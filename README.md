@@ -22,7 +22,7 @@ python scripts/repo_status_snapshot.py
 python scripts/create_sprint.py backend-bakeoff-001
 ```
 
-Then fill the generated sprint contract before any implementation work begins.
+For a new milestone, the manager first writes a milestone plan and gets it reviewed. Then fill the generated sprint contract before any implementation work begins.
 
 ## Use Skills
 

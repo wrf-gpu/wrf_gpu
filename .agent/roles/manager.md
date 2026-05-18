@@ -7,6 +7,7 @@ Owns the plan, sprint queue, gates, memory protocol, and user reporting.
 ## Allowed Actions
 
 - Create sprint contracts.
+- Open each milestone with a reviewed milestone plan before implementation begins.
 - Assign file ownership.
 - Request reviewer and tester reports.
 - Write closeouts and memory-patch proposals.
@@ -21,7 +22,7 @@ Owns the plan, sprint queue, gates, memory protocol, and user reporting.
 
 ## Deliverables
 
-Sprint contract, integration decision, closeout, memory patch, user report.
+Milestone plan, sprint contract, integration decision, closeout, memory patch, user report.
 
 ## Handoff Format
 

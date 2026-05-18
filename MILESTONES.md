@@ -1,5 +1,7 @@
 # Milestones
 
+Before any implementation work in M1-M8, the manager must write a milestone plan and obtain independent review. The first sprint in a milestone is normally a planning/review sprint unless the milestone plan already exists and passes review.
+
 ## M0 - AgentOS / Factory Bootstrap
 
 Goal: create governance, memory, skills, sprint templates, scripts, and smoke tests.

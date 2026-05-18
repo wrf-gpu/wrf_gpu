@@ -2,7 +2,9 @@
 
 Required before merge:
 
+- milestone plan exists and was reviewed for first sprint in a milestone
 - sprint contract exists
+- sprint contract was reviewed before implementation when required by lifecycle policy
 - worker report exists
 - tester report exists
 - reviewer report exists
