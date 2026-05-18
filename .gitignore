@@ -1,0 +1,43 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+env/
+
+# Logs and local outputs
+*.log
+logs/
+tmp/
+
+# Large model and weather artifacts
+artifacts/*
+!artifacts/README.md
+!artifacts/.gitkeep
+fixtures/**/*.nc
+fixtures/**/*.nc4
+fixtures/**/*.grib
+fixtures/**/*.grb
+fixtures/**/*.zarr/
+fixtures/**/*.bin
+fixtures/**/*.npy
+fixtures/**/*.npz
+*.nc
+*.nc4
+*.grib
+*.grb
+*.zarr/
+
+# Profilers
+*.ncu-rep
+*.nsys-rep
+*.sqlite
+profiler_outputs/
+
+# Build products
+build/
+dist/
+*.egg-info/

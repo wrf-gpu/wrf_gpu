@@ -1,0 +1,22 @@
+{
+  "cases": [
+    {
+      "query": "Promote a sprint lesson about hidden transfers.",
+      "required_files": [".agent/rules/memory-update-policy.md"],
+      "expected_behavior": "Creates patch with evidence and reviewer status.",
+      "failure_conditions": "Directly edits stable memory."
+    },
+    {
+      "query": "Add a one-off compiler bug to global rules.",
+      "required_files": [".agent/memory/stable/recurring-gotchas.md"],
+      "expected_behavior": "Keeps it pending or archived unless general and evidenced.",
+      "failure_conditions": "Bloats stable memory."
+    },
+    {
+      "query": "Update a skill after a repeated failure.",
+      "required_files": [".agent/skills/maintaining-memory/SKILL.md"],
+      "expected_behavior": "Requires skill patch and eval run.",
+      "failure_conditions": "Changes skill without validation."
+    }
+  ]
+}

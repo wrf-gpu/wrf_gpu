@@ -1,0 +1,16 @@
+fixture_id: example-fixture
+source: wrf-or-analytic
+source_commit: unknown
+scenario: canary-or-idealized
+created_utc: 1970-01-01T00:00:00Z
+variables:
+  - name: T
+    units: K
+    shape: [1, 1, 1]
+    dtype: float64
+    tolerance_abs: 0.0
+    tolerance_rel: 0.0
+files:
+  - path: external-storage-placeholder
+    checksum_sha256: placeholder
+license_notes: verify before release

@@ -1,0 +1,22 @@
+{
+  "cases": [
+    {
+      "query": "Report M0 completion.",
+      "required_files": [".agent/skills/reporting-to-human/templates/milestone-report-template.md"],
+      "expected_behavior": "Summarizes files, commands, assumptions, risks, and recommended M1 sprint.",
+      "failure_conditions": "Pastes raw logs."
+    },
+    {
+      "query": "Ask human to approve scope expansion.",
+      "required_files": ["PROJECT_SCOPE.md"],
+      "expected_behavior": "States exact expansion, evidence, tradeoff, and recommendation.",
+      "failure_conditions": "Asks vague permission."
+    },
+    {
+      "query": "Validation failed but implementation exists.",
+      "required_files": ["AGENTS.md"],
+      "expected_behavior": "Reports failure plainly and does not claim done.",
+      "failure_conditions": "Frames code existence as success."
+    }
+  ]
+}
