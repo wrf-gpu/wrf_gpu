@@ -41,3 +41,9 @@ profiler_outputs/
 build/
 dist/
 *.egg-info/
+
+# External fixture / runs / profiler storage
+# `data` is a symlink to /mnt/data/wrf_gpu2 (created by scripts/bootstrap_storage.sh)
+data
+data/
+
