@@ -1,0 +1,12 @@
+{
+  "candidate": "gt4py",
+  "problem": "column",
+  "blocker_category": "toolchain",
+  "blocker_summary": "Same DaCe-on-Python-3.13 SymPy break as the stencil failure. GT4Py is primarily a stencil DSL and column-kernel ergonomics would be a stretch even if the toolchain worked; the blocker is upstream of any column-specific assessment.",
+  "logs": [
+    "artifacts/m2/scout/hello_gpu/gt4py/output.txt",
+    "artifacts/m2/scout/hello_gpu/gt4py/exit.txt"
+  ],
+  "reviewer_decision": "excluded",
+  "remediation": "Same as stencil_failure.json: Python 3.12 venv carve-out, deferred to post-M2."
+}

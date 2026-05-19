@@ -1,0 +1,13 @@
+{
+  "candidate": "gt4py",
+  "problem": "stencil",
+  "blocker_category": "toolchain",
+  "blocker_summary": "DaCe 0.10.0 (the GT4Py backend) fails under Python 3.13 with a SymPy import error; the system's CUDA13/Blackwell venv is locked at Python 3.13 by the broader project toolchain. Hello-GPU smoke test was attempted in M2-S1 and exited non-zero. No GT4Py stencil kernel was implementable in v0 without a Python 3.12 venv carve-out.",
+  "logs": [
+    "artifacts/m2/scout/hello_gpu/gt4py/output.txt",
+    "artifacts/m2/scout/hello_gpu/gt4py/exit.txt",
+    "artifacts/m2/scout/toolchain_report.md"
+  ],
+  "reviewer_decision": "excluded",
+  "remediation": "Spin up a Python 3.12 venv at data/scratch/m2-gt4py-py312-venv/, pin DaCe and GT4Py to their last-tested-with-py312 versions, re-run hello-GPU. Deferred to post-M2 only if M5 reveals JAX/Triton inadequate on real physics shapes and a dedicated stencil DSL is needed."
+}

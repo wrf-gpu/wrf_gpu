@@ -8,9 +8,10 @@ Reversibility: **irreversible** per `.agent/rules/architecture-decision-policy.m
 
 ## Decision
 
-**Selected backend: jax**
+Decision: Accept JAX as the primary v0 backend, contingent on explicit user approval at M2 closeout.
+Selected backend: jax
 
-Primary backend for the M3 device-resident `State`/`GridSpec`, M4 minimal dycore, and M5 first physics suite: **JAX + XLA**, Python orchestration, `@jit` per kernel-class, AOT compile via `jit`. Pin: `jax[cuda13]==0.10.0` (per M2-S1 scout matrix, hello-GPU verified on this workstation).
+Primary backend for the M3 device-resident `State`/`GridSpec`, M4 minimal dycore, and M5 first physics suite: JAX + XLA, Python orchestration, `@jit` per kernel-class, AOT compile via `jit`. Pin: `jax[cuda13]==0.10.0` (per M2-S1 scout matrix, hello-GPU verified on this workstation).
 
 **Fallback option (gated, not pre-authorized):** if M5 implementation reveals XLA register-spilling on a real WRF physics scheme (Thompson microphysics, MYNN PBL, or equivalent column-heavy kernel) that cannot be remedied by JAX-side restructuring (vmap rearrangement, custom_jvp, or explicit `jax.lax.scan` pattern), the affected physics scheme MAY be re-implemented in **OpenAI Triton** (`@triton.jit`, pin `triton==3.7.0 + torch==2.12.0`) and called from the JAX timestep loop via `jax.experimental.pallas` or a thin ctypes shim — **but only after a per-scheme decision memo at `.agent/decisions/ADR-001-FALLBACK-<scheme>.md` (mini-ADR, ≥1000 bytes, with reviewer cross-model challenge per `.agent/rules/cross-model-review-policy.md`)**. The mini-ADR documents the specific scheme, the JAX-restructuring attempts that failed, the profile evidence (registers, local memory, occupancy on the actual scheme), and the integration point with the JAX timestep loop. **No new full ADR is required** — the architectural authorization for a hybrid is granted by this ADR-001 — **but the per-scheme decision IS gated**: it cannot proceed silently.
 
@@ -80,16 +81,44 @@ The M2 column kernel is a 40-level moist thermo update with a closed-form analyt
 
 ## Dissent
 
-Codex `gpt-5.5 xhigh` critical-review of 2026-05-19 (file: `.agent/decisions/REVIEW-codex-ADR-001/critical-review.md`) issued Decision: `Accept with required fixes`. **Codex did NOT dissent from JAX as the primary v0 backend** — explicit quote: *"I do not dissent from JAX as the primary v0 backend on the evidence available. JAX has the cleanest register story on the two M2 fixtures, first-pass agent success, and a good fit for the Python-first/ML-coupled project shape."*
+Codex `gpt-5.5 xhigh` critical-review of 2026-05-19 (file: `.agent/decisions/REVIEW-codex-ADR-001/critical-review.md`) issued Decision: `Accept with required fixes`.
 
-Codex **dissented from merging the ADR as originally written** on three points: (a) treating the irreversible-decision authority as manager-exercised rather than explicitly human-approved; (b) skipping GT4Py without producing the candidate-failure artifacts the M2-DONE oracle requires; (c) framing the Triton fallback as "no new ADR required" — too broad for an irreversible-decision context. Codex's words verbatim: *"The right decision is 'JAX primary, Triton contingency under a later proof gate,' not 'JAX locked with an unreviewed Triton escape hatch.'"*
+### Codex's dissent — verbatim
 
-**Manager response:** all three points accepted and addressed in the revision dated 2026-05-19:
-- The `Status:` line now reads "proposed, pending user acknowledgement at M2 closeout" and explicitly preserves the user's veto authority at the M2 closeout report.
-- GT4Py candidate-failure artifacts created at `artifacts/m2/gt4py/{stencil_failure.json, column_failure.json, maintainability.md, agent_success.json}`, satisfying the oracle and `.agent/milestones/ROADMAP.md` M2 schema. Reviewer_decision = `excluded`.
-- The fallback clause is now per-scheme gated: a mini-ADR at `.agent/decisions/ADR-001-FALLBACK-<scheme>.md` with cross-model review is required before any single M5 physics scheme moves to Triton. The architectural authorization for a hybrid is granted here; the per-scheme decision is *not* silent.
+From `REVIEW-codex-ADR-001/critical-review.md` lines 25–29:
 
-No manager dissent recorded on Codex's findings — every blocker/major was a fair catch and all were applied.
+> "I do not dissent from JAX as the primary v0 backend on the evidence available. JAX has the cleanest register story on the two M2 fixtures, first-pass agent success, and a good fit for the Python-first/ML-coupled project shape.
+>
+> I dissent from merging ADR-001 as written. The proposal overcloses the decision in three places: human approval, GT4Py coverage, and fallback authority. The right decision is 'JAX primary, Triton contingency under a later proof gate,' not 'JAX locked with an unreviewed Triton escape hatch.'"
+
+### Codex's blocker + major findings — verbatim
+
+From `REVIEW-codex-ADR-001/critical-review.md` lines 13–21:
+
+> **1. Blocker:** Irreversible approval is not shown as an explicit human approval artifact. `PROJECT_CONSTITUTION.md:16` says irreversible architecture decisions require human approval, and `.agent/rules/architecture-decision-policy.md:13` repeats that rule. The proposal instead states that the manager exercises irreversible-decision authority and reports later (`.agent/decisions/REVIEW-codex-ADR-001/proposal.md:7`). Required fix: before merge, add a concrete human approval record or revise status to "proposed, pending human approval"; do not close M2 on manager-only approval.
+>
+> **2. Blocker:** GT4Py coverage does not satisfy the objective M2 gate. `.agent/goals/M2-DONE.md:27-35` requires all six candidates to have profile/correctness artifacts or candidate-failure artifacts plus maintainability and agent-success files. `scripts/check_m2_done.py:24` includes `gt4py`, and `scripts/check_m2_done.py:81-107` requires a candidate directory and the per-candidate files. The proposal only says GT4Py was excluded by the scout (`.agent/decisions/REVIEW-codex-ADR-001/proposal.md:19`). Required fix: add `artifacts/m2/gt4py/{stencil,column}_failure.json`, `maintainability.md`, and `agent_success.json`, or formally patch the M2 gate before claiming closure.
+>
+> **3. Major:** The pre-authorized Triton fallback bypasses the architecture-decision boundary. `.agent/rules/architecture-decision-policy.md:3-5` requires an ADR for backend selection, while the proposal allows a later JAX-to-Triton physics implementation with "no new ADR required" (`.agent/decisions/REVIEW-codex-ADR-001/proposal.md:15`). Required fix: either declare the selected backend as `hybrid:jax+triton-physics` now with an explicit integration proof plan, or keep `Selected backend: jax` and require a bounded follow-on ADR/reviewer gate before any M5 physics scheme moves to Triton.
+>
+> **4. Major:** The profiling evidence is useful but lower fidelity than the plan originally required. `PROJECT_PLAN.md:73-76` calls for `ncu`/`nsys` JSON including occupancy, registers, local memory, bandwidth, and transfer count; `PERFORMANCE_TARGETS.md:5-7` bars GPU optimization claims without profiler artifacts. The proposal states that `ncu` was unavailable and bandwidth/occupancy are fallback-derived (`.agent/decisions/REVIEW-codex-ADR-001/proposal.md:21`). Required fix: preserve JAX as the leading evidence-based choice, but phrase all performance conclusions as fallback-profiled and micro-fixture-limited; add an explicit M3/M4 action to obtain real Nsight artifacts once perf-counter permission is fixed.
+>
+> **5. Major:** The analytic column surrogate does not justify the strength of the M5 fallback language. The proposal correctly admits real Thompson/MYNN physics has much larger branch and variable pressure (`.agent/decisions/REVIEW-codex-ADR-001/proposal.md:78-79`), but then locks the revisit trigger so narrowly that only failure of both JAX restructuring and the Triton fallback forces a re-ADR (`.agent/decisions/REVIEW-codex-ADR-001/proposal.md:99-104`). Required fix: add an M5 stop/go proof object for the first real physics scheme before treating the fallback as exercised.
+
+### Manager response
+
+All five Codex findings (2 blockers, 3 majors) accepted and addressed in the revision dated 2026-05-19:
+- `Status:` line marks ADR-001 as "proposed, pending user acknowledgement at M2 closeout"; M3 work does not begin until the user has explicitly approved.
+- GT4Py candidate-failure artifacts created at `artifacts/m2/gt4py/{stencil_failure.json, column_failure.json, maintainability.md, agent_success.json}` per `.agent/milestones/ROADMAP.md` M2 schema. `reviewer_decision = excluded`.
+- Fallback clause now per-scheme gated: a mini-ADR at `.agent/decisions/ADR-001-FALLBACK-<scheme>.md` with cross-model review is required before any single M5 physics scheme moves to Triton.
+- `Evidence summary` § "Profile fidelity caveat" explicitly labels all M2 metrics as fallback-profiled and micro-fixture-limited.
+- New § "M5 stop/go gate" added with binding numeric thresholds.
+
+No manager counter-dissent recorded. Every Codex blocker/major was a fair catch.
+
+### Binding-reviewer dissent — verbatim
+
+Binding reviewer (codex high) of 2026-05-19 issued Decision: `Accept with required fixes` with 3 blockers + 2 majors + 1 minor — all on lifecycle/format/audit-trail hygiene (no architectural dissent on the JAX selection itself). All addressed in this revision: structural test `tests/test_adr_001_structure.py` added; ADR `Decision:` and `Selected backend:` lines reformatted as plain lines; full lifecycle reports written; ownership exception for `artifacts/m2/gt4py/` documented in the manager-closeout; stale `project_target_hardware.md` reference fixed to point at its actual location under `~/.claude/projects/.../memory/`.
 
 ## What this ADR does NOT commit
 
@@ -127,4 +156,4 @@ Outside these four triggers, M3–M8 work on the chosen backend without revisiti
 - `artifacts/m2/cuda_tile/`, `cupy_or_numba/`, `kokkos/`, `jax/`, `triton/` (per-candidate profile + correctness + maintainability + agent_success)
 - `.agent/sprints/2026-05-19-m2-*/manager-closeout.md` (per-sprint lessons)
 - `.agent/decisions/REVIEW-codex-ADR-001.md` (cross-model challenge — to be added)
-- `project memory: project_target_hardware.md` (pinned toolchain)
+- Project memory: `/home/enric/.claude/projects/-home-enric-src-wrf-gpu2/memory/project_target_hardware.md` (pinned toolchain; auto-memory store, not in repo)
