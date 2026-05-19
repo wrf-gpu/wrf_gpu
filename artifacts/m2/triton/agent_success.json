@@ -1,0 +1,14 @@
+{
+  "backend_used": "triton",
+  "build_attempts": 1,
+  "candidate": "triton",
+  "escalation_events": 0,
+  "notes": [
+    "Implemented direct @triton.jit kernels only; no JAX/Pallas wrapper and no mixed precision.",
+    "Runner creates an isolated data/scratch/m2-triton-venv environment and records pip freeze.",
+    "Nsight Compute is invoked when present; expected permission failures are captured as profiler artifacts."
+  ],
+  "reviewer_rejections": 0,
+  "runtime_failures": 0,
+  "sprint_count": 1
+}
