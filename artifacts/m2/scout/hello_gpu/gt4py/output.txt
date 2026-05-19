@@ -1,0 +1,14 @@
+Traceback (most recent call last):
+  File "/home/enric/src/wrf_gpu2/artifacts/m2/scout/hello_gpu/gt4py/hello.py", line 10, in <module>
+    def times_two(a: dace.float32[N], b: dace.float32[N]):
+                     ~~~~~~~~~~~~^^^
+  File "/home/enric/src/wrf_gpu2/data/scratch/m2-scout-venv/lib/python3.13/site-packages/dace/dtypes.py", line 345, in __getitem__
+    return data.Array(self, (s, ))
+           ~~~~~~~~~~^^^^^^^^^^^^^
+  File "/home/enric/src/wrf_gpu2/data/scratch/m2-scout-venv/lib/python3.13/site-packages/dace/properties.py", line 402, in initialize_properties
+    setattr(obj, name, prop.default)
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/enric/src/wrf_gpu2/data/scratch/m2-scout-venv/lib/python3.13/site-packages/dace/properties.py", line 1130, in __set__
+    if (not isinstance(val, sp.expr.Expr) and not isinstance(val, int)
+                            ^^^^^^^
+AttributeError: module 'sympy' has no attribute 'expr'

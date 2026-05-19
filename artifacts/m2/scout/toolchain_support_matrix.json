@@ -1,0 +1,88 @@
+{
+  "generated_utc": "2026-05-19T08:29:27Z",
+  "target_hardware": {
+    "gpu_model": "NVIDIA GeForce RTX 5090",
+    "compute_capability": "12.0",
+    "driver_version": "590.48.01"
+  },
+  "candidates": [
+    {
+      "name": "jax",
+      "verdict": "go-with-version-bump",
+      "rationale": "JAX 0.10.0 CUDA13 wheel passed hello-GPU; see artifacts/m2/scout/hello_gpu/jax/output.txt",
+      "version_pin": "jax[cuda13]==0.10.0",
+      "install_command": "python -m venv data/scratch/m2-scout-venv && source data/scratch/m2-scout-venv/bin/activate && pip install 'jax[cuda13]==0.10.0'",
+      "hello_gpu_passed": true,
+      "hello_gpu_artifact_dir": "artifacts/m2/scout/hello_gpu/jax/",
+      "known_gaps": [
+        "Only functional smoke-tested; no profiler artifact in this scout.",
+        "Requires CUDA 13 wheels and driver new enough for CUDA 13 runtime."
+      ]
+    },
+    {
+      "name": "triton",
+      "verdict": "go-with-version-bump",
+      "rationale": "Triton 3.7 + torch 2.12 CUDA13 passed; see artifacts/m2/scout/hello_gpu/triton/output.txt",
+      "version_pin": "triton==3.7.0 torch==2.12.0",
+      "install_command": "source data/scratch/m2-scout-venv/bin/activate && pip install 'triton==3.7.0' 'torch==2.12.0'",
+      "hello_gpu_passed": true,
+      "hello_gpu_artifact_dir": "artifacts/m2/scout/hello_gpu/triton/",
+      "known_gaps": [
+        "Triton driver activation depends on torch.cuda in the current wheel.",
+        "Only pointwise JIT launch tested; no stencil/column kernel evidence yet."
+      ]
+    },
+    {
+      "name": "gt4py",
+      "verdict": "blocked",
+      "rationale": "DaCe 0.10.0 failed under Python 3.13; see artifacts/m2/scout/hello_gpu/gt4py/output.txt",
+      "version_pin": null,
+      "install_command": null,
+      "hello_gpu_passed": false,
+      "hello_gpu_artifact_dir": "artifacts/m2/scout/hello_gpu/gt4py/",
+      "known_gaps": [
+        "PyPI GT4Py 1.1.9 installs, but the DaCe 0.10.0 dependency is not Python 3.13 clean here.",
+        "Published GT4Py quick-start GPU extras still document cuda11x-style extras, not a CUDA 13 Blackwell path."
+      ]
+    },
+    {
+      "name": "kokkos",
+      "verdict": "go-with-version-bump",
+      "rationale": "Kokkos 4.7.1 BLACKWELL120 source build passed; see hello_gpu/kokkos/output.txt",
+      "version_pin": "Kokkos 4.7.1 tag 4.7.01",
+      "install_command": "source env_wrf_gpu.sh && cmake -S data/scratch/m2-scout-src/kokkos -B data/scratch/m2-scout-build/kokkos -DCMAKE_INSTALL_PREFIX=$PWD/data/scratch/m2-scout-install/kokkos -DCMAKE_CXX_COMPILER=$PWD/data/scratch/m2-scout-src/kokkos/bin/nvcc_wrapper -DKokkos_ENABLE_CUDA=ON -DKokkos_ARCH_BLACKWELL120=ON -DKokkos_ENABLE_SERIAL=ON && cmake --build data/scratch/m2-scout-build/kokkos --parallel 8 && cmake --install data/scratch/m2-scout-build/kokkos",
+      "hello_gpu_passed": true,
+      "hello_gpu_artifact_dir": "artifacts/m2/scout/hello_gpu/kokkos/",
+      "known_gaps": [
+        "Requires user-local Kokkos source build; no preinstalled package was found.",
+        "Compile path is heavier than Python candidates."
+      ]
+    },
+    {
+      "name": "cupy_or_numba",
+      "verdict": "go",
+      "rationale": "CuPy 14.0.1 CUDA13x wheel passed hello-GPU; see hello_gpu/cupy_or_numba/output.txt",
+      "version_pin": "cupy-cuda13x==14.0.1",
+      "install_command": "source data/scratch/m2-scout-venv/bin/activate && pip install 'cupy-cuda13x==14.0.1'",
+      "hello_gpu_passed": true,
+      "hello_gpu_artifact_dir": "artifacts/m2/scout/hello_gpu/cupy_or_numba/",
+      "known_gaps": [
+        "CuPy was selected over Numba for this candidate because CUDA 13x wheels are direct and clean.",
+        "Only array expression smoke-tested; raw-kernel ergonomics still need M2 implementation evidence."
+      ]
+    },
+    {
+      "name": "cuda_tile",
+      "verdict": "go",
+      "rationale": "CUDA 13.1 nvcc -arch=sm_120 passed hello-GPU; see hello_gpu/cuda_tile/output.txt",
+      "version_pin": "CUDA Toolkit 13.1.115 from NVHPC 26.3",
+      "install_command": "source /home/enric/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/env_wrf_gpu.sh && nvcc -std=c++17 -arch=sm_120 -O2 hello.cu -o hello_cuda_tile",
+      "hello_gpu_passed": true,
+      "hello_gpu_artifact_dir": "artifacts/m2/scout/hello_gpu/cuda_tile/",
+      "known_gaps": [
+        "NVIDIA-only path by design.",
+        "No profiler or transfer audit in this functional scout."
+      ]
+    }
+  ]
+}
