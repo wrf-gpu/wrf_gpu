@@ -1,0 +1,20 @@
+{
+  "achieved_bandwidth_gbps": 0.0027099353333214973,
+  "artifact_paths": [
+    "data/profiler_artifacts/cuda_tile/column_ncu_stdout.txt",
+    "data/profiler_artifacts/cuda_tile/column_ncu_stderr.txt",
+    "data/profiler_artifacts/cuda_tile/column_ncu_exit.txt",
+    "data/scratch/cuda_tile/resource_usage.txt"
+  ],
+  "backend": "cuda-tile",
+  "benchmark": "m2_column",
+  "case": "analytic-column-thermo-v1",
+  "hardware": "RTX 5090 32GB",
+  "host_device_transfer_bytes": 2560,
+  "kernel_launches": 1,
+  "local_memory_bytes": 0,
+  "occupancy_pct": 100.0,
+  "profiler_limitation": "ncu invoked, but local user lacks NVIDIA performance-counter permission (ERR_NVGPUCTRPERM); registers/local memory parsed from cuobjdump, occupancy from CUDA occupancy API, wall time/transfers from bench output.",
+  "registers_per_thread": 24,
+  "wall_time_s": 0.000944671988487
+}
