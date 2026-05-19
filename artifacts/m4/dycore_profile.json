@@ -1,0 +1,26 @@
+{
+  "artifact_paths": [
+    "artifacts/m4/hlo_dump/dycore_step_production.txt",
+    "artifacts/m4/transfer_audit.json",
+    "artifacts/m4/spacetime_budget.json"
+  ],
+  "backend": "jax",
+  "benchmark": "m4_dycore_step",
+  "case": "m4-dycore-40x80x80",
+  "device_to_host_bytes_post_init": 0,
+  "gpu_name": "cuda:0",
+  "hardware": "RTX 5090 32GB",
+  "host_device_transfer_bytes": 0,
+  "host_to_device_bytes_post_init": 0,
+  "iterations": 100,
+  "jax_version": "0.10.0",
+  "kernel_launches": 29,
+  "kernel_launches_per_dycore_step": 29,
+  "local_memory_bytes": null,
+  "n_acoustic": 4,
+  "occupancy_pct": null,
+  "profiler_limitation": "ncu/nsys perf counters not used in worker command; HLO-derived launch estimate plus JAX trace transfer audit",
+  "registers_per_thread": null,
+  "temporary_bytes_per_step": 0,
+  "wall_time_s": 0.0004355566494632512
+}

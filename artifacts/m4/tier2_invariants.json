@@ -1,0 +1,9 @@
+{
+  "case": "m4-still-air-density-current-cold-blob",
+  "dt_s": 2.0,
+  "iterations": 100,
+  "mass_residual_relative": 0.0,
+  "nan_inf_violations": 0,
+  "pass": true,
+  "qv_positivity_violations": 0
+}
