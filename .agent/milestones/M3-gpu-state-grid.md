@@ -17,3 +17,7 @@ Acceptance gates:
 - BC metadata schema frozen at M3 close
 
 See `.agent/milestones/ROADMAP.md` M3 and `PROJECT_PLAN.md §7` for the full per-gate proof-object list.
+
+## Reviewer Decision
+
+Accepted (manager-side) 2026-05-19, **conditional on explicit user approval of ADR-002**. See `.agent/decisions/MILESTONE-M3-CLOSEOUT.md` for the full proof-object inventory, residual risks, and recommended M4 entry. Single sprint (M3-S1) closed across 2 worker attempts + 1 tester + 2 reviewer + 1 Codex critical-review on ADR-002 (Reject → Accept with 4 fixes → Accept with 6 critical-review fixes applied). 298 tests passing. Zero post-init transfers verified.
