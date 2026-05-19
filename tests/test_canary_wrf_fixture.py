@@ -15,8 +15,8 @@ from gpuwrf.validation.compare_fixture import load_manifest
 
 
 ROOT = Path(__file__).resolve().parents[1]
-MANIFEST = ROOT / "fixtures/manifests/canary-wrf-d01-20260518T13-tslice-v1.yaml"
-SAMPLE = ROOT / "fixtures/samples/canary-wrf-d01-20260518T13-tslice-v1.npz"
+MANIFEST = ROOT / "fixtures/manifests/canary-wrf-d01-20260518T18-tslice-v1.yaml"
+SAMPLE = ROOT / "fixtures/samples/canary-wrf-d01-20260518T18-tslice-v1.npz"
 
 
 def _env() -> dict[str, str]:

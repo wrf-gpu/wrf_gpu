@@ -1,7 +1,7 @@
-fixture_id: canary-wrf-d01-20260518T13-tslice-v1
+fixture_id: canary-wrf-d01-20260518T18-tslice-v1
 source: wrf-derived
-source_commit: path=/mnt/data/canairy_meteo/runs/wrf_l3/20260517_18z_l3_24h_20260518T004341Z/wrfout_d01_2026-05-18_13:00:00
-  sha256=9ba4a5631a0a3307a6772ce60d04d340be9886ca49d7af25015cf1d875c2e102
+source_commit: path=/mnt/data/wrf_gpu2/source_wrfouts/wrfout_d01_2026-05-18_18:00:00
+  sha256=5cb92e491d0d7ccf5ba1f4835cbca73a82c4e1b2db75fdcaa6fa12a9093301e1
 wrf_version: 4.7.1
 scenario: Canary Islands WRF L3 d01 valid 2026-05-18 13:00 UTC, single interior timestep
   slice
@@ -9,8 +9,8 @@ created_utc: '2026-05-19T00:00:00Z'
 tier: 1
 precision_reference: fp64
 generation_command: python scripts/extract_canary_wrf_fixture.py
-external_uri: data/fixtures/canary-wrf-d01-20260518T13-tslice-v1/full.npz
-sample_slice_path: fixtures/samples/canary-wrf-d01-20260518T13-tslice-v1.npz
+external_uri: data/fixtures/canary-wrf-d01-20260518T18-tslice-v1/full.npz
+sample_slice_path: fixtures/samples/canary-wrf-d01-20260518T18-tslice-v1.npz
 git_commit: worker/gpt/m1-canary-wrf-derived-fixture
 license_notes: Derived from local Gen2 WRF operational run for project validation;
   bulk payload remains under data/.
@@ -88,11 +88,11 @@ variables:
   tolerance_rationale: WRF fp32 base-state pressure; interior 10x8x8 slice
   tier_overrides: null
 files:
-- path: data/fixtures/canary-wrf-d01-20260518T13-tslice-v1/full.npz
-  checksum_sha256: a2aaa08cd15a296f5223077ba49ae89a2c053b357827902855e16bc42b73a842
-  bytes: 15967
+- path: data/fixtures/canary-wrf-d01-20260518T18-tslice-v1/full.npz
+  checksum_sha256: b9bb6f59038a5a5c35e63331a368b382e05e34ae1c33a003f793c1e6d5b3c074
+  bytes: 15945
   external: true
-- path: fixtures/samples/canary-wrf-d01-20260518T13-tslice-v1.npz
-  checksum_sha256: 8fffc8a9de04186cdd5677e8ef5e313d90f0b1cb336c7efecda276b73b02e040
-  bytes: 14214
+- path: fixtures/samples/canary-wrf-d01-20260518T18-tslice-v1.npz
+  checksum_sha256: 7c01a8128c8cac668b78281133410d48fe8186aea1dc0381a9b708c1b9dbffa4
+  bytes: 14130
   external: false

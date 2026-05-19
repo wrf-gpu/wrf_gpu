@@ -20,12 +20,13 @@ except ImportError as exc:  # pragma: no cover - exercised only in missing-dep e
 
 
 ROOT = Path(__file__).resolve().parents[3]
-FIXTURE_ID = "canary-wrf-d01-20260518T13-tslice-v1"
-SOURCE_WRFOUT = Path(
-    "/mnt/data/canairy_meteo/runs/wrf_l3/"
-    "20260517_18z_l3_24h_20260518T004341Z/"
-    "wrfout_d01_2026-05-18_13:00:00"
-)
+FIXTURE_ID = "canary-wrf-d01-20260518T18-tslice-v1"
+# Source-of-record is project-owned and immutable. We previously borrowed from a
+# Gen2 nightly-run path, but Gen2 rotates wrfouts (its scheduler overwrites the
+# directory on each new run). To make this fixture reproducible long-term, the
+# project copied a representative wrfout into its own storage at the path below
+# (sha256 5cb92e491d0d7ccf5ba1f4835cbca73a82c4e1b2db75fdcaa6fa12a9093301e1).
+SOURCE_WRFOUT = Path("/mnt/data/wrf_gpu2/source_wrfouts/wrfout_d01_2026-05-18_18:00:00")
 EXTERNAL_DIR = ROOT / "data/fixtures" / FIXTURE_ID
 FULL_PATH = EXTERNAL_DIR / "full.npz"
 CHECKSUM_PATH = EXTERNAL_DIR / "checksums.txt"
