@@ -2,7 +2,7 @@
 
 Date: 2026-05-19
 Author: M3-S1 worker (codex) drafted technical body; manager finalized 2026-05-19
-Status: **accepted by manager pending explicit user approval** at M3 closeout. Same gating pattern as ADR-001: the manager-autonomy directive does NOT silently amend the constitution; irreversible architecture decisions require explicit human approval (`PROJECT_CONSTITUTION.md:16`, `.agent/rules/architecture-decision-policy.md:13`). M4 implementation does NOT begin until the user explicitly approves at the M3 closeout status report.
+Status: **ACCEPTED 2026-05-19 by user** at M3 closeout (explicit "approved, move to m4" reply). Same gating pattern as ADR-001. M4 implementation may proceed under this layout.
 Scope: M3 single-GPU JAX/XLA state, grid, halo, and dummy timestep loop
 Reversibility: irreversible per `.agent/rules/architecture-decision-policy.md` (state layout, halo contract).
 

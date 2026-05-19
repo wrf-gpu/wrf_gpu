@@ -47,6 +47,15 @@ case "$ROLE" in worker|tester|reviewer|critical-review) ;; *) echo "bad role: $R
 REPO="$(cd "$(dirname "$0")/.." && pwd)"
 SPRINT_ABS="$(cd "$SPRINT" && pwd)"
 SPRINT_NAME="$(basename "$SPRINT_ABS")"
+
+# Auto-detect the active milestone goal file from the sprint name (e.g. "...-m4-..." → M4-DONE.md).
+# Falls back to M1-DONE.md if no match (legacy behavior).
+GOAL_FILE=".agent/goals/M1-DONE.md"
+if [[ "$SPRINT_NAME" =~ -(m[0-9]+)- ]]; then
+  M="${BASH_REMATCH[1]^^}"  # m4 → M4
+  CANDIDATE=".agent/goals/${M}-DONE.md"
+  [[ -f "$REPO/$CANDIDATE" ]] && GOAL_FILE="$CANDIDATE"
+fi
 TS="$(date -u +%Y%m%dT%H%M%SZ)"
 WIN="${SPRINT_NAME:0:40}-${ROLE}"
 LOG_DIR="$REPO/logs"; mkdir -p "$LOG_DIR"
@@ -147,7 +156,7 @@ cat > "$PROMPT" <<EOF
 3. \`CLAUDE.md\`
 4. \`PROJECT_PLAN.md\`
 5. \`.agent/milestones/ROADMAP.md\`
-6. \`.agent/goals/M1-DONE.md\` (the active goal; do not change it)
+6. \`$GOAL_FILE\` (the active goal; do not change it)
 7. \`$SPRINT_ABS/sprint-contract.md\`
 8. The relevant skill under \`.agent/skills/\` for your role:
    - worker → writing-gpu-kernels, writing-execplans
