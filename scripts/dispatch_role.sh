@@ -169,6 +169,27 @@ $ROLE_INSTRUCTIONS
 - Exit cleanly when your deliverable is on disk. Do not loop.
 EOF
 
+# Cross-model AI assignment per role (codified 2026-05-19 per user directive):
+#   worker          → codex gpt-5.5      — implementation (codex is good at code)
+#   tester          → claude opus 4.7    — independent second-AI verification (different blind spots)
+#   reviewer        → codex gpt-5.5      — binding judgment (worker AI + reviewer AI same = OK because tester is the other AI)
+#   critical-review → codex gpt-5.5      — manager's second-opinion path
+# Override --reasoning maps differently per CLI:
+#   codex: model_reasoning_effort=<high|xhigh>
+#   claude: --effort <high|xhigh>
+case "$ROLE" in
+  tester)
+    AI_CLI="claude"
+    # Claude Code: -p (print/non-interactive), --model opus (alias = latest opus = 4.7),
+    # --effort <level>, --permission-mode bypassPermissions, prompt via stdin.
+    LAUNCH_CMD="claude -p --model opus --effort \"$REASONING\" --permission-mode bypassPermissions --no-session-persistence --append-system-prompt \"You are acting as the sonnet-test-engineer ROLE for this project, running as Claude Opus 4.7. Strictly follow the role-specific instructions in the prompt. Do not loop interactively. Exit cleanly when your deliverable file is on disk.\" --add-dir \"$REPO\" --add-dir /mnt/data/wrf_gpu2 < \"$PROMPT\""
+    ;;
+  worker|reviewer|critical-review)
+    AI_CLI="codex"
+    LAUNCH_CMD="codex exec --dangerously-bypass-approvals-and-sandbox -m gpt-5.5 -c model_reasoning_effort=\"$REASONING\" --color always --output-last-message \"$SPRINT_ABS/.${ROLE}-last.txt\" -C \"$REPO\" < \"$PROMPT\""
+    ;;
+esac
+
 # Build the post-completion summary helper as a separate script the tmux window will source.
 # The helper builds a one-paragraph status, send-keys it to the manager window, then kills its own window.
 COMPLETION_HELPER="$SPRINT_ABS/.${ROLE}-completion.sh"
@@ -194,27 +215,6 @@ sleep 1
 tmux kill-window -t "$MGR_SESS:$WIN" 2>/dev/null || true
 COMPLETION_EOF
 chmod +x "$COMPLETION_HELPER"
-
-# Cross-model AI assignment per role (codified 2026-05-19 per user directive):
-#   worker          → codex gpt-5.5      — implementation (codex is good at code)
-#   tester          → claude opus 4.7    — independent second-AI verification (different blind spots)
-#   reviewer        → codex gpt-5.5      — binding judgment (worker AI + reviewer AI same = OK because tester is the other AI)
-#   critical-review → codex gpt-5.5      — manager's second-opinion path
-# Override --reasoning maps differently per CLI:
-#   codex: model_reasoning_effort=<high|xhigh>
-#   claude: --effort <high|xhigh>
-case "$ROLE" in
-  tester)
-    AI_CLI="claude"
-    # Claude Code: -p (print/non-interactive), --model opus (alias = latest opus = 4.7),
-    # --effort <level>, --permission-mode bypassPermissions, prompt via stdin.
-    LAUNCH_CMD="claude -p --model opus --effort \"$REASONING\" --permission-mode bypassPermissions --no-session-persistence --append-system-prompt \"You are acting as the sonnet-test-engineer ROLE for this project, running as Claude Opus 4.7. Strictly follow the role-specific instructions in the prompt. Do not loop interactively. Exit cleanly when your deliverable file is on disk.\" --add-dir \"$REPO\" --add-dir /mnt/data/wrf_gpu2 < \"$PROMPT\""
-    ;;
-  worker|reviewer|critical-review)
-    AI_CLI="codex"
-    LAUNCH_CMD="codex exec --dangerously-bypass-approvals-and-sandbox -m gpt-5.5 -c model_reasoning_effort=\"$REASONING\" --color always --output-last-message \"$SPRINT_ABS/.${ROLE}-last.txt\" -C \"$REPO\" < \"$PROMPT\""
-    ;;
-esac
 
 # Launch in tmux: AI runs non-interactively, on exit the completion helper send-keys back to the manager.
 # `tmux new-window -d` returns immediately; the manager does not block.
