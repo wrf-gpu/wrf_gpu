@@ -1,6 +1,6 @@
 # Goal Condition — M1 Done
 
-Used by Claude Code `/goal` evaluator. The end state is **objective and machine-checkable**: every assertion below must hold simultaneously for M1 to be considered complete. The evaluator runs the commands and inspects results in the transcript.
+Used by the self-paced `/loop` manager to detect M1 completion. The end state is **objective and machine-checkable**: every assertion below must hold simultaneously for M1 to be considered complete. The manager runs `scripts/check_m1_done.py` each turn and stops the loop when its `ok` field is `true`.
 
 ## Single-command status check
 

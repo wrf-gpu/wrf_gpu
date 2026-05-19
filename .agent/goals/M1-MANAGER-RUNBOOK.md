@@ -1,18 +1,20 @@
 # M1 Manager Per-Turn Runbook
 
-The `/goal` loop re-fires the manager every turn until `.agent/goals/M1-DONE.md` is satisfied. This file tells the manager **what to do each turn**. Read it after `M1-DONE.md`.
+The manager runs in a **self-paced `/loop`**. Each turn the manager executes one step of the decision tree below, commits, calls `ScheduleWakeup` with a reasonable next-tick delay (default 1200–1800 s; less if waiting on a fresh dispatch, more if all agents are idle), and yields. Agents finishing out-of-band send their summary back into the manager's tmux window via `tmux send-keys` (`scripts/dispatch_role.sh` handles this) — those completions arrive as user messages and trigger an immediate next turn ahead of the scheduled wakeup.
 
-## Turn-zero (first turn after /goal)
+This file tells the manager **what to do each turn**. Read it after `M1-DONE.md`.
 
-If `git log -1 --oneline` does not contain the literal token `[m1-bootstrap]`, the bootstrap commit is missing — stop and tell the user (this should not happen if the prep pass succeeded). Otherwise, proceed to "Standard turn."
+## Turn-zero (first manager turn of the loop)
+
+If `git log -1 --oneline` does not contain the literal token `[m1-bootstrap]`, the bootstrap commit is missing — stop the loop and tell the user (this should not happen if the prep pass succeeded). Otherwise, proceed to "Standard turn."
 
 ## Standard turn (every turn after bootstrap)
 
 Execute, in order:
 
 1. **Status check.** Run `python scripts/check_m1_done.py`. Print summary.
-2. **If `ok == true`** → run "M1 closeout" (below), then stop the loop.
-3. **Otherwise**, identify the *next required action* using the decision tree below. Execute exactly one step per turn. Do not chain sprints in one turn — let `/goal` re-fire.
+2. **If `ok == true`** → run "M1 closeout" (below), then stop the loop (do NOT call ScheduleWakeup).
+3. **Otherwise**, identify the *next required action* using the decision tree below. Execute exactly **one** step per turn (dispatch one agent OR write one contract OR perform one closeout). Then `ScheduleWakeup` for the next tick (typical: 1500 s if an agent is in-flight, 600 s if just waiting for an external state change, 60 s if a fast action is queued). Yield.
 
 ## Decision tree (per-turn next action)
 
@@ -32,6 +34,8 @@ For each `dir = .agent/sprints/2026-*-m1-*/` in chronological order:
 5. **Reviewer Decision = Reject or Accept with required fixes (fixes not done)**:
    - If `.${role}-retry-count` < retry cap: amend the contract to address the findings (manager edits sprint-contract.md), reset `.worker-done`/`.tester-done`/`.reviewer-done` markers for the affected roles, re-dispatch worker (next turn picks up tester/reviewer). Done for this turn.
    - If retry cap reached on any role: write `.agent/decisions/BLOCKER-${sprint_id}.md` per the M1-DONE.md escalation template, stop the loop.
+
+**Sprint structure is not frozen.** Per the user's directive of 2026-05-19, the manager may merge two contemplated sprints into one if the work is small, or split one into two if a sprint contract grows too wide. The candidate list in §C is a default ordering, not a contract. If the manager believes microphysics-shape and stencil-shape fixtures fit in one sprint at this scale, it may consolidate.
 6. **All three reports present, Decision = Accept, but close_sprint fails**: read the close_sprint error. Usually means manager-closeout.md or memory-patch.md is template. Manager writes them now (no agent needed — manager owns these). Commit. Done for this turn.
 7. **Sprint cleanly closed** (close_sprint ok=true): move on; this sprint is done. Loop to next sprint.
 
@@ -85,3 +89,11 @@ When stopping for any reason (M1 closeout, blocker, stall, timeout), the final m
 - Write a one-page user status report.
 - Print the report to stdout so the user sees it on attach.
 - Echo the stop reason and the current `git log -5 --oneline`.
+- **Do NOT call ScheduleWakeup.** Omitting the call ends the self-paced /loop.
+
+## Send-keys completion mechanism
+
+When `scripts/dispatch_role.sh` is used to spawn an agent, the agent's tmux window runs codex non-interactively then auto-types a short report line into the manager's tmux window with a 5-second visible pause before pressing Enter. That auto-typed line arrives at the manager as a user message. The manager should:
+- Treat it as a notification, not as the source of truth — always read the role's report file from disk for actual content.
+- Use it as a trigger to advance the decision tree on the **next** turn (which the harness fires automatically because a user message was received).
+- Not respond conversationally; do the next decision-tree step and yield with `ScheduleWakeup`.

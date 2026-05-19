@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Manager's universal sprint-role dispatcher.
+# Manager's universal sprint-role dispatcher (fire-and-forget + send-keys completion).
 #
 # Usage:
 #   scripts/dispatch_role.sh <role> <sprint-folder> [--reasoning <high|xhigh>] [--retry-cap N]
@@ -14,17 +14,22 @@
 #   - Opens a tmux window in the manager's tmux session, named "<sprint>-<role>".
 #   - Runs codex exec non-interactively (Gen2 protocol: --dangerously-bypass-approvals-and-sandbox,
 #     gpt-5.5, configurable reasoning effort).
-#   - Blocks the caller until the codex process exits.
-#   - Kills the tmux window on delivery (per project memory rule).
-#   - Enforces a per-sprint per-role retry cap (default 5).
+#   - **Returns immediately to the caller** (does not block). Manager yields after dispatch.
+#   - When the agent finishes, the agent's tmux window:
+#       (a) writes a done marker + exit code to disk
+#       (b) tmux send-keys a short summary into the manager's window (5s pause then Enter)
+#       (c) kills its own window
+#   - The manager receives the summary as a "user message" on its next turn and continues the loop.
 #   - All output is teed to logs/<sprint>-<role>-<timestamp>.log.
+#   - Enforces a per-sprint per-role retry cap (default 5).
 #
-# Exit code = codex exit code. The manager loop calls this script from its turn and
-# inspects the role-specific report file to decide what to do next.
+# Only one agent should run at a time per sprint (worker → tester → reviewer is sequential by lifecycle).
+# Multiple sprints in parallel are NOT recommended in M1 because send-keys can interleave into the
+# manager's prompt area. The manager's runbook keeps M1 single-threaded.
 
 set -euo pipefail
 
-usage() { sed -n '2,22p' "$0" >&2; exit "${1:-2}"; }
+usage() { sed -n '2,28p' "$0" >&2; exit "${1:-2}"; }
 
 ROLE="${1:-}"; SPRINT="${2:-}"; shift 2 || usage 2
 REASONING="high"; RETRY_CAP=5
@@ -60,11 +65,13 @@ if (( COUNT >= RETRY_CAP )); then
 fi
 echo $((COUNT+1)) > "$RETRY_FILE"
 
-# Resolve tmux session — manager's current session, fall back to session 1.
-SESS="$(tmux display-message -p '#S' 2>/dev/null || echo 1)"
-tmux has-session -t "$SESS" 2>/dev/null || { echo "no tmux session $SESS" >&2; exit 2; }
+# Resolve manager session + window for send-keys completion.
+MGR_SESS="$(tmux display-message -p '#S' 2>/dev/null || echo 1)"
+MGR_WIN="$(tmux display-message -p '#I' 2>/dev/null || echo 0)"
+MGR_TARGET="${MGR_SESS}:${MGR_WIN}"
+tmux has-session -t "$MGR_SESS" 2>/dev/null || { echo "no tmux session $MGR_SESS" >&2; exit 2; }
 
-# Assemble role prompt. Each role appends a role-specific block on top of a shared header.
+# Role-specific report path + branch + instructions.
 ROLE_REPORT_FILE="$SPRINT_ABS/${ROLE//-/_}-report.md"
 case "$ROLE" in
   worker)
@@ -76,7 +83,7 @@ You are the sprint **worker** (codex gpt-5.5). Implement exactly what \`sprint-c
 Required output:
 - Write code only to paths listed under "File Ownership" in the contract.
 - Run every validation command listed in the contract; capture stdout/stderr.
-- Write \`worker-report.md\` (replacing the template) with: summary, files changed (paths), commands run + their output, proof objects (paths), risks, handoff. Must include the literal token \`Summary:\` and be ≥400 bytes.
+- Write \`worker-report.md\` (replacing the template) with: summary, files changed (paths), commands run + their output, proof objects (paths), risks, handoff. Must include the literal token \`Summary:\` and be >=400 bytes.
 - Push your work on a feature branch named \`$BRANCH\`. If the branch exists, append to it.
 - Do not touch reviewer-report.md, tester-report.md, manager-closeout.md, or memory-patch.md — those are other roles.
 - Do not modify governance files (PROJECT_CONSTITUTION.md, PROJECT_SCOPE.md, AGENTS.md, CLAUDE.md, ARCHITECTURE_PRINCIPLES.md, VALIDATION_STRATEGY.md, PRECISION_POLICY.md, PERFORMANCE_TARGETS.md, RISK_REGISTER.md, INTERFACE_CONTRACTS.md, PROJECT_PLAN.md, MILESTONES.md, the \`.agent/rules/*\`, \`.agent/roles/*\`, or any goal file).
@@ -92,7 +99,7 @@ You are the sprint **tester** (codex gpt-5.5 acting as sonnet-test-engineer). Th
 - Re-run every validation command in the contract from a clean shell; record results.
 - Add edge-case tests under \`tests/\` that the worker may have missed.
 - Try to break the implementation: malformed inputs, boundary cases, missing files, schema violations.
-- Write \`tester-report.md\` (replacing the template) with: tests added or run, results, fixtures used, gaps, Decision. Must include the literal token \`Decision:\` and be ≥400 bytes.
+- Write \`tester-report.md\` (replacing the template) with: tests added or run, results, fixtures used, gaps, Decision. Must include the literal token \`Decision:\` and be >=400 bytes.
 - You may edit only \`tests/\`, the report file, and your own branch \`$BRANCH\`.
 - Do not edit code under \`src/\`, \`scripts/\` (other than test helpers under \`tests/\`), or any governance file.
 EOF
@@ -106,7 +113,7 @@ You are the sprint **reviewer** (codex gpt-5.5 acting as opus-reviewer). The wor
 
 - Read worker-report.md, tester-report.md, the full sprint diff, the contract, the constitution, AGENTS.md, the relevant goal file, and PROJECT_PLAN.md.
 - Run independent spot-checks of validation commands.
-- Write \`reviewer-report.md\` (replacing the template) with: findings (severity-ranked: blocker/major/minor/note, each citing file:line), contract compliance, correctness risks, performance risks, required fixes, Decision. Must include the literal token \`Decision:\` followed by exactly one of \`Accept\` | \`Accept with required fixes\` | \`Reject\`, and be ≥400 bytes.
+- Write \`reviewer-report.md\` (replacing the template) with: findings (severity-ranked: blocker/major/minor/note, each citing file:line), contract compliance, correctness risks, performance risks, required fixes, Decision. Must include the literal token \`Decision:\` followed by exactly one of \`Accept\` | \`Accept with required fixes\` | \`Reject\`, and be >=400 bytes.
 - Read-only access to source files; you may only write \`reviewer-report.md\` and your own branch \`$BRANCH\`.
 - No rewriting the worker's code during review.
 EOF
@@ -158,37 +165,42 @@ $ROLE_INSTRUCTIONS
 - Do not modify governance files or goal files.
 - Do not commit binary fixture data to git. Use \`data/\` (symlink to \`/mnt/data/wrf_gpu2/\`).
 - All work happens on the role's branch ($BRANCH if applicable). The manager integrates branches.
-- Your report file must be ≥400 bytes and include the role-specific decision token.
+- Your report file must be >=400 bytes and include the role-specific decision token.
 - Exit cleanly when your deliverable is on disk. Do not loop.
 EOF
 
-# Launch in tmux. The window blocks on codex exit, writes done marker + exit code, then we kill it.
-tmux new-window -d -t "${SESS}:" -n "$WIN" \
-  "bash -lc 'set -o pipefail; echo \"[dispatch] role=$ROLE sprint=$SPRINT_NAME reasoning=$REASONING attempt=$((COUNT+1))/$RETRY_CAP at \$(date -u)\" | tee \"$LOG\"; codex exec --dangerously-bypass-approvals-and-sandbox -m gpt-5.5 -c model_reasoning_effort=\"$REASONING\" --color always --output-last-message \"$SPRINT_ABS/.${ROLE}-last.txt\" -C \"$REPO\" < \"$PROMPT\" 2>&1 | tee -a \"$LOG\"; ec=\${PIPESTATUS[0]}; echo \"\$ec\" > \"$EXIT_FILE\"; touch \"$DONE_MARK\"; echo \"[dispatch] codex exited \$ec at \$(date -u)\" | tee -a \"$LOG\"; sleep 2'"
-
-# Block until codex finishes (no polling beyond a slow filesystem wait).
-until [[ -f "$DONE_MARK" ]]; do sleep 10; done
-EXIT_CODE="$(cat "$EXIT_FILE")"
-
-# Kill the tmux window per the close-on-delivery rule.
-tmux kill-window -t "${SESS}:$WIN" 2>/dev/null || true
-
-# Verify the role's report has the required decision token + size.
-VALID="true"; REASON=""
-if [[ -f "$ROLE_REPORT_FILE" ]]; then
-  SIZE=$(stat -c %s "$ROLE_REPORT_FILE")
-  if (( SIZE < 400 )); then VALID="false"; REASON="report too short ($SIZE bytes)"; fi
-  case "$ROLE" in
-    worker)
-      grep -q "Summary:" "$ROLE_REPORT_FILE" || { VALID="false"; REASON="worker-report.md missing 'Summary:' token"; } ;;
-    tester|reviewer|critical-review)
-      grep -q "Decision:" "$ROLE_REPORT_FILE" || { VALID="false"; REASON="$ROLE report missing 'Decision:' token"; } ;;
-  esac
-else
-  VALID="false"; REASON="role report file not produced: $ROLE_REPORT_FILE"
+# Build the post-completion summary helper as a separate script the tmux window will source.
+# The helper builds a one-paragraph status, send-keys it to the manager window, then kills its own window.
+COMPLETION_HELPER="$SPRINT_ABS/.${ROLE}-completion.sh"
+cat > "$COMPLETION_HELPER" <<COMPLETION_EOF
+#!/usr/bin/env bash
+# Auto-generated completion helper for ${ROLE} of ${SPRINT_NAME}.
+set +e
+EC="\$(cat "$EXIT_FILE" 2>/dev/null || echo unknown)"
+REP="$ROLE_REPORT_FILE"
+SIZE=0; DEC=""
+if [[ -f "\$REP" ]]; then
+  SIZE=\$(stat -c %s "\$REP" 2>/dev/null || echo 0)
+  DEC="\$(grep -m1 -E '^(Decision:|## Decision|Summary:)' "\$REP" 2>/dev/null | head -1 | tr -d '\n' | cut -c1-160)"
 fi
+# Build the message manager receives. Keep it under 400 chars so it types fast.
+MSG="AGENT REPORT [$ROLE / $SPRINT_NAME] codex_exit=\${EC} report=\${REP##$REPO/} size=\${SIZE}B \${DEC}. Per runbook: read disk for full content, then take next step in M1 decision tree."
+# Type the message into the manager window with a visible pause before Enter.
+tmux send-keys -t "$MGR_TARGET" "\$MSG"
+sleep 5
+tmux send-keys -t "$MGR_TARGET" Enter
+sleep 1
+# Suicide: kill this tmux window. (Runs last; whatever follows in the parent shell is irrelevant.)
+tmux kill-window -t "$MGR_SESS:$WIN" 2>/dev/null || true
+COMPLETION_EOF
+chmod +x "$COMPLETION_HELPER"
 
-printf '{"ok":%s,"role":"%s","sprint":"%s","codex_exit":%s,"attempt":%s,"retry_cap":%s,"log":"%s","report":"%s","reason":"%s"}\n' \
-  "$VALID" "$ROLE" "$SPRINT_NAME" "$EXIT_CODE" "$((COUNT+1))" "$RETRY_CAP" "$LOG" "$ROLE_REPORT_FILE" "$REASON"
+# Launch in tmux: codex runs, on exit the completion helper send-keys back to the manager.
+# `tmux new-window -d` returns immediately; the manager does not block.
+tmux new-window -d -t "${MGR_SESS}:" -n "$WIN" \
+  "bash -lc 'set -o pipefail; echo \"[dispatch] role=$ROLE sprint=$SPRINT_NAME reasoning=$REASONING attempt=$((COUNT+1))/$RETRY_CAP at \$(date -u)\" | tee \"$LOG\"; codex exec --dangerously-bypass-approvals-and-sandbox -m gpt-5.5 -c model_reasoning_effort=\"$REASONING\" --color always --output-last-message \"$SPRINT_ABS/.${ROLE}-last.txt\" -C \"$REPO\" < \"$PROMPT\" 2>&1 | tee -a \"$LOG\"; ec=\${PIPESTATUS[0]}; echo \"\$ec\" > \"$EXIT_FILE\"; touch \"$DONE_MARK\"; echo \"[dispatch] codex exited \$ec at \$(date -u)\" | tee -a \"$LOG\"; bash \"$COMPLETION_HELPER\"'"
 
-[[ "$VALID" == "true" ]] && exit "$EXIT_CODE" || exit 4
+# Manager's view: confirmation that the agent was launched (this is the JSON the manager reads).
+printf '{"ok":true,"role":"%s","sprint":"%s","tmux_target":"%s:%s","attempt":%s,"retry_cap":%s,"log":"%s","report":"%s","note":"fire-and-forget; agent will send-keys report on completion"}\n' \
+  "$ROLE" "$SPRINT_NAME" "$MGR_SESS" "$WIN" "$((COUNT+1))" "$RETRY_CAP" "$LOG" "$ROLE_REPORT_FILE"
+exit 0
