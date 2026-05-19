@@ -1,0 +1,163 @@
+$schema: https://json-schema.org/draft/2020-12/schema
+$id: https://gpuwrf.local/schemas/fixture-manifest.schema.json
+title: GPUWRF Fixture Manifest
+type: object
+additionalProperties: false
+required:
+  - fixture_id
+  - source
+  - source_commit
+  - wrf_version
+  - scenario
+  - created_utc
+  - tier
+  - precision_reference
+  - generation_command
+  - external_uri
+  - sample_slice_path
+  - git_commit
+  - license_notes
+  - variables
+  - files
+properties:
+  fixture_id:
+    type: string
+    minLength: 1
+  source:
+    type: string
+    enum: [analytic, wrf-derived]
+  source_commit:
+    type: string
+    minLength: 1
+  wrf_version:
+    anyOf:
+      - type: string
+        minLength: 1
+      - type: "null"
+  scenario:
+    type: string
+    minLength: 1
+  created_utc:
+    type: string
+    format: date-time
+  tier:
+    type: integer
+    enum: [1, 2, 3, 4]
+  precision_reference:
+    type: string
+    enum: [fp64, fp32, bf16, fp16]
+  generation_command:
+    type: string
+    minLength: 1
+  external_uri:
+    anyOf:
+      - type: string
+        minLength: 1
+      - type: "null"
+  sample_slice_path:
+    description: Relative repo path to a committed sample slice; validator enforces <=100 KB.
+    anyOf:
+      - type: string
+        minLength: 1
+      - type: "null"
+  git_commit:
+    type: string
+    minLength: 1
+  license_notes:
+    type: string
+    minLength: 1
+  variables:
+    type: array
+    minItems: 1
+    items:
+      type: object
+      additionalProperties: false
+      required:
+        - name
+        - units
+        - shape
+        - staggering
+        - dtype
+        - tolerance_abs
+        - tolerance_rel
+        - tolerance_rationale
+        - tier_overrides
+      properties:
+        name:
+          type: string
+          minLength: 1
+        units:
+          type: string
+          minLength: 1
+        shape:
+          type: array
+          minItems: 1
+          items:
+            type: integer
+            minimum: 1
+        staggering:
+          description: mass cell center, u/v/w Arakawa-C faces, or m for legacy m-stagger metadata.
+          type: string
+          enum: [mass, u, v, w, m]
+        dtype:
+          type: string
+          minLength: 1
+        tolerance_abs:
+          type: number
+          minimum: 0
+        tolerance_rel:
+          type: number
+          minimum: 0
+        tolerance_rationale:
+          type: string
+          minLength: 1
+          maxLength: 200
+        tier_overrides:
+          anyOf:
+            - type: "null"
+            - type: object
+              additionalProperties: false
+              patternProperties:
+                "^[1-4]$":
+                  type: object
+                  additionalProperties: false
+                  required: [tolerance_abs, tolerance_rel]
+                  properties:
+                    tolerance_abs:
+                      type: number
+                      minimum: 0
+                    tolerance_rel:
+                      type: number
+                      minimum: 0
+  files:
+    type: array
+    items:
+      type: object
+      additionalProperties: false
+      required:
+        - path
+        - checksum_sha256
+        - bytes
+        - external
+      properties:
+        path:
+          type: string
+          minLength: 1
+        checksum_sha256:
+          type: string
+          pattern: "^[0-9a-f]{64}$"
+        bytes:
+          type: integer
+          minimum: 0
+        external:
+          type: boolean
+allOf:
+  - if:
+      properties:
+        source:
+          const: wrf-derived
+    then:
+      properties:
+        wrf_version:
+          type: string
+          minLength: 1
