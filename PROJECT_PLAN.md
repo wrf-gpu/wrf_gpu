@@ -1,6 +1,6 @@
 # Project Plan
 
-Status: **approved 2026-05-19; M1 dispatch authorized; subsequent milestones dispatch on manager's call with Codex critical review as the second opinion.**
+Status: **M1 closed 2026-05-19. M2 in progress (2/6 candidates satisfied as of 2026-05-19). Manager runs autonomously per `.agent/goals/M2-MANAGER-RUNBOOK.md`; subsequent milestones dispatch on manager's call with Codex critical review as the second opinion.**
 Author: manager (Opus 4.7 1M).
 Inputs: `v2 ai driven from scratch plan by deepthink.txt`, `wrf to gpu gpt5.5 deep research.pdf`, `WRF GPU Porting_ Architecture & Verification.pdf`, all governance files in this repo.
 Scope: this document is the **synthesis layer** that reconciles the two research briefs with the bootstrap. It does not restate the constitution, scope, spec, principles, validation strategy, precision policy, performance targets, or risk register. Those remain authoritative as-is.

@@ -61,3 +61,14 @@ dist/
 # `data` is a symlink to /mnt/data/wrf_gpu2 (created by scripts/bootstrap_storage.sh)
 data
 data/
+
+# Dispatch bookkeeping (auto-generated per role per sprint by scripts/dispatch_role.sh)
+.agent/sprints/*/.worker-*
+.agent/sprints/*/.tester-*
+.agent/sprints/*/.reviewer-*
+.agent/sprints/*/.critical-review-*
+.agent/sprints/*/role-prompts/
+
+# Claude Code scheduled-task lock
+.claude/scheduled_tasks.lock
+
