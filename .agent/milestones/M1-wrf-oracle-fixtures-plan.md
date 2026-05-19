@@ -54,4 +54,6 @@ An independent reviewer must confirm that M1 produces enough oracle evidence for
 
 ## Reviewer Decision
 
-Pending
+Accepted (2026-05-19)
+
+M1 closed 2026-05-19. See `.agent/decisions/MILESTONE-M1-CLOSEOUT.md` for the full proof-object inventory, residual risks, and recommended M2 entry. Three sprints closed (S1 with one fix cycle on validator/schema parity; S2 + S3 zero fix cycles). 45 tests passing on main. All five required proof objects from `PROJECT_PLAN.md §7` present: manifest schema (YAML+JSON-Schema), storage policy, comparison harness CLI with frozen surface, analytic stencil fixture, analytic column fixture, Canary WRF-derived fixture.
