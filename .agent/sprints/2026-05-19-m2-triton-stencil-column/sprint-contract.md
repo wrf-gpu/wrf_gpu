@@ -7,7 +7,10 @@ Worker: gpt-kernel-worker (Codex `gpt-5.5` `high`)
 Tester: sonnet-test-engineer (Claude Opus 4.7 `xhigh` — cross-AI verification)
 Reviewer: opus-reviewer (Codex `gpt-5.5` `high`)
 Candidate family: `triton` (Python, OpenAI Triton, block-level GPU DSL)
-Approval status: opened 2026-05-19 by manager after M2-S5 closeout.
+Approval status: **AMENDED 2026-05-19 (attempt 2) — reviewer Decision = Reject on attempt 1 (binding); see `reviewer-report.md`. The amendment below makes the bench's resource extraction kernel-symbol-aware so the column profile reports the column kernel's own register count, not a max over all cached cubins.**
+
+### Amendment log
+- **2026-05-19 attempt 2**: amended AC #6 to require kernel-symbol-aware cubin parsing; added new AC #14a binding the tester's `test_column_profile_registers_match_column_kernel_cubin` test to pass; archived attempt-1 work as `worker-report.attempt1.md`.
 
 ## Objective
 
@@ -77,8 +80,8 @@ All must hold.
    - `kernel_launches` — count of `@triton.jit` invocations per problem (target ≤ 5; typically 1).
    - `host_device_transfer_bytes` — H2D + D2H sum.
    - `occupancy_pct` — extracted via Triton's `kernel.metadata` (which exposes `num_warps`, `num_stages`) → derived theoretical occupancy. If Triton doesn't surface this, fall back to running `cuobjdump --dump-sass` on Triton's cubin (cached under `~/.triton/cache/`).
-   - `registers_per_thread` — from cuobjdump on the cubin. Triton's `kernel.metadata` may also expose this.
-   - `local_memory_bytes` — same source. **Must be 0 for column** (matches all prior candidates).
+   - `registers_per_thread` — from cuobjdump on the **specific kernel's own cubin**, not a max over all cached cubins. Bench must filter by kernel symbol name (`_stencil_advdiff_kernel` vs `_column_thermo_kernel`) OR clear/isolate `TRITON_CACHE_DIR` between stencil and column launches. **Per-AC #14a, the assertion `column_profile["registers_per_thread"] == cuobjdump REG of `_column_thermo_kernel` cubin section` must hold; the same for stencil.**
+   - `local_memory_bytes` — same kernel-symbol-aware source. **Must be 0 for column** (matches all prior candidates).
    - `achieved_bandwidth_gbps` — fallback-derived.
 
 ### Maintainability narrative (≤300 words)
@@ -96,6 +99,7 @@ All must hold.
 12. `check_m1_done.py` ok.
 13. No file >100 KB committed beyond pre-existing.
 14. **`local_memory_bytes` for column kernel = 0.**
+14a. **`pytest -q tests/test_m2_triton_edge_cases.py::test_column_profile_registers_match_column_kernel_cubin` passes** (and symmetric stencil check). These tests were added by Claude tester on attempt 1; they currently fail. Worker fix MUST turn them green.
 
 ## Validation Commands
 

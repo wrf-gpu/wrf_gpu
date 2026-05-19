@@ -1,0 +1,31 @@
+{
+  "achieved_bandwidth_gbps": 0.09481481481481482,
+  "achieved_bandwidth_method": "fallback-derived",
+  "artifact_paths": [
+    "data/profiler_artifacts/triton/column_triton_0.cubin",
+    "data/profiler_artifacts/triton/column_cuobjdump_resource_usage.txt",
+    "data/profiler_artifacts/triton/column_ncu_stdout.txt",
+    "data/profiler_artifacts/triton/column_ncu_stderr.txt",
+    "data/profiler_artifacts/triton/column_ncu_exit.txt",
+    "data/profiler_artifacts/triton/deliberate_triton_bug.txt"
+  ],
+  "backend": "triton",
+  "benchmark": "m2_column",
+  "case": "analytic-column-thermo-v1",
+  "hardware": "RTX 5090 32GB",
+  "host_device_transfer_bytes": 2560,
+  "kernel_launches": 1,
+  "local_memory_bytes": 0,
+  "occupancy_pct": 100.0,
+  "profiler_limitation": "ncu is invoked by the runner but local performance-counter permission may be unavailable; registers/local memory come from cuobjdump for Function _column_thermo_kernel: in Triton's cached cubin, occupancy is fallback-derived from registers and block size 64, and bandwidth is fallback-derived.",
+  "registers_per_thread": 34,
+  "torch_cuda": "13.0",
+  "torch_devices": [
+    "NVIDIA GeForce RTX 5090"
+  ],
+  "torch_version": "2.12.0+cu130",
+  "triton_cache_dir": "/home/enric/src/wrf_gpu2/data/scratch/m2-triton-cache",
+  "triton_version": "3.7.0",
+  "wall_time_s": 2.7e-05,
+  "warmup_pattern": "one compile/first-run launch, one unmeasured post-compile warmup launch, then median of 5 torch.cuda.synchronize() kernel-only timings"
+}
