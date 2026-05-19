@@ -182,7 +182,7 @@ case "$ROLE" in
     AI_CLI="claude"
     # Claude Code: -p (print/non-interactive), --model opus (alias = latest opus = 4.7),
     # --effort <level>, --permission-mode bypassPermissions, prompt via stdin.
-    LAUNCH_CMD="claude -p --model opus --effort \"$REASONING\" --permission-mode bypassPermissions --no-session-persistence --append-system-prompt \"You are acting as the sonnet-test-engineer ROLE for this project, running as Claude Opus 4.7. Strictly follow the role-specific instructions in the prompt. Do not loop interactively. Exit cleanly when your deliverable file is on disk.\" --add-dir \"$REPO\" --add-dir /mnt/data/wrf_gpu2 < \"$PROMPT\""
+    LAUNCH_CMD="claude -p --model opus --effort \"$REASONING\" --permission-mode auto --no-session-persistence --append-system-prompt \"You are acting as the sonnet-test-engineer ROLE for this project, running as Claude Opus 4.7. Strictly follow the role-specific instructions in the prompt. Do not loop interactively. Exit cleanly when your deliverable file is on disk.\" --add-dir \"$REPO\" --add-dir /mnt/data/wrf_gpu2 < \"$PROMPT\""
     ;;
   worker|reviewer|critical-review)
     AI_CLI="codex"
