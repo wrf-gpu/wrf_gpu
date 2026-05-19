@@ -105,6 +105,28 @@ def test_full_external_file_exists_at_external_uri() -> None:
     assert all(array.dtype == np.float64 for array in arrays.values())
 
 
+def test_manifest_file_records_match_actual_payloads() -> None:
+    data = load_manifest(MANIFEST)
+
+    for file_record in data["files"]:
+        path = ROOT / file_record["path"]
+        assert path.is_file()
+        assert path.stat().st_size == file_record["bytes"]
+        assert sha256_file(path) == file_record["checksum_sha256"]
+
+
+def test_external_checksums_file_covers_external_payloads() -> None:
+    data = load_manifest(MANIFEST)
+    checksums = (ROOT / data["external_uri"]).with_name("checksums.txt")
+
+    assert checksums.is_file()
+    lines = set(checksums.read_text(encoding="utf-8").splitlines())
+    for file_record in data["files"]:
+        if file_record["external"]:
+            expected = f"{file_record['checksum_sha256']}  {(ROOT / file_record['path']).name}"
+            assert expected in lines
+
+
 def test_cli_round_trip_identity_passes() -> None:
     proc = _compare(SAMPLE)
 
@@ -131,6 +153,35 @@ def test_cli_round_trip_perturbation_fails(tmp_path: Path) -> None:
     record = json.loads(proc.stdout)
     assert record["pass"] is False
     assert record["first_failure"] == "T"
+
+
+def test_cli_rejects_candidate_missing_manifest_variable(tmp_path: Path) -> None:
+    candidate = tmp_path / "missing-variable.npz"
+    with np.load(SAMPLE, allow_pickle=False) as loaded:
+        arrays = {name: loaded[name] for name in loaded.files if name != "QVAPOR"}
+    np.savez(candidate, **arrays)
+
+    proc = _compare(candidate)
+
+    assert proc.returncode == 2
+    assert "candidate missing variable QVAPOR" in proc.stderr
+
+
+def test_cli_reports_shape_mismatch_as_failed_comparison(tmp_path: Path) -> None:
+    candidate = tmp_path / "wrong-shape.npz"
+    with np.load(SAMPLE, allow_pickle=False) as loaded:
+        arrays = {name: loaded[name] for name in loaded.files}
+    arrays["PB"] = arrays["PB"][:, :, :-1]
+    np.savez(candidate, **arrays)
+
+    proc = _compare(candidate)
+
+    assert proc.returncode == 1
+    record = json.loads(proc.stdout)
+    pb = next(variable for variable in record["variables"] if variable["name"] == "PB")
+    assert record["pass"] is False
+    assert record["first_failure"] == "PB"
+    assert pb["shape_ok"] is False
 
 
 def test_wrf_version_validator_parity_rejects_empty_value(tmp_path: Path) -> None:
