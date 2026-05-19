@@ -1,0 +1,22 @@
+{
+  "achieved_bandwidth_gbps": 0.38342486270594106,
+  "achieved_bandwidth_method": "fallback-derived",
+  "artifact_paths": [
+    "data/scratch/m2-cupy/stencil_run.json",
+    "data/profiler_artifacts/cupy_or_numba/stencil_ncu_stdout.txt",
+    "data/profiler_artifacts/cupy_or_numba/stencil_ncu_stderr.txt",
+    "data/profiler_artifacts/cupy_or_numba/stencil_ncu_exit.txt",
+    "data/profiler_artifacts/cupy_or_numba/deliberate_kernel_bug.txt"
+  ],
+  "backend": "cupy",
+  "benchmark": "m2_stencil",
+  "case": "analytic-stencil-3d-advdiff-v1",
+  "hardware": "RTX 5090 32GB",
+  "host_device_transfer_bytes": 118272,
+  "kernel_launches": 1,
+  "local_memory_bytes": 64,
+  "occupancy_pct": 66.66666666666667,
+  "profiler_limitation": "ncu invoked, but local user lacks NVIDIA performance-counter permission (ERR_NVGPUCTRPERM); RawKernel attributes provide registers/local memory, occupancy uses CuPy/CUDA occupancy API fallback, and bandwidth is fallback-derived.",
+  "registers_per_thread": 58,
+  "wall_time_s": 0.000308462
+}
