@@ -186,16 +186,17 @@ EOF
 # Override --reasoning maps differently per CLI:
 #   codex: model_reasoning_effort=<high|xhigh>
 #   claude: --effort <high|xhigh>
+# Interactive launches (per 2026-05-19 user directive): drop -p/exec and stdin redirect so
+# the agent runs in a real tmux pane the user can watch and inject keystrokes into.
+# Prompt is seeded after spawn via `tmux paste-buffer`; output is captured by `tmux pipe-pane`.
 case "$ROLE" in
   tester)
     AI_CLI="claude"
-    # Claude Code: -p (print/non-interactive), --model opus (alias = latest opus = 4.7),
-    # --effort <level>, --permission-mode bypassPermissions, prompt via stdin.
-    LAUNCH_CMD="claude -p --model opus --effort \"$REASONING\" --permission-mode auto --no-session-persistence --append-system-prompt \"You are acting as the sonnet-test-engineer ROLE for this project, running as Claude Opus 4.7. Strictly follow the role-specific instructions in the prompt. Do not loop interactively. Exit cleanly when your deliverable file is on disk.\" --add-dir \"$REPO\" --add-dir /mnt/data/wrf_gpu2 < \"$PROMPT\""
+    LAUNCH_CMD="claude --model opus --effort \"$REASONING\" --permission-mode auto --append-system-prompt \"You are acting as the sonnet-test-engineer ROLE for this project, running as Claude Opus 4.7. Strictly follow the role-specific instructions sent as the first message. When your deliverable file is on disk, type /exit to end the session.\" --add-dir \"$REPO\" --add-dir /mnt/data/wrf_gpu2"
     ;;
   worker|reviewer|critical-review)
     AI_CLI="codex"
-    LAUNCH_CMD="codex exec --dangerously-bypass-approvals-and-sandbox -m gpt-5.5 -c model_reasoning_effort=\"$REASONING\" --color always --output-last-message \"$SPRINT_ABS/.${ROLE}-last.txt\" -C \"$REPO\" < \"$PROMPT\""
+    LAUNCH_CMD="codex --dangerously-bypass-approvals-and-sandbox -m gpt-5.5 -c model_reasoning_effort=\"$REASONING\" -C \"$REPO\""
     ;;
 esac
 
@@ -225,10 +226,23 @@ tmux kill-window -t "$MGR_SESS:$WIN" 2>/dev/null || true
 COMPLETION_EOF
 chmod +x "$COMPLETION_HELPER"
 
-# Launch in tmux: AI runs non-interactively, on exit the completion helper send-keys back to the manager.
+# Launch in tmux: AI runs INTERACTIVELY in a real pty (user can watch + inject).
 # `tmux new-window -d` returns immediately; the manager does not block.
+# Logging: `tmux pipe-pane` captures the live pane stream (ANSI included) to $LOG.
+# Prompt seeding: after the binary starts up its REPL, paste $PROMPT via tmux paste-buffer.
 tmux new-window -d -t "${MGR_SESS}:" -n "$WIN" \
-  "bash -lc 'set -o pipefail; echo \"[dispatch] role=$ROLE ai=$AI_CLI sprint=$SPRINT_NAME reasoning=$REASONING attempt=$((COUNT+1))/$RETRY_CAP at \$(date -u)\" | tee \"$LOG\"; $LAUNCH_CMD 2>&1 | tee -a \"$LOG\"; ec=\${PIPESTATUS[0]}; echo \"\$ec\" > \"$EXIT_FILE\"; touch \"$DONE_MARK\"; echo \"[dispatch] $AI_CLI exited \$ec at \$(date -u)\" | tee -a \"$LOG\"; bash \"$COMPLETION_HELPER\"'"
+  "bash -lc 'echo \"[dispatch] role=$ROLE ai=$AI_CLI sprint=$SPRINT_NAME reasoning=$REASONING attempt=$((COUNT+1))/$RETRY_CAP at \$(date -u)\"; $LAUNCH_CMD; ec=\$?; echo \"\$ec\" > \"$EXIT_FILE\"; touch \"$DONE_MARK\"; echo \"[dispatch] $AI_CLI exited \$ec at \$(date -u)\"; bash \"$COMPLETION_HELPER\"'"
+
+# Capture the pane stream to $LOG so we still have an archived log even though the agent runs in tty mode.
+tmux pipe-pane -t "${MGR_SESS}:${WIN}" -O "cat >> \"$LOG\"" 2>/dev/null || true
+
+# Wait for the agent REPL to come up, then seed it with the role prompt.
+# Use a paste-buffer (handles multi-KB multi-line text reliably) and an explicit Enter to submit.
+sleep 8
+tmux load-buffer -b "${WIN}_seed" "$PROMPT" 2>/dev/null && \
+  tmux paste-buffer -d -p -b "${WIN}_seed" -t "${MGR_SESS}:${WIN}" 2>/dev/null
+sleep 2
+tmux send-keys -t "${MGR_SESS}:${WIN}" Enter 2>/dev/null || true
 
 # Manager's view: confirmation that the agent was launched (this is the JSON the manager reads).
 printf '{"ok":true,"role":"%s","ai":"%s","sprint":"%s","tmux_target":"%s:%s","attempt":%s,"retry_cap":%s,"log":"%s","report":"%s","note":"fire-and-forget; agent will send-keys report on completion"}\n' \
