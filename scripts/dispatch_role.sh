@@ -184,7 +184,7 @@ if [[ -f "\$REP" ]]; then
   DEC="\$(grep -m1 -E '^(Decision:|## Decision|Summary:)' "\$REP" 2>/dev/null | head -1 | tr -d '\n' | cut -c1-160)"
 fi
 # Build the message manager receives. Keep it under 400 chars so it types fast.
-MSG="AGENT REPORT [$ROLE / $SPRINT_NAME] codex_exit=\${EC} report=\${REP##$REPO/} size=\${SIZE}B \${DEC}. Per runbook: read disk for full content, then take next step in M1 decision tree."
+MSG="AGENT REPORT [$ROLE via $AI_CLI / $SPRINT_NAME] exit=\${EC} report=\${REP##$REPO/} size=\${SIZE}B \${DEC}. Per active milestone runbook: read disk for full content, then take next decision-tree step."
 # Type the message into the manager window with a visible pause before Enter.
 tmux send-keys -t "$MGR_TARGET" "\$MSG"
 sleep 5
@@ -195,12 +195,33 @@ tmux kill-window -t "$MGR_SESS:$WIN" 2>/dev/null || true
 COMPLETION_EOF
 chmod +x "$COMPLETION_HELPER"
 
-# Launch in tmux: codex runs, on exit the completion helper send-keys back to the manager.
+# Cross-model AI assignment per role (codified 2026-05-19 per user directive):
+#   worker          → codex gpt-5.5      — implementation (codex is good at code)
+#   tester          → claude opus 4.7    — independent second-AI verification (different blind spots)
+#   reviewer        → codex gpt-5.5      — binding judgment (worker AI + reviewer AI same = OK because tester is the other AI)
+#   critical-review → codex gpt-5.5      — manager's second-opinion path
+# Override --reasoning maps differently per CLI:
+#   codex: model_reasoning_effort=<high|xhigh>
+#   claude: --effort <high|xhigh>
+case "$ROLE" in
+  tester)
+    AI_CLI="claude"
+    # Claude Code: -p (print/non-interactive), --model opus (alias = latest opus = 4.7),
+    # --effort <level>, --permission-mode bypassPermissions, prompt via stdin.
+    LAUNCH_CMD="claude -p --model opus --effort \"$REASONING\" --permission-mode bypassPermissions --no-session-persistence --append-system-prompt \"You are acting as the sonnet-test-engineer ROLE for this project, running as Claude Opus 4.7. Strictly follow the role-specific instructions in the prompt. Do not loop interactively. Exit cleanly when your deliverable file is on disk.\" --add-dir \"$REPO\" --add-dir /mnt/data/wrf_gpu2 < \"$PROMPT\""
+    ;;
+  worker|reviewer|critical-review)
+    AI_CLI="codex"
+    LAUNCH_CMD="codex exec --dangerously-bypass-approvals-and-sandbox -m gpt-5.5 -c model_reasoning_effort=\"$REASONING\" --color always --output-last-message \"$SPRINT_ABS/.${ROLE}-last.txt\" -C \"$REPO\" < \"$PROMPT\""
+    ;;
+esac
+
+# Launch in tmux: AI runs non-interactively, on exit the completion helper send-keys back to the manager.
 # `tmux new-window -d` returns immediately; the manager does not block.
 tmux new-window -d -t "${MGR_SESS}:" -n "$WIN" \
-  "bash -lc 'set -o pipefail; echo \"[dispatch] role=$ROLE sprint=$SPRINT_NAME reasoning=$REASONING attempt=$((COUNT+1))/$RETRY_CAP at \$(date -u)\" | tee \"$LOG\"; codex exec --dangerously-bypass-approvals-and-sandbox -m gpt-5.5 -c model_reasoning_effort=\"$REASONING\" --color always --output-last-message \"$SPRINT_ABS/.${ROLE}-last.txt\" -C \"$REPO\" < \"$PROMPT\" 2>&1 | tee -a \"$LOG\"; ec=\${PIPESTATUS[0]}; echo \"\$ec\" > \"$EXIT_FILE\"; touch \"$DONE_MARK\"; echo \"[dispatch] codex exited \$ec at \$(date -u)\" | tee -a \"$LOG\"; bash \"$COMPLETION_HELPER\"'"
+  "bash -lc 'set -o pipefail; echo \"[dispatch] role=$ROLE ai=$AI_CLI sprint=$SPRINT_NAME reasoning=$REASONING attempt=$((COUNT+1))/$RETRY_CAP at \$(date -u)\" | tee \"$LOG\"; $LAUNCH_CMD 2>&1 | tee -a \"$LOG\"; ec=\${PIPESTATUS[0]}; echo \"\$ec\" > \"$EXIT_FILE\"; touch \"$DONE_MARK\"; echo \"[dispatch] $AI_CLI exited \$ec at \$(date -u)\" | tee -a \"$LOG\"; bash \"$COMPLETION_HELPER\"'"
 
 # Manager's view: confirmation that the agent was launched (this is the JSON the manager reads).
-printf '{"ok":true,"role":"%s","sprint":"%s","tmux_target":"%s:%s","attempt":%s,"retry_cap":%s,"log":"%s","report":"%s","note":"fire-and-forget; agent will send-keys report on completion"}\n' \
-  "$ROLE" "$SPRINT_NAME" "$MGR_SESS" "$WIN" "$((COUNT+1))" "$RETRY_CAP" "$LOG" "$ROLE_REPORT_FILE"
+printf '{"ok":true,"role":"%s","ai":"%s","sprint":"%s","tmux_target":"%s:%s","attempt":%s,"retry_cap":%s,"log":"%s","report":"%s","note":"fire-and-forget; agent will send-keys report on completion"}\n' \
+  "$ROLE" "$AI_CLI" "$SPRINT_NAME" "$MGR_SESS" "$WIN" "$((COUNT+1))" "$RETRY_CAP" "$LOG" "$ROLE_REPORT_FILE"
 exit 0
