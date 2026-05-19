@@ -1,0 +1,108 @@
+fixture_id: "analytic-column-thermo-v1"
+source: "analytic"
+source_commit: "analytic.py seed 0"
+wrf_version: null
+scenario: "40-level analytic moist thermodynamic column with branch-dependent phase source"
+created_utc: "2026-05-19T00:00:00Z"
+tier: 1
+precision_reference: "fp64"
+generation_command: "python scripts/generate_analytic_fixtures.py --seed 0 --out fixtures/samples/"
+external_uri: null
+sample_slice_path: "fixtures/samples/analytic-column-thermo-v1.npz"
+git_commit: "worker/gpt/m1-analytic-fixtures"
+license_notes: "Analytic synthetic fixture generated in-repository; no external data license."
+variables:
+  -
+    name: "temperature_initial"
+    units: "K"
+    shape:
+      - 40
+    staggering: "mass"
+    dtype: "float64"
+    tolerance_abs: 1.0e-11
+    tolerance_rel: 0.0
+    tolerance_rationale: "fp64 deterministic column input"
+    tier_overrides: null
+  -
+    name: "qv_initial"
+    units: "kg kg-1"
+    shape:
+      - 40
+    staggering: "mass"
+    dtype: "float64"
+    tolerance_abs: 1.0e-13
+    tolerance_rel: 1.0e-12
+    tolerance_rationale: "fp64 deterministic vapor input"
+    tier_overrides: null
+  -
+    name: "pressure_initial"
+    units: "Pa"
+    shape:
+      - 40
+    staggering: "mass"
+    dtype: "float64"
+    tolerance_abs: 1.0e-08
+    tolerance_rel: 1.0e-12
+    tolerance_rationale: "fp64 pressure profile input"
+    tier_overrides: null
+  -
+    name: "saturation_qv"
+    units: "kg kg-1"
+    shape:
+      - 40
+    staggering: "mass"
+    dtype: "float64"
+    tolerance_abs: 1.0e-13
+    tolerance_rel: 1.0e-12
+    tolerance_rationale: "fp64 branch threshold input"
+    tier_overrides: null
+  -
+    name: "temperature_next"
+    units: "K"
+    shape:
+      - 40
+    staggering: "mass"
+    dtype: "float64"
+    tolerance_abs: 1.0e-11
+    tolerance_rel: 1.0e-12
+    tolerance_rationale: "fp64 latent-heating reference output"
+    tier_overrides: null
+  -
+    name: "qv_next"
+    units: "kg kg-1"
+    shape:
+      - 40
+    staggering: "mass"
+    dtype: "float64"
+    tolerance_abs: 1.0e-13
+    tolerance_rel: 1.0e-12
+    tolerance_rationale: "fp64 vapor reference output"
+    tier_overrides: null
+  -
+    name: "pressure_next"
+    units: "Pa"
+    shape:
+      - 40
+    staggering: "mass"
+    dtype: "float64"
+    tolerance_abs: 1.0e-08
+    tolerance_rel: 1.0e-12
+    tolerance_rationale: "pressure held fixed by analytic operator"
+    tier_overrides: null
+  -
+    name: "mse_delta"
+    units: "J kg-1"
+    shape:
+      - 40
+    staggering: "mass"
+    dtype: "float64"
+    tolerance_abs: 1.0e-10
+    tolerance_rel: 1.0e-12
+    tolerance_rationale: "moist static energy residual should stay near roundoff"
+    tier_overrides: null
+files:
+  -
+    path: "fixtures/samples/analytic-column-thermo-v1.npz"
+    checksum_sha256: "76507b09cdcf1bc8ac7fda052f92b70fb4b407abd65bcbfdc500509e5b16e8bb"
+    bytes: 3890
+    external: false

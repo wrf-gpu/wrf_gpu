@@ -1,0 +1,85 @@
+fixture_id: "analytic-stencil-3d-advdiff-v1"
+source: "analytic"
+source_commit: "analytic.py seed 0"
+wrf_version: null
+scenario: "32x16x8 periodic staggered-grid advection-diffusion single timestep"
+created_utc: "2026-05-19T00:00:00Z"
+tier: 1
+precision_reference: "fp64"
+generation_command: "python scripts/generate_analytic_fixtures.py --seed 0 --out fixtures/samples/"
+external_uri: null
+sample_slice_path: "fixtures/samples/analytic-stencil-3d-advdiff-v1.npz"
+git_commit: "worker/gpt/m1-analytic-fixtures"
+license_notes: "Analytic synthetic fixture generated in-repository; no external data license."
+variables:
+  -
+    name: "phi_initial"
+    units: "K"
+    shape:
+      - 8
+      - 16
+      - 32
+    staggering: "mass"
+    dtype: "float64"
+    tolerance_abs: 1.0e-10
+    tolerance_rel: 0.0
+    tolerance_rationale: "fp64 analytic field; strict absolute tolerance"
+    tier_overrides: null
+  -
+    name: "u_face"
+    units: "m s-1"
+    shape:
+      - 8
+      - 16
+      - 33
+    staggering: "u"
+    dtype: "float32"
+    tolerance_abs: 1.0e-06
+    tolerance_rel: 1.0e-07
+    tolerance_rationale: "stored fp32 face velocity; compare at fp32 scale"
+    tier_overrides: null
+  -
+    name: "v_face"
+    units: "m s-1"
+    shape:
+      - 8
+      - 17
+      - 32
+    staggering: "v"
+    dtype: "float32"
+    tolerance_abs: 1.0e-06
+    tolerance_rel: 1.0e-07
+    tolerance_rationale: "stored fp32 face velocity; compare at fp32 scale"
+    tier_overrides: null
+  -
+    name: "w_face"
+    units: "m s-1"
+    shape:
+      - 9
+      - 16
+      - 32
+    staggering: "w"
+    dtype: "float32"
+    tolerance_abs: 1.0e-07
+    tolerance_rel: 1.0e-07
+    tolerance_rationale: "small stored fp32 face velocity; strict absolute tolerance"
+    tier_overrides: null
+  -
+    name: "phi_next"
+    units: "K"
+    shape:
+      - 8
+      - 16
+      - 32
+    staggering: "mass"
+    dtype: "float64"
+    tolerance_abs: 1.0e-10
+    tolerance_rel: 1.0e-12
+    tolerance_rationale: "fp64 NumPy reference update; strict oracle tolerance"
+    tier_overrides: null
+files:
+  -
+    path: "fixtures/samples/analytic-stencil-3d-advdiff-v1.npz"
+    checksum_sha256: "c5378468c0e4860244f62764726defec15305d83e2dfdbcb130d3da5645f7780"
+    bytes: 61080
+    external: false
