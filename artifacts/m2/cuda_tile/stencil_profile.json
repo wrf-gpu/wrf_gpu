@@ -1,5 +1,5 @@
 {
-  "achieved_bandwidth_gbps": 0.07727690886103371,
+  "achieved_bandwidth_gbps": 0.1512584377024524,
   "artifact_paths": [
     "data/profiler_artifacts/cuda_tile/stencil_ncu_stdout.txt",
     "data/profiler_artifacts/cuda_tile/stencil_ncu_stderr.txt",
@@ -16,5 +16,5 @@
   "occupancy_pct": 66.666667,
   "profiler_limitation": "ncu invoked, but local user lacks NVIDIA performance-counter permission (ERR_NVGPUCTRPERM); registers/local memory parsed from cuobjdump, occupancy from CUDA occupancy API, wall time/transfers from bench output.",
   "registers_per_thread": 58,
-  "wall_time_s": 0.00153049600124
+  "wall_time_s": 0.000781920015812
 }
