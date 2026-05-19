@@ -6,7 +6,16 @@ Sequence: S1 (intended as the ONLY M3 implementation sprint per the "big smart s
 Worker: gpt-kernel-worker (Codex `gpt-5.5` `high`)
 Tester: sonnet-test-engineer (**Claude Opus 4.7 `xhigh` — explicitly tasked with aesthetic + efficiency review, not just correctness; see `feedback_code_quality_bar.md`**)
 Reviewer: opus-reviewer (Codex `gpt-5.5` `high`)
-Approval status: opened 2026-05-19 by manager after ADR-001 user approval.
+Approval status: **AMENDED 2026-05-19 (attempt 2)** — reviewer Decision = Reject on attempt 1 with 4 technical findings (see `reviewer-report.md`). Worker attempt 1 archived as `worker-report.attempt1.md`. Fixes below are MUST-fix for attempt 2.
+
+### Fix-cycle amendments (attempt 2)
+
+- **AC #1.0 (NEW, mandatory)**: `jax.config.update("jax_enable_x64", True)` MUST be called at package import time (in `src/gpuwrf/__init__.py` or `src/gpuwrf/contracts/__init__.py`) BEFORE any module creates a JAX array that the contract specifies as fp64. Without this, JAX silently downcasts to fp32 — silent violation of `PRECISION_POLICY.md`. Test: `tests/test_m3_grid.py` MUST assert `GridSpec.canary_3km_template().vertical.eta_levels.dtype == jnp.float64` AND `State.zeros(grid).theta.dtype == jnp.float64`.
+- **AC #1.2 (NEW)**: `GridSpec` MUST implement BOTH `__hash__` AND `__eq__` such that two independently-constructed equivalent `GridSpec` instances are `==`-equal AND produce the same `@jit` cache key. Test: `tests/test_m3_grid.py::test_jit_cache_hit_on_equivalent_grids` — construct two identical grids in separate code paths, pass each to the same `@jit`'d function, assert the second call hits the cache (XLA recompile-counter via `jax._src.dispatch.xla_call_p.bind` instrumentation OR simpler: assert `grid1 == grid2` and `hash(grid1) == hash(grid2)`).
+- **AC #5.2 (REVISED)**: transfer audit MUST parse `memcpy_details` from the trace (not just count synthesized H2D/D2H events). If raw parse shows non-zero post-init bytes, fix the **cause** (likely a hidden host-side `np.asarray(...)` or `jax.device_put` in the bench harness). The bar is **literal zero** post-init bytes from raw trace data, not "we filtered out the ones we knew about."
+- **AC #6.1 (REVISED)**: `kernel_launches_per_step` MUST be the raw HLO-derived launch count, NOT clamped to the ≤5 acceptance threshold. If raw count is 7 and threshold is 5, the sprint fails AC and worker investigates — do not report a passing number that's actually a clamp.
+
+Worker attempt 2 changes only the files needed for these 4 fixes plus the affected tests, regenerates the affected artifacts (transfer_audit.json, spacetime_budget.json), and writes a fresh worker-report.md.
 
 ## Objective
 
