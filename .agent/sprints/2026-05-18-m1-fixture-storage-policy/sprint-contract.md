@@ -4,9 +4,12 @@ Sprint ID: `2026-05-18-m1-fixture-storage-policy`
 Milestone: M1 — WRF Oracle & Fixtures
 Sequence: S1 (first implementation sprint of M1)
 Reviewer: opus-reviewer (required pre-implementation per `.agent/rules/sprint-lifecycle.md` step 3 — this sprint touches validation behavior)
-Worker: gpt-kernel-worker (Codex `gpt-5.5` `xhigh`)
+Worker: gpt-kernel-worker (Codex `gpt-5.5` `high`)
 Tester: sonnet-test-engineer
-Approval status: **draft, pending Codex review of PROJECT_PLAN + ROADMAP + this contract, then human approval**.
+Approval status: **AMENDED 2026-05-19 (attempt 2) — reviewer Decision = Reject on attempt 1; see `reviewer-report.md`; amended acceptance criteria below address the two blockers and the file-size-command note.**
+
+### Amendment log
+- **2026-05-19 attempt 2**: amended acceptance criterion #1 to require `wrf_version` non-empty when `source == "wrf-derived"` in *both* schema and Python validator; amended Validation Commands to fix the malformed `git ls-files | xargs -I{} stat ...` invocation (use `-print0 | xargs -0 stat -c '%s %n'`); archived attempt-1 work as `worker-report.attempt1.md`.
 
 ## Objective
 
@@ -59,7 +62,7 @@ All must hold for closeout.
 
 ### Schema (`fixtures/manifests/schema.yaml`)
 
-1. Top-level required fields: `fixture_id`, `source` (enum: `analytic` | `wrf-derived`), `source_commit`, `wrf_version` (nullable, required when `source == "wrf-derived"`), `scenario`, `created_utc`, `tier` (enum: `1` | `2` | `3` | `4`), `precision_reference` (enum: `fp64` | `fp32` | `bf16` | `fp16`), `generation_command`, `external_uri` (nullable), `sample_slice_path` (nullable; ≤100 KB), `git_commit`, `license_notes`, `variables` (list, non-empty), `files` (list, may be empty for purely external manifests).
+1. Top-level required fields: `fixture_id`, `source` (enum: `analytic` | `wrf-derived`), `source_commit`, `wrf_version` (nullable when `source == "analytic"`; **required AND non-empty (minLength 1) when `source == "wrf-derived"`** — enforced by *both* `fixtures/manifests/schema.yaml` / `schema.json` AND by `validate_manifest()` in `src/gpuwrf/validation/compare_fixture.py`; the test `tests/test_fixture_manifest_edge_cases.py::test_wrf_derived_requires_non_empty_wrf_version` must pass), `scenario`, `created_utc`, `tier` (enum: `1` | `2` | `3` | `4`), `precision_reference` (enum: `fp64` | `fp32` | `bf16` | `fp16`), `generation_command`, `external_uri` (nullable), `sample_slice_path` (nullable; ≤100 KB), `git_commit`, `license_notes`, `variables` (list, non-empty), `files` (list, may be empty for purely external manifests).
 2. Each `variables[*]` entry requires: `name`, `units`, `shape` (list of int), `staggering` (enum: `mass` | `u` | `v` | `w` | `m`-stagger appropriate to grid; document in schema), `dtype`, `tolerance_abs` (float, per-variable), `tolerance_rel` (float, per-variable), `tolerance_rationale` (string, ≤200 chars, explaining how the value was chosen), and `tier_overrides` (nullable mapping tier→{tolerance_abs, tolerance_rel} for variables whose tolerance differs by validation tier).
 3. Each `files[*]` entry requires: `path`, `checksum_sha256`, `bytes` (int), `external` (bool — `true` if `path` is a URI rather than a relative repo path).
 4. Tolerances are **never** top-level — always per-variable. Top-level tolerance fields must be rejected by the validator.
@@ -127,9 +130,9 @@ All must hold for closeout.
 python scripts/validate_agentos.py
 python scripts/validate_fixture_manifest.py fixtures/manifests/fixture-manifest-template.yaml
 python -m gpuwrf.validation.compare_fixture --help
-pytest -q
-python scripts/repo_status_snapshot.py            # output parsed in worker report; dirty_files must be a subset of contract-owned paths
-git ls-files | xargs -I{} stat -c '%s {}' | sort -nr | head -5  # asserts no committed file > 100 KB
+pytest -q                                          # must report 0 failures (the wrf_version edge case must now pass)
+python scripts/repo_status_snapshot.py             # dirty_files must be a subset of contract-owned paths
+git ls-files -z | xargs -0 stat -c '%s %n' | sort -nr | head -5   # asserts no committed file > 100 KB
 git diff --stat $(git rev-parse HEAD)
 ```
 

@@ -1,16 +1,24 @@
-fixture_id: example-fixture
-source: wrf-or-analytic
-source_commit: unknown
-scenario: canary-or-idealized
-created_utc: 1970-01-01T00:00:00Z
+fixture_id: analytic-template-smoke-v1
+source: analytic
+source_commit: not-applicable-analytic-template
+wrf_version: null
+scenario: schema smoke template for M1 S1
+created_utc: "2026-05-19T00:00:00Z"
+tier: 1
+precision_reference: fp64
+generation_command: "manual template; no fixture data generated"
+external_uri: null
+sample_slice_path: null
+git_commit: pending
+license_notes: "Template metadata only; no third-party fixture payload."
 variables:
   - name: T
     units: K
     shape: [1, 1, 1]
+    staggering: mass
     dtype: float64
-    tolerance_abs: 0.0
-    tolerance_rel: 0.0
-files:
-  - path: external-storage-placeholder
-    checksum_sha256: placeholder
-license_notes: verify before release
+    tolerance_abs: 1.0e-12
+    tolerance_rel: 1.0e-12
+    tolerance_rationale: "Template-only fp64 identity comparison placeholder."
+    tier_overrides: null
+files: []

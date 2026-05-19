@@ -21,6 +21,10 @@ fixtures/**/*.nc
 fixtures/**/*.nc4
 fixtures/**/*.grib
 fixtures/**/*.grb
+fixtures/**/*.grib2
+fixtures/**/*.grb2
+fixtures/**/*.h5
+fixtures/**/*.hdf5
 fixtures/**/*.zarr/
 fixtures/**/*.bin
 fixtures/**/*.npy
@@ -29,11 +33,22 @@ fixtures/**/*.npz
 *.nc4
 *.grib
 *.grb
+*.grib2
+*.grb2
+*.h5
+*.hdf5
 *.zarr/
+*.zarr
+*.bin
+*.npy
+*.npz
 
 # Profilers
 *.ncu-rep
 *.nsys-rep
+*.qdrep
+*.sqlite-shm
+*.sqlite-wal
 *.sqlite
 profiler_outputs/
 
@@ -46,4 +61,3 @@ dist/
 # `data` is a symlink to /mnt/data/wrf_gpu2 (created by scripts/bootstrap_storage.sh)
 data
 data/
-
