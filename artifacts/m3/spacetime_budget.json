@@ -1,0 +1,14 @@
+{
+  "flops_per_cell_per_step": 4,
+  "halo_buffer_bytes": 0,
+  "kernel_launches_per_step": 3,
+  "notes": {
+    "flops_per_cell_per_step": "theta no-op: multiply/add/subtract/multiply over one mass field.",
+    "temporary_bytes_per_step": "0 because the scan body has no array constructors and HLO fuses the add/sub chain."
+  },
+  "state_bytes": 38656,
+  "temporary_bytes_per_step": 0,
+  "tendency_bytes": 38656,
+  "total_persistent_bytes": 77312,
+  "wall_time_per_step_us": 2.8281795093789697
+}
