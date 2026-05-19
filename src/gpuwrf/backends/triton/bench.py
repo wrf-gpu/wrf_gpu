@@ -26,6 +26,10 @@ from .stencil import run_stencil
 ROOT = Path(__file__).resolve().parents[4]
 STENCIL_CASE = "analytic-stencil-3d-advdiff-v1"
 COLUMN_CASE = "analytic-column-thermo-v1"
+KERNEL_SYMBOLS = {
+    "stencil": "_stencil_advdiff_kernel",
+    "column": "_column_thermo_kernel",
+}
 
 
 def _rel(path: Path) -> str:
@@ -48,21 +52,21 @@ def _triton_cache_dir() -> Path:
     return Path.home() / ".triton" / "cache"
 
 
-def _parse_resource_usage(text: str) -> tuple[int, int, int]:
-    regs: list[int] = []
-    locals_: list[int] = []
-    max_threads: list[int] = []
-    for line in text.splitlines():
+def _parse_kernel_resource_usage(text: str, kernel_symbol: str) -> tuple[int, int, int]:
+    matches = re.finditer(r"Function\s+([^\s:]+):\s*\n\s*([^\n]+)", text)
+    for match in matches:
+        if match.group(1) != kernel_symbol:
+            continue
+        line = match.group(2)
         reg = re.search(r"\bREG:(\d+)", line)
         local = re.search(r"\bLOCAL:(\d+)", line)
         threads = re.search(r"\b(?:MAX_THREADS|MAXTHREADS):(\d+)", line)
-        if reg:
-            regs.append(int(reg.group(1)))
-        if local:
-            locals_.append(int(local.group(1)))
-        if threads:
-            max_threads.append(int(threads.group(1)))
-    return (max(regs) if regs else 0, max(locals_) if locals_ else 0, max(max_threads) if max_threads else 0)
+        return (
+            int(reg.group(1)) if reg else 0,
+            int(local.group(1)) if local else 0,
+            int(threads.group(1)) if threads else 0,
+        )
+    return 0, 0, 0
 
 
 def _derive_occupancy(registers_per_thread: int, block_threads: int) -> float:
@@ -92,32 +96,61 @@ def _resource_metrics_factory(profiler_dir: Path):
         profiler_dir.mkdir(parents=True, exist_ok=True)
         resource_path = profiler_dir / f"{problem}_cuobjdump_resource_usage.txt"
         artifact_paths: list[str] = []
+        kernel_symbol = KERNEL_SYMBOLS[problem]
+        for stale in profiler_dir.glob(f"{problem}_triton_*.cubin"):
+            stale.unlink()
         cubins = _recent_cubins(marker)
         if cubins and shutil.which("cuobjdump"):
             parts: list[str] = []
             copied: list[Path] = []
-            for index, cubin in enumerate(cubins[:4]):
-                copied_cubin = profiler_dir / f"{problem}_triton_{index}.cubin"
-                shutil.copy2(cubin, copied_cubin)
-                copied.append(copied_cubin)
+            metrics: tuple[int, int, int] | None = None
+            for cubin in cubins:
                 proc = subprocess.run(
-                    ["cuobjdump", "--dump-resource-usage", str(copied_cubin)],
+                    ["cuobjdump", "--dump-resource-usage", str(cubin)],
                     text=True,
                     stdout=subprocess.PIPE,
                     stderr=subprocess.STDOUT,
                     check=False,
                 )
+                regs, local, parsed_threads = _parse_kernel_resource_usage(proc.stdout, kernel_symbol)
+                if regs <= 0:
+                    continue
+                index = len(copied)
+                copied_cubin = profiler_dir / f"{problem}_triton_{index}.cubin"
+                shutil.copy2(cubin, copied_cubin)
+                copied.append(copied_cubin)
                 parts.append(f"### {_rel(copied_cubin)}\n{proc.stdout}")
+                if metrics is None:
+                    metrics = (regs, local, parsed_threads)
+                if len(copied) >= 4:
+                    break
+            if metrics is None:
+                resource_path.write_text(
+                    "\n".join(parts)
+                    + (
+                        f"\nNo recent Triton cubin contained Function {kernel_symbol}: "
+                        f"under {_triton_cache_dir()}.\n"
+                    ),
+                    encoding="utf-8",
+                )
+                artifact_paths.append(_rel(resource_path))
+                limitation = (
+                    f"cuobjdump found Triton cubins but none containing Function {kernel_symbol}:; "
+                    "registers, local memory, and occupancy are conservative fallback placeholders. "
+                    "Bandwidth is fallback-derived."
+                )
+                return 1, 0, 0.0, artifact_paths, limitation
             resource_path.write_text("\n".join(parts), encoding="utf-8")
-            regs, local, parsed_threads = _parse_resource_usage(resource_path.read_text(errors="replace"))
+            regs, local, parsed_threads = metrics
             threads = parsed_threads or block_threads
             occupancy = _derive_occupancy(regs, threads)
             artifact_paths.extend(_rel(path) for path in copied)
             artifact_paths.append(_rel(resource_path))
             limitation = (
                 "ncu is invoked by the runner but local performance-counter permission may be unavailable; "
-                "registers/local memory come from cuobjdump over Triton cached cubins, occupancy is "
-                f"fallback-derived from registers and block size {threads}, and bandwidth is fallback-derived."
+                f"registers/local memory come from cuobjdump for Function {kernel_symbol}: in Triton's cached "
+                f"cubin, occupancy is fallback-derived from registers and block size {threads}, and bandwidth "
+                "is fallback-derived."
             )
             return regs or 1, local, occupancy, artifact_paths, limitation
 
