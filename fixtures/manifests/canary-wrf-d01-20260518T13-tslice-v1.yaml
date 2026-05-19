@@ -1,0 +1,98 @@
+fixture_id: canary-wrf-d01-20260518T13-tslice-v1
+source: wrf-derived
+source_commit: path=/mnt/data/canairy_meteo/runs/wrf_l3/20260517_18z_l3_24h_20260518T004341Z/wrfout_d01_2026-05-18_13:00:00
+  sha256=9ba4a5631a0a3307a6772ce60d04d340be9886ca49d7af25015cf1d875c2e102
+wrf_version: 4.7.1
+scenario: Canary Islands WRF L3 d01 valid 2026-05-18 13:00 UTC, single interior timestep
+  slice
+created_utc: '2026-05-19T00:00:00Z'
+tier: 1
+precision_reference: fp64
+generation_command: python scripts/extract_canary_wrf_fixture.py
+external_uri: data/fixtures/canary-wrf-d01-20260518T13-tslice-v1/full.npz
+sample_slice_path: fixtures/samples/canary-wrf-d01-20260518T13-tslice-v1.npz
+git_commit: worker/gpt/m1-canary-wrf-derived-fixture
+license_notes: Derived from local Gen2 WRF operational run for project validation;
+  bulk payload remains under data/.
+variables:
+- name: T
+  units: K
+  shape:
+  - 10
+  - 8
+  - 8
+  staggering: mass
+  dtype: float32
+  tolerance_abs: 0.001
+  tolerance_rel: 1.0e-06
+  tolerance_rationale: WRF fp32 perturbation theta; interior z0:10 y24:32 x42:50
+  tier_overrides: null
+- name: U
+  units: m s-1
+  shape:
+  - 10
+  - 8
+  - 9
+  staggering: u
+  dtype: float32
+  tolerance_abs: 0.0001
+  tolerance_rel: 1.0e-06
+  tolerance_rationale: WRF fp32 u-face wind; interior z0:10 y24:32 x42:51
+  tier_overrides: null
+- name: V
+  units: m s-1
+  shape:
+  - 10
+  - 9
+  - 8
+  staggering: v
+  dtype: float32
+  tolerance_abs: 0.0001
+  tolerance_rel: 1.0e-06
+  tolerance_rationale: WRF fp32 v-face wind; interior z0:10 y24:33 x42:50
+  tier_overrides: null
+- name: QVAPOR
+  units: kg kg-1
+  shape:
+  - 10
+  - 8
+  - 8
+  staggering: mass
+  dtype: float32
+  tolerance_abs: 1.0e-08
+  tolerance_rel: 1.0e-06
+  tolerance_rationale: WRF fp32 water vapor mixing ratio; interior 10x8x8 slice
+  tier_overrides: null
+- name: P
+  units: Pa
+  shape:
+  - 10
+  - 8
+  - 8
+  staggering: mass
+  dtype: float32
+  tolerance_abs: 0.01
+  tolerance_rel: 1.0e-06
+  tolerance_rationale: WRF fp32 perturbation pressure; interior 10x8x8 slice
+  tier_overrides: null
+- name: PB
+  units: Pa
+  shape:
+  - 10
+  - 8
+  - 8
+  staggering: mass
+  dtype: float32
+  tolerance_abs: 0.01
+  tolerance_rel: 1.0e-06
+  tolerance_rationale: WRF fp32 base-state pressure; interior 10x8x8 slice
+  tier_overrides: null
+files:
+- path: data/fixtures/canary-wrf-d01-20260518T13-tslice-v1/full.npz
+  checksum_sha256: a2aaa08cd15a296f5223077ba49ae89a2c053b357827902855e16bc42b73a842
+  bytes: 15967
+  external: true
+- path: fixtures/samples/canary-wrf-d01-20260518T13-tslice-v1.npz
+  checksum_sha256: 8fffc8a9de04186cdd5677e8ef5e313d90f0b1cb336c7efecda276b73b02e040
+  bytes: 14214
+  external: false
