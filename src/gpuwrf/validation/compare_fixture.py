@@ -133,7 +133,7 @@ def validate_manifest(data: dict[str, Any], manifest_path: Path | None = None) -
 
     if data.get("source") not in {"analytic", "wrf-derived"}:
         errors.append("$.source: expected one of analytic, wrf-derived")
-    if data.get("source") == "wrf-derived" and not isinstance(data.get("wrf_version"), str):
+    if data.get("source") == "wrf-derived" and (not isinstance(data.get("wrf_version"), str) or not data.get("wrf_version")):
         errors.append("$.wrf_version: required non-empty string when source is wrf-derived")
     elif "wrf_version" in data and data.get("wrf_version") is not None and not isinstance(data.get("wrf_version"), str):
         errors.append("$.wrf_version: expected string or null")
