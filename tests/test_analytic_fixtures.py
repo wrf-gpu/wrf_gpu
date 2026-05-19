@@ -8,6 +8,7 @@ import subprocess
 import sys
 
 import numpy as np
+import yaml
 
 from gpuwrf.validation.compare_fixture import load_manifest
 
@@ -103,3 +104,53 @@ def test_cli_round_trip_perturbation_fails(tmp_path: Path) -> None:
         record = json.loads(proc.stdout)
         assert record["pass"] is False
         assert record["first_failure"] == variable_name
+
+
+def test_actual_fixture_missing_candidate_variable_is_rejected(tmp_path: Path) -> None:
+    data = load_manifest(COLUMN_MANIFEST)
+    omitted = data["variables"][-1]["name"]
+    candidate = tmp_path / "missing-variable.npz"
+    with np.load(COLUMN_SAMPLE, allow_pickle=False) as loaded:
+        arrays = {name: loaded[name] for name in loaded.files if name != omitted}
+    np.savez(candidate, **arrays)
+
+    proc = _compare(COLUMN_MANIFEST, candidate, COLUMN_SAMPLE)
+
+    assert proc.returncode == 2
+    assert f"candidate missing variable {omitted}" in proc.stderr
+
+
+def test_actual_fixture_declared_shape_mismatch_fails_cleanly(tmp_path: Path) -> None:
+    data = load_manifest(STENCIL_MANIFEST)
+    data["variables"][0]["shape"] = [1, 16, 32]
+    manifest = tmp_path / "bad-shape.yaml"
+    manifest.write_text(yaml.safe_dump(data), encoding="utf-8")
+
+    proc = _compare(manifest, STENCIL_SAMPLE, STENCIL_SAMPLE)
+
+    assert proc.returncode == 1
+    record = json.loads(proc.stdout)
+    assert record["pass"] is False
+    assert record["first_failure"] == data["variables"][0]["name"]
+    assert record["variables"][0]["shape_ok"] is False
+
+
+def test_actual_fixture_missing_candidate_file_is_rejected(tmp_path: Path) -> None:
+    missing_candidate = tmp_path / "does-not-exist.npz"
+
+    proc = _compare(STENCIL_MANIFEST, missing_candidate, STENCIL_SAMPLE)
+
+    assert proc.returncode == 2
+    assert "file does not exist" in proc.stderr
+
+
+def test_actual_manifest_schema_rejects_top_level_tolerance(tmp_path: Path) -> None:
+    data = load_manifest(COLUMN_MANIFEST)
+    data["tolerance_abs"] = 1.0
+    manifest = tmp_path / "top-level-tolerance.yaml"
+    manifest.write_text(yaml.safe_dump(data), encoding="utf-8")
+
+    proc = _run([sys.executable, "scripts/validate_fixture_manifest.py", str(manifest)])
+
+    assert proc.returncode == 1
+    assert "$.tolerance_abs: unknown field" in proc.stderr
