@@ -45,7 +45,7 @@ def main() -> int:
     hlo_text = compiled_text(compiled)
     write_hlo(ART / "hlo_dump" / "dummy_loop.txt", hlo_text, SCRATCH / "dummy_loop_full_hlo.txt")
 
-    result = compiled(state, tendencies, DT)
+    result = run_dummy_loop(state, tendencies, DT, N_STEPS)
     block_until_ready(result)
 
     trace_dir = SCRATCH / "transfer_trace"
@@ -53,7 +53,7 @@ def main() -> int:
         shutil.rmtree(trace_dir)
     trace_dir.mkdir(parents=True, exist_ok=True)
     with jax.profiler.trace(str(trace_dir), create_perfetto_link=False):
-        traced = compiled(state, tendencies, DT)
+        traced = run_dummy_loop(state, tendencies, DT, N_STEPS)
         block_until_ready(traced)
 
     audit = write_transfer_audit(ART / "transfer_audit.json", N_STEPS, trace_dir)
@@ -61,7 +61,7 @@ def main() -> int:
     def run_once():
         """Calls the already-compiled dummy loop for median timing samples."""
 
-        return compiled(state, tendencies, DT)
+        return run_dummy_loop(state, tendencies, DT, N_STEPS)
 
     wall_us = median_step_us(run_once, N_STEPS, samples=100)
     budget = write_spacetime_budget(

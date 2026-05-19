@@ -21,7 +21,7 @@ def dummy_step(state: State, tendencies: Tendencies, dt: float) -> tuple[State, 
     return state.replace(theta=theta_next), tendencies
 
 
-@partial(jax.jit, static_argnames=("n_steps",))
+@partial(jax.jit, static_argnames=("dt", "n_steps"))
 def run_dummy_loop(state: State, tendencies: Tendencies, dt: float, n_steps: int) -> tuple[State, Tendencies]:
     """Runs the whole dummy integration as one JITed scan call."""
 

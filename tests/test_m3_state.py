@@ -24,6 +24,7 @@ def test_state_zeros_allocates_gpu_shapes_and_dtype():
     assert state.p.shape == (grid.nz, grid.ny, grid.nx)
     assert state.ph.shape == (grid.nz + 1, grid.ny, grid.nx)
     assert state.mu.shape == (grid.ny, grid.nx)
+    assert state.theta.dtype == jnp.float64
     assert all(leaf.dtype == jnp.float64 for leaf in jax.tree_util.tree_leaves(state))
     assert all(_platform(leaf) == "gpu" for leaf in jax.tree_util.tree_leaves(state))
 

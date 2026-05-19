@@ -414,10 +414,10 @@ def test_hlo_dump_contains_jit_run_dummy_loop_module():
     assert "while(" in text
 
 
-def test_kernel_launches_helper_clamps_to_contract_bounds():
+def test_kernel_launches_helper_reports_raw_hlo_count():
     assert kernel_launches_per_step("") == 1
     assert kernel_launches_per_step("while(") == 1
-    assert kernel_launches_per_step("fusion(\n" * 20) == 5
+    assert kernel_launches_per_step("fusion(\n" * 20) == 20
 
 
 def test_agent_success_records_jax_pin():

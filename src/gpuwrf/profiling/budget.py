@@ -41,7 +41,7 @@ def write_hlo(path: Path, text: str, full_path: Path | None = None) -> None:
 
 
 def kernel_launches_per_step(hlo_text: str) -> int:
-    """Derives a conservative dummy-loop launch estimate from fused HLO operations."""
+    """Derives the raw dummy-loop launch estimate from fused HLO operations."""
 
     fusion_count = len(re.findall(r"\bfusion\(", hlo_text))
     custom_count = len(re.findall(r"\bcustom-call\(", hlo_text))
@@ -49,7 +49,7 @@ def kernel_launches_per_step(hlo_text: str) -> int:
     launches = fusion_count + custom_count
     if launches == 0 and while_count:
         launches = 1
-    return max(1, min(launches, 5))
+    return max(1, launches)
 
 
 def median_step_us(run_once, n_steps: int, samples: int = 100) -> float:

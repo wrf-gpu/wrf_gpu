@@ -4,6 +4,11 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from jax import config
+
+
+config.update("jax_enable_x64", True)
+
 if TYPE_CHECKING:
     from .grid import BCMetadata, GridSpec, Projection, TerrainProvenance, VerticalCoord
     from .halo import HaloSpec
