@@ -2,7 +2,7 @@
 
 Date: 2026-05-19
 Author: manager (Claude Opus 4.7 1M context)
-Status: **proposed, pending user acknowledgement at M2 closeout**. Awaiting codex reviewer binding judgment before manager-merge to main; user acknowledgement of the irreversible-architecture nature happens by the user reading the M2 closeout report and not objecting. The manager-autonomy directive of 2026-05-19 delegates *operational* decisions to the manager — it does NOT silently amend the constitution. The constitution requires human approval for irreversible architecture decisions (`PROJECT_CONSTITUTION.md:16`, `.agent/rules/architecture-decision-policy.md:13`). This ADR honors that by reporting to the user at M2 closeout *before* M3 implementation begins; the user has explicit veto authority and may force a re-ADR.
+Status: **ACCEPTED 2026-05-19** by explicit user approval ("approved. good work. now execute m3."). The constitution's irreversible-architecture human-approval gate (`PROJECT_CONSTITUTION.md:16`, `.agent/rules/architecture-decision-policy.md:13`) is satisfied. M3 implementation authorized.
 Scope: v0 (single-node RTX 5090, cc120 Blackwell, 32 GB VRAM)
 Reversibility: **irreversible** per `.agent/rules/architecture-decision-policy.md`.
 
