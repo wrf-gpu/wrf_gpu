@@ -1,0 +1,5 @@
+cmake_minimum_required(VERSION 3.22)
+project(m2_scout_kokkos_hello LANGUAGES CXX)
+find_package(Kokkos REQUIRED)
+add_executable(hello_kokkos hello.cpp)
+target_link_libraries(hello_kokkos Kokkos::kokkos)
