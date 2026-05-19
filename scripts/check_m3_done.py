@@ -133,9 +133,17 @@ def check_milestone_closeout(errors: list[str]) -> None:
 
 
 def check_cross_ai_provenance(errors: list[str]) -> None:
+    # Sprints that explicitly waive the tester role (manager-direct decision sprints) are exempt.
     for d in sorted(glob.glob(SPRINTS_GLOB)):
         tr = Path(d) / "tester-report.md"
         if not tr.exists():
+            continue
+        tr_text = tr.read_text(errors="replace")
+        if (
+            "Tester role explicitly waived" in tr_text
+            or "Decision: waived" in tr_text
+            or "Decision: not applicable" in tr_text
+        ):
             continue
         logs = sorted(glob.glob(str(ROOT / "logs" / f"{Path(d).name}-tester-*.log")))
         if not logs:

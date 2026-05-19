@@ -1,0 +1,11 @@
+Objective: independent critical review of ADR-002.
+
+Files changed: [.agent/decisions/REVIEW-codex-ADR-002/critical-review.md](/home/enric/src/wrf_gpu2/.agent/decisions/REVIEW-codex-ADR-002/critical-review.md)
+
+Commands run: read-order and evidence inspection with `sed`, `nl`, `find`, `rg`, `git status`; artifact/source spot checks for ADR-002, M3 contract, reports, `GridSpec`, `State`, `HaloSpec`, HLO, transfer audit, and spacetime budget; wrote the report with `apply_patch`; verified size with `wc -c`.
+
+Proof objects produced: `critical-review.md`, 6029 bytes, includes `Decision: Accept with required fixes`.
+
+Unresolved risks: explicit human-approval provenance, synthetic Canary static-field provenance, halo future-proofing overclaim, missing review sprint contract, stale `agent_success.json`.
+
+Next decision needed: manager applies or records dissent against the required fixes before treating ADR-002 as locked.

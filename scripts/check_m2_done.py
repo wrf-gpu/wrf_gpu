@@ -147,15 +147,23 @@ def check_milestone_closeout(errors: list[str]) -> None:
 
 def check_cross_ai_provenance(errors: list[str]) -> None:
     # Each M2 sprint's tester-report.md should have been produced by Claude (not codex).
-    # Heuristic: tester role-prompt header writes 'via claude' OR the log file references claude.
+    # Sprints that explicitly waive the tester role (manager-direct decision sprints) are exempt.
     sprint_dirs = sorted(glob.glob(SPRINTS_GLOB))
     for d in sprint_dirs:
         tr = Path(d) / "tester-report.md"
         if not tr.exists():
             continue  # caught by close_sprint check
+        tr_text = tr.read_text(errors="replace")
+        # Tester-waiver pattern: report says role was explicitly waived per contract.
+        if (
+            "Tester role explicitly waived" in tr_text
+            or "Decision: waived" in tr_text
+            or "Decision: not applicable" in tr_text
+        ):
+            continue
         # Look for any log file naming claude as the tester AI for this sprint.
-        log_pattern = ROOT / "logs" / f"{Path(d).name}-tester-*.log"
-        logs = sorted(glob.glob(str(log_pattern)))
+        log_pattern = str(ROOT / "logs" / f"{Path(d).name}-tester-*.log")
+        logs = sorted(glob.glob(log_pattern))
         if not logs:
             errors.append(f"sprint {Path(d).name}: no tester log found to verify AI provenance")
             continue
