@@ -486,3 +486,54 @@ Total: ~45-60 min budget.
 ## Backstop
 
 If lami fix produces parity numbers WORSE than attempt-4 (regression), worker A5 immediately stops and files `BLOCKER-m5-s1-attempt5-lami-regression.md`. Manager investigates with parallel-pair on the diagnostic.
+
+## Attempt-5 amendment — scope expansion (added mid-flight, 2026-05-20 evening)
+
+Gemini parallel side-audit identified a SECOND confirmed coefficient bug. Manager (Claude Opus 4.7) verified directly against WRF source. Same class as the lami bug — literal-substitution typo against WRF source. Adding to attempt-5 scope.
+
+### Fix 6 (P0) — graupel cge(11)/cgg(11) substituted with rain values
+
+`src/gpuwrf/physics/thompson_constants.py:69-70`:
+```python
+CRE10 = 2.0   # rain moment-10 exponent — OK for rain code paths
+CRE11 = 3.0   # rain moment-11 exponent — OK for rain code paths
+```
+
+Need to ADD graupel equivalents:
+```python
+# Graupel moment-11 exponent and gamma value, mp_physics=8 (bv_g = 0.640961647, mu_g = 0)
+# WRF: module_mp_thompson.F.pre:104,156,755,763,767  →  cge(11) = 0.5*(bv_g + 5. + 2.*mu_g) = 2.8204808235
+#                                                       cgg(11) = WGAMMA(cge(11))           = 1.7042533
+CGE11 = 2.8204808235  # = 0.5 * (0.640961647 + 5.0 + 2.0 * 0.0)
+CGG11 = 1.7042533     # = math.gamma(CGE11)
+```
+
+`src/gpuwrf/physics/thompson_constants.py:90,92` (T2_SUBL_QG, T2_MELT_QG):
+```python
+# Before:
+T2_SUBL_QG = 0.28 * SC3 * math.sqrt(AV_G_MP8) * 2.0
+T2_MELT_QG = PI * 4.0 * C_CUBE / LFUS * 0.28 * SC3 * math.sqrt(AV_G_MP8) * 2.0
+
+# After (replace literal 2.0 with CGG11 to match WRF module_mp_thompson.F.pre:2761,2872):
+T2_SUBL_QG = 0.28 * SC3 * math.sqrt(AV_G_MP8) * CGG11
+T2_MELT_QG = PI * 4.0 * C_CUBE / LFUS * 0.28 * SC3 * math.sqrt(AV_G_MP8) * CGG11
+```
+
+`src/gpuwrf/physics/thompson_column.py:463,492` (graupel sublimation + melting):
+```python
+# Before (uses CRE11 = 3.0 from rain):
+T2_MELT_QG * rhof2 * vsc2 * ilamg**CRE11
+T2_SUBL_QG * vsc2 * rhof2 * ilamg**CRE11
+
+# After (uses CGE11 = 2.82048 from graupel, matches WRF module_mp_thompson.F.pre:2874-2875):
+T2_MELT_QG * rhof2 * vsc2 * ilamg**CGE11
+T2_SUBL_QG * vsc2 * rhof2 * ilamg**CGE11
+```
+
+WRF citations: `module_mp_thompson.F.pre:104` (mu_g=0), `:156` (bv_g=0.640961647 for mp_physics=8), `:763` (cge(11) formula), `:767` (cgg=gamma(cge)), `:2761` (live t2_qg_sd), `:2872-2875` (live t2_qg_me + cge(11) exponent usage).
+
+### Why mid-flight scope expansion is acceptable here
+
+The bug-fix parallel-pair rule (mandatory per user directive 2026-05-20 evening) puts Gemini side-audits on every confirmed-bug sprint. The lami fix was already in scope; the graupel fix is the same class of bug, in the same code file, requiring the same kind of edit. Worker A5 has the kernel open. Folding both into one attempt is more efficient than serial-cycling attempt-6. Both fixes confirmed-by-two-AIs (Gemini originator + manager verifier) per the bug-fix parallel-pair rule.
+
+Worker A5 must apply both Fix 1 (lami) and Fix 6 (graupel) before regenerating artifacts.
