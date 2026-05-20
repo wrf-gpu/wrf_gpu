@@ -5,19 +5,24 @@ Third AI available to this project alongside Claude (Opus 4.7 / Sonnet 4.6) and 
 ## Capability + constraints
 
 - **What it is**: Google Antigravity CLI wrapper around Gemini 3.5 high-flash. Authored as a coding model, benchmark-comparable to Claude Opus 4.7 and Codex gpt-5.5 on coding tasks.
-- **Speed**: ~4x faster than Opus 4.7. This is the load-bearing property — cheap to ask for parallel opinions.
-- **Allowed roles** (per user directive 2026-05-20 evening, updated after Gemini's first two deliveries proved high-value):
-  - **Second / third opinion** (side runner) alongside codex critical-review or Claude tester. **Always-on for any non-trivial decision.**
-  - **Bug-fix parallel-pair (mandatory)**: every confirmed issue dispatches ≥2 AIs to identify and propose a fix. One of the two MUST be Gemini. The other is codex or Claude. Manager combines candidates. Rationale: hallucination risk on Gemini drops to ~zero when paired with a slower, deeper AI; speed advantage stays useful. Without the pair, single-Gemini fixes could ship a hallucinated coefficient. With the pair, the risk is bounded.
-  - **Large / complex reviews — Gemini in parallel** (alongside the primary reviewer, not as the binding reviewer). Primary reviewer remains Claude Opus 4.7 (and codex for critical-review on memory/skill/governance patches). Gemini's parallel report is supplementary and feeds into the manager's decision memo.
-  - **Tools / sidecars / scripts / report drafts / quick diagnostic probes**: unconstrained. Use Gemini whenever it brings the project forward — speed is the value.
-  - **Sprint frontrunner — codex gpt-5.5 xhigh remains the default primary worker**. Gemini does not replace codex for new sprint implementation. Gemini may run as a second worker in a parallel-pair on bug-fix sprints per the rule above.
-- **Forbidden roles** (still apply):
-  - NEVER **sole primary worker** for sprint implementation. Workers are codex or Claude, with optional Gemini parallel-pair when the manager dispatches one.
-  - NEVER **sole tester** for a sprint. Tester gate requires codex- or Claude-class AI. Gemini may run alongside, not instead of.
+- **Speed**: ~4x faster than Opus 4.7.
+- **HARD QUOTA CONSTRAINT (user directive 2026-05-20 ~21:30)**: project has limited weekly Gemini quota; **must be reserved for M6 and M7 where the operational-RMSE validation work needs heavy AI compute**. Do NOT burn quota on routine parallel-pair / large-review dispatches. Effective immediately.
+- **Reactive-only dispatch policy** (replaces the earlier "parallel-pair mandatory" and "large-review default-on" rules from 2026-05-20 evening):
+  - **Complex bug chases where the first agent (codex or Claude) has already failed to find the bug**. Gemini's value-add here is the orthogonal-attack-vector: different architecture, different training, different blind spots → catches what the first AI missed. This is the primary reason to spend Gemini quota now.
+  - **Sustained-mystery diagnosis** (≥1 codex/Claude diagnostic agent already returned inconclusive or wrong): dispatch Gemini as second-opinion.
+- **Forbidden / no longer default-on** (was permitted in the prior policy, NO LONGER):
+  - NOT routinely paired on every confirmed bug.
+  - NOT default-on for large/complex reviews; Claude Opus reviewer is sole binding voice unless the review explicitly needs Gemini's orthogonal angle.
+  - NOT used for general second-opinion / smoke / sanity checks.
+  - NOT used for sidecar tool authoring or report drafts — those go to codex/Claude.
+- **Still forbidden roles** (unchanged):
+  - NEVER **sole primary worker** for sprint implementation.
+  - NEVER **sole tester** for a sprint.
   - NEVER **sole reviewer / sole judge** for an ADR, milestone closeout, or sprint acceptance.
   - NEVER **sole critical-reviewer** for memory or skill patches.
-- **Reasoning**: Gemini has demonstrated high-value side-runner output (1 novel reviewer check + 1 specific coefficient bug found in first two deliveries) but the project still has limited track record on its hallucination profile. The parallel-pair rule eliminates hallucination risk on consequential decisions; the unconstrained-tooling rule captures Gemini's speed value where the risk is low.
+- **Sprint frontrunner**: codex gpt-5.5 xhigh remains the default primary worker; Claude Opus 4.7 remains the primary reviewer.
+- **Quota budget logic**: assume ~5-8 Gemini dispatches per day max under heavy use; per-day soft budget on M5/M6 = ≤2 dispatches; reserve the rest for M7 operational validation where there's no substitute for fast cross-AI verification on time-critical operational-RMSE residual hunts.
+- **Reasoning**: Gemini has already proven its value (2 coefficient bugs found + 1 ADR-007 review with 2 valid required-fixes), so the question is not "is it valuable" but "where is the marginal call most worth the quota". User has decided that's bug-chase reactive + M6/M7 forecast residual hunts, not routine pair work.
 
 ## CLI invocation
 
