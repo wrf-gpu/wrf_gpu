@@ -7,9 +7,10 @@ Third AI available to this project alongside Claude (Opus 4.7 / Sonnet 4.6) and 
 - **What it is**: Google Antigravity CLI wrapper around Gemini 3.5 high-flash. Authored as a coding model, benchmark-comparable to Claude Opus 4.7 and Codex gpt-5.5 on coding tasks.
 - **Speed**: ~4x faster than Opus 4.7.
 - **HARD QUOTA CONSTRAINT (user directive 2026-05-20 ~21:30)**: project has limited weekly Gemini quota; **must be reserved for M6 and M7 where the operational-RMSE validation work needs heavy AI compute**. Do NOT burn quota on routine parallel-pair / large-review dispatches. Effective immediately.
-- **Reactive-only dispatch policy** (replaces the earlier "parallel-pair mandatory" and "large-review default-on" rules from 2026-05-20 evening):
+- **Reactive-only dispatch policy** (replaces the earlier "parallel-pair mandatory" and "large-review default-on" rules from 2026-05-20 evening; refined later same evening to add architecture-tiebreak case):
   - **Complex bug chases where the first agent (codex or Claude) has already failed to find the bug**. Gemini's value-add here is the orthogonal-attack-vector: different architecture, different training, different blind spots → catches what the first AI missed. This is the primary reason to spend Gemini quota now.
   - **Sustained-mystery diagnosis** (≥1 codex/Claude diagnostic agent already returned inconclusive or wrong): dispatch Gemini as second-opinion.
+  - **Third opinion on core architecture decisions** when manager (Claude Opus 4.7) and primary codex critical-reviewer disagree, and the disagreement blocks a load-bearing call (backend/precision/state-layout/coupling-boundary class). NOT for routine ADR reviews where Claude + codex already concur — only for the specific case where a 2-AI disagreement exists on a project-shaping decision. Gemini's role is tiebreaker input, never the deciding vote.
 - **Forbidden / no longer default-on** (was permitted in the prior policy, NO LONGER):
   - NOT routinely paired on every confirmed bug.
   - NOT default-on for large/complex reviews; Claude Opus reviewer is sole binding voice unless the review explicitly needs Gemini's orthogonal angle.
