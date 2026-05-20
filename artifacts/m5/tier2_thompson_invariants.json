@@ -2,7 +2,7 @@
   "dt_s": 60.0,
   "finite_latent_heating": {
     "bound_K": 100.0,
-    "max_abs_delta_T_K": 2.729736643819791,
+    "max_abs_delta_T_K": 2.73444517604878,
     "pass": true
   },
   "iterations": 10,

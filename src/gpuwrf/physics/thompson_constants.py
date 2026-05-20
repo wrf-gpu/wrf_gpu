@@ -68,6 +68,8 @@ CRE2 = 1.0
 CRE9 = 4.0
 CRE10 = 2.0
 CRE11 = 3.0
+CGE11 = 2.8204808235
+CGG11 = 1.7042533
 CIG1 = 1.0
 CIG2 = 6.0
 CIG5 = 1.0
@@ -87,9 +89,9 @@ T2_SUBL_QS = 0.28 * SC3 * math.sqrt(AV_S)
 T1_MELT_QS = PI * 4.0 * C_SQRD / LFUS * 0.86
 T2_MELT_QS = PI * 4.0 * C_SQRD / LFUS * 0.28 * SC3 * math.sqrt(AV_S)
 T1_SUBL_QG = 0.86
-T2_SUBL_QG = 0.28 * SC3 * math.sqrt(AV_G_MP8) * 2.0
+T2_SUBL_QG = 0.28 * SC3 * math.sqrt(AV_G_MP8) * CGG11
 T1_MELT_QG = PI * 4.0 * C_CUBE / LFUS * 0.86
-T2_MELT_QG = PI * 4.0 * C_CUBE / LFUS * 0.28 * SC3 * math.sqrt(AV_G_MP8) * 2.0
+T2_MELT_QG = PI * 4.0 * C_CUBE / LFUS * 0.28 * SC3 * math.sqrt(AV_G_MP8) * CGG11
 
 
 def constant_table() -> dict[str, float]:
@@ -127,6 +129,8 @@ def constant_table() -> dict[str, float]:
         "BM_I",
         "BM_G",
         "CIE2",
+        "CGE11",
+        "CGG11",
         "OBMR",
         "OBMI",
         "OBMG",

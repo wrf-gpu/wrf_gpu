@@ -19,6 +19,7 @@ from gpuwrf.physics.thompson_constants import (
     C_SQRD,
     CCG2_NU12,
     CCG3_NU12,
+    CGE11,
     CIE2,
     CRE10,
     CRE11,
@@ -460,7 +461,7 @@ def _ice_sources(state: ThompsonColumnState, dt: float) -> ThompsonColumnState:
     pnr_sml = jnp.where(rs > R1, smo0 / rs * snow_melt * state.rho * 10.0 ** (-0.25 * (twet - T_0)), 0.0)
 
     prr_gml_rate = (tempc * tcond - 2.5e6 * diffu * del_qvs) * n0_g * (
-        T1_MELT_QG * ilamg**CRE10 + T2_MELT_QG * rhof2 * vsc2 * ilamg**CRE11
+        T1_MELT_QG * ilamg**CRE10 + T2_MELT_QG * rhof2 * vsc2 * ilamg**CGE11
     )
     prr_gml_rate = jnp.minimum(rg / float(dt), jnp.maximum(0.0, prr_gml_rate)) / state.rho
     graupel_melt = jnp.where((state.T > T_0) & active_graupel, prr_gml_rate * float(dt), 0.0)
@@ -489,7 +490,7 @@ def _ice_sources(state: ThompsonColumnState, dt: float) -> ThompsonColumnState:
     pri_ide = jnp.where(pri_ide < 0.0, jnp.maximum(-ri / float(dt), pri_ide), jnp.minimum(pri_ide, jnp.maximum(state.qv - qvsi, 0.0) * state.rho / float(dt) * 0.999))
     prs_sde = c_snow * t1_subl * diffu * ssati * rvs * (T1_SUBL_QS * smo1 + T2_SUBL_QS * rhof2 * vsc2 * smof)
     prs_sde = jnp.where(active_snow, jnp.where(prs_sde < 0.0, jnp.maximum(-rs / float(dt), prs_sde), jnp.minimum(prs_sde, jnp.maximum(state.qv - qvsi, 0.0) * state.rho / float(dt) * 0.999)), 0.0)
-    prg_gde = C_CUBE * t1_subl * diffu * ssati * rvs * n0_g * (T1_SUBL_QG * ilamg**CRE10 + T2_SUBL_QG * vsc2 * rhof2 * ilamg**CRE11)
+    prg_gde = C_CUBE * t1_subl * diffu * ssati * rvs * n0_g * (T1_SUBL_QG * ilamg**CRE10 + T2_SUBL_QG * vsc2 * rhof2 * ilamg**CGE11)
     prg_gde = jnp.where(active_graupel, jnp.where(prg_gde < 0.0, jnp.maximum(-rg / float(dt), prg_gde), jnp.minimum(prg_gde, jnp.maximum(state.qv - qvsi, 0.0) * state.rho / float(dt) * 0.999)), 0.0)
 
     ice_deposition = pri_ide * float(dt) / state.rho
