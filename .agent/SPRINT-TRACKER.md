@@ -8,9 +8,17 @@ Manager-maintained. Updated every watchman tick. Source of truth for parallel-ma
 
 | Window | Sprint | Role | AI | Status | ETA |
 |---|---|---|---|---|---|
-| 1 | M6 milestone plan | scout | codex gpt-5.5 xhigh | drafting plan | finishes ~01:50 |
-| 2 | M5-S2 MYNN | retroactive reviewer | Claude Opus 4.7 xhigh | reading code + manager closeout | finishes ~02:00 |
-| 3 | M5-S3 RRTMG radiation | worker | codex gpt-5.5 xhigh | DISPATCHING NOW | budget 6-12h |
+| 1 | M5-S2 MYNN attempt-2 | worker | codex gpt-5.5 xhigh | reading reviewer R-1..R-6 spec | finishes ~05:30-09:30 (4-8h budget) |
+| 3 | M5-S3 RRTMG radiation | worker | codex gpt-5.5 xhigh | ~10 min in; built rrtmg_constants.py with WRF source citations; working on extractor + harness + fixture | finishes ~07:20-13:20 (6-12h budget) |
+
+**Auto-notify**: both windows dispatched with the canonical completion handler from `.agent/references/dispatching-agents-pattern.md` — will tap-type AGENT REPORT to manager pane on `/exit`. M6 scout + M5-S2 retro reviewer (now closed) were dispatched without the handler, hence the silent finish.
+
+## Recently completed (this session)
+
+| Sprint | Outcome | Commit |
+|---|---|---|
+| M6 milestone plan (scout, codex, 9m 32s) | Plan written 26485 bytes; commit `3392d04` on `worker/codex/m6-milestone-plan-scout`. Recommends bounded surface-layer/Noah-MP minimum in M6 (diverges from M5 closeout default of pushing to M7); flags Gen2 d01/d02 3km domain mismatch as prerequisite. **NEEDS MANAGER REVIEW for consensus before dispatch.** | `3392d04` (branch, not yet merged to main) |
+| M5-S2 retroactive Opus reviewer | **REJECT** — R-1 kernel is Louis-Blackadar not MYNN; R-2 harness tautological (worker-authored same scheme both sides); R-3 Tier-2 trivial because no surface flux; R-4 raw HLO 6 above ≤5 contract; R-5 retain XLA tridiag + scaffolding. **M5 milestone close rescinded; contingent on M5-S2-A2 (Path A) before M6 dispatch.** | `653cf41` (report committed on main) |
 
 ## M5 sprint table (full history)
 
@@ -20,9 +28,10 @@ Manager-maintained. Updated every watchman tick. Source of truth for parallel-ma
 | M5-S1 Thompson microphysics | codex A1-A6 (6 attempts) | tester A4 (Opus 4.7) ✓ | reviewer A5 (Opus 4.7) ✓ Accept-with-fixes (R-1 caught Gemini hallucination) | `d768194` + `00e7ee8` | ✓ CLOSED |
 | M5-S1.x Thompson tables | codex A1 (1 attempt) | n/a (closeout-only) | manager-only (defer remainder to M6) | `fe959d2` + `1868545` | ✓ CLOSED partial; debt → M6 prologue |
 | ADR-007 precision policy | codex A1 (1 attempt) | n/a | Gemini side-runner (Accept-with-fixes; pre-quota-revision policy) | `445c49f` + `6c9df22` | ✓ CLOSED |
-| M5-S2 MYNN PBL | codex A1 (1 attempt; 55min) | n/a (skipped under bigger-steps) | **RETROACTIVE Opus 4.7 in flight (Window 2)** | `989f143` + `e4abc86` (provisional) | ⚠ PROVISIONAL pending reviewer |
-| M5-S3 RRTMG radiation | codex A1 (dispatching now Window 3) | pending | pending Opus 4.7 (mandatory per new sprint-lifecycle hard rule) | pending | OPEN |
-| M5 milestone closeout | manager | n/a | manager | `52cacc3` | ⚠ PROVISIONAL pending M5-S2 reviewer + M5-S3 outcome |
+| M5-S2 MYNN PBL attempt-1 | codex A1 (1 attempt; 55min) | n/a (skipped under bigger-steps — GOVERNANCE MISS) | **Opus 4.7 retro REJECTED** (R-1..R-6) | `989f143` + `e4abc86` then rescinded | ✗ REJECTED — Path A attempt-2 dispatched |
+| M5-S2 MYNN PBL attempt-2 | codex A2 (in flight Window 1) | pending | pending Opus 4.7 (MANDATORY) | pending | OPEN — real MYNN2.5 + WRF-EDMF link + surface fluxes + Tier-2 redesign |
+| M5-S3 RRTMG radiation | codex A1 (in flight Window 3) | pending | pending Opus 4.7 (MANDATORY) | pending | OPEN — ~10 min in; constants drafted with WRF citations |
+| M5 milestone closeout | manager | n/a | manager | `52cacc3` (rescinded) | ⚠ PROVISIONAL — RESCINDED pending M5-S2-A2 close + M5-S3 close |
 
 ## M5 closure dependencies
 
@@ -53,3 +62,5 @@ Manager updates this file after every watchman tick. Each row's status moves thr
 - 2026-05-21 01:00 — M5-S2 retroactive reviewer dispatched (user-flagged double-AI gap)
 - 2026-05-21 01:10 — user invoked parallel-management directive + tracker + RRTMG question
 - 2026-05-21 01:15 — tracker created; M5-S3 RRTMG dispatching
+- 2026-05-21 01:20 — user flagged that windows 1+2 finished without auto-notify; dispatch pattern fix encoded at `.agent/references/dispatching-agents-pattern.md` (canonical pattern with completion handler MANDATORY)
+- 2026-05-21 01:22 — M6 scout report read (plan good, needs review for consensus); M5-S2 retro reviewer REJECTED → M5-S2-A2 dispatched with full completion handler + R-1..R-6 spec; tracker updated
