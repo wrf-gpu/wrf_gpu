@@ -31,6 +31,24 @@ Pre-attempt-4 read-only probe established the error budget (`diagnosis-report.md
 
 Recommended Path B with diagnosis-prescribed narrow fixes for attempt 4 (which worker A4 then executed). Has not weighed in on attempt-4 outcome yet — the diagnosis was pre-attempt-4.
 
+### Gemini side-runner #2 — parity-numbers sanity check (just-completed, 2026-05-20 14:11Z)
+
+Full text: `gemini-second-opinion-parity-sanity.md`. Verified the diagnosis error budget holds — process-order, Ni-handling, and lookup-table proxies each match their predicted contributions. **But Gemini also identified a specific coefficient bug at `src/gpuwrf/physics/thompson_column.py:277-278`**:
+
+```python
+lami = jnp.where(xdi < 5.0e-6, 6.0 / 5.0e-6, lami)    # <-- 6.0 should be 4.0
+lami = jnp.where(xdi > 300.0e-6, 6.0 / 300.0e-6, lami) # <-- 6.0 should be 4.0
+```
+
+Verified by manager (Claude Opus) directly:
+- WRF source `module_mp_thompson.F.pre:1920` uses `lami = cie(2)/5.E-6`.
+- `cie(2) = bm_i + mu_i + 1.` (`module_mp_thompson.F.pre:688`), `bm_i = 3.0` (`:138`), `mu_i = 0` → `cie(2) = 4.0`.
+- JAX appears to have substituted `cig(2) = gamma(cie(2)) = gamma(4) = 6` (the moment Gamma-function value) where WRF uses `cie(2) = 4` (the moment exponent). Off by factor 1.5 in clipped lami → propagates into `Ni` (line 279) and ice mass partition.
+
+**This is a real bug, NOT a lookup-table proxy issue.** It means some fraction of the residual `qi/Ni` error currently attributed to "20-30% lookup-table proxies" in the diagnosis budget may actually be this 1-line typo. The fix is 1 line; should be attempted before any M5-S1.x lookup-table export sprint to recalibrate the residual budget. Adds P0-class scope item to whichever path the reviewer chooses.
+
+Manager has injected this finding into tester A4's running session for independent verification.
+
 ### Opinion 3 — Gemini 3.5 high-flash (side-runner, read-only)
 
 Full text: `gemini-third-opinion.md` (same folder). Summary:
