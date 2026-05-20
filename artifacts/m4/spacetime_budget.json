@@ -1,0 +1,15 @@
+{
+  "case": "m4-dycore-40x80x80-100-step",
+  "flops_per_cell_per_step": 4,
+  "halo_buffer_bytes": 0,
+  "kernel_launches_per_step": 24,
+  "notes": {
+    "flops_per_cell_per_step": "not statically counted for split-explicit dycore; M5 profiler will replace this estimate",
+    "temporary_bytes_per_step": "0 because the scan body has no array constructors and HLO fuses the add/sub chain."
+  },
+  "state_bytes": 14540800,
+  "temporary_bytes_per_step": 0,
+  "tendency_bytes": 14540800,
+  "total_persistent_bytes": 29081600,
+  "wall_time_per_step_us": 634.0713601093739
+}

@@ -1,0 +1,13 @@
+{
+  "device_to_host_bytes_post_init": 0,
+  "gpu_name": "cuda:0",
+  "host_to_device_bytes_post_init": 0,
+  "iterations": 100,
+  "jax_version": "0.10.0",
+  "method": "jax.profiler.trace scanned for post-init memcpy events",
+  "trace_dir": "/home/enric/src/wrf_gpu2/data/scratch/m4/transfer_trace",
+  "trace_transfer_event_files": [
+    "/home/enric/src/wrf_gpu2/data/scratch/m4/transfer_trace/plugins/profile/2026_05_20_01_17_51/enric-battlestation.trace.json.gz",
+    "/home/enric/src/wrf_gpu2/data/scratch/m4/transfer_trace/plugins/profile/2026_05_20_01_17_51/enric-battlestation.xplane.pb"
+  ]
+}

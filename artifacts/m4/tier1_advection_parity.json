@@ -1,0 +1,10 @@
+{
+  "fixture_id": "analytic-stencil-3d-upwind5-v1",
+  "jax_version": "0.10.0",
+  "max_abs_err": 0.0,
+  "max_rel_err": 0.0,
+  "operator": "dycore 5th-order horizontal periodic and 3rd-order vertical no-wrap upwind mass-scalar advection",
+  "pass": true,
+  "tolerance_abs": 1e-10,
+  "tolerance_rel": 1e-12
+}

@@ -1,0 +1,30 @@
+{
+  "case": "1d-periodic-sine-linear-advection-public-dycore-run",
+  "errors_per_level": [
+    {
+      "dt_s": 2.0,
+      "dx_m": 2000.0,
+      "l2_error": 1.0533356640821479e-07,
+      "n_steps": 50
+    },
+    {
+      "dt_s": 1.0,
+      "dx_m": 1000.0,
+      "l2_error": 3.2985769934616123e-09,
+      "n_steps": 100
+    },
+    {
+      "dt_s": 0.5,
+      "dx_m": 500.0,
+      "l2_error": 1.6643931879223133e-10,
+      "n_steps": 200
+    }
+  ],
+  "expected_order": 3.0,
+  "observed_order": 4.65287662292045,
+  "observed_order_pairs": [
+    4.99697765990216,
+    4.308775585938742
+  ],
+  "pass": true
+}
