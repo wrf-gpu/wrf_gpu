@@ -1,0 +1,11 @@
+{
+  "gate_status": "GO_CARRYFORWARD",
+  "hlo_production_bytes": 53944,
+  "kernel_launches_per_step": 5,
+  "local_memory_bytes_per_kernel": null,
+  "rationale": "tier-1/tier-2 pass under carry-forward source-derived harness tolerances; exact WRF object path is absent",
+  "registers_per_kernel": null,
+  "tier1_pass": true,
+  "tier2_pass": true,
+  "tolerance_regime": "carry-forward"
+}

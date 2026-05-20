@@ -1,0 +1,30 @@
+{
+  "field_pass": {
+    "qv": true,
+    "theta": true,
+    "tke": true,
+    "u": true,
+    "v": true,
+    "w": true
+  },
+  "fixture_id": "analytic-mynn-pbl-column-v1",
+  "pass": true,
+  "per_field_max_abs_err": {
+    "qv": 3.6290880358128e-05,
+    "theta": 0.23906881761558907,
+    "tke": 0.8322094921247578,
+    "u": 0.04008024664424781,
+    "v": 0.01649585470824011,
+    "w": 0.0
+  },
+  "per_field_max_rel_err": {
+    "qv": 0.018581481566419842,
+    "theta": 0.0008125956985817047,
+    "tke": 41.227973322170044,
+    "u": 0.006545812728532274,
+    "v": 19.147762485068395,
+    "w": 0.0
+  },
+  "scenarios_tested": 3,
+  "tolerances_met": true
+}

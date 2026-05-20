@@ -1,0 +1,1 @@
+fixtures/manifests/analytic-mynn-pbl-column-v1.yaml: ok
