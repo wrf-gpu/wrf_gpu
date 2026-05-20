@@ -2,7 +2,7 @@
 
 Date: 2026-05-19
 Author: M4 worker draft (Codex gpt-5.5)
-Status: draft for manager finalization
+Status: ACCEPTED 2026-05-20 by manager at M4-S1 closeout (per user-delegated overnight autonomy of 2026-05-19). Codex cross-model critical-review dispatched post-merge in parallel with M5-S1 prep; if critical-review surfaces blocker findings, this status reverts to draft-pending-fix-cycle. User post-hoc explicit-approval visibility in MORNING-REPORT.md.
 Scope: M4 reduced dry dycore: RK3, advection, acoustic substep, debug hooks, and tier-1/2/3 validation artifacts.
 
 ## Decision
