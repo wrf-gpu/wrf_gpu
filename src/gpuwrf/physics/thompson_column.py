@@ -19,6 +19,7 @@ from gpuwrf.physics.thompson_constants import (
     C_SQRD,
     CCG2_NU12,
     CCG3_NU12,
+    CIE2,
     CRE10,
     CRE11,
     CRE2,
@@ -274,8 +275,8 @@ def _finish(state: ThompsonColumnState) -> ThompsonColumnState:
     xni = jnp.maximum(R2, ni_raw * rho)
     lami = (AM_I * 6.0 * OIG1 * xni / ri) ** OBMI
     xdi = 4.0 / lami
-    lami = jnp.where(xdi < 5.0e-6, 6.0 / 5.0e-6, lami)
-    lami = jnp.where(xdi > 300.0e-6, 6.0 / 300.0e-6, lami)
+    lami = jnp.where(xdi < 5.0e-6, CIE2 / 5.0e-6, lami)
+    lami = jnp.where(xdi > 300.0e-6, CIE2 / 300.0e-6, lami)
     Ni = jnp.where(qi <= R1, 0.0, jnp.minimum((ri / AM_I * lami**3.0 * OIG2) / rho, 999.0e3 / rho))
 
     nr_raw = jnp.maximum(R2 / rho, state.Nr)

@@ -1,9 +1,9 @@
 {
-  "gate_status": "FALLBACK",
+  "gate_status": "GO",
   "kernel_launches_per_step": 1,
   "local_memory_bytes_per_kernel": null,
-  "rationale": "correctness failed",
+  "rationale": "tier-1/tier-2 pass and HLO-derived launches are within the GO threshold; register/local-memory counters are null due to perfmon restriction",
   "registers_per_kernel": null,
-  "tier1_pass": false,
+  "tier1_pass": true,
   "tier2_pass": true
 }

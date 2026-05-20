@@ -41,6 +41,7 @@ BM_G = 3.0
 MU_R = 0.0
 MU_I = 0.0
 MU_G = 0.0
+CIE2 = BM_I + MU_I + 1.0
 OBMR = 1.0 / BM_R
 OBMI = 1.0 / BM_I
 OBMG = 1.0 / BM_G
@@ -125,6 +126,7 @@ def constant_table() -> dict[str, float]:
         "BM_R",
         "BM_I",
         "BM_G",
+        "CIE2",
         "OBMR",
         "OBMI",
         "OBMG",

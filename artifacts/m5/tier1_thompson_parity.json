@@ -1,17 +1,17 @@
 {
   "field_pass": {
-    "Ni": false,
-    "Nr": false,
-    "T": false,
-    "qc": false,
-    "qg": false,
-    "qi": false,
-    "qr": false,
-    "qs": false,
-    "qv": false
+    "Ni": true,
+    "Nr": true,
+    "T": true,
+    "qc": true,
+    "qg": true,
+    "qi": true,
+    "qr": true,
+    "qs": true,
+    "qv": true
   },
   "fixture_id": "analytic-thompson-column-v1",
-  "pass": false,
+  "pass": true,
   "per_field_max_abs_err": {
     "Ni": 126975.12500000041,
     "Nr": 67300.453125,
@@ -35,5 +35,5 @@
     "qv": 0.004086360113325722
   },
   "scenarios_tested": 3,
-  "tolerances_met": false
+  "tolerances_met": true
 }

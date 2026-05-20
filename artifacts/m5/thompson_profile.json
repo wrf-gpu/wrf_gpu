@@ -22,5 +22,5 @@
   "registers_per_kernel": null,
   "registers_per_thread": null,
   "temporary_bytes_per_step": 0,
-  "wall_time_s": 0.0002819919609464705
+  "wall_time_s": 0.00018619600450620055
 }
