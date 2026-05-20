@@ -23,10 +23,12 @@ SCRATCH = ROOT / "data" / "scratch"
 BUILD_SCRIPT = ROOT / "scripts" / "wrf_mynn_harness_build.sh"
 HARNESS = SCRATCH / "wrf_mynn_harness"
 WRF_SOURCE = Path("/mnt/data/canairy_meteo/artifacts/wrf_gpu_src/WRF/phys/MYNN-EDMF/misc/module_bl_mynn.F90")
-EXACT_OBJECT = Path("/mnt/data/canairy_meteo/artifacts/wrf_gpu_src/WRF/phys/module_bl_mynn.o")
+WRF_EDMF_SOURCE = Path("/mnt/data/canairy_meteo/artifacts/wrf_gpu_src/WRF/phys/MYNN-EDMF/module_bl_mynnedmf.F90")
+WRF_EDMF_OBJECT = Path("/mnt/data/canairy_meteo/artifacts/wrf_gpu_src/WRF/phys/module_bl_mynnedmf.o")
+WRF_EDMF_COMMON_OBJECT = Path("/mnt/data/canairy_meteo/artifacts/wrf_gpu_src/WRF/phys/module_bl_mynnedmf_common.o")
 
 INPUT_FIELDS = ("u", "v", "w", "theta", "qv", "tke", "p", "rho", "dz")
-OUTPUT_FIELDS = ("u", "v", "w", "theta", "qv", "tke")
+OUTPUT_FIELDS = ("u", "v", "w", "theta", "qv", "tke", "km", "kh", "el")
 
 
 def _sha256(path: Path) -> str:
@@ -105,7 +107,7 @@ def make_scenarios() -> tuple[dict[str, np.ndarray], float]:
 
 
 def _build_harness() -> Path:
-    """Compiles the source-derived Fortran harness."""
+    """Compiles the WRF-object-linked Fortran harness."""
 
     subprocess.run([str(BUILD_SCRIPT)], cwd=ROOT, check=True)
     if not HARNESS.exists():
@@ -131,7 +133,7 @@ def _read_fortran_output(path: Path) -> dict[str, np.ndarray]:
         if len(header) != 2:
             raise RuntimeError(f"bad harness output header in {path}")
         data = np.loadtxt(handle, dtype=np.float64)
-    if data.ndim != 2 or data.shape[1] != 14:
+    if data.ndim != 2 or data.shape[1] != 18:
         raise RuntimeError(f"bad harness output shape {data.shape} in {path}")
     return {
         "u": data[:, 0],
@@ -142,8 +144,13 @@ def _read_fortran_output(path: Path) -> dict[str, np.ndarray]:
         "tke": data[:, 5],
         "km": data[:, 9],
         "kh": data[:, 10],
-        "shear": data[:, 11],
-        "buoy": data[:, 12],
+        "el": data[:, 11],
+        "shear": data[:, 12],
+        "buoy": data[:, 13],
+        "diss": data[:, 14],
+        "transport": data[:, 15],
+        "surface_theta_flux": data[:, 16],
+        "surface_qv_flux": data[:, 17],
     }
 
 
@@ -151,7 +158,26 @@ def _run_harness(fields: dict[str, np.ndarray], dt: float) -> dict[str, np.ndarr
     """Runs the compiled harness for each fixture scenario."""
 
     harness = _build_harness()
-    outputs: dict[str, list[np.ndarray]] = {name: [] for name in ("u", "v", "w", "theta", "qv", "tke", "km", "kh", "shear", "buoy")}
+    outputs: dict[str, list[np.ndarray]] = {
+        name: []
+        for name in (
+            "u",
+            "v",
+            "w",
+            "theta",
+            "qv",
+            "tke",
+            "km",
+            "kh",
+            "el",
+            "shear",
+            "buoy",
+            "diss",
+            "transport",
+            "surface_theta_flux",
+            "surface_qv_flux",
+        )
+    }
     for scenario, name in enumerate(("marine_trade_inversion", "stable_nocturnal", "windy_terrain_mixed")):
         input_path = SCRATCH / f"mynn_input_{name}.dat"
         output_path = SCRATCH / f"mynn_output_{name}.dat"
@@ -196,12 +222,15 @@ def _manifest_variables(shape: tuple[int, ...]) -> list[dict[str, Any]]:
     ]
     variables.extend(
         [
-            _variable("output_u", "m s-1", shape, 5.0e-2, 2.0e-2, "Carry-forward tolerance for source-derived Fortran harness residuals"),
-            _variable("output_v", "m s-1", shape, 5.0e-2, 2.0e-2, "Carry-forward tolerance for source-derived Fortran harness residuals"),
+            _variable("output_u", "m s-1", shape, 5.0e-2, 2.0e-2, "Carry-forward tolerance for WRF-object-linked dry MYNN residuals"),
+            _variable("output_v", "m s-1", shape, 5.0e-2, 2.0e-2, "Carry-forward tolerance for WRF-object-linked dry MYNN residuals"),
             _variable("output_w", "m s-1", shape, 1.0e-12, 1.0e-10, "W is carried unchanged in M5-S2 column mode"),
-            _variable("output_theta", "K", shape, 1.0e-1, 1.0e-3, "Carry-forward tolerance for source-derived Fortran harness residuals"),
-            _variable("output_qv", "kg kg-1", shape, 5.0e-5, 5.0e-2, "Carry-forward tolerance for source-derived Fortran harness residuals"),
-            _variable("output_tke", "m2 s-2", shape, 8.0e-1, 1.0, "Carry-forward tolerance for source-derived Fortran harness residuals"),
+            _variable("output_theta", "K", shape, 1.0e-1, 1.0e-3, "Carry-forward tolerance for WRF-object-linked dry MYNN residuals"),
+            _variable("output_qv", "kg kg-1", shape, 5.0e-5, 5.0e-2, "Carry-forward tolerance for WRF-object-linked dry MYNN residuals"),
+            _variable("output_tke", "m2 s-2", shape, 8.0e-1, 1.0, "Carry-forward tolerance for WRF-object-linked dry MYNN residuals"),
+            _variable("output_km", "m2 s-1", shape, 5.0, 5.0e-1, "WRF MYNN object-linked exchange-coefficient diagnostic"),
+            _variable("output_kh", "m2 s-1", shape, 5.0, 5.0e-1, "WRF MYNN object-linked exchange-coefficient diagnostic"),
+            _variable("output_el", "m", shape, 20.0, 5.0e-1, "WRF MYNN object-linked master-length diagnostic"),
         ]
     )
     return variables
@@ -228,13 +257,14 @@ def write_fixture() -> dict[str, Any]:
 
     harness_sha = _sha256(HARNESS)
     source_sha = _sha256(WRF_SOURCE) if WRF_SOURCE.exists() else "0" * 64
-    exact_status = "present" if EXACT_OBJECT.exists() else "absent"
+    edmf_source_sha = _sha256(WRF_EDMF_SOURCE) if WRF_EDMF_SOURCE.exists() else "0" * 64
+    edmf_object_status = "present" if WRF_EDMF_OBJECT.exists() and WRF_EDMF_COMMON_OBJECT.exists() else "absent"
     manifest = {
         "fixture_id": FIXTURE_ID,
         "source": "wrf-derived",
-        "source_commit": f"wrf-mynn-source-derived-fortran-harness sha256={harness_sha}; source_sha256={source_sha}; exact_module_bl_mynn_o={exact_status}",
-        "wrf_version": "v4.7.1-derived-MYNN-EDMF-source",
-        "scenario": "three MYNN2.5 columns generated by a standalone nvfortran source-derived harness; exact contract module_bl_mynn.o absent in local WRF tree",
+        "source_commit": f"wrf-mynnedmf-object-linked-harness sha256={harness_sha}; module_bl_mynn_sha256={source_sha}; module_bl_mynnedmf_sha256={edmf_source_sha}; module_bl_mynnedmf_o={edmf_object_status}",
+        "wrf_version": "v4.7.1-MYNN-EDMF-object-linked",
+        "scenario": "three MYNN2.5 columns generated by nvfortran harness linked to WRF module_bl_mynnedmf/module_bl_mynnedmf_common objects",
         "created_utc": "2026-05-20T23:10:00Z",
         "tier": 1,
         "precision_reference": "fp64",
@@ -242,7 +272,7 @@ def write_fixture() -> dict[str, Any]:
         "external_uri": "data/scratch/wrf_mynn_harness",
         "sample_slice_path": "fixtures/samples/analytic-mynn-pbl-column-v1.npz",
         "git_commit": _git_rev(),
-        "license_notes": "Synthetic input columns run through a standalone source-derived MYNN harness compiled with nvfortran; the exact module_bl_mynn.o object named by the sprint contract is absent in this tree.",
+        "license_notes": "Synthetic input columns run through an nvfortran harness linked against compiled WRF MYNN-EDMF module objects.",
         "variables": _manifest_variables(tuple(fields["u"].shape)),
         "files": [
             {"path": "fixtures/samples/analytic-mynn-pbl-column-v1.npz", "checksum_sha256": _sha256(SAMPLE), "bytes": sample_bytes, "external": False},
@@ -260,7 +290,8 @@ def write_fixture() -> dict[str, Any]:
         "harness": str(HARNESS.relative_to(ROOT)),
         "harness_sha256": harness_sha,
         "source_sha256": source_sha,
-        "exact_module_bl_mynn_o": exact_status,
+        "module_bl_mynnedmf_sha256": edmf_source_sha,
+        "module_bl_mynnedmf_o": edmf_object_status,
     }
 
 

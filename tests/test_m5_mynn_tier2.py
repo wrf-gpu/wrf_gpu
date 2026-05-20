@@ -8,3 +8,5 @@ def test_mynn_tier2_invariants_pass():
     assert record["pass"] is True
     assert record["positivity"]["violations"] == 0
     assert record["nan_inf"]["violations"] == 0
+    assert record["momentum_budget"]["pass"] is True
+    assert record["tke_budget"]["pass"] is True
