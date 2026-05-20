@@ -68,8 +68,10 @@ CRE2 = 1.0
 CRE9 = 4.0
 CRE10 = 2.0
 CRE11 = 3.0
-CGE11 = 2.8204808235
-CGG11 = 1.7042533
+# WRF module_mp_thompson.F.pre lines 104, 156, 763, and 767.
+MU_G_MP8 = MU_G
+CGE11 = 0.5 * (BV_G_MP8 + 5.0 + 2.0 * MU_G_MP8)
+CGG11 = math.gamma(CGE11)
 CIG1 = 1.0
 CIG2 = 6.0
 CIG5 = 1.0

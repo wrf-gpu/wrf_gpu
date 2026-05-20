@@ -26,3 +26,9 @@ def test_thompson_constants_match_wrf_source_values():
     assert c.CRE9 == 4.0
     assert c.T1_QR_EV == 0.78
     assert c.T2_QR_EV > 0.0
+
+
+def test_thompson_derived_constants_match_source_formulas():
+    assert math.isclose(c.CIE2, c.BM_I + c.MU_I + 1.0, rel_tol=0.0, abs_tol=1.0e-15)
+    assert math.isclose(c.CGE11, 0.5 * (c.BV_G_MP8 + 5.0 + 2.0 * c.MU_G_MP8), rel_tol=0.0, abs_tol=1.0e-15)
+    assert math.isclose(c.CGG11, math.gamma(c.CGE11), rel_tol=1.0e-7)

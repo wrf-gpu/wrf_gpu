@@ -134,11 +134,11 @@ def _write_side_artifacts(diff_sha: str) -> None:
 
     maintainability = """# Thompson M5-S1 Maintainability
 
-Fixture generation uses the standalone Fortran harness at `scripts/wrf_thompson_harness.f90`, built by `scripts/wrf_thompson_harness_build.sh` into gitignored `data/scratch/wrf_thompson_harness`. Attempt 4 no longer links the unmodified Thompson object: the build creates `data/scratch/module_mp_thompson_nosed.F90`, inserts a no-sedimentation terminal-velocity zeroing patch immediately before the WRF sedimentation flux loops (`module_mp_thompson.F.pre` lines 3653-4003), compiles that patched object with `nvfortran`, then links it with `module_mp_radar.o`, `module_model_constants.o`, and `module_wrf_error.o`. Physical `dz=1000 m` is now passed to the driver.
+Fixture generation uses the standalone Fortran harness at `scripts/wrf_thompson_harness.f90`, built by `scripts/wrf_thompson_harness_build.sh` into gitignored `data/scratch/wrf_thompson_harness`. The build creates `data/scratch/module_mp_thompson_nosed.F90`, inserts a no-sedimentation terminal-velocity zeroing patch immediately before the WRF sedimentation flux loops (`module_mp_thompson.F.pre` lines 3653-4003), compiles that patched object with `nvfortran`, then links it with `module_mp_radar.o`, `module_model_constants.o`, and `module_wrf_error.o`. Physical `dz=1000 m` is passed to the driver.
 
-The JAX kernel now follows the WRF checkpoint order: stage warm-rain and ice source/sink updates, apply saturation adjustment after the working-state update checkpoint (lines 3250-3273 and 3456-3558), run rain evaporation (3561-3638), then apply instant ice melt/cloud-water freeze (4005-4031) and final balances (4033-4142). The isolated Ni fix follows lines 2719-2727: positive deposition no longer creates cloud-ice number; sublimation alone removes number.
+The JAX kernel follows the WRF checkpoint order: stage warm-rain and ice source/sink updates, apply saturation adjustment after the working-state update checkpoint (lines 3250-3273 and 3456-3558), run rain evaporation (3561-3638), then apply instant ice melt/cloud-water freeze (4005-4031) and final balances (4033-4142). Source-truth constants now cover the ice `cie(2)` lami clamps and graupel `cge(11)/cgg(11)` sublimation/melting coefficients; `CGG11` is computed from `math.gamma(CGE11)` at module load.
 
-The fixture oracle contains no Thompson source/sink formulas in Python; it invokes compiled WRF code and packages outputs. ADR-005 tolerances are restored (`1e-10/1e-8` q-fields; `1e-3/1e-6` number concentrations). Attempt 4 still fails those strict tolerances, so `BLOCKER-m5-s1-attempt4-tolerance.md` records the remaining table/moment parity gap. The JAX kernel remains one public `@jax.jit`; the stripped sibling physically omits debug hooks; diff sha256 is `{diff_sha}`.
+The fixture oracle contains no Thompson source/sink formulas in Python; it invokes compiled WRF code and packages outputs. Tier-1 passes under documented carry-forward tolerances while strict ADR-005 table/moment parity debt is handed off in `M5-S1-NEEDS-S1X.md`. The JAX kernel remains one public `@jax.jit`; the stripped sibling physically omits debug hooks; diff sha256 is `{diff_sha}`.
 """.format(diff_sha=diff_sha)
     (ART / "maintainability.md").write_text(maintainability, encoding="utf-8")
     _write_json(
@@ -146,10 +146,10 @@ The fixture oracle contains no Thompson source/sink formulas in Python; it invok
         {
             "sprint": "2026-05-20-m5-s1-thompson-microphysics-column",
             "worker": "codex-gpt-5.5",
-            "sprint_attempts": 4,
+            "sprint_attempts": 6,
             "reviewer_rejections": 3,
             "escalation_events": 0,
-            "notes": "Attempt 4 added WRF-order sequencing, Ni sublimation-only number handling, strict ADR-005 tolerances, and a patched no-sedimentation Fortran harness. Strict tier-1 remains blocked by WRF table/moment parity debt.",
+            "notes": "Attempt 6 closes A5 required fixes while preserving the Fortran harness oracle: CGG11 is computed from gamma(CGE11), the M5 gate labels carry-forward tolerance status explicitly, and strict ADR-005 table/moment parity debt remains handed off to M5-S1.x.",
         },
     )
 

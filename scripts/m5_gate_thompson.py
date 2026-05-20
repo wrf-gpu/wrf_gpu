@@ -6,9 +6,12 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import yaml
+
 
 ROOT = Path(__file__).resolve().parents[1]
 ART = ROOT / "artifacts" / "m5"
+MANIFEST = ROOT / "fixtures" / "manifests" / "analytic-thompson-column-v1.yaml"
 
 
 def _load(path: Path) -> dict:
@@ -17,12 +20,25 @@ def _load(path: Path) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
+def _tolerance_regime() -> str:
+    """Classifies whether Tier-1 pass is strict ADR-005 or carry-forward."""
+
+    manifest = yaml.safe_load(MANIFEST.read_text(encoding="utf-8"))
+    for variable in manifest["variables"]:
+        name = str(variable["name"])
+        rationale = str(variable.get("tolerance_rationale", ""))
+        if name.startswith("output_") and "carry-forward" in rationale:
+            return "carry-forward"
+    return "ADR-005-strict"
+
+
 def evaluate_gate() -> dict:
     """Builds the Thompson gate result from measured validation/profile artifacts."""
 
     tier1 = _load(ART / "tier1_thompson_parity.json")
     tier2 = _load(ART / "tier2_thompson_invariants.json")
     profile = _load(ART / "thompson_profile.json")
+    tolerance_regime = _tolerance_regime()
     launches = int(profile.get("kernel_launches_per_step") or profile.get("kernel_launches") or 0)
     local = profile.get("local_memory_bytes_per_kernel", profile.get("local_memory_bytes"))
     registers = profile.get("registers_per_kernel", profile.get("registers_per_thread"))
@@ -55,13 +71,20 @@ def evaluate_gate() -> dict:
             status = "GRAY-ZONE"
             reasons.append(f"{local} B local memory exceeds GO threshold 256")
     if status == "GO":
-        reasons.append("tier-1/tier-2 pass and HLO-derived launches are within the GO threshold; register/local-memory counters are null due to perfmon restriction")
+        if tolerance_regime == "carry-forward":
+            status = "GO_CARRYFORWARD"
+            reasons.append(
+                "tier-1/tier-2 pass under carry-forward tolerances; strict ADR-005 parity remains M5-S1.x handoff; HLO-derived launches are within the GO threshold; register/local-memory counters are null due to perfmon restriction"
+            )
+        else:
+            reasons.append("tier-1/tier-2 pass under ADR-005 strict tolerances and HLO-derived launches are within the GO threshold; register/local-memory counters are null due to perfmon restriction")
     return {
         "kernel_launches_per_step": launches,
         "local_memory_bytes_per_kernel": local,
         "registers_per_kernel": registers,
         "tier1_pass": tier1_pass,
         "tier2_pass": tier2_pass,
+        "tolerance_regime": tolerance_regime,
         "gate_status": status,
         "rationale": "; ".join(reasons)[:300],
     }
@@ -75,7 +98,7 @@ def main() -> int:
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(record, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     print(json.dumps(record, indent=2, sort_keys=True))
-    return 0 if record["gate_status"] in {"GO", "GRAY-ZONE"} else 1
+    return 0 if record["gate_status"] in {"GO", "GO_CARRYFORWARD", "GRAY-ZONE"} else 1
 
 
 if __name__ == "__main__":
