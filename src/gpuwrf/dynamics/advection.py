@@ -113,6 +113,52 @@ def derivative3_upwind(field, velocity, spacing: float, axis: int):
     return jnp.where(velocity >= 0.0, backward, forward)
 
 
+def derivative3_upwind_vertical(field, velocity, spacing: float):
+    """Computes third-order vertical upwind differences without top/bottom wrap."""
+
+    nz = int(field.shape[0])
+    if nz == 1:
+        return field * 0.0
+    if nz == 2:
+        grad = (field[1:2, :, :] - field[0:1, :, :]) / spacing
+        return jnp.concatenate((grad, grad), axis=0)
+    if nz == 3:
+        lower_first = (field[1:2, :, :] - field[0:1, :, :]) / spacing
+        lower_second = (3.0 * field[2:3, :, :] - 4.0 * field[1:2, :, :] + field[0:1, :, :]) / (
+            2.0 * spacing
+        )
+        backward = jnp.concatenate((lower_first, lower_first, lower_second), axis=0)
+        upper_second = (-3.0 * field[0:1, :, :] + 4.0 * field[1:2, :, :] - field[2:3, :, :]) / (
+            2.0 * spacing
+        )
+        upper_first = (field[2:3, :, :] - field[1:2, :, :]) / spacing
+        forward = jnp.concatenate((upper_second, upper_first, upper_first), axis=0)
+        return jnp.where(velocity >= 0.0, backward, forward)
+
+    lower_first = (field[1:2, :, :] - field[0:1, :, :]) / spacing
+    lower_second = (3.0 * field[2:3, :, :] - 4.0 * field[1:2, :, :] + field[0:1, :, :]) / (2.0 * spacing)
+    backward_core = (
+        11.0 * field[3:, :, :]
+        - 18.0 * field[2:-1, :, :]
+        + 9.0 * field[1:-2, :, :]
+        - 2.0 * field[:-3, :, :]
+    ) / (6.0 * spacing)
+    backward = jnp.concatenate((lower_first, lower_first, lower_second, backward_core), axis=0)
+
+    forward_core = (
+        -11.0 * field[:-3, :, :]
+        + 18.0 * field[1:-2, :, :]
+        - 9.0 * field[2:-1, :, :]
+        + 2.0 * field[3:, :, :]
+    ) / (6.0 * spacing)
+    upper_second = (-3.0 * field[-3:-2, :, :] + 4.0 * field[-2:-1, :, :] - field[-1:, :, :]) / (
+        2.0 * spacing
+    )
+    upper_first = (field[-1:, :, :] - field[-2:-1, :, :]) / spacing
+    forward = jnp.concatenate((forward_core, upper_second, upper_first, upper_first), axis=0)
+    return jnp.where(velocity >= 0.0, backward, forward)
+
+
 def mass_face_velocities(state: State) -> tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray]:
     """Collocates C-grid face velocities to mass points for scalar advection."""
 
@@ -128,26 +174,68 @@ def advect_mass_scalar(phi, u_mass, v_mass, w_mass, grid: GridSpec):
     return -(
         u_mass * derivative5_upwind(phi, u_mass, _dx(grid), axis=2)
         + v_mass * derivative5_upwind(phi, v_mass, _dy(grid), axis=1)
-        + w_mass * derivative3_upwind(phi, w_mass, _dz(grid), axis=0)
+        + w_mass * derivative3_upwind_vertical(phi, w_mass, _dz(grid))
     )
 
 
-def advect_u_face(u, grid: GridSpec):
-    """Advects u on its own face line; shared by dycore tendencies and tests."""
+def _mass_to_u_face(field):
+    """Interpolates a mass-point field to periodic x faces for C-grid cross terms."""
 
-    return -(u * derivative5_upwind(u, u, _dx(grid), axis=2))
-
-
-def advect_v_face(v, grid: GridSpec):
-    """Advects v on its own face line; shared by dycore tendencies and tests."""
-
-    return -(v * derivative5_upwind(v, v, _dy(grid), axis=1))
+    face = 0.5 * (jnp.roll(field, 1, axis=2) + field)
+    return jnp.concatenate((face, face[:, :, :1]), axis=2)
 
 
-def advect_w_face(w, grid: GridSpec):
-    """Advects w vertically on its own face line; shared by dycore tendencies and tests."""
+def _mass_to_v_face(field):
+    """Interpolates a mass-point field to periodic y faces for C-grid cross terms."""
 
-    return -(w * derivative3_upwind(w, w, _dz(grid), axis=0))
+    face = 0.5 * (jnp.roll(field, 1, axis=1) + field)
+    return jnp.concatenate((face, face[:, :1, :]), axis=1)
+
+
+def _mass_to_w_face(field):
+    """Interpolates mass points to rigid vertical faces without top/bottom wrap."""
+
+    interior = 0.5 * (field[:-1, :, :] + field[1:, :, :])
+    return jnp.concatenate((field[:1, :, :], interior, field[-1:, :, :]), axis=0)
+
+
+def advect_u_face(state: State, grid: GridSpec):
+    """Advects u by the full C-grid velocity field at x-face locations."""
+
+    u_mass, v_mass, w_mass = mass_face_velocities(state)
+    v_on_u = _mass_to_u_face(v_mass)
+    w_on_u = _mass_to_u_face(w_mass)
+    return -(
+        state.u * derivative5_upwind(state.u, state.u, _dx(grid), axis=2)
+        + v_on_u * derivative5_upwind(state.u, v_on_u, _dy(grid), axis=1)
+        + w_on_u * derivative3_upwind_vertical(state.u, w_on_u, _dz(grid))
+    )
+
+
+def advect_v_face(state: State, grid: GridSpec):
+    """Advects v by the full C-grid velocity field at y-face locations."""
+
+    u_mass, v_mass, w_mass = mass_face_velocities(state)
+    u_on_v = _mass_to_v_face(u_mass)
+    w_on_v = _mass_to_v_face(w_mass)
+    return -(
+        u_on_v * derivative5_upwind(state.v, u_on_v, _dx(grid), axis=2)
+        + state.v * derivative5_upwind(state.v, state.v, _dy(grid), axis=1)
+        + w_on_v * derivative3_upwind_vertical(state.v, w_on_v, _dz(grid))
+    )
+
+
+def advect_w_face(state: State, grid: GridSpec):
+    """Advects w by the full C-grid velocity field at vertical-face locations."""
+
+    u_mass, v_mass, _ = mass_face_velocities(state)
+    u_on_w = _mass_to_w_face(u_mass)
+    v_on_w = _mass_to_w_face(v_mass)
+    return -(
+        u_on_w * derivative5_upwind(state.w, u_on_w, _dx(grid), axis=2)
+        + v_on_w * derivative5_upwind(state.w, v_on_w, _dy(grid), axis=1)
+        + state.w * derivative3_upwind_vertical(state.w, state.w, _dz(grid))
+    )
 
 
 def fixture_reference_update(phi, u_face, v_face, w_face, dt: float):
@@ -177,9 +265,9 @@ def compute_advection_tendencies(state: State, base: Tendencies, grid: GridSpec)
     haloed = apply_halo(state, halo_spec(grid))
     u_mass, v_mass, w_mass = mass_face_velocities(haloed)
     return base.replace(
-        u=base.u + advect_u_face(haloed.u, grid),
-        v=base.v + advect_v_face(haloed.v, grid),
-        w=base.w + advect_w_face(haloed.w, grid),
+        u=base.u + advect_u_face(haloed, grid),
+        v=base.v + advect_v_face(haloed, grid),
+        w=base.w + advect_w_face(haloed, grid),
         theta=base.theta + advect_mass_scalar(haloed.theta, u_mass, v_mass, w_mass, grid),
         qv=base.qv + advect_mass_scalar(haloed.qv, u_mass, v_mass, w_mass, grid),
         p=base.p + advect_mass_scalar(haloed.p, u_mass, v_mass, w_mass, grid),

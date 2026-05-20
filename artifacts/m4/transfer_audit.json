@@ -7,7 +7,7 @@
   "method": "jax.profiler.trace scanned for post-init memcpy events",
   "trace_dir": "/home/enric/src/wrf_gpu2/data/scratch/m4/transfer_trace",
   "trace_transfer_event_files": [
-    "/home/enric/src/wrf_gpu2/data/scratch/m4/transfer_trace/plugins/profile/2026_05_19_19_03_59/enric-battlestation.trace.json.gz",
-    "/home/enric/src/wrf_gpu2/data/scratch/m4/transfer_trace/plugins/profile/2026_05_19_19_03_59/enric-battlestation.xplane.pb"
+    "/home/enric/src/wrf_gpu2/data/scratch/m4/transfer_trace/plugins/profile/2026_05_20_01_17_51/enric-battlestation.trace.json.gz",
+    "/home/enric/src/wrf_gpu2/data/scratch/m4/transfer_trace/plugins/profile/2026_05_20_01_17_51/enric-battlestation.xplane.pb"
   ]
 }

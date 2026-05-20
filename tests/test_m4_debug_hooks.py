@@ -8,6 +8,8 @@ import jax.numpy as jnp
 
 from gpuwrf.debug.asserts import assert_finite, assert_physical_bounds
 from gpuwrf.debug.snapshots import dump_snapshots, snapshot
+from gpuwrf.dynamics.step import step
+from gpuwrf.dynamics.step_debug_stripped import step_debug_stripped
 from gpuwrf.profiling.budget import compiled_text
 from gpuwrf.validation.tier2 import density_current_state, make_ideal_grid
 
@@ -50,3 +52,14 @@ def test_hlo_diff_artifact_is_empty_when_present():
         return
     assert path.stat().st_size == 0
     assert hashlib.sha256(path.read_bytes()).hexdigest() == "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+
+
+def test_production_hlo_matches_hand_stripped_sibling_ops():
+    grid = make_ideal_grid(3, 5, 5)
+    state, tendencies = density_current_state(grid)
+    prod = compiled_text(step.lower(state, tendencies, grid, 0.1, n_acoustic=1, debug=False).compile()).lower()
+    stripped = compiled_text(step_debug_stripped.lower(state, tendencies, grid, 0.1, n_acoustic=1).compile()).lower()
+    for token in ("is-finite", "isfinite", "debug.callback"):
+        assert token not in prod
+        assert token not in stripped
+    assert abs(prod.count("fusion(") - stripped.count("fusion(")) == 0

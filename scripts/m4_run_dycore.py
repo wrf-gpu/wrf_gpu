@@ -9,6 +9,7 @@ from pathlib import Path
 import shutil
 import sys
 
+os.environ.setdefault("JAX_ENABLE_X64", "true")
 os.environ.setdefault("XLA_PYTHON_CLIENT_PREALLOCATE", "false")
 
 ROOT = Path(__file__).resolve().parents[1]

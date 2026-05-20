@@ -1,9 +1,9 @@
 {
   "gate_status": "trip",
-  "kernel_launches_per_step": 29,
-  "local_memory_bytes_per_kernel": 0,
-  "rationale": "HLO-derived launch count only; registers/local memory require ncu/cuobjdump follow-up before M5 performance claims.",
-  "registers_per_kernel": 0,
+  "kernel_launches_per_step": 24,
+  "local_memory_bytes_per_kernel": null,
+  "rationale": "HLO-derived launch count only; local memory/register metrics unavailable from HLO and recorded as JSON null pending ncu/cuobjdump follow-up.",
+  "registers_per_kernel": null,
   "thresholds": {
     "kernel_launches_per_step": 10,
     "local_memory_bytes_per_kernel": 256,

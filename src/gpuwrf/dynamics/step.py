@@ -49,10 +49,3 @@ def run(
 
     next_state, _ = jax.lax.scan(body, state, xs=None, length=int(n_steps))
     return next_state
-
-
-@partial(jax.jit, static_argnames=("grid", "dt", "n_acoustic"))
-def step_stripped_reference(state: State, tendencies: Tendencies, grid: GridSpec, dt: float, *, n_acoustic: int = 4) -> State:
-    """Provides an owned-path stripped production reference for HLO identity checks."""
-
-    return _step_impl(state, tendencies, grid, dt, n_acoustic, False)

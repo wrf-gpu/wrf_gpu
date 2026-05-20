@@ -32,6 +32,7 @@ from gpuwrf.dynamics.advection import (
 from gpuwrf.dynamics.step import run, step
 from gpuwrf.profiling.budget import compiled_text
 from gpuwrf.profiling.transfer_audit import block_until_ready
+from gpuwrf.validation.tier1 import run_tier1
 from gpuwrf.validation.tier2 import density_current_state, invariant_record, make_ideal_grid
 
 
@@ -41,58 +42,37 @@ from gpuwrf.validation.tier2 import density_current_state, invariant_record, mak
 
 
 def test_tier1_is_a_self_check_not_a_dycore_check():
-    """`fixture_reference_update` IS the operator that generated `phi_next` —
-    documenting that tier1 reports a tautology, not dycore parity."""
+    """The fixed Tier-1 path must use the dycore's upwind sibling fixture."""
 
-    with np.load("fixtures/samples/analytic-stencil-3d-advdiff-v1.npz", allow_pickle=False) as loaded:
-        phi = jnp.asarray(loaded["phi_initial"], dtype=jnp.float64)
-        u = jnp.asarray(loaded["u_face"], dtype=jnp.float64)
-        v = jnp.asarray(loaded["v_face"], dtype=jnp.float64)
-        w = jnp.asarray(loaded["w_face"], dtype=jnp.float64)
-        ref = np.asarray(loaded["phi_next"], dtype=np.float64)
-    got = np.asarray(fixture_reference_update(phi, u, v, w, 3.0))
-    # The worker's wrapper reproduces phi_next bit-exact: this confirms tier1
-    # measures the wrapper, not the dycore's 5H/3V upwind advection.
-    assert float(np.max(np.abs(got - ref))) == 0.0
+    record = run_tier1()
+    assert record["fixture_id"] == "analytic-stencil-3d-upwind5-v1"
+    assert "upwind" in record["operator"]
+    assert "M1 centered" not in record["operator"]
 
 
 def test_tier1_artifact_pass_is_consistent_with_zero_error():
     record = json.loads(Path("artifacts/m4/tier1_advection_parity.json").read_text())
     assert record["pass"] is True
-    assert record["max_abs_err"] == 0.0
-    # The "operator" field MUST self-document the divergence between fixture and dycore.
-    assert "M1" in record["operator"]
-    assert "5H/3V upwind" in record["operator"]
+    assert record["max_abs_err"] <= record["tolerance_abs"]
+    assert "5th-order horizontal" in record["operator"]
+    assert "3rd-order vertical" in record["operator"]
 
 
 def test_dycore_advection_operator_is_NOT_what_tier1_checks():
-    """Direct comparison: compute_advection_tendencies on a smooth field is not
-    equal (in general) to fixture_reference_update. Independent confirmation of
-    operator mismatch — guards against the tier1 wrapper being mistaken for
-    actual dycore parity in any future refactor."""
+    """Direct comparison confirms Tier-1 now checks the dycore upwind operator."""
 
-    grid = make_ideal_grid(6, 12, 12)
-    state, base = density_current_state(grid)
-    # Pre-perturb theta with a smooth wave so the upwind result is meaningfully
-    # different from the centred reference.
-    z = jnp.arange(grid.nz, dtype=jnp.float64)[:, None, None]
-    y = jnp.arange(grid.ny, dtype=jnp.float64)[None, :, None]
-    x = jnp.arange(grid.nx, dtype=jnp.float64)[None, None, :]
-    theta = 300.0 + jnp.sin(2.0 * jnp.pi * x / grid.nx) * jnp.cos(2.0 * jnp.pi * y / grid.ny)
-    state = state.replace(
-        theta=theta,
-        u=jnp.ones_like(state.u),
-        v=jnp.ones_like(state.v),
-        w=jnp.zeros_like(state.w) + 0.1,
-    )
-    upwind = compute_advection_tendencies(state, base, grid).theta
-    u_mass, v_mass, w_mass = mass_face_velocities(state)
-    centred = advect_mass_scalar(theta, u_mass, v_mass, w_mass, grid)
-    diff = float(jnp.max(jnp.abs(upwind - base.theta - centred)))
-    # NB: advect_mass_scalar is itself the upwind operator; centred reference is
-    # fixture_reference_update. Confirm they disagree on a non-trivial state.
-    fixture_like = fixture_reference_update(theta, state.u, state.v, state.w, 0.0)  # dt=0 → returns phi
-    assert float(jnp.max(jnp.abs(fixture_like - theta))) == 0.0
+    with np.load("fixtures/samples/analytic-stencil-3d-upwind5-v1.npz", allow_pickle=False) as loaded:
+        phi = jnp.asarray(loaded["phi_initial"], dtype=jnp.float64)
+        u = jnp.asarray(loaded["u_face"], dtype=jnp.float64)
+        v = jnp.asarray(loaded["v_face"], dtype=jnp.float64)
+        w = jnp.asarray(loaded["w_face"], dtype=jnp.float64)
+        ref = np.asarray(loaded["phi_next_upwind5"], dtype=np.float64)
+    grid = make_ideal_grid(8, 16, 32, dx_m=900.0, dy_m=900.0, top_m=960.0)
+    u_mass = 0.5 * (u[:, :, :-1] + u[:, :, 1:])
+    v_mass = 0.5 * (v[:, :-1, :] + v[:, 1:, :])
+    w_mass = 0.5 * (w[:-1, :, :] + w[1:, :, :])
+    got = np.asarray(phi + 3.0 * advect_mass_scalar(phi, u_mass, v_mass, w_mass, grid))
+    assert float(np.max(np.abs(got - ref))) <= 1.0e-10
 
 
 # ----------------------------------------------------------------------------- #
@@ -114,29 +94,16 @@ def test_tier2_mass_invariant_is_trivial_because_mu_is_dead():
 
 
 def test_tier2_density_current_ic_is_a_noop_simulation():
-    """**Compounding finding:** the worker's `density_current_state` initialises
-    u=v=w=0 and p uniform. With zero velocity, the 5H/3V upwind advection
-    produces zero tendencies; with uniform pressure, the acoustic substep
-    pressure-gradient term is zero. So every prognostic except possibly mu
-    stays at its initial value across the entire 100-step "density current"
-    run — there is no density-current dynamics being exercised.
-
-    Mass-residual = 0, qv-violations = 0, and nan-inf = 0 trivially. The
-    tier-2 invariant artifact therefore certifies a no-op, not a stable
-    integration of the Straka 1993 cold-blob problem named in the contract."""
+    """The fixed Tier-2 IC must be a nontrivial tracer translation, not a no-op."""
 
     grid = make_ideal_grid(4, 8, 8)
     state, tendencies = density_current_state(grid)
-    # Pre-conditions documenting the no-op IC.
-    assert float(jnp.max(jnp.abs(state.u))) == 0.0
+    assert float(jnp.max(jnp.abs(state.u))) > 0.0
     assert float(jnp.max(jnp.abs(state.v))) == 0.0
     assert float(jnp.max(jnp.abs(state.w))) == 0.0
-    assert float(jnp.min(state.p)) == float(jnp.max(state.p))  # uniform pressure
     out = run(state, tendencies, grid, 2.0, 10, n_acoustic=4, debug=False)
     block_until_ready(out)
-    # The "Straka cold blob" never evolves because nothing drives motion.
-    for before, after in zip(jax.tree_util.tree_leaves(state), jax.tree_util.tree_leaves(out), strict=True):
-        assert float(jnp.max(jnp.abs(np.asarray(after) - np.asarray(before)))) == 0.0
+    assert float(jnp.max(jnp.abs(out.theta - state.theta))) > 0.1
 
 
 def test_dycore_advects_theta_when_u_is_perturbed():
@@ -154,12 +121,17 @@ def test_dycore_advects_theta_when_u_is_perturbed():
 
 
 def test_tier2_record_pass_keys():
-    record = invariant_record(make_ideal_grid(4, 6, 6), n_steps=2, dt=0.25, n_acoustic=1)
+    record = invariant_record(make_ideal_grid(4, 6, 6), n_steps=5, dt=1.0, n_acoustic=1)
     assert set(record).issuperset(
-        {"mass_residual_relative", "qv_positivity_violations", "nan_inf_violations", "pass"}
+        {
+            "mass_residual_relative",
+            "qv_positivity_violations",
+            "nan_inf_violations",
+            "final_state_differs_from_initial",
+            "pass",
+        }
     )
-    # Verify the dead-variable consequence at the small case as well.
-    assert record["mass_residual_relative"] == 0.0
+    assert record["final_state_differs_from_initial"] is True
 
 
 # ----------------------------------------------------------------------------- #
@@ -393,17 +365,10 @@ def test_adr003_has_required_tokens():
 
 
 def test_step_stripped_reference_calls_same_impl_as_step_debug_false():
-    """`step_stripped_reference` and `step(..., debug=False)` both dispatch to
-    `_step_impl(state, ..., False)`. The HLO-identity test is therefore a
-    tautology (same code path), not a hand-stripped sibling per AC #2.4.
-
-    Documenting this so reviewer/manager can decide whether the constitutional
-    debuggability gate is satisfied by intent or by literal text-stripping."""
+    """The fixed HLO proof must use a real hand-stripped sibling source file."""
 
     src = Path("src/gpuwrf/dynamics/step.py").read_text()
-    # Both wrappers call _step_impl(..., debug) where debug is False for the
-    # stripped reference. There is no separate file with assertion calls deleted.
-    assert "def step_stripped_reference" in src
-    assert not Path("src/gpuwrf/dynamics/step_debug_stripped.py").exists()
-    # The auxiliary unit-level finite-check absence proves debug=False emits no
-    # extra ops; covered by test_step_debug_false_hlo_excludes_finite_check_ops.
+    stripped = Path("src/gpuwrf/dynamics/step_debug_stripped.py").read_text()
+    assert "def step_stripped_reference" not in src
+    assert "assert_" not in stripped
+    assert "snapshot" not in stripped

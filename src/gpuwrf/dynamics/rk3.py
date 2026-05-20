@@ -32,29 +32,29 @@ def _assert_state(state: State, stage: str, debug: bool) -> State:
     )
 
 
-def rk3_stage(state: State, base_tendencies: Tendencies, grid: GridSpec, dt_stage: float) -> State:
-    """Encapsulates one tendency calculation plus Euler advance."""
+def rk3_stage(origin: State, stage_state: State, base_tendencies: Tendencies, grid: GridSpec, dt_stage: float) -> State:
+    """Computes tendencies on a stage state and advances from the RK origin."""
 
-    tendencies = compute_advection_tendencies(state, base_tendencies, grid)
-    return add_scaled_tendencies(state, tendencies, dt_stage)
+    tendencies = compute_advection_tendencies(stage_state, base_tendencies, grid)
+    return add_scaled_tendencies(origin, tendencies, dt_stage)
 
 
 def rk3_step(state: State, base_tendencies: Tendencies, grid: GridSpec, dt: float, n_acoustic: int, debug: bool) -> State:
     """Runs the M4 three-stage large step with acoustic stages two and three."""
 
     s0 = apply_halo(state, halo_spec(grid))
-    s1 = rk3_stage(s0, base_tendencies, grid, dt / 3.0)
+    s1 = rk3_stage(s0, s0, base_tendencies, grid, dt / 3.0)
     s1 = apply_halo(s1, halo_spec(grid))
     if debug:
         s1 = snapshot(_assert_state(s1, "rk1", debug), "rk1", enabled=debug)
 
-    s2 = rk3_stage(s1, base_tendencies, grid, dt / 2.0)
+    s2 = rk3_stage(s0, s1, base_tendencies, grid, dt / 2.0)
     s2 = forward_backward_acoustic(s2, grid, dt / 2.0, n_acoustic)
     s2 = apply_halo(s2, halo_spec(grid))
     if debug:
         s2 = snapshot(_assert_state(s2, "rk2_acoustic", debug), "rk2_acoustic", enabled=debug)
 
-    s3 = rk3_stage(s2, base_tendencies, grid, dt)
+    s3 = rk3_stage(s0, s2, base_tendencies, grid, dt)
     s3 = forward_backward_acoustic(s3, grid, dt, n_acoustic)
     s3 = apply_halo(s3, halo_spec(grid))
     if debug:

@@ -3,7 +3,17 @@ from __future__ import annotations
 import jax.numpy as jnp
 import numpy as np
 
-from gpuwrf.dynamics.advection import advect_mass_scalar, derivative3_upwind, derivative5_upwind, fixture_reference_update, mass_face_velocities
+from gpuwrf.dynamics.advection import (
+    advect_mass_scalar,
+    advect_u_face,
+    advect_v_face,
+    advect_w_face,
+    derivative3_upwind,
+    derivative3_upwind_vertical,
+    derivative5_upwind,
+    fixture_reference_update,
+    mass_face_velocities,
+)
 from gpuwrf.validation.tier2 import density_current_state, make_ideal_grid
 
 
@@ -29,6 +39,14 @@ def test_third_order_vertical_derivative_preserves_constant_field():
     assert float(jnp.max(jnp.abs(got))) == 0.0
 
 
+def test_vertical_derivative_does_not_wrap_top_to_bottom():
+    field = jnp.arange(8, dtype=jnp.float64)[:, None, None]
+    velocity = jnp.ones_like(field)
+    got = derivative3_upwind_vertical(field, velocity, 1.0)
+    assert float(got[0, 0, 0]) == 1.0
+    assert float(got[-1, 0, 0]) == 1.0
+
+
 def test_mass_scalar_advection_is_conservative_for_constant_velocity():
     grid = make_ideal_grid(6, 8, 8)
     state, _ = density_current_state(grid)
@@ -49,3 +67,24 @@ def test_fixture_reference_wrapper_matches_committed_phi_next():
             )
         )
         assert np.max(np.abs(got - loaded["phi_next"])) <= 1.0e-10
+
+
+def test_velocity_advection_includes_cross_terms():
+    grid = make_ideal_grid(6, 8, 8)
+    state, _ = density_current_state(grid)
+    y_u = jnp.arange(grid.ny, dtype=jnp.float64)[None, :, None]
+    x_v = jnp.arange(grid.nx, dtype=jnp.float64)[None, None, :]
+    x_w = jnp.arange(grid.nx, dtype=jnp.float64)[None, None, :]
+    u = jnp.sin(2.0 * jnp.pi * y_u / float(grid.ny)) + jnp.zeros_like(state.u)
+    v = jnp.sin(2.0 * jnp.pi * x_v / float(grid.nx)) + jnp.zeros_like(state.v)
+    w = jnp.sin(2.0 * jnp.pi * x_w / float(grid.nx)) + jnp.zeros_like(state.w)
+    state = state.replace(
+        u=u,
+        v=jnp.ones_like(state.v) * 3.0 + v * 0.0,
+        w=jnp.zeros_like(state.w),
+    )
+    assert float(jnp.max(jnp.abs(advect_u_face(state, grid)))) > 0.0
+    state = state.replace(u=jnp.ones_like(state.u) * 4.0, v=v, w=jnp.zeros_like(state.w))
+    assert float(jnp.max(jnp.abs(advect_v_face(state, grid)))) > 0.0
+    state = state.replace(u=jnp.ones_like(state.u) * 4.0, v=jnp.zeros_like(state.v), w=w)
+    assert float(jnp.max(jnp.abs(advect_w_face(state, grid)))) > 0.0

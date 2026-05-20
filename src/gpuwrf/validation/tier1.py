@@ -12,14 +12,16 @@ import jax.numpy as jnp
 import numpy as np
 import yaml
 
-from gpuwrf.dynamics.advection import fixture_reference_update
+from gpuwrf.dynamics.advection import advect_mass_scalar
+from gpuwrf.validation.tier2 import make_ideal_grid
 
 
 config.update("jax_enable_x64", True)
 
 ROOT = Path(__file__).resolve().parents[3]
-MANIFEST = ROOT / "fixtures" / "manifests" / "analytic-stencil-3d-advdiff-v1.yaml"
-SAMPLE = ROOT / "fixtures" / "samples" / "analytic-stencil-3d-advdiff-v1.npz"
+FIXTURE_ID = "analytic-stencil-3d-upwind5-v1"
+MANIFEST = ROOT / "fixtures" / "manifests" / f"{FIXTURE_ID}.yaml"
+SAMPLE = ROOT / "fixtures" / "samples" / f"{FIXTURE_ID}.npz"
 ARTIFACT = ROOT / "artifacts" / "m4" / "tier1_advection_parity.json"
 
 
@@ -27,9 +29,9 @@ def _phi_tolerances(manifest: dict[str, Any]) -> tuple[float, float]:
     """Extracts phi_next tolerances from the pinned fixture manifest."""
 
     for variable in manifest["variables"]:
-        if variable["name"] == "phi_next":
+        if variable["name"] == "phi_next_upwind5":
             return float(variable["tolerance_abs"]), float(variable["tolerance_rel"])
-    raise KeyError("phi_next tolerance missing from manifest")
+    raise KeyError("phi_next_upwind5 tolerance missing from manifest")
 
 
 def run_tier1(out: Path = ARTIFACT) -> dict[str, Any]:
@@ -42,16 +44,20 @@ def run_tier1(out: Path = ARTIFACT) -> dict[str, Any]:
         u = jnp.asarray(loaded["u_face"], dtype=jnp.float64)
         v = jnp.asarray(loaded["v_face"], dtype=jnp.float64)
         w = jnp.asarray(loaded["w_face"], dtype=jnp.float64)
-        reference = np.asarray(loaded["phi_next"], dtype=np.float64)
+        reference = np.asarray(loaded["phi_next_upwind5"], dtype=np.float64)
 
-    candidate = np.asarray(fixture_reference_update(phi, u, v, w, 3.0))
+    grid = make_ideal_grid(8, 16, 32, dx_m=900.0, dy_m=900.0, top_m=960.0)
+    u_mass = 0.5 * (u[:, :, :-1] + u[:, :, 1:])
+    v_mass = 0.5 * (v[:, :-1, :] + v[:, 1:, :])
+    w_mass = 0.5 * (w[:-1, :, :] + w[1:, :, :])
+    candidate = np.asarray(phi + 3.0 * advect_mass_scalar(phi, u_mass, v_mass, w_mass, grid))
     diff = np.abs(candidate - reference)
     allowed = tolerance_abs + tolerance_rel * np.abs(reference)
     max_abs = float(np.max(diff))
     max_rel = float(np.max(diff / (np.abs(reference) + np.finfo(np.float64).eps)))
     record = {
-        "fixture_id": "analytic-stencil-3d-advdiff-v1",
-        "operator": "M1 centered 4H/2V advection-diffusion reference wrapper; dycore uses 5H/3V upwind",
+        "fixture_id": FIXTURE_ID,
+        "operator": "dycore 5th-order horizontal periodic and 3rd-order vertical no-wrap upwind mass-scalar advection",
         "max_abs_err": max_abs,
         "max_rel_err": max_rel,
         "tolerance_abs": tolerance_abs,

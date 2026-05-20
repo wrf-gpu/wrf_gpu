@@ -10,7 +10,10 @@ from jax import config
 import jax.numpy as jnp
 import numpy as np
 
-from gpuwrf.dynamics.advection import ddx4_centered
+from gpuwrf.contracts.state import State, Tendencies
+from gpuwrf.dynamics.step import run
+from gpuwrf.profiling.transfer_audit import block_until_ready
+from gpuwrf.validation.tier2 import make_ideal_grid
 
 
 config.update("jax_enable_x64", True)
@@ -19,51 +22,47 @@ ROOT = Path(__file__).resolve().parents[3]
 ARTIFACT = ROOT / "artifacts" / "m4" / "tier3_convergence.json"
 
 
-def _rk3_step(phi, velocity: float, dx: float, dt: float):
-    """Advances the one-dimensional linear advection equation by one RK3 step."""
-
-    def rhs(value):
-        """Keeps the advection RHS local to the manufactured convergence test."""
-
-        return -velocity * ddx4_centered(value, dx, axis=0)
-
-    k1 = rhs(phi)
-    y1 = phi + dt * k1
-    k2 = rhs(y1)
-    y2 = 0.75 * phi + 0.25 * (y1 + dt * k2)
-    k3 = rhs(y2)
-    return (phi + 2.0 * (y2 + dt * k3)) / 3.0
-
-
 def _run_level(dx: float, dt: float, n_steps: int, velocity: float = 20.0) -> dict[str, float]:
-    """Runs one grid level and returns its analytic 2-norm error."""
+    """Runs one public-dycore grid level and returns its analytic 2-norm error."""
 
     domain_m = 128_000.0
     nx = int(round(domain_m / dx))
     x = jnp.arange(nx, dtype=jnp.float64) * dx
-    center0 = 0.35 * domain_m
-    width = 0.08 * domain_m
-    phi = jnp.exp(-((x - center0) / width) ** 2)
-    for _ in range(int(n_steps)):
-        phi = _rk3_step(phi, velocity, dx, dt)
+    perturbation = jnp.sin(2.0 * jnp.pi * x / domain_m)
+    grid = make_ideal_grid(4, 4, nx, dx_m=dx, dy_m=dx, top_m=480.0)
+    state = State.zeros(grid)
+    tendencies = Tendencies.zeros(grid)
+    theta = 300.0 + perturbation[None, None, :] + jnp.zeros((grid.nz, grid.ny, 1), dtype=jnp.float64)
+    state = state.replace(
+        u=jnp.ones_like(state.u) * velocity,
+        v=jnp.zeros_like(state.v),
+        w=jnp.zeros_like(state.w),
+        theta=theta,
+        qv=jnp.ones_like(state.qv) * 1.0e-3,
+        p=jnp.zeros_like(state.p),
+        ph=jnp.zeros_like(state.ph),
+        mu=jnp.ones_like(state.mu),
+    )
+    final = run(state, tendencies, grid, dt, int(n_steps), n_acoustic=1, debug=False)
+    block_until_ready(final)
     final_t = float(dt) * float(n_steps)
-    shifted = jnp.mod(x - velocity * final_t, domain_m)
-    exact = jnp.exp(-((shifted - center0) / width) ** 2)
-    err = jnp.sqrt(jnp.mean((phi - exact) ** 2))
+    exact = jnp.sin(2.0 * jnp.pi * (x - velocity * final_t) / domain_m)
+    candidate = final.theta[0, 0, :] - 300.0
+    err = jnp.sqrt(jnp.mean((candidate - exact) ** 2))
     return {"dx_m": float(dx), "dt_s": float(dt), "n_steps": int(n_steps), "l2_error": float(err)}
 
 
 def convergence_record() -> dict[str, Any]:
     """Computes observed order from the three mandated resolution levels."""
 
-    levels = [_run_level(2000.0, 20.0, 100), _run_level(1000.0, 10.0, 200), _run_level(500.0, 5.0, 400)]
+    levels = [_run_level(2000.0, 2.0, 50), _run_level(1000.0, 1.0, 100), _run_level(500.0, 0.5, 200)]
     e0, e1, e2 = (level["l2_error"] for level in levels)
     order01 = float(np.log2(e0 / e1))
     order12 = float(np.log2(e1 / e2))
     observed = 0.5 * (order01 + order12)
     expected = 3.0
     return {
-        "case": "1d-periodic-smooth-bump-linear-advection-rk3-centered-reference",
+        "case": "1d-periodic-sine-linear-advection-public-dycore-run",
         "errors_per_level": levels,
         "observed_order": observed,
         "observed_order_pairs": [order01, order12],

@@ -19,9 +19,10 @@ def test_tier1_artifact_passes_when_present():
         return
     record = json.loads(path.read_text())
     assert record["pass"] is True
-    assert record["fixture_id"] == "analytic-stencil-3d-advdiff-v1"
+    assert record["fixture_id"] == "analytic-stencil-3d-upwind5-v1"
 
 
-def test_tier1_records_operator_mismatch_honestly():
+def test_tier1_records_dycore_upwind_operator():
     record = run_tier1()
-    assert "dycore uses 5H/3V upwind" in record["operator"]
+    assert "5th-order horizontal" in record["operator"]
+    assert "3rd-order vertical" in record["operator"]
