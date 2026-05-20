@@ -1,0 +1,18 @@
+{
+  "command": [
+    "/usr/local/cuda/bin/ncu",
+    "--target-processes",
+    "all",
+    "--launch-count",
+    "1",
+    "/home/enric/miniconda3/bin/python",
+    "-c",
+    "import jax, jax.numpy as jnp; x=jnp.ones((1024,), dtype=jnp.float32); (x+x).block_until_ready()"
+  ],
+  "ncu_path": "/usr/local/cuda/bin/ncu",
+  "nsys_path": "/usr/local/cuda/bin/nsys",
+  "returncode": 1,
+  "status": "failed_or_restricted",
+  "stderr_tail": "",
+  "stdout_tail": "==PROF== Connected to process 116055 (/home/enric/miniconda3/bin/python3.13)\n==ERROR== ERR_NVGPUCTRPERM - The user does not have permission to access NVIDIA GPU Performance Counters on the target device 0. For instructions on enabling permissions and to get more information see https://developer.nvidia.com/ERR_NVGPUCTRPERM\n==PROF== Disconnected from process 116055\n"
+}

@@ -9,6 +9,8 @@ Scope: M4 reduced dry dycore: RK3, advection, acoustic substep, debug hooks, and
 
 Decision: **fp64 is the only authorized production dycore precision through M5-S1.** All M4 prognostic storage and all dycore arithmetic remain fp64. ADR-003 does NOT authorize any production downcast. fp32 is allowed only behind experiment flags with separate artifacts, against the fp64 M4 reference, and not merged to production until BOTH (a) M4 residual evidence gaps closed (see M4 closeout §§1-3) AND (b) Thompson fp64 frozen-target gate (per ADR-005) has been passed first.
 
+**ADR-007 amendment (2026-05-20):** after M5-S1, the blanket fp64 lock is narrowed by `.agent/decisions/ADR-007-precision-policy.md`. The locked set remains `state.mu`, pressure/geopotential fields (`state.p`, `state.ph`), pressure-gradient accumulation, and acoustic accumulators. ADR-007 authorizes follow-on implementation sprints to evaluate and implement FP32 storage/arithmetic for non-acoustic `state.u`, `state.v`, `state.theta`, `state.qv`, Thompson hydrometeor fields (`qc`, `qr`, `qi`, `qs`, `qg`), Thompson number fields (`Ni`, `Nr`), and thermodynamic `T`, with FP64 conservation/coupling boundaries and operational RMSE gates on `U10/V10/T2`. Persistent BF16 state remains unauthorized except for ADR-007's bounded non-conservative lookup/proxy-intermediate row. No production dtype change is made by this amendment.
+
 Rationale: the M4 dycore is the reference path for later physics coupling. The proof objects show fp64 parity and invariants are clean (approximately):
 
 - `artifacts/m4/tier1_advection_parity.json` reports `max_abs_err = 0.0`, `max_rel_err = 0.0`, and `pass = true` against the dycore upwind sibling fixture.
@@ -53,6 +55,8 @@ The M4 evidence package is:
 This evidence supports the fp64 M4 reference. It does NOT authorize fp32 production dycore arithmetic. All downcast statements below are EXPERIMENTAL CANDIDATES requiring separate proof artifacts and explicit per-field authorization before any production use.
 
 ## Authorization Matrix (per critical-review Major #2)
+
+**Supersession note:** this matrix remains the historical M4/M5-S1 gate. For post-M5-S1 precision work, use ADR-007's Authorization Matrix. In particular, rows below that say `NOT AUTHORIZED until ADR-005 Thompson fp64 gate passes` are now superseded for Thompson by ADR-007 because the M5-S1 gate produced `GO_CARRYFORWARD`; strict parity debt and operational RMSE gates still remain follow-on requirements.
 
 The following table is the binding precision-experiment gate. Each row defaults to `NOT AUTHORIZED` until its artifact paths exist on `main` and tier-1/2/3 + profile evidence at the proposed precision passes against the fp64 reference within stated tolerances:
 
@@ -102,9 +106,9 @@ No manager counter-dissent recorded. All Codex findings were fair catches; codex
 ## Trigger for Revisiting
 
 ADR-003 must be revisited when ANY of:
-- M5-S1 Thompson passes fp64 frozen target — at that point, the M5 physics rows in the Authorization Matrix can begin precision experiments.
+- M5-S1 Thompson passes fp64 frozen target — satisfied by the M5-S1 `GO_CARRYFORWARD` gate and superseded by ADR-007 for post-M5-S1 precision authorization.
 - M4.x sprint produces real acoustic sound-wave validation — at that point, acoustic accumulator + pressure-adjacent fields can begin precision experiments.
 - M5+ produces true mu mass-continuity diagnostic and 2D cross-term convergence oracle — at that point, dycore-mass-evidence is no longer surrogate and downcast experiments can be authorized for evidence-passing classes.
 - Hardware change (e.g. moving off RTX 5090 Blackwell) — fp32:fp64 ratio assumptions change.
 
-Outside these triggers, ADR-003 remains binding as "fp64 production lock; fp32 experiments only behind separate artifacts and explicit per-field authorization."
+Outside these triggers, ADR-003 remains binding as "fp64 production lock through M5-S1; post-M5-S1 fp32 experiments only behind ADR-007 per-field authorization, separate artifacts, and explicit operational RMSE gates."

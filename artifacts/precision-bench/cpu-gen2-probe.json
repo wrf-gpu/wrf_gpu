@@ -1,0 +1,12 @@
+{
+  "env_exists": true,
+  "env_path": "/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/env_wrf_gpu.sh",
+  "env_probe_returncode": 0,
+  "env_probe_stderr": "",
+  "env_probe_stdout": "HDF5=/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_gpu_libs\nNETCDF=/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_gpu_libs\nPATH=/home/enric/src/canairy_meteo/Gen2/artifacts/nvhpc/Linux_x86_64/26.3/comm_libs/mpi/bin:/home/enric/src/canairy_meteo/Gen2/artifacts/nvhpc/Linux_x86_64/26.3/compilers/bin:/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_gpu_libs/bin:/home/enric/src/canairy_meteo/Gen2/artifacts/envs/wrf-gpu-build/bin:/home/enric/.local/bin:/home/enric/.npm-global/bin:/home/enric/.local/bin:/home/enric/.local/bin:/home/enric/.npm-global/bin:/home/enric/.local/bin:/home/enric/.codex/tmp/arg0/codex-arg0iesfqC:/home/enric/.npm-global/lib/node_modules/@openai/codex/node_modules/@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/path:/home/enric/.npm-global/bin:/home/enric/.local/bin:/home/enric/.opencode/bin:/home/enric/.npm-global/bin:/home/enric/.npm-global/bin:/usr/local/cuda/bin:/home/enric/.opencode/bin:/home/enric/.npm-global/bin:/home/enric/.npm-global/bin:/home/enric/miniconda3/bin:/home/enric/miniconda3/condabin:/usr/local/cuda/bin:/home/enric/.npm-global/bin:/home/enric/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin\n",
+  "note": "Exact Gen2 WRF Canary 3km CPU timestep baseline was probed but not run here because no wrfinput/wrfbdy files are present under the Gen2 WRF tree. Sprint-local CPU JAX baselines are emitted separately per workload.",
+  "status": "unavailable",
+  "wrf_exe": "/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/WRF/main/wrf.exe",
+  "wrf_exe_exists": true,
+  "wrfinput_candidates": []
+}
