@@ -1,8 +1,8 @@
 {
   "escalation_events": 0,
-  "notes": "Attempt 2 replaced compact attempt-1 rates with WRF-source-mapped Path-B-strict formulas and an independent NumPy tendency-ledger fixture oracle.",
-  "reviewer_rejections": 1,
+  "notes": "Attempt 3 replaced the Python formula oracle with a compiled WRF Fortran harness. The JAX candidate remains the attempt-2 WRF-source transcription.",
+  "reviewer_rejections": 2,
   "sprint": "2026-05-20-m5-s1-thompson-microphysics-column",
-  "sprint_attempts": 2,
+  "sprint_attempts": 3,
   "worker": "codex-gpt-5.5"
 }

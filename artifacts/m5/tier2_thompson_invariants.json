@@ -2,7 +2,7 @@
   "dt_s": 60.0,
   "finite_latent_heating": {
     "bound_K": 100.0,
-    "max_abs_delta_T_K": 0.8504670669483403,
+    "max_abs_delta_T_K": 2.9791947680550948,
     "pass": true
   },
   "iterations": 10,
@@ -17,7 +17,7 @@
   },
   "water_budget": {
     "pass": true,
-    "relative_residual": 4.703652943237793e-13,
+    "relative_residual": 2.670445271854754e-12,
     "tolerance": 1e-08
   }
 }
