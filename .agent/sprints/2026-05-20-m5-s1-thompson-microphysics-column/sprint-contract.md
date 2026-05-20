@@ -6,7 +6,56 @@ Sequence: S1 — first physics implementation sprint (decision-gate S0 closed; A
 Worker: gpt-kernel-worker (Codex `gpt-5.5` `xhigh`)
 Tester: sonnet-test-engineer (**Claude Opus 4.7 `xhigh`** — cross-AI verification per dispatch_role.sh; explicitly tasked with WRF source-truth check + Allocation Audit + tier-1/2 reproduction)
 Reviewer: opus-reviewer (Codex `gpt-5.5` `xhigh`) — binding judgment
-Approval status: pending worker dispatch.
+Approval status: **AMENDED 2026-05-20 (attempt 2)** — reviewer Decision = Reject on attempt 1 with 2 blockers + 1 major + 1 minor; cross-AI tester (Claude Opus 4.7 xhigh) independently flagged the same Path-B tautology. See `reviewer-report.md` and `tester-report.md`. Worker attempt 1 archived as commit `1d5d1e5`. Fixes below are MUST-fix for attempt 2.
+
+### Fix-cycle amendments (attempt 2) — derived from reviewer-report.md Required Fixes
+
+**Root cause of attempt 1 Reject:** Worker A1 took Path B (Python re-implementation against WRF source) but produced **compact analytic time-relaxation approximations** for warm-rain autoconv (`thompson_column.py:153-174`), rain freezing + snow/graupel melting (`:191-198`), and vapor deposition/sublimation (`:200-231`). The fixture generator `m5_generate_thompson_fixture.py:113-229` used the SAME compact formulas, so Tier-1 became a JAX-vs-NumPy self-consistency check, not a WRF parity test. ADR-005 Critical-review Major #2 specifically warned against this exact failure mode.
+
+**Attempt-2 binding fixes (MUST resolve, blocker-class):**
+
+- **AC #2.2.fix (Replace fixture-oracle with genuine WRF-faithful source)**: The Tier-1 fixture MUST be independent of the JAX kernel's source formulas. Three acceptable approaches, in order of preference:
+  - **Path A (preferred — strongly recommended for attempt 2)**: Compile a small Fortran wrapper around the WRF Thompson driver. WRF is ALREADY COMPILED on this workstation (nightly forecasts running per user 2026-05-19); worker MAY use that build's `module_mp_thompson.F.pre` object file OR rebuild against `../wrf_gpu/sidecar_reports/post13_thompson_first_divergence_20260508T224837Z/source_snapshots_pre/module_mp_thompson.F.pre`. Wrapper signature: takes synthetic column inputs (T, p, qv, qc, qr, qi, qs, qg, Ni, Nr, ρ, dt), calls Thompson driver mp_gt_driver column-loop body with sedimentation disabled (set the relevant terminal-velocity arrays to zero OR call ONLY the source/sink subroutines, NOT the full driver), returns outputs. Worker must check WRF compile dependencies in adjacent dirs (`../wrf_gpu/`, `/mnt/data/wrf_gpu2/`, etc) and document the exact path taken in maintainability.md. If Path A is infeasible after honest investigation (document compile-failure logs), worker may fall back to Path B-strict (below).
+  - **Path B-strict (fallback only)**: Genuinely line-by-line transcription of the named WRF subroutines per the references in reviewer-report.md:
+    - **Warm-rain autoconversion**: Berry-Reinhardt formula per `module_mp_thompson.F.pre:2242-2268`. Transcribe constants + functional form. Cite line numbers in code comments.
+    - **Rain evaporation**: Srivastava-Coen formula per `module_mp_thompson.F.pre:3561-3636`. Cite lines.
+    - **Ice depositional growth**: Particle-diameter/moment terms per `module_mp_thompson.F.pre:2709-2770`. Cite lines.
+    - **Mass/number balance constraints**: Final-step constraints per `module_mp_thompson.F.pre:4033-4142`. Cite lines.
+    - **Rain freezing + snow/graupel melting**: Find the WRF Thompson subroutines for these processes (worker reads the file to identify) and transcribe with citations.
+  - **Path A-light (compromise)**: If neither Path A wrapper compile NOR genuine line-by-line is achievable in attempt-2 wall-time, the worker MAY use a **hybrid**: Path A for at least 2 of the 4 named processes (Berry-Reinhardt + one other), Path B-strict for the rest, and document the hybrid explicitly. This still produces an independent oracle for at least part of the kernel.
+
+  **Hard rule for attempt 2**: The fixture generator MUST contain at least one process whose formula does NOT appear in `thompson_column.py`. The tester MUST verify by `diff`ing the formulas between the two files. The reviewer MUST attest that ≥ 50% of the Tier-1 fixture's `output_*` values are produced by formulas distinct from the JAX kernel's implementation. This breaks the tautology.
+
+- **AC #1.2.fix (Replace compact analytic approximations with WRF-faithful formulas)**: At minimum the following processes in `src/gpuwrf/physics/thompson_column.py` MUST use WRF-equivalent formulas (with WRF-source line citations in code comments):
+  - Warm-rain autoconversion: Berry-Reinhardt (NOT a linear `tau` relaxation)
+  - Warm-rain accretion: Khairoutdinov-Kogan or WRF-equivalent (cite WRF lines)
+  - Rain evaporation: Srivastava-Coen (NOT first-order saturation deficit)
+  - Vapor deposition/sublimation: particle-diameter/moment terms (NOT first-order saturation deficit)
+  - Mass/number balance: end-of-step WRF balance constraints (NOT just clip-to-zero)
+  - Freezing/melting: WRF-faithful (cite WRF subroutine + lines)
+
+  Saturation adjustment may remain Newton-iteration-based (this is reasonable for JAX). Other compact approximations are NOT acceptable for attempt 2.
+
+- **AC #5.3.fix (Re-evaluate GO gate under the new oracle)**: The kernel-launch count + register/local-memory metrics MUST be re-derived after the WRF-faithful implementation lands. The 1-launch count from attempt 1 was for the compact kernel and is NOT transferable. Worker re-runs `scripts/m5_gate_thompson.py`. New result may be GO, GRAY-ZONE (mandatory non-discretionary procedure per ADR-005), or FALLBACK (opens per-scheme Triton ADR per ADR-001). Any outcome is acceptable as long as the artifact accurately reports MEASURED numbers for the WRF-faithful kernel.
+
+**Attempt-2 major-class fixes:**
+
+- **ADR-006 update**: explicitly list which WRF subroutines were used (with line citations) and which were NOT (with reasons). The "compact approximations" disclosure in attempt 1's ADR-006 must be REMOVED — disclosure does not amend the contract, per reviewer.
+
+**Attempt-2 minor-class fixes:**
+
+- **HLO commit-time auditability**: write a short note in ADR-006 explaining how an auditor can re-derive the HLO diff from the committed code (it requires `scripts/m5_thompson_hlo_diff.py` rerun; on-disk truncated HLO can't be normalized alone, but the rerun is cheap).
+
+**Worker A2 scope**: only the files needed for these fixes plus the affected tests and artifact regeneration. ADR-006 explicit update. NO new modules unless required by Path A (e.g. a `scripts/wrf_thompson_wrapper.f90` Fortran wrapper file, which is pre-approved as new scope).
+
+**Test expectations for attempt 2:**
+- All 25 attempt-1 adversarial tests in `tests/test_m5_thompson_adversarial.py` MUST still pass (do not regress).
+- Add 1-3 attempt-2 tests asserting that ≥ 1 specific formula in the fixture generator differs from `thompson_column.py` (anti-tautology guard).
+- Total pytest count must increase, not decrease.
+
+**Backstop if Path A fails AND Path B-strict is infeasible in attempt-2 time budget**: worker MUST file `BLOCKER-m5-s1-thompson-fixture.md` in the sprint folder documenting the failure modes encountered. Manager will then either (a) dispatch a dedicated M5-S0.5 sub-sprint for Fortran-wrapper compilation, OR (b) formally amend ADR-005 + re-dispatch ADR-005 critical-review to authorize the narrower scope. Filing the blocker file is an acceptable outcome IF both paths are honestly attempted with documented failure logs.
+
+When done, type `/exit`.
 
 ## Objective
 
