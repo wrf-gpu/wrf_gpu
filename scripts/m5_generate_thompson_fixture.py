@@ -19,7 +19,60 @@ SRC = ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
-from gpuwrf.physics.thompson_constants import CP, EPS, HGFR, LFUS, LSUB, R1, R_D, RV, T_0, XM0I  # noqa: E402
+from gpuwrf.physics.thompson_constants import (  # noqa: E402
+    AM_G_MP8,
+    AM_I,
+    AM_R,
+    C_CUBE,
+    C_SQRD,
+    CCG2_NU12,
+    CCG3_NU12,
+    CP,
+    CRE10,
+    CRE11,
+    CRE2,
+    CRE9,
+    CRG2,
+    CRG3,
+    D0C,
+    D0I,
+    D0R,
+    D0S,
+    EPS,
+    FV_R,
+    HGFR,
+    LFUS,
+    LSUB,
+    NT_C,
+    NU_C_MP8,
+    OBMI,
+    OBMR,
+    OCG1_NU12,
+    OCG2_NU12,
+    OIG1,
+    OIG2,
+    ORG2,
+    ORG3,
+    PI,
+    R1,
+    R2,
+    R_D,
+    RHO_NOT,
+    RV,
+    T1_MELT_QG,
+    T1_MELT_QS,
+    T1_QR_EV,
+    T1_QR_QC,
+    T1_SUBL_QG,
+    T1_SUBL_QS,
+    T2_MELT_QG,
+    T2_MELT_QS,
+    T2_QR_EV,
+    T2_SUBL_QG,
+    T2_SUBL_QS,
+    T_0,
+    XM0I,
+)
 
 
 FIXTURE_ID = "analytic-thompson-column-v1"
@@ -110,8 +163,99 @@ def _rho(p: np.ndarray, T: np.ndarray, qv: np.ndarray) -> np.ndarray:
     return 0.622 * p / (R_D * T * (qv + 0.622))
 
 
+def _air_props_np(qv: np.ndarray, T: np.ndarray, p: np.ndarray, rho: np.ndarray):
+    """NumPy transcription of WRF thermodynamic scalars at lines 2055-2064."""
+
+    tempc = T - 273.15
+    diffu = 2.11e-5 * (T / 273.15) ** 1.94 * (101325.0 / p)
+    visco = np.where(tempc >= 0.0, 1.718 + 0.0049 * tempc, 1.718 + 0.0049 * tempc - 1.2e-5 * tempc * tempc) * 1.0e-5
+    tcond = (5.69 + 0.0168 * tempc) * 1.0e-5 * 418.936
+    lvap = _lvap(T)
+    ocp = _ocp(qv)
+    rhof = np.sqrt(RHO_NOT / np.maximum(rho, R1))
+    rhof2 = np.sqrt(rhof)
+    vsc2 = np.sqrt(np.maximum(rho, R1) / np.maximum(visco, R1))
+    return tempc, diffu, tcond, lvap, ocp, rhof, rhof2, vsc2
+
+
+def _rain_distribution_np(qr: np.ndarray, Nr: np.ndarray, rho: np.ndarray):
+    """NumPy rain distribution using WRF lines 2210-2215."""
+
+    rr = np.maximum(qr * rho, R1)
+    nr = np.maximum(Nr * rho, R2)
+    lamr = (AM_R * CRG3 * ORG2 * nr / rr) ** OBMR
+    ilamr = 1.0 / lamr
+    mvd_r = (3.0 + 0.672) / lamr
+    n0_r = nr * ORG2 * lamr**CRE2
+    active = (qr > R1) & (Nr > 0.0)
+    return rr, nr, lamr, ilamr, mvd_r, n0_r, active
+
+
+def _cloud_distribution_np(qc: np.ndarray, rho: np.ndarray):
+    """NumPy mp=8 cloud distribution for WRF lines 2233-2239."""
+
+    rc = np.maximum(qc * rho, R1)
+    lamc = (NT_C * AM_R * CCG2_NU12 * OCG1_NU12 / rc) ** OBMR
+    xdc = np.maximum(D0C * 1.0e6, (rc / (AM_R * NT_C)) ** OBMR * 1.0e6)
+    mvd_c = (3.0 + NU_C_MP8 + 0.672) / lamc
+    mvd_c = np.maximum(D0C, np.minimum(mvd_c, D0R))
+    return rc, lamc, xdc, mvd_c, qc > R1
+
+
+def _ice_distribution_np(qi: np.ndarray, Ni: np.ndarray, rho: np.ndarray):
+    """NumPy ice particle terms for WRF lines 2711-2715."""
+
+    ri = np.maximum(qi * rho, R1)
+    ni = np.maximum(Ni * rho, R2)
+    lami = (AM_I * 6.0 * OIG1 * ni / ri) ** OBMI
+    ilami = 1.0 / lami
+    xdi = np.maximum(D0I, 4.0 * ilami)
+    xmi = AM_I * xdi**3.0
+    return ri, ni, ilami, xmi, qi > R1
+
+
+def _snow_moments_np(qs: np.ndarray, rho: np.ndarray, tempc: np.ndarray):
+    """NumPy snow moment proxy for WRF lines 2745-2752 and 2845-2857."""
+
+    rs = np.maximum(qs * rho, R1)
+    xds = np.maximum(D0S, (rs / 0.069) ** 0.5)
+    smo0 = rs / np.maximum(0.069 * xds * xds, R1)
+    smo1 = smo0 * xds
+    smof = smo0 * np.sqrt(xds)
+    c_snow = C_SQRD + (tempc + 1.5) * (C_CUBE - C_SQRD) / (-30.0 + 1.5)
+    c_snow = np.maximum(C_SQRD, np.minimum(c_snow, C_CUBE))
+    return rs, smo0, smo1, smof, c_snow, qs > R1
+
+
+def _graupel_distribution_np(qg: np.ndarray, rho: np.ndarray):
+    """NumPy mp=8 graupel terms for WRF lines 2200-2203."""
+
+    rg = np.maximum(qg * rho, R1)
+    ng = np.maximum(4.0e5 * rho, R2)
+    lamg = (AM_G_MP8 * CRG3 * ORG2 * ng / rg) ** (1.0 / 3.0)
+    ilamg = 1.0 / lamg
+    n0_g = ng * ORG2 * lamg
+    return rg, ng, ilamg, n0_g, qg > R1
+
+
+def _sublimation_prefactor_np(qv: np.ndarray, T: np.ndarray, p: np.ndarray, rho: np.ndarray, ssati: np.ndarray, diffu: np.ndarray, tcond: np.ndarray):
+    """NumPy Srivastava-Coen ice prefactor from WRF lines 2450-2464."""
+
+    otemp = 1.0 / T
+    qvsi = _rsif(p, T)
+    rvs = rho * qvsi
+    rvs_p = rvs * otemp * (LSUB * otemp / RV - 1.0)
+    rvs_pp = rvs * (otemp * (LSUB * otemp / RV - 1.0) * otemp * (LSUB * otemp / RV - 1.0) + (-2.0 * LSUB * otemp**3 / RV) + otemp * otemp)
+    gamsc = LSUB * diffu / tcond * rvs_p
+    alphsc = 0.5 * (gamsc / (1.0 + gamsc)) ** 2 * rvs_pp / rvs_p * rvs / rvs_p
+    alphsc = np.maximum(1.0e-9, alphsc)
+    xsat = np.where(np.abs(ssati) < 1.0e-9, 0.0, ssati)
+    t1_subl = 4.0 * PI * (1.0 - alphsc * xsat + 2.0 * alphsc * alphsc * xsat * xsat - 5.0 * alphsc**3 * xsat**3) / (1.0 + gamsc)
+    return t1_subl, rvs
+
+
 def reference_step_numpy(fields: dict[str, np.ndarray], dt: float) -> dict[str, np.ndarray]:
-    """Path-B reference body mirroring the JAX Thompson source/sink subset."""
+    """Path-B-strict oracle: WRF-style tendency ledger, not the JAX helper sequence."""
 
     qv = np.maximum(fields["qv"].copy(), 1.0e-10)
     qc = np.maximum(fields["qc"].copy(), 0.0)
@@ -123,6 +267,7 @@ def reference_step_numpy(fields: dict[str, np.ndarray], dt: float) -> dict[str, 
     Nr = np.maximum(fields["Nr"].copy(), 0.0)
     T = fields["T"].copy()
     p = fields["p"].copy()
+    rho = _rho(p, T, qv)
 
     qvs = _rslf(p, T)
     lvap = _lvap(T)
@@ -136,9 +281,13 @@ def reference_step_numpy(fields: dict[str, np.ndarray], dt: float) -> dict[str, 
     active = (ssatw > EPS) | ((ssatw < -EPS) & (qc > 0.0))
     clap = np.where(active, clap, 0.0)
     clap = np.where(clap < 0.0, np.maximum(clap, -qc), np.minimum(clap, qv - 1.0e-10))
-    qv = qv - clap
-    qc = qc + clap
-    T = T + lvap * ocp * clap
+    qvten = -clap / dt
+    qcten = clap / dt
+    tten = lvap * ocp * clap / dt
+    qv = qv + dt * qvten
+    qc = qc + dt * qcten
+    T = T + dt * tten
+    rho = _rho(p, T, qv)
 
     ocp = _ocp(qv)
     lvap = _lvap(T)
@@ -155,63 +304,104 @@ def reference_step_numpy(fields: dict[str, np.ndarray], dt: float) -> dict[str, 
     Ni = Ni + qc_freeze / XM0I
     T = T + lfus2 * ocp * qc_freeze
 
-    rain_freeze_fraction = np.clip((HGFR - T) / 40.0, 0.0, 1.0)
-    rain_freeze = qr * rain_freeze_fraction
+    rain_freeze = np.where(T < HGFR, qr, 0.0)
     qr = qr - rain_freeze
-    qg = qg + rain_freeze
-    Nr = Nr * (1.0 - rain_freeze_fraction)
+    qi = qi + rain_freeze
+    Ni = Ni + np.where(rain_freeze > 0.0, Nr, 0.0)
+    Nr = np.where(rain_freeze > 0.0, 0.0, Nr)
     T = T + lfus2 * ocp * rain_freeze
+    rho = _rho(p, T, qv)
 
-    warm_fraction = np.clip((T - T_0) / 20.0, 0.0, 1.0)
-    qs_melt = qs * warm_fraction
-    qg_melt = qg * warm_fraction
-    qs = qs - qs_melt
-    qg = qg - qg_melt
-    qr = qr + qs_melt + qg_melt
-    T = T - LFUS * ocp * (qs_melt + qg_melt)
+    tempc, diffu, tcond, _lvap_unused, ocp, _rhof, rhof2, vsc2 = _air_props_np(qv, T, p, rho)
+    qvs0 = _rslf(p, T_0)
+    del_qvs = np.maximum(0.0, qvs0 - qv)
+    twet = np.minimum(T, T_0)
+    rs, smo0, smo1, smof, _c_snow, active_snow = _snow_moments_np(qs, rho, tempc)
+    rg, ng, ilamg, n0_g, active_graupel = _graupel_distribution_np(qg, rho)
+    prr_sml = (tempc * tcond - 2.5e6 * diffu * del_qvs) * (T1_MELT_QS * smo1 + T2_MELT_QS * rhof2 * vsc2 * smof)
+    prr_sml = np.minimum(rs / dt, np.maximum(0.0, prr_sml)) / rho
+    snow_melt = np.where((T > T_0) & active_snow, prr_sml * dt, 0.0)
+    pnr_sml = np.where(rs > R1, smo0 / rs * snow_melt * rho * 10.0 ** (-0.25 * (twet - T_0)), 0.0)
+    prr_gml = (tempc * tcond - 2.5e6 * diffu * del_qvs) * n0_g * (T1_MELT_QG * ilamg**CRE10 + T2_MELT_QG * rhof2 * vsc2 * ilamg**CRE11)
+    prr_gml = np.minimum(rg / dt, np.maximum(0.0, prr_gml)) / rho
+    graupel_melt = np.where((T > T_0) & active_graupel, prr_gml * dt, 0.0)
+    pnr_gml = np.where(rg > R1, graupel_melt * ng / rg * 10.0 ** (-0.33 * (twet - T_0)), 0.0)
+    qs = qs - snow_melt
+    qg = qg - graupel_melt
+    qr = qr + snow_melt + graupel_melt
+    Nr = Nr + pnr_sml + pnr_gml
+    T = T - LFUS * ocp * (snow_melt + graupel_melt)
+    rho = _rho(p, T, qv)
 
+    tempc, diffu, tcond, _lvap_unused, ocp, _rhof, rhof2, vsc2 = _air_props_np(qv, T, p, rho)
     qvsi = _rsif(p, T)
-    existing_ice = qi + qs + qg
-    deposition = np.minimum(qv - 1.0e-10, 0.25 * np.maximum(qv - qvsi, 0.0))
-    deposition = np.where(T < T_0, deposition, 0.0)
-    ice_weight = np.where(existing_ice > R1, qi / np.maximum(existing_ice, R1), 1.0)
-    snow_weight = np.where(existing_ice > R1, qs / np.maximum(existing_ice, R1), 0.0)
-    graupel_weight = np.where(existing_ice > R1, qg / np.maximum(existing_ice, R1), 0.0)
-    qv = qv - deposition
-    qi = qi + deposition * ice_weight
-    qs = qs + deposition * snow_weight
-    qg = qg + deposition * graupel_weight
-    Ni = Ni + deposition * ice_weight / XM0I
-    T = T + LSUB * ocp * deposition
+    ssati = qv / qvsi - 1.0
+    t1_subl, rvs = _sublimation_prefactor_np(qv, T, p, rho, ssati, diffu, tcond)
+    ri, ni, ilami, xmi, active_ice = _ice_distribution_np(qi, Ni, rho)
+    rs, _smo0, smo1, smof, c_snow, active_snow = _snow_moments_np(qs, rho, T - 273.15)
+    rg, ng, ilamg, n0_g, active_graupel = _graupel_distribution_np(qg, rho)
+    pri_ide = C_CUBE * t1_subl * diffu * ssati * rvs * OIG1 * ni * ilami
+    pri_ide = np.where(active_ice, pri_ide, 0.0)
+    pri_ide = np.where(pri_ide < 0.0, np.maximum(-ri / dt, pri_ide), np.minimum(pri_ide, np.maximum(qv - qvsi, 0.0) * rho / dt * 0.999))
+    prs_sde = c_snow * t1_subl * diffu * ssati * rvs * (T1_SUBL_QS * smo1 + T2_SUBL_QS * rhof2 * vsc2 * smof)
+    prs_sde = np.where(active_snow, np.where(prs_sde < 0.0, np.maximum(-rs / dt, prs_sde), np.minimum(prs_sde, np.maximum(qv - qvsi, 0.0) * rho / dt * 0.999)), 0.0)
+    prg_gde = C_CUBE * t1_subl * diffu * ssati * rvs * n0_g * (T1_SUBL_QG * ilamg**CRE10 + T2_SUBL_QG * vsc2 * rhof2 * ilamg**CRE11)
+    prg_gde = np.where(active_graupel, np.where(prg_gde < 0.0, np.maximum(-rg / dt, prg_gde), np.minimum(prg_gde, np.maximum(qv - qvsi, 0.0) * rho / dt * 0.999)), 0.0)
+    qi_delta = pri_ide * dt / rho
+    qs_delta = prs_sde * dt / rho
+    qg_delta = prg_gde * dt / rho
+    vapor_sink = np.maximum(0.0, qi_delta) + np.maximum(0.0, qs_delta) + np.maximum(0.0, qg_delta)
+    vapor_source = np.maximum(0.0, -qi_delta) + np.maximum(0.0, -qs_delta) + np.maximum(0.0, -qg_delta)
+    qv = qv - vapor_sink + vapor_source
+    qi = qi + qi_delta
+    qs = qs + qs_delta
+    qg = qg + qg_delta
+    Ni = np.maximum(0.0, Ni + np.where(qi_delta < 0.0, qi_delta / np.maximum(xmi, XM0I), qi_delta / XM0I))
+    T = T + LSUB * ocp * (vapor_sink - vapor_source)
+    rho = _rho(p, T, qv)
 
-    qvsi = _rsif(p, T)
-    existing_ice = qi + qs + qg
-    sublimation = np.minimum(existing_ice, 0.25 * np.maximum(qvsi - qv, 0.0))
-    sublimation = np.where(T < T_0, sublimation, 0.0)
-    ice_weight = np.where(existing_ice > R1, qi / np.maximum(existing_ice, R1), 0.0)
-    snow_weight = np.where(existing_ice > R1, qs / np.maximum(existing_ice, R1), 0.0)
-    graupel_weight = np.where(existing_ice > R1, qg / np.maximum(existing_ice, R1), 0.0)
-    qi_before_sublimation = qi.copy()
-    qv = qv + sublimation
-    qi = qi - sublimation * ice_weight
-    qs = qs - sublimation * snow_weight
-    qg = qg - sublimation * graupel_weight
-    Ni = np.maximum(0.0, Ni - Ni * sublimation * ice_weight / np.maximum(qi_before_sublimation, R1))
-    T = T - LSUB * ocp * sublimation
-
-    autoconv_source = np.maximum(qc - 1.0e-4, 0.0)
-    autoconv = np.minimum(qc, autoconv_source * (1.0 - np.exp(-dt / 900.0)))
-    accretion = np.minimum(qc - autoconv, 0.18 * qr * (1.0 - np.exp(-dt / 300.0)))
-    transfer = np.maximum(0.0, autoconv + accretion)
-    Nr = Nr + autoconv / np.maximum(4.0 / 3.0 * np.pi * 1000.0 * (80.0e-6) ** 3, 1.0e-6)
+    tempc, diffu, tcond, lvap, ocp, rhof, rhof2, vsc2 = _air_props_np(qv, T, p, rho)
+    rc, lamc, xdc, mvd_c, active_cloud = _cloud_distribution_np(qc, rho)
+    rr, nr, lamr, ilamr, mvd_r, n0_r, active_rain = _rain_distribution_np(qr, Nr, rho)
+    dc_g = ((CCG3_NU12 * OCG2_NU12) ** OBMR / lamc) * 1.0e6
+    dc_b = np.maximum(xdc**3 * dc_g**3 - xdc**6, 0.0) ** (1.0 / 6.0)
+    zeta1_raw = 6.25e-6 * xdc * dc_b**3 - 0.4
+    zeta1 = 0.5 * (zeta1_raw + np.abs(zeta1_raw))
+    zeta = 0.027 * rc * zeta1
+    taud_raw = 0.5 * dc_b - 7.5
+    taud = 0.5 * (taud_raw + np.abs(taud_raw)) + R1
+    tau = 3.72 / np.maximum(rc * taud, R1)
+    prr_wau = np.where((rc > 0.01e-3) & active_cloud, np.minimum(rc / dt, zeta / tau), 0.0)
+    pnr_wau = prr_wau / np.maximum(AM_R * NU_C_MP8 * 10.0 * D0R**3, R2)
+    ef_rw = np.clip(0.55 + 0.45 * (mvd_r - D0R) / np.maximum(2.5e-3 - D0R, R1), 0.0, 1.0)
+    prr_rcw = rhof * T1_QR_QC * ef_rw * rc * n0_r * ((lamr + FV_R) ** (-CRE9))
+    prr_rcw = np.where(active_rain & (mvd_r > D0R) & (mvd_c > D0C), prr_rcw, 0.0)
+    prr_rcw = np.minimum(np.maximum(rc - prr_wau * dt, 0.0) / dt, prr_rcw)
+    autoconv = prr_wau * dt / rho
+    accretion = prr_rcw * dt / rho
+    transfer = np.minimum(qc, autoconv + accretion)
+    Nr = Nr + pnr_wau * dt / rho
     qc = qc - transfer
     qr = qr + transfer
 
     qvs = _rslf(p, T)
-    lvap = _lvap(T)
-    ocp = _ocp(qv)
-    evap = np.minimum(qr, np.minimum(0.20 * np.maximum(qvs - qv, 0.0), qr * (1.0 - np.exp(-dt / 900.0))))
-    nr_loss = np.where(qr > 0.0, Nr * evap / np.maximum(qr, R1), 0.0)
+    ssatw = qv / qvs - 1.0
+    rvs = rho * qvs
+    otemp = 1.0 / T
+    rvs_p = rvs * otemp * (lvap * otemp / RV - 1.0)
+    rvs_pp = rvs * (otemp * (lvap * otemp / RV - 1.0) * otemp * (lvap * otemp / RV - 1.0) + (-2.0 * lvap * otemp**3 / RV) + otemp * otemp)
+    gamsc = lvap * diffu / tcond * rvs_p
+    alphsc = 0.5 * (gamsc / (1.0 + gamsc)) ** 2 * rvs_pp / rvs_p * rvs / rvs_p
+    alphsc = np.maximum(1.0e-9, alphsc)
+    xsat = np.minimum(-1.0e-9, ssatw)
+    t1_evap = 2.0 * PI * (1.0 - alphsc * xsat + 2.0 * alphsc * alphsc * xsat * xsat - 5.0 * alphsc**3 * xsat**3) / (1.0 + gamsc)
+    rr, nr, lamr, ilamr, _mvd_r, n0_r, active_rain = _rain_distribution_np(qr, Nr, rho)
+    evap_raw = t1_evap * diffu * (-ssatw) * n0_r * rvs * (T1_QR_EV * ilamr**CRE10 + T2_QR_EV * vsc2 * rhof2 * ((lamr + 0.5 * FV_R) ** (-CRE11))) / rho
+    fast_clear = (qv / qvs < 0.95) & (rr / rho <= 1.0e-8)
+    evap_rate = np.where(fast_clear, qr / dt, evap_raw)
+    rate_max = np.minimum(qr / dt, np.maximum(qvs - qv, 0.0) / dt)
+    evap = np.where((ssatw < -EPS) & active_rain, np.minimum(rate_max, evap_rate) * dt, 0.0)
+    nr_loss = np.where(qr > 0.0, np.minimum(Nr * 0.99, Nr * evap / np.maximum(qr, R1)), 0.0)
     qv = qv + evap
     qr = qr - evap
     Nr = np.maximum(0.0, Nr - nr_loss)
@@ -223,10 +413,26 @@ def reference_step_numpy(fields: dict[str, np.ndarray], dt: float) -> dict[str, 
     qi = np.where(qi <= R1, 0.0, np.maximum(qi, 0.0))
     qs = np.where(qs <= R1, 0.0, np.maximum(qs, 0.0))
     qg = np.where(qg <= R1, 0.0, np.maximum(qg, 0.0))
-    Ni = np.where(qi <= R1, 0.0, np.maximum(Ni, 0.0))
-    Nr = np.where(qr <= R1, 0.0, np.maximum(Nr, 0.0))
     T = np.maximum(T, 50.0)
-    return {"qv": qv, "qc": qc, "qr": qr, "qi": qi, "qs": qs, "qg": qg, "Ni": Ni, "Nr": Nr, "T": T, "rho": _rho(p, T, qv)}
+    rho = _rho(p, T, qv)
+
+    ni_raw = np.maximum(R2 / rho, Ni)
+    ri = np.maximum(qi * rho, R1)
+    xni = np.maximum(R2, ni_raw * rho)
+    lami = (AM_I * 6.0 * OIG1 * xni / ri) ** OBMI
+    xdi = 4.0 / lami
+    lami = np.where(xdi < 5.0e-6, 6.0 / 5.0e-6, lami)
+    lami = np.where(xdi > 300.0e-6, 6.0 / 300.0e-6, lami)
+    Ni = np.where(qi <= R1, 0.0, np.minimum((ri / AM_I * lami**3.0 * OIG2) / rho, 999.0e3 / rho))
+    nr_raw = np.maximum(R2 / rho, Nr)
+    rr = np.maximum(qr * rho, R1)
+    xnr = np.maximum(R2, nr_raw * rho)
+    lamr = (AM_R * CRG3 * ORG2 * xnr / rr) ** OBMR
+    mvd_r = (3.0 + 0.672) / lamr
+    mvd_r = np.minimum(2.5e-3, np.maximum(D0R * 0.75, mvd_r))
+    lamr = (3.0 + 0.672) / mvd_r
+    Nr = np.where(qr <= R1, 0.0, CRG2 * ORG3 * rr * lamr**3.0 / AM_R / rho)
+    return {"qv": qv, "qc": qc, "qr": qr, "qi": qi, "qs": qs, "qg": qg, "Ni": Ni, "Nr": Nr, "T": T, "rho": rho}
 
 
 def make_scenarios() -> tuple[dict[str, np.ndarray], float]:
@@ -335,7 +541,7 @@ def write_fixture() -> dict[str, Any]:
     manifest = {
         "fixture_id": FIXTURE_ID,
         "source": "analytic",
-        "source_commit": "module_mp_thompson.F.pre source-mapped Path B formulas lines 2040-2063, 3024-3273, 3456-3633, 4000-4152, 5444-5490",
+        "source_commit": "module_mp_thompson.F.pre Path-B-strict formulas lines 2040-2064, 2207-2268, 2450-2464, 2623-2675, 2709-2770, 2845-2889, 2967-3260, 3456-3636, 4007-4142, 5444-5495",
         "wrf_version": "v4.7.1",
         "scenario": "three Thompson source/sink columns: maritime shallow cloud, cold mixed-phase, precipitating column; sedimentation disabled by construction",
         "created_utc": "2026-05-20T02:42:06Z",
@@ -357,7 +563,15 @@ def write_fixture() -> dict[str, Any]:
         ],
     }
     MANIFEST.write_text(yaml.safe_dump(manifest, sort_keys=False), encoding="utf-8")
-    return {"sample": str(SAMPLE.relative_to(ROOT)), "manifest": str(MANIFEST.relative_to(ROOT)), "bytes": sample_bytes, "sha256": _sha256(SAMPLE), "path": "B", "wrf_source_exists": WRF_SOURCE.exists()}
+    return {
+        "sample": str(SAMPLE.relative_to(ROOT)),
+        "manifest": str(MANIFEST.relative_to(ROOT)),
+        "bytes": sample_bytes,
+        "sha256": _sha256(SAMPLE),
+        "path": "B-strict",
+        "path_a_investigation": "no reusable module_mp_thompson object/module found under ../wrf_gpu or /mnt/data/wrf_gpu2; direct wrapper compile would require WRF module dependencies outside this worker scope",
+        "wrf_source_exists": WRF_SOURCE.exists(),
+    }
 
 
 def main() -> int:

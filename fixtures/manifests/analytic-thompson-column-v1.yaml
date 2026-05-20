@@ -1,7 +1,7 @@
 fixture_id: analytic-thompson-column-v1
 source: analytic
-source_commit: module_mp_thompson.F.pre source-mapped Path B formulas lines 2040-2063,
-  3024-3273, 3456-3633, 4000-4152, 5444-5490
+source_commit: module_mp_thompson.F.pre Path-B-strict formulas lines 2040-2064, 2207-2268,
+  2450-2464, 2623-2675, 2709-2770, 2845-2889, 2967-3260, 3456-3636, 4007-4142, 5444-5495
 wrf_version: v4.7.1
 scenario: 'three Thompson source/sink columns: maritime shallow cloud, cold mixed-phase,
   precipitating column; sedimentation disabled by construction'
@@ -11,7 +11,7 @@ precision_reference: fp64
 generation_command: python scripts/m5_generate_thompson_fixture.py
 external_uri: null
 sample_slice_path: fixtures/samples/analytic-thompson-column-v1.npz
-git_commit: b9aa9d9
+git_commit: fd50df0
 license_notes: Synthetic fixture generated in-repository from WRF Thompson source
   formulas; WRF source itself is not redistributed here.
 variables:
@@ -247,6 +247,6 @@ variables:
   tier_overrides: null
 files:
 - path: fixtures/samples/analytic-thompson-column-v1.npz
-  checksum_sha256: 81de264f443f5ad153a1b05256dabc2a01856a41e800181aea1b332f2f5011d7
-  bytes: 7770
+  checksum_sha256: 3bdd721ac380620dfcf12fbef2693833205885674587ca5099390f31ef001ae1
+  bytes: 7789
   external: false

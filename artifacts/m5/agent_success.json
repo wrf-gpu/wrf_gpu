@@ -1,8 +1,8 @@
 {
   "escalation_events": 0,
-  "notes": "Worker generated Path-B fixture, JAX kernel, validation artifacts, HLO proof, and gate dry-run in one attempt.",
-  "reviewer_rejections": 0,
+  "notes": "Attempt 2 replaced compact attempt-1 rates with WRF-source-mapped Path-B-strict formulas and an independent NumPy tendency-ledger fixture oracle.",
+  "reviewer_rejections": 1,
   "sprint": "2026-05-20-m5-s1-thompson-microphysics-column",
-  "sprint_attempts": 1,
+  "sprint_attempts": 2,
   "worker": "codex-gpt-5.5"
 }

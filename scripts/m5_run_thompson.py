@@ -134,13 +134,13 @@ def _write_side_artifacts(diff_sha: str) -> None:
 
     maintainability = """# Thompson M5-S1 Maintainability
 
-Fixture generation used Path B. Path A would require compiling WRF's full `module_mp_thompson.F.pre` dependency stack (`module_wrf_error`, `module_mp_radar`, lookup-table initialization, WRF preprocessor flags), which is not self-contained in this repo's M5 worker scope. The Path-B formulas are source-mapped to the WRF snapshot and intentionally limited to sedimentation-free source/sink processes.
+Fixture generation used Path B-strict after Path A investigation found no reusable `module_mp_thompson` object/module under `../wrf_gpu` or `/mnt/data/wrf_gpu2`; only `wrf.exe` binaries and the `.F.pre` source snapshot were present. A direct wrapper compile would need `module_wrf_error`, `module_mp_radar`, model constants, preprocessor flags, and lookup-table init outside this worker's file ownership.
 
-Included: driver boundary species prep and rho formula (lines 1070-1274), saturation over water/ice (lines 5444-5490), cloud condensation Newton adjustment (lines 3456-3556), rain evaporation shape (lines 3561-3633), freezing/melting phase changes (lines 4000-4152), and tendency/update constraints (lines 3024-3273).
+Included: driver boundary species prep and rho formula (lines 1070-1274), saturation over water/ice (lines 5444-5495), cloud condensation Newton adjustment (lines 3456-3556), Berry-Reinhardt autoconversion (lines 2242-2258), rain-cloud-water collection shape (lines 2260-2268, with bounded collection-efficiency proxy because `t_Efrw` is a generated table), Srivastava-Coen rain evaporation (lines 3561-3636), cloud-ice/snow/graupel deposition and sublimation (lines 2709-2770), rain freezing + snow/graupel melting (lines 2658-2669 and 2845-2889), and final mass/number constraints (lines 4033-4142).
 
-Skipped because sedimentation is out of M5-S1: terminal velocity, substepping, and flux-divergence sections beginning at lines 3655-3972. Also skipped: aerosol scavenging/activation tables and radar/effective-radius diagnostics, because they are optional diagnostics outside the frozen M5-S1 output state.
+Skipped because sedimentation is out of M5-S1: terminal velocity, substepping, and flux-divergence sections beginning at lines 3655-3972. Also skipped: aerosol activation/scavenging, WRF-generated lookup tables that are not fixture inputs (`t_Efrw`, freezing tables), radar/effective-radius diagnostics, and graupel volume/hail state.
 
-The JAX kernel is one public `@jax.jit` with `dt` and `debug` static. The stripped sibling physically omits debug hooks; diff sha256 is `{diff_sha}`.
+The fixture oracle uses a WRF-style NumPy tendency ledger (`qvten`, `qcten`, `tten`) and process-rate names; it does not call the JAX kernel or share its helper sequence. The JAX kernel is one public `@jax.jit` with `dt` and `debug` static. The stripped sibling physically omits debug hooks; diff sha256 is `{diff_sha}`.
 """.format(diff_sha=diff_sha)
     (ART / "maintainability.md").write_text(maintainability, encoding="utf-8")
     _write_json(
@@ -148,10 +148,10 @@ The JAX kernel is one public `@jax.jit` with `dt` and `debug` static. The stripp
         {
             "sprint": "2026-05-20-m5-s1-thompson-microphysics-column",
             "worker": "codex-gpt-5.5",
-            "sprint_attempts": 1,
-            "reviewer_rejections": 0,
+            "sprint_attempts": 2,
+            "reviewer_rejections": 1,
             "escalation_events": 0,
-            "notes": "Worker generated Path-B fixture, JAX kernel, validation artifacts, HLO proof, and gate dry-run in one attempt.",
+            "notes": "Attempt 2 replaced compact attempt-1 rates with WRF-source-mapped Path-B-strict formulas and an independent NumPy tendency-ledger fixture oracle.",
         },
     )
 

@@ -21,3 +21,8 @@ def test_thompson_constants_match_wrf_source_values():
     assert c.LVAP0 == 2.5e6
     assert c.LFUS == c.LSUB - c.LVAP0
     assert math.isclose(c.D0I, (c.XM0I / c.AM_I) ** (1.0 / 3.0), rel_tol=0.0, abs_tol=1.0e-18)
+    assert c.NU_C_MP8 == 12.0
+    assert c.CRG3 == 6.0
+    assert c.CRE9 == 4.0
+    assert c.T1_QR_EV == 0.78
+    assert c.T2_QR_EV > 0.0
