@@ -8,8 +8,8 @@ Manager-maintained. Updated every watchman tick. Source of truth for parallel-ma
 
 | Window | Sprint | Role | AI | Status | ETA |
 |---|---|---|---|---|---|
-| 1 | M5-S2 MYNN attempt-2 | worker | codex gpt-5.5 xhigh | reading reviewer R-1..R-6 spec | finishes ~05:30-09:30 (4-8h budget) |
-| 3 | M5-S3 RRTMG radiation | worker | codex gpt-5.5 xhigh | ~10 min in; built rrtmg_constants.py with WRF source citations; working on extractor + harness + fixture | finishes ~07:20-13:20 (6-12h budget) |
+| 1 | M5-S2 MYNN attempt-2 | worker | codex gpt-5.5 xhigh | 32+ min in, writing worker-a2-report.md, will auto-notify on /exit (canonical handler) | <1h |
+| 2 | M5-S3 RRTMG | reviewer | Claude Opus 4.7 xhigh | just dispatched (canonical handler) — mandatory per sprint-lifecycle hard rule | 30-90 min |
 
 **Auto-notify**: both windows dispatched with the canonical completion handler from `.agent/references/dispatching-agents-pattern.md` — will tap-type AGENT REPORT to manager pane on `/exit`. M6 scout + M5-S2 retro reviewer (now closed) were dispatched without the handler, hence the silent finish.
 
@@ -30,7 +30,7 @@ Manager-maintained. Updated every watchman tick. Source of truth for parallel-ma
 | ADR-007 precision policy | codex A1 (1 attempt) | n/a | Gemini side-runner (Accept-with-fixes; pre-quota-revision policy) | `445c49f` + `6c9df22` | ✓ CLOSED |
 | M5-S2 MYNN PBL attempt-1 | codex A1 (1 attempt; 55min) | n/a (skipped under bigger-steps — GOVERNANCE MISS) | **Opus 4.7 retro REJECTED** (R-1..R-6) | `989f143` + `e4abc86` then rescinded | ✗ REJECTED — Path A attempt-2 dispatched |
 | M5-S2 MYNN PBL attempt-2 | codex A2 (in flight Window 1) | pending | pending Opus 4.7 (MANDATORY) | pending | OPEN — real MYNN2.5 + WRF-EDMF link + surface fluxes + Tier-2 redesign |
-| M5-S3 RRTMG radiation | codex A1 (in flight Window 3) | pending | pending Opus 4.7 (MANDATORY) | pending | OPEN — ~10 min in; constants drafted with WRF citations |
+| M5-S3 RRTMG radiation | codex A1 (DONE 36m 13s, commit `b7a3c12`) | n/a | **OPUS REVIEWER IN FLIGHT Window 2** | pending merge | OPEN pending reviewer — partial anti-tautology (links real WRF objects but doesn't call full RRTMG_SWRAD/LWRAD driver); GO_CARRYFORWARD; 419 pytest pass; raw HLO markers 19 |
 | M5 milestone closeout | manager | n/a | manager | `52cacc3` (rescinded) | ⚠ PROVISIONAL — RESCINDED pending M5-S2-A2 close + M5-S3 close |
 
 ## M5 closure dependencies
@@ -64,3 +64,4 @@ Manager updates this file after every watchman tick. Each row's status moves thr
 - 2026-05-21 01:15 — tracker created; M5-S3 RRTMG dispatching
 - 2026-05-21 01:20 — user flagged that windows 1+2 finished without auto-notify; dispatch pattern fix encoded at `.agent/references/dispatching-agents-pattern.md` (canonical pattern with completion handler MANDATORY)
 - 2026-05-21 01:22 — M6 scout report read (plan good, needs review for consensus); M5-S2 retro reviewer REJECTED → M5-S2-A2 dispatched with full completion handler + R-1..R-6 spec; tracker updated
+- 2026-05-21 ~01:55 — M5-S3 RRTMG worker DONE (36 min, commit `b7a3c12`, 419 pytest pass, partial anti-tautology gap honestly named); M5-S3 Opus reviewer dispatched with canonical handler (mandatory per sprint-lifecycle); M5-S2-A2 still finalizing its report
