@@ -1,0 +1,39 @@
+{
+  "field_pass": {
+    "Ni": true,
+    "Nr": true,
+    "T": true,
+    "qc": true,
+    "qg": true,
+    "qi": true,
+    "qr": true,
+    "qs": true,
+    "qv": true
+  },
+  "fixture_id": "analytic-thompson-column-v1",
+  "pass": true,
+  "per_field_max_abs_err": {
+    "Ni": 1.862645149230957e-09,
+    "Nr": 0.0,
+    "T": 0.0,
+    "qc": 4.0657581468206416e-20,
+    "qg": 1.3552527156068805e-20,
+    "qi": 0.0,
+    "qr": 0.0,
+    "qs": 0.0,
+    "qv": 0.0
+  },
+  "per_field_max_rel_err": {
+    "Ni": 1.746915457223121e-16,
+    "Nr": 0.0,
+    "T": 0.0,
+    "qc": 3.867272131103282e-15,
+    "qg": 1.8938032879345955e-16,
+    "qi": 0.0,
+    "qr": 0.0,
+    "qs": 0.0,
+    "qv": 0.0
+  },
+  "scenarios_tested": 3,
+  "tolerances_met": true
+}

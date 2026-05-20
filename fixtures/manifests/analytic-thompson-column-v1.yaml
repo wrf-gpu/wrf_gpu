@@ -1,0 +1,252 @@
+fixture_id: analytic-thompson-column-v1
+source: analytic
+source_commit: module_mp_thompson.F.pre source-mapped Path B formulas lines 2040-2063,
+  3024-3273, 3456-3633, 4000-4152, 5444-5490
+wrf_version: v4.7.1
+scenario: 'three Thompson source/sink columns: maritime shallow cloud, cold mixed-phase,
+  precipitating column; sedimentation disabled by construction'
+created_utc: '2026-05-20T02:42:06Z'
+tier: 1
+precision_reference: fp64
+generation_command: python scripts/m5_generate_thompson_fixture.py
+external_uri: null
+sample_slice_path: fixtures/samples/analytic-thompson-column-v1.npz
+git_commit: b9aa9d9
+license_notes: Synthetic fixture generated in-repository from WRF Thompson source
+  formulas; WRF source itself is not redistributed here.
+variables:
+- name: input_T
+  units: K
+  shape:
+  - 3
+  - 12
+  staggering: mass
+  dtype: float64
+  tolerance_abs: 1.0e-10
+  tolerance_rel: 1.0e-12
+  tolerance_rationale: fp64 synthetic thermodynamic input
+  tier_overrides: null
+- name: input_p
+  units: Pa
+  shape:
+  - 3
+  - 12
+  staggering: mass
+  dtype: float64
+  tolerance_abs: 1.0e-08
+  tolerance_rel: 1.0e-12
+  tolerance_rationale: fp64 synthetic pressure input
+  tier_overrides: null
+- name: input_rho
+  units: kg m-3
+  shape:
+  - 3
+  - 12
+  staggering: mass
+  dtype: float64
+  tolerance_abs: 1.0e-12
+  tolerance_rel: 1.0e-12
+  tolerance_rationale: rho computed with WRF mp_gt_driver formula
+  tier_overrides: null
+- name: input_dt
+  units: s
+  shape:
+  - 1
+  staggering: mass
+  dtype: float64
+  tolerance_abs: 0.0
+  tolerance_rel: 0.0
+  tolerance_rationale: static Thompson timestep
+  tier_overrides: null
+- name: input_qv
+  units: kg kg-1
+  shape:
+  - 3
+  - 12
+  staggering: mass
+  dtype: float64
+  tolerance_abs: 1.0e-12
+  tolerance_rel: 1.0e-12
+  tolerance_rationale: fp64 hydrometeor input
+  tier_overrides: null
+- name: input_qc
+  units: kg kg-1
+  shape:
+  - 3
+  - 12
+  staggering: mass
+  dtype: float64
+  tolerance_abs: 1.0e-12
+  tolerance_rel: 1.0e-12
+  tolerance_rationale: fp64 hydrometeor input
+  tier_overrides: null
+- name: input_qr
+  units: kg kg-1
+  shape:
+  - 3
+  - 12
+  staggering: mass
+  dtype: float64
+  tolerance_abs: 1.0e-12
+  tolerance_rel: 1.0e-12
+  tolerance_rationale: fp64 hydrometeor input
+  tier_overrides: null
+- name: input_qi
+  units: kg kg-1
+  shape:
+  - 3
+  - 12
+  staggering: mass
+  dtype: float64
+  tolerance_abs: 1.0e-12
+  tolerance_rel: 1.0e-12
+  tolerance_rationale: fp64 hydrometeor input
+  tier_overrides: null
+- name: input_qs
+  units: kg kg-1
+  shape:
+  - 3
+  - 12
+  staggering: mass
+  dtype: float64
+  tolerance_abs: 1.0e-12
+  tolerance_rel: 1.0e-12
+  tolerance_rationale: fp64 hydrometeor input
+  tier_overrides: null
+- name: input_qg
+  units: kg kg-1
+  shape:
+  - 3
+  - 12
+  staggering: mass
+  dtype: float64
+  tolerance_abs: 1.0e-12
+  tolerance_rel: 1.0e-12
+  tolerance_rationale: fp64 hydrometeor input
+  tier_overrides: null
+- name: input_Ni
+  units: kg-1
+  shape:
+  - 3
+  - 12
+  staggering: mass
+  dtype: float64
+  tolerance_abs: 0.001
+  tolerance_rel: 1.0e-06
+  tolerance_rationale: fp64 number concentration input
+  tier_overrides: null
+- name: input_Nr
+  units: kg-1
+  shape:
+  - 3
+  - 12
+  staggering: mass
+  dtype: float64
+  tolerance_abs: 0.001
+  tolerance_rel: 1.0e-06
+  tolerance_rationale: fp64 number concentration input
+  tier_overrides: null
+- name: output_qv
+  units: kg kg-1
+  shape:
+  - 3
+  - 12
+  staggering: mass
+  dtype: float64
+  tolerance_abs: 1.0e-10
+  tolerance_rel: 1.0e-08
+  tolerance_rationale: ADR-005 hydrometeor tolerance
+  tier_overrides: null
+- name: output_qc
+  units: kg kg-1
+  shape:
+  - 3
+  - 12
+  staggering: mass
+  dtype: float64
+  tolerance_abs: 1.0e-10
+  tolerance_rel: 1.0e-08
+  tolerance_rationale: ADR-005 hydrometeor tolerance
+  tier_overrides: null
+- name: output_qr
+  units: kg kg-1
+  shape:
+  - 3
+  - 12
+  staggering: mass
+  dtype: float64
+  tolerance_abs: 1.0e-10
+  tolerance_rel: 1.0e-08
+  tolerance_rationale: ADR-005 hydrometeor tolerance
+  tier_overrides: null
+- name: output_qi
+  units: kg kg-1
+  shape:
+  - 3
+  - 12
+  staggering: mass
+  dtype: float64
+  tolerance_abs: 1.0e-10
+  tolerance_rel: 1.0e-08
+  tolerance_rationale: ADR-005 hydrometeor tolerance
+  tier_overrides: null
+- name: output_qs
+  units: kg kg-1
+  shape:
+  - 3
+  - 12
+  staggering: mass
+  dtype: float64
+  tolerance_abs: 1.0e-10
+  tolerance_rel: 1.0e-08
+  tolerance_rationale: ADR-005 hydrometeor tolerance
+  tier_overrides: null
+- name: output_qg
+  units: kg kg-1
+  shape:
+  - 3
+  - 12
+  staggering: mass
+  dtype: float64
+  tolerance_abs: 1.0e-10
+  tolerance_rel: 1.0e-08
+  tolerance_rationale: ADR-005 hydrometeor tolerance
+  tier_overrides: null
+- name: output_Ni
+  units: kg-1
+  shape:
+  - 3
+  - 12
+  staggering: mass
+  dtype: float64
+  tolerance_abs: 0.001
+  tolerance_rel: 1.0e-06
+  tolerance_rationale: ADR-005 number concentration tolerance
+  tier_overrides: null
+- name: output_Nr
+  units: kg-1
+  shape:
+  - 3
+  - 12
+  staggering: mass
+  dtype: float64
+  tolerance_abs: 0.001
+  tolerance_rel: 1.0e-06
+  tolerance_rationale: ADR-005 number concentration tolerance
+  tier_overrides: null
+- name: output_T
+  units: K
+  shape:
+  - 3
+  - 12
+  staggering: mass
+  dtype: float64
+  tolerance_abs: 1.0e-08
+  tolerance_rel: 1.0e-10
+  tolerance_rationale: fp64 latent heating tolerance
+  tier_overrides: null
+files:
+- path: fixtures/samples/analytic-thompson-column-v1.npz
+  checksum_sha256: 81de264f443f5ad153a1b05256dabc2a01856a41e800181aea1b332f2f5011d7
+  bytes: 7770
+  external: false

@@ -1,0 +1,26 @@
+{
+  "artifact_paths": [
+    "artifacts/m5/hlo_dump/thompson_column_production.txt",
+    "artifacts/m5/tier1_thompson_parity.json",
+    "artifacts/m5/tier2_thompson_invariants.json"
+  ],
+  "backend": "jax",
+  "benchmark": "m5_thompson_column",
+  "case": "analytic-thompson-column-v1",
+  "device_to_host_bytes_post_init": 0,
+  "gpu_name": "cuda:0",
+  "hardware": "RTX 5090 32GB",
+  "host_device_transfer_bytes": 0,
+  "host_to_device_bytes_post_init": 0,
+  "jax_version": "0.10.0",
+  "kernel_launches": 1,
+  "kernel_launches_per_step": 1,
+  "local_memory_bytes": null,
+  "local_memory_bytes_per_kernel": null,
+  "occupancy_pct": null,
+  "profiler_limitation": "ncu/nsys counters blocked by workstation perfmon policy; HLO launch count and JAX timing are recorded, register/local memory left null",
+  "registers_per_kernel": null,
+  "registers_per_thread": null,
+  "temporary_bytes_per_step": 0,
+  "wall_time_s": 0.00012779596727341413
+}
