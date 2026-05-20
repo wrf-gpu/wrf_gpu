@@ -24,13 +24,15 @@ Project constitution, current milestone, milestone plan, sprint objective, file 
 
 ## Available AI families and their valid roles
 
-| Family | Worker | Tester | Reviewer | Critical-Review | Side-Opinion / Tie-Break / Test-Tool |
-|---|---|---|---|---|---|
-| Claude (Opus 4.7 / Sonnet 4.6) | yes | yes | yes | yes | yes |
-| Codex (gpt-5.5 xhigh) | yes | yes | yes | yes | yes |
-| **Gemini 3.5 high-flash (`agy`)** | **no** | **no (sole)** — only as side-runner alongside Claude/codex tester | **no (sole)** — only side-runner | **no (sole)** — only side-runner | **yes — preferred for speed** |
+| Family | Primary Worker (new sprint impl) | Bug-fix Parallel-Pair | Tester | Reviewer | Critical-Review | Side-Opinion / Tools / Sidecar |
+|---|---|---|---|---|---|---|
+| **Codex (gpt-5.5 xhigh)** — frontrunner | **yes (default)** | yes | yes | yes | yes (primary for memory/skill patches) | yes |
+| **Claude (Opus 4.7 / Sonnet 4.6)** | yes | yes | yes | **yes (primary reviewer)** | yes | yes |
+| **Gemini 3.5 high-flash (`agy`)** | no (sole); yes when paired in bug-fix parallel-pair | **yes — mandatory in every parallel-pair** | no (sole); side-runner only | no (sole); side-runner only, and parallel side-runner for large/complex reviews | no (sole); supplementary only | **yes — unconstrained, preferred for speed** |
 
-Reason for Gemini constraints: new to this project, no in-repo track record yet. Promote to wider roles after ≥3 successful side-runner deliveries (manager updates the track-record table at `.agent/references/dispatching-gemini.md` after each delivery).
+**Bug-fix parallel-pair rule (mandatory per user directive 2026-05-20)**: every confirmed issue dispatches ≥2 AIs in parallel to identify and propose a fix. One of the two MUST be Gemini (speed advantage). The other is codex or Claude (depth, hallucination check). Manager combines candidates and picks the best (or merges). Without the pair, a single Gemini fix could ship a hallucinated coefficient; with the pair, hallucination risk goes to ~zero.
+
+**Large/complex reviews — Gemini parallel side-runner**: when a review is non-trivial (e.g. milestone closeout, large ADR, contested sprint acceptance), dispatch Gemini in parallel with the primary reviewer (Claude Opus 4.7). Gemini's report is supplementary; the primary reviewer's verdict is binding.
 
 ## Hard rules
 

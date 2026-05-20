@@ -6,18 +6,18 @@ Third AI available to this project alongside Claude (Opus 4.7 / Sonnet 4.6) and 
 
 - **What it is**: Google Antigravity CLI wrapper around Gemini 3.5 high-flash. Authored as a coding model, benchmark-comparable to Claude Opus 4.7 and Codex gpt-5.5 on coding tasks.
 - **Speed**: ~4x faster than Opus 4.7. This is the load-bearing property — cheap to ask for parallel opinions.
-- **Allowed roles** (per project constitution + user directive 2026-05-20):
-  - **Second / third opinion** (side runner) alongside codex critical-review or Claude tester.
-  - **Tie-breaker** when codex + Claude disagree.
-  - **Test-tool author** (quick sanity scripts, one-off probes).
-  - **Report drafter / summarizer** (read state, point out anomalies).
-  - **Diagnosis side-runner** in parallel with codex diagnosis.
-- **Forbidden roles**:
-  - NEVER **primary worker** for sprint implementation. Worker = codex or Claude, per existing sprint contract.
+- **Allowed roles** (per user directive 2026-05-20 evening, updated after Gemini's first two deliveries proved high-value):
+  - **Second / third opinion** (side runner) alongside codex critical-review or Claude tester. **Always-on for any non-trivial decision.**
+  - **Bug-fix parallel-pair (mandatory)**: every confirmed issue dispatches ≥2 AIs to identify and propose a fix. One of the two MUST be Gemini. The other is codex or Claude. Manager combines candidates. Rationale: hallucination risk on Gemini drops to ~zero when paired with a slower, deeper AI; speed advantage stays useful. Without the pair, single-Gemini fixes could ship a hallucinated coefficient. With the pair, the risk is bounded.
+  - **Large / complex reviews — Gemini in parallel** (alongside the primary reviewer, not as the binding reviewer). Primary reviewer remains Claude Opus 4.7 (and codex for critical-review on memory/skill/governance patches). Gemini's parallel report is supplementary and feeds into the manager's decision memo.
+  - **Tools / sidecars / scripts / report drafts / quick diagnostic probes**: unconstrained. Use Gemini whenever it brings the project forward — speed is the value.
+  - **Sprint frontrunner — codex gpt-5.5 xhigh remains the default primary worker**. Gemini does not replace codex for new sprint implementation. Gemini may run as a second worker in a parallel-pair on bug-fix sprints per the rule above.
+- **Forbidden roles** (still apply):
+  - NEVER **sole primary worker** for sprint implementation. Workers are codex or Claude, with optional Gemini parallel-pair when the manager dispatches one.
   - NEVER **sole tester** for a sprint. Tester gate requires codex- or Claude-class AI. Gemini may run alongside, not instead of.
   - NEVER **sole reviewer / sole judge** for an ADR, milestone closeout, or sprint acceptance.
   - NEVER **sole critical-reviewer** for memory or skill patches.
-- **Reasoning**: model is new to this project. Benchmarks ≠ track record. Until Gemini has accumulated ≥3 successful side-runner deliveries in this repo, treat its output as a third datapoint not a deciding vote.
+- **Reasoning**: Gemini has demonstrated high-value side-runner output (1 novel reviewer check + 1 specific coefficient bug found in first two deliveries) but the project still has limited track record on its hallucination profile. The parallel-pair rule eliminates hallucination risk on consequential decisions; the unconstrained-tooling rule captures Gemini's speed value where the risk is low.
 
 ## CLI invocation
 
