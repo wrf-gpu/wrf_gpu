@@ -1,0 +1,126 @@
+HloModule jit_column_thermo, is_scheduled=true, entry_computation_layout={(f32[40]{0}, f32[40]{0}, f32[40]{0}, f32[40]{0})->(f32[40]{0}, f32[40]{0}, f32[40]{0}, f32[40]{0})}, allow_spmd_sharding_propagation_to_parameters={true,true,true,true}, allow_spmd_sharding_propagation_to_output={true,true,true,true}, frontend_attributes={fingerprint_before_lhs="30edf4602c87171b0a91dd6bc7696ebd"}
+
+FileNames
+1 "/tmp/wrf_gpu2_adr007/scripts/precision_bench.py"
+2 "/tmp/wrf_gpu2_adr007/src/gpuwrf/backends/jax/column.py"
+
+FunctionNames
+1 "<module>"
+2 "main"
+3 "run_all"
+4 "run_one"
+5 "run_m2_column"
+6 "column_thermo"
+
+FileLocations
+1 {file_name_id=1 function_name_id=1 line=617 end_line=617 column=21 end_column=27}
+2 {file_name_id=1 function_name_id=2 line=596 end_line=596 column=15 end_column=92}
+3 {file_name_id=1 function_name_id=3 line=555 end_line=555 column=25 end_column=87}
+4 {file_name_id=1 function_name_id=4 line=372 end_line=372 column=15 end_column=77}
+5 {file_name_id=1 function_name_id=5 line=258 end_line=258 column=15 end_column=41}
+6 {file_name_id=2 function_name_id=6 line=33 end_line=33 column=16 end_column=63}
+7 {file_name_id=2 function_name_id=6 line=33 end_line=33 column=66 end_column=93}
+8 {file_name_id=2 function_name_id=6 line=33 end_line=33 column=72 end_column=92}
+9 {file_name_id=2 function_name_id=6 line=33 end_line=33 column=24 end_column=62}
+10 {file_name_id=2 function_name_id=6 line=26 end_line=26 column=14 end_column=74}
+11 {file_name_id=2 function_name_id=6 line=26 end_line=26 column=26 end_column=51}
+12 {file_name_id=2 function_name_id=6 line=31 end_line=31 column=23 end_column=70}
+13 {file_name_id=2 function_name_id=6 line=31 end_line=31 column=45 end_column=70}
+14 {file_name_id=2 function_name_id=6 line=30 end_line=30 column=18 end_column=44}
+15 {file_name_id=2 function_name_id=6 line=25 end_line=25 column=18 end_column=64}
+16 {file_name_id=2 function_name_id=6 line=25 end_line=25 column=46 end_column=63}
+17 {file_name_id=2 function_name_id=6 line=25 end_line=25 column=30 end_column=44}
+18 {file_name_id=2 function_name_id=6 line=23 end_line=23 column=14 end_column=65}
+19 {file_name_id=2 function_name_id=6 line=23 end_line=23 column=26 end_column=46}
+20 {file_name_id=2 function_name_id=6 line=24 end_line=24 column=19 end_column=32}
+21 {file_name_id=2 function_name_id=6 line=22 end_line=22 column=13 end_column=57}
+22 {file_name_id=2 function_name_id=6 line=22 end_line=22 column=25 end_column=51}
+
+StackFrames
+1 {file_location_id=1 parent_frame_id=1}
+2 {file_location_id=2 parent_frame_id=2}
+3 {file_location_id=3 parent_frame_id=3}
+4 {file_location_id=4 parent_frame_id=4}
+5 {file_location_id=5 parent_frame_id=5}
+6 {file_location_id=6 parent_frame_id=6}
+7 {file_location_id=7 parent_frame_id=6}
+8 {file_location_id=8 parent_frame_id=6}
+9 {file_location_id=9 parent_frame_id=6}
+10 {file_location_id=10 parent_frame_id=6}
+11 {file_location_id=11 parent_frame_id=6}
+12 {file_location_id=12 parent_frame_id=6}
+13 {file_location_id=13 parent_frame_id=6}
+14 {file_location_id=14 parent_frame_id=6}
+15 {file_location_id=15 parent_frame_id=6}
+16 {file_location_id=16 parent_frame_id=6}
+17 {file_location_id=17 parent_frame_id=6}
+18 {file_location_id=18 parent_frame_id=6}
+19 {file_location_id=19 parent_frame_id=6}
+20 {file_location_id=20 parent_frame_id=6}
+21 {file_location_id=21 parent_frame_id=6}
+22 {file_location_id=22 parent_frame_id=6}
+
+
+%fused_add_maximum (param_0.15: f32[40], param_1.27: f32[40], param_2.28: f32[40]) -> (f32[40], f32[40], f32[40]) {
+  %param_1.27 = f32[40]{0} parameter(1)
+  %param_0.15 = f32[40]{0} parameter(0)
+  %param_2.28 = f32[40]{0} parameter(2)
+  %sub.6.3.clone.1 = f32[40]{0} subtract(%param_0.15, %param_2.28), metadata={op_name="jit(column_thermo)/sub" stack_frame_id=22}
+  %constant_17_2_clone_1 = f32[] constant(0)
+  %broadcast.1.4.clone.1 = f32[40]{0} broadcast(%constant_17_2_clone_1), dimensions={}
+  %max.5.3.clone.1 = f32[40]{0} maximum(%sub.6.3.clone.1, %broadcast.1.4.clone.1), metadata={op_name="jit(column_thermo)/max" stack_frame_id=21}
+  %constant_15_1_clone_1 = f32[] constant(0.32)
+  %mul.19.3.clone.1 = f32[40]{0} broadcast(%constant_15_1_clone_1), dimensions={}, metadata={op_name="jit(column_thermo)/mul" stack_frame_id=20}
+  %mul.22.3.clone.1 = f32[40]{0} multiply(%max.5.3.clone.1, %mul.19.3.clone.1), metadata={op_name="jit(column_thermo)/mul" stack_frame_id=20}
+  %constant_16_1_clone_1 = f32[] constant(0.72)
+  %mul.20.3.clone.1 = f32[40]{0} broadcast(%constant_16_1_clone_1), dimensions={}, metadata={op_name="jit(column_thermo)/mul" stack_frame_id=19}
+  %mul.21.3.clone.1 = f32[40]{0} multiply(%param_2.28, %mul.20.3.clone.1), metadata={op_name="jit(column_thermo)/mul" stack_frame_id=19}
+  %sub.7.3.clone.1 = f32[40]{0} subtract(%mul.21.3.clone.1, %param_0.15), metadata={op_name="jit(column_thermo)/sub" stack_frame_id=19}
+  %max.6.3.clone.1 = f32[40]{0} maximum(%sub.7.3.clone.1, %broadcast.1.4.clone.1), metadata={op_name="jit(column_thermo)/max" stack_frame_id=18}
+  %constant_14_1_clone_1 = f32[] constant(0.04)
+  %mul.18.3.clone.1 = f32[40]{0} broadcast(%constant_14_1_clone_1), dimensions={}, metadata={op_name="jit(column_thermo)/mul" stack_frame_id=17}
+  %mul.23.3.clone.1 = f32[40]{0} multiply(%max.6.3.clone.1, %mul.18.3.clone.1), metadata={op_name="jit(column_thermo)/mul" stack_frame_id=17}
+  %constant_13_1_clone_1 = f32[] constant(0.18)
+  %mul.17.3.clone.1 = f32[40]{0} broadcast(%constant_13_1_clone_1), dimensions={}, metadata={op_name="jit(column_thermo)/mul" stack_frame_id=16}
+  %mul.24.3.clone.1 = f32[40]{0} multiply(%param_0.15, %mul.17.3.clone.1), metadata={op_name="jit(column_thermo)/mul" stack_frame_id=16}
+  %min.1.3.clone.1 = f32[40]{0} minimum(%mul.23.3.clone.1, %mul.24.3.clone.1), metadata={op_name="jit(column_thermo)/min" stack_frame_id=15}
+  %sub.9.1.clone.1 = f32[40]{0} subtract(%mul.22.3.clone.1, %min.1.3.clone.1), metadata={op_name="jit(column_thermo)/sub" stack_frame_id=14}
+  %constant_11_1_clone_1 = f32[] constant(2490.03979)
+  %mul.16.1.clone.1 = f32[40]{0} broadcast(%constant_11_1_clone_1), dimensions={}, metadata={op_name="jit(column_thermo)/mul" stack_frame_id=13}
+  %mul.25.1.clone.1 = f32[40]{0} multiply(%sub.9.1.clone.1, %mul.16.1.clone.1), metadata={op_name="jit(column_thermo)/mul" stack_frame_id=13}
+  %add.4.1.clone.1 = f32[40]{0} add(%param_1.27, %mul.25.1.clone.1), metadata={op_name="jit(column_thermo)/add" stack_frame_id=12}
+  %sub.10.1 = f32[40]{0} subtract(%add.4.1.clone.1, %param_1.27), metadata={op_name="jit(column_thermo)/sub" stack_frame_id=9}
+  %constant_10_1 = f32[] constant(1004)
+  %mul.15.1 = f32[40]{0} broadcast(%constant_10_1), dimensions={}, metadata={op_name="jit(column_thermo)/mul" stack_frame_id=6}
+  %mul.26.1 = f32[40]{0} multiply(%sub.10.1, %mul.15.1), metadata={op_name="jit(column_thermo)/mul" stack_frame_id=6}
+  %sub.8.1.clone.1 = f32[40]{0} subtract(%param_0.15, %mul.22.3.clone.1), metadata={op_name="jit(column_thermo)/sub" stack_frame_id=11}
+  %add.3.1.clone.1 = f32[40]{0} add(%sub.8.1.clone.1, %min.1.3.clone.1), metadata={op_name="jit(column_thermo)/add" stack_frame_id=11}
+  %constant_12_1_clone_1 = f32[] constant(1e-08)
+  %max.4.1.clone.1 = f32[40]{0} broadcast(%constant_12_1_clone_1), dimensions={}, metadata={op_name="jit(column_thermo)/max" stack_frame_id=10}
+  %max.7.1.clone.1 = f32[40]{0} maximum(%add.3.1.clone.1, %max.4.1.clone.1), metadata={op_name="jit(column_thermo)/max" stack_frame_id=10}
+  %sub.11.1 = f32[40]{0} subtract(%max.7.1.clone.1, %param_0.15), metadata={op_name="jit(column_thermo)/sub" stack_frame_id=8}
+  %constant_9_1 = f32[] constant(2.5e+06)
+  %mul.14.1 = f32[40]{0} broadcast(%constant_9_1), dimensions={}, metadata={op_name="jit(column_thermo)/mul" stack_frame_id=7}
+  %mul.27.1 = f32[40]{0} multiply(%sub.11.1, %mul.14.1), metadata={op_name="jit(column_thermo)/mul" stack_frame_id=7}
+  %add.5.1 = f32[40]{0} add(%mul.26.1, %mul.27.1), metadata={op_name="jit(column_thermo)/add" stack_frame_id=6}
+  ROOT %tuple.2 = (f32[40]{0}, f32[40]{0}, f32[40]{0}) tuple(%add.5.1, %max.7.1.clone.1, %add.4.1.clone.1)
+}
+
+ENTRY %main.1 (temperature_initial.1: f32[40], qv_initial.1: f32[40], pressure_initial.1: f32[40], saturation_qv.1: f32[40]) -> (f32[40], f32[40], f32[40], f32[40]) {
+  %pressure_initial.1 = f32[40]{0} parameter(2), metadata={op_name="pressure_initial"}
+  %saturation_qv.1 = f32[40]{0} parameter(3), metadata={op_name="saturation_qv"}
+  %qv_initial.1 = f32[40]{0} parameter(1), metadata={op_name="qv_initial"}
+  %temperature_initial.1 = f32[40]{0} parameter(0), metadata={op_name="temperature_initial"}
+  %loop_add_maximum_fusion = (f32[40]{0}, f32[40]{0}, f32[40]{0}) fusion(%qv_initial.1, %temperature_initial.1, %saturation_qv.1), kind=kLoop, calls=%fused_add_maximum, metadata={op_name="jit(column_thermo)/add" stack_frame_id=6}
+  %get-tuple-element.3 = f32[40]{0} get-tuple-element(%loop_add_maximum_fusion), index=2, metadata={op_name="jit(column_thermo)/add" stack_frame_id=6}
+  %get-tuple-element.4 = f32[40]{0} get-tuple-element(%loop_add_maximum_fusion), index=1, metadata={op_name="jit(column_thermo)/add" stack_frame_id=6}
+  %get-tuple-element.6 = f32[40]{0} get-tuple-element(%loop_add_maximum_fusion), index=0, metadata={op_name="jit(column_thermo)/add" stack_frame_id=6}
+  %tuple.3 = (f32[40]{0}, f32[40]{0}, f32[40]{0}, f32[40]{0}) tuple(%get-tuple-element.3, %get-tuple-element.4, %pressure_initial.1, %get-tuple-element.6)
+  %get-tuple-element.7 = f32[40]{0} get-tuple-element(%tuple.3), index=0
+  %get-tuple-element.8 = f32[40]{0} get-tuple-element(%tuple.3), index=1
+  %get-tuple-element.9 = f32[40]{0} get-tuple-element(%tuple.3), index=2
+  %get-tuple-element.10 = f32[40]{0} get-tuple-element(%tuple.3), index=3
+  %copy.1 = f32[40]{0} copy(%get-tuple-element.9)
+  ROOT %tuple.4 = (f32[40]{0}, f32[40]{0}, f32[40]{0}, f32[40]{0}) tuple(%get-tuple-element.7, %get-tuple-element.8, %copy.1, %get-tuple-element.10)
+}
+

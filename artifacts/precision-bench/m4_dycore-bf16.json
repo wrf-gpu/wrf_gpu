@@ -1,0 +1,14 @@
+{
+  "artifact_paths": [
+    "artifacts/precision-bench/profiler-probe.json",
+    "artifacts/precision-bench/cpu-gen2-probe.json"
+  ],
+  "backend": "jax",
+  "benchmark": "m4_dycore",
+  "case": "m4-dycore-40x80x80-single-step",
+  "device_backend": "gpu",
+  "kernel_wall_time_us": null,
+  "precision": "bf16",
+  "rationale": "not applicable under ADR-007 candidate policy: M4 dycore includes pressure/acoustic-adjacent and mass-continuity-critical paths that remain FP64-locked; benchmark intentionally not run as a production candidate",
+  "status": "not_applicable"
+}
