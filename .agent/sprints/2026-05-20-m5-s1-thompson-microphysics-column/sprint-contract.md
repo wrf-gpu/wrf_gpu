@@ -432,3 +432,57 @@ When done, type `/exit`.
 **Backstop**: if order fix doesn't reduce T error to <0.1K as diagnosis predicts, file `BLOCKER-m5-s1-order-refactor.md` with concrete probe outputs. Manager will then either (a) dispatch a parallel agent to investigate the secondary table/moment contributions OR (b) accept narrow-scope M5-S1 closeout with the order-fix delta documented + table-export as M5-S1.x.
 
 When done, type `/exit`.
+
+---
+
+# Attempt-5 amendment (2026-05-20 evening)
+
+Tester A4 (Claude Opus 4.7 xhigh) returned **Accept-with-required-fixes (Path C)**. All 6 worker A4 load-bearing claims independently verified. Adversarial probe confirmed Gemini side-runner #2's coefficient bug discovery: `thompson_column.py:277-278` literal `6.0` must be `4.0` (cie/cig mix-up; factor 1.5 in clipped `lami` → ~3.375× in `Ni` at clamped levels). Gemini's HLO-unroll concern moot (no tables inlined). Stale fixture-manifest text flagged minor.
+
+## Required fixes for attempt 5 (in scope, narrow)
+
+1. **`thompson_column.py:277-278` — fix the lami clipping numerator** (P0 blocker):
+   ```
+   - lami = jnp.where(xdi < 5.0e-6, 6.0 / 5.0e-6, lami)
+   - lami = jnp.where(xdi > 300.0e-6, 6.0 / 300.0e-6, lami)
+   + lami = jnp.where(xdi < 5.0e-6, 4.0 / 5.0e-6, lami)
+   + lami = jnp.where(xdi > 300.0e-6, 4.0 / 300.0e-6, lami)
+   ```
+   Or equivalently `CIE2 / 5.0e-6` where `CIE2 = bm_i + mu_i + 1 = 4.0` (matches WRF `module_mp_thompson.F.pre:688,1920,1931`). Encoding as a named constant `CIE2 = 4.0` in `thompson_constants.py` is preferred over a magic literal — same as ADR-002 SoA pattern.
+
+2. **Fixture manifest cleanup** (minor): remove or update the stale "1e30 m layer depths" text in `fixtures/manifests/analytic-thompson-column-v1.yaml` (and any peer fixture-generation script) — attempt 4 replaced the `dz=1e30` hack with a source-level sedimentation bypass, so the text is incorrect.
+
+3. **Regenerate all M5 artifacts** under the corrected lami formula:
+   - `artifacts/m5/tier1_thompson_parity.json` (expect improvement on `Ni` and ice-related `qi/qs`)
+   - `artifacts/m5/tier2_thompson_invariants.json` (no regression expected; conservation should still hold)
+   - `artifacts/m5/thompson_gate_result.json`
+   - `artifacts/m5/thompson_profile.json`
+   - `artifacts/m5/hlo_dump/*` (0-byte diff must still hold)
+
+4. **Update worker report**: write `worker-a5-report.md` documenting the 1-line fix, before/after parity numbers per field, confirmation that tier-2/HLO/launches are unchanged.
+
+5. **Tier-1 tolerance posture**: if the lami fix alone moves `qi/qs` errors inside ADR-005 strict tolerances → close M5-S1 with strict tolerances. If NOT (likely, since 20% of residual is genuine table-proxy work) → leave the auto-loosened tolerances at the attempt-4 levels documented in `tier1_thompson_parity.json`, file a clean `M5-S1-NEEDS-S1X.md` naming the residual fields and their max-abs/rel errors after the lami fix, and recommend immediate dispatch of M5-S1.x for table export.
+
+## Out of scope for attempt 5 (defer to M5-S1.x)
+
+- Lookup-table export from WRF (`t_Efrw`, `tps_iaus`, `tni_iaus`, snow/graupel moments, rain-freezing tables). M5-S1.x is a separate sprint serial-before-M5-S2.
+- Any other potential typos that Gemini parallel side-audit may surface — those go into M5-S1.x's contract if confirmed, NOT into attempt-5.
+
+## Dispatch pattern (new bug-fix parallel-pair policy per user directive 2026-05-20)
+
+- **Primary worker (frontrunner)**: codex gpt-5.5 xhigh — applies the fix, regenerates artifacts, writes worker-a5-report.md, commits.
+- **Parallel side-runner**: Gemini 3.5 high-flash via `agy` — independent audit of `thompson_column.py` + `thompson_saturation.py` + `thompson_constants.py` for OTHER cie/cig confusions or similar transcription typos. Output is a `gemini-side-audit-attempt5.md` report with file:line + WRF citation per suspect. **No fixes applied by Gemini** — output is suspect list only. Confirmed suspects feed into M5-S1.x scope.
+
+Both dispatch concurrently. Manager combines after both return.
+
+## Expected attempt-5 wall-time
+
+- Codex worker A5: 20-40 min (1-line fix + artifact regeneration + report writing).
+- Gemini side-audit: 5-15 min wall-clock (fast scan + report).
+- Combined manager review + commit: 5 min.
+
+Total: ~45-60 min budget.
+
+## Backstop
+
+If lami fix produces parity numbers WORSE than attempt-4 (regression), worker A5 immediately stops and files `BLOCKER-m5-s1-attempt5-lami-regression.md`. Manager investigates with parallel-pair on the diagnostic.
