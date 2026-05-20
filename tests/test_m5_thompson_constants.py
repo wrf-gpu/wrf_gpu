@@ -1,8 +1,12 @@
 from __future__ import annotations
 
 import math
+from pathlib import Path
+
+import yaml
 
 from gpuwrf.physics import thompson_constants as c
+from gpuwrf.physics.thompson_tables import TABLE_ASSET, THOMPSON_TABLES, asset_sha256
 
 
 def test_thompson_constants_match_wrf_source_values():
@@ -32,3 +36,17 @@ def test_thompson_derived_constants_match_source_formulas():
     assert math.isclose(c.CIE2, c.BM_I + c.MU_I + 1.0, rel_tol=0.0, abs_tol=1.0e-15)
     assert math.isclose(c.CGE11, 0.5 * (c.BV_G_MP8 + 5.0 + 2.0 * c.MU_G_MP8), rel_tol=0.0, abs_tol=1.0e-15)
     assert math.isclose(c.CGG11, math.gamma(c.CGE11), rel_tol=1.0e-7)
+
+
+def test_thompson_table_asset_is_pinned_in_manifest():
+    manifest = yaml.safe_load(Path("fixtures/manifests/analytic-thompson-column-v1.yaml").read_text(encoding="utf-8"))
+    entries = [entry for entry in manifest["files"] if entry["path"] == "data/fixtures/thompson-tables-v1.npz"]
+    assert entries
+    assert TABLE_ASSET.exists()
+    assert entries[0]["checksum_sha256"] == asset_sha256()
+
+
+def test_runtime_tables_have_expected_wrf_shapes():
+    assert THOMPSON_TABLES.t_Efrw.shape == (100, 100)
+    assert THOMPSON_TABLES.iaus.shape == (64, 55, 3)
+    assert THOMPSON_TABLES.snow_sa.shape == (10,)

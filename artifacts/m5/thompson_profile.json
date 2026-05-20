@@ -13,8 +13,8 @@
   "host_device_transfer_bytes": 0,
   "host_to_device_bytes_post_init": 0,
   "jax_version": "0.10.0",
-  "kernel_launches": 1,
-  "kernel_launches_per_step": 1,
+  "kernel_launches": 5,
+  "kernel_launches_per_step": 5,
   "local_memory_bytes": null,
   "local_memory_bytes_per_kernel": null,
   "occupancy_pct": null,
@@ -22,5 +22,5 @@
   "registers_per_kernel": null,
   "registers_per_thread": null,
   "temporary_bytes_per_step": 0,
-  "wall_time_s": 0.0002042414853349328
+  "wall_time_s": 0.0002473419881425798
 }

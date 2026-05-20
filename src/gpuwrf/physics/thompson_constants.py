@@ -30,15 +30,18 @@ D0R = 50.0e-6
 D0S = 300.0e-6
 D0G = 350.0e-6
 AM_R = PI * RHO_W / 6.0
+AM_S = 0.069
 AM_I = PI * RHO_I / 6.0
 D0I = (XM0I / AM_I) ** (1.0 / 3.0)
 AM_G_MP8 = PI * RHO_G_MP8 / 6.0
 
 # Source: module_mp_thompson.F.pre lines 101-168, 670-725, 786-817.
 BM_R = 3.0
+BM_S = 2.0
 BM_I = 3.0
 BM_G = 3.0
 MU_R = 0.0
+MU_S = 0.6357
 MU_I = 0.0
 MU_G = 0.0
 CIE2 = BM_I + MU_I + 1.0
@@ -62,6 +65,7 @@ CRG3 = 6.0
 CRG9 = 6.0
 CRG10 = 1.0
 CRG11 = 2.0
+ORG1 = 1.0 / CRG3
 ORG2 = 1.0 / CRG2
 ORG3 = 1.0 / CRG3
 CRE2 = 1.0
@@ -124,10 +128,12 @@ def constant_table() -> dict[str, float]:
         "D0S",
         "D0G",
         "AM_R",
+        "AM_S",
         "AM_I",
         "D0I",
         "AM_G_MP8",
         "BM_R",
+        "BM_S",
         "BM_I",
         "BM_G",
         "CIE2",
