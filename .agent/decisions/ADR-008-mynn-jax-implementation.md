@@ -1,0 +1,36 @@
+# ADR-008 - MYNN2.5 JAX Implementation Mapping
+
+Date: 2026-05-20
+Author: M5-S2 worker draft (Codex gpt-5.5)
+Status: ACCEPTED worker draft, pending tester/reviewer/manager closeout
+Scope: post-hoc implementation record for the M5-S2 MYNN2.5 PBL column kernel.
+
+## Decision
+
+Decision: keep the M5-S2 MYNN2.5 JAX column candidate with a source-derived `nvfortran` harness fixture, carry-forward Tier-1 tolerances, and a packed XLA tridiagonal solve in the hot path. The public API is `step_mynn_pbl_column(state, dt, *, debug=False) -> state`, with `MynnPBLColumnState` carrying `u`, `v`, `w`, `theta`, `qv`, `tke`, `p`, `rho`, `dz`, and diagnostic `km`, `kh`, `el` leaves at fp64 (`src/gpuwrf/physics/mynn_pbl.py:43`, `src/gpuwrf/physics/mynn_pbl.py:47`, `src/gpuwrf/physics/mynn_pbl.py:277`).
+
+This ADR is an implementation record, not a forward architecture decision. ADR-001 still selects JAX as the backend, ADR-002 still controls state layout, and ADR-007 still says `state.w` is `needs-empirical-test`, so this sprint carries `w` as fp64 and does not downcast or vertically advect it (`.agent/decisions/ADR-007-precision-policy.md:65`, `src/gpuwrf/physics/mynn_pbl.py:47`).
+
+## WRF Source Mapping
+
+WRF source mapping: the available source of truth in this worktree is `/mnt/data/canairy_meteo/artifacts/wrf_gpu_src/WRF/phys/MYNN-EDMF/misc/module_bl_mynn.F90`, not the exact `../wrf_gpu/.../module_bl_mynn.F.pre` path named in the contract. That file documents `qke` as twice TKE and `el` as mixing length (`/mnt/data/canairy_meteo/artifacts/wrf_gpu_src/WRF/phys/MYNN-EDMF/misc/module_bl_mynn.F90:67`, `/mnt/data/canairy_meteo/artifacts/wrf_gpu_src/WRF/phys/MYNN-EDMF/misc/module_bl_mynn.F90:68`). The constants in `mynn_constants.py` mirror the WRF closure constants block (`/mnt/data/canairy_meteo/artifacts/wrf_gpu_src/WRF/phys/MYNN-EDMF/misc/module_bl_mynn.F90:278`, `/mnt/data/canairy_meteo/artifacts/wrf_gpu_src/WRF/phys/MYNN-EDMF/misc/module_bl_mynn.F90:309`, `src/gpuwrf/physics/mynn_constants.py:11`, `src/gpuwrf/physics/mynn_constants.py:47`).
+
+The JAX kernel maps the Level-2 gradient/stability structure from `mym_level2` (`/mnt/data/canairy_meteo/artifacts/wrf_gpu_src/WRF/phys/MYNN-EDMF/misc/module_bl_mynn.F90:1482`, `/mnt/data/canairy_meteo/artifacts/wrf_gpu_src/WRF/phys/MYNN-EDMF/misc/module_bl_mynn.F90:1578`) into `_level2_stability` (`src/gpuwrf/physics/mynn_pbl.py:166`, `src/gpuwrf/physics/mynn_pbl.py:185`). The local mixing-length path is the bounded WRF option-2 family (`/mnt/data/canairy_meteo/artifacts/wrf_gpu_src/WRF/phys/MYNN-EDMF/misc/module_bl_mynn.F90:1881`, `/mnt/data/canairy_meteo/artifacts/wrf_gpu_src/WRF/phys/MYNN-EDMF/misc/module_bl_mynn.F90:2016`) and is represented in M5-S2 by the neutral bounded interface length in `_mixing_length` (`src/gpuwrf/physics/mynn_pbl.py:195`, `src/gpuwrf/physics/mynn_pbl.py:203`). TKE production and eddy diffusivity follow the source terms and `dfm/dfh/dfq` structure in `mym_turbulence` (`/mnt/data/canairy_meteo/artifacts/wrf_gpu_src/WRF/phys/MYNN-EDMF/misc/module_bl_mynn.F90:2845`, `/mnt/data/canairy_meteo/artifacts/wrf_gpu_src/WRF/phys/MYNN-EDMF/misc/module_bl_mynn.F90:2867`, `src/gpuwrf/physics/mynn_pbl.py:206`, `src/gpuwrf/physics/mynn_pbl.py:221`).
+
+## Tridiagonal Solver
+
+WRF `mym_predict` uses `tridiag2` for the vertical implicit solve (`/mnt/data/canairy_meteo/artifacts/wrf_gpu_src/WRF/phys/MYNN-EDMF/misc/module_bl_mynn.F90:3147`, `/mnt/data/canairy_meteo/artifacts/wrf_gpu_src/WRF/phys/MYNN-EDMF/misc/module_bl_mynn.F90:5318`, `/mnt/data/canairy_meteo/artifacts/wrf_gpu_src/WRF/phys/MYNN-EDMF/misc/module_bl_mynn.F90:5350`). The repository now has a reusable `solve_tridiagonal` production path backed by XLA's tridiagonal primitive for launch discipline and a `solve_tridiagonal_thomas_reference` recurrence used by tests (`src/gpuwrf/physics/tridiagonal_solver.py:13`, `src/gpuwrf/physics/tridiagonal_solver.py:31`, `tests/test_m5_mynn_tridiagonal.py:8`, `tests/test_m5_mynn_tridiagonal.py:27`). The hot path stacks `u`, `v`, `theta`, `qv`, and TKE RHS into a single multi-RHS tridiagonal call, which is why the profile reports five clustered launches and a raw HLO marker count of six (`src/gpuwrf/physics/mynn_pbl.py:255`, `src/gpuwrf/physics/mynn_pbl.py:259`, `artifacts/m5/mynn_profile.json:17`, `artifacts/m5/mynn_profile.json:23`).
+
+## Surface Stub
+
+The real MYNN surface layer remains out of M5-S2 scope. The stub is a neutral bulk diagnostic that returns `ustar`, heat/moisture fluxes, and momentum stresses from lowest-level winds and scalar deltas (`src/gpuwrf/physics/mynn_surface_stub.py:16`, `src/gpuwrf/physics/mynn_surface_stub.py:27`, `src/gpuwrf/physics/mynn_surface_stub.py:36`). The production kernel currently keeps the no-external-flux Tier-2 conservation invariant and does not apply the surface fluxes to prognostic tendencies; this is deliberate carry-forward debt for real surface coupling.
+
+## Fixture And Gate Status
+
+The contract asked for a WRF-object Fortran harness, but the exact object path is absent and the manifest records `exact_module_bl_mynn_o=absent` (`scripts/wrf_mynn_harness_build.sh:9`, `scripts/wrf_mynn_harness_build.sh:31`, `fixtures/manifests/analytic-mynn-pbl-column-v1.yaml:3`, `fixtures/manifests/analytic-mynn-pbl-column-v1.yaml:5`). The generated fixture therefore uses a standalone source-derived `nvfortran` harness (`scripts/wrf_mynn_harness.f90:39`, `scripts/wrf_mynn_harness.f90:95`) and the manifest marks carry-forward tolerances for outputs (`fixtures/manifests/analytic-mynn-pbl-column-v1.yaml:129`, `fixtures/manifests/analytic-mynn-pbl-column-v1.yaml:199`, `fixtures/manifests/analytic-mynn-pbl-column-v1.yaml:188`, `fixtures/manifests/analytic-mynn-pbl-column-v1.yaml:198`).
+
+Gate dry-run: Tier-1 passes under carry-forward tolerances with max absolute errors `u=0.04008024664424781`, `v=0.01649585470824011`, `theta=0.23906881761558907`, `qv=3.6290880358128e-05`, `tke=0.8322094921247578`, and `w=0.0` (`artifacts/m5/tier1_mynn_parity.json:12`, `artifacts/m5/tier1_mynn_parity.json:18`, `artifacts/m5/tier1_mynn_parity.json:29`). Tier-2 passes positivity, momentum, theta, qv, and finite checks (`artifacts/m5/tier2_mynn_invariants.json:3`, `artifacts/m5/tier2_mynn_invariants.json:23`, `artifacts/m5/tier2_mynn_invariants.json:24`). The profile reports `kernel_launches_per_step=5`, `raw_hlo_launch_marker_count=6`, `temporary_bytes_per_step=0`, and HLO size `53944` bytes (`artifacts/m5/mynn_profile.json:13`, `artifacts/m5/mynn_profile.json:18`, `artifacts/m5/mynn_profile.json:23`, `artifacts/m5/mynn_profile.json:26`). The gate result is `GO_CARRYFORWARD` because the exact WRF object is absent and Tier-1 uses carry-forward tolerances (`artifacts/m5/mynn_gate_result.json:2`, `artifacts/m5/mynn_gate_result.json:6`).
+
+## Consequences
+
+Positive consequence: the M5-S2 branch now has a JAX-resident MYNN2.5-shaped column kernel, reusable tridiagonal solver tests, fixture/manifest plumbing, HLO identity proof, and Tier-2 invariant artifacts. Main residual: this is not yet a full WRF-object oracle, and the surface-layer coupling is diagnostic-only. The next decision is whether to accept `GO_CARRYFORWARD` for M5 close and schedule M5-S2.x to bind against the exact MYNN object or the newer `module_bl_mynnedmf` object tree.

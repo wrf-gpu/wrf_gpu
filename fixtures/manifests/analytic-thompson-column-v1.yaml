@@ -1,6 +1,6 @@
 fixture_id: analytic-thompson-column-v1
 source: wrf-derived
-source_commit: wrf-thompson-via-fortran-harness sha256=043ff5b8bf41d635d02e2014b50fcf8553212b7372f5e2d2cd41545a48aa8c2c;
+source_commit: wrf-thompson-via-fortran-harness sha256=665e5508beb228b54e9277bb5b1701fbbd3fb70e95d6d54863c4d85ec4019780;
   thompson_tables_sha256=a76b0f28e8b910df0a5dde529f02460b5e7a3ea92d9e543f673c43e2a5b02f9f;
   module_mp_thompson.F.pre
 wrf_version: v4.7.1
@@ -13,7 +13,7 @@ precision_reference: fp64
 generation_command: python scripts/m5_generate_thompson_fixture.py
 external_uri: data/scratch/wrf_thompson_harness
 sample_slice_path: fixtures/samples/analytic-thompson-column-v1.npz
-git_commit: 00e7ee8
+git_commit: fdfc77c
 license_notes: Synthetic input columns run through locally compiled WRF v4.7.1 Thompson
   object; harness binary is gitignored and referenced by SHA-256 in files.
 variables:
@@ -262,8 +262,8 @@ files:
   bytes: 7026
   external: false
 - path: data/scratch/wrf_thompson_harness
-  checksum_sha256: 043ff5b8bf41d635d02e2014b50fcf8553212b7372f5e2d2cd41545a48aa8c2c
-  bytes: 290968
+  checksum_sha256: 665e5508beb228b54e9277bb5b1701fbbd3fb70e95d6d54863c4d85ec4019780
+  bytes: 290952
   external: true
 - path: data/fixtures/thompson-tables-v1.npz
   checksum_sha256: a76b0f28e8b910df0a5dde529f02460b5e7a3ea92d9e543f673c43e2a5b02f9f

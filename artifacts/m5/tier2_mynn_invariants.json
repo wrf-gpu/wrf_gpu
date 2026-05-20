@@ -1,0 +1,29 @@
+{
+  "dt_s": 30.0,
+  "energy_conservation": {
+    "pass": true,
+    "theta_relative_residual": 0.0,
+    "tolerance": 1e-10
+  },
+  "iterations": 10,
+  "mass_conservation": {
+    "pass": true,
+    "qv_relative_residual": 1.663255467603231e-16,
+    "tolerance": 1e-10
+  },
+  "momentum_conservation": {
+    "pass": true,
+    "relative_residual": 2.458093788575482e-16,
+    "tolerance": 1e-10
+  },
+  "nan_inf": {
+    "pass": true,
+    "violations": 0
+  },
+  "pass": true,
+  "positivity": {
+    "pass": true,
+    "tke_floor": 5e-06,
+    "violations": 0
+  }
+}
