@@ -317,11 +317,11 @@ def _saturation_adjustment(state: ThompsonColumnState, dt: float) -> ThompsonCol
     )
 
 
-def _warm_rain(state: ThompsonColumnState, dt: float) -> ThompsonColumnState:
-    """Uses WRF warm-rain rates from lines 2242-2268 and 3561-3636."""
+def _warm_rain_collection(state: ThompsonColumnState, dt: float) -> ThompsonColumnState:
+    """Applies WRF warm-rain autoconversion/accretion rates from lines 2242-2268."""
 
     tempc, diffu, _visco, tcond, lvap, ocp, rhof, rhof2, vsc2 = _air_properties(state)
-    del tempc
+    del tempc, diffu, tcond, lvap, ocp, rhof2, vsc2
     rc, lamc, xdc, mvd_c, active_cloud = _cloud_distribution(state.qc, state.rho)
     rr, nr, lamr, ilamr, mvd_r, n0_r, active_rain = _rain_distribution(state.qr, state.Nr, state.rho)
 
@@ -349,8 +349,13 @@ def _warm_rain(state: ThompsonColumnState, dt: float) -> ThompsonColumnState:
     accretion = prr_rcw * float(dt) / state.rho
     transfer = jnp.minimum(state.qc, autoconv + accretion)
     nr_gain = pnr_wau * float(dt) / state.rho
-    state = state.replace(qc=state.qc - transfer, qr=state.qr + transfer, Nr=state.Nr + nr_gain)
+    return state.replace(qc=state.qc - transfer, qr=state.qr + transfer, Nr=state.Nr + nr_gain)
 
+
+def _rain_evaporation(state: ThompsonColumnState, dt: float) -> ThompsonColumnState:
+    """Applies WRF Srivastava-Coen rain evaporation from lines 3561-3638."""
+
+    _tempc, diffu, _visco, tcond, lvap, ocp, _rhof, rhof2, vsc2 = _air_properties(state)
     # Srivastava-Coen rain evaporation, WRF lines 3561-3636.
     qvs = saturation_mixing_ratio_liquid(state.p, state.T)
     ssatw = state.qv / qvs - 1.0
@@ -390,19 +395,43 @@ def _warm_rain(state: ThompsonColumnState, dt: float) -> ThompsonColumnState:
     )
 
 
-def _ice_sources(state: ThompsonColumnState, dt: float) -> ThompsonColumnState:
-    """Handles WRF-mapped deposition, freezing, melting, and phase partitioning."""
+def _warm_rain(state: ThompsonColumnState, dt: float) -> ThompsonColumnState:
+    """Preserves the legacy combined warm-rain helper for focused tests."""
 
+    return _rain_evaporation(_warm_rain_collection(state, dt), dt)
+
+
+def _instant_melt_freeze(state: ThompsonColumnState, dt: float) -> ThompsonColumnState:
+    """Applies WRF instant cloud-ice melt/cloud-water freeze from lines 4005-4031."""
+
+    del dt
     ocp = cp_inverse(state.qv)
     lvap = latent_heat_vaporization(state.T)
     lfus2 = LSUB - lvap
 
-    # Instant cloud-ice melt and cloud-water homogeneous freezing, WRF lines 4010-4028.
     qi_melt = jnp.where(state.T > T_0, state.qi, 0.0)
-    state = state.replace(qc=state.qc + qi_melt, qi=state.qi - qi_melt, Ni=jnp.where(qi_melt > 0.0, 0.0, state.Ni), T=state.T - LFUS * ocp * qi_melt)
+    state = state.replace(
+        qc=state.qc + qi_melt,
+        qi=state.qi - qi_melt,
+        Ni=jnp.where(qi_melt > 0.0, 0.0, state.Ni),
+        T=state.T - LFUS * ocp * qi_melt,
+    )
 
     qc_freeze = jnp.where(state.T < HGFR, state.qc, 0.0)
-    state = state.replace(qc=state.qc - qc_freeze, qi=state.qi + qc_freeze, Ni=state.Ni + qc_freeze / XM0I, T=state.T + lfus2 * ocp * qc_freeze)
+    return state.replace(
+        qc=state.qc - qc_freeze,
+        qi=state.qi + qc_freeze,
+        Ni=state.Ni + qc_freeze / XM0I,
+        T=state.T + lfus2 * ocp * qc_freeze,
+    )
+
+
+def _ice_sources(state: ThompsonColumnState, dt: float) -> ThompsonColumnState:
+    """Stages WRF-mapped ice tendencies before condensation and rain evaporation."""
+
+    ocp = cp_inverse(state.qv)
+    lvap = latent_heat_vaporization(state.T)
+    lfus2 = LSUB - lvap
 
     # Rain freezing fallback branch from WRF lines 2658-2669 (lookup-table branch omitted).
     rain_freeze = jnp.where(state.T < HGFR, state.qr, 0.0)
@@ -472,7 +501,9 @@ def _ice_sources(state: ThompsonColumnState, dt: float) -> ThompsonColumnState:
         qi=state.qi + ice_deposition,
         qs=state.qs + snow_deposition,
         qg=state.qg + graupel_deposition,
-        Ni=jnp.maximum(0.0, state.Ni + jnp.where(ice_deposition < 0.0, ice_deposition / jnp.maximum(xmi, XM0I), ice_deposition / XM0I)),
+        # WRF lines 2719-2727 update pni_ide only in sublimation; positive
+        # deposition partitions mass but does not create new cloud-ice number.
+        Ni=jnp.maximum(0.0, state.Ni + jnp.where(ice_deposition < 0.0, ice_deposition / jnp.maximum(xmi, XM0I), 0.0)),
         T=state.T + LSUB * ocp * (vapor_sink - vapor_source),
         rho=density_from_pressure_temperature(state.p, state.T + LSUB * ocp * (vapor_sink - vapor_source), state.qv - vapor_sink + vapor_source),
     )
@@ -496,13 +527,20 @@ def _debug_checks(state: ThompsonColumnState, debug: bool) -> ThompsonColumnStat
 
 
 def _step_thompson_column_impl(state: ThompsonColumnState, dt: float, debug: bool) -> ThompsonColumnState:
-    """Runs the fused source/sink Thompson column body with sedimentation removed."""
+    """Runs the fused source/sink Thompson body in WRF checkpoint order."""
 
     state = _clip_species(state)
     state = _debug_checks(state, debug)
-    state = _saturation_adjustment(state, dt)
+    # WRF order: stage rates/tendencies (2917-3247), update working state
+    # before condensation (3250-3273), cloud cond/evap (3456-3558),
+    # rain evaporation (3561-3638), instant melt/freeze (4005-4031),
+    # final write/balance (4033-4142). This source/sink subset uses the
+    # same checkpoints while keeping sedimentation out of scope.
+    state = _warm_rain_collection(state, dt)
     state = _ice_sources(state, dt)
-    state = _warm_rain(state, dt)
+    state = _saturation_adjustment(state, dt)
+    state = _rain_evaporation(state, dt)
+    state = _instant_melt_freeze(state, dt)
     state = _finish(state)
     return _debug_checks(state, debug)
 

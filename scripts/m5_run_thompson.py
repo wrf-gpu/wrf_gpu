@@ -134,13 +134,11 @@ def _write_side_artifacts(diff_sha: str) -> None:
 
     maintainability = """# Thompson M5-S1 Maintainability
 
-Fixture generation now uses the attempt-3 standalone Fortran harness at `scripts/wrf_thompson_harness.f90`, built by `scripts/wrf_thompson_harness_build.sh` into gitignored `data/scratch/wrf_thompson_harness`. The harness links the existing WRF v4.7.1 Thompson object (`/mnt/data/canairy_meteo/artifacts/wrf_gpu_src/WRF/phys/module_mp_thompson.o`) plus `module_mp_radar.o`, `module_model_constants.o`, and `module_wrf_error.o`, then calls `thompson_init` before `mp_gt_driver`. `gfortran` is unavailable on this workstation and the WRF module files are NVHPC-built, so the build uses `nvfortran` for ABI compatibility.
+Fixture generation uses the standalone Fortran harness at `scripts/wrf_thompson_harness.f90`, built by `scripts/wrf_thompson_harness_build.sh` into gitignored `data/scratch/wrf_thompson_harness`. Attempt 4 no longer links the unmodified Thompson object: the build creates `data/scratch/module_mp_thompson_nosed.F90`, inserts a no-sedimentation terminal-velocity zeroing patch immediately before the WRF sedimentation flux loops (`module_mp_thompson.F.pre` lines 3653-4003), compiles that patched object with `nvfortran`, then links it with `module_mp_radar.o`, `module_model_constants.o`, and `module_wrf_error.o`. Physical `dz=1000 m` is now passed to the driver.
 
-The JAX kernel remains the attempt-2 WRF-source transcription: driver boundary species prep and rho formula (lines 1070-1274), saturation over water/ice (lines 5444-5495), cloud condensation Newton adjustment (lines 3456-3556), Berry-Reinhardt autoconversion (lines 2242-2258), rain-cloud-water collection shape (lines 2260-2268, with bounded collection-efficiency proxy because `t_Efrw` is a generated table), Srivastava-Coen rain evaporation (lines 3561-3636), cloud-ice/snow/graupel deposition and sublimation (lines 2709-2770), rain freezing + snow/graupel melting (lines 2658-2669 and 2845-2889), and final mass/number constraints (lines 4033-4142).
+The JAX kernel now follows the WRF checkpoint order: stage warm-rain and ice source/sink updates, apply saturation adjustment after the working-state update checkpoint (lines 3250-3273 and 3456-3558), run rain evaporation (3561-3638), then apply instant ice melt/cloud-water freeze (4005-4031) and final balances (4033-4142). The isolated Ni fix follows lines 2719-2727: positive deposition no longer creates cloud-ice number; sublimation alone removes number.
 
-Sedimentation status: the harness suppresses sediment fallout numerically by passing `dz=1.0e30` for every column level; this makes the flux-divergence path at lines 3655-3972 negligible without modifying the WRF object. This is weaker than a source-level bypass and remains an explicit residual risk. Also skipped in the JAX candidate: aerosol activation/scavenging, exact WRF-generated lookup tables not carried as fixture inputs, radar/effective-radius diagnostics, and graupel volume/hail state.
-
-The fixture oracle contains no Thompson source/sink formulas in Python; it writes text inputs, invokes the compiled WRF harness, and packages Fortran outputs. The broad tier-1 tolerances document the remaining exact-parity gap between the compiled WRF oracle and the current JAX table/proxy implementation. The JAX kernel is one public `@jax.jit` with `dt` and `debug` static. The stripped sibling physically omits debug hooks; diff sha256 is `{diff_sha}`.
+The fixture oracle contains no Thompson source/sink formulas in Python; it invokes compiled WRF code and packages outputs. ADR-005 tolerances are restored (`1e-10/1e-8` q-fields; `1e-3/1e-6` number concentrations). Attempt 4 still fails those strict tolerances, so `BLOCKER-m5-s1-attempt4-tolerance.md` records the remaining table/moment parity gap. The JAX kernel remains one public `@jax.jit`; the stripped sibling physically omits debug hooks; diff sha256 is `{diff_sha}`.
 """.format(diff_sha=diff_sha)
     (ART / "maintainability.md").write_text(maintainability, encoding="utf-8")
     _write_json(
@@ -148,10 +146,10 @@ The fixture oracle contains no Thompson source/sink formulas in Python; it write
         {
             "sprint": "2026-05-20-m5-s1-thompson-microphysics-column",
             "worker": "codex-gpt-5.5",
-            "sprint_attempts": 3,
-            "reviewer_rejections": 2,
+            "sprint_attempts": 4,
+            "reviewer_rejections": 3,
             "escalation_events": 0,
-            "notes": "Attempt 3 replaced the Python formula oracle with a compiled WRF Fortran harness. The JAX candidate remains the attempt-2 WRF-source transcription.",
+            "notes": "Attempt 4 added WRF-order sequencing, Ni sublimation-only number handling, strict ADR-005 tolerances, and a patched no-sedimentation Fortran harness. Strict tier-1 remains blocked by WRF table/moment parity debt.",
         },
     )
 

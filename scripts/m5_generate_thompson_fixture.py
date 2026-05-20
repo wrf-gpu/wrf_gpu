@@ -214,10 +214,10 @@ def _manifest_variables(shape: tuple[int, ...]) -> list[dict[str, Any]]:
     for name in ("Ni", "Nr"):
         variables.append(_variable(f"input_{name}", "kg-1", shape, 1.0e-2, 1.0e-5, "WRF harness number-concentration input"))
     for name in ("qv", "qc", "qr", "qi", "qs", "qg"):
-        variables.append(_variable(f"output_{name}", "kg kg-1", shape, 2.0e-4, 1.0, "fortran-harness independent oracle; broad attempt-3 tolerance documents unresolved exact WRF table/proxy parity"))
+        variables.append(_variable(f"output_{name}", "kg kg-1", shape, 1.0e-10, 1.0e-8, "ADR-005 strict Thompson source/sink parity tolerance; attempt-4 may fail until table parity lands"))
     for name in ("Ni", "Nr"):
-        variables.append(_variable(f"output_{name}", "kg-1", shape, 2.0e6, 10.0, "fortran-harness independent oracle; broad attempt-3 tolerance documents unresolved exact WRF table/proxy parity"))
-    variables.append(_variable("output_T", "K", shape, 2.0, 2.0e-2, "fortran-harness independent oracle; latent-heating tolerance covers Fortran-real vs JAX fp64 ordering"))
+        variables.append(_variable(f"output_{name}", "kg-1", shape, 1.0e-3, 1.0e-6, "ADR-005 strict Thompson number-concentration parity tolerance; attempt-4 may fail until table parity lands"))
+    variables.append(_variable("output_T", "K", shape, 1.0e-8, 1.0e-8, "strict WRF-harness temperature parity tolerance for the source/sink column"))
     return variables
 
 

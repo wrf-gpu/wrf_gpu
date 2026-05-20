@@ -7,7 +7,7 @@ Scope: post-hoc implementation record for the M5-S1 Thompson microphysics column
 
 ## Decision
 
-Decision: keep the attempt-2 JAX Thompson source/sink transcription as the candidate implementation, and replace the Tier-1 oracle with an attempt-3 compiled WRF Fortran harness. The public JAX API remains `step_thompson_column(state, dt, *, debug=False) -> state`, where `state` is the `ThompsonColumnState` pytree carrying `qv`, `qc`, `qr`, `qi`, `qs`, `qg`, `Ni`, `Nr`, `T`, `p`, and `rho`.
+Decision: keep the JAX Thompson source/sink candidate implementation, with attempt-4 WRF-order sequencing and cloud-ice-number fixes, and use a compiled WRF Fortran harness as the Tier-1 oracle. The public JAX API remains `step_thompson_column(state, dt, *, debug=False) -> state`, where `state` is the `ThompsonColumnState` pytree carrying `qv`, `qc`, `qr`, `qi`, `qs`, `qg`, `Ni`, `Nr`, `T`, `p`, and `rho`.
 
 This ADR is not a forward architecture decision. ADR-001 remains the backend decision and ADR-005 remains the first-physics-suite decision. ADR-006 records the implementation and oracle mapping actually used by this sprint.
 
@@ -15,11 +15,11 @@ This ADR is not a forward architecture decision. ADR-001 remains the backend dec
 
 WRF source mapping: the source of truth is `../wrf_gpu/sidecar_reports/post13_thompson_first_divergence_20260508T224837Z/source_snapshots_pre/module_mp_thompson.F.pre`.
 
-The Fortran harness in `scripts/wrf_thompson_harness.f90` uses `module_mp_thompson` from the existing WRF v4.7.1 build. It calls `thompson_init` first, because lookup-table allocation and initialization live in lines 604-1064 and must happen before the driver path. It then calls `mp_gt_driver`, whose call boundary is lines 1070-1564. The harness passes the frozen M5-S1 prognostic fields and writes outputs in `ES24.16E3` text format before the Python fixture packager creates `fixtures/samples/analytic-thompson-column-v1.npz`.
+The Fortran harness in `scripts/wrf_thompson_harness.f90` uses a locally compiled WRF v4.7.1 `module_mp_thompson` object. It calls `thompson_init` first, because lookup-table allocation and initialization live in lines 604-1064 and must happen before the driver path. It then calls `mp_gt_driver`, whose call boundary is lines 1070-1564. The harness passes the frozen M5-S1 prognostic fields and writes outputs in `ES24.16E3` text format before the Python fixture packager creates `fixtures/samples/analytic-thompson-column-v1.npz`.
 
 Build dependency tree:
 
-- `/mnt/data/canairy_meteo/artifacts/wrf_gpu_src/WRF/phys/module_mp_thompson.o`
+- `data/scratch/module_mp_thompson_nosed.o` compiled from `../wrf_gpu/.../module_mp_thompson.F.pre` with the attempt-4 no-sedimentation patch
 - `/mnt/data/canairy_meteo/artifacts/wrf_gpu_src/WRF/phys/module_mp_radar.o`
 - `/mnt/data/canairy_meteo/artifacts/wrf_gpu_src/WRF/share/module_model_constants.o`
 - `/mnt/data/canairy_meteo/artifacts/wrf_gpu_src/WRF/frame/module_wrf_error.o`
@@ -39,15 +39,17 @@ The JAX candidate maps these WRF sections:
 - rain freezing and snow/graupel melting: lines 2658-2669 and 2845-2889
 - tendency bookkeeping and final mass/number constraints: lines 2967-3260 and 4033-4142
 
+Attempt 4 changed the JAX process order to follow WRF checkpoints: source/sink staging and conservation (2917-3247), working-state update before condensation (3250-3273), cloud condensation/evaporation (3456-3558), rain evaporation (3561-3638), instant cloud-ice melt/cloud-water freeze (4005-4031), and final write/balance (4033-4142). It also changed cloud-ice number handling to match lines 2719-2727: `pni_ide` is active only in the sublimation branch, while positive deposition partitions mass without creating new `Ni`.
+
 ## Sedimentation status
 
-Sedimentation status: OUT for M5-S1 per ADR-005. The WRF sedimentation and precipitation accumulation path starts around lines 3655-3972. The attempt-3 harness suppresses sedimentation numerically by passing `dz=1.0e30` for all levels, so flux-divergence fallout is negligible for the synthetic columns. This is weaker than a source-level bypass of lines 3655-3972 and is recorded as residual risk. A follow-up wrapper/table sprint should replace this with an explicit patched WRF source build or exported source-only subroutine if exact no-sedimentation parity becomes blocking.
+Sedimentation status: OUT for M5-S1 per ADR-005. The WRF sedimentation and precipitation accumulation path starts around lines 3655-4003. Attempt 4 replaced the attempt-3 `dz=1.0e30` workaround with a local source patch: `scripts/wrf_thompson_harness_build.sh` copies `module_mp_thompson.F.pre` to `data/scratch/module_mp_thompson_nosed.F90` and inserts a no-sedimentation patch immediately before the sedimentation flux loops. The patch zeroes `vtrk`, `vtnrk`, `vtik`, `vtnik`, `vtsk`, `vtgk`, `vtngk`, `vtck`, and `vtnck`, so the sedimentation loops at lines 3854-4003 execute with zero terminal velocities and no fallout flux. The harness now passes physical `dz=1000 m`.
 
 The JAX kernel itself contains no sedimentation, terminal-velocity, substepping, or precipitation-accumulation code. Aerosol activation/scavenging, exact generated lookup-table parity, radar/effective-radius diagnostics, and hail/graupel volume state are also outside the M5-S1 candidate.
 
 ## Kernel fusion
 
-The JAX implementation uses one public `@jax.jit` with `dt` and `debug` static. `src/gpuwrf/physics/thompson_column_debug_stripped.py` is a hand-stripped sibling with debug calls physically omitted. `python scripts/m5_run_thompson.py` recompiles both paths and rewrites `artifacts/m5/hlo_dump/thompson_column_debug_vs_stripped.diff`; the diff is 0 bytes on the worker run.
+The JAX implementation uses one public `@jax.jit` with `dt` and `debug` static. The process-order refactor is still a single fused JAX call; it only reorders existing source/sink helpers and splits warm-rain collection from rain evaporation so the checkpoints match WRF source order. `src/gpuwrf/physics/thompson_column_debug_stripped.py` is a hand-stripped sibling with debug calls physically omitted. `python scripts/m5_run_thompson.py` recompiles both paths and rewrites `artifacts/m5/hlo_dump/thompson_column_debug_vs_stripped.diff`; the diff is 0 bytes on the worker run when HLO identity holds.
 
 There are no `jnp.array`, `jnp.zeros`, or `jnp.empty` calls in the traced Thompson body. Container construction is via `state.replace(...)` around fused expressions over existing leaves.
 
@@ -57,8 +59,8 @@ An auditor can re-derive the HLO identity proof by rerunning `python scripts/m5_
 
 ## Tolerances
 
-The Fortran harness gives a structurally independent oracle, but it also exposes the current exact-parity gap: the JAX candidate still uses documented proxies where WRF uses generated lookup tables. Therefore the attempt-3 Tier-1 tolerances are broad and explicitly non-final: `abs=2e-4, rel=1.0` for water species, `abs=2e6, rel=10.0` for `Ni/Nr`, and `abs=2 K, rel=2e-2` for temperature. These tolerances are sufficient to keep the independent-oracle pipeline running, but they are not evidence of final WRF Thompson parity. Exact table parity remains a follow-up risk.
+The Fortran harness gives a structurally independent oracle and attempt 4 restored the ADR-005 strict Tier-1 tolerances: `abs=1e-10, rel=1e-8` for water species and `abs=1e-3, rel=1e-6` for `Ni/Nr`; `output_T` is recorded with strict `abs=1e-8, rel=1e-8`. These strict tolerances currently fail. The attempt-4 max absolute errors are `qv=1.4304079020558032e-05`, `qc=1.517228938283358e-04`, `qr=4.760876436193939e-06`, `qi=1.3708094759935232e-04`, `qs=1.447943623500527e-04`, `qg=1.5218435328806104e-05`, `Ni=126975.12500000044`, `Nr=67300.453125`, and `T=0.040290844661740266 K`. The order fix confirmed the diagnosis by reducing the main temperature error below 0.1 K, but exact table/moment parity remains unresolved.
 
 ## Gate dry-run
 
-Gate dry-run: `artifacts/m5/thompson_gate_result.json` is GO on the worker run because Tier-1 and Tier-2 pass under the recorded attempt-3 tolerances and the HLO-derived launch count is within the ADR-001/ADR-005 threshold. Register and local-memory counters remain `null` because Nsight perf counters are blocked by the known workstation perfmon policy.
+Gate dry-run: `artifacts/m5/thompson_gate_result.json` is expected to report `FALLBACK`/correctness failure after attempt 4 because Tier-1 does not meet the restored strict tolerances. This is not a backend performance fallback claim; it is a physics-parity blocker recorded in `.agent/sprints/2026-05-20-m5-s1-thompson-microphysics-column/BLOCKER-m5-s1-attempt4-tolerance.md`. Register and local-memory counters remain `null` because Nsight perf counters are blocked by the known workstation perfmon policy.

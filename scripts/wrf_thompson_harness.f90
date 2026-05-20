@@ -35,7 +35,9 @@ program wrf_thompson_harness
   pii = 1.0
   p = 0.0
   w = 0.0
-  dz = 1.0e30
+  ! Sedimentation is bypassed in the locally patched Thompson object; keep
+  ! physical layer depths so non-sedimentation thermodynamic paths see sane dz.
+  dz = 1000.0
   hgt = 0.0
   refl_10cm = 0.0
   re_cloud = 0.0
