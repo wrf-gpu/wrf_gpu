@@ -1,8 +1,8 @@
 {
   "gate_status": "GO_CARRYFORWARD",
-  "kernel_launches_per_step": 1,
+  "kernel_launches_per_step": 5,
   "local_memory_bytes_per_kernel": null,
-  "rationale": "tier-1/tier-2 pass under carry-forward tolerances; strict ADR-005 parity remains M5-S1.x handoff; HLO-derived launches are within the GO threshold; register/local-memory counters are null due to perfmon restriction",
+  "rationale": "tier-1/tier-2 pass under carry-forward tolerances; strict ADR-005 parity remains blocked after M5-S1.x table export; HLO-derived launches are within the GO threshold; register/local-memory counters are null due to perfmon restriction",
   "registers_per_kernel": null,
   "tier1_pass": true,
   "tier2_pass": true,

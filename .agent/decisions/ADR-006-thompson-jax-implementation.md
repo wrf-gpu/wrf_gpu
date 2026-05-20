@@ -57,9 +57,25 @@ There are no `jnp.array`, `jnp.zeros`, or `jnp.empty` calls in the traced Thomps
 
 An auditor can re-derive the HLO identity proof by rerunning `python scripts/m5_run_thompson.py`. The committed truncated HLO files are readability artifacts only; the proof is the regenerated zero-byte diff from the committed source and stripped sibling.
 
+## M5-S1.x table export amendment
+
+M5-S1.x adds a reproducible Thompson table-export path in `scripts/extract_thompson_tables.py`. The extractor compiles a scratch copy of the WRF `module_mp_thompson.F.pre`, injects a read-only `m5_dump_thompson_tables` subroutine before `END MODULE module_mp_thompson`, calls `thompson_init`, and writes the initialized private table state to a stream dump that Python repacks as `data/fixtures/thompson-tables-v1.npz`.
+
+Exported and pinned tables include:
+
+- `t_Efrw`, initialized by `table_Efrw` at `module_mp_thompson.F.pre:4921-4977` and consumed by rain-collecting-cloud-water at `module_mp_thompson.F.pre:2260-2268`.
+- `tps_iaus`, `tni_iaus`, and `tpi_ide`, initialized by `qi_aut_qs` at `module_mp_thompson.F.pre:4870-4913` and consumed by cloud-ice deposition/autoconversion at `module_mp_thompson.F.pre:2719-2742`.
+- Rain-freezing tables `tpi_qrfz`, `tpg_qrfz`, `tni_qrfz`, and `tnr_qrfz`, initialized by `freezeH2O` at `module_mp_thompson.F.pre:4664-4855` and consumed at `module_mp_thompson.F.pre:2658-2669`.
+- Snow moment coefficients `sa`, `sb`, `cse`, and `csg`, initialized or declared at `module_mp_thompson.F.pre:337-356,730-750` and consumed by the Field snow-moment path at `module_mp_thompson.F.pre:2093-2191`.
+- Graupel moment/coefficient arrays `cge`, `cgg`, `am_g`, `av_g`, `bv_g`, and `rho_g`, declared/initialized at `module_mp_thompson.F.pre:73-156,760-770`.
+
+The current JAX hot path wires the small active rain/cloud collection table, ice autoconversion/deposition tables, and snow moment coefficients through `src/gpuwrf/physics/thompson_tables.py` and `src/gpuwrf/physics/thompson_column.py`. The large rain-freezing tables are extracted and pinned in the asset, but are not yet passed through the jitted timestep body because dynamic gathers from the 4-D rain-freezing tables produced an HLO/launch regression during M5-S1.x (5 counted fusions even after removing the large tables from the hot path; 9 counted fusions with packed rain-freezing tables; 23 with direct dynamic 4-D table reads). This is recorded as the M5-S1.x blocker rather than hidden by gate relabeling.
+
 ## Tolerances
 
 The Fortran harness gives a structurally independent oracle and attempt 4 restored the ADR-005 strict Tier-1 tolerances: `abs=1e-10, rel=1e-8` for water species and `abs=1e-3, rel=1e-6` for `Ni/Nr`; `output_T` is recorded with strict `abs=1e-8, rel=1e-8`. These strict tolerances currently fail. The attempt-4 max absolute errors are `qv=1.4304079020558032e-05`, `qc=1.517228938283358e-04`, `qr=4.760876436193939e-06`, `qi=1.3708094759935232e-04`, `qs=1.447943623500527e-04`, `qg=1.5218435328806104e-05`, `Ni=126975.12500000044`, `Nr=67300.453125`, and `T=0.040290844661740266 K`. The order fix confirmed the diagnosis by reducing the main temperature error below 0.1 K, but exact table/moment parity remains unresolved.
+
+After the M5-S1.x table export, current max absolute residuals are `qv=4.7608781466789915e-06`, `qc=1.2657008724556353e-07`, `qr=4.760876436193939e-06`, `qi=1.269506099959173e-07`, `qs=9.2685395199886e-11`, `qg=2.9509294563467847e-06`, `Ni=126975.12500000079`, `Nr=67300.453125`, and `T=0.011792500929288963 K`. This confirms the table export removed the largest snow, cloud-water, and cloud-ice proxy residuals, but strict ADR-005 remains blocked by rain evaporation/melting, graupel depletion, number concentration, and the rain-freezing-table HLO regression.
 
 ## Gate dry-run
 

@@ -136,9 +136,9 @@ def _write_side_artifacts(diff_sha: str) -> None:
 
 Fixture generation uses the standalone Fortran harness at `scripts/wrf_thompson_harness.f90`, built by `scripts/wrf_thompson_harness_build.sh` into gitignored `data/scratch/wrf_thompson_harness`. The build creates `data/scratch/module_mp_thompson_nosed.F90`, inserts a no-sedimentation terminal-velocity zeroing patch immediately before the WRF sedimentation flux loops (`module_mp_thompson.F.pre` lines 3653-4003), compiles that patched object with `nvfortran`, then links it with `module_mp_radar.o`, `module_model_constants.o`, and `module_wrf_error.o`. Physical `dz=1000 m` is passed to the driver.
 
-The JAX kernel follows the WRF checkpoint order: stage warm-rain and ice source/sink updates, apply saturation adjustment after the working-state update checkpoint (lines 3250-3273 and 3456-3558), run rain evaporation (3561-3638), then apply instant ice melt/cloud-water freeze (4005-4031) and final balances (4033-4142). Source-truth constants now cover the ice `cie(2)` lami clamps and graupel `cge(11)/cgg(11)` sublimation/melting coefficients; `CGG11` is computed from `math.gamma(CGE11)` at module load.
+The JAX kernel follows the WRF checkpoint order: stage warm-rain and ice source/sink updates, apply saturation adjustment after the working-state update checkpoint (lines 3250-3273 and 3456-3558), run rain evaporation (3561-3638), then apply instant ice melt/cloud-water freeze (4005-4031) and final balances (4033-4142). Source-truth constants now cover the ice `cie(2)` lami clamps and graupel `cge(11)/cgg(11)` sublimation/melting coefficients; `CGG11` is computed from `math.gamma(CGE11)` at module load. M5-S1.x exports the WRF Thompson table asset and wires the small active rain/cloud, ice-autoconversion, and snow-moment tables; the large rain-freezing tables remain asset-pinned but blocked from the hot path by the HLO/launch regression recorded in the S1.x blocker.
 
-The fixture oracle contains no Thompson source/sink formulas in Python; it invokes compiled WRF code and packages outputs. Tier-1 passes under documented carry-forward tolerances while strict ADR-005 table/moment parity debt is handed off in `M5-S1-NEEDS-S1X.md`. The JAX kernel remains one public `@jax.jit`; the stripped sibling physically omits debug hooks; diff sha256 is `{diff_sha}`.
+The fixture oracle contains no Thompson source/sink formulas in Python; it invokes compiled WRF code and packages outputs. Tier-1 passes under documented carry-forward tolerances while strict ADR-005 post-table parity debt is recorded in the M5-S1.x blocker. The JAX kernel remains one public `@jax.jit`; the stripped sibling physically omits debug hooks; diff sha256 is `{diff_sha}`.
 """.format(diff_sha=diff_sha)
     (ART / "maintainability.md").write_text(maintainability, encoding="utf-8")
     _write_json(
@@ -149,7 +149,7 @@ The fixture oracle contains no Thompson source/sink formulas in Python; it invok
             "sprint_attempts": 6,
             "reviewer_rejections": 3,
             "escalation_events": 0,
-            "notes": "Attempt 6 closes A5 required fixes while preserving the Fortran harness oracle: CGG11 is computed from gamma(CGE11), the M5 gate labels carry-forward tolerance status explicitly, and strict ADR-005 table/moment parity debt remains handed off to M5-S1.x.",
+            "notes": "M5-S1.x exports the WRF Thompson table asset while preserving the Fortran harness oracle: small active table paths are wired, rain-freezing table hot-path use is blocked by HLO/launch regression, and strict ADR-005 parity remains unresolved.",
         },
     )
 

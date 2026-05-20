@@ -26,7 +26,7 @@ def _tolerance_regime() -> str:
     manifest = yaml.safe_load(MANIFEST.read_text(encoding="utf-8"))
     for variable in manifest["variables"]:
         name = str(variable["name"])
-        rationale = str(variable.get("tolerance_rationale", ""))
+        rationale = str(variable.get("tolerance_rationale", "")).lower()
         if name.startswith("output_") and "carry-forward" in rationale:
             return "carry-forward"
     return "ADR-005-strict"
@@ -74,7 +74,7 @@ def evaluate_gate() -> dict:
         if tolerance_regime == "carry-forward":
             status = "GO_CARRYFORWARD"
             reasons.append(
-                "tier-1/tier-2 pass under carry-forward tolerances; strict ADR-005 parity remains M5-S1.x handoff; HLO-derived launches are within the GO threshold; register/local-memory counters are null due to perfmon restriction"
+                "tier-1/tier-2 pass under carry-forward tolerances; strict ADR-005 parity remains blocked after M5-S1.x table export; HLO-derived launches are within the GO threshold; register/local-memory counters are null due to perfmon restriction"
             )
         else:
             reasons.append("tier-1/tier-2 pass under ADR-005 strict tolerances and HLO-derived launches are within the GO threshold; register/local-memory counters are null due to perfmon restriction")

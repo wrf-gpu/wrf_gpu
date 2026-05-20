@@ -7,6 +7,9 @@ SCRATCH="${ROOT}/data/scratch"
 OUT="${SCRATCH}/wrf_thompson_harness"
 OBJ="${SCRATCH}/wrf_thompson_harness.o"
 THOMPSON_SRC="${ROOT}/../wrf_gpu/sidecar_reports/post13_thompson_first_divergence_20260508T224837Z/source_snapshots_pre/module_mp_thompson.F.pre"
+if [[ ! -f "${THOMPSON_SRC}" ]]; then
+  THOMPSON_SRC="/home/enric/src/wrf_gpu/sidecar_reports/post13_thompson_first_divergence_20260508T224837Z/source_snapshots_pre/module_mp_thompson.F.pre"
+fi
 PATCHED_SRC="${SCRATCH}/module_mp_thompson_nosed.F90"
 PATCHED_OBJ="${SCRATCH}/module_mp_thompson_nosed.o"
 LOG="${SCRATCH}/wrf_thompson_harness_build.log"

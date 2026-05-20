@@ -15,6 +15,7 @@ from gpuwrf.physics.thompson_constants import (
     AM_G_MP8,
     AM_I,
     AM_R,
+    AM_S,
     C_CUBE,
     C_SQRD,
     CCG2_NU12,
@@ -71,6 +72,18 @@ from gpuwrf.physics.thompson_saturation import (
     latent_heat_vaporization,
     saturation_mixing_ratio_ice,
     saturation_mixing_ratio_liquid,
+)
+from gpuwrf.physics.thompson_tables import (
+    DR_FIRST,
+    DR_LAST,
+    N_EFRW_C,
+    N_EFRW_R,
+    N_I_TABLE,
+    N_I1_TABLE,
+    NT_I_FIRST,
+    R_I_FIRST,
+    THOMPSON_TABLES,
+    ThompsonTableBundle,
 )
 
 
@@ -215,14 +228,76 @@ def _ice_distribution(qi, Ni, rho):
     return ri, ni, lami, ilami, xdi, xmi, qi > R1
 
 
-def _snow_moment_proxy(qs, rho, tempc):
-    """Provides the snow moment inputs used by WRF deposition/melting formulas."""
+def _lookup_digit_index(values, first_power: int, size: int):
+    """Matches WRF's decade/digit table indexes without a search loop."""
+
+    safe = jnp.maximum(values, jnp.finfo(jnp.asarray(values).dtype).tiny)
+    decade = jnp.floor(jnp.log10(safe))
+    digit = jnp.floor(safe / (10.0**decade))
+    index = digit + 9.0 * (decade - float(first_power)) - 1.0
+    return jnp.clip(index.astype(jnp.int32), 0, size - 1)
+
+
+def _take2(table, i, j):
+    """Dynamic 2-D table read lowered as a gather, not as Python indexing."""
+
+    return jnp.take(jnp.ravel(table), i.astype(jnp.int32) * table.shape[1] + j.astype(jnp.int32))
+
+
+def _take3_last(table, i, j):
+    """Reads a packed 2-D table with a small last dimension."""
+
+    base = (i.astype(jnp.int32) * table.shape[1] + j.astype(jnp.int32)) * table.shape[2]
+    offsets = jnp.arange(table.shape[2], dtype=jnp.int32)
+    return jnp.take(jnp.ravel(table), base[..., None] + offsets)
+
+
+def _snow_moment(order, smo2, tempc, tables: ThompsonTableBundle):
+    """Evaluates the Field et al. snow-moment polynomial used by WRF."""
+
+    sa = tables.snow_sa
+    sb = tables.snow_sb
+    tc2 = tempc * tempc
+    order2 = order * order
+    loga = (
+        sa[0]
+        + sa[1] * tempc
+        + sa[2] * order
+        + sa[3] * tempc * order
+        + sa[4] * tc2
+        + sa[5] * order2
+        + sa[6] * tc2 * order
+        + sa[7] * tempc * order2
+        + sa[8] * tc2 * tempc
+        + sa[9] * order2 * order
+    )
+    b = (
+        sb[0]
+        + sb[1] * tempc
+        + sb[2] * order
+        + sb[3] * tempc * order
+        + sb[4] * tc2
+        + sb[5] * order2
+        + sb[6] * tc2 * order
+        + sb[7] * tempc * order2
+        + sb[8] * tc2 * tempc
+        + sb[9] * order2 * order
+    )
+    return 10.0**loga * smo2**b
+
+
+def _snow_moments(qs, rho, tempc, tables: ThompsonTableBundle = THOMPSON_TABLES):
+    """Provides WRF snow moment inputs from module_mp_thompson.F.pre:2093-2191."""
 
     rs = jnp.maximum(qs * rho, R1)
-    xds = jnp.maximum(D0S, (rs / 0.069) ** 0.5)
-    smo0 = rs / jnp.maximum(0.069 * xds * xds, R1)
-    smo1 = smo0 * xds
-    smof = smo0 * jnp.sqrt(xds)
+    tc0 = jnp.minimum(-0.1, tempc)
+    smob = rs / AM_S
+    smo2 = smob
+    smo0 = _snow_moment(0.0, smo2, tc0, tables)
+    smo1 = _snow_moment(1.0, smo2, tc0, tables)
+    smoc = _snow_moment(tables.cse[0], smo2, tc0, tables)
+    smof = _snow_moment(tables.cse[15], smo2, tc0, tables)
+    xds = jnp.where(qs > R1, smoc / jnp.maximum(smob, R1), 0.0)
     c_snow = C_SQRD + (tempc + 1.5) * (C_CUBE - C_SQRD) / (-30.0 + 1.5)
     c_snow = jnp.maximum(C_SQRD, jnp.minimum(c_snow, C_CUBE))
     return rs, xds, smo0, smo1, smof, c_snow, qs > R1
@@ -319,7 +394,7 @@ def _saturation_adjustment(state: ThompsonColumnState, dt: float) -> ThompsonCol
     )
 
 
-def _warm_rain_collection(state: ThompsonColumnState, dt: float) -> ThompsonColumnState:
+def _warm_rain_collection(state: ThompsonColumnState, dt: float, tables: ThompsonTableBundle = THOMPSON_TABLES) -> ThompsonColumnState:
     """Applies WRF warm-rain autoconversion/accretion rates from lines 2242-2268."""
 
     tempc, diffu, _visco, tcond, lvap, ocp, rhof, rhof2, vsc2 = _air_properties(state)
@@ -339,10 +414,15 @@ def _warm_rain_collection(state: ThompsonColumnState, dt: float) -> ThompsonColu
     prr_wau = jnp.where((rc > 0.01e-3) & active_cloud, jnp.minimum(rc / float(dt), zeta / tau), 0.0)
     pnr_wau = prr_wau / jnp.maximum(AM_R * NU_C_MP8 * 10.0 * D0R**3, R2)
 
-    # WRF rain-collecting-cloud-water shape, lines 2260-2268. The table
-    # value t_Efrw is represented as a bounded efficiency proxy because the
-    # generated lookup table is not a prognostic M5-S1 input.
-    ef_rw = jnp.clip(0.55 + 0.45 * (mvd_r - D0R) / jnp.maximum(2.5e-3 - D0R, R1), 0.0, 1.0)
+    # WRF rain-collecting-cloud-water shape from t_Efrw, initialized at
+    # module_mp_thompson.F.pre:4921-4977 and consumed at lines 2260-2268.
+    idx_r_eff = jnp.clip(
+        jnp.floor(N_EFRW_R * jnp.log(jnp.maximum(mvd_r, DR_FIRST) / DR_FIRST) / jnp.log(DR_LAST / DR_FIRST)),
+        0,
+        N_EFRW_R - 1,
+    ).astype(jnp.int32)
+    idx_c_eff = jnp.clip(jnp.floor(mvd_c * 1.0e6).astype(jnp.int32) - 1, 0, N_EFRW_C - 1)
+    ef_rw = _take2(tables.t_Efrw, idx_r_eff, idx_c_eff)
     prr_rcw_raw = rhof * T1_QR_QC * ef_rw * rc * n0_r * ((lamr + FV_R) ** (-CRE9))
     prr_rcw = jnp.where(active_rain & (mvd_r > D0R) & (mvd_c > D0C), prr_rcw_raw, 0.0)
     prr_rcw = jnp.minimum(jnp.maximum(rc - prr_wau * float(dt), 0.0) / float(dt), prr_rcw)
@@ -428,21 +508,28 @@ def _instant_melt_freeze(state: ThompsonColumnState, dt: float) -> ThompsonColum
     )
 
 
-def _ice_sources(state: ThompsonColumnState, dt: float) -> ThompsonColumnState:
+def _ice_sources(state: ThompsonColumnState, dt: float, tables: ThompsonTableBundle = THOMPSON_TABLES) -> ThompsonColumnState:
     """Stages WRF-mapped ice tendencies before condensation and rain evaporation."""
 
     ocp = cp_inverse(state.qv)
     lvap = latent_heat_vaporization(state.T)
     lfus2 = LSUB - lvap
 
-    # Rain freezing fallback branch from WRF lines 2658-2669 (lookup-table branch omitted).
-    rain_freeze = jnp.where(state.T < HGFR, state.qr, 0.0)
+    # Rain-freezing tables are exported in the asset, but not passed through
+    # the hot path until the HLO/launch blocker in the M5-S1.x report is closed.
+    rr0 = jnp.maximum(state.qr * state.rho, R1)
+    nr0 = jnp.maximum(state.Nr * state.rho, R2)
+    fallback_active = (state.T < HGFR) & (state.qr > R1)
+    ice_freeze = jnp.where(fallback_active, state.qr, 0.0)
+    graupel_freeze = jnp.zeros_like(ice_freeze)
+    nr_loss = jnp.where(fallback_active, state.Nr, 0.0)
     state = state.replace(
-        qr=state.qr - rain_freeze,
-        qi=state.qi + rain_freeze,
-        Ni=state.Ni + jnp.where(rain_freeze > 0.0, state.Nr, 0.0),
-        Nr=jnp.where(rain_freeze > 0.0, 0.0, state.Nr),
-        T=state.T + lfus2 * ocp * rain_freeze,
+        qr=state.qr - ice_freeze - graupel_freeze,
+        qi=state.qi + ice_freeze,
+        qg=state.qg + graupel_freeze,
+        Ni=state.Ni + jnp.where(fallback_active, nr0, 0.0) / state.rho,
+        Nr=jnp.maximum(0.0, state.Nr - nr_loss),
+        T=state.T + lfus2 * ocp * (ice_freeze + graupel_freeze),
     )
     state = state.replace(rho=density_from_pressure_temperature(state.p, state.T, state.qv))
 
@@ -451,7 +538,7 @@ def _ice_sources(state: ThompsonColumnState, dt: float) -> ThompsonColumnState:
     qvs0 = saturation_mixing_ratio_liquid(state.p, T_0)
     del_qvs = jnp.maximum(0.0, qvs0 - state.qv)
     twet = jnp.minimum(state.T, T_0)
-    rs, _xds, smo0, smo1, smof, _c_snow, active_snow = _snow_moment_proxy(state.qs, state.rho, tempc)
+    rs, _xds, smo0, smo1, smof, _c_snow, active_snow = _snow_moments(state.qs, state.rho, tempc, tables)
     rg, ng, _lamg, ilamg, n0_g, active_graupel = _graupel_distribution(state.qg, state.rho)
 
     # Snow/graupel melting formula structure from WRF lines 2845-2889.
@@ -480,32 +567,56 @@ def _ice_sources(state: ThompsonColumnState, dt: float) -> ThompsonColumnState:
     qvsi = saturation_mixing_ratio_ice(state.p, state.T)
     ssati = state.qv / qvsi - 1.0
     t1_subl, rvs = _sublimation_prefactor(state, ssati, diffu, tcond)
-    ri, ni, _lami, ilami, _xdi, xmi, active_ice = _ice_distribution(state.qi, state.Ni, state.rho)
-    rs, _xds, _smo0, smo1, smof, c_snow, active_snow = _snow_moment_proxy(state.qs, state.rho, state.T - 273.15)
+    ri, ni, _lami, ilami, xdi, xmi, active_ice = _ice_distribution(state.qi, state.Ni, state.rho)
+    rs, _xds, _smo0, smo1, smof, c_snow, active_snow = _snow_moments(state.qs, state.rho, state.T - 273.15, tables)
     rg, ng, _lamg, ilamg, n0_g, active_graupel = _graupel_distribution(state.qg, state.rho)
 
-    # Cloud-ice and aggregate deposition/sublimation, WRF lines 2709-2770.
-    pri_ide = C_CUBE * t1_subl * diffu * ssati * rvs * OIG1 * 1.0 * ni * ilami
-    pri_ide = jnp.where(active_ice, pri_ide, 0.0)
-    pri_ide = jnp.where(pri_ide < 0.0, jnp.maximum(-ri / float(dt), pri_ide), jnp.minimum(pri_ide, jnp.maximum(state.qv - qvsi, 0.0) * state.rho / float(dt) * 0.999))
+    idx_i = jnp.where(ri > R_I_FIRST, _lookup_digit_index(ri, -10, N_I_TABLE), 0)
+    idx_i1 = jnp.where(ni > NT_I_FIRST, _lookup_digit_index(ni, 0, N_I1_TABLE), 0)
+
+    # Cloud-ice deposition uses tpi_ide from module_mp_thompson.F.pre:4870-4913;
+    # ice-to-snow autoconversion uses tps/tni_iaus at lines 2731-2742.
+    pri_ide_raw = C_CUBE * t1_subl * diffu * ssati * rvs * OIG1 * 1.0 * ni * ilami
+    pri_ide_raw = jnp.where(active_ice, pri_ide_raw, 0.0)
+    pri_ide_limited = jnp.where(
+        pri_ide_raw < 0.0,
+        jnp.maximum(-ri / float(dt), pri_ide_raw),
+        jnp.minimum(pri_ide_raw, jnp.maximum(state.qv - qvsi, 0.0) * state.rho / float(dt) * 0.999),
+    )
+    iaus = _take3_last(tables.iaus, idx_i, idx_i1)
+    tpi_ide = iaus[..., 2]
+    pri_ide = jnp.where(pri_ide_limited > 0.0, tpi_ide * pri_ide_limited, pri_ide_limited)
+    prs_ide = jnp.where(pri_ide_limited > 0.0, (1.0 - tpi_ide) * pri_ide_limited, 0.0)
+    iau_table_mass = iaus[..., 0]
+    iau_table_num = iaus[..., 1]
+    iau_large = (idx_i == N_I_TABLE - 1) | (xdi > 5.0 * D0S)
+    iau_small = xdi < 0.1 * D0S
+    prs_iau_mass = jnp.where(iau_large, ri * 0.99, jnp.where(iau_small, 0.0, jnp.minimum(ri * 0.99, iau_table_mass)))
+    pni_iau_num = jnp.where(iau_large, ni * 0.95, jnp.where(iau_small, 0.0, jnp.minimum(ni * 0.95, iau_table_num)))
+    prs_iau_mass = jnp.where(active_ice, prs_iau_mass, 0.0)
+    pni_iau_num = jnp.where(active_ice, pni_iau_num, 0.0)
+
     prs_sde = c_snow * t1_subl * diffu * ssati * rvs * (T1_SUBL_QS * smo1 + T2_SUBL_QS * rhof2 * vsc2 * smof)
     prs_sde = jnp.where(active_snow, jnp.where(prs_sde < 0.0, jnp.maximum(-rs / float(dt), prs_sde), jnp.minimum(prs_sde, jnp.maximum(state.qv - qvsi, 0.0) * state.rho / float(dt) * 0.999)), 0.0)
     prg_gde = C_CUBE * t1_subl * diffu * ssati * rvs * n0_g * (T1_SUBL_QG * ilamg**CRE10 + T2_SUBL_QG * vsc2 * rhof2 * ilamg**CGE11)
-    prg_gde = jnp.where(active_graupel, jnp.where(prg_gde < 0.0, jnp.maximum(-rg / float(dt), prg_gde), jnp.minimum(prg_gde, jnp.maximum(state.qv - qvsi, 0.0) * state.rho / float(dt) * 0.999)), 0.0)
+    prg_gde = jnp.where(active_graupel & (ssati < -EPS), jnp.maximum(-rg / float(dt), prg_gde), 0.0)
 
     ice_deposition = pri_ide * float(dt) / state.rho
+    snow_from_ice_deposition = prs_ide * float(dt) / state.rho
+    ice_to_snow = prs_iau_mass / state.rho
+    ice_number_to_snow = pni_iau_num / state.rho
     snow_deposition = prs_sde * float(dt) / state.rho
     graupel_deposition = prg_gde * float(dt) / state.rho
-    vapor_sink = jnp.maximum(0.0, ice_deposition) + jnp.maximum(0.0, snow_deposition) + jnp.maximum(0.0, graupel_deposition)
+    vapor_sink = jnp.maximum(0.0, ice_deposition) + jnp.maximum(0.0, snow_from_ice_deposition) + jnp.maximum(0.0, snow_deposition) + jnp.maximum(0.0, graupel_deposition)
     vapor_source = jnp.maximum(0.0, -ice_deposition) + jnp.maximum(0.0, -snow_deposition) + jnp.maximum(0.0, -graupel_deposition)
     return state.replace(
         qv=state.qv - vapor_sink + vapor_source,
-        qi=state.qi + ice_deposition,
-        qs=state.qs + snow_deposition,
+        qi=state.qi + ice_deposition - ice_to_snow,
+        qs=state.qs + snow_from_ice_deposition + ice_to_snow + snow_deposition,
         qg=state.qg + graupel_deposition,
         # WRF lines 2719-2727 update pni_ide only in sublimation; positive
         # deposition partitions mass but does not create new cloud-ice number.
-        Ni=jnp.maximum(0.0, state.Ni + jnp.where(ice_deposition < 0.0, ice_deposition / jnp.maximum(xmi, XM0I), 0.0)),
+        Ni=jnp.maximum(0.0, state.Ni + jnp.where(ice_deposition < 0.0, ice_deposition / jnp.maximum(xmi, XM0I), 0.0) - ice_number_to_snow),
         T=state.T + LSUB * ocp * (vapor_sink - vapor_source),
         rho=density_from_pressure_temperature(state.p, state.T + LSUB * ocp * (vapor_sink - vapor_source), state.qv - vapor_sink + vapor_source),
     )
