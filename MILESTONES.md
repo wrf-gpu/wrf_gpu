@@ -57,6 +57,7 @@ Deliverables: short forecast driver, conservation checks, drift envelope.
 Acceptance gates: tier 3 and initial tier 4 consistency.
 Likely sprints: coupling, timestep controls, diagnostics.
 Blockers: M4/M5 interfaces.
+Validation source: `wrf_l3/`, `wrf_l2/` daily backfill in `/mnt/data/canairy_meteo/runs/` per `.agent/references/cpu-wrf-baseline.md`. Pin run-IDs into the sprint contract; do not wildcard the directory.
 
 ## M7 - Canary Operational v0
 
@@ -65,6 +66,7 @@ Deliverables: I/O, restart, post-processing, operational verification.
 Acceptance gates: repeatable run, WRF baseline comparison, wall-clock evidence.
 Likely sprints: 3 km pipeline, 1 km memory audit, post-processing.
 Blockers: GPU memory and I/O throughput.
+WRF baseline comparator: the Gen2 daily CPU run for the same AIFS input, per `.agent/references/cpu-wrf-baseline.md` — not a fresh external WRF installation.
 
 ## M8 - Public/Forkable Release
 
