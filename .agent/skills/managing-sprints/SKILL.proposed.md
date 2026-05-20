@@ -39,7 +39,7 @@ Reason for Gemini constraints: new to this project, no in-repo track record yet.
 - No done claim without proof object.
 - No scope expansion without approval.
 - **No sole-AI binding decision when Gemini is involved.** Gemini's verdict is always one input among ≥2 other AI opinions. See `.agent/references/dispatching-gemini.md`.
-- When dispatching a Gemini side-runner: tee output to a named file alongside other agent reports, save the prompt next to it, name the tmux window `gemini-<role>-<sprint>` so janitor distinguishes AI families.
+- When dispatching a Gemini side-runner: ALWAYS use the canonical pattern — tmux new-window + `agy --dangerously-skip-permissions -i` (interactive REPL, not `-p` print) + the onboarding prefix from `.agent/references/gemini-onboarding-prompt.md` prepended to the task prompt + pipe-pane logging + completion-handler teardown. Inline `-p` is reserved for throwaway pings only. See `.agent/references/dispatching-gemini.md` Pattern A. Tee output to a named file alongside other agent reports, save the prompt next to it, name the tmux window `gemini-<role>-<sprint>` so janitor distinguishes AI families.
 - Cap on parallelism: at most 2 Gemini side-runners simultaneously for a single decision point (1× Claude opus + 1× codex + 1-2× Gemini is the project ceiling).
 
 ## Deliverables

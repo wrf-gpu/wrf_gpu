@@ -45,41 +45,78 @@ OAuth flow opens a browser URL and waits 30 s for either callback or pasted code
 
 ## Dispatch patterns
 
-### Pattern A — quick side-opinion (preferred default)
+**Hard requirements that apply to every Gemini dispatch — set 2026-05-20 by user directive**:
 
-Use when codex or Claude has produced a primary judgment and you want a cheap second datapoint:
+1. **Always run in a named tmux window** inside the user's session — never inline. User must be able to watch and inject mid-flight, same as codex/Claude dispatches.
+2. **Always interactive REPL mode** (`agy --dangerously-skip-permissions -i "<onboarding+task>"`) — not `-p` print mode. This keeps the session open so user can ask follow-ups and so we can resume via `--continue` if needed.
+3. **Always prefix the task with the onboarding prompt** at `.agent/references/gemini-onboarding-prompt.md`. Reason: Gemini is new to this project and will behave inconsistently with Claude / codex unless explicitly briefed on PROJECT_CONSTITUTION.md + AGENTS.md + dispatching-gemini.md + the relevant skill.
+4. **Always pipe-pane the tmux window to a log file** so the full transcript is captured for audit, same as codex/Claude dispatches.
+5. **Always tear down the window** after delivery (the completion handler reports back to manager then kills the window).
+
+### Pattern A — interactive tmux side-opinion (canonical pattern, use this for every Gemini dispatch unless you have a reason not to)
 
 ```bash
-PROMPT_FILE=/tmp/gemini-opinion-prompt.md
-cat > "$PROMPT_FILE" <<'EOF'
-You are a side-opinion agent. The primary judgment was rendered by <Claude Opus 4.7 / codex gpt-5.5>.
-Your job: independently read <files> and give a one-paragraph verdict.
-Do NOT modify anything. Read-only. No tool use that writes.
-<the question>
-EOF
-agy --dangerously-skip-permissions -p "$(cat "$PROMPT_FILE")" 2>&1 > /tmp/gemini-opinion.md
+WT=/home/enric/src/wrf_gpu2           # or worktree path for sprint-isolated work
+WIN=gemini-<role>-<short-task-tag>    # e.g. gemini-side-m5-s1-thompson
+TASK_PROMPT=/tmp/gemini-task-${WIN}.md
+FULL_PROMPT=/tmp/gemini-full-${WIN}.md
+OUT=/path/to/sprint/folder/${WIN}.md
+LOG=/path/to/sprint/folder/${WIN}.log
+DONE_MARK=/path/to/sprint/folder/.${WIN}-done
+EXIT_FILE=/path/to/sprint/folder/.${WIN}-exit
+
+# 1. Write the task-specific prompt
+cat > "$TASK_PROMPT" <<'TASK_EOF'
+# Task
+
+<the actual question + files to read + expected output structure>
+TASK_EOF
+
+# 2. Prepend the mandatory onboarding prefix
+cat /home/enric/src/wrf_gpu2/.agent/references/gemini-onboarding-prompt.md \
+    "$TASK_PROMPT" > "$FULL_PROMPT"
+
+MGR_SESS=$(tmux display-message -p '#S')
+MGR_WIN=$(tmux display-message -p '#I')
+MGR_TARGET="${MGR_SESS}:${MGR_WIN}"
+
+# 3. Open tmux window with agy in interactive mode, with workspace dir added
+tmux new-window -d -t "${MGR_SESS}:" -n "$WIN" \
+  "bash -lc 'echo \"[dispatch-${WIN}] agy started at \$(date -u)\"; agy --dangerously-skip-permissions --add-dir $WT -i \"\$(cat $FULL_PROMPT)\" 2>&1 | tee $OUT; ec=\$?; echo \"\$ec\" > \"$EXIT_FILE\"; touch \"$DONE_MARK\"; MSG=\"AGENT REPORT [gemini side-opinion / $WIN] exit=\$ec report=$OUT\"; tmux send-keys -t \"$MGR_TARGET\" \"\$MSG\"; sleep 5; tmux send-keys -t \"$MGR_TARGET\" Enter; sleep 1; tmux kill-window -t \"${MGR_SESS}:${WIN}\" 2>/dev/null || true'"
+
+# 4. Pipe pane to log for full audit trail
+tmux pipe-pane -t "${MGR_SESS}:${WIN}" -O "cat >> \"$LOG\"" 2>/dev/null || true
 ```
 
-Output then folds into manager's decision memo as one of N opinions.
+The user sees the window in their tmux session, can switch to it (`Ctrl-b w`), watch Gemini's reasoning live, and inject corrections via `tmux send-keys` or simply by typing in the window.
 
 ### Pattern B — parallel side-runner during sprint
 
-Use when codex/Claude is running a heavy sprint and you want Gemini to chase a different angle in parallel. Same prompt file pattern, dispatch in tmux window so it runs concurrent:
-
-```bash
-tmux new-window -d -t "$MGR_SESS:" -n gemini-side -c /home/enric/src/wrf_gpu2 \
-  "bash -lc 'agy --dangerously-skip-permissions -p \"\$(cat /tmp/gemini-prompt.md)\" 2>&1 | tee /path/to/report.md; echo done > /path/to/.done'"
-```
-
-Manager combines findings from codex + Claude + Gemini.
+Same as Pattern A. The fact that Gemini is running concurrent with codex/Claude is just a matter of dispatching multiple windows in parallel; no different invocation. Use unique `$WIN` per dispatch.
 
 ### Pattern C — quick test-tool author
 
-Use when you need a small diagnostic script (e.g. "write me a Python script that compares two NPZ files field-by-field with relative-error histograms"). Gemini's speed makes this cheaper than dispatching codex.
+Even for "write me a Python diagnostic" tasks, use Pattern A (tmux + interactive + onboarding). The script gets written to `$OUT`, which we then extract via `grep -A 9999 "^\`\`\`python" $OUT | head -...`. Reason: even small write-tasks must go through onboarding so Gemini knows the project's no-silent-write-to-governance constraint.
+
+### Pattern D — synchronous one-shot
 
 ```bash
-agy --dangerously-skip-permissions -p "Write a Python script that <does X>. Print only the script body, no commentary. The script must be self-contained, use only numpy + scipy, fit in <50 lines." > /tmp/diagnostic.py
+agy --dangerously-skip-permissions -p "$(cat .agent/references/gemini-onboarding-prompt.md && echo && cat /tmp/gemini-task.md)" 2>&1 | tee /tmp/gemini-out.md
 ```
+
+**Operational status (2026-05-20)**: due to the agy-tmux-OAuth quirk documented below, Pattern D is currently the working default. Use Pattern A (tmux + interactive) once the OAuth-per-pty issue is resolved.
+
+## Known agy quirk: re-OAuth on fresh tmux pty
+
+Observed 2026-05-20: agy stores credentials at `~/.gemini/antigravity-cli/implicit/*.pb` but the cached credentials only authenticate the pty/process tree that completed the OAuth flow. When a fresh tmux `new-window` spawns a new pty and invokes `agy ... -i`, agy presents the OAuth URL again rather than reusing cached creds. From the manager's pty (where the OAuth was completed) `agy -p` works without re-auth.
+
+**Operational consequences**:
+- **For one-shot side opinions (Pattern D)**: dispatch directly from manager pty (no tmux new-window). Cached creds work. This is the current default for Gemini dispatches.
+- **For tmux interactive (Pattern A)**: user must manually complete OAuth in the new tmux pane after launch, OR pre-warm a long-lived agy interactive session that subsequent dispatches reuse via `agy --continue`.
+- **Workarounds to investigate**: (1) pre-warm an interactive agy session; (2) check if there's an `agy --auth-file` flag or env var; (3) inspect the `.pb` files to see if creds can be made portable across ptys; (4) use `opencode run -m google/gemini-3.5-flash` instead (currently blocked by root-owned `~/.local/share/opencode/snapshot/`).
+- Manager owns resolving this quirk as a hygiene task; until then, Pattern D is the operational default and the dispatch is run inline from the manager pty (still visible to user via this session's terminal).
+
+The user can still inject corrections mid-flight by typing in the manager pane — same as for any inline Bash command. Pattern A's "user injects via tmux" benefit is not lost, only temporarily routed through the manager pane.
 
 ## Hygiene
 
@@ -93,7 +130,8 @@ agy --dangerously-skip-permissions -p "Write a Python script that <does X>. Prin
 
 | Date | Task | Outcome | Verdict |
 |---|---|---|---|
-| 2026-05-20 | M5-S1 attempt-4 third-opinion (Path A vs B) | Delivered Path-B recommendation with cited per-field rel-err evidence (`qc`=0.999998, `qr`=4.5e7, `qg`=9.8e8), constructed a non-trivial counterargument (PBL discovery > microphysics table fix), and raised one novel reviewer check that neither Claude nor codex had surfaced (HLO unroll / compile-OOM risk from baked lookup tables). Saved to `.agent/sprints/2026-05-20-m5-s1-thompson-microphysics-column/gemini-third-opinion.md`. | **Useful side-runner**. Compile-OOM check was a real value-add. Confirmed Gemini can be adversarial about its own recommendation. 1/3 toward role promotion. |
+| 2026-05-20 | M5-S1 attempt-4 third-opinion (Path A vs B) | Delivered Path-B recommendation with cited per-field rel-err evidence (`qc`=0.999998, `qr`=4.5e7, `qg`=9.8e8), constructed a non-trivial counterargument (PBL discovery > microphysics table fix), and raised one novel reviewer check that neither Claude nor codex had surfaced (HLO unroll / compile-OOM risk from baked lookup tables). Saved to `.agent/sprints/2026-05-20-m5-s1-thompson-microphysics-column/gemini-third-opinion.md`. **Note: this dispatch used pre-update Pattern D (inline `-p`, no onboarding prefix, no tmux). Pattern A is the target dispatch pattern; Pattern D is the current operational default pending resolution of the agy-tmux-OAuth quirk.** | **Useful side-runner**. Compile-OOM check was a real value-add. Confirmed Gemini can be adversarial about its own recommendation. 1/3 toward role promotion. |
+| 2026-05-20 | Onboarding smoke test (Pattern D after Pattern A blocked by agy-tmux-OAuth quirk) | Three onboarding questions on PROJECT_CONSTITUTION + AGENTS + dispatching-gemini. All three answered correctly with file:line citations (`AGENTS.md:22`, `dispatching-gemini.md:15-19`, `PROJECT_CONSTITUTION.md:5`). High self-confidence. Generated its own track-record line as requested. Saved to `.agent/sprints/2026-05-20-m5-s1-thompson-microphysics-column/gemini-smoke-onboarding.md`. | **Onboarding prefix works.** Gemini's behavior in-project is now in-line with Claude/codex conventions (file:line evidence, terse, scoped). 2/3 toward role promotion. |
 
 Manager updates this table after each Gemini delivery so future read-throughs can calibrate confidence in Gemini's role.
 

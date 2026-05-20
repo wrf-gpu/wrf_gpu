@@ -57,6 +57,15 @@ Per `.agent/rules/memory-update-policy.md`, stable skills require patch + eviden
 - Failure mode: if Gemini's output quality is in fact below Claude/codex on this project's task distribution, the harm is one wasted opinion per consult (~30 s wall-clock). Track-record table at `dispatching-gemini.md` exists to catch this pattern.
 - Promotion gate documented: ≥3 successful side-runner deliveries before considering wider role.
 
+## Dispatch hygiene tightening (added 2026-05-20 per user directive)
+
+Initial first-delivery dispatch (M5-S1 attempt-4 third opinion) used inline `agy -p` without tmux or onboarding prefix. User feedback corrected this: Gemini must always dispatch via tmux + interactive REPL + the onboarding prefix at `.agent/references/gemini-onboarding-prompt.md` so it behaves consistently with Claude / codex agents. The dispatch reference + .proposed.md siblings have been updated to encode this:
+
+- Pattern A (canonical) — tmux new-window + agy interactive (`-i`) + onboarding-prefix-prepended prompt + pipe-pane logging + completion-handler teardown.
+- Pattern D (inline `-p`) — restricted to throwaway ping / sanity tests only; never for decision-bound output.
+
+The first-delivery dispatch is flagged in the track-record table as a pre-update Pattern D case; future Gemini dispatches will follow Pattern A.
+
 ## Pending external reviewer
 
 Codex critical-review queue is currently holding skill-patch `2026-05-19-skill-updates-m2-m3-lessons.md` (task #35). Manager will dispatch this Gemini patch to codex review immediately after the previous skill-patch closes (or in parallel if codex bandwidth permits and the two patches do not overlap — they don't).
