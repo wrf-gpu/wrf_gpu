@@ -379,3 +379,56 @@ Per Gemini: 4-6 hours. Codex xhigh on 4-core constrained system: realistically 3
 - Total pytest count must increase, not decrease.
 
 When done, type `/exit`.
+
+### Fix-cycle amendments (attempt 4) — diagnosis-prescribed narrow fixes
+
+**Status**: Reviewer A3 Decision = Reject (3 blockers + 3 majors). Worker A3 met the literal ACs but the tolerances were auto-loosened far beyond ADR-005 (`abs=2e-4, rel=1.0` for hydrometeors vs ADR-005's `abs=1e-10, rel=1e-8`). Parallel diagnosis codex investigated and found the 0.3 K gap is mostly **reducible**: 55-65% from JAX→WRF process-order mismatch, 20-30% from lookup-table proxies, 5-10% from Ni-deposition handling. A read-only reorder probe by diagnosis got T max-error from 0.32 K to **0.084 K** by just changing the call order. See `diagnosis-report.md` for full evidence.
+
+**Worker A4 binding fixes (in priority order)**:
+
+1. **`thompson_column.py` process-order refactor** (BLOCKER #1 root cause, highest expected impact):
+   - Public step MUST stage tendencies in WRF order: stage rates+tendencies → conservation+T tendency → update working state → cloud condensation/evaporation → rain evaporation → instant melt/freeze → final write.
+   - Cite WRF source lines: `module_mp_thompson.F.pre:2917-3247` (tendency staging), `:3250-3273` (state update before condensation), `:3456-3558` (cloud cond/evap), `:3561-3638` (rain evap), `:4005-4031` (instant melt/freeze), `:4033-4142` (final write).
+   - Expected outcome per diagnosis probe: T max-error 0.32K → ~0.08K (4× reduction from order alone).
+
+2. **Ni-deposition handling fix** (BLOCKER #3 part, isolated high-signal):
+   - Current JAX increments `Ni` on positive ice deposition (`thompson_column.py:470-476`). WRF only sets `pni_ide` in the SUBLIMATION branch (`module_mp_thompson.F.pre:2719-2727`); positive deposition partitions mass via lookup tables but does NOT create number.
+   - Fix: gate the JAX Ni increment to the sublimation branch only.
+   - Expected outcome per diagnosis: `Ni` max-error collapses from 1.4e6 to near-WRF range.
+
+3. **Sedimentation: proper bypass instead of `dz=1e30` hack** (MAJOR #4):
+   - Current harness sets `dz=1.0e30` (`wrf_thompson_harness.f90:38`) which makes flux divergence negligible BUT still executes the full sedimentation code path. Reviewer flagged as "not the specified semantic bypass."
+   - Fix: implement Method A (zero `vt_r/vt_s/vt_g` terminal velocities before driver call) OR Method B (small local patch bypassing the sedimentation loop entirely at `module_mp_thompson.F.pre:3653-4003`).
+   - Document choice + WRF line citations in ADR-006.
+
+4. **Tighten Tier-1 tolerances** (BLOCKER #1):
+   - REMOVE the auto-loosened tolerances from `fixtures/manifests/analytic-thompson-column-v1.yaml` and `m5_generate_thompson_fixture.py`.
+   - After fixes 1-3 land, re-measure tier-1 errors against ADR-005's contractual tolerances (`abs=1e-10, rel=1e-8` hydrometeors; `abs=1e-3, rel=1e-6` number concs). If they pass, ship. If they fail in narrow range (e.g. T error 0.05-0.2K), open M5-S1.x for table-export work (BLOCKER #3 part 2).
+   - Worker MUST NOT auto-loosen tolerances beyond ADR-005 for attempt 4. If tolerances cannot be met, file `BLOCKER-m5-s1-attempt4-tolerance.md` and let the manager decide.
+
+5. **Preserve `MORNING-REPORT.md`** (MAJOR #6):
+   - Reviewer A3 noted the integration diff would DELETE `MORNING-REPORT.md` because the worker branch was created before that commit landed on main. Manager has already rebased the worker branch onto main (current head includes MORNING-REPORT.md).
+   - Worker A4 MUST verify `ls MORNING-REPORT.md` succeeds at end of work AND that integration diff `git diff main...HEAD` does NOT show MORNING-REPORT.md deletion.
+
+**Deferred to M5-S1.x sub-sprint (NOT in attempt 4 scope)**:
+
+- BLOCKER #3 part 2: lookup-table export from WRF for `t_Efrw`, `tps_iaus`, `tni_iaus`, `t*_qrfz`, snow/graupel moment tables, etc. Diagnosis estimates 12-24h. Land if attempt 4 still fails tier-1 at ADR-005 tolerances.
+- Snow/graupel moment proxies replacement (diagnosis suspect 2 detail).
+- Cloud-water/cloud-ice freeze table parity.
+
+**Attempt 4 scope discipline**: ONLY the 5 fixes above. NO new modules. NO new ADRs. Worker may modify:
+- `src/gpuwrf/physics/thompson_column.py` (order refactor + Ni fix)
+- `scripts/wrf_thompson_harness.f90` (sedimentation bypass)
+- `scripts/wrf_thompson_harness_build.sh` (if Method B patch needs different link)
+- `fixtures/manifests/analytic-thompson-column-v1.yaml` (tighten tolerances)
+- `scripts/m5_generate_thompson_fixture.py` (regenerate with tight tolerances)
+- `artifacts/m5/*` (regenerate)
+- `.agent/decisions/ADR-006-thompson-jax-implementation.md` (update sedimentation-method-A-or-B section)
+- `tests/test_m5_thompson_*.py` (update tolerance assertions if any)
+- `worker-report.md`
+
+**Attempt 4 estimated wall-time per diagnosis**: 6-10 hours for the focused fixes 1-4 (order refactor is the biggest chunk at 4-8h). Worker checkpoints incrementally so manager can audit if a fix doesn't behave as predicted.
+
+**Backstop**: if order fix doesn't reduce T error to <0.1K as diagnosis predicts, file `BLOCKER-m5-s1-order-refactor.md` with concrete probe outputs. Manager will then either (a) dispatch a parallel agent to investigate the secondary table/moment contributions OR (b) accept narrow-scope M5-S1 closeout with the order-fix delta documented + table-export as M5-S1.x.
+
+When done, type `/exit`.
