@@ -106,6 +106,22 @@ agy --dangerously-skip-permissions -p "$(cat .agent/references/gemini-onboarding
 
 **Operational status (2026-05-20)**: due to the agy-tmux-OAuth quirk documented below, Pattern D is currently the working default. Use Pattern A (tmux + interactive) once the OAuth-per-pty issue is resolved.
 
+## Known agy quirk: daily quota exhaustion (silent failure pattern)
+
+Observed 2026-05-20 evening after ~6 successful Gemini deliveries: agy starts returning empty output with exit code 0. The actual error is logged only to `~/.gemini/antigravity-cli/cli.log`:
+
+```
+RESOURCE_EXHAUSTED (code 429): Individual quota reached. Contact your administrator to enable overages. Resets in 3h26m46s.
+```
+
+**Detection**: if `agy -p "..."` returns empty stdout and exit 0, tail `~/.gemini/antigravity-cli/cli.log` for `RESOURCE_EXHAUSTED` to confirm quota vs. other failure.
+
+**Workaround**: wait for the named reset window (typically ~24h sliding window on Google's free tier). Quota event is per-user-per-day.
+
+**Operational rule**: budget ~5-8 Gemini dispatches per day during heavy bug-fix-parallel-pair work. Cheap-ping calls (smoke tests, ping) also count. When approaching limit, reserve remaining capacity for high-leverage side-audits (bug-class identification) over low-leverage ones (re-verification of already-confirmed fixes).
+
+**Fallback**: `opencode run -m google/gemini-3.5-flash` accesses the same Gemini family via a separate quota pool. Currently blocked by a root-owned `~/.local/share/opencode/snapshot/` (one-time `sudo chown` needed). Once unblocked, opencode is the natural fallback when agy quota trips.
+
 ## Known agy quirk: re-OAuth on fresh tmux pty
 
 Observed 2026-05-20: agy stores credentials at `~/.gemini/antigravity-cli/implicit/*.pb` but the cached credentials only authenticate the pty/process tree that completed the OAuth flow. When a fresh tmux `new-window` spawns a new pty and invokes `agy ... -i`, agy presents the OAuth URL again rather than reusing cached creds. From the manager's pty (where the OAuth was completed) `agy -p` works without re-auth.
@@ -134,6 +150,8 @@ The user can still inject corrections mid-flight by typing in the manager pane �
 | 2026-05-20 | Onboarding smoke test (Pattern D after Pattern A blocked by agy-tmux-OAuth quirk) | Three onboarding questions on PROJECT_CONSTITUTION + AGENTS + dispatching-gemini. All three answered correctly with file:line citations (`AGENTS.md:22`, `dispatching-gemini.md:15-19`, `PROJECT_CONSTITUTION.md:5`). High self-confidence. Generated its own track-record line as requested. Saved to `.agent/sprints/2026-05-20-m5-s1-thompson-microphysics-column/gemini-smoke-onboarding.md`. | **Onboarding prefix works.** Gemini's behavior in-project is now in-line with Claude/codex conventions (file:line evidence, terse, scoped). Counts as 0.5 toward promotion (sanity check, not analytic delivery). 1.5/3. |
 | 2026-05-20 | M5-S1 attempt-4 parity-numbers sanity check (side-runner #2) | Verified diagnosis error budget holds (process-order 87% reduction matches, Ni 91% matches, lookup-table residual matches 20-30%). **Identified a real coefficient bug at `thompson_column.py:277-278`** — JAX uses `6.0 / clip` where WRF source `module_mp_thompson.F.pre:1920` uses `cie(2) / clip = 4.0 / clip`. Off by factor 1.5 in clipped `lami`, propagates into `Ni` and ice mass partition. Manager verified independently. Tester A4 (Claude Opus 4.7 xhigh) independently confirmed in adversarial-probe section. Saved to `.agent/sprints/2026-05-20-m5-s1-thompson-microphysics-column/gemini-second-opinion-parity-sanity.md`. | **High-value side-runner**. Found a specific 1-line bug that worker, diagnosis codex, and manager all missed. 2.5/3 toward role promotion. |
 | 2026-05-20 | M5-S1 attempt-5 parallel side-audit (bug-fix parallel-pair, side-audit role) | While codex worker A5 was applying the lami fix, Gemini scanned `thompson_column.py` + `thompson_constants.py` + `thompson_saturation.py` for OTHER coefficient confusions. **Identified a SECOND confirmed bug**: graupel sublimation/melting (`thompson_constants.py:90,92` and `thompson_column.py:463,492`) hardcodes `* 2.0` and `ilamg**CRE11` (rain values) where WRF live code (`module_mp_thompson.F.pre:2761,2872-2875`) uses `* cgg(11) = 1.7042533` and `ilamg**cge(11)` where `cge(11) = 2.8204808` for graupel mp_physics=8 (`:104,156,763`). Manager verified independently. Folded into attempt-5 scope as Fix 6 via mid-flight injection to worker A5. Also dismissed 2 other suspects with rationale. Saved to `.agent/sprints/2026-05-20-m5-s1-thompson-microphysics-column/gemini-side-audit-attempt5.md`. | **High-value side-runner #2**. Found a second specific 1-line-class bug that even tester A4 (Claude Opus) missed. The parallel-pair rule paid off immediately on first sprint where it was applied. Gemini's role is now firmly proven. Promotion gate ≥3 deliveries reached and exceeded; role-by-role expansion (per user directive evening 2026-05-20) already in effect. |
+| 2026-05-20 | Stage-M4 architectural review (user-commissioned, ad-hoc) | Independent review of project plan w.r.t. 4x+ performance target on RTX 5090. Flagged 3 issues: FP64 throttling (existential), nesting omission (v0-scope), launch-bound latency on outer nested domains. User accepted and approved ADR-007 precision-policy sprint after M5-S1 close. Saved to `.agent/reviews/2026-05-20-stage-m4-architectural-review-gemini.md`. | **High-value architectural review** — caught a project-existential precision-policy oversight in ADR-003. Manager + user concur on remediation path. |
+| 2026-05-20 | M5-S1 attempt-5 fix-verification side-runner (planned) | Two consecutive dispatch attempts failed silently (empty stdout, exit 0). Root cause discovered via `~/.gemini/antigravity-cli/cli.log`: `RESOURCE_EXHAUSTED (code 429): Individual quota reached. Resets in 3h26m46s.` Quota exhaustion documented as known agy quirk (see above). Fix-verification was supplementary; Claude Opus reviewer remains binding. | **Operational signal** — daily Gemini quota hit after ~6 successful dispatches in a heavy day. Documentation updated. |
 
 Manager updates this table after each Gemini delivery so future read-throughs can calibrate confidence in Gemini's role.
 
