@@ -1,0 +1,8 @@
+{
+  "escalation_events": 0,
+  "notes": "Attempt 6 closes A5 required fixes while preserving the Fortran harness oracle: CGG11 is computed from gamma(CGE11), the M5 gate labels carry-forward tolerance status explicitly, and strict ADR-005 table/moment parity debt remains handed off to M5-S1.x.",
+  "reviewer_rejections": 3,
+  "sprint": "2026-05-20-m5-s1-thompson-microphysics-column",
+  "sprint_attempts": 6,
+  "worker": "codex-gpt-5.5"
+}

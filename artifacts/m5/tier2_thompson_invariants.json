@@ -1,0 +1,23 @@
+{
+  "dt_s": 60.0,
+  "finite_latent_heating": {
+    "bound_K": 100.0,
+    "max_abs_delta_T_K": 2.734448701089576,
+    "pass": true
+  },
+  "iterations": 10,
+  "nan_inf": {
+    "pass": true,
+    "violations": 0
+  },
+  "pass": true,
+  "positivity": {
+    "pass": true,
+    "violations": 0
+  },
+  "water_budget": {
+    "pass": true,
+    "relative_residual": 2.670445271854754e-12,
+    "tolerance": 1e-08
+  }
+}
