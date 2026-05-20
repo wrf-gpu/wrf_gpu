@@ -1,0 +1,39 @@
+{
+  "field_pass": {
+    "column_absorbed": true,
+    "flux_down": true,
+    "flux_up": true,
+    "heating_rate": true,
+    "surface_absorbed": true,
+    "surface_down": true,
+    "surface_up": true,
+    "toa_down": true,
+    "toa_up": true
+  },
+  "fixture_id": "analytic-rrtmg-sw-column-v1",
+  "pass": true,
+  "per_field_max_abs_err": {
+    "column_absorbed": 1.1368683772161603e-13,
+    "flux_down": 2.2737367544323206e-13,
+    "flux_up": 2.842170943040401e-14,
+    "heating_rate": 3.957337929572091e-18,
+    "surface_absorbed": 0.0,
+    "surface_down": 1.1368683772161603e-13,
+    "surface_up": 2.842170943040401e-14,
+    "toa_down": 0.0,
+    "toa_up": 2.842170943040401e-14
+  },
+  "per_field_max_rel_err": {
+    "column_absorbed": 4.541261683033431e-16,
+    "flux_down": 2.792255324687229e-16,
+    "flux_up": 2.825568108071645e-16,
+    "heating_rate": 6.441262313401096e-14,
+    "surface_absorbed": 0.0,
+    "surface_down": 1.3699350155207562e-16,
+    "surface_up": 1.7485948111876344e-16,
+    "toa_down": 0.0,
+    "toa_up": 2.1673270982065147e-16
+  },
+  "scenarios_tested": 3,
+  "tolerances_met": true
+}

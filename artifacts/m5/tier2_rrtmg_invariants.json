@@ -1,0 +1,17 @@
+{
+  "longwave_surface_emission": {
+    "fractional_residual_max": 0.0,
+    "pass": true,
+    "tolerance": 1e-12
+  },
+  "nan_inf": {
+    "pass": true,
+    "violations": 0
+  },
+  "pass": true,
+  "shortwave_energy_conservation": {
+    "fractional_residual_max": 0.0,
+    "pass": true,
+    "tolerance": 1e-10
+  }
+}

@@ -1,0 +1,139 @@
+{
+  "hlo": {
+    "combined_launches": 19,
+    "lw_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "lw_hlo_bytes": 46446,
+    "lw_launches": 9,
+    "sw_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "sw_hlo_bytes": 42513,
+    "sw_launches": 10
+  },
+  "profile": {
+    "artifact_paths": [
+      "artifacts/m5/hlo_dump/rrtmg_sw_production.txt",
+      "artifacts/m5/hlo_dump/rrtmg_lw_production.txt",
+      "artifacts/m5/tier1_rrtmg_sw_parity.json",
+      "artifacts/m5/tier1_rrtmg_lw_parity.json",
+      "artifacts/m5/tier2_rrtmg_invariants.json"
+    ],
+    "backend": "jax",
+    "benchmark": "m5_s3_rrtmg_radiation_column",
+    "case": "analytic-rrtmg-sw/lw-column-v1",
+    "device_to_host_bytes_post_init": 0,
+    "gpu_name": "cuda:0",
+    "hardware": "RTX 5090 32GB",
+    "hlo_production_bytes_lw": 46446,
+    "hlo_production_bytes_sw": 42513,
+    "host_device_transfer_bytes": 0,
+    "host_to_device_bytes_post_init": 0,
+    "jax_version": "0.10.0",
+    "kernel_launches": 5,
+    "kernel_launches_per_step": 5,
+    "local_memory_bytes": null,
+    "local_memory_bytes_per_kernel": null,
+    "occupancy_pct": null,
+    "profiler_limitation": "ncu/nsys counters not used in this worker pass; HLO launch markers and wall-time proxy recorded, register/local memory left null",
+    "raw_hlo_launch_marker_count": 19,
+    "raw_hlo_launch_marker_count_lw": 9,
+    "raw_hlo_launch_marker_count_sw": 10,
+    "registers_per_kernel": null,
+    "registers_per_thread": null,
+    "temporary_bytes_per_step": 0,
+    "wall_time_s": 0.00013103603851050138
+  },
+  "tier1_lw": {
+    "field_pass": {
+      "column_net_heating": true,
+      "flux_down": true,
+      "flux_up": true,
+      "heating_rate": true,
+      "surface_down": true,
+      "surface_emission": true,
+      "surface_up": true,
+      "toa_down": true,
+      "toa_up": true
+    },
+    "fixture_id": "analytic-rrtmg-lw-column-v1",
+    "pass": true,
+    "per_field_max_abs_err": {
+      "column_net_heating": 5.684341886080802e-14,
+      "flux_down": 2.842170943040401e-14,
+      "flux_up": 2.2737367544323206e-13,
+      "heating_rate": 4.8000165980819124e-18,
+      "surface_down": 2.842170943040401e-14,
+      "surface_emission": 0.0,
+      "surface_up": 1.1368683772161603e-13,
+      "toa_down": 0.0,
+      "toa_up": 5.684341886080802e-14
+    },
+    "per_field_max_rel_err": {
+      "column_net_heating": 1.821386467145868e-15,
+      "flux_down": 4.1459523261027437e-16,
+      "flux_up": 5.548566047627678e-16,
+      "heating_rate": 8.287322556770291e-11,
+      "surface_down": 4.1459523261027437e-16,
+      "surface_emission": 0.0,
+      "surface_up": 3.1002780477679524e-16,
+      "toa_down": 0.0,
+      "toa_up": 1.5615619268088413e-16
+    },
+    "scenarios_tested": 3,
+    "tolerances_met": true
+  },
+  "tier1_sw": {
+    "field_pass": {
+      "column_absorbed": true,
+      "flux_down": true,
+      "flux_up": true,
+      "heating_rate": true,
+      "surface_absorbed": true,
+      "surface_down": true,
+      "surface_up": true,
+      "toa_down": true,
+      "toa_up": true
+    },
+    "fixture_id": "analytic-rrtmg-sw-column-v1",
+    "pass": true,
+    "per_field_max_abs_err": {
+      "column_absorbed": 5.684341886080802e-14,
+      "flux_down": 2.2737367544323206e-13,
+      "flux_up": 5.684341886080802e-14,
+      "heating_rate": 4.296151108473811e-18,
+      "surface_absorbed": 0.0,
+      "surface_down": 1.1368683772161603e-13,
+      "surface_up": 2.842170943040401e-14,
+      "toa_down": 0.0,
+      "toa_up": 1.4210854715202004e-14
+    },
+    "per_field_max_rel_err": {
+      "column_absorbed": 9.123389418760802e-16,
+      "flux_down": 2.792255324687229e-16,
+      "flux_up": 3.610089376311836e-16,
+      "heating_rate": 8.622989010845235e-14,
+      "surface_absorbed": 0.0,
+      "surface_down": 1.3699350155207562e-16,
+      "surface_up": 1.7485948111876344e-16,
+      "toa_down": 0.0,
+      "toa_up": 2.1215511356414042e-16
+    },
+    "scenarios_tested": 3,
+    "tolerances_met": true
+  },
+  "tier2": {
+    "longwave_surface_emission": {
+      "fractional_residual_max": 0.0,
+      "pass": true,
+      "tolerance": 1e-12
+    },
+    "nan_inf": {
+      "pass": true,
+      "violations": 0
+    },
+    "pass": true,
+    "shortwave_energy_conservation": {
+      "fractional_residual_max": 1.2219272197541334e-16,
+      "pass": true,
+      "tolerance": 1e-10
+    }
+  }
+}

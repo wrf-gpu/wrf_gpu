@@ -1,0 +1,15 @@
+{
+  "gate_status": "GO_CARRYFORWARD",
+  "hlo_production_bytes_lw": 46446,
+  "hlo_production_bytes_sw": 42513,
+  "kernel_launches_per_step": 5,
+  "local_memory_bytes_per_kernel": null,
+  "oracle_regime": "linked-source-derived",
+  "rationale": "tier-1/tier-2 pass under compact linked source-derived harness; full WRF RRTMG driver oracle remains deferred",
+  "raw_hlo_launch_marker_count": 19,
+  "registers_per_kernel": null,
+  "tier1_lw_pass": true,
+  "tier1_sw_pass": true,
+  "tier2_pass": true,
+  "tolerance_regime": "carry-forward"
+}

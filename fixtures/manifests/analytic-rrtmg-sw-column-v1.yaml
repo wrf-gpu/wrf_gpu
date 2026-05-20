@@ -1,0 +1,261 @@
+fixture_id: analytic-rrtmg-sw-column-v1
+source: wrf-derived
+source_commit: wrf-rrtmg-linked-source-derived-harness sha256=b5b3b63ecec1869fff43d1371480c1509bb68e46b9c3568ce77670cd7eb3f628;
+  module_ra_rrtmg_sw.F.o=present; module_ra_rrtmg_lw.F.o=present; full_rrtmg_driver_call=deferred
+wrf_version: v4.7.1-derived-RRTMG-linked-column-harness
+scenario: three source-derived shortwave RRTMG columns with marine cloud and solar-zenith
+  variation
+created_utc: '2026-05-21T01:40:00Z'
+tier: 1
+precision_reference: fp64
+generation_command: python scripts/m5_generate_rrtmg_fixture.py
+external_uri: data/scratch/wrf_rrtmg_harness
+sample_slice_path: fixtures/samples/analytic-rrtmg-sw-column-v1.npz
+git_commit: 467c324
+license_notes: Synthetic columns run through a GNU Fortran harness linked to real
+  WRF RRTMG SW/LW objects; output oracle is a compact source-derived column model
+  pending full driver binding.
+variables:
+- name: input_T
+  units: K
+  shape:
+  - 3
+  - 16
+  staggering: mass
+  dtype: float64
+  tolerance_abs: 1.0e-10
+  tolerance_rel: 1.0e-10
+  tolerance_rationale: RRTMG harness input temperature
+  tier_overrides: null
+- name: input_p
+  units: Pa
+  shape:
+  - 3
+  - 16
+  staggering: mass
+  dtype: float64
+  tolerance_abs: 1.0e-08
+  tolerance_rel: 1.0e-10
+  tolerance_rationale: RRTMG harness input pressure
+  tier_overrides: null
+- name: input_qv
+  units: kg kg-1
+  shape:
+  - 3
+  - 16
+  staggering: mass
+  dtype: float64
+  tolerance_abs: 1.0e-12
+  tolerance_rel: 1.0e-10
+  tolerance_rationale: RRTMG harness input vapor
+  tier_overrides: null
+- name: input_qc
+  units: kg kg-1
+  shape:
+  - 3
+  - 16
+  staggering: mass
+  dtype: float64
+  tolerance_abs: 1.0e-12
+  tolerance_rel: 1.0e-10
+  tolerance_rationale: RRTMG harness input cloud water
+  tier_overrides: null
+- name: input_qi
+  units: kg kg-1
+  shape:
+  - 3
+  - 16
+  staggering: mass
+  dtype: float64
+  tolerance_abs: 1.0e-12
+  tolerance_rel: 1.0e-10
+  tolerance_rationale: RRTMG harness input cloud ice
+  tier_overrides: null
+- name: input_qs
+  units: kg kg-1
+  shape:
+  - 3
+  - 16
+  staggering: mass
+  dtype: float64
+  tolerance_abs: 1.0e-12
+  tolerance_rel: 1.0e-10
+  tolerance_rationale: RRTMG harness input snow
+  tier_overrides: null
+- name: input_qg
+  units: kg kg-1
+  shape:
+  - 3
+  - 16
+  staggering: mass
+  dtype: float64
+  tolerance_abs: 1.0e-12
+  tolerance_rel: 1.0e-10
+  tolerance_rationale: RRTMG harness input graupel
+  tier_overrides: null
+- name: input_cloud_fraction
+  units: '1'
+  shape:
+  - 3
+  - 16
+  staggering: mass
+  dtype: float64
+  tolerance_abs: 1.0e-12
+  tolerance_rel: 1.0e-10
+  tolerance_rationale: RRTMG harness input cloud fraction
+  tier_overrides: null
+- name: input_dz
+  units: m
+  shape:
+  - 3
+  - 16
+  staggering: mass
+  dtype: float64
+  tolerance_abs: 1.0e-10
+  tolerance_rel: 1.0e-10
+  tolerance_rationale: RRTMG harness input layer thickness
+  tier_overrides: null
+- name: input_rho
+  units: kg m-3
+  shape:
+  - 3
+  - 16
+  staggering: mass
+  dtype: float64
+  tolerance_abs: 1.0e-12
+  tolerance_rel: 1.0e-10
+  tolerance_rationale: RRTMG harness input density
+  tier_overrides: null
+- name: input_surface_albedo
+  units: '1'
+  shape:
+  - 3
+  staggering: mass
+  dtype: float64
+  tolerance_abs: 1.0e-12
+  tolerance_rel: 1.0e-10
+  tolerance_rationale: RRTMG-SW surface albedo input
+  tier_overrides: null
+- name: input_coszen
+  units: '1'
+  shape:
+  - 3
+  staggering: mass
+  dtype: float64
+  tolerance_abs: 1.0e-12
+  tolerance_rel: 1.0e-10
+  tolerance_rationale: RRTMG-SW cosine solar zenith input
+  tier_overrides: null
+- name: output_heating_rate
+  units: K s-1
+  shape:
+  - 3
+  - 16
+  staggering: mass
+  dtype: float64
+  tolerance_abs: 2.0e-08
+  tolerance_rel: 2.0e-06
+  tolerance_rationale: Carry-forward tolerance for compact source-derived RRTMG-SW
+    harness
+  tier_overrides: null
+- name: output_flux_down
+  units: W m-2
+  shape:
+  - 3
+  - 17
+  staggering: mass
+  dtype: float64
+  tolerance_abs: 2.0e-05
+  tolerance_rel: 2.0e-07
+  tolerance_rationale: Carry-forward tolerance for compact source-derived RRTMG-SW
+    harness
+  tier_overrides: null
+- name: output_flux_up
+  units: W m-2
+  shape:
+  - 3
+  - 17
+  staggering: mass
+  dtype: float64
+  tolerance_abs: 2.0e-05
+  tolerance_rel: 2.0e-07
+  tolerance_rationale: Carry-forward tolerance for compact source-derived RRTMG-SW
+    harness
+  tier_overrides: null
+- name: output_toa_down
+  units: W m-2
+  shape:
+  - 3
+  staggering: mass
+  dtype: float64
+  tolerance_abs: 2.0e-05
+  tolerance_rel: 2.0e-07
+  tolerance_rationale: RRTMG-SW top interface diagnostic
+  tier_overrides: null
+- name: output_toa_up
+  units: W m-2
+  shape:
+  - 3
+  staggering: mass
+  dtype: float64
+  tolerance_abs: 2.0e-05
+  tolerance_rel: 2.0e-07
+  tolerance_rationale: RRTMG-SW top interface diagnostic
+  tier_overrides: null
+- name: output_surface_down
+  units: W m-2
+  shape:
+  - 3
+  staggering: mass
+  dtype: float64
+  tolerance_abs: 2.0e-05
+  tolerance_rel: 2.0e-07
+  tolerance_rationale: RRTMG-SW surface interface diagnostic
+  tier_overrides: null
+- name: output_surface_up
+  units: W m-2
+  shape:
+  - 3
+  staggering: mass
+  dtype: float64
+  tolerance_abs: 2.0e-05
+  tolerance_rel: 2.0e-07
+  tolerance_rationale: RRTMG-SW surface interface diagnostic
+  tier_overrides: null
+- name: output_column_absorbed
+  units: W m-2
+  shape:
+  - 3
+  staggering: mass
+  dtype: float64
+  tolerance_abs: 2.0e-05
+  tolerance_rel: 2.0e-07
+  tolerance_rationale: RRTMG-SW atmospheric absorption diagnostic
+  tier_overrides: null
+- name: output_surface_absorbed
+  units: W m-2
+  shape:
+  - 3
+  staggering: mass
+  dtype: float64
+  tolerance_abs: 2.0e-05
+  tolerance_rel: 2.0e-07
+  tolerance_rationale: RRTMG-SW surface absorption diagnostic
+  tier_overrides: null
+files:
+- path: fixtures/samples/analytic-rrtmg-sw-column-v1.npz
+  checksum_sha256: 6c8aea61fc6e25b003d36cd1ef31d958f13d0c9f49aaa0e3761b22c7691cb98f
+  bytes: 9039
+  external: false
+- path: data/fixtures/analytic-rrtmg-sw-column-v1/full.npz
+  checksum_sha256: 6c8aea61fc6e25b003d36cd1ef31d958f13d0c9f49aaa0e3761b22c7691cb98f
+  bytes: 9039
+  external: true
+- path: data/scratch/wrf_rrtmg_harness
+  checksum_sha256: b5b3b63ecec1869fff43d1371480c1509bb68e46b9c3568ce77670cd7eb3f628
+  bytes: 921680
+  external: true
+- path: data/fixtures/rrtmg-tables-v1.npz
+  checksum_sha256: 375303f4d56fd5495e3047c1c8b12affb3221d2e691e52047ed1415626b7814f
+  bytes: 3137
+  external: true
