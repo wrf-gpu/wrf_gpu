@@ -2,60 +2,54 @@
 
 Manager-maintained. 20-min cadence (AFK).
 
-## Currently in flight (1 codex + 2 opus — within ≤3 codex policy)
+## Currently in flight (3 codex parallel — at cap, on critical-path)
 
-| Window | Sprint | AI | Started | Wall |
-|---|---|---|---|---|
-| `worker-s3zzzz` | M5-S3.zzzz cldprmc+spcvmc SW broadband (R-8+R-9 hypothesis confrontation) | codex gpt-5.5 xhigh | 14:38 | 16-32h |
-| `reviewer-m6s2` | M6-S2 coupled forecast driver Opus review | opus 4.7 xhigh | 14:58 | ~15-25min |
-| `reviewer-s3zzz` | M5-S3.zzz LW closeout Opus review | opus 4.7 xhigh | 14:58 | ~15-25min |
+| Window | Sprint | AI | Started | Wall | File ownership |
+|---|---|---|---|---|---|
+| `worker-s3zzzz` | M5-S3.zzzz SW cldprmc+spcvmc broadband | codex gpt-5.5 xhigh | 14:38 | 16-32h | `rrtmg_sw.py` only + harness `cldprmc_sw_*`+`spcvmc_*` records |
+| `worker-s3zzzzz` | M5-S3.zzzzz LW cldprmc+rtrnmc broadband (NEW) | codex gpt-5.5 xhigh | 15:25 | 16-32h | `rrtmg_lw.py` only + harness `cldprmc_lw_*`+`rtrnmc_*` records |
+| `worker-m6s3` | M6-S3 surface layer + bounded Noah-MP (NEW) | codex gpt-5.5 xhigh | 15:26 | 30-48h | NEW `physics/surface_layer.py, noah_mp.py`, `wrf_sfclay_harness.f90`, ADR-012+013 |
 
-**Codex count: 1 (within 3-cap). Opus reviewers don't count.** 
+**3-way disjointness verified**:
+- s3zzzz: rrtmg_sw.py + cldprmc_sw_/spcvmc_ harness records + lw_/sw_ validator names (interface-freeze)
+- s3zzzzz: rrtmg_lw.py + cldprmc_lw_/rtrnmc_ harness records + lw_ validator names (interface-freeze)
+- m6s3: NEW physics/surface_layer + noah_mp + sfclay harness; reads Gen2 via io.validation
 
-## Closed this tick (2 worker AGENT REPORTs)
+## Closed this tick (2 BIG Opus verdicts)
 
-| Sprint | Verdict | Status |
-|---|---|---|
-| **M6-S2 coupled forecast driver** | worker PASS all 7 AC + bundled 5 M6-S1 prereqs | merged `464cbc3`; Opus review IN FLIGHT |
-| **M5-S3.zzz LW closeout** | worker PARTIAL: 16/16 LW bands taug+fracs PASS intermediate-oracle; Tier-1 broadband still FAILS (root cause: cldprmc_lw + rtrnmc) | merged; Opus review IN FLIGHT |
+| Sprint | Verdict |
+|---|---|
+| **M6-S2 coupled forecast driver** | Opus **ACCEPT-WITH-MINOR-FOLLOWUPS** (22 R-findings: 16P/6F-disclosed) |
+| **M5-S3.zzz LW closeout** | Opus **PARTIAL-ACCEPT-AS-GROUNDWORK-PHASE-LW-TAUMOL** (16/16 bands taug+fracs PASS intermediate; broadband still fails → S3.zzzzz binding) |
 
-### M6-S2 highlights
-- 1h + 6h + 24h forecasts PASS on real d02 (160×67×45)
-- 0 H2D / 0 D2H / 0 host-device-transfer bytes (MEASURED via JAX profiler trace, not literal)
-- `temporary_bytes_per_step = 136890408` (130 MB, measured via XLA `compiled.memory_analysis()`)
-- 23/23 M6 tests pass
-- pyproject.toml `zarr+jax` added (M6-S2a Opus follow-up closed)
-- All 5 M6-S1 prereqs addressed: R-3 FP32 Path A, R-5 real GridSpec dz, R-7 measured temp bytes, R-9 robust cadence, R-13 boundary State extension
-- WRF-style boundary apply (specified + relaxation zone) per `module_bc.F` citations
-- ADR-010 amended
-- Honest unresolved-risks: 1s internal dycore guard, finite-state guard (residency proof not physical validation), mu_bdy first-step replay, WRF-shaped NPZ instead of NetCDF
+## M6-S2 reviewer 3 critical disclosures (binding downstream)
 
-### M5-S3.zzz LW highlights
-- 16/16 LW bands FULL_BRANCH_ACCEPTED at intermediate-oracle
-- Per-band table with WRF source citations for each band
-- LW launches 43 (lax.scan barrier present, no full fusion)
-- Combined raw launches 97
-- Root cause now: LW cldprmc + rtrnmc transfer/source (analog to SW M5-S3.zz finding)
-- Worker recommends M5-S3.zzzzz LW cldprmc+rtrnmc oracle (file-disjoint with SW S3.zzzz — could parallel)
+- R-16: **1s dycore_dt_s cap** is permanent guard, dynamics:physics 60× mismatch → **M6-S5 cannot use wall numbers; M6-S7 must lift cap for real RMSE**
+- R-17: **Finite-state guard** saturates all clips at 24h → **M6-S4 must measure conservation BEFORE sanitize_state runs**
+- R-18: **mu_bdy first-step-replay** (Gen2 has only wrfinput_d02) → **M6-S3 prereq F-S3-2: extend accessor for wrfout_d02_* OR document M6-S8 interior-only**
 
 ## M5 sprint table (live)
 
 | Sprint | Status |
 |---|---|
-| M5-S0 through M5-S3.zzz (16 sprints) | ✓ all CLOSED at worker level |
-| **M5-S3.zzzz cldprmc+spcvmc SW broadband** | 🟡 codex worker IN FLIGHT (~50min in) |
-| **M5-S3.zzz LW** | 🟡 Opus review IN FLIGHT (worker just closed) |
-| M5-S3.zzzzz LW cldprmc+rtrnmc oracle (NEW per S3.zzz worker rec) | ⚪ contract pending; can dispatch parallel after S3.zzz Opus accepts |
+| M5-S0 through M5-S3.zzz (16 sprints) | ✓ all CLOSED |
+| **M5-S3.zzzz SW cldprmc+spcvmc broadband** | 🟡 codex worker |
+| **M5-S3.zzzzz LW cldprmc+rtrnmc broadband** | 🟡 codex worker (NEW, parallel under interface-freeze) |
 | M5-S1.z Thompson collision tables | ⚪ optional |
+
+**M5 RRTMG PARITY** = S3.zzzz + S3.zzzzz BOTH close (parallel ~24-48h instead of sequential 48-96h)
 
 ## M6 sprint table (live)
 
 | Sprint | Status |
 |---|---|
-| M6 plan + S1 + S2a | ✓ all CLOSED |
-| **M6-S2 coupled forecast driver** | 🟡 Opus review IN FLIGHT (worker just closed) |
-| M6-S3 surface + Noah-MP | ⚪ contract READY; dispatch after M6-S2 Opus accepts |
-| M6-S4..S7 + S8 | ⚪ queued |
+| M6 plan + S1 + S2a + S2 | ✓ all CLOSED |
+| **M6-S3 surface + Noah-MP minimum** | 🟡 codex worker (NEW; F-S3-1/2/3 prereqs bundled) |
+| M6-S4 Tier-2 coupled (must measure PRE-sanitize_state) | ⚪ queued |
+| M6-S5 ADR-007 4× verdict (F-S5-1/2/3 prereqs: lift dycore cap, end-to-end wall, denominator choice) | ⚪ queued |
+| M6-S6 Tier-3 TSC1.0 | ⚪ queued |
+| M6-S7 Tier-4 probtest (must run with cap+guard disabled) | ⚪ queued |
+| M6-S8 operational Gen2 + closeout | ⚪ queued |
 
 ## M7 sprint table
 
@@ -64,30 +58,36 @@ Manager-maintained. 20-min cadence (AFK).
 | M7 plan: scout + critic + manager-amendments | ✓ all CLOSED |
 | M7-S0..S8 | ⚪ queued |
 
-## Big-picture critical path
+## Big-picture critical path (refined)
 
 ```
-NOW (1 codex + 2 opus reviews)
-  → Opus reviews → manager closeouts → next dispatch:
-     ├─ M5-S3.zzzzz LW cldprmc+rtrnmc (codex, after S3.zzz Opus)
-     ├─ M6-S3 surface+Noah-MP (codex, after M6-S2 Opus)
-     └─ S3.zzzz still running (SW broadband closeout)
-  → 3 codex parallel again (s3zzzz + s3zzzzz LW + m6s3 surface) once Opus reviews land
+NOW (3 codex parallel)
+  ├─ M5-S3.zzzz SW broadband → Opus → SW PARITY
+  ├─ M5-S3.zzzzz LW broadband → Opus → LW PARITY (parallel under interface-freeze)
+  └─ M6-S3 surface+Noah-MP → Opus → first operationally-meaningful U10/V10/T2/qv2
+
+When (SW PARITY + LW PARITY): M5 RRTMG complete → ADR-009 final
+When M6-S3 close: M6-S4/S5/S6/S7 4-way parallel → M6-S8 → M6 GREEN
+M6 GREEN + M5 RRTMG complete → M6-S8 operational T2 binding gate meaningful → M7-S0 dispatch
+M7 GREEN → M8 release
 ```
 
-**Calendar refined**: M5 RRTMG full PARITY now needs S3.zzzz (SW broadband) + S3.zzzzz (LW broadband) = 2 more sprints (16-32h each, file-disjoint can parallel). Closer to end-goal than expected.
+**Calendar refined**: M5 RRTMG PARITY ~24-48h (SW+LW parallel); M6 close 5-8 days; **end-goal landing ~2.5-3 weeks** (further accelerated by 3-way parallel)
 
 ## File-ownership snapshot
 
-- `coupling/{driver, boundary_apply}.py`: M6-S2 LANDED
-- `contracts/state.py`: boundary leaves landed
+- `coupling/{driver, boundary_apply, physics_couplers}.py`: M6-S2 LANDED; M6-S3 will touch surface_adapter only
+- `contracts/{state, precision}.py`: M6-S2 amended; FROZEN
 - `physics/rrtmg_sw.py`: M5-S3.zzzz worker active
-- `physics/rrtmg_lw.py`: M5-S3.zzz LANDED; M5-S3.zzzzz will reopen for cldprmc+rtrnmc
-- `io/**`: M6-S2a frozen
+- `physics/rrtmg_lw.py`: M5-S3.zzzzz worker active (parallel, disjoint)
+- `physics/surface_layer.py, noah_mp.py`: NEW M6-S3 worker active
+- `scripts/wrf_rrtmg_harness.f90`: BOTH SW + LW workers extending (interface-freeze names enforced)
+- `scripts/wrf_sfclay_harness.f90`: NEW M6-S3
+- `io/**`: M6-S2a CLOSED + accessor; M6-S3 may extend for land state
 - Other physics: CLOSED, frozen
 
 ## Recent ticks
 
-- 14:38: S3.zz Opus + M5-S3.zzzz dispatched (3 codex)
-- 14:58 (this tick): M6-S2 worker DONE + M5-S3.zzz LW worker DONE; both AGENT REPORTs landed; 2 Opus reviewers dispatched in parallel; codex count drops to 1 (s3zzzz)
-- Next: 15:18 (20-min cadence)
+- 14:58: M6-S2 + S3.zzz workers DONE; 2 Opus reviewers dispatched
+- 15:25 (this tick): both Opus verdicts landed (ACCEPT + PARTIAL); **M6-S3 + M5-S3.zzzzz workers dispatched in parallel**; 3 codex parallel cap honored
+- Next: 15:45 (20-min cadence)
