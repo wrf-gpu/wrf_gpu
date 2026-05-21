@@ -43,6 +43,264 @@ from gpuwrf.physics.rrtmg_tables import RRTMGTableBundle, RRTMG_TABLES, TABLE_AS
 
 config.update("jax_enable_x64", True)
 
+O3_MMR_TO_VMR = 0.603461
+_O3SUM = (
+    5.297e-8,
+    5.852e-8,
+    6.579e-8,
+    7.505e-8,
+    8.577e-8,
+    9.895e-8,
+    1.175e-7,
+    1.399e-7,
+    1.677e-7,
+    2.003e-7,
+    2.571e-7,
+    3.325e-7,
+    4.438e-7,
+    6.255e-7,
+    8.168e-7,
+    1.036e-6,
+    1.366e-6,
+    1.855e-6,
+    2.514e-6,
+    3.240e-6,
+    4.033e-6,
+    4.854e-6,
+    5.517e-6,
+    6.089e-6,
+    6.689e-6,
+    1.106e-5,
+    1.462e-5,
+    1.321e-5,
+    9.856e-6,
+    5.960e-6,
+    5.960e-6,
+)
+_PPSUM = (
+    955.890,
+    850.532,
+    754.599,
+    667.742,
+    589.841,
+    519.421,
+    455.480,
+    398.085,
+    347.171,
+    301.735,
+    261.310,
+    225.360,
+    193.419,
+    165.490,
+    141.032,
+    120.125,
+    102.689,
+    87.829,
+    75.123,
+    64.306,
+    55.086,
+    47.209,
+    40.535,
+    34.795,
+    29.865,
+    19.122,
+    9.277,
+    4.660,
+    2.421,
+    1.294,
+    0.647,
+)
+_O3WIN = (
+    4.629e-8,
+    4.686e-8,
+    5.017e-8,
+    5.613e-8,
+    6.871e-8,
+    8.751e-8,
+    1.138e-7,
+    1.516e-7,
+    2.161e-7,
+    3.264e-7,
+    4.968e-7,
+    7.338e-7,
+    1.017e-6,
+    1.308e-6,
+    1.625e-6,
+    2.011e-6,
+    2.516e-6,
+    3.130e-6,
+    3.840e-6,
+    4.703e-6,
+    5.486e-6,
+    6.289e-6,
+    6.993e-6,
+    7.494e-6,
+    8.197e-6,
+    9.632e-6,
+    1.113e-5,
+    1.146e-5,
+    9.389e-6,
+    6.135e-6,
+    6.135e-6,
+)
+_PPWIN = (
+    955.747,
+    841.783,
+    740.199,
+    649.538,
+    568.404,
+    495.815,
+    431.069,
+    373.464,
+    322.354,
+    277.190,
+    237.635,
+    203.433,
+    174.070,
+    148.949,
+    127.408,
+    108.915,
+    93.114,
+    79.551,
+    67.940,
+    58.072,
+    49.593,
+    42.318,
+    36.138,
+    30.907,
+    26.362,
+    16.423,
+    7.583,
+    3.620,
+    1.807,
+    0.938,
+    0.469,
+)
+_LW_BUFFER_PPROF = (
+    1000.00,
+    855.47,
+    731.82,
+    626.05,
+    535.57,
+    458.16,
+    391.94,
+    335.29,
+    286.83,
+    245.38,
+    209.91,
+    179.57,
+    153.62,
+    131.41,
+    112.42,
+    96.17,
+    82.27,
+    70.38,
+    60.21,
+    51.51,
+    44.06,
+    37.69,
+    32.25,
+    27.59,
+    23.60,
+    20.19,
+    17.27,
+    14.77,
+    12.64,
+    10.81,
+    9.25,
+    7.91,
+    6.77,
+    5.79,
+    4.95,
+    4.24,
+    3.63,
+    3.10,
+    2.65,
+    2.27,
+    1.94,
+    1.66,
+    1.42,
+    1.22,
+    1.04,
+    0.89,
+    0.76,
+    0.65,
+    0.56,
+    0.48,
+    0.41,
+    0.35,
+    0.30,
+    0.26,
+    0.22,
+    0.19,
+    0.16,
+    0.14,
+    0.12,
+    0.10,
+)
+_LW_BUFFER_TPROF = (
+    286.96,
+    281.07,
+    275.16,
+    268.11,
+    260.56,
+    253.02,
+    245.62,
+    238.41,
+    231.57,
+    225.91,
+    221.72,
+    217.79,
+    215.06,
+    212.74,
+    210.25,
+    210.16,
+    210.69,
+    212.14,
+    213.74,
+    215.37,
+    216.82,
+    217.94,
+    219.03,
+    220.18,
+    221.37,
+    222.64,
+    224.16,
+    225.88,
+    227.63,
+    229.51,
+    231.50,
+    233.73,
+    236.18,
+    238.78,
+    241.60,
+    244.44,
+    247.35,
+    250.33,
+    253.32,
+    256.30,
+    259.22,
+    262.12,
+    264.80,
+    266.50,
+    267.59,
+    268.44,
+    268.69,
+    267.76,
+    266.13,
+    263.96,
+    261.54,
+    258.93,
+    256.15,
+    253.23,
+    249.89,
+    246.67,
+    243.48,
+    240.25,
+    236.66,
+    233.86,
+)
+
 
 @jax.tree_util.register_pytree_node_class
 class RRTMGLWColumnState:
@@ -130,6 +388,13 @@ class RRTMGLWIntermediateState(NamedTuple):
     plankbnd: jnp.ndarray
     dplankup: jnp.ndarray
     dplankdn: jnp.ndarray
+    cldprmc_cldfmc: jnp.ndarray
+    cldprmc_taucmc: jnp.ndarray
+    rtrnmc_pfracs: jnp.ndarray
+    rtrnmc_plansum: jnp.ndarray
+    rtrnmc_tfn_tbl_output: jnp.ndarray
+    rtrnmc_zfd_per_gpoint: jnp.ndarray
+    rtrnmc_zfu_per_gpoint: jnp.ndarray
 
 
 class _LWSetCoefState(NamedTuple):
@@ -210,6 +475,14 @@ class _LWNTableBundle(NamedTuple):
     cfc11adj: jnp.ndarray
     cfc12: jnp.ndarray
     cfc22adj: jnp.ndarray
+
+
+class _LWCloudTableBundle(NamedTuple):
+    """WRF LW cloud absorption tables used by `cldprmc`."""
+
+    liquid: jnp.ndarray
+    ice: jnp.ndarray
+    snow: jnp.ndarray
 
 
 _LW_GPOINT_COUNTS = (10, 12, 16, 14, 16, 8, 12, 8, 12, 6, 8, 8, 4, 2, 2, 2)
@@ -449,6 +722,33 @@ def _native_lw_tables() -> _LWNTableBundle:
     )
 
 
+@lru_cache(maxsize=1)
+def _native_lw_cloud_tables() -> _LWCloudTableBundle:
+    """Builds WRF `cldprmc` absorption coefficients for the fixture radii.
+
+    The harness uses WRF's default effective radii for this sprint fixture:
+    liquid 10 um, ice 30 um, and snow 75 um.  The interpolation mirrors
+    `cldprmc` at module_ra_rrtmg_lw.F:2972-3018.
+    """
+
+    extractor = _extract_rrtmg_tables_module()
+    source = extractor.LW_SOURCE
+    liquid_grid = np.arange(2.5, 60.5, dtype=np.float64)
+    ice_grid = 2.0 + 3.0 * np.arange(1, 47, dtype=np.float64)
+    liquid = []
+    ice = []
+    snow = []
+    for band in range(1, 17):
+        liquid.append(extractor._interp_table(extractor._parse_source_array(source, "absliq1", band), liquid_grid, 10.0))
+        ice.append(extractor._interp_table(extractor._parse_source_array(source, "absice3", band), ice_grid, 30.0))
+        snow.append(extractor._interp_table(extractor._parse_source_array(source, "absice3", band), ice_grid, 75.0))
+    return _LWCloudTableBundle(
+        liquid=np.asarray(liquid, dtype=np.float64),
+        ice=np.asarray(ice, dtype=np.float64),
+        snow=np.asarray(snow, dtype=np.float64),
+    )
+
+
 def _clip_state(state: RRTMGLWColumnState) -> RRTMGLWColumnState:
     """Applies radiation-safe physical bounds before optical calculations."""
 
@@ -489,6 +789,34 @@ def _temperature_interfaces(T):
     return jnp.concatenate((bottom, middle, top), axis=-1)
 
 
+def _lw_buffer_temperatures(t_layer, t_level, pressure_interfaces_pa):
+    """Ports WRF LW wrapper top-buffer temperature adjustment."""
+
+    original_layers = t_layer.shape[-1] - 1
+    dtype = t_layer.dtype
+    pprof = jnp.asarray(_LW_BUFFER_PPROF, dtype=dtype)
+    tprof = jnp.asarray(_LW_BUFFER_TPROF, dtype=dtype)
+    plev = (pressure_interfaces_pa * 0.01).at[..., -1].set(0.0)
+    below = pprof < plev[..., None]
+    has_interval = jnp.any(below, axis=-1)
+    first_below = jnp.argmax(below, axis=-1)
+    k0 = jnp.where(has_interval, jnp.maximum(first_below - 1, 0), pprof.shape[0] - 1)
+    k1 = jnp.minimum(k0 + 1, pprof.shape[0] - 1)
+    p0 = jnp.take(pprof, k0, axis=0)
+    p1 = jnp.take(pprof, k1, axis=0)
+    t0 = jnp.take(tprof, k0, axis=0)
+    t1 = jnp.take(tprof, k1, axis=0)
+    weight = jnp.where(k0 == k1, 0.0, (plev - p0) / (p1 - p0))
+    varint = weight * (t1 - t0) + t0
+
+    offset = t_level[..., original_layers - 1] - varint[..., original_layers - 1]
+    adjusted_top_levels = varint[..., original_layers:] + offset[..., None]
+    t_level_lw = jnp.concatenate((t_level[..., :original_layers], adjusted_top_levels), axis=-1)
+    adjusted_top_layers = 0.5 * (t_level_lw[..., original_layers - 1 : -1] + t_level_lw[..., original_layers:])
+    t_layer_lw = jnp.concatenate((t_layer[..., : original_layers - 1], adjusted_top_layers), axis=-1)
+    return t_layer_lw, t_level_lw
+
+
 def _pressure_layer_mass(p):
     """Reconstructs WRF harness layer mass from midpoint pressure interfaces."""
 
@@ -525,6 +853,33 @@ def _rrtmg_column_amounts(qv, pressure_interfaces):
     pwvcm = jnp.sum(18.0160 * coldry * h2ovmr, axis=-1) / jnp.maximum(DRY_AIR_MOLECULAR_WEIGHT * jnp.sum(dry_plus_water, axis=-1), 1.0e-12)
     pwvcm = pwvcm * (1.0e3 * pressure_interfaces[..., 0] * 0.01) / (1.0e2 * GRAVITY)
     return absorber, pwvcm
+
+
+def _lw_o3_profile_vmr(pressure_interfaces_pa):
+    """Ports WRF `INIRAD/O3DATA` annual ozone profile integration for LW."""
+
+    plev = pressure_interfaces_pa * 0.01
+    dtype = plev.dtype
+    o3sum = jnp.asarray(_O3SUM, dtype=dtype)
+    ppsum = jnp.asarray(_PPSUM, dtype=dtype)
+    o3win = jnp.asarray(_O3WIN, dtype=dtype)
+    ppwin = jnp.asarray(_PPWIN, dtype=dtype)
+
+    o3ann_tail = o3win[:-1] + (o3win[1:] - o3win[:-1]) / (ppwin[1:] - ppwin[:-1]) * (ppsum[1:] - ppwin[:-1])
+    o3ann = jnp.concatenate((0.5 * (o3sum[:1] + o3win[:1]), 0.5 * (o3ann_tail + o3sum[1:])))
+    ppwrkh = jnp.concatenate((jnp.asarray([1100.0], dtype=dtype), 0.5 * (ppsum[1:] + ppsum[:-1]), jnp.asarray([0.0], dtype=dtype)))
+
+    bottom = plev[..., :-1][..., None]
+    top = plev[..., 1:][..., None]
+    pp_bottom = ppwrkh[:-1]
+    pp_top = ppwrkh[1:]
+    pb1 = jnp.maximum(bottom - pp_bottom, 0.0)
+    pb2 = jnp.maximum(bottom - pp_top, 0.0)
+    pt1 = jnp.maximum(top - pp_bottom, 0.0)
+    pt2 = jnp.maximum(top - pp_top, 0.0)
+    integrated = jnp.sum((pb2 - pb1 - pt2 + pt1) * o3ann, axis=-1)
+    dp = jnp.maximum(plev[..., :-1] - plev[..., 1:], 1.0e-12)
+    return (integrated / dp) * jnp.asarray(O3_MMR_TO_VMR, dtype=dtype)
 
 
 def _lw_diffusivity(pwvcm):
@@ -568,6 +923,7 @@ def _lw_setcoef(qv, p_pa, t_k, pressure_interfaces_pa, tables: RRTMGTableBundle)
     pz = pressure_interfaces_pa * 0.01
     dp_mb = jnp.maximum(pz[..., :-1] - pz[..., 1:], 1.0e-12)
     coldry = dp_mb * 1.0e3 * AVOGADRO / (1.0e2 * GRAVITY * amm * (1.0 + h2ovmr))
+    o3_vmr = _lw_o3_profile_vmr(pressure_interfaces_pa)
 
     plog = jnp.log(pavel)
     jp = _trunc_int(36.0 - 5.0 * (plog + 0.04))
@@ -582,7 +938,7 @@ def _lw_setcoef(qv, p_pa, t_k, pressure_interfaces_pa, tables: RRTMGTableBundle)
     ft1 = ((t_k - tref1) / 15.0) - (jt1 - 3).astype(jnp.float64)
 
     wkl_h2o = coldry * h2ovmr
-    wbroad = coldry * jnp.maximum(0.0, 1.0 - (CO2_VMR + O3_BACKGROUND_VMR + N2O_VMR + CH4_VMR + O2_VMR))
+    wbroad = coldry * jnp.maximum(0.0, 1.0 - (CO2_VMR + o3_vmr + N2O_VMR + CH4_VMR + O2_VMR))
     water = wkl_h2o / jnp.maximum(coldry, 1.0e-300)
     scalefac = pavel * (296.0 / 1013.0) / t_k
     lower = plog > 4.56
@@ -614,7 +970,7 @@ def _lw_setcoef(qv, p_pa, t_k, pressure_interfaces_pa, tables: RRTMGTableBundle)
 
     colh2o = 1.0e-20 * wkl_h2o
     colco2 = 1.0e-20 * coldry * CO2_VMR
-    colo3 = 1.0e-20 * coldry * O3_BACKGROUND_VMR
+    colo3 = 1.0e-20 * coldry * o3_vmr
     coln2o = 1.0e-20 * coldry * N2O_VMR
     colco = 1.0e-32 * coldry
     colch4 = 1.0e-20 * coldry * CH4_VMR
@@ -1211,9 +1567,344 @@ def _source_recurrence_up(trans, source, surface):
     return jnp.concatenate(levels, axis=-3)
 
 
+def _lw_band_to_global(values: jnp.ndarray) -> jnp.ndarray:
+    """Converts padded band/local-g LW arrays to WRF global g-point order."""
+
+    pieces = []
+    for band, count in enumerate(_LW_GPOINT_COUNTS):
+        pieces.append(values[..., band, :count])
+    return jnp.concatenate(pieces, axis=-1)
+
+
+def _lw_global_to_band(values: jnp.ndarray) -> jnp.ndarray:
+    """Converts WRF global g-point arrays to padded band/local-g layout."""
+
+    pieces = []
+    start = 0
+    for count in _LW_GPOINT_COUNTS:
+        band_values = values[..., start : start + count]
+        pad = max(_LW_GPOINT_COUNTS) - count
+        if pad:
+            band_values = jnp.pad(band_values, [(0, 0)] * (band_values.ndim - 1) + [(0, pad)])
+        pieces.append(band_values)
+        start += count
+    return jnp.stack(pieces, axis=-2)
+
+
+def _kiss_uint_to_float(value):
+    signed = lax.bitcast_convert_type(value, jnp.int32)
+    return signed.astype(jnp.float64) * 2.328306e-10 + 0.5
+
+
+def _kiss_step(seed1, seed2, seed3, seed4):
+    """WRF MCICA KISS generator step; mirrors module_ra_rrtmg_lw.F:2688-2706."""
+
+    mask16 = jnp.asarray(65535, dtype=jnp.uint32)
+
+    def m(value, shift):
+        if shift > 0:
+            return jnp.bitwise_xor(value, jnp.left_shift(value, jnp.asarray(shift, dtype=jnp.uint32)))
+        return jnp.bitwise_xor(value, jnp.right_shift(value, jnp.asarray(-shift, dtype=jnp.uint32)))
+
+    seed1 = seed1 * jnp.asarray(69069, dtype=jnp.uint32) + jnp.asarray(1327217885, dtype=jnp.uint32)
+    seed2 = m(m(m(seed2, 13), -17), 5)
+    seed3 = jnp.asarray(18000, dtype=jnp.uint32) * jnp.bitwise_and(seed3, mask16) + jnp.right_shift(seed3, jnp.asarray(16, dtype=jnp.uint32))
+    seed4 = jnp.asarray(30903, dtype=jnp.uint32) * jnp.bitwise_and(seed4, mask16) + jnp.right_shift(seed4, jnp.asarray(16, dtype=jnp.uint32))
+    kiss = seed1 + seed2 + jnp.left_shift(seed3, jnp.asarray(16, dtype=jnp.uint32)) + seed4
+    return seed1, seed2, seed3, seed4, _kiss_uint_to_float(kiss)
+
+
+def _lw_mcica_random_cloud_mask(p_layer_pa, cloud_fraction):
+    """Builds the WRF random-overlap McICA mask for the LW fixture path.
+
+    The WRF harness uses `icld=1`, `irng=0`, and `permuteseed=150`, so this
+    ports only the random-overlap KISS path from module_ra_rrtmg_lw.F:2402-2438.
+    """
+
+    p_seed = p_layer_pa.astype(jnp.float32) * jnp.float32(0.01)
+    p_seed = p_seed * jnp.float32(100.0)
+    frac = p_seed[..., :4] - jnp.floor(p_seed[..., :4])
+    seeds = [(frac[..., idx] * jnp.float32(1.0e9)).astype(jnp.uint32) for idx in range(4)]
+    carry = tuple(seeds)
+
+    def scan_step(carry, _):
+        seed1, seed2, seed3, seed4, random_value = _kiss_step(*carry)
+        return (seed1, seed2, seed3, seed4), random_value
+
+    carry, _ = lax.scan(scan_step, carry, xs=None, length=150)
+    nlay = int(p_layer_pa.shape[-1])
+    carry, random_flat = lax.scan(scan_step, carry, xs=None, length=140 * nlay)
+    cdf = jnp.reshape(random_flat, (140, nlay) + p_layer_pa.shape[:-1])
+    leading = len(p_layer_pa.shape) - 1
+    cdf = jnp.transpose(cdf, tuple(range(2, 2 + leading)) + (1, 0))
+    cldf = jnp.where(cloud_fraction < 1.0e-20, 0.0, cloud_fraction)
+    return (cdf >= (1.0 - cldf[..., :, None])).astype(jnp.float64)
+
+
+def _lw_cldprmc_state(state, p_ext, layer_mass_ext, tables: RRTMGTableBundle):
+    """Ports the WRF LW `mcica_subcol_lw` random mask plus `cldprmc` optical depth."""
+
+    del tables
+    cloud_ext = jnp.concatenate((state.cloud_fraction, jnp.zeros_like(state.cloud_fraction[..., -1:])), axis=-1)
+    qc_ext = jnp.concatenate((state.qc, jnp.zeros_like(state.qc[..., -1:])), axis=-1)
+    qi_ext = jnp.concatenate((state.qi, jnp.zeros_like(state.qi[..., -1:])), axis=-1)
+    qs_ext = jnp.concatenate((state.qs, jnp.zeros_like(state.qs[..., -1:])), axis=-1)
+    cloud_safe = jnp.maximum(cloud_ext, 0.01)
+    clw_path = qc_ext * layer_mass_ext * 1000.0 / cloud_safe
+    ciw_path = qi_ext * layer_mass_ext * 1000.0 / cloud_safe
+    csw_path = qs_ext * 0.99 * layer_mass_ext * 1000.0 / cloud_safe
+    cldf_global = _lw_mcica_random_cloud_mask(p_ext, cloud_ext)
+    clw_global = jnp.where(cldf_global > 0.5, clw_path[..., :, None], 0.0)
+    ciw_global = jnp.where(cldf_global > 0.5, ciw_path[..., :, None], 0.0)
+    csw_global = jnp.where(cldf_global > 0.5, csw_path[..., :, None], 0.0)
+
+    cldf_band = _lw_global_to_band(cldf_global)
+    clw_band = _lw_global_to_band(clw_global)
+    ciw_band = _lw_global_to_band(ciw_global)
+    csw_band = _lw_global_to_band(csw_global)
+    cloud = _native_lw_cloud_tables()
+    liquid = jnp.asarray(cloud.liquid, dtype=clw_band.dtype).reshape((1,) * (clw_band.ndim - 2) + (16, 1))
+    ice = jnp.asarray(cloud.ice, dtype=ciw_band.dtype).reshape((1,) * (ciw_band.ndim - 2) + (16, 1))
+    snow = jnp.asarray(cloud.snow, dtype=csw_band.dtype).reshape((1,) * (csw_band.ndim - 2) + (16, 1))
+    taucmc = clw_band * liquid + ciw_band * ice + csw_band * snow
+    return cldf_band, taucmc
+
+
+def _lw_lookup_terms(tau):
+    """Returns WRF lookup-table tau/exp/tfn values for `rtrnmc`."""
+
+    tblind = tau / (LW_BPADE + tau)
+    idx = jnp.clip((LW_TBLINT * tblind + 0.5).astype(jnp.int32), 0, LW_NTBL)
+    tfn = idx.astype(jnp.float64) / float(LW_NTBL)
+    tau_tbl = jnp.where(idx == LW_NTBL, 1.0e10, LW_BPADE * tfn / jnp.maximum(1.0 - tfn, 1.0e-300))
+    tau_tbl = jnp.where(idx == 0, 0.0, tau_tbl)
+    exp_tbl = jnp.where(idx == LW_NTBL, LW_EXP_EPS, jnp.maximum(jnp.exp(-tau_tbl), LW_EXP_EPS))
+    tfn_tbl = jnp.where(
+        idx == LW_NTBL,
+        1.0,
+        jnp.where(
+            tau_tbl < 0.06,
+            tau_tbl / 6.0,
+            1.0 - 2.0 * ((1.0 / jnp.maximum(tau_tbl, 1.0e-300)) - (exp_tbl / jnp.maximum(1.0 - exp_tbl, 1.0e-300))),
+        ),
+    )
+    return tau_tbl, exp_tbl, tfn_tbl
+
+
+def _lw_rtrnmc_layer_terms(radld, odepth_raw, odcld, efclfrac, cldfmc, plfrac, blay, dplankdn, dplankup):
+    """Evaluates one WRF `rtrnmc` downward layer update for all g-points."""
+
+    odtot_raw = odepth_raw + odcld
+
+    atrans_a = odepth_raw - 0.5 * odepth_raw * odepth_raw
+    odepth_rec = odepth_raw / 6.0
+    gassrc_a = plfrac * (blay + dplankdn * odepth_rec) * atrans_a
+    atot_a = odtot_raw - 0.5 * odtot_raw * odtot_raw
+    odtot_rec = odtot_raw / 6.0
+    bbdtot_a = plfrac * (blay + dplankdn * odtot_rec)
+    bbd_a = plfrac * (blay + dplankdn * odepth_rec)
+    bbugas_a = plfrac * (blay + dplankup * odepth_rec)
+    bbutot_a = plfrac * (blay + dplankup * odtot_rec)
+    tfn_a = odepth_rec
+
+    _, exp_tot_b, tfn_tot_b = _lw_lookup_terms(odtot_raw)
+    atot_b = 1.0 - exp_tot_b
+    bbdtot_b = plfrac * (blay + tfn_tot_b * dplankdn)
+    bbutot_b = plfrac * (blay + tfn_tot_b * dplankup)
+
+    tau_gas_c, exp_gas_c, tfn_gas_c = _lw_lookup_terms(odepth_raw)
+    atrans_c = 1.0 - exp_gas_c
+    gassrc_c = atrans_c * plfrac * (blay + tfn_gas_c * dplankdn)
+    odtot_c = tau_gas_c + odcld
+    _, exp_tot_c, tfn_tot_c = _lw_lookup_terms(odtot_c)
+    atot_c = 1.0 - exp_tot_c
+    bbdtot_c = plfrac * (blay + tfn_tot_c * dplankdn)
+    bbd_c = plfrac * (blay + tfn_gas_c * dplankdn)
+    bbugas_c = plfrac * (blay + tfn_gas_c * dplankup)
+    bbutot_c = plfrac * (blay + tfn_tot_c * dplankup)
+
+    case_a = odtot_raw < 0.06
+    case_b = jnp.logical_and(jnp.logical_not(case_a), odepth_raw <= 0.06)
+    atrans_cloud = jnp.where(case_a | case_b, atrans_a, atrans_c)
+    gassrc_cloud = jnp.where(case_a | case_b, gassrc_a, gassrc_c)
+    atot_cloud = jnp.where(case_a, atot_a, jnp.where(case_b, atot_b, atot_c))
+    bbdtot_cloud = jnp.where(case_a, bbdtot_a, jnp.where(case_b, bbdtot_b, bbdtot_c))
+    bbd_cloud = jnp.where(case_a | case_b, bbd_a, bbd_c)
+    bbugas_cloud = jnp.where(case_a | case_b, bbugas_a, bbugas_c)
+    bbutot_cloud = jnp.where(case_a, bbutot_a, jnp.where(case_b, bbutot_b, bbutot_c))
+    tfn_cloud = jnp.where(case_a | case_b, tfn_a, tfn_gas_c)
+    rad_cloud = (
+        radld
+        - radld * (atrans_cloud + efclfrac * (1.0 - atrans_cloud))
+        + gassrc_cloud
+        + cldfmc * (bbdtot_cloud * atot_cloud - gassrc_cloud)
+    )
+
+    clear_small = odepth_raw <= 0.06
+    atrans_clear_small = odepth_raw - 0.5 * odepth_raw * odepth_raw
+    odepth_clear_rec = odepth_raw / 6.0
+    bbd_clear_small = plfrac * (blay + dplankdn * odepth_clear_rec)
+    bbugas_clear_small = plfrac * (blay + dplankup * odepth_clear_rec)
+    _, exp_clear, tfn_clear_lookup = _lw_lookup_terms(odepth_raw)
+    atrans_clear_lookup = 1.0 - exp_clear
+    bbd_clear_lookup = plfrac * (blay + tfn_clear_lookup * dplankdn)
+    bbugas_clear_lookup = plfrac * (blay + tfn_clear_lookup * dplankup)
+    atrans_clear = jnp.where(clear_small, atrans_clear_small, atrans_clear_lookup)
+    bbd_clear = jnp.where(clear_small, bbd_clear_small, bbd_clear_lookup)
+    bbugas_clear = jnp.where(clear_small, bbugas_clear_small, bbugas_clear_lookup)
+    tfn_clear = jnp.where(clear_small, odepth_clear_rec, tfn_clear_lookup)
+    rad_clear = radld + (bbd_clear - radld) * atrans_clear
+
+    return {
+        "cloud": {
+            "rad": rad_cloud,
+            "atrans": atrans_cloud,
+            "atot": atot_cloud,
+            "bbugas": bbugas_cloud,
+            "bbutot": bbutot_cloud,
+            "bbd": bbd_cloud,
+            "tfn": tfn_cloud,
+        },
+        "clear": {
+            "rad": rad_clear,
+            "atrans": atrans_clear,
+            "atot": atrans_clear,
+            "bbugas": bbugas_clear,
+            "bbutot": bbugas_clear,
+            "bbd": bbd_clear,
+            "tfn": tfn_clear,
+        },
+    }
+
+
+def _lw_rtrnmc_outputs(state, intermediate_base, cldfmc, taucmc, transfer_tau, tables: RRTMGTableBundle):
+    """Ports WRF `rtrnmc` cloudy-source recurrence and per-g-point flux capture."""
+
+    del transfer_tau
+    tau = intermediate_base.tau
+    fracs = intermediate_base.fracs
+    secdiff = intermediate_base.secdiff
+    planklay = intermediate_base.planklay
+    planklev = intermediate_base.planklev
+    plankbnd = intermediate_base.plankbnd
+    nlay = int(tau.shape[-3])
+    cloud_layer = jnp.any(cldfmc > 0.5, axis=(-1, -2))
+    scale_band = tables.lw_delwave * (jnp.pi * 1.0e4)
+    zfd_bands = []
+    zfu_bands = []
+    tfn_bands = []
+
+    for band in range(16):
+        valid = tables.lw_gpoint_mask[band]
+        tau_b = tau[..., :, band, :]
+        frac_b = fracs[..., :, band, :]
+        cldf_b = cldfmc[..., :, band, :]
+        taucmc_b = taucmc[..., :, band, :]
+        sec = secdiff[..., band][..., None]
+        odcld = jnp.where(cldf_b == 1.0, sec[..., None, :] * taucmc_b, 0.0)
+        efclfrac = (1.0 - jnp.exp(-odcld)) * cldf_b
+        scale = scale_band[band]
+
+        radld = jnp.zeros_like(tau_b[..., 0, :])
+        radclrd = jnp.zeros_like(radld)
+        iclddn = jnp.zeros(radld.shape[:-1], dtype=bool)
+
+        def layer0(value):
+            return jnp.moveaxis(value, -2, 0)
+
+        plank_b = planklay[..., :, band]
+        dplankdn_b = planklev[..., :-1, band] - plank_b
+        dplankup_b = planklev[..., 1:, band] - plank_b
+        down_xs = (
+            layer0(jnp.flip(tau_b, axis=-2)),
+            layer0(jnp.flip(frac_b, axis=-2)),
+            layer0(jnp.flip(odcld, axis=-2)),
+            layer0(jnp.flip(efclfrac, axis=-2)),
+            layer0(jnp.flip(cldf_b, axis=-2)),
+            jnp.moveaxis(jnp.flip(cloud_layer, axis=-1), -1, 0),
+            jnp.moveaxis(jnp.flip(plank_b, axis=-1), -1, 0),
+            jnp.moveaxis(jnp.flip(dplankdn_b, axis=-1), -1, 0),
+            jnp.moveaxis(jnp.flip(dplankup_b, axis=-1), -1, 0),
+        )
+
+        def down_body(carry, xs):
+            radld, radclrd, iclddn = carry
+            tau_l, frac_l, odcld_l, efclfrac_l, cldf_l, cloud_l, plank_l, dplankdn_l, dplankup_l = xs
+            odepth = jnp.maximum(sec * tau_l, 0.0)
+            terms = _lw_rtrnmc_layer_terms(
+                radld,
+                odepth,
+                odcld_l,
+                efclfrac_l,
+                cldf_l,
+                frac_l,
+                plank_l[..., None],
+                dplankdn_l[..., None],
+                dplankup_l[..., None],
+            )
+            is_cloud = cloud_l[..., None]
+            rad_new = jnp.where(is_cloud, terms["cloud"]["rad"], terms["clear"]["rad"])
+            atrans = jnp.where(is_cloud, terms["cloud"]["atrans"], terms["clear"]["atrans"])
+            atot = jnp.where(is_cloud, terms["cloud"]["atot"], terms["clear"]["atot"])
+            bbugas = jnp.where(is_cloud, terms["cloud"]["bbugas"], terms["clear"]["bbugas"])
+            bbutot = jnp.where(is_cloud, terms["cloud"]["bbutot"], terms["clear"]["bbutot"])
+            bbd = jnp.where(is_cloud, terms["cloud"]["bbd"], terms["clear"]["bbd"])
+            tfn = jnp.where(is_cloud, terms["cloud"]["tfn"], terms["clear"]["tfn"])
+            iclddn_new = jnp.logical_or(iclddn, cloud_l)
+            radclrd_new = jnp.where(iclddn_new[..., None], radclrd + (bbd - radclrd) * atrans, rad_new)
+            return (rad_new, radclrd_new, iclddn_new), (rad_new * scale * valid, atrans, atot, bbugas, bbutot, tfn * valid)
+
+        (radld, _, _), down_outputs = lax.scan(down_body, (radld, radclrd, iclddn), down_xs)
+        zfd_scan, atrans_scan, atot_scan, bbugas_scan, bbutot_scan, tfn_scan = down_outputs
+        zfd_layer0 = jnp.flip(jnp.concatenate((jnp.zeros_like(radld)[None, ...], zfd_scan), axis=0), axis=0)
+        zfd = jnp.moveaxis(zfd_layer0, 0, -2)
+        atrans_layers = jnp.moveaxis(jnp.flip(atrans_scan, axis=0), 0, -2)
+        atot_layers = jnp.moveaxis(jnp.flip(atot_scan, axis=0), 0, -2)
+        bbugas_layers = jnp.moveaxis(jnp.flip(bbugas_scan, axis=0), 0, -2)
+        bbutot_layers = jnp.moveaxis(jnp.flip(bbutot_scan, axis=0), 0, -2)
+        tfn_layers = jnp.moveaxis(jnp.flip(tfn_scan, axis=0), 0, -2)
+
+        radlu = frac_b[..., 0, :] * plankbnd[..., band][..., None] + (1.0 - state.surface_emissivity[..., None]) * radld
+        up_xs = (
+            layer0(atrans_layers),
+            layer0(atot_layers),
+            layer0(bbugas_layers),
+            layer0(bbutot_layers),
+            layer0(efclfrac),
+            layer0(cldf_b),
+            jnp.moveaxis(cloud_layer, -1, 0),
+        )
+
+        def up_body(radlu, xs):
+            atrans_l, atot_l, bbugas_l, bbutot_l, efclfrac_l, cldf_l, cloud_l = xs
+            is_cloud = cloud_l[..., None]
+            gassrc = bbugas_l * atrans_l
+            rad_cloud = (
+                radlu
+                - radlu * (atrans_l + efclfrac_l * (1.0 - atrans_l))
+                + gassrc
+                + cldf_l * (bbutot_l * atot_l - gassrc)
+            )
+            rad_clear = radlu + (bbugas_l - radlu) * atrans_l
+            radlu = jnp.where(is_cloud, rad_cloud, rad_clear)
+            return radlu, radlu * scale * valid
+
+        _, zfu_scan = lax.scan(up_body, radlu, up_xs)
+        zfu = jnp.moveaxis(jnp.concatenate((radlu[None, ...] * scale * valid, zfu_scan), axis=0), 0, -2)
+        zfd_bands.append(zfd)
+        zfu_bands.append(zfu)
+        tfn_bands.append(tfn_layers)
+
+    zfd_all = jnp.stack(zfd_bands, axis=-2)
+    zfu_all = jnp.stack(zfu_bands, axis=-2)
+    tfn_all = jnp.stack(tfn_bands, axis=-2)
+    plansum = jnp.sum(fracs * tables.lw_gpoint_mask.reshape((1,) * (fracs.ndim - 2) + (16, 16)), axis=-1) * planklay
+    return tfn_all, zfd_all, zfu_all, plansum
+
+
 def _lw_solver_state(
     state: RRTMGLWColumnState, tables: RRTMGTableBundle
-) -> tuple[RRTMGLWColumnState, RRTMGLWIntermediateState, jnp.ndarray, int, jnp.ndarray, jnp.ndarray]:
+) -> tuple[RRTMGLWColumnState, RRTMGLWIntermediateState, int, jnp.ndarray]:
     """Builds LW gas/source state before transfer; WRF formulas: `rtrnmc` lines 3253-3409."""
 
     state = _clip_state(state)
@@ -1225,18 +1916,11 @@ def _lw_solver_state(
     t_ext = jnp.concatenate((state.T, state.T[..., -1:]), axis=-1)
     t_interface = _temperature_interfaces(state.T)
     t_interface_ext = jnp.concatenate((t_interface, t_interface[..., -1:]), axis=-1)
+    t_ext, t_interface_ext = _lw_buffer_temperatures(t_ext, t_interface_ext, pressure_interfaces)
     qv_ext = jnp.concatenate((state.qv, state.qv[..., -1:]), axis=-1)
-    qc_ext = jnp.concatenate((state.qc, jnp.zeros_like(state.qc[..., -1:])), axis=-1)
-    qi_ext = jnp.concatenate((state.qi, jnp.zeros_like(state.qi[..., -1:])), axis=-1)
-    qs_ext = jnp.concatenate((state.qs, jnp.zeros_like(state.qs[..., -1:])), axis=-1)
-    qg_ext = jnp.concatenate((state.qg, jnp.zeros_like(state.qg[..., -1:])), axis=-1)
-    cloud_ext = jnp.concatenate((state.cloud_fraction, jnp.zeros_like(state.cloud_fraction[..., -1:])), axis=-1)
     layer_mass = _pressure_layer_mass(state.p)
     layer_mass_ext = jnp.maximum((pressure_interfaces[..., :-1] - pressure_interfaces[..., 1:]) / GRAVITY, MIN_LAYER_MASS)
     _, pwvcm = _rrtmg_column_amounts(qv_ext, pressure_interfaces)
-    cloud_path_g = (qc_ext + qi_ext + qs_ext + qg_ext) * layer_mass_ext * 1000.0 * cloud_ext
-
-    cloud_coeff = tables.lw_cloud_absorption[:, None]
     mask = tables.lw_gpoint_mask
 
     secdiff = _lw_diffusivity(pwvcm)
@@ -1247,15 +1931,12 @@ def _lw_solver_state(
     accepted = accepted.reshape((1,) * (branch_tau.ndim - 2) + (16, 1))
     tau = jnp.where(accepted, branch_tau, fallback_tau)
     fracs = jnp.where(accepted, branch_fracs, fallback_fracs)
-    cloud_tau = cloud_path_g[..., None, None] * cloud_coeff
-    transfer_tau = jnp.clip(tau + cloud_tau, 0.0, MAX_OPTICAL_DEPTH) * mask
-    optical_path = transfer_tau * secdiff[..., None, :, None]
-    trans = jnp.exp(-jnp.minimum(jnp.maximum(optical_path, MIN_OPTICAL_DEPTH), MAX_OPTICAL_DEPTH))
-    trans = jnp.where(mask > 0.0, trans, 1.0)
+    transfer_tau = jnp.clip(tau, 0.0, MAX_OPTICAL_DEPTH) * mask
+    cldfmc, taucmc = _lw_cldprmc_state(state, p_ext, layer_mass_ext, tables)
     planklay, planklev, plankbnd = _lw_planck_state(t_ext, t_interface_ext, state.surface_temperature, state.surface_emissivity, tables)
     dplankup = planklev[..., 1:, :] - planklay
     dplankdn = planklev[..., :-1, :] - planklay
-    intermediate = RRTMGLWIntermediateState(
+    intermediate_base = RRTMGLWIntermediateState(
         tau=tau,
         fracs=fracs,
         secdiff=secdiff,
@@ -1264,28 +1945,30 @@ def _lw_solver_state(
         plankbnd=plankbnd,
         dplankup=dplankup,
         dplankdn=dplankdn,
+        cldprmc_cldfmc=cldfmc,
+        cldprmc_taucmc=taucmc,
+        rtrnmc_pfracs=fracs,
+        rtrnmc_plansum=jnp.zeros_like(planklay),
+        rtrnmc_tfn_tbl_output=jnp.zeros_like(fracs),
+        rtrnmc_zfd_per_gpoint=jnp.zeros(fracs.shape[:-3] + (fracs.shape[-3] + 1, 16, 16), dtype=fracs.dtype),
+        rtrnmc_zfu_per_gpoint=jnp.zeros(fracs.shape[:-3] + (fracs.shape[-3] + 1, 16, 16), dtype=fracs.dtype),
     )
-    return state, intermediate, trans, original_layers, layer_mass, transfer_tau
+    tfn_output, zfd_per_gpoint, zfu_per_gpoint, plansum = _lw_rtrnmc_outputs(state, intermediate_base, cldfmc, taucmc, transfer_tau, tables)
+    intermediate = intermediate_base._replace(
+        rtrnmc_plansum=plansum,
+        rtrnmc_tfn_tbl_output=tfn_output,
+        rtrnmc_zfd_per_gpoint=zfd_per_gpoint,
+        rtrnmc_zfu_per_gpoint=zfu_per_gpoint,
+    )
+    return state, intermediate, original_layers, layer_mass
 
 
 def _longwave_impl(state: RRTMGLWColumnState, tables: RRTMGTableBundle, debug: bool) -> RRTMGLWColumnResult:
     """Unjitted LW implementation shared by production and stripped paths."""
 
-    state, intermediate, trans, original_layers, layer_mass, transfer_tau = _lw_solver_state(state, tables)
-    mask = tables.lw_gpoint_mask
-    band_frac = intermediate.fracs
-    planck_scale = tables.lw_delwave * (jnp.pi * 1.0e4)
-    tfac = _lw_tfn_factor(transfer_tau * intermediate.secdiff[..., None, :, None])
-    down_source = (intermediate.planklay[..., :, None] + intermediate.dplankdn[..., :, None] * tfac) * planck_scale[..., None] * band_frac
-    up_source = (intermediate.planklay[..., :, None] + intermediate.dplankup[..., :, None] * tfac) * planck_scale[..., None] * band_frac
-    surface_emission_band = intermediate.plankbnd[..., :, None] * planck_scale[..., None] * mask / jnp.maximum(jnp.sum(mask, axis=-1), 1.0)[:, None]
-
-    down_band = _source_recurrence_down(trans, down_source)
-    surface_reflectance = (1.0 - state.surface_emissivity[..., None, None]) * down_band[..., 0, :, :]
-    up_band = _source_recurrence_up(trans, up_source, surface_emission_band + surface_reflectance)
-
-    flux_up_model = jnp.sum(up_band, axis=(-1, -2))
-    flux_down_model = jnp.sum(down_band, axis=(-1, -2))
+    state, intermediate, original_layers, layer_mass = _lw_solver_state(state, tables)
+    flux_up_model = jnp.sum(intermediate.rtrnmc_zfu_per_gpoint, axis=(-1, -2))
+    flux_down_model = jnp.sum(intermediate.rtrnmc_zfd_per_gpoint, axis=(-1, -2))
     net_down = flux_down_model - flux_up_model
     layer_net_heating = net_down[..., 1 : original_layers + 1] - net_down[..., :original_layers]
     heating_rate = layer_net_heating / (layer_mass * CP_AIR)
@@ -1315,7 +1998,7 @@ def compute_rrtmg_lw_intermediates(
 ) -> RRTMGLWIntermediateState:
     """Returns the JAX LW state compared to WRF `rtrnmc` entry oracles."""
 
-    _, intermediate, _, _, _, _ = _lw_solver_state(state, tables)
+    _, intermediate, _, _ = _lw_solver_state(state, tables)
     return intermediate
 
 

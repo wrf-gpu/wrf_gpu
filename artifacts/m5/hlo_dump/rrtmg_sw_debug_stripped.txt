@@ -1,8 +1,8 @@
-HloModule jit_solve_rrtmg_sw_column_debug_stripped, is_scheduled=true, entry_computation_layout={(f64[3,16]{1,0}, f64[3,16]{1,0}, f64[3,16]{1,0}, f64[3,16]{1,0}, f64[3,16]{1,0}, /*index=5*/f64[3,16]{1,0}, f64[3,16]{1,0}, f64[3]{0}, f64[3]{0})->(f64[3,16]{1,0}, f64[3,18]{1,0}, f64[3,18]{1,0}, f64[3]{0}, f64[3]{0}, /*index=5*/f64[3]{0}, f64[3]{0}, f64[3]{0}, f64[3]{0})}, allow_spmd_sharding_propagation_to_parameters={true,true,true,true,true,true,true,true,true}, allow_spmd_sharding_propagation_to_output={true,true,true,true,true,true,true,true,true}, frontend_attributes={fingerprint_before_lhs="b0b0863ba4bc85511eaabf48a8bc50a1"}
+HloModule jit_solve_rrtmg_sw_column_debug_stripped, is_scheduled=true, entry_computation_layout={(f64[3,16]{1,0}, f64[3,16]{1,0}, f64[3,16]{1,0}, f64[3,16]{1,0}, f64[3,16]{1,0}, /*index=5*/f64[3,16]{1,0}, f64[3,16]{1,0}, f64[3]{0}, f64[3]{0})->(f64[3,16]{1,0}, f64[3,18]{1,0}, f64[3,18]{1,0}, f64[3]{0}, f64[3]{0}, /*index=5*/f64[3]{0}, f64[3]{0}, f64[3]{0}, f64[3]{0})}, allow_spmd_sharding_propagation_to_parameters={true,true,true,true,true,true,true,true,true}, allow_spmd_sharding_propagation_to_output={true,true,true,true,true,true,true,true,true}, frontend_attributes={fingerprint_before_lhs="6bc6b7d795fe493df46922907e756452"}
 
 FileNames
-1 "/tmp/wrf_gpu2_s3zzz/scripts/m5_run_rrtmg.py"
-2 "/tmp/wrf_gpu2_s3zzz/src/gpuwrf/physics/rrtmg_sw.py"
+1 "/tmp/wrf_gpu2_s3zzzzz/scripts/m5_run_rrtmg.py"
+2 "/tmp/wrf_gpu2_s3zzzzz/src/gpuwrf/physics/rrtmg_sw.py"
 
 FunctionNames
 1 "<module>"
@@ -999,4 +999,4 @@ StackFrames
 246 {file_location_id=156 parent_frame_id=245}
 247 {file_location_id=159 parent_frame_id=236}
 
-# Truncated for git hygiene; full HLO: /tmp/wrf_gpu2_s3zzz/data/scratch/m5/rrtmg_sw_debug_stripped_full.txt
+# Truncated for git hygiene; full HLO: /tmp/wrf_gpu2_s3zzzzz/data/scratch/m5/rrtmg_sw_debug_stripped_full.txt

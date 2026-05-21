@@ -1,6 +1,6 @@
 fixture_id: rrtmg-intermediate-oracle-v1
 source: wrf-derived
-source_commit: wrf-rrtmg-intermediate-harness sha256=87448c6065a50162ad5f71458e19b0022cac4c171f6116bb711c50ce6383ff4b;
+source_commit: wrf-rrtmg-intermediate-harness sha256=a05460d80e6f06e5c35932e37d985d25c4ac96fc6104ea4bed0bdb41217cea6e;
   module_ra_rrtmg_sw.F.o=present; module_ra_rrtmg_lw.F.o=present; low_level_calls=setcoef_sw+taumol_sw+spcvmc_sw+setcoef+taumol+rtrnmc;
   rrtmg_data_convert=big_endian
 wrf_version: v4.7.1-derived-RRTMG-real-driver-column-harness
@@ -12,7 +12,7 @@ precision_reference: fp64
 generation_command: python scripts/m5_generate_rrtmg_fixture.py
 external_uri: data/fixtures/rrtmg-intermediate-oracle-v1.npz
 sample_slice_path: null
-git_commit: 3242f1f
+git_commit: 1c58ca1
 license_notes: Synthetic columns run through a GNU Fortran harness linked to real
   WRF RRTMG SW/LW objects and lower RRTMG solver-entry subroutines.
 variables:
@@ -92,14 +92,104 @@ variables:
   tolerance_rel: 1.0e-08
   tolerance_rationale: LW Planck layer source oracle
   tier_overrides: null
+- name: lw_cldprmc_cldfmc
+  units: '1'
+  shape:
+  - 3
+  - 17
+  - 16
+  - 16
+  staggering: mass
+  dtype: float64
+  tolerance_abs: 0.0001
+  tolerance_rel: 0.001
+  tolerance_rationale: LW McICA cloud mask from cldprmc_lw boundary
+  tier_overrides: null
+- name: lw_cldprmc_taucmc
+  units: '1'
+  shape:
+  - 3
+  - 17
+  - 16
+  - 16
+  staggering: mass
+  dtype: float64
+  tolerance_abs: 0.0001
+  tolerance_rel: 0.001
+  tolerance_rationale: LW cloud optical depth from cldprmc_lw
+  tier_overrides: null
+- name: lw_rtrnmc_pfracs
+  units: '1'
+  shape:
+  - 3
+  - 17
+  - 16
+  - 16
+  staggering: mass
+  dtype: float64
+  tolerance_abs: 0.0001
+  tolerance_rel: 0.001
+  tolerance_rationale: LW rtrnmc Planck fraction per g-point
+  tier_overrides: null
+- name: lw_rtrnmc_plansum
+  units: W m-2
+  shape:
+  - 3
+  - 17
+  - 16
+  staggering: mass
+  dtype: float64
+  tolerance_abs: 0.0001
+  tolerance_rel: 0.001
+  tolerance_rationale: LW rtrnmc band Planck source sum
+  tier_overrides: null
+- name: lw_rtrnmc_tfn_tbl_output
+  units: '1'
+  shape:
+  - 3
+  - 17
+  - 16
+  - 16
+  staggering: mass
+  dtype: float64
+  tolerance_abs: 0.0001
+  tolerance_rel: 0.001
+  tolerance_rationale: LW rtrnmc tfn_tbl source correction output
+  tier_overrides: null
+- name: lw_rtrnmc_zfd_per_gpoint
+  units: W m-2
+  shape:
+  - 3
+  - 18
+  - 16
+  - 16
+  staggering: mass
+  dtype: float64
+  tolerance_abs: 0.0001
+  tolerance_rel: 0.001
+  tolerance_rationale: LW rtrnmc downward flux per g-point before broadband accumulation
+  tier_overrides: null
+- name: lw_rtrnmc_zfu_per_gpoint
+  units: W m-2
+  shape:
+  - 3
+  - 18
+  - 16
+  - 16
+  staggering: mass
+  dtype: float64
+  tolerance_abs: 0.0001
+  tolerance_rel: 0.001
+  tolerance_rationale: LW rtrnmc upward flux per g-point before broadband accumulation
+  tier_overrides: null
 files:
 - path: data/fixtures/rrtmg-intermediate-oracle-v1.npz
-  checksum_sha256: d8795e2379d86a7a9c86a10c40f867ceb1f294c33ce5d7a1fbcd68f8fbe0b954
-  bytes: 123331
+  checksum_sha256: 008f7a00e7835557ce101a8f83b36896de63e6f30d66646cdd6869a0c07133ab
+  bytes: 256933
   external: false
 - path: data/scratch/wrf_rrtmg_harness
-  checksum_sha256: 87448c6065a50162ad5f71458e19b0022cac4c171f6116bb711c50ce6383ff4b
-  bytes: 1048944
+  checksum_sha256: a05460d80e6f06e5c35932e37d985d25c4ac96fc6104ea4bed0bdb41217cea6e
+  bytes: 1085984
   external: true
 - path: data/fixtures/rrtmg-tables-v1.npz
   checksum_sha256: 5cc63950c81795b02f7bf47147afc4a9d667ae00f14510f7325816fb4f3a06e2

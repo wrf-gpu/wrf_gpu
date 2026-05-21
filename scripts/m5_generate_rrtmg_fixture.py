@@ -123,6 +123,14 @@ def _read_oracle_binary(payload: bytes) -> dict[str, np.ndarray]:
     oracle["lw_secdiff"] = take_f4_f((nbnd_lw,))
     oracle["lw_dplankup"] = take_f4_f((nlay_lw, nbnd_lw))
     oracle["lw_dplankdn"] = take_f4_f((nlay_lw, nbnd_lw))
+    if offset < len(payload):
+        oracle["lw_cldprmc_cldfmc"] = take_f4_f((nlay_lw, max_lw_g, nbnd_lw))
+        oracle["lw_cldprmc_taucmc"] = take_f4_f((nlay_lw, max_lw_g, nbnd_lw))
+        oracle["lw_rtrnmc_pfracs"] = take_f4_f((nlay_lw, max_lw_g, nbnd_lw))
+        oracle["lw_rtrnmc_plansum"] = take_f4_f((nlay_lw, nbnd_lw))
+        oracle["lw_rtrnmc_tfn_tbl_output"] = take_f4_f((nlay_lw, max_lw_g, nbnd_lw))
+        oracle["lw_rtrnmc_zfd_per_gpoint"] = take_f4_f((nlay_lw + 1, max_lw_g, nbnd_lw))
+        oracle["lw_rtrnmc_zfu_per_gpoint"] = take_f4_f((nlay_lw + 1, max_lw_g, nbnd_lw))
     if offset != len(payload):
         raise RuntimeError(f"unexpected trailing bytes in RRTMG oracle payload: {len(payload) - offset}")
     return oracle
@@ -438,6 +446,13 @@ def _intermediate_manifest(path: Path) -> None:
             _variable("lw_taug", "1", (3, 17, 16, 16), 1.0e-8, 1.0e-4, "LW gas optical-depth intermediate oracle"),
             _variable("lw_fracs", "1", (3, 17, 16, 16), 1.0e-8, 1.0e-4, "LW Planck fraction intermediate oracle"),
             _variable("lw_planklay", "W m-2", (3, 17, 16), 1.0e-10, 1.0e-8, "LW Planck layer source oracle"),
+            _variable("lw_cldprmc_cldfmc", "1", (3, 17, 16, 16), 1.0e-4, 1.0e-3, "LW McICA cloud mask from cldprmc_lw boundary"),
+            _variable("lw_cldprmc_taucmc", "1", (3, 17, 16, 16), 1.0e-4, 1.0e-3, "LW cloud optical depth from cldprmc_lw"),
+            _variable("lw_rtrnmc_pfracs", "1", (3, 17, 16, 16), 1.0e-4, 1.0e-3, "LW rtrnmc Planck fraction per g-point"),
+            _variable("lw_rtrnmc_plansum", "W m-2", (3, 17, 16), 1.0e-4, 1.0e-3, "LW rtrnmc band Planck source sum"),
+            _variable("lw_rtrnmc_tfn_tbl_output", "1", (3, 17, 16, 16), 1.0e-4, 1.0e-3, "LW rtrnmc tfn_tbl source correction output"),
+            _variable("lw_rtrnmc_zfd_per_gpoint", "W m-2", (3, 18, 16, 16), 1.0e-4, 1.0e-3, "LW rtrnmc downward flux per g-point before broadband accumulation"),
+            _variable("lw_rtrnmc_zfu_per_gpoint", "W m-2", (3, 18, 16, 16), 1.0e-4, 1.0e-3, "LW rtrnmc upward flux per g-point before broadband accumulation"),
         ],
         "files": [
             {

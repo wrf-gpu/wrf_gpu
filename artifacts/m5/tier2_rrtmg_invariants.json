@@ -1,6 +1,6 @@
 {
   "longwave_candidate_heating_flux_closure": {
-    "fractional_residual_max": 9.3612259442344e-07,
+    "fractional_residual_max": 9.361225944238642e-07,
     "pass": true,
     "tolerance": 1e-06
   },
@@ -20,7 +20,7 @@
   },
   "pass": true,
   "shortwave_candidate_heating_flux_closure": {
-    "fractional_residual_max": 9.361225944869974e-07,
+    "fractional_residual_max": 9.361225944869833e-07,
     "pass": true,
     "tolerance": 1e-06
   },
