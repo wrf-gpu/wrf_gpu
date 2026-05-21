@@ -231,6 +231,25 @@ class FullDomainBatchingVerdict(ProofObjectSchema):
     schema_name = "FullDomainBatchingVerdict"
     description = "Full-domain batching speedup verdict against fair CPU denominator."
     required = {
+        "speedup_ratio": FieldRule("number", "CPU wall divided by GPU end-to-end wall."),
+        "pass": FieldRule("boolean", "True only when speedup and Tier-2 gates pass."),
+        "gpu_wall_s": FieldRule("number", "Binding GPU end-to-end wall numerator."),
+        "cpu_wall_s": FieldRule("number", "Binding CPU wall denominator."),
+        "cpu_denominator_basis": FieldRule("string", "Chosen CPU denominator basis."),
+        "fp_precision_caveat": FieldRule("string", "WRF -r4 and ADR-007 precision caveat."),
+        "dycore_cap_status": FieldRule("string", "How the M6-S2 dycore cap was lifted."),
+        "tier2_invariants_under_lifted_cap": FieldRule("string", "pass/fail Tier-2 status under lifted cap."),
+        "profiler_raw_paths": FieldRule("array", "Raw JAX/nsys/ncu profiler artifact paths."),
+        "transfer_audit": FieldRule("object", "Parsed transfer audit summary."),
+        "op_count": FieldRule("integer", "Compiled HLO operation count."),
+        "hlo_size_bytes": FieldRule("integer", "Compiled HLO text size in bytes."),
+        "temp_peak_bytes": FieldRule("integer", "XLA temporary memory peak in bytes."),
+        "compile_retries": FieldRule("integer", "Compile retry count."),
+        "cache_size_bytes": FieldRule("integer", "Compilation cache size in bytes."),
+        "allocator_fragmentation": FieldRule("number", "Allocator fragmentation estimate."),
+        "artifact_paths": FieldRule("array", "Raw and summary proof paths."),
+    }
+    optional = {
         "benchmark": FieldRule("string", "Benchmark identifier."),
         "backend": FieldRule("string", "Execution backend."),
         "hardware": FieldRule("string", "Hardware description."),
@@ -239,9 +258,6 @@ class FullDomainBatchingVerdict(ProofObjectSchema):
         "host_device_transfer_bytes": FieldRule("integer", "Total transfer bytes."),
         "cpu_denominator_artifact": FieldRule("string", "Fair CPU denominator JSON path."),
         "verdict": FieldRule("string", "PASS/FAIL/BLOCKED verdict."),
-        "artifact_paths": FieldRule("array", "Raw and summary proof paths."),
-    }
-    optional = {
         "kernel_launches": FieldRule(("integer", "null"), "Kernel launch count, null if profiler unavailable."),
         "occupancy_pct": FieldRule(("number", "null"), "Profiler occupancy, null if unavailable."),
         "registers_per_thread": FieldRule(("integer", "null"), "Register count, null if unavailable."),

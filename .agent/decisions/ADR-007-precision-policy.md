@@ -2,10 +2,16 @@
 
 Date: 2026-05-20
 Author: ADR-007 worker (codex gpt-5.5 xhigh)
-Status: **PROPOSED for tester/reviewer acceptance.** No production code downcast is implemented by this ADR; follow-on scheme sprints must implement and validate the authorized rows.
+Status: **M6-S5 BINDING VERDICT: FAIL (2026-05-21).** The measured end-to-end GPU wall passes the 4x performance threshold, but the lifted-cap forecast fails the required stability and Tier-2 invariant gates. No production precision expansion is authorized by this verdict.
 Scope: RTX 5090 + Ryzen 9 9950X precision policy for M2 column, M4 dycore, and M5 Thompson evidence.
 
 ## Status
+
+M6-S5 binding verdict evidence is recorded at `artifacts/m6/performance/full_domain_batching_verdict.json`. The run used Path B: coupled `dt_s=10s`, dycore receives the full coupled `dt_s` directly, and legacy 60s coupled calls now raise instead of silently applying the M6-S2 `min(dt_s, 1.0)` cap.
+
+Verdict: **FAIL**. Binding numerator: GPU end-to-end wall `500.78218523820397s` = cold start `7.253510077018291s` + compile `388.4165298009757s` + 24h coupled forecast `103.11085539206397s` + output write `2.0012899681460112s`. Binding denominator: M6-S2a raw timing subtraction `4859.53s` from `artifacts/m6/cpu_denominator.json`, preserving the WRF `-r4` default-real caveat. The speedup ratio is `9.703879537345157x`, which clears the 4x performance threshold.
+
+The fail reason is structural correctness, not throughput: under the lifted Path-B cap the reduced M4 dycore is unstable over the coupled forecast. The 24h final state saturates finite-guard bounds (`theta=150/550K`, `p=1000/120000Pa`, `qv=0.05`, winds at clip limits), the lifted-cap sanitize audit fires on `8617/8640` steps with value firing rate `0.5400004228674616`, worse than the legacy capped baseline (`938/1440`, value rate `0.002115730785150769`), and the 1h lifted-cap Tier-2 audit fails with `nan_inf=1014298726` and total-water residual `4.2711782132553853e-4 > 1e-8`. Raw profiler evidence is preserved in the JAX trace and `artifacts/m6/performance/profile/m6_s5_nsys_audit.nsys-rep`.
 
 ADR-007 amends ADR-003's blanket M5-S1 fp64 production lock into a per-field authorization matrix. It does not modify production `src/gpuwrf` code. It authorizes follow-on implementation sprints to downcast named fields or arithmetic paths only where this ADR says `FP32-OK` or `BF16-OK`, and only with the operational RMSE gate below.
 
