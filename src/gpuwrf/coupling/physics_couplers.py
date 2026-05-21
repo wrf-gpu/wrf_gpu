@@ -15,7 +15,7 @@ from gpuwrf.contracts.grid import GridSpec
 from gpuwrf.contracts.precision import DEFAULT_DTYPES
 from gpuwrf.contracts.state import State
 from gpuwrf.physics.mynn_pbl import MynnPBLColumnState, step_mynn_pbl_column
-from gpuwrf.physics.mynn_surface_stub import surface_layer
+from gpuwrf.physics.surface_layer import surface_layer
 from gpuwrf.physics.rrtmg_lw import RRTMGLWColumnState, solve_rrtmg_lw_column
 from gpuwrf.physics.rrtmg_sw import RRTMGSWColumnState, solve_rrtmg_sw_column
 from gpuwrf.physics.thompson_column import (
@@ -31,13 +31,17 @@ GRAVITY_M_S2 = 9.80665
 
 
 class _SurfaceColumnState(NamedTuple):
-    """Column-oriented view consumed by `mynn_surface_stub.surface_layer`."""
+    """Column-oriented view consumed by `surface_layer.surface_layer`."""
 
     u: object
     v: object
     theta: object
     qv: object
     p: object
+    dz: object
+    t_skin: object
+    soil_moisture: object
+    ustar: object
 
 
 def _to_columns(field):
@@ -211,6 +215,10 @@ def surface_adapter(state: State, dt: float) -> State:
         theta=_to_columns(state.theta),
         qv=_to_columns(state.qv),
         p=_to_columns(state.p),
+        dz=_column_dz_from_state(state, None),
+        t_skin=state.t_skin,
+        soil_moisture=state.soil_moisture,
+        ustar=state.ustar,
     )
     flux = surface_layer(column_state)
     return state.replace(

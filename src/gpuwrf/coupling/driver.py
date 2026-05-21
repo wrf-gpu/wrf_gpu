@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import timedelta
 from functools import partial
 from pathlib import Path
-from typing import Any
+from typing import Any, NamedTuple
 
 import jax
 from jax import config
@@ -20,12 +20,14 @@ from gpuwrf.coupling.physics_couplers import mynn_adapter, rrtmg_adapter, surfac
 from gpuwrf.dynamics.step import step as dycore_step
 from gpuwrf.io.gen2_accessor import Gen2Run
 from gpuwrf.io.validation import load_gen2_var
+from gpuwrf.physics.surface_layer import surface_layer_with_diagnostics
 from gpuwrf.profiling.transfer_audit import block_until_ready
 
 
 config.update("jax_enable_x64", True)
 
 P0_THETA_OFFSET_K = 300.0
+GRAVITY_M_S2 = 9.80665
 DEFAULT_DT_S = 60.0
 DEFAULT_RADIATION_CADENCE_STEPS = 10
 STANDARD_OUTPUT_LEADS_H = (1, 6, 12, 18, 24)
@@ -513,6 +515,7 @@ def write_wrfout_gpu(path: str | Path, state: State, grid: GridSpec, *, lead_hou
     """Write the forecast state to a compact WRF-shaped NumPy output file."""
 
     path = Path(path)
+    surface = _surface_diagnostics_for_output(state)
     payload = {
         "U": np.asarray(jax.device_get(state.u), dtype=np.float32),
         "V": np.asarray(jax.device_get(state.v), dtype=np.float32),
@@ -522,6 +525,13 @@ def write_wrfout_gpu(path: str | Path, state: State, grid: GridSpec, *, lead_hou
         "P": np.asarray(jax.device_get(state.p), dtype=np.float32),
         "PH": np.asarray(jax.device_get(state.ph), dtype=np.float32),
         "MU": np.asarray(jax.device_get(state.mu), dtype=np.float32),
+        "U10": np.asarray(jax.device_get(surface.u10), dtype=np.float32),
+        "V10": np.asarray(jax.device_get(surface.v10), dtype=np.float32),
+        "T2": np.asarray(jax.device_get(surface.t2), dtype=np.float32),
+        "Q2": np.asarray(jax.device_get(surface.q2), dtype=np.float32),
+        "UST": np.asarray(jax.device_get(surface.fluxes.ustar), dtype=np.float32),
+        "HFX_KIN": np.asarray(jax.device_get(surface.fluxes.theta_flux), dtype=np.float32),
+        "QFX_KIN": np.asarray(jax.device_get(surface.fluxes.qv_flux), dtype=np.float32),
         "lead_hours": np.asarray(float(lead_hours), dtype=np.float32),
         "mass_shape": np.asarray([grid.nz, grid.ny, grid.nx], dtype=np.int32),
         "wrf_staggered_extent": np.asarray([grid.nz + 1, grid.ny + 1, grid.nx + 1], dtype=np.int32),
@@ -529,6 +539,36 @@ def write_wrfout_gpu(path: str | Path, state: State, grid: GridSpec, *, lead_hou
         "container_note": np.asarray("npz proof container; dimensions match WRF variable staggering"),
     }
     np.savez(path, **payload)
+
+
+class _SurfaceOutputState(NamedTuple):
+    u: object
+    v: object
+    theta: object
+    qv: object
+    p: object
+    dz: object
+    t_skin: object
+    soil_moisture: object
+    ustar: object
+
+
+def _surface_diagnostics_for_output(state: State):
+    u_mass = 0.5 * (state.u[:, :, :-1] + state.u[:, :, 1:])
+    v_mass = 0.5 * (state.v[:, :-1, :] + state.v[:, 1:, :])
+    dz = jnp.maximum((state.ph[1:, :, :] - state.ph[:-1, :, :]) / GRAVITY_M_S2, 1.0)
+    column_state = _SurfaceOutputState(
+        u=jnp.moveaxis(u_mass, 0, -1),
+        v=jnp.moveaxis(v_mass, 0, -1),
+        theta=jnp.moveaxis(state.theta, 0, -1),
+        qv=jnp.moveaxis(state.qv, 0, -1),
+        p=jnp.moveaxis(state.p, 0, -1),
+        dz=jnp.moveaxis(dz, 0, -1),
+        t_skin=state.t_skin,
+        soil_moisture=state.soil_moisture,
+        ustar=state.ustar,
+    )
+    return surface_layer_with_diagnostics(column_state)
 
 
 def state_diagnostics(state: State) -> dict[str, Any]:
