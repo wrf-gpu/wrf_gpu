@@ -1,8 +1,23 @@
 # ADR-009 - RRTMG JAX Transfer Solver State
 
 Date: 2026-05-21
-Author: M5-S3.x worker amendment (Codex gpt-5.5); M5-S3.y non-acceptance update (Codex gpt-5.5); M5-S3.zzz LW closeout update (Codex gpt-5.5); M5-S3.zzzzz LW cldprmc/rtrnmc parity update (Codex gpt-5.5)
-Status: SW-PARTIAL/UNKNOWN, LW-PARITY after M5-S3.zzzzz
+Author: 8-sprint M5-S3 RRTMG arc — M5-S3 (Codex), M5-S3.x (Codex), M5-S3.y (Codex), M5-S3.z (Codex), M5-S3.zz (Codex), M5-S3.zzz (Codex), M5-S3.zzzz (Codex), M5-S3.zzzzz (Codex); manager Claude Opus 4.7 1M-context; all double-AI verified by independent Opus 4.7 reviewer passes
+Status: **SW-PARITY + LW-PARITY** (full RRTMG parity for analytic-rrtmg-*-column-v1 fixtures; composition of M5-S3.zzzz SW parity merge `dc03d04` + M5-S3.zzzzz LW parity merge 2026-05-21)
+
+## Final Manager Amendment (2026-05-21 17:00)
+
+After M5-S3.zzzz SW Opus accept + M5-S3.zzzzz LW Opus accept, ADR-009 reconciles to full **SW-PARITY + LW-PARITY**. Strict Tier-1 broadband flux residuals (analytic-column fixtures):
+
+- **SW**: max flux 0.0715 W/m² (vs 1.0 = 14× under); heating 3.4e-8 K/s (2,900× under)
+- **LW**: max flux 1.2e-4 W/m² (8,350× under); heating 3.6e-8 K/s (2,795× under)
+
+Non-blocking follow-ups carried forward:
+- 454-launch performance debt (54 SW + 400 LW; M5 closeout / Pareto-frontier scope)
+- R-12 band-5 (and likely sibling 3, 7, 13, 14 binary-species bands) fixture-conditional simplification — M6-S8 critic must attribute T2 drift in cloudy-PBL scenarios; if T2 drift > 0.5 K, recommend follow-up sprint to harden these bands to full WRF binary-species interpolation
+- R-13 MCICA XLA-fusion sensitivity (LW; quiet refactor when convenient)
+- R-16 SW intermediate validator imports lost in merge; cherry-pick from M5-S3.zzzz branch (manager housekeeping)
+
+M5 RRTMG full PARITY → M6-S8 operational T2 binding gate UNBLOCKED for dispatch (subject to M6-S5 ADR-007 prereqs: dycore cap lift, end-to-end wall, denominator selection).
 Scope: M5-S3.x/M5-S3.y RRTMG shortwave and longwave radiation column rewrite.
 
 ## Decision
