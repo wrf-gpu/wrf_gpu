@@ -18,6 +18,17 @@ from gpuwrf.io.gen2_accessor import GEN2_READ_ONLY_ROOT, Gen2Run
 
 BOUNDARY_VARIABLES = ("U", "V", "T", "QVAPOR", "PH")
 SIDES = ("W", "E", "S", "N")
+WRFBDY_VARIABLES = ("U", "V", "T", "QVAPOR", "PH", "MU")
+WRFBDY_STATE_FIELDS = {
+    "U": "u",
+    "V": "v",
+    "T": "theta",
+    "QVAPOR": "qv",
+    "PH": "ph",
+    "MU": "mu",
+}
+WRFBDY_BASE_SUFFIXES = {"W": "BXS", "E": "BXE", "S": "BYS", "N": "BYE"}
+WRFBDY_TENDENCY_SUFFIXES = {"W": "BTXS", "E": "BTXE", "S": "BTYS", "N": "BTYE"}
 COORDS = {
     "U": ("XLAT_U", "XLONG_U", "ZNU"),
     "V": ("XLAT_V", "XLONG_V", "ZNU"),
@@ -131,6 +142,168 @@ def _sides(field: np.ndarray) -> dict[str, np.ndarray]:
 def _read_var(dataset: Dataset, name: str) -> np.ndarray:
     data = dataset.variables[name][0]
     return np.asarray(np.ma.filled(data, np.nan), dtype=np.float64)
+
+
+def _decode_char_times(dataset: Dataset) -> list[str]:
+    if "Times" not in dataset.variables:
+        return []
+    chars = np.asarray(dataset.variables["Times"][:])
+    decoded = []
+    for row in chars:
+        if row.dtype.kind == "S":
+            decoded.append(b"".join(row.tolist()).decode("ascii", errors="replace").strip())
+        else:
+            decoded.append("".join(row.astype(str).tolist()).strip())
+    return decoded
+
+
+def _read_wrfbdy_array(dataset: Dataset, name: str, time_index: int) -> np.ndarray:
+    if name not in dataset.variables:
+        raise KeyError(f"{name!r} not present in wrfbdy file")
+    variable = dataset.variables[name]
+    data = variable[time_index] if variable.dimensions and variable.dimensions[0] == "Time" else variable[:]
+    return np.asarray(np.ma.filled(data, np.nan), dtype=np.float64)
+
+
+def decode_wrfbdy(
+    path: str | Path,
+    *,
+    variables: tuple[str, ...] = WRFBDY_VARIABLES,
+    time_index: int = 0,
+) -> dict[str, Any]:
+    """Decode WRF `wrfbdy` boundary values and prescribed tendency increments.
+
+    Returned side arrays keep WRF's `(bdy_width, z?, side_index)` order. The
+    `_BT*` arrays are independent forcing tendencies consumed by WRF lateral
+    boundary interpolation, not quantities reconstructed from GPU output.
+    """
+
+    source = Path(path)
+    with Dataset(source, "r") as dataset:
+        bdy_width = int(len(dataset.dimensions["bdy_width"])) if "bdy_width" in dataset.dimensions else 1
+        times = _decode_char_times(dataset)
+        decoded: dict[str, Any] = {
+            "schema": "wrfbdy_decoder_v1",
+            "path": str(source),
+            "time_index": int(time_index),
+            "times": times,
+            "bdy_width": bdy_width,
+            "variables": {},
+        }
+        for var in variables:
+            var_payload: dict[str, Any] = {"sides": {}}
+            for side in SIDES:
+                base_name = f"{var}_{WRFBDY_BASE_SUFFIXES[side]}"
+                tendency_name = f"{var}_{WRFBDY_TENDENCY_SUFFIXES[side]}"
+                base = _read_wrfbdy_array(dataset, base_name, time_index)
+                tendency = _read_wrfbdy_array(dataset, tendency_name, time_index)
+                var_payload["sides"][side] = {
+                    "boundary": base,
+                    "tendency": tendency,
+                    "boundary_variable": base_name,
+                    "tendency_variable": tendency_name,
+                    "units": getattr(dataset.variables[base_name], "units", ""),
+                    "tendency_units": getattr(dataset.variables[tendency_name], "units", ""),
+                    "shape": list(base.shape),
+                }
+            decoded["variables"][var] = var_payload
+    return decoded
+
+
+def wrfbdy_path_for_run(run: Gen2Run, domain: str = "d01") -> Path:
+    """Return the Gen2 wrfbdy path for the requested parent domain."""
+
+    path = run.path / f"wrfbdy_{domain}"
+    if not path.exists():
+        raise FileNotFoundError(path)
+    return path
+
+
+def _snapshot_field(snapshot: Any, field: str):
+    if isinstance(snapshot, dict):
+        return snapshot.get(field)
+    return getattr(snapshot, field, None)
+
+
+def _reverse_last_axis(array: np.ndarray) -> np.ndarray:
+    return np.flip(array, axis=-1)
+
+
+def _gpu_side_strip(field: np.ndarray, side: str, width: int) -> np.ndarray:
+    """Extract GPU boundary strips in WRF wrfbdy `(width, z?, side_index)` order."""
+
+    data = np.asarray(field, dtype=np.float64)
+    if data.ndim == 3:
+        if side == "W":
+            return np.moveaxis(data[:, :, :width], 2, 0)
+        if side == "E":
+            return np.moveaxis(_reverse_last_axis(data[:, :, -width:]), 2, 0)
+        if side == "S":
+            return np.moveaxis(data[:, :width, :], 1, 0)
+        return np.moveaxis(np.flip(data[:, -width:, :], axis=1), 1, 0)
+    if data.ndim == 2:
+        if side == "W":
+            return data[:, :width].T
+        if side == "E":
+            return _reverse_last_axis(data[:, -width:]).T
+        if side == "S":
+            return data[:width, :]
+        return np.flip(data[-width:, :], axis=0)
+    raise ValueError(f"boundary snapshot field must be 2D or 3D, got shape {data.shape}")
+
+
+def _common_extent(left: np.ndarray, right: np.ndarray) -> tuple[tuple[slice, ...], tuple[slice, ...]]:
+    shape = tuple(min(int(a), int(b)) for a, b in zip(left.shape, right.shape, strict=False))
+    index = tuple(slice(0, size) for size in shape)
+    return index, index
+
+
+def compare_boundary_tendency_to_wrfbdy(
+    gpu_tendency: Any,
+    decoded: dict[str, Any],
+    *,
+    variables: tuple[str, ...] = WRFBDY_VARIABLES,
+    width: int | None = None,
+    trim_corners: int = 0,
+) -> dict[str, Any]:
+    """Compare GPU boundary-apply tendencies with decoded wrfbdy `_BT*` terms."""
+
+    bdy_width = int(decoded.get("bdy_width", 1) if width is None else width)
+    per_variable: dict[str, Any] = {}
+    for var in variables:
+        state_field = WRFBDY_STATE_FIELDS[var]
+        candidate = _snapshot_field(gpu_tendency, state_field)
+        if candidate is None:
+            continue
+        side_records = {}
+        for side in SIDES:
+            truth = np.asarray(decoded["variables"][var]["sides"][side]["tendency"], dtype=np.float64)
+            gpu_side = _gpu_side_strip(np.asarray(candidate), side, min(bdy_width, truth.shape[0]))
+            left_index, right_index = _common_extent(gpu_side, truth)
+            left = gpu_side[left_index]
+            right = truth[right_index]
+            if trim_corners > 0 and left.shape[-1] > 2 * int(trim_corners):
+                trim = int(trim_corners)
+                left = left[..., trim:-trim]
+                right = right[..., trim:-trim]
+            stats = _stats(left, right)
+            stats["compared_shape"] = list(left.shape)
+            stats["wrfbdy_variable"] = decoded["variables"][var]["sides"][side]["tendency_variable"]
+            side_records[side] = stats
+        aggregate = {
+            "mae_max": max(record["mae"] for record in side_records.values()),
+            "rmse_max": max(record["rmse"] for record in side_records.values()),
+            "max_abs_max": max(record["max_abs"] for record in side_records.values()),
+            "rel_mae_max": max(record["rel_mae"] for record in side_records.values()),
+        }
+        per_variable[var] = {"aggregate": aggregate, "sides": side_records}
+    return {
+        "schema": "wrfbdy_boundary_tendency_comparison_v1",
+        "source": decoded.get("path"),
+        "time_index": int(decoded.get("time_index", 0)),
+        "bdy_width": bdy_width,
+        "variables": per_variable,
+    }
 
 
 def _stats(predicted: np.ndarray, truth: np.ndarray) -> dict[str, float]:
@@ -264,4 +437,14 @@ def extract_d02_boundary(gen2_run: Gen2Run, output_path: str) -> dict[str, Any]:
     return manifest
 
 
-__all__ = ["BOUNDARY_VARIABLES", "SIDES", "TOLERANCES", "extract_d02_boundary"]
+__all__ = [
+    "BOUNDARY_VARIABLES",
+    "SIDES",
+    "TOLERANCES",
+    "WRFBDY_STATE_FIELDS",
+    "WRFBDY_VARIABLES",
+    "compare_boundary_tendency_to_wrfbdy",
+    "decode_wrfbdy",
+    "extract_d02_boundary",
+    "wrfbdy_path_for_run",
+]

@@ -187,11 +187,26 @@ class Tier3DriftEnvelope(ProofObjectSchema):
     description = "Tier-3 controlled short-run convergence and drift envelope."
     required = {
         "run_id": FieldRule("string", "Validation run identifier."),
-        "status": FieldRule("string", "PASS/FAIL/BLOCKED status."),
+        "domain": FieldRule("string", "WRF/GPU domain ID for the pinned drift comparison."),
+        "status": FieldRule("string", "GREEN/PARTIAL/BLOCKED/FAIL status."),
         "base_dt_s": FieldRule("number", "Base timestep in seconds."),
         "refined_dt_s": FieldRule("number", "Refined timestep in seconds."),
-        "norms": FieldRule("object", "Per-variable drift norms."),
+        "further_refined_dt_s": FieldRule("number", "Second refinement timestep in seconds."),
+        "lead_hours": FieldRule("array", "Lead times evaluated by the envelope."),
+        "variables": FieldRule("array", "Variables evaluated by the envelope."),
+        "boundary_mode": FieldRule("object", "Boundary forcing mode and provenance."),
+        "forcing_mode": FieldRule("object", "Physics/forcing cadence used by reduced and pinned runs."),
+        "regridding": FieldRule("object", "Regridding and staggering policy."),
+        "norm_definitions": FieldRule("object", "Definitions for max_abs/rmse/mean_abs norms."),
+        "envelope_derivation": FieldRule("object", "Controlled dt-refinement and CPU/analytic reference derivation."),
+        "envelope": FieldRule("object", "Per-variable per-lead dt-sensitivity envelope."),
+        "gpu_drift": FieldRule("object", "Per-variable per-lead GPU-vs-reference drift."),
+        "per_variable_status": FieldRule("object", "GREEN/PARTIAL/FAIL/BLOCKED status by variable and lead."),
         "artifact_paths": FieldRule("array", "Raw and summary proof paths."),
+    }
+    optional = {
+        "thompson_water_budget_oracle": FieldRule("object", "F-min-1 independent Thompson water-budget side-channel proof."),
+        "wrfbdy_boundary_oracle": FieldRule("object", "F-min-2 wrfbdy decoder comparison proof."),
     }
 
 

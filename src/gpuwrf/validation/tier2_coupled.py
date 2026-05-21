@@ -88,6 +88,31 @@ def _precip_mixing_ratio_delta(state: State, state_next: State):
     return jnp.asarray(precip_delta_mm, dtype=jnp.float64) / column_mass_kg_m2
 
 
+def _water_tendency_oracle(precip_out):
+    """Return a Thompson side-channel tendency oracle when one was supplied."""
+
+    if precip_out is None:
+        return None
+    if isinstance(precip_out, dict):
+        if "column_water_tendency" in precip_out:
+            column = precip_out["column_water_tendency"]
+            precip = precip_out.get("precip_out_tendency", 0.0)
+            return column, precip, "thompson_tendency_side_channel"
+        if "species_tendencies" in precip_out:
+            species = precip_out["species_tendencies"]
+            column = jnp.mean(sum(jnp.asarray(value, dtype=jnp.float64) for value in species.values()), axis=0)
+            precip = precip_out.get("precip_out_tendency", 0.0)
+            return column, precip, "thompson_species_tendency_dict"
+        return None
+    if hasattr(precip_out, "column_water_tendency"):
+        return (
+            getattr(precip_out, "column_water_tendency"),
+            getattr(precip_out, "precip_out_tendency", 0.0),
+            type(precip_out).__name__,
+        )
+    return None
+
+
 def _field_from_snapshot(snapshot: Any, field: str):
     if snapshot is None:
         return None
@@ -137,10 +162,19 @@ def mu_continuity_residual(state: State, state_next: State, dt: float, fluxes) -
 def water_budget_residual(state: State, state_next: State, dt: float, precip_out=None) -> dict[str, Any]:
     """Return total-water residual from vapor + hydrometeors + precipitation outflow."""
 
-    del dt
     water_delta = _column_total_water(state_next) - _column_total_water(state)
-    precip_delta = _precip_mixing_ratio_delta(state, state_next) if precip_out is None else jnp.asarray(precip_out)
-    residual = _interior_2d(water_delta + precip_delta)
+    oracle = _water_tendency_oracle(precip_out)
+    if oracle is None:
+        precip_delta = _precip_mixing_ratio_delta(state, state_next) if precip_out is None else jnp.asarray(precip_out)
+        residual = _interior_2d(water_delta + precip_delta)
+        oracle_source = "precipitation_accumulator_delta"
+    else:
+        column_tendency, precip_tendency, oracle_source = oracle
+        residual = _interior_2d(
+            water_delta
+            + float(dt) * jnp.asarray(precip_tendency, dtype=jnp.float64)
+            - float(dt) * jnp.asarray(column_tendency, dtype=jnp.float64)
+        )
     per_leaf = {
         field: {"max_abs": _max_abs(_interior_2d(jnp.asarray(getattr(state_next, field)) - jnp.asarray(getattr(state, field))))}
         for field in HYDROMETEOR_FIELDS
@@ -153,6 +187,7 @@ def water_budget_residual(state: State, state_next: State, dt: float, precip_out
         "max_abs": max_abs,
         "domain_mean_abs": mean_abs,
         "per_leaf": per_leaf,
+        "oracle_source": oracle_source,
         "wrf_source": "phys/module_diagnostics_driver.F:336-356",
     }
 
