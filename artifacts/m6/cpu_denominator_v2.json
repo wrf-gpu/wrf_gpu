@@ -1,0 +1,81 @@
+{
+  "attribution_fraction_d02": 0.18260914959890023,
+  "attribution_policy": "d02 fraction of total nested run by domain ratio of grid points x timestep ratio",
+  "compile_flags": [
+    "-O3",
+    "-acc",
+    "-gpu=cc120,fastmath",
+    "-w",
+    "-Mfree",
+    "-byteswapio",
+    "-Mrecursive",
+    "-r4",
+    "-i4"
+  ],
+  "compile_log": "/mnt/data/canairy_meteo/artifacts/wrf_gpu_src/WRF/compile.log",
+  "compile_precision_note": "compile.log records -r4 default real; this artifact preserves that evidence for M6-S5.",
+  "domain_count": 5,
+  "domain_work_weights": {
+    "1": 1158854400.0,
+    "2": 6648998400.0,
+    "3": 13258080000.0,
+    "4": 7869312000.0,
+    "5": 7475846400.0
+  },
+  "fp_precision": "FP32 default real observed (-r4); review contract expected FP64, so M6-S5 must account for this evidence",
+  "hardware": "same workstation as RTX 5090 (28-rank WRF)",
+  "nest_ratio": [
+    9000,
+    3000,
+    1000,
+    1000,
+    1000
+  ],
+  "nvhpc_version": "26.3",
+  "raw_timing_summary": {
+    "1": {
+      "count": 4800,
+      "mean_s": 3.436589675,
+      "p50_s": 3.256235,
+      "p95_s": 4.4339960000000005,
+      "sum_s": 16495.63044
+    },
+    "2": {
+      "count": 14400,
+      "mean_s": 1.09720658125,
+      "p50_s": 1.025725,
+      "p95_s": 1.4436674999999999,
+      "sum_s": 15799.77477
+    },
+    "3": {
+      "count": 43200,
+      "mean_s": 0.11557956574074073,
+      "p50_s": 0.10577,
+      "p95_s": 0.1598805,
+      "sum_s": 4993.03724
+    },
+    "4": {
+      "count": 43200,
+      "mean_s": 0.07190677777777778,
+      "p50_s": 0.064615,
+      "p95_s": 0.10248050000000003,
+      "sum_s": 3106.3728
+    },
+    "5": {
+      "count": 43200,
+      "mean_s": 0.06851353773148149,
+      "p50_s": 0.06135,
+      "p95_s": 0.09797200000000011,
+      "sum_s": 2959.78483
+    }
+  },
+  "run_id": "20260520_18z_l3_24h_20260521T045847Z",
+  "source_logs": [
+    "/mnt/data/canairy_meteo/runs/wrf_l3/20260520_18z_l3_24h_20260521T045847Z/rsl.error.0000",
+    "/mnt/data/canairy_meteo/runs/wrf_l3/20260520_18z_l3_24h_20260521T045847Z/namelist.input",
+    "/mnt/data/canairy_meteo/artifacts/wrf_gpu_src/WRF/compile.log"
+  ],
+  "wall_time_d02_attributable_s": 3012.2530467461324,
+  "wall_time_per_step_ms": 209.18423935737033,
+  "wall_time_total_24h_s": 16495.63044
+}

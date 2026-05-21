@@ -43,7 +43,7 @@ from gpuwrf.coupling.driver import (
 )
 from gpuwrf.coupling.physics_couplers import mynn_adapter, rrtmg_adapter, surface_adapter, thompson_adapter
 from gpuwrf.dynamics.step import step as dycore_step
-from gpuwrf.io.gen2_accessor import Gen2Run
+from gpuwrf.io.gen2_accessor import DEFAULT_M6_BOUNDARY_REPLAY, DEFAULT_M6_GEN2_RUN_DIR, Gen2Run
 from gpuwrf.io.proof_schemas import Forecast24h, ForecastSmoke, SpacetimeBudget, validate_artifact
 from gpuwrf.profiling.budget import compiled_memory_stats, compiled_text, kernel_launches_per_step
 from gpuwrf.profiling.transfer_audit import block_until_ready, count_transfer_bytes, visible_gpu_name
@@ -51,8 +51,8 @@ from gpuwrf.profiling.transfer_audit import block_until_ready, count_transfer_by
 
 config.update("jax_enable_x64", True)
 
-DEFAULT_RUN_DIR = Path("/mnt/data/canairy_meteo/runs/wrf_l3/20260519_18z_l3_24h_20260520T025228Z")
-DEFAULT_BOUNDARY = Path("data/fixtures/m6/d02_boundary_replay_v1.zarr")
+DEFAULT_RUN_DIR = DEFAULT_M6_GEN2_RUN_DIR
+DEFAULT_BOUNDARY = DEFAULT_M6_BOUNDARY_REPLAY
 ARTIFACT_DIR = ROOT / "artifacts" / "m6"
 SPACETIME_BUDGET = ARTIFACT_DIR / "spacetime_budget_d02.json"
 
@@ -147,7 +147,9 @@ def _median_segment_wall_per_step_ms(run_once: Callable[[], State], steps: int, 
 
 
 def _cpu_denominator_comparison(gpu_24h_wall_s: float) -> dict[str, Any]:
-    path = ARTIFACT_DIR / "cpu_denominator.json"
+    path = ARTIFACT_DIR / "cpu_denominator_v2.json"
+    if not path.exists():
+        path = ARTIFACT_DIR / "cpu_denominator.json"
     data = json.loads(path.read_text(encoding="utf-8"))
     raw = data.get("raw_timing_summary", {})
     raw_subtraction = float(raw["2"]["sum_s"] - raw["3"]["sum_s"] - raw["4"]["sum_s"] - raw["5"]["sum_s"])

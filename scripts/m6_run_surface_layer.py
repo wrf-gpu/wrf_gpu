@@ -23,7 +23,7 @@ import jax.numpy as jnp
 import numpy as np
 from netCDF4 import Dataset
 
-from gpuwrf.io.gen2_accessor import Gen2Run
+from gpuwrf.io.gen2_accessor import DEFAULT_M6_GEN2_RUN_DIR, Gen2Run
 from gpuwrf.io.land_state import build_land_state_manifest, load_prescribed_land_state
 from gpuwrf.io.proof_schemas import SurfaceLayerArtifact, validate_artifact
 from gpuwrf.io.validation import load_gen2_var
@@ -31,7 +31,7 @@ from gpuwrf.physics.surface_constants import P0_PA, R_D_OVER_CP
 from gpuwrf.physics.surface_layer import surface_layer_with_diagnostics
 
 
-DEFAULT_RUN_DIR = Path("/mnt/data/canairy_meteo/runs/wrf_l3/20260519_18z_l3_24h_20260520T025228Z")
+DEFAULT_RUN_DIR = DEFAULT_M6_GEN2_RUN_DIR
 ARTIFACT_DIR = ROOT / "artifacts" / "m6"
 
 

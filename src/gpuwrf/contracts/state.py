@@ -67,6 +67,10 @@ def _state_field_shapes(grid: GridSpec) -> dict[str, tuple[int, ...]]:
         "fltv": surface_2d,
         "t_skin": surface_2d,
         "soil_moisture": surface_2d,
+        "xland": surface_2d,
+        "lakemask": surface_2d,
+        "mavail": surface_2d,
+        "roughness_m": surface_2d,
         "rain_acc": surface_2d,
         "snow_acc": surface_2d,
         "graupel_acc": surface_2d,
@@ -159,6 +163,9 @@ class State:
     - `ustar`: m s^-1, `theta_flux`: K m s^-1, `qv_flux`: kg kg^-1 m s^-1,
       `tau_u/tau_v`: m2 s^-2, `rhosfc`: kg m^-3, `fltv`: K m s^-1,
       `t_skin`: K, `soil_moisture`: m3 m^-3 on surface mass points.
+    - `xland`, `lakemask`, `mavail`: prescribed land/water and moisture
+      availability fields from Gen2 `wrfinput_d02`; `roughness_m`: prescribed
+      or derived surface roughness length in m.
     - `rain_acc/snow_acc/graupel_acc/ice_acc`: mm accumulated precipitation
       on surface mass points.
     - `u_bdy/v_bdy/theta_bdy/qv_bdy/ph_bdy/mu_bdy`: time-varying lateral
@@ -193,6 +200,10 @@ class State:
         "fltv",
         "t_skin",
         "soil_moisture",
+        "xland",
+        "lakemask",
+        "mavail",
+        "roughness_m",
         "rain_acc",
         "snow_acc",
         "graupel_acc",
@@ -234,6 +245,10 @@ class State:
         fltv: jax.Array,
         t_skin: jax.Array,
         soil_moisture: jax.Array,
+        xland: jax.Array,
+        lakemask: jax.Array,
+        mavail: jax.Array,
+        roughness_m: jax.Array,
         rain_acc: jax.Array,
         snow_acc: jax.Array,
         graupel_acc: jax.Array,
@@ -272,6 +287,10 @@ class State:
         self.fltv = fltv
         self.t_skin = t_skin
         self.soil_moisture = soil_moisture
+        self.xland = xland
+        self.lakemask = lakemask
+        self.mavail = mavail
+        self.roughness_m = roughness_m
         self.rain_acc = rain_acc
         self.snow_acc = snow_acc
         self.graupel_acc = graupel_acc

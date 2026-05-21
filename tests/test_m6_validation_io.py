@@ -1,14 +1,12 @@
 from __future__ import annotations
 
-from pathlib import Path
-
 import numpy as np
 
-from gpuwrf.io.gen2_accessor import Gen2Run
+from gpuwrf.io.gen2_accessor import DEFAULT_M6_GEN2_RUN_DIR, Gen2Run
 from gpuwrf.io.validation import domain_mask, lead_time_slice, load_gen2_var, regrid, unit_convert
 
 
-RUN_PATH = Path("/mnt/data/canairy_meteo/runs/wrf_l3/20260519_18z_l3_24h_20260520T025228Z")
+RUN_PATH = DEFAULT_M6_GEN2_RUN_DIR
 
 
 class _Grid:

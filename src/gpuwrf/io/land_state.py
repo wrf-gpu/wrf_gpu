@@ -2,15 +2,16 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
 from datetime import datetime, timezone
 import hashlib
 from pathlib import Path
 from typing import Any
 
+import jax.numpy as jnp
 import numpy as np
 
 from gpuwrf.io.gen2_accessor import Gen2Run
-from gpuwrf.io.validation import load_gen2_var
 from gpuwrf.physics.noah_mp import PrescribedNoahMPState, prescribe_noah_mp_state
 
 
@@ -29,6 +30,8 @@ LAND_STATE_VARIABLES = (
     "VEGFRA",
     "CM",
     "CH",
+    "MAVAIL",
+    "ZNT",
 )
 
 
@@ -56,23 +59,32 @@ def _summary(field: Any) -> dict[str, Any]:
 
 
 def load_prescribed_land_state(run: Gen2Run, domain: str = "d02", time: int = 0) -> PrescribedNoahMPState:
-    """Load the Option-A Noah-MP prescribed lower boundary via validation I/O."""
+    """Load the Option-A Noah-MP prescribed lower boundary from `wrfinput_d02`."""
 
-    loaded = {name: load_gen2_var(run, domain, name, time=time) for name in LAND_STATE_VARIABLES if name in run.variables(domain)}
+    del time
+    wrfinput_variables = set(run.wrfinput_variables(domain))
+    loaded = {name: run.load_wrfinput(domain, name, lazy=False) for name in LAND_STATE_VARIABLES if name in wrfinput_variables}
     missing = sorted(set(LAND_STATE_VARIABLES) - set(loaded))
     required = {"XLAND", "LANDMASK", "IVGTYP", "ISLTYP", "LU_INDEX", "SST", "TSK", "SMOIS", "SH2O", "TSLB"}
     absent_required = sorted(required - set(loaded))
     if absent_required:
         raise KeyError(f"required Gen2 land-state variables missing for {domain}: {absent_required}")
+    roughness_note = (
+        "ZNT loaded directly from wrfinput_d02."
+        if "ZNT" in loaded
+        else "ZNT absent; roughness_m derived from CM when usable, otherwise VEGFRA/land-water surrogate."
+    )
+    mavail_note = "MAVAIL loaded directly from wrfinput_d02." if "MAVAIL" in loaded else "MAVAIL absent; derived from top SMOIS and land/water mask."
     source = {
         "run_id": run.run_id,
         "domain": domain,
-        "time_index": int(time),
-        "source_file": str(run._file_for_time(domain, time)),  # metadata only; value reads above use validation I/O.
+        "time_index": 0,
+        "source_file": str(run.wrfinput_file(domain)),
         "missing_optional_variables": missing,
-        "roughness_note": "ZNT absent; roughness_m derived from CM when usable, otherwise VEGFRA/land-water surrogate.",
+        "roughness_note": roughness_note,
+        "mavail_note": mavail_note,
     }
-    return prescribe_noah_mp_state(
+    state = prescribe_noah_mp_state(
         t_skin=loaded["TSK"],
         smois=loaded["SMOIS"],
         sh2o=loaded["SH2O"],
@@ -88,6 +100,11 @@ def load_prescribed_land_state(run: Gen2Run, domain: str = "d02", time: int = 0)
         cm=loaded.get("CM"),
         source=source,
     )
+    if "ZNT" in loaded:
+        state = replace(state, roughness_m=jnp.clip(jnp.asarray(loaded["ZNT"], dtype=jnp.float64), 1.0e-7, 10.0))
+    if "MAVAIL" in loaded:
+        state = replace(state, mavail=jnp.clip(jnp.asarray(loaded["MAVAIL"], dtype=jnp.float64), 0.0, 1.0))
+    return state
 
 
 def build_land_state_manifest(
@@ -100,7 +117,8 @@ def build_land_state_manifest(
 
     land = load_prescribed_land_state(run, domain, time) if state is None else state
     source_file = Path(land.source["source_file"])
-    variables = {name: {"available": name in run.variables(domain)} for name in LAND_STATE_VARIABLES}
+    wrfinput_variables = set(run.wrfinput_variables(domain))
+    variables = {name: {"available": name in wrfinput_variables} for name in LAND_STATE_VARIABLES}
     summaries = {
         "t_skin": _summary(land.t_skin),
         "soil_moisture": _summary(land.soil_moisture),
@@ -123,6 +141,7 @@ def build_land_state_manifest(
         "variables": variables,
         "summaries": summaries,
         "roughness_derivation": land.source.get("roughness_note"),
+        "mavail_derivation": land.source.get("mavail_note"),
         "read_only_source_root": "/mnt/data/canairy_meteo",
         "artifact_paths": [],
     }
