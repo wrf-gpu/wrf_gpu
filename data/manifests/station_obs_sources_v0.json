@@ -1,0 +1,125 @@
+{
+  "manifest_version": "m7-s0a-station-obs-sources-v0",
+  "status": "PARTIAL",
+  "domain": "Canary Islands d01/d02 operational verification",
+  "generated_utc": "2026-05-21T23:09:21Z",
+  "sources": [
+    {
+      "source_id": "metar_canary_airports",
+      "status": "AVAILABLE",
+      "source_type": "METAR",
+      "station_ids": ["GCRR", "GCLP", "GCTS", "GCFV", "GCXO", "GCHI", "GCLA", "GCGM", "GCRT"],
+      "variables": ["temperature_2m", "dewpoint_2m", "wind_dir_10m", "wind_speed_10m", "wind_gust_10m", "visibility", "altimeter", "cloud"],
+      "cadence": "hourly to sub-hourly airport reports",
+      "primary_url": "https://aviationweather.gov/api/data/metar?ids=GCRR,GCLP,GCTS,GCFV,GCXO,GCHI,GCLA,GCGM,GCRT&format=json",
+      "fallback_url_template": "https://tgftp.nws.noaa.gov/data/observations/metar/stations/{ICAO}.TXT",
+      "sample_fetch": {
+        "checked_utc": "2026-05-21T23:04:34Z",
+        "method": "curl GET",
+        "result": "AVAILABLE",
+        "evidence": "AviationWeather returned JSON records including GCFV/GCLA/GCLP at reportTime 2026-05-21T22:30:00Z; NOAA TGFTP returned GCRR 212300Z text."
+      },
+      "license_access_notes": "Public aviation weather feed; use only for station verification, not as sole dense-network truth."
+    },
+    {
+      "source_id": "synop_canary_wmo",
+      "status": "PARTIAL",
+      "source_type": "SYNOP",
+      "station_ids_known_from_aemet_manifest": ["60040", "60004", "60005"],
+      "variables": ["temperature_2m", "wind", "pressure", "precipitation", "humidity"],
+      "cadence": "nominal 3-hourly SYNOP where available",
+      "primary_url": "https://opendata.aemet.es/opendata/api/observacion/convencional/todas",
+      "sample_fetch": {
+        "checked_utc": "2026-05-21T23:06:40Z",
+        "method": "curl GET without api_key",
+        "result": "PARTIAL",
+        "evidence": "Endpoint responded HTTP 200 with an empty text body without credentials; station WMO IDs are present in the local AEMET manifest but live conventional access needs configured AEMET OpenData credentials."
+      },
+      "license_access_notes": "Treat as PARTIAL until AEMET OpenData key and redistribution terms are recorded in M7-S5."
+    },
+    {
+      "source_id": "aemet_conventional_canary",
+      "status": "PARTIAL",
+      "source_type": "AEMET_LOCAL_NETWORK",
+      "station_count": 106,
+      "station_manifest": "/home/enric/src/canairy_meteo/Gen2/manifests/aemet_stations_canary_v1.yaml",
+      "local_archive_glob": "/home/enric/src/canairy_meteo/Gen2/artifacts/datasets/aemet_stations/*_daily_v1.parquet",
+      "variables": ["temperature_2m", "relative_humidity", "pressure", "wind_speed", "wind_direction", "precipitation"],
+      "cadence": "conventional observation cadence by station; daily archives exist locally for many stations",
+      "primary_url": "https://opendata.aemet.es/opendata/api/observacion/convencional/todas",
+      "station_url_template": "https://opendata.aemet.es/opendata/api/observacion/convencional/datos/estacion/{idema}",
+      "sample_fetch": {
+        "checked_utc": "2026-05-21T23:06:40Z",
+        "method": "curl HEAD/GET without api_key",
+        "result": "PARTIAL",
+        "evidence": "HTTP reachable; live payload requires AEMET OpenData credential handling before an operational loader can bind to it."
+      },
+      "license_access_notes": "Operational verification can start from Gen2 local archive, but live station verification remains PARTIAL until API key and terms are pinned."
+    },
+    {
+      "source_id": "grafcan_sitcan",
+      "status": "PARTIAL",
+      "source_type": "REGIONAL_LOCAL_NETWORK",
+      "station_count": 57,
+      "station_manifest": "/home/enric/src/canairy_meteo/Gen2/manifests/grafcan_sitcan_stations_v1.yaml",
+      "inventory_url": "https://opendata.sitcan.es/upload/meteorologia/estaciones.csv",
+      "live_api_base": "https://sensores.grafcan.es/api/v1.0/",
+      "variables": ["temperature_2m", "relative_humidity", "pressure", "wind_speed", "wind_direction", "precipitation", "solar_ghi_partial"],
+      "cadence": "live sensor API per station/datastream when authorized",
+      "sample_fetch": {
+        "checked_utc": "2026-05-21T23:04:32Z",
+        "method": "curl HEAD inventory and curl GET API root",
+        "result": "PARTIAL",
+        "evidence": "Inventory CSV returned HTTP 200 and Sensors API root returned Swagger HTML; live observations require GRAFCAN_API_KEY per Gen2 manifest."
+      },
+      "license_access_notes": "Inventory is public; operational observations require key-bearing API path and terms review."
+    },
+    {
+      "source_id": "gen2_station_cube_v3_candidate",
+      "status": "AVAILABLE",
+      "source_type": "LOCAL_HISTORICAL_STATION_CORPUS",
+      "station_count": 193,
+      "row_count": 6935614,
+      "date_range_utc": ["2016-04-21", "2026-05-07"],
+      "station_registry": "/home/enric/src/canairy_meteo/Gen2/manifests/high_quality_station_registry_v1.json",
+      "station_cube": "/home/enric/src/canairy_meteo/Gen2/artifacts/datasets/station_benchmark_cube_v3_candidate.parquet",
+      "wrf_matched_skill_products": [
+        "/home/enric/src/canairy_meteo/Gen2/artifacts/datasets/wrf_case_bank_skill_0_24h_matched_v1.parquet",
+        "/home/enric/src/canairy_meteo/Gen2/artifacts/datasets/wrf_case_bank_skill_25_72h_matched_v1.parquet"
+      ],
+      "variables": ["wind", "temperature", "humidity_partial", "precipitation_partial", "station_metadata"],
+      "cadence": "historical station cube cadence by source",
+      "sample_fetch": {
+        "checked_utc": "2026-05-21T23:00:00Z",
+        "method": "local path inventory",
+        "result": "AVAILABLE",
+        "evidence": "Paths listed on disk under Gen2 manifests and artifacts; no live ingest attempted in M7-S0a."
+      },
+      "license_access_notes": "Use as local verification corpus and station registry seed; source-level masks must be honored in M7-S5."
+    }
+  ],
+  "binding_policy": {
+    "m7_s5_minimum_sources": ["metar_canary_airports", "aemet_conventional_canary", "gen2_station_cube_v3_candidate"],
+    "operational_claim_rule": "M7 cannot claim operational validation unless observed U10, V10, and T2 verification has fresh station observations or an explicitly accepted historical-cycle verification window.",
+    "stale_observation_rule": "If live observations are unavailable or stale, M7 status must be PROVISIONAL_3KM_PIPELINE or BLOCKED, not operationally validated.",
+    "score_fields": ["U10_RMSE", "V10_RMSE", "wind_speed_RMSE", "wind_direction_MAE_non_calm", "T2_RMSE", "bias", "n"]
+  },
+  "station_priority": [
+    "gen2_station_cube_v3_candidate for first historical harness",
+    "AEMET conventional network for public national-service observations once credentials are pinned",
+    "METAR airport reports for robust live smoke and aviation-grade wind/T2",
+    "GRAFCAN SITCAN for dense local enrichment once key path is operational"
+  ],
+  "artifact_paths": [
+    "/home/enric/src/canairy_meteo/Gen2/manifests/high_quality_station_registry_v1.json",
+    "/home/enric/src/canairy_meteo/Gen2/manifests/aemet_stations_canary_v1.yaml",
+    "/home/enric/src/canairy_meteo/Gen2/manifests/grafcan_sitcan_stations_v1.yaml",
+    "/home/enric/src/canairy_meteo/Gen2/artifacts/datasets/station_benchmark_cube_v3_candidate.parquet",
+    "/home/enric/src/canairy_meteo/Gen2/artifacts/datasets/wrf_case_bank_skill_0_24h_matched_v1.parquet",
+    "/home/enric/src/canairy_meteo/Gen2/artifacts/datasets/wrf_case_bank_skill_25_72h_matched_v1.parquet"
+  ],
+  "notes": [
+    "This is a source manifest only; no live station ingest is implemented in M7-S0a.",
+    "AEMET and GRAFCAN live loaders are intentionally PARTIAL because credentials and terms must be pinned before binding operational verification."
+  ]
+}
