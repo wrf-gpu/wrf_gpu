@@ -15,21 +15,21 @@
   "per_field_max_abs_err": {
     "column_absorbed": 87.53339162140193,
     "flux_down": 56.4980975502483,
-    "flux_up": 64.43487698173968,
-    "heating_rate": 2.478007334543835e-05,
-    "surface_absorbed": 15.0083069250594,
-    "surface_down": 20.55932413682686,
+    "flux_up": 64.43487698173965,
+    "heating_rate": 2.4780073345437684e-05,
+    "surface_absorbed": 15.008306925059372,
+    "surface_down": 20.55932413682683,
     "surface_up": 5.551019119116095,
     "toa_down": 8.68866504788457e-05,
-    "toa_up": 30.142989195802443
+    "toa_up": 30.14298919580233
   },
   "per_field_max_rel_err": {
-    "column_absorbed": 0.36886590796769336,
-    "flux_down": 0.30048455344774133,
+    "column_absorbed": 0.36886590796769253,
+    "flux_down": 0.30048455344774155,
     "flux_up": 0.857605195729086,
-    "heating_rate": 1.272799496791177,
-    "surface_absorbed": 0.21431564550608043,
-    "surface_down": 0.21431564208218598,
+    "heating_rate": 1.272799496791143,
+    "surface_absorbed": 0.21431564550608,
+    "surface_down": 0.21431564208218568,
     "surface_up": 0.21431569068245995,
     "toa_down": 7.744305929600154e-08,
     "toa_up": 0.1006209216570679

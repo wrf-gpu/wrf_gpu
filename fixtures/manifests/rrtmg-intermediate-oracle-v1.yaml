@@ -1,6 +1,6 @@
 fixture_id: rrtmg-intermediate-oracle-v1
 source: wrf-derived
-source_commit: wrf-rrtmg-intermediate-harness sha256=313205b94e6528c614fde3fdf19e385fe45cda3f790311cefcce18721903815a;
+source_commit: wrf-rrtmg-intermediate-harness sha256=87448c6065a50162ad5f71458e19b0022cac4c171f6116bb711c50ce6383ff4b;
   module_ra_rrtmg_sw.F.o=present; module_ra_rrtmg_lw.F.o=present; low_level_calls=setcoef_sw+taumol_sw+spcvmc_sw+setcoef+taumol+rtrnmc;
   rrtmg_data_convert=big_endian
 wrf_version: v4.7.1-derived-RRTMG-real-driver-column-harness
@@ -12,7 +12,7 @@ precision_reference: fp64
 generation_command: python scripts/m5_generate_rrtmg_fixture.py
 external_uri: data/fixtures/rrtmg-intermediate-oracle-v1.npz
 sample_slice_path: null
-git_commit: 2c6748a
+git_commit: 3242f1f
 license_notes: Synthetic columns run through a GNU Fortran harness linked to real
   WRF RRTMG SW/LW objects and lower RRTMG solver-entry subroutines.
 variables:
@@ -98,10 +98,10 @@ files:
   bytes: 123331
   external: false
 - path: data/scratch/wrf_rrtmg_harness
-  checksum_sha256: 313205b94e6528c614fde3fdf19e385fe45cda3f790311cefcce18721903815a
+  checksum_sha256: 87448c6065a50162ad5f71458e19b0022cac4c171f6116bb711c50ce6383ff4b
   bytes: 1048944
   external: true
 - path: data/fixtures/rrtmg-tables-v1.npz
-  checksum_sha256: 9d8bedbfa93161b0d782d64a98c7e36d8f95e54b016d4fc570c0a7c5aa534013
-  bytes: 4199742
+  checksum_sha256: 5cc63950c81795b02f7bf47147afc4a9d667ae00f14510f7325816fb4f3a06e2
+  bytes: 4201708
   external: true
