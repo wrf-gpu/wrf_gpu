@@ -13,13 +13,14 @@ _SPEC.loader.exec_module(_MODULE)
 evaluate_gate = _MODULE.evaluate_gate
 
 
-def test_rrtmg_gate_reports_honest_launch_gray_zone():
+def test_rrtmg_gate_reports_honest_fallback_with_raw_launches():
     if not Path("artifacts/m5/rrtmg_profile.json").exists():
-        subprocess.run([sys.executable, "scripts/m5_run_rrtmg.py"], check=True)
+        subprocess.run([sys.executable, "scripts/m5_run_rrtmg.py"], check=False)
     record = evaluate_gate()
-    assert record["gate_status"] == "GRAY-ZONE"
-    assert record["tier1_sw_pass"] is True
-    assert record["tier1_lw_pass"] is True
+    assert record["gate_status"] == "FALLBACK"
+    assert record["tier1_sw_pass"] is False
+    assert record["tier1_lw_pass"] is False
     assert record["tier2_pass"] is True
     assert record["kernel_launches_per_step"] == record["raw_hlo_launch_marker_count"]
     assert record["kernel_launches_per_step"] > 5
+    assert "correctness failed" in record["rationale"]

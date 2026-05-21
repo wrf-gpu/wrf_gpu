@@ -21,6 +21,10 @@ from gpuwrf.physics.rrtmg_constants import (
     LW_DIFFUSIVITY_A0,
     LW_DIFFUSIVITY_A1,
     LW_DIFFUSIVITY_A2,
+    LW_BPADE,
+    LW_EXP_EPS,
+    LW_NTBL,
+    LW_TBLINT,
     MAX_OPTICAL_DEPTH,
     MIN_LAYER_MASS,
     MIN_OPTICAL_DEPTH,
@@ -109,6 +113,19 @@ class RRTMGLWColumnResult(NamedTuple):
     surface_up: jnp.ndarray
     column_net_heating: jnp.ndarray
     surface_emission: jnp.ndarray
+
+
+class RRTMGLWIntermediateState(NamedTuple):
+    """LW solver-entry state exposed for M5-S3.z WRF intermediate-oracle checks."""
+
+    tau: jnp.ndarray
+    fracs: jnp.ndarray
+    secdiff: jnp.ndarray
+    planklay: jnp.ndarray
+    planklev: jnp.ndarray
+    plankbnd: jnp.ndarray
+    dplankup: jnp.ndarray
+    dplankdn: jnp.ndarray
 
 
 def _leaves(state: RRTMGLWColumnState):
@@ -226,6 +243,23 @@ def _lw_planck_state(t_layer, t_level, t_surface, emissivity, tables: RRTMGTable
     return planklay, planklev, plankbnd
 
 
+def _lw_tfn_factor(odepth):
+    """WRF `tfn_tbl` source correction from `rrtmg_lw.F:3403-3409,8054-8070`."""
+
+    tau = jnp.maximum(odepth, 0.0)
+    tblind = tau / (LW_BPADE + tau)
+    idx = jnp.clip((LW_TBLINT * tblind + 0.5).astype(jnp.int32), 0, LW_NTBL)
+    tfn = idx.astype(jnp.float64) / float(LW_NTBL)
+    tau_tbl = jnp.where(idx == LW_NTBL, 1.0e10, LW_BPADE * tfn / jnp.maximum(1.0 - tfn, 1.0e-300))
+    exp_tbl = jnp.maximum(jnp.exp(-tau_tbl), LW_EXP_EPS)
+    table_factor = jnp.where(
+        tau_tbl < 0.06,
+        tau_tbl / 6.0,
+        1.0 - 2.0 * ((1.0 / jnp.maximum(tau_tbl, 1.0e-300)) - (exp_tbl / jnp.maximum(1.0 - exp_tbl, 1.0e-300))),
+    )
+    return jnp.where(tau <= 0.06, tau / 6.0, table_factor)
+
+
 def _source_recurrence_down(trans, source):
     """Top-to-bottom LW source recurrence."""
 
@@ -250,8 +284,8 @@ def _source_recurrence_up(trans, source, surface):
     return jnp.concatenate(levels, axis=-3)
 
 
-def _longwave_impl(state: RRTMGLWColumnState, tables: RRTMGTableBundle, debug: bool) -> RRTMGLWColumnResult:
-    """Unjitted LW implementation shared by production and stripped paths."""
+def _lw_solver_state(state: RRTMGLWColumnState, tables: RRTMGTableBundle) -> tuple[RRTMGLWColumnState, RRTMGLWIntermediateState, jnp.ndarray, int, jnp.ndarray]:
+    """Builds LW gas/source state before transfer; WRF formulas: `rtrnmc` lines 3253-3409."""
 
     state = _clip_state(state)
     original_layers = state.p.shape[-1]
@@ -284,16 +318,40 @@ def _longwave_impl(state: RRTMGLWColumnState, tables: RRTMGTableBundle, debug: b
     optical_path = tau * secdiff[..., None, :, None]
     trans = jnp.exp(-jnp.minimum(jnp.maximum(optical_path, MIN_OPTICAL_DEPTH), MAX_OPTICAL_DEPTH))
     trans = jnp.where(mask > 0.0, trans, 1.0)
-    planklay, _planklev, plankbnd = _lw_planck_state(t_ext, t_interface_ext, state.surface_temperature, state.surface_emissivity, tables)
+    planklay, planklev, plankbnd = _lw_planck_state(t_ext, t_interface_ext, state.surface_temperature, state.surface_emissivity, tables)
+    dplankup = planklev[..., 1:, :] - planklay
+    dplankdn = planklev[..., :-1, :] - planklay
     band_g_count = jnp.maximum(jnp.sum(mask, axis=-1), 1.0)
     band_frac = mask / band_g_count[:, None]
-    planck_scale = tables.lw_delwave * (jnp.pi * 1.0e4)
-    layer_source = planklay[..., :, None] * planck_scale[..., None] * band_frac
-    surface_emission_band = plankbnd[..., :, None] * planck_scale[..., None] * band_frac
+    fracs = jnp.broadcast_to(band_frac, tau.shape)
+    intermediate = RRTMGLWIntermediateState(
+        tau=tau,
+        fracs=fracs,
+        secdiff=secdiff,
+        planklay=planklay,
+        planklev=planklev,
+        plankbnd=plankbnd,
+        dplankup=dplankup,
+        dplankdn=dplankdn,
+    )
+    return state, intermediate, trans, original_layers, layer_mass
 
-    down_band = _source_recurrence_down(trans, layer_source)
+
+def _longwave_impl(state: RRTMGLWColumnState, tables: RRTMGTableBundle, debug: bool) -> RRTMGLWColumnResult:
+    """Unjitted LW implementation shared by production and stripped paths."""
+
+    state, intermediate, trans, original_layers, layer_mass = _lw_solver_state(state, tables)
+    mask = tables.lw_gpoint_mask
+    band_frac = intermediate.fracs
+    planck_scale = tables.lw_delwave * (jnp.pi * 1.0e4)
+    tfac = _lw_tfn_factor(intermediate.tau * intermediate.secdiff[..., None, :, None])
+    down_source = (intermediate.planklay[..., :, None] + intermediate.dplankdn[..., :, None] * tfac) * planck_scale[..., None] * band_frac
+    up_source = (intermediate.planklay[..., :, None] + intermediate.dplankup[..., :, None] * tfac) * planck_scale[..., None] * band_frac
+    surface_emission_band = intermediate.plankbnd[..., :, None] * planck_scale[..., None] * mask / jnp.maximum(jnp.sum(mask, axis=-1), 1.0)[:, None]
+
+    down_band = _source_recurrence_down(trans, down_source)
     surface_reflectance = (1.0 - state.surface_emissivity[..., None, None]) * down_band[..., 0, :, :]
-    up_band = _source_recurrence_up(trans, layer_source, surface_emission_band + surface_reflectance)
+    up_band = _source_recurrence_up(trans, up_source, surface_emission_band + surface_reflectance)
 
     flux_up_model = jnp.sum(up_band, axis=(-1, -2))
     flux_down_model = jnp.sum(down_band, axis=(-1, -2))
@@ -318,6 +376,16 @@ def _longwave_impl(state: RRTMGLWColumnState, tables: RRTMGTableBundle, debug: b
         column_net_heating=jnp.sum(layer_net_heating, axis=-1),
         surface_emission=surface_emission,
     )
+
+
+def compute_rrtmg_lw_intermediates(
+    state: RRTMGLWColumnState,
+    tables: RRTMGTableBundle = RRTMG_TABLES,
+) -> RRTMGLWIntermediateState:
+    """Returns the JAX LW state compared to WRF `rtrnmc` entry oracles."""
+
+    _, intermediate, _, _, _ = _lw_solver_state(state, tables)
+    return intermediate
 
 
 @partial(jax.jit, static_argnames=("debug",))

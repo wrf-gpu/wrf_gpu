@@ -1,0 +1,1211 @@
+{
+  "fixture": "data/fixtures/rrtmg-intermediate-oracle-v1.npz",
+  "lw": {
+    "per_band": [
+      {
+        "band": 1,
+        "fracs": {
+          "abs_tol": 1e-08,
+          "band": 1,
+          "candidate_at_max": 0.1,
+          "max_abs": 0.15490999221801757,
+          "max_cell": [
+            0,
+            0,
+            2
+          ],
+          "max_rel": 1306.5998203330587,
+          "pass": false,
+          "quantity": "lw_fracs",
+          "reference_at_max": 0.2549099922180176,
+          "rel_tol": 0.0001,
+          "shape_mismatch": false
+        },
+        "pass": false,
+        "taug": {
+          "abs_tol": 1e-08,
+          "band": 1,
+          "candidate_at_max": 80.0,
+          "max_abs": 1049887.0,
+          "max_cell": [
+            2,
+            16,
+            9
+          ],
+          "max_rel": 0.9999238071291764,
+          "pass": false,
+          "quantity": "lw_taug",
+          "reference_at_max": 1049967.0,
+          "rel_tol": 0.0001,
+          "shape_mismatch": false
+        }
+      },
+      {
+        "band": 2,
+        "fracs": {
+          "abs_tol": 1e-08,
+          "band": 2,
+          "candidate_at_max": 0.08333333333333333,
+          "max_abs": 0.08278792434915279,
+          "max_cell": [
+            0,
+            0,
+            11
+          ],
+          "max_rel": 151.790540219108,
+          "pass": false,
+          "quantity": "lw_fracs",
+          "reference_at_max": 0.0005454089841805398,
+          "rel_tol": 0.0001,
+          "shape_mismatch": false
+        },
+        "pass": false,
+        "taug": {
+          "abs_tol": 1e-08,
+          "band": 2,
+          "candidate_at_max": 80.0,
+          "max_abs": 48642.359375,
+          "max_cell": [
+            2,
+            0,
+            11
+          ],
+          "max_rel": 23.605402003575417,
+          "pass": false,
+          "quantity": "lw_taug",
+          "reference_at_max": 48722.359375,
+          "rel_tol": 0.0001,
+          "shape_mismatch": false
+        }
+      },
+      {
+        "band": 3,
+        "fracs": {
+          "abs_tol": 1e-08,
+          "band": 3,
+          "candidate_at_max": 0.0625,
+          "max_abs": 0.09817193448543549,
+          "max_cell": [
+            1,
+            16,
+            0
+          ],
+          "max_rel": 792.2075973037961,
+          "pass": false,
+          "quantity": "lw_fracs",
+          "reference_at_max": 0.16067193448543549,
+          "rel_tol": 0.0001,
+          "shape_mismatch": false
+        },
+        "pass": false,
+        "taug": {
+          "abs_tol": 1e-08,
+          "band": 3,
+          "candidate_at_max": 80.0,
+          "max_abs": 4613.01123046875,
+          "max_cell": [
+            2,
+            16,
+            15
+          ],
+          "max_rel": 57.279308494261244,
+          "pass": false,
+          "quantity": "lw_taug",
+          "reference_at_max": 4693.01123046875,
+          "rel_tol": 0.0001,
+          "shape_mismatch": false
+        }
+      },
+      {
+        "band": 4,
+        "fracs": {
+          "abs_tol": 1e-08,
+          "band": 4,
+          "candidate_at_max": 0.07142857142857142,
+          "max_abs": 0.08808315864631108,
+          "max_cell": [
+            2,
+            0,
+            0
+          ],
+          "max_rel": 35.46178599999316,
+          "pass": false,
+          "quantity": "lw_fracs",
+          "reference_at_max": 0.1595117300748825,
+          "rel_tol": 0.0001,
+          "shape_mismatch": false
+        },
+        "pass": false,
+        "taug": {
+          "abs_tol": 1e-08,
+          "band": 4,
+          "candidate_at_max": 80.0,
+          "max_abs": 19147.69921875,
+          "max_cell": [
+            2,
+            16,
+            13
+          ],
+          "max_rel": 110.29708407815271,
+          "pass": false,
+          "quantity": "lw_taug",
+          "reference_at_max": 19227.69921875,
+          "rel_tol": 0.0001,
+          "shape_mismatch": false
+        }
+      },
+      {
+        "band": 5,
+        "fracs": {
+          "abs_tol": 1e-08,
+          "band": 5,
+          "candidate_at_max": 0.0625,
+          "max_abs": 0.0819326788187027,
+          "max_cell": [
+            2,
+            0,
+            1
+          ],
+          "max_rel": 760.5890389902679,
+          "pass": false,
+          "quantity": "lw_fracs",
+          "reference_at_max": 0.1444326788187027,
+          "rel_tol": 0.0001,
+          "shape_mismatch": false
+        },
+        "pass": false,
+        "taug": {
+          "abs_tol": 1e-08,
+          "band": 5,
+          "candidate_at_max": 80.0,
+          "max_abs": 1503.4215087890625,
+          "max_cell": [
+            0,
+            16,
+            15
+          ],
+          "max_rel": 1110.7767894975254,
+          "pass": false,
+          "quantity": "lw_taug",
+          "reference_at_max": 1583.4215087890625,
+          "rel_tol": 0.0001,
+          "shape_mismatch": false
+        }
+      },
+      {
+        "band": 6,
+        "fracs": {
+          "abs_tol": 1e-08,
+          "band": 6,
+          "candidate_at_max": 0.125,
+          "max_abs": 0.16627001762390137,
+          "max_cell": [
+            0,
+            0,
+            0
+          ],
+          "max_rel": 189.22400169500204,
+          "pass": false,
+          "quantity": "lw_fracs",
+          "reference_at_max": 0.29127001762390137,
+          "rel_tol": 0.0001,
+          "shape_mismatch": false
+        },
+        "pass": false,
+        "taug": {
+          "abs_tol": 1e-08,
+          "band": 6,
+          "candidate_at_max": 9.429024189541591,
+          "max_abs": 9.40394490754093,
+          "max_cell": [
+            0,
+            4,
+            0
+          ],
+          "max_rel": 730.9855704308407,
+          "pass": false,
+          "quantity": "lw_taug",
+          "reference_at_max": 0.025079282000660896,
+          "rel_tol": 0.0001,
+          "shape_mismatch": false
+        }
+      },
+      {
+        "band": 7,
+        "fracs": {
+          "abs_tol": 1e-08,
+          "band": 7,
+          "candidate_at_max": 0.08333333333333333,
+          "max_abs": 0.22984565297762555,
+          "max_cell": [
+            0,
+            15,
+            0
+          ],
+          "max_rel": 149.29530000441585,
+          "pass": false,
+          "quantity": "lw_fracs",
+          "reference_at_max": 0.31317898631095886,
+          "rel_tol": 0.0001,
+          "shape_mismatch": false
+        },
+        "pass": false,
+        "taug": {
+          "abs_tol": 1e-08,
+          "band": 7,
+          "candidate_at_max": 80.0,
+          "max_abs": 79.98789708316326,
+          "max_cell": [
+            0,
+            16,
+            1
+          ],
+          "max_rel": 8298.414516277551,
+          "pass": false,
+          "quantity": "lw_taug",
+          "reference_at_max": 0.012102916836738586,
+          "rel_tol": 0.0001,
+          "shape_mismatch": false
+        }
+      },
+      {
+        "band": 8,
+        "fracs": {
+          "abs_tol": 1e-08,
+          "band": 8,
+          "candidate_at_max": 0.125,
+          "max_abs": 0.189410001039505,
+          "max_cell": [
+            0,
+            0,
+            0
+          ],
+          "max_rel": 233.96506439504407,
+          "pass": false,
+          "quantity": "lw_fracs",
+          "reference_at_max": 0.314410001039505,
+          "rel_tol": 0.0001,
+          "shape_mismatch": false
+        },
+        "pass": false,
+        "taug": {
+          "abs_tol": 1e-08,
+          "band": 8,
+          "candidate_at_max": 80.0,
+          "max_abs": 79.99391728919,
+          "max_cell": [
+            2,
+            16,
+            7
+          ],
+          "max_rel": 13151.030813038533,
+          "pass": false,
+          "quantity": "lw_taug",
+          "reference_at_max": 0.006082710810005665,
+          "rel_tol": 0.0001,
+          "shape_mismatch": false
+        }
+      },
+      {
+        "band": 9,
+        "fracs": {
+          "abs_tol": 1e-08,
+          "band": 9,
+          "candidate_at_max": 0.08333333333333333,
+          "max_abs": 0.12580666939417523,
+          "max_cell": [
+            0,
+            16,
+            0
+          ],
+          "max_rel": 207.1251210265337,
+          "pass": false,
+          "quantity": "lw_fracs",
+          "reference_at_max": 0.20914000272750854,
+          "rel_tol": 0.0001,
+          "shape_mismatch": false
+        },
+        "pass": false,
+        "taug": {
+          "abs_tol": 1e-08,
+          "band": 9,
+          "candidate_at_max": 80.0,
+          "max_abs": 9476.330078125,
+          "max_cell": [
+            2,
+            0,
+            11
+          ],
+          "max_rel": 588.3572037750606,
+          "pass": false,
+          "quantity": "lw_taug",
+          "reference_at_max": 9556.330078125,
+          "rel_tol": 0.0001,
+          "shape_mismatch": false
+        }
+      },
+      {
+        "band": 10,
+        "fracs": {
+          "abs_tol": 1e-08,
+          "band": 10,
+          "candidate_at_max": 0.16666666666666666,
+          "max_abs": 0.16404332717259726,
+          "max_cell": [
+            0,
+            16,
+            0
+          ],
+          "max_rel": 41.89763641112545,
+          "pass": false,
+          "quantity": "lw_fracs",
+          "reference_at_max": 0.3307099938392639,
+          "rel_tol": 0.0001,
+          "shape_mismatch": false
+        },
+        "pass": false,
+        "taug": {
+          "abs_tol": 1e-08,
+          "band": 10,
+          "candidate_at_max": 80.0,
+          "max_abs": 19528.89453125,
+          "max_cell": [
+            2,
+            16,
+            5
+          ],
+          "max_rel": 2.931694998037706,
+          "pass": false,
+          "quantity": "lw_taug",
+          "reference_at_max": 19608.89453125,
+          "rel_tol": 0.0001,
+          "shape_mismatch": false
+        }
+      },
+      {
+        "band": 11,
+        "fracs": {
+          "abs_tol": 1e-08,
+          "band": 11,
+          "candidate_at_max": 0.125,
+          "max_abs": 0.19258999824523926,
+          "max_cell": [
+            0,
+            16,
+            2
+          ],
+          "max_rel": 65.24439942909235,
+          "pass": false,
+          "quantity": "lw_fracs",
+          "reference_at_max": 0.31758999824523926,
+          "rel_tol": 0.0001,
+          "shape_mismatch": false
+        },
+        "pass": false,
+        "taug": {
+          "abs_tol": 1e-08,
+          "band": 11,
+          "candidate_at_max": 80.0,
+          "max_abs": 56337.29296875,
+          "max_cell": [
+            2,
+            16,
+            7
+          ],
+          "max_rel": 1.9664546103062235,
+          "pass": false,
+          "quantity": "lw_taug",
+          "reference_at_max": 56417.29296875,
+          "rel_tol": 0.0001,
+          "shape_mismatch": false
+        }
+      },
+      {
+        "band": 12,
+        "fracs": {
+          "abs_tol": 1e-08,
+          "band": 12,
+          "candidate_at_max": 0.125,
+          "max_abs": 0.1280927062034607,
+          "max_cell": [
+            2,
+            0,
+            4
+          ],
+          "max_rel": 562949953421312.0,
+          "pass": false,
+          "quantity": "lw_fracs",
+          "reference_at_max": 0.2530927062034607,
+          "rel_tol": 0.0001,
+          "shape_mismatch": false
+        },
+        "pass": false,
+        "taug": {
+          "abs_tol": 1e-08,
+          "band": 12,
+          "candidate_at_max": 80.0,
+          "max_abs": 6053.93603515625,
+          "max_cell": [
+            2,
+            0,
+            7
+          ],
+          "max_rel": 3.602879701896397e+17,
+          "pass": false,
+          "quantity": "lw_taug",
+          "reference_at_max": 6133.93603515625,
+          "rel_tol": 0.0001,
+          "shape_mismatch": false
+        }
+      },
+      {
+        "band": 13,
+        "fracs": {
+          "abs_tol": 1e-08,
+          "band": 13,
+          "candidate_at_max": 0.25,
+          "max_abs": 0.25565749406814575,
+          "max_cell": [
+            1,
+            15,
+            0
+          ],
+          "max_rel": 29.241188488460583,
+          "pass": false,
+          "quantity": "lw_fracs",
+          "reference_at_max": 0.5056574940681458,
+          "rel_tol": 0.0001,
+          "shape_mismatch": false
+        },
+        "pass": false,
+        "taug": {
+          "abs_tol": 1e-08,
+          "band": 13,
+          "candidate_at_max": 80.0,
+          "max_abs": 79.9999742347045,
+          "max_cell": [
+            1,
+            16,
+            3
+          ],
+          "max_rel": 3104950.774612323,
+          "pass": false,
+          "quantity": "lw_taug",
+          "reference_at_max": 2.5765295504243113e-05,
+          "rel_tol": 0.0001,
+          "shape_mismatch": false
+        }
+      },
+      {
+        "band": 14,
+        "fracs": {
+          "abs_tol": 1e-08,
+          "band": 14,
+          "candidate_at_max": 0.5,
+          "max_abs": 0.4520219452679157,
+          "max_cell": [
+            0,
+            0,
+            1
+          ],
+          "max_rel": 9.42143127294475,
+          "pass": false,
+          "quantity": "lw_fracs",
+          "reference_at_max": 0.047978054732084274,
+          "rel_tol": 0.0001,
+          "shape_mismatch": false
+        },
+        "pass": false,
+        "taug": {
+          "abs_tol": 1e-08,
+          "band": 14,
+          "candidate_at_max": 80.0,
+          "max_abs": 21493.583984375,
+          "max_cell": [
+            2,
+            16,
+            1
+          ],
+          "max_rel": 2.147062826697944,
+          "pass": false,
+          "quantity": "lw_taug",
+          "reference_at_max": 21573.583984375,
+          "rel_tol": 0.0001,
+          "shape_mismatch": false
+        }
+      },
+      {
+        "band": 15,
+        "fracs": {
+          "abs_tol": 1e-08,
+          "band": 15,
+          "candidate_at_max": 0.5,
+          "max_abs": 0.5,
+          "max_cell": [
+            0,
+            16,
+            0
+          ],
+          "max_rel": 2251799813685248.0,
+          "pass": false,
+          "quantity": "lw_fracs",
+          "reference_at_max": 0.0,
+          "rel_tol": 0.0001,
+          "shape_mismatch": false
+        },
+        "pass": false,
+        "taug": {
+          "abs_tol": 1e-08,
+          "band": 15,
+          "candidate_at_max": 80.0,
+          "max_abs": 80.0,
+          "max_cell": [
+            0,
+            16,
+            1
+          ],
+          "max_rel": 3.602879701896397e+17,
+          "pass": false,
+          "quantity": "lw_taug",
+          "reference_at_max": 0.0,
+          "rel_tol": 0.0001,
+          "shape_mismatch": false
+        }
+      },
+      {
+        "band": 16,
+        "fracs": {
+          "abs_tol": 1e-08,
+          "band": 16,
+          "candidate_at_max": 0.5,
+          "max_abs": 0.28506672382354736,
+          "max_cell": [
+            1,
+            3,
+            0
+          ],
+          "max_rel": 1.326194488680207,
+          "pass": false,
+          "quantity": "lw_fracs",
+          "reference_at_max": 0.7850667238235474,
+          "rel_tol": 0.0001,
+          "shape_mismatch": false
+        },
+        "pass": false,
+        "taug": {
+          "abs_tol": 1e-08,
+          "band": 16,
+          "candidate_at_max": 80.0,
+          "max_abs": 79.7606130540371,
+          "max_cell": [
+            1,
+            16,
+            1
+          ],
+          "max_rel": 1040.4445420362779,
+          "pass": false,
+          "quantity": "lw_taug",
+          "reference_at_max": 0.23938694596290588,
+          "rel_tol": 0.0001,
+          "shape_mismatch": false
+        }
+      }
+    ],
+    "planck": {
+      "fields": {
+        "plankbnd": {
+          "abs_tol": 1e-10,
+          "band": null,
+          "candidate_at_max": 1.3206676e-05,
+          "max_abs": 1.067501005329991e-12,
+          "max_cell": [
+            2,
+            4
+          ],
+          "max_rel": 8.450000607456322e-08,
+          "pass": true,
+          "quantity": "lw_planck.plankbnd",
+          "reference_at_max": 1.3206677067501005e-05,
+          "rel_tol": 1e-08,
+          "shape_mismatch": false
+        },
+        "planklay": {
+          "abs_tol": 1e-10,
+          "band": null,
+          "candidate_at_max": 1.05614346115999e-05,
+          "max_abs": 2.8753220185801518e-12,
+          "max_cell": [
+            0,
+            5,
+            4
+          ],
+          "max_rel": 8.45733500722104e-07,
+          "pass": true,
+          "quantity": "lw_planck.planklay",
+          "reference_at_max": 1.0561431736277882e-05,
+          "rel_tol": 1e-08,
+          "shape_mismatch": false
+        },
+        "planklev": {
+          "abs_tol": 1e-10,
+          "band": null,
+          "candidate_at_max": 9.756338502307921e-06,
+          "max_abs": 3.9764870558264874e-12,
+          "max_cell": [
+            2,
+            8,
+            4
+          ],
+          "max_rel": 1.37717280607326e-06,
+          "pass": true,
+          "quantity": "lw_planck.planklev",
+          "reference_at_max": 9.756342478794977e-06,
+          "rel_tol": 1e-08,
+          "shape_mismatch": false
+        }
+      },
+      "pass": true,
+      "quantity": "lw_planck_state"
+    },
+    "planck_corrections": {
+      "fields": {
+        "dplankdn": {
+          "abs_tol": 1e-10,
+          "band": null,
+          "candidate_at_max": 2.2944260456411446e-07,
+          "max_abs": 4.718799159877723e-12,
+          "max_cell": [
+            2,
+            5,
+            3
+          ],
+          "max_rel": 2.05659368178381e-05,
+          "pass": true,
+          "quantity": "lw_dplankdn",
+          "reference_at_max": 2.2944732336327434e-07,
+          "rel_tol": 1e-08,
+          "shape_mismatch": false
+        },
+        "dplankup": {
+          "abs_tol": 1e-10,
+          "band": null,
+          "candidate_at_max": -2.2524001975314738e-07,
+          "max_abs": 4.566353783473447e-12,
+          "max_cell": [
+            0,
+            1,
+            5
+          ],
+          "max_rel": 2.3860893501712958e-05,
+          "pass": true,
+          "quantity": "lw_dplankup",
+          "reference_at_max": -2.252354533993639e-07,
+          "rel_tol": 1e-08,
+          "shape_mismatch": false
+        }
+      },
+      "pass": true,
+      "quantity": "lw_planck_corrections"
+    },
+    "secdiff": {
+      "abs_tol": 1e-12,
+      "band": null,
+      "candidate_at_max": 1.5541070790715488,
+      "max_abs": 1.283116610739654e-07,
+      "max_cell": [
+        2,
+        6
+      ],
+      "max_rel": 8.256295424920841e-08,
+      "pass": false,
+      "quantity": "lw_secdiff",
+      "reference_at_max": 1.5541069507598877,
+      "rel_tol": 1e-10,
+      "shape_mismatch": false
+    }
+  },
+  "pass": false,
+  "sw": {
+    "setcoef": {
+      "fields": {
+        "colmol": {
+          "abs_tol": 1e-12,
+          "band": null,
+          "candidate_at_max": 4224.583804840276,
+          "max_abs": 0.005191559025661263,
+          "max_cell": [
+            2,
+            1,
+            5
+          ],
+          "max_rel": 1.5620997223598538e-06,
+          "pass": false,
+          "quantity": "sw_setcoef.colmol",
+          "reference_at_max": 4224.57861328125,
+          "rel_tol": 1e-10,
+          "shape_mismatch": false
+        },
+        "fac00": {
+          "abs_tol": 1e-12,
+          "band": null,
+          "candidate_at_max": 0.7026237944862868,
+          "max_abs": 1.4017035725233384e-05,
+          "max_cell": [
+            2,
+            0
+          ],
+          "max_rel": 0.00021528480863616424,
+          "pass": false,
+          "quantity": "sw_setcoef.fac00",
+          "reference_at_max": 0.7026097774505615,
+          "rel_tol": 1e-10,
+          "shape_mismatch": false
+        },
+        "fac01": {
+          "abs_tol": 1e-12,
+          "band": null,
+          "candidate_at_max": 0.7527987724726504,
+          "max_abs": 1.611648151222944e-05,
+          "max_cell": [
+            0,
+            1
+          ],
+          "max_rel": 0.0003919633553173448,
+          "pass": false,
+          "quantity": "sw_setcoef.fac01",
+          "reference_at_max": 0.7528148889541626,
+          "rel_tol": 1e-10,
+          "shape_mismatch": false
+        },
+        "fac10": {
+          "abs_tol": 1e-12,
+          "band": null,
+          "candidate_at_max": 0.25340592638973325,
+          "max_abs": 1.597182277768283e-05,
+          "max_cell": [
+            2,
+            1
+          ],
+          "max_rel": 0.0002156917327223975,
+          "pass": false,
+          "quantity": "sw_setcoef.fac10",
+          "reference_at_max": 0.25338995456695557,
+          "rel_tol": 1e-10,
+          "shape_mismatch": false
+        },
+        "fac11": {
+          "abs_tol": 1e-12,
+          "band": null,
+          "candidate_at_max": 0.10763510652763913,
+          "max_abs": 9.019291567102794e-06,
+          "max_cell": [
+            2,
+            0
+          ],
+          "max_rel": 0.00039415392670090975,
+          "pass": false,
+          "quantity": "sw_setcoef.fac11",
+          "reference_at_max": 0.10764412581920624,
+          "rel_tol": 1e-10,
+          "shape_mismatch": false
+        },
+        "forfac": {
+          "abs_tol": 1e-12,
+          "band": null,
+          "candidate_at_max": 0.9864139476855136,
+          "max_abs": 1.1120632659178398e-07,
+          "max_cell": [
+            0,
+            0
+          ],
+          "max_rel": 1.6493183752433484e-07,
+          "pass": false,
+          "quantity": "sw_setcoef.forfac",
+          "reference_at_max": 0.986413836479187,
+          "rel_tol": 1e-10,
+          "shape_mismatch": false
+        },
+        "indfor": {
+          "abs_tol": 1e-12,
+          "band": null,
+          "candidate_at_max": 1.0,
+          "max_abs": 0.0,
+          "max_cell": [
+            0,
+            0
+          ],
+          "max_rel": 0.0,
+          "pass": true,
+          "quantity": "sw_setcoef.indfor",
+          "reference_at_max": 1.0,
+          "rel_tol": 1e-10,
+          "shape_mismatch": false
+        },
+        "indself": {
+          "abs_tol": 1e-12,
+          "band": null,
+          "candidate_at_max": 1.0,
+          "max_abs": 1.0,
+          "max_cell": [
+            0,
+            16
+          ],
+          "max_rel": 4503599627370496.0,
+          "pass": false,
+          "quantity": "sw_setcoef.indself",
+          "reference_at_max": 0.0,
+          "rel_tol": 1e-10,
+          "shape_mismatch": false
+        },
+        "jp": {
+          "abs_tol": 1e-12,
+          "band": null,
+          "candidate_at_max": 1.0,
+          "max_abs": 0.0,
+          "max_cell": [
+            0,
+            0
+          ],
+          "max_rel": 0.0,
+          "pass": true,
+          "quantity": "sw_setcoef.jp",
+          "reference_at_max": 1.0,
+          "rel_tol": 1e-10,
+          "shape_mismatch": false
+        },
+        "jt": {
+          "abs_tol": 1e-12,
+          "band": null,
+          "candidate_at_max": 2.0,
+          "max_abs": 0.0,
+          "max_cell": [
+            0,
+            0
+          ],
+          "max_rel": 0.0,
+          "pass": true,
+          "quantity": "sw_setcoef.jt",
+          "reference_at_max": 2.0,
+          "rel_tol": 1e-10,
+          "shape_mismatch": false
+        },
+        "jt1": {
+          "abs_tol": 1e-12,
+          "band": null,
+          "candidate_at_max": 3.0,
+          "max_abs": 0.0,
+          "max_cell": [
+            0,
+            0
+          ],
+          "max_rel": 0.0,
+          "pass": true,
+          "quantity": "sw_setcoef.jt1",
+          "reference_at_max": 3.0,
+          "rel_tol": 1e-10,
+          "shape_mismatch": false
+        },
+        "selffac": {
+          "abs_tol": 1e-12,
+          "band": null,
+          "candidate_at_max": 0.014273544961720215,
+          "max_abs": 2.9822285040753682e-09,
+          "max_cell": [
+            0,
+            0
+          ],
+          "max_rel": 2.8916636038606234e-07,
+          "pass": false,
+          "quantity": "sw_setcoef.selffac",
+          "reference_at_max": 0.01427354197949171,
+          "rel_tol": 1e-10,
+          "shape_mismatch": false
+        }
+      },
+      "pass": false,
+      "quantity": "sw_setcoef_state"
+    },
+    "sfluxzen": {
+      "abs_tol": 1e-08,
+      "band": null,
+      "candidate_at_max": 14.569730935819962,
+      "max_abs": 14.569730935819962,
+      "max_cell": [
+        2,
+        0,
+        11
+      ],
+      "max_rel": 6.561623481344717e+16,
+      "pass": false,
+      "quantity": "sw_sfluxzen",
+      "reference_at_max": 0.0,
+      "rel_tol": 0.0001,
+      "shape_mismatch": false
+    },
+    "taug_per_band": [
+      {
+        "abs_tol": 1e-08,
+        "band": 1,
+        "candidate_at_max": 136.73270490535234,
+        "max_abs": 0.000495167889852155,
+        "max_cell": [
+          2,
+          0,
+          5
+        ],
+        "max_rel": 3.621416668277452e-06,
+        "pass": true,
+        "quantity": "sw_taug",
+        "reference_at_max": 136.7332000732422,
+        "rel_tol": 0.0001,
+        "shape_mismatch": false
+      },
+      {
+        "abs_tol": 1e-08,
+        "band": 2,
+        "candidate_at_max": 28056.194501670896,
+        "max_abs": 0.11799832910401165,
+        "max_cell": [
+          2,
+          0,
+          11
+        ],
+        "max_rel": 4.205767564928985e-06,
+        "pass": true,
+        "quantity": "sw_taug",
+        "reference_at_max": 28056.3125,
+        "rel_tol": 0.0001,
+        "shape_mismatch": false
+      },
+      {
+        "abs_tol": 1e-08,
+        "band": 3,
+        "candidate_at_max": 116.09933426129068,
+        "max_abs": 0.0002903724983838174,
+        "max_cell": [
+          2,
+          0,
+          7
+        ],
+        "max_rel": 5.278550971255024e-06,
+        "pass": true,
+        "quantity": "sw_taug",
+        "reference_at_max": 116.09962463378906,
+        "rel_tol": 0.0001,
+        "shape_mismatch": false
+      },
+      {
+        "abs_tol": 1e-08,
+        "band": 4,
+        "candidate_at_max": 85.79313588521255,
+        "max_abs": 0.00013804056870014847,
+        "max_cell": [
+          2,
+          0,
+          7
+        ],
+        "max_rel": 3.1890055407376425e-06,
+        "pass": true,
+        "quantity": "sw_taug",
+        "reference_at_max": 85.79327392578125,
+        "rel_tol": 0.0001,
+        "shape_mismatch": false
+      },
+      {
+        "abs_tol": 1e-08,
+        "band": 5,
+        "candidate_at_max": 1353.0194605829086,
+        "max_abs": 0.00361070615394965,
+        "max_cell": [
+          2,
+          0,
+          9
+        ],
+        "max_rel": 3.6328983453637712e-06,
+        "pass": true,
+        "quantity": "sw_taug",
+        "reference_at_max": 1353.0230712890625,
+        "rel_tol": 0.0001,
+        "shape_mismatch": false
+      },
+      {
+        "abs_tol": 1e-08,
+        "band": 6,
+        "candidate_at_max": 770.2447883725412,
+        "max_abs": 0.0017936587088343003,
+        "max_cell": [
+          2,
+          0,
+          9
+        ],
+        "max_rel": 8.172446674906763e-06,
+        "pass": true,
+        "quantity": "sw_taug",
+        "reference_at_max": 770.24658203125,
+        "rel_tol": 0.0001,
+        "shape_mismatch": false
+      },
+      {
+        "abs_tol": 1e-08,
+        "band": 7,
+        "candidate_at_max": 0.13962418448658515,
+        "max_abs": 2.472427315658443e-07,
+        "max_cell": [
+          2,
+          0,
+          1
+        ],
+        "max_rel": 2.157637472211678e-06,
+        "pass": true,
+        "quantity": "sw_taug",
+        "reference_at_max": 0.1396244317293167,
+        "rel_tol": 0.0001,
+        "shape_mismatch": false
+      },
+      {
+        "abs_tol": 1e-08,
+        "band": 8,
+        "candidate_at_max": 49.68461505436464,
+        "max_abs": 0.00012310481504584914,
+        "max_cell": [
+          2,
+          0,
+          9
+        ],
+        "max_rel": 8.941069766420717e-06,
+        "pass": true,
+        "quantity": "sw_taug",
+        "reference_at_max": 49.68473815917969,
+        "rel_tol": 0.0001,
+        "shape_mismatch": false
+      },
+      {
+        "abs_tol": 1e-08,
+        "band": 9,
+        "candidate_at_max": 13.58042425844363,
+        "max_abs": 4.67803747294937e-05,
+        "max_cell": [
+          2,
+          0,
+          7
+        ],
+        "max_rel": 3.4446798344311386e-06,
+        "pass": true,
+        "quantity": "sw_taug",
+        "reference_at_max": 13.58047103881836,
+        "rel_tol": 0.0001,
+        "shape_mismatch": false
+      },
+      {
+        "abs_tol": 1e-08,
+        "band": 10,
+        "candidate_at_max": 0.0664465994996776,
+        "max_abs": 1.2205412489030287e-07,
+        "max_cell": [
+          2,
+          0,
+          5
+        ],
+        "max_rel": 4.613024919110164e-06,
+        "pass": true,
+        "quantity": "sw_taug",
+        "reference_at_max": 0.06644672155380249,
+        "rel_tol": 0.0001,
+        "shape_mismatch": false
+      },
+      {
+        "abs_tol": 1e-08,
+        "band": 11,
+        "candidate_at_max": 0.0,
+        "max_abs": 0.0,
+        "max_cell": [
+          0,
+          0,
+          0
+        ],
+        "max_rel": 0.0,
+        "pass": true,
+        "quantity": "sw_taug",
+        "reference_at_max": 0.0,
+        "rel_tol": 0.0001,
+        "shape_mismatch": false
+      },
+      {
+        "abs_tol": 1e-08,
+        "band": 12,
+        "candidate_at_max": 13210.99747579829,
+        "max_abs": 0.3881007982909068,
+        "max_cell": [
+          1,
+          0,
+          7
+        ],
+        "max_rel": 9.188861713235044e-05,
+        "pass": true,
+        "quantity": "sw_taug",
+        "reference_at_max": 13210.609375,
+        "rel_tol": 0.0001,
+        "shape_mismatch": false
+      },
+      {
+        "abs_tol": 1e-08,
+        "band": 13,
+        "candidate_at_max": 5.010077687254235,
+        "max_abs": 1.308535604138683e-05,
+        "max_cell": [
+          2,
+          1,
+          5
+        ],
+        "max_rel": 2.6285735135299416e-06,
+        "pass": true,
+        "quantity": "sw_taug",
+        "reference_at_max": 5.010064601898193,
+        "rel_tol": 0.0001,
+        "shape_mismatch": false
+      },
+      {
+        "abs_tol": 1e-08,
+        "band": 14,
+        "candidate_at_max": 150700.05153767217,
+        "max_abs": 0.26096232782583684,
+        "max_cell": [
+          2,
+          0,
+          11
+        ],
+        "max_rel": 7.861435229411621e-06,
+        "pass": true,
+        "quantity": "sw_taug",
+        "reference_at_max": 150700.3125,
+        "rel_tol": 0.0001,
+        "shape_mismatch": false
+      }
+    ],
+    "taur": {
+      "abs_tol": 1e-08,
+      "band": null,
+      "candidate_at_max": 0.4142822050624215,
+      "max_abs": 5.08981260027852e-07,
+      "max_cell": [
+        2,
+        1,
+        0,
+        12
+      ],
+      "max_rel": 1.5661223633238288e-06,
+      "pass": true,
+      "quantity": "sw_taur",
+      "reference_at_max": 0.4142816960811615,
+      "rel_tol": 0.0001,
+      "shape_mismatch": false
+    }
+  },
+  "wrf_source_lines": {
+    "lw_rtrnmc_source": "module_ra_rrtmg_lw.F:3253-3409",
+    "lw_tfn_tbl": "module_ra_rrtmg_lw.F:8054-8070",
+    "sw_setcoef": "module_ra_rrtmg_sw.F:2843-3099",
+    "sw_spcvmc_entry": "module_ra_rrtmg_sw.F:8196-8450",
+    "sw_taumol": "module_ra_rrtmg_sw.F:3190-4653"
+  }
+}
