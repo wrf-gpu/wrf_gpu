@@ -1,0 +1,15 @@
+{
+  "gate_status": "FALLBACK",
+  "hlo_production_bytes_lw": 62516,
+  "hlo_production_bytes_sw": 68562,
+  "kernel_launches_per_step": 28,
+  "local_memory_bytes_per_kernel": null,
+  "oracle_regime": "wrf-driver",
+  "rationale": "correctness failed",
+  "raw_hlo_launch_marker_count": 28,
+  "registers_per_kernel": null,
+  "tier1_lw_pass": false,
+  "tier1_sw_pass": false,
+  "tier2_pass": true,
+  "tolerance_regime": "strict"
+}

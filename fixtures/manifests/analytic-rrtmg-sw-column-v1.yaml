@@ -1,0 +1,271 @@
+fixture_id: analytic-rrtmg-sw-column-v1
+source: wrf-derived
+source_commit: wrf-rrtmg-real-driver-harness sha256=c4e5a75932cc924400e7d61ff5fa7439e22bda92c5c0e6e9f0789b8ffde8d2d1;
+  module_ra_rrtmg_sw.F.o=present; module_ra_rrtmg_lw.F.o=present; full_rrtmg_driver_call=RRTMG_SWRAD+RRTMG_LWRAD;
+  rrtmg_data_convert=big_endian
+wrf_version: v4.7.1-derived-RRTMG-real-driver-column-harness
+scenario: three real-driver shortwave RRTMG columns with marine cloud and solar-zenith
+  variation
+created_utc: '2026-05-21T01:40:00Z'
+tier: 1
+precision_reference: fp64
+generation_command: python scripts/m5_generate_rrtmg_fixture.py
+external_uri: data/scratch/wrf_rrtmg_harness
+sample_slice_path: fixtures/samples/analytic-rrtmg-sw-column-v1.npz
+git_commit: 6c6fae7
+license_notes: Synthetic columns run through a GNU Fortran harness linked to real
+  WRF RRTMG SW/LW objects and calling RRTMG_SWRAD/RRTMG_LWRAD with Gen2 RRTMG_*_DATA
+  tables.
+variables:
+- name: input_T
+  units: K
+  shape:
+  - 3
+  - 16
+  staggering: mass
+  dtype: float64
+  tolerance_abs: 1.0e-10
+  tolerance_rel: 1.0e-10
+  tolerance_rationale: RRTMG harness input temperature
+  tier_overrides: null
+- name: input_p
+  units: Pa
+  shape:
+  - 3
+  - 16
+  staggering: mass
+  dtype: float64
+  tolerance_abs: 1.0e-08
+  tolerance_rel: 1.0e-10
+  tolerance_rationale: RRTMG harness input pressure
+  tier_overrides: null
+- name: input_qv
+  units: kg kg-1
+  shape:
+  - 3
+  - 16
+  staggering: mass
+  dtype: float64
+  tolerance_abs: 1.0e-12
+  tolerance_rel: 1.0e-10
+  tolerance_rationale: RRTMG harness input vapor
+  tier_overrides: null
+- name: input_qc
+  units: kg kg-1
+  shape:
+  - 3
+  - 16
+  staggering: mass
+  dtype: float64
+  tolerance_abs: 1.0e-12
+  tolerance_rel: 1.0e-10
+  tolerance_rationale: RRTMG harness input cloud water
+  tier_overrides: null
+- name: input_qi
+  units: kg kg-1
+  shape:
+  - 3
+  - 16
+  staggering: mass
+  dtype: float64
+  tolerance_abs: 1.0e-12
+  tolerance_rel: 1.0e-10
+  tolerance_rationale: RRTMG harness input cloud ice
+  tier_overrides: null
+- name: input_qs
+  units: kg kg-1
+  shape:
+  - 3
+  - 16
+  staggering: mass
+  dtype: float64
+  tolerance_abs: 1.0e-12
+  tolerance_rel: 1.0e-10
+  tolerance_rationale: RRTMG harness input snow
+  tier_overrides: null
+- name: input_qg
+  units: kg kg-1
+  shape:
+  - 3
+  - 16
+  staggering: mass
+  dtype: float64
+  tolerance_abs: 1.0e-12
+  tolerance_rel: 1.0e-10
+  tolerance_rationale: RRTMG harness input graupel
+  tier_overrides: null
+- name: input_cloud_fraction
+  units: '1'
+  shape:
+  - 3
+  - 16
+  staggering: mass
+  dtype: float64
+  tolerance_abs: 1.0e-12
+  tolerance_rel: 1.0e-10
+  tolerance_rationale: RRTMG harness input cloud fraction
+  tier_overrides: null
+- name: input_dz
+  units: m
+  shape:
+  - 3
+  - 16
+  staggering: mass
+  dtype: float64
+  tolerance_abs: 1.0e-10
+  tolerance_rel: 1.0e-10
+  tolerance_rationale: RRTMG harness input layer thickness
+  tier_overrides: null
+- name: input_rho
+  units: kg m-3
+  shape:
+  - 3
+  - 16
+  staggering: mass
+  dtype: float64
+  tolerance_abs: 1.0e-12
+  tolerance_rel: 1.0e-10
+  tolerance_rationale: RRTMG harness input density
+  tier_overrides: null
+- name: input_pressure_layer_mass
+  units: kg m-2
+  shape:
+  - 3
+  - 16
+  staggering: mass
+  dtype: float64
+  tolerance_abs: 2.0e-05
+  tolerance_rel: 2.0e-07
+  tolerance_rationale: WRF RRTMG pressure-thickness layer mass used for heating/flux
+    closure
+  tier_overrides: null
+- name: input_surface_albedo
+  units: '1'
+  shape:
+  - 3
+  staggering: mass
+  dtype: float64
+  tolerance_abs: 1.0e-12
+  tolerance_rel: 1.0e-10
+  tolerance_rationale: RRTMG-SW surface albedo input
+  tier_overrides: null
+- name: input_coszen
+  units: '1'
+  shape:
+  - 3
+  staggering: mass
+  dtype: float64
+  tolerance_abs: 1.0e-12
+  tolerance_rel: 1.0e-10
+  tolerance_rationale: RRTMG-SW cosine solar zenith input
+  tier_overrides: null
+- name: output_heating_rate
+  units: K s-1
+  shape:
+  - 3
+  - 16
+  staggering: mass
+  dtype: float64
+  tolerance_abs: 0.0001
+  tolerance_rel: 0.05
+  tolerance_rationale: Physical-noise-floor tolerance for real WRF RRTMG-SW heating
+  tier_overrides: null
+- name: output_flux_down
+  units: W m-2
+  shape:
+  - 3
+  - 18
+  staggering: mass
+  dtype: float64
+  tolerance_abs: 1.0
+  tolerance_rel: 0.05
+  tolerance_rationale: Physical-noise-floor tolerance for real WRF RRTMG-SW flux
+  tier_overrides: null
+- name: output_flux_up
+  units: W m-2
+  shape:
+  - 3
+  - 18
+  staggering: mass
+  dtype: float64
+  tolerance_abs: 1.0
+  tolerance_rel: 0.05
+  tolerance_rationale: Physical-noise-floor tolerance for real WRF RRTMG-SW flux
+  tier_overrides: null
+- name: output_toa_down
+  units: W m-2
+  shape:
+  - 3
+  staggering: mass
+  dtype: float64
+  tolerance_abs: 1.0
+  tolerance_rel: 0.05
+  tolerance_rationale: Physical-noise-floor tolerance for RRTMG-SW top-interface flux
+  tier_overrides: null
+- name: output_toa_up
+  units: W m-2
+  shape:
+  - 3
+  staggering: mass
+  dtype: float64
+  tolerance_abs: 1.0
+  tolerance_rel: 0.05
+  tolerance_rationale: Physical-noise-floor tolerance for RRTMG-SW top-interface flux
+  tier_overrides: null
+- name: output_surface_down
+  units: W m-2
+  shape:
+  - 3
+  staggering: mass
+  dtype: float64
+  tolerance_abs: 1.0
+  tolerance_rel: 0.05
+  tolerance_rationale: Physical-noise-floor tolerance for RRTMG-SW surface flux
+  tier_overrides: null
+- name: output_surface_up
+  units: W m-2
+  shape:
+  - 3
+  staggering: mass
+  dtype: float64
+  tolerance_abs: 1.0
+  tolerance_rel: 0.05
+  tolerance_rationale: Physical-noise-floor tolerance for RRTMG-SW surface flux
+  tier_overrides: null
+- name: output_column_absorbed
+  units: W m-2
+  shape:
+  - 3
+  staggering: mass
+  dtype: float64
+  tolerance_abs: 1.0
+  tolerance_rel: 0.05
+  tolerance_rationale: Physical-noise-floor tolerance for RRTMG-SW column absorption
+  tier_overrides: null
+- name: output_surface_absorbed
+  units: W m-2
+  shape:
+  - 3
+  staggering: mass
+  dtype: float64
+  tolerance_abs: 1.0
+  tolerance_rel: 0.05
+  tolerance_rationale: Physical-noise-floor tolerance for RRTMG-SW surface absorption
+  tier_overrides: null
+files:
+- path: fixtures/samples/analytic-rrtmg-sw-column-v1.npz
+  checksum_sha256: 35d6fa9d7b56c42b1d8cc95ef865d84bd7d1168a84713c0ea18aacf552e035f0
+  bytes: 9061
+  external: false
+- path: data/fixtures/analytic-rrtmg-sw-column-v1/full.npz
+  checksum_sha256: 35d6fa9d7b56c42b1d8cc95ef865d84bd7d1168a84713c0ea18aacf552e035f0
+  bytes: 9061
+  external: true
+- path: data/scratch/wrf_rrtmg_harness
+  checksum_sha256: c4e5a75932cc924400e7d61ff5fa7439e22bda92c5c0e6e9f0789b8ffde8d2d1
+  bytes: 982952
+  external: true
+- path: data/fixtures/rrtmg-tables-v1.npz
+  checksum_sha256: cffd87d494e3f8c2da6bedac42d6626a993bdcd777dcd0bad53dee5e4f7f96c8
+  bytes: 1747092
+  external: true

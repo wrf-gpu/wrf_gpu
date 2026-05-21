@@ -1,0 +1,1 @@
+fixtures/manifests/analytic-rrtmg-lw-column-v1.yaml: ok
