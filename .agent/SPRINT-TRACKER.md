@@ -1,62 +1,64 @@
 # Sprint Tracker — Live Dashboard
 
-Manager-maintained. Updated every watchman tick. Source of truth for parallel-management state.
+Manager-maintained. Updated every watchman tick.
 
-**Per user directive 2026-05-21 ~09:35**: M6 prologue full-steam-ahead; rate-limit watch on gpt-5.5.
-
-## Currently in flight (3 parallel: 1 codex + 2 opus)
+## Currently in flight (1)
 
 | Window | Sprint | AI | Phase | Started | Status |
 |---|---|---|---|---|---|
-| `worker-s1y` | M5-S1.y Thompson | codex gpt-5.5 xhigh | worker | 09:35 | running pytest validation (35m) — implementation likely complete, awaiting suite |
-| `reviewer-s2x` | M5-S2.x MYNN | claude-opus-4-7 xhigh | reviewer | 10:15 | thinking/transmuting; verifying AC1 budget probe + AC2 radicand + AC3 surface-layer interface |
-| `reviewer-s3x` | M5-S3.x RRTMG | claude-opus-4-7 xhigh | reviewer | 10:15 | thinking/ionizing; verdict expected: REJECT-bounded / ACCEPT-AS-GROUNDWORK-PHASE-2 |
+| `reviewer-s1y` | M5-S1.y Thompson | claude-opus-4-7 xhigh | reviewer | 10:43 | thinking/leavening; needs to decide ACCEPT-AS-GRAY-ZONE vs REJECT-bounded |
 
-## Worker reports received this tick (10:10)
+## Closed this tick (2)
 
-| Sprint | Worker | Wall | Verdict signal | Commit |
-|---|---|---|---|---|
-| M5-S2.x MYNN | codex | 27m 03s | self-clean: AC1-AC5 pass; full pytest blocked by `/tmp` disk-space env failures (unrelated) | `7f9f4f1` |
-| M5-S3.x RRTMG | codex | 29m 03s | **self-flag: "do not close as accepted"**; strict Tier-1 SW+LW fail; 40 raw launches > 10 cap; new Eddington pieces sound but full `setcoef + taumol` + LW Planck-source machinery missing | `cbce2e5` |
+| Sprint | Verdict | Merge | Closeout |
+|---|---|---|---|
+| **M5-S2.x MYNN follow-ups** | Opus **ACCEPT** | `dec3e8c` (worker `7f9f4f1` + reviewer `9625d73`) | `.agent/sprints/.../m5-s2x-mynn-followups/manager-closeout.md` |
+| **M5-S3.x RRTMG transfer-solver** | Opus **ACCEPT-AS-GROUNDWORK-PHASE-2** | `0dad...` (worker `cbce2e5` + reviewer `e52857d`) | `.agent/sprints/.../m5-s3x-rrtmg-transfer-solver/manager-closeout.md` + new `m5-s3y-rrtmg-setcoef-taumol-planck/` stub |
 
-## Key M5-S2.x signals (worker self-report)
+## M6 prologue debt (running tally)
 
-- AC1 independent budget probe: max residuals u=2.5e-5, v=9.3e-6, theta=1.6e-6, qv=2.4e-10 (target ≤1e-3)
-- AC2: Path A chosen — unguarded SQRT matching WRF source `module_bl_mynnedmf.F90:1918-1919`
-- AC3: `surface_layer(state) -> SurfaceFluxes` hook + ADR-008 interface section with WRF citations
-- AC4: 35 raw launches, no fudge, 0 transfers, HLO 279 KB
-- AC5: 11/11 MYNN tests pass; full pytest has unrelated env failures (out-of-scope per file ownership)
+| Sprint | Status | Wall budget |
+|---|---|---|
+| M5-S1.y Thompson HLO + residuals | Opus reviewer in flight | 4-10h (delivered 43m) |
+| M5-S2.x MYNN follow-ups | ✓ CLOSED ACCEPT | 2-6h (delivered 27m + 23m review) |
+| M5-S3.x RRTMG transfer-solver | ✓ CLOSED GROUNDWORK-PHASE-2 | 8-16h (delivered 29m + 7m review) |
+| **M5-S3.y RRTMG setcoef+taumol+Planck (NEW)** | STUB; awaits manager Eddington-vs-PIFM decision then dispatch | **16-32h** (largest M5 item) |
 
-## Key M5-S3.x signals (worker self-report)
-
-- Removed fabricated `tau_gas = vapor_path * 0.01 * log1p(gas_coeff)` ✓
-- Added Joseph-Wiscombe-Weinman delta-scaling + Eddington layer reflectance/transmittance ✓
-- Added LW g-point recurrence + WRF molecular column construction ✓
-- **MISSING**: full `setcoef + taumol` per-band gas-absorption interpolation, full LW Planck-source machinery
-- 40 raw launches (cap was 10), HLO 497 KB SW + 137 KB LW (within 500 KB ceiling)
-- Tier-2 invariants pass, Tier-1 strict fail
-- Honest gate: FALLBACK, no `min(raw, cap)` fudge
-
-## On deck (queued)
+## On deck
 
 | Sprint | Trigger | Notes |
 |---|---|---|
-| Manager closeout for s2x, s3x | After respective Opus reviewer verdicts | Likely s2x ACCEPT or ACCEPT-WITH-MINOR-FOLLOWUPS; s3x REJECT-bounded or ACCEPT-AS-GROUNDWORK-PHASE-2 (manager will need M5-S3.y stub) |
-| Manager closeout for s1y | After P1 worker delivers + Opus reviewer | Codex still running pytest validation |
-| P4 M6 plan consensus (codex critical-review) | After ≥1 codex worker frees gpt-5.5 quota | Can dispatch now since codex is only on P1 |
-| M6-S1 coupled interface freeze | After all 3 prologue close + P4 ratified | Serial |
-| M6-S2..S8 | Per plan scout sequence | Mostly parallelizable after S2 smoke |
+| M5-S1.y manager closeout | After Opus reviewer verdict | Worker self-flagged GRAY-ZONE; reviewer to decide |
+| M5-S3.y Eddington-vs-PIFM decision (manager+1 codex) | Now (manager) — option (a) patch local WRF kmodts=1 / option (b) retarget JAX to PIFM | Recommended (a); preserves M5-S3.x progress |
+| M5-S3.y worker dispatch | After Eddington decision + P1 closure | Codex worker; 16-32h; file-disjoint can run parallel with M6-S1 prep |
+| P4 M6 plan consensus (codex critical-review) | Now (codex quota freed; only P1 reviewer in flight, no codex active) | Can dispatch |
+| M6-S1 coupled interface freeze | After M5-S1.y closes + ratification of M6 plan | Serial — blocks M6-S2/S3 |
 
 ## Watchman policy
 
-- Next tick: 20 min (10:55) — reviewers expected to finish ~10:30-10:45, P1 worker likely wrapping pytest
-- On reviewer AGENT REPORT: read verdict, dispatch manager closeout commit, update tracker
-- If P1 worker AGENT REPORT lands: dispatch Opus reviewer for s1y
+- Next tick: 20 min (~11:05) — P1 reviewer expected to finish ~10:55-11:10
+- Then: dispatch M5-S3.y worker + P4 codex critical-review in parallel
+- After P1 closes: dispatch M6-S1 interface freeze (single worker)
 
 ## Recent ticks
 
-- 2026-05-21 09:30-09:37 — 3 codex workers dispatched (s1y, s2x, s3x); user authorized sandbox spawn
-- 2026-05-21 10:10 — watchman tick; P2 worker done (27m), P3 worker done (29m, self-flagged not-acceptable), P1 still running fixture build
-- 2026-05-21 10:13 — sent `/exit Enter Enter` to P2+P3 panes; AGENT REPORTs fired
-- 2026-05-21 10:15 — dispatched Opus reviewer for s2x + s3x in parallel
-- 2026-05-21 10:18 — tracker updated; next watchman scheduled 10:55
+- 2026-05-21 09:30-09:37 — 3 codex workers dispatched
+- 2026-05-21 10:10-10:18 — watchman tick #1: P2+P3 workers done, Opus reviewers dispatched
+- 2026-05-21 10:38-10:43 — watchman tick #2:
+  - P2 Opus reviewer ACCEPT → merge + closeout committed
+  - P3 Opus reviewer ACCEPT-AS-GROUNDWORK-PHASE-2 → merge + closeout + M5-S3.y stub committed
+  - P1 worker delivered GRAY-ZONE (10 launches honest, HLO 421 KB > 350 KB target, Ni 126975→772, qr met, qg/qv/T/Ni/Nr still miss strict)
+  - P1 Opus reviewer dispatched 10:43
+- Next: 11:05 tick to catch P1 verdict + dispatch parallel M5-S3.y + P4
+
+## File-ownership snapshot (M6 prologue)
+
+- thompson_*: M5-S1.y owns (in-flight review)
+- mynn_*: M5-S2.x CLOSED → free for M6-S3
+- rrtmg_*: M5-S3.x CLOSED → M5-S3.y will reopen for setcoef+taumol+Planck
+
+## Anti-pattern observations (this cycle)
+
+- **NO** spec-gaming recurrences from M5-S2 / M5-S3 prior cycles. Both workers honest about scope limits.
+- Codex worker pattern improving: self-flag honest partial > pretend parity. Reviewer's verifiability-triple checks (`nm` + non-clipped + non-vacuous) all passed.
+- Process learning: dispatching pattern's `/exit` auto-fire reliability issue noted again — manual tap-Enter on stuck panes worked. To encode in pattern doc later.
