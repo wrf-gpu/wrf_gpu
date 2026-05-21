@@ -29,6 +29,7 @@ WRF_EDMF_COMMON_OBJECT = Path("/mnt/data/canairy_meteo/artifacts/wrf_gpu_src/WRF
 
 INPUT_FIELDS = ("u", "v", "w", "theta", "qv", "tke", "p", "rho", "dz")
 OUTPUT_FIELDS = ("u", "v", "w", "theta", "qv", "tke", "km", "kh", "el")
+TENDENCY_FIELDS = ("du", "dv", "dtheta", "dqv")
 
 
 def _sha256(path: Path) -> str:
@@ -133,7 +134,7 @@ def _read_fortran_output(path: Path) -> dict[str, np.ndarray]:
         if len(header) != 2:
             raise RuntimeError(f"bad harness output header in {path}")
         data = np.loadtxt(handle, dtype=np.float64)
-    if data.ndim != 2 or data.shape[1] != 18:
+    if data.ndim != 2 or data.shape[1] != 22:
         raise RuntimeError(f"bad harness output shape {data.shape} in {path}")
     return {
         "u": data[:, 0],
@@ -151,6 +152,10 @@ def _read_fortran_output(path: Path) -> dict[str, np.ndarray]:
         "transport": data[:, 15],
         "surface_theta_flux": data[:, 16],
         "surface_qv_flux": data[:, 17],
+        "du": data[:, 18],
+        "dv": data[:, 19],
+        "dtheta": data[:, 20],
+        "dqv": data[:, 21],
     }
 
 
@@ -176,6 +181,10 @@ def _run_harness(fields: dict[str, np.ndarray], dt: float) -> dict[str, np.ndarr
             "transport",
             "surface_theta_flux",
             "surface_qv_flux",
+            "du",
+            "dv",
+            "dtheta",
+            "dqv",
         )
     }
     for scenario, name in enumerate(("marine_trade_inversion", "stable_nocturnal", "windy_terrain_mixed")):
@@ -231,6 +240,10 @@ def _manifest_variables(shape: tuple[int, ...]) -> list[dict[str, Any]]:
             _variable("output_km", "m2 s-1", shape, 5.0, 5.0e-1, "WRF MYNN object-linked exchange-coefficient diagnostic"),
             _variable("output_kh", "m2 s-1", shape, 5.0, 5.0e-1, "WRF MYNN object-linked exchange-coefficient diagnostic"),
             _variable("output_el", "m", shape, 20.0, 5.0e-1, "WRF MYNN object-linked master-length diagnostic"),
+            _variable("output_du", "m s-2", shape, 1.0e-3, 1.0e-2, "WRF mynn_tendencies U tendency oracle for Tier-2 independent budget"),
+            _variable("output_dv", "m s-2", shape, 1.0e-3, 1.0e-2, "WRF mynn_tendencies V tendency oracle for Tier-2 independent budget"),
+            _variable("output_dtheta", "K s-1", shape, 1.0e-3, 1.0e-2, "WRF mynn_tendencies theta tendency oracle for Tier-2 independent budget"),
+            _variable("output_dqv", "kg kg-1 s-1", shape, 1.0e-3, 1.0e-2, "WRF mynn_tendencies qv tendency oracle for Tier-2 independent budget"),
         ]
     )
     return variables
@@ -248,6 +261,8 @@ def write_fixture() -> dict[str, Any]:
     for name in INPUT_FIELDS:
         payload[f"input_{name}"] = fields[name]
     for name in OUTPUT_FIELDS:
+        payload[f"output_{name}"] = outputs[name]
+    for name in TENDENCY_FIELDS:
         payload[f"output_{name}"] = outputs[name]
     np.savez_compressed(SAMPLE, **payload)
     np.savez_compressed(FULL, **payload)

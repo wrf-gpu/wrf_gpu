@@ -36,6 +36,7 @@ def evaluate_gate() -> dict:
 
     tier1 = _load(ART / "tier1_mynn_parity.json")
     tier2 = _load(ART / "tier2_mynn_invariants.json")
+    tier2_independent = _load(ART / "tier2_mynn_independent_budget.json")
     profile = _load(ART / "mynn_profile.json")
     launches = int(profile.get("kernel_launches_per_step") or profile.get("kernel_launches") or 0)
     local = profile.get("local_memory_bytes_per_kernel", profile.get("local_memory_bytes"))
@@ -43,9 +44,10 @@ def evaluate_gate() -> dict:
     hlo_bytes = int(profile.get("hlo_production_bytes", 0))
     tier1_pass = bool(tier1.get("pass"))
     tier2_pass = bool(tier2.get("pass"))
+    tier2_independent_pass = bool(tier2_independent.get("pass"))
     status = "GO"
     reasons = []
-    if not tier1_pass or not tier2_pass:
+    if not tier1_pass or not tier2_pass or not tier2_independent_pass:
         status = "FALLBACK"
         reasons.append("correctness failed")
     amended_launch_limit = 35
@@ -75,7 +77,7 @@ def evaluate_gate() -> dict:
     tolerance_regime = _tolerance_regime()
     if status == "GO" and tolerance_regime == "carry-forward":
         status = "GO_CARRYFORWARD"
-        reasons.append("tier-1/tier-2 pass under carry-forward WRF-object-linked harness tolerances")
+        reasons.append("tier-1/tier-2 plus independent WRF budget pass under carry-forward WRF-object-linked harness tolerances")
     elif status == "GO":
         reasons.append("tier-1/tier-2 pass under strict tolerances and launch/HLO limits")
     return {
@@ -85,6 +87,7 @@ def evaluate_gate() -> dict:
         "hlo_production_bytes": hlo_bytes,
         "tier1_pass": tier1_pass,
         "tier2_pass": tier2_pass,
+        "tier2_independent_budget_pass": tier2_independent_pass,
         "tolerance_regime": tolerance_regime,
         "gate_status": status,
         "rationale": "; ".join(reasons)[:300],
