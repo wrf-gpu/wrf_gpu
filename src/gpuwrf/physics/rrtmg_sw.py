@@ -13,6 +13,7 @@ import numpy as np
 from gpuwrf.debug.asserts import assert_finite, assert_physical_bounds
 from gpuwrf.physics.rrtmg_constants import (
     CP_AIR,
+    GRAVITY,
     MAX_OPTICAL_DEPTH,
     MIN_COSZEN,
     MIN_LAYER_MASS,
@@ -131,46 +132,79 @@ def _expand_surface(x):
     return x[..., None]
 
 
+def _pressure_layer_mass(p):
+    """Reconstructs WRF harness layer mass from midpoint pressure interfaces."""
+
+    nz = p.shape[-1]
+    dp_bottom = jnp.maximum(10.0, p[..., 0] - p[..., 1])
+    bottom = p[..., :1] + 0.5 * dp_bottom[..., None]
+    middle = 0.5 * (p[..., :-1] + p[..., 1:])
+    dp_top = jnp.maximum(10.0, p[..., -2] - p[..., -1])
+    top = jnp.maximum(400.0, p[..., -1:] - 0.5 * dp_top[..., None])
+    interfaces = jnp.concatenate((bottom, middle, top), axis=-1)
+    return jnp.maximum((interfaces[..., :nz] - interfaces[..., 1 : nz + 1]) / GRAVITY, MIN_LAYER_MASS)
+
+
+def _nearest_pressure_coefficients(state_p, tables: RRTMGTableBundle):
+    """Selects WRF reference-pressure absorption coefficients per layer."""
+
+    ref_log = jnp.log(tables.sw_reference_pressure_pa)
+    layer_log = jnp.log(jnp.maximum(state_p, 1.0))
+    idx = jnp.argmin(jnp.abs(layer_log[..., None] - ref_log), axis=-1)
+    gathered = jnp.take(tables.sw_absorption_coefficients, idx, axis=1)
+    return jnp.moveaxis(gathered, 0, -2)
+
+
 def _shortwave_impl(state: RRTMGSWColumnState, tables: RRTMGTableBundle, debug: bool) -> RRTMGSWColumnResult:
     """Unjitted SW implementation shared by production and stripped paths."""
 
     state = _clip_state(state)
-    layer_mass = jnp.maximum(state.rho * state.dz, MIN_LAYER_MASS)
+    layer_mass = _pressure_layer_mass(state.p)
     vapor_path = state.qv * layer_mass
-    liquid_path = (state.qc + 0.25 * state.qg) * layer_mass
-    ice_path = (state.qi + state.qs + 0.75 * state.qg) * layer_mass
+    liquid_path_g = (state.qc + 0.25 * state.qg) * layer_mass * 1000.0
+    ice_path_g = (state.qi + state.qs + 0.75 * state.qg) * layer_mass * 1000.0
 
-    band_index = jnp.arange(tables.sw_band_weights.shape[0])
-    weights = jnp.take(tables.sw_band_weights, band_index, axis=0)
-    gas_coeff = jnp.take(tables.sw_absorption_coefficients, band_index, axis=0)
-    rayleigh_coeff = jnp.take(tables.sw_rayleigh_coefficients, band_index, axis=0)
-    liquid_coeff = jnp.take(tables.sw_cloud_liquid_extinction, band_index, axis=0)
-    ice_coeff = jnp.take(tables.sw_cloud_ice_extinction, band_index, axis=0)
+    weights = tables.sw_gpoint_weights
+    gas_coeff = _nearest_pressure_coefficients(state.p, tables)
+    rayleigh_coeff = tables.sw_rayleigh_coefficients
+    liquid_coeff = tables.sw_cloud_liquid_extinction[:, None]
+    ice_coeff = tables.sw_cloud_ice_extinction[:, None]
+    liquid_ssa = tables.sw_cloud_liquid_ssa[:, None]
+    ice_ssa = tables.sw_cloud_ice_ssa[:, None]
+    mask = tables.sw_gpoint_mask
 
     pressure_scale = jnp.sqrt(jnp.maximum(state.p, 1.0) / 100000.0)
-    tau_gas = vapor_path[..., None] * gas_coeff
-    tau_rayleigh = pressure_scale[..., None] * rayleigh_coeff
-    tau_cloud = state.cloud_fraction[..., None] * (liquid_path[..., None] * liquid_coeff + ice_path[..., None] * ice_coeff)
-    tau = jnp.clip(tau_gas + tau_rayleigh + tau_cloud, MIN_OPTICAL_DEPTH, MAX_OPTICAL_DEPTH)
+    tau_gas = vapor_path[..., None, None] * (0.01 * jnp.log1p(jnp.maximum(gas_coeff, 0.0)))
+    tau_rayleigh = pressure_scale[..., None, None] * rayleigh_coeff
+    tau_liquid = state.cloud_fraction[..., None, None] * liquid_path_g[..., None, None] * liquid_coeff
+    tau_ice = state.cloud_fraction[..., None, None] * ice_path_g[..., None, None] * ice_coeff
+    scatter_tau = tau_rayleigh + tau_liquid * liquid_ssa + tau_ice * ice_ssa
+    tau_absorption = tau_gas + tau_rayleigh * 0.2 + tau_liquid * (1.0 - liquid_ssa) + tau_ice * (1.0 - ice_ssa)
+    tau = jnp.clip(tau_absorption, MIN_OPTICAL_DEPTH, MAX_OPTICAL_DEPTH) * mask
 
-    top_flux_band = SOLAR_CONSTANT * _expand_surface(state.coszen) * weights
-    tau_top_down = jnp.flip(tau, axis=-2)
-    zeros = jnp.zeros_like(tau_top_down[..., :1, :])
-    optical_depth_interfaces_top_down = jnp.concatenate((zeros, jnp.cumsum(tau_top_down, axis=-2)), axis=-2)
-    down_top_down = top_flux_band[..., None, :] * jnp.exp(-optical_depth_interfaces_top_down)
-    down_band = jnp.flip(down_top_down, axis=-2)
+    top_flux_band = SOLAR_CONSTANT * state.coszen[..., None, None] * weights
+    tau_top_down = jnp.flip(tau, axis=-3)
+    zeros = jnp.zeros_like(tau_top_down[..., :1, :, :])
+    optical_depth_interfaces_top_down = jnp.concatenate((zeros, jnp.cumsum(tau_top_down, axis=-3)), axis=-3)
+    down_top_down = top_flux_band[..., None, :, :] * jnp.exp(-optical_depth_interfaces_top_down)
+    down_band = jnp.flip(down_top_down, axis=-3)
 
-    surface_down_band = down_band[..., 0, :]
-    surface_up_band = _expand_surface(state.surface_albedo) * surface_down_band
-    optical_depth_interfaces_bottom_up = jnp.concatenate((jnp.zeros_like(tau[..., :1, :]), jnp.cumsum(tau, axis=-2)), axis=-2)
-    up_band = surface_up_band[..., None, :] * jnp.exp(-optical_depth_interfaces_bottom_up)
+    surface_down_band = down_band[..., 0, :, :]
+    surface_up_band = state.surface_albedo[..., None, None] * surface_down_band
+    optical_depth_interfaces_bottom_up = jnp.concatenate((jnp.zeros_like(tau[..., :1, :, :]), jnp.cumsum(tau, axis=-3)), axis=-3)
+    surface_up = surface_up_band[..., None, :, :] * jnp.exp(-optical_depth_interfaces_bottom_up)
+    layer_reflectance = 0.5 * (1.0 - jnp.exp(-jnp.minimum(scatter_tau, MAX_OPTICAL_DEPTH))) * mask
+    reflected_layers = down_band[..., 1:, :, :] * layer_reflectance
+    reflected_up = jnp.concatenate((jnp.zeros_like(surface_up[..., :1, :, :]), jnp.cumsum(reflected_layers, axis=-3)), axis=-3)
+    reflected_up = reflected_up * jnp.exp(-0.5 * optical_depth_interfaces_bottom_up)
+    up_band = surface_up + reflected_up
 
-    flux_down_model = jnp.sum(down_band, axis=-1)
-    flux_up_model = jnp.sum(up_band, axis=-1)
+    flux_down_model = jnp.sum(down_band, axis=(-1, -2))
+    flux_up_model = jnp.sum(up_band, axis=(-1, -2))
     net_down = flux_down_model - flux_up_model
     column_absorbed_layers = net_down[..., 1:] - net_down[..., :-1]
     heating_rate = column_absorbed_layers / (layer_mass * CP_AIR)
-    surface_absorbed = jnp.sum(surface_down_band - surface_up_band, axis=-1)
+    surface_absorbed = jnp.sum(surface_down_band - surface_up_band, axis=(-1, -2))
     flux_down = jnp.concatenate((flux_down_model, flux_down_model[..., -1:]), axis=-1)
     flux_up = jnp.concatenate((flux_up_model, flux_up_model[..., -1:]), axis=-1)
 

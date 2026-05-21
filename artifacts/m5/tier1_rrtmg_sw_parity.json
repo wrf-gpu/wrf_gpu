@@ -1,39 +1,39 @@
 {
   "field_pass": {
-    "column_absorbed": true,
-    "flux_down": true,
-    "flux_up": true,
-    "heating_rate": true,
-    "surface_absorbed": true,
-    "surface_down": true,
-    "surface_up": true,
-    "toa_down": true,
-    "toa_up": true
+    "column_absorbed": false,
+    "flux_down": false,
+    "flux_up": false,
+    "heating_rate": false,
+    "surface_absorbed": false,
+    "surface_down": false,
+    "surface_up": false,
+    "toa_down": false,
+    "toa_up": false
   },
   "fixture_id": "analytic-rrtmg-sw-column-v1",
-  "pass": true,
+  "pass": false,
   "per_field_max_abs_err": {
-    "column_absorbed": 145.85432643425588,
-    "flux_down": 909.3679364056326,
-    "flux_up": 623.5597533075135,
-    "heating_rate": 0.0006418843327518469,
-    "surface_absorbed": 745.6817070896792,
-    "surface_down": 909.3679364056326,
-    "surface_up": 163.6862293159533,
-    "toa_down": 67.04383583984384,
-    "toa_up": 599.8293482091347
+    "column_absorbed": 2222.1098991024437,
+    "flux_down": 863.4149601378938,
+    "flux_up": 1578.875792806668,
+    "heating_rate": 0.0006909078736834584,
+    "surface_absorbed": 708.0002665501335,
+    "surface_down": 863.4149601378938,
+    "surface_up": 155.41469358776033,
+    "toa_down": 67.04383583984372,
+    "toa_up": 1578.875792806668
   },
   "per_field_max_rel_err": {
-    "column_absorbed": 0.8433098205087121,
-    "flux_down": 12.998890717420098,
-    "flux_up": 12.998891275834167,
-    "heating_rate": 59.47769955835695,
-    "surface_absorbed": 12.998890514360447,
-    "surface_down": 12.998890717420098,
-    "surface_up": 12.998891275834167,
-    "toa_down": 0.07765583457175192,
-    "toa_up": 0.8510035912076442
+    "column_absorbed": 10.621004254933512,
+    "flux_down": 12.291043717310316,
+    "flux_up": 12.557588154009641,
+    "heating_rate": 113.24457314277885,
+    "surface_absorbed": 12.291043524518276,
+    "surface_down": 12.291043717310316,
+    "surface_up": 12.291044247488456,
+    "toa_down": 0.07765583457175178,
+    "toa_up": 2.5988095715353943
   },
   "scenarios_tested": 3,
-  "tolerances_met": true
+  "tolerances_met": false
 }

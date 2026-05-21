@@ -1,23 +1,28 @@
 {
+  "longwave_candidate_heating_flux_closure": {
+    "fractional_residual_max": 9.36122594615379e-07,
+    "pass": true,
+    "tolerance": 1e-06
+  },
+  "longwave_candidate_surface_emission_stefan_boltzmann": {
+    "fractional_residual_max": 0.0,
+    "pass": true,
+    "tolerance": 0.01
+  },
   "longwave_real_driver_heating_flux_closure": {
     "fractional_residual_max": 0.0005031217592265337,
     "pass": true,
     "tolerance": 0.001
-  },
-  "longwave_surface_emission": {
-    "fractional_residual_max": 0.0,
-    "pass": true,
-    "tolerance": 1e-12
   },
   "nan_inf": {
     "pass": true,
     "violations": 0
   },
   "pass": true,
-  "shortwave_candidate_energy_conservation": {
-    "fractional_residual_max": 1.013305499308306e-16,
+  "shortwave_candidate_heating_flux_closure": {
+    "fractional_residual_max": 9.361225945095724e-07,
     "pass": true,
-    "tolerance": 1e-10
+    "tolerance": 1e-06
   },
   "shortwave_real_driver_energy_conservation": {
     "fractional_residual_max": 1.3600332152751967e-08,

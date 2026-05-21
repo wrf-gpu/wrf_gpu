@@ -11,7 +11,7 @@ precision_reference: fp64
 generation_command: python scripts/m5_generate_rrtmg_fixture.py
 external_uri: data/scratch/wrf_rrtmg_harness
 sample_slice_path: fixtures/samples/analytic-rrtmg-lw-column-v1.npz
-git_commit: b7a3c12
+git_commit: 6c6fae7
 license_notes: Synthetic columns run through a GNU Fortran harness linked to real
   WRF RRTMG SW/LW objects and calling RRTMG_SWRAD/RRTMG_LWRAD with Gen2 RRTMG_*_DATA
   tables.
@@ -165,10 +165,9 @@ variables:
   - 16
   staggering: mass
   dtype: float64
-  tolerance_abs: 0.0002
-  tolerance_rel: 0.5
-  tolerance_rationale: Carry-forward tolerance for real WRF RRTMG-LW driver vs effective-table
-    JAX column
+  tolerance_abs: 0.0001
+  tolerance_rel: 0.05
+  tolerance_rationale: Physical-noise-floor tolerance for real WRF RRTMG-LW heating
   tier_overrides: null
 - name: output_flux_down
   units: W m-2
@@ -177,10 +176,9 @@ variables:
   - 18
   staggering: mass
   dtype: float64
-  tolerance_abs: 500.0
-  tolerance_rel: 0.5
-  tolerance_rationale: Carry-forward tolerance for real WRF RRTMG-LW driver vs effective-table
-    JAX column
+  tolerance_abs: 1.0
+  tolerance_rel: 0.05
+  tolerance_rationale: Physical-noise-floor tolerance for real WRF RRTMG-LW flux
   tier_overrides: null
 - name: output_flux_up
   units: W m-2
@@ -189,10 +187,9 @@ variables:
   - 18
   staggering: mass
   dtype: float64
-  tolerance_abs: 500.0
-  tolerance_rel: 0.5
-  tolerance_rationale: Carry-forward tolerance for real WRF RRTMG-LW driver vs effective-table
-    JAX column
+  tolerance_abs: 1.0
+  tolerance_rel: 0.05
+  tolerance_rationale: Physical-noise-floor tolerance for real WRF RRTMG-LW flux
   tier_overrides: null
 - name: output_toa_down
   units: W m-2
@@ -200,9 +197,9 @@ variables:
   - 3
   staggering: mass
   dtype: float64
-  tolerance_abs: 500.0
-  tolerance_rel: 0.5
-  tolerance_rationale: RRTMG-LW real-driver top interface diagnostic
+  tolerance_abs: 1.0
+  tolerance_rel: 0.05
+  tolerance_rationale: Physical-noise-floor tolerance for RRTMG-LW top-interface flux
   tier_overrides: null
 - name: output_toa_up
   units: W m-2
@@ -210,9 +207,9 @@ variables:
   - 3
   staggering: mass
   dtype: float64
-  tolerance_abs: 500.0
-  tolerance_rel: 0.5
-  tolerance_rationale: RRTMG-LW real-driver top interface diagnostic
+  tolerance_abs: 1.0
+  tolerance_rel: 0.05
+  tolerance_rationale: Physical-noise-floor tolerance for RRTMG-LW top-interface flux
   tier_overrides: null
 - name: output_surface_down
   units: W m-2
@@ -220,9 +217,9 @@ variables:
   - 3
   staggering: mass
   dtype: float64
-  tolerance_abs: 500.0
-  tolerance_rel: 0.5
-  tolerance_rationale: RRTMG-LW real-driver surface interface diagnostic
+  tolerance_abs: 1.0
+  tolerance_rel: 0.05
+  tolerance_rationale: Physical-noise-floor tolerance for RRTMG-LW surface flux
   tier_overrides: null
 - name: output_surface_up
   units: W m-2
@@ -230,9 +227,9 @@ variables:
   - 3
   staggering: mass
   dtype: float64
-  tolerance_abs: 500.0
-  tolerance_rel: 0.5
-  tolerance_rationale: RRTMG-LW real-driver surface interface diagnostic
+  tolerance_abs: 1.0
+  tolerance_rel: 0.05
+  tolerance_rationale: Physical-noise-floor tolerance for RRTMG-LW surface flux
   tier_overrides: null
 - name: output_column_net_heating
   units: W m-2
@@ -240,9 +237,9 @@ variables:
   - 3
   staggering: mass
   dtype: float64
-  tolerance_abs: 500.0
-  tolerance_rel: 0.5
-  tolerance_rationale: RRTMG-LW real-driver model-column net heating diagnostic
+  tolerance_abs: 1.0
+  tolerance_rel: 0.05
+  tolerance_rationale: Physical-noise-floor tolerance for RRTMG-LW column net heating
   tier_overrides: null
 - name: output_surface_emission
   units: W m-2
@@ -250,9 +247,10 @@ variables:
   - 3
   staggering: mass
   dtype: float64
-  tolerance_abs: 500.0
-  tolerance_rel: 0.5
-  tolerance_rationale: RRTMG-LW Stefan-Boltzmann surface emission diagnostic
+  tolerance_abs: 1.0
+  tolerance_rel: 0.05
+  tolerance_rationale: Physical-noise-floor tolerance for RRTMG-LW Stefan-Boltzmann
+    emission
   tier_overrides: null
 files:
 - path: fixtures/samples/analytic-rrtmg-lw-column-v1.npz
@@ -268,6 +266,6 @@ files:
   bytes: 982952
   external: true
 - path: data/fixtures/rrtmg-tables-v1.npz
-  checksum_sha256: adef2bec561807450add24a596daf17fad9b617e348807f2648e2e88e8118d51
-  bytes: 1535874
+  checksum_sha256: cffd87d494e3f8c2da6bedac42d6626a993bdcd777dcd0bad53dee5e4f7f96c8
+  bytes: 1747092
   external: true

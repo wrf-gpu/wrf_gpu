@@ -1,8 +1,8 @@
-b5b3b63ecec1869fff43d1371480c1509bb68e46b9c3568ce77670cd7eb3f628  /tmp/wrf_gpu2_s3/data/scratch/wrf_rrtmg_harness
+c4e5a75932cc924400e7d61ff5fa7439e22bda92c5c0e6e9f0789b8ffde8d2d1  /tmp/wrf_gpu2_s3/data/scratch/wrf_rrtmg_harness
 /tmp/wrf_gpu2_s3/data/scratch/wrf_rrtmg_harness
 {
   "harness": "data/scratch/wrf_rrtmg_harness",
-  "harness_sha256": "b5b3b63ecec1869fff43d1371480c1509bb68e46b9c3568ce77670cd7eb3f628",
+  "harness_sha256": "c4e5a75932cc924400e7d61ff5fa7439e22bda92c5c0e6e9f0789b8ffde8d2d1",
   "lw_manifest": "fixtures/manifests/analytic-rrtmg-lw-column-v1.yaml",
   "lw_sample": "fixtures/samples/analytic-rrtmg-lw-column-v1.npz",
   "sw_manifest": "fixtures/manifests/analytic-rrtmg-sw-column-v1.yaml",
