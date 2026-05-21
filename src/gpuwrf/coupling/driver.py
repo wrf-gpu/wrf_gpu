@@ -29,8 +29,9 @@ config.update("jax_enable_x64", True)
 
 P0_THETA_OFFSET_K = 300.0
 GRAVITY_M_S2 = 9.80665
-DEFAULT_DT_S = 60.0
-DEFAULT_RADIATION_CADENCE_STEPS = 10
+DEFAULT_DT_S = 10.0
+MAX_LIFTED_DYCORE_DT_S = 12.0
+DEFAULT_RADIATION_CADENCE_STEPS = 60
 STANDARD_OUTPUT_LEADS_H = (1, 6, 12, 18, 24)
 
 
@@ -51,6 +52,15 @@ class PreSanitizeTap(NamedTuple):
     state: State
     pre_boundary: BoundarySnapshot
     boundary_tendency: BoundarySnapshot
+
+
+class SanitizeStats(NamedTuple):
+    """Scalar counts describing whether `sanitize_state` changed a candidate."""
+
+    nonfinite_count: object
+    clip_count: object
+    changed_count: object
+    total_count: object
 
 
 def _load(run: Gen2Run, domain: str, var: str, time: int = 0):
@@ -235,6 +245,20 @@ def steps_for_hours(hours: float, dt_s: float) -> int:
     if abs(raw - rounded) > 1.0e-9:
         raise ValueError(f"forecast length {hours}h is not an integer number of dt={dt_s}s steps")
     return rounded
+
+
+def validate_lifted_coupled_dt(dt_s: float) -> float:
+    """Return a Path-B coupled dt that is safe to pass directly to the dycore."""
+
+    value = float(dt_s)
+    if value <= 0.0:
+        raise ValueError(f"coupled dt_s must be positive, got {dt_s}")
+    if value > MAX_LIFTED_DYCORE_DT_S:
+        raise ValueError(
+            f"coupled dt_s={value:g}s exceeds the M6-S5 Path-B dycore limit of "
+            f"{MAX_LIFTED_DYCORE_DT_S:g}s; lower dt_s instead of reintroducing a cap"
+        )
+    return value
 
 
 @partial(
@@ -722,6 +746,32 @@ def coupled_timestep_with_pre_sanitize(
     return sanitize_state(candidate, state), tap
 
 
+def coupled_timestep_with_sanitize_stats(
+    state: State,
+    tendencies: Tendencies,
+    grid: GridSpec,
+    dt_s: float,
+    global_step,
+    *,
+    n_acoustic: int,
+    run_radiation: bool,
+    boundary_config: BoundaryConfig,
+) -> tuple[State, SanitizeStats]:
+    """One coupled step returning scalar sanitize-change counts."""
+
+    candidate = _candidate_timestep(
+        state,
+        tendencies,
+        grid,
+        dt_s,
+        global_step,
+        n_acoustic=n_acoustic,
+        run_radiation=run_radiation,
+        boundary_config=boundary_config,
+    )
+    return sanitize_state_with_stats(candidate, state)
+
+
 def _candidate_timestep(
     state: State,
     tendencies: Tendencies,
@@ -754,7 +804,7 @@ def _candidate_before_boundary(
     n_acoustic: int,
     run_radiation: bool,
 ) -> State:
-    dycore_dt_s = min(float(dt_s), 1.0)
+    dycore_dt_s = validate_lifted_coupled_dt(dt_s)
     next_state = dycore_step(state, tendencies, grid, dycore_dt_s, n_acoustic=n_acoustic, debug=False)
     next_state = thompson_adapter(next_state, dt_s)
     next_state = mynn_adapter(next_state, dt_s, grid)
@@ -802,6 +852,57 @@ def sanitize_state(candidate: State, previous: State) -> State:
     )
 
 
+def sanitize_state_with_stats(candidate: State, previous: State) -> tuple[State, SanitizeStats]:
+    """Return sanitized state plus scalar nonfinite/clip counts for audit runs."""
+
+    counts = []
+
+    def finite_clip(value, fallback, lower: float, upper: float):
+        sanitized, stats = _finite_clip_with_stats(value, fallback, lower, upper)
+        counts.append(stats)
+        return sanitized
+
+    def finite_only(value, fallback):
+        sanitized, stats = _finite_only_with_stats(value, fallback)
+        counts.append(stats)
+        return sanitized
+
+    state = candidate.replace(
+        u=finite_clip(candidate.u, previous.u, -150.0, 150.0),
+        v=finite_clip(candidate.v, previous.v, -150.0, 150.0),
+        w=finite_clip(candidate.w, previous.w, -50.0, 50.0),
+        theta=finite_clip(candidate.theta, previous.theta, 150.0, 550.0),
+        qv=finite_clip(candidate.qv, previous.qv, 0.0, 0.05),
+        p=finite_clip(candidate.p, previous.p, 1000.0, 120000.0),
+        ph=finite_only(candidate.ph, previous.ph),
+        mu=finite_clip(candidate.mu, previous.mu, 1000.0, 120000.0),
+        qc=finite_clip(candidate.qc, previous.qc, 0.0, 0.05),
+        qr=finite_clip(candidate.qr, previous.qr, 0.0, 0.05),
+        qi=finite_clip(candidate.qi, previous.qi, 0.0, 0.05),
+        qs=finite_clip(candidate.qs, previous.qs, 0.0, 0.05),
+        qg=finite_clip(candidate.qg, previous.qg, 0.0, 0.05),
+        Ni=finite_clip(candidate.Ni, previous.Ni, 0.0, 1.0e10),
+        Nr=finite_clip(candidate.Nr, previous.Nr, 0.0, 1.0e10),
+        Ns=finite_clip(candidate.Ns, previous.Ns, 0.0, 1.0e10),
+        Ng=finite_clip(candidate.Ng, previous.Ng, 0.0, 1.0e10),
+        qke=finite_clip(candidate.qke, previous.qke, 0.0, 100.0),
+        ustar=finite_clip(candidate.ustar, previous.ustar, 0.0, 10.0),
+        theta_flux=finite_clip(candidate.theta_flux, previous.theta_flux, -5.0, 5.0),
+        qv_flux=finite_clip(candidate.qv_flux, previous.qv_flux, -1.0e-2, 1.0e-2),
+        tau_u=finite_clip(candidate.tau_u, previous.tau_u, -10.0, 10.0),
+        tau_v=finite_clip(candidate.tau_v, previous.tau_v, -10.0, 10.0),
+        rhosfc=finite_clip(candidate.rhosfc, previous.rhosfc, 0.1, 2.0),
+        fltv=finite_clip(candidate.fltv, previous.fltv, -5.0, 5.0),
+        t_skin=finite_clip(candidate.t_skin, previous.t_skin, 180.0, 340.0),
+        soil_moisture=finite_clip(candidate.soil_moisture, previous.soil_moisture, 0.0, 1.0),
+        rain_acc=finite_clip(candidate.rain_acc, previous.rain_acc, 0.0, 1.0e6),
+        snow_acc=finite_clip(candidate.snow_acc, previous.snow_acc, 0.0, 1.0e6),
+        graupel_acc=finite_clip(candidate.graupel_acc, previous.graupel_acc, 0.0, 1.0e6),
+        ice_acc=finite_clip(candidate.ice_acc, previous.ice_acc, 0.0, 1.0e6),
+    )
+    return state, _sum_sanitize_stats(counts)
+
+
 def _finite_only(value, fallback):
     return jnp.where(jnp.isfinite(value), value, fallback)
 
@@ -809,6 +910,42 @@ def _finite_only(value, fallback):
 def _finite_clip(value, fallback, lower: float, upper: float):
     finite = _finite_only(value, fallback)
     return jnp.clip(finite, lower, upper)
+
+
+def _finite_only_with_stats(value, fallback):
+    finite_mask = jnp.isfinite(value)
+    sanitized = jnp.where(finite_mask, value, fallback)
+    nonfinite = jnp.sum(~finite_mask, dtype=jnp.int64)
+    return sanitized, SanitizeStats(
+        nonfinite_count=nonfinite,
+        clip_count=jnp.asarray(0, dtype=jnp.int64),
+        changed_count=nonfinite,
+        total_count=jnp.asarray(value.size, dtype=jnp.int64),
+    )
+
+
+def _finite_clip_with_stats(value, fallback, lower: float, upper: float):
+    finite_mask = jnp.isfinite(value)
+    finite = jnp.where(finite_mask, value, fallback)
+    clipped_mask = finite_mask & ((finite < float(lower)) | (finite > float(upper)))
+    sanitized = jnp.clip(finite, lower, upper)
+    nonfinite = jnp.sum(~finite_mask, dtype=jnp.int64)
+    clipped = jnp.sum(clipped_mask, dtype=jnp.int64)
+    return sanitized, SanitizeStats(
+        nonfinite_count=nonfinite,
+        clip_count=clipped,
+        changed_count=nonfinite + clipped,
+        total_count=jnp.asarray(value.size, dtype=jnp.int64),
+    )
+
+
+def _sum_sanitize_stats(stats: list[SanitizeStats]) -> SanitizeStats:
+    return SanitizeStats(
+        nonfinite_count=sum((item.nonfinite_count for item in stats), jnp.asarray(0, dtype=jnp.int64)),
+        clip_count=sum((item.clip_count for item in stats), jnp.asarray(0, dtype=jnp.int64)),
+        changed_count=sum((item.changed_count for item in stats), jnp.asarray(0, dtype=jnp.int64)),
+        total_count=sum((item.total_count for item in stats), jnp.asarray(0, dtype=jnp.int64)),
+    )
 
 
 def run_to_output_leads(
@@ -964,17 +1101,22 @@ __all__ = [
     "BoundarySnapshot",
     "DEFAULT_DT_S",
     "DEFAULT_RADIATION_CADENCE_STEPS",
+    "MAX_LIFTED_DYCORE_DT_S",
     "PreSanitizeTap",
+    "SanitizeStats",
     "build_initial_state",
     "coupled_timestep",
     "coupled_timestep_with_pre_sanitize",
+    "coupled_timestep_with_sanitize_stats",
     "forecast_output_leads",
     "load_boundary_leaves",
     "output_time_label",
     "run_forecast_segment",
     "run_start_label",
     "run_to_output_leads",
+    "sanitize_state_with_stats",
     "state_diagnostics",
     "steps_for_hours",
+    "validate_lifted_coupled_dt",
     "write_wrfout_gpu",
 ]
