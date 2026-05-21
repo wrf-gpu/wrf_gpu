@@ -1,6 +1,6 @@
 fixture_id: analytic-rrtmg-lw-column-v1
 source: wrf-derived
-source_commit: wrf-rrtmg-real-driver-harness sha256=313205b94e6528c614fde3fdf19e385fe45cda3f790311cefcce18721903815a;
+source_commit: wrf-rrtmg-real-driver-harness sha256=43ab8af87e869f002f162f5cfc4311802957b312738d80f95b4a73a4e2dbc1a8;
   module_ra_rrtmg_sw.F.o=present; module_ra_rrtmg_lw.F.o=present; full_rrtmg_driver_call=RRTMG_SWRAD+RRTMG_LWRAD;
   rrtmg_data_convert=big_endian
 wrf_version: v4.7.1-derived-RRTMG-real-driver-column-harness
@@ -11,7 +11,7 @@ precision_reference: fp64
 generation_command: python scripts/m5_generate_rrtmg_fixture.py
 external_uri: data/scratch/wrf_rrtmg_harness
 sample_slice_path: fixtures/samples/analytic-rrtmg-lw-column-v1.npz
-git_commit: 2c6748a
+git_commit: 0d11eaa
 license_notes: Synthetic columns run through a GNU Fortran harness linked to real
   WRF RRTMG SW/LW objects and calling RRTMG_SWRAD/RRTMG_LWRAD with Gen2 RRTMG_*_DATA
   tables.
@@ -298,18 +298,18 @@ variables:
   tier_overrides: null
 files:
 - path: fixtures/samples/analytic-rrtmg-lw-column-v1.npz
-  checksum_sha256: 47212ec415c53e3b49de81e1b5f223b5f8e382265c9c4739b87bc4d1de9968c2
-  bytes: 10729
+  checksum_sha256: e1c0fbff5dec82f6f3bc303029c5f5fc85d26cd8405326fae29b4ac0535a8dc9
+  bytes: 10732
   external: false
 - path: data/fixtures/analytic-rrtmg-lw-column-v1/full.npz
-  checksum_sha256: 47212ec415c53e3b49de81e1b5f223b5f8e382265c9c4739b87bc4d1de9968c2
-  bytes: 10729
+  checksum_sha256: e1c0fbff5dec82f6f3bc303029c5f5fc85d26cd8405326fae29b4ac0535a8dc9
+  bytes: 10732
   external: true
 - path: data/scratch/wrf_rrtmg_harness
-  checksum_sha256: 313205b94e6528c614fde3fdf19e385fe45cda3f790311cefcce18721903815a
-  bytes: 1048944
+  checksum_sha256: 43ab8af87e869f002f162f5cfc4311802957b312738d80f95b4a73a4e2dbc1a8
+  bytes: 1118848
   external: true
 - path: data/fixtures/rrtmg-tables-v1.npz
-  checksum_sha256: 9d8bedbfa93161b0d782d64a98c7e36d8f95e54b016d4fc570c0a7c5aa534013
-  bytes: 4199742
+  checksum_sha256: 0695e523a5c79025721eb3e660e379ca84d246ec791ecc24b2b6aafd5296a5f4
+  bytes: 4201708
   external: true

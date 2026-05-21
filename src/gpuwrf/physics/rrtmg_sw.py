@@ -19,7 +19,6 @@ from gpuwrf.physics.rrtmg_constants import (
     CP_AIR,
     DRY_AIR_MOLECULAR_WEIGHT,
     GRAVITY,
-    MAX_OPTICAL_DEPTH,
     MIN_COSZEN,
     MIN_LAYER_MASS,
     MIN_OPTICAL_DEPTH,
@@ -41,6 +40,11 @@ _SW_GLOBAL_GPOINT_INDEX = jnp.asarray(
     ),
     dtype=jnp.int32,
 )
+_SW_NTBL = 10000
+_SW_TBLINT = 10000.0
+_SW_OD_LO = 0.06
+_SW_BPADE = 1.0 / 0.278
+_SW_EXP_EPS = 1.0e-20
 
 
 @jax.tree_util.register_pytree_node_class
@@ -136,6 +140,26 @@ class RRTMGSWIntermediateState(NamedTuple):
     taug: jnp.ndarray
     taur: jnp.ndarray
     sfluxzen: jnp.ndarray
+    pcldfmc: jnp.ndarray
+    ptaucmc: jnp.ndarray
+    pasycmc: jnp.ndarray
+    pomgcmc: jnp.ndarray
+    ptaormc: jnp.ndarray
+    spcvmc_zref: jnp.ndarray
+    spcvmc_ztra: jnp.ndarray
+    spcvmc_zrefd: jnp.ndarray
+    spcvmc_ztrad: jnp.ndarray
+    spcvmc_zref_clear: jnp.ndarray
+    spcvmc_ztra_clear: jnp.ndarray
+    spcvmc_zrefd_clear: jnp.ndarray
+    spcvmc_ztrad_clear: jnp.ndarray
+    spcvmc_zref_cloud: jnp.ndarray
+    spcvmc_ztra_cloud: jnp.ndarray
+    spcvmc_zrefd_cloud: jnp.ndarray
+    spcvmc_ztrad_cloud: jnp.ndarray
+    spcvmc_direct_trans: jnp.ndarray
+    spcvmc_zfd_flux: jnp.ndarray
+    spcvmc_zfu_flux: jnp.ndarray
 
 
 class _SWSetCoefState(NamedTuple):
@@ -163,6 +187,29 @@ class _SWSetCoefState(NamedTuple):
     forfac: jnp.ndarray
     forfrac: jnp.ndarray
     indfor: jnp.ndarray
+
+
+def _setcoef_state_dtype(coef: _SWSetCoefState, dtype) -> _SWSetCoefState:
+    """Casts WRF real-valued setcoef fields while preserving integer indices."""
+
+    return coef._replace(
+        colh2o=coef.colh2o.astype(dtype),
+        colco2=coef.colco2.astype(dtype),
+        colo3=coef.colo3.astype(dtype),
+        coln2o=coef.coln2o.astype(dtype),
+        colch4=coef.colch4.astype(dtype),
+        colo2=coef.colo2.astype(dtype),
+        colmol=coef.colmol.astype(dtype),
+        coldry=coef.coldry.astype(dtype),
+        fac00=coef.fac00.astype(dtype),
+        fac01=coef.fac01.astype(dtype),
+        fac10=coef.fac10.astype(dtype),
+        fac11=coef.fac11.astype(dtype),
+        selffac=coef.selffac.astype(dtype),
+        selffrac=coef.selffrac.astype(dtype),
+        forfac=coef.forfac.astype(dtype),
+        forfrac=coef.forfrac.astype(dtype),
+    )
 
 
 def _leaves(state: RRTMGSWColumnState):
@@ -210,6 +257,187 @@ def _pressure_layer_mass(p):
     return jnp.maximum((interfaces[..., :nz] - interfaces[..., 1 : nz + 1]) / GRAVITY, MIN_LAYER_MASS)
 
 
+_O3SUM = jnp.asarray(
+    (
+        5.297e-8,
+        5.852e-8,
+        6.579e-8,
+        7.505e-8,
+        8.577e-8,
+        9.895e-8,
+        1.175e-7,
+        1.399e-7,
+        1.677e-7,
+        2.003e-7,
+        2.571e-7,
+        3.325e-7,
+        4.438e-7,
+        6.255e-7,
+        8.168e-7,
+        1.036e-6,
+        1.366e-6,
+        1.855e-6,
+        2.514e-6,
+        3.240e-6,
+        4.033e-6,
+        4.854e-6,
+        5.517e-6,
+        6.089e-6,
+        6.689e-6,
+        1.106e-5,
+        1.462e-5,
+        1.321e-5,
+        9.856e-6,
+        5.960e-6,
+        5.960e-6,
+    ),
+    dtype=jnp.float64,
+)
+_PPSUM = jnp.asarray(
+    (
+        955.890,
+        850.532,
+        754.599,
+        667.742,
+        589.841,
+        519.421,
+        455.480,
+        398.085,
+        347.171,
+        301.735,
+        261.310,
+        225.360,
+        193.419,
+        165.490,
+        141.032,
+        120.125,
+        102.689,
+        87.829,
+        75.123,
+        64.306,
+        55.086,
+        47.209,
+        40.535,
+        34.795,
+        29.865,
+        19.122,
+        9.277,
+        4.660,
+        2.421,
+        1.294,
+        0.647,
+    ),
+    dtype=jnp.float64,
+)
+_O3WIN = jnp.asarray(
+    (
+        4.629e-8,
+        4.686e-8,
+        5.017e-8,
+        5.613e-8,
+        6.871e-8,
+        8.751e-8,
+        1.138e-7,
+        1.516e-7,
+        2.161e-7,
+        3.264e-7,
+        4.968e-7,
+        7.338e-7,
+        1.017e-6,
+        1.308e-6,
+        1.625e-6,
+        2.011e-6,
+        2.516e-6,
+        3.130e-6,
+        3.840e-6,
+        4.703e-6,
+        5.486e-6,
+        6.289e-6,
+        6.993e-6,
+        7.494e-6,
+        8.197e-6,
+        9.632e-6,
+        1.113e-5,
+        1.146e-5,
+        9.389e-6,
+        6.135e-6,
+        6.135e-6,
+    ),
+    dtype=jnp.float64,
+)
+_PPWIN = jnp.asarray(
+    (
+        955.747,
+        841.783,
+        740.199,
+        649.538,
+        568.404,
+        495.815,
+        431.069,
+        373.464,
+        322.354,
+        277.190,
+        237.635,
+        203.433,
+        174.070,
+        148.949,
+        127.408,
+        108.915,
+        93.114,
+        79.551,
+        67.940,
+        58.072,
+        49.593,
+        42.318,
+        36.138,
+        30.907,
+        26.362,
+        16.423,
+        7.583,
+        3.620,
+        1.807,
+        0.938,
+        0.469,
+    ),
+    dtype=jnp.float64,
+)
+
+
+def _wrf_o3_vmr(pressure_interfaces_pa):
+    """Replicates WRF `inirad/O3DATA` climatological ozone for o3input=0."""
+
+    o3sum = _O3SUM.astype(jnp.float32)
+    ppsum = _PPSUM.astype(jnp.float32)
+    o3win = _O3WIN.astype(jnp.float32)
+    ppwin = _PPWIN.astype(jnp.float32)
+    o3ann_tail = o3win[:-1] + ((o3win[1:] - o3win[:-1]) / (ppwin[1:] - ppwin[:-1])) * (ppsum[1:] - ppwin[:-1])
+    o3ann = jnp.concatenate(
+        (
+            jnp.asarray([jnp.float32(0.5) * (jnp.float32(5.297e-8) + jnp.float32(4.629e-8))], dtype=jnp.float32),
+            jnp.float32(0.5) * (o3ann_tail + o3sum[1:]),
+        )
+    )
+    ppwrkh = jnp.concatenate(
+        (
+            jnp.asarray([1100.0], dtype=jnp.float32),
+            jnp.float32(0.5) * (ppsum[1:] + ppsum[:-1]),
+            jnp.asarray([0.0], dtype=jnp.float32),
+        )
+    )
+    plev = (pressure_interfaces_pa * 0.01).astype(jnp.float32)
+    pb = plev[..., :-1, None]
+    pt = plev[..., 1:, None]
+    lower = ppwrkh[:-1]
+    upper = ppwrkh[1:]
+    zero = jnp.float32(0.0)
+    pb1 = jnp.where(pb <= lower, zero, pb - lower)
+    pb2 = jnp.where(pb <= upper, zero, pb - upper)
+    pt1 = jnp.where(pt <= lower, zero, pt - lower)
+    pt2 = jnp.where(pt <= upper, zero, pt - upper)
+    o3_mmr = jnp.sum((pb2 - pb1 - pt2 + pt1) * o3ann, axis=-1) / jnp.maximum(plev[..., :-1] - plev[..., 1:], jnp.float32(1.0e-12))
+    return (o3_mmr * jnp.float32(0.603461)).astype(jnp.float64)
+
+
 def _extend_with_wrf_top_layer(values, top_values=None):
     """Adds WRF's isothermal extra top layer used by the RRTMG wrapper."""
 
@@ -243,26 +471,35 @@ def _take_rows(table, idx):
 def _sw_setcoef(qv, p_pa, t_k, pressure_interfaces_pa, tables: RRTMGTableBundle) -> _SWSetCoefState:
     """Ports WRF `setcoef_sw` pressure/temperature interpolation factors."""
 
+    dtype = jnp.float32
+    qv = qv.astype(dtype)
+    p_pa = p_pa.astype(dtype)
+    t_k = t_k.astype(dtype)
+    pressure_interfaces_pa = pressure_interfaces_pa.astype(dtype)
+    preflog = tables.sw_preflog.astype(dtype)
+    tref = tables.sw_tref.astype(dtype)
     h2ovmr = qv * WATER_VAPOR_MOLECULAR_WEIGHT_RATIO
-    amm = (1.0 - h2ovmr) * DRY_AIR_MOLECULAR_WEIGHT + h2ovmr * 18.0160
-    pavel = jnp.maximum(p_pa * 0.01, 1.0e-6)
-    pz = jnp.maximum(pressure_interfaces_pa * 0.01, 1.0e-12)
-    dp_mb = jnp.maximum(pz[..., :-1] - pz[..., 1:], 1.0e-12)
-    coldry = dp_mb * 1.0e3 * AVOGADRO / (1.0e2 * GRAVITY * amm * (1.0 + h2ovmr))
+    amm = (1.0 - h2ovmr) * jnp.asarray(DRY_AIR_MOLECULAR_WEIGHT, dtype=dtype) + h2ovmr * jnp.asarray(18.0160, dtype=dtype)
+    pavel = jnp.maximum(p_pa * jnp.asarray(0.01, dtype=dtype), jnp.asarray(1.0e-6, dtype=dtype))
+    pz = jnp.maximum(pressure_interfaces_pa * jnp.asarray(0.01, dtype=dtype), jnp.asarray(1.0e-12, dtype=dtype))
+    dp_mb = jnp.maximum(pz[..., :-1] - pz[..., 1:], jnp.asarray(1.0e-12, dtype=dtype))
+    coldry = dp_mb * jnp.asarray(1.0e3, dtype=dtype) * jnp.asarray(AVOGADRO, dtype=dtype) / (
+        jnp.asarray(1.0e2, dtype=dtype) * jnp.asarray(GRAVITY, dtype=dtype) * amm * (1.0 + h2ovmr)
+    )
 
     plog = jnp.log(pavel)
     jp = _trunc_int(36.0 - 5.0 * (plog + 0.04))
     jp = jnp.clip(jp, 1, 58)
     jp1 = jp + 1
-    fp = 5.0 * (jnp.take(tables.sw_preflog, jp - 1, axis=0) - plog)
-    tref0 = jnp.take(tables.sw_tref, jp - 1, axis=0)
-    tref1 = jnp.take(tables.sw_tref, jp1 - 1, axis=0)
+    fp = 5.0 * (jnp.take(preflog, jp - 1, axis=0) - plog)
+    tref0 = jnp.take(tref, jp - 1, axis=0)
+    tref1 = jnp.take(tref, jp1 - 1, axis=0)
     jt = _trunc_int(3.0 + (t_k - tref0) / 15.0)
     jt = jnp.clip(jt, 1, 4)
-    ft = ((t_k - tref0) / 15.0) - (jt - 3).astype(jnp.float64)
+    ft = ((t_k - tref0) / 15.0) - (jt - 3).astype(dtype)
     jt1 = _trunc_int(3.0 + (t_k - tref1) / 15.0)
     jt1 = jnp.clip(jt1, 1, 4)
-    ft1 = ((t_k - tref1) / 15.0) - (jt1 - 3).astype(jnp.float64)
+    ft1 = ((t_k - tref1) / 15.0) - (jt1 - 3).astype(dtype)
 
     water = h2ovmr
     scalefac = pavel * (296.0 / 1013.0) / t_k
@@ -272,12 +509,12 @@ def _sw_setcoef(qv, p_pa, t_k, pressure_interfaces_pa, tables: RRTMGTableBundle)
     upper_for_factor = (t_k - 188.0) / 36.0
     indfor_lower = jnp.minimum(2, jnp.maximum(1, _trunc_int(lower_for_factor)))
     indfor = jnp.where(lower, indfor_lower, 3)
-    forfrac = jnp.where(lower, lower_for_factor - indfor.astype(jnp.float64), upper_for_factor - 1.0)
+    forfrac = jnp.where(lower, lower_for_factor - indfor.astype(dtype), upper_for_factor - 1.0)
 
     selffac = jnp.where(lower, water * forfac, 0.0)
     self_factor = (t_k - 188.0) / 7.2
     indself = jnp.minimum(9, jnp.maximum(1, _trunc_int(self_factor) - 7))
-    selffrac = jnp.where(lower, self_factor - (indself + 7).astype(jnp.float64), 0.0)
+    selffrac = jnp.where(lower, self_factor - (indself + 7).astype(dtype), 0.0)
     indself = jnp.where(lower, indself, 0)
 
     compfp = 1.0 - fp
@@ -286,13 +523,15 @@ def _sw_setcoef(qv, p_pa, t_k, pressure_interfaces_pa, tables: RRTMGTableBundle)
     fac11 = fp * ft1
     fac01 = fp * (1.0 - ft1)
 
-    colh2o = 1.0e-20 * coldry * h2ovmr
-    colco2 = 1.0e-20 * coldry * CO2_VMR
-    colo3 = 1.0e-20 * coldry * O3_BACKGROUND_VMR
-    coln2o = 1.0e-20 * coldry * N2O_VMR
-    colch4 = 1.0e-20 * coldry * CH4_VMR
-    colo2 = 1.0e-20 * coldry * O2_VMR
-    colmol = 1.0e-20 * coldry + colh2o
+    o3_vmr = _wrf_o3_vmr(pressure_interfaces_pa)
+    scale = jnp.asarray(1.0e-20, dtype=dtype)
+    colh2o = scale * coldry * h2ovmr
+    colco2 = scale * coldry * jnp.asarray(CO2_VMR, dtype=dtype)
+    colo3 = scale * coldry * o3_vmr.astype(dtype)
+    coln2o = scale * coldry * jnp.asarray(N2O_VMR, dtype=dtype)
+    colch4 = scale * coldry * jnp.asarray(CH4_VMR, dtype=dtype)
+    colo2 = scale * coldry * jnp.asarray(O2_VMR, dtype=dtype)
+    colmol = scale * coldry + colh2o
 
     return _SWSetCoefState(
         jp=jp,
@@ -363,8 +602,9 @@ def _interp_binary(table, idx0_1b, idx1_1b, stride_1b, fs, coef: _SWSetCoefState
 def _continuum_terms(band, coef: _SWSetCoefState, tables: RRTMGTableBundle):
     """Water-vapor self and foreign continuum contribution used below `laytrop`."""
 
-    self_table = tables.sw_selfref[band]
-    for_table = tables.sw_forref[band]
+    dtype = coef.colh2o.dtype
+    self_table = tables.sw_selfref[band].astype(dtype)
+    for_table = tables.sw_forref[band].astype(dtype)
     inds = coef.indself - 1
     indf = coef.indfor - 1
     self_interp = _take_rows(self_table, inds) + coef.selffrac[..., None] * (
@@ -379,26 +619,32 @@ def _continuum_terms(band, coef: _SWSetCoefState, tables: RRTMGTableBundle):
 def _binary_params(spec_a, spec_b, strrat, multiplier):
     """Builds WRF binary-species interpolation parameters."""
 
+    dtype = spec_a.dtype
+    strrat = jnp.asarray(strrat, dtype=dtype)
+    multiplier = jnp.asarray(multiplier, dtype=dtype)
     speccomb = spec_a + strrat * spec_b
-    specparm = spec_a / jnp.maximum(speccomb, 1.0e-300)
-    specparm = jnp.minimum(specparm, 1.0 - 1.0e-6)
+    specparm = spec_a / jnp.maximum(speccomb, jnp.asarray(1.0e-30, dtype=dtype))
+    specparm = jnp.minimum(specparm, jnp.asarray(1.0 - 1.0e-6, dtype=dtype))
     specmult = multiplier * specparm
     js = 1 + _trunc_int(specmult)
-    fs = jnp.mod(specmult, 1.0)
+    fs = jnp.mod(specmult, jnp.asarray(1.0, dtype=dtype))
     return speccomb, js, fs
 
 
 def _sw_taumol(coef: _SWSetCoefState, tables: RRTMGTableBundle):
     """Ports WRF `taumol_sw` gas and Rayleigh optical-depth branches."""
 
+    dtype = jnp.float32
+    coef = _setcoef_state_dtype(coef, dtype)
+    gpoint_mask = tables.sw_gpoint_mask.astype(dtype)
     taug = []
     taur = []
     for band in range(14):
-        absa = tables.sw_absa[band]
-        absb = tables.sw_absb[band]
+        absa = tables.sw_absa[band].astype(dtype)
+        absb = tables.sw_absb[band].astype(dtype)
         nspa = tables.sw_nspa[band]
         nspb = tables.sw_nspb[band]
-        strrat = tables.sw_strrat[band]
+        strrat = jnp.asarray(tables.sw_strrat[band], dtype=dtype)
         lower = coef.lower_mask
         lower_idx0 = ((coef.jp - 1) * 5 + (coef.jt - 1)) * nspa + 1
         lower_idx1 = (coef.jp * 5 + (coef.jt1 - 1)) * nspa + 1
@@ -412,7 +658,7 @@ def _sw_taumol(coef: _SWSetCoefState, tables: RRTMGTableBundle):
             )
             high = coef.colch4[..., None] * _interp_four_rows(absb, upper_idx0, upper_idx1, nspb, coef)
             tau = jnp.where(lower[..., None], low, high)
-            ray = coef.colmol[..., None] * tables.sw_rayl[band]
+            ray = coef.colmol[..., None] * tables.sw_rayl[band].astype(dtype)
         elif band in (1, 5):
             speccomb_l, js_l, fs_l = _binary_params(coef.colh2o, coef.colco2, strrat, 8.0)
             low = speccomb_l[..., None] * _interp_binary(absa, lower_idx0 + js_l - 1, lower_idx1 + js_l - 1, nspa, fs_l, coef) + _continuum_terms(
@@ -421,12 +667,12 @@ def _sw_taumol(coef: _SWSetCoefState, tables: RRTMGTableBundle):
             speccomb_u, js_u, fs_u = _binary_params(coef.colh2o, coef.colco2, strrat, 4.0)
             high = speccomb_u[..., None] * _interp_binary(absb, upper_idx0 + js_u - 1, upper_idx1 + js_u - 1, nspb, fs_u, coef)
             high = high + coef.colh2o[..., None] * coef.forfac[..., None] * (
-                _take_rows(tables.sw_forref[band], coef.indfor - 1)
+                _take_rows(tables.sw_forref[band].astype(dtype), coef.indfor - 1)
                 + coef.forfrac[..., None]
-                * (_take_rows(tables.sw_forref[band], coef.indfor) - _take_rows(tables.sw_forref[band], coef.indfor - 1))
+                * (_take_rows(tables.sw_forref[band].astype(dtype), coef.indfor) - _take_rows(tables.sw_forref[band].astype(dtype), coef.indfor - 1))
             )
             tau = jnp.where(lower[..., None], low, high)
-            ray = coef.colmol[..., None] * tables.sw_rayl[band]
+            ray = coef.colmol[..., None] * tables.sw_rayl[band].astype(dtype)
         elif band == 3:
             speccomb, js, fs = _binary_params(coef.colh2o, coef.colco2, strrat, 8.0)
             low = speccomb[..., None] * _interp_binary(absa, lower_idx0 + js - 1, lower_idx1 + js - 1, nspa, fs, coef) + _continuum_terms(
@@ -434,80 +680,80 @@ def _sw_taumol(coef: _SWSetCoefState, tables: RRTMGTableBundle):
             )
             high = coef.colco2[..., None] * _interp_four_rows(absb, upper_idx0, upper_idx1, nspb, coef)
             tau = jnp.where(lower[..., None], low, high)
-            ray = coef.colmol[..., None] * tables.sw_rayl[band]
+            ray = coef.colmol[..., None] * tables.sw_rayl[band].astype(dtype)
         elif band == 4:
             low = coef.colh2o[..., None] * (_interp_four_rows(absa, lower_idx0, lower_idx1, nspa, coef) + _continuum_terms(band, coef, tables) / jnp.maximum(coef.colh2o[..., None], 1.0e-300))
-            low = low + coef.colch4[..., None] * tables.sw_abs_ch4[band]
+            low = low + coef.colch4[..., None] * tables.sw_abs_ch4[band].astype(dtype)
             high = coef.colh2o[..., None] * (
                 _interp_four_rows(absb, upper_idx0, upper_idx1, nspb, coef)
                 + coef.forfac[..., None]
                 * (
-                    _take_rows(tables.sw_forref[band], coef.indfor - 1)
+                    _take_rows(tables.sw_forref[band].astype(dtype), coef.indfor - 1)
                     + coef.forfrac[..., None]
-                    * (_take_rows(tables.sw_forref[band], coef.indfor) - _take_rows(tables.sw_forref[band], coef.indfor - 1))
+                    * (_take_rows(tables.sw_forref[band].astype(dtype), coef.indfor) - _take_rows(tables.sw_forref[band].astype(dtype), coef.indfor - 1))
                 )
-            ) + coef.colch4[..., None] * tables.sw_abs_ch4[band]
+            ) + coef.colch4[..., None] * tables.sw_abs_ch4[band].astype(dtype)
             tau = jnp.where(lower[..., None], low, high)
-            ray = coef.colmol[..., None] * tables.sw_rayl[band]
+            ray = coef.colmol[..., None] * tables.sw_rayl[band].astype(dtype)
         elif band == 6:
-            o2adj = 1.6
-            o2cont = 4.35e-4 * coef.colo2 / (350.0 * 2.0)
+            o2adj = jnp.asarray(1.6, dtype=dtype)
+            o2cont = jnp.asarray(4.35e-4 / (350.0 * 2.0), dtype=dtype) * coef.colo2
             speccomb, js, fs = _binary_params(coef.colh2o, o2adj * coef.colo2, strrat, 8.0)
             low = speccomb[..., None] * _interp_binary(absa, lower_idx0 + js - 1, lower_idx1 + js - 1, nspa, fs, coef) + _continuum_terms(
                 band, coef, tables
             ) + o2cont[..., None]
             high = coef.colo2[..., None] * o2adj * _interp_four_rows(absb, upper_idx0, upper_idx1, nspb, coef) + o2cont[..., None]
             tau = jnp.where(lower[..., None], low, high)
-            ray = coef.colmol[..., None] * tables.sw_rayl[band]
+            ray = coef.colmol[..., None] * tables.sw_rayl[band].astype(dtype)
         elif band == 7:
             low = coef.colh2o[..., None] * (
-                tables.sw_givfac[band] * _interp_four_rows(absa, lower_idx0, lower_idx1, nspa, coef)
-                + _continuum_terms(band, coef, tables) / jnp.maximum(coef.colh2o[..., None], 1.0e-300)
+                tables.sw_givfac[band].astype(dtype) * _interp_four_rows(absa, lower_idx0, lower_idx1, nspa, coef)
+                + _continuum_terms(band, coef, tables) / jnp.maximum(coef.colh2o[..., None], jnp.asarray(1.0e-30, dtype=dtype))
             )
             tau = jnp.where(lower[..., None], low, jnp.zeros_like(low))
-            ray = coef.colmol[..., None] * tables.sw_rayl[band]
+            ray = coef.colmol[..., None] * tables.sw_rayl[band].astype(dtype)
         elif band == 8:
             speccomb, js, fs = _binary_params(coef.colh2o, coef.colo2, strrat, 8.0)
             low = speccomb[..., None] * _interp_binary(absa, lower_idx0 + js - 1, lower_idx1 + js - 1, nspa, fs, coef)
-            low = low + coef.colo3[..., None] * tables.sw_abs_o3a[band] + _continuum_terms(band, coef, tables)
-            high = coef.colo2[..., None] * _interp_four_rows(absb, upper_idx0, upper_idx1, nspb, coef) + coef.colo3[..., None] * tables.sw_abs_o3b[band]
+            low = low + coef.colo3[..., None] * tables.sw_abs_o3a[band].astype(dtype) + _continuum_terms(band, coef, tables)
+            high = coef.colo2[..., None] * _interp_four_rows(absb, upper_idx0, upper_idx1, nspb, coef) + coef.colo3[..., None] * tables.sw_abs_o3b[band].astype(dtype)
             tau = jnp.where(lower[..., None], low, high)
             ray_low = coef.colmol[..., None] * (
-                _take_rows(tables.sw_rayla[band].T, js - 1)
-                + fs[..., None] * (_take_rows(tables.sw_rayla[band].T, js) - _take_rows(tables.sw_rayla[band].T, js - 1))
+                _take_rows(tables.sw_rayla[band].T.astype(dtype), js - 1)
+                + fs[..., None] * (_take_rows(tables.sw_rayla[band].T.astype(dtype), js) - _take_rows(tables.sw_rayla[band].T.astype(dtype), js - 1))
             )
-            ray_high = coef.colmol[..., None] * tables.sw_raylb[band]
+            ray_high = coef.colmol[..., None] * tables.sw_raylb[band].astype(dtype)
             ray = jnp.where(lower[..., None], ray_low, ray_high)
         elif band == 9:
-            low = coef.colh2o[..., None] * _interp_four_rows(absa, lower_idx0, lower_idx1, nspa, coef) + coef.colo3[..., None] * tables.sw_abs_o3a[band]
-            high = coef.colo3[..., None] * tables.sw_abs_o3b[band]
+            low = coef.colh2o[..., None] * _interp_four_rows(absa, lower_idx0, lower_idx1, nspa, coef) + coef.colo3[..., None] * tables.sw_abs_o3a[band].astype(dtype)
+            high = coef.colo3[..., None] * tables.sw_abs_o3b[band].astype(dtype)
             tau = jnp.where(lower[..., None], low, high)
-            ray = coef.colmol[..., None] * tables.sw_rayl[band]
+            ray = coef.colmol[..., None] * tables.sw_rayl[band].astype(dtype)
         elif band == 10:
-            tau = jnp.zeros(coef.colh2o.shape + (tables.sw_gpoint_mask.shape[1],), dtype=jnp.float64)
-            ray = coef.colmol[..., None] * tables.sw_rayl[band]
+            tau = jnp.zeros(coef.colh2o.shape + (gpoint_mask.shape[1],), dtype=dtype)
+            ray = coef.colmol[..., None] * tables.sw_rayl[band].astype(dtype)
         elif band == 11:
             low = coef.colo3[..., None] * _interp_four_rows(absa, lower_idx0, lower_idx1, nspa, coef)
             high = coef.colo3[..., None] * _interp_four_rows(absb, upper_idx0, upper_idx1, nspb, coef)
             tau = jnp.where(lower[..., None], low, high)
-            ray = coef.colmol[..., None] * tables.sw_rayl[band]
+            ray = coef.colmol[..., None] * tables.sw_rayl[band].astype(dtype)
         elif band == 12:
             speccomb_l, js_l, fs_l = _binary_params(coef.colo3, coef.colo2, strrat, 8.0)
             low = speccomb_l[..., None] * _interp_binary(absa, lower_idx0 + js_l - 1, lower_idx1 + js_l - 1, nspa, fs_l, coef)
             speccomb_u, js_u, fs_u = _binary_params(coef.colo3, coef.colo2, strrat, 4.0)
             high = speccomb_u[..., None] * _interp_binary(absb, upper_idx0 + js_u - 1, upper_idx1 + js_u - 1, nspb, fs_u, coef)
             tau = jnp.where(lower[..., None], low, high)
-            ray = coef.colmol[..., None] * tables.sw_rayl[band]
+            ray = coef.colmol[..., None] * tables.sw_rayl[band].astype(dtype)
         else:
             low = coef.colh2o[..., None] * (
                 _interp_four_rows(absa, lower_idx0, lower_idx1, nspa, coef)
-                + _continuum_terms(band, coef, tables) / jnp.maximum(coef.colh2o[..., None], 1.0e-300)
-            ) + coef.colco2[..., None] * tables.sw_abs_co2[band]
-            high = coef.colco2[..., None] * _interp_four_rows(absb, upper_idx0, upper_idx1, nspb, coef) + coef.colh2o[..., None] * tables.sw_abs_h2o[band]
+                + _continuum_terms(band, coef, tables) / jnp.maximum(coef.colh2o[..., None], jnp.asarray(1.0e-30, dtype=dtype))
+            ) + coef.colco2[..., None] * tables.sw_abs_co2[band].astype(dtype)
+            high = coef.colco2[..., None] * _interp_four_rows(absb, upper_idx0, upper_idx1, nspb, coef) + coef.colh2o[..., None] * tables.sw_abs_h2o[band].astype(dtype)
             tau = jnp.where(lower[..., None], low, high)
-            ray = coef.colmol[..., None] * tables.sw_rayl[band]
-        taug.append(tau * tables.sw_gpoint_mask[band])
-        taur.append(ray * tables.sw_gpoint_mask[band])
+            ray = coef.colmol[..., None] * tables.sw_rayl[band].astype(dtype)
+        taug.append(tau * gpoint_mask[band])
+        taur.append(ray * gpoint_mask[band])
     return jnp.stack(taug, axis=-2), jnp.stack(taur, axis=-2)
 
 
@@ -668,7 +914,10 @@ def _kissvec_step(seed1, seed2, seed3, seed4):
 def _mcica_random_overlap_mask(p_pa, cloud_fraction, gpoint_mask):
     """Builds WRF `mcica_subcol_sw` random-overlap cloud masks for reduced SW g-points."""
 
-    p_seed = p_pa.astype(jnp.float32).astype(jnp.float64)
+    # WRF passes play in mb, then mcica_subcol_sw converts it back to Pa in
+    # real*4 before deriving KISS seeds from the bottom four layer pressures.
+    p_seed = (p_pa.astype(jnp.float32) * jnp.float32(0.01)).astype(jnp.float32) * jnp.float32(100.0)
+    p_seed = p_seed.astype(jnp.float64)
     frac = p_seed - jnp.floor(p_seed)
     seed = (frac[..., :4].astype(jnp.float32) * jnp.float32(1.0e9)).astype(jnp.uint32)
     seed1, seed2, seed3, seed4 = (seed[..., 0], seed[..., 1], seed[..., 2], seed[..., 3])
@@ -689,13 +938,32 @@ def _mcica_random_overlap_mask(p_pa, cloud_fraction, gpoint_mask):
     return cloudy_reduced.astype(jnp.float64) * gpoint_mask
 
 
+def _sw_transmittance_lookup(optical_depth):
+    """Mirrors WRF `rrsw_tbl` exponential lookup with low-tau expansion."""
+
+    dtype = optical_depth.dtype
+    one = jnp.asarray(1.0, dtype=dtype)
+    tau = jnp.minimum(optical_depth, jnp.asarray(500.0, dtype=dtype))
+    tblint = jnp.asarray(_SW_TBLINT, dtype=dtype)
+    bpade = jnp.asarray(_SW_BPADE, dtype=dtype)
+    tblind = tau / (bpade + tau)
+    idx = jnp.clip((tblint * tblind + jnp.asarray(0.5, dtype=dtype)).astype(jnp.int32), 0, _SW_NTBL)
+    tfn = idx.astype(dtype) / tblint
+    tau_tbl = bpade * tfn / jnp.maximum(one - tfn, jnp.asarray(1.0e-30, dtype=dtype))
+    table_value = jnp.maximum(jnp.exp(-tau_tbl), jnp.asarray(_SW_EXP_EPS, dtype=dtype))
+    table_value = jnp.where(idx == 0, one, table_value)
+    table_value = jnp.where(idx == _SW_NTBL, jnp.asarray(_SW_EXP_EPS, dtype=dtype), table_value)
+    expansion = one - tau + jnp.asarray(0.5, dtype=dtype) * tau * tau
+    return jnp.where(tau <= jnp.asarray(_SW_OD_LO, dtype=dtype), expansion, table_value)
+
+
 def _reftra_eddington(tau, omega, asymmetry, mu0, active):
     """Computes Eddington direct/diffuse layer reflectance and transmittance."""
 
-    tau = jnp.clip(tau, MIN_OPTICAL_DEPTH, MAX_OPTICAL_DEPTH)
-    omega = jnp.clip(omega, 0.0, 0.999999)
-    asymmetry = jnp.clip(asymmetry, -0.999999, 0.999999)
-    mu0 = jnp.maximum(mu0[..., None, None, None], 1.0e-6)
+    tau = jnp.maximum(tau, MIN_OPTICAL_DEPTH).astype(jnp.float32)
+    omega = jnp.clip(omega, 0.0, 0.999999).astype(jnp.float32)
+    asymmetry = jnp.clip(asymmetry, -0.999999, 0.999999).astype(jnp.float32)
+    mu0 = jnp.maximum(mu0[..., None, None, None], 1.0e-6).astype(jnp.float32)
     g3 = 3.0 * asymmetry
     gamma1 = (7.0 - omega * (4.0 + g3)) * 0.25
     gamma2 = -(1.0 - omega * (4.0 - g3)) * 0.25
@@ -709,11 +977,16 @@ def _reftra_eddington(tau, omega, asymmetry, mu0, active):
     za = gamma1 * mu0
     za_cons = za - gamma3
     zgt = gamma1 * tau
-    exp_mu = jnp.exp(-jnp.minimum(tau / mu0, 500.0))
+    exp_mu = _sw_transmittance_lookup(tau / mu0)
     pref_cons = (zgt - za_cons * (1.0 - exp_mu)) / (1.0 + zgt)
     ptra_cons = 1.0 - pref_cons
     prefd_cons = zgt / (1.0 + zgt)
     ptrad_cons = 1.0 - prefd_cons
+    low_tau_identity = exp_mu == 1.0
+    pref_cons = jnp.where(low_tau_identity, 0.0, pref_cons)
+    ptra_cons = jnp.where(low_tau_identity, 1.0, ptra_cons)
+    prefd_cons = jnp.where(low_tau_identity, 0.0, prefd_cons)
+    ptrad_cons = jnp.where(low_tau_identity, 1.0, ptrad_cons)
 
     za1 = gamma1 * gamma4 + gamma2 * gamma3
     za2 = gamma1 * gamma3 + gamma2 * gamma4
@@ -736,15 +1009,18 @@ def _reftra_eddington(tau, omega, asymmetry, mu0, active):
     zt5 = zr5
     zbeta = (gamma1 - zrk) / jnp.maximum(zrkg, 1.0e-12)
 
-    exp_h = jnp.exp(-jnp.minimum(zrk * tau, 500.0))
+    exp_h = _sw_transmittance_lookup(zrk * tau)
     inv_exp_h = 1.0 / jnp.maximum(exp_h, 1.0e-300)
     inv_exp_mu = 1.0 / jnp.maximum(exp_mu, 1.0e-300)
     zdenr = zr4 * inv_exp_h + zr5 * exp_h
     zdent = zt4 * inv_exp_h + zt5 * exp_h
-    pref_non = omega * (zr1 * inv_exp_h - zr2 * exp_h - zr3 * exp_mu) / jnp.where(jnp.abs(zdenr) > 1.0e-8, zdenr, 1.0)
-    ptra_non = exp_mu - exp_mu * omega * (zt1 * inv_exp_h - zt2 * exp_h - zt3 * inv_exp_mu) / jnp.where(
-        jnp.abs(zdent) > 1.0e-8, zdent, 1.0
+    singular = (zdenr >= -1.0e-8) & (zdenr <= 1.0e-8)
+    pref_non_raw = omega * (zr1 * inv_exp_h - zr2 * exp_h - zr3 * exp_mu) / jnp.where(singular, 1.0, zdenr)
+    ptra_non_raw = exp_mu - exp_mu * omega * (zt1 * inv_exp_h - zt2 * exp_h - zt3 * inv_exp_mu) / jnp.where(
+        jnp.abs(zdent) > 1.0e-300, zdent, 1.0
     )
+    pref_non = jnp.where(singular, 1.0e-8, pref_non_raw)
+    ptra_non = jnp.where(singular, exp_mu, ptra_non_raw)
     exp_2 = exp_h * exp_h
     zdend = 1.0 / jnp.maximum((1.0 - zbeta * exp_2) * zrkg, 1.0e-12)
     prefd_non = gamma2 * (1.0 - exp_2) * zdend
@@ -759,7 +1035,7 @@ def _reftra_eddington(tau, omega, asymmetry, mu0, active):
     ptra = jnp.where(identity, 1.0, ptra)
     prefd = jnp.where(identity, 0.0, prefd)
     ptrad = jnp.where(identity, 1.0, ptrad)
-    return (jnp.clip(pref, 0.0, 1.0), jnp.clip(prefd, 0.0, 1.0), jnp.clip(ptra, 0.0, 1.0), jnp.clip(ptrad, 0.0, 1.0))
+    return (pref, prefd, ptra, ptrad)
 
 
 def _vertical_quadrature(pref, prefd, ptra, ptrad, direct_trans):
@@ -851,29 +1127,30 @@ def _shortwave_impl(state: RRTMGSWColumnState, tables: RRTMGTableBundle, debug: 
     cloud_ext = jnp.concatenate((state.cloud_fraction, jnp.zeros_like(state.cloud_fraction[..., -1:])), axis=-1)
     layer_mass = _pressure_layer_mass(state.p)
     layer_mass_ext = jnp.maximum((pressure_interfaces[..., :-1] - pressure_interfaces[..., 1:]) / GRAVITY, MIN_LAYER_MASS)
-    liquid_path_g = qc_ext * layer_mass_ext * 1000.0
-    ice_path_g = qi_ext * layer_mass_ext * 1000.0
-    snow_path_g = 0.99 * qs_ext * layer_mass_ext * 1000.0
+    cloud_dtype = jnp.float32
+    liquid_path_g = (qc_ext * layer_mass_ext * 1000.0).astype(cloud_dtype)
+    ice_path_g = (qi_ext * layer_mass_ext * 1000.0).astype(cloud_dtype)
+    snow_path_g = (0.99 * qs_ext * layer_mass_ext * 1000.0).astype(cloud_dtype)
 
     coef = _sw_setcoef(qv_ext, p_ext, _extend_with_wrf_top_layer(state.T), pressure_interfaces, tables)
     tau_gas, tau_rayleigh = _sw_taumol_fused(coef, tables)
     sfluxzen = _sw_sfluxzen(coef, tables)
-    liquid_coeff = tables.sw_cloud_liquid_extinction[:, None]
-    ice_coeff = tables.sw_cloud_ice_extinction[:, None]
-    snow_coeff = tables.sw_cloud_snow_extinction[:, None]
-    liquid_ssa = tables.sw_cloud_liquid_ssa[:, None]
-    ice_ssa = tables.sw_cloud_ice_ssa[:, None]
-    snow_ssa = tables.sw_cloud_snow_ssa[:, None]
-    liquid_asy = tables.sw_cloud_liquid_asymmetry[:, None]
-    ice_asy = tables.sw_cloud_ice_asymmetry[:, None]
-    snow_asy = tables.sw_cloud_snow_asymmetry[:, None]
+    liquid_coeff = tables.sw_cloud_liquid_extinction.astype(cloud_dtype)[:, None]
+    ice_coeff = tables.sw_cloud_ice_extinction.astype(cloud_dtype)[:, None]
+    snow_coeff = tables.sw_cloud_snow_extinction.astype(cloud_dtype)[:, None]
+    liquid_ssa = tables.sw_cloud_liquid_ssa.astype(cloud_dtype)[:, None]
+    ice_ssa = tables.sw_cloud_ice_ssa.astype(cloud_dtype)[:, None]
+    snow_ssa = tables.sw_cloud_snow_ssa.astype(cloud_dtype)[:, None]
+    liquid_asy = tables.sw_cloud_liquid_asymmetry.astype(cloud_dtype)[:, None]
+    ice_asy = tables.sw_cloud_ice_asymmetry.astype(cloud_dtype)[:, None]
+    snow_asy = tables.sw_cloud_snow_asymmetry.astype(cloud_dtype)[:, None]
     liquid_forward = liquid_asy * liquid_asy
-    ice_forward = tables.sw_cloud_ice_forward_fraction[:, None]
-    snow_forward = tables.sw_cloud_snow_forward_fraction[:, None]
-    mask = tables.sw_gpoint_mask
+    ice_forward = tables.sw_cloud_ice_forward_fraction.astype(cloud_dtype)[:, None]
+    snow_forward = tables.sw_cloud_snow_forward_fraction.astype(cloud_dtype)[:, None]
+    mask = tables.sw_gpoint_mask.astype(cloud_dtype)
 
-    cloud_box = cloud_ext[..., None, None]
-    cloud_amount = _mcica_random_overlap_mask(p_ext, cloud_ext, mask)
+    cloud_box = cloud_ext.astype(cloud_dtype)[..., None, None]
+    cloud_amount = _mcica_random_overlap_mask(p_ext, cloud_ext, mask).astype(cloud_dtype)
     cloud_safe = jnp.maximum(cloud_box, 0.01)
     cloud_present = cloud_box > 0.0
     liquid_incloud = jnp.where(cloud_present, liquid_path_g[..., None, None] / cloud_safe, 0.0)
@@ -903,6 +1180,7 @@ def _shortwave_impl(state: RRTMGSWColumnState, tables: RRTMGTableBundle, debug: 
     tau_cloud = tau_liquid + tau_ice + tau_snow
     scattering_cloud = scat_liquid + scat_ice + scat_snow
     omega_cloud = jnp.clip(scattering_cloud / jnp.maximum(tau_cloud, MIN_OPTICAL_DEPTH), 0.0, 0.999999)
+    omega_cloud = jnp.where(cloud_amount > 0.0, omega_cloud, 1.0)
     asymmetry_cloud = jnp.where(
         scattering_cloud > MIN_OPTICAL_DEPTH,
         (scat_liquid * asym_liquid + scat_ice * asym_ice + scat_snow * asym_snow) / jnp.maximum(scattering_cloud, MIN_OPTICAL_DEPTH),
@@ -910,7 +1188,7 @@ def _shortwave_impl(state: RRTMGSWColumnState, tables: RRTMGTableBundle, debug: 
     )
 
     scattering_total_cloud = tau_clear * omega_clear + tau_cloud * omega_cloud
-    tau_total_cloud = jnp.clip(tau_clear + tau_cloud, MIN_OPTICAL_DEPTH, MAX_OPTICAL_DEPTH)
+    tau_total_cloud = jnp.maximum(tau_clear + tau_cloud, MIN_OPTICAL_DEPTH)
     omega_total_cloud = jnp.clip(scattering_total_cloud / jnp.maximum(tau_total_cloud, MIN_OPTICAL_DEPTH), 0.0, 0.999999)
     asymmetry_total_cloud = jnp.where(
         scattering_total_cloud > MIN_OPTICAL_DEPTH,
@@ -918,7 +1196,7 @@ def _shortwave_impl(state: RRTMGSWColumnState, tables: RRTMGTableBundle, debug: 
         0.0,
     )
 
-    tau_clear = jnp.clip(tau_clear, MIN_OPTICAL_DEPTH, MAX_OPTICAL_DEPTH) * mask
+    tau_clear = jnp.maximum(tau_clear, MIN_OPTICAL_DEPTH) * mask
     omega_clear = omega_clear * mask
     asymmetry_clear = asymmetry_clear * mask
     tau_total_cloud = tau_total_cloud * mask
@@ -933,18 +1211,21 @@ def _shortwave_impl(state: RRTMGSWColumnState, tables: RRTMGTableBundle, debug: 
     asymmetry_cloud_top_down = jnp.flip(asymmetry_total_cloud, axis=-3)
     cloud_top_down = jnp.flip(jnp.clip(cloud_amount, 0.0, 1.0), axis=-3)
     active_top_down = jnp.flip(mask + jnp.zeros_like(tau_clear), axis=-3)
+    cloud_active_top_down = active_top_down * (cloud_top_down > 1.0e-12)
     pref_clear, prefd_clear, ptra_clear, ptrad_clear = _reftra_eddington(
         tau_clear_top_down, omega_clear_top_down, asymmetry_clear_top_down, state.coszen, active_top_down
     )
     pref_cloud, prefd_cloud, ptra_cloud, ptrad_cloud = _reftra_eddington(
-        tau_cloud_top_down, omega_cloud_top_down, asymmetry_cloud_top_down, state.coszen, active_top_down
+        tau_cloud_top_down, omega_cloud_top_down, asymmetry_cloud_top_down, state.coszen, cloud_active_top_down
     )
+    cloud_top_down = cloud_top_down.astype(pref_clear.dtype)
+    active_top_down = active_top_down.astype(pref_clear.dtype)
     pref_lay = (1.0 - cloud_top_down) * pref_clear + cloud_top_down * pref_cloud
     prefd_lay = (1.0 - cloud_top_down) * prefd_clear + cloud_top_down * prefd_cloud
     ptra_lay = (1.0 - cloud_top_down) * ptra_clear + cloud_top_down * ptra_cloud
     ptrad_lay = (1.0 - cloud_top_down) * ptrad_clear + cloud_top_down * ptrad_cloud
     surface = jnp.broadcast_to(
-        state.surface_albedo[..., None, None, None],
+        state.surface_albedo[..., None, None, None].astype(pref_lay.dtype),
         pref_lay.shape[:-3] + (1, pref_lay.shape[-2], pref_lay.shape[-1]),
     )
     zero_surface = jnp.zeros_like(surface)
@@ -953,12 +1234,12 @@ def _shortwave_impl(state: RRTMGSWColumnState, tables: RRTMGTableBundle, debug: 
     ptra = jnp.concatenate((ptra_lay, zero_surface), axis=-3)
     ptrad = jnp.concatenate((ptrad_lay, zero_surface), axis=-3)
     mu0 = jnp.maximum(state.coszen[..., None, None, None], 1.0e-6)
-    direct_clear = jnp.exp(-jnp.minimum(tau_clear_top_down / mu0, 500.0))
-    direct_cloud = jnp.exp(-jnp.minimum(tau_cloud_top_down / mu0, 500.0))
+    direct_clear = _sw_transmittance_lookup((tau_clear_top_down / mu0).astype(pref_lay.dtype))
+    direct_cloud = _sw_transmittance_lookup((tau_cloud_top_down / mu0).astype(pref_lay.dtype))
     direct_trans = ((1.0 - cloud_top_down) * direct_clear + cloud_top_down * direct_cloud) * active_top_down
-    direct_trans = jnp.where(active_top_down > 0.0, direct_trans, 1.0)
+    direct_trans = jnp.where(active_top_down > 0.0, direct_trans, 1.0).astype(pref_lay.dtype)
     down_top_down, up_top_down = _vertical_quadrature(pref, prefd, ptra, ptrad, direct_trans)
-    top_flux_band = state.coszen[..., None, None] * sfluxzen
+    top_flux_band = (state.coszen[..., None, None] * sfluxzen).astype(down_top_down.dtype)
     down_band = jnp.flip(down_top_down * top_flux_band[..., None, :, :], axis=-3)
     up_band = jnp.flip(up_top_down * top_flux_band[..., None, :, :], axis=-3)
 
@@ -966,6 +1247,7 @@ def _shortwave_impl(state: RRTMGSWColumnState, tables: RRTMGTableBundle, debug: 
     flux_up_model = jnp.sum(up_band, axis=(-1, -2))
     net_down = flux_down_model - flux_up_model
     column_absorbed_layers = net_down[..., 1 : original_layers + 1] - net_down[..., :original_layers]
+    column_absorbed_total = net_down[..., -1] - net_down[..., 0]
     heating_rate = column_absorbed_layers / (layer_mass * CP_AIR)
     surface_absorbed = flux_down_model[..., 0] - flux_up_model[..., 0]
     flux_down = flux_down_model
@@ -982,7 +1264,7 @@ def _shortwave_impl(state: RRTMGSWColumnState, tables: RRTMGTableBundle, debug: 
         toa_up=flux_up[..., -1],
         surface_down=flux_down[..., 0],
         surface_up=flux_up[..., 0],
-        column_absorbed=jnp.sum(column_absorbed_layers, axis=-1),
+        column_absorbed=column_absorbed_total,
         surface_absorbed=surface_absorbed,
     )
 
@@ -1000,8 +1282,136 @@ def compute_rrtmg_sw_intermediates(
     p_ext = jnp.concatenate((state.p, top_pressure), axis=-1)
     qv_ext = _extend_with_wrf_top_layer(state.qv)
     t_ext = _extend_with_wrf_top_layer(state.T)
+    qc_ext = jnp.concatenate((state.qc, jnp.zeros_like(state.qc[..., -1:])), axis=-1)
+    qi_ext = jnp.concatenate((state.qi, jnp.zeros_like(state.qi[..., -1:])), axis=-1)
+    qs_ext = jnp.concatenate((state.qs, jnp.zeros_like(state.qs[..., -1:])), axis=-1)
+    cloud_ext = jnp.concatenate((state.cloud_fraction, jnp.zeros_like(state.cloud_fraction[..., -1:])), axis=-1)
+    layer_mass_ext = jnp.maximum((pressure_interfaces[..., :-1] - pressure_interfaces[..., 1:]) / GRAVITY, MIN_LAYER_MASS)
+    cloud_dtype = jnp.float32
+    liquid_path_g = (qc_ext * layer_mass_ext * 1000.0).astype(cloud_dtype)
+    ice_path_g = (qi_ext * layer_mass_ext * 1000.0).astype(cloud_dtype)
+    snow_path_g = (0.99 * qs_ext * layer_mass_ext * 1000.0).astype(cloud_dtype)
     coef = _sw_setcoef(qv_ext, p_ext, t_ext, pressure_interfaces, tables)
     tau_gas, tau_rayleigh = _sw_taumol_fused(coef, tables)
+    sfluxzen = _sw_sfluxzen(coef, tables)
+
+    liquid_coeff = tables.sw_cloud_liquid_extinction.astype(cloud_dtype)[:, None]
+    ice_coeff = tables.sw_cloud_ice_extinction.astype(cloud_dtype)[:, None]
+    snow_coeff = tables.sw_cloud_snow_extinction.astype(cloud_dtype)[:, None]
+    liquid_ssa = tables.sw_cloud_liquid_ssa.astype(cloud_dtype)[:, None]
+    ice_ssa = tables.sw_cloud_ice_ssa.astype(cloud_dtype)[:, None]
+    snow_ssa = tables.sw_cloud_snow_ssa.astype(cloud_dtype)[:, None]
+    liquid_asy = tables.sw_cloud_liquid_asymmetry.astype(cloud_dtype)[:, None]
+    ice_asy = tables.sw_cloud_ice_asymmetry.astype(cloud_dtype)[:, None]
+    snow_asy = tables.sw_cloud_snow_asymmetry.astype(cloud_dtype)[:, None]
+    liquid_forward = liquid_asy * liquid_asy
+    ice_forward = tables.sw_cloud_ice_forward_fraction.astype(cloud_dtype)[:, None]
+    snow_forward = tables.sw_cloud_snow_forward_fraction.astype(cloud_dtype)[:, None]
+    mask = tables.sw_gpoint_mask.astype(cloud_dtype)
+
+    cloud_box = cloud_ext.astype(cloud_dtype)[..., None, None]
+    cloud_amount = _mcica_random_overlap_mask(p_ext, cloud_ext, mask).astype(cloud_dtype)
+    cloud_safe = jnp.maximum(cloud_box, 0.01)
+    cloud_present = cloud_box > 0.0
+    liquid_incloud = jnp.where(cloud_present, liquid_path_g[..., None, None] / cloud_safe, 0.0)
+    ice_incloud = jnp.where(cloud_present, ice_path_g[..., None, None] / cloud_safe, 0.0)
+    snow_incloud = jnp.where(cloud_present, snow_path_g[..., None, None] / cloud_safe, 0.0)
+
+    tau_clear_orig = tau_gas + tau_rayleigh
+    omega_clear_orig = jnp.clip(tau_rayleigh / jnp.maximum(tau_clear_orig, MIN_OPTICAL_DEPTH), 0.0, 0.999999)
+    asymmetry_clear_orig = jnp.zeros_like(tau_clear_orig)
+    tau_clear, omega_clear, asymmetry_clear = _delta_scale(tau_clear_orig, omega_clear_orig, asymmetry_clear_orig)
+
+    tau_liquid_orig = liquid_incloud * liquid_coeff * cloud_amount
+    tau_ice_orig = ice_incloud * ice_coeff * cloud_amount
+    tau_snow_orig = snow_incloud * snow_coeff * cloud_amount
+    ptaormc = tau_liquid_orig + tau_ice_orig + tau_snow_orig
+
+    def scale_cloud_component(tau_orig, omega_orig, asym_orig, forward_fraction):
+        denom = jnp.maximum(1.0 - forward_fraction * omega_orig, 1.0e-12)
+        tau_scaled = denom * tau_orig
+        omega_scaled = jnp.clip(omega_orig * (1.0 - forward_fraction) / denom, 0.0, 0.999999)
+        asym_scaled = jnp.clip((asym_orig - forward_fraction) / jnp.maximum(1.0 - forward_fraction, 1.0e-12), -0.999999, 0.999999)
+        scattering = tau_scaled * omega_scaled
+        return tau_scaled, scattering, asym_scaled
+
+    tau_liquid, scat_liquid, asym_liquid = scale_cloud_component(tau_liquid_orig, liquid_ssa, liquid_asy, liquid_forward)
+    tau_ice, scat_ice, asym_ice = scale_cloud_component(tau_ice_orig, ice_ssa, ice_asy, ice_forward)
+    tau_snow, scat_snow, asym_snow = scale_cloud_component(tau_snow_orig, snow_ssa, snow_asy, snow_forward)
+    tau_cloud = tau_liquid + tau_ice + tau_snow
+    scattering_cloud = scat_liquid + scat_ice + scat_snow
+    omega_cloud = jnp.clip(scattering_cloud / jnp.maximum(tau_cloud, MIN_OPTICAL_DEPTH), 0.0, 0.999999)
+    omega_cloud = jnp.where(cloud_amount > 0.0, omega_cloud, 1.0)
+    asymmetry_cloud = jnp.where(
+        scattering_cloud > MIN_OPTICAL_DEPTH,
+        (scat_liquid * asym_liquid + scat_ice * asym_ice + scat_snow * asym_snow) / jnp.maximum(scattering_cloud, MIN_OPTICAL_DEPTH),
+        0.0,
+    )
+
+    scattering_total_cloud = tau_clear * omega_clear + tau_cloud * omega_cloud
+    tau_total_cloud = jnp.maximum(tau_clear + tau_cloud, MIN_OPTICAL_DEPTH)
+    omega_total_cloud = jnp.clip(scattering_total_cloud / jnp.maximum(tau_total_cloud, MIN_OPTICAL_DEPTH), 0.0, 0.999999)
+    asymmetry_total_cloud = jnp.where(
+        scattering_total_cloud > MIN_OPTICAL_DEPTH,
+        (tau_clear * omega_clear * asymmetry_clear + tau_cloud * omega_cloud * asymmetry_cloud) / jnp.maximum(scattering_total_cloud, MIN_OPTICAL_DEPTH),
+        0.0,
+    )
+
+    tau_clear = jnp.maximum(tau_clear, MIN_OPTICAL_DEPTH) * mask
+    omega_clear = omega_clear * mask
+    asymmetry_clear = asymmetry_clear * mask
+    tau_total_cloud = tau_total_cloud * mask
+    omega_total_cloud = omega_total_cloud * mask
+    asymmetry_total_cloud = asymmetry_total_cloud * mask
+
+    tau_clear_top_down = jnp.flip(tau_clear, axis=-3)
+    omega_clear_top_down = jnp.flip(omega_clear, axis=-3)
+    asymmetry_clear_top_down = jnp.flip(asymmetry_clear, axis=-3)
+    tau_cloud_top_down = jnp.flip(tau_total_cloud, axis=-3)
+    omega_cloud_top_down = jnp.flip(omega_total_cloud, axis=-3)
+    asymmetry_cloud_top_down = jnp.flip(asymmetry_total_cloud, axis=-3)
+    cloud_top_down = jnp.flip(jnp.clip(cloud_amount, 0.0, 1.0), axis=-3)
+    active_top_down = jnp.flip(mask + jnp.zeros_like(tau_clear), axis=-3)
+    cloud_active_top_down = active_top_down * (cloud_top_down > 1.0e-12)
+    pref_clear, prefd_clear, ptra_clear, ptrad_clear = _reftra_eddington(
+        tau_clear_top_down, omega_clear_top_down, asymmetry_clear_top_down, state.coszen, active_top_down
+    )
+    pref_cloud, prefd_cloud, ptra_cloud, ptrad_cloud = _reftra_eddington(
+        tau_cloud_top_down, omega_cloud_top_down, asymmetry_cloud_top_down, state.coszen, cloud_active_top_down
+    )
+    cloud_top_down = cloud_top_down.astype(pref_clear.dtype)
+    active_top_down = active_top_down.astype(pref_clear.dtype)
+    pref_lay = (1.0 - cloud_top_down) * pref_clear + cloud_top_down * pref_cloud
+    prefd_lay = (1.0 - cloud_top_down) * prefd_clear + cloud_top_down * prefd_cloud
+    ptra_lay = (1.0 - cloud_top_down) * ptra_clear + cloud_top_down * ptra_cloud
+    ptrad_lay = (1.0 - cloud_top_down) * ptrad_clear + cloud_top_down * ptrad_cloud
+    surface = jnp.broadcast_to(
+        state.surface_albedo[..., None, None, None].astype(pref_lay.dtype),
+        pref_lay.shape[:-3] + (1, pref_lay.shape[-2], pref_lay.shape[-1]),
+    )
+    zero_surface = jnp.zeros_like(surface)
+    pref = jnp.concatenate((pref_lay, surface), axis=-3)
+    prefd = jnp.concatenate((prefd_lay, surface), axis=-3)
+    ptra = jnp.concatenate((ptra_lay, zero_surface), axis=-3)
+    ptrad = jnp.concatenate((ptrad_lay, zero_surface), axis=-3)
+    pref_clear_full = jnp.concatenate((pref_clear, surface), axis=-3)
+    prefd_clear_full = jnp.concatenate((prefd_clear, surface), axis=-3)
+    ptra_clear_full = jnp.concatenate((ptra_clear, zero_surface), axis=-3)
+    ptrad_clear_full = jnp.concatenate((ptrad_clear, zero_surface), axis=-3)
+    pref_cloud_full = jnp.concatenate((pref_cloud, surface), axis=-3)
+    prefd_cloud_full = jnp.concatenate((prefd_cloud, surface), axis=-3)
+    ptra_cloud_full = jnp.concatenate((ptra_cloud, zero_surface), axis=-3)
+    ptrad_cloud_full = jnp.concatenate((ptrad_cloud, zero_surface), axis=-3)
+    mu0 = jnp.maximum(state.coszen[..., None, None, None], 1.0e-6)
+    direct_clear = _sw_transmittance_lookup((tau_clear_top_down / mu0).astype(pref_lay.dtype))
+    direct_cloud = _sw_transmittance_lookup((tau_cloud_top_down / mu0).astype(pref_lay.dtype))
+    direct_trans = ((1.0 - cloud_top_down) * direct_clear + cloud_top_down * direct_cloud) * active_top_down
+    direct_trans = jnp.where(active_top_down > 0.0, direct_trans, 1.0).astype(pref_lay.dtype)
+    down_top_down, up_top_down = _vertical_quadrature(pref, prefd, ptra, ptrad, direct_trans)
+    top_flux_band = (state.coszen[..., None, None] * sfluxzen).astype(down_top_down.dtype)
+    down_band = jnp.flip(down_top_down * top_flux_band[..., None, :, :], axis=-3)
+    up_band = jnp.flip(up_top_down * top_flux_band[..., None, :, :], axis=-3)
+
     return RRTMGSWIntermediateState(
         jp=coef.jp,
         jt=coef.jt,
@@ -1017,7 +1427,27 @@ def compute_rrtmg_sw_intermediates(
         colmol=jnp.stack((coef.colh2o, coef.colco2, coef.colo3, coef.colch4, coef.coln2o, coef.colo2), axis=-1),
         taug=tau_gas,
         taur=tau_rayleigh,
-        sfluxzen=_sw_sfluxzen(coef, tables),
+        sfluxzen=sfluxzen,
+        pcldfmc=cloud_amount,
+        ptaucmc=tau_cloud,
+        pasycmc=asymmetry_cloud,
+        pomgcmc=omega_cloud,
+        ptaormc=ptaormc,
+        spcvmc_zref=pref,
+        spcvmc_ztra=ptra,
+        spcvmc_zrefd=prefd,
+        spcvmc_ztrad=ptrad,
+        spcvmc_zref_clear=pref_clear_full,
+        spcvmc_ztra_clear=ptra_clear_full,
+        spcvmc_zrefd_clear=prefd_clear_full,
+        spcvmc_ztrad_clear=ptrad_clear_full,
+        spcvmc_zref_cloud=pref_cloud_full,
+        spcvmc_ztra_cloud=ptra_cloud_full,
+        spcvmc_zrefd_cloud=prefd_cloud_full,
+        spcvmc_ztrad_cloud=ptrad_cloud_full,
+        spcvmc_direct_trans=direct_trans,
+        spcvmc_zfd_flux=down_band,
+        spcvmc_zfu_flux=up_band,
     )
 
 

@@ -1,6 +1,6 @@
 {
   "longwave_candidate_heating_flux_closure": {
-    "fractional_residual_max": 9.361225942977018e-07,
+    "fractional_residual_max": 9.361225944943983e-07,
     "pass": true,
     "tolerance": 1e-06
   },
@@ -10,7 +10,7 @@
     "tolerance": 0.01
   },
   "longwave_real_driver_heating_flux_closure": {
-    "fractional_residual_max": 0.0005031217592265337,
+    "fractional_residual_max": 0.0005030889649350209,
     "pass": true,
     "tolerance": 0.001
   },
@@ -20,7 +20,7 @@
   },
   "pass": true,
   "shortwave_candidate_heating_flux_closure": {
-    "fractional_residual_max": 9.361225944355787e-07,
+    "fractional_residual_max": 9.361225946537269e-07,
     "pass": true,
     "tolerance": 1e-06
   },
@@ -30,7 +30,7 @@
     "tolerance": 1e-06
   },
   "shortwave_real_driver_heating_flux_closure": {
-    "fractional_residual_max": 0.0005030677981696251,
+    "fractional_residual_max": 0.0005030574464111342,
     "pass": true,
     "tolerance": 0.001
   }

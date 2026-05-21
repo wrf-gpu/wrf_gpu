@@ -1,0 +1,180 @@
+{
+  "all_nonfinite_counts_zero": true,
+  "all_nonmask_cap_counts_zero": true,
+  "arrays": {
+    "sw_cldprmc_pasycmc": {
+      "binary_mask": false,
+      "exact_exp_cap_500": 0,
+      "exact_optical_cap_80": 0,
+      "max": 0.6412273049354553,
+      "min": 0.0,
+      "nonfinite": 0
+    },
+    "sw_cldprmc_pcldfmc": {
+      "binary_mask": true,
+      "non_binary": 0,
+      "nonfinite": 0
+    },
+    "sw_cldprmc_pomgcmc": {
+      "binary_mask": false,
+      "exact_exp_cap_500": 0,
+      "exact_optical_cap_80": 0,
+      "max": 1.0,
+      "min": 0.07191550731658936,
+      "nonfinite": 0
+    },
+    "sw_cldprmc_ptaormc": {
+      "binary_mask": false,
+      "exact_exp_cap_500": 0,
+      "exact_optical_cap_80": 0,
+      "max": 80.66141510009766,
+      "min": 0.0,
+      "nonfinite": 0
+    },
+    "sw_cldprmc_ptaucmc": {
+      "binary_mask": false,
+      "exact_exp_cap_500": 0,
+      "exact_optical_cap_80": 0,
+      "max": 25.762760162353516,
+      "min": 0.0,
+      "nonfinite": 0
+    },
+    "sw_spcvmc_direct_trans": {
+      "binary_mask": false,
+      "exact_exp_cap_500": 0,
+      "exact_optical_cap_80": 0,
+      "max": 0.9999642968177795,
+      "min": 0.0,
+      "nonfinite": 0
+    },
+    "sw_spcvmc_zfd": {
+      "binary_mask": false,
+      "exact_exp_cap_500": 0,
+      "exact_optical_cap_80": 0,
+      "max": 1.0527163743972778,
+      "min": 0.0,
+      "nonfinite": 0
+    },
+    "sw_spcvmc_zfd_flux": {
+      "binary_mask": false,
+      "exact_exp_cap_500": 0,
+      "exact_optical_cap_80": 0,
+      "max": 85.79927062988281,
+      "min": 0.0,
+      "nonfinite": 0
+    },
+    "sw_spcvmc_zfu": {
+      "binary_mask": false,
+      "exact_exp_cap_500": 0,
+      "exact_optical_cap_80": 0,
+      "max": 0.9925901889801025,
+      "min": -0.011334109120070934,
+      "nonfinite": 0
+    },
+    "sw_spcvmc_zfu_flux": {
+      "binary_mask": false,
+      "exact_exp_cap_500": 0,
+      "exact_optical_cap_80": 0,
+      "max": 74.14075469970703,
+      "min": -0.08240868151187897,
+      "nonfinite": 0
+    },
+    "sw_spcvmc_zref": {
+      "binary_mask": false,
+      "exact_exp_cap_500": 0,
+      "exact_optical_cap_80": 0,
+      "max": 0.937364399433136,
+      "min": 0.0,
+      "nonfinite": 0
+    },
+    "sw_spcvmc_zref_clear": {
+      "binary_mask": false,
+      "exact_exp_cap_500": 0,
+      "exact_optical_cap_80": 0,
+      "max": 0.27000001072883606,
+      "min": 0.0,
+      "nonfinite": 0
+    },
+    "sw_spcvmc_zref_cloud": {
+      "binary_mask": false,
+      "exact_exp_cap_500": 0,
+      "exact_optical_cap_80": 0,
+      "max": 0.937364399433136,
+      "min": 0.0,
+      "nonfinite": 0
+    },
+    "sw_spcvmc_zrefd": {
+      "binary_mask": false,
+      "exact_exp_cap_500": 0,
+      "exact_optical_cap_80": 0,
+      "max": 0.9379667043685913,
+      "min": -0.07179676741361618,
+      "nonfinite": 0
+    },
+    "sw_spcvmc_zrefd_clear": {
+      "binary_mask": false,
+      "exact_exp_cap_500": 0,
+      "exact_optical_cap_80": 0,
+      "max": 0.27000001072883606,
+      "min": -0.07179676741361618,
+      "nonfinite": 0
+    },
+    "sw_spcvmc_zrefd_cloud": {
+      "binary_mask": false,
+      "exact_exp_cap_500": 0,
+      "exact_optical_cap_80": 0,
+      "max": 0.9379667043685913,
+      "min": -0.07179675251245499,
+      "nonfinite": 0
+    },
+    "sw_spcvmc_ztra": {
+      "binary_mask": false,
+      "exact_exp_cap_500": 0,
+      "exact_optical_cap_80": 0,
+      "max": 0.9999685287475586,
+      "min": 0.0,
+      "nonfinite": 0
+    },
+    "sw_spcvmc_ztra_clear": {
+      "binary_mask": false,
+      "exact_exp_cap_500": 0,
+      "exact_optical_cap_80": 0,
+      "max": 0.9999734163284302,
+      "min": 0.0,
+      "nonfinite": 0
+    },
+    "sw_spcvmc_ztra_cloud": {
+      "binary_mask": false,
+      "exact_exp_cap_500": 0,
+      "exact_optical_cap_80": 0,
+      "max": 1.0,
+      "min": 0.0,
+      "nonfinite": 0
+    },
+    "sw_spcvmc_ztrad": {
+      "binary_mask": false,
+      "exact_exp_cap_500": 0,
+      "exact_optical_cap_80": 0,
+      "max": 0.9999743700027466,
+      "min": 0.0,
+      "nonfinite": 0
+    },
+    "sw_spcvmc_ztrad_clear": {
+      "binary_mask": false,
+      "exact_exp_cap_500": 0,
+      "exact_optical_cap_80": 0,
+      "max": 0.9999743700027466,
+      "min": 0.0,
+      "nonfinite": 0
+    },
+    "sw_spcvmc_ztrad_cloud": {
+      "binary_mask": false,
+      "exact_exp_cap_500": 0,
+      "exact_optical_cap_80": 0,
+      "max": 1.0,
+      "min": 0.0,
+      "nonfinite": 0
+    }
+  },
+  "fixture": "data/fixtures/rrtmg-intermediate-oracle-v1.npz"
+}

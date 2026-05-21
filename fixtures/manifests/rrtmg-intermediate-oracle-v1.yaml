@@ -1,7 +1,8 @@
 fixture_id: rrtmg-intermediate-oracle-v1
 source: wrf-derived
-source_commit: wrf-rrtmg-intermediate-harness sha256=313205b94e6528c614fde3fdf19e385fe45cda3f790311cefcce18721903815a;
-  module_ra_rrtmg_sw.F.o=present; module_ra_rrtmg_lw.F.o=present; low_level_calls=setcoef_sw+taumol_sw+spcvmc_sw+setcoef+taumol+rtrnmc;
+source_commit: wrf-rrtmg-intermediate-harness sha256=43ab8af87e869f002f162f5cfc4311802957b312738d80f95b4a73a4e2dbc1a8;
+  module_ra_rrtmg_sw.F.o=present; module_ra_rrtmg_lw.F.o=present; low_level_calls=setcoef_sw+taumol_sw+cldprmc_sw+spcvmc_sw+reftra_sw+vrtqdr_sw+setcoef+taumol+rtrnmc;
+  nm_symbol_sha256=2dd3acc839cecd3657037150dcd111ff2440aa2ebf32d1f5636be2d7f61c476d;
   rrtmg_data_convert=big_endian
 wrf_version: v4.7.1-derived-RRTMG-real-driver-column-harness
 scenario: three RRTMG columns with per-band SW/LW fluxes and solver-entry intermediate
@@ -12,7 +13,10 @@ precision_reference: fp64
 generation_command: python scripts/m5_generate_rrtmg_fixture.py
 external_uri: data/fixtures/rrtmg-intermediate-oracle-v1.npz
 sample_slice_path: null
-git_commit: 2c6748a
+git_commit: 0d11eaa
+nm_symbol_grep: spcvmc_|rtrnmc_|taumol_|setcoef_|cldprmc_
+nm_symbol_sha256: 2dd3acc839cecd3657037150dcd111ff2440aa2ebf32d1f5636be2d7f61c476d
+nm_symbol_count: 17
 license_notes: Synthetic columns run through a GNU Fortran harness linked to real
   WRF RRTMG SW/LW objects and lower RRTMG solver-entry subroutines.
 variables:
@@ -54,6 +58,164 @@ variables:
   tolerance_rel: 0.0001
   tolerance_rationale: SW per-g-point solar source oracle
   tier_overrides: null
+- name: sw_cldprmc_pcldfmc
+  units: '1'
+  shape:
+  - 3
+  - 17
+  - 12
+  - 14
+  staggering: mass
+  dtype: float64
+  tolerance_abs: 0.0
+  tolerance_rel: 0.0
+  tolerance_rationale: WRF cldprmc_sw MCICA binary cloud mask
+  tier_overrides: null
+- name: sw_cldprmc_ptaucmc
+  units: '1'
+  shape:
+  - 3
+  - 17
+  - 12
+  - 14
+  staggering: mass
+  dtype: float64
+  tolerance_abs: 0.0001
+  tolerance_rel: 0.001
+  tolerance_rationale: WRF cldprmc_sw delta-scaled cloud optical depth
+  tier_overrides: null
+- name: sw_cldprmc_pasycmc
+  units: '1'
+  shape:
+  - 3
+  - 17
+  - 12
+  - 14
+  staggering: mass
+  dtype: float64
+  tolerance_abs: 0.0001
+  tolerance_rel: 0.001
+  tolerance_rationale: WRF cldprmc_sw delta-scaled asymmetry parameter
+  tier_overrides: null
+- name: sw_cldprmc_pomgcmc
+  units: '1'
+  shape:
+  - 3
+  - 17
+  - 12
+  - 14
+  staggering: mass
+  dtype: float64
+  tolerance_abs: 0.0001
+  tolerance_rel: 0.001
+  tolerance_rationale: WRF cldprmc_sw delta-scaled single-scattering albedo
+  tier_overrides: null
+- name: sw_cldprmc_ptaormc
+  units: '1'
+  shape:
+  - 3
+  - 17
+  - 12
+  - 14
+  staggering: mass
+  dtype: float64
+  tolerance_abs: 0.0001
+  tolerance_rel: 0.001
+  tolerance_rationale: WRF cldprmc_sw pre-delta-scaling cloud optical depth
+  tier_overrides: null
+- name: sw_spcvmc_zref
+  units: '1'
+  shape:
+  - 3
+  - 18
+  - 12
+  - 14
+  staggering: mass
+  dtype: float64
+  tolerance_abs: 0.0001
+  tolerance_rel: 0.001
+  tolerance_rationale: WRF spcvmc_sw blended direct reflectance before vertical quadrature
+  tier_overrides: null
+- name: sw_spcvmc_ztra
+  units: '1'
+  shape:
+  - 3
+  - 18
+  - 12
+  - 14
+  staggering: mass
+  dtype: float64
+  tolerance_abs: 0.0001
+  tolerance_rel: 0.001
+  tolerance_rationale: WRF spcvmc_sw blended direct transmittance before vertical
+    quadrature
+  tier_overrides: null
+- name: sw_spcvmc_zrefd
+  units: '1'
+  shape:
+  - 3
+  - 18
+  - 12
+  - 14
+  staggering: mass
+  dtype: float64
+  tolerance_abs: 0.0001
+  tolerance_rel: 0.001
+  tolerance_rationale: WRF spcvmc_sw blended diffuse reflectance before vertical quadrature
+  tier_overrides: null
+- name: sw_spcvmc_ztrad
+  units: '1'
+  shape:
+  - 3
+  - 18
+  - 12
+  - 14
+  staggering: mass
+  dtype: float64
+  tolerance_abs: 0.0001
+  tolerance_rel: 0.001
+  tolerance_rationale: WRF spcvmc_sw blended diffuse transmittance before vertical
+    quadrature
+  tier_overrides: null
+- name: sw_spcvmc_direct_trans
+  units: '1'
+  shape:
+  - 3
+  - 17
+  - 12
+  - 14
+  staggering: mass
+  dtype: float64
+  tolerance_abs: 0.0001
+  tolerance_rel: 0.001
+  tolerance_rationale: WRF spcvmc_sw per-layer direct-beam transmittance
+  tier_overrides: null
+- name: sw_spcvmc_zfd_flux
+  units: W m-2
+  shape:
+  - 3
+  - 18
+  - 12
+  - 14
+  staggering: mass
+  dtype: float64
+  tolerance_abs: 0.0001
+  tolerance_rel: 0.001
+  tolerance_rationale: WRF spcvmc_sw per-g-point down flux before broadband accumulation
+  tier_overrides: null
+- name: sw_spcvmc_zfu_flux
+  units: W m-2
+  shape:
+  - 3
+  - 18
+  - 12
+  - 14
+  staggering: mass
+  dtype: float64
+  tolerance_abs: 0.0001
+  tolerance_rel: 0.001
+  tolerance_rationale: WRF spcvmc_sw per-g-point up flux before broadband accumulation
+  tier_overrides: null
 - name: lw_taug
   units: '1'
   shape:
@@ -94,14 +256,14 @@ variables:
   tier_overrides: null
 files:
 - path: data/fixtures/rrtmg-intermediate-oracle-v1.npz
-  checksum_sha256: d8795e2379d86a7a9c86a10c40f867ceb1f294c33ce5d7a1fbcd68f8fbe0b954
-  bytes: 123331
+  checksum_sha256: eeef60540bdcf1a20d90cecefd4ef264f54fa012ce18d23ab3edfbb52d4f4aca
+  bytes: 494149
   external: false
 - path: data/scratch/wrf_rrtmg_harness
-  checksum_sha256: 313205b94e6528c614fde3fdf19e385fe45cda3f790311cefcce18721903815a
-  bytes: 1048944
+  checksum_sha256: 43ab8af87e869f002f162f5cfc4311802957b312738d80f95b4a73a4e2dbc1a8
+  bytes: 1118848
   external: true
 - path: data/fixtures/rrtmg-tables-v1.npz
-  checksum_sha256: 9d8bedbfa93161b0d782d64a98c7e36d8f95e54b016d4fc570c0a7c5aa534013
-  bytes: 4199742
+  checksum_sha256: 0695e523a5c79025721eb3e660e379ca84d246ec791ecc24b2b6aafd5296a5f4
+  bytes: 4201708
   external: true
