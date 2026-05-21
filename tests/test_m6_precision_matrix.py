@@ -18,7 +18,26 @@ def test_precision_matrix_covers_every_state_leaf_dtype():
 
 
 def test_precision_matrix_gate_flags_match_adr007_boundary_classes():
-    gated = {"u", "v", "theta", "qv", "qc", "qr", "qi", "qs", "qg", "Ni", "Nr", "Ns", "Ng", "qke"}
+    gated = {
+        "u",
+        "v",
+        "theta",
+        "qv",
+        "qc",
+        "qr",
+        "qi",
+        "qs",
+        "qg",
+        "Ni",
+        "Nr",
+        "Ns",
+        "Ng",
+        "qke",
+        "u_bdy",
+        "v_bdy",
+        "theta_bdy",
+        "qv_bdy",
+    }
     locked = set(State.__slots__) - gated
 
     for field in gated:

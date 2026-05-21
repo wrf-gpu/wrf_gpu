@@ -48,6 +48,12 @@ STATE_FIELD_ORDER = (
     "snow_acc",
     "graupel_acc",
     "ice_acc",
+    "u_bdy",
+    "v_bdy",
+    "theta_bdy",
+    "qv_bdy",
+    "ph_bdy",
+    "mu_bdy",
 )
 
 
@@ -89,6 +95,13 @@ PRECISION_MATRIX = {
     "snow_acc": (FP64, False),
     "graupel_acc": (FP64, False),
     "ice_acc": (FP64, False),
+    # Time-varying lateral-boundary forcing leaves.
+    "u_bdy": (FP32_GATED, True),
+    "v_bdy": (FP32_GATED, True),
+    "theta_bdy": (FP32_GATED, True),
+    "qv_bdy": (FP32_GATED, True),
+    "ph_bdy": (FP64, False),
+    "mu_bdy": (FP64, False),
 }
 
 

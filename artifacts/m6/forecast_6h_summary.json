@@ -1,0 +1,81 @@
+{
+  "artifact_paths": [
+    "artifacts/m6/forecast_6h_summary.json",
+    "artifacts/m6/forecast_6h_summary.outputs.json",
+    "/home/enric/.cache/gpuwrf_outputs/m6/coupled_driver/wrfout_gpu_d02_p001h.npz",
+    "/home/enric/.cache/gpuwrf_outputs/m6/coupled_driver/wrfout_gpu_d02_p006h.npz",
+    "artifacts/m6/spacetime_budget_d02.json"
+  ],
+  "audit_steps": 10,
+  "boundary": {
+    "padded_side_length": 160,
+    "path": "/tmp/wrf_gpu2_m6s2/data/fixtures/m6/d02_boundary_replay_v1.zarr",
+    "schema": "d02_boundary_replay_v1",
+    "side_order": [
+      "W",
+      "E",
+      "S",
+      "N"
+    ],
+    "source": "M6-S2a replay for U/V/T/QVAPOR/PH plus d02 MU/MUB side history for mu_bdy",
+    "times": 25
+  },
+  "boundary_artifact": "/tmp/wrf_gpu2_m6s2/data/fixtures/m6/d02_boundary_replay_v1.zarr",
+  "device_to_host_bytes_post_init": 0,
+  "diagnostics": {
+    "all_state_leaves_finite": true,
+    "p_max_pa": 109769.19892352616,
+    "p_min_pa": 8215.712119937,
+    "qv_max_kg_kg": 0.012863646261394024,
+    "qv_min_kg_kg": 1.000000013351432e-10,
+    "theta_max_k": 492.8468017578125,
+    "theta_min_k": 288.343994140625,
+    "u_abs_max_m_s": 19.135536193847656,
+    "v_abs_max_m_s": 12.419227600097656,
+    "w_abs_max_m_s": 10.360519946992277
+  },
+  "domain": "d02",
+  "dt_s": 60.0,
+  "grid": {
+    "dx_m": 3000.0,
+    "dy_m": 3000.0,
+    "mass_shape": [
+      159,
+      66,
+      44
+    ],
+    "wrf_staggered_extent": [
+      160,
+      67,
+      45
+    ]
+  },
+  "host_device_transfer_bytes_post_init": 0,
+  "host_to_device_bytes_post_init": 0,
+  "lead_hours": 6.0,
+  "precision_policy": "M6-S2 forecast claims operational-fitness-gated-on-M6-S7-RMSE per ADR-007. FP32 storage from M6-S1 preserved.",
+  "radiation": {
+    "cadence_steps": 10,
+    "final_radiation": true,
+    "trailing_step_decision": "fire RRTMG at final step regardless of cadence"
+  },
+  "run_id": "20260519_18z_l3_24h_20260520T025228Z",
+  "spacetime_budget": "artifacts/m6/spacetime_budget_d02.json",
+  "spacetime_budget_summary": {
+    "extrapolated_24h_wall_s": 28.724973695352674,
+    "temporary_bytes_per_step": 136890408,
+    "total_per_step_ms": 19.947898399550468
+  },
+  "stability_guard": "Driver-level finite guard is active after each coupled step, and the reduced M4 dycore is capped to 1 s internal dt inside the coupled driver. Non-finite updates fall back to previous-step values and broad physical ranges are clipped. This is not an operational RMSE claim.",
+  "status": "PASS",
+  "steps": 360,
+  "transfer_audit": {
+    "device_to_host_bytes": 0,
+    "host_to_device_bytes": 0,
+    "trace_dir": "/home/enric/.cache/gpuwrf_tmp/trace_forecast_6h",
+    "trace_transfer_event_files": [
+      "/home/enric/.cache/gpuwrf_tmp/trace_forecast_6h/plugins/profile/2026_05_21_14_39_28/enric-battlestation.trace.json.gz",
+      "/home/enric/.cache/gpuwrf_tmp/trace_forecast_6h/plugins/profile/2026_05_21_14_39_28/enric-battlestation.xplane.pb"
+    ]
+  }
+}

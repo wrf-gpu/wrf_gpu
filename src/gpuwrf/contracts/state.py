@@ -38,6 +38,7 @@ def _state_field_shapes(grid: GridSpec) -> dict[str, tuple[int, ...]]:
     nz, ny, nx = grid.nz, grid.ny, grid.nx
     mass_3d = (nz, ny, nx)
     surface_2d = (ny, nx)
+    boundary_side = max(nx + 1, ny + 1)
     return {
         "u": (nz, ny, nx + 1),
         "v": (nz, ny + 1, nx),
@@ -70,6 +71,12 @@ def _state_field_shapes(grid: GridSpec) -> dict[str, tuple[int, ...]]:
         "snow_acc": surface_2d,
         "graupel_acc": surface_2d,
         "ice_acc": surface_2d,
+        "u_bdy": (1, 4, nz, boundary_side),
+        "v_bdy": (1, 4, nz, boundary_side),
+        "theta_bdy": (1, 4, nz, boundary_side),
+        "qv_bdy": (1, 4, nz, boundary_side),
+        "ph_bdy": (1, 4, nz + 1, boundary_side),
+        "mu_bdy": (1, 4, 1, boundary_side),
     }
 
 
@@ -154,6 +161,8 @@ class State:
       `t_skin`: K, `soil_moisture`: m3 m^-3 on surface mass points.
     - `rain_acc/snow_acc/graupel_acc/ice_acc`: mm accumulated precipitation
       on surface mass points.
+    - `u_bdy/v_bdy/theta_bdy/qv_bdy/ph_bdy/mu_bdy`: time-varying lateral
+      forcing as `(time, side=W/E/S/N, z-like, padded side index)`.
     """
 
     __slots__ = (
@@ -188,6 +197,12 @@ class State:
         "snow_acc",
         "graupel_acc",
         "ice_acc",
+        "u_bdy",
+        "v_bdy",
+        "theta_bdy",
+        "qv_bdy",
+        "ph_bdy",
+        "mu_bdy",
     )
 
     def __init__(
@@ -223,6 +238,12 @@ class State:
         snow_acc: jax.Array,
         graupel_acc: jax.Array,
         ice_acc: jax.Array,
+        u_bdy: jax.Array,
+        v_bdy: jax.Array,
+        theta_bdy: jax.Array,
+        qv_bdy: jax.Array,
+        ph_bdy: jax.Array,
+        mu_bdy: jax.Array,
     ) -> None:
         self.u = u
         self.v = v
@@ -255,6 +276,12 @@ class State:
         self.snow_acc = snow_acc
         self.graupel_acc = graupel_acc
         self.ice_acc = ice_acc
+        self.u_bdy = u_bdy
+        self.v_bdy = v_bdy
+        self.theta_bdy = theta_bdy
+        self.qv_bdy = qv_bdy
+        self.ph_bdy = ph_bdy
+        self.mu_bdy = mu_bdy
 
     @classmethod
     def zeros(cls, grid: GridSpec) -> "State":
