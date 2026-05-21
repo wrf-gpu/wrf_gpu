@@ -203,10 +203,22 @@ class Tier4ProbtestTolerances(ProofObjectSchema):
     required = {
         "run_id": FieldRule("string", "Tolerance-generation run identifier."),
         "status": FieldRule("string", "PASS/FAIL/BLOCKED status."),
+        "prototype_label": FieldRule("string", "Explicit M6 prototype/full-M7-ensemble label."),
+        "domain": FieldRule("string", "WRF/GPU domain ID."),
+        "sample_size": FieldRule("integer", "Number of historical deterministic members."),
+        "variables": FieldRule("array", "Variables covered by the tolerance table."),
+        "leads_h": FieldRule("array", "Forecast lead hours covered by the tolerance table."),
+        "strata": FieldRule("array", "Land/sea/elevation strata covered by the tolerance table."),
         "member_manifest": FieldRule("string", "Ensemble or historical-member manifest path."),
         "tolerances": FieldRule("object", "Per-variable and per-lead tolerances."),
         "freeze_time_utc": FieldRule("string", "Time when tolerances were frozen."),
+        "tolerance_factor": FieldRule("number", "k factor applied to member-to-member standard deviation."),
+        "method": FieldRule("object", "Variance, reduction, precipitation, and no-peek policy."),
+        "heldout_policy": FieldRule("object", "Held-out candidate exclusion policy."),
         "artifact_paths": FieldRule("array", "Raw and summary proof paths."),
+    }
+    optional = {
+        "units": FieldRule("object", "Variable units for tolerance and RMSE fields."),
     }
 
 
