@@ -7,6 +7,7 @@ import numpy as np
 from gpuwrf.validation.rrtmg_intermediate_oracles import (
     ORACLE,
     run_intermediate_validation,
+    validate_lw_fracs_per_band,
     validate_lw_planck_corrections,
     validate_lw_planck_state,
     validate_lw_taug_per_band,
@@ -34,6 +35,7 @@ def test_rrtmg_intermediate_validation_helpers_report_pass_and_fail():
     tiny = np.full((2, 3), 1.0e-12)
     assert validate_sw_taug_per_band(tiny, zeros, 1)["pass"] is True
     assert validate_lw_taug_per_band(np.ones((2, 3)), zeros, 1)["pass"] is False
+    assert validate_lw_fracs_per_band(tiny, zeros, 1)["pass"] is True
     assert validate_sw_taur(tiny, zeros)["pass"] is True
 
     setcoef = {"jp": zeros, "jt": zeros, "jt1": zeros, "fac00": zeros, "fac01": zeros, "fac10": zeros, "fac11": zeros, "indself": zeros, "indfor": zeros, "selffac": zeros, "forfac": zeros, "colmol": zeros}
@@ -53,4 +55,5 @@ def test_rrtmg_intermediate_artifacts_are_written_honestly():
     assert Path("artifacts/m5/rrtmg_per_band_status.json").exists()
     assert record["sw"]["taur"]["pass"] is True
     assert all(item["pass"] for item in record["sw"]["taug_per_band"])
-    assert record["pass"] is False
+    assert all(item["pass"] for item in record["lw"]["per_band"])
+    assert record["pass"] is True
