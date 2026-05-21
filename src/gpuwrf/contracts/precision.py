@@ -1,4 +1,9 @@
-"""Precision registry for M3 state fields; centralizes fp64 defaults."""
+"""Precision registry for state fields and ADR-007 coupling boundaries.
+
+`FP32_GATED` means ADR-007 authorizes FP32 storage only under the
+field-specific validation gates. Locked mass, pressure, geopotential,
+surface-stability, and accumulation fields remain FP64.
+"""
 
 from __future__ import annotations
 
@@ -8,6 +13,83 @@ import jax.numpy as jnp
 
 
 FP64 = jnp.float64
+FP32_GATED = jnp.float32
+
+
+STATE_FIELD_ORDER = (
+    "u",
+    "v",
+    "w",
+    "theta",
+    "qv",
+    "p",
+    "ph",
+    "mu",
+    "qc",
+    "qr",
+    "qi",
+    "qs",
+    "qg",
+    "Ni",
+    "Nr",
+    "Ns",
+    "Ng",
+    "qke",
+    "ustar",
+    "theta_flux",
+    "qv_flux",
+    "tau_u",
+    "tau_v",
+    "rhosfc",
+    "fltv",
+    "t_skin",
+    "soil_moisture",
+    "rain_acc",
+    "snow_acc",
+    "graupel_acc",
+    "ice_acc",
+)
+
+
+PRECISION_MATRIX = {
+    # Dynamics / mass and acoustic boundary.
+    "mu": (FP64, False),
+    "p": (FP64, False),
+    "ph": (FP64, False),
+    "pgeop": (FP64, False),
+    "u": (FP32_GATED, True),
+    "v": (FP32_GATED, True),
+    "w": (FP64, False),
+    "theta": (FP32_GATED, True),
+    "qv": (FP32_GATED, True),
+    # Thompson hydrometeor mass and number fields.
+    "qc": (FP32_GATED, True),
+    "qr": (FP32_GATED, True),
+    "qi": (FP32_GATED, True),
+    "qs": (FP32_GATED, True),
+    "qg": (FP32_GATED, True),
+    "Ni": (FP32_GATED, True),
+    "Nr": (FP32_GATED, True),
+    "Ns": (FP32_GATED, True),
+    "Ng": (FP32_GATED, True),
+    # MYNN turbulent kinetic energy.
+    "qke": (FP32_GATED, True),
+    # Surface-layer stability and flux handles.
+    "ustar": (FP64, False),
+    "theta_flux": (FP64, False),
+    "qv_flux": (FP64, False),
+    "tau_u": (FP64, False),
+    "tau_v": (FP64, False),
+    "rhosfc": (FP64, False),
+    "fltv": (FP64, False),
+    "t_skin": (FP64, False),
+    "soil_moisture": (FP64, False),
+    # Accumulated precipitation diagnostics.
+    "rain_acc": (FP64, False),
+    "snow_acc": (FP64, False),
+    "graupel_acc": (FP64, False),
+    "ice_acc": (FP64, False),
+}
 
 
 @dataclass(frozen=True)
@@ -17,11 +99,16 @@ class DTypeRegistry:
     defaults: tuple[tuple[str, object], ...]
 
     @classmethod
-    def fp64_defaults(cls) -> "DTypeRegistry":
-        """Builds the M3 fp64 registry; single call-site documents the precision policy."""
+    def from_precision_matrix(cls) -> "DTypeRegistry":
+        """Builds the M6 state-storage registry from the ADR-007 matrix."""
 
-        fields = ("u", "v", "w", "theta", "qv", "p", "ph", "mu")
-        return cls(tuple((field, FP64) for field in fields))
+        return cls(tuple((field, PRECISION_MATRIX[field][0]) for field in STATE_FIELD_ORDER))
+
+    @classmethod
+    def fp64_defaults(cls) -> "DTypeRegistry":
+        """Compatibility constructor for older callers that requested M3 defaults."""
+
+        return cls.from_precision_matrix()
 
     def dtype_for(self, field: str):
         """Returns the dtype for one state field; guards against misspelled field names."""
@@ -32,4 +119,4 @@ class DTypeRegistry:
         return mapping[field]
 
 
-DEFAULT_DTYPES = DTypeRegistry.fp64_defaults()
+DEFAULT_DTYPES = DTypeRegistry.from_precision_matrix()
