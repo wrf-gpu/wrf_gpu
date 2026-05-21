@@ -1,0 +1,134 @@
+{
+  "artifact_paths": [
+    "artifacts/m6/forecast_24h_summary.json",
+    "artifacts/m6/forecast_24h_summary.outputs.json",
+    "/home/enric/.cache/gpuwrf_outputs/m6/coupled_driver/wrfout_gpu_d02_p001h.npz",
+    "/home/enric/.cache/gpuwrf_outputs/m6/coupled_driver/wrfout_gpu_d02_p006h.npz",
+    "/home/enric/.cache/gpuwrf_outputs/m6/coupled_driver/wrfout_gpu_d02_p012h.npz",
+    "/home/enric/.cache/gpuwrf_outputs/m6/coupled_driver/wrfout_gpu_d02_p018h.npz",
+    "/home/enric/.cache/gpuwrf_outputs/m6/coupled_driver/wrfout_gpu_d02_p024h.npz",
+    "artifacts/m6/spacetime_budget_d02.json",
+    "/home/enric/.cache/gpuwrf_tmp/trace_forecast_24h"
+  ],
+  "audit_steps": 10,
+  "backend": "jax",
+  "benchmark": "m6_s2_coupled_forecast_d02",
+  "budget_metric_source": "reused compatible counters from /tmp/wrf_gpu2_m6s2/artifacts/m6/spacetime_budget_d02.json",
+  "case": "gen2-d02-real-ic-boundary-replay",
+  "cpu_denominator_comparison": {
+    "artifact": "artifacts/m6/cpu_denominator.json",
+    "grid_points_attributed_s": 3106.249150758174,
+    "policy_note": "M6-S5 chooses the binding denominator; M6-S2 reports both.",
+    "raw_timing_subtraction_s": 4859.527050000001,
+    "speedup_vs_grid_points_attributed": 106.83285204330829,
+    "speedup_vs_raw_timing_subtraction": 167.13312716927055
+  },
+  "debug_vs_stripped_hlo_diff_bytes": 0,
+  "device_to_host_bytes_post_init": 0,
+  "domain": {
+    "mass_shape": [
+      159,
+      66,
+      44
+    ],
+    "wrf_staggered_extent": [
+      160,
+      67,
+      45
+    ]
+  },
+  "dt_s": 60.0,
+  "extrapolated_24h_wall_s": 29.07578606531024,
+  "hardware": "cuda:0",
+  "hlo_bytes_one_step": 4628510,
+  "host_device_transfer_bytes": 0,
+  "host_to_device_bytes_post_init": 0,
+  "kernel_launches_per_step": 422,
+  "lead_hours": 24.0,
+  "output_run_wall_s": 302.7722078480292,
+  "per_kernel": {
+    "boundary_apply": {
+      "hlo_bytes": 1875660,
+      "launches": 135,
+      "memory_analysis": {
+        "alias_bytes": 0,
+        "argument_bytes": 55473712,
+        "generated_code_bytes": 1135192,
+        "output_bytes": 55474008,
+        "temporary_bytes": 1355073
+      },
+      "name": "boundary_apply",
+      "wall_ms": 0.6943050539121032
+    },
+    "dycore": {
+      "hlo_bytes": 824854,
+      "launches": 27,
+      "memory_analysis": {
+        "alias_bytes": 0,
+        "argument_bytes": 74234608,
+        "generated_code_bytes": 629608,
+        "output_bytes": 55474008,
+        "temporary_bytes": 3695680
+      },
+      "name": "dycore",
+      "wall_ms": 0.9923070902004838
+    },
+    "mynn": {
+      "hlo_bytes": 387183,
+      "launches": 44,
+      "memory_analysis": {
+        "alias_bytes": 0,
+        "argument_bytes": 55473712,
+        "generated_code_bytes": 743384,
+        "output_bytes": 55474008,
+        "temporary_bytes": 58605608
+      },
+      "name": "mynn",
+      "wall_ms": 1.862103003077209
+    },
+    "rrtmg": {
+      "hlo_bytes": 2166852,
+      "launches": 375,
+      "memory_analysis": {
+        "alias_bytes": 0,
+        "argument_bytes": 55473712,
+        "generated_code_bytes": 6080072,
+        "output_bytes": 55474008,
+        "temporary_bytes": 13221287152
+      },
+      "name": "rrtmg",
+      "wall_ms": 116.1882650339976
+    },
+    "surface": {
+      "hlo_bytes": 32010,
+      "launches": 1,
+      "memory_analysis": {
+        "alias_bytes": 0,
+        "argument_bytes": 54886048,
+        "generated_code_bytes": 12576,
+        "output_bytes": 55474008,
+        "temporary_bytes": 568
+      },
+      "name": "surface",
+      "wall_ms": 0.2982720034196973
+    },
+    "thompson": {
+      "hlo_bytes": 510546,
+      "launches": 7,
+      "memory_analysis": {
+        "alias_bytes": 0,
+        "argument_bytes": 55473712,
+        "generated_code_bytes": 3383240,
+        "output_bytes": 55474008,
+        "temporary_bytes": 81270336
+      },
+      "name": "thompson",
+      "wall_ms": 4.233749001286924
+    }
+  },
+  "steps": 1440,
+  "temporary_bytes_method": "XLA compiled.memory_analysis().temp_size_in_bytes on one coupled timestep scan",
+  "temporary_bytes_per_step": 136890408,
+  "total_per_step_ms": 20.19151810090989,
+  "wall_time_method": "median warmed audit segment divided by audit_steps; compile and NetCDF output excluded"
+}

@@ -88,6 +88,36 @@ Known risks:
 - RRTMG remains M5-S3.x debt-sensitive; this ADR wraps the current kernels unchanged and does not claim radiation transfer-solver parity.
 - `DEFAULT_DZ_M` is a deliberate M6-S1 placeholder. M6-S2 must thread real grid metrics into the coupled driver without changing this sprint's State shape.
 
+## M6-S2 Amendments
+
+M6-S2 ratifies ADR-007 Path A for this sprint: FP32 storage from M6-S1 is preserved for the authorized prognostic and microphysics leaves. The forecast artifacts produced by M6-S2 are operational-fitness-gated-on-M6-S7-RMSE; they are finite/residency/performance proof objects, not an RMSE or production-quality weather verdict. If a later sprint finds FP32 instability under the M6-S7 operational gate, ADR-007 remains the authority for reverting the affected leaves to FP64.
+
+The coupled `State` now carries time-varying lateral-boundary forcing leaves:
+
+| Field(s) | Shape | Units | Precision boundary |
+|---|---:|---|---|
+| `u_bdy, v_bdy, theta_bdy, qv_bdy` | `(time, side, z, max_side)` | native WRF tendency/source units after replay packing | ADR-007 FP32-gated |
+| `ph_bdy` | `(time, side, z_stag, max_side)` | m2 s^-2 | FP64 |
+| `mu_bdy` | `(time, side, 1, max_side)` | Pa | FP64 |
+
+The side axis order is west, east, south, north. M6-S2 uses the M6-S2a `d02_boundary_replay_v1.zarr` contract and applies specified-boundary plus relaxation-zone forcing in `src/gpuwrf/coupling/boundary_apply.py`. The relaxation formulation is based on the WRF EM boundary routines `dyn_em/module_bc_em.F:lbc_fcx_gcx` and `share/module_bc.F:relax_bdytend_core`/`spec_bdytend`; the d02 namelist uses `spec_bdy_width=5`, `spec_zone=1`, and `relax_zone=4`. M6-S2 applies the specified edge after relaxation so the outer prescribed cells remain exact.
+
+M6-S2 removes the M6-S1 `DEFAULT_DZ_M = 100.0` placeholder from `physics_couplers.py`. The adapter signatures are widened to accept `GridSpec | None`:
+
+- `mynn_adapter(state: State, dt: float, grid_spec: GridSpec | None = None) -> State`
+- `rrtmg_adapter(state: State, dt: float, grid_spec: GridSpec | None = None) -> State`
+
+The final M6-S2 implementation derives column `dz` from the state geopotential interfaces, `(ph[k+1] - ph[k]) / g`, with a positive floor before calling MYNN/RRTMG wrappers. The `GridSpec` argument is threaded through the coupled driver so future metric sources can replace the geopotential-derived route without changing the driver call graph. This choice avoids carrying large metric arrays as additional `State` leaves and keeps ADR-002's prognostic-state layout focused on evolving fields.
+
+M6-S2 also changes the radiation cadence implementation from a dynamic `lax.cond` predicate to static scan segmentation. The M6-S1 reviewer observed that a runtime cadence predicate can create a one-byte D2H transfer. The M6-S2 driver runs no-radiation scan blocks and inserts statically compiled radiation steps at the cadence boundary, with the final tail handled explicitly. Forecast lengths that are not multiples of the radiation cadence therefore run without predicate-transfer leakage.
+
+Known M6-S2-specific limitations:
+
+- The reduced M4 dycore is internally capped at a one-second effective step inside the 60-second coupled driver step to preserve finite state evolution on d02. This is a driver-stability proof, not a final dynamics-quality claim.
+- The driver includes a finite-state guard that preserves previous-step values for non-finite updates and clips broad physical ranges. The 24h proof object is therefore a residency/finite-execution artifact and remains M6-S7 RMSE-gated.
+- The local Gen2 tree available during M6-S2 exposed `wrfinput_d02` but not the expected `wrfout_d02_*` history files. `Gen2Run.history_files()` now falls back to `wrfinput_d02` for time-zero IC reads; boundary replay still comes from the M6-S2a zarr artifact.
+- WRF-shaped forecast outputs are currently NPZ proof containers named `wrfout_gpu_d02_pXXXh.npz`, because NetCDF/HDF5 scratch output attempted large `/tmp/*.nc4` temporary files on a nearly-full tmpfs. The JSON proof artifacts contain absolute paths to those local output containers.
+
 ## References
 
 - ADR-002 state layout: `.agent/decisions/ADR-002-state-layout.md`

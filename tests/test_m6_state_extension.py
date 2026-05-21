@@ -24,6 +24,7 @@ SURFACE_2D = (
     "graupel_acc",
     "ice_acc",
 )
+BOUNDARY = ("u_bdy", "v_bdy", "theta_bdy", "qv_bdy", "ph_bdy", "mu_bdy")
 
 
 def _platform(array) -> str:
@@ -47,6 +48,19 @@ def test_m6_new_state_leaves_are_device_arrays_with_expected_shape_and_dtype():
         assert _platform(leaf) == "gpu"
         assert leaf.shape == (grid.ny, grid.nx)
         assert leaf.dtype == jnp.float64
+
+    side = max(grid.nx + 1, grid.ny + 1)
+    assert state.u_bdy.shape == (1, 4, grid.nz, side)
+    assert state.v_bdy.shape == (1, 4, grid.nz, side)
+    assert state.theta_bdy.shape == (1, 4, grid.nz, side)
+    assert state.qv_bdy.shape == (1, 4, grid.nz, side)
+    assert state.ph_bdy.shape == (1, 4, grid.nz + 1, side)
+    assert state.mu_bdy.shape == (1, 4, 1, side)
+    for field in BOUNDARY:
+        leaf = getattr(state, field)
+        assert isinstance(leaf, jax.Array)
+        assert _platform(leaf) == "gpu"
+        assert leaf.dtype == PRECISION_MATRIX[field][0]
 
 
 def test_m6_existing_state_leaves_preserve_c_grid_shapes():

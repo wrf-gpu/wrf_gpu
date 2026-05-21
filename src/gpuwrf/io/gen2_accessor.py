@@ -322,6 +322,9 @@ class Gen2Run:
         _domain_number(domain)
         files = sorted(self.path.glob(f"wrfout_{domain}_*"))
         if not files:
+            wrfinput = self.wrfinput_file(domain)
+            if wrfinput.exists():
+                return [wrfinput]
             raise FileNotFoundError(f"no wrfout files for {domain} in {self.path}")
         return files
 

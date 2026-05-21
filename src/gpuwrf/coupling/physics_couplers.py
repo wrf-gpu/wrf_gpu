@@ -11,6 +11,7 @@ from typing import NamedTuple
 
 import jax.numpy as jnp
 
+from gpuwrf.contracts.grid import GridSpec
 from gpuwrf.contracts.precision import DEFAULT_DTYPES
 from gpuwrf.contracts.state import State
 from gpuwrf.physics.mynn_pbl import MynnPBLColumnState, step_mynn_pbl_column
@@ -26,7 +27,7 @@ from gpuwrf.physics.thompson_column import (
 
 P0_PA = 100000.0
 R_D_OVER_CP = 287.0 / 1004.0
-DEFAULT_DZ_M = 100.0
+GRAVITY_M_S2 = 9.80665
 
 
 class _SurfaceColumnState(NamedTuple):
@@ -117,10 +118,13 @@ def _rho_from_state(state: State):
     return density_from_pressure_temperature(state.p, T, state.qv)
 
 
-def _column_dz_like(theta_columns):
-    """Returns the M6-S1 column-spacing placeholder until the forecast driver owns grid metrics."""
+def _column_dz_from_state(state: State, grid: GridSpec | None):
+    """Returns terrain-following layer thickness from geopotential interfaces."""
 
-    return jnp.ones_like(theta_columns, dtype=jnp.float64) * DEFAULT_DZ_M
+    del grid
+    interface_height_m = state.ph.astype(jnp.float64) / GRAVITY_M_S2
+    dz = jnp.maximum(interface_height_m[1:, :, :] - interface_height_m[:-1, :, :], 1.0)
+    return _to_columns(dz)
 
 
 def _cloud_fraction_columns(state: State):
@@ -163,7 +167,7 @@ def thompson_adapter(state: State, dt: float) -> State:
     )
 
 
-def mynn_adapter(state: State, dt: float) -> State:
+def mynn_adapter(state: State, dt: float, grid: GridSpec | None = None) -> State:
     """Slice state to MYNN PBL-column inputs, call the kernel, and reassemble State."""
 
     theta_columns = _to_columns(state.theta)
@@ -178,7 +182,7 @@ def mynn_adapter(state: State, dt: float) -> State:
         0.5 * qke_columns,
         _to_columns(state.p),
         _to_columns(_rho_from_state(state)),
-        _column_dz_like(theta_columns),
+        _column_dz_from_state(state, grid),
         zeros,
         zeros,
         zeros,
@@ -220,7 +224,7 @@ def surface_adapter(state: State, dt: float) -> State:
     )
 
 
-def rrtmg_adapter(state: State, dt: float) -> State:
+def rrtmg_adapter(state: State, dt: float, grid: GridSpec | None = None) -> State:
     """Run SW and LW RRTMG column kernels and apply their temperature tendency."""
 
     T = _temperature_from_theta(state.theta, state.p)
@@ -232,7 +236,7 @@ def rrtmg_adapter(state: State, dt: float) -> State:
     qs_columns = _to_columns(state.qs)
     qg_columns = _to_columns(state.qg)
     cloud_fraction = _cloud_fraction_columns(state)
-    dz = _column_dz_like(theta_columns)
+    dz = _column_dz_from_state(state, grid)
     rho = _to_columns(_rho_from_state(state))
     surface_shape = state.t_skin.shape
     surface_albedo = jnp.ones(surface_shape, dtype=state.t_skin.dtype) * 0.15

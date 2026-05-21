@@ -52,6 +52,43 @@ def kernel_launches_per_step(hlo_text: str) -> int:
     return max(1, launches)
 
 
+def compiled_memory_stats(compiled: Any) -> dict[str, int | None]:
+    """Return XLA memory-analysis counters when the compiled object exposes them."""
+
+    try:
+        analysis = compiled.memory_analysis()
+    except AttributeError:
+        return {
+            "argument_bytes": None,
+            "output_bytes": None,
+            "alias_bytes": None,
+            "temporary_bytes": None,
+            "generated_code_bytes": None,
+        }
+    if analysis is None:
+        return {
+            "argument_bytes": None,
+            "output_bytes": None,
+            "alias_bytes": None,
+            "temporary_bytes": None,
+            "generated_code_bytes": None,
+        }
+    return {
+        "argument_bytes": _memory_attr(analysis, "argument_size_in_bytes"),
+        "output_bytes": _memory_attr(analysis, "output_size_in_bytes"),
+        "alias_bytes": _memory_attr(analysis, "alias_size_in_bytes"),
+        "temporary_bytes": _memory_attr(analysis, "temp_size_in_bytes"),
+        "generated_code_bytes": _memory_attr(analysis, "generated_code_size_in_bytes"),
+    }
+
+
+def _memory_attr(analysis: Any, name: str) -> int | None:
+    """Normalizes optional XLA memory-analysis attributes to JSON-safe integers."""
+
+    value = getattr(analysis, name, None)
+    return None if value is None else int(value)
+
+
 def median_step_us(run_once, n_steps: int, samples: int = 100) -> float:
     """Measures median per-step wall time after caller-provided compilation warmup."""
 
