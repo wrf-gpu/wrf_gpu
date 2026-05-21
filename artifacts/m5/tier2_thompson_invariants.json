@@ -19,5 +19,26 @@
     "pass": true,
     "relative_residual": 2.670445271854754e-12,
     "tolerance": 1e-08
+  },
+  "wrf_harness_one_step_budget": {
+    "number_caveat": "WRF finalizes Ns/Ng/Qb internally but this M5 harness exposes only Ni/Nr; tracked-number tolerance is carry-forward diagnostic.",
+    "per_field_max_abs_err": {
+      "Ni": 772.3940057673026,
+      "Nr": 33653.28915198239,
+      "T": 0.008302000075161686,
+      "qc": 2.375154443240955e-09,
+      "qg": 2.9509294563467847e-06,
+      "qi": 4.855188355740517e-09,
+      "qr": 3.327517035206257e-08,
+      "qs": 9.2685395199886e-11,
+      "qv": 2.9510734091959916e-06
+    },
+    "source": "WRF linked Fortran harness fixture output",
+    "tracked_number_max_abs": 33653.28915198239,
+    "tracked_number_pass": true,
+    "tracked_number_tolerance": 100000.0,
+    "water_delta_max_abs": 3.9751988940156524e-10,
+    "water_delta_pass": true,
+    "water_delta_tolerance": 1e-08
   }
 }

@@ -11,10 +11,10 @@ from gpuwrf.physics.thompson_column import (
     ThompsonColumnState,
     _clip_species,
     _finish,
-    _ice_sources,
+    _ice_sources_with_process_flags,
     _instant_melt_freeze,
     _rain_evaporation,
-    _saturation_adjustment,
+    _saturation_adjustment_with_condensation,
     _warm_rain_collection,
 )
 
@@ -27,9 +27,9 @@ def _step_thompson_column_stripped_impl(state: ThompsonColumnState, dt: float) -
 
     state = _clip_species(state)
     state = _warm_rain_collection(state, dt)
-    state = _ice_sources(state, dt)
-    state = _saturation_adjustment(state, dt)
-    state = _rain_evaporation(state, dt)
+    state, graupel_melt = _ice_sources_with_process_flags(state, dt)
+    state, cloud_condensed = _saturation_adjustment_with_condensation(state, dt)
+    state = _rain_evaporation(state, dt, skip_evaporation=cloud_condensed, graupel_melt=graupel_melt)
     state = _instant_melt_freeze(state, dt)
     return _finish(state)
 

@@ -58,6 +58,7 @@ class ThompsonTableBundle(NamedTuple):
 
     t_Efrw: jnp.ndarray
     iaus: jnp.ndarray
+    qrfz: jnp.ndarray
     snow_sa: jnp.ndarray
     snow_sb: jnp.ndarray
     cse: jnp.ndarray
@@ -100,9 +101,20 @@ def load_thompson_tables(path: Path = TABLE_ASSET) -> ThompsonTableBundle:
 
     arrays = _load_npz(str(path))
     iaus = np.stack((arrays["tps_iaus"], arrays["tni_iaus"], arrays["tpi_ide"]), axis=-1)
+    default_in_index = 27
+    qrfz = np.stack(
+        (
+            arrays["tpi_qrfz"][:, :, :, default_in_index],
+            arrays["tpg_qrfz"][:, :, :, default_in_index],
+            arrays["tni_qrfz"][:, :, :, default_in_index],
+            arrays["tnr_qrfz"][:, :, :, default_in_index],
+        ),
+        axis=-1,
+    ).reshape(-1, 4)
     return ThompsonTableBundle(
         t_Efrw=jnp.asarray(arrays["t_Efrw"], dtype=jnp.float64),
         iaus=jnp.asarray(iaus, dtype=jnp.float64),
+        qrfz=jnp.asarray(qrfz, dtype=jnp.float64),
         snow_sa=jnp.asarray(arrays["snow_sa"], dtype=jnp.float64),
         snow_sb=jnp.asarray(arrays["snow_sb"], dtype=jnp.float64),
         cse=jnp.asarray(arrays["cse"], dtype=jnp.float64),

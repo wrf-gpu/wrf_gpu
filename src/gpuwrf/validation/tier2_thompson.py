@@ -11,7 +11,7 @@ import jax.numpy as jnp
 import numpy as np
 
 from gpuwrf.physics.thompson_column import ThompsonColumnState, _step_thompson_column_impl
-from gpuwrf.validation.tier1_thompson import load_fixture_state
+from gpuwrf.validation.tier1_thompson import OUTPUT_FIELDS, load_fixture_state
 
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -50,13 +50,41 @@ def _trajectory_metrics(state: ThompsonColumnState, dt: float, n_steps: int):
     return final, pos_bad, finite_bad, heat_max, residual
 
 
+def _wrf_one_step_budget(state: ThompsonColumnState, dt: float, expected: dict[str, np.ndarray]) -> dict[str, Any]:
+    """Compares aggregate candidate budgets against the WRF-linked harness output."""
+
+    candidate = _step_thompson_column_impl(state, dt, False)
+    water_initial = np.asarray(sum(np.asarray(getattr(state, field), dtype=np.float64) for field in WATER_FIELDS), dtype=np.float64)
+    water_candidate = np.asarray(sum(np.asarray(getattr(candidate, field), dtype=np.float64) for field in WATER_FIELDS), dtype=np.float64)
+    water_wrf = np.asarray(sum(expected[field] for field in WATER_FIELDS), dtype=np.float64)
+    water_delta_residual = np.abs((water_candidate - water_initial) - (water_wrf - water_initial))
+    per_field_abs = {
+        field: float(np.max(np.abs(np.asarray(getattr(candidate, field), dtype=np.float64) - expected[field])))
+        for field in OUTPUT_FIELDS
+    }
+    tracked_number_abs = max(per_field_abs["Ni"], per_field_abs["Nr"])
+    return {
+        "source": "WRF linked Fortran harness fixture output",
+        "water_delta_max_abs": float(np.max(water_delta_residual)),
+        "water_delta_tolerance": 1.0e-8,
+        "water_delta_pass": bool(np.max(water_delta_residual) <= 1.0e-8),
+        "tracked_number_max_abs": float(tracked_number_abs),
+        "tracked_number_tolerance": 1.0e5,
+        "tracked_number_pass": bool(tracked_number_abs <= 1.0e5),
+        "per_field_max_abs_err": per_field_abs,
+        "number_caveat": "WRF finalizes Ns/Ng/Qb internally but this M5 harness exposes only Ni/Nr; tracked-number tolerance is carry-forward diagnostic.",
+    }
+
+
 def invariant_record(state: ThompsonColumnState | None = None, dt: float | None = None, n_steps: int = 10) -> dict[str, Any]:
     """Computes the M5-S1 trajectory-wide Tier-2 invariant result."""
 
     if state is None or dt is None:
-        loaded_state, loaded_dt, _ = load_fixture_state()
+        loaded_state, loaded_dt, expected = load_fixture_state()
         state = loaded_state
         dt = loaded_dt
+    else:
+        _loaded_state, _loaded_dt, expected = load_fixture_state()
     final, pos_bad, finite_bad, heat_max, residual = _trajectory_metrics(state, float(dt), int(n_steps))
     jax.tree_util.tree_map(lambda leaf: leaf.block_until_ready() if hasattr(leaf, "block_until_ready") else leaf, final)
     positivity_violations = int(np.asarray(pos_bad))
@@ -70,8 +98,17 @@ def invariant_record(state: ThompsonColumnState | None = None, dt: float | None 
         "water_budget": {"relative_residual": water_residual, "tolerance": 1.0e-8, "pass": water_residual <= 1.0e-8},
         "finite_latent_heating": {"max_abs_delta_T_K": max_heat, "bound_K": 100.0, "pass": max_heat < 100.0},
         "nan_inf": {"violations": nonfinite, "pass": nonfinite == 0},
-        "pass": bool(positivity_violations == 0 and nonfinite == 0 and water_residual <= 1.0e-8 and max_heat < 100.0),
     }
+    wrf_budget = _wrf_one_step_budget(state, float(dt), expected)
+    record["wrf_harness_one_step_budget"] = wrf_budget
+    record["pass"] = bool(
+        positivity_violations == 0
+        and nonfinite == 0
+        and water_residual <= 1.0e-8
+        and max_heat < 100.0
+        and wrf_budget["water_delta_pass"]
+        and wrf_budget["tracked_number_pass"]
+    )
     return record
 
 
