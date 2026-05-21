@@ -400,15 +400,17 @@ def _interp_table(values: np.ndarray, grid: np.ndarray, radius: float) -> float:
     return float(np.interp(radius, grid, values))
 
 
-def _sw_cloud_coefficients() -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
-    """Builds SW cloud extinction and scattering coefficients from WRF source tables."""
+def _sw_cloud_coefficients() -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    """Builds SW cloud optical coefficients from WRF source tables."""
 
     liquid_grid = np.arange(1.5, 59.5, dtype=np.float64)
     ice_grid = 2.0 + 3.0 * np.arange(1, 47, dtype=np.float64)
     liquid_ext = []
     liquid_ssa = []
+    liquid_asy = []
     ice_ext = []
     ice_ssa = []
+    ice_asy = []
     for band in range(16, 30):
         ext_liq = _interp_table(_parse_source_array(SW_SOURCE, "extliq1", band), liquid_grid, 10.0)
         ssa_liq = _interp_table(_parse_source_array(SW_SOURCE, "ssaliq1", band), liquid_grid, 10.0)
@@ -416,17 +418,19 @@ def _sw_cloud_coefficients() -> tuple[np.ndarray, np.ndarray, np.ndarray, np.nda
         ext_ice = _interp_table(_parse_source_array(SW_SOURCE, "extice3", band), ice_grid, 30.0)
         ssa_ice = _interp_table(_parse_source_array(SW_SOURCE, "ssaice3", band), ice_grid, 30.0)
         asy_ice = _interp_table(_parse_source_array(SW_SOURCE, "asyice3", band), ice_grid, 30.0)
-        forw_liq = asy_liq * asy_liq
-        forw_ice = asy_ice * asy_ice
-        liquid_ext.append(ext_liq * (1.0 - forw_liq * ssa_liq))
-        ice_ext.append(ext_ice * (1.0 - forw_ice * ssa_ice))
-        liquid_ssa.append(ssa_liq * (1.0 - forw_liq) / max(1.0 - forw_liq * ssa_liq, np.finfo(np.float64).tiny))
-        ice_ssa.append(ssa_ice * (1.0 - forw_ice) / max(1.0 - forw_ice * ssa_ice, np.finfo(np.float64).tiny))
+        liquid_ext.append(ext_liq)
+        ice_ext.append(ext_ice)
+        liquid_ssa.append(ssa_liq)
+        ice_ssa.append(ssa_ice)
+        liquid_asy.append(asy_liq)
+        ice_asy.append(asy_ice)
     return (
         np.asarray(liquid_ext, dtype=np.float64),
         np.asarray(ice_ext, dtype=np.float64),
         np.asarray(liquid_ssa, dtype=np.float64),
         np.asarray(ice_ssa, dtype=np.float64),
+        np.asarray(liquid_asy, dtype=np.float64),
+        np.asarray(ice_asy, dtype=np.float64),
     )
 
 
@@ -466,7 +470,7 @@ def _effective_sw_coefficients(records: list[bytes]) -> dict[str, np.ndarray]:
     source_weights_array = np.asarray(source_weights, dtype=np.float64)
     sw_gpoint_weights = _normalized(source_weights_array)
     sw_gpoint_mask = _reduced_mask(SW_REDUCED_GROUPS, MAX_SW_GPOINTS)
-    liquid_ext, ice_ext, liquid_ssa, ice_ssa = _sw_cloud_coefficients()
+    liquid_ext, ice_ext, liquid_ssa, ice_ssa, liquid_asy, ice_asy = _sw_cloud_coefficients()
     band_weights = np.sum(sw_gpoint_weights, axis=1)
     return {
         "sw_reference_pressure_pa": REFERENCE_PRESSURE_MB * 100.0,
@@ -478,6 +482,8 @@ def _effective_sw_coefficients(records: list[bytes]) -> dict[str, np.ndarray]:
         "sw_cloud_ice_extinction": ice_ext,
         "sw_cloud_liquid_ssa": liquid_ssa,
         "sw_cloud_ice_ssa": ice_ssa,
+        "sw_cloud_liquid_asymmetry": liquid_asy,
+        "sw_cloud_ice_asymmetry": ice_asy,
         "sw_band_weights": band_weights,
     }
 

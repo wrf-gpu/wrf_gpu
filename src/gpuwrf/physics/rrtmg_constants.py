@@ -10,6 +10,14 @@ RV_OVER_RD_MINUS_ONE = 0.608
 SECONDS_PER_DAY = 86400.0
 SOLAR_CONSTANT = 1368.22
 STEFAN_BOLTZMANN = 5.670374419e-8
+AVOGADRO = 6.02214199e23
+DRY_AIR_MOLECULAR_WEIGHT = 28.9660
+WATER_VAPOR_MOLECULAR_WEIGHT_RATIO = 1.607793
+CO2_VMR = 420.0e-6
+CH4_VMR = 1.9e-6
+N2O_VMR = 0.335e-6
+O2_VMR = 0.2095
+O3_BACKGROUND_VMR = 8.0e-8
 
 WRF_RRTMG_SW_BANDS = 14
 WRF_RRTMG_LW_BANDS = 16
@@ -19,3 +27,58 @@ MIN_COSZEN = 0.0
 MIN_LAYER_MASS = 1.0e-6
 MIN_OPTICAL_DEPTH = 1.0e-10
 MAX_OPTICAL_DEPTH = 80.0
+
+LW_DIFFUSIVITY_A0 = (
+    1.66,
+    1.55,
+    1.58,
+    1.66,
+    1.54,
+    1.454,
+    1.89,
+    1.33,
+    1.668,
+    1.66,
+    1.66,
+    1.66,
+    1.66,
+    1.66,
+    1.66,
+    1.66,
+)
+LW_DIFFUSIVITY_A1 = (
+    0.0,
+    0.25,
+    0.22,
+    0.0,
+    0.13,
+    0.446,
+    -0.10,
+    0.40,
+    -0.006,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+)
+LW_DIFFUSIVITY_A2 = (
+    0.0,
+    -12.0,
+    -11.7,
+    0.0,
+    -0.72,
+    -0.243,
+    0.19,
+    -0.062,
+    0.414,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+)

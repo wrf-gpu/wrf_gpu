@@ -28,6 +28,8 @@ ASSET_TABLE_NAMES = (
     "sw_cloud_ice_extinction",
     "sw_cloud_liquid_ssa",
     "sw_cloud_ice_ssa",
+    "sw_cloud_liquid_asymmetry",
+    "sw_cloud_ice_asymmetry",
     "lw_band_weights",
     "lw_reference_pressure_pa",
     "lw_gpoint_mask",
@@ -52,6 +54,8 @@ class RRTMGTableBundle(NamedTuple):
     sw_cloud_ice_extinction: jnp.ndarray
     sw_cloud_liquid_ssa: jnp.ndarray
     sw_cloud_ice_ssa: jnp.ndarray
+    sw_cloud_liquid_asymmetry: jnp.ndarray
+    sw_cloud_ice_asymmetry: jnp.ndarray
     lw_band_weights: jnp.ndarray
     lw_reference_pressure_pa: jnp.ndarray
     lw_gpoint_mask: jnp.ndarray
@@ -94,6 +98,8 @@ def load_rrtmg_tables(path: Path = TABLE_ASSET) -> RRTMGTableBundle:
         sw_cloud_ice_extinction=jnp.asarray(arrays["sw_cloud_ice_extinction"], dtype=jnp.float64),
         sw_cloud_liquid_ssa=jnp.asarray(arrays["sw_cloud_liquid_ssa"], dtype=jnp.float64),
         sw_cloud_ice_ssa=jnp.asarray(arrays["sw_cloud_ice_ssa"], dtype=jnp.float64),
+        sw_cloud_liquid_asymmetry=jnp.asarray(arrays["sw_cloud_liquid_asymmetry"], dtype=jnp.float64),
+        sw_cloud_ice_asymmetry=jnp.asarray(arrays["sw_cloud_ice_asymmetry"], dtype=jnp.float64),
         lw_band_weights=jnp.asarray(arrays["lw_band_weights"], dtype=jnp.float64),
         lw_reference_pressure_pa=jnp.asarray(arrays["lw_reference_pressure_pa"], dtype=jnp.float64),
         lw_gpoint_mask=jnp.asarray(arrays["lw_gpoint_mask"], dtype=jnp.float64),

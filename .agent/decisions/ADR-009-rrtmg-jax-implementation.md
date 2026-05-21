@@ -1,44 +1,64 @@
-# ADR-009 - RRTMG Real-Driver Column Binding And Reduced-G-Point JAX Tables
+# ADR-009 - RRTMG JAX Transfer Solver State
 
 Date: 2026-05-21
-Author: M5-S3 attempt-3 worker amendment (Codex gpt-5.5)
+Author: M5-S3.x worker amendment (Codex gpt-5.5)
 Status: PROPOSED worker draft, pending mandatory Claude Opus reviewer pass
-Scope: implementation record for the M5-S3 RRTMG shortwave and longwave radiation column sprint.
+Scope: M5-S3.x RRTMG shortwave and longwave radiation column rewrite.
 
 ## Decision
 
-M5-S3 attempt 3 preserves the attempt-2 WRF wrapper-driver binding: the Fortran harness initializes local Gen2 RRTMG tables and calls the real WRF `RRTMG_SWRAD` and `RRTMG_LWRAD` wrapper surfaces. The JAX table asset still stores raw `RRTMG_SW_DATA` and `RRTMG_LW_DATA` payload bytes for provenance, but the compact A2 median/quantile clipped reductions are removed.
+M5-S3.x replaces the M5-S3 hand-rolled SW reflection stack and fabricated gas curve with a real transfer-solver skeleton:
 
-The table extractor now consumes WRF spectral data using WRF's own reduced-g-point grouping. For SW, it parses the 14 unformatted band records, extracts KAO/KBO reference-pressure absorption arrays, Rayleigh/source arrays, and applies the WRF 16-to-band-dependent g-point weights from `module_ra_rrtmg_sw.F:4763-4784` and `module_ra_rrtmg_sw.F:4927-5027`. For LW, it uses the WRF 16-to-band-dependent g-point map and weights from `module_ra_rrtmg_lw.F:8073-8104` and `module_ra_rrtmg_lw.F:8244-8315`. Cloud optical coefficients are sourced from the WRF source tables and delta-scaling/absorption formulas at `module_ra_rrtmg_sw.F:2388-2428` and `module_ra_rrtmg_lw.F:2997-3018`.
+- SW now computes RRTMG-style molecular columns from pressure interfaces and gas VMRs, multiplies them by extracted reduced-g absorption coefficients, combines gas/Rayleigh/cloud optical properties, applies Joseph-Wiscombe-Weinman delta scaling, evaluates the Meador-Weaver/Joseph Eddington two-stream coefficients, and solves the vertical adding problem using the WRF `vrtqdr_sw` recurrence.
+- LW now computes RRTMG-style molecular columns, evaluates per-band/g-point optical depths, applies the `rtrnmc` band diffusivity-angle convention, runs top-down/down-up source recurrences with surface emissivity/reflection, and sums g-points with the extracted quadrature weights.
+- The table asset now stores original SW cloud extinction/SSA/asymmetry from WRF source tables instead of only pre-delta-scaled cloud coefficients, so delta scaling is visible in the JAX solver.
 
-This is a real spectral-table consumption fix for A2's R-2. It is not yet a full RRTMG port: the JAX kernels still do not implement full gas-species interpolation, McICA cloud sampling, or the complete AER transfer solvers.
+This is a real transfer rewrite relative to M5-S3. It is **not accepted as full RRTMG parity** because strict Tier-1 still fails. The remaining blocker is the incomplete optical-depth/source path: the NPZ still exposes reduced reference-pressure absorption profiles, not the full `setcoef` + band-specific `taumol` interpolation state, and LW still lacks full Planck-fraction (`fracref*`) interpolation.
 
 ## WRF Source Mapping
 
-The local WRF source declares 14 shortwave bands and 112 reduced shortwave g-points in `module_ra_rrtmg_sw.F:31-37`. It declares 16 longwave bands and 140 reduced longwave g-points in `module_ra_rrtmg_lw.F:76-82`. This ADR follows the discovered local build rather than the sprint text's incorrect "32 bands" wording.
+The local WRF source declares 14 shortwave bands and 112 reduced shortwave g-points in `module_ra_rrtmg_sw.F:31-37`; it declares 16 longwave bands and 140 reduced longwave g-points in `module_ra_rrtmg_lw.F:76-82`.
 
-The harness binds the WRF wrapper-driver surfaces at `module_ra_rrtmg_sw.F:10034-10100` and `module_ra_rrtmg_lw.F:11570-11607`. Those wrappers call the internal AER RRTMG transfer drivers at `module_ra_rrtmg_sw.F:11462-11484` and `module_ra_rrtmg_lw.F:12768-12778`. Initialization opens `RRTMG_SW_DATA` and `RRTMG_LW_DATA` at `module_ra_rrtmg_sw.F:11667-11685` and `module_ra_rrtmg_lw.F:13046-13067`. The data-record comments state 14 SW read records and 16 LW read records at `module_ra_rrtmg_sw.F:11705-11710` and `module_ra_rrtmg_lw.F:13085-13090`.
+The WRF wrappers bound by the harness are `RRTMG_SWRAD` at `module_ra_rrtmg_sw.F:10034-10100` and `RRTMG_LWRAD` at `module_ra_rrtmg_lw.F:11570-11607`. They call the internal AER drivers at `module_ra_rrtmg_sw.F:11462-11484` and `module_ra_rrtmg_lw.F:12768-12778`.
 
-Pressure-layer mass in the JAX compact kernels follows the local harness interface reconstruction at `scripts/wrf_rrtmg_harness.f90:294-321`. WRF's SW and LW heating-factor comments define the flux-over-pressure-to-K/day conversion at `module_ra_rrtmg_sw.F:4880-4901` and `module_ra_rrtmg_lw.F:8212-8233`. The LW wrapper lines `module_ra_rrtmg_lw.F:12823-12829` only convert `hr` from K/day to K/s and Exner-normalized tendency; they are not a pressure-thickness heating formula.
+SW source mappings:
 
-## Tables And JAX Use
+- Molecular-column and interpolation setup follows `setcoef_sw`: pressure/temperature interpolation factors and scaled molecular columns are defined at `module_ra_rrtmg_sw.F:2843-3099`.
+- Band/g-point optical depth is delegated by WRF to `taumol_sw` at `module_ra_rrtmg_sw.F:3190-4653`; the current JAX code does not yet port each band-specific branch.
+- Incoming solar g-point source is accumulated in `spcvmc_sw` at `module_ra_rrtmg_sw.F:8470-8476`.
+- Optical properties and delta scaling are combined at `module_ra_rrtmg_sw.F:8554-8558` and `module_ra_rrtmg_sw.F:8603-8610`, with the cloud delta-scaling branch at `module_ra_rrtmg_sw.F:8638-8644`.
+- Eddington two-stream coefficients are present in `reftra_sw` at `module_ra_rrtmg_sw.F:2647-2652`; homogeneous and particular reflectance/transmittance expressions continue through `module_ra_rrtmg_sw.F:2672-2802`.
+- WRF compiled oracle caveat: local `reftra_sw` sets `kmodts=2` at `module_ra_rrtmg_sw.F:2632`, so the WRF fixture uses the PIFM branch at `module_ra_rrtmg_sw.F:2652-2655`, while the M5-S3.x contract requested the Eddington branch. This mismatch is now explicit.
+- Vertical adding follows `vrtqdr_sw` at `module_ra_rrtmg_sw.F:8035-8159`.
 
-`scripts/extract_rrtmg_tables.py` parses the real big-endian Fortran sequential-unformatted records, verifies 14 SW and 16 LW records, stores raw payload bytes/offsets, and pins SHA-256 for data and source files. The regenerated NPZ is 1,747,092 bytes with SHA-256 `cffd87d494e3f8c2da6bedac42d6626a993bdcd777dcd0bad53dee5e4f7f96c8`.
+LW source mappings:
 
-The active spectral coefficient values are no longer pinned to the A2 clip floors: the regenerated active-value fraction at old floors `0.0025`, `1e-5`, `0.25`, `0.16`, `0.003`, and `0.2` is `0.0`. The JAX bundle exposes SW absorption as `(14,59,12)` over bands, WRF reference pressure levels, and padded reduced g-points, plus SW g-point weights/masks, Rayleigh coefficients, and cloud extinction/SSA. LW now also exposes pressure-resolved absorption as `(16,59,16)`, plus LW g-point weights/masks, band weights from WRF `delwave`, and LW cloud absorption.
+- Molecular columns, precipitable water, CFC cross-section inputs, and surface emissivity setup are in the LW input path at `module_ra_rrtmg_lw.F:11204-11490`.
+- Band-specific optical-depth and Planck-fraction interpolation is delegated by WRF to `taumol` at `module_ra_rrtmg_lw.F:4824-7942`; the current JAX code does not yet port each `taugb*` branch.
+- `rtrnmc` diffusivity angles use the band rules at `module_ra_rrtmg_lw.F:3253-3261`.
+- LW downward/upward correlated-k source recurrences and surface reflection are at `module_ra_rrtmg_lw.F:3317-3436` and `module_ra_rrtmg_lw.F:3439-3468`.
+- LW band/g-point flux accumulation and heating conversion are at `module_ra_rrtmg_lw.F:3475-3515`.
+
+## Implemented Formulas
+
+SW delta scaling follows Joseph, Wiscombe, and Weinman (1976): `f = g^2`, `tau' = (1 - f omega) tau`, `omega' = (1 - f) omega / (1 - f omega)`, and `g' = (g - f) / (1 - f)`. WRF applies the same algebra in `module_ra_rrtmg_sw.F:8603-8610` and `module_ra_rrtmg_sw.F:8638-8644`.
+
+SW Eddington coefficients follow the contract and the Eddington branch in WRF `reftra_sw`: `gamma1 = (7 - omega (4 + 3g))/4`, `gamma2 = -(1 - omega (4 - 3g))/4`, `gamma3 = (2 - 3 mu0 g)/4`, and `gamma4 = 1 - gamma3` (`module_ra_rrtmg_sw.F:2647-2661`). The homogeneous and non-conservative reflectance/transmittance expressions mirror `module_ra_rrtmg_sw.F:2714-2802`. The vertical adding recurrence mirrors `module_ra_rrtmg_sw.F:8108-8156`.
+
+LW follows Mlawer et al. (1997) correlated-k structure at the reduced-g-point level: per-band/g-point optical depth, band diffusivity angle, source recurrence, surface reflection, and quadrature accumulation. The implemented recurrence follows the `rtrnmc` control flow at `module_ra_rrtmg_lw.F:3317-3515`, but the source function is still a band-weighted Stefan-Boltzmann approximation because the full WRF `fracref*`/Planck interpolation path is not yet exposed in `rrtmg-tables-v1.npz`.
 
 ## Validation And Gate Status
 
-Attempt 3 restores non-vacuous Tier-1 tolerances in the manifests: flux outputs use `abs=1.0 W m-2, rel=0.05`, and heating-rate outputs use `abs=1.0e-4 K s-1, rel=0.05`. These replace the A2 `abs=1200 W m-2` and `rel=15.0` carry-forward regime.
+Latest regenerated proof objects:
 
-Under those strict tolerances, the current compact JAX kernels do not pass Tier-1. Regenerated artifacts report SW max absolute errors of `flux_down=863.4149601378938 W m-2`, `flux_up=1578.875792806668 W m-2`, and `heating_rate=6.909078736834584e-4 K s-1`. LW max absolute errors are `flux_down=228.98306589556717 W m-2`, `flux_up=176.3891440048552 W m-2`, and `heating_rate=1.5330015754548213e-4 K s-1`. The gate is therefore `FALLBACK` for correctness, not a performance GO.
-
-Tier-2 was updated to remove the A2 JAX-side tautological energy record. It now checks JAX SW and LW heating against candidate flux divergence using the WRF fixture pressure-layer mass, keeps real-driver SW/LW closure checks, and checks LW Stefan-Boltzmann surface emission against `sigma * emissivity * T_sfc^4`. The regenerated Tier-2 artifact passes.
-
-Profile reporting remains honest: `kernel_launches_per_step` equals `raw_hlo_launch_marker_count`, now `28` after the reduced-g-point table expansion (`15` SW plus `13` LW). This preserves the raw-count reporting rule, but it no longer preserves A2's raw value of 22.
+- `artifacts/m5/tier1_rrtmg_sw_parity.json`: `pass=false`; max residuals include `flux_down=107.68936518613896 W m-2`, `flux_up=59.54565780869302 W m-2`, `toa_down=67.04383583984372 W m-2`, and `heating_rate=2.9023857620628224e-05 K s-1`.
+- `artifacts/m5/tier1_rrtmg_lw_parity.json`: `pass=false`; max residuals include `flux_down=75.56380595798305 W m-2`, `flux_up=45.5067191111325 W m-2`, `column_net_heating=88.2496334872834 W m-2`, and `heating_rate=6.148058425830156e-05 K s-1`.
+- `artifacts/m5/tier2_rrtmg_invariants.json`: `pass=true`.
+- `artifacts/m5/rrtmg_profile.json`: HLO sizes are `497598` bytes SW and `136941` bytes LW; raw launch marker count is honestly `40` (`24` SW + `16` LW), so launch budget fails. No `min(raw, cap)` launch reporting is used.
+- `artifacts/m5/rrtmg_gate_result.json`: `gate_status=FALLBACK`, `tolerance_regime=strict`, `oracle_regime=wrf-driver`.
 
 ## Consequences
 
-Positive consequence: the A2 R-2 clipped coefficient defect is removed, and the A2 R-3 vacuous tolerance defect is removed. The repository now has real WRF driver fixtures, real table provenance, real reduced-g-point spectral coefficients, strict manifest tolerances, and non-tautological Tier-2 records.
+Positive consequence: M5-S3.x removes the fabricated `log1p` SW gas curve, uses WRF-style molecular columns, implements visible SW delta scaling and Eddington adding, and moves LW to an explicit reduced-g correlated-k recurrence. The new tests lock those formulas.
 
-Cost: the compact JAX transfer kernels remain inadequate against the real WRF RRTMG fixture once tolerances are meaningful. The next decision should be a dedicated M5-S3.x implementation sprint for full gas-species interpolation plus SW/LW transfer parity, or an explicit architecture decision that RRTMG is outside the compact-column JAX scope.
+Blocking consequence: M6 coupled validation remains blocked. Strict Tier-1 does not pass and the raw launch count exceeds the M5-S3.x budget. The next implementation decision is whether to port full SW/LW `setcoef` + `taumol` + LW Planck-fraction interpolation into JAX tables, or to call/translate the existing WRF low-level oracle into generated device-resident optical-depth fixtures for a narrower validation boundary.
