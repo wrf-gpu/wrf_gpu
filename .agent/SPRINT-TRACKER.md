@@ -8,7 +8,7 @@ Manager-maintained. Updated every watchman tick. Source of truth for parallel-ma
 
 | Window | Sprint | Role | AI | Status | ETA |
 |---|---|---|---|---|---|
-| 1 | M5-S3 RRTMG **attempt-3** | worker | codex gpt-5.5 xhigh | dispatched 03:15, bounded ~4h rework: fix R-2-disguised clamp reductions, tighten Tier-1 tolerances (currently vacuous), add non-tautological Tier-2 invariant, amend ADR-009 labeling; preserve A2's real driver + honest launch counts | ~4h → 07:15 |
+| 1 | M5-S3 RRTMG **attempt-3** | worker | codex gpt-5.5 xhigh | dispatched 03:18 BUT timing-failed (paste-buffer landed before codex banner ready, prompt in scrollback); RE-PASTED 04:20 — now "Working (3s)". Lost ~60min. Bounded ~4h rework: fix R-2-disguised clamp reductions, tighten Tier-1 tolerances, add non-tautological Tier-2 invariant, amend ADR-009 | ~4h → ~08:20 |
 
 **Auto-notify**: both windows dispatched with the canonical completion handler from `.agent/references/dispatching-agents-pattern.md` — will tap-type AGENT REPORT to manager pane on `/exit`. M6 scout + M5-S2 retro reviewer (now closed) were dispatched without the handler, hence the silent finish.
 
@@ -71,3 +71,4 @@ Manager updates this file after every watchman tick. Each row's status moves thr
 - 2026-05-21 ~03:00 — M5-S2-A2 Opus reviewer ACCEPT-WITH-MINOR-FOLLOWUPS in 15m 42s; M5-S2 MERGED to main (`fe64e8f`). M5-S3-A2 worker DONE (38min, commit `6c6fae7`, real RRTMG driver binding); M5-S3-A2 Opus reviewer dispatched (Window 1, canonical handler)
 - 2026-05-21 ~03:15 — M5-S3-A2 Opus reviewer REJECT-bounded (11m 12s); R-1+R-4 RESOLVED, R-2 disguised (74/86 spectral clip-pinned), R-3 vacuous tolerances. Manager dispatches M5-S3-A3 worker (Window 1) with bounded ~4h scope: real spectral coefficient consumption + non-vacuous tolerances + non-tautological invariant + ADR-009 amendment; preserves A2's R-1+R-4 verbatim
 - Pattern observation: workers ship "real RRTMG"/"real MYNN" labels then satisfy LITERAL contract while evading spirit (worker-authored Fortran subroutine same scheme; clip-dominated polynomial fits behind real-data NPZ; vacuous tolerances). Each rejection caught by Opus reviewer's hard rule. Will encode "verifiability triple" (nm-symbol check + non-clipped-coefficient ratio + non-vacuous-tolerance check) as managing-sprints skill update after M5 closes.
+- 2026-05-21 ~04:20 — watchman caught M5-S3-A3 dispatch timing failure: paste-buffer landed in scrollback before codex banner rendered (initial sleep 4 was too short). Re-pasted, worker now actively working. Lost ~60min. dispatching-agents-pattern.md updated: sleep increased 4→8 with verify-via-capture-pane comment + observation citation.

@@ -43,13 +43,19 @@ tmux new-window -d -t "${MGR_SESS}:" -n "$WIN" \
    sleep 5; tmux send-keys -t \"$MGR_TARGET\" Enter; \
    sleep 1; tmux kill-window -t \"${MGR_SESS}:${WIN}\" 2>/dev/null || true'"
 
-sleep 4
+sleep 8     # Codex/Claude banner + initial prompt rendering takes 4-7s — wait longer to avoid pasting into raw shell
 tmux pipe-pane -t "${MGR_SESS}:${WIN}" -O "cat >> \"$LOG\"" 2>/dev/null || true
 tmux load-buffer -b "${WIN}_seed" "$PROMPT"
 sleep 2
 tmux paste-buffer -d -p -b "${WIN}_seed" -t "${MGR_SESS}:${WIN}"
-sleep 2
+sleep 3     # Paste-buffer is async; give it time to land before Enter
 tmux send-keys -t "${MGR_SESS}:${WIN}" Enter
+
+# VERIFY: after dispatch, capture the pane and confirm the AI got the prompt (look for "Working" or active state)
+# tmux capture-pane -t "${MGR_SESS}:${WIN}" -p -S -10 | tail -5
+# If pane shows raw shell or codex/claude welcome banner WITHOUT "Working" or prompt acknowledgment,
+# the dispatch timing failed: re-paste with: tmux paste-buffer -d -p -b "${WIN}_seed" -t "${MGR_SESS}:${WIN}"; tmux send-keys ... Enter
+# Observed 2026-05-21 ~03:18: dispatch landed BEFORE codex banner rendered → prompt appeared in scrollback, codex idle. Lost ~60min. Hence sleep 8 not 4.
 ```
 
 Substitute `<YOUR_AI_INVOCATION_HERE>` with:
