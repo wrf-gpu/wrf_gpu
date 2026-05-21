@@ -1,4 +1,4 @@
-"""Device-resident prognostic state and tendency contracts for M3."""
+"""Device-resident prognostic state and tendency contracts."""
 
 from __future__ import annotations
 
@@ -30,6 +30,47 @@ def _zeros(shape: tuple[int, ...], field: str, device: jax.Device) -> jax.Array:
     """Allocates one frozen state/tendency field on the selected GPU during init only."""
 
     return jax.device_put(jnp.zeros(shape, dtype=DEFAULT_DTYPES.dtype_for(field)), device)
+
+
+def _state_field_shapes(grid: GridSpec) -> dict[str, tuple[int, ...]]:
+    """Returns the frozen SoA field-shape contract for the coupled M6 state."""
+
+    nz, ny, nx = grid.nz, grid.ny, grid.nx
+    mass_3d = (nz, ny, nx)
+    surface_2d = (ny, nx)
+    return {
+        "u": (nz, ny, nx + 1),
+        "v": (nz, ny + 1, nx),
+        "w": (nz + 1, ny, nx),
+        "theta": mass_3d,
+        "qv": mass_3d,
+        "p": mass_3d,
+        "ph": (nz + 1, ny, nx),
+        "mu": surface_2d,
+        "qc": mass_3d,
+        "qr": mass_3d,
+        "qi": mass_3d,
+        "qs": mass_3d,
+        "qg": mass_3d,
+        "Ni": mass_3d,
+        "Nr": mass_3d,
+        "Ns": mass_3d,
+        "Ng": mass_3d,
+        "qke": mass_3d,
+        "ustar": surface_2d,
+        "theta_flux": surface_2d,
+        "qv_flux": surface_2d,
+        "tau_u": surface_2d,
+        "tau_v": surface_2d,
+        "rhosfc": surface_2d,
+        "fltv": surface_2d,
+        "t_skin": surface_2d,
+        "soil_moisture": surface_2d,
+        "rain_acc": surface_2d,
+        "snow_acc": surface_2d,
+        "graupel_acc": surface_2d,
+        "ice_acc": surface_2d,
+    }
 
 
 def _leaf_nbytes(leaves: Iterable[jax.Array]) -> int:
@@ -99,11 +140,90 @@ class Tendencies:
 
 @jax.tree_util.register_pytree_node_class
 class State:
-    """Pytree of GPU-resident WRF-shaped prognostic fields."""
+    """Pytree of GPU-resident WRF-shaped prognostic and coupling fields.
 
-    __slots__ = ("u", "v", "w", "theta", "qv", "p", "ph", "mu")
+    Units and staggering:
+    - `u`, `v`, `w`: m s^-1 on Arakawa C-grid faces.
+    - `theta`: K, `qv/qc/qr/qi/qs/qg`: kg kg^-1 on mass points.
+    - `p`: Pa on mass points; `ph`: m2 s^-2 geopotential on vertical faces.
+    - `mu`: Pa column dry mass on mass points.
+    - `Ni/Nr/Ns/Ng`: m^-3 number concentrations on mass points.
+    - `qke`: m2 s^-2 MYNN turbulent kinetic energy on mass points.
+    - `ustar`: m s^-1, `theta_flux`: K m s^-1, `qv_flux`: kg kg^-1 m s^-1,
+      `tau_u/tau_v`: m2 s^-2, `rhosfc`: kg m^-3, `fltv`: K m s^-1,
+      `t_skin`: K, `soil_moisture`: m3 m^-3 on surface mass points.
+    - `rain_acc/snow_acc/graupel_acc/ice_acc`: mm accumulated precipitation
+      on surface mass points.
+    """
 
-    def __init__(self, u, v, w, theta, qv, p, ph, mu) -> None:
+    __slots__ = (
+        "u",
+        "v",
+        "w",
+        "theta",
+        "qv",
+        "p",
+        "ph",
+        "mu",
+        "qc",
+        "qr",
+        "qi",
+        "qs",
+        "qg",
+        "Ni",
+        "Nr",
+        "Ns",
+        "Ng",
+        "qke",
+        "ustar",
+        "theta_flux",
+        "qv_flux",
+        "tau_u",
+        "tau_v",
+        "rhosfc",
+        "fltv",
+        "t_skin",
+        "soil_moisture",
+        "rain_acc",
+        "snow_acc",
+        "graupel_acc",
+        "ice_acc",
+    )
+
+    def __init__(
+        self,
+        u: jax.Array,
+        v: jax.Array,
+        w: jax.Array,
+        theta: jax.Array,
+        qv: jax.Array,
+        p: jax.Array,
+        ph: jax.Array,
+        mu: jax.Array,
+        qc: jax.Array,
+        qr: jax.Array,
+        qi: jax.Array,
+        qs: jax.Array,
+        qg: jax.Array,
+        Ni: jax.Array,
+        Nr: jax.Array,
+        Ns: jax.Array,
+        Ng: jax.Array,
+        qke: jax.Array,
+        ustar: jax.Array,
+        theta_flux: jax.Array,
+        qv_flux: jax.Array,
+        tau_u: jax.Array,
+        tau_v: jax.Array,
+        rhosfc: jax.Array,
+        fltv: jax.Array,
+        t_skin: jax.Array,
+        soil_moisture: jax.Array,
+        rain_acc: jax.Array,
+        snow_acc: jax.Array,
+        graupel_acc: jax.Array,
+        ice_acc: jax.Array,
+    ) -> None:
         self.u = u
         self.v = v
         self.w = w
@@ -112,23 +232,36 @@ class State:
         self.p = p
         self.ph = ph
         self.mu = mu
+        self.qc = qc
+        self.qr = qr
+        self.qi = qi
+        self.qs = qs
+        self.qg = qg
+        self.Ni = Ni
+        self.Nr = Nr
+        self.Ns = Ns
+        self.Ng = Ng
+        self.qke = qke
+        self.ustar = ustar
+        self.theta_flux = theta_flux
+        self.qv_flux = qv_flux
+        self.tau_u = tau_u
+        self.tau_v = tau_v
+        self.rhosfc = rhosfc
+        self.fltv = fltv
+        self.t_skin = t_skin
+        self.soil_moisture = soil_moisture
+        self.rain_acc = rain_acc
+        self.snow_acc = snow_acc
+        self.graupel_acc = graupel_acc
+        self.ice_acc = ice_acc
 
     @classmethod
     def zeros(cls, grid: GridSpec) -> "State":
-        """Allocates the full M3 prognostic state once on the first visible GPU."""
+        """Allocates the full M6 SoA state once on the first visible GPU."""
 
         device = _gpu_device()
-        nz, ny, nx = grid.nz, grid.ny, grid.nx
-        return cls(
-            _zeros((nz, ny, nx + 1), "u", device),
-            _zeros((nz, ny + 1, nx), "v", device),
-            _zeros((nz + 1, ny, nx), "w", device),
-            _zeros((nz, ny, nx), "theta", device),
-            _zeros((nz, ny, nx), "qv", device),
-            _zeros((nz, ny, nx), "p", device),
-            _zeros((nz + 1, ny, nx), "ph", device),
-            _zeros((ny, nx), "mu", device),
-        )
+        return cls(**{field: _zeros(shape, field, device) for field, shape in _state_field_shapes(grid).items()})
 
     @classmethod
     def from_init(cls, grid: GridSpec, ic: Path) -> "State":
@@ -141,7 +274,11 @@ class State:
         """Returns an updated pytree with explicit field names for JAX functional steps."""
 
         values = {name: getattr(self, name) for name in self.__slots__}
-        values.update(updates)
+        for name, value in updates.items():
+            current = values[name]
+            if hasattr(current, "dtype") and hasattr(value, "astype"):
+                value = value.astype(current.dtype)
+            values[name] = value
         return type(self)(**values)
 
     def bytes(self) -> int:

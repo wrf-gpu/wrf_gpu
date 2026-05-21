@@ -18,7 +18,8 @@ def _record_snapshot(stage: str, ring_size: int, *leaves) -> None:
     """Stores host copies for debug runs without participating in production HLO."""
 
     fields = State.__slots__
-    _SNAPSHOTS[stage] = {name: leaves[index] for index, name in enumerate(fields)}
+    state_leaves = leaves[: len(fields)]
+    _SNAPSHOTS[stage] = {name: state_leaves[index] for index, name in enumerate(fields)}
     while len(_SNAPSHOTS) > int(ring_size):
         _SNAPSHOTS.popitem(last=False)
 
@@ -29,7 +30,7 @@ def snapshot(state: State, stage: str, *, enabled: bool, ring_size: int = 8) -> 
     if not enabled:
         return state
     token = jnp.asarray(0, dtype=state.theta.dtype)
-    jax.debug.callback(_record_snapshot, stage, int(ring_size), state.u, state.v, state.w, state.theta, state.qv, state.p, state.ph, state.mu, token)
+    jax.debug.callback(_record_snapshot, stage, int(ring_size), *jax.tree_util.tree_leaves(state), token)
     return state
 
 
