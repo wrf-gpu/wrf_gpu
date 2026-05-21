@@ -53,9 +53,13 @@ RMSE adapter schema. It returns:
 `{field: {"rmse": float, "error_map": jax.Array, "valid_time_utc": str, "gen2_source_file": str}}`
 
 Boundary replay cross-checks compare lead-0 replay-zarr d02 boundary
-strips against d02 wrfout boundary strips for the same valid time. Any
-relative MAE above 1 percent is a data-pipeline failure flag, not a
-model-performance result.
+strips against d02 wrfout boundary strips for the same valid time.
+Thresholds match `src/gpuwrf/io/boundary_replay.py:40-41` TOLERANCES
+(U/V/QVAPOR `rel_mae_max=0.03`, T `rmse 0.5K`, PH tight relative gate);
+any breach is a data-pipeline failure flag, not a
+model-performance result. (Amended 2026-05-21 per M6.5-D1 Opus AC4
+disposition c — initial 1% spec was manager error, not matching the
+existing source-of-truth TOLERANCES.)
 
 ## Alternatives
 
