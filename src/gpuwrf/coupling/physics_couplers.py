@@ -48,6 +48,23 @@ class _SurfaceColumnState(NamedTuple):
     ustar: object
 
 
+class ThompsonTendencySideChannel(NamedTuple):
+    """Microphysical species-tendency oracle emitted by the Thompson adapter.
+
+    Arrays are in State orientation `(z, y, x)` except `column_water_tendency`,
+    which is the vertical-mean total-water tendency on `(y, x)`.
+    """
+
+    qv: object
+    qc: object
+    qr: object
+    qi: object
+    qs: object
+    qg: object
+    column_water_tendency: object
+    precip_out_tendency: object
+
+
 def _to_columns(field):
     """Moves state vertical axis from leading `(z, y, x)` to trailing `(..., z)`."""
 
@@ -142,12 +159,12 @@ def _cloud_fraction_columns(state: State):
     return _to_columns(jnp.clip(condensate * 1.0e5, 0.0, 1.0))
 
 
-def thompson_adapter(state: State, dt: float) -> State:
-    """Slice state to Thompson-column inputs, call the kernel, and reassemble State."""
+def _thompson_column_from_state(state: State) -> ThompsonColumnState:
+    """Build the column-kernel input view for Thompson microphysics."""
 
     T = _temperature_from_theta(state.theta, state.p)
     rho = density_from_pressure_temperature(state.p, T, state.qv)
-    column = ThompsonColumnState(
+    return ThompsonColumnState(
         _to_columns(state.qv),
         _to_columns(state.qc),
         _to_columns(state.qr),
@@ -160,7 +177,11 @@ def thompson_adapter(state: State, dt: float) -> State:
         _to_columns(state.p),
         _to_columns(rho),
     )
-    out = step_thompson_column(column, dt, debug=False)
+
+
+def _state_from_thompson_output(state: State, out: ThompsonColumnState) -> State:
+    """Reassemble a State from Thompson column-kernel output."""
+
     theta = _theta_from_temperature(_from_columns(out.T), state.p, _field_dtype("theta"))
     return state.replace(
         theta=theta,
@@ -173,6 +194,57 @@ def thompson_adapter(state: State, dt: float) -> State:
         Ni=_from_columns(out.Ni).astype(_field_dtype("Ni")),
         Nr=_from_columns(out.Nr).astype(_field_dtype("Nr")),
     )
+
+
+def _thompson_tendency_side_channel(
+    state: State,
+    out: ThompsonColumnState,
+    dt: float,
+) -> ThompsonTendencySideChannel:
+    """Return water-species tendencies independent of precipitation accumulators."""
+
+    inv_dt = 1.0 / float(dt)
+    tendencies = {
+        field: (
+            jnp.asarray(_from_columns(getattr(out, field)), dtype=jnp.float64)
+            - jnp.asarray(getattr(state, field), dtype=jnp.float64)
+        )
+        * inv_dt
+        for field in ("qv", "qc", "qr", "qi", "qs", "qg")
+    }
+    column_water_tendency = jnp.mean(sum(tendencies.values()), axis=0)
+    precip_out_tendency = jnp.zeros_like(column_water_tendency)
+    return ThompsonTendencySideChannel(
+        qv=tendencies["qv"],
+        qc=tendencies["qc"],
+        qr=tendencies["qr"],
+        qi=tendencies["qi"],
+        qs=tendencies["qs"],
+        qg=tendencies["qg"],
+        column_water_tendency=column_water_tendency,
+        precip_out_tendency=precip_out_tendency,
+    )
+
+
+def thompson_adapter(state: State, dt: float, *, return_tendencies: bool = False):
+    """Slice state to Thompson inputs, call the kernel, and reassemble State.
+
+    `return_tendencies=True` exposes the M6-S6 water-budget oracle while
+    existing coupled-driver calls keep the original State-only API.
+    """
+
+    column = _thompson_column_from_state(state)
+    out = step_thompson_column(column, dt, debug=False)
+    next_state = _state_from_thompson_output(state, out)
+    if return_tendencies:
+        return next_state, _thompson_tendency_side_channel(state, out, dt)
+    return next_state
+
+
+def thompson_adapter_with_tendencies(state: State, dt: float) -> tuple[State, ThompsonTendencySideChannel]:
+    """Explicit Thompson side-channel wrapper for validation call sites."""
+
+    return thompson_adapter(state, dt, return_tendencies=True)
 
 
 def mynn_adapter(state: State, dt: float, grid: GridSpec | None = None) -> State:
@@ -291,3 +363,13 @@ def rrtmg_adapter(state: State, dt: float, grid: GridSpec | None = None) -> Stat
     lw = solve_rrtmg_lw_column(lw_state, debug=False)
     T_next = T + float(dt) * _from_columns(sw.heating_rate + lw.heating_rate)
     return state.replace(theta=_theta_from_temperature(T_next, state.p, _field_dtype("theta")))
+
+
+__all__ = [
+    "ThompsonTendencySideChannel",
+    "mynn_adapter",
+    "rrtmg_adapter",
+    "surface_adapter",
+    "thompson_adapter",
+    "thompson_adapter_with_tendencies",
+]
