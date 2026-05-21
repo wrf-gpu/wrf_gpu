@@ -71,6 +71,25 @@ Extract WRF intermediate state at the `cldprmc_sw` → `spcvmc_sw` boundary, val
 5. Cite `module_ra_rrtmg_sw.F:lineno` for every formula.
 6. WATCHDOG + multi-Enter pattern in launcher.
 
+## REVIEWER-BINDING ADDITIONS (per M5-S3.zz Opus reviewer §4 A1-A5)
+
+- **A1 — R-8 hypothesis confrontation**: explicitly verify `cloud_safe = max(cloud_box, 0.01)` floor against `cldprmc_sw` `ptaucmc/pasycmc/pomgcmc` dumps. If floor is the bias source, replace with `where(cloud_box > 0, ..., 0)` form that does NOT floor the denominator.
+- **A2 — R-9 hypothesis confrontation**: explicitly verify "double-Eddington-then-blend" against `spcvmc_sw` per-g-point `zref/ztra/zrefd/ztrad` dumps. Restructure JAX to compute reftra ONCE per g-point with MCICA-selected optical properties (matching WRF accumulator semantics), not blend-then-Eddington.
+- **A3 — Per-g-point flux pre-accumulation dump**: dump `zfd/zfu` BEFORE broadband `sum(axis=(-1,-2))` reduction (`rrtmg_sw.py:965-966`); validate JAX `down_band/up_band` matches WRF per-g-point fluxes before sum.
+- **A4 — Re-`nm` harness + persist SHA**: rebuild harness with cldprmc+spcvmc dump extensions; run `nm` on rebuilt binary; persist symbol set SHA to `fixtures/manifests/rrtmg-intermediate-oracle-v1.yaml`. Closes M5-S3.zz verifiability-triple §1.1 debt.
+- **A5 — ADR-009 status**: amend to `SW-PARITY, LW-NOT-PARITY` ONLY IF strict Tier-1 SW PASS proven. Otherwise hold at `NOT-PARITY` + document new SW broadband root cause + recommend M5-S3.zzzzz scope.
+
+## Attribution table from M5-S3.zz reviewer §3.3 (what your oracle will pin down)
+
+| Source | Est. contribution | Oracle catches |
+|---|---|---|
+| cldprmc_sw cloud-optics (R-8 + cloud_safe + delta-scaling closure) | 20-50 W/m² | YES — ptaucmc/pomgcmc/pasycmc/ptaormc per band/layer/g-point |
+| spcvmc_sw per-layer reftra blending (R-9) | 10-30 W/m² | YES — clear/cloud zref/ztra/zrefd/ztrad |
+| Direct-beam transmittance | 5-15 W/m² | YES |
+| Per-g-point flux accumulation pre-broadband | 0-10 W/m² | YES — zfd/zfu BEFORE sum |
+| Transfer-solver | ≈0 | already PASS (M5-S3.y carry-forward) |
+| Gas optical / sfluxzen / setcoef | ≈0 | already PASS (M5-S3.zz) |
+
 ## End-goal context
 
 If this sprint closes SW PARITY, M5 RRTMG is half-done (LW still at S3.zzz). Combined S3.zzzz + S3.zzz unblocks M6 operational T2 validation. The 6-sprint M5-S3 cycle (S3 → S3.x → S3.y → S3.z → S3.zz → S3.zzzz) reflects honest discovery: each cycle adds permanent infrastructure (native tables → Eddington oracle → intermediate-oracle NPZ → per-band framework → sfluxzen+setcoef → cldprmc+spcvmc). Trajectory is positive.
