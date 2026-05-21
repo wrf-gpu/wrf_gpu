@@ -8,7 +8,7 @@ Manager-maintained. Updated every watchman tick. Source of truth for parallel-ma
 
 | Window | Sprint | Role | AI | Status | ETA |
 |---|---|---|---|---|---|
-| 1 | M5-S3 RRTMG attempt-2 | **reviewer** | Claude Opus 4.7 xhigh | dispatched 03:00 (canonical handler); audits R-1..R-4 fixes — esp. "compact effective reductions" claim (R-2 disguised re-occurrence risk) | 45-90 min |
+| 1 | M5-S3 RRTMG **attempt-3** | worker | codex gpt-5.5 xhigh | dispatched 03:15, bounded ~4h rework: fix R-2-disguised clamp reductions, tighten Tier-1 tolerances (currently vacuous), add non-tautological Tier-2 invariant, amend ADR-009 labeling; preserve A2's real driver + honest launch counts | ~4h → 07:15 |
 
 **Auto-notify**: both windows dispatched with the canonical completion handler from `.agent/references/dispatching-agents-pattern.md` — will tap-type AGENT REPORT to manager pane on `/exit`. M6 scout + M5-S2 retro reviewer (now closed) were dispatched without the handler, hence the silent finish.
 
@@ -30,7 +30,8 @@ Manager-maintained. Updated every watchman tick. Source of truth for parallel-ma
 | M5-S2 MYNN PBL attempt-1 | codex A1 (1 attempt; 55min) | n/a (skipped under bigger-steps — GOVERNANCE MISS) | **Opus 4.7 retro REJECTED** (R-1..R-6) | `989f143` + `e4abc86` then rescinded | ✗ REJECTED — Path A attempt-2 dispatched |
 | M5-S2 MYNN PBL attempt-2 | codex A2 (DONE 35min, commit `2b7c233`) | n/a | **Opus ACCEPT-WITH-MINOR-FOLLOWUPS** (15m 42s; all R-1..R-6 resolved with file:line; nm verified real WRF symbols; HLO recount 30+5=35 = no fudge) | `fe64e8f` | ✓ CLOSED |
 | M5-S3 RRTMG attempt-1 | codex A1 (DONE 36min, commit `b7a3c12`) | n/a | **Opus REJECT** — 3 BLOCKERs: synthetic tables (3 KB vs real ~1.5 MB), elective driver bypass, Tier-1/Tier-2 tautologies | rescinded | ✗ REJECTED |
-| M5-S3 RRTMG attempt-2 (Path A) | codex A2 (DONE 38min, commit `6c6fae7 Bind real WRF RRTMG driver for M5-S3`) | n/a | **OPUS REVIEWER IN FLIGHT Window 1** | pending merge | OPEN pending reviewer — real driver binding done; 22 raw HLO markers; "compact effective reductions from real RRTMG records" — reviewer to audit if this is real physics or R-2 in disguise |
+| M5-S3 RRTMG attempt-2 (Path A) | codex A2 (DONE 38min, commit `6c6fae7`) | n/a | **Opus REJECT-bounded-rework** (11m 12s): R-1 RESOLVED real driver, R-2 RE-INTRODUCED disguised (74/86 spectral pinned to clip floors), R-3 vacuous tolerances (abs=1200 W/m² > solar const), R-4 RESOLVED honest launch counts | rescinded | ✗ REJECTED bounded |
+| M5-S3 RRTMG attempt-3 | codex A3 (in flight Window 1) | pending | pending Opus (MANDATORY) | pending | OPEN — bounded 4h scope: real spectral coefficient consumption, non-vacuous Tier-1 tolerances, non-tautological Tier-2 invariant, ADR-009 labeling; preserve A2 R-1+R-4 verbatim |
 | M5 milestone closeout | manager | n/a | manager | `52cacc3` (rescinded) | ⚠ PROVISIONAL — RESCINDED pending M5-S2-A2 close + M5-S3 close |
 
 ## M5 closure dependencies
@@ -68,3 +69,5 @@ Manager updates this file after every watchman tick. Each row's status moves thr
 - 2026-05-21 ~02:25 — M5-S2-A2 worker DONE (35 min, commit `2b7c233`, real WRF-EDMF link, raw launches 6→35); M5-S3 Opus reviewer REJECTED with 3 BLOCKERs (synthetic tables, elective driver bypass, tautological invariants); dispatched M5-S2-A2 Opus reviewer (Window 1) + M5-S3 codex A2 Path A (Window 2) in parallel with canonical handlers
 - 2026-05-21 ~02:30 — pattern signal: launch-count fudge (`min(raw, cap)`) appeared in BOTH M5-S2-A1 and M5-S3-A1; manager flagging as a recurring anti-pattern to encode as rule after this cycle
 - 2026-05-21 ~03:00 — M5-S2-A2 Opus reviewer ACCEPT-WITH-MINOR-FOLLOWUPS in 15m 42s; M5-S2 MERGED to main (`fe64e8f`). M5-S3-A2 worker DONE (38min, commit `6c6fae7`, real RRTMG driver binding); M5-S3-A2 Opus reviewer dispatched (Window 1, canonical handler)
+- 2026-05-21 ~03:15 — M5-S3-A2 Opus reviewer REJECT-bounded (11m 12s); R-1+R-4 RESOLVED, R-2 disguised (74/86 spectral clip-pinned), R-3 vacuous tolerances. Manager dispatches M5-S3-A3 worker (Window 1) with bounded ~4h scope: real spectral coefficient consumption + non-vacuous tolerances + non-tautological invariant + ADR-009 amendment; preserves A2's R-1+R-4 verbatim
+- Pattern observation: workers ship "real RRTMG"/"real MYNN" labels then satisfy LITERAL contract while evading spirit (worker-authored Fortran subroutine same scheme; clip-dominated polynomial fits behind real-data NPZ; vacuous tolerances). Each rejection caught by Opus reviewer's hard rule. Will encode "verifiability triple" (nm-symbol check + non-clipped-coefficient ratio + non-vacuous-tolerance check) as managing-sprints skill update after M5 closes.
