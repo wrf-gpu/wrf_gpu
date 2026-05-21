@@ -18,7 +18,8 @@ from gpuwrf.contracts.state import State, Tendencies
 from gpuwrf.coupling.boundary_apply import BoundaryConfig, DEFAULT_BOUNDARY_CONFIG, SIDE_INDEX, SIDES, apply_lateral_boundaries
 from gpuwrf.coupling.physics_couplers import mynn_adapter, rrtmg_adapter, surface_adapter, thompson_adapter
 from gpuwrf.dynamics.step import step as dycore_step
-from gpuwrf.io.gen2_accessor import Gen2Run
+from gpuwrf.io.gen2_accessor import DEFAULT_M6_BOUNDARY_REPLAY, Gen2Run
+from gpuwrf.io.land_state import load_prescribed_land_state
 from gpuwrf.io.validation import load_gen2_var
 from gpuwrf.physics.surface_layer import surface_layer_with_diagnostics
 from gpuwrf.profiling.transfer_audit import block_until_ready
@@ -33,6 +34,25 @@ DEFAULT_RADIATION_CADENCE_STEPS = 10
 STANDARD_OUTPUT_LEADS_H = (1, 6, 12, 18, 24)
 
 
+class BoundarySnapshot(NamedTuple):
+    """Boundary-relevant leaves captured immediately before boundary replay."""
+
+    u: object
+    v: object
+    theta: object
+    qv: object
+    ph: object
+    mu: object
+
+
+class PreSanitizeTap(NamedTuple):
+    """Per-step state captured before `sanitize_state`, plus boundary replay terms."""
+
+    state: State
+    pre_boundary: BoundarySnapshot
+    boundary_tendency: BoundarySnapshot
+
+
 def _load(run: Gen2Run, domain: str, var: str, time: int = 0):
     """Route every Gen2 variable read through the shared validation I/O path."""
 
@@ -43,7 +63,7 @@ def build_initial_state(
     run: Gen2Run,
     *,
     domain: str = "d02",
-    boundary_path: str | Path = "data/fixtures/m6/d02_boundary_replay_v1.zarr",
+    boundary_path: str | Path = DEFAULT_M6_BOUNDARY_REPLAY,
 ) -> tuple[State, Tendencies, GridSpec, dict[str, Any]]:
     """Load the d02 IC and replayed lateral boundaries into one device-resident State."""
 
@@ -58,7 +78,7 @@ def build_initial_state(
     p = _load(run, domain, "P", 0) + _load(run, domain, "PB", 0)
     ph = _load(run, domain, "PH", 0) + _load(run, domain, "PHB", 0)
     mu = _load(run, domain, "MU", 0) + _load(run, domain, "MUB", 0)
-    smois = _load(run, domain, "SMOIS", 0)
+    land = load_prescribed_land_state(run, domain=domain, time=0)
 
     bdy_leaves, boundary_meta = load_boundary_leaves(run, grid, boundary_path=boundary_path, domain=domain)
 
@@ -81,8 +101,12 @@ def build_initial_state(
         Ns=jnp.zeros_like(state.Ns),
         Ng=jnp.zeros_like(state.Ng),
         qke=_load(run, domain, "QKE", 0),
-        t_skin=_load(run, domain, "TSK", 0),
-        soil_moisture=smois[0],
+        t_skin=land.t_skin,
+        soil_moisture=land.soil_moisture[0],
+        xland=land.xland,
+        lakemask=land.lakemask,
+        mavail=land.mavail,
+        roughness_m=land.roughness_m,
         **bdy_leaves,
     )
     tendencies = Tendencies.zeros(grid)
@@ -90,6 +114,12 @@ def build_initial_state(
         "domain": domain,
         "run_id": run.run_id,
         "boundary": boundary_meta,
+        "prescribed_land": {
+            "source_file": land.source.get("source_file"),
+            "roughness_note": land.source.get("roughness_note"),
+            "mavail_note": land.source.get("mavail_note"),
+            "missing_optional_variables": land.source.get("missing_optional_variables", []),
+        },
         "grid": {
             "mass_shape": [int(grid.nx), int(grid.ny), int(grid.nz)],
             "wrf_staggered_extent": [int(grid.nx + 1), int(grid.ny + 1), int(grid.nz + 1)],
@@ -219,6 +249,7 @@ def steps_for_hours(hours: float, dt_s: float) -> int:
         "radiation_cadence_steps",
         "final_radiation",
         "boundary_config",
+        "capture_pre_sanitize",
     ),
 )
 def run_forecast_segment(
@@ -234,8 +265,24 @@ def run_forecast_segment(
     radiation_cadence_steps: int = DEFAULT_RADIATION_CADENCE_STEPS,
     final_radiation: bool = True,
     boundary_config: BoundaryConfig = DEFAULT_BOUNDARY_CONFIG,
-) -> State:
+    capture_pre_sanitize: bool = False,
+) -> State | tuple[State, PreSanitizeTap]:
     """Run a shape-stable coupled forecast segment under `lax.scan`."""
+
+    if bool(capture_pre_sanitize):
+        return _run_forecast_segment_with_pre_sanitize_tap(
+            state,
+            tendencies,
+            grid,
+            dt_s,
+            steps,
+            start_step=start_step,
+            total_steps=total_steps,
+            n_acoustic=n_acoustic,
+            radiation_cadence_steps=radiation_cadence_steps,
+            final_radiation=final_radiation,
+            boundary_config=boundary_config,
+        )
 
     total = int(start_step + steps if total_steps is None else total_steps)
     remaining = int(steps)
@@ -315,6 +362,111 @@ def run_forecast_segment(
     return current
 
 
+def _run_forecast_segment_with_pre_sanitize_tap(
+    state: State,
+    tendencies: Tendencies,
+    grid: GridSpec,
+    dt_s: float,
+    steps: int,
+    *,
+    start_step: int,
+    total_steps: int | None,
+    n_acoustic: int,
+    radiation_cadence_steps: int,
+    final_radiation: bool,
+    boundary_config: BoundaryConfig,
+) -> tuple[State, PreSanitizeTap]:
+    """Run the same static cadence segmentation while returning pre-sanitize states."""
+
+    total = int(start_step + steps if total_steps is None else total_steps)
+    remaining = int(steps)
+    completed = int(start_step)
+    current = state
+    taps: list[PreSanitizeTap] = []
+
+    prefix = 0 if completed % int(radiation_cadence_steps) == 0 else int(radiation_cadence_steps) - (
+        completed % int(radiation_cadence_steps)
+    )
+    prefix = min(prefix, remaining)
+    if prefix > 0:
+        if prefix - 1 > 0:
+            current, tap = _scan_without_radiation_tap(
+                current,
+                tendencies,
+                grid,
+                dt_s,
+                prefix - 1,
+                completed,
+                n_acoustic,
+                boundary_config,
+            )
+            taps.append(tap)
+            completed += prefix - 1
+            remaining -= prefix - 1
+        if remaining > 0:
+            current, tap = coupled_timestep_with_pre_sanitize(
+                current,
+                tendencies,
+                grid,
+                dt_s,
+                jnp.asarray(completed + 1, dtype=jnp.int32),
+                n_acoustic=n_acoustic,
+                run_radiation=True,
+                boundary_config=boundary_config,
+            )
+            taps.append(_stack_single_tap(tap))
+            completed += 1
+            remaining -= 1
+
+    full_blocks = remaining // int(radiation_cadence_steps)
+    if full_blocks > 0:
+        current, tap = _scan_radiation_blocks_tap(
+            current,
+            tendencies,
+            grid,
+            dt_s,
+            full_blocks,
+            completed,
+            n_acoustic,
+            int(radiation_cadence_steps),
+            boundary_config,
+        )
+        taps.append(tap)
+        completed += full_blocks * int(radiation_cadence_steps)
+        remaining -= full_blocks * int(radiation_cadence_steps)
+
+    if remaining > 0:
+        if remaining - 1 > 0:
+            current, tap = _scan_without_radiation_tap(
+                current,
+                tendencies,
+                grid,
+                dt_s,
+                remaining - 1,
+                completed,
+                n_acoustic,
+                boundary_config,
+            )
+            taps.append(tap)
+            completed += remaining - 1
+        tail_radiation = bool(final_radiation and completed + 1 == total)
+        current, tap = coupled_timestep_with_pre_sanitize(
+            current,
+            tendencies,
+            grid,
+            dt_s,
+            jnp.asarray(completed + 1, dtype=jnp.int32),
+            n_acoustic=n_acoustic,
+            run_radiation=tail_radiation,
+            boundary_config=boundary_config,
+        )
+        taps.append(_stack_single_tap(tap))
+
+    if not taps:
+        return current, _empty_tap_like(state)
+    return current, _concat_taps(taps)
+
+
 def _scan_without_radiation(
     state: State,
     tendencies: Tendencies,
@@ -346,6 +498,36 @@ def _scan_without_radiation(
 
     final_state, _ = jax.lax.scan(body, state, indices)
     return final_state
+
+
+def _scan_without_radiation_tap(
+    state: State,
+    tendencies: Tendencies,
+    grid: GridSpec,
+    dt_s: float,
+    steps: int,
+    completed_steps,
+    n_acoustic: int,
+    boundary_config: BoundaryConfig,
+) -> tuple[State, PreSanitizeTap]:
+    if int(steps) <= 0:
+        return state, _empty_tap_like(state)
+    indices = jnp.arange(int(steps), dtype=jnp.int32) + jnp.asarray(completed_steps, dtype=jnp.int32) + 1
+
+    def body(carry: State, global_step):
+        return coupled_timestep_with_pre_sanitize(
+            carry,
+            tendencies,
+            grid,
+            dt_s,
+            global_step,
+            n_acoustic=n_acoustic,
+            run_radiation=False,
+            boundary_config=boundary_config,
+        )
+
+    final_state, tap = jax.lax.scan(body, state, indices)
+    return final_state, tap
 
 
 def _scan_radiation_blocks(
@@ -392,6 +574,95 @@ def _scan_radiation_blocks(
     return final_state
 
 
+def _scan_radiation_blocks_tap(
+    state: State,
+    tendencies: Tendencies,
+    grid: GridSpec,
+    dt_s: float,
+    blocks: int,
+    completed_steps: int,
+    n_acoustic: int,
+    radiation_cadence_steps: int,
+    boundary_config: BoundaryConfig,
+) -> tuple[State, PreSanitizeTap]:
+    if int(blocks) <= 0:
+        return state, _empty_tap_like(state)
+
+    def block(carry: State, block_index):
+        block_completed = jnp.asarray(completed_steps, dtype=jnp.int32) + block_index * int(radiation_cadence_steps)
+        carry, no_rad_tap = _scan_without_radiation_tap(
+            carry,
+            tendencies,
+            grid,
+            dt_s,
+            int(radiation_cadence_steps) - 1,
+            block_completed,
+            n_acoustic,
+            boundary_config,
+        )
+        carry, rad_tap = coupled_timestep_with_pre_sanitize(
+            carry,
+            tendencies,
+            grid,
+            dt_s,
+            block_completed + int(radiation_cadence_steps),
+            n_acoustic=n_acoustic,
+            run_radiation=True,
+            boundary_config=boundary_config,
+        )
+        return carry, _concat_taps((no_rad_tap, _stack_single_tap(rad_tap)))
+
+    final_state, block_taps = jax.lax.scan(block, state, jnp.arange(int(blocks), dtype=jnp.int32))
+    flat_taps = jax.tree_util.tree_map(
+        lambda leaf: leaf.reshape((int(blocks) * int(radiation_cadence_steps),) + leaf.shape[2:]),
+        block_taps,
+    )
+    return final_state, flat_taps
+
+
+def _boundary_snapshot(state: State) -> BoundarySnapshot:
+    return BoundarySnapshot(state.u, state.v, state.theta, state.qv, state.ph, state.mu)
+
+
+def _boundary_tendency(after: State, before: State, dt_s: float) -> BoundarySnapshot:
+    inv_dt = 1.0 / float(dt_s)
+    return BoundarySnapshot(
+        (after.u - before.u) * inv_dt,
+        (after.v - before.v) * inv_dt,
+        (after.theta - before.theta) * inv_dt,
+        (after.qv - before.qv) * inv_dt,
+        (after.ph - before.ph) * inv_dt,
+        (after.mu - before.mu) * inv_dt,
+    )
+
+
+def _stack_single_tap(tap: PreSanitizeTap) -> PreSanitizeTap:
+    return jax.tree_util.tree_map(lambda leaf: jnp.expand_dims(leaf, axis=0), tap)
+
+
+def _empty_tap_like(state: State) -> PreSanitizeTap:
+    tap = PreSanitizeTap(
+        state=state,
+        pre_boundary=_boundary_snapshot(state),
+        boundary_tendency=_boundary_snapshot(state.replace(
+            u=jnp.zeros_like(state.u),
+            v=jnp.zeros_like(state.v),
+            theta=jnp.zeros_like(state.theta),
+            qv=jnp.zeros_like(state.qv),
+            ph=jnp.zeros_like(state.ph),
+            mu=jnp.zeros_like(state.mu),
+        )),
+    )
+    return jax.tree_util.tree_map(lambda leaf: leaf[None, ...][:0], tap)
+
+
+def _concat_taps(taps) -> PreSanitizeTap:
+    taps = tuple(taps)
+    if len(taps) == 1:
+        return taps[0]
+    return jax.tree_util.tree_map(lambda *leaves: jnp.concatenate(leaves, axis=0), *taps)
+
+
 def coupled_timestep(
     state: State,
     tendencies: Tendencies,
@@ -405,6 +676,84 @@ def coupled_timestep(
 ) -> State:
     """One dycore + physics + lateral-boundary step."""
 
+    return sanitize_state(
+        _candidate_timestep(
+            state,
+            tendencies,
+            grid,
+            dt_s,
+            global_step,
+            n_acoustic=n_acoustic,
+            run_radiation=run_radiation,
+            boundary_config=boundary_config,
+        ),
+        state,
+    )
+
+
+def coupled_timestep_with_pre_sanitize(
+    state: State,
+    tendencies: Tendencies,
+    grid: GridSpec,
+    dt_s: float,
+    global_step,
+    *,
+    n_acoustic: int,
+    run_radiation: bool,
+    boundary_config: BoundaryConfig,
+) -> tuple[State, PreSanitizeTap]:
+    """One coupled step returning the state immediately before `sanitize_state`."""
+
+    before_boundary = _candidate_before_boundary(
+        state,
+        tendencies,
+        grid,
+        dt_s,
+        n_acoustic=n_acoustic,
+        run_radiation=run_radiation,
+    )
+    lead_seconds = global_step.astype(jnp.float64) * float(dt_s)
+    candidate = apply_lateral_boundaries(before_boundary, lead_seconds, dt_s, boundary_config)
+    tap = PreSanitizeTap(
+        state=candidate,
+        pre_boundary=_boundary_snapshot(before_boundary),
+        boundary_tendency=_boundary_tendency(candidate, before_boundary, dt_s),
+    )
+    return sanitize_state(candidate, state), tap
+
+
+def _candidate_timestep(
+    state: State,
+    tendencies: Tendencies,
+    grid: GridSpec,
+    dt_s: float,
+    global_step,
+    *,
+    n_acoustic: int,
+    run_radiation: bool,
+    boundary_config: BoundaryConfig,
+) -> State:
+    before_boundary = _candidate_before_boundary(
+        state,
+        tendencies,
+        grid,
+        dt_s,
+        n_acoustic=n_acoustic,
+        run_radiation=run_radiation,
+    )
+    lead_seconds = global_step.astype(jnp.float64) * float(dt_s)
+    return apply_lateral_boundaries(before_boundary, lead_seconds, dt_s, boundary_config)
+
+
+def _candidate_before_boundary(
+    state: State,
+    tendencies: Tendencies,
+    grid: GridSpec,
+    dt_s: float,
+    *,
+    n_acoustic: int,
+    run_radiation: bool,
+) -> State:
     dycore_dt_s = min(float(dt_s), 1.0)
     next_state = dycore_step(state, tendencies, grid, dycore_dt_s, n_acoustic=n_acoustic, debug=False)
     next_state = thompson_adapter(next_state, dt_s)
@@ -412,9 +761,7 @@ def coupled_timestep(
     next_state = surface_adapter(next_state, dt_s)
     if run_radiation:
         next_state = rrtmg_adapter(next_state, dt_s, grid)
-    lead_seconds = global_step.astype(jnp.float64) * float(dt_s)
-    next_state = apply_lateral_boundaries(next_state, lead_seconds, dt_s, boundary_config)
-    return sanitize_state(next_state, state)
+    return next_state
 
 
 def sanitize_state(candidate: State, previous: State) -> State:
@@ -550,6 +897,10 @@ class _SurfaceOutputState(NamedTuple):
     dz: object
     t_skin: object
     soil_moisture: object
+    xland: object
+    lakemask: object
+    mavail: object
+    roughness_m: object
     ustar: object
 
 
@@ -566,6 +917,10 @@ def _surface_diagnostics_for_output(state: State):
         dz=jnp.moveaxis(dz, 0, -1),
         t_skin=state.t_skin,
         soil_moisture=state.soil_moisture,
+        xland=state.xland,
+        lakemask=state.lakemask,
+        mavail=state.mavail,
+        roughness_m=state.roughness_m,
         ustar=state.ustar,
     )
     return surface_layer_with_diagnostics(column_state)
@@ -606,10 +961,13 @@ def output_time_label(run: Gen2Run, lead_hours: float, domain: str = "d02") -> s
 
 
 __all__ = [
+    "BoundarySnapshot",
     "DEFAULT_DT_S",
     "DEFAULT_RADIATION_CADENCE_STEPS",
+    "PreSanitizeTap",
     "build_initial_state",
     "coupled_timestep",
+    "coupled_timestep_with_pre_sanitize",
     "forecast_output_leads",
     "load_boundary_leaves",
     "output_time_label",

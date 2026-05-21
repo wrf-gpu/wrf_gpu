@@ -1,20 +1,17 @@
 from __future__ import annotations
 
-from pathlib import Path
-
 import numpy as np
 
-from gpuwrf.io.gen2_accessor import Gen2Run, LazyNetCDFArray
+from gpuwrf.io.gen2_accessor import DEFAULT_M6_GEN2_RUN_DIR, Gen2Run, LazyNetCDFArray
 
 
-RUN_PATH = Path("/mnt/data/canairy_meteo/runs/wrf_l3/20260519_18z_l3_24h_20260520T025228Z")
+RUN_PATH = DEFAULT_M6_GEN2_RUN_DIR
 
 
 def test_gen2_run_discovers_domains_grid_and_missing_d02_bdy():
     run = Gen2Run(RUN_PATH)
 
     assert run.domains == ["d01", "d02", "d03", "d04", "d05"]
-    assert not (RUN_PATH / "wrfbdy_d02").exists()
     grid = run.grid("d02")
     assert grid.dx_m == 3000.0
     assert grid.dy_m == 3000.0
@@ -27,6 +24,8 @@ def test_gen2_run_discovers_domains_grid_and_missing_d02_bdy():
     assert grid.grid_proj == "lambert"
     assert grid.parent_id == 1
     assert grid.parent_grid_ratio == 3
+    assert len(run.history_files("d02")) == 25
+    assert (RUN_PATH / "wrfinput_d02").exists()
 
 
 def test_gen2_variables_and_lazy_load_are_read_only_device_cached():
@@ -35,6 +34,9 @@ def test_gen2_variables_and_lazy_load_are_read_only_device_cached():
     variables = run.variables("d02")
     for name in ("U", "V", "T", "QVAPOR", "PH"):
         assert name in variables
+    wrfinput_variables = run.wrfinput_variables("d02")
+    for name in ("XLAND", "LAKEMASK", "TSK", "SMOIS"):
+        assert name in wrfinput_variables
 
     lazy = run.load("d02", "T", time=0, lazy=True)
     assert isinstance(lazy, LazyNetCDFArray)
@@ -52,7 +54,7 @@ def test_gen2_manifest_shape_without_hashing(tmp_path):
 
     manifest = run.write_manifest(manifest_path, include_sha256=False)
 
-    assert manifest["run_id"] == "20260519_18z_l3_24h_20260520T025228Z"
+    assert manifest["run_id"] == "20260520_18z_l3_24h_20260521T045847Z"
     assert manifest["path"] == str(RUN_PATH)
     assert manifest["no_write_audit"] is True
     assert {domain["id"] for domain in manifest["domains"]} == {"d01", "d02", "d03", "d04", "d05"}

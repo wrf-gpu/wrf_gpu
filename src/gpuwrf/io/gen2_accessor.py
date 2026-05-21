@@ -24,6 +24,10 @@ from gpuwrf.contracts.grid import BCMetadata, GridSpec, Projection, TerrainProve
 
 
 GEN2_READ_ONLY_ROOT = Path("/mnt/data/canairy_meteo")
+DEFAULT_M6_GEN2_RUN_DIR = Path(
+    "/mnt/data/canairy_meteo/runs/wrf_l3/20260520_18z_l3_24h_20260521T045847Z"
+)
+DEFAULT_M6_BOUNDARY_REPLAY = Path("data/fixtures/m6/d02_boundary_replay_v2.zarr")
 MAP_PROJ_NAMES = {1: "lambert", 2: "polar", 3: "mercator"}
 DOMAIN_RE = re.compile(r"^d(?P<num>\d{2})$")
 WRFOUT_TIME_RE = re.compile(r"wrfout_d\d{2}_(?P<stamp>\d{4}-\d{2}-\d{2}_\d{2}:\d{2}:\d{2})$")
@@ -335,6 +339,12 @@ class Gen2Run:
             raise FileNotFoundError(path)
         return path
 
+    def wrfinput_variables(self, domain: str) -> list[str]:
+        """Return variables present in the domain's `wrfinput` file."""
+
+        with Dataset(self.wrfinput_file(domain), "r") as dataset:
+            return list(dataset.variables.keys())
+
     def time_axis(self, domain: str) -> list[datetime]:
         times: list[datetime] = []
         for path in self.history_files(domain):
@@ -401,6 +411,17 @@ class Gen2Run:
 
     def load(self, domain: str, var: str, time: int | str | datetime | None = None, lazy: bool = True):
         path = self._file_for_time(domain, time)
+        with Dataset(path, "r") as dataset:
+            if var not in dataset.variables:
+                raise KeyError(f"{var!r} not present in {path}")
+            time_index = 0 if "Time" in dataset.variables[var].dimensions else None
+        handle = LazyNetCDFArray(self, path, var, time_index)
+        return handle if lazy else handle.materialize()
+
+    def load_wrfinput(self, domain: str, var: str, lazy: bool = True):
+        """Load one variable from `wrfinput_<domain>` through the shared cache."""
+
+        path = self.wrfinput_file(domain)
         with Dataset(path, "r") as dataset:
             if var not in dataset.variables:
                 raise KeyError(f"{var!r} not present in {path}")
@@ -488,4 +509,12 @@ class Gen2Run:
         return self._device_cache[key]
 
 
-__all__ = ["GEN2_READ_ONLY_ROOT", "Gen2GridSpec", "Gen2Run", "LazyNetCDFArray", "parse_namelist"]
+__all__ = [
+    "DEFAULT_M6_BOUNDARY_REPLAY",
+    "DEFAULT_M6_GEN2_RUN_DIR",
+    "GEN2_READ_ONLY_ROOT",
+    "Gen2GridSpec",
+    "Gen2Run",
+    "LazyNetCDFArray",
+    "parse_namelist",
+]

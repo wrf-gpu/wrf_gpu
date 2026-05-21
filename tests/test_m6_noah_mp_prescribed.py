@@ -1,17 +1,15 @@
 from __future__ import annotations
 
-from pathlib import Path
-
 import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from gpuwrf.io.gen2_accessor import Gen2Run
+from gpuwrf.io.gen2_accessor import DEFAULT_M6_GEN2_RUN_DIR, Gen2Run
 from gpuwrf.io.land_state import build_land_state_manifest, load_prescribed_land_state
 from gpuwrf.physics.noah_mp import prescribe_noah_mp_state, roughness_from_prescribed_fields
 
 
-RUN_PATH = Path("/mnt/data/canairy_meteo/runs/wrf_l3/20260519_18z_l3_24h_20260520T025228Z")
+RUN_PATH = DEFAULT_M6_GEN2_RUN_DIR
 
 
 def test_roughness_surrogate_uses_water_and_land_masks_when_cm_is_zero():
@@ -56,5 +54,6 @@ def test_gen2_prescribed_land_state_manifest_when_fixture_available():
     assert manifest["status"] == "PASS"
     assert manifest["variables"]["TSK"]["available"] is True
     assert manifest["variables"]["SMOIS"]["available"] is True
+    assert manifest["variables"]["XLAND"]["available"] is True
     assert manifest["summaries"]["roughness_m"]["finite"] is True
     assert manifest["source_sha256"]

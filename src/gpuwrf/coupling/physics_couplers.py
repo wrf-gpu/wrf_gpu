@@ -41,6 +41,10 @@ class _SurfaceColumnState(NamedTuple):
     dz: object
     t_skin: object
     soil_moisture: object
+    xland: object
+    lakemask: object
+    mavail: object
+    roughness_m: object
     ustar: object
 
 
@@ -218,6 +222,10 @@ def surface_adapter(state: State, dt: float) -> State:
         dz=_column_dz_from_state(state, None),
         t_skin=state.t_skin,
         soil_moisture=state.soil_moisture,
+        xland=state.xland,
+        lakemask=state.lakemask,
+        mavail=state.mavail,
+        roughness_m=state.roughness_m,
         ustar=state.ustar,
     )
     flux = surface_layer(column_state)

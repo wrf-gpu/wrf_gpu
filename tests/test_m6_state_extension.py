@@ -19,6 +19,10 @@ SURFACE_2D = (
     "fltv",
     "t_skin",
     "soil_moisture",
+    "xland",
+    "lakemask",
+    "mavail",
+    "roughness_m",
     "rain_acc",
     "snow_acc",
     "graupel_acc",
@@ -47,7 +51,12 @@ def test_m6_new_state_leaves_are_device_arrays_with_expected_shape_and_dtype():
         assert isinstance(leaf, jax.Array)
         assert _platform(leaf) == "gpu"
         assert leaf.shape == (grid.ny, grid.nx)
-        assert leaf.dtype == jnp.float64
+        assert leaf.dtype == PRECISION_MATRIX[field][0]
+
+    assert state.xland.dtype == jnp.float32
+    assert state.lakemask.dtype == jnp.float32
+    assert state.mavail.dtype == jnp.float32
+    assert state.roughness_m.dtype == jnp.float64
 
     side = max(grid.nx + 1, grid.ny + 1)
     assert state.u_bdy.shape == (1, 4, grid.nz, side)

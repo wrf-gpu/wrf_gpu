@@ -166,10 +166,17 @@ class Tier2CoupledInvariants(ProofObjectSchema):
     description = "Tier-2 coupled conservation and positivity proof."
     required = {
         "run_id": FieldRule("string", "Validation run identifier."),
+        "domain": FieldRule("string", "WRF/GPU domain ID."),
         "status": FieldRule("string", "PASS/FAIL/BLOCKED status."),
         "budgets": FieldRule("object", "Dry-mass, water, positivity, and energy budget records."),
+        "per_step": FieldRule("array", "Per-step per-leaf residual table."),
+        "thresholds": FieldRule("object", "Binding AC6 thresholds and pass/fail state."),
         "boundary_terms": FieldRule("object", "Boundary-flux terms used by the independent oracle."),
         "artifact_paths": FieldRule("array", "Raw and summary proof paths."),
+    }
+    optional = {
+        "sanitize_policy": FieldRule("object", "PRE-sanitize tap or sanitize-OFF policy evidence."),
+        "gen2_pin": FieldRule("object", "Pinned Gen2 run path and history inventory."),
     }
 
 

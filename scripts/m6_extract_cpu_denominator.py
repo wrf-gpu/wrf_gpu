@@ -16,12 +16,12 @@ SRC = ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
-from gpuwrf.io.gen2_accessor import Gen2Run
+from gpuwrf.io.gen2_accessor import DEFAULT_M6_GEN2_RUN_DIR, Gen2Run
 
 
-RUN_PATH = Path("/mnt/data/canairy_meteo/runs/wrf_l3/20260519_18z_l3_24h_20260520T025228Z")
+RUN_PATH = DEFAULT_M6_GEN2_RUN_DIR
 WRF_COMPILE_LOG = Path("/mnt/data/canairy_meteo/artifacts/wrf_gpu_src/WRF/compile.log")
-OUTPUT = ROOT / "artifacts" / "m6" / "cpu_denominator.json"
+OUTPUT = ROOT / "artifacts" / "m6" / "cpu_denominator_v2.json"
 TIMING_RE = re.compile(r"Timing for main: time .* on domain\s+(?P<domain>\d+):\s+(?P<seconds>[0-9.]+) elapsed seconds")
 
 
