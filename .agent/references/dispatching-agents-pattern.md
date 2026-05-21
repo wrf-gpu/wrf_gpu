@@ -97,8 +97,13 @@ Skeleton (drop into every launcher script):
   if [ ! -f "$DONE_MARK" ]; then
     echo "watchdog" > "$EXIT_FILE"; touch "$DONE_MARK"
     MSG="AGENT REPORT [$ROLE_TAG / $SPRINT_TAG / $AI_NAME] exit=watchdog report=$REPORT"
-    tmux send-keys -t "1:0" "$MSG" 2>/dev/null; sleep 5
-    tmux send-keys -t "1:0" Enter 2>/dev/null
+    tmux send-keys -t "1:0" "$MSG" 2>/dev/null
+    sleep 3
+    tmux send-keys -t "1:0" Enter 2>/dev/null  # first Enter — establishes input complete
+    sleep 2
+    tmux send-keys -t "1:0" Enter 2>/dev/null  # second Enter — actually submits (Claude Code needs this)
+    sleep 2
+    tmux send-keys -t "1:0" Enter 2>/dev/null  # safety third Enter
   fi
 ) &
 WATCHDOG_PID=$!
@@ -110,7 +115,12 @@ ec=$?
 if [ ! -f "$DONE_MARK" ]; then
   echo "$ec" > "$EXIT_FILE"; touch "$DONE_MARK"
   MSG="AGENT REPORT [$ROLE_TAG / $SPRINT_TAG / $AI_NAME] exit=$ec report=$REPORT"
-  tmux send-keys -t "1:0" "$MSG" 2>/dev/null; sleep 5
+  tmux send-keys -t "1:0" "$MSG" 2>/dev/null
+  sleep 3
+  tmux send-keys -t "1:0" Enter 2>/dev/null
+  sleep 2
+  tmux send-keys -t "1:0" Enter 2>/dev/null
+  sleep 2
   tmux send-keys -t "1:0" Enter 2>/dev/null
 fi
 kill "$WATCHDOG_PID" 2>/dev/null || true
@@ -121,6 +131,20 @@ tmux kill-window -t "1:$WIN" 2>/dev/null || true
 The watchdog and foreground race; whoever notices first fires AGENT REPORT (the `$DONE_MARK` sentinel prevents double-fire). Net effect: manager gets notified within ~75s of report-file stability regardless of whether the AI exited cleanly.
 
 **Role prompt clarification**: also update every role prompt to say "type `/exit` as a slash-command (not as text in the report); the wrapper has a watchdog that will force-fire AGENT REPORT after 60s of report-file stability if you forget."
+
+**Multi-Enter pattern** (added 2026-05-21 12:05 after user-flagged "had to press enter after the last report" incident): Claude Code's input prompt requires **three Enter keystrokes with 2-3s delays** to reliably submit a pasted AGENT REPORT message. Single Enter sometimes silently fails (input shows the text but doesn't submit). Always pattern:
+
+```bash
+tmux send-keys -t "1:0" "$MSG"   # paste text
+sleep 3                          # let the buffer settle
+tmux send-keys -t "1:0" Enter    # establish input complete
+sleep 2
+tmux send-keys -t "1:0" Enter    # actual submit (often the load-bearing one)
+sleep 2
+tmux send-keys -t "1:0" Enter    # safety
+```
+
+Sending the Enter immediately after `send-keys "$MSG"` or with only 1s delay loses the input. The 3-2-2s spacing is empirically required.
 
 Reference launchers using this pattern: `/tmp/launch_rev_s3y.sh`, `/tmp/launch_rev_m6s1.sh` (2026-05-21).
 
