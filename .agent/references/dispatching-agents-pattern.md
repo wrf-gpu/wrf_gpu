@@ -156,6 +156,26 @@ Earlier in this project the sandbox refused long bash-string dispatch citing "ag
 2. Issue the tmux dispatch with the launcher path, not inlined
 3. User one-time permission approval if needed
 
+## Agent-pool balance (added 2026-05-21 14:40 per user directive)
+
+**Rule**: ≤3 codex (gpt-5.5) parallel workers at any time — rate-limit risk. When a 4th sprint slot opens, dispatch **Opus** for any of these roles:
+
+- Reviewer (already standard)
+- Bug fixer (specific named bug)
+- Bug hunter (mysterious residual diagnosis)
+- Tool builder (sidecar script, harness extension, helper utility)
+- Test runner (pytest, gates, profile audits)
+- Skill/memory/ADR patch authoring
+- Manager intermediate consensus / second opinions
+
+Opus has separate quota pool, is faster (~2-4×) for short focused tasks, and has equal or better quality on reviewer-style work. Mixing the workforce keeps throughput high without either pool exhausting.
+
+Opus reviewer dispatches do NOT count against the codex 3-cap.
+
+Heavy code-write sprints (Thompson kernel rewrite, RRTMG transcription, M6-S2 driver): still codex, counts against the cap.
+
+Investigative / diagnostic / validation / governance / tooling: prefer opus.
+
 ## Cross-links
 
 - `.agent/rules/sprint-lifecycle.md` — double-AI principle
