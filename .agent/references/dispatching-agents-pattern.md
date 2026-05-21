@@ -64,19 +64,73 @@ Substitute `<YOUR_AI_INVOCATION_HERE>` with:
 - Claude Sonnet: `claude --dangerously-skip-permissions --model claude-sonnet-4-6`
 - Gemini (reactive only per current policy): use Pattern D inline `agy -p` from manager pane; tmux dispatch problematic due to OAuth-per-pty quirk
 
-## When the bash-script-heuristic blocks the dispatch
-
-A few times this session the sandbox refused the long bash-string dispatch citing "agent-inferred parameters for a high-stakes autonomous worker spawn." Workaround:
-
-1. Write the role prompt + a short launcher script to disk via the Write tool (verifiable by the sandbox)
-2. Issue the tmux dispatch with the launcher path, not inlined
-3. OR break dispatch into 2 Bash calls: first creates window with minimal command, second adds completion handler via `tmux respawn-pane` or similar
-
-If the sandbox refuses even the minimal form, drop the completion handler temporarily — but file the resulting "no auto-notification" as a known dispatch-pattern incident in the tracker and manually poll via `tmux capture-pane` every watchman tick.
-
 ## Per the sprint-lifecycle hard rule
 
 Every code/governance sprint requires Opus 4.7 reviewer pass before close. Dispatch the reviewer with the canonical pattern above + the reviewer role prompt. Without the completion handler the manager won't know when the reviewer is done.
+
+## HARD RULE: Watchdog auto-notify (added 2026-05-21 ~11:40 after 4 stuck-at-/exit incidents)
+
+Both codex and claude CLIs have the SAME failure mode: when the role prompt says "When done, /exit", the AI writes "/exit" as PLAIN TEXT inside its report and never executes it as a slash command. The pane sits at the input prompt with `/exit` visible but un-fired forever. Manager has to manually tap Enter, wasting an entire watchman cycle per stuck agent.
+
+**Fix**: every launcher MUST include a backgrounded watchdog that:
+1. Polls for the report file (`worker-report.md` or `reviewer-report.md`) to appear
+2. Waits for it to be "stable" (no modification in last 60s)
+3. Taps `Enter` into the pane to flush any queued `/exit`
+4. Sends `/exit Enter` as a fresh slash-command
+5. Force-kills the window if it's still alive
+6. Fires `AGENT REPORT` to the manager pane UNCONDITIONALLY (if not already done by the foreground)
+
+Skeleton (drop into every launcher script):
+
+```bash
+# --- BACKGROUND WATCHDOG ---
+( while [ ! -f "$REPORT" ]; do sleep 10; done
+  while true; do
+    age=$(( $(date +%s) - $(stat -c %Y "$REPORT" 2>/dev/null || echo 0) ))
+    [ "$age" -ge 60 ] && break
+    sleep 15
+  done
+  tmux send-keys -t "1:$WIN" Enter 2>/dev/null || true; sleep 5
+  tmux send-keys -t "1:$WIN" "/exit" Enter 2>/dev/null || true; sleep 5
+  tmux send-keys -t "1:$WIN" Enter 2>/dev/null || true; sleep 3
+  tmux kill-window -t "1:$WIN" 2>/dev/null || true
+  if [ ! -f "$DONE_MARK" ]; then
+    echo "watchdog" > "$EXIT_FILE"; touch "$DONE_MARK"
+    MSG="AGENT REPORT [$ROLE_TAG / $SPRINT_TAG / $AI_NAME] exit=watchdog report=$REPORT"
+    tmux send-keys -t "1:0" "$MSG" 2>/dev/null; sleep 5
+    tmux send-keys -t "1:0" Enter 2>/dev/null
+  fi
+) &
+WATCHDOG_PID=$!
+
+# --- FOREGROUND AI ---
+cd "$WT"
+<AI_CMD>
+ec=$?
+if [ ! -f "$DONE_MARK" ]; then
+  echo "$ec" > "$EXIT_FILE"; touch "$DONE_MARK"
+  MSG="AGENT REPORT [$ROLE_TAG / $SPRINT_TAG / $AI_NAME] exit=$ec report=$REPORT"
+  tmux send-keys -t "1:0" "$MSG" 2>/dev/null; sleep 5
+  tmux send-keys -t "1:0" Enter 2>/dev/null
+fi
+kill "$WATCHDOG_PID" 2>/dev/null || true
+sleep 1
+tmux kill-window -t "1:$WIN" 2>/dev/null || true
+```
+
+The watchdog and foreground race; whoever notices first fires AGENT REPORT (the `$DONE_MARK` sentinel prevents double-fire). Net effect: manager gets notified within ~75s of report-file stability regardless of whether the AI exited cleanly.
+
+**Role prompt clarification**: also update every role prompt to say "type `/exit` as a slash-command (not as text in the report); the wrapper has a watchdog that will force-fire AGENT REPORT after 60s of report-file stability if you forget."
+
+Reference launchers using this pattern: `/tmp/launch_rev_s3y.sh`, `/tmp/launch_rev_m6s1.sh` (2026-05-21).
+
+## When the bash-script-heuristic blocks the dispatch (legacy)
+
+Earlier in this project the sandbox refused long bash-string dispatch citing "agent-inferred parameters for a high-stakes autonomous worker spawn." Mitigations:
+
+1. Write the role prompt + a short launcher script to disk via the Write tool (verifiable by the sandbox)
+2. Issue the tmux dispatch with the launcher path, not inlined
+3. User one-time permission approval if needed
 
 ## Cross-links
 
