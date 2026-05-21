@@ -2,63 +2,73 @@
 
 Manager-maintained. Updated every watchman tick.
 
-## Currently in flight (1)
+**Per user 2026-05-21 ~11:10**: keep 30-min watchman cadence; next swarm dispatched.
 
-| Window | Sprint | AI | Phase | Started | Status |
+## Currently in flight (3 codex)
+
+| Window | Sprint | Phase | Started | Wall budget | Status |
 |---|---|---|---|---|---|
-| `reviewer-s1y` | M5-S1.y Thompson | claude-opus-4-7 xhigh | reviewer | 10:43 | thinking/leavening; needs to decide ACCEPT-AS-GRAY-ZONE vs REJECT-bounded |
+| `worker-s3y` | M5-S3.y RRTMG setcoef+taumol+Planck | worker (codex gpt-5.5 xhigh) | 11:11 | 16-32h | Working — blocked M5 close depends on this |
+| `worker-m6s1` | M6-S1 coupled interface freeze | worker (codex gpt-5.5 xhigh) | 11:11 | 12-18h | Working — first M6 implementation sprint |
+| `critic-m6plan` | M6 milestone plan consensus critique | critical-reviewer (codex gpt-5.5 xhigh) | 11:11 | 30-60min | Working — plan ratification before M6-S2..S8 dispatch |
 
-## Closed this tick (2)
+## Manager decision recorded (this tick)
+
+- **Eddington-vs-PIFM**: option (a) — patch local WRF `kmodts=1` + rebuild harness. Preserves M5-S3.x Eddington implementation. Worker AC0 = first step.
+
+## Closed this tick (1)
 
 | Sprint | Verdict | Merge | Closeout |
 |---|---|---|---|
-| **M5-S2.x MYNN follow-ups** | Opus **ACCEPT** | `dec3e8c` (worker `7f9f4f1` + reviewer `9625d73`) | `.agent/sprints/.../m5-s2x-mynn-followups/manager-closeout.md` |
-| **M5-S3.x RRTMG transfer-solver** | Opus **ACCEPT-AS-GROUNDWORK-PHASE-2** | `0dad...` (worker `cbce2e5` + reviewer `e52857d`) | `.agent/sprints/.../m5-s3x-rrtmg-transfer-solver/manager-closeout.md` + new `m5-s3y-rrtmg-setcoef-taumol-planck/` stub |
+| **M5-S1.y Thompson HLO + residuals** | Opus **ACCEPT-AS-GRAY-ZONE-CHECKPOINT** | `0bd1fd2` (worker + reviewer `bbabd32`) | M6-S1 UNBLOCKED-WITH-DEBT; optional M5-S1.z follow-up if M6 RMSE flags |
 
-## M6 prologue debt (running tally)
+## M5 prologue close status
 
-| Sprint | Status | Wall budget |
-|---|---|---|
-| M5-S1.y Thompson HLO + residuals | Opus reviewer in flight | 4-10h (delivered 43m) |
-| M5-S2.x MYNN follow-ups | ✓ CLOSED ACCEPT | 2-6h (delivered 27m + 23m review) |
-| M5-S3.x RRTMG transfer-solver | ✓ CLOSED GROUNDWORK-PHASE-2 | 8-16h (delivered 29m + 7m review) |
-| **M5-S3.y RRTMG setcoef+taumol+Planck (NEW)** | STUB; awaits manager Eddington-vs-PIFM decision then dispatch | **16-32h** (largest M5 item) |
+| Sprint | Status |
+|---|---|
+| M5-S1.y Thompson | ✓ CLOSED (GRAY-ZONE-CHECKPOINT) |
+| M5-S2.x MYNN | ✓ CLOSED (ACCEPT) |
+| M5-S3.x RRTMG transfer-solver | ✓ CLOSED (GROUNDWORK-PHASE-2) |
+| **M5-S3.y RRTMG setcoef+taumol+Planck** | in flight (codex) |
 
-## On deck
+## M6 sprint status
 
-| Sprint | Trigger | Notes |
-|---|---|---|
-| M5-S1.y manager closeout | After Opus reviewer verdict | Worker self-flagged GRAY-ZONE; reviewer to decide |
-| M5-S3.y Eddington-vs-PIFM decision (manager+1 codex) | Now (manager) — option (a) patch local WRF kmodts=1 / option (b) retarget JAX to PIFM | Recommended (a); preserves M5-S3.x progress |
-| M5-S3.y worker dispatch | After Eddington decision + P1 closure | Codex worker; 16-32h; file-disjoint can run parallel with M6-S1 prep |
-| P4 M6 plan consensus (codex critical-review) | Now (codex quota freed; only P1 reviewer in flight, no codex active) | Can dispatch |
-| M6-S1 coupled interface freeze | After M5-S1.y closes + ratification of M6 plan | Serial — blocks M6-S2/S3 |
+| Sprint | Status |
+|---|---|
+| **M6-S1 coupled interface freeze** | in flight (codex) — UNBLOCKED today |
+| M6 plan critical-review | in flight (codex) — needed before M6-S2..S8 dispatch |
+| M6-S2 forecast driver | queued — after M6-S1 + plan ratification |
+| M6-S3 surface + Noah-MP minimum | queued — after M6-S2 smoke; M5-S2.x interface stub ready |
+| M6-S4 Tier-2 coupled invariants | queued — after M6-S2 smoke; parallelizable with S3/S5/S6/S7 |
+| M6-S5 ADR-007 4× verdict | queued — after M6-S2 smoke; parallelizable |
+| M6-S6 Tier-3 TSC1.0 | queued — after M6-S2 + S4 |
+| M6-S7 Tier-4 probtest | queued — after M6-S1 |
+| M6-S8 operational Gen2 + closeout | queued — after S0-S7 |
 
 ## Watchman policy
 
-- Next tick: 20 min (~11:05) — P1 reviewer expected to finish ~10:55-11:10
-- Then: dispatch M5-S3.y worker + P4 codex critical-review in parallel
-- After P1 closes: dispatch M6-S1 interface freeze (single worker)
+- **30-min cadence per user directive**
+- On each tick: check 3 codex panes, dispatch Opus reviewers on worker AGENT REPORTs, update tracker
+- Next tick: ~11:42
 
 ## Recent ticks
 
-- 2026-05-21 09:30-09:37 — 3 codex workers dispatched
+- 2026-05-21 09:30-09:37 — 3 codex workers dispatched (s1y, s2x, s3x)
 - 2026-05-21 10:10-10:18 — watchman tick #1: P2+P3 workers done, Opus reviewers dispatched
-- 2026-05-21 10:38-10:43 — watchman tick #2:
-  - P2 Opus reviewer ACCEPT → merge + closeout committed
-  - P3 Opus reviewer ACCEPT-AS-GROUNDWORK-PHASE-2 → merge + closeout + M5-S3.y stub committed
-  - P1 worker delivered GRAY-ZONE (10 launches honest, HLO 421 KB > 350 KB target, Ni 126975→772, qr met, qg/qv/T/Ni/Nr still miss strict)
-  - P1 Opus reviewer dispatched 10:43
-- Next: 11:05 tick to catch P1 verdict + dispatch parallel M5-S3.y + P4
+- 2026-05-21 10:38-10:43 — watchman tick #2: P2 ACCEPT + P3 GROUNDWORK-PHASE-2 merged; M5-S3.y stub created
+- 2026-05-21 11:01-11:12 — watchman tick #3 (user-triggered):
+  - P1 Opus reviewer ACCEPT-AS-GRAY-ZONE-CHECKPOINT → merge + closeout
+  - **Next swarm dispatched**: M5-S3.y (16-32h codex), M6-S1 (12-18h codex), M6 plan critic (30-60min codex)
+- Next: 30-min tick at ~11:42
 
-## File-ownership snapshot (M6 prologue)
+## File-ownership disjointness (3 parallel agents)
 
-- thompson_*: M5-S1.y owns (in-flight review)
-- mynn_*: M5-S2.x CLOSED → free for M6-S3
-- rrtmg_*: M5-S3.x CLOSED → M5-S3.y will reopen for setcoef+taumol+Planck
+- `worker-s3y`: `src/gpuwrf/physics/rrtmg_*`, `scripts/wrf_rrtmg_*`, `module_ra_rrtmg_sw.F` patch, `ADR-009`
+- `worker-m6s1`: `src/gpuwrf/contracts/state.py`, `precision.py`, NEW `coupling/`, NEW `tests/test_m6_*`, NEW `ADR-010`, NEW `scripts/m6_run_dummy_coupled.py`
+- `critic-m6plan`: READ-only — writes `.agent/sprints/2026-05-21-m6-milestone-plan-scout/critical-review-codex.md`
 
-## Anti-pattern observations (this cycle)
+All three disjoint. Safe parallel.
 
-- **NO** spec-gaming recurrences from M5-S2 / M5-S3 prior cycles. Both workers honest about scope limits.
-- Codex worker pattern improving: self-flag honest partial > pretend parity. Reviewer's verifiability-triple checks (`nm` + non-clipped + non-vacuous) all passed.
-- Process learning: dispatching pattern's `/exit` auto-fire reliability issue noted again — manual tap-Enter on stuck panes worked. To encode in pattern doc later.
+## Rate-limit watch
+
+3 codex (gpt-5.5 xhigh) simultaneous. User flagged untested rate-limit at 3x earlier (2026-05-21 09:35). First run worked. Monitor for empty-output / 429-equivalent signals on first tick.
