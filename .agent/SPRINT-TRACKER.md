@@ -1,54 +1,51 @@
 # Sprint Tracker — Live Dashboard
 
-Manager-maintained. 30-min cadence. **Update on every dispatch per user 12:35.**
+Manager-maintained. **20-min cadence** (per user 14:05 AFK directive). **Update on every dispatch** (per user 12:35).
 
-## Currently in flight (3 codex — all Working confirmed)
+## Currently in flight (3 agents — 1 Opus + 2 codex)
 
-| Window | Sprint | AI | Started | Status |
-|---|---|---|---|---|
-| `worker-s3zz` | M5-S3.zz RRTMG SW closeout | codex gpt-5.5 xhigh | 12:48 | finalizing — sfluxzen+setcoef ROOT CAUSES CLOSED; new broadband-transfer/cloud-optics root cause emerged (sprint outcome: PARTIAL); writing report + committing |
-| `worker-m6s2` | M6-S2 coupled forecast driver | codex gpt-5.5 xhigh | 12:50 | 56m — running 1h smoke proof after fixing finite-state (capped internal reduced-dycore step at 1s); long compile + iterating |
-| `critic-m7plan` | M7 plan critical-review | codex gpt-5.5 xhigh | 13:05 | re-paste required at 13:46 (first prompt didn't fire); now Working |
+| Window | Sprint | AI | Started | Wall | Notes |
+|---|---|---|---|---|---|
+| `reviewer-s3zz` | M5-S3.zz RRTMG SW closeout Opus review | Opus 4.7 xhigh | 14:01 | ~15-25min | Verify worker partial; bind M5-S3.zzzz scope (cldprmc+spcvmc oracle) |
+| `worker-m6s2` | M6-S2 coupled forecast driver (1h→6h→24h on d02) | codex gpt-5.5 xhigh | 12:50 (1h20m+ in) | 24-36h | Iterating 1h smoke after finite-state cap fix; long compile |
+| `worker-s3zzz` | M5-S3.zzz RRTMG LW closeout (16 bands taumol+fracs) | codex gpt-5.5 xhigh | 14:08 | 24-48h | NEW dispatch in parallel with S3.zz Opus + M6-S2; file-disjoint (rrtmg_lw only) |
 
-## Tick observations
+**Rate-limit watch**: 2 codex + 1 opus active = within tested limit. Opus quota separate from gpt quota.
 
-**M5-S3.zz partial outcome**: worker closed the M5-S3.z reviewer's named root causes (sfluxzen band/g-point allocation + setcoef precision) but Tier-1 SW flux STILL fails — root cause shifted to broader transfer-solver and cloud-optics closure (cldprmc_sw/spcvmc_sw layer optical inputs). Worker recommends next sprint extract those as intermediate oracles before more production code edits. **M5-S3.zzz scope may need amendment** (LW closeout was advance-bound, but the SW transfer-solver/cloud-optics issue is newly discovered).
+## Just dispatched this tick
 
-**M6-S2 reality**: 1h smoke compile + run is slower than expected on real 16×16×30 → 160×67×45 d02 domain. Worker iterating; this is normal first-real-coupled-forecast pain. Watching.
+- **M5-S3.zzz LW closeout**: codex worker spawned per user "max parallel" directive
+- Contract written per M5-S3.z reviewer §4 advance-binding (Option 2)
+- File-disjoint from M5-S3.zz (SW) and M6-S2 (coupling/contracts)
 
-**M7 critic dispatch failure**: first prompt didn't fire (sandbox + paste timing); re-pasted at 13:46. Now Working. Wall budget still 30-60min from re-paste.
+## M5 sprint table (live)
 
-## Closed this tick
-
-(none — all 3 still working; M7 critic re-pasted)
-
-## M5 sprint table
-
-| Sprint | Status | Notes |
+| Sprint | Status | Detail |
 |---|---|---|
-| M5-S0 through M5-S3.z (11 sprints) | ✓ all CLOSED | M5 prologue closure tracked in MILESTONE-M5-CLOSEOUT.md |
-| **M5-S3.zz RRTMG SW closeout** | 🟡 worker finalizing | Outcome: sfluxzen+setcoef CLOSED; new SW broadband/cloud-optics root cause |
-| M5-S3.zzz LW closeout | ⚪ queued (may need scope amendment per S3.zz finding) | Advance-bound but new SW issue may need parallel/prior sprint |
-| M5-S1.z Thompson collision tables | ⚪ optional | Only if M6 RMSE flags |
+| M5-S0 → M5-S3.z (14 sprints) | ✓ all CLOSED | M5 prologue completed; physics suite proven on column oracle |
+| **M5-S3.zz RRTMG SW closeout** | 🟡 Opus reviewer IN FLIGHT | Worker delivered partial; sfluxzen+setcoef CLOSED; new broadband root cause |
+| **M5-S3.zzz RRTMG LW closeout** | 🟡 codex worker IN FLIGHT (just dispatched) | 16 LW bands taumol+fracs transcription per M5-S3.z reviewer §4 |
+| M5-S3.zzzz cldprmc+spcvmc SW oracle (NEW) | ⚪ contract STUB ready | Dispatch after S3.zz Opus accepts |
+| M5-S1.z Thompson collision tables | ⚪ optional | Only if M6 RMSE flags microphysics drift |
 
-## M6 sprint table
+**M5 RRTMG PARITY** requires: S3.zz Opus + S3.zzzz close + S3.zzz close. **Earliest unblock: ~24-48h.**
 
-| Sprint | Status |
-|---|---|
-| M6 plan + S1 + S2a | ✓ all closed |
-| **M6-S2 coupled forecast driver** | 🟡 worker iterating (56m+, 1h smoke compile) |
-| M6-S3 surface + Noah-MP | ⚪ queued (after M6-S2 smoke) |
-| M6-S4..S7 (Tier-2/3/4 + 4× verdict) | ⚪ queued (parallel after M6-S3) |
-| M6-S8 operational + closeout | ⚪ queued (serial final) |
+## M6 sprint table (live)
+
+| Sprint | Status | Detail |
+|---|---|---|
+| M6 plan + S1 + S2a | ✓ all CLOSED | Infrastructure ready |
+| **M6-S2 coupled forecast driver** | 🟡 worker iterating (1h20m+) | 1h smoke compile after dycore-step cap fix |
+| M6-S3 surface layer + Noah-MP | ⚪ contract READY; depends on M6-S2 smoke | 30-48h |
+| M6-S4..S7 (Tier-2/3/4 + 4× verdict) | ⚪ queued (parallel after M6-S3) | 4-way parallel |
+| M6-S8 operational Gen2 + closeout | ⚪ queued (serial final) | 24-36h |
 
 ## M7 sprint table
 
 | Sprint | Status |
 |---|---|
-| M7 plan scout | ✓ CLOSED (34KB plan, 9 sprints) |
-| **M7 plan critic** | 🟡 codex Working (re-paste 13:46) |
-| M7 plan manager-amendments | ⚪ queued |
-| M7-S0..S8 implementation | ⚪ queued |
+| M7 plan: scout + critic + manager-amendments | ✓ all CLOSED (full ratification cycle) |
+| M7-S0..S8 implementation | ⚪ queued (after M6 GREEN + M5 RRTMG PARITY) |
 
 ## M8 (queued)
 
@@ -56,38 +53,40 @@ Manager-maintained. 30-min cadence. **Update on every dispatch per user 12:35.**
 |---|---|
 | M8 forkable release | ⚪ queued |
 
-## Big-picture critical path (UPDATED with S3.zz finding)
+## Big-picture critical path
 
 ```
-NOW (3 codex)
-  ├─ M5-S3.zz close (PARTIAL — sfluxzen+setcoef CLOSED, new broadband root cause) → Opus
-  │   → M5-S3.zzzz cldprmc_sw/spcvmc_sw intermediate oracle (NEW scope per worker)
-  │   → M5-S3.zzz LW closeout (advance-bound, but order may swap)
-  │   → M5 RRTMG PARITY
-  ├─ M6-S2 close → Opus → M6-S3 → Opus → M6-S4..S7 parallel → M6-S8 → M6 GREEN
-  └─ M7 critic close → manager amendments → M7-S0 ready
+NOW (3 parallel agents)
+  ├─ S3.zz Opus → bind M5-S3.zzzz scope → S3.zzzz worker (codex) → Opus → SW PARITY
+  ├─ S3.zzz worker → Opus → LW PARITY  (CRITICAL: dominant 24h T2 driver)
+  └─ M6-S2 → Opus → M6-S3 → Opus → M6-S4..S7 4-way → M6-S8 → M6 GREEN
+
+When (SW PARITY + LW PARITY): M5 RRTMG complete → M6-S8 operational T2 binding gate meaningful
+When M6 GREEN: M7-S0 dispatch (plan already manager-ratified)
+M7 GREEN → M8 release
 ```
 
-**Calendar update**: M5 RRTMG PARITY likely needs 1 more sprint than originally projected (S3.zzzz cldprmc + S3.zzz LW = 2 more cycles); M6 close 5-8 days; end-goal landing ~3-4 weeks.
+**Calendar**: M5 RRTMG PARITY 24-48h; M6 close 5-9 days; end-goal landing ~3-4 weeks.
 
 ## File-ownership snapshot
 
-- `pyproject.toml`: M6-S2 amending (zarr+jax STEP 0)
 - `src/gpuwrf/contracts/state.py`: M6-S2 extending (boundary leaves)
 - `src/gpuwrf/coupling/{driver, boundary_apply}.py`: NEW M6-S2
-- `src/gpuwrf/io/**`: M6-S2a CLOSED (frozen)
-- `src/gpuwrf/physics/rrtmg_sw.py`: M5-S3.zz in flight (sfluxzen + setcoef precision + lax.scan; uncommitted changes)
-- `src/gpuwrf/physics/rrtmg_lw.py`: FROZEN until M5-S3.zzz
-- All other physics: CLOSED
+- `src/gpuwrf/io/**`: M6-S2a CLOSED, frozen
+- `src/gpuwrf/physics/rrtmg_sw.py`: M5-S3.zz Opus reviewing; future M5-S3.zzzz reopens for cldprmc/spcvmc
+- `src/gpuwrf/physics/rrtmg_lw.py`: M5-S3.zzz worker editing (16 bands)
+- All other physics: CLOSED, frozen
 
-## Watchman policy
+**3-way disjointness verified**: SW (rrtmg_sw) vs LW (rrtmg_lw) vs M6 (coupling+contracts). Zero conflict surface.
 
-- 30-min cadence per user
-- **Routine: update tracker on every new dispatch + watchman tick**
-- Next: 14:16
+## Watchman policy (user-AFK)
+
+- 20-min cadence per user 14:05
+- On each tick: check 3 panes, process AGENT REPORTs, dispatch next sprint per critical path
+- Maintain ≥2 parallel agents at all times
+- Watch for rate-limit signals (empty stdout on codex = quota exhaust)
 
 ## Recent ticks
 
-- 13:08: 3 codex dispatched (s3zz + m6s2 + m7critic); m7critic dispatch failure noted
-- 13:46 (this tick): all 3 still in flight; s3zz delivered partial + new root cause discovery; m6s2 iterating; m7critic re-pasted (re-Working)
-- Next: 14:16
+- 13:50 (this tick): S3.zz worker + M7 critic AGENT REPORTs landed; S3.zz Opus reviewer dispatched; M5-S3.zzzz stub written; M7 manager-amendments integrated; **M5-S3.zzz LW worker dispatched in parallel per user "max parallel" directive**
+- Next: 14:25 (20-min cadence per user AFK directive)
