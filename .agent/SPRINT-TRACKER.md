@@ -1,98 +1,93 @@
 # Sprint Tracker — Live Dashboard
 
-Manager-maintained. **20-min cadence** (per user 14:05 AFK). **Update on every dispatch** (per user 12:35).
+Manager-maintained. 20-min cadence (AFK).
 
-## Currently in flight (3 codex on critical-path — MAX PARALLEL achieved)
+## Currently in flight (1 codex + 2 opus — within ≤3 codex policy)
 
-| Window | Sprint | AI | Started | Wall | Critical-path role |
-|---|---|---|---|---|---|
-| `worker-m6s2` | M6-S2 coupled forecast driver | codex gpt-5.5 xhigh | 12:50 (1h35m+) | 24-36h | First real GPU forecast on Canary d02 |
-| `worker-s3zzz` | M5-S3.zzz LW closeout (16-band taumol+fracs) | codex gpt-5.5 xhigh | 14:08 (~25m) | 24-48h | DOMINANT 24h T2 driver |
-| `worker-s3zzzz` | M5-S3.zzzz cldprmc+spcvmc SW broadband + R-8+R-9 confrontation | codex gpt-5.5 xhigh | 14:38 (just spawned) | 16-32h | SW broadband closeout (last SW gap) |
+| Window | Sprint | AI | Started | Wall |
+|---|---|---|---|---|
+| `worker-s3zzzz` | M5-S3.zzzz cldprmc+spcvmc SW broadband (R-8+R-9 hypothesis confrontation) | codex gpt-5.5 xhigh | 14:38 | 16-32h |
+| `reviewer-m6s2` | M6-S2 coupled forecast driver Opus review | opus 4.7 xhigh | 14:58 | ~15-25min |
+| `reviewer-s3zzz` | M5-S3.zzz LW closeout Opus review | opus 4.7 xhigh | 14:58 | ~15-25min |
 
-**File-disjointness verified**:
-- m6s2: `coupling/`, `contracts/state.py`, `pyproject.toml`, NEW `scripts/m6_run_coupled_forecast.py`
-- s3zzz: `physics/rrtmg_lw.py` ONLY
-- s3zzzz: `physics/rrtmg_sw.py` + harness extensions (cldprmc/spcvmc dumps)
+**Codex count: 1 (within 3-cap). Opus reviewers don't count.** 
 
-Shared-file overlap (NPZ + validation framework): worker dispatches stagger oracle extensions to avoid conflict.
+## Closed this tick (2 worker AGENT REPORTs)
 
-## Just dispatched this tick
-
-- **M5-S3.zzzz cldprmc+spcvmc worker (codex)** per S3.zz Opus Option A binding + R-8/R-9 hypothesis confrontation
-- Contract amended with reviewer's A1-A5 binding additions
-
-## Closed this tick
-
-| Sprint | Verdict |
-|---|---|
-| M5-S3.zz Opus reviewer | **PARTIAL-ACCEPT-AS-GROUNDWORK-PHASE-5** + binding Option A |
-
-Reviewer §3.3 attribution table pinned residual to 4 SW broadband sources (20-50 W/m² from cldprmc cloud-optics; 10-30 W/m² from spcvmc reftra blending; 5-15 W/m² from direct-beam transmittance; 0-10 W/m² from flux accumulation). All resolvable via M5-S3.zzzz oracle dumps.
-
-## M5 sprint table
-
-| Sprint | Status | Detail |
+| Sprint | Verdict | Status |
 |---|---|---|
-| M5-S0 through M5-S3.zz (15 sprints) | ✓ all CLOSED | M5-S3.zz Opus accepted as Phase-5 groundwork |
-| **M5-S3.zzz LW closeout** | 🟡 codex worker (~25min) | 16-band taumol+fracs transcription |
-| **M5-S3.zzzz cldprmc+spcvmc SW broadband** | 🟡 codex worker (just spawned) | R-8 + R-9 hypothesis confrontation + A1-A5 reviewer-binding |
-| M5-S1.z Thompson collision tables | ⚪ optional | Only if M6 RMSE flags microphysics drift |
+| **M6-S2 coupled forecast driver** | worker PASS all 7 AC + bundled 5 M6-S1 prereqs | merged `464cbc3`; Opus review IN FLIGHT |
+| **M5-S3.zzz LW closeout** | worker PARTIAL: 16/16 LW bands taug+fracs PASS intermediate-oracle; Tier-1 broadband still FAILS (root cause: cldprmc_lw + rtrnmc) | merged; Opus review IN FLIGHT |
 
-**M5 RRTMG PARITY** = S3.zzz + S3.zzzz both close. Earliest unblock: ~24-48h.
+### M6-S2 highlights
+- 1h + 6h + 24h forecasts PASS on real d02 (160×67×45)
+- 0 H2D / 0 D2H / 0 host-device-transfer bytes (MEASURED via JAX profiler trace, not literal)
+- `temporary_bytes_per_step = 136890408` (130 MB, measured via XLA `compiled.memory_analysis()`)
+- 23/23 M6 tests pass
+- pyproject.toml `zarr+jax` added (M6-S2a Opus follow-up closed)
+- All 5 M6-S1 prereqs addressed: R-3 FP32 Path A, R-5 real GridSpec dz, R-7 measured temp bytes, R-9 robust cadence, R-13 boundary State extension
+- WRF-style boundary apply (specified + relaxation zone) per `module_bc.F` citations
+- ADR-010 amended
+- Honest unresolved-risks: 1s internal dycore guard, finite-state guard (residency proof not physical validation), mu_bdy first-step replay, WRF-shaped NPZ instead of NetCDF
 
-## M6 sprint table
+### M5-S3.zzz LW highlights
+- 16/16 LW bands FULL_BRANCH_ACCEPTED at intermediate-oracle
+- Per-band table with WRF source citations for each band
+- LW launches 43 (lax.scan barrier present, no full fusion)
+- Combined raw launches 97
+- Root cause now: LW cldprmc + rtrnmc transfer/source (analog to SW M5-S3.zz finding)
+- Worker recommends M5-S3.zzzzz LW cldprmc+rtrnmc oracle (file-disjoint with SW S3.zzzz — could parallel)
+
+## M5 sprint table (live)
+
+| Sprint | Status |
+|---|---|
+| M5-S0 through M5-S3.zzz (16 sprints) | ✓ all CLOSED at worker level |
+| **M5-S3.zzzz cldprmc+spcvmc SW broadband** | 🟡 codex worker IN FLIGHT (~50min in) |
+| **M5-S3.zzz LW** | 🟡 Opus review IN FLIGHT (worker just closed) |
+| M5-S3.zzzzz LW cldprmc+rtrnmc oracle (NEW per S3.zzz worker rec) | ⚪ contract pending; can dispatch parallel after S3.zzz Opus accepts |
+| M5-S1.z Thompson collision tables | ⚪ optional |
+
+## M6 sprint table (live)
 
 | Sprint | Status |
 |---|---|
 | M6 plan + S1 + S2a | ✓ all CLOSED |
-| **M6-S2 coupled forecast driver** | 🟡 worker (1h35m+, iterating 1h smoke) |
-| M6-S3..S8 | ⚪ queued |
+| **M6-S2 coupled forecast driver** | 🟡 Opus review IN FLIGHT (worker just closed) |
+| M6-S3 surface + Noah-MP | ⚪ contract READY; dispatch after M6-S2 Opus accepts |
+| M6-S4..S7 + S8 | ⚪ queued |
 
 ## M7 sprint table
 
 | Sprint | Status |
 |---|---|
-| M7 plan scout + critic + manager-amendments | ✓ all CLOSED |
-| M7-S0..S8 | ⚪ queued (after M6 GREEN + M5 RRTMG PARITY) |
+| M7 plan: scout + critic + manager-amendments | ✓ all CLOSED |
+| M7-S0..S8 | ⚪ queued |
 
-## Big-picture critical path (UPDATED with parallel SW+LW)
+## Big-picture critical path
 
 ```
-NOW (3 codex parallel — max throughput)
-  ├─ M6-S2 → Opus → M6-S3 → M6-S4..S7 4-way → M6-S8 → M6 GREEN
-  ├─ M5-S3.zzz LW → Opus → LW PARITY
-  └─ M5-S3.zzzz SW → Opus → SW PARITY
-
-When (SW PARITY + LW PARITY): M5 RRTMG complete
-When M6 GREEN + M5 RRTMG complete: M6-S8 operational T2 binding gate → meaningful
-When M6 GREEN: M7-S0 dispatch (plan fully ratified)
-M7 GREEN → M8 release
+NOW (1 codex + 2 opus reviews)
+  → Opus reviews → manager closeouts → next dispatch:
+     ├─ M5-S3.zzzzz LW cldprmc+rtrnmc (codex, after S3.zzz Opus)
+     ├─ M6-S3 surface+Noah-MP (codex, after M6-S2 Opus)
+     └─ S3.zzzz still running (SW broadband closeout)
+  → 3 codex parallel again (s3zzzz + s3zzzzz LW + m6s3 surface) once Opus reviews land
 ```
 
-**Calendar**: M5 RRTMG PARITY 24-48h (was sequential 48-96h); M6 close 5-9 days; **end-goal landing ~3 weeks** (faster than prior estimate due to SW+LW parallel).
+**Calendar refined**: M5 RRTMG full PARITY now needs S3.zzzz (SW broadband) + S3.zzzzz (LW broadband) = 2 more sprints (16-32h each, file-disjoint can parallel). Closer to end-goal than expected.
 
 ## File-ownership snapshot
 
-- `pyproject.toml`: M6-S2 (zarr+jax added)
-- `src/gpuwrf/contracts/state.py`: M6-S2 (boundary leaves)
-- `src/gpuwrf/coupling/{driver, boundary_apply}.py`: NEW M6-S2
-- `src/gpuwrf/io/**`: M6-S2a CLOSED
-- `src/gpuwrf/physics/rrtmg_sw.py`: M5-S3.zzzz (R-8+R-9 fix; harness cldprmc+spcvmc extensions)
-- `src/gpuwrf/physics/rrtmg_lw.py`: M5-S3.zzz (16-band taumol+fracs)
-- `src/gpuwrf/validation/rrtmg_intermediate_oracles.py`: BOTH workers extending (staggered records to avoid conflict)
+- `coupling/{driver, boundary_apply}.py`: M6-S2 LANDED
+- `contracts/state.py`: boundary leaves landed
+- `physics/rrtmg_sw.py`: M5-S3.zzzz worker active
+- `physics/rrtmg_lw.py`: M5-S3.zzz LANDED; M5-S3.zzzzz will reopen for cldprmc+rtrnmc
+- `io/**`: M6-S2a frozen
 - Other physics: CLOSED, frozen
-
-## Watchman policy (AFK)
-
-- 20-min cadence per user
-- Maintain ≥2 parallel agents at all times
-- Process AGENT REPORTs immediately on landing
-- Watch rate-limit (empty codex stdout = quota signal)
-- Update tracker per dispatch
 
 ## Recent ticks
 
-- 14:08 (S3.zzz LW dispatched alongside M6-S2 + S3.zz Opus)
-- 14:38 (this tick): **S3.zz Opus PARTIAL-ACCEPT + binding Option A**; S3.zzzz cldprmc+spcvmc worker dispatched per reviewer A1-A5; **3 parallel codex achieved on M5 RRTMG closure path**
-- Next: 14:58 (20-min cadence)
+- 14:38: S3.zz Opus + M5-S3.zzzz dispatched (3 codex)
+- 14:58 (this tick): M6-S2 worker DONE + M5-S3.zzz LW worker DONE; both AGENT REPORTs landed; 2 Opus reviewers dispatched in parallel; codex count drops to 1 (s3zzzz)
+- Next: 15:18 (20-min cadence)
