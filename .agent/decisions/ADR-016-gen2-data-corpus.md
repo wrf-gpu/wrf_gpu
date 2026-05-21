@@ -2,7 +2,9 @@
 
 ## Status
 
-Proposed for M6.5-D1 review.
+ACCEPTED — M6.5-D1 Opus reviewer ACCEPT 2026-05-21 (commit `89ab922`);
+manager closeout commit `3fb2bae`; AC4 threshold amended commit `d16dfb2`.
+Operational follow-ups (5 non-blocking tickets) queued for M7-S0a.
 
 ## Context
 
