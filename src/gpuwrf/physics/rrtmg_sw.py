@@ -6,6 +6,7 @@ from functools import partial
 from typing import NamedTuple
 
 import jax
+from jax import lax
 from jax import config
 import jax.numpy as jnp
 import numpy as np
@@ -25,13 +26,21 @@ from gpuwrf.physics.rrtmg_constants import (
     N2O_VMR,
     O2_VMR,
     O3_BACKGROUND_VMR,
-    SOLAR_CONSTANT,
     WATER_VAPOR_MOLECULAR_WEIGHT_RATIO,
 )
 from gpuwrf.physics.rrtmg_tables import RRTMGTableBundle, RRTMG_TABLES
 
 
 config.update("jax_enable_x64", True)
+
+_SW_GPOINT_COUNTS = (6, 12, 8, 8, 10, 10, 2, 10, 8, 6, 6, 8, 6, 12)
+_SW_GLOBAL_GPOINT_INDEX = jnp.asarray(
+    tuple(
+        tuple((sum(_SW_GPOINT_COUNTS[:band]) + gpoint) if gpoint < _SW_GPOINT_COUNTS[band] else 0 for gpoint in range(12))
+        for band in range(14)
+    ),
+    dtype=jnp.int32,
+)
 
 
 @jax.tree_util.register_pytree_node_class
@@ -269,7 +278,7 @@ def _sw_setcoef(qv, p_pa, t_k, pressure_interfaces_pa, tables: RRTMGTableBundle)
     self_factor = (t_k - 188.0) / 7.2
     indself = jnp.minimum(9, jnp.maximum(1, _trunc_int(self_factor) - 7))
     selffrac = jnp.where(lower, self_factor - (indself + 7).astype(jnp.float64), 0.0)
-    indself = jnp.where(lower, indself, 1)
+    indself = jnp.where(lower, indself, 0)
 
     compfp = 1.0 - fp
     fac10 = compfp * ft
@@ -502,6 +511,18 @@ def _sw_taumol(coef: _SWSetCoefState, tables: RRTMGTableBundle):
     return jnp.stack(taug, axis=-2), jnp.stack(taur, axis=-2)
 
 
+def _sw_taumol_fused(coef: _SWSetCoefState, tables: RRTMGTableBundle):
+    """Returns validated SW optical depths through a band-axis `lax.scan` barrier."""
+
+    taug, taur = _sw_taumol(coef, tables)
+
+    def keep_band(_, band_index):
+        return None, (taug[..., band_index, :], taur[..., band_index, :])
+
+    _, (taug_scan, taur_scan) = lax.scan(keep_band, None, jnp.arange(14, dtype=jnp.int32))
+    return jnp.moveaxis(taug_scan, 0, -2), jnp.moveaxis(taur_scan, 0, -2)
+
+
 def _select_layer(values, idx):
     """Selects one layer per column from a bottom-to-top layer array."""
 
@@ -525,6 +546,15 @@ def _source_indices(coef: _SWSetCoefState, layreffr, mode: str):
     return jnp.where(has_cross, cross_idx, upper_default)
 
 
+def _source_active(coef: _SWSetCoefState, mode: str):
+    """Matches whether WRF's lower/upper `taumol_sw` source loop executes."""
+
+    lower_count = jnp.sum(coef.lower_mask.astype(jnp.int32), axis=-1)
+    if mode == "lower":
+        return lower_count > 0
+    return lower_count < coef.jp.shape[-1]
+
+
 def _interp_source(source_table, js, fs):
     """Interpolates WRF reduced solar source functions over species ratio."""
 
@@ -540,6 +570,8 @@ def _sw_sfluxzen(coef: _SWSetCoefState, tables: RRTMGTableBundle):
     for band in range(14):
         src = tables.sw_sfluxref[band]
         layreffr = tables.sw_layreffr[band]
+        mode = "upper" if band in (0, 1, 11, 12, 13) else "lower"
+        active = _source_active(coef, mode)
         if band in (0, 4, 7, 9, 10, 11, 13):
             source = jnp.broadcast_to(src[:, 0], coef.colh2o.shape[:-1] + src[:, 0].shape)
         elif band == 1:
@@ -577,6 +609,7 @@ def _sw_sfluxzen(coef: _SWSetCoefState, tables: RRTMGTableBundle):
             source = jnp.broadcast_to(src[:, 0], coef.colh2o.shape[:-1] + src[:, 0].shape)
         if band == 11:
             source = source * tables.sw_scalekur[band]
+        source = jnp.where(active[..., None], source, 0.0)
         sources.append(source * tables.sw_gpoint_mask[band])
     return jnp.stack(sources, axis=-2)
 
@@ -609,6 +642,51 @@ def _delta_scale(tau, omega, asymmetry):
     omega_scaled = (1.0 - f) * omega / denom_tau
     asym_scaled = (asymmetry - f) / denom_g
     return tau_scaled, jnp.clip(omega_scaled, 0.0, 0.999999), jnp.clip(asym_scaled, -0.999999, 0.999999)
+
+
+def _kissvec_step(seed1, seed2, seed3, seed4):
+    """Advances WRF MCICA's KISS vector RNG for all active columns."""
+
+    seed1 = seed1 * jnp.uint32(69069) + jnp.uint32(1327217885)
+
+    def shift_xor(value, amount):
+        if amount > 0:
+            shifted = jnp.left_shift(value, jnp.uint32(amount))
+        else:
+            shifted = jnp.right_shift(value, jnp.uint32(-amount))
+        return jnp.bitwise_xor(value, shifted)
+
+    seed2 = shift_xor(shift_xor(shift_xor(seed2, 13), -17), 5)
+    seed3 = jnp.uint32(18000) * jnp.bitwise_and(seed3, jnp.uint32(65535)) + jnp.right_shift(seed3, jnp.uint32(16))
+    seed4 = jnp.uint32(30903) * jnp.bitwise_and(seed4, jnp.uint32(65535)) + jnp.right_shift(seed4, jnp.uint32(16))
+    kiss = seed1 + seed2 + jnp.left_shift(seed3, jnp.uint32(16)) + seed4
+    signed = kiss.astype(jnp.int32).astype(jnp.float64)
+    random = signed * 2.328306e-10 + 0.5
+    return seed1, seed2, seed3, seed4, random
+
+
+def _mcica_random_overlap_mask(p_pa, cloud_fraction, gpoint_mask):
+    """Builds WRF `mcica_subcol_sw` random-overlap cloud masks for reduced SW g-points."""
+
+    p_seed = p_pa.astype(jnp.float32).astype(jnp.float64)
+    frac = p_seed - jnp.floor(p_seed)
+    seed = (frac[..., :4].astype(jnp.float32) * jnp.float32(1.0e9)).astype(jnp.uint32)
+    seed1, seed2, seed3, seed4 = (seed[..., 0], seed[..., 1], seed[..., 2], seed[..., 3])
+    seed1, seed2, seed3, seed4, _ = _kissvec_step(seed1, seed2, seed3, seed4)
+    nlay = p_pa.shape[-1]
+    nsteps = sum(_SW_GPOINT_COUNTS) * nlay
+
+    def advance(carry, _):
+        s1, s2, s3, s4 = carry
+        s1, s2, s3, s4, random = _kissvec_step(s1, s2, s3, s4)
+        return (s1, s2, s3, s4), random
+
+    _, cdf_flat = lax.scan(advance, (seed1, seed2, seed3, seed4), None, length=nsteps)
+    cdf = jnp.reshape(cdf_flat, (sum(_SW_GPOINT_COUNTS), nlay) + p_pa.shape[:-1])
+    cdf = jnp.moveaxis(cdf, (0, 1), (-1, -2))
+    cloudy_global = cdf >= (1.0 - cloud_fraction[..., :, None])
+    cloudy_reduced = jnp.take(cloudy_global, _SW_GLOBAL_GPOINT_INDEX, axis=-1)
+    return cloudy_reduced.astype(jnp.float64) * gpoint_mask
 
 
 def _reftra_eddington(tau, omega, asymmetry, mu0, active):
@@ -773,42 +851,98 @@ def _shortwave_impl(state: RRTMGSWColumnState, tables: RRTMGTableBundle, debug: 
     cloud_ext = jnp.concatenate((state.cloud_fraction, jnp.zeros_like(state.cloud_fraction[..., -1:])), axis=-1)
     layer_mass = _pressure_layer_mass(state.p)
     layer_mass_ext = jnp.maximum((pressure_interfaces[..., :-1] - pressure_interfaces[..., 1:]) / GRAVITY, MIN_LAYER_MASS)
-    gas_column, dry_column = _rrtmg_column_amounts(qv_ext, pressure_interfaces)
-    liquid_path_g = (qc_ext + 0.25 * qg_ext) * layer_mass_ext * 1000.0
-    ice_path_g = (qi_ext + qs_ext + 0.75 * qg_ext) * layer_mass_ext * 1000.0
+    liquid_path_g = qc_ext * layer_mass_ext * 1000.0
+    ice_path_g = qi_ext * layer_mass_ext * 1000.0
+    snow_path_g = 0.99 * qs_ext * layer_mass_ext * 1000.0
 
-    weights = tables.sw_gpoint_weights
-    gas_coeff = _nearest_pressure_coefficients(p_ext, tables)
-    rayleigh_coeff = tables.sw_rayleigh_coefficients
+    coef = _sw_setcoef(qv_ext, p_ext, _extend_with_wrf_top_layer(state.T), pressure_interfaces, tables)
+    tau_gas, tau_rayleigh = _sw_taumol_fused(coef, tables)
+    sfluxzen = _sw_sfluxzen(coef, tables)
     liquid_coeff = tables.sw_cloud_liquid_extinction[:, None]
     ice_coeff = tables.sw_cloud_ice_extinction[:, None]
+    snow_coeff = tables.sw_cloud_snow_extinction[:, None]
     liquid_ssa = tables.sw_cloud_liquid_ssa[:, None]
     ice_ssa = tables.sw_cloud_ice_ssa[:, None]
+    snow_ssa = tables.sw_cloud_snow_ssa[:, None]
     liquid_asy = tables.sw_cloud_liquid_asymmetry[:, None]
     ice_asy = tables.sw_cloud_ice_asymmetry[:, None]
+    snow_asy = tables.sw_cloud_snow_asymmetry[:, None]
+    liquid_forward = liquid_asy * liquid_asy
+    ice_forward = tables.sw_cloud_ice_forward_fraction[:, None]
+    snow_forward = tables.sw_cloud_snow_forward_fraction[:, None]
     mask = tables.sw_gpoint_mask
 
-    tau_gas = gas_column[..., None, None] * jnp.maximum(gas_coeff, 0.0)
-    tau_rayleigh = dry_column[..., None, None] * rayleigh_coeff
-    tau_liquid = cloud_ext[..., None, None] * liquid_path_g[..., None, None] * liquid_coeff
-    tau_ice = cloud_ext[..., None, None] * ice_path_g[..., None, None] * ice_coeff
-    tau_total = jnp.clip(tau_gas + tau_rayleigh + tau_liquid + tau_ice, MIN_OPTICAL_DEPTH, MAX_OPTICAL_DEPTH)
-    scattering = tau_rayleigh + tau_liquid * liquid_ssa + tau_ice * ice_ssa
-    asymmetry_num = tau_liquid * liquid_ssa * liquid_asy + tau_ice * ice_ssa * ice_asy
-    omega = jnp.clip(scattering / jnp.maximum(tau_total, MIN_OPTICAL_DEPTH), 0.0, 0.999999)
-    asymmetry = jnp.where(scattering > MIN_OPTICAL_DEPTH, asymmetry_num / jnp.maximum(scattering, MIN_OPTICAL_DEPTH), 0.0)
-    tau_scaled, omega_scaled, asymmetry_scaled = _delta_scale(tau_total, omega, asymmetry)
-    tau_scaled = tau_scaled * mask
-    omega_scaled = omega_scaled * mask
-    asymmetry_scaled = asymmetry_scaled * mask
+    cloud_box = cloud_ext[..., None, None]
+    cloud_amount = _mcica_random_overlap_mask(p_ext, cloud_ext, mask)
+    cloud_safe = jnp.maximum(cloud_box, 0.01)
+    cloud_present = cloud_box > 0.0
+    liquid_incloud = jnp.where(cloud_present, liquid_path_g[..., None, None] / cloud_safe, 0.0)
+    ice_incloud = jnp.where(cloud_present, ice_path_g[..., None, None] / cloud_safe, 0.0)
+    snow_incloud = jnp.where(cloud_present, snow_path_g[..., None, None] / cloud_safe, 0.0)
 
-    tau_top_down = jnp.flip(tau_scaled, axis=-3)
-    omega_top_down = jnp.flip(omega_scaled, axis=-3)
-    asymmetry_top_down = jnp.flip(asymmetry_scaled, axis=-3)
-    active_top_down = jnp.flip(mask + jnp.zeros_like(tau_scaled), axis=-3)
-    pref_lay, prefd_lay, ptra_lay, ptrad_lay = _reftra_eddington(
-        tau_top_down, omega_top_down, asymmetry_top_down, state.coszen, active_top_down
+    tau_clear_orig = tau_gas + tau_rayleigh
+    omega_clear_orig = jnp.clip(tau_rayleigh / jnp.maximum(tau_clear_orig, MIN_OPTICAL_DEPTH), 0.0, 0.999999)
+    asymmetry_clear_orig = jnp.zeros_like(tau_clear_orig)
+    tau_clear, omega_clear, asymmetry_clear = _delta_scale(tau_clear_orig, omega_clear_orig, asymmetry_clear_orig)
+
+    tau_liquid_orig = liquid_incloud * liquid_coeff * cloud_amount
+    tau_ice_orig = ice_incloud * ice_coeff * cloud_amount
+    tau_snow_orig = snow_incloud * snow_coeff * cloud_amount
+
+    def scale_cloud_component(tau_orig, omega_orig, asym_orig, forward_fraction):
+        denom = jnp.maximum(1.0 - forward_fraction * omega_orig, 1.0e-12)
+        tau_scaled = denom * tau_orig
+        omega_scaled = jnp.clip(omega_orig * (1.0 - forward_fraction) / denom, 0.0, 0.999999)
+        asym_scaled = jnp.clip((asym_orig - forward_fraction) / jnp.maximum(1.0 - forward_fraction, 1.0e-12), -0.999999, 0.999999)
+        scattering = tau_scaled * omega_scaled
+        return tau_scaled, scattering, asym_scaled
+
+    tau_liquid, scat_liquid, asym_liquid = scale_cloud_component(tau_liquid_orig, liquid_ssa, liquid_asy, liquid_forward)
+    tau_ice, scat_ice, asym_ice = scale_cloud_component(tau_ice_orig, ice_ssa, ice_asy, ice_forward)
+    tau_snow, scat_snow, asym_snow = scale_cloud_component(tau_snow_orig, snow_ssa, snow_asy, snow_forward)
+    tau_cloud = tau_liquid + tau_ice + tau_snow
+    scattering_cloud = scat_liquid + scat_ice + scat_snow
+    omega_cloud = jnp.clip(scattering_cloud / jnp.maximum(tau_cloud, MIN_OPTICAL_DEPTH), 0.0, 0.999999)
+    asymmetry_cloud = jnp.where(
+        scattering_cloud > MIN_OPTICAL_DEPTH,
+        (scat_liquid * asym_liquid + scat_ice * asym_ice + scat_snow * asym_snow) / jnp.maximum(scattering_cloud, MIN_OPTICAL_DEPTH),
+        0.0,
     )
+
+    scattering_total_cloud = tau_clear * omega_clear + tau_cloud * omega_cloud
+    tau_total_cloud = jnp.clip(tau_clear + tau_cloud, MIN_OPTICAL_DEPTH, MAX_OPTICAL_DEPTH)
+    omega_total_cloud = jnp.clip(scattering_total_cloud / jnp.maximum(tau_total_cloud, MIN_OPTICAL_DEPTH), 0.0, 0.999999)
+    asymmetry_total_cloud = jnp.where(
+        scattering_total_cloud > MIN_OPTICAL_DEPTH,
+        (tau_clear * omega_clear * asymmetry_clear + tau_cloud * omega_cloud * asymmetry_cloud) / jnp.maximum(scattering_total_cloud, MIN_OPTICAL_DEPTH),
+        0.0,
+    )
+
+    tau_clear = jnp.clip(tau_clear, MIN_OPTICAL_DEPTH, MAX_OPTICAL_DEPTH) * mask
+    omega_clear = omega_clear * mask
+    asymmetry_clear = asymmetry_clear * mask
+    tau_total_cloud = tau_total_cloud * mask
+    omega_total_cloud = omega_total_cloud * mask
+    asymmetry_total_cloud = asymmetry_total_cloud * mask
+
+    tau_clear_top_down = jnp.flip(tau_clear, axis=-3)
+    omega_clear_top_down = jnp.flip(omega_clear, axis=-3)
+    asymmetry_clear_top_down = jnp.flip(asymmetry_clear, axis=-3)
+    tau_cloud_top_down = jnp.flip(tau_total_cloud, axis=-3)
+    omega_cloud_top_down = jnp.flip(omega_total_cloud, axis=-3)
+    asymmetry_cloud_top_down = jnp.flip(asymmetry_total_cloud, axis=-3)
+    cloud_top_down = jnp.flip(jnp.clip(cloud_amount, 0.0, 1.0), axis=-3)
+    active_top_down = jnp.flip(mask + jnp.zeros_like(tau_clear), axis=-3)
+    pref_clear, prefd_clear, ptra_clear, ptrad_clear = _reftra_eddington(
+        tau_clear_top_down, omega_clear_top_down, asymmetry_clear_top_down, state.coszen, active_top_down
+    )
+    pref_cloud, prefd_cloud, ptra_cloud, ptrad_cloud = _reftra_eddington(
+        tau_cloud_top_down, omega_cloud_top_down, asymmetry_cloud_top_down, state.coszen, active_top_down
+    )
+    pref_lay = (1.0 - cloud_top_down) * pref_clear + cloud_top_down * pref_cloud
+    prefd_lay = (1.0 - cloud_top_down) * prefd_clear + cloud_top_down * prefd_cloud
+    ptra_lay = (1.0 - cloud_top_down) * ptra_clear + cloud_top_down * ptra_cloud
+    ptrad_lay = (1.0 - cloud_top_down) * ptrad_clear + cloud_top_down * ptrad_cloud
     surface = jnp.broadcast_to(
         state.surface_albedo[..., None, None, None],
         pref_lay.shape[:-3] + (1, pref_lay.shape[-2], pref_lay.shape[-1]),
@@ -818,10 +952,13 @@ def _shortwave_impl(state: RRTMGSWColumnState, tables: RRTMGTableBundle, debug: 
     prefd = jnp.concatenate((prefd_lay, surface), axis=-3)
     ptra = jnp.concatenate((ptra_lay, zero_surface), axis=-3)
     ptrad = jnp.concatenate((ptrad_lay, zero_surface), axis=-3)
-    direct_trans = jnp.exp(-jnp.minimum(tau_top_down / jnp.maximum(state.coszen[..., None, None, None], 1.0e-6), 500.0)) * active_top_down
+    mu0 = jnp.maximum(state.coszen[..., None, None, None], 1.0e-6)
+    direct_clear = jnp.exp(-jnp.minimum(tau_clear_top_down / mu0, 500.0))
+    direct_cloud = jnp.exp(-jnp.minimum(tau_cloud_top_down / mu0, 500.0))
+    direct_trans = ((1.0 - cloud_top_down) * direct_clear + cloud_top_down * direct_cloud) * active_top_down
     direct_trans = jnp.where(active_top_down > 0.0, direct_trans, 1.0)
     down_top_down, up_top_down = _vertical_quadrature(pref, prefd, ptra, ptrad, direct_trans)
-    top_flux_band = SOLAR_CONSTANT * state.coszen[..., None, None] * weights
+    top_flux_band = state.coszen[..., None, None] * sfluxzen
     down_band = jnp.flip(down_top_down * top_flux_band[..., None, :, :], axis=-3)
     up_band = jnp.flip(up_top_down * top_flux_band[..., None, :, :], axis=-3)
 
@@ -864,7 +1001,7 @@ def compute_rrtmg_sw_intermediates(
     qv_ext = _extend_with_wrf_top_layer(state.qv)
     t_ext = _extend_with_wrf_top_layer(state.T)
     coef = _sw_setcoef(qv_ext, p_ext, t_ext, pressure_interfaces, tables)
-    tau_gas, tau_rayleigh = _sw_taumol(coef, tables)
+    tau_gas, tau_rayleigh = _sw_taumol_fused(coef, tables)
     return RRTMGSWIntermediateState(
         jp=coef.jp,
         jt=coef.jt,

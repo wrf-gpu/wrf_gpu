@@ -32,6 +32,11 @@ ASSET_TABLE_NAMES = (
     "sw_cloud_ice_ssa",
     "sw_cloud_liquid_asymmetry",
     "sw_cloud_ice_asymmetry",
+    "sw_cloud_ice_forward_fraction",
+    "sw_cloud_snow_extinction",
+    "sw_cloud_snow_ssa",
+    "sw_cloud_snow_asymmetry",
+    "sw_cloud_snow_forward_fraction",
     "sw_nspa",
     "sw_nspb",
     "sw_absa",
@@ -85,6 +90,11 @@ class RRTMGTableBundle(NamedTuple):
     sw_cloud_ice_ssa: jnp.ndarray
     sw_cloud_liquid_asymmetry: jnp.ndarray
     sw_cloud_ice_asymmetry: jnp.ndarray
+    sw_cloud_ice_forward_fraction: jnp.ndarray
+    sw_cloud_snow_extinction: jnp.ndarray
+    sw_cloud_snow_ssa: jnp.ndarray
+    sw_cloud_snow_asymmetry: jnp.ndarray
+    sw_cloud_snow_forward_fraction: jnp.ndarray
     sw_nspa: jnp.ndarray
     sw_nspb: jnp.ndarray
     sw_absa: jnp.ndarray
@@ -156,6 +166,11 @@ def load_rrtmg_tables(path: Path = TABLE_ASSET) -> RRTMGTableBundle:
         sw_cloud_ice_ssa=jnp.asarray(arrays["sw_cloud_ice_ssa"], dtype=jnp.float64),
         sw_cloud_liquid_asymmetry=jnp.asarray(arrays["sw_cloud_liquid_asymmetry"], dtype=jnp.float64),
         sw_cloud_ice_asymmetry=jnp.asarray(arrays["sw_cloud_ice_asymmetry"], dtype=jnp.float64),
+        sw_cloud_ice_forward_fraction=jnp.asarray(arrays["sw_cloud_ice_forward_fraction"], dtype=jnp.float64),
+        sw_cloud_snow_extinction=jnp.asarray(arrays["sw_cloud_snow_extinction"], dtype=jnp.float64),
+        sw_cloud_snow_ssa=jnp.asarray(arrays["sw_cloud_snow_ssa"], dtype=jnp.float64),
+        sw_cloud_snow_asymmetry=jnp.asarray(arrays["sw_cloud_snow_asymmetry"], dtype=jnp.float64),
+        sw_cloud_snow_forward_fraction=jnp.asarray(arrays["sw_cloud_snow_forward_fraction"], dtype=jnp.float64),
         sw_nspa=jnp.asarray(arrays["sw_nspa"], dtype=jnp.int32),
         sw_nspb=jnp.asarray(arrays["sw_nspb"], dtype=jnp.int32),
         sw_absa=jnp.asarray(arrays["sw_absa"], dtype=jnp.float64),

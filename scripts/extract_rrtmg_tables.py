@@ -470,7 +470,7 @@ def _lw_planck_tables() -> tuple[np.ndarray, np.ndarray]:
     return totplnk, totplk16
 
 
-def _sw_cloud_coefficients() -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+def _sw_cloud_coefficients() -> tuple[np.ndarray, ...]:
     """Builds SW cloud optical coefficients from WRF source tables."""
 
     liquid_grid = np.arange(1.5, 59.5, dtype=np.float64)
@@ -481,6 +481,11 @@ def _sw_cloud_coefficients() -> tuple[np.ndarray, np.ndarray, np.ndarray, np.nda
     ice_ext = []
     ice_ssa = []
     ice_asy = []
+    ice_forw = []
+    snow_ext = []
+    snow_ssa = []
+    snow_asy = []
+    snow_forw = []
     for band in range(16, 30):
         ext_liq = _interp_table(_parse_source_array(SW_SOURCE, "extliq1", band), liquid_grid, 10.0)
         ssa_liq = _interp_table(_parse_source_array(SW_SOURCE, "ssaliq1", band), liquid_grid, 10.0)
@@ -488,12 +493,22 @@ def _sw_cloud_coefficients() -> tuple[np.ndarray, np.ndarray, np.ndarray, np.nda
         ext_ice = _interp_table(_parse_source_array(SW_SOURCE, "extice3", band), ice_grid, 30.0)
         ssa_ice = _interp_table(_parse_source_array(SW_SOURCE, "ssaice3", band), ice_grid, 30.0)
         asy_ice = _interp_table(_parse_source_array(SW_SOURCE, "asyice3", band), ice_grid, 30.0)
+        fdl_ice = _interp_table(_parse_source_array(SW_SOURCE, "fdlice3", band), ice_grid, 30.0)
+        ext_snow = _interp_table(_parse_source_array(SW_SOURCE, "extice3", band), ice_grid, 75.0)
+        ssa_snow = _interp_table(_parse_source_array(SW_SOURCE, "ssaice3", band), ice_grid, 75.0)
+        asy_snow = _interp_table(_parse_source_array(SW_SOURCE, "asyice3", band), ice_grid, 75.0)
+        fdl_snow = _interp_table(_parse_source_array(SW_SOURCE, "fdlice3", band), ice_grid, 75.0)
         liquid_ext.append(ext_liq)
         ice_ext.append(ext_ice)
         liquid_ssa.append(ssa_liq)
         ice_ssa.append(ssa_ice)
         liquid_asy.append(asy_liq)
         ice_asy.append(asy_ice)
+        ice_forw.append(min(asy_ice, fdl_ice + 0.5 / ssa_ice))
+        snow_ext.append(ext_snow)
+        snow_ssa.append(ssa_snow)
+        snow_asy.append(asy_snow)
+        snow_forw.append(min(asy_snow, fdl_snow + 0.5 / ssa_snow))
     return (
         np.asarray(liquid_ext, dtype=np.float64),
         np.asarray(ice_ext, dtype=np.float64),
@@ -501,6 +516,11 @@ def _sw_cloud_coefficients() -> tuple[np.ndarray, np.ndarray, np.ndarray, np.nda
         np.asarray(ice_ssa, dtype=np.float64),
         np.asarray(liquid_asy, dtype=np.float64),
         np.asarray(ice_asy, dtype=np.float64),
+        np.asarray(ice_forw, dtype=np.float64),
+        np.asarray(snow_ext, dtype=np.float64),
+        np.asarray(snow_ssa, dtype=np.float64),
+        np.asarray(snow_asy, dtype=np.float64),
+        np.asarray(snow_forw, dtype=np.float64),
     )
 
 
@@ -540,7 +560,19 @@ def _effective_sw_coefficients(records: list[bytes]) -> dict[str, np.ndarray]:
     source_weights_array = np.asarray(source_weights, dtype=np.float64)
     sw_gpoint_weights = _normalized(source_weights_array)
     sw_gpoint_mask = _reduced_mask(SW_REDUCED_GROUPS, MAX_SW_GPOINTS)
-    liquid_ext, ice_ext, liquid_ssa, ice_ssa, liquid_asy, ice_asy = _sw_cloud_coefficients()
+    (
+        liquid_ext,
+        ice_ext,
+        liquid_ssa,
+        ice_ssa,
+        liquid_asy,
+        ice_asy,
+        ice_forw,
+        snow_ext,
+        snow_ssa,
+        snow_asy,
+        snow_forw,
+    ) = _sw_cloud_coefficients()
     band_weights = np.sum(sw_gpoint_weights, axis=1)
     return {
         "sw_reference_pressure_pa": REFERENCE_PRESSURE_MB * 100.0,
@@ -556,6 +588,11 @@ def _effective_sw_coefficients(records: list[bytes]) -> dict[str, np.ndarray]:
         "sw_cloud_ice_ssa": ice_ssa,
         "sw_cloud_liquid_asymmetry": liquid_asy,
         "sw_cloud_ice_asymmetry": ice_asy,
+        "sw_cloud_ice_forward_fraction": ice_forw,
+        "sw_cloud_snow_extinction": snow_ext,
+        "sw_cloud_snow_ssa": snow_ssa,
+        "sw_cloud_snow_asymmetry": snow_asy,
+        "sw_cloud_snow_forward_fraction": snow_forw,
         "sw_band_weights": band_weights,
     }
 
