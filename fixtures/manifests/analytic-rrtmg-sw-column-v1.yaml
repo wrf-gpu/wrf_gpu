@@ -1,6 +1,6 @@
 fixture_id: analytic-rrtmg-sw-column-v1
 source: wrf-derived
-source_commit: wrf-rrtmg-real-driver-harness sha256=43ab8af87e869f002f162f5cfc4311802957b312738d80f95b4a73a4e2dbc1a8;
+source_commit: wrf-rrtmg-real-driver-harness sha256=a05460d80e6f06e5c35932e37d985d25c4ac96fc6104ea4bed0bdb41217cea6e;
   module_ra_rrtmg_sw.F.o=present; module_ra_rrtmg_lw.F.o=present; full_rrtmg_driver_call=RRTMG_SWRAD+RRTMG_LWRAD;
   rrtmg_data_convert=big_endian
 wrf_version: v4.7.1-derived-RRTMG-real-driver-column-harness
@@ -12,7 +12,7 @@ precision_reference: fp64
 generation_command: python scripts/m5_generate_rrtmg_fixture.py
 external_uri: data/scratch/wrf_rrtmg_harness
 sample_slice_path: fixtures/samples/analytic-rrtmg-sw-column-v1.npz
-git_commit: 0d11eaa
+git_commit: 1c58ca1
 license_notes: Synthetic columns run through a GNU Fortran harness linked to real
   WRF RRTMG SW/LW objects and calling RRTMG_SWRAD/RRTMG_LWRAD with Gen2 RRTMG_*_DATA
   tables.
@@ -298,18 +298,18 @@ variables:
   tier_overrides: null
 files:
 - path: fixtures/samples/analytic-rrtmg-sw-column-v1.npz
-  checksum_sha256: 9d8568ea4168f8c0866849e015bf2303926a786400fe469b481dfbda1c877a89
-  bytes: 10239
+  checksum_sha256: b2034e03e4049fbfc004017fef3937d44c1580526e0b6c4ad27bec528c0121f3
+  bytes: 10228
   external: false
 - path: data/fixtures/analytic-rrtmg-sw-column-v1/full.npz
-  checksum_sha256: 9d8568ea4168f8c0866849e015bf2303926a786400fe469b481dfbda1c877a89
-  bytes: 10239
+  checksum_sha256: b2034e03e4049fbfc004017fef3937d44c1580526e0b6c4ad27bec528c0121f3
+  bytes: 10228
   external: true
 - path: data/scratch/wrf_rrtmg_harness
-  checksum_sha256: 43ab8af87e869f002f162f5cfc4311802957b312738d80f95b4a73a4e2dbc1a8
-  bytes: 1118848
+  checksum_sha256: a05460d80e6f06e5c35932e37d985d25c4ac96fc6104ea4bed0bdb41217cea6e
+  bytes: 1085984
   external: true
 - path: data/fixtures/rrtmg-tables-v1.npz
-  checksum_sha256: 0695e523a5c79025721eb3e660e379ca84d246ec791ecc24b2b6aafd5296a5f4
+  checksum_sha256: 5cc63950c81795b02f7bf47147afc4a9d667ae00f14510f7325816fb4f3a06e2
   bytes: 4201708
   external: true

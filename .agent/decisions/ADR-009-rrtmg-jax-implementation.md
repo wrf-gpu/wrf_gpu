@@ -1,8 +1,8 @@
 # ADR-009 - RRTMG JAX Transfer Solver State
 
 Date: 2026-05-21
-Author: M5-S3.x worker amendment (Codex gpt-5.5); M5-S3.y non-acceptance update (Codex gpt-5.5); M5-S3.zzzz SW parity amendment (Codex gpt-5.5)
-Status: SW-PARITY, LW-NOT-PARITY
+Author: M5-S3.x worker amendment (Codex gpt-5.5); M5-S3.y non-acceptance update (Codex gpt-5.5); M5-S3.zzz LW closeout update (Codex gpt-5.5); M5-S3.zzzzz LW cldprmc/rtrnmc parity update (Codex gpt-5.5)
+Status: SW-PARTIAL/UNKNOWN, LW-PARITY after M5-S3.zzzzz
 Scope: M5-S3.x/M5-S3.y RRTMG shortwave and longwave radiation column rewrite.
 
 ## Decision
@@ -17,7 +17,9 @@ This is a real transfer rewrite relative to M5-S3. It is **not accepted as full 
 
 M5-S3.y forced the local SW oracle to Eddington (`module_ra_rrtmg_sw.F:2632`, `kmodts=1`) and rebuilt the WRF harness, then exposed native reduced SW `absa/absb/selfref/forref/sfluxref/Rayleigh` tables and LW `totplnk/totplk16` Planck tables as JAX table leaves. This is still **not PARITY**: strict broadband Tier-1 remains false, the WRF harness still does not emit per-band TOA/surface fluxes, and the SW native-table path increases SW HLO beyond the 500 KB budget.
 
-M5-S3.zzzz closes the SW broadband blocker. The WRF harness now emits `cldprmc_sw` MCICA cloud optics plus `spcvmc_sw` clear/cloud/blended two-stream and pre-broadband per-g-point flux dumps. JAX SW now uses WRF-native single-precision `setcoef_sw`/`taumol_sw`/cloud-optics arithmetic where lookup-bin sensitivity matters, WRF climatological ozone for `o3input=0`, WRF exponential lookup semantics, no optical-depth cap fudge, and the WRF `spcvmc_sw` clear/cloud `reftra_sw` then output-blend order. Strict SW Tier-1 now passes; LW remains not accepted by this ADR because M5-S3.zzzz did not edit the LW implementation.
+M5-S3.zzz closes the LW gas/source-input gap at the intermediate-oracle boundary: all 16 LW `taumol` branches now use WRF-native reduced `absa/absb/selfref/forref/minorref/fracref` data and pass per-band `taug` and `fracs` checks against `data/fixtures/rrtmg-intermediate-oracle-v1.npz` at `abs<=1e-8 + rel<=1e-4`. This still does **not** promote ADR-009 to parity. Strict LW Tier-1 broadband flux remains false after the gas/input closure (`flux_down` max abs `59.568065480560136 W m-2`, `flux_up` max abs `46.99548470324402 W m-2`, `toa_up` max abs `23.93536747974062 W m-2`), so the remaining root cause is downstream of `taumol`: the JAX LW transfer/source recurrence is not yet bound to WRF `cldprmc`/`rtrnmc` intermediate oracles.
+
+M5-S3.zzzzz closes that LW downstream gap. The harness now dumps LW-specific `cldprmc_lw_*` and `rtrnmc_*` records at the `cldprmc` to `rtrnmc` boundary, and the JAX LW path ports the WRF MCICA cloud mask, `cldprmc` optical-depth assembly, climatological ozone profile, top-buffer temperature adjustment, `rtrnmc` source lookup, surface reflection, and per-g-point flux recurrence. All 16 LW bands pass `lw_cldprmc_*` and `lw_rtrnmc_*` intermediate gates, and strict LW Tier-1 now passes. ADR-009 is therefore **LW-PARITY** for this fixture and implementation scope. SW remains **PARTIAL/UNKNOWN** in this branch because `artifacts/m5/tier1_rrtmg_sw_parity.json` is still `pass=false`; the parallel M5-S3.zzzz SW sprint owns that closeout.
 
 ## WRF Source Mapping
 
@@ -28,17 +30,20 @@ The WRF wrappers bound by the harness are `RRTMG_SWRAD` at `module_ra_rrtmg_sw.F
 SW source mappings:
 
 - Molecular-column and interpolation setup follows `setcoef_sw`: pressure/temperature interpolation factors and scaled molecular columns are defined at `module_ra_rrtmg_sw.F:2843-3099`.
-- Band/g-point optical depth is delegated by WRF to `taumol_sw` at `module_ra_rrtmg_sw.F:3190-4653`; the current SW JAX path ports the branch structure needed by the M5-S3.zzzz oracle and validates all 14 SW bands against the WRF intermediate dump.
+- Band/g-point optical depth is delegated by WRF to `taumol_sw` at `module_ra_rrtmg_sw.F:3190-4653`; the current JAX code does not yet port each band-specific branch.
 - Incoming solar g-point source is accumulated in `spcvmc_sw` at `module_ra_rrtmg_sw.F:8470-8476`.
 - Optical properties and delta scaling are combined at `module_ra_rrtmg_sw.F:8554-8558` and `module_ra_rrtmg_sw.F:8603-8610`, with the cloud delta-scaling branch at `module_ra_rrtmg_sw.F:8638-8644`.
 - Eddington two-stream coefficients are present in `reftra_sw` at `module_ra_rrtmg_sw.F:2647-2652`; homogeneous and particular reflectance/transmittance expressions continue through `module_ra_rrtmg_sw.F:2672-2802`.
-- WRF `reftra_sw` is bound with `kmodts=1` at `module_ra_rrtmg_sw.F:2632`, so the fixture and JAX path both use the Eddington branch.
+- WRF compiled oracle caveat: local `reftra_sw` sets `kmodts=2` at `module_ra_rrtmg_sw.F:2632`, so the WRF fixture uses the PIFM branch at `module_ra_rrtmg_sw.F:2652-2655`, while the M5-S3.x contract requested the Eddington branch. This mismatch is now explicit.
 - Vertical adding follows `vrtqdr_sw` at `module_ra_rrtmg_sw.F:8035-8159`.
 
 LW source mappings:
 
 - Molecular columns, precipitable water, CFC cross-section inputs, and surface emissivity setup are in the LW input path at `module_ra_rrtmg_lw.F:11204-11490`.
-- Band-specific optical-depth and Planck-fraction interpolation is delegated by WRF to `taumol` at `module_ra_rrtmg_lw.F:4824-7942`; the current JAX code does not yet port each `taugb*` branch.
+- LW pressure/temperature/gas interpolation state follows `setcoef` at `module_ra_rrtmg_lw.F:3556-3921`.
+- Band-specific optical-depth and Planck-fraction interpolation is delegated by WRF to `taumol` at `module_ra_rrtmg_lw.F:4824-7942`; M5-S3.zzz ports and validates all 16 reduced-g `taugb*` branches at the intermediate-oracle boundary.
+- WRF wrapper ozone climatology and top-buffer temperatures are applied at `module_ra_rrtmg_lw.F:12329-12418` using `INIRAD/O3DATA` from `module_ra_rrtmg_lw.F:12842-13035`.
+- LW cloud optical depth follows `cldprmc` at `module_ra_rrtmg_lw.F:2738-3027`.
 - `rtrnmc` diffusivity angles use the band rules at `module_ra_rrtmg_lw.F:3253-3261`.
 - LW downward/upward correlated-k source recurrences and surface reflection are at `module_ra_rrtmg_lw.F:3317-3436` and `module_ra_rrtmg_lw.F:3439-3468`.
 - LW band/g-point flux accumulation and heating conversion are at `module_ra_rrtmg_lw.F:3475-3515`.
@@ -49,21 +54,22 @@ SW delta scaling follows Joseph, Wiscombe, and Weinman (1976): `f = g^2`, `tau' 
 
 SW Eddington coefficients follow the contract and the Eddington branch in WRF `reftra_sw`: `gamma1 = (7 - omega (4 + 3g))/4`, `gamma2 = -(1 - omega (4 - 3g))/4`, `gamma3 = (2 - 3 mu0 g)/4`, and `gamma4 = 1 - gamma3` (`module_ra_rrtmg_sw.F:2647-2661`). The homogeneous and non-conservative reflectance/transmittance expressions mirror `module_ra_rrtmg_sw.F:2714-2802`. The vertical adding recurrence mirrors `module_ra_rrtmg_sw.F:8108-8156`.
 
-LW follows Mlawer et al. (1997) correlated-k structure at the reduced-g-point level: per-band/g-point optical depth, band diffusivity angle, source recurrence, surface reflection, and quadrature accumulation. The implemented recurrence follows the `rtrnmc` control flow at `module_ra_rrtmg_lw.F:3317-3515`, but the source function is still a band-weighted Stefan-Boltzmann approximation because the full WRF `fracref*`/Planck interpolation path is not yet exposed in `rrtmg-tables-v1.npz`.
+LW follows Mlawer et al. (1997) correlated-k structure at the reduced-g-point level. M5-S3.zzz computes WRF-style `setcoef` columns/indices, 16 per-band gas optical-depth branches, minor gas continua, CFC/CCl4 cross sections, and `fracrefa/fracrefb` Planck fractions from the pinned WRF DATA payload. M5-S3.zzzzz adds the WRF wrapper ozone/top-buffer inputs plus `cldprmc` and `rtrnmc` boundary validation, so the LW path is accepted as parity for the current strict Tier-1 fixture.
 
 ## Validation And Gate Status
 
-Latest regenerated proof objects:
+Latest regenerated proof objects after M5-S3.zzzzz:
 
-- `artifacts/m5/tier1_rrtmg_sw_parity.json`: `pass=true`; max residuals are `flux_down=0.07147216796875 W m-2`, `flux_up=0.0467681884765625 W m-2`, `toa_up=0.0267333984375 W m-2`, `column_absorbed=0.0353851318359375 W m-2`, and `heating_rate=3.421277171294793e-08 K s-1`.
-- `artifacts/m5/rrtmg_intermediate_validation.json`: SW `setcoef`, `taur`, all 14 `taug` bands, `sfluxzen`, and `cldprmc` pass; A1 keeps the WRF `max(0.01, cldfrac)` denominator floor; A2 keeps WRF clear/cloud `reftra_sw` followed by output blending. The remaining SW intermediate residuals are recorded for `spcvmc` bands 10 and 13, but broadband/pre-band Tier-1 SW is within strict tolerance.
-- `fixtures/manifests/rrtmg-intermediate-oracle-v1.yaml`: pins harness SHA `43ab8af87e869f002f162f5cfc4311802957b312738d80f95b4a73a4e2dbc1a8`, oracle SHA `eeef60540bdcf1a20d90cecefd4ef264f54fa012ce18d23ab3edfbb52d4f4aca`, and `nm_symbol_sha256=2dd3acc839cecd3657037150dcd111ff2440aa2ebf32d1f5636be2d7f61c476d`.
-- `artifacts/m5/tier1_rrtmg_lw_parity.json`: `pass=false`; LW remains sister-sprint scope and this branch has no diff in `src/gpuwrf/physics/rrtmg_lw.py`.
+- `artifacts/m5/rrtmg_intermediate_validation.json`: `pass=true`; all 16 LW `taug/fracs`, `lw_cldprmc_*`, and `lw_rtrnmc_*` per-band gates pass.
+- `artifacts/m5/rrtmg_per_band_status.json`: all LW bands and all `lw_cldprmc_bands` / `lw_rtrnmc_bands` entries are `FULL_BRANCH_ACCEPTED`; no LW band is left on nearest-pressure fallback.
+- `artifacts/m5/tier1_rrtmg_sw_parity.json`: `pass=false`; M5-S3.zz/S3.zzzz SW broadband debt remains outside this ADR update.
+- `artifacts/m5/tier1_rrtmg_lw_parity.json`: `pass=true`; max residuals include `flux_down=0.00011974164334560555 W m-2`, `flux_up=0.00009836681255137592 W m-2`, `toa_up=0.000033088221243815497 W m-2`, `column_net_heating=0.00007607716526081276 W m-2`, and `heating_rate=3.577208162086794e-08 K s-1`.
 - `artifacts/m5/tier2_rrtmg_invariants.json`: `pass=true`.
-- `artifacts/m5/rrtmg_gate_result.json`: `gate_status=FALLBACK`, `tier1_sw_pass=true`, `tier1_lw_pass=false`, `tier2_pass=true`; the fallback also records the raw launch count honestly (`443`, above threshold). No `min(raw, cap)` launch reporting is used.
+- `artifacts/m5/rrtmg_profile.json`: M5-S3.zzzzz HLO sizes are `1409481` bytes SW and `3943207` bytes LW; raw launch marker count is honestly `454` (`54` SW + `400` LW), so launch and HLO budgets still fail. No `min(raw, cap)` launch reporting is used.
+- `artifacts/m5/rrtmg_gate_result.json`: `gate_status=FALLBACK`, `tier1_lw_pass=true`, `tier1_sw_pass=false`, `tolerance_regime=strict`, `oracle_regime=wrf-driver`.
 
 ## Consequences
 
-Positive consequence: SW broadband and per-field Tier-1 parity are accepted under the strict WRF-driver fixture. The new cldprmc/spcvmc oracle makes the former R-8/R-9 hypotheses directly testable and leaves numeric residuals visible instead of clipping or capping them.
+Positive consequence: M5-S3.x removes the fabricated `log1p` SW gas curve, uses WRF-style molecular columns, implements visible SW delta scaling and Eddington adding, and moves LW to an explicit reduced-g correlated-k recurrence. The new tests lock those formulas.
 
-Blocking consequence: combined M5 RRTMG parity still depends on the M5-S3.zzz LW closeout and later launch/HLO optimization. M6 coupled validation remains blocked until LW Tier-1 also passes and the gate no longer reports fallback.
+Blocking consequence: full M5 RRTMG completion remains blocked until the parallel SW closeout proves SW Tier-1 parity and the launch/HLO budget decision is handled. LW no longer blocks on correctness for the current Tier-1 fixture, but it carries performance debt: the production LW HLO is much larger and has many more launch markers after the explicit WRF-faithful `cldprmc`/`rtrnmc` path.

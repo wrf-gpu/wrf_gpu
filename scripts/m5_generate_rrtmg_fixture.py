@@ -7,7 +7,6 @@ import hashlib
 import io
 import json
 import os
-import re
 import subprocess
 import sys
 from pathlib import Path
@@ -35,7 +34,6 @@ BUILD_SCRIPT = ROOT / "scripts" / "wrf_rrtmg_harness_build.sh"
 HARNESS = SCRATCH / "wrf_rrtmg_harness"
 WRF_SW_OBJECT = Path("/mnt/data/canairy_meteo/artifacts/wrf_gpu_src/WRF/_build_gen2_dmpar/CMakeFiles/WRF_Core.dir/phys/module_ra_rrtmg_sw.F.o")
 WRF_LW_OBJECT = Path("/mnt/data/canairy_meteo/artifacts/wrf_gpu_src/WRF/_build_gen2_dmpar/CMakeFiles/WRF_Core.dir/phys/module_ra_rrtmg_lw.F.o")
-NM_SYMBOL_RE = re.compile(r"spcvmc_|rtrnmc_|taumol_|setcoef_|cldprmc_")
 
 INPUT_FIELDS = ("T", "p", "qv", "qc", "qi", "qs", "qg", "cloud_fraction", "dz", "rho")
 ORACLE_MARKER = b"#RRTMG_ORACLE_V1_BINARY\n"
@@ -125,35 +123,14 @@ def _read_oracle_binary(payload: bytes) -> dict[str, np.ndarray]:
     oracle["lw_secdiff"] = take_f4_f((nbnd_lw,))
     oracle["lw_dplankup"] = take_f4_f((nlay_lw, nbnd_lw))
     oracle["lw_dplankdn"] = take_f4_f((nlay_lw, nbnd_lw))
-
     if offset < len(payload):
-        nlev_sw = nlay_sw + 1
-        tail_start = offset
-        cld_shape = (nlay_sw, max_sw_g, nbnd_sw)
-        lev_shape = (nlev_sw, max_sw_g, nbnd_sw)
-        for name in (
-            "sw_cldprmc_pcldfmc",
-            "sw_cldprmc_ptaucmc",
-            "sw_cldprmc_pasycmc",
-            "sw_cldprmc_pomgcmc",
-            "sw_cldprmc_ptaormc",
-        ):
-            oracle[name] = take_f4_f(cld_shape)
-        for name in ("sw_spcvmc_zref", "sw_spcvmc_ztra", "sw_spcvmc_zrefd", "sw_spcvmc_ztrad"):
-            oracle[name] = take_f4_f(lev_shape)
-        for name in ("sw_spcvmc_zref_clear", "sw_spcvmc_ztra_clear", "sw_spcvmc_zrefd_clear", "sw_spcvmc_ztrad_clear"):
-            oracle[name] = take_f4_f(lev_shape)
-        for name in ("sw_spcvmc_zref_cloud", "sw_spcvmc_ztra_cloud", "sw_spcvmc_zrefd_cloud", "sw_spcvmc_ztrad_cloud"):
-            oracle[name] = take_f4_f(lev_shape)
-        oracle["sw_spcvmc_direct_trans"] = take_f4_f(cld_shape)
-        oracle["sw_spcvmc_zfd"] = take_f4_f(lev_shape)
-        oracle["sw_spcvmc_zfu"] = take_f4_f(lev_shape)
-        oracle["sw_spcvmc_zfd_flux"] = take_f4_f(lev_shape)
-        oracle["sw_spcvmc_zfu_flux"] = take_f4_f(lev_shape)
-        expected_tail = (5 * int(np.prod(cld_shape)) + 12 * int(np.prod(lev_shape)) + int(np.prod(cld_shape)) + 4 * int(np.prod(lev_shape))) * 4
-        consumed_tail = offset - tail_start
-        if consumed_tail != expected_tail:
-            raise RuntimeError(f"bad RRTMG oracle cloudy tail length: consumed {consumed_tail}, expected {expected_tail}")
+        oracle["lw_cldprmc_cldfmc"] = take_f4_f((nlay_lw, max_lw_g, nbnd_lw))
+        oracle["lw_cldprmc_taucmc"] = take_f4_f((nlay_lw, max_lw_g, nbnd_lw))
+        oracle["lw_rtrnmc_pfracs"] = take_f4_f((nlay_lw, max_lw_g, nbnd_lw))
+        oracle["lw_rtrnmc_plansum"] = take_f4_f((nlay_lw, nbnd_lw))
+        oracle["lw_rtrnmc_tfn_tbl_output"] = take_f4_f((nlay_lw, max_lw_g, nbnd_lw))
+        oracle["lw_rtrnmc_zfd_per_gpoint"] = take_f4_f((nlay_lw + 1, max_lw_g, nbnd_lw))
+        oracle["lw_rtrnmc_zfu_per_gpoint"] = take_f4_f((nlay_lw + 1, max_lw_g, nbnd_lw))
     if offset != len(payload):
         raise RuntimeError(f"unexpected trailing bytes in RRTMG oracle payload: {len(payload) - offset}")
     return oracle
@@ -163,23 +140,6 @@ def _sha256(path: Path) -> str:
     """Computes the SHA-256 digest used by manifest file entries."""
 
     return hashlib.sha256(path.read_bytes()).hexdigest()
-
-
-def _nm_symbol_output() -> str:
-    """Returns the preserved low-level RRTMG symbol lines from the rebuilt harness."""
-
-    output = subprocess.check_output(["nm", str(HARNESS)], cwd=ROOT, text=True)
-    lines = [line for line in output.splitlines() if NM_SYMBOL_RE.search(line)]
-    if not lines:
-        raise RuntimeError("nm did not find required RRTMG low-level symbols in the harness")
-    return "\n".join(lines) + "\n"
-
-
-def _nm_symbol_sha256() -> tuple[str, int]:
-    """Computes the SHA-256 digest for the A4 nm symbol grep output."""
-
-    output = _nm_symbol_output()
-    return hashlib.sha256(output.encode("utf-8")).hexdigest(), len(output.splitlines())
 
 
 def _git_rev() -> str:
@@ -226,7 +186,7 @@ def make_scenarios() -> dict[str, np.ndarray]:
     cloud_fraction = np.stack(
         [
             0.12 + 0.72 * np.exp(-((z - 0.28) / 0.13) ** 2),
-            0.006 + 0.30 * np.exp(-((z - 0.55) / 0.16) ** 2),
+            0.05 + 0.30 * np.exp(-((z - 0.55) / 0.16) ** 2),
             0.18 + 0.52 * np.exp(-((z - 0.38) / 0.18) ** 2),
         ]
     )
@@ -457,7 +417,6 @@ def _intermediate_manifest(path: Path) -> None:
     """Writes the SHA-pinned manifest for the large intermediate-oracle NPZ."""
 
     harness_sha = _sha256(HARNESS)
-    nm_sha, nm_count = _nm_symbol_sha256()
     manifest = {
         "fixture_id": "rrtmg-intermediate-oracle-v1",
         "source": "wrf-derived",
@@ -467,8 +426,7 @@ def _intermediate_manifest(path: Path) -> None:
             f"{'present' if WRF_SW_OBJECT.exists() else 'absent'}; "
             "module_ra_rrtmg_lw.F.o="
             f"{'present' if WRF_LW_OBJECT.exists() else 'absent'}; "
-            "low_level_calls=setcoef_sw+taumol_sw+cldprmc_sw+spcvmc_sw+reftra_sw+vrtqdr_sw+setcoef+taumol+rtrnmc; "
-            f"nm_symbol_sha256={nm_sha}; "
+            "low_level_calls=setcoef_sw+taumol_sw+spcvmc_sw+setcoef+taumol+rtrnmc; "
             "rrtmg_data_convert=big_endian"
         ),
         "wrf_version": "v4.7.1-derived-RRTMG-real-driver-column-harness",
@@ -480,29 +438,21 @@ def _intermediate_manifest(path: Path) -> None:
         "external_uri": str(INTERMEDIATE_ORACLE.relative_to(ROOT)),
         "sample_slice_path": None,
         "git_commit": _git_rev(),
-        "nm_symbol_grep": "spcvmc_|rtrnmc_|taumol_|setcoef_|cldprmc_",
-        "nm_symbol_sha256": nm_sha,
-        "nm_symbol_count": nm_count,
         "license_notes": "Synthetic columns run through a GNU Fortran harness linked to real WRF RRTMG SW/LW objects and lower RRTMG solver-entry subroutines.",
         "variables": [
             _variable("sw_taug", "1", (3, 17, 12, 14), 1.0e-8, 1.0e-4, "SW gas optical-depth intermediate oracle"),
             _variable("sw_taur", "1", (3, 17, 12, 14), 1.0e-8, 1.0e-4, "SW Rayleigh optical-depth intermediate oracle"),
             _variable("sw_sfluxzen", "W m-2", (3, 12, 14), 1.0e-8, 1.0e-4, "SW per-g-point solar source oracle"),
-            _variable("sw_cldprmc_pcldfmc", "1", (3, 17, 12, 14), 0.0, 0.0, "WRF cldprmc_sw MCICA binary cloud mask"),
-            _variable("sw_cldprmc_ptaucmc", "1", (3, 17, 12, 14), 1.0e-4, 1.0e-3, "WRF cldprmc_sw delta-scaled cloud optical depth"),
-            _variable("sw_cldprmc_pasycmc", "1", (3, 17, 12, 14), 1.0e-4, 1.0e-3, "WRF cldprmc_sw delta-scaled asymmetry parameter"),
-            _variable("sw_cldprmc_pomgcmc", "1", (3, 17, 12, 14), 1.0e-4, 1.0e-3, "WRF cldprmc_sw delta-scaled single-scattering albedo"),
-            _variable("sw_cldprmc_ptaormc", "1", (3, 17, 12, 14), 1.0e-4, 1.0e-3, "WRF cldprmc_sw pre-delta-scaling cloud optical depth"),
-            _variable("sw_spcvmc_zref", "1", (3, 18, 12, 14), 1.0e-4, 1.0e-3, "WRF spcvmc_sw blended direct reflectance before vertical quadrature"),
-            _variable("sw_spcvmc_ztra", "1", (3, 18, 12, 14), 1.0e-4, 1.0e-3, "WRF spcvmc_sw blended direct transmittance before vertical quadrature"),
-            _variable("sw_spcvmc_zrefd", "1", (3, 18, 12, 14), 1.0e-4, 1.0e-3, "WRF spcvmc_sw blended diffuse reflectance before vertical quadrature"),
-            _variable("sw_spcvmc_ztrad", "1", (3, 18, 12, 14), 1.0e-4, 1.0e-3, "WRF spcvmc_sw blended diffuse transmittance before vertical quadrature"),
-            _variable("sw_spcvmc_direct_trans", "1", (3, 17, 12, 14), 1.0e-4, 1.0e-3, "WRF spcvmc_sw per-layer direct-beam transmittance"),
-            _variable("sw_spcvmc_zfd_flux", "W m-2", (3, 18, 12, 14), 1.0e-4, 1.0e-3, "WRF spcvmc_sw per-g-point down flux before broadband accumulation"),
-            _variable("sw_spcvmc_zfu_flux", "W m-2", (3, 18, 12, 14), 1.0e-4, 1.0e-3, "WRF spcvmc_sw per-g-point up flux before broadband accumulation"),
             _variable("lw_taug", "1", (3, 17, 16, 16), 1.0e-8, 1.0e-4, "LW gas optical-depth intermediate oracle"),
             _variable("lw_fracs", "1", (3, 17, 16, 16), 1.0e-8, 1.0e-4, "LW Planck fraction intermediate oracle"),
             _variable("lw_planklay", "W m-2", (3, 17, 16), 1.0e-10, 1.0e-8, "LW Planck layer source oracle"),
+            _variable("lw_cldprmc_cldfmc", "1", (3, 17, 16, 16), 1.0e-4, 1.0e-3, "LW McICA cloud mask from cldprmc_lw boundary"),
+            _variable("lw_cldprmc_taucmc", "1", (3, 17, 16, 16), 1.0e-4, 1.0e-3, "LW cloud optical depth from cldprmc_lw"),
+            _variable("lw_rtrnmc_pfracs", "1", (3, 17, 16, 16), 1.0e-4, 1.0e-3, "LW rtrnmc Planck fraction per g-point"),
+            _variable("lw_rtrnmc_plansum", "W m-2", (3, 17, 16), 1.0e-4, 1.0e-3, "LW rtrnmc band Planck source sum"),
+            _variable("lw_rtrnmc_tfn_tbl_output", "1", (3, 17, 16, 16), 1.0e-4, 1.0e-3, "LW rtrnmc tfn_tbl source correction output"),
+            _variable("lw_rtrnmc_zfd_per_gpoint", "W m-2", (3, 18, 16, 16), 1.0e-4, 1.0e-3, "LW rtrnmc downward flux per g-point before broadband accumulation"),
+            _variable("lw_rtrnmc_zfu_per_gpoint", "W m-2", (3, 18, 16, 16), 1.0e-4, 1.0e-3, "LW rtrnmc upward flux per g-point before broadband accumulation"),
         ],
         "files": [
             {
@@ -580,13 +530,6 @@ def write_fixture() -> dict[str, Any]:
             "input_T": fields["T"],
             "input_p": fields["p"],
             "input_qv": fields["qv"],
-            "input_qc": fields["qc"],
-            "input_qi": fields["qi"],
-            "input_qs": fields["qs"],
-            "input_qg": fields["qg"],
-            "input_cloud_fraction": fields["cloud_fraction"],
-            "input_dz": fields["dz"],
-            "input_rho": fields["rho"],
             "input_surface_albedo": fields["surface_albedo"],
             "input_coszen": fields["coszen"],
             "input_surface_temperature": fields["surface_temperature"],
@@ -598,8 +541,8 @@ def write_fixture() -> dict[str, Any]:
     np.savez_compressed(LW_SAMPLE, **lw_payload)
     np.savez_compressed(LW_FULL, **lw_payload)
     np.savez_compressed(INTERMEDIATE_ORACLE, **oracle_payload)
-    if INTERMEDIATE_ORACLE.stat().st_size > 50_000_000:
-        raise RuntimeError(f"{INTERMEDIATE_ORACLE} exceeds 50 MB budget")
+    if INTERMEDIATE_ORACLE.stat().st_size > 30_000_000:
+        raise RuntimeError(f"{INTERMEDIATE_ORACLE} exceeds 30 MB budget")
 
     shape = tuple(fields["T"].shape)
     interface_shape = (shape[0], shape[1] + 2)

@@ -22,13 +22,8 @@ program wrf_rrtmg_harness
   !       plankbnd[16], taug[nlay_lw,max_lw_g,16],
   !       fracs[nlay_lw,max_lw_g,16], secdiff[16],
   !       dplankup[nlay_lw,16], dplankdn[nlay_lw,16]
-  !     M5-S3.zzzz appends SW cloudy boundary/stage records:
-  !       cldprmc pcldfmc/ptaucmc/pasycmc/pomgcmc/ptaormc[nlay_sw,max_sw_g,14]
-  !       spcvmc zref/ztra/zrefd/ztrad clear/cloud/blended[nlay_sw+1,max_sw_g,14]
-  !       spcvmc direct_trans[nlay_sw,max_sw_g,14],
-  !       raw zfd/zfu[nlay_sw+1,max_sw_g,14], and weighted flux zfd/zfu[nlay_sw+1,max_sw_g,14]
   use module_ra_rrtmg_sw, only: rrtmg_swinit, rrtmg_swrad
-  use module_ra_rrtmg_lw, only: rrtmg_lwinit, rrtmg_lwrad
+  use module_ra_rrtmg_lw, only: rrtmg_lwinit, rrtmg_lwrad, inirad
   use parrrsw, only: sw_nbnd => nbndsw, sw_ngpt => ngptsw, sw_jpband => jpband, &
                      sw_jpb1 => jpb1, sw_mxmol => mxmol
   use parrrtm, only: lw_nbnd => nbndlw, lw_ngpt => ngptlw, lw_mxmol => mxmol, &
@@ -36,15 +31,15 @@ program wrf_rrtmg_harness
   use rrtmg_sw_setcoef, only: setcoef_sw
   use rrtmg_sw_taumol, only: taumol_sw
   use rrtmg_sw_spcvmc, only: spcvmc_sw
-  use mcica_subcol_gen_sw, only: mcica_subcol_sw
-  use rrtmg_sw_cldprmc, only: cldprmc_sw
-  use rrtmg_sw_reftra, only: reftra_sw
-  use rrtmg_sw_vrtqdr, only: vrtqdr_sw
-  use rrsw_wvn, only: sw_ngc => ngc
-  use rrsw_tbl, only: tblint, bpade, od_lo, exp_tbl
+  use mcica_subcol_gen_lw, only: mcica_subcol_lw
+  use rrtmg_lw_cldprmc, only: cldprmc
   use rrtmg_lw_setcoef, only: setcoef
   use rrtmg_lw_taumol, only: taumol
   use rrtmg_lw_rtrnmc, only: rtrnmc
+  use rrlw_con, only: lw_fluxfac => fluxfac
+  use rrlw_tbl, only: lw_tblint => tblint, lw_bpade => bpade, lw_tau_tbl => tau_tbl, &
+                      lw_exp_tbl => exp_tbl, lw_tfn_tbl => tfn_tbl
+  use rrlw_wvn, only: lw_delwave => delwave, lw_ngb => ngb, lw_ngs => ngs
   implicit none
 
   integer, parameter :: rk = kind(1.0)
@@ -82,13 +77,11 @@ program wrf_rrtmg_harness
   integer, allocatable :: lw_jp(:), lw_jt(:)
   real(rk), allocatable :: sw_fac00(:), sw_fac01(:), sw_fac10(:), sw_fac11(:), sw_selffac(:), sw_forfac(:)
   real(rk), allocatable :: sw_colmol(:,:), sw_taug(:,:,:), sw_taur(:,:,:), sw_sfluxzen(:,:)
-  real(rk), allocatable :: sw_cld_pcldfmc(:,:,:), sw_cld_ptaucmc(:,:,:), sw_cld_pasycmc(:,:,:), sw_cld_pomgcmc(:,:,:), sw_cld_ptaormc(:,:,:)
-  real(rk), allocatable :: sw_spc_zref(:,:,:), sw_spc_ztra(:,:,:), sw_spc_zrefd(:,:,:), sw_spc_ztrad(:,:,:)
-  real(rk), allocatable :: sw_spc_zref_clear(:,:,:), sw_spc_ztra_clear(:,:,:), sw_spc_zrefd_clear(:,:,:), sw_spc_ztrad_clear(:,:,:)
-  real(rk), allocatable :: sw_spc_zref_cloud(:,:,:), sw_spc_ztra_cloud(:,:,:), sw_spc_zrefd_cloud(:,:,:), sw_spc_ztrad_cloud(:,:,:)
-  real(rk), allocatable :: sw_spc_direct_trans(:,:,:), sw_spc_zfd(:,:,:), sw_spc_zfu(:,:,:), sw_spc_zfd_flux(:,:,:), sw_spc_zfu_flux(:,:,:)
   real(rk), allocatable :: lw_planklay(:,:), lw_planklev(:,:), lw_plankbnd(:)
   real(rk), allocatable :: lw_taug(:,:,:), lw_fracs(:,:,:), lw_secdiff(:), lw_dplankup(:,:), lw_dplankdn(:,:)
+  real(rk), allocatable :: lw_cldprmc_cldfmc(:,:,:), lw_cldprmc_taucmc(:,:,:)
+  real(rk), allocatable :: lw_rtrnmc_pfracs(:,:,:), lw_rtrnmc_plansum(:,:), lw_rtrnmc_tfn_tbl_output(:,:,:)
+  real(rk), allocatable :: lw_rtrnmc_zfd_per_gpoint(:,:,:), lw_rtrnmc_zfu_per_gpoint(:,:,:)
   real(rk), allocatable :: sw_band_flux(:,:), lw_band_flux(:,:)
 
   argc = command_argument_count()
@@ -109,14 +102,12 @@ program wrf_rrtmg_harness
   allocate(lw_jp(nz+1), lw_jt(nz+1))
   allocate(sw_fac00(nz+1), sw_fac01(nz+1), sw_fac10(nz+1), sw_fac11(nz+1), sw_selffac(nz+1), sw_forfac(nz+1))
   allocate(sw_colmol(nz+1,6), sw_taug(nz+1,sw_max_g,sw_nbnd), sw_taur(nz+1,sw_max_g,sw_nbnd), sw_sfluxzen(sw_max_g,sw_nbnd))
-  allocate(sw_cld_pcldfmc(nz+1,sw_max_g,sw_nbnd), sw_cld_ptaucmc(nz+1,sw_max_g,sw_nbnd), sw_cld_pasycmc(nz+1,sw_max_g,sw_nbnd), sw_cld_pomgcmc(nz+1,sw_max_g,sw_nbnd), sw_cld_ptaormc(nz+1,sw_max_g,sw_nbnd))
-  allocate(sw_spc_zref(nz+2,sw_max_g,sw_nbnd), sw_spc_ztra(nz+2,sw_max_g,sw_nbnd), sw_spc_zrefd(nz+2,sw_max_g,sw_nbnd), sw_spc_ztrad(nz+2,sw_max_g,sw_nbnd))
-  allocate(sw_spc_zref_clear(nz+2,sw_max_g,sw_nbnd), sw_spc_ztra_clear(nz+2,sw_max_g,sw_nbnd), sw_spc_zrefd_clear(nz+2,sw_max_g,sw_nbnd), sw_spc_ztrad_clear(nz+2,sw_max_g,sw_nbnd))
-  allocate(sw_spc_zref_cloud(nz+2,sw_max_g,sw_nbnd), sw_spc_ztra_cloud(nz+2,sw_max_g,sw_nbnd), sw_spc_zrefd_cloud(nz+2,sw_max_g,sw_nbnd), sw_spc_ztrad_cloud(nz+2,sw_max_g,sw_nbnd))
-  allocate(sw_spc_direct_trans(nz+1,sw_max_g,sw_nbnd), sw_spc_zfd(nz+2,sw_max_g,sw_nbnd), sw_spc_zfu(nz+2,sw_max_g,sw_nbnd), sw_spc_zfd_flux(nz+2,sw_max_g,sw_nbnd), sw_spc_zfu_flux(nz+2,sw_max_g,sw_nbnd))
   allocate(lw_planklay(nz+1,lw_nbnd), lw_planklev(0:nz+1,lw_nbnd), lw_plankbnd(lw_nbnd))
   allocate(lw_taug(nz+1,lw_max_g,lw_nbnd), lw_fracs(nz+1,lw_max_g,lw_nbnd), lw_secdiff(lw_nbnd))
   allocate(lw_dplankup(nz+1,lw_nbnd), lw_dplankdn(nz+1,lw_nbnd))
+  allocate(lw_cldprmc_cldfmc(nz+1,lw_max_g,lw_nbnd), lw_cldprmc_taucmc(nz+1,lw_max_g,lw_nbnd))
+  allocate(lw_rtrnmc_pfracs(nz+1,lw_max_g,lw_nbnd), lw_rtrnmc_plansum(nz+1,lw_nbnd), lw_rtrnmc_tfn_tbl_output(nz+1,lw_max_g,lw_nbnd))
+  allocate(lw_rtrnmc_zfd_per_gpoint(nz+2,lw_max_g,lw_nbnd), lw_rtrnmc_zfu_per_gpoint(nz+2,lw_max_g,lw_nbnd))
   allocate(sw_band_flux(4,sw_nbnd), lw_band_flux(4,lw_nbnd))
   do k = 1, nz
      read(10,*) temp(k), press(k), qv(k), qc(k), qi(k), qs(k), qg(k), cldfra(k), dz(k), rho(k)
@@ -134,13 +125,10 @@ program wrf_rrtmg_harness
                                    temp, press, qv, qc, qi, qs, qg, cldfra, dz, rho, &
                                    sw_band_flux, lw_band_flux, sw_jp, sw_jt, sw_jt1, sw_indself, sw_indfor, &
                                    sw_fac00, sw_fac01, sw_fac10, sw_fac11, sw_selffac, sw_forfac, sw_colmol, &
-                                   sw_taug, sw_taur, sw_sfluxzen, sw_cld_pcldfmc, sw_cld_ptaucmc, sw_cld_pasycmc, &
-                                   sw_cld_pomgcmc, sw_cld_ptaormc, sw_spc_zref, sw_spc_ztra, sw_spc_zrefd, sw_spc_ztrad, &
-                                   sw_spc_zref_clear, sw_spc_ztra_clear, sw_spc_zrefd_clear, sw_spc_ztrad_clear, &
-                                   sw_spc_zref_cloud, sw_spc_ztra_cloud, sw_spc_zrefd_cloud, sw_spc_ztrad_cloud, &
-                                   sw_spc_direct_trans, sw_spc_zfd, sw_spc_zfu, sw_spc_zfd_flux, sw_spc_zfu_flux, &
-                                   lw_jp, lw_jt, lw_planklay, lw_planklev, &
-                                   lw_plankbnd, lw_taug, lw_fracs, lw_secdiff, lw_dplankup, lw_dplankdn)
+                                   sw_taug, sw_taur, sw_sfluxzen, lw_jp, lw_jt, lw_planklay, lw_planklev, &
+                                   lw_plankbnd, lw_taug, lw_fracs, lw_secdiff, lw_dplankup, lw_dplankdn, &
+                                   lw_cldprmc_cldfmc, lw_cldprmc_taucmc, lw_rtrnmc_pfracs, lw_rtrnmc_plansum, &
+                                   lw_rtrnmc_tfn_tbl_output, lw_rtrnmc_zfd_per_gpoint, lw_rtrnmc_zfu_per_gpoint)
 
   open(unit=20, file=trim(output_path), status='replace', action='write')
   write(20,'(I6)') nz
@@ -157,13 +145,10 @@ program wrf_rrtmg_harness
   call append_intermediate_oracle(output_path, nz+1, nz+1, sw_band_flux, lw_band_flux, &
                                   sw_jp, sw_jt, sw_jt1, sw_indself, sw_indfor, &
                                   sw_fac00, sw_fac01, sw_fac10, sw_fac11, sw_selffac, sw_forfac, sw_colmol, &
-                                  sw_taug, sw_taur, sw_sfluxzen, sw_cld_pcldfmc, sw_cld_ptaucmc, sw_cld_pasycmc, &
-                                  sw_cld_pomgcmc, sw_cld_ptaormc, sw_spc_zref, sw_spc_ztra, sw_spc_zrefd, sw_spc_ztrad, &
-                                  sw_spc_zref_clear, sw_spc_ztra_clear, sw_spc_zrefd_clear, sw_spc_ztrad_clear, &
-                                  sw_spc_zref_cloud, sw_spc_ztra_cloud, sw_spc_zrefd_cloud, sw_spc_ztrad_cloud, &
-                                  sw_spc_direct_trans, sw_spc_zfd, sw_spc_zfu, sw_spc_zfd_flux, sw_spc_zfu_flux, &
-                                  lw_jp, lw_jt, lw_planklay, lw_planklev, &
-                                  lw_plankbnd, lw_taug, lw_fracs, lw_secdiff, lw_dplankup, lw_dplankdn)
+                                  sw_taug, sw_taur, sw_sfluxzen, lw_jp, lw_jt, lw_planklay, lw_planklev, &
+                                  lw_plankbnd, lw_taug, lw_fracs, lw_secdiff, lw_dplankup, lw_dplankdn, &
+                                  lw_cldprmc_cldfmc, lw_cldprmc_taucmc, lw_rtrnmc_pfracs, lw_rtrnmc_plansum, &
+                                  lw_rtrnmc_tfn_tbl_output, lw_rtrnmc_zfd_per_gpoint, lw_rtrnmc_zfu_per_gpoint)
 
 contains
 
@@ -171,13 +156,11 @@ contains
                                          temp, press, qv, qc, qi, qs, qg, cldfra, dz, rho, &
                                          sw_band_flux, lw_band_flux, sw_jp, sw_jt, sw_jt1, sw_indself, sw_indfor, &
                                          sw_fac00, sw_fac01, sw_fac10, sw_fac11, sw_selffac, sw_forfac, sw_colmol, &
-                                         sw_taug_band, sw_taur_band, sw_sflux_band, sw_cld_pcldfmc, sw_cld_ptaucmc, sw_cld_pasycmc, &
-                                         sw_cld_pomgcmc, sw_cld_ptaormc, sw_spc_zref, sw_spc_ztra, sw_spc_zrefd, sw_spc_ztrad, &
-                                         sw_spc_zref_clear, sw_spc_ztra_clear, sw_spc_zrefd_clear, sw_spc_ztrad_clear, &
-                                         sw_spc_zref_cloud, sw_spc_ztra_cloud, sw_spc_zrefd_cloud, sw_spc_ztrad_cloud, &
-                                         sw_spc_direct_trans, sw_spc_zfd, sw_spc_zfu, sw_spc_zfd_flux, sw_spc_zfu_flux, &
-                                         lw_jp, lw_jt, lw_planklay, lw_planklev, &
-                                         lw_plankbnd, lw_taug_band, lw_fracs_band, lw_secdiff, lw_dplankup, lw_dplankdn)
+                                         sw_taug_band, sw_taur_band, sw_sflux_band, lw_jp, lw_jt, lw_planklay, lw_planklev, &
+                                         lw_plankbnd, lw_taug_band, lw_fracs_band, lw_secdiff, lw_dplankup, lw_dplankdn, &
+                                         lw_cldprmc_cldfmc_band, lw_cldprmc_taucmc_band, lw_rtrnmc_pfracs_band, &
+                                         lw_rtrnmc_plansum_band, lw_rtrnmc_tfn_tbl_output_band, &
+                                         lw_rtrnmc_zfd_per_gpoint_band, lw_rtrnmc_zfu_per_gpoint_band)
     integer, intent(in) :: nz
     real(rk), intent(in) :: surface_albedo, coszen_scalar, surface_temperature, surface_emissivity
     real(rk), intent(in) :: temp(nz), press(nz), qv(nz), qc(nz), qi(nz), qs(nz), qg(nz), cldfra(nz), dz(nz), rho(nz)
@@ -187,39 +170,27 @@ contains
     real(rk), intent(out) :: sw_fac00(nz+1), sw_fac01(nz+1), sw_fac10(nz+1), sw_fac11(nz+1), sw_selffac(nz+1), sw_forfac(nz+1)
     real(rk), intent(out) :: sw_colmol(nz+1,6), sw_taug_band(nz+1,sw_max_g,sw_nbnd), sw_taur_band(nz+1,sw_max_g,sw_nbnd)
     real(rk), intent(out) :: sw_sflux_band(sw_max_g,sw_nbnd)
-    real(rk), intent(out) :: sw_cld_pcldfmc(nz+1,sw_max_g,sw_nbnd), sw_cld_ptaucmc(nz+1,sw_max_g,sw_nbnd)
-    real(rk), intent(out) :: sw_cld_pasycmc(nz+1,sw_max_g,sw_nbnd), sw_cld_pomgcmc(nz+1,sw_max_g,sw_nbnd), sw_cld_ptaormc(nz+1,sw_max_g,sw_nbnd)
-    real(rk), intent(out) :: sw_spc_zref(nz+2,sw_max_g,sw_nbnd), sw_spc_ztra(nz+2,sw_max_g,sw_nbnd), sw_spc_zrefd(nz+2,sw_max_g,sw_nbnd), sw_spc_ztrad(nz+2,sw_max_g,sw_nbnd)
-    real(rk), intent(out) :: sw_spc_zref_clear(nz+2,sw_max_g,sw_nbnd), sw_spc_ztra_clear(nz+2,sw_max_g,sw_nbnd), sw_spc_zrefd_clear(nz+2,sw_max_g,sw_nbnd), sw_spc_ztrad_clear(nz+2,sw_max_g,sw_nbnd)
-    real(rk), intent(out) :: sw_spc_zref_cloud(nz+2,sw_max_g,sw_nbnd), sw_spc_ztra_cloud(nz+2,sw_max_g,sw_nbnd), sw_spc_zrefd_cloud(nz+2,sw_max_g,sw_nbnd), sw_spc_ztrad_cloud(nz+2,sw_max_g,sw_nbnd)
-    real(rk), intent(out) :: sw_spc_direct_trans(nz+1,sw_max_g,sw_nbnd), sw_spc_zfd(nz+2,sw_max_g,sw_nbnd), sw_spc_zfu(nz+2,sw_max_g,sw_nbnd)
-    real(rk), intent(out) :: sw_spc_zfd_flux(nz+2,sw_max_g,sw_nbnd), sw_spc_zfu_flux(nz+2,sw_max_g,sw_nbnd)
     real(rk), intent(out) :: lw_planklay(nz+1,lw_nbnd), lw_planklev(0:nz+1,lw_nbnd), lw_plankbnd(lw_nbnd)
     real(rk), intent(out) :: lw_taug_band(nz+1,lw_max_g,lw_nbnd), lw_fracs_band(nz+1,lw_max_g,lw_nbnd)
     real(rk), intent(out) :: lw_secdiff(lw_nbnd), lw_dplankup(nz+1,lw_nbnd), lw_dplankdn(nz+1,lw_nbnd)
+    real(rk), intent(out) :: lw_cldprmc_cldfmc_band(nz+1,lw_max_g,lw_nbnd), lw_cldprmc_taucmc_band(nz+1,lw_max_g,lw_nbnd)
+    real(rk), intent(out) :: lw_rtrnmc_pfracs_band(nz+1,lw_max_g,lw_nbnd), lw_rtrnmc_plansum_band(nz+1,lw_nbnd)
+    real(rk), intent(out) :: lw_rtrnmc_tfn_tbl_output_band(nz+1,lw_max_g,lw_nbnd)
+    real(rk), intent(out) :: lw_rtrnmc_zfd_per_gpoint_band(nz+2,lw_max_g,lw_nbnd), lw_rtrnmc_zfu_per_gpoint_band(nz+2,lw_max_g,lw_nbnd)
 
     integer, parameter :: sw_counts(sw_nbnd) = (/6,12,8,8,10,10,2,10,8,6,6,8,6,12/)
     integer, parameter :: lw_counts(lw_nbnd) = (/10,12,16,14,16,8,12,8,12,6,8,8,4,2,2,2/)
-    integer :: nlay, k, b, g, ig, start_g, laytrop, layswtch, laylow, ncbands
-    integer :: irng_sw, icld_sw, inflag_sw, iceflag_sw, liqflag_sw, permuteseed_sw, idcor_sw, juldat_sw
-    real(rk) :: pavel(nz+1), tavel(nz+1), pz(0:nz+1), tz(0:nz+1)
+    integer :: nlay, k, b, g, start_g, laytrop, layswtch, laylow, ncbands
+    integer :: icld_lw, irng_lw, permuteseed_lw
+    real(rk) :: pavel(nz+1), tavel(nz+1), tavel_lw(nz+1), pz(0:nz+1), tz(0:nz+1), tz_lw(0:nz+1)
     real(rk) :: coldry(nz+1), wkl(sw_mxmol,nz+1), wkl_lw(lw_mxmol,nz+1), wx(lw_maxxsec,nz+1)
-    real(rk) :: wbroad(nz+1), h2ovmr(nz+1), o3vmr(nz+1), amm, summol, amttl, wvttl, wvsh, pwvcm
+    real(rk) :: wbroad(nz+1), h2ovmr(nz+1), amm, summol, summol_lw, amttl, wvttl, wvsh, pwvcm
+    real(rk) :: o3mmr_lw(nz+1), o3vmr_lw(nz+1), plev_o3(1:nz+2)
     real(rk) :: co2mult(nz+1), colh2o(nz+1), colco2(nz+1), colo3(nz+1), coln2o(nz+1), colch4(nz+1), colo2(nz+1), colmol(nz+1)
     real(rk) :: selffrac(nz+1), forfrac(nz+1)
     real(rk) :: taug_sw(nz+1,sw_ngpt), taur_sw(nz+1,sw_ngpt), sflux_sw(sw_ngpt)
     real(rk) :: albdif(sw_nbnd), albdir(sw_nbnd), adjflux(sw_jpband)
     real(rk) :: cldf_sw(nz+1,sw_ngpt), taucmc_sw(nz+1,sw_ngpt), taormc_sw(nz+1,sw_ngpt), asy_sw(nz+1,sw_ngpt), omg_sw(nz+1,sw_ngpt)
-    real(rk) :: cldfmc_mc(sw_ngpt,nz+1), ciwpmc_mc(sw_ngpt,nz+1), clwpmc_mc(sw_ngpt,nz+1), cswpmc_mc(sw_ngpt,nz+1)
-    real(rk) :: taormc_mc(sw_ngpt,nz+1), taucmc_mc(sw_ngpt,nz+1), ssacmc_mc(sw_ngpt,nz+1), asmcmc_mc(sw_ngpt,nz+1), fsfcmc_mc(sw_ngpt,nz+1)
-    real(rk) :: reicmc_mc(nz+1), relqmc_mc(nz+1), resnmc_mc(nz+1)
-    real(rk) :: play_mc(1,nz+1), cldfrac_mc(1,nz+1), clwpth_mc(1,nz+1), ciwpth_mc(1,nz+1), cswpth_mc(1,nz+1)
-    real(rk) :: rei_mc(1,nz+1), rel_mc(1,nz+1), res_mc(1,nz+1), hgt_mc(1,nz+1)
-    real(rk) :: taucld_mc(sw_nbnd,1,nz+1), ssacld_mc(sw_nbnd,1,nz+1), asmcld_mc(sw_nbnd,1,nz+1), fsfcld_mc(sw_nbnd,1,nz+1)
-    real(rk) :: cldfmcl_mc(sw_ngpt,1,nz+1), ciwpmcl_mc(sw_ngpt,1,nz+1), clwpmcl_mc(sw_ngpt,1,nz+1), cswpmcl_mc(sw_ngpt,1,nz+1)
-    real(rk) :: taucmcl_mc(sw_ngpt,1,nz+1), ssacmcl_mc(sw_ngpt,1,nz+1), asmcmcl_mc(sw_ngpt,1,nz+1), fsfcmcl_mc(sw_ngpt,1,nz+1)
-    real(rk) :: reicmcl_mc(1,nz+1), relqmcl_mc(1,nz+1), resnmcl_mc(1,nz+1)
-    real(rk) :: pdel_pa, cloud_safe, dzsum, snow_mass_factor
     real(rk) :: taua_sw(nz+1,sw_nbnd), asya_sw(nz+1,sw_nbnd), omga_sw(nz+1,sw_nbnd)
     real(rk) :: bbfd(nz+2), bbfu(nz+2), bbcd(nz+2), bbcu(nz+2), uvfd(nz+2), uvcd(nz+2), nifd(nz+2), nicd(nz+2)
     real(rk) :: bbfddir(nz+2), bbcddir(nz+2), uvfddir(nz+2), uvcddir(nz+2), nifddir(nz+2), nicddir(nz+2)
@@ -230,11 +201,28 @@ contains
     real(rk) :: fac00_lw(nz+1), fac01_lw(nz+1), fac10_lw(nz+1), fac11_lw(nz+1), selffac_lw(nz+1), selffrac_lw(nz+1), forfac_lw(nz+1), forfrac_lw(nz+1)
     real(rk) :: semiss(lw_nbnd), fracs_lw(nz+1,lw_ngpt), taug_lw(nz+1,lw_ngpt), taut_lw(nz+1,lw_ngpt)
     real(rk) :: cldf_lw(lw_ngpt,nz+1), taucmc_lw(lw_ngpt,nz+1)
+    real(rk) :: ciwpmc_lw(lw_ngpt,nz+1), clwpmc_lw(lw_ngpt,nz+1), cswpmc_lw(lw_ngpt,nz+1)
+    real(rk) :: reicmc_lw(nz+1), relqmc_lw(nz+1), resnmc_lw(nz+1)
+    real(rk) :: play_lw(1,nz+1), hgt_lw(1,nz+1), cldfrac_lw(1,nz+1)
+    real(rk) :: ciwp_lw(1,nz+1), clwp_lw(1,nz+1), cswp_lw(1,nz+1), tauc_lw(lw_nbnd,1,nz+1)
+    real(rk) :: rei_lw(1,nz+1), rel_lw(1,nz+1), res_lw(1,nz+1)
+    real(rk) :: cldfmcl_lw(lw_ngpt,1,nz+1), ciwpmcl_lw(lw_ngpt,1,nz+1), clwpmcl_lw(lw_ngpt,1,nz+1)
+    real(rk) :: cswpmcl_lw(lw_ngpt,1,nz+1), taucmcl_lw(lw_ngpt,1,nz+1)
+    real(rk) :: reicmcl_lw(1,nz+1), relqmcl_lw(1,nz+1), resnmcl_lw(1,nz+1)
+    real(rk) :: layer_mass_ext(nz+1), dzsum, cloud_safe, snow_mass_factor
     real(rk) :: totuflux(0:nz+1), totdflux(0:nz+1), fnet(0:nz+1), htr(0:nz+1), totuclfl(0:nz+1), totdclfl(0:nz+1), fnetc(0:nz+1), htrc(0:nz+1)
 
     nlay = nz + 1
     call build_rrtmg_profile(nz, temp, press, qv, pavel, tavel, pz, tz, coldry, h2ovmr)
-    call fill_o3_profile(nlay, pz, o3vmr)
+    call adjust_lw_buffer_temperature(nz, pz, tavel, tz, tavel_lw, tz_lw)
+    do k = 1, nlay + 1
+       plev_o3(k) = pz(k-1)
+    enddo
+    o3mmr_lw = 0.0_rk
+    call inirad(o3mmr_lw, plev_o3, 1, nlay - 1)
+    do k = 1, nlay
+       o3vmr_lw(k) = o3mmr_lw(k) * o3_mmr_to_vmr
+    enddo
     wkl = 0.0_rk
     wkl_lw = 0.0_rk
     wx = 0.0_rk
@@ -243,14 +231,15 @@ contains
     do k = 1, nlay
        wkl(1,k) = coldry(k) * h2ovmr(k)
        wkl(2,k) = coldry(k) * co2_vmr_default
-       wkl(3,k) = coldry(k) * o3vmr(k)
+       wkl(3,k) = coldry(k) * o3_vmr_default
        wkl(4,k) = coldry(k) * n2o_vmr_default
        wkl(6,k) = coldry(k) * ch4_vmr_default
        wkl(7,k) = coldry(k) * o2_vmr_default
        wkl_lw(:,k) = wkl(:,k)
-       wkl_lw(3,k) = coldry(k) * o3_vmr_default
+       wkl_lw(3,k) = coldry(k) * o3vmr_lw(k)
        summol = co2_vmr_default + o3_vmr_default + n2o_vmr_default + ch4_vmr_default + o2_vmr_default
-       wbroad(k) = coldry(k) * max(0.0_rk, 1.0_rk - summol)
+       summol_lw = co2_vmr_default + o3vmr_lw(k) + n2o_vmr_default + ch4_vmr_default + o2_vmr_default
+       wbroad(k) = coldry(k) * max(0.0_rk, 1.0_rk - summol_lw)
        wx(1,k) = coldry(k) * ccl4_vmr_default * 1.0e-20_rk
        wx(2,k) = coldry(k) * cfc11_vmr_default * 1.0e-20_rk
        wx(3,k) = coldry(k) * cfc12_vmr_default * 1.0e-20_rk
@@ -289,132 +278,14 @@ contains
     albdif = surface_albedo
     albdir = surface_albedo
     adjflux = 1.0_rk
-    sw_cld_pcldfmc = 0.0_rk
-    sw_cld_ptaucmc = 0.0_rk
-    sw_cld_pasycmc = 0.0_rk
-    sw_cld_pomgcmc = 1.0_rk
-    sw_cld_ptaormc = 0.0_rk
-    sw_spc_zref = 0.0_rk
-    sw_spc_ztra = 0.0_rk
-    sw_spc_zrefd = 0.0_rk
-    sw_spc_ztrad = 0.0_rk
-    sw_spc_zref_clear = 0.0_rk
-    sw_spc_ztra_clear = 0.0_rk
-    sw_spc_zrefd_clear = 0.0_rk
-    sw_spc_ztrad_clear = 0.0_rk
-    sw_spc_zref_cloud = 0.0_rk
-    sw_spc_ztra_cloud = 0.0_rk
-    sw_spc_zrefd_cloud = 0.0_rk
-    sw_spc_ztrad_cloud = 0.0_rk
-    sw_spc_direct_trans = 0.0_rk
-    sw_spc_zfd = 0.0_rk
-    sw_spc_zfu = 0.0_rk
-    sw_spc_zfd_flux = 0.0_rk
-    sw_spc_zfu_flux = 0.0_rk
+    cldf_sw = 0.0_rk
+    taucmc_sw = 0.0_rk
+    taormc_sw = 0.0_rk
+    asy_sw = 0.0_rk
+    omg_sw = 1.0_rk
     taua_sw = 0.0_rk
     asya_sw = 0.0_rk
     omga_sw = 1.0_rk
-
-    icld_sw = 1
-    inflag_sw = 5
-    iceflag_sw = 5
-    liqflag_sw = 1
-    irng_sw = 0
-    permuteseed_sw = 1
-    idcor_sw = 0
-    juldat_sw = 142
-    play_mc = 0.0_rk
-    cldfrac_mc = 0.0_rk
-    clwpth_mc = 0.0_rk
-    ciwpth_mc = 0.0_rk
-    cswpth_mc = 0.0_rk
-    rei_mc = 10.0_rk
-    rel_mc = 10.0_rk
-    res_mc = 10.0_rk
-    hgt_mc = 0.0_rk
-    taucld_mc = 0.0_rk
-    ssacld_mc = 1.0_rk
-    asmcld_mc = 0.0_rk
-    fsfcld_mc = 0.0_rk
-    dzsum = 0.0_rk
-    do k = 1, nz
-       pdel_pa = (pz(k-1) - pz(k)) * 100.0_rk
-       cloud_safe = max(0.01_rk, min(1.0_rk, max(0.0_rk, cldfra(k))))
-       play_mc(1,k) = pavel(k)
-       cldfrac_mc(1,k) = min(1.0_rk, max(0.0_rk, cldfra(k)))
-       clwpth_mc(1,k) = max(qc(k), 0.0_rk) * pdel_pa / gravity * 1000.0_rk / cloud_safe
-       ciwpth_mc(1,k) = max(qi(k), 0.0_rk) * pdel_pa / gravity * 1000.0_rk / cloud_safe
-       snow_mass_factor = 0.99_rk
-       cswpth_mc(1,k) = max(qs(k), 0.0_rk) * snow_mass_factor * pdel_pa / gravity * 1000.0_rk / cloud_safe
-       rel_mc(1,k) = 10.0_rk
-       rei_mc(1,k) = 30.0_rk
-       res_mc(1,k) = 75.0_rk
-       hgt_mc(1,k) = dzsum + 0.5_rk * dz(k)
-       dzsum = dzsum + dz(k)
-    enddo
-    play_mc(1,nlay) = pavel(nlay)
-    cldfrac_mc(1,nlay) = 0.0_rk
-    clwpth_mc(1,nlay) = 0.0_rk
-    ciwpth_mc(1,nlay) = 0.0_rk
-    cswpth_mc(1,nlay) = 0.0_rk
-    rel_mc(1,nlay) = 10.0_rk
-    rei_mc(1,nlay) = 10.0_rk
-    res_mc(1,nlay) = 10.0_rk
-    hgt_mc(1,nlay) = dzsum + 0.5_rk * dz(nz)
-
-    call mcica_subcol_sw(1, 1, nlay, icld_sw, permuteseed_sw, irng_sw, play_mc, &
-                         cldfrac_mc, ciwpth_mc, clwpth_mc, cswpth_mc, rei_mc, rel_mc, res_mc, &
-                         taucld_mc, ssacld_mc, asmcld_mc, fsfcld_mc, hgt_mc, idcor_sw, juldat_sw, 28.3_rk, &
-                         cldfmcl_mc, ciwpmcl_mc, clwpmcl_mc, cswpmcl_mc, reicmcl_mc, relqmcl_mc, resnmcl_mc, &
-                         taucmcl_mc, ssacmcl_mc, asmcmcl_mc, fsfcmcl_mc)
-    do k = 1, nlay
-       reicmc_mc(k) = reicmcl_mc(1,k)
-       relqmc_mc(k) = relqmcl_mc(1,k)
-       resnmc_mc(k) = resnmcl_mc(1,k)
-       do ig = 1, sw_ngpt
-          cldfmc_mc(ig,k) = cldfmcl_mc(ig,1,k)
-          ciwpmc_mc(ig,k) = ciwpmcl_mc(ig,1,k)
-          clwpmc_mc(ig,k) = clwpmcl_mc(ig,1,k)
-          cswpmc_mc(ig,k) = cswpmcl_mc(ig,1,k)
-          taucmc_mc(ig,k) = taucmcl_mc(ig,1,k)
-          ssacmc_mc(ig,k) = ssacmcl_mc(ig,1,k)
-          asmcmc_mc(ig,k) = asmcmcl_mc(ig,1,k)
-          fsfcmc_mc(ig,k) = fsfcmcl_mc(ig,1,k)
-       enddo
-    enddo
-    call cldprmc_sw(nlay, inflag_sw, iceflag_sw, liqflag_sw, cldfmc_mc, &
-                    ciwpmc_mc, clwpmc_mc, cswpmc_mc, reicmc_mc, relqmc_mc, resnmc_mc, &
-                    taormc_mc, taucmc_mc, ssacmc_mc, asmcmc_mc, fsfcmc_mc)
-    do k = 1, nlay
-       do ig = 1, sw_ngpt
-          cldf_sw(k,ig) = cldfmc_mc(ig,k)
-          taucmc_sw(k,ig) = taucmc_mc(ig,k)
-          taormc_sw(k,ig) = taormc_mc(ig,k)
-          asy_sw(k,ig) = asmcmc_mc(ig,k)
-          omg_sw(k,ig) = ssacmc_mc(ig,k)
-       enddo
-    enddo
-    start_g = 1
-    do b = 1, sw_nbnd
-       do g = 1, sw_counts(b)
-          ig = start_g + g - 1
-          sw_cld_pcldfmc(:,g,b) = cldf_sw(:,ig)
-          sw_cld_ptaucmc(:,g,b) = taucmc_sw(:,ig)
-          sw_cld_pasycmc(:,g,b) = asy_sw(:,ig)
-          sw_cld_pomgcmc(:,g,b) = omg_sw(:,ig)
-          sw_cld_ptaormc(:,g,b) = taormc_sw(:,ig)
-       enddo
-       start_g = start_g + sw_counts(b)
-    enddo
-
-    call compute_spcvmc_sw_stage_oracle(nlay, surface_albedo, max(coszen_scalar, 1.0e-10_rk), &
-                                        taug_sw, taur_sw, sflux_sw, cldf_sw, taucmc_sw, asy_sw, omg_sw, taormc_sw, &
-                                        taua_sw, asya_sw, omga_sw, &
-                                        sw_spc_zref, sw_spc_ztra, sw_spc_zrefd, sw_spc_ztrad, &
-                                        sw_spc_zref_clear, sw_spc_ztra_clear, sw_spc_zrefd_clear, sw_spc_ztrad_clear, &
-                                        sw_spc_zref_cloud, sw_spc_ztra_cloud, sw_spc_zrefd_cloud, sw_spc_ztrad_cloud, &
-                                        sw_spc_direct_trans, sw_spc_zfd, sw_spc_zfu, sw_spc_zfd_flux, sw_spc_zfu_flux)
-
     do b = 1, sw_nbnd
        call spcvmc_sw(nlay, sw_jpb1 + b - 1, sw_jpb1 + b - 1, 1, 0, &
                       pavel, tavel, pz, tz, surface_temperature, albdif, albdir, &
@@ -433,7 +304,7 @@ contains
     enddo
 
     semiss = surface_emissivity
-    call setcoef(nlay, 1, pavel, tavel, tz, surface_temperature, semiss, coldry, wkl_lw, wbroad, &
+    call setcoef(nlay, 1, pavel, tavel_lw, tz_lw, surface_temperature, semiss, coldry, wkl_lw, wbroad, &
                  laytrop, lw_jp, lw_jt, jt1_lw, lw_planklay, lw_planklev, lw_plankbnd, &
                  colh2o, colco2, colo3, coln2o, colco, colch4, colo2, colbrd, &
                  fac00_lw, fac01_lw, fac10_lw, fac11_lw, &
@@ -472,9 +343,85 @@ contains
     call lw_diffusivity(pwvcm, lw_secdiff)
     cldf_lw = 0.0_rk
     taucmc_lw = 0.0_rk
+    ciwpmc_lw = 0.0_rk
+    clwpmc_lw = 0.0_rk
+    cswpmc_lw = 0.0_rk
+    reicmc_lw = 10.0_rk
+    relqmc_lw = 10.0_rk
+    resnmc_lw = 10.0_rk
+    play_lw = 0.0_rk
+    hgt_lw = 0.0_rk
+    cldfrac_lw = 0.0_rk
+    ciwp_lw = 0.0_rk
+    clwp_lw = 0.0_rk
+    cswp_lw = 0.0_rk
+    tauc_lw = 0.0_rk
+    rei_lw = 10.0_rk
+    rel_lw = 10.0_rk
+    res_lw = 10.0_rk
+    do k = 1, nlay
+       layer_mass_ext(k) = max(1.0e-6_rk, (pz(k-1) - pz(k)) * 100.0_rk / gravity)
+       play_lw(1,k) = pavel(k)
+    enddo
+    dzsum = 0.0_rk
+    do k = 1, nz
+       hgt_lw(1,k) = dzsum + 0.5_rk * dz(k)
+       dzsum = dzsum + dz(k)
+       cldfrac_lw(1,k) = min(1.0_rk, max(0.0_rk, cldfra(k)))
+       cloud_safe = max(0.01_rk, cldfrac_lw(1,k))
+       clwp_lw(1,k) = max(qc(k), 0.0_rk) * layer_mass_ext(k) * 1000.0_rk / cloud_safe
+       ciwp_lw(1,k) = max(qi(k), 0.0_rk) * layer_mass_ext(k) * 1000.0_rk / cloud_safe
+       snow_mass_factor = 0.99_rk
+       cswp_lw(1,k) = max(qs(k), 0.0_rk) * snow_mass_factor * layer_mass_ext(k) * 1000.0_rk / cloud_safe
+       rel_lw(1,k) = 10.0_rk
+       rei_lw(1,k) = 30.0_rk
+       res_lw(1,k) = 75.0_rk
+    enddo
+    hgt_lw(1,nlay) = dzsum + 0.5_rk * dz(nz)
+    icld_lw = 1
+    irng_lw = 0
+    permuteseed_lw = 150
+    call mcica_subcol_lw(1, 1, nlay, icld_lw, permuteseed_lw, irng_lw, play_lw, &
+                         cldfrac_lw, ciwp_lw, clwp_lw, cswp_lw, rei_lw, rel_lw, res_lw, tauc_lw, &
+                         hgt_lw, 0, 142, 28.3_rk, cldfmcl_lw, ciwpmcl_lw, clwpmcl_lw, cswpmcl_lw, &
+                         reicmcl_lw, relqmcl_lw, resnmcl_lw, taucmcl_lw)
+    do k = 1, nlay
+       do g = 1, lw_ngpt
+          cldf_lw(g,k) = cldfmcl_lw(g,1,k)
+          ciwpmc_lw(g,k) = ciwpmcl_lw(g,1,k)
+          clwpmc_lw(g,k) = clwpmcl_lw(g,1,k)
+          cswpmc_lw(g,k) = cswpmcl_lw(g,1,k)
+          taucmc_lw(g,k) = taucmcl_lw(g,1,k)
+       enddo
+       reicmc_lw(k) = reicmcl_lw(1,k)
+       relqmc_lw(k) = relqmcl_lw(1,k)
+       resnmc_lw(k) = resnmcl_lw(1,k)
+    enddo
     ncbands = lw_nbnd
+    call cldprmc(nlay, 5, 5, 1, cldf_lw, ciwpmc_lw, clwpmc_lw, cswpmc_lw, reicmc_lw, relqmc_lw, resnmc_lw, ncbands, taucmc_lw)
+    lw_cldprmc_cldfmc_band = 0.0_rk
+    lw_cldprmc_taucmc_band = 0.0_rk
+    lw_rtrnmc_pfracs_band = 0.0_rk
+    lw_rtrnmc_plansum_band = 0.0_rk
+    lw_rtrnmc_tfn_tbl_output_band = 0.0_rk
+    lw_rtrnmc_zfd_per_gpoint_band = 0.0_rk
+    lw_rtrnmc_zfu_per_gpoint_band = 0.0_rk
+    start_g = 1
     do b = 1, lw_nbnd
-       call rtrnmc(nlay, b, b, 0, pz, semiss, ncbands, cldf_lw, taucmc_lw, &
+       do g = 1, lw_counts(b)
+          lw_cldprmc_cldfmc_band(:,g,b) = cldf_lw(start_g+g-1,:)
+          lw_cldprmc_taucmc_band(:,g,b) = taucmc_lw(start_g+g-1,:)
+          lw_rtrnmc_pfracs_band(:,g,b) = fracs_lw(:,start_g+g-1)
+       enddo
+       lw_rtrnmc_plansum_band(:,b) = sum(lw_rtrnmc_pfracs_band(:,:,b), dim=2) * lw_planklay(:,b)
+       start_g = start_g + lw_counts(b)
+    enddo
+    do b = 1, lw_nbnd
+       call capture_lw_rtrnmc_band(nlay, b, pz, semiss, cldf_lw, taucmc_lw, &
+                   lw_planklay, lw_planklev, lw_plankbnd, pwvcm, fracs_lw, taut_lw, &
+                   lw_rtrnmc_tfn_tbl_output_band(:,:,b), lw_rtrnmc_zfd_per_gpoint_band(:,:,b), &
+                   lw_rtrnmc_zfu_per_gpoint_band(:,:,b))
+       call rtrnmc(nlay, b, b, 1, pz, semiss, ncbands, cldf_lw, taucmc_lw, &
                    lw_planklay, lw_planklev, lw_plankbnd, pwvcm, fracs_lw, taut_lw, &
                    totuflux, totdflux, fnet, htr, totuclfl, totdclfl, fnetc, htrc)
        lw_band_flux(1,b) = totuflux(nlay)
@@ -483,202 +430,6 @@ contains
        lw_band_flux(4,b) = totdflux(0)
     enddo
   end subroutine compute_intermediate_oracle
-
-  subroutine compute_spcvmc_sw_stage_oracle(nlay, surface_albedo, prmu0, ztaug, ztaur, zsflxzen, &
-                                            pcldfmc, ptaucmc, pasycmc, pomgcmc, ptaormc, &
-                                            ptaua, pasya, pomga, zref_out, ztra_out, zrefd_out, ztrad_out, &
-                                            zref_clear_out, ztra_clear_out, zrefd_clear_out, ztrad_clear_out, &
-                                            zref_cloud_out, ztra_cloud_out, zrefd_cloud_out, ztrad_cloud_out, &
-                                            direct_trans_out, zfd_out, zfu_out, zfd_flux_out, zfu_flux_out)
-    integer, intent(in) :: nlay
-    real(rk), intent(in) :: surface_albedo, prmu0
-    real(rk), intent(in) :: ztaug(nlay,sw_ngpt), ztaur(nlay,sw_ngpt), zsflxzen(sw_ngpt)
-    real(rk), intent(in) :: pcldfmc(nlay,sw_ngpt), ptaucmc(nlay,sw_ngpt), pasycmc(nlay,sw_ngpt), pomgcmc(nlay,sw_ngpt), ptaormc(nlay,sw_ngpt)
-    real(rk), intent(in) :: ptaua(nlay,sw_nbnd), pasya(nlay,sw_nbnd), pomga(nlay,sw_nbnd)
-    real(rk), intent(out) :: zref_out(nlay+1,sw_max_g,sw_nbnd), ztra_out(nlay+1,sw_max_g,sw_nbnd), zrefd_out(nlay+1,sw_max_g,sw_nbnd), ztrad_out(nlay+1,sw_max_g,sw_nbnd)
-    real(rk), intent(out) :: zref_clear_out(nlay+1,sw_max_g,sw_nbnd), ztra_clear_out(nlay+1,sw_max_g,sw_nbnd), zrefd_clear_out(nlay+1,sw_max_g,sw_nbnd), ztrad_clear_out(nlay+1,sw_max_g,sw_nbnd)
-    real(rk), intent(out) :: zref_cloud_out(nlay+1,sw_max_g,sw_nbnd), ztra_cloud_out(nlay+1,sw_max_g,sw_nbnd), zrefd_cloud_out(nlay+1,sw_max_g,sw_nbnd), ztrad_cloud_out(nlay+1,sw_max_g,sw_nbnd)
-    real(rk), intent(out) :: direct_trans_out(nlay,sw_max_g,sw_nbnd), zfd_out(nlay+1,sw_max_g,sw_nbnd), zfu_out(nlay+1,sw_max_g,sw_nbnd)
-    real(rk), intent(out) :: zfd_flux_out(nlay+1,sw_max_g,sw_nbnd), zfu_flux_out(nlay+1,sw_max_g,sw_nbnd)
-
-    integer, parameter :: sw_counts(sw_nbnd) = (/6,12,8,8,10,10,2,10,8,6,6,8,6,12/)
-    logical :: lrtchkclr(nlay), lrtchkcld(nlay)
-    integer :: b, jg, jk, ikl, iw, igt, itind
-    real(rk) :: tblind, ze1, zclear, zcloud, zdbtmc, zdbtmo, zf, zwf, tauorig, zincflx
-    real(rk) :: zdbt(nlay+1), zdbt_nodel(nlay+1), zdbtc(nlay+1), zdbtc_nodel(nlay+1)
-    real(rk) :: ztdbt(nlay+1), ztdbt_nodel(nlay+1), ztdbtc(nlay+1), ztdbtc_nodel(nlay+1)
-    real(rk) :: zgcc(nlay), zgco(nlay), zomcc(nlay), zomco(nlay), ztauc(nlay), ztauo(nlay)
-    real(rk) :: zref(nlay+1), zrefc(nlay+1), zrefo(nlay+1), zrefd(nlay+1), zrefdc(nlay+1), zrefdo(nlay+1)
-    real(rk) :: ztra(nlay+1), ztrac(nlay+1), ztrao(nlay+1), ztrad(nlay+1), ztradc(nlay+1), ztrado(nlay+1)
-    real(rk) :: zrdnd(nlay+1), zrdndc(nlay+1), zrup(nlay+1), zrupd(nlay+1), zrupc(nlay+1), zrupdc(nlay+1)
-    real(rk) :: zcd(nlay+1,sw_ngpt), zcu(nlay+1,sw_ngpt), zfd(nlay+1,sw_ngpt), zfu(nlay+1,sw_ngpt)
-
-    zref_out = 0.0_rk
-    ztra_out = 0.0_rk
-    zrefd_out = 0.0_rk
-    ztrad_out = 0.0_rk
-    zref_clear_out = 0.0_rk
-    ztra_clear_out = 0.0_rk
-    zrefd_clear_out = 0.0_rk
-    ztrad_clear_out = 0.0_rk
-    zref_cloud_out = 0.0_rk
-    ztra_cloud_out = 0.0_rk
-    zrefd_cloud_out = 0.0_rk
-    ztrad_cloud_out = 0.0_rk
-    direct_trans_out = 0.0_rk
-    zfd_out = 0.0_rk
-    zfu_out = 0.0_rk
-    zfd_flux_out = 0.0_rk
-    zfu_flux_out = 0.0_rk
-    zcd = 0.0_rk
-    zcu = 0.0_rk
-    zfd = 0.0_rk
-    zfu = 0.0_rk
-
-    iw = 0
-    do b = 1, sw_nbnd
-       igt = sw_counts(b)
-       do jg = 1, igt
-          iw = iw + 1
-          zincflx = zsflxzen(iw) * prmu0
-
-          ztdbtc(1) = 1.0_rk
-          ztdbtc_nodel(1) = 1.0_rk
-          zdbtc(nlay+1) = 0.0_rk
-          ztrac(nlay+1) = 0.0_rk
-          ztradc(nlay+1) = 0.0_rk
-          zrefc(nlay+1) = surface_albedo
-          zrefdc(nlay+1) = surface_albedo
-          zrupc(nlay+1) = surface_albedo
-          zrupdc(nlay+1) = surface_albedo
-
-          ztdbt(1) = 1.0_rk
-          ztdbt_nodel(1) = 1.0_rk
-          zdbt(nlay+1) = 0.0_rk
-          ztra(nlay+1) = 0.0_rk
-          ztrad(nlay+1) = 0.0_rk
-          zref(nlay+1) = surface_albedo
-          zrefd(nlay+1) = surface_albedo
-          zrup(nlay+1) = surface_albedo
-          zrupd(nlay+1) = surface_albedo
-          zrefo(nlay+1) = surface_albedo
-          zrefdo(nlay+1) = surface_albedo
-          ztrao(nlay+1) = 0.0_rk
-          ztrado(nlay+1) = 0.0_rk
-
-          do jk = 1, nlay
-             ikl = nlay + 1 - jk
-             lrtchkclr(jk) = .true.
-             lrtchkcld(jk) = (pcldfmc(ikl,iw) > 1.0e-12_rk)
-
-             ztauc(jk) = ztaur(ikl,iw) + ztaug(ikl,iw) + ptaua(ikl,b)
-             zomcc(jk) = ztaur(ikl,iw) + ptaua(ikl,b) * pomga(ikl,b)
-             zgcc(jk) = pasya(ikl,b) * pomga(ikl,b) * ptaua(ikl,b) / zomcc(jk)
-             zomcc(jk) = zomcc(jk) / ztauc(jk)
-
-             zclear = 1.0_rk - pcldfmc(ikl,iw)
-             zcloud = pcldfmc(ikl,iw)
-             ze1 = ztauc(jk) / prmu0
-             if (ze1 .le. od_lo) then
-                zdbtmc = 1.0_rk - ze1 + 0.5_rk * ze1 * ze1
-             else
-                tblind = ze1 / (bpade + ze1)
-                itind = tblint * tblind + 0.5_rk
-                zdbtmc = exp_tbl(itind)
-             endif
-             zdbtc_nodel(jk) = zdbtmc
-             ztdbtc_nodel(jk+1) = zdbtc_nodel(jk) * ztdbtc_nodel(jk)
-
-             tauorig = ztauc(jk) + ptaormc(ikl,iw)
-             ze1 = tauorig / prmu0
-             if (ze1 .le. od_lo) then
-                zdbtmo = 1.0_rk - ze1 + 0.5_rk * ze1 * ze1
-             else
-                tblind = ze1 / (bpade + ze1)
-                itind = tblint * tblind + 0.5_rk
-                zdbtmo = exp_tbl(itind)
-             endif
-             zdbt_nodel(jk) = zclear * zdbtmc + zcloud * zdbtmo
-             ztdbt_nodel(jk+1) = zdbt_nodel(jk) * ztdbt_nodel(jk)
-          enddo
-
-          do jk = 1, nlay
-             zf = zgcc(jk) * zgcc(jk)
-             zwf = zomcc(jk) * zf
-             ztauc(jk) = (1.0_rk - zwf) * ztauc(jk)
-             zomcc(jk) = (zomcc(jk) - zwf) / (1.0_rk - zwf)
-             zgcc(jk) = (zgcc(jk) - zf) / (1.0_rk - zf)
-          enddo
-
-          do jk = 1, nlay
-             ikl = nlay + 1 - jk
-             ztauo(jk) = ztauc(jk) + ptaucmc(ikl,iw)
-             zomco(jk) = ztauc(jk) * zomcc(jk) + ptaucmc(ikl,iw) * pomgcmc(ikl,iw)
-             zgco(jk) = (ptaucmc(ikl,iw) * pomgcmc(ikl,iw) * pasycmc(ikl,iw) + ztauc(jk) * zomcc(jk) * zgcc(jk)) / zomco(jk)
-             zomco(jk) = zomco(jk) / ztauo(jk)
-          enddo
-
-          call reftra_sw(nlay, lrtchkclr, zgcc, prmu0, ztauc, zomcc, zrefc, zrefdc, ztrac, ztradc)
-          call reftra_sw(nlay, lrtchkcld, zgco, prmu0, ztauo, zomco, zrefo, zrefdo, ztrao, ztrado)
-
-          do jk = 1, nlay
-             ikl = nlay + 1 - jk
-             zclear = 1.0_rk - pcldfmc(ikl,iw)
-             zcloud = pcldfmc(ikl,iw)
-             zref(jk) = zclear * zrefc(jk) + zcloud * zrefo(jk)
-             zrefd(jk) = zclear * zrefdc(jk) + zcloud * zrefdo(jk)
-             ztra(jk) = zclear * ztrac(jk) + zcloud * ztrao(jk)
-             ztrad(jk) = zclear * ztradc(jk) + zcloud * ztrado(jk)
-
-             ze1 = ztauc(jk) / prmu0
-             if (ze1 .le. od_lo) then
-                zdbtmc = 1.0_rk - ze1 + 0.5_rk * ze1 * ze1
-             else
-                tblind = ze1 / (bpade + ze1)
-                itind = tblint * tblind + 0.5_rk
-                zdbtmc = exp_tbl(itind)
-             endif
-             zdbtc(jk) = zdbtmc
-             ztdbtc(jk+1) = zdbtc(jk) * ztdbtc(jk)
-
-             ze1 = ztauo(jk) / prmu0
-             if (ze1 .le. od_lo) then
-                zdbtmo = 1.0_rk - ze1 + 0.5_rk * ze1 * ze1
-             else
-                tblind = ze1 / (bpade + ze1)
-                itind = tblint * tblind + 0.5_rk
-                zdbtmo = exp_tbl(itind)
-             endif
-             zdbt(jk) = zclear * zdbtmc + zcloud * zdbtmo
-             ztdbt(jk+1) = zdbt(jk) * ztdbt(jk)
-          enddo
-
-          call vrtqdr_sw(nlay, iw, zrefc, zrefdc, ztrac, ztradc, zdbtc, zrdndc, zrupc, zrupdc, ztdbtc, zcd, zcu)
-          call vrtqdr_sw(nlay, iw, zref, zrefd, ztra, ztrad, zdbt, zrdnd, zrup, zrupd, ztdbt, zfd, zfu)
-
-          zref_out(:,jg,b) = zref
-          ztra_out(:,jg,b) = ztra
-          zrefd_out(:,jg,b) = zrefd
-          ztrad_out(:,jg,b) = ztrad
-          zref_clear_out(:,jg,b) = zrefc
-          ztra_clear_out(:,jg,b) = ztrac
-          zrefd_clear_out(:,jg,b) = zrefdc
-          ztrad_clear_out(:,jg,b) = ztradc
-          zref_cloud_out(:,jg,b) = zrefo
-          ztra_cloud_out(:,jg,b) = ztrao
-          zrefd_cloud_out(:,jg,b) = zrefdo
-          ztrad_cloud_out(:,jg,b) = ztrado
-          direct_trans_out(:,jg,b) = zdbt(1:nlay)
-          zfd_out(:,jg,b) = zfd(:,iw)
-          zfu_out(:,jg,b) = zfu(:,iw)
-          do jk = 1, nlay + 1
-             ikl = nlay + 2 - jk
-             zfd_flux_out(ikl,jg,b) = zincflx * zfd(jk,iw)
-             zfu_flux_out(ikl,jg,b) = zincflx * zfu(jk,iw)
-          enddo
-       enddo
-    enddo
-  end subroutine compute_spcvmc_sw_stage_oracle
 
   subroutine build_rrtmg_profile(nz, temp, press, qv, pavel, tavel, pz, tz, coldry, h2ovmr)
     integer, intent(in) :: nz
@@ -718,84 +469,70 @@ contains
     enddo
   end subroutine build_rrtmg_profile
 
-  subroutine fill_o3_profile(nlay, pz, o3vmr)
-    integer, intent(in) :: nlay
-    real(rk), intent(in) :: pz(0:nlay)
-    real(rk), intent(out) :: o3vmr(nlay)
-    real(rk), parameter :: o3sum(31) = (/ &
-         5.297e-8_rk, 5.852e-8_rk, 6.579e-8_rk, 7.505e-8_rk, &
-         8.577e-8_rk, 9.895e-8_rk, 1.175e-7_rk, 1.399e-7_rk, &
-         1.677e-7_rk, 2.003e-7_rk, 2.571e-7_rk, 3.325e-7_rk, &
-         4.438e-7_rk, 6.255e-7_rk, 8.168e-7_rk, 1.036e-6_rk, &
-         1.366e-6_rk, 1.855e-6_rk, 2.514e-6_rk, 3.240e-6_rk, &
-         4.033e-6_rk, 4.854e-6_rk, 5.517e-6_rk, 6.089e-6_rk, &
-         6.689e-6_rk, 1.106e-5_rk, 1.462e-5_rk, 1.321e-5_rk, &
-         9.856e-6_rk, 5.960e-6_rk, 5.960e-6_rk /)
-    real(rk), parameter :: ppsum(31) = (/ &
-         955.890_rk, 850.532_rk, 754.599_rk, 667.742_rk, 589.841_rk, &
-         519.421_rk, 455.480_rk, 398.085_rk, 347.171_rk, 301.735_rk, &
-         261.310_rk, 225.360_rk, 193.419_rk, 165.490_rk, 141.032_rk, &
-         120.125_rk, 102.689_rk, 87.829_rk, 75.123_rk, 64.306_rk, &
-         55.086_rk, 47.209_rk, 40.535_rk, 34.795_rk, 29.865_rk, &
-         19.122_rk, 9.277_rk, 4.660_rk, 2.421_rk, 1.294_rk, 0.647_rk /)
-    real(rk), parameter :: o3win(31) = (/ &
-         4.629e-8_rk, 4.686e-8_rk, 5.017e-8_rk, 5.613e-8_rk, &
-         6.871e-8_rk, 8.751e-8_rk, 1.138e-7_rk, 1.516e-7_rk, &
-         2.161e-7_rk, 3.264e-7_rk, 4.968e-7_rk, 7.338e-7_rk, &
-         1.017e-6_rk, 1.308e-6_rk, 1.625e-6_rk, 2.011e-6_rk, &
-         2.516e-6_rk, 3.130e-6_rk, 3.840e-6_rk, 4.703e-6_rk, &
-         5.486e-6_rk, 6.289e-6_rk, 6.993e-6_rk, 7.494e-6_rk, &
-         8.197e-6_rk, 9.632e-6_rk, 1.113e-5_rk, 1.146e-5_rk, &
-         9.389e-6_rk, 6.135e-6_rk, 6.135e-6_rk /)
-    real(rk), parameter :: ppwin(31) = (/ &
-         955.747_rk, 841.783_rk, 740.199_rk, 649.538_rk, 568.404_rk, &
-         495.815_rk, 431.069_rk, 373.464_rk, 322.354_rk, 277.190_rk, &
-         237.635_rk, 203.433_rk, 174.070_rk, 148.949_rk, 127.408_rk, &
-         108.915_rk, 93.114_rk, 79.551_rk, 67.940_rk, 58.072_rk, &
-         49.593_rk, 42.318_rk, 36.138_rk, 30.907_rk, 26.362_rk, &
-         16.423_rk, 7.583_rk, 3.620_rk, 1.807_rk, 0.938_rk, 0.469_rk /)
-    integer :: k, jj
-    real(rk) :: o3ann(31), ppwrkh(32), pb1, pb2, pt1, pt2, o3mmr
+  subroutine adjust_lw_buffer_temperature(nz, pz, tavel, tz, tavel_lw, tz_lw)
+    integer, intent(in) :: nz
+    real(rk), intent(in) :: pz(0:nz+1), tavel(nz+1), tz(0:nz+1)
+    real(rk), intent(out) :: tavel_lw(nz+1), tz_lw(0:nz+1)
+    integer, parameter :: nproflevs = 60
+    real(rk), parameter :: pprof(nproflevs) = (/ &
+       1000.00_rk,855.47_rk,731.82_rk,626.05_rk,535.57_rk,458.16_rk, &
+       391.94_rk,335.29_rk,286.83_rk,245.38_rk,209.91_rk,179.57_rk, &
+       153.62_rk,131.41_rk,112.42_rk,96.17_rk,82.27_rk,70.38_rk, &
+       60.21_rk,51.51_rk,44.06_rk,37.69_rk,32.25_rk,27.59_rk, &
+       23.60_rk,20.19_rk,17.27_rk,14.77_rk,12.64_rk,10.81_rk, &
+       9.25_rk,7.91_rk,6.77_rk,5.79_rk,4.95_rk,4.24_rk, &
+       3.63_rk,3.10_rk,2.65_rk,2.27_rk,1.94_rk,1.66_rk, &
+       1.42_rk,1.22_rk,1.04_rk,0.89_rk,0.76_rk,0.65_rk, &
+       0.56_rk,0.48_rk,0.41_rk,0.35_rk,0.30_rk,0.26_rk, &
+       0.22_rk,0.19_rk,0.16_rk,0.14_rk,0.12_rk,0.10_rk /)
+    real(rk), parameter :: tprof(nproflevs) = (/ &
+       286.96_rk,281.07_rk,275.16_rk,268.11_rk,260.56_rk,253.02_rk, &
+       245.62_rk,238.41_rk,231.57_rk,225.91_rk,221.72_rk,217.79_rk, &
+       215.06_rk,212.74_rk,210.25_rk,210.16_rk,210.69_rk,212.14_rk, &
+       213.74_rk,215.37_rk,216.82_rk,217.94_rk,219.03_rk,220.18_rk, &
+       221.37_rk,222.64_rk,224.16_rk,225.88_rk,227.63_rk,229.51_rk, &
+       231.50_rk,233.73_rk,236.18_rk,238.78_rk,241.60_rk,244.44_rk, &
+       247.35_rk,250.33_rk,253.32_rk,256.30_rk,259.22_rk,262.12_rk, &
+       264.80_rk,266.50_rk,267.59_rk,268.44_rk,268.69_rk,267.76_rk, &
+       266.13_rk,263.96_rk,261.54_rk,258.93_rk,256.15_rk,253.23_rk, &
+       249.89_rk,246.67_rk,243.48_rk,240.25_rk,236.66_rk,233.86_rk /)
+    integer :: l, ll, klev, nlay
+    real(rk) :: varint(nz+2), plev, wght, vark, vark1
 
-    o3ann(1) = 0.5_rk * (o3sum(1) + o3win(1))
-    do k = 2, 31
-       o3ann(k) = o3win(k-1) + (o3win(k) - o3win(k-1)) / (ppwin(k) - ppwin(k-1)) * (ppsum(k) - ppwin(k-1))
-       o3ann(k) = 0.5_rk * (o3ann(k) + o3sum(k))
+    nlay = nz + 1
+    tavel_lw = tavel
+    tz_lw = tz
+    do l = 1, nlay + 1
+       plev = pz(l-1)
+       if (l == nlay + 1) plev = 0.0_rk
+       if (pprof(nproflevs) .lt. plev) then
+          klev = nproflevs
+          do ll = 2, nproflevs
+             if (pprof(ll) .lt. plev) then
+                klev = ll - 1
+                exit
+             endif
+          enddo
+       else
+          klev = nproflevs
+       endif
+       if (klev .ne. nproflevs) then
+          vark = tprof(klev)
+          vark1 = tprof(klev+1)
+          wght = (plev - pprof(klev)) / (pprof(klev+1) - pprof(klev))
+       else
+          vark = tprof(klev)
+          vark1 = tprof(klev)
+          wght = 0.0_rk
+       endif
+       varint(l) = wght * (vark1 - vark) + vark
     enddo
-    ppwrkh(1) = 1100.0_rk
-    do k = 2, 31
-       ppwrkh(k) = 0.5_rk * (ppsum(k) + ppsum(k-1))
-    enddo
-    ppwrkh(32) = 0.0_rk
 
-    do k = 1, nlay
-       o3mmr = 0.0_rk
-       do jj = 1, 31
-          if (pz(k-1) <= ppwrkh(jj)) then
-             pb1 = 0.0_rk
-          else
-             pb1 = pz(k-1) - ppwrkh(jj)
-          endif
-          if (pz(k-1) <= ppwrkh(jj+1)) then
-             pb2 = 0.0_rk
-          else
-             pb2 = pz(k-1) - ppwrkh(jj+1)
-          endif
-          if (pz(k) <= ppwrkh(jj)) then
-             pt1 = 0.0_rk
-          else
-             pt1 = pz(k) - ppwrkh(jj)
-          endif
-          if (pz(k) <= ppwrkh(jj+1)) then
-             pt2 = 0.0_rk
-          else
-             pt2 = pz(k) - ppwrkh(jj+1)
-          endif
-          o3mmr = o3mmr + (pb2 - pb1 - pt2 + pt1) * o3ann(jj)
-       enddo
-       o3vmr(k) = o3mmr / max(pz(k-1) - pz(k), 1.0e-12_rk) * o3_mmr_to_vmr
+    do l = nz + 1, nlay + 1
+       tz_lw(l-1) = varint(l) + (tz(nz-1) - varint(nz))
+       tavel_lw(l-1) = 0.5_rk * (tz_lw(l-1) + tz_lw(l-2))
     enddo
-  end subroutine fill_o3_profile
+  end subroutine adjust_lw_buffer_temperature
 
   subroutine lw_diffusivity(pwvcm, secdiff)
     real(rk), intent(in) :: pwvcm
@@ -814,16 +551,177 @@ contains
     enddo
   end subroutine lw_diffusivity
 
+  subroutine capture_lw_rtrnmc_band(nlayers, iband, pz, semiss, cldfmc, taucmc, &
+                                    planklay, planklev, plankbnd, pwvcm, fracs, taut, &
+                                    tfn_out, zfd_out, zfu_out)
+    integer, intent(in) :: nlayers, iband
+    real(rk), intent(in) :: pz(0:), semiss(:), cldfmc(:,:), taucmc(:,:)
+    real(rk), intent(in) :: planklay(:,:), planklev(0:,:), plankbnd(:), pwvcm, fracs(:,:), taut(:,:)
+    real(rk), intent(out) :: tfn_out(:,:), zfd_out(:,:), zfu_out(:,:)
+
+    real(rk) :: secdiff(lw_nbnd), odcld(nlayers,lw_ngpt), abscld(nlayers,lw_ngpt), efclfrac(nlayers,lw_ngpt)
+    real(rk) :: atot(nlayers), atrans(nlayers), bbugas(nlayers), bbutot(nlayers)
+    real(rk) :: transcld, radld, radclrd, plfrac, blay, dplankup, dplankdn
+    real(rk) :: odepth, odtot, odepth_rec, odtot_rec, gassrc
+    real(rk) :: tblind, tfactot, bbd, bbdtot, tfacgas, transc, tausfac
+    real(rk) :: rad0, reflect, radlu, radclru, scale
+    integer :: icldlyr(nlayers), iclddn
+    integer :: ib, lay, lev, ig, igc, g_local, start_g, end_g
+    integer :: ittot, itgas, itr
+
+    call lw_diffusivity(pwvcm, secdiff)
+    odcld = 0.0_rk
+    abscld = 0.0_rk
+    efclfrac = 0.0_rk
+    icldlyr = 0
+    do lay = 1, nlayers
+       do ig = 1, lw_ngpt
+          if (cldfmc(ig,lay) .eq. 1.0_rk) then
+             ib = lw_ngb(ig)
+             odcld(lay,ig) = secdiff(ib) * taucmc(ig,lay)
+             transcld = exp(-odcld(lay,ig))
+             abscld(lay,ig) = 1.0_rk - transcld
+             efclfrac(lay,ig) = abscld(lay,ig) * cldfmc(ig,lay)
+             icldlyr(lay) = 1
+          endif
+       enddo
+    enddo
+
+    tfn_out = 0.0_rk
+    zfd_out = 0.0_rk
+    zfu_out = 0.0_rk
+    start_g = 1
+    if (iband .ge. 2) start_g = lw_ngs(iband-1) + 1
+    end_g = lw_ngs(iband)
+    scale = 0.5_rk * lw_delwave(iband) * lw_fluxfac
+
+    do igc = start_g, end_g
+       g_local = igc - start_g + 1
+       radld = 0.0_rk
+       radclrd = 0.0_rk
+       iclddn = 0
+       zfd_out(nlayers+1,g_local) = 0.0_rk
+
+       do lev = nlayers, 1, -1
+          plfrac = fracs(lev,igc)
+          blay = planklay(lev,iband)
+          dplankup = planklev(lev,iband) - blay
+          dplankdn = planklev(lev-1,iband) - blay
+          odepth = secdiff(iband) * taut(lev,igc)
+          if (odepth .lt. 0.0_rk) odepth = 0.0_rk
+          if (icldlyr(lev) .eq. 1) then
+             iclddn = 1
+             odtot = odepth + odcld(lev,igc)
+             if (odtot .lt. 0.06_rk) then
+                atrans(lev) = odepth - 0.5_rk * odepth * odepth
+                odepth_rec = odepth / 6.0_rk
+                tfn_out(lev,g_local) = odepth_rec
+                gassrc = plfrac * (blay + dplankdn * odepth_rec) * atrans(lev)
+                atot(lev) = odtot - 0.5_rk * odtot * odtot
+                odtot_rec = odtot / 6.0_rk
+                bbdtot = plfrac * (blay + dplankdn * odtot_rec)
+                bbd = plfrac * (blay + dplankdn * odepth_rec)
+                radld = radld - radld * (atrans(lev) + efclfrac(lev,igc) * (1.0_rk - atrans(lev))) + &
+                        gassrc + cldfmc(igc,lev) * (bbdtot * atot(lev) - gassrc)
+                bbugas(lev) = plfrac * (blay + dplankup * odepth_rec)
+                bbutot(lev) = plfrac * (blay + dplankup * odtot_rec)
+             elseif (odepth .le. 0.06_rk) then
+                atrans(lev) = odepth - 0.5_rk * odepth * odepth
+                odepth_rec = odepth / 6.0_rk
+                tfn_out(lev,g_local) = odepth_rec
+                gassrc = plfrac * (blay + dplankdn * odepth_rec) * atrans(lev)
+                odtot = odepth + odcld(lev,igc)
+                tblind = odtot / (lw_bpade + odtot)
+                ittot = lw_tblint * tblind + 0.5_rk
+                tfactot = lw_tfn_tbl(ittot)
+                bbdtot = plfrac * (blay + tfactot * dplankdn)
+                bbd = plfrac * (blay + dplankdn * odepth_rec)
+                atot(lev) = 1.0_rk - lw_exp_tbl(ittot)
+                radld = radld - radld * (atrans(lev) + efclfrac(lev,igc) * (1.0_rk - atrans(lev))) + &
+                        gassrc + cldfmc(igc,lev) * (bbdtot * atot(lev) - gassrc)
+                bbugas(lev) = plfrac * (blay + dplankup * odepth_rec)
+                bbutot(lev) = plfrac * (blay + tfactot * dplankup)
+             else
+                tblind = odepth / (lw_bpade + odepth)
+                itgas = lw_tblint * tblind + 0.5_rk
+                odepth = lw_tau_tbl(itgas)
+                atrans(lev) = 1.0_rk - lw_exp_tbl(itgas)
+                tfacgas = lw_tfn_tbl(itgas)
+                tfn_out(lev,g_local) = tfacgas
+                gassrc = atrans(lev) * plfrac * (blay + tfacgas * dplankdn)
+                odtot = odepth + odcld(lev,igc)
+                tblind = odtot / (lw_bpade + odtot)
+                ittot = lw_tblint * tblind + 0.5_rk
+                tfactot = lw_tfn_tbl(ittot)
+                bbdtot = plfrac * (blay + tfactot * dplankdn)
+                bbd = plfrac * (blay + tfacgas * dplankdn)
+                atot(lev) = 1.0_rk - lw_exp_tbl(ittot)
+                radld = radld - radld * (atrans(lev) + efclfrac(lev,igc) * (1.0_rk - atrans(lev))) + &
+                        gassrc + cldfmc(igc,lev) * (bbdtot * atot(lev) - gassrc)
+                bbugas(lev) = plfrac * (blay + tfacgas * dplankup)
+                bbutot(lev) = plfrac * (blay + tfactot * dplankup)
+             endif
+          else
+             if (odepth .le. 0.06_rk) then
+                atrans(lev) = odepth - 0.5_rk * odepth * odepth
+                odepth = odepth / 6.0_rk
+                tfn_out(lev,g_local) = odepth
+                bbd = plfrac * (blay + dplankdn * odepth)
+                bbugas(lev) = plfrac * (blay + dplankup * odepth)
+             else
+                tblind = odepth / (lw_bpade + odepth)
+                itr = lw_tblint * tblind + 0.5_rk
+                transc = lw_exp_tbl(itr)
+                atrans(lev) = 1.0_rk - transc
+                tausfac = lw_tfn_tbl(itr)
+                tfn_out(lev,g_local) = tausfac
+                bbd = plfrac * (blay + tausfac * dplankdn)
+                bbugas(lev) = plfrac * (blay + tausfac * dplankup)
+             endif
+             atot(lev) = atrans(lev)
+             bbutot(lev) = bbugas(lev)
+             radld = radld + (bbd - radld) * atrans(lev)
+          endif
+
+          zfd_out(lev,g_local) = radld * scale
+          if (iclddn .eq. 1) then
+             radclrd = radclrd + (bbd - radclrd) * atrans(lev)
+          else
+             radclrd = radld
+          endif
+       enddo
+
+       rad0 = fracs(1,igc) * plankbnd(iband)
+       reflect = 1.0_rk - semiss(iband)
+       radlu = rad0 + reflect * radld
+       radclru = rad0 + reflect * radclrd
+       zfu_out(1,g_local) = radlu * scale
+
+       do lev = 1, nlayers
+          if (icldlyr(lev) .eq. 1) then
+             gassrc = bbugas(lev) * atrans(lev)
+             radlu = radlu - radlu * (atrans(lev) + efclfrac(lev,igc) * (1.0_rk - atrans(lev))) + &
+                     gassrc + cldfmc(igc,lev) * (bbutot(lev) * atot(lev) - gassrc)
+          else
+             radlu = radlu + (bbugas(lev) - radlu) * atrans(lev)
+          endif
+          zfu_out(lev+1,g_local) = radlu * scale
+          if (iclddn .eq. 1) then
+             radclru = radclru + (bbugas(lev) - radclru) * atrans(lev)
+          else
+             radclru = radlu
+          endif
+       enddo
+    enddo
+  end subroutine capture_lw_rtrnmc_band
+
   subroutine append_intermediate_oracle(output_path, nlay_sw, nlay_lw, sw_band_flux, lw_band_flux, &
                                         sw_jp, sw_jt, sw_jt1, sw_indself, sw_indfor, &
                                         sw_fac00, sw_fac01, sw_fac10, sw_fac11, sw_selffac, sw_forfac, sw_colmol, &
-                                        sw_taug, sw_taur, sw_sfluxzen, sw_cld_pcldfmc, sw_cld_ptaucmc, sw_cld_pasycmc, &
-                                        sw_cld_pomgcmc, sw_cld_ptaormc, sw_spc_zref, sw_spc_ztra, sw_spc_zrefd, sw_spc_ztrad, &
-                                        sw_spc_zref_clear, sw_spc_ztra_clear, sw_spc_zrefd_clear, sw_spc_ztrad_clear, &
-                                        sw_spc_zref_cloud, sw_spc_ztra_cloud, sw_spc_zrefd_cloud, sw_spc_ztrad_cloud, &
-                                        sw_spc_direct_trans, sw_spc_zfd, sw_spc_zfu, sw_spc_zfd_flux, sw_spc_zfu_flux, &
-                                        lw_jp, lw_jt, lw_planklay, lw_planklev, &
-                                        lw_plankbnd, lw_taug, lw_fracs, lw_secdiff, lw_dplankup, lw_dplankdn)
+                                        sw_taug, sw_taur, sw_sfluxzen, lw_jp, lw_jt, lw_planklay, lw_planklev, &
+                                        lw_plankbnd, lw_taug, lw_fracs, lw_secdiff, lw_dplankup, lw_dplankdn, &
+                                        lw_cldprmc_cldfmc, lw_cldprmc_taucmc, lw_rtrnmc_pfracs, lw_rtrnmc_plansum, &
+                                        lw_rtrnmc_tfn_tbl_output, lw_rtrnmc_zfd_per_gpoint, lw_rtrnmc_zfu_per_gpoint)
     character(len=*), intent(in) :: output_path
     integer, intent(in) :: nlay_sw, nlay_lw
     real(rk), intent(in) :: sw_band_flux(4,sw_nbnd), lw_band_flux(4,lw_nbnd)
@@ -831,16 +729,13 @@ contains
     integer, intent(in) :: lw_jp(nlay_lw), lw_jt(nlay_lw)
     real(rk), intent(in) :: sw_fac00(nlay_sw), sw_fac01(nlay_sw), sw_fac10(nlay_sw), sw_fac11(nlay_sw), sw_selffac(nlay_sw), sw_forfac(nlay_sw)
     real(rk), intent(in) :: sw_colmol(nlay_sw,6), sw_taug(nlay_sw,sw_max_g,sw_nbnd), sw_taur(nlay_sw,sw_max_g,sw_nbnd), sw_sfluxzen(sw_max_g,sw_nbnd)
-    real(rk), intent(in) :: sw_cld_pcldfmc(nlay_sw,sw_max_g,sw_nbnd), sw_cld_ptaucmc(nlay_sw,sw_max_g,sw_nbnd)
-    real(rk), intent(in) :: sw_cld_pasycmc(nlay_sw,sw_max_g,sw_nbnd), sw_cld_pomgcmc(nlay_sw,sw_max_g,sw_nbnd), sw_cld_ptaormc(nlay_sw,sw_max_g,sw_nbnd)
-    real(rk), intent(in) :: sw_spc_zref(nlay_sw+1,sw_max_g,sw_nbnd), sw_spc_ztra(nlay_sw+1,sw_max_g,sw_nbnd), sw_spc_zrefd(nlay_sw+1,sw_max_g,sw_nbnd), sw_spc_ztrad(nlay_sw+1,sw_max_g,sw_nbnd)
-    real(rk), intent(in) :: sw_spc_zref_clear(nlay_sw+1,sw_max_g,sw_nbnd), sw_spc_ztra_clear(nlay_sw+1,sw_max_g,sw_nbnd), sw_spc_zrefd_clear(nlay_sw+1,sw_max_g,sw_nbnd), sw_spc_ztrad_clear(nlay_sw+1,sw_max_g,sw_nbnd)
-    real(rk), intent(in) :: sw_spc_zref_cloud(nlay_sw+1,sw_max_g,sw_nbnd), sw_spc_ztra_cloud(nlay_sw+1,sw_max_g,sw_nbnd), sw_spc_zrefd_cloud(nlay_sw+1,sw_max_g,sw_nbnd), sw_spc_ztrad_cloud(nlay_sw+1,sw_max_g,sw_nbnd)
-    real(rk), intent(in) :: sw_spc_direct_trans(nlay_sw,sw_max_g,sw_nbnd), sw_spc_zfd(nlay_sw+1,sw_max_g,sw_nbnd), sw_spc_zfu(nlay_sw+1,sw_max_g,sw_nbnd)
-    real(rk), intent(in) :: sw_spc_zfd_flux(nlay_sw+1,sw_max_g,sw_nbnd), sw_spc_zfu_flux(nlay_sw+1,sw_max_g,sw_nbnd)
     real(rk), intent(in) :: lw_planklay(nlay_lw,lw_nbnd), lw_planklev(0:nlay_lw,lw_nbnd), lw_plankbnd(lw_nbnd)
     real(rk), intent(in) :: lw_taug(nlay_lw,lw_max_g,lw_nbnd), lw_fracs(nlay_lw,lw_max_g,lw_nbnd), lw_secdiff(lw_nbnd)
     real(rk), intent(in) :: lw_dplankup(nlay_lw,lw_nbnd), lw_dplankdn(nlay_lw,lw_nbnd)
+    real(rk), intent(in) :: lw_cldprmc_cldfmc(nlay_lw,lw_max_g,lw_nbnd), lw_cldprmc_taucmc(nlay_lw,lw_max_g,lw_nbnd)
+    real(rk), intent(in) :: lw_rtrnmc_pfracs(nlay_lw,lw_max_g,lw_nbnd), lw_rtrnmc_plansum(nlay_lw,lw_nbnd)
+    real(rk), intent(in) :: lw_rtrnmc_tfn_tbl_output(nlay_lw,lw_max_g,lw_nbnd)
+    real(rk), intent(in) :: lw_rtrnmc_zfd_per_gpoint(nlay_lw+1,lw_max_g,lw_nbnd), lw_rtrnmc_zfu_per_gpoint(nlay_lw+1,lw_max_g,lw_nbnd)
     integer :: dims(6)
 
     dims = (/nlay_sw, nlay_lw, sw_max_g, lw_max_g, sw_nbnd, lw_nbnd/)
@@ -853,11 +748,8 @@ contains
     write(21) sw_colmol, sw_taug, sw_taur, sw_sfluxzen
     write(21) lw_jp, lw_jt
     write(21) lw_planklay, lw_planklev, lw_plankbnd, lw_taug, lw_fracs, lw_secdiff, lw_dplankup, lw_dplankdn
-    write(21) sw_cld_pcldfmc, sw_cld_ptaucmc, sw_cld_pasycmc, sw_cld_pomgcmc, sw_cld_ptaormc
-    write(21) sw_spc_zref, sw_spc_ztra, sw_spc_zrefd, sw_spc_ztrad
-    write(21) sw_spc_zref_clear, sw_spc_ztra_clear, sw_spc_zrefd_clear, sw_spc_ztrad_clear
-    write(21) sw_spc_zref_cloud, sw_spc_ztra_cloud, sw_spc_zrefd_cloud, sw_spc_ztrad_cloud
-    write(21) sw_spc_direct_trans, sw_spc_zfd, sw_spc_zfu, sw_spc_zfd_flux, sw_spc_zfu_flux
+    write(21) lw_cldprmc_cldfmc, lw_cldprmc_taucmc
+    write(21) lw_rtrnmc_pfracs, lw_rtrnmc_plansum, lw_rtrnmc_tfn_tbl_output, lw_rtrnmc_zfd_per_gpoint, lw_rtrnmc_zfu_per_gpoint
     close(21)
   end subroutine append_intermediate_oracle
 

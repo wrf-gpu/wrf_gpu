@@ -1,10 +1,6 @@
 fixture_id: analytic-rrtmg-lw-column-v1
 source: wrf-derived
-<<<<<<< HEAD
-source_commit: wrf-rrtmg-real-driver-harness sha256=87448c6065a50162ad5f71458e19b0022cac4c171f6116bb711c50ce6383ff4b;
-=======
-source_commit: wrf-rrtmg-real-driver-harness sha256=43ab8af87e869f002f162f5cfc4311802957b312738d80f95b4a73a4e2dbc1a8;
->>>>>>> worker/codex/m5-s3zzzz-rrtmg-cldprmc-spcvmc-oracle
+source_commit: wrf-rrtmg-real-driver-harness sha256=a05460d80e6f06e5c35932e37d985d25c4ac96fc6104ea4bed0bdb41217cea6e;
   module_ra_rrtmg_sw.F.o=present; module_ra_rrtmg_lw.F.o=present; full_rrtmg_driver_call=RRTMG_SWRAD+RRTMG_LWRAD;
   rrtmg_data_convert=big_endian
 wrf_version: v4.7.1-derived-RRTMG-real-driver-column-harness
@@ -15,11 +11,7 @@ precision_reference: fp64
 generation_command: python scripts/m5_generate_rrtmg_fixture.py
 external_uri: data/scratch/wrf_rrtmg_harness
 sample_slice_path: fixtures/samples/analytic-rrtmg-lw-column-v1.npz
-<<<<<<< HEAD
-git_commit: 3242f1f
-=======
-git_commit: 0d11eaa
->>>>>>> worker/codex/m5-s3zzzz-rrtmg-cldprmc-spcvmc-oracle
+git_commit: 1c58ca1
 license_notes: Synthetic columns run through a GNU Fortran harness linked to real
   WRF RRTMG SW/LW objects and calling RRTMG_SWRAD/RRTMG_LWRAD with Gen2 RRTMG_*_DATA
   tables.
@@ -306,26 +298,18 @@ variables:
   tier_overrides: null
 files:
 - path: fixtures/samples/analytic-rrtmg-lw-column-v1.npz
-  checksum_sha256: e1c0fbff5dec82f6f3bc303029c5f5fc85d26cd8405326fae29b4ac0535a8dc9
-  bytes: 10732
+  checksum_sha256: 6b1878c6a165ca1c3b3589ec136a6b38c2bebfbc19e8c78aebee9b6ba6ceeabc
+  bytes: 10754
   external: false
 - path: data/fixtures/analytic-rrtmg-lw-column-v1/full.npz
-  checksum_sha256: e1c0fbff5dec82f6f3bc303029c5f5fc85d26cd8405326fae29b4ac0535a8dc9
-  bytes: 10732
+  checksum_sha256: 6b1878c6a165ca1c3b3589ec136a6b38c2bebfbc19e8c78aebee9b6ba6ceeabc
+  bytes: 10754
   external: true
 - path: data/scratch/wrf_rrtmg_harness
-<<<<<<< HEAD
-  checksum_sha256: 87448c6065a50162ad5f71458e19b0022cac4c171f6116bb711c50ce6383ff4b
-  bytes: 1048944
+  checksum_sha256: a05460d80e6f06e5c35932e37d985d25c4ac96fc6104ea4bed0bdb41217cea6e
+  bytes: 1085984
   external: true
 - path: data/fixtures/rrtmg-tables-v1.npz
   checksum_sha256: 5cc63950c81795b02f7bf47147afc4a9d667ae00f14510f7325816fb4f3a06e2
-=======
-  checksum_sha256: 43ab8af87e869f002f162f5cfc4311802957b312738d80f95b4a73a4e2dbc1a8
-  bytes: 1118848
-  external: true
-- path: data/fixtures/rrtmg-tables-v1.npz
-  checksum_sha256: 0695e523a5c79025721eb3e660e379ca84d246ec791ecc24b2b6aafd5296a5f4
->>>>>>> worker/codex/m5-s3zzzz-rrtmg-cldprmc-spcvmc-oracle
   bytes: 4201708
   external: true
