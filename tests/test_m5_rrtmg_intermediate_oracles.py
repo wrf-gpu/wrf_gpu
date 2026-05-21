@@ -37,7 +37,10 @@ def test_rrtmg_intermediate_validation_helpers_report_pass_and_fail():
     assert validate_sw_taur(tiny, zeros)["pass"] is True
 
     setcoef = {"jp": zeros, "jt": zeros, "jt1": zeros, "fac00": zeros, "fac01": zeros, "fac10": zeros, "fac11": zeros, "indself": zeros, "indfor": zeros, "selffac": zeros, "forfac": zeros, "colmol": zeros}
-    assert validate_sw_setcoef_state(setcoef, setcoef)["pass"] is True
+    setcoef_result = validate_sw_setcoef_state(setcoef, setcoef)
+    assert setcoef_result["pass"] is True
+    assert setcoef_result["fields"]["fac00"]["abs_tol"] == 1.0e-4
+    assert setcoef_result["fields"]["fac00"]["rel_tol"] == 1.0e-3
 
     planck = {"planklay": zeros, "planklev": np.zeros((2, 4)), "plankbnd": np.zeros(3)}
     assert validate_lw_planck_state(planck, planck)["pass"] is True

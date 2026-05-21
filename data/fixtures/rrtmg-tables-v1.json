@@ -1,11 +1,11 @@
 {
-  "bytes": 4199742,
+  "bytes": 4201708,
   "lw_bands": 16,
   "lw_payload_bytes": 847424,
   "lw_records": 16,
   "output": "data/fixtures/rrtmg-tables-v1.npz",
   "record_format": "big-endian Fortran sequential unformatted with 4-byte record markers",
-  "sha256": "9d8bedbfa93161b0d782d64a98c7e36d8f95e54b016d4fc570c0a7c5aa534013",
+  "sha256": "5cc63950c81795b02f7bf47147afc4a9d667ae00f14510f7325816fb4f3a06e2",
   "source": "real WRF RRTMG_SW_DATA/RRTMG_LW_DATA records reduced with WRF g-point weights and source cloud optics",
   "sw_bands": 14,
   "sw_payload_bytes": 680256,
