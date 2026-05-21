@@ -336,6 +336,14 @@ def _reduce_gpoints(values: np.ndarray, groups: tuple[int, ...], *, weighted: bo
     return np.stack(reduced, axis=-1)
 
 
+def _reduce_gpoints_first(values: np.ndarray, groups: tuple[int, ...], *, weighted: bool) -> np.ndarray:
+    """Applies WRF's reduced-g-point grouping to arrays with original g first."""
+
+    moved = np.moveaxis(values, 0, -1)
+    reduced = _reduce_gpoints(moved, groups, weighted=weighted)
+    return np.moveaxis(reduced, -1, 0)
+
+
 def _pad_gpoints(values: np.ndarray, width: int) -> np.ndarray:
     """Pads a reduced-g-point array on the last axis with zeros."""
 
@@ -343,6 +351,17 @@ def _pad_gpoints(values: np.ndarray, width: int) -> np.ndarray:
     if pad < 0:
         raise ValueError(f"cannot pad width {values.shape[-1]} to {width}")
     return np.pad(values, [(0, 0)] * (values.ndim - 1) + [(0, pad)])
+
+
+def _pad_axis(values: np.ndarray, width: int, axis: int) -> np.ndarray:
+    """Pads one axis of an array with zeros up to `width`."""
+
+    pad = width - values.shape[axis]
+    if pad < 0:
+        raise ValueError(f"cannot pad axis width {values.shape[axis]} to {width}")
+    pads = [(0, 0)] * values.ndim
+    pads[axis] = (0, pad)
+    return np.pad(values, pads)
 
 
 def _reduced_mask(groups_by_band: tuple[tuple[int, ...], ...], width: int) -> np.ndarray:
@@ -398,6 +417,57 @@ def _interp_table(values: np.ndarray, grid: np.ndarray, radius: float) -> float:
     """Interpolates WRF cloud-optical tables with endpoint guarding."""
 
     return float(np.interp(radius, grid, values))
+
+
+def _parse_source_block_numbers(body: str) -> np.ndarray:
+    """Parses a Fortran DATA/assignment body into float64 values."""
+
+    body = re.sub(r"!.*", "", body)
+    body = body.replace("_rb", "").replace("D", "E").replace("d", "e")
+    numbers = re.findall(r"[-+]?(?:\d+\.\d*|\.\d+|\d+)(?:[Ee][-+]?\d+)?", body)
+    return np.asarray([float(number) for number in numbers], dtype=np.float64)
+
+
+def _parse_named_vector_assignment(source: Path, name: str) -> np.ndarray:
+    """Parses a whole-array Fortran vector assignment such as `tref(:) = (/ ... /)`."""
+
+    text = source.read_text(encoding="utf-8", errors="replace")
+    pattern = re.compile(rf"{name}\(:\)\s*=\s*\(/\s*&(?P<body>.*?)\s*/\)", re.DOTALL)
+    match = pattern.search(text)
+    if match is None:
+        raise ValueError(f"missing source vector {name}(:) in {source}")
+    return _parse_source_block_numbers(match.group("body"))
+
+
+def _lw_planck_tables() -> tuple[np.ndarray, np.ndarray]:
+    """Extracts WRF LW integrated Planck tables from source assignments."""
+
+    text = LW_SOURCE.read_text(encoding="utf-8", errors="replace")
+    totplnk = np.zeros((181, 16), dtype=np.float64)
+    pattern = re.compile(r"totplnk\((\d+):(\d+),\s*(\d+)\)\s*=\s*\(/\s*&(?P<body>.*?)\s*/\)", re.DOTALL)
+    for match in pattern.finditer(text):
+        start = int(match.group(1))
+        end = int(match.group(2))
+        band = int(match.group(3))
+        values = _parse_source_block_numbers(match.group("body"))
+        if values.size != end - start + 1:
+            raise ValueError(f"bad totplnk({start}:{end},{band}) size {values.size}")
+        totplnk[start - 1 : end, band - 1] = values
+    if np.count_nonzero(totplnk) == 0:
+        raise ValueError("failed to extract LW totplnk table")
+
+    totplk16 = np.zeros(181, dtype=np.float64)
+    pattern16 = re.compile(r"totplk16\((\d+):(\d+)\)\s*=\s*\(/\s*&(?P<body>.*?)\s*/\)", re.DOTALL)
+    for match in pattern16.finditer(text):
+        start = int(match.group(1))
+        end = int(match.group(2))
+        values = _parse_source_block_numbers(match.group("body"))
+        if values.size != end - start + 1:
+            raise ValueError(f"bad totplk16({start}:{end}) size {values.size}")
+        totplk16[start - 1 : end] = values
+    if np.count_nonzero(totplk16) == 0:
+        raise ValueError("failed to extract LW totplk16 table")
+    return totplnk, totplk16
 
 
 def _sw_cloud_coefficients() -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
@@ -474,6 +544,8 @@ def _effective_sw_coefficients(records: list[bytes]) -> dict[str, np.ndarray]:
     band_weights = np.sum(sw_gpoint_weights, axis=1)
     return {
         "sw_reference_pressure_pa": REFERENCE_PRESSURE_MB * 100.0,
+        "sw_preflog": np.log(REFERENCE_PRESSURE_MB),
+        "sw_tref": _parse_named_vector_assignment(SW_SOURCE, "tref"),
         "sw_gpoint_mask": sw_gpoint_mask,
         "sw_gpoint_weights": sw_gpoint_weights,
         "sw_absorption_coefficients": np.asarray(gas_profiles, dtype=np.float64),
@@ -485,6 +557,117 @@ def _effective_sw_coefficients(records: list[bytes]) -> dict[str, np.ndarray]:
         "sw_cloud_liquid_asymmetry": liquid_asy,
         "sw_cloud_ice_asymmetry": ice_asy,
         "sw_band_weights": band_weights,
+    }
+
+
+def _full_sw_reduced_tables(records: list[bytes]) -> dict[str, np.ndarray]:
+    """Builds native SW reduced-g tables used by WRF `taumol_sw`."""
+
+    max_g = MAX_SW_GPOINTS
+    max_absa = 9 * 5 * 13
+    max_absb = 5 * 5 * 47
+    max_source_param = 9
+    nspa = np.asarray([9, 9, 9, 9, 1, 9, 9, 1, 9, 1, 0, 1, 9, 1], dtype=np.int32)
+    nspb = np.asarray([1, 5, 1, 1, 1, 5, 1, 0, 1, 0, 0, 1, 5, 1], dtype=np.int32)
+
+    absa = np.zeros((14, max_absa, max_g), dtype=np.float64)
+    absb = np.zeros((14, max_absb, max_g), dtype=np.float64)
+    selfref = np.zeros((14, 10, max_g), dtype=np.float64)
+    forref = np.zeros((14, 4, max_g), dtype=np.float64)
+    sfluxref = np.zeros((14, max_g, max_source_param), dtype=np.float64)
+    rayl = np.zeros((14, max_g), dtype=np.float64)
+    rayl_scalar = np.zeros(14, dtype=np.float64)
+    rayla = np.zeros((14, max_g, max_source_param), dtype=np.float64)
+    raylb = np.zeros((14, max_g), dtype=np.float64)
+    abs_ch4 = np.zeros((14, max_g), dtype=np.float64)
+    abs_o3a = np.zeros((14, max_g), dtype=np.float64)
+    abs_o3b = np.zeros((14, max_g), dtype=np.float64)
+    abs_h2o = np.zeros((14, max_g), dtype=np.float64)
+    abs_co2 = np.zeros((14, max_g), dtype=np.float64)
+    strrat = np.zeros(14, dtype=np.float64)
+    layreffr = np.ones(14, dtype=np.int32)
+    givfac = np.ones(14, dtype=np.float64)
+    scalekur = np.ones(14, dtype=np.float64)
+
+    for band_index, (record, (_band, spec), groups) in enumerate(zip(records, SW_READ_SPECS, SW_REDUCED_GROUPS, strict=True)):
+        parsed = _parse_record(record, spec)
+        ng = len(groups)
+        if "kao" in parsed:
+            kao = parsed["kao"]
+            if kao.ndim == 3:
+                kao = kao[None, :, :, :]
+            kao_red = _reduce_gpoints(kao, groups, weighted=True)
+            flat = kao_red.reshape((kao_red.shape[0] * kao_red.shape[1] * kao_red.shape[2], ng), order="F")
+            absa[band_index, : flat.shape[0], :ng] = flat
+        if "kbo" in parsed:
+            kbo = parsed["kbo"]
+            if kbo.ndim == 3:
+                kbo = kbo[None, :, :, :]
+            kbo_red = _reduce_gpoints(kbo, groups, weighted=True)
+            flat = kbo_red.reshape((kbo_red.shape[0] * kbo_red.shape[1] * kbo_red.shape[2], ng), order="F")
+            absb[band_index, : flat.shape[0], :ng] = flat
+        if "selfrefo" in parsed:
+            reduced = _reduce_gpoints(parsed["selfrefo"], groups, weighted=True)
+            selfref[band_index, : reduced.shape[0], :ng] = reduced
+        if "forrefo" in parsed:
+            reduced = _reduce_gpoints(parsed["forrefo"], groups, weighted=True)
+            forref[band_index, : reduced.shape[0], :ng] = reduced
+        source = parsed["sfluxrefo"]
+        if source.ndim == 1:
+            reduced = _reduce_gpoints(source, groups, weighted=False)
+            sfluxref[band_index, :ng, 0] = reduced
+        else:
+            reduced = _reduce_gpoints_first(source, groups, weighted=False)
+            sfluxref[band_index, :ng, : reduced.shape[1]] = reduced
+        if "rayl" in parsed:
+            rayl_scalar[band_index] = float(parsed["rayl"])
+            rayl[band_index, :ng] = float(parsed["rayl"])
+        if "raylo" in parsed:
+            rayl[band_index, :ng] = _reduce_gpoints(parsed["raylo"], groups, weighted=True)
+        if "raylbo" in parsed:
+            raylb[band_index, :ng] = _reduce_gpoints(parsed["raylbo"], groups, weighted=True)
+        if "raylao" in parsed:
+            reduced = _reduce_gpoints_first(parsed["raylao"], groups, weighted=True)
+            rayla[band_index, :ng, : reduced.shape[1]] = reduced
+        if "absch4o" in parsed:
+            abs_ch4[band_index, :ng] = _reduce_gpoints(parsed["absch4o"], groups, weighted=True)
+        if "abso3ao" in parsed:
+            abs_o3a[band_index, :ng] = _reduce_gpoints(parsed["abso3ao"], groups, weighted=True)
+        if "abso3bo" in parsed:
+            abs_o3b[band_index, :ng] = _reduce_gpoints(parsed["abso3bo"], groups, weighted=True)
+        if "absh2oo" in parsed:
+            abs_h2o[band_index, :ng] = _reduce_gpoints(parsed["absh2oo"], groups, weighted=True)
+        if "absco2o" in parsed:
+            abs_co2[band_index, :ng] = _reduce_gpoints(parsed["absco2o"], groups, weighted=True)
+        if "strrat" in parsed:
+            strrat[band_index] = float(parsed["strrat"])
+        layreffr[band_index] = int(parsed.get("layreffr", np.asarray(1)))
+        if "givfac" in parsed:
+            givfac[band_index] = float(parsed["givfac"])
+        if "scalekur" in parsed:
+            scalekur[band_index] = float(parsed["scalekur"])
+
+    return {
+        "sw_nspa": nspa,
+        "sw_nspb": nspb,
+        "sw_absa": absa,
+        "sw_absb": absb,
+        "sw_selfref": selfref,
+        "sw_forref": forref,
+        "sw_sfluxref": sfluxref,
+        "sw_rayl": rayl,
+        "sw_rayl_scalar": rayl_scalar,
+        "sw_rayla": rayla,
+        "sw_raylb": raylb,
+        "sw_abs_ch4": abs_ch4,
+        "sw_abs_o3a": abs_o3a,
+        "sw_abs_o3b": abs_o3b,
+        "sw_abs_h2o": abs_h2o,
+        "sw_abs_co2": abs_co2,
+        "sw_strrat": strrat,
+        "sw_layreffr": layreffr,
+        "sw_givfac": givfac,
+        "sw_scalekur": scalekur,
     }
 
 
@@ -503,11 +686,24 @@ def _effective_lw_coefficients(records: list[bytes]) -> dict[str, np.ndarray]:
     cloud = _lw_cloud_absorption()
     return {
         "lw_reference_pressure_pa": REFERENCE_PRESSURE_MB * 100.0,
+        "lw_preflog": np.log(REFERENCE_PRESSURE_MB),
+        "lw_tref": _parse_named_vector_assignment(LW_SOURCE, "tref"),
         "lw_gpoint_mask": lw_gpoint_mask,
         "lw_gpoint_weights": lw_gpoint_weights,
         "lw_absorption_coefficients": np.asarray(gas, dtype=np.float64),
         "lw_cloud_absorption": cloud,
         "lw_band_weights": np.sum(lw_gpoint_weights, axis=1),
+    }
+
+
+def _full_lw_planck_tables() -> dict[str, np.ndarray]:
+    """Builds LW Planck-source tables from WRF source assignments."""
+
+    totplnk, totplk16 = _lw_planck_tables()
+    return {
+        "lw_totplnk": totplnk,
+        "lw_totplk16": totplk16,
+        "lw_delwave": LW_DELWAVE.copy(),
     }
 
 
@@ -523,7 +719,9 @@ def build_tables(sw_data: Path | None = None, lw_data: Path | None = None) -> tu
 
     tables: dict[str, np.ndarray] = {}
     tables.update(_effective_sw_coefficients(sw_records))
+    tables.update(_full_sw_reduced_tables(sw_records))
     tables.update(_effective_lw_coefficients(lw_records))
+    tables.update(_full_lw_planck_tables())
     tables.update(
         {
             "gas_vmr_defaults": np.asarray([420.0e-6, 1.9e-6, 0.335e-6, 0.2095, 8.0e-9], dtype=np.float64),

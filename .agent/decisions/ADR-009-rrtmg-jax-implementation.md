@@ -1,9 +1,9 @@
 # ADR-009 - RRTMG JAX Transfer Solver State
 
 Date: 2026-05-21
-Author: M5-S3.x worker amendment (Codex gpt-5.5)
-Status: PROPOSED worker draft, pending mandatory Claude Opus reviewer pass
-Scope: M5-S3.x RRTMG shortwave and longwave radiation column rewrite.
+Author: M5-S3.x worker amendment (Codex gpt-5.5); M5-S3.y non-acceptance update (Codex gpt-5.5)
+Status: PROPOSED worker draft, M5-S3.y still NOT PARITY
+Scope: M5-S3.x/M5-S3.y RRTMG shortwave and longwave radiation column rewrite.
 
 ## Decision
 
@@ -14,6 +14,8 @@ M5-S3.x replaces the M5-S3 hand-rolled SW reflection stack and fabricated gas cu
 - The table asset now stores original SW cloud extinction/SSA/asymmetry from WRF source tables instead of only pre-delta-scaled cloud coefficients, so delta scaling is visible in the JAX solver.
 
 This is a real transfer rewrite relative to M5-S3. It is **not accepted as full RRTMG parity** because strict Tier-1 still fails. The remaining blocker is the incomplete optical-depth/source path: the NPZ still exposes reduced reference-pressure absorption profiles, not the full `setcoef` + band-specific `taumol` interpolation state, and LW still lacks full Planck-fraction (`fracref*`) interpolation.
+
+M5-S3.y forced the local SW oracle to Eddington (`module_ra_rrtmg_sw.F:2632`, `kmodts=1`) and rebuilt the WRF harness, then exposed native reduced SW `absa/absb/selfref/forref/sfluxref/Rayleigh` tables and LW `totplnk/totplk16` Planck tables as JAX table leaves. This is still **not PARITY**: strict broadband Tier-1 remains false, the WRF harness still does not emit per-band TOA/surface fluxes, and the SW native-table path increases SW HLO beyond the 500 KB budget.
 
 ## WRF Source Mapping
 
@@ -51,11 +53,12 @@ LW follows Mlawer et al. (1997) correlated-k structure at the reduced-g-point le
 
 Latest regenerated proof objects:
 
-- `artifacts/m5/tier1_rrtmg_sw_parity.json`: `pass=false`; max residuals include `flux_down=107.68936518613896 W m-2`, `flux_up=59.54565780869302 W m-2`, `toa_down=67.04383583984372 W m-2`, and `heating_rate=2.9023857620628224e-05 K s-1`.
-- `artifacts/m5/tier1_rrtmg_lw_parity.json`: `pass=false`; max residuals include `flux_down=75.56380595798305 W m-2`, `flux_up=45.5067191111325 W m-2`, `column_net_heating=88.2496334872834 W m-2`, and `heating_rate=6.148058425830156e-05 K s-1`.
+- `artifacts/m5/tier1_rrtmg_sw_parity.json`: `pass=false`; M5-S3.y max residuals include `flux_down=135.97104293374935 W m-2`, `flux_up=79.21669171335645 W m-2`, `toa_down=67.04542671926288 W m-2`, and `heating_rate=3.632664522070731e-05 K s-1`.
+- `artifacts/m5/tier1_rrtmg_lw_parity.json`: `pass=false`; M5-S3.y max residuals include `flux_down=67.25107985479801 W m-2`, `flux_up=44.33055076399509 W m-2`, `column_net_heating=73.67198882864889 W m-2`, and `heating_rate=6.091121542523097e-05 K s-1`.
 - `artifacts/m5/tier2_rrtmg_invariants.json`: `pass=true`.
-- `artifacts/m5/rrtmg_profile.json`: HLO sizes are `497598` bytes SW and `136941` bytes LW; raw launch marker count is honestly `40` (`24` SW + `16` LW), so launch budget fails. No `min(raw, cap)` launch reporting is used.
+- `artifacts/m5/rrtmg_profile.json`: M5-S3.y HLO sizes are `1312209` bytes SW and `154560` bytes LW; raw launch marker count is honestly `52` (`36` SW + `16` LW), so launch and HLO budgets fail. No `min(raw, cap)` launch reporting is used.
 - `artifacts/m5/rrtmg_gate_result.json`: `gate_status=FALLBACK`, `tolerance_regime=strict`, `oracle_regime=wrf-driver`.
+- `artifacts/m5/tier1_rrtmg_per_band.json`: `produced=false`; the WRF harness per-band flux extension was not completed, so no per-band parity claim is made.
 
 ## Consequences
 

@@ -1,0 +1,8 @@
+{
+  "artifact": "tier1_rrtmg_per_band",
+  "pass": false,
+  "produced": false,
+  "reason": "M5-S3.y worker did not complete the WRF harness per-band flux extension. Broadband strict Tier-1 still fails, so no per-band parity claim is made.",
+  "required_by": "2026-05-21-m5-s3y-rrtmg-setcoef-taumol-planck AC6/AC8",
+  "wrf_harness_sha256": "25c88aa4f79e49533aa55dc557183e43052ce0a043da9d1ee4aa31e134fd2b33"
+}

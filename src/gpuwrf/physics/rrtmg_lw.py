@@ -148,6 +148,15 @@ def _pressure_interfaces(p):
     return jnp.concatenate((bottom, middle, top), axis=-1)
 
 
+def _temperature_interfaces(T):
+    """Reconstructs WRF harness interface temperatures from midpoint temperatures."""
+
+    bottom = T[..., :1]
+    middle = 0.5 * (T[..., :-1] + T[..., 1:])
+    top = T[..., -1:]
+    return jnp.concatenate((bottom, middle, top), axis=-1)
+
+
 def _pressure_layer_mass(p):
     """Reconstructs WRF harness layer mass from midpoint pressure interfaces."""
 
@@ -197,6 +206,26 @@ def _lw_diffusivity(pwvcm):
     return jnp.where(variable, jnp.clip(secdiff, 1.50, 1.80), 1.66)
 
 
+def _interp_lw_planck(values, tables: RRTMGTableBundle):
+    """Interpolates WRF `totplnk` integrated Planck tables for all LW bands."""
+
+    bounded = jnp.clip(values, 160.0, 340.0)
+    ind = jnp.clip((bounded - 159.0).astype(jnp.int32), 1, 180)
+    frac = bounded - 159.0 - ind.astype(jnp.float64)
+    low = jnp.take(tables.lw_totplnk, ind - 1, axis=0)
+    high = jnp.take(tables.lw_totplnk, ind, axis=0)
+    return low + frac[..., None] * (high - low)
+
+
+def _lw_planck_state(t_layer, t_level, t_surface, emissivity, tables: RRTMGTableBundle):
+    """Ports WRF `setcoef` Planck interpolation for all-band LW calls."""
+
+    planklay = _interp_lw_planck(t_layer, tables)
+    planklev = _interp_lw_planck(t_level, tables)
+    plankbnd = _interp_lw_planck(t_surface, tables) * emissivity[..., None]
+    return planklay, planklev, plankbnd
+
+
 def _source_recurrence_down(trans, source):
     """Top-to-bottom LW source recurrence."""
 
@@ -231,6 +260,8 @@ def _longwave_impl(state: RRTMGLWColumnState, tables: RRTMGTableBundle, debug: b
     pressure_interfaces = jnp.concatenate((original_interfaces, jnp.full_like(top_pressure, 1.0e-3)), axis=-1)
     p_ext = jnp.concatenate((state.p, top_pressure), axis=-1)
     t_ext = jnp.concatenate((state.T, state.T[..., -1:]), axis=-1)
+    t_interface = _temperature_interfaces(state.T)
+    t_interface_ext = jnp.concatenate((t_interface, t_interface[..., -1:]), axis=-1)
     qv_ext = jnp.concatenate((state.qv, state.qv[..., -1:]), axis=-1)
     qc_ext = jnp.concatenate((state.qc, jnp.zeros_like(state.qc[..., -1:])), axis=-1)
     qi_ext = jnp.concatenate((state.qi, jnp.zeros_like(state.qi[..., -1:])), axis=-1)
@@ -253,9 +284,12 @@ def _longwave_impl(state: RRTMGLWColumnState, tables: RRTMGTableBundle, debug: b
     optical_path = tau * secdiff[..., None, :, None]
     trans = jnp.exp(-jnp.minimum(jnp.maximum(optical_path, MIN_OPTICAL_DEPTH), MAX_OPTICAL_DEPTH))
     trans = jnp.where(mask > 0.0, trans, 1.0)
-    layer_source = STEFAN_BOLTZMANN * t_ext[..., None, None] ** 4 * weights
-    surface_blackbody = STEFAN_BOLTZMANN * state.surface_temperature[..., None, None] ** 4
-    surface_emission_band = surface_blackbody * state.surface_emissivity[..., None, None] * weights
+    planklay, _planklev, plankbnd = _lw_planck_state(t_ext, t_interface_ext, state.surface_temperature, state.surface_emissivity, tables)
+    band_g_count = jnp.maximum(jnp.sum(mask, axis=-1), 1.0)
+    band_frac = mask / band_g_count[:, None]
+    planck_scale = tables.lw_delwave * (jnp.pi * 1.0e4)
+    layer_source = planklay[..., :, None] * planck_scale[..., None] * band_frac
+    surface_emission_band = plankbnd[..., :, None] * planck_scale[..., None] * band_frac
 
     down_band = _source_recurrence_down(trans, layer_source)
     surface_reflectance = (1.0 - state.surface_emissivity[..., None, None]) * down_band[..., 0, :, :]

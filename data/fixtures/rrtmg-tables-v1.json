@@ -1,11 +1,11 @@
 {
-  "bytes": 1747874,
+  "bytes": 4199742,
   "lw_bands": 16,
   "lw_payload_bytes": 847424,
   "lw_records": 16,
   "output": "data/fixtures/rrtmg-tables-v1.npz",
   "record_format": "big-endian Fortran sequential unformatted with 4-byte record markers",
-  "sha256": "f4163c7f89d08a76d37892fba529fbebbf90c078c6ebcffaf6492ef5eecf53fb",
+  "sha256": "9d8bedbfa93161b0d782d64a98c7e36d8f95e54b016d4fc570c0a7c5aa534013",
   "source": "real WRF RRTMG_SW_DATA/RRTMG_LW_DATA records reduced with WRF g-point weights and source cloud optics",
   "sw_bands": 14,
   "sw_payload_bytes": 680256,
@@ -15,5 +15,5 @@
   "wrf_lw_source_sha256": "c7a5238612aa8a4213c8d3af6708ec6a5248e6701e19758a80e563905d306de3",
   "wrf_sw_data_path": "/mnt/data/canairy_meteo/artifacts/wrf_gpu_src/WRF/install_gen2_dmpar/run/RRTMG_SW_DATA",
   "wrf_sw_data_sha256": "a7d25f5b4d33be8629cbef7ecacc1ff413bf398a021297793e843ba1cc627baf",
-  "wrf_sw_source_sha256": "7f8af1da0ca1d25ce784a917bc68600300a7c569881c57e7de8501cd53496b59"
+  "wrf_sw_source_sha256": "f6da816cd8ffa89e73397a2fe005e5e8a07716aa176eb0b5004f6a60efeda4e0"
 }

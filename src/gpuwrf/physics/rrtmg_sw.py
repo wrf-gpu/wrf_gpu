@@ -109,6 +109,33 @@ class RRTMGSWColumnResult(NamedTuple):
     surface_absorbed: jnp.ndarray
 
 
+class _SWSetCoefState(NamedTuple):
+    """WRF `setcoef_sw` interpolation state, kept as JAX arrays."""
+
+    jp: jnp.ndarray
+    jt: jnp.ndarray
+    jt1: jnp.ndarray
+    lower_mask: jnp.ndarray
+    colh2o: jnp.ndarray
+    colco2: jnp.ndarray
+    colo3: jnp.ndarray
+    coln2o: jnp.ndarray
+    colch4: jnp.ndarray
+    colo2: jnp.ndarray
+    colmol: jnp.ndarray
+    coldry: jnp.ndarray
+    fac00: jnp.ndarray
+    fac01: jnp.ndarray
+    fac10: jnp.ndarray
+    fac11: jnp.ndarray
+    selffac: jnp.ndarray
+    selffrac: jnp.ndarray
+    indself: jnp.ndarray
+    forfac: jnp.ndarray
+    forfrac: jnp.ndarray
+    indfor: jnp.ndarray
+
+
 def _leaves(state: RRTMGSWColumnState):
     """Centralizes leaf iteration for equality and hashing."""
 
@@ -169,6 +196,369 @@ def _nearest_pressure_coefficients(state_p, tables: RRTMGTableBundle):
     idx = jnp.argmin(jnp.abs(layer_log[..., None] - ref_log), axis=-1)
     gathered = jnp.take(tables.sw_absorption_coefficients, idx, axis=1)
     return jnp.moveaxis(gathered, 0, -2)
+
+
+def _trunc_int(value):
+    """Fortran-style positive-range integer truncation."""
+
+    return value.astype(jnp.int32)
+
+
+def _take_rows(table, idx):
+    """Gathers flattened WRF coefficient rows for every layer."""
+
+    clipped = jnp.clip(idx, 0, table.shape[0] - 1)
+    return jnp.take(table, clipped, axis=0)
+
+
+def _sw_setcoef(qv, p_pa, t_k, pressure_interfaces_pa, tables: RRTMGTableBundle) -> _SWSetCoefState:
+    """Ports WRF `setcoef_sw` pressure/temperature interpolation factors."""
+
+    h2ovmr = qv * WATER_VAPOR_MOLECULAR_WEIGHT_RATIO
+    amm = (1.0 - h2ovmr) * DRY_AIR_MOLECULAR_WEIGHT + h2ovmr * 18.0160
+    pavel = jnp.maximum(p_pa * 0.01, 1.0e-6)
+    pz = jnp.maximum(pressure_interfaces_pa * 0.01, 1.0e-12)
+    dp_mb = jnp.maximum(pz[..., :-1] - pz[..., 1:], 1.0e-12)
+    coldry = dp_mb * 1.0e3 * AVOGADRO / (1.0e2 * GRAVITY * amm * (1.0 + h2ovmr))
+
+    plog = jnp.log(pavel)
+    jp = _trunc_int(36.0 - 5.0 * (plog + 0.04))
+    jp = jnp.clip(jp, 1, 58)
+    jp1 = jp + 1
+    fp = 5.0 * (jnp.take(tables.sw_preflog, jp - 1, axis=0) - plog)
+    tref0 = jnp.take(tables.sw_tref, jp - 1, axis=0)
+    tref1 = jnp.take(tables.sw_tref, jp1 - 1, axis=0)
+    jt = _trunc_int(3.0 + (t_k - tref0) / 15.0)
+    jt = jnp.clip(jt, 1, 4)
+    ft = ((t_k - tref0) / 15.0) - (jt - 3).astype(jnp.float64)
+    jt1 = _trunc_int(3.0 + (t_k - tref1) / 15.0)
+    jt1 = jnp.clip(jt1, 1, 4)
+    ft1 = ((t_k - tref1) / 15.0) - (jt1 - 3).astype(jnp.float64)
+
+    water = h2ovmr
+    scalefac = pavel * (296.0 / 1013.0) / t_k
+    lower = plog > 4.56
+    forfac = scalefac / (1.0 + water)
+    lower_for_factor = (332.0 - t_k) / 36.0
+    upper_for_factor = (t_k - 188.0) / 36.0
+    indfor_lower = jnp.minimum(2, jnp.maximum(1, _trunc_int(lower_for_factor)))
+    indfor = jnp.where(lower, indfor_lower, 3)
+    forfrac = jnp.where(lower, lower_for_factor - indfor.astype(jnp.float64), upper_for_factor - 1.0)
+
+    selffac = jnp.where(lower, water * forfac, 0.0)
+    self_factor = (t_k - 188.0) / 7.2
+    indself = jnp.minimum(9, jnp.maximum(1, _trunc_int(self_factor) - 7))
+    selffrac = jnp.where(lower, self_factor - (indself + 7).astype(jnp.float64), 0.0)
+    indself = jnp.where(lower, indself, 1)
+
+    compfp = 1.0 - fp
+    fac10 = compfp * ft
+    fac00 = compfp * (1.0 - ft)
+    fac11 = fp * ft1
+    fac01 = fp * (1.0 - ft1)
+
+    colh2o = 1.0e-20 * coldry * h2ovmr
+    colco2 = 1.0e-20 * coldry * CO2_VMR
+    colo3 = 1.0e-20 * coldry * O3_BACKGROUND_VMR
+    coln2o = 1.0e-20 * coldry * N2O_VMR
+    colch4 = 1.0e-20 * coldry * CH4_VMR
+    colo2 = 1.0e-20 * coldry * O2_VMR
+    colmol = 1.0e-20 * coldry + colh2o
+
+    return _SWSetCoefState(
+        jp=jp,
+        jt=jt,
+        jt1=jt1,
+        lower_mask=lower,
+        colh2o=colh2o,
+        colco2=colco2,
+        colo3=colo3,
+        coln2o=coln2o,
+        colch4=colch4,
+        colo2=colo2,
+        colmol=colmol,
+        coldry=coldry,
+        fac00=fac00,
+        fac01=fac01,
+        fac10=fac10,
+        fac11=fac11,
+        selffac=selffac,
+        selffrac=selffrac,
+        indself=indself,
+        forfac=forfac,
+        forfrac=forfrac,
+        indfor=indfor,
+    )
+
+
+def _interp_four_rows(table, idx0_1b, idx1_1b, stride_1b, coef: _SWSetCoefState):
+    """WRF four-corner pressure/temperature interpolation for one species row."""
+
+    idx0 = idx0_1b - 1
+    idx1 = idx1_1b - 1
+    stride = stride_1b
+    return (
+        coef.fac00[..., None] * _take_rows(table, idx0)
+        + coef.fac10[..., None] * _take_rows(table, idx0 + stride)
+        + coef.fac01[..., None] * _take_rows(table, idx1)
+        + coef.fac11[..., None] * _take_rows(table, idx1 + stride)
+    )
+
+
+def _interp_binary(table, idx0_1b, idx1_1b, stride_1b, fs, coef: _SWSetCoefState):
+    """WRF binary-species interpolation over pressure, temperature, and species ratio."""
+
+    idx0 = idx0_1b - 1
+    idx1 = idx1_1b - 1
+    stride = stride_1b
+    fac000 = (1.0 - fs) * coef.fac00
+    fac010 = (1.0 - fs) * coef.fac10
+    fac100 = fs * coef.fac00
+    fac110 = fs * coef.fac10
+    fac001 = (1.0 - fs) * coef.fac01
+    fac011 = (1.0 - fs) * coef.fac11
+    fac101 = fs * coef.fac01
+    fac111 = fs * coef.fac11
+    return (
+        fac000[..., None] * _take_rows(table, idx0)
+        + fac100[..., None] * _take_rows(table, idx0 + 1)
+        + fac010[..., None] * _take_rows(table, idx0 + stride)
+        + fac110[..., None] * _take_rows(table, idx0 + stride + 1)
+        + fac001[..., None] * _take_rows(table, idx1)
+        + fac101[..., None] * _take_rows(table, idx1 + 1)
+        + fac011[..., None] * _take_rows(table, idx1 + stride)
+        + fac111[..., None] * _take_rows(table, idx1 + stride + 1)
+    )
+
+
+def _continuum_terms(band, coef: _SWSetCoefState, tables: RRTMGTableBundle):
+    """Water-vapor self and foreign continuum contribution used below `laytrop`."""
+
+    self_table = tables.sw_selfref[band]
+    for_table = tables.sw_forref[band]
+    inds = coef.indself - 1
+    indf = coef.indfor - 1
+    self_interp = _take_rows(self_table, inds) + coef.selffrac[..., None] * (
+        _take_rows(self_table, inds + 1) - _take_rows(self_table, inds)
+    )
+    for_interp = _take_rows(for_table, indf) + coef.forfrac[..., None] * (
+        _take_rows(for_table, indf + 1) - _take_rows(for_table, indf)
+    )
+    return coef.colh2o[..., None] * (coef.selffac[..., None] * self_interp + coef.forfac[..., None] * for_interp)
+
+
+def _binary_params(spec_a, spec_b, strrat, multiplier):
+    """Builds WRF binary-species interpolation parameters."""
+
+    speccomb = spec_a + strrat * spec_b
+    specparm = spec_a / jnp.maximum(speccomb, 1.0e-300)
+    specparm = jnp.minimum(specparm, 1.0 - 1.0e-6)
+    specmult = multiplier * specparm
+    js = 1 + _trunc_int(specmult)
+    fs = jnp.mod(specmult, 1.0)
+    return speccomb, js, fs
+
+
+def _sw_taumol(coef: _SWSetCoefState, tables: RRTMGTableBundle):
+    """Ports WRF `taumol_sw` gas and Rayleigh optical-depth branches."""
+
+    taug = []
+    taur = []
+    for band in range(14):
+        absa = tables.sw_absa[band]
+        absb = tables.sw_absb[band]
+        nspa = tables.sw_nspa[band]
+        nspb = tables.sw_nspb[band]
+        strrat = tables.sw_strrat[band]
+        lower = coef.lower_mask
+        lower_idx0 = ((coef.jp - 1) * 5 + (coef.jt - 1)) * nspa + 1
+        lower_idx1 = (coef.jp * 5 + (coef.jt1 - 1)) * nspa + 1
+        upper_idx0 = ((coef.jp - 13) * 5 + (coef.jt - 1)) * nspb + 1
+        upper_idx1 = ((coef.jp - 12) * 5 + (coef.jt1 - 1)) * nspb + 1
+
+        if band in (0, 2):
+            speccomb, js, fs = _binary_params(coef.colh2o, coef.colch4, strrat, 8.0)
+            low = speccomb[..., None] * _interp_binary(absa, lower_idx0 + js - 1, lower_idx1 + js - 1, nspa, fs, coef) + _continuum_terms(
+                band, coef, tables
+            )
+            high = coef.colch4[..., None] * _interp_four_rows(absb, upper_idx0, upper_idx1, nspb, coef)
+            tau = jnp.where(lower[..., None], low, high)
+            ray = coef.colmol[..., None] * tables.sw_rayl[band]
+        elif band in (1, 5):
+            speccomb_l, js_l, fs_l = _binary_params(coef.colh2o, coef.colco2, strrat, 8.0)
+            low = speccomb_l[..., None] * _interp_binary(absa, lower_idx0 + js_l - 1, lower_idx1 + js_l - 1, nspa, fs_l, coef) + _continuum_terms(
+                band, coef, tables
+            )
+            speccomb_u, js_u, fs_u = _binary_params(coef.colh2o, coef.colco2, strrat, 4.0)
+            high = speccomb_u[..., None] * _interp_binary(absb, upper_idx0 + js_u - 1, upper_idx1 + js_u - 1, nspb, fs_u, coef)
+            high = high + coef.colh2o[..., None] * coef.forfac[..., None] * (
+                _take_rows(tables.sw_forref[band], coef.indfor - 1)
+                + coef.forfrac[..., None]
+                * (_take_rows(tables.sw_forref[band], coef.indfor) - _take_rows(tables.sw_forref[band], coef.indfor - 1))
+            )
+            tau = jnp.where(lower[..., None], low, high)
+            ray = coef.colmol[..., None] * tables.sw_rayl[band]
+        elif band == 3:
+            speccomb, js, fs = _binary_params(coef.colh2o, coef.colco2, strrat, 8.0)
+            low = speccomb[..., None] * _interp_binary(absa, lower_idx0 + js - 1, lower_idx1 + js - 1, nspa, fs, coef) + _continuum_terms(
+                band, coef, tables
+            )
+            high = coef.colco2[..., None] * _interp_four_rows(absb, upper_idx0, upper_idx1, nspb, coef)
+            tau = jnp.where(lower[..., None], low, high)
+            ray = coef.colmol[..., None] * tables.sw_rayl[band]
+        elif band == 4:
+            low = coef.colh2o[..., None] * (_interp_four_rows(absa, lower_idx0, lower_idx1, nspa, coef) + _continuum_terms(band, coef, tables) / jnp.maximum(coef.colh2o[..., None], 1.0e-300))
+            low = low + coef.colch4[..., None] * tables.sw_abs_ch4[band]
+            high = coef.colh2o[..., None] * (
+                _interp_four_rows(absb, upper_idx0, upper_idx1, nspb, coef)
+                + coef.forfac[..., None]
+                * (
+                    _take_rows(tables.sw_forref[band], coef.indfor - 1)
+                    + coef.forfrac[..., None]
+                    * (_take_rows(tables.sw_forref[band], coef.indfor) - _take_rows(tables.sw_forref[band], coef.indfor - 1))
+                )
+            ) + coef.colch4[..., None] * tables.sw_abs_ch4[band]
+            tau = jnp.where(lower[..., None], low, high)
+            ray = coef.colmol[..., None] * tables.sw_rayl[band]
+        elif band == 6:
+            o2adj = 1.6
+            o2cont = 4.35e-4 * coef.colo2 / (350.0 * 2.0)
+            speccomb, js, fs = _binary_params(coef.colh2o, o2adj * coef.colo2, strrat, 8.0)
+            low = speccomb[..., None] * _interp_binary(absa, lower_idx0 + js - 1, lower_idx1 + js - 1, nspa, fs, coef) + _continuum_terms(
+                band, coef, tables
+            ) + o2cont[..., None]
+            high = coef.colo2[..., None] * o2adj * _interp_four_rows(absb, upper_idx0, upper_idx1, nspb, coef) + o2cont[..., None]
+            tau = jnp.where(lower[..., None], low, high)
+            ray = coef.colmol[..., None] * tables.sw_rayl[band]
+        elif band == 7:
+            low = coef.colh2o[..., None] * (
+                tables.sw_givfac[band] * _interp_four_rows(absa, lower_idx0, lower_idx1, nspa, coef)
+                + _continuum_terms(band, coef, tables) / jnp.maximum(coef.colh2o[..., None], 1.0e-300)
+            )
+            tau = jnp.where(lower[..., None], low, jnp.zeros_like(low))
+            ray = coef.colmol[..., None] * tables.sw_rayl[band]
+        elif band == 8:
+            speccomb, js, fs = _binary_params(coef.colh2o, coef.colo2, strrat, 8.0)
+            low = speccomb[..., None] * _interp_binary(absa, lower_idx0 + js - 1, lower_idx1 + js - 1, nspa, fs, coef)
+            low = low + coef.colo3[..., None] * tables.sw_abs_o3a[band] + _continuum_terms(band, coef, tables)
+            high = coef.colo2[..., None] * _interp_four_rows(absb, upper_idx0, upper_idx1, nspb, coef) + coef.colo3[..., None] * tables.sw_abs_o3b[band]
+            tau = jnp.where(lower[..., None], low, high)
+            ray_low = coef.colmol[..., None] * (
+                _take_rows(tables.sw_rayla[band].T, js - 1)
+                + fs[..., None] * (_take_rows(tables.sw_rayla[band].T, js) - _take_rows(tables.sw_rayla[band].T, js - 1))
+            )
+            ray_high = coef.colmol[..., None] * tables.sw_raylb[band]
+            ray = jnp.where(lower[..., None], ray_low, ray_high)
+        elif band == 9:
+            low = coef.colh2o[..., None] * _interp_four_rows(absa, lower_idx0, lower_idx1, nspa, coef) + coef.colo3[..., None] * tables.sw_abs_o3a[band]
+            high = coef.colo3[..., None] * tables.sw_abs_o3b[band]
+            tau = jnp.where(lower[..., None], low, high)
+            ray = coef.colmol[..., None] * tables.sw_rayl[band]
+        elif band == 10:
+            tau = jnp.zeros(coef.colh2o.shape + (tables.sw_gpoint_mask.shape[1],), dtype=jnp.float64)
+            ray = coef.colmol[..., None] * tables.sw_rayl[band]
+        elif band == 11:
+            low = coef.colo3[..., None] * _interp_four_rows(absa, lower_idx0, lower_idx1, nspa, coef)
+            high = coef.colo3[..., None] * _interp_four_rows(absb, upper_idx0, upper_idx1, nspb, coef)
+            tau = jnp.where(lower[..., None], low, high)
+            ray = coef.colmol[..., None] * tables.sw_rayl[band]
+        elif band == 12:
+            speccomb_l, js_l, fs_l = _binary_params(coef.colo3, coef.colo2, strrat, 8.0)
+            low = speccomb_l[..., None] * _interp_binary(absa, lower_idx0 + js_l - 1, lower_idx1 + js_l - 1, nspa, fs_l, coef)
+            speccomb_u, js_u, fs_u = _binary_params(coef.colo3, coef.colo2, strrat, 4.0)
+            high = speccomb_u[..., None] * _interp_binary(absb, upper_idx0 + js_u - 1, upper_idx1 + js_u - 1, nspb, fs_u, coef)
+            tau = jnp.where(lower[..., None], low, high)
+            ray = coef.colmol[..., None] * tables.sw_rayl[band]
+        else:
+            low = coef.colh2o[..., None] * (
+                _interp_four_rows(absa, lower_idx0, lower_idx1, nspa, coef)
+                + _continuum_terms(band, coef, tables) / jnp.maximum(coef.colh2o[..., None], 1.0e-300)
+            ) + coef.colco2[..., None] * tables.sw_abs_co2[band]
+            high = coef.colco2[..., None] * _interp_four_rows(absb, upper_idx0, upper_idx1, nspb, coef) + coef.colh2o[..., None] * tables.sw_abs_h2o[band]
+            tau = jnp.where(lower[..., None], low, high)
+            ray = coef.colmol[..., None] * tables.sw_rayl[band]
+        taug.append(tau * tables.sw_gpoint_mask[band])
+        taur.append(ray * tables.sw_gpoint_mask[band])
+    return jnp.stack(taug, axis=-2), jnp.stack(taur, axis=-2)
+
+
+def _select_layer(values, idx):
+    """Selects one layer per column from a bottom-to-top layer array."""
+
+    gather_idx = idx[..., None]
+    return jnp.take_along_axis(values, gather_idx, axis=-1)[..., 0]
+
+
+def _source_indices(coef: _SWSetCoefState, layreffr, mode: str):
+    """Approximates WRF `laysolfr` source-layer selection for SW bands."""
+
+    nlay = coef.jp.shape[-1]
+    laytrop_count = jnp.sum(coef.lower_mask.astype(jnp.int32), axis=-1)
+    lower_default = jnp.maximum(laytrop_count - 1, 0)
+    upper_default = jnp.full_like(lower_default, nlay - 1)
+    crosses = (coef.jp[..., :-1] < layreffr) & (coef.jp[..., 1:] >= layreffr)
+    has_cross = jnp.any(crosses, axis=-1)
+    cross_idx = jnp.argmax(crosses.astype(jnp.int32), axis=-1) + 1
+    if mode == "lower":
+        target = jnp.minimum(cross_idx, lower_default)
+        return jnp.where(has_cross, target, lower_default)
+    return jnp.where(has_cross, cross_idx, upper_default)
+
+
+def _interp_source(source_table, js, fs):
+    """Interpolates WRF reduced solar source functions over species ratio."""
+
+    table = source_table.T
+    base = _take_rows(table, js - 1)
+    return base + fs[..., None] * (_take_rows(table, js) - base)
+
+
+def _sw_sfluxzen(coef: _SWSetCoefState, tables: RRTMGTableBundle):
+    """Builds WRF `sfluxzen` source functions from reduced `sfluxref` tables."""
+
+    sources = []
+    for band in range(14):
+        src = tables.sw_sfluxref[band]
+        layreffr = tables.sw_layreffr[band]
+        if band in (0, 4, 7, 9, 10, 11, 13):
+            source = jnp.broadcast_to(src[:, 0], coef.colh2o.shape[:-1] + src[:, 0].shape)
+        elif band == 1:
+            idx = _source_indices(coef, layreffr, "upper")
+            h2o = _select_layer(coef.colh2o, idx)
+            co2 = _select_layer(coef.colco2, idx)
+            _, js, fs = _binary_params(h2o, co2, tables.sw_strrat[band], 4.0)
+            source = _interp_source(src, js, fs)
+        elif band in (2,):
+            idx = _source_indices(coef, layreffr, "lower")
+            h2o = _select_layer(coef.colh2o, idx)
+            ch4 = _select_layer(coef.colch4, idx)
+            _, js, fs = _binary_params(h2o, ch4, tables.sw_strrat[band], 8.0)
+            source = _interp_source(src, js, fs)
+        elif band in (3, 5):
+            idx = _source_indices(coef, layreffr, "lower")
+            h2o = _select_layer(coef.colh2o, idx)
+            co2 = _select_layer(coef.colco2, idx)
+            _, js, fs = _binary_params(h2o, co2, tables.sw_strrat[band], 8.0)
+            source = _interp_source(src, js, fs)
+        elif band in (6, 8):
+            idx = _source_indices(coef, layreffr, "lower")
+            h2o = _select_layer(coef.colh2o, idx)
+            o2 = _select_layer(coef.colo2, idx)
+            o2_factor = 1.6 if band == 6 else 1.0
+            _, js, fs = _binary_params(h2o, o2_factor * o2, tables.sw_strrat[band], 8.0)
+            source = _interp_source(src, js, fs)
+        elif band == 12:
+            idx = _source_indices(coef, layreffr, "upper")
+            o3 = _select_layer(coef.colo3, idx)
+            o2 = _select_layer(coef.colo2, idx)
+            _, js, fs = _binary_params(o3, o2, tables.sw_strrat[band], 4.0)
+            source = _interp_source(src, js, fs)
+        else:
+            source = jnp.broadcast_to(src[:, 0], coef.colh2o.shape[:-1] + src[:, 0].shape)
+        if band == 11:
+            source = source * tables.sw_scalekur[band]
+        sources.append(source * tables.sw_gpoint_mask[band])
+    return jnp.stack(sources, axis=-2)
 
 
 def _rrtmg_column_amounts(qv, pressure_interfaces):
@@ -363,13 +753,12 @@ def _shortwave_impl(state: RRTMGSWColumnState, tables: RRTMGTableBundle, debug: 
     cloud_ext = jnp.concatenate((state.cloud_fraction, jnp.zeros_like(state.cloud_fraction[..., -1:])), axis=-1)
     layer_mass = _pressure_layer_mass(state.p)
     layer_mass_ext = jnp.maximum((pressure_interfaces[..., :-1] - pressure_interfaces[..., 1:]) / GRAVITY, MIN_LAYER_MASS)
-    gas_column, dry_column = _rrtmg_column_amounts(qv_ext, pressure_interfaces)
+    coef = _sw_setcoef(qv_ext, p_ext, _extend_with_wrf_top_layer(state.T), pressure_interfaces, tables)
+    tau_gas, tau_rayleigh = _sw_taumol(coef, tables)
     liquid_path_g = (qc_ext + 0.25 * qg_ext) * layer_mass_ext * 1000.0
     ice_path_g = (qi_ext + qs_ext + 0.75 * qg_ext) * layer_mass_ext * 1000.0
 
-    weights = tables.sw_gpoint_weights
-    gas_coeff = _nearest_pressure_coefficients(p_ext, tables)
-    rayleigh_coeff = tables.sw_rayleigh_coefficients
+    sfluxzen = _sw_sfluxzen(coef, tables)
     liquid_coeff = tables.sw_cloud_liquid_extinction[:, None]
     ice_coeff = tables.sw_cloud_ice_extinction[:, None]
     liquid_ssa = tables.sw_cloud_liquid_ssa[:, None]
@@ -378,8 +767,6 @@ def _shortwave_impl(state: RRTMGSWColumnState, tables: RRTMGTableBundle, debug: 
     ice_asy = tables.sw_cloud_ice_asymmetry[:, None]
     mask = tables.sw_gpoint_mask
 
-    tau_gas = gas_column[..., None, None] * jnp.maximum(gas_coeff, 0.0)
-    tau_rayleigh = dry_column[..., None, None] * rayleigh_coeff
     tau_liquid = cloud_ext[..., None, None] * liquid_path_g[..., None, None] * liquid_coeff
     tau_ice = cloud_ext[..., None, None] * ice_path_g[..., None, None] * ice_coeff
     tau_total = jnp.clip(tau_gas + tau_rayleigh + tau_liquid + tau_ice, MIN_OPTICAL_DEPTH, MAX_OPTICAL_DEPTH)
@@ -411,7 +798,7 @@ def _shortwave_impl(state: RRTMGSWColumnState, tables: RRTMGTableBundle, debug: 
     direct_trans = jnp.exp(-jnp.minimum(tau_top_down / jnp.maximum(state.coszen[..., None, None, None], 1.0e-6), 500.0)) * active_top_down
     direct_trans = jnp.where(active_top_down > 0.0, direct_trans, 1.0)
     down_top_down, up_top_down = _vertical_quadrature(pref, prefd, ptra, ptrad, direct_trans)
-    top_flux_band = SOLAR_CONSTANT * state.coszen[..., None, None] * weights
+    top_flux_band = state.coszen[..., None, None] * sfluxzen
     down_band = jnp.flip(down_top_down * top_flux_band[..., None, :, :], axis=-3)
     up_band = jnp.flip(up_top_down * top_flux_band[..., None, :, :], axis=-3)
 
