@@ -18,7 +18,7 @@ FIXTURE_ID = "analytic-mynn-pbl-column-v1"
 MANIFEST = ROOT / "fixtures" / "manifests" / f"{FIXTURE_ID}.yaml"
 SAMPLE = ROOT / "fixtures" / "samples" / f"{FIXTURE_ID}.npz"
 ARTIFACT = ROOT / "artifacts" / "m5" / "tier1_mynn_parity.json"
-OUTPUT_FIELDS = ("u", "v", "w", "theta", "qv", "tke")
+OUTPUT_FIELDS = ("u", "v", "w", "theta", "qv", "tke", "km", "kh", "el")
 
 
 def _load_manifest() -> dict[str, Any]:

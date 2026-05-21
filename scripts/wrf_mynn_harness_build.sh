@@ -7,18 +7,15 @@ OUT="${SCRATCH}/wrf_mynn_harness"
 OBJ="${SCRATCH}/wrf_mynn_harness.o"
 LOG="${SCRATCH}/wrf_mynn_harness_build.log"
 WRF_ROOT="/mnt/data/canairy_meteo/artifacts/wrf_gpu_src/WRF"
-EXACT_OBJ="${WRF_ROOT}/phys/module_bl_mynn.o"
-ACTUAL_SRC="${WRF_ROOT}/phys/MYNN-EDMF/misc/module_bl_mynn.F90"
+WRF_MAIN="${WRF_ROOT}/main"
+WRF_EDMF_SRC="${WRF_ROOT}/phys/MYNN-EDMF/module_bl_mynnedmf.F90"
+WRF_EDMF_OBJ="${WRF_ROOT}/phys/module_bl_mynnedmf.o"
+WRF_COMMON_OBJ="${WRF_ROOT}/phys/module_bl_mynnedmf_common.o"
+WRF_KIND_OBJ="${WRF_ROOT}/phys/ccpp_kind_types.o"
+WRF_CONST_OBJ="${WRF_ROOT}/share/module_model_constants.o"
 
 mkdir -p "${SCRATCH}"
 : > "${LOG}"
-
-if [[ -x "${OUT}" && "${OUT}" -nt "${ROOT}/scripts/wrf_mynn_harness.f90" ]]; then
-  echo "reusing existing one-time MYNN harness build: ${OUT}" >>"${LOG}"
-  sha256sum "${OUT}" | tee -a "${LOG}"
-  echo "${OUT}"
-  exit 0
-fi
 
 if [[ -f /home/enric/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/env_wrf_gpu.sh ]]; then
   # shellcheck disable=SC1091
@@ -27,19 +24,39 @@ fi
 
 FC="${FC:-$(command -v nvfortran || true)}"
 if [[ -z "${FC}" ]]; then
-  echo "nvfortran not found; cannot compile MYNN harness" | tee -a "${LOG}" >&2
+  echo "nvfortran not found; cannot compile WRF-linked MYNN harness" | tee -a "${LOG}" >&2
   exit 1
 fi
 
-if [[ -f "${EXACT_OBJ}" ]]; then
-  echo "exact object present: ${EXACT_OBJ}" >>"${LOG}"
-else
-  echo "exact contract object absent: ${EXACT_OBJ}" >>"${LOG}"
-  echo "using standalone source-derived harness; source reference: ${ACTUAL_SRC}" >>"${LOG}"
+for path in "${WRF_MAIN}/module_bl_mynnedmf.mod" "${WRF_MAIN}/module_bl_mynnedmf_common.mod" \
+            "${WRF_EDMF_OBJ}" "${WRF_COMMON_OBJ}" "${WRF_KIND_OBJ}" "${WRF_CONST_OBJ}"; do
+  if [[ ! -e "${path}" ]]; then
+    echo "required WRF MYNN object/module missing: ${path}" | tee -a "${LOG}" >&2
+    exit 1
+  fi
+done
+
+needs_build=0
+if [[ ! -x "${OUT}" ]]; then
+  needs_build=1
+elif [[ "${ROOT}/scripts/wrf_mynn_harness.f90" -nt "${OUT}" || "${WRF_EDMF_OBJ}" -nt "${OUT}" || "${WRF_COMMON_OBJ}" -nt "${OUT}" ]]; then
+  needs_build=1
 fi
 
-"${FC}" -c -o "${OBJ}" "${ROOT}/scripts/wrf_mynn_harness.f90" >>"${LOG}" 2>&1
-"${FC}" -o "${OUT}" "${OBJ}" >>"${LOG}" 2>&1
+if [[ "${needs_build}" == "0" ]]; then
+  echo "reusing existing WRF-object-linked MYNN harness: ${OUT}" >>"${LOG}"
+  sha256sum "${OUT}" | tee -a "${LOG}"
+  echo "${OUT}"
+  exit 0
+fi
+
+echo "compiler=${FC}" >>"${LOG}"
+echo "source=${WRF_EDMF_SRC}" >>"${LOG}"
+echo "linked_objects=${WRF_EDMF_OBJ} ${WRF_COMMON_OBJ} ${WRF_KIND_OBJ} ${WRF_CONST_OBJ}" >>"${LOG}"
+
+"${FC}" -I"${WRF_MAIN}" -c -o "${OBJ}" "${ROOT}/scripts/wrf_mynn_harness.f90" >>"${LOG}" 2>&1
+"${FC}" -o "${OUT}" "${OBJ}" \
+  "${WRF_EDMF_OBJ}" "${WRF_COMMON_OBJ}" "${WRF_KIND_OBJ}" "${WRF_CONST_OBJ}" >>"${LOG}" 2>&1
 chmod 0755 "${OUT}"
 sha256sum "${OUT}" | tee -a "${LOG}"
 echo "${OUT}"

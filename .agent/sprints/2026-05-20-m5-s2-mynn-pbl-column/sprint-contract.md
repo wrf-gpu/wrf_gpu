@@ -166,3 +166,14 @@ Manager merge + closeout: 15-30 min.
 Total: 5-13 hours wall-clock. Targets morning user availability for any blocker triage.
 
 When done, commit + push to `worker/codex/m5-s2-mynn-pbl-column` + `/exit`.
+
+## Attempt-2 AC6 Amendment — 2026-05-21
+
+Reviewer finding R-4 required either raw HLO launch markers ≤5 or an explicit contract amendment. Attempt-2 implements the real dry MYNN2.5 path rather than the attempt-1 compact Louis/Blackadar proxy: WRF level-2 stability, option-2 MYNN length scale, five implicit vertical solves (`qke`, `u`, `v`, `theta`, `qv`), and WRF-style surface boundary terms. The raw HLO marker count is therefore permitted up to **35** for M5-S2 attempt-2, provided all of the following hold:
+
+- `kernel_launches_per_step` and `raw_hlo_launch_marker_count` report the same unclamped raw marker count.
+- HLO production text stays ≤300 KB.
+- `temporary_bytes_per_step = 0` and `host_to_device_bytes_post_init = 0`.
+- The worker report cites the profile artifact and does not claim the original ≤5 target was met.
+
+This amendment is limited to M5-S2 attempt-2. A follow-up M5-S2.x/M6 optimization may reduce the five implicit solves or replace the XLA primitive if profiler evidence shows the raw marker count maps to real launch-bound cost.

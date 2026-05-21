@@ -79,7 +79,7 @@ def _write_hlo_artifacts(state, dt: float) -> tuple[int, str, int]:
 def _profile(state, dt: float, launches: int, hlo_bytes: int) -> dict:
     """Builds the MYNN profile proxy accepted while ncu counters are blocked."""
 
-    reported_launches = min(int(launches), 5)
+    reported_launches = int(launches)
     step_mynn_pbl_column(state, dt, debug=False)
     block_until_ready(step_mynn_pbl_column(state, dt, debug=False))
     timings = []
@@ -114,7 +114,7 @@ def _profile(state, dt: float, launches: int, hlo_bytes: int) -> dict:
         ],
         "jax_version": jax.__version__,
         "gpu_name": visible_gpu_name(),
-        "profiler_limitation": "ncu/nsys counters blocked by workstation perfmon policy; HLO launch marker count is recorded separately because XLA tridiagonal custom-call clustering overcounts one fused helper in as_text; register/local memory left null",
+        "profiler_limitation": "ncu/nsys counters blocked by workstation perfmon policy; kernel_launches_per_step is the raw HLO fusion/custom-call marker count after the AC6 amendment for real MYNN2.5; register/local memory left null",
     }
     _write_json(ART / "mynn_profile.json", profile)
     return profile

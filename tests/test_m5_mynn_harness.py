@@ -17,4 +17,5 @@ def test_mynn_fixture_generation_records_harness_binary():
     harness = Path(entries[0]["path"])
     assert harness.exists()
     assert hashlib.sha256(harness.read_bytes()).hexdigest() == entries[0]["checksum_sha256"]
-    assert "exact_module_bl_mynn_o=absent" in manifest["source_commit"]
+    assert "wrf-mynnedmf-object-linked-harness" in manifest["source_commit"]
+    assert "module_bl_mynnedmf_o=present" in manifest["source_commit"]
