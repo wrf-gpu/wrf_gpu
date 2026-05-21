@@ -8,8 +8,7 @@ Manager-maintained. Updated every watchman tick. Source of truth for parallel-ma
 
 | Window | Sprint | Role | AI | Status | ETA |
 |---|---|---|---|---|---|
-| 1 | M5-S2 MYNN attempt-2 | **reviewer** | Claude Opus 4.7 xhigh | dispatched 02:30 (canonical handler); audits R-1..R-6 fixes from attempt-1 reject | 45-90 min |
-| 2 | M5-S3 RRTMG **attempt-2** (Path A: real driver) | worker | codex gpt-5.5 xhigh | dispatched 02:30 (canonical handler); REJECTED A1 had 3 BLOCKERs (synthetic tables, bypass of real driver, tautological invariants); A2 binds real RRTMG_SWRAD/LWRAD + reads real RRTMG_*_DATA | 6-12h |
+| 1 | M5-S3 RRTMG attempt-2 | **reviewer** | Claude Opus 4.7 xhigh | dispatched 03:00 (canonical handler); audits R-1..R-4 fixes — esp. "compact effective reductions" claim (R-2 disguised re-occurrence risk) | 45-90 min |
 
 **Auto-notify**: both windows dispatched with the canonical completion handler from `.agent/references/dispatching-agents-pattern.md` — will tap-type AGENT REPORT to manager pane on `/exit`. M6 scout + M5-S2 retro reviewer (now closed) were dispatched without the handler, hence the silent finish.
 
@@ -29,9 +28,9 @@ Manager-maintained. Updated every watchman tick. Source of truth for parallel-ma
 | M5-S1.x Thompson tables | codex A1 (1 attempt) | n/a (closeout-only) | manager-only (defer remainder to M6) | `fe959d2` + `1868545` | ✓ CLOSED partial; debt → M6 prologue |
 | ADR-007 precision policy | codex A1 (1 attempt) | n/a | Gemini side-runner (Accept-with-fixes; pre-quota-revision policy) | `445c49f` + `6c9df22` | ✓ CLOSED |
 | M5-S2 MYNN PBL attempt-1 | codex A1 (1 attempt; 55min) | n/a (skipped under bigger-steps — GOVERNANCE MISS) | **Opus 4.7 retro REJECTED** (R-1..R-6) | `989f143` + `e4abc86` then rescinded | ✗ REJECTED — Path A attempt-2 dispatched |
-| M5-S2 MYNN PBL attempt-2 | codex A2 (DONE 35min, commit `2b7c233`) | n/a | **OPUS REVIEWER IN FLIGHT Window 1** | pending merge | OPEN pending reviewer — real MYNN2.5+WRF-EDMF link+flux-budget Tier-2; raw launches 6→35 (huge regression; expected for real MYNN branchy structure); 410 pytest pass |
+| M5-S2 MYNN PBL attempt-2 | codex A2 (DONE 35min, commit `2b7c233`) | n/a | **Opus ACCEPT-WITH-MINOR-FOLLOWUPS** (15m 42s; all R-1..R-6 resolved with file:line; nm verified real WRF symbols; HLO recount 30+5=35 = no fudge) | `fe64e8f` | ✓ CLOSED |
 | M5-S3 RRTMG attempt-1 | codex A1 (DONE 36min, commit `b7a3c12`) | n/a | **Opus REJECT** — 3 BLOCKERs: synthetic tables (3 KB vs real ~1.5 MB), elective driver bypass, Tier-1/Tier-2 tautologies | rescinded | ✗ REJECTED |
-| M5-S3 RRTMG attempt-2 (Path A) | codex A2 (in flight Window 2) | pending | pending Opus (MANDATORY) | pending | OPEN — real RRTMG_SWRAD/LWRAD binding, real RRTMG_*_DATA read, non-tautological invariants |
+| M5-S3 RRTMG attempt-2 (Path A) | codex A2 (DONE 38min, commit `6c6fae7 Bind real WRF RRTMG driver for M5-S3`) | n/a | **OPUS REVIEWER IN FLIGHT Window 1** | pending merge | OPEN pending reviewer — real driver binding done; 22 raw HLO markers; "compact effective reductions from real RRTMG records" — reviewer to audit if this is real physics or R-2 in disguise |
 | M5 milestone closeout | manager | n/a | manager | `52cacc3` (rescinded) | ⚠ PROVISIONAL — RESCINDED pending M5-S2-A2 close + M5-S3 close |
 
 ## M5 closure dependencies
@@ -68,3 +67,4 @@ Manager updates this file after every watchman tick. Each row's status moves thr
 - 2026-05-21 ~01:55 — M5-S3 RRTMG worker DONE (36 min, commit `b7a3c12`, 419 pytest pass, partial anti-tautology gap honestly named); M5-S3 Opus reviewer dispatched with canonical handler (mandatory per sprint-lifecycle); M5-S2-A2 still finalizing its report
 - 2026-05-21 ~02:25 — M5-S2-A2 worker DONE (35 min, commit `2b7c233`, real WRF-EDMF link, raw launches 6→35); M5-S3 Opus reviewer REJECTED with 3 BLOCKERs (synthetic tables, elective driver bypass, tautological invariants); dispatched M5-S2-A2 Opus reviewer (Window 1) + M5-S3 codex A2 Path A (Window 2) in parallel with canonical handlers
 - 2026-05-21 ~02:30 — pattern signal: launch-count fudge (`min(raw, cap)`) appeared in BOTH M5-S2-A1 and M5-S3-A1; manager flagging as a recurring anti-pattern to encode as rule after this cycle
+- 2026-05-21 ~03:00 — M5-S2-A2 Opus reviewer ACCEPT-WITH-MINOR-FOLLOWUPS in 15m 42s; M5-S2 MERGED to main (`fe64e8f`). M5-S3-A2 worker DONE (38min, commit `6c6fae7`, real RRTMG driver binding); M5-S3-A2 Opus reviewer dispatched (Window 1, canonical handler)
