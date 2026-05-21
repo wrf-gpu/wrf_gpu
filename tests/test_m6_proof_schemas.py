@@ -11,6 +11,7 @@ from gpuwrf.io.proof_schemas import (
     MilestoneCloseoutM6,
     SCHEMA_REGISTRY,
     SpacetimeBudget,
+    SurfaceLayerArtifact,
     Tier2CoupledInvariants,
     Tier3DriftEnvelope,
     Tier4ProbtestTolerances,
@@ -34,6 +35,7 @@ def test_all_m6_schema_classes_have_machine_readable_json_schema():
         Tier4ProbtestTolerances,
         Gen2Comparison,
         FullDomainBatchingVerdict,
+        SurfaceLayerArtifact,
         MilestoneCloseoutM6,
     ]
     for schema in classes:
@@ -54,6 +56,8 @@ def test_schema_registry_exposes_expected_artifact_aliases():
         "probtest_tolerances",
         "gen2_comparison",
         "full_domain_batching_verdict",
+        "surface_operational_delta",
+        "radiation_conditioning_feasibility",
         "milestone_closeout_m6",
     ):
         assert key in SCHEMA_REGISTRY

@@ -242,6 +242,25 @@ class FullDomainBatchingVerdict(ProofObjectSchema):
     }
 
 
+class SurfaceLayerArtifact(ProofObjectSchema):
+    """M6-S3 surface-layer, land-state, and operational-delta proof object."""
+
+    schema_name = "SurfaceLayerArtifact"
+    description = "M6-S3 surface-layer proof object covering land state, radiation feasibility, and deltas."
+    required = {
+        "artifact_type": FieldRule("string", "Surface-layer proof subtype."),
+        "status": FieldRule("string", "PASS/PARTIAL/BLOCKED/FAIL status."),
+        "run_id": FieldRule("string", "Pinned Gen2 run identifier."),
+        "domain": FieldRule("string", "Domain ID."),
+        "artifact_paths": FieldRule("array", "Related proof-object paths."),
+    }
+    optional = {
+        "variables": FieldRule("object", "Variable inventory or per-variable validation payload."),
+        "operational_delta": FieldRule("object", "Per-variable and per-lead operational delta metrics."),
+        "prerequisites": FieldRule("object", "F-S3 prerequisite evidence."),
+    }
+
+
 class MilestoneCloseoutM6(ProofObjectSchema):
     """M6 closeout proof index."""
 
@@ -272,6 +291,10 @@ SCHEMA_REGISTRY: dict[str, type[ProofObjectSchema]] = {
     "probtest_tolerances": Tier4ProbtestTolerances,
     "gen2_comparison": Gen2Comparison,
     "full_domain_batching_verdict": FullDomainBatchingVerdict,
+    "surface_layer_artifact": SurfaceLayerArtifact,
+    "radiation_conditioning_feasibility": SurfaceLayerArtifact,
+    "surface_operational_delta": SurfaceLayerArtifact,
+    "land_state_manifest": SurfaceLayerArtifact,
     "milestone_closeout_m6": MilestoneCloseoutM6,
 }
 
@@ -300,6 +323,7 @@ __all__ = [
     "MilestoneCloseoutM6",
     "SCHEMA_REGISTRY",
     "SpacetimeBudget",
+    "SurfaceLayerArtifact",
     "Tier2CoupledInvariants",
     "Tier3DriftEnvelope",
     "Tier4ProbtestTolerances",
