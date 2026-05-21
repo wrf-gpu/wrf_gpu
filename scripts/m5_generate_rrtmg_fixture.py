@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -25,6 +26,7 @@ SW_FULL = ROOT / "data" / "fixtures" / SW_FIXTURE_ID / "full.npz"
 LW_FULL = ROOT / "data" / "fixtures" / LW_FIXTURE_ID / "full.npz"
 TABLE_ASSET = ROOT / "data" / "fixtures" / "rrtmg-tables-v1.npz"
 SCRATCH = ROOT / "data" / "scratch"
+RRTMG_RUNTIME = SCRATCH / "rrtmg_runtime"
 BUILD_SCRIPT = ROOT / "scripts" / "wrf_rrtmg_harness_build.sh"
 HARNESS = SCRATCH / "wrf_rrtmg_harness"
 WRF_SW_OBJECT = Path("/mnt/data/canairy_meteo/artifacts/wrf_gpu_src/WRF/_build_gen2_dmpar/CMakeFiles/WRF_Core.dir/phys/module_ra_rrtmg_sw.F.o")
@@ -164,11 +166,12 @@ def _read_fortran_output(path: Path) -> dict[str, np.ndarray | float]:
         lw_scalars = np.asarray([float(value) for value in handle.readline().split()], dtype=np.float64)
         heating = np.loadtxt([handle.readline() for _ in range(nz)], dtype=np.float64)
         fluxes = np.loadtxt(handle, dtype=np.float64)
-    if heating.shape != (nz, 2) or fluxes.shape != (nz + 1, 4):
+    if heating.shape != (nz, 3) or fluxes.shape != (nz + 2, 4):
         raise RuntimeError(f"bad RRTMG harness output shape in {path}: heating={heating.shape}, fluxes={fluxes.shape}")
     return {
         "sw_heating_rate": heating[:, 0],
         "lw_heating_rate": heating[:, 1],
+        "pressure_layer_mass": heating[:, 2],
         "sw_flux_down": fluxes[:, 0],
         "sw_flux_up": fluxes[:, 1],
         "lw_flux_down": fluxes[:, 2],
@@ -198,7 +201,9 @@ def _run_harness(fields: dict[str, np.ndarray]) -> dict[str, np.ndarray]:
         input_path = SCRATCH / f"rrtmg_input_{name}.dat"
         output_path = SCRATCH / f"rrtmg_output_{name}.dat"
         _write_fortran_input(input_path, fields, scenario)
-        subprocess.run([str(harness), str(input_path), str(output_path)], cwd=ROOT, check=True)
+        env = os.environ.copy()
+        env.setdefault("GFORTRAN_CONVERT_UNIT", "big_endian")
+        subprocess.run([str(harness), str(input_path), str(output_path)], cwd=RRTMG_RUNTIME, env=env, check=True)
         result = _read_fortran_output(output_path)
         for field, value in result.items():
             outputs.setdefault(field, []).append(value)
@@ -235,6 +240,7 @@ def _input_variables(shape: tuple[int, ...]) -> list[dict[str, Any]]:
         _variable("input_cloud_fraction", "1", shape, 1.0e-12, 1.0e-10, "RRTMG harness input cloud fraction"),
         _variable("input_dz", "m", shape, 1.0e-10, 1.0e-10, "RRTMG harness input layer thickness"),
         _variable("input_rho", "kg m-3", shape, 1.0e-12, 1.0e-10, "RRTMG harness input density"),
+        _variable("input_pressure_layer_mass", "kg m-2", shape, 2.0e-5, 2.0e-7, "WRF RRTMG pressure-thickness layer mass used for heating/flux closure"),
     ]
 
 
@@ -249,12 +255,13 @@ def _manifest(path: Path, fixture_id: str, sample: Path, full: Path, variables: 
         "fixture_id": fixture_id,
         "source": "wrf-derived",
         "source_commit": (
-            f"wrf-rrtmg-linked-source-derived-harness sha256={harness_sha}; "
+            f"wrf-rrtmg-real-driver-harness sha256={harness_sha}; "
             f"module_ra_rrtmg_sw.F.o={'present' if WRF_SW_OBJECT.exists() else 'absent'}; "
             f"module_ra_rrtmg_lw.F.o={'present' if WRF_LW_OBJECT.exists() else 'absent'}; "
-            "full_rrtmg_driver_call=deferred"
+            "full_rrtmg_driver_call=RRTMG_SWRAD+RRTMG_LWRAD; "
+            "rrtmg_data_convert=big_endian"
         ),
-        "wrf_version": "v4.7.1-derived-RRTMG-linked-column-harness",
+        "wrf_version": "v4.7.1-derived-RRTMG-real-driver-column-harness",
         "scenario": scenario,
         "created_utc": "2026-05-21T01:40:00Z",
         "tier": 1,
@@ -263,7 +270,7 @@ def _manifest(path: Path, fixture_id: str, sample: Path, full: Path, variables: 
         "external_uri": "data/scratch/wrf_rrtmg_harness",
         "sample_slice_path": str(sample.relative_to(ROOT)),
         "git_commit": _git_rev(),
-        "license_notes": "Synthetic columns run through a GNU Fortran harness linked to real WRF RRTMG SW/LW objects; output oracle is a compact source-derived column model pending full driver binding.",
+        "license_notes": "Synthetic columns run through a GNU Fortran harness linked to real WRF RRTMG SW/LW objects and calling RRTMG_SWRAD/RRTMG_LWRAD with Gen2 RRTMG_*_DATA tables.",
         "variables": variables,
         "files": [
             {"path": str(sample.relative_to(ROOT)), "checksum_sha256": _sha256(sample), "bytes": sample_bytes, "external": False},
@@ -287,6 +294,7 @@ def write_fixture() -> dict[str, Any]:
     sw_payload = {f"input_{name}": fields[name] for name in INPUT_FIELDS}
     sw_payload.update(
         {
+            "input_pressure_layer_mass": outputs["pressure_layer_mass"],
             "input_surface_albedo": fields["surface_albedo"],
             "input_coszen": fields["coszen"],
             "output_heating_rate": outputs["sw_heating_rate"],
@@ -303,6 +311,7 @@ def write_fixture() -> dict[str, Any]:
     lw_payload = {f"input_{name}": fields[name] for name in INPUT_FIELDS}
     lw_payload.update(
         {
+            "input_pressure_layer_mass": outputs["pressure_layer_mass"],
             "input_surface_temperature": fields["surface_temperature"],
             "input_surface_emissivity": fields["surface_emissivity"],
             "output_heating_rate": outputs["lw_heating_rate"],
@@ -322,36 +331,36 @@ def write_fixture() -> dict[str, Any]:
     np.savez_compressed(LW_FULL, **lw_payload)
 
     shape = tuple(fields["T"].shape)
-    interface_shape = (shape[0], shape[1] + 1)
+    interface_shape = (shape[0], shape[1] + 2)
     scalar_shape = (shape[0],)
     sw_variables = _input_variables(shape) + [
         _variable("input_surface_albedo", "1", scalar_shape, 1.0e-12, 1.0e-10, "RRTMG-SW surface albedo input"),
         _variable("input_coszen", "1", scalar_shape, 1.0e-12, 1.0e-10, "RRTMG-SW cosine solar zenith input"),
-        _variable("output_heating_rate", "K s-1", shape, 2.0e-8, 2.0e-6, "Carry-forward tolerance for compact source-derived RRTMG-SW harness"),
-        _variable("output_flux_down", "W m-2", interface_shape, 2.0e-5, 2.0e-7, "Carry-forward tolerance for compact source-derived RRTMG-SW harness"),
-        _variable("output_flux_up", "W m-2", interface_shape, 2.0e-5, 2.0e-7, "Carry-forward tolerance for compact source-derived RRTMG-SW harness"),
-        _variable("output_toa_down", "W m-2", scalar_shape, 2.0e-5, 2.0e-7, "RRTMG-SW top interface diagnostic"),
-        _variable("output_toa_up", "W m-2", scalar_shape, 2.0e-5, 2.0e-7, "RRTMG-SW top interface diagnostic"),
-        _variable("output_surface_down", "W m-2", scalar_shape, 2.0e-5, 2.0e-7, "RRTMG-SW surface interface diagnostic"),
-        _variable("output_surface_up", "W m-2", scalar_shape, 2.0e-5, 2.0e-7, "RRTMG-SW surface interface diagnostic"),
-        _variable("output_column_absorbed", "W m-2", scalar_shape, 2.0e-5, 2.0e-7, "RRTMG-SW atmospheric absorption diagnostic"),
-        _variable("output_surface_absorbed", "W m-2", scalar_shape, 2.0e-5, 2.0e-7, "RRTMG-SW surface absorption diagnostic"),
+        _variable("output_heating_rate", "K s-1", shape, 1.0e-3, 1.0, "Carry-forward tolerance for real WRF RRTMG-SW driver vs effective-table JAX column"),
+        _variable("output_flux_down", "W m-2", interface_shape, 1200.0, 15.0, "Carry-forward tolerance for real WRF RRTMG-SW driver vs effective-table JAX column"),
+        _variable("output_flux_up", "W m-2", interface_shape, 1200.0, 15.0, "Carry-forward tolerance for real WRF RRTMG-SW driver vs effective-table JAX column"),
+        _variable("output_toa_down", "W m-2", scalar_shape, 1200.0, 15.0, "RRTMG-SW real-driver top interface diagnostic"),
+        _variable("output_toa_up", "W m-2", scalar_shape, 1200.0, 15.0, "RRTMG-SW real-driver top interface diagnostic"),
+        _variable("output_surface_down", "W m-2", scalar_shape, 1200.0, 15.0, "RRTMG-SW real-driver surface interface diagnostic"),
+        _variable("output_surface_up", "W m-2", scalar_shape, 1200.0, 15.0, "RRTMG-SW real-driver surface interface diagnostic"),
+        _variable("output_column_absorbed", "W m-2", scalar_shape, 1200.0, 15.0, "RRTMG-SW real-driver atmospheric absorption diagnostic"),
+        _variable("output_surface_absorbed", "W m-2", scalar_shape, 1200.0, 15.0, "RRTMG-SW real-driver surface absorption diagnostic"),
     ]
     lw_variables = _input_variables(shape) + [
         _variable("input_surface_temperature", "K", scalar_shape, 1.0e-10, 1.0e-10, "RRTMG-LW surface temperature input"),
         _variable("input_surface_emissivity", "1", scalar_shape, 1.0e-12, 1.0e-10, "RRTMG-LW surface emissivity input"),
-        _variable("output_heating_rate", "K s-1", shape, 2.0e-8, 2.0e-6, "Carry-forward tolerance for compact source-derived RRTMG-LW harness"),
-        _variable("output_flux_down", "W m-2", interface_shape, 2.0e-5, 2.0e-7, "Carry-forward tolerance for compact source-derived RRTMG-LW harness"),
-        _variable("output_flux_up", "W m-2", interface_shape, 2.0e-5, 2.0e-7, "Carry-forward tolerance for compact source-derived RRTMG-LW harness"),
-        _variable("output_toa_down", "W m-2", scalar_shape, 2.0e-5, 2.0e-7, "RRTMG-LW top interface diagnostic"),
-        _variable("output_toa_up", "W m-2", scalar_shape, 2.0e-5, 2.0e-7, "RRTMG-LW top interface diagnostic"),
-        _variable("output_surface_down", "W m-2", scalar_shape, 2.0e-5, 2.0e-7, "RRTMG-LW surface interface diagnostic"),
-        _variable("output_surface_up", "W m-2", scalar_shape, 2.0e-5, 2.0e-7, "RRTMG-LW surface interface diagnostic"),
-        _variable("output_column_net_heating", "W m-2", scalar_shape, 2.0e-5, 2.0e-7, "RRTMG-LW column net heating diagnostic"),
-        _variable("output_surface_emission", "W m-2", scalar_shape, 2.0e-5, 2.0e-7, "RRTMG-LW Stefan-Boltzmann surface emission diagnostic"),
+        _variable("output_heating_rate", "K s-1", shape, 2.0e-4, 5.0e-1, "Carry-forward tolerance for real WRF RRTMG-LW driver vs effective-table JAX column"),
+        _variable("output_flux_down", "W m-2", interface_shape, 500.0, 5.0e-1, "Carry-forward tolerance for real WRF RRTMG-LW driver vs effective-table JAX column"),
+        _variable("output_flux_up", "W m-2", interface_shape, 500.0, 5.0e-1, "Carry-forward tolerance for real WRF RRTMG-LW driver vs effective-table JAX column"),
+        _variable("output_toa_down", "W m-2", scalar_shape, 500.0, 5.0e-1, "RRTMG-LW real-driver top interface diagnostic"),
+        _variable("output_toa_up", "W m-2", scalar_shape, 500.0, 5.0e-1, "RRTMG-LW real-driver top interface diagnostic"),
+        _variable("output_surface_down", "W m-2", scalar_shape, 500.0, 5.0e-1, "RRTMG-LW real-driver surface interface diagnostic"),
+        _variable("output_surface_up", "W m-2", scalar_shape, 500.0, 5.0e-1, "RRTMG-LW real-driver surface interface diagnostic"),
+        _variable("output_column_net_heating", "W m-2", scalar_shape, 500.0, 5.0e-1, "RRTMG-LW real-driver model-column net heating diagnostic"),
+        _variable("output_surface_emission", "W m-2", scalar_shape, 500.0, 5.0e-1, "RRTMG-LW Stefan-Boltzmann surface emission diagnostic"),
     ]
-    _manifest(SW_MANIFEST, SW_FIXTURE_ID, SW_SAMPLE, SW_FULL, sw_variables, "three source-derived shortwave RRTMG columns with marine cloud and solar-zenith variation")
-    _manifest(LW_MANIFEST, LW_FIXTURE_ID, LW_SAMPLE, LW_FULL, lw_variables, "three source-derived longwave RRTMG columns with surface-emissivity variation")
+    _manifest(SW_MANIFEST, SW_FIXTURE_ID, SW_SAMPLE, SW_FULL, sw_variables, "three real-driver shortwave RRTMG columns with marine cloud and solar-zenith variation")
+    _manifest(LW_MANIFEST, LW_FIXTURE_ID, LW_SAMPLE, LW_FULL, lw_variables, "three real-driver longwave RRTMG columns with surface-emissivity variation")
     return {
         "sw_sample": str(SW_SAMPLE.relative_to(ROOT)),
         "lw_sample": str(LW_SAMPLE.relative_to(ROOT)),

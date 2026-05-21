@@ -19,4 +19,4 @@ def test_rrtmg_fixture_generation_records_linked_harness_binary():
     assert hashlib.sha256(harness.read_bytes()).hexdigest() == entries[0]["checksum_sha256"]
     assert "module_ra_rrtmg_sw.F.o=present" in manifest["source_commit"]
     assert "module_ra_rrtmg_lw.F.o=present" in manifest["source_commit"]
-    assert "full_rrtmg_driver_call=deferred" in manifest["source_commit"]
+    assert "full_rrtmg_driver_call=RRTMG_SWRAD+RRTMG_LWRAD" in manifest["source_commit"]

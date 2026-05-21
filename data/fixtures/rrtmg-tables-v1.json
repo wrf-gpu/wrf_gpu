@@ -1,12 +1,19 @@
 {
-  "bytes": 3137,
+  "bytes": 1535874,
   "lw_bands": 16,
+  "lw_payload_bytes": 847424,
+  "lw_records": 16,
   "output": "data/fixtures/rrtmg-tables-v1.npz",
-  "sha256": "375303f4d56fd5495e3047c1c8b12affb3221d2e691e52047ed1415626b7814f",
-  "source": "deterministic compact RRTMG column table bundle seeded by WRF v4.7.1 RRTMG DATA/source availability",
+  "record_format": "big-endian Fortran sequential unformatted with 4-byte record markers",
+  "sha256": "adef2bec561807450add24a596daf17fad9b617e348807f2648e2e88e8118d51",
+  "source": "real WRF RRTMG_SW_DATA/RRTMG_LW_DATA unformatted records with compact effective JAX reductions",
   "sw_bands": 14,
+  "sw_payload_bytes": 680256,
+  "sw_records": 14,
+  "wrf_lw_data_path": "/mnt/data/canairy_meteo/artifacts/wrf_gpu_src/WRF/install_gen2_dmpar/run/RRTMG_LW_DATA",
   "wrf_lw_data_sha256": "bcfdee24b63a4c909522a329b8e16c539f0173c7e5aea2caf933ab4fe28c5c97",
   "wrf_lw_source_sha256": "c7a5238612aa8a4213c8d3af6708ec6a5248e6701e19758a80e563905d306de3",
+  "wrf_sw_data_path": "/mnt/data/canairy_meteo/artifacts/wrf_gpu_src/WRF/install_gen2_dmpar/run/RRTMG_SW_DATA",
   "wrf_sw_data_sha256": "a7d25f5b4d33be8629cbef7ecacc1ff413bf398a021297793e843ba1cc627baf",
   "wrf_sw_source_sha256": "7f8af1da0ca1d25ce784a917bc68600300a7c569881c57e7de8501cd53496b59"
 }

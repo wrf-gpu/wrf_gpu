@@ -11,9 +11,10 @@ import jax.numpy as jnp
 import numpy as np
 
 from gpuwrf.physics.rrtmg_constants import STEFAN_BOLTZMANN
+from gpuwrf.physics.rrtmg_constants import CP_AIR
 from gpuwrf.physics.rrtmg_lw import solve_rrtmg_lw_column
 from gpuwrf.physics.rrtmg_sw import solve_rrtmg_sw_column
-from gpuwrf.validation.tier1_rrtmg import load_lw_fixture_state, load_sw_fixture_state
+from gpuwrf.validation.tier1_rrtmg import LW_SAMPLE, SW_SAMPLE, load_lw_fixture_state, load_sw_fixture_state
 
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -25,6 +26,8 @@ def invariant_record() -> dict[str, Any]:
 
     sw_state, _ = load_sw_fixture_state()
     lw_state, _ = load_lw_fixture_state()
+    sw_ref = np.load(SW_SAMPLE, allow_pickle=False)
+    lw_ref = np.load(LW_SAMPLE, allow_pickle=False)
     sw = solve_rrtmg_sw_column(sw_state, debug=False)
     lw = solve_rrtmg_lw_column(lw_state, debug=False)
     jax.tree_util.tree_map(lambda leaf: leaf.block_until_ready() if hasattr(leaf, "block_until_ready") else leaf, (sw, lw))
@@ -41,14 +44,43 @@ def invariant_record() -> dict[str, Any]:
         + jnp.sum(~jnp.isfinite(lw.flux_down))
         + jnp.sum(~jnp.isfinite(lw.flux_up))
     )
+    sw_driver_toa = sw_ref["output_toa_down"] - sw_ref["output_toa_up"]
+    sw_driver_surface = sw_ref["output_surface_down"] - sw_ref["output_surface_up"]
+    sw_driver_residual = np.abs(sw_driver_toa - sw_ref["output_column_absorbed"] - sw_driver_surface) / np.maximum(np.abs(sw_ref["output_toa_down"]), 1.0)
+    sw_driver_model_net = (sw_ref["output_flux_down"][:, -2] - sw_ref["output_flux_up"][:, -2]) - sw_driver_surface
+    sw_driver_integrated = np.sum(sw_ref["output_heating_rate"] * sw_ref["input_pressure_layer_mass"] * CP_AIR, axis=1)
+    sw_driver_heat_residual = np.abs(sw_driver_model_net - sw_driver_integrated) / np.maximum(np.abs(sw_driver_model_net), 1.0)
+    lw_driver_surface = lw_ref["output_surface_down"] - lw_ref["output_surface_up"]
+    lw_driver_model_net = (lw_ref["output_flux_down"][:, -2] - lw_ref["output_flux_up"][:, -2]) - lw_driver_surface
+    lw_driver_integrated = np.sum(lw_ref["output_heating_rate"] * lw_ref["input_pressure_layer_mass"] * CP_AIR, axis=1)
+    lw_driver_heat_residual = np.abs(lw_driver_model_net - lw_driver_integrated) / np.maximum(np.abs(lw_driver_model_net), 1.0)
+
     sw_max = float(np.asarray(jnp.max(sw_residual)))
     lw_max = float(np.asarray(jnp.max(lw_surface_residual)))
+    sw_driver_max = float(np.max(sw_driver_residual))
+    sw_driver_heat_max = float(np.max(sw_driver_heat_residual))
+    lw_driver_heat_max = float(np.max(lw_driver_heat_residual))
     nonfinite = int(np.asarray(finite_bad))
     record = {
-        "shortwave_energy_conservation": {
+        "shortwave_candidate_energy_conservation": {
             "fractional_residual_max": sw_max,
             "tolerance": 1.0e-10,
             "pass": sw_max <= 1.0e-10,
+        },
+        "shortwave_real_driver_energy_conservation": {
+            "fractional_residual_max": sw_driver_max,
+            "tolerance": 1.0e-6,
+            "pass": sw_driver_max <= 1.0e-6,
+        },
+        "shortwave_real_driver_heating_flux_closure": {
+            "fractional_residual_max": sw_driver_heat_max,
+            "tolerance": 1.0e-3,
+            "pass": sw_driver_heat_max <= 1.0e-3,
+        },
+        "longwave_real_driver_heating_flux_closure": {
+            "fractional_residual_max": lw_driver_heat_max,
+            "tolerance": 1.0e-3,
+            "pass": lw_driver_heat_max <= 1.0e-3,
         },
         "longwave_surface_emission": {
             "fractional_residual_max": lw_max,
@@ -56,7 +88,14 @@ def invariant_record() -> dict[str, Any]:
             "pass": lw_max <= 1.0e-12,
         },
         "nan_inf": {"violations": nonfinite, "pass": nonfinite == 0},
-        "pass": bool(sw_max <= 1.0e-10 and lw_max <= 1.0e-12 and nonfinite == 0),
+        "pass": bool(
+            sw_max <= 1.0e-10
+            and sw_driver_max <= 1.0e-6
+            and sw_driver_heat_max <= 1.0e-3
+            and lw_driver_heat_max <= 1.0e-3
+            and lw_max <= 1.0e-12
+            and nonfinite == 0
+        ),
     }
     return record
 

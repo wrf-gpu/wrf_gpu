@@ -14,7 +14,7 @@ def test_rrtmg_sw_step_preserves_column_shapes_and_fp64_dtype():
     state, _ = load_sw_fixture_state()
     out = solve_rrtmg_sw_column(state, debug=False)
     assert out.heating_rate.shape == state.T.shape
-    assert out.flux_down.shape[-1] == state.T.shape[-1] + 1
+    assert out.flux_down.shape[-1] == state.T.shape[-1] + 2
     assert out.flux_up.shape == out.flux_down.shape
     assert out.heating_rate.dtype == jnp.float64
     assert np.all(np.isfinite(np.asarray(out.heating_rate)))
@@ -24,7 +24,7 @@ def test_rrtmg_lw_step_preserves_column_shapes_and_fp64_dtype():
     state, _ = load_lw_fixture_state()
     out = solve_rrtmg_lw_column(state, debug=False)
     assert out.heating_rate.shape == state.T.shape
-    assert out.flux_down.shape[-1] == state.T.shape[-1] + 1
+    assert out.flux_down.shape[-1] == state.T.shape[-1] + 2
     assert out.flux_up.shape == out.flux_down.shape
     assert out.heating_rate.dtype == jnp.float64
     assert np.all(np.isfinite(np.asarray(out.heating_rate)))

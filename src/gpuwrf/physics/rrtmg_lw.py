@@ -165,12 +165,14 @@ def _longwave_impl(state: RRTMGLWColumnState, tables: RRTMGTableBundle, debug: b
     )
     down_band = jnp.flip(down_top, axis=-2)
 
-    flux_up = jnp.sum(up_band, axis=-1)
-    flux_down = jnp.sum(down_band, axis=-1)
-    net_down = flux_down - flux_up
+    flux_up_model = jnp.sum(up_band, axis=-1)
+    flux_down_model = jnp.sum(down_band, axis=-1)
+    net_down = flux_down_model - flux_up_model
     layer_net_heating = net_down[..., 1:] - net_down[..., :-1]
     heating_rate = layer_net_heating / (layer_mass * CP_AIR)
     surface_emission = STEFAN_BOLTZMANN * state.surface_emissivity * state.surface_temperature**4
+    flux_down = jnp.concatenate((flux_down_model, jnp.zeros_like(flux_down_model[..., -1:])), axis=-1)
+    flux_up = jnp.concatenate((flux_up_model, flux_up_model[..., -1:]), axis=-1)
 
     heating_rate = assert_finite(heating_rate, "rrtmg_lw.heating_rate", enabled=debug)
     flux_down = assert_physical_bounds(flux_down, 0.0, 2000.0, "rrtmg_lw.flux_down", enabled=debug)

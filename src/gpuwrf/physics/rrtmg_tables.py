@@ -85,12 +85,14 @@ RRTMG_TABLES = load_rrtmg_tables()
 
 
 TABLE_SOURCE_LINES = {
-    "sw_band_count": "module_ra_rrtmg_sw.F:22-25",
-    "sw_solar_constant": "module_ra_rrtmg_sw.F:127-128",
-    "sw_init": "module_ra_rrtmg_sw.F:11610-11631",
-    "sw_kernel": "module_ra_rrtmg_sw.F:8856-9650",
-    "lw_band_count": "module_ra_rrtmg_lw.F:36-41",
-    "lw_constants": "module_ra_rrtmg_lw.F:190-220",
-    "lw_init": "module_ra_rrtmg_lw.F:12983-13010",
-    "lw_kernel": "module_ra_rrtmg_lw.F:10694-11180",
+    "sw_band_count": "module_ra_rrtmg_sw.F:31-37",
+    "sw_driver": "module_ra_rrtmg_sw.F:10034-10100",
+    "sw_driver_calls_core": "module_ra_rrtmg_sw.F:11462-11484",
+    "sw_data_open": "module_ra_rrtmg_sw.F:11667-11685",
+    "sw_data_records": "module_ra_rrtmg_sw.F:11705-11710",
+    "lw_band_count": "module_ra_rrtmg_lw.F:76-82",
+    "lw_driver": "module_ra_rrtmg_lw.F:11570-11607",
+    "lw_driver_calls_core": "module_ra_rrtmg_lw.F:12768-12778",
+    "lw_data_open": "module_ra_rrtmg_lw.F:13046-13067",
+    "lw_data_records": "module_ra_rrtmg_lw.F:13085-13090",
 }

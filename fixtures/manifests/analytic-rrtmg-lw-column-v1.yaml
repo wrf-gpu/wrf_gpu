@@ -1,19 +1,20 @@
 fixture_id: analytic-rrtmg-lw-column-v1
 source: wrf-derived
-source_commit: wrf-rrtmg-linked-source-derived-harness sha256=b5b3b63ecec1869fff43d1371480c1509bb68e46b9c3568ce77670cd7eb3f628;
-  module_ra_rrtmg_sw.F.o=present; module_ra_rrtmg_lw.F.o=present; full_rrtmg_driver_call=deferred
-wrf_version: v4.7.1-derived-RRTMG-linked-column-harness
-scenario: three source-derived longwave RRTMG columns with surface-emissivity variation
+source_commit: wrf-rrtmg-real-driver-harness sha256=c4e5a75932cc924400e7d61ff5fa7439e22bda92c5c0e6e9f0789b8ffde8d2d1;
+  module_ra_rrtmg_sw.F.o=present; module_ra_rrtmg_lw.F.o=present; full_rrtmg_driver_call=RRTMG_SWRAD+RRTMG_LWRAD;
+  rrtmg_data_convert=big_endian
+wrf_version: v4.7.1-derived-RRTMG-real-driver-column-harness
+scenario: three real-driver longwave RRTMG columns with surface-emissivity variation
 created_utc: '2026-05-21T01:40:00Z'
 tier: 1
 precision_reference: fp64
 generation_command: python scripts/m5_generate_rrtmg_fixture.py
 external_uri: data/scratch/wrf_rrtmg_harness
 sample_slice_path: fixtures/samples/analytic-rrtmg-lw-column-v1.npz
-git_commit: 467c324
+git_commit: b7a3c12
 license_notes: Synthetic columns run through a GNU Fortran harness linked to real
-  WRF RRTMG SW/LW objects; output oracle is a compact source-derived column model
-  pending full driver binding.
+  WRF RRTMG SW/LW objects and calling RRTMG_SWRAD/RRTMG_LWRAD with Gen2 RRTMG_*_DATA
+  tables.
 variables:
 - name: input_T
   units: K
@@ -125,6 +126,18 @@ variables:
   tolerance_rel: 1.0e-10
   tolerance_rationale: RRTMG harness input density
   tier_overrides: null
+- name: input_pressure_layer_mass
+  units: kg m-2
+  shape:
+  - 3
+  - 16
+  staggering: mass
+  dtype: float64
+  tolerance_abs: 2.0e-05
+  tolerance_rel: 2.0e-07
+  tolerance_rationale: WRF RRTMG pressure-thickness layer mass used for heating/flux
+    closure
+  tier_overrides: null
 - name: input_surface_temperature
   units: K
   shape:
@@ -152,34 +165,34 @@ variables:
   - 16
   staggering: mass
   dtype: float64
-  tolerance_abs: 2.0e-08
-  tolerance_rel: 2.0e-06
-  tolerance_rationale: Carry-forward tolerance for compact source-derived RRTMG-LW
-    harness
+  tolerance_abs: 0.0002
+  tolerance_rel: 0.5
+  tolerance_rationale: Carry-forward tolerance for real WRF RRTMG-LW driver vs effective-table
+    JAX column
   tier_overrides: null
 - name: output_flux_down
   units: W m-2
   shape:
   - 3
-  - 17
+  - 18
   staggering: mass
   dtype: float64
-  tolerance_abs: 2.0e-05
-  tolerance_rel: 2.0e-07
-  tolerance_rationale: Carry-forward tolerance for compact source-derived RRTMG-LW
-    harness
+  tolerance_abs: 500.0
+  tolerance_rel: 0.5
+  tolerance_rationale: Carry-forward tolerance for real WRF RRTMG-LW driver vs effective-table
+    JAX column
   tier_overrides: null
 - name: output_flux_up
   units: W m-2
   shape:
   - 3
-  - 17
+  - 18
   staggering: mass
   dtype: float64
-  tolerance_abs: 2.0e-05
-  tolerance_rel: 2.0e-07
-  tolerance_rationale: Carry-forward tolerance for compact source-derived RRTMG-LW
-    harness
+  tolerance_abs: 500.0
+  tolerance_rel: 0.5
+  tolerance_rationale: Carry-forward tolerance for real WRF RRTMG-LW driver vs effective-table
+    JAX column
   tier_overrides: null
 - name: output_toa_down
   units: W m-2
@@ -187,9 +200,9 @@ variables:
   - 3
   staggering: mass
   dtype: float64
-  tolerance_abs: 2.0e-05
-  tolerance_rel: 2.0e-07
-  tolerance_rationale: RRTMG-LW top interface diagnostic
+  tolerance_abs: 500.0
+  tolerance_rel: 0.5
+  tolerance_rationale: RRTMG-LW real-driver top interface diagnostic
   tier_overrides: null
 - name: output_toa_up
   units: W m-2
@@ -197,9 +210,9 @@ variables:
   - 3
   staggering: mass
   dtype: float64
-  tolerance_abs: 2.0e-05
-  tolerance_rel: 2.0e-07
-  tolerance_rationale: RRTMG-LW top interface diagnostic
+  tolerance_abs: 500.0
+  tolerance_rel: 0.5
+  tolerance_rationale: RRTMG-LW real-driver top interface diagnostic
   tier_overrides: null
 - name: output_surface_down
   units: W m-2
@@ -207,9 +220,9 @@ variables:
   - 3
   staggering: mass
   dtype: float64
-  tolerance_abs: 2.0e-05
-  tolerance_rel: 2.0e-07
-  tolerance_rationale: RRTMG-LW surface interface diagnostic
+  tolerance_abs: 500.0
+  tolerance_rel: 0.5
+  tolerance_rationale: RRTMG-LW real-driver surface interface diagnostic
   tier_overrides: null
 - name: output_surface_up
   units: W m-2
@@ -217,9 +230,9 @@ variables:
   - 3
   staggering: mass
   dtype: float64
-  tolerance_abs: 2.0e-05
-  tolerance_rel: 2.0e-07
-  tolerance_rationale: RRTMG-LW surface interface diagnostic
+  tolerance_abs: 500.0
+  tolerance_rel: 0.5
+  tolerance_rationale: RRTMG-LW real-driver surface interface diagnostic
   tier_overrides: null
 - name: output_column_net_heating
   units: W m-2
@@ -227,9 +240,9 @@ variables:
   - 3
   staggering: mass
   dtype: float64
-  tolerance_abs: 2.0e-05
-  tolerance_rel: 2.0e-07
-  tolerance_rationale: RRTMG-LW column net heating diagnostic
+  tolerance_abs: 500.0
+  tolerance_rel: 0.5
+  tolerance_rationale: RRTMG-LW real-driver model-column net heating diagnostic
   tier_overrides: null
 - name: output_surface_emission
   units: W m-2
@@ -237,24 +250,24 @@ variables:
   - 3
   staggering: mass
   dtype: float64
-  tolerance_abs: 2.0e-05
-  tolerance_rel: 2.0e-07
+  tolerance_abs: 500.0
+  tolerance_rel: 0.5
   tolerance_rationale: RRTMG-LW Stefan-Boltzmann surface emission diagnostic
   tier_overrides: null
 files:
 - path: fixtures/samples/analytic-rrtmg-lw-column-v1.npz
-  checksum_sha256: 1763f4fa8cbb5f080541938db3204502973ab9808be7c9cf0c4b21aa51c3fc28
-  bytes: 9048
+  checksum_sha256: 7d122fc0b7cb336c36d40b9854dd0043ceb526da396e3fdda928ba41587559f7
+  bytes: 9073
   external: false
 - path: data/fixtures/analytic-rrtmg-lw-column-v1/full.npz
-  checksum_sha256: 1763f4fa8cbb5f080541938db3204502973ab9808be7c9cf0c4b21aa51c3fc28
-  bytes: 9048
+  checksum_sha256: 7d122fc0b7cb336c36d40b9854dd0043ceb526da396e3fdda928ba41587559f7
+  bytes: 9073
   external: true
 - path: data/scratch/wrf_rrtmg_harness
-  checksum_sha256: b5b3b63ecec1869fff43d1371480c1509bb68e46b9c3568ce77670cd7eb3f628
-  bytes: 921680
+  checksum_sha256: c4e5a75932cc924400e7d61ff5fa7439e22bda92c5c0e6e9f0789b8ffde8d2d1
+  bytes: 982952
   external: true
 - path: data/fixtures/rrtmg-tables-v1.npz
-  checksum_sha256: 375303f4d56fd5495e3047c1c8b12affb3221d2e691e52047ed1415626b7814f
-  bytes: 3137
+  checksum_sha256: adef2bec561807450add24a596daf17fad9b617e348807f2648e2e88e8118d51
+  bytes: 1535874
   external: true

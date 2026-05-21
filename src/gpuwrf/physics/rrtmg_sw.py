@@ -165,12 +165,14 @@ def _shortwave_impl(state: RRTMGSWColumnState, tables: RRTMGTableBundle, debug: 
     optical_depth_interfaces_bottom_up = jnp.concatenate((jnp.zeros_like(tau[..., :1, :]), jnp.cumsum(tau, axis=-2)), axis=-2)
     up_band = surface_up_band[..., None, :] * jnp.exp(-optical_depth_interfaces_bottom_up)
 
-    flux_down = jnp.sum(down_band, axis=-1)
-    flux_up = jnp.sum(up_band, axis=-1)
-    net_down = flux_down - flux_up
+    flux_down_model = jnp.sum(down_band, axis=-1)
+    flux_up_model = jnp.sum(up_band, axis=-1)
+    net_down = flux_down_model - flux_up_model
     column_absorbed_layers = net_down[..., 1:] - net_down[..., :-1]
     heating_rate = column_absorbed_layers / (layer_mass * CP_AIR)
     surface_absorbed = jnp.sum(surface_down_band - surface_up_band, axis=-1)
+    flux_down = jnp.concatenate((flux_down_model, flux_down_model[..., -1:]), axis=-1)
+    flux_up = jnp.concatenate((flux_up_model, flux_up_model[..., -1:]), axis=-1)
 
     heating_rate = assert_finite(heating_rate, "rrtmg_sw.heating_rate", enabled=debug)
     flux_down = assert_physical_bounds(flux_down, 0.0, 2000.0, "rrtmg_sw.flux_down", enabled=debug)

@@ -1,4 +1,4 @@
-HloModule jit_solve_rrtmg_sw_column_debug_stripped, is_scheduled=true, entry_computation_layout={(f64[3,16]{1,0}, f64[3,16]{1,0}, f64[3,16]{1,0}, f64[3,16]{1,0}, f64[3,16]{1,0}, /*index=5*/f64[3,16]{1,0}, f64[3,16]{1,0}, f64[3]{0}, f64[3]{0}, f64[3,16]{1,0}, /*index=10*/f64[3,16]{1,0})->(f64[3,16]{1,0}, f64[3,17]{1,0}, f64[3,17]{1,0}, f64[3]{0}, f64[3]{0}, /*index=5*/f64[3]{0}, f64[3]{0}, f64[3]{0}, f64[3]{0})}, allow_spmd_sharding_propagation_to_parameters={true,true,true,true,true,true,true,true,true,true,true}, allow_spmd_sharding_propagation_to_output={true,true,true,true,true,true,true,true,true}, frontend_attributes={fingerprint_before_lhs="aee47cf4fc69189b81188d4180185b40"}
+HloModule jit_solve_rrtmg_sw_column_debug_stripped, is_scheduled=true, entry_computation_layout={(f64[3,16]{1,0}, f64[3,16]{1,0}, f64[3,16]{1,0}, f64[3,16]{1,0}, f64[3,16]{1,0}, /*index=5*/f64[3,16]{1,0}, f64[3,16]{1,0}, f64[3]{0}, f64[3]{0}, f64[3,16]{1,0}, /*index=10*/f64[3,16]{1,0})->(f64[3,16]{1,0}, f64[3,18]{1,0}, f64[3,18]{1,0}, f64[3]{0}, f64[3]{0}, /*index=5*/f64[3]{0}, f64[3]{0}, f64[3]{0}, f64[3]{0})}, allow_spmd_sharding_propagation_to_parameters={true,true,true,true,true,true,true,true,true,true,true}, allow_spmd_sharding_propagation_to_output={true,true,true,true,true,true,true,true,true}, frontend_attributes={fingerprint_before_lhs="36efc439c104555d54fe61ac759faba3"}
 
 FileNames
 1 "/tmp/wrf_gpu2_s3/scripts/m5_run_rrtmg.py"
@@ -16,72 +16,74 @@ FileLocations
 1 {file_name_id=1 function_name_id=1 line=180 end_line=180 column=21 end_column=27}
 2 {file_name_id=1 function_name_id=2 line=165 end_line=165 column=10 end_column=50}
 3 {file_name_id=1 function_name_id=3 line=89 end_line=89 column=32 end_column=84}
-4 {file_name_id=2 function_name_id=4 line=210 end_line=210 column=11 end_column=48}
-5 {file_name_id=2 function_name_id=5 line=182 end_line=182 column=17 end_column=35}
-6 {file_name_id=2 function_name_id=5 line=183 end_line=183 column=15 end_column=31}
-7 {file_name_id=2 function_name_id=5 line=184 end_line=184 column=21 end_column=38}
-8 {file_name_id=2 function_name_id=5 line=185 end_line=185 column=19 end_column=34}
+4 {file_name_id=2 function_name_id=4 line=212 end_line=212 column=11 end_column=48}
+5 {file_name_id=2 function_name_id=5 line=174 end_line=174 column=50 end_column=75}
+6 {file_name_id=2 function_name_id=5 line=175 end_line=175 column=46 end_column=69}
+7 {file_name_id=2 function_name_id=5 line=186 end_line=186 column=21 end_column=38}
+8 {file_name_id=2 function_name_id=5 line=187 end_line=187 column=19 end_column=34}
 9 {file_name_id=2 function_name_id=5 line=166 end_line=166 column=14 end_column=43}
-10 {file_name_id=2 function_name_id=5 line=168 end_line=168 column=16 end_column=43}
+10 {file_name_id=2 function_name_id=5 line=168 end_line=168 column=22 end_column=49}
 11 {file_name_id=2 function_name_id=5 line=154 end_line=154 column=10 end_column=92}
-12 {file_name_id=2 function_name_id=5 line=186 end_line=186 column=24 end_column=64}
-13 {file_name_id=2 function_name_id=5 line=173 end_line=173 column=23 end_column=76}
-14 {file_name_id=2 function_name_id=5 line=169 end_line=169 column=14 end_column=39}
-15 {file_name_id=2 function_name_id=5 line=166 end_line=166 column=46 end_column=90}
-16 {file_name_id=2 function_name_id=5 line=166 end_line=166 column=54 end_column=89}
-17 {file_name_id=2 function_name_id=5 line=165 end_line=165 column=41 end_column=126}
-18 {file_name_id=2 function_name_id=5 line=165 end_line=165 column=91 end_column=115}
-19 {file_name_id=2 function_name_id=5 line=164 end_line=164 column=22 end_column=59}
-20 {file_name_id=2 function_name_id=5 line=163 end_line=163 column=24 end_column=44}
-21 {file_name_id=2 function_name_id=5 line=137 end_line=137 column=12 end_column=30}
-22 {file_name_id=2 function_name_id=6 line=121 end_line=121 column=23 end_column=63}
-23 {file_name_id=2 function_name_id=5 line=160 end_line=160 column=20 end_column=47}
-24 {file_name_id=2 function_name_id=5 line=160 end_line=160 column=50 end_column=93}
-25 {file_name_id=2 function_name_id=5 line=160 end_line=160 column=58 end_column=92}
-26 {file_name_id=2 function_name_id=5 line=159 end_line=159 column=40 end_column=108}
-27 {file_name_id=2 function_name_id=5 line=159 end_line=159 column=64 end_column=97}
-28 {file_name_id=2 function_name_id=5 line=157 end_line=157 column=19 end_column=41}
-29 {file_name_id=2 function_name_id=5 line=156 end_line=156 column=20 end_column=66}
-30 {file_name_id=2 function_name_id=5 line=144 end_line=144 column=14 end_column=66}
-31 {file_name_id=2 function_name_id=5 line=143 end_line=143 column=17 end_column=60}
-32 {file_name_id=2 function_name_id=6 line=122 end_line=122 column=15 end_column=52}
-33 {file_name_id=2 function_name_id=5 line=161 end_line=161 column=16 end_column=48}
-34 {file_name_id=2 function_name_id=5 line=154 end_line=154 column=19 end_column=41}
-35 {file_name_id=2 function_name_id=5 line=153 end_line=153 column=16 end_column=47}
-36 {file_name_id=2 function_name_id=5 line=153 end_line=153 column=51 end_column=73}
-37 {file_name_id=2 function_name_id=5 line=153 end_line=153 column=91 end_column=110}
-38 {file_name_id=2 function_name_id=5 line=148 end_line=148 column=16 end_column=76}
-39 {file_name_id=2 function_name_id=5 line=147 end_line=147 column=19 end_column=82}
-40 {file_name_id=2 function_name_id=5 line=152 end_line=152 column=19 end_column=44}
-41 {file_name_id=2 function_name_id=5 line=146 end_line=146 column=21 end_column=82}
-42 {file_name_id=2 function_name_id=5 line=151 end_line=151 column=14 end_column=35}
-43 {file_name_id=2 function_name_id=5 line=145 end_line=145 column=16 end_column=79}
-44 {file_name_id=2 function_name_id=5 line=141 end_line=141 column=15 end_column=67}
-45 {file_name_id=2 function_name_id=6 line=120 end_line=120 column=23 end_column=63}
-46 {file_name_id=2 function_name_id=5 line=141 end_line=141 column=16 end_column=35}
-47 {file_name_id=2 function_name_id=5 line=140 end_line=140 column=18 end_column=59}
-48 {file_name_id=2 function_name_id=5 line=141 end_line=141 column=38 end_column=53}
-49 {file_name_id=2 function_name_id=5 line=150 end_line=150 column=21 end_column=67}
-50 {file_name_id=2 function_name_id=5 line=150 end_line=150 column=30 end_column=66}
-51 {file_name_id=2 function_name_id=6 line=114 end_line=114 column=10 end_column=35}
-52 {file_name_id=2 function_name_id=5 line=139 end_line=139 column=17 end_column=38}
-53 {file_name_id=2 function_name_id=6 line=115 end_line=115 column=11 end_column=37}
-54 {file_name_id=2 function_name_id=5 line=140 end_line=140 column=19 end_column=45}
-55 {file_name_id=2 function_name_id=6 line=116 end_line=116 column=11 end_column=37}
-56 {file_name_id=2 function_name_id=6 line=118 end_line=118 column=11 end_column=37}
-57 {file_name_id=2 function_name_id=6 line=117 end_line=117 column=11 end_column=37}
-58 {file_name_id=2 function_name_id=5 line=140 end_line=140 column=30 end_column=45}
-59 {file_name_id=2 function_name_id=6 line=119 end_line=119 column=11 end_column=37}
-60 {file_name_id=2 function_name_id=5 line=138 end_line=138 column=17 end_column=66}
-61 {file_name_id=2 function_name_id=5 line=138 end_line=138 column=29 end_column=49}
-62 {file_name_id=2 function_name_id=6 line=123 end_line=123 column=11 end_column=37}
-63 {file_name_id=2 function_name_id=6 line=124 end_line=124 column=12 end_column=50}
-64 {file_name_id=2 function_name_id=5 line=171 end_line=171 column=29 end_column=46}
-65 {file_name_id=2 function_name_id=5 line=171 end_line=171 column=49 end_column=67}
-66 {file_name_id=2 function_name_id=5 line=170 end_line=170 column=15 end_column=34}
-67 {file_name_id=2 function_name_id=5 line=172 end_line=172 column=19 end_column=65}
-68 {file_name_id=2 function_name_id=5 line=172 end_line=172 column=45 end_column=64}
-69 {file_name_id=2 function_name_id=5 line=173 end_line=173 column=31 end_column=66}
+12 {file_name_id=2 function_name_id=5 line=175 end_line=175 column=14 end_column=80}
+13 {file_name_id=2 function_name_id=5 line=174 end_line=174 column=16 end_column=86}
+14 {file_name_id=2 function_name_id=5 line=188 end_line=188 column=24 end_column=64}
+15 {file_name_id=2 function_name_id=5 line=173 end_line=173 column=23 end_column=76}
+16 {file_name_id=2 function_name_id=5 line=169 end_line=169 column=20 end_column=45}
+17 {file_name_id=2 function_name_id=5 line=166 end_line=166 column=46 end_column=90}
+18 {file_name_id=2 function_name_id=5 line=166 end_line=166 column=54 end_column=89}
+19 {file_name_id=2 function_name_id=5 line=165 end_line=165 column=41 end_column=126}
+20 {file_name_id=2 function_name_id=5 line=165 end_line=165 column=91 end_column=115}
+21 {file_name_id=2 function_name_id=5 line=164 end_line=164 column=22 end_column=59}
+22 {file_name_id=2 function_name_id=5 line=163 end_line=163 column=24 end_column=44}
+23 {file_name_id=2 function_name_id=5 line=137 end_line=137 column=12 end_column=30}
+24 {file_name_id=2 function_name_id=6 line=121 end_line=121 column=23 end_column=63}
+25 {file_name_id=2 function_name_id=5 line=160 end_line=160 column=20 end_column=47}
+26 {file_name_id=2 function_name_id=5 line=160 end_line=160 column=50 end_column=93}
+27 {file_name_id=2 function_name_id=5 line=160 end_line=160 column=58 end_column=92}
+28 {file_name_id=2 function_name_id=5 line=159 end_line=159 column=40 end_column=108}
+29 {file_name_id=2 function_name_id=5 line=159 end_line=159 column=64 end_column=97}
+30 {file_name_id=2 function_name_id=5 line=157 end_line=157 column=19 end_column=41}
+31 {file_name_id=2 function_name_id=5 line=156 end_line=156 column=20 end_column=66}
+32 {file_name_id=2 function_name_id=5 line=144 end_line=144 column=14 end_column=66}
+33 {file_name_id=2 function_name_id=5 line=143 end_line=143 column=17 end_column=60}
+34 {file_name_id=2 function_name_id=6 line=122 end_line=122 column=15 end_column=52}
+35 {file_name_id=2 function_name_id=5 line=161 end_line=161 column=16 end_column=48}
+36 {file_name_id=2 function_name_id=5 line=154 end_line=154 column=19 end_column=41}
+37 {file_name_id=2 function_name_id=5 line=153 end_line=153 column=16 end_column=47}
+38 {file_name_id=2 function_name_id=5 line=153 end_line=153 column=51 end_column=73}
+39 {file_name_id=2 function_name_id=5 line=153 end_line=153 column=91 end_column=110}
+40 {file_name_id=2 function_name_id=5 line=148 end_line=148 column=16 end_column=76}
+41 {file_name_id=2 function_name_id=5 line=147 end_line=147 column=19 end_column=82}
+42 {file_name_id=2 function_name_id=5 line=152 end_line=152 column=19 end_column=44}
+43 {file_name_id=2 function_name_id=5 line=146 end_line=146 column=21 end_column=82}
+44 {file_name_id=2 function_name_id=5 line=151 end_line=151 column=14 end_column=35}
+45 {file_name_id=2 function_name_id=5 line=145 end_line=145 column=16 end_column=79}
+46 {file_name_id=2 function_name_id=5 line=141 end_line=141 column=15 end_column=67}
+47 {file_name_id=2 function_name_id=6 line=120 end_line=120 column=23 end_column=63}
+48 {file_name_id=2 function_name_id=5 line=141 end_line=141 column=16 end_column=35}
+49 {file_name_id=2 function_name_id=5 line=140 end_line=140 column=18 end_column=59}
+50 {file_name_id=2 function_name_id=5 line=141 end_line=141 column=38 end_column=53}
+51 {file_name_id=2 function_name_id=5 line=150 end_line=150 column=21 end_column=67}
+52 {file_name_id=2 function_name_id=5 line=150 end_line=150 column=30 end_column=66}
+53 {file_name_id=2 function_name_id=6 line=114 end_line=114 column=10 end_column=35}
+54 {file_name_id=2 function_name_id=5 line=139 end_line=139 column=17 end_column=38}
+55 {file_name_id=2 function_name_id=6 line=115 end_line=115 column=11 end_column=37}
+56 {file_name_id=2 function_name_id=5 line=140 end_line=140 column=19 end_column=45}
+57 {file_name_id=2 function_name_id=6 line=116 end_line=116 column=11 end_column=37}
+58 {file_name_id=2 function_name_id=6 line=118 end_line=118 column=11 end_column=37}
+59 {file_name_id=2 function_name_id=6 line=117 end_line=117 column=11 end_column=37}
+60 {file_name_id=2 function_name_id=5 line=140 end_line=140 column=30 end_column=45}
+61 {file_name_id=2 function_name_id=6 line=119 end_line=119 column=11 end_column=37}
+62 {file_name_id=2 function_name_id=5 line=138 end_line=138 column=17 end_column=66}
+63 {file_name_id=2 function_name_id=5 line=138 end_line=138 column=29 end_column=49}
+64 {file_name_id=2 function_name_id=6 line=123 end_line=123 column=11 end_column=37}
+65 {file_name_id=2 function_name_id=6 line=124 end_line=124 column=12 end_column=50}
+66 {file_name_id=2 function_name_id=5 line=171 end_line=171 column=29 end_column=46}
+67 {file_name_id=2 function_name_id=5 line=171 end_line=171 column=49 end_column=67}
+68 {file_name_id=2 function_name_id=5 line=170 end_line=170 column=15 end_column=46}
+69 {file_name_id=2 function_name_id=5 line=172 end_line=172 column=19 end_column=65}
+70 {file_name_id=2 function_name_id=5 line=172 end_line=172 column=45 end_column=64}
+71 {file_name_id=2 function_name_id=5 line=173 end_line=173 column=31 end_column=66}
 
 StackFrames
 1 {file_location_id=1 parent_frame_id=1}
@@ -102,59 +104,61 @@ StackFrames
 16 {file_location_id=15 parent_frame_id=5}
 17 {file_location_id=16 parent_frame_id=5}
 18 {file_location_id=17 parent_frame_id=5}
-19 {file_location_id=18 parent_frame_id=12}
+19 {file_location_id=18 parent_frame_id=5}
 20 {file_location_id=19 parent_frame_id=5}
-21 {file_location_id=20 parent_frame_id=5}
-22 {file_location_id=21 parent_frame_id=12}
-23 {file_location_id=22 parent_frame_id=23}
-24 {file_location_id=23 parent_frame_id=5}
-25 {file_location_id=24 parent_frame_id=5}
+21 {file_location_id=20 parent_frame_id=12}
+22 {file_location_id=21 parent_frame_id=5}
+23 {file_location_id=22 parent_frame_id=5}
+24 {file_location_id=23 parent_frame_id=12}
+25 {file_location_id=24 parent_frame_id=25}
 26 {file_location_id=25 parent_frame_id=5}
 27 {file_location_id=26 parent_frame_id=5}
-28 {file_location_id=27 parent_frame_id=12}
-29 {file_location_id=28 parent_frame_id=12}
-30 {file_location_id=29 parent_frame_id=5}
+28 {file_location_id=27 parent_frame_id=5}
+29 {file_location_id=28 parent_frame_id=5}
+30 {file_location_id=29 parent_frame_id=12}
 31 {file_location_id=30 parent_frame_id=12}
 32 {file_location_id=31 parent_frame_id=5}
-33 {file_location_id=21 parent_frame_id=5}
-34 {file_location_id=32 parent_frame_id=34}
-35 {file_location_id=33 parent_frame_id=12}
-36 {file_location_id=34 parent_frame_id=5}
-37 {file_location_id=35 parent_frame_id=5}
+33 {file_location_id=32 parent_frame_id=12}
+34 {file_location_id=33 parent_frame_id=5}
+35 {file_location_id=23 parent_frame_id=5}
+36 {file_location_id=34 parent_frame_id=36}
+37 {file_location_id=35 parent_frame_id=12}
 38 {file_location_id=36 parent_frame_id=5}
 39 {file_location_id=37 parent_frame_id=5}
-40 {file_location_id=38 parent_frame_id=12}
-41 {file_location_id=39 parent_frame_id=12}
-42 {file_location_id=40 parent_frame_id=5}
+40 {file_location_id=38 parent_frame_id=5}
+41 {file_location_id=39 parent_frame_id=5}
+42 {file_location_id=40 parent_frame_id=12}
 43 {file_location_id=41 parent_frame_id=12}
 44 {file_location_id=42 parent_frame_id=5}
 45 {file_location_id=43 parent_frame_id=12}
 46 {file_location_id=44 parent_frame_id=5}
-47 {file_location_id=45 parent_frame_id=23}
+47 {file_location_id=45 parent_frame_id=12}
 48 {file_location_id=46 parent_frame_id=5}
-49 {file_location_id=47 parent_frame_id=5}
+49 {file_location_id=47 parent_frame_id=25}
 50 {file_location_id=48 parent_frame_id=5}
 51 {file_location_id=49 parent_frame_id=5}
 52 {file_location_id=50 parent_frame_id=5}
-53 {file_location_id=51 parent_frame_id=34}
+53 {file_location_id=51 parent_frame_id=5}
 54 {file_location_id=52 parent_frame_id=5}
-55 {file_location_id=53 parent_frame_id=34}
+55 {file_location_id=53 parent_frame_id=36}
 56 {file_location_id=54 parent_frame_id=5}
-57 {file_location_id=55 parent_frame_id=34}
-58 {file_location_id=56 parent_frame_id=34}
-59 {file_location_id=57 parent_frame_id=34}
-60 {file_location_id=58 parent_frame_id=5}
-61 {file_location_id=59 parent_frame_id=34}
+57 {file_location_id=55 parent_frame_id=36}
+58 {file_location_id=56 parent_frame_id=5}
+59 {file_location_id=57 parent_frame_id=36}
+60 {file_location_id=58 parent_frame_id=36}
+61 {file_location_id=59 parent_frame_id=36}
 62 {file_location_id=60 parent_frame_id=5}
-63 {file_location_id=61 parent_frame_id=5}
-64 {file_location_id=62 parent_frame_id=34}
-65 {file_location_id=63 parent_frame_id=34}
-66 {file_location_id=64 parent_frame_id=5}
-67 {file_location_id=65 parent_frame_id=5}
+63 {file_location_id=61 parent_frame_id=36}
+64 {file_location_id=62 parent_frame_id=5}
+65 {file_location_id=63 parent_frame_id=5}
+66 {file_location_id=64 parent_frame_id=36}
+67 {file_location_id=65 parent_frame_id=36}
 68 {file_location_id=66 parent_frame_id=5}
 69 {file_location_id=67 parent_frame_id=5}
 70 {file_location_id=68 parent_frame_id=5}
 71 {file_location_id=69 parent_frame_id=5}
+72 {file_location_id=70 parent_frame_id=5}
+73 {file_location_id=71 parent_frame_id=5}
 
 
 %region_1.8.clone.5 (reduce_window_sum.24: f64[], reduce_window_sum.25: f64[]) -> f64[] {
@@ -169,53 +173,53 @@ StackFrames
   ROOT %reduce_window_sum.23.0 = f64[] add(%reduce_window_sum.21, %reduce_window_sum.22), metadata={op_name="reduce_window_sum"}
 }
 
-%fused_multiply (param_0.149: f64[3,16,14], param_1.173: f64[3], param_2.123: f64[14], param_3.85: f64[3]) -> (f64[3,17,14], f64[3,17,14]) {
+%fused_multiply (param_0.151: f64[3,16,14], param_1.175: f64[3], param_2.123: f64[14], param_3.85: f64[3]) -> (f64[3,17,14], f64[3,17,14]) {
   %constant_40_2 = f64[] constant(0)
   %broadcast.19.8 = f64[3]{0} broadcast(%constant_40_2), dimensions={}
-  %param_1.173 = f64[3]{0} parameter(1)
+  %param_1.175 = f64[3]{0} parameter(1)
   %constant_51_4 = f64[] constant(1)
-  %min.8.5 = f64[3]{0} broadcast(%constant_51_4), dimensions={}, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/jit(clip)/min" stack_frame_id=23}
-  %clamp.2.5 = f64[3]{0} clamp(%broadcast.19.8, %param_1.173, %min.8.5), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/jit(clip)/min" stack_frame_id=23}
-  %mul.117.3 = f64[3,14]{1,0} broadcast(%clamp.2.5), dimensions={0}, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/mul" stack_frame_id=20}
+  %min.8.5 = f64[3]{0} broadcast(%constant_51_4), dimensions={}, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/jit(clip)/min" stack_frame_id=25}
+  %clamp.2.5 = f64[3]{0} clamp(%broadcast.19.8, %param_1.175, %min.8.5), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/jit(clip)/min" stack_frame_id=25}
+  %mul.117.3 = f64[3,14]{1,0} broadcast(%clamp.2.5), dimensions={0}, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/mul" stack_frame_id=22}
   %param_3.85 = f64[3]{0} parameter(3)
-  %max.29.3.clone.1 = f64[3]{0} maximum(%param_3.85, %broadcast.19.8), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/max" stack_frame_id=34}
+  %max.29.3.clone.1 = f64[3]{0} maximum(%param_3.85, %broadcast.19.8), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/max" stack_frame_id=36}
   %constant_35_1_clone_1 = f64[] constant(1368.22)
   %broadcast.62.1.clone.1 = f64[3]{0} broadcast(%constant_35_1_clone_1), dimensions={}
-  %mul.0.1.clone.1 = f64[3]{0} multiply(%max.29.3.clone.1, %broadcast.62.1.clone.1), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/mul" stack_frame_id=30}
-  %mul.106.3.clone.1 = f64[3,14]{1,0} broadcast(%mul.0.1.clone.1), dimensions={0}, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/mul" stack_frame_id=30}
-  %iota.39.clone.1 = s64[14,1]{1,0} iota(), iota_dimension=0, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/iota" stack_frame_id=32}
-  %convert_element_type.5.33.clone.1 = s32[14,1]{1,0} convert(%iota.39.clone.1), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/jit(_take)/convert_element_type" stack_frame_id=31}
-  %constant_55_2_clone_1 = s32[] constant(0), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/jit(_take)" stack_frame_id=31}
-  %broadcast.33.5.clone.1 = s32[14,1]{1,0} broadcast(%constant_55_2_clone_1), dimensions={}, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/jit(_take)" stack_frame_id=31}
-  %ge.5.5.clone.1 = pred[14,1]{1,0} compare(%convert_element_type.5.33.clone.1, %broadcast.33.5.clone.1), direction=GE, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/jit(_take)/ge" stack_frame_id=31}
-  %constant_56_2_clone_1 = s32[] constant(13), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/jit(_take)" stack_frame_id=31}
-  %broadcast.34.5.clone.1 = s32[14,1]{1,0} broadcast(%constant_56_2_clone_1), dimensions={}, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/jit(_take)" stack_frame_id=31}
-  %le.5.5.clone.1 = pred[14,1]{1,0} compare(%convert_element_type.5.33.clone.1, %broadcast.34.5.clone.1), direction=LE, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/jit(_take)/le" stack_frame_id=31}
-  %and.5.3.clone.1 = pred[14,1]{1,0} and(%ge.5.5.clone.1, %le.5.5.clone.1), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/jit(_take)/and" stack_frame_id=31}
+  %mul.0.1.clone.1 = f64[3]{0} multiply(%max.29.3.clone.1, %broadcast.62.1.clone.1), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/mul" stack_frame_id=32}
+  %mul.106.3.clone.1 = f64[3,14]{1,0} broadcast(%mul.0.1.clone.1), dimensions={0}, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/mul" stack_frame_id=32}
+  %iota.39.clone.1 = s64[14,1]{1,0} iota(), iota_dimension=0, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/iota" stack_frame_id=34}
+  %convert_element_type.5.33.clone.1 = s32[14,1]{1,0} convert(%iota.39.clone.1), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/jit(_take)/convert_element_type" stack_frame_id=33}
+  %constant_55_2_clone_1 = s32[] constant(0), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/jit(_take)" stack_frame_id=33}
+  %broadcast.33.5.clone.1 = s32[14,1]{1,0} broadcast(%constant_55_2_clone_1), dimensions={}, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/jit(_take)" stack_frame_id=33}
+  %ge.5.5.clone.1 = pred[14,1]{1,0} compare(%convert_element_type.5.33.clone.1, %broadcast.33.5.clone.1), direction=GE, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/jit(_take)/ge" stack_frame_id=33}
+  %constant_56_2_clone_1 = s32[] constant(13), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/jit(_take)" stack_frame_id=33}
+  %broadcast.34.5.clone.1 = s32[14,1]{1,0} broadcast(%constant_56_2_clone_1), dimensions={}, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/jit(_take)" stack_frame_id=33}
+  %le.5.5.clone.1 = pred[14,1]{1,0} compare(%convert_element_type.5.33.clone.1, %broadcast.34.5.clone.1), direction=LE, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/jit(_take)/le" stack_frame_id=33}
+  %and.5.3.clone.1 = pred[14,1]{1,0} and(%ge.5.5.clone.1, %le.5.5.clone.1), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/jit(_take)/and" stack_frame_id=33}
   %param_2.123 = f64[14]{0} parameter(2)
-  %gather.10.3.clone.1 = f64[14,1]{1,0} gather(%param_2.123, %convert_element_type.5.33.clone.1), offset_dims={1}, collapsed_slice_dims={}, start_index_map={0}, index_vector_dim=1, slice_sizes={1}, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/jit(_take)/gather" stack_frame_id=31}
-  %constant_58_2_clone_1 = f64[] constant(nan), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/jit(_take)" stack_frame_id=31}
-  %broadcast.65.9.clone.1 = f64[14,1]{1,0} broadcast(%constant_58_2_clone_1), dimensions={}, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/jit(_take)" stack_frame_id=31}
-  %select_n.25.5.clone.1 = f64[14,1]{1,0} select(%and.5.3.clone.1, %gather.10.3.clone.1, %broadcast.65.9.clone.1), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/jit(_take)/select_n" stack_frame_id=31}
-  %bitcast.15.clone.1 = f64[14]{0} bitcast(%select_n.25.5.clone.1), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/jit(_take)/select_n" stack_frame_id=31}
-  %mul.109.5.clone.1 = f64[3,14]{1,0} broadcast(%bitcast.15.clone.1), dimensions={1}, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/mul" stack_frame_id=30}
-  %mul.110.3.clone.1 = f64[3,14]{1,0} multiply(%mul.106.3.clone.1, %mul.109.5.clone.1), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/mul" stack_frame_id=30}
-  %mul.113.1.clone.1 = f64[3,17,14]{2,1,0} broadcast(%mul.110.3.clone.1), dimensions={0,2}, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/mul" stack_frame_id=24}
-  %param_0.149 = f64[3,16,14]{2,1,0} parameter(0)
-  %rev.0.5.clone.1 = f64[3,16,14]{2,1,0} reverse(%param_0.149), dimensions={1}, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/jit(_flip)/rev" stack_frame_id=29}
-  %reduce_window_sum.10.5.clone.1 = f64[3,16,14]{2,1,0} reduce-window(%rev.0.5.clone.1, %constant_40_2), window={size=1x16x1 pad=0_0x15_0x0_0}, to_apply=%region_1.8.clone.4, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/jit(cumsum)/reduce_window_sum" stack_frame_id=28}
-  %pad.5.clone.1 = f64[3,17,14]{2,1,0} pad(%reduce_window_sum.10.5.clone.1, %constant_40_2), padding=0_0x1_0x0_0, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/concatenate" stack_frame_id=27}
-  %neg.2.3.clone.1 = f64[3,17,14]{2,1,0} negate(%pad.5.clone.1), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/neg" stack_frame_id=26}
-  %exp.2.1.clone.1 = f64[3,17,14]{2,1,0} exponential(%neg.2.3.clone.1), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/exp" stack_frame_id=25}
-  %mul.114.1.clone.1 = f64[3,17,14]{2,1,0} multiply(%mul.113.1.clone.1, %exp.2.1.clone.1), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/mul" stack_frame_id=24}
-  %slice.5 = f64[3,1,14]{2,1,0} slice(%mul.114.1.clone.1), slice={[0:3], [16:17], [0:14]}, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/slice" stack_frame_id=21}
-  %bitcast.5.4 = f64[3,14]{1,0} bitcast(%slice.5), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/slice" stack_frame_id=21}
-  %mul.118.3 = f64[3,14]{1,0} multiply(%mul.117.3, %bitcast.5.4), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/mul" stack_frame_id=20}
+  %gather.10.3.clone.1 = f64[14,1]{1,0} gather(%param_2.123, %convert_element_type.5.33.clone.1), offset_dims={1}, collapsed_slice_dims={}, start_index_map={0}, index_vector_dim=1, slice_sizes={1}, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/jit(_take)/gather" stack_frame_id=33}
+  %constant_58_2_clone_1 = f64[] constant(nan), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/jit(_take)" stack_frame_id=33}
+  %broadcast.65.9.clone.1 = f64[14,1]{1,0} broadcast(%constant_58_2_clone_1), dimensions={}, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/jit(_take)" stack_frame_id=33}
+  %select_n.25.5.clone.1 = f64[14,1]{1,0} select(%and.5.3.clone.1, %gather.10.3.clone.1, %broadcast.65.9.clone.1), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/jit(_take)/select_n" stack_frame_id=33}
+  %bitcast.15.clone.1 = f64[14]{0} bitcast(%select_n.25.5.clone.1), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/jit(_take)/select_n" stack_frame_id=33}
+  %mul.109.5.clone.1 = f64[3,14]{1,0} broadcast(%bitcast.15.clone.1), dimensions={1}, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/mul" stack_frame_id=32}
+  %mul.110.3.clone.1 = f64[3,14]{1,0} multiply(%mul.106.3.clone.1, %mul.109.5.clone.1), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/mul" stack_frame_id=32}
+  %mul.113.1.clone.1 = f64[3,17,14]{2,1,0} broadcast(%mul.110.3.clone.1), dimensions={0,2}, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/mul" stack_frame_id=26}
+  %param_0.151 = f64[3,16,14]{2,1,0} parameter(0)
+  %rev.0.5.clone.1 = f64[3,16,14]{2,1,0} reverse(%param_0.151), dimensions={1}, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/jit(_flip)/rev" stack_frame_id=31}
+  %reduce_window_sum.10.5.clone.1 = f64[3,16,14]{2,1,0} reduce-window(%rev.0.5.clone.1, %constant_40_2), window={size=1x16x1 pad=0_0x15_0x0_0}, to_apply=%region_1.8.clone.4, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/jit(cumsum)/reduce_window_sum" stack_frame_id=30}
+  %pad.5.clone.1 = f64[3,17,14]{2,1,0} pad(%reduce_window_sum.10.5.clone.1, %constant_40_2), padding=0_0x1_0x0_0, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/concatenate" stack_frame_id=29}
+  %neg.2.3.clone.1 = f64[3,17,14]{2,1,0} negate(%pad.5.clone.1), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/neg" stack_frame_id=28}
+  %exp.2.1.clone.1 = f64[3,17,14]{2,1,0} exponential(%neg.2.3.clone.1), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/exp" stack_frame_id=27}
+  %mul.114.1.clone.1 = f64[3,17,14]{2,1,0} multiply(%mul.113.1.clone.1, %exp.2.1.clone.1), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/mul" stack_frame_id=26}
+  %slice.5 = f64[3,1,14]{2,1,0} slice(%mul.114.1.clone.1), slice={[0:3], [16:17], [0:14]}, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/slice" stack_frame_id=23}
+  %bitcast.5.4 = f64[3,14]{1,0} bitcast(%slice.5), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/slice" stack_frame_id=23}
+  %mul.118.3 = f64[3,14]{1,0} multiply(%mul.117.3, %bitcast.5.4), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/mul" stack_frame_id=22}
   %mul.121.1 = f64[3,17,14]{2,1,0} broadcast(%mul.118.3), dimensions={0,2}, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/mul" stack_frame_id=9}
-  %reduce_window_sum.11.1 = f64[3,16,14]{2,1,0} reduce-window(%param_0.149, %constant_40_2), window={size=1x16x1 pad=0_0x15_0x0_0}, to_apply=%region_1.8.clone.5, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/jit(cumsum)/reduce_window_sum" stack_frame_id=19}
-  %pad.1.5 = f64[3,17,14]{2,1,0} pad(%reduce_window_sum.11.1, %constant_40_2), padding=0_0x1_0x0_0, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/concatenate" stack_frame_id=18}
-  %neg.3.5 = f64[3,17,14]{2,1,0} negate(%pad.1.5), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/neg" stack_frame_id=17}
-  %exp.3.3 = f64[3,17,14]{2,1,0} exponential(%neg.3.5), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/exp" stack_frame_id=16}
+  %reduce_window_sum.11.1 = f64[3,16,14]{2,1,0} reduce-window(%param_0.151, %constant_40_2), window={size=1x16x1 pad=0_0x15_0x0_0}, to_apply=%region_1.8.clone.5, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/jit(cumsum)/reduce_window_sum" stack_frame_id=21}
+  %pad.1.5 = f64[3,17,14]{2,1,0} pad(%reduce_window_sum.11.1, %constant_40_2), padding=0_0x1_0x0_0, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/concatenate" stack_frame_id=20}
+  %neg.3.5 = f64[3,17,14]{2,1,0} negate(%pad.1.5), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/neg" stack_frame_id=19}
+  %exp.3.3 = f64[3,17,14]{2,1,0} exponential(%neg.3.5), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/exp" stack_frame_id=18}
   %mul.122.1 = f64[3,17,14]{2,1,0} multiply(%mul.121.1, %exp.3.3), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/mul" stack_frame_id=9}
   ROOT %tuple.2 = (f64[3,17,14]{2,1,0}, f64[3,17,14]{2,1,0}) tuple(%mul.122.1, %mul.114.1.clone.1)
 }
@@ -226,105 +230,117 @@ StackFrames
   ROOT %reduce_window_sum.5.0 = f64[] add(%reduce_window_sum.3, %reduce_window_sum.4), metadata={op_name="reduce_window_sum"}
 }
 
-%fused_reduce (param_0.151: f64[3,17,14]) -> f64[3,17] {
-  %param_0.151 = f64[3,17,14]{2,1,0} parameter(0)
-  %rev.2.1 = f64[3,17,14]{2,1,0} reverse(%param_0.151), dimensions={1}, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/jit(_flip)/rev" stack_frame_id=35}
+%fused_reduce (param_0.153: f64[3,17,14]) -> f64[3,17] {
+  %param_0.153 = f64[3,17,14]{2,1,0} parameter(0)
+  %rev.2.1 = f64[3,17,14]{2,1,0} reverse(%param_0.153), dimensions={1}, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/jit(_flip)/rev" stack_frame_id=37}
   %constant_40_6 = f64[] constant(0)
   ROOT %reduce_sum.28.1 = f64[3,17]{1,0} reduce(%rev.2.1, %constant_40_6), dimensions={2}, to_apply=%region_1.8, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/reduce_sum" stack_frame_id=10}
 }
 
-%fused_clamp (param_0.154: f64[3,16], param_1.170: f64[3,16], param_2.118: f64[3,16], param_3.70: f64[3,16], param_4.42: f64[3,16], param_5.38: f64[3,16], param_6.34: f64[3,16], param_7.27: f64[14], param_8.25: f64[14], param_9.22: f64[14], param_10.22: f64[14], param_11.21: f64[3,16], param_12.20: f64[3,16]) -> f64[3,16,14] {
+%fused_clamp (param_0.156: f64[3,16], param_1.172: f64[3,16], param_2.118: f64[3,16], param_3.70: f64[3,16], param_4.42: f64[3,16], param_5.38: f64[3,16], param_6.34: f64[3,16], param_7.27: f64[14], param_8.25: f64[14], param_9.22: f64[14], param_10.22: f64[14], param_11.21: f64[3,16], param_12.20: f64[3,16]) -> f64[3,16,14] {
   %constant_43_1 = f64[] constant(1e-10)
   %max.2.1 = f64[3,16,14]{2,1,0} broadcast(%constant_43_1), dimensions={}, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/jit(clip)/max" stack_frame_id=12}
   %param_3.70 = f64[3,16]{1,0} parameter(3)
   %constant_40_4 = f64[] constant(0)
   %broadcast.20.12 = f64[3,16]{1,0} broadcast(%constant_40_4), dimensions={}
-  %max.24.3 = f64[3,16]{1,0} maximum(%param_3.70, %broadcast.20.12), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/max" stack_frame_id=55}
+  %max.24.3 = f64[3,16]{1,0} maximum(%param_3.70, %broadcast.20.12), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/max" stack_frame_id=57}
   %param_12.20 = f64[3,16]{1,0} parameter(12)
   %constant_39_2 = f64[] constant(1e-06)
   %broadcast.18.3 = f64[3,16]{1,0} broadcast(%constant_39_2), dimensions={}
-  %max.31.3 = f64[3,16]{1,0} maximum(%param_12.20, %broadcast.18.3), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/max" stack_frame_id=65}
+  %max.31.3 = f64[3,16]{1,0} maximum(%param_12.20, %broadcast.18.3), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/max" stack_frame_id=67}
   %param_11.21 = f64[3,16]{1,0} parameter(11)
   %constant_51_1 = f64[] constant(1)
   %broadcast.21.11 = f64[3,16]{1,0} broadcast(%constant_51_1), dimensions={}
-  %max.30.3 = f64[3,16]{1,0} maximum(%param_11.21, %broadcast.21.11), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/max" stack_frame_id=64}
-  %mul.65.3 = f64[3,16]{1,0} multiply(%max.31.3, %max.30.3), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/mul" stack_frame_id=63}
-  %max.32.3 = f64[3,16]{1,0} maximum(%mul.65.3, %broadcast.18.3), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/max" stack_frame_id=62}
-  %mul.66.3 = f64[3,16]{1,0} multiply(%max.24.3, %max.32.3), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/mul" stack_frame_id=54}
-  %mul.73.3 = f64[3,16,14]{2,1,0} broadcast(%mul.66.3), dimensions={0,1}, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/mul" stack_frame_id=44}
-  %iota.43 = s64[14,1]{1,0} iota(), iota_dimension=0, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/iota" stack_frame_id=32}
-  %convert_element_type.5.37 = s32[14,1]{1,0} convert(%iota.43), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/jit(_take)/convert_element_type" stack_frame_id=31}
-  %constant_55_1 = s32[] constant(0), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/jit(_take)" stack_frame_id=31}
-  %broadcast.33.7 = s32[14,1]{1,0} broadcast(%constant_55_1), dimensions={}, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/jit(_take)" stack_frame_id=31}
-  %ge.5.7 = pred[14,1]{1,0} compare(%convert_element_type.5.37, %broadcast.33.7), direction=GE, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/jit(_take)/ge" stack_frame_id=31}
-  %constant_56_1 = s32[] constant(13), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/jit(_take)" stack_frame_id=31}
-  %broadcast.34.7 = s32[14,1]{1,0} broadcast(%constant_56_1), dimensions={}, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/jit(_take)" stack_frame_id=31}
-  %le.5.7 = pred[14,1]{1,0} compare(%convert_element_type.5.37, %broadcast.34.7), direction=LE, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/jit(_take)/le" stack_frame_id=31}
-  %and.5.5 = pred[14,1]{1,0} and(%ge.5.7, %le.5.7), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/jit(_take)/and" stack_frame_id=31}
+  %max.30.3 = f64[3,16]{1,0} maximum(%param_11.21, %broadcast.21.11), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/max" stack_frame_id=66}
+  %mul.65.3 = f64[3,16]{1,0} multiply(%max.31.3, %max.30.3), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/mul" stack_frame_id=65}
+  %max.32.3 = f64[3,16]{1,0} maximum(%mul.65.3, %broadcast.18.3), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/max" stack_frame_id=64}
+  %mul.66.3 = f64[3,16]{1,0} multiply(%max.24.3, %max.32.3), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/mul" stack_frame_id=56}
+  %mul.73.3 = f64[3,16,14]{2,1,0} broadcast(%mul.66.3), dimensions={0,1}, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/mul" stack_frame_id=46}
+  %iota.43 = s64[14,1]{1,0} iota(), iota_dimension=0, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/iota" stack_frame_id=34}
+  %convert_element_type.5.37 = s32[14,1]{1,0} convert(%iota.43), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/jit(_take)/convert_element_type" stack_frame_id=33}
+  %constant_55_1 = s32[] constant(0), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/jit(_take)" stack_frame_id=33}
+  %broadcast.33.7 = s32[14,1]{1,0} broadcast(%constant_55_1), dimensions={}, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/jit(_take)" stack_frame_id=33}
+  %ge.5.7 = pred[14,1]{1,0} compare(%convert_element_type.5.37, %broadcast.33.7), direction=GE, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/jit(_take)/ge" stack_frame_id=33}
+  %constant_56_1 = s32[] constant(13), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/jit(_take)" stack_frame_id=33}
+  %broadcast.34.7 = s32[14,1]{1,0} broadcast(%constant_56_1), dimensions={}, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/jit(_take)" stack_frame_id=33}
+  %le.5.7 = pred[14,1]{1,0} compare(%convert_element_type.5.37, %broadcast.34.7), direction=LE, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/jit(_take)/le" stack_frame_id=33}
+  %and.5.5 = pred[14,1]{1,0} and(%ge.5.7, %le.5.7), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/jit(_take)/and" stack_frame_id=33}
   %param_10.22 = f64[14]{0} parameter(10)
-  %gather.11.3 = f64[14,1]{1,0} gather(%param_10.22, %convert_element_type.5.37), offset_dims={1}, collapsed_slice_dims={}, start_index_map={0}, index_vector_dim=1, slice_sizes={1}, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/jit(_take)/gather" stack_frame_id=45}
-  %constant_58_1 = f64[] constant(nan), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/jit(_take)" stack_frame_id=31}
-  %broadcast.65.17 = f64[14,1]{1,0} broadcast(%constant_58_1), dimensions={}, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/jit(_take)" stack_frame_id=31}
-  %select_n.26.3 = f64[14,1]{1,0} select(%and.5.5, %gather.11.3, %broadcast.65.17), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/jit(_take)/select_n" stack_frame_id=45}
-  %bitcast.1.5 = f64[14]{0} bitcast(%select_n.26.3), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/jit(_take)/select_n" stack_frame_id=45}
-  %mul.76.5 = f64[3,16,14]{2,1,0} broadcast(%bitcast.1.5), dimensions={2}, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/mul" stack_frame_id=44}
-  %mul.77.3 = f64[3,16,14]{2,1,0} multiply(%mul.73.3, %mul.76.5), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/mul" stack_frame_id=44}
+  %gather.11.3 = f64[14,1]{1,0} gather(%param_10.22, %convert_element_type.5.37), offset_dims={1}, collapsed_slice_dims={}, start_index_map={0}, index_vector_dim=1, slice_sizes={1}, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/jit(_take)/gather" stack_frame_id=47}
+  %constant_58_1 = f64[] constant(nan), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/jit(_take)" stack_frame_id=33}
+  %broadcast.65.17 = f64[14,1]{1,0} broadcast(%constant_58_1), dimensions={}, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/jit(_take)" stack_frame_id=33}
+  %select_n.26.3 = f64[14,1]{1,0} select(%and.5.5, %gather.11.3, %broadcast.65.17), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/jit(_take)/select_n" stack_frame_id=47}
+  %bitcast.1.5 = f64[14]{0} bitcast(%select_n.26.3), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/jit(_take)/select_n" stack_frame_id=47}
+  %mul.76.5 = f64[3,16,14]{2,1,0} broadcast(%bitcast.1.5), dimensions={2}, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/mul" stack_frame_id=46}
+  %mul.77.3 = f64[3,16,14]{2,1,0} multiply(%mul.73.3, %mul.76.5), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/mul" stack_frame_id=46}
   %param_2.118 = f64[3,16]{1,0} parameter(2)
-  %max.33.5 = f64[3,16]{1,0} maximum(%param_2.118, %broadcast.21.11), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/max" stack_frame_id=53}
+  %max.33.5 = f64[3,16]{1,0} maximum(%param_2.118, %broadcast.21.11), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/max" stack_frame_id=55}
   %constant_87_1 = f64[] constant(1e-05)
-  %broadcast.58.5 = f64[3,16]{1,0} broadcast(%constant_87_1), dimensions={}, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/div" stack_frame_id=52}
-  %multiply.6 = f64[3,16]{1,0} multiply(%max.33.5, %broadcast.58.5), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/div" stack_frame_id=52}
-  %sqrt.1.3 = f64[3,16]{1,0} sqrt(%multiply.6), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/sqrt" stack_frame_id=51}
-  %mul.80.3 = f64[3,16,14]{2,1,0} broadcast(%sqrt.1.3), dimensions={0,1}, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/mul" stack_frame_id=42}
+  %broadcast.58.5 = f64[3,16]{1,0} broadcast(%constant_87_1), dimensions={}, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/div" stack_frame_id=54}
+  %multiply.6 = f64[3,16]{1,0} multiply(%max.33.5, %broadcast.58.5), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/div" stack_frame_id=54}
+  %sqrt.1.3 = f64[3,16]{1,0} sqrt(%multiply.6), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/sqrt" stack_frame_id=53}
+  %mul.80.3 = f64[3,16,14]{2,1,0} broadcast(%sqrt.1.3), dimensions={0,1}, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/mul" stack_frame_id=44}
   %param_9.22 = f64[14]{0} parameter(9)
-  %gather.12.3 = f64[14,1]{1,0} gather(%param_9.22, %convert_element_type.5.37), offset_dims={1}, collapsed_slice_dims={}, start_index_map={0}, index_vector_dim=1, slice_sizes={1}, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/jit(_take)/gather" stack_frame_id=43}
-  %select_n.27.3 = f64[14,1]{1,0} select(%and.5.5, %gather.12.3, %broadcast.65.17), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/jit(_take)/select_n" stack_frame_id=43}
-  %bitcast.2.5 = f64[14]{0} bitcast(%select_n.27.3), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/jit(_take)/select_n" stack_frame_id=43}
-  %mul.83.5 = f64[3,16,14]{2,1,0} broadcast(%bitcast.2.5), dimensions={2}, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/mul" stack_frame_id=42}
-  %mul.84.3 = f64[3,16,14]{2,1,0} multiply(%mul.80.3, %mul.83.5), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/mul" stack_frame_id=42}
-  %add.12.1 = f64[3,16,14]{2,1,0} add(%mul.77.3, %mul.84.3), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/add" stack_frame_id=36}
-  %param_0.154 = f64[3,16]{1,0} parameter(0)
-  %clamp.6 = f64[3,16]{1,0} clamp(%broadcast.20.12, %param_0.154, %broadcast.21.11), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/jit(clip)/min" stack_frame_id=47}
-  %mul.101.3 = f64[3,16,14]{2,1,0} broadcast(%clamp.6), dimensions={0,1}, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/mul" stack_frame_id=37}
+  %gather.12.3 = f64[14,1]{1,0} gather(%param_9.22, %convert_element_type.5.37), offset_dims={1}, collapsed_slice_dims={}, start_index_map={0}, index_vector_dim=1, slice_sizes={1}, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/jit(_take)/gather" stack_frame_id=45}
+  %select_n.27.3 = f64[14,1]{1,0} select(%and.5.5, %gather.12.3, %broadcast.65.17), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/jit(_take)/select_n" stack_frame_id=45}
+  %bitcast.2.5 = f64[14]{0} bitcast(%select_n.27.3), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/jit(_take)/select_n" stack_frame_id=45}
+  %mul.83.5 = f64[3,16,14]{2,1,0} broadcast(%bitcast.2.5), dimensions={2}, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/mul" stack_frame_id=44}
+  %mul.84.3 = f64[3,16,14]{2,1,0} multiply(%mul.80.3, %mul.83.5), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/mul" stack_frame_id=44}
+  %add.12.1 = f64[3,16,14]{2,1,0} add(%mul.77.3, %mul.84.3), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/add" stack_frame_id=38}
+  %param_0.156 = f64[3,16]{1,0} parameter(0)
+  %clamp.6 = f64[3,16]{1,0} clamp(%broadcast.20.12, %param_0.156, %broadcast.21.11), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/jit(clip)/min" stack_frame_id=49}
+  %mul.101.3 = f64[3,16,14]{2,1,0} broadcast(%clamp.6), dimensions={0,1}, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/mul" stack_frame_id=39}
   %param_4.42 = f64[3,16]{1,0} parameter(4)
-  %max.25.3 = f64[3,16]{1,0} maximum(%param_4.42, %broadcast.20.12), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/max" stack_frame_id=57}
-  %param_1.170 = f64[3,16]{1,0} parameter(1)
-  %max.28.6 = f64[3,16]{1,0} maximum(%param_1.170, %broadcast.20.12), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/max" stack_frame_id=61}
+  %max.25.3 = f64[3,16]{1,0} maximum(%param_4.42, %broadcast.20.12), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/max" stack_frame_id=59}
+  %param_1.172 = f64[3,16]{1,0} parameter(1)
+  %max.28.6 = f64[3,16]{1,0} maximum(%param_1.172, %broadcast.20.12), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/max" stack_frame_id=63}
   %constant_38_1 = f64[] constant(0.25)
-  %mul.64.3 = f64[3,16]{1,0} broadcast(%constant_38_1), dimensions={}, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/mul" stack_frame_id=60}
-  %mul.67.3 = f64[3,16]{1,0} multiply(%max.28.6, %mul.64.3), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/mul" stack_frame_id=60}
-  %add.8.3 = f64[3,16]{1,0} add(%max.25.3, %mul.67.3), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/add" stack_frame_id=56}
-  %mul.68.1 = f64[3,16]{1,0} multiply(%add.8.3, %max.32.3), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/mul" stack_frame_id=49}
-  %mul.87.3 = f64[3,16,14]{2,1,0} broadcast(%mul.68.1), dimensions={0,1}, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/mul" stack_frame_id=38}
+  %mul.64.3 = f64[3,16]{1,0} broadcast(%constant_38_1), dimensions={}, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/mul" stack_frame_id=62}
+  %mul.67.3 = f64[3,16]{1,0} multiply(%max.28.6, %mul.64.3), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/mul" stack_frame_id=62}
+  %add.8.3 = f64[3,16]{1,0} add(%max.25.3, %mul.67.3), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/add" stack_frame_id=58}
+  %mul.68.1 = f64[3,16]{1,0} multiply(%add.8.3, %max.32.3), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/mul" stack_frame_id=51}
+  %mul.87.3 = f64[3,16,14]{2,1,0} broadcast(%mul.68.1), dimensions={0,1}, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/mul" stack_frame_id=40}
   %param_8.25 = f64[14]{0} parameter(8)
-  %gather.13.3 = f64[14,1]{1,0} gather(%param_8.25, %convert_element_type.5.37), offset_dims={1}, collapsed_slice_dims={}, start_index_map={0}, index_vector_dim=1, slice_sizes={1}, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/jit(_take)/gather" stack_frame_id=41}
-  %select_n.28.3 = f64[14,1]{1,0} select(%and.5.5, %gather.13.3, %broadcast.65.17), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/jit(_take)/select_n" stack_frame_id=41}
-  %bitcast.3.5 = f64[14]{0} bitcast(%select_n.28.3), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/jit(_take)/select_n" stack_frame_id=41}
-  %mul.90.5 = f64[3,16,14]{2,1,0} broadcast(%bitcast.3.5), dimensions={2}, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/mul" stack_frame_id=38}
-  %mul.91.3 = f64[3,16,14]{2,1,0} multiply(%mul.87.3, %mul.90.5), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/mul" stack_frame_id=38}
+  %gather.13.3 = f64[14,1]{1,0} gather(%param_8.25, %convert_element_type.5.37), offset_dims={1}, collapsed_slice_dims={}, start_index_map={0}, index_vector_dim=1, slice_sizes={1}, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/jit(_take)/gather" stack_frame_id=43}
+  %select_n.28.3 = f64[14,1]{1,0} select(%and.5.5, %gather.13.3, %broadcast.65.17), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/jit(_take)/select_n" stack_frame_id=43}
+  %bitcast.3.5 = f64[14]{0} bitcast(%select_n.28.3), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/jit(_take)/select_n" stack_frame_id=43}
+  %mul.90.5 = f64[3,16,14]{2,1,0} broadcast(%bitcast.3.5), dimensions={2}, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/mul" stack_frame_id=40}
+  %mul.91.3 = f64[3,16,14]{2,1,0} multiply(%mul.87.3, %mul.90.5), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/mul" stack_frame_id=40}
   %param_6.34 = f64[3,16]{1,0} parameter(6)
-  %max.26.3 = f64[3,16]{1,0} maximum(%param_6.34, %broadcast.20.12), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/max" stack_frame_id=59}
+  %max.26.3 = f64[3,16]{1,0} maximum(%param_6.34, %broadcast.20.12), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/max" stack_frame_id=61}
   %param_5.38 = f64[3,16]{1,0} parameter(5)
-  %max.27.3 = f64[3,16]{1,0} maximum(%param_5.38, %broadcast.20.12), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/max" stack_frame_id=58}
-  %add.9.3 = f64[3,16]{1,0} add(%max.26.3, %max.27.3), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/add" stack_frame_id=48}
+  %max.27.3 = f64[3,16]{1,0} maximum(%param_5.38, %broadcast.20.12), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/max" stack_frame_id=60}
+  %add.9.3 = f64[3,16]{1,0} add(%max.26.3, %max.27.3), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/add" stack_frame_id=50}
   %constant_37_1 = f64[] constant(0.75)
-  %mul.63.3 = f64[3,16]{1,0} broadcast(%constant_37_1), dimensions={}, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/mul" stack_frame_id=50}
-  %mul.69.3 = f64[3,16]{1,0} multiply(%max.28.6, %mul.63.3), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/mul" stack_frame_id=50}
-  %add.10.1 = f64[3,16]{1,0} add(%add.9.3, %mul.69.3), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/add" stack_frame_id=48}
-  %mul.70.1 = f64[3,16]{1,0} multiply(%add.10.1, %max.32.3), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/mul" stack_frame_id=46}
-  %mul.94.3 = f64[3,16,14]{2,1,0} broadcast(%mul.70.1), dimensions={0,1}, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/mul" stack_frame_id=39}
+  %mul.63.3 = f64[3,16]{1,0} broadcast(%constant_37_1), dimensions={}, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/mul" stack_frame_id=52}
+  %mul.69.3 = f64[3,16]{1,0} multiply(%max.28.6, %mul.63.3), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/mul" stack_frame_id=52}
+  %add.10.1 = f64[3,16]{1,0} add(%add.9.3, %mul.69.3), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/add" stack_frame_id=50}
+  %mul.70.1 = f64[3,16]{1,0} multiply(%add.10.1, %max.32.3), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/mul" stack_frame_id=48}
+  %mul.94.3 = f64[3,16,14]{2,1,0} broadcast(%mul.70.1), dimensions={0,1}, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/mul" stack_frame_id=41}
   %param_7.27 = f64[14]{0} parameter(7)
-  %gather.14.3 = f64[14,1]{1,0} gather(%param_7.27, %convert_element_type.5.37), offset_dims={1}, collapsed_slice_dims={}, start_index_map={0}, index_vector_dim=1, slice_sizes={1}, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/jit(_take)/gather" stack_frame_id=40}
-  %select_n.29.3 = f64[14,1]{1,0} select(%and.5.5, %gather.14.3, %broadcast.65.17), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/jit(_take)/select_n" stack_frame_id=40}
-  %bitcast.4.5 = f64[14]{0} bitcast(%select_n.29.3), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/jit(_take)/select_n" stack_frame_id=40}
-  %mul.97.5 = f64[3,16,14]{2,1,0} broadcast(%bitcast.4.5), dimensions={2}, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/mul" stack_frame_id=39}
-  %mul.98.3 = f64[3,16,14]{2,1,0} multiply(%mul.94.3, %mul.97.5), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/mul" stack_frame_id=39}
-  %add.11.1 = f64[3,16,14]{2,1,0} add(%mul.91.3, %mul.98.3), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/add" stack_frame_id=38}
-  %mul.102.3 = f64[3,16,14]{2,1,0} multiply(%mul.101.3, %add.11.1), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/mul" stack_frame_id=37}
-  %add.13.1 = f64[3,16,14]{2,1,0} add(%add.12.1, %mul.102.3), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/add" stack_frame_id=36}
+  %gather.14.3 = f64[14,1]{1,0} gather(%param_7.27, %convert_element_type.5.37), offset_dims={1}, collapsed_slice_dims={}, start_index_map={0}, index_vector_dim=1, slice_sizes={1}, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/jit(_take)/gather" stack_frame_id=42}
+  %select_n.29.3 = f64[14,1]{1,0} select(%and.5.5, %gather.14.3, %broadcast.65.17), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/jit(_take)/select_n" stack_frame_id=42}
+  %bitcast.4.5 = f64[14]{0} bitcast(%select_n.29.3), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/jit(_take)/select_n" stack_frame_id=42}
+  %mul.97.5 = f64[3,16,14]{2,1,0} broadcast(%bitcast.4.5), dimensions={2}, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/mul" stack_frame_id=41}
+  %mul.98.3 = f64[3,16,14]{2,1,0} multiply(%mul.94.3, %mul.97.5), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/mul" stack_frame_id=41}
+  %add.11.1 = f64[3,16,14]{2,1,0} add(%mul.91.3, %mul.98.3), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/add" stack_frame_id=40}
+  %mul.102.3 = f64[3,16,14]{2,1,0} multiply(%mul.101.3, %add.11.1), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/mul" stack_frame_id=39}
+  %add.13.1 = f64[3,16,14]{2,1,0} add(%add.12.1, %mul.102.3), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/add" stack_frame_id=38}
   %constant_42_1 = f64[] constant(80)
   %min.4.1 = f64[3,16,14]{2,1,0} broadcast(%constant_42_1), dimensions={}, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/jit(clip)/min" stack_frame_id=12}
   ROOT %clamp.1.1 = f64[3,16,14]{2,1,0} clamp(%max.2.1, %add.13.1, %min.4.1), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/jit(clip)/min" stack_frame_id=12}
+}
+
+%fused_concatenate (param_0.126: f64[3,17]) -> f64[3,18] {
+  %param_0.126 = f64[3,17]{1,0} parameter(0)
+  %slice.11.1 = f64[3,1]{1,0} slice(%param_0.126), slice={[0:3], [16:17]}, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/slice" stack_frame_id=6}
+  ROOT %concatenate.7.1 = f64[3,18]{1,0} concatenate(%param_0.126, %slice.11.1), dimensions={1}, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/concatenate" stack_frame_id=13}
+}
+
+%fused_concatenate.1 (param_0.127: f64[3,17]) -> f64[3,18] {
+  %param_0.127 = f64[3,17]{1,0} parameter(0)
+  %slice.10.1 = f64[3,1]{1,0} slice(%param_0.127), slice={[0:3], [16:17]}, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/slice" stack_frame_id=5}
+  ROOT %concatenate.6.1 = f64[3,18]{1,0} concatenate(%param_0.127, %slice.10.1), dimensions={1}, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/concatenate" stack_frame_id=14}
 }
 
 %region_1.8.clone.2 (reduce_window_sum.15: f64[], reduce_window_sum.16: f64[]) -> f64[] {
@@ -333,29 +349,29 @@ StackFrames
   ROOT %reduce_window_sum.17.0 = f64[] add(%reduce_window_sum.15, %reduce_window_sum.16), metadata={op_name="reduce_window_sum"}
 }
 
-%fused_divide_reduce (param_0.150: f64[3,17], param_1.167: f64[3,17], param_2.120: f64[3,16], param_3.76: f64[3,16]) -> (f64[3], f64[3,16]) {
-  %param_0.150 = f64[3,17]{1,0} parameter(0)
-  %param_1.167 = f64[3,17]{1,0} parameter(1)
-  %sub.3.5 = f64[3,17]{1,0} subtract(%param_0.150, %param_1.167), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/sub" stack_frame_id=68}
-  %slice.8.5 = f64[3,16]{1,0} slice(%sub.3.5), slice={[0:3], [1:17]}, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/slice" stack_frame_id=66}
-  %slice.9.5 = f64[3,16]{1,0} slice(%sub.3.5), slice={[0:3], [0:16]}, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/slice" stack_frame_id=67}
-  %sub.4.5 = f64[3,16]{1,0} subtract(%slice.8.5, %slice.9.5), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/sub" stack_frame_id=66}
+%fused_divide_reduce (param_0.152: f64[3,17], param_1.169: f64[3,17], param_2.120: f64[3,16], param_3.76: f64[3,16]) -> (f64[3], f64[3,16]) {
+  %param_0.152 = f64[3,17]{1,0} parameter(0)
+  %param_1.169 = f64[3,17]{1,0} parameter(1)
+  %sub.3.5 = f64[3,17]{1,0} subtract(%param_0.152, %param_1.169), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/sub" stack_frame_id=70}
+  %slice.8.5 = f64[3,16]{1,0} slice(%sub.3.5), slice={[0:3], [1:17]}, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/slice" stack_frame_id=68}
+  %slice.9.5 = f64[3,16]{1,0} slice(%sub.3.5), slice={[0:3], [0:16]}, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/slice" stack_frame_id=69}
+  %sub.4.5 = f64[3,16]{1,0} subtract(%slice.8.5, %slice.9.5), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/sub" stack_frame_id=68}
   %constant_40_5 = f64[] constant(0)
-  %reduce_sum.31.1 = f64[3]{0} reduce(%sub.4.5, %constant_40_5), dimensions={1}, to_apply=%region_1.8.clone.2, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/reduce_sum" stack_frame_id=13}
+  %reduce_sum.31.1 = f64[3]{0} reduce(%sub.4.5, %constant_40_5), dimensions={1}, to_apply=%region_1.8.clone.2, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/reduce_sum" stack_frame_id=15}
   %param_3.76 = f64[3,16]{1,0} parameter(3)
   %constant_39_1_clone_1 = f64[] constant(1e-06)
   %broadcast.18.5.clone.1 = f64[3,16]{1,0} broadcast(%constant_39_1_clone_1), dimensions={}
-  %max.31.5.clone.1 = f64[3,16]{1,0} maximum(%param_3.76, %broadcast.18.5.clone.1), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/max" stack_frame_id=65}
+  %max.31.5.clone.1 = f64[3,16]{1,0} maximum(%param_3.76, %broadcast.18.5.clone.1), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/max" stack_frame_id=67}
   %param_2.120 = f64[3,16]{1,0} parameter(2)
   %constant_51_3_clone_1 = f64[] constant(1)
   %broadcast.21.13.clone.1 = f64[3,16]{1,0} broadcast(%constant_51_3_clone_1), dimensions={}
-  %max.30.5.clone.1 = f64[3,16]{1,0} maximum(%param_2.120, %broadcast.21.13.clone.1), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/max" stack_frame_id=64}
-  %mul.65.5.clone.1 = f64[3,16]{1,0} multiply(%max.31.5.clone.1, %max.30.5.clone.1), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/mul" stack_frame_id=63}
-  %max.32.5.clone.1 = f64[3,16]{1,0} maximum(%mul.65.5.clone.1, %broadcast.18.5.clone.1), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/max" stack_frame_id=62}
+  %max.30.5.clone.1 = f64[3,16]{1,0} maximum(%param_2.120, %broadcast.21.13.clone.1), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/max" stack_frame_id=66}
+  %mul.65.5.clone.1 = f64[3,16]{1,0} multiply(%max.31.5.clone.1, %max.30.5.clone.1), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/mul" stack_frame_id=65}
+  %max.32.5.clone.1 = f64[3,16]{1,0} maximum(%mul.65.5.clone.1, %broadcast.18.5.clone.1), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/max" stack_frame_id=64}
   %constant_33_1_clone_1 = f64[] constant(1004)
-  %mul.62.3.clone.1 = f64[3,16]{1,0} broadcast(%constant_33_1_clone_1), dimensions={}, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/mul" stack_frame_id=70}
-  %mul.123.3.clone.1 = f64[3,16]{1,0} multiply(%max.32.5.clone.1, %mul.62.3.clone.1), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/mul" stack_frame_id=70}
-  %div.5.1.clone.1 = f64[3,16]{1,0} divide(%sub.4.5, %mul.123.3.clone.1), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/div" stack_frame_id=69}
+  %mul.62.3.clone.1 = f64[3,16]{1,0} broadcast(%constant_33_1_clone_1), dimensions={}, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/mul" stack_frame_id=72}
+  %mul.123.3.clone.1 = f64[3,16]{1,0} multiply(%max.32.5.clone.1, %mul.62.3.clone.1), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/mul" stack_frame_id=72}
+  %div.5.1.clone.1 = f64[3,16]{1,0} divide(%sub.4.5, %mul.123.3.clone.1), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/div" stack_frame_id=71}
   ROOT %tuple = (f64[3]{0}, f64[3,16]{1,0}) tuple(%reduce_sum.31.1, %div.5.1.clone.1)
 }
 
@@ -365,20 +381,20 @@ StackFrames
   ROOT %reduce_window_sum.20.0 = f64[] add(%reduce_window_sum.18, %reduce_window_sum.19), metadata={op_name="reduce_window_sum"}
 }
 
-%fused_reduce.1 (param_0.152: f64[3,17,14], param_1.168: f64[3]) -> f64[3] {
-  %param_0.152 = f64[3,17,14]{2,1,0} parameter(0)
-  %slice.18 = f64[3,1,14]{2,1,0} slice(%param_0.152), slice={[0:3], [16:17], [0:14]}, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/slice" stack_frame_id=21}
-  %bitcast.5.10 = f64[3,14]{1,0} bitcast(%slice.18), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/slice" stack_frame_id=21}
+%fused_reduce.1 (param_0.154: f64[3,17,14], param_1.170: f64[3]) -> f64[3] {
+  %param_0.154 = f64[3,17,14]{2,1,0} parameter(0)
+  %slice.18 = f64[3,1,14]{2,1,0} slice(%param_0.154), slice={[0:3], [16:17], [0:14]}, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/slice" stack_frame_id=23}
+  %bitcast.5.10 = f64[3,14]{1,0} bitcast(%slice.18), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/slice" stack_frame_id=23}
   %constant_40_7 = f64[] constant(0)
   %broadcast.19.12 = f64[3]{0} broadcast(%constant_40_7), dimensions={}
-  %param_1.168 = f64[3]{0} parameter(1)
+  %param_1.170 = f64[3]{0} parameter(1)
   %constant_51_2 = f64[] constant(1)
-  %min.8.9 = f64[3]{0} broadcast(%constant_51_2), dimensions={}, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/jit(clip)/min" stack_frame_id=23}
-  %clamp.2.9 = f64[3]{0} clamp(%broadcast.19.12, %param_1.168, %min.8.9), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/jit(clip)/min" stack_frame_id=23}
-  %mul.117.7 = f64[3,14]{1,0} broadcast(%clamp.2.9), dimensions={0}, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/mul" stack_frame_id=20}
-  %mul.118.7 = f64[3,14]{1,0} multiply(%mul.117.7, %bitcast.5.10), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/mul" stack_frame_id=20}
-  %sub.5.3 = f64[3,14]{1,0} subtract(%bitcast.5.10, %mul.118.7), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/sub" stack_frame_id=71}
-  ROOT %reduce_sum.30.1 = f64[3]{0} reduce(%sub.5.3, %constant_40_7), dimensions={1}, to_apply=%region_1.8.clone.3, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/reduce_sum" stack_frame_id=14}
+  %min.8.9 = f64[3]{0} broadcast(%constant_51_2), dimensions={}, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/jit(clip)/min" stack_frame_id=25}
+  %clamp.2.9 = f64[3]{0} clamp(%broadcast.19.12, %param_1.170, %min.8.9), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/jit(clip)/min" stack_frame_id=25}
+  %mul.117.7 = f64[3,14]{1,0} broadcast(%clamp.2.9), dimensions={0}, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/mul" stack_frame_id=22}
+  %mul.118.7 = f64[3,14]{1,0} multiply(%mul.117.7, %bitcast.5.10), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/mul" stack_frame_id=22}
+  %sub.5.3 = f64[3,14]{1,0} subtract(%bitcast.5.10, %mul.118.7), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/sub" stack_frame_id=73}
+  ROOT %reduce_sum.30.1 = f64[3]{0} reduce(%sub.5.3, %constant_40_7), dimensions={1}, to_apply=%region_1.8.clone.3, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/reduce_sum" stack_frame_id=16}
 }
 
 %region_1.8.clone.1 (reduce_window_sum.12: f64[], reduce_window_sum.13: f64[]) -> f64[] {
@@ -387,33 +403,33 @@ StackFrames
   ROOT %reduce_window_sum.14.0 = f64[] add(%reduce_window_sum.12, %reduce_window_sum.13), metadata={op_name="reduce_window_sum"}
 }
 
-%fused_reduce.2 (param_0.148: f64[3,17,14]) -> f64[3,17] {
-  %param_0.148 = f64[3,17,14]{2,1,0} parameter(0)
+%fused_reduce.2 (param_0.150: f64[3,17,14]) -> f64[3,17] {
+  %param_0.150 = f64[3,17,14]{2,1,0} parameter(0)
   %constant_40_1 = f64[] constant(0)
-  ROOT %reduce_sum.29.1 = f64[3,17]{1,0} reduce(%param_0.148, %constant_40_1), dimensions={2}, to_apply=%region_1.8.clone.1, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/reduce_sum" stack_frame_id=15}
+  ROOT %reduce_sum.29.1 = f64[3,17]{1,0} reduce(%param_0.150, %constant_40_1), dimensions={2}, to_apply=%region_1.8.clone.1, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/reduce_sum" stack_frame_id=17}
 }
 
-%wrapped_slice_computation (param_0.157: f64[3,17]) -> f64[3,1] {
-  %param_0.157 = f64[3,17]{1,0} parameter(0)
-  ROOT %slice.10.1 = f64[3,1]{1,0} slice(%param_0.157), slice={[0:3], [16:17]}, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/slice" stack_frame_id=5}
-}
-
-%wrapped_slice_computation.1 (param_0.158: f64[3,17]) -> f64[3,1] {
-  %param_0.158 = f64[3,17]{1,0} parameter(0)
-  ROOT %slice.11.1 = f64[3,1]{1,0} slice(%param_0.158), slice={[0:3], [16:17]}, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/slice" stack_frame_id=6}
-}
-
-%wrapped_slice_computation.2 (param_0.159: f64[3,17]) -> f64[3,1] {
+%wrapped_slice_computation (param_0.159: f64[3,17]) -> f64[3,1] {
   %param_0.159 = f64[3,17]{1,0} parameter(0)
-  ROOT %slice.12.1 = f64[3,1]{1,0} slice(%param_0.159), slice={[0:3], [0:1]}, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/slice" stack_frame_id=7}
+  ROOT %slice.10.2 = f64[3,1]{1,0} slice(%param_0.159), slice={[0:3], [16:17]}, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/slice" stack_frame_id=5}
 }
 
-%wrapped_slice_computation.3 (param_0.160: f64[3,17]) -> f64[3,1] {
+%wrapped_slice_computation.1 (param_0.160: f64[3,17]) -> f64[3,1] {
   %param_0.160 = f64[3,17]{1,0} parameter(0)
-  ROOT %slice.13.1 = f64[3,1]{1,0} slice(%param_0.160), slice={[0:3], [0:1]}, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/slice" stack_frame_id=8}
+  ROOT %slice.11.2 = f64[3,1]{1,0} slice(%param_0.160), slice={[0:3], [16:17]}, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/slice" stack_frame_id=6}
 }
 
-ENTRY %main.16 (state_1_.1: f64[3,16], state_2_.1: f64[3,16], state_3_.1: f64[3,16], state_4_.1: f64[3,16], state_5_.1: f64[3,16], state_6_.1: f64[3,16], state_7_.1: f64[3,16], state_8_.1: f64[3], state_9_.1: f64[3], state_10_.1: f64[3,16], state_11_.1: f64[3,16]) -> (f64[3,16], f64[3,17], f64[3,17], f64[3], f64[3], /*index=5*/f64[3], f64[3], f64[3], f64[3]) {
+%wrapped_slice_computation.2 (param_0.161: f64[3,17]) -> f64[3,1] {
+  %param_0.161 = f64[3,17]{1,0} parameter(0)
+  ROOT %slice.12.1 = f64[3,1]{1,0} slice(%param_0.161), slice={[0:3], [0:1]}, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/slice" stack_frame_id=7}
+}
+
+%wrapped_slice_computation.3 (param_0.162: f64[3,17]) -> f64[3,1] {
+  %param_0.162 = f64[3,17]{1,0} parameter(0)
+  ROOT %slice.13.1 = f64[3,1]{1,0} slice(%param_0.162), slice={[0:3], [0:1]}, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/slice" stack_frame_id=8}
+}
+
+ENTRY %main.16 (state_1_.1: f64[3,16], state_2_.1: f64[3,16], state_3_.1: f64[3,16], state_4_.1: f64[3,16], state_5_.1: f64[3,16], state_6_.1: f64[3,16], state_7_.1: f64[3,16], state_8_.1: f64[3], state_9_.1: f64[3], state_10_.1: f64[3,16], state_11_.1: f64[3,16]) -> (f64[3,16], f64[3,18], f64[3,18], f64[3], f64[3], /*index=5*/f64[3], f64[3], f64[3], f64[3]) {
   %state_8_.1 = f64[3]{0} parameter(7), metadata={op_name="state[8]"}
   %state_10_.1 = f64[3,16]{1,0} parameter(9), metadata={op_name="state[10]"}
   %state_11_.1 = f64[3,16]{1,0} parameter(10), metadata={op_name="state[11]"}
@@ -434,19 +450,21 @@ ENTRY %main.16 (state_1_.1: f64[3,16], state_2_.1: f64[3,16], state_3_.1: f64[3,
   %loop_multiply_fusion = (f64[3,17,14]{2,1,0}, f64[3,17,14]{2,1,0}) fusion(%loop_clamp_fusion, %state_8_.1, %constant_45_0, %state_9_.1), kind=kLoop, calls=%fused_multiply, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/mul" stack_frame_id=9}
   %get-tuple-element.3 = f64[3,17,14]{2,1,0} get-tuple-element(%loop_multiply_fusion), index=1, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/mul" stack_frame_id=9}
   %get-tuple-element.2 = f64[3,17,14]{2,1,0} get-tuple-element(%loop_multiply_fusion), index=0, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/mul" stack_frame_id=9}
-  %loop_reduce_fusion.2 = f64[3,17]{1,0} fusion(%get-tuple-element.2), kind=kInput, calls=%fused_reduce.2, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/reduce_sum" stack_frame_id=15}, backend_config={"operation_queue_id":"0","force_earliest_schedule":false,"reification_cost":[],"device_type":"DEVICE_TYPE_INVALID","native_emitter_backend_config":{"type":"NATIVE_EMITTER_TYPE_LOOP","unroll_factor":2}}
+  %loop_reduce_fusion.2 = f64[3,17]{1,0} fusion(%get-tuple-element.2), kind=kCustom, calls=%fused_reduce.2, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/reduce_sum" stack_frame_id=17}, backend_config={"operation_queue_id":"0","fusion_backend_config":{"kind":"__triton","block_level_fusion_config":{"num_warps":"1","output_tiles":[{"sizes":["1","1"]}],"num_ctas":1,"num_stages":1,"is_tma_allowed":true,"is_warp_specialization_allowed":false,"waves_per_eu":0}},"force_earliest_schedule":false,"reification_cost":[],"device_type":"DEVICE_TYPE_INVALID"}
   %wrapped_slice.3 = f64[3,1]{1,0} fusion(%loop_reduce_fusion.2), kind=kLoop, calls=%wrapped_slice_computation.3, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/slice" stack_frame_id=8}
   %bitcast.9.0 = f64[3]{0} bitcast(%wrapped_slice.3), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/slice" stack_frame_id=8}
   %wrapped_slice.1 = f64[3,1]{1,0} fusion(%loop_reduce_fusion.2), kind=kLoop, calls=%wrapped_slice_computation.1, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/slice" stack_frame_id=6}
   %bitcast.7.0 = f64[3]{0} bitcast(%wrapped_slice.1), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/slice" stack_frame_id=6}
-  %loop_reduce_fusion.1 = f64[3]{0} fusion(%get-tuple-element.3, %state_8_.1), kind=kInput, calls=%fused_reduce.1, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/reduce_sum" stack_frame_id=14}, backend_config={"operation_queue_id":"0","force_earliest_schedule":false,"reification_cost":[],"device_type":"DEVICE_TYPE_INVALID","native_emitter_backend_config":{"type":"NATIVE_EMITTER_TYPE_LOOP","unroll_factor":2}}
+  %loop_reduce_fusion.1 = f64[3]{0} fusion(%get-tuple-element.3, %state_8_.1), kind=kInput, calls=%fused_reduce.1, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/reduce_sum" stack_frame_id=16}, backend_config={"operation_queue_id":"0","force_earliest_schedule":false,"reification_cost":[],"device_type":"DEVICE_TYPE_INVALID","native_emitter_backend_config":{"type":"NATIVE_EMITTER_TYPE_LOOP","unroll_factor":2}}
   %loop_reduce_fusion = f64[3,17]{1,0} fusion(%get-tuple-element.3), kind=kInput, calls=%fused_reduce, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/reduce_sum" stack_frame_id=10}, backend_config={"operation_queue_id":"0","force_earliest_schedule":false,"reification_cost":[],"device_type":"DEVICE_TYPE_INVALID","native_emitter_backend_config":{"type":"NATIVE_EMITTER_TYPE_LOOP","unroll_factor":4}}
   %wrapped_slice.2 = f64[3,1]{1,0} fusion(%loop_reduce_fusion), kind=kLoop, calls=%wrapped_slice_computation.2, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/slice" stack_frame_id=7}
   %bitcast.8.0 = f64[3]{0} bitcast(%wrapped_slice.2), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/slice" stack_frame_id=7}
   %wrapped_slice = f64[3,1]{1,0} fusion(%loop_reduce_fusion), kind=kLoop, calls=%wrapped_slice_computation, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/slice" stack_frame_id=5}
   %bitcast.6.0 = f64[3]{0} bitcast(%wrapped_slice), metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/slice" stack_frame_id=5}
-  %input_divide_reduce_fusion = (f64[3]{0}, f64[3,16]{1,0}) fusion(%loop_reduce_fusion, %loop_reduce_fusion.2, %state_10_.1, %state_11_.1), kind=kInput, calls=%fused_divide_reduce, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/reduce_sum" stack_frame_id=13}, backend_config={"operation_queue_id":"0","force_earliest_schedule":false,"reification_cost":[],"device_type":"DEVICE_TYPE_INVALID","native_emitter_backend_config":{"type":"NATIVE_EMITTER_TYPE_INVALID","unroll_factor":0}}
-  %get-tuple-element.1 = f64[3,16]{1,0} get-tuple-element(%input_divide_reduce_fusion), index=1, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/reduce_sum" stack_frame_id=13}
-  %get-tuple-element = f64[3]{0} get-tuple-element(%input_divide_reduce_fusion), index=0, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/reduce_sum" stack_frame_id=13}
-  ROOT %tuple.1.0 = (f64[3,16]{1,0}, f64[3,17]{1,0}, f64[3,17]{1,0}, f64[3]{0}, f64[3]{0}, /*index=5*/f64[3]{0}, f64[3]{0}, f64[3]{0}, f64[3]{0}) tuple(%get-tuple-element.1, %loop_reduce_fusion, %loop_reduce_fusion.2, %bitcast.6.0, %bitcast.7.0, /*index=5*/%bitcast.8.0, %bitcast.9.0, %get-tuple-element, %loop_reduce_fusion.1)
+  %input_divide_reduce_fusion = (f64[3]{0}, f64[3,16]{1,0}) fusion(%loop_reduce_fusion, %loop_reduce_fusion.2, %state_10_.1, %state_11_.1), kind=kInput, calls=%fused_divide_reduce, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/reduce_sum" stack_frame_id=15}, backend_config={"operation_queue_id":"0","force_earliest_schedule":false,"reification_cost":[],"device_type":"DEVICE_TYPE_INVALID","native_emitter_backend_config":{"type":"NATIVE_EMITTER_TYPE_INVALID","unroll_factor":0}}
+  %get-tuple-element.1 = f64[3,16]{1,0} get-tuple-element(%input_divide_reduce_fusion), index=1, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/reduce_sum" stack_frame_id=15}
+  %get-tuple-element = f64[3]{0} get-tuple-element(%input_divide_reduce_fusion), index=0, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/reduce_sum" stack_frame_id=15}
+  %input_concatenate_fusion = f64[3,18]{1,0} fusion(%loop_reduce_fusion.2), kind=kInput, calls=%fused_concatenate, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/concatenate" deduplicated_name="input_concatenate_fusion" stack_frame_id=13}
+  %input_concatenate_fusion.1 = f64[3,18]{1,0} fusion(%loop_reduce_fusion), kind=kInput, calls=%fused_concatenate.1, metadata={op_name="jit(solve_rrtmg_sw_column_debug_stripped)/concatenate" deduplicated_name="input_concatenate_fusion" stack_frame_id=14}
+  ROOT %tuple.1.0 = (f64[3,16]{1,0}, f64[3,18]{1,0}, f64[3,18]{1,0}, f64[3]{0}, f64[3]{0}, /*index=5*/f64[3]{0}, f64[3]{0}, f64[3]{0}, f64[3]{0}) tuple(%get-tuple-element.1, %input_concatenate_fusion.1, %input_concatenate_fusion, %bitcast.6.0, %bitcast.7.0, /*index=5*/%bitcast.8.0, %bitcast.9.0, %get-tuple-element, %loop_reduce_fusion.1)
 }
