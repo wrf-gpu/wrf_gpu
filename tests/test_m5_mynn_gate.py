@@ -15,3 +15,4 @@ def test_mynn_gate_result_is_go_carryforward_when_artifacts_exist():
     assert payload["kernel_launches_per_step"] <= 35
     assert payload["tier1_pass"] is True
     assert payload["tier2_pass"] is True
+    assert payload["tier2_independent_budget_pass"] is True

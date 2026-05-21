@@ -41,11 +41,10 @@ from gpuwrf.physics.mynn_constants import (
     P608,
     QKEMIN,
     QMIN,
-    R_D,
     SQFAC,
     TKE_EPS,
 )
-from gpuwrf.physics.mynn_surface_stub import bulk_surface_fluxes
+from gpuwrf.physics.mynn_surface_stub import surface_layer
 from gpuwrf.physics.tridiagonal_solver import solve_tridiagonal
 
 
@@ -168,11 +167,16 @@ def _virtual_potential(theta, qv):
 def _surface_terms(state: MynnPBLColumnState):
     """Builds the M5 neutral-bulk surface fluxes used by the column kernel."""
 
-    flux = bulk_surface_fluxes(state.u[..., 0], state.v[..., 0], state.theta[..., 0], state.qv[..., 0])
+    flux = surface_layer(state)
     wind = jnp.maximum(jnp.sqrt(state.u[..., 0] * state.u[..., 0] + state.v[..., 0] * state.v[..., 0]), 0.2)
-    fltv = (1.0 + P608 * state.qv[..., 0]) * flux.theta_flux + P608 * state.theta[..., 0] * flux.qv_flux
-    rhosfc = jnp.maximum(state.p[..., 0] / (R_D * (state.theta[..., 0] + P608 * state.qv[..., 0])), 1.0e-4)
-    return flux, wind, fltv, rhosfc
+    return flux, wind, flux.fltv, flux.rhosfc
+
+
+def _flux_richardson(ri, ri1, ri2, ri3, ri4, rfc):
+    """WRF-faithful flux Richardson formula with an unguarded SQRT radicand."""
+
+    radicand = ri * ri - ri3 * ri + ri4
+    return jnp.minimum(ri1 * (ri + ri2 - jnp.sqrt(radicand)), rfc)
 
 
 def _mym_level2(state: MynnPBLColumnState):
@@ -199,8 +203,7 @@ def _mym_level2(state: MynnPBLColumnState):
     ri2 = rf1 * smc
     ri3 = 4.0 * rf2 * smc - 2.0 * ri2
     ri4 = ri2 * ri2
-    radicand = jnp.maximum(ri * ri - ri3 * ri + ri4, 0.0)
-    rf = jnp.minimum(ri1 * (ri + ri2 - jnp.sqrt(radicand)), rfc)
+    rf = _flux_richardson(ri, ri1, ri2, ri3, ri4, rfc)
     sh_i = shc * (rfc - rf) / (1.0 - rf)
     sm_i = smc * (rf1 - rf) / (rf2 - rf) * sh_i
 

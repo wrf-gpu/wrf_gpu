@@ -12,11 +12,13 @@ import numpy as np
 
 from gpuwrf.physics.mynn_constants import TKE_EPS
 from gpuwrf.physics.mynn_pbl import MynnPBLColumnState, _mynn_budget_diagnostics
-from gpuwrf.validation.tier1_mynn import load_fixture_state
+from gpuwrf.validation.tier1_mynn import SAMPLE, load_fixture_state
 
 
 ROOT = Path(__file__).resolve().parents[3]
 ARTIFACT = ROOT / "artifacts" / "m5" / "tier2_mynn_invariants.json"
+INDEPENDENT_BUDGET_ARTIFACT = ROOT / "artifacts" / "m5" / "tier2_mynn_independent_budget.json"
+INDEPENDENT_TOLERANCE_ABS = 1.0e-3
 
 
 def _mass_by_column(field, state: MynnPBLColumnState):
@@ -105,10 +107,93 @@ def invariant_record(state: MynnPBLColumnState | None = None, dt: float | None =
     return record
 
 
+def _load_wrf_mean_tendencies(sample: Path = SAMPLE) -> dict[str, np.ndarray]:
+    """Loads WRF `mynn_tendencies` output arrays from the object-linked fixture."""
+
+    with np.load(sample, allow_pickle=False) as loaded:
+        return {
+            "u": np.asarray(loaded["output_du"], dtype=np.float64),
+            "v": np.asarray(loaded["output_dv"], dtype=np.float64),
+            "theta": np.asarray(loaded["output_dtheta"], dtype=np.float64),
+            "qv": np.asarray(loaded["output_dqv"], dtype=np.float64),
+        }
+
+
+def _jax_mean_tendencies(state: MynnPBLColumnState, dt: float) -> dict[str, np.ndarray]:
+    """Computes one-step JAX mean-field tendencies at the fixture input state."""
+
+    next_state, _budget = _mynn_budget_diagnostics(state, dt)
+    jax.tree_util.tree_map(
+        lambda leaf: leaf.block_until_ready() if hasattr(leaf, "block_until_ready") else leaf,
+        next_state,
+    )
+    return {
+        "u": (np.asarray(next_state.u, dtype=np.float64) - np.asarray(state.u, dtype=np.float64)) / float(dt),
+        "v": (np.asarray(next_state.v, dtype=np.float64) - np.asarray(state.v, dtype=np.float64)) / float(dt),
+        "theta": (np.asarray(next_state.theta, dtype=np.float64) - np.asarray(state.theta, dtype=np.float64)) / float(dt),
+        "qv": (np.asarray(next_state.qv, dtype=np.float64) - np.asarray(state.qv, dtype=np.float64)) / float(dt),
+    }
+
+
+def independent_budget_record(
+    state: MynnPBLColumnState | None = None,
+    dt: float | None = None,
+    wrf_tendencies: dict[str, np.ndarray] | None = None,
+) -> dict[str, Any]:
+    """Compares JAX mean-field tendencies against WRF harness `mynn_tendencies` outputs."""
+
+    if state is None or dt is None:
+        loaded_state, loaded_dt, _ = load_fixture_state()
+        state = loaded_state
+        dt = loaded_dt
+    if wrf_tendencies is None:
+        wrf_tendencies = _load_wrf_mean_tendencies()
+
+    candidate = _jax_mean_tendencies(state, float(dt))
+    per_field_max_abs: dict[str, float] = {}
+    per_field_mean_abs: dict[str, float] = {}
+    per_field_max_rel: dict[str, float] = {}
+    field_pass: dict[str, bool] = {}
+    for field in ("u", "v", "theta", "qv"):
+        diff = np.abs(candidate[field] - wrf_tendencies[field])
+        per_field_max_abs[field] = float(np.max(diff))
+        per_field_mean_abs[field] = float(np.mean(diff))
+        per_field_max_rel[field] = float(np.max(diff / np.maximum(np.abs(wrf_tendencies[field]), np.finfo(np.float64).eps)))
+        field_pass[field] = bool(per_field_max_abs[field] <= INDEPENDENT_TOLERANCE_ABS)
+
+    return {
+        "fixture_id": "analytic-mynn-pbl-column-v1",
+        "oracle": "WRF module_bl_mynnedmf mynn_tendencies du/dv/dth/dqv from object-linked harness",
+        "comparison": "JAX one-step mean-field tendencies at the same input state",
+        "dt_s": float(dt),
+        "scenarios_tested": int(next(iter(wrf_tendencies.values())).shape[0]),
+        "fields": ["u", "v", "theta", "qv"],
+        "per_field_max_abs_residual": per_field_max_abs,
+        "per_field_mean_abs_residual": per_field_mean_abs,
+        "per_field_max_rel_residual": per_field_max_rel,
+        "tolerance_abs": INDEPENDENT_TOLERANCE_ABS,
+        "field_pass": field_pass,
+        "pass": bool(all(field_pass.values())),
+        "scope_note": (
+            "Dry MYNN2.5 comparison with cloud and EDMF mass-flux arrays disabled in both "
+            "the WRF harness and JAX kernel; full MYNN-EDMF remains an M6 follow-up."
+        ),
+    }
+
+
 def run_tier2(out: Path = ARTIFACT) -> dict[str, Any]:
     """Writes the required tier-2 MYNN budget proof JSON."""
 
     record = invariant_record()
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(json.dumps(record, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return record
+
+
+def run_independent_budget(out: Path = INDEPENDENT_BUDGET_ARTIFACT) -> dict[str, Any]:
+    """Writes the WRF-oracle mean-field tendency proof JSON."""
+
+    record = independent_budget_record()
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(record, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     return record

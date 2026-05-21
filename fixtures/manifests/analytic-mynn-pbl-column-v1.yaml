@@ -1,6 +1,6 @@
 fixture_id: analytic-mynn-pbl-column-v1
 source: wrf-derived
-source_commit: wrf-mynnedmf-object-linked-harness sha256=4ed5ce48d264f1f8ef56f8304ed2d2e939895c1fbbcbc1cda83996e715ac700f;
+source_commit: wrf-mynnedmf-object-linked-harness sha256=57198fa33207578714eef4d93c79de46687c0642da9edd20742e57cead00ac23;
   module_bl_mynn_sha256=a906e5825f24dca0747f7a5ba7dcc7e7b4cd8e838ad3913f28fec5078ed24e74;
   module_bl_mynnedmf_sha256=5e8f5da03d0d658de74fe407a60201347a406c6e613d1442bc74b50f53ed259b;
   module_bl_mynnedmf_o=present
@@ -13,7 +13,7 @@ precision_reference: fp64
 generation_command: python scripts/m5_generate_mynn_fixture.py
 external_uri: data/scratch/wrf_mynn_harness
 sample_slice_path: fixtures/samples/analytic-mynn-pbl-column-v1.npz
-git_commit: '1687992'
+git_commit: 5c5782c
 license_notes: Synthetic input columns run through an nvfortran harness linked against
   compiled WRF MYNN-EDMF module objects.
 variables:
@@ -225,16 +225,64 @@ variables:
   tolerance_rel: 0.5
   tolerance_rationale: WRF MYNN object-linked master-length diagnostic
   tier_overrides: null
+- name: output_du
+  units: m s-2
+  shape:
+  - 3
+  - 16
+  staggering: mass
+  dtype: float64
+  tolerance_abs: 0.001
+  tolerance_rel: 0.01
+  tolerance_rationale: WRF mynn_tendencies U tendency oracle for Tier-2 independent
+    budget
+  tier_overrides: null
+- name: output_dv
+  units: m s-2
+  shape:
+  - 3
+  - 16
+  staggering: mass
+  dtype: float64
+  tolerance_abs: 0.001
+  tolerance_rel: 0.01
+  tolerance_rationale: WRF mynn_tendencies V tendency oracle for Tier-2 independent
+    budget
+  tier_overrides: null
+- name: output_dtheta
+  units: K s-1
+  shape:
+  - 3
+  - 16
+  staggering: mass
+  dtype: float64
+  tolerance_abs: 0.001
+  tolerance_rel: 0.01
+  tolerance_rationale: WRF mynn_tendencies theta tendency oracle for Tier-2 independent
+    budget
+  tier_overrides: null
+- name: output_dqv
+  units: kg kg-1 s-1
+  shape:
+  - 3
+  - 16
+  staggering: mass
+  dtype: float64
+  tolerance_abs: 0.001
+  tolerance_rel: 0.01
+  tolerance_rationale: WRF mynn_tendencies qv tendency oracle for Tier-2 independent
+    budget
+  tier_overrides: null
 files:
 - path: fixtures/samples/analytic-mynn-pbl-column-v1.npz
-  checksum_sha256: 0891ed755a03b0e53de9f09d1c0eaad9a7626e229690d8661f3a6605e46cd39f
-  bytes: 7715
+  checksum_sha256: 04eb2115e61648266f501c6cc346110d7f609ae3874e7bd081ec3dc2603cb0a5
+  bytes: 9236
   external: false
 - path: data/fixtures/analytic-mynn-pbl-column-v1/full.npz
-  checksum_sha256: 0891ed755a03b0e53de9f09d1c0eaad9a7626e229690d8661f3a6605e46cd39f
-  bytes: 7715
+  checksum_sha256: 04eb2115e61648266f501c6cc346110d7f609ae3874e7bd081ec3dc2603cb0a5
+  bytes: 9236
   external: true
 - path: data/scratch/wrf_mynn_harness
-  checksum_sha256: 4ed5ce48d264f1f8ef56f8304ed2d2e939895c1fbbcbc1cda83996e715ac700f
+  checksum_sha256: 57198fa33207578714eef4d93c79de46687c0642da9edd20742e57cead00ac23
   bytes: 394528
   external: true

@@ -27,7 +27,7 @@ from gpuwrf.physics.mynn_pbl import step_mynn_pbl_column, step_mynn_pbl_column_d
 from gpuwrf.profiling.budget import compiled_text, kernel_launches_per_step, write_hlo  # noqa: E402
 from gpuwrf.profiling.transfer_audit import block_until_ready, visible_gpu_name  # noqa: E402
 from gpuwrf.validation.tier1_mynn import load_fixture_state, run_tier1  # noqa: E402
-from gpuwrf.validation.tier2_mynn import run_tier2  # noqa: E402
+from gpuwrf.validation.tier2_mynn import run_independent_budget, run_tier2  # noqa: E402
 
 
 ART = ROOT / "artifacts" / "m5"
@@ -111,6 +111,7 @@ def _profile(state, dt: float, launches: int, hlo_bytes: int) -> dict:
             "artifacts/m5/hlo_dump/mynn_pbl_production.txt",
             "artifacts/m5/tier1_mynn_parity.json",
             "artifacts/m5/tier2_mynn_invariants.json",
+            "artifacts/m5/tier2_mynn_independent_budget.json",
         ],
         "jax_version": jax.__version__,
         "gpu_name": visible_gpu_name(),
@@ -127,10 +128,30 @@ def main() -> int:
     state, dt, _ = load_fixture_state()
     tier1 = run_tier1()
     tier2 = run_tier2()
+    independent_budget = run_independent_budget()
     launches, diff_sha, hlo_bytes = _write_hlo_artifacts(state, dt)
     profile = _profile(state, dt, launches, hlo_bytes)
-    print(json.dumps({"tier1": tier1, "tier2": tier2, "profile": profile, "hlo_diff_sha256": diff_sha}, indent=2, sort_keys=True))
-    return 0 if tier1.get("pass") and tier2.get("pass") and (HLO / "mynn_pbl_debug_vs_stripped.diff").stat().st_size == 0 else 1
+    print(
+        json.dumps(
+            {
+                "tier1": tier1,
+                "tier2": tier2,
+                "tier2_independent_budget": independent_budget,
+                "profile": profile,
+                "hlo_diff_sha256": diff_sha,
+            },
+            indent=2,
+            sort_keys=True,
+        )
+    )
+    return (
+        0
+        if tier1.get("pass")
+        and tier2.get("pass")
+        and independent_budget.get("pass")
+        and (HLO / "mynn_pbl_debug_vs_stripped.diff").stat().st_size == 0
+        else 1
+    )
 
 
 if __name__ == "__main__":

@@ -1,0 +1,40 @@
+{
+  "comparison": "JAX one-step mean-field tendencies at the same input state",
+  "dt_s": 30.0,
+  "field_pass": {
+    "qv": true,
+    "theta": true,
+    "u": true,
+    "v": true
+  },
+  "fields": [
+    "u",
+    "v",
+    "theta",
+    "qv"
+  ],
+  "fixture_id": "analytic-mynn-pbl-column-v1",
+  "oracle": "WRF module_bl_mynnedmf mynn_tendencies du/dv/dth/dqv from object-linked harness",
+  "pass": true,
+  "per_field_max_abs_residual": {
+    "qv": 2.3522538483006757e-10,
+    "theta": 1.5993035522872863e-06,
+    "u": 2.5574529788071048e-05,
+    "v": 9.349085167409388e-06
+  },
+  "per_field_max_rel_residual": {
+    "qv": 0.09315611551558871,
+    "theta": 5712702839.466666,
+    "u": 0.14454226287747515,
+    "v": 0.06143014083102655
+  },
+  "per_field_mean_abs_residual": {
+    "qv": 1.5320691260603355e-11,
+    "theta": 4.7285494015151617e-07,
+    "u": 7.84214472555114e-07,
+    "v": 2.851677439783808e-07
+  },
+  "scenarios_tested": 3,
+  "scope_note": "Dry MYNN2.5 comparison with cloud and EDMF mass-flux arrays disabled in both the WRF harness and JAX kernel; full MYNN-EDMF remains an M6 follow-up.",
+  "tolerance_abs": 0.001
+}

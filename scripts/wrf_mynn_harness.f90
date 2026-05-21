@@ -118,11 +118,11 @@ program wrf_mynn_harness
   open(unit=20, file=trim(output_path), status='replace', action='write')
   write(20,'(I6,1X,ES24.16E3)') nz, dt
   do k = 1, nz
-     write(20,'(18(ES24.16E3,1X))') &
+     write(20,'(22(ES24.16E3,1X))') &
           u(k) + du(k) * dt, v(k) + dv(k) * dt, w(k), &
           theta(k) + dth(k) * dt, max(qv(k) + dqv(k) * dt, 0.0_kind_phys), &
           0.5_kind_phys * qke(k), p(k), rho(k), dz(k), km(k), kh(k), el(k), &
-          qshear(k), qbuoy(k), qdiss(k), qwt(k), flt, flq
+          qshear(k), qbuoy(k), qdiss(k), qwt(k), flt, flq, du(k), dv(k), dth(k), dqv(k)
   end do
   close(20)
 
