@@ -1,4 +1,4 @@
-"""Machine-readable proof-object schemas for M6 sprint artifacts."""
+"""Machine-readable proof-object schemas for sprint artifacts."""
 
 from __future__ import annotations
 
@@ -252,6 +252,120 @@ class Gen2Comparison(ProofObjectSchema):
     }
 
 
+class AIFSIngestManifest(ProofObjectSchema):
+    """M7-S0a AIFS-to-WPS ingest readiness manifest."""
+
+    schema_name = "AIFSIngestManifest"
+    description = "Read-only Gen2 WPS reuse contract for AIFS GRIB2 to WRF input/boundary products."
+    required = {
+        "manifest_version": FieldRule("string", "Manifest schema/version identifier."),
+        "status": FieldRule("string", "AVAILABLE/PARTIAL/BLOCKED readiness status."),
+        "strategy": FieldRule("string", "Ingest strategy, e.g. reuse_gen2_wps_v0."),
+        "source": FieldRule("object", "Upstream and local AIFS source locations."),
+        "valid_time_window": FieldRule("object", "Cycle init/end times and required forecast steps."),
+        "dimensions": FieldRule("object", "Domain and vertical-level dimensions."),
+        "projection": FieldRule("object", "Lambert or other grid projection metadata."),
+        "frequency_hours": FieldRule("integer", "IC/BC forcing cadence in hours."),
+        "completeness_gate": FieldRule("object", "Files and checks required before allocation."),
+        "gen2_wps_reuse": FieldRule("object", "Read-only Gen2 WPS files and reuse policy."),
+        "artifact_paths": FieldRule("array", "Paths proving the manifest inputs exist."),
+    }
+    optional = {
+        "variables": FieldRule("object", "Pressure-level, surface, and soil variables expected from AIFS."),
+        "notes": FieldRule("array", "Human-readable caveats or follow-up notes."),
+    }
+
+
+class StationObservationSourceManifest(ProofObjectSchema):
+    """M7-S0a station-observation source readiness manifest."""
+
+    schema_name = "StationObservationSourceManifest"
+    description = "Candidate station-observation sources for Canary operational verification."
+    required = {
+        "manifest_version": FieldRule("string", "Manifest schema/version identifier."),
+        "status": FieldRule("string", "AVAILABLE/PARTIAL/BLOCKED aggregate readiness status."),
+        "domain": FieldRule("string", "Verification domain label."),
+        "generated_utc": FieldRule("string", "Manifest generation time."),
+        "sources": FieldRule("array", "Source records with access status, variables, and evidence."),
+        "binding_policy": FieldRule("object", "How sources bind or qualify operational verification."),
+        "artifact_paths": FieldRule("array", "Local manifests, sample fetches, or evidence paths."),
+    }
+    optional = {
+        "station_priority": FieldRule("array", "Preferred source order for M7-S5."),
+        "notes": FieldRule("array", "Human-readable caveats or follow-up notes."),
+    }
+
+
+class OperationalOutput(ProofObjectSchema):
+    """M7 operational NetCDF/Zarr output proof schema."""
+
+    schema_name = "OperationalOutput"
+    description = "Operational model-output manifest for NetCDF-like hourly files and cycle Zarr products."
+    required = {
+        "cycle_id": FieldRule("string", "Immutable cycle identifier, e.g. YYYYMMDD_18z."),
+        "status": FieldRule("string", "PUBLISHED/PARTIAL/BLOCKED/FAILED output status."),
+        "init_time_utc": FieldRule("string", "Cycle initialization time in UTC."),
+        "valid_times_utc": FieldRule("array", "Output valid times included in the product."),
+        "domains": FieldRule("object", "Domain IDs mapped to grid shape and resolution metadata."),
+        "fields": FieldRule("object", "Field names mapped to units, dimensions, and optionality."),
+        "output_formats": FieldRule("array", "Formats written for this cycle, e.g. netcdf_hourly and zarr_cycle."),
+        "root_path": FieldRule("string", "Cycle output root path."),
+        "attrs": FieldRule("object", "Global product attributes and provenance."),
+        "artifact_paths": FieldRule("array", "Related manifests and product proof paths."),
+    }
+    optional = {
+        "checksums": FieldRule("object", "Per-output checksum records."),
+        "retention_class": FieldRule("string", "Retention policy class."),
+    }
+
+
+class OperationalStatus(ProofObjectSchema):
+    """M7 operational cycle status JSON schema."""
+
+    schema_name = "OperationalStatus"
+    description = "Single-cycle operational status snapshot consumed by monitoring and dashboard hooks."
+    required = {
+        "cycle_id": FieldRule("string", "Immutable cycle identifier."),
+        "status": FieldRule("string", "WAITING_AIFS/AIFS_LATE/RUNNING/POSTPROCESSING/VERIFYING/PUBLISHED/FAILED/STALE_PUBLISHED."),
+        "init_time_utc": FieldRule("string", "Cycle initialization time in UTC."),
+        "updated_utc": FieldRule("string", "Status update time in UTC."),
+        "wall_clock_s": FieldRule("number", "Wall-clock seconds spent in the current attempt."),
+        "exit_code": FieldRule(("integer", "null"), "Process exit code, or null before process completion."),
+        "current_step": FieldRule("string", "Current operational step."),
+        "alert_flags": FieldRule("array", "Active alert classes."),
+        "artifact_index_path": FieldRule("string", "Path to the cycle proof index or partial index."),
+        "last_good_cycle_id": FieldRule(("string", "null"), "Most recent publishable cycle, if any."),
+    }
+    optional = {
+        "error_class": FieldRule(("string", "null"), "Failure class when status is FAILED or AIFS_LATE."),
+        "wall_time_budget_s": FieldRule("number", "Configured wall-time budget for the cycle."),
+    }
+
+
+class OperationalScheduler(ProofObjectSchema):
+    """M7 operational scheduler configuration schema."""
+
+    schema_name = "OperationalScheduler"
+    description = "Cron-like daily-cycle scheduler contract for the single-machine M7 v0 pipeline."
+    required = {
+        "scheduler_id": FieldRule("string", "Scheduler configuration identifier."),
+        "status": FieldRule("string", "ACTIVE/DRAFT/BLOCKED scheduler config status."),
+        "cycle_hour_utc": FieldRule("integer", "Forecast initialization cycle hour in UTC."),
+        "timezone": FieldRule("string", "Timezone for local operator display."),
+        "aifs_poll_start_utc": FieldRule("string", "Daily UTC time to begin polling for AIFS readiness."),
+        "aifs_poll_timeout_utc": FieldRule("string", "Daily UTC time at which AIFS is declared late."),
+        "forecast_hours_minimum": FieldRule("integer", "Minimum required forecast horizon."),
+        "locks": FieldRule("object", "Single-machine lock and rerun policy."),
+        "retention_policy": FieldRule("object", "Output and proof retention policy."),
+        "failure_states": FieldRule("array", "Scheduler-visible failure states."),
+        "artifact_paths": FieldRule("array", "Related scheduler/status proof paths."),
+    }
+    optional = {
+        "publish_target_utc": FieldRule("string", "Provisional daily publish target."),
+        "stale_publish_policy": FieldRule("object", "Rules for publishing the previous good cycle."),
+    }
+
+
 class FullDomainBatchingVerdict(ProofObjectSchema):
     """M6-S5 ADR-007 full-domain performance verdict proof."""
 
@@ -340,6 +454,20 @@ SCHEMA_REGISTRY: dict[str, type[ProofObjectSchema]] = {
     "tier4_probtest_tolerances": Tier4ProbtestTolerances,
     "probtest_tolerances": Tier4ProbtestTolerances,
     "gen2_comparison": Gen2Comparison,
+    "aifs_ingest_manifest": AIFSIngestManifest,
+    "aifs_ingest_v0": AIFSIngestManifest,
+    "aifs_ingest_v0.json": AIFSIngestManifest,
+    "station_observation_source_manifest": StationObservationSourceManifest,
+    "station_obs_sources_v0": StationObservationSourceManifest,
+    "station_obs_sources_v0.json": StationObservationSourceManifest,
+    "operational_output": OperationalOutput,
+    "operational_output.json": OperationalOutput,
+    "operational_status": OperationalStatus,
+    "operational_status.json": OperationalStatus,
+    "ops_status_schema": OperationalStatus,
+    "ops_status_schema.json": OperationalStatus,
+    "operational_scheduler": OperationalScheduler,
+    "operational_scheduler.json": OperationalScheduler,
     "full_domain_batching_verdict": FullDomainBatchingVerdict,
     "surface_layer_artifact": SurfaceLayerArtifact,
     "radiation_conditioning_feasibility": SurfaceLayerArtifact,
@@ -365,14 +493,19 @@ def validate_artifact(path: str | Path) -> dict[str, Any]:
 
 
 __all__ = [
+    "AIFSIngestManifest",
     "CoupledDummyCarry",
     "Forecast24h",
     "ForecastSmoke",
     "FullDomainBatchingVerdict",
     "Gen2Comparison",
     "MilestoneCloseoutM6",
+    "OperationalOutput",
+    "OperationalScheduler",
+    "OperationalStatus",
     "SCHEMA_REGISTRY",
     "SpacetimeBudget",
+    "StationObservationSourceManifest",
     "SurfaceLayerArtifact",
     "Tier2CoupledInvariants",
     "Tier3DriftEnvelope",

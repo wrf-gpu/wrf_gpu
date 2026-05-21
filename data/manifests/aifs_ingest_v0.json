@@ -1,0 +1,150 @@
+{
+  "manifest_version": "m7-s0a-aifs-ingest-v0",
+  "status": "AVAILABLE",
+  "strategy": "reuse_gen2_wps_v0",
+  "source": {
+    "upstream": {
+      "primary": "ECMWF open-data AIFS GRIB2 via Gen2/scripts/prepare_aifs_pure_forcing.py",
+      "default_transport": "AIFS_OPENDATA_SOURCE=azure",
+      "historical_archive": "/mnt/data/canairy_meteo/data/aifs_single/aifs_single_YYYYMM.nc",
+      "icechunk_archive": "s3://dynamical-ecmwf-aifs-single/ecmwf-aifs-single-forecast/v0.1.0.icechunk"
+    },
+    "local_example_cycle": {
+      "cycle_id": "20260520_18z",
+      "wps_case_root": "/mnt/data/canairy_meteo/runs/wps_cases/20260520_18z_72h",
+      "raw_grib_steps": [
+        "/mnt/data/canairy_meteo/runs/wps_cases/20260520_18z_72h/ungrib/step_000.grib2",
+        "/mnt/data/canairy_meteo/runs/wps_cases/20260520_18z_72h/ungrib/step_006.grib2",
+        "/mnt/data/canairy_meteo/runs/wps_cases/20260520_18z_72h/ungrib/step_012.grib2",
+        "/mnt/data/canairy_meteo/runs/wps_cases/20260520_18z_72h/ungrib/step_018.grib2",
+        "/mnt/data/canairy_meteo/runs/wps_cases/20260520_18z_72h/ungrib/step_024.grib2"
+      ],
+      "metgrid_examples": [
+        "/mnt/data/canairy_meteo/runs/wps_cases/20260520_18z_72h/l3/met_em.d01.2026-05-20_18:00:00.nc",
+        "/mnt/data/canairy_meteo/runs/wps_cases/20260520_18z_72h/l3/met_em.d02.2026-05-20_18:00:00.nc"
+      ],
+      "live_readiness_state": "/mnt/data/canairy_meteo/data/state/live_18z_state.json"
+    }
+  },
+  "valid_time_window": {
+    "cycle_hour_utc": 18,
+    "example_init_time_utc": "2026-05-20T18:00:00Z",
+    "example_end_time_utc": "2026-05-23T18:00:00Z",
+    "minimum_v0_end_time_utc": "2026-05-21T18:00:00Z",
+    "required_steps_h_v0": [0, 6, 12, 18, 24],
+    "available_steps_h_example": [0, 6, 12, 18, 24, 30, 36, 42, 48, 54, 60, 66, 72]
+  },
+  "dimensions": {
+    "vertical": {
+      "wrf_e_vert": 45,
+      "metgrid_pressure_levels": 14,
+      "metgrid_soil_layers": 2
+    },
+    "domains": {
+      "d01": {
+        "dx_m": 9000,
+        "dy_m": 9000,
+        "e_we": 94,
+        "e_sn": 60,
+        "met_em_mass_shape": [59, 93]
+      },
+      "d02": {
+        "dx_m": 3000,
+        "dy_m": 3000,
+        "e_we": 160,
+        "e_sn": 67,
+        "met_em_mass_shape": [66, 159]
+      },
+      "d03": {
+        "dx_m": 1000,
+        "dy_m": 1000,
+        "e_we": 94,
+        "e_sn": 76,
+        "status": "CONDITIONAL_M7_S2"
+      },
+      "d04": {
+        "dx_m": 1000,
+        "dy_m": 1000,
+        "e_we": 70,
+        "e_sn": 61,
+        "status": "CONDITIONAL_M7_S2"
+      },
+      "d05": {
+        "dx_m": 1000,
+        "dy_m": 1000,
+        "e_we": 70,
+        "e_sn": 58,
+        "status": "CONDITIONAL_M7_S2"
+      }
+    }
+  },
+  "projection": {
+    "map_proj": "lambert",
+    "map_proj_code": 1,
+    "ref_lat": 28.3,
+    "ref_lon": -16.4,
+    "truelat1": 25.0,
+    "truelat2": 30.0,
+    "stand_lon": -16.4,
+    "geog_data_path": "/mnt/data/canairy_meteo/artifacts/wps_geog/WPS_GEOG_LOW_RES",
+    "d02_met_em_attrs": {
+      "DX": 3000.0,
+      "DY": 3000.0,
+      "CEN_LAT": 28.34027,
+      "CEN_LON": -16.12384,
+      "MOAD_CEN_LAT": 28.30001
+    }
+  },
+  "frequency_hours": 6,
+  "variables": {
+    "pressure_levels_hpa": [1000, 925, 850, 700, 600, 500, 400, 300, 250, 200, 150, 100, 50],
+    "pressure_level_fields": ["u", "v", "t", "q", "z"],
+    "surface_fields": ["10u", "10v", "2t", "2d", "sp", "msl", "skt", "lsm", "z"],
+    "soil_fields": ["vsw", "sot"],
+    "wps_vtable": "/home/enric/src/canairy_meteo/Gen2/configs/Vtable.AIFS_PURE"
+  },
+  "completeness_gate": {
+    "status_if_missing": "AIFS_LATE_OR_INCOMPLETE",
+    "minimum_v0_required_raw_steps": ["step_000.grib2", "step_006.grib2", "step_012.grib2", "step_018.grib2", "step_024.grib2"],
+    "minimum_v0_required_met_em_domains": ["d01", "d02"],
+    "minimum_v0_required_met_em_times_utc": [
+      "2026-05-20T18:00:00Z",
+      "2026-05-21T00:00:00Z",
+      "2026-05-21T06:00:00Z",
+      "2026-05-21T12:00:00Z",
+      "2026-05-21T18:00:00Z"
+    ],
+    "must_check_before_gpu_allocation": [
+      "raw GRIB2 step files exist and are non-empty",
+      "Gen2 ungrib outputs AIFS:* exist for every required step",
+      "l3/namelist.wps matches expected projection and interval_seconds=21600",
+      "met_em d01 and d02 exist for every required v0 valid time",
+      "met_em global attributes expose FLAG_METGRID=1, FLAG_PSFC=1, FLAG_SH=1, and FLAG_SOIL_LAYERS=1"
+    ]
+  },
+  "gen2_wps_reuse": {
+    "policy": "M7 v0 reuses Gen2 WPS/WPS-like transformation as ingest oracle; no new AIFS regridder in M7-S0a or M7-S1 unless a later ADR approves it.",
+    "read_only_root": "/mnt/data/canairy_meteo",
+    "case_namelist_wps": "/mnt/data/canairy_meteo/runs/wps_cases/20260520_18z_72h/l3/namelist.wps",
+    "ungrib_namelist_wps": "/mnt/data/canairy_meteo/runs/wps_cases/20260520_18z_72h/ungrib/namelist.wps",
+    "wps_binary_reference": "/mnt/data/canairy_meteo/artifacts/wrf_src/WPS",
+    "geog_root": "/mnt/data/canairy_meteo/artifacts/wps_geog/WPS_GEOG_LOW_RES",
+    "gen2_scripts": [
+      "/home/enric/src/canairy_meteo/Gen2/scripts/prepare_aifs_pure_forcing.py",
+      "/home/enric/src/canairy_meteo/Gen2/scripts/poll_live_18z_cycle_v1.py"
+    ]
+  },
+  "artifact_paths": [
+    "/mnt/data/canairy_meteo/runs/wps_cases/20260520_18z_72h/l3/namelist.wps",
+    "/mnt/data/canairy_meteo/runs/wps_cases/20260520_18z_72h/ungrib/namelist.wps",
+    "/mnt/data/canairy_meteo/runs/wps_cases/20260520_18z_72h/ungrib/step_000.grib2",
+    "/mnt/data/canairy_meteo/runs/wps_cases/20260520_18z_72h/ungrib/step_024.grib2",
+    "/mnt/data/canairy_meteo/runs/wps_cases/20260520_18z_72h/l3/met_em.d02.2026-05-20_18:00:00.nc",
+    "/home/enric/src/canairy_meteo/Gen2/configs/Vtable.AIFS_PURE",
+    "/mnt/data/canairy_meteo/data/state/live_18z_state.json"
+  ],
+  "notes": [
+    "The required sprint inventory command at maxdepth 3 saw only /mnt/data/canairy_meteo/AIFS.log and /mnt/data/canairy_meteo/data/aifs_ens/aifs_ens_20260414_00z.grib2; the WPS case artifacts are deeper under runs/wps_cases.",
+    "The old generic /mnt/data/canairy_meteo/artifacts/wrf_src/WPS/namelist.wps is not the binding Canary geometry; the case-specific l3 namelist is the v0 reuse target."
+  ]
+}
