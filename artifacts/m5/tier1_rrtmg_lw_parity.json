@@ -13,26 +13,26 @@
   "fixture_id": "analytic-rrtmg-lw-column-v1",
   "pass": false,
   "per_field_max_abs_err": {
-    "column_net_heating": 73.67198882864889,
-    "flux_down": 67.25107985479801,
-    "flux_up": 44.33055076399509,
-    "heating_rate": 6.091121542523097e-05,
-    "surface_down": 10.743642163317077,
+    "column_net_heating": 73.57036677312863,
+    "flux_down": 70.60186487697774,
+    "flux_up": 44.615773276228026,
+    "heating_rate": 5.978802100628081e-05,
+    "surface_down": 10.948037190213029,
     "surface_emission": 3.059611549360852e-05,
-    "surface_up": 0.643868833120905,
+    "surface_up": 0.6561325347346383,
     "toa_down": 0.0,
-    "toa_up": 44.33055076399509
+    "toa_up": 44.615773276228026
   },
   "per_field_max_rel_err": {
-    "column_net_heating": 0.5710347664979502,
-    "flux_down": 0.6590888151425406,
-    "flux_up": 0.1929620325423348,
-    "heating_rate": 18.38772630807074,
-    "surface_down": 0.029927042852576902,
+    "column_net_heating": 0.5732919412474431,
+    "flux_down": 0.6591331132195449,
+    "flux_up": 0.19420354916549387,
+    "heating_rate": 10.998735911059551,
+    "surface_down": 0.03049639714005069,
     "surface_emission": 7.076241582851272e-08,
-    "surface_up": 0.001658459556663873,
+    "surface_up": 0.0016900480605564832,
     "toa_down": 0.0,
-    "toa_up": 0.1929620325423348
+    "toa_up": 0.19420354916549387
   },
   "scenarios_tested": 3,
   "tolerances_met": false

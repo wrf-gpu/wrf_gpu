@@ -109,6 +109,26 @@ class RRTMGSWColumnResult(NamedTuple):
     surface_absorbed: jnp.ndarray
 
 
+class RRTMGSWIntermediateState(NamedTuple):
+    """SW solver-entry state exposed for M5-S3.z WRF intermediate-oracle checks."""
+
+    jp: jnp.ndarray
+    jt: jnp.ndarray
+    jt1: jnp.ndarray
+    fac00: jnp.ndarray
+    fac01: jnp.ndarray
+    fac10: jnp.ndarray
+    fac11: jnp.ndarray
+    indself: jnp.ndarray
+    indfor: jnp.ndarray
+    selffac: jnp.ndarray
+    forfac: jnp.ndarray
+    colmol: jnp.ndarray
+    taug: jnp.ndarray
+    taur: jnp.ndarray
+    sfluxzen: jnp.ndarray
+
+
 class _SWSetCoefState(NamedTuple):
     """WRF `setcoef_sw` interpolation state, kept as JAX arrays."""
 
@@ -753,12 +773,13 @@ def _shortwave_impl(state: RRTMGSWColumnState, tables: RRTMGTableBundle, debug: 
     cloud_ext = jnp.concatenate((state.cloud_fraction, jnp.zeros_like(state.cloud_fraction[..., -1:])), axis=-1)
     layer_mass = _pressure_layer_mass(state.p)
     layer_mass_ext = jnp.maximum((pressure_interfaces[..., :-1] - pressure_interfaces[..., 1:]) / GRAVITY, MIN_LAYER_MASS)
-    coef = _sw_setcoef(qv_ext, p_ext, _extend_with_wrf_top_layer(state.T), pressure_interfaces, tables)
-    tau_gas, tau_rayleigh = _sw_taumol(coef, tables)
+    gas_column, dry_column = _rrtmg_column_amounts(qv_ext, pressure_interfaces)
     liquid_path_g = (qc_ext + 0.25 * qg_ext) * layer_mass_ext * 1000.0
     ice_path_g = (qi_ext + qs_ext + 0.75 * qg_ext) * layer_mass_ext * 1000.0
 
-    sfluxzen = _sw_sfluxzen(coef, tables)
+    weights = tables.sw_gpoint_weights
+    gas_coeff = _nearest_pressure_coefficients(p_ext, tables)
+    rayleigh_coeff = tables.sw_rayleigh_coefficients
     liquid_coeff = tables.sw_cloud_liquid_extinction[:, None]
     ice_coeff = tables.sw_cloud_ice_extinction[:, None]
     liquid_ssa = tables.sw_cloud_liquid_ssa[:, None]
@@ -767,6 +788,8 @@ def _shortwave_impl(state: RRTMGSWColumnState, tables: RRTMGTableBundle, debug: 
     ice_asy = tables.sw_cloud_ice_asymmetry[:, None]
     mask = tables.sw_gpoint_mask
 
+    tau_gas = gas_column[..., None, None] * jnp.maximum(gas_coeff, 0.0)
+    tau_rayleigh = dry_column[..., None, None] * rayleigh_coeff
     tau_liquid = cloud_ext[..., None, None] * liquid_path_g[..., None, None] * liquid_coeff
     tau_ice = cloud_ext[..., None, None] * ice_path_g[..., None, None] * ice_coeff
     tau_total = jnp.clip(tau_gas + tau_rayleigh + tau_liquid + tau_ice, MIN_OPTICAL_DEPTH, MAX_OPTICAL_DEPTH)
@@ -798,7 +821,7 @@ def _shortwave_impl(state: RRTMGSWColumnState, tables: RRTMGTableBundle, debug: 
     direct_trans = jnp.exp(-jnp.minimum(tau_top_down / jnp.maximum(state.coszen[..., None, None, None], 1.0e-6), 500.0)) * active_top_down
     direct_trans = jnp.where(active_top_down > 0.0, direct_trans, 1.0)
     down_top_down, up_top_down = _vertical_quadrature(pref, prefd, ptra, ptrad, direct_trans)
-    top_flux_band = state.coszen[..., None, None] * sfluxzen
+    top_flux_band = SOLAR_CONSTANT * state.coszen[..., None, None] * weights
     down_band = jnp.flip(down_top_down * top_flux_band[..., None, :, :], axis=-3)
     up_band = jnp.flip(up_top_down * top_flux_band[..., None, :, :], axis=-3)
 
@@ -824,6 +847,40 @@ def _shortwave_impl(state: RRTMGSWColumnState, tables: RRTMGTableBundle, debug: 
         surface_up=flux_up[..., 0],
         column_absorbed=jnp.sum(column_absorbed_layers, axis=-1),
         surface_absorbed=surface_absorbed,
+    )
+
+
+def compute_rrtmg_sw_intermediates(
+    state: RRTMGSWColumnState,
+    tables: RRTMGTableBundle = RRTMG_TABLES,
+) -> RRTMGSWIntermediateState:
+    """Returns JAX SW state compared to WRF `setcoef_sw`/`taumol_sw`/`spcvmc_sw` oracles."""
+
+    state = _clip_state(state)
+    original_interfaces = _pressure_interfaces(state.p)
+    top_pressure = 0.5 * original_interfaces[..., -1:]
+    pressure_interfaces = jnp.concatenate((original_interfaces, jnp.full_like(top_pressure, 1.0e-3)), axis=-1)
+    p_ext = jnp.concatenate((state.p, top_pressure), axis=-1)
+    qv_ext = _extend_with_wrf_top_layer(state.qv)
+    t_ext = _extend_with_wrf_top_layer(state.T)
+    coef = _sw_setcoef(qv_ext, p_ext, t_ext, pressure_interfaces, tables)
+    tau_gas, tau_rayleigh = _sw_taumol(coef, tables)
+    return RRTMGSWIntermediateState(
+        jp=coef.jp,
+        jt=coef.jt,
+        jt1=coef.jt1,
+        fac00=coef.fac00,
+        fac01=coef.fac01,
+        fac10=coef.fac10,
+        fac11=coef.fac11,
+        indself=coef.indself,
+        indfor=coef.indfor,
+        selffac=coef.selffac,
+        forfac=coef.forfac,
+        colmol=jnp.stack((coef.colh2o, coef.colco2, coef.colo3, coef.colch4, coef.coln2o, coef.colo2), axis=-1),
+        taug=tau_gas,
+        taur=tau_rayleigh,
+        sfluxzen=_sw_sfluxzen(coef, tables),
     )
 
 

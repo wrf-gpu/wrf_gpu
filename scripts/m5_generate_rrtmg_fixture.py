@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import hashlib
+import io
 import json
 import os
 import subprocess
@@ -24,6 +25,8 @@ SW_MANIFEST = ROOT / "fixtures" / "manifests" / f"{SW_FIXTURE_ID}.yaml"
 LW_MANIFEST = ROOT / "fixtures" / "manifests" / f"{LW_FIXTURE_ID}.yaml"
 SW_FULL = ROOT / "data" / "fixtures" / SW_FIXTURE_ID / "full.npz"
 LW_FULL = ROOT / "data" / "fixtures" / LW_FIXTURE_ID / "full.npz"
+INTERMEDIATE_ORACLE = ROOT / "data" / "fixtures" / "rrtmg-intermediate-oracle-v1.npz"
+INTERMEDIATE_MANIFEST = ROOT / "fixtures" / "manifests" / "rrtmg-intermediate-oracle-v1.yaml"
 TABLE_ASSET = ROOT / "data" / "fixtures" / "rrtmg-tables-v1.npz"
 SCRATCH = ROOT / "data" / "scratch"
 RRTMG_RUNTIME = SCRATCH / "rrtmg_runtime"
@@ -33,6 +36,96 @@ WRF_SW_OBJECT = Path("/mnt/data/canairy_meteo/artifacts/wrf_gpu_src/WRF/_build_g
 WRF_LW_OBJECT = Path("/mnt/data/canairy_meteo/artifacts/wrf_gpu_src/WRF/_build_gen2_dmpar/CMakeFiles/WRF_Core.dir/phys/module_ra_rrtmg_lw.F.o")
 
 INPUT_FIELDS = ("T", "p", "qv", "qc", "qi", "qs", "qg", "cloud_fraction", "dz", "rho")
+ORACLE_MARKER = b"#RRTMG_ORACLE_V1_BINARY\n"
+
+
+def _read_oracle_binary(payload: bytes) -> dict[str, np.ndarray]:
+    """Parses the appended stream-unformatted WRF intermediate oracle payload."""
+
+    if not payload:
+        return {}
+
+    if len(payload) < 24:
+        raise RuntimeError(f"RRTMG oracle payload too short: {len(payload)} bytes")
+    dims_be = np.frombuffer(payload[:24], dtype=">i4")
+    dims_le = np.frombuffer(payload[:24], dtype="<i4")
+    expected = (17, 17, 12, 16, 14, 16)
+    if tuple(int(v) for v in dims_be) == expected:
+        endian = ">"
+        dims = dims_be
+    elif tuple(int(v) for v in dims_le) == expected:
+        endian = "<"
+        dims = dims_le
+    else:
+        for candidate_endian, candidate_dims in ((">", dims_be), ("<", dims_le)):
+            nlay_sw, nlay_lw, max_sw_g, max_lw_g, nbnd_sw, nbnd_lw = [int(v) for v in candidate_dims]
+            if (
+                1 <= nlay_sw <= 256
+                and 1 <= nlay_lw <= 256
+                and max_sw_g == 12
+                and max_lw_g == 16
+                and nbnd_sw == 14
+                and nbnd_lw == 16
+            ):
+                endian = candidate_endian
+                dims = candidate_dims
+                break
+        else:
+            raise RuntimeError(f"bad RRTMG oracle dimensions: be={dims_be.tolist()} le={dims_le.tolist()}")
+
+    nlay_sw, nlay_lw, max_sw_g, max_lw_g, nbnd_sw, nbnd_lw = [int(v) for v in dims]
+    offset = 24
+
+    def take_i4(count: int) -> np.ndarray:
+        nonlocal offset
+        byte_count = count * 4
+        values = np.frombuffer(payload, dtype=f"{endian}i4", count=count, offset=offset)
+        if values.size != count:
+            raise RuntimeError("truncated RRTMG oracle integer record")
+        offset += byte_count
+        return values.astype(np.int32, copy=True)
+
+    def take_f4(count: int) -> np.ndarray:
+        nonlocal offset
+        byte_count = count * 4
+        values = np.frombuffer(payload, dtype=f"{endian}f4", count=count, offset=offset)
+        if values.size != count:
+            raise RuntimeError("truncated RRTMG oracle real record")
+        offset += byte_count
+        return values.astype(np.float64, copy=True)
+
+    def take_f4_f(shape: tuple[int, ...]) -> np.ndarray:
+        return take_f4(int(np.prod(shape))).reshape(shape, order="F")
+
+    def take_i4_f(shape: tuple[int, ...]) -> np.ndarray:
+        return take_i4(int(np.prod(shape))).reshape(shape, order="F")
+
+    oracle: dict[str, np.ndarray] = {
+        "oracle_dims": np.asarray([nlay_sw, nlay_lw, max_sw_g, max_lw_g, nbnd_sw, nbnd_lw], dtype=np.int32),
+        "sw_per_band_flux": take_f4_f((4, nbnd_sw)),
+        "lw_per_band_flux": take_f4_f((4, nbnd_lw)),
+    }
+    for name in ("sw_jp", "sw_jt", "sw_jt1", "sw_indself", "sw_indfor"):
+        oracle[name] = take_i4_f((nlay_sw,))
+    for name in ("sw_fac00", "sw_fac01", "sw_fac10", "sw_fac11", "sw_selffac", "sw_forfac"):
+        oracle[name] = take_f4_f((nlay_sw,))
+    oracle["sw_colmol"] = take_f4_f((nlay_sw, 6))
+    oracle["sw_taug"] = take_f4_f((nlay_sw, max_sw_g, nbnd_sw))
+    oracle["sw_taur"] = take_f4_f((nlay_sw, max_sw_g, nbnd_sw))
+    oracle["sw_sfluxzen"] = take_f4_f((max_sw_g, nbnd_sw))
+    for name in ("lw_jp", "lw_jt"):
+        oracle[name] = take_i4_f((nlay_lw,))
+    oracle["lw_planklay"] = take_f4_f((nlay_lw, nbnd_lw))
+    oracle["lw_planklev"] = take_f4_f((nlay_lw + 1, nbnd_lw))
+    oracle["lw_plankbnd"] = take_f4_f((nbnd_lw,))
+    oracle["lw_taug"] = take_f4_f((nlay_lw, max_lw_g, nbnd_lw))
+    oracle["lw_fracs"] = take_f4_f((nlay_lw, max_lw_g, nbnd_lw))
+    oracle["lw_secdiff"] = take_f4_f((nbnd_lw,))
+    oracle["lw_dplankup"] = take_f4_f((nlay_lw, nbnd_lw))
+    oracle["lw_dplankdn"] = take_f4_f((nlay_lw, nbnd_lw))
+    if offset != len(payload):
+        raise RuntimeError(f"unexpected trailing bytes in RRTMG oracle payload: {len(payload) - offset}")
+    return oracle
 
 
 def _sha256(path: Path) -> str:
@@ -160,7 +253,14 @@ def _write_fortran_input(path: Path, fields: dict[str, np.ndarray], scenario: in
 def _read_fortran_output(path: Path) -> dict[str, np.ndarray | float]:
     """Reads one RRTMG harness output file."""
 
-    with path.open("r", encoding="utf-8") as handle:
+    raw = path.read_bytes()
+    if ORACLE_MARKER in raw:
+        text_raw, oracle_raw = raw.split(ORACLE_MARKER, 1)
+        oracle = _read_oracle_binary(oracle_raw)
+    else:
+        text_raw = raw
+        oracle = {}
+    with io.StringIO(text_raw.decode("utf-8")) as handle:
         nz = int(handle.readline().strip())
         sw_scalars = np.asarray([float(value) for value in handle.readline().split()], dtype=np.float64)
         lw_scalars = np.asarray([float(value) for value in handle.readline().split()], dtype=np.float64)
@@ -168,7 +268,7 @@ def _read_fortran_output(path: Path) -> dict[str, np.ndarray | float]:
         fluxes = np.loadtxt(handle, dtype=np.float64)
     if heating.shape != (nz, 3) or fluxes.shape != (nz + 2, 4):
         raise RuntimeError(f"bad RRTMG harness output shape in {path}: heating={heating.shape}, fluxes={fluxes.shape}")
-    return {
+    result: dict[str, np.ndarray | float] = {
         "sw_heating_rate": heating[:, 0],
         "lw_heating_rate": heating[:, 1],
         "pressure_layer_mass": heating[:, 2],
@@ -189,6 +289,22 @@ def _read_fortran_output(path: Path) -> dict[str, np.ndarray | float]:
         "lw_column_net_heating": lw_scalars[4],
         "lw_surface_emission": lw_scalars[5],
     }
+    if oracle:
+        result.update(
+            {
+                "sw_per_band_toa_up": oracle["sw_per_band_flux"][0],
+                "sw_per_band_toa_down": oracle["sw_per_band_flux"][1],
+                "sw_per_band_surface_up": oracle["sw_per_band_flux"][2],
+                "sw_per_band_surface_down": oracle["sw_per_band_flux"][3],
+                "lw_per_band_toa_up": oracle["lw_per_band_flux"][0],
+                "lw_per_band_toa_down": oracle["lw_per_band_flux"][1],
+                "lw_per_band_surface_up": oracle["lw_per_band_flux"][2],
+                "lw_per_band_surface_down": oracle["lw_per_band_flux"][3],
+            }
+        )
+        for name, value in oracle.items():
+            result[f"oracle_{name}"] = value
+    return result
 
 
 def _run_harness(fields: dict[str, np.ndarray]) -> dict[str, np.ndarray]:
@@ -207,7 +323,14 @@ def _run_harness(fields: dict[str, np.ndarray]) -> dict[str, np.ndarray]:
         result = _read_fortran_output(output_path)
         for field, value in result.items():
             outputs.setdefault(field, []).append(value)
-    return {name: np.stack(values).astype(np.float64) for name, values in outputs.items()}
+    stacked: dict[str, np.ndarray] = {}
+    for name, values in outputs.items():
+        array = np.stack(values)
+        if array.dtype.kind in {"i", "u"}:
+            stacked[name] = array.astype(np.int32)
+        else:
+            stacked[name] = array.astype(np.float64)
+    return stacked
 
 
 def _variable(name: str, units: str, shape: tuple[int, ...], abs_tol: float, rel_tol: float, rationale: str) -> dict[str, Any]:
@@ -282,10 +405,58 @@ def _manifest(path: Path, fixture_id: str, sample: Path, full: Path, variables: 
     path.write_text(yaml.safe_dump(manifest, sort_keys=False), encoding="utf-8")
 
 
+def _intermediate_manifest(path: Path) -> None:
+    """Writes the SHA-pinned manifest for the large intermediate-oracle NPZ."""
+
+    harness_sha = _sha256(HARNESS)
+    manifest = {
+        "fixture_id": "rrtmg-intermediate-oracle-v1",
+        "source": "wrf-derived",
+        "source_commit": (
+            f"wrf-rrtmg-intermediate-harness sha256={harness_sha}; "
+            "module_ra_rrtmg_sw.F.o="
+            f"{'present' if WRF_SW_OBJECT.exists() else 'absent'}; "
+            "module_ra_rrtmg_lw.F.o="
+            f"{'present' if WRF_LW_OBJECT.exists() else 'absent'}; "
+            "low_level_calls=setcoef_sw+taumol_sw+spcvmc_sw+setcoef+taumol+rtrnmc; "
+            "rrtmg_data_convert=big_endian"
+        ),
+        "wrf_version": "v4.7.1-derived-RRTMG-real-driver-column-harness",
+        "scenario": "three RRTMG columns with per-band SW/LW fluxes and solver-entry intermediate state",
+        "created_utc": "2026-05-21T01:40:00Z",
+        "tier": 1,
+        "precision_reference": "fp64",
+        "generation_command": "python scripts/m5_generate_rrtmg_fixture.py",
+        "external_uri": str(INTERMEDIATE_ORACLE.relative_to(ROOT)),
+        "sample_slice_path": None,
+        "git_commit": _git_rev(),
+        "license_notes": "Synthetic columns run through a GNU Fortran harness linked to real WRF RRTMG SW/LW objects and lower RRTMG solver-entry subroutines.",
+        "variables": [
+            _variable("sw_taug", "1", (3, 17, 12, 14), 1.0e-8, 1.0e-4, "SW gas optical-depth intermediate oracle"),
+            _variable("sw_taur", "1", (3, 17, 12, 14), 1.0e-8, 1.0e-4, "SW Rayleigh optical-depth intermediate oracle"),
+            _variable("sw_sfluxzen", "W m-2", (3, 12, 14), 1.0e-8, 1.0e-4, "SW per-g-point solar source oracle"),
+            _variable("lw_taug", "1", (3, 17, 16, 16), 1.0e-8, 1.0e-4, "LW gas optical-depth intermediate oracle"),
+            _variable("lw_fracs", "1", (3, 17, 16, 16), 1.0e-8, 1.0e-4, "LW Planck fraction intermediate oracle"),
+            _variable("lw_planklay", "W m-2", (3, 17, 16), 1.0e-10, 1.0e-8, "LW Planck layer source oracle"),
+        ],
+        "files": [
+            {
+                "path": str(INTERMEDIATE_ORACLE.relative_to(ROOT)),
+                "checksum_sha256": _sha256(INTERMEDIATE_ORACLE),
+                "bytes": INTERMEDIATE_ORACLE.stat().st_size,
+                "external": False,
+            },
+            {"path": str(HARNESS.relative_to(ROOT)), "checksum_sha256": harness_sha, "bytes": HARNESS.stat().st_size, "external": True},
+            {"path": str(TABLE_ASSET.relative_to(ROOT)), "checksum_sha256": _sha256(TABLE_ASSET), "bytes": TABLE_ASSET.stat().st_size, "external": True},
+        ],
+    }
+    path.write_text(yaml.safe_dump(manifest, sort_keys=False), encoding="utf-8")
+
+
 def write_fixture() -> dict[str, Any]:
     """Writes both RRTMG fixtures and manifests."""
 
-    for path in (SW_SAMPLE.parent, LW_SAMPLE.parent, SW_FULL.parent, LW_FULL.parent, SW_MANIFEST.parent, LW_MANIFEST.parent):
+    for path in (SW_SAMPLE.parent, LW_SAMPLE.parent, SW_FULL.parent, LW_FULL.parent, INTERMEDIATE_ORACLE.parent, SW_MANIFEST.parent, LW_MANIFEST.parent):
         path.mkdir(parents=True, exist_ok=True)
     if not TABLE_ASSET.exists():
         subprocess.run([sys.executable, "scripts/extract_rrtmg_tables.py", "--output", str(TABLE_ASSET)], cwd=ROOT, check=True)
@@ -306,6 +477,10 @@ def write_fixture() -> dict[str, Any]:
             "output_surface_up": outputs["sw_surface_up"],
             "output_column_absorbed": outputs["sw_column_absorbed"],
             "output_surface_absorbed": outputs["sw_surface_absorbed"],
+            "output_per_band_toa_up": outputs["sw_per_band_toa_up"],
+            "output_per_band_toa_down": outputs["sw_per_band_toa_down"],
+            "output_per_band_surface_up": outputs["sw_per_band_surface_up"],
+            "output_per_band_surface_down": outputs["sw_per_band_surface_down"],
         }
     )
     lw_payload = {f"input_{name}": fields[name] for name in INPUT_FIELDS}
@@ -323,12 +498,36 @@ def write_fixture() -> dict[str, Any]:
             "output_surface_up": outputs["lw_surface_up"],
             "output_column_net_heating": outputs["lw_column_net_heating"],
             "output_surface_emission": outputs["lw_surface_emission"],
+            "output_per_band_toa_up": outputs["lw_per_band_toa_up"],
+            "output_per_band_toa_down": outputs["lw_per_band_toa_down"],
+            "output_per_band_surface_up": outputs["lw_per_band_surface_up"],
+            "output_per_band_surface_down": outputs["lw_per_band_surface_down"],
+        }
+    )
+    oracle_payload = {
+        name.removeprefix("oracle_"): value
+        for name, value in outputs.items()
+        if name.startswith("oracle_")
+    }
+    oracle_payload.update(
+        {
+            "scenario_names": np.asarray(["marine_trade_cloud", "thin_nocturnal_ice", "humid_low_cloud"]),
+            "input_T": fields["T"],
+            "input_p": fields["p"],
+            "input_qv": fields["qv"],
+            "input_surface_albedo": fields["surface_albedo"],
+            "input_coszen": fields["coszen"],
+            "input_surface_temperature": fields["surface_temperature"],
+            "input_surface_emissivity": fields["surface_emissivity"],
         }
     )
     np.savez_compressed(SW_SAMPLE, **sw_payload)
     np.savez_compressed(SW_FULL, **sw_payload)
     np.savez_compressed(LW_SAMPLE, **lw_payload)
     np.savez_compressed(LW_FULL, **lw_payload)
+    np.savez_compressed(INTERMEDIATE_ORACLE, **oracle_payload)
+    if INTERMEDIATE_ORACLE.stat().st_size > 30_000_000:
+        raise RuntimeError(f"{INTERMEDIATE_ORACLE} exceeds 30 MB budget")
 
     shape = tuple(fields["T"].shape)
     interface_shape = (shape[0], shape[1] + 2)
@@ -345,6 +544,10 @@ def write_fixture() -> dict[str, Any]:
         _variable("output_surface_up", "W m-2", scalar_shape, 1.0, 5.0e-2, "Physical-noise-floor tolerance for RRTMG-SW surface flux"),
         _variable("output_column_absorbed", "W m-2", scalar_shape, 1.0, 5.0e-2, "Physical-noise-floor tolerance for RRTMG-SW column absorption"),
         _variable("output_surface_absorbed", "W m-2", scalar_shape, 1.0, 5.0e-2, "Physical-noise-floor tolerance for RRTMG-SW surface absorption"),
+        _variable("output_per_band_toa_up", "W m-2", (shape[0], 14), 1.0, 5.0e-2, "Per-band RRTMG-SW TOA upward flux from spcvmc_sw"),
+        _variable("output_per_band_toa_down", "W m-2", (shape[0], 14), 1.0, 5.0e-2, "Per-band RRTMG-SW TOA downward flux from spcvmc_sw"),
+        _variable("output_per_band_surface_up", "W m-2", (shape[0], 14), 1.0, 5.0e-2, "Per-band RRTMG-SW surface upward flux from spcvmc_sw"),
+        _variable("output_per_band_surface_down", "W m-2", (shape[0], 14), 1.0, 5.0e-2, "Per-band RRTMG-SW surface downward flux from spcvmc_sw"),
     ]
     lw_variables = _input_variables(shape) + [
         _variable("input_surface_temperature", "K", scalar_shape, 1.0e-10, 1.0e-10, "RRTMG-LW surface temperature input"),
@@ -358,12 +561,19 @@ def write_fixture() -> dict[str, Any]:
         _variable("output_surface_up", "W m-2", scalar_shape, 1.0, 5.0e-2, "Physical-noise-floor tolerance for RRTMG-LW surface flux"),
         _variable("output_column_net_heating", "W m-2", scalar_shape, 1.0, 5.0e-2, "Physical-noise-floor tolerance for RRTMG-LW column net heating"),
         _variable("output_surface_emission", "W m-2", scalar_shape, 1.0, 5.0e-2, "Physical-noise-floor tolerance for RRTMG-LW Stefan-Boltzmann emission"),
+        _variable("output_per_band_toa_up", "W m-2", (shape[0], 16), 1.0, 5.0e-2, "Per-band RRTMG-LW TOA upward flux from rtrnmc"),
+        _variable("output_per_band_toa_down", "W m-2", (shape[0], 16), 1.0, 5.0e-2, "Per-band RRTMG-LW TOA downward flux from rtrnmc"),
+        _variable("output_per_band_surface_up", "W m-2", (shape[0], 16), 1.0, 5.0e-2, "Per-band RRTMG-LW surface upward flux from rtrnmc"),
+        _variable("output_per_band_surface_down", "W m-2", (shape[0], 16), 1.0, 5.0e-2, "Per-band RRTMG-LW surface downward flux from rtrnmc"),
     ]
     _manifest(SW_MANIFEST, SW_FIXTURE_ID, SW_SAMPLE, SW_FULL, sw_variables, "three real-driver shortwave RRTMG columns with marine cloud and solar-zenith variation")
     _manifest(LW_MANIFEST, LW_FIXTURE_ID, LW_SAMPLE, LW_FULL, lw_variables, "three real-driver longwave RRTMG columns with surface-emissivity variation")
+    _intermediate_manifest(INTERMEDIATE_MANIFEST)
     return {
         "sw_sample": str(SW_SAMPLE.relative_to(ROOT)),
         "lw_sample": str(LW_SAMPLE.relative_to(ROOT)),
+        "intermediate_oracle": str(INTERMEDIATE_ORACLE.relative_to(ROOT)),
+        "intermediate_manifest": str(INTERMEDIATE_MANIFEST.relative_to(ROOT)),
         "sw_manifest": str(SW_MANIFEST.relative_to(ROOT)),
         "lw_manifest": str(LW_MANIFEST.relative_to(ROOT)),
         "harness": str(HARNESS.relative_to(ROOT)),

@@ -29,6 +29,7 @@ from gpuwrf.profiling.budget import compiled_text, kernel_launches_per_step, wri
 from gpuwrf.profiling.transfer_audit import block_until_ready, visible_gpu_name  # noqa: E402
 from gpuwrf.validation.tier1_rrtmg import load_lw_fixture_state, load_sw_fixture_state, run_tier1_lw, run_tier1_sw  # noqa: E402
 from gpuwrf.validation.tier2_rrtmg import run_tier2  # noqa: E402
+from gpuwrf.validation.rrtmg_intermediate_oracles import run_intermediate_validation  # noqa: E402
 
 
 ART = ROOT / "artifacts" / "m5"
@@ -161,14 +162,16 @@ def main() -> int:
     lw_state, _ = load_lw_fixture_state()
     tier1_sw = run_tier1_sw()
     tier1_lw = run_tier1_lw()
+    intermediate = run_intermediate_validation()
     tier2 = run_tier2()
     hlo = _write_hlo_artifacts(sw_state, lw_state)
     profile = _profile(sw_state, lw_state, hlo)
-    record = {"tier1_sw": tier1_sw, "tier1_lw": tier1_lw, "tier2": tier2, "hlo": hlo, "profile": profile}
+    record = {"tier1_sw": tier1_sw, "tier1_lw": tier1_lw, "intermediate": intermediate, "tier2": tier2, "hlo": hlo, "profile": profile}
     print(json.dumps(record, indent=2, sort_keys=True))
     ok = (
         tier1_sw.get("pass")
         and tier1_lw.get("pass")
+        and intermediate.get("pass")
         and tier2.get("pass")
         and (HLO / "rrtmg_sw_debug_vs_stripped.diff").stat().st_size == 0
         and (HLO / "rrtmg_lw_debug_vs_stripped.diff").stat().st_size == 0

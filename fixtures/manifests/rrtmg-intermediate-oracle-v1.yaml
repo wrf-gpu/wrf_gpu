@@ -1,0 +1,107 @@
+fixture_id: rrtmg-intermediate-oracle-v1
+source: wrf-derived
+source_commit: wrf-rrtmg-intermediate-harness sha256=313205b94e6528c614fde3fdf19e385fe45cda3f790311cefcce18721903815a;
+  module_ra_rrtmg_sw.F.o=present; module_ra_rrtmg_lw.F.o=present; low_level_calls=setcoef_sw+taumol_sw+spcvmc_sw+setcoef+taumol+rtrnmc;
+  rrtmg_data_convert=big_endian
+wrf_version: v4.7.1-derived-RRTMG-real-driver-column-harness
+scenario: three RRTMG columns with per-band SW/LW fluxes and solver-entry intermediate
+  state
+created_utc: '2026-05-21T01:40:00Z'
+tier: 1
+precision_reference: fp64
+generation_command: python scripts/m5_generate_rrtmg_fixture.py
+external_uri: data/fixtures/rrtmg-intermediate-oracle-v1.npz
+sample_slice_path: null
+git_commit: 2c6748a
+license_notes: Synthetic columns run through a GNU Fortran harness linked to real
+  WRF RRTMG SW/LW objects and lower RRTMG solver-entry subroutines.
+variables:
+- name: sw_taug
+  units: '1'
+  shape:
+  - 3
+  - 17
+  - 12
+  - 14
+  staggering: mass
+  dtype: float64
+  tolerance_abs: 1.0e-08
+  tolerance_rel: 0.0001
+  tolerance_rationale: SW gas optical-depth intermediate oracle
+  tier_overrides: null
+- name: sw_taur
+  units: '1'
+  shape:
+  - 3
+  - 17
+  - 12
+  - 14
+  staggering: mass
+  dtype: float64
+  tolerance_abs: 1.0e-08
+  tolerance_rel: 0.0001
+  tolerance_rationale: SW Rayleigh optical-depth intermediate oracle
+  tier_overrides: null
+- name: sw_sfluxzen
+  units: W m-2
+  shape:
+  - 3
+  - 12
+  - 14
+  staggering: mass
+  dtype: float64
+  tolerance_abs: 1.0e-08
+  tolerance_rel: 0.0001
+  tolerance_rationale: SW per-g-point solar source oracle
+  tier_overrides: null
+- name: lw_taug
+  units: '1'
+  shape:
+  - 3
+  - 17
+  - 16
+  - 16
+  staggering: mass
+  dtype: float64
+  tolerance_abs: 1.0e-08
+  tolerance_rel: 0.0001
+  tolerance_rationale: LW gas optical-depth intermediate oracle
+  tier_overrides: null
+- name: lw_fracs
+  units: '1'
+  shape:
+  - 3
+  - 17
+  - 16
+  - 16
+  staggering: mass
+  dtype: float64
+  tolerance_abs: 1.0e-08
+  tolerance_rel: 0.0001
+  tolerance_rationale: LW Planck fraction intermediate oracle
+  tier_overrides: null
+- name: lw_planklay
+  units: W m-2
+  shape:
+  - 3
+  - 17
+  - 16
+  staggering: mass
+  dtype: float64
+  tolerance_abs: 1.0e-10
+  tolerance_rel: 1.0e-08
+  tolerance_rationale: LW Planck layer source oracle
+  tier_overrides: null
+files:
+- path: data/fixtures/rrtmg-intermediate-oracle-v1.npz
+  checksum_sha256: d8795e2379d86a7a9c86a10c40f867ceb1f294c33ce5d7a1fbcd68f8fbe0b954
+  bytes: 123331
+  external: false
+- path: data/scratch/wrf_rrtmg_harness
+  checksum_sha256: 313205b94e6528c614fde3fdf19e385fe45cda3f790311cefcce18721903815a
+  bytes: 1048944
+  external: true
+- path: data/fixtures/rrtmg-tables-v1.npz
+  checksum_sha256: 9d8bedbfa93161b0d782d64a98c7e36d8f95e54b016d4fc570c0a7c5aa534013
+  bytes: 4199742
+  external: true
