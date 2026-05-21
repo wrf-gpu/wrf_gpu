@@ -13,17 +13,33 @@ Make M5-S3.z the **WRF intermediate-oracle extraction sprint**, not another roun
 
 This is a **per-branch validation infrastructure sprint** that unblocks (later) M5-S3.zz where each JAX branch is fixed in isolation with HLO budget control, instead of attempting all 14 SW bands and 16 LW bands in one shipment.
 
-## Acceptance
+## Acceptance (per M5-S3.y Opus reviewer §5 — binding)
 
-- **AC1 — Per-band WRF harness output**. `scripts/wrf_rrtmg_harness.f90` extended to dump:
-  - SW: per-band `taug(ig)` (gas optical depth per g-point), `taur(ig)` (Rayleigh per g-point), `cldfmc(lay,ig)` (cloud fraction per Monte Carlo column), `sfluxref(ig)` (solar source)
-  - LW: per-band `taug(lay,ig)` (gas optical depth), `fracs(lay,igc)` (Planck fraction), `planklay(lay,iband)`, `planklev(lay+1,iband)`, `plankbnd(iband)`
-  - All written as additional unformatted records appended to the existing harness output, with structured indexing.
-- **AC2 — Intermediate oracle fixture extension**. `scripts/m5_generate_rrtmg_fixture.py` parses the new harness output records into NPZ leaves. Manifest schema updated. Sample size budget: ≤10 MB total (per-band per-g-point arrays for the 3 scenarios).
-- **AC3 — JAX branch validation framework**. New `src/gpuwrf/validation/rrtmg_intermediate_oracles.py` with one function per intermediate quantity that compares JAX intermediate computation to WRF harness output, per band, per g-point. Pass criterion per quantity: abs ≤1e-6 + rel ≤0.01 (tighter than end-to-end flux tolerances; these are intermediate quantities).
-- **AC4 — Per-branch validation report**. `artifacts/m5/rrtmg_intermediate_validation.json` with per-quantity per-band pass/fail. Lists which JAX branches need fixing.
-- **AC5 — M5-S3.y SW partial REVERT (if Opus reviewer requires)**. Roll back the SW native branch expansion that blew HLO if the Opus reviewer chose REJECT-revert path. Preserve AC0 Eddington oracle and basic setcoef. Keep only what passes intermediate-oracle validation.
-- **AC6 — ADR-009 amendment**. Document the intermediate-oracle pattern + per-branch validation strategy. Reset status to "PHASE-3-INTERMEDIATE-ORACLES" (not "PARITY").
+- **AC1 — WRF harness per-band TOA + surface flux emission**. `scripts/wrf_rrtmg_harness.f90` extends to dump 14 SW + 16 LW per-band TOA-up, TOA-down, surface-up, surface-down arrays per scenario. Closes M5-S3.y AC6 (methodological blocker).
+- **AC2 — WRF harness intermediate-oracle dumps** (per-band, per-layer, per-g-point):
+  - SW (at entry to `spcvmc_sw`): `jp(lev), jt(lev), jt1(lev), fac00..fac11(lev), indself(lev), indfor(lev), selffac(lev), forfac(lev), colmol(lev,*), taug(lev,igc,iband), taur(lev,igc), sfluxzen(igc,iband)`
+  - LW (at entry to `rtrnmc`): `jp(lev), jt(lev), planklay(lev,iband), planklev(lev,iband), plankbnd(iband), taug(lev,igc,iband), fracs(lev,igc), secdiff(iband)`
+  - Persist as `data/fixtures/rrtmg-intermediate-oracle-v1.npz` with SHA pinned in manifest.
+- **AC3 — Band-by-band JAX validation against intermediate oracle** (TIGHT tolerances — these are intermediate quantities, not flux output):
+  - Each of the 14 SW bands: `taug` and `taur` JAX outputs match WRF intermediate within `abs ≤ 1e-8 + rel ≤ 1e-4` per g-point per layer.
+  - Each of the 16 LW bands: `taug` and `fracs` JAX outputs match WRF intermediate within `abs ≤ 1e-8 + rel ≤ 1e-4`.
+  - JAX `_sw_setcoef` outputs match WRF `setcoef_sw` intermediate within float64 round-off `abs ≤ 1e-12 + rel ≤ 1e-10`.
+  - LW Planck-state (`planklay/planklev/plankbnd`) matches WRF `setcoef`/`taumol` Planck path within `abs ≤ 1e-10 + rel ≤ 1e-8`.
+- **AC4 — LW source machinery completion**. `dplankup/dplankdn` non-isothermal per-layer correction + `tfn_tbl` source-correction lookup in `rtrnmc` (`module_ra_rrtmg_lw.F:3270-3340`).
+- **AC5 — SW launch fusion**. 36 SW → ≤6 SW launches via `lax.scan` over bands OR table-driven compact branches. HLO SW ≤500 KB. **Total combined raw launches ≤10**.
+- **AC6 — Strict Tier-1 pass at flux-output level**. `abs ≤ 1 W/m² + rel ≤ 0.05` for fluxes, `abs ≤ 1e-4 K/s + rel ≤ 0.05` for heating (unchanged contract bar).
+- **AC7 — ADR-009 finalized to `PARITY`**, citing per-band intermediate-oracle validation evidence.
+- **AC8 — Per-band debt list**. `artifacts/m5/rrtmg_per_band_status.json` documents which JAX branches pass intermediate-oracle gate, which are reverted to nearest-pressure approximation, and which carry which debt to future sprints.
+
+## HARD RULES (per reviewer §5 constraints)
+
+1. **NO further hand-transcribed JAX branch code until corresponding WRF intermediate-oracle dump exists for that band.** Worker may NOT validate against broadband-flux output alone. This is the methodological discipline that prevents the M5-S3.y SW regression.
+2. **SW `_sw_taumol_*` branches that fail intermediate-oracle gate must be reverted to the M5-S3.x nearest-pressure approximation for that band ONLY**, with a documented per-band debt list. Better to ship a correct broadband approximation than 14 incorrect band branches.
+3. Carry forward unconditionally: all M5-S3.y AC0 (Eddington oracle), native table data (`sw_absa/absb/selfref/forref/sfluxref`, `lw_totplnk/totplk16`), faithful JAX `_sw_setcoef` formulas, LW `totplnk` Planck-source replacement.
+
+## Estimated wall
+
+24-48 hours (intermediate-oracle harness extension non-trivial; per-band validation many small gates; LW source completion + SW fusion larger code lifts).
 
 ## Inputs
 
