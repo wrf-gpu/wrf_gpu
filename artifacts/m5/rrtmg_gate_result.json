@@ -1,15 +1,15 @@
 {
   "gate_status": "FALLBACK",
-  "hlo_production_bytes_lw": 1766125,
-  "hlo_production_bytes_sw": 1409779,
-  "kernel_launches_per_step": 97,
+  "hlo_production_bytes_lw": 1315000,
+  "hlo_production_bytes_sw": 9579786,
+  "kernel_launches_per_step": 443,
   "local_memory_bytes_per_kernel": null,
   "oracle_regime": "wrf-driver",
-  "rationale": "correctness failed; 97 launches exceeds fallback threshold 50",
-  "raw_hlo_launch_marker_count": 97,
+  "rationale": "correctness failed; 443 launches exceeds fallback threshold 50",
+  "raw_hlo_launch_marker_count": 443,
   "registers_per_kernel": null,
   "tier1_lw_pass": false,
-  "tier1_sw_pass": false,
+  "tier1_sw_pass": true,
   "tier2_pass": true,
   "tolerance_regime": "strict"
 }

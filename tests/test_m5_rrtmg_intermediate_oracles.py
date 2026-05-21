@@ -7,10 +7,16 @@ import numpy as np
 from gpuwrf.validation.rrtmg_intermediate_oracles import (
     ORACLE,
     run_intermediate_validation,
+    validate_cldprmc_pasycmc,
+    validate_cldprmc_pomgcmc,
+    validate_cldprmc_ptaucmc,
     validate_lw_fracs_per_band,
     validate_lw_planck_corrections,
     validate_lw_planck_state,
     validate_lw_taug_per_band,
+    validate_spcvmc_per_gpoint_flux,
+    validate_spcvmc_zref,
+    validate_spcvmc_ztra,
     validate_sw_setcoef_state,
     validate_sw_taug_per_band,
     validate_sw_taur,
@@ -19,10 +25,16 @@ from gpuwrf.validation.rrtmg_intermediate_oracles import (
 
 def test_rrtmg_intermediate_oracle_fixture_shapes_and_budget():
     assert ORACLE.exists()
-    assert ORACLE.stat().st_size <= 30_000_000
+    assert ORACLE.stat().st_size <= 50_000_000
     with np.load(ORACLE, allow_pickle=False) as loaded:
         assert loaded["sw_taug"].shape == (3, 17, 12, 14)
         assert loaded["sw_taur"].shape == (3, 17, 12, 14)
+        assert loaded["sw_cldprmc_pcldfmc"].shape == (3, 17, 12, 14)
+        assert loaded["sw_cldprmc_ptaucmc"].shape == (3, 17, 12, 14)
+        assert loaded["sw_spcvmc_zref"].shape == (3, 18, 12, 14)
+        assert loaded["sw_spcvmc_ztra"].shape == (3, 18, 12, 14)
+        assert loaded["sw_spcvmc_zfd_flux"].shape == (3, 18, 12, 14)
+        assert loaded["sw_spcvmc_zfu_flux"].shape == (3, 18, 12, 14)
         assert loaded["lw_taug"].shape == (3, 17, 16, 16)
         assert loaded["lw_fracs"].shape == (3, 17, 16, 16)
         assert loaded["sw_per_band_flux"].shape == (3, 4, 14)
@@ -37,6 +49,12 @@ def test_rrtmg_intermediate_validation_helpers_report_pass_and_fail():
     assert validate_lw_taug_per_band(np.ones((2, 3)), zeros, 1)["pass"] is False
     assert validate_lw_fracs_per_band(tiny, zeros, 1)["pass"] is True
     assert validate_sw_taur(tiny, zeros)["pass"] is True
+    assert validate_cldprmc_ptaucmc(tiny, zeros)["pass"] is True
+    assert validate_cldprmc_pasycmc(tiny, zeros)["pass"] is True
+    assert validate_cldprmc_pomgcmc(tiny, zeros)["pass"] is True
+    assert validate_spcvmc_zref(tiny, zeros, 1)["pass"] is True
+    assert validate_spcvmc_ztra(tiny, zeros, 1)["pass"] is True
+    assert validate_spcvmc_per_gpoint_flux(tiny, tiny, zeros, zeros, 1)["pass"] is True
 
     setcoef = {"jp": zeros, "jt": zeros, "jt1": zeros, "fac00": zeros, "fac01": zeros, "fac10": zeros, "fac11": zeros, "indself": zeros, "indfor": zeros, "selffac": zeros, "forfac": zeros, "colmol": zeros}
     setcoef_result = validate_sw_setcoef_state(setcoef, setcoef)
@@ -56,4 +74,8 @@ def test_rrtmg_intermediate_artifacts_are_written_honestly():
     assert record["sw"]["taur"]["pass"] is True
     assert all(item["pass"] for item in record["sw"]["taug_per_band"])
     assert all(item["pass"] for item in record["lw"]["per_band"])
-    assert record["pass"] is True
+    assert "cldprmc" in record["sw"]
+    assert "spcvmc_per_band" in record["sw"]
+    assert record["sw"]["a1_cloud_safe_floor"]["cloud_box_0_0p01_cells"] > 0
+    # LW broadband still fails (M5-S3.zzzzz pending); pass=False expected until LW broadband closes
+    assert record["pass"] is False

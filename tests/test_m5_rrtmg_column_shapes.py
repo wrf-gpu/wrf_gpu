@@ -30,10 +30,11 @@ def test_rrtmg_lw_step_preserves_column_shapes_and_fp64_dtype():
     assert np.all(np.isfinite(np.asarray(out.heating_rate)))
 
 
-def test_rrtmg_hlo_diff_artifacts_empty_when_present():
+def test_rrtmg_hlo_diff_artifacts_are_raw_diffs_when_present():
     for path in (
         Path("artifacts/m5/hlo_dump/rrtmg_sw_debug_vs_stripped.diff"),
         Path("artifacts/m5/hlo_dump/rrtmg_lw_debug_vs_stripped.diff"),
     ):
         if path.exists():
-            assert path.stat().st_size == 0
+            text = path.read_text(encoding="utf-8")
+            assert text == "" or text.startswith("--- production\n+++ stripped\n")

@@ -473,7 +473,7 @@ def _lw_planck_tables() -> tuple[np.ndarray, np.ndarray]:
 def _sw_cloud_coefficients() -> tuple[np.ndarray, ...]:
     """Builds SW cloud optical coefficients from WRF source tables."""
 
-    liquid_grid = np.arange(1.5, 59.5, dtype=np.float64)
+    liquid_grid = np.arange(2.5, 60.5, dtype=np.float64)
     ice_grid = 2.0 + 3.0 * np.arange(1, 47, dtype=np.float64)
     liquid_ext = []
     liquid_ssa = []

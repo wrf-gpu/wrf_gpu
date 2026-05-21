@@ -1,39 +1,39 @@
 {
   "field_pass": {
-    "column_absorbed": false,
-    "flux_down": false,
-    "flux_up": false,
+    "column_absorbed": true,
+    "flux_down": true,
+    "flux_up": true,
     "heating_rate": true,
-    "surface_absorbed": false,
-    "surface_down": false,
-    "surface_up": false,
+    "surface_absorbed": true,
+    "surface_down": true,
+    "surface_up": true,
     "toa_down": true,
-    "toa_up": false
+    "toa_up": true
   },
   "fixture_id": "analytic-rrtmg-sw-column-v1",
-  "pass": false,
+  "pass": true,
   "per_field_max_abs_err": {
-    "column_absorbed": 87.53339162140193,
-    "flux_down": 56.4980975502483,
-    "flux_up": 64.43487698173965,
-    "heating_rate": 2.4780073345437684e-05,
-    "surface_absorbed": 15.008306925059372,
-    "surface_down": 20.55932413682683,
-    "surface_up": 5.551019119116095,
-    "toa_down": 8.68866504788457e-05,
-    "toa_up": 30.14298919580233
+    "column_absorbed": 0.0353851318359375,
+    "flux_down": 0.07147216796875,
+    "flux_up": 0.0467681884765625,
+    "heating_rate": 3.421277171294793e-08,
+    "surface_absorbed": 0.02814483642578125,
+    "surface_down": 0.0343170166015625,
+    "surface_up": 0.006171226501464844,
+    "toa_down": 0.0,
+    "toa_up": 0.0267333984375
   },
   "per_field_max_rel_err": {
-    "column_absorbed": 0.36886590796769253,
-    "flux_down": 0.30048455344774155,
-    "flux_up": 0.857605195729086,
-    "heating_rate": 1.272799496791143,
-    "surface_absorbed": 0.21431564550608,
-    "surface_down": 0.21431564208218568,
-    "surface_up": 0.21431569068245995,
-    "toa_down": 7.744305929600154e-08,
-    "toa_up": 0.1006209216570679
+    "column_absorbed": 0.00017432836969822623,
+    "flux_down": 0.0004956016382591008,
+    "flux_up": 0.0006133230402413838,
+    "heating_rate": 0.0011637263017713257,
+    "surface_absorbed": 0.00044519027660508203,
+    "surface_down": 0.00044511304862063445,
+    "surface_up": 0.00044469254194049915,
+    "toa_down": 0.0,
+    "toa_up": 4.398053128481792e-05
   },
   "scenarios_tested": 3,
-  "tolerances_met": false
+  "tolerances_met": true
 }
