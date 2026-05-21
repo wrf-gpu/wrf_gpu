@@ -40,6 +40,8 @@ def evaluate_gate() -> dict:
     profile = _load(ART / "thompson_profile.json")
     tolerance_regime = _tolerance_regime()
     launches = int(profile.get("kernel_launches_per_step") or profile.get("kernel_launches") or 0)
+    raw_launches = int(profile.get("raw_hlo_launch_marker_count", launches))
+    hlo_full_bytes = int(profile.get("hlo_full_bytes") or 0)
     local = profile.get("local_memory_bytes_per_kernel", profile.get("local_memory_bytes"))
     registers = profile.get("registers_per_kernel", profile.get("registers_per_thread"))
     tier1_pass = bool(tier1.get("pass"))
@@ -50,6 +52,9 @@ def evaluate_gate() -> dict:
     if not tier1_pass or not tier2_pass:
         status = "FALLBACK"
         reasons.append("correctness failed")
+    if raw_launches != launches:
+        status = "FALLBACK"
+        reasons.append(f"raw launch markers {raw_launches} differ from reported launches {launches}")
     if launches > 50:
         status = "FALLBACK"
         reasons.append(f"{launches} launches exceeds fallback threshold 50")
@@ -70,6 +75,9 @@ def evaluate_gate() -> dict:
         elif int(local) > 256 and status == "GO":
             status = "GRAY-ZONE"
             reasons.append(f"{local} B local memory exceeds GO threshold 256")
+    if hlo_full_bytes > 350_000 and status != "FALLBACK":
+        status = "GRAY-ZONE"
+        reasons.append(f"full HLO {hlo_full_bytes} bytes exceeds M5-S1.y target 350000")
     if status == "GO":
         if tolerance_regime == "carry-forward":
             status = "GO_CARRYFORWARD"
@@ -80,6 +88,8 @@ def evaluate_gate() -> dict:
             reasons.append("tier-1/tier-2 pass under ADR-005 strict tolerances and HLO-derived launches are within the GO threshold; register/local-memory counters are null due to perfmon restriction")
     return {
         "kernel_launches_per_step": launches,
+        "raw_hlo_launch_marker_count": raw_launches,
+        "hlo_full_bytes": hlo_full_bytes,
         "local_memory_bytes_per_kernel": local,
         "registers_per_kernel": registers,
         "tier1_pass": tier1_pass,

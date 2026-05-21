@@ -49,4 +49,5 @@ def test_thompson_table_asset_is_pinned_in_manifest():
 def test_runtime_tables_have_expected_wrf_shapes():
     assert THOMPSON_TABLES.t_Efrw.shape == (100, 100)
     assert THOMPSON_TABLES.iaus.shape == (64, 55, 3)
+    assert THOMPSON_TABLES.qrfz.shape == (37 * 37 * 45, 4)
     assert THOMPSON_TABLES.snow_sa.shape == (10,)

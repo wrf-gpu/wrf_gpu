@@ -16,6 +16,7 @@ from gpuwrf.physics.thompson_constants import (
     AM_I,
     AM_R,
     AM_S,
+    ATO,
     C_CUBE,
     C_SQRD,
     CCG2_NU12,
@@ -24,6 +25,7 @@ from gpuwrf.physics.thompson_constants import (
     CIE2,
     CRE10,
     CRE11,
+    CRE1,
     CRE2,
     CRE9,
     CRG2,
@@ -45,6 +47,7 @@ from gpuwrf.physics.thompson_constants import (
     OCG2_NU12,
     OIG1,
     OIG2,
+    ORG1,
     ORG2,
     ORG3,
     PI,
@@ -65,6 +68,7 @@ from gpuwrf.physics.thompson_constants import (
     T2_SUBL_QG,
     T2_SUBL_QS,
     T_0,
+    TNO,
     XM0I,
 )
 from gpuwrf.physics.thompson_saturation import (
@@ -80,7 +84,11 @@ from gpuwrf.physics.thompson_tables import (
     N_EFRW_R,
     N_I_TABLE,
     N_I1_TABLE,
+    N_R1_TABLE,
+    N_R_TABLE,
+    N_TC_TABLE,
     NT_I_FIRST,
+    R_R_FIRST,
     R_I_FIRST,
     THOMPSON_TABLES,
     ThompsonTableBundle,
@@ -252,6 +260,15 @@ def _take3_last(table, i, j):
     return jnp.take(jnp.ravel(table), base[..., None] + offsets)
 
 
+def _take_qrfz(table, idx_r, idx_r1, idx_tc):
+    """Reads default-IN rain-freezing values from one flattened dynamic index."""
+
+    combined = (idx_r.astype(jnp.int32) * N_R1_TABLE + idx_r1.astype(jnp.int32)) * N_TC_TABLE + idx_tc.astype(jnp.int32)
+    base = combined * table.shape[1]
+    offsets = jnp.arange(table.shape[1], dtype=jnp.int32)
+    return jnp.take(jnp.ravel(table), base[..., None] + offsets)
+
+
 def _snow_moment(order, smo2, tempc, tables: ThompsonTableBundle):
     """Evaluates the Field et al. snow-moment polynomial used by WRF."""
 
@@ -366,7 +383,7 @@ def _finish(state: ThompsonColumnState) -> ThompsonColumnState:
     return state.replace(qv=qv, qc=qc, qr=qr, qi=qi, qs=qs, qg=qg, Ni=Ni, Nr=Nr, T=T, rho=rho)
 
 
-def _saturation_adjustment(state: ThompsonColumnState, dt: float) -> ThompsonColumnState:
+def _saturation_adjustment_with_condensation(state: ThompsonColumnState, dt: float) -> tuple[ThompsonColumnState, jax.Array]:
     """Implements the 3-iteration Thompson cloud condensation adjustment."""
 
     del dt
@@ -384,14 +401,23 @@ def _saturation_adjustment(state: ThompsonColumnState, dt: float) -> ThompsonCol
     active = (ssatw > EPS) | ((ssatw < -EPS) & (state.qc > 0.0))
     clap = jnp.where(active, clap, 0.0)
     clap = jnp.where(clap < 0.0, jnp.maximum(clap, -state.qc), jnp.minimum(clap, state.qv - 1.0e-10))
+    condensed_cloud = clap > EPS
     qv = state.qv - clap
     T = state.T + lvap * ocp * clap
-    return state.replace(
+    adjusted = state.replace(
         qv=qv,
         qc=state.qc + clap,
         T=T,
         rho=density_from_pressure_temperature(state.p, T, qv),
     )
+    return adjusted, condensed_cloud
+
+
+def _saturation_adjustment(state: ThompsonColumnState, dt: float) -> ThompsonColumnState:
+    """Legacy wrapper for tests that only need the adjusted state."""
+
+    adjusted, _condensed_cloud = _saturation_adjustment_with_condensation(state, dt)
+    return adjusted
 
 
 def _warm_rain_collection(state: ThompsonColumnState, dt: float, tables: ThompsonTableBundle = THOMPSON_TABLES) -> ThompsonColumnState:
@@ -434,7 +460,12 @@ def _warm_rain_collection(state: ThompsonColumnState, dt: float, tables: Thompso
     return state.replace(qc=state.qc - transfer, qr=state.qr + transfer, Nr=state.Nr + nr_gain)
 
 
-def _rain_evaporation(state: ThompsonColumnState, dt: float) -> ThompsonColumnState:
+def _rain_evaporation(
+    state: ThompsonColumnState,
+    dt: float,
+    skip_evaporation: jax.Array | bool = False,
+    graupel_melt: jax.Array | float = 0.0,
+) -> ThompsonColumnState:
     """Applies WRF Srivastava-Coen rain evaporation from lines 3561-3638."""
 
     _tempc, diffu, _visco, tcond, lvap, ocp, _rhof, rhof2, vsc2 = _air_properties(state)
@@ -466,8 +497,13 @@ def _rain_evaporation(state: ThompsonColumnState, dt: float) -> ThompsonColumnSt
     )
     fast_clear = (state.qv / qvs < 0.95) & (rr / state.rho <= 1.0e-8)
     evap_rate = jnp.where(fast_clear, state.qr / float(dt), evap_raw)
+    tempc = state.T - 273.15
+    eva_factor = jnp.minimum(1.0, 0.01 + (0.99 - 0.01) * (tempc / 20.0))
     rate_max = jnp.minimum(state.qr / float(dt), jnp.maximum(qvs - state.qv, 0.0) / float(dt))
-    evap = jnp.where((ssatw < -EPS) & active_rain, jnp.minimum(rate_max, evap_rate) * float(dt), 0.0)
+    active = (ssatw < -EPS) & active_rain & ~jnp.asarray(skip_evaporation, dtype=bool)
+    limited_rate = jnp.minimum(rate_max, evap_rate)
+    limited_rate = jnp.where((jnp.asarray(graupel_melt) > 0.0) & ~fast_clear, limited_rate * eva_factor, limited_rate)
+    evap = jnp.where(active, limited_rate * float(dt), 0.0)
     nr_loss = jnp.where(state.qr > 0.0, jnp.minimum(state.Nr * 0.99, state.Nr * evap / jnp.maximum(state.qr, R1)), 0.0)
     return state.replace(
         qv=state.qv + evap,
@@ -508,36 +544,73 @@ def _instant_melt_freeze(state: ThompsonColumnState, dt: float) -> ThompsonColum
     )
 
 
-def _ice_sources(state: ThompsonColumnState, dt: float, tables: ThompsonTableBundle = THOMPSON_TABLES) -> ThompsonColumnState:
+def _ice_sources_with_process_flags(
+    state: ThompsonColumnState, dt: float, tables: ThompsonTableBundle = THOMPSON_TABLES
+) -> tuple[ThompsonColumnState, jax.Array]:
     """Stages WRF-mapped ice tendencies before condensation and rain evaporation."""
 
     ocp = cp_inverse(state.qv)
     lvap = latent_heat_vaporization(state.T)
     lfus2 = LSUB - lvap
 
-    # Rain-freezing tables are exported in the asset, but not passed through
-    # the hot path until the HLO/launch blocker in the M5-S1.x report is closed.
+    # WRF rain-freezing tables are initialized by freezeH2O
+    # (module_mp_thompson.F.pre:4664-4855) and consumed at lines 2658-2669.
     rr0 = jnp.maximum(state.qr * state.rho, R1)
     nr0 = jnp.maximum(state.Nr * state.rho, R2)
+    rr_for_index = jnp.maximum(rr0, R_R_FIRST)
+    _, _nr, lamr0, _ilamr0, _mvd_r0, _n0_r0, _active_rain0 = _rain_distribution(state.qr, state.Nr, state.rho)
+    lam_exp = lamr0
+    n0_exp = ORG1 * rr_for_index / AM_R * lam_exp**CRE1
+    idx_r = _lookup_digit_index(rr_for_index, -6, N_R_TABLE)
+    idx_r1 = _lookup_digit_index(n0_exp, 6, N_R1_TABLE)
+    idx_tc = jnp.clip(jnp.floor(-(state.T - 273.15) + 0.5).astype(jnp.int32) - 1, 0, N_TC_TABLE - 1)
+    qrfz = _take_qrfz(tables.qrfz, idx_r, idx_r1, idx_tc)
+    table_active = (state.T < T_0) & (rr0 > R_R_FIRST) & (state.qr > R1)
+    table_ice = jnp.where(table_active, qrfz[..., 0] / state.rho, 0.0)
+    table_graupel = jnp.where(table_active, qrfz[..., 1] / state.rho, 0.0)
+    table_ni = jnp.where(table_active, qrfz[..., 2] / state.rho, 0.0)
+    table_nr = jnp.where(table_active, qrfz[..., 3] / state.rho, 0.0)
     fallback_active = (state.T < HGFR) & (state.qr > R1)
-    ice_freeze = jnp.where(fallback_active, state.qr, 0.0)
-    graupel_freeze = jnp.zeros_like(ice_freeze)
-    nr_loss = jnp.where(fallback_active, state.Nr, 0.0)
+    fallback_ice = jnp.where(fallback_active & ~table_active, state.qr, 0.0)
+    fallback_ni = jnp.where(fallback_active & ~table_active, nr0 / state.rho, 0.0)
+    ice_freeze = table_ice + fallback_ice
+    graupel_freeze = table_graupel
+    frozen_total = ice_freeze + graupel_freeze
+    freeze_ratio = jnp.where(frozen_total > state.qr, state.qr / jnp.maximum(frozen_total, R1), 1.0)
+    ice_freeze = ice_freeze * freeze_ratio
+    graupel_freeze = graupel_freeze * freeze_ratio
+    table_ni = table_ni * freeze_ratio
+    table_nr = table_nr * freeze_ratio
+    nr_loss = jnp.minimum(state.Nr, table_nr + table_ni + fallback_ni)
     state = state.replace(
         qr=state.qr - ice_freeze - graupel_freeze,
         qi=state.qi + ice_freeze,
         qg=state.qg + graupel_freeze,
-        Ni=state.Ni + jnp.where(fallback_active, nr0, 0.0) / state.rho,
+        Ni=state.Ni + table_ni + fallback_ni,
         Nr=jnp.maximum(0.0, state.Nr - nr_loss),
         T=state.T + lfus2 * ocp * (ice_freeze + graupel_freeze),
     )
     state = state.replace(rho=density_from_pressure_temperature(state.p, state.T, state.qv))
 
+    qvsi_freeze = saturation_mixing_ratio_ice(state.p, state.T)
+    qvsw_freeze = saturation_mixing_ratio_liquid(state.p, state.T)
+    ssati_freeze = state.qv / qvsi_freeze - 1.0
+    ssatw_freeze = state.qv / qvsw_freeze - 1.0
+    deposition_nucleation_active = (state.T < T_0) & ((ssati_freeze >= 0.25) | ((ssatw_freeze > EPS) & (state.T < 253.15)))
+    xnc = jnp.minimum(250.0e3, TNO * jnp.exp(ATO * (T_0 - state.T)))
+    xni = state.Ni * state.rho
+    pni_inu = jnp.maximum(xnc - xni, 0.0) / float(dt)
+    vapor_rate_max = jnp.maximum(0.0, (state.qv - qvsi_freeze) * state.rho / float(dt) * 0.999)
+    pri_inu = jnp.where(deposition_nucleation_active, jnp.minimum(vapor_rate_max, XM0I * pni_inu), 0.0)
+    pni_inu = jnp.where(deposition_nucleation_active, pri_inu / XM0I, 0.0)
+    inu_mass = pri_inu * float(dt) / state.rho
+    inu_number = pni_inu * float(dt) / state.rho
+
     tempc, diffu, _visco, tcond, _lvap, ocp, rhof, rhof2, vsc2 = _air_properties(state)
     del rhof
     qvs0 = saturation_mixing_ratio_liquid(state.p, T_0)
     del_qvs = jnp.maximum(0.0, qvs0 - state.qv)
-    twet = jnp.minimum(state.T, T_0)
+    twet = state.T
     rs, _xds, smo0, smo1, smof, _c_snow, active_snow = _snow_moments(state.qs, state.rho, tempc, tables)
     rg, ng, _lamg, ilamg, n0_g, active_graupel = _graupel_distribution(state.qg, state.rho)
 
@@ -598,8 +671,17 @@ def _ice_sources(state: ThompsonColumnState, dt: float, tables: ThompsonTableBun
 
     prs_sde = c_snow * t1_subl * diffu * ssati * rvs * (T1_SUBL_QS * smo1 + T2_SUBL_QS * rhof2 * vsc2 * smof)
     prs_sde = jnp.where(active_snow, jnp.where(prs_sde < 0.0, jnp.maximum(-rs / float(dt), prs_sde), jnp.minimum(prs_sde, jnp.maximum(state.qv - qvsi, 0.0) * state.rho / float(dt) * 0.999)), 0.0)
+    vapor_rate_max = (state.qv - qvsi) * state.rho / float(dt) * 0.999
     prg_gde = C_CUBE * t1_subl * diffu * ssati * rvs * n0_g * (T1_SUBL_QG * ilamg**CRE10 + T2_SUBL_QG * vsc2 * rhof2 * ilamg**CGE11)
-    prg_gde = jnp.where(active_graupel & (ssati < -EPS), jnp.maximum(-rg / float(dt), prg_gde), 0.0)
+    prg_gde = jnp.where(active_graupel & (ssati < -EPS), jnp.maximum(jnp.maximum(-rg / float(dt), prg_gde), vapor_rate_max), 0.0)
+    deposition_sum = pri_inu + pri_ide + prs_ide + prs_sde + prg_gde
+    limited = ((deposition_sum > EPS) & (deposition_sum > vapor_rate_max)) | ((deposition_sum < -EPS) & (deposition_sum < vapor_rate_max))
+    deposition_denom = jnp.where(jnp.abs(deposition_sum) > R1, deposition_sum, 1.0)
+    deposition_ratio = jnp.where(limited, vapor_rate_max / deposition_denom, 1.0)
+    pri_ide = pri_ide * deposition_ratio
+    prs_ide = prs_ide * deposition_ratio
+    prs_sde = prs_sde * deposition_ratio
+    prg_gde = prg_gde * deposition_ratio
 
     ice_deposition = pri_ide * float(dt) / state.rho
     snow_from_ice_deposition = prs_ide * float(dt) / state.rho
@@ -609,17 +691,27 @@ def _ice_sources(state: ThompsonColumnState, dt: float, tables: ThompsonTableBun
     graupel_deposition = prg_gde * float(dt) / state.rho
     vapor_sink = jnp.maximum(0.0, ice_deposition) + jnp.maximum(0.0, snow_from_ice_deposition) + jnp.maximum(0.0, snow_deposition) + jnp.maximum(0.0, graupel_deposition)
     vapor_source = jnp.maximum(0.0, -ice_deposition) + jnp.maximum(0.0, -snow_deposition) + jnp.maximum(0.0, -graupel_deposition)
-    return state.replace(
-        qv=state.qv - vapor_sink + vapor_source,
-        qi=state.qi + ice_deposition - ice_to_snow,
+    updated_qv = state.qv - vapor_sink + vapor_source - inu_mass
+    updated_T = state.T + LSUB * ocp * (vapor_sink - vapor_source + inu_mass)
+    updated = state.replace(
+        qv=updated_qv,
+        qi=state.qi + ice_deposition - ice_to_snow + inu_mass,
         qs=state.qs + snow_from_ice_deposition + ice_to_snow + snow_deposition,
         qg=state.qg + graupel_deposition,
         # WRF lines 2719-2727 update pni_ide only in sublimation; positive
         # deposition partitions mass but does not create new cloud-ice number.
-        Ni=jnp.maximum(0.0, state.Ni + jnp.where(ice_deposition < 0.0, ice_deposition / jnp.maximum(xmi, XM0I), 0.0) - ice_number_to_snow),
-        T=state.T + LSUB * ocp * (vapor_sink - vapor_source),
-        rho=density_from_pressure_temperature(state.p, state.T + LSUB * ocp * (vapor_sink - vapor_source), state.qv - vapor_sink + vapor_source),
+        Ni=jnp.maximum(0.0, state.Ni + inu_number + jnp.where(ice_deposition < 0.0, ice_deposition / jnp.maximum(xmi, XM0I), 0.0) - ice_number_to_snow),
+        T=updated_T,
+        rho=density_from_pressure_temperature(state.p, updated_T, updated_qv),
     )
+    return updated, graupel_melt
+
+
+def _ice_sources(state: ThompsonColumnState, dt: float, tables: ThompsonTableBundle = THOMPSON_TABLES) -> ThompsonColumnState:
+    """Legacy wrapper for callers that do not need process flags."""
+
+    updated, _graupel_melt = _ice_sources_with_process_flags(state, dt, tables)
+    return updated
 
 
 def _debug_checks(state: ThompsonColumnState, debug: bool) -> ThompsonColumnState:
@@ -650,9 +742,9 @@ def _step_thompson_column_impl(state: ThompsonColumnState, dt: float, debug: boo
     # final write/balance (4033-4142). This source/sink subset uses the
     # same checkpoints while keeping sedimentation out of scope.
     state = _warm_rain_collection(state, dt)
-    state = _ice_sources(state, dt)
-    state = _saturation_adjustment(state, dt)
-    state = _rain_evaporation(state, dt)
+    state, graupel_melt = _ice_sources_with_process_flags(state, dt)
+    state, cloud_condensed = _saturation_adjustment_with_condensation(state, dt)
+    state = _rain_evaporation(state, dt, skip_evaporation=cloud_condensed, graupel_melt=graupel_melt)
     state = _instant_melt_freeze(state, dt)
     state = _finish(state)
     return _debug_checks(state, debug)

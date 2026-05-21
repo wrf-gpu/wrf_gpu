@@ -9,3 +9,5 @@ def test_m5_thompson_tier2_invariants_pass():
     assert record["positivity"]["violations"] == 0
     assert record["nan_inf"]["violations"] == 0
     assert record["water_budget"]["relative_residual"] <= 1.0e-8
+    assert record["wrf_harness_one_step_budget"]["water_delta_pass"] is True
+    assert record["wrf_harness_one_step_budget"]["tracked_number_pass"] is True

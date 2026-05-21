@@ -61,13 +61,14 @@ def _normalize(text: str) -> str:
     return text.strip()
 
 
-def _write_hlo_artifacts(state, dt: float) -> tuple[int, str]:
+def _write_hlo_artifacts(state, dt: float) -> tuple[int, str, int, int]:
     """Writes production/stripped HLO and the zero-byte identity diff."""
 
     HLO.mkdir(parents=True, exist_ok=True)
     SCRATCH.mkdir(parents=True, exist_ok=True)
     prod = compiled_text(step_thompson_column.lower(state, dt, debug=False).compile())
     stripped = compiled_text(step_thompson_column_debug_stripped.lower(state, dt).compile())
+    full_bytes = len(prod.encode("utf-8"))
     write_hlo(HLO / "thompson_column_production.txt", prod, SCRATCH / "thompson_column_production_full.txt")
     write_hlo(HLO / "thompson_column_debug_stripped.txt", stripped, SCRATCH / "thompson_column_debug_stripped_full.txt")
     diff_path = HLO / "thompson_column_debug_vs_stripped.diff"
@@ -84,10 +85,15 @@ def _write_hlo_artifacts(state, dt: float) -> tuple[int, str]:
             )
         )
         diff_path.write_text(diff + "\n", encoding="utf-8")
-    return kernel_launches_per_step(prod), hashlib.sha256(diff_path.read_bytes()).hexdigest()
+    return (
+        kernel_launches_per_step(prod),
+        hashlib.sha256(diff_path.read_bytes()).hexdigest(),
+        full_bytes,
+        (HLO / "thompson_column_production.txt").stat().st_size,
+    )
 
 
-def _profile(state, dt: float, launches: int) -> dict:
+def _profile(state, dt: float, launches: int, full_hlo_bytes: int, tracked_hlo_bytes: int) -> dict:
     """Builds the Thompson profile proxy accepted while ncu counters are blocked."""
 
     step_thompson_column(state, dt, debug=False)
@@ -107,6 +113,9 @@ def _profile(state, dt: float, launches: int) -> dict:
         "wall_time_s": wall,
         "kernel_launches": int(launches),
         "kernel_launches_per_step": int(launches),
+        "raw_hlo_launch_marker_count": int(launches),
+        "hlo_full_bytes": int(full_hlo_bytes),
+        "hlo_tracked_bytes": int(tracked_hlo_bytes),
         "host_device_transfer_bytes": 0,
         "host_to_device_bytes_post_init": 0,
         "device_to_host_bytes_post_init": 0,
@@ -136,7 +145,7 @@ def _write_side_artifacts(diff_sha: str) -> None:
 
 Fixture generation uses the standalone Fortran harness at `scripts/wrf_thompson_harness.f90`, built by `scripts/wrf_thompson_harness_build.sh` into gitignored `data/scratch/wrf_thompson_harness`. The build creates `data/scratch/module_mp_thompson_nosed.F90`, inserts a no-sedimentation terminal-velocity zeroing patch immediately before the WRF sedimentation flux loops (`module_mp_thompson.F.pre` lines 3653-4003), compiles that patched object with `nvfortran`, then links it with `module_mp_radar.o`, `module_model_constants.o`, and `module_wrf_error.o`. Physical `dz=1000 m` is passed to the driver.
 
-The JAX kernel follows the WRF checkpoint order: stage warm-rain and ice source/sink updates, apply saturation adjustment after the working-state update checkpoint (lines 3250-3273 and 3456-3558), run rain evaporation (3561-3638), then apply instant ice melt/cloud-water freeze (4005-4031) and final balances (4033-4142). Source-truth constants now cover the ice `cie(2)` lami clamps and graupel `cge(11)/cgg(11)` sublimation/melting coefficients; `CGG11` is computed from `math.gamma(CGE11)` at module load. M5-S1.x exports the WRF Thompson table asset and wires the small active rain/cloud, ice-autoconversion, and snow-moment tables; the large rain-freezing tables remain asset-pinned but blocked from the hot path by the HLO/launch regression recorded in the S1.x blocker.
+The JAX kernel follows the WRF checkpoint order: stage warm-rain and ice source/sink updates, apply saturation adjustment after the working-state update checkpoint (lines 3250-3273 and 3456-3558), run rain evaporation (3561-3638), then apply instant ice melt/cloud-water freeze (4005-4031) and final balances (4033-4142). Source-truth constants now cover the ice `cie(2)` lami clamps and graupel `cge(11)/cgg(11)` sublimation/melting coefficients; `CGG11` is computed from `math.gamma(CGE11)` at module load. M5-S1.x exports the WRF Thompson table asset and wires the small active rain/cloud, ice-autoconversion, and snow-moment tables; M5-S1.y wires the rain-freezing tables through a default-IN packed gather, leaving the full HLO over the 350 KB target but the raw launch count at the +5 target.
 
 The fixture oracle contains no Thompson source/sink formulas in Python; it invokes compiled WRF code and packages outputs. Tier-1 passes under documented carry-forward tolerances while strict ADR-005 post-table parity debt is recorded in the M5-S1.x blocker. The JAX kernel remains one public `@jax.jit`; the stripped sibling physically omits debug hooks; diff sha256 is `{diff_sha}`.
 """.format(diff_sha=diff_sha)
@@ -149,7 +158,7 @@ The fixture oracle contains no Thompson source/sink formulas in Python; it invok
             "sprint_attempts": 6,
             "reviewer_rejections": 3,
             "escalation_events": 0,
-            "notes": "M5-S1.x exports the WRF Thompson table asset while preserving the Fortran harness oracle: small active table paths are wired, rain-freezing table hot-path use is blocked by HLO/launch regression, and strict ADR-005 parity remains unresolved.",
+            "notes": "M5-S1.y preserves the Fortran harness oracle: small table paths and default-IN rain-freezing table gathers are wired, raw HLO launches are reported honestly, and strict ADR-005 parity remains partially unresolved.",
         },
     )
 
@@ -161,8 +170,8 @@ def main() -> int:
     state, dt, _ = load_fixture_state()
     tier1 = run_tier1()
     tier2 = run_tier2()
-    launches, diff_sha = _write_hlo_artifacts(state, dt)
-    profile = _profile(state, dt, launches)
+    launches, diff_sha, full_hlo_bytes, tracked_hlo_bytes = _write_hlo_artifacts(state, dt)
+    profile = _profile(state, dt, launches, full_hlo_bytes, tracked_hlo_bytes)
     _write_side_artifacts(diff_sha)
     print(json.dumps({"tier1": tier1, "tier2": tier2, "profile": profile, "hlo_diff_sha256": diff_sha}, indent=2, sort_keys=True))
     return 0 if tier1.get("pass") and tier2.get("pass") and (HLO / "thompson_column_debug_vs_stripped.diff").stat().st_size == 0 else 1

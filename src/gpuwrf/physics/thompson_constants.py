@@ -17,6 +17,8 @@ R1 = 1.0e-12
 R2 = 1.0e-6
 EPS = 1.0e-15
 HGFR = 235.16
+TNO = 5.0
+ATO = 0.304
 RV = 461.5
 R_D = 287.04
 CP = 1004.0
@@ -68,6 +70,7 @@ CRG11 = 2.0
 ORG1 = 1.0 / CRG3
 ORG2 = 1.0 / CRG2
 ORG3 = 1.0 / CRG3
+CRE1 = 4.0
 CRE2 = 1.0
 CRE9 = 4.0
 CRE10 = 2.0
@@ -115,6 +118,8 @@ def constant_table() -> dict[str, float]:
         "R2",
         "EPS",
         "HGFR",
+        "TNO",
+        "ATO",
         "RV",
         "R_D",
         "CP",
@@ -142,11 +147,13 @@ def constant_table() -> dict[str, float]:
         "OBMR",
         "OBMI",
         "OBMG",
+        "ORG1",
         "AV_R",
         "FV_R",
         "SC3",
         "C_CUBE",
         "C_SQRD",
+        "CRE1",
         "T1_QR_QC",
         "T1_QR_EV",
         "T2_QR_EV",
