@@ -1,0 +1,1460 @@
+{
+  "artifact_paths": [
+    "artifacts/m6/tier4/probtest_tolerances.json",
+    "artifacts/m6/tier4/ensemble_member_manifest.json",
+    "artifacts/m6/tier4/cost_model.json",
+    "artifacts/m6/tier4/tolerance_freeze_report.md",
+    "artifacts/m6/tier4/heldout_candidate_validation.json"
+  ],
+  "artifact_type": "tier4_probtest_tolerances",
+  "blockers": [
+    "expected 10 historical members, found 4 under /mnt/data/canairy_meteo/runs/wrf_l3",
+    "excluded complete members with non-pinned d02 grid shape: 20260509_18z_l3_24h_20260511T190519Z has d02 shape (66, 120), expected pinned (66, 159)"
+  ],
+  "domain": "d02",
+  "freeze_time_utc": "2026-05-21T16:24:07+00:00",
+  "heldout_policy": {
+    "heldout_cycle": "20260519_18z",
+    "reason": "M6-S2 pinned GPU forecast day is excluded from the tolerance sample."
+  },
+  "leads_h": [
+    6,
+    12,
+    24
+  ],
+  "member_manifest": "artifacts/m6/tier4/ensemble_member_manifest.json",
+  "method": {
+    "candidate_peek_policy": "tolerances are written before held-out candidate validation",
+    "diagnostic_only_reason": "Local Gen2 wrf_l3 history has fewer than 10 complete d02 day-members through +24h; the table is a pre-candidate diagnostic computed from the complete members only.",
+    "k": 1.96,
+    "k_rationale": "1.96 approximates a two-sided 95% normal interval for this M6 prototype.",
+    "no_min_raw_cap_fudge": true,
+    "precip_definition": "(RAINC + RAINNC + optional RAINSH at lead) - same components at lead 0",
+    "sample_type": "3 complete deterministic historical Gen2 wrf_l3 day-members; 10 required for acceptance",
+    "stratum_reduction": "RMS of per-grid-cell member standard deviation; tolerance = k * sigma_rms_member_std",
+    "variance_estimator": "per-grid-cell sample variance across members with ddof=1"
+  },
+  "prototype_label": "M6 prototype; full ensemble at M7",
+  "run_id": "m6_s7_tier4_probtest_2026-05-21T162413Z",
+  "sample_size": 3,
+  "sample_size_required": 10,
+  "status": "BLOCKED",
+  "strata": [
+    "canary",
+    "land",
+    "sea",
+    "elevation_band_0",
+    "elevation_band_1",
+    "elevation_band_2",
+    "elevation_band_3",
+    "elevation_band_4",
+    "elevation_band_5"
+  ],
+  "tolerance_factor": 1.96,
+  "tolerances": {
+    "T2": {
+      "12h": {
+        "canary": {
+          "finite": true,
+          "grid_cell_count": 10494,
+          "sigma_rms_member_std": 0.5282972661308247,
+          "std_mean": 0.36103796044605696,
+          "std_median": 0.21285124097766517,
+          "std_p95": 1.1515118573901821,
+          "tolerance": 1.0354626416164165,
+          "variance_mean": 0.2790980014013035
+        },
+        "elevation_band_0": {
+          "finite": true,
+          "grid_cell_count": 10190,
+          "sigma_rms_member_std": 0.4779524312243799,
+          "std_mean": 0.33427502741408466,
+          "std_median": 0.20578347642815764,
+          "std_p95": 0.9650321998786344,
+          "tolerance": 0.9367867651997847,
+          "variance_mean": 0.2284385265132956
+        },
+        "elevation_band_1": {
+          "finite": true,
+          "grid_cell_count": 159,
+          "sigma_rms_member_std": 1.2733244728154107,
+          "std_mean": 1.102092483053075,
+          "std_median": 0.9382430660078465,
+          "std_p95": 2.143497324340746,
+          "tolerance": 2.495715966718205,
+          "variance_mean": 1.6213552130706435
+        },
+        "elevation_band_2": {
+          "finite": true,
+          "grid_cell_count": 80,
+          "sigma_rms_member_std": 1.4465433615369399,
+          "std_mean": 1.370217788852324,
+          "std_median": 1.3366663351648596,
+          "std_p95": 2.1698190603328467,
+          "tolerance": 2.835224988612402,
+          "variance_mean": 2.09248769680659
+        },
+        "elevation_band_3": {
+          "finite": true,
+          "grid_cell_count": 32,
+          "sigma_rms_member_std": 1.680473264697206,
+          "std_mean": 1.6174914397807263,
+          "std_median": 1.6954229749566099,
+          "std_p95": 2.2241940434479757,
+          "tolerance": 3.293727598806524,
+          "variance_mean": 2.823990393362086
+        },
+        "elevation_band_4": {
+          "finite": true,
+          "grid_cell_count": 22,
+          "sigma_rms_member_std": 1.7935846070632908,
+          "std_mean": 1.7049734334340905,
+          "std_median": 1.8503809258236903,
+          "std_p95": 2.39460465688625,
+          "tolerance": 3.51542582984405,
+          "variance_mean": 3.2169457426943793
+        },
+        "elevation_band_5": {
+          "finite": true,
+          "grid_cell_count": 4,
+          "sigma_rms_member_std": 1.902457806494157,
+          "std_mean": 1.782020867206625,
+          "std_median": 2.0859048545129397,
+          "std_p95": 2.2879944922041147,
+          "tolerance": 3.7288173007285477,
+          "variance_mean": 3.6193457054905593
+        },
+        "land": {
+          "finite": true,
+          "grid_cell_count": 768,
+          "sigma_rms_member_std": 1.401189890565018,
+          "std_mean": 1.2594474902944943,
+          "std_median": 1.251329306782414,
+          "std_p95": 2.313419139642728,
+          "tolerance": 2.746332185507435,
+          "variance_mean": 1.9633331094216067
+        },
+        "sea": {
+          "finite": true,
+          "grid_cell_count": 9726,
+          "sigma_rms_member_std": 0.3822364836773011,
+          "std_mean": 0.2900963072562976,
+          "std_median": 0.19450353299780493,
+          "std_p95": 0.7981877258532979,
+          "tolerance": 0.7491835080075102,
+          "variance_mean": 0.1461047294539877
+        }
+      },
+      "24h": {
+        "canary": {
+          "finite": true,
+          "grid_cell_count": 10494,
+          "sigma_rms_member_std": 0.6020753491539436,
+          "std_mean": 0.39653556400295414,
+          "std_median": 0.22374427732649813,
+          "std_p95": 1.3078518628127132,
+          "tolerance": 1.1800676843417293,
+          "variance_mean": 0.36249472605884303
+        },
+        "elevation_band_0": {
+          "finite": true,
+          "grid_cell_count": 10190,
+          "sigma_rms_member_std": 0.5260599685781251,
+          "std_mean": 0.3581910777163408,
+          "std_median": 0.21912170429027525,
+          "std_p95": 1.1416990009697872,
+          "tolerance": 1.0310775384131252,
+          "variance_mean": 0.276739090540418
+        },
+        "elevation_band_1": {
+          "finite": true,
+          "grid_cell_count": 159,
+          "sigma_rms_member_std": 1.5962768967149328,
+          "std_mean": 1.4684202877005441,
+          "std_median": 1.496001615501028,
+          "std_p95": 2.440139183430511,
+          "tolerance": 3.1287027175612683,
+          "variance_mean": 2.5480999309858565
+        },
+        "elevation_band_2": {
+          "finite": true,
+          "grid_cell_count": 80,
+          "sigma_rms_member_std": 1.983566580145044,
+          "std_mean": 1.9325752295240641,
+          "std_median": 1.9423321432460328,
+          "std_p95": 2.5375785325450386,
+          "tolerance": 3.887790497084286,
+          "variance_mean": 3.934536377868305
+        },
+        "elevation_band_3": {
+          "finite": true,
+          "grid_cell_count": 32,
+          "sigma_rms_member_std": 2.260359673372082,
+          "std_mean": 2.2299336073140203,
+          "std_median": 2.221718204256816,
+          "std_p95": 2.9067557283563374,
+          "tolerance": 4.4303049598092805,
+          "variance_mean": 5.109225853006743
+        },
+        "elevation_band_4": {
+          "finite": true,
+          "grid_cell_count": 22,
+          "sigma_rms_member_std": 2.0240470993982855,
+          "std_mean": 1.9890965649978931,
+          "std_median": 2.012358771918061,
+          "std_p95": 2.554177854920061,
+          "tolerance": 3.9671323148206397,
+          "variance_mean": 4.096766660582612
+        },
+        "elevation_band_5": {
+          "finite": true,
+          "grid_cell_count": 4,
+          "sigma_rms_member_std": 1.556444515683902,
+          "std_mean": 1.51463446274056,
+          "std_median": 1.4521477121872994,
+          "std_p95": 1.9836275267406442,
+          "tolerance": 3.0506312507404476,
+          "variance_mean": 2.4225195304024965
+        },
+        "land": {
+          "finite": true,
+          "grid_cell_count": 768,
+          "sigma_rms_member_std": 1.5433044090475372,
+          "std_mean": 1.329042434862748,
+          "std_median": 1.232561166124388,
+          "std_p95": 2.6239679598459764,
+          "tolerance": 3.0248766417331727,
+          "variance_mean": 2.381788498985568
+        },
+        "sea": {
+          "finite": true,
+          "grid_cell_count": 9726,
+          "sigma_rms_member_std": 0.4506040554742579,
+          "std_mean": 0.3229014619239575,
+          "std_median": 0.21338483617563558,
+          "std_p95": 1.0581564341477594,
+          "tolerance": 0.8831839487295455,
+          "variance_mean": 0.20304401480984813
+        }
+      },
+      "6h": {
+        "canary": {
+          "finite": true,
+          "grid_cell_count": 10494,
+          "sigma_rms_member_std": 0.4714866897332773,
+          "std_mean": 0.32142264196581083,
+          "std_median": 0.1845482193586016,
+          "std_p95": 1.028865749705604,
+          "tolerance": 0.9241139118772235,
+          "variance_mean": 0.22229969859564366
+        },
+        "elevation_band_0": {
+          "finite": true,
+          "grid_cell_count": 10190,
+          "sigma_rms_member_std": 0.4237358262398346,
+          "std_mean": 0.2964363823576693,
+          "std_median": 0.18133396191281148,
+          "std_p95": 0.9901575212563549,
+          "tolerance": 0.8305222194300758,
+          "variance_mean": 0.17955205043915526
+        },
+        "elevation_band_1": {
+          "finite": true,
+          "grid_cell_count": 159,
+          "sigma_rms_member_std": 1.053811949554542,
+          "std_mean": 0.9399116916362545,
+          "std_median": 0.8458213020624522,
+          "std_p95": 1.823617659917699,
+          "tolerance": 2.0654714211269023,
+          "variance_mean": 1.1105196250239446
+        },
+        "elevation_band_2": {
+          "finite": true,
+          "grid_cell_count": 80,
+          "sigma_rms_member_std": 1.3211028437622918,
+          "std_mean": 1.255767196867504,
+          "std_median": 1.1703471213403187,
+          "std_p95": 1.9633008389990163,
+          "tolerance": 2.589361573774092,
+          "variance_mean": 1.7453127237968147
+        },
+        "elevation_band_3": {
+          "finite": true,
+          "grid_cell_count": 32,
+          "sigma_rms_member_std": 1.7195236760118326,
+          "std_mean": 1.680245160552972,
+          "std_median": 1.608210216777439,
+          "std_p95": 2.2759820422797223,
+          "tolerance": 3.370266404983192,
+          "variance_mean": 2.9567616723652463
+        },
+        "elevation_band_4": {
+          "finite": true,
+          "grid_cell_count": 22,
+          "sigma_rms_member_std": 1.8682268610885888,
+          "std_mean": 1.7991707397270624,
+          "std_median": 1.8759355339029877,
+          "std_p95": 2.4435141152325883,
+          "tolerance": 3.661724647733634,
+          "variance_mean": 3.490271604492921
+        },
+        "elevation_band_5": {
+          "finite": true,
+          "grid_cell_count": 4,
+          "sigma_rms_member_std": 1.9558545374800953,
+          "std_mean": 1.9420753732158818,
+          "std_median": 1.8598018665899323,
+          "std_p95": 2.2641282649848367,
+          "tolerance": 3.833474893460987,
+          "variance_mean": 3.8253669717814773
+        },
+        "land": {
+          "finite": true,
+          "grid_cell_count": 768,
+          "sigma_rms_member_std": 1.2130487491901443,
+          "std_mean": 1.0841846343684065,
+          "std_median": 1.0477676875796456,
+          "std_p95": 2.0537806799322373,
+          "tolerance": 2.3775755484126826,
+          "variance_mean": 1.4714872679117736
+        },
+        "sea": {
+          "finite": true,
+          "grid_cell_count": 9726,
+          "sigma_rms_member_std": 0.35165231075087566,
+          "std_mean": 0.261192207032108,
+          "std_median": 0.17652870181809474,
+          "std_p95": 0.853847899733791,
+          "tolerance": 0.6892385290717162,
+          "variance_mean": 0.12365934765643043
+        }
+      }
+    },
+    "U10": {
+      "12h": {
+        "canary": {
+          "finite": true,
+          "grid_cell_count": 10494,
+          "sigma_rms_member_std": 2.273470876403421,
+          "std_mean": 2.1237208735070676,
+          "std_median": 2.156232768862324,
+          "std_p95": 3.452976272883787,
+          "tolerance": 4.4560029177507054,
+          "variance_mean": 5.16866982585454
+        },
+        "elevation_band_0": {
+          "finite": true,
+          "grid_cell_count": 10190,
+          "sigma_rms_member_std": 2.297751780118879,
+          "std_mean": 2.1561787877548793,
+          "std_median": 2.183785409450289,
+          "std_p95": 3.466227594355598,
+          "tolerance": 4.503593489033003,
+          "variance_mean": 5.2796632430394785
+        },
+        "elevation_band_1": {
+          "finite": true,
+          "grid_cell_count": 159,
+          "sigma_rms_member_std": 1.1882349922726256,
+          "std_mean": 1.026740723213585,
+          "std_median": 0.8989159312831896,
+          "std_p95": 2.088505655329414,
+          "tolerance": 2.328940584854346,
+          "variance_mean": 1.4119023968611266
+        },
+        "elevation_band_2": {
+          "finite": true,
+          "grid_cell_count": 80,
+          "sigma_rms_member_std": 0.8306529790752096,
+          "std_mean": 0.7444702252349241,
+          "std_median": 0.7156329144765775,
+          "std_p95": 1.39543120933401,
+          "tolerance": 1.628079838987411,
+          "variance_mean": 0.6899843716465207
+        },
+        "elevation_band_3": {
+          "finite": true,
+          "grid_cell_count": 32,
+          "sigma_rms_member_std": 1.0213659815109633,
+          "std_mean": 0.9520685486323301,
+          "std_median": 0.948352048560609,
+          "std_p95": 1.4585044054148446,
+          "tolerance": 2.0018773237614877,
+          "variance_mean": 1.0431884681878532
+        },
+        "elevation_band_4": {
+          "finite": true,
+          "grid_cell_count": 22,
+          "sigma_rms_member_std": 1.952088320541689,
+          "std_mean": 1.8646922591397987,
+          "std_median": 1.9680928299806566,
+          "std_p95": 2.395641318383409,
+          "tolerance": 3.8260931082617105,
+          "variance_mean": 3.8106488111952728
+        },
+        "elevation_band_5": {
+          "finite": true,
+          "grid_cell_count": 4,
+          "sigma_rms_member_std": 2.3635038795615193,
+          "std_mean": 2.2776384915690806,
+          "std_median": 2.5380233822767013,
+          "std_p95": 2.7964041762028375,
+          "tolerance": 4.632467603940578,
+          "variance_mean": 5.586150588702351
+        },
+        "land": {
+          "finite": true,
+          "grid_cell_count": 768,
+          "sigma_rms_member_std": 1.8347180152743277,
+          "std_mean": 1.5898458234707025,
+          "std_median": 1.4713437368849434,
+          "std_p95": 3.244769857296283,
+          "tolerance": 3.596047309937682,
+          "variance_mean": 3.366190195572168
+        },
+        "sea": {
+          "finite": true,
+          "grid_cell_count": 9726,
+          "sigma_rms_member_std": 2.30456071980777,
+          "std_mean": 2.1658775708572553,
+          "std_median": 2.191392071265029,
+          "std_p95": 3.468909747216009,
+          "tolerance": 4.516939010823229,
+          "variance_mean": 5.311000111280908
+        }
+      },
+      "24h": {
+        "canary": {
+          "finite": true,
+          "grid_cell_count": 10494,
+          "sigma_rms_member_std": 2.5659343167348947,
+          "std_mean": 2.340781193661297,
+          "std_median": 2.2448533947084135,
+          "std_p95": 4.300592239726756,
+          "tolerance": 5.029231260800393,
+          "variance_mean": 6.584018917797771
+        },
+        "elevation_band_0": {
+          "finite": true,
+          "grid_cell_count": 10190,
+          "sigma_rms_member_std": 2.5932593509634017,
+          "std_mean": 2.37752939417722,
+          "std_median": 2.2686424448521616,
+          "std_p95": 4.320136830980192,
+          "tolerance": 5.0827883278882675,
+          "variance_mean": 6.724994061359123
+        },
+        "elevation_band_1": {
+          "finite": true,
+          "grid_cell_count": 159,
+          "sigma_rms_member_std": 1.5813237688274484,
+          "std_mean": 1.3093061535312591,
+          "std_median": 1.1693373868871177,
+          "std_p95": 2.8963210091009133,
+          "tolerance": 3.099394586901799,
+          "variance_mean": 2.5005848618586453
+        },
+        "elevation_band_2": {
+          "finite": true,
+          "grid_cell_count": 80,
+          "sigma_rms_member_std": 0.9229531739447766,
+          "std_mean": 0.7396290841611559,
+          "std_median": 0.5314225249629547,
+          "std_p95": 1.695635089653569,
+          "tolerance": 1.808988220931762,
+          "variance_mean": 0.8518425612947371
+        },
+        "elevation_band_3": {
+          "finite": true,
+          "grid_cell_count": 32,
+          "sigma_rms_member_std": 0.7049151049386131,
+          "std_mean": 0.649084759169666,
+          "std_median": 0.5677842677990101,
+          "std_p95": 1.0662821962211029,
+          "tolerance": 1.3816336056796816,
+          "variance_mean": 0.49690530517061593
+        },
+        "elevation_band_4": {
+          "finite": true,
+          "grid_cell_count": 22,
+          "sigma_rms_member_std": 1.4566565204946802,
+          "std_mean": 1.35846930212933,
+          "std_median": 1.341471996144554,
+          "std_p95": 2.1366905253262294,
+          "tolerance": 2.855046780169573,
+          "variance_mean": 2.1218482186996686
+        },
+        "elevation_band_5": {
+          "finite": true,
+          "grid_cell_count": 4,
+          "sigma_rms_member_std": 1.9631019974758501,
+          "std_mean": 1.7868287710184534,
+          "std_median": 1.9248973174540536,
+          "std_p95": 2.662748316700377,
+          "tolerance": 3.8476799150526664,
+          "variance_mean": 3.8537694524936734
+        },
+        "land": {
+          "finite": true,
+          "grid_cell_count": 768,
+          "sigma_rms_member_std": 2.5906510136546452,
+          "std_mean": 2.1426547906537725,
+          "std_median": 1.885703223093655,
+          "std_p95": 5.001970815547232,
+          "tolerance": 5.077675986763104,
+          "variance_mean": 6.711472674549841
+        },
+        "sea": {
+          "finite": true,
+          "grid_cell_count": 9726,
+          "sigma_rms_member_std": 2.5639724471969556,
+          "std_mean": 2.3564259682356115,
+          "std_median": 2.2557401027174366,
+          "std_p95": 4.249257619883698,
+          "tolerance": 5.025385996506033,
+          "variance_mean": 6.573954709985146
+        }
+      },
+      "6h": {
+        "canary": {
+          "finite": true,
+          "grid_cell_count": 10494,
+          "sigma_rms_member_std": 2.0217652572569813,
+          "std_mean": 1.8372358528782862,
+          "std_median": 1.8424812600875429,
+          "std_p95": 3.2643268251951203,
+          "tolerance": 3.9626599042236834,
+          "variance_mean": 4.087534755451388
+        },
+        "elevation_band_0": {
+          "finite": true,
+          "grid_cell_count": 10190,
+          "sigma_rms_member_std": 2.042889461607913,
+          "std_mean": 1.8644289947542003,
+          "std_median": 1.868298692636789,
+          "std_p95": 3.278077855674221,
+          "tolerance": 4.0040633447515095,
+          "variance_mean": 4.173397352348669
+        },
+        "elevation_band_1": {
+          "finite": true,
+          "grid_cell_count": 159,
+          "sigma_rms_member_std": 1.0289148140658508,
+          "std_mean": 0.8651782518445014,
+          "std_median": 0.7539852005773342,
+          "std_p95": 1.9010959833783982,
+          "tolerance": 2.0166730355690676,
+          "variance_mean": 1.0586656946041644
+        },
+        "elevation_band_2": {
+          "finite": true,
+          "grid_cell_count": 80,
+          "sigma_rms_member_std": 0.7980300953162871,
+          "std_mean": 0.7001796761582322,
+          "std_median": 0.654193718069553,
+          "std_p95": 1.359426407302752,
+          "tolerance": 1.5641389868199227,
+          "variance_mean": 0.6368520330305223
+        },
+        "elevation_band_3": {
+          "finite": true,
+          "grid_cell_count": 32,
+          "sigma_rms_member_std": 0.9727928462222021,
+          "std_mean": 0.8848284257357617,
+          "std_median": 0.8682423172669995,
+          "std_p95": 1.5249227858766805,
+          "tolerance": 1.906673978595516,
+          "variance_mean": 0.9463259216610929
+        },
+        "elevation_band_4": {
+          "finite": true,
+          "grid_cell_count": 22,
+          "sigma_rms_member_std": 1.8259979789894436,
+          "std_mean": 1.7755432789108796,
+          "std_median": 1.7728878582150216,
+          "std_p95": 2.46708852521949,
+          "tolerance": 3.5789560388193093,
+          "variance_mean": 3.3342686192735327
+        },
+        "elevation_band_5": {
+          "finite": true,
+          "grid_cell_count": 4,
+          "sigma_rms_member_std": 2.7026783462511843,
+          "std_mean": 2.6513491838953023,
+          "std_median": 2.886255814716379,
+          "std_p95": 3.0567198080011164,
+          "tolerance": 5.297249558652321,
+          "variance_mean": 7.304470243295036
+        },
+        "land": {
+          "finite": true,
+          "grid_cell_count": 768,
+          "sigma_rms_member_std": 1.60048422115848,
+          "std_mean": 1.3878685542965072,
+          "std_median": 1.2790609969132254,
+          "std_p95": 2.7782210589370755,
+          "tolerance": 3.1369490734706207,
+          "variance_mean": 2.5615497421772666
+        },
+        "sea": {
+          "finite": true,
+          "grid_cell_count": 9726,
+          "sigma_rms_member_std": 2.051348831814729,
+          "std_mean": 1.8727195137163295,
+          "std_median": 1.870769017691222,
+          "std_p95": 3.2970452116981273,
+          "tolerance": 4.020643710356869,
+          "variance_mean": 4.208032029787654
+        }
+      }
+    },
+    "V10": {
+      "12h": {
+        "canary": {
+          "finite": true,
+          "grid_cell_count": 10494,
+          "sigma_rms_member_std": 2.8034455683623953,
+          "std_mean": 2.595238120731792,
+          "std_median": 2.729777452165644,
+          "std_p95": 4.045164915001218,
+          "tolerance": 5.494753313990294,
+          "variance_mean": 7.8593070547707535
+        },
+        "elevation_band_0": {
+          "finite": true,
+          "grid_cell_count": 10190,
+          "sigma_rms_member_std": 2.8355529069251713,
+          "std_mean": 2.6384051543343445,
+          "std_median": 2.7769729580077733,
+          "std_p95": 4.060372435134715,
+          "tolerance": 5.557683697573336,
+          "variance_mean": 8.040360287971788
+        },
+        "elevation_band_1": {
+          "finite": true,
+          "grid_cell_count": 159,
+          "sigma_rms_member_std": 1.321072749884252,
+          "std_mean": 1.10810054668459,
+          "std_median": 0.9612264239118298,
+          "std_p95": 2.6641626812424626,
+          "tolerance": 2.589302589773134,
+          "variance_mean": 1.7452332104867396
+        },
+        "elevation_band_2": {
+          "finite": true,
+          "grid_cell_count": 80,
+          "sigma_rms_member_std": 0.9898712087837751,
+          "std_mean": 0.8957671154196529,
+          "std_median": 0.8568272836359533,
+          "std_p95": 1.6232777121157094,
+          "tolerance": 1.9401475692161991,
+          "variance_mean": 0.979845009979052
+        },
+        "elevation_band_3": {
+          "finite": true,
+          "grid_cell_count": 32,
+          "sigma_rms_member_std": 1.2800490228974561,
+          "std_mean": 1.1822622782811936,
+          "std_median": 1.0602975600771947,
+          "std_p95": 2.103810015853035,
+          "tolerance": 2.508896084879014,
+          "variance_mean": 1.638525501020732
+        },
+        "elevation_band_4": {
+          "finite": true,
+          "grid_cell_count": 22,
+          "sigma_rms_member_std": 1.768790642697051,
+          "std_mean": 1.6912712011596696,
+          "std_median": 1.6833732875107725,
+          "std_p95": 2.3838268043245585,
+          "tolerance": 3.46682965968622,
+          "variance_mean": 3.1286203376926456
+        },
+        "elevation_band_5": {
+          "finite": true,
+          "grid_cell_count": 4,
+          "sigma_rms_member_std": 2.3096347412176224,
+          "std_mean": 2.28436700303073,
+          "std_median": 2.36765472955138,
+          "std_p95": 2.6267158447771575,
+          "tolerance": 4.52688409278654,
+          "variance_mean": 5.334412637839393
+        },
+        "land": {
+          "finite": true,
+          "grid_cell_count": 768,
+          "sigma_rms_member_std": 1.475273391705097,
+          "std_mean": 1.2732864460797673,
+          "std_median": 1.0826477629678162,
+          "std_p95": 2.8057909064396758,
+          "tolerance": 2.89153584774199,
+          "variance_mean": 2.1764315802730607
+        },
+        "sea": {
+          "finite": true,
+          "grid_cell_count": 9726,
+          "sigma_rms_member_std": 2.882368362304556,
+          "std_mean": 2.6996241875766156,
+          "std_median": 2.8462561753353612,
+          "std_p95": 4.075589416186105,
+          "tolerance": 5.64944199011693,
+          "variance_mean": 8.30804737601425
+        }
+      },
+      "24h": {
+        "canary": {
+          "finite": true,
+          "grid_cell_count": 10494,
+          "sigma_rms_member_std": 2.686912245153912,
+          "std_mean": 2.3692785084234345,
+          "std_median": 2.395754095144523,
+          "std_p95": 4.623968960765617,
+          "tolerance": 5.266348000501667,
+          "variance_mean": 7.219497413158035
+        },
+        "elevation_band_0": {
+          "finite": true,
+          "grid_cell_count": 10190,
+          "sigma_rms_member_std": 2.7180423508252307,
+          "std_mean": 2.4098593377032516,
+          "std_median": 2.4531198836480295,
+          "std_p95": 4.648354647969796,
+          "tolerance": 5.3273630076174525,
+          "variance_mean": 7.387754220879548
+        },
+        "elevation_band_1": {
+          "finite": true,
+          "grid_cell_count": 159,
+          "sigma_rms_member_std": 1.3400467304168773,
+          "std_mean": 1.1141556297672293,
+          "std_median": 0.9288067915013679,
+          "std_p95": 2.427226847992666,
+          "tolerance": 2.6264915916170795,
+          "variance_mean": 1.7957252397009629
+        },
+        "elevation_band_2": {
+          "finite": true,
+          "grid_cell_count": 80,
+          "sigma_rms_member_std": 0.9020119410601415,
+          "std_mean": 0.7443795562569815,
+          "std_median": 0.611927127303619,
+          "std_p95": 1.7432428638516173,
+          "tolerance": 1.7679434044778772,
+          "variance_mean": 0.8136255418150838
+        },
+        "elevation_band_3": {
+          "finite": true,
+          "grid_cell_count": 32,
+          "sigma_rms_member_std": 0.7724122743051538,
+          "std_mean": 0.6775900466953617,
+          "std_median": 0.5967229402162886,
+          "std_p95": 1.1935246295141755,
+          "tolerance": 1.5139280576381013,
+          "variance_mean": 0.5966207214972602
+        },
+        "elevation_band_4": {
+          "finite": true,
+          "grid_cell_count": 22,
+          "sigma_rms_member_std": 1.2960102511689873,
+          "std_mean": 1.1682126239607251,
+          "std_median": 1.0035497082132345,
+          "std_p95": 2.2096452912698004,
+          "tolerance": 2.540180092291215,
+          "variance_mean": 1.6796425711351013
+        },
+        "elevation_band_5": {
+          "finite": true,
+          "grid_cell_count": 4,
+          "sigma_rms_member_std": 1.678185445102989,
+          "std_mean": 1.6595517931942472,
+          "std_median": 1.6315057708010667,
+          "std_p95": 1.9814322471091714,
+          "tolerance": 3.2892434724018584,
+          "variance_mean": 2.816306388155517
+        },
+        "land": {
+          "finite": true,
+          "grid_cell_count": 768,
+          "sigma_rms_member_std": 1.5723785838081368,
+          "std_mean": 1.2801862234054546,
+          "std_median": 1.0459599136136877,
+          "std_p95": 3.1579113991995773,
+          "tolerance": 3.081862024263948,
+          "variance_mean": 2.472374410818482
+        },
+        "sea": {
+          "finite": true,
+          "grid_cell_count": 9726,
+          "sigma_rms_member_std": 2.755784343512939,
+          "std_mean": 2.455277158936884,
+          "std_median": 2.511256556494815,
+          "std_p95": 4.694993625472443,
+          "tolerance": 5.401337313285361,
+          "variance_mean": 7.59434734795104
+        }
+      },
+      "6h": {
+        "canary": {
+          "finite": true,
+          "grid_cell_count": 10494,
+          "sigma_rms_member_std": 2.78668560033626,
+          "std_mean": 2.6015822381987634,
+          "std_median": 2.6528714513652902,
+          "std_p95": 4.136871484179633,
+          "tolerance": 5.46190377665907,
+          "variance_mean": 7.765616635121463
+        },
+        "elevation_band_0": {
+          "finite": true,
+          "grid_cell_count": 10190,
+          "sigma_rms_member_std": 2.819251880488753,
+          "std_mean": 2.6470123945336095,
+          "std_median": 2.689392061154706,
+          "std_p95": 4.1437407387077485,
+          "tolerance": 5.525733685757956,
+          "variance_mean": 7.94818116563937
+        },
+        "elevation_band_1": {
+          "finite": true,
+          "grid_cell_count": 159,
+          "sigma_rms_member_std": 1.1883918964723108,
+          "std_mean": 0.9903021351993446,
+          "std_median": 0.8072926487811986,
+          "std_p95": 2.2926815427810565,
+          "tolerance": 2.3292481170857293,
+          "variance_mean": 1.4122752996010555
+        },
+        "elevation_band_2": {
+          "finite": true,
+          "grid_cell_count": 80,
+          "sigma_rms_member_std": 0.9575352976976115,
+          "std_mean": 0.8361462025793511,
+          "std_median": 0.7561996973356875,
+          "std_p95": 1.7923328058325825,
+          "tolerance": 1.8767691834873184,
+          "variance_mean": 0.9168738463368534
+        },
+        "elevation_band_3": {
+          "finite": true,
+          "grid_cell_count": 32,
+          "sigma_rms_member_std": 1.2328701795687607,
+          "std_mean": 1.1469684072161972,
+          "std_median": 1.0767036705755753,
+          "std_p95": 1.855868317230208,
+          "tolerance": 2.416425551954771,
+          "variance_mean": 1.519968879669908
+        },
+        "elevation_band_4": {
+          "finite": true,
+          "grid_cell_count": 22,
+          "sigma_rms_member_std": 1.8475078235818727,
+          "std_mean": 1.7665097549764468,
+          "std_median": 1.6726628904506695,
+          "std_p95": 2.5223294102112184,
+          "tolerance": 3.6211153342204705,
+          "variance_mean": 3.4132851581962282
+        },
+        "elevation_band_5": {
+          "finite": true,
+          "grid_cell_count": 4,
+          "sigma_rms_member_std": 2.244053093689471,
+          "std_mean": 2.2338422190628,
+          "std_median": 2.2767530444459925,
+          "std_p95": 2.455808658334569,
+          "tolerance": 4.398344063631363,
+          "variance_mean": 5.0357742872972855
+        },
+        "land": {
+          "finite": true,
+          "grid_cell_count": 768,
+          "sigma_rms_member_std": 1.472925631991154,
+          "std_mean": 1.296336126853743,
+          "std_median": 1.209856002113931,
+          "std_p95": 2.6091785040259348,
+          "tolerance": 2.8869342387026617,
+          "variance_mean": 2.16950991737654
+        },
+        "sea": {
+          "finite": true,
+          "grid_cell_count": 9726,
+          "sigma_rms_member_std": 2.864874409590883,
+          "std_mean": 2.704649173579493,
+          "std_median": 2.743686511779128,
+          "std_p95": 4.162682592291941,
+          "tolerance": 5.61515384279813,
+          "variance_mean": 8.20750538272871
+        }
+      }
+    },
+    "precip": {
+      "12h": {
+        "canary": {
+          "finite": true,
+          "grid_cell_count": 10494,
+          "sigma_rms_member_std": 0.01672561673439827,
+          "std_mean": 0.0017086571321653973,
+          "std_median": 0.0,
+          "std_p95": 0.006528905341593104,
+          "tolerance": 0.032782208799420606,
+          "variance_mean": 0.0002797462551459835
+        },
+        "elevation_band_0": {
+          "finite": true,
+          "grid_cell_count": 10190,
+          "sigma_rms_member_std": 0.016973245068634065,
+          "std_mean": 0.0017590600940565818,
+          "std_median": 0.0,
+          "std_p95": 0.006662861168133675,
+          "tolerance": 0.033267560334522765,
+          "variance_mean": 0.00028809104815991066
+        },
+        "elevation_band_1": {
+          "finite": true,
+          "grid_cell_count": 159,
+          "sigma_rms_member_std": 0.00024107400590537022,
+          "std_mean": 3.29655466567175e-05,
+          "std_median": 0.0,
+          "std_p95": 1.723627105055111e-05,
+          "tolerance": 0.0004725050515745256,
+          "variance_mean": 5.811667632326246e-08
+        },
+        "elevation_band_2": {
+          "finite": true,
+          "grid_cell_count": 80,
+          "sigma_rms_member_std": 3.58114444269084e-06,
+          "std_mean": 4.3732377023141064e-07,
+          "std_median": 0.0,
+          "std_p95": 0.0,
+          "tolerance": 7.019043107674047e-06,
+          "variance_mean": 1.2824595519415487e-11
+        },
+        "elevation_band_3": {
+          "finite": true,
+          "grid_cell_count": 32,
+          "sigma_rms_member_std": 0.0,
+          "std_mean": 0.0,
+          "std_median": 0.0,
+          "std_p95": 0.0,
+          "tolerance": 0.0,
+          "variance_mean": 0.0
+        },
+        "elevation_band_4": {
+          "finite": true,
+          "grid_cell_count": 22,
+          "sigma_rms_member_std": 0.0,
+          "std_mean": 0.0,
+          "std_median": 0.0,
+          "std_p95": 0.0,
+          "tolerance": 0.0,
+          "variance_mean": 0.0
+        },
+        "elevation_band_5": {
+          "finite": true,
+          "grid_cell_count": 4,
+          "sigma_rms_member_std": 0.0,
+          "std_mean": 0.0,
+          "std_median": 0.0,
+          "std_p95": 0.0,
+          "tolerance": 0.0,
+          "variance_mean": 0.0
+        },
+        "land": {
+          "finite": true,
+          "grid_cell_count": 768,
+          "sigma_rms_member_std": 0.004964799439342976,
+          "std_mean": 0.0005152759687903804,
+          "std_median": 0.0,
+          "std_p95": 0.0009463826216678401,
+          "tolerance": 0.009731006901112232,
+          "variance_mean": 2.4649233472900325e-05
+        },
+        "sea": {
+          "finite": true,
+          "grid_cell_count": 9726,
+          "sigma_rms_member_std": 0.017317321820044716,
+          "std_mean": 0.0018028908082369593,
+          "std_median": 0.0,
+          "std_p95": 0.006859613421821174,
+          "tolerance": 0.03394195076728764,
+          "variance_mean": 0.0002998896350189968
+        }
+      },
+      "24h": {
+        "canary": {
+          "finite": true,
+          "grid_cell_count": 10494,
+          "sigma_rms_member_std": 0.06868207833236915,
+          "std_mean": 0.012969744554544513,
+          "std_median": 0.0,
+          "std_p95": 0.04982132075186774,
+          "tolerance": 0.13461687353144353,
+          "variance_mean": 0.004717227884053693
+        },
+        "elevation_band_0": {
+          "finite": true,
+          "grid_cell_count": 10190,
+          "sigma_rms_member_std": 0.06821544366368079,
+          "std_mean": 0.012622828093003259,
+          "std_median": 0.0,
+          "std_p95": 0.0486571640436399,
+          "tolerance": 0.13370226958081435,
+          "variance_mean": 0.004653346754232808
+        },
+        "elevation_band_1": {
+          "finite": true,
+          "grid_cell_count": 159,
+          "sigma_rms_member_std": 0.04069442079889014,
+          "std_mean": 0.013380189394353616,
+          "std_median": 0.0,
+          "std_p95": 0.08721667647469811,
+          "tolerance": 0.07976106476582466,
+          "variance_mean": 0.0016560358841571422
+        },
+        "elevation_band_2": {
+          "finite": true,
+          "grid_cell_count": 80,
+          "sigma_rms_member_std": 0.14647186901754533,
+          "std_mean": 0.05535546225954251,
+          "std_median": 2.9490584966899567e-06,
+          "std_p95": 0.30076741631875337,
+          "tolerance": 0.28708486327438887,
+          "variance_mean": 0.02145400841349296
+        },
+        "elevation_band_3": {
+          "finite": true,
+          "grid_cell_count": 32,
+          "sigma_rms_member_std": 0.04676991663733519,
+          "std_mean": 0.016466719091754758,
+          "std_median": 0.0001392416989289219,
+          "std_p95": 0.1275292107016171,
+          "tolerance": 0.09166903660917698,
+          "variance_mean": 0.0021874251022632836
+        },
+        "elevation_band_4": {
+          "finite": true,
+          "grid_cell_count": 22,
+          "sigma_rms_member_std": 0.03469385901668539,
+          "std_mean": 0.011545145889696644,
+          "std_median": 0.0,
+          "std_p95": 0.06635606602781087,
+          "tolerance": 0.06799996367270336,
+          "variance_mean": 0.001203663853469642
+        },
+        "elevation_band_5": {
+          "finite": true,
+          "grid_cell_count": 4,
+          "sigma_rms_member_std": 0.0082228684529427,
+          "std_mean": 0.0076548804230219215,
+          "std_median": 0.0062837469737477,
+          "std_p95": 0.011869572115310466,
+          "tolerance": 0.01611682216776769,
+          "variance_mean": 6.761556559440028e-05
+        },
+        "land": {
+          "finite": true,
+          "grid_cell_count": 768,
+          "sigma_rms_member_std": 0.052651671729614394,
+          "std_mean": 0.010801572437975533,
+          "std_median": 0.0,
+          "std_p95": 0.06107880188347541,
+          "tolerance": 0.10319727659004421,
+          "variance_mean": 0.0027721985359230755
+        },
+        "sea": {
+          "finite": true,
+          "grid_cell_count": 9726,
+          "sigma_rms_member_std": 0.0697912201409839,
+          "std_mean": 0.013140951236173646,
+          "std_median": 0.0,
+          "std_p95": 0.04964480674852702,
+          "tolerance": 0.13679079147632844,
+          "variance_mean": 0.004870814408767277
+        }
+      },
+      "6h": {
+        "canary": {
+          "finite": true,
+          "grid_cell_count": 10494,
+          "sigma_rms_member_std": 0.0031399284531106633,
+          "std_mean": 0.00015013564275441008,
+          "std_median": 0.0,
+          "std_p95": 0.0,
+          "tolerance": 0.0061542597680969,
+          "variance_mean": 9.859150690653923e-06
+        },
+        "elevation_band_0": {
+          "finite": true,
+          "grid_cell_count": 10190,
+          "sigma_rms_member_std": 0.003186279925141181,
+          "std_mean": 0.00015409801578279437,
+          "std_median": 0.0,
+          "std_p95": 0.0,
+          "tolerance": 0.006245108653276714,
+          "variance_mean": 1.015237976135769e-05
+        },
+        "elevation_band_1": {
+          "finite": true,
+          "grid_cell_count": 159,
+          "sigma_rms_member_std": 0.00024023774283039835,
+          "std_mean": 3.289099582695833e-05,
+          "std_median": 0.0,
+          "std_p95": 1.723627105055111e-05,
+          "tolerance": 0.0004708659759475807,
+          "variance_mean": 5.7714173080244615e-08
+        },
+        "elevation_band_2": {
+          "finite": true,
+          "grid_cell_count": 80,
+          "sigma_rms_member_std": 3.58114444269084e-06,
+          "std_mean": 4.3732377023141064e-07,
+          "std_median": 0.0,
+          "std_p95": 0.0,
+          "tolerance": 7.019043107674047e-06,
+          "variance_mean": 1.2824595519415487e-11
+        },
+        "elevation_band_3": {
+          "finite": true,
+          "grid_cell_count": 32,
+          "sigma_rms_member_std": 0.0,
+          "std_mean": 0.0,
+          "std_median": 0.0,
+          "std_p95": 0.0,
+          "tolerance": 0.0,
+          "variance_mean": 0.0
+        },
+        "elevation_band_4": {
+          "finite": true,
+          "grid_cell_count": 22,
+          "sigma_rms_member_std": 0.0,
+          "std_mean": 0.0,
+          "std_median": 0.0,
+          "std_p95": 0.0,
+          "tolerance": 0.0,
+          "variance_mean": 0.0
+        },
+        "elevation_band_5": {
+          "finite": true,
+          "grid_cell_count": 4,
+          "sigma_rms_member_std": 0.0,
+          "std_mean": 0.0,
+          "std_median": 0.0,
+          "std_p95": 0.0,
+          "tolerance": 0.0,
+          "variance_mean": 0.0
+        },
+        "land": {
+          "finite": true,
+          "grid_cell_count": 768,
+          "sigma_rms_member_std": 0.004439156301751986,
+          "std_mean": 0.0003687008134644611,
+          "std_median": 0.0,
+          "std_p95": 0.0,
+          "tolerance": 0.008700746351433893,
+          "variance_mean": 1.970610867138437e-05
+        },
+        "sea": {
+          "finite": true,
+          "grid_cell_count": 9726,
+          "sigma_rms_member_std": 0.0030135692148544374,
+          "std_mean": 0.00013287694944726233,
+          "std_median": 0.0,
+          "std_p95": 0.0,
+          "tolerance": 0.0059065956611146974,
+          "variance_mean": 9.08159941271839e-06
+        }
+      }
+    },
+    "qv2": {
+      "12h": {
+        "canary": {
+          "finite": true,
+          "grid_cell_count": 10494,
+          "sigma_rms_member_std": 0.0010421692189840001,
+          "std_mean": 0.0009492708384183706,
+          "std_median": 0.0008946239493343279,
+          "std_p95": 0.0017858149728799976,
+          "tolerance": 0.0020426516692086403,
+          "variance_mean": 1.086116680997721e-06
+        },
+        "elevation_band_0": {
+          "finite": true,
+          "grid_cell_count": 10190,
+          "sigma_rms_member_std": 0.001039082856244404,
+          "std_mean": 0.0009474450611380678,
+          "std_median": 0.000891330118286927,
+          "std_p95": 0.001788304974604248,
+          "tolerance": 0.002036602398239032,
+          "variance_mean": 1.0796931821410287e-06
+        },
+        "elevation_band_1": {
+          "finite": true,
+          "grid_cell_count": 159,
+          "sigma_rms_member_std": 0.0010829223224626389,
+          "std_mean": 0.0009365990654300985,
+          "std_median": 0.0009709387195832381,
+          "std_p95": 0.0017881414975013915,
+          "tolerance": 0.0021225277520267724,
+          "variance_mean": 1.1727207564878756e-06
+        },
+        "elevation_band_2": {
+          "finite": true,
+          "grid_cell_count": 80,
+          "sigma_rms_member_std": 0.0011478033318210016,
+          "std_mean": 0.0010258196154829557,
+          "std_median": 0.0011175117556653986,
+          "std_p95": 0.0017145929612230955,
+          "tolerance": 0.002249694530369163,
+          "variance_mean": 1.3174524885393924e-06
+        },
+        "elevation_band_3": {
+          "finite": true,
+          "grid_cell_count": 32,
+          "sigma_rms_member_std": 0.0010984099713605016,
+          "std_mean": 0.000979472716051267,
+          "std_median": 0.001197934170550912,
+          "std_p95": 0.0014685255836036472,
+          "tolerance": 0.0021528835438665832,
+          "variance_mean": 1.2065044651841782e-06
+        },
+        "elevation_band_4": {
+          "finite": true,
+          "grid_cell_count": 22,
+          "sigma_rms_member_std": 0.0014126252506386939,
+          "std_mean": 0.0014023435347532258,
+          "std_median": 0.0014499077955294993,
+          "std_p95": 0.0015872393330699046,
+          "tolerance": 0.00276874549125184,
+          "variance_mean": 1.995510098742033e-06
+        },
+        "elevation_band_5": {
+          "finite": true,
+          "grid_cell_count": 4,
+          "sigma_rms_member_std": 0.0016172983573517392,
+          "std_mean": 0.0016157115606952582,
+          "std_median": 0.0016394109293873481,
+          "std_p95": 0.0016814292042538269,
+          "tolerance": 0.003169904780409409,
+          "variance_mean": 2.6156539766926342e-06
+        },
+        "land": {
+          "finite": true,
+          "grid_cell_count": 768,
+          "sigma_rms_member_std": 0.0011920785028471837,
+          "std_mean": 0.0010683419465771064,
+          "std_median": 0.001095798461850761,
+          "std_p95": 0.001920757099188253,
+          "tolerance": 0.00233647386558048,
+          "variance_mean": 1.4210511569503827e-06
+        },
+        "sea": {
+          "finite": true,
+          "grid_cell_count": 9726,
+          "sigma_rms_member_std": 0.001029402277102226,
+          "std_mean": 0.0009398685547389638,
+          "std_median": 0.0008849591692325785,
+          "std_p95": 0.0017550411615360494,
+          "tolerance": 0.002017628463120363,
+          "variance_mean": 1.059669048103248e-06
+        }
+      },
+      "24h": {
+        "canary": {
+          "finite": true,
+          "grid_cell_count": 10494,
+          "sigma_rms_member_std": 0.000987168590445932,
+          "std_mean": 0.0008286345127245656,
+          "std_median": 0.0007140330160308986,
+          "std_p95": 0.0018510379751477074,
+          "tolerance": 0.0019348504372740268,
+          "variance_mean": 9.745018259630084e-07
+        },
+        "elevation_band_0": {
+          "finite": true,
+          "grid_cell_count": 10190,
+          "sigma_rms_member_std": 0.0009767983296869872,
+          "std_mean": 0.0008218295853849383,
+          "std_median": 0.0007043354260383739,
+          "std_p95": 0.0018381765085658797,
+          "tolerance": 0.001914524726186495,
+          "variance_mean": 9.54134976879288e-07
+        },
+        "elevation_band_1": {
+          "finite": true,
+          "grid_cell_count": 159,
+          "sigma_rms_member_std": 0.0008355387854966262,
+          "std_mean": 0.0007263851802301019,
+          "std_median": 0.0007024814311288821,
+          "std_p95": 0.0014816861642824978,
+          "tolerance": 0.0016376560195733873,
+          "variance_mean": 6.981250620691772e-07
+        },
+        "elevation_band_2": {
+          "finite": true,
+          "grid_cell_count": 80,
+          "sigma_rms_member_std": 0.0010440990670133258,
+          "std_mean": 0.0009791100658756516,
+          "std_median": 0.000980363909593087,
+          "std_p95": 0.0016145968732339797,
+          "tolerance": 0.0020464341713461185,
+          "variance_mean": 1.0901428617380974e-06
+        },
+        "elevation_band_3": {
+          "finite": true,
+          "grid_cell_count": 32,
+          "sigma_rms_member_std": 0.0015451336951399534,
+          "std_mean": 0.0014877573653621422,
+          "std_median": 0.0013841467782450866,
+          "std_p95": 0.0023854155168663745,
+          "tolerance": 0.0030284620424743084,
+          "variance_mean": 2.3874381358568464e-06
+        },
+        "elevation_band_4": {
+          "finite": true,
+          "grid_cell_count": 22,
+          "sigma_rms_member_std": 0.002752717564050743,
+          "std_mean": 0.0026593604982850546,
+          "std_median": 0.0026487130318568553,
+          "std_p95": 0.0037889797532943627,
+          "tolerance": 0.005395326425539457,
+          "variance_mean": 7.577453987433457e-06
+        },
+        "elevation_band_5": {
+          "finite": true,
+          "grid_cell_count": 4,
+          "sigma_rms_member_std": 0.003662076463074678,
+          "std_mean": 0.0036520718720062057,
+          "std_median": 0.003614108267457883,
+          "std_p95": 0.004004517274581768,
+          "tolerance": 0.007177669867626369,
+          "variance_mean": 1.3410804021405547e-05
+        },
+        "land": {
+          "finite": true,
+          "grid_cell_count": 768,
+          "sigma_rms_member_std": 0.0013897599028620483,
+          "std_mean": 0.0011684943920304827,
+          "std_median": 0.0010088696506234402,
+          "std_p95": 0.002535613436099098,
+          "tolerance": 0.002723929409609615,
+          "variance_mean": 1.93143258760313e-06
+        },
+        "sea": {
+          "finite": true,
+          "grid_cell_count": 9726,
+          "sigma_rms_member_std": 0.0009481240032167176,
+          "std_mean": 0.000801797952236498,
+          "std_median": 0.0006882616058494367,
+          "std_p95": 0.0017661605108648594,
+          "tolerance": 0.0018583230463047665,
+          "variance_mean": 8.989391254756944e-07
+        }
+      },
+      "6h": {
+        "canary": {
+          "finite": true,
+          "grid_cell_count": 10494,
+          "sigma_rms_member_std": 0.0010490404336421818,
+          "std_mean": 0.0009677842712514002,
+          "std_median": 0.0009887586816643783,
+          "std_p95": 0.001687552922459474,
+          "tolerance": 0.0020561192499386764,
+          "variance_mean": 1.100485831416177e-06
+        },
+        "elevation_band_0": {
+          "finite": true,
+          "grid_cell_count": 10190,
+          "sigma_rms_member_std": 0.0010523274244341296,
+          "std_mean": 0.0009725712233335227,
+          "std_median": 0.0009901819957043347,
+          "std_p95": 0.0016914694871009383,
+          "tolerance": 0.002062561751890894,
+          "variance_mean": 1.1073930082161688e-06
+        },
+        "elevation_band_1": {
+          "finite": true,
+          "grid_cell_count": 159,
+          "sigma_rms_member_std": 0.0008176353571811929,
+          "std_mean": 0.000687144750997596,
+          "std_median": 0.0006198498373614909,
+          "std_p95": 0.0014738145492261964,
+          "tolerance": 0.001602565300075138,
+          "variance_mean": 6.685275773128169e-07
+        },
+        "elevation_band_2": {
+          "finite": true,
+          "grid_cell_count": 80,
+          "sigma_rms_member_std": 0.0009814344532225938,
+          "std_mean": 0.0008487880101246236,
+          "std_median": 0.0007702163720990345,
+          "std_p95": 0.0014747192272004358,
+          "tolerance": 0.0019236115283162837,
+          "variance_mean": 9.632135859723318e-07
+        },
+        "elevation_band_3": {
+          "finite": true,
+          "grid_cell_count": 32,
+          "sigma_rms_member_std": 0.0009650478382073732,
+          "std_mean": 0.0008880895812392495,
+          "std_median": 0.0009788484667441707,
+          "std_p95": 0.0013970789283498067,
+          "tolerance": 0.0018914937628864514,
+          "variance_mean": 9.313173300287244e-07
+        },
+        "elevation_band_4": {
+          "finite": true,
+          "grid_cell_count": 22,
+          "sigma_rms_member_std": 0.001199168804686839,
+          "std_mean": 0.0011813512088894083,
+          "std_median": 0.0012203932737078816,
+          "std_p95": 0.0014151158462737895,
+          "tolerance": 0.0023503708571862045,
+          "variance_mean": 1.4380058221340624e-06
+        },
+        "elevation_band_5": {
+          "finite": true,
+          "grid_cell_count": 4,
+          "sigma_rms_member_std": 0.0014614250126714979,
+          "std_mean": 0.0014600712423369874,
+          "std_median": 0.001461387528429974,
+          "std_p95": 0.0015253106045033929,
+          "tolerance": 0.002864393024836136,
+          "variance_mean": 2.1357630676618884e-06
+        },
+        "land": {
+          "finite": true,
+          "grid_cell_count": 768,
+          "sigma_rms_member_std": 0.0011509290351045278,
+          "std_mean": 0.0009841597480682105,
+          "std_median": 0.000914780209980572,
+          "std_p95": 0.0019596009072644165,
+          "tolerance": 0.002255820908804874,
+          "variance_mean": 1.3246376438466393e-06
+        },
+        "sea": {
+          "finite": true,
+          "grid_cell_count": 9726,
+          "sigma_rms_member_std": 0.001040570034525169,
+          "std_mean": 0.000966491204605779,
+          "std_median": 0.0009896201501747165,
+          "std_p95": 0.00165102540054309,
+          "tolerance": 0.002039517267669331,
+          "variance_mean": 1.082785996751711e-06
+        }
+      }
+    }
+  },
+  "units": {
+    "T2": "K",
+    "U10": "m s-1",
+    "V10": "m s-1",
+    "precip": "mm accumulated over lead window",
+    "qv2": "kg kg-1"
+  },
+  "variables": [
+    "U10",
+    "V10",
+    "T2",
+    "qv2",
+    "precip"
+  ]
+}
