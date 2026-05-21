@@ -1,118 +1,112 @@
 # Sprint Tracker — Live Dashboard
 
-Manager-maintained. 30-min cadence. **Per user 2026-05-21 12:35: update this every time new agents dispatch so user can watch progress live.**
+Manager-maintained. 30-min cadence. **Update on every dispatch per user 12:35.**
 
-## Currently in flight (3 agents — 2 Opus + 1 codex)
+## Currently in flight (2 codex workers, all using multi-Enter watchdog)
 
-| Window | Sprint | AI | Phase | Started | Wall budget | File ownership |
-|---|---|---|---|---|---|---|
-| `reviewer-m6s2a` | M6-S2a Gen2 accessor + d02 boundary replay + shared I/O | Opus 4.7 xhigh | reviewer (multi-Enter watchdog) | 12:34 | ~15-25min | reviewer-report.md |
-| `reviewer-s3z` | M5-S3.z RRTMG intermediate-oracles | Opus 4.7 xhigh | reviewer (multi-Enter watchdog) | 12:34 | ~15-25min | reviewer-report.md |
-| `scout-m7plan` | M7 Canary operational v0 plan scout | codex gpt-5.5 xhigh | scout (multi-Enter watchdog) | 12:36 | 30-60min | NEW `m7-milestone-plan.md` (read-only otherwise) |
-
-**All 3 disjoint**: opus reviewers read existing files; m7plan scout writes a single new plan doc. No risk of merge conflicts.
-
-## Just dispatched (this swarm)
-
-- Three Opus reviewer prompts written + multi-Enter launchers + dispatched (m6s2a + s3z)
-- M7 scout prompt written + dispatched (parallel productive use of idle gpt capacity per user directive)
-- Two M6 sprint contracts pre-staged (M6-S2 + M6-S3) ready for dispatch the moment M6-S2a Opus accepts
-
-## M5 sprint table
-
-| Sprint | Worker attempts | Reviewer | Verdict | Merge | Status |
+| Window | Sprint | AI | Started | Wall | File ownership |
 |---|---|---|---|---|---|
-| M5-S0 scout | codex 1 | codex crit | ADR-005 ratified | `09a3738` | ✓ CLOSED |
-| M5-S1 Thompson | codex 6 | Opus + Gemini | ACCEPT (CGG11 caught by Gemini) | `d768194` `00e7ee8` | ✓ CLOSED |
-| M5-S1.x Thompson lookup tables | codex 1 | manager | partial; debt → M5-S1.y | `fe959d2` | ✓ CLOSED (partial) |
-| ADR-007 precision policy | codex 1 | Gemini (pre-quota) | ACCEPT | `445c49f` `6c9df22` | ✓ CLOSED |
-| M5-S2 MYNN attempt-1 | codex 1 | retroactive Opus | REJECTED | rescinded | ✗ REJECTED |
-| M5-S2 MYNN attempt-2 | codex 1 | Opus | ACCEPT (real WRF-EDMF nm-verified) | `fe64e8f` | ✓ CLOSED |
-| M5-S2.x MYNN follow-ups | codex 1 | Opus | ACCEPT (independent budget probe) | `9625d73` | ✓ CLOSED |
-| M5-S3 RRTMG attempt-1 | codex 1 | Opus | REJECT (synthetic tables) | rescinded | ✗ |
-| M5-S3 RRTMG attempt-2 | codex 1 | Opus | REJECT-bounded (clip-pinning) | rescinded | ✗ |
-| M5-S3 RRTMG attempt-3 | codex 1 | Opus | ACCEPT-AS-GROUNDWORK | `b1a3102` | ✓ CLOSED |
-| M5-S1.y Thompson HLO + residuals | codex 1 | Opus | ACCEPT-AS-GRAY-ZONE-CHECKPOINT | `0bd1fd2` | ✓ CLOSED |
-| M5-S3.x RRTMG Eddington transfer-solver | codex 1 | Opus | ACCEPT-AS-GROUNDWORK-PHASE-2 | merged | ✓ CLOSED |
-| M5-S3.y RRTMG setcoef+taumol+Planck | codex 1 | Opus | PARTIAL-ACCEPT-AS-GROUNDWORK-PHASE-3 | merged | ✓ CLOSED (4 permanent artifacts preserved) |
-| **M5-S3.z RRTMG intermediate-oracles** | codex 1 (done) | **Opus IN FLIGHT** | TBD | pending | 🟡 reviewer-s3z |
-| M5-S3.zz follow-up (SW or LW or harness) | queued — scope set by S3.z Opus | — | — | — | ⚪ queued |
-| M5-S1.z Thompson collision tables | queued — only if M6 RMSE flags microphysics | — | — | — | ⚪ optional |
+| `worker-s3zz` | M5-S3.zz RRTMG SW closeout (sfluxzen + setcoef precision + lax.scan SW fusion) | codex gpt-5.5 xhigh | 12:48 | 8-16h | `src/gpuwrf/physics/rrtmg_sw.py`, validation/intermediate_oracles, ADR-009 amend |
+| `worker-m6s2` | M6-S2 coupled forecast driver (1h→6h→24h on d02) | codex gpt-5.5 xhigh | 12:50 | 24-36h | NEW `coupling/{driver, boundary_apply}.py`, `state.py` boundary leaves, `physics_couplers` GridSpec, `m6_run_coupled_forecast.py`, pyproject.toml (STEP 0) |
 
-## M6 sprint table
+File-disjoint. Both have multi-Enter watchdog (Claude Code's 3-Enter pattern).
 
-| Sprint | Status | Wall | Notes |
+## Closed this tick (3 sprints + 1 scout — biggest tick yet)
+
+| Sprint | Verdict | Wall (worker + reviewer/critic) | Merge |
 |---|---|---|---|
-| M6 plan scout | ✓ CLOSED | 9m | `3392d04` codex scout |
-| M6 plan critic | ✓ CLOSED (RATIFY-WITH-AMENDMENTS) | 8m | codex critic; manager integrated 10 amendments |
-| M6-S1 coupled interface freeze | ✓ CLOSED (ACCEPT-WITH-MINOR-FOLLOWUPS, 12P/5F/0R) | 22m+9m | `2c6748a`; 5 prereqs bundled into M6-S2 contract |
-| **M6-S2a Gen2 accessor + boundary replay + shared I/O** | codex done; **Opus IN FLIGHT** | 12-18h+~20m | 🟡 reviewer-m6s2a — critical-path infrastructure |
-| M6-S2 coupled forecast driver (1h→6h→24h on d02) | contract READY; blocked on M6-S2a Opus ACCEPT | 24-36h | Bundles all 5 M6-S1 prereqs |
-| M6-S3 surface layer + bounded Noah-MP | contract READY; blocked on M6-S2 smoke | 30-48h | Manager recommends Option A (prescribed land state) |
-| M6-S4 Tier-2 coupled invariants | queued; parallel after M6-S2 smoke | 16-24h | External oracle (no self-consistency) |
-| M6-S5 ADR-007 4× verdict | queued; parallel after M6-S2 smoke | 12-20h | Uses M6-S2a CPU denominator (`-r4` caveat) |
-| M6-S6 Tier-3 TSC1.0 | queued | 18-30h | Controlled dt-refinement |
-| M6-S7 Tier-4 probtest prototype | queued | 18-30h | Stratified by land/sea/elevation |
-| M6-S8 operational Gen2 + closeout | queued — serial final | 24-36h | CPU-vs-obs binding gate |
+| **M5-S3.z RRTMG intermediate-oracles** | Opus **PARTIAL-ACCEPT-AS-GROUNDWORK-PHASE-4** | 24m + ~15m | merged; M5-S3.zz Option 1 binding |
+| **M6-S2a Gen2 accessor + d02 boundary replay + shared I/O** | Opus **ACCEPT-WITH-MINOR-FOLLOWUPS** (12P/5F/0R) | ~25m + ~18m | merged; M6-S2..S8 UNBLOCKED |
+| **M7 milestone plan scout** | DONE (34 KB plan written) | 9m 51s | branch `scout/codex/m7-milestone-plan`; critic + manager integration queued |
 
-## M7 sprint table (pre-flight)
+## M5 sprint table (UPDATED)
 
-| Sprint | Status | Notes |
+| Sprint | Worker | Reviewer | Verdict | Status |
+|---|---|---|---|---|
+| M5-S0 scout → M5-S2.x MYNN follow-ups | (see prior tick — 7 sprints closed) | | | ✓ all CLOSED |
+| M5-S1.y Thompson HLO + residuals | codex 1 | Opus | ACCEPT-AS-GRAY-ZONE-CHECKPOINT | ✓ CLOSED |
+| M5-S3.x RRTMG Eddington transfer-solver | codex 1 | Opus | ACCEPT-AS-GROUNDWORK-PHASE-2 | ✓ CLOSED |
+| M5-S3.y RRTMG setcoef+taumol+Planck-1 | codex 1 | Opus | PARTIAL-ACCEPT-AS-GROUNDWORK-PHASE-3 | ✓ CLOSED |
+| M5-S3.z RRTMG intermediate-oracles | codex 1 | Opus | PARTIAL-ACCEPT-AS-GROUNDWORK-PHASE-4 | ✓ CLOSED (just now) |
+| **M5-S3.zz RRTMG SW closeout** | codex 1 | pending | TBD | 🟡 worker IN FLIGHT |
+| M5-S3.zzz RRTMG LW closeout | queued — after S3.zz | — | — | ⚪ queued (advance-bound to Option 2) |
+| M5-S1.z Thompson collision tables | optional | — | — | ⚪ optional |
+
+## M6 sprint table (UPDATED)
+
+| Sprint | Status | Wall |
 |---|---|---|
-| **M7 plan scout** | **codex IN FLIGHT** (12:36) | 🟡 scout-m7plan — pre-stages M7 contracts |
-| M7 plan critic | queued — after scout closes | Manager-pattern: scout → critic → manager amendments |
-| M7-S0..Sn Canary operational v0 | queued — defined by M7 plan integration | 3km then 1km pipeline, daily-run, ops verification |
+| M6 plan scout + critic + manager-amendments | ✓ all CLOSED | 17m + 8m + manager |
+| M6-S1 coupled interface freeze | ✓ CLOSED (ACCEPT-WITH-MINOR-FOLLOWUPS, 12P/5F/0R) | 22m + 9m |
+| M6-S2a Gen2 accessor + boundary replay + shared I/O | ✓ CLOSED (ACCEPT-WITH-MINOR-FOLLOWUPS, 12P/5F/0R) | 25m + 18m |
+| **M6-S2 coupled forecast driver** | 🟡 worker IN FLIGHT (Phase 0: pyproject.toml zarr+jax then 1h smoke → 6h → 24h) | 24-36h |
+| M6-S3 surface layer + bounded Noah-MP | queued — depends on M6-S2 smoke | 30-48h |
+| M6-S4 Tier-2 coupled invariants | READY (per M6-S2a Opus) | 16-24h |
+| M6-S5 ADR-007 4× verdict | READY (with `-r4` precision + denominator basis prereqs) | 12-20h |
+| M6-S6 Tier-3 TSC1.0 | READY | 18-30h |
+| M6-S7 Tier-4 probtest prototype | READY | 18-30h |
+| M6-S8 operational Gen2 + closeout | queued — serial final | 24-36h |
+
+## M7 sprint table (NEW)
+
+| Sprint | Status | Wall |
+|---|---|---|
+| **M7 milestone plan scout** | ✓ DONE (34 KB plan written, branch `scout/codex/m7-milestone-plan`) | 10m |
+| M7 plan critic | queued — codex critical-review of scout's plan | 30-60min |
+| M7 plan manager-amendments | queued — manager integration after critic | 30min |
+| M7-S0..Sn Canary operational v0 | queued — defined by integrated M7 plan | TBD |
 
 ## M8 (queued, post-M7)
 
-| Sprint | Status | Notes |
+| Sprint | Status |
+|---|---|
+| M8 forkable release | queued |
+
+## What can run in parallel NOW (utility analysis)
+
+| Opportunity | Status | Dispatch when |
 |---|---|---|
-| M8 forkable release | queued | docs, packaging, public review |
+| M7 plan critic (codex critical-review of scout plan) | READY | NOW or next tick (uses idle codex capacity) |
+| M5-S1.z Thompson collision tables | Held | Only if M6 RMSE flags microphysics drift |
+| Skill-patch consolidation | Held | Lower priority than M7 plan track |
+| Gemini bug-chase | Quota-conserved for M7 ops | — |
 
-## Path to PROJECT_CONSTITUTION end goal
+**Decision**: at next watchman, if rate-limit allows, dispatch M7 plan critic. Currently: 2 codex active (s3zz + m6s2). Adding M7 critic = 3 codex parallel = our tested limit. Could dispatch now to keep momentum.
+
+## Big-picture path to PROJECT_CONSTITUTION end goal
 
 ```
-NOW (3 agents) → M6-S2a + M5-S3.z Opus verdicts (+~20min) + M7 plan scout (+~45min)
-  → +24-48h: M5-S3.zz + M6-S2 + M6-S3 parallel dispatch (3 codex)
-  → +18-30h: M6-S4 + M6-S5 + M6-S6 + M6-S7 4-way parallel
-  → +24-36h: M6-S8 closeout
-  → M6 GREEN → M7 implementation (plan already prepared by scout)
-  → M7 GREEN → M8 forkable release
+NOW (2 codex + 1 done) → +8-16h: M5-S3.zz close → +Opus → M5-S3.zzz dispatch (LW closeout)
+NOW (2 codex)         → +24-36h: M6-S2 close → +Opus → M6-S3 dispatch (surface+Noah-MP)
+After M5-S3.zzz close → +Opus → M5 prologue Phase-5 FINAL CLOSE → RRTMG PARITY
+After M6-S3 close     → M6-S4/S5/S6/S7 4-way parallel (18-30h) → M6-S8 closeout (24-36h)
+M6 GREEN → M7 implementation (plan integration ready) → M8 forkable release
 ```
 
-**Calendar**: M6 close 5-8 days from now (faster than earlier estimate thanks to parallel M7 prep); end-goal landing **~3-4 weeks**.
+**Calendar update**: M6 close 4-7 days from now (faster — M6-S2a already done; M5-S3.zz is smaller); end-goal landing **~3-4 weeks**.
 
 ## File-ownership snapshot
 
-- `src/gpuwrf/contracts/state.py, precision.py`: FROZEN by M6-S1 (M6-S2 will add boundary leaves)
-- `src/gpuwrf/coupling/physics_couplers.py`: FROZEN by M6-S1 (M6-S2 threads GridSpec)
-- `src/gpuwrf/coupling/{driver.py, boundary_apply.py}`: NEW, M6-S2 owns
-- `src/gpuwrf/io/**`: M6-S2a OWNS (in flight Opus review)
-- `src/gpuwrf/physics/thompson_*, mynn_*`: M5-S1.y/S2.x CLOSED, frozen (M5-S1.z optional reopen)
-- `src/gpuwrf/physics/rrtmg_*`: M5-S3.z in flight Opus; M5-S3.zz to reopen
-- `src/gpuwrf/physics/{surface_layer,noah_mp}.py`: NEW, M6-S3 owns (queued)
+- `src/gpuwrf/contracts/state.py`: M6-S2 extending now (boundary leaves)
+- `src/gpuwrf/contracts/precision.py`: FROZEN
+- `src/gpuwrf/coupling/{physics_couplers, __init__}.py`: M6-S1 froze; M6-S2 threading GridSpec
+- `src/gpuwrf/coupling/{driver, boundary_apply}.py`: NEW, M6-S2 owns
+- `src/gpuwrf/io/**`: M6-S2a OWNS (closed)
+- `src/gpuwrf/physics/thompson_*, mynn_*`: CLOSED, frozen (M5-S1.z optional reopen)
+- `src/gpuwrf/physics/rrtmg_sw.py`: M5-S3.zz reopening (SW closeout)
+- `src/gpuwrf/physics/rrtmg_lw.py`: FROZEN until M5-S3.zzz
+- `src/gpuwrf/physics/{surface_layer, noah_mp}.py`: NEW, M6-S3 owns (queued)
 - `src/gpuwrf/dynamics/**`: M4 frozen
-- `src/gpuwrf/validation/{tier2,tier3,tier4}_coupled.py`: M6-S4/S6/S7 own (queued)
+- `pyproject.toml`: M6-S2 adding zarr+jax (STEP 0 of worker)
 
 ## Watchman policy
 
 - 30-min cadence per user
-- **Routine: update this table on EVERY new agent dispatch** so user has live visibility
-- Next watchman ~13:05
+- Next ~13:25
+- M7 plan critic dispatch decision at next tick (or now if rate-limit clear)
 
-## Recent ticks
+## Recent ticks (compact)
 
-- 2026-05-21 12:08-12:10 — watchman #5 (user-triggered): M5-S3.y + M6-S1 closed; M5-S3.z + M6-S2a dispatched; watchdog fix encoded
-- 2026-05-21 12:30-12:35 — watchman #6 (user-triggered via 2 AGENT REPORTs): both workers reported (single Enter still unreliable — manager Enter'd manually); 2 Opus reviewers dispatched with multi-Enter watchdog; M6-S2 + M6-S3 contracts pre-staged
-- 2026-05-21 12:36 — **M7 scout dispatched in parallel** (codex idle capacity used for forward motion); table-update routine encoded per user directive
-- Next: 30-min tick at ~13:05
-
-## Manager utility opportunities for "what else can happen in parallel?"
-
-| Idle capacity opportunity | Status |
-|---|---|
-| M7 plan scout (next milestone planning) | ✓ DISPATCHED NOW |
-| M5-S1.z Thompson collision tables (speculative) | Held — only if M6 RMSE flags |
-| Skill-patch consolidation (formalize watchdog/multi-Enter/GROUNDWORK-PHASE-N patterns) | Held — useful but lower priority than M7 planning |
-| Gemini bug-chase | Held — quota-conserved for M7 operational |
-| pyproject.toml zarr add | Manager can do this directly; will batch with next commit |
+- 12:08-12:40: M5-S3.z worker → Opus closeout; M6-S1 closeout; M5-S3.y closeout; M5-S3.z worker + M6-S2a worker dispatched; M6-S2a Opus dispatched; M5-S3.z Opus dispatched; M7 plan scout dispatched
+- 12:40-12:55 (this tick): M5-S3.z Opus + M6-S2a Opus + M7 scout ALL closed; M5-S3.zz + M6-S2 codex workers dispatched (2 parallel, multi-Enter watchdog)
+- Next: 13:25
