@@ -1,93 +1,91 @@
 # Sprint Tracker — Live Dashboard
 
-Manager-maintained. 20-min cadence (AFK).
+Manager-maintained. 30-min cadence overnight (per 2026-05-23 standing order).
+Manager: Claude Opus 4.7 (1M-context). Replaces previous manager 2026-05-23 ~23:00.
 
-## Currently in flight (3 codex parallel — at cap, on critical-path)
+## Currently in flight (3 codex parallel, file-disjoint, all dispatched 2026-05-22 23:48-23:49 UTC)
 
-| Window | Sprint | AI | Started | Wall | File ownership |
+| Window | Sprint | Role | AI | Wall budget | File ownership |
 |---|---|---|---|---|---|
-| `worker-s3zzzz` | M5-S3.zzzz SW cldprmc+spcvmc broadband | codex gpt-5.5 xhigh | 14:38 | 16-32h | `rrtmg_sw.py` only + harness `cldprmc_sw_*`+`spcvmc_*` records |
-| `worker-s3zzzzz` | M5-S3.zzzzz LW cldprmc+rtrnmc broadband (NEW) | codex gpt-5.5 xhigh | 15:25 | 16-32h | `rrtmg_lw.py` only + harness `cldprmc_lw_*`+`rtrnmc_*` records |
-| `worker-m6s3` | M6-S3 surface layer + bounded Noah-MP (NEW) | codex gpt-5.5 xhigh | 15:26 | 30-48h | NEW `physics/surface_layer.py, noah_mp.py`, `wrf_sfclay_harness.f90`, ADR-012+013 |
+| `2:2` | `2026-05-23-m6x-c2-pivot-critic` | critical-review | codex gpt-5.5 xhigh | 60-120 min | READ-ONLY → `.agent/sprints/.../reviewer-report.md` |
+| `2:3` | `2026-05-23-m6x-dycore-alt-methods-scout` | scout (worker) | codex gpt-5.5 xhigh | 60-120 min | READ-ONLY → `.agent/sprints/.../worker-report.md` |
+| `2:4` | `2026-05-23-m6x-vertical-acoustic-analytic-oracle` | worker | codex gpt-5.5 xhigh | 4-6 h | `tests/test_m6x_vertical_acoustic_oracle.py`, `src/gpuwrf/validation/analytic_oracles/vertical_linear_acoustic.py` |
 
-**3-way disjointness verified**:
-- s3zzzz: rrtmg_sw.py + cldprmc_sw_/spcvmc_ harness records + lw_/sw_ validator names (interface-freeze)
-- s3zzzzz: rrtmg_lw.py + cldprmc_lw_/rtrnmc_ harness records + lw_ validator names (interface-freeze)
-- m6s3: NEW physics/surface_layer + noah_mp + sfclay harness; reads Gen2 via io.validation
+**Disjointness**: critic + scout are read-only; oracle writes only NEW files under tests/ and a new `validation/analytic_oracles/` subpackage. No file collision possible.
 
-## Closed this tick (2 BIG Opus verdicts)
+## Recent decisions (manager hand-over 2026-05-23 ~23:00)
 
-| Sprint | Verdict |
+| Time | Decision | Commit |
+|---|---|---|
+| 23:14 | HALT `worker/codex/m6x-c2-A2y-wrf-smallstep-parity` per c2-A2.x reviewer NEEDS-HYBRID-PIVOT verdict | `739d6a9` |
+| 23:14 | ADR-022 DRAFT (hybrid JAX IMEX vertical operator, manager's working recommendation) | `739d6a9` |
+| 23:14 | ADR-021 DRAFT (full WRF small-step shape vertical port, opposing alternative) | `739d6a9` |
+| 23:18 | Three orthogonal pivot sprints dispatched | (sprint contracts) |
+
+## Upstream context the manager inherited
+
+| Reference | Verdict |
 |---|---|
-| **M6-S2 coupled forecast driver** | Opus **ACCEPT-WITH-MINOR-FOLLOWUPS** (22 R-findings: 16P/6F-disclosed) |
-| **M5-S3.zzz LW closeout** | Opus **PARTIAL-ACCEPT-AS-GROUNDWORK-PHASE-LW-TAUMOL** (16/16 bands taug+fracs PASS intermediate; broadband still fails → S3.zzzzz binding) |
+| `2026-05-22-c2-A2-A2x-bundle-review/reviewer-report.md` (Opus 4.7, 9bca47c) | NEEDS-HYBRID-PIVOT (R1, R2, R5, R7 BLOCKING; horizontal half ACCEPT) |
+| `2026-05-22-c2-architecture-stepback/worker-report.md` (codex) | Continue c2 with hybrid as fallback (probabilities table §2) |
+| `2026-05-22-c2-methodology-stepback/worker-report.md` (gemini) | WRF-port direction is fastest viable path (argues for ADR-021) |
 
-## M6-S2 reviewer 3 critical disclosures (binding downstream)
+## Critic decision tree (after AGENT REPORTs return)
 
-- R-16: **1s dycore_dt_s cap** is permanent guard, dynamics:physics 60× mismatch → **M6-S5 cannot use wall numbers; M6-S7 must lift cap for real RMSE**
-- R-17: **Finite-state guard** saturates all clips at 24h → **M6-S4 must measure conservation BEFORE sanitize_state runs**
-- R-18: **mu_bdy first-step-replay** (Gen2 has only wrfinput_d02) → **M6-S3 prereq F-S3-2: extend accessor for wrfout_d02_* OR document M6-S8 interior-only**
+1. **If critic returns RATIFY-ADR-022** AND scout returns RECOMMEND-PROCEED-WITH-ADR-022 (or NEUTRAL):
+   - Ratify ADR-022, drop the DRAFT suffix, status PROPOSED.
+   - Dispatch the M6.x-c2-vert-hybrid implementation worker (codex) + Canary 3 km curvilinear smoke worker (codex) in parallel.
+2. **If critic returns RATIFY-ADR-021** OR scout returns RECOMMEND-PROCEED-WITH-ADR-021:
+   - Ratify ADR-021, status PROPOSED.
+   - Dispatch the WRF small-step Fortran harness sprint as the prerequisite, in parallel with carry-expansion contract draft.
+3. **If critic and scout disagree** (one RATIFY-022, other RATIFY-021):
+   - Dispatch Gemini (reactive-only side-runner) for the tie-break per `dispatching-gemini.md`.
+4. **If critic returns RATIFY-NEITHER** or scout returns RECOMMEND-THIRD-OPTION:
+   - Read the third-option proposal, write ADR-023 DRAFT, dispatch a second critic round.
 
-## M5 sprint table (live)
+In all branches, the analytic-oracle worker (window 2:4) keeps running — its deliverable is needed regardless of which pivot lands.
 
-| Sprint | Status |
-|---|---|
-| M5-S0 through M5-S3.zzz (16 sprints) | ✓ all CLOSED |
-| **M5-S3.zzzz SW cldprmc+spcvmc broadband** | 🟡 codex worker |
-| **M5-S3.zzzzz LW cldprmc+rtrnmc broadband** | 🟡 codex worker (NEW, parallel under interface-freeze) |
-| M5-S1.z Thompson collision tables | ⚪ optional |
+## Closed this morning (pre-handover) — kept for continuity
 
-**M5 RRTMG PARITY** = S3.zzzz + S3.zzzzz BOTH close (parallel ~24-48h instead of sequential 48-96h)
+The previous manager's tracker said "all-quiet awaiting M6 prologue dispatch." Since then (per `git log --all --since 2026-05-21`):
+- M6-S1 through M6-S4 implementation sprints closed with various verdicts (S2 24h forecast PASS d02 FP32; S3 PARTIAL surface+Noah-MP; S4 Tier-2 PASS; S5 FAIL NaN-explode; S6 SCAFFOLD-PARTIAL; S7 SCAFFOLD-DEFER-M7)
+- M6.5-D1 Gen2 backfill + ADR-016 closed
+- M7-S0a operational/data prologue closed
+- M6.x WRF-canonical dycore: c1 path burned A1-A11 + 4 bughunts + Klemp-Skamarock contingency → c2 architecture (ADR-020) → c2-A1, c2-A1', c2-A1'' all ACCEPT → c2-A2 horizontal PGF ACCEPT, c2-A2.x vertical-acoustic REJECT
+- All M5 prologue physics work closed (Thompson HLO/tables, MYNN follow-ups, RRTMG s3x→s3y→s3z→s3zz→s3zzz→s3zzzz SW PARITY + s3zzzzz LW PARITY)
 
-## M6 sprint table (live)
+## Watchman cadence
 
-| Sprint | Status |
-|---|---|
-| M6 plan + S1 + S2a + S2 | ✓ all CLOSED |
-| **M6-S3 surface + Noah-MP minimum** | 🟡 codex worker (NEW; F-S3-1/2/3 prereqs bundled) |
-| M6-S4 Tier-2 coupled (must measure PRE-sanitize_state) | ⚪ queued |
-| M6-S5 ADR-007 4× verdict (F-S5-1/2/3 prereqs: lift dycore cap, end-to-end wall, denominator choice) | ⚪ queued |
-| M6-S6 Tier-3 TSC1.0 | ⚪ queued |
-| M6-S7 Tier-4 probtest (must run with cap+guard disabled) | ⚪ queued |
-| M6-S8 operational Gen2 + closeout | ⚪ queued |
+30-min ScheduleWakeup loop tick during the user-AFK window:
+1. `tmux list-windows -t 2` — confirm ephemeral windows only on `:2`, `:3`, `:4` until they self-destruct
+2. Capture each non-protected pane's last 8 lines to verify "Working (...s)" status or report-on-disk
+3. Check `.agent/sprints/.../*-done` markers + `*-exit` files for silent completions
+4. Update this tracker
+5. If any agent has finished without firing AGENT REPORT, manually capture report from disk + kill window
 
-## M7 sprint table
+Per user standing order 2026-05-23: windows 0 and 1 of session 2 stay protected (manager + user spare); windows 2+ are ephemeral and torn down on completion.
 
-| Sprint | Status |
-|---|---|
-| M7 plan: scout + critic + manager-amendments | ✓ all CLOSED |
-| M7-S0..S8 | ⚪ queued |
+## Parallelism budget
 
-## Big-picture critical path (refined)
+- ≤3 codex parallel — currently AT cap (3/3 codex).
+- Opus available for review/critic/tool-building/test-running roles (separate pool).
+- Gemini reactive-only (limited tokens) — engaged on architecture tiebreak only.
 
-```
-NOW (3 codex parallel)
-  ├─ M5-S3.zzzz SW broadband → Opus → SW PARITY
-  ├─ M5-S3.zzzzz LW broadband → Opus → LW PARITY (parallel under interface-freeze)
-  └─ M6-S3 surface+Noah-MP → Opus → first operationally-meaningful U10/V10/T2/qv2
+## Sprint outcome ledger (since manager handover)
 
-When (SW PARITY + LW PARITY): M5 RRTMG complete → ADR-009 final
-When M6-S3 close: M6-S4/S5/S6/S7 4-way parallel → M6-S8 → M6 GREEN
-M6 GREEN + M5 RRTMG complete → M6-S8 operational T2 binding gate meaningful → M7-S0 dispatch
-M7 GREEN → M8 release
-```
-
-**Calendar refined**: M5 RRTMG PARITY ~24-48h (SW+LW parallel); M6 close 5-8 days; **end-goal landing ~2.5-3 weeks** (further accelerated by 3-way parallel)
-
-## File-ownership snapshot
-
-- `coupling/{driver, boundary_apply, physics_couplers}.py`: M6-S2 LANDED; M6-S3 will touch surface_adapter only
-- `contracts/{state, precision}.py`: M6-S2 amended; FROZEN
-- `physics/rrtmg_sw.py`: M5-S3.zzzz worker active
-- `physics/rrtmg_lw.py`: M5-S3.zzzzz worker active (parallel, disjoint)
-- `physics/surface_layer.py, noah_mp.py`: NEW M6-S3 worker active
-- `scripts/wrf_rrtmg_harness.f90`: BOTH SW + LW workers extending (interface-freeze names enforced)
-- `scripts/wrf_sfclay_harness.f90`: NEW M6-S3
-- `io/**`: M6-S2a CLOSED + accessor; M6-S3 may extend for land state
-- Other physics: CLOSED, frozen
+| Sprint | Result | Branch / commit |
+|---|---|---|
+| 2026-05-22 c2-A2-A2x bundle review (Opus) | NEEDS-HYBRID-PIVOT | `reviewer/opus/c2-A2-A2x-bundle 9bca47c` |
+| 2026-05-22 c2-methodology-stepback (Gemini) | "WRF-port is fastest viable" | `reviewer/gemini/c2-methodology-stepback 0b8ae9b` |
+| 2026-05-22 c2-architecture-stepback (Codex) | Continue c2; hybrid as fallback | `worker/codex/c2-architecture-stepback 8d97c43` |
+| 2026-05-23 m6x-c2-pivot-halt | HALT recorded on main | merge commit (this commit) |
 
 ## Recent ticks
 
-- 14:58: M6-S2 + S3.zzz workers DONE; 2 Opus reviewers dispatched
-- 15:25 (this tick): both Opus verdicts landed (ACCEPT + PARTIAL); **M6-S3 + M5-S3.zzzzz workers dispatched in parallel**; 3 codex parallel cap honored
-- Next: 15:45 (20-min cadence)
+- 2026-05-22 ~19:21 — c2-A2 bundle review verdict NEEDS-HYBRID-PIVOT (previous manager)
+- 2026-05-22 ~23:00 — manager handover; new manager (Opus 4.7) takes over
+- 2026-05-22 ~23:14 — ADR-021 + ADR-022 drafts written; c2-A2.y HALT marker on main
+- 2026-05-22 ~23:48 — 3 parallel sprints dispatched (critic + scout + oracle worker)
+- 2026-05-22 ~23:54 — manager scheduling 30-min watchman loop; user AFK for the night
+
+— Manager (Claude Opus 4.7 1M-context), 2026-05-23 ~00:00 UTC
