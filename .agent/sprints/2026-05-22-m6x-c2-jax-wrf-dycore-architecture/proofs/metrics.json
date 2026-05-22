@@ -1,0 +1,120 @@
+{
+  "acceptance_criterion": "AC2",
+  "analytic_flat_fixture": {
+    "msftx": {
+      "dtype": "float64",
+      "shape": [
+        8,
+        8
+      ]
+    },
+    "msfty": {
+      "dtype": "float64",
+      "shape": [
+        8,
+        8
+      ]
+    },
+    "msfux": {
+      "dtype": "float64",
+      "shape": [
+        8,
+        9
+      ]
+    },
+    "msfuy": {
+      "dtype": "float64",
+      "shape": [
+        8,
+        9
+      ]
+    },
+    "msfvx": {
+      "dtype": "float64",
+      "shape": [
+        9,
+        8
+      ]
+    },
+    "msfvy": {
+      "dtype": "float64",
+      "shape": [
+        9,
+        8
+      ]
+    },
+    "provenance": "analytic-flat",
+    "summary_minmax": [
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ]
+  },
+  "jit_audit": {
+    "function": "gpuwrf.dynamics.metrics.metric_minmax",
+    "host_callback_free": true,
+    "jaxpr_contains": "elementwise-reductions"
+  },
+  "wrf_fixture": {
+    "available": true,
+    "msftx": {
+      "dtype": "float64",
+      "shape": [
+        66,
+        159
+      ]
+    },
+    "msfty": {
+      "dtype": "float64",
+      "shape": [
+        66,
+        159
+      ]
+    },
+    "msfux": {
+      "dtype": "float64",
+      "shape": [
+        66,
+        160
+      ]
+    },
+    "msfuy": {
+      "dtype": "float64",
+      "shape": [
+        66,
+        160
+      ]
+    },
+    "msfvx": {
+      "dtype": "float64",
+      "shape": [
+        67,
+        159
+      ]
+    },
+    "msfvy": {
+      "dtype": "float64",
+      "shape": [
+        67,
+        159
+      ]
+    },
+    "path": "/mnt/data/canairy_meteo/runs/wrf_l3/20260520_18z_l3_24h_20260521T045847Z/wrfinput_d02",
+    "provenance": "wrfinput:/mnt/data/canairy_meteo/runs/wrf_l3/20260520_18z_l3_24h_20260521T045847Z/wrfinput_d02:nz=44:eta=(45,)",
+    "summary_minmax": [
+      0.999048113822937,
+      0.9994949698448181,
+      0.999048113822937,
+      0.9994949698448181,
+      0.999048113822937,
+      0.9994950294494629,
+      0.9990480542182922,
+      0.9995021820068359
+    ]
+  }
+}

@@ -91,6 +91,160 @@ def _leaf_nbytes(leaves: Iterable[jax.Array]) -> int:
 
 
 @jax.tree_util.register_pytree_node_class
+class BaseState:
+    """Read-only WRF base-state fields separated from prognostic State.
+
+    These fields may vary over terrain but do not belong in the high-frequency
+    prognostic timestep carry. They are explicit so c2 pressure/geopotential
+    helpers do not infer static WRF quantities from reduced c1 state.
+    """
+
+    __slots__ = ("pb", "phb", "theta_base", "mu_base")
+
+    def __init__(self, pb: jax.Array, phb: jax.Array, theta_base: jax.Array, mu_base: jax.Array) -> None:
+        self.pb = pb
+        self.phb = phb
+        self.theta_base = theta_base
+        self.mu_base = mu_base
+
+    @classmethod
+    def zeros(cls, grid: GridSpec) -> "BaseState":
+        """Allocates base-state placeholders once on the first visible GPU."""
+
+        device = _gpu_device()
+        nz, ny, nx = grid.nz, grid.ny, grid.nx
+        return cls(
+            _zeros((nz, ny, nx), "p", device),
+            _zeros((nz + 1, ny, nx), "ph", device),
+            _zeros((nz, ny, nx), "theta", device),
+            _zeros((ny, nx), "mu", device),
+        )
+
+    def replace(self, **updates) -> "BaseState":
+        """Returns an updated base-state pytree with explicit field names."""
+
+        values = {name: getattr(self, name) for name in self.__slots__}
+        values.update(updates)
+        return type(self)(**values)
+
+    def bytes(self) -> int:
+        """Reports persistent base-state bytes for proof-object generation."""
+
+        leaves, _ = jax.tree_util.tree_flatten(self)
+        return _leaf_nbytes(leaves)
+
+    def tree_flatten(self):
+        """Presents base-state arrays as JAX leaves."""
+
+        return tuple(getattr(self, name) for name in self.__slots__), None
+
+    @classmethod
+    def tree_unflatten(cls, aux, children):
+        """Rebuilds BaseState after JAX transformations."""
+
+        del aux
+        return cls(*children)
+
+
+@jax.tree_util.register_pytree_node_class
+class BoundaryState:
+    """Time-interpolated lateral forcing separated from prognostic State.
+
+    The current M6 State still carries legacy six-leaf boundary arrays for
+    compatibility. c2 code should use this object so future boundary replay can
+    add pressure, base-pressure, and vertical-velocity forcing without widening
+    the prognostic timestep state.
+    """
+
+    __slots__ = ("u", "v", "w", "theta", "qv", "p", "pb", "ph", "mu")
+
+    def __init__(
+        self,
+        u: jax.Array,
+        v: jax.Array,
+        w: jax.Array,
+        theta: jax.Array,
+        qv: jax.Array,
+        p: jax.Array,
+        pb: jax.Array,
+        ph: jax.Array,
+        mu: jax.Array,
+    ) -> None:
+        self.u = u
+        self.v = v
+        self.w = w
+        self.theta = theta
+        self.qv = qv
+        self.p = p
+        self.pb = pb
+        self.ph = ph
+        self.mu = mu
+
+    @classmethod
+    def zeros(cls, grid: GridSpec, *, n_times: int = 1) -> "BoundaryState":
+        """Allocates a complete boundary forcing schema once on the first GPU."""
+
+        device = _gpu_device()
+        nz = grid.nz
+        boundary_side = max(grid.nx + 1, grid.ny + 1)
+        shape_mass = (n_times, 4, nz, boundary_side)
+        shape_face = (n_times, 4, nz + 1, boundary_side)
+        shape_mu = (n_times, 4, 1, boundary_side)
+        return cls(
+            _zeros(shape_mass, "u", device),
+            _zeros(shape_mass, "v", device),
+            _zeros(shape_face, "w", device),
+            _zeros(shape_mass, "theta", device),
+            _zeros(shape_mass, "qv", device),
+            _zeros(shape_mass, "p", device),
+            _zeros(shape_mass, "p", device),
+            _zeros(shape_face, "ph", device),
+            _zeros(shape_mu, "mu", device),
+        )
+
+    @classmethod
+    def from_legacy_state(cls, state: "State") -> "BoundaryState":
+        """Builds the new boundary object from the current six legacy leaves."""
+
+        return cls(
+            u=state.u_bdy,
+            v=state.v_bdy,
+            w=jnp.zeros((state.u_bdy.shape[0], 4, state.ph_bdy.shape[2], state.u_bdy.shape[3]), dtype=state.w.dtype),
+            theta=state.theta_bdy,
+            qv=state.qv_bdy,
+            p=jnp.zeros_like(state.theta_bdy),
+            pb=jnp.zeros_like(state.theta_bdy),
+            ph=state.ph_bdy,
+            mu=state.mu_bdy,
+        )
+
+    def replace(self, **updates) -> "BoundaryState":
+        """Returns an updated boundary pytree with explicit field names."""
+
+        values = {name: getattr(self, name) for name in self.__slots__}
+        values.update(updates)
+        return type(self)(**values)
+
+    def bytes(self) -> int:
+        """Reports persistent boundary bytes for proof-object generation."""
+
+        leaves, _ = jax.tree_util.tree_flatten(self)
+        return _leaf_nbytes(leaves)
+
+    def tree_flatten(self):
+        """Presents boundary arrays as JAX leaves."""
+
+        return tuple(getattr(self, name) for name in self.__slots__), None
+
+    @classmethod
+    def tree_unflatten(cls, aux, children):
+        """Rebuilds BoundaryState after JAX transformations."""
+
+        del aux
+        return cls(*children)
+
+
+@jax.tree_util.register_pytree_node_class
 class Tendencies:
     """Pytree of preallocated tendency buffers matching every prognostic state field."""
 

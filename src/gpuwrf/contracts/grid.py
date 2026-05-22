@@ -1,4 +1,4 @@
-"""Grid contract for the M3 GPU-resident state skeleton."""
+"""Grid contract for the GPU-resident dycore state skeleton."""
 
 from __future__ import annotations
 
@@ -51,6 +51,192 @@ class VerticalCoord:
     eta_levels: jax.Array
 
 
+@jax.tree_util.register_pytree_node_class
+@dataclass(frozen=True)
+class DycoreMetrics:
+    """Static WRF dycore metric and vertical-coordinate arrays.
+
+    Map factors and hybrid-eta coefficients live here, not in the timestep
+    ``State`` carry. This follows the c2 architecture split: static grid data is
+    device-resident, while prognostic fields remain separate SoA leaves.
+    """
+
+    msftx: jax.Array
+    msfty: jax.Array
+    msfux: jax.Array
+    msfuy: jax.Array
+    msfvx: jax.Array
+    msfvy: jax.Array
+    c1h: jax.Array
+    c2h: jax.Array
+    c3h: jax.Array
+    c4h: jax.Array
+    c1f: jax.Array
+    c2f: jax.Array
+    c3f: jax.Array
+    c4f: jax.Array
+    dn: jax.Array
+    dnw: jax.Array
+    rdn: jax.Array
+    rdnw: jax.Array
+    p_top: jax.Array
+    provenance: str = "analytic-flat"
+
+    def __post_init__(self) -> None:
+        """Normalizes scalar metadata and enforces fp64 metric storage."""
+
+        for name in self._array_names():
+            array = jnp.asarray(getattr(self, name), dtype=jnp.float64)
+            object.__setattr__(self, name, array)
+            if array.dtype != jnp.float64:
+                raise TypeError(f"DycoreMetrics.{name} must be fp64")
+        if tuple(self.p_top.shape) not in ((), (1,)):
+            raise ValueError("DycoreMetrics.p_top must be scalar or shape (1,)")
+
+    @staticmethod
+    def _array_names() -> tuple[str, ...]:
+        """Returns metric array field names in pytree order."""
+
+        return (
+            "msftx",
+            "msfty",
+            "msfux",
+            "msfuy",
+            "msfvx",
+            "msfvy",
+            "c1h",
+            "c2h",
+            "c3h",
+            "c4h",
+            "c1f",
+            "c2f",
+            "c3f",
+            "c4f",
+            "dn",
+            "dnw",
+            "rdn",
+            "rdnw",
+            "p_top",
+        )
+
+    @classmethod
+    def flat(
+        cls,
+        *,
+        ny: int,
+        nx: int,
+        nz: int,
+        eta_levels: jax.Array,
+        top_pressure_pa: float,
+        provenance: str = "analytic-flat",
+    ) -> "DycoreMetrics":
+        """Builds a flat, unit-map-factor fixture for idealized tests."""
+
+        eta = jnp.asarray(eta_levels, dtype=jnp.float64)
+        eta_mass = 0.5 * (eta[:-1] + eta[1:])
+        dn = jnp.abs(eta[:-1] - eta[1:])
+        rdn = 1.0 / dn
+        return cls(
+            msftx=jnp.ones((ny, nx), dtype=jnp.float64),
+            msfty=jnp.ones((ny, nx), dtype=jnp.float64),
+            msfux=jnp.ones((ny, nx + 1), dtype=jnp.float64),
+            msfuy=jnp.ones((ny, nx + 1), dtype=jnp.float64),
+            msfvx=jnp.ones((ny + 1, nx), dtype=jnp.float64),
+            msfvy=jnp.ones((ny + 1, nx), dtype=jnp.float64),
+            c1h=eta_mass,
+            c2h=jnp.zeros((nz,), dtype=jnp.float64),
+            c3h=eta_mass,
+            c4h=jnp.zeros((nz,), dtype=jnp.float64),
+            c1f=eta,
+            c2f=jnp.zeros((nz + 1,), dtype=jnp.float64),
+            c3f=eta,
+            c4f=jnp.zeros((nz + 1,), dtype=jnp.float64),
+            dn=dn,
+            dnw=dn,
+            rdn=rdn,
+            rdnw=rdn,
+            p_top=jnp.asarray(top_pressure_pa, dtype=jnp.float64),
+            provenance=provenance,
+        )
+
+    def validate_shapes(self, *, ny: int, nx: int, nz: int) -> None:
+        """Validates WRF staggering shapes against a GridSpec."""
+
+        expected = {
+            "msftx": (ny, nx),
+            "msfty": (ny, nx),
+            "msfux": (ny, nx + 1),
+            "msfuy": (ny, nx + 1),
+            "msfvx": (ny + 1, nx),
+            "msfvy": (ny + 1, nx),
+            "c1h": (nz,),
+            "c2h": (nz,),
+            "c3h": (nz,),
+            "c4h": (nz,),
+            "c1f": (nz + 1,),
+            "c2f": (nz + 1,),
+            "c3f": (nz + 1,),
+            "c4f": (nz + 1,),
+            "dn": (nz,),
+            "dnw": (nz,),
+            "rdn": (nz,),
+            "rdnw": (nz,),
+        }
+        for name, shape in expected.items():
+            if tuple(getattr(self, name).shape) != shape:
+                raise ValueError(f"DycoreMetrics.{name} shape must be {shape}")
+
+    def tree_flatten(self):
+        """Splits metric arrays from static provenance metadata."""
+
+        return tuple(getattr(self, name) for name in self._array_names()), self.provenance
+
+    @classmethod
+    def tree_unflatten(cls, aux, children):
+        """Rebuilds DycoreMetrics after JAX pytree transforms."""
+
+        values = dict(zip(cls._array_names(), children, strict=True))
+        values["provenance"] = aux
+        return cls(**values)
+
+    @staticmethod
+    def _array_equal(left: jax.Array, right: jax.Array) -> bool:
+        """Compares metric arrays outside timestep code."""
+
+        return bool(
+            left.shape == right.shape
+            and left.dtype == right.dtype
+            and np.array_equal(np.asarray(left), np.asarray(right))
+        )
+
+    @staticmethod
+    def _array_hash(array: jax.Array) -> int:
+        """Hashes static metric arrays for existing static-grid call sites."""
+
+        host = np.asarray(array)
+        return hash((tuple(host.shape), str(host.dtype), host.tobytes()))
+
+    def __eq__(self, other: object) -> bool:
+        """Implements array-aware equality for tests and static cache keys."""
+
+        if not isinstance(other, DycoreMetrics):
+            return NotImplemented
+        return self.provenance == other.provenance and all(
+            self._array_equal(getattr(self, name), getattr(other, name))
+            for name in self._array_names()
+        )
+
+    def __hash__(self) -> int:
+        """Hashes metric provenance and arrays for current GridSpec static use."""
+
+        return hash(
+            (
+                self.provenance,
+                tuple(self._array_hash(getattr(self, name)) for name in self._array_names()),
+            )
+        )
+
+
 @dataclass(frozen=True)
 class BCMetadata:
     """Stores boundary-condition provenance for future restart-compatible coupling."""
@@ -65,7 +251,7 @@ class BCMetadata:
 @jax.tree_util.register_pytree_node_class
 @dataclass(frozen=True)
 class GridSpec:
-    """JAX pytree grid contract; array leaves are eta levels and terrain height."""
+    """JAX pytree grid contract with static WRF dycore metrics."""
 
     projection: Projection
     terrain: TerrainProvenance
@@ -73,6 +259,7 @@ class GridSpec:
     bc: BCMetadata
     eta_levels: jax.Array
     terrain_height: jax.Array
+    metrics: DycoreMetrics | None = None
     halo_width: int = 2
     staggering: Literal["c-grid"] = "c-grid"
 
@@ -88,6 +275,18 @@ class GridSpec:
                     self.vertical.nz,
                     self.vertical.top_pressure_pa,
                     self.eta_levels,
+                ),
+            )
+        if self.metrics is None:
+            object.__setattr__(
+                self,
+                "metrics",
+                DycoreMetrics.flat(
+                    ny=self.projection.ny,
+                    nx=self.projection.nx,
+                    nz=self.vertical.nz,
+                    eta_levels=self.eta_levels,
+                    top_pressure_pa=self.vertical.top_pressure_pa,
                 ),
             )
         if self.projection.kind not in ("lambert", "mercator", "polar"):
@@ -106,6 +305,8 @@ class GridSpec:
             raise ValueError("eta_levels shape must be (nz + 1,)")
         if self.terrain_height.dtype != jnp.float64 or self.eta_levels.dtype != jnp.float64:
             raise TypeError("GridSpec arrays must be fp64")
+        assert self.metrics is not None
+        self.metrics.validate_shapes(ny=self.projection.ny, nx=self.projection.nx, nz=self.vertical.nz)
 
     @property
     def nx(self) -> int:
@@ -128,7 +329,7 @@ class GridSpec:
     def tree_flatten(self):
         """Splits JAX array leaves from static hashable grid metadata."""
 
-        children = (self.eta_levels, self.terrain_height)
+        children = (self.eta_levels, self.terrain_height, self.metrics)
         vertical_meta = (self.vertical.kind, self.vertical.nz, self.vertical.top_pressure_pa)
         aux = (
             self.projection,
@@ -145,7 +346,7 @@ class GridSpec:
         """Rebuilds GridSpec after JAX pytree transforms."""
 
         projection, terrain, vertical_meta, bc, halo_width, staggering = aux
-        eta_levels, terrain_height = children
+        eta_levels, terrain_height, metrics = children
         vertical = VerticalCoord(*vertical_meta, eta_levels)
         return cls(
             projection=projection,
@@ -154,6 +355,7 @@ class GridSpec:
             bc=bc,
             eta_levels=eta_levels,
             terrain_height=terrain_height,
+            metrics=metrics,
             halo_width=halo_width,
             staggering=staggering,
         )
@@ -190,6 +392,7 @@ class GridSpec:
             and self.staggering == other.staggering
             and self._array_equal(self.eta_levels, other.eta_levels)
             and self._array_equal(self.terrain_height, other.terrain_height)
+            and self.metrics == other.metrics
         )
 
     def __hash__(self) -> int:
@@ -205,6 +408,7 @@ class GridSpec:
                 self.staggering,
                 self._array_hash(self.eta_levels),
                 self._array_hash(self.terrain_height),
+                hash(self.metrics),
             )
         )
 

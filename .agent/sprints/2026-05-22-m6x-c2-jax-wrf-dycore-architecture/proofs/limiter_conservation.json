@@ -1,0 +1,10 @@
+{
+  "acceptance_criterion": "AC6",
+  "fixture": "analytic one-cell row with positive total scalar mass and one negative value",
+  "mass_after": 2.5,
+  "mass_before": 2.5,
+  "min_after": 0.0,
+  "passes_mass_tolerance": true,
+  "passes_nonnegative": true,
+  "relative_mass_error": 0.0
+}
