@@ -2,7 +2,7 @@
 
 Date: 2026-05-22
 Author: c2-A1 worker (codex)
-Status: PROPOSED for manager/reviewer review. User authorized the sprint on 2026-05-22; this ADR records the implementation skeleton and must not be treated as operational closure.
+Status: DEFERRED-PROPOSED. User authorized the sprint on 2026-05-22; this ADR records the implementation skeleton and must not be treated as operational closure. Final ADR commitments are delayed pending the parallel numerical-stability spike report at `/tmp/wrf_gpu2_main_cp/.agent/sprints/2026-05-22-m6x-numerical-stability-spike/worker-report.md` or branch `worker/codex/m6x-numerical-stability-spike`.
 Scope: c2-A1 architecture skeleton for WRF-compatible JAX dycore representation and scan carry.
 
 ## Decision
@@ -20,6 +20,8 @@ The c1 methodology review and architecture scout agree that remaining stability 
 - Map factors and hybrid-eta coefficients stay out of `State`.
 - Previous pressure and accumulators are explicit scan carry.
 - This ADR does not authorize production physics retuning, sanitize masking, MPI, or multi-GPU work.
+- Base-state-vs-perturbation decomposition commitments for individual variables are pending the numerical-stability spike, especially Gemini §4 findings.
+- Whether sloping-surface metric terms must be carried in `GridSpec` from day 1 is pending the numerical-stability spike.
 
 ## Evidence
 
@@ -37,4 +39,4 @@ The architecture now has a stable place for WRF metrics and scan diagnostics. Th
 
 ## Revisit
 
-Revisit if c2-A1 proof objects show XLA cannot keep `DycoreMetrics` and scan carry resident, if WRF fixture loading cannot populate the schema, or if the manager/reviewer rejects the ADR-002 amendment patch.
+Before accepting this ADR, incorporate the numerical-stability spike findings on base-state/perturbation decomposition and sloping-surface metric terms. After acceptance, revisit if c2-A1 proof objects show XLA cannot keep `DycoreMetrics` and scan carry resident, if WRF fixture loading cannot populate the schema, or if the manager/reviewer rejects the ADR-002 amendment patch.

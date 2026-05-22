@@ -2,11 +2,13 @@
 
 Date: 2026-05-22
 Sprint: `2026-05-22-m6x-c2-jax-wrf-dycore-architecture`
-Status: proposed patch object; do not apply without manager/reviewer approval.
+Status: deferred proposed patch object; do not apply without manager/reviewer approval and numerical-stability spike incorporation.
 
 ## Rationale
 
 ADR-002 correctly froze SoA C-grid prognostic storage for M3/M4. c1 evidence and the 2026-05-22 architecture scout show that WRF-compatible M6/M7 dycore work also needs static map factors, WRF hybrid-eta coefficients, base-state fields, boundary forcing, and scan-carried diagnostics. Keeping those inside the old `State` abstraction would make the high-frequency timestep carry ambiguous and would violate the c2 contract rule that map factors and hybrid coefficients are static `GridSpec` data.
+
+Final variable-level base-state-vs-perturbation commitments are intentionally deferred until the parallel numerical-stability spike lands. That report is expected to clarify Gemini §4 decomposition requirements and whether sloping-surface metric terms must be static `GridSpec`/`DycoreMetrics` fields from day 1.
 
 ## Proposed Diff
 
@@ -49,3 +51,8 @@ diff --git a/.agent/decisions/ADR-002-state-layout.md b/.agent/decisions/ADR-002
 - Metrics proof: `.agent/sprints/2026-05-22-m6x-c2-jax-wrf-dycore-architecture/proofs/metrics.json`
 - Hybrid proof: `.agent/sprints/2026-05-22-m6x-c2-jax-wrf-dycore-architecture/proofs/hybrid_eta.json`
 - Scan audit: `.agent/sprints/2026-05-22-m6x-c2-jax-wrf-dycore-architecture/proofs/scan_transfer_audit.md`
+
+## Pending Spike Questions
+
+- Which variables require explicit base-state-vs-perturbation decomposition before c2-A2 implementation begins?
+- Are sloping-surface metric terms mandatory `GridSpec.metrics` fields in the first accepted c2 ADR, rather than later implementation detail?

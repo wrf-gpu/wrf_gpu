@@ -9,9 +9,11 @@ Freeze and prove the c2 architecture skeleton for a JAX/XLA WRF-compatible dycor
 
 ## Outcome
 
-Summary: architecture skeleton implemented; AC1-AC6 pass with proof objects, AC7 is partial analytic smoke only, and AC8 recommends continuing C with the warm-bubble harness as the next gate.
+Summary: architecture skeleton implemented; AC1-AC6 pass with proof objects, AC7 is partial analytic smoke only, and AC8 recommends continuing C with the warm-bubble harness as the next gate. ADR acceptance is deferred pending the parallel numerical-stability spike.
 
 Recommendation: continue C implementation, with one explicit caveat: AC7 is a finite architecture smoke, not warm-bubble parity. The referenced `scripts/m6_warm_bubble_test.py` is absent in this worktree, so c2-A2 should first restore/build the warm-bubble harness before claiming physical integration progress.
+
+New user instruction after initial push: incorporate the numerical-stability spike before committing to final ADR content, specifically variable-level base-state-vs-perturbation decomposition and sloping-surface metric terms. The spike report was not yet available at `/tmp/wrf_gpu2_main_cp/.agent/sprints/2026-05-22-m6x-numerical-stability-spike/worker-report.md`, and the branch `worker/codex/m6x-numerical-stability-spike` was not visible on `origin` at the time of this update.
 
 ## AC Status
 

@@ -5,7 +5,7 @@ Author: worker-generated decision-gate draft
 
 ## Recommendation
 
-Merge Decision: do not merge to main from this worker alone; send to mandatory reviewer/tester. Technical decision-gate recommendation is continue C implementation.
+Merge Decision: do not merge to main from this worker alone; send to mandatory reviewer/tester and incorporate the parallel numerical-stability spike before accepting ADR commitments. Technical decision-gate recommendation is continue C implementation.
 
 Continue C implementation.
 
@@ -24,6 +24,8 @@ The architecture is compatible with JAX/XLA representation: WRF map factors and 
 ## Blocking Caveat
 
 AC7 is not a real warm-bubble validation. The role prompt referenced `scripts/m6_warm_bubble_test.py`, but that file is absent in this worktree. Do not claim c2 physical stability or warm-bubble improvement from this closeout.
+
+ADR commitments are also blocked on the numerical-stability spike, specifically the Gemini §4 state-decomposition findings and the day-1 treatment of sloping-surface metric terms.
 
 ## Decision
 

@@ -2,7 +2,7 @@
 
 Date: 2026-05-22
 Worker: codex
-Status: AC1 architecture patch produced; executable skeleton and proof harness follow this document.
+Status: AC1 architecture patch produced; executable skeleton and proof harness follow this document. Final ADR commitments are deferred pending the parallel numerical-stability spike.
 
 ## Decision
 
@@ -58,13 +58,18 @@ Architecture patterns, not code, are taken from prior art:
 
 ## ADR-002 Amendment Summary
 
-The proposed amendment is in `.agent/patches/2026-05-22-c2-adr-002-amendment.md`. It does not rewrite ADR-002 in place. It adds:
+The proposed amendment is in `.agent/patches/2026-05-22-c2-adr-002-amendment.md`. It does not rewrite ADR-002 in place and must not be accepted until the numerical-stability spike is incorporated. It currently adds:
 
 - `DycoreMetrics` as a child of `GridSpec`
 - `BaseState` and `BoundaryState` as separate pytrees
 - WRF hybrid-eta coefficient arrays as grid metrics
 - explicit scan-carry policy for previous pressure and accumulators
 - a transition rule: legacy boundary leaves may remain until coupling code migrates, but new dycore code should consume `BoundaryState`
+
+Pending spike incorporation:
+
+- Gemini §4 may require variable-specific base-state-vs-perturbation decomposition beyond the current generic `BaseState`.
+- Sloping-surface metric terms may need to be first-class `DycoreMetrics` fields from day 1 rather than deferred c2-A2 details.
 
 ## Risks
 
