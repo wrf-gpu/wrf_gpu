@@ -1,0 +1,30 @@
+{
+  "acceptance_criterion": "AC7",
+  "analytic_smoke": {
+    "all_stabilizers_off": {
+      "finite": true,
+      "theta_mass": 192011.1118438478,
+      "theta_min": 300.00004174899857
+    },
+    "stabilizers_enabled": {
+      "finite": true,
+      "theta_mass": 192011.1118438478,
+      "theta_min": 300.0000422150445
+    },
+    "steps": 5
+  },
+  "previous_c1_reference": {
+    "diverged_at_s": 350,
+    "finite_to_600s": false,
+    "source": "MORNING-REPORT-2026-05-22.md UPDATE 08:00",
+    "warm_bubble_centroid_300s_m": 2517,
+    "warm_bubble_w_max_300s_m_s": 5.99
+  },
+  "risk": "This proof verifies c2 wiring and finite state only. It does not close warm-bubble physics parity.",
+  "status": "PARTIAL_SMOKE_NOT_WARM_BUBBLE_PARITY",
+  "warm_bubble_script": {
+    "available": false,
+    "note": "The role prompt referenced this script, but it is absent in this worktree.",
+    "path": "scripts/m6_warm_bubble_test.py"
+  }
+}
