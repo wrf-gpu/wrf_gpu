@@ -35,6 +35,7 @@ from gpuwrf.contracts.grid import GridSpec
 from gpuwrf.contracts.state import State, Tendencies
 from gpuwrf.coupling.boundary_apply import BoundaryConfig, apply_lateral_boundaries
 from gpuwrf.coupling.driver import (
+    BisectionConfig,
     DEFAULT_DT_S,
     DEFAULT_RADIATION_CADENCE_STEPS,
     MAX_LIFTED_DYCORE_DT_S,
@@ -74,6 +75,7 @@ config.update("jax_enable_x64", True)
 PERF_DIR = ROOT / "artifacts" / "m6" / "performance"
 DEFAULT_OUTPUT = PERF_DIR / "full_domain_batching_verdict.json"
 DEFAULT_FORECAST_OUTPUT_DIR = Path("/home/enric/.cache/gpuwrf_outputs/m6/full_domain_batching")
+DEFAULT_BISECTION_OUTPUT_DIR = PERF_DIR / "empirical_bisection"
 BINDING_CPU_DENOMINATOR = ROOT / "artifacts" / "m6" / "cpu_denominator.json"
 CPU_DENOMINATOR_V2 = ROOT / "artifacts" / "m6" / "cpu_denominator_v2.json"
 SPEEDUP_GATE = 4.0
@@ -738,6 +740,197 @@ def _boundary_config(args: argparse.Namespace) -> BoundaryConfig:
     )
 
 
+def _bisection_config(args: argparse.Namespace) -> BisectionConfig:
+    disable_physics = bool(args.disable_physics)
+    return BisectionConfig(
+        disable_sanitize=bool(args.disable_sanitize),
+        disable_thompson=disable_physics or bool(args.disable_thompson),
+        disable_mynn=disable_physics or bool(args.disable_mynn),
+        disable_surface=disable_physics or bool(args.disable_surface),
+        disable_rrtmg=disable_physics or bool(args.disable_rrtmg),
+        disable_boundary=bool(args.disable_boundary),
+        disable_advection=bool(args.disable_advection),
+        disable_acoustic=bool(args.disable_acoustic),
+        disable_mu_continuity=bool(args.disable_mu_continuity),
+    )
+
+
+def _bisection_probe_requested(args: argparse.Namespace) -> bool:
+    return any(
+        bool(getattr(args, name))
+        for name in (
+            "bisection_probe",
+            "disable_sanitize",
+            "disable_physics",
+            "disable_thompson",
+            "disable_mynn",
+            "disable_surface",
+            "disable_rrtmg",
+            "disable_boundary",
+            "disable_advection",
+            "disable_acoustic",
+            "disable_mu_continuity",
+        )
+    )
+
+
+def _bisection_label(args: argparse.Namespace, config: BisectionConfig) -> str:
+    if args.probe_label:
+        return str(args.probe_label)
+    disabled = [name.removeprefix("disable_") for name, value in config._asdict().items() if value]
+    return "baseline" if not disabled else "no_" + "_".join(disabled)
+
+
+def _component_subset(config: BisectionConfig) -> dict[str, Any]:
+    physics = []
+    if not config.disable_thompson:
+        physics.append("thompson")
+    if not config.disable_mynn:
+        physics.append("mynn")
+    if not config.disable_surface:
+        physics.append("surface")
+    if not config.disable_rrtmg:
+        physics.append("rrtmg")
+    return {
+        "dycore": {
+            "advection": not bool(config.disable_advection),
+            "acoustic": not bool(config.disable_acoustic),
+            "mu_continuity": not bool(config.disable_mu_continuity),
+        },
+        "physics": physics,
+        "boundary": not bool(config.disable_boundary),
+        "sanitize": not bool(config.disable_sanitize),
+    }
+
+
+@jax.jit
+def _state_nonfinite_count(state: State):
+    leaves = jax.tree_util.tree_leaves(state)
+    return sum((jnp.sum(~jnp.isfinite(leaf), dtype=jnp.int64) for leaf in leaves), jnp.asarray(0, dtype=jnp.int64))
+
+
+def _state_nonfinite_summary(state: State) -> dict[str, Any]:
+    by_field = {}
+    total = 0
+    for name in State.__slots__:
+        value = getattr(state, name)
+        count = int(np.asarray(jnp.sum(~jnp.isfinite(value), dtype=jnp.int64)))
+        if count:
+            by_field[name] = count
+            total += count
+    return {"nonfinite_count": int(total), "nonfinite_by_field": by_field}
+
+
+@partial(
+    jax.jit,
+    static_argnames=("grid", "dt_s", "n_acoustic", "run_radiation", "boundary_config", "bisection_config"),
+)
+def _one_step_bisection(
+    state: State,
+    tendencies: Tendencies,
+    grid: GridSpec,
+    dt_s: float,
+    global_step,
+    *,
+    n_acoustic: int,
+    run_radiation: bool,
+    boundary_config: BoundaryConfig,
+    bisection_config: BisectionConfig,
+):
+    return coupled_timestep_with_pre_sanitize(
+        state,
+        tendencies,
+        grid,
+        dt_s,
+        global_step,
+        n_acoustic=n_acoustic,
+        run_radiation=run_radiation,
+        boundary_config=boundary_config,
+        bisection_config=bisection_config,
+    )
+
+
+def _run_bisection_probe(args: argparse.Namespace) -> dict[str, Any]:
+    validate_lifted_coupled_dt(args.dt_s)
+    boundary = _resolve_path(args.boundary)
+    boundary_config = _boundary_config(args)
+    config = _bisection_config(args)
+    label = _bisection_label(args, config)
+    output = _resolve_path(args.bisection_output) if args.bisection_output else DEFAULT_BISECTION_OUTPUT_DIR / f"{label}.json"
+    output.parent.mkdir(parents=True, exist_ok=True)
+    gen2 = Gen2Run(Path(args.run_dir))
+    state, tendencies, grid, meta = build_initial_state(gen2, domain="d02", boundary_path=boundary)
+    steps = steps_for_hours(args.hours, args.dt_s)
+    current = state
+    first_nonfinite_step = None
+    first_nonfinite_summary = None
+    samples: list[dict[str, Any]] = []
+    start = time.perf_counter()
+    completed = 0
+    for index in range(steps):
+        step_number = index + 1
+        run_radiation = step_number % int(args.radiation_cadence_steps) == 0
+        if args.final_radiation and step_number == steps:
+            run_radiation = True
+        current, tap = _one_step_bisection(
+            current,
+            tendencies,
+            grid,
+            args.dt_s,
+            jnp.asarray(step_number, dtype=jnp.int32),
+            n_acoustic=args.n_acoustic,
+            run_radiation=run_radiation,
+            boundary_config=boundary_config,
+            bisection_config=config,
+        )
+        block_until_ready(current)
+        nonfinite_count = int(np.asarray(_state_nonfinite_count(tap.state)))
+        completed = step_number
+        if (
+            step_number <= 3
+            or nonfinite_count > 0
+            or (args.probe_log_interval > 0 and step_number % int(args.probe_log_interval) == 0)
+        ):
+            samples.append(
+                {
+                    "step": int(step_number),
+                    "run_radiation": bool(run_radiation),
+                    "raw_candidate_nonfinite_count": int(nonfinite_count),
+                }
+            )
+        if nonfinite_count > 0:
+            first_nonfinite_step = step_number
+            first_nonfinite_summary = _state_nonfinite_summary(tap.state)
+            break
+    block_until_ready(current)
+    wall_s = time.perf_counter() - start
+    payload = {
+        "artifact_type": "m6x_empirical_bisection_probe",
+        "created_utc": _now_utc(),
+        "label": label,
+        "run_id": gen2.run_id,
+        "domain": "d02",
+        "dt_s": float(args.dt_s),
+        "hours_requested": float(args.hours),
+        "steps_requested": int(steps),
+        "steps_completed": int(completed),
+        "n_acoustic": int(args.n_acoustic),
+        "radiation_cadence_steps": int(args.radiation_cadence_steps),
+        "component_subset": _component_subset(config),
+        "bisection_config": dict(config._asdict()),
+        "status": "nonfinite" if first_nonfinite_step is not None else "finite_through_limit",
+        "first_nonfinite_step": None if first_nonfinite_step is None else int(first_nonfinite_step),
+        "first_nonfinite_summary": first_nonfinite_summary,
+        "samples": samples,
+        "wall_s": float(wall_s),
+        "grid": meta["grid"],
+        "boundary_path": _artifact_path(boundary),
+        "artifact_paths": [_artifact_path(output)],
+    }
+    output.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return payload
+
+
 def _diagnostics_hit_sanitize_bounds(diagnostics: dict[str, Any]) -> bool:
     return bool(
         diagnostics.get("theta_min_k") == 150.0
@@ -985,6 +1178,20 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--spec-exp", type=float, default=0.0)
     parser.add_argument("--skip-final-radiation", dest="final_radiation", action="store_false")
     parser.add_argument("--profile-child", action="store_true")
+    parser.add_argument("--bisection-probe", action="store_true")
+    parser.add_argument("--probe-label")
+    parser.add_argument("--bisection-output")
+    parser.add_argument("--probe-log-interval", type=int, default=30)
+    parser.add_argument("--disable-sanitize", action="store_true")
+    parser.add_argument("--disable-physics", action="store_true")
+    parser.add_argument("--disable-thompson", action="store_true")
+    parser.add_argument("--disable-mynn", action="store_true")
+    parser.add_argument("--disable-surface", action="store_true")
+    parser.add_argument("--disable-rrtmg", action="store_true")
+    parser.add_argument("--disable-boundary", action="store_true")
+    parser.add_argument("--disable-advection", action="store_true")
+    parser.add_argument("--disable-acoustic", action="store_true")
+    parser.add_argument("--disable-mu-continuity", action="store_true")
     parser.set_defaults(final_radiation=True, legacy_baseline_sanitize_audit=True)
     return parser.parse_args(argv)
 
@@ -993,6 +1200,10 @@ def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
     if args.profile_child:
         return _profile_child(args)
+    if _bisection_probe_requested(args):
+        payload = _run_bisection_probe(args)
+        print(json.dumps(payload, indent=2, sort_keys=True))
+        return 0
     payload = run(args)
     print(json.dumps(payload, indent=2, sort_keys=True))
     return 0
