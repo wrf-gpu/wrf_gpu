@@ -46,8 +46,14 @@ def _state_field_shapes(grid: GridSpec) -> dict[str, tuple[int, ...]]:
         "theta": mass_3d,
         "qv": mass_3d,
         "p": mass_3d,
+        "p_total": mass_3d,
+        "p_perturbation": mass_3d,
         "ph": (nz + 1, ny, nx),
+        "ph_total": (nz + 1, ny, nx),
+        "ph_perturbation": (nz + 1, ny, nx),
         "mu": surface_2d,
+        "mu_total": surface_2d,
+        "mu_perturbation": surface_2d,
         "qc": mass_3d,
         "qr": mass_3d,
         "qi": mass_3d,
@@ -99,13 +105,21 @@ class BaseState:
     helpers do not infer static WRF quantities from reduced c1 state.
     """
 
-    __slots__ = ("pb", "phb", "theta_base", "mu_base")
+    __slots__ = ("pb", "phb", "mub", "t0", "theta_base")
 
-    def __init__(self, pb: jax.Array, phb: jax.Array, theta_base: jax.Array, mu_base: jax.Array) -> None:
+    def __init__(
+        self,
+        pb: jax.Array,
+        phb: jax.Array,
+        mub: jax.Array,
+        t0: jax.Array,
+        theta_base: jax.Array,
+    ) -> None:
         self.pb = pb
         self.phb = phb
+        self.mub = mub
+        self.t0 = t0
         self.theta_base = theta_base
-        self.mu_base = mu_base
 
     @classmethod
     def zeros(cls, grid: GridSpec) -> "BaseState":
@@ -116,9 +130,16 @@ class BaseState:
         return cls(
             _zeros((nz, ny, nx), "p", device),
             _zeros((nz + 1, ny, nx), "ph", device),
-            _zeros((nz, ny, nx), "theta", device),
             _zeros((ny, nx), "mu", device),
+            _zeros((nz, ny, nx), "theta", device),
+            _zeros((nz, ny, nx), "theta", device),
         )
+
+    @property
+    def mu_base(self) -> jax.Array:
+        """Compatibility alias for the WRF base dry-column mass ``mub``."""
+
+        return self.mub
 
     def replace(self, **updates) -> "BaseState":
         """Returns an updated base-state pytree with explicit field names."""
@@ -310,8 +331,12 @@ class State:
     Units and staggering:
     - `u`, `v`, `w`: m s^-1 on Arakawa C-grid faces.
     - `theta`: K, `qv/qc/qr/qi/qs/qg`: kg kg^-1 on mass points.
-    - `p`: Pa on mass points; `ph`: m2 s^-2 geopotential on vertical faces.
-    - `mu`: Pa column dry mass on mass points.
+    - `p`/`p_total`: Pa total pressure on mass points; `p_perturbation`
+      is first-class WRF perturbation pressure used by c2 PGF terms.
+    - `ph`/`ph_total`: m2 s^-2 total geopotential on vertical faces;
+      `ph_perturbation` is the perturbation geopotential.
+    - `mu`/`mu_total`: Pa column dry mass on mass points; `mu_perturbation`
+      is the perturbation dry-column mass relative to `BaseState.mub`.
     - `Ni/Nr/Ns/Ng`: m^-3 number concentrations on mass points.
     - `qke`: m2 s^-2 MYNN turbulent kinetic energy on mass points.
     - `ustar`: m s^-1, `theta_flux`: K m s^-1, `qv_flux`: kg kg^-1 m s^-1,
@@ -335,6 +360,12 @@ class State:
         "p",
         "ph",
         "mu",
+        "p_total",
+        "p_perturbation",
+        "ph_total",
+        "ph_perturbation",
+        "mu_total",
+        "mu_perturbation",
         "qc",
         "qr",
         "qi",
@@ -380,6 +411,12 @@ class State:
         p: jax.Array,
         ph: jax.Array,
         mu: jax.Array,
+        p_total: jax.Array,
+        p_perturbation: jax.Array,
+        ph_total: jax.Array,
+        ph_perturbation: jax.Array,
+        mu_total: jax.Array,
+        mu_perturbation: jax.Array,
         qc: jax.Array,
         qr: jax.Array,
         qi: jax.Array,
@@ -422,6 +459,12 @@ class State:
         self.p = p
         self.ph = ph
         self.mu = mu
+        self.p_total = p_total
+        self.p_perturbation = p_perturbation
+        self.ph_total = ph_total
+        self.ph_perturbation = ph_perturbation
+        self.mu_total = mu_total
+        self.mu_perturbation = mu_perturbation
         self.qc = qc
         self.qr = qr
         self.qi = qi
@@ -479,6 +522,24 @@ class State:
             if hasattr(current, "dtype") and hasattr(value, "astype"):
                 value = value.astype(current.dtype)
             values[name] = value
+
+        def sync_total_legacy_perturbation(total: str, legacy: str, perturbation: str) -> None:
+            """Keeps transitional legacy aliases aligned with explicit c2 totals."""
+
+            total_changed = total in updates
+            legacy_changed = legacy in updates
+            perturbation_changed = perturbation in updates
+            old_total = getattr(self, total)
+            if total_changed:
+                values[legacy] = values[total]
+            elif legacy_changed:
+                values[total] = values[legacy]
+            if (total_changed or legacy_changed) and not perturbation_changed:
+                values[perturbation] = values[perturbation] + (values[total] - old_total)
+
+        sync_total_legacy_perturbation("p_total", "p", "p_perturbation")
+        sync_total_legacy_perturbation("ph_total", "ph", "ph_perturbation")
+        sync_total_legacy_perturbation("mu_total", "mu", "mu_perturbation")
         return type(self)(**values)
 
     def bytes(self) -> int:

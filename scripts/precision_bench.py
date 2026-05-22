@@ -275,7 +275,7 @@ def run_m2_column(precision: str, backend: str, artifact_dir: Path, warmups: int
 
 def _make_m4_state_tendencies(dtype: Any):
     _jax, jnp = _jax_modules()
-    from gpuwrf.contracts.state import State, Tendencies
+    from gpuwrf.contracts.state import State, Tendencies, _state_field_shapes
     from gpuwrf.validation.tier2 import make_ideal_grid
 
     grid = make_ideal_grid()
@@ -301,7 +301,29 @@ def _make_m4_state_tendencies(dtype: Any):
     p = theta * _scalar(dtype, 0.0)
     mu = jnp.ones((ny, nx), dtype=dtype)
     u = jnp.ones((nz, ny, nx + 1), dtype=dtype) * _scalar(dtype, 5.0)
-    state = State(u, zero_v, zero_w, theta, qv, p, zero_ph, mu)
+    arrays = {
+        field: jnp.zeros(shape, dtype=dtype)
+        for field, shape in _state_field_shapes(grid).items()
+    }
+    arrays.update(
+        {
+            "u": u,
+            "v": zero_v,
+            "w": zero_w,
+            "theta": theta,
+            "qv": qv,
+            "p": p,
+            "p_total": p,
+            "p_perturbation": p,
+            "ph": zero_ph,
+            "ph_total": zero_ph,
+            "ph_perturbation": zero_ph,
+            "mu": mu,
+            "mu_total": mu,
+            "mu_perturbation": mu,
+        }
+    )
+    state = State(**arrays)
     return grid, state, tendencies
 
 

@@ -2,13 +2,13 @@
 
 Date: 2026-05-22
 Sprint: `2026-05-22-m6x-c2-jax-wrf-dycore-architecture`
-Status: deferred proposed patch object; do not apply without manager/reviewer approval and numerical-stability spike incorporation.
+Status: proposed patch object after numerical-stability spike absorption; do not apply without manager/reviewer approval.
 
 ## Rationale
 
-ADR-002 correctly froze SoA C-grid prognostic storage for M3/M4. c1 evidence and the 2026-05-22 architecture scout show that WRF-compatible M6/M7 dycore work also needs static map factors, WRF hybrid-eta coefficients, base-state fields, boundary forcing, and scan-carried diagnostics. Keeping those inside the old `State` abstraction would make the high-frequency timestep carry ambiguous and would violate the c2 contract rule that map factors and hybrid coefficients are static `GridSpec` data.
+ADR-002 correctly froze SoA C-grid prognostic storage for M3/M4. c1 evidence, the 2026-05-22 architecture scout, Gemini's c2 review, and the numerical-stability spike show that WRF-compatible M6/M7 dycore work also needs static map factors, WRF hybrid-eta coefficients, base-state fields, explicit perturbation fields, terrain slopes, boundary forcing, and scan-carried diagnostics. Keeping those inside the old implicit `State.p/state.ph/state.mu` abstraction would make the high-frequency timestep carry ambiguous and would violate the c2 contract rule that map factors, hybrid coefficients, and terrain slopes are static `GridSpec` data.
 
-Final variable-level base-state-vs-perturbation commitments are intentionally deferred until the parallel numerical-stability spike lands. That report is expected to clarify Gemini §4 decomposition requirements and whether sloping-surface metric terms must be static `GridSpec`/`DycoreMetrics` fields from day 1.
+The spike report on `origin/worker/codex/m6x-numerical-stability-spike` found flat warm-bubble failure at step 76 (150 s), mountain failure at step 36 (70 s), and unchanged failure after brute-force `smdiv=0.1` plus top Rayleigh sponge. The amendment therefore makes base-state/perturbation decomposition and well-balanced terrain-following PGF day-1 architecture commitments. Damping remains required infrastructure, but not the architectural fix.
 
 ## Proposed Diff
 
@@ -19,24 +19,38 @@ diff --git a/.agent/decisions/ADR-002-state-layout.md b/.agent/decisions/ADR-002
 +
 +c2 amendment: keep the SoA prognostic `State`, but split WRF dycore data into four categories:
 +
-+- `State`: prognostic or time-evolving fields only.
-+- `BaseState`: static WRF base pressure/geopotential/theta/mass fields that may vary over terrain but are not prognostic.
++- `State`: prognostic or time-evolving fields only, with first-class `p_total`, `p_perturbation`, `ph_total`, `ph_perturbation`, `mu_total`, and `mu_perturbation` leaves. Transitional aliases `p/ph/mu` may remain for legacy M4/M6 callers, but new c2 dycore modules must consume the explicit total/perturbation names.
++- `BaseState`: static WRF `pb`, `phb`, `mub`, `t0`, and `theta_base` fields that may vary over terrain but are not prognostic.
 +- `BoundaryState`: time-interpolated lateral forcing grouped outside `State`.
-+- `GridSpec.metrics: DycoreMetrics`: static WRF map factors, hybrid-eta coefficients, vertical inverse spacings, and damping/filter coefficient arrays.
++- `GridSpec.metrics: DycoreMetrics`: static WRF map factors, hybrid-eta coefficients, vertical inverse spacings, terrain slopes, and damping/filter coefficient arrays.
 @@
  Staggering: Arakawa C-grid.
 +
 +c2 amendment: `DycoreMetrics` uses WRF staggering shapes:
 +`msftx/msfty -> (ny, nx)`, `msfux/msfuy -> (ny, nx+1)`,
 +`msfvx/msfvy -> (ny+1, nx)`, mass coefficients `c?h -> (nz)`,
-+face coefficients `c?f -> (nz+1)`, and `dn/dnw/rdn/rdnw -> (nz)`.
++face coefficients `c?f -> (nz+1)`, `dn/dnw/rdn/rdnw -> (nz)`,
++mass terrain slopes `dzdx/dzdy -> (ny, nx)`, x-face slope
++`dzdx_u -> (ny, nx+1)`, and y-face slope `dzdy_v -> (ny+1, nx)`.
 +These arrays are static grid data and MUST NOT be added to the timestep `State` pytree.
++They exist so c2-A2 can implement the well-balanced horizontal pressure-gradient
++operator required by WRF `dyn_em/module_small_step_em.F:828-862,902-936`.
 @@
  ## Residency And Timestep Carry
 @@
  The timestep loop accepts an already allocated `State`, an already allocated `Tendencies`, scalar `dt`, and static `n_steps`.
 +
 +c2 amendment: WRF small-step memory such as previous pressure for `smdiv`, flux accumulators, and intermediate tendencies are explicit `lax.scan` carry leaves. They MUST NOT be Python globals, hidden mutable module state, or host-owned arrays captured inside the timestep loop.
++
++c2 amendment: horizontal pressure-gradient force code MUST use stored
++`p_perturbation` directly, combine `ph/ph_perturbation`, `pb`, `al/alt`
++analogues, map-factor ratios, and hybrid mass coefficients as in WRF
++`module_small_step_em.F:828-862,902-936`, and subtract the hydrostatic
++terrain-following slope correction equivalent to
++`(g/alpha) * dzdx * dp/deta` / `(g/alpha) * dzdy * dp/deta`.
++`module_small_step_em.F:557-565` remains the `smdiv` pressure-memory anchor,
++but `smdiv`, Rayleigh, and hyperdiffusion are stabilizers around this correct
++operator, not substitutes for it.
 @@
  ## Risks
 @@
@@ -51,8 +65,5 @@ diff --git a/.agent/decisions/ADR-002-state-layout.md b/.agent/decisions/ADR-002
 - Metrics proof: `.agent/sprints/2026-05-22-m6x-c2-jax-wrf-dycore-architecture/proofs/metrics.json`
 - Hybrid proof: `.agent/sprints/2026-05-22-m6x-c2-jax-wrf-dycore-architecture/proofs/hybrid_eta.json`
 - Scan audit: `.agent/sprints/2026-05-22-m6x-c2-jax-wrf-dycore-architecture/proofs/scan_transfer_audit.md`
-
-## Pending Spike Questions
-
-- Which variables require explicit base-state-vs-perturbation decomposition before c2-A2 implementation begins?
-- Are sloping-surface metric terms mandatory `GridSpec.metrics` fields in the first accepted c2 ADR, rather than later implementation detail?
+- Spike report: `origin/worker/codex/m6x-numerical-stability-spike:.agent/sprints/2026-05-22-m6x-numerical-stability-spike/worker-report.md`
+- Orthogonal review driver: `.agent/sprints/2026-05-22-gemini-c2-architecture-review/response.md`

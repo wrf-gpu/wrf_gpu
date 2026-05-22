@@ -9,17 +9,17 @@ Freeze and prove the c2 architecture skeleton for a JAX/XLA WRF-compatible dycor
 
 ## Outcome
 
-Summary: architecture skeleton implemented; AC1-AC6 pass with proof objects, AC7 is partial analytic smoke only, and AC8 recommends continuing C with the warm-bubble harness as the next gate. ADR acceptance is deferred pending the parallel numerical-stability spike.
+Summary: architecture skeleton implemented; AC1-AC6 pass with proof objects, AC7 is partial analytic smoke only, and AC8 recommends continuing C with the warm-bubble harness as the next gate. AC1 final ACCEPT after spike absorption: ADR-020 and the ADR-002 amendment now include explicit total/perturbation state decomposition, terrain slope metrics, and a WRF-anchored well-balanced PGF requirement.
 
 Recommendation: continue C implementation, with one explicit caveat: AC7 is a finite architecture smoke, not warm-bubble parity. The referenced `scripts/m6_warm_bubble_test.py` is absent in this worktree, so c2-A2 should first restore/build the warm-bubble harness before claiming physical integration progress.
 
-New user instruction after initial push: incorporate the numerical-stability spike before committing to final ADR content, specifically variable-level base-state-vs-perturbation decomposition and sloping-surface metric terms. The spike report was not yet available at `/tmp/wrf_gpu2_main_cp/.agent/sprints/2026-05-22-m6x-numerical-stability-spike/worker-report.md`, and the branch `worker/codex/m6x-numerical-stability-spike` was not visible on `origin` at the time of this update.
+Spike absorption update: the spike report is available on `origin/worker/codex/m6x-numerical-stability-spike`. It found flat warm-bubble nonfinite at step 76 (150 s), mountain nonfinite at step 36 (70 s), and unchanged flat failure after brute-force `smdiv=0.1` plus top Rayleigh sponge. c2-A1 now treats damping as secondary infrastructure and makes base-state/perturbation decomposition plus well-balanced PGF day-1 architecture commitments.
 
 ## AC Status
 
 | AC | Status | Evidence |
 |---|---|---|
-| AC1 ADR/architecture | PASS | `architecture.md`, `.agent/patches/2026-05-22-c2-adr-002-amendment.md`, `ADR-020-c2-dycore-architecture.md` |
+| AC1 ADR/architecture | PASS final after spike absorption | `architecture.md`, `.agent/patches/2026-05-22-c2-adr-002-amendment.md`, `ADR-020-c2-dycore-architecture.md` |
 | AC2 metrics | PASS | `proofs/metrics.json`; WRF `wrfinput_d02` map-factor shapes loaded |
 | AC3 hybrid eta | PASS | `proofs/hybrid_eta.json`; analytic oracle max error 0.0; WRF coeffs loaded |
 | AC4 damping/diffusion/limiter skeletons | PASS | `tests/test_m6x_c2_stabilizers.py` |
@@ -43,6 +43,10 @@ New user instruction after initial push: incorporate the numerical-stability spi
 - `tests/test_m6x_c2_hybrid_eta.py`
 - `tests/test_m6x_c2_stabilizers.py`
 - `tests/test_m6x_c2_scan.py`
+- `tests/test_m3_state.py`
+- `tests/test_m6_state_extension.py`
+- `src/gpuwrf/contracts/precision.py`
+- `scripts/precision_bench.py`
 - `scripts/m6x_c2_generate_proofs.py`
 - `.agent/sprints/2026-05-22-m6x-c2-jax-wrf-dycore-architecture/architecture.md`
 - `.agent/sprints/2026-05-22-m6x-c2-jax-wrf-dycore-architecture/proofs/*`
@@ -54,11 +58,12 @@ New user instruction after initial push: incorporate the numerical-stability spi
 ## Commands Run
 
 - `sed`/`rg` reads of the required sprint prompt, sprint contract, scout report, constitution, AGENTS, ADRs, morning report, methodology review, bughunt report, current contracts/dynamics, and WRF `dyn_em` source anchors.
-- `pytest -q tests/test_m6x_c2_metrics.py tests/test_m6x_c2_hybrid_eta.py tests/test_m6x_c2_stabilizers.py tests/test_m6x_c2_scan.py`
-- `pytest -q tests/test_m3_grid.py tests/test_m4_acoustic.py tests/test_m4_rk3.py tests/test_m4_dycore_step.py tests/test_m6x_c2_metrics.py tests/test_m6x_c2_hybrid_eta.py tests/test_m6x_c2_stabilizers.py tests/test_m6x_c2_scan.py`
-- `pytest -q tests/test_m3_grid.py tests/test_m3_state.py tests/test_m4_acoustic.py tests/test_m4_rk3.py tests/test_m4_dycore_step.py tests/test_m6x_c2_metrics.py tests/test_m6x_c2_hybrid_eta.py tests/test_m6x_c2_stabilizers.py tests/test_m6x_c2_scan.py` (failed only stale M3 fp64 precision expectations for `theta`; current `precision.py` already returns ADR-007 fp32-gated `theta`)
-- `python scripts/m6x_c2_generate_proofs.py`
+- `PYTHONPATH=src pytest -q tests/test_m6x_c2_metrics.py tests/test_m6x_c2_hybrid_eta.py tests/test_m6x_c2_stabilizers.py tests/test_m6x_c2_scan.py` -> `13 passed`
+- `python -m py_compile src/gpuwrf/contracts/state.py src/gpuwrf/contracts/grid.py src/gpuwrf/contracts/precision.py src/gpuwrf/dynamics/metrics.py src/gpuwrf/dynamics/acoustic_wrf.py src/gpuwrf/dynamics/orchestrator.py scripts/m6x_c2_generate_proofs.py scripts/precision_bench.py`
+- `PYTHONPATH=src pytest -q tests/test_m3_state.py tests/test_m6_state_extension.py tests/test_m4_acoustic.py tests/test_m4_rk3.py tests/test_m4_dycore_step.py` -> `15 passed`
+- `PYTHONPATH=src python scripts/m6x_c2_generate_proofs.py`
 - `python scripts/close_sprint.py .agent/sprints/2026-05-22-m6x-c2-jax-wrf-dycore-architecture` (fails pending independent `reviewer-report.md`, `tester-report.md`, and `memory-patch.md`)
+- `git show origin/worker/codex/m6x-numerical-stability-spike:.agent/sprints/2026-05-22-m6x-numerical-stability-spike/worker-report.md` equivalent read via sibling worktree `/tmp/wrf_gpu2_spike`
 
 ## Proof Objects Produced
 

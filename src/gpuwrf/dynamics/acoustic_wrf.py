@@ -41,11 +41,11 @@ def acoustic_substep(
     ``module_small_step_em.F``.
     """
 
-    metric_zero = jnp.sum(metrics.c1h, dtype=state.p.dtype) * jnp.asarray(0.0, dtype=state.p.dtype)
-    pressure_source = state.p + metric_zero
+    metric_zero = jnp.sum(metrics.c1h, dtype=state.p_total.dtype) * jnp.asarray(0.0, dtype=state.p_total.dtype)
+    pressure_source = state.p_total + metric_zero
     pressure_next = apply_smdiv_pressure(pressure_source, previous_pressure, config.smdiv)
     w_next = apply_rayleigh_w(state.w, config.rayleigh)
-    next_state = state.replace(p=pressure_next, w=w_next)
+    next_state = state.replace(p_total=pressure_next, w=w_next)
     return next_state, pressure_source
 
 
