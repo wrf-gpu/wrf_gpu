@@ -33,7 +33,7 @@ class FluxAccumulators:
     def zeros_like(cls, state: State) -> "FluxAccumulators":
         """Creates zero accumulators with timestep-resident shapes."""
 
-        return cls(jnp.zeros_like(state.p), jnp.zeros_like(state.theta))
+        return cls(jnp.zeros_like(state.p_total), jnp.zeros_like(state.theta))
 
     def tree_flatten(self):
         """Presents accumulators as scan-carry leaves."""
@@ -88,7 +88,7 @@ def initialize_scan_carry(state: State) -> DycoreScanCarry:
 
     return DycoreScanCarry(
         state=state,
-        previous_pressure=state.p + jnp.zeros_like(state.p),
+        previous_pressure=state.p_total + jnp.zeros_like(state.p_total),
         fluxes=FluxAccumulators.zeros_like(state),
     )
 
@@ -114,7 +114,7 @@ def wrf_em_step(
     theta_limited = positive_definite_limiter(theta_diffused, mass, config.limiter)
     next_state = acoustic_state.replace(theta=theta_limited)
     next_fluxes = FluxAccumulators(
-        pressure=carry.fluxes.pressure + (next_state.p - carry.state.p),
+        pressure=carry.fluxes.pressure + (next_state.p_total - carry.state.p_total),
         theta=carry.fluxes.theta + (next_state.theta - carry.state.theta),
     )
     return DycoreScanCarry(next_state, previous_pressure, next_fluxes)

@@ -23,6 +23,21 @@ def _first_time_variable(dataset: Dataset, name: str) -> jax.Array:
     return jnp.asarray(np.asarray(dataset.variables[name][0], dtype=np.float64))
 
 
+def terrain_slope_metrics(terrain_height: jax.Array, dx_m: float, dy_m: float) -> tuple[jax.Array, ...]:
+    """Derives mass- and face-point terrain slopes for well-balanced PGF terms."""
+
+    terrain = jnp.asarray(terrain_height, dtype=jnp.float64)
+    dx = jnp.asarray(dx_m, dtype=jnp.float64)
+    dy = jnp.asarray(dy_m, dtype=jnp.float64)
+    padded_x = jnp.pad(terrain, ((0, 0), (1, 1)), mode="edge")
+    padded_y = jnp.pad(terrain, ((1, 1), (0, 0)), mode="edge")
+    dzdx_u = (padded_x[:, 1:] - padded_x[:, :-1]) / dx
+    dzdy_v = (padded_y[1:, :] - padded_y[:-1, :]) / dy
+    dzdx = 0.5 * (dzdx_u[:, 1:] + dzdx_u[:, :-1])
+    dzdy = 0.5 * (dzdy_v[1:, :] + dzdy_v[:-1, :])
+    return dzdx, dzdy, dzdx_u, dzdy_v
+
+
 def load_wrfinput_metrics(path: str | Path) -> DycoreMetrics:
     """Loads WRF map factors and hybrid-eta coefficients from ``wrfinput``.
 
@@ -32,6 +47,12 @@ def load_wrfinput_metrics(path: str | Path) -> DycoreMetrics:
 
     with Dataset(str(path)) as dataset:
         eta_levels = _first_time_variable(dataset, "ZNW")
+        terrain_height = _first_time_variable(dataset, "HGT")
+        dzdx, dzdy, dzdx_u, dzdy_v = terrain_slope_metrics(
+            terrain_height,
+            float(getattr(dataset, "DX")),
+            float(getattr(dataset, "DY")),
+        )
         nz = int(dataset.dimensions["bottom_top"].size)
         return DycoreMetrics(
             msftx=_first_time_variable(dataset, "MAPFAC_MX"),
@@ -52,6 +73,10 @@ def load_wrfinput_metrics(path: str | Path) -> DycoreMetrics:
             dnw=_first_time_variable(dataset, "DNW"),
             rdn=_first_time_variable(dataset, "RDN"),
             rdnw=_first_time_variable(dataset, "RDNW"),
+            dzdx=dzdx,
+            dzdy=dzdy,
+            dzdx_u=dzdx_u,
+            dzdy_v=dzdy_v,
             p_top=_first_time_variable(dataset, "P_TOP"),
             provenance=f"wrfinput:{Path(path)}:nz={nz}:eta={tuple(eta_levels.shape)}",
         )

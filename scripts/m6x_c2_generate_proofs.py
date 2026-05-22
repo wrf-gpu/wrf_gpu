@@ -55,7 +55,13 @@ def _analytic_state(grid: GridSpec) -> State:
     bubble = jnp.exp(-((x - 0.5 * grid.nx) ** 2 + (y - 0.5 * grid.ny) ** 2 + (z - 0.35 * grid.nz) ** 2) / 8.0)
     arrays["theta"] = 300.0 + 0.1 * bubble
     arrays["p"] = jnp.ones_like(arrays["p"]) * 1000.0
+    arrays["p_total"] = arrays["p"]
+    arrays["p_perturbation"] = arrays["p"]
+    arrays["ph_total"] = arrays["ph"]
+    arrays["ph_perturbation"] = arrays["ph"]
     arrays["mu"] = jnp.ones_like(arrays["mu"]) * 90000.0
+    arrays["mu_total"] = arrays["mu"]
+    arrays["mu_perturbation"] = arrays["mu"]
     return State(**arrays)
 
 
@@ -73,6 +79,10 @@ def metrics_proof() -> None:
             "msfuy": _array_payload(flat.msfuy),
             "msfvx": _array_payload(flat.msfvx),
             "msfvy": _array_payload(flat.msfvy),
+            "dzdx": _array_payload(flat.dzdx),
+            "dzdy": _array_payload(flat.dzdy),
+            "dzdx_u": _array_payload(flat.dzdx_u),
+            "dzdy_v": _array_payload(flat.dzdy_v),
             "summary_minmax": np.asarray(metric_minmax(flat)).tolist(),
         },
         "jit_audit": {
@@ -93,6 +103,10 @@ def metrics_proof() -> None:
                 "msfuy": _array_payload(wrf.msfuy),
                 "msfvx": _array_payload(wrf.msfvx),
                 "msfvy": _array_payload(wrf.msfvy),
+                "dzdx": _array_payload(wrf.dzdx),
+                "dzdy": _array_payload(wrf.dzdy),
+                "dzdx_u": _array_payload(wrf.dzdx_u),
+                "dzdy_v": _array_payload(wrf.dzdy_v),
                 "summary_minmax": np.asarray(metric_minmax(wrf)).tolist(),
             }
         )

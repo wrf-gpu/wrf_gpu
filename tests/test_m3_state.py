@@ -1,10 +1,9 @@
 from __future__ import annotations
 
 import jax
-import jax.numpy as jnp
 
 from gpuwrf.contracts.grid import GridSpec
-from gpuwrf.contracts.precision import DEFAULT_DTYPES
+from gpuwrf.contracts.precision import DEFAULT_DTYPES, PRECISION_MATRIX
 from gpuwrf.contracts.state import State, Tendencies
 
 
@@ -22,10 +21,16 @@ def test_state_zeros_allocates_gpu_shapes_and_dtype():
     assert state.theta.shape == (grid.nz, grid.ny, grid.nx)
     assert state.qv.shape == (grid.nz, grid.ny, grid.nx)
     assert state.p.shape == (grid.nz, grid.ny, grid.nx)
+    assert state.p_total.shape == (grid.nz, grid.ny, grid.nx)
+    assert state.p_perturbation.shape == (grid.nz, grid.ny, grid.nx)
     assert state.ph.shape == (grid.nz + 1, grid.ny, grid.nx)
+    assert state.ph_total.shape == (grid.nz + 1, grid.ny, grid.nx)
+    assert state.ph_perturbation.shape == (grid.nz + 1, grid.ny, grid.nx)
     assert state.mu.shape == (grid.ny, grid.nx)
-    assert state.theta.dtype == jnp.float64
-    assert all(leaf.dtype == jnp.float64 for leaf in jax.tree_util.tree_leaves(state))
+    assert state.mu_total.shape == (grid.ny, grid.nx)
+    assert state.mu_perturbation.shape == (grid.ny, grid.nx)
+    for field in State.__slots__:
+        assert getattr(state, field).dtype == DEFAULT_DTYPES.dtype_for(field)
     assert all(_platform(leaf) == "gpu" for leaf in jax.tree_util.tree_leaves(state))
 
 
@@ -42,7 +47,7 @@ def test_state_and_tendency_bytes_match_manual_sum():
 
 
 def test_precision_registry_rejects_unknown_field():
-    assert DEFAULT_DTYPES.dtype_for("theta") == jnp.float64
+    assert DEFAULT_DTYPES.dtype_for("theta") == PRECISION_MATRIX["theta"][0]
     try:
         DEFAULT_DTYPES.dtype_for("rain")
     except KeyError as exc:

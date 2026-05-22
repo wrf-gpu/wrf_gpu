@@ -1,6 +1,34 @@
 {
   "acceptance_criterion": "AC2",
   "analytic_flat_fixture": {
+    "dzdx": {
+      "dtype": "float64",
+      "shape": [
+        8,
+        8
+      ]
+    },
+    "dzdx_u": {
+      "dtype": "float64",
+      "shape": [
+        8,
+        9
+      ]
+    },
+    "dzdy": {
+      "dtype": "float64",
+      "shape": [
+        8,
+        8
+      ]
+    },
+    "dzdy_v": {
+      "dtype": "float64",
+      "shape": [
+        9,
+        8
+      ]
+    },
     "msftx": {
       "dtype": "float64",
       "shape": [
@@ -62,6 +90,34 @@
   },
   "wrf_fixture": {
     "available": true,
+    "dzdx": {
+      "dtype": "float64",
+      "shape": [
+        66,
+        159
+      ]
+    },
+    "dzdx_u": {
+      "dtype": "float64",
+      "shape": [
+        66,
+        160
+      ]
+    },
+    "dzdy": {
+      "dtype": "float64",
+      "shape": [
+        66,
+        159
+      ]
+    },
+    "dzdy_v": {
+      "dtype": "float64",
+      "shape": [
+        67,
+        159
+      ]
+    },
     "msftx": {
       "dtype": "float64",
       "shape": [

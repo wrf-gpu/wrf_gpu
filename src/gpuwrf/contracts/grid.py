@@ -56,9 +56,10 @@ class VerticalCoord:
 class DycoreMetrics:
     """Static WRF dycore metric and vertical-coordinate arrays.
 
-    Map factors and hybrid-eta coefficients live here, not in the timestep
-    ``State`` carry. This follows the c2 architecture split: static grid data is
-    device-resident, while prognostic fields remain separate SoA leaves.
+    Map factors, hybrid-eta coefficients, and terrain slopes live here, not in
+    the timestep ``State`` carry. This follows the c2 architecture split:
+    static grid data is device-resident, while prognostic fields remain
+    separate SoA leaves.
     """
 
     msftx: jax.Array
@@ -79,6 +80,10 @@ class DycoreMetrics:
     dnw: jax.Array
     rdn: jax.Array
     rdnw: jax.Array
+    dzdx: jax.Array
+    dzdy: jax.Array
+    dzdx_u: jax.Array
+    dzdy_v: jax.Array
     p_top: jax.Array
     provenance: str = "analytic-flat"
 
@@ -116,6 +121,10 @@ class DycoreMetrics:
             "dnw",
             "rdn",
             "rdnw",
+            "dzdx",
+            "dzdy",
+            "dzdx_u",
+            "dzdy_v",
             "p_top",
         )
 
@@ -155,6 +164,10 @@ class DycoreMetrics:
             dnw=dn,
             rdn=rdn,
             rdnw=rdn,
+            dzdx=jnp.zeros((ny, nx), dtype=jnp.float64),
+            dzdy=jnp.zeros((ny, nx), dtype=jnp.float64),
+            dzdx_u=jnp.zeros((ny, nx + 1), dtype=jnp.float64),
+            dzdy_v=jnp.zeros((ny + 1, nx), dtype=jnp.float64),
             p_top=jnp.asarray(top_pressure_pa, dtype=jnp.float64),
             provenance=provenance,
         )
@@ -181,6 +194,10 @@ class DycoreMetrics:
             "dnw": (nz,),
             "rdn": (nz,),
             "rdnw": (nz,),
+            "dzdx": (ny, nx),
+            "dzdy": (ny, nx),
+            "dzdx_u": (ny, nx + 1),
+            "dzdy_v": (ny + 1, nx),
         }
         for name, shape in expected.items():
             if tuple(getattr(self, name).shape) != shape:
