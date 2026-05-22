@@ -1,6 +1,18 @@
 {
   "acceptance_criterion": "AC2",
   "analytic_flat_fixture": {
+    "cf1": {
+      "dtype": "float64",
+      "shape": []
+    },
+    "cf2": {
+      "dtype": "float64",
+      "shape": []
+    },
+    "cf3": {
+      "dtype": "float64",
+      "shape": []
+    },
     "dzdx": {
       "dtype": "float64",
       "shape": [
@@ -27,6 +39,18 @@
       "shape": [
         9,
         8
+      ]
+    },
+    "fnm": {
+      "dtype": "float64",
+      "shape": [
+        10
+      ]
+    },
+    "fnp": {
+      "dtype": "float64",
+      "shape": [
+        10
       ]
     },
     "msftx": {
@@ -90,6 +114,18 @@
   },
   "wrf_fixture": {
     "available": true,
+    "cf1": {
+      "dtype": "float64",
+      "shape": []
+    },
+    "cf2": {
+      "dtype": "float64",
+      "shape": []
+    },
+    "cf3": {
+      "dtype": "float64",
+      "shape": []
+    },
     "dzdx": {
       "dtype": "float64",
       "shape": [
@@ -116,6 +152,18 @@
       "shape": [
         67,
         159
+      ]
+    },
+    "fnm": {
+      "dtype": "float64",
+      "shape": [
+        44
+      ]
+    },
+    "fnp": {
+      "dtype": "float64",
+      "shape": [
+        44
       ]
     },
     "msftx": {

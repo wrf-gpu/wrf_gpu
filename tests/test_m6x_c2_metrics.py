@@ -4,6 +4,8 @@ from pathlib import Path
 
 import jax
 import jax.numpy as jnp
+import numpy as np
+from netCDF4 import Dataset
 
 from gpuwrf.contracts.grid import GridSpec
 from gpuwrf.dynamics.metrics import (
@@ -34,9 +36,18 @@ def test_flat_metrics_shapes_staggering_and_identity_values():
     assert metrics.dzdy_v.shape == (grid.ny + 1, grid.nx)
     assert metrics.c1h.shape == (grid.nz,)
     assert metrics.c1f.shape == (grid.nz + 1,)
+    assert metrics.cf1.shape == ()
+    assert metrics.cf2.shape == ()
+    assert metrics.cf3.shape == ()
+    assert metrics.fnm.shape == (grid.nz,)
+    assert metrics.fnp.shape == (grid.nz,)
     assert metrics.msftx.dtype == jnp.float64
+    assert metrics.fnm.dtype == jnp.float64
     assert jnp.allclose(metrics.dzdx, 0.0)
     assert jnp.allclose(metrics.dzdy, 0.0)
+    assert jnp.allclose(metrics.fnm, 0.5)
+    assert jnp.allclose(metrics.fnp, 0.5)
+    assert jnp.allclose(jnp.asarray([metrics.cf1, metrics.cf2, metrics.cf3]), jnp.asarray([2.0, -1.5, 0.5]))
     assert jnp.allclose(mass_metric_area(metrics), 1.0)
     assert jnp.allclose(u_metric_ratio(metrics), 1.0)
     assert jnp.allclose(v_metric_ratio(metrics), 1.0)
@@ -68,5 +79,17 @@ def test_wrfinput_metric_loader_shapes_when_fixture_available():
     assert metrics.dzdy_v.shape == (67, 159)
     assert metrics.c1h.shape == (44,)
     assert metrics.c1f.shape == (45,)
+    assert metrics.cf1.shape == ()
+    assert metrics.cf2.shape == ()
+    assert metrics.cf3.shape == ()
+    assert metrics.fnm.shape == (44,)
+    assert metrics.fnp.shape == (44,)
     assert metrics.p_top.shape == ()
     assert float(jnp.min(metric_minmax(metrics))) > 0.0
+
+    with Dataset(WRFINPUT_D02) as dataset:
+        assert float(metrics.cf1) == float(np.asarray(dataset.variables["CF1"][0], dtype=np.float64))
+        assert float(metrics.cf2) == float(np.asarray(dataset.variables["CF2"][0], dtype=np.float64))
+        assert float(metrics.cf3) == float(np.asarray(dataset.variables["CF3"][0], dtype=np.float64))
+        assert jnp.allclose(metrics.fnm, jnp.asarray(np.asarray(dataset.variables["FNM"][0], dtype=np.float64)))
+        assert jnp.allclose(metrics.fnp, jnp.asarray(np.asarray(dataset.variables["FNP"][0], dtype=np.float64)))
