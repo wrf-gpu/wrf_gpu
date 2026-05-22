@@ -1,0 +1,133 @@
+{
+  "artifact_paths": [
+    "artifacts/m6/performance/empirical_bisection/phase3_acoustic_only.json"
+  ],
+  "artifact_type": "m6x_empirical_bisection_probe",
+  "bisection_config": {
+    "disable_acoustic": false,
+    "disable_advection": true,
+    "disable_boundary": true,
+    "disable_mu_continuity": true,
+    "disable_mynn": true,
+    "disable_rrtmg": true,
+    "disable_sanitize": true,
+    "disable_surface": true,
+    "disable_thompson": true
+  },
+  "boundary_path": "data/fixtures/m6/d02_boundary_replay_v2.zarr",
+  "component_subset": {
+    "boundary": false,
+    "dycore": {
+      "acoustic": true,
+      "advection": false,
+      "mu_continuity": false
+    },
+    "physics": [],
+    "sanitize": false
+  },
+  "created_utc": "2026-05-22T02:56:04.810101+00:00",
+  "domain": "d02",
+  "dt_s": 10.0,
+  "first_nonfinite_step": null,
+  "first_nonfinite_summary": null,
+  "grid": {
+    "dx_m": 3000.0,
+    "dy_m": 3000.0,
+    "mass_shape": [
+      159,
+      66,
+      44
+    ],
+    "wrf_staggered_extent": [
+      160,
+      67,
+      45
+    ]
+  },
+  "hours_requested": 1.0,
+  "label": "phase3_acoustic_only",
+  "n_acoustic": 2,
+  "radiation_cadence_steps": 60,
+  "run_id": "20260520_18z_l3_24h_20260521T045847Z",
+  "samples": [
+    {
+      "raw_candidate_nonfinite_count": 0,
+      "run_radiation": false,
+      "step": 1
+    },
+    {
+      "raw_candidate_nonfinite_count": 0,
+      "run_radiation": false,
+      "step": 2
+    },
+    {
+      "raw_candidate_nonfinite_count": 0,
+      "run_radiation": false,
+      "step": 3
+    },
+    {
+      "raw_candidate_nonfinite_count": 0,
+      "run_radiation": false,
+      "step": 30
+    },
+    {
+      "raw_candidate_nonfinite_count": 0,
+      "run_radiation": true,
+      "step": 60
+    },
+    {
+      "raw_candidate_nonfinite_count": 0,
+      "run_radiation": false,
+      "step": 90
+    },
+    {
+      "raw_candidate_nonfinite_count": 0,
+      "run_radiation": true,
+      "step": 120
+    },
+    {
+      "raw_candidate_nonfinite_count": 0,
+      "run_radiation": false,
+      "step": 150
+    },
+    {
+      "raw_candidate_nonfinite_count": 0,
+      "run_radiation": true,
+      "step": 180
+    },
+    {
+      "raw_candidate_nonfinite_count": 0,
+      "run_radiation": false,
+      "step": 210
+    },
+    {
+      "raw_candidate_nonfinite_count": 0,
+      "run_radiation": true,
+      "step": 240
+    },
+    {
+      "raw_candidate_nonfinite_count": 0,
+      "run_radiation": false,
+      "step": 270
+    },
+    {
+      "raw_candidate_nonfinite_count": 0,
+      "run_radiation": true,
+      "step": 300
+    },
+    {
+      "raw_candidate_nonfinite_count": 0,
+      "run_radiation": false,
+      "step": 330
+    },
+    {
+      "raw_candidate_nonfinite_count": 0,
+      "run_radiation": true,
+      "step": 360
+    }
+  ],
+  "status": "finite_through_limit",
+  "steps_completed": 360,
+  "steps_requested": 360,
+  "wall_s": 1.0842754769983003
+}

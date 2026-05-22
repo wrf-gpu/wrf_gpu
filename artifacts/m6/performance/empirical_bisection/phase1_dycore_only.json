@@ -1,0 +1,88 @@
+{
+  "artifact_paths": [
+    "artifacts/m6/performance/empirical_bisection/phase1_dycore_only.json"
+  ],
+  "artifact_type": "m6x_empirical_bisection_probe",
+  "bisection_config": {
+    "disable_acoustic": false,
+    "disable_advection": false,
+    "disable_boundary": true,
+    "disable_mu_continuity": false,
+    "disable_mynn": true,
+    "disable_rrtmg": true,
+    "disable_sanitize": true,
+    "disable_surface": true,
+    "disable_thompson": true
+  },
+  "boundary_path": "data/fixtures/m6/d02_boundary_replay_v2.zarr",
+  "component_subset": {
+    "boundary": false,
+    "dycore": {
+      "acoustic": true,
+      "advection": true,
+      "mu_continuity": true
+    },
+    "physics": [],
+    "sanitize": false
+  },
+  "created_utc": "2026-05-22T02:55:46.898927+00:00",
+  "domain": "d02",
+  "dt_s": 10.0,
+  "first_nonfinite_step": 25,
+  "first_nonfinite_summary": {
+    "nonfinite_by_field": {
+      "p": 61,
+      "ph": 83,
+      "theta": 1,
+      "u": 88,
+      "v": 93,
+      "w": 83
+    },
+    "nonfinite_count": 409
+  },
+  "grid": {
+    "dx_m": 3000.0,
+    "dy_m": 3000.0,
+    "mass_shape": [
+      159,
+      66,
+      44
+    ],
+    "wrf_staggered_extent": [
+      160,
+      67,
+      45
+    ]
+  },
+  "hours_requested": 1.0,
+  "label": "phase1_dycore_only",
+  "n_acoustic": 2,
+  "radiation_cadence_steps": 60,
+  "run_id": "20260520_18z_l3_24h_20260521T045847Z",
+  "samples": [
+    {
+      "raw_candidate_nonfinite_count": 0,
+      "run_radiation": false,
+      "step": 1
+    },
+    {
+      "raw_candidate_nonfinite_count": 0,
+      "run_radiation": false,
+      "step": 2
+    },
+    {
+      "raw_candidate_nonfinite_count": 0,
+      "run_radiation": false,
+      "step": 3
+    },
+    {
+      "raw_candidate_nonfinite_count": 409,
+      "run_radiation": false,
+      "step": 25
+    }
+  ],
+  "status": "nonfinite",
+  "steps_completed": 25,
+  "steps_requested": 360,
+  "wall_s": 9.207114908000221
+}

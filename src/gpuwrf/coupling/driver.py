@@ -15,8 +15,12 @@ import zarr
 
 from gpuwrf.contracts.grid import GridSpec
 from gpuwrf.contracts.state import State, Tendencies
+from gpuwrf.contracts.halo import apply_halo
 from gpuwrf.coupling.boundary_apply import BoundaryConfig, DEFAULT_BOUNDARY_CONFIG, SIDE_INDEX, SIDES, apply_lateral_boundaries
 from gpuwrf.coupling.physics_couplers import mynn_adapter, rrtmg_adapter, surface_adapter, thompson_adapter
+from gpuwrf.dynamics.acoustic import forward_backward_acoustic
+from gpuwrf.dynamics.advection import compute_advection_tendencies, halo_spec
+from gpuwrf.dynamics.tendencies import add_scaled_tendencies
 from gpuwrf.dynamics.step import step as dycore_step
 from gpuwrf.io.gen2_accessor import DEFAULT_M6_BOUNDARY_REPLAY, Gen2Run
 from gpuwrf.io.land_state import load_prescribed_land_state
@@ -61,6 +65,23 @@ class SanitizeStats(NamedTuple):
     clip_count: object
     changed_count: object
     total_count: object
+
+
+class BisectionConfig(NamedTuple):
+    """Static diagnostic switches for empirical instability bisection."""
+
+    disable_sanitize: bool = False
+    disable_thompson: bool = False
+    disable_mynn: bool = False
+    disable_surface: bool = False
+    disable_rrtmg: bool = False
+    disable_boundary: bool = False
+    disable_advection: bool = False
+    disable_acoustic: bool = False
+    disable_mu_continuity: bool = False
+
+
+DEFAULT_BISECTION_CONFIG = BisectionConfig()
 
 
 def _load(run: Gen2Run, domain: str, var: str, time: int = 0):
@@ -274,6 +295,7 @@ def validate_lifted_coupled_dt(dt_s: float) -> float:
         "final_radiation",
         "boundary_config",
         "capture_pre_sanitize",
+        "bisection_config",
     ),
 )
 def run_forecast_segment(
@@ -290,6 +312,7 @@ def run_forecast_segment(
     final_radiation: bool = True,
     boundary_config: BoundaryConfig = DEFAULT_BOUNDARY_CONFIG,
     capture_pre_sanitize: bool = False,
+    bisection_config: BisectionConfig = DEFAULT_BISECTION_CONFIG,
 ) -> State | tuple[State, PreSanitizeTap]:
     """Run a shape-stable coupled forecast segment under `lax.scan`."""
 
@@ -306,6 +329,7 @@ def run_forecast_segment(
             radiation_cadence_steps=radiation_cadence_steps,
             final_radiation=final_radiation,
             boundary_config=boundary_config,
+            bisection_config=bisection_config,
         )
 
     total = int(start_step + steps if total_steps is None else total_steps)
@@ -327,6 +351,7 @@ def run_forecast_segment(
             completed,
             n_acoustic,
             boundary_config,
+            bisection_config,
         )
         completed += prefix - 1
         remaining -= prefix - 1
@@ -340,6 +365,7 @@ def run_forecast_segment(
                 n_acoustic=n_acoustic,
                 run_radiation=True,
                 boundary_config=boundary_config,
+                bisection_config=bisection_config,
             )
             completed += 1
             remaining -= 1
@@ -356,6 +382,7 @@ def run_forecast_segment(
             n_acoustic,
             int(radiation_cadence_steps),
             boundary_config,
+            bisection_config,
         )
         completed += full_blocks * int(radiation_cadence_steps)
         remaining -= full_blocks * int(radiation_cadence_steps)
@@ -370,6 +397,7 @@ def run_forecast_segment(
             completed,
             n_acoustic,
             boundary_config,
+            bisection_config,
         )
         completed += remaining - 1
         tail_radiation = bool(final_radiation and completed + 1 == total)
@@ -382,6 +410,7 @@ def run_forecast_segment(
             n_acoustic=n_acoustic,
             run_radiation=tail_radiation,
             boundary_config=boundary_config,
+            bisection_config=bisection_config,
         )
     return current
 
@@ -399,6 +428,7 @@ def _run_forecast_segment_with_pre_sanitize_tap(
     radiation_cadence_steps: int,
     final_radiation: bool,
     boundary_config: BoundaryConfig,
+    bisection_config: BisectionConfig,
 ) -> tuple[State, PreSanitizeTap]:
     """Run the same static cadence segmentation while returning pre-sanitize states."""
 
@@ -423,6 +453,7 @@ def _run_forecast_segment_with_pre_sanitize_tap(
                 completed,
                 n_acoustic,
                 boundary_config,
+                bisection_config,
             )
             taps.append(tap)
             completed += prefix - 1
@@ -437,6 +468,7 @@ def _run_forecast_segment_with_pre_sanitize_tap(
                 n_acoustic=n_acoustic,
                 run_radiation=True,
                 boundary_config=boundary_config,
+                bisection_config=bisection_config,
             )
             taps.append(_stack_single_tap(tap))
             completed += 1
@@ -454,6 +486,7 @@ def _run_forecast_segment_with_pre_sanitize_tap(
             n_acoustic,
             int(radiation_cadence_steps),
             boundary_config,
+            bisection_config,
         )
         taps.append(tap)
         completed += full_blocks * int(radiation_cadence_steps)
@@ -470,6 +503,7 @@ def _run_forecast_segment_with_pre_sanitize_tap(
                 completed,
                 n_acoustic,
                 boundary_config,
+                bisection_config,
             )
             taps.append(tap)
             completed += remaining - 1
@@ -483,6 +517,7 @@ def _run_forecast_segment_with_pre_sanitize_tap(
             n_acoustic=n_acoustic,
             run_radiation=tail_radiation,
             boundary_config=boundary_config,
+            bisection_config=bisection_config,
         )
         taps.append(_stack_single_tap(tap))
 
@@ -500,6 +535,7 @@ def _scan_without_radiation(
     completed_steps,
     n_acoustic: int,
     boundary_config: BoundaryConfig,
+    bisection_config: BisectionConfig,
 ) -> State:
     if int(steps) <= 0:
         return state
@@ -516,6 +552,7 @@ def _scan_without_radiation(
                 n_acoustic=n_acoustic,
                 run_radiation=False,
                 boundary_config=boundary_config,
+                bisection_config=bisection_config,
             ),
             None,
         )
@@ -533,6 +570,7 @@ def _scan_without_radiation_tap(
     completed_steps,
     n_acoustic: int,
     boundary_config: BoundaryConfig,
+    bisection_config: BisectionConfig,
 ) -> tuple[State, PreSanitizeTap]:
     if int(steps) <= 0:
         return state, _empty_tap_like(state)
@@ -548,6 +586,7 @@ def _scan_without_radiation_tap(
             n_acoustic=n_acoustic,
             run_radiation=False,
             boundary_config=boundary_config,
+            bisection_config=bisection_config,
         )
 
     final_state, tap = jax.lax.scan(body, state, indices)
@@ -564,6 +603,7 @@ def _scan_radiation_blocks(
     n_acoustic: int,
     radiation_cadence_steps: int,
     boundary_config: BoundaryConfig,
+    bisection_config: BisectionConfig,
 ) -> State:
     if int(blocks) <= 0:
         return state
@@ -579,6 +619,7 @@ def _scan_radiation_blocks(
             block_completed,
             n_acoustic,
             boundary_config,
+            bisection_config,
         )
         return (
             coupled_timestep(
@@ -590,6 +631,7 @@ def _scan_radiation_blocks(
                 n_acoustic=n_acoustic,
                 run_radiation=True,
                 boundary_config=boundary_config,
+                bisection_config=bisection_config,
             ),
             None,
         )
@@ -608,6 +650,7 @@ def _scan_radiation_blocks_tap(
     n_acoustic: int,
     radiation_cadence_steps: int,
     boundary_config: BoundaryConfig,
+    bisection_config: BisectionConfig,
 ) -> tuple[State, PreSanitizeTap]:
     if int(blocks) <= 0:
         return state, _empty_tap_like(state)
@@ -623,6 +666,7 @@ def _scan_radiation_blocks_tap(
             block_completed,
             n_acoustic,
             boundary_config,
+            bisection_config,
         )
         carry, rad_tap = coupled_timestep_with_pre_sanitize(
             carry,
@@ -633,6 +677,7 @@ def _scan_radiation_blocks_tap(
             n_acoustic=n_acoustic,
             run_radiation=True,
             boundary_config=boundary_config,
+            bisection_config=bisection_config,
         )
         return carry, _concat_taps((no_rad_tap, _stack_single_tap(rad_tap)))
 
@@ -697,22 +742,24 @@ def coupled_timestep(
     n_acoustic: int,
     run_radiation: bool,
     boundary_config: BoundaryConfig,
+    bisection_config: BisectionConfig = DEFAULT_BISECTION_CONFIG,
 ) -> State:
     """One dycore + physics + lateral-boundary step."""
 
-    return sanitize_state(
-        _candidate_timestep(
-            state,
-            tendencies,
-            grid,
-            dt_s,
-            global_step,
-            n_acoustic=n_acoustic,
-            run_radiation=run_radiation,
-            boundary_config=boundary_config,
-        ),
+    candidate = _candidate_timestep(
         state,
+        tendencies,
+        grid,
+        dt_s,
+        global_step,
+        n_acoustic=n_acoustic,
+        run_radiation=run_radiation,
+        boundary_config=boundary_config,
+        bisection_config=bisection_config,
     )
+    if bool(bisection_config.disable_sanitize):
+        return candidate
+    return sanitize_state(candidate, state)
 
 
 def coupled_timestep_with_pre_sanitize(
@@ -725,6 +772,7 @@ def coupled_timestep_with_pre_sanitize(
     n_acoustic: int,
     run_radiation: bool,
     boundary_config: BoundaryConfig,
+    bisection_config: BisectionConfig = DEFAULT_BISECTION_CONFIG,
 ) -> tuple[State, PreSanitizeTap]:
     """One coupled step returning the state immediately before `sanitize_state`."""
 
@@ -735,14 +783,20 @@ def coupled_timestep_with_pre_sanitize(
         dt_s,
         n_acoustic=n_acoustic,
         run_radiation=run_radiation,
+        bisection_config=bisection_config,
     )
     lead_seconds = global_step.astype(jnp.float64) * float(dt_s)
-    candidate = apply_lateral_boundaries(before_boundary, lead_seconds, dt_s, boundary_config)
+    if bool(bisection_config.disable_boundary):
+        candidate = before_boundary
+    else:
+        candidate = apply_lateral_boundaries(before_boundary, lead_seconds, dt_s, boundary_config)
     tap = PreSanitizeTap(
         state=candidate,
         pre_boundary=_boundary_snapshot(before_boundary),
         boundary_tendency=_boundary_tendency(candidate, before_boundary, dt_s),
     )
+    if bool(bisection_config.disable_sanitize):
+        return candidate, tap
     return sanitize_state(candidate, state), tap
 
 
@@ -756,6 +810,7 @@ def coupled_timestep_with_sanitize_stats(
     n_acoustic: int,
     run_radiation: bool,
     boundary_config: BoundaryConfig,
+    bisection_config: BisectionConfig = DEFAULT_BISECTION_CONFIG,
 ) -> tuple[State, SanitizeStats]:
     """One coupled step returning scalar sanitize-change counts."""
 
@@ -768,7 +823,12 @@ def coupled_timestep_with_sanitize_stats(
         n_acoustic=n_acoustic,
         run_radiation=run_radiation,
         boundary_config=boundary_config,
+        bisection_config=bisection_config,
     )
+    if bool(bisection_config.disable_sanitize):
+        zero = jnp.asarray(0, dtype=jnp.int64)
+        total = sum((leaf.size for leaf in jax.tree_util.tree_leaves(candidate)), 0)
+        return candidate, SanitizeStats(zero, zero, zero, jnp.asarray(total, dtype=jnp.int64))
     return sanitize_state_with_stats(candidate, state)
 
 
@@ -782,6 +842,7 @@ def _candidate_timestep(
     n_acoustic: int,
     run_radiation: bool,
     boundary_config: BoundaryConfig,
+    bisection_config: BisectionConfig = DEFAULT_BISECTION_CONFIG,
 ) -> State:
     before_boundary = _candidate_before_boundary(
         state,
@@ -790,7 +851,10 @@ def _candidate_timestep(
         dt_s,
         n_acoustic=n_acoustic,
         run_radiation=run_radiation,
+        bisection_config=bisection_config,
     )
+    if bool(bisection_config.disable_boundary):
+        return before_boundary
     lead_seconds = global_step.astype(jnp.float64) * float(dt_s)
     return apply_lateral_boundaries(before_boundary, lead_seconds, dt_s, boundary_config)
 
@@ -803,15 +867,92 @@ def _candidate_before_boundary(
     *,
     n_acoustic: int,
     run_radiation: bool,
+    bisection_config: BisectionConfig = DEFAULT_BISECTION_CONFIG,
 ) -> State:
     dycore_dt_s = validate_lifted_coupled_dt(dt_s)
-    next_state = dycore_step(state, tendencies, grid, dycore_dt_s, n_acoustic=n_acoustic, debug=False)
-    next_state = thompson_adapter(next_state, dt_s)
-    next_state = mynn_adapter(next_state, dt_s, grid)
-    next_state = surface_adapter(next_state, dt_s)
-    if run_radiation:
+    next_state = _dycore_step_for_bisection(
+        state,
+        tendencies,
+        grid,
+        dycore_dt_s,
+        n_acoustic=n_acoustic,
+        bisection_config=bisection_config,
+    )
+    if not bool(bisection_config.disable_thompson):
+        next_state = thompson_adapter(next_state, dt_s)
+    if not bool(bisection_config.disable_mynn):
+        next_state = mynn_adapter(next_state, dt_s, grid)
+    if not bool(bisection_config.disable_surface):
+        next_state = surface_adapter(next_state, dt_s)
+    if run_radiation and not bool(bisection_config.disable_rrtmg):
         next_state = rrtmg_adapter(next_state, dt_s, grid)
     return next_state
+
+
+def _dycore_step_for_bisection(
+    state: State,
+    tendencies: Tendencies,
+    grid: GridSpec,
+    dt: float,
+    *,
+    n_acoustic: int,
+    bisection_config: BisectionConfig,
+) -> State:
+    if not (
+        bool(bisection_config.disable_advection)
+        or bool(bisection_config.disable_acoustic)
+        or bool(bisection_config.disable_mu_continuity)
+    ):
+        return dycore_step(state, tendencies, grid, dt, n_acoustic=n_acoustic, debug=False)
+
+    s0 = apply_halo(state, halo_spec(grid))
+    s1 = _rk3_bisection_stage(
+        s0,
+        s0,
+        tendencies,
+        grid,
+        dt / 3.0,
+        disable_advection=bool(bisection_config.disable_advection),
+    )
+    s1 = apply_halo(s1, halo_spec(grid))
+    s2 = _rk3_bisection_stage(
+        s0,
+        s1,
+        tendencies,
+        grid,
+        dt / 2.0,
+        disable_advection=bool(bisection_config.disable_advection),
+    )
+    if not bool(bisection_config.disable_acoustic):
+        s2 = forward_backward_acoustic(s2, grid, dt / 2.0, n_acoustic)
+    s2 = apply_halo(s2, halo_spec(grid))
+    s3 = _rk3_bisection_stage(
+        s0,
+        s2,
+        tendencies,
+        grid,
+        dt,
+        disable_advection=bool(bisection_config.disable_advection),
+    )
+    if not bool(bisection_config.disable_acoustic):
+        s3 = forward_backward_acoustic(s3, grid, dt, n_acoustic)
+    s3 = apply_halo(s3, halo_spec(grid))
+    if bool(bisection_config.disable_mu_continuity):
+        s3 = s3.replace(mu=state.mu)
+    return s3
+
+
+def _rk3_bisection_stage(
+    origin: State,
+    stage_state: State,
+    base_tendencies: Tendencies,
+    grid: GridSpec,
+    dt_stage: float,
+    *,
+    disable_advection: bool,
+) -> State:
+    tendencies = base_tendencies if disable_advection else compute_advection_tendencies(stage_state, base_tendencies, grid)
+    return add_scaled_tendencies(origin, tendencies, dt_stage)
 
 
 def sanitize_state(candidate: State, previous: State) -> State:
@@ -1098,7 +1239,9 @@ def output_time_label(run: Gen2Run, lead_hours: float, domain: str = "d02") -> s
 
 
 __all__ = [
+    "BisectionConfig",
     "BoundarySnapshot",
+    "DEFAULT_BISECTION_CONFIG",
     "DEFAULT_DT_S",
     "DEFAULT_RADIATION_CADENCE_STEPS",
     "MAX_LIFTED_DYCORE_DT_S",
