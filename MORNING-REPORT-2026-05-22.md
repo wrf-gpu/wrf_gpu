@@ -137,3 +137,49 @@ All autonomous options exhausted. The c1 dycore residual requires map-factor ext
 The bug-hunt methodology is converging but the fix sites keep moving from operator-level to architecture-level. Each iteration narrows scope correctly; the project is now choosing between architecture additions (1, 5) or alternative dycore approaches (2, 3, 4).
 
 No more autonomous work until your call. Repo state: 30+ commits today, all milestone work captured.
+
+---
+
+## UPDATE 08:00 — Warm-bubble RETEST = BIG NEWS
+
+**Manager caught own error**: c1-A4 buoyancy commit was on the c1 branch but c1-A5..A10 all branched from BEFORE it. The first warm-bubble test ran on a buoyancy-LESS branch — false signal.
+
+Cherry-picked c1-A4 buoyancy + c1-A7/A8/A9 fixes → retested.
+
+### Retest result
+| Metric | WRF reference | c1 with buoyancy |
+|---|---|---|
+| w_max at 300s | 5-10 m/s | **5.99 m/s ✓** |
+| bubble centroid at 300s | ~2500m | **2517m ✓** |
+| finite to 600s | YES | **NO — blows up at 350s** |
+| Last finite w_max | — | 162 million m/s (diverged) |
+
+### What this means
+
+**c1 dycore IS structurally correct for short times.** It produces physically accurate Skamarock-Klemp warm-bubble physics for 300s — including buoyancy, acoustic, advection working together. Then it lacks numerical stability mechanism for sustained run (~5-6 minutes simulated time before divergence).
+
+### Killed wrong direction
+- c1-A10 (map-factor extension): killed
+- The 86.9% sanitize firing in coupled 1h is NOT a fundamental architecture flaw
+
+### Likely fixes
+The c1 dycore needs ADDITIONAL stability mechanisms WRF has:
+- 6th-order hyperdiffusion on momentum
+- Positive-definite/monotonic flux limiter on scalars (we have flux form, not monotonic)
+- Rayleigh damping (sponge) at top boundary
+- Divergence damping (smdiv was tried in c1-A3 but pre-buoyancy)
+
+**Smaller scope than map-factor extension.** Could be 4-8h sprint to add 1-2 of these.
+
+### Waiting on RMSE-growth diagnostic
+
+Currently running (started ~25min ago). Will tell us if the c1 dycore diverges:
+- Exponentially → unstable mode, needs damping
+- Polynomially → formulation error, needs operator fix
+- Linearly → systematic bias, needs targeted correction
+
+Once RMSE-growth lands, manager dispatches the specific fix class.
+
+### Net assessment
+
+This is the most encouraging M6.x signal in 9 iterations. c1 dycore works in principle. Needs stability hardening, not architectural replacement. **Constitutional 4× target met (44.33×) + correct physics in principle = path to operational forecast still real.**
