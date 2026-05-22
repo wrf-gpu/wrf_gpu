@@ -72,6 +72,18 @@
         44
       ]
     },
+    "cf1": {
+      "dtype": "float64",
+      "shape": []
+    },
+    "cf2": {
+      "dtype": "float64",
+      "shape": []
+    },
+    "cf3": {
+      "dtype": "float64",
+      "shape": []
+    },
     "dn": {
       "dtype": "float64",
       "shape": [
@@ -79,6 +91,18 @@
       ]
     },
     "dnw": {
+      "dtype": "float64",
+      "shape": [
+        44
+      ]
+    },
+    "fnm": {
+      "dtype": "float64",
+      "shape": [
+        44
+      ]
+    },
+    "fnp": {
       "dtype": "float64",
       "shape": [
         44

@@ -59,7 +59,8 @@ class DycoreMetrics:
     Map factors, hybrid-eta coefficients, and terrain slopes live here, not in
     the timestep ``State`` carry. This follows the c2 architecture split:
     static grid data is device-resident, while prognostic fields remain
-    separate SoA leaves.
+    separate SoA leaves. The ``cf*`` and ``fnm/fnp`` coefficients support
+    WRF's non-hydrostatic PGF face-pressure construction.
     """
 
     msftx: jax.Array
@@ -80,6 +81,11 @@ class DycoreMetrics:
     dnw: jax.Array
     rdn: jax.Array
     rdnw: jax.Array
+    cf1: jax.Array
+    cf2: jax.Array
+    cf3: jax.Array
+    fnm: jax.Array
+    fnp: jax.Array
     dzdx: jax.Array
     dzdy: jax.Array
     dzdx_u: jax.Array
@@ -121,6 +127,11 @@ class DycoreMetrics:
             "dnw",
             "rdn",
             "rdnw",
+            "cf1",
+            "cf2",
+            "cf3",
+            "fnm",
+            "fnp",
             "dzdx",
             "dzdy",
             "dzdx_u",
@@ -141,10 +152,22 @@ class DycoreMetrics:
     ) -> "DycoreMetrics":
         """Builds a flat, unit-map-factor fixture for idealized tests."""
 
+        if nz < 3:
+            raise ValueError("DycoreMetrics.flat requires nz >= 3 for WRF cf coefficients")
         eta = jnp.asarray(eta_levels, dtype=jnp.float64)
+        if tuple(eta.shape) != (nz + 1,):
+            raise ValueError("eta_levels shape must be (nz + 1,)")
         eta_mass = 0.5 * (eta[:-1] + eta[1:])
         dn = jnp.abs(eta[:-1] - eta[1:])
         rdn = 1.0 / dn
+        dnw = dn
+        rdnw = rdn
+        fnm = 0.5 * jnp.ones((nz,), dtype=jnp.float64)
+        fnp = 0.5 * jnp.ones((nz,), dtype=jnp.float64)
+        fnm = fnm.at[1:].set(0.5 * dnw[:-1] / dn[1:])
+        fnp = fnp.at[1:].set(0.5 * dnw[1:] / dn[1:])
+        cof1 = (2.0 * dn[1] + dn[2]) / (dn[1] + dn[2]) * dnw[0] / dn[1]
+        cof2 = dn[1] / (dn[1] + dn[2]) * dnw[0] / dn[2]
         return cls(
             msftx=jnp.ones((ny, nx), dtype=jnp.float64),
             msfty=jnp.ones((ny, nx), dtype=jnp.float64),
@@ -161,9 +184,14 @@ class DycoreMetrics:
             c3f=eta,
             c4f=jnp.zeros((nz + 1,), dtype=jnp.float64),
             dn=dn,
-            dnw=dn,
+            dnw=dnw,
             rdn=rdn,
-            rdnw=rdn,
+            rdnw=rdnw,
+            cf1=fnp[1] + cof1,
+            cf2=fnm[1] - cof1 - cof2,
+            cf3=cof2,
+            fnm=fnm,
+            fnp=fnp,
             dzdx=jnp.zeros((ny, nx), dtype=jnp.float64),
             dzdy=jnp.zeros((ny, nx), dtype=jnp.float64),
             dzdx_u=jnp.zeros((ny, nx + 1), dtype=jnp.float64),
@@ -194,6 +222,11 @@ class DycoreMetrics:
             "dnw": (nz,),
             "rdn": (nz,),
             "rdnw": (nz,),
+            "cf1": (),
+            "cf2": (),
+            "cf3": (),
+            "fnm": (nz,),
+            "fnp": (nz,),
             "dzdx": (ny, nx),
             "dzdy": (ny, nx),
             "dzdx_u": (ny, nx + 1),

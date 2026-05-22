@@ -514,7 +514,13 @@ class State:
         return cls.zeros(grid)
 
     def replace(self, **updates) -> "State":
-        """Returns an updated pytree with explicit field names for JAX functional steps."""
+        """Returns an updated pytree with explicit field names for JAX functional steps.
+
+        ``p_total`` is authoritative; ``p_perturbation`` is a delta the caller
+        maintains explicitly against the current ``BaseState.pb``. Updating
+        ``p_perturbation`` alone does not auto-recompute ``p_total`` because
+        ``pb`` is not visible to ``State.replace``.
+        """
 
         values = {name: getattr(self, name) for name in self.__slots__}
         for name, value in updates.items():

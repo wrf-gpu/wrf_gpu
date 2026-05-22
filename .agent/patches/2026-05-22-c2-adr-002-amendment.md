@@ -30,11 +30,13 @@ diff --git a/.agent/decisions/ADR-002-state-layout.md b/.agent/decisions/ADR-002
 +`msftx/msfty -> (ny, nx)`, `msfux/msfuy -> (ny, nx+1)`,
 +`msfvx/msfvy -> (ny+1, nx)`, mass coefficients `c?h -> (nz)`,
 +face coefficients `c?f -> (nz+1)`, `dn/dnw/rdn/rdnw -> (nz)`,
++non-hydrostatic pressure-interpolation coefficients `cf1/cf2/cf3 -> ()`
++and `fnm/fnp -> (nz)`,
 +mass terrain slopes `dzdx/dzdy -> (ny, nx)`, x-face slope
 +`dzdx_u -> (ny, nx+1)`, and y-face slope `dzdy_v -> (ny+1, nx)`.
 +These arrays are static grid data and MUST NOT be added to the timestep `State` pytree.
 +They exist so c2-A2 can implement the well-balanced horizontal pressure-gradient
-+operator required by WRF `dyn_em/module_small_step_em.F:828-862,902-936`.
++operator required by WRF `dyn_em/module_small_step_em.F:663,698-711,828-862,902-936`.
 @@
  ## Residency And Timestep Carry
 @@
@@ -43,11 +45,14 @@ diff --git a/.agent/decisions/ADR-002-state-layout.md b/.agent/decisions/ADR-002
 +c2 amendment: WRF small-step memory such as previous pressure for `smdiv`, flux accumulators, and intermediate tendencies are explicit `lax.scan` carry leaves. They MUST NOT be Python globals, hidden mutable module state, or host-owned arrays captured inside the timestep loop.
 +
 +c2 amendment: horizontal pressure-gradient force code MUST use stored
-+`p_perturbation` directly, combine `ph/ph_perturbation`, `pb`, `al/alt`
-+analogues, map-factor ratios, and hybrid mass coefficients as in WRF
-+`module_small_step_em.F:828-862,902-936`, and subtract the hydrostatic
-+terrain-following slope correction equivalent to
-+`(g/alpha) * dzdx * dp/deta` / `(g/alpha) * dzdy * dp/deta`.
++`p_perturbation` directly and compute scan-carried `al/alt` and `cqu/cqv`
++intermediates. It MUST follow WRF's implicit terrain cancellation through
++the first three `dpxy` terms in `module_small_step_em.F:828-831,902-905`,
++use x ratio `msfux/msfuy` and y ratio `msfvy/msfvx`, and MUST NOT add an
++explicit hydrostatic slope-subtraction term. When non-hydrostatic mode is
++active, it MUST add the fourth PGF term in `module_small_step_em.F:854-863`
++and `module_small_step_em.F:928-937`, with `dpn` built from `cf1/cf2/cf3` at boundaries and `fnm/fnp`
++in the interior.
 +`module_small_step_em.F:557-565` remains the `smdiv` pressure-memory anchor,
 +but `smdiv`, Rayleigh, and hyperdiffusion are stabilizers around this correct
 +operator, not substitutes for it.
