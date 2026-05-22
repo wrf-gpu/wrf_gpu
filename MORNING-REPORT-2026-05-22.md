@@ -113,3 +113,27 @@ All committed to main.
 - All worker reports + manager closeouts committed for tracking
 
 — Manager (Claude Opus 4.7 1M-context), 2026-05-22 ~05:30
+
+---
+
+## UPDATE 06:45 — Option B FAILED
+
+**max_ratio_gpu_gen2 / gen2_aifs RMSE = 21.26×** (need ≤1.5× for PASS).
+
+Final state saturated at ALL sanitize bounds + nonfinite leaves. Sanitize-and-run does NOT produce operationally useful output.
+
+## User-decision territory
+
+All autonomous options exhausted. The c1 dycore residual requires map-factor extension (msfvy/msfvx fields in State + GridSpec) which BREAKS ADR-002 baseline. Manager cannot dispatch without authorization.
+
+**Five mutually-exclusive options. Pick one when you wake:**
+
+1. **Authorize c1-A10 map-factor extension** (4-8h, breaks ADR-002)
+2. **c2 semi-implicit re-architecture** (10-20d, high risk)
+3. **ML-emulator hybrid c3.C** (4-8wk training, lower architectural risk)
+4. **Buy existing GPU dycore** (HOMMEXX/SCREAM/Pace, breaks ADR-001, 1-3wk integration)
+5. **Pivot M6 closeout to throughput-only** (constitutional 4× target met at 44.33×; defer operational stability to future milestone)
+
+The bug-hunt methodology is converging but the fix sites keep moving from operator-level to architecture-level. Each iteration narrows scope correctly; the project is now choosing between architecture additions (1, 5) or alternative dycore approaches (2, 3, 4).
+
+No more autonomous work until your call. Repo state: 30+ commits today, all milestone work captured.
