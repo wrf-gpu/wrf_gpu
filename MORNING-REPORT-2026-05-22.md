@@ -183,3 +183,71 @@ Once RMSE-growth lands, manager dispatches the specific fix class.
 ### Net assessment
 
 This is the most encouraging M6.x signal in 9 iterations. c1 dycore works in principle. Needs stability hardening, not architectural replacement. **Constitutional 4× target met (44.33×) + correct physics in principle = path to operational forecast still real.**
+
+---
+
+## UPDATE 09:30 — c1-A11 diagnostic pressure: closed one bug, exposed next; PATTERN CONFIRMED
+
+c1-A11 implemented diagnostic pressure (per bughunt #2 §3 Hyp B + WRF EoS). Result:
+- Closed: pressure drift to negative
+- Worse in coupled: sanitize **88.6% → 100%**; nonfinite **793M → 2.45B**
+- Warm-bubble: blow-up moved from pressure to theta/w before 600s
+
+**11 c1 iterations. Each surgical fix is correct in isolation. Each exposes the next missing WRF mechanism in coupled context.** This is the c1 reality.
+
+## What c1 needs simultaneously (the "complete WRF" picture)
+
+To match WRF behavior at full-domain coupled forecast, c1 needs ALL of:
+- ✅ Klemp-Skamarock acoustic + tridiag (have)
+- ✅ Mass-conservative scalar advection (have, c1-A2)
+- ✅ Mass-conservative momentum advection (have, c1-A7+A8)
+- ✅ Vertical buoyancy in w equation (have, c1-A4)
+- ✅ Diagnostic pressure from theta/ph/mu (have, c1-A11)
+- ❌ Map-factor support (msfvy/msfvx fields) — c1-A10 killed
+- ❌ Hybrid-eta coordinate (c1h/c2h/c3h/c4h)
+- ❌ Klemp §3d smdiv divergence damping (c1-A3 tried pre-buoyancy, didn't help)
+- ❌ 6th-order hyperdiffusion on momentum
+- ❌ Rayleigh damping (sponge) at top
+- ❌ Positive-definite/monotonic scalar limiter
+
+That's 6 more WRF mechanisms needed. Each is a surgical sprint (4-8h). Sequential approach has been wrong — they need to land together to stabilize.
+
+## Definitive recommendations (USER DECISION REQUIRED)
+
+### Option A: **Bundle ALL remaining mechanisms in one c1-A12 sprint**
+- Wall: 1-3 days codex (large sprint with multiple WRF citations)
+- Risk: high — many moving parts, hard to debug if it fails
+- Methodology violation: contradicts bughunt #4's "no bundling" anti-pattern
+- Likely outcome: 50/50 closes M6.x
+
+### Option B: **Pivot to throughput-only M6 closeout** (recommended)
+- M6 closes as: "Constitutional 4× speedup target met at 44.33×; full dycore stability deferred to a future milestone"
+- M7 dispatch: blocked until dycore lands
+- Document c1 as 11-iteration progress: each iteration produced a correct surgical fix; coupled stability requires WRF-canonical completeness beyond M6 scope
+- Wall: <1h to write closeout
+- Operational forecast: NOT achieved this cycle
+
+### Option C: **Pivot to alternative dycore architecture**
+- E3SM/HOMMEXX, SCREAM, Pace (gt4py)
+- Breaks ADR-001 (JAX-native)
+- Wall: 1-3 weeks integration
+- Operational forecast: achievable with proven dycore
+
+### Option D: **Continue surgical iteration c1-A12** (map-factor, then A13 hybrid-eta, etc)
+- Wall: 4-8h per sprint × 6 mechanisms = 1-2 weeks
+- Same per-iteration evidence-grading
+- Risk: same pattern continues; each fix exposes next; not clear it converges
+
+## Honest manager assessment
+
+The c1 approach has been correctly executing surgical fixes guided by empirical evidence. Every fix has been WRF-cited and verified. The pattern of "each fix exposes next" is **NOT** methodology failure — it's the reality that WRF's full coupled stability depends on simultaneously having multiple regularization mechanisms.
+
+**Option B (throughput-only closeout)** is the honest call: M6's constitutional target is achieved; the operational target needs a larger dycore-completion effort than M6 scope allows. M7 milestone scope should explicitly include "complete WRF-canonical dycore" as primary deliverable.
+
+The 11-iteration c1 effort produced:
+- Concrete map of what WRF mechanisms are essential vs optional
+- Verified surgical fixes for 5 mechanisms
+- Reusable empirical-bisection methodology
+- All on branches, recoverable if c1 architecture is resumed
+
+Awaiting user decision.
