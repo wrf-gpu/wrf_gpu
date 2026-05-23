@@ -1,0 +1,83 @@
+{
+  "artifacts": {},
+  "diagnostic": {
+    "name": "operator_term_budget_tracer",
+    "purpose": "Rank named operator terms by magnitude."
+  },
+  "input": {
+    "path": "/tmp/wrf_gpu2_s2_baseline/.agent/sprints/2026-05-23-m6x-s2-d02-baseline-instrumented/artifacts/sidecar-inputs/operator_term_budget_tracer.input.json",
+    "term_count": 0
+  },
+  "measurements": {
+    "extra_terms": {},
+    "per_term": {
+      "boundary_forcing": {
+        "l2": null,
+        "max_abs": null,
+        "mean": null,
+        "positive_fraction": null,
+        "present": false,
+        "shape": []
+      },
+      "buoyancy": {
+        "l2": null,
+        "max_abs": null,
+        "mean": null,
+        "positive_fraction": null,
+        "present": false,
+        "shape": []
+      },
+      "density_coupling": {
+        "l2": null,
+        "max_abs": null,
+        "mean": null,
+        "positive_fraction": null,
+        "present": false,
+        "shape": []
+      },
+      "pressure_restoring": {
+        "l2": null,
+        "max_abs": null,
+        "mean": null,
+        "positive_fraction": null,
+        "present": false,
+        "shape": []
+      },
+      "rayleigh": {
+        "l2": null,
+        "max_abs": null,
+        "mean": null,
+        "positive_fraction": null,
+        "present": false,
+        "shape": []
+      },
+      "smdiv": {
+        "l2": null,
+        "max_abs": null,
+        "mean": null,
+        "positive_fraction": null,
+        "present": false,
+        "shape": []
+      },
+      "theta_transport": {
+        "l2": null,
+        "max_abs": null,
+        "mean": null,
+        "positive_fraction": null,
+        "present": false,
+        "shape": []
+      }
+    },
+    "ranking": []
+  },
+  "schema_version": "m6x-s1-diagnostic-sidecar-v1",
+  "source_citations": [
+    ".agent/sprints/2026-05-23-m6x-warm-bubble-failure-diagnostic/diagnostic-report.md:71-90",
+    "src/gpuwrf/dynamics/acoustic_wrf.py:735-747"
+  ],
+  "status": "NO_TERMS",
+  "units": {
+    "l2": "same units times sqrt(samples)",
+    "term_value": "field-dependent tendency units"
+  }
+}
