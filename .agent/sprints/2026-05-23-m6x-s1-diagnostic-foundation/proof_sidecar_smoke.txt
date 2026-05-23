@@ -1,0 +1,22 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.11, pytest-9.0.3, pluggy-1.5.0 -- /home/enric/miniconda3/bin/python
+cachedir: .pytest_cache
+rootdir: /tmp/wrf_gpu2_s1_diag
+configfile: pyproject.toml
+plugins: zarr-3.1.6, anyio-4.12.1
+collecting ... collected 12 items
+
+tests/test_m6x_s1_diagnostic_sidecars.py::test_bound_violation_tracer_smoke PASSED [  8%]
+tests/test_m6x_s1_diagnostic_sidecars.py::test_sanitizer_audit_smoke PASSED [ 16%]
+tests/test_m6x_s1_diagnostic_sidecars.py::test_limiter_activation_tracker_smoke PASSED [ 25%]
+tests/test_m6x_s1_diagnostic_sidecars.py::test_field_rmse_timeline_smoke PASSED [ 33%]
+tests/test_m6x_s1_diagnostic_sidecars.py::test_spatial_divergence_map_smoke PASSED [ 41%]
+tests/test_m6x_s1_diagnostic_sidecars.py::test_conservation_tracker_smoke PASSED [ 50%]
+tests/test_m6x_s1_diagnostic_sidecars.py::test_boundary_ring_error_profiler_smoke PASSED [ 58%]
+tests/test_m6x_s1_diagnostic_sidecars.py::test_vertical_column_phase_space_smoke PASSED [ 66%]
+tests/test_m6x_s1_diagnostic_sidecars.py::test_operator_term_budget_tracer_smoke PASSED [ 75%]
+tests/test_m6x_s1_diagnostic_sidecars.py::test_transfer_launch_timeline_smoke PASSED [ 83%]
+tests/test_m6x_s1_diagnostic_sidecars.py::test_timestep_convergence_dashboard_smoke PASSED [ 91%]
+tests/test_m6x_s1_diagnostic_sidecars.py::test_stabilizer_provenance_scanner_smoke PASSED [100%]
+
+============================== 12 passed in 0.05s ==============================
