@@ -1,0 +1,207 @@
+Gen2 RMSE baseline characterization
+Method requested: A
+Method used: A consecutive-day overlap
+
+Inventory root: /mnt/data/canairy_meteo/runs/wrf_l3
+Domain: d02
+Run directories: 29
+Runs with d02 retained product: 6
+Complete advertised runs with d02 retained product: 3
+Longest consecutive usable init-date span: 2026-05-21..2026-05-22 (2 days)
+Runs with retained products:
+  - 20260509_18z_l3_24h_20260511T190519Z: files=25, observed_hours=24, advertised_hours=24, complete, source=wrfout, file=wrfout_d02_2026-05-10_06:00:00, valid=2026-05-09T18:00:00+00:00..2026-05-10T18:00:00+00:00
+  - 20260509_18z_l3_24h_20260512T154354Z: files=3, observed_hours=2, advertised_hours=24, partial, source=wrfout, file=wrfout_d02_2026-05-09_20:00:00, valid=2026-05-09T18:00:00+00:00..2026-05-09T20:00:00+00:00
+  - 20260521_18z_l2rerun_l3_24h_20260522T231647Z: files=25, observed_hours=24, advertised_hours=24, complete, source=wrfout, file=wrfout_d02_2026-05-22_14:00:00, valid=2026-05-21T18:00:00+00:00..2026-05-22T18:00:00+00:00
+  - 20260521_18z_l3_24h_20260522T072630Z: files=9, observed_hours=8, advertised_hours=24, partial, source=wrfout, file=wrfout_d02_2026-05-22_02:00:00, valid=2026-05-21T18:00:00+00:00..2026-05-22T02:00:00+00:00
+  - 20260521_18z_l3_24h_20260522T133443Z: files=25, observed_hours=24, advertised_hours=24, complete, source=wrfout, file=wrfout_d02_2026-05-22_14:00:00, valid=2026-05-21T18:00:00+00:00..2026-05-22T18:00:00+00:00
+  - 20260522_18z_l3_24h_20260523T055700Z: files=13, observed_hours=12, advertised_hours=24, partial, source=wrfout, file=wrfout_d02_2026-05-23_06:00:00, valid=2026-05-22T18:00:00+00:00..2026-05-23T06:00:00+00:00
+
+Inventory root: /mnt/data/canairy_meteo/runs/wrf_l2
+Domain: d02
+Run directories: 23
+Runs with d02 retained product: 23
+Complete advertised runs with d02 retained product: 22
+Longest consecutive usable init-date span: 2026-04-30..2026-05-21 (22 days)
+Runs with retained products:
+  - 20260430_18z_l2_72h_20260520T191306Z: files=73, observed_hours=72, advertised_hours=72, complete, source=thin, file=thin_gridded_d02_v1.nc, valid=2026-04-30T18:00:00+00:00..2026-05-03T18:00:00+00:00
+  - 20260501_18z_l2_72h_20260519T173026Z: files=73, observed_hours=72, advertised_hours=72, complete, source=thin, file=thin_gridded_d02_v1.nc, valid=2026-05-01T18:00:00+00:00..2026-05-04T18:00:00+00:00
+  - 20260502_18z_l2_72h_20260520T103946Z: files=73, observed_hours=72, advertised_hours=72, complete, source=thin, file=thin_gridded_d02_v1.nc, valid=2026-05-02T18:00:00+00:00..2026-05-05T18:00:00+00:00
+  - 20260503_18z_l2_72h_20260518T205545Z: files=73, observed_hours=72, advertised_hours=72, complete, source=thin, file=thin_gridded_d02_v1.nc, valid=2026-05-03T18:00:00+00:00..2026-05-06T18:00:00+00:00
+  - 20260504_18z_l2_72h_20260515T061907Z: files=73, observed_hours=72, advertised_hours=72, complete, source=thin, file=thin_gridded_d02_v1.nc, valid=2026-05-04T18:00:00+00:00..2026-05-07T18:00:00+00:00
+  - 20260505_18z_l2_72h_20260518T074056Z: files=73, observed_hours=72, advertised_hours=72, complete, source=thin, file=thin_gridded_d02_v1.nc, valid=2026-05-05T18:00:00+00:00..2026-05-08T18:00:00+00:00
+  - 20260506_18z_l2_72h_20260513T222831Z: files=73, observed_hours=72, advertised_hours=72, complete, source=thin, file=thin_gridded_d02_v1.nc, valid=2026-05-06T18:00:00+00:00..2026-05-09T18:00:00+00:00
+  - 20260507_18z_l2_72h_20260513T124307Z: files=73, observed_hours=72, advertised_hours=72, complete, source=thin, file=thin_gridded_d02_v1.nc, valid=2026-05-07T18:00:00+00:00..2026-05-10T18:00:00+00:00
+  - 20260508_18z_l2_72h_20260512T161222Z: files=73, observed_hours=72, advertised_hours=72, complete, source=thin, file=thin_gridded_d02_v1.nc, valid=2026-05-08T18:00:00+00:00..2026-05-11T18:00:00+00:00
+  - 20260509_18z_l2_72h_20260511T190519Z: files=73, observed_hours=72, advertised_hours=72, complete, source=thin, file=thin_gridded_d02_v1.nc, valid=2026-05-09T18:00:00+00:00..2026-05-12T18:00:00+00:00
+  - 20260510_18z_l2_72h_20260511T124717Z: files=73, observed_hours=72, advertised_hours=72, complete, source=thin, file=thin_gridded_d02_v1.nc, valid=2026-05-10T18:00:00+00:00..2026-05-13T18:00:00+00:00
+  - 20260511_18z_l2_72h_20260512T045528Z: files=73, observed_hours=72, advertised_hours=72, complete, source=thin, file=thin_gridded_d02_v1.nc, valid=2026-05-11T18:00:00+00:00..2026-05-14T18:00:00+00:00
+  - 20260512_18z_l2_72h_20260513T014823Z: files=73, observed_hours=72, advertised_hours=72, complete, source=thin, file=thin_gridded_d02_v1.nc, valid=2026-05-12T18:00:00+00:00..2026-05-15T18:00:00+00:00
+  - 20260513_18z_l2_72h_20260514T054102Z: files=73, observed_hours=72, advertised_hours=72, complete, source=thin, file=thin_gridded_d02_v1.nc, valid=2026-05-13T18:00:00+00:00..2026-05-16T18:00:00+00:00
+  - 20260514_18z_l2_72h_20260517T145509Z: files=73, observed_hours=72, advertised_hours=72, complete, source=thin, file=thin_gridded_d02_v1.nc, valid=2026-05-14T18:00:00+00:00..2026-05-17T18:00:00+00:00
+  - 20260515_18z_l2_72h_20260517T064752Z: files=73, observed_hours=72, advertised_hours=72, complete, source=thin, file=thin_gridded_d02_v1.nc, valid=2026-05-15T18:00:00+00:00..2026-05-18T18:00:00+00:00
+  - 20260516_18z_l2_72h_20260516T234038Z: files=73, observed_hours=72, advertised_hours=72, complete, source=thin, file=thin_gridded_d02_v1.nc, valid=2026-05-16T18:00:00+00:00..2026-05-19T18:00:00+00:00
+  - 20260517_18z_l2_72h_20260518T004341Z: files=73, observed_hours=72, advertised_hours=72, complete, source=thin, file=thin_gridded_d02_v1.nc, valid=2026-05-17T18:00:00+00:00..2026-05-20T18:00:00+00:00
+  - 20260518_18z_l2_72h_20260519T075505Z: files=73, observed_hours=72, advertised_hours=72, complete, source=thin, file=thin_gridded_d02_v1.nc, valid=2026-05-18T18:00:00+00:00..2026-05-21T18:00:00+00:00
+  - 20260519_18z_l2_72h_20260520T025228Z: files=73, observed_hours=72, advertised_hours=72, complete, source=thin, file=thin_gridded_d02_v1.nc, valid=2026-05-19T18:00:00+00:00..2026-05-22T18:00:00+00:00
+  - 20260520_18z_l2_72h_20260521T045847Z: files=73, observed_hours=72, advertised_hours=72, complete, source=thin, file=thin_gridded_d02_v1.nc, valid=2026-05-20T18:00:00+00:00..2026-05-23T18:00:00+00:00
+  - 20260521_18z_l2_72h_20260522T133443Z: files=20, observed_hours=19, advertised_hours=72, partial, source=wrfout, file=wrfout_d02_2026-05-22_04:00:00, valid=2026-05-21T18:00:00+00:00..2026-05-22T13:00:00+00:00
+  - 20260521_18z_l2rerun_l2_72h_20260522T231647Z: files=73, observed_hours=72, advertised_hours=72, complete, source=thin, file=thin_gridded_d02_v1.nc, valid=2026-05-21T18:00:00+00:00..2026-05-24T18:00:00+00:00
+
+WRF output metadata sample
+Dimensions: {'Time': 73, 'south_north': 66, 'west_east': 159, 'DateStrLen': 19}
+Variable count: 21
+First variables: CLDHIGH, CLDLOW, CLDMID, GLW, PBLH, PSFC, Q2, RAINC, RAINNC, RAINSH, SWDOWN, T2, TCC, TSK, Times, U10, UST, V10, XLAT, XLONG, XTIME
+Target variable metadata: {'T2': {'dimensions': ['Time', 'south_north', 'west_east'], 'shape': [73, 66, 159], 'units': 'K', 'description': ''}, 'U10': {'dimensions': ['Time', 'south_north', 'west_east'], 'shape': [73, 66, 159], 'units': 'm/s', 'description': ''}, 'V10': {'dimensions': ['Time', 'south_north', 'west_east'], 'shape': [73, 66, 159], 'units': 'm/s', 'description': ''}}
+Output frequency: hourly for complete retained runs (valid-time deltas are 1h).
+File naming convention: <run-id>/wrfout_<domain>_YYYY-MM-DD_HH:MM:SS for raw retained history, or <run-id>/thin_gridded_<domain>_v1.nc for compact hourly retained products
+Run-id convention: YYYYMMDD_18z_l{2|3}_{24|72}h_YYYYMMDDTHHMMSSZ, with observed rerun variants.
+
+Comparison pairs
+Lead 24h source root: /mnt/data/canairy_meteo/runs/wrf_l2
+  2026-05-01T18:00:00+00:00: 20260430_18z_l2_72h_20260520T191306Z lead 24h vs 20260501_18z_l2_72h_20260519T173026Z lead 0h
+  2026-05-02T18:00:00+00:00: 20260501_18z_l2_72h_20260519T173026Z lead 24h vs 20260502_18z_l2_72h_20260520T103946Z lead 0h
+  2026-05-03T18:00:00+00:00: 20260502_18z_l2_72h_20260520T103946Z lead 24h vs 20260503_18z_l2_72h_20260518T205545Z lead 0h
+  2026-05-04T18:00:00+00:00: 20260503_18z_l2_72h_20260518T205545Z lead 24h vs 20260504_18z_l2_72h_20260515T061907Z lead 0h
+  2026-05-05T18:00:00+00:00: 20260504_18z_l2_72h_20260515T061907Z lead 24h vs 20260505_18z_l2_72h_20260518T074056Z lead 0h
+  2026-05-06T18:00:00+00:00: 20260505_18z_l2_72h_20260518T074056Z lead 24h vs 20260506_18z_l2_72h_20260513T222831Z lead 0h
+  2026-05-07T18:00:00+00:00: 20260506_18z_l2_72h_20260513T222831Z lead 24h vs 20260507_18z_l2_72h_20260513T124307Z lead 0h
+  2026-05-08T18:00:00+00:00: 20260507_18z_l2_72h_20260513T124307Z lead 24h vs 20260508_18z_l2_72h_20260512T161222Z lead 0h
+  2026-05-09T18:00:00+00:00: 20260508_18z_l2_72h_20260512T161222Z lead 24h vs 20260509_18z_l2_72h_20260511T190519Z lead 0h
+  2026-05-10T18:00:00+00:00: 20260509_18z_l2_72h_20260511T190519Z lead 24h vs 20260510_18z_l2_72h_20260511T124717Z lead 0h
+  2026-05-11T18:00:00+00:00: 20260510_18z_l2_72h_20260511T124717Z lead 24h vs 20260511_18z_l2_72h_20260512T045528Z lead 0h
+  2026-05-12T18:00:00+00:00: 20260511_18z_l2_72h_20260512T045528Z lead 24h vs 20260512_18z_l2_72h_20260513T014823Z lead 0h
+  2026-05-13T18:00:00+00:00: 20260512_18z_l2_72h_20260513T014823Z lead 24h vs 20260513_18z_l2_72h_20260514T054102Z lead 0h
+  2026-05-14T18:00:00+00:00: 20260513_18z_l2_72h_20260514T054102Z lead 24h vs 20260514_18z_l2_72h_20260517T145509Z lead 0h
+  2026-05-15T18:00:00+00:00: 20260514_18z_l2_72h_20260517T145509Z lead 24h vs 20260515_18z_l2_72h_20260517T064752Z lead 0h
+  2026-05-16T18:00:00+00:00: 20260515_18z_l2_72h_20260517T064752Z lead 24h vs 20260516_18z_l2_72h_20260516T234038Z lead 0h
+  2026-05-17T18:00:00+00:00: 20260516_18z_l2_72h_20260516T234038Z lead 24h vs 20260517_18z_l2_72h_20260518T004341Z lead 0h
+  2026-05-18T18:00:00+00:00: 20260517_18z_l2_72h_20260518T004341Z lead 24h vs 20260518_18z_l2_72h_20260519T075505Z lead 0h
+  2026-05-19T18:00:00+00:00: 20260518_18z_l2_72h_20260519T075505Z lead 24h vs 20260519_18z_l2_72h_20260520T025228Z lead 0h
+  2026-05-20T18:00:00+00:00: 20260519_18z_l2_72h_20260520T025228Z lead 24h vs 20260520_18z_l2_72h_20260521T045847Z lead 0h
+  2026-05-21T18:00:00+00:00: 20260520_18z_l2_72h_20260521T045847Z lead 24h vs 20260521_18z_l2rerun_l2_72h_20260522T231647Z lead 0h
+Lead 72h source root: /mnt/data/canairy_meteo/runs/wrf_l2
+  2026-05-03T18:00:00+00:00: 20260430_18z_l2_72h_20260520T191306Z lead 72h vs 20260501_18z_l2_72h_20260519T173026Z lead 48h
+  2026-05-04T18:00:00+00:00: 20260501_18z_l2_72h_20260519T173026Z lead 72h vs 20260502_18z_l2_72h_20260520T103946Z lead 48h
+  2026-05-05T18:00:00+00:00: 20260502_18z_l2_72h_20260520T103946Z lead 72h vs 20260503_18z_l2_72h_20260518T205545Z lead 48h
+  2026-05-06T18:00:00+00:00: 20260503_18z_l2_72h_20260518T205545Z lead 72h vs 20260504_18z_l2_72h_20260515T061907Z lead 48h
+  2026-05-07T18:00:00+00:00: 20260504_18z_l2_72h_20260515T061907Z lead 72h vs 20260505_18z_l2_72h_20260518T074056Z lead 48h
+  2026-05-08T18:00:00+00:00: 20260505_18z_l2_72h_20260518T074056Z lead 72h vs 20260506_18z_l2_72h_20260513T222831Z lead 48h
+  2026-05-09T18:00:00+00:00: 20260506_18z_l2_72h_20260513T222831Z lead 72h vs 20260507_18z_l2_72h_20260513T124307Z lead 48h
+  2026-05-10T18:00:00+00:00: 20260507_18z_l2_72h_20260513T124307Z lead 72h vs 20260508_18z_l2_72h_20260512T161222Z lead 48h
+  2026-05-11T18:00:00+00:00: 20260508_18z_l2_72h_20260512T161222Z lead 72h vs 20260509_18z_l2_72h_20260511T190519Z lead 48h
+  2026-05-12T18:00:00+00:00: 20260509_18z_l2_72h_20260511T190519Z lead 72h vs 20260510_18z_l2_72h_20260511T124717Z lead 48h
+  2026-05-13T18:00:00+00:00: 20260510_18z_l2_72h_20260511T124717Z lead 72h vs 20260511_18z_l2_72h_20260512T045528Z lead 48h
+  2026-05-14T18:00:00+00:00: 20260511_18z_l2_72h_20260512T045528Z lead 72h vs 20260512_18z_l2_72h_20260513T014823Z lead 48h
+  2026-05-15T18:00:00+00:00: 20260512_18z_l2_72h_20260513T014823Z lead 72h vs 20260513_18z_l2_72h_20260514T054102Z lead 48h
+  2026-05-16T18:00:00+00:00: 20260513_18z_l2_72h_20260514T054102Z lead 72h vs 20260514_18z_l2_72h_20260517T145509Z lead 48h
+  2026-05-17T18:00:00+00:00: 20260514_18z_l2_72h_20260517T145509Z lead 72h vs 20260515_18z_l2_72h_20260517T064752Z lead 48h
+  2026-05-18T18:00:00+00:00: 20260515_18z_l2_72h_20260517T064752Z lead 72h vs 20260516_18z_l2_72h_20260516T234038Z lead 48h
+  2026-05-19T18:00:00+00:00: 20260516_18z_l2_72h_20260516T234038Z lead 72h vs 20260517_18z_l2_72h_20260518T004341Z lead 48h
+  2026-05-20T18:00:00+00:00: 20260517_18z_l2_72h_20260518T004341Z lead 72h vs 20260518_18z_l2_72h_20260519T075505Z lead 48h
+  2026-05-21T18:00:00+00:00: 20260518_18z_l2_72h_20260519T075505Z lead 72h vs 20260519_18z_l2_72h_20260520T025228Z lead 48h
+  2026-05-22T18:00:00+00:00: 20260519_18z_l2_72h_20260520T025228Z lead 72h vs 20260520_18z_l2_72h_20260521T045847Z lead 48h
+  2026-05-23T18:00:00+00:00: 20260520_18z_l2_72h_20260521T045847Z lead 72h vs 20260521_18z_l2rerun_l2_72h_20260522T231647Z lead 48h
+
+RMSE summary
+field,lead_hours,spatial_mean_rmse,p95_rmse,sample_pairs,units
+T2,24,0.6284061313,1.76199533,17,K
+U10,24,1.456482265,2.954589341,17,m/s
+V10,24,1.590974439,3.556604337,17,m/s
+T2,72,0.2550553229,0.4131125664,17,K
+U10,72,0.8878892918,1.77950453,17,m/s
+V10,72,0.8699087447,1.742272248,17,m/s
+
+Spatial pattern: T2 24h
+top5_threshold=1.762; top5_boundary_fraction=0.002; top5_mean_lat=28.2304; top5_mean_lon=-16.6029; pair_rmse_mean=0.951439; pair_rmse_std=0.0925262; pair_rmse_min=0.720742; pair_rmse_max=1.08338
+::--::.::..::::.........
+::=::::::..::--:........
+.:--:::-::..:=+=........
+.:::::----:::-*=...:::::
+::::.:*=++*-:-=:...:-::.
+::::.:--*@#=:......::=-:
+.:-:::::-=#=:.......::-:
+.:-+-:.:::--.........:-:
+..-#=...::.:..........::
+..:+=..................:
+...::.:................:
+......::...............:
+
+Spatial pattern: U10 24h
+top5_threshold=2.95459; top5_boundary_fraction=0.133; top5_mean_lat=27.9943; top5_mean_lon=-16.7350; pair_rmse_mean=1.61366; pair_rmse_std=0.238994; pair_rmse_min=1.08048; pair_rmse_max=2.08774
+:-+-:===+==-=+#=....:--:
+:-*+-+#+*+=-=#@#....:--:
+:===-=*+**===+**:::.---:
+-=--:-++**====+--::.-==-
+-++-:-==+*#--+==-::::++:
+:-*+---+=+*+:::::::::-=:
+:-*#=-=+*=#+:::.:::::.-:
+--+*==----+=-::..:::::-:
+--=*---:---::::....:::::
+-=+=-::::--::::........:
+:-=-:::::::::::::......:
+:::::::::::::::::::::...
+
+Spatial pattern: V10 24h
+top5_threshold=3.5566; top5_boundary_fraction=0.021; top5_mean_lat=28.0708; top5_mean_lon=-16.7704; pair_rmse_mean=1.7955; pair_rmse_std=0.378548; pair_rmse_min=1.07196; pair_rmse_max=2.37773
+-=---:::::--====::.:::::
+-===-----:::=***:::::-::
+-::--==+=--:-#%+::::--:.
+=::--=+@#*=--=+-::::--:.
+=-:::==@%#=:---::::::--:
+==-::::**==--::.::.::--:
+-=+=-:::::--:::...:::-::
+-+*++-::.:::::::::::::::
+-=*++::....::::::::::.::
+::--:::....::::::::::.::
+:::::::....::::::::::.:-
+:::::::......::::::::...
+
+Spatial pattern: T2 72h
+top5_threshold=0.413113; top5_boundary_fraction=0.088; top5_mean_lat=28.1376; top5_mean_lon=-16.0779; pair_rmse_mean=0.251543; pair_rmse_std=0.0903708; pair_rmse_min=0.127197; pair_rmse_max=0.44387
+-===---::::::-::..::.:-=
+-=+*==-::::::+=:..::::-=
+--++-==-:::::#*=:::-::-=
+--==--=-=-:::+%+.:::--=+
+------@+-*+::-=+...=-=++
+-=-----=+#*:::::.::--+#+
+:-==:::---*+-:...:-:-=+=
+:-=+----::--::::::::--==
+:-=+--:::::::::::::::---
+::-*--:::::::::::::::--+
+::::---:::::::::::::::-+
+:::::--::::::::::::::::+
+
+Spatial pattern: U10 72h
+top5_threshold=1.7795; top5_boundary_fraction=0.059; top5_mean_lat=28.0705; top5_mean_lon=-17.2800; pair_rmse_mean=0.894837; pair_rmse_std=0.434395; pair_rmse_min=0.431311; pair_rmse_max=1.65442
+--:-=======--=-::..::::-
++=-+:*@**+==-+*--:.::---
+*#==-+***======---.:--=-
+#%+=-=**+=+*-:-:-:-:===-
+*@*=----*==+=:-=++-:-=+-
+-%@--=+=-:-+:::-+--:::==
+--#+*=+=:::==::---+:..-=
+--=-**+=---:-::-:--::::-
+-=-:::::::::::--:::::::-
+-----:::::::::---::::::=
+------:::::::::---::::::
+-:::--::::::::::::::::::
+
+Spatial pattern: V10 72h
+top5_threshold=1.74227; top5_boundary_fraction=0.042; top5_mean_lat=28.0675; top5_mean_lon=-17.1025; pair_rmse_mean=0.89352; pair_rmse_std=0.382921; pair_rmse_min=0.378329; pair_rmse_max=1.59241
+:+:--::::.:=-:-::-------
+:--=#+-=-..:==--:::--=--
+::.:*%+*=-::-+:+-::-:==-
+-==-=%+@+-:=-=:=%=:-----
+=+=::+=#*:-=+-:+=+--:=-=
+-*=-:==+-::+=..:-+--::==
+-+*-=#+:...=:..:::--:::=
+--#-*+--::..:..::.:::.:-
+:-=.==-:::.:::.......:::
+.:::----::::.::......:::
+::..:::::::::.::...::.::
+....:..::......::..:..::
+
+Threshold recommendation
+Recommend RMSE < 2.0x Gen2 noise floor as the default M6 Tier-4 rejection threshold, because ADR-007 makes U10/V10/T2 operational RMSE binding and a 2x multiplier allows minor implementation differences while still rejecting large forecast-regime errors.
+Caveat: rows with sample_pairs=0 are not threshold anchors; rerun this diagnostic after at least 7 consecutive retained daily cycles and 72h overlaps are available.
+CSV written: data/fixtures/gen2_baseline/rmse_summary.csv
