@@ -1,0 +1,96 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.11, pytest-9.0.3, pluggy-1.5.0 -- /home/enric/miniconda3/bin/python
+cachedir: .pytest_cache
+rootdir: /home/enric/src/wrf_gpu2
+configfile: pyproject.toml
+plugins: zarr-3.1.6, anyio-4.12.1
+collecting ... collected 3 items
+
+tests/test_m6x_vertical_acoustic_oracle.py::test_linear_acoustic_period_matches_dispersion_relation FAILED [ 33%]
+tests/test_m6x_vertical_acoustic_oracle.py::test_no_drift_in_hydrostatic_rest_state FAILED [ 66%]
+tests/test_m6x_vertical_acoustic_oracle.py::test_amplitude_decay_within_2pct_of_analytic FAILED [100%]
+
+=================================== FAILURES ===================================
+___________ test_linear_acoustic_period_matches_dispersion_relation ____________
+
+    def test_linear_acoustic_period_matches_dispersion_relation():
+        grid = _column_grid()
+        mode0 = _oracle_mode(np.asarray([0.0], dtype=np.float64))
+        period_s = float(mode0["period_s"])
+        phase_times = np.asarray([0.0, 0.25 * period_s, 0.5 * period_s, period_s], dtype=np.float64)
+        analytic = _oracle_mode(phase_times)
+        state, base = _state_and_base_from_mode(analytic, 0, grid)
+    
+        quarter = _advance_current_operator(state, base, grid, phase_times[1])
+        half = _advance_current_operator(state, base, grid, phase_times[2])
+        full = _advance_current_operator(state, base, grid, phase_times[3])
+    
+        initial_profile = analytic["w"][0]
+        quarter_amp = _modal_amplitude(quarter.w, initial_profile)
+        half_amp = _modal_amplitude(half.w, initial_profile)
+        full_amp = _modal_amplitude(full.w, initial_profile)
+        expected = [
+            _modal_amplitude(_broadcast_face(analytic["w"][1], grid), initial_profile),
+            _modal_amplitude(_broadcast_face(analytic["w"][2], grid), initial_profile),
+            _modal_amplitude(_broadcast_face(analytic["w"][3], grid), initial_profile),
+        ]
+        tolerance = 0.02 * INITIAL_W_M_S
+    
+>       assert abs(quarter_amp - expected[0]) < tolerance
+E       assert 0.9999999999999999 < 0.02
+E        +  where 0.9999999999999999 = abs((1.0 - 6.123233995736766e-17))
+
+tests/test_m6x_vertical_acoustic_oracle.py:154: AssertionError
+___________________ test_no_drift_in_hydrostatic_rest_state ____________________
+
+    def test_no_drift_in_hydrostatic_rest_state():
+        grid = _column_grid()
+        rest = _oracle_mode(np.asarray([0.0], dtype=np.float64))
+        state, base = _state_and_base_from_mode(rest, 0, grid)
+        state = state.replace(
+            w=jnp.zeros_like(state.w),
+            theta=base.theta_base,
+            ph_total=base.phb,
+            ph_perturbation=jnp.zeros_like(state.ph_perturbation),
+        )
+        ph_initial = state.ph_perturbation
+    
+        final = _advance_current_operator(state, base, grid, 10.0, n_substeps=1000)
+    
+        assert float(jnp.max(jnp.abs(final.w))) < 1.0e-12
+        assert float(jnp.max(jnp.abs(final.ph_perturbation - ph_initial))) < 1.0e-12
+>       assert hasattr(acoustic_wrf, "vertical_acoustic_update"), (
+            "no operator-level vertical_acoustic_update is exposed; hydrostatic-rest "
+            "invariance cannot yet be certified for the WRF advance_w path"
+        )
+E       AssertionError: no operator-level vertical_acoustic_update is exposed; hydrostatic-rest invariance cannot yet be certified for the WRF advance_w path
+E       assert False
+E        +  where False = hasattr(acoustic_wrf, 'vertical_acoustic_update')
+
+tests/test_m6x_vertical_acoustic_oracle.py:175: AssertionError
+_________________ test_amplitude_decay_within_2pct_of_analytic _________________
+
+    def test_amplitude_decay_within_2pct_of_analytic():
+        grid = _column_grid()
+        mode0 = _oracle_mode(np.asarray([0.0], dtype=np.float64))
+        half_period_s = 0.5 * float(mode0["period_s"])
+        analytic = _oracle_mode(np.asarray([0.0, half_period_s], dtype=np.float64))
+        state, base = _state_and_base_from_mode(analytic, 0, grid)
+    
+        final = _advance_current_operator(state, base, grid, half_period_s)
+    
+        initial_profile = analytic["w"][0]
+        actual_signed_amplitude = _modal_amplitude(final.w, initial_profile)
+        expected_signed_amplitude = _modal_amplitude(_broadcast_face(analytic["w"][1], grid), initial_profile)
+        analytic_decay = np.exp(-float(analytic["decay_rate_inv_s"]) * half_period_s)
+        assert analytic_decay == pytest.approx(1.0)
+>       assert abs(actual_signed_amplitude - expected_signed_amplitude) < 0.02 * INITIAL_W_M_S
+E       assert 2.0 < (0.02 * 1.0)
+E        +  where 2.0 = abs((1.0 - -1.0))
+
+tests/test_m6x_vertical_acoustic_oracle.py:195: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_m6x_vertical_acoustic_oracle.py::test_linear_acoustic_period_matches_dispersion_relation
+FAILED tests/test_m6x_vertical_acoustic_oracle.py::test_no_drift_in_hydrostatic_rest_state
+FAILED tests/test_m6x_vertical_acoustic_oracle.py::test_amplitude_decay_within_2pct_of_analytic
+============================== 3 failed in 7.77s ===============================
