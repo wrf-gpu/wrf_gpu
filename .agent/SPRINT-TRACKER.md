@@ -3,18 +3,19 @@
 Manager-maintained. 30-min cadence overnight (per 2026-05-23 standing order).
 Manager: Claude Opus 4.7 (1M-context). Replaces previous manager 2026-05-23 ~23:00.
 
-## Currently in flight (2 parallel, dedicated worktrees)
+## Currently in flight
 
 | Window | Sprint | Role | AI | Worktree | Wall budget | Goal |
 |---|---|---|---|---|---|---|
-| `2:..._production-grade-r-reviewer` | `2026-05-23-m6x-adr023-production-grade-reviewer` | reviewer | codex gpt-5.5 xhigh (NOTE: dispatcher mapped reviewer→codex; project lifecycle expects Opus 4.7 — dispatch a second tester-role Opus pass if codex verdict is suspicious) | `/tmp/wrf_gpu2_review_prod` on `reviewer/opus/m6x-adr023-production-grade-reviewer` | 45-90 min | Re-run spot checks, audit critic findings closure, anti-tautology + forbidden-move audits. Verdict in §6: ACCEPT / ACCEPT-WITH-REQUIRED-FIXES / REJECT. |
-| `2:..._d02-boundary-repla-worker` | `2026-05-23-m6x-adr023-d02-boundary-replay-1h` | worker | codex gpt-5.5 xhigh | `/tmp/wrf_gpu2_d02` on `worker/gpt/m6x-adr023-d02-boundary-replay-1h` | 6-12 h | F6 acceptance-ladder rung 4. 1h coupled forecast on Gen2 d02 with production-grade ADR-023 + c2-A2 horizontal + M5 physics + M6-S3 surface + M6.5-D1 IC/boundary. RMSE on T2/U10/V10/w/theta vs Gen2 wrfout. Informational (no target threshold). |
+| `2:..._public-scan-path-u-worker` | `2026-05-23-m6x-adr023-public-scan-path-unification` | worker | codex gpt-5.5 xhigh | `/tmp/wrf_gpu2_unify` on `worker/gpt/m6x-adr023-public-scan-path-unification` | 4-7 h | **Close reviewer reject.** Unify public nonhydrostatic scan path so it routes through the MPAS-recurrence kernel (not the simplified `_wrf_buoyancy_column_update` branch); remove `NONHYDROSTATIC_BUOYANCY_SCALE` constant + positive-only updraft drag + mu tanh CFL limiter; restore missing fixture; fix F8 in ADR-023; new path-unification tests. CRITICAL: if warm-bubble breaks after simplification, REPORT — do not silently re-stabilize. |
 
 ## Recently completed (this watchman session)
 
 | Sprint | Outcome | Branch / commit | Merged on main |
 |---|---|---|---|
-| `m6x-adr023-production-grade` | **PASS** — production-gate 4/4, no-regression 19/19, warm-bubble PASS, transfer audit 5/5, MPAS slice trajectory RMSE 38.7% → **1.69%** (23× improvement). Open: launch count 20→67 (3.3× growth, deferred optimization). | `worker/gpt/m6x-adr023-production-grade @ 0a05159` | `f4b04af` |
+| `m6x-adr023-d02-boundary-replay-1h` | **HALT-BY-MANAGER-PATH-SPLIT** — d02 worker halted after reviewer found path split; preserved scaffolding (scripts/m6_d02_boundary_replay_1h.py + src/gpuwrf/integration/d02_replay.py + tests/test_m6x_d02_boundary_replay.py). Redispatch after unification. | `worker/gpt/m6x-adr023-d02-boundary-replay-1h @ 47ee1bf` | merge `5260250` |
+| `m6x-adr023-production-grade-reviewer` | **REJECT** — 2 binding findings: (1) BLOCKER fixture warm_bubble_2km.npz missing; (2) MAJOR path split — MPAS-recurrence path reached only via pressure_scale=0.0; public scan with non_hydrostatic=True uses _wrf_buoyancy_column_update which ignores epssm + applies prototype stabilization. ADR-023 stays PROPOSED. | `reviewer/opus/m6x-adr023-production-grade-reviewer @ b2f7a05` (16309B report) | merge `5260250` |
+| `m6x-adr023-production-grade` | PASS at module-level (production-gate 4/4, MPAS slice RMSE 38.7% → 1.69%) but **path split**: the 1.69% claim does NOT apply to the public coupled-forecast scan path. | `worker/gpt/m6x-adr023-production-grade @ 0a05159` | `f4b04af` |
 | `m6x-adr023-mpas-column-slice-oracle` | **PASS** — 4/4 slice tests; MPAS lines 1589-2208 literal port; peak amplitude error 1.92%, trajectory RMSE 38.7% | `worker/gpt/m6x-adr023-mpas-column-slice-oracle @ 4834599` | `0d03bc1` |
 
 ## Round 1 outcome (3 sprints dispatched 2026-05-22 23:48-23:49, returned 2026-05-23 00:55-01:10)
@@ -124,5 +125,8 @@ Per user standing order 2026-05-23: windows 0 and 1 of session 2 stay protected 
 - 2026-05-23 ~02:52 — production-grade sprint dispatched (6-10h, 12 acceptance criteria, target RMSE <15%)
 - 2026-05-23 ~03:20 — production-grade returned in 25m: RMSE 38.7%→1.69% (target <15% smashed by 9×). All gates GREEN. Open risk: launch count 20→67.
 - 2026-05-23 ~03:30 — 2 parallel sprints dispatched: reviewer (binding lifecycle gate) + d02 boundary replay (F6 rung 4)
+- 2026-05-23 ~04:05 — reviewer returned REJECT after 9m: path split + missing fixture; ADR-023 stays PROPOSED
+- 2026-05-23 ~04:08 — d02 worker halted (received manager halt message; committed scaffolding + HALT-BY-MANAGER-PATH-SPLIT report); halt + reject merged to main
+- 2026-05-23 ~04:08 — unification sprint dispatched (m6x-adr023-public-scan-path-unification, 4-7h)
 
-— Manager (Claude Opus 4.7 1M-context), 2026-05-23 ~03:30 UTC
+— Manager (Claude Opus 4.7 1M-context), 2026-05-23 ~04:10 UTC
