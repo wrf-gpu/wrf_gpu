@@ -3,11 +3,18 @@
 Manager-maintained. 30-min cadence overnight (per 2026-05-23 standing order).
 Manager: Claude Opus 4.7 (1M-context). Replaces previous manager 2026-05-23 ~23:00.
 
-## Currently in flight
+## Currently in flight (2 parallel intel sprints — dispatched ~08:04 UTC after strategy critic HYBRID verdict)
 
-**NONE — all sprints closed. Stable stopping point. Awaiting user direction on the 4 open questions in `MORNING-REPORT.md`.**
+| Window | Sprint | Role | AI | Worktree | Wall budget | Goal |
+|---|---|---|---|---|---|---|
+| `2:..._clamp-strip-honest-worker` | `2026-05-23-m6x-adr021-clamp-strip-honest-test` | worker | codex gpt-5.5 xhigh | `/tmp/wrf_gpu2_adr021_strip` on `worker/gpt/m6x-adr021-clamp-strip-honest-test` | 4-8 h | Strip clamps from ADR-021 prototype (w-clamp, positive-only-w, theta lift bias, mu reset, disabled u/v accum); run operator-sanity gate. Three outcomes: PASS=ADR-021 architecture is the answer; FAIL_PHYSICAL_BOUNDS=both architectures share issue; FAIL_FINITENESS=carry expansion alone insufficient. |
+| `2:..._gen2-rmse-baseline-charac-worker` | `2026-05-23-m6x-gen2-rmse-baseline-characterization` | worker | codex gpt-5.5 xhigh | `/tmp/wrf_gpu2_gen2_baseline` on `worker/gpt/m6x-gen2-rmse-baseline-characterization` | 4-8 h | Characterize Gen2 operational noise floor (forecast-vs-forecast under "no model change"). Anchors the Tier-4 PASS threshold for the dycore. |
 
-Manager (autonomous overnight) is parked. Tmux: only protected windows 0+1 remain.
+## Round-N (overnight) outcome
+
+| Sprint | Outcome | Branch/commit | Merge on main |
+|---|---|---|---|
+| `m6x-close-strategy-plan-critic` (codex critic) | **HYBRID verdict** — 6-sprint counter-plan to manager's draft. Key sequencing: diagnostics first, baseline before operator changes, Tier-3 before Tier-4. | `critic/codex/m6x-close-strategy-plan-critic @ 305daf7` | merge `f458052` |
 
 ## Recently completed (this watchman session)
 
