@@ -816,10 +816,11 @@ def initialize_acoustic_carry(
 ) -> AcousticScanCarry:
     """Initializes the scan carry with diagnostic ``al/alt`` and ``cqu/cqv``."""
 
-    del config
     pressure, al, alt = diagnose_pressure_al_alt(state, base_state, metrics)
     cqu, cqv = moisture_coupling_factors(state)
-    return AcousticScanCarry(_replace_pressure(state, pressure, base_state), previous_pressure, al, alt, cqu, cqv)
+    keep_resident_pressure = bool(config.non_hydrostatic) and base_state is not None
+    pressure_state = state if keep_resident_pressure else _replace_pressure(state, pressure, base_state)
+    return AcousticScanCarry(pressure_state, previous_pressure, al, alt, cqu, cqv)
 
 
 @partial(jax.jit, static_argnames=("config", "dt"))
@@ -832,10 +833,12 @@ def acoustic_substep_carry(
 ) -> AcousticScanCarry:
     """Runs one WRF-shaped acoustic substep with diagnostic scan carry."""
 
-    pressure_source, al, alt = diagnose_pressure_al_alt(carry.state, base_state, metrics)
+    pressure_diag, al, alt = diagnose_pressure_al_alt(carry.state, base_state, metrics)
+    keep_resident_pressure = bool(config.non_hydrostatic) and base_state is not None
+    pressure_source = carry.state.p_perturbation if keep_resident_pressure else pressure_diag
     cqu, cqv = moisture_coupling_factors(carry.state)
     pressure_next = apply_smdiv_pressure(pressure_source, carry.previous_pressure, config.smdiv)
-    pressure_state = _replace_pressure(carry.state, pressure_next, base_state)
+    pressure_state = carry.state if keep_resident_pressure else _replace_pressure(carry.state, pressure_next, base_state)
     du_dt, dv_dt, _, _ = horizontal_pressure_gradient(
         pressure_state,
         base_state,
@@ -873,7 +876,7 @@ def acoustic_substep_carry(
         next_state = _replace_mu(next_state, next_state.mu_perturbation + dmu, base_state)
 
     final_pressure, final_al, final_alt = diagnose_pressure_al_alt(next_state, base_state, metrics)
-    final_state = _replace_pressure(next_state, final_pressure, base_state)
+    final_state = next_state if keep_resident_pressure else _replace_pressure(next_state, final_pressure, base_state)
     final_cqu, final_cqv = moisture_coupling_factors(final_state)
     return AcousticScanCarry(final_state, pressure_source, final_al, final_alt, final_cqu, final_cqv)
 

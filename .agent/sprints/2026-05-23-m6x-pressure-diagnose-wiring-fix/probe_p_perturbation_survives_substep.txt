@@ -1,0 +1,9 @@
+{
+  "absolute_difference_pa": 0.0,
+  "interpretation": "If p_perturbation_after_acoustic_substep_carry is far smaller than p_perturbation_after_recurrence_only, the diagnose_pressure_al_alt overwrite is erasing the recurrence's density-derived pressure.",
+  "p_perturbation_after_acoustic_substep_carry": 12.701117942007619,
+  "p_perturbation_after_recurrence_only": 12.701117942007619,
+  "p_perturbation_from_diagnose_applied_to_post_recurrence_state": 4.3655745685100555e-11,
+  "p_perturbation_from_diagnose_on_initial_state": 4.3655745685100555e-11,
+  "passes_tolerance_1e-9_pa": true
+}
