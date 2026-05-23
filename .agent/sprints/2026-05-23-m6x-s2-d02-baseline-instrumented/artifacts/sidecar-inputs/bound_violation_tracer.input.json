@@ -1,0 +1,60 @@
+{
+  "bounds": {
+    "p_max_pa": {
+      "max": 120000.0,
+      "units": "Pa"
+    },
+    "p_min_pa": {
+      "min": 1000.0,
+      "units": "Pa"
+    },
+    "w_abs_m_s": {
+      "max": 50.0,
+      "units": "m s-1"
+    }
+  },
+  "series": [
+    {
+      "label": "theta_min",
+      "step": 3600,
+      "theta_K": 302.3,
+      "time_s": 3600.0
+    },
+    {
+      "label": "theta_max",
+      "step": 3600,
+      "theta_K": 302.76,
+      "time_s": 3600.0
+    },
+    {
+      "label": "qv_min",
+      "qv": 0.004,
+      "step": 3600,
+      "time_s": 3600.0
+    },
+    {
+      "label": "qv_max",
+      "qv": 0.016,
+      "step": 3600,
+      "time_s": 3600.0
+    },
+    {
+      "label": "w_abs_max",
+      "step": 3600,
+      "time_s": 3600.0,
+      "w_abs_m_s": 0.0399081591550353
+    },
+    {
+      "label": "p_min",
+      "p_min_pa": 70000.0,
+      "step": 3600,
+      "time_s": 3600.0
+    },
+    {
+      "label": "p_max",
+      "p_max_pa": 101000.0,
+      "step": 3600,
+      "time_s": 3600.0
+    }
+  ]
+}

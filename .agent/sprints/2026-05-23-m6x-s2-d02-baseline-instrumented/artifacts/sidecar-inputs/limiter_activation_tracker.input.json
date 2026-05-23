@@ -1,0 +1,4 @@
+{
+  "limiter_steps": [],
+  "note": "Current preserved replay proof exposes candidate sanitize counts, not raw_dmu/bounded_dmu arrays."
+}
