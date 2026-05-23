@@ -7,7 +7,7 @@ import jax.numpy as jnp
 
 from gpuwrf.contracts.grid import BCMetadata, GridSpec, Projection, TerrainProvenance, VerticalCoord
 from gpuwrf.contracts.state import BaseState, State, _state_field_shapes
-from gpuwrf.dynamics.acoustic_wrf import NONHYDROSTATIC_BUOYANCY_SCALE, vertical_acoustic_update
+from gpuwrf.dynamics.acoustic_wrf import MPAS_COLUMN_BUOYANCY_TENDENCY_SCALE, vertical_acoustic_update
 from gpuwrf.dynamics.metrics import flat_metrics_for_grid
 from gpuwrf.validation.mpas_oracles import mpas_column_slice
 
@@ -103,10 +103,25 @@ def _c2_vertical_trajectory(slice_result: dict) -> np.ndarray:
             epssm=EPS_SM,
             top_lid=True,
             pressure_scale=0.0,
-            buoyancy_scale=NONHYDROSTATIC_BUOYANCY_SCALE,
+            buoyancy_scale=MPAS_COLUMN_BUOYANCY_TENDENCY_SCALE,
         )
         trajectory.append(np.asarray(state.w[:, 0, 0], dtype=np.float64))
     return np.asarray(trajectory, dtype=np.float64)
+
+
+def _write_fixture_if_missing() -> None:
+    if FIXTURE_PATH.exists():
+        return
+    generated = mpas_column_slice(
+        scenario="warm_bubble_2km",
+        n_levels=N_LEVELS,
+        column_height_m=COLUMN_HEIGHT_M,
+        dt_acoustic_s=DT_ACOUSTIC_S,
+        n_substeps=N_SUBSTEPS,
+        epssm=EPS_SM,
+    )
+    FIXTURE_PATH.parent.mkdir(parents=True, exist_ok=True)
+    np.savez(FIXTURE_PATH, **generated)
 
 
 def test_slice_runs_warm_bubble_scenario():
@@ -161,6 +176,7 @@ def test_adr023_operator_matches_slice_within_tolerance():
 
 
 def test_warm_bubble_fixture_replays_generated_slice():
+    _write_fixture_if_missing()
     assert FIXTURE_PATH.exists()
     generated = mpas_column_slice(
         scenario="warm_bubble_2km",

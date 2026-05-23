@@ -1,0 +1,16 @@
+{
+  "first_nonfinite_step": null,
+  "output": ".agent/sprints/2026-05-23-m6x-adr023-public-scan-path-unification/proof_warm_bubble_unified.json",
+  "samples": {
+    "300s": {
+      "centroid_z_m": 1565.5560216842773,
+      "w_max_m_s": 0.2890913445206212
+    },
+    "600s": {
+      "centroid_z_m": 1017.743241957037,
+      "w_max_m_s": 0.040971098510138464
+    }
+  },
+  "surviving_seconds": 600.0,
+  "verdict": "FAIL_TARGETS_NOT_MET"
+}

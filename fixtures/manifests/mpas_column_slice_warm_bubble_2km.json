@@ -1,0 +1,23 @@
+{
+  "fixture_id": "mpas_column_slice_warm_bubble_2km",
+  "artifact_type": "generated_mpas_column_slice_fixture",
+  "path": "data/fixtures/mpas_column_slice/warm_bubble_2km.npz",
+  "source": "gpuwrf.validation.mpas_oracles.mpas_column_slice",
+  "generator": "tests/test_m6x_mpas_column_slice_oracle.py::_write_fixture_if_missing",
+  "scenario": "warm_bubble_2km",
+  "n_levels": 16,
+  "column_height_m": 10000.0,
+  "dt_acoustic_s": 1.0,
+  "n_substeps": 40,
+  "epssm": 0.1,
+  "logical_content_sha256": "963c59d234a0e6f0bd3582f234448ff65f6871f57d6a6321c864978e48e11994",
+  "arrays": {
+    "t": [41],
+    "w": [41, 17],
+    "theta_perturbation": [41, 16],
+    "ph_perturbation": [41, 17],
+    "mu_perturbation": [41],
+    "rho_perturbation": [41, 16]
+  },
+  "storage_policy": "The binary npz is generated on first test use and remains under data/, which is gitignored by project policy."
+}

@@ -9,11 +9,10 @@ from gpuwrf.dynamics import acoustic_wrf
 from gpuwrf.dynamics.acoustic_wrf import (
     AcousticConfig,
     AcousticScanCarry,
-    NONHYDROSTATIC_BUOYANCY_SCALE,
+    MPAS_COLUMN_BUOYANCY_TENDENCY_SCALE,
     POST_SOLVE_REPLACEMENT_ORDER,
     acoustic_substep_carry,
     initialize_acoustic_carry,
-    vertical_acoustic_update,
 )
 from gpuwrf.dynamics.metrics import flat_metrics_for_grid
 from gpuwrf.validation.mpas_oracles import mpas_column_slice
@@ -77,19 +76,18 @@ def _c2_mpas_trajectory(epssm: float) -> tuple[np.ndarray, dict]:
     grid = _column_grid()
     metrics = flat_metrics_for_grid(grid)
     state, base = _state_and_base_from_slice_initial(slice_result, grid)
+    config = AcousticConfig(n_substeps=1, non_hydrostatic=True, mu_continuity=True, epssm=epssm)
+    carry = initialize_acoustic_carry(state, state.p_perturbation, metrics, base, config)
     trajectory = [np.asarray(state.w[:, 0, 0], dtype=np.float64)]
     for _ in range(N_SUBSTEPS):
-        state = vertical_acoustic_update(
-            state,
-            base,
+        carry = acoustic_substep_carry(
+            carry,
             metrics,
-            dt=DT_ACOUSTIC_S,
-            epssm=epssm,
-            top_lid=True,
-            pressure_scale=0.0,
-            buoyancy_scale=NONHYDROSTATIC_BUOYANCY_SCALE,
+            config,
+            DT_ACOUSTIC_S,
+            base,
         )
-        trajectory.append(np.asarray(state.w[:, 0, 0], dtype=np.float64))
+        trajectory.append(np.asarray(carry.state.w[:, 0, 0], dtype=np.float64))
     return np.asarray(trajectory, dtype=np.float64), slice_result
 
 
@@ -156,5 +154,6 @@ def test_post_solve_order_and_carry_boundaries_are_explicit():
         "alt",
     )
     assert AcousticScanCarry.__slots__ == ("state", "previous_pressure", "al", "alt", "cqu", "cqv")
-    assert "Post-solve replacement order" in (vertical_acoustic_update.__doc__ or "")
+    assert MPAS_COLUMN_BUOYANCY_TENDENCY_SCALE == 0.38
+    assert "Post-solve replacement order" in (acoustic_wrf.vertical_acoustic_update.__doc__ or "")
     assert "Per-substep locals" in (AcousticScanCarry.__doc__ or "")

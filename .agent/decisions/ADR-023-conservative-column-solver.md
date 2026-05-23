@@ -1,6 +1,6 @@
 # ADR-023 — Conservative Column Solver (PROPOSED — RATIFY-ADR-023 with required fixes)
 
-**Status**: **PROPOSED** — ratified 2026-05-23 02:10 UTC after round-2 critic `RATIFY-ADR-023` + prototype `PASS_WARM_BUBBLE_600S` + R7 GREEN. The production-grade sprint has folded the critic fixes into code and tests; reviewer concurrence is still required before this ADR moves to ACCEPTED.
+**Status**: **PROPOSED** — ratified 2026-05-23 02:10 UTC after round-2 critic `RATIFY-ADR-023` + prototype `PASS_WARM_BUBBLE_600S` + R7 GREEN. The production-grade sprint folded the critic fixes into code and tests, but reviewer `b2f7a05` rejected the path split. The public-scan unification sprint now routes the public nonhydrostatic scan through the MPAS recurrence, but the unified warm-bubble path does not meet the 600 s warm-bubble acceptance targets. Reviewer concurrence is still required before this ADR moves to ACCEPTED.
 **Date**: 2026-05-23
 **Author**: Manager (Claude Opus 4.7, 1M-context)
 **Ratification evidence**:
@@ -113,7 +113,7 @@ The order is mirrored in `POST_SOLVE_REPLACEMENT_ORDER` and covered by `tests/te
 | `AcousticScanCarry` expansion | 7 new field families | none | **none** |
 | Tier-1 WRF parity | binding | not binding | **softly binding (~5% vs MPAS Klemp 2007)** |
 | Tier-4 RMSE binding | yes | yes | **yes** |
-| Worker-time to warm-bubble PASS | 5-9 days | 2-4 days | **3-5 days (oracle test already on disk)** |
+| Worker-time to warm-bubble PASS | 5-9 days | 2-4 days | **8-14 days total estimate (5-8d operator proof + 3-6d forecast relevance)** |
 | Risk of late "missing-term" discovery | medium-high | medium | **low (conservative column form is well-understood)** |
 | Operational GPU-NWP precedent | MPAS (Fortran/OpenACC) | Dinosaur/NeuralGCM (global spectral) | **SCREAM HEVI + ICON4Py + MPAS Klemp 2007 (3 supports)** |
 | Future portability beyond WRF baseline | low | high | **high** |
@@ -156,7 +156,7 @@ Folded from `2026-05-23-m6x-adr023-three-way-critic/reviewer-report.md`. The pro
 - **F5 — `epssm` default**: not yet swept. Production sprint must sweep `epssm ∈ {0.0, 0.1, 0.3}` against R7 + warm-bubble + slice trajectory, bind default to evidence. *Status: CLOSED pending reviewer acceptance — `proof_epssm_sweep.txt` keeps default 0.1 because 0.3 improves slice RMSE but fails R7.*
 - **F6 — Tier-4 acceptance ladder**: Production sprint must implement the staged ladder: analytic-oracle → MPAS column slice → warm-bubble → 1h d02 boundary replay → 24h/72h Gen2 RMSE. No skipping rungs.
 - **F7 — Public carry vs locals vs scratch**: ADR must explicitly name the three categories. Production sprint adds this to the ADR + the code structure. *Status: CLOSED in §3 and `AcousticScanCarry` docstring; `tests/test_m6x_adr023_production_grade.py` asserts the six-leaf public carry.*
-- **F8 — Cost re-estimation**: critic re-estimated 5-8d operator-proof + 3-6d forecast-relevance. Manager's 3-5d was optimistic. *Status: revised in §Trade-offs below.*
+- **F8 — Cost re-estimation**: critic re-estimated 5-8d operator-proof + 3-6d forecast-relevance. Manager's 3-5d was optimistic. *Status: revised in §Trade-offs to 8-14d total.*
 - **F9 — Post-solve replacement order**: critic asked for explicit order for `(w, theta, ph_perturbation, mu_perturbation, p_perturbation, al, alt)`. *Status: CLOSED in §6, `POST_SOLVE_REPLACEMENT_ORDER`, and production-grade tests.*
 - **F10 — Performance/residency claims**: prototype reported launch count 20 + 0 transfers + scan jaxpr without host callbacks. *Status: CLOSED for this sprint's evidence by `proof_transfer_audit.txt` and `proof_launch_count_production.txt`; full ncu/nsys remains a later profiler-bot artifact if required by manager.*
 
@@ -164,11 +164,11 @@ Folded from `2026-05-23-m6x-adr023-three-way-critic/reviewer-report.md`. The pro
 
 From `2026-05-23-m6x-adr023-conservative-column-prototype/worker-report.md` §Risks:
 
-1. **Nonhydrostatic warm-bubble required prototype-grade tuning**: reduced vertical acoustic pressure coupling + calibrated buoyancy scale + small nonlinear updraft drag. Production sprint split the evidence path: the MPAS-slice rung now uses the epssm-aware MPAS recurrence and reaches <15% trajectory RMSE; the coupled warm-bubble rung keeps the vertical buoyancy column limiter with the drag documented as an MPAS Rayleigh-block analogue (`mpas_atm_time_integration.F:2184-2193`). This is still a residual risk for d02 replay, not a Tier-4 physics claim.
+1. **Nonhydrostatic warm-bubble no longer uses the separate buoyancy-column path**: reviewer-reject closure removed the `_wrf_buoyancy_column_update` branch, the named `NONHYDROSTATIC_BUOYANCY_SCALE`, and the positive-only updraft drag. Both `pressure_scale=0.0` and the public `non_hydrostatic=True` scan path now enter the same epssm-aware MPAS recurrence. This closes the path-split defect but exposes that the conservative recurrence alone does not yet satisfy the warm-bubble rung.
 
-2. **Nonhydrostatic `mu_continuity` gated OFF**: production sprint un-gated the in-scan update. The flux-form tendency is evaluated every substep and applied with a small positive-mass acoustic-loop CFL limiter to prevent warm-bubble horizontal mass feedback from dominating before the d02 boundary-replay rung exists. This limiter is a residual risk and must be revisited before a 24h forecast claim.
+2. **Warm-bubble unified-path failure is now explicit evidence**: deleting the mass limiter outright made the public scan nonfinite at step 2. Retaining the documented temporary `mu_continuity` CFL bound keeps the run finite through 600 s but fails the target envelope (`w_max=0.289 m/s` at 300 s and `0.041 m/s` at 600 s in the worker proof). This is not a Tier-4 physics claim and must be resolved before d02 or 24 h replay.
 
-3. **Launch count 20, not optimized**: HLO inspection shows the standalone vertical operator remains within the prototype launch budget. Production proof is `proof_launch_count_production.txt`; backend-specific ncu/nsys profiling remains optional until the manager dispatches a profiler-bot sprint.
+3. **Launch count remains unoptimized**: reviewer-reject closure remeasured the unified `pressure_scale=-1.0` recurrence at 67 kernel launches, matching the prior direct `pressure_scale=0.0` MPAS recurrence path and exceeding the prototype baseline of 20. This is not a host-transfer regression, but it blocks any speed claim until a profiler-bot optimization sprint.
 
 ## Fallback trigger (per critic §6 open question 6)
 
