@@ -1,0 +1,14 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.11, pytest-9.0.3, pluggy-1.5.0 -- /home/enric/miniconda3/bin/python
+cachedir: .pytest_cache
+rootdir: /tmp/wrf_gpu2_prod
+configfile: pyproject.toml
+plugins: zarr-3.1.6, anyio-4.12.1
+collecting ... collected 4 items
+
+tests/test_m6x_adr023_production_grade.py::test_mpas_slice_trajectory_rmse_under_production_target PASSED [ 25%]
+tests/test_m6x_adr023_production_grade.py::test_epssm_sweep_keeps_mpas_slice_rung_below_target PASSED [ 50%]
+tests/test_m6x_adr023_production_grade.py::test_nonhydrostatic_mu_continuity_runs_inside_scan_body PASSED [ 75%]
+tests/test_m6x_adr023_production_grade.py::test_post_solve_order_and_carry_boundaries_are_explicit PASSED [100%]
+
+============================== 4 passed in 6.70s ===============================

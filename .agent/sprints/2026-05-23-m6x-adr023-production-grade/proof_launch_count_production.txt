@@ -1,0 +1,13 @@
+vertical_acoustic_update warm CUDA-profiler capture
+source=/tmp/m6x_launch_probe_warm_stats.txt
+probe=one warmed JIT execution of vertical_acoustic_update pressure_scale=0.0 epssm=0.1
+cuGraphLaunch_calls=2
+cuLaunchKernelEx_calls=67
+cuMemcpyHtoDAsync_v2_calls=0
+cuMemcpyDtoHAsync_v2_calls=0
+cuMemcpyDtoDAsync_v2_calls=48
+cuda_kernel_instances_total=67
+cuda_kernel_rows=loop_add_fusion:32, loop_divide_fusion:16, loop_subtract_fusion:16, loop_reverse_fusion:1, loop_reverse_fusion_1:1, wrapped_slice:1
+hlo_compiled_fusion_count=90
+prototype_baseline_kernel_launches=20
+note=production MPAS recurrence adds Thomas-scan forward/backward work and currently exceeds the prototype launch budget; correctness gates pass but optimization remains a risk

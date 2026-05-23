@@ -1,0 +1,16 @@
+{
+  "first_nonfinite_step": null,
+  "output": ".agent/sprints/2026-05-23-m6x-adr023-production-grade/proof_warm_bubble_production.json",
+  "samples": {
+    "300s": {
+      "centroid_z_m": 2579.718231967597,
+      "w_max_m_s": 5.1294112440572235
+    },
+    "600s": {
+      "centroid_z_m": 3385.2273071323343,
+      "w_max_m_s": 8.523914985976297
+    }
+  },
+  "surviving_seconds": 600.0,
+  "verdict": "PASS_WARM_BUBBLE_600S"
+}
