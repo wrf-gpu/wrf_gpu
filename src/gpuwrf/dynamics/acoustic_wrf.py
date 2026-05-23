@@ -28,9 +28,8 @@ GRAVITY_M_S2 = 9.80665
 MIN_PRESSURE_PA = 1.0
 MIN_ALT = 1.0e-8
 CONVECTIVE_BUOYANCY_GAIN = 0.0
-NONHYDROSTATIC_BUOYANCY_SCALE = 0.38
-NONHYDROSTATIC_UPDRAFT_DRAG = 0.0005
-MU_CONTINUITY_CFL_FRACTION = 1.0e-3
+MPAS_COLUMN_BUOYANCY_TENDENCY_SCALE = 0.38
+TEMPORARY_MU_CONTINUITY_CFL_FRACTION = 1.0e-3
 MPAS_OMEGA_TO_W_METRIC = 1.35
 POST_SOLVE_REPLACEMENT_ORDER = (
     "w",
@@ -461,16 +460,17 @@ def _mu_continuity_increment(
     *,
     dt: float,
 ) -> jax.Array:
-    """Returns a positive-mass acoustic-loop continuity increment.
+    """Temporary bounded mass update for the pre-d02 public scan path.
 
-    The flux-form tendency is still computed every substep; this limiter keeps
-    the split acoustic update inside a small column-mass CFL fraction so the
-    idealized warm-bubble probe does not let horizontal mass feedback dominate
-    the vertical-column validation before the d02 boundary-replay rung exists.
+    Removing this limiter while routing the public scan through the MPAS
+    recurrence makes the 600 s warm-bubble probe nonfinite at step 2. It is
+    therefore retained as a documented validation stabilizer, not as an
+    accepted 24 h forecast mechanism; the d02 boundary-replay rung must replace
+    or ratify it before ADR-023 can advance beyond PROPOSED.
     """
 
     base_mu = jnp.maximum(jnp.abs(_base_mu(base_state, state)), 1.0)
-    max_delta = MU_CONTINUITY_CFL_FRACTION * base_mu
+    max_delta = TEMPORARY_MU_CONTINUITY_CFL_FRACTION * base_mu
     raw_delta = float(dt) * dmu_dt
     return max_delta * jnp.tanh(raw_delta / max_delta)
 
@@ -638,18 +638,8 @@ def vertical_acoustic_update(
     itself never expands ``AcousticScanCarry``.
     """
 
-    if float(pressure_scale) == 0.0:
+    if float(pressure_scale) <= 0.0:
         return _mpas_recurrence_vertical_update(
-            state,
-            base_state,
-            metrics,
-            dt=dt,
-            epssm=epssm,
-            top_lid=top_lid,
-            buoyancy_scale=buoyancy_scale,
-        )
-    if float(pressure_scale) < 0.0:
-        return _wrf_buoyancy_column_update(
             state,
             base_state,
             metrics,
@@ -705,46 +695,6 @@ def vertical_acoustic_update(
 
 
 @partial(jax.jit, static_argnames=("dt", "epssm", "top_lid", "buoyancy_scale"))
-def _wrf_buoyancy_column_update(
-    state: State,
-    base_state: BaseState | None,
-    metrics: DycoreMetrics,
-    *,
-    dt: float,
-    epssm: float = 0.1,
-    top_lid: bool = True,
-    buoyancy_scale: float = NONHYDROSTATIC_BUOYANCY_SCALE,
-) -> State:
-    """Runs the WRF-compatible warm-bubble column limiter path.
-
-    This path is used only by the coupled nonhydrostatic warm-bubble scan until
-    the full horizontal/vertical acoustic solve has a d02 boundary replay gate.
-    Its damping term is the local analogue of the MPAS vertical Rayleigh block
-    (``mpas_atm_time_integration.F:2184-2193``), applied to positive updrafts
-    to preserve the existing 600 s thermal validation while ``mu_continuity``
-    is exercised in the scan.
-    """
-
-    del epssm
-    buoyancy = _vertical_buoyancy_acceleration(state, base_state)
-    w_next = state.w + float(dt) * float(buoyancy_scale) * buoyancy
-    updraft_drag = 1.0 + NONHYDROSTATIC_UPDRAFT_DRAG * float(dt) * jnp.maximum(w_next, 0.0)
-    w_next = w_next / updraft_drag
-    w_next = w_next.at[0, :, :].set(0.0)
-    if bool(top_lid):
-        w_next = w_next.at[-1, :, :].set(0.0)
-    ph_perturbation = state.ph_perturbation + GRAVITY_M_S2 * float(dt) * w_next
-    ph_base = _base_geopotential(base_state, state)
-    theta_next = _vertical_theta_transport(state, base_state, metrics, w_next, dt=dt)
-    return state.replace(
-        w=w_next,
-        theta=theta_next,
-        ph_perturbation=ph_perturbation,
-        ph_total=ph_base + ph_perturbation,
-    )
-
-
-@partial(jax.jit, static_argnames=("dt", "epssm", "top_lid", "buoyancy_scale"))
 def _mpas_recurrence_vertical_update(
     state: State,
     base_state: BaseState | None,
@@ -753,7 +703,7 @@ def _mpas_recurrence_vertical_update(
     dt: float,
     epssm: float = 0.1,
     top_lid: bool = True,
-    buoyancy_scale: float = NONHYDROSTATIC_BUOYANCY_SCALE,
+    buoyancy_scale: float = MPAS_COLUMN_BUOYANCY_TENDENCY_SCALE,
 ) -> State:
     """Applies the linearized MPAS/WRF-family off-centered column recurrence.
 
@@ -815,10 +765,11 @@ def _mpas_recurrence_vertical_update(
         0.5 * (1.0 - float(epssm)) * state.w + 0.5 * (1.0 + float(epssm)) * w_next
     )
     ph_base = _base_geopotential(base_state, state)
-    pressure_perturbation = _pressure_from_density_perturbation(state, base_state, rho_next)
     if base_state is None:
-        pressure_total = pressure_perturbation
+        pressure_perturbation = state.p_perturbation
+        pressure_total = state.p_total
     else:
+        pressure_perturbation = _pressure_from_density_perturbation(state, base_state, rho_next)
         pressure_total = base_state.pb + pressure_perturbation
     return state.replace(
         w=w_next,
@@ -912,7 +863,7 @@ def acoustic_substep_carry(
         epssm=config.epssm,
         top_lid=config.top_lid,
         pressure_scale=-1.0 if bool(config.non_hydrostatic) else 1.0,
-        buoyancy_scale=NONHYDROSTATIC_BUOYANCY_SCALE if bool(config.non_hydrostatic) else 1.0,
+        buoyancy_scale=MPAS_COLUMN_BUOYANCY_TENDENCY_SCALE if bool(config.non_hydrostatic) else 1.0,
         convective_buoyancy_gain=0.0,
     )
     if bool(config.mu_continuity):

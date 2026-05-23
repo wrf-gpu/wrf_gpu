@@ -1,0 +1,7 @@
+Time (%),Total Time (ns),Instances,Avg (ns),Med (ns),Min (ns),Max (ns),StdDev (ns),Name
+37.4,24288,32,759.0,768.0,736,800,20.3,loop_add_fusion
+35.7,23200,16,1450.0,1376.0,1376,1984,175.2,loop_divide_fusion
+23.2,15072,16,942.0,928.0,928,960,16.4,loop_subtract_fusion
+1.2,800,1,800.0,800.0,800,800,0.0,loop_reverse_fusion
+1.2,768,1,768.0,768.0,768,768,0.0,loop_reverse_fusion_1
+1.2,768,1,768.0,768.0,768,768,0.0,wrapped_slice
