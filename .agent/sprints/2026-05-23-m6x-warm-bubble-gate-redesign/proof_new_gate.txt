@@ -1,0 +1,14 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.11, pytest-9.0.3, pluggy-1.5.0 -- /home/enric/miniconda3/bin/python
+cachedir: .pytest_cache
+rootdir: /tmp/wrf_gpu2_gate_redesign
+configfile: pyproject.toml
+plugins: zarr-3.1.6, anyio-4.12.1
+collecting ... collected 4 items
+
+tests/test_m6x_warm_bubble_operator_sanity.py::test_warm_bubble_runs_finite_on_unified_path PASSED [ 25%]
+tests/test_m6x_warm_bubble_operator_sanity.py::test_warm_bubble_extrema_reported_correctly PASSED [ 50%]
+tests/test_m6x_warm_bubble_operator_sanity.py::test_anti_clamp_scan_detects_known_patterns_in_test_fixtures PASSED [ 75%]
+tests/test_m6x_warm_bubble_operator_sanity.py::test_r7_oracle_is_prerequisite_for_pass PASSED [100%]
+
+============================== 4 passed in 9.80s ===============================
