@@ -1,0 +1,51 @@
+{
+  "anti_clamp_hard_failures": [],
+  "bound_violations": [
+    {
+      "bound": 50000.0,
+      "comparator": "<=",
+      "field": "mu_perturbation_max_Pa",
+      "step": 300,
+      "tolerance": 0.0,
+      "units": "Pa",
+      "value": 86374.47494781279
+    }
+  ],
+  "first_nonfinite_step": null,
+  "output": ".agent/sprints/2026-05-23-m6x-warm-bubble-gate-redesign/proof_current_state_verdict.json",
+  "preconditions_ok": true,
+  "samples": {
+    "300s": {
+      "centroid_z_m": 2153.9156689791407,
+      "mu_perturbation_max_Pa": 42469.0978998544,
+      "mu_perturbation_min_Pa": -42880.58483381978,
+      "mu_residual_Pa": 42880.58483381978,
+      "p_perturbation_max_Pa": 346.77817475145315,
+      "p_perturbation_min_Pa": -152.82778272710053,
+      "step": 150,
+      "theta_perturbation_max_K": 1.684438101128194,
+      "theta_perturbation_min_K": -0.0001841170993088781,
+      "time_s": 300.0,
+      "w_abs_max_m_s": 0.09108699287816883,
+      "w_max_m_s": 0.09108699287816883,
+      "w_min_m_s": -0.0765396333947972
+    },
+    "600s": {
+      "centroid_z_m": 2044.5305870563718,
+      "mu_perturbation_max_Pa": 86374.47494781279,
+      "mu_perturbation_min_Pa": -86785.96188177825,
+      "mu_residual_Pa": 86785.96188177825,
+      "p_perturbation_max_Pa": 315.7192191584963,
+      "p_perturbation_min_Pa": -192.48588269289215,
+      "step": 300,
+      "theta_perturbation_max_K": 1.5503358115530546,
+      "theta_perturbation_min_K": -0.0001319554372685161,
+      "time_s": 600.0,
+      "w_abs_max_m_s": 0.04376497936803057,
+      "w_max_m_s": 0.038687905089051594,
+      "w_min_m_s": -0.04376497936803057
+    }
+  },
+  "surviving_seconds": 600.0,
+  "verdict": "FAIL_PHYSICAL_BOUNDS"
+}

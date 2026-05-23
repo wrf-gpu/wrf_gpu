@@ -1,0 +1,14 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.11, pytest-9.0.3, pluggy-1.5.0 -- /home/enric/miniconda3/bin/python
+cachedir: .pytest_cache
+rootdir: /tmp/wrf_gpu2_gate_redesign
+configfile: pyproject.toml
+plugins: zarr-3.1.6, anyio-4.12.1
+collecting ... collected 4 items
+
+tests/test_m3_transfer_audit.py::test_transfer_audit_artifact_is_zero_post_init PASSED [ 25%]
+tests/test_m3_transfer_audit.py::test_spacetime_budget_artifact_has_required_m3_keys PASSED [ 50%]
+tests/test_m3_transfer_audit.py::test_transfer_audit_counts_memcpy_details PASSED [ 75%]
+tests/test_m3_transfer_audit.py::test_transfer_audit_counts_plain_trace_text PASSED [100%]
+
+============================== 4 passed in 0.40s ===============================

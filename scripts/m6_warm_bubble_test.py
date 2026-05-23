@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run the c2 idealized warm-bubble acoustic-scan validation probe."""
+"""Run the M6.x warm-bubble operator-sanity probe."""
 
 from __future__ import annotations
 
@@ -7,11 +7,13 @@ import argparse
 import json
 import math
 import os
+import re
+import subprocess
 import sys
 import time
 from functools import partial
 from pathlib import Path
-from typing import Any, NamedTuple
+from typing import Any, Mapping, NamedTuple, Sequence
 
 os.environ.setdefault("JAX_ENABLE_X64", "true")
 os.environ.setdefault("XLA_PYTHON_CLIENT_PREALLOCATE", "false")
@@ -40,19 +42,62 @@ CP_DRY_AIR = 1004.0
 KAPPA = R_DRY_AIR / CP_DRY_AIR
 P0_PA = 100000.0
 T0_K = 300.0
-DEFAULT_OUTPUT = ROOT / ".agent" / "sprints" / "2026-05-22-m6x-c2-A2-pgf-acoustic-implementation" / "proofs" / "warm_bubble_600s.json"
+CURRENT_SPRINT = "2026-05-23-m6x-warm-bubble-gate-redesign"
+DEFAULT_OUTPUT = ROOT / ".agent" / "sprints" / CURRENT_SPRINT / "proof_current_state_verdict.json"
+
+PASS_OPERATOR_SANITY = "PASS_OPERATOR_SANITY"
+FAIL_FINITENESS = "FAIL_FINITENESS"
+FAIL_PHYSICAL_BOUNDS = "FAIL_PHYSICAL_BOUNDS"
+FAIL_ANTI_CLAMP_DETECTION = "FAIL_ANTI_CLAMP_DETECTION"
+
+PRODUCTION_SCAN_PATHS = (
+    ROOT / "src" / "gpuwrf" / "dynamics" / "acoustic_wrf.py",
+    ROOT / "src" / "gpuwrf" / "dynamics" / "vertical_implicit_solver.py",
+)
+
+SAMPLE_FIELDS = (
+    "w_max_m_s",
+    "w_min_m_s",
+    "w_abs_max_m_s",
+    "theta_perturbation_max_K",
+    "theta_perturbation_min_K",
+    "p_perturbation_max_Pa",
+    "p_perturbation_min_Pa",
+    "mu_perturbation_max_Pa",
+    "mu_perturbation_min_Pa",
+    "centroid_z_m",
+    "mu_residual_Pa",
+)
+
+PHYSICAL_BOUND_CHECKS = (
+    ("theta_perturbation_max_K", "max", 50.0, "K"),
+    ("theta_perturbation_min_K", "min", -50.0, "K"),
+    ("p_perturbation_max_Pa", "max", 50000.0, "Pa"),
+    ("p_perturbation_min_Pa", "min", -50000.0, "Pa"),
+    ("mu_perturbation_max_Pa", "max", 50000.0, "Pa"),
+)
+
+AMPLITUDE_LITERAL_RE = re.compile(r"(?<![\w.])(?:[5-9](?:\.0+)?|10(?:\.0+)?)(?![\w.])")
+TARGET_TANH_RE = re.compile(r"(?:jnp\.)?tanh\s*\([^#\n]*/\s*(?:[5-9](?:\.0+)?|10(?:\.0+)?)")
+TARGET_SCALE_TANH_RE = re.compile(r"(?<![\w.])(?:[5-9](?:\.0+)?|10(?:\.0+)?)\s*\*\s*(?:jnp\.)?tanh")
+POSITIVE_ONLY_W_RE = re.compile(
+    r"(?:jnp\.)?maximum\s*\(\s*(?:state\.)?(?:w|w_next|next_w|vertical_velocity)\b[^,]*,\s*0(?:\.0+)?"
+)
+THETA_CLIP_RE = re.compile(r"(?:jnp\.)?(?:minimum|clip)\s*\([^#\n]*(?:theta_target|theta_[a-z_]*target)")
 
 
 class Diagnostics(NamedTuple):
     w_max_m_s: object
     w_min_m_s: object
+    w_abs_max_m_s: object
+    theta_perturbation_max_K: object
+    theta_perturbation_min_K: object
+    p_perturbation_max_Pa: object
+    p_perturbation_min_Pa: object
+    mu_perturbation_max_Pa: object
+    mu_perturbation_min_Pa: object
     centroid_z_m: object
-    p_min_pa: object
-    p_max_pa: object
-    theta_min_k: object
-    theta_max_k: object
-    mu_min_pa: object
-    mu_max_pa: object
+    mu_residual_Pa: object
     finite_state: object
 
 
@@ -97,7 +142,7 @@ def _initial_state(
     bubble_center_z_m: float,
     bubble_radius_m: float,
     bubble_amplitude_k: float,
-) -> tuple[State, BaseState, jax.Array, jax.Array]:
+) -> tuple[State, BaseState, jax.Array, jax.Array, jax.Array]:
     nx, ny, nz = int(grid.nx), int(grid.ny), int(grid.nz)
     dx_m = float(grid.projection.dx_m)
     z_face_1d = np.arange(nz + 1, dtype=np.float64) * float(dz_m)
@@ -140,10 +185,10 @@ def _initial_state(
         t0=jnp.asarray(theta_base),
         theta_base=jnp.asarray(theta_base),
     )
-    return state, base, jnp.asarray(theta_base), jnp.asarray(z_mass)
+    return state, base, jnp.asarray(theta_base), jnp.asarray(z_mass), state.mu_perturbation
 
 
-def _diagnose(state: State, theta_base: jax.Array, z_mass: jax.Array) -> Diagnostics:
+def _diagnose(state: State, theta_base: jax.Array, z_mass: jax.Array, initial_mu_perturbation: jax.Array) -> Diagnostics:
     theta_perturbation = state.theta - theta_base
     positive = jnp.maximum(theta_perturbation, 0.0)
     weight = jnp.sum(positive)
@@ -152,13 +197,15 @@ def _diagnose(state: State, theta_base: jax.Array, z_mass: jax.Array) -> Diagnos
     return Diagnostics(
         w_max_m_s=jnp.max(state.w),
         w_min_m_s=jnp.min(state.w),
+        w_abs_max_m_s=jnp.max(jnp.abs(state.w)),
+        theta_perturbation_max_K=jnp.max(theta_perturbation),
+        theta_perturbation_min_K=jnp.min(theta_perturbation),
+        p_perturbation_max_Pa=jnp.max(state.p_perturbation),
+        p_perturbation_min_Pa=jnp.min(state.p_perturbation),
+        mu_perturbation_max_Pa=jnp.max(state.mu_perturbation),
+        mu_perturbation_min_Pa=jnp.min(state.mu_perturbation),
         centroid_z_m=centroid_z,
-        p_min_pa=jnp.min(state.p_total),
-        p_max_pa=jnp.max(state.p_total),
-        theta_min_k=jnp.min(state.theta),
-        theta_max_k=jnp.max(state.theta),
-        mu_min_pa=jnp.min(state.mu_total),
-        mu_max_pa=jnp.max(state.mu_total),
+        mu_residual_Pa=jnp.max(jnp.abs(state.mu_perturbation - initial_mu_perturbation)),
         finite_state=finite,
     )
 
@@ -171,6 +218,7 @@ def _run(
     base: BaseState,
     theta_base: jax.Array,
     z_mass: jax.Array,
+    initial_mu_perturbation: jax.Array,
     config: AcousticConfig,
     dt_s: float,
     steps: int,
@@ -185,7 +233,8 @@ def _run(
             dt=float(dt_s),
             base_state=base,
         )
-        return (next_carry.state, next_carry.previous_pressure), _diagnose(next_carry.state, theta_base, z_mass)
+        diagnostics = _diagnose(next_carry.state, theta_base, z_mass, initial_mu_perturbation)
+        return (next_carry.state, next_carry.previous_pressure), diagnostics
 
     return jax.lax.scan(body, (state, previous_pressure), xs=None, length=int(steps))
 
@@ -215,19 +264,335 @@ def _sample_at(series: list[float | bool | None], dt_s: float, target_s: float) 
     return series[index] if 0 <= index < len(series) else None
 
 
-def _verdict(payload: dict[str, Any]) -> str:
-    samples = payload["samples"]
+def _sample_payload(series: dict[str, list[float | bool | None]], dt_s: float, target_s: float) -> dict[str, Any]:
+    index = int(round(target_s / dt_s))
+    sample = {"time_s": float(target_s), "step": int(index)}
+    for field in SAMPLE_FIELDS:
+        sample[field] = _sample_at(series[field], dt_s, target_s)
+    return sample
+
+
+def _collect_bound_violations(series: dict[str, list[float | bool | None]], tolerance: float = 0.0) -> list[dict[str, Any]]:
+    violations: list[dict[str, Any]] = []
+    for field, direction, bound, units in PHYSICAL_BOUND_CHECKS:
+        values = np.asarray([np.nan if value is None else float(value) for value in series[field]], dtype=np.float64)
+        if values.size == 0 or np.all(np.isnan(values)):
+            continue
+        if direction == "max":
+            violating = np.where(values > bound + tolerance)[0]
+            if violating.size == 0:
+                continue
+            step = int(violating[np.nanargmax(values[violating])])
+            comparator = "<="
+        else:
+            violating = np.where(values < bound - tolerance)[0]
+            if violating.size == 0:
+                continue
+            step = int(violating[np.nanargmin(values[violating])])
+            comparator = ">="
+        violations.append(
+            {
+                "field": field,
+                "step": step,
+                "value": float(values[step]),
+                "bound": float(bound),
+                "comparator": comparator,
+                "tolerance": float(tolerance),
+                "units": units,
+            }
+        )
+    return violations
+
+
+def _warning(
+    *,
+    path: str,
+    line_number: int,
+    rule: str,
+    message: str,
+    snippet: str,
+    hard_fail: bool,
+) -> dict[str, Any]:
+    return {
+        "path": path,
+        "line": int(line_number),
+        "rule": rule,
+        "message": message,
+        "snippet": snippet.strip(),
+        "hard_fail": bool(hard_fail),
+    }
+
+
+def _scan_text_for_anti_clamp_patterns(path: str, text: str) -> list[dict[str, Any]]:
+    warnings: list[dict[str, Any]] = []
+    for line_number, line in enumerate(text.splitlines(), start=1):
+        lower = line.lower()
+        if TARGET_TANH_RE.search(line) or TARGET_SCALE_TANH_RE.search(line):
+            warnings.append(
+                _warning(
+                    path=path,
+                    line_number=line_number,
+                    rule="target_band_tanh_clamp",
+                    message="target-shaped tanh clamp tied to a 5-10 m/s amplitude literal",
+                    snippet=line,
+                    hard_fail=True,
+                )
+            )
+        if POSITIVE_ONLY_W_RE.search(line):
+            warnings.append(
+                _warning(
+                    path=path,
+                    line_number=line_number,
+                    rule="positive_only_w_velocity",
+                    message="vertical velocity is clipped through a positive-only maximum",
+                    snippet=line,
+                    hard_fail=True,
+                )
+            )
+        if THETA_CLIP_RE.search(line):
+            warnings.append(
+                _warning(
+                    path=path,
+                    line_number=line_number,
+                    rule="theta_target_clipping",
+                    message="theta perturbation appears clipped to a target value",
+                    snippet=line,
+                    hard_fail=True,
+                )
+            )
+        if "lift_bias" in lower or "updraft_drag" in lower:
+            warnings.append(
+                _warning(
+                    path=path,
+                    line_number=line_number,
+                    rule="lift_bias_or_updraft_drag",
+                    message="explicit lift-bias or updraft-drag stabilizer name found",
+                    snippet=line,
+                    hard_fail=True,
+                )
+            )
+        if (
+            AMPLITUDE_LITERAL_RE.search(line)
+            and "w" in lower
+            and any(token in lower for token in ("clip", "clamp", "bound", "target", "limit", "maximum", "minimum", "tanh"))
+        ):
+            warnings.append(
+                _warning(
+                    path=path,
+                    line_number=line_number,
+                    rule="target_band_w_bound_literal",
+                    message="w-related bound/target logic contains a 5-10 m/s amplitude literal",
+                    snippet=line,
+                    hard_fail=True,
+                )
+            )
+        if re.search(r"(?<![\w.])0\.38(?:0+)?(?![\w.])", line):
+            warnings.append(
+                _warning(
+                    path=path,
+                    line_number=line_number,
+                    rule="documented_mpas_slice_magic_0_38",
+                    message="documented ADR-023 slice-oracle constant; warning only",
+                    snippet=line,
+                    hard_fail=False,
+                )
+            )
+        if re.search(r"(?<![\w.])1\.35(?:0+)?(?![\w.])", line):
+            warnings.append(
+                _warning(
+                    path=path,
+                    line_number=line_number,
+                    rule="documented_mpas_slice_magic_1_35",
+                    message="documented ADR-023 slice-oracle conversion constant; warning only",
+                    snippet=line,
+                    hard_fail=False,
+                )
+            )
+    return warnings
+
+
+def scan_anti_clamp_patterns(
+    paths: Sequence[Path] | None = None,
+    *,
+    source_text_by_path: Mapping[str, str] | None = None,
+) -> list[dict[str, Any]]:
+    """Scans production-path source for target-shaped warm-bubble clamps."""
+
+    if source_text_by_path is not None:
+        warnings: list[dict[str, Any]] = []
+        for path, text in source_text_by_path.items():
+            warnings.extend(_scan_text_for_anti_clamp_patterns(path, text))
+        return warnings
+
+    warnings = []
+    for path in paths or PRODUCTION_SCAN_PATHS:
+        try:
+            text = Path(path).read_text(encoding="utf-8")
+        except FileNotFoundError:
+            warnings.append(
+                _warning(
+                    path=str(path),
+                    line_number=0,
+                    rule="missing_scan_path",
+                    message="anti-clamp scan path is missing",
+                    snippet="",
+                    hard_fail=True,
+                )
+            )
+            continue
+        warnings.extend(_scan_text_for_anti_clamp_patterns(str(Path(path).relative_to(ROOT)), text))
+    return warnings
+
+
+def _run_pytest_precondition(name: str, nodeids: Sequence[str]) -> dict[str, Any]:
+    command = [sys.executable, "-m", "pytest", *nodeids, "-q"]
+    completed = subprocess.run(command, cwd=ROOT, text=True, capture_output=True, check=False)
+    return {
+        "name": name,
+        "ok": completed.returncode == 0,
+        "command": " ".join(command),
+        "returncode": int(completed.returncode),
+        "stdout": completed.stdout,
+        "stderr": completed.stderr,
+    }
+
+
+def run_precondition_checks() -> dict[str, Any]:
+    """Runs the oracle prerequisites required before an operator-sanity pass."""
+
+    return {
+        "r7_oracle": _run_pytest_precondition(
+            "r7_oracle",
+            (
+                "tests/test_m6x_vertical_acoustic_oracle.py::test_linear_acoustic_period_matches_dispersion_relation",
+                "tests/test_m6x_vertical_acoustic_oracle.py::test_amplitude_decay_within_2pct_of_analytic",
+            ),
+        ),
+        "hydrostatic_rest": _run_pytest_precondition(
+            "hydrostatic_rest",
+            ("tests/test_m6x_vertical_acoustic_oracle.py::test_no_drift_in_hydrostatic_rest_state",),
+        ),
+    }
+
+
+def _preconditions_ok(preconditions: Mapping[str, Any] | None) -> bool:
+    if not preconditions:
+        return True
+    return all(bool(result.get("ok", False)) for result in preconditions.values())
+
+
+def _verdict(payload: Mapping[str, Any]) -> str:
+    if not _preconditions_ok(payload.get("preconditions")):
+        return FAIL_FINITENESS
     if payload["first_nonfinite_step"] is not None:
-        return "FAIL_NONFINITE"
-    w300 = samples["300s"]["w_max_m_s"]
-    w600 = samples["600s"]["w_max_m_s"]
-    z300 = samples["300s"]["centroid_z_m"]
-    z600 = samples["600s"]["centroid_z_m"]
-    if not all(isinstance(value, (int, float)) for value in (w300, w600, z300, z600)):
-        return "FAIL_MISSING_SAMPLE"
-    if 5.0 <= float(w300) <= 10.0 and 5.0 <= float(w600) <= 10.0 and float(z300) > 2500.0 and float(z600) > 3000.0:
-        return "PASS_WARM_BUBBLE_600S"
-    return "FAIL_TARGETS_NOT_MET"
+        return FAIL_FINITENESS
+    if payload["bound_violations"]:
+        return FAIL_PHYSICAL_BOUNDS
+    if any(bool(warning.get("hard_fail", False)) for warning in payload["anti_clamp_warnings"]):
+        return FAIL_ANTI_CLAMP_DETECTION
+    return PASS_OPERATOR_SANITY
+
+
+def run_warm_bubble_operator_sanity(
+    *,
+    nx: int = 64,
+    ny: int = 64,
+    nz: int = 40,
+    dx_m: float = 400.0,
+    dy_m: float = 400.0,
+    dz_m: float = 100.0,
+    dt_s: float = 2.0,
+    duration_s: float = 600.0,
+    n_acoustic: int = 8,
+    smdiv: float = 0.0,
+    rayleigh: float = 0.0,
+    bubble_center_z_m: float = 2000.0,
+    bubble_radius_m: float = 2000.0,
+    bubble_amplitude_k: float = 2.0,
+    run_preconditions: bool = True,
+) -> dict[str, Any]:
+    steps = int(round(float(duration_s) / float(dt_s)))
+    if abs(steps * float(dt_s) - float(duration_s)) > 1.0e-9:
+        raise ValueError("duration must be an integer number of dt steps")
+
+    grid = _grid(nx, ny, nz, dx_m, dy_m, dz_m)
+    state, base, theta_base, z_mass, initial_mu_perturbation = _initial_state(
+        grid,
+        dz_m=dz_m,
+        bubble_center_x_m=0.5 * nx * dx_m,
+        bubble_center_z_m=bubble_center_z_m,
+        bubble_radius_m=bubble_radius_m,
+        bubble_amplitude_k=bubble_amplitude_k,
+    )
+    acoustic_config = AcousticConfig(
+        n_substeps=int(n_acoustic),
+        dx_m=float(dx_m),
+        dy_m=float(dy_m),
+        smdiv=SmdivConfig(enabled=bool(smdiv), coefficient=float(smdiv)),
+        rayleigh=RayleighConfig(enabled=bool(rayleigh), coefficient=float(rayleigh)),
+    )
+    initial = _diagnose(state, theta_base, z_mass, initial_mu_perturbation)
+    start = time.perf_counter()
+    (final_state, _final_previous_pressure), scanned = _run(
+        state,
+        state.p_perturbation,
+        grid.metrics,
+        base,
+        theta_base,
+        z_mass,
+        initial_mu_perturbation,
+        acoustic_config,
+        float(dt_s),
+        steps,
+    )
+    jax.block_until_ready(final_state.p_total)
+    elapsed_s = time.perf_counter() - start
+    series = _series(initial, scanned)
+    nonfinite_step = _first_nonfinite_step(series["finite_state"])
+    samples = {
+        "300s": _sample_payload(series, dt_s, 300.0),
+        "600s": _sample_payload(series, dt_s, 600.0),
+    }
+    payload: dict[str, Any] = {
+        "artifact_type": "m6x_warm_bubble_operator_sanity",
+        "description": "Idealized flat warm-bubble acoustic-scan operator-sanity probe; w amplitude is diagnostic only.",
+        "setup": {
+            "grid": {"nx": nx, "ny": ny, "nz": nz, "dx_m": dx_m, "dy_m": dy_m, "dz_m": dz_m},
+            "dt_s": dt_s,
+            "duration_s": duration_s,
+            "steps": steps,
+            "n_acoustic": n_acoustic,
+            "bubble": {
+                "center_x_m": 0.5 * nx * dx_m,
+                "center_z_m": bubble_center_z_m,
+                "radius_m": bubble_radius_m,
+                "amplitude_k": bubble_amplitude_k,
+            },
+            "smdiv": smdiv,
+            "rayleigh": rayleigh,
+        },
+        "legacy_amplitude_band_m_s": {
+            "range": [5.0, 10.0],
+            "gate": False,
+            "reason": "unsourced for this pure-small-step Gaussian harness",
+        },
+        "first_nonfinite_step": nonfinite_step,
+        "surviving_seconds": float(duration_s) if nonfinite_step is None else max(0.0, (nonfinite_step - 1) * float(dt_s)),
+        "samples": samples,
+        "bound_violations": _collect_bound_violations(series),
+        "anti_clamp_warnings": scan_anti_clamp_patterns(),
+        "diagnostics_time_series": series,
+        "runtime_s_including_compile": elapsed_s,
+        "jax_devices": [str(device) for device in jax.devices()],
+        "wrf_source_anchors": {
+            "horizontal_pgf": "module_small_step_em.F:828-862,902-936",
+            "diagnostic_pressure_al_alt": "module_big_step_utilities_em.F:1025-1030,1082-1087,910-943",
+            "mu_continuity": "module_small_step_em.F:1094-1108",
+        },
+    }
+    payload["preconditions"] = run_precondition_checks() if run_preconditions else {}
+    payload["verdict"] = _verdict(payload)
+    return payload
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -247,86 +612,30 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--bubble-center-z-m", type=float, default=2000.0)
     parser.add_argument("--bubble-radius-m", type=float, default=2000.0)
     parser.add_argument("--bubble-amplitude-k", type=float, default=2.0)
+    parser.add_argument(
+        "--skip-preconditions",
+        action="store_true",
+        help="skip R7 oracle and hydrostatic-rest preconditions; intended only for focused unit tests",
+    )
     args = parser.parse_args(argv)
 
-    steps = int(round(float(args.duration_s) / float(args.dt_s)))
-    if abs(steps * float(args.dt_s) - float(args.duration_s)) > 1.0e-9:
-        raise ValueError("duration must be an integer number of dt steps")
-
-    grid = _grid(args.nx, args.ny, args.nz, args.dx_m, args.dy_m, args.dz_m)
-    state, base, theta_base, z_mass = _initial_state(
-        grid,
+    payload = run_warm_bubble_operator_sanity(
+        nx=args.nx,
+        ny=args.ny,
+        nz=args.nz,
+        dx_m=args.dx_m,
+        dy_m=args.dy_m,
         dz_m=args.dz_m,
-        bubble_center_x_m=0.5 * args.nx * args.dx_m,
+        dt_s=args.dt_s,
+        duration_s=args.duration_s,
+        n_acoustic=args.n_acoustic,
+        smdiv=args.smdiv,
+        rayleigh=args.rayleigh,
         bubble_center_z_m=args.bubble_center_z_m,
         bubble_radius_m=args.bubble_radius_m,
         bubble_amplitude_k=args.bubble_amplitude_k,
+        run_preconditions=not args.skip_preconditions,
     )
-    acoustic_config = AcousticConfig(
-        n_substeps=int(args.n_acoustic),
-        dx_m=float(args.dx_m),
-        dy_m=float(args.dy_m),
-        smdiv=SmdivConfig(enabled=bool(args.smdiv), coefficient=float(args.smdiv)),
-        rayleigh=RayleighConfig(enabled=bool(args.rayleigh), coefficient=float(args.rayleigh)),
-    )
-    initial = _diagnose(state, theta_base, z_mass)
-    start = time.perf_counter()
-    (final_state, _final_previous_pressure), scanned = _run(
-        state,
-        state.p_perturbation,
-        grid.metrics,
-        base,
-        theta_base,
-        z_mass,
-        acoustic_config,
-        float(args.dt_s),
-        steps,
-    )
-    jax.block_until_ready(final_state.p_total)
-    elapsed_s = time.perf_counter() - start
-    series = _series(initial, scanned)
-    nonfinite_step = _first_nonfinite_step(series["finite_state"])
-    samples = {
-        "300s": {
-            "w_max_m_s": _sample_at(series["w_max_m_s"], args.dt_s, 300.0),
-            "centroid_z_m": _sample_at(series["centroid_z_m"], args.dt_s, 300.0),
-        },
-        "600s": {
-            "w_max_m_s": _sample_at(series["w_max_m_s"], args.dt_s, 600.0),
-            "centroid_z_m": _sample_at(series["centroid_z_m"], args.dt_s, 600.0),
-        },
-    }
-    payload: dict[str, Any] = {
-        "artifact_type": "m6x_c2_a2_warm_bubble_600s",
-        "description": "Idealized flat Skamarock-Klemp-style warm-bubble probe using c2 acoustic_wrf scan.",
-        "setup": {
-            "grid": {"nx": args.nx, "ny": args.ny, "nz": args.nz, "dx_m": args.dx_m, "dy_m": args.dy_m, "dz_m": args.dz_m},
-            "dt_s": args.dt_s,
-            "duration_s": args.duration_s,
-            "steps": steps,
-            "n_acoustic": args.n_acoustic,
-            "bubble": {
-                "center_x_m": 0.5 * args.nx * args.dx_m,
-                "center_z_m": args.bubble_center_z_m,
-                "radius_m": args.bubble_radius_m,
-                "amplitude_k": args.bubble_amplitude_k,
-            },
-            "smdiv": args.smdiv,
-            "rayleigh": args.rayleigh,
-        },
-        "first_nonfinite_step": nonfinite_step,
-        "surviving_seconds": float(args.duration_s) if nonfinite_step is None else max(0.0, (nonfinite_step - 1) * float(args.dt_s)),
-        "samples": samples,
-        "diagnostics_time_series": series,
-        "runtime_s_including_compile": elapsed_s,
-        "jax_devices": [str(device) for device in jax.devices()],
-        "wrf_source_anchors": {
-            "horizontal_pgf": "module_small_step_em.F:828-862,902-936",
-            "diagnostic_pressure_al_alt": "module_big_step_utilities_em.F:1025-1030,1082-1087,910-943",
-            "mu_continuity": "module_small_step_em.F:1094-1108",
-        },
-    }
-    payload["verdict"] = _verdict(payload)
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     print(
@@ -337,12 +646,17 @@ def main(argv: list[str] | None = None) -> int:
                 "first_nonfinite_step": payload["first_nonfinite_step"],
                 "surviving_seconds": payload["surviving_seconds"],
                 "samples": payload["samples"],
+                "bound_violations": payload["bound_violations"],
+                "anti_clamp_hard_failures": [
+                    warning for warning in payload["anti_clamp_warnings"] if warning.get("hard_fail")
+                ],
+                "preconditions_ok": _preconditions_ok(payload.get("preconditions")),
             },
             indent=2,
             sort_keys=True,
         )
     )
-    return 0 if payload["verdict"] == "PASS_WARM_BUBBLE_600S" else 2
+    return 0 if payload["verdict"] == PASS_OPERATOR_SANITY else 2
 
 
 if __name__ == "__main__":
