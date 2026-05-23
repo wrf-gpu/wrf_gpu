@@ -3,16 +3,18 @@
 Manager-maintained. 30-min cadence overnight (per 2026-05-23 standing order).
 Manager: Claude Opus 4.7 (1M-context). Replaces previous manager 2026-05-23 ~23:00.
 
-## Currently in flight
+## Currently in flight (2 parallel, anti-stuck hedge after ADR-023 fallback trigger fired)
 
 | Window | Sprint | Role | AI | Worktree | Wall budget | Goal |
 |---|---|---|---|---|---|---|
-| `2:..._public-scan-path-u-worker` | `2026-05-23-m6x-adr023-public-scan-path-unification` | worker | codex gpt-5.5 xhigh | `/tmp/wrf_gpu2_unify` on `worker/gpt/m6x-adr023-public-scan-path-unification` | 4-7 h | **Close reviewer reject.** Unify public nonhydrostatic scan path so it routes through the MPAS-recurrence kernel (not the simplified `_wrf_buoyancy_column_update` branch); remove `NONHYDROSTATIC_BUOYANCY_SCALE` constant + positive-only updraft drag + mu tanh CFL limiter; restore missing fixture; fix F8 in ADR-023; new path-unification tests. CRITICAL: if warm-bubble breaks after simplification, REPORT — do not silently re-stabilize. |
+| `2:..._failure-diagn-tester` | `2026-05-23-m6x-warm-bubble-failure-diagnostic` | tester (diagnostic) | **Claude Opus 4.7** xhigh (different model — fresh angle on codex-built code) | `/tmp/wrf_gpu2_diag` on `tester/opus/m6x-warm-bubble-failure-diagnostic` | 2-4 h | Diagnose WHY conservative MPAS-recurrence produces w_max=0.04 on warm-bubble. Verdict in §7: WIRING-BUG / SIGN-ERROR / ARCHITECTURAL-GAP-FALLBACK / MAGIC-NUMBER / MIXED. Drives next dispatch. Read-only + one diagnostic script. |
+| `2:..._wrf-smallstep-prot-worker` | `2026-05-23-m6x-adr021-wrf-smallstep-prototype` | worker | codex gpt-5.5 xhigh | `/tmp/wrf_gpu2_adr021` on `worker/gpt/m6x-adr021-wrf-smallstep-prototype` | 8-14 h | ADR-021 fallback prototype: expand AcousticScanCarry with WRF small-step scratch (t_2ave, ww, muave, muts, ph_tend); port advance_w + advance_mu_t + calc_coef_w line-for-line from WRF source. Binding gate: warm-bubble w_max ∈ [5,10] at 600s. |
 
 ## Recently completed (this watchman session)
 
 | Sprint | Outcome | Branch / commit | Merged on main |
 |---|---|---|---|
+| `m6x-adr023-public-scan-path-unification` | **PATH UNIFIED but WARM-BUBBLE FAILS** — 4/4 unification gates PASS, 23/23 regression PASS, transfer audit 5/5 PASS, fixture restored via manifest+generator. epssm now plumbed end-to-end (public sweep differs across {0,0.1,0.3}). Honest warm-bubble: w_max=0.041 m/s at 600s (target [5,10]). ADR-023 fallback trigger fires. | `worker/gpt/m6x-adr023-public-scan-path-unification @ e2391d3` | merge `d1f7d0c` |
 | `m6x-adr023-d02-boundary-replay-1h` | **HALT-BY-MANAGER-PATH-SPLIT** — d02 worker halted after reviewer found path split; preserved scaffolding (scripts/m6_d02_boundary_replay_1h.py + src/gpuwrf/integration/d02_replay.py + tests/test_m6x_d02_boundary_replay.py). Redispatch after unification. | `worker/gpt/m6x-adr023-d02-boundary-replay-1h @ 47ee1bf` | merge `5260250` |
 | `m6x-adr023-production-grade-reviewer` | **REJECT** — 2 binding findings: (1) BLOCKER fixture warm_bubble_2km.npz missing; (2) MAJOR path split — MPAS-recurrence path reached only via pressure_scale=0.0; public scan with non_hydrostatic=True uses _wrf_buoyancy_column_update which ignores epssm + applies prototype stabilization. ADR-023 stays PROPOSED. | `reviewer/opus/m6x-adr023-production-grade-reviewer @ b2f7a05` (16309B report) | merge `5260250` |
 | `m6x-adr023-production-grade` | PASS at module-level (production-gate 4/4, MPAS slice RMSE 38.7% → 1.69%) but **path split**: the 1.69% claim does NOT apply to the public coupled-forecast scan path. | `worker/gpt/m6x-adr023-production-grade @ 0a05159` | `f4b04af` |
@@ -128,5 +130,7 @@ Per user standing order 2026-05-23: windows 0 and 1 of session 2 stay protected 
 - 2026-05-23 ~04:05 — reviewer returned REJECT after 9m: path split + missing fixture; ADR-023 stays PROPOSED
 - 2026-05-23 ~04:08 — d02 worker halted (received manager halt message; committed scaffolding + HALT-BY-MANAGER-PATH-SPLIT report); halt + reject merged to main
 - 2026-05-23 ~04:08 — unification sprint dispatched (m6x-adr023-public-scan-path-unification, 4-7h)
+- 2026-05-23 ~04:24 — unification returned in 16m: path unified + 23/23 regression PASS, but honest warm-bubble fails (w_max=0.04 vs [5,10]). ADR-023 fallback trigger fires.
+- 2026-05-23 ~04:47 — anti-stuck hedge dispatched: Opus diagnostic (2-4h, fresh-model angle) + Codex ADR-021 prototype (8-14h, Plan B carry expansion)
 
-— Manager (Claude Opus 4.7 1M-context), 2026-05-23 ~04:10 UTC
+— Manager (Claude Opus 4.7 1M-context), 2026-05-23 ~04:50 UTC
