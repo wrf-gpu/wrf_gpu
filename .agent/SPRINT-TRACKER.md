@@ -5,7 +5,9 @@ Manager: Claude Opus 4.7 (1M-context). Replaces previous manager 2026-05-23 ~23:
 
 ## Currently in flight
 
-**NONE** — round 2 closed cleanly. Awaiting next sprint dispatch (production-grade ADR-023 implementation).
+| Window | Sprint | Role | AI | Worktree | Wall budget | Goal |
+|---|---|---|---|---|---|---|
+| `2:?` | `2026-05-23-m6x-adr023-mpas-column-slice-oracle` | worker | codex gpt-5.5 xhigh | `/tmp/wrf_gpu2_slice` on `worker/gpt/m6x-adr023-mpas-column-slice-oracle` | 3-5 h | Close critic F1: Python NumPy literal port of MPAS Fortran lines 2172-2208 (forward-sweep + back-sub + perturbation reconstruction). Captures non-tautological column trajectory. Prototype operator compared within tolerance. Unblocks production-grade sprint with F6 ladder rung. |
 
 ## Round 1 outcome (3 sprints dispatched 2026-05-22 23:48-23:49, returned 2026-05-23 00:55-01:10)
 
@@ -109,5 +111,6 @@ Per user standing order 2026-05-23: windows 0 and 1 of session 2 stay protected 
 - 2026-05-23 ~01:36 — round 2: dispatched critic + prototype in dedicated worktrees (`/tmp/wrf_gpu2_critic_r2`, `/tmp/wrf_gpu2_proto`)
 - 2026-05-23 ~02:00 — round 2 agents finished cleanly: critic RATIFY-ADR-023 (committed), prototype passed all acceptance gates
 - 2026-05-23 ~02:10 — watchman tick 2: read both reports; merged both branches to main; ADR-023 ratified DRAFT→PROPOSED with critic required-fixes folded; ADR-022-DRAFT superseded
+- 2026-05-23 ~02:17 — next-phase sprint dispatched: MPAS column-slice oracle (closes critic F1, F6 acceptance-ladder rung 2)
 
-— Manager (Claude Opus 4.7 1M-context), 2026-05-23 ~02:10 UTC
+— Manager (Claude Opus 4.7 1M-context), 2026-05-23 ~02:20 UTC
