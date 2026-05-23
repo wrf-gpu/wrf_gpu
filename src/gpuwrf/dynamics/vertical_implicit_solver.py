@@ -10,6 +10,78 @@ import jax.numpy as jnp
 config.update("jax_enable_x64", True)
 
 
+R_D = 287.0
+CP_D = 1004.0
+GRAVITY_M_S2 = 9.80665
+
+
+def build_epssm_column_coefficients(
+    theta: jax.Array,
+    dz_m: jax.Array,
+    *,
+    dt: float,
+    epssm: float = 0.1,
+) -> tuple[jax.Array, ...]:
+    """Builds MPAS/WRF-family off-centered tridiagonal coefficients.
+
+    The coefficient names follow MPAS-A
+    ``mpas_atm_time_integration.F:1589-1651``: ``dtseps``, ``cofrz``,
+    ``cofwr``, ``cofwz``, ``coftz``, ``cofwt``, and the tridiagonal
+    ``a/b/c`` rows. This is the epssm-aware builder used by the production
+    nonhydrostatic ADR-023 column path. Inputs are batched columns with the
+    leading axis as mass levels.
+    """
+
+    theta = jnp.asarray(theta)
+    dz_m = jnp.asarray(dz_m, dtype=theta.dtype)
+    dtseps = 0.5 * float(dt) * (1.0 + float(epssm))
+    rcv = R_D / (CP_D - R_D)
+    c2 = CP_D * rcv
+
+    rdzw = 1.0 / dz_m
+    dz_face = 0.5 * (dz_m[:-1, :, :] + dz_m[1:, :, :])
+    theta_face = 0.5 * (theta[:-1, :, :] + theta[1:, :, :])
+
+    cofrz = dtseps * rdzw
+    cofwt = 0.5 * dtseps * rcv * GRAVITY_M_S2 / theta
+
+    cofwz = jnp.zeros((theta.shape[0] + 1,) + theta.shape[1:], dtype=theta.dtype)
+    cofwr = jnp.zeros_like(cofwz)
+    coftz = jnp.zeros_like(cofwz)
+    cofwz = cofwz.at[1:-1, :, :].set(dtseps * c2 / dz_face)
+    cofwr = cofwr.at[1:-1, :, :].set(0.5 * dtseps * GRAVITY_M_S2)
+    coftz = coftz.at[1:-1, :, :].set(dtseps * theta_face)
+
+    a = jnp.zeros_like(cofwz)
+    b = jnp.ones_like(cofwz)
+    c = jnp.zeros_like(cofwz)
+    a_interior = (
+        -cofwz[1:-1, :, :] * coftz[:-2, :, :] * rdzw[:-1, :, :]
+        + cofwr[1:-1, :, :] * cofrz[:-1, :, :]
+        - cofwt[:-1, :, :] * coftz[:-2, :, :] * rdzw[:-1, :, :]
+    )
+    b_interior = (
+        1.0
+        + cofwz[1:-1, :, :]
+        * (
+            coftz[1:-1, :, :] * rdzw[1:, :, :]
+            + coftz[1:-1, :, :] * rdzw[:-1, :, :]
+        )
+        - coftz[1:-1, :, :]
+        * (cofwt[1:, :, :] * rdzw[1:, :, :] - cofwt[:-1, :, :] * rdzw[:-1, :, :])
+        + cofwr[1:-1, :, :] * (cofrz[1:, :, :] - cofrz[:-1, :, :])
+    )
+    c_interior = (
+        -cofwz[1:-1, :, :] * coftz[2:, :, :] * rdzw[1:, :, :]
+        - cofwr[1:-1, :, :] * cofrz[1:, :, :]
+        + cofwt[1:, :, :] * coftz[2:, :, :] * rdzw[1:, :, :]
+    )
+    a = a.at[1:-1, :, :].set(a_interior)
+    b = b.at[1:-1, :, :].set(b_interior)
+    c = c.at[1:-1, :, :].set(c_interior)
+    return cofrz, cofwr, cofwz, coftz, cofwt, rdzw, a, b, c
+
+
 def solve_tridiagonal_thomas(a: jax.Array, b: jax.Array, c: jax.Array, rhs: jax.Array) -> jax.Array:
     """Solves a batched tridiagonal system along the leading vertical axis.
 

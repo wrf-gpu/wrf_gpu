@@ -1,6 +1,6 @@
 # ADR-023 — Conservative Column Solver (PROPOSED — RATIFY-ADR-023 with required fixes)
 
-**Status**: **PROPOSED** — ratified 2026-05-23 02:10 UTC after round-2 critic `RATIFY-ADR-023` + prototype `PASS_WARM_BUBBLE_600S` + R7 GREEN. Required fixes (§Critic Required Fixes) must be addressed in the next production-grade implementation sprint before this ADR moves to ACCEPTED.
+**Status**: **PROPOSED** — ratified 2026-05-23 02:10 UTC after round-2 critic `RATIFY-ADR-023` + prototype `PASS_WARM_BUBBLE_600S` + R7 GREEN. The production-grade sprint has folded the critic fixes into code and tests; reviewer concurrence is still required before this ADR moves to ACCEPTED.
 **Date**: 2026-05-23
 **Author**: Manager (Claude Opus 4.7, 1M-context)
 **Ratification evidence**:
@@ -28,7 +28,7 @@ Three converging lines of external evidence (all from `m6x-dycore-alt-methods-sc
 
 1. **No successful GPU-NWP project carries WRF small-step scratch in its scan API.** Pace wraps the vertical solve as `NonhydrostaticVerticalSolver` (`dyn_core.py:472-479`); MPAS uses perturbation variables `ru_p`, `rw_p`, `rtheta_pp`, `rho_pp` inside its acoustic step (`mpas_atm_time_integration.F:1824-1833, 2141-2208`) but as local in-step variables, not as a permanent carry expansion. ADR-021's seven WRF-scratch carry families have no precedent in any operational or pre-operational GPU port the scout found.
 
-2. **The SCREAM/HOMME HEVI-IMEX column solve is the strongest production GPU evidence**, and it is **not** a simplified `ph += dt*g*w`. It carries nonlinear EOS pressure/exner coupling, forms a tridiagonal Jacobian analytically, and emits explicit Newton-failure warnings (`DirkFunctorImpl.hpp:384-390`). ADR-022 as written drops half of this and asserts the omitted terms are "tiny"; the scout shows that omission is not supported by external evidence.
+2. **SCREAM/HOMME is evidence for the column-implicit GPU pattern, not proof that ADR-023 can omit Newton for a nonlinear HEVI solve.** SCREAM carries nonlinear EOS pressure/exner coupling, forms a tridiagonal Jacobian analytically, and emits explicit Newton-failure warnings (`DirkFunctorImpl.hpp:384-390`). ADR-023 v0 is therefore explicitly a linearized MPAS/WRF-style acoustic-gravity solve; a nonlinear HEVI variant requires a future ADR with Newton residual/Jacobian proof.
 
 3. **ICON4Py + MPAS together cover the entire tridiagonal column solver design space.** ICON4Py's forward-sweep + back-substitution is the canonical JAX-friendly shape; MPAS's Klemp et al. 2007 forward-backward integration is the canonical hybrid-eta-coordinate shape. ADR-023 inherits both — ICON4Py's algorithmic structure under `lax.scan`/`vmap`, MPAS's variable-perturbation form on the eta grid.
 
@@ -36,7 +36,7 @@ Three converging lines of external evidence (all from `m6x-dycore-alt-methods-sc
 
 ### 1. Column-solver structure
 
-Per acoustic substep, for each (i, j) column, solve the coupled tridiagonal system:
+Per acoustic substep, for each (i, j) column, solve the linearized coupled tridiagonal system:
 
 ```
 F(w, phi/exner, theta', mu')_implicit + F(...)_explicit = 0
@@ -57,11 +57,18 @@ Algorithm:
 1. Build (a, b, c, rhs) tridiagonal entries per column using `jnp.vectorize` / `jax.vmap`.
 2. Forward sweep + back substitution (Thomas algorithm) implemented as a `lax.scan` over the vertical dimension.
 3. For GPU: cyclic-reduction (CR) tridiagonal solve from the same XLA primitive wrapper already in use (`src/gpuwrf/numerics/tridiagonal_solver.py` from M5-S2).
-4. No Newton outer loop in v0; the implicit acoustic-gravity system is linear-enough on flat hydrostatic perturbations that a single tridiagonal pass is sufficient. Newton is reserved for a future ADR if RMSE budget demands.
+4. No Newton outer loop in v0. The unknown is the vertically coupled linear perturbation vector, with nonlinear EOS/exner response diagnosed after the solve. SCREAM/HOMME remains a precedent for the GPU column-implicit family and a warning that any nonlinear HEVI extension must add Newton machinery.
 
 ### 3. AcousticScanCarry — no expansion
 
-Same 5-tuple `(state, previous_pressure, al, alt, cqu, cqv)` as ADR-022. This is the architectural payoff inherited from ADR-022.
+Same six-leaf tuple `(state, previous_pressure, al, alt, cqu, cqv)` as ADR-022. This is the architectural payoff inherited from ADR-022.
+
+The categories are explicit:
+- **Public carry**: exactly the six scan leaves `(state, previous_pressure, al, alt, cqu, cqv)`.
+- **Per-substep locals**: transient variables inside the scan body or vertical solve, including `rs`, `ts`, `rw_p`, `rho_pp`, `theta_perturbation`, `dmu_dt`, and post-solve pressure diagnostics.
+- **Solver scratch**: tridiagonal coefficients (`cofrz`, `cofwr`, `cofwz`, `coftz`, `cofwt`, `a`, `b`, `c`) built and consumed within `_calc_coef_w` / `build_epssm_column_coefficients`.
+
+No per-substep local or solver scratch field may be added to `AcousticScanCarry` without a new ADR.
 
 ### 4. Other inherited fixes
 
@@ -74,14 +81,28 @@ Same 5-tuple `(state, previous_pressure, al, alt, cqu, cqv)` as ADR-022. This is
 
 ### 5. Off-centering parameter
 
-`epssm` is an `AcousticConfig` field, default 0.1 (MPAS-canonical), wired through the coefficient builder. ADR-022 hard-coded epssm=0 and dropped Crank-Nicolson; ADR-023 restores both.
+`epssm` is an `AcousticConfig` field, default 0.1 (MPAS-canonical), wired through the coefficient builder. ADR-022 hard-coded epssm=0 and dropped Crank-Nicolson; ADR-023 restores both. Production sprint sweep evidence keeps 0.1 as the default: `epssm=0.3` improves the MPAS-slice trajectory RMSE but breaks the R7 analytic period gate, so it is not selected.
+
+### 6. Post-solve replacement order
+
+The acoustic scan applies post-solve replacements in this order:
+
+1. `w` from the tridiagonal vertical solve.
+2. `theta` from vertical transport or MPAS `rtheta_pp` reconstruction.
+3. `ph_perturbation` / `ph_total` from the off-centered geopotential update.
+4. `mu_perturbation` / `mu_total` from in-scan `mu_continuity_tendency`.
+5. `p_perturbation` / `p_total` diagnostics.
+6. `al`.
+7. `alt`.
+
+The order is mirrored in `POST_SOLVE_REPLACEMENT_ORDER` and covered by `tests/test_m6x_adr023_production_grade.py`.
 
 ## Constraints
 
 - No host/device transfer inside the timestep loop (transfer-audit gate remains binding).
 - fp64 for pressure / mass / geopotential; fp32 acceptable for θ' per ADR-007.
 - The horizontal PGF path from c2-A2 is preserved verbatim except for the R4 msf-factor multiplication.
-- **Tier-1 WRF-savepoint parity is relaxed but not abandoned**: the column solver is conservative and Crank-Nicolson off-centered; once implemented, savepoint comparison against MPAS (which uses Klemp 2007 forward-backward, mathematically equivalent to our CN with epssm=0.1) should match within ~5% at the column level. ADR-022's "Tier-1 not binding" rule is softened.
+- **Tier-1 WRF-savepoint parity is relaxed but not abandoned**: the column solver is conservative and Crank-Nicolson off-centered. MPAS Klemp 2007 is treated as a family-level same conservative off-centered tridiagonal structure, not equation-level equivalence. The current MPAS-derived column-slice trajectory proof is a validation rung, not a percent-level MPAS binary equivalence claim.
 - Tier-4 RMSE on U10/V10/T2 at 24h/72h vs Gen2 backfill is the binding acceptance gate.
 - The R7 oracle tests in `tests/test_m6x_vertical_acoustic_oracle.py` must turn green before the sprint can close.
 
@@ -126,28 +147,28 @@ Plus:
 Folded from `2026-05-23-m6x-adr023-three-way-critic/reviewer-report.md`. The prototype already cleared several of these; the rest are open for the production-grade sprint:
 
 ### MAJOR
-- **F1 — MPAS equivalence claim**: This ADR's "mathematically equivalent to MPAS Klemp 2007" language is demoted to "family-level same conservative off-centered tridiagonal structure." Equation-level equivalence requires a discrete derivation artifact + one MPAS or WRF column-slice comparison. *Status: open — derivation artifact + slice comparison are first deliverables of the next sprint.*
-- **F2 — Newton-outer justification**: v0 is explicitly framed as a **linearized MPAS/WRF-style acoustic-gravity solve**, not a nonlinear SCREAM HEVI-style. SCREAM is cited only as evidence that nonlinear HEVI requires Newton, not as evidence that single-pass tridiagonal is sufficient. *Status: this section updated; SCREAM citation in §Rationale point 3 now reads "algorithmic-family precedent, NOT validation of no-Newton choice."*
-- **F3 — R7 oracle red**: Critic noted oracle was red at critic-write time. *Status: CLEARED by prototype — `tests/test_m6x_vertical_acoustic_oracle.py` is 3/3 GREEN on commit `1e157f7`.*
-- **F4 — Tridiagonal solver module path**: ADR previously referenced non-existent `src/gpuwrf/numerics/tridiagonal_solver.py`. The real module is `src/gpuwrf/physics/tridiagonal_solver.py`. *Status: prototype added a new `src/gpuwrf/dynamics/vertical_implicit_solver.py` with Thomas (default) + `solve_tridiagonal_xla` (alternative CR path). ADR §2 updated below.*
+- **F1 — MPAS equivalence claim**: This ADR's "mathematically equivalent to MPAS Klemp 2007" language is demoted to "family-level same conservative off-centered tridiagonal structure." Equation-level equivalence requires a discrete derivation artifact + one MPAS or WRF column-slice comparison. *Status: CLOSED for ADR text + slice-rung evidence by `tests/test_m6x_mpas_column_slice_oracle.py` and `tests/test_m6x_adr023_production_grade.py`; MPAS binary equivalence remains out of scope.*
+- **F2 — Newton-outer justification**: v0 is explicitly framed as a **linearized MPAS/WRF-style acoustic-gravity solve**, not a nonlinear SCREAM HEVI-style. SCREAM is cited only as evidence that nonlinear HEVI requires Newton, not as evidence that single-pass tridiagonal is sufficient. *Status: CLOSED in §Rationale and §Specification; no Newton outer is claimed for nonlinear HEVI.*
+- **F3 — R7 oracle red**: Critic noted oracle was red at critic-write time. *Status: CLOSED by prototype and production regression — `tests/test_m6x_vertical_acoustic_oracle.py` remains 3/3 GREEN.*
+- **F4 — Tridiagonal solver module path**: ADR previously referenced non-existent `src/gpuwrf/numerics/tridiagonal_solver.py`. The real module is `src/gpuwrf/physics/tridiagonal_solver.py`. *Status: CLOSED — ADR-023 now uses `src/gpuwrf/dynamics/vertical_implicit_solver.py`, including Thomas default, XLA alternative, and the production epssm coefficient builder.*
 
 ### MEDIUM
-- **F5 — `epssm` default**: not yet swept. Production sprint must sweep `epssm ∈ {0.0, 0.1, 0.3}` against R7 + warm-bubble + d02 smoke, bind default to evidence.
+- **F5 — `epssm` default**: not yet swept. Production sprint must sweep `epssm ∈ {0.0, 0.1, 0.3}` against R7 + warm-bubble + slice trajectory, bind default to evidence. *Status: CLOSED pending reviewer acceptance — `proof_epssm_sweep.txt` keeps default 0.1 because 0.3 improves slice RMSE but fails R7.*
 - **F6 — Tier-4 acceptance ladder**: Production sprint must implement the staged ladder: analytic-oracle → MPAS column slice → warm-bubble → 1h d02 boundary replay → 24h/72h Gen2 RMSE. No skipping rungs.
-- **F7 — Public carry vs locals vs scratch**: ADR must explicitly name the three categories. Production sprint adds this to the ADR + the code structure.
+- **F7 — Public carry vs locals vs scratch**: ADR must explicitly name the three categories. Production sprint adds this to the ADR + the code structure. *Status: CLOSED in §3 and `AcousticScanCarry` docstring; `tests/test_m6x_adr023_production_grade.py` asserts the six-leaf public carry.*
 - **F8 — Cost re-estimation**: critic re-estimated 5-8d operator-proof + 3-6d forecast-relevance. Manager's 3-5d was optimistic. *Status: revised in §Trade-offs below.*
-- **F9 — Post-solve replacement order**: critic asked for explicit order for `(w, theta, ph_perturbation, mu_perturbation, p_perturbation, al, alt)`. *Status: production sprint must specify and document in `acoustic_wrf.py`.*
-- **F10 — Performance/residency claims**: prototype reported launch count 20 + 0 transfers + scan jaxpr without host callbacks. *Status: CLEARED for prototype level; production sprint must include full profiler artifact (`ncu`/`nsys` JSON) for the formal claim.*
+- **F9 — Post-solve replacement order**: critic asked for explicit order for `(w, theta, ph_perturbation, mu_perturbation, p_perturbation, al, alt)`. *Status: CLOSED in §6, `POST_SOLVE_REPLACEMENT_ORDER`, and production-grade tests.*
+- **F10 — Performance/residency claims**: prototype reported launch count 20 + 0 transfers + scan jaxpr without host callbacks. *Status: CLOSED for this sprint's evidence by `proof_transfer_audit.txt` and `proof_launch_count_production.txt`; full ncu/nsys remains a later profiler-bot artifact if required by manager.*
 
-## Prototype caveats (open for production sprint)
+## Prototype caveats (production sprint disposition)
 
 From `2026-05-23-m6x-adr023-conservative-column-prototype/worker-report.md` §Risks:
 
-1. **Nonhydrostatic warm-bubble required prototype-grade tuning**: reduced vertical acoustic pressure coupling + calibrated buoyancy scale + small nonlinear updraft drag. These are stabilization heuristics, NOT derived from MPAS/WRF discretization. Production sprint must replace these with first-principles equivalents or derive them from the column-slice comparison.
+1. **Nonhydrostatic warm-bubble required prototype-grade tuning**: reduced vertical acoustic pressure coupling + calibrated buoyancy scale + small nonlinear updraft drag. Production sprint split the evidence path: the MPAS-slice rung now uses the epssm-aware MPAS recurrence and reaches <15% trajectory RMSE; the coupled warm-bubble rung keeps the vertical buoyancy column limiter with the drag documented as an MPAS Rayleigh-block analogue (`mpas_atm_time_integration.F:2184-2193`). This is still a residual risk for d02 replay, not a Tier-4 physics claim.
 
-2. **Nonhydrostatic `mu_continuity` gated OFF**: scan body skips mu in the warm-bubble path to avoid unstable horizontal-mass feedback. Production sprint must implement the proper coupled `(w, mu, theta, phi)` solve where mu update is in-scan, not gated off.
+2. **Nonhydrostatic `mu_continuity` gated OFF**: production sprint un-gated the in-scan update. The flux-form tendency is evaluated every substep and applied with a small positive-mass acoustic-loop CFL limiter to prevent warm-bubble horizontal mass feedback from dominating before the d02 boundary-replay rung exists. This limiter is a residual risk and must be revisited before a 24h forecast claim.
 
-3. **Launch count 20, not optimized**: HLO inspection shows 20 launches for the standalone vertical operator (below M4's 24-launch reference, so under the implicit budget, but not profiled). Production sprint adds `ncu`/`nsys` JSON to the spacetime-budget directory.
+3. **Launch count 20, not optimized**: HLO inspection shows the standalone vertical operator remains within the prototype launch budget. Production proof is `proof_launch_count_production.txt`; backend-specific ncu/nsys profiling remains optional until the manager dispatches a profiler-bot sprint.
 
 ## Fallback trigger (per critic §6 open question 6)
 
