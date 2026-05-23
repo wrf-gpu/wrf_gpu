@@ -1,0 +1,7 @@
+{
+  "source_files": [
+    "src/gpuwrf/dynamics/acoustic_wrf.py",
+    "src/gpuwrf/dynamics/damping.py",
+    "src/gpuwrf/integration/d02_replay.py"
+  ]
+}

@@ -63,7 +63,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--output-dir", type=Path, default=SPRINT_DIR)
     parser.add_argument("--run-dir", type=Path, default=None)
     parser.add_argument("--radiation-cadence-steps", type=int, default=60)
-    parser.add_argument("--probe-timeout-s", type=float, default=120.0)
+    parser.add_argument("--probe-timeout-s", type=float, default=1800.0)
     parser.add_argument("--replay-timeout-s", type=float, default=36000.0)
     parser.add_argument("--skip-probe", action="store_true")
     parser.add_argument("--force-synthetic", action="store_true")

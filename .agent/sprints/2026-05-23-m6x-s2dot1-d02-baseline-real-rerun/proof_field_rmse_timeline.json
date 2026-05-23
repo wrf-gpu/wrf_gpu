@@ -1,0 +1,69 @@
+{
+  "artifacts": {},
+  "diagnostic": {
+    "name": "field_rmse_timeline",
+    "purpose": "Track forecast-reference error by lead."
+  },
+  "input": {
+    "lead_count": 1,
+    "path": "/tmp/wrf_gpu2_s2dot1_baseline/.agent/sprints/2026-05-23-m6x-s2dot1-d02-baseline-real-rerun/artifacts/sidecar-inputs/field_rmse_timeline.input.json"
+  },
+  "measurements": {
+    "fields_requested": [
+      "T2",
+      "U10",
+      "V10",
+      "qv2",
+      "w",
+      "theta",
+      "w_k20",
+      "theta_k20"
+    ],
+    "timeline": [
+      {
+        "fields": {
+          "T2": {
+            "bias": 0.39999999999997726,
+            "max_abs_error": 0.39999999999997726,
+            "rmse": 0.39999999999997726
+          },
+          "U10": {
+            "bias": 0.5,
+            "max_abs_error": 0.5,
+            "rmse": 0.5
+          },
+          "V10": {
+            "bias": -0.6000000000000001,
+            "max_abs_error": 0.6000000000000001,
+            "rmse": 0.6000000000000001
+          },
+          "theta_k20": {
+            "max_abs_error": 0.30000000000001137,
+            "rmse": 0.3000000000000114
+          },
+          "w_k20": {
+            "max_abs_error": 0.020000000000000004,
+            "rmse": 0.02
+          }
+        },
+        "lead_hours": 1.0,
+        "lead_time_s": 3600.0,
+        "reference": "synthetic://gen2-shaped-reference"
+      }
+    ]
+  },
+  "schema_version": "m6x-s1-diagnostic-sidecar-v1",
+  "source_citations": [
+    "src/gpuwrf/integration/d02_replay.py:515-546",
+    "scripts/diagnostic_gen2_rmse_baseline.py:1-9"
+  ],
+  "status": "OK",
+  "units": {
+    "T2": "K",
+    "U10": "m s-1",
+    "V10": "m s-1",
+    "qv2": "kg kg-1",
+    "theta": "K",
+    "w": "m s-1"
+  }
+}

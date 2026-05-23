@@ -1,0 +1,100 @@
+{
+  "columns": [
+    {
+      "i": 2,
+      "j": 2,
+      "name": "boundary_zone",
+      "note": "Only k20 forecast slices are available from the preserved replay field NPZ.",
+      "profiles": {
+        "theta": [
+          302.34000000000003
+        ],
+        "w": [
+          0.03236739606139474
+        ]
+      },
+      "time_series": {
+        "mu": [
+          0.0,
+          0.0
+        ],
+        "p": [
+          0.0,
+          0.0
+        ],
+        "theta": [
+          302.04,
+          302.34000000000003
+        ],
+        "w": [
+          0.01236739606139474,
+          0.03236739606139474
+        ]
+      }
+    },
+    {
+      "i": 11,
+      "j": 11,
+      "name": "mount_teide_proxy",
+      "note": "Only k20 forecast slices are available from the preserved replay field NPZ.",
+      "profiles": {
+        "theta": [
+          302.52000000000004
+        ],
+        "w": [
+          0.009974459028233105
+        ]
+      },
+      "time_series": {
+        "mu": [
+          0.0,
+          0.0
+        ],
+        "p": [
+          0.0,
+          0.0
+        ],
+        "theta": [
+          302.22,
+          302.52000000000004
+        ],
+        "w": [
+          -0.010025540971766896,
+          0.009974459028233105
+        ]
+      }
+    },
+    {
+      "i": 12,
+      "j": 0,
+      "name": "ocean_proxy",
+      "note": "Only k20 forecast slices are available from the preserved replay field NPZ.",
+      "profiles": {
+        "theta": [
+          302.3
+        ],
+        "w": [
+          0.004863950093841435
+        ]
+      },
+      "time_series": {
+        "mu": [
+          0.0,
+          0.0
+        ],
+        "p": [
+          0.0,
+          0.0
+        ],
+        "theta": [
+          302.0,
+          302.3
+        ],
+        "w": [
+          -0.015136049906158565,
+          0.004863950093841435
+        ]
+      }
+    }
+  ]
+}
