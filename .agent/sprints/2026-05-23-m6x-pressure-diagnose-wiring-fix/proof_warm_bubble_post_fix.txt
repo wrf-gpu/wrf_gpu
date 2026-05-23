@@ -1,0 +1,16 @@
+{
+  "first_nonfinite_step": null,
+  "output": ".agent/sprints/2026-05-23-m6x-pressure-diagnose-wiring-fix/proof_warm_bubble_post_fix.json",
+  "samples": {
+    "300s": {
+      "centroid_z_m": 2153.9156689791407,
+      "w_max_m_s": 0.09108699287816883
+    },
+    "600s": {
+      "centroid_z_m": 2044.5305870563714,
+      "w_max_m_s": 0.038687905089051594
+    }
+  },
+  "surviving_seconds": 600.0,
+  "verdict": "FAIL_TARGETS_NOT_MET"
+}
