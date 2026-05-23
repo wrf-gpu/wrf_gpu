@@ -3,17 +3,16 @@
 Manager-maintained. 30-min cadence overnight (per 2026-05-23 standing order).
 Manager: Claude Opus 4.7 (1M-context). Replaces previous manager 2026-05-23 ~23:00.
 
-## Currently in flight (2 parallel intel sprints — dispatched ~08:04 UTC after strategy critic HYBRID verdict)
+## Currently in flight
 
-| Window | Sprint | Role | AI | Worktree | Wall budget | Goal |
-|---|---|---|---|---|---|---|
-| `2:..._clamp-strip-honest-worker` | `2026-05-23-m6x-adr021-clamp-strip-honest-test` | worker | codex gpt-5.5 xhigh | `/tmp/wrf_gpu2_adr021_strip` on `worker/gpt/m6x-adr021-clamp-strip-honest-test` | 4-8 h | Strip clamps from ADR-021 prototype (w-clamp, positive-only-w, theta lift bias, mu reset, disabled u/v accum); run operator-sanity gate. Three outcomes: PASS=ADR-021 architecture is the answer; FAIL_PHYSICAL_BOUNDS=both architectures share issue; FAIL_FINITENESS=carry expansion alone insufficient. |
-| `2:..._gen2-rmse-baseline-charac-worker` | `2026-05-23-m6x-gen2-rmse-baseline-characterization` | worker | codex gpt-5.5 xhigh | `/tmp/wrf_gpu2_gen2_baseline` on `worker/gpt/m6x-gen2-rmse-baseline-characterization` | 4-8 h | Characterize Gen2 operational noise floor (forecast-vs-forecast under "no model change"). Anchors the Tier-4 PASS threshold for the dycore. |
+**NONE — both intel sprints returned and merged. Stable state. Decisive intel landed.**
 
-## Round-N (overnight) outcome
+## Decisive intel landed this round
 
 | Sprint | Outcome | Branch/commit | Merge on main |
 |---|---|---|---|
+| `m6x-adr021-clamp-strip-honest-test` | **FAIL_FINITENESS catastrophically** — strip clamps from ADR-021 prototype → theta perturbation reaches `+21,822 / -22,589 K` at step 1; signed w `+142M / -166M m/s`; nonfinite at step 2. **ADR-021 architecture is dead as a clean implementation.** The clamps were masking 22,000 K theta oscillations. | `worker/gpt/m6x-adr021-clamp-strip-honest-test @ 2aa21d0` | merge `b4ee268` |
+| `m6x-gen2-rmse-baseline-characterization` | **Real operational noise floor characterized** — 17 same-grid Gen2 forecast-vs-forecast pairs. T2 24h RMSE 0.63 K (p95 1.76); U10 24h 1.46 m/s (p95 2.95); V10 24h 1.59 m/s (p95 3.56); 72h ≈ half (re-sync effect). First numerical anchor for M6-close Tier-4 gate. | `worker/gpt/m6x-gen2-rmse-baseline-characterization @ 979d044` | merge `87a11e9` |
 | `m6x-close-strategy-plan-critic` (codex critic) | **HYBRID verdict** — 6-sprint counter-plan to manager's draft. Key sequencing: diagnostics first, baseline before operator changes, Tier-3 before Tier-4. | `critic/codex/m6x-close-strategy-plan-critic @ 305daf7` | merge `f458052` |
 
 ## Recently completed (this watchman session)
@@ -149,5 +148,8 @@ Per user standing order 2026-05-23: windows 0 and 1 of session 2 stay protected 
 - 2026-05-23 ~06:00 — gate-redesign sprint dispatched (Stage 1 of CHANGE-THE-GATE recommendation: operator-sanity gate + ADR-024 policy)
 - 2026-05-23 ~06:15 — gate-redesign returned PASS in 10m: ADR-024 PROPOSED; honest verdict on current main is FAIL_PHYSICAL_BOUNDS (mu 86 kPa > 50 kPa). Architectural mu issue is now correctly surfaced.
 - 2026-05-23 ~06:25 — autonomous session parking. All sprints closed. Stable state. 4 open questions for user in MORNING-REPORT.md.
+- 2026-05-23 ~07:00 — user returned, drafted 5-sprint M6-close plan, dispatched strategy critic + 2 intel sprints (other instance)
+- 2026-05-23 ~08:10 — manager picked up the dispatch chain; ran both intel sprints in parallel
+- 2026-05-23 ~09:30 — both intel sprints returned and merged. **Decisive results**: ADR-021 catastrophically fails without clamps (22,000 K theta blowup); Gen2 baseline anchored (T2 24h 0.63 K, U10 1.46 m/s, V10 1.59 m/s). ADR-023 is architectural winner by elimination.
 
-— Manager (Claude Opus 4.7 1M-context), 2026-05-23 ~06:25 UTC
+— Manager (Claude Opus 4.7 1M-context), 2026-05-23 ~09:35 UTC
