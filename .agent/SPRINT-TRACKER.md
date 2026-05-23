@@ -3,14 +3,9 @@
 Manager-maintained. 30-min cadence overnight (per 2026-05-23 standing order).
 Manager: Claude Opus 4.7 (1M-context). Replaces previous manager 2026-05-23 ~23:00.
 
-## Currently in flight (2 codex parallel, dedicated worktrees — no race)
+## Currently in flight
 
-| Window | Sprint | Role | AI | Worktree | Wall budget | File ownership |
-|---|---|---|---|---|---|---|
-| `2:2` | `2026-05-23-m6x-adr023-three-way-critic` | critical-review (round 2) | codex gpt-5.5 xhigh | `/tmp/wrf_gpu2_critic_r2` on `critic/codex/m6x-adr023-three-way-critic` | 60-120 min | READ-ONLY → commits reviewer-report.md on its branch |
-| `2:3` | `2026-05-23-m6x-adr023-conservative-column-prototype` | worker (single-large-sprint) | codex gpt-5.5 xhigh | `/tmp/wrf_gpu2_proto` on `worker/gpt/m6x-adr023-conservative-column-prototype` | 6-10 h | `src/gpuwrf/dynamics/acoustic_wrf.py` (vertical part), new `vertical_implicit_solver.py`, new `tests/test_m6x_adr023_column_solver.py` |
-
-**Dedicated worktrees** prevent the round-1 multi-writer race that lost the critic's report. Each agent has its own branch in its own `/tmp/wrf_gpu2_*` worktree.
+**NONE** — round 2 closed cleanly. Awaiting next sprint dispatch (production-grade ADR-023 implementation).
 
 ## Round 1 outcome (3 sprints dispatched 2026-05-22 23:48-23:49, returned 2026-05-23 00:55-01:10)
 
@@ -20,14 +15,20 @@ Manager: Claude Opus 4.7 (1M-context). Replaces previous manager 2026-05-23 ~23:
 | `m6x-dycore-alt-methods-scout` | `RECOMMEND-THIRD-OPTION` — concrete proposal: ADR-022b conservative column solver (SCREAM/HOMME DIRK Newton + ICON4Py tridiagonal + MPAS Klemp 2007 forward-backward) | `worker/gpt/m6x-dycore-alt-methods-scout @ 67c75ce` → merged main `8582355` | ✓ CLOSED |
 | `m6x-vertical-acoustic-analytic-oracle` | 3 RED pytest tests on disk + closed-form analytic module (Skamarock 2008 §3.2 dispersion). Gates the pivot prototype acceptance. | `worker/gpt/m6x-vertical-acoustic-analytic-oracle @ 14caf8f` → merged main `f6965be` | ✓ CLOSED |
 
-## Round 2 setup
+## Round 2 outcome — converged on ADR-023
 
-Manager wrote **ADR-023-conservative-column-solver-DRAFT.md** capturing scout's third-option proposal. Now dispatched:
+| Sprint | Outcome | Branch / commit |
+|---|---|---|
+| `m6x-adr023-three-way-critic` | `RATIFY-ADR-023` with 10 required fixes (4 MAJOR, 6 MEDIUM) | `critic/codex/m6x-adr023-three-way-critic @ c1a3ded` → merged main |
+| `m6x-adr023-conservative-column-prototype` | **CODE-RUNNING PROOF**: R7 3/3 GREEN, warm-bubble PASS (w_max=8.52 m/s ∈ [5,10]), solver 4/4, c2 horizontal 8/8, transfer audit 5/5, 20 launches, 0 transfers | `worker/gpt/m6x-adr023-conservative-column-prototype @ 1e157f7` → merged main |
 
-1. Round-2 critic: argues ADR-023 vs ADR-022 vs ADR-021, four-way verdict (incl. RATIFY-NEITHER). Mandatory commit step.
-2. Prototype worker: implements ADR-023 column solver against the 3 R7 oracle tests. User-mandated "rewrite-with-different-method, single large sprint" path.
+**Manager decision (2026-05-23 02:10 UTC)**: **ADR-023 RATIFIED to PROPOSED**. Critic's required-fixes (F1-F10) and prototype caveats (NH tuning heuristics; mu_continuity gated off; no profiler artifact yet) are open work for the next production-grade sprint.
 
-These two run in parallel. The prototype is the "code-running evidence" path; the critic is the "paper analysis" path. Whichever finishes first informs the other.
+The decisive evidence: prototype demonstrably turned the R7 RED tests GREEN and survived 600s warm-bubble without nonfinite. This proves the conservative column solver direction works in code, not just paper. The prototype's stabilization heuristics are NOT acceptable as production physics — but they are acceptable as proof-of-concept that the architecture supports the conservative-column-solve operator without expanding the carry.
+
+## Next sprint (planned)
+
+**`2026-05-23-m6x-adr023-production-grade`**: replace prototype-grade stabilization with first-principles derivation, add MPAS/WRF column slice oracle (non-tautological, per critic F1), implement coupled `(w, mu, theta, phi)` solve with mu in-scan, run `epssm ∈ {0.0, 0.1, 0.3}` sweep, add `ncu`/`nsys` profiler artifact, document post-solve replacement order. Then the M6 acceptance ladder begins: column slice → warm bubble → 1h d02 replay → 24h/72h Gen2 RMSE.
 
 ## Recent decisions (manager hand-over 2026-05-23 ~23:00)
 
@@ -106,5 +107,7 @@ Per user standing order 2026-05-23: windows 0 and 1 of session 2 stay protected 
 - 2026-05-23 ~01:24 — watchman tick 1: discovered critic loss + read scout/oracle deliverables
 - 2026-05-23 ~01:30 — scout + oracle merged to main; ADR-023-DRAFT written (third option)
 - 2026-05-23 ~01:36 — round 2: dispatched critic + prototype in dedicated worktrees (`/tmp/wrf_gpu2_critic_r2`, `/tmp/wrf_gpu2_proto`)
+- 2026-05-23 ~02:00 — round 2 agents finished cleanly: critic RATIFY-ADR-023 (committed), prototype passed all acceptance gates
+- 2026-05-23 ~02:10 — watchman tick 2: read both reports; merged both branches to main; ADR-023 ratified DRAFT→PROPOSED with critic required-fixes folded; ADR-022-DRAFT superseded
 
-— Manager (Claude Opus 4.7 1M-context), 2026-05-23 ~01:40 UTC
+— Manager (Claude Opus 4.7 1M-context), 2026-05-23 ~02:10 UTC

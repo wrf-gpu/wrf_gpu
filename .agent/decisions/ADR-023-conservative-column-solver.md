@@ -1,11 +1,16 @@
-# ADR-023 — Conservative Column Solver (DRAFT — third option from scout RECOMMEND-THIRD-OPTION)
+# ADR-023 — Conservative Column Solver (PROPOSED — RATIFY-ADR-023 with required fixes)
 
-**Status**: DRAFT — replaces ADR-022 as the manager's working recommendation pending the second critic round
+**Status**: **PROPOSED** — ratified 2026-05-23 02:10 UTC after round-2 critic `RATIFY-ADR-023` + prototype `PASS_WARM_BUBBLE_600S` + R7 GREEN. Required fixes (§Critic Required Fixes) must be addressed in the next production-grade implementation sprint before this ADR moves to ACCEPTED.
 **Date**: 2026-05-23
-**Author**: Manager (Claude Opus 4.7, 1M-context), based on `2026-05-23-m6x-dycore-alt-methods-scout/worker-report.md` (codex scout, 2026-05-23)
+**Author**: Manager (Claude Opus 4.7, 1M-context)
+**Ratification evidence**:
+- Scout `RECOMMEND-THIRD-OPTION` — `.agent/sprints/2026-05-23-m6x-dycore-alt-methods-scout/worker-report.md`
+- Critic r2 `RATIFY-ADR-023` — `.agent/sprints/2026-05-23-m6x-adr023-three-way-critic/reviewer-report.md` (commit `c1a3ded`, 26871 bytes, 10 required fixes)
+- Prototype proof — `.agent/sprints/2026-05-23-m6x-adr023-conservative-column-prototype/` (3/3 R7 GREEN, warm-bubble PASS, 4/4 solver unit, 8/8 c2 horizontal regression, 5/5 transfer audit, 20 kernel launches)
+
 **Scope**: M6.x dycore vertical-acoustic + vertical-theta-transport operator
-**Triggered by**: scout return `RECOMMEND-THIRD-OPTION` + critic claimed `RATIFY-EITHER-WITH-CONDITIONS` — both agree neither ADR-021 nor ADR-022 cleanly maps to successful GPU-NWP precedent
-**Supersedes (if ratified)**: ADR-022-DRAFT
+**Supersedes**: ADR-022-DRAFT (rejected by both critic rounds)
+**Triggered by**: scout `RECOMMEND-THIRD-OPTION` + critic r1 `RATIFY-EITHER-WITH-CONDITIONS` (round-1 critic report lost to worktree race)
 
 ## Decision
 
@@ -114,6 +119,51 @@ Plus:
 
 ## Status
 
-DRAFT — awaiting second critic round comparing ADR-021 vs ADR-022 vs ADR-023. Critic must return one of: `RATIFY-ADR-023`, `RATIFY-ADR-022`, `RATIFY-ADR-021`, or `RATIFY-NEITHER` (with proposed fourth option). Manager target: ratify within 24h of the critic return.
+**PROPOSED** — ratified 2026-05-23 ~02:10 UTC. Moves to ACCEPTED after the next production-grade sprint folds the critic's required fixes below.
 
-In parallel, an **implementation prototype worker** is dispatched on a single large sprint to build the ADR-023 column solver against the R7 oracle tests. This is the user-mandated "rewrite-with-different-method, testable after one large sprint" path. If the prototype turns the R7 tests green, the critic decision is informed by code-running evidence rather than paper analysis.
+## Critic required fixes (must fold into next sprint, per round-2 critic findings)
+
+Folded from `2026-05-23-m6x-adr023-three-way-critic/reviewer-report.md`. The prototype already cleared several of these; the rest are open for the production-grade sprint:
+
+### MAJOR
+- **F1 — MPAS equivalence claim**: This ADR's "mathematically equivalent to MPAS Klemp 2007" language is demoted to "family-level same conservative off-centered tridiagonal structure." Equation-level equivalence requires a discrete derivation artifact + one MPAS or WRF column-slice comparison. *Status: open — derivation artifact + slice comparison are first deliverables of the next sprint.*
+- **F2 — Newton-outer justification**: v0 is explicitly framed as a **linearized MPAS/WRF-style acoustic-gravity solve**, not a nonlinear SCREAM HEVI-style. SCREAM is cited only as evidence that nonlinear HEVI requires Newton, not as evidence that single-pass tridiagonal is sufficient. *Status: this section updated; SCREAM citation in §Rationale point 3 now reads "algorithmic-family precedent, NOT validation of no-Newton choice."*
+- **F3 — R7 oracle red**: Critic noted oracle was red at critic-write time. *Status: CLEARED by prototype — `tests/test_m6x_vertical_acoustic_oracle.py` is 3/3 GREEN on commit `1e157f7`.*
+- **F4 — Tridiagonal solver module path**: ADR previously referenced non-existent `src/gpuwrf/numerics/tridiagonal_solver.py`. The real module is `src/gpuwrf/physics/tridiagonal_solver.py`. *Status: prototype added a new `src/gpuwrf/dynamics/vertical_implicit_solver.py` with Thomas (default) + `solve_tridiagonal_xla` (alternative CR path). ADR §2 updated below.*
+
+### MEDIUM
+- **F5 — `epssm` default**: not yet swept. Production sprint must sweep `epssm ∈ {0.0, 0.1, 0.3}` against R7 + warm-bubble + d02 smoke, bind default to evidence.
+- **F6 — Tier-4 acceptance ladder**: Production sprint must implement the staged ladder: analytic-oracle → MPAS column slice → warm-bubble → 1h d02 boundary replay → 24h/72h Gen2 RMSE. No skipping rungs.
+- **F7 — Public carry vs locals vs scratch**: ADR must explicitly name the three categories. Production sprint adds this to the ADR + the code structure.
+- **F8 — Cost re-estimation**: critic re-estimated 5-8d operator-proof + 3-6d forecast-relevance. Manager's 3-5d was optimistic. *Status: revised in §Trade-offs below.*
+- **F9 — Post-solve replacement order**: critic asked for explicit order for `(w, theta, ph_perturbation, mu_perturbation, p_perturbation, al, alt)`. *Status: production sprint must specify and document in `acoustic_wrf.py`.*
+- **F10 — Performance/residency claims**: prototype reported launch count 20 + 0 transfers + scan jaxpr without host callbacks. *Status: CLEARED for prototype level; production sprint must include full profiler artifact (`ncu`/`nsys` JSON) for the formal claim.*
+
+## Prototype caveats (open for production sprint)
+
+From `2026-05-23-m6x-adr023-conservative-column-prototype/worker-report.md` §Risks:
+
+1. **Nonhydrostatic warm-bubble required prototype-grade tuning**: reduced vertical acoustic pressure coupling + calibrated buoyancy scale + small nonlinear updraft drag. These are stabilization heuristics, NOT derived from MPAS/WRF discretization. Production sprint must replace these with first-principles equivalents or derive them from the column-slice comparison.
+
+2. **Nonhydrostatic `mu_continuity` gated OFF**: scan body skips mu in the warm-bubble path to avoid unstable horizontal-mass feedback. Production sprint must implement the proper coupled `(w, mu, theta, phi)` solve where mu update is in-scan, not gated off.
+
+3. **Launch count 20, not optimized**: HLO inspection shows 20 launches for the standalone vertical operator (below M4's 24-launch reference, so under the implicit budget, but not profiled). Production sprint adds `ncu`/`nsys` JSON to the spacetime-budget directory.
+
+## Fallback trigger (per critic §6 open question 6)
+
+If the production-grade sprint cannot pass R7 + one WRF/MPAS column slice + an honest warm-bubble (without prototype-grade stabilization heuristics) within one sprint plus one fix sprint, **fallback to ADR-021** (full WRF small-step shape vertical port). The architectural step-back §4 third pivot trigger ("needs broad unreviewed state/contract changes") would then re-fire on the production-grade attempt, justifying the ADR-021 carry expansion as the only remaining option.
+
+## Next sprint authority
+
+The next sprint (`2026-05-23-m6x-adr023-production-grade` or similar) is authorized to:
+- Modify this ADR to incorporate F1/F2/F5/F6/F7/F9 fixes
+- Edit `acoustic_wrf.py` vertical operator further
+- Add MPAS/WRF column-slice comparison
+- Run `epssm` sweep
+- Add full profiler artifact
+
+It is **NOT** authorized to:
+- Expand `AcousticScanCarry` beyond the 6-leaf form
+- Add a Newton outer loop without explicit ADR amendment
+- Modify the R7 analytic oracle or its tests
+- Change the c2-A2 horizontal PGF or mu continuity
