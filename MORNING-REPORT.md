@@ -42,9 +42,20 @@ NOT merged (intentional):
 
 ## What's in flight
 
-| Window | Sprint | AI | Worktree | Wall | Goal |
-|---|---|---|---|---|---|
-| `2:?` | `m6x-warm-bubble-gate-redesign` | codex gpt-5.5 xhigh | `/tmp/wrf_gpu2_gate_redesign` | 4-8 h | Stage 1: rewrite verdict logic + add anti-clamp scan + write ADR-024 policy + honestly re-run on current main |
+**NONE — gate-redesign returned at ~06:15.** Project at stable stopping point. Tmux: only your protected windows 0+1.
+
+## Gate-redesign result (returned during this session)
+
+The gate-redesign worker delivered in 10m. Critic's Stage 1 spec fully implemented:
+- `scripts/m6_warm_bubble_test.py` verdict logic rewritten (amplitude band → operator-sanity)
+- Anti-clamp static scanner over the production path
+- 4 new operator-sanity tests + 32/32 no-regression + 5/5 transfer audit PASS
+- `.agent/decisions/ADR-024-warm-bubble-gate-policy.md` (PROPOSED)
+- **Honest verdict on current main: `FAIL_PHYSICAL_BOUNDS`** because `mu_perturbation_max_Pa = 86374.47` (at step 300) > 50 kPa bound. The new gate exposes the mu_continuity_increment saturation that the old amplitude gate masked.
+
+The anti-clamp scan correctly flags two warnings (non-failing) for the documented `0.38` and `1.35` magic constants inherited from the slice oracle. These are queued for a future operator-cleanup sprint, not amplitude-band clamps.
+
+Merged on main at `19338d1`.
 
 ## Project state summary
 
@@ -87,4 +98,18 @@ M0 ─── M1 ─── M2 ─── M3 ─── M4 ─── M5 ─── M6
 3. Should the next sprint after gate-redesign be (a) Tier-3 RK3 coupling for the warm-bubble harness, (b) Tier-4 RMSE vs Gen2 backfill direct, or (c) operator cleanup (remove `0.38` / `1.35` magic numbers from the unified path)?
 4. Is `_mu_continuity_increment` tanh limiter acceptable in the meantime, or should it block any forward progress until replaced?
 
-— Manager (Claude Opus 4.7 1M-context), 2026-05-23 ~06:00 UTC
+— Manager (Claude Opus 4.7 1M-context), 2026-05-23 ~06:25 UTC
+
+## Final autonomous-session summary
+
+Total sprints executed this autonomous overnight: **10** (3 in round 1; 2 in round 2; reviewer + d02-halted; diagnostic + ADR-021 prototype; wiring-fix + gate-critic; gate-redesign).
+
+Sprints merged to main: **8**.
+
+Sprints intentionally NOT merged: **1** (ADR-021 prototype — stabilizer-clamped at exactly `9.0`).
+
+Sprints halted by manager: **1** (d02 boundary replay halted when reviewer found path split).
+
+ADRs produced: **ADR-021** (DRAFT — opposing alternative; supersession candidate if user prefers), **ADR-022** (DRAFT — simplified hybrid, superseded by ADR-023), **ADR-023** (PROPOSED — conservative column solver, current architecture), **ADR-024** (PROPOSED — warm-bubble gate policy change).
+
+Project state: M6.x dycore is at a **better-understood state, not a solved state**. The architectural question is now framed correctly: the current warm-bubble harness is a diagnostic, M6 close is Tier-3/Tier-4 RMSE per the docs. Decision on whether to source a real warm-bubble reference, fix mu_continuity_increment, or proceed directly to Tier-3/Tier-4 work is yours.

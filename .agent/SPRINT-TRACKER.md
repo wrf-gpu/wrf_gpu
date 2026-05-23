@@ -5,14 +5,15 @@ Manager: Claude Opus 4.7 (1M-context). Replaces previous manager 2026-05-23 ~23:
 
 ## Currently in flight
 
-| Window | Sprint | Role | AI | Worktree | Wall budget | Goal |
-|---|---|---|---|---|---|---|
-| `2:..._gate-redesign-worker` | `2026-05-23-m6x-warm-bubble-gate-redesign` | worker | codex gpt-5.5 xhigh | `/tmp/wrf_gpu2_gate_redesign` on `worker/gpt/m6x-warm-bubble-gate-redesign` | 4-8 h | Stage 1 of critic's CHANGE-THE-GATE: rewrite warm-bubble verdict from amplitude band [5,10] to operator-sanity (PASS_OPERATOR_SANITY / FAIL_FINITENESS / FAIL_PHYSICAL_BOUNDS / FAIL_ANTI_CLAMP_DETECTION). Add static anti-clamp scan. Write ADR-024 policy. Re-run on current main, honestly report. |
+**NONE — all sprints closed. Stable stopping point. Awaiting user direction on the 4 open questions in `MORNING-REPORT.md`.**
+
+Manager (autonomous overnight) is parked. Tmux: only protected windows 0+1 remain.
 
 ## Recently completed (this watchman session)
 
 | Sprint | Outcome | Branch / commit | Merged on main |
 |---|---|---|---|
+| `m6x-warm-bubble-gate-redesign` | **PASS** — operator-sanity gate landed in 10m. 4 new tests + 32/32 no-regression + 5/5 transfer audit. ADR-024 PROPOSED. **Current main verdict: `FAIL_PHYSICAL_BOUNDS`** (mu_pert 86 kPa > 50 kPa bound — the architectural mu issue is now correctly surfaced, not masked). Anti-clamp scan warns on documented 0.38/1.35 magics; no hard fails. | `worker/gpt/m6x-warm-bubble-gate-redesign @ d801547` | merge `19338d1` |
 | `m6x-warm-bubble-gate-strategy-critic` (codex critic) | **CHANGE-THE-GATE** — [5,10] amplitude target not sourced for our pure-small-step harness. Both "passing" branches use unphysical clamps (ADR-021 `tanh(.../9.0)` clamp; ADR-023 prototype magic stabilizers). M6 actual gate per docs is Tier-3/Tier-4, not amplitude. Two-stage path: operator-sanity now, sourced reference later if needed. | `critic/codex/m6x-warm-bubble-gate-strategy-critic @ c80b622` | merge `c35aa36` |
 | `m6x-pressure-diagnose-wiring-fix` | **PASS** — gated `_replace_pressure` on `non_hydrostatic`; 2/2 new + 27/27 no-regression + 5/5 transfer audit. Warm-bubble w_max still 0.0387 (architectural gap unchanged as expected); theta/p blowup bounded; mu limiter still saturates ~86.8 kPa. | `worker/gpt/m6x-pressure-diagnose-wiring-fix @ 0c262d4` | merge `c35aa36` precursor |
 | `m6x-warm-bubble-failure-diagnostic` (Opus 4.7) | **MIXED verdict HIGH confidence** — wiring bug (acoustic_wrf.py:875-876 erases p_perturbation) + architectural gap (recurrence cannot sustain bubble lifting). §9.2 critical insight: [5,10] target may need RK3 big-step coupling the harness lacks. Recommended land wiring fix + ADR-021 prototype as primary architectural answer. | `tester/opus/m6x-warm-bubble-failure-diagnostic @ e56c0e6` | merge `563217f` |
@@ -139,5 +140,7 @@ Per user standing order 2026-05-23: windows 0 and 1 of session 2 stay protected 
 - 2026-05-23 ~05:15 — 2 follow-up sprints dispatched: wiring fix (small, correct-in-isolation) + gate-strategy critic (top-level GPT-5.5 critique per user directive #6)
 - 2026-05-23 ~05:55 — both returned: wiring fix PASS (theta/p blowup bounded); gate critic CHANGE-THE-GATE verdict (target unsourced; clamps unacceptable; M6 actual gate is Tier-3/Tier-4 per docs)
 - 2026-05-23 ~06:00 — gate-redesign sprint dispatched (Stage 1 of CHANGE-THE-GATE recommendation: operator-sanity gate + ADR-024 policy)
+- 2026-05-23 ~06:15 — gate-redesign returned PASS in 10m: ADR-024 PROPOSED; honest verdict on current main is FAIL_PHYSICAL_BOUNDS (mu 86 kPa > 50 kPa). Architectural mu issue is now correctly surfaced.
+- 2026-05-23 ~06:25 — autonomous session parking. All sprints closed. Stable state. 4 open questions for user in MORNING-REPORT.md.
 
-— Manager (Claude Opus 4.7 1M-context), 2026-05-23 ~06:00 UTC
+— Manager (Claude Opus 4.7 1M-context), 2026-05-23 ~06:25 UTC
