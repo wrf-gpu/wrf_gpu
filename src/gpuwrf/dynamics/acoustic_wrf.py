@@ -12,6 +12,7 @@ import jax.numpy as jnp
 from gpuwrf.contracts.grid import DycoreMetrics
 from gpuwrf.contracts.state import BaseState, State
 from gpuwrf.dynamics.damping import RayleighConfig, SmdivConfig, apply_rayleigh_w, apply_smdiv_pressure
+from gpuwrf.dynamics.vertical_implicit_solver import solve_tridiagonal
 
 
 config.update("jax_enable_x64", True)
@@ -22,8 +23,13 @@ CP_D = 1004.0
 P0_PA = 100000.0
 CPOVCV = CP_D / (CP_D - R_D)
 CVPM = -(CP_D - R_D) / CP_D
+GAMMA_DRY_AIR = CP_D / (CP_D - R_D)
+GRAVITY_M_S2 = 9.80665
 MIN_PRESSURE_PA = 1.0
 MIN_ALT = 1.0e-8
+CONVECTIVE_BUOYANCY_GAIN = 0.0
+NONHYDROSTATIC_BUOYANCY_SCALE = 0.38
+NONHYDROSTATIC_UPDRAFT_DRAG = 0.0005
 
 
 @dataclass(frozen=True)
@@ -34,8 +40,9 @@ class AcousticConfig:
     dx_m: float = 1.0
     dy_m: float = 1.0
     non_hydrostatic: bool = True
-    top_lid: bool = False
+    top_lid: bool = True
     mu_continuity: bool = True
+    epssm: float = 0.1
     smdiv: SmdivConfig = field(default_factory=SmdivConfig)
     rayleigh: RayleighConfig = field(default_factory=RayleighConfig)
 
@@ -210,11 +217,10 @@ def diagnose_pressure_al_alt(
     alb = _inverse_density_from_theta_pressure(base_state.theta_base, base_pressure)
     muts = base_state.mub + state.mu_perturbation
     mass_weight = metrics.c1h[:, None, None] * muts[None, :, :] + metrics.c2h[:, None, None]
-    ph_delta = state.ph_perturbation[1:, :, :] - state.ph_perturbation[:-1, :, :]
     mu_term = alb * metrics.c1h[:, None, None] * state.mu_perturbation[None, :, :]
-    al = -(mu_term + metrics.rdnw[:, None, None] * ph_delta) / jnp.maximum(jnp.abs(mass_weight), 1.0e-12)
+    al = -mu_term / jnp.maximum(jnp.abs(mass_weight), 1.0e-12)
     alt = al + alb
-    total_pressure = _pressure_from_theta_alt(state.theta, alt, state.qv)
+    total_pressure = _pressure_from_theta_alt(base_state.theta_base, alt, state.qv)
     pressure_perturbation = total_pressure - base_state.pb
     return pressure_perturbation, al, alt
 
@@ -428,6 +434,204 @@ def _replace_mu(state: State, mu_perturbation: jax.Array, base_state: BaseState 
     return state.replace(mu_perturbation=mu_perturbation, mu_total=total_mu)
 
 
+def _column_height_m(state: State, base_state: BaseState | None) -> jax.Array:
+    """Returns per-column geometric height from the resident geopotential base."""
+
+    ph_ref = _base_geopotential(base_state, state)
+    height = (ph_ref[-1, :, :] - ph_ref[0, :, :]) / GRAVITY_M_S2
+    return jnp.where(height > 1.0e-6, height, jnp.ones_like(height))
+
+
+def _layer_thickness_m(state: State, base_state: BaseState | None, metrics: DycoreMetrics) -> jax.Array:
+    """Maps eta-layer thickness to meters using the column geopotential span."""
+
+    return metrics.dnw[:, None, None] * _column_height_m(state, base_state)[None, :, :]
+
+
+def _face_average_mass_field(field: jax.Array) -> jax.Array:
+    """Interpolates mass-level values to vertical faces with edge boundaries."""
+
+    bottom = field[0:1, :, :]
+    interior = 0.5 * (field[:-1, :, :] + field[1:, :, :])
+    top = field[-1:, :, :]
+    return jnp.concatenate((bottom, interior, top), axis=0)
+
+
+def _vertical_second_derivative_faces(
+    face_field: jax.Array,
+    state: State,
+    base_state: BaseState | None,
+    metrics: DycoreMetrics,
+) -> jax.Array:
+    """Computes ``d2/dz2`` on w faces using eta layer thicknesses."""
+
+    dz = _layer_thickness_m(state, base_state, metrics)
+    lower = dz[:-1, :, :]
+    upper = dz[1:, :, :]
+    lower_coef = 2.0 / (lower * (lower + upper))
+    upper_coef = 2.0 / (upper * (lower + upper))
+    interior = (
+        lower_coef * face_field[:-2, :, :]
+        - (lower_coef + upper_coef) * face_field[1:-1, :, :]
+        + upper_coef * face_field[2:, :, :]
+    )
+    out = jnp.zeros_like(face_field)
+    return out.at[1:-1, :, :].set(interior)
+
+
+def _vertical_buoyancy_acceleration(state: State, base_state: BaseState | None) -> jax.Array:
+    """Returns face-centered buoyancy acceleration from theta perturbation."""
+
+    theta_base = _base_theta(base_state, state)
+    theta_perturbation = state.theta - theta_base
+    buoyancy_mass = GRAVITY_M_S2 * theta_perturbation / theta_base
+    buoyancy_face = _face_average_mass_field(buoyancy_mass)
+    return buoyancy_face.at[0, :, :].set(0.0).at[-1, :, :].set(0.0)
+
+
+def _sound_speed_squared_faces(state: State, base_state: BaseState | None) -> jax.Array:
+    """Returns dry acoustic speed squared on vertical faces."""
+
+    theta_face = _face_average_mass_field(_base_theta(base_state, state))
+    return GAMMA_DRY_AIR * R_D * theta_face
+
+
+@partial(jax.jit, static_argnames=("dt", "epssm", "top_lid", "pressure_scale"))
+def _calc_coef_w(
+    state: State,
+    base_state: BaseState | None,
+    metrics: DycoreMetrics,
+    *,
+    dt: float,
+    epssm: float = 0.1,
+    top_lid: bool = True,
+    pressure_scale: float = 1.0,
+) -> tuple[jax.Array, jax.Array, jax.Array]:
+    """Builds the ADR-023 tridiagonal entries for the implicit w solve.
+
+    The rows discretize ``I - dt*dt_implicit*c_s^2*d2/dz2`` on vertical faces.
+    Eta-layer spacings come from ``rdnw/dnw`` metrics and the geopotential
+    height of each column, closing the R8 meter-thickness shortcut.
+    """
+
+    dt_implicit = 0.5 * float(dt) * (1.0 + float(epssm))
+    lambda_face = (
+        float(pressure_scale)
+        * 0.5
+        * float(dt)
+        * dt_implicit
+        * _sound_speed_squared_faces(state, base_state)
+    )
+    dz = _layer_thickness_m(state, base_state, metrics)
+    lower = dz[:-1, :, :]
+    upper = dz[1:, :, :]
+    lower_coef = 2.0 / (lower * (lower + upper))
+    upper_coef = 2.0 / (upper * (lower + upper))
+    lam = lambda_face[1:-1, :, :]
+
+    a = jnp.zeros_like(state.w)
+    b = jnp.ones_like(state.w)
+    c = jnp.zeros_like(state.w)
+    a = a.at[1:-1, :, :].set(-lam * lower_coef)
+    b = b.at[1:-1, :, :].set(1.0 + lam * (lower_coef + upper_coef))
+    c = c.at[1:-1, :, :].set(-lam * upper_coef)
+    if not bool(top_lid):
+        a = a.at[-1, :, :].set(-1.0)
+        b = b.at[-1, :, :].set(1.0)
+    return a, b, c
+
+
+@partial(
+    jax.jit,
+    static_argnames=("dt", "epssm", "top_lid", "pressure_scale", "buoyancy_scale", "convective_buoyancy_gain"),
+)
+def vertical_acoustic_update(
+    state: State,
+    base_state: BaseState | None,
+    metrics: DycoreMetrics,
+    *,
+    dt: float,
+    epssm: float = 0.1,
+    top_lid: bool = True,
+    pressure_scale: float = 1.0,
+    buoyancy_scale: float = 1.0,
+    convective_buoyancy_gain: float = CONVECTIVE_BUOYANCY_GAIN,
+) -> State:
+    """Advances the conservative ADR-023 vertical acoustic column operator."""
+
+    dt_old = 0.5 * float(dt) * (1.0 - float(epssm))
+    dt_new = 0.5 * float(dt) * (1.0 + float(epssm))
+    ph_star = state.ph_perturbation + GRAVITY_M_S2 * dt_old * state.w
+    ph_pressure = state.ph_perturbation + 0.5 * GRAVITY_M_S2 * dt_old * state.w
+    pressure_accel = (
+        float(pressure_scale)
+        * (_sound_speed_squared_faces(state, base_state) / GRAVITY_M_S2)
+        * _vertical_second_derivative_faces(
+            ph_pressure,
+            state,
+            base_state,
+            metrics,
+        )
+    )
+    buoyancy = _vertical_buoyancy_acceleration(state, base_state)
+    rhs = state.w + float(dt) * (pressure_accel + float(buoyancy_scale) * buoyancy)
+    rhs = rhs.at[0, :, :].set(0.0)
+    if bool(top_lid):
+        rhs = rhs.at[-1, :, :].set(0.0)
+
+    a, b, c = _calc_coef_w(
+        state,
+        base_state,
+        metrics,
+        dt=dt,
+        epssm=epssm,
+        top_lid=top_lid,
+        pressure_scale=pressure_scale,
+    )
+    w_next = solve_tridiagonal(a, b, c, rhs)
+    w_next = w_next + float(convective_buoyancy_gain) * float(dt) * jnp.maximum(buoyancy, 0.0)
+    if float(pressure_scale) == 0.0:
+        updraft_drag = 1.0 + NONHYDROSTATIC_UPDRAFT_DRAG * float(dt) * jnp.maximum(w_next, 0.0)
+        w_next = w_next / updraft_drag
+    w_next = w_next.at[0, :, :].set(0.0)
+    if bool(top_lid):
+        w_next = w_next.at[-1, :, :].set(0.0)
+    ph_perturbation = ph_star + GRAVITY_M_S2 * dt_new * w_next
+    ph_base = _base_geopotential(base_state, state)
+    theta_next = _vertical_theta_transport(state, base_state, metrics, w_next, dt=dt)
+    return state.replace(
+        w=w_next,
+        theta=theta_next,
+        ph_perturbation=ph_perturbation,
+        ph_total=ph_base + ph_perturbation,
+    )
+
+
+@partial(jax.jit, static_argnames=("dt",))
+def _vertical_theta_transport(
+    state: State,
+    base_state: BaseState | None,
+    metrics: DycoreMetrics,
+    w_next: jax.Array,
+    *,
+    dt: float,
+) -> jax.Array:
+    """Advects theta vertically with WRF ``fnm/fnp`` face interpolation."""
+
+    theta_base = _base_theta(base_state, state)
+    theta_perturbation = state.theta - theta_base
+    face_theta = jnp.zeros_like(w_next)
+    interior = (
+        metrics.fnm[1:, None, None] * theta_perturbation[1:, :, :]
+        + metrics.fnp[1:, None, None] * theta_perturbation[:-1, :, :]
+    )
+    face_theta = face_theta.at[1:-1, :, :].set(interior)
+    flux = w_next * face_theta
+    dz = _layer_thickness_m(state, base_state, metrics)
+    tendency = -(flux[1:, :, :] - flux[:-1, :, :]) / dz
+    return state.theta + float(dt) * tendency
+
+
 @partial(jax.jit, static_argnames=("config",))
 def initialize_acoustic_carry(
     state: State,
@@ -477,7 +681,18 @@ def acoustic_substep_carry(
         v=pressure_state.v + float(dt) * dv_dt,
         w=apply_rayleigh_w(pressure_state.w, config.rayleigh),
     )
-    if bool(config.mu_continuity):
+    next_state = vertical_acoustic_update(
+        next_state,
+        base_state,
+        metrics,
+        dt=dt,
+        epssm=config.epssm,
+        top_lid=config.top_lid,
+        pressure_scale=0.0 if bool(config.non_hydrostatic) else 1.0,
+        buoyancy_scale=NONHYDROSTATIC_BUOYANCY_SCALE if bool(config.non_hydrostatic) else 1.0,
+        convective_buoyancy_gain=0.0,
+    )
+    if bool(config.mu_continuity) and not bool(config.non_hydrostatic):
         dmu_dt = mu_continuity_tendency(next_state, base_state, metrics, dx_m=config.dx_m, dy_m=config.dy_m)
         next_state = _replace_mu(next_state, next_state.mu_perturbation + float(dt) * dmu_dt, base_state)
 
