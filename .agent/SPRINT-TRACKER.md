@@ -3,16 +3,18 @@
 Manager-maintained. 30-min cadence overnight (per 2026-05-23 standing order).
 Manager: Claude Opus 4.7 (1M-context). Replaces previous manager 2026-05-23 ~23:00.
 
-## Currently in flight
+## Currently in flight (2 parallel, dedicated worktrees)
 
 | Window | Sprint | Role | AI | Worktree | Wall budget | Goal |
 |---|---|---|---|---|---|---|
-| `2:?` | `2026-05-23-m6x-adr023-production-grade` | worker | codex gpt-5.5 xhigh | `/tmp/wrf_gpu2_prod` on `worker/gpt/m6x-adr023-production-grade` | 6-10 h | Production-grade ADR-023 implementation: replace prototype heuristics with derived equivalents, drive MPAS slice trajectory RMSE 38.7% → <15%, sweep epssm, un-gate nonhydrostatic mu_continuity in-scan, fold critic F2/F5/F7/F9 into ADR-023. 12 acceptance criteria. |
+| `2:..._production-grade-r-reviewer` | `2026-05-23-m6x-adr023-production-grade-reviewer` | reviewer | codex gpt-5.5 xhigh (NOTE: dispatcher mapped reviewer→codex; project lifecycle expects Opus 4.7 — dispatch a second tester-role Opus pass if codex verdict is suspicious) | `/tmp/wrf_gpu2_review_prod` on `reviewer/opus/m6x-adr023-production-grade-reviewer` | 45-90 min | Re-run spot checks, audit critic findings closure, anti-tautology + forbidden-move audits. Verdict in §6: ACCEPT / ACCEPT-WITH-REQUIRED-FIXES / REJECT. |
+| `2:..._d02-boundary-repla-worker` | `2026-05-23-m6x-adr023-d02-boundary-replay-1h` | worker | codex gpt-5.5 xhigh | `/tmp/wrf_gpu2_d02` on `worker/gpt/m6x-adr023-d02-boundary-replay-1h` | 6-12 h | F6 acceptance-ladder rung 4. 1h coupled forecast on Gen2 d02 with production-grade ADR-023 + c2-A2 horizontal + M5 physics + M6-S3 surface + M6.5-D1 IC/boundary. RMSE on T2/U10/V10/w/theta vs Gen2 wrfout. Informational (no target threshold). |
 
 ## Recently completed (this watchman session)
 
 | Sprint | Outcome | Branch / commit | Merged on main |
 |---|---|---|---|
+| `m6x-adr023-production-grade` | **PASS** — production-gate 4/4, no-regression 19/19, warm-bubble PASS, transfer audit 5/5, MPAS slice trajectory RMSE 38.7% → **1.69%** (23× improvement). Open: launch count 20→67 (3.3× growth, deferred optimization). | `worker/gpt/m6x-adr023-production-grade @ 0a05159` | `f4b04af` |
 | `m6x-adr023-mpas-column-slice-oracle` | **PASS** — 4/4 slice tests; MPAS lines 1589-2208 literal port; peak amplitude error 1.92%, trajectory RMSE 38.7% | `worker/gpt/m6x-adr023-mpas-column-slice-oracle @ 4834599` | `0d03bc1` |
 
 ## Round 1 outcome (3 sprints dispatched 2026-05-22 23:48-23:49, returned 2026-05-23 00:55-01:10)
@@ -120,5 +122,7 @@ Per user standing order 2026-05-23: windows 0 and 1 of session 2 stay protected 
 - 2026-05-23 ~02:17 — next-phase sprint dispatched: MPAS column-slice oracle (closes critic F1, F6 acceptance-ladder rung 2)
 - 2026-05-23 ~02:33 — slice oracle returned PASS (4/4 tests, 1.92% peak / 38.7% trajectory RMSE) — merged to main
 - 2026-05-23 ~02:52 — production-grade sprint dispatched (6-10h, 12 acceptance criteria, target RMSE <15%)
+- 2026-05-23 ~03:20 — production-grade returned in 25m: RMSE 38.7%→1.69% (target <15% smashed by 9×). All gates GREEN. Open risk: launch count 20→67.
+- 2026-05-23 ~03:30 — 2 parallel sprints dispatched: reviewer (binding lifecycle gate) + d02 boundary replay (F6 rung 4)
 
-— Manager (Claude Opus 4.7 1M-context), 2026-05-23 ~02:55 UTC
+— Manager (Claude Opus 4.7 1M-context), 2026-05-23 ~03:30 UTC
