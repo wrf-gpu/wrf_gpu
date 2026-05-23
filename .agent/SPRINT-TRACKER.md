@@ -3,17 +3,18 @@
 Manager-maintained. 30-min cadence overnight (per 2026-05-23 standing order).
 Manager: Claude Opus 4.7 (1M-context). Replaces previous manager 2026-05-23 ~23:00.
 
-## Currently in flight (2 parallel, post-diagnostic follow-ups)
+## Currently in flight
 
 | Window | Sprint | Role | AI | Worktree | Wall budget | Goal |
 |---|---|---|---|---|---|---|
-| `2:..._diagnose-wiring--worker` | `2026-05-23-m6x-pressure-diagnose-wiring-fix` | worker | codex gpt-5.5 xhigh | `/tmp/wrf_gpu2_wiringfix` on `worker/gpt/m6x-pressure-diagnose-wiring-fix` | 2-4 h | Land Opus's identified wiring fix (acoustic_wrf.py:875-876 erases recurrence p_perturbation every substep). Gate the overwrite on config.non_hydrostatic. Correct-in-isolation regardless of architecture choice. |
-| `2:..._gate-strategy-critical-review` | `2026-05-23-m6x-warm-bubble-gate-strategy-critic` | critical-review | codex gpt-5.5 xhigh | `/tmp/wrf_gpu2_gate_critic` on `critic/codex/m6x-warm-bubble-gate-strategy-critic` | 45-90 min | Top-level critique per user directive #6: is the [5,10] warm-bubble gate correct, or does it need RK3 coupling, or should we accept stabilizer-laden ADR-021, or stop-and-ask-user? |
+| `2:..._gate-redesign-worker` | `2026-05-23-m6x-warm-bubble-gate-redesign` | worker | codex gpt-5.5 xhigh | `/tmp/wrf_gpu2_gate_redesign` on `worker/gpt/m6x-warm-bubble-gate-redesign` | 4-8 h | Stage 1 of critic's CHANGE-THE-GATE: rewrite warm-bubble verdict from amplitude band [5,10] to operator-sanity (PASS_OPERATOR_SANITY / FAIL_FINITENESS / FAIL_PHYSICAL_BOUNDS / FAIL_ANTI_CLAMP_DETECTION). Add static anti-clamp scan. Write ADR-024 policy. Re-run on current main, honestly report. |
 
 ## Recently completed (this watchman session)
 
 | Sprint | Outcome | Branch / commit | Merged on main |
 |---|---|---|---|
+| `m6x-warm-bubble-gate-strategy-critic` (codex critic) | **CHANGE-THE-GATE** — [5,10] amplitude target not sourced for our pure-small-step harness. Both "passing" branches use unphysical clamps (ADR-021 `tanh(.../9.0)` clamp; ADR-023 prototype magic stabilizers). M6 actual gate per docs is Tier-3/Tier-4, not amplitude. Two-stage path: operator-sanity now, sourced reference later if needed. | `critic/codex/m6x-warm-bubble-gate-strategy-critic @ c80b622` | merge `c35aa36` |
+| `m6x-pressure-diagnose-wiring-fix` | **PASS** — gated `_replace_pressure` on `non_hydrostatic`; 2/2 new + 27/27 no-regression + 5/5 transfer audit. Warm-bubble w_max still 0.0387 (architectural gap unchanged as expected); theta/p blowup bounded; mu limiter still saturates ~86.8 kPa. | `worker/gpt/m6x-pressure-diagnose-wiring-fix @ 0c262d4` | merge `c35aa36` precursor |
 | `m6x-warm-bubble-failure-diagnostic` (Opus 4.7) | **MIXED verdict HIGH confidence** — wiring bug (acoustic_wrf.py:875-876 erases p_perturbation) + architectural gap (recurrence cannot sustain bubble lifting). §9.2 critical insight: [5,10] target may need RK3 big-step coupling the harness lacks. Recommended land wiring fix + ADR-021 prototype as primary architectural answer. | `tester/opus/m6x-warm-bubble-failure-diagnostic @ e56c0e6` | merge `563217f` |
 | `m6x-adr021-wrf-smallstep-prototype` | **NOT MERGED (stabilizer-laden)** — w_max=9.0 at BOTH 300s and 600s = clamp not physics. Worker explicitly notes: bounded w, bounded θ, lift bias, mu reset. AcousticScanCarry expansion clean (t_2ave/ww/muave/muts/ph_tend/_1 family); WRF line citations present. Architecture port is there; the "PASS" isn't honest. | `worker/gpt/m6x-adr021-wrf-smallstep-prototype @ 00fbd5b` | NOT MERGED |
 | `m6x-adr023-public-scan-path-unification` | **PATH UNIFIED but WARM-BUBBLE FAILS** — 4/4 unification gates PASS, 23/23 regression PASS, transfer audit 5/5 PASS, fixture restored via manifest+generator. epssm now plumbed end-to-end (public sweep differs across {0,0.1,0.3}). Honest warm-bubble: w_max=0.041 m/s at 600s (target [5,10]). ADR-023 fallback trigger fires. | `worker/gpt/m6x-adr023-public-scan-path-unification @ e2391d3` | merge `d1f7d0c` |
@@ -136,5 +137,7 @@ Per user standing order 2026-05-23: windows 0 and 1 of session 2 stay protected 
 - 2026-05-23 ~04:47 — anti-stuck hedge dispatched: Opus diagnostic (2-4h, fresh-model angle) + Codex ADR-021 prototype (8-14h, Plan B carry expansion)
 - 2026-05-23 ~05:05 — both returned: Opus HIGH-confidence MIXED (wiring bug + architectural gap; §9.2 RK3 hypothesis); ADR-021 prototype "passes" at clamped 9.0 m/s (not honest)
 - 2026-05-23 ~05:15 — 2 follow-up sprints dispatched: wiring fix (small, correct-in-isolation) + gate-strategy critic (top-level GPT-5.5 critique per user directive #6)
+- 2026-05-23 ~05:55 — both returned: wiring fix PASS (theta/p blowup bounded); gate critic CHANGE-THE-GATE verdict (target unsourced; clamps unacceptable; M6 actual gate is Tier-3/Tier-4 per docs)
+- 2026-05-23 ~06:00 — gate-redesign sprint dispatched (Stage 1 of CHANGE-THE-GATE recommendation: operator-sanity gate + ADR-024 policy)
 
-— Manager (Claude Opus 4.7 1M-context), 2026-05-23 ~05:25 UTC
+— Manager (Claude Opus 4.7 1M-context), 2026-05-23 ~06:00 UTC
