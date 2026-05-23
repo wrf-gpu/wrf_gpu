@@ -1,0 +1,7 @@
+field,lead_hours,spatial_mean_rmse,p95_rmse,sample_pairs,units,notes
+T2,24,0.6284061313,1.76199533,17,K,Method A consecutive-day overlap; root=wrf_l2; domain=d02; lhs_lead=24h; rhs_leads=[0]; valid_times=2026-05-01T18:00:00+00:00..2026-05-21T18:00:00+00:00; source_kind=thin; skipped_shape_pairs=4
+U10,24,1.456482265,2.954589341,17,m/s,Method A consecutive-day overlap; root=wrf_l2; domain=d02; lhs_lead=24h; rhs_leads=[0]; valid_times=2026-05-01T18:00:00+00:00..2026-05-21T18:00:00+00:00; source_kind=thin; skipped_shape_pairs=4
+V10,24,1.590974439,3.556604337,17,m/s,Method A consecutive-day overlap; root=wrf_l2; domain=d02; lhs_lead=24h; rhs_leads=[0]; valid_times=2026-05-01T18:00:00+00:00..2026-05-21T18:00:00+00:00; source_kind=thin; skipped_shape_pairs=4
+T2,72,0.2550553229,0.4131125664,17,K,Method A consecutive-day overlap; root=wrf_l2; domain=d02; lhs_lead=72h; rhs_leads=[48]; valid_times=2026-05-03T18:00:00+00:00..2026-05-23T18:00:00+00:00; source_kind=thin; skipped_shape_pairs=4
+U10,72,0.8878892918,1.77950453,17,m/s,Method A consecutive-day overlap; root=wrf_l2; domain=d02; lhs_lead=72h; rhs_leads=[48]; valid_times=2026-05-03T18:00:00+00:00..2026-05-23T18:00:00+00:00; source_kind=thin; skipped_shape_pairs=4
+V10,72,0.8699087447,1.742272248,17,m/s,Method A consecutive-day overlap; root=wrf_l2; domain=d02; lhs_lead=72h; rhs_leads=[48]; valid_times=2026-05-03T18:00:00+00:00..2026-05-23T18:00:00+00:00; source_kind=thin; skipped_shape_pairs=4
