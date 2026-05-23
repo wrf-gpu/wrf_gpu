@@ -7,7 +7,13 @@ Manager: Claude Opus 4.7 (1M-context). Replaces previous manager 2026-05-23 ~23:
 
 | Window | Sprint | Role | AI | Worktree | Wall budget | Goal |
 |---|---|---|---|---|---|---|
-| `2:?` | `2026-05-23-m6x-adr023-mpas-column-slice-oracle` | worker | codex gpt-5.5 xhigh | `/tmp/wrf_gpu2_slice` on `worker/gpt/m6x-adr023-mpas-column-slice-oracle` | 3-5 h | Close critic F1: Python NumPy literal port of MPAS Fortran lines 2172-2208 (forward-sweep + back-sub + perturbation reconstruction). Captures non-tautological column trajectory. Prototype operator compared within tolerance. Unblocks production-grade sprint with F6 ladder rung. |
+| `2:?` | `2026-05-23-m6x-adr023-production-grade` | worker | codex gpt-5.5 xhigh | `/tmp/wrf_gpu2_prod` on `worker/gpt/m6x-adr023-production-grade` | 6-10 h | Production-grade ADR-023 implementation: replace prototype heuristics with derived equivalents, drive MPAS slice trajectory RMSE 38.7% → <15%, sweep epssm, un-gate nonhydrostatic mu_continuity in-scan, fold critic F2/F5/F7/F9 into ADR-023. 12 acceptance criteria. |
+
+## Recently completed (this watchman session)
+
+| Sprint | Outcome | Branch / commit | Merged on main |
+|---|---|---|---|
+| `m6x-adr023-mpas-column-slice-oracle` | **PASS** — 4/4 slice tests; MPAS lines 1589-2208 literal port; peak amplitude error 1.92%, trajectory RMSE 38.7% | `worker/gpt/m6x-adr023-mpas-column-slice-oracle @ 4834599` | `0d03bc1` |
 
 ## Round 1 outcome (3 sprints dispatched 2026-05-22 23:48-23:49, returned 2026-05-23 00:55-01:10)
 
@@ -112,5 +118,7 @@ Per user standing order 2026-05-23: windows 0 and 1 of session 2 stay protected 
 - 2026-05-23 ~02:00 — round 2 agents finished cleanly: critic RATIFY-ADR-023 (committed), prototype passed all acceptance gates
 - 2026-05-23 ~02:10 — watchman tick 2: read both reports; merged both branches to main; ADR-023 ratified DRAFT→PROPOSED with critic required-fixes folded; ADR-022-DRAFT superseded
 - 2026-05-23 ~02:17 — next-phase sprint dispatched: MPAS column-slice oracle (closes critic F1, F6 acceptance-ladder rung 2)
+- 2026-05-23 ~02:33 — slice oracle returned PASS (4/4 tests, 1.92% peak / 38.7% trajectory RMSE) — merged to main
+- 2026-05-23 ~02:52 — production-grade sprint dispatched (6-10h, 12 acceptance criteria, target RMSE <15%)
 
-— Manager (Claude Opus 4.7 1M-context), 2026-05-23 ~02:20 UTC
+— Manager (Claude Opus 4.7 1M-context), 2026-05-23 ~02:55 UTC
