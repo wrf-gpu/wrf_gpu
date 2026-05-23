@@ -5,7 +5,11 @@ Manager: Claude Opus 4.7 (1M-context). Replaces previous manager 2026-05-23 ~23:
 
 ## Currently in flight
 
-**NONE — both intel sprints returned and merged. Stable state. Decisive intel landed.**
+**NONE.** S2 finished after 1h 45m and returned `BLOCKER_SYNTHETIC_FALLBACK` — `scripts/m6_d02_boundary_replay_1h.py` probe times out after 130s with no output. Sidecars (12/12) + no-regression (45 tests) all PASS. **S2 NOT merged to main pending blocker investigation before S3 can use a real baseline.**
+
+Next user/manager action: dispatch a small diagnostic on the d02 replay-probe timeout (likely GPU/JAX env issue per worker note), OR accept the synthetic-fallback evidence and proceed to S3 with explicit caveat that operator changes are validated against synthetic data only.
+
+Branch: `worker/gpt/m6x-s2-d02-baseline-instrumented @ 584a043` (not merged).
 
 ## Decisive intel landed this round
 
