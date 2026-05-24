@@ -1,7 +1,7 @@
 # ADR-024 — Warm-Bubble Gate Policy
 
-Status: **PROPOSED**
-Date: 2026-05-23
+Status: **ACCEPTED** (2026-05-24, per external consultation; supersedes the PROPOSED state of 2026-05-23. Warm-bubble is permanently a diagnostic / operator-sanity gate, never an architecture-acceptance target.)
+Date: 2026-05-23 (proposed); 2026-05-24 (accepted)
 Author: M6.x warm-bubble gate-redesign worker
 
 ## Context

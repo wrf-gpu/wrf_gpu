@@ -52,11 +52,28 @@ Blockers: fixture extraction and backend ergonomics.
 
 ## M6 - Coupled Short Forecast
 
-Goal: couple dycore and physics for short windows.
-Deliverables: short forecast driver, conservation checks, drift envelope.
-Acceptance gates: tier 3 and initial tier 4 consistency.
-Likely sprints: coupling, timestep controls, diagnostics.
-Blockers: M4/M5 interfaces.
+**2026-05-24 split per external consultation (`.agent/decisions/manager-reflections/PLAN-REFLECTION-2026-05-24-post-consultation.md`).** "Finite because guarded" no longer counts. Gates run sequentially; no progress claim without passing all upstream gates.
+
+### M6a - WRF small-step savepoint parity
+
+Goal: prove the JAX dycore reproduces WRF's small-step operator-by-operator on real Canary d02 inputs.
+Deliverables: CPU-WRF savepoint extractor (`module_small_step_em` instrumented), savepoint manifest schema with stagger/units/RK-stage/acoustic-substep metadata, JAX comparator that fails loudly on deliberate perturbation, per-operator parity proofs (coefficient construction, tridiagonal solve, ww/MUTS/t_2ave, advance_w, pressure/geopotential restoration).
+Acceptance gates: **sanitizer-off**. 1/2/5/10-step replay matches CPU WRF savepoints within strict per-tier tolerances. No clamps, no caps, no tanh sanitizer.
+
+### M6b - Honest 1-hour Canary d02
+
+Goal: a sanitizer-free 1h coupled forecast bounded by Gen2 noise floor envelope.
+Deliverables: physics-on + boundary-on full 1h run with WRF-savepoint-validated operator.
+Acceptance gates: no nonfinite at any step. Theta physically bounded. T2/U10/V10 RMSE inside a pre-declared envelope (typically ≤5× Gen2 noise floor: ≈3 K / 7.5 m/s). Interior error not dominated by single boundary or terrain artifact.
+
+### M6c - 6h/24h Gen2 probabilistic consistency
+
+Goal: Tier-4 statistical consistency vs Gen2 backfill on full Canary 3km domain.
+Deliverables: 6h and 24h runs across the 17-pair Gen2 noise-floor sample.
+Acceptance gates: GPU-vs-Gen2 RMSE bounded by Gen2-vs-Gen2 floating-point divergence envelope (AceCAST-style framing) rather than bitwise equality.
+
+Likely sprints: M6B0 savepoint harness; M6B1-B6 bottom-up port ladder; M6b honest replay; M6c Tier-4 comparator.
+Blockers: M4/M5 interfaces; CPU WRF Fortran instrumentation patch authorization.
 Validation source: `wrf_l3/`, `wrf_l2/` daily backfill in `/mnt/data/canairy_meteo/runs/` per `.agent/references/cpu-wrf-baseline.md`. Pin run-IDs into the sprint contract; do not wildcard the directory.
 
 ## M7 - Canary Operational v0

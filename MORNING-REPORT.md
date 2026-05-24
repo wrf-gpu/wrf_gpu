@@ -1,6 +1,6 @@
-# Morning Report — 2026-05-24
+# Morning Report — 2026-05-24 (post-consultation)
 
-**Status:** M6 is active, not closed. The project has moved past the old warm-bubble amplitude target and is now executing the critic-ratified HYBRID close path: diagnose real replay, clean up sourced operator terms, then run Tier-3 and Tier-4 gates. ADR-023 and ADR-024 remain **PROPOSED**.
+**Status:** M6 entered post-blocker execution today. The HYBRID exit-rule fired as designed; the external deep-AI consultation diagnosed the root cause and prescribed **B-direct with savepoint-first discipline**. ADR-023 is now SUPERSEDED-PROVISIONAL; ADR-024 is ACCEPTED; ADR-025 (savepoint harness + B-direct port ladder) is DRAFT, to be finalized at M6B0 close. M6 has been split into M6a (savepoint parity) / M6b (honest 1h) / M6c (Gen2 24h consistency). Sprint M6B0 (WRF savepoint harness) is dispatching.
 
 ## Milestone Ledger
 
@@ -8,50 +8,78 @@
 |---|---|---|
 | M0 | Closed | AgentOS/bootstrap complete. |
 | M1 | Closed | WRF oracle and fixture foundation complete. |
-| M2 | Closed | Backend decision path completed earlier; current implementation path is JAX/XLA. |
-| M3 | Closed | GPU state/grid skeleton and transfer discipline established. |
-| M4 | Closed | Minimal dycore work completed enough to feed M6.x. |
-| M5 | Closed | First physics-suite work completed enough to feed coupled M6. |
-| M6 | Active | Dycore stabilization and coupled short-forecast validation. |
-| M7 | Prologue done | S0a operational/data prologue complete; implementation waits on M6 close. |
+| M2 | Closed | Backend = JAX/XLA. |
+| M3 | Closed | GPU state/grid skeleton. |
+| M4 | Closed | Minimal dycore. |
+| M5 | Closed | Physics suite (Thompson μP, MYNN PBL, RRTMG LW+SW). |
+| **M6a** | **Active** | WRF small-step savepoint parity. M6B0 dispatching. |
+| M6b | Pending | Honest 1h Canary d02 (sanitizer-off). Blocked on M6a (M6B6). |
+| M6c | Pending | 6h/24h Gen2 statistical consistency. Blocked on M6b. |
+| M7 | Prologue done | Stays on CPU WRF until M6b passes. |
 | M8 | Pending | Public/forkable release not started. |
 
-## M6 Dissection
+## What happened overnight (2026-05-23 → 2026-05-24)
 
-Done:
-- S1 diagnostic foundation: 12 diagnostic sidecars plus `.agent/decisions/source_mining_operator_table.md`.
-- S2/S2.1 attempted unchanged ADR-023 d02 baseline: both fell back to synthetic data because the real replay probe timed out with zero stdout/stderr.
-- S3-narrow stabilizer cleanup: scanner moved from 28 to 20 experiment-backed findings and from 8 to 37 source-backed findings; `_mu_continuity_increment` is still deferred.
-- Gate policy: ADR-024 makes warm-bubble an operator-sanity diagnostic. Current honest verdict is `FAIL_PHYSICAL_BOUNDS`, not an amplitude miss.
+1. **S2.2 fixed the d02 replay hang** (commit `4ee4d31`) — JAX `lax.cond` radiation predicate pathology.
+2. **S3-narrow** cleaned stabilizer provenance — 28→20 experiment-backed, 8→37 source-backed.
+3. **S4-prep** built Tier-3 convergence infrastructure.
+4. **S2.1-redo** ran the first REAL Gen2-anchored 1h d02 baseline (commit `4b97743`):
+   - T2 RMSE = **136.885 K** (218× Gen2 24h noise floor 0.628 K)
+   - U10 = **106.419 m/s** (73× off), V10 = **102.232 m/s** (64× off)
+   - θ_max = 550 K at step 3600 (post-sanitize, sanitizer cap)
+   - **17.2 billion** sanitized nonfinite candidates per 1h run
+5. **Exit-rule critic** (full-state GPT-5 critique) verdicted `DISPATCH-OPERATOR-BUG-HUNT` with 9 grep targets.
+6. **S3-hunt operator bug-hunt** ran 7 single-suspect A/B toggles under sanitizer-bypass. Verdict: **`NO-BUG-LOCALIZED`** — every toggle still first-nonfinite at step 2.
+7. **Third-path substrate scout** evaluated Dinosaur/ICON4Py/Pace/NeuralGCM. Verdict: `RECOMMEND-OPTION-B`.
+8. **HYBRID exit-rule fired** as designed. Manager wrote `M6-DYCORE-BLOCKER-MEMO.md` with 4 bounded options.
+9. **External AI consultation** (response received 2026-05-24): "Finish this as Option B, but make the savepoint harness the product for the next sprint." Skip A-probe. Keep C as fallback. Add E as optional shadow benchmark.
+10. **User approved all 8 plan items.** PROJECT_PLAN.md §14, MILESTONES.md M6 split, ADR-023 supersede, ADR-024 accept, ADR-025 draft, post-consultation reflection, M6B0 sprint contract all committed.
 
-In flight:
-- S2.2 d02 replay hang debug: find and fix why `scripts/m6_d02_boundary_replay_1h.py --duration-s 1` hangs.
-- S4-prep Tier-3 convergence infrastructure: build the idealized dt-convergence runner and schema so S4 can start quickly.
-- This doc refresh sprint.
+## Diagnosis (refined)
 
-Queued:
-- S2.1-redo real baseline after S2.2 fixes replay startup.
-- S3-real source-backed mu/metric cleanup using real baseline deltas.
-- S4 Tier-3 controlled convergence.
-- S5 6h/24h Tier-4 Gen2/observation comparator.
-- S6 closeout or explicit architecture blocker.
+Per consultation: not "WRF small-step is unportable" but **"the project lacks the instrumentation needed to distinguish wrong recurrence / wrong staging / missing scratch / wrong source coupling."** WRF compatibility must be validated at the acoustic-substep level, not at 1h.
 
-## HYBRID Plan Position
+The correction:
+> Stop trying to make a WRF-like dycore stable from the outside. Rebuild the WRF small-step from the inside, under savepoint parity, then optimize.
 
-The close-strategy critic returned `HYBRID`: diagnostics first, baseline before operator changes, Tier-3 before Tier-4, and separate ADR-024 gate-policy acceptance from ADR-023 architecture acceptance. The project is between HYBRID S2 and S3: S1 is done, S2 is blocked on infrastructure, S3-narrow handled bounded provenance cleanup, and S3-real must wait for real replay evidence unless the manager deliberately accepts a weaker path.
+## Committed sequencing (B-direct)
 
-## Parallel Intel
+```
+M6B0 ── M6B1 ── M6B2 ── M6B3 ── M6B4 ── M6B5 ── M6B6 ── M6b ── M6c ── M6-perf
+savepoint  coef   tridiag  scratch  acoustic  full    coupled  1h    24h   optim
+harness   parity  parity   parity   parity   dycore   step    honest Gen2  (post-correctness)
+```
 
-ADR-021 strip result: the carry-expansion path is not a clean fallback. Removing the warm-bubble clamps and harness aids produced `FAIL_FINITENESS` at step 2, with theta perturbations around +/-22,000 K and signed vertical velocities around +/-1.6e8 m/s at step 1. ADR-021 is branch evidence only unless a new sourced stabilization plan is reviewed.
+**Sprint #1 = M6B0** (in dispatch): WRF `module_small_step_em` savepoint extractor + JAX comparator + deliberate-perturbation negative test + first coefficient parity proof.
 
-Gen2 baseline result: `data/fixtures/gen2_baseline/rmse_summary.csv` now gives real d02 forecast-to-forecast anchors from 17 same-grid Gen2 pairs. Spatial-mean RMSE at 24 h is T2 0.628 K, U10 1.456 m/s, V10 1.591 m/s; at 72 h it is T2 0.255 K, U10 0.888 m/s, V10 0.870 m/s. These are Gen2 consistency anchors, not observation-error proof.
+## What's NOT scheduled
 
-## Open Questions
+- **A-probe** (WRF scratch hybrid as first sprint) — skipped per consultation.
+- **C — substrate port** — fallback only, after B proves WRF small-step unportable.
+- **D — defer M6** — reserved for business continuity.
+- **E — shadow GPU-WRF (AceCAST / wrf-gpu-port)** — optional; deferred unless principal authorizes.
 
-1. Should S3-real be barred until S2.2 produces a real d02 baseline, or may it proceed with an explicit "no real before/after baseline" caveat?
-2. Should ADR-024 be promoted independently once review accepts the gate policy, while ADR-023 remains proposed until mu/stabilizer evidence passes?
-3. If S2.2 finds the replay hang is environmental rather than code, should the manager run the real baseline on a different machine or define a smaller real-data replay target?
+## Validation gates (binding)
 
-## Time To M6 Close
+| Gate | Binds | Bar |
+|---|---|---|
+| G1 — Savepoint parity | M6B0–B6 | sanitizer-off; per-operator delta; no caps |
+| G2 — 10-step replay | end of M6B6 | first-nonfinite null; no caps |
+| G3 — 1h d02 | M6b | no sanitizer in production path; T2/U10/V10 RMSE ≤5× Gen2 floor |
+| G4 — 6h/24h Gen2 | M6c | AceCAST-style probabilistic envelope |
+| G5 — Performance | post-M6c | wall-clock < 28-rank CPU WRF; 0 H2D/D2H in loop |
 
-Best estimate: 3-6 focused sprints after S2.2 unblocks the real d02 replay. In wall time, that is roughly 1-3 days if the hang fix is small and S3-real localizes the mu/stabilizer issue; longer if S2.2 exposes a JAX/GPU infrastructure defect or S4 Tier-3 fails structurally.
+## Time to M6 close
+
+10–17 sprints. Wider than the prior 5–9 estimate, but each sprint produces hard per-operator parity evidence rather than forensics on billions of nonfinites.
+
+## Out-of-band ask
+
+The consultation recommends an **external human WRF expert review** at M6B0 close — two hours from someone who has touched WRF `module_small_step_em`, MPAS-A dycore, or ICON HEVI numerics. The review target is "are these savepoints sufficient to prove the small-step port?", not "is JAX good?". Flagged to principal for M6B0 close.
+
+## Risk gates active
+
+- M6B0 cannot patch WRF Fortran in ≤2 sprints → escalate; consider AceCAST alternative.
+- Comparator finds >15 savepoints diverging at step 2 even with WRF carries added → trigger external WRF-expert review; reconsider C.
+- No measurable speedup at M6B5 → reopen performance section before M6b.
+- External WRF expert unobtainable → Codex critical-review substitute; flag gap.

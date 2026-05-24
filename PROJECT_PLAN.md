@@ -1,6 +1,6 @@
 # Project Plan
 
-Status: **M0-M5 closed. M6 active in dycore stabilization after the M6.x pivot chain; ADR-023 and ADR-024 are PROPOSED, not ACCEPTED. Current execution follows the critic-ratified HYBRID sequence: S1 diagnostic/source lock done, S2/S2.1 real d02 baseline blocked by replay hang, S2.2 hang debug in flight, S3-narrow stabilizer cleanup done, S4 Tier-3 and S5 Tier-4 queued. M7 prologue S0a is done but M7 implementation remains gated by M6 close.**
+Status: **M0-M5 closed. M6 entered post-blocker execution on 2026-05-24 following external consultation. The HYBRID exit-rule fired: S2.1-redo real Gen2 1h baseline produced T2 136.9 K / U10 106.4 m/s / V10 102.2 m/s (218×/73×/64× Gen2 noise floor); the operator bug-hunt (7 A/B toggles, sanitizer-bypass) returned `NO-BUG-LOCALIZED`. External consultation diagnosed the root cause as missing operator-by-operator instrumentation (not WRF un-portability) and recommended **B-direct with savepoint-first discipline**: build the WRF `module_small_step_em` savepoint harness *first*, then port the small-step bottom-up under per-operator parity. M6 is split into M6a (savepoint parity, sanitizer-off), M6b (honest 1h Canary d02), M6c (6h/24h Gen2 consistency) — see `MILESTONES.md`. ADR-023 is **superseded-provisional**; ADR-024 (operator-sanity gate) is promoted to ACCEPTED per consultation; ADR-025 covering savepoint-harness + B-direct port ladder is to be drafted. M7 implementation remains gated by M6b close. See §14 for the post-blocker execution plan.**
 Author: manager (Opus 4.7 1M).
 Inputs: `v2 ai driven from scratch plan by deepthink.txt`, `wrf to gpu gpt5.5 deep research.pdf`, `WRF GPU Porting_ Architecture & Verification.pdf`, all governance files in this repo.
 Scope: this document is the **synthesis layer** that reconciles the two research briefs with the bootstrap. It does not restate the constitution, scope, spec, principles, validation strategy, precision policy, performance targets, or risk register. Those remain authoritative as-is.
@@ -199,3 +199,78 @@ The manager handover on 2026-05-23 triggered an M6.x dycore pivot cycle. These a
 4. **The HYBRID close plan is in execution.** The accepted sequencing from the close-strategy critic is: S1 diagnostic/source lock, S2 current-path d02 baseline, S3 source-backed mu/metric cleanup, S4 Tier-3 controlled convergence, S5 6h/24h Tier-4 comparison, S6 closeout or explicit architecture blocker. Current state: S1 done; S2 and S2.1 produced only synthetic fallback because real replay hangs; S2.2 is in flight to fix that; S3-narrow is done; S4-prep is running infrastructure work; S3-real/S4/S5/S6 remain queued.
 5. **Source-mining is locked as a decision aid, not an ADR.** `.agent/decisions/source_mining_operator_table.md` is the canonical table for the current operator debts. S3-narrow converted the production `1.35` metric and `0.38` buoyancy-scale usage into source-backed or slice-only paths and improved the stabilizer scan from 28 to 20 experiment-backed findings and 8 to 37 source-backed findings. The `_mu_continuity_increment` limiter remains explicitly deferred until real d02 baseline evidence exists.
 6. **Initial Tier-4 numerical anchors now exist.** `data/fixtures/gen2_baseline/rmse_summary.csv` records 17 same-grid Gen2 forecast-to-forecast d02 pairs: T2/U10/V10 spatial-mean RMSEs of 0.628 K, 1.456 m/s, and 1.591 m/s at 24 h; 0.255 K, 0.888 m/s, and 0.870 m/s at 72 h. These are Gen2 consistency anchors, not observation-error closure.
+
+## 14. M6 Post-Blocker Execution Plan (2026-05-24)
+
+Triggered by the catastrophic S2.1-redo real d02 baseline, the `NO-BUG-LOCALIZED` bug-hunt verdict, the HYBRID exit-rule firing, and the external deep-consultation response committed as `.agent/decisions/manager-reflections/PLAN-REFLECTION-2026-05-24-post-consultation.md`. Supersedes the prior HYBRID S3-real → S4 → S5 → S6 sequence and the BLOCKER-memo manager addendum (A-as-probe-first).
+
+### 14.1 Diagnosis (refined)
+
+The dycore is not failing because GPU-JAX cannot run WRF-like dynamics. It is failing because the project lacks instrumentation to distinguish *which* class of error is firing: wrong recurrence, wrong staging, missing WRF scratch state, or wrong source-equation coupling. ADR-023's minimalist-carry thesis failed real d02; ADR-021's clamp-strip failure proves that a *blind* full-carry port also fails. Both architectures were guessing with different numbers of variables. The correction: **WRF compatibility must be validated at the acoustic-substep level, not at 1h.**
+
+### 14.2 Committed sequencing (B-direct, savepoint-first)
+
+```
+M6B0 ── M6B1 ── M6B2 ── M6B3 ── M6B4 ── M6B5 ── M6B6 ── M6b ── M6c ── M7
+savepoint  coef   tridiag  scratch  acoustic  full    coupled  1h    24h
+harness   parity  parity   parity   parity   dycore   step    honest Gen2
+                                                                      └─ public release (M8)
+                                                                          ↑
+                                                              optional E-lane:
+                                                              GPU-WRF shadow scout
+```
+
+- **M6B0 — WRF savepoint harness.** *Decisive sprint.* CPU WRF instrumentation around `module_small_step_em`, savepoint schema (RK stage, acoustic substep, stagger, units, map factors, vertical grid, namelist, run-ID), JAX comparator with deliberate-perturbation negative test, first coefficient parity proof on one column + 16×16 patch. **No RMSE tuning, no clamps, no sanitizer acceptance.**
+- **M6B1 — coefficient parity.** Reproduce WRF vertical-solve coefficients (`calc_coef_w` equivalent) on one column → 16×16 patch → full d02.
+- **M6B2 — tridiagonal solve parity.** JAX `lax.scan` Thomas solver matched against WRF.
+- **M6B3 — scratch-state parity.** Adopt `t_2ave`, `ww`, `muave`, `muts`, `ph_tend`, save fields as savepoints demand. WRF compatibility now wins over carry-minimalism.
+- **M6B4 — acoustic recurrence parity.** One acoustic substep then all substeps inside one RK stage.
+- **M6B5 — full dycore step parity.** Physics off, boundary off, sanitizer off.
+- **M6B6 — coupled step parity.** Physics on, boundary on, sanitizer still off.
+- **M6b — honest 1h.** Only after B6 do we re-run the 1h d02 RMSE comparison.
+- **M6c — 24h Gen2 consistency.** Tier-4 statistical envelope (AceCAST-style: GPU-vs-CPU bounded by CPU-vs-CPU floating-point divergence) rather than bitwise.
+
+### 14.3 What A-probe and Option C become
+
+**A-probe (WRF scratch hybrid)** is **not** scheduled. The consultation's argument carries: partial-scratch may improve T2 from 137 K to 40 K and then trap the project in months of "hidden staging" whack-a-mole. The savepoint harness gives surgical attribution that A-probe cannot. If a future evidence-driven justification surfaces, A-probe may run as **a single disposable sprint with a hard kill gate** (first-nonfinite → none over 10 steps AND ≥10× T2 RMSE drop; failure means immediate B-direct continuation, never a follow-on tuning sprint).
+
+**Option C (substrate port)** stays as fallback only: **"C-primary = JAX reimplementation of ICON4Py/MPAS/WRF-proven vertical-implicit patterns, after B proves WRF-small-step parity is too expensive or structurally unsuitable."** Not before.
+
+### 14.4 Option E (new) — Shadow GPU-WRF lane (optional, low-priority)
+
+A research-scout sprint may evaluate AceCAST and `FahrenheitResearch/wrf-gpu-port` as **shadow benchmarks** — operational counterfactuals that protect Canary business continuity while the JAX rewrite is held to savepoint truth. E is **not** a replacement for B. E is a parallel insurance lane; it does not consume the primary 4-core AI budget and may be deferred indefinitely.
+
+### 14.5 Performance gating (post-correctness only)
+
+No optimization sprints before M6B5 passes. Then in order:
+1. **Lock RTX 5090/JAX environment.** Nsight Systems trace proving no recompilation in timestep loop. `jax_enable_x64=True`. CUDA-pip wheel pinned.
+2. **Whole timestep as one compiled graph.** Acoustic loop and RK loop are `lax.scan`, never Python loops. Hard rule: no `device_get`, no host callbacks, no Python diagnostics in the operational timestep loop. Diagnostics in a separate debug build.
+3. **Carry size is a performance problem, not a correctness veto.** A correct large carry beats a sanitizer-dependent small carry. Use XLA buffer donation and aliasing.
+4. **Profile before Triton.** Per-scheme Triton/Pallas only for measured hotspots. Aligned with ADR-001's gated fallback.
+5. **Two precision modes**: validation (fp64-heavy, strict WRF parity) and operational (mixed where savepoint and Tier-4 prove safe).
+
+### 14.6 ADR status updates (this section is operational; not constitutional re-vote)
+
+- **ADR-023 (conservative column solver)** → **SUPERSEDED-PROVISIONAL.** Scientifically sound minimalist-carry thesis, but failed real d02 evidence. Kept as reference; not the production architecture.
+- **ADR-024 (warm-bubble gate = operator sanity)** → **ACCEPTED** (per consultation's "ADR-024's gate-policy idea is sound"). Warm-bubble is now permanently a diagnostic, never an architecture-acceptance target.
+- **ADR-021/022 (full-carry / hybrid drafts)** → remain DRAFT, branch evidence only.
+- **ADR-025 (to be drafted)**: WRF savepoint-harness + B-direct port ladder. Will be drafted during M6B0 and reviewed at M6B0 close.
+
+### 14.7 Risk gates (sprint-level kill conditions)
+
+- **M6B0 savepoint extractor cannot patch WRF Fortran in ≤2 sprints** → escalate to user; consider AceCAST instrumentation as an alternative oracle source.
+- **JAX comparator finds >15 savepoints diverging at step 2 even when WRF carries are added** → trigger external WRF-expert human review before committing more sprints. Triggers Option C evaluation as design-time alternative (still not implementation).
+- **No measurable RTX 5090 speedup vs 28-rank CPU WRF at M6B5** → re-open performance section, profile, consider mixed-precision operational mode before M6b dispatch.
+- **External human WRF expert review unobtainable** → manager dispatches a Codex critical-review sprint as substitute and flags the gap to the user at M6B0 close.
+
+### 14.8 Validation gates (binding)
+
+1. **Savepoint parity (M6B0–B6)**: sanitizer-off; no caps; no nonfinites; exact shape/stagger/unit agreement; WRF/JAX deltas tracked per operator.
+2. **10-step real d02 replay**: physics off then on; boundary off then on; first-bad-step remains null; no field reaches diagnostic caps; operator term budget serialized.
+3. **1h d02 (M6b)**: no sanitizer in production path; theta physically bounded; wind maxima plausible; T2/U10/V10 RMSE inside pre-declared envelope.
+4. **6h/24h Gen2 consistency (M6c)**: Tier-4 probabilistic — AceCAST-style envelope, not bitwise.
+5. **Performance (post-M6c)**: wall-clock < 28-rank CPU WRF for Canary 3km; no host/device transfer in timestep loops; memory headroom for 1km; profiler proof of where time is spent.
+
+### 14.9 M7 alignment
+
+M7 (Canary operational v0) continues with CPU WRF as the operational backend until M6b passes, then migrates field-by-field as savepoint parity expands. Public messaging does not imply GPU-native operation before M6b. M7 may also be backed by an E-lane shadow GPU-WRF for business continuity if user authorizes.
