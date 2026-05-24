@@ -1,6 +1,9 @@
 --- a/dyn_em/solve_em.F
 +++ b/dyn_em/solve_em.F
-@@
+@@ -53,6 +53,15 @@
+ ! Model layer modules
+    USE module_model_constants
+    USE module_small_step_em
 +#ifdef WRF_SAVEPOINT
 +   USE savepoint_wrapper, ONLY: sp_calc_coef_w_pre, sp_calc_coef_w_post, &
 +      sp_small_step_prep_post, sp_advance_mu_t_pre, sp_advance_mu_t_post, &
@@ -10,20 +13,46 @@
 +      sp_small_step_finish_post, sp_acoustic_substep_boundary, &
 +      sp_rk_stage_boundary
 +#endif
-@@
+ #ifdef GPU_OPENACC
+    USE eulerian_mass_core_gpu, ONLY : calc_mu_uv_1_core_gpu
+    USE small_step_gpu, ONLY : calc_p_rho_gpu, calc_coef_w_gpu, sumflux_gpu
+@@ -2673,6 +2682,9 @@
+        IF (config_flags%non_hydrostatic) THEN
+ #ifdef GPU_OPENACC
+          IF (wrf_gpu_fallback_calc_coef_w) THEN
++#ifdef WRF_SAVEPOINT
++         CALL sp_calc_coef_w_pre()
++#endif
+            CALL calc_coef_w( a,alpha,gamma,                    &
+                            grid%mut,                         &
+                            grid%c1h, grid%c2h, grid%c1f, grid%c2f, &
+@@ -2685,6 +2697,9 @@
+                            grid%i_start(ij), grid%i_end(ij), &
+                            grid%j_start(ij), grid%j_end(ij), &
+                            k_start    , k_end               )
++#ifdef WRF_SAVEPOINT
++         CALL sp_calc_coef_w_post()
++#endif
+ ! CPU fallback produces the implicit-w coefficients on host; advance_w_gpu
+ ! consumes them on device in the following acoustic substeps.
+ !$acc update device(a, alpha, gamma)
+@@ -2702,6 +2717,9 @@
+                            k_start    , k_end               )
+          ENDIF
+ #else
 +#ifdef WRF_SAVEPOINT
 +         CALL sp_calc_coef_w_pre()
 +#endif
           CALL calc_coef_w( a,alpha,gamma,                    &
                             grid%mut,                         &
                             grid%c1h, grid%c2h, grid%c1f, grid%c2f, &
-@@
+@@ -2714,6 +2732,9 @@
+                            grid%i_start(ij), grid%i_end(ij), &
+                            grid%j_start(ij), grid%j_end(ij), &
                             k_start    , k_end               )
 +#ifdef WRF_SAVEPOINT
 +         CALL sp_calc_coef_w_post()
 +#endif
-@@
-+#ifdef WRF_SAVEPOINT
-+         CALL sp_acoustic_substep_boundary()
-+         CALL sp_rk_stage_boundary()
-+#endif
+ #endif
+        ENDIF
+ 

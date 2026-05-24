@@ -1,0 +1,52 @@
+source_head_before_patch=115e5756f98ee2370d62b6709baac6417d8f7338
+patching file dyn_em/solve_em.F
+patching file configure.wrf
+Hunk #1 succeeded at 232 with fuzz 2 (offset -1 lines).
+source_head_after_patch=115e5756f98ee2370d62b6709baac6417d8f7338
+diff: /home/enric/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/WRF/var/run/crtm_coeffs: No such file or directory
+diff: /tmp/wrf_gpu2_relink/external/wrf_savepoint_patch/source_copy/var/run/crtm_coeffs: No such file or directory
+diff: /home/enric/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/WRF/var/test/radiance/crtm_coeffs: No such file or directory
+diff: /tmp/wrf_gpu2_relink/external/wrf_savepoint_patch/source_copy/var/test/radiance/crtm_coeffs: No such file or directory
+Files /home/enric/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/WRF/chem/KPP/clean_kpp and /tmp/wrf_gpu2_relink/external/wrf_savepoint_patch/source_copy/chem/KPP/clean_kpp differ
+Files /home/enric/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/WRF/chem/KPP/compile_wkc and /tmp/wrf_gpu2_relink/external/wrf_savepoint_patch/source_copy/chem/KPP/compile_wkc differ
+Files /home/enric/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/WRF/chem/KPP/kpp/kpp-2.1/kpp_compile and /tmp/wrf_gpu2_relink/external/wrf_savepoint_patch/source_copy/chem/KPP/kpp/kpp-2.1/kpp_compile differ
+Files /home/enric/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/WRF/chem/KPP/util/create_inc_files.csh and /tmp/wrf_gpu2_relink/external/wrf_savepoint_patch/source_copy/chem/KPP/util/create_inc_files.csh differ
+Files /home/enric/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/WRF/chem/KPP/util/wkc/linker.csh and /tmp/wrf_gpu2_relink/external/wrf_savepoint_patch/source_copy/chem/KPP/util/wkc/linker.csh differ
+Files /home/enric/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/WRF/chem/KPP/util/write_decomp/write_decom.csh and /tmp/wrf_gpu2_relink/external/wrf_savepoint_patch/source_copy/chem/KPP/util/write_decomp/write_decom.csh differ
+Files /home/enric/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/WRF/clean and /tmp/wrf_gpu2_relink/external/wrf_savepoint_patch/source_copy/clean differ
+Files /home/enric/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/WRF/compile and /tmp/wrf_gpu2_relink/external/wrf_savepoint_patch/source_copy/compile differ
+Files /home/enric/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/WRF/configure.wrf and /tmp/wrf_gpu2_relink/external/wrf_savepoint_patch/source_copy/configure.wrf differ
+Files /home/enric/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/WRF/dyn_em/Makefile and /tmp/wrf_gpu2_relink/external/wrf_savepoint_patch/source_copy/dyn_em/Makefile differ
+Files /home/enric/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/WRF/dyn_em/solve_em.F and /tmp/wrf_gpu2_relink/external/wrf_savepoint_patch/source_copy/dyn_em/solve_em.F differ
+Files /home/enric/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/WRF/external/esmf_time_f90/testall.csh and /tmp/wrf_gpu2_relink/external/wrf_savepoint_patch/source_copy/external/esmf_time_f90/testall.csh differ
+Files /home/enric/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/WRF/external/fftpack/77to90.csh and /tmp/wrf_gpu2_relink/external/wrf_savepoint_patch/source_copy/external/fftpack/77to90.csh differ
+Files /home/enric/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/WRF/external/io_grib1/diffwrf and /tmp/wrf_gpu2_relink/external/wrf_savepoint_patch/source_copy/external/io_grib1/diffwrf differ
+Files /home/enric/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/WRF/tools/DOMAIN_TIME_TEST/DOMAIN_TIME_TEST.csh and /tmp/wrf_gpu2_relink/external/wrf_savepoint_patch/source_copy/tools/DOMAIN_TIME_TEST/DOMAIN_TIME_TEST.csh differ
+Files /home/enric/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/WRF/tools/all_reg.csh and /tmp/wrf_gpu2_relink/external/wrf_savepoint_patch/source_copy/tools/all_reg.csh differ
+Files /home/enric/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/WRF/tools/any_updates_in_registry.csh and /tmp/wrf_gpu2_relink/external/wrf_savepoint_patch/source_copy/tools/any_updates_in_registry.csh differ
+Files /home/enric/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/WRF/tools/build_codebase and /tmp/wrf_gpu2_relink/external/wrf_savepoint_patch/source_copy/tools/build_codebase differ
+Files /home/enric/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/WRF/tools/build_test.csh and /tmp/wrf_gpu2_relink/external/wrf_savepoint_patch/source_copy/tools/build_test.csh differ
+Files /home/enric/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/WRF/tools/danger and /tmp/wrf_gpu2_relink/external/wrf_savepoint_patch/source_copy/tools/danger differ
+Files /home/enric/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/WRF/tools/link_codebase_to_wrfbrowser and /tmp/wrf_gpu2_relink/external/wrf_savepoint_patch/source_copy/tools/link_codebase_to_wrfbrowser differ
+Files /home/enric/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/WRF/tools/regtest.csh and /tmp/wrf_gpu2_relink/external/wrf_savepoint_patch/source_copy/tools/regtest.csh differ
+Files /home/enric/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/WRF/tools/regtest_esmf.csh and /tmp/wrf_gpu2_relink/external/wrf_savepoint_patch/source_copy/tools/regtest_esmf.csh differ
+Files /home/enric/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/WRF/tools/regtest_hwrf.csh and /tmp/wrf_gpu2_relink/external/wrf_savepoint_patch/source_copy/tools/regtest_hwrf.csh differ
+Files /home/enric/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/WRF/tools/regtest_nmmnest.csh and /tmp/wrf_gpu2_relink/external/wrf_savepoint_patch/source_copy/tools/regtest_nmmnest.csh differ
+Files /home/enric/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/WRF/tools/safe and /tmp/wrf_gpu2_relink/external/wrf_savepoint_patch/source_copy/tools/safe differ
+Files /home/enric/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/WRF/tools/test4_0_ESMFSST.lsf.csh and /tmp/wrf_gpu2_relink/external/wrf_savepoint_patch/source_copy/tools/test4_0_ESMFSST.lsf.csh differ
+Files /home/enric/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/WRF/tools/test_compile.csh and /tmp/wrf_gpu2_relink/external/wrf_savepoint_patch/source_copy/tools/test_compile.csh differ
+Files /home/enric/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/WRF/tools/test_nml_domains.csh and /tmp/wrf_gpu2_relink/external/wrf_savepoint_patch/source_copy/tools/test_nml_domains.csh differ
+Files /home/enric/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/WRF/tools/testomatic and /tmp/wrf_gpu2_relink/external/wrf_savepoint_patch/source_copy/tools/testomatic differ
+Files /home/enric/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/WRF/var/da/makedepf90-2.8.8/setup_makedepf90 and /tmp/wrf_gpu2_relink/external/wrf_savepoint_patch/source_copy/var/da/makedepf90-2.8.8/setup_makedepf90 differ
+Files /home/enric/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/WRF/var/external/crtm_2.3.0/config-setup/ftn.setup.csh and /tmp/wrf_gpu2_relink/external/wrf_savepoint_patch/source_copy/var/external/crtm_2.3.0/config-setup/ftn.setup.csh differ
+Files /home/enric/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/WRF/var/external/crtm_2.3.0/config-setup/g95-debug.setup.csh and /tmp/wrf_gpu2_relink/external/wrf_savepoint_patch/source_copy/var/external/crtm_2.3.0/config-setup/g95-debug.setup.csh differ
+Files /home/enric/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/WRF/var/external/crtm_2.3.0/config-setup/g95.setup.csh and /tmp/wrf_gpu2_relink/external/wrf_savepoint_patch/source_copy/var/external/crtm_2.3.0/config-setup/g95.setup.csh differ
+Files /home/enric/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/WRF/var/external/crtm_2.3.0/config-setup/gfortran-debug.setup.csh and /tmp/wrf_gpu2_relink/external/wrf_savepoint_patch/source_copy/var/external/crtm_2.3.0/config-setup/gfortran-debug.setup.csh differ
+Files /home/enric/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/WRF/var/external/crtm_2.3.0/config-setup/gfortran.setup.csh and /tmp/wrf_gpu2_relink/external/wrf_savepoint_patch/source_copy/var/external/crtm_2.3.0/config-setup/gfortran.setup.csh differ
+Files /home/enric/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/WRF/var/external/crtm_2.3.0/config-setup/ifort-debug.setup.csh and /tmp/wrf_gpu2_relink/external/wrf_savepoint_patch/source_copy/var/external/crtm_2.3.0/config-setup/ifort-debug.setup.csh differ
+Files /home/enric/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/WRF/var/external/crtm_2.3.0/config-setup/ifort.setup.csh and /tmp/wrf_gpu2_relink/external/wrf_savepoint_patch/source_copy/var/external/crtm_2.3.0/config-setup/ifort.setup.csh differ
+Files /home/enric/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/WRF/var/external/crtm_2.3.0/config-setup/pgf95-debug.setup.csh and /tmp/wrf_gpu2_relink/external/wrf_savepoint_patch/source_copy/var/external/crtm_2.3.0/config-setup/pgf95-debug.setup.csh differ
+Files /home/enric/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/WRF/var/external/crtm_2.3.0/config-setup/pgf95.setup.csh and /tmp/wrf_gpu2_relink/external/wrf_savepoint_patch/source_copy/var/external/crtm_2.3.0/config-setup/pgf95.setup.csh differ
+Files /home/enric/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/WRF/var/external/crtm_2.3.0/config-setup/xlf2003-debug.setup.csh and /tmp/wrf_gpu2_relink/external/wrf_savepoint_patch/source_copy/var/external/crtm_2.3.0/config-setup/xlf2003-debug.setup.csh differ
+Files /home/enric/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/WRF/var/external/crtm_2.3.0/config-setup/xlf2003.setup.csh and /tmp/wrf_gpu2_relink/external/wrf_savepoint_patch/source_copy/var/external/crtm_2.3.0/config-setup/xlf2003.setup.csh differ
+Only in /tmp/wrf_gpu2_relink/external/wrf_savepoint_patch/source_copy/dyn_em: savepoint_wrapper.F90
