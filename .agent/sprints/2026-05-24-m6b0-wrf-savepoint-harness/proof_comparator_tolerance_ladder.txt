@@ -1,0 +1,14 @@
+operator=coefficient_construction
+format=npz-bundle-v1
+sanitizer_mode=off
+cofrz=1e-12 absolute; reciprocal-depth coefficient, fp64 deterministic fixture
+cofwr=1e-12 absolute; gravity/dt scalar coefficient, fp64 deterministic fixture
+cofwz=1e-11 absolute; pressure/geopotential coefficient includes dz-face arithmetic
+coftz=1e-11 absolute; theta-face averaging coefficient
+cofwt=1e-12 absolute; theta reciprocal coefficient
+rdzw=1e-12 absolute; reciprocal dz from saved WRF slice
+tri_a=1e-11 absolute; accumulated coefficient row
+tri_b=1e-11 absolute; accumulated diagonal row
+tri_c=1e-11 absolute; accumulated coefficient row
+negative_test_perturbation=+1e-6 theta input must exceed ladder and fail parity
+rationale=tolerances are predeclared fp64 roundoff-scale for same-formula M6B0 harness; M6B1 must revisit against true Fortran calc_coef_w dumps.

@@ -1,0 +1,16 @@
+--- a/dyn_em/module_small_step_em.F
++++ b/dyn_em/module_small_step_em.F
+@@
++! M6B0 savepoint hook plan, kept as a reviewable patch artifact.
++! The sprint implementation writes NPZ bundles from an isolated extractor
++! rather than modifying the protected operational WRF build.
++!
++! Required hook boundaries:
++! 1. calc_coef_w entry/exit around module_small_step_em.F:570-652
++! 2. MU/MUTS/MUAVE/ww start and end around module_small_step_em.F:1094-1125
++! 3. t_2ave update around module_small_step_em.F:1340-1345
++! 4. ph_tend accumulation around module_small_step_em.F:1340-1597
++! 5. advance_w entry/exit around module_small_step_em.F:1340-1597
++! 6. pressure/geopotential restoration around module_small_step_em.F:902-942
++! 7. full acoustic substep boundary
++! 8. full RK-stage boundary
