@@ -1,0 +1,29 @@
+--- a/dyn_em/solve_em.F
++++ b/dyn_em/solve_em.F
+@@
++#ifdef WRF_SAVEPOINT
++   USE savepoint_wrapper, ONLY: sp_calc_coef_w_pre, sp_calc_coef_w_post, &
++      sp_small_step_prep_post, sp_advance_mu_t_pre, sp_advance_mu_t_post, &
++      sp_advance_uv_post, sp_advance_w_rhs_ready, sp_advance_w_raw_w, &
++      sp_advance_w_tridiag_fwd, sp_advance_w_tridiag_back, &
++      sp_advance_w_rayleigh, sp_advance_w_ph_final, sp_calc_p_rho_post, &
++      sp_small_step_finish_post, sp_acoustic_substep_boundary, &
++      sp_rk_stage_boundary
++#endif
+@@
++#ifdef WRF_SAVEPOINT
++         CALL sp_calc_coef_w_pre()
++#endif
+          CALL calc_coef_w( a,alpha,gamma,                    &
+                            grid%mut,                         &
+                            grid%c1h, grid%c2h, grid%c1f, grid%c2f, &
+@@
+                            k_start    , k_end               )
++#ifdef WRF_SAVEPOINT
++         CALL sp_calc_coef_w_post()
++#endif
+@@
++#ifdef WRF_SAVEPOINT
++         CALL sp_acoustic_substep_boundary()
++         CALL sp_rk_stage_boundary()
++#endif

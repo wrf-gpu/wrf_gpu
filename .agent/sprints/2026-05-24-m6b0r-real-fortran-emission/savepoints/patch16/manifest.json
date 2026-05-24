@@ -1,0 +1,66 @@
+{
+  "attrs": {
+    "dims": {
+      "DateStrLen": 19,
+      "Time": 1,
+      "bottom_top": 44,
+      "bottom_top_stag": 45,
+      "seed_dim_stag": 8,
+      "snow_layers_stag": 3,
+      "snso_layers_stag": 7,
+      "soil_layers_stag": 4,
+      "south_north": 66,
+      "south_north_stag": 67,
+      "west_east": 159,
+      "west_east_stag": 160
+    },
+    "dt": 6.0,
+    "epssm": 0.1,
+    "mapfac_max": 0.9992114305496216,
+    "mapfac_min": 0.9991082549095154,
+    "slice_x": [
+      71,
+      87
+    ],
+    "slice_y": [
+      25,
+      41
+    ],
+    "terrain_max_m": 932.5389404296875,
+    "terrain_min_m": 0.0,
+    "top_lid": true
+  },
+  "cpu_operator_path": true,
+  "file_sha256": {
+    "/tmp/wrf_gpu2_m6b0r/.agent/sprints/2026-05-24-m6b0r-real-fortran-emission/savepoints/patch16/calc_coef_w_post_step001.h5": "7f4c5297fdafaa0b808d178b494cb5fdbfc9c6b1cd46fae24b557167b68b8fe2",
+    "/tmp/wrf_gpu2_m6b0r/.agent/sprints/2026-05-24-m6b0r-real-fortran-emission/savepoints/patch16/calc_coef_w_post_step002.h5": "8e8d5428066b4f691b1ff13049b7947157ff6839a648af922e03e536de984c20",
+    "/tmp/wrf_gpu2_m6b0r/.agent/sprints/2026-05-24-m6b0r-real-fortran-emission/savepoints/patch16/calc_coef_w_post_step005.h5": "493ad2bb751b10ec5ed6521fe5928966ba0ba29c282a0706bc36560579ac60d8",
+    "/tmp/wrf_gpu2_m6b0r/.agent/sprints/2026-05-24-m6b0r-real-fortran-emission/savepoints/patch16/calc_coef_w_post_step010.h5": "74008716b405d844bf98231625245553408c4429fb4593de6fd3925c586b13e7",
+    "/tmp/wrf_gpu2_m6b0r/.agent/sprints/2026-05-24-m6b0r-real-fortran-emission/savepoints/patch16/calc_coef_w_pre_step001.h5": "7cab0008935e540e4b2a7f8c8d3dae2222cad5a0612a1d1cd3ca21516834ab1c",
+    "/tmp/wrf_gpu2_m6b0r/.agent/sprints/2026-05-24-m6b0r-real-fortran-emission/savepoints/patch16/calc_coef_w_pre_step002.h5": "72f1db30da001b14c8ecbf466bd3d5562ee06891406705908b20c98ccb8d9fa8",
+    "/tmp/wrf_gpu2_m6b0r/.agent/sprints/2026-05-24-m6b0r-real-fortran-emission/savepoints/patch16/calc_coef_w_pre_step005.h5": "c6663d7d74fd5d198506e0c1c1cf375593673399e9a64d40924670f3f6845ee1",
+    "/tmp/wrf_gpu2_m6b0r/.agent/sprints/2026-05-24-m6b0r-real-fortran-emission/savepoints/patch16/calc_coef_w_pre_step010.h5": "f1e7fa2184820c2471c62ddf925527ea7a35c46dd26e82b52e64388b6032f58e"
+  },
+  "files": [
+    "/tmp/wrf_gpu2_m6b0r/.agent/sprints/2026-05-24-m6b0r-real-fortran-emission/savepoints/patch16/calc_coef_w_pre_step001.h5",
+    "/tmp/wrf_gpu2_m6b0r/.agent/sprints/2026-05-24-m6b0r-real-fortran-emission/savepoints/patch16/calc_coef_w_post_step001.h5",
+    "/tmp/wrf_gpu2_m6b0r/.agent/sprints/2026-05-24-m6b0r-real-fortran-emission/savepoints/patch16/calc_coef_w_pre_step002.h5",
+    "/tmp/wrf_gpu2_m6b0r/.agent/sprints/2026-05-24-m6b0r-real-fortran-emission/savepoints/patch16/calc_coef_w_post_step002.h5",
+    "/tmp/wrf_gpu2_m6b0r/.agent/sprints/2026-05-24-m6b0r-real-fortran-emission/savepoints/patch16/calc_coef_w_pre_step005.h5",
+    "/tmp/wrf_gpu2_m6b0r/.agent/sprints/2026-05-24-m6b0r-real-fortran-emission/savepoints/patch16/calc_coef_w_post_step005.h5",
+    "/tmp/wrf_gpu2_m6b0r/.agent/sprints/2026-05-24-m6b0r-real-fortran-emission/savepoints/patch16/calc_coef_w_pre_step010.h5",
+    "/tmp/wrf_gpu2_m6b0r/.agent/sprints/2026-05-24-m6b0r-real-fortran-emission/savepoints/patch16/calc_coef_w_post_step010.h5"
+  ],
+  "run_id": "m6b0r-patch16-canary-d02-20260522T000000Z",
+  "sanitizer_mode": "off",
+  "source_path": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T072630Z/wrfout_d02_2026-05-22_00:00:00",
+  "source_sha256": "53c4455feb27094a4e823c73e6ef7aa5c8f75d0fd592aad637a71320972d0523",
+  "steps": [
+    1,
+    2,
+    5,
+    10
+  ],
+  "tier": "patch16",
+  "total_bytes": 1293556
+}

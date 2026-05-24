@@ -1,0 +1,12 @@
+&wrf_gpu
+ wrf_gpu_fallback_small_step_prep = .true.,
+ wrf_gpu_fallback_calc_p_rho      = .true.,
+ wrf_gpu_fallback_calc_coef_w     = .true.,
+ wrf_gpu_fallback_advance_uv      = .true.,
+ wrf_gpu_fallback_advance_mu_t    = .true.,
+ wrf_gpu_fallback_advance_w       = .true.,
+ wrf_gpu_fallback_small_step_finish = .true.,
+/
+
+! M6B0-R parity runs intentionally select the CPU module_small_step_em path.
+! GPU companion operators are deferred to M6B6+ after CPU savepoint parity.

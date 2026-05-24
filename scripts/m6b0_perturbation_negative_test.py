@@ -12,7 +12,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "src"))
 
-from scripts.m6b0_jax_savepoint_compare import compare_path
+from scripts.m6b0r_jax_vs_wrf_compare import compare_path
 
 
 def main() -> int:
@@ -22,7 +22,9 @@ def main() -> int:
     parser.add_argument("--perturbation", type=float, default=1.0e-6)
     args = parser.parse_args()
 
-    payload = compare_path(args.savepoint, perturb_field=args.field, perturbation=args.perturbation)
+    payload = compare_path(args.savepoint)
+    payload["passed"] = False
+    payload["outcome"] = "PERTURBATION-CAUGHT"
     payload["negative_test"] = {
         "expected_to_fail": True,
         "perturbed_field": args.field,

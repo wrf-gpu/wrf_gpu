@@ -1,0 +1,5 @@
+--- a/configure.wrf
++++ b/configure.wrf
+@@
+-CPPFLAGS        =    $(ARCHFLAGS) $(ENVCOMPDEFS) -I$(LIBINCLUDE) $(TRADFLAG)
++CPPFLAGS        =    $(ARCHFLAGS) $(ENVCOMPDEFS) -DWRF_SAVEPOINT -I$(LIBINCLUDE) $(TRADFLAG)
