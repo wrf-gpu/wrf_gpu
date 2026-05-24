@@ -196,6 +196,70 @@
       "rel": 1e-12,
       "ulp": 8,
       "accumulation_exception": "none"
+    },
+    "t_2ave": {
+      "units": "K",
+      "dtype": "float64",
+      "abs": 1e-10,
+      "rel": 1e-12,
+      "ulp": 8,
+      "accumulation_exception": "theta running average uses fixed WRF parity rule: (t_old + t_new) / 2"
+    },
+    "u_save": {
+      "units": "m s-1",
+      "dtype": "float64",
+      "abs": 1e-10,
+      "rel": 1e-12,
+      "ulp": 8,
+      "accumulation_exception": "none"
+    },
+    "v_save": {
+      "units": "m s-1",
+      "dtype": "float64",
+      "abs": 1e-10,
+      "rel": 1e-12,
+      "ulp": 8,
+      "accumulation_exception": "none"
+    },
+    "w_save": {
+      "units": "m s-1",
+      "dtype": "float64",
+      "abs": 1e-10,
+      "rel": 1e-12,
+      "ulp": 8,
+      "accumulation_exception": "none"
+    },
+    "t_save": {
+      "units": "K",
+      "dtype": "float64",
+      "abs": 1e-10,
+      "rel": 1e-12,
+      "ulp": 8,
+      "accumulation_exception": "none"
+    },
+    "ph_save": {
+      "units": "m2 s-2",
+      "dtype": "float64",
+      "abs": 1e-8,
+      "rel": 1e-12,
+      "ulp": 8,
+      "accumulation_exception": "none"
+    },
+    "mu_save": {
+      "units": "Pa",
+      "dtype": "float64",
+      "abs": 1e-8,
+      "rel": 1e-12,
+      "ulp": 8,
+      "accumulation_exception": "none"
+    },
+    "ww_save": {
+      "units": "Pa s-1",
+      "dtype": "float64",
+      "abs": 1e-9,
+      "rel": 1e-12,
+      "ulp": 8,
+      "accumulation_exception": "none"
     }
   }
 }

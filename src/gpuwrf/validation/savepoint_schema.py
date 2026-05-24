@@ -19,6 +19,16 @@ VALID_BOUNDARIES = {
     "small_step_prep_post",
     "advance_mu_t_pre",
     "advance_mu_t_post",
+    "t_2ave_update_pre",
+    "t_2ave_update_post",
+    "ww_update_pre",
+    "ww_update_post",
+    "muave_update_pre",
+    "muave_update_post",
+    "ph_tend_accumulate_pre",
+    "ph_tend_accumulate_post",
+    "substep_save_state_pre",
+    "substep_save_state_post",
     "advance_uv_post",
     "advance_w_rhs_ready",
     "advance_w_raw_w",
@@ -44,6 +54,7 @@ VALID_OPERATORS = {
     "calc_coef_w",
     "advance_mu_t",
     "advance_w",
+    "small_step_scratch",
 }
 TOLERANCE_LADDER_PATH = Path(__file__).with_name("tolerance_ladder.json")
 

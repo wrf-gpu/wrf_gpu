@@ -1,0 +1,594 @@
+{
+  "clean": {
+    "mu_save": {
+      "abs_threshold": 1e-08,
+      "actual_shape": [
+        3,
+        3
+      ],
+      "dtype": "float64",
+      "expected_shape": [
+        3,
+        3
+      ],
+      "location": [
+        0,
+        0
+      ],
+      "max_abs_delta": 0.0,
+      "passed": true,
+      "rel_threshold": 1e-12,
+      "tolerance": 1e-08,
+      "ulp_threshold": 8,
+      "units": "Pa"
+    },
+    "muave": {
+      "abs_threshold": 1e-08,
+      "actual_shape": [
+        3,
+        3
+      ],
+      "dtype": "float64",
+      "expected_shape": [
+        3,
+        3
+      ],
+      "location": [
+        0,
+        0
+      ],
+      "max_abs_delta": 0.0,
+      "passed": true,
+      "rel_threshold": 1e-12,
+      "tolerance": 1e-08,
+      "ulp_threshold": 8,
+      "units": "Pa"
+    },
+    "muts": {
+      "abs_threshold": 1e-08,
+      "actual_shape": [
+        3,
+        3
+      ],
+      "dtype": "float64",
+      "expected_shape": [
+        3,
+        3
+      ],
+      "location": [
+        0,
+        0
+      ],
+      "max_abs_delta": 0.0,
+      "passed": true,
+      "rel_threshold": 1e-12,
+      "tolerance": 9.669011450195312e-08,
+      "ulp_threshold": 16,
+      "units": "Pa"
+    },
+    "ph_save": {
+      "abs_threshold": 1e-08,
+      "actual_shape": [
+        45,
+        3,
+        3
+      ],
+      "dtype": "float64",
+      "expected_shape": [
+        45,
+        3,
+        3
+      ],
+      "location": [
+        0,
+        0,
+        0
+      ],
+      "max_abs_delta": 0.0,
+      "passed": true,
+      "rel_threshold": 1e-12,
+      "tolerance": 1e-08,
+      "ulp_threshold": 8,
+      "units": "m2 s-2"
+    },
+    "ph_tend": {
+      "abs_threshold": 1e-10,
+      "actual_shape": [
+        45,
+        3,
+        3
+      ],
+      "dtype": "float64",
+      "expected_shape": [
+        45,
+        3,
+        3
+      ],
+      "location": [
+        0,
+        0,
+        0
+      ],
+      "max_abs_delta": 0.0,
+      "passed": true,
+      "rel_threshold": 1e-12,
+      "tolerance": 1e-10,
+      "ulp_threshold": 8,
+      "units": "m2 s-3"
+    },
+    "t_2ave": {
+      "abs_threshold": 1e-10,
+      "actual_shape": [
+        44,
+        3,
+        3
+      ],
+      "dtype": "float64",
+      "expected_shape": [
+        44,
+        3,
+        3
+      ],
+      "location": [
+        0,
+        0,
+        0
+      ],
+      "max_abs_delta": 0.0,
+      "passed": true,
+      "rel_threshold": 1e-12,
+      "tolerance": 1.1329968946937317e-09,
+      "ulp_threshold": 8,
+      "units": "K"
+    },
+    "t_save": {
+      "abs_threshold": 1e-10,
+      "actual_shape": [
+        44,
+        3,
+        3
+      ],
+      "dtype": "float64",
+      "expected_shape": [
+        44,
+        3,
+        3
+      ],
+      "location": [
+        0,
+        0,
+        0
+      ],
+      "max_abs_delta": 0.0,
+      "passed": true,
+      "rel_threshold": 1e-12,
+      "tolerance": 2.4082680203444945e-09,
+      "ulp_threshold": 8,
+      "units": "K"
+    },
+    "u_save": {
+      "abs_threshold": 1e-10,
+      "actual_shape": [
+        44,
+        3,
+        4
+      ],
+      "dtype": "float64",
+      "expected_shape": [
+        44,
+        3,
+        4
+      ],
+      "location": [
+        0,
+        0,
+        0
+      ],
+      "max_abs_delta": 0.0,
+      "passed": true,
+      "rel_threshold": 1e-12,
+      "tolerance": 1e-10,
+      "ulp_threshold": 8,
+      "units": "m s-1"
+    },
+    "v_save": {
+      "abs_threshold": 1e-10,
+      "actual_shape": [
+        44,
+        4,
+        3
+      ],
+      "dtype": "float64",
+      "expected_shape": [
+        44,
+        4,
+        3
+      ],
+      "location": [
+        0,
+        0,
+        0
+      ],
+      "max_abs_delta": 0.0,
+      "passed": true,
+      "rel_threshold": 1e-12,
+      "tolerance": 1e-10,
+      "ulp_threshold": 8,
+      "units": "m s-1"
+    },
+    "w_save": {
+      "abs_threshold": 1e-10,
+      "actual_shape": [
+        45,
+        3,
+        3
+      ],
+      "dtype": "float64",
+      "expected_shape": [
+        45,
+        3,
+        3
+      ],
+      "location": [
+        0,
+        0,
+        0
+      ],
+      "max_abs_delta": 0.0,
+      "passed": true,
+      "rel_threshold": 1e-12,
+      "tolerance": 1e-10,
+      "ulp_threshold": 8,
+      "units": "m s-1"
+    },
+    "ww": {
+      "abs_threshold": 1e-09,
+      "actual_shape": [
+        45,
+        3,
+        3
+      ],
+      "dtype": "float64",
+      "expected_shape": [
+        45,
+        3,
+        3
+      ],
+      "location": [
+        0,
+        0,
+        0
+      ],
+      "max_abs_delta": 0.0,
+      "passed": true,
+      "rel_threshold": 1e-12,
+      "tolerance": 1e-09,
+      "ulp_threshold": 8,
+      "units": "Pa s-1"
+    },
+    "ww_save": {
+      "abs_threshold": 1e-09,
+      "actual_shape": [
+        45,
+        3,
+        3
+      ],
+      "dtype": "float64",
+      "expected_shape": [
+        45,
+        3,
+        3
+      ],
+      "location": [
+        0,
+        0,
+        0
+      ],
+      "max_abs_delta": 0.0,
+      "passed": true,
+      "rel_threshold": 1e-12,
+      "tolerance": 1e-09,
+      "ulp_threshold": 8,
+      "units": "Pa s-1"
+    }
+  },
+  "clean_self_compare_passed": true,
+  "operator": "small_step_scratch",
+  "passed": true,
+  "perturbed": {
+    "mu_save": {
+      "abs_threshold": 1e-08,
+      "actual_shape": [
+        3,
+        3
+      ],
+      "dtype": "float64",
+      "expected_shape": [
+        3,
+        3
+      ],
+      "location": [
+        0,
+        0
+      ],
+      "max_abs_delta": 1.999999312829459e-07,
+      "passed": false,
+      "rel_threshold": 1e-12,
+      "tolerance": 1e-08,
+      "ulp_threshold": 8,
+      "units": "Pa"
+    },
+    "muave": {
+      "abs_threshold": 1e-08,
+      "actual_shape": [
+        3,
+        3
+      ],
+      "dtype": "float64",
+      "expected_shape": [
+        3,
+        3
+      ],
+      "location": [
+        0,
+        0
+      ],
+      "max_abs_delta": 1.999999312829459e-07,
+      "passed": false,
+      "rel_threshold": 1e-12,
+      "tolerance": 1e-08,
+      "ulp_threshold": 8,
+      "units": "Pa"
+    },
+    "muts": {
+      "abs_threshold": 1e-08,
+      "actual_shape": [
+        3,
+        3
+      ],
+      "dtype": "float64",
+      "expected_shape": [
+        3,
+        3
+      ],
+      "location": [
+        0,
+        0
+      ],
+      "max_abs_delta": 1.933804014697671e-06,
+      "passed": false,
+      "rel_threshold": 1e-12,
+      "tolerance": 9.669011450195312e-08,
+      "ulp_threshold": 16,
+      "units": "Pa"
+    },
+    "ph_save": {
+      "abs_threshold": 1e-08,
+      "actual_shape": [
+        45,
+        3,
+        3
+      ],
+      "dtype": "float64",
+      "expected_shape": [
+        45,
+        3,
+        3
+      ],
+      "location": [
+        0,
+        0,
+        0
+      ],
+      "max_abs_delta": 2e-07,
+      "passed": false,
+      "rel_threshold": 1e-12,
+      "tolerance": 1e-08,
+      "ulp_threshold": 8,
+      "units": "m2 s-2"
+    },
+    "ph_tend": {
+      "abs_threshold": 1e-10,
+      "actual_shape": [
+        45,
+        3,
+        3
+      ],
+      "dtype": "float64",
+      "expected_shape": [
+        45,
+        3,
+        3
+      ],
+      "location": [
+        0,
+        0,
+        0
+      ],
+      "max_abs_delta": 2e-09,
+      "passed": false,
+      "rel_threshold": 1e-12,
+      "tolerance": 1e-10,
+      "ulp_threshold": 8,
+      "units": "m2 s-3"
+    },
+    "t_2ave": {
+      "abs_threshold": 1e-10,
+      "actual_shape": [
+        44,
+        3,
+        3
+      ],
+      "dtype": "float64",
+      "expected_shape": [
+        44,
+        3,
+        3
+      ],
+      "location": [
+        0,
+        0,
+        0
+      ],
+      "max_abs_delta": 2.265993792605059e-08,
+      "passed": false,
+      "rel_threshold": 1e-12,
+      "tolerance": 1.1329968946937317e-09,
+      "ulp_threshold": 8,
+      "units": "K"
+    },
+    "t_save": {
+      "abs_threshold": 1e-10,
+      "actual_shape": [
+        44,
+        3,
+        3
+      ],
+      "dtype": "float64",
+      "expected_shape": [
+        44,
+        3,
+        3
+      ],
+      "location": [
+        0,
+        0,
+        0
+      ],
+      "max_abs_delta": 4.816536058882548e-08,
+      "passed": false,
+      "rel_threshold": 1e-12,
+      "tolerance": 2.4082680203444945e-09,
+      "ulp_threshold": 8,
+      "units": "K"
+    },
+    "u_save": {
+      "abs_threshold": 1e-10,
+      "actual_shape": [
+        44,
+        3,
+        4
+      ],
+      "dtype": "float64",
+      "expected_shape": [
+        44,
+        3,
+        4
+      ],
+      "location": [
+        0,
+        0,
+        0
+      ],
+      "max_abs_delta": 1.9999999989472883e-09,
+      "passed": false,
+      "rel_threshold": 1e-12,
+      "tolerance": 1e-10,
+      "ulp_threshold": 8,
+      "units": "m s-1"
+    },
+    "v_save": {
+      "abs_threshold": 1e-10,
+      "actual_shape": [
+        44,
+        4,
+        3
+      ],
+      "dtype": "float64",
+      "expected_shape": [
+        44,
+        4,
+        3
+      ],
+      "location": [
+        0,
+        0,
+        0
+      ],
+      "max_abs_delta": 2.000000165480742e-09,
+      "passed": false,
+      "rel_threshold": 1e-12,
+      "tolerance": 1e-10,
+      "ulp_threshold": 8,
+      "units": "m s-1"
+    },
+    "w_save": {
+      "abs_threshold": 1e-10,
+      "actual_shape": [
+        45,
+        3,
+        3
+      ],
+      "dtype": "float64",
+      "expected_shape": [
+        45,
+        3,
+        3
+      ],
+      "location": [
+        0,
+        0,
+        0
+      ],
+      "max_abs_delta": 2e-09,
+      "passed": false,
+      "rel_threshold": 1e-12,
+      "tolerance": 1e-10,
+      "ulp_threshold": 8,
+      "units": "m s-1"
+    },
+    "ww": {
+      "abs_threshold": 1e-09,
+      "actual_shape": [
+        45,
+        3,
+        3
+      ],
+      "dtype": "float64",
+      "expected_shape": [
+        45,
+        3,
+        3
+      ],
+      "location": [
+        0,
+        0,
+        0
+      ],
+      "max_abs_delta": 2e-08,
+      "passed": false,
+      "rel_threshold": 1e-12,
+      "tolerance": 1e-09,
+      "ulp_threshold": 8,
+      "units": "Pa s-1"
+    },
+    "ww_save": {
+      "abs_threshold": 1e-09,
+      "actual_shape": [
+        45,
+        3,
+        3
+      ],
+      "dtype": "float64",
+      "expected_shape": [
+        45,
+        3,
+        3
+      ],
+      "location": [
+        0,
+        0,
+        0
+      ],
+      "max_abs_delta": 2e-08,
+      "passed": false,
+      "rel_threshold": 1e-12,
+      "tolerance": 1e-09,
+      "ulp_threshold": 8,
+      "units": "Pa s-1"
+    }
+  },
+  "sanitizer_mode": "off",
+  "scratch_perturbations_caught": true,
+  "source_path": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T072630Z/wrfout_d02_2026-05-22_00:00:00"
+}
