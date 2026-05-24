@@ -271,6 +271,10 @@ No optimization sprints before M6B5 passes. Then in order:
 - A sprint that introduces a synchronization point inside the operational timestep loop (that is not present in WRF for numerical reasons) must include an "operational-mode ablation" sub-sprint that demonstrates the synchronization can be lifted without breaking Tier-4. Otherwise, the synchronization is rejected.
 - Pilots / harness scaffolding that **cannot be optimized away** in operational mode are wrong by design and must be redesigned.
 - The "passes savepoint parity" claim must be paired with "operational-mode variant passes Tier-4 RMSE" before any M6 milestone is closed.
+- **(Critic Amendment #1)** Every parity sprint M6B1–B6 closeout MUST include an "Operational-compatibility" section classifying every new field / boundary / dtype / solver interface as **validation-only**, **operational-approved-with-evidence**, or **undecided**. Undecided items may not enter operational APIs.
+- **(Critic Amendment #2)** Operator fusion in operational mode: rule is "**must fuse OR carry a profiler-backed exception**." ADR-026 must include a compiled-region map with HLO/Nsight launch evidence for each RK and acoustic scan; an unfused operator boundary needs a documented profiler reason.
+- **(Critic Amendment #3)** **Savepoint HDF5 layout ≠ operational in-memory layout.** ADR-026 must include operational state layout, peak device memory, XLA temporary/aliasing evidence where available, and a projected 1 km headroom calculation (not a 1 km run — a memory projection).
+- **(Critic Amendment #4)** Precision authorization is **fail-closed**: ADR-026 may propose downcasts, but operational code may NOT depend on a new downcast until ADR-007 or a reviewed amendment authorizes that field/path with Tier-4 evidence attached. Sprint-local precision sub-documents do not become accidental production policy.
 
 ### 14.5.2 M6-perf-design sprint (gates M6B6 → M6b)
 
@@ -281,6 +285,11 @@ Between M6B6 (full coupled-step savepoint parity) and M6b (1h honest Canary d02)
 - If the operational mode cannot beat 28-rank CPU WRF within two perf-design sprints despite passing Tier-4, **the project re-opens whether the savepoint-first per-operator-parity framing was the right path**, with a full-state GPT critic + Gemini tiebreak (per `[[feedback_step_back_cadence]]`). This is the kill gate that prevents the project from shipping a correct-but-slow GPU dycore.
 
 Sprint contract pre-drafted at `.agent/sprints/2026-05-25-m6-perf-design/sprint-contract.md`; activates when M6B6 closes.
+
+**Critic Amendments #5 + #6** also apply to the M6-perf-design sprint:
+
+- **Amendment #5 (Tier-2 stability floors)**: M6-perf-design gates ALSO include Tier-2 invariants — finite/bounds audit, mass / dry-air continuity residual, water-budget residual where physics is active, conservation checks sensitive to solver/fusion changes. T2/U10/V10 are necessary but NOT sufficient. Speed cannot override invariant failure (precedent: ADR-007's prior failure).
+- **Amendment #6 (1.2× = tripwire only)**: The 1.2× wall-clock target is a **first-pass kill switch only**, not the project's GPU value-proposition acceptance. ADR-026 must publish a **measured path** to the actual M7 speed target (project research synthesis rejected ≤5–7× as structurally insufficient against an 8–10× target), including: dominant hotspots, launch-count budget, memory-traffic budget, precision plan, whether PCR/batched-Thomas is required to reach target. A 1.2× pass without a credible path to M7's target should NOT be advertised as meeting the original GPU-native value proposition.
 
 ### 14.6 ADR status updates (this section is operational; not constitutional re-vote)
 
