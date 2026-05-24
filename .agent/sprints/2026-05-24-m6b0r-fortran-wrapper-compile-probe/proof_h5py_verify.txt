@@ -1,0 +1,14 @@
+Opening /tmp/wrapprobe_test.h5
+  [OK  ] dataset 'data' present
+  [OK  ] shape == (4,4,4) got (4, 4, 4)
+  [OK  ] dtype == float64 got float64
+  [OK  ] byteorder native/little got '<'
+  [OK  ] values bitwise equal to fortran fill (reversed-axis view)
+  attrs: ['acstep', 'name', 'rkstage', 'schema_version', 'stagger', 'units']
+  [OK  ] attr name == 'probe_field' (got 'probe_field')
+  [OK  ] attr units == 'arbitrary' (got 'arbitrary')
+  [OK  ] attr stagger == 'C' (got 'C')
+  [OK  ] attr rkstage == 1
+  [OK  ] attr acstep == 0
+  [OK  ] attr schema_version == 1
+RESULT: PASS — Fortran->HDF5->h5py round-trip clean
