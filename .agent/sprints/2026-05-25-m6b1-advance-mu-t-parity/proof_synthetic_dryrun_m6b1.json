@@ -1,0 +1,32 @@
+{
+  "clean": {
+    "mu": {
+      "max_abs_delta": 0.0,
+      "passed": true,
+      "tolerance": 1e-08
+    },
+    "muts": {
+      "max_abs_delta": 0.0,
+      "passed": true,
+      "tolerance": 9.669011450195312e-08
+    }
+  },
+  "clean_self_compare_passed": true,
+  "mu_and_muts_perturbations_caught": true,
+  "operator": "advance_mu_t",
+  "passed": true,
+  "perturbed": {
+    "mu": {
+      "caught": true,
+      "max_abs_delta": 1.999999312829459e-07,
+      "tolerance": 1e-08
+    },
+    "muts": {
+      "caught": true,
+      "max_abs_delta": 1.933804014697671e-06,
+      "tolerance": 9.669011450195312e-08
+    }
+  },
+  "sanitizer_mode": "off",
+  "source_path": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T072630Z/wrfout_d02_2026-05-22_00:00:00"
+}

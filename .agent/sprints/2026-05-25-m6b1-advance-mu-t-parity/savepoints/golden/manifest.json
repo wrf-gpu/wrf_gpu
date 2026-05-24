@@ -1,0 +1,91 @@
+{
+  "attrs": {
+    "dt": 6.0,
+    "dx": 3000.0,
+    "dy": 3000.0,
+    "epssm": 0.1,
+    "halo_slice_x": [
+      79,
+      145
+    ],
+    "halo_slice_y": [
+      25,
+      66
+    ],
+    "mapfac_max": 0.9994948506355286,
+    "mapfac_min": 0.9991050362586975,
+    "run_id": "m6b1-golden-canary-d02-20260522T000000Z-y26x080-64x40x44",
+    "target_slice_x": [
+      80,
+      144
+    ],
+    "target_slice_y": [
+      26,
+      66
+    ]
+  },
+  "cpu_operator_path": true,
+  "direct_relinked_wrf": false,
+  "file_sha256": {
+    "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/golden/advance_mu_t_post_step001.h5": "e28f8a49a4c5c50ba9637bda83de9bce5889eed65c5d50d43b12ecd72b9ae98a",
+    "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/golden/advance_mu_t_post_step002.h5": "6a9d44e7283f8b5acf0e6d561aa20a8dd6393f7cdaa81f7e3e9b709599aa8731",
+    "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/golden/advance_mu_t_post_step003.h5": "f1d1b2a47ee6a2d22c81c49bec01af93c82db9791165368420d0577f5b48a336",
+    "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/golden/advance_mu_t_post_step004.h5": "8843819191a41cb59edbc467ec542e3eb9ad68207f54407d33ce4179ac5cedb2",
+    "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/golden/advance_mu_t_post_step005.h5": "eeca6c2af4e6fdd9091cc4f8c042b753dc1845275367359e1873653d4d9ba995",
+    "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/golden/advance_mu_t_post_step006.h5": "610f4b39f30a111c29763496843276bc3f24058fe16767bdb2e2f60424ed6b9e",
+    "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/golden/advance_mu_t_post_step007.h5": "be6d7a69f47f074d88b4c564bc4b1531dbb70f7cfad5e41b82912c3e3b6ec428",
+    "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/golden/advance_mu_t_post_step008.h5": "55013f075a36ac5022539114809e11012f84af43c3c3e151498a42d3f41c361c",
+    "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/golden/advance_mu_t_post_step009.h5": "987445f11e0eef11c2194b8e4b7e365971921ccd1c795a3c05798563608f740c",
+    "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/golden/advance_mu_t_post_step010.h5": "17491bd8aaadf6b5a13abfa0a18ec0c54c5f19e7869601e01c0fe646b46367a8",
+    "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/golden/advance_mu_t_pre_step001.h5": "46b7f1c413bd2a15ce9b3e66ba31121d46b2e976b1ddabfbdfd903da02d498f4",
+    "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/golden/advance_mu_t_pre_step002.h5": "5623f1e5253ce905afa9842a455c149f823c9cfc1f7da7bca4dbe17f33f38e6d",
+    "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/golden/advance_mu_t_pre_step003.h5": "32db0020c6af4f0ebf0ae04e4e8c22b0bcf6848cb853d7c3ceacb8423976ce77",
+    "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/golden/advance_mu_t_pre_step004.h5": "3c0c45e7fc224fb3c80cc0dde41b91cb97049d444e736d504ceb494a11712748",
+    "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/golden/advance_mu_t_pre_step005.h5": "cb80527eaa85f6002fba0b8df7715d5b17f5b03a1c7a3f5f1ce95742981afcfe",
+    "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/golden/advance_mu_t_pre_step006.h5": "57caf2a0e0075362a6a6df6a08c3b3ca8a5d22f131852c1cf0f9633f3982e57e",
+    "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/golden/advance_mu_t_pre_step007.h5": "6e3a83720a6d97650c1eb6dfe18bdf9b08f4cae589530b48b8661af0352af366",
+    "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/golden/advance_mu_t_pre_step008.h5": "6f3c5beaa4322f0d65cc7a32a60c3fcf88a195221767aa842a5fc95db1ea4d30",
+    "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/golden/advance_mu_t_pre_step009.h5": "13f5879599c3c8b5977a1bd1e5a1d9e7068ba468a97af4a18dfe3f3f80010de7",
+    "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/golden/advance_mu_t_pre_step010.h5": "1c8a01598cdc4cf86db99e87fd4cfbc4cdcb52e8eaec5925a4b21044bbd1dad4"
+  },
+  "files": [
+    "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/golden/advance_mu_t_pre_step001.h5",
+    "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/golden/advance_mu_t_post_step001.h5",
+    "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/golden/advance_mu_t_pre_step002.h5",
+    "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/golden/advance_mu_t_post_step002.h5",
+    "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/golden/advance_mu_t_pre_step003.h5",
+    "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/golden/advance_mu_t_post_step003.h5",
+    "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/golden/advance_mu_t_pre_step004.h5",
+    "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/golden/advance_mu_t_post_step004.h5",
+    "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/golden/advance_mu_t_pre_step005.h5",
+    "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/golden/advance_mu_t_post_step005.h5",
+    "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/golden/advance_mu_t_pre_step006.h5",
+    "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/golden/advance_mu_t_post_step006.h5",
+    "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/golden/advance_mu_t_pre_step007.h5",
+    "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/golden/advance_mu_t_post_step007.h5",
+    "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/golden/advance_mu_t_pre_step008.h5",
+    "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/golden/advance_mu_t_post_step008.h5",
+    "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/golden/advance_mu_t_pre_step009.h5",
+    "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/golden/advance_mu_t_post_step009.h5",
+    "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/golden/advance_mu_t_pre_step010.h5",
+    "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/golden/advance_mu_t_post_step010.h5"
+  ],
+  "run_id": "m6b1-golden-canary-d02-20260522T000000Z-y26x080-64x40x44",
+  "sanitizer_mode": "off",
+  "source_path": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T072630Z/wrfout_d02_2026-05-22_00:00:00",
+  "source_sha256": "53c4455feb27094a4e823c73e6ef7aa5c8f75d0fd592aad637a71320972d0523",
+  "steps": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10
+  ],
+  "tier": "golden",
+  "total_bytes": 76046718
+}

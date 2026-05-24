@@ -1,0 +1,91 @@
+{
+  "attrs": {
+    "dt": 6.0,
+    "dx": 3000.0,
+    "dy": 3000.0,
+    "epssm": 0.1,
+    "halo_slice_x": [
+      78,
+      81
+    ],
+    "halo_slice_y": [
+      31,
+      34
+    ],
+    "mapfac_max": 0.9991570115089417,
+    "mapfac_min": 0.9991433620452881,
+    "run_id": "m6b1-column-canary-d02-20260522T000000Z",
+    "target_slice_x": [
+      79,
+      80
+    ],
+    "target_slice_y": [
+      32,
+      33
+    ]
+  },
+  "cpu_operator_path": true,
+  "direct_relinked_wrf": false,
+  "file_sha256": {
+    "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/column/advance_mu_t_post_step001.h5": "982bcf289bedaec31d6f0afcd2d8ab53fff8249da096c2a6484bbf6ef3908c90",
+    "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/column/advance_mu_t_post_step002.h5": "7811c7bf628d6fd1c4a6f700fe9818ff976ca3c0ef014ed9fe52c4a2035b9f04",
+    "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/column/advance_mu_t_post_step003.h5": "1bac6de53c99300905f565d12c02b0d429fe621caa69af1e58ba39a4a5e0856f",
+    "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/column/advance_mu_t_post_step004.h5": "987d8da3ff8cb9e7ed4b3182764dcafaff2e08cbd2b17ccd78e49a4ee17c853f",
+    "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/column/advance_mu_t_post_step005.h5": "ca328ecda12607c0e1a4861d2d1fe6f90b6d07dc9140f03d212f94fccf5ab4a2",
+    "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/column/advance_mu_t_post_step006.h5": "1a9c7858aeb0d49831051b3dbd9cc5f423ae52db3b7d14c05c384001e61e921f",
+    "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/column/advance_mu_t_post_step007.h5": "ac4c6203e1b08af61a08378492ff315c76ac7bcf94deeaa0a009ac43609a9431",
+    "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/column/advance_mu_t_post_step008.h5": "ef95b0955d7cdf7387baae2bdbff236d5818bd9842f7eb8d4ab6413746303696",
+    "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/column/advance_mu_t_post_step009.h5": "616999d52ae133665cddb477c0d5e484aafc6fdfd8aee94adcd33e944b46e9d1",
+    "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/column/advance_mu_t_post_step010.h5": "bc114cd7149d874c47ea8fcf61afc0e1721445f79460b7b802cefe8ea4c43c53",
+    "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/column/advance_mu_t_pre_step001.h5": "db0c04ddcfb647ba1d52ffed823ac964db63c022671d7905962ecac8f33b6063",
+    "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/column/advance_mu_t_pre_step002.h5": "6d0a355d21b3b52c3e68062cac7a3d9e11c48353b10b4d3d7e0ccd3412a944e2",
+    "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/column/advance_mu_t_pre_step003.h5": "7d6c31d363773e5613d9be3f847f78d0751b6203d2f1d2fcd5fcb04a419dce21",
+    "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/column/advance_mu_t_pre_step004.h5": "153fda0f63b68ab40ab04749fc1480d71f5fa66912f3bc20977369a70dffca58",
+    "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/column/advance_mu_t_pre_step005.h5": "02d6cb615fb7146a5729b144e4dd740a65d7fa52748f105d8098b277da2b6252",
+    "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/column/advance_mu_t_pre_step006.h5": "3ff81a3ff06e40d9a3f6b1f2a035d498e537b741436ac58841402956fd234c0e",
+    "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/column/advance_mu_t_pre_step007.h5": "841080ba4b1b39ab54ea5fe455668e28d949b4bcaa354a7a1889d0240d75b56f",
+    "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/column/advance_mu_t_pre_step008.h5": "36426aee8133ab93922884bd28d6618f2183785603c86141c729e62aa56d9bb9",
+    "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/column/advance_mu_t_pre_step009.h5": "822a44bf7be94da3690e393385699a3203529de88b3407c8c4162ef0a7716dce",
+    "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/column/advance_mu_t_pre_step010.h5": "df6043dbdc1f7930cb2b26cc3f76b2676c7b3ea83c5ac826226af4416b9b4fb4"
+  },
+  "files": [
+    "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/column/advance_mu_t_pre_step001.h5",
+    "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/column/advance_mu_t_post_step001.h5",
+    "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/column/advance_mu_t_pre_step002.h5",
+    "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/column/advance_mu_t_post_step002.h5",
+    "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/column/advance_mu_t_pre_step003.h5",
+    "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/column/advance_mu_t_post_step003.h5",
+    "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/column/advance_mu_t_pre_step004.h5",
+    "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/column/advance_mu_t_post_step004.h5",
+    "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/column/advance_mu_t_pre_step005.h5",
+    "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/column/advance_mu_t_post_step005.h5",
+    "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/column/advance_mu_t_pre_step006.h5",
+    "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/column/advance_mu_t_post_step006.h5",
+    "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/column/advance_mu_t_pre_step007.h5",
+    "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/column/advance_mu_t_post_step007.h5",
+    "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/column/advance_mu_t_pre_step008.h5",
+    "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/column/advance_mu_t_post_step008.h5",
+    "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/column/advance_mu_t_pre_step009.h5",
+    "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/column/advance_mu_t_post_step009.h5",
+    "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/column/advance_mu_t_pre_step010.h5",
+    "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/column/advance_mu_t_post_step010.h5"
+  ],
+  "run_id": "m6b1-column-canary-d02-20260522T000000Z",
+  "sanitizer_mode": "off",
+  "source_path": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T072630Z/wrfout_d02_2026-05-22_00:00:00",
+  "source_sha256": "53c4455feb27094a4e823c73e6ef7aa5c8f75d0fd592aad637a71320972d0523",
+  "steps": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10
+  ],
+  "tier": "column",
+  "total_bytes": 1782112
+}
