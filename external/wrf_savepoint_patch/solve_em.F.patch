@@ -55,4 +55,25 @@
 +#endif
  #endif
         ENDIF
- 
+
+@@
++#ifdef WRF_SAVEPOINT
++         CALL sp_acoustic_substep_boundary()
++         CALL sp_rk_stage_boundary()
++#endif
+@@
++#ifdef WRF_SAVEPOINT
++         CALL sp_advance_mu_t_pre(rk_step, iteration, grid%mu_2, grid%mut, grid%mudf, &
++                          grid%muts, muave, grid%ww, grid%t_2)
++#endif
+          CALL advance_mu_t( grid%ww, ww1, grid%u_2, grid%u_save, grid%v_2, grid%v_save, &
+                           grid%mu_2, grid%mut, muave, grid%muts, grid%muu, grid%muv,    &
+                           grid%mudf,                                                    &
+@@
+                           grid%i_start(ij), grid%i_end(ij),  &
+                           grid%j_start(ij), grid%j_end(ij),  &
+                           k_start    , k_end                )
++#ifdef WRF_SAVEPOINT
++         CALL sp_advance_mu_t_post(rk_step, iteration, grid%mu_2, grid%mut, grid%mudf, &
++                          grid%muts, muave, grid%ww, grid%t_2, ph_tend)
++#endif

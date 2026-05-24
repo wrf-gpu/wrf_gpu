@@ -1,0 +1,1853 @@
+{
+  "operator": "advance_mu_t",
+  "outcome": "PASS",
+  "passed": true,
+  "tiers": {
+    "column": {
+      "manifest": {
+        "attrs": {
+          "dt": 6.0,
+          "dx": 3000.0,
+          "dy": 3000.0,
+          "epssm": 0.1,
+          "halo_slice_x": [
+            78,
+            81
+          ],
+          "halo_slice_y": [
+            31,
+            34
+          ],
+          "mapfac_max": 0.9991570115089417,
+          "mapfac_min": 0.9991433620452881,
+          "run_id": "m6b1-column-canary-d02-20260522T000000Z",
+          "target_slice_x": [
+            79,
+            80
+          ],
+          "target_slice_y": [
+            32,
+            33
+          ]
+        },
+        "cpu_operator_path": true,
+        "direct_relinked_wrf": false,
+        "file_sha256": {
+          "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/column/advance_mu_t_post_step001.h5": "b34b0021369ec9bf671b74384ad7deed941232bb88451f07917ef371b5a8b9cb",
+          "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/column/advance_mu_t_post_step002.h5": "b74ceac33b8df033f8a5125d78a7b648a20e9244840e47f4a1a6e464e207a472",
+          "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/column/advance_mu_t_post_step003.h5": "6936646e0555f7ac358095196eedcc4e29388521639ce0ac0e047094c8f925a7",
+          "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/column/advance_mu_t_post_step004.h5": "e8da0e85b985c33f4575896c20e3a7c8cefde5f5bc108038637a237c1135d8a5",
+          "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/column/advance_mu_t_post_step005.h5": "48c92b9ff6a3a287723c2753bf3be0ce9f07ce19be5913353f807568979f2f67",
+          "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/column/advance_mu_t_post_step006.h5": "d66df3309d9aea5f8d1df544257a80075ad2f01a0b3b6d37777a1d29278c1dfd",
+          "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/column/advance_mu_t_post_step007.h5": "69c25883ddbd4706a3bd6d597354ef4a11a7d805a498c3f77fd7138533899f41",
+          "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/column/advance_mu_t_post_step008.h5": "92b17f98851a8693f1c6c88b4f6fe1ba473023c11a143ade30e956fbc0c0017d",
+          "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/column/advance_mu_t_post_step009.h5": "74cb343eac35b08b83d7c967312f87749a1231e2055e69b98d9b733e04dba1b0",
+          "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/column/advance_mu_t_post_step010.h5": "61272cfe98a0acb6b3ea75f22c512395388b14a190423aaed8deeda32a12bfa9",
+          "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/column/advance_mu_t_pre_step001.h5": "aa56f10db91a6da91927b640a7de080da8be2142ad9a39c3dd816da26f02b5ec",
+          "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/column/advance_mu_t_pre_step002.h5": "18639cfa99c1e90b982f12c12e241262dec302e2bff35e0390142f62cd4d387b",
+          "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/column/advance_mu_t_pre_step003.h5": "9047aa59fc30070245438c34e97275c18e21d81728bc4038fec8326398c286f2",
+          "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/column/advance_mu_t_pre_step004.h5": "f46e2ed2e659616f14e69d947051b196faa3216f09cfee2e24227d0b3976189b",
+          "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/column/advance_mu_t_pre_step005.h5": "2011396048fbfaf203fb24d2da1eb9e98a0f26a6ee80e5714b991790b6f0c107",
+          "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/column/advance_mu_t_pre_step006.h5": "8029b07d87151be569db3a7fa9154447789ad46a73cda33eae9f226a6b08957a",
+          "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/column/advance_mu_t_pre_step007.h5": "34c54e43c74694d89a757ec0efb3f2b0ecaf4cfbddb572a1d9d4a56f9106f91e",
+          "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/column/advance_mu_t_pre_step008.h5": "379e6db717a1abf14103a985405514962832b70cf58627da4c312c8bd15f4189",
+          "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/column/advance_mu_t_pre_step009.h5": "48aa99ae53aa69179d074c3f3635d915e9048c9014ef2680d43f0f3fcbf47f99",
+          "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/column/advance_mu_t_pre_step010.h5": "572a4194a9495e50d255db233814e24cda6224a13361265608a1b6203d593627"
+        },
+        "files": [
+          "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/column/advance_mu_t_pre_step001.h5",
+          "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/column/advance_mu_t_post_step001.h5",
+          "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/column/advance_mu_t_pre_step002.h5",
+          "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/column/advance_mu_t_post_step002.h5",
+          "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/column/advance_mu_t_pre_step003.h5",
+          "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/column/advance_mu_t_post_step003.h5",
+          "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/column/advance_mu_t_pre_step004.h5",
+          "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/column/advance_mu_t_post_step004.h5",
+          "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/column/advance_mu_t_pre_step005.h5",
+          "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/column/advance_mu_t_post_step005.h5",
+          "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/column/advance_mu_t_pre_step006.h5",
+          "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/column/advance_mu_t_post_step006.h5",
+          "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/column/advance_mu_t_pre_step007.h5",
+          "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/column/advance_mu_t_post_step007.h5",
+          "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/column/advance_mu_t_pre_step008.h5",
+          "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/column/advance_mu_t_post_step008.h5",
+          "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/column/advance_mu_t_pre_step009.h5",
+          "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/column/advance_mu_t_post_step009.h5",
+          "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/column/advance_mu_t_pre_step010.h5",
+          "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/column/advance_mu_t_post_step010.h5"
+        ],
+        "run_id": "m6b1-column-canary-d02-20260522T000000Z",
+        "sanitizer_mode": "off",
+        "source_path": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T072630Z/wrfout_d02_2026-05-22_00:00:00",
+        "source_sha256": "53c4455feb27094a4e823c73e6ef7aa5c8f75d0fd592aad637a71320972d0523",
+        "steps": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10
+        ],
+        "tier": "column",
+        "total_bytes": 1782112
+      },
+      "operator": "advance_mu_t",
+      "outcome": "PASS",
+      "passed": true,
+      "results": [
+        {
+          "boundary": "advance_mu_t_post",
+          "fields": {
+            "mu": {
+              "abs_threshold": 1e-08,
+              "actual_shape": [
+                3,
+                3
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                3,
+                3
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-08,
+              "ulp_threshold": 8,
+              "units": "Pa"
+            },
+            "muave": {
+              "abs_threshold": 1e-08,
+              "actual_shape": [
+                3,
+                3
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                3,
+                3
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-08,
+              "ulp_threshold": 8,
+              "units": "Pa"
+            },
+            "mudf": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                3,
+                3
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                3,
+                3
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-10,
+              "ulp_threshold": 8,
+              "units": "Pa s-1"
+            },
+            "muts": {
+              "abs_threshold": 1e-08,
+              "actual_shape": [
+                3,
+                3
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                3,
+                3
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 9.669011450195312e-08,
+              "ulp_threshold": 16,
+              "units": "Pa"
+            },
+            "ph_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                45,
+                3,
+                3
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                3,
+                3
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-10,
+              "ulp_threshold": 8,
+              "units": "m2 s-3"
+            },
+            "theta": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                3,
+                3
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                3,
+                3
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 2.408268020344494e-09,
+              "ulp_threshold": 8,
+              "units": "K"
+            },
+            "ww": {
+              "abs_threshold": 1e-09,
+              "actual_shape": [
+                45,
+                3,
+                3
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                3,
+                3
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-09,
+              "ulp_threshold": 8,
+              "units": "Pa s-1"
+            }
+          },
+          "operator": "advance_mu_t",
+          "passed": true,
+          "path": "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/column/advance_mu_t_post_step001.h5",
+          "run_id": "m6b1-column-canary-d02-20260522T000000Z-step001-advance_mu_t_post",
+          "step": 1,
+          "tier": "column"
+        },
+        {
+          "boundary": "advance_mu_t_post",
+          "fields": {
+            "mu": {
+              "abs_threshold": 1e-08,
+              "actual_shape": [
+                3,
+                3
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                3,
+                3
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-08,
+              "ulp_threshold": 8,
+              "units": "Pa"
+            },
+            "muave": {
+              "abs_threshold": 1e-08,
+              "actual_shape": [
+                3,
+                3
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                3,
+                3
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-08,
+              "ulp_threshold": 8,
+              "units": "Pa"
+            },
+            "mudf": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                3,
+                3
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                3,
+                3
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-10,
+              "ulp_threshold": 8,
+              "units": "Pa s-1"
+            },
+            "muts": {
+              "abs_threshold": 1e-08,
+              "actual_shape": [
+                3,
+                3
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                3,
+                3
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 9.669011450195312e-08,
+              "ulp_threshold": 16,
+              "units": "Pa"
+            },
+            "ph_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                45,
+                3,
+                3
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                3,
+                3
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-10,
+              "ulp_threshold": 8,
+              "units": "m2 s-3"
+            },
+            "theta": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                3,
+                3
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                3,
+                3
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 4.9588102716460194e-09,
+              "ulp_threshold": 8,
+              "units": "K"
+            },
+            "ww": {
+              "abs_threshold": 1e-09,
+              "actual_shape": [
+                45,
+                3,
+                3
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                3,
+                3
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-09,
+              "ulp_threshold": 8,
+              "units": "Pa s-1"
+            }
+          },
+          "operator": "advance_mu_t",
+          "passed": true,
+          "path": "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/column/advance_mu_t_post_step002.h5",
+          "run_id": "m6b1-column-canary-d02-20260522T000000Z-step002-advance_mu_t_post",
+          "step": 2,
+          "tier": "column"
+        },
+        {
+          "boundary": "advance_mu_t_post",
+          "fields": {
+            "mu": {
+              "abs_threshold": 1e-08,
+              "actual_shape": [
+                3,
+                3
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                3,
+                3
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-08,
+              "ulp_threshold": 8,
+              "units": "Pa"
+            },
+            "muave": {
+              "abs_threshold": 1e-08,
+              "actual_shape": [
+                3,
+                3
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                3,
+                3
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-08,
+              "ulp_threshold": 8,
+              "units": "Pa"
+            },
+            "mudf": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                3,
+                3
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                3,
+                3
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-10,
+              "ulp_threshold": 8,
+              "units": "Pa s-1"
+            },
+            "muts": {
+              "abs_threshold": 1e-08,
+              "actual_shape": [
+                3,
+                3
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                3,
+                3
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 9.669011450195312e-08,
+              "ulp_threshold": 16,
+              "units": "Pa"
+            },
+            "ph_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                45,
+                3,
+                3
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                3,
+                3
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-10,
+              "ulp_threshold": 8,
+              "units": "m2 s-3"
+            },
+            "theta": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                3,
+                3
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                3,
+                3
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 7.509352522947545e-09,
+              "ulp_threshold": 8,
+              "units": "K"
+            },
+            "ww": {
+              "abs_threshold": 1e-09,
+              "actual_shape": [
+                45,
+                3,
+                3
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                3,
+                3
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-09,
+              "ulp_threshold": 8,
+              "units": "Pa s-1"
+            }
+          },
+          "operator": "advance_mu_t",
+          "passed": true,
+          "path": "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/column/advance_mu_t_post_step003.h5",
+          "run_id": "m6b1-column-canary-d02-20260522T000000Z-step003-advance_mu_t_post",
+          "step": 3,
+          "tier": "column"
+        },
+        {
+          "boundary": "advance_mu_t_post",
+          "fields": {
+            "mu": {
+              "abs_threshold": 1e-08,
+              "actual_shape": [
+                3,
+                3
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                3,
+                3
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-08,
+              "ulp_threshold": 8,
+              "units": "Pa"
+            },
+            "muave": {
+              "abs_threshold": 1e-08,
+              "actual_shape": [
+                3,
+                3
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                3,
+                3
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-08,
+              "ulp_threshold": 8,
+              "units": "Pa"
+            },
+            "mudf": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                3,
+                3
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                3,
+                3
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-10,
+              "ulp_threshold": 8,
+              "units": "Pa s-1"
+            },
+            "muts": {
+              "abs_threshold": 1e-08,
+              "actual_shape": [
+                3,
+                3
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                3,
+                3
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 9.669011450195312e-08,
+              "ulp_threshold": 16,
+              "units": "Pa"
+            },
+            "ph_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                45,
+                3,
+                3
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                3,
+                3
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-10,
+              "ulp_threshold": 8,
+              "units": "m2 s-3"
+            },
+            "theta": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                3,
+                3
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                3,
+                3
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1.005989477424907e-08,
+              "ulp_threshold": 8,
+              "units": "K"
+            },
+            "ww": {
+              "abs_threshold": 1e-09,
+              "actual_shape": [
+                45,
+                3,
+                3
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                3,
+                3
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-09,
+              "ulp_threshold": 8,
+              "units": "Pa s-1"
+            }
+          },
+          "operator": "advance_mu_t",
+          "passed": true,
+          "path": "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/column/advance_mu_t_post_step004.h5",
+          "run_id": "m6b1-column-canary-d02-20260522T000000Z-step004-advance_mu_t_post",
+          "step": 4,
+          "tier": "column"
+        },
+        {
+          "boundary": "advance_mu_t_post",
+          "fields": {
+            "mu": {
+              "abs_threshold": 1e-08,
+              "actual_shape": [
+                3,
+                3
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                3,
+                3
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-08,
+              "ulp_threshold": 8,
+              "units": "Pa"
+            },
+            "muave": {
+              "abs_threshold": 1e-08,
+              "actual_shape": [
+                3,
+                3
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                3,
+                3
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-08,
+              "ulp_threshold": 8,
+              "units": "Pa"
+            },
+            "mudf": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                3,
+                3
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                3,
+                3
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-10,
+              "ulp_threshold": 8,
+              "units": "Pa s-1"
+            },
+            "muts": {
+              "abs_threshold": 1e-08,
+              "actual_shape": [
+                3,
+                3
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                3,
+                3
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 9.669011450195312e-08,
+              "ulp_threshold": 16,
+              "units": "Pa"
+            },
+            "ph_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                45,
+                3,
+                3
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                3,
+                3
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-10,
+              "ulp_threshold": 8,
+              "units": "m2 s-3"
+            },
+            "theta": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                3,
+                3
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                3,
+                3
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1.2610437025550595e-08,
+              "ulp_threshold": 8,
+              "units": "K"
+            },
+            "ww": {
+              "abs_threshold": 1e-09,
+              "actual_shape": [
+                45,
+                3,
+                3
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                3,
+                3
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-09,
+              "ulp_threshold": 8,
+              "units": "Pa s-1"
+            }
+          },
+          "operator": "advance_mu_t",
+          "passed": true,
+          "path": "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/column/advance_mu_t_post_step005.h5",
+          "run_id": "m6b1-column-canary-d02-20260522T000000Z-step005-advance_mu_t_post",
+          "step": 5,
+          "tier": "column"
+        },
+        {
+          "boundary": "advance_mu_t_post",
+          "fields": {
+            "mu": {
+              "abs_threshold": 1e-08,
+              "actual_shape": [
+                3,
+                3
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                3,
+                3
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-08,
+              "ulp_threshold": 8,
+              "units": "Pa"
+            },
+            "muave": {
+              "abs_threshold": 1e-08,
+              "actual_shape": [
+                3,
+                3
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                3,
+                3
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-08,
+              "ulp_threshold": 8,
+              "units": "Pa"
+            },
+            "mudf": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                3,
+                3
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                3,
+                3
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-10,
+              "ulp_threshold": 8,
+              "units": "Pa s-1"
+            },
+            "muts": {
+              "abs_threshold": 1e-08,
+              "actual_shape": [
+                3,
+                3
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                3,
+                3
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 9.669011450195312e-08,
+              "ulp_threshold": 16,
+              "units": "Pa"
+            },
+            "ph_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                45,
+                3,
+                3
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                3,
+                3
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-10,
+              "ulp_threshold": 8,
+              "units": "m2 s-3"
+            },
+            "theta": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                3,
+                3
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                3,
+                3
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1.5160979276852122e-08,
+              "ulp_threshold": 8,
+              "units": "K"
+            },
+            "ww": {
+              "abs_threshold": 1e-09,
+              "actual_shape": [
+                45,
+                3,
+                3
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                3,
+                3
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-09,
+              "ulp_threshold": 8,
+              "units": "Pa s-1"
+            }
+          },
+          "operator": "advance_mu_t",
+          "passed": true,
+          "path": "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/column/advance_mu_t_post_step006.h5",
+          "run_id": "m6b1-column-canary-d02-20260522T000000Z-step006-advance_mu_t_post",
+          "step": 6,
+          "tier": "column"
+        },
+        {
+          "boundary": "advance_mu_t_post",
+          "fields": {
+            "mu": {
+              "abs_threshold": 1e-08,
+              "actual_shape": [
+                3,
+                3
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                3,
+                3
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-08,
+              "ulp_threshold": 8,
+              "units": "Pa"
+            },
+            "muave": {
+              "abs_threshold": 1e-08,
+              "actual_shape": [
+                3,
+                3
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                3,
+                3
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-08,
+              "ulp_threshold": 8,
+              "units": "Pa"
+            },
+            "mudf": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                3,
+                3
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                3,
+                3
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-10,
+              "ulp_threshold": 8,
+              "units": "Pa s-1"
+            },
+            "muts": {
+              "abs_threshold": 1e-08,
+              "actual_shape": [
+                3,
+                3
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                3,
+                3
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 9.669011450195312e-08,
+              "ulp_threshold": 16,
+              "units": "Pa"
+            },
+            "ph_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                45,
+                3,
+                3
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                3,
+                3
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-10,
+              "ulp_threshold": 8,
+              "units": "m2 s-3"
+            },
+            "theta": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                3,
+                3
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                3,
+                3
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1.7711521528153646e-08,
+              "ulp_threshold": 8,
+              "units": "K"
+            },
+            "ww": {
+              "abs_threshold": 1e-09,
+              "actual_shape": [
+                45,
+                3,
+                3
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                3,
+                3
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-09,
+              "ulp_threshold": 8,
+              "units": "Pa s-1"
+            }
+          },
+          "operator": "advance_mu_t",
+          "passed": true,
+          "path": "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/column/advance_mu_t_post_step007.h5",
+          "run_id": "m6b1-column-canary-d02-20260522T000000Z-step007-advance_mu_t_post",
+          "step": 7,
+          "tier": "column"
+        },
+        {
+          "boundary": "advance_mu_t_post",
+          "fields": {
+            "mu": {
+              "abs_threshold": 1e-08,
+              "actual_shape": [
+                3,
+                3
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                3,
+                3
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-08,
+              "ulp_threshold": 8,
+              "units": "Pa"
+            },
+            "muave": {
+              "abs_threshold": 1e-08,
+              "actual_shape": [
+                3,
+                3
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                3,
+                3
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-08,
+              "ulp_threshold": 8,
+              "units": "Pa"
+            },
+            "mudf": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                3,
+                3
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                3,
+                3
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-10,
+              "ulp_threshold": 8,
+              "units": "Pa s-1"
+            },
+            "muts": {
+              "abs_threshold": 1e-08,
+              "actual_shape": [
+                3,
+                3
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                3,
+                3
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 9.669011450195312e-08,
+              "ulp_threshold": 16,
+              "units": "Pa"
+            },
+            "ph_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                45,
+                3,
+                3
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                3,
+                3
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-10,
+              "ulp_threshold": 8,
+              "units": "m2 s-3"
+            },
+            "theta": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                3,
+                3
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                3,
+                3
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 2.0262063779455173e-08,
+              "ulp_threshold": 8,
+              "units": "K"
+            },
+            "ww": {
+              "abs_threshold": 1e-09,
+              "actual_shape": [
+                45,
+                3,
+                3
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                3,
+                3
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-09,
+              "ulp_threshold": 8,
+              "units": "Pa s-1"
+            }
+          },
+          "operator": "advance_mu_t",
+          "passed": true,
+          "path": "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/column/advance_mu_t_post_step008.h5",
+          "run_id": "m6b1-column-canary-d02-20260522T000000Z-step008-advance_mu_t_post",
+          "step": 8,
+          "tier": "column"
+        },
+        {
+          "boundary": "advance_mu_t_post",
+          "fields": {
+            "mu": {
+              "abs_threshold": 1e-08,
+              "actual_shape": [
+                3,
+                3
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                3,
+                3
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-08,
+              "ulp_threshold": 8,
+              "units": "Pa"
+            },
+            "muave": {
+              "abs_threshold": 1e-08,
+              "actual_shape": [
+                3,
+                3
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                3,
+                3
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-08,
+              "ulp_threshold": 8,
+              "units": "Pa"
+            },
+            "mudf": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                3,
+                3
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                3,
+                3
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-10,
+              "ulp_threshold": 8,
+              "units": "Pa s-1"
+            },
+            "muts": {
+              "abs_threshold": 1e-08,
+              "actual_shape": [
+                3,
+                3
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                3,
+                3
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 9.669011450195312e-08,
+              "ulp_threshold": 16,
+              "units": "Pa"
+            },
+            "ph_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                45,
+                3,
+                3
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                3,
+                3
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-10,
+              "ulp_threshold": 8,
+              "units": "m2 s-3"
+            },
+            "theta": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                3,
+                3
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                3,
+                3
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 2.2812606030756697e-08,
+              "ulp_threshold": 8,
+              "units": "K"
+            },
+            "ww": {
+              "abs_threshold": 1e-09,
+              "actual_shape": [
+                45,
+                3,
+                3
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                3,
+                3
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-09,
+              "ulp_threshold": 8,
+              "units": "Pa s-1"
+            }
+          },
+          "operator": "advance_mu_t",
+          "passed": true,
+          "path": "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/column/advance_mu_t_post_step009.h5",
+          "run_id": "m6b1-column-canary-d02-20260522T000000Z-step009-advance_mu_t_post",
+          "step": 9,
+          "tier": "column"
+        },
+        {
+          "boundary": "advance_mu_t_post",
+          "fields": {
+            "mu": {
+              "abs_threshold": 1e-08,
+              "actual_shape": [
+                3,
+                3
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                3,
+                3
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-08,
+              "ulp_threshold": 8,
+              "units": "Pa"
+            },
+            "muave": {
+              "abs_threshold": 1e-08,
+              "actual_shape": [
+                3,
+                3
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                3,
+                3
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-08,
+              "ulp_threshold": 8,
+              "units": "Pa"
+            },
+            "mudf": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                3,
+                3
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                3,
+                3
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-10,
+              "ulp_threshold": 8,
+              "units": "Pa s-1"
+            },
+            "muts": {
+              "abs_threshold": 1e-08,
+              "actual_shape": [
+                3,
+                3
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                3,
+                3
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 9.669011450195312e-08,
+              "ulp_threshold": 16,
+              "units": "Pa"
+            },
+            "ph_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                45,
+                3,
+                3
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                3,
+                3
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-10,
+              "ulp_threshold": 8,
+              "units": "m2 s-3"
+            },
+            "theta": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                3,
+                3
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                3,
+                3
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 2.5363148282058224e-08,
+              "ulp_threshold": 8,
+              "units": "K"
+            },
+            "ww": {
+              "abs_threshold": 1e-09,
+              "actual_shape": [
+                45,
+                3,
+                3
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                3,
+                3
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-09,
+              "ulp_threshold": 8,
+              "units": "Pa s-1"
+            }
+          },
+          "operator": "advance_mu_t",
+          "passed": true,
+          "path": "/tmp/wrf_gpu2_m6b1/.agent/sprints/2026-05-25-m6b1-advance-mu-t-parity/savepoints/column/advance_mu_t_post_step010.h5",
+          "run_id": "m6b1-column-canary-d02-20260522T000000Z-step010-advance_mu_t_post",
+          "step": 10,
+          "tier": "column"
+        }
+      ],
+      "sanitizer_mode": "off",
+      "savepoint_count": 10,
+      "tier": "column",
+      "tolerance_ladder_path": "/tmp/wrf_gpu2_m6b1/src/gpuwrf/validation/tolerance_ladder.json",
+      "transfer_audit": {
+        "h2d_d2h_inside_timestep_loop_bytes": 0,
+        "note": "Comparator reads HDF5 before each isolated JAX helper call; no production timestep loop is executed."
+      }
+    }
+  }
+}

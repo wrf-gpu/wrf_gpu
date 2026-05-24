@@ -36,6 +36,10 @@ VALID_BOUNDARIES = {
     "acoustic_substep_end",
     "rk_stage_end",
 }
+VALID_OPERATORS = {
+    "calc_coef_w",
+    "advance_mu_t",
+}
 TOLERANCE_LADDER_PATH = Path(__file__).with_name("tolerance_ladder.json")
 
 
@@ -121,6 +125,8 @@ class SavepointMetadata:
         for name in ("run_id", "wrf_version", "wrf_commit", "namelist_hash", "tier", "operator", "boundary"):
             if not str(getattr(self, name)):
                 raise ValueError(f"SavepointMetadata.{name} must be non-empty")
+        if self.operator not in VALID_OPERATORS:
+            raise ValueError(f"unsupported savepoint operator: {self.operator}")
         if self.boundary not in VALID_BOUNDARIES:
             raise ValueError(f"unsupported savepoint boundary: {self.boundary}")
         if int(self.domain_index) < 1:

@@ -17,9 +17,15 @@ contains
   end subroutine sp_calc_coef_w_post
   subroutine sp_small_step_prep_post()
   end subroutine sp_small_step_prep_post
-  subroutine sp_advance_mu_t_pre()
+  subroutine sp_advance_mu_t_pre(rkstage, acstep, mu, mut, mudf, muts, muave, ww_in, theta_in)
+    integer, intent(in) :: rkstage, acstep
+    real, intent(in) :: mu(:, :), mut(:, :), mudf(:, :), muts(:, :), muave(:, :)
+    real, intent(in) :: ww_in(:, :, :), theta_in(:, :, :)
   end subroutine sp_advance_mu_t_pre
-  subroutine sp_advance_mu_t_post()
+  subroutine sp_advance_mu_t_post(rkstage, acstep, mu, mut, mudf, muts, muave, ww_out, theta_out, ph_tend)
+    integer, intent(in) :: rkstage, acstep
+    real, intent(in) :: mu(:, :), mut(:, :), mudf(:, :), muts(:, :), muave(:, :)
+    real, intent(in) :: ww_out(:, :, :), theta_out(:, :, :), ph_tend(:, :, :)
   end subroutine sp_advance_mu_t_post
   subroutine sp_advance_uv_post()
   end subroutine sp_advance_uv_post

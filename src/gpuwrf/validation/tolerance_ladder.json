@@ -108,6 +108,54 @@
       "rel": 1e-12,
       "ulp": 16,
       "accumulation_exception": "field-accumulated MUTS allowed 2x ULP per acoustic step"
+    },
+    "mu": {
+      "units": "Pa",
+      "dtype": "float64",
+      "abs": 1e-8,
+      "rel": 1e-12,
+      "ulp": 8,
+      "accumulation_exception": "none"
+    },
+    "mudf": {
+      "units": "Pa s-1",
+      "dtype": "float64",
+      "abs": 1e-10,
+      "rel": 1e-12,
+      "ulp": 8,
+      "accumulation_exception": "none"
+    },
+    "muave": {
+      "units": "Pa",
+      "dtype": "float64",
+      "abs": 1e-8,
+      "rel": 1e-12,
+      "ulp": 8,
+      "accumulation_exception": "none"
+    },
+    "ww": {
+      "units": "Pa s-1",
+      "dtype": "float64",
+      "abs": 1e-9,
+      "rel": 1e-12,
+      "ulp": 8,
+      "accumulation_exception": "none"
+    },
+    "theta": {
+      "units": "K",
+      "dtype": "float64",
+      "abs": 1e-10,
+      "rel": 1e-12,
+      "ulp": 8,
+      "accumulation_exception": "none"
+    },
+    "ph_tend": {
+      "units": "m2 s-3",
+      "dtype": "float64",
+      "abs": 1e-10,
+      "rel": 1e-12,
+      "ulp": 8,
+      "accumulation_exception": "none"
     }
   }
 }
