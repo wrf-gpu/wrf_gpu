@@ -1,0 +1,6 @@
+=== COMPILE savepoint_wrapper.F90 ===
+nvfortran -O0 -g -Mfreeform -Mbackslash -I/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_gpu_libs/include -c savepoint_wrapper.F90
+=== COMPILE test_savepoint.F90 ===
+nvfortran -O0 -g -Mfreeform -Mbackslash -I/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_gpu_libs/include -c test_savepoint.F90
+=== LINK ===
+nvfortran -O0 -g -Mfreeform -Mbackslash -I/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_gpu_libs/include -o test_savepoint savepoint_wrapper.o test_savepoint.o -L/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_gpu_libs/lib -lhdf5_fortran -lhdf5 -lz -ldl -lm
