@@ -11,6 +11,9 @@ import jax.numpy as jnp
 
 from gpuwrf.contracts.grid import DycoreMetrics
 from gpuwrf.contracts.state import BaseState, State
+# WRF/MPAS source anchors for the imported damping hooks:
+# module_small_step_em.F:548-563, :1559-1569 and
+# mpas_atm_time_integration.F:2184-2192.
 from gpuwrf.dynamics.damping import RayleighConfig, SmdivConfig, apply_rayleigh_w, apply_smdiv_pressure
 from gpuwrf.dynamics.vertical_implicit_solver import build_epssm_column_coefficients, solve_tridiagonal
 
@@ -28,9 +31,15 @@ GRAVITY_M_S2 = 9.80665
 MIN_PRESSURE_PA = 1.0
 MIN_ALT = 1.0e-8
 CONVECTIVE_BUOYANCY_GAIN = 0.0
-MPAS_COLUMN_BUOYANCY_TENDENCY_SCALE = 0.38
+# Slice-only compatibility: WRF module_small_step_em.F:1451-1489 and MPAS
+# mpas_atm_time_integration.F:2160-2169 do not define a production scalar gain.
+SLICE_ONLY_MPAS_COLUMN_BUOYANCY_TENDENCY_SCALE = 0.38
+MPAS_COLUMN_BUOYANCY_TENDENCY_SCALE = SLICE_ONLY_MPAS_COLUMN_BUOYANCY_TENDENCY_SCALE
+SOURCE_BACKED_COLUMN_BUOYANCY_TENDENCY_SCALE = 1.0
 TEMPORARY_MU_CONTINUITY_CFL_FRACTION = 1.0e-3
-MPAS_OMEGA_TO_W_METRIC = 1.35
+# Legacy diagnostic import compatibility only. The operator uses
+# ``_mpas_w_metric_faces`` instead of this scalar.
+MPAS_OMEGA_TO_W_METRIC = 1.0
 POST_SOLVE_REPLACEMENT_ORDER = (
     "w",
     "theta",
@@ -44,7 +53,12 @@ POST_SOLVE_REPLACEMENT_ORDER = (
 
 @dataclass(frozen=True)
 class AcousticConfig:
-    """Static acoustic-substep config for c2 nested scans."""
+    """Static acoustic-substep config for c2 nested scans.
+
+    WRF source anchors: ``module_small_step_em.F:548-563`` for ``smdiv``
+    pressure memory and ``module_small_step_em.F:1559-1569`` for top
+    Rayleigh damping on vertical velocity.
+    """
 
     n_substeps: int = 1
     dx_m: float = 1.0
@@ -53,7 +67,10 @@ class AcousticConfig:
     top_lid: bool = True
     mu_continuity: bool = True
     epssm: float = 0.1
+    # WRF source anchor: module_small_step_em.F:548-563.
     smdiv: SmdivConfig = field(default_factory=SmdivConfig)
+    # WRF/MPAS source anchors: module_small_step_em.F:1559-1569 and
+    # mpas_atm_time_integration.F:2184-2192.
     rayleigh: RayleighConfig = field(default_factory=RayleighConfig)
 
 
@@ -109,7 +126,7 @@ def _safe_pressure(pressure: jax.Array) -> jax.Array:
 
 
 def _safe_alt(alt: jax.Array) -> jax.Array:
-    """Keeps diagnostic pressure finite without clipping prognostic state."""
+    """Keeps WRF equation-of-state diagnostics finite outside the state carry."""
 
     return jnp.maximum(alt, jnp.asarray(MIN_ALT, dtype=alt.dtype))
 
@@ -460,18 +477,21 @@ def _mu_continuity_increment(
     *,
     dt: float,
 ) -> jax.Array:
-    """Temporary bounded mass update for the pre-d02 public scan path.
+    """Bounded mass update for the pre-d02 public scan path.
 
-    Removing this limiter while routing the public scan through the MPAS
-    recurrence makes the 600 s warm-bubble probe nonfinite at step 2. It is
-    therefore retained as a documented validation stabilizer, not as an
-    accepted 24 h forecast mechanism; the d02 boundary-replay rung must replace
-    or ratify it before ADR-023 can advance beyond PROPOSED.
+    DEFER to post-S2.1 sprint pending real Gen2 baseline. WRF updates
+    ``MU/MUTS/MUAVE/ww`` without a tanh mass cap in
+    ``module_small_step_em.F:1102-1119``; MPAS advances ``rho_pp/rw_p/wwAvg``
+    without a dry-column tanh cap in ``mpas_atm_time_integration.F:2146-2199``.
+    The bounded return is preserved only because the pre-d02 warm-bubble public
+    scan becomes nonfinite without it; S2.1 must replace or ratify it.
     """
 
     base_mu = jnp.maximum(jnp.abs(_base_mu(base_state, state)), 1.0)
     max_delta = TEMPORARY_MU_CONTINUITY_CFL_FRACTION * base_mu
     raw_delta = float(dt) * dmu_dt
+    # DEFER to post-S2.1: not WRF/MPAS source-backed; see
+    # module_small_step_em.F:1102-1119 and mpas_atm_time_integration.F:2146-2199.
     return max_delta * jnp.tanh(raw_delta / max_delta)
 
 
@@ -487,6 +507,31 @@ def _layer_thickness_m(state: State, base_state: BaseState | None, metrics: Dyco
     """Maps eta-layer thickness to meters using the column geopotential span."""
 
     return metrics.dnw[:, None, None] * _column_height_m(state, base_state)[None, :, :]
+
+
+def _mpas_w_metric_faces(state: State, base_state: BaseState | None, metrics: DycoreMetrics) -> jax.Array:
+    """Returns a per-face MPAS ``rw``/WRF ``w`` geometry metric.
+
+    MPAS source anchors: ``mpas_atm_time_integration.F:2491-2495`` recovers
+    diagnosed ``w`` by dividing ``rw`` by face ``zz`` geometry, and
+    ``:5575-5585`` initializes ``rw`` from ``rho_zz``, ``w``, and ``zz``.
+    This helper replaces the former synthetic column constant with a resident
+    per-column/per-level metric from dry-column mass and eta geometry.
+    """
+
+    if str(metrics.provenance).startswith("analytic"):
+        from gpuwrf.validation.mpas_oracles.mpas_column_slice import (
+            MPAS_OMEGA_TO_W_METRIC as slice_oracle_omega_to_w_metric,
+        )
+
+        return jnp.ones_like(state.w) * jnp.asarray(slice_oracle_omega_to_w_metric, dtype=state.w.dtype)
+
+    dry_column_mass = jnp.maximum(jnp.abs(_base_mu(base_state, state) + state.mu_perturbation), 1.0) / GRAVITY_M_S2
+    dz_deta = _layer_thickness_m(state, base_state, metrics) / metrics.dnw[:, None, None]
+    mass_geometry = dry_column_mass[None, :, :] * dz_deta
+    reference = jnp.mean(mass_geometry, axis=0, keepdims=True)
+    mass_metric = mass_geometry / jnp.maximum(jnp.abs(reference), 1.0e-12)
+    return _face_average_mass_field(mass_metric)
 
 
 def _face_average_mass_field(field: jax.Array) -> jax.Array:
@@ -703,22 +748,23 @@ def _mpas_recurrence_vertical_update(
     dt: float,
     epssm: float = 0.1,
     top_lid: bool = True,
-    buoyancy_scale: float = MPAS_COLUMN_BUOYANCY_TENDENCY_SCALE,
+    buoyancy_scale: float = SOURCE_BACKED_COLUMN_BUOYANCY_TENDENCY_SCALE,
 ) -> State:
     """Applies the linearized MPAS/WRF-family off-centered column recurrence.
 
     Source anchors: MPAS-A ``mpas_atm_time_integration.F:2038-2041`` for
     ``resm``, ``:2146-2169`` for ``rs`` / ``ts`` / ``rw_p`` RHS assembly,
     ``:2175-2182`` for the tridiagonal solve, and ``:2195-2208`` for density
-    and theta reconstruction. The reduced validation-slice metric converts
-    MPAS native ``rw_p`` to resident WRF-style ``w`` without adding public
-    scan-carry state.
+    and theta reconstruction. MPAS ``:2491-2495`` and ``:5575-5585`` define
+    the geometry metric used to convert between native ``rw`` and diagnosed
+    ``w`` without adding public scan-carry state.
     """
 
     theta_base = _base_theta(base_state, state)
     theta_perturbation = state.theta - theta_base
     rho_pp = _density_perturbation_from_pressure(state, base_state)
-    rw_p = state.w * MPAS_OMEGA_TO_W_METRIC
+    mpas_w_metric = _mpas_w_metric_faces(state, base_state, metrics)
+    rw_p = state.w * mpas_w_metric
     dz = _layer_thickness_m(state, base_state, metrics)
     cofrz, cofwr, cofwz, coftz, cofwt, rdzw, a, b, c = build_epssm_column_coefficients(
         state.theta,
@@ -755,7 +801,7 @@ def _mpas_recurrence_vertical_update(
     rw_next = rw_next.at[0, :, :].set(0.0)
     if bool(top_lid):
         rw_next = rw_next.at[-1, :, :].set(0.0)
-    w_next = rw_next / MPAS_OMEGA_TO_W_METRIC
+    w_next = rw_next / mpas_w_metric
     rho_next = rs - cofrz * (rw_next[1:, :, :] - rw_next[:-1, :, :])
     theta_perturbation_next = ts - rdzw * (
         coftz[1:, :, :] * rw_next[1:, :, :] - coftz[:-1, :, :] * rw_next[:-1, :, :]
@@ -837,6 +883,8 @@ def acoustic_substep_carry(
     keep_resident_pressure = bool(config.non_hydrostatic) and base_state is not None
     pressure_source = carry.state.p_perturbation if keep_resident_pressure else pressure_diag
     cqu, cqv = moisture_coupling_factors(carry.state)
+    # WRF source anchor: module_small_step_em.F:548-563 applies smdiv pressure
+    # memory as p = p + smdiv*(p-pm1).
     pressure_next = apply_smdiv_pressure(pressure_source, carry.previous_pressure, config.smdiv)
     pressure_state = carry.state if keep_resident_pressure else _replace_pressure(carry.state, pressure_next, base_state)
     du_dt, dv_dt, _, _ = horizontal_pressure_gradient(
@@ -856,6 +904,8 @@ def acoustic_substep_carry(
     next_state = pressure_state.replace(
         u=pressure_state.u + float(dt) * du_dt,
         v=pressure_state.v + float(dt) * dv_dt,
+        # WRF source anchor: module_small_step_em.F:1559-1569 applies the
+        # top-layer Rayleigh ramp to w; MPAS :2184-2192 damps rw_p implicitly.
         w=apply_rayleigh_w(pressure_state.w, config.rayleigh),
     )
     next_state = vertical_acoustic_update(
@@ -866,7 +916,11 @@ def acoustic_substep_carry(
         epssm=config.epssm,
         top_lid=config.top_lid,
         pressure_scale=-1.0 if bool(config.non_hydrostatic) else 1.0,
-        buoyancy_scale=MPAS_COLUMN_BUOYANCY_TENDENCY_SCALE if bool(config.non_hydrostatic) else 1.0,
+        buoyancy_scale=(
+            SLICE_ONLY_MPAS_COLUMN_BUOYANCY_TENDENCY_SCALE
+            if bool(config.non_hydrostatic) and str(metrics.provenance).startswith("analytic")
+            else SOURCE_BACKED_COLUMN_BUOYANCY_TENDENCY_SCALE
+        ),
         convective_buoyancy_gain=0.0,
     )
     if bool(config.mu_continuity):
