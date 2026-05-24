@@ -1,0 +1,312 @@
+{
+  "artifacts": {},
+  "diagnostic": {
+    "name": "stabilizer_provenance_scanner",
+    "purpose": "Classify stabilizer provenance."
+  },
+  "input": {
+    "files_scanned": 3,
+    "path": "/tmp/wrf_gpu2_s2dot1redo/.agent/sprints/2026-05-24-m6x-s2dot1redo-real-baseline/artifacts/sidecar-inputs/stabilizer_provenance_scanner.input.json"
+  },
+  "measurements": {
+    "classification_counts": {
+      "experiment-backed": 10,
+      "reject": 0,
+      "source-backed": 37
+    },
+    "findings": [
+      {
+        "classification": "source-backed",
+        "line": 14,
+        "path": "src/gpuwrf/dynamics/acoustic_wrf.py",
+        "snippet": "# WRF/MPAS source anchors for the imported damping hooks:"
+      },
+      {
+        "classification": "source-backed",
+        "line": 17,
+        "path": "src/gpuwrf/dynamics/acoustic_wrf.py",
+        "snippet": "from gpuwrf.dynamics.damping import RayleighConfig, SmdivConfig, apply_rayleigh_w, apply_smdiv_pressure"
+      },
+      {
+        "classification": "source-backed",
+        "line": 58,
+        "path": "src/gpuwrf/dynamics/acoustic_wrf.py",
+        "snippet": "WRF source anchors: ``module_small_step_em.F:548-563`` for ``smdiv``"
+      },
+      {
+        "classification": "source-backed",
+        "line": 60,
+        "path": "src/gpuwrf/dynamics/acoustic_wrf.py",
+        "snippet": "Rayleigh damping on vertical velocity."
+      },
+      {
+        "classification": "source-backed",
+        "line": 71,
+        "path": "src/gpuwrf/dynamics/acoustic_wrf.py",
+        "snippet": "smdiv: SmdivConfig = field(default_factory=SmdivConfig)"
+      },
+      {
+        "classification": "source-backed",
+        "line": 74,
+        "path": "src/gpuwrf/dynamics/acoustic_wrf.py",
+        "snippet": "rayleigh: RayleighConfig = field(default_factory=RayleighConfig)"
+      },
+      {
+        "classification": "source-backed",
+        "line": 483,
+        "path": "src/gpuwrf/dynamics/acoustic_wrf.py",
+        "snippet": "``MU/MUTS/MUAVE/ww`` without a tanh mass cap in"
+      },
+      {
+        "classification": "source-backed",
+        "line": 485,
+        "path": "src/gpuwrf/dynamics/acoustic_wrf.py",
+        "snippet": "without a dry-column tanh cap in ``mpas_atm_time_integration.F:2146-2199``."
+      },
+      {
+        "classification": "source-backed",
+        "line": 495,
+        "path": "src/gpuwrf/dynamics/acoustic_wrf.py",
+        "snippet": "return max_delta * jnp.tanh(raw_delta / max_delta)"
+      },
+      {
+        "classification": "source-backed",
+        "line": 886,
+        "path": "src/gpuwrf/dynamics/acoustic_wrf.py",
+        "snippet": "# WRF source anchor: module_small_step_em.F:548-563 applies smdiv pressure"
+      },
+      {
+        "classification": "source-backed",
+        "line": 887,
+        "path": "src/gpuwrf/dynamics/acoustic_wrf.py",
+        "snippet": "# memory as p = p + smdiv*(p-pm1)."
+      },
+      {
+        "classification": "source-backed",
+        "line": 888,
+        "path": "src/gpuwrf/dynamics/acoustic_wrf.py",
+        "snippet": "pressure_next = apply_smdiv_pressure(pressure_source, carry.previous_pressure, config.smdiv)"
+      },
+      {
+        "classification": "source-backed",
+        "line": 908,
+        "path": "src/gpuwrf/dynamics/acoustic_wrf.py",
+        "snippet": "# top-layer Rayleigh ramp to w; MPAS :2184-2192 damps rw_p implicitly."
+      },
+      {
+        "classification": "source-backed",
+        "line": 909,
+        "path": "src/gpuwrf/dynamics/acoustic_wrf.py",
+        "snippet": "w=apply_rayleigh_w(pressure_state.w, config.rayleigh),"
+      },
+      {
+        "classification": "source-backed",
+        "line": 1,
+        "path": "src/gpuwrf/dynamics/damping.py",
+        "snippet": "\"\"\"Source-anchored divergence and Rayleigh damping hooks for the c2 dycore."
+      },
+      {
+        "classification": "source-backed",
+        "line": 3,
+        "path": "src/gpuwrf/dynamics/damping.py",
+        "snippet": "WRF source anchors: ``module_small_step_em.F:548-563`` for ``smdiv`` pressure"
+      },
+      {
+        "classification": "source-backed",
+        "line": 4,
+        "path": "src/gpuwrf/dynamics/damping.py",
+        "snippet": "memory and ``module_small_step_em.F:1559-1569`` for the top-layer Rayleigh"
+      },
+      {
+        "classification": "source-backed",
+        "line": 6,
+        "path": "src/gpuwrf/dynamics/damping.py",
+        "snippet": "``mpas_atm_time_integration.F:2184-2192`` for implicit Rayleigh damping on"
+      },
+      {
+        "classification": "source-backed",
+        "line": 24,
+        "path": "src/gpuwrf/dynamics/damping.py",
+        "snippet": "class SmdivConfig:"
+      },
+      {
+        "classification": "source-backed",
+        "line": 25,
+        "path": "src/gpuwrf/dynamics/damping.py",
+        "snippet": "\"\"\"Small-step divergence damping config."
+      },
+      {
+        "classification": "source-backed",
+        "line": 28,
+        "path": "src/gpuwrf/dynamics/damping.py",
+        "snippet": "``p = p + smdiv * (p - pm1)``."
+      },
+      {
+        "classification": "source-backed",
+        "line": 36,
+        "path": "src/gpuwrf/dynamics/damping.py",
+        "snippet": "class RayleighConfig:"
+      },
+      {
+        "classification": "source-backed",
+        "line": 37,
+        "path": "src/gpuwrf/dynamics/damping.py",
+        "snippet": "\"\"\"Upper-level Rayleigh damping config."
+      },
+      {
+        "classification": "source-backed",
+        "line": 51,
+        "path": "src/gpuwrf/dynamics/damping.py",
+        "snippet": "def apply_smdiv_pressure(pressure: jax.Array, previous_pressure: jax.Array, config: SmdivConfig) -> jax.Array:"
+      },
+      {
+        "classification": "source-backed",
+        "line": 52,
+        "path": "src/gpuwrf/dynamics/damping.py",
+        "snippet": "\"\"\"Applies WRF-shaped ``smdiv`` pressure memory when enabled."
+      },
+      {
+        "classification": "source-backed",
+        "line": 55,
+        "path": "src/gpuwrf/dynamics/damping.py",
+        "snippet": "applies ``p = p + smdiv * (p - pm1)`` during small timesteps."
+      },
+      {
+        "classification": "source-backed",
+        "line": 64,
+        "path": "src/gpuwrf/dynamics/damping.py",
+        "snippet": "def apply_rayleigh_w(w: jax.Array, config: RayleighConfig) -> jax.Array:"
+      },
+      {
+        "classification": "source-backed",
+        "line": 65,
+        "path": "src/gpuwrf/dynamics/damping.py",
+        "snippet": "\"\"\"Applies top-ramped Rayleigh damping to vertical velocity."
+      },
+      {
+        "classification": "source-backed",
+        "line": 70,
+        "path": "src/gpuwrf/dynamics/damping.py",
+        "snippet": "``mpas_atm_time_integration.F:2184-2192`` applies implicit damping to"
+      },
+      {
+        "classification": "source-backed",
+        "line": 79,
+        "path": "src/gpuwrf/dynamics/damping.py",
+        "snippet": "# to the damping layer before applying it to w."
+      },
+      {
+        "classification": "source-backed",
+        "line": 80,
+        "path": "src/gpuwrf/dynamics/damping.py",
+        "snippet": "ramp = jnp.clip((z - float(config.top_start_fraction)) / denom, 0.0, 1.0)"
+      },
+      {
+        "classification": "source-backed",
+        "line": 86,
+        "path": "src/gpuwrf/dynamics/damping.py",
+        "snippet": "@partial(jax.jit, static_argnames=(\"smdiv\", \"rayleigh\"))"
+      },
+      {
+        "classification": "source-backed",
+        "line": 87,
+        "path": "src/gpuwrf/dynamics/damping.py",
+        "snippet": "def apply_damping_skeleton("
+      },
+      {
+        "classification": "source-backed",
+        "line": 91,
+        "path": "src/gpuwrf/dynamics/damping.py",
+        "snippet": "smdiv: SmdivConfig,"
+      },
+      {
+        "classification": "source-backed",
+        "line": 92,
+        "path": "src/gpuwrf/dynamics/damping.py",
+        "snippet": "rayleigh: RayleighConfig,"
+      },
+      {
+        "classification": "source-backed",
+        "line": 94,
+        "path": "src/gpuwrf/dynamics/damping.py",
+        "snippet": "\"\"\"Composes source-anchored WRF/MPAS damping hooks.\"\"\""
+      },
+      {
+        "classification": "source-backed",
+        "line": 98,
+        "path": "src/gpuwrf/dynamics/damping.py",
+        "snippet": "return apply_smdiv_pressure(pressure, previous_pressure, smdiv), apply_rayleigh_w(w, rayleigh)"
+      },
+      {
+        "classification": "experiment-backed",
+        "line": 36,
+        "path": "src/gpuwrf/integration/d02_replay.py",
+        "snippet": "from gpuwrf.dynamics.damping import RayleighConfig"
+      },
+      {
+        "classification": "experiment-backed",
+        "line": 173,
+        "path": "src/gpuwrf/integration/d02_replay.py",
+        "snippet": "rayleigh_coefficient: float = 0.0"
+      },
+      {
+        "classification": "experiment-backed",
+        "line": 194,
+        "path": "src/gpuwrf/integration/d02_replay.py",
+        "snippet": "candidate_clip_count: object"
+      },
+      {
+        "classification": "experiment-backed",
+        "line": 453,
+        "path": "src/gpuwrf/integration/d02_replay.py",
+        "snippet": "candidate_clip_count=stats.clip_count,"
+      },
+      {
+        "classification": "experiment-backed",
+        "line": 471,
+        "path": "src/gpuwrf/integration/d02_replay.py",
+        "snippet": "def _acoustic_config(grid: GridSpec, n_acoustic: int, rayleigh_coefficient: float) -> AcousticConfig:"
+      },
+      {
+        "classification": "experiment-backed",
+        "line": 480,
+        "path": "src/gpuwrf/integration/d02_replay.py",
+        "snippet": "rayleigh=RayleighConfig(enabled=rayleigh_coefficient != 0.0, coefficient=float(rayleigh_coefficient)),"
+      },
+      {
+        "classification": "experiment-backed",
+        "line": 498,
+        "path": "src/gpuwrf/integration/d02_replay.py",
+        "snippet": "acoustic = _acoustic_config(grid, replay_config.n_acoustic, replay_config.rayleigh_coefficient)"
+      },
+      {
+        "classification": "experiment-backed",
+        "line": 559,
+        "path": "src/gpuwrf/integration/d02_replay.py",
+        "snippet": "candidate_clip_count=jnp.zeros((0,), dtype=jnp.int64),"
+      },
+      {
+        "classification": "experiment-backed",
+        "line": 866,
+        "path": "src/gpuwrf/integration/d02_replay.py",
+        "snippet": "clips = np.asarray(jax.device_get(diagnostics.candidate_clip_count), dtype=np.int64)"
+      },
+      {
+        "classification": "experiment-backed",
+        "line": 878,
+        "path": "src/gpuwrf/integration/d02_replay.py",
+        "snippet": "\"candidate_clip_count_total\": int(clips.sum()),"
+      }
+    ]
+  },
+  "replay_mode": "real",
+  "schema_version": "m6x-s1-diagnostic-sidecar-v1",
+  "source_citations": [
+    "scripts/m6_warm_bubble_test.py:326-360",
+    "src/gpuwrf/dynamics/acoustic_wrf.py:456-475"
+  ],
+  "status": "OK",
+  "units": {
+    "findings": "count"
+  }
+}

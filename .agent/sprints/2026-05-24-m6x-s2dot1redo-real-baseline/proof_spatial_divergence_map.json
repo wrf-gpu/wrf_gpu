@@ -1,0 +1,142 @@
+{
+  "artifacts": {
+    "spatial_error_npz": "/tmp/wrf_gpu2_s2dot1redo/.agent/sprints/2026-05-24-m6x-s2dot1redo-real-baseline/proof_spatial_divergence_map.npz"
+  },
+  "diagnostic": {
+    "name": "spatial_divergence_map",
+    "purpose": "Map and stratify forecast-reference error."
+  },
+  "input": {
+    "field": "T2",
+    "path": "/tmp/wrf_gpu2_s2dot1redo/.agent/sprints/2026-05-24-m6x-s2dot1redo-real-baseline/artifacts/sidecar-inputs/spatial_divergence_map.input.json",
+    "shape": [
+      66,
+      159
+    ]
+  },
+  "measurements": {
+    "boundary_bands": [
+      {
+        "band_grid_cells": "0-5",
+        "rmse": 123.45017953113125,
+        "sample_count": 2150
+      },
+      {
+        "band_grid_cells": "5-10",
+        "rmse": 121.48086726741046,
+        "sample_count": 1950
+      },
+      {
+        "band_grid_cells": "10-20",
+        "rmse": 140.2055983603665,
+        "sample_count": 3300
+      },
+      {
+        "band_grid_cells": "interior",
+        "rmse": 150.64802752196636,
+        "sample_count": 3094
+      }
+    ],
+    "elevation_quartiles": [
+      {
+        "elevation_m_quartile": 1,
+        "range": [
+          -7.947286206899662e-08,
+          0.0
+        ],
+        "rmse": 196.94539082246726,
+        "sample_count": 7
+      },
+      {
+        "elevation_m_quartile": 2,
+        "range": [
+          0.0,
+          0.0
+        ],
+        "rmse": null,
+        "sample_count": 0
+      },
+      {
+        "elevation_m_quartile": 3,
+        "range": [
+          0.0,
+          0.0
+        ],
+        "rmse": null,
+        "sample_count": 0
+      },
+      {
+        "elevation_m_quartile": 4,
+        "range": [
+          0.0,
+          2987.11767578125
+        ],
+        "rmse": 136.8360226576117,
+        "sample_count": 10487
+      }
+    ],
+    "global_rmse": 136.88491639902077,
+    "land_sea": [
+      {
+        "class": "sea",
+        "rmse": null,
+        "sample_count": 0
+      },
+      {
+        "class": "land",
+        "rmse": 157.129130843577,
+        "sample_count": 768
+      }
+    ],
+    "terrain_quartiles": [
+      {
+        "range": [
+          -7.947286206899662e-08,
+          0.0
+        ],
+        "rmse": 196.94539082246726,
+        "sample_count": 7,
+        "terrain_quartile": 1
+      },
+      {
+        "range": [
+          0.0,
+          0.0
+        ],
+        "rmse": null,
+        "sample_count": 0,
+        "terrain_quartile": 2
+      },
+      {
+        "range": [
+          0.0,
+          0.0
+        ],
+        "rmse": null,
+        "sample_count": 0,
+        "terrain_quartile": 3
+      },
+      {
+        "range": [
+          0.0,
+          2987.11767578125
+        ],
+        "rmse": 136.8360226576117,
+        "sample_count": 10487,
+        "terrain_quartile": 4
+      }
+    ]
+  },
+  "replay_mode": "real",
+  "schema_version": "m6x-s1-diagnostic-sidecar-v1",
+  "source_citations": [
+    "src/gpuwrf/integration/d02_replay.py:515-546",
+    "src/gpuwrf/integration/d02_replay.py:142-206"
+  ],
+  "status": "OK",
+  "units": {
+    "distance": "grid cells",
+    "elevation_m": "m",
+    "error": "field-dependent"
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "artifacts": {},
+  "diagnostic": {
+    "name": "transfer_launch_timeline",
+    "purpose": "Summarize residency and launch evidence."
+  },
+  "input": {
+    "path": "/tmp/wrf_gpu2_s2dot1redo/.agent/sprints/2026-05-24-m6x-s2dot1redo-real-baseline/artifacts/sidecar-inputs/transfer_launch_timeline.input.json"
+  },
+  "measurements": {
+    "device_to_host_bytes_post_init": 0,
+    "host_to_device_bytes_post_init": 0,
+    "jaxpr_callback_free": true,
+    "launch_count": null,
+    "peak_memory": {
+      "bytes_in_use": 465108992,
+      "device": "cuda:0",
+      "peak_bytes_in_use": 9360634112,
+      "raw_keys": [
+        "bytes_in_use",
+        "bytes_limit",
+        "bytes_reserved",
+        "largest_alloc_size",
+        "largest_free_block_bytes",
+        "num_allocs",
+        "peak_bytes_in_use",
+        "peak_bytes_reserved",
+        "peak_pool_bytes",
+        "pool_bytes"
+      ]
+    },
+    "post_init_total_transfer_bytes": 0,
+    "trace_transfer_event_files": []
+  },
+  "replay_mode": "real",
+  "schema_version": "m6x-s1-diagnostic-sidecar-v1",
+  "source_citations": [
+    "src/gpuwrf/integration/d02_replay.py:549-618",
+    "src/gpuwrf/integration/d02_replay.py:621-632"
+  ],
+  "status": "OK",
+  "units": {
+    "bytes": "B",
+    "launch_count": "count"
+  }
+}
