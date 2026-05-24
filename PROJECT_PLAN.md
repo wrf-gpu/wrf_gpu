@@ -242,12 +242,45 @@ A research-scout sprint may evaluate AceCAST and `FahrenheitResearch/wrf-gpu-por
 
 ### 14.5 Performance gating (post-correctness only)
 
+**Principal directive 2026-05-24 (night):** *"Solutions that just bring the correct results but are massively inefficient for the GPU will bomb the project purpose by design. Pilots are OK if they can be optimized, but if incompatible with a GPU-optimized core, the solution is just wrong for this project."* This section enforces that as binding plan rule.
+
 No optimization sprints before M6B5 passes. Then in order:
 1. **Lock RTX 5090/JAX environment.** Nsight Systems trace proving no recompilation in timestep loop. `jax_enable_x64=True`. CUDA-pip wheel pinned.
 2. **Whole timestep as one compiled graph.** Acoustic loop and RK loop are `lax.scan`, never Python loops. Hard rule: no `device_get`, no host callbacks, no Python diagnostics in the operational timestep loop. Diagnostics in a separate debug build.
 3. **Carry size is a performance problem, not a correctness veto.** A correct large carry beats a sanitizer-dependent small carry. Use XLA buffer donation and aliasing.
 4. **Profile before Triton.** Per-scheme Triton/Pallas only for measured hotspots. Aligned with ADR-001's gated fallback.
 5. **Two precision modes**: validation (fp64-heavy, strict WRF parity) and operational (mixed where savepoint and Tier-4 prove safe).
+
+### 14.5.1 Validation-mode / operational-mode separation (BINDING INVARIANTS)
+
+**The savepoint harness is a validation-mode-only checkpoint. The operational mode is a strict GPU-optimized variant that runs in production. Conflating the two will cap max speed by design.**
+
+| Invariant | Validation mode | Operational mode |
+|---|---|---|
+| Precision | fp64 strict per WRF | Per-field per ADR-007 (fp32/bf16 authorized for fields where Tier-4 proves safe) |
+| State carry | Includes WRF small-step scratch (`t_2ave`, `ww`, `muave`, `muts`, `ph_tend`, `_save`) for bitwise comparison | Strict subset: drops any scratch field not required by Tier-4 RMSE |
+| Operator boundaries | 12+ savepoint-emission points inside `module_small_step_em.F` analogues | Operators may be **fused across savepoint boundaries** into single XLA HLO graphs / `lax.scan` bodies |
+| Vertical solver | Serial Thomas forward-backward (per WRF) | Thomas OR parallel cyclic reduction (PCR) OR batched-Thomas, chosen by profiler + Tier-4 envelope |
+| Halo exchange | Per-WRF cadence | Per-GPU-optimal cadence — may differ if Tier-4 passes |
+| H2D/D2H in timestep loop | Permitted for savepoint emission only (validation builds only) | **ZERO**. Hard constitutional rule. |
+| Diagnostic snapshots | Mandatory per `[[feedback_debuggability_hooks]]` static-arg pattern | DCE-eliminated by XLA in production build |
+
+**Binding rules that follow from these invariants:**
+
+- A sprint that adds a field to **operational** carry must include a justification "this is required by Tier-4 envelope" with cited evidence. If no such justification, the field lives in validation mode only.
+- A sprint that introduces a synchronization point inside the operational timestep loop (that is not present in WRF for numerical reasons) must include an "operational-mode ablation" sub-sprint that demonstrates the synchronization can be lifted without breaking Tier-4. Otherwise, the synchronization is rejected.
+- Pilots / harness scaffolding that **cannot be optimized away** in operational mode are wrong by design and must be redesigned.
+- The "passes savepoint parity" claim must be paired with "operational-mode variant passes Tier-4 RMSE" before any M6 milestone is closed.
+
+### 14.5.2 M6-perf-design sprint (gates M6B6 → M6b)
+
+Between M6B6 (full coupled-step savepoint parity) and M6b (1h honest Canary d02), the project runs a deliberate **operational-mode design sprint** with the following acceptance:
+
+- An "operational-mode design" ADR enumerates per-operator: (a) which carry fields drop, (b) which operators fuse, (c) which fields downcast and to what precision, (d) which solver variant is used, (e) what Tier-4 evidence validates each choice.
+- The operational-mode build runs the same Canary d02 1h that M6B6 validated and meets: (a) Tier-4 RMSE envelope on T2/U10/V10, (b) wall-clock **less than 28-rank CPU WRF**, (c) zero H2D/D2H in timestep loop verified by Nsight Systems trace.
+- If the operational mode cannot beat 28-rank CPU WRF within two perf-design sprints despite passing Tier-4, **the project re-opens whether the savepoint-first per-operator-parity framing was the right path**, with a full-state GPT critic + Gemini tiebreak (per `[[feedback_step_back_cadence]]`). This is the kill gate that prevents the project from shipping a correct-but-slow GPU dycore.
+
+Sprint contract pre-drafted at `.agent/sprints/2026-05-25-m6-perf-design/sprint-contract.md`; activates when M6B6 closes.
 
 ### 14.6 ADR status updates (this section is operational; not constitutional re-vote)
 
