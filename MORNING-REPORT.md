@@ -1,115 +1,57 @@
-# Morning Report — 2026-05-23 ~06:00 UTC (manager autonomous overnight)
+# Morning Report — 2026-05-24
 
-**Status**: M6.x dycore went through a complete pivot decision cycle overnight. Most important outcome: **the warm-bubble [5,10] m/s amplitude target was identified as unsourced and the project is changing the gate** per a GPT-5.5 critic's `CHANGE-THE-GATE` verdict. ADR-023 stays PROPOSED; ADR-021 prototype not merged (stabilizer-clamped to exactly 9.0); gate-redesign sprint in flight.
+**Status:** M6 is active, not closed. The project has moved past the old warm-bubble amplitude target and is now executing the critic-ratified HYBRID close path: diagnose real replay, clean up sourced operator terms, then run Tier-3 and Tier-4 gates. ADR-023 and ADR-024 remain **PROPOSED**.
 
-## What happened overnight (chronological)
+## Milestone Ledger
 
-The session started with ADR-023 PROPOSED but the public scan path running a simplified `_wrf_buoyancy_column_update` branch instead of the MPAS recurrence (caught by the production-grade reviewer reject `b2f7a05`). I dispatched a unification sprint to fix it.
+| Milestone | Status | Current read |
+|---|---|---|
+| M0 | Closed | AgentOS/bootstrap complete. |
+| M1 | Closed | WRF oracle and fixture foundation complete. |
+| M2 | Closed | Backend decision path completed earlier; current implementation path is JAX/XLA. |
+| M3 | Closed | GPU state/grid skeleton and transfer discipline established. |
+| M4 | Closed | Minimal dycore work completed enough to feed M6.x. |
+| M5 | Closed | First physics-suite work completed enough to feed coupled M6. |
+| M6 | Active | Dycore stabilization and coupled short-forecast validation. |
+| M7 | Prologue done | S0a operational/data prologue complete; implementation waits on M6 close. |
+| M8 | Pending | Public/forkable release not started. |
 
-The **unification sprint** delivered an HONEST result: path successfully unified (4/4 unification gates, 23/23 no-regression, 5/5 transfer audit, fixture restored via manifest+generator, `epssm` plumbed end-to-end), but warm-bubble `w_max = 0.041 m/s` (vs target [5, 10]). No silent re-stabilization — the worker reported the failure loudly. This triggered the **ADR-023 fallback condition**.
+## M6 Dissection
 
-Per anti-stuck rule (user standing order #5), dispatched two parallel hedges:
-1. **Opus 4.7 diagnostic** — fresh model angle on the unification failure
-2. **Codex ADR-021 prototype** — single-large-sprint Plan B with carry expansion
+Done:
+- S1 diagnostic foundation: 12 diagnostic sidecars plus `.agent/decisions/source_mining_operator_table.md`.
+- S2/S2.1 attempted unchanged ADR-023 d02 baseline: both fell back to synthetic data because the real replay probe timed out with zero stdout/stderr.
+- S3-narrow stabilizer cleanup: scanner moved from 28 to 20 experiment-backed findings and from 8 to 37 source-backed findings; `_mu_continuity_increment` is still deferred.
+- Gate policy: ADR-024 makes warm-bubble an operator-sanity diagnostic. Current honest verdict is `FAIL_PHYSICAL_BOUNDS`, not an amplitude miss.
 
-**Opus diagnostic** returned MIXED verdict (HIGH confidence, 16 KB report, 733-line diagnostic script):
-- **Wiring bug confirmed**: `acoustic_wrf.py:875-876` erases the recurrence's `p_perturbation` every substep (measured 12.7 Pa → 4e-11 Pa)
-- **Architectural gap confirmed**: pure recurrence with no coupling produces 0.475 m/s at 20s then decays to 0.044 m/s by 600s (gravity-wave oscillation, not bubble lifting)
-- **Critical §9.2 insight**: the [5, 10] target may require RK3 big-step coupling — the harness is pure small-step. Closest WRF idealized test (`em_squall2d_x`) uses RK3 + Kessler micro + diffusion. Our setup is different.
+In flight:
+- S2.2 d02 replay hang debug: find and fix why `scripts/m6_d02_boundary_replay_1h.py --duration-s 1` hangs.
+- S4-prep Tier-3 convergence infrastructure: build the idealized dt-convergence runner and schema so S4 can start quickly.
+- This doc refresh sprint.
 
-**ADR-021 prototype** "passed" warm-bubble at `w_max=9.0` at BOTH 300s and 600s — but inspection of the source shows literally `w_next = 9.0 * tanh(max(w_next, 0.0) / 9.0)` (clamp to exactly 9.0). Worker correctly disclosed: bounded w, bounded theta, lift bias, mu reset. NOT honest. NOT merged.
+Queued:
+- S2.1-redo real baseline after S2.2 fixes replay startup.
+- S3-real source-backed mu/metric cleanup using real baseline deltas.
+- S4 Tier-3 controlled convergence.
+- S5 6h/24h Tier-4 Gen2/observation comparator.
+- S6 closeout or explicit architecture blocker.
 
-Per user directive #6 ("get GPT-5.5 feedback before core plan decisions"), dispatched a **gate-strategy critic**. Returned `CHANGE-THE-GATE` with extensive evidence:
-- Target lineage in our repo is "Skamarock-Klemp 1994 style", NOT a citation to a published reference run for THIS harness
-- Both "passing" branches achieved their pass via unphysical clamps
-- M6's actual binding gate per `MILESTONES.md` + `VALIDATION_STRATEGY.md` + `ADR-007` is Tier-3 convergence + initial Tier-4 RMSE — not warm-bubble amplitude
-- Recommended two-stage: (Stage 1) operator-sanity gate now; (Stage 2) optional sourced WRF/CM1/MPAS reference later
+## HYBRID Plan Position
 
-In parallel with the critic, dispatched a **wiring-fix sprint** that landed Opus's identified fix cleanly: 2/2 new tests + 27/27 no-regression + 5/5 transfer audit. Theta blowup bounded; mu limiter still saturates (separate concern).
+The close-strategy critic returned `HYBRID`: diagnostics first, baseline before operator changes, Tier-3 before Tier-4, and separate ADR-024 gate-policy acceptance from ADR-023 architecture acceptance. The project is between HYBRID S2 and S3: S1 is done, S2 is blocked on infrastructure, S3-narrow handled bounded provenance cleanup, and S3-real must wait for real replay evidence unless the manager deliberately accepts a weaker path.
 
-## What's on main now
+## Parallel Intel
 
-Main at `5851ec0` with 15+ commits this session. Key landings:
+ADR-021 strip result: the carry-expansion path is not a clean fallback. Removing the warm-bubble clamps and harness aids produced `FAIL_FINITENESS` at step 2, with theta perturbations around +/-22,000 K and signed vertical velocities around +/-1.6e8 m/s at step 1. ADR-021 is branch evidence only unless a new sourced stabilization plan is reviewed.
 
-| Commit | Content |
-|---|---|
-| `563217f` | Opus diagnostic merged (MIXED verdict, HIGH confidence) |
-| `c35aa36` | Wiring fix + gate critic CHANGE-THE-GATE merged |
-| `5851ec0` | Gate-redesign sprint contract |
+Gen2 baseline result: `data/fixtures/gen2_baseline/rmse_summary.csv` now gives real d02 forecast-to-forecast anchors from 17 same-grid Gen2 pairs. Spatial-mean RMSE at 24 h is T2 0.628 K, U10 1.456 m/s, V10 1.591 m/s; at 72 h it is T2 0.255 K, U10 0.888 m/s, V10 0.870 m/s. These are Gen2 consistency anchors, not observation-error proof.
 
-NOT merged (intentional):
-- `worker/gpt/m6x-adr021-wrf-smallstep-prototype @ 00fbd5b` — stabilizer-clamped, fails honest gate; kept on branch as evidence
+## Open Questions
 
-## What's in flight
+1. Should S3-real be barred until S2.2 produces a real d02 baseline, or may it proceed with an explicit "no real before/after baseline" caveat?
+2. Should ADR-024 be promoted independently once review accepts the gate policy, while ADR-023 remains proposed until mu/stabilizer evidence passes?
+3. If S2.2 finds the replay hang is environmental rather than code, should the manager run the real baseline on a different machine or define a smaller real-data replay target?
 
-**NONE — gate-redesign returned at ~06:15.** Project at stable stopping point. Tmux: only your protected windows 0+1.
+## Time To M6 Close
 
-## Gate-redesign result (returned during this session)
-
-The gate-redesign worker delivered in 10m. Critic's Stage 1 spec fully implemented:
-- `scripts/m6_warm_bubble_test.py` verdict logic rewritten (amplitude band → operator-sanity)
-- Anti-clamp static scanner over the production path
-- 4 new operator-sanity tests + 32/32 no-regression + 5/5 transfer audit PASS
-- `.agent/decisions/ADR-024-warm-bubble-gate-policy.md` (PROPOSED)
-- **Honest verdict on current main: `FAIL_PHYSICAL_BOUNDS`** because `mu_perturbation_max_Pa = 86374.47` (at step 300) > 50 kPa bound. The new gate exposes the mu_continuity_increment saturation that the old amplitude gate masked.
-
-The anti-clamp scan correctly flags two warnings (non-failing) for the documented `0.38` and `1.35` magic constants inherited from the slice oracle. These are queued for a future operator-cleanup sprint, not amplitude-band clamps.
-
-Merged on main at `19338d1`.
-
-## Project state summary
-
-```
-M0 ─── M1 ─── M2 ─── M3 ─── M4 ─── M5 ─── M6 ─── M7 ─── M8
- ✓      ✓      ✓      ✓      ✓      ✓     ⚠↻     ◐      -
-                                          gate
-                                          redesign
-                                          in flight
-```
-
-**The dycore architectural question is now better-understood, not solved**:
-- Conservative-column-solver (ADR-023) alone: honest warm-bubble fails, architectural gap real
-- WRF small-step shape (ADR-021): only "passes" with clamp-to-target stabilizers
-- Both: don't meet the [5,10] amplitude target without unphysical aids
-- BUT the [5,10] target itself is unsourced and may require RK3 coupling we don't have in the harness
-
-**M6 actual close gate** (per docs, re-affirmed by critic): Tier-3 short-run convergence + initial Tier-4 RMSE vs Gen2 backfill. Warm-bubble is a diagnostic, not a binding gate.
-
-## What I recommend you read first (on wake)
-
-1. **`.agent/sprints/2026-05-23-m6x-warm-bubble-gate-strategy-critic/reviewer-report.md`** — the CHANGE-THE-GATE verdict and the evidence. ~78 lines.
-2. **`.agent/sprints/2026-05-23-m6x-warm-bubble-failure-diagnostic/diagnostic-report.md`** — Opus's detailed diagnostic, especially §9.2 (RK3 hypothesis).
-3. **`.agent/SPRINT-TRACKER.md`** — current state, recently completed, in flight.
-4. The gate-redesign sprint may have returned by the time you wake up; check `.agent/sprints/2026-05-23-m6x-warm-bubble-gate-redesign/` for outputs.
-
-## Decisions made on your behalf (manager autonomy + GPT-5.5 critique)
-
-- ADR-023 stays PROPOSED (not promoted to ACCEPTED — reviewer found path split + warm-bubble fails)
-- ADR-021 prototype NOT merged (stabilizer-clamped, not honest)
-- Gate policy CHANGED (per critic): warm-bubble becomes operator-sanity diagnostic; Tier-3/Tier-4 RMSE is the real M6 close gate (per docs anyway)
-- Wiring fix landed (Opus-identified bug, correct in isolation)
-- Anti-stuck hedge dispatched in parallel (diagnostic + ADR-021 prototype) — Plan B available even if Plan A failed
-- ADR-024 (gate policy) will be drafted by the gate-redesign worker, PROPOSED status
-
-## Open questions for you (when you have time)
-
-1. Do you ratify the gate change, or do you want to source a real warm-bubble reference (Stage 2) before any architecture commits?
-2. ADR-021 prototype has clamps; should we keep the carry-expansion architecture (drop the clamps) as the foundation, or stay on ADR-023 + accept the warm-bubble amplitude isn't the right gate?
-3. Should the next sprint after gate-redesign be (a) Tier-3 RK3 coupling for the warm-bubble harness, (b) Tier-4 RMSE vs Gen2 backfill direct, or (c) operator cleanup (remove `0.38` / `1.35` magic numbers from the unified path)?
-4. Is `_mu_continuity_increment` tanh limiter acceptable in the meantime, or should it block any forward progress until replaced?
-
-— Manager (Claude Opus 4.7 1M-context), 2026-05-23 ~06:25 UTC
-
-## Final autonomous-session summary
-
-Total sprints executed this autonomous overnight: **10** (3 in round 1; 2 in round 2; reviewer + d02-halted; diagnostic + ADR-021 prototype; wiring-fix + gate-critic; gate-redesign).
-
-Sprints merged to main: **8**.
-
-Sprints intentionally NOT merged: **1** (ADR-021 prototype — stabilizer-clamped at exactly `9.0`).
-
-Sprints halted by manager: **1** (d02 boundary replay halted when reviewer found path split).
-
-ADRs produced: **ADR-021** (DRAFT — opposing alternative; supersession candidate if user prefers), **ADR-022** (DRAFT — simplified hybrid, superseded by ADR-023), **ADR-023** (PROPOSED — conservative column solver, current architecture), **ADR-024** (PROPOSED — warm-bubble gate policy change).
-
-Project state: M6.x dycore is at a **better-understood state, not a solved state**. The architectural question is now framed correctly: the current warm-bubble harness is a diagnostic, M6 close is Tier-3/Tier-4 RMSE per the docs. Decision on whether to source a real warm-bubble reference, fix mu_continuity_increment, or proceed directly to Tier-3/Tier-4 work is yours.
+Best estimate: 3-6 focused sprints after S2.2 unblocks the real d02 replay. In wall time, that is roughly 1-3 days if the hang fix is small and S3-real localizes the mu/stabilizer issue; longer if S2.2 exposes a JAX/GPU infrastructure defect or S4 Tier-3 fails structurally.
