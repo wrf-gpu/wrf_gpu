@@ -1,0 +1,28 @@
+{
+  "artifacts": {},
+  "diagnostic": {
+    "name": "timestep_convergence_dashboard",
+    "purpose": "Standardize Tier-3 dt-pair norms."
+  },
+  "input": {
+    "pair_count": 0,
+    "path": "/tmp/wrf_gpu2_s2dot1redo/.agent/sprints/2026-05-24-m6x-s2dot1redo-real-baseline/artifacts/sidecar-inputs/timestep_convergence_dashboard.input.json"
+  },
+  "measurements": {
+    "convergence_verdict": "PLACEHOLDER_PENDING_S4",
+    "dt_pairs": [],
+    "verdict_note": "This S1 sidecar records structure only; S4 owns pass/fail convergence evidence."
+  },
+  "replay_mode": "real",
+  "schema_version": "m6x-s1-diagnostic-sidecar-v1",
+  "source_citations": [
+    ".agent/milestones/ROADMAP.md:89-98",
+    ".agent/sprints/2026-05-23-m6x-close-strategy-plan-critic/reviewer-report.md:115-123"
+  ],
+  "status": "STRUCTURE_ONLY",
+  "units": {
+    "dt": "s",
+    "lead_time": "s",
+    "norms": "variable-dependent"
+  }
+}

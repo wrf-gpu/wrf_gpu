@@ -53,6 +53,7 @@ NOISE_ANCHORS = {
     "V10": {"lead_hours": 24, "spatial_mean_rmse": 1.590974439, "units": "m/s"},
 }
 COMMAND_LOG_DIR = SPRINT_DIR / "artifacts/command-logs"
+SUMMARY_NAME = "proof_s2dot1redo_summary.json"
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
@@ -65,7 +66,18 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--radiation-cadence-steps", type=int, default=60)
     parser.add_argument("--probe-timeout-s", type=float, default=1800.0)
     parser.add_argument("--replay-timeout-s", type=float, default=36000.0)
-    parser.add_argument("--skip-probe", action="store_true")
+    parser.add_argument(
+        "--skip-probe",
+        action="store_true",
+        default=True,
+        help="Skip the short probe and run the full real replay directly (default for S2.1-redo).",
+    )
+    parser.add_argument(
+        "--run-probe",
+        dest="skip_probe",
+        action="store_false",
+        help="Run the legacy short probe before the full replay.",
+    )
     parser.add_argument("--force-synthetic", action="store_true")
     return parser.parse_args(argv)
 
@@ -601,7 +613,12 @@ def build_conservation_payload(forecast: dict[str, np.ndarray], reference: dict[
     }
 
 
-def run_sidecars(out: Path, input_paths: dict[str, Path]) -> tuple[dict[str, dict[str, Any]], list[dict[str, Any]]]:
+def run_sidecars(
+    out: Path,
+    input_paths: dict[str, Path],
+    *,
+    replay_mode: str | None,
+) -> tuple[dict[str, dict[str, Any]], list[dict[str, Any]]]:
     proofs: dict[str, dict[str, Any]] = {}
     commands: list[dict[str, Any]] = []
     for name, script in SIDEcars:
@@ -620,11 +637,14 @@ def run_sidecars(out: Path, input_paths: dict[str, Path]) -> tuple[dict[str, dic
         print(format_command_result(f"sidecar:{name}", result), flush=True)
         if output.exists():
             proof = load_json(output)
+            proof["replay_mode"] = replay_mode
+            write_json(output, proof)
         else:
             proof = {
                 "schema_version": "m6x-s1-diagnostic-sidecar-v1",
                 "diagnostic": {"name": name},
                 "status": "SIDEcar_FAILED",
+                "replay_mode": replay_mode,
                 "measurements": {},
                 "command_result": result,
             }
@@ -641,8 +661,8 @@ def summarize(
     noise: dict[str, dict[str, Any]],
     commands: list[dict[str, Any]],
 ) -> dict[str, Any]:
-    findings = classify_findings(proof, replay_meta, sidecars, noise)
-    top_numeric = top_numeric_findings(proof, noise)
+    findings = classify_findings(out, proof, replay_meta, sidecars, noise)
+    top_numeric = top_numeric_findings(out, proof, noise)
     s3 = s3_priorities(proof, sidecars, replay_meta)
     summary = {
         "schema_version": "m6x-s2-baseline-instrumented-v1",
@@ -664,13 +684,13 @@ def summarize(
         "s3_priorities": s3,
         "proof_paths": {
             "replay": rel(out / "proof_d02_replay.json"),
-            "summary": rel(out / "proof_s2_baseline_summary.json"),
+            "summary": rel(out / SUMMARY_NAME),
             **{name: item["path"] for name, item in sidecars.items()},
         },
         "commands": [command_record(item) for item in commands],
         "known_gaps": known_gaps(proof, sidecars),
     }
-    write_json(out / "proof_s2_baseline_summary.json", summary)
+    write_json(out / SUMMARY_NAME, summary)
     return summary
 
 
@@ -713,6 +733,7 @@ def sanitizer_summary(sidecars: dict[str, dict[str, Any]]) -> dict[str, Any]:
 
 
 def classify_findings(
+    out: Path,
     proof: dict[str, Any],
     replay_meta: dict[str, Any],
     sidecars: dict[str, dict[str, Any]],
@@ -726,7 +747,7 @@ def classify_findings(
                 "classification": "BLOCKER",
                 "title": "Real Gen2 d02 baseline was not produced",
                 "detail": replay_meta.get("reason") or "real replay unavailable",
-                "proof": rel(SPRINT_DIR / "proof_d02_replay.json"),
+                "proof": rel(out / "proof_d02_replay.json"),
             }
         )
     elif proof.get("first_nonfinite_step") is not None:
@@ -736,7 +757,20 @@ def classify_findings(
                 "classification": "BLOCKER",
                 "title": "Replay became nonfinite",
                 "detail": f"first_nonfinite_step={proof.get('first_nonfinite_step')}",
-                "proof": rel(SPRINT_DIR / "proof_d02_replay.json"),
+                "proof": rel(out / "proof_d02_replay.json"),
+            }
+        )
+
+    bounds = sidecars.get("bound_violation_tracer", {}).get("payload", {})
+    if bounds.get("status") == "VIOLATION":
+        first = bounds.get("measurements", {}).get("first_violation", {})
+        findings.append(
+            {
+                "id": "F01",
+                "classification": "NEW-FINDING-NEEDS-S3-FIX",
+                "title": "Physical-bound tracer found a post-sanitize bound violation",
+                "detail": json.dumps(first, sort_keys=True),
+                "proof": sidecars.get("bound_violation_tracer", {}).get("path"),
             }
         )
 
@@ -835,7 +869,7 @@ def classify_findings(
     return findings
 
 
-def top_numeric_findings(proof: dict[str, Any], noise: dict[str, dict[str, Any]]) -> list[dict[str, Any]]:
+def top_numeric_findings(out_dir: Path, proof: dict[str, Any], noise: dict[str, dict[str, Any]]) -> list[dict[str, Any]]:
     out: list[dict[str, Any]] = []
     diagnostics = proof.get("diagnostics", {})
     for key in (
@@ -847,10 +881,10 @@ def top_numeric_findings(proof: dict[str, Any], noise: dict[str, dict[str, Any]]
         "theta_max_over_run_k",
     ):
         if key in diagnostics:
-            out.append({"metric": key, "value": diagnostics[key], "proof": rel(SPRINT_DIR / "proof_d02_replay.json")})
+            out.append({"metric": key, "value": diagnostics[key], "proof": rel(out_dir / "proof_d02_replay.json")})
     for field, item in proof.get("comparison", {}).get("rmse", {}).items():
         value = item.get("value") if isinstance(item, dict) else None
-        row = {"metric": f"rmse_{field}", "value": value, "proof": rel(SPRINT_DIR / "proof_d02_replay.json")}
+        row = {"metric": f"rmse_{field}", "value": value, "proof": rel(out_dir / "proof_d02_replay.json")}
         if field in noise:
             row["noise_floor_24h"] = noise[field]["spatial_mean_rmse"]
         out.append(row)
@@ -945,7 +979,7 @@ def write_findings(out: Path, summary: dict[str, Any]) -> Path:
     for gap in summary["known_gaps"]:
         lines.append(f"- {gap}")
     lines.append("")
-    return write_text(out / "findings.md", "\n".join(lines))
+    return write_text(out / "findings_real.md", "\n".join(lines))
 
 
 def write_s3_memo(out: Path, summary: dict[str, Any]) -> Path:
@@ -983,16 +1017,18 @@ def write_s3_memo(out: Path, summary: dict[str, Any]) -> Path:
         else "S3 plus one bounded fix sprint is plausible, but only if it removes or ratifies limiter/sanitizer masking before Tier-3 claims."
     )
     lines.extend(["## Exit-Rule Status", "", exit_status, ""])
-    return write_text(out / "s3_input_memo.md", "\n".join(lines))
+    return write_text(out / "s3_input_memo_real.md", "\n".join(lines))
 
 
 def main(argv: list[str] | None = None) -> int:
+    global COMMAND_LOG_DIR
     args = parse_args(argv)
     out = args.output_dir
     if not out.is_absolute():
         out = ROOT / out
     out.mkdir(parents=True, exist_ok=True)
     (out / "artifacts").mkdir(parents=True, exist_ok=True)
+    COMMAND_LOG_DIR = out / "artifacts/command-logs"
 
     print("[m6x-s2] starting measurement-only d02 baseline orchestration", flush=True)
     print(f"[m6x-s2] output_dir={out}", flush=True)
@@ -1000,13 +1036,13 @@ def main(argv: list[str] | None = None) -> int:
     noise = load_noise_floor()
     forecast, reference, aux = load_output_arrays(proof)
     inputs = sidecar_inputs(out, proof, forecast, reference, aux)
-    sidecars, sidecar_commands = run_sidecars(out, inputs)
+    sidecars, sidecar_commands = run_sidecars(out, inputs, replay_mode=replay_meta.get("mode"))
     all_commands = list(replay_meta.get("commands", [])) + sidecar_commands
     summary = summarize(out, proof, replay_meta, sidecars, noise, all_commands)
     write_findings(out, summary)
     write_s3_memo(out, summary)
 
-    print("[m6x-s2] wrote proof_s2_baseline_summary.json", flush=True)
+    print(f"[m6x-s2] wrote {SUMMARY_NAME}", flush=True)
     print(json.dumps({"status": summary["status"], "replay_mode": summary["replay_mode"], "fallback_reason": summary["fallback_reason"]}, indent=2), flush=True)
     return 0
 

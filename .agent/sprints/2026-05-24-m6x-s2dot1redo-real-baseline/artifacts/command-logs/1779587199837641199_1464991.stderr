@@ -1,0 +1,18 @@
+E0524 02:53:25.829933 1465099 slow_operation_alarm.cc:73]
+********************************
+[Compiling module jit_run_replay_scan for GPU] Very slow compile? If you want to file a bug, run with envvar XLA_FLAGS=--xla_dump_to=/tmp/foo and attach the results.
+********************************
+E0524 02:56:07.402779 1464995 slow_operation_alarm.cc:140] The operation took 4m41.572903015s
+
+********************************
+[Compiling module jit_run_replay_scan for GPU] Very slow compile? If you want to file a bug, run with envvar XLA_FLAGS=--xla_dump_to=/tmp/foo and attach the results.
+********************************
+W0524 02:59:27.557802 1476099 cupti_tracer.cc:1739] Already too many activity events, drop the buffer of 32664bytes of event to reuse. This warning is logged once per 10000 occurrences, the current count is 1.
+W0524 02:59:41.496125 1476099 cupti_tracer.cc:1739] Already too many activity events, drop the buffer of 32760bytes of event to reuse. This warning is logged once per 10000 occurrences, the current count is 10001.
+W0524 02:59:54.071629 1476099 cupti_tracer.cc:1739] Already too many activity events, drop the buffer of 32760bytes of event to reuse. This warning is logged once per 10000 occurrences, the current count is 20001.
+W0524 03:00:06.887969 1476099 cupti_tracer.cc:1739] Already too many activity events, drop the buffer of 32632bytes of event to reuse. This warning is logged once per 10000 occurrences, the current count is 30001.
+W0524 03:00:19.368007 1476099 cupti_tracer.cc:1739] Already too many activity events, drop the buffer of 32760bytes of event to reuse. This warning is logged once per 10000 occurrences, the current count is 40001.
+W0524 03:00:32.090644 1476099 cupti_tracer.cc:1739] Already too many activity events, drop the buffer of 32568bytes of event to reuse. This warning is logged once per 10000 occurrences, the current count is 50001.
+W0524 03:00:44.469042 1476099 cupti_tracer.cc:1739] Already too many activity events, drop the buffer of 32760bytes of event to reuse. This warning is logged once per 10000 occurrences, the current count is 60001.
+W0524 03:00:56.567246 1476099 cupti_tracer.cc:1739] Already too many activity events, drop the buffer of 32696bytes of event to reuse. This warning is logged once per 10000 occurrences, the current count is 70001.
+W0524 03:01:09.366744 1476099 cupti_tracer.cc:1739] Already too many activity events, drop the buffer of 32728bytes of event to reuse. This warning is logged once per 10000 occurrences, the current count is 80001.

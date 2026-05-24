@@ -1,0 +1,28 @@
+{
+  "artifacts": {},
+  "diagnostic": {
+    "name": "limiter_activation_tracker",
+    "purpose": "Quantify dry-mass limiter saturation."
+  },
+  "input": {
+    "path": "/tmp/wrf_gpu2_s2dot1redo/.agent/sprints/2026-05-24-m6x-s2dot1redo-real-baseline/artifacts/sidecar-inputs/limiter_activation_tracker.input.json",
+    "step_count": 0
+  },
+  "measurements": {
+    "limiter_active": false,
+    "max_saturation_fraction": 0.0,
+    "per_step": []
+  },
+  "replay_mode": "real",
+  "schema_version": "m6x-s1-diagnostic-sidecar-v1",
+  "source_citations": [
+    "src/gpuwrf/dynamics/acoustic_wrf.py:456-475",
+    "src/gpuwrf/dynamics/acoustic_wrf.py:872-876"
+  ],
+  "status": "OK",
+  "units": {
+    "dmu": "Pa",
+    "saturation_fraction": "1",
+    "time_s": "s"
+  }
+}
