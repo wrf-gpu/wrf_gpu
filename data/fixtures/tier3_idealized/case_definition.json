@@ -1,0 +1,83 @@
+{
+  "case_name": "flat_warm_bubble_tier3",
+  "description": "Small flat, dry, constant-base-state warm-bubble convergence case for M6 Tier-3 infrastructure. This is independent of d02 replay and uses the ADR-023 unified acoustic path only as the current operator under test.",
+  "case_choice_rationale": {
+    "why_not_d02": "The sprint requires an idealized case independent of Gen2/d02 replay so timestep sensitivity is not mixed with boundary replay or configuration noise.",
+    "why_flat_warm_bubble": "The contract validation command names flat_warm_bubble_tier3. To avoid reusing the old amplitude gate, this case uses a small cosine-bell theta perturbation, short integration, and convergence norms instead of a target w-amplitude band.",
+    "wrf_inspiration": "/mnt/data/canairy_meteo/artifacts/wrf_gpu_src/WRF/test/em_hill2d_x/namelist.input exists and documents an ideal dycore-only, open-x/periodic-y, no-physics test family. This case is flatter and smaller for infrastructure smoke only."
+  },
+  "grid": {
+    "nx": 4,
+    "ny": 4,
+    "nz": 8,
+    "dx_m": 2000.0,
+    "dy_m": 2000.0,
+    "dz_meta": {
+      "type": "uniform_flat",
+      "dz_m": 500.0,
+      "ztop_m": 4000.0,
+      "vertical_coordinate": "hybrid_eta"
+    }
+  },
+  "initial_conditions": {
+    "base_state": {
+      "surface_pressure_pa": 100000.0,
+      "surface_temperature_k": 300.0,
+      "pressure_profile": "isothermal_hydrostatic",
+      "theta_base": "derived_from_pressure_profile",
+      "hydrostatic_balance": "analytic isothermal base pressure and geopotential"
+    },
+    "theta_perturbation": {
+      "form": "compact_cosine_bell_x_y_z",
+      "amplitude_k": 0.25,
+      "center_x_fraction": 0.5,
+      "center_y_fraction": 0.5,
+      "center_z_m": 1800.0,
+      "radius_x_m": 2600.0,
+      "radius_y_m": 2600.0,
+      "radius_z_m": 1500.0,
+      "y_modulation_fraction": 0.05
+    },
+    "wind": {
+      "u_background_m_s": 5.0,
+      "v_background_m_s": 0.0,
+      "w_background_m_s": 0.0
+    },
+    "qv_kg_kg": 0.0
+  },
+  "boundary_conditions": {
+    "mode": "open",
+    "x": "open edge-gradient in current ADR-023 pressure-gradient implementation",
+    "y": "open edge-gradient in current ADR-023 pressure-gradient implementation",
+    "z_bottom": "rigid flat lower boundary",
+    "z_top": "rigid lid"
+  },
+  "physics_toggles": {
+    "scope": "dycore_only",
+    "microphysics": false,
+    "radiation": false,
+    "surface_layer": false,
+    "pbl": false,
+    "land_surface": false
+  },
+  "solver": {
+    "operator": "ADR-023 run_acoustic_scan_carry",
+    "n_acoustic_substeps": 2,
+    "epssm": 0.1,
+    "smdiv": 0.0,
+    "rayleigh": 0.0
+  },
+  "dt_refinement": {
+    "default_dt_s": 1.0,
+    "refinement_factors": [1.0, 0.5, 0.25],
+    "dt_pairs": ["dt_vs_dt_over_2", "dt_over_2_vs_dt_over_4"]
+  },
+  "total_integration_time_s": 4.0,
+  "checkpoints_s": [1.0, 2.0, 4.0],
+  "variables_to_track": ["U", "V", "W", "theta", "p_perturbation", "mu_perturbation"],
+  "pass_fail_criteria": {
+    "rmse_refined_pair_max_growth_factor": 1.25,
+    "linf_refined_pair_max_growth_factor": 1.5,
+    "absolute_floor": 1e-12
+  }
+}
