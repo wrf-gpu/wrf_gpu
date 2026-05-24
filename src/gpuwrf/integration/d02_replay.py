@@ -4,9 +4,12 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from functools import partial
+import gzip
+import json
 import math
 import os
 from pathlib import Path
+import re
 import shutil
 import time
 from typing import Any, NamedTuple
@@ -36,10 +39,120 @@ from gpuwrf.dynamics.tendencies import add_scaled_tendencies
 from gpuwrf.io.gen2_accessor import Gen2Run
 from gpuwrf.io.gen2_wrfout_loader import normalize_valid_time
 from gpuwrf.io.land_state import load_prescribed_land_state
-from gpuwrf.profiling.transfer_audit import block_until_ready, count_transfer_bytes, visible_gpu_name
+from gpuwrf.profiling.transfer_audit import block_until_ready, visible_gpu_name
 
 
 config.update("jax_enable_x64", True)
+
+_DEBUG = os.environ.get("GPUWRF_D02_REPLAY_DEBUG", "").lower() not in {"", "0", "false", "no", "off"}
+_DEBUG_START = time.perf_counter()
+
+
+def _debug(message: str) -> None:
+    if _DEBUG:
+        print(f"[d02-replay +{time.perf_counter() - _DEBUG_START:8.3f}s] {message}", flush=True)
+
+
+def _shape_dtype(value: Any) -> str:
+    shape = getattr(value, "shape", np.shape(value))
+    dtype = getattr(value, "dtype", None)
+    return f"shape={tuple(shape)} dtype={dtype}"
+
+
+_debug("module import complete")
+
+_TRACE_SIZE_RE = re.compile(r"(?:^|[\s,{])(?:bytes|byte_size|size|num_bytes|NumBytes)\s*[:=]\s*(\d+)", re.IGNORECASE)
+_TRACE_DIRECTION_RE = re.compile(
+    r"(host_to_device|device_to_host|memcpyh2d|memcpyd2h|\bh2d\b|\bd2h\b)",
+    re.IGNORECASE,
+)
+
+
+def _flatten_trace_args(value: Any) -> str:
+    if isinstance(value, dict):
+        return " ".join(f"{key}:{_flatten_trace_args(item)}" for key, item in value.items())
+    if isinstance(value, (list, tuple)):
+        return " ".join(_flatten_trace_args(item) for item in value)
+    return str(value)
+
+
+def _trace_event_size(value: Any) -> int:
+    size = 0
+    if isinstance(value, dict):
+        for key, item in value.items():
+            if str(key).lower() in {"bytes", "byte size", "byte_size", "size", "numbytes", "num_bytes"}:
+                try:
+                    size = max(size, int(item))
+                except (TypeError, ValueError):
+                    pass
+            size = max(size, _trace_event_size(item))
+        return size
+    if isinstance(value, (list, tuple)):
+        for item in value:
+            size = max(size, _trace_event_size(item))
+        return size
+    if isinstance(value, str):
+        for match in _TRACE_SIZE_RE.finditer(value):
+            size = max(size, int(match.group(1)))
+    return size
+
+
+def _read_trace_json(path: Path) -> dict[str, Any] | None:
+    try:
+        if path.suffix == ".gz":
+            with gzip.open(path, "rt", encoding="utf-8", errors="replace") as handle:
+                return json.loads(handle.read())
+        return json.loads(path.read_text(encoding="utf-8", errors="replace"))
+    except (OSError, json.JSONDecodeError):
+        return None
+
+
+def _read_trace_text(path: Path) -> str:
+    try:
+        if path.suffix == ".gz":
+            with gzip.open(path, "rt", encoding="utf-8", errors="replace") as handle:
+                return handle.read()
+        return path.read_text(encoding="utf-8", errors="replace")
+    except OSError:
+        return ""
+
+
+def _count_replay_transfer_bytes(trace_dir: Path) -> tuple[int, int, list[str]]:
+    """Count actual H2D/D2H JSON trace events while ignoring D2D and xplane text hits."""
+
+    h2d = 0
+    d2h = 0
+    matched: list[str] = []
+    for path in sorted(trace_dir.rglob("*")):
+        if not path.is_file() or path.stat().st_size == 0:
+            continue
+        if not (path.name.endswith(".json") or path.name.endswith(".trace.json.gz")):
+            continue
+        text = _read_trace_text(path)
+        if not _TRACE_DIRECTION_RE.search(text):
+            continue
+        payload = _read_trace_json(path)
+        if not isinstance(payload, dict):
+            continue
+        file_matched = False
+        for event in payload.get("traceEvents", []):
+            if not isinstance(event, dict):
+                continue
+            name = str(event.get("name", ""))
+            args = event.get("args", {})
+            detail = f"{name} {_flatten_trace_args(args)}".lower()
+            if "d2d" in detail or "device-to-device" in detail:
+                continue
+            size = _trace_event_size(args)
+            if "host_to_device" in detail or "memcpyh2d" in detail or re.search(r"\bh2d\b", detail):
+                h2d += size
+                file_matched = True
+            elif "device_to_host" in detail or "memcpyd2h" in detail or re.search(r"\bd2h\b", detail):
+                d2h += size
+                file_matched = True
+        if file_matched:
+            matched.append(str(path))
+    return h2d, d2h, matched
 
 P0_THETA_OFFSET_K = 300.0
 DEFAULT_REPLAY_RUN_DIR = Path("/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z")
@@ -85,14 +198,19 @@ class StepDiagnostics(NamedTuple):
     theta_max_k: object
 
 
-def _load(run: Gen2Run, domain: str, var: str, time: int):
-    return run.load(domain, var, time=time, lazy=False)
+def _load(run: Gen2Run, domain: str, var: str, time_index: int):
+    start = time.perf_counter()
+    _debug(f"load start {domain}:{var}[{time_index}]")
+    value = run.load(domain, var, time=time_index, lazy=False)
+    _debug(f"load done {domain}:{var}[{time_index}] {_shape_dtype(value)} elapsed_s={time.perf_counter() - start:.3f}")
+    return value
 
 
 def _optional_load(run: Gen2Run, domain: str, var: str, time: int, fallback):
     try:
         return _load(run, domain, var, time)
     except KeyError:
+        _debug(f"optional load missing {domain}:{var}[{time}], using fallback {_shape_dtype(fallback)}")
         return fallback
 
 
@@ -120,6 +238,7 @@ def _pack_history_3d(
     dtype: Any,
     transform=None,
 ) -> np.ndarray:
+    _debug(f"pack history start {domain}:{var} ntimes={ntimes} z_len={z_len} max_side={max_side}")
     packed = np.zeros((ntimes, 4, z_len, max_side), dtype=dtype)
     for time_index in range(ntimes):
         data = np.asarray(_load(run, domain, var, time_index), dtype=dtype)
@@ -127,15 +246,18 @@ def _pack_history_3d(
             data = np.asarray(transform(run, domain, data, time_index), dtype=dtype)
         for side, values in _field_sides_3d(data).items():
             packed[time_index, SIDE_INDEX[side], : values.shape[0], : values.shape[1]] = values
+    _debug(f"pack history done {domain}:{var} {_shape_dtype(packed)}")
     return packed
 
 
 def _pack_history_mu(run: Gen2Run, domain: str, *, ntimes: int, max_side: int) -> np.ndarray:
+    _debug(f"pack history start {domain}:MU+MUB ntimes={ntimes} max_side={max_side}")
     packed = np.zeros((ntimes, 4, 1, max_side), dtype=np.float64)
     for time_index in range(ntimes):
         data = np.asarray(_load(run, domain, "MU", time_index) + _load(run, domain, "MUB", time_index), dtype=np.float64)
         for side, values in _field_sides_2d(data).items():
             packed[time_index, SIDE_INDEX[side], 0, : values.shape[0]] = values
+    _debug(f"pack history done {domain}:MU+MUB {_shape_dtype(packed)}")
     return packed
 
 
@@ -148,7 +270,9 @@ def load_history_boundary_leaves(
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     """Build real lateral replay leaves from the Gen2 d02 hourly wrfout history."""
 
+    _debug(f"load boundary leaves start domain={domain}")
     history_count = len(run.history_files(domain))
+    _debug(f"history files counted domain={domain} count={history_count}")
     if history_count < 2:
         raise FileNotFoundError(f"{run.path} has fewer than two wrfout_{domain} history files")
     n = min(history_count, int(ntimes if ntimes is not None else history_count))
@@ -194,7 +318,9 @@ def load_history_boundary_leaves(
         ),
         "mu_bdy": _pack_history_mu(run, domain, ntimes=n, max_side=max_side),
     }
+    _debug("device_put boundary leaves start")
     leaves = {name: jax.device_put(jnp.asarray(value)) for name, value in leaves_np.items()}
+    _debug("device_put boundary leaves done")
     meta = {
         "source": "Gen2 d02 hourly wrfout side-history replay",
         "source_run_dir": str(run.path),
@@ -209,13 +335,21 @@ def load_history_boundary_leaves(
 def build_replay_case(run_dir: str | Path = DEFAULT_REPLAY_RUN_DIR, *, domain: str = "d02") -> ReplayCase:
     """Load a Gen2 d02 initial state with WRF perturbation/base splits preserved."""
 
+    _debug(f"build_replay_case start run_dir={run_dir} domain={domain}")
     run = Gen2Run(run_dir)
+    _debug("Gen2Run created")
     grid = run.grid(domain).as_grid_spec()
+    _debug(f"grid loaded mass_shape={(grid.nz, grid.ny, grid.nx)}")
     state = State.zeros(grid)
+    _debug("State.zeros complete")
     tendencies = Tendencies.zeros(grid)
+    _debug("Tendencies.zeros complete")
     metrics = load_wrfinput_metrics(run.wrfinput_file(domain))
+    _debug("load_wrfinput_metrics complete")
     land = load_prescribed_land_state(run, domain=domain, time=0)
+    _debug("load_prescribed_land_state complete")
     boundary_leaves, boundary_meta = load_history_boundary_leaves(run, grid, domain=domain)
+    _debug("load_history_boundary_leaves complete")
 
     p_perturbation = _load(run, domain, "P", 0)
     pb = _load(run, domain, "PB", 0)
@@ -256,6 +390,7 @@ def build_replay_case(run_dir: str | Path = DEFAULT_REPLAY_RUN_DIR, *, domain: s
         roughness_m=land.roughness_m,
         **boundary_leaves,
     )
+    _debug("state.replace with initial fields complete")
     base = BaseState(
         pb=pb.astype(state.p_total.dtype),
         phb=phb.astype(state.ph_total.dtype),
@@ -288,6 +423,7 @@ def build_replay_case(run_dir: str | Path = DEFAULT_REPLAY_RUN_DIR, *, domain: s
             "mu_split": "mu_total=MUB+MU, mu_perturbation=MU",
         },
     }
+    _debug("build_replay_case done")
     return ReplayCase(run, state, tendencies, grid, metrics, base, state.p_perturbation, metadata)
 
 
@@ -394,6 +530,8 @@ def _candidate_timestep_adr023(
     base_state: BaseState,
     global_step,
     replay_config: ReplayConfig,
+    *,
+    run_radiation: bool,
 ) -> tuple[State, Any]:
     next_state, next_previous_pressure = _dycore_step_adr023(
         state,
@@ -407,19 +545,234 @@ def _candidate_timestep_adr023(
     next_state = thompson_adapter(next_state, float(replay_config.dt_s))
     next_state = mynn_adapter(next_state, float(replay_config.dt_s), grid)
     next_state = surface_adapter(next_state, float(replay_config.dt_s))
-    run_radiation = (global_step % int(replay_config.radiation_cadence_steps)) == 0
-    run_radiation = run_radiation | (
-        bool(replay_config.final_radiation) & (global_step == _total_steps(replay_config))
-    )
-    next_state = jax.lax.cond(
-        run_radiation,
-        lambda value: rrtmg_adapter(value, float(replay_config.dt_s), grid),
-        lambda value: value,
-        next_state,
-    )
+    if bool(run_radiation):
+        next_state = rrtmg_adapter(next_state, float(replay_config.dt_s), grid)
     lead_seconds = global_step.astype(jnp.float64) * float(replay_config.dt_s)
     next_state = apply_lateral_boundaries(next_state, lead_seconds, float(replay_config.dt_s), replay_config.boundary_config)
     return next_state, next_previous_pressure
+
+
+def _empty_step_diagnostics() -> StepDiagnostics:
+    return StepDiagnostics(
+        finite_after_sanitize=jnp.zeros((0,), dtype=jnp.bool_),
+        candidate_nonfinite_count=jnp.zeros((0,), dtype=jnp.int64),
+        candidate_clip_count=jnp.zeros((0,), dtype=jnp.int64),
+        candidate_changed_count=jnp.zeros((0,), dtype=jnp.int64),
+        w_abs_max_m_s=jnp.zeros((0,), dtype=jnp.float64),
+        theta_min_k=jnp.zeros((0,), dtype=jnp.float64),
+        theta_max_k=jnp.zeros((0,), dtype=jnp.float64),
+    )
+
+
+def _stack_step_diagnostics(diagnostics: StepDiagnostics) -> StepDiagnostics:
+    return StepDiagnostics(*(jnp.reshape(leaf, (1,)) for leaf in diagnostics))
+
+
+def _concat_step_diagnostics(chunks: list[StepDiagnostics]) -> StepDiagnostics:
+    if not chunks:
+        return _empty_step_diagnostics()
+    if len(chunks) == 1:
+        return chunks[0]
+    return StepDiagnostics(
+        *(
+            jnp.concatenate([getattr(chunk, name) for chunk in chunks], axis=0)
+            for name in StepDiagnostics._fields
+        )
+    )
+
+
+@partial(jax.jit, static_argnames=("grid", "replay_config", "start_step", "steps"))
+def _run_replay_scan_no_radiation(
+    state: State,
+    previous_pressure,
+    tendencies: Tendencies,
+    grid: GridSpec,
+    metrics: DycoreMetrics,
+    base_state: BaseState,
+    replay_config: ReplayConfig,
+    start_step: int,
+    steps: int,
+) -> tuple[State, Any, StepDiagnostics]:
+    """Run a no-radiation replay segment as one shape-stable device scan."""
+
+    indices = jnp.arange(int(steps), dtype=jnp.int32) + jnp.asarray(int(start_step), dtype=jnp.int32) + 1
+
+    def body(carry, global_step):
+        carry_state, carry_previous_pressure = carry
+        candidate, next_previous_pressure = _candidate_timestep_adr023(
+            carry_state,
+            carry_previous_pressure,
+            tendencies,
+            grid,
+            metrics,
+            base_state,
+            global_step,
+            replay_config,
+            run_radiation=False,
+        )
+        sanitized, stats = _sanitize_replay_candidate(candidate, carry_state, base_state)
+        return (sanitized, next_previous_pressure), _step_diagnostics(sanitized, stats)
+
+    (final_state, final_previous_pressure), diagnostics = jax.lax.scan(
+        body,
+        (state, previous_pressure),
+        indices,
+    )
+    return final_state, final_previous_pressure, diagnostics
+
+
+@partial(jax.jit, static_argnames=("grid", "replay_config", "run_radiation"))
+def _run_replay_one_step(
+    state: State,
+    previous_pressure,
+    tendencies: Tendencies,
+    grid: GridSpec,
+    metrics: DycoreMetrics,
+    base_state: BaseState,
+    replay_config: ReplayConfig,
+    global_step,
+    *,
+    run_radiation: bool,
+) -> tuple[State, Any, StepDiagnostics]:
+    """Run one replay timestep with radiation as a static Python branch."""
+
+    candidate, next_previous_pressure = _candidate_timestep_adr023(
+        state,
+        previous_pressure,
+        tendencies,
+        grid,
+        metrics,
+        base_state,
+        global_step,
+        replay_config,
+        run_radiation=run_radiation,
+    )
+    sanitized, stats = _sanitize_replay_candidate(candidate, state, base_state)
+    return sanitized, next_previous_pressure, _step_diagnostics(sanitized, stats)
+
+
+def _run_no_radiation_segment(
+    state: State,
+    previous_pressure,
+    tendencies: Tendencies,
+    grid: GridSpec,
+    metrics: DycoreMetrics,
+    base_state: BaseState,
+    replay_config: ReplayConfig,
+    *,
+    completed_steps: int,
+    steps: int,
+) -> tuple[State, Any, StepDiagnostics]:
+    if int(steps) <= 0:
+        return state, previous_pressure, _empty_step_diagnostics()
+    _debug(f"no-radiation segment start completed_steps={completed_steps} steps={steps}")
+    result = _run_replay_scan_no_radiation(
+        state,
+        previous_pressure,
+        tendencies,
+        grid,
+        metrics,
+        base_state,
+        replay_config,
+        int(completed_steps),
+        int(steps),
+    )
+    _debug(f"no-radiation segment dispatched completed_steps={completed_steps} steps={steps}")
+    return result
+
+
+def _run_static_one_step(
+    state: State,
+    previous_pressure,
+    tendencies: Tendencies,
+    grid: GridSpec,
+    metrics: DycoreMetrics,
+    base_state: BaseState,
+    replay_config: ReplayConfig,
+    *,
+    step_number: int,
+    run_radiation: bool,
+) -> tuple[State, Any, StepDiagnostics]:
+    _debug(f"one-step segment start step={step_number} run_radiation={run_radiation}")
+    state, previous_pressure, diagnostics = _run_replay_one_step(
+        state,
+        previous_pressure,
+        tendencies,
+        grid,
+        metrics,
+        base_state,
+        replay_config,
+        jnp.asarray(int(step_number), dtype=jnp.int32),
+        run_radiation=bool(run_radiation),
+    )
+    _debug(f"one-step segment dispatched step={step_number} run_radiation={run_radiation}")
+    return state, previous_pressure, _stack_step_diagnostics(diagnostics)
+
+
+@partial(jax.jit, static_argnames=("grid", "replay_config", "start_step", "blocks", "cadence"))
+def _run_replay_radiation_blocks(
+    state: State,
+    previous_pressure,
+    tendencies: Tendencies,
+    grid: GridSpec,
+    metrics: DycoreMetrics,
+    base_state: BaseState,
+    replay_config: ReplayConfig,
+    start_step: int,
+    blocks: int,
+    cadence: int,
+) -> tuple[State, Any, StepDiagnostics]:
+    """Run full radiation-cadence blocks without unrolling each block in Python."""
+
+    def no_radiation_body(carry, global_step):
+        carry_state, carry_previous_pressure = carry
+        candidate, next_previous_pressure = _candidate_timestep_adr023(
+            carry_state,
+            carry_previous_pressure,
+            tendencies,
+            grid,
+            metrics,
+            base_state,
+            global_step,
+            replay_config,
+            run_radiation=False,
+        )
+        sanitized, stats = _sanitize_replay_candidate(candidate, carry_state, base_state)
+        return (sanitized, next_previous_pressure), _step_diagnostics(sanitized, stats)
+
+    def block(carry, block_index):
+        carry_state, carry_previous_pressure = carry
+        block_completed = jnp.asarray(int(start_step), dtype=jnp.int32) + block_index * int(cadence)
+        no_rad_indices = jnp.arange(int(cadence) - 1, dtype=jnp.int32) + block_completed + 1
+        (carry_state, carry_previous_pressure), no_rad_diags = jax.lax.scan(
+            no_radiation_body,
+            (carry_state, carry_previous_pressure),
+            no_rad_indices,
+        )
+        candidate, next_previous_pressure = _candidate_timestep_adr023(
+            carry_state,
+            carry_previous_pressure,
+            tendencies,
+            grid,
+            metrics,
+            base_state,
+            block_completed + int(cadence),
+            replay_config,
+            run_radiation=True,
+        )
+        sanitized, stats = _sanitize_replay_candidate(candidate, carry_state, base_state)
+        block_diags = _concat_step_diagnostics([no_rad_diags, _stack_step_diagnostics(_step_diagnostics(sanitized, stats))])
+        return (sanitized, next_previous_pressure), block_diags
+
+    (final_state, final_previous_pressure), block_diags = jax.lax.scan(
+        block,
+        (state, previous_pressure),
+        jnp.arange(int(blocks), dtype=jnp.int32),
+    )
+    flat_diags = StepDiagnostics(
+        *(leaf.reshape((int(blocks) * int(cadence),)) for leaf in block_diags)
+    )
+    return final_state, final_previous_pressure, flat_diags
 
 
 @partial(jax.jit, static_argnames=("grid", "replay_config"))
@@ -432,30 +785,72 @@ def run_replay_scan(
     base_state: BaseState,
     replay_config: ReplayConfig,
 ) -> tuple[State, Any, StepDiagnostics]:
-    """Run the coupled ADR-023 replay as one device-resident scan."""
+    """Run the coupled ADR-023 replay with static radiation-cadence segmentation."""
 
-    def body(carry, local_index):
-        carry_state, carry_previous_pressure = carry
-        global_step = local_index.astype(jnp.int32) + jnp.asarray(1, dtype=jnp.int32)
-        candidate, next_previous_pressure = _candidate_timestep_adr023(
-            carry_state,
-            carry_previous_pressure,
+    total = _total_steps(replay_config)
+    cadence = int(replay_config.radiation_cadence_steps)
+    if cadence <= 0:
+        raise ValueError("radiation_cadence_steps must be positive")
+    if total <= 0:
+        return state, previous_pressure, _empty_step_diagnostics()
+
+    current = state
+    current_previous_pressure = previous_pressure
+    completed = 0
+    remaining = int(total)
+    chunks: list[StepDiagnostics] = []
+
+    full_blocks = remaining // cadence
+    if full_blocks > 0:
+        _debug(f"radiation block scan start completed_steps={completed} blocks={full_blocks} cadence={cadence}")
+        current, current_previous_pressure, diagnostics = _run_replay_radiation_blocks(
+            current,
+            current_previous_pressure,
             tendencies,
             grid,
             metrics,
             base_state,
-            global_step,
             replay_config,
+            completed,
+            full_blocks,
+            cadence,
         )
-        sanitized, stats = _sanitize_replay_candidate(candidate, carry_state, base_state)
-        return (sanitized, next_previous_pressure), _step_diagnostics(sanitized, stats)
+        _debug(f"radiation block scan dispatched completed_steps={completed} blocks={full_blocks} cadence={cadence}")
+        chunks.append(diagnostics)
+        completed += full_blocks * cadence
+        remaining -= full_blocks * cadence
 
-    (final_state, final_previous_pressure), diagnostics = jax.lax.scan(
-        body,
-        (state, previous_pressure),
-        jnp.arange(_total_steps(replay_config), dtype=jnp.int32),
-    )
-    return final_state, final_previous_pressure, diagnostics
+    if remaining > 0:
+        current, current_previous_pressure, diagnostics = _run_no_radiation_segment(
+            current,
+            current_previous_pressure,
+            tendencies,
+            grid,
+            metrics,
+            base_state,
+            replay_config,
+            completed_steps=completed,
+            steps=remaining - 1,
+        )
+        if remaining - 1 > 0:
+            chunks.append(diagnostics)
+            completed += remaining - 1
+            remaining -= remaining - 1
+        tail_radiation = bool(replay_config.final_radiation and completed + 1 == total)
+        current, current_previous_pressure, diagnostics = _run_static_one_step(
+            current,
+            current_previous_pressure,
+            tendencies,
+            grid,
+            metrics,
+            base_state,
+            replay_config,
+            step_number=completed + 1,
+            run_radiation=tail_radiation,
+        )
+        chunks.append(diagnostics)
+
+    return current, current_previous_pressure, _concat_step_diagnostics(chunks)
 
 
 def _first_nonfinite_step(diagnostics: StepDiagnostics) -> int | None:
@@ -466,6 +861,7 @@ def _first_nonfinite_step(diagnostics: StepDiagnostics) -> int | None:
 
 
 def diagnostics_summary(state: State, diagnostics: StepDiagnostics) -> dict[str, Any]:
+    state_diag = state_diagnostics(state)
     nonfinite = np.asarray(jax.device_get(diagnostics.candidate_nonfinite_count), dtype=np.int64)
     clips = np.asarray(jax.device_get(diagnostics.candidate_clip_count), dtype=np.int64)
     changed = np.asarray(jax.device_get(diagnostics.candidate_changed_count), dtype=np.int64)
@@ -474,16 +870,16 @@ def diagnostics_summary(state: State, diagnostics: StepDiagnostics) -> dict[str,
     theta_min = np.asarray(jax.device_get(diagnostics.theta_min_k), dtype=np.float64)
     theta_max = np.asarray(jax.device_get(diagnostics.theta_max_k), dtype=np.float64)
     return {
-        **state_diagnostics(state),
+        **state_diag,
         "first_nonfinite_step": _first_nonfinite_step(diagnostics),
         "first_candidate_nonfinite_step": int(candidate_bad[0] + 1) if candidate_bad.size else None,
         "candidate_nonfinite_steps": int(np.count_nonzero(nonfinite)),
         "candidate_nonfinite_count_total": int(nonfinite.sum()),
         "candidate_clip_count_total": int(clips.sum()),
         "candidate_changed_count_total": int(changed.sum()),
-        "peak_w_abs_m_s": float(np.nanmax(w_abs)),
-        "theta_min_over_run_k": float(np.nanmin(theta_min)),
-        "theta_max_over_run_k": float(np.nanmax(theta_max)),
+        "peak_w_abs_m_s": float(np.nanmax(w_abs)) if w_abs.size else state_diag["w_abs_max_m_s"],
+        "theta_min_over_run_k": float(np.nanmin(theta_min)) if theta_min.size else state_diag["theta_min_k"],
+        "theta_max_over_run_k": float(np.nanmax(theta_max)) if theta_max.size else state_diag["theta_max_k"],
     }
 
 
@@ -547,6 +943,7 @@ def forecast_comparison(state: State, run: Gen2Run, *, domain: str = "d02", lead
 
 
 def static_transfer_audit(case: ReplayCase, replay_config: ReplayConfig) -> dict[str, Any]:
+    _debug("static_transfer_audit start")
     jaxpr_text = str(
         jax.make_jaxpr(run_replay_scan, static_argnums=(3, 6))(
             case.state,
@@ -559,6 +956,7 @@ def static_transfer_audit(case: ReplayCase, replay_config: ReplayConfig) -> dict
         )
     ).lower()
     forbidden = ("host_callback", "io_callback", "pure_callback")
+    _debug(f"static_transfer_audit done jaxpr_bytes={len(jaxpr_text.encode('utf-8'))}")
     return {
         "method": "JAXPR callback scan for the exact ADR-023 replay scan",
         "host_callback_free": all(token not in jaxpr_text for token in forbidden),
@@ -569,6 +967,7 @@ def static_transfer_audit(case: ReplayCase, replay_config: ReplayConfig) -> dict
 
 def trace_transfer_audit(case: ReplayCase, replay_config: ReplayConfig, trace_dir: str | Path) -> dict[str, Any]:
     trace_path = Path(trace_dir)
+    _debug(f"trace_transfer_audit warmup start trace_dir={trace_path}")
     block_until_ready(
         run_replay_scan(
             case.state,
@@ -580,10 +979,12 @@ def trace_transfer_audit(case: ReplayCase, replay_config: ReplayConfig, trace_di
             replay_config,
         )
     )
+    _debug("trace_transfer_audit warmup done")
     if trace_path.exists():
         shutil.rmtree(trace_path)
     trace_path.mkdir(parents=True, exist_ok=True)
     try:
+        _debug("trace_transfer_audit profiled run start")
         with jax.profiler.trace(str(trace_path), create_perfetto_link=False):
             result = run_replay_scan(
                 case.state,
@@ -596,6 +997,7 @@ def trace_transfer_audit(case: ReplayCase, replay_config: ReplayConfig, trace_di
             )
             block_until_ready(result)
     except TypeError:
+        _debug("trace_transfer_audit retrying profiler.trace without create_perfetto_link")
         with jax.profiler.trace(str(trace_path)):
             result = run_replay_scan(
                 case.state,
@@ -607,7 +1009,9 @@ def trace_transfer_audit(case: ReplayCase, replay_config: ReplayConfig, trace_di
                 replay_config,
             )
             block_until_ready(result)
-    h2d, d2h, files = count_transfer_bytes(trace_path)
+    _debug("trace_transfer_audit profiled run done")
+    h2d, d2h, files = _count_replay_transfer_bytes(trace_path)
+    _debug(f"trace_transfer_audit done h2d={h2d} d2h={d2h} files={len(files)}")
     return {
         "method": "jax.profiler.trace on warmed replay scan",
         "host_to_device_bytes_post_init": int(h2d),
@@ -713,9 +1117,17 @@ def run_replay_proof(
     include_trace_audit: bool = True,
     include_static_audit: bool = True,
 ) -> dict[str, Any]:
+    _debug(
+        "run_replay_proof start "
+        f"run_dir={run_dir} duration_s={replay_config.duration_s:g} dt_s={replay_config.dt_s:g} "
+        f"n_acoustic={replay_config.n_acoustic}"
+    )
     case = build_replay_case(run_dir, domain=domain)
+    _debug("initial block_until_ready start")
     block_until_ready((case.state, case.previous_pressure, case.tendencies, case.metrics, case.base_state))
+    _debug("initial block_until_ready done")
     start = time.perf_counter()
+    _debug("run_replay_scan dispatch start")
     final_state, final_previous_pressure, step_diags = run_replay_scan(
         case.state,
         case.previous_pressure,
@@ -725,13 +1137,21 @@ def run_replay_proof(
         case.base_state,
         replay_config,
     )
+    _debug("run_replay_scan dispatch returned; block_until_ready start")
     block_until_ready((final_state, final_previous_pressure, step_diags))
     wall_s = time.perf_counter() - start
+    _debug(f"run_replay_scan block_until_ready done wall_s={wall_s:.3f}")
+    _debug("forecast_comparison start")
     comparison = forecast_comparison(final_state, case.run, domain=domain, lead_hours=float(replay_config.duration_s) / 3600.0)
+    _debug("forecast_comparison done")
+    _debug("diagnostics_summary start")
     diag = diagnostics_summary(final_state, step_diags)
+    _debug("diagnostics_summary done")
     output_path = None
     if output_fields_path is not None:
+        _debug(f"write_output_fields start path={output_fields_path}")
         output_path = write_output_fields(output_fields_path, final_state, comparison)
+        _debug("write_output_fields done")
     static_audit = (
         static_transfer_audit(case, replay_config)
         if include_static_audit
@@ -742,6 +1162,7 @@ def run_replay_proof(
             "jaxpr_bytes": None,
         }
     )
+    _debug("static audit branch complete")
     trace = (
         trace_transfer_audit(
             case,
@@ -759,6 +1180,7 @@ def run_replay_proof(
             "trace_transfer_event_files": [],
         }
     )
+    _debug("trace audit branch complete")
 
     payload = {
         "status": "PASS"

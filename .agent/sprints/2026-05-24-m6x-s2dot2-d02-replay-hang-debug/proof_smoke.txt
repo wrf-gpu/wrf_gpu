@@ -1,0 +1,11 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.11, pytest-9.0.3, pluggy-1.5.0 -- /home/enric/miniconda3/bin/python
+cachedir: .pytest_cache
+rootdir: /tmp/wrf_gpu2_s2dot2_debug
+configfile: pyproject.toml
+plugins: zarr-3.1.6, anyio-4.12.1
+collecting ... collected 1 item
+
+tests/test_m6x_d02_replay_hang_debug.py::test_synthetic_replay_scan_returns_within_60_seconds PASSED [100%]
+
+============================== 1 passed in 30.78s ==============================
