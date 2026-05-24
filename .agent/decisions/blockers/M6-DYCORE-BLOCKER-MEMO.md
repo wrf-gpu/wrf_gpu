@@ -85,3 +85,56 @@ This is not a project failure. It's a correctly-surfaced architectural decision 
 The biggest single learning from this cycle: the architectural pivot was the right scope, but neither of the two prototyped architectures (small-carry conservative OR full-carry WRF-shape) handles the real coupled forecast. A third path is genuinely needed.
 
 — Manager (Claude Opus 4.7), 2026-05-24
+
+---
+
+## UPDATE 2026-05-24 ~06:30 UTC — Third-path scout returned
+
+Scout `scout/codex/m6x-third-path-substrate @ 655d21f` (8m 49s) compared all three options across 11 dimensions with file:line citations and deep-dived Option C substrate candidates (Dinosaur, ICON4Py, Pace, NeuralGCM).
+
+### Scout verdict: **RECOMMEND-OPTION-B** (Full WRF Small-Step Port + Savepoint Harness)
+
+Reasoning:
+- Turns the ambiguous step-2 failure into recurrence-by-recurrence numerical comparisons against WRF savepoints (anti-tautology)
+- Preserves M5 physics + d02 replay infrastructure + S1 sidecars
+- No external dependency added
+- Strongest Tier-4 Gen2 RMSE interpretation
+- "Most likely to actually work"
+
+### Scout's mandatory dissent
+
+Option C-primary (ICON4Py-pattern JAX rewrite, not direct ICON4Py import) would avoid the brittle scratch-state trap entirely. If the project values "escaping architecture" over "source-parity confidence," C-primary deserves a prototype sprint. Pace and Dinosaur are less suitable: Pace = GT4Py+DaCe not pure JAX, Dinosaur = global spectral on sigma coordinates not WRF-compatible.
+
+### Scout's three paths for the user
+
+1. **Option B directly** (scout's preferred path)
+2. **Option A as a one-sprint fast probe before B** (cheap insurance — if `t_2ave`/`ww`/`muave` alone fix it, save ~5 sprints)
+3. **Open a separate ADR for C-primary ICON4Py-pattern JAX rewrite** as parallel-track fallback
+
+### Manager addendum
+
+The scout's path #2 (A-as-probe-first) is appealing because it's the cheapest way to disprove the simplest hypothesis. Recommended ordering for user consideration:
+- Dispatch Option A as a bounded 1-sprint probe (add `t_2ave`/`ww`/`muave` to carry, implement WRF-cited usage, re-run S2.1-redo). If it brings T2 1h RMSE from 137K to <10K, continue Option A path. If still >50K, pivot to Option B with WRF savepoint harness.
+- C-primary stays as the long-tail fallback if A and B both stall.
+
+User decides: A-as-probe / B-direct / B+C-parallel / D-defer / something else.
+
+### What's been pre-built and survives any pivot
+
+- 12 S1 diagnostic sidecars (`scripts/diagnostic_*.py`)
+- Source-mining lock table (`.agent/decisions/source_mining_operator_table.md`)
+- Tier-3 convergence infrastructure (`scripts/m6_tier3_convergence_runner.py`)
+- Gen2 noise floor characterization (`data/fixtures/gen2_baseline/rmse_summary.csv`)
+- d02 replay (post-S2.2 hang fix; works for any operator pluggable into the integration layer)
+- All M5 physics (Thompson, MYNN, RRTMG SW+LW)
+- Anti-clamp scanner + stabilizer provenance scanner
+
+### Files to read for user decision
+
+1. **This file** (`.agent/decisions/blockers/M6-DYCORE-BLOCKER-MEMO.md`)
+2. `.agent/sprints/2026-05-24-m6x-third-path-substrate-scout/option_comparison.md` (11-dimension scoring table)
+3. `.agent/sprints/2026-05-24-m6x-third-path-substrate-scout/worker-report.md` (recommendation + dissent)
+4. `.agent/sprints/2026-05-24-m6x-exit-rule-critic/reviewer-report.md` (the critic's framing)
+5. `.agent/sprints/2026-05-24-m6x-s3hunt-operator-bug-hunt/verdict.md` (why no single bug)
+
+— Manager (Claude Opus 4.7), 2026-05-24 ~06:30 UTC, standing down on architecture commitment; awaiting user direction
