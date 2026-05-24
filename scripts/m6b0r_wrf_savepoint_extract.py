@@ -75,6 +75,48 @@ def _slice_for_tier(ds: Dataset, tier: str) -> tuple[slice, slice, str]:
     return _golden_slice(hgt)
 
 
+def _resolve_top_lid(ds: Dataset) -> bool:
+    """Resolves WRF ``top_lid`` namelist flag from the wrfout/namelist.
+
+    Order of precedence: explicit wrfout attribute, sibling ``namelist.output``
+    (post-run canonicalised value), sibling ``namelist.input`` (pre-run user
+    value), then the WRF default ``.false.``. Matches WRF ``module_small_step_em.F``
+    line 619-620 ``lid_flag=1; IF(top_lid)lid_flag=0`` semantics.
+    """
+
+    raw = getattr(ds, "TOP_LID", None)
+    if raw is not None:
+        if isinstance(raw, str):
+            return raw.strip().upper() in {"T", ".T.", ".TRUE.", "TRUE", "1"}
+        return bool(raw)
+    run_dir = Path(SOURCE_WRFOUT).parent
+    for namelist_name in ("namelist.output", "namelist.input"):
+        namelist_path = run_dir / namelist_name
+        if not namelist_path.exists():
+            continue
+        try:
+            text = namelist_path.read_text(errors="replace")
+        except OSError:
+            continue
+        for line in text.splitlines():
+            stripped = line.strip()
+            if not stripped or stripped.startswith("!"):
+                continue
+            if "top_lid" not in stripped.lower():
+                continue
+            _, _, rhs = stripped.partition("=")
+            rhs = rhs.split("!", 1)[0].split(",", 1)[0].strip()
+            if "*" in rhs:
+                _, _, rhs = rhs.partition("*")
+                rhs = rhs.strip()
+            token = rhs.strip(".").upper()
+            if token in {"T", "TRUE"}:
+                return True
+            if token in {"F", "FALSE"}:
+                return False
+    return False
+
+
 def _load_state(tier: str) -> dict[str, object]:
     with Dataset(SOURCE_WRFOUT) as ds:
         ys, xs, run_id = _slice_for_tier(ds, tier)
@@ -89,7 +131,7 @@ def _load_state(tier: str) -> dict[str, object]:
         attrs = {
             "dt": float(getattr(ds, "DT", 6.0)),
             "epssm": float(getattr(ds, "EPSSM", 0.1) or 0.1),
-            "top_lid": bool(getattr(ds, "TOP_LID", True)),
+            "top_lid": _resolve_top_lid(ds),
             "dims": {name: int(len(dim)) for name, dim in ds.dimensions.items()},
             "slice_y": [int(ys.start), int(ys.stop)],
             "slice_x": [int(xs.start), int(xs.stop)],
@@ -119,7 +161,26 @@ def _load_state(tier: str) -> dict[str, object]:
     }
 
 
-def _wrf_calc_coef_w(state: dict[str, object], *, dts: float, epssm: float, g: float = 9.80665) -> dict[str, np.ndarray]:
+def _wrf_calc_coef_w(
+    state: dict[str, object],
+    *,
+    dts: float,
+    epssm: float,
+    g: float = 9.80665,
+    top_lid: bool | None = None,
+) -> dict[str, np.ndarray]:
+    """Python translation of WRF ``calc_coef_w`` (module_small_step_em.F:570-652).
+
+    Fortran-to-Python index mapping (``kde = nz + 1`` in 1-based Fortran,
+    so ``F(kde-1) -> P[nz-1]``, ``F(kde) -> P[nz]``):
+      * Top ``a`` row (line 626): ``c1f(kde-1)`` and ``c1h(kde-1)`` ->
+        ``c1f[nz-1]``, ``c1h[nz-1]``.
+      * Top ``b`` row (line 646): ``c1h(kde-1)`` and ``c1f(kde)`` ->
+        ``c1h[nz-1]``, ``c1f[nz]``.
+      * ``lid_flag`` is ``0`` when the namelist sets ``top_lid=.true.``
+        (line 619-620), otherwise ``1``.
+    """
+
     mut = np.asarray(state["mut"], dtype=np.float64)
     c1h = np.asarray(state["c1h"], dtype=np.float64)
     c2h = np.asarray(state["c2h"], dtype=np.float64)
@@ -135,12 +196,19 @@ def _wrf_calc_coef_w(state: dict[str, object], *, dts: float, epssm: float, g: f
     alpha = np.ones_like(a)
     gamma = np.zeros_like(a)
     cof = (0.5 * dts * g * (1.0 + epssm)) ** 2
-    lid_flag = 1.0
+
+    # WRF lines 619-620: ``lid_flag = 1; IF(top_lid) lid_flag = 0``.
+    if top_lid is None:
+        top_lid = bool(state["attrs"]["top_lid"])  # type: ignore[index]
+    lid_flag = 0.0 if bool(top_lid) else 1.0
 
     a[1, :, :] = 0.0
     k_top = nz - 1
-    denom_top = (c1h[k_top] * mut + c2h[k_top]) * (c1f[nz] * mut + c2f[nz])
-    a[nz, :, :] = -2.0 * cof * rdnw[nz - 1] ** 2 * c2a[nz - 1] * lid_flag / denom_top
+    # WRF line 626 (k = kde-1): top ``a`` denominator uses c1f(kde-1) / c1h(kde-1).
+    denom_top_a = (c1h[k_top] * mut + c2h[k_top]) * (c1f[k_top] * mut + c2f[k_top])
+    # WRF line 646 (k = kde):   top ``b`` denominator uses c1h(kde-1) and c1f(kde).
+    denom_top_b = (c1h[k_top] * mut + c2h[k_top]) * (c1f[nz] * mut + c2f[nz])
+    a[nz, :, :] = -2.0 * cof * rdnw[nz - 1] ** 2 * c2a[nz - 1] * lid_flag / denom_top_a
     gamma[0, :, :] = 0.0
 
     for kk in range(2, nz):
@@ -157,7 +225,7 @@ def _wrf_calc_coef_w(state: dict[str, object], *, dts: float, epssm: float, g: f
         alpha[k, :, :] = 1.0 / (b - a[k] * gamma[k - 1])
         gamma[k, :, :] = c * alpha[k]
 
-    b_top = 1.0 + 2.0 * cof * rdnw[nz - 1] ** 2 * c2a[nz - 1] / denom_top
+    b_top = 1.0 + 2.0 * cof * rdnw[nz - 1] ** 2 * c2a[nz - 1] / denom_top_b
     alpha[nz, :, :] = 1.0 / (b_top - a[nz] * gamma[nz - 1])
     gamma[nz, :, :] = 0.0
     return {"a": a, "alpha": alpha, "gamma": gamma}
