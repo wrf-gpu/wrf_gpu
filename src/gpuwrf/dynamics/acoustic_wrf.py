@@ -595,6 +595,74 @@ def _sound_speed_squared_mass(state: State, base_state: BaseState | None) -> jax
     return GAMMA_DRY_AIR * R_D * _base_theta(base_state, state)
 
 
+def calc_coef_w_wrf_coefficients(
+    mut: jax.Array,
+    metrics: DycoreMetrics,
+    *,
+    dt: float,
+    epssm: float = 0.1,
+    top_lid: bool = False,
+    cqw: jax.Array | None = None,
+    c2a: jax.Array | None = None,
+    gravity: float = GRAVITY_M_S2,
+) -> tuple[jax.Array, jax.Array, jax.Array]:
+    """Returns WRF ``calc_coef_w`` ``a``, ``alpha`` and ``gamma`` coefficients.
+
+    Source: WRF ``dyn_em/module_small_step_em.F:624-649``. The M6B0-R
+    coefficient fixture has ``cqw=1`` and ``c2a=1`` because its CPU-path
+    extractor isolated the hybrid-coordinate coefficient construction.
+    """
+
+    mut = jnp.asarray(mut, dtype=jnp.float64)
+    nz = int(metrics.c1h.shape[0])
+    field_shape = (nz + 1,) + tuple(mut.shape)
+    mass_shape = (nz,) + tuple(mut.shape)
+    cqw = jnp.ones(field_shape, dtype=mut.dtype) if cqw is None else jnp.asarray(cqw, dtype=mut.dtype)
+    c2a = jnp.ones(mass_shape, dtype=mut.dtype) if c2a is None else jnp.asarray(c2a, dtype=mut.dtype)
+
+    mass_h = metrics.c1h[:, None, None] * mut[None, :, :] + metrics.c2h[:, None, None]
+    mass_f = metrics.c1f[:, None, None] * mut[None, :, :] + metrics.c2f[:, None, None]
+    rdn = metrics.rdn[:, None, None]
+    rdnw = metrics.rdnw[:, None, None]
+
+    cof = (0.5 * float(dt) * float(gravity) * (1.0 + float(epssm))) ** 2
+    lid_flag = 0.0 if bool(top_lid) else 1.0
+    a = jnp.zeros(field_shape, dtype=mut.dtype)
+    alpha = jnp.ones(field_shape, dtype=mut.dtype)
+    gamma = jnp.zeros(field_shape, dtype=mut.dtype)
+
+    # WRF lines 624-627: lower boundary row, top lower diagonal, gamma seed.
+    top_denom = mass_h[nz - 1] * mass_f[nz]
+    a = a.at[1, :, :].set(0.0)
+    a = a.at[nz, :, :].set(-2.0 * cof * rdnw[nz - 1] ** 2 * c2a[nz - 1] * lid_flag / top_denom)
+    gamma = gamma.at[0, :, :].set(0.0)
+
+    # WRF lines 629-633: lower diagonal on interior w faces.
+    for kk in range(2, nz):
+        k = kk - 1
+        denom = mass_h[k] * mass_f[k]
+        a = a.at[kk, :, :].set(-cqw[kk] * cof * rdn[kk] * rdnw[kk - 1] * c2a[kk - 1] / denom)
+
+    # WRF lines 635-642: diagonal/upper diagonal followed by Thomas forward sweep.
+    for k in range(1, nz):
+        denom_upper = mass_h[k] * mass_f[k]
+        denom_lower = mass_h[k - 1] * mass_f[k]
+        denom_c = mass_h[k] * mass_f[k + 1]
+        b = 1.0 + cqw[k] * cof * rdn[k] * (
+            rdnw[k] * c2a[k] / denom_upper + rdnw[k - 1] * c2a[k - 1] / denom_lower
+        )
+        c = -cqw[k] * cof * rdn[k] * rdnw[k] * c2a[k] / denom_c
+        alpha_k = 1.0 / (b - a[k] * gamma[k - 1])
+        alpha = alpha.at[k, :, :].set(alpha_k)
+        gamma = gamma.at[k, :, :].set(c * alpha_k)
+
+    # WRF lines 644-649: top row diagonal and gamma closure.
+    b_top = 1.0 + 2.0 * cof * rdnw[nz - 1] ** 2 * c2a[nz - 1] / top_denom
+    alpha = alpha.at[nz, :, :].set(1.0 / (b_top - a[nz] * gamma[nz - 1]))
+    gamma = gamma.at[nz, :, :].set(0.0)
+    return a, alpha, gamma
+
+
 def _density_perturbation_from_pressure(state: State, base_state: BaseState | None) -> jax.Array:
     """Maps resident pressure perturbation to the linearized density variable."""
 

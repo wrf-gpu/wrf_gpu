@@ -1,0 +1,1069 @@
+{
+  "operator": "calc_coef_w",
+  "outcome": "PARITY-DEFECT-LOCALIZED",
+  "passed": false,
+  "tiers": {
+    "column": {
+      "operator": "calc_coef_w",
+      "outcome": "PARITY-DEFECT-LOCALIZED",
+      "passed": false,
+      "results": [
+        {
+          "boundary": "calc_coef_w_post",
+          "fields": {
+            "a": {
+              "abs_threshold": 1e-11,
+              "actual_shape": [
+                45,
+                1,
+                1
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                1,
+                1
+              ],
+              "location": [
+                2,
+                0,
+                0
+              ],
+              "max_abs_delta": 259.6639474310799,
+              "passed": false,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-11,
+              "ulp_threshold": 8,
+              "units": "dimensionless"
+            },
+            "alpha": {
+              "abs_threshold": 1e-11,
+              "actual_shape": [
+                45,
+                1,
+                1
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                1,
+                1
+              ],
+              "location": [
+                2,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.9950025857696718,
+              "passed": false,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-11,
+              "ulp_threshold": 8,
+              "units": "dimensionless"
+            },
+            "gamma": {
+              "abs_threshold": 1e-11,
+              "actual_shape": [
+                45,
+                1,
+                1
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                1,
+                1
+              ],
+              "location": [
+                40,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.4794380030755466,
+              "passed": false,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-11,
+              "ulp_threshold": 8,
+              "units": "dimensionless"
+            }
+          },
+          "operator": "calc_coef_w",
+          "passed": false,
+          "path": "/tmp/wrf_gpu2_m6b0r/.agent/sprints/2026-05-24-m6b0r-real-fortran-emission/savepoints/column/calc_coef_w_post_step001.h5",
+          "run_id": "m6b0r-column-canary-d02-20260522T000000Z-step001-calc_coef_w_post",
+          "tier": "column"
+        },
+        {
+          "boundary": "calc_coef_w_post",
+          "fields": {
+            "a": {
+              "abs_threshold": 1e-11,
+              "actual_shape": [
+                45,
+                1,
+                1
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                1,
+                1
+              ],
+              "location": [
+                2,
+                0,
+                0
+              ],
+              "max_abs_delta": 259.6639474310799,
+              "passed": false,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-11,
+              "ulp_threshold": 8,
+              "units": "dimensionless"
+            },
+            "alpha": {
+              "abs_threshold": 1e-11,
+              "actual_shape": [
+                45,
+                1,
+                1
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                1,
+                1
+              ],
+              "location": [
+                2,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.9950025857696718,
+              "passed": false,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-11,
+              "ulp_threshold": 8,
+              "units": "dimensionless"
+            },
+            "gamma": {
+              "abs_threshold": 1e-11,
+              "actual_shape": [
+                45,
+                1,
+                1
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                1,
+                1
+              ],
+              "location": [
+                40,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.4794380030755466,
+              "passed": false,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-11,
+              "ulp_threshold": 8,
+              "units": "dimensionless"
+            }
+          },
+          "operator": "calc_coef_w",
+          "passed": false,
+          "path": "/tmp/wrf_gpu2_m6b0r/.agent/sprints/2026-05-24-m6b0r-real-fortran-emission/savepoints/column/calc_coef_w_post_step002.h5",
+          "run_id": "m6b0r-column-canary-d02-20260522T000000Z-step002-calc_coef_w_post",
+          "tier": "column"
+        },
+        {
+          "boundary": "calc_coef_w_post",
+          "fields": {
+            "a": {
+              "abs_threshold": 1e-11,
+              "actual_shape": [
+                45,
+                1,
+                1
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                1,
+                1
+              ],
+              "location": [
+                2,
+                0,
+                0
+              ],
+              "max_abs_delta": 259.6639474310799,
+              "passed": false,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-11,
+              "ulp_threshold": 8,
+              "units": "dimensionless"
+            },
+            "alpha": {
+              "abs_threshold": 1e-11,
+              "actual_shape": [
+                45,
+                1,
+                1
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                1,
+                1
+              ],
+              "location": [
+                2,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.9950025857696718,
+              "passed": false,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-11,
+              "ulp_threshold": 8,
+              "units": "dimensionless"
+            },
+            "gamma": {
+              "abs_threshold": 1e-11,
+              "actual_shape": [
+                45,
+                1,
+                1
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                1,
+                1
+              ],
+              "location": [
+                40,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.4794380030755466,
+              "passed": false,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-11,
+              "ulp_threshold": 8,
+              "units": "dimensionless"
+            }
+          },
+          "operator": "calc_coef_w",
+          "passed": false,
+          "path": "/tmp/wrf_gpu2_m6b0r/.agent/sprints/2026-05-24-m6b0r-real-fortran-emission/savepoints/column/calc_coef_w_post_step005.h5",
+          "run_id": "m6b0r-column-canary-d02-20260522T000000Z-step005-calc_coef_w_post",
+          "tier": "column"
+        },
+        {
+          "boundary": "calc_coef_w_post",
+          "fields": {
+            "a": {
+              "abs_threshold": 1e-11,
+              "actual_shape": [
+                45,
+                1,
+                1
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                1,
+                1
+              ],
+              "location": [
+                2,
+                0,
+                0
+              ],
+              "max_abs_delta": 259.6639474310799,
+              "passed": false,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-11,
+              "ulp_threshold": 8,
+              "units": "dimensionless"
+            },
+            "alpha": {
+              "abs_threshold": 1e-11,
+              "actual_shape": [
+                45,
+                1,
+                1
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                1,
+                1
+              ],
+              "location": [
+                2,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.9950025857696718,
+              "passed": false,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-11,
+              "ulp_threshold": 8,
+              "units": "dimensionless"
+            },
+            "gamma": {
+              "abs_threshold": 1e-11,
+              "actual_shape": [
+                45,
+                1,
+                1
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                1,
+                1
+              ],
+              "location": [
+                40,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.4794380030755466,
+              "passed": false,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-11,
+              "ulp_threshold": 8,
+              "units": "dimensionless"
+            }
+          },
+          "operator": "calc_coef_w",
+          "passed": false,
+          "path": "/tmp/wrf_gpu2_m6b0r/.agent/sprints/2026-05-24-m6b0r-real-fortran-emission/savepoints/column/calc_coef_w_post_step010.h5",
+          "run_id": "m6b0r-column-canary-d02-20260522T000000Z-step010-calc_coef_w_post",
+          "tier": "column"
+        }
+      ],
+      "sanitizer_mode": "off",
+      "savepoint_count": 4,
+      "tolerance_ladder_path": "/tmp/wrf_gpu2_defect/src/gpuwrf/validation/tolerance_ladder.json",
+      "transfer_audit": {
+        "h2d_d2h_inside_timestep_loop_bytes": 0,
+        "note": "Comparator reads HDF5 on host before the JAX coefficient call; no timestep loop is executed."
+      }
+    },
+    "golden": {
+      "operator": "calc_coef_w",
+      "outcome": "PARITY-DEFECT-LOCALIZED",
+      "passed": false,
+      "results": [
+        {
+          "boundary": "calc_coef_w_post",
+          "fields": {
+            "a": {
+              "abs_threshold": 1e-11,
+              "actual_shape": [
+                45,
+                40,
+                64
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                40,
+                64
+              ],
+              "location": [
+                2,
+                5,
+                63
+              ],
+              "max_abs_delta": 266.2936577657915,
+              "passed": false,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-11,
+              "ulp_threshold": 8,
+              "units": "dimensionless"
+            },
+            "alpha": {
+              "abs_threshold": 1e-11,
+              "actual_shape": [
+                45,
+                40,
+                64
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                40,
+                64
+              ],
+              "location": [
+                2,
+                18,
+                0
+              ],
+              "max_abs_delta": 0.9950100403383089,
+              "passed": false,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-11,
+              "ulp_threshold": 8,
+              "units": "dimensionless"
+            },
+            "gamma": {
+              "abs_threshold": 1e-11,
+              "actual_shape": [
+                45,
+                40,
+                64
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                40,
+                64
+              ],
+              "location": [
+                40,
+                23,
+                35
+              ],
+              "max_abs_delta": 0.4798648364335092,
+              "passed": false,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-11,
+              "ulp_threshold": 8,
+              "units": "dimensionless"
+            }
+          },
+          "operator": "calc_coef_w",
+          "passed": false,
+          "path": "/tmp/wrf_gpu2_m6b0r/.agent/sprints/2026-05-24-m6b0r-real-fortran-emission/savepoints/golden/calc_coef_w_post_step001.h5",
+          "run_id": "m6b0r-golden-canary-d02-20260522T000000Z-y26x080-64x40x44-step001-calc_coef_w_post",
+          "tier": "golden"
+        },
+        {
+          "boundary": "calc_coef_w_post",
+          "fields": {
+            "a": {
+              "abs_threshold": 1e-11,
+              "actual_shape": [
+                45,
+                40,
+                64
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                40,
+                64
+              ],
+              "location": [
+                2,
+                5,
+                63
+              ],
+              "max_abs_delta": 266.2936577657915,
+              "passed": false,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-11,
+              "ulp_threshold": 8,
+              "units": "dimensionless"
+            },
+            "alpha": {
+              "abs_threshold": 1e-11,
+              "actual_shape": [
+                45,
+                40,
+                64
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                40,
+                64
+              ],
+              "location": [
+                2,
+                18,
+                0
+              ],
+              "max_abs_delta": 0.9950100403383089,
+              "passed": false,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-11,
+              "ulp_threshold": 8,
+              "units": "dimensionless"
+            },
+            "gamma": {
+              "abs_threshold": 1e-11,
+              "actual_shape": [
+                45,
+                40,
+                64
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                40,
+                64
+              ],
+              "location": [
+                40,
+                23,
+                35
+              ],
+              "max_abs_delta": 0.4798648364335092,
+              "passed": false,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-11,
+              "ulp_threshold": 8,
+              "units": "dimensionless"
+            }
+          },
+          "operator": "calc_coef_w",
+          "passed": false,
+          "path": "/tmp/wrf_gpu2_m6b0r/.agent/sprints/2026-05-24-m6b0r-real-fortran-emission/savepoints/golden/calc_coef_w_post_step002.h5",
+          "run_id": "m6b0r-golden-canary-d02-20260522T000000Z-y26x080-64x40x44-step002-calc_coef_w_post",
+          "tier": "golden"
+        },
+        {
+          "boundary": "calc_coef_w_post",
+          "fields": {
+            "a": {
+              "abs_threshold": 1e-11,
+              "actual_shape": [
+                45,
+                40,
+                64
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                40,
+                64
+              ],
+              "location": [
+                2,
+                5,
+                63
+              ],
+              "max_abs_delta": 266.2936577657915,
+              "passed": false,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-11,
+              "ulp_threshold": 8,
+              "units": "dimensionless"
+            },
+            "alpha": {
+              "abs_threshold": 1e-11,
+              "actual_shape": [
+                45,
+                40,
+                64
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                40,
+                64
+              ],
+              "location": [
+                2,
+                18,
+                0
+              ],
+              "max_abs_delta": 0.9950100403383089,
+              "passed": false,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-11,
+              "ulp_threshold": 8,
+              "units": "dimensionless"
+            },
+            "gamma": {
+              "abs_threshold": 1e-11,
+              "actual_shape": [
+                45,
+                40,
+                64
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                40,
+                64
+              ],
+              "location": [
+                40,
+                23,
+                35
+              ],
+              "max_abs_delta": 0.4798648364335092,
+              "passed": false,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-11,
+              "ulp_threshold": 8,
+              "units": "dimensionless"
+            }
+          },
+          "operator": "calc_coef_w",
+          "passed": false,
+          "path": "/tmp/wrf_gpu2_m6b0r/.agent/sprints/2026-05-24-m6b0r-real-fortran-emission/savepoints/golden/calc_coef_w_post_step005.h5",
+          "run_id": "m6b0r-golden-canary-d02-20260522T000000Z-y26x080-64x40x44-step005-calc_coef_w_post",
+          "tier": "golden"
+        },
+        {
+          "boundary": "calc_coef_w_post",
+          "fields": {
+            "a": {
+              "abs_threshold": 1e-11,
+              "actual_shape": [
+                45,
+                40,
+                64
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                40,
+                64
+              ],
+              "location": [
+                2,
+                5,
+                63
+              ],
+              "max_abs_delta": 266.2936577657915,
+              "passed": false,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-11,
+              "ulp_threshold": 8,
+              "units": "dimensionless"
+            },
+            "alpha": {
+              "abs_threshold": 1e-11,
+              "actual_shape": [
+                45,
+                40,
+                64
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                40,
+                64
+              ],
+              "location": [
+                2,
+                18,
+                0
+              ],
+              "max_abs_delta": 0.9950100403383089,
+              "passed": false,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-11,
+              "ulp_threshold": 8,
+              "units": "dimensionless"
+            },
+            "gamma": {
+              "abs_threshold": 1e-11,
+              "actual_shape": [
+                45,
+                40,
+                64
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                40,
+                64
+              ],
+              "location": [
+                40,
+                23,
+                35
+              ],
+              "max_abs_delta": 0.4798648364335092,
+              "passed": false,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-11,
+              "ulp_threshold": 8,
+              "units": "dimensionless"
+            }
+          },
+          "operator": "calc_coef_w",
+          "passed": false,
+          "path": "/tmp/wrf_gpu2_m6b0r/.agent/sprints/2026-05-24-m6b0r-real-fortran-emission/savepoints/golden/calc_coef_w_post_step010.h5",
+          "run_id": "m6b0r-golden-canary-d02-20260522T000000Z-y26x080-64x40x44-step010-calc_coef_w_post",
+          "tier": "golden"
+        }
+      ],
+      "sanitizer_mode": "off",
+      "savepoint_count": 4,
+      "tolerance_ladder_path": "/tmp/wrf_gpu2_defect/src/gpuwrf/validation/tolerance_ladder.json",
+      "transfer_audit": {
+        "h2d_d2h_inside_timestep_loop_bytes": 0,
+        "note": "Comparator reads HDF5 on host before the JAX coefficient call; no timestep loop is executed."
+      }
+    },
+    "patch16": {
+      "operator": "calc_coef_w",
+      "outcome": "PARITY-DEFECT-LOCALIZED",
+      "passed": false,
+      "results": [
+        {
+          "boundary": "calc_coef_w_post",
+          "fields": {
+            "a": {
+              "abs_threshold": 1e-11,
+              "actual_shape": [
+                45,
+                16,
+                16
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                16,
+                16
+              ],
+              "location": [
+                2,
+                12,
+                0
+              ],
+              "max_abs_delta": 278.0947834046479,
+              "passed": false,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-11,
+              "ulp_threshold": 8,
+              "units": "dimensionless"
+            },
+            "alpha": {
+              "abs_threshold": 1e-11,
+              "actual_shape": [
+                45,
+                16,
+                16
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                16,
+                16
+              ],
+              "location": [
+                2,
+                15,
+                9
+              ],
+              "max_abs_delta": 0.9950083829969085,
+              "passed": false,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-11,
+              "ulp_threshold": 8,
+              "units": "dimensionless"
+            },
+            "gamma": {
+              "abs_threshold": 1e-11,
+              "actual_shape": [
+                45,
+                16,
+                16
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                16,
+                16
+              ],
+              "location": [
+                40,
+                0,
+                13
+              ],
+              "max_abs_delta": 0.4796874879103546,
+              "passed": false,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-11,
+              "ulp_threshold": 8,
+              "units": "dimensionless"
+            }
+          },
+          "operator": "calc_coef_w",
+          "passed": false,
+          "path": "/tmp/wrf_gpu2_m6b0r/.agent/sprints/2026-05-24-m6b0r-real-fortran-emission/savepoints/patch16/calc_coef_w_post_step001.h5",
+          "run_id": "m6b0r-patch16-canary-d02-20260522T000000Z-step001-calc_coef_w_post",
+          "tier": "patch16"
+        },
+        {
+          "boundary": "calc_coef_w_post",
+          "fields": {
+            "a": {
+              "abs_threshold": 1e-11,
+              "actual_shape": [
+                45,
+                16,
+                16
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                16,
+                16
+              ],
+              "location": [
+                2,
+                12,
+                0
+              ],
+              "max_abs_delta": 278.0947834046479,
+              "passed": false,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-11,
+              "ulp_threshold": 8,
+              "units": "dimensionless"
+            },
+            "alpha": {
+              "abs_threshold": 1e-11,
+              "actual_shape": [
+                45,
+                16,
+                16
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                16,
+                16
+              ],
+              "location": [
+                2,
+                15,
+                9
+              ],
+              "max_abs_delta": 0.9950083829969085,
+              "passed": false,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-11,
+              "ulp_threshold": 8,
+              "units": "dimensionless"
+            },
+            "gamma": {
+              "abs_threshold": 1e-11,
+              "actual_shape": [
+                45,
+                16,
+                16
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                16,
+                16
+              ],
+              "location": [
+                40,
+                0,
+                13
+              ],
+              "max_abs_delta": 0.4796874879103546,
+              "passed": false,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-11,
+              "ulp_threshold": 8,
+              "units": "dimensionless"
+            }
+          },
+          "operator": "calc_coef_w",
+          "passed": false,
+          "path": "/tmp/wrf_gpu2_m6b0r/.agent/sprints/2026-05-24-m6b0r-real-fortran-emission/savepoints/patch16/calc_coef_w_post_step002.h5",
+          "run_id": "m6b0r-patch16-canary-d02-20260522T000000Z-step002-calc_coef_w_post",
+          "tier": "patch16"
+        },
+        {
+          "boundary": "calc_coef_w_post",
+          "fields": {
+            "a": {
+              "abs_threshold": 1e-11,
+              "actual_shape": [
+                45,
+                16,
+                16
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                16,
+                16
+              ],
+              "location": [
+                2,
+                12,
+                0
+              ],
+              "max_abs_delta": 278.0947834046479,
+              "passed": false,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-11,
+              "ulp_threshold": 8,
+              "units": "dimensionless"
+            },
+            "alpha": {
+              "abs_threshold": 1e-11,
+              "actual_shape": [
+                45,
+                16,
+                16
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                16,
+                16
+              ],
+              "location": [
+                2,
+                15,
+                9
+              ],
+              "max_abs_delta": 0.9950083829969085,
+              "passed": false,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-11,
+              "ulp_threshold": 8,
+              "units": "dimensionless"
+            },
+            "gamma": {
+              "abs_threshold": 1e-11,
+              "actual_shape": [
+                45,
+                16,
+                16
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                16,
+                16
+              ],
+              "location": [
+                40,
+                0,
+                13
+              ],
+              "max_abs_delta": 0.4796874879103546,
+              "passed": false,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-11,
+              "ulp_threshold": 8,
+              "units": "dimensionless"
+            }
+          },
+          "operator": "calc_coef_w",
+          "passed": false,
+          "path": "/tmp/wrf_gpu2_m6b0r/.agent/sprints/2026-05-24-m6b0r-real-fortran-emission/savepoints/patch16/calc_coef_w_post_step005.h5",
+          "run_id": "m6b0r-patch16-canary-d02-20260522T000000Z-step005-calc_coef_w_post",
+          "tier": "patch16"
+        },
+        {
+          "boundary": "calc_coef_w_post",
+          "fields": {
+            "a": {
+              "abs_threshold": 1e-11,
+              "actual_shape": [
+                45,
+                16,
+                16
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                16,
+                16
+              ],
+              "location": [
+                2,
+                12,
+                0
+              ],
+              "max_abs_delta": 278.0947834046479,
+              "passed": false,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-11,
+              "ulp_threshold": 8,
+              "units": "dimensionless"
+            },
+            "alpha": {
+              "abs_threshold": 1e-11,
+              "actual_shape": [
+                45,
+                16,
+                16
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                16,
+                16
+              ],
+              "location": [
+                2,
+                15,
+                9
+              ],
+              "max_abs_delta": 0.9950083829969085,
+              "passed": false,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-11,
+              "ulp_threshold": 8,
+              "units": "dimensionless"
+            },
+            "gamma": {
+              "abs_threshold": 1e-11,
+              "actual_shape": [
+                45,
+                16,
+                16
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                16,
+                16
+              ],
+              "location": [
+                40,
+                0,
+                13
+              ],
+              "max_abs_delta": 0.4796874879103546,
+              "passed": false,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-11,
+              "ulp_threshold": 8,
+              "units": "dimensionless"
+            }
+          },
+          "operator": "calc_coef_w",
+          "passed": false,
+          "path": "/tmp/wrf_gpu2_m6b0r/.agent/sprints/2026-05-24-m6b0r-real-fortran-emission/savepoints/patch16/calc_coef_w_post_step010.h5",
+          "run_id": "m6b0r-patch16-canary-d02-20260522T000000Z-step010-calc_coef_w_post",
+          "tier": "patch16"
+        }
+      ],
+      "sanitizer_mode": "off",
+      "savepoint_count": 4,
+      "tolerance_ladder_path": "/tmp/wrf_gpu2_defect/src/gpuwrf/validation/tolerance_ladder.json",
+      "transfer_audit": {
+        "h2d_d2h_inside_timestep_loop_bytes": 0,
+        "note": "Comparator reads HDF5 on host before the JAX coefficient call; no timestep loop is executed."
+      }
+    }
+  }
+}

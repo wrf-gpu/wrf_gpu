@@ -14,11 +14,11 @@ sys.path.insert(0, str(ROOT / "src"))
 os.environ.setdefault("JAX_PLATFORM_NAME", "cpu")
 os.environ.setdefault("XLA_PYTHON_CLIENT_PREALLOCATE", "false")
 
-import jax
 import jax.numpy as jnp
 import numpy as np
 
-from gpuwrf.dynamics.vertical_implicit_solver import build_epssm_column_coefficients
+from gpuwrf.dynamics.acoustic_wrf import calc_coef_w_wrf_coefficients
+from gpuwrf.dynamics.metrics import load_wrfinput_metrics
 from gpuwrf.validation.savepoint_io import read_savepoint
 from gpuwrf.validation.savepoint_schema import load_tolerance_ladder
 
@@ -33,20 +33,30 @@ def _post_files(path: Path) -> list[Path]:
     return sorted(path.glob("calc_coef_w_post_step*.h5"))
 
 
+_METRICS_CACHE: dict[str, object] = {}
+
+
+def _metrics_for_source(path: str):
+    if path not in _METRICS_CACHE:
+        _METRICS_CACHE[path] = load_wrfinput_metrics(path)
+    return _METRICS_CACHE[path]
+
+
 def _jax_calc(savepoint) -> dict[str, np.ndarray]:
-    coeffs = build_epssm_column_coefficients(
-        jnp.asarray(savepoint.arrays["theta"]),
-        jnp.asarray(savepoint.arrays["dz_m"]),
+    # WRF calc_coef_w uses hybrid-coordinate mass denominators, not dz/theta
+    # metric coefficients. Source: module_small_step_em.F:624-649.
+    # The Canary d02 namelist has TOP_LID=F, so WRF line 620 leaves lid_flag=1.
+    a, alpha, gamma = calc_coef_w_wrf_coefficients(
+        jnp.asarray(savepoint.arrays["mut"]),
+        _metrics_for_source(savepoint.metadata.source_path),
         dt=savepoint.metadata.dt_seconds,
         epssm=0.1,
+        top_lid=False,
     )
-    _cofrz, _cofwr, _cofwz, _coftz, _cofwt, _rdzw, tri_a, tri_b, tri_c = [
-        np.asarray(jax.device_get(item)) for item in coeffs
-    ]
     return {
-        "a": tri_a,
-        "alpha": 1.0 / tri_b,
-        "gamma": tri_c / tri_b,
+        "a": np.asarray(a),
+        "alpha": np.asarray(alpha),
+        "gamma": np.asarray(gamma),
     }
 
 
