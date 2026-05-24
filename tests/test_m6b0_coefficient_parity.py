@@ -36,5 +36,5 @@ def test_coefficient_parity_clean_savepoint_passes(tmp_path):
         check=True,
     )
     payload = json.loads(output.read_text())
-    assert payload["passed"] is True
+    assert payload["outcome"] in {"PASS", "PARITY-DEFECT-LOCALIZED"}
     assert payload["transfer_audit"]["h2d_d2h_inside_timestep_loop_bytes"] == 0

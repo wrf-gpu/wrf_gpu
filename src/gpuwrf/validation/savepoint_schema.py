@@ -1,16 +1,42 @@
-"""Schema objects for M6B0 WRF small-step savepoints."""
+"""Schema objects for WRF small-step savepoints."""
 
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+import json
+from pathlib import Path
 from typing import Any, Literal
 
 import numpy as np
 
 
-SCHEMA_VERSION = "m6b0-savepoint-v1"
-SAVEPOINT_FORMAT = "npz-bundle-v1"
+SCHEMA_VERSION = "m6b0r-savepoint-v1"
+SAVEPOINT_FORMAT = "hdf5-savepoint-v1"
 VALID_STAGGERS = {"mass", "u", "v", "w", "eta-half", "eta-full", "scalar"}
+VALID_BOUNDARIES = {
+    "calc_coef_w_pre",
+    "calc_coef_w_post",
+    "small_step_prep_post",
+    "advance_mu_t_pre",
+    "advance_mu_t_post",
+    "advance_uv_post",
+    "advance_w_rhs_ready",
+    "advance_w_raw_w",
+    "advance_w_tridiag_fwd",
+    "advance_w_tridiag_back",
+    "advance_w_rayleigh",
+    "advance_w_ph_final",
+    "calc_p_rho_post",
+    "small_step_finish_post",
+    "acoustic_substep_boundary",
+    "rk_stage_boundary",
+    # M6B0 compatibility aliases.
+    "coefficient_construction",
+    "acoustic_substep_start",
+    "acoustic_substep_end",
+    "rk_stage_end",
+}
+TOLERANCE_LADDER_PATH = Path(__file__).with_name("tolerance_ladder.json")
 
 
 @dataclass(frozen=True)
@@ -95,6 +121,8 @@ class SavepointMetadata:
         for name in ("run_id", "wrf_version", "wrf_commit", "namelist_hash", "tier", "operator", "boundary"):
             if not str(getattr(self, name)):
                 raise ValueError(f"SavepointMetadata.{name} must be non-empty")
+        if self.boundary not in VALID_BOUNDARIES:
+            raise ValueError(f"unsupported savepoint boundary: {self.boundary}")
         if int(self.domain_index) < 1:
             raise ValueError("domain_index must be >= 1")
         if float(self.dt_seconds) <= 0.0:
@@ -184,3 +212,32 @@ class Savepoint:
                 raise ValueError(f"{name} shape mismatch: {array.shape} != {variable.shape}")
             if np.dtype(array.dtype) != np.dtype(variable.dtype):
                 raise ValueError(f"{name} dtype mismatch: {array.dtype} != {variable.dtype}")
+
+
+def load_tolerance_ladder(path: str | Path = TOLERANCE_LADDER_PATH) -> dict[str, Any]:
+    """Load the committed machine-readable comparison tolerance ladder."""
+
+    with Path(path).open("r", encoding="utf-8") as handle:
+        payload = json.load(handle)
+    if "fields" not in payload or not isinstance(payload["fields"], dict):
+        raise ValueError("tolerance ladder must contain a fields object")
+    factor = float(payload.get("perturbation_rule", {}).get("minimum_factor_over_tolerance", 10.0))
+    if factor < 10.0:
+        raise ValueError("perturbation magnitude rule must be at least 10x tolerance")
+    for field_name, entry in payload["fields"].items():
+        for required in ("units", "dtype", "abs", "rel", "ulp", "accumulation_exception"):
+            if required not in entry:
+                raise ValueError(f"tolerance ladder field {field_name} missing {required}")
+        if entry["abs"] is None and entry["rel"] is None and entry["ulp"] is None:
+            raise ValueError(f"tolerance ladder field {field_name} has no threshold")
+    return payload
+
+
+def tolerance_for_field(field_name: str, path: str | Path = TOLERANCE_LADDER_PATH) -> dict[str, Any]:
+    """Return one field tolerance entry from the ladder."""
+
+    ladder = load_tolerance_ladder(path)
+    try:
+        return dict(ladder["fields"][field_name])
+    except KeyError as exc:
+        raise KeyError(f"no tolerance entry for field: {field_name}") from exc
