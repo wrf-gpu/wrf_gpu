@@ -1,0 +1,112 @@
+{
+  "clean": {
+    "tri_fwd": {
+      "abs_threshold": 1e-10,
+      "actual_shape": [
+        5,
+        2,
+        1
+      ],
+      "dtype": "float64",
+      "expected_shape": [
+        5,
+        2,
+        1
+      ],
+      "location": [
+        0,
+        0,
+        0
+      ],
+      "max_abs_delta": 0.0,
+      "passed": true,
+      "rel_threshold": 1e-12,
+      "tolerance": 1e-10,
+      "ulp_threshold": 8,
+      "units": "m s-1"
+    },
+    "tri_solution": {
+      "abs_threshold": 1e-10,
+      "actual_shape": [
+        5,
+        2,
+        1
+      ],
+      "dtype": "float64",
+      "expected_shape": [
+        5,
+        2,
+        1
+      ],
+      "location": [
+        0,
+        0,
+        0
+      ],
+      "max_abs_delta": 0.0,
+      "passed": true,
+      "rel_threshold": 1e-12,
+      "tolerance": 1e-10,
+      "ulp_threshold": 8,
+      "units": "m s-1"
+    }
+  },
+  "clean_self_compare_passed": true,
+  "fwd_and_back_perturbations_caught": true,
+  "operator": "advance_w_tridiag",
+  "passed": true,
+  "perturbed": {
+    "tri_fwd": {
+      "abs_threshold": 1e-10,
+      "actual_shape": [
+        5,
+        2,
+        1
+      ],
+      "dtype": "float64",
+      "expected_shape": [
+        5,
+        2,
+        1
+      ],
+      "location": [
+        0,
+        0,
+        0
+      ],
+      "max_abs_delta": 2e-09,
+      "passed": false,
+      "rel_threshold": 1e-12,
+      "tolerance": 1e-10,
+      "ulp_threshold": 8,
+      "units": "m s-1"
+    },
+    "tri_solution": {
+      "abs_threshold": 1e-10,
+      "actual_shape": [
+        5,
+        2,
+        1
+      ],
+      "dtype": "float64",
+      "expected_shape": [
+        5,
+        2,
+        1
+      ],
+      "location": [
+        0,
+        0,
+        0
+      ],
+      "max_abs_delta": 2e-09,
+      "passed": false,
+      "rel_threshold": 1e-12,
+      "tolerance": 1e-10,
+      "ulp_threshold": 8,
+      "units": "m s-1"
+    }
+  },
+  "sanitizer_mode": "off",
+  "wrf_source_lines": "module_small_step_em.F:1533-1550"
+}
