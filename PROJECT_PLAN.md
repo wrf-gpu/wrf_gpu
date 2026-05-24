@@ -1,6 +1,6 @@
 # Project Plan
 
-Status: **M1 closed 2026-05-19. M2 in progress (2/6 candidates satisfied as of 2026-05-19). Manager runs autonomously per `.agent/goals/M2-MANAGER-RUNBOOK.md`; subsequent milestones dispatch on manager's call with Codex critical review as the second opinion.**
+Status: **M0-M5 closed. M6 active in dycore stabilization after the M6.x pivot chain; ADR-023 and ADR-024 are PROPOSED, not ACCEPTED. Current execution follows the critic-ratified HYBRID sequence: S1 diagnostic/source lock done, S2/S2.1 real d02 baseline blocked by replay hang, S2.2 hang debug in flight, S3-narrow stabilizer cleanup done, S4 Tier-3 and S5 Tier-4 queued. M7 prologue S0a is done but M7 implementation remains gated by M6 close.**
 Author: manager (Opus 4.7 1M).
 Inputs: `v2 ai driven from scratch plan by deepthink.txt`, `wrf to gpu gpt5.5 deep research.pdf`, `WRF GPU Porting_ Architecture & Verification.pdf`, all governance files in this repo.
 Scope: this document is the **synthesis layer** that reconciles the two research briefs with the bootstrap. It does not restate the constitution, scope, spec, principles, validation strategy, precision policy, performance targets, or risk register. Those remain authoritative as-is.
@@ -188,3 +188,14 @@ Per the manager-autonomy directive of 2026-05-19, the user delegates all operati
 - Does not freeze interface contracts. `INTERFACE_CONTRACTS.md` is explicitly placeholders until M3 ADR-002.
 - Does not promise a speedup number. `PROJECT_SPEC.md` already states the bar correctly ("beats the operational baseline enough to justify the rewrite").
 - Does not change governance, validation strategy, precision policy, performance targets, or scope. Those are constitutional.
+
+## 13. Recorded operational decisions since manager handover 2026-05-23
+
+The manager handover on 2026-05-23 triggered an M6.x dycore pivot cycle. These are operational records for a fresh reader; they do not promote any PROPOSED ADR to ACCEPTED and do not alter milestone gates.
+
+1. **ADR-023 conservative column solver is the current proposed architecture.** It was chosen after a three-way critic, source scout, prototype, MPAS column-slice work, and diagnostic follow-up. The public scan path is unified on main, but ADR-023 remains **PROPOSED** because warm-bubble operator sanity still exposes a mass-coupling/stabilization issue and reviewer concurrence is still required.
+2. **ADR-024 warm-bubble gate policy is PROPOSED.** The old `[5, 10] m/s` warm-bubble amplitude target is no longer a binding architecture gate. The critic verdict was `CHANGE-THE-GATE`: warm-bubble now reports operator sanity, finite/bounds failures, and anti-clamp evidence; M6 close remains Tier-3 convergence plus initial Tier-4 RMSE/consistency.
+3. **ADR-021 carry-expansion prototype is branch evidence only, not merged architecture.** The apparent warm-bubble pass depended on target-shaped clamps and harness aids. The later clamp-strip honest test failed catastrophically (`FAIL_FINITENESS` at step 2), so ADR-021 is not a clean fallback without a new sourced stabilization plan.
+4. **The HYBRID close plan is in execution.** The accepted sequencing from the close-strategy critic is: S1 diagnostic/source lock, S2 current-path d02 baseline, S3 source-backed mu/metric cleanup, S4 Tier-3 controlled convergence, S5 6h/24h Tier-4 comparison, S6 closeout or explicit architecture blocker. Current state: S1 done; S2 and S2.1 produced only synthetic fallback because real replay hangs; S2.2 is in flight to fix that; S3-narrow is done; S4-prep is running infrastructure work; S3-real/S4/S5/S6 remain queued.
+5. **Source-mining is locked as a decision aid, not an ADR.** `.agent/decisions/source_mining_operator_table.md` is the canonical table for the current operator debts. S3-narrow converted the production `1.35` metric and `0.38` buoyancy-scale usage into source-backed or slice-only paths and improved the stabilizer scan from 28 to 20 experiment-backed findings and 8 to 37 source-backed findings. The `_mu_continuity_increment` limiter remains explicitly deferred until real d02 baseline evidence exists.
+6. **Initial Tier-4 numerical anchors now exist.** `data/fixtures/gen2_baseline/rmse_summary.csv` records 17 same-grid Gen2 forecast-to-forecast d02 pairs: T2/U10/V10 spatial-mean RMSEs of 0.628 K, 1.456 m/s, and 1.591 m/s at 24 h; 0.255 K, 0.888 m/s, and 0.870 m/s at 72 h. These are Gen2 consistency anchors, not observation-error closure.

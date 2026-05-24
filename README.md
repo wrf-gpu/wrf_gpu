@@ -4,6 +4,18 @@ A GPU-native, WRF-compatible regional NWP system designed and built almost entir
 
 This is not a port of legacy WRF. It is a clean rewrite that targets the GPU memory hierarchy from day one and validates against WRF as an oracle rather than inheriting WRF's architecture.
 
+## Current status
+
+M0-M5 are closed. M6 is active and focused on dycore stabilization: S2/S2.1 did not produce a real d02 baseline because the d02 replay probe hangs with zero stdout/stderr, S2.2 is investigating that infrastructure blocker, S3-narrow reduced stabilizer provenance debt from 28 to 20 experiment-backed findings and raised source-backed findings from 8 to 37, S4-prep is building Tier-3 convergence infrastructure, and S5/S6 remain queued for Tier-4 comparison and closeout. M7 has a completed prologue (`m7-s0a`) but is not ready for implementation dispatch until M6 closes.
+
+### Where the project actually stands
+
+The active dycore path is ADR-023, the conservative column solver, but ADR-023 is still **PROPOSED**. It is the unified path on main and is currently favored by elimination: the ADR-021 carry-expansion prototype only passed the old warm-bubble target through unphysical clamps, and the clamp-stripped honest test becomes nonfinite at step 2 with catastrophic theta and vertical-velocity growth. ADR-021 remains evidence, not the accepted architecture.
+
+ADR-024 is also **PROPOSED**. It changes the warm-bubble harness from an amplitude gate into an operator-sanity diagnostic. The current honest warm-bubble verdict is `FAIL_PHYSICAL_BOUNDS` because `mu_perturbation_max_Pa` exceeds the 50 kPa bound; the old `[5, 10] m/s` amplitude band is no longer a binding architecture gate. M6 close is Tier-3 convergence plus initial Tier-4 RMSE/consistency, not a single warm-bubble number.
+
+The source-mining lock is [`.agent/decisions/source_mining_operator_table.md`](.agent/decisions/source_mining_operator_table.md). It identifies the remaining operator debts, including the temporary `_mu_continuity_increment` limiter and the stabilizer cleanup still deferred after S3-narrow.
+
 ## Core goals (immutable)
 
 1. **GPU-native architecture.** Whole-state device residency after init. No host/device transfers inside the timestep loop without an ADR. Fused timestep-scale kernels, not 200,000-launch micro-kernels.
