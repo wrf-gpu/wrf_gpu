@@ -101,6 +101,46 @@
       "ulp": 8,
       "accumulation_exception": "none"
     },
+    "tri_alpha": {
+      "units": "dimensionless",
+      "dtype": "float64",
+      "abs": 1e-11,
+      "rel": 1e-12,
+      "ulp": 8,
+      "accumulation_exception": "none"
+    },
+    "tri_gamma": {
+      "units": "dimensionless",
+      "dtype": "float64",
+      "abs": 1e-11,
+      "rel": 1e-12,
+      "ulp": 8,
+      "accumulation_exception": "none"
+    },
+    "tri_rhs": {
+      "units": "m s-1",
+      "dtype": "float64",
+      "abs": 1e-10,
+      "rel": 1e-12,
+      "ulp": 8,
+      "accumulation_exception": "none"
+    },
+    "tri_fwd": {
+      "units": "m s-1",
+      "dtype": "float64",
+      "abs": 1e-10,
+      "rel": 1e-12,
+      "ulp": 8,
+      "accumulation_exception": "none"
+    },
+    "tri_solution": {
+      "units": "m s-1",
+      "dtype": "float64",
+      "abs": 1e-10,
+      "rel": 1e-12,
+      "ulp": 8,
+      "accumulation_exception": "none"
+    },
     "muts": {
       "units": "Pa",
       "dtype": "float64",

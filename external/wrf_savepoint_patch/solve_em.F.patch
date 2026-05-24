@@ -8,7 +8,8 @@
 +   USE savepoint_wrapper, ONLY: sp_calc_coef_w_pre, sp_calc_coef_w_post, &
 +      sp_small_step_prep_post, sp_advance_mu_t_pre, sp_advance_mu_t_post, &
 +      sp_advance_uv_post, sp_advance_w_rhs_ready, sp_advance_w_raw_w, &
-+      sp_advance_w_tridiag_fwd, sp_advance_w_tridiag_back, &
++      sp_advance_w_tridiag_fwd_pre, sp_advance_w_tridiag_fwd_post, &
++      sp_advance_w_tridiag_back_pre, sp_advance_w_tridiag_back_post, &
 +      sp_advance_w_rayleigh, sp_advance_w_ph_final, sp_calc_p_rho_post, &
 +      sp_small_step_finish_post, sp_acoustic_substep_boundary, &
 +      sp_rk_stage_boundary
@@ -76,4 +77,30 @@
 +#ifdef WRF_SAVEPOINT
 +         CALL sp_advance_mu_t_post(rk_step, iteration, grid%mu_2, grid%mut, grid%mudf, &
 +                          grid%muts, muave, grid%ww, grid%t_2, ph_tend)
++#endif
+@@ -1533,6 +1533,9 @@
++#ifdef WRF_SAVEPOINT
++    CALL sp_advance_w_tridiag_fwd_pre(0, 0, a, alpha, gamma, rhs)
++#endif
+     DO k=2,k_end+1
+     DO i=i_start, i_end
+        w(i,k,j)=(w(i,k,j)-a(i,k,j)*w(i,k-1,j))*alpha(i,k,j)
+@@ -1536,6 +1539,12 @@
+     ENDDO
+     ENDDO
++#ifdef WRF_SAVEPOINT
++    CALL sp_advance_w_tridiag_fwd_post(0, 0, a, alpha, gamma, w)
++    CALL sp_advance_w_tridiag_back_pre(0, 0, gamma, w)
++#endif
+     IF (diag_aw_point .AND. diag_aw_call .LE. diag_aw_max_call .AND. j .EQ. diag_aw_j .AND. &
+         diag_aw_i .GE. i_start .AND. diag_aw_i .LE. i_end .AND. &
+         diag_aw_k .GE. 2 .AND. diag_aw_k .LE. k_end+1) THEN
+@@ -1546,6 +1555,9 @@
+     DO k=k_end,2,-1
+     DO i=i_start, i_end
+        w (i,k,j)=w (i,k,j)-gamma(i,k,j)*w(i,k+1,j)
+     ENDDO
+     ENDDO
++#ifdef WRF_SAVEPOINT
++    CALL sp_advance_w_tridiag_back_post(0, 0, gamma, w)
 +#endif

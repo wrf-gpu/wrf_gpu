@@ -33,10 +33,22 @@ contains
   end subroutine sp_advance_w_rhs_ready
   subroutine sp_advance_w_raw_w()
   end subroutine sp_advance_w_raw_w
-  subroutine sp_advance_w_tridiag_fwd()
-  end subroutine sp_advance_w_tridiag_fwd
-  subroutine sp_advance_w_tridiag_back()
-  end subroutine sp_advance_w_tridiag_back
+  subroutine sp_advance_w_tridiag_fwd_pre(rkstage, acstep, a, alpha, gamma, rhs)
+    integer, intent(in) :: rkstage, acstep
+    real, intent(in) :: a(:, :, :), alpha(:, :, :), gamma(:, :, :), rhs(:, :)
+  end subroutine sp_advance_w_tridiag_fwd_pre
+  subroutine sp_advance_w_tridiag_fwd_post(rkstage, acstep, a, alpha, gamma, w_fwd)
+    integer, intent(in) :: rkstage, acstep
+    real, intent(in) :: a(:, :, :), alpha(:, :, :), gamma(:, :, :), w_fwd(:, :, :)
+  end subroutine sp_advance_w_tridiag_fwd_post
+  subroutine sp_advance_w_tridiag_back_pre(rkstage, acstep, gamma, w_fwd)
+    integer, intent(in) :: rkstage, acstep
+    real, intent(in) :: gamma(:, :, :), w_fwd(:, :, :)
+  end subroutine sp_advance_w_tridiag_back_pre
+  subroutine sp_advance_w_tridiag_back_post(rkstage, acstep, gamma, w_solved)
+    integer, intent(in) :: rkstage, acstep
+    real, intent(in) :: gamma(:, :, :), w_solved(:, :, :)
+  end subroutine sp_advance_w_tridiag_back_post
   subroutine sp_advance_w_rayleigh()
   end subroutine sp_advance_w_rayleigh
   subroutine sp_advance_w_ph_final()

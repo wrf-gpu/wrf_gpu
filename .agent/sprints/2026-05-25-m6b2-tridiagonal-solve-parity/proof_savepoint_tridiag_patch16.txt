@@ -1,0 +1,850 @@
+{
+  "operator": "advance_w_tridiag",
+  "outcome": "PASS",
+  "passed": true,
+  "tiers": {
+    "patch16": {
+      "manifest": {
+        "attrs": {
+          "dims": {
+            "DateStrLen": 19,
+            "Time": 1,
+            "bottom_top": 44,
+            "bottom_top_stag": 45,
+            "seed_dim_stag": 8,
+            "snow_layers_stag": 3,
+            "snso_layers_stag": 7,
+            "soil_layers_stag": 4,
+            "south_north": 66,
+            "south_north_stag": 67,
+            "west_east": 159,
+            "west_east_stag": 160
+          },
+          "dt": 6.0,
+          "epssm": 0.1,
+          "mapfac_max": 0.9992114305496216,
+          "mapfac_min": 0.9991082549095154,
+          "slice_x": [
+            71,
+            87
+          ],
+          "slice_y": [
+            25,
+            41
+          ],
+          "terrain_max_m": 932.5389404296875,
+          "terrain_min_m": 0.0,
+          "top_lid": false
+        },
+        "cpu_operator_path": true,
+        "direct_relinked_wrf": false,
+        "file_sha256": {
+          "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_back_post_step001.h5": "903855b38fab24f357dd920206a64740d035aaa96de940e7ddf963b13c39688c",
+          "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_back_post_step002.h5": "6f19a6c8798a115fe97fe44ee0da10cdc1390c7aa3671be8788a3c1e8c6b8da2",
+          "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_back_post_step003.h5": "4012042464dc0e0293de94d661e10cf90d25b81d19f50c2a8debdd1a09f5d514",
+          "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_back_post_step004.h5": "84ea51ab98b68800574eb8d57dd66bd13399aef56f8fb5252c83b0f341635b40",
+          "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_back_post_step005.h5": "9c0f6721582c6abc68302dd1749ee4582fdf382aea9c259b4bcabea0d50a7e72",
+          "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_back_post_step006.h5": "535ffb50f3d0eaed847bb31aca8e4362be31f935e19a48a64badf21182a5553f",
+          "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_back_post_step007.h5": "fb587f5157cf6137b70a29521f3bf6dc8329cf46079a576a7b32c3f2224028b5",
+          "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_back_post_step008.h5": "e3e029fc2ad767e580f3da659ff87ea779dcaae33c121f21966de90b08db5f4e",
+          "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_back_post_step009.h5": "328d12c6c8576c3c2ce05414adaf86b7803d3fb6493f6406733520daf255e1ae",
+          "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_back_post_step010.h5": "c988ceb48dc4c36a03c9c1085f62459b3d61c144946ab61b53871c630fdf5a6d",
+          "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_back_pre_step001.h5": "dde446962df0572441f4059a5b984b7a317e83df28cc17b6e471e98b85c4520e",
+          "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_back_pre_step002.h5": "fd34a05beccc9a10ebbfd5c5001389c95ba30d1c802501b764460e5a4fe6a2ae",
+          "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_back_pre_step003.h5": "aa2498301dc8d7004757fe2f041e497cd1466b765a7c09ec8fc6ea63eef90764",
+          "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_back_pre_step004.h5": "686af9fc3e987b3570ed6908a6e734090b0932d98e2f0cea00c87d1bf30a9257",
+          "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_back_pre_step005.h5": "c272173ca2c7395608193881eb9ac16b7dfc1c4c69aad43b685e04ad5a72cea4",
+          "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_back_pre_step006.h5": "d400b38c396f85584dcdb3340b97b83e9155d9b82281d3f3eb9228c1181483a3",
+          "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_back_pre_step007.h5": "d6dffd71e26fba3cc32c68760cfc670838e5e1763baa77146f2f8ddb01be2d7a",
+          "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_back_pre_step008.h5": "879ddfa1c2895c315ce639092791109a8763a642aa08fa815c00c4763219825c",
+          "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_back_pre_step009.h5": "60fe3a4f5981d2488df2d1967d3a20b22897e0a9d655722ce6877d41034be368",
+          "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_back_pre_step010.h5": "021d4631ebfdd27433f3269fc6a4835100e4d7895b41213fe532e896b2305af1",
+          "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_fwd_post_step001.h5": "ec42291a93e716d9c00dbe6a1321129bd328d2de587448187e6f293a562a34a3",
+          "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_fwd_post_step002.h5": "f93dd3591a7d1f65d7bbd38fa09bc2bc7a87100c8dbb6a6c037e0baef7204ab4",
+          "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_fwd_post_step003.h5": "76bca00cfd6f0691e392a90e685ffd6319ab71cdbd5185c9ff065e0da78f3b6e",
+          "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_fwd_post_step004.h5": "e12f81748e5de5306d6c653a02dbfa4d53151881d0a2c8856cc7e2324502fc2f",
+          "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_fwd_post_step005.h5": "24761dd24c7f6952c6a00f4f3d9485c33ae0e458ef59369294796cfad53bdf97",
+          "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_fwd_post_step006.h5": "1607c3c24ede0121ae2a81db6b52ddb8b1c6aadda8f82e17691fefa01930b6ab",
+          "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_fwd_post_step007.h5": "7a3f3ac3bab601d78a46b8acbe8789a0e75fea50eb842f45f26d8cc48a99dce1",
+          "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_fwd_post_step008.h5": "2bf078f9419febda6f1750961489243f097c6cc71f7c4ad5f0996de859ff92d8",
+          "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_fwd_post_step009.h5": "7f538abff9e7f62a409c71309773e15c9bbda2c63c8bc6f803757b0ba5981347",
+          "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_fwd_post_step010.h5": "b462a82d781fa1281bade5a63798898e674deb42b49de2a119c075f2e0f64038",
+          "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_fwd_pre_step001.h5": "50caa3eb91d6eeec26758c8d6805d70bf92728efdc294eb3696d5cbca26196d2",
+          "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_fwd_pre_step002.h5": "0f6fa1a04dbb7736859cd953744fa2f1e528502ba972a4da0302a0f4d7b3d75e",
+          "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_fwd_pre_step003.h5": "e727936d5ec3808aa5db1ce9ba3fb664840b564b5527a8b1c9e0fc50ddefe5e6",
+          "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_fwd_pre_step004.h5": "d879b41160e5aee52c2e34ff72183180cf83cb613629d8fc15762cbd321d4fb7",
+          "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_fwd_pre_step005.h5": "9b83a70a5bd9d4d684ad4ebe880b44fa67b905a7da1e028cf57baed5e1109971",
+          "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_fwd_pre_step006.h5": "c8cc3c09f71d7cee38752ba6bdcfc8250139e8c3c47636f1b2a417a1988421d2",
+          "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_fwd_pre_step007.h5": "6d6be8a18ce68b9a30388254fb6f41e646daf0dcd232176bef8b7622c1d60c90",
+          "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_fwd_pre_step008.h5": "cb827c5b32787b0e98ce415d62a1e35496eacb038d8a8cbaff88c7682a965b77",
+          "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_fwd_pre_step009.h5": "68729b9da5dbe4c104c5d1509bba15a5bef298e2aea776a85e1a6541c6cf5b66",
+          "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_fwd_pre_step010.h5": "88989d8d94198e32c8ddfc62682bf77a33c22e1e9de5e8b19808b05f48a3de52"
+        },
+        "files": [
+          "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_fwd_pre_step001.h5",
+          "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_fwd_post_step001.h5",
+          "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_back_pre_step001.h5",
+          "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_back_post_step001.h5",
+          "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_fwd_pre_step002.h5",
+          "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_fwd_post_step002.h5",
+          "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_back_pre_step002.h5",
+          "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_back_post_step002.h5",
+          "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_fwd_pre_step003.h5",
+          "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_fwd_post_step003.h5",
+          "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_back_pre_step003.h5",
+          "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_back_post_step003.h5",
+          "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_fwd_pre_step004.h5",
+          "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_fwd_post_step004.h5",
+          "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_back_pre_step004.h5",
+          "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_back_post_step004.h5",
+          "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_fwd_pre_step005.h5",
+          "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_fwd_post_step005.h5",
+          "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_back_pre_step005.h5",
+          "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_back_post_step005.h5",
+          "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_fwd_pre_step006.h5",
+          "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_fwd_post_step006.h5",
+          "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_back_pre_step006.h5",
+          "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_back_post_step006.h5",
+          "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_fwd_pre_step007.h5",
+          "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_fwd_post_step007.h5",
+          "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_back_pre_step007.h5",
+          "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_back_post_step007.h5",
+          "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_fwd_pre_step008.h5",
+          "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_fwd_post_step008.h5",
+          "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_back_pre_step008.h5",
+          "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_back_post_step008.h5",
+          "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_fwd_pre_step009.h5",
+          "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_fwd_post_step009.h5",
+          "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_back_pre_step009.h5",
+          "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_back_post_step009.h5",
+          "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_fwd_pre_step010.h5",
+          "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_fwd_post_step010.h5",
+          "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_back_pre_step010.h5",
+          "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_back_post_step010.h5"
+        ],
+        "run_id": "m6b2-patch16-canary-d02-20260522T000000Z",
+        "sanitizer_mode": "off",
+        "source_path": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T072630Z/wrfout_d02_2026-05-22_00:00:00",
+        "source_sha256": "53c4455feb27094a4e823c73e6ef7aa5c8f75d0fd592aad637a71320972d0523",
+        "steps": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10
+        ],
+        "tier": "patch16",
+        "total_bytes": 8575044,
+        "wrf_source_lines": "module_small_step_em.F:1533-1550"
+      },
+      "operator": "advance_w_tridiag",
+      "outcome": "PASS",
+      "passed": true,
+      "results": [
+        {
+          "back": {
+            "boundary": "advance_w_tridiag_back_post",
+            "fields": {
+              "tri_solution": {
+                "abs_threshold": 1e-10,
+                "actual_shape": [
+                  45,
+                  16,
+                  16
+                ],
+                "dtype": "float64",
+                "expected_shape": [
+                  45,
+                  16,
+                  16
+                ],
+                "location": [
+                  2,
+                  7,
+                  13
+                ],
+                "max_abs_delta": 4.336808689942018e-19,
+                "passed": true,
+                "rel_threshold": 1e-12,
+                "tolerance": 1e-10,
+                "ulp_threshold": 8,
+                "units": "m s-1"
+              }
+            },
+            "passed": true,
+            "path": "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_back_post_step001.h5"
+          },
+          "fwd": {
+            "boundary": "advance_w_tridiag_fwd_post",
+            "fields": {
+              "tri_fwd": {
+                "abs_threshold": 1e-10,
+                "actual_shape": [
+                  45,
+                  16,
+                  16
+                ],
+                "dtype": "float64",
+                "expected_shape": [
+                  45,
+                  16,
+                  16
+                ],
+                "location": [
+                  4,
+                  8,
+                  0
+                ],
+                "max_abs_delta": 1.3877787807814457e-17,
+                "passed": true,
+                "rel_threshold": 1e-12,
+                "tolerance": 1e-10,
+                "ulp_threshold": 8,
+                "units": "m s-1"
+              }
+            },
+            "passed": true,
+            "path": "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_fwd_post_step001.h5"
+          },
+          "passed": true,
+          "step": 1,
+          "tier": "patch16"
+        },
+        {
+          "back": {
+            "boundary": "advance_w_tridiag_back_post",
+            "fields": {
+              "tri_solution": {
+                "abs_threshold": 1e-10,
+                "actual_shape": [
+                  45,
+                  16,
+                  16
+                ],
+                "dtype": "float64",
+                "expected_shape": [
+                  45,
+                  16,
+                  16
+                ],
+                "location": [
+                  38,
+                  10,
+                  4
+                ],
+                "max_abs_delta": 3.469446951953614e-18,
+                "passed": true,
+                "rel_threshold": 1e-12,
+                "tolerance": 1e-10,
+                "ulp_threshold": 8,
+                "units": "m s-1"
+              }
+            },
+            "passed": true,
+            "path": "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_back_post_step002.h5"
+          },
+          "fwd": {
+            "boundary": "advance_w_tridiag_fwd_post",
+            "fields": {
+              "tri_fwd": {
+                "abs_threshold": 1e-10,
+                "actual_shape": [
+                  45,
+                  16,
+                  16
+                ],
+                "dtype": "float64",
+                "expected_shape": [
+                  45,
+                  16,
+                  16
+                ],
+                "location": [
+                  33,
+                  14,
+                  12
+                ],
+                "max_abs_delta": 1.734723475976807e-18,
+                "passed": true,
+                "rel_threshold": 1e-12,
+                "tolerance": 1e-10,
+                "ulp_threshold": 8,
+                "units": "m s-1"
+              }
+            },
+            "passed": true,
+            "path": "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_fwd_post_step002.h5"
+          },
+          "passed": true,
+          "step": 2,
+          "tier": "patch16"
+        },
+        {
+          "back": {
+            "boundary": "advance_w_tridiag_back_post",
+            "fields": {
+              "tri_solution": {
+                "abs_threshold": 1e-10,
+                "actual_shape": [
+                  45,
+                  16,
+                  16
+                ],
+                "dtype": "float64",
+                "expected_shape": [
+                  45,
+                  16,
+                  16
+                ],
+                "location": [
+                  33,
+                  5,
+                  4
+                ],
+                "max_abs_delta": 1.734723475976807e-18,
+                "passed": true,
+                "rel_threshold": 1e-12,
+                "tolerance": 1e-10,
+                "ulp_threshold": 8,
+                "units": "m s-1"
+              }
+            },
+            "passed": true,
+            "path": "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_back_post_step003.h5"
+          },
+          "fwd": {
+            "boundary": "advance_w_tridiag_fwd_post",
+            "fields": {
+              "tri_fwd": {
+                "abs_threshold": 1e-10,
+                "actual_shape": [
+                  45,
+                  16,
+                  16
+                ],
+                "dtype": "float64",
+                "expected_shape": [
+                  45,
+                  16,
+                  16
+                ],
+                "location": [
+                  37,
+                  12,
+                  7
+                ],
+                "max_abs_delta": 3.469446951953614e-18,
+                "passed": true,
+                "rel_threshold": 1e-12,
+                "tolerance": 1e-10,
+                "ulp_threshold": 8,
+                "units": "m s-1"
+              }
+            },
+            "passed": true,
+            "path": "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_fwd_post_step003.h5"
+          },
+          "passed": true,
+          "step": 3,
+          "tier": "patch16"
+        },
+        {
+          "back": {
+            "boundary": "advance_w_tridiag_back_post",
+            "fields": {
+              "tri_solution": {
+                "abs_threshold": 1e-10,
+                "actual_shape": [
+                  45,
+                  16,
+                  16
+                ],
+                "dtype": "float64",
+                "expected_shape": [
+                  45,
+                  16,
+                  16
+                ],
+                "location": [
+                  36,
+                  4,
+                  4
+                ],
+                "max_abs_delta": 6.938893903907228e-18,
+                "passed": true,
+                "rel_threshold": 1e-12,
+                "tolerance": 1e-10,
+                "ulp_threshold": 8,
+                "units": "m s-1"
+              }
+            },
+            "passed": true,
+            "path": "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_back_post_step004.h5"
+          },
+          "fwd": {
+            "boundary": "advance_w_tridiag_fwd_post",
+            "fields": {
+              "tri_fwd": {
+                "abs_threshold": 1e-10,
+                "actual_shape": [
+                  45,
+                  16,
+                  16
+                ],
+                "dtype": "float64",
+                "expected_shape": [
+                  45,
+                  16,
+                  16
+                ],
+                "location": [
+                  21,
+                  13,
+                  1
+                ],
+                "max_abs_delta": 8.673617379884035e-19,
+                "passed": true,
+                "rel_threshold": 1e-12,
+                "tolerance": 1e-10,
+                "ulp_threshold": 8,
+                "units": "m s-1"
+              }
+            },
+            "passed": true,
+            "path": "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_fwd_post_step004.h5"
+          },
+          "passed": true,
+          "step": 4,
+          "tier": "patch16"
+        },
+        {
+          "back": {
+            "boundary": "advance_w_tridiag_back_post",
+            "fields": {
+              "tri_solution": {
+                "abs_threshold": 1e-10,
+                "actual_shape": [
+                  45,
+                  16,
+                  16
+                ],
+                "dtype": "float64",
+                "expected_shape": [
+                  45,
+                  16,
+                  16
+                ],
+                "location": [
+                  36,
+                  5,
+                  4
+                ],
+                "max_abs_delta": 3.469446951953614e-18,
+                "passed": true,
+                "rel_threshold": 1e-12,
+                "tolerance": 1e-10,
+                "ulp_threshold": 8,
+                "units": "m s-1"
+              }
+            },
+            "passed": true,
+            "path": "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_back_post_step005.h5"
+          },
+          "fwd": {
+            "boundary": "advance_w_tridiag_fwd_post",
+            "fields": {
+              "tri_fwd": {
+                "abs_threshold": 1e-10,
+                "actual_shape": [
+                  45,
+                  16,
+                  16
+                ],
+                "dtype": "float64",
+                "expected_shape": [
+                  45,
+                  16,
+                  16
+                ],
+                "location": [
+                  42,
+                  14,
+                  11
+                ],
+                "max_abs_delta": 8.673617379884035e-19,
+                "passed": true,
+                "rel_threshold": 1e-12,
+                "tolerance": 1e-10,
+                "ulp_threshold": 8,
+                "units": "m s-1"
+              }
+            },
+            "passed": true,
+            "path": "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_fwd_post_step005.h5"
+          },
+          "passed": true,
+          "step": 5,
+          "tier": "patch16"
+        },
+        {
+          "back": {
+            "boundary": "advance_w_tridiag_back_post",
+            "fields": {
+              "tri_solution": {
+                "abs_threshold": 1e-10,
+                "actual_shape": [
+                  45,
+                  16,
+                  16
+                ],
+                "dtype": "float64",
+                "expected_shape": [
+                  45,
+                  16,
+                  16
+                ],
+                "location": [
+                  34,
+                  6,
+                  7
+                ],
+                "max_abs_delta": 8.673617379884035e-19,
+                "passed": true,
+                "rel_threshold": 1e-12,
+                "tolerance": 1e-10,
+                "ulp_threshold": 8,
+                "units": "m s-1"
+              }
+            },
+            "passed": true,
+            "path": "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_back_post_step006.h5"
+          },
+          "fwd": {
+            "boundary": "advance_w_tridiag_fwd_post",
+            "fields": {
+              "tri_fwd": {
+                "abs_threshold": 1e-10,
+                "actual_shape": [
+                  45,
+                  16,
+                  16
+                ],
+                "dtype": "float64",
+                "expected_shape": [
+                  45,
+                  16,
+                  16
+                ],
+                "location": [
+                  38,
+                  2,
+                  4
+                ],
+                "max_abs_delta": 3.469446951953614e-18,
+                "passed": true,
+                "rel_threshold": 1e-12,
+                "tolerance": 1e-10,
+                "ulp_threshold": 8,
+                "units": "m s-1"
+              }
+            },
+            "passed": true,
+            "path": "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_fwd_post_step006.h5"
+          },
+          "passed": true,
+          "step": 6,
+          "tier": "patch16"
+        },
+        {
+          "back": {
+            "boundary": "advance_w_tridiag_back_post",
+            "fields": {
+              "tri_solution": {
+                "abs_threshold": 1e-10,
+                "actual_shape": [
+                  45,
+                  16,
+                  16
+                ],
+                "dtype": "float64",
+                "expected_shape": [
+                  45,
+                  16,
+                  16
+                ],
+                "location": [
+                  42,
+                  10,
+                  1
+                ],
+                "max_abs_delta": 8.673617379884035e-19,
+                "passed": true,
+                "rel_threshold": 1e-12,
+                "tolerance": 1e-10,
+                "ulp_threshold": 8,
+                "units": "m s-1"
+              }
+            },
+            "passed": true,
+            "path": "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_back_post_step007.h5"
+          },
+          "fwd": {
+            "boundary": "advance_w_tridiag_fwd_post",
+            "fields": {
+              "tri_fwd": {
+                "abs_threshold": 1e-10,
+                "actual_shape": [
+                  45,
+                  16,
+                  16
+                ],
+                "dtype": "float64",
+                "expected_shape": [
+                  45,
+                  16,
+                  16
+                ],
+                "location": [
+                  35,
+                  10,
+                  14
+                ],
+                "max_abs_delta": 3.469446951953614e-18,
+                "passed": true,
+                "rel_threshold": 1e-12,
+                "tolerance": 1e-10,
+                "ulp_threshold": 8,
+                "units": "m s-1"
+              }
+            },
+            "passed": true,
+            "path": "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_fwd_post_step007.h5"
+          },
+          "passed": true,
+          "step": 7,
+          "tier": "patch16"
+        },
+        {
+          "back": {
+            "boundary": "advance_w_tridiag_back_post",
+            "fields": {
+              "tri_solution": {
+                "abs_threshold": 1e-10,
+                "actual_shape": [
+                  45,
+                  16,
+                  16
+                ],
+                "dtype": "float64",
+                "expected_shape": [
+                  45,
+                  16,
+                  16
+                ],
+                "location": [
+                  31,
+                  13,
+                  0
+                ],
+                "max_abs_delta": 3.469446951953614e-18,
+                "passed": true,
+                "rel_threshold": 1e-12,
+                "tolerance": 1e-10,
+                "ulp_threshold": 8,
+                "units": "m s-1"
+              }
+            },
+            "passed": true,
+            "path": "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_back_post_step008.h5"
+          },
+          "fwd": {
+            "boundary": "advance_w_tridiag_fwd_post",
+            "fields": {
+              "tri_fwd": {
+                "abs_threshold": 1e-10,
+                "actual_shape": [
+                  45,
+                  16,
+                  16
+                ],
+                "dtype": "float64",
+                "expected_shape": [
+                  45,
+                  16,
+                  16
+                ],
+                "location": [
+                  3,
+                  15,
+                  0
+                ],
+                "max_abs_delta": 2.7755575615628914e-17,
+                "passed": true,
+                "rel_threshold": 1e-12,
+                "tolerance": 1e-10,
+                "ulp_threshold": 8,
+                "units": "m s-1"
+              }
+            },
+            "passed": true,
+            "path": "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_fwd_post_step008.h5"
+          },
+          "passed": true,
+          "step": 8,
+          "tier": "patch16"
+        },
+        {
+          "back": {
+            "boundary": "advance_w_tridiag_back_post",
+            "fields": {
+              "tri_solution": {
+                "abs_threshold": 1e-10,
+                "actual_shape": [
+                  45,
+                  16,
+                  16
+                ],
+                "dtype": "float64",
+                "expected_shape": [
+                  45,
+                  16,
+                  16
+                ],
+                "location": [
+                  35,
+                  5,
+                  4
+                ],
+                "max_abs_delta": 3.469446951953614e-18,
+                "passed": true,
+                "rel_threshold": 1e-12,
+                "tolerance": 1e-10,
+                "ulp_threshold": 8,
+                "units": "m s-1"
+              }
+            },
+            "passed": true,
+            "path": "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_back_post_step009.h5"
+          },
+          "fwd": {
+            "boundary": "advance_w_tridiag_fwd_post",
+            "fields": {
+              "tri_fwd": {
+                "abs_threshold": 1e-10,
+                "actual_shape": [
+                  45,
+                  16,
+                  16
+                ],
+                "dtype": "float64",
+                "expected_shape": [
+                  45,
+                  16,
+                  16
+                ],
+                "location": [
+                  36,
+                  3,
+                  7
+                ],
+                "max_abs_delta": 3.469446951953614e-18,
+                "passed": true,
+                "rel_threshold": 1e-12,
+                "tolerance": 1e-10,
+                "ulp_threshold": 8,
+                "units": "m s-1"
+              }
+            },
+            "passed": true,
+            "path": "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_fwd_post_step009.h5"
+          },
+          "passed": true,
+          "step": 9,
+          "tier": "patch16"
+        },
+        {
+          "back": {
+            "boundary": "advance_w_tridiag_back_post",
+            "fields": {
+              "tri_solution": {
+                "abs_threshold": 1e-10,
+                "actual_shape": [
+                  45,
+                  16,
+                  16
+                ],
+                "dtype": "float64",
+                "expected_shape": [
+                  45,
+                  16,
+                  16
+                ],
+                "location": [
+                  27,
+                  13,
+                  0
+                ],
+                "max_abs_delta": 3.469446951953614e-18,
+                "passed": true,
+                "rel_threshold": 1e-12,
+                "tolerance": 1e-10,
+                "ulp_threshold": 8,
+                "units": "m s-1"
+              }
+            },
+            "passed": true,
+            "path": "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_back_post_step010.h5"
+          },
+          "fwd": {
+            "boundary": "advance_w_tridiag_fwd_post",
+            "fields": {
+              "tri_fwd": {
+                "abs_threshold": 1e-10,
+                "actual_shape": [
+                  45,
+                  16,
+                  16
+                ],
+                "dtype": "float64",
+                "expected_shape": [
+                  45,
+                  16,
+                  16
+                ],
+                "location": [
+                  39,
+                  12,
+                  4
+                ],
+                "max_abs_delta": 1.734723475976807e-18,
+                "passed": true,
+                "rel_threshold": 1e-12,
+                "tolerance": 1e-10,
+                "ulp_threshold": 8,
+                "units": "m s-1"
+              }
+            },
+            "passed": true,
+            "path": "/tmp/wrf_gpu2_m6b2/.agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity/savepoints/patch16/advance_w_tridiag_fwd_post_step010.h5"
+          },
+          "passed": true,
+          "step": 10,
+          "tier": "patch16"
+        }
+      ],
+      "sanitizer_mode": "off",
+      "savepoint_count": 10,
+      "tier": "patch16",
+      "tolerance_ladder_path": "/tmp/wrf_gpu2_m6b2/src/gpuwrf/validation/tolerance_ladder.json",
+      "transfer_audit": {
+        "h2d_d2h_inside_timestep_loop_bytes": 0,
+        "note": "Comparator reads HDF5 before isolated JAX scan calls; no production timestep loop is executed."
+      }
+    }
+  }
+}

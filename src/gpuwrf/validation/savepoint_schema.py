@@ -24,6 +24,10 @@ VALID_BOUNDARIES = {
     "advance_w_raw_w",
     "advance_w_tridiag_fwd",
     "advance_w_tridiag_back",
+    "advance_w_tridiag_fwd_pre",
+    "advance_w_tridiag_fwd_post",
+    "advance_w_tridiag_back_pre",
+    "advance_w_tridiag_back_post",
     "advance_w_rayleigh",
     "advance_w_ph_final",
     "calc_p_rho_post",
@@ -39,6 +43,7 @@ VALID_BOUNDARIES = {
 VALID_OPERATORS = {
     "calc_coef_w",
     "advance_mu_t",
+    "advance_w",
 }
 TOLERANCE_LADDER_PATH = Path(__file__).with_name("tolerance_ladder.json")
 
