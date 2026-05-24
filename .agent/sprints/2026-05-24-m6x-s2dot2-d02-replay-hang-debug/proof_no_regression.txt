@@ -1,0 +1,56 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.11, pytest-9.0.3, pluggy-1.5.0 -- /home/enric/miniconda3/bin/python
+cachedir: .pytest_cache
+rootdir: /tmp/wrf_gpu2_s2dot2_debug
+configfile: pyproject.toml
+plugins: zarr-3.1.6, anyio-4.12.1
+collecting ... collected 46 items
+
+tests/test_m6x_vertical_acoustic_oracle.py::test_linear_acoustic_period_matches_dispersion_relation PASSED [  2%]
+tests/test_m6x_vertical_acoustic_oracle.py::test_no_drift_in_hydrostatic_rest_state PASSED [  4%]
+tests/test_m6x_vertical_acoustic_oracle.py::test_amplitude_decay_within_2pct_of_analytic PASSED [  6%]
+tests/test_m6x_adr023_column_solver.py::test_thomas_solver_matches_dense_spd_reference PASSED [  8%]
+tests/test_m6x_adr023_column_solver.py::test_top_lid_boundary_rows_are_honored PASSED [ 10%]
+tests/test_m6x_adr023_column_solver.py::test_top_lid_update_enforces_top_w_only_when_requested PASSED [ 13%]
+tests/test_m6x_adr023_column_solver.py::test_zero_rhs_invariance PASSED  [ 15%]
+tests/test_m6x_c2_acoustic.py::test_diagnostic_pressure_al_alt_matches_base_rest_state PASSED [ 17%]
+tests/test_m6x_c2_acoustic.py::test_acoustic_carry_includes_al_alt_and_cq_intermediates PASSED [ 19%]
+tests/test_m6x_c2_acoustic.py::test_smdiv_pressure_memory_preserves_previous_diagnostic_pressure PASSED [ 21%]
+tests/test_m6x_c2_acoustic.py::test_mu_continuity_tendency_is_nonzero_for_divergent_u_flux PASSED [ 23%]
+tests/test_m6x_c2_acoustic.py::test_acoustic_scan_updates_mu_inside_substep_loop PASSED [ 26%]
+tests/test_m6x_c2_acoustic.py::test_diagnostic_pressure_is_recomputed_after_mu_changes PASSED [ 28%]
+tests/test_m6x_c2_acoustic.py::test_moisture_coupling_factors_are_scan_carried PASSED [ 30%]
+tests/test_m6x_c2_acoustic.py::test_acoustic_scan_jaxpr_has_scan_and_no_host_callbacks PASSED [ 32%]
+tests/test_m6x_mpas_column_slice_oracle.py::test_slice_runs_warm_bubble_scenario PASSED [ 34%]
+tests/test_m6x_mpas_column_slice_oracle.py::test_slice_runs_stratified_rest_scenario PASSED [ 36%]
+tests/test_m6x_mpas_column_slice_oracle.py::test_adr023_operator_matches_slice_within_tolerance PASSED [ 39%]
+tests/test_m6x_mpas_column_slice_oracle.py::test_warm_bubble_fixture_replays_generated_slice PASSED [ 41%]
+tests/test_m6x_adr023_path_unification.py::test_no_separate_wrf_buoyancy_column_update_is_exported PASSED [ 43%]
+tests/test_m6x_adr023_path_unification.py::test_pressure_scale_zero_and_public_negative_path_are_identical PASSED [ 45%]
+tests/test_m6x_adr023_path_unification.py::test_public_scan_epssm_changes_the_nonhydrostatic_update PASSED [ 47%]
+tests/test_m6x_adr023_path_unification.py::test_direct_and_public_recurrence_source_hash_is_shared PASSED [ 50%]
+tests/test_m6x_pressure_diagnose_wiring.py::test_nonhydrostatic_carry_preserves_recurrence_pressure_perturbation PASSED [ 52%]
+tests/test_m6x_pressure_diagnose_wiring.py::test_hydrostatic_carry_keeps_diagnostic_pressure_replacement PASSED [ 54%]
+tests/test_m6x_warm_bubble_operator_sanity.py::test_warm_bubble_runs_finite_on_unified_path PASSED [ 56%]
+tests/test_m6x_warm_bubble_operator_sanity.py::test_warm_bubble_extrema_reported_correctly PASSED [ 58%]
+tests/test_m6x_warm_bubble_operator_sanity.py::test_anti_clamp_scan_detects_known_patterns_in_test_fixtures PASSED [ 60%]
+tests/test_m6x_warm_bubble_operator_sanity.py::test_r7_oracle_is_prerequisite_for_pass PASSED [ 63%]
+tests/test_m6x_s1_diagnostic_sidecars.py::test_bound_violation_tracer_smoke PASSED [ 65%]
+tests/test_m6x_s1_diagnostic_sidecars.py::test_sanitizer_audit_smoke PASSED [ 67%]
+tests/test_m6x_s1_diagnostic_sidecars.py::test_limiter_activation_tracker_smoke PASSED [ 69%]
+tests/test_m6x_s1_diagnostic_sidecars.py::test_field_rmse_timeline_smoke PASSED [ 71%]
+tests/test_m6x_s1_diagnostic_sidecars.py::test_spatial_divergence_map_smoke PASSED [ 73%]
+tests/test_m6x_s1_diagnostic_sidecars.py::test_conservation_tracker_smoke PASSED [ 76%]
+tests/test_m6x_s1_diagnostic_sidecars.py::test_boundary_ring_error_profiler_smoke PASSED [ 78%]
+tests/test_m6x_s1_diagnostic_sidecars.py::test_vertical_column_phase_space_smoke PASSED [ 80%]
+tests/test_m6x_s1_diagnostic_sidecars.py::test_operator_term_budget_tracer_smoke PASSED [ 82%]
+tests/test_m6x_s1_diagnostic_sidecars.py::test_transfer_launch_timeline_smoke PASSED [ 84%]
+tests/test_m6x_s1_diagnostic_sidecars.py::test_timestep_convergence_dashboard_smoke PASSED [ 86%]
+tests/test_m6x_s1_diagnostic_sidecars.py::test_stabilizer_provenance_scanner_smoke PASSED [ 89%]
+tests/test_m6x_d02_boundary_replay.py::test_d02_boundary_replay_10_step_smoke PASSED [ 91%]
+tests/test_m3_transfer_audit.py::test_transfer_audit_artifact_is_zero_post_init PASSED [ 93%]
+tests/test_m3_transfer_audit.py::test_spacetime_budget_artifact_has_required_m3_keys PASSED [ 95%]
+tests/test_m3_transfer_audit.py::test_transfer_audit_counts_memcpy_details PASSED [ 97%]
+tests/test_m3_transfer_audit.py::test_transfer_audit_counts_plain_trace_text PASSED [100%]
+
+======================== 46 passed in 312.68s (0:05:12) ========================

@@ -1,0 +1,801 @@
+=== duration=1 post-fix replay timing ===
+[d02-replay-cli +   0.000s] importing jax.config
+[d02-replay-cli +   0.485s] importing replay dependencies
+[d02-replay +   0.000s] module import complete
+[d02-replay-cli +   1.307s] imports complete
+[d02-replay-cli +   1.308s] parsed args duration_s=1 dt_s=1 effective_dt_s=1 n_acoustic=4 run_dir=/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z output=.agent/sprints/2026-05-24-m6x-s2dot2-d02-replay-hang-debug/proof_replay_run_d1.json
+[d02-replay-cli +   1.308s] calling run_replay_proof
+[d02-replay +   0.003s] run_replay_proof start run_dir=/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z duration_s=1 dt_s=1 n_acoustic=4
+[d02-replay +   0.003s] build_replay_case start run_dir=/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z domain=d02
+[d02-replay +   0.003s] Gen2Run created
+[d02-replay +   1.339s] grid loaded mass_shape=(44, 66, 159)
+[d02-replay +   1.782s] State.zeros complete
+[d02-replay +   1.786s] Tendencies.zeros complete
+[d02-replay +   2.367s] load_wrfinput_metrics complete
+[d02-replay +   4.720s] load_prescribed_land_state complete
+[d02-replay +   4.720s] load boundary leaves start domain=d02
+[d02-replay +   4.721s] history files counted domain=d02 count=25
+[d02-replay +   4.721s] pack history start d02:U ntimes=25 z_len=44 max_side=160
+[d02-replay +   4.722s] load start d02:U[0]
+[d02-replay +   4.875s] load done d02:U[0] shape=(44, 66, 160) dtype=float32 elapsed_s=0.154
+[d02-replay +   4.877s] load start d02:U[1]
+[d02-replay +   5.027s] load done d02:U[1] shape=(44, 66, 160) dtype=float32 elapsed_s=0.151
+[d02-replay +   5.030s] load start d02:U[2]
+[d02-replay +   5.159s] load done d02:U[2] shape=(44, 66, 160) dtype=float32 elapsed_s=0.129
+[d02-replay +   5.160s] load start d02:U[3]
+[d02-replay +   5.277s] load done d02:U[3] shape=(44, 66, 160) dtype=float32 elapsed_s=0.117
+[d02-replay +   5.279s] load start d02:U[4]
+[d02-replay +   5.439s] load done d02:U[4] shape=(44, 66, 160) dtype=float32 elapsed_s=0.161
+[d02-replay +   5.442s] load start d02:U[5]
+[d02-replay +   5.609s] load done d02:U[5] shape=(44, 66, 160) dtype=float32 elapsed_s=0.167
+[d02-replay +   5.610s] load start d02:U[6]
+[d02-replay +   5.770s] load done d02:U[6] shape=(44, 66, 160) dtype=float32 elapsed_s=0.159
+[d02-replay +   5.772s] load start d02:U[7]
+[d02-replay +   5.915s] load done d02:U[7] shape=(44, 66, 160) dtype=float32 elapsed_s=0.143
+[d02-replay +   5.916s] load start d02:U[8]
+[d02-replay +   6.050s] load done d02:U[8] shape=(44, 66, 160) dtype=float32 elapsed_s=0.134
+[d02-replay +   6.051s] load start d02:U[9]
+[d02-replay +   6.151s] load done d02:U[9] shape=(44, 66, 160) dtype=float32 elapsed_s=0.100
+[d02-replay +   6.151s] load start d02:U[10]
+[d02-replay +   6.260s] load done d02:U[10] shape=(44, 66, 160) dtype=float32 elapsed_s=0.109
+[d02-replay +   6.262s] load start d02:U[11]
+[d02-replay +   6.420s] load done d02:U[11] shape=(44, 66, 160) dtype=float32 elapsed_s=0.158
+[d02-replay +   6.422s] load start d02:U[12]
+[d02-replay +   6.577s] load done d02:U[12] shape=(44, 66, 160) dtype=float32 elapsed_s=0.156
+[d02-replay +   6.580s] load start d02:U[13]
+[d02-replay +   6.725s] load done d02:U[13] shape=(44, 66, 160) dtype=float32 elapsed_s=0.145
+[d02-replay +   6.727s] load start d02:U[14]
+[d02-replay +   6.897s] load done d02:U[14] shape=(44, 66, 160) dtype=float32 elapsed_s=0.170
+[d02-replay +   6.899s] load start d02:U[15]
+[d02-replay +   7.021s] load done d02:U[15] shape=(44, 66, 160) dtype=float32 elapsed_s=0.122
+[d02-replay +   7.021s] load start d02:U[16]
+[d02-replay +   7.170s] load done d02:U[16] shape=(44, 66, 160) dtype=float32 elapsed_s=0.149
+[d02-replay +   7.171s] load start d02:U[17]
+[d02-replay +   7.339s] load done d02:U[17] shape=(44, 66, 160) dtype=float32 elapsed_s=0.168
+[d02-replay +   7.342s] load start d02:U[18]
+[d02-replay +   7.505s] load done d02:U[18] shape=(44, 66, 160) dtype=float32 elapsed_s=0.163
+[d02-replay +   7.506s] load start d02:U[19]
+[d02-replay +   7.691s] load done d02:U[19] shape=(44, 66, 160) dtype=float32 elapsed_s=0.185
+[d02-replay +   7.698s] load start d02:U[20]
+[d02-replay +   7.832s] load done d02:U[20] shape=(44, 66, 160) dtype=float32 elapsed_s=0.134
+[d02-replay +   7.832s] load start d02:U[21]
+[d02-replay +   7.915s] load done d02:U[21] shape=(44, 66, 160) dtype=float32 elapsed_s=0.082
+[d02-replay +   7.918s] load start d02:U[22]
+[d02-replay +   8.024s] load done d02:U[22] shape=(44, 66, 160) dtype=float32 elapsed_s=0.106
+[d02-replay +   8.025s] load start d02:U[23]
+[d02-replay +   8.155s] load done d02:U[23] shape=(44, 66, 160) dtype=float32 elapsed_s=0.130
+[d02-replay +   8.157s] load start d02:U[24]
+[d02-replay +   8.296s] load done d02:U[24] shape=(44, 66, 160) dtype=float32 elapsed_s=0.139
+[d02-replay +   8.299s] pack history done d02:U shape=(25, 4, 44, 160) dtype=float32
+[d02-replay +   8.299s] pack history start d02:V ntimes=25 z_len=44 max_side=160
+[d02-replay +   8.299s] load start d02:V[0]
+[d02-replay +   8.429s] load done d02:V[0] shape=(44, 67, 159) dtype=float32 elapsed_s=0.130
+[d02-replay +   8.431s] load start d02:V[1]
+[d02-replay +   8.549s] load done d02:V[1] shape=(44, 67, 159) dtype=float32 elapsed_s=0.119
+[d02-replay +   8.552s] load start d02:V[2]
+[d02-replay +   8.650s] load done d02:V[2] shape=(44, 67, 159) dtype=float32 elapsed_s=0.098
+[d02-replay +   8.651s] load start d02:V[3]
+[d02-replay +   8.767s] load done d02:V[3] shape=(44, 67, 159) dtype=float32 elapsed_s=0.117
+[d02-replay +   8.768s] load start d02:V[4]
+[d02-replay +   8.857s] load done d02:V[4] shape=(44, 67, 159) dtype=float32 elapsed_s=0.089
+[d02-replay +   8.857s] load start d02:V[5]
+[d02-replay +   8.945s] load done d02:V[5] shape=(44, 67, 159) dtype=float32 elapsed_s=0.087
+[d02-replay +   8.945s] load start d02:V[6]
+[d02-replay +   9.078s] load done d02:V[6] shape=(44, 67, 159) dtype=float32 elapsed_s=0.132
+[d02-replay +   9.080s] load start d02:V[7]
+[d02-replay +   9.207s] load done d02:V[7] shape=(44, 67, 159) dtype=float32 elapsed_s=0.127
+[d02-replay +   9.209s] load start d02:V[8]
+[d02-replay +   9.350s] load done d02:V[8] shape=(44, 67, 159) dtype=float32 elapsed_s=0.140
+[d02-replay +   9.352s] load start d02:V[9]
+[d02-replay +   9.488s] load done d02:V[9] shape=(44, 67, 159) dtype=float32 elapsed_s=0.136
+[d02-replay +   9.490s] load start d02:V[10]
+[d02-replay +   9.615s] load done d02:V[10] shape=(44, 67, 159) dtype=float32 elapsed_s=0.125
+[d02-replay +   9.616s] load start d02:V[11]
+[d02-replay +   9.704s] load done d02:V[11] shape=(44, 67, 159) dtype=float32 elapsed_s=0.088
+[d02-replay +   9.705s] load start d02:V[12]
+[d02-replay +   9.844s] load done d02:V[12] shape=(44, 67, 159) dtype=float32 elapsed_s=0.140
+[d02-replay +   9.848s] load start d02:V[13]
+[d02-replay +   9.999s] load done d02:V[13] shape=(44, 67, 159) dtype=float32 elapsed_s=0.152
+[d02-replay +  10.002s] load start d02:V[14]
+[d02-replay +  10.159s] load done d02:V[14] shape=(44, 67, 159) dtype=float32 elapsed_s=0.158
+[d02-replay +  10.161s] load start d02:V[15]
+[d02-replay +  10.306s] load done d02:V[15] shape=(44, 67, 159) dtype=float32 elapsed_s=0.145
+[d02-replay +  10.307s] load start d02:V[16]
+[d02-replay +  10.498s] load done d02:V[16] shape=(44, 67, 159) dtype=float32 elapsed_s=0.191
+[d02-replay +  10.500s] load start d02:V[17]
+[d02-replay +  10.639s] load done d02:V[17] shape=(44, 67, 159) dtype=float32 elapsed_s=0.139
+[d02-replay +  10.640s] load start d02:V[18]
+[d02-replay +  10.799s] load done d02:V[18] shape=(44, 67, 159) dtype=float32 elapsed_s=0.160
+[d02-replay +  10.805s] load start d02:V[19]
+[d02-replay +  10.996s] load done d02:V[19] shape=(44, 67, 159) dtype=float32 elapsed_s=0.190
+[d02-replay +  10.997s] load start d02:V[20]
+[d02-replay +  11.147s] load done d02:V[20] shape=(44, 67, 159) dtype=float32 elapsed_s=0.150
+[d02-replay +  11.150s] load start d02:V[21]
+[d02-replay +  11.296s] load done d02:V[21] shape=(44, 67, 159) dtype=float32 elapsed_s=0.146
+[d02-replay +  11.297s] load start d02:V[22]
+[d02-replay +  11.407s] load done d02:V[22] shape=(44, 67, 159) dtype=float32 elapsed_s=0.110
+[d02-replay +  11.408s] load start d02:V[23]
+[d02-replay +  11.537s] load done d02:V[23] shape=(44, 67, 159) dtype=float32 elapsed_s=0.130
+[d02-replay +  11.538s] load start d02:V[24]
+[d02-replay +  11.646s] load done d02:V[24] shape=(44, 67, 159) dtype=float32 elapsed_s=0.108
+[d02-replay +  11.648s] pack history done d02:V shape=(25, 4, 44, 160) dtype=float32
+[d02-replay +  11.648s] pack history start d02:T ntimes=25 z_len=44 max_side=160
+[d02-replay +  11.648s] load start d02:T[0]
+[d02-replay +  11.784s] load done d02:T[0] shape=(44, 66, 159) dtype=float32 elapsed_s=0.135
+[d02-replay +  11.787s] load start d02:T[1]
+[d02-replay +  11.934s] load done d02:T[1] shape=(44, 66, 159) dtype=float32 elapsed_s=0.147
+[d02-replay +  11.937s] load start d02:T[2]
+[d02-replay +  12.076s] load done d02:T[2] shape=(44, 66, 159) dtype=float32 elapsed_s=0.138
+[d02-replay +  12.077s] load start d02:T[3]
+[d02-replay +  12.219s] load done d02:T[3] shape=(44, 66, 159) dtype=float32 elapsed_s=0.142
+[d02-replay +  12.223s] load start d02:T[4]
+[d02-replay +  12.366s] load done d02:T[4] shape=(44, 66, 159) dtype=float32 elapsed_s=0.143
+[d02-replay +  12.366s] load start d02:T[5]
+[d02-replay +  12.465s] load done d02:T[5] shape=(44, 66, 159) dtype=float32 elapsed_s=0.099
+[d02-replay +  12.466s] load start d02:T[6]
+[d02-replay +  12.574s] load done d02:T[6] shape=(44, 66, 159) dtype=float32 elapsed_s=0.108
+[d02-replay +  12.577s] load start d02:T[7]
+[d02-replay +  12.728s] load done d02:T[7] shape=(44, 66, 159) dtype=float32 elapsed_s=0.151
+[d02-replay +  12.730s] load start d02:T[8]
+[d02-replay +  12.875s] load done d02:T[8] shape=(44, 66, 159) dtype=float32 elapsed_s=0.145
+[d02-replay +  12.880s] load start d02:T[9]
+[d02-replay +  13.050s] load done d02:T[9] shape=(44, 66, 159) dtype=float32 elapsed_s=0.170
+[d02-replay +  13.054s] load start d02:T[10]
+[d02-replay +  13.228s] load done d02:T[10] shape=(44, 66, 159) dtype=float32 elapsed_s=0.174
+[d02-replay +  13.233s] load start d02:T[11]
+[d02-replay +  13.339s] load done d02:T[11] shape=(44, 66, 159) dtype=float32 elapsed_s=0.106
+[d02-replay +  13.340s] load start d02:T[12]
+[d02-replay +  13.435s] load done d02:T[12] shape=(44, 66, 159) dtype=float32 elapsed_s=0.095
+[d02-replay +  13.436s] load start d02:T[13]
+[d02-replay +  13.591s] load done d02:T[13] shape=(44, 66, 159) dtype=float32 elapsed_s=0.154
+[d02-replay +  13.591s] load start d02:T[14]
+[d02-replay +  13.738s] load done d02:T[14] shape=(44, 66, 159) dtype=float32 elapsed_s=0.147
+[d02-replay +  13.741s] load start d02:T[15]
+[d02-replay +  13.893s] load done d02:T[15] shape=(44, 66, 159) dtype=float32 elapsed_s=0.153
+[d02-replay +  13.897s] load start d02:T[16]
+[d02-replay +  14.036s] load done d02:T[16] shape=(44, 66, 159) dtype=float32 elapsed_s=0.140
+[d02-replay +  14.042s] load start d02:T[17]
+[d02-replay +  14.163s] load done d02:T[17] shape=(44, 66, 159) dtype=float32 elapsed_s=0.121
+[d02-replay +  14.164s] load start d02:T[18]
+[d02-replay +  14.280s] load done d02:T[18] shape=(44, 66, 159) dtype=float32 elapsed_s=0.117
+[d02-replay +  14.281s] load start d02:T[19]
+[d02-replay +  14.355s] load done d02:T[19] shape=(44, 66, 159) dtype=float32 elapsed_s=0.074
+[d02-replay +  14.355s] load start d02:T[20]
+[d02-replay +  14.449s] load done d02:T[20] shape=(44, 66, 159) dtype=float32 elapsed_s=0.094
+[d02-replay +  14.453s] load start d02:T[21]
+[d02-replay +  14.577s] load done d02:T[21] shape=(44, 66, 159) dtype=float32 elapsed_s=0.124
+[d02-replay +  14.580s] load start d02:T[22]
+[d02-replay +  14.706s] load done d02:T[22] shape=(44, 66, 159) dtype=float32 elapsed_s=0.126
+[d02-replay +  14.709s] load start d02:T[23]
+[d02-replay +  14.841s] load done d02:T[23] shape=(44, 66, 159) dtype=float32 elapsed_s=0.132
+[d02-replay +  14.842s] load start d02:T[24]
+[d02-replay +  14.989s] load done d02:T[24] shape=(44, 66, 159) dtype=float32 elapsed_s=0.148
+[d02-replay +  14.994s] pack history done d02:T shape=(25, 4, 44, 160) dtype=float32
+[d02-replay +  14.994s] pack history start d02:QVAPOR ntimes=25 z_len=44 max_side=160
+[d02-replay +  14.994s] load start d02:QVAPOR[0]
+[d02-replay +  15.153s] load done d02:QVAPOR[0] shape=(44, 66, 159) dtype=float32 elapsed_s=0.159
+[d02-replay +  15.154s] load start d02:QVAPOR[1]
+[d02-replay +  15.270s] load done d02:QVAPOR[1] shape=(44, 66, 159) dtype=float32 elapsed_s=0.116
+[d02-replay +  15.271s] load start d02:QVAPOR[2]
+[d02-replay +  15.458s] load done d02:QVAPOR[2] shape=(44, 66, 159) dtype=float32 elapsed_s=0.187
+[d02-replay +  15.460s] load start d02:QVAPOR[3]
+[d02-replay +  15.652s] load done d02:QVAPOR[3] shape=(44, 66, 159) dtype=float32 elapsed_s=0.192
+[d02-replay +  15.654s] load start d02:QVAPOR[4]
+[d02-replay +  15.850s] load done d02:QVAPOR[4] shape=(44, 66, 159) dtype=float32 elapsed_s=0.196
+[d02-replay +  15.853s] load start d02:QVAPOR[5]
+[d02-replay +  15.991s] load done d02:QVAPOR[5] shape=(44, 66, 159) dtype=float32 elapsed_s=0.138
+[d02-replay +  15.993s] load start d02:QVAPOR[6]
+[d02-replay +  16.082s] load done d02:QVAPOR[6] shape=(44, 66, 159) dtype=float32 elapsed_s=0.089
+[d02-replay +  16.083s] load start d02:QVAPOR[7]
+[d02-replay +  16.261s] load done d02:QVAPOR[7] shape=(44, 66, 159) dtype=float32 elapsed_s=0.177
+[d02-replay +  16.263s] load start d02:QVAPOR[8]
+[d02-replay +  16.475s] load done d02:QVAPOR[8] shape=(44, 66, 159) dtype=float32 elapsed_s=0.211
+[d02-replay +  16.475s] load start d02:QVAPOR[9]
+[d02-replay +  16.629s] load done d02:QVAPOR[9] shape=(44, 66, 159) dtype=float32 elapsed_s=0.154
+[d02-replay +  16.630s] load start d02:QVAPOR[10]
+[d02-replay +  16.830s] load done d02:QVAPOR[10] shape=(44, 66, 159) dtype=float32 elapsed_s=0.200
+[d02-replay +  16.834s] load start d02:QVAPOR[11]
+[d02-replay +  17.048s] load done d02:QVAPOR[11] shape=(44, 66, 159) dtype=float32 elapsed_s=0.215
+[d02-replay +  17.051s] load start d02:QVAPOR[12]
+[d02-replay +  17.222s] load done d02:QVAPOR[12] shape=(44, 66, 159) dtype=float32 elapsed_s=0.171
+[d02-replay +  17.223s] load start d02:QVAPOR[13]
+[d02-replay +  17.387s] load done d02:QVAPOR[13] shape=(44, 66, 159) dtype=float32 elapsed_s=0.164
+[d02-replay +  17.388s] load start d02:QVAPOR[14]
+[d02-replay +  17.537s] load done d02:QVAPOR[14] shape=(44, 66, 159) dtype=float32 elapsed_s=0.149
+[d02-replay +  17.540s] load start d02:QVAPOR[15]
+[d02-replay +  17.686s] load done d02:QVAPOR[15] shape=(44, 66, 159) dtype=float32 elapsed_s=0.146
+[d02-replay +  17.688s] load start d02:QVAPOR[16]
+[d02-replay +  17.816s] load done d02:QVAPOR[16] shape=(44, 66, 159) dtype=float32 elapsed_s=0.129
+[d02-replay +  17.820s] load start d02:QVAPOR[17]
+[d02-replay +  17.986s] load done d02:QVAPOR[17] shape=(44, 66, 159) dtype=float32 elapsed_s=0.166
+[d02-replay +  17.987s] load start d02:QVAPOR[18]
+[d02-replay +  18.091s] load done d02:QVAPOR[18] shape=(44, 66, 159) dtype=float32 elapsed_s=0.104
+[d02-replay +  18.092s] load start d02:QVAPOR[19]
+[d02-replay +  18.257s] load done d02:QVAPOR[19] shape=(44, 66, 159) dtype=float32 elapsed_s=0.165
+[d02-replay +  18.260s] load start d02:QVAPOR[20]
+[d02-replay +  18.441s] load done d02:QVAPOR[20] shape=(44, 66, 159) dtype=float32 elapsed_s=0.181
+[d02-replay +  18.442s] load start d02:QVAPOR[21]
+[d02-replay +  18.624s] load done d02:QVAPOR[21] shape=(44, 66, 159) dtype=float32 elapsed_s=0.182
+[d02-replay +  18.625s] load start d02:QVAPOR[22]
+[d02-replay +  18.792s] load done d02:QVAPOR[22] shape=(44, 66, 159) dtype=float32 elapsed_s=0.167
+[d02-replay +  18.795s] load start d02:QVAPOR[23]
+[d02-replay +  18.898s] load done d02:QVAPOR[23] shape=(44, 66, 159) dtype=float32 elapsed_s=0.103
+[d02-replay +  18.899s] load start d02:QVAPOR[24]
+[d02-replay +  19.011s] load done d02:QVAPOR[24] shape=(44, 66, 159) dtype=float32 elapsed_s=0.112
+[d02-replay +  19.012s] pack history done d02:QVAPOR shape=(25, 4, 44, 160) dtype=float32
+[d02-replay +  19.012s] pack history start d02:PH ntimes=25 z_len=45 max_side=160
+[d02-replay +  19.012s] load start d02:PH[0]
+[d02-replay +  19.176s] load done d02:PH[0] shape=(45, 66, 159) dtype=float32 elapsed_s=0.164
+[d02-replay +  19.181s] load start d02:PHB[0]
+[d02-replay +  19.342s] load done d02:PHB[0] shape=(45, 66, 159) dtype=float32 elapsed_s=0.161
+[d02-replay +  19.349s] load start d02:PH[1]
+[d02-replay +  19.501s] load done d02:PH[1] shape=(45, 66, 159) dtype=float32 elapsed_s=0.152
+[d02-replay +  19.508s] load start d02:PHB[1]
+[d02-replay +  19.643s] load done d02:PHB[1] shape=(45, 66, 159) dtype=float32 elapsed_s=0.136
+[d02-replay +  19.645s] load start d02:PH[2]
+[d02-replay +  19.775s] load done d02:PH[2] shape=(45, 66, 159) dtype=float32 elapsed_s=0.130
+[d02-replay +  19.776s] load start d02:PHB[2]
+[d02-replay +  19.886s] load done d02:PHB[2] shape=(45, 66, 159) dtype=float32 elapsed_s=0.110
+[d02-replay +  19.887s] load start d02:PH[3]
+[d02-replay +  20.021s] load done d02:PH[3] shape=(45, 66, 159) dtype=float32 elapsed_s=0.133
+[d02-replay +  20.023s] load start d02:PHB[3]
+[d02-replay +  20.204s] load done d02:PHB[3] shape=(45, 66, 159) dtype=float32 elapsed_s=0.181
+[d02-replay +  20.210s] load start d02:PH[4]
+[d02-replay +  20.355s] load done d02:PH[4] shape=(45, 66, 159) dtype=float32 elapsed_s=0.145
+[d02-replay +  20.359s] load start d02:PHB[4]
+[d02-replay +  20.526s] load done d02:PHB[4] shape=(45, 66, 159) dtype=float32 elapsed_s=0.167
+[d02-replay +  20.532s] load start d02:PH[5]
+[d02-replay +  20.687s] load done d02:PH[5] shape=(45, 66, 159) dtype=float32 elapsed_s=0.155
+[d02-replay +  20.688s] load start d02:PHB[5]
+[d02-replay +  20.795s] load done d02:PHB[5] shape=(45, 66, 159) dtype=float32 elapsed_s=0.106
+[d02-replay +  20.796s] load start d02:PH[6]
+[d02-replay +  20.912s] load done d02:PH[6] shape=(45, 66, 159) dtype=float32 elapsed_s=0.116
+[d02-replay +  20.915s] load start d02:PHB[6]
+[d02-replay +  21.053s] load done d02:PHB[6] shape=(45, 66, 159) dtype=float32 elapsed_s=0.138
+[d02-replay +  21.058s] load start d02:PH[7]
+[d02-replay +  21.205s] load done d02:PH[7] shape=(45, 66, 159) dtype=float32 elapsed_s=0.147
+[d02-replay +  21.207s] load start d02:PHB[7]
+[d02-replay +  21.353s] load done d02:PHB[7] shape=(45, 66, 159) dtype=float32 elapsed_s=0.145
+[d02-replay +  21.357s] load start d02:PH[8]
+[d02-replay +  21.494s] load done d02:PH[8] shape=(45, 66, 159) dtype=float32 elapsed_s=0.137
+[d02-replay +  21.495s] load start d02:PHB[8]
+[d02-replay +  21.598s] load done d02:PHB[8] shape=(45, 66, 159) dtype=float32 elapsed_s=0.103
+[d02-replay +  21.603s] load start d02:PH[9]
+[d02-replay +  21.701s] load done d02:PH[9] shape=(45, 66, 159) dtype=float32 elapsed_s=0.098
+[d02-replay +  21.703s] load start d02:PHB[9]
+[d02-replay +  21.840s] load done d02:PHB[9] shape=(45, 66, 159) dtype=float32 elapsed_s=0.137
+[d02-replay +  21.846s] load start d02:PH[10]
+[d02-replay +  21.991s] load done d02:PH[10] shape=(45, 66, 159) dtype=float32 elapsed_s=0.145
+[d02-replay +  21.997s] load start d02:PHB[10]
+[d02-replay +  22.136s] load done d02:PHB[10] shape=(45, 66, 159) dtype=float32 elapsed_s=0.140
+[d02-replay +  22.138s] load start d02:PH[11]
+[d02-replay +  22.281s] load done d02:PH[11] shape=(45, 66, 159) dtype=float32 elapsed_s=0.143
+[d02-replay +  22.285s] load start d02:PHB[11]
+[d02-replay +  22.399s] load done d02:PHB[11] shape=(45, 66, 159) dtype=float32 elapsed_s=0.114
+[d02-replay +  22.401s] load start d02:PH[12]
+[d02-replay +  22.545s] load done d02:PH[12] shape=(45, 66, 159) dtype=float32 elapsed_s=0.144
+[d02-replay +  22.546s] load start d02:PHB[12]
+[d02-replay +  22.649s] load done d02:PHB[12] shape=(45, 66, 159) dtype=float32 elapsed_s=0.103
+[d02-replay +  22.650s] load start d02:PH[13]
+[d02-replay +  22.782s] load done d02:PH[13] shape=(45, 66, 159) dtype=float32 elapsed_s=0.132
+[d02-replay +  22.786s] load start d02:PHB[13]
+[d02-replay +  22.973s] load done d02:PHB[13] shape=(45, 66, 159) dtype=float32 elapsed_s=0.187
+[d02-replay +  22.978s] load start d02:PH[14]
+[d02-replay +  23.154s] load done d02:PH[14] shape=(45, 66, 159) dtype=float32 elapsed_s=0.176
+[d02-replay +  23.156s] load start d02:PHB[14]
+[d02-replay +  23.330s] load done d02:PHB[14] shape=(45, 66, 159) dtype=float32 elapsed_s=0.174
+[d02-replay +  23.338s] load start d02:PH[15]
+[d02-replay +  23.473s] load done d02:PH[15] shape=(45, 66, 159) dtype=float32 elapsed_s=0.135
+[d02-replay +  23.474s] load start d02:PHB[15]
+[d02-replay +  23.598s] load done d02:PHB[15] shape=(45, 66, 159) dtype=float32 elapsed_s=0.124
+[d02-replay +  23.605s] load start d02:PH[16]
+[d02-replay +  23.780s] load done d02:PH[16] shape=(45, 66, 159) dtype=float32 elapsed_s=0.176
+[d02-replay +  23.785s] load start d02:PHB[16]
+[d02-replay +  23.947s] load done d02:PHB[16] shape=(45, 66, 159) dtype=float32 elapsed_s=0.163
+[d02-replay +  23.953s] load start d02:PH[17]
+[d02-replay +  24.098s] load done d02:PH[17] shape=(45, 66, 159) dtype=float32 elapsed_s=0.144
+[d02-replay +  24.101s] load start d02:PHB[17]
+[d02-replay +  24.236s] load done d02:PHB[17] shape=(45, 66, 159) dtype=float32 elapsed_s=0.135
+[d02-replay +  24.243s] load start d02:PH[18]
+[d02-replay +  24.338s] load done d02:PH[18] shape=(45, 66, 159) dtype=float32 elapsed_s=0.095
+[d02-replay +  24.339s] load start d02:PHB[18]
+[d02-replay +  24.435s] load done d02:PHB[18] shape=(45, 66, 159) dtype=float32 elapsed_s=0.096
+[d02-replay +  24.441s] load start d02:PH[19]
+[d02-replay +  24.576s] load done d02:PH[19] shape=(45, 66, 159) dtype=float32 elapsed_s=0.135
+[d02-replay +  24.577s] load start d02:PHB[19]
+[d02-replay +  24.713s] load done d02:PHB[19] shape=(45, 66, 159) dtype=float32 elapsed_s=0.135
+[d02-replay +  24.718s] load start d02:PH[20]
+[d02-replay +  24.851s] load done d02:PH[20] shape=(45, 66, 159) dtype=float32 elapsed_s=0.133
+[d02-replay +  24.854s] load start d02:PHB[20]
+[d02-replay +  24.989s] load done d02:PHB[20] shape=(45, 66, 159) dtype=float32 elapsed_s=0.135
+[d02-replay +  24.993s] load start d02:PH[21]
+[d02-replay +  25.100s] load done d02:PH[21] shape=(45, 66, 159) dtype=float32 elapsed_s=0.107
+[d02-replay +  25.101s] load start d02:PHB[21]
+[d02-replay +  25.201s] load done d02:PHB[21] shape=(45, 66, 159) dtype=float32 elapsed_s=0.100
+[d02-replay +  25.207s] load start d02:PH[22]
+[d02-replay +  25.300s] load done d02:PH[22] shape=(45, 66, 159) dtype=float32 elapsed_s=0.093
+[d02-replay +  25.300s] load start d02:PHB[22]
+[d02-replay +  25.383s] load done d02:PHB[22] shape=(45, 66, 159) dtype=float32 elapsed_s=0.082
+[d02-replay +  25.384s] load start d02:PH[23]
+[d02-replay +  25.497s] load done d02:PH[23] shape=(45, 66, 159) dtype=float32 elapsed_s=0.113
+[d02-replay +  25.502s] load start d02:PHB[23]
+[d02-replay +  25.633s] load done d02:PHB[23] shape=(45, 66, 159) dtype=float32 elapsed_s=0.131
+[d02-replay +  25.638s] load start d02:PH[24]
+[d02-replay +  25.773s] load done d02:PH[24] shape=(45, 66, 159) dtype=float32 elapsed_s=0.135
+[d02-replay +  25.775s] load start d02:PHB[24]
+[d02-replay +  25.908s] load done d02:PHB[24] shape=(45, 66, 159) dtype=float32 elapsed_s=0.133
+[d02-replay +  25.913s] pack history done d02:PH shape=(25, 4, 45, 160) dtype=float64
+[d02-replay +  25.913s] pack history start d02:MU+MUB ntimes=25 max_side=160
+[d02-replay +  25.913s] load start d02:MU[0]
+[d02-replay +  26.081s] load done d02:MU[0] shape=(66, 159) dtype=float32 elapsed_s=0.168
+[d02-replay +  26.081s] load start d02:MUB[0]
+[d02-replay +  26.195s] load done d02:MUB[0] shape=(66, 159) dtype=float32 elapsed_s=0.114
+[d02-replay +  26.220s] load start d02:MU[1]
+[d02-replay +  26.361s] load done d02:MU[1] shape=(66, 159) dtype=float32 elapsed_s=0.141
+[d02-replay +  26.362s] load start d02:MUB[1]
+[d02-replay +  26.534s] load done d02:MUB[1] shape=(66, 159) dtype=float32 elapsed_s=0.173
+[d02-replay +  26.536s] load start d02:MU[2]
+[d02-replay +  26.721s] load done d02:MU[2] shape=(66, 159) dtype=float32 elapsed_s=0.185
+[d02-replay +  26.721s] load start d02:MUB[2]
+[d02-replay +  26.905s] load done d02:MUB[2] shape=(66, 159) dtype=float32 elapsed_s=0.183
+[d02-replay +  26.906s] load start d02:MU[3]
+[d02-replay +  27.064s] load done d02:MU[3] shape=(66, 159) dtype=float32 elapsed_s=0.157
+[d02-replay +  27.064s] load start d02:MUB[3]
+[d02-replay +  27.173s] load done d02:MUB[3] shape=(66, 159) dtype=float32 elapsed_s=0.109
+[d02-replay +  27.175s] load start d02:MU[4]
+[d02-replay +  27.331s] load done d02:MU[4] shape=(66, 159) dtype=float32 elapsed_s=0.156
+[d02-replay +  27.331s] load start d02:MUB[4]
+[d02-replay +  27.474s] load done d02:MUB[4] shape=(66, 159) dtype=float32 elapsed_s=0.143
+[d02-replay +  27.475s] load start d02:MU[5]
+[d02-replay +  27.616s] load done d02:MU[5] shape=(66, 159) dtype=float32 elapsed_s=0.142
+[d02-replay +  27.616s] load start d02:MUB[5]
+[d02-replay +  27.750s] load done d02:MUB[5] shape=(66, 159) dtype=float32 elapsed_s=0.133
+[d02-replay +  27.752s] load start d02:MU[6]
+[d02-replay +  27.846s] load done d02:MU[6] shape=(66, 159) dtype=float32 elapsed_s=0.094
+[d02-replay +  27.846s] load start d02:MUB[6]
+[d02-replay +  27.979s] load done d02:MUB[6] shape=(66, 159) dtype=float32 elapsed_s=0.133
+[d02-replay +  27.980s] load start d02:MU[7]
+[d02-replay +  28.061s] load done d02:MU[7] shape=(66, 159) dtype=float32 elapsed_s=0.081
+[d02-replay +  28.061s] load start d02:MUB[7]
+[d02-replay +  28.157s] load done d02:MUB[7] shape=(66, 159) dtype=float32 elapsed_s=0.096
+[d02-replay +  28.158s] load start d02:MU[8]
+[d02-replay +  28.302s] load done d02:MU[8] shape=(66, 159) dtype=float32 elapsed_s=0.144
+[d02-replay +  28.303s] load start d02:MUB[8]
+[d02-replay +  28.447s] load done d02:MUB[8] shape=(66, 159) dtype=float32 elapsed_s=0.144
+[d02-replay +  28.448s] load start d02:MU[9]
+[d02-replay +  28.586s] load done d02:MU[9] shape=(66, 159) dtype=float32 elapsed_s=0.138
+[d02-replay +  28.586s] load start d02:MUB[9]
+[d02-replay +  28.728s] load done d02:MUB[9] shape=(66, 159) dtype=float32 elapsed_s=0.142
+[d02-replay +  28.730s] load start d02:MU[10]
+[d02-replay +  28.856s] load done d02:MU[10] shape=(66, 159) dtype=float32 elapsed_s=0.126
+[d02-replay +  28.857s] load start d02:MUB[10]
+[d02-replay +  28.964s] load done d02:MUB[10] shape=(66, 159) dtype=float32 elapsed_s=0.108
+[d02-replay +  28.965s] load start d02:MU[11]
+[d02-replay +  29.091s] load done d02:MU[11] shape=(66, 159) dtype=float32 elapsed_s=0.127
+[d02-replay +  29.092s] load start d02:MUB[11]
+[d02-replay +  29.249s] load done d02:MUB[11] shape=(66, 159) dtype=float32 elapsed_s=0.157
+[d02-replay +  29.250s] load start d02:MU[12]
+[d02-replay +  29.429s] load done d02:MU[12] shape=(66, 159) dtype=float32 elapsed_s=0.179
+[d02-replay +  29.429s] load start d02:MUB[12]
+[d02-replay +  29.595s] load done d02:MUB[12] shape=(66, 159) dtype=float32 elapsed_s=0.166
+[d02-replay +  29.596s] load start d02:MU[13]
+[d02-replay +  29.745s] load done d02:MU[13] shape=(66, 159) dtype=float32 elapsed_s=0.149
+[d02-replay +  29.746s] load start d02:MUB[13]
+[d02-replay +  29.850s] load done d02:MUB[13] shape=(66, 159) dtype=float32 elapsed_s=0.105
+[d02-replay +  29.851s] load start d02:MU[14]
+[d02-replay +  30.002s] load done d02:MU[14] shape=(66, 159) dtype=float32 elapsed_s=0.151
+[d02-replay +  30.002s] load start d02:MUB[14]
+[d02-replay +  30.169s] load done d02:MUB[14] shape=(66, 159) dtype=float32 elapsed_s=0.167
+[d02-replay +  30.171s] load start d02:MU[15]
+[d02-replay +  30.358s] load done d02:MU[15] shape=(66, 159) dtype=float32 elapsed_s=0.186
+[d02-replay +  30.358s] load start d02:MUB[15]
+[d02-replay +  30.509s] load done d02:MUB[15] shape=(66, 159) dtype=float32 elapsed_s=0.151
+[d02-replay +  30.512s] load start d02:MU[16]
+[d02-replay +  30.614s] load done d02:MU[16] shape=(66, 159) dtype=float32 elapsed_s=0.103
+[d02-replay +  30.615s] load start d02:MUB[16]
+[d02-replay +  30.740s] load done d02:MUB[16] shape=(66, 159) dtype=float32 elapsed_s=0.126
+[d02-replay +  30.741s] load start d02:MU[17]
+[d02-replay +  30.840s] load done d02:MU[17] shape=(66, 159) dtype=float32 elapsed_s=0.099
+[d02-replay +  30.841s] load start d02:MUB[17]
+[d02-replay +  30.960s] load done d02:MUB[17] shape=(66, 159) dtype=float32 elapsed_s=0.120
+[d02-replay +  30.962s] load start d02:MU[18]
+[d02-replay +  31.111s] load done d02:MU[18] shape=(66, 159) dtype=float32 elapsed_s=0.150
+[d02-replay +  31.112s] load start d02:MUB[18]
+[d02-replay +  31.256s] load done d02:MUB[18] shape=(66, 159) dtype=float32 elapsed_s=0.144
+[d02-replay +  31.258s] load start d02:MU[19]
+[d02-replay +  31.395s] load done d02:MU[19] shape=(66, 159) dtype=float32 elapsed_s=0.137
+[d02-replay +  31.395s] load start d02:MUB[19]
+[d02-replay +  31.532s] load done d02:MUB[19] shape=(66, 159) dtype=float32 elapsed_s=0.137
+[d02-replay +  31.533s] load start d02:MU[20]
+[d02-replay +  31.634s] load done d02:MU[20] shape=(66, 159) dtype=float32 elapsed_s=0.101
+[d02-replay +  31.634s] load start d02:MUB[20]
+[d02-replay +  31.722s] load done d02:MUB[20] shape=(66, 159) dtype=float32 elapsed_s=0.088
+[d02-replay +  31.722s] load start d02:MU[21]
+[d02-replay +  31.844s] load done d02:MU[21] shape=(66, 159) dtype=float32 elapsed_s=0.121
+[d02-replay +  31.844s] load start d02:MUB[21]
+[d02-replay +  31.979s] load done d02:MUB[21] shape=(66, 159) dtype=float32 elapsed_s=0.135
+[d02-replay +  31.980s] load start d02:MU[22]
+[d02-replay +  32.121s] load done d02:MU[22] shape=(66, 159) dtype=float32 elapsed_s=0.141
+[d02-replay +  32.121s] load start d02:MUB[22]
+[d02-replay +  32.261s] load done d02:MUB[22] shape=(66, 159) dtype=float32 elapsed_s=0.140
+[d02-replay +  32.263s] load start d02:MU[23]
+[d02-replay +  32.403s] load done d02:MU[23] shape=(66, 159) dtype=float32 elapsed_s=0.140
+[d02-replay +  32.403s] load start d02:MUB[23]
+[d02-replay +  32.517s] load done d02:MUB[23] shape=(66, 159) dtype=float32 elapsed_s=0.114
+[d02-replay +  32.518s] load start d02:MU[24]
+[d02-replay +  32.641s] load done d02:MU[24] shape=(66, 159) dtype=float32 elapsed_s=0.122
+[d02-replay +  32.641s] load start d02:MUB[24]
+[d02-replay +  32.803s] load done d02:MUB[24] shape=(66, 159) dtype=float32 elapsed_s=0.162
+[d02-replay +  32.805s] pack history done d02:MU+MUB shape=(25, 4, 1, 160) dtype=float64
+[d02-replay +  32.805s] device_put boundary leaves start
+[d02-replay +  32.830s] device_put boundary leaves done
+[d02-replay +  32.830s] load_history_boundary_leaves complete
+[d02-replay +  32.830s] load start d02:P[0]
+[d02-replay +  33.038s] load done d02:P[0] shape=(44, 66, 159) dtype=float32 elapsed_s=0.208
+[d02-replay +  33.038s] load start d02:PB[0]
+[d02-replay +  33.218s] load done d02:PB[0] shape=(44, 66, 159) dtype=float32 elapsed_s=0.180
+[d02-replay +  33.218s] load start d02:PH[0]
+[d02-replay +  33.291s] load done d02:PH[0] shape=(45, 66, 159) dtype=float32 elapsed_s=0.073
+[d02-replay +  33.291s] load start d02:PHB[0]
+[d02-replay +  33.357s] load done d02:PHB[0] shape=(45, 66, 159) dtype=float32 elapsed_s=0.066
+[d02-replay +  33.357s] load start d02:MU[0]
+[d02-replay +  33.428s] load done d02:MU[0] shape=(66, 159) dtype=float32 elapsed_s=0.071
+[d02-replay +  33.428s] load start d02:MUB[0]
+[d02-replay +  33.481s] load done d02:MUB[0] shape=(66, 159) dtype=float32 elapsed_s=0.052
+[d02-replay +  33.481s] load start d02:T[0]
+[d02-replay +  33.522s] load done d02:T[0] shape=(44, 66, 159) dtype=float32 elapsed_s=0.041
+[d02-replay +  33.586s] load start d02:U[0]
+[d02-replay +  33.643s] load done d02:U[0] shape=(44, 66, 160) dtype=float32 elapsed_s=0.057
+[d02-replay +  33.643s] load start d02:V[0]
+[d02-replay +  33.706s] load done d02:V[0] shape=(44, 67, 159) dtype=float32 elapsed_s=0.063
+[d02-replay +  33.706s] load start d02:W[0]
+[d02-replay +  33.842s] load done d02:W[0] shape=(45, 66, 159) dtype=float32 elapsed_s=0.136
+[d02-replay +  33.842s] load start d02:QVAPOR[0]
+[d02-replay +  33.908s] load done d02:QVAPOR[0] shape=(44, 66, 159) dtype=float32 elapsed_s=0.065
+[d02-replay +  34.021s] load start d02:QCLOUD[0]
+[d02-replay +  34.155s] load done d02:QCLOUD[0] shape=(44, 66, 159) dtype=float32 elapsed_s=0.134
+[d02-replay +  34.157s] load start d02:QRAIN[0]
+[d02-replay +  34.290s] load done d02:QRAIN[0] shape=(44, 66, 159) dtype=float32 elapsed_s=0.134
+[d02-replay +  34.291s] load start d02:QICE[0]
+[d02-replay +  34.380s] load done d02:QICE[0] shape=(44, 66, 159) dtype=float32 elapsed_s=0.089
+[d02-replay +  34.380s] load start d02:QSNOW[0]
+[d02-replay +  34.472s] load done d02:QSNOW[0] shape=(44, 66, 159) dtype=float32 elapsed_s=0.092
+[d02-replay +  34.473s] load start d02:QGRAUP[0]
+[d02-replay +  34.606s] load done d02:QGRAUP[0] shape=(44, 66, 159) dtype=float32 elapsed_s=0.133
+[d02-replay +  34.608s] load start d02:QNICE[0]
+[d02-replay +  34.746s] load done d02:QNICE[0] shape=(44, 66, 159) dtype=float32 elapsed_s=0.138
+[d02-replay +  34.748s] load start d02:QNRAIN[0]
+[d02-replay +  34.890s] load done d02:QNRAIN[0] shape=(44, 66, 159) dtype=float32 elapsed_s=0.142
+[d02-replay +  34.893s] load start d02:QKE[0]
+[d02-replay +  35.031s] load done d02:QKE[0] shape=(44, 66, 159) dtype=float32 elapsed_s=0.138
+[d02-replay +  35.186s] state.replace with initial fields complete
+[d02-replay +  35.188s] build_replay_case done
+[d02-replay +  35.188s] initial block_until_ready start
+[d02-replay +  35.189s] initial block_until_ready done
+[d02-replay +  35.189s] run_replay_scan dispatch start
+[d02-replay +  35.192s] one-step segment start step=1 run_radiation=True
+[d02-replay +  37.551s] one-step segment dispatched step=1 run_radiation=True
+[d02-replay + 176.467s] run_replay_scan dispatch returned; block_until_ready start
+[d02-replay + 176.519s] run_replay_scan block_until_ready done wall_s=141.330
+[d02-replay + 176.519s] forecast_comparison start
+[d02-replay + 180.651s] load start d02:T2[0]
+[d02-replay + 180.741s] load done d02:T2[0] shape=(66, 159) dtype=float32 elapsed_s=0.089
+[d02-replay + 180.741s] load start d02:U10[0]
+[d02-replay + 180.828s] load done d02:U10[0] shape=(66, 159) dtype=float32 elapsed_s=0.087
+[d02-replay + 180.828s] load start d02:V10[0]
+[d02-replay + 180.964s] load done d02:V10[0] shape=(66, 159) dtype=float32 elapsed_s=0.136
+[d02-replay + 180.964s] load start d02:W[0]
+[d02-replay + 181.039s] load done d02:W[0] shape=(45, 66, 159) dtype=float32 elapsed_s=0.075
+[d02-replay + 181.114s] load start d02:T[0]
+[d02-replay + 181.188s] load done d02:T[0] shape=(44, 66, 159) dtype=float32 elapsed_s=0.074
+[d02-replay + 181.650s] forecast_comparison done
+[d02-replay + 181.650s] diagnostics_summary start
+[d02-replay + 184.760s] diagnostics_summary done
+[d02-replay + 184.760s] write_output_fields start path=/home/enric/.cache/gpuwrf_outputs/m6x_d02_replay/proof_d02_replay_fields.npz
+[d02-replay + 184.786s] write_output_fields done
+[d02-replay + 184.786s] static_transfer_audit start
+[d02-replay + 185.892s] static_transfer_audit done jaxpr_bytes=3450396
+[d02-replay + 185.895s] static audit branch complete
+[d02-replay + 185.895s] trace_transfer_audit warmup start trace_dir=/home/enric/.cache/gpuwrf_tmp/trace_m6x_d02_replay_1s
+[d02-replay + 186.113s] trace_transfer_audit warmup done
+[d02-replay + 186.115s] trace_transfer_audit profiled run start
+[d02-replay + 189.721s] trace_transfer_audit profiled run done
+[d02-replay + 192.223s] trace_transfer_audit done h2d=0 d2h=0 files=0
+[d02-replay + 192.224s] trace audit branch complete
+[d02-replay-cli + 193.533s] run_replay_proof returned status=PASS
+[d02-replay-cli + 193.533s] writing proof JSON to /tmp/wrf_gpu2_s2dot2_debug/.agent/sprints/2026-05-24-m6x-s2dot2-d02-replay-hang-debug/proof_replay_run_d1.json
+{
+  "comparison": {
+    "gen2_reference_path": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d02_2026-05-21_18:00:00",
+    "lead_hours": 0.0002777777777777778,
+    "max_abs_error": {
+      "T2": {
+        "units": "K",
+        "value": 108.82878989366532
+      },
+      "U10": {
+        "units": "m s-1",
+        "value": 146.53167134288117
+      },
+      "V10": {
+        "units": "m s-1",
+        "value": 142.60576725375654
+      },
+      "theta_k20": {
+        "units": "K",
+        "value": 0.12152099609375
+      },
+      "w_k20": {
+        "units": "m s-1",
+        "value": 1.3207426540632854
+      }
+    },
+    "rmse": {
+      "T2": {
+        "units": "K",
+        "value": 5.669158050491101
+      },
+      "U10": {
+        "units": "m s-1",
+        "value": 86.92647254259741
+      },
+      "V10": {
+        "units": "m s-1",
+        "value": 81.99804731225517
+      },
+      "theta_k20": {
+        "units": "K",
+        "value": 0.017937303258689245
+      },
+      "w_k20": {
+        "units": "m s-1",
+        "value": 1.24731974752837
+      }
+    },
+    "shapes": {
+      "T2": {
+        "forecast": [
+          66,
+          159
+        ],
+        "reference": [
+          66,
+          159
+        ]
+      },
+      "U10": {
+        "forecast": [
+          66,
+          159
+        ],
+        "reference": [
+          66,
+          159
+        ]
+      },
+      "V10": {
+        "forecast": [
+          66,
+          159
+        ],
+        "reference": [
+          66,
+          159
+        ]
+      },
+      "theta_k20": {
+        "forecast": [
+          66,
+          159
+        ],
+        "reference": [
+          66,
+          159
+        ]
+      },
+      "w_k20": {
+        "forecast": [
+          66,
+          159
+        ],
+        "reference": [
+          66,
+          159
+        ]
+      }
+    },
+    "spatial_mean_drift": {
+      "T2": {
+        "units": "K",
+        "value": 0.5809724179801936
+      },
+      "U10": {
+        "units": "m s-1",
+        "value": 27.98327299558565
+      },
+      "V10": {
+        "units": "m s-1",
+        "value": -24.00477675308817
+      }
+    },
+    "valid_time_utc": "2026-05-21T18:00:00+00:00"
+  },
+  "diagnostics": {
+    "all_state_leaves_finite": true,
+    "candidate_changed_count_total": 336403,
+    "candidate_clip_count_total": 336403,
+    "candidate_nonfinite_count_total": 0,
+    "candidate_nonfinite_steps": 0,
+    "first_candidate_nonfinite_step": null,
+    "first_nonfinite_step": null,
+    "p_max_pa": 120000.0,
+    "p_min_pa": 1000.0,
+    "peak_w_abs_m_s": 45.226082222926195,
+    "qv_max_kg_kg": 0.05000000074505806,
+    "qv_min_kg_kg": 1.000000013351432e-10,
+    "theta_max_k": 550.0,
+    "theta_max_over_run_k": 550.0,
+    "theta_min_k": 150.0,
+    "theta_min_over_run_k": 150.0,
+    "u_abs_max_m_s": 150.0,
+    "v_abs_max_m_s": 150.0,
+    "w_abs_max_m_s": 45.226082222926195
+  },
+  "dt_s": 1.0,
+  "duration_s": 1.0,
+  "first_nonfinite_step": null,
+  "forecast_throughput_x_realtime": 0.00707561458898152,
+  "invoked_schemes": [
+    {
+      "component": "dycore_large_step",
+      "implementation": "gpuwrf.dynamics.advection.compute_advection_tendencies + add_scaled_tendencies",
+      "name": "WRF-shaped RK3 advection stages"
+    },
+    {
+      "component": "horizontal_pgf",
+      "implementation": "gpuwrf.dynamics.acoustic_wrf.horizontal_pressure_gradient via run_acoustic_scan",
+      "name": "c2-A2 WRF-shaped horizontal pressure-gradient force"
+    },
+    {
+      "component": "vertical_acoustic",
+      "implementation": "gpuwrf.dynamics.acoustic_wrf.run_acoustic_scan / vertical_acoustic_update",
+      "name": "ADR-023 conservative tridiagonal column solver"
+    },
+    {
+      "component": "mass_continuity",
+      "implementation": "gpuwrf.dynamics.acoustic_wrf.mu_continuity_tendency, AcousticConfig(mu_continuity=True)",
+      "name": "c2-A2 mu_continuity"
+    },
+    {
+      "component": "microphysics",
+      "implementation": "gpuwrf.coupling.physics_couplers.thompson_adapter",
+      "name": "M5 Thompson column adapter"
+    },
+    {
+      "component": "pbl",
+      "implementation": "gpuwrf.coupling.physics_couplers.mynn_adapter",
+      "name": "M5 MYNN PBL column adapter"
+    },
+    {
+      "component": "surface",
+      "implementation": "gpuwrf.coupling.physics_couplers.surface_adapter + gpuwrf.io.land_state.load_prescribed_land_state",
+      "name": "M6-S3 MM5 sfclay surface layer with prescribed Noah-MP Option A land leaves"
+    },
+    {
+      "component": "radiation",
+      "implementation": "gpuwrf.coupling.physics_couplers.rrtmg_adapter",
+      "name": "M5 RRTMG SW+LW at cadence 60 steps plus final=True"
+    },
+    {
+      "component": "lateral_boundary",
+      "implementation": "gpuwrf.coupling.boundary_apply.apply_lateral_boundaries",
+      "name": "Gen2 d02 hourly side-history boundary replay"
+    },
+    {
+      "component": "surface_lower_boundary",
+      "implementation": "gpuwrf.physics.noah_mp.PrescribedNoahMPState",
+      "name": "Bounded prescribed Noah-MP state, non-prognostic Option A"
+    }
+  ],
+  "n_acoustic": 4,
+  "objective": "M6.x ADR-023 F6 rung 4: 1h Gen2 d02 boundary replay",
+  "output_fields_npz": "/home/enric/.cache/gpuwrf_outputs/m6x_d02_replay/proof_d02_replay_fields.npz",
+  "peak_gpu_memory": {
+    "bytes_in_use": 463073024,
+    "device": "cuda:0",
+    "peak_bytes_in_use": 9337574656,
+    "raw_keys": [
+      "bytes_in_use",
+      "bytes_limit",
+      "bytes_reserved",
+      "largest_alloc_size",
+      "largest_free_block_bytes",
+      "num_allocs",
+      "peak_bytes_in_use",
+      "peak_bytes_reserved",
+      "peak_pool_bytes",
+      "pool_bytes"
+    ]
+  },
+  "proof_notes": [
+    "RMSE values are informational for this sprint; no threshold is applied.",
+    "Boundary forcing is built from real Gen2 d02 hourly side histories for the same run used as truth.",
+    "Sanitize statistics are reported separately; first_nonfinite_step is based on post-guard State leaves, and first_candidate_nonfinite_step records pre-guard candidate failures."
+  ],
+  "run": {
+    "base_state": {
+      "geopotential_split": "ph_total=PHB+PH, ph_perturbation=PH",
+      "mu_split": "mu_total=MUB+MU, mu_perturbation=MU",
+      "pressure_split": "p_total=PB+P, p_perturbation=P",
+      "theta_base_k": 300.0
+    },
+    "boundary": {
+      "padded_side_length": 160,
+      "schema": "history-side-pack-v1",
+      "side_order": [
+        "W",
+        "E",
+        "S",
+        "N"
+      ],
+      "source": "Gen2 d02 hourly wrfout side-history replay",
+      "source_run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
+      "times": 25
+    },
+    "domain": "d02",
+    "grid": {
+      "dx_m": 3000.0,
+      "dy_m": 3000.0,
+      "mass_shape": [
+        44,
+        66,
+        159
+      ],
+      "wrf_staggered_extent": [
+        45,
+        67,
+        160
+      ]
+    },
+    "prescribed_land": {
+      "mavail_note": "MAVAIL absent; derived from top SMOIS and land/water mask.",
+      "missing_optional_variables": [
+        "MAVAIL",
+        "ZNT"
+      ],
+      "roughness_note": "ZNT absent; roughness_m derived from CM when usable, otherwise VEGFRA/land-water surrogate.",
+      "source_file": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfinput_d02"
+    },
+    "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
+    "run_id": "20260521_18z_l3_24h_20260522T133443Z",
+    "run_start_label": "2026-05-21_18:00:00"
+  },
+  "status": "PASS",
+  "steps": 1,
+  "transfer_audit": {
+    "host_device_transfer_bytes_post_init": 0,
+    "static": {
+      "forbidden_tokens": [
+        "host_callback",
+        "io_callback",
+        "pure_callback"
+      ],
+      "host_callback_free": true,
+      "jaxpr_bytes": 3450396,
+      "method": "JAXPR callback scan for the exact ADR-023 replay scan"
+    },
+    "trace": {
+      "device_to_host_bytes_post_init": 0,
+      "host_to_device_bytes_post_init": 0,
+      "method": "jax.profiler.trace on warmed replay scan",
+      "post_init_total_bytes": 0,
+      "trace_dir": "/home/enric/.cache/gpuwrf_tmp/trace_m6x_d02_replay_1s",
+      "trace_transfer_event_files": []
+    }
+  },
+  "wall_time_s": 141.33047913000337
+}
+[d02-replay-cli + 193.534s] done
+real 195.05
+user 276.40
+sys 13.87
