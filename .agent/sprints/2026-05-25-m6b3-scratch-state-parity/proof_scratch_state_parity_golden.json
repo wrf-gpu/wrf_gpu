@@ -1,0 +1,3627 @@
+{
+  "operational_compatibility": {
+    "_save": "undecided",
+    "muave": "undecided",
+    "muts": "undecided",
+    "ph_tend": "undecided",
+    "t_2ave": "undecided",
+    "ww": "undecided"
+  },
+  "operator": "small_step_scratch",
+  "outcome": "FOURTH-OPERATOR-FAMILY-PARITY-ACHIEVED",
+  "passed": true,
+  "tiers": {
+    "golden": {
+      "manifest": {
+        "attrs": {
+          "dt": 6.0,
+          "dx": 3000.0,
+          "dy": 3000.0,
+          "epssm": 0.1,
+          "halo_slice_x": [
+            79,
+            145
+          ],
+          "halo_slice_y": [
+            25,
+            66
+          ],
+          "mapfac_max": 0.9994948506355286,
+          "mapfac_min": 0.9991050362586975,
+          "run_id": "m6b1-golden-canary-d02-20260522T000000Z-y26x080-64x40x44",
+          "target_slice_x": [
+            80,
+            144
+          ],
+          "target_slice_y": [
+            26,
+            66
+          ]
+        },
+        "cpu_operator_path": true,
+        "direct_relinked_wrf": false,
+        "file_sha256": {
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/muave_update_post_step001.h5": "c5198945d80931bcb7dea529d6aa801e01e630dae8c8578bfc827e2bcb4f52f6",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/muave_update_post_step002.h5": "bb0e151762ab8dc55582fc38af18a359fcf9475f80252d498e58068547f9f907",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/muave_update_post_step003.h5": "859a870e9251fec7dda519c320424feccb4159b55a31cae0e378fcbaac5b4478",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/muave_update_post_step004.h5": "ccb894955630d792a71e2eb8a8d49618d91bf9521fceb025d0696fc2b00da62b",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/muave_update_post_step005.h5": "17f2d3be09991896da46c3127f0ea515a50f67cf79407276d2680fdf58b0673d",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/muave_update_post_step006.h5": "b5e867940c489575cfc81272f425cda82c4083f6f5abd1fa69b666eca934250b",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/muave_update_post_step007.h5": "1ea89da31b1c434f16b3ffed8a0f3bf4e5b05bd41692fbdfc92e92275080b0cd",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/muave_update_post_step008.h5": "cab9fcc1a57ef212c6d757de5fdc80590e676ead20bea1a1fd420514ff38d17c",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/muave_update_post_step009.h5": "f9c9612a846ddbc247c3df24ec00e41264c5689cb0d0c12a683675ba2c1a3a8b",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/muave_update_post_step010.h5": "d282ed221cea8b9a11339acae906e98633c3fb7c48155dcdaac94856ce8c4293",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/muave_update_pre_step001.h5": "05921536cb8e2ee4f849a3c1498b91b2e1da38713c7add60b5b13ca530c6c548",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/muave_update_pre_step002.h5": "b17900d533f7e33fd3e0fc87972dc94a730dcec142e02ef661e57c33b155e407",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/muave_update_pre_step003.h5": "9081f37c822f75c39ab46a507e7cfb0cc73872367a7773abfa7550e8df846fa2",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/muave_update_pre_step004.h5": "86de1133bacc4bd088da2e02d825e6a182860153be5612dd0d003029d64e8f6f",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/muave_update_pre_step005.h5": "d426a552b4fc49d2c6be6b29abab981e8ef1c69ca0ae6469cdeae561f3e4af4a",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/muave_update_pre_step006.h5": "daab428440112e9c3f3ddaefd5f4af13d5fef278d1ce8e2f35ff0c9063800887",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/muave_update_pre_step007.h5": "1a07cd68eafb0b785f33adeb83059fc02464f420cd2b794f708feb88ac40f37b",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/muave_update_pre_step008.h5": "6c30c7aaee8e096563e401eaf4cc4f7e28ad6da4a073a8df323ca7331bf7ba2d",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/muave_update_pre_step009.h5": "53300c941c0075205dda2356ca0b84f676ea99658c507ab21db2fe94e6e4fb1f",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/muave_update_pre_step010.h5": "3dfe0f38f0d261d75f7364095eb3e7f9529e3288ee6a1604f2a6e8aa0e6fd03c",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ph_tend_accumulate_post_step001.h5": "98c22165eddcc0c4d2261bc9ca52f6b07c8eb5d7b0fcfc6807cc3d7a4e1706e7",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ph_tend_accumulate_post_step002.h5": "283184463eb121c65d25b5405b9248435fbc5470d6cb03fb0e814ed3221a7490",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ph_tend_accumulate_post_step003.h5": "7017a4f7e6e64bf63c41723fda70283e0253d472052c8bd83c0926731ba359f7",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ph_tend_accumulate_post_step004.h5": "16a7fe474bbb54b3be8370f7ed2c4e9d4ee819b25ff5bbb981236fd9ae0cd262",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ph_tend_accumulate_post_step005.h5": "c00c66f109438d26d922fce4d445d280f1ece0fd7410a50b7ce163721b15fbf8",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ph_tend_accumulate_post_step006.h5": "fc50369d01ff0b523119ad916628c641eb976bb08439fb63a8769336ae10d707",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ph_tend_accumulate_post_step007.h5": "21bc78487ad21558ff3227ace542d7b59107aeef950537d0ac45629ae56f6c07",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ph_tend_accumulate_post_step008.h5": "5afc06ce1a520510136743ba8a671e37b0d22446f1146c75883860072bc92ab6",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ph_tend_accumulate_post_step009.h5": "c42911e65c0064c5a39839855f8d9c32f3ae8b8a54d36e0e46e86f0eae2c429a",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ph_tend_accumulate_post_step010.h5": "ec8c003437bfa9141b6d4651ad1eb810b815d9c303840fab898f724c65bf3a44",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ph_tend_accumulate_pre_step001.h5": "e2e6af329e55e98adffc782d90f0d77f757a7bdef633b91fb150bb2d9c6c1462",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ph_tend_accumulate_pre_step002.h5": "288168920149560c9244402ecfee5681433cdc78b9dbad1afc6e677475832645",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ph_tend_accumulate_pre_step003.h5": "95ae3d62ab03fcbffa3d5d05dc674012eac3be446fb42f29bf1506d3d50d154a",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ph_tend_accumulate_pre_step004.h5": "ecc17df8e7df073fb59b4b7df74f8516bd43d7e39d7f3f7305f6a34d8424c6e6",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ph_tend_accumulate_pre_step005.h5": "4e73a5803a7f14c91612fa3842bba317e9361206eb567347314edde396dce934",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ph_tend_accumulate_pre_step006.h5": "6875657a37b012fedb7775c137c8375281776ebaef9a75c661f6380461eda598",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ph_tend_accumulate_pre_step007.h5": "409caa22c9ca2af1b08fb3acbe394c9c1b544463b3aa71f135e7e7ba45c3fddd",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ph_tend_accumulate_pre_step008.h5": "34145402b3db9cf7acc0ef88ad46c3b341ca9ab46024b371f929893b23f33da5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ph_tend_accumulate_pre_step009.h5": "ec6d0420707aeebae6c075ef85209683f36f589f9f009bd5aedd0eeabe93eaae",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ph_tend_accumulate_pre_step010.h5": "80527aab7f1f8061facd5bbbe874ef391813675cb9f189c3b9e087524b50991e",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/substep_save_state_post_step001.h5": "6d0493530a3b5cb403bb3a5e41dd9cbdad4829d9fb17bb274e370feef71cb25c",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/substep_save_state_post_step002.h5": "0385976e6edeaa45e413a687efaa1520edd27d981a17b4846f45241fccc995ab",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/substep_save_state_post_step003.h5": "08409e228114afabd4099219ad617c0ae8f063e281e877207db2134562de2d67",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/substep_save_state_post_step004.h5": "0b606ecd07926f33f5785063b700d5c7e7b66d1de6c658800bbd317d06a93474",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/substep_save_state_post_step005.h5": "d4d5eda8bc92d3561962f07bbdf3d12d9d4b88250f248114d806787a4d979106",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/substep_save_state_post_step006.h5": "dac2ae9b309c66fcebec499ad869a85711112a7c525b522c537a450964df03b8",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/substep_save_state_post_step007.h5": "90d9b2cbc8ce2423cdaeef965d024355ee2799e4d4b96a56807758a280ce465b",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/substep_save_state_post_step008.h5": "45c1fb6f52de6481eb4da416ac2b4c650815b50c5372bcc3a2841bbbd061556c",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/substep_save_state_post_step009.h5": "6a4052d2fa9d75c220ba793e9c85475128d967b67965fd18b67f718bb79120d9",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/substep_save_state_post_step010.h5": "660d07ed4f7dc3a1bd705ce09e313e671c03a2c6a2d759eaea06a307922a12f4",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/substep_save_state_pre_step001.h5": "c7e8ec3d9d7766674e2fb1cb31141a63be980a658e7ff8beeb0945512aa34449",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/substep_save_state_pre_step002.h5": "63902689b816c038ed3a9f8dafeddbe008d4f4ac76d8e8b48ff3a16a1c88daf7",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/substep_save_state_pre_step003.h5": "8a3555530a7ee49d9286e0148c621725e49ea4aee7650f9ad94c8bab239b530e",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/substep_save_state_pre_step004.h5": "2503d51af64da7280763111bfb7c0c22268037337163cf2a7c3c0394ad6f8845",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/substep_save_state_pre_step005.h5": "12f11a1c2ff51593a695bd41d3f66dbbc6cdc17365533d75c07102ae08fa3c0a",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/substep_save_state_pre_step006.h5": "607d59488baabc059ce1a07fba02b4757a4448cae50a4c0c0fdea94a40ccc8e5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/substep_save_state_pre_step007.h5": "8393ffa1941b6bd72d927feccb9cd082ed3148a0d71dd5114ca107c267dce140",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/substep_save_state_pre_step008.h5": "c85af4b44fec7db632d6d6b9ed608549ea89de68ca86a4469e18bbdcb2769788",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/substep_save_state_pre_step009.h5": "996b88a09b3c7425849648d54c80fd2d512970095a67032abb34de084ccf4046",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/substep_save_state_pre_step010.h5": "23a3a35ae642cb4885e589fb4cefb2c95f303b32cde7915a9171691eb6fec32c",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/t_2ave_update_post_step001.h5": "f1b395cb4fcc33f87851a305086cd0bb37ab92bceeb06f049cad4f320189b4ac",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/t_2ave_update_post_step002.h5": "34670e86fd2889dd0e30ee7a5a7efc351c0ffa821965cd3775d807384a1a0ef1",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/t_2ave_update_post_step003.h5": "414f1339c5381b9c02df4b4a7505103db71d6c6562c961dfe801a0a6e435c0aa",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/t_2ave_update_post_step004.h5": "a73ee4fc48d7f892ef0811d860ef3aa86662e2808e0700773745d47fd32ea208",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/t_2ave_update_post_step005.h5": "076130ee176081864b915f022545143a1da91f0d39ad2fe6a8a3d286c3422cd0",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/t_2ave_update_post_step006.h5": "185f18ffdc307781284a9919b5776853af64956795d31bfd5d8c4b7742059e58",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/t_2ave_update_post_step007.h5": "799246c5df6f2dfdc1029b943924fb2fa945cc8faba2b92b59dddcb16d3d3181",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/t_2ave_update_post_step008.h5": "26982ad001b007ebe224a2ef8c3bdbf74524712f543b3595fbd0c50e14549a99",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/t_2ave_update_post_step009.h5": "b562efc7ddb720a26e7542c494db4e8079bdae21649bdd7b948dbc29bd85e2fb",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/t_2ave_update_post_step010.h5": "a2bb808b851b63a110d900d83bf8fa91fa5e767cf1f9360938197e90de082466",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/t_2ave_update_pre_step001.h5": "61fd5cbd76136e0adcd5c76dbd6a6f8c2dcf58c63caaed0ddd1bad459de6987e",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/t_2ave_update_pre_step002.h5": "b73c1c05e05a7620a10117aee67db83ca3c9b8dd79a716d6cff6d2cc8f629b69",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/t_2ave_update_pre_step003.h5": "8b31545f1ac404281ee361eb06461a4179fe75126c4de15fe258cab815cd2d4e",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/t_2ave_update_pre_step004.h5": "f68a200f42a8ea05ffc88aa13f9c98838b41934e47fbddd4fb66a2cccf06601d",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/t_2ave_update_pre_step005.h5": "447690ee9d96fc2f0602e1ba86f0df4448125ae4bf26e2e50c03f60b14668086",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/t_2ave_update_pre_step006.h5": "71d359cdd8098003f8d8a401971c59933544db5defba30699399368c42b725e3",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/t_2ave_update_pre_step007.h5": "67cb5cc0f15e41ea2ba95663c91fc84860eab358e40f11643427b15de0742128",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/t_2ave_update_pre_step008.h5": "75a2c008c649474cd24938c155cd3a8e53ac61c12752008d52c5fc7f365672e3",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/t_2ave_update_pre_step009.h5": "8274785ebcc0677b94dc3129e3d4d192c0fbb176c7fa288f8809563690c88c2c",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/t_2ave_update_pre_step010.h5": "17da636956741ee613de0150c679d25f289737832dade0455b13c1c0bc377691",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ww_update_post_step001.h5": "81e47cedac22b26b86b286f4d10651e6c5f9d8c1b522e4b5d1b550c0c51eaf12",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ww_update_post_step002.h5": "2dad4d9c492f8ea6fa6cc8e0ca6c5d7b53f7cfaee970905c289b5d9cb76dc5a2",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ww_update_post_step003.h5": "2a1e29e63d4d8e71cfb9a2ba7c282963b3155d0ca291b1cc456abdf5a600bfd8",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ww_update_post_step004.h5": "802ed1a532071a8df876b63c0d5c98b04700f4e666678d867acf4115ce5d5ef0",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ww_update_post_step005.h5": "e06f06be55d40fc45b437d5d27ccf46b9d14ad92d0c755ac835e36831776bb9a",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ww_update_post_step006.h5": "4885b77a2943b1ee463dc509aa70eea3c39745964c0196b5696c2e667b68be87",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ww_update_post_step007.h5": "36864ea796b0090b3c3066a991a69e8ca3484b4f45f533d3bb1a5eb84697e36c",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ww_update_post_step008.h5": "a132dae44a1d71c5ee6bdf04ed4ce3f12e5b8562dbc2a776da966170759dc0e1",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ww_update_post_step009.h5": "2d0f0951fedab2d1335070c90476eac10ebf20d29821249672e55b79bc24d8e5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ww_update_post_step010.h5": "ea859004d87eaa1d516d7b44009cce2bfc66ae51fc788ba22a2c4aa8143b7894",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ww_update_pre_step001.h5": "e3c1e74bc5e480441893254b82d00c0cf59d43407f8c67d183e92deec4cea595",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ww_update_pre_step002.h5": "e5d6720640a8c2e5c41bb8d1993a6c0179b904986938ee302c4aa3ec789bb72b",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ww_update_pre_step003.h5": "13dc874e043fc8a8d60b093d83c8b5ac8110a3bb0c2e6b36dd622a8dee1e687c",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ww_update_pre_step004.h5": "f4961ae9799db96cac4b5cff50dadcf0d2f0624a72f2431c137e48e412fd9ddc",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ww_update_pre_step005.h5": "4f2afc6325b5656d3170f57e8f1fe44984c4b2e027775e42c71c885ca196d0c6",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ww_update_pre_step006.h5": "24d8fbcdce10bc46b39acebfbc1663acdd1e6a0e21080f9a6011792980ce9509",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ww_update_pre_step007.h5": "8bef3648a73ab8e9e8cf5862792eaca6ba48ef44864601aa036d51f5aa6495d5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ww_update_pre_step008.h5": "2520291f0fa99c149c9f32440972c7f630e26167ebc0f25dad76ae673642a02e",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ww_update_pre_step009.h5": "4faa28e218bfd8ca95e804d568facda391cd8710a6cf11b2c273fcfaafda7cb8",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ww_update_pre_step010.h5": "dc94fc7ff56a1ab6b6e9359e2fa9142ad1f8cd000465daf8387b5f558acb4b22"
+        },
+        "files": [
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/t_2ave_update_pre_step001.h5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/t_2ave_update_post_step001.h5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ww_update_pre_step001.h5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ww_update_post_step001.h5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/muave_update_pre_step001.h5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/muave_update_post_step001.h5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ph_tend_accumulate_pre_step001.h5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ph_tend_accumulate_post_step001.h5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/substep_save_state_pre_step001.h5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/substep_save_state_post_step001.h5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/t_2ave_update_pre_step002.h5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/t_2ave_update_post_step002.h5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ww_update_pre_step002.h5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ww_update_post_step002.h5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/muave_update_pre_step002.h5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/muave_update_post_step002.h5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ph_tend_accumulate_pre_step002.h5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ph_tend_accumulate_post_step002.h5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/substep_save_state_pre_step002.h5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/substep_save_state_post_step002.h5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/t_2ave_update_pre_step003.h5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/t_2ave_update_post_step003.h5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ww_update_pre_step003.h5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ww_update_post_step003.h5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/muave_update_pre_step003.h5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/muave_update_post_step003.h5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ph_tend_accumulate_pre_step003.h5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ph_tend_accumulate_post_step003.h5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/substep_save_state_pre_step003.h5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/substep_save_state_post_step003.h5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/t_2ave_update_pre_step004.h5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/t_2ave_update_post_step004.h5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ww_update_pre_step004.h5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ww_update_post_step004.h5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/muave_update_pre_step004.h5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/muave_update_post_step004.h5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ph_tend_accumulate_pre_step004.h5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ph_tend_accumulate_post_step004.h5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/substep_save_state_pre_step004.h5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/substep_save_state_post_step004.h5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/t_2ave_update_pre_step005.h5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/t_2ave_update_post_step005.h5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ww_update_pre_step005.h5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ww_update_post_step005.h5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/muave_update_pre_step005.h5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/muave_update_post_step005.h5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ph_tend_accumulate_pre_step005.h5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ph_tend_accumulate_post_step005.h5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/substep_save_state_pre_step005.h5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/substep_save_state_post_step005.h5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/t_2ave_update_pre_step006.h5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/t_2ave_update_post_step006.h5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ww_update_pre_step006.h5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ww_update_post_step006.h5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/muave_update_pre_step006.h5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/muave_update_post_step006.h5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ph_tend_accumulate_pre_step006.h5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ph_tend_accumulate_post_step006.h5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/substep_save_state_pre_step006.h5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/substep_save_state_post_step006.h5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/t_2ave_update_pre_step007.h5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/t_2ave_update_post_step007.h5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ww_update_pre_step007.h5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ww_update_post_step007.h5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/muave_update_pre_step007.h5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/muave_update_post_step007.h5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ph_tend_accumulate_pre_step007.h5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ph_tend_accumulate_post_step007.h5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/substep_save_state_pre_step007.h5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/substep_save_state_post_step007.h5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/t_2ave_update_pre_step008.h5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/t_2ave_update_post_step008.h5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ww_update_pre_step008.h5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ww_update_post_step008.h5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/muave_update_pre_step008.h5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/muave_update_post_step008.h5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ph_tend_accumulate_pre_step008.h5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ph_tend_accumulate_post_step008.h5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/substep_save_state_pre_step008.h5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/substep_save_state_post_step008.h5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/t_2ave_update_pre_step009.h5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/t_2ave_update_post_step009.h5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ww_update_pre_step009.h5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ww_update_post_step009.h5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/muave_update_pre_step009.h5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/muave_update_post_step009.h5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ph_tend_accumulate_pre_step009.h5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ph_tend_accumulate_post_step009.h5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/substep_save_state_pre_step009.h5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/substep_save_state_post_step009.h5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/t_2ave_update_pre_step010.h5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/t_2ave_update_post_step010.h5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ww_update_pre_step010.h5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ww_update_post_step010.h5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/muave_update_pre_step010.h5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/muave_update_post_step010.h5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ph_tend_accumulate_pre_step010.h5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ph_tend_accumulate_post_step010.h5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/substep_save_state_pre_step010.h5",
+          "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/substep_save_state_post_step010.h5"
+        ],
+        "hook_pairs": [
+          "muave_update",
+          "ph_tend_accumulate",
+          "substep_save_state",
+          "t_2ave_update",
+          "ww_update"
+        ],
+        "operational_classification_default": "undecided",
+        "run_id": "m6b3-golden-canary-d02-20260522T000000Z-y26x080-64x40x44",
+        "sanitizer_mode": "off",
+        "source_path": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T072630Z/wrfout_d02_2026-05-22_00:00:00",
+        "source_sha256": "53c4455feb27094a4e823c73e6ef7aa5c8f75d0fd592aad637a71320972d0523",
+        "steps": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10
+        ],
+        "tier": "golden",
+        "total_bytes": 410678043
+      },
+      "operational_classification": {
+        "_save": "undecided",
+        "muave": "undecided",
+        "muts": "undecided",
+        "ph_tend": "undecided",
+        "t_2ave": "undecided",
+        "ww": "undecided"
+      },
+      "operator": "small_step_scratch",
+      "outcome": "FOURTH-OPERATOR-FAMILY-PARITY-ACHIEVED",
+      "passed": true,
+      "results": [
+        {
+          "boundaries": {
+            "muave_update": {
+              "boundary": "muave_update_post",
+              "fields": {
+                "muave": {
+                  "abs_threshold": 1e-08,
+                  "actual_shape": [
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 1e-08,
+                  "ulp_threshold": 8,
+                  "units": "Pa"
+                },
+                "muts": {
+                  "abs_threshold": 1e-08,
+                  "actual_shape": [
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 9.679509411621093e-08,
+                  "ulp_threshold": 16,
+                  "units": "Pa"
+                }
+              },
+              "passed": true,
+              "path": "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/muave_update_post_step001.h5"
+            },
+            "ph_tend_accumulate": {
+              "boundary": "ph_tend_accumulate_post",
+              "fields": {
+                "ph_tend": {
+                  "abs_threshold": 1e-10,
+                  "actual_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 1e-10,
+                  "ulp_threshold": 8,
+                  "units": "m2 s-3"
+                }
+              },
+              "passed": true,
+              "path": "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ph_tend_accumulate_post_step001.h5"
+            },
+            "substep_save_state": {
+              "boundary": "substep_save_state_post",
+              "fields": {
+                "mu_save": {
+                  "abs_threshold": 1e-08,
+                  "actual_shape": [
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 1e-08,
+                  "ulp_threshold": 8,
+                  "units": "Pa"
+                },
+                "ph_save": {
+                  "abs_threshold": 1e-08,
+                  "actual_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 1e-08,
+                  "ulp_threshold": 8,
+                  "units": "m2 s-2"
+                },
+                "t_save": {
+                  "abs_threshold": 1e-10,
+                  "actual_shape": [
+                    44,
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    44,
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 5.664255788649034e-09,
+                  "ulp_threshold": 8,
+                  "units": "K"
+                },
+                "u_save": {
+                  "abs_threshold": 1e-10,
+                  "actual_shape": [
+                    44,
+                    41,
+                    67
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    44,
+                    41,
+                    67
+                  ],
+                  "location": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 1e-10,
+                  "ulp_threshold": 8,
+                  "units": "m s-1"
+                },
+                "v_save": {
+                  "abs_threshold": 1e-10,
+                  "actual_shape": [
+                    44,
+                    42,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    44,
+                    42,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 1e-10,
+                  "ulp_threshold": 8,
+                  "units": "m s-1"
+                },
+                "w_save": {
+                  "abs_threshold": 1e-10,
+                  "actual_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 1e-10,
+                  "ulp_threshold": 8,
+                  "units": "m s-1"
+                },
+                "ww_save": {
+                  "abs_threshold": 1e-09,
+                  "actual_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 1e-09,
+                  "ulp_threshold": 8,
+                  "units": "Pa s-1"
+                }
+              },
+              "passed": true,
+              "path": "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/substep_save_state_post_step001.h5"
+            },
+            "t_2ave_update": {
+              "boundary": "t_2ave_update_post",
+              "fields": {
+                "t_2ave": {
+                  "abs_threshold": 1e-10,
+                  "actual_shape": [
+                    44,
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    44,
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 2.8357388867561577e-09,
+                  "ulp_threshold": 8,
+                  "units": "K"
+                }
+              },
+              "passed": true,
+              "path": "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/t_2ave_update_post_step001.h5"
+            },
+            "ww_update": {
+              "boundary": "ww_update_post",
+              "fields": {
+                "ww": {
+                  "abs_threshold": 1e-09,
+                  "actual_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 1e-09,
+                  "ulp_threshold": 8,
+                  "units": "Pa s-1"
+                }
+              },
+              "passed": true,
+              "path": "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ww_update_post_step001.h5"
+            }
+          },
+          "passed": true,
+          "step": 1,
+          "tier": "golden"
+        },
+        {
+          "boundaries": {
+            "muave_update": {
+              "boundary": "muave_update_post",
+              "fields": {
+                "muave": {
+                  "abs_threshold": 1e-08,
+                  "actual_shape": [
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 1e-08,
+                  "ulp_threshold": 8,
+                  "units": "Pa"
+                },
+                "muts": {
+                  "abs_threshold": 1e-08,
+                  "actual_shape": [
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 9.679509411621093e-08,
+                  "ulp_threshold": 16,
+                  "units": "Pa"
+                }
+              },
+              "passed": true,
+              "path": "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/muave_update_post_step002.h5"
+            },
+            "ph_tend_accumulate": {
+              "boundary": "ph_tend_accumulate_post",
+              "fields": {
+                "ph_tend": {
+                  "abs_threshold": 1e-10,
+                  "actual_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 1.1314067607571506e-10,
+                  "ulp_threshold": 8,
+                  "units": "m2 s-3"
+                }
+              },
+              "passed": true,
+              "path": "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ph_tend_accumulate_post_step002.h5"
+            },
+            "substep_save_state": {
+              "boundary": "substep_save_state_post",
+              "fields": {
+                "mu_save": {
+                  "abs_threshold": 1e-08,
+                  "actual_shape": [
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 1e-08,
+                  "ulp_threshold": 8,
+                  "units": "Pa"
+                },
+                "ph_save": {
+                  "abs_threshold": 1e-08,
+                  "actual_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 1e-08,
+                  "ulp_threshold": 8,
+                  "units": "m2 s-2"
+                },
+                "t_save": {
+                  "abs_threshold": 1e-10,
+                  "actual_shape": [
+                    44,
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    44,
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 1.1321289592434787e-08,
+                  "ulp_threshold": 8,
+                  "units": "K"
+                },
+                "u_save": {
+                  "abs_threshold": 1e-10,
+                  "actual_shape": [
+                    44,
+                    41,
+                    67
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    44,
+                    41,
+                    67
+                  ],
+                  "location": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 1e-10,
+                  "ulp_threshold": 8,
+                  "units": "m s-1"
+                },
+                "v_save": {
+                  "abs_threshold": 1e-10,
+                  "actual_shape": [
+                    44,
+                    42,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    44,
+                    42,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 1e-10,
+                  "ulp_threshold": 8,
+                  "units": "m s-1"
+                },
+                "w_save": {
+                  "abs_threshold": 1e-10,
+                  "actual_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 1e-10,
+                  "ulp_threshold": 8,
+                  "units": "m s-1"
+                },
+                "ww_save": {
+                  "abs_threshold": 1e-09,
+                  "actual_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 1e-09,
+                  "ulp_threshold": 8,
+                  "units": "Pa s-1"
+                }
+              },
+              "passed": true,
+              "path": "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/substep_save_state_post_step002.h5"
+            },
+            "t_2ave_update": {
+              "boundary": "t_2ave_update_post",
+              "fields": {
+                "t_2ave": {
+                  "abs_threshold": 1e-10,
+                  "actual_shape": [
+                    44,
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    44,
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 8.492772690541912e-09,
+                  "ulp_threshold": 8,
+                  "units": "K"
+                }
+              },
+              "passed": true,
+              "path": "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/t_2ave_update_post_step002.h5"
+            },
+            "ww_update": {
+              "boundary": "ww_update_post",
+              "fields": {
+                "ww": {
+                  "abs_threshold": 1e-09,
+                  "actual_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 1e-09,
+                  "ulp_threshold": 8,
+                  "units": "Pa s-1"
+                }
+              },
+              "passed": true,
+              "path": "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ww_update_post_step002.h5"
+            }
+          },
+          "passed": true,
+          "step": 2,
+          "tier": "golden"
+        },
+        {
+          "boundaries": {
+            "muave_update": {
+              "boundary": "muave_update_post",
+              "fields": {
+                "muave": {
+                  "abs_threshold": 1e-08,
+                  "actual_shape": [
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 1e-08,
+                  "ulp_threshold": 8,
+                  "units": "Pa"
+                },
+                "muts": {
+                  "abs_threshold": 1e-08,
+                  "actual_shape": [
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 9.679509411621093e-08,
+                  "ulp_threshold": 16,
+                  "units": "Pa"
+                }
+              },
+              "passed": true,
+              "path": "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/muave_update_post_step003.h5"
+            },
+            "ph_tend_accumulate": {
+              "boundary": "ph_tend_accumulate_post",
+              "fields": {
+                "ph_tend": {
+                  "abs_threshold": 1e-10,
+                  "actual_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 1.697110141135726e-10,
+                  "ulp_threshold": 8,
+                  "units": "m2 s-3"
+                }
+              },
+              "passed": true,
+              "path": "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ph_tend_accumulate_post_step003.h5"
+            },
+            "substep_save_state": {
+              "boundary": "substep_save_state_post",
+              "fields": {
+                "mu_save": {
+                  "abs_threshold": 1e-08,
+                  "actual_shape": [
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 1e-08,
+                  "ulp_threshold": 8,
+                  "units": "Pa"
+                },
+                "ph_save": {
+                  "abs_threshold": 1e-08,
+                  "actual_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 1e-08,
+                  "ulp_threshold": 8,
+                  "units": "m2 s-2"
+                },
+                "t_save": {
+                  "abs_threshold": 1e-10,
+                  "actual_shape": [
+                    44,
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    44,
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 1.697832339622054e-08,
+                  "ulp_threshold": 8,
+                  "units": "K"
+                },
+                "u_save": {
+                  "abs_threshold": 1e-10,
+                  "actual_shape": [
+                    44,
+                    41,
+                    67
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    44,
+                    41,
+                    67
+                  ],
+                  "location": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 1e-10,
+                  "ulp_threshold": 8,
+                  "units": "m s-1"
+                },
+                "v_save": {
+                  "abs_threshold": 1e-10,
+                  "actual_shape": [
+                    44,
+                    42,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    44,
+                    42,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 1e-10,
+                  "ulp_threshold": 8,
+                  "units": "m s-1"
+                },
+                "w_save": {
+                  "abs_threshold": 1e-10,
+                  "actual_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 1e-10,
+                  "ulp_threshold": 8,
+                  "units": "m s-1"
+                },
+                "ww_save": {
+                  "abs_threshold": 1e-09,
+                  "actual_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 1e-09,
+                  "ulp_threshold": 8,
+                  "units": "Pa s-1"
+                }
+              },
+              "passed": true,
+              "path": "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/substep_save_state_post_step003.h5"
+            },
+            "t_2ave_update": {
+              "boundary": "t_2ave_update_post",
+              "fields": {
+                "t_2ave": {
+                  "abs_threshold": 1e-10,
+                  "actual_shape": [
+                    44,
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    44,
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 1.4149806494327664e-08,
+                  "ulp_threshold": 8,
+                  "units": "K"
+                }
+              },
+              "passed": true,
+              "path": "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/t_2ave_update_post_step003.h5"
+            },
+            "ww_update": {
+              "boundary": "ww_update_post",
+              "fields": {
+                "ww": {
+                  "abs_threshold": 1e-09,
+                  "actual_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 1e-09,
+                  "ulp_threshold": 8,
+                  "units": "Pa s-1"
+                }
+              },
+              "passed": true,
+              "path": "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ww_update_post_step003.h5"
+            }
+          },
+          "passed": true,
+          "step": 3,
+          "tier": "golden"
+        },
+        {
+          "boundaries": {
+            "muave_update": {
+              "boundary": "muave_update_post",
+              "fields": {
+                "muave": {
+                  "abs_threshold": 1e-08,
+                  "actual_shape": [
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 1e-08,
+                  "ulp_threshold": 8,
+                  "units": "Pa"
+                },
+                "muts": {
+                  "abs_threshold": 1e-08,
+                  "actual_shape": [
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 9.679509411621093e-08,
+                  "ulp_threshold": 16,
+                  "units": "Pa"
+                }
+              },
+              "passed": true,
+              "path": "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/muave_update_post_step004.h5"
+            },
+            "ph_tend_accumulate": {
+              "boundary": "ph_tend_accumulate_post",
+              "fields": {
+                "ph_tend": {
+                  "abs_threshold": 1e-10,
+                  "actual_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 2.2628135215143012e-10,
+                  "ulp_threshold": 8,
+                  "units": "m2 s-3"
+                }
+              },
+              "passed": true,
+              "path": "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ph_tend_accumulate_post_step004.h5"
+            },
+            "substep_save_state": {
+              "boundary": "substep_save_state_post",
+              "fields": {
+                "mu_save": {
+                  "abs_threshold": 1e-08,
+                  "actual_shape": [
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 1e-08,
+                  "ulp_threshold": 8,
+                  "units": "Pa"
+                },
+                "ph_save": {
+                  "abs_threshold": 1e-08,
+                  "actual_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 1e-08,
+                  "ulp_threshold": 8,
+                  "units": "m2 s-2"
+                },
+                "t_save": {
+                  "abs_threshold": 1e-10,
+                  "actual_shape": [
+                    44,
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    44,
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 2.2635357200006292e-08,
+                  "ulp_threshold": 8,
+                  "units": "K"
+                },
+                "u_save": {
+                  "abs_threshold": 1e-10,
+                  "actual_shape": [
+                    44,
+                    41,
+                    67
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    44,
+                    41,
+                    67
+                  ],
+                  "location": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 1e-10,
+                  "ulp_threshold": 8,
+                  "units": "m s-1"
+                },
+                "v_save": {
+                  "abs_threshold": 1e-10,
+                  "actual_shape": [
+                    44,
+                    42,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    44,
+                    42,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 1e-10,
+                  "ulp_threshold": 8,
+                  "units": "m s-1"
+                },
+                "w_save": {
+                  "abs_threshold": 1e-10,
+                  "actual_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 1e-10,
+                  "ulp_threshold": 8,
+                  "units": "m s-1"
+                },
+                "ww_save": {
+                  "abs_threshold": 1e-09,
+                  "actual_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 1e-09,
+                  "ulp_threshold": 8,
+                  "units": "Pa s-1"
+                }
+              },
+              "passed": true,
+              "path": "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/substep_save_state_post_step004.h5"
+            },
+            "t_2ave_update": {
+              "boundary": "t_2ave_update_post",
+              "fields": {
+                "t_2ave": {
+                  "abs_threshold": 1e-10,
+                  "actual_shape": [
+                    44,
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    44,
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 1.9806840298113416e-08,
+                  "ulp_threshold": 8,
+                  "units": "K"
+                }
+              },
+              "passed": true,
+              "path": "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/t_2ave_update_post_step004.h5"
+            },
+            "ww_update": {
+              "boundary": "ww_update_post",
+              "fields": {
+                "ww": {
+                  "abs_threshold": 1e-09,
+                  "actual_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 1e-09,
+                  "ulp_threshold": 8,
+                  "units": "Pa s-1"
+                }
+              },
+              "passed": true,
+              "path": "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ww_update_post_step004.h5"
+            }
+          },
+          "passed": true,
+          "step": 4,
+          "tier": "golden"
+        },
+        {
+          "boundaries": {
+            "muave_update": {
+              "boundary": "muave_update_post",
+              "fields": {
+                "muave": {
+                  "abs_threshold": 1e-08,
+                  "actual_shape": [
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 1e-08,
+                  "ulp_threshold": 8,
+                  "units": "Pa"
+                },
+                "muts": {
+                  "abs_threshold": 1e-08,
+                  "actual_shape": [
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 9.679509411621093e-08,
+                  "ulp_threshold": 16,
+                  "units": "Pa"
+                }
+              },
+              "passed": true,
+              "path": "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/muave_update_post_step005.h5"
+            },
+            "ph_tend_accumulate": {
+              "boundary": "ph_tend_accumulate_post",
+              "fields": {
+                "ph_tend": {
+                  "abs_threshold": 1e-10,
+                  "actual_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 2.828516901892876e-10,
+                  "ulp_threshold": 8,
+                  "units": "m2 s-3"
+                }
+              },
+              "passed": true,
+              "path": "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ph_tend_accumulate_post_step005.h5"
+            },
+            "substep_save_state": {
+              "boundary": "substep_save_state_post",
+              "fields": {
+                "mu_save": {
+                  "abs_threshold": 1e-08,
+                  "actual_shape": [
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 1e-08,
+                  "ulp_threshold": 8,
+                  "units": "Pa"
+                },
+                "ph_save": {
+                  "abs_threshold": 1e-08,
+                  "actual_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 1e-08,
+                  "ulp_threshold": 8,
+                  "units": "m2 s-2"
+                },
+                "t_save": {
+                  "abs_threshold": 1e-10,
+                  "actual_shape": [
+                    44,
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    44,
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 2.8292391003792042e-08,
+                  "ulp_threshold": 8,
+                  "units": "K"
+                },
+                "u_save": {
+                  "abs_threshold": 1e-10,
+                  "actual_shape": [
+                    44,
+                    41,
+                    67
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    44,
+                    41,
+                    67
+                  ],
+                  "location": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 1e-10,
+                  "ulp_threshold": 8,
+                  "units": "m s-1"
+                },
+                "v_save": {
+                  "abs_threshold": 1e-10,
+                  "actual_shape": [
+                    44,
+                    42,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    44,
+                    42,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 1e-10,
+                  "ulp_threshold": 8,
+                  "units": "m s-1"
+                },
+                "w_save": {
+                  "abs_threshold": 1e-10,
+                  "actual_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 1e-10,
+                  "ulp_threshold": 8,
+                  "units": "m s-1"
+                },
+                "ww_save": {
+                  "abs_threshold": 1e-09,
+                  "actual_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 1e-09,
+                  "ulp_threshold": 8,
+                  "units": "Pa s-1"
+                }
+              },
+              "passed": true,
+              "path": "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/substep_save_state_post_step005.h5"
+            },
+            "t_2ave_update": {
+              "boundary": "t_2ave_update_post",
+              "fields": {
+                "t_2ave": {
+                  "abs_threshold": 1e-10,
+                  "actual_shape": [
+                    44,
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    44,
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 2.5463874101899167e-08,
+                  "ulp_threshold": 8,
+                  "units": "K"
+                }
+              },
+              "passed": true,
+              "path": "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/t_2ave_update_post_step005.h5"
+            },
+            "ww_update": {
+              "boundary": "ww_update_post",
+              "fields": {
+                "ww": {
+                  "abs_threshold": 1e-09,
+                  "actual_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 1e-09,
+                  "ulp_threshold": 8,
+                  "units": "Pa s-1"
+                }
+              },
+              "passed": true,
+              "path": "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ww_update_post_step005.h5"
+            }
+          },
+          "passed": true,
+          "step": 5,
+          "tier": "golden"
+        },
+        {
+          "boundaries": {
+            "muave_update": {
+              "boundary": "muave_update_post",
+              "fields": {
+                "muave": {
+                  "abs_threshold": 1e-08,
+                  "actual_shape": [
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 1e-08,
+                  "ulp_threshold": 8,
+                  "units": "Pa"
+                },
+                "muts": {
+                  "abs_threshold": 1e-08,
+                  "actual_shape": [
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 9.679509411621093e-08,
+                  "ulp_threshold": 16,
+                  "units": "Pa"
+                }
+              },
+              "passed": true,
+              "path": "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/muave_update_post_step006.h5"
+            },
+            "ph_tend_accumulate": {
+              "boundary": "ph_tend_accumulate_post",
+              "fields": {
+                "ph_tend": {
+                  "abs_threshold": 1e-10,
+                  "actual_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 3.394220282271451e-10,
+                  "ulp_threshold": 8,
+                  "units": "m2 s-3"
+                }
+              },
+              "passed": true,
+              "path": "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ph_tend_accumulate_post_step006.h5"
+            },
+            "substep_save_state": {
+              "boundary": "substep_save_state_post",
+              "fields": {
+                "mu_save": {
+                  "abs_threshold": 1e-08,
+                  "actual_shape": [
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 1e-08,
+                  "ulp_threshold": 8,
+                  "units": "Pa"
+                },
+                "ph_save": {
+                  "abs_threshold": 1e-08,
+                  "actual_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 1e-08,
+                  "ulp_threshold": 8,
+                  "units": "m2 s-2"
+                },
+                "t_save": {
+                  "abs_threshold": 1e-10,
+                  "actual_shape": [
+                    44,
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    44,
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 3.394942480757779e-08,
+                  "ulp_threshold": 8,
+                  "units": "K"
+                },
+                "u_save": {
+                  "abs_threshold": 1e-10,
+                  "actual_shape": [
+                    44,
+                    41,
+                    67
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    44,
+                    41,
+                    67
+                  ],
+                  "location": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 1e-10,
+                  "ulp_threshold": 8,
+                  "units": "m s-1"
+                },
+                "v_save": {
+                  "abs_threshold": 1e-10,
+                  "actual_shape": [
+                    44,
+                    42,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    44,
+                    42,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 1e-10,
+                  "ulp_threshold": 8,
+                  "units": "m s-1"
+                },
+                "w_save": {
+                  "abs_threshold": 1e-10,
+                  "actual_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 1e-10,
+                  "ulp_threshold": 8,
+                  "units": "m s-1"
+                },
+                "ww_save": {
+                  "abs_threshold": 1e-09,
+                  "actual_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 1e-09,
+                  "ulp_threshold": 8,
+                  "units": "Pa s-1"
+                }
+              },
+              "passed": true,
+              "path": "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/substep_save_state_post_step006.h5"
+            },
+            "t_2ave_update": {
+              "boundary": "t_2ave_update_post",
+              "fields": {
+                "t_2ave": {
+                  "abs_threshold": 1e-10,
+                  "actual_shape": [
+                    44,
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    44,
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 3.112090790568492e-08,
+                  "ulp_threshold": 8,
+                  "units": "K"
+                }
+              },
+              "passed": true,
+              "path": "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/t_2ave_update_post_step006.h5"
+            },
+            "ww_update": {
+              "boundary": "ww_update_post",
+              "fields": {
+                "ww": {
+                  "abs_threshold": 1e-09,
+                  "actual_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 1e-09,
+                  "ulp_threshold": 8,
+                  "units": "Pa s-1"
+                }
+              },
+              "passed": true,
+              "path": "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ww_update_post_step006.h5"
+            }
+          },
+          "passed": true,
+          "step": 6,
+          "tier": "golden"
+        },
+        {
+          "boundaries": {
+            "muave_update": {
+              "boundary": "muave_update_post",
+              "fields": {
+                "muave": {
+                  "abs_threshold": 1e-08,
+                  "actual_shape": [
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 1e-08,
+                  "ulp_threshold": 8,
+                  "units": "Pa"
+                },
+                "muts": {
+                  "abs_threshold": 1e-08,
+                  "actual_shape": [
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 9.679509411621093e-08,
+                  "ulp_threshold": 16,
+                  "units": "Pa"
+                }
+              },
+              "passed": true,
+              "path": "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/muave_update_post_step007.h5"
+            },
+            "ph_tend_accumulate": {
+              "boundary": "ph_tend_accumulate_post",
+              "fields": {
+                "ph_tend": {
+                  "abs_threshold": 1e-10,
+                  "actual_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 3.959923662650026e-10,
+                  "ulp_threshold": 8,
+                  "units": "m2 s-3"
+                }
+              },
+              "passed": true,
+              "path": "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ph_tend_accumulate_post_step007.h5"
+            },
+            "substep_save_state": {
+              "boundary": "substep_save_state_post",
+              "fields": {
+                "mu_save": {
+                  "abs_threshold": 1e-08,
+                  "actual_shape": [
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 1e-08,
+                  "ulp_threshold": 8,
+                  "units": "Pa"
+                },
+                "ph_save": {
+                  "abs_threshold": 1e-08,
+                  "actual_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 1e-08,
+                  "ulp_threshold": 8,
+                  "units": "m2 s-2"
+                },
+                "t_save": {
+                  "abs_threshold": 1e-10,
+                  "actual_shape": [
+                    44,
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    44,
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 3.9606458611363544e-08,
+                  "ulp_threshold": 8,
+                  "units": "K"
+                },
+                "u_save": {
+                  "abs_threshold": 1e-10,
+                  "actual_shape": [
+                    44,
+                    41,
+                    67
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    44,
+                    41,
+                    67
+                  ],
+                  "location": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 1e-10,
+                  "ulp_threshold": 8,
+                  "units": "m s-1"
+                },
+                "v_save": {
+                  "abs_threshold": 1e-10,
+                  "actual_shape": [
+                    44,
+                    42,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    44,
+                    42,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 1e-10,
+                  "ulp_threshold": 8,
+                  "units": "m s-1"
+                },
+                "w_save": {
+                  "abs_threshold": 1e-10,
+                  "actual_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 1e-10,
+                  "ulp_threshold": 8,
+                  "units": "m s-1"
+                },
+                "ww_save": {
+                  "abs_threshold": 1e-09,
+                  "actual_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 1e-09,
+                  "ulp_threshold": 8,
+                  "units": "Pa s-1"
+                }
+              },
+              "passed": true,
+              "path": "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/substep_save_state_post_step007.h5"
+            },
+            "t_2ave_update": {
+              "boundary": "t_2ave_update_post",
+              "fields": {
+                "t_2ave": {
+                  "abs_threshold": 1e-10,
+                  "actual_shape": [
+                    44,
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    44,
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 3.677794170947067e-08,
+                  "ulp_threshold": 8,
+                  "units": "K"
+                }
+              },
+              "passed": true,
+              "path": "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/t_2ave_update_post_step007.h5"
+            },
+            "ww_update": {
+              "boundary": "ww_update_post",
+              "fields": {
+                "ww": {
+                  "abs_threshold": 1e-09,
+                  "actual_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 1e-09,
+                  "ulp_threshold": 8,
+                  "units": "Pa s-1"
+                }
+              },
+              "passed": true,
+              "path": "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ww_update_post_step007.h5"
+            }
+          },
+          "passed": true,
+          "step": 7,
+          "tier": "golden"
+        },
+        {
+          "boundaries": {
+            "muave_update": {
+              "boundary": "muave_update_post",
+              "fields": {
+                "muave": {
+                  "abs_threshold": 1e-08,
+                  "actual_shape": [
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 1e-08,
+                  "ulp_threshold": 8,
+                  "units": "Pa"
+                },
+                "muts": {
+                  "abs_threshold": 1e-08,
+                  "actual_shape": [
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 9.679509411621093e-08,
+                  "ulp_threshold": 16,
+                  "units": "Pa"
+                }
+              },
+              "passed": true,
+              "path": "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/muave_update_post_step008.h5"
+            },
+            "ph_tend_accumulate": {
+              "boundary": "ph_tend_accumulate_post",
+              "fields": {
+                "ph_tend": {
+                  "abs_threshold": 1e-10,
+                  "actual_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 4.525627043028601e-10,
+                  "ulp_threshold": 8,
+                  "units": "m2 s-3"
+                }
+              },
+              "passed": true,
+              "path": "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ph_tend_accumulate_post_step008.h5"
+            },
+            "substep_save_state": {
+              "boundary": "substep_save_state_post",
+              "fields": {
+                "mu_save": {
+                  "abs_threshold": 1e-08,
+                  "actual_shape": [
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 1e-08,
+                  "ulp_threshold": 8,
+                  "units": "Pa"
+                },
+                "ph_save": {
+                  "abs_threshold": 1e-08,
+                  "actual_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 1e-08,
+                  "ulp_threshold": 8,
+                  "units": "m2 s-2"
+                },
+                "t_save": {
+                  "abs_threshold": 1e-10,
+                  "actual_shape": [
+                    44,
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    44,
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 4.5263492415149295e-08,
+                  "ulp_threshold": 8,
+                  "units": "K"
+                },
+                "u_save": {
+                  "abs_threshold": 1e-10,
+                  "actual_shape": [
+                    44,
+                    41,
+                    67
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    44,
+                    41,
+                    67
+                  ],
+                  "location": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 1e-10,
+                  "ulp_threshold": 8,
+                  "units": "m s-1"
+                },
+                "v_save": {
+                  "abs_threshold": 1e-10,
+                  "actual_shape": [
+                    44,
+                    42,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    44,
+                    42,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 1e-10,
+                  "ulp_threshold": 8,
+                  "units": "m s-1"
+                },
+                "w_save": {
+                  "abs_threshold": 1e-10,
+                  "actual_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 1e-10,
+                  "ulp_threshold": 8,
+                  "units": "m s-1"
+                },
+                "ww_save": {
+                  "abs_threshold": 1e-09,
+                  "actual_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 1e-09,
+                  "ulp_threshold": 8,
+                  "units": "Pa s-1"
+                }
+              },
+              "passed": true,
+              "path": "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/substep_save_state_post_step008.h5"
+            },
+            "t_2ave_update": {
+              "boundary": "t_2ave_update_post",
+              "fields": {
+                "t_2ave": {
+                  "abs_threshold": 1e-10,
+                  "actual_shape": [
+                    44,
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    44,
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 4.2434975513256416e-08,
+                  "ulp_threshold": 8,
+                  "units": "K"
+                }
+              },
+              "passed": true,
+              "path": "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/t_2ave_update_post_step008.h5"
+            },
+            "ww_update": {
+              "boundary": "ww_update_post",
+              "fields": {
+                "ww": {
+                  "abs_threshold": 1e-09,
+                  "actual_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 1e-09,
+                  "ulp_threshold": 8,
+                  "units": "Pa s-1"
+                }
+              },
+              "passed": true,
+              "path": "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ww_update_post_step008.h5"
+            }
+          },
+          "passed": true,
+          "step": 8,
+          "tier": "golden"
+        },
+        {
+          "boundaries": {
+            "muave_update": {
+              "boundary": "muave_update_post",
+              "fields": {
+                "muave": {
+                  "abs_threshold": 1e-08,
+                  "actual_shape": [
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 1e-08,
+                  "ulp_threshold": 8,
+                  "units": "Pa"
+                },
+                "muts": {
+                  "abs_threshold": 1e-08,
+                  "actual_shape": [
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 9.679509411621093e-08,
+                  "ulp_threshold": 16,
+                  "units": "Pa"
+                }
+              },
+              "passed": true,
+              "path": "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/muave_update_post_step009.h5"
+            },
+            "ph_tend_accumulate": {
+              "boundary": "ph_tend_accumulate_post",
+              "fields": {
+                "ph_tend": {
+                  "abs_threshold": 1e-10,
+                  "actual_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 5.091330423407175e-10,
+                  "ulp_threshold": 8,
+                  "units": "m2 s-3"
+                }
+              },
+              "passed": true,
+              "path": "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ph_tend_accumulate_post_step009.h5"
+            },
+            "substep_save_state": {
+              "boundary": "substep_save_state_post",
+              "fields": {
+                "mu_save": {
+                  "abs_threshold": 1e-08,
+                  "actual_shape": [
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 1e-08,
+                  "ulp_threshold": 8,
+                  "units": "Pa"
+                },
+                "ph_save": {
+                  "abs_threshold": 1e-08,
+                  "actual_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 1e-08,
+                  "ulp_threshold": 8,
+                  "units": "m2 s-2"
+                },
+                "t_save": {
+                  "abs_threshold": 1e-10,
+                  "actual_shape": [
+                    44,
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    44,
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 5.0920526218935045e-08,
+                  "ulp_threshold": 8,
+                  "units": "K"
+                },
+                "u_save": {
+                  "abs_threshold": 1e-10,
+                  "actual_shape": [
+                    44,
+                    41,
+                    67
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    44,
+                    41,
+                    67
+                  ],
+                  "location": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 1e-10,
+                  "ulp_threshold": 8,
+                  "units": "m s-1"
+                },
+                "v_save": {
+                  "abs_threshold": 1e-10,
+                  "actual_shape": [
+                    44,
+                    42,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    44,
+                    42,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 1e-10,
+                  "ulp_threshold": 8,
+                  "units": "m s-1"
+                },
+                "w_save": {
+                  "abs_threshold": 1e-10,
+                  "actual_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 1e-10,
+                  "ulp_threshold": 8,
+                  "units": "m s-1"
+                },
+                "ww_save": {
+                  "abs_threshold": 1e-09,
+                  "actual_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 1e-09,
+                  "ulp_threshold": 8,
+                  "units": "Pa s-1"
+                }
+              },
+              "passed": true,
+              "path": "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/substep_save_state_post_step009.h5"
+            },
+            "t_2ave_update": {
+              "boundary": "t_2ave_update_post",
+              "fields": {
+                "t_2ave": {
+                  "abs_threshold": 1e-10,
+                  "actual_shape": [
+                    44,
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    44,
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 4.809200931704217e-08,
+                  "ulp_threshold": 8,
+                  "units": "K"
+                }
+              },
+              "passed": true,
+              "path": "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/t_2ave_update_post_step009.h5"
+            },
+            "ww_update": {
+              "boundary": "ww_update_post",
+              "fields": {
+                "ww": {
+                  "abs_threshold": 1e-09,
+                  "actual_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 1e-09,
+                  "ulp_threshold": 8,
+                  "units": "Pa s-1"
+                }
+              },
+              "passed": true,
+              "path": "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ww_update_post_step009.h5"
+            }
+          },
+          "passed": true,
+          "step": 9,
+          "tier": "golden"
+        },
+        {
+          "boundaries": {
+            "muave_update": {
+              "boundary": "muave_update_post",
+              "fields": {
+                "muave": {
+                  "abs_threshold": 1e-08,
+                  "actual_shape": [
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 1e-08,
+                  "ulp_threshold": 8,
+                  "units": "Pa"
+                },
+                "muts": {
+                  "abs_threshold": 1e-08,
+                  "actual_shape": [
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 9.679509411621093e-08,
+                  "ulp_threshold": 16,
+                  "units": "Pa"
+                }
+              },
+              "passed": true,
+              "path": "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/muave_update_post_step010.h5"
+            },
+            "ph_tend_accumulate": {
+              "boundary": "ph_tend_accumulate_post",
+              "fields": {
+                "ph_tend": {
+                  "abs_threshold": 1e-10,
+                  "actual_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 5.65703380378575e-10,
+                  "ulp_threshold": 8,
+                  "units": "m2 s-3"
+                }
+              },
+              "passed": true,
+              "path": "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ph_tend_accumulate_post_step010.h5"
+            },
+            "substep_save_state": {
+              "boundary": "substep_save_state_post",
+              "fields": {
+                "mu_save": {
+                  "abs_threshold": 1e-08,
+                  "actual_shape": [
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 1e-08,
+                  "ulp_threshold": 8,
+                  "units": "Pa"
+                },
+                "ph_save": {
+                  "abs_threshold": 1e-08,
+                  "actual_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 1e-08,
+                  "ulp_threshold": 8,
+                  "units": "m2 s-2"
+                },
+                "t_save": {
+                  "abs_threshold": 1e-10,
+                  "actual_shape": [
+                    44,
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    44,
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 5.6577560022720796e-08,
+                  "ulp_threshold": 8,
+                  "units": "K"
+                },
+                "u_save": {
+                  "abs_threshold": 1e-10,
+                  "actual_shape": [
+                    44,
+                    41,
+                    67
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    44,
+                    41,
+                    67
+                  ],
+                  "location": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 1e-10,
+                  "ulp_threshold": 8,
+                  "units": "m s-1"
+                },
+                "v_save": {
+                  "abs_threshold": 1e-10,
+                  "actual_shape": [
+                    44,
+                    42,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    44,
+                    42,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 1e-10,
+                  "ulp_threshold": 8,
+                  "units": "m s-1"
+                },
+                "w_save": {
+                  "abs_threshold": 1e-10,
+                  "actual_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 1e-10,
+                  "ulp_threshold": 8,
+                  "units": "m s-1"
+                },
+                "ww_save": {
+                  "abs_threshold": 1e-09,
+                  "actual_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 1e-09,
+                  "ulp_threshold": 8,
+                  "units": "Pa s-1"
+                }
+              },
+              "passed": true,
+              "path": "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/substep_save_state_post_step010.h5"
+            },
+            "t_2ave_update": {
+              "boundary": "t_2ave_update_post",
+              "fields": {
+                "t_2ave": {
+                  "abs_threshold": 1e-10,
+                  "actual_shape": [
+                    44,
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    44,
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 5.374904312082792e-08,
+                  "ulp_threshold": 8,
+                  "units": "K"
+                }
+              },
+              "passed": true,
+              "path": "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/t_2ave_update_post_step010.h5"
+            },
+            "ww_update": {
+              "boundary": "ww_update_post",
+              "fields": {
+                "ww": {
+                  "abs_threshold": 1e-09,
+                  "actual_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "dtype": "float64",
+                  "expected_shape": [
+                    45,
+                    41,
+                    66
+                  ],
+                  "location": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "max_abs_delta": 0.0,
+                  "passed": true,
+                  "rel_threshold": 1e-12,
+                  "tolerance": 1e-09,
+                  "ulp_threshold": 8,
+                  "units": "Pa s-1"
+                }
+              },
+              "passed": true,
+              "path": "/tmp/wrf_gpu2_m6b3/.agent/sprints/2026-05-25-m6b3-scratch-state-parity/savepoints/golden/ww_update_post_step010.h5"
+            }
+          },
+          "passed": true,
+          "step": 10,
+          "tier": "golden"
+        }
+      ],
+      "sanitizer_mode": "off",
+      "savepoint_count": 100,
+      "tier": "golden",
+      "tolerance_ladder_path": "/tmp/wrf_gpu2_m6b3/src/gpuwrf/validation/tolerance_ladder.json",
+      "transfer_audit": {
+        "h2d_d2h_inside_timestep_loop_bytes": 0,
+        "note": "Comparator reads HDF5 before isolated JAX helper calls; no production timestep loop is executed."
+      }
+    }
+  }
+}

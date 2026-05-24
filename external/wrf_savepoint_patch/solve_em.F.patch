@@ -8,6 +8,11 @@
 +   USE savepoint_wrapper, ONLY: sp_calc_coef_w_pre, sp_calc_coef_w_post, &
 +      sp_small_step_prep_post, sp_advance_mu_t_pre, sp_advance_mu_t_post, &
 +      sp_advance_uv_post, sp_advance_w_rhs_ready, sp_advance_w_raw_w, &
++      sp_t_2ave_update_pre, sp_t_2ave_update_post, &
++      sp_ww_update_pre, sp_ww_update_post, &
++      sp_muave_update_pre, sp_muave_update_post, &
++      sp_ph_tend_accumulate_pre, sp_ph_tend_accumulate_post, &
++      sp_substep_save_state_pre, sp_substep_save_state_post, &
 +      sp_advance_w_tridiag_fwd_pre, sp_advance_w_tridiag_fwd_post, &
 +      sp_advance_w_tridiag_back_pre, sp_advance_w_tridiag_back_post, &
 +      sp_advance_w_rayleigh, sp_advance_w_ph_final, sp_calc_p_rho_post, &
@@ -77,6 +82,46 @@
 +#ifdef WRF_SAVEPOINT
 +         CALL sp_advance_mu_t_post(rk_step, iteration, grid%mu_2, grid%mut, grid%mudf, &
 +                          grid%muts, muave, grid%ww, grid%t_2, ph_tend)
++#endif
+@@
++#ifdef WRF_SAVEPOINT
++         CALL sp_t_2ave_update_pre(rk_step, iteration, grid%t_1, grid%t_2, t_2ave)
++#endif
+          ! M6B3 scratch boundary: t_2ave running average update
++#ifdef WRF_SAVEPOINT
++         CALL sp_t_2ave_update_post(rk_step, iteration, t_2ave)
++#endif
+@@
++#ifdef WRF_SAVEPOINT
++         CALL sp_ww_update_pre(rk_step, iteration, ww1, grid%ww)
++#endif
+          ! M6B3 scratch boundary: ww working-state update
++#ifdef WRF_SAVEPOINT
++         CALL sp_ww_update_post(rk_step, iteration, grid%ww)
++#endif
+@@
++#ifdef WRF_SAVEPOINT
++         CALL sp_muave_update_pre(rk_step, iteration, grid%mu_1, grid%mu_2, grid%mut, muave, grid%muts)
++#endif
+          ! M6B3 scratch boundary: MUAVE/MUTS carry update
++#ifdef WRF_SAVEPOINT
++         CALL sp_muave_update_post(rk_step, iteration, muave, grid%muts)
++#endif
+@@
++#ifdef WRF_SAVEPOINT
++         CALL sp_ph_tend_accumulate_pre(rk_step, iteration, ph_tend, ph_tend_increment)
++#endif
+          ! M6B3 scratch boundary: ph_tend accumulation before advance_w RHS
++#ifdef WRF_SAVEPOINT
++         CALL sp_ph_tend_accumulate_post(rk_step, iteration, ph_tend)
++#endif
+@@
++#ifdef WRF_SAVEPOINT
++         CALL sp_substep_save_state_pre(rk_step, iteration, grid%u_2, grid%v_2, grid%w_2, grid%t_2, grid%ph_2, grid%mu_2, grid%ww)
++#endif
+          ! M6B3 scratch boundary: _save family snapshot between substeps
++#ifdef WRF_SAVEPOINT
++         CALL sp_substep_save_state_post(rk_step, iteration, u_save, v_save, w_save, t_save, ph_save, mu_save, ww_save)
 +#endif
 @@ -1533,6 +1533,9 @@
 +#ifdef WRF_SAVEPOINT

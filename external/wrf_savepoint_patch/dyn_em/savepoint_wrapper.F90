@@ -27,6 +27,49 @@ contains
     real, intent(in) :: mu(:, :), mut(:, :), mudf(:, :), muts(:, :), muave(:, :)
     real, intent(in) :: ww_out(:, :, :), theta_out(:, :, :), ph_tend(:, :, :)
   end subroutine sp_advance_mu_t_post
+  subroutine sp_t_2ave_update_pre(rkstage, acstep, t_old, t_new, t_2ave)
+    integer, intent(in) :: rkstage, acstep
+    real, intent(in) :: t_old(:, :, :), t_new(:, :, :), t_2ave(:, :, :)
+  end subroutine sp_t_2ave_update_pre
+  subroutine sp_t_2ave_update_post(rkstage, acstep, t_2ave)
+    integer, intent(in) :: rkstage, acstep
+    real, intent(in) :: t_2ave(:, :, :)
+  end subroutine sp_t_2ave_update_post
+  subroutine sp_ww_update_pre(rkstage, acstep, ww_old, ww_new)
+    integer, intent(in) :: rkstage, acstep
+    real, intent(in) :: ww_old(:, :, :), ww_new(:, :, :)
+  end subroutine sp_ww_update_pre
+  subroutine sp_ww_update_post(rkstage, acstep, ww_out)
+    integer, intent(in) :: rkstage, acstep
+    real, intent(in) :: ww_out(:, :, :)
+  end subroutine sp_ww_update_post
+  subroutine sp_muave_update_pre(rkstage, acstep, mu_old, mu_new, mut, muave, muts)
+    integer, intent(in) :: rkstage, acstep
+    real, intent(in) :: mu_old(:, :), mu_new(:, :), mut(:, :), muave(:, :), muts(:, :)
+  end subroutine sp_muave_update_pre
+  subroutine sp_muave_update_post(rkstage, acstep, muave, muts)
+    integer, intent(in) :: rkstage, acstep
+    real, intent(in) :: muave(:, :), muts(:, :)
+  end subroutine sp_muave_update_post
+  subroutine sp_ph_tend_accumulate_pre(rkstage, acstep, ph_tend, ph_tend_increment)
+    integer, intent(in) :: rkstage, acstep
+    real, intent(in) :: ph_tend(:, :, :), ph_tend_increment(:, :, :)
+  end subroutine sp_ph_tend_accumulate_pre
+  subroutine sp_ph_tend_accumulate_post(rkstage, acstep, ph_tend)
+    integer, intent(in) :: rkstage, acstep
+    real, intent(in) :: ph_tend(:, :, :)
+  end subroutine sp_ph_tend_accumulate_post
+  subroutine sp_substep_save_state_pre(rkstage, acstep, u, v, w, t, ph, mu, ww)
+    integer, intent(in) :: rkstage, acstep
+    real, intent(in) :: u(:, :, :), v(:, :, :), w(:, :, :), t(:, :, :), ph(:, :, :), ww(:, :, :)
+    real, intent(in) :: mu(:, :)
+  end subroutine sp_substep_save_state_pre
+  subroutine sp_substep_save_state_post(rkstage, acstep, u_save, v_save, w_save, t_save, ph_save, mu_save, ww_save)
+    integer, intent(in) :: rkstage, acstep
+    real, intent(in) :: u_save(:, :, :), v_save(:, :, :), w_save(:, :, :), t_save(:, :, :)
+    real, intent(in) :: ph_save(:, :, :), ww_save(:, :, :)
+    real, intent(in) :: mu_save(:, :)
+  end subroutine sp_substep_save_state_post
   subroutine sp_advance_uv_post()
   end subroutine sp_advance_uv_post
   subroutine sp_advance_w_rhs_ready()
