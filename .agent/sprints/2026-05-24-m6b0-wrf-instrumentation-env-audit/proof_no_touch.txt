@@ -1,0 +1,24 @@
+=== NO-TOUCH PROOF 2026-05-24T20:57:27Z ===
+
+--- pytest --collect-only (from worktree root) ---
+    <Dir agentos>
+      <Module test_no_contradictory_rules.py>
+        <Function test_backend_is_not_locked_before_bakeoff>
+        <Function test_bitwise_is_not_default_requirement>
+      <Module test_required_files.py>
+        <Function test_required_top_level_files_exist>
+      <Module test_skill_metadata.py>
+        <Function test_all_skills_have_metadata_and_evals>
+
+========================= 579 tests collected in 1.83s =========================
+
+--- git status in this worktree (should show only sprint/ proof files) ---
+?? .agent/sprints/2026-05-24-m6b0-wrf-instrumentation-env-audit/proof_no_touch.txt
+?? .agent/sprints/2026-05-24-m6b0-wrf-instrumentation-env-audit/proof_operational_protection.txt
+?? .agent/sprints/2026-05-24-m6b0-wrf-instrumentation-env-audit/proof_storage_estimate.txt
+?? .agent/sprints/2026-05-24-m6b0-wrf-instrumentation-env-audit/proof_toolchain.txt
+?? .agent/sprints/2026-05-24-m6b0-wrf-instrumentation-env-audit/proof_wrf_source_audit.txt
+
+--- Verify operational wrf.exe sha unchanged after audit ---
+1ec3815497887f980293cf8ffc4b1219476d93dbed760538241fc3087e70dd37  /home/enric/src/wrf_gpu/builds/stable_20260509T213321Z/wrf.exe
+Expected: 1ec3815497887f980293cf8ffc4b1219476d93dbed760538241fc3087e70dd37
