@@ -256,12 +256,24 @@ No optimization sprints before M6B5 passes. Then in order:
 - **ADR-021/022 (full-carry / hybrid drafts)** → remain DRAFT, branch evidence only.
 - **ADR-025 (to be drafted)**: WRF savepoint-harness + B-direct port ladder. Will be drafted during M6B0 and reviewed at M6B0 close.
 
-### 14.7 Risk gates (sprint-level kill conditions)
+### 14.7 Risk gates (sprint-level kill conditions, split per phase — critic Amendment #5)
 
-- **M6B0 savepoint extractor cannot patch WRF Fortran in ≤2 sprints** → escalate to user; consider AceCAST instrumentation as an alternative oracle source.
-- **JAX comparator finds >15 savepoints diverging at step 2 even when WRF carries are added** → trigger external WRF-expert human review before committing more sprints. Triggers Option C evaluation as design-time alternative (still not implementation).
-- **No measurable RTX 5090 speedup vs 28-rank CPU WRF at M6B5** → re-open performance section, profile, consider mixed-precision operational mode before M6b dispatch.
-- **External human WRF expert review unobtainable** → manager dispatches a Codex critical-review sprint as substitute and flags the gap to the user at M6B0 close.
+**M6B0 / M6B0-R (savepoint harness + first real Fortran emission)**:
+- Cannot produce isolated relinked WRF + fail-closed comparator in ≤2 sprints → escalate; consider AceCAST commercial-discovery sprint (reverses the E-lane defer).
+- Tier-3 golden small-domain extraction infeasible at ≤5 GB even with short-pulse sub-sampling → re-examine the operator boundary set; reduce to `calc_coef_w` only and defer the rest to M6B1+.
+
+**M6B1 / M6B2 (coefficient + tridiagonal solve parity)**:
+- Schema-valid savepoints expose too many early divergences for worker-only debugging (>15 fields diverging at step 2) → trigger external WRF-expert human review before committing more sprints. Reconsider Option C evaluation as design-time alternative (still not implementation).
+
+**M6B3 / M6B4 (scratch + acoustic recurrence parity)**:
+- WRF small-step state surface keeps expanding beyond the env-audit estimate → re-scope. Reduce M6 close target to M6b only (defer M6c to a pre-M7 release gate).
+
+**M6B5 (full dycore step parity)**:
+- No measurable RTX 5090 speedup vs 28-rank CPU WRF on the validated operator → re-open performance section before M6b dispatch; profile; consider mixed-precision operational mode.
+
+**Cross-cutting**:
+- External human WRF expert review unobtainable → manager dispatches a Codex critical-review sprint as substitute and flags the gap to the user at M6B0 close.
+- Operational `wrf.exe` sha256 changes at any point → STOP all dycore work, revert, escalate. The Gen2 baseline is the project's truth source.
 
 ### 14.8 Validation gates (binding)
 
