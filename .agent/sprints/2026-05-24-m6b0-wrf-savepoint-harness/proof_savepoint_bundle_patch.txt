@@ -1,0 +1,50 @@
+tier=patch16
+source_path=/mnt/data/canairy_meteo/runs/wrf_l3/20260429_18z_l3_24h_20260524T204451Z/wrfinput_d02
+slice_shape=(44, 16, 16)
+savepoint_count=44
+total_bytes=7634917
+.agent/sprints/2026-05-24-m6b0-wrf-savepoint-harness/savepoints/patch16/coefficient_construction_step001.npz 631358
+.agent/sprints/2026-05-24-m6b0-wrf-savepoint-harness/savepoints/patch16/acoustic_substep_start_step001.npz 131494
+.agent/sprints/2026-05-24-m6b0-wrf-savepoint-harness/savepoints/patch16/mu_muts_muave_ww_start_step001.npz 131503
+.agent/sprints/2026-05-24-m6b0-wrf-savepoint-harness/savepoints/patch16/mu_muts_muave_ww_end_step001.npz 131502
+.agent/sprints/2026-05-24-m6b0-wrf-savepoint-harness/savepoints/patch16/t_2ave_update_step001.npz 131497
+.agent/sprints/2026-05-24-m6b0-wrf-savepoint-harness/savepoints/patch16/ph_tend_accumulation_step001.npz 131500
+.agent/sprints/2026-05-24-m6b0-wrf-savepoint-harness/savepoints/patch16/advance_w_entry_step001.npz 131497
+.agent/sprints/2026-05-24-m6b0-wrf-savepoint-harness/savepoints/patch16/advance_w_exit_step001.npz 131497
+.agent/sprints/2026-05-24-m6b0-wrf-savepoint-harness/savepoints/patch16/pressure_geopotential_restoration_step001.npz 131508
+.agent/sprints/2026-05-24-m6b0-wrf-savepoint-harness/savepoints/patch16/acoustic_substep_end_step001.npz 131490
+.agent/sprints/2026-05-24-m6b0-wrf-savepoint-harness/savepoints/patch16/rk_stage_end_step001.npz 131492
+.agent/sprints/2026-05-24-m6b0-wrf-savepoint-harness/savepoints/patch16/coefficient_construction_step002.npz 631356
+.agent/sprints/2026-05-24-m6b0-wrf-savepoint-harness/savepoints/patch16/acoustic_substep_start_step002.npz 131206
+.agent/sprints/2026-05-24-m6b0-wrf-savepoint-harness/savepoints/patch16/mu_muts_muave_ww_start_step002.npz 131215
+.agent/sprints/2026-05-24-m6b0-wrf-savepoint-harness/savepoints/patch16/mu_muts_muave_ww_end_step002.npz 131213
+.agent/sprints/2026-05-24-m6b0-wrf-savepoint-harness/savepoints/patch16/t_2ave_update_step002.npz 131209
+.agent/sprints/2026-05-24-m6b0-wrf-savepoint-harness/savepoints/patch16/ph_tend_accumulation_step002.npz 131212
+.agent/sprints/2026-05-24-m6b0-wrf-savepoint-harness/savepoints/patch16/advance_w_entry_step002.npz 131209
+.agent/sprints/2026-05-24-m6b0-wrf-savepoint-harness/savepoints/patch16/advance_w_exit_step002.npz 131209
+.agent/sprints/2026-05-24-m6b0-wrf-savepoint-harness/savepoints/patch16/pressure_geopotential_restoration_step002.npz 131220
+.agent/sprints/2026-05-24-m6b0-wrf-savepoint-harness/savepoints/patch16/acoustic_substep_end_step002.npz 131203
+.agent/sprints/2026-05-24-m6b0-wrf-savepoint-harness/savepoints/patch16/rk_stage_end_step002.npz 131204
+.agent/sprints/2026-05-24-m6b0-wrf-savepoint-harness/savepoints/patch16/coefficient_construction_step005.npz 631360
+.agent/sprints/2026-05-24-m6b0-wrf-savepoint-harness/savepoints/patch16/acoustic_substep_start_step005.npz 124260
+.agent/sprints/2026-05-24-m6b0-wrf-savepoint-harness/savepoints/patch16/mu_muts_muave_ww_start_step005.npz 124269
+.agent/sprints/2026-05-24-m6b0-wrf-savepoint-harness/savepoints/patch16/mu_muts_muave_ww_end_step005.npz 124267
+.agent/sprints/2026-05-24-m6b0-wrf-savepoint-harness/savepoints/patch16/t_2ave_update_step005.npz 124263
+.agent/sprints/2026-05-24-m6b0-wrf-savepoint-harness/savepoints/patch16/ph_tend_accumulation_step005.npz 124267
+.agent/sprints/2026-05-24-m6b0-wrf-savepoint-harness/savepoints/patch16/advance_w_entry_step005.npz 124263
+.agent/sprints/2026-05-24-m6b0-wrf-savepoint-harness/savepoints/patch16/advance_w_exit_step005.npz 124264
+.agent/sprints/2026-05-24-m6b0-wrf-savepoint-harness/savepoints/patch16/pressure_geopotential_restoration_step005.npz 124275
+.agent/sprints/2026-05-24-m6b0-wrf-savepoint-harness/savepoints/patch16/acoustic_substep_end_step005.npz 124258
+.agent/sprints/2026-05-24-m6b0-wrf-savepoint-harness/savepoints/patch16/rk_stage_end_step005.npz 124259
+.agent/sprints/2026-05-24-m6b0-wrf-savepoint-harness/savepoints/patch16/coefficient_construction_step010.npz 631359
+.agent/sprints/2026-05-24-m6b0-wrf-savepoint-harness/savepoints/patch16/acoustic_substep_start_step010.npz 123973
+.agent/sprints/2026-05-24-m6b0-wrf-savepoint-harness/savepoints/patch16/mu_muts_muave_ww_start_step010.npz 123980
+.agent/sprints/2026-05-24-m6b0-wrf-savepoint-harness/savepoints/patch16/mu_muts_muave_ww_end_step010.npz 123978
+.agent/sprints/2026-05-24-m6b0-wrf-savepoint-harness/savepoints/patch16/t_2ave_update_step010.npz 123974
+.agent/sprints/2026-05-24-m6b0-wrf-savepoint-harness/savepoints/patch16/ph_tend_accumulation_step010.npz 123979
+.agent/sprints/2026-05-24-m6b0-wrf-savepoint-harness/savepoints/patch16/advance_w_entry_step010.npz 123975
+.agent/sprints/2026-05-24-m6b0-wrf-savepoint-harness/savepoints/patch16/advance_w_exit_step010.npz 123974
+.agent/sprints/2026-05-24-m6b0-wrf-savepoint-harness/savepoints/patch16/pressure_geopotential_restoration_step010.npz 123987
+.agent/sprints/2026-05-24-m6b0-wrf-savepoint-harness/savepoints/patch16/acoustic_substep_end_step010.npz 123969
+.agent/sprints/2026-05-24-m6b0-wrf-savepoint-harness/savepoints/patch16/rk_stage_end_step010.npz 123970
+metadata_summary=.agent/sprints/2026-05-24-m6b0-wrf-savepoint-harness/savepoints/patch16/manifest.json

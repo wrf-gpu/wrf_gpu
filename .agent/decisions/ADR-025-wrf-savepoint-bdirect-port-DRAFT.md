@@ -28,15 +28,13 @@ The external consultation's correction:
 
 The replacement architecture is to **use WRF itself as the numerical compiler**: extract per-operator savepoints, reproduce them in JAX, then port the small-step bottom-up under hard parity.
 
-## What this ADR does not yet decide (resolved during M6B0)
+## M6B0 decisions recorded by worker
 
-- The exact WRF Fortran instrumentation strategy (in-tree patch vs wrapper layer vs preprocessor macros).
-- The savepoint file format (HDF5 vs NetCDF vs Serialbox vs custom NPY bundle).
-- The savepoint schema field list (must include: run-ID, WRF version/commit, namelist, domain, map factors, vertical grid, timestep, RK stage, acoustic substep, stagger, units, variable provenance).
-- The tolerance ladder per Tier (Tier-1 fixture parity tolerances for each operator class).
-- Whether a small-domain "golden slice" precedes the full d02 (default: yes).
-
-These are decided in the M6B0 worker-report and reviewer-report, then folded back into this ADR before it moves from DRAFT to PROPOSED.
+- **WRF instrumentation strategy**: isolated wrapper plus reviewable `module_small_step_em.F` hook anchors under `external/wrf_savepoint_patch/`. The protected operational binary at `/home/enric/src/wrf_gpu/builds/stable_20260509T213321Z/wrf.exe` is never overwritten; `proof_instrumented_build.txt` records matching before/after SHA-256 values. M6B1 should replace the wrapper with a true relinked Fortran hook build if reviewer requires direct `wrf.exe` emission rather than the isolated extractor path.
+- **Savepoint file format**: `npz-bundle-v1`, written by `src/gpuwrf/validation/savepoint_io.py`. This was chosen over HDF5/NetCDF for the first harness because it is dependency-light, easy to checksum, and sufficient for column/patch fixtures; the schema keeps `file_format` explicit so a future HDF5 backend can coexist.
+- **Frozen schema field list**: `run_id`, `wrf_version`, `wrf_commit`, `namelist_hash`, `source_path`, `domain_index`, `tier`, `operator`, `boundary`, `dt_seconds`, `rk_stage_index`, `acoustic_substep_index`, `map_factors`, `vertical_grid`, `variables`, `schema_version`, `file_format`, `sanitizer_mode`, `created_utc`, and `notes`. Per-variable metadata is `name`, `dtype`, `shape`, `stagger`, `units`, `provenance`, and `role`.
+- **Tolerance ladder, coefficient construction**: `cofrz=1e-12`, `cofwr=1e-12`, `cofwz=1e-11`, `coftz=1e-11`, `cofwt=1e-12`, `rdzw=1e-12`, `tri_a=1e-11`, `tri_b=1e-11`, `tri_c=1e-11` absolute max-delta. Rationale is recorded in `proof_comparator_tolerance_ladder.txt`; M6B1 must revisit these against true Fortran `calc_coef_w` dumps.
+- **Golden-domain progression**: yes. The approved progression is one Canary d02 column, then a 16x16 Canary d02 patch, then full d02 only when storage and hook coverage justify it. M6B0 defers Tier-3 full-domain savepoints and records the linear storage estimate in `proof_savepoint_storage_estimate.txt`.
 
 ## Acceptance criteria for ADR-025 to move DRAFT → PROPOSED
 
@@ -60,8 +58,8 @@ These are decided in the M6B0 worker-report and reviewer-report, then folded bac
 
 ## Open questions for M6B0
 
-1. Does the Canairy WRF build have Serialbox available, or must the harness be hand-rolled?
-2. Which `module_small_step_em` entry/exit points are the canonical operator boundaries (suggested initial set: `calc_coef_w` entry/exit; advance_mu_t entry/exit; advance_w entry/exit; pressure restoration entry/exit; one full acoustic substep boundary; one RK stage boundary)?
-3. What stagger metadata must accompany every field (u/v/w/mass-point/eta-half/eta-full)?
-4. What are the per-field parity tolerances at Tier-1 (fp64 ULP-scale vs relaxed for accumulation operations)?
-5. Should the M6B0 deliverable include a golden small-domain (e.g. 32×32×40) before the full d02, or run directly on a Canary d02 slice?
+1. **Resolved**: no Serialbox dependency is assumed for M6B0; harness is hand-rolled NPZ.
+2. **Resolved for M6B0**: canonical boundaries are `coefficient_construction`, `mu_muts_muave_ww_start`, `mu_muts_muave_ww_end`, `t_2ave_update`, `ph_tend_accumulation`, `advance_w_entry`, `advance_w_exit`, `pressure_geopotential_restoration`, `acoustic_substep_start`, `acoustic_substep_end`, and `rk_stage_end`.
+3. **Resolved**: allowed stagger metadata values are `mass`, `u`, `v`, `w`, `eta-half`, `eta-full`, and `scalar`.
+4. **Resolved for first operator**: coefficient-construction tolerances are listed above and in `proof_comparator_tolerance_ladder.txt`.
+5. **Resolved**: column and 16x16 d02 slices precede full d02; full-domain Tier-3 is deferred from M6B0.
