@@ -1,0 +1,58 @@
+{
+  "comparison": {
+    "acoustic_substep_index": 1,
+    "boundary": "calc_coef_w_pre",
+    "fields": {
+      "dz_m": {
+        "dtype": "float64",
+        "max_abs_delta": 0.0,
+        "passed": true,
+        "relinked_shape": [
+          44,
+          1,
+          1
+        ],
+        "shim_shape": [
+          44,
+          1,
+          1
+        ]
+      },
+      "mut": {
+        "dtype": "float64",
+        "max_abs_delta": 0.0,
+        "passed": true,
+        "relinked_shape": [
+          1,
+          1
+        ],
+        "shim_shape": [
+          1,
+          1
+        ]
+      },
+      "theta": {
+        "dtype": "float64",
+        "max_abs_delta": 0.0,
+        "passed": true,
+        "relinked_shape": [
+          44,
+          1,
+          1
+        ],
+        "shim_shape": [
+          44,
+          1,
+          1
+        ]
+      }
+    },
+    "operator": "calc_coef_w",
+    "passed": true,
+    "relinked_path": "/tmp/wrf_gpu2_relink/external/wrf_savepoint_patch/savepoints/relinked/column/calc_coef_w_pre_step001.h5",
+    "rk_stage_index": 1,
+    "shim_path": "/tmp/wrf_gpu2_m6b0r/.agent/sprints/2026-05-24-m6b0r-real-fortran-emission/savepoints/column/calc_coef_w_pre_step001.h5"
+  },
+  "status": "PASS",
+  "tier": "column"
+}
