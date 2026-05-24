@@ -1,0 +1,64 @@
+{
+  "artifacts": {},
+  "diagnostic": {
+    "name": "conservation_tracker",
+    "purpose": "Track integral invariant drift."
+  },
+  "input": {
+    "path": "/tmp/wrf_gpu2_s2dot1_baseline/.agent/sprints/2026-05-23-m6x-s2dot1-d02-baseline-real-rerun/artifacts/sidecar-inputs/conservation_tracker.input.json",
+    "state_count": 2
+  },
+  "measurements": {
+    "max_abs_relative_drift": {
+      "surface_temperature_sum": 0.00136824642118042,
+      "surface_wind_energy_proxy": 0.32069088144313185,
+      "theta_k20_sum": 0.0009926215134172017
+    },
+    "time_series": [
+      {
+        "boundary_terms": {},
+        "relative_drift": {
+          "surface_temperature_sum": 0.0,
+          "surface_wind_energy_proxy": 0.0,
+          "theta_k20_sum": 0.0
+        },
+        "source_terms": {},
+        "step": 0,
+        "time_s": 0.0,
+        "totals": {
+          "surface_temperature_sum": 168390.72,
+          "surface_wind_energy_proxy": 6357.3744,
+          "theta_k20_sum": 174084.47999999998
+        }
+      },
+      {
+        "boundary_terms": {},
+        "relative_drift": {
+          "surface_temperature_sum": 0.00136824642118042,
+          "surface_wind_energy_proxy": 0.32069088144313185,
+          "theta_k20_sum": 0.0009926215134172017
+        },
+        "source_terms": {},
+        "step": 1,
+        "time_s": null,
+        "totals": {
+          "surface_temperature_sum": 168621.12,
+          "surface_wind_energy_proxy": 8396.126400000001,
+          "theta_k20_sum": 174257.28000000003
+        }
+      }
+    ]
+  },
+  "schema_version": "m6x-s1-diagnostic-sidecar-v1",
+  "source_citations": [
+    ".agent/milestones/ROADMAP.md:78-88",
+    ".agent/milestones/ROADMAP.md:89-98"
+  ],
+  "status": "OK",
+  "units": {
+    "dry_static_energy": "J",
+    "kinetic_energy": "J",
+    "mass": "kg or Pa-column equivalent",
+    "water": "kg"
+  }
+}

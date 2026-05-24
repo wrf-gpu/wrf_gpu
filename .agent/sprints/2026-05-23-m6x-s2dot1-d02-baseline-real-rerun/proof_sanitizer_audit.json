@@ -1,0 +1,40 @@
+{
+  "artifacts": {},
+  "diagnostic": {
+    "name": "sanitizer_audit",
+    "purpose": "Expose pre-sanitize candidate failures."
+  },
+  "input": {
+    "path": "/tmp/wrf_gpu2_s2dot1_baseline/.agent/sprints/2026-05-23-m6x-s2dot1-d02-baseline-real-rerun/artifacts/sidecar-inputs/sanitizer_audit.input.json",
+    "step_count": 1
+  },
+  "measurements": {
+    "first_bad_candidate_step": null,
+    "per_step": [
+      {
+        "candidate_changed_count": 0,
+        "candidate_clip_count": 0,
+        "candidate_nonfinite_count": 0,
+        "finite_after_sanitize": true,
+        "step": null,
+        "time_s": null
+      }
+    ],
+    "post_sanitize_only_pass_risk": false,
+    "totals": {
+      "candidate_changed_count": 0,
+      "candidate_clip_count": 0,
+      "candidate_nonfinite_count": 0
+    }
+  },
+  "schema_version": "m6x-s1-diagnostic-sidecar-v1",
+  "source_citations": [
+    "src/gpuwrf/integration/d02_replay.py:313-322",
+    "src/gpuwrf/integration/d02_replay.py:468-487"
+  ],
+  "status": "OK",
+  "units": {
+    "counts": "count",
+    "time_s": "s"
+  }
+}

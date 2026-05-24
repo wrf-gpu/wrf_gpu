@@ -1,0 +1,141 @@
+{
+  "artifacts": {
+    "spatial_error_npz": "/tmp/wrf_gpu2_s2dot1_baseline/.agent/sprints/2026-05-23-m6x-s2dot1-d02-baseline-real-rerun/proof_spatial_divergence_map.npz"
+  },
+  "diagnostic": {
+    "name": "spatial_divergence_map",
+    "purpose": "Map and stratify forecast-reference error."
+  },
+  "input": {
+    "field": "T2",
+    "path": "/tmp/wrf_gpu2_s2dot1_baseline/.agent/sprints/2026-05-23-m6x-s2dot1-d02-baseline-real-rerun/artifacts/sidecar-inputs/spatial_divergence_map.input.json",
+    "shape": [
+      24,
+      24
+    ]
+  },
+  "measurements": {
+    "boundary_bands": [
+      {
+        "band_grid_cells": "0-5",
+        "rmse": 0.3999999999999773,
+        "sample_count": 380
+      },
+      {
+        "band_grid_cells": "5-10",
+        "rmse": 0.3999999999999774,
+        "sample_count": 180
+      },
+      {
+        "band_grid_cells": "10-20",
+        "rmse": 0.39999999999997726,
+        "sample_count": 16
+      },
+      {
+        "band_grid_cells": "interior",
+        "rmse": null,
+        "sample_count": 0
+      }
+    ],
+    "elevation_quartiles": [
+      {
+        "elevation_m_quartile": 1,
+        "range": [
+          447.23278052350634,
+          1214.0097965952455
+        ],
+        "rmse": 0.39999999999997726,
+        "sample_count": 144
+      },
+      {
+        "elevation_m_quartile": 2,
+        "range": [
+          1214.0097965952455,
+          1715.4585853210876
+        ],
+        "rmse": 0.3999999999999773,
+        "sample_count": 132
+      },
+      {
+        "elevation_m_quartile": 3,
+        "range": [
+          1715.4585853210876,
+          2534.57225048069
+        ],
+        "rmse": 0.3999999999999773,
+        "sample_count": 152
+      },
+      {
+        "elevation_m_quartile": 4,
+        "range": [
+          2534.57225048069,
+          3635.031206642396
+        ],
+        "rmse": 0.3999999999999773,
+        "sample_count": 148
+      }
+    ],
+    "global_rmse": 0.39999999999997726,
+    "land_sea": [
+      {
+        "class": "sea",
+        "rmse": 0.39999999999997726,
+        "sample_count": 288
+      },
+      {
+        "class": "land",
+        "rmse": 0.39999999999997726,
+        "sample_count": 288
+      }
+    ],
+    "terrain_quartiles": [
+      {
+        "range": [
+          447.23278052350634,
+          1214.0097965952455
+        ],
+        "rmse": 0.39999999999997726,
+        "sample_count": 144,
+        "terrain_quartile": 1
+      },
+      {
+        "range": [
+          1214.0097965952455,
+          1715.4585853210876
+        ],
+        "rmse": 0.3999999999999773,
+        "sample_count": 132,
+        "terrain_quartile": 2
+      },
+      {
+        "range": [
+          1715.4585853210876,
+          2534.57225048069
+        ],
+        "rmse": 0.3999999999999773,
+        "sample_count": 152,
+        "terrain_quartile": 3
+      },
+      {
+        "range": [
+          2534.57225048069,
+          3635.031206642396
+        ],
+        "rmse": 0.3999999999999773,
+        "sample_count": 148,
+        "terrain_quartile": 4
+      }
+    ]
+  },
+  "schema_version": "m6x-s1-diagnostic-sidecar-v1",
+  "source_citations": [
+    "src/gpuwrf/integration/d02_replay.py:515-546",
+    "src/gpuwrf/integration/d02_replay.py:142-206"
+  ],
+  "status": "OK",
+  "units": {
+    "distance": "grid cells",
+    "elevation_m": "m",
+    "error": "field-dependent"
+  }
+}
