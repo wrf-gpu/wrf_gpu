@@ -14,40 +14,42 @@ def _source(path: Path) -> str:
     return path.read_text(encoding="utf-8")
 
 
-def test_advance_mu_t_outputs_are_committed_to_resident_operational_state():
+def test_advance_mu_t_outputs_are_committed_by_shared_core():
     mode = _source(OPERATIONAL_MODE)
     state = _source(OPERATIONAL_STATE)
+    core = _source(ROOT / "src" / "gpuwrf" / "dynamics" / "core" / "acoustic.py")
 
-    assert 'mu_new = advanced["mu"]' in mode
-    assert 'theta_new = advanced["theta"] + theta_offset' in mode
-    assert "theta=theta_new" in mode
-    assert 'mudf_new=advanced["mudf"]' in mode
-    assert 'muts_new=advanced["muts"]' in mode
-    assert 'muave_new=advanced["muave"]' in mode
-    assert 'ww_new=advanced["ww"]' in mode
+    assert "acoustic_substep_core" in mode
+    assert 'mu=advanced["mu"]' in core
+    assert 'theta=advanced["theta"]' in core
+    assert 'mudf=advanced["mudf"]' in core
+    assert 'muts=advanced["muts"]' in core
+    assert 'muave=advanced["muave"]' in core
+    assert 'ww=scratch["ww"]' in core
     assert 'mudf=acoustic.mudf' in _source(COMPARE_SCRIPT)
     assert "mudf: jax.Array" in state
     assert "mu_new = state.mu_perturbation" not in mode
-    assert "module_small_step_em.F:1102-1108" in mode
-    assert "module_small_step_em.F:1141-1171" in mode
+    assert "module_small_step_em.F:1533-1550" in core
 
 
 def test_w_coefficients_and_dt_sub_follow_contracted_acoustic_cadence():
     mode = _source(OPERATIONAL_MODE)
+    core = _source(ROOT / "src" / "gpuwrf" / "dynamics" / "core" / "acoustic.py")
 
-    assert "calc_coef_w_wrf_coefficients(\n        carry.muts" in mode
+    assert "calc_coef_w_wrf_coefficients(" in mode
+    assert "acoustic.coef_mut if acoustic.coef_mut is not None else acoustic.muts" in mode
     assert "dt_sub = float(namelist.dt_s) / float(namelist.acoustic_substeps)" in mode
     assert "float(dt_stage) / float(scan_substeps)" not in mode
     assert "solve_em.F:2409-2717" in mode
-    assert "solve_em.F:1472-1483" in mode
+    assert "solve_em.F:3065" in core
 
 
 def test_ph_tend_matches_validation_bound_theta_delta_formula():
     mode = _source(OPERATIONAL_MODE)
+    core = _source(ROOT / "src" / "gpuwrf" / "dynamics" / "core" / "acoustic.py")
 
-    assert "theta_delta = jnp.asarray(theta_new) - jnp.asarray(theta_old)" in mode
-    assert "set(0.01 * theta_delta)" in mode
-    assert "module_small_step_em.F:1345-1395" in mode
+    assert "theta_delta = jnp.asarray(theta_new) - jnp.asarray(theta_old)" in core
+    assert "set(0.01 * theta_delta)" in core
     assert "new_state.ph) - jnp.asarray(old_state.ph" not in mode
 
 

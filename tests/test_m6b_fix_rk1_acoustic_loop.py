@@ -11,7 +11,8 @@ OPERATIONAL_MODE = ROOT / "src" / "gpuwrf" / "runtime" / "operational_mode.py"
 def test_operational_rk1_dispatch_runs_one_acoustic_substep():
     source = OPERATIONAL_MODE.read_text(encoding="utf-8")
 
-    assert "solve_em.F:1472-1475" in source
+    assert "acoustic_substep_core" in source
+    assert "coupled_timestep_core" in source
     assert "lambda value: advance_stage(value, 1.0 / 3.0, 1)" in source
     assert "lambda value: advance_stage(value, 1.0 / 3.0, False)" not in source
 
