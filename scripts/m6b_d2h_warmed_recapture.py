@@ -76,7 +76,16 @@ from gpuwrf.runtime.operational_mode import OperationalNamelist, run_forecast_op
 
 config.update("jax_enable_x64", True)
 
-SPRINT = ROOT / ".agent" / "sprints" / "2026-05-25-m6b-d2h-warmed-recapture"
+# SPRINT output dir can be overridden by the env var
+# ``GPUWRF_D2H_SPRINT_DIR`` so a re-capture sprint (e.g. v2) can route
+# call-log JSON and canonical summary into its own sprint folder without
+# overwriting the prior sprint's proofs.
+_SPRINT_OVERRIDE = os.environ.get("GPUWRF_D2H_SPRINT_DIR")
+SPRINT = (
+    Path(_SPRINT_OVERRIDE)
+    if _SPRINT_OVERRIDE
+    else ROOT / ".agent" / "sprints" / "2026-05-25-m6b-d2h-warmed-recapture"
+)
 ARTIFACTS = SPRINT / "artifacts"
 DEFAULT_RUN_ID = "20260521_18z_l3_24h_20260522T072630Z"
 RUN_ROOT = Path("/mnt/data/canairy_meteo/runs/wrf_l3")
