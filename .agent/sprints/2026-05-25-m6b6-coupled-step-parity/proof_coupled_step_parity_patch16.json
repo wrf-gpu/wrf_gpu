@@ -1,0 +1,6537 @@
+{
+  "operational_compatibility": {
+    "Gen2 wrfbdy boundary replay": "validation-only",
+    "M5 physics adapter invocations": "validation-only",
+    "coupled_step.py callable": "validation-only",
+    "per-coupled-step tolerance entries": "validation-only",
+    "schema v7 extension": "validation-only",
+    "sp_coupled_step_complete hook": "validation-only"
+  },
+  "operator": "coupled_step",
+  "outcome": "SEVENTH-COUPLED-STEP-PARITY-ACHIEVED",
+  "passed": true,
+  "tiers": {
+    "patch16": {
+      "manifest": {
+        "acoustic_substeps_per_rk": 10,
+        "attrs": {
+          "dt": 6.0,
+          "dx": 3000.0,
+          "dy": 3000.0,
+          "epssm": 0.1,
+          "halo_slice_x": [
+            70,
+            88
+          ],
+          "halo_slice_y": [
+            24,
+            42
+          ],
+          "mapfac_max": 0.9992199540138245,
+          "mapfac_min": 0.9991031289100647,
+          "run_id": "m6b1-patch16-canary-d02-20260522T000000Z",
+          "target_slice_x": [
+            71,
+            87
+          ],
+          "target_slice_y": [
+            25,
+            41
+          ]
+        },
+        "composition_order": "dycore_step -> Thompson mp=8 -> MYNN bl=5 -> RRTMG LW/SW ra=4/4 -> Gen2 wrfbdy boundary",
+        "cpu_operator_path": true,
+        "direct_relinked_wrf": false,
+        "file_sha256": {
+          "/tmp/wrf_gpu2_m6b6/.agent/sprints/2026-05-25-m6b6-coupled-step-parity/savepoints/patch16/coupled_step_complete_step001.h5": "1cea165df6267dddfb54eaf4c59660c7d86971afc9fa8770e47d3fd51f08cb1f",
+          "/tmp/wrf_gpu2_m6b6/.agent/sprints/2026-05-25-m6b6-coupled-step-parity/savepoints/patch16/coupled_step_complete_step002.h5": "c63983136257d1ded572c65905c876aeab69e1513c6e9d6c212be0e8cc84d0f5",
+          "/tmp/wrf_gpu2_m6b6/.agent/sprints/2026-05-25-m6b6-coupled-step-parity/savepoints/patch16/coupled_step_complete_step003.h5": "725cd604da34ec5ff8813314b9e97dbeb326a2c50ddb6400deb59d2d79d5781d",
+          "/tmp/wrf_gpu2_m6b6/.agent/sprints/2026-05-25-m6b6-coupled-step-parity/savepoints/patch16/coupled_step_complete_step004.h5": "e82468bcccd65729240cd8738497afa2bc1a541eddd8d08c6b74e4a78eb95fc5",
+          "/tmp/wrf_gpu2_m6b6/.agent/sprints/2026-05-25-m6b6-coupled-step-parity/savepoints/patch16/coupled_step_complete_step005.h5": "9ddb9b25146257bf1bc8e39b7c3d4b226648bf4b6bc998d1c7e44675ac09701a",
+          "/tmp/wrf_gpu2_m6b6/.agent/sprints/2026-05-25-m6b6-coupled-step-parity/savepoints/patch16/coupled_step_complete_step006.h5": "e09cf49577d6c6e0d5f5721b6cd1b52b5f8d785eeed795b7b19a7101fc71ca1d",
+          "/tmp/wrf_gpu2_m6b6/.agent/sprints/2026-05-25-m6b6-coupled-step-parity/savepoints/patch16/coupled_step_complete_step007.h5": "ed105a2a41ad1cec320ca672f1697260e8a16ae49ad5baf811bde3250f7659a9",
+          "/tmp/wrf_gpu2_m6b6/.agent/sprints/2026-05-25-m6b6-coupled-step-parity/savepoints/patch16/coupled_step_complete_step008.h5": "dfce961b28aaff0d44d2b3c7d76b38fcc6becbdd7971e192dee797fcad038f2e",
+          "/tmp/wrf_gpu2_m6b6/.agent/sprints/2026-05-25-m6b6-coupled-step-parity/savepoints/patch16/coupled_step_complete_step009.h5": "f56b374804a6a6b01b24837b19cfdf3eb8c0d932b7f439624286b6be8b95887f",
+          "/tmp/wrf_gpu2_m6b6/.agent/sprints/2026-05-25-m6b6-coupled-step-parity/savepoints/patch16/coupled_step_complete_step010.h5": "a6437d36d1902485ba3d0d3cfac345f6b157828deb061afb65092a2bf74420f0"
+        },
+        "files": [
+          "/tmp/wrf_gpu2_m6b6/.agent/sprints/2026-05-25-m6b6-coupled-step-parity/savepoints/patch16/coupled_step_complete_step001.h5",
+          "/tmp/wrf_gpu2_m6b6/.agent/sprints/2026-05-25-m6b6-coupled-step-parity/savepoints/patch16/coupled_step_complete_step002.h5",
+          "/tmp/wrf_gpu2_m6b6/.agent/sprints/2026-05-25-m6b6-coupled-step-parity/savepoints/patch16/coupled_step_complete_step003.h5",
+          "/tmp/wrf_gpu2_m6b6/.agent/sprints/2026-05-25-m6b6-coupled-step-parity/savepoints/patch16/coupled_step_complete_step004.h5",
+          "/tmp/wrf_gpu2_m6b6/.agent/sprints/2026-05-25-m6b6-coupled-step-parity/savepoints/patch16/coupled_step_complete_step005.h5",
+          "/tmp/wrf_gpu2_m6b6/.agent/sprints/2026-05-25-m6b6-coupled-step-parity/savepoints/patch16/coupled_step_complete_step006.h5",
+          "/tmp/wrf_gpu2_m6b6/.agent/sprints/2026-05-25-m6b6-coupled-step-parity/savepoints/patch16/coupled_step_complete_step007.h5",
+          "/tmp/wrf_gpu2_m6b6/.agent/sprints/2026-05-25-m6b6-coupled-step-parity/savepoints/patch16/coupled_step_complete_step008.h5",
+          "/tmp/wrf_gpu2_m6b6/.agent/sprints/2026-05-25-m6b6-coupled-step-parity/savepoints/patch16/coupled_step_complete_step009.h5",
+          "/tmp/wrf_gpu2_m6b6/.agent/sprints/2026-05-25-m6b6-coupled-step-parity/savepoints/patch16/coupled_step_complete_step010.h5"
+        ],
+        "namelist_physics_boundary_on": {
+          "bl_pbl_physics": 5,
+          "cu_physics": 0,
+          "mp_physics": 8,
+          "ra_lw_physics": 4,
+          "ra_sw_physics": 4,
+          "sf_sfclay_physics": 0,
+          "sf_surface_physics": 0,
+          "specified": true
+        },
+        "rk_order": 3,
+        "run_id": "m6b6-patch16-canary-d02-20260522T000000Z",
+        "sanitizer_mode": "off",
+        "source_path": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T072630Z/wrfout_d02_2026-05-22_00:00:00",
+        "source_sha256": "53c4455feb27094a4e823c73e6ef7aa5c8f75d0fd592aad637a71320972d0523",
+        "steps": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10
+        ],
+        "tier": "patch16",
+        "tolerance_rationale": "M6B5 dycore-step tolerance plus 1e-10 abs cap for physics-tendency fields per ADR-007 fp64-strict exception.",
+        "total_bytes": 10591036,
+        "wrfbdy_path": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T072630Z/wrfbdy_d01",
+        "wrfbdy_sha256": "6e32ece769966966e6818e8ed8336e943a796fa2b4989f1de33f91429a49b9c0"
+      },
+      "namelist_physics_boundary_on": {
+        "bl_pbl_physics": 5,
+        "cu_physics": 0,
+        "mp_physics": 8,
+        "ra_lw_physics": 4,
+        "ra_sw_physics": 4,
+        "sf_sfclay_physics": 0,
+        "sf_surface_physics": 0,
+        "specified": true
+      },
+      "operator": "coupled_step",
+      "outcome": "SEVENTH-COUPLED-STEP-PARITY-ACHIEVED",
+      "passed": true,
+      "results": [
+        {
+          "boundary": "coupled_step_complete",
+          "fields": {
+            "mu": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-06,
+              "ulp_threshold": 2400,
+              "units": "Pa"
+            },
+            "mu_bdy_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 8.492488606770833e-09,
+              "ulp_threshold": 4800,
+              "units": "Pa s-1"
+            },
+            "muave": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-06,
+              "ulp_threshold": 2400,
+              "units": "Pa"
+            },
+            "mudf": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-08,
+              "ulp_threshold": 2400,
+              "units": "Pa s-1"
+            },
+            "mut": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 2.8499999999999998e-05,
+              "ulp_threshold": 2400,
+              "units": "Pa"
+            },
+            "muts": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 2.904642550048828e-05,
+              "ulp_threshold": 4800,
+              "units": "Pa"
+            },
+            "p": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-06,
+              "ulp_threshold": 4800,
+              "units": "Pa"
+            },
+            "ph": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 0.2486090688,
+              "ulp_threshold": 4800,
+              "units": "m2 s-2"
+            },
+            "ph_tend": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 1.0504668771480564e-06,
+              "ulp_threshold": 2400,
+              "units": "m2 s-3"
+            },
+            "qc_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 1e-10,
+              "ulp_threshold": 4800,
+              "units": "kg kg-1 s-1"
+            },
+            "qg_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 1e-10,
+              "ulp_threshold": 4800,
+              "units": "kg kg-1 s-1"
+            },
+            "qi_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 1e-10,
+              "ulp_threshold": 4800,
+              "units": "kg kg-1 s-1"
+            },
+            "qke_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 2.440103550752004e-09,
+              "ulp_threshold": 4800,
+              "units": "m2 s-3"
+            },
+            "qr_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 1e-10,
+              "ulp_threshold": 4800,
+              "units": "kg kg-1 s-1"
+            },
+            "qs_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 1e-10,
+              "ulp_threshold": 4800,
+              "units": "kg kg-1 s-1"
+            },
+            "qv_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 1e-10,
+              "ulp_threshold": 4800,
+              "units": "kg kg-1 s-1"
+            },
+            "t_2ave": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 0.00010329838109806639,
+              "ulp_threshold": 2400,
+              "units": "K"
+            },
+            "theta": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 0.0055469568,
+              "ulp_threshold": 2400,
+              "units": "K"
+            },
+            "theta_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 5.831933129673008e-06,
+              "ulp_threshold": 4800,
+              "units": "K s-1"
+            },
+            "u": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                44,
+                18,
+                19
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                19
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 0.000847703775,
+              "ulp_threshold": 4800,
+              "units": "m s-1"
+            },
+            "u_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                19
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                19
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 1e-10,
+              "ulp_threshold": 4800,
+              "units": "m s-2"
+            },
+            "v": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                44,
+                19,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                19,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 0.000268748925,
+              "ulp_threshold": 4800,
+              "units": "m s-1"
+            },
+            "v_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                19,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                19,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 1e-10,
+              "ulp_threshold": 4800,
+              "units": "m s-2"
+            },
+            "w": {
+              "abs_threshold": 3e-07,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-07,
+              "ulp_threshold": 9600,
+              "units": "m s-1"
+            },
+            "w_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 1e-10,
+              "ulp_threshold": 4800,
+              "units": "m s-2"
+            },
+            "ww": {
+              "abs_threshold": 3e-07,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-07,
+              "ulp_threshold": 2400,
+              "units": "Pa s-1"
+            }
+          },
+          "passed": true,
+          "path": "/tmp/wrf_gpu2_m6b6/.agent/sprints/2026-05-25-m6b6-coupled-step-parity/savepoints/patch16/coupled_step_complete_step001.h5",
+          "step": 1,
+          "tier": "patch16"
+        },
+        {
+          "boundary": "coupled_step_complete",
+          "fields": {
+            "mu": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-06,
+              "ulp_threshold": 2400,
+              "units": "Pa"
+            },
+            "mu_bdy_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 1.6114946080038378e-08,
+              "ulp_threshold": 4800,
+              "units": "Pa s-1"
+            },
+            "muave": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-06,
+              "ulp_threshold": 2400,
+              "units": "Pa"
+            },
+            "mudf": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-08,
+              "ulp_threshold": 2400,
+              "units": "Pa s-1"
+            },
+            "mut": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 2.8499999999999998e-05,
+              "ulp_threshold": 2400,
+              "units": "Pa"
+            },
+            "muts": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3.139259782446855e-05,
+              "ulp_threshold": 4800,
+              "units": "Pa"
+            },
+            "p": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-06,
+              "ulp_threshold": 4800,
+              "units": "Pa"
+            },
+            "ph": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 0.24861072177601318,
+              "ulp_threshold": 4800,
+              "units": "m2 s-2"
+            },
+            "ph_tend": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 2.3900300723525773e-06,
+              "ulp_threshold": 2400,
+              "units": "m2 s-3"
+            },
+            "qc_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 1e-10,
+              "ulp_threshold": 4800,
+              "units": "kg kg-1 s-1"
+            },
+            "qg_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 1e-10,
+              "ulp_threshold": 4800,
+              "units": "kg kg-1 s-1"
+            },
+            "qi_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 1e-10,
+              "ulp_threshold": 4800,
+              "units": "kg kg-1 s-1"
+            },
+            "qke_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 2.499999833333337e-09,
+              "ulp_threshold": 4800,
+              "units": "m2 s-3"
+            },
+            "qr_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 1e-10,
+              "ulp_threshold": 4800,
+              "units": "kg kg-1 s-1"
+            },
+            "qs_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 1e-10,
+              "ulp_threshold": 4800,
+              "units": "kg kg-1 s-1"
+            },
+            "qv_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 1e-10,
+              "ulp_threshold": 4800,
+              "units": "kg kg-1 s-1"
+            },
+            "t_2ave": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 0.0055469568,
+              "ulp_threshold": 2400,
+              "units": "K"
+            },
+            "theta": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 0.005546945153499985,
+              "ulp_threshold": 2400,
+              "units": "K"
+            },
+            "theta_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 1.1900311236508941e-05,
+              "ulp_threshold": 4800,
+              "units": "K s-1"
+            },
+            "u": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                44,
+                18,
+                19
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                19
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 0.0008476367848342896,
+              "ulp_threshold": 4800,
+              "units": "m s-1"
+            },
+            "u_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                19
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                19
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 1.9599204166666666e-05,
+              "ulp_threshold": 4800,
+              "units": "m s-2"
+            },
+            "v": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                44,
+                19,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                19,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 0.00026873828434381485,
+              "ulp_threshold": 4800,
+              "units": "m s-1"
+            },
+            "v_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                19,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                19,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 9.318867708333333e-06,
+              "ulp_threshold": 4800,
+              "units": "m s-2"
+            },
+            "w": {
+              "abs_threshold": 3e-07,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-07,
+              "ulp_threshold": 9600,
+              "units": "m s-1"
+            },
+            "w_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 1e-10,
+              "ulp_threshold": 4800,
+              "units": "m s-2"
+            },
+            "ww": {
+              "abs_threshold": 3e-07,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-07,
+              "ulp_threshold": 2400,
+              "units": "Pa s-1"
+            }
+          },
+          "passed": true,
+          "path": "/tmp/wrf_gpu2_m6b6/.agent/sprints/2026-05-25-m6b6-coupled-step-parity/savepoints/patch16/coupled_step_complete_step002.h5",
+          "step": 2,
+          "tier": "patch16"
+        },
+        {
+          "boundary": "coupled_step_complete",
+          "fields": {
+            "mu": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 4.00664251046812e-06,
+              "ulp_threshold": 2400,
+              "units": "Pa"
+            },
+            "mu_bdy_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 4.755769162599209e-08,
+              "ulp_threshold": 4800,
+              "units": "Pa s-1"
+            },
+            "muave": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 4.812320176191753e-06,
+              "ulp_threshold": 2400,
+              "units": "Pa"
+            },
+            "mudf": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-08,
+              "ulp_threshold": 2400,
+              "units": "Pa s-1"
+            },
+            "mut": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 2.8499999999999998e-05,
+              "ulp_threshold": 2400,
+              "units": "Pa"
+            },
+            "muts": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3.24856233942216e-05,
+              "ulp_threshold": 4800,
+              "units": "Pa"
+            },
+            "p": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-06,
+              "ulp_threshold": 4800,
+              "units": "Pa"
+            },
+            "ph": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 0.24861237475202635,
+              "ulp_threshold": 4800,
+              "units": "m2 s-2"
+            },
+            "ph_tend": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 7.152736030312565e-06,
+              "ulp_threshold": 2400,
+              "units": "m2 s-3"
+            },
+            "qc_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 1e-10,
+              "ulp_threshold": 4800,
+              "units": "kg kg-1 s-1"
+            },
+            "qg_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 1e-10,
+              "ulp_threshold": 4800,
+              "units": "kg kg-1 s-1"
+            },
+            "qi_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 1e-10,
+              "ulp_threshold": 4800,
+              "units": "kg kg-1 s-1"
+            },
+            "qke_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 2.499999833333337e-09,
+              "ulp_threshold": 4800,
+              "units": "m2 s-3"
+            },
+            "qr_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 1e-10,
+              "ulp_threshold": 4800,
+              "units": "kg kg-1 s-1"
+            },
+            "qs_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 1e-10,
+              "ulp_threshold": 4800,
+              "units": "kg kg-1 s-1"
+            },
+            "qv_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 1e-10,
+              "ulp_threshold": 4800,
+              "units": "kg kg-1 s-1"
+            },
+            "t_2ave": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 0.005546945153499985,
+              "ulp_threshold": 2400,
+              "units": "K"
+            },
+            "theta": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 0.005546933506999969,
+              "ulp_threshold": 2400,
+              "units": "K"
+            },
+            "theta_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 8.21977435751427e-06,
+              "ulp_threshold": 4800,
+              "units": "K s-1"
+            },
+            "u": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                44,
+                18,
+                19
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                19
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 0.000847569794668579,
+              "ulp_threshold": 4800,
+              "units": "m s-1"
+            },
+            "u_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                19
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                19
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 1.4534315185186268e-05,
+              "ulp_threshold": 4800,
+              "units": "m s-2"
+            },
+            "v": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                44,
+                19,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                19,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 0.0002687276436876297,
+              "ulp_threshold": 4800,
+              "units": "m s-1"
+            },
+            "v_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                19,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                19,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 7.885220870947838e-06,
+              "ulp_threshold": 4800,
+              "units": "m s-2"
+            },
+            "w": {
+              "abs_threshold": 3e-07,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-07,
+              "ulp_threshold": 9600,
+              "units": "m s-1"
+            },
+            "w_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 1e-10,
+              "ulp_threshold": 4800,
+              "units": "m s-2"
+            },
+            "ww": {
+              "abs_threshold": 3e-07,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-07,
+              "ulp_threshold": 2400,
+              "units": "Pa s-1"
+            }
+          },
+          "passed": true,
+          "path": "/tmp/wrf_gpu2_m6b6/.agent/sprints/2026-05-25-m6b6-coupled-step-parity/savepoints/patch16/coupled_step_complete_step003.h5",
+          "step": 3,
+          "tier": "patch16"
+        },
+        {
+          "boundary": "coupled_step_complete",
+          "fields": {
+            "mu": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 6.5319122025236e-06,
+              "ulp_threshold": 2400,
+              "units": "Pa"
+            },
+            "mu_bdy_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 7.344857520447834e-08,
+              "ulp_threshold": 4800,
+              "units": "Pa s-1"
+            },
+            "muave": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 7.790711730489504e-06,
+              "ulp_threshold": 2400,
+              "units": "Pa"
+            },
+            "mudf": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-08,
+              "ulp_threshold": 2400,
+              "units": "Pa s-1"
+            },
+            "mut": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 2.8499999999999998e-05,
+              "ulp_threshold": 2400,
+              "units": "Pa"
+            },
+            "muts": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3.480779048534213e-05,
+              "ulp_threshold": 4800,
+              "units": "Pa"
+            },
+            "p": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-06,
+              "ulp_threshold": 4800,
+              "units": "Pa"
+            },
+            "ph": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 0.24861402772803956,
+              "ulp_threshold": 4800,
+              "units": "m2 s-2"
+            },
+            "ph_tend": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 1.2708535233005638e-05,
+              "ulp_threshold": 2400,
+              "units": "m2 s-3"
+            },
+            "qc_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 1e-10,
+              "ulp_threshold": 4800,
+              "units": "kg kg-1 s-1"
+            },
+            "qg_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 1e-10,
+              "ulp_threshold": 4800,
+              "units": "kg kg-1 s-1"
+            },
+            "qi_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 1e-10,
+              "ulp_threshold": 4800,
+              "units": "kg kg-1 s-1"
+            },
+            "qke_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 2.499999833333337e-09,
+              "ulp_threshold": 4800,
+              "units": "m2 s-3"
+            },
+            "qr_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 1e-10,
+              "ulp_threshold": 4800,
+              "units": "kg kg-1 s-1"
+            },
+            "qs_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 1e-10,
+              "ulp_threshold": 4800,
+              "units": "kg kg-1 s-1"
+            },
+            "qv_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 1e-10,
+              "ulp_threshold": 4800,
+              "units": "kg kg-1 s-1"
+            },
+            "t_2ave": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 0.005546933506999969,
+              "ulp_threshold": 2400,
+              "units": "K"
+            },
+            "theta": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 0.005546921860499954,
+              "ulp_threshold": 2400,
+              "units": "K"
+            },
+            "theta_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 1.1808343310250324e-05,
+              "ulp_threshold": 4800,
+              "units": "K s-1"
+            },
+            "u": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                44,
+                18,
+                19
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                19
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 0.0008475028045028686,
+              "ulp_threshold": 4800,
+              "units": "m s-1"
+            },
+            "u_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                19
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                19
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 1.1642143602498372e-05,
+              "ulp_threshold": 4800,
+              "units": "m s-2"
+            },
+            "v": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                44,
+                19,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                19,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 0.00026871700303144453,
+              "ulp_threshold": 4800,
+              "units": "m s-1"
+            },
+            "v_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                19,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                19,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 7.577186074892679e-06,
+              "ulp_threshold": 4800,
+              "units": "m s-2"
+            },
+            "w": {
+              "abs_threshold": 3e-07,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-07,
+              "ulp_threshold": 9600,
+              "units": "m s-1"
+            },
+            "w_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 1e-10,
+              "ulp_threshold": 4800,
+              "units": "m s-2"
+            },
+            "ww": {
+              "abs_threshold": 3e-07,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-07,
+              "ulp_threshold": 2400,
+              "units": "Pa s-1"
+            }
+          },
+          "passed": true,
+          "path": "/tmp/wrf_gpu2_m6b6/.agent/sprints/2026-05-25-m6b6-coupled-step-parity/savepoints/patch16/coupled_step_complete_step004.h5",
+          "step": 4,
+          "tier": "patch16"
+        },
+        {
+          "boundary": "coupled_step_complete",
+          "fields": {
+            "mu": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 7.372631773674502e-06,
+              "ulp_threshold": 2400,
+              "units": "Pa"
+            },
+            "mu_bdy_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 8.818130606972911e-08,
+              "ulp_threshold": 4800,
+              "units": "Pa s-1"
+            },
+            "muave": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 8.639494092112176e-06,
+              "ulp_threshold": 2400,
+              "units": "Pa"
+            },
+            "mudf": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-08,
+              "ulp_threshold": 2400,
+              "units": "Pa s-1"
+            },
+            "mut": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 2.8499999999999998e-05,
+              "ulp_threshold": 2400,
+              "units": "Pa"
+            },
+            "muts": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3.663660655398753e-05,
+              "ulp_threshold": 4800,
+              "units": "Pa"
+            },
+            "p": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-06,
+              "ulp_threshold": 4800,
+              "units": "Pa"
+            },
+            "ph": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 0.24861568070405274,
+              "ulp_threshold": 4800,
+              "units": "m2 s-2"
+            },
+            "ph_tend": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 1.8024185890753307e-05,
+              "ulp_threshold": 2400,
+              "units": "m2 s-3"
+            },
+            "qc_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 1e-10,
+              "ulp_threshold": 4800,
+              "units": "kg kg-1 s-1"
+            },
+            "qg_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 1e-10,
+              "ulp_threshold": 4800,
+              "units": "kg kg-1 s-1"
+            },
+            "qi_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 1e-10,
+              "ulp_threshold": 4800,
+              "units": "kg kg-1 s-1"
+            },
+            "qke_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 2.499999833333337e-09,
+              "ulp_threshold": 4800,
+              "units": "m2 s-3"
+            },
+            "qr_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 1e-10,
+              "ulp_threshold": 4800,
+              "units": "kg kg-1 s-1"
+            },
+            "qs_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 1e-10,
+              "ulp_threshold": 4800,
+              "units": "kg kg-1 s-1"
+            },
+            "qv_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 1e-10,
+              "ulp_threshold": 4800,
+              "units": "kg kg-1 s-1"
+            },
+            "t_2ave": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 0.005546921860499954,
+              "ulp_threshold": 2400,
+              "units": "K"
+            },
+            "theta": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 0.005546910213999939,
+              "ulp_threshold": 2400,
+              "units": "K"
+            },
+            "theta_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 7.648215725198105e-06,
+              "ulp_threshold": 4800,
+              "units": "K s-1"
+            },
+            "u": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                44,
+                18,
+                19
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                19
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 0.0008474358143371582,
+              "ulp_threshold": 4800,
+              "units": "m s-1"
+            },
+            "u_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                19
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                19
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 1.0881769570414225e-05,
+              "ulp_threshold": 4800,
+              "units": "m s-2"
+            },
+            "v": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                44,
+                19,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                19,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 0.0002687063623752594,
+              "ulp_threshold": 4800,
+              "units": "m s-1"
+            },
+            "v_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                19,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                19,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 7.57604044046402e-06,
+              "ulp_threshold": 4800,
+              "units": "m s-2"
+            },
+            "w": {
+              "abs_threshold": 3e-07,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-07,
+              "ulp_threshold": 9600,
+              "units": "m s-1"
+            },
+            "w_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 1e-10,
+              "ulp_threshold": 4800,
+              "units": "m s-2"
+            },
+            "ww": {
+              "abs_threshold": 3e-07,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-07,
+              "ulp_threshold": 2400,
+              "units": "Pa s-1"
+            }
+          },
+          "passed": true,
+          "path": "/tmp/wrf_gpu2_m6b6/.agent/sprints/2026-05-25-m6b6-coupled-step-parity/savepoints/patch16/coupled_step_complete_step005.h5",
+          "step": 5,
+          "tier": "patch16"
+        },
+        {
+          "boundary": "coupled_step_complete",
+          "fields": {
+            "mu": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 8.737132025040461e-06,
+              "ulp_threshold": 2400,
+              "units": "Pa"
+            },
+            "mu_bdy_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 9.721239711506217e-08,
+              "ulp_threshold": 4800,
+              "units": "Pa s-1"
+            },
+            "muave": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 9.934947457372173e-06,
+              "ulp_threshold": 2400,
+              "units": "Pa"
+            },
+            "mudf": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-08,
+              "ulp_threshold": 2400,
+              "units": "Pa s-1"
+            },
+            "mut": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 2.8499999999999998e-05,
+              "ulp_threshold": 2400,
+              "units": "Pa"
+            },
+            "muts": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3.797802643631154e-05,
+              "ulp_threshold": 4800,
+              "units": "Pa"
+            },
+            "p": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-06,
+              "ulp_threshold": 4800,
+              "units": "Pa"
+            },
+            "ph": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 0.24861733368006592,
+              "ulp_threshold": 4800,
+              "units": "m2 s-2"
+            },
+            "ph_tend": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 2.297730342563378e-05,
+              "ulp_threshold": 2400,
+              "units": "m2 s-3"
+            },
+            "qc_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 1e-10,
+              "ulp_threshold": 4800,
+              "units": "kg kg-1 s-1"
+            },
+            "qg_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 1e-10,
+              "ulp_threshold": 4800,
+              "units": "kg kg-1 s-1"
+            },
+            "qi_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 1e-10,
+              "ulp_threshold": 4800,
+              "units": "kg kg-1 s-1"
+            },
+            "qke_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 2.499999833333337e-09,
+              "ulp_threshold": 4800,
+              "units": "m2 s-3"
+            },
+            "qr_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 1e-10,
+              "ulp_threshold": 4800,
+              "units": "kg kg-1 s-1"
+            },
+            "qs_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 1e-10,
+              "ulp_threshold": 4800,
+              "units": "kg kg-1 s-1"
+            },
+            "qv_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 1e-10,
+              "ulp_threshold": 4800,
+              "units": "kg kg-1 s-1"
+            },
+            "t_2ave": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 0.005546910213999939,
+              "ulp_threshold": 2400,
+              "units": "K"
+            },
+            "theta": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 0.0055468985674999235,
+              "ulp_threshold": 2400,
+              "units": "K"
+            },
+            "theta_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 6.952677816263834e-06,
+              "ulp_threshold": 4800,
+              "units": "K s-1"
+            },
+            "u": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                44,
+                18,
+                19
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                19
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 0.0008473688241714477,
+              "ulp_threshold": 4800,
+              "units": "m s-1"
+            },
+            "u_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                19
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                19
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 1.033371116333008e-05,
+              "ulp_threshold": 4800,
+              "units": "m s-2"
+            },
+            "v": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                44,
+                19,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                19,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 0.00026869572171907426,
+              "ulp_threshold": 4800,
+              "units": "m s-1"
+            },
+            "v_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                19,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                19,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 7.5748945456186925e-06,
+              "ulp_threshold": 4800,
+              "units": "m s-2"
+            },
+            "w": {
+              "abs_threshold": 3e-07,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-07,
+              "ulp_threshold": 9600,
+              "units": "m s-1"
+            },
+            "w_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 1e-10,
+              "ulp_threshold": 4800,
+              "units": "m s-2"
+            },
+            "ww": {
+              "abs_threshold": 3e-07,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-07,
+              "ulp_threshold": 2400,
+              "units": "Pa s-1"
+            }
+          },
+          "passed": true,
+          "path": "/tmp/wrf_gpu2_m6b6/.agent/sprints/2026-05-25-m6b6-coupled-step-parity/savepoints/patch16/coupled_step_complete_step006.h5",
+          "step": 6,
+          "tier": "patch16"
+        },
+        {
+          "boundary": "coupled_step_complete",
+          "fields": {
+            "mu": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 1.08500871175307e-05,
+              "ulp_threshold": 2400,
+              "units": "Pa"
+            },
+            "mu_bdy_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 1.0076428911965941e-07,
+              "ulp_threshold": 4800,
+              "units": "Pa s-1"
+            },
+            "muave": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 1.1018700781230115e-05,
+              "ulp_threshold": 2400,
+              "units": "Pa"
+            },
+            "mudf": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-08,
+              "ulp_threshold": 2400,
+              "units": "Pa s-1"
+            },
+            "mut": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 2.8499999999999998e-05,
+              "ulp_threshold": 2400,
+              "units": "Pa"
+            },
+            "muts": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3.8394062082956064e-05,
+              "ulp_threshold": 4800,
+              "units": "Pa"
+            },
+            "p": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-06,
+              "ulp_threshold": 4800,
+              "units": "Pa"
+            },
+            "ph": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 0.2486189866560791,
+              "ulp_threshold": 4800,
+              "units": "m2 s-2"
+            },
+            "ph_tend": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 2.7561776132641645e-05,
+              "ulp_threshold": 2400,
+              "units": "m2 s-3"
+            },
+            "qc_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 1e-10,
+              "ulp_threshold": 4800,
+              "units": "kg kg-1 s-1"
+            },
+            "qg_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 1e-10,
+              "ulp_threshold": 4800,
+              "units": "kg kg-1 s-1"
+            },
+            "qi_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 1e-10,
+              "ulp_threshold": 4800,
+              "units": "kg kg-1 s-1"
+            },
+            "qke_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 2.499999833333337e-09,
+              "ulp_threshold": 4800,
+              "units": "m2 s-3"
+            },
+            "qr_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 1e-10,
+              "ulp_threshold": 4800,
+              "units": "kg kg-1 s-1"
+            },
+            "qs_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 1e-10,
+              "ulp_threshold": 4800,
+              "units": "kg kg-1 s-1"
+            },
+            "qv_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 1e-10,
+              "ulp_threshold": 4800,
+              "units": "kg kg-1 s-1"
+            },
+            "t_2ave": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 0.0055468985674999235,
+              "ulp_threshold": 2400,
+              "units": "K"
+            },
+            "theta": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 0.005546886920999908,
+              "ulp_threshold": 2400,
+              "units": "K"
+            },
+            "theta_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 6.896707076378663e-06,
+              "ulp_threshold": 4800,
+              "units": "K s-1"
+            },
+            "u": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                44,
+                18,
+                19
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                19
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 0.0008473018340057373,
+              "ulp_threshold": 4800,
+              "units": "m s-1"
+            },
+            "u_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                19
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                19
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 3.4686633174180986e-06,
+              "ulp_threshold": 4800,
+              "units": "m s-2"
+            },
+            "v": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                44,
+                19,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                19,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 0.0002686850810628891,
+              "ulp_threshold": 4800,
+              "units": "m s-1"
+            },
+            "v_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                19,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                19,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 7.573748911190034e-06,
+              "ulp_threshold": 4800,
+              "units": "m s-2"
+            },
+            "w": {
+              "abs_threshold": 3e-07,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-07,
+              "ulp_threshold": 9600,
+              "units": "m s-1"
+            },
+            "w_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 1e-10,
+              "ulp_threshold": 4800,
+              "units": "m s-2"
+            },
+            "ww": {
+              "abs_threshold": 3e-07,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-07,
+              "ulp_threshold": 2400,
+              "units": "Pa s-1"
+            }
+          },
+          "passed": true,
+          "path": "/tmp/wrf_gpu2_m6b6/.agent/sprints/2026-05-25-m6b6-coupled-step-parity/savepoints/patch16/coupled_step_complete_step007.h5",
+          "step": 7,
+          "tier": "patch16"
+        },
+        {
+          "boundary": "coupled_step_complete",
+          "fields": {
+            "mu": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 1.3291084829239016e-05,
+              "ulp_threshold": 2400,
+              "units": "Pa"
+            },
+            "mu_bdy_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 1.0019847093605719e-07,
+              "ulp_threshold": 4800,
+              "units": "Pa s-1"
+            },
+            "muave": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 1.3254469863563392e-05,
+              "ulp_threshold": 2400,
+              "units": "Pa"
+            },
+            "mudf": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-08,
+              "ulp_threshold": 2400,
+              "units": "Pa s-1"
+            },
+            "mut": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 2.8499999999999998e-05,
+              "ulp_threshold": 2400,
+              "units": "Pa"
+            },
+            "muts": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3.925288939767922e-05,
+              "ulp_threshold": 4800,
+              "units": "Pa"
+            },
+            "p": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-06,
+              "ulp_threshold": 4800,
+              "units": "Pa"
+            },
+            "ph": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 0.24862063963209227,
+              "ulp_threshold": 4800,
+              "units": "m2 s-2"
+            },
+            "ph_tend": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3.1803061355637395e-05,
+              "ulp_threshold": 2400,
+              "units": "m2 s-3"
+            },
+            "qc_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 1e-10,
+              "ulp_threshold": 4800,
+              "units": "kg kg-1 s-1"
+            },
+            "qg_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 1e-10,
+              "ulp_threshold": 4800,
+              "units": "kg kg-1 s-1"
+            },
+            "qi_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 1e-10,
+              "ulp_threshold": 4800,
+              "units": "kg kg-1 s-1"
+            },
+            "qke_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 2.499999833333337e-09,
+              "ulp_threshold": 4800,
+              "units": "m2 s-3"
+            },
+            "qr_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 1e-10,
+              "ulp_threshold": 4800,
+              "units": "kg kg-1 s-1"
+            },
+            "qs_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 1e-10,
+              "ulp_threshold": 4800,
+              "units": "kg kg-1 s-1"
+            },
+            "qv_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 1e-10,
+              "ulp_threshold": 4800,
+              "units": "kg kg-1 s-1"
+            },
+            "t_2ave": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 0.005546886920999908,
+              "ulp_threshold": 2400,
+              "units": "K"
+            },
+            "theta": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 0.005546875274499893,
+              "ulp_threshold": 2400,
+              "units": "K"
+            },
+            "theta_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 6.896683913763364e-06,
+              "ulp_threshold": 4800,
+              "units": "K s-1"
+            },
+            "u": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                44,
+                18,
+                19
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                19
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 0.0008472348438400267,
+              "ulp_threshold": 4800,
+              "units": "m s-1"
+            },
+            "u_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                19
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                19
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 3.4678603559017184e-06,
+              "ulp_threshold": 4800,
+              "units": "m s-2"
+            },
+            "v": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                44,
+                19,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                19,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 0.0002686744404067039,
+              "ulp_threshold": 4800,
+              "units": "m s-1"
+            },
+            "v_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                19,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                19,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 7.572603276761373e-06,
+              "ulp_threshold": 4800,
+              "units": "m s-2"
+            },
+            "w": {
+              "abs_threshold": 3e-07,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-07,
+              "ulp_threshold": 9600,
+              "units": "m s-1"
+            },
+            "w_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 1e-10,
+              "ulp_threshold": 4800,
+              "units": "m s-2"
+            },
+            "ww": {
+              "abs_threshold": 3e-07,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-07,
+              "ulp_threshold": 2400,
+              "units": "Pa s-1"
+            }
+          },
+          "passed": true,
+          "path": "/tmp/wrf_gpu2_m6b6/.agent/sprints/2026-05-25-m6b6-coupled-step-parity/savepoints/patch16/coupled_step_complete_step008.h5",
+          "step": 8,
+          "tier": "patch16"
+        },
+        {
+          "boundary": "coupled_step_complete",
+          "fields": {
+            "mu": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 1.590128469816445e-05,
+              "ulp_threshold": 2400,
+              "units": "Pa"
+            },
+            "mu_bdy_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 9.660307227689457e-08,
+              "ulp_threshold": 4800,
+              "units": "Pa s-1"
+            },
+            "muave": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 1.586213170013057e-05,
+              "ulp_threshold": 2400,
+              "units": "Pa"
+            },
+            "mudf": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-08,
+              "ulp_threshold": 2400,
+              "units": "Pa s-1"
+            },
+            "mut": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 2.8499999999999998e-05,
+              "ulp_threshold": 2400,
+              "units": "Pa"
+            },
+            "muts": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3.930069505739525e-05,
+              "ulp_threshold": 4800,
+              "units": "Pa"
+            },
+            "p": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-06,
+              "ulp_threshold": 4800,
+              "units": "Pa"
+            },
+            "ph": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 0.2486222926081055,
+              "ulp_threshold": 4800,
+              "units": "m2 s-2"
+            },
+            "ph_tend": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3.573380353610073e-05,
+              "ulp_threshold": 2400,
+              "units": "m2 s-3"
+            },
+            "qc_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 1e-10,
+              "ulp_threshold": 4800,
+              "units": "kg kg-1 s-1"
+            },
+            "qg_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 1e-10,
+              "ulp_threshold": 4800,
+              "units": "kg kg-1 s-1"
+            },
+            "qi_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 1e-10,
+              "ulp_threshold": 4800,
+              "units": "kg kg-1 s-1"
+            },
+            "qke_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 2.499999833333337e-09,
+              "ulp_threshold": 4800,
+              "units": "m2 s-3"
+            },
+            "qr_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 1e-10,
+              "ulp_threshold": 4800,
+              "units": "kg kg-1 s-1"
+            },
+            "qs_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 1e-10,
+              "ulp_threshold": 4800,
+              "units": "kg kg-1 s-1"
+            },
+            "qv_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 1e-10,
+              "ulp_threshold": 4800,
+              "units": "kg kg-1 s-1"
+            },
+            "t_2ave": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 0.005546875274499893,
+              "ulp_threshold": 2400,
+              "units": "K"
+            },
+            "theta": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 0.005546863627999878,
+              "ulp_threshold": 2400,
+              "units": "K"
+            },
+            "theta_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 6.896660751148065e-06,
+              "ulp_threshold": 4800,
+              "units": "K s-1"
+            },
+            "u": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                44,
+                18,
+                19
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                19
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 0.0008471678536743164,
+              "ulp_threshold": 4800,
+              "units": "m s-1"
+            },
+            "u_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                19
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                19
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 3.4670573943853378e-06,
+              "ulp_threshold": 4800,
+              "units": "m s-2"
+            },
+            "v": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                44,
+                19,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                19,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 0.0002686637997505188,
+              "ulp_threshold": 4800,
+              "units": "m s-1"
+            },
+            "v_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                19,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                19,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 7.571457381916046e-06,
+              "ulp_threshold": 4800,
+              "units": "m s-2"
+            },
+            "w": {
+              "abs_threshold": 3e-07,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-07,
+              "ulp_threshold": 9600,
+              "units": "m s-1"
+            },
+            "w_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 1e-10,
+              "ulp_threshold": 4800,
+              "units": "m s-2"
+            },
+            "ww": {
+              "abs_threshold": 3e-07,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-07,
+              "ulp_threshold": 2400,
+              "units": "Pa s-1"
+            }
+          },
+          "passed": true,
+          "path": "/tmp/wrf_gpu2_m6b6/.agent/sprints/2026-05-25-m6b6-coupled-step-parity/savepoints/patch16/coupled_step_complete_step009.h5",
+          "step": 9,
+          "tier": "patch16"
+        },
+        {
+          "boundary": "coupled_step_complete",
+          "fields": {
+            "mu": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 1.8660222754079953e-05,
+              "ulp_threshold": 2400,
+              "units": "Pa"
+            },
+            "mu_bdy_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 1e-10,
+              "ulp_threshold": 4800,
+              "units": "Pa s-1"
+            },
+            "muave": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 1.861883868324122e-05,
+              "ulp_threshold": 2400,
+              "units": "Pa"
+            },
+            "mudf": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-08,
+              "ulp_threshold": 2400,
+              "units": "Pa s-1"
+            },
+            "mut": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 2.8499999999999998e-05,
+              "ulp_threshold": 2400,
+              "units": "Pa"
+            },
+            "muts": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3.4190029315357e-05,
+              "ulp_threshold": 4800,
+              "units": "Pa"
+            },
+            "p": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-06,
+              "ulp_threshold": 4800,
+              "units": "Pa"
+            },
+            "ph": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 0.24862394558411866,
+              "ulp_threshold": 4800,
+              "units": "m2 s-2"
+            },
+            "ph_tend": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3.938628858295516e-05,
+              "ulp_threshold": 2400,
+              "units": "m2 s-3"
+            },
+            "qc_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 1e-10,
+              "ulp_threshold": 4800,
+              "units": "kg kg-1 s-1"
+            },
+            "qg_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 1e-10,
+              "ulp_threshold": 4800,
+              "units": "kg kg-1 s-1"
+            },
+            "qi_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 1e-10,
+              "ulp_threshold": 4800,
+              "units": "kg kg-1 s-1"
+            },
+            "qke_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 2.499999833333337e-09,
+              "ulp_threshold": 4800,
+              "units": "m2 s-3"
+            },
+            "qr_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 1e-10,
+              "ulp_threshold": 4800,
+              "units": "kg kg-1 s-1"
+            },
+            "qs_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 1e-10,
+              "ulp_threshold": 4800,
+              "units": "kg kg-1 s-1"
+            },
+            "qv_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 1e-10,
+              "ulp_threshold": 4800,
+              "units": "kg kg-1 s-1"
+            },
+            "t_2ave": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 0.005546863627999878,
+              "ulp_threshold": 2400,
+              "units": "K"
+            },
+            "theta": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 0.0055468519814998625,
+              "ulp_threshold": 2400,
+              "units": "K"
+            },
+            "theta_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 6.8966375884691865e-06,
+              "ulp_threshold": 4800,
+              "units": "K s-1"
+            },
+            "u": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                44,
+                18,
+                19
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                19
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 0.0008471008635086059,
+              "ulp_threshold": 4800,
+              "units": "m s-1"
+            },
+            "u_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                19
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                19
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 3.4662544328689576e-06,
+              "ulp_threshold": 4800,
+              "units": "m s-2"
+            },
+            "v": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                44,
+                19,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                19,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 0.00026865315909433367,
+              "ulp_threshold": 4800,
+              "units": "m s-1"
+            },
+            "v_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                19,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                19,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 7.570311747487386e-06,
+              "ulp_threshold": 4800,
+              "units": "m s-2"
+            },
+            "w": {
+              "abs_threshold": 3e-07,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-07,
+              "ulp_threshold": 9600,
+              "units": "m s-1"
+            },
+            "w_phys_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-10,
+              "tolerance": 1e-10,
+              "ulp_threshold": 4800,
+              "units": "m s-2"
+            },
+            "ww": {
+              "abs_threshold": 3e-07,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-07,
+              "ulp_threshold": 2400,
+              "units": "Pa s-1"
+            }
+          },
+          "passed": true,
+          "path": "/tmp/wrf_gpu2_m6b6/.agent/sprints/2026-05-25-m6b6-coupled-step-parity/savepoints/patch16/coupled_step_complete_step010.h5",
+          "step": 10,
+          "tier": "patch16"
+        }
+      ],
+      "sanitizer_mode": "off",
+      "savepoint_count": 10,
+      "tier": "patch16",
+      "tolerance_ladder_path": "/tmp/wrf_gpu2_m6b6/src/gpuwrf/validation/tolerance_ladder.json",
+      "transfer_audit": {
+        "h2d_d2h_inside_timestep_loop_bytes": 0,
+        "note": "Comparator reads HDF5 before isolated validation calls; no production timestep loop is executed."
+      }
+    }
+  }
+}

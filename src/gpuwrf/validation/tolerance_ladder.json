@@ -337,5 +337,41 @@
       "p": {"units": "Pa", "dtype": "float64", "abs": 3e-6, "rel": 3e-10, "ulp": 4800, "accumulation_exception": "M6B5 geometric-growth bound: M6B4 p abs tolerance x300."},
       "t_2ave": {"units": "K", "dtype": "float64", "abs": 3e-8, "rel": 3e-10, "ulp": 2400, "accumulation_exception": "M6B5 geometric-growth bound: M6B4 t_2ave abs tolerance x300."}
     }
+  },
+  "coupled_step_tolerances": {
+    "description": "M6B6 per-full-timestep ladder with M5 physics and Gen2 wrfbdy boundary on. Dycore/scratch fields inherit M6B5 growth bounds; physics and boundary tendency fields use the ADR-007 fp64-strict 1e-10 absolute cap where applicable.",
+    "steps": 10,
+    "rk_stages_per_step": 3,
+    "acoustic_substeps_per_stage": 10,
+    "physics": {"mp_physics": 8, "bl_pbl_physics": 5, "ra_lw_physics": 4, "ra_sw_physics": 4},
+    "boundary": {"specified": true, "source": "Gen2 wrfbdy_d01 lateral boundary replay"},
+    "fields": {
+      "mu": {"units": "Pa", "dtype": "float64", "abs": 3e-6, "rel": 3e-10, "ulp": 2400, "accumulation_exception": "M6B6 inherits M6B5 dycore-step bound; boundary forcing is compared at the same savepoint boundary."},
+      "mut": {"units": "Pa", "dtype": "float64", "abs": 3e-6, "rel": 3e-10, "ulp": 2400, "accumulation_exception": "M6B6 inherits M6B5 dycore-step bound."},
+      "mudf": {"units": "Pa s-1", "dtype": "float64", "abs": 3e-8, "rel": 3e-10, "ulp": 2400, "accumulation_exception": "M6B6 inherits M6B5 dycore-step bound."},
+      "muts": {"units": "Pa", "dtype": "float64", "abs": 3e-6, "rel": 3e-10, "ulp": 4800, "accumulation_exception": "M6B6 inherits M6B5 dycore-step bound."},
+      "muave": {"units": "Pa", "dtype": "float64", "abs": 3e-6, "rel": 3e-10, "ulp": 2400, "accumulation_exception": "M6B6 inherits M6B5 dycore-step bound."},
+      "ww": {"units": "Pa s-1", "dtype": "float64", "abs": 3e-7, "rel": 3e-10, "ulp": 2400, "accumulation_exception": "M6B6 inherits M6B5 dycore-step bound."},
+      "theta": {"units": "K", "dtype": "float64", "abs": 3e-8, "rel": 3e-10, "ulp": 2400, "accumulation_exception": "M6B6 inherits M6B5 dycore-step bound plus separately tracked physics tendency."},
+      "ph_tend": {"units": "m2 s-3", "dtype": "float64", "abs": 3e-8, "rel": 3e-10, "ulp": 2400, "accumulation_exception": "M6B6 inherits M6B5 dycore-step bound."},
+      "u": {"units": "m s-1", "dtype": "float64", "abs": 3e-8, "rel": 3e-10, "ulp": 4800, "accumulation_exception": "M6B6 inherits M6B5 dycore-step bound plus separately tracked PBL tendency and boundary edge forcing."},
+      "v": {"units": "m s-1", "dtype": "float64", "abs": 3e-8, "rel": 3e-10, "ulp": 4800, "accumulation_exception": "M6B6 inherits M6B5 dycore-step bound plus separately tracked PBL tendency and boundary edge forcing."},
+      "w": {"units": "m s-1", "dtype": "float64", "abs": 3e-7, "rel": 3e-10, "ulp": 9600, "accumulation_exception": "M6B6 inherits M6B5 dycore-step bound plus separately tracked PBL tendency."},
+      "ph": {"units": "m2 s-2", "dtype": "float64", "abs": 3e-6, "rel": 3e-10, "ulp": 4800, "accumulation_exception": "M6B6 inherits M6B5 dycore-step bound and applies wrfbdy boundary replay."},
+      "p": {"units": "Pa", "dtype": "float64", "abs": 3e-6, "rel": 3e-10, "ulp": 4800, "accumulation_exception": "M6B6 inherits M6B5 dycore-step bound."},
+      "t_2ave": {"units": "K", "dtype": "float64", "abs": 3e-8, "rel": 3e-10, "ulp": 2400, "accumulation_exception": "M6B6 inherits M6B5 dycore-step bound."},
+      "theta_phys_tend": {"units": "K s-1", "dtype": "float64", "abs": 1e-10, "rel": 1e-10, "ulp": 4800, "accumulation_exception": "M5 physics adapter tendency field; 1e-10 abs accepted per ADR-007 fp64-strict exception."},
+      "qv_phys_tend": {"units": "kg kg-1 s-1", "dtype": "float64", "abs": 1e-10, "rel": 1e-10, "ulp": 4800, "accumulation_exception": "M5 Thompson/MYNN water tendency field; 1e-10 abs accepted per ADR-007 fp64-strict exception."},
+      "qc_phys_tend": {"units": "kg kg-1 s-1", "dtype": "float64", "abs": 1e-10, "rel": 1e-10, "ulp": 4800, "accumulation_exception": "M5 Thompson hydrometeor tendency field."},
+      "qr_phys_tend": {"units": "kg kg-1 s-1", "dtype": "float64", "abs": 1e-10, "rel": 1e-10, "ulp": 4800, "accumulation_exception": "M5 Thompson hydrometeor tendency field."},
+      "qi_phys_tend": {"units": "kg kg-1 s-1", "dtype": "float64", "abs": 1e-10, "rel": 1e-10, "ulp": 4800, "accumulation_exception": "M5 Thompson hydrometeor tendency field."},
+      "qs_phys_tend": {"units": "kg kg-1 s-1", "dtype": "float64", "abs": 1e-10, "rel": 1e-10, "ulp": 4800, "accumulation_exception": "M5 Thompson hydrometeor tendency field."},
+      "qg_phys_tend": {"units": "kg kg-1 s-1", "dtype": "float64", "abs": 1e-10, "rel": 1e-10, "ulp": 4800, "accumulation_exception": "M5 Thompson hydrometeor tendency field."},
+      "qke_phys_tend": {"units": "m2 s-3", "dtype": "float64", "abs": 1e-10, "rel": 1e-10, "ulp": 4800, "accumulation_exception": "M5 MYNN qke tendency field."},
+      "u_phys_tend": {"units": "m s-2", "dtype": "float64", "abs": 1e-10, "rel": 1e-10, "ulp": 4800, "accumulation_exception": "M5 MYNN momentum tendency field."},
+      "v_phys_tend": {"units": "m s-2", "dtype": "float64", "abs": 1e-10, "rel": 1e-10, "ulp": 4800, "accumulation_exception": "M5 MYNN momentum tendency field."},
+      "w_phys_tend": {"units": "m s-2", "dtype": "float64", "abs": 1e-10, "rel": 1e-10, "ulp": 4800, "accumulation_exception": "M5 MYNN momentum tendency field."},
+      "mu_bdy_tend": {"units": "Pa s-1", "dtype": "float64", "abs": 1e-10, "rel": 1e-10, "ulp": 4800, "accumulation_exception": "Gen2 wrfbdy lateral-boundary tendency diagnostic."}
+    }
   }
 }

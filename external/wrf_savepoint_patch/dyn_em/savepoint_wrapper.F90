@@ -88,6 +88,15 @@ contains
     real, intent(in) :: ww(:, :, :), theta(:, :, :), ph_tend(:, :, :)
     real, intent(in) :: u(:, :, :), v(:, :, :), w(:, :, :), ph(:, :, :), p(:, :, :), t_2ave(:, :, :)
   end subroutine sp_dycore_step_complete
+  subroutine sp_coupled_step_complete(istep, mu, mut, mudf, muts, muave, ww, theta, ph_tend, u, v, w, ph, p, t_2ave, &
+       qv, qc, qr, qi, qs, qg, qke, theta_phys_tend, qv_phys_tend, mu_bdy_tend)
+    integer, intent(in) :: istep
+    real, intent(in) :: mu(:, :), mut(:, :), mudf(:, :), muts(:, :), muave(:, :)
+    real, intent(in) :: ww(:, :, :), theta(:, :, :), ph_tend(:, :, :)
+    real, intent(in) :: u(:, :, :), v(:, :, :), w(:, :, :), ph(:, :, :), p(:, :, :), t_2ave(:, :, :)
+    real, intent(in) :: qv(:, :, :), qc(:, :, :), qr(:, :, :), qi(:, :, :), qs(:, :, :), qg(:, :, :), qke(:, :, :)
+    real, intent(in) :: theta_phys_tend(:, :, :), qv_phys_tend(:, :, :), mu_bdy_tend(:, :)
+  end subroutine sp_coupled_step_complete
   subroutine sp_advance_uv_post()
   end subroutine sp_advance_uv_post
   subroutine sp_advance_w_rhs_ready()
