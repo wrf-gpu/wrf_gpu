@@ -1,0 +1,1896 @@
+{
+  "artifact_type": "m6b_standalone_vs_comparator_input_signatures",
+  "comparator": {
+    "carry_initialization": {
+      "mu_save": {
+        "dtype": "float64",
+        "first_3_bytes_hex": "000000",
+        "sha256": "75771fa3f0f2ab6357d2fd95c816934c09d6ea6783efc2d6e346175a24fc1a82",
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "muave": {
+        "dtype": "float64",
+        "first_3_bytes_hex": "000000",
+        "sha256": "75771fa3f0f2ab6357d2fd95c816934c09d6ea6783efc2d6e346175a24fc1a82",
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "mudf": {
+        "dtype": "float64",
+        "first_3_bytes_hex": "000000",
+        "sha256": "e0abb2a316eedd503011b31df9eafadae2649e00e96011b88f358d59b91f931f",
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "muts": {
+        "dtype": "float64",
+        "first_3_bytes_hex": "000000",
+        "sha256": "d3fcf82972c58e7f3cf7bd87a04f173a47ac62308b5e2f212d3ea3b3872d83b0",
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "ph_save": {
+        "dtype": "float64",
+        "first_3_bytes_hex": "000000",
+        "sha256": "d309ace9ac7d10cd3df4b8c7e9c8076422e0174e08b053afef638a2e9dd2148e",
+        "shape": [
+          45,
+          66,
+          159
+        ]
+      },
+      "ph_tend": {
+        "dtype": "float64",
+        "first_3_bytes_hex": "000000",
+        "sha256": "558308dcb9bb1a191c775b24ffd6f35e90f4626f71090e95fee4b69cc65702b6",
+        "shape": [
+          45,
+          66,
+          159
+        ]
+      },
+      "t_2ave": {
+        "dtype": "float64",
+        "first_3_bytes_hex": "000000",
+        "sha256": "6e8eef500e717f9e126cbacc767b82333eda3ee729d4b58545c671b30a696d53",
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "t_save": {
+        "dtype": "float32",
+        "first_3_bytes_hex": "6be691",
+        "sha256": "391b25ca6670082abadefc4f89ac72e78b595bcccc5c2d936c81804fdde79805",
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "u_save": {
+        "dtype": "float32",
+        "first_3_bytes_hex": "91a8b5",
+        "sha256": "7d564b60f0303a9520e1e52bfda253b69577fcd9dfea847a9bace813cc4158f4",
+        "shape": [
+          44,
+          66,
+          160
+        ]
+      },
+      "v_save": {
+        "dtype": "float32",
+        "first_3_bytes_hex": "4efa21",
+        "sha256": "beaa8c4da4765bbdd28d62d8ac6c9229fd86734b6bb48525ccd31fba9da4d64a",
+        "shape": [
+          44,
+          67,
+          159
+        ]
+      },
+      "w_save": {
+        "dtype": "float64",
+        "first_3_bytes_hex": "000000",
+        "sha256": "3e69d5fb7805cc68b4778780400aca26586317b4427efbf712cdb64e98566abb",
+        "shape": [
+          45,
+          66,
+          159
+        ]
+      },
+      "ww": {
+        "dtype": "float64",
+        "first_3_bytes_hex": "000000",
+        "sha256": "558308dcb9bb1a191c775b24ffd6f35e90f4626f71090e95fee4b69cc65702b6",
+        "shape": [
+          45,
+          66,
+          159
+        ]
+      },
+      "ww_save": {
+        "dtype": "float64",
+        "first_3_bytes_hex": "000000",
+        "sha256": "558308dcb9bb1a191c775b24ffd6f35e90f4626f71090e95fee4b69cc65702b6",
+        "shape": [
+          45,
+          66,
+          159
+        ]
+      }
+    },
+    "grid": {
+      "dx_m": 3000.0,
+      "dy_m": 3000.0,
+      "mass_shape": [
+        44,
+        66,
+        159
+      ],
+      "wrf_staggered_extent": [
+        45,
+        67,
+        160
+      ]
+    },
+    "label": "comparator",
+    "namelist": {
+      "config": {
+        "acoustic_substeps": 10,
+        "boundary_config": "BoundaryConfig(spec_bdy_width=5, spec_zone=1, relax_zone=4, update_cadence_s=3600.0, spec_exp=0.0)",
+        "dt_s": 10.0,
+        "dx_m": 3000.0,
+        "dy_m": 3000.0,
+        "epssm": 0.1,
+        "grid_shape": [
+          44,
+          66,
+          159
+        ],
+        "radiation_cadence_steps": 999999,
+        "rk_order": 3,
+        "run_boundary": true,
+        "run_physics": true,
+        "top_lid": false,
+        "use_vertical_solver": true
+      },
+      "metrics": {
+        "c1f": {
+          "dtype": "float64",
+          "first_3_bytes_hex": "000000",
+          "sha256": "33ce24dd9b8f38fae61ab31d37caf83e3219b94d62b456ef8aa382c3fca1bcda",
+          "shape": [
+            45
+          ]
+        },
+        "c1h": {
+          "dtype": "float64",
+          "first_3_bytes_hex": "000000",
+          "sha256": "a37c82fdf2adece419f5693e6d07ebdc16621e17e88f2b380345310221ff6213",
+          "shape": [
+            44
+          ]
+        },
+        "c2f": {
+          "dtype": "float64",
+          "first_3_bytes_hex": "000000",
+          "sha256": "b1ecb67fc1e4c24083a76e4ad9ddf57ecbd2233cf2c81f04fccbaba926867a64",
+          "shape": [
+            45
+          ]
+        },
+        "c2h": {
+          "dtype": "float64",
+          "first_3_bytes_hex": "000000",
+          "sha256": "f461a3c1c318cd336ed050aae1e768e7f6a1fffec03d5a1a79fdafebc4f10554",
+          "shape": [
+            44
+          ]
+        },
+        "c3f": {
+          "dtype": "float64",
+          "first_3_bytes_hex": "000000",
+          "sha256": "802f3f00ccea6f1a5416850afbf713406de348ea56b9828f4be4bb4cdb457064",
+          "shape": [
+            45
+          ]
+        },
+        "c3h": {
+          "dtype": "float64",
+          "first_3_bytes_hex": "000000",
+          "sha256": "2787feffbaa626d84cad1ac810e1ff3832115817c4db11b4dc21bb92c012b031",
+          "shape": [
+            44
+          ]
+        },
+        "c4f": {
+          "dtype": "float64",
+          "first_3_bytes_hex": "000000",
+          "sha256": "2091ecb1da55776acf3cac531d1d34d29ab8c4149eeb72fea5d4823b0a4a3e4f",
+          "shape": [
+            45
+          ]
+        },
+        "c4h": {
+          "dtype": "float64",
+          "first_3_bytes_hex": "000000",
+          "sha256": "9f2028e969690b846b10cd76547a8aa379dceeba51ce9eb47a2127a2582ccc73",
+          "shape": [
+            44
+          ]
+        },
+        "cf1": {
+          "dtype": "float64",
+          "first_3_bytes_hex": "000000",
+          "sha256": "a700f7de23fa639e55c9ca0e3fa98a37439c30526c765debab93ef89ff7b881c",
+          "shape": []
+        },
+        "cf2": {
+          "dtype": "float64",
+          "first_3_bytes_hex": "000000",
+          "sha256": "1b7b88d616aa83b18f7cbdf5fb1f7ccd8db13ac091a629b6c5ea713f79e5f976",
+          "shape": []
+        },
+        "cf3": {
+          "dtype": "float64",
+          "first_3_bytes_hex": "000000",
+          "sha256": "6c398d3e650088e7e3b82eb4dca59abeb12c37131fcc889c1850e156e4eec146",
+          "shape": []
+        },
+        "dn": {
+          "dtype": "float64",
+          "first_3_bytes_hex": "000000",
+          "sha256": "c7959da44003f46b3b86bce2148514c70b070fb22192f80209b0caac02486404",
+          "shape": [
+            44
+          ]
+        },
+        "dnw": {
+          "dtype": "float64",
+          "first_3_bytes_hex": "000000",
+          "sha256": "0634693bd2a4fc49b733d3f238bc4cf77416816173f252c3ba0008cebe11cc00",
+          "shape": [
+            44
+          ]
+        },
+        "dzdx": {
+          "dtype": "float64",
+          "first_3_bytes_hex": "000000",
+          "sha256": "e855064e60386be61e624666e9dc92c43f12236ca66cb22f64be3d3ede3ca250",
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "dzdx_u": {
+          "dtype": "float64",
+          "first_3_bytes_hex": "000000",
+          "sha256": "7b5a617e487cfd30fcb60250bd5813fab77a833c7ed06a5f366a0d52e94d1671",
+          "shape": [
+            66,
+            160
+          ]
+        },
+        "dzdy": {
+          "dtype": "float64",
+          "first_3_bytes_hex": "000000",
+          "sha256": "ab6de89f37917a9d5aab6a900d5cfb07c3b6c505d4020ee3f75daf6f0ebe52ca",
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "dzdy_v": {
+          "dtype": "float64",
+          "first_3_bytes_hex": "000000",
+          "sha256": "034b94e27ac7f5e7592e6fa4226b4ff68aae4b16ddd4be06ebef4710f8a5eb6d",
+          "shape": [
+            67,
+            159
+          ]
+        },
+        "fnm": {
+          "dtype": "float64",
+          "first_3_bytes_hex": "000000",
+          "sha256": "f9f6f864996c657bbfc824ac3236feab4375d138cbe2bab4120ed008581b2c7a",
+          "shape": [
+            44
+          ]
+        },
+        "fnp": {
+          "dtype": "float64",
+          "first_3_bytes_hex": "000000",
+          "sha256": "a081bee0feb4b70c26332e4892dc641e5db4ccbb557d046f86604142a3ea4536",
+          "shape": [
+            44
+          ]
+        },
+        "msftx": {
+          "dtype": "float64",
+          "first_3_bytes_hex": "000000",
+          "sha256": "5ff2b4362b7c761f6a8fec568d68408493e74fb4039894c15f124fb000129d4b",
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "msfty": {
+          "dtype": "float64",
+          "first_3_bytes_hex": "000000",
+          "sha256": "5ff2b4362b7c761f6a8fec568d68408493e74fb4039894c15f124fb000129d4b",
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "msfux": {
+          "dtype": "float64",
+          "first_3_bytes_hex": "000000",
+          "sha256": "73d54a6582497732f18e50f10cb064613526e19bf5178d418160a0ba1141954e",
+          "shape": [
+            66,
+            160
+          ]
+        },
+        "msfuy": {
+          "dtype": "float64",
+          "first_3_bytes_hex": "000000",
+          "sha256": "73d54a6582497732f18e50f10cb064613526e19bf5178d418160a0ba1141954e",
+          "shape": [
+            66,
+            160
+          ]
+        },
+        "msfvx": {
+          "dtype": "float64",
+          "first_3_bytes_hex": "000000",
+          "sha256": "8c3cce164dfc167195a1f62ca96dca3e6f1d91ec57079b557c9bc49a2c362a44",
+          "shape": [
+            67,
+            159
+          ]
+        },
+        "msfvy": {
+          "dtype": "float64",
+          "first_3_bytes_hex": "000000",
+          "sha256": "8c3cce164dfc167195a1f62ca96dca3e6f1d91ec57079b557c9bc49a2c362a44",
+          "shape": [
+            67,
+            159
+          ]
+        },
+        "p_top": {
+          "dtype": "float64",
+          "first_3_bytes_hex": "000000",
+          "sha256": "8bf8f02d248cac981639ce4f026cc4fde3e8e9663a9842d5f3a09f7472871f2d",
+          "shape": []
+        },
+        "rdn": {
+          "dtype": "float64",
+          "first_3_bytes_hex": "000000",
+          "sha256": "0e57097a47d518315a3f522d4c230fac8735c5cde6b054a9515b45489c29d539",
+          "shape": [
+            44
+          ]
+        },
+        "rdnw": {
+          "dtype": "float64",
+          "first_3_bytes_hex": "000000",
+          "sha256": "43af0eea30a583696080b81b4f987104ea84598f121a283bf558f3c855fc0a4c",
+          "shape": [
+            44
+          ]
+        }
+      },
+      "metrics_provenance": "wrfinput:/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T072630Z/wrfinput_d02:nz=44:eta=(45,)",
+      "tendencies": {
+        "mu": {
+          "dtype": "float64",
+          "first_3_bytes_hex": "000000",
+          "sha256": "e0abb2a316eedd503011b31df9eafadae2649e00e96011b88f358d59b91f931f",
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "p": {
+          "dtype": "float64",
+          "first_3_bytes_hex": "000000",
+          "sha256": "56822720b066d07db27aeb78444598dbcaf27ccfb2ed068a6d6ee38091942a36",
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "ph": {
+          "dtype": "float64",
+          "first_3_bytes_hex": "000000",
+          "sha256": "558308dcb9bb1a191c775b24ffd6f35e90f4626f71090e95fee4b69cc65702b6",
+          "shape": [
+            45,
+            66,
+            159
+          ]
+        },
+        "qv": {
+          "dtype": "float32",
+          "first_3_bytes_hex": "000000",
+          "sha256": "722412f57d04f4d80550e5d722a2c05e03981d72fa009bf79a57de6478534c98",
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "theta": {
+          "dtype": "float32",
+          "first_3_bytes_hex": "000000",
+          "sha256": "722412f57d04f4d80550e5d722a2c05e03981d72fa009bf79a57de6478534c98",
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "u": {
+          "dtype": "float32",
+          "first_3_bytes_hex": "000000",
+          "sha256": "a349341000e4b8ce54025e06df4c87afaf2a22c7a1d90f42298a0eddbcda14de",
+          "shape": [
+            44,
+            66,
+            160
+          ]
+        },
+        "v": {
+          "dtype": "float32",
+          "first_3_bytes_hex": "000000",
+          "sha256": "88c85925d681b6166e544b3ff9cd6e10fa9bae414be10b53c141713524369646",
+          "shape": [
+            44,
+            67,
+            159
+          ]
+        },
+        "w": {
+          "dtype": "float64",
+          "first_3_bytes_hex": "000000",
+          "sha256": "558308dcb9bb1a191c775b24ffd6f35e90f4626f71090e95fee4b69cc65702b6",
+          "shape": [
+            45,
+            66,
+            159
+          ]
+        }
+      }
+    },
+    "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T072630Z",
+    "run_id": "20260521_18z_l3_24h_20260522T072630Z",
+    "state": {
+      "Ng": {
+        "dtype": "float32",
+        "first_3_bytes_hex": "000000",
+        "sha256": "722412f57d04f4d80550e5d722a2c05e03981d72fa009bf79a57de6478534c98",
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "Ni": {
+        "dtype": "float32",
+        "first_3_bytes_hex": "000000",
+        "sha256": "722412f57d04f4d80550e5d722a2c05e03981d72fa009bf79a57de6478534c98",
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "Nr": {
+        "dtype": "float32",
+        "first_3_bytes_hex": "000000",
+        "sha256": "722412f57d04f4d80550e5d722a2c05e03981d72fa009bf79a57de6478534c98",
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "Ns": {
+        "dtype": "float32",
+        "first_3_bytes_hex": "000000",
+        "sha256": "722412f57d04f4d80550e5d722a2c05e03981d72fa009bf79a57de6478534c98",
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "fltv": {
+        "dtype": "float64",
+        "first_3_bytes_hex": "000000",
+        "sha256": "e0abb2a316eedd503011b31df9eafadae2649e00e96011b88f358d59b91f931f",
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "graupel_acc": {
+        "dtype": "float64",
+        "first_3_bytes_hex": "000000",
+        "sha256": "e0abb2a316eedd503011b31df9eafadae2649e00e96011b88f358d59b91f931f",
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "ice_acc": {
+        "dtype": "float64",
+        "first_3_bytes_hex": "000000",
+        "sha256": "e0abb2a316eedd503011b31df9eafadae2649e00e96011b88f358d59b91f931f",
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "lakemask": {
+        "dtype": "float32",
+        "first_3_bytes_hex": "000000",
+        "sha256": "efbd7a5d3da769f0a4a5163afd2489ad4eeb04ab0f1b0b8b7320f8990afa0e3b",
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "mavail": {
+        "dtype": "float32",
+        "first_3_bytes_hex": "000080",
+        "sha256": "3da1c1506827d211e3e5e40c92b3525caaa832f9ab935686ccdc72ad3456b621",
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "mu": {
+        "dtype": "float64",
+        "first_3_bytes_hex": "000000",
+        "sha256": "d3fcf82972c58e7f3cf7bd87a04f173a47ac62308b5e2f212d3ea3b3872d83b0",
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "mu_bdy": {
+        "dtype": "float64",
+        "first_3_bytes_hex": "000000",
+        "sha256": "59e858e46ef513da202a80d4c2f34ed4807e3dbe94f044418ca715579e6823ee",
+        "shape": [
+          9,
+          4,
+          1,
+          160
+        ]
+      },
+      "mu_perturbation": {
+        "dtype": "float64",
+        "first_3_bytes_hex": "000000",
+        "sha256": "75771fa3f0f2ab6357d2fd95c816934c09d6ea6783efc2d6e346175a24fc1a82",
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "mu_total": {
+        "dtype": "float64",
+        "first_3_bytes_hex": "000000",
+        "sha256": "d3fcf82972c58e7f3cf7bd87a04f173a47ac62308b5e2f212d3ea3b3872d83b0",
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "p": {
+        "dtype": "float64",
+        "first_3_bytes_hex": "000000",
+        "sha256": "9fc9c229009e16bbdad5268c2b7d420d1a302d5aa35c0a8d63c98ea25ccf9ae1",
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "p_perturbation": {
+        "dtype": "float64",
+        "first_3_bytes_hex": "000000",
+        "sha256": "c53a5d254df55364e390bd0ee82ca2eedb4c02a1371ea31cd1a07fd8e150842e",
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "p_total": {
+        "dtype": "float64",
+        "first_3_bytes_hex": "000000",
+        "sha256": "9fc9c229009e16bbdad5268c2b7d420d1a302d5aa35c0a8d63c98ea25ccf9ae1",
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "ph": {
+        "dtype": "float64",
+        "first_3_bytes_hex": "000000",
+        "sha256": "d309ace9ac7d10cd3df4b8c7e9c8076422e0174e08b053afef638a2e9dd2148e",
+        "shape": [
+          45,
+          66,
+          159
+        ]
+      },
+      "ph_bdy": {
+        "dtype": "float64",
+        "first_3_bytes_hex": "000000",
+        "sha256": "2c69b6547c902caa4e53803b83a0ac0cb8b4faa1725d88ed35ad32cca8687ddc",
+        "shape": [
+          9,
+          4,
+          45,
+          160
+        ]
+      },
+      "ph_perturbation": {
+        "dtype": "float64",
+        "first_3_bytes_hex": "000000",
+        "sha256": "5745186df41fc04a2877f2c9b64e8e6a20ba98373c0b2555e41e56cb36e55fce",
+        "shape": [
+          45,
+          66,
+          159
+        ]
+      },
+      "ph_total": {
+        "dtype": "float64",
+        "first_3_bytes_hex": "000000",
+        "sha256": "d309ace9ac7d10cd3df4b8c7e9c8076422e0174e08b053afef638a2e9dd2148e",
+        "shape": [
+          45,
+          66,
+          159
+        ]
+      },
+      "qc": {
+        "dtype": "float32",
+        "first_3_bytes_hex": "000000",
+        "sha256": "722412f57d04f4d80550e5d722a2c05e03981d72fa009bf79a57de6478534c98",
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "qg": {
+        "dtype": "float32",
+        "first_3_bytes_hex": "000000",
+        "sha256": "722412f57d04f4d80550e5d722a2c05e03981d72fa009bf79a57de6478534c98",
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "qi": {
+        "dtype": "float32",
+        "first_3_bytes_hex": "000000",
+        "sha256": "722412f57d04f4d80550e5d722a2c05e03981d72fa009bf79a57de6478534c98",
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "qke": {
+        "dtype": "float32",
+        "first_3_bytes_hex": "000000",
+        "sha256": "722412f57d04f4d80550e5d722a2c05e03981d72fa009bf79a57de6478534c98",
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "qr": {
+        "dtype": "float32",
+        "first_3_bytes_hex": "000000",
+        "sha256": "722412f57d04f4d80550e5d722a2c05e03981d72fa009bf79a57de6478534c98",
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "qs": {
+        "dtype": "float32",
+        "first_3_bytes_hex": "000000",
+        "sha256": "722412f57d04f4d80550e5d722a2c05e03981d72fa009bf79a57de6478534c98",
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "qv": {
+        "dtype": "float32",
+        "first_3_bytes_hex": "500431",
+        "sha256": "c3a46fc98c8b4b69044eba9496da280c79d34944efdd3b0582ab7e938dcfba17",
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "qv_bdy": {
+        "dtype": "float32",
+        "first_3_bytes_hex": "500431",
+        "sha256": "a9279822ac9e7a4d07091995958c262ecde2984c1e51cb2dd3039d4ed3261f72",
+        "shape": [
+          9,
+          4,
+          44,
+          160
+        ]
+      },
+      "qv_flux": {
+        "dtype": "float64",
+        "first_3_bytes_hex": "000000",
+        "sha256": "e0abb2a316eedd503011b31df9eafadae2649e00e96011b88f358d59b91f931f",
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "rain_acc": {
+        "dtype": "float64",
+        "first_3_bytes_hex": "000000",
+        "sha256": "e0abb2a316eedd503011b31df9eafadae2649e00e96011b88f358d59b91f931f",
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "rhosfc": {
+        "dtype": "float64",
+        "first_3_bytes_hex": "000000",
+        "sha256": "e0abb2a316eedd503011b31df9eafadae2649e00e96011b88f358d59b91f931f",
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "roughness_m": {
+        "dtype": "float64",
+        "first_3_bytes_hex": "d42b65",
+        "sha256": "28903bac2a51baf0fa30f845bea1e21d0b618f7a6e4736afc3c61cd3603f22e7",
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "snow_acc": {
+        "dtype": "float64",
+        "first_3_bytes_hex": "000000",
+        "sha256": "e0abb2a316eedd503011b31df9eafadae2649e00e96011b88f358d59b91f931f",
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "soil_moisture": {
+        "dtype": "float64",
+        "first_3_bytes_hex": "000000",
+        "sha256": "8e7020aed98a2821f9119f433e5ee87c4fe6e40ee2f0b85b6de76657eda5c894",
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "t_skin": {
+        "dtype": "float64",
+        "first_3_bytes_hex": "000000",
+        "sha256": "244cb47c4153ee3faeccda5a1031d27b258b97073bf48814307cbc1b480bb1d2",
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "tau_u": {
+        "dtype": "float64",
+        "first_3_bytes_hex": "000000",
+        "sha256": "e0abb2a316eedd503011b31df9eafadae2649e00e96011b88f358d59b91f931f",
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "tau_v": {
+        "dtype": "float64",
+        "first_3_bytes_hex": "000000",
+        "sha256": "e0abb2a316eedd503011b31df9eafadae2649e00e96011b88f358d59b91f931f",
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "theta": {
+        "dtype": "float32",
+        "first_3_bytes_hex": "6be691",
+        "sha256": "391b25ca6670082abadefc4f89ac72e78b595bcccc5c2d936c81804fdde79805",
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "theta_bdy": {
+        "dtype": "float32",
+        "first_3_bytes_hex": "6be691",
+        "sha256": "03437688619a302b4609377e86513cc0670dd3ae88979864621a82def2be6021",
+        "shape": [
+          9,
+          4,
+          44,
+          160
+        ]
+      },
+      "theta_flux": {
+        "dtype": "float64",
+        "first_3_bytes_hex": "000000",
+        "sha256": "e0abb2a316eedd503011b31df9eafadae2649e00e96011b88f358d59b91f931f",
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "u": {
+        "dtype": "float32",
+        "first_3_bytes_hex": "91a8b5",
+        "sha256": "7d564b60f0303a9520e1e52bfda253b69577fcd9dfea847a9bace813cc4158f4",
+        "shape": [
+          44,
+          66,
+          160
+        ]
+      },
+      "u_bdy": {
+        "dtype": "float32",
+        "first_3_bytes_hex": "91a8b5",
+        "sha256": "ab8b7447dd0756dd7c2f1a1e1e7b30e1abaa0f84cb2010cecf7c2adf236f56a2",
+        "shape": [
+          9,
+          4,
+          44,
+          160
+        ]
+      },
+      "ustar": {
+        "dtype": "float64",
+        "first_3_bytes_hex": "000000",
+        "sha256": "e0abb2a316eedd503011b31df9eafadae2649e00e96011b88f358d59b91f931f",
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "v": {
+        "dtype": "float32",
+        "first_3_bytes_hex": "4efa21",
+        "sha256": "beaa8c4da4765bbdd28d62d8ac6c9229fd86734b6bb48525ccd31fba9da4d64a",
+        "shape": [
+          44,
+          67,
+          159
+        ]
+      },
+      "v_bdy": {
+        "dtype": "float32",
+        "first_3_bytes_hex": "4efa21",
+        "sha256": "22dac876c44224304c23568123fe306375178a90cf53eea526f0d7db68f65fa3",
+        "shape": [
+          9,
+          4,
+          44,
+          160
+        ]
+      },
+      "w": {
+        "dtype": "float64",
+        "first_3_bytes_hex": "000000",
+        "sha256": "3e69d5fb7805cc68b4778780400aca26586317b4427efbf712cdb64e98566abb",
+        "shape": [
+          45,
+          66,
+          159
+        ]
+      },
+      "xland": {
+        "dtype": "float32",
+        "first_3_bytes_hex": "000000",
+        "sha256": "a19bd2652caad0501faa6fb17f7420932610e2be6d275636a1e616e6479762d3",
+        "shape": [
+          66,
+          159
+        ]
+      }
+    },
+    "wrapping": {
+      "carry_init": "initial_operational_carry(_enforce_operational_precision(state))",
+      "entrypoint": "run_forecast_operational",
+      "state_replace": "p=p_total, ph=ph_total, mu=mu_total"
+    }
+  },
+  "diagnosis": "Harness inputs match for the contracted 10 s step.",
+  "duration_s": 10.0,
+  "ic_file": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T072630Z/wrfout_d02_2026-05-21_18:00:00",
+  "ic_time": "2026-05-21_18:00:00",
+  "matches": {
+    "carry_initialization": true,
+    "namelist": true,
+    "state": true
+  },
+  "run_id": "20260521_18z_l3_24h_20260522T072630Z",
+  "standalone": {
+    "carry_initialization": {
+      "mu_save": {
+        "dtype": "float64",
+        "first_3_bytes_hex": "000000",
+        "sha256": "75771fa3f0f2ab6357d2fd95c816934c09d6ea6783efc2d6e346175a24fc1a82",
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "muave": {
+        "dtype": "float64",
+        "first_3_bytes_hex": "000000",
+        "sha256": "75771fa3f0f2ab6357d2fd95c816934c09d6ea6783efc2d6e346175a24fc1a82",
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "mudf": {
+        "dtype": "float64",
+        "first_3_bytes_hex": "000000",
+        "sha256": "e0abb2a316eedd503011b31df9eafadae2649e00e96011b88f358d59b91f931f",
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "muts": {
+        "dtype": "float64",
+        "first_3_bytes_hex": "000000",
+        "sha256": "d3fcf82972c58e7f3cf7bd87a04f173a47ac62308b5e2f212d3ea3b3872d83b0",
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "ph_save": {
+        "dtype": "float64",
+        "first_3_bytes_hex": "000000",
+        "sha256": "d309ace9ac7d10cd3df4b8c7e9c8076422e0174e08b053afef638a2e9dd2148e",
+        "shape": [
+          45,
+          66,
+          159
+        ]
+      },
+      "ph_tend": {
+        "dtype": "float64",
+        "first_3_bytes_hex": "000000",
+        "sha256": "558308dcb9bb1a191c775b24ffd6f35e90f4626f71090e95fee4b69cc65702b6",
+        "shape": [
+          45,
+          66,
+          159
+        ]
+      },
+      "t_2ave": {
+        "dtype": "float64",
+        "first_3_bytes_hex": "000000",
+        "sha256": "6e8eef500e717f9e126cbacc767b82333eda3ee729d4b58545c671b30a696d53",
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "t_save": {
+        "dtype": "float32",
+        "first_3_bytes_hex": "6be691",
+        "sha256": "391b25ca6670082abadefc4f89ac72e78b595bcccc5c2d936c81804fdde79805",
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "u_save": {
+        "dtype": "float32",
+        "first_3_bytes_hex": "91a8b5",
+        "sha256": "7d564b60f0303a9520e1e52bfda253b69577fcd9dfea847a9bace813cc4158f4",
+        "shape": [
+          44,
+          66,
+          160
+        ]
+      },
+      "v_save": {
+        "dtype": "float32",
+        "first_3_bytes_hex": "4efa21",
+        "sha256": "beaa8c4da4765bbdd28d62d8ac6c9229fd86734b6bb48525ccd31fba9da4d64a",
+        "shape": [
+          44,
+          67,
+          159
+        ]
+      },
+      "w_save": {
+        "dtype": "float64",
+        "first_3_bytes_hex": "000000",
+        "sha256": "3e69d5fb7805cc68b4778780400aca26586317b4427efbf712cdb64e98566abb",
+        "shape": [
+          45,
+          66,
+          159
+        ]
+      },
+      "ww": {
+        "dtype": "float64",
+        "first_3_bytes_hex": "000000",
+        "sha256": "558308dcb9bb1a191c775b24ffd6f35e90f4626f71090e95fee4b69cc65702b6",
+        "shape": [
+          45,
+          66,
+          159
+        ]
+      },
+      "ww_save": {
+        "dtype": "float64",
+        "first_3_bytes_hex": "000000",
+        "sha256": "558308dcb9bb1a191c775b24ffd6f35e90f4626f71090e95fee4b69cc65702b6",
+        "shape": [
+          45,
+          66,
+          159
+        ]
+      }
+    },
+    "grid": {
+      "dx_m": 3000.0,
+      "dy_m": 3000.0,
+      "mass_shape": [
+        44,
+        66,
+        159
+      ],
+      "wrf_staggered_extent": [
+        45,
+        67,
+        160
+      ]
+    },
+    "label": "standalone",
+    "namelist": {
+      "config": {
+        "acoustic_substeps": 10,
+        "boundary_config": "BoundaryConfig(spec_bdy_width=5, spec_zone=1, relax_zone=4, update_cadence_s=3600.0, spec_exp=0.0)",
+        "dt_s": 10.0,
+        "dx_m": 3000.0,
+        "dy_m": 3000.0,
+        "epssm": 0.1,
+        "grid_shape": [
+          44,
+          66,
+          159
+        ],
+        "radiation_cadence_steps": 999999,
+        "rk_order": 3,
+        "run_boundary": true,
+        "run_physics": true,
+        "top_lid": false,
+        "use_vertical_solver": true
+      },
+      "metrics": {
+        "c1f": {
+          "dtype": "float64",
+          "first_3_bytes_hex": "000000",
+          "sha256": "33ce24dd9b8f38fae61ab31d37caf83e3219b94d62b456ef8aa382c3fca1bcda",
+          "shape": [
+            45
+          ]
+        },
+        "c1h": {
+          "dtype": "float64",
+          "first_3_bytes_hex": "000000",
+          "sha256": "a37c82fdf2adece419f5693e6d07ebdc16621e17e88f2b380345310221ff6213",
+          "shape": [
+            44
+          ]
+        },
+        "c2f": {
+          "dtype": "float64",
+          "first_3_bytes_hex": "000000",
+          "sha256": "b1ecb67fc1e4c24083a76e4ad9ddf57ecbd2233cf2c81f04fccbaba926867a64",
+          "shape": [
+            45
+          ]
+        },
+        "c2h": {
+          "dtype": "float64",
+          "first_3_bytes_hex": "000000",
+          "sha256": "f461a3c1c318cd336ed050aae1e768e7f6a1fffec03d5a1a79fdafebc4f10554",
+          "shape": [
+            44
+          ]
+        },
+        "c3f": {
+          "dtype": "float64",
+          "first_3_bytes_hex": "000000",
+          "sha256": "802f3f00ccea6f1a5416850afbf713406de348ea56b9828f4be4bb4cdb457064",
+          "shape": [
+            45
+          ]
+        },
+        "c3h": {
+          "dtype": "float64",
+          "first_3_bytes_hex": "000000",
+          "sha256": "2787feffbaa626d84cad1ac810e1ff3832115817c4db11b4dc21bb92c012b031",
+          "shape": [
+            44
+          ]
+        },
+        "c4f": {
+          "dtype": "float64",
+          "first_3_bytes_hex": "000000",
+          "sha256": "2091ecb1da55776acf3cac531d1d34d29ab8c4149eeb72fea5d4823b0a4a3e4f",
+          "shape": [
+            45
+          ]
+        },
+        "c4h": {
+          "dtype": "float64",
+          "first_3_bytes_hex": "000000",
+          "sha256": "9f2028e969690b846b10cd76547a8aa379dceeba51ce9eb47a2127a2582ccc73",
+          "shape": [
+            44
+          ]
+        },
+        "cf1": {
+          "dtype": "float64",
+          "first_3_bytes_hex": "000000",
+          "sha256": "a700f7de23fa639e55c9ca0e3fa98a37439c30526c765debab93ef89ff7b881c",
+          "shape": []
+        },
+        "cf2": {
+          "dtype": "float64",
+          "first_3_bytes_hex": "000000",
+          "sha256": "1b7b88d616aa83b18f7cbdf5fb1f7ccd8db13ac091a629b6c5ea713f79e5f976",
+          "shape": []
+        },
+        "cf3": {
+          "dtype": "float64",
+          "first_3_bytes_hex": "000000",
+          "sha256": "6c398d3e650088e7e3b82eb4dca59abeb12c37131fcc889c1850e156e4eec146",
+          "shape": []
+        },
+        "dn": {
+          "dtype": "float64",
+          "first_3_bytes_hex": "000000",
+          "sha256": "c7959da44003f46b3b86bce2148514c70b070fb22192f80209b0caac02486404",
+          "shape": [
+            44
+          ]
+        },
+        "dnw": {
+          "dtype": "float64",
+          "first_3_bytes_hex": "000000",
+          "sha256": "0634693bd2a4fc49b733d3f238bc4cf77416816173f252c3ba0008cebe11cc00",
+          "shape": [
+            44
+          ]
+        },
+        "dzdx": {
+          "dtype": "float64",
+          "first_3_bytes_hex": "000000",
+          "sha256": "e855064e60386be61e624666e9dc92c43f12236ca66cb22f64be3d3ede3ca250",
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "dzdx_u": {
+          "dtype": "float64",
+          "first_3_bytes_hex": "000000",
+          "sha256": "7b5a617e487cfd30fcb60250bd5813fab77a833c7ed06a5f366a0d52e94d1671",
+          "shape": [
+            66,
+            160
+          ]
+        },
+        "dzdy": {
+          "dtype": "float64",
+          "first_3_bytes_hex": "000000",
+          "sha256": "ab6de89f37917a9d5aab6a900d5cfb07c3b6c505d4020ee3f75daf6f0ebe52ca",
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "dzdy_v": {
+          "dtype": "float64",
+          "first_3_bytes_hex": "000000",
+          "sha256": "034b94e27ac7f5e7592e6fa4226b4ff68aae4b16ddd4be06ebef4710f8a5eb6d",
+          "shape": [
+            67,
+            159
+          ]
+        },
+        "fnm": {
+          "dtype": "float64",
+          "first_3_bytes_hex": "000000",
+          "sha256": "f9f6f864996c657bbfc824ac3236feab4375d138cbe2bab4120ed008581b2c7a",
+          "shape": [
+            44
+          ]
+        },
+        "fnp": {
+          "dtype": "float64",
+          "first_3_bytes_hex": "000000",
+          "sha256": "a081bee0feb4b70c26332e4892dc641e5db4ccbb557d046f86604142a3ea4536",
+          "shape": [
+            44
+          ]
+        },
+        "msftx": {
+          "dtype": "float64",
+          "first_3_bytes_hex": "000000",
+          "sha256": "5ff2b4362b7c761f6a8fec568d68408493e74fb4039894c15f124fb000129d4b",
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "msfty": {
+          "dtype": "float64",
+          "first_3_bytes_hex": "000000",
+          "sha256": "5ff2b4362b7c761f6a8fec568d68408493e74fb4039894c15f124fb000129d4b",
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "msfux": {
+          "dtype": "float64",
+          "first_3_bytes_hex": "000000",
+          "sha256": "73d54a6582497732f18e50f10cb064613526e19bf5178d418160a0ba1141954e",
+          "shape": [
+            66,
+            160
+          ]
+        },
+        "msfuy": {
+          "dtype": "float64",
+          "first_3_bytes_hex": "000000",
+          "sha256": "73d54a6582497732f18e50f10cb064613526e19bf5178d418160a0ba1141954e",
+          "shape": [
+            66,
+            160
+          ]
+        },
+        "msfvx": {
+          "dtype": "float64",
+          "first_3_bytes_hex": "000000",
+          "sha256": "8c3cce164dfc167195a1f62ca96dca3e6f1d91ec57079b557c9bc49a2c362a44",
+          "shape": [
+            67,
+            159
+          ]
+        },
+        "msfvy": {
+          "dtype": "float64",
+          "first_3_bytes_hex": "000000",
+          "sha256": "8c3cce164dfc167195a1f62ca96dca3e6f1d91ec57079b557c9bc49a2c362a44",
+          "shape": [
+            67,
+            159
+          ]
+        },
+        "p_top": {
+          "dtype": "float64",
+          "first_3_bytes_hex": "000000",
+          "sha256": "8bf8f02d248cac981639ce4f026cc4fde3e8e9663a9842d5f3a09f7472871f2d",
+          "shape": []
+        },
+        "rdn": {
+          "dtype": "float64",
+          "first_3_bytes_hex": "000000",
+          "sha256": "0e57097a47d518315a3f522d4c230fac8735c5cde6b054a9515b45489c29d539",
+          "shape": [
+            44
+          ]
+        },
+        "rdnw": {
+          "dtype": "float64",
+          "first_3_bytes_hex": "000000",
+          "sha256": "43af0eea30a583696080b81b4f987104ea84598f121a283bf558f3c855fc0a4c",
+          "shape": [
+            44
+          ]
+        }
+      },
+      "metrics_provenance": "wrfinput:/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T072630Z/wrfinput_d02:nz=44:eta=(45,)",
+      "tendencies": {
+        "mu": {
+          "dtype": "float64",
+          "first_3_bytes_hex": "000000",
+          "sha256": "e0abb2a316eedd503011b31df9eafadae2649e00e96011b88f358d59b91f931f",
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "p": {
+          "dtype": "float64",
+          "first_3_bytes_hex": "000000",
+          "sha256": "56822720b066d07db27aeb78444598dbcaf27ccfb2ed068a6d6ee38091942a36",
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "ph": {
+          "dtype": "float64",
+          "first_3_bytes_hex": "000000",
+          "sha256": "558308dcb9bb1a191c775b24ffd6f35e90f4626f71090e95fee4b69cc65702b6",
+          "shape": [
+            45,
+            66,
+            159
+          ]
+        },
+        "qv": {
+          "dtype": "float32",
+          "first_3_bytes_hex": "000000",
+          "sha256": "722412f57d04f4d80550e5d722a2c05e03981d72fa009bf79a57de6478534c98",
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "theta": {
+          "dtype": "float32",
+          "first_3_bytes_hex": "000000",
+          "sha256": "722412f57d04f4d80550e5d722a2c05e03981d72fa009bf79a57de6478534c98",
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "u": {
+          "dtype": "float32",
+          "first_3_bytes_hex": "000000",
+          "sha256": "a349341000e4b8ce54025e06df4c87afaf2a22c7a1d90f42298a0eddbcda14de",
+          "shape": [
+            44,
+            66,
+            160
+          ]
+        },
+        "v": {
+          "dtype": "float32",
+          "first_3_bytes_hex": "000000",
+          "sha256": "88c85925d681b6166e544b3ff9cd6e10fa9bae414be10b53c141713524369646",
+          "shape": [
+            44,
+            67,
+            159
+          ]
+        },
+        "w": {
+          "dtype": "float64",
+          "first_3_bytes_hex": "000000",
+          "sha256": "558308dcb9bb1a191c775b24ffd6f35e90f4626f71090e95fee4b69cc65702b6",
+          "shape": [
+            45,
+            66,
+            159
+          ]
+        }
+      }
+    },
+    "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T072630Z",
+    "run_id": "20260521_18z_l3_24h_20260522T072630Z",
+    "state": {
+      "Ng": {
+        "dtype": "float32",
+        "first_3_bytes_hex": "000000",
+        "sha256": "722412f57d04f4d80550e5d722a2c05e03981d72fa009bf79a57de6478534c98",
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "Ni": {
+        "dtype": "float32",
+        "first_3_bytes_hex": "000000",
+        "sha256": "722412f57d04f4d80550e5d722a2c05e03981d72fa009bf79a57de6478534c98",
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "Nr": {
+        "dtype": "float32",
+        "first_3_bytes_hex": "000000",
+        "sha256": "722412f57d04f4d80550e5d722a2c05e03981d72fa009bf79a57de6478534c98",
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "Ns": {
+        "dtype": "float32",
+        "first_3_bytes_hex": "000000",
+        "sha256": "722412f57d04f4d80550e5d722a2c05e03981d72fa009bf79a57de6478534c98",
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "fltv": {
+        "dtype": "float64",
+        "first_3_bytes_hex": "000000",
+        "sha256": "e0abb2a316eedd503011b31df9eafadae2649e00e96011b88f358d59b91f931f",
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "graupel_acc": {
+        "dtype": "float64",
+        "first_3_bytes_hex": "000000",
+        "sha256": "e0abb2a316eedd503011b31df9eafadae2649e00e96011b88f358d59b91f931f",
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "ice_acc": {
+        "dtype": "float64",
+        "first_3_bytes_hex": "000000",
+        "sha256": "e0abb2a316eedd503011b31df9eafadae2649e00e96011b88f358d59b91f931f",
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "lakemask": {
+        "dtype": "float32",
+        "first_3_bytes_hex": "000000",
+        "sha256": "efbd7a5d3da769f0a4a5163afd2489ad4eeb04ab0f1b0b8b7320f8990afa0e3b",
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "mavail": {
+        "dtype": "float32",
+        "first_3_bytes_hex": "000080",
+        "sha256": "3da1c1506827d211e3e5e40c92b3525caaa832f9ab935686ccdc72ad3456b621",
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "mu": {
+        "dtype": "float64",
+        "first_3_bytes_hex": "000000",
+        "sha256": "d3fcf82972c58e7f3cf7bd87a04f173a47ac62308b5e2f212d3ea3b3872d83b0",
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "mu_bdy": {
+        "dtype": "float64",
+        "first_3_bytes_hex": "000000",
+        "sha256": "59e858e46ef513da202a80d4c2f34ed4807e3dbe94f044418ca715579e6823ee",
+        "shape": [
+          9,
+          4,
+          1,
+          160
+        ]
+      },
+      "mu_perturbation": {
+        "dtype": "float64",
+        "first_3_bytes_hex": "000000",
+        "sha256": "75771fa3f0f2ab6357d2fd95c816934c09d6ea6783efc2d6e346175a24fc1a82",
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "mu_total": {
+        "dtype": "float64",
+        "first_3_bytes_hex": "000000",
+        "sha256": "d3fcf82972c58e7f3cf7bd87a04f173a47ac62308b5e2f212d3ea3b3872d83b0",
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "p": {
+        "dtype": "float64",
+        "first_3_bytes_hex": "000000",
+        "sha256": "9fc9c229009e16bbdad5268c2b7d420d1a302d5aa35c0a8d63c98ea25ccf9ae1",
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "p_perturbation": {
+        "dtype": "float64",
+        "first_3_bytes_hex": "000000",
+        "sha256": "c53a5d254df55364e390bd0ee82ca2eedb4c02a1371ea31cd1a07fd8e150842e",
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "p_total": {
+        "dtype": "float64",
+        "first_3_bytes_hex": "000000",
+        "sha256": "9fc9c229009e16bbdad5268c2b7d420d1a302d5aa35c0a8d63c98ea25ccf9ae1",
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "ph": {
+        "dtype": "float64",
+        "first_3_bytes_hex": "000000",
+        "sha256": "d309ace9ac7d10cd3df4b8c7e9c8076422e0174e08b053afef638a2e9dd2148e",
+        "shape": [
+          45,
+          66,
+          159
+        ]
+      },
+      "ph_bdy": {
+        "dtype": "float64",
+        "first_3_bytes_hex": "000000",
+        "sha256": "2c69b6547c902caa4e53803b83a0ac0cb8b4faa1725d88ed35ad32cca8687ddc",
+        "shape": [
+          9,
+          4,
+          45,
+          160
+        ]
+      },
+      "ph_perturbation": {
+        "dtype": "float64",
+        "first_3_bytes_hex": "000000",
+        "sha256": "5745186df41fc04a2877f2c9b64e8e6a20ba98373c0b2555e41e56cb36e55fce",
+        "shape": [
+          45,
+          66,
+          159
+        ]
+      },
+      "ph_total": {
+        "dtype": "float64",
+        "first_3_bytes_hex": "000000",
+        "sha256": "d309ace9ac7d10cd3df4b8c7e9c8076422e0174e08b053afef638a2e9dd2148e",
+        "shape": [
+          45,
+          66,
+          159
+        ]
+      },
+      "qc": {
+        "dtype": "float32",
+        "first_3_bytes_hex": "000000",
+        "sha256": "722412f57d04f4d80550e5d722a2c05e03981d72fa009bf79a57de6478534c98",
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "qg": {
+        "dtype": "float32",
+        "first_3_bytes_hex": "000000",
+        "sha256": "722412f57d04f4d80550e5d722a2c05e03981d72fa009bf79a57de6478534c98",
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "qi": {
+        "dtype": "float32",
+        "first_3_bytes_hex": "000000",
+        "sha256": "722412f57d04f4d80550e5d722a2c05e03981d72fa009bf79a57de6478534c98",
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "qke": {
+        "dtype": "float32",
+        "first_3_bytes_hex": "000000",
+        "sha256": "722412f57d04f4d80550e5d722a2c05e03981d72fa009bf79a57de6478534c98",
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "qr": {
+        "dtype": "float32",
+        "first_3_bytes_hex": "000000",
+        "sha256": "722412f57d04f4d80550e5d722a2c05e03981d72fa009bf79a57de6478534c98",
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "qs": {
+        "dtype": "float32",
+        "first_3_bytes_hex": "000000",
+        "sha256": "722412f57d04f4d80550e5d722a2c05e03981d72fa009bf79a57de6478534c98",
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "qv": {
+        "dtype": "float32",
+        "first_3_bytes_hex": "500431",
+        "sha256": "c3a46fc98c8b4b69044eba9496da280c79d34944efdd3b0582ab7e938dcfba17",
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "qv_bdy": {
+        "dtype": "float32",
+        "first_3_bytes_hex": "500431",
+        "sha256": "a9279822ac9e7a4d07091995958c262ecde2984c1e51cb2dd3039d4ed3261f72",
+        "shape": [
+          9,
+          4,
+          44,
+          160
+        ]
+      },
+      "qv_flux": {
+        "dtype": "float64",
+        "first_3_bytes_hex": "000000",
+        "sha256": "e0abb2a316eedd503011b31df9eafadae2649e00e96011b88f358d59b91f931f",
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "rain_acc": {
+        "dtype": "float64",
+        "first_3_bytes_hex": "000000",
+        "sha256": "e0abb2a316eedd503011b31df9eafadae2649e00e96011b88f358d59b91f931f",
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "rhosfc": {
+        "dtype": "float64",
+        "first_3_bytes_hex": "000000",
+        "sha256": "e0abb2a316eedd503011b31df9eafadae2649e00e96011b88f358d59b91f931f",
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "roughness_m": {
+        "dtype": "float64",
+        "first_3_bytes_hex": "d42b65",
+        "sha256": "28903bac2a51baf0fa30f845bea1e21d0b618f7a6e4736afc3c61cd3603f22e7",
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "snow_acc": {
+        "dtype": "float64",
+        "first_3_bytes_hex": "000000",
+        "sha256": "e0abb2a316eedd503011b31df9eafadae2649e00e96011b88f358d59b91f931f",
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "soil_moisture": {
+        "dtype": "float64",
+        "first_3_bytes_hex": "000000",
+        "sha256": "8e7020aed98a2821f9119f433e5ee87c4fe6e40ee2f0b85b6de76657eda5c894",
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "t_skin": {
+        "dtype": "float64",
+        "first_3_bytes_hex": "000000",
+        "sha256": "244cb47c4153ee3faeccda5a1031d27b258b97073bf48814307cbc1b480bb1d2",
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "tau_u": {
+        "dtype": "float64",
+        "first_3_bytes_hex": "000000",
+        "sha256": "e0abb2a316eedd503011b31df9eafadae2649e00e96011b88f358d59b91f931f",
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "tau_v": {
+        "dtype": "float64",
+        "first_3_bytes_hex": "000000",
+        "sha256": "e0abb2a316eedd503011b31df9eafadae2649e00e96011b88f358d59b91f931f",
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "theta": {
+        "dtype": "float32",
+        "first_3_bytes_hex": "6be691",
+        "sha256": "391b25ca6670082abadefc4f89ac72e78b595bcccc5c2d936c81804fdde79805",
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "theta_bdy": {
+        "dtype": "float32",
+        "first_3_bytes_hex": "6be691",
+        "sha256": "03437688619a302b4609377e86513cc0670dd3ae88979864621a82def2be6021",
+        "shape": [
+          9,
+          4,
+          44,
+          160
+        ]
+      },
+      "theta_flux": {
+        "dtype": "float64",
+        "first_3_bytes_hex": "000000",
+        "sha256": "e0abb2a316eedd503011b31df9eafadae2649e00e96011b88f358d59b91f931f",
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "u": {
+        "dtype": "float32",
+        "first_3_bytes_hex": "91a8b5",
+        "sha256": "7d564b60f0303a9520e1e52bfda253b69577fcd9dfea847a9bace813cc4158f4",
+        "shape": [
+          44,
+          66,
+          160
+        ]
+      },
+      "u_bdy": {
+        "dtype": "float32",
+        "first_3_bytes_hex": "91a8b5",
+        "sha256": "ab8b7447dd0756dd7c2f1a1e1e7b30e1abaa0f84cb2010cecf7c2adf236f56a2",
+        "shape": [
+          9,
+          4,
+          44,
+          160
+        ]
+      },
+      "ustar": {
+        "dtype": "float64",
+        "first_3_bytes_hex": "000000",
+        "sha256": "e0abb2a316eedd503011b31df9eafadae2649e00e96011b88f358d59b91f931f",
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "v": {
+        "dtype": "float32",
+        "first_3_bytes_hex": "4efa21",
+        "sha256": "beaa8c4da4765bbdd28d62d8ac6c9229fd86734b6bb48525ccd31fba9da4d64a",
+        "shape": [
+          44,
+          67,
+          159
+        ]
+      },
+      "v_bdy": {
+        "dtype": "float32",
+        "first_3_bytes_hex": "4efa21",
+        "sha256": "22dac876c44224304c23568123fe306375178a90cf53eea526f0d7db68f65fa3",
+        "shape": [
+          9,
+          4,
+          44,
+          160
+        ]
+      },
+      "w": {
+        "dtype": "float64",
+        "first_3_bytes_hex": "000000",
+        "sha256": "3e69d5fb7805cc68b4778780400aca26586317b4427efbf712cdb64e98566abb",
+        "shape": [
+          45,
+          66,
+          159
+        ]
+      },
+      "xland": {
+        "dtype": "float32",
+        "first_3_bytes_hex": "000000",
+        "sha256": "a19bd2652caad0501faa6fb17f7420932610e2be6d275636a1e616e6479762d3",
+        "shape": [
+          66,
+          159
+        ]
+      }
+    },
+    "wrapping": {
+      "carry_init": "initial_operational_carry(_enforce_operational_precision(state))",
+      "entrypoint": "run_forecast_operational",
+      "state_replace": "p=p_total, ph=ph_total, mu=mu_total"
+    }
+  },
+  "status": "PASS"
+}
