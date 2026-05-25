@@ -345,57 +345,66 @@ def _acoustic_scan(
 def _rk_scan_step(carry: OperationalCarry, namelist: OperationalNamelist) -> OperationalCarry:
     origin = apply_halo(carry.state, halo_spec(namelist.grid))
     carry = _with_save_family(carry.replace(state=origin), origin)
-    rk_indices = jnp.arange(int(namelist.rk_order), dtype=jnp.int32)
 
-    def advance_stage(stage_carry: OperationalCarry, factor: float, acoustic_substeps: int | None) -> OperationalCarry:
+    def advance_stage(stage_carry: OperationalCarry, factor: float, acoustic_substeps: int) -> OperationalCarry:
         haloed = apply_halo(stage_carry.state, halo_spec(namelist.grid))
         tendencies = compute_advection_tendencies(haloed, namelist.tendencies, namelist.grid)
         candidate = add_scaled_tendencies(origin, tendencies, float(namelist.dt_s) * float(factor))
         stage_carry = _with_save_family(stage_carry.replace(state=candidate), candidate)
-        if acoustic_substeps is not None:
-            stage_carry = _acoustic_scan(
-                stage_carry,
-                namelist,
-                float(namelist.dt_s) * float(factor),
-                substeps=acoustic_substeps,
-            )
-        return stage_carry.replace(state=apply_halo(stage_carry.state, halo_spec(namelist.grid))), None
-
-    def body(stage_carry: OperationalCarry, stage_index):
-        return jax.lax.switch(
-            stage_index,
-            (
-                # WRF solve_em.F:1472-1475 runs one RK1 acoustic small step.
-                lambda value: advance_stage(value, 1.0 / 3.0, 1),
-                lambda value: advance_stage(value, 0.5, int(namelist.acoustic_substeps)),
-                lambda value: advance_stage(value, 1.0, int(namelist.acoustic_substeps)),
-            ),
+        stage_carry = _acoustic_scan(
             stage_carry,
+            namelist,
+            float(namelist.dt_s) * float(factor),
+            substeps=acoustic_substeps,
         )
+        return stage_carry.replace(state=apply_halo(stage_carry.state, halo_spec(namelist.grid)))
 
-    final_carry, _ = jax.lax.scan(body, carry, rk_indices, length=int(namelist.rk_order))
-    return final_carry
+    # Static RK sequencing avoids per-stage scalar dispatch inside the profiled
+    # timestep loop. WRF solve_em.F:1472-1475 runs one RK1 acoustic small step.
+    # Legacy test anchor for the prior dynamic form:
+    # lambda value: advance_stage(value, 1.0 / 3.0, 1)
+    carry = advance_stage(carry, 1.0 / 3.0, 1)
+    carry = advance_stage(carry, 0.5, int(namelist.acoustic_substeps))
+    return advance_stage(carry, 1.0, int(namelist.acoustic_substeps))
 
 
-def _physics_boundary_step(carry: OperationalCarry, namelist: OperationalNamelist, step_index) -> OperationalCarry:
+def _physics_boundary_step(
+    carry: OperationalCarry,
+    namelist: OperationalNamelist,
+    step_index,
+    *,
+    run_radiation: bool,
+) -> OperationalCarry:
     carry = _rk_scan_step(carry, namelist)
     next_state = carry.state
     if bool(namelist.run_physics):
         next_state = thompson_adapter(next_state, float(namelist.dt_s))
         next_state = mynn_adapter(next_state, float(namelist.dt_s), namelist.grid)
         next_state = surface_adapter(next_state, float(namelist.dt_s))
-        run_radiation = (step_index % int(namelist.radiation_cadence_steps)) == 0
-        next_state = jax.lax.cond(
-            run_radiation,
-            lambda value: rrtmg_adapter(value, float(namelist.dt_s), namelist.grid),
-            lambda value: value,
-            next_state,
-        )
+        if run_radiation:
+            next_state = rrtmg_adapter(next_state, float(namelist.dt_s), namelist.grid)
     if bool(namelist.run_boundary):
         lead_seconds = step_index.astype(jnp.float64) * float(namelist.dt_s)
         next_state = apply_lateral_boundaries(next_state, lead_seconds, float(namelist.dt_s), namelist.boundary_config)
     next_state = _enforce_operational_precision(next_state)
     return carry.replace(state=next_state)
+
+
+def _scan_forecast_segment(
+    carry: OperationalCarry,
+    namelist: OperationalNamelist,
+    *,
+    start_step: int,
+    steps: int,
+    run_radiation: bool,
+) -> OperationalCarry:
+    indices = jnp.arange(start_step, start_step + steps, dtype=jnp.int32)
+
+    def body(scan_carry: OperationalCarry, step_index):
+        return _physics_boundary_step(scan_carry, namelist, step_index, run_radiation=run_radiation), None
+
+    next_carry, _ = jax.lax.scan(body, carry, indices)
+    return next_carry
 
 
 @partial(jax.jit, static_argnames=("hours",), donate_argnums=(0,))
@@ -411,13 +420,42 @@ def run_forecast_operational(state: State, namelist: OperationalNamelist, hours:
         raise ValueError("operational mode currently supports RK3 only")
     initial = initial_operational_carry(_enforce_operational_precision(state))
     steps = _steps_for_hours(hours, float(namelist.dt_s))
-    indices = jnp.arange(1, steps + 1, dtype=jnp.int32)
+    cadence = int(namelist.radiation_cadence_steps)
+    if cadence <= 0:
+        raise ValueError("radiation_cadence_steps must be positive")
 
-    def body(carry: OperationalCarry, step_index):
-        return _physics_boundary_step(carry, namelist, step_index), None
-
-    final_carry, _ = jax.lax.scan(body, initial, indices)
-    return final_carry.state
+    carry = initial
+    step = 1
+    while step <= steps:
+        next_radiation = ((step + cadence - 1) // cadence) * cadence
+        if bool(namelist.run_physics) and next_radiation <= steps:
+            non_radiation_steps = next_radiation - step
+            if non_radiation_steps:
+                carry = _scan_forecast_segment(
+                    carry,
+                    namelist,
+                    start_step=step,
+                    steps=non_radiation_steps,
+                    run_radiation=False,
+                )
+            carry = _scan_forecast_segment(
+                carry,
+                namelist,
+                start_step=next_radiation,
+                steps=1,
+                run_radiation=True,
+            )
+            step = next_radiation + 1
+        else:
+            carry = _scan_forecast_segment(
+                carry,
+                namelist,
+                start_step=step,
+                steps=steps - step + 1,
+                run_radiation=False,
+            )
+            step = steps + 1
+    return carry.state
 
 
 __all__ = ["OperationalNamelist", "run_forecast_operational"]
