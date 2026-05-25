@@ -1,6 +1,6 @@
 --- a/dyn_em/solve_em.F
 +++ b/dyn_em/solve_em.F
-@@ -53,6 +53,15 @@
+@@ -53,6 +53,21 @@
  ! Model layer modules
     USE module_model_constants
     USE module_small_step_em
@@ -22,27 +22,27 @@
  #ifdef GPU_OPENACC
     USE eulerian_mass_core_gpu, ONLY : calc_mu_uv_1_core_gpu
     USE small_step_gpu, ONLY : calc_p_rho_gpu, calc_coef_w_gpu, sumflux_gpu
-@@ -2673,6 +2682,9 @@
+@@ -2673,6 +2688,9 @@
         IF (config_flags%non_hydrostatic) THEN
  #ifdef GPU_OPENACC
           IF (wrf_gpu_fallback_calc_coef_w) THEN
 +#ifdef WRF_SAVEPOINT
-+         CALL sp_calc_coef_w_pre()
++           CALL sp_calc_coef_w_pre()
 +#endif
             CALL calc_coef_w( a,alpha,gamma,                    &
                             grid%mut,                         &
                             grid%c1h, grid%c2h, grid%c1f, grid%c2f, &
-@@ -2685,6 +2697,9 @@
+@@ -2685,6 +2703,9 @@
                             grid%i_start(ij), grid%i_end(ij), &
                             grid%j_start(ij), grid%j_end(ij), &
                             k_start    , k_end               )
 +#ifdef WRF_SAVEPOINT
-+         CALL sp_calc_coef_w_post()
++           CALL sp_calc_coef_w_post()
 +#endif
  ! CPU fallback produces the implicit-w coefficients on host; advance_w_gpu
  ! consumes them on device in the following acoustic substeps.
  !$acc update device(a, alpha, gamma)
-@@ -2702,6 +2717,9 @@
+@@ -2702,6 +2723,9 @@
                             k_start    , k_end               )
           ENDIF
  #else
@@ -52,7 +52,7 @@
           CALL calc_coef_w( a,alpha,gamma,                    &
                             grid%mut,                         &
                             grid%c1h, grid%c2h, grid%c1f, grid%c2f, &
-@@ -2714,6 +2732,9 @@
+@@ -2714,6 +2738,9 @@
                             grid%i_start(ij), grid%i_end(ij), &
                             grid%j_start(ij), grid%j_end(ij), &
                             k_start    , k_end               )
@@ -61,13 +61,11 @@
 +#endif
  #endif
         ENDIF
-
-@@
-+#ifdef WRF_SAVEPOINT
-+         CALL sp_acoustic_substep_boundary()
-+         CALL sp_rk_stage_boundary()
-+#endif
-@@
+ 
+@@ -3395,6 +3422,10 @@
+ !$acc update self(grid%mu_2, grid%mut, muave, grid%muts, grid%muu, grid%muv)
+ !$acc update self(grid%mudf, grid%t_2, grid%t_save, t_2save, t_tend)
+ !$acc update self(mu_tend)
 +#ifdef WRF_SAVEPOINT
 +         CALL sp_advance_mu_t_pre(rk_step, iteration, grid%mu_2, grid%mut, grid%mudf, &
 +                          grid%muts, muave, grid%ww, grid%t_2)
@@ -75,7 +73,7 @@
           CALL advance_mu_t( grid%ww, ww1, grid%u_2, grid%u_save, grid%v_2, grid%v_save, &
                            grid%mu_2, grid%mut, muave, grid%muts, grid%muu, grid%muv,    &
                            grid%mudf,                                                    &
-@@
+@@ -3413,6 +3444,10 @@
                            grid%i_start(ij), grid%i_end(ij),  &
                            grid%j_start(ij), grid%j_end(ij),  &
                            k_start    , k_end                )
@@ -83,69 +81,6 @@
 +         CALL sp_advance_mu_t_post(rk_step, iteration, grid%mu_2, grid%mut, grid%mudf, &
 +                          grid%muts, muave, grid%ww, grid%t_2, ph_tend)
 +#endif
-@@
-+#ifdef WRF_SAVEPOINT
-+         CALL sp_t_2ave_update_pre(rk_step, iteration, grid%t_1, grid%t_2, t_2ave)
-+#endif
-          ! M6B3 scratch boundary: t_2ave running average update
-+#ifdef WRF_SAVEPOINT
-+         CALL sp_t_2ave_update_post(rk_step, iteration, t_2ave)
-+#endif
-@@
-+#ifdef WRF_SAVEPOINT
-+         CALL sp_ww_update_pre(rk_step, iteration, ww1, grid%ww)
-+#endif
-          ! M6B3 scratch boundary: ww working-state update
-+#ifdef WRF_SAVEPOINT
-+         CALL sp_ww_update_post(rk_step, iteration, grid%ww)
-+#endif
-@@
-+#ifdef WRF_SAVEPOINT
-+         CALL sp_muave_update_pre(rk_step, iteration, grid%mu_1, grid%mu_2, grid%mut, muave, grid%muts)
-+#endif
-          ! M6B3 scratch boundary: MUAVE/MUTS carry update
-+#ifdef WRF_SAVEPOINT
-+         CALL sp_muave_update_post(rk_step, iteration, muave, grid%muts)
-+#endif
-@@
-+#ifdef WRF_SAVEPOINT
-+         CALL sp_ph_tend_accumulate_pre(rk_step, iteration, ph_tend, ph_tend_increment)
-+#endif
-          ! M6B3 scratch boundary: ph_tend accumulation before advance_w RHS
-+#ifdef WRF_SAVEPOINT
-+         CALL sp_ph_tend_accumulate_post(rk_step, iteration, ph_tend)
-+#endif
-@@
-+#ifdef WRF_SAVEPOINT
-+         CALL sp_substep_save_state_pre(rk_step, iteration, grid%u_2, grid%v_2, grid%w_2, grid%t_2, grid%ph_2, grid%mu_2, grid%ww)
-+#endif
-          ! M6B3 scratch boundary: _save family snapshot between substeps
-+#ifdef WRF_SAVEPOINT
-+         CALL sp_substep_save_state_post(rk_step, iteration, u_save, v_save, w_save, t_save, ph_save, mu_save, ww_save)
-+#endif
-@@ -1533,6 +1533,9 @@
-+#ifdef WRF_SAVEPOINT
-+    CALL sp_advance_w_tridiag_fwd_pre(0, 0, a, alpha, gamma, rhs)
-+#endif
-     DO k=2,k_end+1
-     DO i=i_start, i_end
-        w(i,k,j)=(w(i,k,j)-a(i,k,j)*w(i,k-1,j))*alpha(i,k,j)
-@@ -1536,6 +1539,12 @@
-     ENDDO
-     ENDDO
-+#ifdef WRF_SAVEPOINT
-+    CALL sp_advance_w_tridiag_fwd_post(0, 0, a, alpha, gamma, w)
-+    CALL sp_advance_w_tridiag_back_pre(0, 0, gamma, w)
-+#endif
-     IF (diag_aw_point .AND. diag_aw_call .LE. diag_aw_max_call .AND. j .EQ. diag_aw_j .AND. &
-         diag_aw_i .GE. i_start .AND. diag_aw_i .LE. i_end .AND. &
-         diag_aw_k .GE. 2 .AND. diag_aw_k .LE. k_end+1) THEN
-@@ -1546,6 +1555,9 @@
-     DO k=k_end,2,-1
-     DO i=i_start, i_end
-        w (i,k,j)=w (i,k,j)-gamma(i,k,j)*w(i,k+1,j)
-     ENDDO
-     ENDDO
-+#ifdef WRF_SAVEPOINT
-+    CALL sp_advance_w_tridiag_back_post(0, 0, gamma, w)
-+#endif
+ !$acc update device(grid%ww, ww1, grid%mu_2, muave, grid%muts, grid%mudf)
+ !$acc update device(grid%t_2, t_2save)
+          ELSE

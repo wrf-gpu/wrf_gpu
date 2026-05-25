@@ -67,6 +67,7 @@ cat > "$OUT/build_registry.json" <<JSON
   "strategy": "Fortran wrapper module gated by WRF_SAVEPOINT; CPU savepoint emission shim for M6B0-R extraction",
   "patches": [
     "$PATCH_ROOT/solve_em.F.patch",
+    "$PATCH_ROOT/module_small_step_em.F.patch",
     "$PATCH_ROOT/configure.wrf.patch"
   ],
   "operational_sha256_after": "$stable_after",

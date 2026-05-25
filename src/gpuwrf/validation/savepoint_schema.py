@@ -10,7 +10,26 @@ from typing import Any, Literal
 import numpy as np
 
 
-SCHEMA_VERSION = "m6b0r-savepoint-v1"
+# SCHEMA_VERSION monotonic per-sprint suffix.
+#   v1: M6B0-R initial (calc_coef_w fields a/alpha/gamma + cofrz/cofwr/cofwz/coftz/cofwt/rdzw legacy)
+#   v2: M6B1 added advance_mu_t fields (mu/mudf/muts/muave/ww/theta/ph_tend) + advance_mu_t_pre/post boundaries
+#   v3: M6B2 added Thomas-solve fields (tri_a/tri_b/tri_alpha/tri_gamma/tri_rhs/tri_fwd/tri_solution)
+#        + advance_w_tridiag_{fwd,back}_{pre,post} boundaries
+#   v4: M6B3 added scratch-state fields (t_2ave, ww1, *_save, ph_tend accumulation, muave/muts carry)
+#        + t_2ave_update/ww_update/muave_update/ph_tend_accumulate/substep_save_state boundaries
+SCHEMA_VERSION = "m6b3-savepoint-v4"
+# Older savepoints emitted before the M6B-ladder-hygiene bump still validate as
+# compatible because the schema is purely additive across v1->v4 (new fields,
+# new boundaries, new operators; no removed or renamed fields). The hygiene
+# sprint kept the older versions in `SUPPORTED_SCHEMA_VERSIONS` so M6B0-R/B1/B2
+# regression fixtures continue to load. New emissions always use SCHEMA_VERSION.
+SUPPORTED_SCHEMA_VERSIONS = (
+    "m6b3-savepoint-v4",
+    "m6b3-savepoint-v3",  # alias not actually emitted; present for safety
+    "m6b2-savepoint-v3",
+    "m6b1-savepoint-v2",
+    "m6b0r-savepoint-v1",
+)
 SAVEPOINT_FORMAT = "hdf5-savepoint-v1"
 VALID_STAGGERS = {"mass", "u", "v", "w", "eta-half", "eta-full", "scalar"}
 VALID_BOUNDARIES = {
@@ -134,7 +153,7 @@ class SavepointMetadata:
     notes: str = ""
 
     def __post_init__(self) -> None:
-        if self.schema_version != SCHEMA_VERSION:
+        if self.schema_version not in SUPPORTED_SCHEMA_VERSIONS:
             raise ValueError(f"unsupported schema_version: {self.schema_version}")
         if self.file_format != SAVEPOINT_FORMAT:
             raise ValueError(f"unsupported file_format: {self.file_format}")

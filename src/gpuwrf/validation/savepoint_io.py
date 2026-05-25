@@ -10,7 +10,7 @@ from typing import Any
 import h5py
 import numpy as np
 
-from gpuwrf.validation.savepoint_schema import SCHEMA_VERSION, Savepoint, SavepointMetadata
+from gpuwrf.validation.savepoint_schema import SCHEMA_VERSION, SUPPORTED_SCHEMA_VERSIONS, Savepoint, SavepointMetadata
 
 
 METADATA_ATTR = "metadata_json"
@@ -64,13 +64,17 @@ def write_savepoint(path: str | Path, savepoint: Savepoint) -> None:
 def read_savepoint(
     path: str | Path,
     *,
-    expected_schema_version: str = SCHEMA_VERSION,
+    expected_schema_version: str | None = None,
     verify_tamper: bool = True,
 ) -> Savepoint:
     """Read and validate one HDF5 savepoint.
 
     ``expected_schema_version`` is intentionally explicit so dry-run tests can
-    prove version mismatch failures without mutating global constants.
+    prove version mismatch failures without mutating global constants. When
+    ``None`` (the default), any version in ``SUPPORTED_SCHEMA_VERSIONS`` is
+    accepted (M6B-ladder-hygiene Stage 3: the schema is purely additive across
+    v1→v4, so older savepoints remain readable). Pass an explicit string to
+    force exact-version matching (used by the dry-run mismatch test).
     """
 
     source = Path(path)
@@ -79,8 +83,13 @@ def read_savepoint(
             if METADATA_ATTR not in handle.attrs:
                 raise ValueError(f"{source} is missing {METADATA_ATTR}")
             metadata_payload = json.loads(str(handle.attrs[METADATA_ATTR]))
-            if metadata_payload.get("schema_version") != expected_schema_version:
-                raise ValueError(f"unsupported savepoint schema: {metadata_payload.get('schema_version')}")
+            file_version = metadata_payload.get("schema_version")
+            if expected_schema_version is None:
+                if file_version not in SUPPORTED_SCHEMA_VERSIONS:
+                    raise ValueError(f"unsupported savepoint schema: {file_version}")
+            else:
+                if file_version != expected_schema_version:
+                    raise ValueError(f"unsupported savepoint schema: {file_version}")
             metadata = SavepointMetadata.from_json(metadata_payload)
             if FIELDS_GROUP not in handle:
                 raise ValueError(f"{source} is missing /{FIELDS_GROUP}")

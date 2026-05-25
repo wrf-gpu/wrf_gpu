@@ -1,5 +1,5 @@
 {
-  "schema_version": "m6b0r-tolerance-ladder-v1",
+  "schema_version": "m6b3-tolerance-ladder-v4",
   "perturbation_rule": {
     "minimum_factor_over_tolerance": 10.0,
     "description": "Deliberate perturbations must be at least 10x the applicable pass tolerance."
@@ -35,7 +35,8 @@
       "abs": 1e-12,
       "rel": 1e-12,
       "ulp": 8,
-      "accumulation_exception": "none"
+      "accumulation_exception": "none",
+      "deprecated": "M6B0-R-legacy: MPAS-recurrence column coefficient consumed by scripts/diagnostic_first_bad_step_tracer.py and src/gpuwrf/validation/mpas_oracles/mpas_column_slice.py; retained for MPAS oracle parity. Remove in M6B7 once MPAS oracle is retired."
     },
     "cofwr": {
       "units": "operator-native",
@@ -43,7 +44,8 @@
       "abs": 1e-12,
       "rel": 1e-12,
       "ulp": 8,
-      "accumulation_exception": "none"
+      "accumulation_exception": "none",
+      "deprecated": "M6B0-R-legacy: MPAS-recurrence column coefficient; same provenance as cofrz."
     },
     "cofwz": {
       "units": "operator-native",
@@ -51,7 +53,8 @@
       "abs": 1e-11,
       "rel": 1e-12,
       "ulp": 8,
-      "accumulation_exception": "none"
+      "accumulation_exception": "none",
+      "deprecated": "M6B0-R-legacy: MPAS-recurrence column coefficient; same provenance as cofrz."
     },
     "coftz": {
       "units": "operator-native",
@@ -59,7 +62,8 @@
       "abs": 1e-11,
       "rel": 1e-12,
       "ulp": 8,
-      "accumulation_exception": "none"
+      "accumulation_exception": "none",
+      "deprecated": "M6B0-R-legacy: MPAS-recurrence column coefficient; same provenance as cofrz."
     },
     "cofwt": {
       "units": "operator-native",
@@ -67,7 +71,8 @@
       "abs": 1e-12,
       "rel": 1e-12,
       "ulp": 8,
-      "accumulation_exception": "none"
+      "accumulation_exception": "none",
+      "deprecated": "M6B0-R-legacy: MPAS-recurrence column coefficient; same provenance as cofrz."
     },
     "rdzw": {
       "units": "m-1",
@@ -75,7 +80,8 @@
       "abs": 1e-12,
       "rel": 1e-12,
       "ulp": 8,
-      "accumulation_exception": "none"
+      "accumulation_exception": "none",
+      "deprecated": "M6B0-R-legacy: inverse layer thickness consumed by MPAS oracle. Retained for parity; remove in M6B7."
     },
     "tri_a": {
       "units": "dimensionless",
