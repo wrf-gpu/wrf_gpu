@@ -1,0 +1,692 @@
+{
+  "boundary_field_perturbations_caught": true,
+  "clean": {
+    "mu": {
+      "abs_threshold": 3e-06,
+      "actual_shape": [
+        3,
+        3
+      ],
+      "dtype": "float64",
+      "expected_shape": [
+        3,
+        3
+      ],
+      "location": [
+        0,
+        0
+      ],
+      "max_abs_delta": 0.0,
+      "passed": true,
+      "rel_threshold": 3e-10,
+      "tolerance": 3e-06,
+      "ulp_threshold": 2400,
+      "units": "Pa"
+    },
+    "muave": {
+      "abs_threshold": 3e-06,
+      "actual_shape": [
+        3,
+        3
+      ],
+      "dtype": "float64",
+      "expected_shape": [
+        3,
+        3
+      ],
+      "location": [
+        0,
+        0
+      ],
+      "max_abs_delta": 0.0,
+      "passed": true,
+      "rel_threshold": 3e-10,
+      "tolerance": 3e-06,
+      "ulp_threshold": 2400,
+      "units": "Pa"
+    },
+    "mudf": {
+      "abs_threshold": 3e-08,
+      "actual_shape": [
+        3,
+        3
+      ],
+      "dtype": "float64",
+      "expected_shape": [
+        3,
+        3
+      ],
+      "location": [
+        0,
+        0
+      ],
+      "max_abs_delta": 0.0,
+      "passed": true,
+      "rel_threshold": 3e-10,
+      "tolerance": 3e-08,
+      "ulp_threshold": 2400,
+      "units": "Pa s-1"
+    },
+    "mut": {
+      "abs_threshold": 3e-06,
+      "actual_shape": [
+        3,
+        3
+      ],
+      "dtype": "float64",
+      "expected_shape": [
+        3,
+        3
+      ],
+      "location": [
+        0,
+        0
+      ],
+      "max_abs_delta": 0.0,
+      "passed": true,
+      "rel_threshold": 3e-10,
+      "tolerance": 2.8499999999999998e-05,
+      "ulp_threshold": 2400,
+      "units": "Pa"
+    },
+    "muts": {
+      "abs_threshold": 3e-06,
+      "actual_shape": [
+        3,
+        3
+      ],
+      "dtype": "float64",
+      "expected_shape": [
+        3,
+        3
+      ],
+      "location": [
+        0,
+        0
+      ],
+      "max_abs_delta": 0.0,
+      "passed": true,
+      "rel_threshold": 3e-10,
+      "tolerance": 2.9007034350585936e-05,
+      "ulp_threshold": 4800,
+      "units": "Pa"
+    },
+    "p": {
+      "abs_threshold": 3e-06,
+      "actual_shape": [
+        44,
+        3,
+        3
+      ],
+      "dtype": "float64",
+      "expected_shape": [
+        44,
+        3,
+        3
+      ],
+      "location": [
+        0,
+        0,
+        0
+      ],
+      "max_abs_delta": 0.0,
+      "passed": true,
+      "rel_threshold": 3e-10,
+      "tolerance": 3e-06,
+      "ulp_threshold": 4800,
+      "units": "Pa"
+    },
+    "ph": {
+      "abs_threshold": 3e-06,
+      "actual_shape": [
+        45,
+        3,
+        3
+      ],
+      "dtype": "float64",
+      "expected_shape": [
+        45,
+        3,
+        3
+      ],
+      "location": [
+        0,
+        0,
+        0
+      ],
+      "max_abs_delta": 0.0,
+      "passed": true,
+      "rel_threshold": 3e-10,
+      "tolerance": 3e-06,
+      "ulp_threshold": 4800,
+      "units": "m2 s-2"
+    },
+    "ph_tend": {
+      "abs_threshold": 3e-08,
+      "actual_shape": [
+        45,
+        3,
+        3
+      ],
+      "dtype": "float64",
+      "expected_shape": [
+        45,
+        3,
+        3
+      ],
+      "location": [
+        0,
+        0,
+        0
+      ],
+      "max_abs_delta": 0.0,
+      "passed": true,
+      "rel_threshold": 3e-10,
+      "tolerance": 2.2954880261713744e-07,
+      "ulp_threshold": 2400,
+      "units": "m2 s-3"
+    },
+    "t_2ave": {
+      "abs_threshold": 3e-08,
+      "actual_shape": [
+        44,
+        3,
+        3
+      ],
+      "dtype": "float64",
+      "expected_shape": [
+        44,
+        3,
+        3
+      ],
+      "location": [
+        0,
+        0,
+        0
+      ],
+      "max_abs_delta": 0.0,
+      "passed": true,
+      "rel_threshold": 3e-10,
+      "tolerance": 2.2529616654731402e-05,
+      "ulp_threshold": 2400,
+      "units": "K"
+    },
+    "theta": {
+      "abs_threshold": 3e-08,
+      "actual_shape": [
+        44,
+        3,
+        3
+      ],
+      "dtype": "float64",
+      "expected_shape": [
+        44,
+        3,
+        3
+      ],
+      "location": [
+        0,
+        0,
+        0
+      ],
+      "max_abs_delta": 0.0,
+      "passed": true,
+      "rel_threshold": 3e-10,
+      "tolerance": 2.2912197992426633e-05,
+      "ulp_threshold": 2400,
+      "units": "K"
+    },
+    "u": {
+      "abs_threshold": 3e-08,
+      "actual_shape": [
+        44,
+        3,
+        4
+      ],
+      "dtype": "float64",
+      "expected_shape": [
+        44,
+        3,
+        4
+      ],
+      "location": [
+        0,
+        0,
+        0
+      ],
+      "max_abs_delta": 0.0,
+      "passed": true,
+      "rel_threshold": 3e-10,
+      "tolerance": 3e-08,
+      "ulp_threshold": 4800,
+      "units": "m s-1"
+    },
+    "v": {
+      "abs_threshold": 3e-08,
+      "actual_shape": [
+        44,
+        4,
+        3
+      ],
+      "dtype": "float64",
+      "expected_shape": [
+        44,
+        4,
+        3
+      ],
+      "location": [
+        0,
+        0,
+        0
+      ],
+      "max_abs_delta": 0.0,
+      "passed": true,
+      "rel_threshold": 3e-10,
+      "tolerance": 3e-08,
+      "ulp_threshold": 4800,
+      "units": "m s-1"
+    },
+    "w": {
+      "abs_threshold": 3e-07,
+      "actual_shape": [
+        45,
+        3,
+        3
+      ],
+      "dtype": "float64",
+      "expected_shape": [
+        45,
+        3,
+        3
+      ],
+      "location": [
+        0,
+        0,
+        0
+      ],
+      "max_abs_delta": 0.0,
+      "passed": true,
+      "rel_threshold": 3e-10,
+      "tolerance": 3e-07,
+      "ulp_threshold": 9600,
+      "units": "m s-1"
+    },
+    "ww": {
+      "abs_threshold": 3e-07,
+      "actual_shape": [
+        45,
+        3,
+        3
+      ],
+      "dtype": "float64",
+      "expected_shape": [
+        45,
+        3,
+        3
+      ],
+      "location": [
+        0,
+        0,
+        0
+      ],
+      "max_abs_delta": 0.0,
+      "passed": true,
+      "rel_threshold": 3e-10,
+      "tolerance": 3e-07,
+      "ulp_threshold": 2400,
+      "units": "Pa s-1"
+    }
+  },
+  "clean_self_compare_passed": true,
+  "namelist_disabled": {
+    "bl_pbl_physics": 0,
+    "cu_physics": 0,
+    "mp_physics": 0,
+    "ra_lw_physics": 0,
+    "ra_sw_physics": 0,
+    "sf_sfclay_physics": 0,
+    "sf_surface_physics": 0,
+    "specified": false
+  },
+  "operator": "dycore_step",
+  "passed": true,
+  "perturbed": {
+    "mu": {
+      "abs_threshold": 3e-06,
+      "actual_shape": [
+        3,
+        3
+      ],
+      "dtype": "float64",
+      "expected_shape": [
+        3,
+        3
+      ],
+      "location": [
+        0,
+        0
+      ],
+      "max_abs_delta": 6.000000007588824e-05,
+      "passed": false,
+      "rel_threshold": 3e-10,
+      "tolerance": 3e-06,
+      "ulp_threshold": 2400,
+      "units": "Pa"
+    },
+    "muave": {
+      "abs_threshold": 3e-06,
+      "actual_shape": [
+        3,
+        3
+      ],
+      "dtype": "float64",
+      "expected_shape": [
+        3,
+        3
+      ],
+      "location": [
+        0,
+        0
+      ],
+      "max_abs_delta": 6.000000007588824e-05,
+      "passed": false,
+      "rel_threshold": 3e-10,
+      "tolerance": 3e-06,
+      "ulp_threshold": 2400,
+      "units": "Pa"
+    },
+    "mudf": {
+      "abs_threshold": 3e-08,
+      "actual_shape": [
+        3,
+        3
+      ],
+      "dtype": "float64",
+      "expected_shape": [
+        3,
+        3
+      ],
+      "location": [
+        0,
+        0
+      ],
+      "max_abs_delta": 6e-07,
+      "passed": false,
+      "rel_threshold": 3e-10,
+      "tolerance": 3e-08,
+      "ulp_threshold": 2400,
+      "units": "Pa s-1"
+    },
+    "mut": {
+      "abs_threshold": 3e-06,
+      "actual_shape": [
+        3,
+        3
+      ],
+      "dtype": "float64",
+      "expected_shape": [
+        3,
+        3
+      ],
+      "location": [
+        0,
+        0
+      ],
+      "max_abs_delta": 0.0005700000037904829,
+      "passed": false,
+      "rel_threshold": 3e-10,
+      "tolerance": 2.8500000171000002e-05,
+      "ulp_threshold": 2400,
+      "units": "Pa"
+    },
+    "muts": {
+      "abs_threshold": 3e-06,
+      "actual_shape": [
+        3,
+        3
+      ],
+      "dtype": "float64",
+      "expected_shape": [
+        3,
+        3
+      ],
+      "location": [
+        0,
+        0
+      ],
+      "max_abs_delta": 0.0005801406805403531,
+      "passed": false,
+      "rel_threshold": 3e-10,
+      "tolerance": 2.9007034350585936e-05,
+      "ulp_threshold": 4800,
+      "units": "Pa"
+    },
+    "p": {
+      "abs_threshold": 3e-06,
+      "actual_shape": [
+        44,
+        3,
+        3
+      ],
+      "dtype": "float64",
+      "expected_shape": [
+        44,
+        3,
+        3
+      ],
+      "location": [
+        0,
+        0,
+        0
+      ],
+      "max_abs_delta": 6.000000007588824e-05,
+      "passed": false,
+      "rel_threshold": 3e-10,
+      "tolerance": 3e-06,
+      "ulp_threshold": 4800,
+      "units": "Pa"
+    },
+    "ph": {
+      "abs_threshold": 3e-06,
+      "actual_shape": [
+        45,
+        3,
+        3
+      ],
+      "dtype": "float64",
+      "expected_shape": [
+        45,
+        3,
+        3
+      ],
+      "location": [
+        0,
+        0,
+        0
+      ],
+      "max_abs_delta": 6e-05,
+      "passed": false,
+      "rel_threshold": 3e-10,
+      "tolerance": 3e-06,
+      "ulp_threshold": 4800,
+      "units": "m2 s-2"
+    },
+    "ph_tend": {
+      "abs_threshold": 3e-08,
+      "actual_shape": [
+        45,
+        3,
+        3
+      ],
+      "dtype": "float64",
+      "expected_shape": [
+        45,
+        3,
+        3
+      ],
+      "location": [
+        0,
+        0,
+        0
+      ],
+      "max_abs_delta": 4.590976052342749e-06,
+      "passed": false,
+      "rel_threshold": 3e-10,
+      "tolerance": 2.2954880261713744e-07,
+      "ulp_threshold": 2400,
+      "units": "m2 s-3"
+    },
+    "t_2ave": {
+      "abs_threshold": 3e-08,
+      "actual_shape": [
+        44,
+        3,
+        3
+      ],
+      "dtype": "float64",
+      "expected_shape": [
+        44,
+        3,
+        3
+      ],
+      "location": [
+        0,
+        0,
+        0
+      ],
+      "max_abs_delta": 0.0004505923330944128,
+      "passed": false,
+      "rel_threshold": 3e-10,
+      "tolerance": 2.2529616654731402e-05,
+      "ulp_threshold": 2400,
+      "units": "K"
+    },
+    "theta": {
+      "abs_threshold": 3e-08,
+      "actual_shape": [
+        44,
+        3,
+        3
+      ],
+      "dtype": "float64",
+      "expected_shape": [
+        44,
+        3,
+        3
+      ],
+      "location": [
+        0,
+        0,
+        0
+      ],
+      "max_abs_delta": 0.00045824395984883637,
+      "passed": false,
+      "rel_threshold": 3e-10,
+      "tolerance": 2.2912197992426633e-05,
+      "ulp_threshold": 2400,
+      "units": "K"
+    },
+    "u": {
+      "abs_threshold": 3e-08,
+      "actual_shape": [
+        44,
+        3,
+        4
+      ],
+      "dtype": "float64",
+      "expected_shape": [
+        44,
+        3,
+        4
+      ],
+      "location": [
+        0,
+        0,
+        0
+      ],
+      "max_abs_delta": 6.000000000172534e-07,
+      "passed": false,
+      "rel_threshold": 3e-10,
+      "tolerance": 3e-08,
+      "ulp_threshold": 4800,
+      "units": "m s-1"
+    },
+    "v": {
+      "abs_threshold": 3e-08,
+      "actual_shape": [
+        44,
+        4,
+        3
+      ],
+      "dtype": "float64",
+      "expected_shape": [
+        44,
+        4,
+        3
+      ],
+      "location": [
+        0,
+        0,
+        0
+      ],
+      "max_abs_delta": 5.999999999062311e-07,
+      "passed": false,
+      "rel_threshold": 3e-10,
+      "tolerance": 3e-08,
+      "ulp_threshold": 4800,
+      "units": "m s-1"
+    },
+    "w": {
+      "abs_threshold": 3e-07,
+      "actual_shape": [
+        45,
+        3,
+        3
+      ],
+      "dtype": "float64",
+      "expected_shape": [
+        45,
+        3,
+        3
+      ],
+      "location": [
+        0,
+        0,
+        0
+      ],
+      "max_abs_delta": 6e-06,
+      "passed": false,
+      "rel_threshold": 3e-10,
+      "tolerance": 3e-07,
+      "ulp_threshold": 9600,
+      "units": "m s-1"
+    },
+    "ww": {
+      "abs_threshold": 3e-07,
+      "actual_shape": [
+        45,
+        3,
+        3
+      ],
+      "dtype": "float64",
+      "expected_shape": [
+        45,
+        3,
+        3
+      ],
+      "location": [
+        0,
+        0,
+        0
+      ],
+      "max_abs_delta": 6e-06,
+      "passed": false,
+      "rel_threshold": 3e-10,
+      "tolerance": 3e-07,
+      "ulp_threshold": 2400,
+      "units": "Pa s-1"
+    }
+  },
+  "sanitizer_mode": "off",
+  "source_path": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T072630Z/wrfout_d02_2026-05-22_00:00:00"
+}

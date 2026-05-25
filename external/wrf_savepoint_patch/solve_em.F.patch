@@ -15,7 +15,7 @@
 +      sp_advance_w_rayleigh, sp_advance_w_ph_final, sp_calc_p_rho_post, &
 +      sp_small_step_finish_post, sp_acoustic_substep_boundary, &
 +      sp_acoustic_substep_complete, sp_acoustic_loop_complete, &
-+      sp_rk_stage_boundary
++      sp_dycore_step_complete, sp_rk_stage_boundary
 +#endif
 @@ -2675,0 +2692,3 @@
 +#ifdef WRF_SAVEPOINT
@@ -55,3 +55,10 @@
 +          grid%muts, muave, grid%ww, grid%t_2, ph_tend, grid%u_2, grid%v_2, &
 +          grid%w_2, grid%ph_2, grid%p, t_2save)
 +#endif
+@@ -6765,0 +6812,6 @@
++#ifdef WRF_SAVEPOINT
++  CALL sp_dycore_step_complete(grid%itimestep, grid%mu_2, grid%mut, grid%mudf, &
++       grid%muts, muave, grid%ww, grid%t_2, ph_tend, grid%u_2, grid%v_2, &
++       grid%w_2, grid%ph_2, grid%p, t_2save)
++#endif
++

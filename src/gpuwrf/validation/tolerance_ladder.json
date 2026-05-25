@@ -1,5 +1,5 @@
 {
-  "schema_version": "m6b4-tolerance-ladder-v5",
+  "schema_version": "m6b5-tolerance-ladder-v6",
   "perturbation_rule": {
     "minimum_factor_over_tolerance": 10.0,
     "description": "Deliberate perturbations must be at least 10x the applicable pass tolerance."
@@ -314,6 +314,28 @@
       "rel": 1e-12,
       "ulp": 16,
       "accumulation_exception": "M6B4 full-state recurrence snapshot; no operational carry authorization."
+    }
+  },
+  "dycore_step_tolerances": {
+    "description": "M6B5 per-full-timestep ladder. Bound is M6B4 per-substep tolerance x 10 acoustic substeps x 3 RK stages x 10 timesteps = 300x, recorded before final comparison.",
+    "steps": 10,
+    "rk_stages_per_step": 3,
+    "acoustic_substeps_per_stage": 10,
+    "fields": {
+      "mu": {"units": "Pa", "dtype": "float64", "abs": 3e-6, "rel": 3e-10, "ulp": 2400, "accumulation_exception": "M6B5 geometric-growth bound: M6B4 mu abs tolerance x300."},
+      "mut": {"units": "Pa", "dtype": "float64", "abs": 3e-6, "rel": 3e-10, "ulp": 2400, "accumulation_exception": "M6B5 geometric-growth bound: M6B4 mut abs tolerance x300."},
+      "mudf": {"units": "Pa s-1", "dtype": "float64", "abs": 3e-8, "rel": 3e-10, "ulp": 2400, "accumulation_exception": "M6B5 geometric-growth bound: M6B4 mudf abs tolerance x300."},
+      "muts": {"units": "Pa", "dtype": "float64", "abs": 3e-6, "rel": 3e-10, "ulp": 4800, "accumulation_exception": "M6B5 geometric-growth bound: M6B4 muts abs tolerance x300."},
+      "muave": {"units": "Pa", "dtype": "float64", "abs": 3e-6, "rel": 3e-10, "ulp": 2400, "accumulation_exception": "M6B5 geometric-growth bound: M6B4 muave abs tolerance x300."},
+      "ww": {"units": "Pa s-1", "dtype": "float64", "abs": 3e-7, "rel": 3e-10, "ulp": 2400, "accumulation_exception": "M6B5 geometric-growth bound: M6B4 ww abs tolerance x300."},
+      "theta": {"units": "K", "dtype": "float64", "abs": 3e-8, "rel": 3e-10, "ulp": 2400, "accumulation_exception": "M6B5 geometric-growth bound: M6B4 theta abs tolerance x300."},
+      "ph_tend": {"units": "m2 s-3", "dtype": "float64", "abs": 3e-8, "rel": 3e-10, "ulp": 2400, "accumulation_exception": "M6B5 geometric-growth bound: M6B4 ph_tend abs tolerance x300."},
+      "u": {"units": "m s-1", "dtype": "float64", "abs": 3e-8, "rel": 3e-10, "ulp": 4800, "accumulation_exception": "M6B5 geometric-growth bound: M6B4 u abs tolerance x300."},
+      "v": {"units": "m s-1", "dtype": "float64", "abs": 3e-8, "rel": 3e-10, "ulp": 4800, "accumulation_exception": "M6B5 geometric-growth bound: M6B4 v abs tolerance x300."},
+      "w": {"units": "m s-1", "dtype": "float64", "abs": 3e-7, "rel": 3e-10, "ulp": 9600, "accumulation_exception": "M6B5 geometric-growth bound: M6B4 w abs tolerance x300."},
+      "ph": {"units": "m2 s-2", "dtype": "float64", "abs": 3e-6, "rel": 3e-10, "ulp": 4800, "accumulation_exception": "M6B5 geometric-growth bound: M6B4 ph abs tolerance x300."},
+      "p": {"units": "Pa", "dtype": "float64", "abs": 3e-6, "rel": 3e-10, "ulp": 4800, "accumulation_exception": "M6B5 geometric-growth bound: M6B4 p abs tolerance x300."},
+      "t_2ave": {"units": "K", "dtype": "float64", "abs": 3e-8, "rel": 3e-10, "ulp": 2400, "accumulation_exception": "M6B5 geometric-growth bound: M6B4 t_2ave abs tolerance x300."}
     }
   }
 }
