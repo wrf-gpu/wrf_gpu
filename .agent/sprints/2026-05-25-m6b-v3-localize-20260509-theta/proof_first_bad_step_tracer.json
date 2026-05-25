@@ -1,0 +1,2700 @@
+{
+  "abort_on_first_bad": false,
+  "artifact_type": "diagnostic_first_bad_step_tracer",
+  "description": "V3 localization helper, sanitizer off.",
+  "first_bad_step": 1,
+  "first_guard_limit_step": null,
+  "first_guard_or_nonfinite_issue": {
+    "field": "u",
+    "kind": "nonfinite",
+    "limits": null,
+    "location": {
+      "i_j_k": [
+        17,
+        8,
+        0
+      ],
+      "raw_indices": [
+        0,
+        8,
+        17
+      ]
+    },
+    "previous_value": 3.0952441692352295,
+    "source": "state",
+    "stage": "candidate",
+    "step": 1,
+    "value": "nan"
+  },
+  "first_issue": {
+    "field": "u",
+    "kind": "nonfinite",
+    "limits": null,
+    "location": {
+      "i_j_k": [
+        17,
+        8,
+        0
+      ],
+      "raw_indices": [
+        0,
+        8,
+        17
+      ]
+    },
+    "previous_value": 3.0952441692352295,
+    "source": "state",
+    "stage": "candidate",
+    "step": 1,
+    "value": "nan"
+  },
+  "first_nonfinite_step": 1,
+  "per_step": [
+    {
+      "extrema": {
+        "mu_max_pa": 97493.641015625,
+        "mu_min_pa": 66622.1825,
+        "p_max_pa": 43003875824.3198,
+        "p_min_pa": -54343059728.59218,
+        "theta_max_k": "nan",
+        "theta_min_k": "nan",
+        "u_abs_max_m_s": "nan",
+        "v_abs_max_m_s": "nan",
+        "w_abs_max_m_s": 62647851.632001325
+      },
+      "fields_on_cap": [
+        {
+          "count": 329293,
+          "field": "u",
+          "limits": [
+            -150.0,
+            150.0
+          ]
+        },
+        {
+          "count": 333469,
+          "field": "v",
+          "limits": [
+            -150.0,
+            150.0
+          ]
+        },
+        {
+          "count": 54331,
+          "field": "w",
+          "limits": [
+            -50.0,
+            50.0
+          ]
+        },
+        {
+          "count": 79377,
+          "field": "theta",
+          "limits": [
+            150.0,
+            550.0
+          ]
+        },
+        {
+          "count": 2052,
+          "field": "qv",
+          "limits": [
+            0.0,
+            0.05
+          ]
+        },
+        {
+          "count": 82178,
+          "field": "p",
+          "limits": [
+            1000.0,
+            120000.0
+          ]
+        },
+        {
+          "count": 343920,
+          "field": "qc",
+          "limits": [
+            0.0,
+            0.05
+          ]
+        },
+        {
+          "count": 348480,
+          "field": "qr",
+          "limits": [
+            0.0,
+            0.05
+          ]
+        },
+        {
+          "count": 312578,
+          "field": "qi",
+          "limits": [
+            0.0,
+            0.05
+          ]
+        },
+        {
+          "count": 348480,
+          "field": "qs",
+          "limits": [
+            0.0,
+            0.05
+          ]
+        },
+        {
+          "count": 348480,
+          "field": "qg",
+          "limits": [
+            0.0,
+            0.05
+          ]
+        },
+        {
+          "count": 312522,
+          "field": "Ni",
+          "limits": [
+            0.0,
+            10000000000.0
+          ]
+        },
+        {
+          "count": 348480,
+          "field": "Nr",
+          "limits": [
+            0.0,
+            10000000000.0
+          ]
+        },
+        {
+          "count": 348480,
+          "field": "Ns",
+          "limits": [
+            0.0,
+            10000000000.0
+          ]
+        },
+        {
+          "count": 348480,
+          "field": "Ng",
+          "limits": [
+            0.0,
+            10000000000.0
+          ]
+        },
+        {
+          "count": 48336,
+          "field": "qke",
+          "limits": [
+            0.0,
+            100.0
+          ]
+        },
+        {
+          "count": 7378,
+          "field": "ustar",
+          "limits": [
+            0.0,
+            10.0
+          ]
+        },
+        {
+          "count": 3949,
+          "field": "theta_flux",
+          "limits": [
+            -5.0,
+            5.0
+          ]
+        },
+        {
+          "count": 3098,
+          "field": "qv_flux",
+          "limits": [
+            -0.01,
+            0.01
+          ]
+        },
+        {
+          "count": 7583,
+          "field": "tau_u",
+          "limits": [
+            -10.0,
+            10.0
+          ]
+        },
+        {
+          "count": 7607,
+          "field": "tau_v",
+          "limits": [
+            -10.0,
+            10.0
+          ]
+        },
+        {
+          "count": 748,
+          "field": "rhosfc",
+          "limits": [
+            0.1,
+            2.0
+          ]
+        },
+        {
+          "count": 4575,
+          "field": "fltv",
+          "limits": [
+            -5.0,
+            5.0
+          ]
+        },
+        {
+          "count": 7373,
+          "field": "soil_moisture",
+          "limits": [
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "count": 7920,
+          "field": "rain_acc",
+          "limits": [
+            0.0,
+            1000000.0
+          ]
+        },
+        {
+          "count": 7920,
+          "field": "snow_acc",
+          "limits": [
+            0.0,
+            1000000.0
+          ]
+        },
+        {
+          "count": 7920,
+          "field": "graupel_acc",
+          "limits": [
+            0.0,
+            1000000.0
+          ]
+        },
+        {
+          "count": 7920,
+          "field": "ice_acc",
+          "limits": [
+            0.0,
+            1000000.0
+          ]
+        }
+      ],
+      "first_issue": {
+        "field": "u",
+        "kind": "nonfinite",
+        "limits": null,
+        "location": {
+          "i_j_k": [
+            17,
+            8,
+            0
+          ],
+          "raw_indices": [
+            0,
+            8,
+            17
+          ]
+        },
+        "previous_value": 3.0952441692352295,
+        "source": "state",
+        "stage": "candidate",
+        "step": 1,
+        "value": "nan"
+      },
+      "nonfinite_fields": [
+        {
+          "count": 264,
+          "field": "u"
+        },
+        {
+          "count": 264,
+          "field": "v"
+        },
+        {
+          "count": 132,
+          "field": "theta"
+        },
+        {
+          "count": 132,
+          "field": "qv"
+        },
+        {
+          "count": 4,
+          "field": "qc"
+        },
+        {
+          "count": 4,
+          "field": "Ni"
+        },
+        {
+          "count": 132,
+          "field": "qke"
+        },
+        {
+          "count": 15,
+          "field": "ustar"
+        },
+        {
+          "count": 15,
+          "field": "theta_flux"
+        },
+        {
+          "count": 15,
+          "field": "qv_flux"
+        },
+        {
+          "count": 15,
+          "field": "tau_u"
+        },
+        {
+          "count": 15,
+          "field": "tau_v"
+        },
+        {
+          "count": 3,
+          "field": "rhosfc"
+        },
+        {
+          "count": 15,
+          "field": "fltv"
+        }
+      ],
+      "stage_issue_count": 0,
+      "step": 1
+    },
+    {
+      "extrema": {
+        "mu_max_pa": "nan",
+        "mu_min_pa": "nan",
+        "p_max_pa": "nan",
+        "p_min_pa": "nan",
+        "theta_max_k": "nan",
+        "theta_min_k": "nan",
+        "u_abs_max_m_s": "nan",
+        "v_abs_max_m_s": "nan",
+        "w_abs_max_m_s": "nan"
+      },
+      "fields_on_cap": [
+        {
+          "count": 348480,
+          "field": "Ns",
+          "limits": [
+            0.0,
+            10000000000.0
+          ]
+        },
+        {
+          "count": 348480,
+          "field": "Ng",
+          "limits": [
+            0.0,
+            10000000000.0
+          ]
+        },
+        {
+          "count": 7373,
+          "field": "soil_moisture",
+          "limits": [
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "count": 7920,
+          "field": "rain_acc",
+          "limits": [
+            0.0,
+            1000000.0
+          ]
+        },
+        {
+          "count": 7920,
+          "field": "snow_acc",
+          "limits": [
+            0.0,
+            1000000.0
+          ]
+        },
+        {
+          "count": 7920,
+          "field": "graupel_acc",
+          "limits": [
+            0.0,
+            1000000.0
+          ]
+        },
+        {
+          "count": 7920,
+          "field": "ice_acc",
+          "limits": [
+            0.0,
+            1000000.0
+          ]
+        }
+      ],
+      "first_issue": {
+        "field": "u",
+        "kind": "nonfinite",
+        "limits": null,
+        "location": {
+          "i_j_k": [
+            1,
+            1,
+            0
+          ],
+          "raw_indices": [
+            0,
+            1,
+            1
+          ]
+        },
+        "previous_value": 3551.26806640625,
+        "source": "state",
+        "stage": "candidate",
+        "step": 2,
+        "value": "nan"
+      },
+      "nonfinite_fields": [
+        {
+          "count": 335104,
+          "field": "u"
+        },
+        {
+          "count": 337480,
+          "field": "v"
+        },
+        {
+          "count": 356400,
+          "field": "w"
+        },
+        {
+          "count": 332288,
+          "field": "theta"
+        },
+        {
+          "count": 332288,
+          "field": "qv"
+        },
+        {
+          "count": 348480,
+          "field": "p"
+        },
+        {
+          "count": 339840,
+          "field": "ph"
+        },
+        {
+          "count": 7552,
+          "field": "mu"
+        },
+        {
+          "count": 348480,
+          "field": "p_total"
+        },
+        {
+          "count": 348480,
+          "field": "p_perturbation"
+        },
+        {
+          "count": 339840,
+          "field": "ph_total"
+        },
+        {
+          "count": 356400,
+          "field": "ph_perturbation"
+        },
+        {
+          "count": 7552,
+          "field": "mu_total"
+        },
+        {
+          "count": 7920,
+          "field": "mu_perturbation"
+        },
+        {
+          "count": 348480,
+          "field": "qc"
+        },
+        {
+          "count": 348480,
+          "field": "qr"
+        },
+        {
+          "count": 348480,
+          "field": "qi"
+        },
+        {
+          "count": 348480,
+          "field": "qs"
+        },
+        {
+          "count": 348480,
+          "field": "qg"
+        },
+        {
+          "count": 348480,
+          "field": "Ni"
+        },
+        {
+          "count": 348480,
+          "field": "Nr"
+        },
+        {
+          "count": 348480,
+          "field": "qke"
+        },
+        {
+          "count": 7920,
+          "field": "ustar"
+        },
+        {
+          "count": 7920,
+          "field": "theta_flux"
+        },
+        {
+          "count": 7920,
+          "field": "qv_flux"
+        },
+        {
+          "count": 7920,
+          "field": "tau_u"
+        },
+        {
+          "count": 7920,
+          "field": "tau_v"
+        },
+        {
+          "count": 7920,
+          "field": "rhosfc"
+        },
+        {
+          "count": 7920,
+          "field": "fltv"
+        }
+      ],
+      "stage_issue_count": 0,
+      "step": 2
+    },
+    {
+      "extrema": {
+        "mu_max_pa": "nan",
+        "mu_min_pa": "nan",
+        "p_max_pa": "nan",
+        "p_min_pa": "nan",
+        "theta_max_k": "nan",
+        "theta_min_k": "nan",
+        "u_abs_max_m_s": "nan",
+        "v_abs_max_m_s": "nan",
+        "w_abs_max_m_s": "nan"
+      },
+      "fields_on_cap": [
+        {
+          "count": 348480,
+          "field": "Ns",
+          "limits": [
+            0.0,
+            10000000000.0
+          ]
+        },
+        {
+          "count": 348480,
+          "field": "Ng",
+          "limits": [
+            0.0,
+            10000000000.0
+          ]
+        },
+        {
+          "count": 7373,
+          "field": "soil_moisture",
+          "limits": [
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "count": 7920,
+          "field": "rain_acc",
+          "limits": [
+            0.0,
+            1000000.0
+          ]
+        },
+        {
+          "count": 7920,
+          "field": "snow_acc",
+          "limits": [
+            0.0,
+            1000000.0
+          ]
+        },
+        {
+          "count": 7920,
+          "field": "graupel_acc",
+          "limits": [
+            0.0,
+            1000000.0
+          ]
+        },
+        {
+          "count": 7920,
+          "field": "ice_acc",
+          "limits": [
+            0.0,
+            1000000.0
+          ]
+        }
+      ],
+      "first_issue": {
+        "field": "u",
+        "kind": "nonfinite",
+        "limits": null,
+        "location": {
+          "i_j_k": [
+            1,
+            1,
+            0
+          ],
+          "raw_indices": [
+            0,
+            1,
+            1
+          ]
+        },
+        "previous_value": "nan",
+        "source": "state",
+        "stage": "candidate",
+        "step": 3,
+        "value": "nan"
+      },
+      "nonfinite_fields": [
+        {
+          "count": 335104,
+          "field": "u"
+        },
+        {
+          "count": 337480,
+          "field": "v"
+        },
+        {
+          "count": 356400,
+          "field": "w"
+        },
+        {
+          "count": 332288,
+          "field": "theta"
+        },
+        {
+          "count": 332288,
+          "field": "qv"
+        },
+        {
+          "count": 348480,
+          "field": "p"
+        },
+        {
+          "count": 339840,
+          "field": "ph"
+        },
+        {
+          "count": 7552,
+          "field": "mu"
+        },
+        {
+          "count": 348480,
+          "field": "p_total"
+        },
+        {
+          "count": 348480,
+          "field": "p_perturbation"
+        },
+        {
+          "count": 339840,
+          "field": "ph_total"
+        },
+        {
+          "count": 356400,
+          "field": "ph_perturbation"
+        },
+        {
+          "count": 7552,
+          "field": "mu_total"
+        },
+        {
+          "count": 7920,
+          "field": "mu_perturbation"
+        },
+        {
+          "count": 348480,
+          "field": "qc"
+        },
+        {
+          "count": 348480,
+          "field": "qr"
+        },
+        {
+          "count": 348480,
+          "field": "qi"
+        },
+        {
+          "count": 348480,
+          "field": "qs"
+        },
+        {
+          "count": 348480,
+          "field": "qg"
+        },
+        {
+          "count": 348480,
+          "field": "Ni"
+        },
+        {
+          "count": 348480,
+          "field": "Nr"
+        },
+        {
+          "count": 348480,
+          "field": "qke"
+        },
+        {
+          "count": 7920,
+          "field": "ustar"
+        },
+        {
+          "count": 7920,
+          "field": "theta_flux"
+        },
+        {
+          "count": 7920,
+          "field": "qv_flux"
+        },
+        {
+          "count": 7920,
+          "field": "tau_u"
+        },
+        {
+          "count": 7920,
+          "field": "tau_v"
+        },
+        {
+          "count": 7920,
+          "field": "rhosfc"
+        },
+        {
+          "count": 7920,
+          "field": "fltv"
+        }
+      ],
+      "stage_issue_count": 0,
+      "step": 3
+    },
+    {
+      "extrema": {
+        "mu_max_pa": "nan",
+        "mu_min_pa": "nan",
+        "p_max_pa": "nan",
+        "p_min_pa": "nan",
+        "theta_max_k": "nan",
+        "theta_min_k": "nan",
+        "u_abs_max_m_s": "nan",
+        "v_abs_max_m_s": "nan",
+        "w_abs_max_m_s": "nan"
+      },
+      "fields_on_cap": [
+        {
+          "count": 348480,
+          "field": "Ns",
+          "limits": [
+            0.0,
+            10000000000.0
+          ]
+        },
+        {
+          "count": 348480,
+          "field": "Ng",
+          "limits": [
+            0.0,
+            10000000000.0
+          ]
+        },
+        {
+          "count": 7373,
+          "field": "soil_moisture",
+          "limits": [
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "count": 7920,
+          "field": "rain_acc",
+          "limits": [
+            0.0,
+            1000000.0
+          ]
+        },
+        {
+          "count": 7920,
+          "field": "snow_acc",
+          "limits": [
+            0.0,
+            1000000.0
+          ]
+        },
+        {
+          "count": 7920,
+          "field": "graupel_acc",
+          "limits": [
+            0.0,
+            1000000.0
+          ]
+        },
+        {
+          "count": 7920,
+          "field": "ice_acc",
+          "limits": [
+            0.0,
+            1000000.0
+          ]
+        }
+      ],
+      "first_issue": {
+        "field": "u",
+        "kind": "nonfinite",
+        "limits": null,
+        "location": {
+          "i_j_k": [
+            1,
+            1,
+            0
+          ],
+          "raw_indices": [
+            0,
+            1,
+            1
+          ]
+        },
+        "previous_value": "nan",
+        "source": "state",
+        "stage": "candidate",
+        "step": 4,
+        "value": "nan"
+      },
+      "nonfinite_fields": [
+        {
+          "count": 335104,
+          "field": "u"
+        },
+        {
+          "count": 337480,
+          "field": "v"
+        },
+        {
+          "count": 356400,
+          "field": "w"
+        },
+        {
+          "count": 332288,
+          "field": "theta"
+        },
+        {
+          "count": 332288,
+          "field": "qv"
+        },
+        {
+          "count": 348480,
+          "field": "p"
+        },
+        {
+          "count": 339840,
+          "field": "ph"
+        },
+        {
+          "count": 7552,
+          "field": "mu"
+        },
+        {
+          "count": 348480,
+          "field": "p_total"
+        },
+        {
+          "count": 348480,
+          "field": "p_perturbation"
+        },
+        {
+          "count": 339840,
+          "field": "ph_total"
+        },
+        {
+          "count": 356400,
+          "field": "ph_perturbation"
+        },
+        {
+          "count": 7552,
+          "field": "mu_total"
+        },
+        {
+          "count": 7920,
+          "field": "mu_perturbation"
+        },
+        {
+          "count": 348480,
+          "field": "qc"
+        },
+        {
+          "count": 348480,
+          "field": "qr"
+        },
+        {
+          "count": 348480,
+          "field": "qi"
+        },
+        {
+          "count": 348480,
+          "field": "qs"
+        },
+        {
+          "count": 348480,
+          "field": "qg"
+        },
+        {
+          "count": 348480,
+          "field": "Ni"
+        },
+        {
+          "count": 348480,
+          "field": "Nr"
+        },
+        {
+          "count": 348480,
+          "field": "qke"
+        },
+        {
+          "count": 7920,
+          "field": "ustar"
+        },
+        {
+          "count": 7920,
+          "field": "theta_flux"
+        },
+        {
+          "count": 7920,
+          "field": "qv_flux"
+        },
+        {
+          "count": 7920,
+          "field": "tau_u"
+        },
+        {
+          "count": 7920,
+          "field": "tau_v"
+        },
+        {
+          "count": 7920,
+          "field": "rhosfc"
+        },
+        {
+          "count": 7920,
+          "field": "fltv"
+        }
+      ],
+      "stage_issue_count": 0,
+      "step": 4
+    },
+    {
+      "extrema": {
+        "mu_max_pa": "nan",
+        "mu_min_pa": "nan",
+        "p_max_pa": "nan",
+        "p_min_pa": "nan",
+        "theta_max_k": "nan",
+        "theta_min_k": "nan",
+        "u_abs_max_m_s": "nan",
+        "v_abs_max_m_s": "nan",
+        "w_abs_max_m_s": "nan"
+      },
+      "fields_on_cap": [
+        {
+          "count": 348480,
+          "field": "Ns",
+          "limits": [
+            0.0,
+            10000000000.0
+          ]
+        },
+        {
+          "count": 348480,
+          "field": "Ng",
+          "limits": [
+            0.0,
+            10000000000.0
+          ]
+        },
+        {
+          "count": 7373,
+          "field": "soil_moisture",
+          "limits": [
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "count": 7920,
+          "field": "rain_acc",
+          "limits": [
+            0.0,
+            1000000.0
+          ]
+        },
+        {
+          "count": 7920,
+          "field": "snow_acc",
+          "limits": [
+            0.0,
+            1000000.0
+          ]
+        },
+        {
+          "count": 7920,
+          "field": "graupel_acc",
+          "limits": [
+            0.0,
+            1000000.0
+          ]
+        },
+        {
+          "count": 7920,
+          "field": "ice_acc",
+          "limits": [
+            0.0,
+            1000000.0
+          ]
+        }
+      ],
+      "first_issue": {
+        "field": "u",
+        "kind": "nonfinite",
+        "limits": null,
+        "location": {
+          "i_j_k": [
+            1,
+            1,
+            0
+          ],
+          "raw_indices": [
+            0,
+            1,
+            1
+          ]
+        },
+        "previous_value": "nan",
+        "source": "state",
+        "stage": "candidate",
+        "step": 5,
+        "value": "nan"
+      },
+      "nonfinite_fields": [
+        {
+          "count": 335104,
+          "field": "u"
+        },
+        {
+          "count": 337480,
+          "field": "v"
+        },
+        {
+          "count": 356400,
+          "field": "w"
+        },
+        {
+          "count": 332288,
+          "field": "theta"
+        },
+        {
+          "count": 332288,
+          "field": "qv"
+        },
+        {
+          "count": 348480,
+          "field": "p"
+        },
+        {
+          "count": 339840,
+          "field": "ph"
+        },
+        {
+          "count": 7552,
+          "field": "mu"
+        },
+        {
+          "count": 348480,
+          "field": "p_total"
+        },
+        {
+          "count": 348480,
+          "field": "p_perturbation"
+        },
+        {
+          "count": 339840,
+          "field": "ph_total"
+        },
+        {
+          "count": 356400,
+          "field": "ph_perturbation"
+        },
+        {
+          "count": 7552,
+          "field": "mu_total"
+        },
+        {
+          "count": 7920,
+          "field": "mu_perturbation"
+        },
+        {
+          "count": 348480,
+          "field": "qc"
+        },
+        {
+          "count": 348480,
+          "field": "qr"
+        },
+        {
+          "count": 348480,
+          "field": "qi"
+        },
+        {
+          "count": 348480,
+          "field": "qs"
+        },
+        {
+          "count": 348480,
+          "field": "qg"
+        },
+        {
+          "count": 348480,
+          "field": "Ni"
+        },
+        {
+          "count": 348480,
+          "field": "Nr"
+        },
+        {
+          "count": 348480,
+          "field": "qke"
+        },
+        {
+          "count": 7920,
+          "field": "ustar"
+        },
+        {
+          "count": 7920,
+          "field": "theta_flux"
+        },
+        {
+          "count": 7920,
+          "field": "qv_flux"
+        },
+        {
+          "count": 7920,
+          "field": "tau_u"
+        },
+        {
+          "count": 7920,
+          "field": "tau_v"
+        },
+        {
+          "count": 7920,
+          "field": "rhosfc"
+        },
+        {
+          "count": 7920,
+          "field": "fltv"
+        }
+      ],
+      "stage_issue_count": 0,
+      "step": 5
+    },
+    {
+      "extrema": {
+        "mu_max_pa": "nan",
+        "mu_min_pa": "nan",
+        "p_max_pa": "nan",
+        "p_min_pa": "nan",
+        "theta_max_k": "nan",
+        "theta_min_k": "nan",
+        "u_abs_max_m_s": "nan",
+        "v_abs_max_m_s": "nan",
+        "w_abs_max_m_s": "nan"
+      },
+      "fields_on_cap": [
+        {
+          "count": 348480,
+          "field": "Ns",
+          "limits": [
+            0.0,
+            10000000000.0
+          ]
+        },
+        {
+          "count": 348480,
+          "field": "Ng",
+          "limits": [
+            0.0,
+            10000000000.0
+          ]
+        },
+        {
+          "count": 7373,
+          "field": "soil_moisture",
+          "limits": [
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "count": 7920,
+          "field": "rain_acc",
+          "limits": [
+            0.0,
+            1000000.0
+          ]
+        },
+        {
+          "count": 7920,
+          "field": "snow_acc",
+          "limits": [
+            0.0,
+            1000000.0
+          ]
+        },
+        {
+          "count": 7920,
+          "field": "graupel_acc",
+          "limits": [
+            0.0,
+            1000000.0
+          ]
+        },
+        {
+          "count": 7920,
+          "field": "ice_acc",
+          "limits": [
+            0.0,
+            1000000.0
+          ]
+        }
+      ],
+      "first_issue": {
+        "field": "u",
+        "kind": "nonfinite",
+        "limits": null,
+        "location": {
+          "i_j_k": [
+            1,
+            1,
+            0
+          ],
+          "raw_indices": [
+            0,
+            1,
+            1
+          ]
+        },
+        "previous_value": "nan",
+        "source": "state",
+        "stage": "candidate",
+        "step": 6,
+        "value": "nan"
+      },
+      "nonfinite_fields": [
+        {
+          "count": 335104,
+          "field": "u"
+        },
+        {
+          "count": 337480,
+          "field": "v"
+        },
+        {
+          "count": 356400,
+          "field": "w"
+        },
+        {
+          "count": 332288,
+          "field": "theta"
+        },
+        {
+          "count": 332288,
+          "field": "qv"
+        },
+        {
+          "count": 348480,
+          "field": "p"
+        },
+        {
+          "count": 339840,
+          "field": "ph"
+        },
+        {
+          "count": 7552,
+          "field": "mu"
+        },
+        {
+          "count": 348480,
+          "field": "p_total"
+        },
+        {
+          "count": 348480,
+          "field": "p_perturbation"
+        },
+        {
+          "count": 339840,
+          "field": "ph_total"
+        },
+        {
+          "count": 356400,
+          "field": "ph_perturbation"
+        },
+        {
+          "count": 7552,
+          "field": "mu_total"
+        },
+        {
+          "count": 7920,
+          "field": "mu_perturbation"
+        },
+        {
+          "count": 348480,
+          "field": "qc"
+        },
+        {
+          "count": 348480,
+          "field": "qr"
+        },
+        {
+          "count": 348480,
+          "field": "qi"
+        },
+        {
+          "count": 348480,
+          "field": "qs"
+        },
+        {
+          "count": 348480,
+          "field": "qg"
+        },
+        {
+          "count": 348480,
+          "field": "Ni"
+        },
+        {
+          "count": 348480,
+          "field": "Nr"
+        },
+        {
+          "count": 348480,
+          "field": "qke"
+        },
+        {
+          "count": 7920,
+          "field": "ustar"
+        },
+        {
+          "count": 7920,
+          "field": "theta_flux"
+        },
+        {
+          "count": 7920,
+          "field": "qv_flux"
+        },
+        {
+          "count": 7920,
+          "field": "tau_u"
+        },
+        {
+          "count": 7920,
+          "field": "tau_v"
+        },
+        {
+          "count": 7920,
+          "field": "rhosfc"
+        },
+        {
+          "count": 7920,
+          "field": "fltv"
+        }
+      ],
+      "stage_issue_count": 0,
+      "step": 6
+    },
+    {
+      "extrema": {
+        "mu_max_pa": "nan",
+        "mu_min_pa": "nan",
+        "p_max_pa": "nan",
+        "p_min_pa": "nan",
+        "theta_max_k": "nan",
+        "theta_min_k": "nan",
+        "u_abs_max_m_s": "nan",
+        "v_abs_max_m_s": "nan",
+        "w_abs_max_m_s": "nan"
+      },
+      "fields_on_cap": [
+        {
+          "count": 348480,
+          "field": "Ns",
+          "limits": [
+            0.0,
+            10000000000.0
+          ]
+        },
+        {
+          "count": 348480,
+          "field": "Ng",
+          "limits": [
+            0.0,
+            10000000000.0
+          ]
+        },
+        {
+          "count": 7373,
+          "field": "soil_moisture",
+          "limits": [
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "count": 7920,
+          "field": "rain_acc",
+          "limits": [
+            0.0,
+            1000000.0
+          ]
+        },
+        {
+          "count": 7920,
+          "field": "snow_acc",
+          "limits": [
+            0.0,
+            1000000.0
+          ]
+        },
+        {
+          "count": 7920,
+          "field": "graupel_acc",
+          "limits": [
+            0.0,
+            1000000.0
+          ]
+        },
+        {
+          "count": 7920,
+          "field": "ice_acc",
+          "limits": [
+            0.0,
+            1000000.0
+          ]
+        }
+      ],
+      "first_issue": {
+        "field": "u",
+        "kind": "nonfinite",
+        "limits": null,
+        "location": {
+          "i_j_k": [
+            1,
+            1,
+            0
+          ],
+          "raw_indices": [
+            0,
+            1,
+            1
+          ]
+        },
+        "previous_value": "nan",
+        "source": "state",
+        "stage": "candidate",
+        "step": 7,
+        "value": "nan"
+      },
+      "nonfinite_fields": [
+        {
+          "count": 335104,
+          "field": "u"
+        },
+        {
+          "count": 337480,
+          "field": "v"
+        },
+        {
+          "count": 356400,
+          "field": "w"
+        },
+        {
+          "count": 332288,
+          "field": "theta"
+        },
+        {
+          "count": 332288,
+          "field": "qv"
+        },
+        {
+          "count": 348480,
+          "field": "p"
+        },
+        {
+          "count": 339840,
+          "field": "ph"
+        },
+        {
+          "count": 7552,
+          "field": "mu"
+        },
+        {
+          "count": 348480,
+          "field": "p_total"
+        },
+        {
+          "count": 348480,
+          "field": "p_perturbation"
+        },
+        {
+          "count": 339840,
+          "field": "ph_total"
+        },
+        {
+          "count": 356400,
+          "field": "ph_perturbation"
+        },
+        {
+          "count": 7552,
+          "field": "mu_total"
+        },
+        {
+          "count": 7920,
+          "field": "mu_perturbation"
+        },
+        {
+          "count": 348480,
+          "field": "qc"
+        },
+        {
+          "count": 348480,
+          "field": "qr"
+        },
+        {
+          "count": 348480,
+          "field": "qi"
+        },
+        {
+          "count": 348480,
+          "field": "qs"
+        },
+        {
+          "count": 348480,
+          "field": "qg"
+        },
+        {
+          "count": 348480,
+          "field": "Ni"
+        },
+        {
+          "count": 348480,
+          "field": "Nr"
+        },
+        {
+          "count": 348480,
+          "field": "qke"
+        },
+        {
+          "count": 7920,
+          "field": "ustar"
+        },
+        {
+          "count": 7920,
+          "field": "theta_flux"
+        },
+        {
+          "count": 7920,
+          "field": "qv_flux"
+        },
+        {
+          "count": 7920,
+          "field": "tau_u"
+        },
+        {
+          "count": 7920,
+          "field": "tau_v"
+        },
+        {
+          "count": 7920,
+          "field": "rhosfc"
+        },
+        {
+          "count": 7920,
+          "field": "fltv"
+        }
+      ],
+      "stage_issue_count": 0,
+      "step": 7
+    },
+    {
+      "extrema": {
+        "mu_max_pa": "nan",
+        "mu_min_pa": "nan",
+        "p_max_pa": "nan",
+        "p_min_pa": "nan",
+        "theta_max_k": "nan",
+        "theta_min_k": "nan",
+        "u_abs_max_m_s": "nan",
+        "v_abs_max_m_s": "nan",
+        "w_abs_max_m_s": "nan"
+      },
+      "fields_on_cap": [
+        {
+          "count": 348480,
+          "field": "Ns",
+          "limits": [
+            0.0,
+            10000000000.0
+          ]
+        },
+        {
+          "count": 348480,
+          "field": "Ng",
+          "limits": [
+            0.0,
+            10000000000.0
+          ]
+        },
+        {
+          "count": 7373,
+          "field": "soil_moisture",
+          "limits": [
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "count": 7920,
+          "field": "rain_acc",
+          "limits": [
+            0.0,
+            1000000.0
+          ]
+        },
+        {
+          "count": 7920,
+          "field": "snow_acc",
+          "limits": [
+            0.0,
+            1000000.0
+          ]
+        },
+        {
+          "count": 7920,
+          "field": "graupel_acc",
+          "limits": [
+            0.0,
+            1000000.0
+          ]
+        },
+        {
+          "count": 7920,
+          "field": "ice_acc",
+          "limits": [
+            0.0,
+            1000000.0
+          ]
+        }
+      ],
+      "first_issue": {
+        "field": "u",
+        "kind": "nonfinite",
+        "limits": null,
+        "location": {
+          "i_j_k": [
+            1,
+            1,
+            0
+          ],
+          "raw_indices": [
+            0,
+            1,
+            1
+          ]
+        },
+        "previous_value": "nan",
+        "source": "state",
+        "stage": "candidate",
+        "step": 8,
+        "value": "nan"
+      },
+      "nonfinite_fields": [
+        {
+          "count": 335104,
+          "field": "u"
+        },
+        {
+          "count": 337480,
+          "field": "v"
+        },
+        {
+          "count": 356400,
+          "field": "w"
+        },
+        {
+          "count": 332288,
+          "field": "theta"
+        },
+        {
+          "count": 332288,
+          "field": "qv"
+        },
+        {
+          "count": 348480,
+          "field": "p"
+        },
+        {
+          "count": 339840,
+          "field": "ph"
+        },
+        {
+          "count": 7552,
+          "field": "mu"
+        },
+        {
+          "count": 348480,
+          "field": "p_total"
+        },
+        {
+          "count": 348480,
+          "field": "p_perturbation"
+        },
+        {
+          "count": 339840,
+          "field": "ph_total"
+        },
+        {
+          "count": 356400,
+          "field": "ph_perturbation"
+        },
+        {
+          "count": 7552,
+          "field": "mu_total"
+        },
+        {
+          "count": 7920,
+          "field": "mu_perturbation"
+        },
+        {
+          "count": 348480,
+          "field": "qc"
+        },
+        {
+          "count": 348480,
+          "field": "qr"
+        },
+        {
+          "count": 348480,
+          "field": "qi"
+        },
+        {
+          "count": 348480,
+          "field": "qs"
+        },
+        {
+          "count": 348480,
+          "field": "qg"
+        },
+        {
+          "count": 348480,
+          "field": "Ni"
+        },
+        {
+          "count": 348480,
+          "field": "Nr"
+        },
+        {
+          "count": 348480,
+          "field": "qke"
+        },
+        {
+          "count": 7920,
+          "field": "ustar"
+        },
+        {
+          "count": 7920,
+          "field": "theta_flux"
+        },
+        {
+          "count": 7920,
+          "field": "qv_flux"
+        },
+        {
+          "count": 7920,
+          "field": "tau_u"
+        },
+        {
+          "count": 7920,
+          "field": "tau_v"
+        },
+        {
+          "count": 7920,
+          "field": "rhosfc"
+        },
+        {
+          "count": 7920,
+          "field": "fltv"
+        }
+      ],
+      "stage_issue_count": 0,
+      "step": 8
+    },
+    {
+      "extrema": {
+        "mu_max_pa": "nan",
+        "mu_min_pa": "nan",
+        "p_max_pa": "nan",
+        "p_min_pa": "nan",
+        "theta_max_k": "nan",
+        "theta_min_k": "nan",
+        "u_abs_max_m_s": "nan",
+        "v_abs_max_m_s": "nan",
+        "w_abs_max_m_s": "nan"
+      },
+      "fields_on_cap": [
+        {
+          "count": 348480,
+          "field": "Ns",
+          "limits": [
+            0.0,
+            10000000000.0
+          ]
+        },
+        {
+          "count": 348480,
+          "field": "Ng",
+          "limits": [
+            0.0,
+            10000000000.0
+          ]
+        },
+        {
+          "count": 7373,
+          "field": "soil_moisture",
+          "limits": [
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "count": 7920,
+          "field": "rain_acc",
+          "limits": [
+            0.0,
+            1000000.0
+          ]
+        },
+        {
+          "count": 7920,
+          "field": "snow_acc",
+          "limits": [
+            0.0,
+            1000000.0
+          ]
+        },
+        {
+          "count": 7920,
+          "field": "graupel_acc",
+          "limits": [
+            0.0,
+            1000000.0
+          ]
+        },
+        {
+          "count": 7920,
+          "field": "ice_acc",
+          "limits": [
+            0.0,
+            1000000.0
+          ]
+        }
+      ],
+      "first_issue": {
+        "field": "u",
+        "kind": "nonfinite",
+        "limits": null,
+        "location": {
+          "i_j_k": [
+            1,
+            1,
+            0
+          ],
+          "raw_indices": [
+            0,
+            1,
+            1
+          ]
+        },
+        "previous_value": "nan",
+        "source": "state",
+        "stage": "candidate",
+        "step": 9,
+        "value": "nan"
+      },
+      "nonfinite_fields": [
+        {
+          "count": 335104,
+          "field": "u"
+        },
+        {
+          "count": 337480,
+          "field": "v"
+        },
+        {
+          "count": 356400,
+          "field": "w"
+        },
+        {
+          "count": 332288,
+          "field": "theta"
+        },
+        {
+          "count": 332288,
+          "field": "qv"
+        },
+        {
+          "count": 348480,
+          "field": "p"
+        },
+        {
+          "count": 339840,
+          "field": "ph"
+        },
+        {
+          "count": 7552,
+          "field": "mu"
+        },
+        {
+          "count": 348480,
+          "field": "p_total"
+        },
+        {
+          "count": 348480,
+          "field": "p_perturbation"
+        },
+        {
+          "count": 339840,
+          "field": "ph_total"
+        },
+        {
+          "count": 356400,
+          "field": "ph_perturbation"
+        },
+        {
+          "count": 7552,
+          "field": "mu_total"
+        },
+        {
+          "count": 7920,
+          "field": "mu_perturbation"
+        },
+        {
+          "count": 348480,
+          "field": "qc"
+        },
+        {
+          "count": 348480,
+          "field": "qr"
+        },
+        {
+          "count": 348480,
+          "field": "qi"
+        },
+        {
+          "count": 348480,
+          "field": "qs"
+        },
+        {
+          "count": 348480,
+          "field": "qg"
+        },
+        {
+          "count": 348480,
+          "field": "Ni"
+        },
+        {
+          "count": 348480,
+          "field": "Nr"
+        },
+        {
+          "count": 348480,
+          "field": "qke"
+        },
+        {
+          "count": 7920,
+          "field": "ustar"
+        },
+        {
+          "count": 7920,
+          "field": "theta_flux"
+        },
+        {
+          "count": 7920,
+          "field": "qv_flux"
+        },
+        {
+          "count": 7920,
+          "field": "tau_u"
+        },
+        {
+          "count": 7920,
+          "field": "tau_v"
+        },
+        {
+          "count": 7920,
+          "field": "rhosfc"
+        },
+        {
+          "count": 7920,
+          "field": "fltv"
+        }
+      ],
+      "stage_issue_count": 0,
+      "step": 9
+    },
+    {
+      "extrema": {
+        "mu_max_pa": "nan",
+        "mu_min_pa": "nan",
+        "p_max_pa": "nan",
+        "p_min_pa": "nan",
+        "theta_max_k": "nan",
+        "theta_min_k": "nan",
+        "u_abs_max_m_s": "nan",
+        "v_abs_max_m_s": "nan",
+        "w_abs_max_m_s": "nan"
+      },
+      "fields_on_cap": [
+        {
+          "count": 348480,
+          "field": "Ns",
+          "limits": [
+            0.0,
+            10000000000.0
+          ]
+        },
+        {
+          "count": 348480,
+          "field": "Ng",
+          "limits": [
+            0.0,
+            10000000000.0
+          ]
+        },
+        {
+          "count": 7373,
+          "field": "soil_moisture",
+          "limits": [
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "count": 7920,
+          "field": "rain_acc",
+          "limits": [
+            0.0,
+            1000000.0
+          ]
+        },
+        {
+          "count": 7920,
+          "field": "snow_acc",
+          "limits": [
+            0.0,
+            1000000.0
+          ]
+        },
+        {
+          "count": 7920,
+          "field": "graupel_acc",
+          "limits": [
+            0.0,
+            1000000.0
+          ]
+        },
+        {
+          "count": 7920,
+          "field": "ice_acc",
+          "limits": [
+            0.0,
+            1000000.0
+          ]
+        }
+      ],
+      "first_issue": {
+        "field": "u",
+        "kind": "nonfinite",
+        "limits": null,
+        "location": {
+          "i_j_k": [
+            1,
+            1,
+            0
+          ],
+          "raw_indices": [
+            0,
+            1,
+            1
+          ]
+        },
+        "previous_value": "nan",
+        "source": "state",
+        "stage": "candidate",
+        "step": 10,
+        "value": "nan"
+      },
+      "nonfinite_fields": [
+        {
+          "count": 335104,
+          "field": "u"
+        },
+        {
+          "count": 337480,
+          "field": "v"
+        },
+        {
+          "count": 356400,
+          "field": "w"
+        },
+        {
+          "count": 332288,
+          "field": "theta"
+        },
+        {
+          "count": 332288,
+          "field": "qv"
+        },
+        {
+          "count": 348480,
+          "field": "p"
+        },
+        {
+          "count": 339840,
+          "field": "ph"
+        },
+        {
+          "count": 7552,
+          "field": "mu"
+        },
+        {
+          "count": 348480,
+          "field": "p_total"
+        },
+        {
+          "count": 348480,
+          "field": "p_perturbation"
+        },
+        {
+          "count": 339840,
+          "field": "ph_total"
+        },
+        {
+          "count": 356400,
+          "field": "ph_perturbation"
+        },
+        {
+          "count": 7552,
+          "field": "mu_total"
+        },
+        {
+          "count": 7920,
+          "field": "mu_perturbation"
+        },
+        {
+          "count": 348480,
+          "field": "qc"
+        },
+        {
+          "count": 348480,
+          "field": "qr"
+        },
+        {
+          "count": 348480,
+          "field": "qi"
+        },
+        {
+          "count": 348480,
+          "field": "qs"
+        },
+        {
+          "count": 348480,
+          "field": "qg"
+        },
+        {
+          "count": 348480,
+          "field": "Ni"
+        },
+        {
+          "count": 348480,
+          "field": "Nr"
+        },
+        {
+          "count": 348480,
+          "field": "qke"
+        },
+        {
+          "count": 7920,
+          "field": "ustar"
+        },
+        {
+          "count": 7920,
+          "field": "theta_flux"
+        },
+        {
+          "count": 7920,
+          "field": "qv_flux"
+        },
+        {
+          "count": 7920,
+          "field": "tau_u"
+        },
+        {
+          "count": 7920,
+          "field": "tau_v"
+        },
+        {
+          "count": 7920,
+          "field": "rhosfc"
+        },
+        {
+          "count": 7920,
+          "field": "fltv"
+        }
+      ],
+      "stage_issue_count": 0,
+      "step": 10
+    },
+    {
+      "extrema": {
+        "mu_max_pa": "nan",
+        "mu_min_pa": "nan",
+        "p_max_pa": "nan",
+        "p_min_pa": "nan",
+        "theta_max_k": "nan",
+        "theta_min_k": "nan",
+        "u_abs_max_m_s": "nan",
+        "v_abs_max_m_s": "nan",
+        "w_abs_max_m_s": "nan"
+      },
+      "fields_on_cap": [
+        {
+          "count": 348480,
+          "field": "Ns",
+          "limits": [
+            0.0,
+            10000000000.0
+          ]
+        },
+        {
+          "count": 348480,
+          "field": "Ng",
+          "limits": [
+            0.0,
+            10000000000.0
+          ]
+        },
+        {
+          "count": 7373,
+          "field": "soil_moisture",
+          "limits": [
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "count": 7920,
+          "field": "rain_acc",
+          "limits": [
+            0.0,
+            1000000.0
+          ]
+        },
+        {
+          "count": 7920,
+          "field": "snow_acc",
+          "limits": [
+            0.0,
+            1000000.0
+          ]
+        },
+        {
+          "count": 7920,
+          "field": "graupel_acc",
+          "limits": [
+            0.0,
+            1000000.0
+          ]
+        },
+        {
+          "count": 7920,
+          "field": "ice_acc",
+          "limits": [
+            0.0,
+            1000000.0
+          ]
+        }
+      ],
+      "first_issue": {
+        "field": "u",
+        "kind": "nonfinite",
+        "limits": null,
+        "location": {
+          "i_j_k": [
+            1,
+            1,
+            0
+          ],
+          "raw_indices": [
+            0,
+            1,
+            1
+          ]
+        },
+        "previous_value": "nan",
+        "source": "state",
+        "stage": "candidate",
+        "step": 11,
+        "value": "nan"
+      },
+      "nonfinite_fields": [
+        {
+          "count": 335104,
+          "field": "u"
+        },
+        {
+          "count": 337480,
+          "field": "v"
+        },
+        {
+          "count": 356400,
+          "field": "w"
+        },
+        {
+          "count": 332288,
+          "field": "theta"
+        },
+        {
+          "count": 332288,
+          "field": "qv"
+        },
+        {
+          "count": 348480,
+          "field": "p"
+        },
+        {
+          "count": 339840,
+          "field": "ph"
+        },
+        {
+          "count": 7552,
+          "field": "mu"
+        },
+        {
+          "count": 348480,
+          "field": "p_total"
+        },
+        {
+          "count": 348480,
+          "field": "p_perturbation"
+        },
+        {
+          "count": 339840,
+          "field": "ph_total"
+        },
+        {
+          "count": 356400,
+          "field": "ph_perturbation"
+        },
+        {
+          "count": 7552,
+          "field": "mu_total"
+        },
+        {
+          "count": 7920,
+          "field": "mu_perturbation"
+        },
+        {
+          "count": 348480,
+          "field": "qc"
+        },
+        {
+          "count": 348480,
+          "field": "qr"
+        },
+        {
+          "count": 348480,
+          "field": "qi"
+        },
+        {
+          "count": 348480,
+          "field": "qs"
+        },
+        {
+          "count": 348480,
+          "field": "qg"
+        },
+        {
+          "count": 348480,
+          "field": "Ni"
+        },
+        {
+          "count": 348480,
+          "field": "Nr"
+        },
+        {
+          "count": 348480,
+          "field": "qke"
+        },
+        {
+          "count": 7920,
+          "field": "ustar"
+        },
+        {
+          "count": 7920,
+          "field": "theta_flux"
+        },
+        {
+          "count": 7920,
+          "field": "qv_flux"
+        },
+        {
+          "count": 7920,
+          "field": "tau_u"
+        },
+        {
+          "count": 7920,
+          "field": "tau_v"
+        },
+        {
+          "count": 7920,
+          "field": "rhosfc"
+        },
+        {
+          "count": 7920,
+          "field": "fltv"
+        }
+      ],
+      "stage_issue_count": 0,
+      "step": 11
+    }
+  ],
+  "source_citations": {
+    "current_metric": "src/gpuwrf/dynamics/acoustic_wrf.py:512-534",
+    "current_mu": "src/gpuwrf/dynamics/acoustic_wrf.py:473-495,926-930",
+    "current_recurrence": "src/gpuwrf/dynamics/acoustic_wrf.py:763-827",
+    "current_sanitizer": "src/gpuwrf/integration/d02_replay.py:461-468,727-765",
+    "current_staging": "src/gpuwrf/integration/d02_replay.py:489-520",
+    "mpas_coefficients": "mpas_atm_time_integration.F:1589-1656",
+    "mpas_recurrence": "mpas_atm_time_integration.F:2146-2208",
+    "mpas_w_metric": "mpas_atm_time_integration.F:2491-2495",
+    "wrf_calc_coef_w": "module_small_step_em.F:619-651",
+    "wrf_mu": "module_small_step_em.F:1094-1119",
+    "wrf_w": "module_small_step_em.F:1340-1597"
+  },
+  "stage_localization": null,
+  "steps_completed": 11,
+  "steps_requested": 11,
+  "ten_step_sanitize_off_acceptance": false,
+  "terminal_fields_on_cap": [
+    {
+      "count": 348480,
+      "field": "Ns",
+      "limits": [
+        0.0,
+        10000000000.0
+      ]
+    },
+    {
+      "count": 348480,
+      "field": "Ng",
+      "limits": [
+        0.0,
+        10000000000.0
+      ]
+    },
+    {
+      "count": 7373,
+      "field": "soil_moisture",
+      "limits": [
+        0.0,
+        1.0
+      ]
+    },
+    {
+      "count": 7920,
+      "field": "rain_acc",
+      "limits": [
+        0.0,
+        1000000.0
+      ]
+    },
+    {
+      "count": 7920,
+      "field": "snow_acc",
+      "limits": [
+        0.0,
+        1000000.0
+      ]
+    },
+    {
+      "count": 7920,
+      "field": "graupel_acc",
+      "limits": [
+        0.0,
+        1000000.0
+      ]
+    },
+    {
+      "count": 7920,
+      "field": "ice_acc",
+      "limits": [
+        0.0,
+        1000000.0
+      ]
+    }
+  ],
+  "terminal_nonfinite_fields": [
+    {
+      "count": 335104,
+      "field": "u"
+    },
+    {
+      "count": 337480,
+      "field": "v"
+    },
+    {
+      "count": 356400,
+      "field": "w"
+    },
+    {
+      "count": 332288,
+      "field": "theta"
+    },
+    {
+      "count": 332288,
+      "field": "qv"
+    },
+    {
+      "count": 348480,
+      "field": "p"
+    },
+    {
+      "count": 339840,
+      "field": "ph"
+    },
+    {
+      "count": 7552,
+      "field": "mu"
+    },
+    {
+      "count": 348480,
+      "field": "p_total"
+    },
+    {
+      "count": 348480,
+      "field": "p_perturbation"
+    },
+    {
+      "count": 339840,
+      "field": "ph_total"
+    },
+    {
+      "count": 356400,
+      "field": "ph_perturbation"
+    },
+    {
+      "count": 7552,
+      "field": "mu_total"
+    },
+    {
+      "count": 7920,
+      "field": "mu_perturbation"
+    },
+    {
+      "count": 348480,
+      "field": "qc"
+    },
+    {
+      "count": 348480,
+      "field": "qr"
+    },
+    {
+      "count": 348480,
+      "field": "qi"
+    },
+    {
+      "count": 348480,
+      "field": "qs"
+    },
+    {
+      "count": 348480,
+      "field": "qg"
+    },
+    {
+      "count": 348480,
+      "field": "Ni"
+    },
+    {
+      "count": 348480,
+      "field": "Nr"
+    },
+    {
+      "count": 348480,
+      "field": "qke"
+    },
+    {
+      "count": 7920,
+      "field": "ustar"
+    },
+    {
+      "count": 7920,
+      "field": "theta_flux"
+    },
+    {
+      "count": 7920,
+      "field": "qv_flux"
+    },
+    {
+      "count": 7920,
+      "field": "tau_u"
+    },
+    {
+      "count": 7920,
+      "field": "tau_v"
+    },
+    {
+      "count": 7920,
+      "field": "rhosfc"
+    },
+    {
+      "count": 7920,
+      "field": "fltv"
+    }
+  ],
+  "toggle": "v3-localize-20260509",
+  "wall_time_s": 152.60983211599978
+}

@@ -1,0 +1,108 @@
+{
+  "artifact_type": "m6b_v3_localize_cell_divergence_trace",
+  "cell": {
+    "i": 73,
+    "j": 60,
+    "k": 28
+  },
+  "first_divergent_step": {
+    "abs_delta_k": 0.0013617621527828305,
+    "delta_k": 0.0013617621527828305,
+    "forecast_theta_k": 348.6410217285156,
+    "interpolated_wrf_theta_k": 348.63965996636284,
+    "lead_seconds": 10.0,
+    "step": 1
+  },
+  "per_step": [
+    {
+      "abs_delta_k": 0.0013617621527828305,
+      "delta_k": 0.0013617621527828305,
+      "forecast_theta_k": 348.6410217285156,
+      "interpolated_wrf_theta_k": 348.63965996636284,
+      "lead_seconds": 10.0,
+      "step": 1
+    },
+    {
+      "abs_delta_k": 0.002723524305565661,
+      "delta_k": 0.002723524305565661,
+      "forecast_theta_k": 348.6410217285156,
+      "interpolated_wrf_theta_k": 348.63829820421006,
+      "lead_seconds": 20.0,
+      "step": 2
+    },
+    {
+      "abs_delta_k": 0.004085286458348492,
+      "delta_k": 0.004085286458348492,
+      "forecast_theta_k": 348.6410217285156,
+      "interpolated_wrf_theta_k": 348.6369364420573,
+      "lead_seconds": 30.0,
+      "step": 3
+    },
+    {
+      "abs_delta_k": 0.005447048611074479,
+      "delta_k": 0.005447048611074479,
+      "forecast_theta_k": 348.6410217285156,
+      "interpolated_wrf_theta_k": 348.63557467990455,
+      "lead_seconds": 40.0,
+      "step": 4
+    },
+    {
+      "abs_delta_k": 0.006808810763914153,
+      "delta_k": 0.006808810763914153,
+      "forecast_theta_k": 348.6410217285156,
+      "interpolated_wrf_theta_k": 348.6342129177517,
+      "lead_seconds": 50.0,
+      "step": 5
+    },
+    {
+      "abs_delta_k": 0.008170572916696983,
+      "delta_k": 0.008170572916696983,
+      "forecast_theta_k": 348.6410217285156,
+      "interpolated_wrf_theta_k": 348.6328511555989,
+      "lead_seconds": 60.0,
+      "step": 6
+    },
+    {
+      "abs_delta_k": 0.00953233506942297,
+      "delta_k": 0.00953233506942297,
+      "forecast_theta_k": 348.6410217285156,
+      "interpolated_wrf_theta_k": 348.6314893934462,
+      "lead_seconds": 70.0,
+      "step": 7
+    },
+    {
+      "abs_delta_k": 0.010894097222262644,
+      "delta_k": 0.010894097222262644,
+      "forecast_theta_k": 348.6410217285156,
+      "interpolated_wrf_theta_k": 348.63012763129336,
+      "lead_seconds": 80.0,
+      "step": 8
+    },
+    {
+      "abs_delta_k": 0.012255859374988631,
+      "delta_k": 0.012255859374988631,
+      "forecast_theta_k": 348.6410217285156,
+      "interpolated_wrf_theta_k": 348.62876586914064,
+      "lead_seconds": 90.0,
+      "step": 9
+    },
+    {
+      "abs_delta_k": 0.013617621527771462,
+      "delta_k": 0.013617621527771462,
+      "forecast_theta_k": 348.6410217285156,
+      "interpolated_wrf_theta_k": 348.62740410698785,
+      "lead_seconds": 100.0,
+      "step": 10
+    },
+    {
+      "abs_delta_k": 2604313607843.374,
+      "delta_k": 2604313607843.374,
+      "forecast_theta_k": 2604313608192.0,
+      "interpolated_wrf_theta_k": 348.62604234483507,
+      "lead_seconds": 110.0,
+      "step": 11
+    }
+  ],
+  "reference_note": "WRF truth is hourly; sub-hour values use linear interpolation between hourly wrfout files.",
+  "threshold_k": 1e-06
+}

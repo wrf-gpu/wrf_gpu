@@ -1,0 +1,193 @@
+{
+  "artifact_type": "m6b_v3_localize_wrf_reference_theta",
+  "convective_signal_neighbor_3x3": {
+    "qv_kg_kg_stats": {
+      "count": 9,
+      "finite_count": 9,
+      "max": 2.6240490115014836e-05,
+      "mean": 2.609282435312505e-05,
+      "min": 2.596835111035034e-05,
+      "std": 8.458913078055514e-08
+    },
+    "theta_k_stats": {
+      "count": 9,
+      "finite_count": 9,
+      "max": 348.65277099609375,
+      "mean": 348.64058770073785,
+      "min": 348.6277770996094,
+      "std": 0.007463415046551119
+    },
+    "w_lower_face_m_s_stats": {
+      "count": 9,
+      "finite_count": 9,
+      "max": 0.0,
+      "mean": 0.0,
+      "min": 0.0,
+      "std": 0.0
+    },
+    "w_upper_face_m_s_stats": {
+      "count": 9,
+      "finite_count": 9,
+      "max": 0.0,
+      "mean": 0.0,
+      "min": 0.0,
+      "std": 0.0
+    }
+  },
+  "physical_interpretation": "WRF reference stays inside the theta envelope at the failure site and selected level.",
+  "reference_time_resolution": "hourly_wrfout; sub-hour violation uses nearest hourly file plus hourly time series",
+  "run_id": "20260509_18z_l3_24h_20260511T190519Z",
+  "selected_reference": {
+    "path": "/mnt/data/canairy_meteo/runs/wrf_l3/20260509_18z_l3_24h_20260511T190519Z/wrfout_d02_2026-05-09_18:00:00",
+    "time_index": 0,
+    "valid_time_utc": "2026-05-09T18:00:00+00:00"
+  },
+  "status": "WRF_REFERENCE_BENIGN_AT_FAILURE_SITE",
+  "violation": {
+    "bound_k": 400.0,
+    "cell": {
+      "i": 73,
+      "j": 60,
+      "k": 28
+    },
+    "exceedance_k": 2604313607792.0,
+    "kind": "above_upper",
+    "lead_seconds": 110.0,
+    "level": 28,
+    "step": 11,
+    "value_k": 2604313608192.0
+  },
+  "wrf_reference_horizontal_extremes_at_level": {
+    "max_k": 348.83990478515625,
+    "min_k": 347.4237365722656,
+    "selected_cell_theta_k": 348.6410217285156
+  },
+  "wrf_reference_theta_at_cell_over_time": [
+    {
+      "theta_k": 348.6410217285156,
+      "time_index": 0,
+      "valid_time_utc": "2026-05-09T18:00:00+00:00"
+    },
+    {
+      "theta_k": 348.1507873535156,
+      "time_index": 1,
+      "valid_time_utc": "2026-05-09T19:00:00+00:00"
+    },
+    {
+      "theta_k": 347.7376708984375,
+      "time_index": 2,
+      "valid_time_utc": "2026-05-09T20:00:00+00:00"
+    },
+    {
+      "theta_k": 347.7115173339844,
+      "time_index": 3,
+      "valid_time_utc": "2026-05-09T21:00:00+00:00"
+    },
+    {
+      "theta_k": 347.77423095703125,
+      "time_index": 4,
+      "valid_time_utc": "2026-05-09T22:00:00+00:00"
+    },
+    {
+      "theta_k": 347.8185119628906,
+      "time_index": 5,
+      "valid_time_utc": "2026-05-09T23:00:00+00:00"
+    },
+    {
+      "theta_k": 347.8946533203125,
+      "time_index": 6,
+      "valid_time_utc": "2026-05-10T00:00:00+00:00"
+    },
+    {
+      "theta_k": 347.8060607910156,
+      "time_index": 7,
+      "valid_time_utc": "2026-05-10T01:00:00+00:00"
+    },
+    {
+      "theta_k": 347.6343078613281,
+      "time_index": 8,
+      "valid_time_utc": "2026-05-10T02:00:00+00:00"
+    },
+    {
+      "theta_k": 347.4546813964844,
+      "time_index": 9,
+      "valid_time_utc": "2026-05-10T03:00:00+00:00"
+    },
+    {
+      "theta_k": 347.3910827636719,
+      "time_index": 10,
+      "valid_time_utc": "2026-05-10T04:00:00+00:00"
+    },
+    {
+      "theta_k": 347.3158874511719,
+      "time_index": 11,
+      "valid_time_utc": "2026-05-10T05:00:00+00:00"
+    },
+    {
+      "theta_k": 347.0985412597656,
+      "time_index": 12,
+      "valid_time_utc": "2026-05-10T06:00:00+00:00"
+    },
+    {
+      "theta_k": 346.9121398925781,
+      "time_index": 13,
+      "valid_time_utc": "2026-05-10T07:00:00+00:00"
+    },
+    {
+      "theta_k": 346.7624206542969,
+      "time_index": 14,
+      "valid_time_utc": "2026-05-10T08:00:00+00:00"
+    },
+    {
+      "theta_k": 346.45294189453125,
+      "time_index": 15,
+      "valid_time_utc": "2026-05-10T09:00:00+00:00"
+    },
+    {
+      "theta_k": 346.0661926269531,
+      "time_index": 16,
+      "valid_time_utc": "2026-05-10T10:00:00+00:00"
+    },
+    {
+      "theta_k": 345.8505554199219,
+      "time_index": 17,
+      "valid_time_utc": "2026-05-10T11:00:00+00:00"
+    },
+    {
+      "theta_k": 345.69476318359375,
+      "time_index": 18,
+      "valid_time_utc": "2026-05-10T12:00:00+00:00"
+    },
+    {
+      "theta_k": 345.57080078125,
+      "time_index": 19,
+      "valid_time_utc": "2026-05-10T13:00:00+00:00"
+    },
+    {
+      "theta_k": 345.6551818847656,
+      "time_index": 20,
+      "valid_time_utc": "2026-05-10T14:00:00+00:00"
+    },
+    {
+      "theta_k": 345.8657531738281,
+      "time_index": 21,
+      "valid_time_utc": "2026-05-10T15:00:00+00:00"
+    },
+    {
+      "theta_k": 346.17425537109375,
+      "time_index": 22,
+      "valid_time_utc": "2026-05-10T16:00:00+00:00"
+    },
+    {
+      "theta_k": 346.4356689453125,
+      "time_index": 23,
+      "valid_time_utc": "2026-05-10T17:00:00+00:00"
+    },
+    {
+      "theta_k": 346.64154052734375,
+      "time_index": 24,
+      "valid_time_utc": "2026-05-10T18:00:00+00:00"
+    }
+  ],
+  "wrfout_count": 25
+}
