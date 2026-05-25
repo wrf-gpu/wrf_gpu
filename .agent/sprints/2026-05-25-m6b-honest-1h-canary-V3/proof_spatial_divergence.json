@@ -1,0 +1,6 @@
+{
+  "artifact_type": "m6b_v3_spatial_divergence",
+  "reason": "blocked_before_spatial_audit:WIND_BOUNDS",
+  "runs": [],
+  "status": "NOT_RUN"
+}
