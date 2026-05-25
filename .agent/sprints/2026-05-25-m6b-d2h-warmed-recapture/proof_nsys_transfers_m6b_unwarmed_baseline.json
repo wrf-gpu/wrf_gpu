@@ -1,0 +1,61 @@
+{
+  "artifact_type": "m6b_d2h_warmed_trace_summary",
+  "d2h_byte_clusters": [
+    {
+      "bytes": 352,
+      "count": 14
+    },
+    {
+      "bytes": 63360,
+      "count": 10
+    },
+    {
+      "bytes": 8,
+      "count": 8
+    },
+    {
+      "bytes": 64320,
+      "count": 6
+    },
+    {
+      "bytes": 63888,
+      "count": 6
+    },
+    {
+      "bytes": 360,
+      "count": 6
+    },
+    {
+      "bytes": 4,
+      "count": 3
+    }
+  ],
+  "d2h_inter_kernel": 3,
+  "d2h_post_kernel": 0,
+  "d2h_pre_kernel": 50,
+  "d2h_total": 53,
+  "h2d_total": 0,
+  "inter_kernel_d2h_clusters_by_prev_kernel": [
+    {
+      "bytes": 4,
+      "count": 3,
+      "prev_kernel": "loop_add_fusion_19"
+    }
+  ],
+  "interpretation": {
+    "d2h_inter_kernel_meaning": "D2H transfers interleaved with kernels \u2014 the ones that genuinely live INSIDE the timestep loop. Constitutional invariant: must be 0.",
+    "d2h_post_kernel_meaning": "Process shutdown / Python prints. Not a constitutional concern.",
+    "d2h_pre_kernel_meaning": "XLA per-call argument-staging / fusion-tail ack copies; emitted at the executable boundary, not inside the jax.lax.scan body."
+  },
+  "kernel_total": 730,
+  "nsys_report": "/tmp/m6b_unwarmed_baseline.nsys-rep",
+  "sqlite_export": "/tmp/m6b_unwarmed_baseline.sqlite",
+  "timing_ns": {
+    "first_d2h": 29564663,
+    "first_h2d": null,
+    "first_kernel": 63081531,
+    "last_d2h": 66699938,
+    "last_h2d": null,
+    "last_kernel_end": 78371546
+  }
+}

@@ -1,0 +1,273 @@
+Capture range started in the application.
+Capture range ended in the application.
+Generating '/tmp/nsys-report-a757.qdstrm'
+[1/1] [0%                          ] proof_warmed.nsys-repProcessing events...
+[1/1] [0%                          ] proof_warmed.nsys-rep[1/1] [0%                          ] proof_warmed.nsys-rep[1/1] [==21%                       ] proof_warmed.nsys-rep[1/1] [=16%                        ] proof_warmed.nsys-rep[1/1] [12%                         ] proof_warmed.nsys-rep[1/1] [===23%                      ] proof_warmed.nsys-rep[1/1] [==18%                       ] proof_warmed.nsys-rep[1/1] [=15%                        ] proof_warmed.nsys-rep[1/1] [12%                         ] proof_warmed.nsys-rep[1/1] [=16%                        ] proof_warmed.nsys-rep[1/1] [==19%                       ] proof_warmed.nsys-rep[1/1] [=16%                        ] proof_warmed.nsys-rep[1/1] [14%                         ] proof_warmed.nsys-rep[1/1] [12%                         ] proof_warmed.nsys-rep[1/1] [11%                         ] proof_warmed.nsys-rep[1/1] [10%                         ] proof_warmed.nsys-rep[1/1] [9%                          ] proof_warmed.nsys-rep[1/1] [8%                          ] proof_warmed.nsys-rep[1/1] [7%                          ] proof_warmed.nsys-rep[1/1] [6%                          ] proof_warmed.nsys-rep[1/1] [5%                          ] proof_warmed.nsys-rep[1/1] [7%                          ] proof_warmed.nsys-rep[1/1] [9%                          ] proof_warmed.nsys-rep[1/1] [11%                         ] proof_warmed.nsys-rep[1/1] [13%                         ] proof_warmed.nsys-rep[1/1] [=16%                        ] proof_warmed.nsys-rep[1/1] [==19%                       ] proof_warmed.nsys-rep[1/1] [==21%                       ] proof_warmed.nsys-rep[1/1] [===24%                      ] proof_warmed.nsys-rep[1/1] [====26%                     ] proof_warmed.nsys-rep[1/1] [====27%                     ] proof_warmed.nsys-rep[1/1] [====28%                     ] proof_warmed.nsys-rep[1/1] [=====29%                    ] proof_warmed.nsys-rep[1/1] [=====30%                    ] proof_warmed.nsys-rep[1/1] [=====32%                    ] proof_warmed.nsys-rep[1/1] [======33%                   ] proof_warmed.nsys-rep[1/1] [======34%                   ] proof_warmed.nsys-rep[1/1] [=======36%                  ] proof_warmed.nsys-rep[1/1] [=======38%                  ] proof_warmed.nsys-rep[1/1] [========40%                 ] proof_warmed.nsys-rep[1/1] [========42%                 ] proof_warmed.nsys-rep[1/1] [=========44%                ] proof_warmed.nsys-rep[1/1] [==========47%               ] proof_warmed.nsys-rep[1/1] [===========53%              ] proof_warmed.nsys-rep[1/1] [============54%             ] proof_warmed.nsys-rep[1/1] [========================100%] proof_warmed.nsys-rep[1/1] [========================100%] proof_warmed.nsys-rep
+{
+  "artifact_type": "m6b_d2h_warmed_recapture_call_log",
+  "device": "cuda:0",
+  "dt_s": 10.0,
+  "grid": {
+    "dx_m": 3000.0,
+    "dy_m": 3000.0,
+    "mass_shape": [
+      44,
+      66,
+      159
+    ],
+    "wrf_staggered_extent": [
+      45,
+      67,
+      160
+    ]
+  },
+  "hours_per_call": 0.013888888888888888,
+  "namelist": {
+    "acoustic_substeps": 2,
+    "dt_s": 10.0,
+    "radiation_cadence_steps": 999999,
+    "run_boundary": true,
+    "run_physics": true,
+    "use_vertical_solver": true
+  },
+  "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T072630Z",
+  "run_id": "20260521_18z_l3_24h_20260522T072630Z",
+  "scope_note": "Three warm-up calls of run_forecast_operational outside the cudaProfilerStart/Stop window, then one profiled call inside. All four calls use identical (state shape, namelist tree, hours) so the JIT cache key is identical and the profiled call is a guaranteed XLA cache hit (sub-100 ms wall-time vs. >120 s for the first compile).",
+  "state_shapes": {
+    "leaf_00": [
+      44,
+      66,
+      160
+    ],
+    "leaf_01": [
+      44,
+      67,
+      159
+    ],
+    "leaf_02": [
+      45,
+      66,
+      159
+    ],
+    "leaf_03": [
+      44,
+      66,
+      159
+    ],
+    "leaf_04": [
+      44,
+      66,
+      159
+    ],
+    "leaf_05": [
+      44,
+      66,
+      159
+    ],
+    "leaf_06": [
+      45,
+      66,
+      159
+    ],
+    "leaf_07": [
+      66,
+      159
+    ],
+    "leaf_08": [
+      44,
+      66,
+      159
+    ],
+    "leaf_09": [
+      44,
+      66,
+      159
+    ],
+    "leaf_10": [
+      45,
+      66,
+      159
+    ],
+    "leaf_11": [
+      45,
+      66,
+      159
+    ],
+    "leaf_12": [
+      66,
+      159
+    ],
+    "leaf_13": [
+      66,
+      159
+    ],
+    "leaf_14": [
+      44,
+      66,
+      159
+    ],
+    "leaf_15": [
+      44,
+      66,
+      159
+    ],
+    "leaf_16": [
+      44,
+      66,
+      159
+    ],
+    "leaf_17": [
+      44,
+      66,
+      159
+    ],
+    "leaf_18": [
+      44,
+      66,
+      159
+    ],
+    "leaf_19": [
+      44,
+      66,
+      159
+    ],
+    "leaf_20": [
+      44,
+      66,
+      159
+    ],
+    "leaf_21": [
+      44,
+      66,
+      159
+    ],
+    "leaf_22": [
+      44,
+      66,
+      159
+    ],
+    "leaf_23": [
+      44,
+      66,
+      159
+    ],
+    "leaf_24": [
+      66,
+      159
+    ],
+    "leaf_25": [
+      66,
+      159
+    ],
+    "leaf_26": [
+      66,
+      159
+    ],
+    "leaf_27": [
+      66,
+      159
+    ],
+    "leaf_28": [
+      66,
+      159
+    ],
+    "leaf_29": [
+      66,
+      159
+    ],
+    "leaf_30": [
+      66,
+      159
+    ],
+    "leaf_31": [
+      66,
+      159
+    ],
+    "leaf_32": [
+      66,
+      159
+    ],
+    "leaf_33": [
+      66,
+      159
+    ],
+    "leaf_34": [
+      66,
+      159
+    ],
+    "leaf_35": [
+      66,
+      159
+    ],
+    "leaf_36": [
+      66,
+      159
+    ],
+    "leaf_37": [
+      66,
+      159
+    ],
+    "leaf_38": [
+      66,
+      159
+    ],
+    "leaf_39": [
+      66,
+      159
+    ],
+    "leaf_40": [
+      66,
+      159
+    ],
+    "leaf_41": [
+      9,
+      4,
+      44,
+      160
+    ],
+    "leaf_42": [
+      9,
+      4,
+      44,
+      160
+    ],
+    "leaf_43": [
+      9,
+      4,
+      44,
+      160
+    ],
+    "leaf_44": [
+      9,
+      4,
+      44,
+      160
+    ],
+    "leaf_45": [
+      9,
+      4,
+      45,
+      160
+    ],
+    "leaf_46": [
+      9,
+      4,
+      1,
+      160
+    ]
+  },
+  "steps_per_call": 5,
+  "wall_time_s": {
+    "profiled_call": 0.069677576997492,
+    "warmup_call_includes_compile": 141.77722413300216,
+    "warmup_call_second": 0.06963899699621834,
+    "warmup_call_third": 0.06636498199804919
+  },
+  "warmed_protocol": {
+    "cuda_profiler_range_used": true,
+    "warmup_and_profiled_signature_identical": true,
+    "warmups_outside_profile_window": 3
+  }
+}
+Generated:
+	/tmp/wrf_gpu2_d2hwarm/.agent/sprints/2026-05-25-m6b-d2h-warmed-recapture/proof_warmed.nsys-rep
