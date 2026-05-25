@@ -61,6 +61,25 @@ In `ADR-026-operational-mode-design-DRAFT.md`, enumerate for each operator valid
 
 For each row, cite the Tier-4 envelope evidence permitting the choice (downcast, drop, fuse).
 
+### Stage 1.5 — Solver mini-bakeoff (MANDATORY, per PCR scout `BAKEOFF` recommendation)
+
+The PCR-vs-Thomas research scout (`.agent/sprints/2026-05-25-m6-perf-pcr-vs-thomas-scout/worker-report.md`) recommended `BAKEOFF` — do NOT switch from literature alone. Before ADR-026 commits to a solver, run a small measured comparison on the validated M6B2 baseline:
+
+- Current JAX `lax.scan` batched-Thomas (already in tree at `src/gpuwrf/dynamics/tridiag_solve.py`)
+- Pure PCR (Hockney & Jesshope) with n=44 columns padded to n=45 + masks
+- One fixed PCR+Thomas hybrid split (e.g., PCR for outer log₂ levels then Thomas)
+- cuSPARSE / cuSolverDx `gtsv` as benchmark references **only** (not a deployable option)
+
+**Bakeoff acceptance** (all required):
+- HLO cost analysis + Nsight Systems trace showing zero H2D/D2H per algorithm
+- Kernel/loop count comparison
+- `block_until_ready()` wall-clock per algorithm at d02 (10500 columns) on RTX 5090
+- Residuals vs validated Thomas on real Canary `calc_coef_w` coefficients (Tier-1 ULP-scale)
+- Tier-4 RMSE check on Canary 1h golden slice
+- NO operational solver promotion without all 5 above present.
+
+Output: `proof_solver_bakeoff.json` + `proof_solver_bakeoff_nsight.qdrep` + a row in ADR-026's Stage 1 table picking the winner with cited evidence.
+
 ### Stage 2 — Operational-mode build (MANDATORY)
 
 Implement `src/gpuwrf/runtime/operational_mode.py`:
@@ -69,6 +88,7 @@ Implement `src/gpuwrf/runtime/operational_mode.py`:
 - No `device_get`, no host callbacks, no Python diagnostics
 - Honors ADR-007 per-field precision authorization
 - Uses the carry subset chosen in Stage 1
+- Uses the solver picked in Stage 1.5
 
 ### Stage 3 — Tier-4 envelope check on golden slice (MANDATORY)
 
