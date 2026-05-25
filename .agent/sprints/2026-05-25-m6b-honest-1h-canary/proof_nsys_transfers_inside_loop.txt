@@ -1,0 +1,5 @@
+status=FAIL
+cudaMemcpyHtoD_inside_profiled_loop=0
+cudaMemcpyDtoH_inside_profiled_loop=53
+full_1h_verified=false
+scope=first_step_blocker_reproduction

@@ -1,0 +1,7 @@
+{
+  "artifact_type": "m6b_honest_performance",
+  "cpu_reference_caveat": "M6 perf-acceptance CPU denominator was recovered after the requested 28-rank wrf.exe aborted in OpenACC; no clean CPU rerun was produced in this sprint",
+  "reason": "no valid 1h forecast wall-clock because physical-bounds gate failed on first 10s step for all pinned runs",
+  "status": "BLOCKED",
+  "transfer_status": "FAIL"
+}
