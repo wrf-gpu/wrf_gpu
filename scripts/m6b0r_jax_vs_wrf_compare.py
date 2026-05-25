@@ -19,8 +19,13 @@ import numpy as np
 
 from gpuwrf.dynamics.acoustic_wrf import calc_coef_w_wrf_coefficients
 from gpuwrf.dynamics.metrics import load_wrfinput_metrics
+from gpuwrf.validation.comparator_common import field_tolerance
 from gpuwrf.validation.savepoint_io import read_savepoint
 from gpuwrf.validation.savepoint_schema import load_tolerance_ladder
+
+
+# Backwards-compat alias for any script that still imports `_threshold`.
+_threshold = field_tolerance
 
 
 SPRINT = ROOT / ".agent/sprints/2026-05-24-m6b0r-real-fortran-emission"
@@ -60,13 +65,6 @@ def _jax_calc(savepoint) -> dict[str, np.ndarray]:
     }
 
 
-def _threshold(entry: dict[str, object], expected: np.ndarray) -> float:
-    abs_tol = float(entry["abs"]) if entry.get("abs") is not None else 0.0
-    rel_tol = float(entry["rel"]) if entry.get("rel") is not None else 0.0
-    scale = float(np.nanmax(np.abs(expected))) if expected.size else 1.0
-    return max(abs_tol, rel_tol * max(scale, 1.0))
-
-
 def compare_savepoint(path: Path, ladder: dict[str, object]) -> dict[str, object]:
     savepoint = read_savepoint(path)
     actual = _jax_calc(savepoint)
@@ -82,7 +80,7 @@ def compare_savepoint(path: Path, ladder: dict[str, object]) -> dict[str, object
         flat_index = int(np.nanargmax(np.abs(delta)))
         location = np.unravel_index(flat_index, delta.shape)
         entry = dict(ladder["fields"][name])  # type: ignore[index]
-        tol = _threshold(entry, expected[slices])
+        tol = field_tolerance(entry, expected[slices])
         field_passed = bool(np.isfinite(max_abs) and max_abs <= tol and expected.shape == got.shape)
         fields[name] = {
             "max_abs_delta": max_abs,

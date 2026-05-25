@@ -56,8 +56,9 @@ fi
   cd "$SOURCE_COPY"
   echo "source_head_before_patch=$canonical_head"
   patch -p1 < "$PATCH_ROOT/solve_em.F.patch"
+  patch -p1 < "$PATCH_ROOT/module_small_step_em.F.patch"
   patch -p1 < "$PATCH_ROOT/configure.wrf.patch"
-  rm -f configure.wrf.orig dyn_em/solve_em.F.orig
+  rm -f configure.wrf.orig dyn_em/solve_em.F.orig dyn_em/module_small_step_em.F.orig
 
   # The committed wrapper artifact also contains the standalone shim program.
   # Full WRF relink needs only the module to avoid a duplicate main symbol.

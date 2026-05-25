@@ -13,7 +13,6 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
-sys.path.insert(0, str(ROOT / "scripts"))
 os.environ.setdefault("JAX_PLATFORM_NAME", "cpu")
 os.environ.setdefault("XLA_PYTHON_CLIENT_PREALLOCATE", "false")
 
@@ -22,9 +21,39 @@ import numpy as np
 from netCDF4 import Dataset
 
 from gpuwrf.dynamics.tridiag_solve import thomas_back_scan, thomas_forward_scan
+from gpuwrf.validation.comparator_common import field_compare, field_tolerance
 from gpuwrf.validation.savepoint_io import read_savepoint, write_savepoint
 from gpuwrf.validation.savepoint_schema import Savepoint, SavepointMetadata, VariableMetadata, load_tolerance_ladder
-from m6b0r_wrf_savepoint_extract import SOURCE_WRFOUT, WRF_COMMIT, _load_state, _sha256_path, _wrf_calc_coef_w
+
+
+# Sibling-script import without the `sys.path.insert(0, scripts)` hack. The
+# m6b0r extractor is not a package yet (queued in
+# `m6b0r-fortran-hook-abi-followup`); use importlib so we don't pollute
+# sys.path with a non-package directory.
+def _import_m6b0r_extract():
+    import importlib.util as _ilu
+    spec = _ilu.spec_from_file_location(
+        "m6b0r_wrf_savepoint_extract",
+        ROOT / "scripts" / "m6b0r_wrf_savepoint_extract.py",
+    )
+    if spec is None or spec.loader is None:
+        raise ImportError("m6b0r_wrf_savepoint_extract.py not found in scripts/")
+    module = _ilu.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+_m6b0r = _import_m6b0r_extract()
+SOURCE_WRFOUT = _m6b0r.SOURCE_WRFOUT
+WRF_COMMIT = _m6b0r.WRF_COMMIT
+_load_state = _m6b0r._load_state
+_sha256_path = _m6b0r._sha256_path
+_wrf_calc_coef_w = _m6b0r._wrf_calc_coef_w
+
+
+# Backwards-compat alias for any reference to the historical helper.
+_threshold = field_tolerance
+_field_compare = field_compare
 
 
 SPRINT = ROOT / ".agent/sprints/2026-05-25-m6b2-tridiagonal-solve-parity"
@@ -216,36 +245,6 @@ def emit_tier(tier: str, steps: int, output: Path) -> dict[str, object]:
     }
     (output / "manifest.json").write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n")
     return manifest
-
-
-def _threshold(entry: dict[str, object], expected: np.ndarray) -> float:
-    abs_tol = float(entry["abs"]) if entry.get("abs") is not None else 0.0
-    rel_tol = float(entry["rel"]) if entry.get("rel") is not None else 0.0
-    scale = float(np.nanmax(np.abs(expected))) if expected.size else 1.0
-    return max(abs_tol, rel_tol * max(scale, 1.0))
-
-
-def _field_compare(name: str, got: np.ndarray, expected: np.ndarray, ladder: dict[str, object]) -> dict[str, object]:
-    delta = np.asarray(got) - np.asarray(expected)
-    max_abs = float(np.nanmax(np.abs(delta)))
-    flat_index = int(np.nanargmax(np.abs(delta)))
-    location = np.unravel_index(flat_index, delta.shape)
-    entry = dict(ladder["fields"][name])  # type: ignore[index]
-    tol = _threshold(entry, expected)
-    passed = bool(expected.shape == got.shape and np.isfinite(max_abs) and max_abs <= tol)
-    return {
-        "max_abs_delta": max_abs,
-        "tolerance": tol,
-        "passed": passed,
-        "location": [int(item) for item in location],
-        "expected_shape": list(expected.shape),
-        "actual_shape": list(got.shape),
-        "units": entry["units"],
-        "dtype": entry["dtype"],
-        "abs_threshold": entry["abs"],
-        "rel_threshold": entry["rel"],
-        "ulp_threshold": entry["ulp"],
-    }
 
 
 def compare_step(root: Path, step: int, ladder: dict[str, object]) -> dict[str, object]:

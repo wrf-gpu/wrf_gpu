@@ -1,0 +1,31 @@
+--- a/dyn_em/module_small_step_em.F
++++ b/dyn_em/module_small_step_em.F
+@@ -1530,11 +1530,18 @@
+        ENDIF
+     ENDIF
+ 
++#ifdef WRF_SAVEPOINT
++    CALL sp_advance_w_tridiag_fwd_pre(0, 0, a, alpha, gamma, rhs)
++#endif
+     DO k=2,k_end+1
+     DO i=i_start, i_end
+        w(i,k,j)=(w(i,k,j)-a(i,k,j)*w(i,k-1,j))*alpha(i,k,j)
+     ENDDO
+     ENDDO
++#ifdef WRF_SAVEPOINT
++    CALL sp_advance_w_tridiag_fwd_post(0, 0, a, alpha, gamma, w)
++    CALL sp_advance_w_tridiag_back_pre(0, 0, gamma, w)
++#endif
+     IF (diag_aw_point .AND. diag_aw_call .LE. diag_aw_max_call .AND. j .EQ. diag_aw_j .AND. &
+         diag_aw_i .GE. i_start .AND. diag_aw_i .LE. i_end .AND. &
+         diag_aw_k .GE. 2 .AND. diag_aw_k .LE. k_end+1) THEN
+@@ -1548,6 +1555,9 @@
+        w (i,k,j)=w (i,k,j)-gamma(i,k,j)*w(i,k+1,j)
+     ENDDO
+     ENDDO
++#ifdef WRF_SAVEPOINT
++    CALL sp_advance_w_tridiag_back_post(0, 0, gamma, w)
++#endif
+     IF (diag_aw_point .AND. diag_aw_call .LE. diag_aw_max_call .AND. j .EQ. diag_aw_j .AND. &
+         diag_aw_i .GE. i_start .AND. diag_aw_i .LE. i_end .AND. &
+         diag_aw_k .GE. 2 .AND. diag_aw_k .LE. k_end+1) THEN

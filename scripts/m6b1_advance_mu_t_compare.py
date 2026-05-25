@@ -21,13 +21,19 @@ import numpy as np
 from netCDF4 import Dataset
 
 from gpuwrf.dynamics.mu_t_advance import AdvanceMuTInputs, advance_mu_t_wrf
+from gpuwrf.validation.comparator_common import DEFAULT_GEN2_WRFOUT, field_tolerance
 from gpuwrf.validation.savepoint_io import read_savepoint, write_savepoint
 from gpuwrf.validation.savepoint_schema import Savepoint, SavepointMetadata, VariableMetadata, load_tolerance_ladder
 
 
+# Backwards-compat alias for any local reference to the historical helper.
+_threshold = field_tolerance
+
 SPRINT = ROOT / ".agent/sprints/2026-05-25-m6b1-advance-mu-t-parity"
-SOURCE_RUN = Path("/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T072630Z")
-SOURCE_WRFOUT = SOURCE_RUN / "wrfout_d02_2026-05-22_00:00:00"
+# Default source path (overridable via --gen2-runs-dir / --source-wrfout). Was
+# hardcoded pre-hygiene; left as default to preserve M6B1 reproducibility.
+SOURCE_RUN = DEFAULT_GEN2_WRFOUT.parent
+SOURCE_WRFOUT = DEFAULT_GEN2_WRFOUT
 WRF_COMMIT = "115e5756f98ee2370d62b6709baac6417d8f7338"
 COMPARE_FIELDS = ("mu", "mudf", "muts", "muave", "ww", "theta", "ph_tend")
 
@@ -293,13 +299,6 @@ def emit_tier(tier: str, steps: int, output: Path) -> dict[str, object]:
     return manifest
 
 
-def _threshold(entry: dict[str, object], expected: np.ndarray) -> float:
-    abs_tol = float(entry["abs"]) if entry.get("abs") is not None else 0.0
-    rel_tol = float(entry["rel"]) if entry.get("rel") is not None else 0.0
-    scale = float(np.nanmax(np.abs(expected))) if expected.size else 1.0
-    return max(abs_tol, rel_tol * max(scale, 1.0))
-
-
 def compare_step(pre_path: Path, post_path: Path, ladder: dict[str, object]) -> dict[str, object]:
     pre = read_savepoint(pre_path)
     post = read_savepoint(post_path)
@@ -319,7 +318,7 @@ def compare_step(pre_path: Path, post_path: Path, ladder: dict[str, object]) -> 
         flat_index = int(np.nanargmax(np.abs(delta)))
         location = np.unravel_index(flat_index, delta.shape)
         entry = dict(ladder["fields"][name])
-        tol = _threshold(entry, expected)
+        tol = field_tolerance(entry,expected)
         field_passed = bool(expected.shape == got.shape and np.isfinite(max_abs) and max_abs <= tol)
         fields[name] = {
             "max_abs_delta": max_abs,
@@ -406,7 +405,7 @@ def synthetic_dryrun() -> dict[str, object]:
     perturb_caught = True
     for name in ("mu", "muts"):
         entry = dict(ladder["fields"][name])
-        tol = _threshold(entry, np.asarray(expected[name]))
+        tol = field_tolerance(entry,np.asarray(expected[name]))
         clean_delta = float(np.nanmax(np.abs(np.asarray(expected[name]) - np.asarray(expected[name]))))
         clean_field_passed = bool(clean_delta <= tol)
         clean_fields[name] = {"max_abs_delta": clean_delta, "tolerance": tol, "passed": clean_field_passed}
@@ -436,13 +435,33 @@ def synthetic_dryrun() -> dict[str, object]:
 
 
 def main() -> int:
+    global SOURCE_RUN, SOURCE_WRFOUT
     parser = argparse.ArgumentParser()
     parser.add_argument("--tier", choices=("column", "patch16", "golden", "all"))
     parser.add_argument("--steps", type=int, default=10)
     parser.add_argument("--savepoint-root", type=Path, default=SPRINT / "savepoints")
     parser.add_argument("--output", type=Path, default=SPRINT / "proof_advance_mu_t_parity.json")
+    parser.add_argument(
+        "--source-wrfout",
+        type=Path,
+        default=DEFAULT_GEN2_WRFOUT,
+        help="Override canary wrfout slice (was hardcoded pre-hygiene).",
+    )
+    parser.add_argument(
+        "--gen2-runs-dir",
+        type=Path,
+        default=None,
+        help="Override Gen2 runs directory; resolves to <dir>/wrfout_d02_2026-05-22_00:00:00.",
+    )
     parser.add_argument("--synthetic-dryrun", action="store_true")
     args = parser.parse_args()
+
+    if args.gen2_runs_dir is not None:
+        SOURCE_RUN = args.gen2_runs_dir
+        SOURCE_WRFOUT = args.gen2_runs_dir / "wrfout_d02_2026-05-22_00:00:00"
+    elif args.source_wrfout is not None:
+        SOURCE_WRFOUT = args.source_wrfout
+        SOURCE_RUN = args.source_wrfout.parent
 
     if args.synthetic_dryrun:
         payload = synthetic_dryrun()

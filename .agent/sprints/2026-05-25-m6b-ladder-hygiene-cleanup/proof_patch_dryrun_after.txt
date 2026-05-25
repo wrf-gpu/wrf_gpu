@@ -1,0 +1,7 @@
+=== solve_em.F.patch dry-run ===
+checking file dyn_em/solve_em.F
+solve_em RC=0
+
+=== module_small_step_em.F.patch dry-run (after solve_em.F applied) ===
+checking file dyn_em/module_small_step_em.F
+module_small_step_em RC=0
