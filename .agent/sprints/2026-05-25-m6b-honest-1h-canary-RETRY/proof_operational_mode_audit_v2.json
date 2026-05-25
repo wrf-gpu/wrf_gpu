@@ -1,0 +1,8 @@
+{
+  "entrypoint": "gpuwrf.runtime.operational_mode.run_forecast_operational",
+  "forbidden_hits": [],
+  "sanitizer": "not_present_in_operational_path",
+  "source": "src/gpuwrf/runtime/operational_mode.py",
+  "status": "PASS",
+  "validation_mode_imports_absent": true
+}
