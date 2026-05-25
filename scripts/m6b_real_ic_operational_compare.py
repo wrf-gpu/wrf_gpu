@@ -64,15 +64,20 @@ from gpuwrf.runtime.operational_state import OperationalCarry, initial_operation
 
 config.update("jax_enable_x64", True)
 
-SPRINT = ROOT / ".agent" / "sprints" / "2026-05-25-m6b-real-ic-bisection"
+BISECTION_SPRINT = ROOT / ".agent" / "sprints" / "2026-05-25-m6b-real-ic-bisection"
+FIX_SPRINT = ROOT / ".agent" / "sprints" / "2026-05-25-m6b-fix-advance-mu-t-commit"
 RUN_ROOT = Path("/mnt/data/canairy_meteo/runs/wrf_l3")
 DEFAULT_RUN_ID = "20260521_18z_l3_24h_20260522T072630Z"
 DEFAULT_IC_TIME = "2026-05-21_18:00:00"
 THRESHOLD = 1.0e-10
 WRF_SOLVE = "/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/WRF/dyn_em/solve_em.F"
 WRF_SMALL = "/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/WRF/dyn_em/module_small_step_em.F"
-RK_STAGES = ((1, 1.0 / 3.0, 1), (2, 0.5, 10), (3, 1.0, 10))
 MARKER = "GPUWRF_M6B_RK1_ACOUSTIC_LOOP_ENTER substeps=1"
+
+
+def _rk_stages(namelist: OperationalNamelist) -> tuple[tuple[int, float, int], ...]:
+    acoustic = int(namelist.acoustic_substeps)
+    return ((1, 1.0 / 3.0, 1), (2, 0.5, max(1, acoustic // 2)), (3, 1.0, acoustic))
 
 
 def _write_json(path: Path, payload: dict[str, Any]) -> None:
@@ -158,7 +163,7 @@ def _carry_to_validation_snapshot(carry: OperationalCarry) -> dict[str, jax.Arra
     return {
         "mu": jnp.asarray(state.mu_perturbation),
         "mut": _base_mu(state),
-        "mudf": jnp.zeros_like(state.mu_perturbation),
+        "mudf": jnp.asarray(carry.mudf),
         "muts": jnp.asarray(carry.muts),
         "muave": jnp.asarray(carry.muave),
         "ww": jnp.asarray(carry.ww),
@@ -178,6 +183,9 @@ def _state_to_acoustic(carry: OperationalCarry, namelist: OperationalNamelist) -
     theta_offset = _theta_base_offset(state.theta)
     mu_base = _base_mu(state)
     mu_total = mu_base + state.mu_perturbation
+    theta_pert = (state.theta - theta_offset).astype(jnp.float64)
+    theta_save_pert = (carry.t_save - theta_offset).astype(jnp.float64)
+    theta_ave_pert = (carry.t_2ave - theta_offset).astype(jnp.float64)
     return AcousticLoopState(
         ww=carry.ww,
         ww_1=carry.ww_save,
@@ -192,16 +200,16 @@ def _state_to_acoustic(carry: OperationalCarry, namelist: OperationalNamelist) -
         muts=carry.muts,
         muu=_u_face_average_2d(mu_total),
         muv=_v_face_average_2d(mu_total),
-        mudf=jnp.zeros_like(state.mu_perturbation),
-        theta=state.theta - theta_offset,
-        theta_1=carry.t_save - theta_offset,
-        theta_ave=carry.t_2ave - theta_offset,
+        mudf=carry.mudf,
+        theta=theta_pert,
+        theta_1=theta_save_pert,
+        theta_ave=theta_ave_pert,
         theta_tend=namelist.tendencies.theta,
         mu_tend=namelist.tendencies.mu,
         ph_tend=carry.ph_tend,
         ph=state.ph_perturbation,
         p=state.p_perturbation,
-        t_2ave=carry.t_2ave - theta_offset,
+        t_2ave=theta_ave_pert,
         dnw=namelist.metrics.dnw,
         fnm=namelist.metrics.fnm,
         fnp=namelist.metrics.fnp,
@@ -246,20 +254,22 @@ def _carry_from_acoustic(acoustic: AcousticLoopState, template: State) -> Operat
         state=state,
         t_2ave=acoustic.t_2ave + theta_offset,
         ww=acoustic.ww,
+        mudf=acoustic.mudf,
         muave=acoustic.muave,
         muts=acoustic.muts,
         ph_tend=acoustic.ph_tend,
         u_save=acoustic.u,
         v_save=acoustic.v,
         w_save=acoustic.w,
-        t_save=theta,
-        ph_save=ph_total,
+        t_save=state.theta,
+        ph_save=state.ph,
         mu_save=acoustic.mu,
         ww_save=acoustic.ww,
     )
 
 
 def _validation_substep(carry: OperationalCarry, namelist: OperationalNamelist, dt_sub: float) -> AcousticLoopState:
+    carry = carry.replace(state=apply_halo(carry.state, halo_spec(namelist.grid)))
     acoustic = _state_to_acoustic(carry, namelist)
     coeff_mut = acoustic.coef_mut if acoustic.coef_mut is not None else acoustic.muts
     a, alpha, gamma = calc_coef_w_wrf_coefficients(
@@ -315,7 +325,7 @@ def _controlled_trace(state: State, namelist: OperationalNamelist) -> tuple[list
     first_bad: dict[str, Any] | None = None
     first_bad_pre_carry: OperationalCarry | None = None
 
-    for rk_stage, factor, substeps in RK_STAGES:
+    for rk_stage, factor, substeps in _rk_stages(namelist):
         op = _stage_candidate(op, op_origin, namelist, factor)
         val = _stage_candidate(val, val_origin, namelist, factor)
         candidate_entry = _trace_entry(f"rk{rk_stage}_advection_candidate", rk_stage, None, op, val)
@@ -324,7 +334,7 @@ def _controlled_trace(state: State, namelist: OperationalNamelist) -> tuple[list
             first_bad = candidate_entry
             first_bad_pre_carry = op
 
-        dt_sub = float(namelist.dt_s) * float(factor) / float(substeps)
+        dt_sub = float(namelist.dt_s) / float(namelist.acoustic_substeps)
         for substep in range(1, substeps + 1):
             pre_op = op
             op = _wrf_small_step_acoustic(op, namelist, dt_sub)
@@ -438,7 +448,7 @@ def _source_line(pattern: str) -> int | None:
 
 
 def _operator_drilldown(pre_carry: OperationalCarry, namelist: OperationalNamelist) -> dict[str, Any]:
-    dt_sub = float(namelist.dt_s) / 3.0
+    dt_sub = float(namelist.dt_s) / float(namelist.acoustic_substeps)
     acoustic = _state_to_acoustic(pre_carry, namelist)
     cfg = AcousticLoopConfig(
         dt=dt_sub,
@@ -532,7 +542,7 @@ def _operator_drilldown(pre_carry: OperationalCarry, namelist: OperationalNameli
         "named_defect": "operational _wrf_small_step_acoustic computes advance_mu_t but discards its prognostic mu/theta/mudf outputs",
         "defect_location": {
             "file": "src/gpuwrf/runtime/operational_mode.py",
-            "mu_new_line": _source_line("mu_new = state.mu_perturbation"),
+            "mu_new_line": _source_line('mu_new = advanced["mu"]'),
             "next_state_line": _source_line("next_state = state.replace("),
         },
         "wrf_source_citation": {
@@ -571,7 +581,7 @@ def _verify_rk1_invocation(state: State, namelist: OperationalNamelist) -> dict[
         "captured_output:",
         text if text else "<empty>",
     ]
-    _write_text(SPRINT / "proof_rk1_fix_invocation.txt", "\n".join(lines).rstrip() + "\n")
+    _write_text(BISECTION_SPRINT / "proof_rk1_fix_invocation.txt", "\n".join(lines).rstrip() + "\n")
     return proof
 
 
@@ -629,21 +639,101 @@ def run_bisection(run_id: str, ic_time: str) -> dict[str, Any]:
         ),
     }
 
-    _write_json(SPRINT / "proof_real_ic_step1_full_trace.json", full_trace)
-    _write_json(SPRINT / "proof_first_diverging_stage.json", first_stage_payload)
-    _write_json(SPRINT / "proof_first_diverging_operator.json", operator)
+    _write_json(BISECTION_SPRINT / "proof_real_ic_step1_full_trace.json", full_trace)
+    _write_json(BISECTION_SPRINT / "proof_first_diverging_stage.json", first_stage_payload)
+    _write_json(BISECTION_SPRINT / "proof_first_diverging_operator.json", operator)
     return {"full_trace": full_trace, "first_stage": first_stage_payload, "operator": operator, "rk1_invocation": invocation}
+
+
+def _controlled_timestep_pair(op: OperationalCarry, val: OperationalCarry, namelist: OperationalNamelist) -> tuple[OperationalCarry, OperationalCarry]:
+    op_origin = apply_halo(op.state, halo_spec(namelist.grid))
+    val_origin = apply_halo(val.state, halo_spec(namelist.grid))
+    op = _with_save_family(op.replace(state=op_origin), op_origin)
+    val = _with_save_family(val.replace(state=val_origin), val_origin)
+    dt_sub = float(namelist.dt_s) / float(namelist.acoustic_substeps)
+
+    for _rk_stage, factor, substeps in _rk_stages(namelist):
+        op = _stage_candidate(op, op_origin, namelist, factor)
+        val = _stage_candidate(val, val_origin, namelist, factor)
+        for _substep in range(1, substeps + 1):
+            op = _wrf_small_step_acoustic(op, namelist, dt_sub)
+            val_acoustic = _validation_substep(val, namelist, dt_sub)
+            val = _carry_from_acoustic(val_acoustic, val.state)
+        op = op.replace(state=apply_halo(op.state, halo_spec(namelist.grid)))
+        val = val.replace(state=apply_halo(val.state, halo_spec(namelist.grid)))
+    return op, val
+
+
+def run_parity_probe(run_id: str, ic_time: str, *, steps: int) -> dict[str, Any]:
+    state, namelist, case, ic_path = _operational_state_for_run(run_id, ic_time)
+    initial = initial_operational_carry(_enforce_operational_precision(_clone_state(state)))
+    op = initial
+    val = initial
+    step_summaries = []
+    for step in range(1, int(steps) + 1):
+        op, val = _controlled_timestep_pair(op, val, namelist)
+        deltas = _field_deltas(
+            _snapshot_to_numpy(_carry_to_validation_snapshot(op)),
+            _snapshot_to_numpy(_carry_to_validation_snapshot(val)),
+        )
+        largest = _largest_bad(deltas)
+        max_delta = float(deltas[largest]["max_abs_delta"]) if largest else 0.0
+        step_summaries.append(
+            {
+                "step": step,
+                "field_deltas": deltas,
+                "largest_bad_field": largest,
+                "max_abs_delta": max_delta,
+                "all_fields_finite": bool(
+                    all(np.all(np.isfinite(np.asarray(value))) for value in _carry_to_validation_snapshot(op).values())
+                ),
+            }
+        )
+
+    final = step_summaries[-1]
+    tolerance = 1.0e-10 if int(steps) == 1 else 1.0e-8
+    payload = {
+        "artifact_type": "m6b_fix_advance_mu_t_commit_parity",
+        "status": "PASS" if final["max_abs_delta"] <= tolerance and final["all_fields_finite"] else "FAIL",
+        "run_id": run_id,
+        "run_dir": str(RUN_ROOT / run_id),
+        "ic_file": str(ic_path),
+        "ic_time": ic_time,
+        "device": visible_gpu_name(),
+        "threshold": tolerance,
+        "steps": int(steps),
+        "grid": case.metadata["grid"],
+        "dt_sub_formula": "dt_s / acoustic_substeps",
+        "fields": list(FULL_STATE_FIELDS),
+        "step_summaries": step_summaries,
+        "final_max_abs_delta": final["max_abs_delta"],
+        "wrf_source_citation": {
+            "rk1_small_step": f"{WRF_SOLVE}:1472-1475",
+            "advance_mu_t_call": f"{WRF_SOLVE}:3435-3452",
+            "mu_commit": f"{WRF_SMALL}:1102-1108",
+            "theta_commit": f"{WRF_SMALL}:1141-1171",
+            "ph_tend_consumed_by_advance_w": f"{WRF_SMALL}:1345-1395",
+        },
+    }
+    name = "proof_step1_parity_after_fix.json" if int(steps) == 1 else f"proof_step{int(steps)}_probe.json"
+    _write_json(FIX_SPRINT / name, payload)
+    return payload
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--gen2-run-id", default=DEFAULT_RUN_ID)
     parser.add_argument("--gen2-ic-time", default=DEFAULT_IC_TIME)
+    parser.add_argument("--steps", type=int)
     return parser.parse_args(argv)
 
 
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
+    if args.steps is not None:
+        payload = run_parity_probe(str(args.gen2_run_id), str(args.gen2_ic_time), steps=int(args.steps))
+        print(json.dumps(payload, indent=2, sort_keys=True))
+        return 0 if payload["status"] == "PASS" else 2
     payload = run_bisection(str(args.gen2_run_id), str(args.gen2_ic_time))
     print(json.dumps(payload, indent=2, sort_keys=True))
     return 0 if payload["first_stage"]["status"] == "LOCALIZED" and payload["rk1_invocation"]["status"] == "PASS" else 2
