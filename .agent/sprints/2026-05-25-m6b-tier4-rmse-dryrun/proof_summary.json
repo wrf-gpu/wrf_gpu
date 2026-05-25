@@ -1,0 +1,17 @@
+{
+  "artifact_type": "m6b_tier4_rmse_dryrun_summary",
+  "device": "cuda:0",
+  "hours": 1.0,
+  "noise_floor_band_multiplier": 5.0,
+  "output_dir": ".agent/sprints/2026-05-25-m6b-tier4-rmse-dryrun",
+  "run_id": "20260429_18z_l3_24h_20260524T204451Z",
+  "spatial_ratio_threshold": 1.5,
+  "stage1_status": "FAIL",
+  "stage2_status": "NOT_RUN",
+  "stage3_status": "NOT_RUN",
+  "thresholds": {
+    "T2": 3.0,
+    "U10": 7.5,
+    "V10": 7.5
+  }
+}
