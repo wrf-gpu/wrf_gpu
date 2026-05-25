@@ -1,0 +1,484 @@
+{
+  "artifact_type": "m6b_gpu_cpu_step2_single_path_probe",
+  "device": "cuda:0",
+  "dt_s": 10.0,
+  "first_nonfinite_field": null,
+  "first_nonfinite_step": null,
+  "grid": {
+    "dx_m": 3000.0,
+    "dy_m": 3000.0,
+    "mass_shape": [
+      44,
+      66,
+      159
+    ],
+    "wrf_staggered_extent": [
+      45,
+      67,
+      160
+    ]
+  },
+  "ic_file": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T072630Z/wrfout_d02_2026-05-21_18:00:00",
+  "jax_default_backend": "gpu",
+  "jax_devices": [
+    "cuda:0"
+  ],
+  "matrix_rows": [
+    {
+      "all_state_leaves_finite": true,
+      "fields": {
+        "mu": {
+          "all_finite": true,
+          "dtype": "float64",
+          "finite_count": 10494,
+          "max_mu": 98220.90626396259,
+          "min_mu": 66801.92751904688,
+          "nonfinite_count": 0,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "theta": {
+          "all_finite": true,
+          "dtype": "float32",
+          "finite_count": 461736,
+          "max_theta": 480592.84375,
+          "min_theta": -353861.15625,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "u": {
+          "all_finite": true,
+          "dtype": "float32",
+          "finite_count": 464640,
+          "max_u": 25.663454055786133,
+          "min_u": -10.300077438354492,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            160
+          ]
+        },
+        "v": {
+          "all_finite": true,
+          "dtype": "float32",
+          "finite_count": 468732,
+          "max_v": 9.91049861907959,
+          "min_v": -11.481945991516113,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            67,
+            159
+          ]
+        },
+        "w": {
+          "all_finite": true,
+          "dtype": "float64",
+          "finite_count": 472230,
+          "max_w": 0.9269569516181946,
+          "min_w": -0.7523292899131775,
+          "nonfinite_count": 0,
+          "shape": [
+            45,
+            66,
+            159
+          ]
+        }
+      },
+      "largest_bad_field": null,
+      "lead_seconds": 10.0,
+      "max_mu": 98220.90626396259,
+      "max_theta": 480592.84375,
+      "max_u": 25.663454055786133,
+      "max_v": 9.91049861907959,
+      "max_w": 0.9269569516181946,
+      "min_mu": 66801.92751904688,
+      "min_theta": -353861.15625,
+      "min_u": -10.300077438354492,
+      "min_v": -11.481945991516113,
+      "min_w": -0.7523292899131775,
+      "path": "validation",
+      "run_id": "20260521_18z_l3_24h_20260522T072630Z",
+      "step": 1,
+      "wall_time_s_including_compile": 77.03557862700018,
+      "wrf_reference": {
+        "available": false,
+        "max_abs_delta": null,
+        "reason": "1 contracted steps cover 10 s; the Gen2 d02 WRF reference available to this harness is hourly wrfout history."
+      }
+    },
+    {
+      "all_state_leaves_finite": true,
+      "fields": {
+        "mu": {
+          "all_finite": true,
+          "dtype": "float64",
+          "finite_count": 10494,
+          "max_mu": 99837.05073937865,
+          "min_mu": 67450.75934795201,
+          "nonfinite_count": 0,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "theta": {
+          "all_finite": true,
+          "dtype": "float32",
+          "finite_count": 461736,
+          "max_theta": 931797632.0,
+          "min_theta": -549520000.0,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "u": {
+          "all_finite": true,
+          "dtype": "float32",
+          "finite_count": 464640,
+          "max_u": 25.663454055786133,
+          "min_u": -10.300077438354492,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            160
+          ]
+        },
+        "v": {
+          "all_finite": true,
+          "dtype": "float32",
+          "finite_count": 468732,
+          "max_v": 9.91049861907959,
+          "min_v": -11.481945991516113,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            67,
+            159
+          ]
+        },
+        "w": {
+          "all_finite": true,
+          "dtype": "float64",
+          "finite_count": 472230,
+          "max_w": 0.9269569516181946,
+          "min_w": -0.7523292899131775,
+          "nonfinite_count": 0,
+          "shape": [
+            45,
+            66,
+            159
+          ]
+        }
+      },
+      "largest_bad_field": null,
+      "lead_seconds": 20.0,
+      "max_mu": 99837.05073937865,
+      "max_theta": 931797632.0,
+      "max_u": 25.663454055786133,
+      "max_v": 9.91049861907959,
+      "max_w": 0.9269569516181946,
+      "min_mu": 67450.75934795201,
+      "min_theta": -549520000.0,
+      "min_u": -10.300077438354492,
+      "min_v": -11.481945991516113,
+      "min_w": -0.7523292899131775,
+      "path": "validation",
+      "run_id": "20260521_18z_l3_24h_20260522T072630Z",
+      "step": 2,
+      "wall_time_s_including_compile": 70.58438060699973,
+      "wrf_reference": {
+        "available": false,
+        "max_abs_delta": null,
+        "reason": "2 contracted steps cover 20 s; the Gen2 d02 WRF reference available to this harness is hourly wrfout history."
+      }
+    },
+    {
+      "all_state_leaves_finite": true,
+      "fields": {
+        "mu": {
+          "all_finite": true,
+          "dtype": "float64",
+          "finite_count": 10494,
+          "max_mu": 102755.54188967631,
+          "min_mu": 67938.30455790719,
+          "nonfinite_count": 0,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "theta": {
+          "all_finite": true,
+          "dtype": "float32",
+          "finite_count": 461736,
+          "max_theta": 68726099542016.0,
+          "min_theta": -45938064228352.0,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "u": {
+          "all_finite": true,
+          "dtype": "float32",
+          "finite_count": 464640,
+          "max_u": 25.663454055786133,
+          "min_u": -10.300077438354492,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            160
+          ]
+        },
+        "v": {
+          "all_finite": true,
+          "dtype": "float32",
+          "finite_count": 468732,
+          "max_v": 9.91049861907959,
+          "min_v": -11.481945991516113,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            67,
+            159
+          ]
+        },
+        "w": {
+          "all_finite": true,
+          "dtype": "float64",
+          "finite_count": 472230,
+          "max_w": 0.9269569516181946,
+          "min_w": -0.7523292899131775,
+          "nonfinite_count": 0,
+          "shape": [
+            45,
+            66,
+            159
+          ]
+        }
+      },
+      "largest_bad_field": null,
+      "lead_seconds": 30.0,
+      "max_mu": 102755.54188967631,
+      "max_theta": 68726099542016.0,
+      "max_u": 25.663454055786133,
+      "max_v": 9.91049861907959,
+      "max_w": 0.9269569516181946,
+      "min_mu": 67938.30455790719,
+      "min_theta": -45938064228352.0,
+      "min_u": -10.300077438354492,
+      "min_v": -11.481945991516113,
+      "min_w": -0.7523292899131775,
+      "path": "validation",
+      "run_id": "20260521_18z_l3_24h_20260522T072630Z",
+      "step": 3,
+      "wall_time_s_including_compile": 70.95678218299963,
+      "wrf_reference": {
+        "available": false,
+        "max_abs_delta": null,
+        "reason": "3 contracted steps cover 30 s; the Gen2 d02 WRF reference available to this harness is hourly wrfout history."
+      }
+    },
+    {
+      "all_state_leaves_finite": true,
+      "fields": {
+        "mu": {
+          "all_finite": true,
+          "dtype": "float64",
+          "finite_count": 10494,
+          "max_mu": 108614.07553686894,
+          "min_mu": 67335.73775859186,
+          "nonfinite_count": 0,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "theta": {
+          "all_finite": true,
+          "dtype": "float32",
+          "finite_count": 461736,
+          "max_theta": 4.288180216880169e+17,
+          "min_theta": -6.092026280306278e+17,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "u": {
+          "all_finite": true,
+          "dtype": "float32",
+          "finite_count": 464640,
+          "max_u": 25.663454055786133,
+          "min_u": -10.300077438354492,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            160
+          ]
+        },
+        "v": {
+          "all_finite": true,
+          "dtype": "float32",
+          "finite_count": 468732,
+          "max_v": 9.91049861907959,
+          "min_v": -11.481945991516113,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            67,
+            159
+          ]
+        },
+        "w": {
+          "all_finite": true,
+          "dtype": "float64",
+          "finite_count": 472230,
+          "max_w": 0.9269569516181946,
+          "min_w": -0.7523292899131775,
+          "nonfinite_count": 0,
+          "shape": [
+            45,
+            66,
+            159
+          ]
+        }
+      },
+      "largest_bad_field": null,
+      "lead_seconds": 40.0,
+      "max_mu": 108614.07553686894,
+      "max_theta": 4.288180216880169e+17,
+      "max_u": 25.663454055786133,
+      "max_v": 9.91049861907959,
+      "max_w": 0.9269569516181946,
+      "min_mu": 67335.73775859186,
+      "min_theta": -6.092026280306278e+17,
+      "min_u": -10.300077438354492,
+      "min_v": -11.481945991516113,
+      "min_w": -0.7523292899131775,
+      "path": "validation",
+      "run_id": "20260521_18z_l3_24h_20260522T072630Z",
+      "step": 4,
+      "wall_time_s_including_compile": 67.30293413900017,
+      "wrf_reference": {
+        "available": false,
+        "max_abs_delta": null,
+        "reason": "4 contracted steps cover 40 s; the Gen2 d02 WRF reference available to this harness is hourly wrfout history."
+      }
+    },
+    {
+      "all_state_leaves_finite": true,
+      "fields": {
+        "mu": {
+          "all_finite": true,
+          "dtype": "float64",
+          "finite_count": 10494,
+          "max_mu": 114922.17193041324,
+          "min_mu": 64863.45103426282,
+          "nonfinite_count": 0,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "theta": {
+          "all_finite": true,
+          "dtype": "float32",
+          "finite_count": 461736,
+          "max_theta": 3.974757235367112e+22,
+          "min_theta": -5.842032507108063e+22,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "u": {
+          "all_finite": true,
+          "dtype": "float32",
+          "finite_count": 464640,
+          "max_u": 25.663454055786133,
+          "min_u": -10.300077438354492,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            160
+          ]
+        },
+        "v": {
+          "all_finite": true,
+          "dtype": "float32",
+          "finite_count": 468732,
+          "max_v": 9.91049861907959,
+          "min_v": -11.481945991516113,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            67,
+            159
+          ]
+        },
+        "w": {
+          "all_finite": true,
+          "dtype": "float64",
+          "finite_count": 472230,
+          "max_w": 0.9269569516181946,
+          "min_w": -0.7523292899131775,
+          "nonfinite_count": 0,
+          "shape": [
+            45,
+            66,
+            159
+          ]
+        }
+      },
+      "largest_bad_field": null,
+      "lead_seconds": 50.0,
+      "max_mu": 114922.17193041324,
+      "max_theta": 3.974757235367112e+22,
+      "max_u": 25.663454055786133,
+      "max_v": 9.91049861907959,
+      "max_w": 0.9269569516181946,
+      "min_mu": 64863.45103426282,
+      "min_theta": -5.842032507108063e+22,
+      "min_u": -10.300077438354492,
+      "min_v": -11.481945991516113,
+      "min_w": -0.7523292899131775,
+      "path": "validation",
+      "run_id": "20260521_18z_l3_24h_20260522T072630Z",
+      "step": 5,
+      "wall_time_s_including_compile": 70.69719772400003,
+      "wrf_reference": {
+        "available": false,
+        "max_abs_delta": null,
+        "reason": "5 contracted steps cover 50 s; the Gen2 d02 WRF reference available to this harness is hourly wrfout history."
+      }
+    }
+  ],
+  "path": "validation",
+  "platform": "gpu",
+  "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T072630Z",
+  "run_id": "20260521_18z_l3_24h_20260522T072630Z",
+  "status": "PASS",
+  "steps": 5
+}
