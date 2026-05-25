@@ -40,7 +40,7 @@ from gpuwrf.runtime.operational_mode import OperationalNamelist, run_forecast_op
 
 config.update("jax_enable_x64", True)
 
-SPRINT = ROOT / ".agent" / "sprints" / "2026-05-25-m6b-honest-1h-canary-RETRY"
+SPRINT = ROOT / ".agent" / "sprints" / "2026-05-25-m6b-rk1-d2h-acceptance"
 RUN_ROOT = Path("/mnt/data/canairy_meteo/runs/wrf_l3")
 BASELINE_RMSE = ROOT / "data" / "fixtures" / "gen2_baseline" / "rmse_summary.csv"
 D2H_WARMED_MEMO = ROOT / ".agent" / "sprints" / "2026-05-25-m6b-d2h-warmed-recapture" / "d2h_warmed_memo.md"
@@ -49,7 +49,7 @@ D2H_GREP_MEMO = ROOT / ".agent" / "sprints" / "2026-05-25-m6b-d2h-grep" / "d2h_l
 PINNED_RUN_IDS = (
     "20260509_18z_l3_24h_20260511T190519Z",
     "20260521_18z_l3_24h_20260522T072630Z",
-    "20260523_18z_l3_24h_20260524T004313Z",
+    "20260521_18z_l3_24h_20260522T133443Z",
 )
 TIER4_THRESHOLDS = {"T2": 3.0, "U10": 7.5, "V10": 7.5}
 SPATIAL_RATIO_THRESHOLD = 1.5
@@ -458,13 +458,13 @@ def run_acceptance(run_ids: tuple[str, ...], *, hours: float) -> dict[str, Any]:
         "performance": performance,
         "d2h_inheritance": d2h,
     }
-    _write_json(SPRINT / "proof_1h_runs.json", payload)
-    _write_json(SPRINT / "proof_bounds_v2.json", {"artifact_type": "m6b_retry_bounds", "status": payload["status"], "runs": runs})
-    _write_json(SPRINT / "proof_tier4_rmse_v2.json", {"artifact_type": "m6b_retry_tier4_rmse", **aggregate_rmse})
-    _write_json(SPRINT / "proof_spatial_divergence_v2.json", {"artifact_type": "m6b_retry_spatial_divergence", **aggregate_spatial})
-    _write_json(SPRINT / "proof_performance_v2.json", {"artifact_type": "m6b_retry_performance", **performance})
+    _write_json(SPRINT / "proof_m6b_1h_runs.json", payload)
+    _write_json(SPRINT / "proof_bounds.json", {"artifact_type": "m6b_rk1_d2h_bounds", "status": payload["status"], "runs": runs})
+    _write_json(SPRINT / "proof_tier4_rmse.json", {"artifact_type": "m6b_rk1_d2h_tier4_rmse", **aggregate_rmse})
+    _write_json(SPRINT / "proof_spatial_divergence.json", {"artifact_type": "m6b_rk1_d2h_spatial_divergence", **aggregate_spatial})
+    _write_json(SPRINT / "proof_performance.json", {"artifact_type": "m6b_rk1_d2h_performance", **performance})
     _write_json(SPRINT / "proof_d2h_inheritance.json", {"artifact_type": "m6b_retry_d2h_inheritance", **d2h})
-    _write_json(SPRINT / "proof_operational_mode_audit_v2.json", source_audit)
+    _write_json(SPRINT / "proof_operational_mode_audit.json", source_audit)
     return payload
 
 
