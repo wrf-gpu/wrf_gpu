@@ -1,0 +1,5 @@
+status=PASS
+launch_count_estimate=unavailable
+hlo_path=/tmp/wrf_gpu2_perfacc/.agent/sprints/2026-05-25-m6-perf-design-acceptance/artifacts/hlo/operational_1h_scan.hlo.txt
+dominant_hotspot=compiled one-step operational scan; no sanitizer or Python diagnostics in path
+m7_target_path=PCR/batched vertical solve plus full-domain physics batching and ADR-007 downcast plan
