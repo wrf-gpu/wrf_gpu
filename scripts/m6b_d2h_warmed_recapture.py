@@ -49,6 +49,7 @@ from __future__ import annotations
 import argparse
 import ctypes
 import ctypes.util
+from dataclasses import replace
 import json
 import os
 from pathlib import Path
@@ -103,7 +104,13 @@ def _cuda_profiler_call(name: str) -> None:
         raise RuntimeError(f"{name} failed with CUDA error {result}")
 
 
-def _build_case(run_id: str) -> tuple[Any, OperationalNamelist, dict[str, Any]]:
+def _build_case(
+    run_id: str,
+    *,
+    run_boundary: bool = True,
+    run_physics: bool = True,
+    acoustic_substeps: int = 2,
+) -> tuple[Any, OperationalNamelist, dict[str, Any]]:
     run_dir = RUN_ROOT / run_id
     case = build_replay_case(run_dir)
     state = case.state.replace(
@@ -114,10 +121,11 @@ def _build_case(run_id: str) -> tuple[Any, OperationalNamelist, dict[str, Any]]:
         tendencies=case.tendencies,
         metrics=case.metrics,
         dt_s=DT_S,
-        acoustic_substeps=2,
+        acoustic_substeps=acoustic_substeps,
         radiation_cadence_steps=999999,
         use_vertical_solver=True,
     )
+    namelist = replace(namelist, run_boundary=run_boundary, run_physics=run_physics)
     meta = {
         "run_id": run_id,
         "run_dir": str(run_dir),
@@ -148,6 +156,9 @@ def run_warmed_capture(
     run_id: str,
     use_cuda_range: bool,
     profile_steps: int,
+    run_boundary: bool = True,
+    run_physics: bool = True,
+    acoustic_substeps: int = 2,
     call_log_name: str = "proof_warmed_call_log.json",
 ) -> dict[str, Any]:
     SPRINT.mkdir(parents=True, exist_ok=True)
@@ -162,19 +173,34 @@ def run_warmed_capture(
     # use of a freshly-cached executable. All of this happens *before* nsys
     # opens its capture window, so the profiled call below should see zero
     # D2H transfers.
-    state_warm, namelist_warm, meta = _build_case(run_id)
+    state_warm, namelist_warm, meta = _build_case(
+        run_id,
+        run_boundary=run_boundary,
+        run_physics=run_physics,
+        acoustic_substeps=acoustic_substeps,
+    )
     t0 = time.perf_counter()
     warm = run_forecast_operational(state_warm, namelist_warm, hours_per_call)
     block_until_ready(warm)
     t_warmup = time.perf_counter() - t0
 
-    state_warm2, namelist_warm2, _ = _build_case(run_id)
+    state_warm2, namelist_warm2, _ = _build_case(
+        run_id,
+        run_boundary=run_boundary,
+        run_physics=run_physics,
+        acoustic_substeps=acoustic_substeps,
+    )
     t0 = time.perf_counter()
     warm2 = run_forecast_operational(state_warm2, namelist_warm2, hours_per_call)
     block_until_ready(warm2)
     t_warmup2 = time.perf_counter() - t0
 
-    state_warm3, namelist_warm3, _ = _build_case(run_id)
+    state_warm3, namelist_warm3, _ = _build_case(
+        run_id,
+        run_boundary=run_boundary,
+        run_physics=run_physics,
+        acoustic_substeps=acoustic_substeps,
+    )
     t0 = time.perf_counter()
     warm3 = run_forecast_operational(state_warm3, namelist_warm3, hours_per_call)
     block_until_ready(warm3)
@@ -184,7 +210,12 @@ def run_warmed_capture(
 
     # ---- profiled call: identical signature => cache hit, zero first-graph
     # staging expected.
-    state_profile, namelist_profile, _ = _build_case(run_id)
+    state_profile, namelist_profile, _ = _build_case(
+        run_id,
+        run_boundary=run_boundary,
+        run_physics=run_physics,
+        acoustic_substeps=acoustic_substeps,
+    )
     if use_cuda_range:
         _cuda_profiler_call("cudaProfilerStart")
     t0 = time.perf_counter()
@@ -377,6 +408,22 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         help="Internal scan iteration count inside the profiled call (default 5).",
     )
     parser.add_argument(
+        "--disable-boundary",
+        action="store_true",
+        help="Bisection mode: set namelist.run_boundary=False.",
+    )
+    parser.add_argument(
+        "--disable-physics",
+        action="store_true",
+        help="Bisection mode: set namelist.run_physics=False.",
+    )
+    parser.add_argument(
+        "--acoustic-substeps",
+        type=int,
+        default=2,
+        help="Bisection mode: override namelist.acoustic_substeps (default 2).",
+    )
+    parser.add_argument(
         "--parse-rep",
         type=Path,
         default=None,
@@ -407,13 +454,26 @@ def main(argv: list[str] | None = None) -> int:
     use_cuda_range = os.environ.get("GPUWRF_CUDA_PROFILER_RANGE") == "1"
     call_log_name = (
         "proof_warmed_call_log.json"
-        if int(args.profile_steps) == DEFAULT_PROFILE_STEPS
-        else f"proof_warmed_call_log_{int(args.profile_steps)}step.json"
+        if (
+            int(args.profile_steps) == DEFAULT_PROFILE_STEPS
+            and not bool(args.disable_boundary)
+            and not bool(args.disable_physics)
+            and int(args.acoustic_substeps) == 2
+        )
+        else (
+            f"proof_warmed_call_log_{int(args.profile_steps)}step"
+            f"_boundary-{int(not bool(args.disable_boundary))}"
+            f"_physics-{int(not bool(args.disable_physics))}"
+            f"_acoustic-{int(args.acoustic_substeps)}.json"
+        )
     )
     payload = run_warmed_capture(
         run_id=args.run_id,
         use_cuda_range=use_cuda_range,
         profile_steps=int(args.profile_steps),
+        run_boundary=not bool(args.disable_boundary),
+        run_physics=not bool(args.disable_physics),
+        acoustic_substeps=int(args.acoustic_substeps),
         call_log_name=call_log_name,
     )
     print(json.dumps(payload, indent=2, sort_keys=True))
