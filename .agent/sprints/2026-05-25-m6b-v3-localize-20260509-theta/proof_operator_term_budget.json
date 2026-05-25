@@ -1,0 +1,165 @@
+{
+  "artifacts": {},
+  "diagnostic": {
+    "name": "operator_term_budget_tracer",
+    "purpose": "Rank named operator terms by magnitude."
+  },
+  "input": {
+    "path": ".agent/sprints/2026-05-25-m6b-v3-localize-20260509-theta/diagnostic_operator_term_budget_input.json",
+    "term_count": 11
+  },
+  "measurements": {
+    "extra_terms": {
+      "coftz": {
+        "l2": 1264.7514173971472,
+        "max_abs": 270.078369140625,
+        "mean": 182.08177863226996,
+        "positive_fraction": 0.9555555555555556,
+        "present": true,
+        "shape": [
+          45
+        ]
+      },
+      "cofwr": {
+        "l2": 17.68428934304898,
+        "max_abs": 2.696828842163086,
+        "mean": 2.576969782511393,
+        "positive_fraction": 0.9555555555555556,
+        "present": true,
+        "shape": [
+          45
+        ]
+      },
+      "cofwt": {
+        "l2": 0.02129403920743163,
+        "max_abs": 0.0037027501966804266,
+        "mean": 0.0031783047280358996,
+        "positive_fraction": 1.0,
+        "present": true,
+        "shape": [
+          44
+        ]
+      },
+      "cofwz": {
+        "l2": 6.21428473983338,
+        "max_abs": 2.2404778003692627,
+        "mean": -0.7363011247581905,
+        "positive_fraction": 0.0,
+        "present": true,
+        "shape": [
+          45
+        ]
+      }
+    },
+    "per_term": {
+      "boundary_forcing": {
+        "l2": null,
+        "max_abs": null,
+        "mean": null,
+        "positive_fraction": null,
+        "present": false,
+        "shape": []
+      },
+      "buoyancy": {
+        "l2": 15.310141301108356,
+        "max_abs": 6.245253562927246,
+        "mean": 1.4510934224559202,
+        "positive_fraction": 0.7333333333333333,
+        "present": true,
+        "shape": [
+          45
+        ]
+      },
+      "density_coupling": {
+        "l2": 0.043274675053810344,
+        "max_abs": 0.013493961525302647,
+        "mean": 0.0036428639198231947,
+        "positive_fraction": 0.7954545454545454,
+        "present": true,
+        "shape": [
+          44
+        ]
+      },
+      "pressure_restoring": {
+        "l2": 143.420431278516,
+        "max_abs": 68.2405045390939,
+        "mean": 11.87336415999001,
+        "positive_fraction": 0.8604651162790697,
+        "present": true,
+        "shape": [
+          43
+        ]
+      },
+      "rayleigh": {
+        "l2": null,
+        "max_abs": null,
+        "mean": null,
+        "positive_fraction": null,
+        "present": false,
+        "shape": []
+      },
+      "smdiv": {
+        "l2": null,
+        "max_abs": null,
+        "mean": null,
+        "positive_fraction": null,
+        "present": false,
+        "shape": []
+      },
+      "theta_transport": {
+        "l2": 489.54448751072766,
+        "max_abs": 198.473602281771,
+        "mean": 47.5703546116116,
+        "positive_fraction": 0.75,
+        "present": true,
+        "shape": [
+          44
+        ]
+      }
+    },
+    "ranking": [
+      {
+        "max_abs": 270.078369140625,
+        "term": "coftz"
+      },
+      {
+        "max_abs": 198.473602281771,
+        "term": "theta_transport"
+      },
+      {
+        "max_abs": 68.2405045390939,
+        "term": "pressure_restoring"
+      },
+      {
+        "max_abs": 6.245253562927246,
+        "term": "buoyancy"
+      },
+      {
+        "max_abs": 2.696828842163086,
+        "term": "cofwr"
+      },
+      {
+        "max_abs": 2.2404778003692627,
+        "term": "cofwz"
+      },
+      {
+        "max_abs": 0.013493961525302647,
+        "term": "density_coupling"
+      },
+      {
+        "max_abs": 0.0037027501966804266,
+        "term": "cofwt"
+      }
+    ]
+  },
+  "schema_version": "m6x-s1-diagnostic-sidecar-v1",
+  "source_citations": [
+    ".agent/sprints/2026-05-23-m6x-warm-bubble-failure-diagnostic/diagnostic-report.md:71-90",
+    "src/gpuwrf/dynamics/acoustic_wrf.py:735-747"
+  ],
+  "status": "OK",
+  "units": {
+    "l2": "same units times sqrt(samples)",
+    "term_value": "field-dependent tendency units"
+  }
+}
