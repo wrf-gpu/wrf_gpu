@@ -1,0 +1,6 @@
+{
+  "artifact_type": "m6b_rk1_d2h_tier4_rmse",
+  "fields": {},
+  "reason": "blocked_before_valid_1h_rmse:THETA_BOUNDS",
+  "status": "NOT_RUN"
+}

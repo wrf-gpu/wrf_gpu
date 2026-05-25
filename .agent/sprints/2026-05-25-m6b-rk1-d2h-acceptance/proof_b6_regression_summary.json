@@ -1,0 +1,8 @@
+{
+  "artifact_type": "m6b_rk1_d2h_b6_regression_summary",
+  "cpu_cores": "0-3",
+  "max_abs_delta_0_present": true,
+  "outcome": "SEVENTH-COUPLED-STEP-PARITY-ACHIEVED",
+  "sanitizer": "OFF",
+  "status": "PASS"
+}
