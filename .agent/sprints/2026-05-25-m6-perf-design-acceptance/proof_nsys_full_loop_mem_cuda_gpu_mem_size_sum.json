@@ -1,0 +1,42 @@
+[
+  {
+    "Total (MB)": 117.506,
+    "Count": 60,
+    "Avg (MB)": 1.958,
+    "Med (MB)": 0.000,
+    "Min (MB)": 0.000,
+    "Max (MB)": 8.389,
+    "StdDev (MB)": 3.577,
+    "Operation": "[CUDA memset]"
+  },
+  {
+    "Total (MB)": 113.093,
+    "Count": 496,
+    "Avg (MB)": 0.228,
+    "Med (MB)": 0.000,
+    "Min (MB)": 0.000,
+    "Max (MB)": 3.778,
+    "StdDev (MB)": 0.813,
+    "Operation": "[CUDA memcpy Host-to-Device]"
+  },
+  {
+    "Total (MB)": 68.164,
+    "Count": 349,
+    "Avg (MB)": 0.195,
+    "Med (MB)": 0.000,
+    "Min (MB)": 0.000,
+    "Max (MB)": 3.778,
+    "StdDev (MB)": 0.751,
+    "Operation": "[CUDA memcpy Device-to-Device]"
+  },
+  {
+    "Total (MB)": 0.168,
+    "Count": 100,
+    "Avg (MB)": 0.002,
+    "Med (MB)": 0.000,
+    "Min (MB)": 0.000,
+    "Max (MB)": 0.084,
+    "StdDev (MB)": 0.010,
+    "Operation": "[CUDA memcpy Device-to-Host]"
+  }
+]

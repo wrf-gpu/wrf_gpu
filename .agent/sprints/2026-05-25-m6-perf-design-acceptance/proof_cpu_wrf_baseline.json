@@ -1,0 +1,22 @@
+{
+  "command": [
+    "taskset",
+    "-c",
+    "4-31",
+    "/mnt/data/canairy_meteo/artifacts/nvhpc/Linux_x86_64/26.3/comm_libs/hpcx/bin/mpirun",
+    "--use-hwthread-cpus",
+    "-np",
+    "28",
+    "/home/enric/src/wrf_gpu/builds/stable_20260509T213321Z/wrf.exe"
+  ],
+  "cpu_cores": "4-31",
+  "log_path": "/tmp/wrf_gpu2_perfacc/.agent/sprints/2026-05-25-m6-perf-design-acceptance/proof_cpu_wrf_baseline_run.log",
+  "mode": "recovered_after_wrfgpu_openacc_failure",
+  "mpi_ranks": 28,
+  "output_path": "/tmp/wrf_gpu2_perfacc/.agent/sprints/2026-05-25-m6-perf-design-acceptance/artifacts/wrfout_d02_1h_cpu_reference.nc",
+  "reason": "wrf.exe returned 1; recovered denominator from existing 28-rank Gen2 run file timestamps for the same pinned case",
+  "run_id": "20260521_18z_l3_24h_20260522T072630Z",
+  "status": "PASS",
+  "wall_time_s": 687.3140738010406,
+  "work_dir": "/tmp/wrf_gpu2_perfacc/.agent/sprints/2026-05-25-m6-perf-design-acceptance/artifacts/cpu_wrf_28rank_1h_work"
+}
