@@ -1,0 +1,30 @@
+{
+  "artifact_type": "m6b_honest_profile_only",
+  "grid": {
+    "dx_m": 3000.0,
+    "dy_m": 3000.0,
+    "mass_shape": [
+      44,
+      66,
+      120
+    ],
+    "wrf_staggered_extent": [
+      45,
+      67,
+      121
+    ]
+  },
+  "hours_profiled": 0.002777777777777778,
+  "namelist": {
+    "acoustic_substeps": 2,
+    "dt_s": 10.0,
+    "radiation_cadence_steps": 999999,
+    "run_boundary": true,
+    "run_physics": true,
+    "use_vertical_solver": true
+  },
+  "profile_scope": "warmed run_forecast_operational first 10s step; full 1h blocked by physical-bounds failure",
+  "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260509_18z_l3_24h_20260511T190519Z",
+  "run_id": "20260509_18z_l3_24h_20260511T190519Z",
+  "status": "PASS"
+}
