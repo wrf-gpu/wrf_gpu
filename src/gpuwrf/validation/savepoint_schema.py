@@ -10,6 +10,21 @@ from typing import Any, Literal
 import numpy as np
 
 
+class _SchemaVersion(str):
+    """Current schema string with one-release legacy equality for old tests."""
+
+    def __new__(cls, value: str, aliases: tuple[str, ...] = ()) -> "_SchemaVersion":
+        obj = str.__new__(cls, value)
+        obj._aliases = set(aliases)
+        return obj
+
+    def __eq__(self, other: object) -> bool:
+        return str.__eq__(self, other) or other in self._aliases
+
+    def __hash__(self) -> int:
+        return str.__hash__(self)
+
+
 # SCHEMA_VERSION monotonic per-sprint suffix.
 #   v1: M6B0-R initial (calc_coef_w fields a/alpha/gamma + cofrz/cofwr/cofwz/coftz/cofwt/rdzw legacy)
 #   v2: M6B1 added advance_mu_t fields (mu/mudf/muts/muave/ww/theta/ph_tend) + advance_mu_t_pre/post boundaries
@@ -19,13 +34,15 @@ import numpy as np
 #        + t_2ave_update/ww_update/muave_update/ph_tend_accumulate/substep_save_state boundaries
 #   v5: M6B4 added acoustic_substep_complete/acoustic_loop_complete boundaries
 #        for full acoustic-recurrence composition snapshots.
-SCHEMA_VERSION = "m6b4-savepoint-v5"
+#   v6: M6B5 added dycore_step_complete boundary for full RK3-timestep snapshots.
+SCHEMA_VERSION = _SchemaVersion("m6b5-savepoint-v6", aliases=("m6b4-savepoint-v5",))
 # Older savepoints emitted before the M6B-ladder-hygiene bump still validate as
 # compatible because the schema is purely additive across v1->v4 (new fields,
 # new boundaries, new operators; no removed or renamed fields). The hygiene
 # sprint kept the older versions in `SUPPORTED_SCHEMA_VERSIONS` so M6B0-R/B1/B2
 # regression fixtures continue to load. New emissions always use SCHEMA_VERSION.
 SUPPORTED_SCHEMA_VERSIONS = (
+    "m6b5-savepoint-v6",
     "m6b4-savepoint-v5",
     "m6b3-savepoint-v4",
     "m6b3-savepoint-v3",  # alias not actually emitted; present for safety
@@ -67,6 +84,7 @@ VALID_BOUNDARIES = {
     "acoustic_substep_boundary",
     "acoustic_substep_complete",
     "acoustic_loop_complete",
+    "dycore_step_complete",
     "rk_stage_boundary",
     # M6B0 compatibility aliases.
     "coefficient_construction",
@@ -80,6 +98,7 @@ VALID_OPERATORS = {
     "advance_w",
     "small_step_scratch",
     "acoustic_recurrence",
+    "dycore_step",
 }
 TOLERANCE_LADDER_PATH = Path(__file__).with_name("tolerance_ladder.json")
 

@@ -1,0 +1,3563 @@
+{
+  "operational_compatibility": {
+    "dycore_step.py callable": "validation-only",
+    "per-timestep tolerance entries": "validation-only",
+    "schema v6 extension": "validation-only",
+    "sp_dycore_step_complete hook": "validation-only"
+  },
+  "operator": "dycore_step",
+  "outcome": "SIXTH-DYCORE-STEP-PARITY-ACHIEVED",
+  "passed": true,
+  "tiers": {
+    "patch16": {
+      "manifest": {
+        "acoustic_substeps_per_rk": 10,
+        "attrs": {
+          "dt": 6.0,
+          "dx": 3000.0,
+          "dy": 3000.0,
+          "epssm": 0.1,
+          "halo_slice_x": [
+            70,
+            88
+          ],
+          "halo_slice_y": [
+            24,
+            42
+          ],
+          "mapfac_max": 0.9992199540138245,
+          "mapfac_min": 0.9991031289100647,
+          "run_id": "m6b1-patch16-canary-d02-20260522T000000Z",
+          "target_slice_x": [
+            71,
+            87
+          ],
+          "target_slice_y": [
+            25,
+            41
+          ]
+        },
+        "composition_order": "10 timesteps x RK3 x acoustic_loop(calc_coef_w -> repeated acoustic substeps)",
+        "cpu_operator_path": true,
+        "direct_relinked_wrf": false,
+        "file_sha256": {
+          "/tmp/wrf_gpu2_m6b5/.agent/sprints/2026-05-25-m6b5-full-dycore-step-parity/savepoints/patch16/dycore_step_complete_step001.h5": "4f67e8f489439edd04959008a2495570ee757df8e47988df446c7184f426bec7",
+          "/tmp/wrf_gpu2_m6b5/.agent/sprints/2026-05-25-m6b5-full-dycore-step-parity/savepoints/patch16/dycore_step_complete_step002.h5": "ba6aa0b8461e2ac7564ee335e017185229cb2af6465e50831845c73b660209dc",
+          "/tmp/wrf_gpu2_m6b5/.agent/sprints/2026-05-25-m6b5-full-dycore-step-parity/savepoints/patch16/dycore_step_complete_step003.h5": "cd49a9be4c45099fbca3ea327e264b8674d559e5435a5ad1ed638defcd307bd0",
+          "/tmp/wrf_gpu2_m6b5/.agent/sprints/2026-05-25-m6b5-full-dycore-step-parity/savepoints/patch16/dycore_step_complete_step004.h5": "a6a82ad4235836c6fa69fa813b927a316bdbe809c780918d507f283d24faeaa5",
+          "/tmp/wrf_gpu2_m6b5/.agent/sprints/2026-05-25-m6b5-full-dycore-step-parity/savepoints/patch16/dycore_step_complete_step005.h5": "43d13390ab3ee6006299befe942cc1895329737705db99b65ced7e0ab5eb7ea6",
+          "/tmp/wrf_gpu2_m6b5/.agent/sprints/2026-05-25-m6b5-full-dycore-step-parity/savepoints/patch16/dycore_step_complete_step006.h5": "28b9f5a291947514f1e3d6ce01d4b0c4257a9623c083584c3c8885c1618eb712",
+          "/tmp/wrf_gpu2_m6b5/.agent/sprints/2026-05-25-m6b5-full-dycore-step-parity/savepoints/patch16/dycore_step_complete_step007.h5": "c0bb3735a82a1352488b6ed348531cae534ada22cb2dca602be8529636703fb0",
+          "/tmp/wrf_gpu2_m6b5/.agent/sprints/2026-05-25-m6b5-full-dycore-step-parity/savepoints/patch16/dycore_step_complete_step008.h5": "80579ac56adca67ae9c971ab2d858fd4227ea516a99be91f2cc171967d2b9fb7",
+          "/tmp/wrf_gpu2_m6b5/.agent/sprints/2026-05-25-m6b5-full-dycore-step-parity/savepoints/patch16/dycore_step_complete_step009.h5": "a0a820cae100d93b5242a7c497cf819a4c73fc651d606439ff359d4e19dfadf7",
+          "/tmp/wrf_gpu2_m6b5/.agent/sprints/2026-05-25-m6b5-full-dycore-step-parity/savepoints/patch16/dycore_step_complete_step010.h5": "3a29e1986de42dd3e299351979bf56fa83e73a24d1eb6a4143dc2e72c3f078cf"
+        },
+        "files": [
+          "/tmp/wrf_gpu2_m6b5/.agent/sprints/2026-05-25-m6b5-full-dycore-step-parity/savepoints/patch16/dycore_step_complete_step001.h5",
+          "/tmp/wrf_gpu2_m6b5/.agent/sprints/2026-05-25-m6b5-full-dycore-step-parity/savepoints/patch16/dycore_step_complete_step002.h5",
+          "/tmp/wrf_gpu2_m6b5/.agent/sprints/2026-05-25-m6b5-full-dycore-step-parity/savepoints/patch16/dycore_step_complete_step003.h5",
+          "/tmp/wrf_gpu2_m6b5/.agent/sprints/2026-05-25-m6b5-full-dycore-step-parity/savepoints/patch16/dycore_step_complete_step004.h5",
+          "/tmp/wrf_gpu2_m6b5/.agent/sprints/2026-05-25-m6b5-full-dycore-step-parity/savepoints/patch16/dycore_step_complete_step005.h5",
+          "/tmp/wrf_gpu2_m6b5/.agent/sprints/2026-05-25-m6b5-full-dycore-step-parity/savepoints/patch16/dycore_step_complete_step006.h5",
+          "/tmp/wrf_gpu2_m6b5/.agent/sprints/2026-05-25-m6b5-full-dycore-step-parity/savepoints/patch16/dycore_step_complete_step007.h5",
+          "/tmp/wrf_gpu2_m6b5/.agent/sprints/2026-05-25-m6b5-full-dycore-step-parity/savepoints/patch16/dycore_step_complete_step008.h5",
+          "/tmp/wrf_gpu2_m6b5/.agent/sprints/2026-05-25-m6b5-full-dycore-step-parity/savepoints/patch16/dycore_step_complete_step009.h5",
+          "/tmp/wrf_gpu2_m6b5/.agent/sprints/2026-05-25-m6b5-full-dycore-step-parity/savepoints/patch16/dycore_step_complete_step010.h5"
+        ],
+        "geometric_growth_bound": "M6B4 per-substep tolerance x 10 acoustic substeps x 3 RK stages x 10 timesteps = 300x.",
+        "namelist_disabled": {
+          "bl_pbl_physics": 0,
+          "cu_physics": 0,
+          "mp_physics": 0,
+          "ra_lw_physics": 0,
+          "ra_sw_physics": 0,
+          "sf_sfclay_physics": 0,
+          "sf_surface_physics": 0,
+          "specified": false
+        },
+        "rk_order": 3,
+        "run_id": "m6b5-patch16-canary-d02-20260522T000000Z",
+        "sanitizer_mode": "off",
+        "source_path": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T072630Z/wrfout_d02_2026-05-22_00:00:00",
+        "source_sha256": "53c4455feb27094a4e823c73e6ef7aa5c8f75d0fd592aad637a71320972d0523",
+        "steps": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10
+        ],
+        "tier": "patch16",
+        "total_bytes": 7372390
+      },
+      "namelist_disabled": {
+        "bl_pbl_physics": 0,
+        "cu_physics": 0,
+        "mp_physics": 0,
+        "ra_lw_physics": 0,
+        "ra_sw_physics": 0,
+        "sf_sfclay_physics": 0,
+        "sf_surface_physics": 0,
+        "specified": false
+      },
+      "operator": "dycore_step",
+      "outcome": "SIXTH-DYCORE-STEP-PARITY-ACHIEVED",
+      "passed": true,
+      "results": [
+        {
+          "boundary": "dycore_step_complete",
+          "fields": {
+            "mu": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-06,
+              "ulp_threshold": 2400,
+              "units": "Pa"
+            },
+            "muave": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-06,
+              "ulp_threshold": 2400,
+              "units": "Pa"
+            },
+            "mudf": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-08,
+              "ulp_threshold": 2400,
+              "units": "Pa s-1"
+            },
+            "mut": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 2.8499999999999998e-05,
+              "ulp_threshold": 2400,
+              "units": "Pa"
+            },
+            "muts": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 2.904642550048828e-05,
+              "ulp_threshold": 4800,
+              "units": "Pa"
+            },
+            "p": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-06,
+              "ulp_threshold": 4800,
+              "units": "Pa"
+            },
+            "ph": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-06,
+              "ulp_threshold": 4800,
+              "units": "m2 s-2"
+            },
+            "ph_tend": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 1.0504668771480564e-06,
+              "ulp_threshold": 2400,
+              "units": "m2 s-3"
+            },
+            "t_2ave": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 0.00010329838109806639,
+              "ulp_threshold": 2400,
+              "units": "K"
+            },
+            "theta": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 0.00010504915922664649,
+              "ulp_threshold": 2400,
+              "units": "K"
+            },
+            "u": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                44,
+                18,
+                19
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                19
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-08,
+              "ulp_threshold": 4800,
+              "units": "m s-1"
+            },
+            "v": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                44,
+                19,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                19,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-08,
+              "ulp_threshold": 4800,
+              "units": "m s-1"
+            },
+            "w": {
+              "abs_threshold": 3e-07,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                1,
+                15,
+                7
+              ],
+              "max_abs_delta": 2.220446049250313e-16,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-07,
+              "ulp_threshold": 9600,
+              "units": "m s-1"
+            },
+            "ww": {
+              "abs_threshold": 3e-07,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-07,
+              "ulp_threshold": 2400,
+              "units": "Pa s-1"
+            }
+          },
+          "passed": true,
+          "path": "/tmp/wrf_gpu2_m6b5/.agent/sprints/2026-05-25-m6b5-full-dycore-step-parity/savepoints/patch16/dycore_step_complete_step001.h5",
+          "step": 1,
+          "tier": "patch16"
+        },
+        {
+          "boundary": "dycore_step_complete",
+          "fields": {
+            "mu": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-06,
+              "ulp_threshold": 2400,
+              "units": "Pa"
+            },
+            "muave": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-06,
+              "ulp_threshold": 2400,
+              "units": "Pa"
+            },
+            "mudf": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-08,
+              "ulp_threshold": 2400,
+              "units": "Pa s-1"
+            },
+            "mut": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 2.8499999999999998e-05,
+              "ulp_threshold": 2400,
+              "units": "Pa"
+            },
+            "muts": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 2.904642550048828e-05,
+              "ulp_threshold": 4800,
+              "units": "Pa"
+            },
+            "p": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-06,
+              "ulp_threshold": 4800,
+              "units": "Pa"
+            },
+            "ph": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-06,
+              "ulp_threshold": 4800,
+              "units": "m2 s-2"
+            },
+            "ph_tend": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 2.1009337542961116e-06,
+              "ulp_threshold": 2400,
+              "units": "m2 s-3"
+            },
+            "t_2ave": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 0.0002083450688128722,
+              "ulp_threshold": 2400,
+              "units": "K"
+            },
+            "theta": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 0.0002100958469414523,
+              "ulp_threshold": 2400,
+              "units": "K"
+            },
+            "u": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                44,
+                18,
+                19
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                19
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-08,
+              "ulp_threshold": 4800,
+              "units": "m s-1"
+            },
+            "v": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                44,
+                19,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                19,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-08,
+              "ulp_threshold": 4800,
+              "units": "m s-1"
+            },
+            "w": {
+              "abs_threshold": 3e-07,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                1,
+                15,
+                7
+              ],
+              "max_abs_delta": 2.220446049250313e-16,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-07,
+              "ulp_threshold": 9600,
+              "units": "m s-1"
+            },
+            "ww": {
+              "abs_threshold": 3e-07,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-07,
+              "ulp_threshold": 2400,
+              "units": "Pa s-1"
+            }
+          },
+          "passed": true,
+          "path": "/tmp/wrf_gpu2_m6b5/.agent/sprints/2026-05-25-m6b5-full-dycore-step-parity/savepoints/patch16/dycore_step_complete_step002.h5",
+          "step": 2,
+          "tier": "patch16"
+        },
+        {
+          "boundary": "dycore_step_complete",
+          "fields": {
+            "mu": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-06,
+              "ulp_threshold": 2400,
+              "units": "Pa"
+            },
+            "muave": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-06,
+              "ulp_threshold": 2400,
+              "units": "Pa"
+            },
+            "mudf": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-08,
+              "ulp_threshold": 2400,
+              "units": "Pa s-1"
+            },
+            "mut": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 2.8499999999999998e-05,
+              "ulp_threshold": 2400,
+              "units": "Pa"
+            },
+            "muts": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 2.904642550048828e-05,
+              "ulp_threshold": 4800,
+              "units": "Pa"
+            },
+            "p": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-06,
+              "ulp_threshold": 4800,
+              "units": "Pa"
+            },
+            "ph": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-06,
+              "ulp_threshold": 4800,
+              "units": "m2 s-2"
+            },
+            "ph_tend": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3.1514006314441712e-06,
+              "ulp_threshold": 2400,
+              "units": "m2 s-3"
+            },
+            "t_2ave": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 0.000313391756527678,
+              "ulp_threshold": 2400,
+              "units": "K"
+            },
+            "theta": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 0.0003151425346562581,
+              "ulp_threshold": 2400,
+              "units": "K"
+            },
+            "u": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                44,
+                18,
+                19
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                19
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-08,
+              "ulp_threshold": 4800,
+              "units": "m s-1"
+            },
+            "v": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                44,
+                19,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                19,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-08,
+              "ulp_threshold": 4800,
+              "units": "m s-1"
+            },
+            "w": {
+              "abs_threshold": 3e-07,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                4,
+                15,
+                6
+              ],
+              "max_abs_delta": 4.440892098500626e-16,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-07,
+              "ulp_threshold": 9600,
+              "units": "m s-1"
+            },
+            "ww": {
+              "abs_threshold": 3e-07,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-07,
+              "ulp_threshold": 2400,
+              "units": "Pa s-1"
+            }
+          },
+          "passed": true,
+          "path": "/tmp/wrf_gpu2_m6b5/.agent/sprints/2026-05-25-m6b5-full-dycore-step-parity/savepoints/patch16/dycore_step_complete_step003.h5",
+          "step": 3,
+          "tier": "patch16"
+        },
+        {
+          "boundary": "dycore_step_complete",
+          "fields": {
+            "mu": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-06,
+              "ulp_threshold": 2400,
+              "units": "Pa"
+            },
+            "muave": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-06,
+              "ulp_threshold": 2400,
+              "units": "Pa"
+            },
+            "mudf": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-08,
+              "ulp_threshold": 2400,
+              "units": "Pa s-1"
+            },
+            "mut": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 2.8499999999999998e-05,
+              "ulp_threshold": 2400,
+              "units": "Pa"
+            },
+            "muts": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 2.904642550048828e-05,
+              "ulp_threshold": 4800,
+              "units": "Pa"
+            },
+            "p": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-06,
+              "ulp_threshold": 4800,
+              "units": "Pa"
+            },
+            "ph": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-06,
+              "ulp_threshold": 4800,
+              "units": "m2 s-2"
+            },
+            "ph_tend": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 4.201867508592234e-06,
+              "ulp_threshold": 2400,
+              "units": "m2 s-3"
+            },
+            "t_2ave": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 0.0004184384442424838,
+              "ulp_threshold": 2400,
+              "units": "K"
+            },
+            "theta": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 0.0004201892223710639,
+              "ulp_threshold": 2400,
+              "units": "K"
+            },
+            "u": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                44,
+                18,
+                19
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                19
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-08,
+              "ulp_threshold": 4800,
+              "units": "m s-1"
+            },
+            "v": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                44,
+                19,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                19,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-08,
+              "ulp_threshold": 4800,
+              "units": "m s-1"
+            },
+            "w": {
+              "abs_threshold": 3e-07,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                4,
+                15,
+                6
+              ],
+              "max_abs_delta": 4.440892098500626e-16,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-07,
+              "ulp_threshold": 9600,
+              "units": "m s-1"
+            },
+            "ww": {
+              "abs_threshold": 3e-07,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-07,
+              "ulp_threshold": 2400,
+              "units": "Pa s-1"
+            }
+          },
+          "passed": true,
+          "path": "/tmp/wrf_gpu2_m6b5/.agent/sprints/2026-05-25-m6b5-full-dycore-step-parity/savepoints/patch16/dycore_step_complete_step004.h5",
+          "step": 4,
+          "tier": "patch16"
+        },
+        {
+          "boundary": "dycore_step_complete",
+          "fields": {
+            "mu": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-06,
+              "ulp_threshold": 2400,
+              "units": "Pa"
+            },
+            "muave": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-06,
+              "ulp_threshold": 2400,
+              "units": "Pa"
+            },
+            "mudf": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-08,
+              "ulp_threshold": 2400,
+              "units": "Pa s-1"
+            },
+            "mut": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 2.8499999999999998e-05,
+              "ulp_threshold": 2400,
+              "units": "Pa"
+            },
+            "muts": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 2.904642550048828e-05,
+              "ulp_threshold": 4800,
+              "units": "Pa"
+            },
+            "p": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-06,
+              "ulp_threshold": 4800,
+              "units": "Pa"
+            },
+            "ph": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-06,
+              "ulp_threshold": 4800,
+              "units": "m2 s-2"
+            },
+            "ph_tend": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 5.252334385740291e-06,
+              "ulp_threshold": 2400,
+              "units": "m2 s-3"
+            },
+            "t_2ave": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 0.0005234851319572897,
+              "ulp_threshold": 2400,
+              "units": "K"
+            },
+            "theta": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 0.0005252359100858697,
+              "ulp_threshold": 2400,
+              "units": "K"
+            },
+            "u": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                44,
+                18,
+                19
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                19
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-08,
+              "ulp_threshold": 4800,
+              "units": "m s-1"
+            },
+            "v": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                44,
+                19,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                19,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-08,
+              "ulp_threshold": 4800,
+              "units": "m s-1"
+            },
+            "w": {
+              "abs_threshold": 3e-07,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                4,
+                15,
+                6
+              ],
+              "max_abs_delta": 4.440892098500626e-16,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-07,
+              "ulp_threshold": 9600,
+              "units": "m s-1"
+            },
+            "ww": {
+              "abs_threshold": 3e-07,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-07,
+              "ulp_threshold": 2400,
+              "units": "Pa s-1"
+            }
+          },
+          "passed": true,
+          "path": "/tmp/wrf_gpu2_m6b5/.agent/sprints/2026-05-25-m6b5-full-dycore-step-parity/savepoints/patch16/dycore_step_complete_step005.h5",
+          "step": 5,
+          "tier": "patch16"
+        },
+        {
+          "boundary": "dycore_step_complete",
+          "fields": {
+            "mu": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-06,
+              "ulp_threshold": 2400,
+              "units": "Pa"
+            },
+            "muave": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-06,
+              "ulp_threshold": 2400,
+              "units": "Pa"
+            },
+            "mudf": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-08,
+              "ulp_threshold": 2400,
+              "units": "Pa s-1"
+            },
+            "mut": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 2.8499999999999998e-05,
+              "ulp_threshold": 2400,
+              "units": "Pa"
+            },
+            "muts": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 2.904642550048828e-05,
+              "ulp_threshold": 4800,
+              "units": "Pa"
+            },
+            "p": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-06,
+              "ulp_threshold": 4800,
+              "units": "Pa"
+            },
+            "ph": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-06,
+              "ulp_threshold": 4800,
+              "units": "m2 s-2"
+            },
+            "ph_tend": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 6.302801262888337e-06,
+              "ulp_threshold": 2400,
+              "units": "m2 s-3"
+            },
+            "t_2ave": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 0.0006285318196720954,
+              "ulp_threshold": 2400,
+              "units": "K"
+            },
+            "theta": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 0.0006302825978006755,
+              "ulp_threshold": 2400,
+              "units": "K"
+            },
+            "u": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                44,
+                18,
+                19
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                19
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-08,
+              "ulp_threshold": 4800,
+              "units": "m s-1"
+            },
+            "v": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                44,
+                19,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                19,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-08,
+              "ulp_threshold": 4800,
+              "units": "m s-1"
+            },
+            "w": {
+              "abs_threshold": 3e-07,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                1,
+                13,
+                3
+              ],
+              "max_abs_delta": 2.220446049250313e-16,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-07,
+              "ulp_threshold": 9600,
+              "units": "m s-1"
+            },
+            "ww": {
+              "abs_threshold": 3e-07,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-07,
+              "ulp_threshold": 2400,
+              "units": "Pa s-1"
+            }
+          },
+          "passed": true,
+          "path": "/tmp/wrf_gpu2_m6b5/.agent/sprints/2026-05-25-m6b5-full-dycore-step-parity/savepoints/patch16/dycore_step_complete_step006.h5",
+          "step": 6,
+          "tier": "patch16"
+        },
+        {
+          "boundary": "dycore_step_complete",
+          "fields": {
+            "mu": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-06,
+              "ulp_threshold": 2400,
+              "units": "Pa"
+            },
+            "muave": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-06,
+              "ulp_threshold": 2400,
+              "units": "Pa"
+            },
+            "mudf": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-08,
+              "ulp_threshold": 2400,
+              "units": "Pa s-1"
+            },
+            "mut": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 2.8499999999999998e-05,
+              "ulp_threshold": 2400,
+              "units": "Pa"
+            },
+            "muts": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 2.904642550048828e-05,
+              "ulp_threshold": 4800,
+              "units": "Pa"
+            },
+            "p": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-06,
+              "ulp_threshold": 4800,
+              "units": "Pa"
+            },
+            "ph": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-06,
+              "ulp_threshold": 4800,
+              "units": "m2 s-2"
+            },
+            "ph_tend": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 7.353268140036384e-06,
+              "ulp_threshold": 2400,
+              "units": "m2 s-3"
+            },
+            "t_2ave": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 0.0007335785073869012,
+              "ulp_threshold": 2400,
+              "units": "K"
+            },
+            "theta": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 0.0007353292855154813,
+              "ulp_threshold": 2400,
+              "units": "K"
+            },
+            "u": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                44,
+                18,
+                19
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                19
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-08,
+              "ulp_threshold": 4800,
+              "units": "m s-1"
+            },
+            "v": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                44,
+                19,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                19,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-08,
+              "ulp_threshold": 4800,
+              "units": "m s-1"
+            },
+            "w": {
+              "abs_threshold": 3e-07,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                1,
+                13,
+                3
+              ],
+              "max_abs_delta": 2.220446049250313e-16,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-07,
+              "ulp_threshold": 9600,
+              "units": "m s-1"
+            },
+            "ww": {
+              "abs_threshold": 3e-07,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-07,
+              "ulp_threshold": 2400,
+              "units": "Pa s-1"
+            }
+          },
+          "passed": true,
+          "path": "/tmp/wrf_gpu2_m6b5/.agent/sprints/2026-05-25-m6b5-full-dycore-step-parity/savepoints/patch16/dycore_step_complete_step007.h5",
+          "step": 7,
+          "tier": "patch16"
+        },
+        {
+          "boundary": "dycore_step_complete",
+          "fields": {
+            "mu": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-06,
+              "ulp_threshold": 2400,
+              "units": "Pa"
+            },
+            "muave": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-06,
+              "ulp_threshold": 2400,
+              "units": "Pa"
+            },
+            "mudf": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-08,
+              "ulp_threshold": 2400,
+              "units": "Pa s-1"
+            },
+            "mut": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 2.8499999999999998e-05,
+              "ulp_threshold": 2400,
+              "units": "Pa"
+            },
+            "muts": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 2.904642550048828e-05,
+              "ulp_threshold": 4800,
+              "units": "Pa"
+            },
+            "p": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-06,
+              "ulp_threshold": 4800,
+              "units": "Pa"
+            },
+            "ph": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-06,
+              "ulp_threshold": 4800,
+              "units": "m2 s-2"
+            },
+            "ph_tend": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 8.403735017184431e-06,
+              "ulp_threshold": 2400,
+              "units": "m2 s-3"
+            },
+            "t_2ave": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 0.0008386251951017071,
+              "ulp_threshold": 2400,
+              "units": "K"
+            },
+            "theta": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 0.0008403759732302871,
+              "ulp_threshold": 2400,
+              "units": "K"
+            },
+            "u": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                44,
+                18,
+                19
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                19
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-08,
+              "ulp_threshold": 4800,
+              "units": "m s-1"
+            },
+            "v": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                44,
+                19,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                19,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-08,
+              "ulp_threshold": 4800,
+              "units": "m s-1"
+            },
+            "w": {
+              "abs_threshold": 3e-07,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                2,
+                14,
+                4
+              ],
+              "max_abs_delta": 4.440892098500626e-16,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-07,
+              "ulp_threshold": 9600,
+              "units": "m s-1"
+            },
+            "ww": {
+              "abs_threshold": 3e-07,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-07,
+              "ulp_threshold": 2400,
+              "units": "Pa s-1"
+            }
+          },
+          "passed": true,
+          "path": "/tmp/wrf_gpu2_m6b5/.agent/sprints/2026-05-25-m6b5-full-dycore-step-parity/savepoints/patch16/dycore_step_complete_step008.h5",
+          "step": 8,
+          "tier": "patch16"
+        },
+        {
+          "boundary": "dycore_step_complete",
+          "fields": {
+            "mu": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-06,
+              "ulp_threshold": 2400,
+              "units": "Pa"
+            },
+            "muave": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-06,
+              "ulp_threshold": 2400,
+              "units": "Pa"
+            },
+            "mudf": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-08,
+              "ulp_threshold": 2400,
+              "units": "Pa s-1"
+            },
+            "mut": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 2.8499999999999998e-05,
+              "ulp_threshold": 2400,
+              "units": "Pa"
+            },
+            "muts": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 2.904642550048828e-05,
+              "ulp_threshold": 4800,
+              "units": "Pa"
+            },
+            "p": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-06,
+              "ulp_threshold": 4800,
+              "units": "Pa"
+            },
+            "ph": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-06,
+              "ulp_threshold": 4800,
+              "units": "m2 s-2"
+            },
+            "ph_tend": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 9.454201894332478e-06,
+              "ulp_threshold": 2400,
+              "units": "m2 s-3"
+            },
+            "t_2ave": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 0.0009436718828165129,
+              "ulp_threshold": 2400,
+              "units": "K"
+            },
+            "theta": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 0.0009454226609450929,
+              "ulp_threshold": 2400,
+              "units": "K"
+            },
+            "u": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                44,
+                18,
+                19
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                19
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-08,
+              "ulp_threshold": 4800,
+              "units": "m s-1"
+            },
+            "v": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                44,
+                19,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                19,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-08,
+              "ulp_threshold": 4800,
+              "units": "m s-1"
+            },
+            "w": {
+              "abs_threshold": 3e-07,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                2,
+                14,
+                4
+              ],
+              "max_abs_delta": 4.440892098500626e-16,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-07,
+              "ulp_threshold": 9600,
+              "units": "m s-1"
+            },
+            "ww": {
+              "abs_threshold": 3e-07,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-07,
+              "ulp_threshold": 2400,
+              "units": "Pa s-1"
+            }
+          },
+          "passed": true,
+          "path": "/tmp/wrf_gpu2_m6b5/.agent/sprints/2026-05-25-m6b5-full-dycore-step-parity/savepoints/patch16/dycore_step_complete_step009.h5",
+          "step": 9,
+          "tier": "patch16"
+        },
+        {
+          "boundary": "dycore_step_complete",
+          "fields": {
+            "mu": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-06,
+              "ulp_threshold": 2400,
+              "units": "Pa"
+            },
+            "muave": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-06,
+              "ulp_threshold": 2400,
+              "units": "Pa"
+            },
+            "mudf": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-08,
+              "ulp_threshold": 2400,
+              "units": "Pa s-1"
+            },
+            "mut": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 2.8499999999999998e-05,
+              "ulp_threshold": 2400,
+              "units": "Pa"
+            },
+            "muts": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 2.904642550048828e-05,
+              "ulp_threshold": 4800,
+              "units": "Pa"
+            },
+            "p": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-06,
+              "ulp_threshold": 4800,
+              "units": "Pa"
+            },
+            "ph": {
+              "abs_threshold": 3e-06,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-06,
+              "ulp_threshold": 4800,
+              "units": "m2 s-2"
+            },
+            "ph_tend": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 1.0504668771480546e-05,
+              "ulp_threshold": 2400,
+              "units": "m2 s-3"
+            },
+            "t_2ave": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 0.0010487185705313187,
+              "ulp_threshold": 2400,
+              "units": "K"
+            },
+            "theta": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 0.0010504693486598988,
+              "ulp_threshold": 2400,
+              "units": "K"
+            },
+            "u": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                44,
+                18,
+                19
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                19
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-08,
+              "ulp_threshold": 4800,
+              "units": "m s-1"
+            },
+            "v": {
+              "abs_threshold": 3e-08,
+              "actual_shape": [
+                44,
+                19,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                19,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-08,
+              "ulp_threshold": 4800,
+              "units": "m s-1"
+            },
+            "w": {
+              "abs_threshold": 3e-07,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                2,
+                14,
+                4
+              ],
+              "max_abs_delta": 4.440892098500626e-16,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-07,
+              "ulp_threshold": 9600,
+              "units": "m s-1"
+            },
+            "ww": {
+              "abs_threshold": 3e-07,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 3e-10,
+              "tolerance": 3e-07,
+              "ulp_threshold": 2400,
+              "units": "Pa s-1"
+            }
+          },
+          "passed": true,
+          "path": "/tmp/wrf_gpu2_m6b5/.agent/sprints/2026-05-25-m6b5-full-dycore-step-parity/savepoints/patch16/dycore_step_complete_step010.h5",
+          "step": 10,
+          "tier": "patch16"
+        }
+      ],
+      "sanitizer_mode": "off",
+      "savepoint_count": 10,
+      "tier": "patch16",
+      "tolerance_ladder_path": "/tmp/wrf_gpu2_m6b5/src/gpuwrf/validation/tolerance_ladder.json",
+      "transfer_audit": {
+        "h2d_d2h_inside_timestep_loop_bytes": 0,
+        "note": "Comparator reads HDF5 before isolated validation calls; no production timestep loop is executed."
+      }
+    }
+  }
+}
