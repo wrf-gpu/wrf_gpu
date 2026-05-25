@@ -1,0 +1,19 @@
+{
+  "artifact_type": "m6_perf_design_acceptance_status",
+  "blocked_gates": [
+    "Tier-4 golden 1h RMSE was not run by this script; no committed golden operational output/reference pair is present under the sprint directory",
+    "28-rank CPU WRF 1h comparison was not rerun in this turn; only existing denominator artifacts are available under artifacts/m6",
+    "direct cuSPARSE/cuSolverDx gtsv references are not bound into the repo",
+    "Nsight Systems qdrep is produced only by invoking nsys around --profile-only; JAX trace transfer audit is not a substitute for the mandatory Nsight artifact"
+  ],
+  "existing_cpu_denominator_artifacts": [
+    "artifacts/m6/cpu_denominator.json",
+    "artifacts/m6/cpu_denominator_v2.json"
+  ],
+  "status": "BLOCKED",
+  "tier4_envelope_thresholds": {
+    "T2_K": 3.0,
+    "U10_m_s": 7.5,
+    "V10_m_s": 7.5
+  }
+}
