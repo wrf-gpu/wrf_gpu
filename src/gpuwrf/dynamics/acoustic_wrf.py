@@ -632,9 +632,13 @@ def calc_coef_w_wrf_coefficients(
     gamma = jnp.zeros(field_shape, dtype=mut.dtype)
 
     # WRF lines 624-627: lower boundary row, top lower diagonal, gamma seed.
-    top_denom = mass_h[nz - 1] * mass_f[nz]
+    # WRF :626 uses c1f(kde-1) for the top a row; WRF :646 uses c1f(kde) for
+    # the top b row. The two denominators differ whenever c1f[nz-1] != c1f[nz],
+    # so split them explicitly.
+    top_denom_a = mass_h[nz - 1] * mass_f[nz - 1]
+    top_denom_b = mass_h[nz - 1] * mass_f[nz]
     a = a.at[1, :, :].set(0.0)
-    a = a.at[nz, :, :].set(-2.0 * cof * rdnw[nz - 1] ** 2 * c2a[nz - 1] * lid_flag / top_denom)
+    a = a.at[nz, :, :].set(-2.0 * cof * rdnw[nz - 1] ** 2 * c2a[nz - 1] * lid_flag / top_denom_a)
     gamma = gamma.at[0, :, :].set(0.0)
 
     # WRF lines 629-633: lower diagonal on interior w faces.
@@ -657,7 +661,7 @@ def calc_coef_w_wrf_coefficients(
         gamma = gamma.at[k, :, :].set(c * alpha_k)
 
     # WRF lines 644-649: top row diagonal and gamma closure.
-    b_top = 1.0 + 2.0 * cof * rdnw[nz - 1] ** 2 * c2a[nz - 1] / top_denom
+    b_top = 1.0 + 2.0 * cof * rdnw[nz - 1] ** 2 * c2a[nz - 1] / top_denom_b
     alpha = alpha.at[nz, :, :].set(1.0 / (b_top - a[nz] * gamma[nz - 1]))
     gamma = gamma.at[nz, :, :].set(0.0)
     return a, alpha, gamma
