@@ -1,0 +1,85 @@
+M6b RK1 Sanity Check — Part 2: Structural compare of RK1 / RK2 / RK3 paths
+==========================================================================
+
+Source: src/gpuwrf/runtime/operational_mode.py @ HEAD (post 268e38d D2H lift).
+
+Relevant function: `_rk_scan_step` (lines 345-368).
+
+------------------------------------------------------------------
+def _rk_scan_step(carry, namelist):
+    origin = apply_halo(carry.state, halo_spec(namelist.grid))
+    carry = _with_save_family(carry.replace(state=origin), origin)
+
+    def advance_stage(stage_carry, factor, acoustic_substeps):
+        haloed = apply_halo(stage_carry.state, halo_spec(namelist.grid))
+        tendencies = compute_advection_tendencies(haloed, namelist.tendencies, namelist.grid)
+        candidate = add_scaled_tendencies(origin, tendencies, float(namelist.dt_s) * float(factor))
+        stage_carry = _with_save_family(stage_carry.replace(state=candidate), candidate)
+        stage_carry = _acoustic_scan(
+            stage_carry,
+            namelist,
+            float(namelist.dt_s) * float(factor),
+            substeps=acoustic_substeps,
+        )
+        return stage_carry.replace(state=apply_halo(stage_carry.state, halo_spec(namelist.grid)))
+
+    carry = advance_stage(carry, 1.0 / 3.0, 1)                                # RK1
+    carry = advance_stage(carry, 0.5,       int(namelist.acoustic_substeps))  # RK2
+    return advance_stage(carry, 1.0,        int(namelist.acoustic_substeps))  # RK3
+------------------------------------------------------------------
+
+Side-by-side: the body of advance_stage is invariant across stages. The only
+parameters that change per stage are `factor` (RK fraction) and the substep
+count routed into `_acoustic_scan`. Anything else is shared.
+
+                  RK1                       RK2                        RK3
+factor            1.0/3.0                   0.5                        1.0
+dt_stage          dt_s/3                    dt_s/2                     dt_s
+acoustic_substeps 1                         namelist.acoustic_substeps namelist.acoustic_substeps
+                                            (default 10)               (default 10)
+dt_sub (inside    dt_stage / 1              dt_stage / 10              dt_stage / 10
+ _acoustic_scan)  = dt_s/3                  = dt_s/20                  = dt_s/10
+halo before adv   apply_halo                apply_halo                 apply_halo
+tendency calc     compute_advection_        compute_advection_         compute_advection_
+                  tendencies(haloed,...)    tendencies(haloed,...)     tendencies(haloed,...)
+candidate         add_scaled_tendencies(    add_scaled_tendencies(     add_scaled_tendencies(
+                  origin, tendencies,       origin, tendencies,        origin, tendencies,
+                  dt_s/3)                   dt_s/2)                    dt_s)
+acoustic call     _acoustic_scan(..,        _acoustic_scan(..,         _acoustic_scan(..,
+                  substeps=1)               substeps=acoustic_substeps) substeps=acoustic_substeps)
+post-acoustic     apply_halo                apply_halo                 apply_halo
+
+Inside _acoustic_scan (operational_mode.py:325-342):
+
+------------------------------------------------------------------
+def _acoustic_scan(carry, namelist, dt_stage, *, substeps=None):
+    scan_substeps = int(namelist.acoustic_substeps if substeps is None else substeps)
+    dt_sub = float(dt_stage) / float(scan_substeps)
+
+    def body(scan_carry, _):
+        if bool(namelist.use_vertical_solver):
+            return _wrf_small_step_acoustic(scan_carry, namelist, dt_sub), None
+        next_state = add_scaled_tendencies(scan_carry.state, namelist.tendencies, dt_sub)
+        return _with_save_family(scan_carry.replace(state=next_state), next_state), None
+
+    next_carry, _ = jax.lax.scan(body, carry, xs=None, length=scan_substeps)
+    return next_carry.replace(state=apply_halo(next_carry.state, halo_spec(namelist.grid)))
+------------------------------------------------------------------
+
+The acoustic body is identical for all three stages: `_wrf_small_step_acoustic`
+with the same `namelist` (epssm, metrics, tendencies) and a stage-dependent
+`dt_sub`. Only the loop count differs.
+
+Conclusion for Part 2
+---------------------
+RK1, RK2 and RK3 follow STRUCTURALLY IDENTICAL code paths in operational_mode.py.
+The only differences are scalar parameters:
+  - factor (RK3 weights: 1/3, 1/2, 1)
+  - acoustic substep count (RK1=1, RK2=RK3=namelist.acoustic_substeps)
+
+There is no operator-order divergence, no scratch-init divergence, and no
+`if rk_step == 1: skip` guard. RK1 enters `_wrf_small_step_acoustic` exactly
+once per call to `_rk_scan_step`.
+
+This satisfies the "RK1 must be structurally identical to RK2/RK3 modulo
+stage index" test stated in the sprint contract Part 2.
