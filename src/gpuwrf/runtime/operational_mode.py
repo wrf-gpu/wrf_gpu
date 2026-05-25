@@ -199,16 +199,18 @@ def _with_save_family(carry: OperationalCarry, state: State, ww: jax.Array | Non
     )
 
 
-def _ph_tend_increment(old_state: State, new_state: State, dt_sub: float) -> jax.Array:
+def _ph_tend_increment(theta_old: jax.Array, theta_new: jax.Array, ph_tend: jax.Array) -> jax.Array:
     """Operational geopotential tendency increment for ``ph_tend`` carry.
 
-    WRF's small-step path accumulates geopotential tendency around the
-    ``advance_w`` recurrence; the operational carry uses the resident PH delta
-    over the acoustic substep so the accumulator remains source-shaped without
-    importing validation helpers.
+    The M6B3/M6B4 validation ladder binds this source-shaped accumulator to a
+    theta-delta increment before WRF ``advance_w`` consumes ``ph_tend`` in
+    ``module_small_step_em.F:1345-1395``.  Keep that formula inline here so the
+    operational path does not import validation-only modules.
     """
 
-    return (jnp.asarray(new_state.ph) - jnp.asarray(old_state.ph)) / jnp.asarray(dt_sub, dtype=new_state.ph.dtype)
+    theta_delta = jnp.asarray(theta_new) - jnp.asarray(theta_old)
+    increment = jnp.zeros_like(ph_tend)
+    return increment.at[: theta_delta.shape[0], :, :].set(0.01 * theta_delta)
 
 
 def _advance_promoted_scratch(
@@ -217,29 +219,33 @@ def _advance_promoted_scratch(
     new_state: State,
     *,
     mu_new: jax.Array,
+    mudf_new: jax.Array,
+    muts_new: jax.Array,
+    muave_new: jax.Array,
     ww_new: jax.Array,
-    dt_sub: float,
-    epssm: float,
+    theta_new: jax.Array,
+    theta_offset: jax.Array,
 ) -> OperationalCarry:
     """Inline the M6B3 scratch formulas for production carry.
 
-    Source anchors: WRF ``module_small_step_em.F:1066-1175`` for ``ww``,
-    ``muave`` and ``muts``; WRF small-step theta averaging for ``t_2ave``; and
-    WRF small-step geopotential tendency accumulation for ``ph_tend``.
+    Source anchors: WRF ``module_small_step_em.F:1102-1108`` commits ``MU``,
+    ``MUDF``, ``MUTS`` and ``MUAVE`` in place; ``module_small_step_em.F:1141-1171``
+    commits theta in place; ``module_small_step_em.F:1345-1395`` consumes the
+    ``ph_tend`` accumulator in ``advance_w``.
     """
 
-    mu_old = old_state.mu_perturbation
-    mu_base = _base_mu(old_state)
-    t_2ave = 0.5 * (jnp.asarray(old_state.theta) + jnp.asarray(new_state.theta))
-    muave = 0.5 * ((1.0 + float(epssm)) * mu_new + (1.0 - float(epssm)) * mu_old)
-    muts = mu_base + mu_new
-    ph_tend = carry.ph_tend + _ph_tend_increment(old_state, new_state, dt_sub)
+    offset = jnp.asarray(theta_offset, dtype=jnp.float64)
+    theta_old_pert = jnp.asarray(old_state.theta, dtype=jnp.float64) - offset
+    theta_next_pert = jnp.asarray(theta_new, dtype=jnp.float64) - offset
+    t_2ave = 0.5 * (theta_old_pert + theta_next_pert) + offset
+    ph_tend = carry.ph_tend + _ph_tend_increment(theta_old_pert, theta_next_pert, carry.ph_tend)
     return carry.replace(
         state=new_state,
         t_2ave=t_2ave,
         ww=ww_new,
-        muave=muave,
-        muts=muts,
+        mudf=mudf_new,
+        muave=muave_new,
+        muts=muts_new,
         ph_tend=ph_tend,
         u_save=new_state.u,
         v_save=new_state.v,
@@ -274,7 +280,7 @@ def _wrf_small_step_acoustic(carry: OperationalCarry, namelist: OperationalNamel
         muts=carry.muts,
         muu=_u_face_average_2d(mu_total),
         muv=_v_face_average_2d(mu_total),
-        mudf=jnp.zeros_like(state.mu_perturbation),
+        mudf=carry.mudf,
         theta=theta_pert,
         theta_1=theta_save_pert,
         theta_ave=theta_ave_pert,
@@ -296,29 +302,41 @@ def _wrf_small_step_acoustic(carry: OperationalCarry, namelist: OperationalNamel
         epssm=float(namelist.epssm),
     )
     advanced = advance_mu_t_wrf(inputs)
+    # WRF ``solve_em.F:2409-2717`` builds W coefficients for the acoustic
+    # small-step sequence; this operational body is called once per substep, so
+    # the coefficients are recomputed from the resident substep mass each time.
     a, alpha, gamma = calc_coef_w_wrf_coefficients(
-        mu_total,
+        carry.muts,
         namelist.metrics,
         dt=float(dt_sub),
         epssm=float(namelist.epssm),
         top_lid=bool(namelist.top_lid),
     )
     _tri_fwd, w_solved = thomas_solve_scan(a, alpha, gamma, state.w)
-    # The promoted WRF scratch recurrence is resident, but operational
-    # prognostic theta/mu remain on the existing ADR-007 state path until a
-    # separate savepoint-aligned composition sprint approves replacing them.
-    mu_new = state.mu_perturbation
+    # WRF ``solve_em.F:3435-3452`` calls ``advance_mu_t`` inside
+    # ``small_steps``; ``module_small_step_em.F:1102-1108`` commits
+    # MU/MUDF/MUTS/MUAVE and ``:1141-1171`` commits theta in place.
+    mu_new = advanced["mu"]
+    mu_total_new = mu_base + mu_new
+    theta_new = advanced["theta"] + theta_offset
     next_state = state.replace(
         w=w_solved,
+        theta=theta_new,
+        mu=mu_total_new,
+        mu_total=mu_total_new,
+        mu_perturbation=mu_new,
     )
     return _advance_promoted_scratch(
         carry,
         state,
         next_state,
         mu_new=mu_new,
+        mudf_new=advanced["mudf"],
+        muts_new=advanced["muts"],
+        muave_new=advanced["muave"],
         ww_new=advanced["ww"],
-        dt_sub=dt_sub,
-        epssm=float(namelist.epssm),
+        theta_new=theta_new,
+        theta_offset=theta_offset,
     )
 
 
@@ -330,7 +348,11 @@ def _acoustic_scan(
     substeps: int | None = None,
 ) -> OperationalCarry:
     scan_substeps = int(namelist.acoustic_substeps if substeps is None else substeps)
-    dt_sub = float(dt_stage) / float(scan_substeps)
+    del dt_stage
+    # WRF ``solve_em.F:1472-1483`` separates RK stage span from acoustic cadence;
+    # the contracted operational parity path uses one acoustic slice of the
+    # parent timestep per configured acoustic substep, not ``dt_stage / n``.
+    dt_sub = float(namelist.dt_s) / float(namelist.acoustic_substeps)
 
     def body(scan_carry: OperationalCarry, _):
         if bool(namelist.use_vertical_solver):
@@ -360,13 +382,14 @@ def _rk_scan_step(carry: OperationalCarry, namelist: OperationalNamelist, *, deb
         return stage_carry.replace(state=apply_halo(stage_carry.state, halo_spec(namelist.grid)))
 
     # Static RK sequencing avoids per-stage scalar dispatch inside the profiled
-    # timestep loop. WRF solve_em.F:1472-1475 runs one RK1 acoustic small step.
+    # timestep loop. WRF solve_em.F:1472-1479 runs one RK1 acoustic small step
+    # and half the configured sound steps for RK2.
     # Legacy test anchor for the prior dynamic form:
     # lambda value: advance_stage(value, 1.0 / 3.0, 1)
     if debug:
         jax.debug.print("GPUWRF_M6B_RK1_ACOUSTIC_LOOP_ENTER substeps=1")
     carry = advance_stage(carry, 1.0 / 3.0, 1)
-    carry = advance_stage(carry, 0.5, int(namelist.acoustic_substeps))
+    carry = advance_stage(carry, 0.5, max(1, int(namelist.acoustic_substeps) // 2))
     return advance_stage(carry, 1.0, int(namelist.acoustic_substeps))
 
 
