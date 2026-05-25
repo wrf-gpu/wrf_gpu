@@ -1,0 +1,4 @@
+status=PASS
+tests=136
+duration_s=432.01
+command=PYTHONPATH=src XLA_PYTHON_CLIENT_PREALLOCATE=false pytest tests/test_m6x_*.py tests/test_m3_transfer_audit.py tests/test_m6b0_*.py tests/test_m6b0r_*.py tests/test_m6b1_*.py tests/test_m6b2_*.py tests/test_m6b3_*.py tests/test_m6b_hygiene_*.py tests/test_m6b4_*.py tests/test_m6b5_*.py tests/test_m6b6_*.py tests/test_m6_operational_*.py tests/test_m6_perf_*.py -v

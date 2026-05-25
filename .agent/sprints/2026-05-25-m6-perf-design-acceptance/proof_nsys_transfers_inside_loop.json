@@ -1,0 +1,9 @@
+{
+  "artifact_type": "m6_perf_acceptance_nsys_transfer_summary",
+  "cudaMemcpyDtoH_inside_loop": 0,
+  "cudaMemcpyHtoD_inside_loop": 0,
+  "method": "Nsight Systems run around warmed operational loop plus source audit of no callbacks/device_get inside operational_mode.py",
+  "nsys_report": "/tmp/wrf_gpu2_perfacc/.agent/sprints/2026-05-25-m6-perf-design-acceptance/proof_nsys_full_loop.nsys-rep",
+  "region": "m6_perf_acceptance_timestep_loop",
+  "status": "PASS"
+}
