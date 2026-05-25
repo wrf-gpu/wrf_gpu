@@ -1,0 +1,21 @@
+{
+  "artifact_type": "m6_perf_design_operational_smoke",
+  "grid": {
+    "nx": 8,
+    "ny": 8,
+    "nz": 10
+  },
+  "hours": 0.002777777777777778,
+  "precision": {
+    "mu": "float64",
+    "p": "float64",
+    "ph": "float64",
+    "theta": "float32",
+    "u": "float32",
+    "v": "float32",
+    "w": "float64"
+  },
+  "sanitizer": "not_present_in_operational_path",
+  "status": "PASS",
+  "wall_s_including_compile": 20.03897988600147
+}

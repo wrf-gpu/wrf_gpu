@@ -1,0 +1,12 @@
+[
+  {
+    "Total (MB)": 110.817,
+    "Count": 1320,
+    "Avg (MB)": 0.084,
+    "Med (MB)": 0.084,
+    "Min (MB)": 0.084,
+    "Max (MB)": 0.084,
+    "StdDev (MB)": 0.000,
+    "Operation": "[CUDA memcpy Device-to-Device]"
+  }
+]
