@@ -1,11 +1,12 @@
 # Savepoint Wrapper Hook Inventory
 
 Captured by sprint `2026-05-25-m6b-ladder-hygiene-cleanup` (Stage 2). The wrapper
-module `dyn_em/savepoint_wrapper.F90` exposes **28** subroutines (the M6B0-R
-baseline of 8 zero-arg "boundary" hooks plus the 20 M6B1/M6B2/M6B3 typed-arg
-hooks). Of these, **6 hooks (3 pre/post pairs) are actually wired into**
-`solve_em.F` and **4 hooks (3 pre + 1 post)** are wired into
-`module_small_step_em.F` (10 total wired sites; 18 wrapper hooks declared but
+module `dyn_em/savepoint_wrapper.F90` exposes **30** subroutines (12 zero-arg
+legacy hooks plus 18 M6B1/M6B2/M6B3/M6B4 typed-arg hooks). Of these, **6 hooks
+(3 pre/post pairs) from the hygiene baseline are wired into** `solve_em.F` and
+**4 hooks (3 pre + 1 post)** are wired into
+`module_small_step_em.F`; M6B4 adds **2 acoustic recurrence hooks wired into**
+`solve_em.F` (12 total wired sites; 18 wrapper hooks declared but
 not yet inserted in WRF source).
 
 All hook **bodies are EMPTY** — i.e. the wrapper file contains zero in-timestep
@@ -33,27 +34,29 @@ Full ABI wiring is queued in sprint
 | 13 | `sp_ph_tend_accumulate_post` | typed (rkstage, acstep, ph_tend) | EMPTY (typed args only) | NO (declared, not yet inserted) | NO | NO | M6B3 |
 | 14 | `sp_substep_save_state_pre` | typed (rkstage, acstep, u, v, w, t, ph, mu, ww) | EMPTY (typed args only) | NO (declared, not yet inserted) | NO | NO | M6B3 |
 | 15 | `sp_substep_save_state_post` | typed (rkstage, acstep, u_save, v_save, w_save, t_save, ph_save, mu_save, ww_save) | EMPTY (typed args only) | NO (declared, not yet inserted) | NO | NO | M6B3 |
-| 16 | `sp_advance_uv_post` | 0 | EMPTY | NO | NO | NO | M6B0-R |
-| 17 | `sp_advance_w_rhs_ready` | 0 | EMPTY | NO | NO | NO | M6B0-R |
-| 18 | `sp_advance_w_raw_w` | 0 | EMPTY | NO | NO | NO | M6B0-R |
-| 19 | `sp_advance_w_tridiag_fwd_pre` | typed (rkstage, acstep, a, alpha, gamma, rhs) | EMPTY (typed args only) | NO | YES (line 1533) | NO (stub body) | M6B2 |
-| 20 | `sp_advance_w_tridiag_fwd_post` | typed (rkstage, acstep, a, alpha, gamma, w_fwd) | EMPTY (typed args only) | NO | YES (line 1539) | NO (stub body) | M6B2 |
-| 21 | `sp_advance_w_tridiag_back_pre` | typed (rkstage, acstep, gamma, w_fwd) | EMPTY (typed args only) | NO | YES (line 1540, paired with fwd_post) | NO (stub body) | M6B2 |
-| 22 | `sp_advance_w_tridiag_back_post` | typed (rkstage, acstep, gamma, w_solved) | EMPTY (typed args only) | NO | YES (line 1555) | NO (stub body) | M6B2 |
-| 23 | `sp_advance_w_rayleigh` | 0 | EMPTY | NO | NO | NO | M6B0-R |
-| 24 | `sp_advance_w_ph_final` | 0 | EMPTY | NO | NO | NO | M6B0-R |
-| 25 | `sp_calc_p_rho_post` | 0 | EMPTY | NO | NO | NO | M6B0-R |
-| 26 | `sp_small_step_finish_post` | 0 | EMPTY | NO | NO | NO | M6B0-R |
-| 27 | `sp_acoustic_substep_boundary` | 0 | EMPTY | NO | NO | NO | M6B0-R |
-| 28 | `sp_rk_stage_boundary` | 0 | EMPTY | NO | NO | NO | M6B0-R |
+| 16 | `sp_acoustic_substep_complete` | typed (rkstage, substep, mu, mut, mudf, muts, muave, ww, theta, ph_tend, u, v, w, ph, p, t_2ave) | EMPTY (typed args only) | YES (line 4398) | NO | NO (stub body) | M6B4 |
+| 17 | `sp_acoustic_loop_complete` | typed (rkstage, mu, mut, mudf, muts, muave, ww, theta, ph_tend, u, v, w, ph, p, t_2ave) | EMPTY (typed args only) | YES (line 4406) | NO | NO (stub body) | M6B4 |
+| 18 | `sp_advance_uv_post` | 0 | EMPTY | NO | NO | NO | M6B0-R |
+| 19 | `sp_advance_w_rhs_ready` | 0 | EMPTY | NO | NO | NO | M6B0-R |
+| 20 | `sp_advance_w_raw_w` | 0 | EMPTY | NO | NO | NO | M6B0-R |
+| 21 | `sp_advance_w_tridiag_fwd_pre` | typed (rkstage, acstep, a, alpha, gamma, rhs) | EMPTY (typed args only) | NO | YES (line 1533) | NO (stub body) | M6B2 |
+| 22 | `sp_advance_w_tridiag_fwd_post` | typed (rkstage, acstep, a, alpha, gamma, w_fwd) | EMPTY (typed args only) | NO | YES (line 1539) | NO (stub body) | M6B2 |
+| 23 | `sp_advance_w_tridiag_back_pre` | typed (rkstage, acstep, gamma, w_fwd) | EMPTY (typed args only) | NO | YES (line 1540, paired with fwd_post) | NO (stub body) | M6B2 |
+| 24 | `sp_advance_w_tridiag_back_post` | typed (rkstage, acstep, gamma, w_solved) | EMPTY (typed args only) | NO | YES (line 1555) | NO (stub body) | M6B2 |
+| 25 | `sp_advance_w_rayleigh` | 0 | EMPTY | NO | NO | NO | M6B0-R |
+| 26 | `sp_advance_w_ph_final` | 0 | EMPTY | NO | NO | NO | M6B0-R |
+| 27 | `sp_calc_p_rho_post` | 0 | EMPTY | NO | NO | NO | M6B0-R |
+| 28 | `sp_small_step_finish_post` | 0 | EMPTY | NO | NO | NO | M6B0-R |
+| 29 | `sp_acoustic_substep_boundary` | 0 | EMPTY | NO | NO | NO | M6B0-R |
+| 30 | `sp_rk_stage_boundary` | 0 | EMPTY | NO | NO | NO | M6B0-R |
 
 ## Summary statistics
 
-- **Total declared hooks**: 28 (`grep -c "^  subroutine sp_" dyn_em/savepoint_wrapper.F90`)
-- **Hooks called in `solve_em.F`** (post-hygiene patch): 6 (calc_coef_w pre/post x2; advance_mu_t pre/post)
+- **Total declared hooks**: 30 (`grep -c "^  subroutine sp_" dyn_em/savepoint_wrapper.F90`)
+- **Hooks called in `solve_em.F`** (post-M6B4 patch): 8 (calc_coef_w pre/post x2; advance_mu_t pre/post; acoustic_substep/loop_complete)
 - **Hooks called in `module_small_step_em.F`** (post-hygiene patch): 4 (tridiag_fwd_pre/post; tridiag_back_pre/post)
-- **Total wired sites**: 10
-- **Wrapper hooks with NON-zero arg ABI**: 18 (the M6B1/M6B2/M6B3 hooks)
+- **Total wired sites**: 12
+- **Wrapper hooks with NON-zero arg ABI**: 18 (the M6B1/M6B2/M6B3/M6B4 hooks)
 - **Wrapper hooks with empty 0-arg ABI**: 10 (M6B0-R legacy)
 - **Wrapper hooks with non-empty body**: 0 (all bodies are stubs; HDF5 emission is Python-orchestrated)
 

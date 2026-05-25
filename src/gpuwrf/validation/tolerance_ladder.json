@@ -1,5 +1,5 @@
 {
-  "schema_version": "m6b3-tolerance-ladder-v4",
+  "schema_version": "m6b4-tolerance-ladder-v5",
   "perturbation_rule": {
     "minimum_factor_over_tolerance": 10.0,
     "description": "Deliberate perturbations must be at least 10x the applicable pass tolerance."
@@ -266,6 +266,54 @@
       "rel": 1e-12,
       "ulp": 8,
       "accumulation_exception": "none"
+    },
+    "mut": {
+      "units": "Pa",
+      "dtype": "float64",
+      "abs": 1e-8,
+      "rel": 1e-12,
+      "ulp": 8,
+      "accumulation_exception": "M6B4 full-state snapshot pass-through; per-substep bound retains M6B1 mass tolerance."
+    },
+    "u": {
+      "units": "m s-1",
+      "dtype": "float64",
+      "abs": 1e-10,
+      "rel": 1e-12,
+      "ulp": 16,
+      "accumulation_exception": "M6B4 full-state recurrence snapshot; pass-through field with 10x operator tolerance headroom."
+    },
+    "v": {
+      "units": "m s-1",
+      "dtype": "float64",
+      "abs": 1e-10,
+      "rel": 1e-12,
+      "ulp": 16,
+      "accumulation_exception": "M6B4 full-state recurrence snapshot; pass-through field with 10x operator tolerance headroom."
+    },
+    "w": {
+      "units": "m s-1",
+      "dtype": "float64",
+      "abs": 1e-9,
+      "rel": 1e-12,
+      "ulp": 32,
+      "accumulation_exception": "M6B4 Thomas-solve recurrence field; allows linear substep roundoff growth over 10 acoustic substeps."
+    },
+    "ph": {
+      "units": "m2 s-2",
+      "dtype": "float64",
+      "abs": 1e-8,
+      "rel": 1e-12,
+      "ulp": 16,
+      "accumulation_exception": "M6B4 full-state recurrence snapshot; no operational carry authorization."
+    },
+    "p": {
+      "units": "Pa",
+      "dtype": "float64",
+      "abs": 1e-8,
+      "rel": 1e-12,
+      "ulp": 16,
+      "accumulation_exception": "M6B4 full-state recurrence snapshot; no operational carry authorization."
     }
   }
 }

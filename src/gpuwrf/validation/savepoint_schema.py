@@ -17,13 +17,16 @@ import numpy as np
 #        + advance_w_tridiag_{fwd,back}_{pre,post} boundaries
 #   v4: M6B3 added scratch-state fields (t_2ave, ww1, *_save, ph_tend accumulation, muave/muts carry)
 #        + t_2ave_update/ww_update/muave_update/ph_tend_accumulate/substep_save_state boundaries
-SCHEMA_VERSION = "m6b3-savepoint-v4"
+#   v5: M6B4 added acoustic_substep_complete/acoustic_loop_complete boundaries
+#        for full acoustic-recurrence composition snapshots.
+SCHEMA_VERSION = "m6b4-savepoint-v5"
 # Older savepoints emitted before the M6B-ladder-hygiene bump still validate as
 # compatible because the schema is purely additive across v1->v4 (new fields,
 # new boundaries, new operators; no removed or renamed fields). The hygiene
 # sprint kept the older versions in `SUPPORTED_SCHEMA_VERSIONS` so M6B0-R/B1/B2
 # regression fixtures continue to load. New emissions always use SCHEMA_VERSION.
 SUPPORTED_SCHEMA_VERSIONS = (
+    "m6b4-savepoint-v5",
     "m6b3-savepoint-v4",
     "m6b3-savepoint-v3",  # alias not actually emitted; present for safety
     "m6b2-savepoint-v3",
@@ -62,6 +65,8 @@ VALID_BOUNDARIES = {
     "calc_p_rho_post",
     "small_step_finish_post",
     "acoustic_substep_boundary",
+    "acoustic_substep_complete",
+    "acoustic_loop_complete",
     "rk_stage_boundary",
     # M6B0 compatibility aliases.
     "coefficient_construction",
@@ -74,6 +79,7 @@ VALID_OPERATORS = {
     "advance_mu_t",
     "advance_w",
     "small_step_scratch",
+    "acoustic_recurrence",
 }
 TOLERANCE_LADDER_PATH = Path(__file__).with_name("tolerance_ladder.json")
 
