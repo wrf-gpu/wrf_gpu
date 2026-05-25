@@ -1,0 +1,109 @@
+{
+  "artifact_type": "m6b_real_ic_first_diverging_operator",
+  "defect_location": {
+    "file": "src/gpuwrf/runtime/operational_mode.py",
+    "mu_new_line": 310,
+    "next_state_line": 311
+  },
+  "first_diverging_stage": "rk1_acoustic_substep_1",
+  "largest_delta_operator": "advance_mu_t_committed_outputs",
+  "named_defect": "operational _wrf_small_step_acoustic computes advance_mu_t but discards its prognostic mu/theta/mudf outputs",
+  "operator_table": [
+    {
+      "description": "coefficient arrays a/alpha/gamma",
+      "exceeds_1e_10": false,
+      "field_deltas": {
+        "a": 0.0,
+        "alpha": 0.0,
+        "gamma": 0.0
+      },
+      "max_abs_delta": 0.0,
+      "operator": "calc_coef_w"
+    },
+    {
+      "description": "operational computes the same advance_mu_t arrays before commit",
+      "exceeds_1e_10": false,
+      "field_deltas": {
+        "mu": 0.0,
+        "muave": 0.0,
+        "mudf": 0.0,
+        "muts": 0.0,
+        "theta": 0.0,
+        "ww": 0.0
+      },
+      "max_abs_delta": 0.0,
+      "operator": "advance_mu_t_raw_outputs"
+    },
+    {
+      "description": "post-substep prognostic/scratch state after operational commit",
+      "exceeds_1e_10": true,
+      "field_deltas": {
+        "mu": 47.9097314920391,
+        "muave": 26.350352320621596,
+        "mudf": 0.0,
+        "muts": 47.90973149203637,
+        "theta": 5231.41796875,
+        "ww": 0.0
+      },
+      "max_abs_delta": 5231.41796875,
+      "operator": "advance_mu_t_committed_outputs"
+    },
+    {
+      "description": "intermediate alpha/gamma Thomas forward output",
+      "exceeds_1e_10": false,
+      "field_deltas": {
+        "tri_fwd": 0.0
+      },
+      "max_abs_delta": 0.0,
+      "operator": "thomas_forward_sweep"
+    },
+    {
+      "description": "solved w after Thomas back substitution",
+      "exceeds_1e_10": false,
+      "field_deltas": {
+        "w": 0.0
+      },
+      "max_abs_delta": 0.0,
+      "operator": "thomas_back_sub"
+    },
+    {
+      "description": "t_2ave, ww, muave, muts, ph_tend running scratch",
+      "exceeds_1e_10": true,
+      "field_deltas": {
+        "muave": 26.350352320621596,
+        "muts": 47.90973149203637,
+        "ph_tend": 52.314178466796875,
+        "t_2ave": 2615.708740234375,
+        "ww": 0.0
+      },
+      "max_abs_delta": 2615.708740234375,
+      "operator": "scratch_updates"
+    },
+    {
+      "description": "top_lid/rayleigh path not configured in this operational run",
+      "exceeds_1e_10": false,
+      "field_deltas": {
+        "w": 0.0
+      },
+      "max_abs_delta": 0.0,
+      "operator": "rayleigh_damping"
+    },
+    {
+      "description": "PH field at end of first acoustic substep",
+      "exceeds_1e_10": false,
+      "field_deltas": {
+        "ph": 0.0
+      },
+      "max_abs_delta": 0.0,
+      "operator": "ph_final"
+    }
+  ],
+  "status": "LOCALIZED",
+  "threshold": 1e-10,
+  "wrf_source_citation": {
+    "advance_mu_t_call": "/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/WRF/dyn_em/solve_em.F:3435-3452 calls advance_mu_t inside small_steps",
+    "mu_commit": "/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/WRF/dyn_em/module_small_step_em.F:1102-1108 updates MU, MUDF, MUTS, and MUAVE in place",
+    "theta_commit": "/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/WRF/dyn_em/module_small_step_em.F:1141-1171 updates t/t_ave in place",
+    "thomas": "/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/WRF/dyn_em/module_small_step_em.F:1533-1550 performs Thomas forward/back substitution for w"
+  }
+}

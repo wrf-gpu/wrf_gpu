@@ -1,0 +1,5 @@
+status: PASS
+marker: GPUWRF_M6B_RK1_ACOUSTIC_LOOP_ENTER substeps=1
+captured_marker_count: 1
+captured_output:
+GPUWRF_M6B_RK1_ACOUSTIC_LOOP_ENTER substeps=1

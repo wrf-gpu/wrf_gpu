@@ -1,0 +1,5515 @@
+{
+  "artifact_type": "m6b_real_ic_step1_full_trace",
+  "controlled_trace_note": "Per-stage trace uses the same real-IC advection candidate on both sides, then compares operational acoustic substeps with validation acoustic_substep_wrf to isolate the first operator.",
+  "device": "cuda:0",
+  "endpoint_coupled_step_deltas": {
+    "mu": {
+      "actual_shape": [
+        66,
+        159
+      ],
+      "exceeds_1e_10": true,
+      "expected_shape": [
+        66,
+        159
+      ],
+      "max_abs_delta": 95000.01803385417
+    },
+    "muave": {
+      "actual_shape": [
+        66,
+        159
+      ],
+      "exceeds_1e_10": true,
+      "expected_shape": [
+        66,
+        159
+      ],
+      "max_abs_delta": 95000.01803385417
+    },
+    "mudf": {
+      "actual_shape": [
+        66,
+        159
+      ],
+      "exceeds_1e_10": false,
+      "expected_shape": [
+        66,
+        159
+      ],
+      "max_abs_delta": 0.0
+    },
+    "mut": {
+      "actual_shape": [
+        66,
+        159
+      ],
+      "exceeds_1e_10": false,
+      "expected_shape": [
+        66,
+        159
+      ],
+      "max_abs_delta": 7.275957614183426e-12
+    },
+    "muts": {
+      "actual_shape": [
+        66,
+        159
+      ],
+      "exceeds_1e_10": true,
+      "expected_shape": [
+        66,
+        159
+      ],
+      "max_abs_delta": 95000.01803385417
+    },
+    "p": {
+      "actual_shape": [
+        44,
+        66,
+        159
+      ],
+      "exceeds_1e_10": true,
+      "expected_shape": [
+        44,
+        66,
+        159
+      ],
+      "max_abs_delta": 338.79253403824987
+    },
+    "ph": {
+      "actual_shape": [
+        45,
+        66,
+        159
+      ],
+      "exceeds_1e_10": true,
+      "expected_shape": [
+        45,
+        66,
+        159
+      ],
+      "max_abs_delta": 195221.25838216147
+    },
+    "ph_tend": {
+      "actual_shape": [
+        45,
+        66,
+        159
+      ],
+      "exceeds_1e_10": false,
+      "expected_shape": [
+        45,
+        66,
+        159
+      ],
+      "max_abs_delta": 0.0
+    },
+    "t_2ave": {
+      "actual_shape": [
+        44,
+        66,
+        159
+      ],
+      "exceeds_1e_10": true,
+      "expected_shape": [
+        44,
+        66,
+        159
+      ],
+      "max_abs_delta": 1e+300
+    },
+    "theta": {
+      "actual_shape": [
+        44,
+        66,
+        159
+      ],
+      "exceeds_1e_10": true,
+      "expected_shape": [
+        44,
+        66,
+        159
+      ],
+      "max_abs_delta": 1e+300
+    },
+    "u": {
+      "actual_shape": [
+        44,
+        66,
+        160
+      ],
+      "exceeds_1e_10": true,
+      "expected_shape": [
+        44,
+        66,
+        160
+      ],
+      "max_abs_delta": 1e+300
+    },
+    "v": {
+      "actual_shape": [
+        44,
+        67,
+        159
+      ],
+      "exceeds_1e_10": true,
+      "expected_shape": [
+        44,
+        67,
+        159
+      ],
+      "max_abs_delta": 1e+300
+    },
+    "w": {
+      "actual_shape": [
+        45,
+        66,
+        159
+      ],
+      "exceeds_1e_10": true,
+      "expected_shape": [
+        45,
+        66,
+        159
+      ],
+      "max_abs_delta": 0.10439493225376772
+    },
+    "ww": {
+      "actual_shape": [
+        45,
+        66,
+        159
+      ],
+      "exceeds_1e_10": false,
+      "expected_shape": [
+        45,
+        66,
+        159
+      ],
+      "max_abs_delta": 0.0
+    }
+  },
+  "grid": {
+    "dx_m": 3000.0,
+    "dy_m": 3000.0,
+    "mass_shape": [
+      44,
+      66,
+      159
+    ],
+    "wrf_staggered_extent": [
+      45,
+      67,
+      160
+    ]
+  },
+  "ic_file": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T072630Z/wrfout_d02_2026-05-21_18:00:00",
+  "ic_time": "2026-05-21_18:00:00",
+  "rk1_invocation": {
+    "artifact_type": "m6b_real_ic_rk1_fix_invocation",
+    "captured_marker_count": 1,
+    "captured_output": "GPUWRF_M6B_RK1_ACOUSTIC_LOOP_ENTER substeps=1\n",
+    "interpretation": "RK1 acoustic loop entry was executed on the real Gen2 IC",
+    "marker": "GPUWRF_M6B_RK1_ACOUSTIC_LOOP_ENTER substeps=1",
+    "status": "PASS"
+  },
+  "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T072630Z",
+  "run_id": "20260521_18z_l3_24h_20260522T072630Z",
+  "status": "DIVERGED",
+  "threshold": 1e-10,
+  "trace": [
+    {
+      "acoustic_substep": null,
+      "exceeds_1e_10": false,
+      "field_deltas": {
+        "mu": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "muave": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "mudf": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "mut": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "muts": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "p": {
+          "actual_shape": [
+            44,
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            44,
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "ph": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "ph_tend": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "t_2ave": {
+          "actual_shape": [
+            44,
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            44,
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "theta": {
+          "actual_shape": [
+            44,
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            44,
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "u": {
+          "actual_shape": [
+            44,
+            66,
+            160
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            44,
+            66,
+            160
+          ],
+          "max_abs_delta": 0.0
+        },
+        "v": {
+          "actual_shape": [
+            44,
+            67,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            44,
+            67,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "w": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "ww": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        }
+      },
+      "label": "rk1_advection_candidate",
+      "largest_bad_field": null,
+      "max_abs_delta": 0.0,
+      "rk_stage": 1
+    },
+    {
+      "acoustic_substep": 1,
+      "exceeds_1e_10": true,
+      "field_deltas": {
+        "mu": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 47.9097314920391
+        },
+        "muave": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 26.350352320621596
+        },
+        "mudf": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "mut": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 7.275957614183426e-12
+        },
+        "muts": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 47.90973149203637
+        },
+        "p": {
+          "actual_shape": [
+            44,
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            44,
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "ph": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "ph_tend": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 52.314178466796875
+        },
+        "t_2ave": {
+          "actual_shape": [
+            44,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            44,
+            66,
+            159
+          ],
+          "max_abs_delta": 2615.708740234375
+        },
+        "theta": {
+          "actual_shape": [
+            44,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            44,
+            66,
+            159
+          ],
+          "max_abs_delta": 5231.41796875
+        },
+        "u": {
+          "actual_shape": [
+            44,
+            66,
+            160
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            44,
+            66,
+            160
+          ],
+          "max_abs_delta": 0.0
+        },
+        "v": {
+          "actual_shape": [
+            44,
+            67,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            44,
+            67,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "w": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "ww": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        }
+      },
+      "label": "rk1_acoustic_substep_1",
+      "largest_bad_field": "theta",
+      "max_abs_delta": 5231.41796875,
+      "rk_stage": 1
+    },
+    {
+      "acoustic_substep": 1,
+      "exceeds_1e_10": true,
+      "field_deltas": {
+        "mu": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 47.9097314920391
+        },
+        "muave": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 26.350352320621596
+        },
+        "mudf": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "mut": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 7.275957614183426e-12
+        },
+        "muts": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 47.90973149203637
+        },
+        "p": {
+          "actual_shape": [
+            44,
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            44,
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "ph": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "ph_tend": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 52.314178466796875
+        },
+        "t_2ave": {
+          "actual_shape": [
+            44,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            44,
+            66,
+            159
+          ],
+          "max_abs_delta": 2615.708740234375
+        },
+        "theta": {
+          "actual_shape": [
+            44,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            44,
+            66,
+            159
+          ],
+          "max_abs_delta": 5231.41796875
+        },
+        "u": {
+          "actual_shape": [
+            44,
+            66,
+            160
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            44,
+            66,
+            160
+          ],
+          "max_abs_delta": 0.0
+        },
+        "v": {
+          "actual_shape": [
+            44,
+            67,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            44,
+            67,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "w": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "ww": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        }
+      },
+      "label": "rk1_post_acoustic",
+      "largest_bad_field": "theta",
+      "max_abs_delta": 5231.41796875,
+      "rk_stage": 1
+    },
+    {
+      "acoustic_substep": null,
+      "exceeds_1e_10": true,
+      "field_deltas": {
+        "mu": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "muave": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 26.350352320621596
+        },
+        "mudf": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "mut": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "muts": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 47.90973149203637
+        },
+        "p": {
+          "actual_shape": [
+            44,
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            44,
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "ph": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "ph_tend": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 52.314178466796875
+        },
+        "t_2ave": {
+          "actual_shape": [
+            44,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            44,
+            66,
+            159
+          ],
+          "max_abs_delta": 2615.708740234375
+        },
+        "theta": {
+          "actual_shape": [
+            44,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            44,
+            66,
+            159
+          ],
+          "max_abs_delta": 1066.0263671875
+        },
+        "u": {
+          "actual_shape": [
+            44,
+            66,
+            160
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            44,
+            66,
+            160
+          ],
+          "max_abs_delta": 0.0
+        },
+        "v": {
+          "actual_shape": [
+            44,
+            67,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            44,
+            67,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "w": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "ww": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        }
+      },
+      "label": "rk2_advection_candidate",
+      "largest_bad_field": "t_2ave",
+      "max_abs_delta": 2615.708740234375,
+      "rk_stage": 2
+    },
+    {
+      "acoustic_substep": 1,
+      "exceeds_1e_10": true,
+      "field_deltas": {
+        "mu": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 7.182184302437236
+        },
+        "muave": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 3.9502013663404796
+        },
+        "mudf": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "mut": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "muts": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 7.182184302437236
+        },
+        "p": {
+          "actual_shape": [
+            44,
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            44,
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "ph": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "ph_tend": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 123.0376968383789
+        },
+        "t_2ave": {
+          "actual_shape": [
+            44,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            44,
+            66,
+            159
+          ],
+          "max_abs_delta": 5453.10009765625
+        },
+        "theta": {
+          "actual_shape": [
+            44,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            44,
+            66,
+            159
+          ],
+          "max_abs_delta": 11238.6201171875
+        },
+        "u": {
+          "actual_shape": [
+            44,
+            66,
+            160
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            44,
+            66,
+            160
+          ],
+          "max_abs_delta": 0.0
+        },
+        "v": {
+          "actual_shape": [
+            44,
+            67,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            44,
+            67,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "w": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 1.7722822542864947e-08
+        },
+        "ww": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        }
+      },
+      "label": "rk2_acoustic_substep_1",
+      "largest_bad_field": "theta",
+      "max_abs_delta": 11238.6201171875,
+      "rk_stage": 2
+    },
+    {
+      "acoustic_substep": 2,
+      "exceeds_1e_10": true,
+      "field_deltas": {
+        "mu": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 14.36512591572614
+        },
+        "muave": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 11.132802189746144
+        },
+        "mudf": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "mut": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "muts": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 14.365125915719545
+        },
+        "p": {
+          "actual_shape": [
+            44,
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            44,
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "ph": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "ph_tend": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 2704.9398155212402
+        },
+        "t_2ave": {
+          "actual_shape": [
+            44,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            44,
+            66,
+            159
+          ],
+          "max_abs_delta": 136766.484375
+        },
+        "theta": {
+          "actual_shape": [
+            44,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            44,
+            66,
+            159
+          ],
+          "max_abs_delta": 272323.40625
+        },
+        "u": {
+          "actual_shape": [
+            44,
+            66,
+            160
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            44,
+            66,
+            160
+          ],
+          "max_abs_delta": 0.0
+        },
+        "v": {
+          "actual_shape": [
+            44,
+            67,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            44,
+            67,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "w": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 2.0387721733072794e-08
+        },
+        "ww": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0026851688511099203
+        }
+      },
+      "label": "rk2_acoustic_substep_2",
+      "largest_bad_field": "theta",
+      "max_abs_delta": 272323.40625,
+      "rk_stage": 2
+    },
+    {
+      "acoustic_substep": 3,
+      "exceeds_1e_10": true,
+      "field_deltas": {
+        "mu": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 21.548824167631892
+        },
+        "muave": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 18.316159954274553
+        },
+        "mudf": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "mut": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "muts": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 21.548824167635757
+        },
+        "p": {
+          "actual_shape": [
+            44,
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            44,
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "ph": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "ph_tend": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 62603.057903051376
+        },
+        "t_2ave": {
+          "actual_shape": [
+            44,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            44,
+            66,
+            159
+          ],
+          "max_abs_delta": 3166963.75
+        },
+        "theta": {
+          "actual_shape": [
+            44,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            44,
+            66,
+            159
+          ],
+          "max_abs_delta": 6260074.5
+        },
+        "u": {
+          "actual_shape": [
+            44,
+            66,
+            160
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            44,
+            66,
+            160
+          ],
+          "max_abs_delta": 0.0
+        },
+        "v": {
+          "actual_shape": [
+            44,
+            67,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            44,
+            67,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "w": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 2.5717634355437724e-08
+        },
+        "ww": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0026847504568778824
+        }
+      },
+      "label": "rk2_acoustic_substep_3",
+      "largest_bad_field": "theta",
+      "max_abs_delta": 6260074.5,
+      "rk_stage": 2
+    },
+    {
+      "acoustic_substep": 4,
+      "exceeds_1e_10": true,
+      "field_deltas": {
+        "mu": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 28.73327838569594
+        },
+        "muave": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 25.500273987567198
+        },
+        "mudf": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "mut": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "muts": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 28.733278385698213
+        },
+        "p": {
+          "actual_shape": [
+            44,
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            44,
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "ph": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "ph_tend": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 1864386.145652771
+        },
+        "t_2ave": {
+          "actual_shape": [
+            44,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            44,
+            66,
+            159
+          ],
+          "max_abs_delta": 90682896.0
+        },
+        "theta": {
+          "actual_shape": [
+            44,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            44,
+            66,
+            159
+          ],
+          "max_abs_delta": 186439680.0
+        },
+        "u": {
+          "actual_shape": [
+            44,
+            66,
+            160
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            44,
+            66,
+            160
+          ],
+          "max_abs_delta": 0.0
+        },
+        "v": {
+          "actual_shape": [
+            44,
+            67,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            44,
+            67,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "w": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 3.371196055645953e-08
+        },
+        "ww": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 0.005369500215376077
+        }
+      },
+      "label": "rk2_acoustic_substep_4",
+      "largest_bad_field": "theta",
+      "max_abs_delta": 186439680.0,
+      "rk_stage": 2
+    },
+    {
+      "acoustic_substep": 5,
+      "exceeds_1e_10": true,
+      "field_deltas": {
+        "mu": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 35.91848789723599
+        },
+        "muave": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 32.685143617043195
+        },
+        "mudf": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "mut": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 7.275957614183426e-12
+        },
+        "muts": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 35.91848789723008
+        },
+        "p": {
+          "actual_shape": [
+            44,
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            44,
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "ph": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "ph_tend": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 55395789.43290305
+        },
+        "t_2ave": {
+          "actual_shape": [
+            44,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            44,
+            66,
+            159
+          ],
+          "max_abs_delta": 2802011904.0
+        },
+        "theta": {
+          "actual_shape": [
+            44,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            44,
+            66,
+            159
+          ],
+          "max_abs_delta": 5539578880.0
+        },
+        "u": {
+          "actual_shape": [
+            44,
+            66,
+            160
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            44,
+            66,
+            160
+          ],
+          "max_abs_delta": 0.0
+        },
+        "v": {
+          "actual_shape": [
+            44,
+            67,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            44,
+            67,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "w": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 4.4370100371615706e-08
+        },
+        "ww": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 0.005368662030372562
+        }
+      },
+      "label": "rk2_acoustic_substep_5",
+      "largest_bad_field": "theta",
+      "max_abs_delta": 5539578880.0,
+      "rk_stage": 2
+    },
+    {
+      "acoustic_substep": 6,
+      "exceeds_1e_10": true,
+      "field_deltas": {
+        "mu": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 43.104452029346476
+        },
+        "muave": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 39.87076816989702
+        },
+        "mudf": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "mut": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "muts": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 43.104452029350796
+        },
+        "p": {
+          "actual_shape": [
+            44,
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            44,
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "ph": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "ph_tend": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 3137317842.8456326
+        },
+        "t_2ave": {
+          "actual_shape": [
+            44,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            44,
+            66,
+            159
+          ],
+          "max_abs_delta": 156257665024.0
+        },
+        "theta": {
+          "actual_shape": [
+            44,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            44,
+            66,
+            159
+          ],
+          "max_abs_delta": 313731809280.0
+        },
+        "u": {
+          "actual_shape": [
+            44,
+            66,
+            160
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            44,
+            66,
+            160
+          ],
+          "max_abs_delta": 0.0
+        },
+        "v": {
+          "actual_shape": [
+            44,
+            67,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            44,
+            67,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "w": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 5.769145361433914e-08
+        },
+        "ww": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 0.008052991300087742
+        }
+      },
+      "label": "rk2_acoustic_substep_6",
+      "largest_bad_field": "theta",
+      "max_abs_delta": 313731809280.0,
+      "rk_stage": 2
+    },
+    {
+      "acoustic_substep": 7,
+      "exceeds_1e_10": true,
+      "field_deltas": {
+        "mu": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 50.29117010889854
+        },
+        "muave": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 47.057146973100316
+        },
+        "mudf": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "mut": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "muts": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 50.291170108903316
+        },
+        "p": {
+          "actual_shape": [
+            44,
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            44,
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "ph": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "ph_tend": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 56434975538.020584
+        },
+        "t_2ave": {
+          "actual_shape": [
+            44,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            44,
+            66,
+            159
+          ],
+          "max_abs_delta": 2802013700096.0
+        },
+        "theta": {
+          "actual_shape": [
+            44,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            44,
+            66,
+            159
+          ],
+          "max_abs_delta": 5643497373696.0
+        },
+        "u": {
+          "actual_shape": [
+            44,
+            66,
+            160
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            44,
+            66,
+            160
+          ],
+          "max_abs_delta": 0.0
+        },
+        "v": {
+          "actual_shape": [
+            44,
+            67,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            44,
+            67,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "w": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 7.367542020908502e-08
+        },
+        "ww": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 0.008051731928459538
+        }
+      },
+      "label": "rk2_acoustic_substep_7",
+      "largest_bad_field": "theta",
+      "max_abs_delta": 5643497373696.0,
+      "rk_stage": 2
+    },
+    {
+      "acoustic_substep": 8,
+      "exceeds_1e_10": true,
+      "field_deltas": {
+        "mu": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 57.478641462540054
+        },
+        "muave": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 54.24427935340145
+        },
+        "mudf": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "mut": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "muts": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 57.47864146254142
+        },
+        "p": {
+          "actual_shape": [
+            44,
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            44,
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "ph": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "ph_tend": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 5676292221485.154
+        },
+        "t_2ave": {
+          "actual_shape": [
+            44,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            44,
+            66,
+            159
+          ],
+          "max_abs_delta": 283385062752256.0
+        },
+        "theta": {
+          "actual_shape": [
+            44,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            44,
+            66,
+            159
+          ],
+          "max_abs_delta": 567629186072576.0
+        },
+        "u": {
+          "actual_shape": [
+            44,
+            66,
+            160
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            44,
+            66,
+            160
+          ],
+          "max_abs_delta": 0.0
+        },
+        "v": {
+          "actual_shape": [
+            44,
+            67,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            44,
+            67,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "w": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 9.232139985826393e-08
+        },
+        "ww": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 0.010735639313846246
+        }
+      },
+      "label": "rk2_acoustic_substep_8",
+      "largest_bad_field": "theta",
+      "max_abs_delta": 567629186072576.0,
+      "rk_stage": 2
+    },
+    {
+      "acoustic_substep": 9,
+      "exceeds_1e_10": true,
+      "field_deltas": {
+        "mu": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 64.66686541669628
+        },
+        "muave": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 61.43216463732597
+        },
+        "mudf": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "mut": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 7.275957614183426e-12
+        },
+        "muts": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 64.6668654167006
+        },
+        "p": {
+          "actual_shape": [
+            44,
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            44,
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "ph": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "ph_tend": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 106670789827789.98
+        },
+        "t_2ave": {
+          "actual_shape": [
+            44,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            44,
+            66,
+            159
+          ],
+          "max_abs_delta": 5336799660474368.0
+        },
+        "theta": {
+          "actual_shape": [
+            44,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            44,
+            66,
+            159
+          ],
+          "max_abs_delta": 1.0667079560593408e+16
+        },
+        "u": {
+          "actual_shape": [
+            44,
+            66,
+            160
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            44,
+            66,
+            160
+          ],
+          "max_abs_delta": 0.0
+        },
+        "v": {
+          "actual_shape": [
+            44,
+            67,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            44,
+            67,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "w": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 1.1362879193121955e-07
+        },
+        "ww": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 0.010733957360409607
+        }
+      },
+      "label": "rk2_acoustic_substep_9",
+      "largest_bad_field": "theta",
+      "max_abs_delta": 1.0667079560593408e+16,
+      "rk_stage": 2
+    },
+    {
+      "acoustic_substep": 10,
+      "exceeds_1e_10": true,
+      "field_deltas": {
+        "mu": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 71.85584129756944
+        },
+        "muave": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 68.62080215117658
+        },
+        "mudf": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "mut": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "muts": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 71.85584129756899
+        },
+        "p": {
+          "actual_shape": [
+            44,
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            44,
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "ph": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "ph_tend": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 1.021180349974677e+16
+        },
+        "t_2ave": {
+          "actual_shape": [
+            44,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            44,
+            66,
+            159
+          ],
+          "max_abs_delta": 5.108193583693824e+17
+        },
+        "theta": {
+          "actual_shape": [
+            44,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            44,
+            66,
+            159
+          ],
+          "max_abs_delta": 1.0211804265484124e+18
+        },
+        "u": {
+          "actual_shape": [
+            44,
+            66,
+            160
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            44,
+            66,
+            160
+          ],
+          "max_abs_delta": 0.0
+        },
+        "v": {
+          "actual_shape": [
+            44,
+            67,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            44,
+            67,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "w": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 1.3759699601934017e-07
+        },
+        "ww": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 0.013417441466660684
+        }
+      },
+      "label": "rk2_acoustic_substep_10",
+      "largest_bad_field": "theta",
+      "max_abs_delta": 1.0211804265484124e+18,
+      "rk_stage": 2
+    },
+    {
+      "acoustic_substep": 10,
+      "exceeds_1e_10": true,
+      "field_deltas": {
+        "mu": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 71.85584129756944
+        },
+        "muave": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 68.62080215117658
+        },
+        "mudf": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "mut": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "muts": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 71.85584129756899
+        },
+        "p": {
+          "actual_shape": [
+            44,
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            44,
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "ph": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "ph_tend": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 1.021180349974677e+16
+        },
+        "t_2ave": {
+          "actual_shape": [
+            44,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            44,
+            66,
+            159
+          ],
+          "max_abs_delta": 5.108193583693824e+17
+        },
+        "theta": {
+          "actual_shape": [
+            44,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            44,
+            66,
+            159
+          ],
+          "max_abs_delta": 1.0211804265484124e+18
+        },
+        "u": {
+          "actual_shape": [
+            44,
+            66,
+            160
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            44,
+            66,
+            160
+          ],
+          "max_abs_delta": 0.0
+        },
+        "v": {
+          "actual_shape": [
+            44,
+            67,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            44,
+            67,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "w": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 1.3759699601934017e-07
+        },
+        "ww": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 0.013417441466660684
+        }
+      },
+      "label": "rk2_post_acoustic",
+      "largest_bad_field": "theta",
+      "max_abs_delta": 1.0211804265484124e+18,
+      "rk_stage": 2
+    },
+    {
+      "acoustic_substep": null,
+      "exceeds_1e_10": true,
+      "field_deltas": {
+        "mu": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "muave": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 68.62080215117658
+        },
+        "mudf": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "mut": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "muts": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 71.85584129756899
+        },
+        "p": {
+          "actual_shape": [
+            44,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            44,
+            66,
+            159
+          ],
+          "max_abs_delta": 3.6861893022432923e-06
+        },
+        "ph": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "ph_tend": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 1.021180349974677e+16
+        },
+        "t_2ave": {
+          "actual_shape": [
+            44,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            44,
+            66,
+            159
+          ],
+          "max_abs_delta": 5.108193583693824e+17
+        },
+        "theta": {
+          "actual_shape": [
+            44,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            44,
+            66,
+            159
+          ],
+          "max_abs_delta": 2.968897174152151e+17
+        },
+        "u": {
+          "actual_shape": [
+            44,
+            66,
+            160
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            44,
+            66,
+            160
+          ],
+          "max_abs_delta": 0.0
+        },
+        "v": {
+          "actual_shape": [
+            44,
+            67,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            44,
+            67,
+            159
+          ],
+          "max_abs_delta": 4.76837158203125e-07
+        },
+        "w": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 1.9681034690854915e-08
+        },
+        "ww": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 0.013417441466660684
+        }
+      },
+      "label": "rk3_advection_candidate",
+      "largest_bad_field": "t_2ave",
+      "max_abs_delta": 5.108193583693824e+17,
+      "rk_stage": 3
+    },
+    {
+      "acoustic_substep": 1,
+      "exceeds_1e_10": true,
+      "field_deltas": {
+        "mu": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 24.00652417985134
+        },
+        "muave": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 13.203588298918248
+        },
+        "mudf": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "mut": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "muts": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 24.00652417985839
+        },
+        "p": {
+          "actual_shape": [
+            44,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            44,
+            66,
+            159
+          ],
+          "max_abs_delta": 3.6861893022432923e-06
+        },
+        "ph": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "ph_tend": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 3.0826217936159456e+17
+        },
+        "t_2ave": {
+          "actual_shape": [
+            44,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            44,
+            66,
+            159
+          ],
+          "max_abs_delta": 1.5517744053360787e+19
+        },
+        "theta": {
+          "actual_shape": [
+            44,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            44,
+            66,
+            159
+          ],
+          "max_abs_delta": 3.101539343221234e+19
+        },
+        "u": {
+          "actual_shape": [
+            44,
+            66,
+            160
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            44,
+            66,
+            160
+          ],
+          "max_abs_delta": 0.0
+        },
+        "v": {
+          "actual_shape": [
+            44,
+            67,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            44,
+            67,
+            159
+          ],
+          "max_abs_delta": 4.76837158203125e-07
+        },
+        "w": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 9.880095652725629e-08
+        },
+        "ww": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 0.013417441466660684
+        }
+      },
+      "label": "rk3_acoustic_substep_1",
+      "largest_bad_field": "theta",
+      "max_abs_delta": 3.101539343221234e+19,
+      "rk_stage": 3
+    },
+    {
+      "acoustic_substep": 2,
+      "exceeds_1e_10": true,
+      "field_deltas": {
+        "mu": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 48.020833951392206
+        },
+        "muave": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 37.21439455419886
+        },
+        "mudf": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "mut": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 7.275957614183426e-12
+        },
+        "muts": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 48.02083395139198
+        },
+        "p": {
+          "actual_shape": [
+            44,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            44,
+            66,
+            159
+          ],
+          "max_abs_delta": 3.6861893022432923e-06
+        },
+        "ph": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "ph_tend": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 6.147829803735465e+19
+        },
+        "t_2ave": {
+          "actual_shape": [
+            44,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            44,
+            66,
+            159
+          ],
+          "max_abs_delta": 3.0776504915790565e+21
+        },
+        "theta": {
+          "actual_shape": [
+            44,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            44,
+            66,
+            159
+          ],
+          "max_abs_delta": 6.146664767922677e+21
+        },
+        "u": {
+          "actual_shape": [
+            44,
+            66,
+            160
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            44,
+            66,
+            160
+          ],
+          "max_abs_delta": 0.0
+        },
+        "v": {
+          "actual_shape": [
+            44,
+            67,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            44,
+            67,
+            159
+          ],
+          "max_abs_delta": 4.76837158203125e-07
+        },
+        "w": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 1.2040101038390816e-07
+        },
+        "ww": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 0.019516684377200888
+        }
+      },
+      "label": "rk3_acoustic_substep_2",
+      "largest_bad_field": "theta",
+      "max_abs_delta": 6.146664767922677e+21,
+      "rk_stage": 3
+    },
+    {
+      "acoustic_substep": 3,
+      "exceeds_1e_10": true,
+      "field_deltas": {
+        "mu": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 72.04292111196924
+        },
+        "muave": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 61.23298188970966
+        },
+        "mudf": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "mut": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 7.275957614183426e-12
+        },
+        "muts": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 72.04292111196264
+        },
+        "p": {
+          "actual_shape": [
+            44,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            44,
+            66,
+            159
+          ],
+          "max_abs_delta": 3.6861893022432923e-06
+        },
+        "ph": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "ph_tend": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 1.4222643120367154e+22
+        },
+        "t_2ave": {
+          "actual_shape": [
+            44,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            44,
+            66,
+            159
+          ],
+          "max_abs_delta": 7.122191329683247e+23
+        },
+        "theta": {
+          "actual_shape": [
+            44,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            44,
+            66,
+            159
+          ],
+          "max_abs_delta": 1.422264144209337e+24
+        },
+        "u": {
+          "actual_shape": [
+            44,
+            66,
+            160
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            44,
+            66,
+            160
+          ],
+          "max_abs_delta": 0.0
+        },
+        "v": {
+          "actual_shape": [
+            44,
+            67,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            44,
+            67,
+            159
+          ],
+          "max_abs_delta": 4.76837158203125e-07
+        },
+        "w": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 1.6360082255584274e-07
+        },
+        "ww": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0073202516525379124
+        }
+      },
+      "label": "rk3_acoustic_substep_3",
+      "largest_bad_field": "theta",
+      "max_abs_delta": 1.422264144209337e+24,
+      "rk_stage": 3
+    },
+    {
+      "acoustic_substep": 4,
+      "exceeds_1e_10": true,
+      "field_deltas": {
+        "mu": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 96.07277745265378
+        },
+        "muave": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 85.25934209934576
+        },
+        "mudf": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "mut": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 7.275957614183426e-12
+        },
+        "muts": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 96.07277745266038
+        },
+        "p": {
+          "actual_shape": [
+            44,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            44,
+            66,
+            159
+          ],
+          "max_abs_delta": 3.6861893022432923e-06
+        },
+        "ph": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "ph_tend": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 2.6094307060341613e+24
+        },
+        "t_2ave": {
+          "actual_shape": [
+            44,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            44,
+            66,
+            159
+          ],
+          "max_abs_delta": 1.3082171720320578e+26
+        },
+        "theta": {
+          "actual_shape": [
+            44,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            44,
+            66,
+            159
+          ],
+          "max_abs_delta": 2.609430853209091e+26
+        },
+        "u": {
+          "actual_shape": [
+            44,
+            66,
+            160
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            44,
+            66,
+            160
+          ],
+          "max_abs_delta": 0.0
+        },
+        "v": {
+          "actual_shape": [
+            44,
+            67,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            44,
+            67,
+            159
+          ],
+          "max_abs_delta": 4.76837158203125e-07
+        },
+        "w": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 2.2838548996428898e-07
+        },
+        "ww": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 0.025611815498298385
+        }
+      },
+      "label": "rk3_acoustic_substep_4",
+      "largest_bad_field": "theta",
+      "max_abs_delta": 2.609430853209091e+26,
+      "rk_stage": 3
+    },
+    {
+      "acoustic_substep": 5,
+      "exceeds_1e_10": true,
+      "field_deltas": {
+        "mu": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 120.11039475824737
+        },
+        "muave": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 109.29346697073038
+        },
+        "mudf": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "mut": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "muts": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 120.11039475824509
+        },
+        "p": {
+          "actual_shape": [
+            44,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            44,
+            66,
+            159
+          ],
+          "max_abs_delta": 3.6861893022432923e-06
+        },
+        "ph": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "ph_tend": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 6.284655780848294e+26
+        },
+        "t_2ave": {
+          "actual_shape": [
+            44,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            44,
+            66,
+            159
+          ],
+          "max_abs_delta": 3.150409920476033e+28
+        },
+        "theta": {
+          "actual_shape": [
+            44,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            44,
+            66,
+            159
+          ],
+          "max_abs_delta": 6.284656124954499e+28
+        },
+        "u": {
+          "actual_shape": [
+            44,
+            66,
+            160
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            44,
+            66,
+            160
+          ],
+          "max_abs_delta": 0.0
+        },
+        "v": {
+          "actual_shape": [
+            44,
+            67,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            44,
+            67,
+            159
+          ],
+          "max_abs_delta": 4.76837158203125e-07
+        },
+        "w": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 3.1474011130683266e-07
+        },
+        "ww": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0049337447671709
+        }
+      },
+      "label": "rk3_acoustic_substep_5",
+      "largest_bad_field": "theta",
+      "max_abs_delta": 6.284656124954499e+28,
+      "rk_stage": 3
+    },
+    {
+      "acoustic_substep": 6,
+      "exceeds_1e_10": true,
+      "field_deltas": {
+        "mu": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 144.15576480728805
+        },
+        "muave": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 133.33534828521988
+        },
+        "mudf": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "mut": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 7.275957614183426e-12
+        },
+        "muts": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 144.15576480729214
+        },
+        "p": {
+          "actual_shape": [
+            44,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            44,
+            66,
+            159
+          ],
+          "max_abs_delta": 3.6861893022432923e-06
+        },
+        "ph": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "ph_tend": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 1.1496216363667986e+29
+        },
+        "t_2ave": {
+          "actual_shape": [
+            44,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            44,
+            66,
+            159
+          ],
+          "max_abs_delta": 5.765424657718598e+30
+        },
+        "theta": {
+          "actual_shape": [
+            44,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            44,
+            66,
+            159
+          ],
+          "max_abs_delta": 1.1496217217482696e+31
+        },
+        "u": {
+          "actual_shape": [
+            44,
+            66,
+            160
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            44,
+            66,
+            160
+          ],
+          "max_abs_delta": 0.0
+        },
+        "v": {
+          "actual_shape": [
+            44,
+            67,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            44,
+            67,
+            159
+          ],
+          "max_abs_delta": 4.76837158203125e-07
+        },
+        "w": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 4.226497871684387e-07
+        },
+        "ww": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 0.032636721147521364
+        }
+      },
+      "label": "rk3_acoustic_substep_6",
+      "largest_bad_field": "theta",
+      "max_abs_delta": 1.1496217217482696e+31,
+      "rk_stage": 3
+    },
+    {
+      "acoustic_substep": 7,
+      "exceeds_1e_10": true,
+      "field_deltas": {
+        "mu": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 168.20887937205612
+        },
+        "muave": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 157.38497781791057
+        },
+        "mudf": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "mut": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 7.275957614183426e-12
+        },
+        "muts": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 168.20887937206135
+        },
+        "p": {
+          "actual_shape": [
+            44,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            44,
+            66,
+            159
+          ],
+          "max_abs_delta": 3.6861893022432923e-06
+        },
+        "ph": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "ph_tend": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 2.6705345802004975e+31
+        },
+        "t_2ave": {
+          "actual_shape": [
+            44,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            44,
+            66,
+            159
+          ],
+          "max_abs_delta": 1.329929351952113e+33
+        },
+        "theta": {
+          "actual_shape": [
+            44,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            44,
+            66,
+            159
+          ],
+          "max_abs_delta": 2.670534698803023e+33
+        },
+        "u": {
+          "actual_shape": [
+            44,
+            66,
+            160
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            44,
+            66,
+            160
+          ],
+          "max_abs_delta": 0.0
+        },
+        "v": {
+          "actual_shape": [
+            44,
+            67,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            44,
+            67,
+            159
+          ],
+          "max_abs_delta": 4.76837158203125e-07
+        },
+        "w": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 5.520996201324735e-07
+        },
+        "ww": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 0.01244091138288983
+        }
+      },
+      "label": "rk3_acoustic_substep_7",
+      "largest_bad_field": "theta",
+      "max_abs_delta": 2.670534698803023e+33,
+      "rk_stage": 3
+    },
+    {
+      "acoustic_substep": 8,
+      "exceeds_1e_10": true,
+      "field_deltas": {
+        "mu": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 192.26973021858066
+        },
+        "muave": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 181.44234733764483
+        },
+        "mudf": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "mut": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 7.275957614183426e-12
+        },
+        "muts": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 192.2697302185843
+        },
+        "p": {
+          "actual_shape": [
+            44,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            44,
+            66,
+            159
+          ],
+          "max_abs_delta": 3.6861893022432923e-06
+        },
+        "ph": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "ph_tend": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 6.090448060814626e+33
+        },
+        "t_2ave": {
+          "actual_shape": [
+            44,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            44,
+            66,
+            159
+          ],
+          "max_abs_delta": 3.0319932470603214e+35
+        },
+        "theta": {
+          "actual_shape": [
+            44,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            44,
+            66,
+            159
+          ],
+          "max_abs_delta": 6.090447908118782e+35
+        },
+        "u": {
+          "actual_shape": [
+            44,
+            66,
+            160
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            44,
+            66,
+            160
+          ],
+          "max_abs_delta": 0.0
+        },
+        "v": {
+          "actual_shape": [
+            44,
+            67,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            44,
+            67,
+            159
+          ],
+          "max_abs_delta": 4.76837158203125e-07
+        },
+        "w": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 7.030747145586602e-07
+        },
+        "ww": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 0.04014157026952159
+        }
+      },
+      "label": "rk3_acoustic_substep_8",
+      "largest_bad_field": "theta",
+      "max_abs_delta": 6.090447908118782e+35,
+      "rk_stage": 3
+    },
+    {
+      "acoustic_substep": 9,
+      "exceeds_1e_10": true,
+      "field_deltas": {
+        "mu": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 216.33830910664506
+        },
+        "muave": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 205.50744860701616
+        },
+        "mudf": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "mut": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 7.275957614183426e-12
+        },
+        "muts": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 216.33830910664983
+        },
+        "p": {
+          "actual_shape": [
+            44,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            44,
+            66,
+            159
+          ],
+          "max_abs_delta": 3.6861893022432923e-06
+        },
+        "ph": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "ph_tend": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 1.4740342487433923e+36
+        },
+        "t_2ave": {
+          "actual_shape": [
+            44,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            44,
+            66,
+            159
+          ],
+          "max_abs_delta": 7.3495907347261095e+37
+        },
+        "theta": {
+          "actual_shape": [
+            44,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            44,
+            66,
+            159
+          ],
+          "max_abs_delta": 1.474034259150187e+38
+        },
+        "u": {
+          "actual_shape": [
+            44,
+            66,
+            160
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            44,
+            66,
+            160
+          ],
+          "max_abs_delta": 0.0
+        },
+        "v": {
+          "actual_shape": [
+            44,
+            67,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            44,
+            67,
+            159
+          ],
+          "max_abs_delta": 4.76837158203125e-07
+        },
+        "w": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 8.755601766941012e-07
+        },
+        "ww": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 0.01994343931303799
+        }
+      },
+      "label": "rk3_acoustic_substep_9",
+      "largest_bad_field": "theta",
+      "max_abs_delta": 1.474034259150187e+38,
+      "rk_stage": 3
+    },
+    {
+      "acoustic_substep": 10,
+      "exceeds_1e_10": true,
+      "field_deltas": {
+        "mu": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 240.4146077897933
+        },
+        "muave": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 229.58027338237662
+        },
+        "mudf": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "mut": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "muts": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 240.41460778978944
+        },
+        "p": {
+          "actual_shape": [
+            44,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            44,
+            66,
+            159
+          ],
+          "max_abs_delta": 3.6861893022432923e-06
+        },
+        "ph": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "ph_tend": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 1e+300
+        },
+        "t_2ave": {
+          "actual_shape": [
+            44,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            44,
+            66,
+            159
+          ],
+          "max_abs_delta": 1e+300
+        },
+        "theta": {
+          "actual_shape": [
+            44,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            44,
+            66,
+            159
+          ],
+          "max_abs_delta": 1e+300
+        },
+        "u": {
+          "actual_shape": [
+            44,
+            66,
+            160
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            44,
+            66,
+            160
+          ],
+          "max_abs_delta": 0.0
+        },
+        "v": {
+          "actual_shape": [
+            44,
+            67,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            44,
+            67,
+            159
+          ],
+          "max_abs_delta": 4.76837158203125e-07
+        },
+        "w": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 1.069541114673278e-06
+        },
+        "ww": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 0.04764177331157615
+        }
+      },
+      "label": "rk3_acoustic_substep_10",
+      "largest_bad_field": "theta",
+      "max_abs_delta": 1e+300,
+      "rk_stage": 3
+    },
+    {
+      "acoustic_substep": 10,
+      "exceeds_1e_10": true,
+      "field_deltas": {
+        "mu": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 240.4146077897933
+        },
+        "muave": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 229.58027338237662
+        },
+        "mudf": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "mut": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "muts": {
+          "actual_shape": [
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            66,
+            159
+          ],
+          "max_abs_delta": 240.41460778978944
+        },
+        "p": {
+          "actual_shape": [
+            44,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            44,
+            66,
+            159
+          ],
+          "max_abs_delta": 3.6861893022432923e-06
+        },
+        "ph": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 0.0
+        },
+        "ph_tend": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 1e+300
+        },
+        "t_2ave": {
+          "actual_shape": [
+            44,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            44,
+            66,
+            159
+          ],
+          "max_abs_delta": 1e+300
+        },
+        "theta": {
+          "actual_shape": [
+            44,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            44,
+            66,
+            159
+          ],
+          "max_abs_delta": 1e+300
+        },
+        "u": {
+          "actual_shape": [
+            44,
+            66,
+            160
+          ],
+          "exceeds_1e_10": false,
+          "expected_shape": [
+            44,
+            66,
+            160
+          ],
+          "max_abs_delta": 0.0
+        },
+        "v": {
+          "actual_shape": [
+            44,
+            67,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            44,
+            67,
+            159
+          ],
+          "max_abs_delta": 4.76837158203125e-07
+        },
+        "w": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 1.069541114673278e-06
+        },
+        "ww": {
+          "actual_shape": [
+            45,
+            66,
+            159
+          ],
+          "exceeds_1e_10": true,
+          "expected_shape": [
+            45,
+            66,
+            159
+          ],
+          "max_abs_delta": 0.04764177331157615
+        }
+      },
+      "label": "rk3_post_acoustic",
+      "largest_bad_field": "theta",
+      "max_abs_delta": 1e+300,
+      "rk_stage": 3
+    }
+  ]
+}
