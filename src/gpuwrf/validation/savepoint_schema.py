@@ -35,13 +35,18 @@ class _SchemaVersion(str):
 #   v5: M6B4 added acoustic_substep_complete/acoustic_loop_complete boundaries
 #        for full acoustic-recurrence composition snapshots.
 #   v6: M6B5 added dycore_step_complete boundary for full RK3-timestep snapshots.
-SCHEMA_VERSION = _SchemaVersion("m6b5-savepoint-v6", aliases=("m6b4-savepoint-v5",))
+#   v7: M6B6 added coupled_step_complete boundary for physics+boundary-on snapshots.
+SCHEMA_VERSION = _SchemaVersion(
+    "m6b6-savepoint-v7",
+    aliases=("m6b5-savepoint-v6", "m6b4-savepoint-v5"),
+)
 # Older savepoints emitted before the M6B-ladder-hygiene bump still validate as
 # compatible because the schema is purely additive across v1->v4 (new fields,
 # new boundaries, new operators; no removed or renamed fields). The hygiene
 # sprint kept the older versions in `SUPPORTED_SCHEMA_VERSIONS` so M6B0-R/B1/B2
 # regression fixtures continue to load. New emissions always use SCHEMA_VERSION.
 SUPPORTED_SCHEMA_VERSIONS = (
+    "m6b6-savepoint-v7",
     "m6b5-savepoint-v6",
     "m6b4-savepoint-v5",
     "m6b3-savepoint-v4",
@@ -85,6 +90,7 @@ VALID_BOUNDARIES = {
     "acoustic_substep_complete",
     "acoustic_loop_complete",
     "dycore_step_complete",
+    "coupled_step_complete",
     "rk_stage_boundary",
     # M6B0 compatibility aliases.
     "coefficient_construction",
@@ -99,6 +105,7 @@ VALID_OPERATORS = {
     "small_step_scratch",
     "acoustic_recurrence",
     "dycore_step",
+    "coupled_step",
 }
 TOLERANCE_LADDER_PATH = Path(__file__).with_name("tolerance_ladder.json")
 

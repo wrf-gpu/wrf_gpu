@@ -1,0 +1,8 @@
+operator=coupled_step
+outcome=SEVENTH-COUPLED-STEP-PARITY-ACHIEVED
+passed=True
+physics=Thompson mp=8, MYNN bl=5, RRTMG LW/SW ra=4/4
+boundary=Gen2 wrfbdy lateral replay
+column: passed=True max_abs_delta=0.0 at column/step10/mu_bdy_tend
+patch16: passed=True max_abs_delta=0.0 at patch16/step10/mu_bdy_tend
+golden: passed=True max_abs_delta=0.0 at golden/step10/mu_bdy_tend
