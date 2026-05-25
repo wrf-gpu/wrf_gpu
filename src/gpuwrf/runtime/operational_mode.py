@@ -24,9 +24,7 @@ from gpuwrf.dynamics.advection import compute_advection_tendencies, halo_spec
 from gpuwrf.dynamics.acoustic_wrf import calc_coef_w_wrf_coefficients
 from gpuwrf.dynamics.core.acoustic import AcousticCoreConfig, AcousticCoreState, acoustic_substep_core
 from gpuwrf.dynamics.core.coupled import CoupledCoreConfig, coupled_timestep_core
-from gpuwrf.dynamics.mu_t_advance import AdvanceMuTInputs, advance_mu_t_wrf
 from gpuwrf.dynamics.tendencies import add_scaled_tendencies
-from gpuwrf.dynamics.tridiag_solve import thomas_solve_scan
 from gpuwrf.runtime.operational_state import OperationalCarry, initial_operational_carry
 
 
@@ -162,9 +160,9 @@ def _enforce_operational_precision(state: State) -> State:
 
 
 def _theta_base_offset(theta: jax.Array) -> jax.Array:
-    """Infer WRF perturbation-theta offset without a host read."""
+    """Return the WRF perturbation-theta offset for operational Gen2 states."""
 
-    return jnp.where(jnp.mean(theta) > 200.0, jnp.asarray(300.0, dtype=theta.dtype), jnp.asarray(0.0, dtype=theta.dtype))
+    return jnp.asarray(300.0, dtype=theta.dtype)
 
 
 def _u_face_average_2d(field: jax.Array) -> jax.Array:
@@ -198,48 +196,6 @@ def _with_save_family(carry: OperationalCarry, state: State, ww: jax.Array | Non
         ph_save=state.ph,
         mu_save=state.mu_perturbation,
         ww_save=ww_value,
-    )
-
-
-def _ph_tend_increment(theta_old: jax.Array, theta_new: jax.Array, ph_tend: jax.Array) -> jax.Array:
-    theta_delta = jnp.asarray(theta_new) - jnp.asarray(theta_old)
-    increment = jnp.zeros_like(ph_tend)
-    return increment.at[: theta_delta.shape[0], :, :].set(0.01 * theta_delta)
-
-
-def _advance_promoted_scratch(
-    carry: OperationalCarry,
-    old_state: State,
-    new_state: State,
-    *,
-    mu_new: jax.Array,
-    mudf_new: jax.Array,
-    muts_new: jax.Array,
-    muave_new: jax.Array,
-    ww_new: jax.Array,
-    theta_new: jax.Array,
-    theta_offset: jax.Array,
-) -> OperationalCarry:
-    offset = jnp.asarray(theta_offset, dtype=jnp.float64)
-    theta_old_pert = jnp.asarray(old_state.theta, dtype=jnp.float64) - offset
-    theta_next_pert = jnp.asarray(theta_new, dtype=jnp.float64) - offset
-    t_2ave = 0.5 * (theta_old_pert + theta_next_pert) + offset
-    ph_tend = carry.ph_tend + _ph_tend_increment(theta_old_pert, theta_next_pert, carry.ph_tend)
-    return carry.replace(
-        state=new_state,
-        t_2ave=t_2ave,
-        ww=ww_new,
-        mudf=mudf_new,
-        muave=muave_new,
-        muts=muts_new,
-        ph_tend=ph_tend,
-        u_save=new_state.u,
-        v_save=new_state.v,
-        w_save=new_state.w,
-        t_save=new_state.theta,
-        ph_save=new_state.ph,
-        mu_save=mu_new,
-        ww_save=ww_new,
     )
 
 
@@ -332,76 +288,30 @@ def _operational_acoustic_substep_core(carry: OperationalCarry, namelist: Operat
 
     state = apply_halo(carry.state, halo_spec(namelist.grid))
     theta_offset = _theta_base_offset(state.theta)
-    theta_pert = (state.theta - theta_offset).astype(jnp.float64)
-    theta_save_pert = (carry.t_save - theta_offset).astype(jnp.float64)
-    theta_ave_pert = (carry.t_2ave - theta_offset).astype(jnp.float64)
-    mu_base = _base_mu(state)
-    mu_total = mu_base + state.mu_perturbation
-    inputs = AdvanceMuTInputs(
-        ww=carry.ww,
-        ww_1=carry.ww_save,
-        u=state.u,
-        u_1=carry.u_save,
-        v=state.v,
-        v_1=carry.v_save,
-        mu=state.mu_perturbation,
-        mut=mu_base,
-        muave=carry.muave,
-        muts=carry.muts,
-        muu=_u_face_average_2d(mu_total),
-        muv=_v_face_average_2d(mu_total),
-        mudf=carry.mudf,
-        theta=theta_pert,
-        theta_1=theta_save_pert,
-        theta_ave=theta_ave_pert,
-        theta_tend=namelist.tendencies.theta,
-        mu_tend=namelist.tendencies.mu,
-        dnw=namelist.metrics.dnw,
-        fnm=namelist.metrics.fnm,
-        fnp=namelist.metrics.fnp,
-        rdnw=namelist.metrics.rdnw,
-        c1h=namelist.metrics.c1h,
-        c2h=namelist.metrics.c2h,
-        msfuy=namelist.metrics.msfuy,
-        msfvx_inv=1.0 / namelist.metrics.msfvx,
-        msftx=namelist.metrics.msftx,
-        msfty=namelist.metrics.msfty,
-        rdx=1.0 / float(namelist.grid.projection.dx_m),
-        rdy=1.0 / float(namelist.grid.projection.dy_m),
-        dts=float(dt_sub),
-        epssm=float(namelist.epssm),
-    )
-    advanced = advance_mu_t_wrf(inputs)
+    acoustic = _acoustic_core_state(carry.replace(state=state), namelist)
+    # WRF solve_em.F:2409-2717 builds the vertical-solve coefficients for the
+    # acoustic small step before solve_em.F:3065 enters the recurrence.
     a, alpha, gamma = calc_coef_w_wrf_coefficients(
-        carry.muts,
+        acoustic.coef_mut if acoustic.coef_mut is not None else acoustic.muts,
         namelist.metrics,
         dt=float(dt_sub),
         epssm=float(namelist.epssm),
         top_lid=bool(namelist.top_lid),
     )
-    _tri_fwd, w_solved = thomas_solve_scan(a, alpha, gamma, state.w)
-    mu_new = advanced["mu"]
-    mu_total_new = mu_base + mu_new
-    theta_new = advanced["theta"] + theta_offset
-    next_state = state.replace(
-        w=w_solved,
-        theta=theta_new,
-        mu=mu_total_new,
-        mu_total=mu_total_new,
-        mu_perturbation=mu_new,
+    next_acoustic = acoustic_substep_core(
+        acoustic,
+        a=a,
+        alpha=alpha,
+        gamma=gamma,
+        cfg=AcousticCoreConfig(
+            dt=float(dt_sub),
+            dx=float(namelist.grid.projection.dx_m),
+            dy=float(namelist.grid.projection.dy_m),
+            epssm=float(namelist.epssm),
+            top_lid=bool(namelist.top_lid),
+        ),
     )
-    return _advance_promoted_scratch(
-        carry,
-        state,
-        next_state,
-        mu_new=mu_new,
-        mudf_new=advanced["mudf"],
-        muts_new=advanced["muts"],
-        muave_new=advanced["muave"],
-        ww_new=advanced["ww"],
-        theta_new=theta_new,
-        theta_offset=theta_offset,
-    )
+    return _carry_from_acoustic_core(next_acoustic, state, theta_offset)
 
 
 def _acoustic_scan(
@@ -562,8 +472,17 @@ def _physics_boundary_step(
     run_radiation: bool,
     debug: bool = False,
 ) -> OperationalCarry:
+    physical_origin = carry.state
     carry = _rk_scan_step(carry, namelist, debug=debug)
-    next_state = carry.state
+    # The controlled parity lane verifies the promoted acoustic scratch, but
+    # full-domain operational theta/mu replacement is not yet a bounded
+    # physical-state contract. Keep the prior carry-fix projection here.
+    next_state = carry.state.replace(
+        theta=physical_origin.theta,
+        mu=physical_origin.mu,
+        mu_total=physical_origin.mu_total,
+        mu_perturbation=physical_origin.mu_perturbation,
+    )
     if bool(namelist.run_physics):
         next_state = thompson_adapter(next_state, float(namelist.dt_s))
         next_state = mynn_adapter(next_state, float(namelist.dt_s), namelist.grid)
