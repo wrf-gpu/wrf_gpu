@@ -18,6 +18,7 @@ from gpuwrf.contracts.state import State
 PROMOTED_CARRY_EVIDENCE = {
     "t_2ave": "M6b proof_bounds.json: all three strict-subset operational runs breached theta bounds after one 10 s step.",
     "ww": "M6b proof_bounds.json: all three runs developed extreme vertical velocity with strict-subset carry.",
+    "mudf": "M6b real-IC bisection: advance_mu_t MUDF was computed but not committed with MU/theta.",
     "muave": "M6b failure-critic reviewer-report §1: mass running average absent from operational carry.",
     "muts": "M6b failure-critic reviewer-report §1: substep total mass absent from operational carry.",
     "ph_tend": "M6b failure-critic reviewer-report §1: geopotential tendency scratch absent from operational carry.",
@@ -35,6 +36,8 @@ class OperationalCarry:
       averaging used by the small-step vertical recurrence.
     - ``ww``, ``muave`` and ``muts`` follow WRF ``advance_mu_t`` scratch
       updates in ``module_small_step_em.F:1066-1175``.
+    - ``mudf`` follows WRF ``module_small_step_em.F:1102-1108`` where
+      ``advance_mu_t`` updates the divergence-damping mass tendency in place.
     - ``ph_tend`` follows the WRF small-step geopotential tendency accumulator.
     - ``*_save`` fields keep the RK/acoustic transition state consumed across
       WRF small-step stages.
@@ -43,6 +46,7 @@ class OperationalCarry:
     state: State
     t_2ave: jax.Array
     ww: jax.Array
+    mudf: jax.Array
     muave: jax.Array
     muts: jax.Array
     ph_tend: jax.Array
@@ -86,11 +90,13 @@ def initial_operational_carry(state: State) -> OperationalCarry:
     mu_base = _base_mu(state)
     muts = mu_base + state.mu_perturbation
     ww = jnp.zeros_like(state.w)
-    ph_tend = jnp.zeros_like(state.ph)
+    mudf = jnp.zeros_like(state.mu_perturbation)
+    ph_tend = jnp.zeros_like(state.ph, dtype=jnp.float64)
     return OperationalCarry(
         state=state,
-        t_2ave=jnp.asarray(state.theta),
+        t_2ave=jnp.asarray(state.theta, dtype=jnp.float64),
         ww=ww,
+        mudf=mudf,
         muave=jnp.asarray(state.mu_perturbation),
         muts=muts,
         ph_tend=ph_tend,
