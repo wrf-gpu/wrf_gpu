@@ -322,8 +322,15 @@ def _wrf_small_step_acoustic(carry: OperationalCarry, namelist: OperationalNamel
     )
 
 
-def _acoustic_scan(carry: OperationalCarry, namelist: OperationalNamelist, dt_stage: float) -> OperationalCarry:
-    dt_sub = float(dt_stage) / float(namelist.acoustic_substeps)
+def _acoustic_scan(
+    carry: OperationalCarry,
+    namelist: OperationalNamelist,
+    dt_stage: float,
+    *,
+    substeps: int | None = None,
+) -> OperationalCarry:
+    scan_substeps = int(namelist.acoustic_substeps if substeps is None else substeps)
+    dt_sub = float(dt_stage) / float(scan_substeps)
 
     def body(scan_carry: OperationalCarry, _):
         if bool(namelist.use_vertical_solver):
@@ -331,7 +338,7 @@ def _acoustic_scan(carry: OperationalCarry, namelist: OperationalNamelist, dt_st
         next_state = add_scaled_tendencies(scan_carry.state, namelist.tendencies, dt_sub)
         return _with_save_family(scan_carry.replace(state=next_state), next_state), None
 
-    next_carry, _ = jax.lax.scan(body, carry, xs=None, length=int(namelist.acoustic_substeps))
+    next_carry, _ = jax.lax.scan(body, carry, xs=None, length=scan_substeps)
     return next_carry.replace(state=apply_halo(next_carry.state, halo_spec(namelist.grid)))
 
 
@@ -340,22 +347,28 @@ def _rk_scan_step(carry: OperationalCarry, namelist: OperationalNamelist) -> Ope
     carry = _with_save_family(carry.replace(state=origin), origin)
     rk_indices = jnp.arange(int(namelist.rk_order), dtype=jnp.int32)
 
-    def advance_stage(stage_carry: OperationalCarry, factor: float, use_acoustic: bool) -> OperationalCarry:
+    def advance_stage(stage_carry: OperationalCarry, factor: float, acoustic_substeps: int | None) -> OperationalCarry:
         haloed = apply_halo(stage_carry.state, halo_spec(namelist.grid))
         tendencies = compute_advection_tendencies(haloed, namelist.tendencies, namelist.grid)
         candidate = add_scaled_tendencies(origin, tendencies, float(namelist.dt_s) * float(factor))
         stage_carry = _with_save_family(stage_carry.replace(state=candidate), candidate)
-        if use_acoustic:
-            stage_carry = _acoustic_scan(stage_carry, namelist, float(namelist.dt_s) * float(factor))
+        if acoustic_substeps is not None:
+            stage_carry = _acoustic_scan(
+                stage_carry,
+                namelist,
+                float(namelist.dt_s) * float(factor),
+                substeps=acoustic_substeps,
+            )
         return stage_carry.replace(state=apply_halo(stage_carry.state, halo_spec(namelist.grid))), None
 
     def body(stage_carry: OperationalCarry, stage_index):
         return jax.lax.switch(
             stage_index,
             (
-                lambda value: advance_stage(value, 1.0 / 3.0, False),
-                lambda value: advance_stage(value, 0.5, True),
-                lambda value: advance_stage(value, 1.0, True),
+                # WRF solve_em.F:1472-1475 runs one RK1 acoustic small step.
+                lambda value: advance_stage(value, 1.0 / 3.0, 1),
+                lambda value: advance_stage(value, 0.5, int(namelist.acoustic_substeps)),
+                lambda value: advance_stage(value, 1.0, int(namelist.acoustic_substeps)),
             ),
             stage_carry,
         )
