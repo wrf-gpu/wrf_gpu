@@ -1,0 +1,229 @@
+{
+  "artifact_type": "m6b_rk1_parity_step1",
+  "executed_steps": 1,
+  "first_divergence_step": 1,
+  "full_step_level": {
+    "artifact_type": "m6b_operational_vs_validation_step_level_bisection",
+    "device": "cuda:0",
+    "executed_steps": 1,
+    "field_deltas_at_step_1": {
+      "mu": {
+        "actual_shape": [
+          66,
+          159
+        ],
+        "exceeds_1e_10": true,
+        "expected_shape": [
+          66,
+          159
+        ],
+        "max_abs_delta": 95000.01803385417
+      },
+      "muave": {
+        "actual_shape": [
+          66,
+          159
+        ],
+        "exceeds_1e_10": true,
+        "expected_shape": [
+          66,
+          159
+        ],
+        "max_abs_delta": 95000.01803385417
+      },
+      "mudf": {
+        "actual_shape": [
+          66,
+          159
+        ],
+        "exceeds_1e_10": false,
+        "expected_shape": [
+          66,
+          159
+        ],
+        "max_abs_delta": 0.0
+      },
+      "mut": {
+        "actual_shape": [
+          66,
+          159
+        ],
+        "exceeds_1e_10": false,
+        "expected_shape": [
+          66,
+          159
+        ],
+        "max_abs_delta": 7.275957614183426e-12
+      },
+      "muts": {
+        "actual_shape": [
+          66,
+          159
+        ],
+        "exceeds_1e_10": true,
+        "expected_shape": [
+          66,
+          159
+        ],
+        "max_abs_delta": 95000.01803385417
+      },
+      "p": {
+        "actual_shape": [
+          44,
+          66,
+          159
+        ],
+        "exceeds_1e_10": true,
+        "expected_shape": [
+          44,
+          66,
+          159
+        ],
+        "max_abs_delta": 338.79253403824987
+      },
+      "ph": {
+        "actual_shape": [
+          45,
+          66,
+          159
+        ],
+        "exceeds_1e_10": true,
+        "expected_shape": [
+          45,
+          66,
+          159
+        ],
+        "max_abs_delta": 195221.25838216147
+      },
+      "ph_tend": {
+        "actual_shape": [
+          45,
+          66,
+          159
+        ],
+        "exceeds_1e_10": false,
+        "expected_shape": [
+          45,
+          66,
+          159
+        ],
+        "max_abs_delta": 0.0
+      },
+      "t_2ave": {
+        "actual_shape": [
+          44,
+          66,
+          159
+        ],
+        "exceeds_1e_10": true,
+        "expected_shape": [
+          44,
+          66,
+          159
+        ],
+        "max_abs_delta": 1e+300
+      },
+      "theta": {
+        "actual_shape": [
+          44,
+          66,
+          159
+        ],
+        "exceeds_1e_10": true,
+        "expected_shape": [
+          44,
+          66,
+          159
+        ],
+        "max_abs_delta": 1e+300
+      },
+      "u": {
+        "actual_shape": [
+          44,
+          66,
+          160
+        ],
+        "exceeds_1e_10": true,
+        "expected_shape": [
+          44,
+          66,
+          160
+        ],
+        "max_abs_delta": 1e+300
+      },
+      "v": {
+        "actual_shape": [
+          44,
+          67,
+          159
+        ],
+        "exceeds_1e_10": true,
+        "expected_shape": [
+          44,
+          67,
+          159
+        ],
+        "max_abs_delta": 1e+300
+      },
+      "w": {
+        "actual_shape": [
+          45,
+          66,
+          159
+        ],
+        "exceeds_1e_10": true,
+        "expected_shape": [
+          45,
+          66,
+          159
+        ],
+        "max_abs_delta": 0.10439493225376772
+      },
+      "ww": {
+        "actual_shape": [
+          45,
+          66,
+          159
+        ],
+        "exceeds_1e_10": false,
+        "expected_shape": [
+          45,
+          66,
+          159
+        ],
+        "max_abs_delta": 0.0
+      }
+    },
+    "first_divergence_step": 1,
+    "grid": {
+      "dx_m": 3000.0,
+      "dy_m": 3000.0,
+      "mass_shape": [
+        44,
+        66,
+        159
+      ],
+      "wrf_staggered_extent": [
+        45,
+        67,
+        160
+      ]
+    },
+    "largest_bad_field_at_step_1": "theta",
+    "note": "Full coupled operational and validation endpoints already differ after one timestep; substep proof below uses a common RK1 pre-acoustic state to isolate composition.",
+    "requested_steps": 1,
+    "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T072630Z",
+    "run_id": "20260521_18z_l3_24h_20260522T072630Z",
+    "status": "DIVERGED",
+    "threshold": 1e-10
+  },
+  "largest_bad_field": "theta",
+  "max_abs_delta": 1e+300,
+  "max_finite_abs_delta": 195221.25838216147,
+  "note": "Full coupled operational and validation endpoints already differ after one timestep; substep proof below uses a common RK1 pre-acoustic state to isolate composition.",
+  "raw_status": "DIVERGED",
+  "requested_steps": 1,
+  "run_id": "20260521_18z_l3_24h_20260522T072630Z",
+  "status": "FAIL",
+  "threshold": 1e-10
+}
