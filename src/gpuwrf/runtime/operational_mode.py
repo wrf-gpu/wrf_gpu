@@ -20,8 +20,10 @@ from gpuwrf.contracts.precision import DEFAULT_DTYPES, STATE_FIELD_ORDER
 from gpuwrf.contracts.halo import apply_halo
 from gpuwrf.coupling.boundary_apply import BoundaryConfig, DEFAULT_BOUNDARY_CONFIG, apply_lateral_boundaries
 from gpuwrf.coupling.physics_couplers import mynn_adapter, rrtmg_adapter, surface_adapter, thompson_adapter
-from gpuwrf.dynamics.acoustic_wrf import calc_coef_w_wrf_coefficients
 from gpuwrf.dynamics.advection import compute_advection_tendencies, halo_spec
+from gpuwrf.dynamics.acoustic_wrf import calc_coef_w_wrf_coefficients
+from gpuwrf.dynamics.core.acoustic import AcousticCoreConfig, AcousticCoreState, acoustic_substep_core
+from gpuwrf.dynamics.core.coupled import CoupledCoreConfig, coupled_timestep_core
 from gpuwrf.dynamics.mu_t_advance import AdvanceMuTInputs, advance_mu_t_wrf
 from gpuwrf.dynamics.tendencies import add_scaled_tendencies
 from gpuwrf.dynamics.tridiag_solve import thomas_solve_scan
@@ -200,14 +202,6 @@ def _with_save_family(carry: OperationalCarry, state: State, ww: jax.Array | Non
 
 
 def _ph_tend_increment(theta_old: jax.Array, theta_new: jax.Array, ph_tend: jax.Array) -> jax.Array:
-    """Operational geopotential tendency increment for ``ph_tend`` carry.
-
-    The M6B3/M6B4 validation ladder binds this source-shaped accumulator to a
-    theta-delta increment before WRF ``advance_w`` consumes ``ph_tend`` in
-    ``module_small_step_em.F:1345-1395``.  Keep that formula inline here so the
-    operational path does not import validation-only modules.
-    """
-
     theta_delta = jnp.asarray(theta_new) - jnp.asarray(theta_old)
     increment = jnp.zeros_like(ph_tend)
     return increment.at[: theta_delta.shape[0], :, :].set(0.01 * theta_delta)
@@ -226,14 +220,6 @@ def _advance_promoted_scratch(
     theta_new: jax.Array,
     theta_offset: jax.Array,
 ) -> OperationalCarry:
-    """Inline the M6B3 scratch formulas for production carry.
-
-    Source anchors: WRF ``module_small_step_em.F:1102-1108`` commits ``MU``,
-    ``MUDF``, ``MUTS`` and ``MUAVE`` in place; ``module_small_step_em.F:1141-1171``
-    commits theta in place; ``module_small_step_em.F:1345-1395`` consumes the
-    ``ph_tend`` accumulator in ``advance_w``.
-    """
-
     offset = jnp.asarray(theta_offset, dtype=jnp.float64)
     theta_old_pert = jnp.asarray(old_state.theta, dtype=jnp.float64) - offset
     theta_next_pert = jnp.asarray(theta_new, dtype=jnp.float64) - offset
@@ -257,8 +243,92 @@ def _advance_promoted_scratch(
     )
 
 
-def _wrf_small_step_acoustic(carry: OperationalCarry, namelist: OperationalNamelist, dt_sub: float) -> OperationalCarry:
-    """Run one source-backed operational acoustic substep with promoted carry."""
+def _acoustic_core_state(carry: OperationalCarry, namelist: OperationalNamelist) -> AcousticCoreState:
+    state = carry.state
+    theta_offset = _theta_base_offset(state.theta)
+    theta_pert = (state.theta - theta_offset).astype(jnp.float64)
+    theta_save_pert = (carry.t_save - theta_offset).astype(jnp.float64)
+    theta_ave_pert = (carry.t_2ave - theta_offset).astype(jnp.float64)
+    mu_base = _base_mu(state)
+    mu_total = mu_base + state.mu_perturbation
+    return AcousticCoreState(
+        ww=carry.ww,
+        ww_1=carry.ww_save,
+        u=state.u,
+        u_1=carry.u_save,
+        v=state.v,
+        v_1=carry.v_save,
+        w=state.w,
+        mu=state.mu_perturbation,
+        mut=mu_base,
+        muave=carry.muave,
+        muts=carry.muts,
+        muu=_u_face_average_2d(mu_total),
+        muv=_v_face_average_2d(mu_total),
+        mudf=carry.mudf,
+        theta=theta_pert,
+        theta_1=theta_save_pert,
+        theta_ave=theta_ave_pert,
+        theta_tend=namelist.tendencies.theta,
+        mu_tend=namelist.tendencies.mu,
+        ph_tend=carry.ph_tend,
+        ph=state.ph_perturbation,
+        p=state.p_perturbation,
+        t_2ave=theta_ave_pert,
+        dnw=namelist.metrics.dnw,
+        fnm=namelist.metrics.fnm,
+        fnp=namelist.metrics.fnp,
+        rdnw=namelist.metrics.rdnw,
+        c1h=namelist.metrics.c1h,
+        c2h=namelist.metrics.c2h,
+        msfuy=namelist.metrics.msfuy,
+        msfvx_inv=1.0 / namelist.metrics.msfvx,
+        msftx=namelist.metrics.msftx,
+        msfty=namelist.metrics.msfty,
+        coef_mut=carry.muts,
+    )
+
+
+def _carry_from_acoustic_core(acoustic: AcousticCoreState, template: State, theta_offset: jax.Array) -> OperationalCarry:
+    theta = acoustic.theta + theta_offset
+    p_total = template.p_total - template.p_perturbation + acoustic.p
+    ph_total = template.ph_total - template.ph_perturbation + acoustic.ph
+    mu_total = template.mu_total - template.mu_perturbation + acoustic.mu
+    next_state = template.replace(
+        u=acoustic.u,
+        v=acoustic.v,
+        w=acoustic.w,
+        theta=theta,
+        p=p_total,
+        p_total=p_total,
+        p_perturbation=acoustic.p,
+        ph=ph_total,
+        ph_total=ph_total,
+        ph_perturbation=acoustic.ph,
+        mu=mu_total,
+        mu_total=mu_total,
+        mu_perturbation=acoustic.mu,
+    )
+    return OperationalCarry(
+        state=next_state,
+        t_2ave=acoustic.t_2ave + theta_offset,
+        ww=acoustic.ww,
+        mudf=acoustic.mudf,
+        muave=acoustic.muave,
+        muts=acoustic.muts,
+        ph_tend=acoustic.ph_tend,
+        u_save=next_state.u,
+        v_save=next_state.v,
+        w_save=next_state.w,
+        t_save=next_state.theta,
+        ph_save=next_state.ph,
+        mu_save=acoustic.mu,
+        ww_save=acoustic.ww,
+    )
+
+
+def _operational_acoustic_substep_core(carry: OperationalCarry, namelist: OperationalNamelist, dt_sub: float) -> OperationalCarry:
+    """Run one operational acoustic substep through the shared core."""
 
     state = apply_halo(carry.state, halo_spec(namelist.grid))
     theta_offset = _theta_base_offset(state.theta)
@@ -302,9 +372,6 @@ def _wrf_small_step_acoustic(carry: OperationalCarry, namelist: OperationalNamel
         epssm=float(namelist.epssm),
     )
     advanced = advance_mu_t_wrf(inputs)
-    # WRF ``solve_em.F:2409-2717`` builds W coefficients for the acoustic
-    # small-step sequence; this operational body is called once per substep, so
-    # the coefficients are recomputed from the resident substep mass each time.
     a, alpha, gamma = calc_coef_w_wrf_coefficients(
         carry.muts,
         namelist.metrics,
@@ -313,9 +380,6 @@ def _wrf_small_step_acoustic(carry: OperationalCarry, namelist: OperationalNamel
         top_lid=bool(namelist.top_lid),
     )
     _tri_fwd, w_solved = thomas_solve_scan(a, alpha, gamma, state.w)
-    # WRF ``solve_em.F:3435-3452`` calls ``advance_mu_t`` inside
-    # ``small_steps``; ``module_small_step_em.F:1102-1108`` commits
-    # MU/MUDF/MUTS/MUAVE and ``:1141-1171`` commits theta in place.
     mu_new = advanced["mu"]
     mu_total_new = mu_base + mu_new
     theta_new = advanced["theta"] + theta_offset
@@ -356,7 +420,7 @@ def _acoustic_scan(
 
     def body(scan_carry: OperationalCarry, _):
         if bool(namelist.use_vertical_solver):
-            return _wrf_small_step_acoustic(scan_carry, namelist, dt_sub), None
+            return _operational_acoustic_substep_core(scan_carry, namelist, dt_sub), None
         next_state = add_scaled_tendencies(scan_carry.state, namelist.tendencies, dt_sub)
         return _with_save_family(scan_carry.replace(state=next_state), next_state), None
 
@@ -391,6 +455,103 @@ def _rk_scan_step(carry: OperationalCarry, namelist: OperationalNamelist, *, deb
     carry = advance_stage(carry, 1.0 / 3.0, 1)
     carry = advance_stage(carry, 0.5, max(1, int(namelist.acoustic_substeps) // 2))
     return advance_stage(carry, 1.0, int(namelist.acoustic_substeps))
+
+
+def _coupled_core_extras(state: State) -> dict[str, jax.Array]:
+    return {
+        "qv": state.qv,
+        "qc": state.qc,
+        "qr": state.qr,
+        "qi": state.qi,
+        "qs": state.qs,
+        "qg": state.qg,
+        "qke": state.qke,
+        "t_skin": state.t_skin,
+        "xland": state.xland,
+        "lakemask": state.lakemask,
+        "u_bdy": state.u_bdy,
+        "v_bdy": state.v_bdy,
+        "theta_bdy": state.theta_bdy,
+        "qv_bdy": state.qv_bdy,
+        "ph_bdy": state.ph_bdy,
+        "mu_bdy": state.mu_bdy,
+    }
+
+
+def _state_from_coupled_core(snapshot: dict[str, jax.Array], template: State, theta_offset: jax.Array, dt_s: float) -> State:
+    theta = jnp.asarray(snapshot["theta"]) + theta_offset
+    p_pert = jnp.asarray(snapshot["p"])
+    ph_pert = jnp.asarray(snapshot["ph"])
+    mu_pert = jnp.asarray(snapshot["mu"])
+    p_total = template.p_total - template.p_perturbation + p_pert
+    ph_total = template.ph_total - template.ph_perturbation + ph_pert
+    mu_total = template.mu_total - template.mu_perturbation + mu_pert
+    return template.replace(
+        u=jnp.asarray(snapshot["u"]),
+        v=jnp.asarray(snapshot["v"]),
+        w=jnp.asarray(snapshot["w"]),
+        theta=theta,
+        qv=template.qv + jnp.asarray(snapshot["qv_phys_tend"]) * float(dt_s),
+        qc=template.qc + jnp.asarray(snapshot["qc_phys_tend"]) * float(dt_s),
+        qr=template.qr + jnp.asarray(snapshot["qr_phys_tend"]) * float(dt_s),
+        qi=template.qi + jnp.asarray(snapshot["qi_phys_tend"]) * float(dt_s),
+        qs=template.qs + jnp.asarray(snapshot["qs_phys_tend"]) * float(dt_s),
+        qg=template.qg + jnp.asarray(snapshot["qg_phys_tend"]) * float(dt_s),
+        qke=template.qke + jnp.asarray(snapshot["qke_phys_tend"]) * float(dt_s),
+        p=p_total,
+        p_total=p_total,
+        p_perturbation=p_pert,
+        ph=ph_total,
+        ph_total=ph_total,
+        ph_perturbation=ph_pert,
+        mu=mu_total,
+        mu_total=mu_total,
+        mu_perturbation=mu_pert,
+    )
+
+
+def _carry_from_coupled_core(snapshot: dict[str, jax.Array], template: State, theta_offset: jax.Array, dt_s: float) -> OperationalCarry:
+    next_state = _state_from_coupled_core(snapshot, template, theta_offset, float(dt_s))
+    return OperationalCarry(
+        state=next_state,
+        t_2ave=jnp.asarray(snapshot["t_2ave"]) + theta_offset,
+        ww=jnp.asarray(snapshot["ww"]),
+        mudf=jnp.asarray(snapshot["mudf"]),
+        muave=jnp.asarray(snapshot["muave"]),
+        muts=jnp.asarray(snapshot["muts"]),
+        ph_tend=jnp.asarray(snapshot["ph_tend"]),
+        u_save=next_state.u,
+        v_save=next_state.v,
+        w_save=next_state.w,
+        t_save=next_state.theta,
+        ph_save=next_state.ph,
+        mu_save=jnp.asarray(snapshot["mu"]),
+        ww_save=jnp.asarray(snapshot["ww"]),
+    )
+
+
+def _coupled_core_step(carry: OperationalCarry, namelist: OperationalNamelist, step_index) -> OperationalCarry:
+    acoustic = _acoustic_core_state(carry, namelist)
+    theta_offset = _theta_base_offset(carry.state.theta)
+    snapshot = coupled_timestep_core(
+        acoustic,
+        namelist.metrics,
+        CoupledCoreConfig(
+            dt=float(namelist.dt_s),
+            dx=float(namelist.grid.projection.dx_m),
+            dy=float(namelist.grid.projection.dy_m),
+            acoustic_substeps=int(namelist.acoustic_substeps),
+            rk_order=int(namelist.rk_order),
+            epssm=float(namelist.epssm),
+            top_lid=bool(namelist.top_lid),
+            physics_enabled=True,
+            boundary_enabled=True,
+            boundary_config=namelist.boundary_config,
+        ),
+        extras=_coupled_core_extras(carry.state),
+        step_index=step_index,
+    )
+    return _carry_from_coupled_core(snapshot, carry.state, theta_offset, float(namelist.dt_s))
 
 
 def _physics_boundary_step(
