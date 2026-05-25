@@ -1,0 +1,1 @@
+src/gpuwrf/contracts/state.py:23:    devices = [device for device in jax.devices() if device.platform == "gpu"]
