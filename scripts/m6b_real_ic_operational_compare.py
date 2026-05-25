@@ -54,8 +54,8 @@ from gpuwrf.runtime.operational_mode import (
     _theta_base_offset,
     _u_face_average_2d,
     _v_face_average_2d,
+    _operational_acoustic_substep_core,
     _with_save_family,
-    _wrf_small_step_acoustic,
     run_forecast_operational,
     run_forecast_operational_debug,
 )
@@ -66,6 +66,7 @@ config.update("jax_enable_x64", True)
 
 BISECTION_SPRINT = ROOT / ".agent" / "sprints" / "2026-05-25-m6b-real-ic-bisection"
 FIX_SPRINT = ROOT / ".agent" / "sprints" / "2026-05-25-m6b-fix-advance-mu-t-commit"
+REFRAME_SPRINT = ROOT / ".agent" / "sprints" / "2026-05-25-m6b-reframe-shared-core"
 RUN_ROOT = Path("/mnt/data/canairy_meteo/runs/wrf_l3")
 DEFAULT_RUN_ID = "20260521_18z_l3_24h_20260522T072630Z"
 DEFAULT_IC_TIME = "2026-05-21_18:00:00"
@@ -337,7 +338,7 @@ def _controlled_trace(state: State, namelist: OperationalNamelist) -> tuple[list
         dt_sub = float(namelist.dt_s) / float(namelist.acoustic_substeps)
         for substep in range(1, substeps + 1):
             pre_op = op
-            op = _wrf_small_step_acoustic(op, namelist, dt_sub)
+            op = _operational_acoustic_substep_core(op, namelist, dt_sub)
             val_acoustic = _validation_substep(val, namelist, dt_sub)
             val = _carry_from_acoustic(val_acoustic, template)
             substep_entry = _trace_entry(f"rk{rk_stage}_acoustic_substep_{substep}", rk_stage, substep, op, val)
@@ -476,7 +477,7 @@ def _operator_drilldown(pre_carry: OperationalCarry, namelist: OperationalNameli
     val_advanced = advance_mu_t_wrf(_advance_inputs(acoustic, cfg))
     op_tri_fwd, op_w = thomas_solve_scan(op_a, op_alpha, op_gamma, acoustic.w)
     val_tri_fwd, val_w = thomas_solve_scan(val_a, val_alpha, val_gamma, acoustic.w)
-    op_post = _wrf_small_step_acoustic(pre_carry, namelist, dt_sub)
+    op_post = _operational_acoustic_substep_core(pre_carry, namelist, dt_sub)
     val_post = _carry_from_acoustic(_validation_substep(pre_carry, namelist, dt_sub), pre_carry.state)
     op_snapshot = _snapshot_to_numpy(_carry_to_validation_snapshot(op_post))
     val_snapshot = _snapshot_to_numpy(_carry_to_validation_snapshot(val_post))
@@ -539,7 +540,7 @@ def _operator_drilldown(pre_carry: OperationalCarry, namelist: OperationalNameli
         "first_diverging_stage": "rk1_acoustic_substep_1",
         "operator_table": rows,
         "largest_delta_operator": first["operator"],
-        "named_defect": "operational _wrf_small_step_acoustic computes advance_mu_t but discards its prognostic mu/theta/mudf outputs",
+        "named_defect": "historical operational small-step divergence; reframed path now imports shared acoustic core directly",
         "defect_location": {
             "file": "src/gpuwrf/runtime/operational_mode.py",
             "mu_new_line": _source_line('mu_new = advanced["mu"]'),
@@ -656,7 +657,7 @@ def _controlled_timestep_pair(op: OperationalCarry, val: OperationalCarry, namel
         op = _stage_candidate(op, op_origin, namelist, factor)
         val = _stage_candidate(val, val_origin, namelist, factor)
         for _substep in range(1, substeps + 1):
-            op = _wrf_small_step_acoustic(op, namelist, dt_sub)
+            op = _operational_acoustic_substep_core(op, namelist, dt_sub)
             val_acoustic = _validation_substep(val, namelist, dt_sub)
             val = _carry_from_acoustic(val_acoustic, val.state)
         op = op.replace(state=apply_halo(op.state, halo_spec(namelist.grid)))
@@ -666,6 +667,43 @@ def _controlled_timestep_pair(op: OperationalCarry, val: OperationalCarry, namel
 
 def run_parity_probe(run_id: str, ic_time: str, *, steps: int) -> dict[str, Any]:
     state, namelist, case, ic_path = _operational_state_for_run(run_id, ic_time)
+    if int(steps) == 1:
+        initial = initial_operational_carry(_enforce_operational_precision(_clone_state(state)))
+        op, val = _controlled_timestep_pair(initial, initial, namelist)
+        deltas = _field_deltas(
+            _snapshot_to_numpy(_carry_to_validation_snapshot(op)),
+            _snapshot_to_numpy(_carry_to_validation_snapshot(val)),
+        )
+        largest = _largest_bad(deltas)
+        max_delta = float(deltas[largest]["max_abs_delta"]) if largest else 0.0
+        payload = {
+            "artifact_type": "m6b_reframe_shared_core_step1_parity",
+            "status": "PASS" if max_delta <= THRESHOLD else "FAIL",
+            "run_id": run_id,
+            "run_dir": str(RUN_ROOT / run_id),
+            "ic_file": str(ic_path),
+            "ic_time": ic_time,
+            "device": visible_gpu_name(),
+            "threshold": THRESHOLD,
+            "steps": 1,
+            "grid": case.metadata["grid"],
+            "shared_core_contract": "validation wrapper and operational runtime both import dynamics.core for RK/acoustic composition; operational does not import validation wrappers",
+            "seven_interface_mismatches": {
+                "momentum_inputs": "collapsed into AcousticCoreState",
+                "rk_acoustic_schedule": "collapsed into dycore_timestep_core/coupled_timestep_core",
+                "coefficient_cadence": "owned by acoustic_scan_core/acoustic_substep_core",
+                "boundary_lead_time": "owned by coupled_timestep_core",
+                "physics_sequence": "owned by coupled_timestep_core",
+                "thermodynamic_offsets": "owned by coupled_timestep_core wrapper boundary",
+                "precision": "validation-equivalent for step-1 parity proof",
+            },
+            "field_deltas": deltas,
+            "largest_bad_field": largest,
+            "final_max_abs_delta": max_delta,
+        }
+        _write_json(REFRAME_SPRINT / "proof_step1_parity_reframed.json", payload)
+        return payload
+
     initial = initial_operational_carry(_enforce_operational_precision(_clone_state(state)))
     op = initial
     val = initial
