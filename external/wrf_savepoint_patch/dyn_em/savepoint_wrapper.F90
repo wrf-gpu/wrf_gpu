@@ -70,6 +70,18 @@ contains
     real, intent(in) :: ph_save(:, :, :), ww_save(:, :, :)
     real, intent(in) :: mu_save(:, :)
   end subroutine sp_substep_save_state_post
+  subroutine sp_acoustic_substep_complete(rkstage, substep, mu, mut, mudf, muts, muave, ww, theta, ph_tend, u, v, w, ph, p, t_2ave)
+    integer, intent(in) :: rkstage, substep
+    real, intent(in) :: mu(:, :), mut(:, :), mudf(:, :), muts(:, :), muave(:, :)
+    real, intent(in) :: ww(:, :, :), theta(:, :, :), ph_tend(:, :, :)
+    real, intent(in) :: u(:, :, :), v(:, :, :), w(:, :, :), ph(:, :, :), p(:, :, :), t_2ave(:, :, :)
+  end subroutine sp_acoustic_substep_complete
+  subroutine sp_acoustic_loop_complete(rkstage, mu, mut, mudf, muts, muave, ww, theta, ph_tend, u, v, w, ph, p, t_2ave)
+    integer, intent(in) :: rkstage
+    real, intent(in) :: mu(:, :), mut(:, :), mudf(:, :), muts(:, :), muave(:, :)
+    real, intent(in) :: ww(:, :, :), theta(:, :, :), ph_tend(:, :, :)
+    real, intent(in) :: u(:, :, :), v(:, :, :), w(:, :, :), ph(:, :, :), p(:, :, :), t_2ave(:, :, :)
+  end subroutine sp_acoustic_loop_complete
   subroutine sp_advance_uv_post()
   end subroutine sp_advance_uv_post
   subroutine sp_advance_w_rhs_ready()

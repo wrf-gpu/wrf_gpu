@@ -1,0 +1,3886 @@
+{
+  "operational_compatibility": {
+    "acoustic_loop.py callable": "validation-only",
+    "per-substep tolerance entries": "validation-only",
+    "schema v5 extension": "validation-only",
+    "sp_acoustic_substep_complete/loop_complete hooks": "validation-only"
+  },
+  "operator": "acoustic_recurrence",
+  "outcome": "FIFTH-OPERATOR-COMPOSITION-PARITY-ACHIEVED",
+  "passed": true,
+  "tiers": {
+    "patch16": {
+      "loop_result": {
+        "boundary": "acoustic_loop_complete",
+        "fields": {
+          "mu": {
+            "abs_threshold": 1e-08,
+            "actual_shape": [
+              18,
+              18
+            ],
+            "dtype": "float64",
+            "expected_shape": [
+              18,
+              18
+            ],
+            "location": [
+              0,
+              0
+            ],
+            "max_abs_delta": 0.0,
+            "passed": true,
+            "rel_threshold": 1e-12,
+            "tolerance": 1e-08,
+            "ulp_threshold": 8,
+            "units": "Pa"
+          },
+          "muave": {
+            "abs_threshold": 1e-08,
+            "actual_shape": [
+              18,
+              18
+            ],
+            "dtype": "float64",
+            "expected_shape": [
+              18,
+              18
+            ],
+            "location": [
+              0,
+              0
+            ],
+            "max_abs_delta": 0.0,
+            "passed": true,
+            "rel_threshold": 1e-12,
+            "tolerance": 1e-08,
+            "ulp_threshold": 8,
+            "units": "Pa"
+          },
+          "mudf": {
+            "abs_threshold": 1e-10,
+            "actual_shape": [
+              18,
+              18
+            ],
+            "dtype": "float64",
+            "expected_shape": [
+              18,
+              18
+            ],
+            "location": [
+              0,
+              0
+            ],
+            "max_abs_delta": 0.0,
+            "passed": true,
+            "rel_threshold": 1e-12,
+            "tolerance": 1e-10,
+            "ulp_threshold": 8,
+            "units": "Pa s-1"
+          },
+          "mut": {
+            "abs_threshold": 1e-08,
+            "actual_shape": [
+              18,
+              18
+            ],
+            "dtype": "float64",
+            "expected_shape": [
+              18,
+              18
+            ],
+            "location": [
+              0,
+              0
+            ],
+            "max_abs_delta": 0.0,
+            "passed": true,
+            "rel_threshold": 1e-12,
+            "tolerance": 9.5e-08,
+            "ulp_threshold": 8,
+            "units": "Pa"
+          },
+          "muts": {
+            "abs_threshold": 1e-08,
+            "actual_shape": [
+              18,
+              18
+            ],
+            "dtype": "float64",
+            "expected_shape": [
+              18,
+              18
+            ],
+            "location": [
+              0,
+              0
+            ],
+            "max_abs_delta": 0.0,
+            "passed": true,
+            "rel_threshold": 1e-12,
+            "tolerance": 9.682141833496094e-08,
+            "ulp_threshold": 16,
+            "units": "Pa"
+          },
+          "p": {
+            "abs_threshold": 1e-08,
+            "actual_shape": [
+              44,
+              18,
+              18
+            ],
+            "dtype": "float64",
+            "expected_shape": [
+              44,
+              18,
+              18
+            ],
+            "location": [
+              0,
+              0,
+              0
+            ],
+            "max_abs_delta": 0.0,
+            "passed": true,
+            "rel_threshold": 1e-12,
+            "tolerance": 1e-08,
+            "ulp_threshold": 16,
+            "units": "Pa"
+          },
+          "ph": {
+            "abs_threshold": 1e-08,
+            "actual_shape": [
+              45,
+              18,
+              18
+            ],
+            "dtype": "float64",
+            "expected_shape": [
+              45,
+              18,
+              18
+            ],
+            "location": [
+              0,
+              0,
+              0
+            ],
+            "max_abs_delta": 0.0,
+            "passed": true,
+            "rel_threshold": 1e-12,
+            "tolerance": 1e-08,
+            "ulp_threshold": 16,
+            "units": "m2 s-2"
+          },
+          "ph_tend": {
+            "abs_threshold": 1e-10,
+            "actual_shape": [
+              45,
+              18,
+              18
+            ],
+            "dtype": "float64",
+            "expected_shape": [
+              45,
+              18,
+              18
+            ],
+            "location": [
+              0,
+              0,
+              0
+            ],
+            "max_abs_delta": 0.0,
+            "passed": true,
+            "rel_threshold": 1e-12,
+            "tolerance": 1.1671854190533963e-09,
+            "ulp_threshold": 8,
+            "units": "m2 s-3"
+          },
+          "t_2ave": {
+            "abs_threshold": 1e-10,
+            "actual_shape": [
+              44,
+              18,
+              18
+            ],
+            "dtype": "float64",
+            "expected_shape": [
+              44,
+              18,
+              18
+            ],
+            "location": [
+              0,
+              0,
+              0
+            ],
+            "max_abs_delta": 0.0,
+            "passed": true,
+            "rel_threshold": 1e-12,
+            "tolerance": 1.108908531828754e-07,
+            "ulp_threshold": 8,
+            "units": "K"
+          },
+          "theta": {
+            "abs_threshold": 1e-10,
+            "actual_shape": [
+              44,
+              18,
+              18
+            ],
+            "dtype": "float64",
+            "expected_shape": [
+              44,
+              18,
+              18
+            ],
+            "location": [
+              0,
+              0,
+              0
+            ],
+            "max_abs_delta": 0.0,
+            "passed": true,
+            "rel_threshold": 1e-12,
+            "tolerance": 1.1672678027814239e-07,
+            "ulp_threshold": 8,
+            "units": "K"
+          },
+          "u": {
+            "abs_threshold": 1e-10,
+            "actual_shape": [
+              44,
+              18,
+              19
+            ],
+            "dtype": "float64",
+            "expected_shape": [
+              44,
+              18,
+              19
+            ],
+            "location": [
+              0,
+              0,
+              0
+            ],
+            "max_abs_delta": 0.0,
+            "passed": true,
+            "rel_threshold": 1e-12,
+            "tolerance": 1e-10,
+            "ulp_threshold": 16,
+            "units": "m s-1"
+          },
+          "v": {
+            "abs_threshold": 1e-10,
+            "actual_shape": [
+              44,
+              19,
+              18
+            ],
+            "dtype": "float64",
+            "expected_shape": [
+              44,
+              19,
+              18
+            ],
+            "location": [
+              0,
+              0,
+              0
+            ],
+            "max_abs_delta": 0.0,
+            "passed": true,
+            "rel_threshold": 1e-12,
+            "tolerance": 1e-10,
+            "ulp_threshold": 16,
+            "units": "m s-1"
+          },
+          "w": {
+            "abs_threshold": 1e-09,
+            "actual_shape": [
+              45,
+              18,
+              18
+            ],
+            "dtype": "float64",
+            "expected_shape": [
+              45,
+              18,
+              18
+            ],
+            "location": [
+              2,
+              16,
+              3
+            ],
+            "max_abs_delta": 5.551115123125783e-17,
+            "passed": true,
+            "rel_threshold": 1e-12,
+            "tolerance": 1e-09,
+            "ulp_threshold": 32,
+            "units": "m s-1"
+          },
+          "ww": {
+            "abs_threshold": 1e-09,
+            "actual_shape": [
+              45,
+              18,
+              18
+            ],
+            "dtype": "float64",
+            "expected_shape": [
+              45,
+              18,
+              18
+            ],
+            "location": [
+              0,
+              0,
+              0
+            ],
+            "max_abs_delta": 0.0,
+            "passed": true,
+            "rel_threshold": 1e-12,
+            "tolerance": 1e-09,
+            "ulp_threshold": 8,
+            "units": "Pa s-1"
+          }
+        },
+        "passed": true,
+        "path": "/tmp/wrf_gpu2_m6b4/.agent/sprints/2026-05-25-m6b4-acoustic-recurrence-parity/savepoints/patch16/acoustic_loop_complete.h5",
+        "tier": "patch16"
+      },
+      "manifest": {
+        "attrs": {
+          "dt": 6.0,
+          "dx": 3000.0,
+          "dy": 3000.0,
+          "epssm": 0.1,
+          "halo_slice_x": [
+            70,
+            88
+          ],
+          "halo_slice_y": [
+            24,
+            42
+          ],
+          "mapfac_max": 0.9992199540138245,
+          "mapfac_min": 0.9991031289100647,
+          "run_id": "m6b1-patch16-canary-d02-20260522T000000Z",
+          "target_slice_x": [
+            71,
+            87
+          ],
+          "target_slice_y": [
+            25,
+            41
+          ]
+        },
+        "composition_order": "calc_coef_w -> repeated(advance_mu_t -> Thomas -> scratch)",
+        "cpu_operator_path": true,
+        "direct_relinked_wrf": false,
+        "file_sha256": {
+          "/tmp/wrf_gpu2_m6b4/.agent/sprints/2026-05-25-m6b4-acoustic-recurrence-parity/savepoints/patch16/acoustic_loop_complete.h5": "613dc22f6c764f6d9f5c773999f9c52feee8b12c52f42dcf383803a9eefe1c42",
+          "/tmp/wrf_gpu2_m6b4/.agent/sprints/2026-05-25-m6b4-acoustic-recurrence-parity/savepoints/patch16/acoustic_substep_complete_step001.h5": "1c5f08e78f77b5f3662e91b80c14ee342cb0671d61d3b953a64f3bfef77fa2ab",
+          "/tmp/wrf_gpu2_m6b4/.agent/sprints/2026-05-25-m6b4-acoustic-recurrence-parity/savepoints/patch16/acoustic_substep_complete_step002.h5": "cb0d903ff79c17613eda22fdb68758c52aa70143710ab66b8f0c2de77f833608",
+          "/tmp/wrf_gpu2_m6b4/.agent/sprints/2026-05-25-m6b4-acoustic-recurrence-parity/savepoints/patch16/acoustic_substep_complete_step003.h5": "98a6b8d1c2eafeef23c2de23761f8ffb1c371fa1e99aab4e8278cdd3ebc1610c",
+          "/tmp/wrf_gpu2_m6b4/.agent/sprints/2026-05-25-m6b4-acoustic-recurrence-parity/savepoints/patch16/acoustic_substep_complete_step004.h5": "5576f54a4d2587b964e3181d46d46c4c6454a779e392f61c1f24880eab56750c",
+          "/tmp/wrf_gpu2_m6b4/.agent/sprints/2026-05-25-m6b4-acoustic-recurrence-parity/savepoints/patch16/acoustic_substep_complete_step005.h5": "e4a6fcc2c1420daffa5be2786e0d24cb0d797dcd1eb0fa83a6127c28f6e3d7c9",
+          "/tmp/wrf_gpu2_m6b4/.agent/sprints/2026-05-25-m6b4-acoustic-recurrence-parity/savepoints/patch16/acoustic_substep_complete_step006.h5": "5e3c2f992f249c2d1ba7f4b0fefa3294494b74eb4b7ad4de2319f441f351fe1c",
+          "/tmp/wrf_gpu2_m6b4/.agent/sprints/2026-05-25-m6b4-acoustic-recurrence-parity/savepoints/patch16/acoustic_substep_complete_step007.h5": "44bcb788279fd3873634d59ac58599ad527f902f7ea04136e95a22904f74e02d",
+          "/tmp/wrf_gpu2_m6b4/.agent/sprints/2026-05-25-m6b4-acoustic-recurrence-parity/savepoints/patch16/acoustic_substep_complete_step008.h5": "aadc15f14ea6474d95f5ea1864411aa95eb5e11e1d2bafaa016bbe5ae96e73ab",
+          "/tmp/wrf_gpu2_m6b4/.agent/sprints/2026-05-25-m6b4-acoustic-recurrence-parity/savepoints/patch16/acoustic_substep_complete_step009.h5": "bdd64a36a5d830d3665eb2b1a07b50c92f34a896ec0d7827636f1a329bfd6045",
+          "/tmp/wrf_gpu2_m6b4/.agent/sprints/2026-05-25-m6b4-acoustic-recurrence-parity/savepoints/patch16/acoustic_substep_complete_step010.h5": "381d2c2e34e8cd09086fe48315646113b1de8d2df94889903aeefe0e06f93668"
+        },
+        "files": [
+          "/tmp/wrf_gpu2_m6b4/.agent/sprints/2026-05-25-m6b4-acoustic-recurrence-parity/savepoints/patch16/acoustic_substep_complete_step001.h5",
+          "/tmp/wrf_gpu2_m6b4/.agent/sprints/2026-05-25-m6b4-acoustic-recurrence-parity/savepoints/patch16/acoustic_substep_complete_step002.h5",
+          "/tmp/wrf_gpu2_m6b4/.agent/sprints/2026-05-25-m6b4-acoustic-recurrence-parity/savepoints/patch16/acoustic_substep_complete_step003.h5",
+          "/tmp/wrf_gpu2_m6b4/.agent/sprints/2026-05-25-m6b4-acoustic-recurrence-parity/savepoints/patch16/acoustic_substep_complete_step004.h5",
+          "/tmp/wrf_gpu2_m6b4/.agent/sprints/2026-05-25-m6b4-acoustic-recurrence-parity/savepoints/patch16/acoustic_substep_complete_step005.h5",
+          "/tmp/wrf_gpu2_m6b4/.agent/sprints/2026-05-25-m6b4-acoustic-recurrence-parity/savepoints/patch16/acoustic_substep_complete_step006.h5",
+          "/tmp/wrf_gpu2_m6b4/.agent/sprints/2026-05-25-m6b4-acoustic-recurrence-parity/savepoints/patch16/acoustic_substep_complete_step007.h5",
+          "/tmp/wrf_gpu2_m6b4/.agent/sprints/2026-05-25-m6b4-acoustic-recurrence-parity/savepoints/patch16/acoustic_substep_complete_step008.h5",
+          "/tmp/wrf_gpu2_m6b4/.agent/sprints/2026-05-25-m6b4-acoustic-recurrence-parity/savepoints/patch16/acoustic_substep_complete_step009.h5",
+          "/tmp/wrf_gpu2_m6b4/.agent/sprints/2026-05-25-m6b4-acoustic-recurrence-parity/savepoints/patch16/acoustic_substep_complete_step010.h5",
+          "/tmp/wrf_gpu2_m6b4/.agent/sprints/2026-05-25-m6b4-acoustic-recurrence-parity/savepoints/patch16/acoustic_loop_complete.h5"
+        ],
+        "geometric_growth_bound": "per-substep ladder allows 10x operator absolute tolerance plus linear 2x/substep roundoff headroom; no tolerance was fit after comparison.",
+        "run_id": "m6b4-patch16-canary-d02-20260522T000000Z",
+        "sanitizer_mode": "off",
+        "source_path": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T072630Z/wrfout_d02_2026-05-22_00:00:00",
+        "source_sha256": "53c4455feb27094a4e823c73e6ef7aa5c8f75d0fd592aad637a71320972d0523",
+        "substeps": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10
+        ],
+        "tier": "patch16",
+        "total_bytes": 8094125
+      },
+      "operator": "acoustic_recurrence",
+      "outcome": "FIFTH-OPERATOR-COMPOSITION-PARITY-ACHIEVED",
+      "passed": true,
+      "results": [
+        {
+          "boundary": "acoustic_substep_complete",
+          "fields": {
+            "mu": {
+              "abs_threshold": 1e-08,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-08,
+              "ulp_threshold": 8,
+              "units": "Pa"
+            },
+            "muave": {
+              "abs_threshold": 1e-08,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-08,
+              "ulp_threshold": 8,
+              "units": "Pa"
+            },
+            "mudf": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-10,
+              "ulp_threshold": 8,
+              "units": "Pa s-1"
+            },
+            "mut": {
+              "abs_threshold": 1e-08,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 9.5e-08,
+              "ulp_threshold": 8,
+              "units": "Pa"
+            },
+            "muts": {
+              "abs_threshold": 1e-08,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 9.682141833496094e-08,
+              "ulp_threshold": 16,
+              "units": "Pa"
+            },
+            "p": {
+              "abs_threshold": 1e-08,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-08,
+              "ulp_threshold": 16,
+              "units": "Pa"
+            },
+            "ph": {
+              "abs_threshold": 1e-08,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-08,
+              "ulp_threshold": 16,
+              "units": "m2 s-2"
+            },
+            "ph_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1.1671854190533966e-10,
+              "ulp_threshold": 8,
+              "units": "m2 s-3"
+            },
+            "t_2ave": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 5.8441654680697165e-09,
+              "ulp_threshold": 8,
+              "units": "K"
+            },
+            "theta": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1.1680092563336699e-08,
+              "ulp_threshold": 8,
+              "units": "K"
+            },
+            "u": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                19
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                19
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-10,
+              "ulp_threshold": 16,
+              "units": "m s-1"
+            },
+            "v": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                19,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                19,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-10,
+              "ulp_threshold": 16,
+              "units": "m s-1"
+            },
+            "w": {
+              "abs_threshold": 1e-09,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                38,
+                14,
+                2
+              ],
+              "max_abs_delta": 3.469446951953614e-18,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-09,
+              "ulp_threshold": 32,
+              "units": "m s-1"
+            },
+            "ww": {
+              "abs_threshold": 1e-09,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-09,
+              "ulp_threshold": 8,
+              "units": "Pa s-1"
+            }
+          },
+          "passed": true,
+          "path": "/tmp/wrf_gpu2_m6b4/.agent/sprints/2026-05-25-m6b4-acoustic-recurrence-parity/savepoints/patch16/acoustic_substep_complete_step001.h5",
+          "step": 1,
+          "tier": "patch16"
+        },
+        {
+          "boundary": "acoustic_substep_complete",
+          "fields": {
+            "mu": {
+              "abs_threshold": 1e-08,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-08,
+              "ulp_threshold": 8,
+              "units": "Pa"
+            },
+            "muave": {
+              "abs_threshold": 1e-08,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-08,
+              "ulp_threshold": 8,
+              "units": "Pa"
+            },
+            "mudf": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-10,
+              "ulp_threshold": 8,
+              "units": "Pa s-1"
+            },
+            "mut": {
+              "abs_threshold": 1e-08,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 9.5e-08,
+              "ulp_threshold": 8,
+              "units": "Pa"
+            },
+            "muts": {
+              "abs_threshold": 1e-08,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 9.682141833496094e-08,
+              "ulp_threshold": 16,
+              "units": "Pa"
+            },
+            "p": {
+              "abs_threshold": 1e-08,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-08,
+              "ulp_threshold": 16,
+              "units": "Pa"
+            },
+            "ph": {
+              "abs_threshold": 1e-08,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-08,
+              "ulp_threshold": 16,
+              "units": "m2 s-2"
+            },
+            "ph_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 2.334370838106793e-10,
+              "ulp_threshold": 8,
+              "units": "m2 s-3"
+            },
+            "t_2ave": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1.751601965860368e-08,
+              "ulp_threshold": 8,
+              "units": "K"
+            },
+            "theta": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 2.335194675387066e-08,
+              "ulp_threshold": 8,
+              "units": "K"
+            },
+            "u": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                19
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                19
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-10,
+              "ulp_threshold": 16,
+              "units": "m s-1"
+            },
+            "v": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                19,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                19,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-10,
+              "ulp_threshold": 16,
+              "units": "m s-1"
+            },
+            "w": {
+              "abs_threshold": 1e-09,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                1,
+                10,
+                1
+              ],
+              "max_abs_delta": 2.7755575615628914e-17,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-09,
+              "ulp_threshold": 32,
+              "units": "m s-1"
+            },
+            "ww": {
+              "abs_threshold": 1e-09,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-09,
+              "ulp_threshold": 8,
+              "units": "Pa s-1"
+            }
+          },
+          "passed": true,
+          "path": "/tmp/wrf_gpu2_m6b4/.agent/sprints/2026-05-25-m6b4-acoustic-recurrence-parity/savepoints/patch16/acoustic_substep_complete_step002.h5",
+          "step": 2,
+          "tier": "patch16"
+        },
+        {
+          "boundary": "acoustic_substep_complete",
+          "fields": {
+            "mu": {
+              "abs_threshold": 1e-08,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-08,
+              "ulp_threshold": 8,
+              "units": "Pa"
+            },
+            "muave": {
+              "abs_threshold": 1e-08,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-08,
+              "ulp_threshold": 8,
+              "units": "Pa"
+            },
+            "mudf": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-10,
+              "ulp_threshold": 8,
+              "units": "Pa s-1"
+            },
+            "mut": {
+              "abs_threshold": 1e-08,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 9.5e-08,
+              "ulp_threshold": 8,
+              "units": "Pa"
+            },
+            "muts": {
+              "abs_threshold": 1e-08,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 9.682141833496094e-08,
+              "ulp_threshold": 16,
+              "units": "Pa"
+            },
+            "p": {
+              "abs_threshold": 1e-08,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-08,
+              "ulp_threshold": 16,
+              "units": "Pa"
+            },
+            "ph": {
+              "abs_threshold": 1e-08,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-08,
+              "ulp_threshold": 16,
+              "units": "m2 s-2"
+            },
+            "ph_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 3.501556257160189e-10,
+              "ulp_threshold": 8,
+              "units": "m2 s-3"
+            },
+            "t_2ave": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 2.918787384913764e-08,
+              "ulp_threshold": 8,
+              "units": "K"
+            },
+            "theta": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 3.5023800944404624e-08,
+              "ulp_threshold": 8,
+              "units": "K"
+            },
+            "u": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                19
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                19
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-10,
+              "ulp_threshold": 16,
+              "units": "m s-1"
+            },
+            "v": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                19,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                19,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-10,
+              "ulp_threshold": 16,
+              "units": "m s-1"
+            },
+            "w": {
+              "abs_threshold": 1e-09,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                2,
+                16,
+                3
+              ],
+              "max_abs_delta": 5.551115123125783e-17,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-09,
+              "ulp_threshold": 32,
+              "units": "m s-1"
+            },
+            "ww": {
+              "abs_threshold": 1e-09,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-09,
+              "ulp_threshold": 8,
+              "units": "Pa s-1"
+            }
+          },
+          "passed": true,
+          "path": "/tmp/wrf_gpu2_m6b4/.agent/sprints/2026-05-25-m6b4-acoustic-recurrence-parity/savepoints/patch16/acoustic_substep_complete_step003.h5",
+          "step": 3,
+          "tier": "patch16"
+        },
+        {
+          "boundary": "acoustic_substep_complete",
+          "fields": {
+            "mu": {
+              "abs_threshold": 1e-08,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-08,
+              "ulp_threshold": 8,
+              "units": "Pa"
+            },
+            "muave": {
+              "abs_threshold": 1e-08,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-08,
+              "ulp_threshold": 8,
+              "units": "Pa"
+            },
+            "mudf": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-10,
+              "ulp_threshold": 8,
+              "units": "Pa s-1"
+            },
+            "mut": {
+              "abs_threshold": 1e-08,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 9.5e-08,
+              "ulp_threshold": 8,
+              "units": "Pa"
+            },
+            "muts": {
+              "abs_threshold": 1e-08,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 9.682141833496094e-08,
+              "ulp_threshold": 16,
+              "units": "Pa"
+            },
+            "p": {
+              "abs_threshold": 1e-08,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-08,
+              "ulp_threshold": 16,
+              "units": "Pa"
+            },
+            "ph": {
+              "abs_threshold": 1e-08,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-08,
+              "ulp_threshold": 16,
+              "units": "m2 s-2"
+            },
+            "ph_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 4.668741676213585e-10,
+              "ulp_threshold": 8,
+              "units": "m2 s-3"
+            },
+            "t_2ave": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 4.0859728039671605e-08,
+              "ulp_threshold": 8,
+              "units": "K"
+            },
+            "theta": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 4.669565513493859e-08,
+              "ulp_threshold": 8,
+              "units": "K"
+            },
+            "u": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                19
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                19
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-10,
+              "ulp_threshold": 16,
+              "units": "m s-1"
+            },
+            "v": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                19,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                19,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-10,
+              "ulp_threshold": 16,
+              "units": "m s-1"
+            },
+            "w": {
+              "abs_threshold": 1e-09,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                2,
+                16,
+                3
+              ],
+              "max_abs_delta": 5.551115123125783e-17,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-09,
+              "ulp_threshold": 32,
+              "units": "m s-1"
+            },
+            "ww": {
+              "abs_threshold": 1e-09,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-09,
+              "ulp_threshold": 8,
+              "units": "Pa s-1"
+            }
+          },
+          "passed": true,
+          "path": "/tmp/wrf_gpu2_m6b4/.agent/sprints/2026-05-25-m6b4-acoustic-recurrence-parity/savepoints/patch16/acoustic_substep_complete_step004.h5",
+          "step": 4,
+          "tier": "patch16"
+        },
+        {
+          "boundary": "acoustic_substep_complete",
+          "fields": {
+            "mu": {
+              "abs_threshold": 1e-08,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-08,
+              "ulp_threshold": 8,
+              "units": "Pa"
+            },
+            "muave": {
+              "abs_threshold": 1e-08,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-08,
+              "ulp_threshold": 8,
+              "units": "Pa"
+            },
+            "mudf": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-10,
+              "ulp_threshold": 8,
+              "units": "Pa s-1"
+            },
+            "mut": {
+              "abs_threshold": 1e-08,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 9.5e-08,
+              "ulp_threshold": 8,
+              "units": "Pa"
+            },
+            "muts": {
+              "abs_threshold": 1e-08,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 9.682141833496094e-08,
+              "ulp_threshold": 16,
+              "units": "Pa"
+            },
+            "p": {
+              "abs_threshold": 1e-08,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-08,
+              "ulp_threshold": 16,
+              "units": "Pa"
+            },
+            "ph": {
+              "abs_threshold": 1e-08,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-08,
+              "ulp_threshold": 16,
+              "units": "m2 s-2"
+            },
+            "ph_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 5.835927095266981e-10,
+              "ulp_threshold": 8,
+              "units": "m2 s-3"
+            },
+            "t_2ave": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 5.253158223020557e-08,
+              "ulp_threshold": 8,
+              "units": "K"
+            },
+            "theta": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 5.836750932547256e-08,
+              "ulp_threshold": 8,
+              "units": "K"
+            },
+            "u": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                19
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                19
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-10,
+              "ulp_threshold": 16,
+              "units": "m s-1"
+            },
+            "v": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                19,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                19,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-10,
+              "ulp_threshold": 16,
+              "units": "m s-1"
+            },
+            "w": {
+              "abs_threshold": 1e-09,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                2,
+                16,
+                3
+              ],
+              "max_abs_delta": 5.551115123125783e-17,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-09,
+              "ulp_threshold": 32,
+              "units": "m s-1"
+            },
+            "ww": {
+              "abs_threshold": 1e-09,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-09,
+              "ulp_threshold": 8,
+              "units": "Pa s-1"
+            }
+          },
+          "passed": true,
+          "path": "/tmp/wrf_gpu2_m6b4/.agent/sprints/2026-05-25-m6b4-acoustic-recurrence-parity/savepoints/patch16/acoustic_substep_complete_step005.h5",
+          "step": 5,
+          "tier": "patch16"
+        },
+        {
+          "boundary": "acoustic_substep_complete",
+          "fields": {
+            "mu": {
+              "abs_threshold": 1e-08,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-08,
+              "ulp_threshold": 8,
+              "units": "Pa"
+            },
+            "muave": {
+              "abs_threshold": 1e-08,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-08,
+              "ulp_threshold": 8,
+              "units": "Pa"
+            },
+            "mudf": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-10,
+              "ulp_threshold": 8,
+              "units": "Pa s-1"
+            },
+            "mut": {
+              "abs_threshold": 1e-08,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 9.5e-08,
+              "ulp_threshold": 8,
+              "units": "Pa"
+            },
+            "muts": {
+              "abs_threshold": 1e-08,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 9.682141833496094e-08,
+              "ulp_threshold": 16,
+              "units": "Pa"
+            },
+            "p": {
+              "abs_threshold": 1e-08,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-08,
+              "ulp_threshold": 16,
+              "units": "Pa"
+            },
+            "ph": {
+              "abs_threshold": 1e-08,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-08,
+              "ulp_threshold": 16,
+              "units": "m2 s-2"
+            },
+            "ph_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 7.003112514320378e-10,
+              "ulp_threshold": 8,
+              "units": "m2 s-3"
+            },
+            "t_2ave": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 6.420343642073954e-08,
+              "ulp_threshold": 8,
+              "units": "K"
+            },
+            "theta": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 7.003936351600652e-08,
+              "ulp_threshold": 8,
+              "units": "K"
+            },
+            "u": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                19
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                19
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-10,
+              "ulp_threshold": 16,
+              "units": "m s-1"
+            },
+            "v": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                19,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                19,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-10,
+              "ulp_threshold": 16,
+              "units": "m s-1"
+            },
+            "w": {
+              "abs_threshold": 1e-09,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                2,
+                16,
+                3
+              ],
+              "max_abs_delta": 5.551115123125783e-17,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-09,
+              "ulp_threshold": 32,
+              "units": "m s-1"
+            },
+            "ww": {
+              "abs_threshold": 1e-09,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-09,
+              "ulp_threshold": 8,
+              "units": "Pa s-1"
+            }
+          },
+          "passed": true,
+          "path": "/tmp/wrf_gpu2_m6b4/.agent/sprints/2026-05-25-m6b4-acoustic-recurrence-parity/savepoints/patch16/acoustic_substep_complete_step006.h5",
+          "step": 6,
+          "tier": "patch16"
+        },
+        {
+          "boundary": "acoustic_substep_complete",
+          "fields": {
+            "mu": {
+              "abs_threshold": 1e-08,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-08,
+              "ulp_threshold": 8,
+              "units": "Pa"
+            },
+            "muave": {
+              "abs_threshold": 1e-08,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-08,
+              "ulp_threshold": 8,
+              "units": "Pa"
+            },
+            "mudf": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-10,
+              "ulp_threshold": 8,
+              "units": "Pa s-1"
+            },
+            "mut": {
+              "abs_threshold": 1e-08,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 9.5e-08,
+              "ulp_threshold": 8,
+              "units": "Pa"
+            },
+            "muts": {
+              "abs_threshold": 1e-08,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 9.682141833496094e-08,
+              "ulp_threshold": 16,
+              "units": "Pa"
+            },
+            "p": {
+              "abs_threshold": 1e-08,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-08,
+              "ulp_threshold": 16,
+              "units": "Pa"
+            },
+            "ph": {
+              "abs_threshold": 1e-08,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-08,
+              "ulp_threshold": 16,
+              "units": "m2 s-2"
+            },
+            "ph_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 8.170297933373775e-10,
+              "ulp_threshold": 8,
+              "units": "m2 s-3"
+            },
+            "t_2ave": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 7.587529061127349e-08,
+              "ulp_threshold": 8,
+              "units": "K"
+            },
+            "theta": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 8.171121770654048e-08,
+              "ulp_threshold": 8,
+              "units": "K"
+            },
+            "u": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                19
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                19
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-10,
+              "ulp_threshold": 16,
+              "units": "m s-1"
+            },
+            "v": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                19,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                19,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-10,
+              "ulp_threshold": 16,
+              "units": "m s-1"
+            },
+            "w": {
+              "abs_threshold": 1e-09,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                2,
+                16,
+                3
+              ],
+              "max_abs_delta": 5.551115123125783e-17,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-09,
+              "ulp_threshold": 32,
+              "units": "m s-1"
+            },
+            "ww": {
+              "abs_threshold": 1e-09,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-09,
+              "ulp_threshold": 8,
+              "units": "Pa s-1"
+            }
+          },
+          "passed": true,
+          "path": "/tmp/wrf_gpu2_m6b4/.agent/sprints/2026-05-25-m6b4-acoustic-recurrence-parity/savepoints/patch16/acoustic_substep_complete_step007.h5",
+          "step": 7,
+          "tier": "patch16"
+        },
+        {
+          "boundary": "acoustic_substep_complete",
+          "fields": {
+            "mu": {
+              "abs_threshold": 1e-08,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-08,
+              "ulp_threshold": 8,
+              "units": "Pa"
+            },
+            "muave": {
+              "abs_threshold": 1e-08,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-08,
+              "ulp_threshold": 8,
+              "units": "Pa"
+            },
+            "mudf": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-10,
+              "ulp_threshold": 8,
+              "units": "Pa s-1"
+            },
+            "mut": {
+              "abs_threshold": 1e-08,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 9.5e-08,
+              "ulp_threshold": 8,
+              "units": "Pa"
+            },
+            "muts": {
+              "abs_threshold": 1e-08,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 9.682141833496094e-08,
+              "ulp_threshold": 16,
+              "units": "Pa"
+            },
+            "p": {
+              "abs_threshold": 1e-08,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-08,
+              "ulp_threshold": 16,
+              "units": "Pa"
+            },
+            "ph": {
+              "abs_threshold": 1e-08,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-08,
+              "ulp_threshold": 16,
+              "units": "m2 s-2"
+            },
+            "ph_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 9.33748335242717e-10,
+              "ulp_threshold": 8,
+              "units": "m2 s-3"
+            },
+            "t_2ave": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 8.754714480180747e-08,
+              "ulp_threshold": 8,
+              "units": "K"
+            },
+            "theta": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 9.338307189707445e-08,
+              "ulp_threshold": 8,
+              "units": "K"
+            },
+            "u": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                19
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                19
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-10,
+              "ulp_threshold": 16,
+              "units": "m s-1"
+            },
+            "v": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                19,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                19,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-10,
+              "ulp_threshold": 16,
+              "units": "m s-1"
+            },
+            "w": {
+              "abs_threshold": 1e-09,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                2,
+                16,
+                3
+              ],
+              "max_abs_delta": 5.551115123125783e-17,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-09,
+              "ulp_threshold": 32,
+              "units": "m s-1"
+            },
+            "ww": {
+              "abs_threshold": 1e-09,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-09,
+              "ulp_threshold": 8,
+              "units": "Pa s-1"
+            }
+          },
+          "passed": true,
+          "path": "/tmp/wrf_gpu2_m6b4/.agent/sprints/2026-05-25-m6b4-acoustic-recurrence-parity/savepoints/patch16/acoustic_substep_complete_step008.h5",
+          "step": 8,
+          "tier": "patch16"
+        },
+        {
+          "boundary": "acoustic_substep_complete",
+          "fields": {
+            "mu": {
+              "abs_threshold": 1e-08,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-08,
+              "ulp_threshold": 8,
+              "units": "Pa"
+            },
+            "muave": {
+              "abs_threshold": 1e-08,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-08,
+              "ulp_threshold": 8,
+              "units": "Pa"
+            },
+            "mudf": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-10,
+              "ulp_threshold": 8,
+              "units": "Pa s-1"
+            },
+            "mut": {
+              "abs_threshold": 1e-08,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 9.5e-08,
+              "ulp_threshold": 8,
+              "units": "Pa"
+            },
+            "muts": {
+              "abs_threshold": 1e-08,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 9.682141833496094e-08,
+              "ulp_threshold": 16,
+              "units": "Pa"
+            },
+            "p": {
+              "abs_threshold": 1e-08,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-08,
+              "ulp_threshold": 16,
+              "units": "Pa"
+            },
+            "ph": {
+              "abs_threshold": 1e-08,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-08,
+              "ulp_threshold": 16,
+              "units": "m2 s-2"
+            },
+            "ph_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1.0504668771480568e-09,
+              "ulp_threshold": 8,
+              "units": "m2 s-3"
+            },
+            "t_2ave": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 9.921899899234143e-08,
+              "ulp_threshold": 8,
+              "units": "K"
+            },
+            "theta": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1.0505492608760841e-07,
+              "ulp_threshold": 8,
+              "units": "K"
+            },
+            "u": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                19
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                19
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-10,
+              "ulp_threshold": 16,
+              "units": "m s-1"
+            },
+            "v": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                19,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                19,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-10,
+              "ulp_threshold": 16,
+              "units": "m s-1"
+            },
+            "w": {
+              "abs_threshold": 1e-09,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                2,
+                16,
+                3
+              ],
+              "max_abs_delta": 5.551115123125783e-17,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-09,
+              "ulp_threshold": 32,
+              "units": "m s-1"
+            },
+            "ww": {
+              "abs_threshold": 1e-09,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-09,
+              "ulp_threshold": 8,
+              "units": "Pa s-1"
+            }
+          },
+          "passed": true,
+          "path": "/tmp/wrf_gpu2_m6b4/.agent/sprints/2026-05-25-m6b4-acoustic-recurrence-parity/savepoints/patch16/acoustic_substep_complete_step009.h5",
+          "step": 9,
+          "tier": "patch16"
+        },
+        {
+          "boundary": "acoustic_substep_complete",
+          "fields": {
+            "mu": {
+              "abs_threshold": 1e-08,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-08,
+              "ulp_threshold": 8,
+              "units": "Pa"
+            },
+            "muave": {
+              "abs_threshold": 1e-08,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-08,
+              "ulp_threshold": 8,
+              "units": "Pa"
+            },
+            "mudf": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-10,
+              "ulp_threshold": 8,
+              "units": "Pa s-1"
+            },
+            "mut": {
+              "abs_threshold": 1e-08,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 9.5e-08,
+              "ulp_threshold": 8,
+              "units": "Pa"
+            },
+            "muts": {
+              "abs_threshold": 1e-08,
+              "actual_shape": [
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 9.682141833496094e-08,
+              "ulp_threshold": 16,
+              "units": "Pa"
+            },
+            "p": {
+              "abs_threshold": 1e-08,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-08,
+              "ulp_threshold": 16,
+              "units": "Pa"
+            },
+            "ph": {
+              "abs_threshold": 1e-08,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-08,
+              "ulp_threshold": 16,
+              "units": "m2 s-2"
+            },
+            "ph_tend": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1.1671854190533963e-09,
+              "ulp_threshold": 8,
+              "units": "m2 s-3"
+            },
+            "t_2ave": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1.108908531828754e-07,
+              "ulp_threshold": 8,
+              "units": "K"
+            },
+            "theta": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1.1672678027814239e-07,
+              "ulp_threshold": 8,
+              "units": "K"
+            },
+            "u": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                18,
+                19
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                18,
+                19
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-10,
+              "ulp_threshold": 16,
+              "units": "m s-1"
+            },
+            "v": {
+              "abs_threshold": 1e-10,
+              "actual_shape": [
+                44,
+                19,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                44,
+                19,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-10,
+              "ulp_threshold": 16,
+              "units": "m s-1"
+            },
+            "w": {
+              "abs_threshold": 1e-09,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                2,
+                16,
+                3
+              ],
+              "max_abs_delta": 5.551115123125783e-17,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-09,
+              "ulp_threshold": 32,
+              "units": "m s-1"
+            },
+            "ww": {
+              "abs_threshold": 1e-09,
+              "actual_shape": [
+                45,
+                18,
+                18
+              ],
+              "dtype": "float64",
+              "expected_shape": [
+                45,
+                18,
+                18
+              ],
+              "location": [
+                0,
+                0,
+                0
+              ],
+              "max_abs_delta": 0.0,
+              "passed": true,
+              "rel_threshold": 1e-12,
+              "tolerance": 1e-09,
+              "ulp_threshold": 8,
+              "units": "Pa s-1"
+            }
+          },
+          "passed": true,
+          "path": "/tmp/wrf_gpu2_m6b4/.agent/sprints/2026-05-25-m6b4-acoustic-recurrence-parity/savepoints/patch16/acoustic_substep_complete_step010.h5",
+          "step": 10,
+          "tier": "patch16"
+        }
+      ],
+      "sanitizer_mode": "off",
+      "savepoint_count": 11,
+      "tier": "patch16",
+      "tolerance_ladder_path": "/tmp/wrf_gpu2_m6b4/src/gpuwrf/validation/tolerance_ladder.json",
+      "transfer_audit": {
+        "h2d_d2h_inside_timestep_loop_bytes": 0,
+        "note": "Comparator reads HDF5 before isolated validation calls; no production timestep loop is executed."
+      }
+    }
+  }
+}
