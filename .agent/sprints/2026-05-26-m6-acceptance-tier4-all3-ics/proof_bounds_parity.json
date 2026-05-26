@@ -1,0 +1,118 @@
+{
+  "artifact_type": "m6_acceptance_bounds_parity_all3",
+  "device": "cuda:0",
+  "runs": {
+    "20260429_18z_l3_24h_20260524T204451Z": {
+      "b6_coupled_step": {
+        "passed": false,
+        "reason": "Tier-4 acceptance was already blocked by bounds/RMSE; standalone contract validation commands remain authoritative for parity.",
+        "run_id": "20260429_18z_l3_24h_20260524T204451Z",
+        "status": "NOT_RUN"
+      },
+      "bounds_extrema_over_360_steps": {
+        "theta_max_k": 3.3591623345278918e+38,
+        "theta_min_k": 288.6661071777344,
+        "u_abs_max_m_s": 8.456218270990468e+37,
+        "v_abs_max_m_s": 23.745136260986328,
+        "w_abs_max_m_s": 4.200309879892261e+60
+      },
+      "bounds_first_failure": {
+        "all_leaves_finite": true,
+        "lead_seconds": 360.0,
+        "passed": false,
+        "step": 36,
+        "theta_bounded": true,
+        "theta_max_k": 495.92864990234375,
+        "theta_min_k": 288.66717529296875,
+        "u_abs_max_m_s": 103.08615112304688,
+        "v_abs_max_m_s": 23.55375099182129,
+        "w_abs_max_m_s": 10.859894761982051,
+        "wind_bounded": false
+      },
+      "bounds_status": "FAIL",
+      "ic_time": "2026-04-29_18:00:00",
+      "multi_step_parity": {
+        "passed": false,
+        "reason": "Tier-4 acceptance was already blocked by bounds/RMSE; standalone contract validation commands remain authoritative for parity.",
+        "run_id": "20260429_18z_l3_24h_20260524T204451Z",
+        "status": "NOT_RUN"
+      },
+      "passed": false
+    },
+    "20260509_18z_l3_24h_20260511T190519Z": {
+      "b6_coupled_step": {
+        "passed": false,
+        "reason": "Tier-4 acceptance was already blocked by bounds/RMSE; standalone contract validation commands remain authoritative for parity.",
+        "run_id": "20260509_18z_l3_24h_20260511T190519Z",
+        "status": "NOT_RUN"
+      },
+      "bounds_extrema_over_360_steps": {
+        "theta_max_k": 500.31317138671875,
+        "theta_min_k": 290.3358459472656,
+        "u_abs_max_m_s": 8.468033788705075e+37,
+        "v_abs_max_m_s": 13.97754955291748,
+        "w_abs_max_m_s": 2.2505204694284284e+40
+      },
+      "bounds_first_failure": {
+        "all_leaves_finite": true,
+        "lead_seconds": 120.0,
+        "passed": false,
+        "step": 12,
+        "theta_bounded": true,
+        "theta_max_k": 500.31317138671875,
+        "theta_min_k": 290.336181640625,
+        "u_abs_max_m_s": 53.73793029785156,
+        "v_abs_max_m_s": 13.97754955291748,
+        "w_abs_max_m_s": 66.03217370475815,
+        "wind_bounded": false
+      },
+      "bounds_status": "FAIL",
+      "ic_time": "2026-05-09_18:00:00",
+      "multi_step_parity": {
+        "passed": false,
+        "reason": "Tier-4 acceptance was already blocked by bounds/RMSE; standalone contract validation commands remain authoritative for parity.",
+        "run_id": "20260509_18z_l3_24h_20260511T190519Z",
+        "status": "NOT_RUN"
+      },
+      "passed": false
+    },
+    "20260521_18z_l3_24h_20260522T072630Z": {
+      "b6_coupled_step": {
+        "passed": false,
+        "reason": "Tier-4 acceptance was already blocked by bounds/RMSE; standalone contract validation commands remain authoritative for parity.",
+        "run_id": "20260521_18z_l3_24h_20260522T072630Z",
+        "status": "NOT_RUN"
+      },
+      "bounds_extrema_over_360_steps": {
+        "theta_max_k": 6.334420222722641e+31,
+        "theta_min_k": 288.80560302734375,
+        "u_abs_max_m_s": 7.645911161372819e+37,
+        "v_abs_max_m_s": 11.480101585388184,
+        "w_abs_max_m_s": 1.5603230658316912e+25
+      },
+      "bounds_first_failure": {
+        "all_leaves_finite": true,
+        "lead_seconds": 750.0,
+        "passed": false,
+        "step": 75,
+        "theta_bounded": true,
+        "theta_max_k": 492.527099609375,
+        "theta_min_k": 288.81011962890625,
+        "u_abs_max_m_s": 41.63874816894531,
+        "v_abs_max_m_s": 11.480101585388184,
+        "w_abs_max_m_s": 1180.877925311001,
+        "wind_bounded": false
+      },
+      "bounds_status": "FAIL",
+      "ic_time": "2026-05-21_18:00:00",
+      "multi_step_parity": {
+        "passed": false,
+        "reason": "Tier-4 acceptance was already blocked by bounds/RMSE; standalone contract validation commands remain authoritative for parity.",
+        "run_id": "20260521_18z_l3_24h_20260522T072630Z",
+        "status": "NOT_RUN"
+      },
+      "passed": false
+    }
+  },
+  "status": "FAIL"
+}
