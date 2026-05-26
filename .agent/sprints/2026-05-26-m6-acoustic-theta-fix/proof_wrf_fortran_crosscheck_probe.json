@@ -1,0 +1,40 @@
+{
+  "artifact_type": "m6_acoustic_theta_wrf_fortran_crosscheck_probe",
+  "bad_cell_kji": [
+    12,
+    30,
+    62
+  ],
+  "fortran_reference": "/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/WRF/dyn_em/module_small_step_em.F:1141-1171",
+  "instantaneous_theta_source_anti_oracle": {
+    "delta_total_K": 442.15037418685097,
+    "mu_new": -4100.32765562326,
+    "muts_new": 60425.727031876726,
+    "theta_1_total_at_cell": 2656.549560546875,
+    "theta_ave_total_at_cell": 2473.8172850622377,
+    "theta_decoupled_total": 3098.699934733726,
+    "theta_flux_source_at_cell": 2656.549560546875,
+    "theta_mass": 149202.07907018796
+  },
+  "jax_current_flux_source_theta_ave": {
+    "delta_total_K": 441.8394811732078,
+    "mu_new": -4100.32765562326,
+    "muts_new": 60425.727031876726,
+    "theta_1_total_at_cell": 2656.549560546875,
+    "theta_ave_total_at_cell": 2473.8172850622377,
+    "theta_decoupled_total": 3098.389041720083,
+    "theta_flux_source_at_cell": 2473.8172850622377,
+    "theta_mass": 137699.4014313763
+  },
+  "matched_hypothesis": "theta flux source should be WRF t_1, not t_2ave/theta_ave",
+  "wrf_flux_source_t_1": {
+    "delta_total_K": 442.15037418685097,
+    "mu_new": -4100.32765562326,
+    "muts_new": 60425.727031876726,
+    "theta_1_total_at_cell": 2656.549560546875,
+    "theta_ave_total_at_cell": 2473.8172850622377,
+    "theta_decoupled_total": 3098.699934733726,
+    "theta_flux_source_at_cell": 2656.549560546875,
+    "theta_mass": 149202.07907018796
+  }
+}

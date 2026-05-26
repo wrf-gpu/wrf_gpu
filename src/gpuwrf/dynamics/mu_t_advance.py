@@ -128,7 +128,7 @@ def advance_mu_t_wrf(inputs: AdvanceMuTInputs) -> dict[str, jnp.ndarray]:
     theta_i = inputs.theta[:, yy, xx] + inputs.msfty[yy, xx][None, :, :] * float(inputs.dts) * inputs.theta_tend[:, yy, xx]
     theta_ave_new = _update_3d(inputs.theta_ave, inputs.theta[:, yy, xx], yy, xx)
 
-    theta_flux_source = inputs.theta_ave
+    theta_flux_source = inputs.theta_1
 
     wdtn_rows = [jnp.zeros_like(mu_tendency)]
     for k in range(1, nz):
