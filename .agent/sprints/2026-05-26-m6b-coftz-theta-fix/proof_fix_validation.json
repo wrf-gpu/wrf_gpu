@@ -1,0 +1,50 @@
+{
+  "artifact_type": "m6b_coftz_theta_fix_validation",
+  "b6_contract_command": {
+    "log": ".agent/sprints/2026-05-26-m6b-coftz-theta-fix/m6b6_coupled_step_compare.log",
+    "status": "FAIL_ARGPARSE"
+  },
+  "b6_supported_dryrun": {
+    "log": ".agent/sprints/2026-05-26-m6b-coftz-theta-fix/m6b6_coupled_step_compare_synthetic_dryrun.log",
+    "status": "PASS"
+  },
+  "baseline_reproduced": "REPRODUCED",
+  "diagnosis": "The allowed vertical_implicit_solver/acoustic_wrf MPAS-style path was patched and unit-tested, but the operational 20260509 replay still exercises the shared dynamics/core acoustic path, which is read-only in this sprint contract.",
+  "fixed_first_violation": {
+    "bound_k": 400.0,
+    "cell": {
+      "i": 73,
+      "j": 60,
+      "k": 28
+    },
+    "exceedance_k": 2604313607792.0,
+    "kind": "above_upper",
+    "lead_seconds": 110.0,
+    "level": 28,
+    "step": 11,
+    "value_k": 2604313608192.0
+  },
+  "fixed_replay_status": "THETA_BOUND_VIOLATION",
+  "fixed_steps_completed": 11,
+  "focused_regression": {
+    "log": ".agent/sprints/2026-05-26-m6b-coftz-theta-fix/pytest_m6b_coftz_theta_fix.log",
+    "status": "PASS"
+  },
+  "proofs": [
+    ".agent/sprints/2026-05-26-m6b-coftz-theta-fix/proof_baseline_reproduces.json",
+    ".agent/sprints/2026-05-26-m6b-coftz-theta-fix/fixed/proof_theta_explosion.json"
+  ],
+  "pytest_x": {
+    "log": ".agent/sprints/2026-05-26-m6b-coftz-theta-fix/pytest_x.log",
+    "status": "FAIL_MISSING_EXTERNAL_FIXTURE"
+  },
+  "real_ic_contract_command": {
+    "log": ".agent/sprints/2026-05-26-m6b-coftz-theta-fix/m6b_real_ic_operational_compare_steps_2_5_10.log",
+    "status": "FAIL_ARGPARSE"
+  },
+  "real_ic_supported_split": {
+    "log": ".agent/sprints/2026-05-26-m6b-coftz-theta-fix/m6b_real_ic_operational_compare_steps_split.log",
+    "status": "FAIL_STEP2_THETA_T2AVE_PH_TEND_NONFINITE"
+  },
+  "status": "BLOCKED_ACCEPTANCE_NOT_MET"
+}

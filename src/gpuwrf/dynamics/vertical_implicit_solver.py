@@ -21,6 +21,7 @@ def build_epssm_column_coefficients(
     *,
     dt: float,
     epssm: float = 0.1,
+    theta_coefficient: jax.Array | None = None,
 ) -> tuple[jax.Array, ...]:
     """Builds MPAS/WRF-family off-centered tridiagonal coefficients.
 
@@ -33,6 +34,7 @@ def build_epssm_column_coefficients(
     """
 
     theta = jnp.asarray(theta)
+    theta_for_coftz = theta if theta_coefficient is None else jnp.asarray(theta_coefficient, dtype=theta.dtype)
     dz_m = jnp.asarray(dz_m, dtype=theta.dtype)
     dtseps = 0.5 * float(dt) * (1.0 + float(epssm))
     rcv = R_D / (CP_D - R_D)
@@ -40,7 +42,7 @@ def build_epssm_column_coefficients(
 
     rdzw = 1.0 / dz_m
     dz_face = 0.5 * (dz_m[:-1, :, :] + dz_m[1:, :, :])
-    theta_face = 0.5 * (theta[:-1, :, :] + theta[1:, :, :])
+    theta_face = 0.5 * (theta_for_coftz[:-1, :, :] + theta_for_coftz[1:, :, :])
 
     cofrz = dtseps * rdzw
     cofwt = 0.5 * dtseps * rcv * GRAVITY_M_S2 / theta
