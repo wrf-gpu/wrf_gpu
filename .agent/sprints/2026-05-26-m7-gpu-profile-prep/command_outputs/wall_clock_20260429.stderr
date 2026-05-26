@@ -1,0 +1,20 @@
+Traceback (most recent call last):
+  File "/tmp/wrf_gpu2_m7profile/scripts/m7_gpu_profile_1h.py", line 489, in <module>
+    raise SystemExit(main())
+                     ~~~~^^
+  File "/tmp/wrf_gpu2_m7profile/scripts/m7_gpu_profile_1h.py", line 450, in main
+    payload = measure_one_run(args.run_key, args.hours)
+  File "/tmp/wrf_gpu2_m7profile/scripts/m7_gpu_profile_1h.py", line 120, in measure_one_run
+    cold_wall_s, meta = _timed_forecast(run_key, hours, f"m7_cold_1h_{run_key}")
+                        ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/wrf_gpu2_m7profile/scripts/m7_gpu_profile_1h.py", line 108, in _timed_forecast
+    state, namelist, meta = _build_case(run_key)
+                            ~~~~~~~~~~~^^^^^^^^^
+  File "/tmp/wrf_gpu2_m7profile/scripts/m7_gpu_profile_1h.py", line 78, in _build_case
+    case = build_replay_case(run_dir)
+  File "/tmp/wrf_gpu2_m7profile/src/gpuwrf/integration/d02_replay.py", line 351, in build_replay_case
+    boundary_leaves, boundary_meta = load_history_boundary_leaves(run, grid, domain=domain)
+                                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/wrf_gpu2_m7profile/src/gpuwrf/integration/d02_replay.py", line 277, in load_history_boundary_leaves
+    raise FileNotFoundError(f"{run.path} has fewer than two wrfout_{domain} history files")
+FileNotFoundError: /mnt/data/canairy_meteo/runs/wrf_l3/20260429_18z_l3_24h_20260524T204451Z has fewer than two wrfout_d02 history files
