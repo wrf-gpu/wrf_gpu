@@ -1,0 +1,33 @@
+{
+  "acoustic_substep": 1,
+  "cell_index": [
+    28,
+    8,
+    38
+  ],
+  "field": "theta",
+  "mass_cell_index": [
+    8,
+    38
+  ],
+  "operational_post_value": -Infinity,
+  "pre_substep_operational_values": {
+    "mu": 67926946.00803412,
+    "muave": 67926946.00803412,
+    "mudf": 6744142.955612082,
+    "mut": 95000.0,
+    "muts": 68021946.00803412
+  },
+  "pre_substep_validation_values": {
+    "mu": 67926946.00803412,
+    "muave": 67926946.00803412,
+    "mudf": 6744142.955612082,
+    "mut": 95000.0,
+    "muts": 68021946.00803412
+  },
+  "rk_stage": 1,
+  "status": "LOCALIZED",
+  "step_index": 10,
+  "validation_post_value": -Infinity,
+  "where": "acoustic_substep"
+}
