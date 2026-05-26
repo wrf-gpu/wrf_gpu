@@ -1,0 +1,47 @@
+{
+  "cell": {
+    "dt_s": 10.0,
+    "step": 46,
+    "v_stagger_index_k_j_i": [
+      2,
+      1,
+      0
+    ]
+  },
+  "terms": {
+    "boundary_application": [
+      0.007509803771972657
+    ],
+    "carry_fix_projection": [
+      0.0
+    ],
+    "dycore_rk_acoustic": [
+      0.0
+    ],
+    "mynn": [
+      0.0007882118225097656
+    ],
+    "precision_cast": [
+      0.0
+    ],
+    "rk_acoustic": [
+      0.0
+    ],
+    "surface": [
+      0.0
+    ],
+    "thompson": [
+      0.0
+    ]
+  },
+  "values_m_s": {
+    "after_boundary": -11.39712142944336,
+    "after_mynn": -11.472219467163086,
+    "after_precision": -11.39712142944336,
+    "after_projection": -11.480101585388184,
+    "after_rk_acoustic": -11.480101585388184,
+    "after_surface": -11.472219467163086,
+    "after_thompson": -11.480101585388184,
+    "start": -11.480101585388184
+  }
+}
