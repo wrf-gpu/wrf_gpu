@@ -1,0 +1,4048 @@
+{
+  "artifact_type": "m6b_v3_localize_20260509_theta_explosion",
+  "created_utc": "2026-05-26T00:47:41Z",
+  "device": "cuda:0",
+  "field_snapshots": {
+    "cell": {
+      "i": 73,
+      "j": 60,
+      "k": 28
+    },
+    "step_n": {
+      "mu": 96447.3515625,
+      "mu_perturbation": 1447.3515625,
+      "mu_total": 96447.3515625,
+      "p": -36838.09437151286,
+      "p_perturbation": -55897.64515276286,
+      "p_total": -36838.09437151286,
+      "ph": 120200.2734375,
+      "ph_total": 120200.2734375,
+      "qc": 34335572.0,
+      "qg": 0.0,
+      "qi": 0.0,
+      "qr": 0.0,
+      "qs": 0.0,
+      "qv": 1.000000013351432e-10,
+      "t_skin": 293.798095703125,
+      "theta": 2604313608192.0,
+      "u": 52.38127899169922,
+      "v": 3.7981767654418945,
+      "w": 15.996055052713544
+    },
+    "step_n_minus_1": {
+      "mu": 96447.3515625,
+      "mu_perturbation": 1447.3515625,
+      "mu_total": 96447.3515625,
+      "p": 18820.186094063516,
+      "p_perturbation": -239.36468718648393,
+      "p_total": 18820.186094063516,
+      "ph": 120200.2734375,
+      "ph_total": 120200.2734375,
+      "qc": 0.0,
+      "qg": 0.0,
+      "qi": 0.0,
+      "qr": 0.0,
+      "qs": 0.0,
+      "qv": 1.000000013351432e-10,
+      "t_skin": 293.798095703125,
+      "theta": 348.6410217285156,
+      "u": 52.382598876953125,
+      "v": 14.079326629638672,
+      "w": -2.3576655319514823
+    }
+  },
+  "first_violation": {
+    "bound_k": 400.0,
+    "cell": {
+      "i": 73,
+      "j": 60,
+      "k": 28
+    },
+    "exceedance_k": 2604313607792.0,
+    "kind": "above_upper",
+    "lead_seconds": 110.0,
+    "level": 28,
+    "step": 11,
+    "value_k": 2604313608192.0
+  },
+  "input": {
+    "grid": {
+      "dx_m": 3000.0,
+      "dy_m": 3000.0,
+      "mass_shape": [
+        44,
+        66,
+        120
+      ],
+      "wrf_staggered_extent": [
+        45,
+        67,
+        121
+      ]
+    },
+    "namelist": {
+      "acoustic_substeps": 10,
+      "dt_s": 10.0,
+      "radiation_cadence_steps": 999999,
+      "run_boundary": true,
+      "run_physics": true,
+      "use_vertical_solver": true
+    },
+    "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260509_18z_l3_24h_20260511T190519Z",
+    "run_id": "20260509_18z_l3_24h_20260511T190519Z"
+  },
+  "per_step_theta_min_max_by_level": [
+    {
+      "lead_seconds": 10.0,
+      "levels": [
+        {
+          "bounded": true,
+          "level": 0,
+          "lower_bound_k": 200.0,
+          "max_k": 309.6163635253906,
+          "min_k": 290.3358459472656,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 1,
+          "lower_bound_k": 200.0,
+          "max_k": 310.0140380859375,
+          "min_k": 290.58837890625,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 2,
+          "lower_bound_k": 200.0,
+          "max_k": 310.40765380859375,
+          "min_k": 290.7367858886719,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 3,
+          "lower_bound_k": 200.0,
+          "max_k": 310.7135925292969,
+          "min_k": 290.9926452636719,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 4,
+          "lower_bound_k": 200.0,
+          "max_k": 311.0894775390625,
+          "min_k": 291.1641540527344,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 5,
+          "lower_bound_k": 200.0,
+          "max_k": 311.5447998046875,
+          "min_k": 291.1636657714844,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 6,
+          "lower_bound_k": 200.0,
+          "max_k": 312.0874328613281,
+          "min_k": 291.1533203125,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 7,
+          "lower_bound_k": 200.0,
+          "max_k": 312.72222900390625,
+          "min_k": 291.5904541015625,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 8,
+          "lower_bound_k": 200.0,
+          "max_k": 313.450439453125,
+          "min_k": 292.4975891113281,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 9,
+          "lower_bound_k": 200.0,
+          "max_k": 314.2685546875,
+          "min_k": 293.37158203125,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 10,
+          "lower_bound_k": 200.0,
+          "max_k": 315.2610168457031,
+          "min_k": 296.9728088378906,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 11,
+          "lower_bound_k": 200.0,
+          "max_k": 316.52978515625,
+          "min_k": 301.01580810546875,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 12,
+          "lower_bound_k": 200.0,
+          "max_k": 317.8970947265625,
+          "min_k": 305.4572448730469,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 13,
+          "lower_bound_k": 200.0,
+          "max_k": 319.3632507324219,
+          "min_k": 309.3223571777344,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 14,
+          "lower_bound_k": 200.0,
+          "max_k": 320.9476318359375,
+          "min_k": 311.6030578613281,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 15,
+          "lower_bound_k": 200.0,
+          "max_k": 322.60614013671875,
+          "min_k": 314.0812072753906,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 16,
+          "lower_bound_k": 200.0,
+          "max_k": 324.37567138671875,
+          "min_k": 316.7547302246094,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 17,
+          "lower_bound_k": 200.0,
+          "max_k": 326.2488098144531,
+          "min_k": 319.5234375,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 18,
+          "lower_bound_k": 200.0,
+          "max_k": 328.17724609375,
+          "min_k": 322.7403259277344,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 19,
+          "lower_bound_k": 200.0,
+          "max_k": 329.79803466796875,
+          "min_k": 325.9116516113281,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 20,
+          "lower_bound_k": 200.0,
+          "max_k": 331.2122497558594,
+          "min_k": 328.4000549316406,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 21,
+          "lower_bound_k": 200.0,
+          "max_k": 332.6288757324219,
+          "min_k": 330.2810363769531,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 22,
+          "lower_bound_k": 200.0,
+          "max_k": 334.57855224609375,
+          "min_k": 332.0448913574219,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 23,
+          "lower_bound_k": 200.0,
+          "max_k": 336.5746765136719,
+          "min_k": 334.03857421875,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 24,
+          "lower_bound_k": 200.0,
+          "max_k": 338.8003845214844,
+          "min_k": 336.9840087890625,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 25,
+          "lower_bound_k": 200.0,
+          "max_k": 341.3502502441406,
+          "min_k": 339.6704406738281,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 26,
+          "lower_bound_k": 200.0,
+          "max_k": 343.668212890625,
+          "min_k": 341.915283203125,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 27,
+          "lower_bound_k": 200.0,
+          "max_k": 345.8975524902344,
+          "min_k": 343.91497802734375,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 28,
+          "lower_bound_k": 200.0,
+          "max_k": 348.8392333984375,
+          "min_k": 347.4224853515625,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 29,
+          "lower_bound_k": 200.0,
+          "max_k": 353.2446594238281,
+          "min_k": 351.3319396972656,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 30,
+          "lower_bound_k": 250.0,
+          "max_k": 357.7670593261719,
+          "min_k": 354.46746826171875,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 31,
+          "lower_bound_k": 250.0,
+          "max_k": 363.0331726074219,
+          "min_k": 358.3468322753906,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 32,
+          "lower_bound_k": 250.0,
+          "max_k": 370.5113525390625,
+          "min_k": 365.7898254394531,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 33,
+          "lower_bound_k": 250.0,
+          "max_k": 378.5237731933594,
+          "min_k": 373.3733825683594,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 34,
+          "lower_bound_k": 250.0,
+          "max_k": 386.79095458984375,
+          "min_k": 381.09014892578125,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 35,
+          "lower_bound_k": 250.0,
+          "max_k": 395.2350158691406,
+          "min_k": 388.935302734375,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 36,
+          "lower_bound_k": 250.0,
+          "max_k": 405.6576232910156,
+          "min_k": 399.2164306640625,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 37,
+          "lower_bound_k": 250.0,
+          "max_k": 418.0309143066406,
+          "min_k": 411.8979187011719,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 38,
+          "lower_bound_k": 250.0,
+          "max_k": 430.7693176269531,
+          "min_k": 424.9598693847656,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 39,
+          "lower_bound_k": 250.0,
+          "max_k": 443.88299560546875,
+          "min_k": 438.2367248535156,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 40,
+          "lower_bound_k": 250.0,
+          "max_k": 457.3830261230469,
+          "min_k": 451.8330993652344,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 41,
+          "lower_bound_k": 250.0,
+          "max_k": 471.2804260253906,
+          "min_k": 465.8340148925781,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 42,
+          "lower_bound_k": 250.0,
+          "max_k": 485.58673095703125,
+          "min_k": 480.248046875,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 43,
+          "lower_bound_k": 250.0,
+          "max_k": 500.31317138671875,
+          "min_k": 495.09039306640625,
+          "upper_bound_k": 700.0
+        }
+      ],
+      "step": 1
+    },
+    {
+      "lead_seconds": 20.0,
+      "levels": [
+        {
+          "bounded": true,
+          "level": 0,
+          "lower_bound_k": 200.0,
+          "max_k": 309.61724853515625,
+          "min_k": 290.33587646484375,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 1,
+          "lower_bound_k": 200.0,
+          "max_k": 310.01385498046875,
+          "min_k": 290.58837890625,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 2,
+          "lower_bound_k": 200.0,
+          "max_k": 310.40765380859375,
+          "min_k": 290.7367858886719,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 3,
+          "lower_bound_k": 200.0,
+          "max_k": 310.7135925292969,
+          "min_k": 290.9926452636719,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 4,
+          "lower_bound_k": 200.0,
+          "max_k": 311.0894775390625,
+          "min_k": 291.1641540527344,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 5,
+          "lower_bound_k": 200.0,
+          "max_k": 311.5447998046875,
+          "min_k": 291.1636657714844,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 6,
+          "lower_bound_k": 200.0,
+          "max_k": 312.0874328613281,
+          "min_k": 291.1533203125,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 7,
+          "lower_bound_k": 200.0,
+          "max_k": 312.72222900390625,
+          "min_k": 291.5904541015625,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 8,
+          "lower_bound_k": 200.0,
+          "max_k": 313.450439453125,
+          "min_k": 292.4975891113281,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 9,
+          "lower_bound_k": 200.0,
+          "max_k": 314.2685546875,
+          "min_k": 293.37158203125,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 10,
+          "lower_bound_k": 200.0,
+          "max_k": 315.2610168457031,
+          "min_k": 296.9728088378906,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 11,
+          "lower_bound_k": 200.0,
+          "max_k": 316.52978515625,
+          "min_k": 301.01580810546875,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 12,
+          "lower_bound_k": 200.0,
+          "max_k": 317.8970947265625,
+          "min_k": 305.4572448730469,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 13,
+          "lower_bound_k": 200.0,
+          "max_k": 319.3632507324219,
+          "min_k": 309.3223571777344,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 14,
+          "lower_bound_k": 200.0,
+          "max_k": 320.9476318359375,
+          "min_k": 311.6030578613281,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 15,
+          "lower_bound_k": 200.0,
+          "max_k": 322.60614013671875,
+          "min_k": 314.0812072753906,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 16,
+          "lower_bound_k": 200.0,
+          "max_k": 324.37567138671875,
+          "min_k": 316.7547302246094,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 17,
+          "lower_bound_k": 200.0,
+          "max_k": 326.2488098144531,
+          "min_k": 319.5234375,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 18,
+          "lower_bound_k": 200.0,
+          "max_k": 328.17724609375,
+          "min_k": 322.7403259277344,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 19,
+          "lower_bound_k": 200.0,
+          "max_k": 329.79803466796875,
+          "min_k": 325.9116516113281,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 20,
+          "lower_bound_k": 200.0,
+          "max_k": 331.2122497558594,
+          "min_k": 328.4000549316406,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 21,
+          "lower_bound_k": 200.0,
+          "max_k": 332.6288757324219,
+          "min_k": 330.2810363769531,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 22,
+          "lower_bound_k": 200.0,
+          "max_k": 334.57855224609375,
+          "min_k": 332.0448913574219,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 23,
+          "lower_bound_k": 200.0,
+          "max_k": 336.5746765136719,
+          "min_k": 334.03857421875,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 24,
+          "lower_bound_k": 200.0,
+          "max_k": 338.8003845214844,
+          "min_k": 336.9840087890625,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 25,
+          "lower_bound_k": 200.0,
+          "max_k": 341.3502502441406,
+          "min_k": 339.6704406738281,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 26,
+          "lower_bound_k": 200.0,
+          "max_k": 343.668212890625,
+          "min_k": 341.915283203125,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 27,
+          "lower_bound_k": 200.0,
+          "max_k": 345.8975524902344,
+          "min_k": 343.91497802734375,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 28,
+          "lower_bound_k": 200.0,
+          "max_k": 348.8392333984375,
+          "min_k": 347.4224853515625,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 29,
+          "lower_bound_k": 200.0,
+          "max_k": 353.2446594238281,
+          "min_k": 351.3319396972656,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 30,
+          "lower_bound_k": 250.0,
+          "max_k": 357.7670593261719,
+          "min_k": 354.46746826171875,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 31,
+          "lower_bound_k": 250.0,
+          "max_k": 363.0331726074219,
+          "min_k": 358.3468322753906,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 32,
+          "lower_bound_k": 250.0,
+          "max_k": 370.5113525390625,
+          "min_k": 365.7898254394531,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 33,
+          "lower_bound_k": 250.0,
+          "max_k": 378.5237731933594,
+          "min_k": 373.3733825683594,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 34,
+          "lower_bound_k": 250.0,
+          "max_k": 386.79095458984375,
+          "min_k": 381.09014892578125,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 35,
+          "lower_bound_k": 250.0,
+          "max_k": 395.2350158691406,
+          "min_k": 388.935302734375,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 36,
+          "lower_bound_k": 250.0,
+          "max_k": 405.6576232910156,
+          "min_k": 399.2164306640625,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 37,
+          "lower_bound_k": 250.0,
+          "max_k": 418.0309143066406,
+          "min_k": 411.8979187011719,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 38,
+          "lower_bound_k": 250.0,
+          "max_k": 430.7693176269531,
+          "min_k": 424.9598693847656,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 39,
+          "lower_bound_k": 250.0,
+          "max_k": 443.88299560546875,
+          "min_k": 438.2367248535156,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 40,
+          "lower_bound_k": 250.0,
+          "max_k": 457.3830261230469,
+          "min_k": 451.8330993652344,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 41,
+          "lower_bound_k": 250.0,
+          "max_k": 471.2804260253906,
+          "min_k": 465.8340148925781,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 42,
+          "lower_bound_k": 250.0,
+          "max_k": 485.58673095703125,
+          "min_k": 480.248046875,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 43,
+          "lower_bound_k": 250.0,
+          "max_k": 500.31317138671875,
+          "min_k": 495.09039306640625,
+          "upper_bound_k": 700.0
+        }
+      ],
+      "step": 2
+    },
+    {
+      "lead_seconds": 30.0,
+      "levels": [
+        {
+          "bounded": true,
+          "level": 0,
+          "lower_bound_k": 200.0,
+          "max_k": 309.6183166503906,
+          "min_k": 290.3359069824219,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 1,
+          "lower_bound_k": 200.0,
+          "max_k": 310.01348876953125,
+          "min_k": 290.58837890625,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 2,
+          "lower_bound_k": 200.0,
+          "max_k": 310.40765380859375,
+          "min_k": 290.7367858886719,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 3,
+          "lower_bound_k": 200.0,
+          "max_k": 310.7135925292969,
+          "min_k": 290.9926452636719,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 4,
+          "lower_bound_k": 200.0,
+          "max_k": 311.0894775390625,
+          "min_k": 291.1641540527344,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 5,
+          "lower_bound_k": 200.0,
+          "max_k": 311.5447998046875,
+          "min_k": 291.1636657714844,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 6,
+          "lower_bound_k": 200.0,
+          "max_k": 312.0874328613281,
+          "min_k": 291.1533203125,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 7,
+          "lower_bound_k": 200.0,
+          "max_k": 312.72222900390625,
+          "min_k": 291.5904541015625,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 8,
+          "lower_bound_k": 200.0,
+          "max_k": 313.450439453125,
+          "min_k": 292.4975891113281,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 9,
+          "lower_bound_k": 200.0,
+          "max_k": 314.2685546875,
+          "min_k": 293.37158203125,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 10,
+          "lower_bound_k": 200.0,
+          "max_k": 315.2610168457031,
+          "min_k": 296.9728088378906,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 11,
+          "lower_bound_k": 200.0,
+          "max_k": 316.52978515625,
+          "min_k": 301.01580810546875,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 12,
+          "lower_bound_k": 200.0,
+          "max_k": 317.8970947265625,
+          "min_k": 305.4572448730469,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 13,
+          "lower_bound_k": 200.0,
+          "max_k": 319.3632507324219,
+          "min_k": 309.3223571777344,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 14,
+          "lower_bound_k": 200.0,
+          "max_k": 320.9476318359375,
+          "min_k": 311.6030578613281,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 15,
+          "lower_bound_k": 200.0,
+          "max_k": 322.60614013671875,
+          "min_k": 314.0812072753906,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 16,
+          "lower_bound_k": 200.0,
+          "max_k": 324.37567138671875,
+          "min_k": 316.7547302246094,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 17,
+          "lower_bound_k": 200.0,
+          "max_k": 326.2488098144531,
+          "min_k": 319.5234375,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 18,
+          "lower_bound_k": 200.0,
+          "max_k": 328.17724609375,
+          "min_k": 322.7403259277344,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 19,
+          "lower_bound_k": 200.0,
+          "max_k": 329.79803466796875,
+          "min_k": 325.9116516113281,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 20,
+          "lower_bound_k": 200.0,
+          "max_k": 331.2122497558594,
+          "min_k": 328.4000549316406,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 21,
+          "lower_bound_k": 200.0,
+          "max_k": 332.6288757324219,
+          "min_k": 330.2810363769531,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 22,
+          "lower_bound_k": 200.0,
+          "max_k": 334.57855224609375,
+          "min_k": 332.0448913574219,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 23,
+          "lower_bound_k": 200.0,
+          "max_k": 336.5746765136719,
+          "min_k": 334.03857421875,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 24,
+          "lower_bound_k": 200.0,
+          "max_k": 338.8003845214844,
+          "min_k": 336.9840087890625,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 25,
+          "lower_bound_k": 200.0,
+          "max_k": 341.3502502441406,
+          "min_k": 339.6704406738281,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 26,
+          "lower_bound_k": 200.0,
+          "max_k": 343.668212890625,
+          "min_k": 341.915283203125,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 27,
+          "lower_bound_k": 200.0,
+          "max_k": 345.8975524902344,
+          "min_k": 343.91497802734375,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 28,
+          "lower_bound_k": 200.0,
+          "max_k": 348.8392333984375,
+          "min_k": 347.4224853515625,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 29,
+          "lower_bound_k": 200.0,
+          "max_k": 353.2446594238281,
+          "min_k": 351.3319396972656,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 30,
+          "lower_bound_k": 250.0,
+          "max_k": 357.7670593261719,
+          "min_k": 354.46746826171875,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 31,
+          "lower_bound_k": 250.0,
+          "max_k": 363.0331726074219,
+          "min_k": 358.3468322753906,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 32,
+          "lower_bound_k": 250.0,
+          "max_k": 370.5113525390625,
+          "min_k": 365.7898254394531,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 33,
+          "lower_bound_k": 250.0,
+          "max_k": 378.5237731933594,
+          "min_k": 373.3733825683594,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 34,
+          "lower_bound_k": 250.0,
+          "max_k": 386.79095458984375,
+          "min_k": 381.09014892578125,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 35,
+          "lower_bound_k": 250.0,
+          "max_k": 395.2350158691406,
+          "min_k": 388.935302734375,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 36,
+          "lower_bound_k": 250.0,
+          "max_k": 405.6576232910156,
+          "min_k": 399.2164306640625,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 37,
+          "lower_bound_k": 250.0,
+          "max_k": 418.0309143066406,
+          "min_k": 411.8979187011719,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 38,
+          "lower_bound_k": 250.0,
+          "max_k": 430.7693176269531,
+          "min_k": 424.9598693847656,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 39,
+          "lower_bound_k": 250.0,
+          "max_k": 443.88299560546875,
+          "min_k": 438.2367248535156,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 40,
+          "lower_bound_k": 250.0,
+          "max_k": 457.3830261230469,
+          "min_k": 451.8330993652344,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 41,
+          "lower_bound_k": 250.0,
+          "max_k": 471.2804260253906,
+          "min_k": 465.8340148925781,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 42,
+          "lower_bound_k": 250.0,
+          "max_k": 485.58673095703125,
+          "min_k": 480.248046875,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 43,
+          "lower_bound_k": 250.0,
+          "max_k": 500.31317138671875,
+          "min_k": 495.09039306640625,
+          "upper_bound_k": 700.0
+        }
+      ],
+      "step": 3
+    },
+    {
+      "lead_seconds": 40.0,
+      "levels": [
+        {
+          "bounded": true,
+          "level": 0,
+          "lower_bound_k": 200.0,
+          "max_k": 309.6195373535156,
+          "min_k": 290.3359375,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 1,
+          "lower_bound_k": 200.0,
+          "max_k": 310.01300048828125,
+          "min_k": 290.58837890625,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 2,
+          "lower_bound_k": 200.0,
+          "max_k": 310.40765380859375,
+          "min_k": 290.7367858886719,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 3,
+          "lower_bound_k": 200.0,
+          "max_k": 310.7135925292969,
+          "min_k": 290.9926452636719,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 4,
+          "lower_bound_k": 200.0,
+          "max_k": 311.0894775390625,
+          "min_k": 291.1641540527344,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 5,
+          "lower_bound_k": 200.0,
+          "max_k": 311.5447998046875,
+          "min_k": 291.1636657714844,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 6,
+          "lower_bound_k": 200.0,
+          "max_k": 312.0874328613281,
+          "min_k": 291.1533203125,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 7,
+          "lower_bound_k": 200.0,
+          "max_k": 312.72222900390625,
+          "min_k": 291.5904541015625,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 8,
+          "lower_bound_k": 200.0,
+          "max_k": 313.450439453125,
+          "min_k": 292.4975891113281,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 9,
+          "lower_bound_k": 200.0,
+          "max_k": 314.2685546875,
+          "min_k": 293.37158203125,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 10,
+          "lower_bound_k": 200.0,
+          "max_k": 315.2610168457031,
+          "min_k": 296.9728088378906,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 11,
+          "lower_bound_k": 200.0,
+          "max_k": 316.52978515625,
+          "min_k": 301.01580810546875,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 12,
+          "lower_bound_k": 200.0,
+          "max_k": 317.8970947265625,
+          "min_k": 305.4572448730469,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 13,
+          "lower_bound_k": 200.0,
+          "max_k": 319.3632507324219,
+          "min_k": 309.3223571777344,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 14,
+          "lower_bound_k": 200.0,
+          "max_k": 320.9476318359375,
+          "min_k": 311.6030578613281,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 15,
+          "lower_bound_k": 200.0,
+          "max_k": 322.60614013671875,
+          "min_k": 314.0812072753906,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 16,
+          "lower_bound_k": 200.0,
+          "max_k": 324.37567138671875,
+          "min_k": 316.7547302246094,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 17,
+          "lower_bound_k": 200.0,
+          "max_k": 326.2488098144531,
+          "min_k": 319.5234375,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 18,
+          "lower_bound_k": 200.0,
+          "max_k": 328.17724609375,
+          "min_k": 322.7403259277344,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 19,
+          "lower_bound_k": 200.0,
+          "max_k": 329.79803466796875,
+          "min_k": 325.9116516113281,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 20,
+          "lower_bound_k": 200.0,
+          "max_k": 331.2122497558594,
+          "min_k": 328.4000549316406,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 21,
+          "lower_bound_k": 200.0,
+          "max_k": 332.6288757324219,
+          "min_k": 330.2810363769531,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 22,
+          "lower_bound_k": 200.0,
+          "max_k": 334.57855224609375,
+          "min_k": 332.0448913574219,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 23,
+          "lower_bound_k": 200.0,
+          "max_k": 336.5746765136719,
+          "min_k": 334.03857421875,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 24,
+          "lower_bound_k": 200.0,
+          "max_k": 338.8003845214844,
+          "min_k": 336.9840087890625,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 25,
+          "lower_bound_k": 200.0,
+          "max_k": 341.3502502441406,
+          "min_k": 339.6704406738281,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 26,
+          "lower_bound_k": 200.0,
+          "max_k": 343.668212890625,
+          "min_k": 341.915283203125,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 27,
+          "lower_bound_k": 200.0,
+          "max_k": 345.8975524902344,
+          "min_k": 343.91497802734375,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 28,
+          "lower_bound_k": 200.0,
+          "max_k": 348.8392333984375,
+          "min_k": 347.4224853515625,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 29,
+          "lower_bound_k": 200.0,
+          "max_k": 353.2446594238281,
+          "min_k": 351.3319396972656,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 30,
+          "lower_bound_k": 250.0,
+          "max_k": 357.7670593261719,
+          "min_k": 354.46746826171875,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 31,
+          "lower_bound_k": 250.0,
+          "max_k": 363.0331726074219,
+          "min_k": 358.3468322753906,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 32,
+          "lower_bound_k": 250.0,
+          "max_k": 370.5113525390625,
+          "min_k": 365.7898254394531,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 33,
+          "lower_bound_k": 250.0,
+          "max_k": 378.5237731933594,
+          "min_k": 373.3733825683594,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 34,
+          "lower_bound_k": 250.0,
+          "max_k": 386.79095458984375,
+          "min_k": 381.09014892578125,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 35,
+          "lower_bound_k": 250.0,
+          "max_k": 395.2350158691406,
+          "min_k": 388.935302734375,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 36,
+          "lower_bound_k": 250.0,
+          "max_k": 405.6576232910156,
+          "min_k": 399.2164306640625,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 37,
+          "lower_bound_k": 250.0,
+          "max_k": 418.0309143066406,
+          "min_k": 411.8979187011719,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 38,
+          "lower_bound_k": 250.0,
+          "max_k": 430.7693176269531,
+          "min_k": 424.9598693847656,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 39,
+          "lower_bound_k": 250.0,
+          "max_k": 443.88299560546875,
+          "min_k": 438.2367248535156,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 40,
+          "lower_bound_k": 250.0,
+          "max_k": 457.3830261230469,
+          "min_k": 451.8330993652344,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 41,
+          "lower_bound_k": 250.0,
+          "max_k": 471.2804260253906,
+          "min_k": 465.8340148925781,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 42,
+          "lower_bound_k": 250.0,
+          "max_k": 485.58673095703125,
+          "min_k": 480.248046875,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 43,
+          "lower_bound_k": 250.0,
+          "max_k": 500.31317138671875,
+          "min_k": 495.09039306640625,
+          "upper_bound_k": 700.0
+        }
+      ],
+      "step": 4
+    },
+    {
+      "lead_seconds": 50.0,
+      "levels": [
+        {
+          "bounded": true,
+          "level": 0,
+          "lower_bound_k": 200.0,
+          "max_k": 309.6208801269531,
+          "min_k": 290.3359680175781,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 1,
+          "lower_bound_k": 200.0,
+          "max_k": 310.0124206542969,
+          "min_k": 290.58837890625,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 2,
+          "lower_bound_k": 200.0,
+          "max_k": 310.4076232910156,
+          "min_k": 290.7367858886719,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 3,
+          "lower_bound_k": 200.0,
+          "max_k": 310.7135925292969,
+          "min_k": 290.9926452636719,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 4,
+          "lower_bound_k": 200.0,
+          "max_k": 311.0894775390625,
+          "min_k": 291.1641540527344,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 5,
+          "lower_bound_k": 200.0,
+          "max_k": 311.5447998046875,
+          "min_k": 291.1636657714844,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 6,
+          "lower_bound_k": 200.0,
+          "max_k": 312.0874328613281,
+          "min_k": 291.1533203125,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 7,
+          "lower_bound_k": 200.0,
+          "max_k": 312.72222900390625,
+          "min_k": 291.5904541015625,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 8,
+          "lower_bound_k": 200.0,
+          "max_k": 313.450439453125,
+          "min_k": 292.4975891113281,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 9,
+          "lower_bound_k": 200.0,
+          "max_k": 314.2685546875,
+          "min_k": 293.37158203125,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 10,
+          "lower_bound_k": 200.0,
+          "max_k": 315.2610168457031,
+          "min_k": 296.9728088378906,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 11,
+          "lower_bound_k": 200.0,
+          "max_k": 316.52978515625,
+          "min_k": 301.01580810546875,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 12,
+          "lower_bound_k": 200.0,
+          "max_k": 317.8970947265625,
+          "min_k": 305.4572448730469,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 13,
+          "lower_bound_k": 200.0,
+          "max_k": 319.3632507324219,
+          "min_k": 309.3223571777344,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 14,
+          "lower_bound_k": 200.0,
+          "max_k": 320.9476318359375,
+          "min_k": 311.6030578613281,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 15,
+          "lower_bound_k": 200.0,
+          "max_k": 322.60614013671875,
+          "min_k": 314.0812072753906,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 16,
+          "lower_bound_k": 200.0,
+          "max_k": 324.37567138671875,
+          "min_k": 316.7547302246094,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 17,
+          "lower_bound_k": 200.0,
+          "max_k": 326.2488098144531,
+          "min_k": 319.5234375,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 18,
+          "lower_bound_k": 200.0,
+          "max_k": 328.17724609375,
+          "min_k": 322.7403259277344,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 19,
+          "lower_bound_k": 200.0,
+          "max_k": 329.79803466796875,
+          "min_k": 325.9116516113281,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 20,
+          "lower_bound_k": 200.0,
+          "max_k": 331.2122497558594,
+          "min_k": 328.4000549316406,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 21,
+          "lower_bound_k": 200.0,
+          "max_k": 332.6288757324219,
+          "min_k": 330.2810363769531,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 22,
+          "lower_bound_k": 200.0,
+          "max_k": 334.57855224609375,
+          "min_k": 332.0448913574219,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 23,
+          "lower_bound_k": 200.0,
+          "max_k": 336.5746765136719,
+          "min_k": 334.03857421875,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 24,
+          "lower_bound_k": 200.0,
+          "max_k": 338.8003845214844,
+          "min_k": 336.9840087890625,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 25,
+          "lower_bound_k": 200.0,
+          "max_k": 341.3502502441406,
+          "min_k": 339.6704406738281,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 26,
+          "lower_bound_k": 200.0,
+          "max_k": 343.668212890625,
+          "min_k": 341.915283203125,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 27,
+          "lower_bound_k": 200.0,
+          "max_k": 345.8975524902344,
+          "min_k": 343.91497802734375,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 28,
+          "lower_bound_k": 200.0,
+          "max_k": 348.8392333984375,
+          "min_k": 347.4224853515625,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 29,
+          "lower_bound_k": 200.0,
+          "max_k": 353.2446594238281,
+          "min_k": 351.3319396972656,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 30,
+          "lower_bound_k": 250.0,
+          "max_k": 357.7670593261719,
+          "min_k": 354.46746826171875,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 31,
+          "lower_bound_k": 250.0,
+          "max_k": 363.0331726074219,
+          "min_k": 358.3468322753906,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 32,
+          "lower_bound_k": 250.0,
+          "max_k": 370.5113525390625,
+          "min_k": 365.7898254394531,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 33,
+          "lower_bound_k": 250.0,
+          "max_k": 378.5237731933594,
+          "min_k": 373.3733825683594,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 34,
+          "lower_bound_k": 250.0,
+          "max_k": 386.79095458984375,
+          "min_k": 381.09014892578125,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 35,
+          "lower_bound_k": 250.0,
+          "max_k": 395.2350158691406,
+          "min_k": 388.935302734375,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 36,
+          "lower_bound_k": 250.0,
+          "max_k": 405.6576232910156,
+          "min_k": 399.2164306640625,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 37,
+          "lower_bound_k": 250.0,
+          "max_k": 418.0309143066406,
+          "min_k": 411.8979187011719,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 38,
+          "lower_bound_k": 250.0,
+          "max_k": 430.7693176269531,
+          "min_k": 424.9598693847656,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 39,
+          "lower_bound_k": 250.0,
+          "max_k": 443.88299560546875,
+          "min_k": 438.2367248535156,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 40,
+          "lower_bound_k": 250.0,
+          "max_k": 457.3830261230469,
+          "min_k": 451.8330993652344,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 41,
+          "lower_bound_k": 250.0,
+          "max_k": 471.2804260253906,
+          "min_k": 465.8340148925781,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 42,
+          "lower_bound_k": 250.0,
+          "max_k": 485.58673095703125,
+          "min_k": 480.248046875,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 43,
+          "lower_bound_k": 250.0,
+          "max_k": 500.31317138671875,
+          "min_k": 495.09039306640625,
+          "upper_bound_k": 700.0
+        }
+      ],
+      "step": 5
+    },
+    {
+      "lead_seconds": 60.0,
+      "levels": [
+        {
+          "bounded": true,
+          "level": 0,
+          "lower_bound_k": 200.0,
+          "max_k": 309.622314453125,
+          "min_k": 290.33599853515625,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 1,
+          "lower_bound_k": 200.0,
+          "max_k": 310.01177978515625,
+          "min_k": 290.58837890625,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 2,
+          "lower_bound_k": 200.0,
+          "max_k": 310.4075927734375,
+          "min_k": 290.7367858886719,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 3,
+          "lower_bound_k": 200.0,
+          "max_k": 310.7135925292969,
+          "min_k": 290.9926452636719,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 4,
+          "lower_bound_k": 200.0,
+          "max_k": 311.0894775390625,
+          "min_k": 291.1641540527344,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 5,
+          "lower_bound_k": 200.0,
+          "max_k": 311.5447998046875,
+          "min_k": 291.1636657714844,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 6,
+          "lower_bound_k": 200.0,
+          "max_k": 312.0874328613281,
+          "min_k": 291.1533203125,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 7,
+          "lower_bound_k": 200.0,
+          "max_k": 312.72222900390625,
+          "min_k": 291.5904541015625,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 8,
+          "lower_bound_k": 200.0,
+          "max_k": 313.450439453125,
+          "min_k": 292.4975891113281,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 9,
+          "lower_bound_k": 200.0,
+          "max_k": 314.2685546875,
+          "min_k": 293.37158203125,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 10,
+          "lower_bound_k": 200.0,
+          "max_k": 315.2610168457031,
+          "min_k": 296.9728088378906,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 11,
+          "lower_bound_k": 200.0,
+          "max_k": 316.52978515625,
+          "min_k": 301.01580810546875,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 12,
+          "lower_bound_k": 200.0,
+          "max_k": 317.8970947265625,
+          "min_k": 305.4572448730469,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 13,
+          "lower_bound_k": 200.0,
+          "max_k": 319.3632507324219,
+          "min_k": 309.3223571777344,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 14,
+          "lower_bound_k": 200.0,
+          "max_k": 320.9476318359375,
+          "min_k": 311.6030578613281,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 15,
+          "lower_bound_k": 200.0,
+          "max_k": 322.60614013671875,
+          "min_k": 314.0812072753906,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 16,
+          "lower_bound_k": 200.0,
+          "max_k": 324.37567138671875,
+          "min_k": 316.7547302246094,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 17,
+          "lower_bound_k": 200.0,
+          "max_k": 326.2488098144531,
+          "min_k": 319.5234375,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 18,
+          "lower_bound_k": 200.0,
+          "max_k": 328.17724609375,
+          "min_k": 322.7403259277344,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 19,
+          "lower_bound_k": 200.0,
+          "max_k": 329.79803466796875,
+          "min_k": 325.9116516113281,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 20,
+          "lower_bound_k": 200.0,
+          "max_k": 331.2122497558594,
+          "min_k": 328.4000549316406,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 21,
+          "lower_bound_k": 200.0,
+          "max_k": 332.6288757324219,
+          "min_k": 330.2810363769531,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 22,
+          "lower_bound_k": 200.0,
+          "max_k": 334.57855224609375,
+          "min_k": 332.0448913574219,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 23,
+          "lower_bound_k": 200.0,
+          "max_k": 336.5746765136719,
+          "min_k": 334.03857421875,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 24,
+          "lower_bound_k": 200.0,
+          "max_k": 338.8003845214844,
+          "min_k": 336.9840087890625,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 25,
+          "lower_bound_k": 200.0,
+          "max_k": 341.3502502441406,
+          "min_k": 339.6704406738281,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 26,
+          "lower_bound_k": 200.0,
+          "max_k": 343.668212890625,
+          "min_k": 341.915283203125,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 27,
+          "lower_bound_k": 200.0,
+          "max_k": 345.8975524902344,
+          "min_k": 343.91497802734375,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 28,
+          "lower_bound_k": 200.0,
+          "max_k": 348.8392333984375,
+          "min_k": 347.4224853515625,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 29,
+          "lower_bound_k": 200.0,
+          "max_k": 353.2446594238281,
+          "min_k": 351.3319396972656,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 30,
+          "lower_bound_k": 250.0,
+          "max_k": 357.7670593261719,
+          "min_k": 354.46746826171875,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 31,
+          "lower_bound_k": 250.0,
+          "max_k": 363.0331726074219,
+          "min_k": 358.3468322753906,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 32,
+          "lower_bound_k": 250.0,
+          "max_k": 370.5113525390625,
+          "min_k": 365.7898254394531,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 33,
+          "lower_bound_k": 250.0,
+          "max_k": 378.5237731933594,
+          "min_k": 373.3733825683594,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 34,
+          "lower_bound_k": 250.0,
+          "max_k": 386.79095458984375,
+          "min_k": 381.09014892578125,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 35,
+          "lower_bound_k": 250.0,
+          "max_k": 395.2350158691406,
+          "min_k": 388.935302734375,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 36,
+          "lower_bound_k": 250.0,
+          "max_k": 405.6576232910156,
+          "min_k": 399.2164306640625,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 37,
+          "lower_bound_k": 250.0,
+          "max_k": 418.0309143066406,
+          "min_k": 411.8979187011719,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 38,
+          "lower_bound_k": 250.0,
+          "max_k": 430.7693176269531,
+          "min_k": 424.9598693847656,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 39,
+          "lower_bound_k": 250.0,
+          "max_k": 443.88299560546875,
+          "min_k": 438.2367248535156,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 40,
+          "lower_bound_k": 250.0,
+          "max_k": 457.3830261230469,
+          "min_k": 451.8330993652344,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 41,
+          "lower_bound_k": 250.0,
+          "max_k": 471.2804260253906,
+          "min_k": 465.8340148925781,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 42,
+          "lower_bound_k": 250.0,
+          "max_k": 485.58673095703125,
+          "min_k": 480.248046875,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 43,
+          "lower_bound_k": 250.0,
+          "max_k": 500.31317138671875,
+          "min_k": 495.09039306640625,
+          "upper_bound_k": 700.0
+        }
+      ],
+      "step": 6
+    },
+    {
+      "lead_seconds": 70.0,
+      "levels": [
+        {
+          "bounded": true,
+          "level": 0,
+          "lower_bound_k": 200.0,
+          "max_k": 309.623779296875,
+          "min_k": 290.3360290527344,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 1,
+          "lower_bound_k": 200.0,
+          "max_k": 310.0110778808594,
+          "min_k": 290.58837890625,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 2,
+          "lower_bound_k": 200.0,
+          "max_k": 310.4075622558594,
+          "min_k": 290.7367858886719,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 3,
+          "lower_bound_k": 200.0,
+          "max_k": 310.7135925292969,
+          "min_k": 290.9926452636719,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 4,
+          "lower_bound_k": 200.0,
+          "max_k": 311.0894775390625,
+          "min_k": 291.1641540527344,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 5,
+          "lower_bound_k": 200.0,
+          "max_k": 311.5447998046875,
+          "min_k": 291.1636657714844,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 6,
+          "lower_bound_k": 200.0,
+          "max_k": 312.0874328613281,
+          "min_k": 291.1533203125,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 7,
+          "lower_bound_k": 200.0,
+          "max_k": 312.72222900390625,
+          "min_k": 291.5904541015625,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 8,
+          "lower_bound_k": 200.0,
+          "max_k": 313.450439453125,
+          "min_k": 292.4975891113281,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 9,
+          "lower_bound_k": 200.0,
+          "max_k": 314.2685546875,
+          "min_k": 293.37158203125,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 10,
+          "lower_bound_k": 200.0,
+          "max_k": 315.2610168457031,
+          "min_k": 296.9728088378906,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 11,
+          "lower_bound_k": 200.0,
+          "max_k": 316.52978515625,
+          "min_k": 301.01580810546875,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 12,
+          "lower_bound_k": 200.0,
+          "max_k": 317.8970947265625,
+          "min_k": 305.4572448730469,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 13,
+          "lower_bound_k": 200.0,
+          "max_k": 319.3632507324219,
+          "min_k": 309.3223571777344,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 14,
+          "lower_bound_k": 200.0,
+          "max_k": 320.9476318359375,
+          "min_k": 311.6030578613281,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 15,
+          "lower_bound_k": 200.0,
+          "max_k": 322.60614013671875,
+          "min_k": 314.0812072753906,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 16,
+          "lower_bound_k": 200.0,
+          "max_k": 324.37567138671875,
+          "min_k": 316.7547302246094,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 17,
+          "lower_bound_k": 200.0,
+          "max_k": 326.2488098144531,
+          "min_k": 319.5234375,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 18,
+          "lower_bound_k": 200.0,
+          "max_k": 328.17724609375,
+          "min_k": 322.7403259277344,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 19,
+          "lower_bound_k": 200.0,
+          "max_k": 329.79803466796875,
+          "min_k": 325.9116516113281,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 20,
+          "lower_bound_k": 200.0,
+          "max_k": 331.2122497558594,
+          "min_k": 328.4000549316406,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 21,
+          "lower_bound_k": 200.0,
+          "max_k": 332.6288757324219,
+          "min_k": 330.2810363769531,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 22,
+          "lower_bound_k": 200.0,
+          "max_k": 334.57855224609375,
+          "min_k": 332.0448913574219,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 23,
+          "lower_bound_k": 200.0,
+          "max_k": 336.5746765136719,
+          "min_k": 334.03857421875,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 24,
+          "lower_bound_k": 200.0,
+          "max_k": 338.8003845214844,
+          "min_k": 336.9840087890625,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 25,
+          "lower_bound_k": 200.0,
+          "max_k": 341.3502502441406,
+          "min_k": 339.6704406738281,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 26,
+          "lower_bound_k": 200.0,
+          "max_k": 343.668212890625,
+          "min_k": 341.915283203125,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 27,
+          "lower_bound_k": 200.0,
+          "max_k": 345.8975524902344,
+          "min_k": 343.91497802734375,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 28,
+          "lower_bound_k": 200.0,
+          "max_k": 348.8392333984375,
+          "min_k": 347.4224853515625,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 29,
+          "lower_bound_k": 200.0,
+          "max_k": 353.2446594238281,
+          "min_k": 351.3319396972656,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 30,
+          "lower_bound_k": 250.0,
+          "max_k": 357.7670593261719,
+          "min_k": 354.46746826171875,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 31,
+          "lower_bound_k": 250.0,
+          "max_k": 363.0331726074219,
+          "min_k": 358.3468322753906,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 32,
+          "lower_bound_k": 250.0,
+          "max_k": 370.5113525390625,
+          "min_k": 365.7898254394531,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 33,
+          "lower_bound_k": 250.0,
+          "max_k": 378.5237731933594,
+          "min_k": 373.3733825683594,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 34,
+          "lower_bound_k": 250.0,
+          "max_k": 386.79095458984375,
+          "min_k": 381.09014892578125,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 35,
+          "lower_bound_k": 250.0,
+          "max_k": 395.2350158691406,
+          "min_k": 388.935302734375,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 36,
+          "lower_bound_k": 250.0,
+          "max_k": 405.6576232910156,
+          "min_k": 399.2164306640625,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 37,
+          "lower_bound_k": 250.0,
+          "max_k": 418.0309143066406,
+          "min_k": 411.8979187011719,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 38,
+          "lower_bound_k": 250.0,
+          "max_k": 430.7693176269531,
+          "min_k": 424.9598693847656,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 39,
+          "lower_bound_k": 250.0,
+          "max_k": 443.88299560546875,
+          "min_k": 438.2367248535156,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 40,
+          "lower_bound_k": 250.0,
+          "max_k": 457.3830261230469,
+          "min_k": 451.8330993652344,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 41,
+          "lower_bound_k": 250.0,
+          "max_k": 471.2804260253906,
+          "min_k": 465.8340148925781,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 42,
+          "lower_bound_k": 250.0,
+          "max_k": 485.58673095703125,
+          "min_k": 480.248046875,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 43,
+          "lower_bound_k": 250.0,
+          "max_k": 500.31317138671875,
+          "min_k": 495.09039306640625,
+          "upper_bound_k": 700.0
+        }
+      ],
+      "step": 7
+    },
+    {
+      "lead_seconds": 80.0,
+      "levels": [
+        {
+          "bounded": true,
+          "level": 0,
+          "lower_bound_k": 200.0,
+          "max_k": 309.6252746582031,
+          "min_k": 290.3360595703125,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 1,
+          "lower_bound_k": 200.0,
+          "max_k": 310.0103759765625,
+          "min_k": 290.58837890625,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 2,
+          "lower_bound_k": 200.0,
+          "max_k": 310.4075012207031,
+          "min_k": 290.7367858886719,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 3,
+          "lower_bound_k": 200.0,
+          "max_k": 310.7135925292969,
+          "min_k": 290.9926452636719,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 4,
+          "lower_bound_k": 200.0,
+          "max_k": 311.0894775390625,
+          "min_k": 291.1641540527344,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 5,
+          "lower_bound_k": 200.0,
+          "max_k": 311.5447998046875,
+          "min_k": 291.1636657714844,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 6,
+          "lower_bound_k": 200.0,
+          "max_k": 312.0874328613281,
+          "min_k": 291.1533203125,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 7,
+          "lower_bound_k": 200.0,
+          "max_k": 312.72222900390625,
+          "min_k": 291.5904541015625,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 8,
+          "lower_bound_k": 200.0,
+          "max_k": 313.450439453125,
+          "min_k": 292.4975891113281,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 9,
+          "lower_bound_k": 200.0,
+          "max_k": 314.2685546875,
+          "min_k": 293.37158203125,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 10,
+          "lower_bound_k": 200.0,
+          "max_k": 315.2610168457031,
+          "min_k": 296.9728088378906,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 11,
+          "lower_bound_k": 200.0,
+          "max_k": 316.52978515625,
+          "min_k": 301.01580810546875,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 12,
+          "lower_bound_k": 200.0,
+          "max_k": 317.8970947265625,
+          "min_k": 305.4572448730469,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 13,
+          "lower_bound_k": 200.0,
+          "max_k": 319.3632507324219,
+          "min_k": 309.3223571777344,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 14,
+          "lower_bound_k": 200.0,
+          "max_k": 320.9476318359375,
+          "min_k": 311.6030578613281,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 15,
+          "lower_bound_k": 200.0,
+          "max_k": 322.60614013671875,
+          "min_k": 314.0812072753906,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 16,
+          "lower_bound_k": 200.0,
+          "max_k": 324.37567138671875,
+          "min_k": 316.7547302246094,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 17,
+          "lower_bound_k": 200.0,
+          "max_k": 326.2488098144531,
+          "min_k": 319.5234375,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 18,
+          "lower_bound_k": 200.0,
+          "max_k": 328.17724609375,
+          "min_k": 322.7403259277344,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 19,
+          "lower_bound_k": 200.0,
+          "max_k": 329.79803466796875,
+          "min_k": 325.9116516113281,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 20,
+          "lower_bound_k": 200.0,
+          "max_k": 331.2122497558594,
+          "min_k": 328.4000549316406,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 21,
+          "lower_bound_k": 200.0,
+          "max_k": 332.6288757324219,
+          "min_k": 330.2810363769531,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 22,
+          "lower_bound_k": 200.0,
+          "max_k": 334.57855224609375,
+          "min_k": 332.0448913574219,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 23,
+          "lower_bound_k": 200.0,
+          "max_k": 336.5746765136719,
+          "min_k": 334.03857421875,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 24,
+          "lower_bound_k": 200.0,
+          "max_k": 338.8003845214844,
+          "min_k": 336.9840087890625,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 25,
+          "lower_bound_k": 200.0,
+          "max_k": 341.3502502441406,
+          "min_k": 339.6704406738281,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 26,
+          "lower_bound_k": 200.0,
+          "max_k": 343.668212890625,
+          "min_k": 341.915283203125,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 27,
+          "lower_bound_k": 200.0,
+          "max_k": 345.8975524902344,
+          "min_k": 343.91497802734375,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 28,
+          "lower_bound_k": 200.0,
+          "max_k": 348.8392333984375,
+          "min_k": 347.4224853515625,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 29,
+          "lower_bound_k": 200.0,
+          "max_k": 353.2446594238281,
+          "min_k": 351.3319396972656,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 30,
+          "lower_bound_k": 250.0,
+          "max_k": 357.7670593261719,
+          "min_k": 354.46746826171875,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 31,
+          "lower_bound_k": 250.0,
+          "max_k": 363.0331726074219,
+          "min_k": 358.3468322753906,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 32,
+          "lower_bound_k": 250.0,
+          "max_k": 370.5113525390625,
+          "min_k": 365.7898254394531,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 33,
+          "lower_bound_k": 250.0,
+          "max_k": 378.5237731933594,
+          "min_k": 373.3733825683594,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 34,
+          "lower_bound_k": 250.0,
+          "max_k": 386.79095458984375,
+          "min_k": 381.09014892578125,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 35,
+          "lower_bound_k": 250.0,
+          "max_k": 395.2350158691406,
+          "min_k": 388.935302734375,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 36,
+          "lower_bound_k": 250.0,
+          "max_k": 405.6576232910156,
+          "min_k": 399.2164306640625,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 37,
+          "lower_bound_k": 250.0,
+          "max_k": 418.0309143066406,
+          "min_k": 411.8979187011719,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 38,
+          "lower_bound_k": 250.0,
+          "max_k": 430.7693176269531,
+          "min_k": 424.9598693847656,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 39,
+          "lower_bound_k": 250.0,
+          "max_k": 443.88299560546875,
+          "min_k": 438.2367248535156,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 40,
+          "lower_bound_k": 250.0,
+          "max_k": 457.3830261230469,
+          "min_k": 451.8330993652344,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 41,
+          "lower_bound_k": 250.0,
+          "max_k": 471.2804260253906,
+          "min_k": 465.8340148925781,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 42,
+          "lower_bound_k": 250.0,
+          "max_k": 485.58673095703125,
+          "min_k": 480.248046875,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 43,
+          "lower_bound_k": 250.0,
+          "max_k": 500.31317138671875,
+          "min_k": 495.09039306640625,
+          "upper_bound_k": 700.0
+        }
+      ],
+      "step": 8
+    },
+    {
+      "lead_seconds": 90.0,
+      "levels": [
+        {
+          "bounded": true,
+          "level": 0,
+          "lower_bound_k": 200.0,
+          "max_k": 309.6268005371094,
+          "min_k": 290.3360900878906,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 1,
+          "lower_bound_k": 200.0,
+          "max_k": 310.0096435546875,
+          "min_k": 290.58837890625,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 2,
+          "lower_bound_k": 200.0,
+          "max_k": 310.4074401855469,
+          "min_k": 290.7367858886719,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 3,
+          "lower_bound_k": 200.0,
+          "max_k": 310.7135925292969,
+          "min_k": 290.9926452636719,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 4,
+          "lower_bound_k": 200.0,
+          "max_k": 311.0894775390625,
+          "min_k": 291.1641540527344,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 5,
+          "lower_bound_k": 200.0,
+          "max_k": 311.5447998046875,
+          "min_k": 291.1636657714844,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 6,
+          "lower_bound_k": 200.0,
+          "max_k": 312.0874328613281,
+          "min_k": 291.1533203125,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 7,
+          "lower_bound_k": 200.0,
+          "max_k": 312.72222900390625,
+          "min_k": 291.5904541015625,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 8,
+          "lower_bound_k": 200.0,
+          "max_k": 313.450439453125,
+          "min_k": 292.4975891113281,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 9,
+          "lower_bound_k": 200.0,
+          "max_k": 314.2685546875,
+          "min_k": 293.37158203125,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 10,
+          "lower_bound_k": 200.0,
+          "max_k": 315.2610168457031,
+          "min_k": 296.9728088378906,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 11,
+          "lower_bound_k": 200.0,
+          "max_k": 316.52978515625,
+          "min_k": 301.01580810546875,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 12,
+          "lower_bound_k": 200.0,
+          "max_k": 317.8970947265625,
+          "min_k": 305.4572448730469,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 13,
+          "lower_bound_k": 200.0,
+          "max_k": 319.3632507324219,
+          "min_k": 309.3223571777344,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 14,
+          "lower_bound_k": 200.0,
+          "max_k": 320.9476318359375,
+          "min_k": 311.6030578613281,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 15,
+          "lower_bound_k": 200.0,
+          "max_k": 322.60614013671875,
+          "min_k": 314.0812072753906,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 16,
+          "lower_bound_k": 200.0,
+          "max_k": 324.37567138671875,
+          "min_k": 316.7547302246094,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 17,
+          "lower_bound_k": 200.0,
+          "max_k": 326.2488098144531,
+          "min_k": 319.5234375,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 18,
+          "lower_bound_k": 200.0,
+          "max_k": 328.17724609375,
+          "min_k": 322.7403259277344,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 19,
+          "lower_bound_k": 200.0,
+          "max_k": 329.79803466796875,
+          "min_k": 325.9116516113281,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 20,
+          "lower_bound_k": 200.0,
+          "max_k": 331.2122497558594,
+          "min_k": 328.4000549316406,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 21,
+          "lower_bound_k": 200.0,
+          "max_k": 332.6288757324219,
+          "min_k": 330.2810363769531,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 22,
+          "lower_bound_k": 200.0,
+          "max_k": 334.57855224609375,
+          "min_k": 332.0448913574219,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 23,
+          "lower_bound_k": 200.0,
+          "max_k": 336.5746765136719,
+          "min_k": 334.03857421875,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 24,
+          "lower_bound_k": 200.0,
+          "max_k": 338.8003845214844,
+          "min_k": 336.9840087890625,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 25,
+          "lower_bound_k": 200.0,
+          "max_k": 341.3502502441406,
+          "min_k": 339.6704406738281,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 26,
+          "lower_bound_k": 200.0,
+          "max_k": 343.668212890625,
+          "min_k": 341.915283203125,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 27,
+          "lower_bound_k": 200.0,
+          "max_k": 345.8975524902344,
+          "min_k": 343.91497802734375,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 28,
+          "lower_bound_k": 200.0,
+          "max_k": 348.8683166503906,
+          "min_k": 347.4224853515625,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 29,
+          "lower_bound_k": 200.0,
+          "max_k": 353.2446594238281,
+          "min_k": 351.3319396972656,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 30,
+          "lower_bound_k": 250.0,
+          "max_k": 357.7670593261719,
+          "min_k": 354.46746826171875,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 31,
+          "lower_bound_k": 250.0,
+          "max_k": 363.0331726074219,
+          "min_k": 358.3468322753906,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 32,
+          "lower_bound_k": 250.0,
+          "max_k": 370.5113525390625,
+          "min_k": 365.7898254394531,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 33,
+          "lower_bound_k": 250.0,
+          "max_k": 378.5237731933594,
+          "min_k": 373.3733825683594,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 34,
+          "lower_bound_k": 250.0,
+          "max_k": 386.79095458984375,
+          "min_k": 381.09014892578125,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 35,
+          "lower_bound_k": 250.0,
+          "max_k": 395.2350158691406,
+          "min_k": 388.935302734375,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 36,
+          "lower_bound_k": 250.0,
+          "max_k": 405.6576232910156,
+          "min_k": 399.2164306640625,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 37,
+          "lower_bound_k": 250.0,
+          "max_k": 418.0309143066406,
+          "min_k": 411.8979187011719,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 38,
+          "lower_bound_k": 250.0,
+          "max_k": 430.7693176269531,
+          "min_k": 424.9598693847656,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 39,
+          "lower_bound_k": 250.0,
+          "max_k": 443.88299560546875,
+          "min_k": 438.2367248535156,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 40,
+          "lower_bound_k": 250.0,
+          "max_k": 457.3830261230469,
+          "min_k": 451.8330993652344,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 41,
+          "lower_bound_k": 250.0,
+          "max_k": 471.2804260253906,
+          "min_k": 465.8340148925781,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 42,
+          "lower_bound_k": 250.0,
+          "max_k": 485.58673095703125,
+          "min_k": 480.248046875,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 43,
+          "lower_bound_k": 250.0,
+          "max_k": 500.31317138671875,
+          "min_k": 495.09039306640625,
+          "upper_bound_k": 700.0
+        }
+      ],
+      "step": 9
+    },
+    {
+      "lead_seconds": 100.0,
+      "levels": [
+        {
+          "bounded": true,
+          "level": 0,
+          "lower_bound_k": 200.0,
+          "max_k": 309.6283264160156,
+          "min_k": 290.33612060546875,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 1,
+          "lower_bound_k": 200.0,
+          "max_k": 310.0089111328125,
+          "min_k": 290.58837890625,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 2,
+          "lower_bound_k": 200.0,
+          "max_k": 310.4073791503906,
+          "min_k": 290.7367858886719,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 3,
+          "lower_bound_k": 200.0,
+          "max_k": 310.7135925292969,
+          "min_k": 290.9926452636719,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 4,
+          "lower_bound_k": 200.0,
+          "max_k": 311.0894775390625,
+          "min_k": 291.1641540527344,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 5,
+          "lower_bound_k": 200.0,
+          "max_k": 311.5447998046875,
+          "min_k": 291.1636657714844,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 6,
+          "lower_bound_k": 200.0,
+          "max_k": 312.0874328613281,
+          "min_k": 291.1533203125,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 7,
+          "lower_bound_k": 200.0,
+          "max_k": 312.72222900390625,
+          "min_k": 291.5904541015625,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 8,
+          "lower_bound_k": 200.0,
+          "max_k": 313.450439453125,
+          "min_k": 292.4975891113281,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 9,
+          "lower_bound_k": 200.0,
+          "max_k": 314.2685546875,
+          "min_k": 293.37158203125,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 10,
+          "lower_bound_k": 200.0,
+          "max_k": 315.2610168457031,
+          "min_k": 296.9728088378906,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 11,
+          "lower_bound_k": 200.0,
+          "max_k": 316.52978515625,
+          "min_k": 301.01580810546875,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 12,
+          "lower_bound_k": 200.0,
+          "max_k": 317.8970947265625,
+          "min_k": 305.4572448730469,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 13,
+          "lower_bound_k": 200.0,
+          "max_k": 319.3632507324219,
+          "min_k": 309.3223571777344,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 14,
+          "lower_bound_k": 200.0,
+          "max_k": 320.9476318359375,
+          "min_k": 311.6030578613281,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 15,
+          "lower_bound_k": 200.0,
+          "max_k": 322.60614013671875,
+          "min_k": 314.0812072753906,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 16,
+          "lower_bound_k": 200.0,
+          "max_k": 324.37567138671875,
+          "min_k": 316.7547302246094,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 17,
+          "lower_bound_k": 200.0,
+          "max_k": 326.2488098144531,
+          "min_k": 319.5234375,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 18,
+          "lower_bound_k": 200.0,
+          "max_k": 328.17724609375,
+          "min_k": 322.7403259277344,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 19,
+          "lower_bound_k": 200.0,
+          "max_k": 329.79803466796875,
+          "min_k": 325.9116516113281,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 20,
+          "lower_bound_k": 200.0,
+          "max_k": 331.2122497558594,
+          "min_k": 328.4000549316406,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 21,
+          "lower_bound_k": 200.0,
+          "max_k": 332.6288757324219,
+          "min_k": 330.2810363769531,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 22,
+          "lower_bound_k": 200.0,
+          "max_k": 334.57855224609375,
+          "min_k": 332.0448913574219,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 23,
+          "lower_bound_k": 200.0,
+          "max_k": 336.5746765136719,
+          "min_k": 334.03857421875,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 24,
+          "lower_bound_k": 200.0,
+          "max_k": 338.8003845214844,
+          "min_k": 336.9840087890625,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 25,
+          "lower_bound_k": 200.0,
+          "max_k": 341.3502502441406,
+          "min_k": 339.6704406738281,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 26,
+          "lower_bound_k": 200.0,
+          "max_k": 343.668212890625,
+          "min_k": 341.915283203125,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 27,
+          "lower_bound_k": 200.0,
+          "max_k": 345.8975524902344,
+          "min_k": 343.91497802734375,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 28,
+          "lower_bound_k": 200.0,
+          "max_k": 348.9061279296875,
+          "min_k": 347.4224853515625,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 29,
+          "lower_bound_k": 200.0,
+          "max_k": 353.30072021484375,
+          "min_k": 351.3319396972656,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 30,
+          "lower_bound_k": 250.0,
+          "max_k": 357.7670593261719,
+          "min_k": 354.46746826171875,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 31,
+          "lower_bound_k": 250.0,
+          "max_k": 363.0331726074219,
+          "min_k": 358.3468322753906,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 32,
+          "lower_bound_k": 250.0,
+          "max_k": 370.5113525390625,
+          "min_k": 365.7898254394531,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 33,
+          "lower_bound_k": 250.0,
+          "max_k": 378.5237731933594,
+          "min_k": 373.3733825683594,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 34,
+          "lower_bound_k": 250.0,
+          "max_k": 386.79095458984375,
+          "min_k": 381.09014892578125,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 35,
+          "lower_bound_k": 250.0,
+          "max_k": 395.2350158691406,
+          "min_k": 388.935302734375,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 36,
+          "lower_bound_k": 250.0,
+          "max_k": 405.6576232910156,
+          "min_k": 399.2164306640625,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 37,
+          "lower_bound_k": 250.0,
+          "max_k": 418.0309143066406,
+          "min_k": 411.8979187011719,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 38,
+          "lower_bound_k": 250.0,
+          "max_k": 430.7693176269531,
+          "min_k": 424.9598693847656,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 39,
+          "lower_bound_k": 250.0,
+          "max_k": 443.88299560546875,
+          "min_k": 438.2367248535156,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 40,
+          "lower_bound_k": 250.0,
+          "max_k": 457.3830261230469,
+          "min_k": 451.8330993652344,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 41,
+          "lower_bound_k": 250.0,
+          "max_k": 471.2804260253906,
+          "min_k": 465.8340148925781,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 42,
+          "lower_bound_k": 250.0,
+          "max_k": 485.58673095703125,
+          "min_k": 480.248046875,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 43,
+          "lower_bound_k": 250.0,
+          "max_k": 500.31317138671875,
+          "min_k": 495.09039306640625,
+          "upper_bound_k": 700.0
+        }
+      ],
+      "step": 10
+    },
+    {
+      "lead_seconds": 110.0,
+      "levels": [
+        {
+          "bounded": true,
+          "level": 0,
+          "lower_bound_k": 200.0,
+          "max_k": 309.6298522949219,
+          "min_k": 290.3361511230469,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 1,
+          "lower_bound_k": 200.0,
+          "max_k": 310.0082092285156,
+          "min_k": 290.58837890625,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 2,
+          "lower_bound_k": 200.0,
+          "max_k": 310.40728759765625,
+          "min_k": 290.7367858886719,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 3,
+          "lower_bound_k": 200.0,
+          "max_k": 310.7135925292969,
+          "min_k": 290.9926452636719,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 4,
+          "lower_bound_k": 200.0,
+          "max_k": 311.0894775390625,
+          "min_k": 291.1641540527344,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 5,
+          "lower_bound_k": 200.0,
+          "max_k": 311.5447998046875,
+          "min_k": 291.1636657714844,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 6,
+          "lower_bound_k": 200.0,
+          "max_k": 312.0874328613281,
+          "min_k": 291.1533203125,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 7,
+          "lower_bound_k": 200.0,
+          "max_k": 312.72222900390625,
+          "min_k": 291.5904541015625,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 8,
+          "lower_bound_k": 200.0,
+          "max_k": 313.450439453125,
+          "min_k": 292.4975891113281,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 9,
+          "lower_bound_k": 200.0,
+          "max_k": 314.2685546875,
+          "min_k": 293.37158203125,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 10,
+          "lower_bound_k": 200.0,
+          "max_k": 315.2610168457031,
+          "min_k": 296.9728088378906,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 11,
+          "lower_bound_k": 200.0,
+          "max_k": 316.52978515625,
+          "min_k": 301.01580810546875,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 12,
+          "lower_bound_k": 200.0,
+          "max_k": 317.8970947265625,
+          "min_k": 305.4572448730469,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 13,
+          "lower_bound_k": 200.0,
+          "max_k": 319.3632507324219,
+          "min_k": 309.3223571777344,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 14,
+          "lower_bound_k": 200.0,
+          "max_k": 320.9476318359375,
+          "min_k": 311.6030578613281,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 15,
+          "lower_bound_k": 200.0,
+          "max_k": 322.60614013671875,
+          "min_k": 314.0812072753906,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 16,
+          "lower_bound_k": 200.0,
+          "max_k": 324.37567138671875,
+          "min_k": 316.7547302246094,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 17,
+          "lower_bound_k": 200.0,
+          "max_k": 326.2488098144531,
+          "min_k": 319.5234375,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 18,
+          "lower_bound_k": 200.0,
+          "max_k": 328.17724609375,
+          "min_k": 322.7403259277344,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 19,
+          "lower_bound_k": 200.0,
+          "max_k": 329.79803466796875,
+          "min_k": 325.9116516113281,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 20,
+          "lower_bound_k": 200.0,
+          "max_k": 331.2122497558594,
+          "min_k": 328.4000549316406,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 21,
+          "lower_bound_k": 200.0,
+          "max_k": 332.6288757324219,
+          "min_k": 330.2810363769531,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 22,
+          "lower_bound_k": 200.0,
+          "max_k": 334.57855224609375,
+          "min_k": 332.0448913574219,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 23,
+          "lower_bound_k": 200.0,
+          "max_k": 336.5746765136719,
+          "min_k": 334.03857421875,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 24,
+          "lower_bound_k": 200.0,
+          "max_k": 338.8003845214844,
+          "min_k": 336.9840087890625,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 25,
+          "lower_bound_k": 200.0,
+          "max_k": 341.3502502441406,
+          "min_k": 339.6704406738281,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": true,
+          "level": 26,
+          "lower_bound_k": 200.0,
+          "max_k": 343.668212890625,
+          "min_k": 341.915283203125,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": false,
+          "level": 27,
+          "lower_bound_k": 200.0,
+          "max_k": 1527306518528.0,
+          "min_k": 343.91497802734375,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": false,
+          "level": 28,
+          "lower_bound_k": 200.0,
+          "max_k": 2604313608192.0,
+          "min_k": 347.4224853515625,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": false,
+          "level": 29,
+          "lower_bound_k": 200.0,
+          "max_k": 1561677266944.0,
+          "min_k": 351.3319396972656,
+          "upper_bound_k": 400.0
+        },
+        {
+          "bounded": false,
+          "level": 30,
+          "lower_bound_k": 250.0,
+          "max_k": 29304287232.0,
+          "min_k": 354.46746826171875,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 31,
+          "lower_bound_k": 250.0,
+          "max_k": 363.0331726074219,
+          "min_k": 358.3468322753906,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 32,
+          "lower_bound_k": 250.0,
+          "max_k": 370.5113525390625,
+          "min_k": 365.7898254394531,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 33,
+          "lower_bound_k": 250.0,
+          "max_k": 378.5237731933594,
+          "min_k": 373.3733825683594,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 34,
+          "lower_bound_k": 250.0,
+          "max_k": 386.79095458984375,
+          "min_k": 381.09014892578125,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 35,
+          "lower_bound_k": 250.0,
+          "max_k": 395.2350158691406,
+          "min_k": 388.935302734375,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 36,
+          "lower_bound_k": 250.0,
+          "max_k": 405.6576232910156,
+          "min_k": 399.2164306640625,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 37,
+          "lower_bound_k": 250.0,
+          "max_k": 418.0309143066406,
+          "min_k": 411.8979187011719,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 38,
+          "lower_bound_k": 250.0,
+          "max_k": 430.7693176269531,
+          "min_k": 424.9598693847656,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 39,
+          "lower_bound_k": 250.0,
+          "max_k": 443.88299560546875,
+          "min_k": 438.2367248535156,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 40,
+          "lower_bound_k": 250.0,
+          "max_k": 457.3830261230469,
+          "min_k": 451.8330993652344,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 41,
+          "lower_bound_k": 250.0,
+          "max_k": 471.2804260253906,
+          "min_k": 465.8340148925781,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 42,
+          "lower_bound_k": 250.0,
+          "max_k": 485.58673095703125,
+          "min_k": 480.248046875,
+          "upper_bound_k": 700.0
+        },
+        {
+          "bounded": true,
+          "level": 43,
+          "lower_bound_k": 250.0,
+          "max_k": 500.31317138671875,
+          "min_k": 495.09039306640625,
+          "upper_bound_k": 700.0
+        }
+      ],
+      "step": 11
+    }
+  ],
+  "status": "THETA_BOUND_VIOLATION",
+  "steps_completed": 11,
+  "target_steps": 360,
+  "theta_bound_policy": {
+    "lower_30_levels_k": [
+      200.0,
+      400.0
+    ],
+    "upper_14_levels_k": [
+      250.0,
+      700.0
+    ]
+  },
+  "wall_time_s": 141.79966941299972
+}

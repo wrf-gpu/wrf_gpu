@@ -1,0 +1,10 @@
+{
+  "artifact_type": "m6b_v3_localize_20260509_summary",
+  "proofs": [
+    ".agent/sprints/2026-05-26-m6b-coftz-theta-fix/baseline/proof_theta_explosion.json",
+    ".agent/sprints/2026-05-26-m6b-coftz-theta-fix/baseline/proof_wrf_reference_theta.json",
+    ".agent/sprints/2026-05-26-m6b-coftz-theta-fix/baseline/proof_math_vs_ic.json",
+    ".agent/sprints/2026-05-26-m6b-coftz-theta-fix/baseline/localization_memo.md"
+  ],
+  "status": "MATH:coftz"
+}

@@ -843,6 +843,7 @@ def _mpas_recurrence_vertical_update(
         dz,
         dt=dt,
         epssm=epssm,
+        theta_coefficient=theta_base,
     )
     resm = (1.0 - float(epssm)) / (1.0 + float(epssm))
 
