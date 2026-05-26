@@ -1,0 +1,115 @@
+{
+  "artifact_type": "m6_guard_disabled_inventory",
+  "created_utc": "2026-05-26T05:55:06.880394+00:00",
+  "guards": [
+    {
+      "disabled_by": "OperationalNamelist.disable_guards",
+      "file": "src/gpuwrf/runtime/operational_mode.py",
+      "guarded_fields": [
+        "qv",
+        "qc",
+        "qr",
+        "qi",
+        "qs",
+        "qg"
+      ],
+      "kind": "_valid_mixing_ratio",
+      "line": 192
+    },
+    {
+      "disabled_by": "OperationalNamelist.disable_guards",
+      "file": "src/gpuwrf/runtime/operational_mode.py",
+      "guarded_fields": [
+        "u",
+        "v",
+        "w",
+        "theta",
+        "p",
+        "ph",
+        "mu"
+      ],
+      "kind": "_finite_or_origin",
+      "line": 201
+    },
+    {
+      "disabled_by": "OperationalNamelist.disable_guards",
+      "file": "src/gpuwrf/runtime/operational_mode.py",
+      "guarded_fields": [
+        "v"
+      ],
+      "kind": "_m6b_acoustic_tendencies",
+      "line": 225
+    },
+    {
+      "disabled_by": "OperationalNamelist.disable_guards",
+      "file": "src/gpuwrf/runtime/operational_mode.py",
+      "guarded_fields": [
+        "theta"
+      ],
+      "kind": "theta hard projection",
+      "line": 514
+    },
+    {
+      "disabled_by": "OperationalNamelist.disable_guards",
+      "file": "src/gpuwrf/runtime/operational_mode.py",
+      "guarded_fields": [
+        "qv",
+        "qc",
+        "qr",
+        "qi",
+        "qs",
+        "qg"
+      ],
+      "kind": "qv/qc/qr/qi/qs/qg per-RK projection",
+      "line": 515
+    },
+    {
+      "disabled_by": "OperationalNamelist.disable_guards",
+      "file": "src/gpuwrf/runtime/operational_mode.py",
+      "guarded_fields": [
+        "mu",
+        "mu_total",
+        "mu_perturbation"
+      ],
+      "kind": "mu family hard projection",
+      "line": 521
+    },
+    {
+      "disabled_by": "OperationalNamelist.disable_guards",
+      "file": "src/gpuwrf/runtime/operational_mode.py",
+      "guarded_fields": [
+        "qv",
+        "qc",
+        "qr",
+        "qi",
+        "qs",
+        "qg",
+        "theta"
+      ],
+      "kind": "thompson_adapter",
+      "line": 527
+    },
+    {
+      "disabled_by": "OperationalNamelist.disable_guards",
+      "file": "src/gpuwrf/runtime/operational_mode.py",
+      "guarded_fields": [
+        "u",
+        "v",
+        "w",
+        "theta",
+        "p",
+        "ph",
+        "mu",
+        "p_total",
+        "ph_total",
+        "mu_total",
+        "p_perturbation",
+        "ph_perturbation",
+        "mu_perturbation"
+      ],
+      "kind": "post-boundary _finite_or_origin family",
+      "line": 539
+    }
+  ],
+  "operational_mode": "src/gpuwrf/runtime/operational_mode.py"
+}
