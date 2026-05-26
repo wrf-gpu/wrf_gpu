@@ -1,0 +1,11 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.11, pytest-9.0.3, pluggy-1.5.0 -- /home/enric/miniconda3/bin/python
+cachedir: .pytest_cache
+rootdir: /tmp/wrf_gpu2_hpgfix
+configfile: pyproject.toml
+plugins: zarr-3.1.6, anyio-4.12.1
+collecting ... collected 1 item
+
+tests/test_m6_horizontal_pressure_gradient_fix.py::test_step49_horizontal_pressure_gradient_is_velocity_decoupled PASSED [100%]
+
+============================== 1 passed in 12.10s ==============================
