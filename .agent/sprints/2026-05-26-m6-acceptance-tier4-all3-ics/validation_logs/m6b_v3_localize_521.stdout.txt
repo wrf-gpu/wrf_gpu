@@ -1,0 +1,12 @@
+{
+  "artifact_type": "m6b_v3_521_localization_summary",
+  "proofs": [
+    ".agent/sprints/2026-05-26-m6-acceptance-tier4-all3-ics/v3_521/proof_step46_violation.json",
+    ".agent/sprints/2026-05-26-m6-acceptance-tier4-all3-ics/v3_521/proof_wrf_reference_compare.json",
+    ".agent/sprints/2026-05-26-m6-acceptance-tier4-all3-ics/v3_521/proof_operator_decomposition.json",
+    ".agent/sprints/2026-05-26-m6-acceptance-tier4-all3-ics/v3_521/proof_first_divergent_step.json",
+    ".agent/sprints/2026-05-26-m6-acceptance-tier4-all3-ics/v3_521/localization_memo.md"
+  ],
+  "status": "OK",
+  "verdict": "NAMED-FIX:boundary_application"
+}
