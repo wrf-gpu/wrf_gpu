@@ -1,0 +1,70 @@
+{
+  "artifact_type": "m6b_dycore_rk_acoustic_fix_validation",
+  "status": "BLOCKED_PARTIAL",
+  "summary": "The V runaway named in the contract is fixed through step 46: fixed/proof_operator_decomposition.json reports dycore_rk_acoustic = 0.0 m/s/s and fixed/proof_step46_violation.json reports |V|max = 11.480101585388184 m/s. Full sprint acceptance is not satisfied because the 360-step audit fails at step 49 on theta upper bound and later nonfinites, the multi-step parity probe fails from step 2 in theta/t_2ave/ph_tend while U/V remain bitwise equal, and pytest -x fails on a missing external fixture file.",
+  "results": {
+    "literal_b6_command": {
+      "command": "taskset -c 0-3 python scripts/m6b6_coupled_step_compare.py",
+      "exit_code": 2,
+      "result": "FAIL_CLI",
+      "reason": "--tier is required unless --synthetic-dryrun is set"
+    },
+    "b6_corrected_all_tiers": {
+      "command": "taskset -c 0-3 python scripts/m6b6_coupled_step_compare.py --tier all",
+      "exit_code": 0,
+      "result": "PASS",
+      "key_output": "passed=true; outcome=SEVENTH-COUPLED-STEP-PARITY-ACHIEVED; diverging_field_count=0"
+    },
+    "literal_multi_step_command": {
+      "command": "taskset -c 0-3 python scripts/m6b_real_ic_operational_compare.py --steps 2,5,10",
+      "exit_code": 2,
+      "result": "FAIL_CLI",
+      "reason": "argument --steps rejects comma-separated value"
+    },
+    "multi_step_2": {
+      "command": "taskset -c 0-3 python scripts/m6b_real_ic_operational_compare.py --steps 2",
+      "exit_code": 2,
+      "result": "FAIL",
+      "key_output": "step 1 max_abs_delta=0.0; step 2 all_fields_finite=false; theta/t_2ave/ph_tend max_abs_delta=1e300; v max_abs_delta=0.0"
+    },
+    "multi_step_5": {
+      "command": "taskset -c 0-3 python scripts/m6b_real_ic_operational_compare.py --steps 5",
+      "exit_code": 2,
+      "result": "FAIL",
+      "key_output": "same step-2 theta/t_2ave/ph_tend nonfinite failure; v max_abs_delta=0.0 through reported steps"
+    },
+    "multi_step_10": {
+      "command": "taskset -c 0-3 python scripts/m6b_real_ic_operational_compare.py --steps 10",
+      "exit_code": 2,
+      "result": "FAIL",
+      "key_output": "same step-2 theta/t_2ave/ph_tend nonfinite failure; v max_abs_delta=0.0 through reported steps"
+    },
+    "fixed_localizer_step46": {
+      "command": "taskset -c 0-3 python scripts/m6b_v3_localize_521.py --run-id 20260521_18z_l3_24h_20260522T072630Z --output .agent/sprints/2026-05-26-m6b-dycore-rk-acoustic-fix/fixed/",
+      "exit_code": 0,
+      "result": "PASS_FOR_V_DEFECT",
+      "proofs": [
+        ".agent/sprints/2026-05-26-m6b-dycore-rk-acoustic-fix/fixed/proof_step46_violation.json",
+        ".agent/sprints/2026-05-26-m6b-dycore-rk-acoustic-fix/fixed/proof_operator_decomposition.json"
+      ]
+    },
+    "custom_360_step_bounds": {
+      "command": "custom 360-step bounds audit using scripts/m6b_v3_localize_521.py internals",
+      "exit_code": 0,
+      "result": "FAIL",
+      "proof": ".agent/sprints/2026-05-26-m6b-dycore-rk-acoustic-fix/proof_360_step_bounds.json",
+      "key_output": "first_bad_step=49 due theta_upper_14_max_k=1343.5467529296875; V remains bounded with max |V|=11.480101585388184 before nonfinites"
+    },
+    "pytest_all": {
+      "command": "taskset -c 0-3 pytest -x",
+      "exit_code": 1,
+      "result": "FAIL",
+      "key_output": "tests/test_canary_wrf_fixture.py::test_full_external_file_exists_at_external_uri missing data/fixtures/canary-wrf-d01-20260518T18-tslice-v1/full.npz"
+    },
+    "regression_test": {
+      "command": "taskset -c 0-3 pytest tests/test_m6b_dycore_rk_acoustic_fix.py -v",
+      "exit_code": 0,
+      "result": "PASS"
+    }
+  }
+}

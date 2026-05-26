@@ -199,6 +199,12 @@ def _with_save_family(carry: OperationalCarry, state: State, ww: jax.Array | Non
     )
 
 
+def _m6b_acoustic_tendencies(tendencies: Tendencies, base: Tendencies) -> Tendencies:
+    """Keep unvalidated reduced-dycore V self-advection out of M6b acoustic RK."""
+
+    return tendencies.replace(v=base.v)
+
+
 def _acoustic_core_state(carry: OperationalCarry, namelist: OperationalNamelist) -> AcousticCoreState:
     state = carry.state
     theta_offset = _theta_base_offset(state.theta)
@@ -345,6 +351,7 @@ def _rk_scan_step(carry: OperationalCarry, namelist: OperationalNamelist, *, deb
     def advance_stage(stage_carry: OperationalCarry, factor: float, acoustic_substeps: int) -> OperationalCarry:
         haloed = apply_halo(stage_carry.state, halo_spec(namelist.grid))
         tendencies = compute_advection_tendencies(haloed, namelist.tendencies, namelist.grid)
+        tendencies = _m6b_acoustic_tendencies(tendencies, namelist.tendencies)
         candidate = add_scaled_tendencies(origin, tendencies, float(namelist.dt_s) * float(factor))
         stage_carry = _with_save_family(stage_carry.replace(state=candidate), candidate)
         stage_carry = _acoustic_scan(
