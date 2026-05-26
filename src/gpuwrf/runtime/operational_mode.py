@@ -55,6 +55,7 @@ class OperationalNamelist:
     radiation_cadence_steps: int = 60
     boundary_config: BoundaryConfig = DEFAULT_BOUNDARY_CONFIG
     use_vertical_solver: bool = True
+    disable_guards: bool = False
 
     @classmethod
     def from_grid(
@@ -68,6 +69,7 @@ class OperationalNamelist:
         radiation_cadence_steps: int = 60,
         boundary_config: BoundaryConfig = DEFAULT_BOUNDARY_CONFIG,
         use_vertical_solver: bool = True,
+        disable_guards: bool = False,
     ) -> "OperationalNamelist":
         """Build a namelist using resident zero tendencies and flat metrics."""
 
@@ -91,6 +93,7 @@ class OperationalNamelist:
             radiation_cadence_steps=radiation_cadence_steps,
             boundary_config=boundary_config,
             use_vertical_solver=use_vertical_solver,
+            disable_guards=disable_guards,
         )
 
     def tree_flatten(self):
@@ -107,6 +110,7 @@ class OperationalNamelist:
             int(self.radiation_cadence_steps),
             self.boundary_config,
             bool(self.use_vertical_solver),
+            bool(self.disable_guards),
         )
         return children, aux
 
@@ -125,6 +129,7 @@ class OperationalNamelist:
             radiation_cadence_steps,
             boundary_config,
             use_vertical_solver,
+            disable_guards,
         ) = aux
         return cls(
             grid=grid,
@@ -140,6 +145,7 @@ class OperationalNamelist:
             radiation_cadence_steps=radiation_cadence_steps,
             boundary_config=boundary_config,
             use_vertical_solver=use_vertical_solver,
+            disable_guards=disable_guards,
         )
 
 
@@ -368,7 +374,8 @@ def _rk_scan_step(carry: OperationalCarry, namelist: OperationalNamelist, *, deb
     def advance_stage(stage_carry: OperationalCarry, factor: float, acoustic_substeps: int) -> OperationalCarry:
         haloed = apply_halo(stage_carry.state, halo_spec(namelist.grid))
         tendencies = compute_advection_tendencies(haloed, namelist.tendencies, namelist.grid)
-        tendencies = _m6b_acoustic_tendencies(tendencies, namelist.tendencies)
+        if not bool(namelist.disable_guards):
+            tendencies = _m6b_acoustic_tendencies(tendencies, namelist.tendencies)
         candidate = add_scaled_tendencies(origin, tendencies, float(namelist.dt_s) * float(factor))
         stage_carry = _with_save_family(stage_carry.replace(state=candidate), candidate)
         stage_carry = _acoustic_scan(
@@ -498,23 +505,26 @@ def _physics_boundary_step(
 ) -> OperationalCarry:
     physical_origin = carry.state
     carry = _rk_scan_step(carry, namelist, debug=debug)
-    # The controlled parity lane verifies the promoted acoustic scratch, but
-    # full-domain operational theta/mu replacement is not yet a bounded
-    # physical-state contract. Keep the prior carry-fix projection here.
-    next_state = carry.state.replace(
-        theta=physical_origin.theta,
-        qv=_valid_mixing_ratio(carry.state.qv, physical_origin.qv),
-        qc=_valid_mixing_ratio(carry.state.qc, physical_origin.qc),
-        qr=_valid_mixing_ratio(carry.state.qr, physical_origin.qr),
-        qi=_valid_mixing_ratio(carry.state.qi, physical_origin.qi),
-        qs=_valid_mixing_ratio(carry.state.qs, physical_origin.qs),
-        qg=_valid_mixing_ratio(carry.state.qg, physical_origin.qg),
-        mu=physical_origin.mu,
-        mu_total=physical_origin.mu_total,
-        mu_perturbation=physical_origin.mu_perturbation,
-    )
+    next_state = carry.state
+    if not bool(namelist.disable_guards):
+        # The controlled parity lane verifies the promoted acoustic scratch, but
+        # full-domain operational theta/mu replacement is not yet a bounded
+        # physical-state contract. Keep the prior carry-fix projection here.
+        next_state = next_state.replace(
+            theta=physical_origin.theta,
+            qv=_valid_mixing_ratio(next_state.qv, physical_origin.qv),
+            qc=_valid_mixing_ratio(next_state.qc, physical_origin.qc),
+            qr=_valid_mixing_ratio(next_state.qr, physical_origin.qr),
+            qi=_valid_mixing_ratio(next_state.qi, physical_origin.qi),
+            qs=_valid_mixing_ratio(next_state.qs, physical_origin.qs),
+            qg=_valid_mixing_ratio(next_state.qg, physical_origin.qg),
+            mu=physical_origin.mu,
+            mu_total=physical_origin.mu_total,
+            mu_perturbation=physical_origin.mu_perturbation,
+        )
     if bool(namelist.run_physics):
-        next_state = thompson_adapter(next_state, float(namelist.dt_s))
+        if not bool(namelist.disable_guards):
+            next_state = thompson_adapter(next_state, float(namelist.dt_s))
         next_state = mynn_adapter(next_state, float(namelist.dt_s), namelist.grid)
         next_state = surface_adapter(next_state, float(namelist.dt_s))
         if run_radiation:
@@ -522,22 +532,25 @@ def _physics_boundary_step(
     if bool(namelist.run_boundary):
         lead_seconds = step_index.astype(jnp.float64) * float(namelist.dt_s)
         bounded = apply_lateral_boundaries(next_state, lead_seconds, float(namelist.dt_s), namelist.boundary_config)
-        next_state = bounded.replace(
-            u=_finite_or_origin(bounded.u, physical_origin.u),
-            v=_finite_or_origin(bounded.v, physical_origin.v),
-            w=_finite_or_origin(bounded.w, physical_origin.w),
-            theta=_finite_or_origin(bounded.theta, physical_origin.theta),
-            qv=_valid_mixing_ratio(bounded.qv, physical_origin.qv),
-            p=_finite_or_origin(bounded.p, physical_origin.p),
-            ph=_finite_or_origin(bounded.ph, physical_origin.ph),
-            mu=_finite_or_origin(bounded.mu, physical_origin.mu),
-            p_total=_finite_or_origin(bounded.p_total, physical_origin.p_total),
-            ph_total=_finite_or_origin(bounded.ph_total, physical_origin.ph_total),
-            mu_total=_finite_or_origin(bounded.mu_total, physical_origin.mu_total),
-            p_perturbation=_finite_or_origin(bounded.p_perturbation, physical_origin.p_perturbation),
-            ph_perturbation=_finite_or_origin(bounded.ph_perturbation, physical_origin.ph_perturbation),
-            mu_perturbation=_finite_or_origin(bounded.mu_perturbation, physical_origin.mu_perturbation),
-        )
+        if bool(namelist.disable_guards):
+            next_state = bounded
+        else:
+            next_state = bounded.replace(
+                u=_finite_or_origin(bounded.u, physical_origin.u),
+                v=_finite_or_origin(bounded.v, physical_origin.v),
+                w=_finite_or_origin(bounded.w, physical_origin.w),
+                theta=_finite_or_origin(bounded.theta, physical_origin.theta),
+                qv=_valid_mixing_ratio(bounded.qv, physical_origin.qv),
+                p=_finite_or_origin(bounded.p, physical_origin.p),
+                ph=_finite_or_origin(bounded.ph, physical_origin.ph),
+                mu=_finite_or_origin(bounded.mu, physical_origin.mu),
+                p_total=_finite_or_origin(bounded.p_total, physical_origin.p_total),
+                ph_total=_finite_or_origin(bounded.ph_total, physical_origin.ph_total),
+                mu_total=_finite_or_origin(bounded.mu_total, physical_origin.mu_total),
+                p_perturbation=_finite_or_origin(bounded.p_perturbation, physical_origin.p_perturbation),
+                ph_perturbation=_finite_or_origin(bounded.ph_perturbation, physical_origin.ph_perturbation),
+                mu_perturbation=_finite_or_origin(bounded.mu_perturbation, physical_origin.mu_perturbation),
+            )
     next_state = _enforce_operational_precision(next_state)
     return carry.replace(state=next_state)
 
