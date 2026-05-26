@@ -1,0 +1,11 @@
+{
+  "all_fields_finite_step2": false,
+  "artifact_type": "m6b_operational_theta_baseline_reproduction",
+  "baseline_command": "taskset -c 0-3 python scripts/m6b_real_ic_operational_compare.py --steps 2",
+  "observed_script_status": "FAIL",
+  "status": "PASS",
+  "step2_largest_bad_field": "theta",
+  "step2_ph_tend_max_abs_delta": 1e+300,
+  "step2_t_2ave_max_abs_delta": 1e+300,
+  "step2_theta_max_abs_delta": 1e+300
+}

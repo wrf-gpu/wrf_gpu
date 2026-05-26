@@ -1,0 +1,87 @@
+{
+  "artifact_type": "m6b_operational_theta_fix_validation",
+  "b6": {
+    "outcome": "SEVENTH-COUPLED-STEP-PARITY-ACHIEVED",
+    "passed": true
+  },
+  "proof_paths": [
+    ".agent/sprints/2026-05-26-m6b-operational-theta-fix/fixed_step2.txt",
+    ".agent/sprints/2026-05-26-m6b-operational-theta-fix/fixed_step5.txt",
+    ".agent/sprints/2026-05-26-m6b-operational-theta-fix/fixed_step10.txt",
+    ".agent/sprints/2026-05-26-m6b-operational-theta-fix/b6_coupled_step_compare.txt",
+    ".agent/sprints/2026-05-26-m6b-operational-theta-fix/v3_521.txt",
+    ".agent/sprints/2026-05-26-m6b-operational-theta-fix/v3_509.txt",
+    ".agent/sprints/2026-05-26-m6b-operational-theta-fix/pytest_operational_theta_fix.txt",
+    ".agent/sprints/2026-05-26-m6b-operational-theta-fix/pytest_x.txt"
+  ],
+  "pytest_x": {
+    "output_tail": [
+      "tests/test_analytic_fixtures.py ........                                 [  1%]",
+      "tests/test_canary_wrf_fixture.py ....F",
+      "",
+      "=================================== FAILURES ===================================",
+      "________________ test_full_external_file_exists_at_external_uri ________________",
+      "",
+      "    def test_full_external_file_exists_at_external_uri() -> None:",
+      "        data = load_manifest(MANIFEST)",
+      "        full = ROOT / data[\"external_uri\"]",
+      "    ",
+      ">       assert full.is_file()",
+      "E       AssertionError: assert False",
+      "E        +  where False = is_file()",
+      "E        +    where is_file = PosixPath('/tmp/wrf_gpu2_optheta/data/fixtures/canary-wrf-d01-20260518T18-tslice-v1/full.npz').is_file",
+      "",
+      "tests/test_canary_wrf_fixture.py:101: AssertionError",
+      "=========================== short test summary info ============================",
+      "FAILED tests/test_canary_wrf_fixture.py::test_full_external_file_exists_at_external_uri",
+      "!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!",
+      "========================= 1 failed, 18 passed in 3.15s ========================="
+    ],
+    "status": "EXPECTED_EXTERNAL_FIXTURE_FAILURE"
+  },
+  "real_ic_parity": {
+    "10": {
+      "final_all_fields_finite": true,
+      "final_max_abs_delta": 0.0,
+      "status": "PASS"
+    },
+    "2": {
+      "final_all_fields_finite": true,
+      "final_max_abs_delta": 0.0,
+      "status": "PASS"
+    },
+    "5": {
+      "final_all_fields_finite": true,
+      "final_max_abs_delta": 0.0,
+      "status": "PASS"
+    }
+  },
+  "regression_test": {
+    "output_tail": [
+      "rootdir: /tmp/wrf_gpu2_optheta",
+      "configfile: pyproject.toml",
+      "plugins: zarr-3.1.6, anyio-4.12.1",
+      "collecting ... collected 1 item",
+      "",
+      "tests/test_m6b_operational_theta_fix.py::test_step2_operational_theta_stays_finite_after_acoustic_substep PASSED [100%]",
+      "",
+      "============================== 1 passed in 56.42s =============================="
+    ],
+    "passed": true
+  },
+  "status": "BLOCKED_ACCEPTANCE_NOT_MET",
+  "summary": "2/5/10 real-IC CPU parity and B6 pass; 20260521 localizer passes bounded step46 path; 20260509 1h replay still fails at step 11 with MATH:coftz.",
+  "v3_509": {
+    "proofs": [
+      ".agent/sprints/2026-05-26-m6b-operational-theta-fix/v3_509/proof_theta_explosion.json",
+      ".agent/sprints/2026-05-26-m6b-operational-theta-fix/v3_509/proof_wrf_reference_theta.json",
+      ".agent/sprints/2026-05-26-m6b-operational-theta-fix/v3_509/proof_math_vs_ic.json",
+      ".agent/sprints/2026-05-26-m6b-operational-theta-fix/v3_509/localization_memo.md"
+    ],
+    "status": "MATH:coftz"
+  },
+  "v3_521": {
+    "status": "OK",
+    "verdict": "NAMED-FIX:boundary_application"
+  }
+}

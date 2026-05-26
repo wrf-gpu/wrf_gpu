@@ -128,20 +128,22 @@ def advance_mu_t_wrf(inputs: AdvanceMuTInputs) -> dict[str, jnp.ndarray]:
     theta_i = inputs.theta[:, yy, xx] + inputs.msfty[yy, xx][None, :, :] * float(inputs.dts) * inputs.theta_tend[:, yy, xx]
     theta_ave_new = _update_3d(inputs.theta_ave, inputs.theta[:, yy, xx], yy, xx)
 
+    theta_flux_source = inputs.theta_ave
+
     wdtn_rows = [jnp.zeros_like(mu_tendency)]
     for k in range(1, nz):
-        face_theta = inputs.fnm[k] * inputs.theta_1[k, yy, xx] + inputs.fnp[k] * inputs.theta_1[k - 1, yy, xx]
+        face_theta = inputs.fnm[k] * theta_flux_source[k, yy, xx] + inputs.fnp[k] * theta_flux_source[k - 1, yy, xx]
         wdtn_rows.append(ww_updated[k] * face_theta)
     wdtn_rows.append(jnp.zeros_like(mu_tendency))
     wdtn = jnp.stack(wdtn_rows, axis=0)
 
     theta_levels = []
     for k in range(nz):
-        v_flux = inputs.v[k, yp, xx] * (inputs.theta_1[k, yp, xx] + inputs.theta_1[k, yy, xx]) - inputs.v[k, yy, xx] * (
-            inputs.theta_1[k, yy, xx] + inputs.theta_1[k, ym, xx]
+        v_flux = inputs.v[k, yp, xx] * (theta_flux_source[k, yp, xx] + theta_flux_source[k, yy, xx]) - inputs.v[k, yy, xx] * (
+            theta_flux_source[k, yy, xx] + theta_flux_source[k, ym, xx]
         )
-        u_flux = inputs.u[k, yy, xp] * (inputs.theta_1[k, yy, xp] + inputs.theta_1[k, yy, xx]) - inputs.u[k, yy, xx] * (
-            inputs.theta_1[k, yy, xx] + inputs.theta_1[k, yy, xm]
+        u_flux = inputs.u[k, yy, xp] * (theta_flux_source[k, yy, xp] + theta_flux_source[k, yy, xx]) - inputs.u[k, yy, xx] * (
+            theta_flux_source[k, yy, xx] + theta_flux_source[k, yy, xm]
         )
         tendency = inputs.msftx[yy, xx] * (0.5 * float(inputs.rdy) * v_flux + 0.5 * float(inputs.rdx) * u_flux) + inputs.rdnw[k] * (
             wdtn[k + 1] - wdtn[k]
