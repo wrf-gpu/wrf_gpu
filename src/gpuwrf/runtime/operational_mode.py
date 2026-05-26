@@ -183,6 +183,23 @@ def _base_mu(state: State) -> jax.Array:
     return jnp.asarray(state.mu_total) - jnp.asarray(state.mu_perturbation)
 
 
+def _valid_mixing_ratio(candidate: jax.Array, origin: jax.Array, upper: float = 0.05) -> jax.Array:
+    """Keep nonfinite RK moisture excursions out of the physics boundary."""
+
+    candidate = jnp.asarray(candidate)
+    origin = jnp.asarray(origin, dtype=candidate.dtype)
+    valid = jnp.isfinite(candidate) & (candidate >= 0.0) & (candidate <= float(upper))
+    return jnp.where(valid, candidate, origin)
+
+
+def _finite_or_origin(candidate: jax.Array, origin: jax.Array) -> jax.Array:
+    """Reject nonfinite boundary replay values without clipping finite dynamics."""
+
+    candidate = jnp.asarray(candidate)
+    origin = jnp.asarray(origin, dtype=candidate.dtype)
+    return jnp.where(jnp.isfinite(candidate), candidate, origin)
+
+
 def _with_save_family(carry: OperationalCarry, state: State, ww: jax.Array | None = None) -> OperationalCarry:
     """Update WRF ``*_save`` transition fields in resident operational carry."""
 
@@ -486,6 +503,12 @@ def _physics_boundary_step(
     # physical-state contract. Keep the prior carry-fix projection here.
     next_state = carry.state.replace(
         theta=physical_origin.theta,
+        qv=_valid_mixing_ratio(carry.state.qv, physical_origin.qv),
+        qc=_valid_mixing_ratio(carry.state.qc, physical_origin.qc),
+        qr=_valid_mixing_ratio(carry.state.qr, physical_origin.qr),
+        qi=_valid_mixing_ratio(carry.state.qi, physical_origin.qi),
+        qs=_valid_mixing_ratio(carry.state.qs, physical_origin.qs),
+        qg=_valid_mixing_ratio(carry.state.qg, physical_origin.qg),
         mu=physical_origin.mu,
         mu_total=physical_origin.mu_total,
         mu_perturbation=physical_origin.mu_perturbation,
@@ -498,7 +521,23 @@ def _physics_boundary_step(
             next_state = rrtmg_adapter(next_state, float(namelist.dt_s), namelist.grid)
     if bool(namelist.run_boundary):
         lead_seconds = step_index.astype(jnp.float64) * float(namelist.dt_s)
-        next_state = apply_lateral_boundaries(next_state, lead_seconds, float(namelist.dt_s), namelist.boundary_config)
+        bounded = apply_lateral_boundaries(next_state, lead_seconds, float(namelist.dt_s), namelist.boundary_config)
+        next_state = bounded.replace(
+            u=_finite_or_origin(bounded.u, physical_origin.u),
+            v=_finite_or_origin(bounded.v, physical_origin.v),
+            w=_finite_or_origin(bounded.w, physical_origin.w),
+            theta=_finite_or_origin(bounded.theta, physical_origin.theta),
+            qv=_valid_mixing_ratio(bounded.qv, physical_origin.qv),
+            p=_finite_or_origin(bounded.p, physical_origin.p),
+            ph=_finite_or_origin(bounded.ph, physical_origin.ph),
+            mu=_finite_or_origin(bounded.mu, physical_origin.mu),
+            p_total=_finite_or_origin(bounded.p_total, physical_origin.p_total),
+            ph_total=_finite_or_origin(bounded.ph_total, physical_origin.ph_total),
+            mu_total=_finite_or_origin(bounded.mu_total, physical_origin.mu_total),
+            p_perturbation=_finite_or_origin(bounded.p_perturbation, physical_origin.p_perturbation),
+            ph_perturbation=_finite_or_origin(bounded.ph_perturbation, physical_origin.ph_perturbation),
+            mu_perturbation=_finite_or_origin(bounded.mu_perturbation, physical_origin.mu_perturbation),
+        )
     next_state = _enforce_operational_precision(next_state)
     return carry.replace(state=next_state)
 
