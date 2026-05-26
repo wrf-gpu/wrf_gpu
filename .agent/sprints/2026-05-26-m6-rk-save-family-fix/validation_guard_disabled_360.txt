@@ -1,0 +1,28 @@
+{
+  "artifact_type": "m6_guard_disabled_debug_summary",
+  "first_explosive_step": {
+    "cell": [
+      43,
+      27,
+      69
+    ],
+    "envelope_1x": 700.0,
+    "field": "theta",
+    "lead_s": 750.0,
+    "nonfinite_count": 0,
+    "ratio_to_envelope": 0.8097948346819196,
+    "step": 75,
+    "threshold_10x": 7000.0,
+    "value": 566.8563842773438
+  },
+  "first_operator": "acoustic",
+  "n_steps_requested": 360,
+  "proofs": [
+    ".agent/sprints/2026-05-26-m6-rk-save-family-fix/fixed/proof_guard_inventory.json",
+    ".agent/sprints/2026-05-26-m6-rk-save-family-fix/fixed/proof_guards_off_safe_default.json",
+    ".agent/sprints/2026-05-26-m6-rk-save-family-fix/fixed/proof_first_explosive_step.json",
+    ".agent/sprints/2026-05-26-m6-rk-save-family-fix/fixed/proof_first_explosive_operator.json"
+  ],
+  "run_id": "20260521_18z_l3_24h_20260522T072630Z",
+  "status": "OK"
+}

@@ -215,8 +215,11 @@ def _with_save_family(carry: OperationalCarry, state: State, ww: jax.Array | Non
     """Update WRF ``*_save`` transition fields in resident operational carry."""
 
     ww_value = carry.ww if ww is None else ww
+    mu_base = _base_mu(state)
     return carry.replace(
         state=state,
+        muave=jnp.zeros_like(state.mu_perturbation),
+        muts=mu_base,
         u_save=state.u,
         v_save=state.v,
         w_save=state.w,
@@ -306,7 +309,13 @@ def _carry_from_acoustic_core(acoustic: AcousticCoreState, template: State, thet
     theta = acoustic.theta + theta_offset
     p_total = template.p_total - template.p_perturbation + acoustic.p
     ph_total = template.ph_total - template.ph_perturbation + acoustic.ph
-    mu_total = template.mu_total - template.mu_perturbation + acoustic.mu
+    # ``advance_mu_t_wrf`` stores the acoustic small-step mass delta in
+    # ``muts - mut``.  Keep that delta basis in the operational state between
+    # substeps; expanding by ``mu_save`` each iteration recreates the near-zero
+    # hybrid mass denominators seen in the step-46/47 failure.
+    mu_base = template.mu_total - template.mu_perturbation
+    mu_perturbation = acoustic.muts - acoustic.mut
+    mu_total = mu_base + mu_perturbation
     next_state = template.replace(
         u=acoustic.u,
         v=acoustic.v,
@@ -320,7 +329,7 @@ def _carry_from_acoustic_core(acoustic: AcousticCoreState, template: State, thet
         ph_perturbation=acoustic.ph,
         mu=mu_total,
         mu_total=mu_total,
-        mu_perturbation=acoustic.mu,
+        mu_perturbation=mu_perturbation,
     )
     return OperationalCarry(
         state=next_state,
