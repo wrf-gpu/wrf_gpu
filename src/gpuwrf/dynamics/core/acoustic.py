@@ -237,8 +237,9 @@ def acoustic_substep_core(
             epssm=float(cfg.epssm),
         )
     )
+    mu_delta = advanced["muts"] - state.mut
     return state.replace(
-        mu=advanced["mu"],
+        mu=mu_delta,
         mudf=advanced["mudf"],
         muts=advanced["muts"],
         muave=advanced["muave"],
