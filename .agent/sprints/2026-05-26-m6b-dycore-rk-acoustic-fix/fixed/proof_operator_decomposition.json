@@ -1,0 +1,255 @@
+{
+  "artifact_type": "m6b_v3_521_operator_decomposition",
+  "bad_cell": {
+    "step": 46,
+    "v_stagger_index_k_j_i": [
+      2,
+      1,
+      0
+    ]
+  },
+  "cross_check": {
+    "note": "The V3 operational wrapper does not emit separate pressure-gradient/Coriolis/vertical-advection arrays; this proof localizes the observed dv/dt to the available WRF-ordered stage boundary.",
+    "project_source": "src/gpuwrf/runtime/operational_mode.py:_physics_boundary_step",
+    "wrf_source_expected_acoustic_loop": "solve_em.F:3065-4363 runs acoustic small steps inside RK stages.",
+    "wrf_source_expected_boundary_order": "solve_em.F:2034-2285 applies specified lateral-boundary tendencies during the coupled step."
+  },
+  "diagnostic_input": ".agent/sprints/2026-05-26-m6b-dycore-rk-acoustic-fix/fixed/proof_operator_decomposition_input.json",
+  "diagnostic_tool": "diagnostic_operator_term_budget_tracer.py",
+  "dominant_term": "boundary_application",
+  "named_fix_operator": "boundary_application",
+  "status": "OK",
+  "term_budget": {
+    "artifacts": {},
+    "diagnostic": {
+      "name": "operator_term_budget_tracer",
+      "purpose": "Rank named operator terms by magnitude."
+    },
+    "input": {
+      "path": ".agent/sprints/2026-05-26-m6b-dycore-rk-acoustic-fix/fixed/proof_operator_decomposition_input.json",
+      "term_count": 8
+    },
+    "measurements": {
+      "extra_terms": {
+        "boundary_application": {
+          "l2": 0.007509803771972657,
+          "max_abs": 0.007509803771972657,
+          "mean": 0.007509803771972657,
+          "positive_fraction": 1.0,
+          "present": true,
+          "shape": [
+            1
+          ]
+        },
+        "carry_fix_projection": {
+          "l2": 0.0,
+          "max_abs": 0.0,
+          "mean": 0.0,
+          "positive_fraction": 0.0,
+          "present": true,
+          "shape": [
+            1
+          ]
+        },
+        "dycore_rk_acoustic": {
+          "l2": 0.0,
+          "max_abs": 0.0,
+          "mean": 0.0,
+          "positive_fraction": 0.0,
+          "present": true,
+          "shape": [
+            1
+          ]
+        },
+        "mynn": {
+          "l2": 0.0007882118225097656,
+          "max_abs": 0.0007882118225097656,
+          "mean": 0.0007882118225097656,
+          "positive_fraction": 1.0,
+          "present": true,
+          "shape": [
+            1
+          ]
+        },
+        "precision_cast": {
+          "l2": 0.0,
+          "max_abs": 0.0,
+          "mean": 0.0,
+          "positive_fraction": 0.0,
+          "present": true,
+          "shape": [
+            1
+          ]
+        },
+        "rk_acoustic": {
+          "l2": 0.0,
+          "max_abs": 0.0,
+          "mean": 0.0,
+          "positive_fraction": 0.0,
+          "present": true,
+          "shape": [
+            1
+          ]
+        },
+        "surface": {
+          "l2": 0.0,
+          "max_abs": 0.0,
+          "mean": 0.0,
+          "positive_fraction": 0.0,
+          "present": true,
+          "shape": [
+            1
+          ]
+        },
+        "thompson": {
+          "l2": 0.0,
+          "max_abs": 0.0,
+          "mean": 0.0,
+          "positive_fraction": 0.0,
+          "present": true,
+          "shape": [
+            1
+          ]
+        }
+      },
+      "per_term": {
+        "boundary_forcing": {
+          "l2": null,
+          "max_abs": null,
+          "mean": null,
+          "positive_fraction": null,
+          "present": false,
+          "shape": []
+        },
+        "buoyancy": {
+          "l2": null,
+          "max_abs": null,
+          "mean": null,
+          "positive_fraction": null,
+          "present": false,
+          "shape": []
+        },
+        "density_coupling": {
+          "l2": null,
+          "max_abs": null,
+          "mean": null,
+          "positive_fraction": null,
+          "present": false,
+          "shape": []
+        },
+        "pressure_restoring": {
+          "l2": null,
+          "max_abs": null,
+          "mean": null,
+          "positive_fraction": null,
+          "present": false,
+          "shape": []
+        },
+        "rayleigh": {
+          "l2": null,
+          "max_abs": null,
+          "mean": null,
+          "positive_fraction": null,
+          "present": false,
+          "shape": []
+        },
+        "smdiv": {
+          "l2": null,
+          "max_abs": null,
+          "mean": null,
+          "positive_fraction": null,
+          "present": false,
+          "shape": []
+        },
+        "theta_transport": {
+          "l2": null,
+          "max_abs": null,
+          "mean": null,
+          "positive_fraction": null,
+          "present": false,
+          "shape": []
+        }
+      },
+      "ranking": [
+        {
+          "max_abs": 0.007509803771972657,
+          "term": "boundary_application"
+        },
+        {
+          "max_abs": 0.0007882118225097656,
+          "term": "mynn"
+        },
+        {
+          "max_abs": 0.0,
+          "term": "carry_fix_projection"
+        },
+        {
+          "max_abs": 0.0,
+          "term": "dycore_rk_acoustic"
+        },
+        {
+          "max_abs": 0.0,
+          "term": "precision_cast"
+        },
+        {
+          "max_abs": 0.0,
+          "term": "rk_acoustic"
+        },
+        {
+          "max_abs": 0.0,
+          "term": "surface"
+        },
+        {
+          "max_abs": 0.0,
+          "term": "thompson"
+        }
+      ]
+    },
+    "schema_version": "m6x-s1-diagnostic-sidecar-v1",
+    "source_citations": [
+      ".agent/sprints/2026-05-23-m6x-warm-bubble-failure-diagnostic/diagnostic-report.md:71-90",
+      "src/gpuwrf/dynamics/acoustic_wrf.py:735-747"
+    ],
+    "status": "OK",
+    "units": {
+      "l2": "same units times sqrt(samples)",
+      "term_value": "field-dependent tendency units"
+    }
+  },
+  "terms_per_second": {
+    "boundary_application": [
+      0.007509803771972657
+    ],
+    "carry_fix_projection": [
+      0.0
+    ],
+    "dycore_rk_acoustic": [
+      0.0
+    ],
+    "mynn": [
+      0.0007882118225097656
+    ],
+    "precision_cast": [
+      0.0
+    ],
+    "rk_acoustic": [
+      0.0
+    ],
+    "surface": [
+      0.0
+    ],
+    "thompson": [
+      0.0
+    ]
+  },
+  "values_m_s": {
+    "after_boundary": -11.39712142944336,
+    "after_mynn": -11.472219467163086,
+    "after_precision": -11.39712142944336,
+    "after_projection": -11.480101585388184,
+    "after_rk_acoustic": -11.480101585388184,
+    "after_surface": -11.472219467163086,
+    "after_thompson": -11.480101585388184,
+    "start": -11.480101585388184
+  }
+}
