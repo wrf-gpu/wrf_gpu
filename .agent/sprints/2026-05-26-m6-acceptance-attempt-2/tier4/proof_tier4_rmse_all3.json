@@ -1,0 +1,239 @@
+{
+  "aggregate_mean_across_3_ics": {
+    "fields": {
+      "T2": {
+        "mean_across_3_ics": 0.6247354341021077,
+        "passed": true,
+        "per_ic_rmse": [
+          0.5325447618082726,
+          0.4128344158189975,
+          0.9288271246790533
+        ],
+        "threshold": 3.0,
+        "units": "K"
+      },
+      "U10": {
+        "mean_across_3_ics": 3.070508248079969,
+        "passed": true,
+        "per_ic_rmse": [
+          2.4390633493811196,
+          3.082318198347123,
+          3.6901431965116633
+        ],
+        "threshold": 7.5,
+        "units": "m s-1"
+      },
+      "V10": {
+        "mean_across_3_ics": 3.173573395069999,
+        "passed": true,
+        "per_ic_rmse": [
+          2.401158916015895,
+          3.2217094764486,
+          3.897851792745502
+        ],
+        "threshold": 7.5,
+        "units": "m s-1"
+      }
+    },
+    "status": "PASS"
+  },
+  "artifact_type": "m6_acceptance_tier4_rmse_all3",
+  "per_ic": {
+    "20260429_18z_l3_24h_20260524T204451Z": {
+      "artifact_type": "m6_acceptance_tier4_rmse_single_ic",
+      "fields": {
+        "T2": {
+          "all_finite": true,
+          "local_max_abs_error": 3.5780493057037575,
+          "local_mean_abs_error": 0.3362296360745002,
+          "passed": true,
+          "rmse_pass": true,
+          "rmse_spatial_mean": 0.5325447618082726,
+          "rmse_threshold": 3.0,
+          "shape": [
+            66,
+            159
+          ],
+          "spatial_heterogeneity_ratio_max_abs_over_mean_abs": 10.641683307508771,
+          "spatial_heterogeneity_ratio_policy": "informational_only",
+          "units": "K"
+        },
+        "U10": {
+          "all_finite": true,
+          "local_max_abs_error": 11.838976048910466,
+          "local_mean_abs_error": 1.5280461886323673,
+          "passed": true,
+          "rmse_pass": true,
+          "rmse_spatial_mean": 2.4390633493811196,
+          "rmse_threshold": 7.5,
+          "shape": [
+            66,
+            159
+          ],
+          "spatial_heterogeneity_ratio_max_abs_over_mean_abs": 7.747786773059912,
+          "spatial_heterogeneity_ratio_policy": "informational_only",
+          "units": "m s-1"
+        },
+        "V10": {
+          "all_finite": true,
+          "local_max_abs_error": 13.085561840766648,
+          "local_mean_abs_error": 1.579996606478126,
+          "passed": true,
+          "rmse_pass": true,
+          "rmse_spatial_mean": 2.401158916015895,
+          "rmse_threshold": 7.5,
+          "shape": [
+            66,
+            159
+          ],
+          "spatial_heterogeneity_ratio_max_abs_over_mean_abs": 8.282018953151345,
+          "spatial_heterogeneity_ratio_policy": "informational_only",
+          "units": "m s-1"
+        }
+      },
+      "gen2_reference_path": "/mnt/data/canairy_meteo/runs/wrf_l3/20260429_18z_l3_24h_20260524T204451Z/wrfout_d02_2026-04-29_19:00:00",
+      "lead_hours": 1.0,
+      "run_id": "20260429_18z_l3_24h_20260524T204451Z",
+      "status": "PASS",
+      "thresholds": {
+        "T2": 3.0,
+        "U10": 7.5,
+        "V10": 7.5
+      },
+      "valid_time_utc": "2026-04-29T19:00:00+00:00"
+    },
+    "20260509_18z_l3_24h_20260511T190519Z": {
+      "artifact_type": "m6_acceptance_tier4_rmse_single_ic",
+      "fields": {
+        "T2": {
+          "all_finite": true,
+          "local_max_abs_error": 3.523299016770295,
+          "local_mean_abs_error": 0.2554455904941612,
+          "passed": true,
+          "rmse_pass": true,
+          "rmse_spatial_mean": 0.4128344158189975,
+          "rmse_threshold": 3.0,
+          "shape": [
+            66,
+            120
+          ],
+          "spatial_heterogeneity_ratio_max_abs_over_mean_abs": 13.792757236304018,
+          "spatial_heterogeneity_ratio_policy": "informational_only",
+          "units": "K"
+        },
+        "U10": {
+          "all_finite": true,
+          "local_max_abs_error": 14.950496875358716,
+          "local_mean_abs_error": 1.940025010705431,
+          "passed": true,
+          "rmse_pass": true,
+          "rmse_spatial_mean": 3.082318198347123,
+          "rmse_threshold": 7.5,
+          "shape": [
+            66,
+            120
+          ],
+          "spatial_heterogeneity_ratio_max_abs_over_mean_abs": 7.7063423372683335,
+          "spatial_heterogeneity_ratio_policy": "informational_only",
+          "units": "m s-1"
+        },
+        "V10": {
+          "all_finite": true,
+          "local_max_abs_error": 15.340192731822924,
+          "local_mean_abs_error": 2.272442068056291,
+          "passed": true,
+          "rmse_pass": true,
+          "rmse_spatial_mean": 3.2217094764486,
+          "rmse_threshold": 7.5,
+          "shape": [
+            66,
+            120
+          ],
+          "spatial_heterogeneity_ratio_max_abs_over_mean_abs": 6.750531926626404,
+          "spatial_heterogeneity_ratio_policy": "informational_only",
+          "units": "m s-1"
+        }
+      },
+      "gen2_reference_path": "/mnt/data/canairy_meteo/runs/wrf_l3/20260509_18z_l3_24h_20260511T190519Z/wrfout_d02_2026-05-09_19:00:00",
+      "lead_hours": 1.0,
+      "run_id": "20260509_18z_l3_24h_20260511T190519Z",
+      "status": "PASS",
+      "thresholds": {
+        "T2": 3.0,
+        "U10": 7.5,
+        "V10": 7.5
+      },
+      "valid_time_utc": "2026-05-09T19:00:00+00:00"
+    },
+    "20260521_18z_l3_24h_20260522T072630Z": {
+      "artifact_type": "m6_acceptance_tier4_rmse_single_ic",
+      "fields": {
+        "T2": {
+          "all_finite": true,
+          "local_max_abs_error": 6.409129808497823,
+          "local_mean_abs_error": 0.462632435978473,
+          "passed": true,
+          "rmse_pass": true,
+          "rmse_spatial_mean": 0.9288271246790533,
+          "rmse_threshold": 3.0,
+          "shape": [
+            66,
+            159
+          ],
+          "spatial_heterogeneity_ratio_max_abs_over_mean_abs": 13.853611009661352,
+          "spatial_heterogeneity_ratio_policy": "informational_only",
+          "units": "K"
+        },
+        "U10": {
+          "all_finite": true,
+          "local_max_abs_error": 25.184128280520596,
+          "local_mean_abs_error": 2.197733325162259,
+          "passed": true,
+          "rmse_pass": true,
+          "rmse_spatial_mean": 3.6901431965116633,
+          "rmse_threshold": 7.5,
+          "shape": [
+            66,
+            159
+          ],
+          "spatial_heterogeneity_ratio_max_abs_over_mean_abs": 11.459137463213946,
+          "spatial_heterogeneity_ratio_policy": "informational_only",
+          "units": "m s-1"
+        },
+        "V10": {
+          "all_finite": true,
+          "local_max_abs_error": 21.88990049080166,
+          "local_mean_abs_error": 2.485604945957985,
+          "passed": true,
+          "rmse_pass": true,
+          "rmse_spatial_mean": 3.897851792745502,
+          "rmse_threshold": 7.5,
+          "shape": [
+            66,
+            159
+          ],
+          "spatial_heterogeneity_ratio_max_abs_over_mean_abs": 8.806669187876516,
+          "spatial_heterogeneity_ratio_policy": "informational_only",
+          "units": "m s-1"
+        }
+      },
+      "gen2_reference_path": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T072630Z/wrfout_d02_2026-05-21_19:00:00",
+      "lead_hours": 1.0,
+      "run_id": "20260521_18z_l3_24h_20260522T072630Z",
+      "status": "PASS",
+      "thresholds": {
+        "T2": 3.0,
+        "U10": 7.5,
+        "V10": 7.5
+      },
+      "valid_time_utc": "2026-05-21T19:00:00+00:00"
+    }
+  },
+  "spatial_heterogeneity_ratio_policy": "informational_only",
+  "status": "PASS",
+  "thresholds": {
+    "T2": 3.0,
+    "U10": 7.5,
+    "V10": 7.5
+  }
+}
