@@ -1,0 +1,96 @@
+{
+  "artifact_type": "m7_d2h_audit",
+  "bytes": {
+    "d2h_inside_loop_window": 102199152,
+    "d2h_inter_kernel_inside_window": 102199152,
+    "h2d_inside_loop_window": 129698844
+  },
+  "classification": {
+    "hard_invariant": "D2H inter-kernel/intra-step path must be 0.",
+    "io_at_step_boundaries_allowed": true,
+    "pass_condition": "counts.d2h_inter_kernel_inside_window == 0"
+  },
+  "counts": {
+    "d2h_inside_loop_window": 89,
+    "d2h_inter_kernel_inside_window": 89,
+    "d2h_post_kernel_inside_window": 0,
+    "d2h_pre_kernel_inside_window": 0,
+    "d2h_total_trace": 89,
+    "h2d_inside_loop_window": 296,
+    "h2d_total_trace": 299,
+    "memcpy_total": 317297
+  },
+  "export": {
+    "returncode": 0,
+    "reused_existing_sqlite": true,
+    "stderr": "",
+    "stdout": ""
+  },
+  "inter_kernel_d2h_byte_clusters": [
+    {
+      "bytes": 1846944,
+      "count": 18
+    },
+    {
+      "bytes": 1888920,
+      "count": 18
+    },
+    {
+      "bytes": 41976,
+      "count": 10
+    },
+    {
+      "bytes": 1858560,
+      "count": 9
+    },
+    {
+      "bytes": 1874928,
+      "count": 9
+    },
+    {
+      "bytes": 352,
+      "count": 7
+    },
+    {
+      "bytes": 83952,
+      "count": 5
+    },
+    {
+      "bytes": 8,
+      "count": 4
+    },
+    {
+      "bytes": 360,
+      "count": 3
+    },
+    {
+      "bytes": 84480,
+      "count": 3
+    },
+    {
+      "bytes": 85224,
+      "count": 3
+    }
+  ],
+  "kernel_window": {
+    "available": true,
+    "count": 645341,
+    "end_ns": 14832045415,
+    "start_ns": 132226670
+  },
+  "loop_window_ns": {
+    "end": 14832045415,
+    "start": 132226670
+  },
+  "method": "kernel_timeline_process_of_elimination",
+  "nsys_report": "/tmp/m7_profile_artifacts/m7_20260521_warm_360.nsys-rep",
+  "nvtx_marker_regex": "m7_profile_window",
+  "nvtx_window": {
+    "available": false,
+    "end_ns": null,
+    "matches": [],
+    "start_ns": null
+  },
+  "sqlite_export": "/tmp/m7_profile_artifacts/m7_20260521_warm_360.sqlite",
+  "status": "BLOCKED-D2H"
+}
