@@ -383,6 +383,31 @@ def _finish(state: ThompsonColumnState) -> ThompsonColumnState:
     return state.replace(qv=qv, qc=qc, qr=qr, qi=qi, qs=qs, qg=qg, Ni=Ni, Nr=Nr, T=T, rho=rho)
 
 
+def _thermodynamically_admissible(state: ThompsonColumnState) -> jax.Array:
+    """Mask cells where Thompson's WRF column assumptions are valid."""
+
+    return (
+        jnp.isfinite(state.p)
+        & jnp.isfinite(state.T)
+        & jnp.isfinite(state.rho)
+        & (state.p > 1000.0)
+        & (state.T > 150.0)
+        & (state.T < 400.0)
+        & (state.rho > 0.0)
+    )
+
+
+def _select_state(mask: jax.Array, good: ThompsonColumnState, fallback: ThompsonColumnState) -> ThompsonColumnState:
+    """Select per-cell fallback values without leaving the compiled path."""
+
+    return good.replace(
+        **{
+            name: jnp.where(mask, getattr(good, name), getattr(fallback, name))
+            for name in ThompsonColumnState.__slots__
+        }
+    )
+
+
 def _saturation_adjustment_with_condensation(state: ThompsonColumnState, dt: float) -> tuple[ThompsonColumnState, jax.Array]:
     """Implements the 3-iteration Thompson cloud condensation adjustment."""
 
@@ -735,6 +760,8 @@ def _step_thompson_column_impl(state: ThompsonColumnState, dt: float, debug: boo
     """Runs the fused source/sink Thompson body in WRF checkpoint order."""
 
     state = _clip_species(state)
+    valid = _thermodynamically_admissible(state)
+    fallback = state
     state = _debug_checks(state, debug)
     # WRF order: stage rates/tendencies (2917-3247), update working state
     # before condensation (3250-3273), cloud cond/evap (3456-3558),
@@ -747,6 +774,7 @@ def _step_thompson_column_impl(state: ThompsonColumnState, dt: float, debug: boo
     state = _rain_evaporation(state, dt, skip_evaporation=cloud_condensed, graupel_melt=graupel_melt)
     state = _instant_melt_freeze(state, dt)
     state = _finish(state)
+    state = _select_state(valid, state, fallback)
     return _debug_checks(state, debug)
 
 

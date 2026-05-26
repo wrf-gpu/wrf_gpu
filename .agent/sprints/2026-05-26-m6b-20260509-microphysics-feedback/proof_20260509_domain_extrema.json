@@ -1,0 +1,17 @@
+{
+  "artifact_type": "m6b_20260509_fix_validation_domain_extrema",
+  "dt_s": 10.0,
+  "qc_all_finite": true,
+  "qc_lt_0p05_kg_kg": true,
+  "qc_max_kg_kg": 0.00823651161044836,
+  "qc_min_kg_kg": 0.0,
+  "qv_all_finite": true,
+  "qv_max_kg_kg": 0.04996086657047272,
+  "qv_min_kg_kg": 8.198569823036905e-09,
+  "run_id": "20260509_18z_l3_24h_20260511T190519Z",
+  "steps": 360,
+  "theta_all_finite": true,
+  "theta_in_200_700_k": true,
+  "theta_max_k": 500.31317138671875,
+  "theta_min_k": 290.3363037109375
+}

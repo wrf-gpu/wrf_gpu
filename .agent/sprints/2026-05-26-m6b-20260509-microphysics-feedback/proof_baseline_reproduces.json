@@ -1,0 +1,41 @@
+{
+  "artifact_type": "m6b_20260509_baseline_reproduces",
+  "bad_cell_step_n": {
+    "p": -34582.75401226425,
+    "p_perturbation": -53642.30479351425,
+    "qc": 32233444.0,
+    "qv": 1.000000013351432e-10,
+    "theta": 2444869763072.0,
+    "u": 52.34334945678711,
+    "v": 12.051958084106445,
+    "w": 12.391115923198115
+  },
+  "bad_cell_step_n_minus_1": {
+    "p": 24815.37918423359,
+    "p_perturbation": 5755.828402983589,
+    "qc": 0.0,
+    "qv": 0.00011934670328628272,
+    "theta": 348.63739013671875,
+    "u": 52.34809875488281,
+    "v": 12.05252456665039,
+    "w": -4.273957012107816
+  },
+  "first_violation": {
+    "bound_k": 400.0,
+    "cell": {
+      "i": 72,
+      "j": 59,
+      "k": 28
+    },
+    "exceedance_k": 2444869762672.0,
+    "kind": "above_upper",
+    "lead_seconds": 110.0,
+    "level": 28,
+    "step": 11,
+    "value_k": 2444869763072.0
+  },
+  "matches_contract_smoking_gun": true,
+  "run_id": "20260509_18z_l3_24h_20260511T190519Z",
+  "source_proof": ".agent/sprints/2026-05-26-m6b-20260509-microphysics-feedback/baseline/proof_theta_explosion.json",
+  "status": "REPRODUCED"
+}
