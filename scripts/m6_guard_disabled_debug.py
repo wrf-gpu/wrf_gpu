@@ -627,7 +627,7 @@ def main(argv: list[str] | None = None) -> int:
     _write_json(output_dir / "proof_guard_inventory.json", inventory)
     _write_json(output_dir / "proof_guards_off_safe_default.json", _proof_safe_default())
 
-    first_step, first_pre_carry = _run_guard_disabled(state, namelist, min(int(args.n_steps), 75))
+    first_step, first_pre_carry = _run_guard_disabled(state, namelist, int(args.n_steps))
     first_step.update(meta)
     _write_json(output_dir / "proof_first_explosive_step.json", first_step)
 
