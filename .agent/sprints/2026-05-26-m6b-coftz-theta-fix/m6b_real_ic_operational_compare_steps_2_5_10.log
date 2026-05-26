@@ -1,0 +1,4 @@
+usage: m6b_real_ic_operational_compare.py [-h] [--gen2-run-id GEN2_RUN_ID]
+                                          [--gen2-ic-time GEN2_IC_TIME]
+                                          [--steps STEPS]
+m6b_real_ic_operational_compare.py: error: argument --steps: invalid int value: '2,5,10'

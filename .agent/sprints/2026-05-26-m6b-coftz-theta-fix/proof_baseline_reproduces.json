@@ -1,0 +1,26 @@
+{
+  "artifact_type": "m6b_coftz_theta_fix_baseline_reproduction",
+  "baseline_status": "THETA_BOUND_VIOLATION",
+  "command_log": ".agent/sprints/2026-05-26-m6b-coftz-theta-fix/baseline_command.log",
+  "first_violation": {
+    "bound_k": 400.0,
+    "cell": {
+      "i": 73,
+      "j": 60,
+      "k": 28
+    },
+    "exceedance_k": 2604313607792.0,
+    "kind": "above_upper",
+    "lead_seconds": 110.0,
+    "level": 28,
+    "step": 11,
+    "value_k": 2604313608192.0
+  },
+  "math_status": "MATH:coftz",
+  "proofs": [
+    ".agent/sprints/2026-05-26-m6b-coftz-theta-fix/baseline/proof_theta_explosion.json",
+    ".agent/sprints/2026-05-26-m6b-coftz-theta-fix/baseline/proof_math_vs_ic.json",
+    ".agent/sprints/2026-05-26-m6b-coftz-theta-fix/baseline/proof_operator_term_budget.json"
+  ],
+  "status": "REPRODUCED"
+}
