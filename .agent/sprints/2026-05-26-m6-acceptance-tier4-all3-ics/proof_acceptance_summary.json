@@ -1,0 +1,12 @@
+{
+  "artifact_type": "m6_acceptance_summary",
+  "closeout_path": null,
+  "closeout_written": false,
+  "proofs": [
+    ".agent/sprints/2026-05-26-m6-acceptance-tier4-all3-ics/proof_bounds_parity.json",
+    ".agent/sprints/2026-05-26-m6-acceptance-tier4-all3-ics/proof_tier4_rmse_all3.json"
+  ],
+  "stage1_bounds_parity": "FAIL",
+  "stage2_tier4_rmse": "FAIL",
+  "status": "M6-BLOCKED-ACCEPTANCE-GATE"
+}
