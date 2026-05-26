@@ -1,0 +1,40 @@
+{
+  "artifact_type": "m6_rk_save_family_wrf_fortran_crosscheck",
+  "created_utc": "2026-05-26T12:16:14Z",
+  "status": "MATCHED",
+  "matched_hypotheses": [
+    {
+      "hypothesis": "muts accumulation error in advance_mu_t_wrf",
+      "result": "confirmed",
+      "evidence": "WRF advances a small-step MU delta after small_step_prep, then forms MUTS = MUT + MU. The local path was feeding the full physical perturbation basis back into MUTS across acoustic substeps, collapsing c1h*muts+c2h near zero at the failing cell."
+    },
+    {
+      "hypothesis": "mu_perturbation not synced with mu_total",
+      "result": "confirmed",
+      "evidence": "The acoustic core now returns mu on the small-step delta basis as muts-mut, and the operational carry reconstructs mu_total from the fixed base plus that delta."
+    },
+    {
+      "hypothesis": "t_save/t_1 stale semantics",
+      "result": "not the active defect",
+      "evidence": "WRF keeps theta mass coupling as muts*t_1 - mut*t_2 in small_step_prep and adds t_save*mut during small_step_finish. That algebra was left unchanged."
+    },
+    {
+      "hypothesis": "clamp or regularize denominator",
+      "result": "rejected",
+      "evidence": "No WRF denominator clamp was found in small_step_finish; the fix keeps the denominator physical by correcting mass-basis algebra."
+    }
+  ],
+  "wrf_references": {
+    "small_step_prep_rk1": "/mnt/data/canairy_meteo/artifacts/wrf_src/WRF/dyn_em/module_small_step_em.F:128-191 sets MU_1=MU_2, MUTS=MUB+MU_2, MU_SAVE=MU_2, then MU_2=0 for RK1",
+    "small_step_prep_later_rk": "/mnt/data/canairy_meteo/artifacts/wrf_src/WRF/dyn_em/module_small_step_em.F:194-216 sets MUTS=MUB+MU_1, MU_SAVE=MU_2, then MU_2=MU_1-MU_2 for later RK stages",
+    "theta_mass_couple": "/mnt/data/canairy_meteo/artifacts/wrf_src/WRF/dyn_em/module_small_step_em.F:259-264 uses t_save=t_2 and t_2=(c1h*muts+c2h)*t_1-(c1h*mut+c2h)*t_2",
+    "mu_update": "/mnt/data/canairy_meteo/artifacts/wrf_src/WRF/dyn_em/module_small_step_em.F:1102-1108 updates MU, MUDF, MUTS, and MUAVE",
+    "theta_decouple": "/mnt/data/canairy_meteo/artifacts/wrf_src/WRF/dyn_em/module_small_step_em.F:408-423 divides by c1h*muts+c2h without a clamp",
+    "solve_order": "/mnt/data/canairy_meteo/artifacts/wrf_src/WRF/dyn_em/solve_em.F:1220-1284 calls small_step_prep before the small_steps loop; /mnt/data/canairy_meteo/artifacts/wrf_src/WRF/dyn_em/solve_em.F:1423-1880 runs small_steps; /mnt/data/canairy_meteo/artifacts/wrf_src/WRF/dyn_em/solve_em.F:1901-1918 calls small_step_finish after the loop"
+  },
+  "local_changes_crosschecked": {
+    "src/gpuwrf/dynamics/mu_t_advance.py": "advance_mu_t_wrf now derives mu_work_old from muts-mut, forms muts_i=mut+mu_work_new, and computes muave on the same delta basis.",
+    "src/gpuwrf/dynamics/core/acoustic.py": "acoustic_substep_core now exposes core mu as advanced.muts-state.mut so wrappers carry the small-step delta basis.",
+    "src/gpuwrf/runtime/operational_mode.py": "_with_save_family resets muts to mu_base and muave to zero at stage prep; _carry_from_acoustic_core reconstructs physical mu_total from base plus acoustic.muts-acoustic.mut."
+  }
+}
