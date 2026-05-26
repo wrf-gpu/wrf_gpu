@@ -1,0 +1,22 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.11, pytest-9.0.3, pluggy-1.5.0 -- /home/enric/miniconda3/bin/python
+cachedir: .pytest_cache
+rootdir: /tmp/wrf_gpu2_m6acc2
+configfile: pyproject.toml
+plugins: zarr-3.1.6, anyio-4.12.1
+collecting ... collected 12 items
+
+tests/test_m6_guard_disabled_debug.py::test_driver_script_committed PASSED [  8%]
+tests/test_m6_guard_disabled_debug.py::test_operational_mode_exposes_disable_guards PASSED [ 16%]
+tests/test_m6_guard_disabled_debug.py::test_all_four_proof_jsons_present PASSED [ 25%]
+tests/test_m6_guard_disabled_debug.py::test_proof_guard_inventory_lists_known_guard_sites PASSED [ 33%]
+tests/test_m6_guard_disabled_debug.py::test_proof_safe_default_documents_b6_and_v3_521 PASSED [ 41%]
+tests/test_m6_guard_disabled_debug.py::test_proof_first_explosive_step_localizes_explosion PASSED [ 50%]
+tests/test_m6_guard_disabled_debug.py::test_proof_first_explosive_operator_names_an_operator PASSED [ 58%]
+tests/test_m6_guard_disabled_debug.py::test_disable_guards_is_jax_static_argnums_compatible PASSED [ 66%]
+tests/test_m6_guard_disabled_debug.py::test_proof_first_explosive_step_field_is_not_only_guarded PASSED [ 75%]
+tests/test_m6_guard_disabled_debug.py::test_proof_first_explosive_step_is_consistent_with_n_steps_75_cap PASSED [ 83%]
+tests/test_m6_guard_disabled_debug.py::test_proof_safe_default_excludes_guards_off_evidence PASSED [ 91%]
+tests/test_m6_guard_disabled_debug.py::test_no_binary_artefacts_committed_under_sprint_dir PASSED [100%]
+
+============================== 12 passed in 1.03s ==============================
