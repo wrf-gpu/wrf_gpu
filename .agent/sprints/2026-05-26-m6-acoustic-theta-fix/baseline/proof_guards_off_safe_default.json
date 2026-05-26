@@ -1,0 +1,20 @@
+{
+  "artifact_type": "m6_guard_disabled_safe_default",
+  "b6_parity": {
+    "max_abs_diff": 0.0,
+    "source": "/tmp/wrf_gpu2_acthetafix/.agent/sprints/2026-05-25-m6b6-coupled-step-parity/proof_coupled_step_parity.json",
+    "validation_command": "taskset -c 0-3 python scripts/m6b6_coupled_step_compare.py --tier all"
+  },
+  "created_utc": "2026-05-26T07:25:00.259636+00:00",
+  "disable_guards_default": false,
+  "note": "This proof records the default-False safety anchors; the sprint report carries stdout/stderr from the mandatory validation commands run on this branch.",
+  "safe_default_precondition": {
+    "disable_guards": false
+  },
+  "v3_521_step46": {
+    "source": "/tmp/wrf_gpu2_acthetafix/.agent/sprints/2026-05-26-m6b-operational-theta-fix/v3_521/proof_step46_violation.json",
+    "units": "m s-1",
+    "v_max": 11.480101585388184,
+    "validation_command": "taskset -c 0-3 python scripts/m6b_v3_localize_521.py --run-id 20260521_18z_l3_24h_20260522T072630Z --output <sprint>/v3_521_default/"
+  }
+}

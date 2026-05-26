@@ -1,0 +1,12 @@
+{
+  "artifact_type": "m6_acoustic_theta_one_substep_probe",
+  "bad_cell_kji": [
+    12,
+    30,
+    62
+  ],
+  "delta_K": 9.46142578125,
+  "pass_delta_lt_50": true,
+  "theta_after_one_acoustic_substep_K": 2666.010986328125,
+  "theta_before_K": 2656.549560546875
+}
