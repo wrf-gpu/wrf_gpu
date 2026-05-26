@@ -1,0 +1,738 @@
+{
+  "artifact_type": "m6_boundary_dynamics_audit_stage3_onset_localization",
+  "created_utc": "2026-05-26T04:21:45Z",
+  "method": "Identify onset step where |p_perturbation|_max first exceeds 10x physical-reason envelope (5e4 Pa). Inspect ring-vs-interior dominance in the \u00b12 step window around onset. Source attribution: ring_abs_max/interior_abs_max > 2 = boundary-dominant (A); < 0.5 = interior-dominant (B/C); 0.5\u20132 = mixed.",
+  "envelope_used": {
+    "p_perturbation_Pa": 5000.0,
+    "trigger_threshold_x10": 50000.0
+  },
+  "boundary_ring_cells": 5,
+  "per_ic": {
+    "20260429": {
+      "onset_step_p_perturbation_>5e4": 33,
+      "onset_window_steps_pm2": [
+        {
+          "step": 31,
+          "lead_s": 310.0,
+          "p_perturbation_abs_max": 29319.355208664012,
+          "p_total_abs_max": 102911.58639623062,
+          "u_abs_max": 65.16053009033203,
+          "v_abs_max": 23.582935333251953,
+          "w_abs_max": 2.252829633338023,
+          "theta_min": 288.6670227050781,
+          "theta_max": 495.92864990234375,
+          "ring_abs_max": 101567.64289425482,
+          "interior_abs_max": 102911.58639623062,
+          "ring_over_interior": 0.9869407950160117,
+          "verdict_at_step": "mixed"
+        },
+        {
+          "step": 32,
+          "lead_s": 320.0,
+          "p_perturbation_abs_max": 42627.48979296548,
+          "p_total_abs_max": 102970.22444739557,
+          "u_abs_max": 69.92040252685547,
+          "v_abs_max": 23.577106475830078,
+          "w_abs_max": 3.290640908009239,
+          "theta_min": 288.66705322265625,
+          "theta_max": 495.92864990234375,
+          "ring_abs_max": 101556.53011172196,
+          "interior_abs_max": 102970.22444739557,
+          "ring_over_interior": 0.9862708434087583,
+          "verdict_at_step": "mixed"
+        },
+        {
+          "step": 33,
+          "lead_s": 330.0,
+          "p_perturbation_abs_max": 57351.8679286289,
+          "p_total_abs_max": 103026.71285825693,
+          "u_abs_max": 76.87123107910156,
+          "v_abs_max": 23.571273803710938,
+          "w_abs_max": 4.607498754990734,
+          "theta_min": 288.6670837402344,
+          "theta_max": 495.92864990234375,
+          "ring_abs_max": 101544.4474826507,
+          "interior_abs_max": 103026.71285825693,
+          "ring_over_interior": 0.9856128053153991,
+          "verdict_at_step": "mixed"
+        },
+        {
+          "step": 34,
+          "lead_s": 340.0,
+          "p_perturbation_abs_max": 74703.95650666449,
+          "p_total_abs_max": 103080.9246365977,
+          "u_abs_max": 83.11564636230469,
+          "v_abs_max": 23.56543731689453,
+          "w_abs_max": 5.896322029019279,
+          "theta_min": 288.6671142578125,
+          "theta_max": 495.92864990234375,
+          "ring_abs_max": 101531.44855492016,
+          "interior_abs_max": 103080.9246365977,
+          "ring_over_interior": 0.9849683529019547,
+          "verdict_at_step": "mixed"
+        },
+        {
+          "step": 35,
+          "lead_s": 350.0,
+          "p_perturbation_abs_max": 121237.02162379527,
+          "p_total_abs_max": 142013.86928004527,
+          "u_abs_max": 93.40626525878906,
+          "v_abs_max": 23.559595108032227,
+          "w_abs_max": 7.1165669801488445,
+          "theta_min": 288.6671447753906,
+          "theta_max": 495.92864990234375,
+          "ring_abs_max": 115040.57584967223,
+          "interior_abs_max": 142013.86928004527,
+          "ring_over_interior": 0.8100657804261155,
+          "verdict_at_step": "mixed"
+        },
+        {
+          "step": 36,
+          "lead_s": 360.0,
+          "p_perturbation_abs_max": 253795.8199802418,
+          "p_total_abs_max": 270456.07084176823,
+          "u_abs_max": 103.08615112304688,
+          "v_abs_max": 23.55375099182129,
+          "w_abs_max": 10.859894761982051,
+          "theta_min": 288.66717529296875,
+          "theta_max": 495.92864990234375,
+          "ring_abs_max": 233018.9723239918,
+          "interior_abs_max": 270456.07084176823,
+          "ring_over_interior": 0.8615778954369295,
+          "verdict_at_step": "mixed"
+        },
+        {
+          "step": 37,
+          "lead_s": 370.0,
+          "p_perturbation_abs_max": 2792874.8500344157,
+          "p_total_abs_max": 2770225.9711281657,
+          "u_abs_max": 120.485107421875,
+          "v_abs_max": 23.548006057739258,
+          "w_abs_max": 19.18045013520875,
+          "theta_min": 288.6672058105469,
+          "theta_max": 495.92864990234375,
+          "ring_abs_max": 2770225.9711281657,
+          "interior_abs_max": 2005802.6236921016,
+          "ring_over_interior": 1.3811059664629326,
+          "verdict_at_step": "mixed"
+        }
+      ],
+      "final_step": 360,
+      "final_extrema": {
+        "p": {
+          "abs_max": 1.7578485952622611e+308,
+          "all_nonfinite": false,
+          "max": 1.7498258683476037e+308,
+          "min": -1.7578485952622611e+308,
+          "nonfinite_count": 0,
+          "size": 461736
+        },
+        "p_perturbation": {
+          "abs_max": 1.7578485952622611e+308,
+          "all_nonfinite": false,
+          "max": 1.7498258683476037e+308,
+          "min": -1.7578485952622611e+308,
+          "nonfinite_count": 0,
+          "size": 461736
+        },
+        "p_total": {
+          "abs_max": 1.7578485952622611e+308,
+          "all_nonfinite": false,
+          "max": 1.7498258683476037e+308,
+          "min": -1.7578485952622611e+308,
+          "nonfinite_count": 0,
+          "size": 461736
+        },
+        "qv": {
+          "abs_max": 0.04988681897521019,
+          "all_nonfinite": false,
+          "max": 0.04988681897521019,
+          "min": 0.0,
+          "nonfinite_count": 0,
+          "size": 461736
+        },
+        "theta": {
+          "abs_max": 3.3591623345278918e+38,
+          "all_nonfinite": false,
+          "max": 3.3591623345278918e+38,
+          "min": 288.6674499511719,
+          "nonfinite_count": 0,
+          "size": 461736
+        },
+        "u": {
+          "abs_max": 8.456218270990468e+37,
+          "all_nonfinite": false,
+          "max": 8.456218270990468e+37,
+          "min": -7.450580908624612e+37,
+          "nonfinite_count": 0,
+          "size": 464640
+        },
+        "v": {
+          "abs_max": 23.496570587158203,
+          "all_nonfinite": false,
+          "max": 23.496570587158203,
+          "min": -5.1267781257629395,
+          "nonfinite_count": 0,
+          "size": 468732
+        },
+        "w": {
+          "abs_max": 4.200309879892261e+60,
+          "all_nonfinite": false,
+          "max": 3.5412254872843446e+50,
+          "min": -4.200309879892261e+60,
+          "nonfinite_count": 0,
+          "size": 472230
+        }
+      },
+      "growth_rate_factor_per_step_estimate": [
+        1.4539027031661615,
+        1.3454197797519214,
+        1.3025548984669386,
+        1.6228996065687562,
+        2.093385474016207,
+        11.00441626758015
+      ],
+      "wrf_reference_at_lead_1h": {
+        "lead_hours_requested": 1,
+        "p_perturbation": {
+          "abs_max": 1389.8203125,
+          "max": 1389.8203125,
+          "min": -9.677734375,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "p_total": {
+          "abs_max": 101096.0234375,
+          "max": 101096.0234375,
+          "min": 5224.60302734375,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "path": "/mnt/data/canairy_meteo/runs/wrf_l3/20260429_18z_l3_24h_20260524T204451Z/wrfout_d02_2026-04-29_19:00:00",
+        "time_index": 1,
+        "u": {
+          "abs_max": 35.5231819152832,
+          "max": 35.5231819152832,
+          "min": -4.431593894958496,
+          "shape": [
+            44,
+            66,
+            160
+          ]
+        },
+        "v": {
+          "abs_max": 22.144813537597656,
+          "max": 22.144813537597656,
+          "min": -4.360711097717285,
+          "shape": [
+            44,
+            67,
+            159
+          ]
+        },
+        "w": {
+          "abs_max": 1.4067752361297607,
+          "max": 0.9365410208702087,
+          "min": -1.4067752361297607,
+          "shape": [
+            45,
+            66,
+            159
+          ]
+        }
+      }
+    },
+    "20260509": {
+      "onset_step_p_perturbation_>5e4": 11,
+      "onset_window_steps_pm2": [
+        {
+          "step": 9,
+          "lead_s": 90.0,
+          "p_perturbation_abs_max": 4499.6025306072115,
+          "p_total_abs_max": 101937.64617999892,
+          "u_abs_max": 53.73793029785156,
+          "v_abs_max": 13.97754955291748,
+          "w_abs_max": 1.7553738966053152,
+          "theta_min": 290.3360900878906,
+          "theta_max": 500.31317138671875,
+          "ring_abs_max": 101636.63509303119,
+          "interior_abs_max": 101937.64617999892,
+          "ring_over_interior": 0.9970471057725209,
+          "verdict_at_step": "mixed"
+        },
+        {
+          "step": 10,
+          "lead_s": 100.0,
+          "p_perturbation_abs_max": 13163.447910388899,
+          "p_total_abs_max": 101982.81377883129,
+          "u_abs_max": 53.73793029785156,
+          "v_abs_max": 13.97754955291748,
+          "w_abs_max": 5.723360221464951,
+          "theta_min": 290.33612060546875,
+          "theta_max": 500.31317138671875,
+          "ring_abs_max": 101688.00261328179,
+          "interior_abs_max": 101982.81377883129,
+          "ring_over_interior": 0.9971092073789133,
+          "verdict_at_step": "mixed"
+        },
+        {
+          "step": 11,
+          "lead_s": 110.0,
+          "p_perturbation_abs_max": 54549.76594815066,
+          "p_total_abs_max": 102024.90068544907,
+          "u_abs_max": 53.73793029785156,
+          "v_abs_max": 13.97754955291748,
+          "w_abs_max": 18.779397232202157,
+          "theta_min": 290.3361511230469,
+          "theta_max": 500.31317138671875,
+          "ring_abs_max": 101747.30886458232,
+          "interior_abs_max": 102024.90068544907,
+          "ring_over_interior": 0.9972791757796208,
+          "verdict_at_step": "mixed"
+        },
+        {
+          "step": 12,
+          "lead_s": 120.0,
+          "p_perturbation_abs_max": 651596.4913959985,
+          "p_total_abs_max": 632536.9406147485,
+          "u_abs_max": 53.73793029785156,
+          "v_abs_max": 13.97754955291748,
+          "w_abs_max": 66.03217370475815,
+          "theta_min": 290.336181640625,
+          "theta_max": 500.31317138671875,
+          "ring_abs_max": 569007.1313671407,
+          "interior_abs_max": 632536.9406147485,
+          "ring_over_interior": 0.8995634797457606,
+          "verdict_at_step": "mixed"
+        },
+        {
+          "step": 13,
+          "lead_s": 130.0,
+          "p_perturbation_abs_max": 734529366.4502282,
+          "p_total_abs_max": 734510306.899447,
+          "u_abs_max": 61.55723190307617,
+          "v_abs_max": 13.97754955291748,
+          "w_abs_max": 4307.543365405138,
+          "theta_min": 290.3362121582031,
+          "theta_max": 500.31317138671875,
+          "ring_abs_max": 734510306.899447,
+          "interior_abs_max": 613269481.1249566,
+          "ring_over_interior": 1.1976958409084553,
+          "verdict_at_step": "mixed"
+        },
+        {
+          "step": 14,
+          "lead_s": 140.0,
+          "p_perturbation_abs_max": 9.205327652552204e+24,
+          "p_total_abs_max": 9.205327652552204e+24,
+          "u_abs_max": 2332286963941376.0,
+          "v_abs_max": 13.97754955291748,
+          "w_abs_max": 2.355516054181531e+19,
+          "theta_min": 290.33624267578125,
+          "theta_max": 500.31317138671875,
+          "ring_abs_max": 9.205327652552204e+24,
+          "interior_abs_max": 5.8325710511857225e+23,
+          "ring_over_interior": 15.782624115107561,
+          "verdict_at_step": "A_boundary_dominant"
+        },
+        {
+          "step": 15,
+          "lead_s": 150.0,
+          "p_perturbation_abs_max": 7.073247562571545e+114,
+          "p_total_abs_max": 7.073247562571545e+114,
+          "u_abs_max": 8.468033788705075e+37,
+          "v_abs_max": 13.97754955291748,
+          "w_abs_max": 4.517863045358683e+36,
+          "theta_min": 290.3362731933594,
+          "theta_max": 500.31317138671875,
+          "ring_abs_max": 7.073247562571545e+114,
+          "interior_abs_max": 6.687574073624246e+76,
+          "ring_over_interior": 1.0576701633060624e+38,
+          "verdict_at_step": "A_boundary_dominant"
+        }
+      ],
+      "final_step": 360,
+      "final_extrema": {
+        "p": {
+          "abs_max": 1.7915029733120308e+308,
+          "all_nonfinite": false,
+          "max": 1.651926942737476e+308,
+          "min": -1.7915029733120308e+308,
+          "nonfinite_count": 0,
+          "size": 348480
+        },
+        "p_perturbation": {
+          "abs_max": 1.7915029733120308e+308,
+          "all_nonfinite": false,
+          "max": 1.651926942737476e+308,
+          "min": -1.7915029733120308e+308,
+          "nonfinite_count": 0,
+          "size": 348480
+        },
+        "p_total": {
+          "abs_max": 1.7915029733120308e+308,
+          "all_nonfinite": false,
+          "max": 1.651926942737476e+308,
+          "min": -1.7915029733120308e+308,
+          "nonfinite_count": 0,
+          "size": 348480
+        },
+        "qv": {
+          "abs_max": 0.04996086657047272,
+          "all_nonfinite": false,
+          "max": 0.04996086657047272,
+          "min": 8.198569823036905e-09,
+          "nonfinite_count": 0,
+          "size": 348480
+        },
+        "theta": {
+          "abs_max": 500.31317138671875,
+          "all_nonfinite": false,
+          "max": 500.31317138671875,
+          "min": 290.3363037109375,
+          "nonfinite_count": 0,
+          "size": 348480
+        },
+        "u": {
+          "abs_max": 8.468033788705075e+37,
+          "all_nonfinite": false,
+          "max": 8.468033788705075e+37,
+          "min": -7.367046283491252e+37,
+          "nonfinite_count": 0,
+          "size": 351384
+        },
+        "v": {
+          "abs_max": 13.97754955291748,
+          "all_nonfinite": false,
+          "max": 13.97754955291748,
+          "min": -6.536488056182861,
+          "nonfinite_count": 0,
+          "size": 353760
+        },
+        "w": {
+          "abs_max": 2.2505204694284284e+40,
+          "all_nonfinite": false,
+          "max": 5.380989292976423e+39,
+          "min": -2.2505204694284284e+40,
+          "nonfinite_count": 0,
+          "size": 356400
+        }
+      },
+      "growth_rate_factor_per_step_estimate": [
+        2.925469043287368,
+        4.144033259333121,
+        11.944991515001886,
+        1127.2764297372935,
+        1.253227995095545e+16,
+        7.683862899340108e+89
+      ],
+      "wrf_reference_at_lead_1h": {
+        "lead_hours_requested": 1,
+        "p_perturbation": {
+          "abs_max": 1750.6796875,
+          "max": 1750.6796875,
+          "min": -17.236328125,
+          "shape": [
+            44,
+            66,
+            120
+          ]
+        },
+        "p_total": {
+          "abs_max": 101456.8828125,
+          "max": 101456.8828125,
+          "min": 5224.708984375,
+          "shape": [
+            44,
+            66,
+            120
+          ]
+        },
+        "path": "/mnt/data/canairy_meteo/runs/wrf_l3/20260509_18z_l3_24h_20260511T190519Z/wrfout_d02_2026-05-09_19:00:00",
+        "time_index": 1,
+        "u": {
+          "abs_max": 53.3233528137207,
+          "max": 53.3233528137207,
+          "min": -4.008253574371338,
+          "shape": [
+            44,
+            66,
+            121
+          ]
+        },
+        "v": {
+          "abs_max": 14.732279777526855,
+          "max": 14.732279777526855,
+          "min": -8.408096313476562,
+          "shape": [
+            44,
+            67,
+            120
+          ]
+        },
+        "w": {
+          "abs_max": 2.2411327362060547,
+          "max": 1.1630759239196777,
+          "min": -2.2411327362060547,
+          "shape": [
+            45,
+            66,
+            120
+          ]
+        }
+      }
+    },
+    "20260521": {
+      "onset_step_p_perturbation_>5e4": 56,
+      "onset_window_steps_pm2": [
+        {
+          "step": 54,
+          "lead_s": 540.0,
+          "p_perturbation_abs_max": 37598.437869179346,
+          "p_total_abs_max": 113264.3660965365,
+          "u_abs_max": 25.658235549926758,
+          "v_abs_max": 11.480101585388184,
+          "w_abs_max": 2.1105438182313323,
+          "theta_min": 288.808837890625,
+          "theta_max": 492.527099609375,
+          "ring_abs_max": 113264.3660965365,
+          "interior_abs_max": 110084.09058175923,
+          "ring_over_interior": 1.0288895107183111,
+          "verdict_at_step": "mixed"
+        },
+        {
+          "step": 55,
+          "lead_s": 550.0,
+          "p_perturbation_abs_max": 44108.057897591745,
+          "p_total_abs_max": 113579.52260278109,
+          "u_abs_max": 25.658235549926758,
+          "v_abs_max": 11.480101585388184,
+          "w_abs_max": 2.410458775081862,
+          "theta_min": 288.80889892578125,
+          "theta_max": 492.527099609375,
+          "ring_abs_max": 113579.52260278109,
+          "interior_abs_max": 110607.73940167725,
+          "ring_over_interior": 1.0268677690836052,
+          "verdict_at_step": "mixed"
+        },
+        {
+          "step": 56,
+          "lead_s": 560.0,
+          "p_perturbation_abs_max": 53138.79899278454,
+          "p_total_abs_max": 113752.58717192309,
+          "u_abs_max": 25.662033081054688,
+          "v_abs_max": 11.480101585388184,
+          "w_abs_max": 2.7548633947974412,
+          "theta_min": 288.8089599609375,
+          "theta_max": 492.527099609375,
+          "ring_abs_max": 113752.58717192309,
+          "interior_abs_max": 110972.73140709432,
+          "ring_over_interior": 1.0250498994625183,
+          "verdict_at_step": "mixed"
+        },
+        {
+          "step": 57,
+          "lead_s": 570.0,
+          "p_perturbation_abs_max": 59679.67763615267,
+          "p_total_abs_max": 115062.15745723377,
+          "u_abs_max": 25.899276733398438,
+          "v_abs_max": 11.480101585388184,
+          "w_abs_max": 3.1057508843328137,
+          "theta_min": 288.80902099609375,
+          "theta_max": 492.527099609375,
+          "ring_abs_max": 115062.15745723377,
+          "interior_abs_max": 111154.68933630713,
+          "ring_over_interior": 1.035153425773197,
+          "verdict_at_step": "mixed"
+        },
+        {
+          "step": 58,
+          "lead_s": 580.0,
+          "p_perturbation_abs_max": 72518.94611819083,
+          "p_total_abs_max": 116360.39640921398,
+          "u_abs_max": 26.044872283935547,
+          "v_abs_max": 11.480101585388184,
+          "w_abs_max": 3.606567293367672,
+          "theta_min": 288.80908203125,
+          "theta_max": 492.527099609375,
+          "ring_abs_max": 116360.39640921398,
+          "interior_abs_max": 111130.31308464822,
+          "ring_over_interior": 1.0470626166650137,
+          "verdict_at_step": "mixed"
+        },
+        {
+          "step": 59,
+          "lead_s": 590.0,
+          "p_perturbation_abs_max": 83437.26369347912,
+          "p_total_abs_max": 117512.10641865237,
+          "u_abs_max": 27.174762725830078,
+          "v_abs_max": 11.480101585388184,
+          "w_abs_max": 4.050847561973171,
+          "theta_min": 288.80914306640625,
+          "theta_max": 492.527099609375,
+          "ring_abs_max": 117512.10641865237,
+          "interior_abs_max": 110877.62559270681,
+          "ring_over_interior": 1.0598360651256764,
+          "verdict_at_step": "mixed"
+        },
+        {
+          "step": 60,
+          "lead_s": 600.0,
+          "p_perturbation_abs_max": 101070.36768103554,
+          "p_total_abs_max": 118490.52944224319,
+          "u_abs_max": 28.337844848632812,
+          "v_abs_max": 11.480101585388184,
+          "w_abs_max": 4.654679625605375,
+          "theta_min": 288.8092041015625,
+          "theta_max": 492.527099609375,
+          "ring_abs_max": 118490.52944224319,
+          "interior_abs_max": 112060.4836087749,
+          "ring_over_interior": 1.0573801363906017,
+          "verdict_at_step": "mixed"
+        }
+      ],
+      "final_step": 360,
+      "final_extrema": {
+        "p": {
+          "abs_max": 1.7615914915353736e+308,
+          "all_nonfinite": false,
+          "max": 1.7615914915353736e+308,
+          "min": -1.7108840266127068e+308,
+          "nonfinite_count": 0,
+          "size": 461736
+        },
+        "p_perturbation": {
+          "abs_max": 1.7615914915353736e+308,
+          "all_nonfinite": false,
+          "max": 1.7615914915353736e+308,
+          "min": -1.7108840266127068e+308,
+          "nonfinite_count": 0,
+          "size": 461736
+        },
+        "p_total": {
+          "abs_max": 1.7615914915353736e+308,
+          "all_nonfinite": false,
+          "max": 1.7615914915353736e+308,
+          "min": -1.7108840266127068e+308,
+          "nonfinite_count": 0,
+          "size": 461736
+        },
+        "qv": {
+          "abs_max": 0.04993193596601486,
+          "all_nonfinite": false,
+          "max": 0.04993193596601486,
+          "min": 0.0,
+          "nonfinite_count": 0,
+          "size": 461736
+        },
+        "theta": {
+          "abs_max": 1.0134453775176239e+27,
+          "all_nonfinite": false,
+          "max": 1.0134453775176239e+27,
+          "min": 288.810302734375,
+          "nonfinite_count": 0,
+          "size": 461736
+        },
+        "u": {
+          "abs_max": 7.645911161372819e+37,
+          "all_nonfinite": false,
+          "max": 7.645911161372819e+37,
+          "min": -2.2871068753172936e+37,
+          "nonfinite_count": 0,
+          "size": 464640
+        },
+        "v": {
+          "abs_max": 11.480101585388184,
+          "all_nonfinite": false,
+          "max": 9.909534454345703,
+          "min": -11.480101585388184,
+          "nonfinite_count": 0,
+          "size": 468732
+        },
+        "w": {
+          "abs_max": 1.5603230658316912e+25,
+          "all_nonfinite": false,
+          "max": 1.5603230658316912e+25,
+          "min": -1.506143019570056e+25,
+          "nonfinite_count": 0,
+          "size": 472230
+        }
+      },
+      "growth_rate_factor_per_step_estimate": [
+        1.1731353853333504,
+        1.2047412995639026,
+        1.1230904493015788,
+        1.2151363578120336,
+        1.150558139075735,
+        1.2113336800249659
+      ],
+      "wrf_reference_at_lead_1h": {
+        "lead_hours_requested": 1,
+        "p_perturbation": {
+          "abs_max": 2044.6640625,
+          "max": 2044.6640625,
+          "min": -5.716796875,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "p_total": {
+          "abs_max": 101661.1796875,
+          "max": 101661.1796875,
+          "min": 5224.58349609375,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "path": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T072630Z/wrfout_d02_2026-05-21_19:00:00",
+        "time_index": 1,
+        "u": {
+          "abs_max": 23.920743942260742,
+          "max": 23.920743942260742,
+          "min": -10.915668487548828,
+          "shape": [
+            44,
+            66,
+            160
+          ]
+        },
+        "v": {
+          "abs_max": 16.148338317871094,
+          "max": 10.065285682678223,
+          "min": -16.148338317871094,
+          "shape": [
+            44,
+            67,
+            159
+          ]
+        },
+        "w": {
+          "abs_max": 2.552701234817505,
+          "max": 0.8870079517364502,
+          "min": -2.552701234817505,
+          "shape": [
+            45,
+            66,
+            159
+          ]
+        }
+      }
+    }
+  },
+  "summary_verdict": {
+    "20260429": "B_or_C interior-dominant onset (steps 38-41 ring/interior ratio 0.4-0.02)",
+    "20260509": "A boundary-dominant onset (step 14 ring/interior ratio 15.78, growing)",
+    "20260521": "B_or_C interior-dominant onset (steps 67-78 ring/interior ratio 0.5-1e-72)"
+  },
+  "aggregate_source_localization": "MIXED: source is NOT uniformly boundary forcing. 20260509 favors A (boundary); 20260429 and 20260521 favor B/C (dynamics core or operational composition). Common feature: ~10x-per-step exponential growth in p_perturbation once onset crosses ~5e4 Pa, consistent with a positive feedback loop in the pressure/acoustic coupling rather than a single faulty operator. Suggests acoustic substep or vertical-implicit pressure feedback as the operator family at fault, with boundary-applied wrfbdy ringing as the trigger amplitude on at least 20260509."
+}

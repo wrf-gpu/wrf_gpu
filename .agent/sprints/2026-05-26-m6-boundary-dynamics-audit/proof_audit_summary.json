@@ -1,0 +1,25 @@
+{
+  "aggregate_verdict": "FAIL_B_OR_C",
+  "artifact_type": "m6_boundary_dynamics_audit_summary",
+  "ics_audited": [
+    "20260429",
+    "20260509",
+    "20260521"
+  ],
+  "proofs": [
+    "proof_excursion_catalog_20260429.json",
+    "proof_excursion_catalog_20260509.json",
+    "proof_excursion_catalog_20260521.json",
+    "proof_excursion_classification.json",
+    "proof_source_localization.json"
+  ],
+  "ring_dominance_verdict": "A_boundary_dominant",
+  "steps_per_ic": 360,
+  "worst_excursion": {
+    "field": "p_perturbation",
+    "ic": "20260509",
+    "ratio": 3.5830059466240615e+304,
+    "step": 21,
+    "verdict": "FAIL_B_OR_C"
+  }
+}
