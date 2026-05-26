@@ -1,0 +1,5126 @@
+{
+  "artifact_type": "m6_guard_disabled_first_explosive_operator",
+  "created_utc": "2026-05-26T07:48:00.354932+00:00",
+  "device": "cuda:0",
+  "disable_guards": true,
+  "first_operator": {
+    "cell": [
+      11,
+      31,
+      67
+    ],
+    "field": "theta",
+    "operator": "acoustic",
+    "step": 47,
+    "trace_hit": {
+      "cell": [
+        12,
+        31,
+        68
+      ],
+      "envelope_1x": 700.0,
+      "field": "theta",
+      "lead_s": 470.0,
+      "nonfinite_count": 0,
+      "ratio_to_envelope": 28.577042410714284,
+      "step": 47,
+      "threshold_10x": 7000.0,
+      "value": 20003.9296875
+    }
+  },
+  "operator": "acoustic",
+  "operator_vocabulary": [
+    "acoustic",
+    "horizontal_pressure_gradient",
+    "vertical_implicit",
+    "calc_coef_w",
+    "advance_mu_t",
+    "advance_w",
+    "advance_uv"
+  ],
+  "per_substep_trace": [
+    {
+      "fields": {
+        "mu": {
+          "abs_max": 147871.32209254266,
+          "abs_max_cell": [
+            0,
+            48,
+            23
+          ],
+          "abs_max_value": 147871.32209254266,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 147871.32209254266,
+          "min": 37732.38765898919,
+          "nonfinite_count": 0,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "mu_perturbation": {
+          "abs_max": 73609.17365504257,
+          "abs_max_cell": [
+            0,
+            48,
+            23
+          ],
+          "abs_max_value": 73609.17365504257,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 73609.17365504257,
+          "min": -40138.59061325731,
+          "nonfinite_count": 0,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "p_perturbation": {
+          "abs_max": 2193.0110665185784,
+          "abs_max_cell": [
+            0,
+            53,
+            25
+          ],
+          "abs_max_value": 2193.0110665185784,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 2193.0110665185784,
+          "min": -312.3966775211593,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "p_total": {
+          "abs_max": 101899.21419151858,
+          "abs_max_cell": [
+            0,
+            53,
+            25
+          ],
+          "abs_max_value": 101899.21419151858,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 101899.21419151858,
+          "min": 5225.234740686551,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "qc": {
+          "abs_max": 0.0,
+          "abs_max_cell": [
+            0,
+            0,
+            0
+          ],
+          "abs_max_value": 0.0,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 0.0,
+          "min": 0.0,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "qv": {
+          "abs_max": 0.012821151874959469,
+          "abs_max_cell": [
+            0,
+            64,
+            141
+          ],
+          "abs_max_value": 0.012821151874959469,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 0.012821151874959469,
+          "min": 2.4403229872405063e-06,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "theta": {
+          "abs_max": 1729.86376953125,
+          "abs_max_cell": [
+            12,
+            31,
+            68
+          ],
+          "abs_max_value": -1729.86376953125,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 1695.5623779296875,
+          "min": -1729.86376953125,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "u": {
+          "abs_max": 238.281494140625,
+          "abs_max_cell": [
+            12,
+            31,
+            68
+          ],
+          "abs_max_value": 238.281494140625,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 238.281494140625,
+          "min": -41.957183837890625,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            160
+          ]
+        },
+        "v": {
+          "abs_max": 121.54149627685547,
+          "abs_max_cell": [
+            11,
+            30,
+            67
+          ],
+          "abs_max_value": -121.54149627685547,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 38.552860260009766,
+          "min": -121.54149627685547,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            67,
+            159
+          ]
+        },
+        "w": {
+          "abs_max": 0.8348257068341806,
+          "abs_max_cell": [
+            0,
+            51,
+            21
+          ],
+          "abs_max_value": 0.8348257068341806,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 0.8348257068341806,
+          "min": -0.6843829415167494,
+          "nonfinite_count": 0,
+          "shape": [
+            45,
+            66,
+            159
+          ]
+        }
+      },
+      "operator": "horizontal_pressure_gradient",
+      "rk_stage": 1,
+      "step": 47
+    },
+    {
+      "acoustic_substep": 1,
+      "fields": {
+        "mu": {
+          "abs_max": 148073.60515584477,
+          "abs_max_cell": [
+            0,
+            48,
+            23
+          ],
+          "abs_max_value": 148073.60515584477,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 148073.60515584477,
+          "min": 37655.42201393402,
+          "nonfinite_count": 0,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "mu_perturbation": {
+          "abs_max": 73811.45671834468,
+          "abs_max_cell": [
+            0,
+            48,
+            23
+          ],
+          "abs_max_value": 73811.45671834468,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 73811.45671834468,
+          "min": -41159.43794475444,
+          "nonfinite_count": 0,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "p_perturbation": {
+          "abs_max": 2193.0110665185784,
+          "abs_max_cell": [
+            0,
+            53,
+            25
+          ],
+          "abs_max_value": 2193.0110665185784,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 2193.0110665185784,
+          "min": -312.3966775211593,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "p_total": {
+          "abs_max": 101899.21419151858,
+          "abs_max_cell": [
+            0,
+            53,
+            25
+          ],
+          "abs_max_value": 101899.21419151858,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 101899.21419151858,
+          "min": 5225.234740686551,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "qc": {
+          "abs_max": 0.0,
+          "abs_max_cell": [
+            0,
+            0,
+            0
+          ],
+          "abs_max_value": 0.0,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 0.0,
+          "min": 0.0,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "qv": {
+          "abs_max": 0.012821151874959469,
+          "abs_max_cell": [
+            0,
+            64,
+            141
+          ],
+          "abs_max_value": 0.012821151874959469,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 0.012821151874959469,
+          "min": 2.4403229872405063e-06,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "theta": {
+          "abs_max": 20003.9296875,
+          "abs_max_cell": [
+            12,
+            31,
+            68
+          ],
+          "abs_max_value": 20003.9296875,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 20003.9296875,
+          "min": -5335.45458984375,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "u": {
+          "abs_max": 238.281494140625,
+          "abs_max_cell": [
+            12,
+            31,
+            68
+          ],
+          "abs_max_value": 238.281494140625,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 238.281494140625,
+          "min": -41.957183837890625,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            160
+          ]
+        },
+        "v": {
+          "abs_max": 121.54149627685547,
+          "abs_max_cell": [
+            11,
+            30,
+            67
+          ],
+          "abs_max_value": -121.54149627685547,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 38.552860260009766,
+          "min": -121.54149627685547,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            67,
+            159
+          ]
+        },
+        "w": {
+          "abs_max": 0.8348257068341806,
+          "abs_max_cell": [
+            0,
+            51,
+            21
+          ],
+          "abs_max_value": 0.8348257068341806,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 0.8348257068341806,
+          "min": -0.6843829415167494,
+          "nonfinite_count": 0,
+          "shape": [
+            45,
+            66,
+            159
+          ]
+        }
+      },
+      "operator": "acoustic",
+      "rk_stage": 1,
+      "step": 47
+    },
+    {
+      "fields": {
+        "mu": {
+          "abs_max": 148073.60515584477,
+          "abs_max_cell": [
+            0,
+            48,
+            23
+          ],
+          "abs_max_value": 148073.60515584477,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 148073.60515584477,
+          "min": 37655.42201393402,
+          "nonfinite_count": 0,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "mu_perturbation": {
+          "abs_max": 73811.45671834468,
+          "abs_max_cell": [
+            0,
+            48,
+            23
+          ],
+          "abs_max_value": 73811.45671834468,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 73811.45671834468,
+          "min": -41159.43794475444,
+          "nonfinite_count": 0,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "p_perturbation": {
+          "abs_max": 2193.0110665185784,
+          "abs_max_cell": [
+            0,
+            53,
+            25
+          ],
+          "abs_max_value": 2193.0110665185784,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 2193.0110665185784,
+          "min": -312.3966775211593,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "p_total": {
+          "abs_max": 101899.21419151858,
+          "abs_max_cell": [
+            0,
+            53,
+            25
+          ],
+          "abs_max_value": 101899.21419151858,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 101899.21419151858,
+          "min": 5225.234740686551,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "qc": {
+          "abs_max": 0.0,
+          "abs_max_cell": [
+            0,
+            0,
+            0
+          ],
+          "abs_max_value": 0.0,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 0.0,
+          "min": 0.0,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "qv": {
+          "abs_max": 0.012821151874959469,
+          "abs_max_cell": [
+            0,
+            64,
+            141
+          ],
+          "abs_max_value": 0.012821151874959469,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 0.012821151874959469,
+          "min": 2.4403229872405063e-06,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "theta": {
+          "abs_max": 20003.9296875,
+          "abs_max_cell": [
+            12,
+            31,
+            68
+          ],
+          "abs_max_value": 20003.9296875,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 20003.9296875,
+          "min": -5335.45458984375,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "u": {
+          "abs_max": 238.281494140625,
+          "abs_max_cell": [
+            12,
+            31,
+            68
+          ],
+          "abs_max_value": 238.281494140625,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 238.281494140625,
+          "min": -41.957183837890625,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            160
+          ]
+        },
+        "v": {
+          "abs_max": 121.54149627685547,
+          "abs_max_cell": [
+            11,
+            30,
+            67
+          ],
+          "abs_max_value": -121.54149627685547,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 38.552860260009766,
+          "min": -121.54149627685547,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            67,
+            159
+          ]
+        },
+        "w": {
+          "abs_max": 0.8348257068341806,
+          "abs_max_cell": [
+            0,
+            51,
+            21
+          ],
+          "abs_max_value": 0.8348257068341806,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 0.8348257068341806,
+          "min": -0.6843829415167494,
+          "nonfinite_count": 0,
+          "shape": [
+            45,
+            66,
+            159
+          ]
+        }
+      },
+      "operator": "acoustic_halo",
+      "rk_stage": 1,
+      "step": 47
+    },
+    {
+      "fields": {
+        "mu": {
+          "abs_max": 147871.32209254266,
+          "abs_max_cell": [
+            0,
+            48,
+            23
+          ],
+          "abs_max_value": 147871.32209254266,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 147871.32209254266,
+          "min": 37732.38765898919,
+          "nonfinite_count": 0,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "mu_perturbation": {
+          "abs_max": 73609.17365504257,
+          "abs_max_cell": [
+            0,
+            48,
+            23
+          ],
+          "abs_max_value": 73609.17365504257,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 73609.17365504257,
+          "min": -40138.59061325731,
+          "nonfinite_count": 0,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "p_perturbation": {
+          "abs_max": 2193.3191289325478,
+          "abs_max_cell": [
+            0,
+            53,
+            25
+          ],
+          "abs_max_value": 2193.3191289325478,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 2193.3191289325478,
+          "min": -1029.84362597578,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "p_total": {
+          "abs_max": 101899.52225393255,
+          "abs_max_cell": [
+            0,
+            53,
+            25
+          ],
+          "abs_max_value": 101899.52225393255,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 101899.52225393255,
+          "min": 5225.231013223127,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "qc": {
+          "abs_max": 0.0,
+          "abs_max_cell": [
+            0,
+            0,
+            0
+          ],
+          "abs_max_value": 0.0,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 0.0,
+          "min": 0.0,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "qv": {
+          "abs_max": 0.0128245884552598,
+          "abs_max_cell": [
+            0,
+            64,
+            141
+          ],
+          "abs_max_value": 0.0128245884552598,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 0.0128245884552598,
+          "min": 2.4402934286626987e-06,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "theta": {
+          "abs_max": 19934.794921875,
+          "abs_max_cell": [
+            12,
+            31,
+            68
+          ],
+          "abs_max_value": -19934.794921875,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 19160.921875,
+          "min": -19934.794921875,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "u": {
+          "abs_max": 237.16014099121094,
+          "abs_max_cell": [
+            12,
+            31,
+            69
+          ],
+          "abs_max_value": 237.16014099121094,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 237.16014099121094,
+          "min": -42.32204818725586,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            160
+          ]
+        },
+        "v": {
+          "abs_max": 115.7413558959961,
+          "abs_max_cell": [
+            11,
+            30,
+            67
+          ],
+          "abs_max_value": -115.7413558959961,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 38.54692459106445,
+          "min": -115.7413558959961,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            67,
+            159
+          ]
+        },
+        "w": {
+          "abs_max": 0.8340481825669397,
+          "abs_max_cell": [
+            0,
+            51,
+            21
+          ],
+          "abs_max_value": 0.8340481825669397,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 0.8340481825669397,
+          "min": -0.6865620974659922,
+          "nonfinite_count": 0,
+          "shape": [
+            45,
+            66,
+            159
+          ]
+        }
+      },
+      "operator": "horizontal_pressure_gradient",
+      "rk_stage": 2,
+      "step": 47
+    },
+    {
+      "acoustic_substep": 1,
+      "fields": {
+        "mu": {
+          "abs_max": 148074.37648222374,
+          "abs_max_cell": [
+            0,
+            48,
+            23
+          ],
+          "abs_max_value": 148074.37648222374,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 148074.37648222374,
+          "min": 37686.714510876394,
+          "nonfinite_count": 0,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "mu_perturbation": {
+          "abs_max": 73812.22804472367,
+          "abs_max_cell": [
+            0,
+            48,
+            23
+          ],
+          "abs_max_value": 73812.22804472367,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 73812.22804472367,
+          "min": -41356.92287623988,
+          "nonfinite_count": 0,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "p_perturbation": {
+          "abs_max": 2193.3191289325478,
+          "abs_max_cell": [
+            0,
+            53,
+            25
+          ],
+          "abs_max_value": 2193.3191289325478,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 2193.3191289325478,
+          "min": -1029.84362597578,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "p_total": {
+          "abs_max": 101899.52225393255,
+          "abs_max_cell": [
+            0,
+            53,
+            25
+          ],
+          "abs_max_value": 101899.52225393255,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 101899.52225393255,
+          "min": 5225.231013223127,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "qc": {
+          "abs_max": 0.0,
+          "abs_max_cell": [
+            0,
+            0,
+            0
+          ],
+          "abs_max_value": 0.0,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 0.0,
+          "min": 0.0,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "qv": {
+          "abs_max": 0.0128245884552598,
+          "abs_max_cell": [
+            0,
+            64,
+            141
+          ],
+          "abs_max_value": 0.0128245884552598,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 0.0128245884552598,
+          "min": 2.4402934286626987e-06,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "theta": {
+          "abs_max": 94796.1328125,
+          "abs_max_cell": [
+            13,
+            31,
+            68
+          ],
+          "abs_max_value": -94796.1328125,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 32970.25,
+          "min": -94796.1328125,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "u": {
+          "abs_max": 237.16014099121094,
+          "abs_max_cell": [
+            12,
+            31,
+            69
+          ],
+          "abs_max_value": 237.16014099121094,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 237.16014099121094,
+          "min": -42.32204818725586,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            160
+          ]
+        },
+        "v": {
+          "abs_max": 115.7413558959961,
+          "abs_max_cell": [
+            11,
+            30,
+            67
+          ],
+          "abs_max_value": -115.7413558959961,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 38.54692459106445,
+          "min": -115.7413558959961,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            67,
+            159
+          ]
+        },
+        "w": {
+          "abs_max": 0.8340481825669397,
+          "abs_max_cell": [
+            0,
+            51,
+            21
+          ],
+          "abs_max_value": 0.8340481825669397,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 0.8340481825669397,
+          "min": -0.6865620974659922,
+          "nonfinite_count": 0,
+          "shape": [
+            45,
+            66,
+            159
+          ]
+        }
+      },
+      "operator": "acoustic",
+      "rk_stage": 2,
+      "step": 47
+    },
+    {
+      "acoustic_substep": 2,
+      "fields": {
+        "mu": {
+          "abs_max": 148277.72208652546,
+          "abs_max_cell": [
+            0,
+            48,
+            23
+          ],
+          "abs_max_value": 148277.72208652546,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 148277.72208652546,
+          "min": 36860.76402841122,
+          "nonfinite_count": 0,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "mu_perturbation": {
+          "abs_max": 74015.57364902538,
+          "abs_max_cell": [
+            0,
+            48,
+            23
+          ],
+          "abs_max_value": 74015.57364902538,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 74015.57364902538,
+          "min": -42579.51722158878,
+          "nonfinite_count": 0,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "p_perturbation": {
+          "abs_max": 2193.3191289325478,
+          "abs_max_cell": [
+            0,
+            53,
+            25
+          ],
+          "abs_max_value": 2193.3191289325478,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 2193.3191289325478,
+          "min": -1029.84362597578,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "p_total": {
+          "abs_max": 101899.52225393255,
+          "abs_max_cell": [
+            0,
+            53,
+            25
+          ],
+          "abs_max_value": 101899.52225393255,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 101899.52225393255,
+          "min": 5225.231013223127,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "qc": {
+          "abs_max": 0.0,
+          "abs_max_cell": [
+            0,
+            0,
+            0
+          ],
+          "abs_max_value": 0.0,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 0.0,
+          "min": 0.0,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "qv": {
+          "abs_max": 0.0128245884552598,
+          "abs_max_cell": [
+            0,
+            64,
+            141
+          ],
+          "abs_max_value": 0.0128245884552598,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 0.0128245884552598,
+          "min": 2.4402934286626987e-06,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "theta": {
+          "abs_max": 1871761.125,
+          "abs_max_cell": [
+            14,
+            31,
+            68
+          ],
+          "abs_max_value": -1871761.125,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 50921.078125,
+          "min": -1871761.125,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "u": {
+          "abs_max": 237.16014099121094,
+          "abs_max_cell": [
+            12,
+            31,
+            69
+          ],
+          "abs_max_value": 237.16014099121094,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 237.16014099121094,
+          "min": -42.32204818725586,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            160
+          ]
+        },
+        "v": {
+          "abs_max": 115.7413558959961,
+          "abs_max_cell": [
+            11,
+            30,
+            67
+          ],
+          "abs_max_value": -115.7413558959961,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 38.54692459106445,
+          "min": -115.7413558959961,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            67,
+            159
+          ]
+        },
+        "w": {
+          "abs_max": 0.8340481825669397,
+          "abs_max_cell": [
+            0,
+            51,
+            21
+          ],
+          "abs_max_value": 0.8340481825669397,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 0.8340481825669397,
+          "min": -0.6865620974659922,
+          "nonfinite_count": 0,
+          "shape": [
+            45,
+            66,
+            159
+          ]
+        }
+      },
+      "operator": "acoustic",
+      "rk_stage": 2,
+      "step": 47
+    },
+    {
+      "acoustic_substep": 3,
+      "fields": {
+        "mu": {
+          "abs_max": 148481.35934050725,
+          "abs_max_cell": [
+            0,
+            48,
+            23
+          ],
+          "abs_max_value": 148481.35934050725,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 148481.35934050725,
+          "min": 35634.69350217797,
+          "nonfinite_count": 0,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "mu_perturbation": {
+          "abs_max": 74219.21090300714,
+          "abs_max_cell": [
+            0,
+            48,
+            23
+          ],
+          "abs_max_value": 74219.21090300714,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 74219.21090300714,
+          "min": -43805.58774782203,
+          "nonfinite_count": 0,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "p_perturbation": {
+          "abs_max": 2193.3191289325478,
+          "abs_max_cell": [
+            0,
+            53,
+            25
+          ],
+          "abs_max_value": 2193.3191289325478,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 2193.3191289325478,
+          "min": -1029.84362597578,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "p_total": {
+          "abs_max": 101899.52225393255,
+          "abs_max_cell": [
+            0,
+            53,
+            25
+          ],
+          "abs_max_value": 101899.52225393255,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 101899.52225393255,
+          "min": 5225.231013223127,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "qc": {
+          "abs_max": 0.0,
+          "abs_max_cell": [
+            0,
+            0,
+            0
+          ],
+          "abs_max_value": 0.0,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 0.0,
+          "min": 0.0,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "qv": {
+          "abs_max": 0.0128245884552598,
+          "abs_max_cell": [
+            0,
+            64,
+            141
+          ],
+          "abs_max_value": 0.0128245884552598,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 0.0128245884552598,
+          "min": 2.4402934286626987e-06,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "theta": {
+          "abs_max": 1208848.125,
+          "abs_max_cell": [
+            15,
+            31,
+            68
+          ],
+          "abs_max_value": 1208848.125,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 1208848.125,
+          "min": -10156.1708984375,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "u": {
+          "abs_max": 237.16014099121094,
+          "abs_max_cell": [
+            12,
+            31,
+            69
+          ],
+          "abs_max_value": 237.16014099121094,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 237.16014099121094,
+          "min": -42.32204818725586,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            160
+          ]
+        },
+        "v": {
+          "abs_max": 115.7413558959961,
+          "abs_max_cell": [
+            11,
+            30,
+            67
+          ],
+          "abs_max_value": -115.7413558959961,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 38.54692459106445,
+          "min": -115.7413558959961,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            67,
+            159
+          ]
+        },
+        "w": {
+          "abs_max": 0.8340481825669397,
+          "abs_max_cell": [
+            0,
+            51,
+            21
+          ],
+          "abs_max_value": 0.8340481825669397,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 0.8340481825669397,
+          "min": -0.6865620974659922,
+          "nonfinite_count": 0,
+          "shape": [
+            45,
+            66,
+            159
+          ]
+        }
+      },
+      "operator": "acoustic",
+      "rk_stage": 2,
+      "step": 47
+    },
+    {
+      "acoustic_substep": 4,
+      "fields": {
+        "mu": {
+          "abs_max": 148685.28867955744,
+          "abs_max_cell": [
+            0,
+            48,
+            23
+          ],
+          "abs_max_value": 148685.28867955744,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 148685.28867955744,
+          "min": 34405.93148052562,
+          "nonfinite_count": 0,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "mu_perturbation": {
+          "abs_max": 74423.14024205734,
+          "abs_max_cell": [
+            0,
+            48,
+            23
+          ],
+          "abs_max_value": 74423.14024205734,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 74423.14024205734,
+          "min": -45034.34976947438,
+          "nonfinite_count": 0,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "p_perturbation": {
+          "abs_max": 2193.3191289325478,
+          "abs_max_cell": [
+            0,
+            53,
+            25
+          ],
+          "abs_max_value": 2193.3191289325478,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 2193.3191289325478,
+          "min": -1029.84362597578,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "p_total": {
+          "abs_max": 101899.52225393255,
+          "abs_max_cell": [
+            0,
+            53,
+            25
+          ],
+          "abs_max_value": 101899.52225393255,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 101899.52225393255,
+          "min": 5225.231013223127,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "qc": {
+          "abs_max": 0.0,
+          "abs_max_cell": [
+            0,
+            0,
+            0
+          ],
+          "abs_max_value": 0.0,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 0.0,
+          "min": 0.0,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "qv": {
+          "abs_max": 0.0128245884552598,
+          "abs_max_cell": [
+            0,
+            64,
+            141
+          ],
+          "abs_max_value": 0.0128245884552598,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 0.0128245884552598,
+          "min": 2.4402934286626987e-06,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "theta": {
+          "abs_max": 13004205.0,
+          "abs_max_cell": [
+            15,
+            31,
+            68
+          ],
+          "abs_max_value": 13004205.0,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 13004205.0,
+          "min": -339799.625,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "u": {
+          "abs_max": 237.16014099121094,
+          "abs_max_cell": [
+            12,
+            31,
+            69
+          ],
+          "abs_max_value": 237.16014099121094,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 237.16014099121094,
+          "min": -42.32204818725586,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            160
+          ]
+        },
+        "v": {
+          "abs_max": 115.7413558959961,
+          "abs_max_cell": [
+            11,
+            30,
+            67
+          ],
+          "abs_max_value": -115.7413558959961,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 38.54692459106445,
+          "min": -115.7413558959961,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            67,
+            159
+          ]
+        },
+        "w": {
+          "abs_max": 0.8340481825669397,
+          "abs_max_cell": [
+            0,
+            51,
+            21
+          ],
+          "abs_max_value": 0.8340481825669397,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 0.8340481825669397,
+          "min": -0.6865620974659922,
+          "nonfinite_count": 0,
+          "shape": [
+            45,
+            66,
+            159
+          ]
+        }
+      },
+      "operator": "acoustic",
+      "rk_stage": 2,
+      "step": 47
+    },
+    {
+      "acoustic_substep": 5,
+      "fields": {
+        "mu": {
+          "abs_max": 148889.5105393924,
+          "abs_max_cell": [
+            0,
+            48,
+            23
+          ],
+          "abs_max_value": 148889.5105393924,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 148889.5105393924,
+          "min": 33175.26088125739,
+          "nonfinite_count": 0,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "mu_perturbation": {
+          "abs_max": 74627.36210189229,
+          "abs_max_cell": [
+            0,
+            48,
+            23
+          ],
+          "abs_max_value": 74627.36210189229,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 74627.36210189229,
+          "min": -46265.02036874261,
+          "nonfinite_count": 0,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "p_perturbation": {
+          "abs_max": 2193.3191289325478,
+          "abs_max_cell": [
+            0,
+            53,
+            25
+          ],
+          "abs_max_value": 2193.3191289325478,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 2193.3191289325478,
+          "min": -1029.84362597578,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "p_total": {
+          "abs_max": 101899.52225393255,
+          "abs_max_cell": [
+            0,
+            53,
+            25
+          ],
+          "abs_max_value": 101899.52225393255,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 101899.52225393255,
+          "min": 5225.231013223127,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "qc": {
+          "abs_max": 0.0,
+          "abs_max_cell": [
+            0,
+            0,
+            0
+          ],
+          "abs_max_value": 0.0,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 0.0,
+          "min": 0.0,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "qv": {
+          "abs_max": 0.0128245884552598,
+          "abs_max_cell": [
+            0,
+            64,
+            141
+          ],
+          "abs_max_value": 0.0128245884552598,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 0.0128245884552598,
+          "min": 2.4402934286626987e-06,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "theta": {
+          "abs_max": 3737850.25,
+          "abs_max_cell": [
+            16,
+            31,
+            68
+          ],
+          "abs_max_value": -3737850.25,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 295722.21875,
+          "min": -3737850.25,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "u": {
+          "abs_max": 237.16014099121094,
+          "abs_max_cell": [
+            12,
+            31,
+            69
+          ],
+          "abs_max_value": 237.16014099121094,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 237.16014099121094,
+          "min": -42.32204818725586,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            160
+          ]
+        },
+        "v": {
+          "abs_max": 115.7413558959961,
+          "abs_max_cell": [
+            11,
+            30,
+            67
+          ],
+          "abs_max_value": -115.7413558959961,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 38.54692459106445,
+          "min": -115.7413558959961,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            67,
+            159
+          ]
+        },
+        "w": {
+          "abs_max": 0.8340481825669397,
+          "abs_max_cell": [
+            0,
+            51,
+            21
+          ],
+          "abs_max_value": 0.8340481825669397,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 0.8340481825669397,
+          "min": -0.6865620974659922,
+          "nonfinite_count": 0,
+          "shape": [
+            45,
+            66,
+            159
+          ]
+        }
+      },
+      "operator": "acoustic",
+      "rk_stage": 2,
+      "step": 47
+    },
+    {
+      "fields": {
+        "mu": {
+          "abs_max": 148889.5105393924,
+          "abs_max_cell": [
+            0,
+            48,
+            23
+          ],
+          "abs_max_value": 148889.5105393924,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 148889.5105393924,
+          "min": 33175.26088125739,
+          "nonfinite_count": 0,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "mu_perturbation": {
+          "abs_max": 74627.36210189229,
+          "abs_max_cell": [
+            0,
+            48,
+            23
+          ],
+          "abs_max_value": 74627.36210189229,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 74627.36210189229,
+          "min": -46265.02036874261,
+          "nonfinite_count": 0,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "p_perturbation": {
+          "abs_max": 2193.3191289325478,
+          "abs_max_cell": [
+            0,
+            53,
+            25
+          ],
+          "abs_max_value": 2193.3191289325478,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 2193.3191289325478,
+          "min": -1029.84362597578,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "p_total": {
+          "abs_max": 101899.52225393255,
+          "abs_max_cell": [
+            0,
+            53,
+            25
+          ],
+          "abs_max_value": 101899.52225393255,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 101899.52225393255,
+          "min": 5225.231013223127,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "qc": {
+          "abs_max": 0.0,
+          "abs_max_cell": [
+            0,
+            0,
+            0
+          ],
+          "abs_max_value": 0.0,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 0.0,
+          "min": 0.0,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "qv": {
+          "abs_max": 0.0128245884552598,
+          "abs_max_cell": [
+            0,
+            64,
+            141
+          ],
+          "abs_max_value": 0.0128245884552598,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 0.0128245884552598,
+          "min": 2.4402934286626987e-06,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "theta": {
+          "abs_max": 3737850.25,
+          "abs_max_cell": [
+            16,
+            31,
+            68
+          ],
+          "abs_max_value": -3737850.25,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 295722.21875,
+          "min": -3737850.25,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "u": {
+          "abs_max": 237.16014099121094,
+          "abs_max_cell": [
+            12,
+            31,
+            69
+          ],
+          "abs_max_value": 237.16014099121094,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 237.16014099121094,
+          "min": -42.32204818725586,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            160
+          ]
+        },
+        "v": {
+          "abs_max": 115.7413558959961,
+          "abs_max_cell": [
+            11,
+            30,
+            67
+          ],
+          "abs_max_value": -115.7413558959961,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 38.54692459106445,
+          "min": -115.7413558959961,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            67,
+            159
+          ]
+        },
+        "w": {
+          "abs_max": 0.8340481825669397,
+          "abs_max_cell": [
+            0,
+            51,
+            21
+          ],
+          "abs_max_value": 0.8340481825669397,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 0.8340481825669397,
+          "min": -0.6865620974659922,
+          "nonfinite_count": 0,
+          "shape": [
+            45,
+            66,
+            159
+          ]
+        }
+      },
+      "operator": "acoustic_halo",
+      "rk_stage": 2,
+      "step": 47
+    },
+    {
+      "fields": {
+        "mu": {
+          "abs_max": 147871.32209254266,
+          "abs_max_cell": [
+            0,
+            48,
+            23
+          ],
+          "abs_max_value": 147871.32209254266,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 147871.32209254266,
+          "min": 37732.38765898919,
+          "nonfinite_count": 0,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "mu_perturbation": {
+          "abs_max": 73609.17365504257,
+          "abs_max_cell": [
+            0,
+            48,
+            23
+          ],
+          "abs_max_value": 73609.17365504257,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 73609.17365504257,
+          "min": -40138.59061325731,
+          "nonfinite_count": 0,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "p_perturbation": {
+          "abs_max": 3389.776312752001,
+          "abs_max_cell": [
+            11,
+            29,
+            67
+          ],
+          "abs_max_value": -3389.776312752001,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 2226.438328271135,
+          "min": -3389.776312752001,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "p_total": {
+          "abs_max": 101904.61582974555,
+          "abs_max_cell": [
+            0,
+            51,
+            29
+          ],
+          "abs_max_value": 101904.61582974555,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 101904.61582974555,
+          "min": 5225.216953555058,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "qc": {
+          "abs_max": 0.0,
+          "abs_max_cell": [
+            0,
+            0,
+            0
+          ],
+          "abs_max_value": 0.0,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 0.0,
+          "min": 0.0,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "qv": {
+          "abs_max": 0.012835397385060787,
+          "abs_max_cell": [
+            0,
+            64,
+            141
+          ],
+          "abs_max_value": 0.012835397385060787,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 0.012835397385060787,
+          "min": 2.439401896481286e-06,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "theta": {
+          "abs_max": 3951446.25,
+          "abs_max_cell": [
+            14,
+            31,
+            69
+          ],
+          "abs_max_value": -3951446.25,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 3463422.0,
+          "min": -3951446.25,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "u": {
+          "abs_max": 309.3918151855469,
+          "abs_max_cell": [
+            12,
+            31,
+            68
+          ],
+          "abs_max_value": 309.3918151855469,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 309.3918151855469,
+          "min": -168.8107147216797,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            160
+          ]
+        },
+        "v": {
+          "abs_max": 128.3599395751953,
+          "abs_max_cell": [
+            11,
+            29,
+            67
+          ],
+          "abs_max_value": -128.3599395751953,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 38.48976516723633,
+          "min": -128.3599395751953,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            67,
+            159
+          ]
+        },
+        "w": {
+          "abs_max": 0.8317929176316511,
+          "abs_max_cell": [
+            0,
+            51,
+            21
+          ],
+          "abs_max_value": 0.8317929176316511,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 0.8317929176316511,
+          "min": -0.6937647936774819,
+          "nonfinite_count": 0,
+          "shape": [
+            45,
+            66,
+            159
+          ]
+        }
+      },
+      "operator": "horizontal_pressure_gradient",
+      "rk_stage": 3,
+      "step": 47
+    },
+    {
+      "acoustic_substep": 1,
+      "fields": {
+        "mu": {
+          "abs_max": 148076.74487965304,
+          "abs_max_cell": [
+            0,
+            48,
+            23
+          ],
+          "abs_max_value": 148076.74487965304,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 148076.74487965304,
+          "min": 37629.193073446964,
+          "nonfinite_count": 0,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "mu_perturbation": {
+          "abs_max": 73814.59644215295,
+          "abs_max_cell": [
+            0,
+            48,
+            23
+          ],
+          "abs_max_value": 73814.59644215295,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 73814.59644215295,
+          "min": -40419.95567893577,
+          "nonfinite_count": 0,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "p_perturbation": {
+          "abs_max": 3389.776312752001,
+          "abs_max_cell": [
+            11,
+            29,
+            67
+          ],
+          "abs_max_value": -3389.776312752001,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 2226.438328271135,
+          "min": -3389.776312752001,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "p_total": {
+          "abs_max": 101904.61582974555,
+          "abs_max_cell": [
+            0,
+            51,
+            29
+          ],
+          "abs_max_value": 101904.61582974555,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 101904.61582974555,
+          "min": 5225.216953555058,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "qc": {
+          "abs_max": 0.0,
+          "abs_max_cell": [
+            0,
+            0,
+            0
+          ],
+          "abs_max_value": 0.0,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 0.0,
+          "min": 0.0,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "qv": {
+          "abs_max": 0.012835397385060787,
+          "abs_max_cell": [
+            0,
+            64,
+            141
+          ],
+          "abs_max_value": 0.012835397385060787,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 0.012835397385060787,
+          "min": 2.439401896481286e-06,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "theta": {
+          "abs_max": 6017118.0,
+          "abs_max_cell": [
+            14,
+            31,
+            68
+          ],
+          "abs_max_value": -6017118.0,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 1493088.375,
+          "min": -6017118.0,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "u": {
+          "abs_max": 309.3918151855469,
+          "abs_max_cell": [
+            12,
+            31,
+            68
+          ],
+          "abs_max_value": 309.3918151855469,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 309.3918151855469,
+          "min": -168.8107147216797,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            160
+          ]
+        },
+        "v": {
+          "abs_max": 128.3599395751953,
+          "abs_max_cell": [
+            11,
+            29,
+            67
+          ],
+          "abs_max_value": -128.3599395751953,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 38.48976516723633,
+          "min": -128.3599395751953,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            67,
+            159
+          ]
+        },
+        "w": {
+          "abs_max": 0.8317929176316511,
+          "abs_max_cell": [
+            0,
+            51,
+            21
+          ],
+          "abs_max_value": 0.8317929176316511,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 0.8317929176316511,
+          "min": -0.6937647936774819,
+          "nonfinite_count": 0,
+          "shape": [
+            45,
+            66,
+            159
+          ]
+        }
+      },
+      "operator": "acoustic",
+      "rk_stage": 3,
+      "step": 47
+    },
+    {
+      "acoustic_substep": 2,
+      "fields": {
+        "mu": {
+          "abs_max": 148282.46067841328,
+          "abs_max_cell": [
+            0,
+            48,
+            23
+          ],
+          "abs_max_value": 148282.46067841328,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 148282.46067841328,
+          "min": 37534.778398758936,
+          "nonfinite_count": 0,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "mu_perturbation": {
+          "abs_max": 74020.31224091318,
+          "abs_max_cell": [
+            0,
+            48,
+            23
+          ],
+          "abs_max_value": 74020.31224091318,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 74020.31224091318,
+          "min": -40695.42760902133,
+          "nonfinite_count": 0,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "p_perturbation": {
+          "abs_max": 3389.776312752001,
+          "abs_max_cell": [
+            11,
+            29,
+            67
+          ],
+          "abs_max_value": -3389.776312752001,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 2226.438328271135,
+          "min": -3389.776312752001,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "p_total": {
+          "abs_max": 101904.61582974555,
+          "abs_max_cell": [
+            0,
+            51,
+            29
+          ],
+          "abs_max_value": 101904.61582974555,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 101904.61582974555,
+          "min": 5225.216953555058,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "qc": {
+          "abs_max": 0.0,
+          "abs_max_cell": [
+            0,
+            0,
+            0
+          ],
+          "abs_max_value": 0.0,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 0.0,
+          "min": 0.0,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "qv": {
+          "abs_max": 0.012835397385060787,
+          "abs_max_cell": [
+            0,
+            64,
+            141
+          ],
+          "abs_max_value": 0.012835397385060787,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 0.012835397385060787,
+          "min": 2.439401896481286e-06,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "theta": {
+          "abs_max": 12502766.0,
+          "abs_max_cell": [
+            13,
+            31,
+            68
+          ],
+          "abs_max_value": -12502766.0,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 1835380.0,
+          "min": -12502766.0,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "u": {
+          "abs_max": 309.3918151855469,
+          "abs_max_cell": [
+            12,
+            31,
+            68
+          ],
+          "abs_max_value": 309.3918151855469,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 309.3918151855469,
+          "min": -168.8107147216797,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            160
+          ]
+        },
+        "v": {
+          "abs_max": 128.3599395751953,
+          "abs_max_cell": [
+            11,
+            29,
+            67
+          ],
+          "abs_max_value": -128.3599395751953,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 38.48976516723633,
+          "min": -128.3599395751953,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            67,
+            159
+          ]
+        },
+        "w": {
+          "abs_max": 0.8317929176316511,
+          "abs_max_cell": [
+            0,
+            51,
+            21
+          ],
+          "abs_max_value": 0.8317929176316511,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 0.8317929176316511,
+          "min": -0.6937647936774819,
+          "nonfinite_count": 0,
+          "shape": [
+            45,
+            66,
+            159
+          ]
+        }
+      },
+      "operator": "acoustic",
+      "rk_stage": 3,
+      "step": 47
+    },
+    {
+      "acoustic_substep": 3,
+      "fields": {
+        "mu": {
+          "abs_max": 148488.4699312813,
+          "abs_max_cell": [
+            0,
+            48,
+            23
+          ],
+          "abs_max_value": 148488.4699312813,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 148488.4699312813,
+          "min": 37448.73226456584,
+          "nonfinite_count": 0,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "mu_perturbation": {
+          "abs_max": 74226.32149378117,
+          "abs_max_cell": [
+            0,
+            48,
+            23
+          ],
+          "abs_max_value": 74226.32149378117,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 74226.32149378117,
+          "min": -40964.582664132104,
+          "nonfinite_count": 0,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "p_perturbation": {
+          "abs_max": 3389.776312752001,
+          "abs_max_cell": [
+            11,
+            29,
+            67
+          ],
+          "abs_max_value": -3389.776312752001,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 2226.438328271135,
+          "min": -3389.776312752001,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "p_total": {
+          "abs_max": 101904.61582974555,
+          "abs_max_cell": [
+            0,
+            51,
+            29
+          ],
+          "abs_max_value": 101904.61582974555,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 101904.61582974555,
+          "min": 5225.216953555058,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "qc": {
+          "abs_max": 0.0,
+          "abs_max_cell": [
+            0,
+            0,
+            0
+          ],
+          "abs_max_value": 0.0,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 0.0,
+          "min": 0.0,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "qv": {
+          "abs_max": 0.012835397385060787,
+          "abs_max_cell": [
+            0,
+            64,
+            141
+          ],
+          "abs_max_value": 0.012835397385060787,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 0.012835397385060787,
+          "min": 2.439401896481286e-06,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "theta": {
+          "abs_max": 208939024.0,
+          "abs_max_cell": [
+            12,
+            31,
+            68
+          ],
+          "abs_max_value": 208939024.0,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 208939024.0,
+          "min": -20510668.0,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "u": {
+          "abs_max": 309.3918151855469,
+          "abs_max_cell": [
+            12,
+            31,
+            68
+          ],
+          "abs_max_value": 309.3918151855469,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 309.3918151855469,
+          "min": -168.8107147216797,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            160
+          ]
+        },
+        "v": {
+          "abs_max": 128.3599395751953,
+          "abs_max_cell": [
+            11,
+            29,
+            67
+          ],
+          "abs_max_value": -128.3599395751953,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 38.48976516723633,
+          "min": -128.3599395751953,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            67,
+            159
+          ]
+        },
+        "w": {
+          "abs_max": 0.8317929176316511,
+          "abs_max_cell": [
+            0,
+            51,
+            21
+          ],
+          "abs_max_value": 0.8317929176316511,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 0.8317929176316511,
+          "min": -0.6937647936774819,
+          "nonfinite_count": 0,
+          "shape": [
+            45,
+            66,
+            159
+          ]
+        }
+      },
+      "operator": "acoustic",
+      "rk_stage": 3,
+      "step": 47
+    },
+    {
+      "acoustic_substep": 4,
+      "fields": {
+        "mu": {
+          "abs_max": 148694.77308105136,
+          "abs_max_cell": [
+            0,
+            48,
+            23
+          ],
+          "abs_max_value": 148694.77308105136,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 148694.77308105136,
+          "min": 37370.63775420872,
+          "nonfinite_count": 0,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "mu_perturbation": {
+          "abs_max": 74432.62464355126,
+          "abs_max_cell": [
+            0,
+            48,
+            23
+          ],
+          "abs_max_value": 74432.62464355126,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 74432.62464355126,
+          "min": -41227.00230028263,
+          "nonfinite_count": 0,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "p_perturbation": {
+          "abs_max": 3389.776312752001,
+          "abs_max_cell": [
+            11,
+            29,
+            67
+          ],
+          "abs_max_value": -3389.776312752001,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 2226.438328271135,
+          "min": -3389.776312752001,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "p_total": {
+          "abs_max": 101904.61582974555,
+          "abs_max_cell": [
+            0,
+            51,
+            29
+          ],
+          "abs_max_value": 101904.61582974555,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 101904.61582974555,
+          "min": 5225.216953555058,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "qc": {
+          "abs_max": 0.0,
+          "abs_max_cell": [
+            0,
+            0,
+            0
+          ],
+          "abs_max_value": 0.0,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 0.0,
+          "min": 0.0,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "qv": {
+          "abs_max": 0.012835397385060787,
+          "abs_max_cell": [
+            0,
+            64,
+            141
+          ],
+          "abs_max_value": 0.012835397385060787,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 0.012835397385060787,
+          "min": 2.439401896481286e-06,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "theta": {
+          "abs_max": 13306268672.0,
+          "abs_max_cell": [
+            13,
+            31,
+            68
+          ],
+          "abs_max_value": -13306268672.0,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 55387700.0,
+          "min": -13306268672.0,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "u": {
+          "abs_max": 309.3918151855469,
+          "abs_max_cell": [
+            12,
+            31,
+            68
+          ],
+          "abs_max_value": 309.3918151855469,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 309.3918151855469,
+          "min": -168.8107147216797,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            160
+          ]
+        },
+        "v": {
+          "abs_max": 128.3599395751953,
+          "abs_max_cell": [
+            11,
+            29,
+            67
+          ],
+          "abs_max_value": -128.3599395751953,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 38.48976516723633,
+          "min": -128.3599395751953,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            67,
+            159
+          ]
+        },
+        "w": {
+          "abs_max": 0.8317929176316511,
+          "abs_max_cell": [
+            0,
+            51,
+            21
+          ],
+          "abs_max_value": 0.8317929176316511,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 0.8317929176316511,
+          "min": -0.6937647936774819,
+          "nonfinite_count": 0,
+          "shape": [
+            45,
+            66,
+            159
+          ]
+        }
+      },
+      "operator": "acoustic",
+      "rk_stage": 3,
+      "step": 47
+    },
+    {
+      "acoustic_substep": 5,
+      "fields": {
+        "mu": {
+          "abs_max": 148901.3705708532,
+          "abs_max_cell": [
+            0,
+            48,
+            23
+          ],
+          "abs_max_value": 148901.3705708532,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 148901.3705708532,
+          "min": 37300.07278514926,
+          "nonfinite_count": 0,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "mu_perturbation": {
+          "abs_max": 74639.2221333531,
+          "abs_max_cell": [
+            0,
+            48,
+            23
+          ],
+          "abs_max_value": 74639.2221333531,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 74639.2221333531,
+          "min": -41482.27344178219,
+          "nonfinite_count": 0,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "p_perturbation": {
+          "abs_max": 3389.776312752001,
+          "abs_max_cell": [
+            11,
+            29,
+            67
+          ],
+          "abs_max_value": -3389.776312752001,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 2226.438328271135,
+          "min": -3389.776312752001,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "p_total": {
+          "abs_max": 101904.61582974555,
+          "abs_max_cell": [
+            0,
+            51,
+            29
+          ],
+          "abs_max_value": 101904.61582974555,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 101904.61582974555,
+          "min": 5225.216953555058,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "qc": {
+          "abs_max": 0.0,
+          "abs_max_cell": [
+            0,
+            0,
+            0
+          ],
+          "abs_max_value": 0.0,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 0.0,
+          "min": 0.0,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "qv": {
+          "abs_max": 0.012835397385060787,
+          "abs_max_cell": [
+            0,
+            64,
+            141
+          ],
+          "abs_max_value": 0.012835397385060787,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 0.012835397385060787,
+          "min": 2.439401896481286e-06,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "theta": {
+          "abs_max": 36204298240.0,
+          "abs_max_cell": [
+            12,
+            31,
+            68
+          ],
+          "abs_max_value": -36204298240.0,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 32583224.0,
+          "min": -36204298240.0,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "u": {
+          "abs_max": 309.3918151855469,
+          "abs_max_cell": [
+            12,
+            31,
+            68
+          ],
+          "abs_max_value": 309.3918151855469,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 309.3918151855469,
+          "min": -168.8107147216797,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            160
+          ]
+        },
+        "v": {
+          "abs_max": 128.3599395751953,
+          "abs_max_cell": [
+            11,
+            29,
+            67
+          ],
+          "abs_max_value": -128.3599395751953,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 38.48976516723633,
+          "min": -128.3599395751953,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            67,
+            159
+          ]
+        },
+        "w": {
+          "abs_max": 0.8317929176316511,
+          "abs_max_cell": [
+            0,
+            51,
+            21
+          ],
+          "abs_max_value": 0.8317929176316511,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 0.8317929176316511,
+          "min": -0.6937647936774819,
+          "nonfinite_count": 0,
+          "shape": [
+            45,
+            66,
+            159
+          ]
+        }
+      },
+      "operator": "acoustic",
+      "rk_stage": 3,
+      "step": 47
+    },
+    {
+      "acoustic_substep": 6,
+      "fields": {
+        "mu": {
+          "abs_max": 149108.26284415083,
+          "abs_max_cell": [
+            0,
+            48,
+            23
+          ],
+          "abs_max_value": 149108.26284415083,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 149108.26284415083,
+          "min": 37236.61049082142,
+          "nonfinite_count": 0,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "mu_perturbation": {
+          "abs_max": 74846.11440665074,
+          "abs_max_cell": [
+            0,
+            48,
+            23
+          ],
+          "abs_max_value": 74846.11440665074,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 74846.11440665074,
+          "min": -41729.988748205076,
+          "nonfinite_count": 0,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "p_perturbation": {
+          "abs_max": 3389.776312752001,
+          "abs_max_cell": [
+            11,
+            29,
+            67
+          ],
+          "abs_max_value": -3389.776312752001,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 2226.438328271135,
+          "min": -3389.776312752001,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "p_total": {
+          "abs_max": 101904.61582974555,
+          "abs_max_cell": [
+            0,
+            51,
+            29
+          ],
+          "abs_max_value": 101904.61582974555,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 101904.61582974555,
+          "min": 5225.216953555058,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "qc": {
+          "abs_max": 0.0,
+          "abs_max_cell": [
+            0,
+            0,
+            0
+          ],
+          "abs_max_value": 0.0,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 0.0,
+          "min": 0.0,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "qv": {
+          "abs_max": 0.012835397385060787,
+          "abs_max_cell": [
+            0,
+            64,
+            141
+          ],
+          "abs_max_value": 0.012835397385060787,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 0.012835397385060787,
+          "min": 2.439401896481286e-06,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "theta": {
+          "abs_max": 44293046272.0,
+          "abs_max_cell": [
+            11,
+            31,
+            68
+          ],
+          "abs_max_value": -44293046272.0,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 20919572480.0,
+          "min": -44293046272.0,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "u": {
+          "abs_max": 309.3918151855469,
+          "abs_max_cell": [
+            12,
+            31,
+            68
+          ],
+          "abs_max_value": 309.3918151855469,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 309.3918151855469,
+          "min": -168.8107147216797,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            160
+          ]
+        },
+        "v": {
+          "abs_max": 128.3599395751953,
+          "abs_max_cell": [
+            11,
+            29,
+            67
+          ],
+          "abs_max_value": -128.3599395751953,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 38.48976516723633,
+          "min": -128.3599395751953,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            67,
+            159
+          ]
+        },
+        "w": {
+          "abs_max": 0.8317929176316511,
+          "abs_max_cell": [
+            0,
+            51,
+            21
+          ],
+          "abs_max_value": 0.8317929176316511,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 0.8317929176316511,
+          "min": -0.6937647936774819,
+          "nonfinite_count": 0,
+          "shape": [
+            45,
+            66,
+            159
+          ]
+        }
+      },
+      "operator": "acoustic",
+      "rk_stage": 3,
+      "step": 47
+    },
+    {
+      "acoustic_substep": 7,
+      "fields": {
+        "mu": {
+          "abs_max": 149315.45034474152,
+          "abs_max_cell": [
+            0,
+            48,
+            23
+          ],
+          "abs_max_value": 149315.45034474152,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 149315.45034474152,
+          "min": 37179.81960362071,
+          "nonfinite_count": 0,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "mu_perturbation": {
+          "abs_max": 75053.30190724145,
+          "abs_max_cell": [
+            0,
+            48,
+            23
+          ],
+          "abs_max_value": 75053.30190724145,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 75053.30190724145,
+          "min": -41969.746875264354,
+          "nonfinite_count": 0,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "p_perturbation": {
+          "abs_max": 3389.776312752001,
+          "abs_max_cell": [
+            11,
+            29,
+            67
+          ],
+          "abs_max_value": -3389.776312752001,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 2226.438328271135,
+          "min": -3389.776312752001,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "p_total": {
+          "abs_max": 101904.61582974555,
+          "abs_max_cell": [
+            0,
+            51,
+            29
+          ],
+          "abs_max_value": 101904.61582974555,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 101904.61582974555,
+          "min": 5225.216953555058,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "qc": {
+          "abs_max": 0.0,
+          "abs_max_cell": [
+            0,
+            0,
+            0
+          ],
+          "abs_max_value": 0.0,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 0.0,
+          "min": 0.0,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "qv": {
+          "abs_max": 0.012835397385060787,
+          "abs_max_cell": [
+            0,
+            64,
+            141
+          ],
+          "abs_max_value": 0.012835397385060787,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 0.012835397385060787,
+          "min": 2.439401896481286e-06,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "theta": {
+          "abs_max": 359170473984.0,
+          "abs_max_cell": [
+            11,
+            31,
+            68
+          ],
+          "abs_max_value": -359170473984.0,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 14943397888.0,
+          "min": -359170473984.0,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "u": {
+          "abs_max": 309.3918151855469,
+          "abs_max_cell": [
+            12,
+            31,
+            68
+          ],
+          "abs_max_value": 309.3918151855469,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 309.3918151855469,
+          "min": -168.8107147216797,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            160
+          ]
+        },
+        "v": {
+          "abs_max": 128.3599395751953,
+          "abs_max_cell": [
+            11,
+            29,
+            67
+          ],
+          "abs_max_value": -128.3599395751953,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 38.48976516723633,
+          "min": -128.3599395751953,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            67,
+            159
+          ]
+        },
+        "w": {
+          "abs_max": 0.8317929176316511,
+          "abs_max_cell": [
+            0,
+            51,
+            21
+          ],
+          "abs_max_value": 0.8317929176316511,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 0.8317929176316511,
+          "min": -0.6937647936774819,
+          "nonfinite_count": 0,
+          "shape": [
+            45,
+            66,
+            159
+          ]
+        }
+      },
+      "operator": "acoustic",
+      "rk_stage": 3,
+      "step": 47
+    },
+    {
+      "acoustic_substep": 8,
+      "fields": {
+        "mu": {
+          "abs_max": 149522.93351675489,
+          "abs_max_cell": [
+            0,
+            48,
+            23
+          ],
+          "abs_max_value": 149522.93351675489,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 149522.93351675489,
+          "min": 37129.264838738054,
+          "nonfinite_count": 0,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "mu_perturbation": {
+          "abs_max": 75260.7850792548,
+          "abs_max_cell": [
+            0,
+            48,
+            23
+          ],
+          "abs_max_value": 75260.7850792548,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 75260.7850792548,
+          "min": -42201.15272942599,
+          "nonfinite_count": 0,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "p_perturbation": {
+          "abs_max": 3389.776312752001,
+          "abs_max_cell": [
+            11,
+            29,
+            67
+          ],
+          "abs_max_value": -3389.776312752001,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 2226.438328271135,
+          "min": -3389.776312752001,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "p_total": {
+          "abs_max": 101904.61582974555,
+          "abs_max_cell": [
+            0,
+            51,
+            29
+          ],
+          "abs_max_value": 101904.61582974555,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 101904.61582974555,
+          "min": 5225.216953555058,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "qc": {
+          "abs_max": 0.0,
+          "abs_max_cell": [
+            0,
+            0,
+            0
+          ],
+          "abs_max_value": 0.0,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 0.0,
+          "min": 0.0,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "qv": {
+          "abs_max": 0.012835397385060787,
+          "abs_max_cell": [
+            0,
+            64,
+            141
+          ],
+          "abs_max_value": 0.012835397385060787,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 0.012835397385060787,
+          "min": 2.439401896481286e-06,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "theta": {
+          "abs_max": 294543130624.0,
+          "abs_max_cell": [
+            11,
+            31,
+            68
+          ],
+          "abs_max_value": 294543130624.0,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 294543130624.0,
+          "min": -12246609920.0,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "u": {
+          "abs_max": 309.3918151855469,
+          "abs_max_cell": [
+            12,
+            31,
+            68
+          ],
+          "abs_max_value": 309.3918151855469,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 309.3918151855469,
+          "min": -168.8107147216797,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            160
+          ]
+        },
+        "v": {
+          "abs_max": 128.3599395751953,
+          "abs_max_cell": [
+            11,
+            29,
+            67
+          ],
+          "abs_max_value": -128.3599395751953,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 38.48976516723633,
+          "min": -128.3599395751953,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            67,
+            159
+          ]
+        },
+        "w": {
+          "abs_max": 0.8317929176316511,
+          "abs_max_cell": [
+            0,
+            51,
+            21
+          ],
+          "abs_max_value": 0.8317929176316511,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 0.8317929176316511,
+          "min": -0.6937647936774819,
+          "nonfinite_count": 0,
+          "shape": [
+            45,
+            66,
+            159
+          ]
+        }
+      },
+      "operator": "acoustic",
+      "rk_stage": 3,
+      "step": 47
+    },
+    {
+      "acoustic_substep": 9,
+      "fields": {
+        "mu": {
+          "abs_max": 149730.71280465164,
+          "abs_max_cell": [
+            0,
+            48,
+            23
+          ],
+          "abs_max_value": 149730.71280465164,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 149730.71280465164,
+          "min": 37016.46353389443,
+          "nonfinite_count": 0,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "mu_perturbation": {
+          "abs_max": 75468.56436715157,
+          "abs_max_cell": [
+            0,
+            48,
+            23
+          ],
+          "abs_max_value": 75468.56436715157,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 75468.56436715157,
+          "min": -42952.56936133316,
+          "nonfinite_count": 0,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "p_perturbation": {
+          "abs_max": 3389.776312752001,
+          "abs_max_cell": [
+            11,
+            29,
+            67
+          ],
+          "abs_max_value": -3389.776312752001,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 2226.438328271135,
+          "min": -3389.776312752001,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "p_total": {
+          "abs_max": 101904.61582974555,
+          "abs_max_cell": [
+            0,
+            51,
+            29
+          ],
+          "abs_max_value": 101904.61582974555,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 101904.61582974555,
+          "min": 5225.216953555058,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "qc": {
+          "abs_max": 0.0,
+          "abs_max_cell": [
+            0,
+            0,
+            0
+          ],
+          "abs_max_value": 0.0,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 0.0,
+          "min": 0.0,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "qv": {
+          "abs_max": 0.012835397385060787,
+          "abs_max_cell": [
+            0,
+            64,
+            141
+          ],
+          "abs_max_value": 0.012835397385060787,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 0.012835397385060787,
+          "min": 2.439401896481286e-06,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "theta": {
+          "abs_max": 694356082688.0,
+          "abs_max_cell": [
+            14,
+            31,
+            68
+          ],
+          "abs_max_value": 694356082688.0,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 694356082688.0,
+          "min": -25967172.0,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "u": {
+          "abs_max": 309.3918151855469,
+          "abs_max_cell": [
+            12,
+            31,
+            68
+          ],
+          "abs_max_value": 309.3918151855469,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 309.3918151855469,
+          "min": -168.8107147216797,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            160
+          ]
+        },
+        "v": {
+          "abs_max": 128.3599395751953,
+          "abs_max_cell": [
+            11,
+            29,
+            67
+          ],
+          "abs_max_value": -128.3599395751953,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 38.48976516723633,
+          "min": -128.3599395751953,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            67,
+            159
+          ]
+        },
+        "w": {
+          "abs_max": 0.8317929176316511,
+          "abs_max_cell": [
+            0,
+            51,
+            21
+          ],
+          "abs_max_value": 0.8317929176316511,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 0.8317929176316511,
+          "min": -0.6937647936774819,
+          "nonfinite_count": 0,
+          "shape": [
+            45,
+            66,
+            159
+          ]
+        }
+      },
+      "operator": "acoustic",
+      "rk_stage": 3,
+      "step": 47
+    },
+    {
+      "acoustic_substep": 10,
+      "fields": {
+        "mu": {
+          "abs_max": 149938.7886532228,
+          "abs_max_cell": [
+            0,
+            48,
+            23
+          ],
+          "abs_max_value": 149938.7886532228,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 149938.7886532228,
+          "min": 36257.18117097081,
+          "nonfinite_count": 0,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "mu_perturbation": {
+          "abs_max": 75676.64021572273,
+          "abs_max_cell": [
+            0,
+            48,
+            23
+          ],
+          "abs_max_value": 75676.64021572273,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 75676.64021572273,
+          "min": -44128.73289152919,
+          "nonfinite_count": 0,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "p_perturbation": {
+          "abs_max": 3389.776312752001,
+          "abs_max_cell": [
+            11,
+            29,
+            67
+          ],
+          "abs_max_value": -3389.776312752001,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 2226.438328271135,
+          "min": -3389.776312752001,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "p_total": {
+          "abs_max": 101904.61582974555,
+          "abs_max_cell": [
+            0,
+            51,
+            29
+          ],
+          "abs_max_value": 101904.61582974555,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 101904.61582974555,
+          "min": 5225.216953555058,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "qc": {
+          "abs_max": 0.0,
+          "abs_max_cell": [
+            0,
+            0,
+            0
+          ],
+          "abs_max_value": 0.0,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 0.0,
+          "min": 0.0,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "qv": {
+          "abs_max": 0.012835397385060787,
+          "abs_max_cell": [
+            0,
+            64,
+            141
+          ],
+          "abs_max_value": 0.012835397385060787,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 0.012835397385060787,
+          "min": 2.439401896481286e-06,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "theta": {
+          "abs_max": 318990286848.0,
+          "abs_max_cell": [
+            13,
+            31,
+            68
+          ],
+          "abs_max_value": -318990286848.0,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 263547912192.0,
+          "min": -318990286848.0,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "u": {
+          "abs_max": 309.3918151855469,
+          "abs_max_cell": [
+            12,
+            31,
+            68
+          ],
+          "abs_max_value": 309.3918151855469,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 309.3918151855469,
+          "min": -168.8107147216797,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            160
+          ]
+        },
+        "v": {
+          "abs_max": 128.3599395751953,
+          "abs_max_cell": [
+            11,
+            29,
+            67
+          ],
+          "abs_max_value": -128.3599395751953,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 38.48976516723633,
+          "min": -128.3599395751953,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            67,
+            159
+          ]
+        },
+        "w": {
+          "abs_max": 0.8317929176316511,
+          "abs_max_cell": [
+            0,
+            51,
+            21
+          ],
+          "abs_max_value": 0.8317929176316511,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 0.8317929176316511,
+          "min": -0.6937647936774819,
+          "nonfinite_count": 0,
+          "shape": [
+            45,
+            66,
+            159
+          ]
+        }
+      },
+      "operator": "acoustic",
+      "rk_stage": 3,
+      "step": 47
+    },
+    {
+      "fields": {
+        "mu": {
+          "abs_max": 149938.7886532228,
+          "abs_max_cell": [
+            0,
+            48,
+            23
+          ],
+          "abs_max_value": 149938.7886532228,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 149938.7886532228,
+          "min": 36257.18117097081,
+          "nonfinite_count": 0,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "mu_perturbation": {
+          "abs_max": 75676.64021572273,
+          "abs_max_cell": [
+            0,
+            48,
+            23
+          ],
+          "abs_max_value": 75676.64021572273,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 75676.64021572273,
+          "min": -44128.73289152919,
+          "nonfinite_count": 0,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "p_perturbation": {
+          "abs_max": 3389.776312752001,
+          "abs_max_cell": [
+            11,
+            29,
+            67
+          ],
+          "abs_max_value": -3389.776312752001,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 2226.438328271135,
+          "min": -3389.776312752001,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "p_total": {
+          "abs_max": 101904.61582974555,
+          "abs_max_cell": [
+            0,
+            51,
+            29
+          ],
+          "abs_max_value": 101904.61582974555,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 101904.61582974555,
+          "min": 5225.216953555058,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "qc": {
+          "abs_max": 0.0,
+          "abs_max_cell": [
+            0,
+            0,
+            0
+          ],
+          "abs_max_value": 0.0,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 0.0,
+          "min": 0.0,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "qv": {
+          "abs_max": 0.012835397385060787,
+          "abs_max_cell": [
+            0,
+            64,
+            141
+          ],
+          "abs_max_value": 0.012835397385060787,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 0.012835397385060787,
+          "min": 2.439401896481286e-06,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "theta": {
+          "abs_max": 318990286848.0,
+          "abs_max_cell": [
+            13,
+            31,
+            68
+          ],
+          "abs_max_value": -318990286848.0,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 263547912192.0,
+          "min": -318990286848.0,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "u": {
+          "abs_max": 309.3918151855469,
+          "abs_max_cell": [
+            12,
+            31,
+            68
+          ],
+          "abs_max_value": 309.3918151855469,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 309.3918151855469,
+          "min": -168.8107147216797,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            160
+          ]
+        },
+        "v": {
+          "abs_max": 128.3599395751953,
+          "abs_max_cell": [
+            11,
+            29,
+            67
+          ],
+          "abs_max_value": -128.3599395751953,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 38.48976516723633,
+          "min": -128.3599395751953,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            67,
+            159
+          ]
+        },
+        "w": {
+          "abs_max": 0.8317929176316511,
+          "abs_max_cell": [
+            0,
+            51,
+            21
+          ],
+          "abs_max_value": 0.8317929176316511,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 0.8317929176316511,
+          "min": -0.6937647936774819,
+          "nonfinite_count": 0,
+          "shape": [
+            45,
+            66,
+            159
+          ]
+        }
+      },
+      "operator": "acoustic_halo",
+      "rk_stage": 3,
+      "step": 47
+    },
+    {
+      "fields": {
+        "mu": {
+          "abs_max": 149938.7886532228,
+          "abs_max_cell": [
+            0,
+            48,
+            23
+          ],
+          "abs_max_value": 149938.7886532228,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 149938.7886532228,
+          "min": 36257.18117097081,
+          "nonfinite_count": 0,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "mu_perturbation": {
+          "abs_max": 75676.64021572273,
+          "abs_max_cell": [
+            0,
+            48,
+            23
+          ],
+          "abs_max_value": 75676.64021572273,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 75676.64021572273,
+          "min": -44128.73289152919,
+          "nonfinite_count": 0,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "p_perturbation": {
+          "abs_max": 3389.776312752001,
+          "abs_max_cell": [
+            11,
+            29,
+            67
+          ],
+          "abs_max_value": -3389.776312752001,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 2226.438328271135,
+          "min": -3389.776312752001,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "p_total": {
+          "abs_max": 101904.61582974555,
+          "abs_max_cell": [
+            0,
+            51,
+            29
+          ],
+          "abs_max_value": 101904.61582974555,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 101904.61582974555,
+          "min": 5225.216953555058,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "qc": {
+          "abs_max": 0.0,
+          "abs_max_cell": [
+            0,
+            0,
+            0
+          ],
+          "abs_max_value": 0.0,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 0.0,
+          "min": 0.0,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "qv": {
+          "abs_max": 0.012835503555834293,
+          "abs_max_cell": [
+            0,
+            64,
+            141
+          ],
+          "abs_max_value": 0.012835503555834293,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 0.012835503555834293,
+          "min": 2.439401896481286e-06,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "theta": {
+          "abs_max": 318990286848.0,
+          "abs_max_cell": [
+            13,
+            31,
+            68
+          ],
+          "abs_max_value": -318990286848.0,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 263547912192.0,
+          "min": -318990286848.0,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "u": {
+          "abs_max": 148.34854125976562,
+          "abs_max_cell": [
+            11,
+            28,
+            67
+          ],
+          "abs_max_value": 148.34854125976562,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 148.34854125976562,
+          "min": -40.44918441772461,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            160
+          ]
+        },
+        "v": {
+          "abs_max": 102.9410400390625,
+          "abs_max_cell": [
+            11,
+            29,
+            67
+          ],
+          "abs_max_value": -102.9410400390625,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 35.233604431152344,
+          "min": -102.9410400390625,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            67,
+            159
+          ]
+        },
+        "w": {
+          "abs_max": 0.829960383303969,
+          "abs_max_cell": [
+            0,
+            51,
+            21
+          ],
+          "abs_max_value": 0.829960383303969,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 0.829960383303969,
+          "min": -0.6925519645071039,
+          "nonfinite_count": 0,
+          "shape": [
+            45,
+            66,
+            159
+          ]
+        }
+      },
+      "operator": "mynn",
+      "step": 47
+    },
+    {
+      "fields": {
+        "mu": {
+          "abs_max": 149938.7886532228,
+          "abs_max_cell": [
+            0,
+            48,
+            23
+          ],
+          "abs_max_value": 149938.7886532228,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 149938.7886532228,
+          "min": 36257.18117097081,
+          "nonfinite_count": 0,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "mu_perturbation": {
+          "abs_max": 75676.64021572273,
+          "abs_max_cell": [
+            0,
+            48,
+            23
+          ],
+          "abs_max_value": 75676.64021572273,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 75676.64021572273,
+          "min": -44128.73289152919,
+          "nonfinite_count": 0,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "p_perturbation": {
+          "abs_max": 3389.776312752001,
+          "abs_max_cell": [
+            11,
+            29,
+            67
+          ],
+          "abs_max_value": -3389.776312752001,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 2226.438328271135,
+          "min": -3389.776312752001,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "p_total": {
+          "abs_max": 101904.61582974555,
+          "abs_max_cell": [
+            0,
+            51,
+            29
+          ],
+          "abs_max_value": 101904.61582974555,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 101904.61582974555,
+          "min": 5225.216953555058,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "qc": {
+          "abs_max": 0.0,
+          "abs_max_cell": [
+            0,
+            0,
+            0
+          ],
+          "abs_max_value": 0.0,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 0.0,
+          "min": 0.0,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "qv": {
+          "abs_max": 0.012835503555834293,
+          "abs_max_cell": [
+            0,
+            64,
+            141
+          ],
+          "abs_max_value": 0.012835503555834293,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 0.012835503555834293,
+          "min": 2.439401896481286e-06,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "theta": {
+          "abs_max": 318990286848.0,
+          "abs_max_cell": [
+            13,
+            31,
+            68
+          ],
+          "abs_max_value": -318990286848.0,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 263547912192.0,
+          "min": -318990286848.0,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "u": {
+          "abs_max": 148.34854125976562,
+          "abs_max_cell": [
+            11,
+            28,
+            67
+          ],
+          "abs_max_value": 148.34854125976562,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 148.34854125976562,
+          "min": -40.44918441772461,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            160
+          ]
+        },
+        "v": {
+          "abs_max": 102.9410400390625,
+          "abs_max_cell": [
+            11,
+            29,
+            67
+          ],
+          "abs_max_value": -102.9410400390625,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 35.233604431152344,
+          "min": -102.9410400390625,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            67,
+            159
+          ]
+        },
+        "w": {
+          "abs_max": 0.829960383303969,
+          "abs_max_cell": [
+            0,
+            51,
+            21
+          ],
+          "abs_max_value": 0.829960383303969,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 0.829960383303969,
+          "min": -0.6925519645071039,
+          "nonfinite_count": 0,
+          "shape": [
+            45,
+            66,
+            159
+          ]
+        }
+      },
+      "operator": "surface",
+      "step": 47
+    },
+    {
+      "fields": {
+        "mu": {
+          "abs_max": 149938.7886532228,
+          "abs_max_cell": [
+            0,
+            48,
+            23
+          ],
+          "abs_max_value": 149938.7886532228,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 149938.7886532228,
+          "min": 36257.18117097081,
+          "nonfinite_count": 0,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "mu_perturbation": {
+          "abs_max": 75676.64021572273,
+          "abs_max_cell": [
+            0,
+            48,
+            23
+          ],
+          "abs_max_value": 75676.64021572273,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 75676.64021572273,
+          "min": -44128.73289152919,
+          "nonfinite_count": 0,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "p_perturbation": {
+          "abs_max": 3389.776312752001,
+          "abs_max_cell": [
+            11,
+            29,
+            67
+          ],
+          "abs_max_value": -3389.776312752001,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 2226.438328271135,
+          "min": -3389.776312752001,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "p_total": {
+          "abs_max": 101904.61582974555,
+          "abs_max_cell": [
+            0,
+            51,
+            29
+          ],
+          "abs_max_value": 101904.61582974555,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 101904.61582974555,
+          "min": 5225.216953555058,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "qc": {
+          "abs_max": 0.0,
+          "abs_max_cell": [
+            0,
+            0,
+            0
+          ],
+          "abs_max_value": 0.0,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 0.0,
+          "min": 0.0,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "qv": {
+          "abs_max": 0.012833031825721264,
+          "abs_max_cell": [
+            0,
+            64,
+            141
+          ],
+          "abs_max_value": 0.012833031825721264,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 0.012833031825721264,
+          "min": 2.439401896481286e-06,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "theta": {
+          "abs_max": 318990286848.0,
+          "abs_max_cell": [
+            13,
+            31,
+            68
+          ],
+          "abs_max_value": -318990286848.0,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 263547912192.0,
+          "min": -318990286848.0,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "u": {
+          "abs_max": 148.34854125976562,
+          "abs_max_cell": [
+            11,
+            28,
+            67
+          ],
+          "abs_max_value": 148.34854125976562,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 148.34854125976562,
+          "min": -40.44918441772461,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            160
+          ]
+        },
+        "v": {
+          "abs_max": 102.9410400390625,
+          "abs_max_cell": [
+            11,
+            29,
+            67
+          ],
+          "abs_max_value": -102.9410400390625,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 35.233604431152344,
+          "min": -102.9410400390625,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            67,
+            159
+          ]
+        },
+        "w": {
+          "abs_max": 0.829960383303969,
+          "abs_max_cell": [
+            0,
+            51,
+            21
+          ],
+          "abs_max_value": 0.829960383303969,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 0.829960383303969,
+          "min": -0.6925519645071039,
+          "nonfinite_count": 0,
+          "shape": [
+            45,
+            66,
+            159
+          ]
+        }
+      },
+      "operator": "boundary",
+      "step": 47
+    },
+    {
+      "fields": {
+        "mu": {
+          "abs_max": 149938.7886532228,
+          "abs_max_cell": [
+            0,
+            48,
+            23
+          ],
+          "abs_max_value": 149938.7886532228,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 149938.7886532228,
+          "min": 36257.18117097081,
+          "nonfinite_count": 0,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "mu_perturbation": {
+          "abs_max": 75676.64021572273,
+          "abs_max_cell": [
+            0,
+            48,
+            23
+          ],
+          "abs_max_value": 75676.64021572273,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 75676.64021572273,
+          "min": -44128.73289152919,
+          "nonfinite_count": 0,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "p_perturbation": {
+          "abs_max": 3389.776312752001,
+          "abs_max_cell": [
+            11,
+            29,
+            67
+          ],
+          "abs_max_value": -3389.776312752001,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 2226.438328271135,
+          "min": -3389.776312752001,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "p_total": {
+          "abs_max": 101904.61582974555,
+          "abs_max_cell": [
+            0,
+            51,
+            29
+          ],
+          "abs_max_value": 101904.61582974555,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 101904.61582974555,
+          "min": 5225.216953555058,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "qc": {
+          "abs_max": 0.0,
+          "abs_max_cell": [
+            0,
+            0,
+            0
+          ],
+          "abs_max_value": 0.0,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 0.0,
+          "min": 0.0,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "qv": {
+          "abs_max": 0.012833031825721264,
+          "abs_max_cell": [
+            0,
+            64,
+            141
+          ],
+          "abs_max_value": 0.012833031825721264,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 0.012833031825721264,
+          "min": 2.439401896481286e-06,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "theta": {
+          "abs_max": 318990286848.0,
+          "abs_max_cell": [
+            13,
+            31,
+            68
+          ],
+          "abs_max_value": -318990286848.0,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 263547912192.0,
+          "min": -318990286848.0,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "u": {
+          "abs_max": 148.34854125976562,
+          "abs_max_cell": [
+            11,
+            28,
+            67
+          ],
+          "abs_max_value": 148.34854125976562,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 148.34854125976562,
+          "min": -40.44918441772461,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            160
+          ]
+        },
+        "v": {
+          "abs_max": 102.9410400390625,
+          "abs_max_cell": [
+            11,
+            29,
+            67
+          ],
+          "abs_max_value": -102.9410400390625,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 35.233604431152344,
+          "min": -102.9410400390625,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            67,
+            159
+          ]
+        },
+        "w": {
+          "abs_max": 0.829960383303969,
+          "abs_max_cell": [
+            0,
+            51,
+            21
+          ],
+          "abs_max_value": 0.829960383303969,
+          "first_nonfinite_cell": null,
+          "first_nonfinite_value": null,
+          "max": 0.829960383303969,
+          "min": -0.6925519645071039,
+          "nonfinite_count": 0,
+          "shape": [
+            45,
+            66,
+            159
+          ]
+        }
+      },
+      "operator": "precision",
+      "step": 47
+    }
+  ],
+  "run_id": "20260521_18z_l3_24h_20260522T072630Z"
+}

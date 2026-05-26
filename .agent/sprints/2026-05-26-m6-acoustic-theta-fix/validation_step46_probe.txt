@@ -1,0 +1,22 @@
+{
+  "advance_mu_t_decoupled_K": -559297.8457487642,
+  "artifact_type": "m6_acoustic_theta_step46_probe",
+  "bad_cell_kji": [
+    11,
+    31,
+    67
+  ],
+  "c1h": 1.6538467407226562,
+  "c2h": -62115.44140625,
+  "delta_K": -558163.4953613281,
+  "denominator": 2.7745015871114447,
+  "mu_new": -35073.71653666006,
+  "mut_base": 72633.5546875,
+  "muts_new": 37559.83815083994,
+  "numerator": -1552605.1111740917,
+  "pre_mass_theta": 82794086.80853787,
+  "tave_total": 976.7847713952876,
+  "theta1_total": -1134.381103515625,
+  "theta_after_one_acoustic_substep_K": -559297.875,
+  "theta_before_K": -1134.379638671875
+}

@@ -174,10 +174,18 @@ def w_solve_core(
     return w_solved
 
 
-def _decouple_theta_after_advance(state: AcousticCoreState, theta_mass: jax.Array, muts_new: jax.Array) -> jax.Array:
-    """Convert WRF small-step mass-coupled theta back to perturbation theta."""
+def _mass_couple_theta_before_advance(state: AcousticCoreState) -> jax.Array:
+    """Apply WRF ``small_step_prep`` mass coupling before ``advance_mu_t``."""
 
-    numerator = theta_mass + state.theta_1 * (state.c1h[:, None, None] * state.mut[None, :, :] + state.c2h[:, None, None])
+    mut_coef = state.c1h[:, None, None] * state.mut[None, :, :] + state.c2h[:, None, None]
+    muts_coef = state.c1h[:, None, None] * state.muts[None, :, :] + state.c2h[:, None, None]
+    return muts_coef * state.theta_1 - mut_coef * state.theta
+
+
+def _decouple_theta_after_advance(state: AcousticCoreState, theta_mass: jax.Array, muts_new: jax.Array) -> jax.Array:
+    """Apply WRF ``small_step_finish`` projection back to perturbation theta."""
+
+    numerator = theta_mass + state.theta * (state.c1h[:, None, None] * state.mut[None, :, :] + state.c2h[:, None, None])
     denominator = state.c1h[:, None, None] * muts_new[None, :, :] + state.c2h[:, None, None]
     return numerator / denominator
 
@@ -202,7 +210,8 @@ def acoustic_substep_core(
 
     theta_old = state.theta
     mu_old = state.mu
-    advanced = advance_mu_t_core(state, cfg)
+    coupled_state = state.replace(theta=_mass_couple_theta_before_advance(state))
+    advanced = advance_mu_t_core(coupled_state, cfg)
     theta_new = _decouple_theta_after_advance(state, advanced["theta"], advanced["muts"])
     w_solved = w_solve_core(state, a=a, alpha=alpha, gamma=gamma)
 
