@@ -355,6 +355,12 @@ def horizontal_pressure_gradient(
     ``:928-936``; the M1 ambiguity is resolved as the literal WRF
     ``-0.5*c1h*(mu_left + mu_right)``. ``php``/``dpn`` are substep-local
     intermediates, addressing the M2 classification follow-up.
+
+    WRF applies ``dpxy`` to mass-coupled small-step momentum
+    (``small_step_prep`` at ``module_small_step_em.F:238-254``; update at
+    ``:868`` and ``:942``). This routine returns velocity tendencies, so the
+    final pressure-gradient force is decoupled by the same face dry-column mass
+    used in the WRF ``dpxy`` construction.
     """
 
     rdx = 1.0 / float(dx_m)
@@ -411,8 +417,10 @@ def horizontal_pressure_gradient(
         )
         dpy = dpy + (metrics.msfvy / metrics.msfvx)[None, :, :] * rdy * (php_north_y - php_south_y) * bracket_y
 
-    du_dt = -cqu * dpx
-    dv_dt = -cqv * dpy
+    safe_mass_x = jnp.maximum(jnp.abs(mass_x), jnp.asarray(1.0e-12, dtype=dpx.dtype))
+    safe_mass_y = jnp.maximum(jnp.abs(mass_y), jnp.asarray(1.0e-12, dtype=dpy.dtype))
+    du_dt = -cqu * dpx / safe_mass_x
+    dv_dt = -cqv * dpy / safe_mass_y
     return du_dt, dv_dt, dpx, dpy
 
 
