@@ -174,6 +174,14 @@ def w_solve_core(
     return w_solved
 
 
+def _decouple_theta_after_advance(state: AcousticCoreState, theta_mass: jax.Array, muts_new: jax.Array) -> jax.Array:
+    """Convert WRF small-step mass-coupled theta back to perturbation theta."""
+
+    numerator = theta_mass + state.theta_1 * (state.c1h[:, None, None] * state.mut[None, :, :] + state.c2h[:, None, None])
+    denominator = state.c1h[:, None, None] * muts_new[None, :, :] + state.c2h[:, None, None]
+    return numerator / denominator
+
+
 def _ph_tend_increment(theta_old: jax.Array, theta_new: jax.Array, ph_tend: jax.Array) -> jax.Array:
     """Build the M6B3-bound geopotential tendency increment."""
 
@@ -195,13 +203,14 @@ def acoustic_substep_core(
     theta_old = state.theta
     mu_old = state.mu
     advanced = advance_mu_t_core(state, cfg)
+    theta_new = _decouple_theta_after_advance(state, advanced["theta"], advanced["muts"])
     w_solved = w_solve_core(state, a=a, alpha=alpha, gamma=gamma)
 
-    ph_increment = _ph_tend_increment(theta_old, advanced["theta"], state.ph_tend)
+    ph_increment = _ph_tend_increment(theta_old, theta_new, state.ph_tend)
     scratch = build_scratch_state(
         ScratchInputs(
             theta_old=theta_old,
-            theta_new=advanced["theta"],
+            theta_new=theta_new,
             t_2ave_prev=state.t_2ave,
             ww_old=state.ww,
             ww_new=advanced["ww"],
@@ -225,8 +234,8 @@ def acoustic_substep_core(
         muts=advanced["muts"],
         muave=advanced["muave"],
         ww=scratch["ww"],
-        theta=advanced["theta"],
-        theta_ave=advanced["theta"],
+        theta=theta_new,
+        theta_ave=theta_new,
         ph_tend=scratch["ph_tend"],
         w=w_solved,
         t_2ave=scratch["t_2ave"],
