@@ -20,8 +20,13 @@ from gpuwrf.contracts.precision import DEFAULT_DTYPES, STATE_FIELD_ORDER
 from gpuwrf.contracts.halo import apply_halo
 from gpuwrf.coupling.boundary_apply import BoundaryConfig, DEFAULT_BOUNDARY_CONFIG, apply_lateral_boundaries
 from gpuwrf.coupling.physics_couplers import mynn_adapter, rrtmg_adapter, surface_adapter, thompson_adapter
-from gpuwrf.dynamics.advection import compute_advection_tendencies, halo_spec
-from gpuwrf.dynamics.acoustic_wrf import calc_coef_w_wrf_coefficients
+from gpuwrf.dynamics.advection import halo_spec
+from gpuwrf.dynamics.acoustic_wrf import (
+    calc_coef_w_wrf_coefficients,
+    diagnose_pressure_al_alt,
+    horizontal_pressure_gradient,
+    moisture_coupling_factors,
+)
 from gpuwrf.dynamics.core.acoustic import AcousticCoreConfig, AcousticCoreState, acoustic_substep_core
 from gpuwrf.dynamics.core.coupled import CoupledCoreConfig, coupled_timestep_core
 from gpuwrf.dynamics.tendencies import add_scaled_tendencies
@@ -223,9 +228,32 @@ def _with_save_family(carry: OperationalCarry, state: State, ww: jax.Array | Non
 
 
 def _m6b_acoustic_tendencies(tendencies: Tendencies, base: Tendencies) -> Tendencies:
-    """Keep unvalidated reduced-dycore V self-advection out of M6b acoustic RK."""
+    """Legacy diagnostic import shim; no longer suppresses V tendencies."""
 
-    return tendencies.replace(v=base.v)
+    del base
+    return tendencies
+
+
+def _horizontal_pressure_gradient_tendencies(state: State, namelist: OperationalNamelist) -> tuple[jax.Array, jax.Array]:
+    """Compute WRF-shaped velocity PGF tendencies for operational RK u/v."""
+
+    pressure, al, alt = diagnose_pressure_al_alt(state, None, namelist.metrics)
+    cqu, cqv = moisture_coupling_factors(state)
+    du_dt, dv_dt, _, _ = horizontal_pressure_gradient(
+        state,
+        None,
+        namelist.metrics,
+        pressure,
+        al,
+        alt,
+        cqu,
+        cqv,
+        dx_m=namelist.grid.projection.dx_m,
+        dy_m=namelist.grid.projection.dy_m,
+        non_hydrostatic=True,
+        top_lid=bool(namelist.top_lid),
+    )
+    return du_dt, dv_dt
 
 
 def _acoustic_core_state(carry: OperationalCarry, namelist: OperationalNamelist) -> AcousticCoreState:
@@ -373,9 +401,11 @@ def _rk_scan_step(carry: OperationalCarry, namelist: OperationalNamelist, *, deb
 
     def advance_stage(stage_carry: OperationalCarry, factor: float, acoustic_substeps: int) -> OperationalCarry:
         haloed = apply_halo(stage_carry.state, halo_spec(namelist.grid))
-        tendencies = compute_advection_tendencies(haloed, namelist.tendencies, namelist.grid)
-        if not bool(namelist.disable_guards):
-            tendencies = _m6b_acoustic_tendencies(tendencies, namelist.tendencies)
+        du_dt, dv_dt = _horizontal_pressure_gradient_tendencies(haloed, namelist)
+        tendencies = namelist.tendencies.replace(
+            u=namelist.tendencies.u + du_dt,
+            v=namelist.tendencies.v + dv_dt,
+        )
         candidate = add_scaled_tendencies(origin, tendencies, float(namelist.dt_s) * float(factor))
         stage_carry = _with_save_family(stage_carry.replace(state=candidate), candidate)
         stage_carry = _acoustic_scan(
