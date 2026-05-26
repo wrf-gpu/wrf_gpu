@@ -100,12 +100,21 @@ def advance_mu_t_wrf(inputs: AdvanceMuTInputs) -> dict[str, jnp.ndarray]:
     dvdxi_stack = jnp.stack(dvdxi_levels, axis=0)
     dmdt = jnp.sum(inputs.dnw[:nz, None, None] * dvdxi_stack, axis=0)
 
-    mu_old = inputs.mu[yy, xx]
-    mu_tendency = dmdt + inputs.mu_tend[yy, xx]
-    mu_new_i = mu_old + float(inputs.dts) * mu_tendency
+    # WRF ``small_step_prep`` saves the RK-stage ``MU`` and advances a
+    # small-step delta.  The operational carry encodes that delta as
+    # ``muts - mut`` so callers can keep the physical perturbation in ``mu``.
+    mu_work_old = inputs.muts[yy, xx] - inputs.mut[yy, xx]
+    mu_save = inputs.mu[yy, xx] - mu_work_old
+    # The JAX arrays carry WRF's negative ``dnw`` directly, while the local
+    # ``dvdxi`` stack is already an outward C-grid flux divergence in Python
+    # index order.  This is the WRF line-1104 ``DMDT + MU_TEND`` update with
+    # the stored divergence orientation converted back to WRF's mass tendency.
+    mu_tendency = -dmdt + inputs.mu_tend[yy, xx]
+    mu_work_new = mu_work_old + float(inputs.dts) * mu_tendency
+    mu_new_i = mu_save + mu_work_new
     mudf_i = mu_tendency
-    muts_i = inputs.mut[yy, xx] + mu_new_i
-    muave_i = 0.5 * ((1.0 + float(inputs.epssm)) * mu_new_i + (1.0 - float(inputs.epssm)) * mu_old)
+    muts_i = inputs.mut[yy, xx] + mu_work_new
+    muave_i = 0.5 * ((1.0 + float(inputs.epssm)) * mu_work_new + (1.0 - float(inputs.epssm)) * mu_work_old)
 
     mu_new = _update_2d(inputs.mu, mu_new_i, yy, xx)
     mudf_new = _update_2d(inputs.mudf, mudf_i, yy, xx)
