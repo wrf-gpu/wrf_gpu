@@ -107,6 +107,64 @@ def load_prescribed_land_state(run: Gen2Run, domain: str = "d02", time: int = 0)
     return state
 
 
+def load_hourly_land_state(run: Gen2Run, domain: str = "d02", time: int = 0) -> PrescribedNoahMPState:
+    """Load the Gen2 hourly lower-boundary land state from `wrfout_<domain>`.
+
+    The operational `State` currently carries only a compact surface subset, but
+    this loader keeps the full Noah-MP hourly payload together so downstream
+    callers can refresh the fields the frozen state schema exposes without
+    pretending the soil/SST layers are prognostic.
+    """
+
+    history = run.history_files(domain)
+    if not history:
+        raise FileNotFoundError(f"no wrfout files for {domain} in {run.path}")
+    requested_index = int(time)
+    time_index = min(max(requested_index, 0), len(history) - 1)
+    history_variables = set(run.variables(domain))
+    required = {"XLAND", "LANDMASK", "IVGTYP", "ISLTYP", "LU_INDEX", "SST", "TSK", "SMOIS", "SH2O", "TSLB"}
+    absent_required = sorted(required - history_variables)
+    if absent_required:
+        raise KeyError(f"required hourly Gen2 land-state variables missing for {domain}: {absent_required}")
+
+    loadable = set(LAND_STATE_VARIABLES) | required
+    loaded = {name: run.load(domain, name, time=time_index, lazy=False) for name in sorted(loadable & history_variables)}
+    missing = sorted(loadable - set(loaded))
+    source = {
+        "run_id": run.run_id,
+        "domain": domain,
+        "requested_time_index": requested_index,
+        "time_index": time_index,
+        "source_file": str(history[time_index]),
+        "missing_optional_variables": missing,
+        "roughness_note": "ZNT absent from hourly wrfout; roughness_m derived from CM/VEGFRA/land-water surrogate.",
+        "mavail_note": "MAVAIL absent from hourly wrfout; derived from top SMOIS and land/water mask.",
+    }
+    state = prescribe_noah_mp_state(
+        t_skin=loaded["TSK"],
+        smois=loaded["SMOIS"],
+        sh2o=loaded["SH2O"],
+        tslb=loaded["TSLB"],
+        xland=loaded["XLAND"],
+        landmask=loaded["LANDMASK"],
+        lakemask=loaded.get("LAKEMASK", np.zeros_like(np.asarray(loaded["XLAND"]))),
+        ivgtyp=loaded["IVGTYP"],
+        isltyp=loaded["ISLTYP"],
+        lu_index=loaded["LU_INDEX"],
+        sst=loaded["SST"],
+        vegfra=loaded.get("VEGFRA"),
+        cm=loaded.get("CM"),
+        source=source,
+    )
+    water = (state.xland > 1.5) | (state.landmask < 0.5)
+    state = replace(state, t_skin=jnp.where(water, state.sst, state.t_skin))
+    if "MAVAIL" in loaded:
+        state = replace(state, mavail=jnp.clip(jnp.asarray(loaded["MAVAIL"], dtype=jnp.float64), 0.0, 1.0))
+    if "ZNT" in loaded:
+        state = replace(state, roughness_m=jnp.clip(jnp.asarray(loaded["ZNT"], dtype=jnp.float64), 1.0e-7, 10.0))
+    return state
+
+
 def build_land_state_manifest(
     run: Gen2Run,
     domain: str = "d02",
@@ -147,4 +205,4 @@ def build_land_state_manifest(
     }
 
 
-__all__ = ["LAND_STATE_VARIABLES", "build_land_state_manifest", "load_prescribed_land_state"]
+__all__ = ["LAND_STATE_VARIABLES", "build_land_state_manifest", "load_hourly_land_state", "load_prescribed_land_state"]
