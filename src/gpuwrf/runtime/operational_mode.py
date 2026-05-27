@@ -211,6 +211,36 @@ def _finite_or_origin(candidate: jax.Array, origin: jax.Array) -> jax.Array:
     return jnp.where(jnp.isfinite(candidate), candidate, origin)
 
 
+def _limit_theta_by_level(candidate: jax.Array, origin: jax.Array) -> jax.Array:
+    """Apply the M7 operational theta envelope without resetting RK output."""
+
+    candidate = jnp.asarray(candidate)
+    origin = jnp.asarray(origin, dtype=candidate.dtype)
+    shape = (candidate.shape[0],) + (1,) * (candidate.ndim - 1)
+    levels = jnp.arange(candidate.shape[0], dtype=jnp.int32).reshape(shape)
+    lower_column = levels < 30
+    lower = jnp.where(lower_column, 200.0, 250.0).astype(candidate.dtype)
+    upper = jnp.where(lower_column, 400.0, 700.0).astype(candidate.dtype)
+    fallback = jnp.where(jnp.isfinite(origin), origin, 0.5 * (lower + upper))
+    fallback = jnp.clip(fallback, lower, upper)
+    valid = jnp.isfinite(candidate) & (candidate >= lower) & (candidate <= upper)
+    return jnp.where(valid, candidate, fallback)
+
+
+def _limit_guarded_dynamics_state(candidate: State, origin: State) -> State:
+    """Keep finite bounded dynamics from RK3 while preserving positive dry mass."""
+
+    theta = _limit_theta_by_level(candidate.theta, origin.theta)
+    mu_base = jnp.asarray(origin.mu_total) - jnp.asarray(origin.mu_perturbation)
+    mu_perturbation = _finite_or_origin(candidate.mu_perturbation, origin.mu_perturbation)
+    candidate_mu_total = mu_base + mu_perturbation
+    valid_mu = jnp.isfinite(candidate_mu_total) & (candidate_mu_total >= 1.0)
+    mu_perturbation = jnp.where(valid_mu, mu_perturbation, origin.mu_perturbation)
+    mu_total = jnp.maximum(mu_base + mu_perturbation, jnp.asarray(1.0, dtype=mu_perturbation.dtype))
+    mu_perturbation = mu_total - mu_base
+    return candidate.replace(theta=theta, mu=mu_total, mu_total=mu_total, mu_perturbation=mu_perturbation)
+
+
 def _with_save_family(carry: OperationalCarry, state: State, ww: jax.Array | None = None) -> OperationalCarry:
     """Update WRF ``*_save`` transition fields in resident operational carry."""
 
@@ -546,26 +576,19 @@ def _physics_boundary_step(
     carry = _rk_scan_step(carry, namelist, debug=debug)
     next_state = carry.state
     if not bool(namelist.disable_guards):
-        # The controlled parity lane verifies the promoted acoustic scratch, but
-        # full-domain operational theta/mu replacement is not yet a bounded
-        # physical-state contract. Keep the prior carry-fix projection here.
-        next_state = next_state.replace(
-            theta=physical_origin.theta,
+        next_state = _limit_guarded_dynamics_state(next_state, physical_origin).replace(
             qv=_valid_mixing_ratio(next_state.qv, physical_origin.qv),
             qc=_valid_mixing_ratio(next_state.qc, physical_origin.qc),
             qr=_valid_mixing_ratio(next_state.qr, physical_origin.qr),
             qi=_valid_mixing_ratio(next_state.qi, physical_origin.qi),
             qs=_valid_mixing_ratio(next_state.qs, physical_origin.qs),
             qg=_valid_mixing_ratio(next_state.qg, physical_origin.qg),
-            mu=physical_origin.mu,
-            mu_total=physical_origin.mu_total,
-            mu_perturbation=physical_origin.mu_perturbation,
         )
     if bool(namelist.run_physics):
         if not bool(namelist.disable_guards):
             next_state = thompson_adapter(next_state, float(namelist.dt_s))
-        next_state = mynn_adapter(next_state, float(namelist.dt_s), namelist.grid)
         next_state = surface_adapter(next_state, float(namelist.dt_s))
+        next_state = mynn_adapter(next_state, float(namelist.dt_s), namelist.grid)
         if run_radiation:
             next_state = rrtmg_adapter(next_state, float(namelist.dt_s), namelist.grid)
     if bool(namelist.run_boundary):
@@ -578,18 +601,16 @@ def _physics_boundary_step(
                 u=_finite_or_origin(bounded.u, physical_origin.u),
                 v=_finite_or_origin(bounded.v, physical_origin.v),
                 w=_finite_or_origin(bounded.w, physical_origin.w),
-                theta=_finite_or_origin(bounded.theta, physical_origin.theta),
+                theta=_limit_theta_by_level(bounded.theta, physical_origin.theta),
                 qv=_valid_mixing_ratio(bounded.qv, physical_origin.qv),
                 p=_finite_or_origin(bounded.p, physical_origin.p),
                 ph=_finite_or_origin(bounded.ph, physical_origin.ph),
-                mu=_finite_or_origin(bounded.mu, physical_origin.mu),
                 p_total=_finite_or_origin(bounded.p_total, physical_origin.p_total),
                 ph_total=_finite_or_origin(bounded.ph_total, physical_origin.ph_total),
-                mu_total=_finite_or_origin(bounded.mu_total, physical_origin.mu_total),
                 p_perturbation=_finite_or_origin(bounded.p_perturbation, physical_origin.p_perturbation),
                 ph_perturbation=_finite_or_origin(bounded.ph_perturbation, physical_origin.ph_perturbation),
-                mu_perturbation=_finite_or_origin(bounded.mu_perturbation, physical_origin.mu_perturbation),
             )
+            next_state = _limit_guarded_dynamics_state(next_state, physical_origin)
     next_state = _enforce_operational_precision(next_state)
     return carry.replace(state=next_state)
 
