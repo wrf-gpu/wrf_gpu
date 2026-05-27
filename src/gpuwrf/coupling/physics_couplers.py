@@ -136,6 +136,24 @@ def _field_dtype(field: str):
     return DEFAULT_DTYPES.dtype_for(field)
 
 
+def _bottom_column(surface_field, template_columns):
+    """Place a 2-D surface field into the lowest slot of a column array."""
+
+    value = jnp.asarray(surface_field).astype(template_columns.dtype)
+    return jnp.zeros_like(template_columns).at[..., 0].set(value)
+
+
+def _surface_flux_column_inputs(state: State, theta_columns):
+    """Return MYNN bottom-boundary columns sourced from the surface adapter."""
+
+    return (
+        _bottom_column(state.theta_flux, theta_columns),
+        _bottom_column(state.qv_flux, theta_columns),
+        _bottom_column(state.tau_u, theta_columns),
+        _bottom_column(state.tau_v, theta_columns),
+    )
+
+
 def _rho_from_state(state: State):
     """Builds the density diagnostic required by column physics kernels."""
 
@@ -252,7 +270,10 @@ def mynn_adapter(state: State, dt: float, grid: GridSpec | None = None) -> State
 
     theta_columns = _to_columns(state.theta)
     qke_columns = _to_columns(state.qke)
-    zeros = jnp.zeros_like(theta_columns)
+    rho_columns = _to_columns(_rho_from_state(state))
+    dz_columns = _column_dz_from_state(state, grid)
+    theta_flux_columns, qv_flux_columns, tau_u_columns, tau_v_columns = _surface_flux_column_inputs(state, theta_columns)
+    momentum_flux_columns = jnp.sqrt(tau_u_columns * tau_u_columns + tau_v_columns * tau_v_columns)
     column = MynnPBLColumnState(
         _to_columns(_u_mass(state)),
         _to_columns(_v_mass(state)),
@@ -261,13 +282,14 @@ def mynn_adapter(state: State, dt: float, grid: GridSpec | None = None) -> State
         _to_columns(state.qv),
         0.5 * qke_columns,
         _to_columns(state.p),
-        _to_columns(_rho_from_state(state)),
-        _column_dz_from_state(state, grid),
-        zeros,
-        zeros,
-        zeros,
+        rho_columns,
+        dz_columns,
+        theta_flux_columns,
+        qv_flux_columns,
+        momentum_flux_columns,
     )
     out = step_mynn_pbl_column(column, dt, debug=False)
+    out = _apply_surface_flux_bottom_bc(out, state, dt, dz_columns, rho_columns)
     u_mass = _from_columns(out.u)
     v_mass = _from_columns(out.v)
     w_mass = _from_columns(out.w)
@@ -279,6 +301,33 @@ def mynn_adapter(state: State, dt: float, grid: GridSpec | None = None) -> State
         qv=_from_columns(out.qv).astype(_field_dtype("qv")),
         qke=(2.0 * _from_columns(out.tke)).astype(_field_dtype("qke")),
     )
+
+
+def _apply_surface_flux_bottom_bc(
+    out: MynnPBLColumnState,
+    state: State,
+    dt: float,
+    dz_columns,
+    rho_columns,
+) -> MynnPBLColumnState:
+    """Apply stored surface-layer fluxes as MYNN bottom boundary tendencies."""
+
+    dz0 = jnp.maximum(dz_columns[..., 0], 1.0)
+    rho0 = jnp.maximum(rho_columns[..., 0], 1.0e-4)
+    rhosfc = jnp.maximum(jnp.asarray(state.rhosfc, dtype=rho0.dtype), 1.0e-4)
+    scalar_scale = float(dt) / dz0 * rhosfc / rho0
+    theta_increment = (scalar_scale * jnp.asarray(state.theta_flux, dtype=scalar_scale.dtype)).astype(out.theta.dtype)
+    theta = out.theta.at[..., 0].add(theta_increment)
+    qv_flux_floor = jnp.minimum(0.9 * out.qv[..., 0] - 1.0e-8, 0.0) / jnp.maximum(float(dt) / dz0, 1.0e-12)
+    qv_flux = jnp.maximum(jnp.asarray(state.qv_flux, dtype=out.qv.dtype), qv_flux_floor)
+    qv_increment = (scalar_scale * qv_flux.astype(scalar_scale.dtype)).astype(out.qv.dtype)
+    qv = out.qv.at[..., 0].add(qv_increment)
+    momentum_scale = float(dt) / dz0
+    u_increment = (momentum_scale * jnp.asarray(state.tau_u, dtype=momentum_scale.dtype)).astype(out.u.dtype)
+    v_increment = (momentum_scale * jnp.asarray(state.tau_v, dtype=momentum_scale.dtype)).astype(out.v.dtype)
+    u = out.u.at[..., 0].add(u_increment)
+    v = out.v.at[..., 0].add(v_increment)
+    return out.replace(u=u, v=v, theta=theta, qv=jnp.maximum(qv, 0.0))
 
 
 def surface_adapter(state: State, dt: float) -> State:

@@ -73,7 +73,7 @@ class DailyPipelineConfig:
     domain: str = "d02"
     dt_s: float = DT_S
     acoustic_substeps: int = 10
-    radiation_cadence_steps: int = 999999
+    radiation_cadence_steps: int = 180
 
 
 @dataclass(frozen=True)
