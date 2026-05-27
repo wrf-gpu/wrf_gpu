@@ -1,0 +1,4 @@
+validated cpu_per_domain_wall_clock.json,honest_speedup_table.json,gpu_vs_cpu_skill_diff.json
+selected_run 20260521_18z_l3_24h_20260522T133443Z
+d02_speedup 50.20484702814852
+skill_verdict FAIL_SKILL_DIFF
