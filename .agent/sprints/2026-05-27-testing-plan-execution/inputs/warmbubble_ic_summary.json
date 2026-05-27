@@ -1,0 +1,104 @@
+{
+  "array_stats": {
+    "density_kg_m3": {
+      "dtype": "float64",
+      "finite": true,
+      "max": 1.1612378795796319,
+      "min": 0.4722938852139243,
+      "shape": [
+        80,
+        201
+      ]
+    },
+    "pressure_pa": {
+      "dtype": "float64",
+      "finite": true,
+      "max": 100000.0,
+      "min": 40671.58792519709,
+      "shape": [
+        80,
+        201
+      ]
+    },
+    "theta_k": {
+      "dtype": "float64",
+      "finite": true,
+      "max": 302.0,
+      "min": 300.0,
+      "shape": [
+        80,
+        201
+      ]
+    },
+    "theta_perturbation_k": {
+      "dtype": "float64",
+      "finite": true,
+      "max": 2.0,
+      "min": 0.0,
+      "shape": [
+        80,
+        201
+      ]
+    },
+    "u_m_s": {
+      "dtype": "float64",
+      "finite": true,
+      "max": 0.0,
+      "min": 0.0,
+      "shape": [
+        80,
+        201
+      ]
+    },
+    "w_m_s": {
+      "dtype": "float64",
+      "finite": true,
+      "max": 0.0,
+      "min": 0.0,
+      "shape": [
+        80,
+        201
+      ]
+    },
+    "x_m": {
+      "dtype": "float64",
+      "finite": true,
+      "max": 20000.0,
+      "min": 0.0,
+      "shape": [
+        201
+      ]
+    },
+    "z_m": {
+      "dtype": "float64",
+      "finite": true,
+      "max": 7900.0,
+      "min": 0.0,
+      "shape": [
+        80
+      ]
+    }
+  },
+  "case_id": "idealized-warmbubble-bryan-fritsch-2002",
+  "grid": {
+    "dx_m": 100.0,
+    "dz_m": 100.0,
+    "nx": 201,
+    "nz": 80,
+    "staggering": "2d-xz-mass"
+  },
+  "parameters": {
+    "center_x_m": 10000.0,
+    "center_z_m": 2000.0,
+    "moisture": "dry",
+    "radius_x_m": 2000.0,
+    "radius_z_m": 2000.0,
+    "theta0_k": 300.0,
+    "theta_perturbation_k": 2.0
+  },
+  "reference": {
+    "name": "Bryan and Fritsch 2002 dry warm-bubble benchmark",
+    "notes": "Compact dry thermal bubble; WRF em_quarter_ss is the stock-ARW reference path.",
+    "purpose": "buoyant response, acoustic stability, symmetry"
+  }
+}
