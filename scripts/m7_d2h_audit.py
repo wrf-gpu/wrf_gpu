@@ -12,6 +12,9 @@ import subprocess
 from typing import Any
 
 
+XLA_MODULE_REGEX = r"XlaModule:#hlo_module=jit_run_forecast_operational\b"
+
+
 def _write_json(path: Path, payload: dict[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
@@ -113,7 +116,11 @@ def _nvtx_window(conn: sqlite3.Connection, marker_regex: str) -> dict[str, Any]:
     cols = _columns(conn, "NVTX_EVENTS")
     if "start" not in cols or "end" not in cols:
         return {"available": False, "start_ns": None, "end_ns": None, "matches": []}
-    name_candidates = [col for col in ("text", "message", "name", "registeredString", "domainId") if col in cols]
+    name_candidates = [
+        col
+        for col in ("text", "message", "name", "registeredString", "textId", "jsonText", "jsonTextId", "domainId")
+        if col in cols
+    ]
     selected = ["start", "end"] + name_candidates
     pattern = re.compile(marker_regex)
     matches: list[dict[str, Any]] = []
@@ -190,17 +197,34 @@ def audit_trace(report: Path, sqlite_path: Path, marker_regex: str) -> dict[str,
         }
     conn = sqlite3.connect(str(sqlite_path))
     kernel = _kernel_window(conn)
-    nvtx = _nvtx_window(conn, marker_regex)
+    marker_nvtx = _nvtx_window(conn, marker_regex)
+    xla_module_nvtx = _nvtx_window(conn, XLA_MODULE_REGEX)
     rows = _memcpy_rows(conn)
     conn.close()
 
-    loop_start = nvtx["start_ns"] if nvtx["available"] else kernel["start_ns"]
-    loop_end = nvtx["end_ns"] if nvtx["available"] else kernel["end_ns"]
-    method = "nvtx_marker" if nvtx["available"] else "kernel_timeline_process_of_elimination"
+    if marker_nvtx["available"]:
+        nvtx = marker_nvtx
+        loop_start = marker_nvtx["start_ns"]
+        loop_end = marker_nvtx["end_ns"]
+        method = "nvtx_marker"
+        window_provenance = "explicit-marker"
+    elif xla_module_nvtx["available"]:
+        nvtx = xla_module_nvtx
+        loop_start = xla_module_nvtx["start_ns"]
+        loop_end = xla_module_nvtx["end_ns"]
+        method = "xla_module_nvtx"
+        window_provenance = "xla-module-fallback"
+    else:
+        nvtx = marker_nvtx
+        loop_start = kernel["start_ns"]
+        loop_end = kernel["end_ns"]
+        method = "kernel_timeline_process_of_elimination"
+        window_provenance = "broad-fallback"
     if loop_start is None or loop_end is None:
         loop_start = 0
         loop_end = -1
         method = "no_kernel_window_available"
+        window_provenance = "unavailable"
 
     def inside(row: dict[str, Any]) -> bool:
         return int(loop_start) <= int(row["start_ns"]) <= int(loop_end)
@@ -234,8 +258,11 @@ def audit_trace(report: Path, sqlite_path: Path, marker_regex: str) -> dict[str,
         "sqlite_export": str(sqlite_path),
         "export": export,
         "method": method,
+        "window_provenance": window_provenance,
         "nvtx_marker_regex": marker_regex,
         "nvtx_window": nvtx,
+        "xla_module_regex": XLA_MODULE_REGEX,
+        "xla_module_window": xla_module_nvtx,
         "kernel_window": kernel,
         "loop_window_ns": {"start": loop_start, "end": loop_end},
         "counts": {

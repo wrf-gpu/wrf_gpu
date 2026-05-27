@@ -1,0 +1,71 @@
+{
+  "artifact_type": "m7_d2h_audit",
+  "bytes": {
+    "d2h_inside_loop_window": 0,
+    "d2h_inter_kernel_inside_window": 0,
+    "h2d_inside_loop_window": 0
+  },
+  "classification": {
+    "hard_invariant": "D2H inter-kernel/intra-step path must be 0.",
+    "io_at_step_boundaries_allowed": true,
+    "pass_condition": "counts.d2h_inter_kernel_inside_window == 0"
+  },
+  "counts": {
+    "d2h_inside_loop_window": 0,
+    "d2h_inter_kernel_inside_window": 0,
+    "d2h_post_kernel_inside_window": 0,
+    "d2h_pre_kernel_inside_window": 0,
+    "d2h_total_trace": 89,
+    "h2d_inside_loop_window": 0,
+    "h2d_total_trace": 299,
+    "memcpy_total": 317297
+  },
+  "export": {
+    "returncode": 0,
+    "reused_existing_sqlite": true,
+    "stderr": "",
+    "stdout": ""
+  },
+  "inter_kernel_d2h_byte_clusters": [],
+  "kernel_window": {
+    "available": true,
+    "count": 645341,
+    "end_ns": 14832045415,
+    "start_ns": 132226670
+  },
+  "loop_window_ns": {
+    "end": 14823628198,
+    "start": 8262958166
+  },
+  "method": "xla_module_nvtx",
+  "nsys_report": "/tmp/m7_profile_artifacts/m7_20260521_warm_360.nsys-rep",
+  "nvtx_marker_regex": "DOES_NOT_EXIST",
+  "nvtx_window": {
+    "available": true,
+    "end_ns": 14823628198,
+    "matches": [
+      {
+        "end_ns": 14823628198,
+        "label": "XlaModule:#hlo_module=jit_run_forecast_operational,program_id=167# [kernel.kallsyms]",
+        "start_ns": 8262958166
+      }
+    ],
+    "start_ns": 8262958166
+  },
+  "sqlite_export": "/tmp/m7_profile_artifacts/m7_20260521_warm_360.sqlite",
+  "status": "PASS",
+  "window_provenance": "xla-module-fallback",
+  "xla_module_regex": "XlaModule:#hlo_module=jit_run_forecast_operational\\b",
+  "xla_module_window": {
+    "available": true,
+    "end_ns": 14823628198,
+    "matches": [
+      {
+        "end_ns": 14823628198,
+        "label": "XlaModule:#hlo_module=jit_run_forecast_operational,program_id=167# [kernel.kallsyms]",
+        "start_ns": 8262958166
+      }
+    ],
+    "start_ns": 8262958166
+  }
+}

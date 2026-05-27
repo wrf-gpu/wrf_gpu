@@ -7,6 +7,7 @@ import argparse
 import csv
 import ctypes
 import ctypes.util
+from contextlib import ExitStack
 import json
 import math
 import os
@@ -35,10 +36,20 @@ from gpuwrf.integration.d02_replay import build_replay_case  # noqa: E402
 from gpuwrf.profiling.transfer_audit import block_until_ready, visible_gpu_name  # noqa: E402
 from gpuwrf.runtime.operational_mode import OperationalNamelist, run_forecast_operational  # noqa: E402
 
+try:  # noqa: E402
+    import nvtx  # type: ignore[import-not-found]
+except ImportError:  # pragma: no cover - optional profiler marker package
+    nvtx = None  # type: ignore[assignment]
+
+try:  # noqa: E402
+    import torch  # type: ignore[import-not-found]
+except ImportError:  # pragma: no cover - optional profiler marker package
+    torch = None  # type: ignore[assignment]
+
 
 config.update("jax_enable_x64", True)
 
-SPRINT = ROOT / ".agent" / "sprints" / "2026-05-26-m7-gpu-profile-prep"
+SPRINT = ROOT / ".agent" / "sprints" / "2026-05-27-m7-profiler-window-fix"
 ARTIFACT_ROOT = Path("/tmp/m7_profile_artifacts")
 RUN_ROOT = Path("/mnt/data/canairy_meteo/runs/wrf_l3")
 DT_S = 10.0
@@ -104,13 +115,35 @@ def _build_case(run_key: str) -> tuple[Any, OperationalNamelist, dict[str, Any]]
     return state, namelist, meta
 
 
-def _timed_forecast(run_key: str, hours: float, annotation: str) -> tuple[float, dict[str, Any]]:
-    state, namelist, meta = _build_case(run_key)
+class _TorchNvtxAnnotation:
+    def __init__(self, message: str) -> None:
+        self._message = message
+
+    def __enter__(self) -> None:
+        if torch is not None:
+            torch.cuda.nvtx.range_push(self._message)
+
+    def __exit__(self, exc_type: object, exc: object, tb: object) -> None:
+        if torch is not None:
+            torch.cuda.nvtx.range_pop()
+
+
+def _run_forecast(state: Any, namelist: OperationalNamelist, hours: float, annotation: str) -> float:
     start = time.perf_counter()
-    with jax.profiler.TraceAnnotation(annotation):
+    with ExitStack() as stack:
+        stack.enter_context(jax.profiler.TraceAnnotation(annotation))
+        if nvtx is not None:
+            stack.enter_context(nvtx.annotate(annotation))
+        elif torch is not None:
+            stack.enter_context(_TorchNvtxAnnotation(annotation))
         result = run_forecast_operational(state, namelist, float(hours))
         block_until_ready(result)
-    wall_s = time.perf_counter() - start
+    return time.perf_counter() - start
+
+
+def _timed_forecast(run_key: str, hours: float, annotation: str) -> tuple[float, dict[str, Any]]:
+    state, namelist, meta = _build_case(run_key)
+    wall_s = _run_forecast(state, namelist, hours, annotation)
     meta["hours"] = float(hours)
     meta["rk_steps"] = _steps_for_hours(hours)
     return wall_s, meta
@@ -240,11 +273,16 @@ def run_profile_window(
     for idx in range(1, warmups + 1):
         wall_s, _ = _timed_forecast(run_key, hours, f"{annotation}_warmup_{idx}")
         warmup_times.append(wall_s)
+    state, namelist, meta = _build_case(run_key)
     if use_cuda_range:
         _cuda_profiler_call("cudaProfilerStart")
-    profile_wall_s, meta = _timed_forecast(run_key, hours, annotation)
-    if use_cuda_range:
-        _cuda_profiler_call("cudaProfilerStop")
+    try:
+        profile_wall_s = _run_forecast(state, namelist, hours, annotation)
+    finally:
+        if use_cuda_range:
+            _cuda_profiler_call("cudaProfilerStop")
+    meta["hours"] = float(hours)
+    meta["rk_steps"] = _steps_for_hours(hours)
     payload = {
         "artifact_type": "m7_gpu_profile_window_call_log",
         "status": "PASS",
