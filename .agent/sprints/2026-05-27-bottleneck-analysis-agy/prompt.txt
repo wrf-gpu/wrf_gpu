@@ -1,0 +1,84 @@
+You are Gemini 3.5 Flash invoked as a second-model bottleneck and optimization-potential analyst for an open-source JAX/Python GPU port of the WRF atmospheric model. A parallel codex sprint is doing the same analysis from a different angle; the manager will compare both. Your job: produce a rigorous, technically grounded analysis based ONLY on what's verifiable from the proof objects and source code. No fabrication.
+
+INPUT FILES (read these):
+
+Source code:
+- /home/enric/src/wrf_gpu2/src/gpuwrf/runtime/operational_mode.py
+- /home/enric/src/wrf_gpu2/src/gpuwrf/coupling/physics_couplers.py
+- /home/enric/src/wrf_gpu2/src/gpuwrf/dynamics/core/acoustic.py
+- /home/enric/src/wrf_gpu2/src/gpuwrf/dynamics/acoustic_wrf.py
+- /home/enric/src/wrf_gpu2/src/gpuwrf/contracts/state.py
+- /home/enric/src/wrf_gpu2/src/gpuwrf/contracts/precision.py
+- /home/enric/src/wrf_gpu2/src/gpuwrf/integration/daily_pipeline.py
+
+Proof objects (from completed M7 work):
+- /home/enric/src/wrf_gpu2/.agent/sprints/2026-05-26-m7-gpu-profile-prep/nsys_summary.json (Nsight Systems top kernels)
+- /home/enric/src/wrf_gpu2/.agent/sprints/2026-05-27-m7-profiler-window-fix/d2h_audit_v2.json (D2H invariant proof)
+- /home/enric/src/wrf_gpu2/.agent/sprints/2026-05-27-m7-d2h-probe-opus/top_3_suspects.md (theoretical fusion suspects S1/S2/S3)
+- /home/enric/src/wrf_gpu2/.agent/sprints/2026-05-27-m7-1km-memory-audit/step_feasibility.json (1km 7.28 GB peak)
+- /home/enric/src/wrf_gpu2/.agent/sprints/2026-05-27-m7-skill-fix-iter2/post_iter2_speedup.json (current 22.26x speedup state)
+- /home/enric/src/wrf_gpu2/PRECISION_POLICY.md
+- /home/enric/src/wrf_gpu2/PERFORMANCE_TARGETS.md
+
+CURRENT STATE (factual):
+- GPU 24h Canary 3km wall-clock (iter-2 corrected physics): 732.63 s
+- Apples-to-apples speedup vs 28-rank CPU WRF d02-only: 22.26x
+- D2H inter-kernel inside forecast loop: 0 copies, 0 bytes (constitutional invariant ADR-027)
+- 1km Canary peak VRAM: 7278 MiB of 32607 MiB (78% headroom)
+- Cold JIT compile (inclusive): 102-106 s
+- Warm reproducibility CV: 0.42% over 3 warm 1h runs
+- Top kernels by GPU time (from nsys_summary.json): pcrGtsvBatchSharedMemKernelLoop<double> (cuSPARSE tridiagonal), loop_add_fusion_4, loop_multiply_fusion, etc.
+- Hardware: single NVIDIA RTX 5090 (Blackwell sm_120, 32 GB)
+- Software: Python 3.13.11, JAX 0.10.0, jaxlib 0.10.0, CUDA 13.1.115
+
+YOUR DELIVERABLE — 7 PARTS:
+
+PART 1 — TOP-10 HOT-KERNEL ANALYSIS
+For the top 10 kernels by GPU time in nsys_summary.json, produce a table:
+  kernel | total ms / call | % of frame | bound type (memory / compute / launch) | candidate action (fuse / dtype / replace algorithm / accept) | expected wall-clock saving | risk to correctness
+Use only what's verifiable; if NCU metrics are missing, classify based on the operator type (e.g., cuSPARSE tridiagonal solvers are typically memory-bound, elementwise fusion kernels are typically launch-bound).
+
+PART 2 — FUSION OPPORTUNITIES
+List specific consecutive small kernels that should be merged. Reference the operator names in src/gpuwrf/dynamics/core/acoustic.py and src/gpuwrf/coupling/physics_couplers.py. For each fusion target: estimated benefit, JAX/XLA mechanism (jit static-arg unrolling, lax.scan body fusion, jit decoration grouping).
+
+PART 3 — PRECISION DOWNCAST AUDIT
+Read src/gpuwrf/contracts/precision.py and PRECISION_POLICY.md. For each FP64 field in State, judge:
+  must-stay-FP64 (mass/pressure-gradient-sensitive — name which validation result depends on it)
+  candidate-FP32 (low-impact)
+  candidate-BF16 (advection scalars or qx scalars)
+Estimate memory + bandwidth savings if each downcast lands. Tag each with a risk level (low/med/high).
+
+PART 4 — TRANSIENT-MEMORY ANALYSIS
+The 1km audit reported 7.28 GB peak on a State with persistent allocation of ~660 MB. Where do the other ~6.6 GB come from? Identify transient buffers, JIT compile-cache memory, XLA buffer-aliasing failures. Recommend allocator-pressure mitigations (donate_argnums, in-place updates, lax.while_loop instead of scan with carry copies, etc.).
+
+PART 5 — COLD-JIT MITIGATIONS
+102-106 s cold start is operationally expensive. List options to reduce, with JAX-specific mechanism:
+  AOT compilation via jax.export
+  Persistent compile cache via JAX_COMPILATION_CACHE_DIR
+  Shape-stable JIT (avoid retraces on different IC shapes)
+  Reduce JIT optimization level (XLA_FLAGS=--xla_disable_hlo_passes=...)
+  Smaller compilation units (separate JIT for IC ingest vs forecast)
+
+PART 6 — MULTI-GPU READINESS
+The halo placeholder exists; no MPI/NCCL has been done. Outline what's needed:
+  Which State fields need halo exchange (mass-3D, staggered winds, ww, etc.)
+  Message size per timestep at 3km Canary domain (44x66x159 grid)
+  Expected communication overhead vs forecast wall time
+  Recommended mechanism: jax.experimental.shard_map vs explicit jax.experimental.maps.xmap vs raw mpi4py + bridge
+
+PART 7 — PRIORITIZED ROADMAP
+Top 5 optimization sprints, ranked by (wall-clock saving × correctness risk × effort). For each:
+  Sprint name
+  Scope (what to change, in which files)
+  Estimated wall-clock saving (s/24h or % of current 732s)
+  Estimated correctness risk (low/med/high)
+  Estimated effort (sprint-days)
+  Dependencies on other sprints
+
+CONSTRAINTS:
+- No fabricated kernel names, no fabricated speedups, no fabricated citations.
+- If a claim requires data we don't have (e.g., NCU metrics), say "unknown — would need NCU access with NVGPUCTRPERM enabled."
+- Output as Markdown. Save to /tmp/gemini_bottleneck_analysis.md.
+- Save a 5-line executive summary to /tmp/gemini_bottleneck_summary.md.
+
+After producing the analysis, save BOTH files. The manager will compare against the codex sibling analysis.
