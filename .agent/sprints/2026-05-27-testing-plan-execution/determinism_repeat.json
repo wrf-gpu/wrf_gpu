@@ -1,0 +1,40 @@
+{
+  "generated_utc": "2026-05-27T17:58:46.825245Z",
+  "gpu_hours_used": 0.0,
+  "honesty_note": "Existing two-run pipeline repeatability is bitwise PASS, but this does not satisfy the revised three-run gate.",
+  "observed_repeatability": {
+    "exists": true,
+    "field_count": 41,
+    "max_abs_delta": 0.0,
+    "path": "/tmp/wrf_gpu2_testexec/.agent/sprints/2026-05-27-m7-daily-pipeline-integration/repeatability.json",
+    "run_count": 2,
+    "status": "PASS"
+  },
+  "repo_commit": "eb9a13db09cb8b5258db63ace9a2758dd43277a5",
+  "required_run_count": 3,
+  "restart_bitwise_guard": {
+    "all_fields_pass": true,
+    "exists": true,
+    "field_count": 47,
+    "max_delta": 0.0,
+    "path": "/tmp/wrf_gpu2_testexec/.agent/sprints/2026-05-27-m7-restart-continuity/restart_continuity.json",
+    "verdict": "PASS"
+  },
+  "schema": "PublicationHighPriorityProof",
+  "schema_version": 1,
+  "status": "FAIL_REQUIRED_THREE_RUNS_NOT_AVAILABLE",
+  "test_id": "DETERMINISM-REPEAT",
+  "thresholds": {
+    "max_delta_across_observed_runs": {
+      "passed": true,
+      "threshold": "0.0 bitwise for observed repeatability artifact",
+      "value": 0.0
+    },
+    "run_count": {
+      "passed": false,
+      "threshold": ">=3 identical full-pipeline runs",
+      "value": 2.0
+    }
+  },
+  "verdict": "FAIL"
+}
