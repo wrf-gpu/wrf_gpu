@@ -19,7 +19,7 @@ The second question is methodological. Recent code models can make repository-sc
 This paper has four contributions.
 
 1. We describe a WRF-compatible regional replay prototype implemented in Python/JAX with whole-state device residency for the high-frequency model loop, rather than an incremental directive port of legacy WRF.
-2. We report the current corrected-physics workstation result: 708.32 s for a 24 h Canary 3 km d02 pipeline and 23.02x d02-only speedup over the 28-rank CPU WRF baseline on the same workstation. The prior 324.78 s / 50.20x result is retained only as a pre-fix diagnostic path that exposed the workflow's overclaim risk.
+2. We report the current corrected-physics workstation result: 732.63 s for the iteration-2 24 h Canary 3 km d02 pipeline and 22.26x d02-only apples-to-apples speedup over the 28-rank CPU WRF baseline on the same workstation. The iteration-1 result (708.32 s / 23.02x) and the pre-fix path (324.78 s / 50.20x) are retained as diagnostic history; the latter exposed the workflow's overclaim risk and the former exposed the cost of correct physics.
 3. We document the multi-agent engineering method that produced the system, including sprint contracts, proof objects, Architecture Decision Records (ADRs), independent tester/reviewer roles, and rejection loops where the process corrected its own claims.
 4. We report the current scientific blocker: side-by-side AEMET station verification remains outside tolerance versus CPU WRF even after partial skill recovery. The result is a fast, reproducible, device-resident prototype, not yet an operational replacement for WRF.
 
@@ -238,6 +238,24 @@ The post-fix wall-clock cost is 708.32 s end-to-end for 24 h, with 700.73 s fore
 
 The publication claim is therefore specific: the whole-state-resident architecture remains viable under current systems evidence, and the validation/fix discipline can localize coupled defects under operational scoring. The forecast is improving but is not yet a WRF skill replacement.
 
+### 8.4 Second iteration: partial wind recovery, T2 regression
+
+A second fix sprint addressed the three remaining named defects from iteration 1: it widened the lower-30 theta envelope from 400 K to 450 K, added a Gen2 hourly land-state refresh path that reloads `t_skin`, `SST`, `SMOIS`, `SH2O`, and `TSLB` from retained CPU wrfouts at each output boundary, and packed a WRF-ordered 5-row lateral boundary strip (`spec_bdy_width=5`, `relax_zone=4`) replacing the iter-1 outermost-row pack. Verdict: `BLOCKED`.
+
+All systems invariants again held: step-2 multi-step parity 0.0 bitwise, B6 savepoint parity preserved, inter-kernel D2H = 0 bytes, restart bitwise PASS, and AgentOS validation green. The d02-only apples-to-apples speedup settled at 22.26x (down from iter-1's 23.02x due to the modest overhead of hourly land refresh and 5-row boundary handling) — still well above the 4x-8x target.
+
+The post-iter-2 AEMET station scoring on the same 20260521 day, 73 stations, 24 valid hours, 1747 joined rows, produced:
+
+| Variable | CPU WRF RMSE | GPU iter-1 RMSE | GPU iter-2 RMSE | Iter-2 vs CPU |
+|---|---:|---:|---:|---:|
+| T2 (K) | 2.15 | 7.86 | **10.80** | **+402 percent** |
+| U10 (m s-1) | 2.31 | 11.31 | **7.24** | **+213 percent** |
+| V10 (m s-1) | 2.75 | 9.44 | **7.62** | **+177 percent** |
+
+Wind metrics recovered meaningfully: U10 RMSE dropped from +390 percent to +213 percent of CPU, and V10 RMSE dropped from +243 percent to +177 percent. The 5-row boundary strip and the hourly land refresh both contributed plausible relax-zone behavior, and the lower-troposphere wind field began to track the CPU reference more closely. T2 regressed: with the envelope widened from 400 K to 450 K, lower-column theta could climb further during daytime heating, but surface flux magnitudes from the current `surface_adapter` plus MYNN coupling now over-deposit heat into the bottom level. The diurnal warming overshoots rather than saturating.
+
+All three variables remain outside the pre-declared 20 percent tolerance. The publication therefore continues to reject any operational replacement claim. The remaining defect is now narrower: it is not a missing radiation source, a discarded RK3 advance, a width-1 boundary, or a frozen land state. It is a surface-flux magnitude or sign-coupling issue in the iteration-2 path, and it is the next root-cause target for an iteration 3 sprint. The proof-object backbone for iter 2 — `post_iter2_skill_diff.json`, `post_iter2_speedup.json`, `invariant_preservation_iter2.json` — is preserved on disk for that follow-up.
+
 ## 9. Discussion
 
 The project is best understood as two intertwined experiments: one in GPU-native NWP architecture and one in AI-agent scientific-software production.
@@ -264,7 +282,7 @@ The Canary workflow is replay-based. The GPU d02 system receives boundary side h
 
 The validation corpus is too small. M6 used three V3 initial conditions for operational Tier-4 RMSE gates, and M7 side-by-side station scoring used one 24 h 20260521 case. That is enough to expose a serious problem and measure partial recovery; it is not enough to characterize seasonal or regime-dependent behavior. A full Tier-4 ensemble remains corpus-blocked until more Gen2 d02 CPU/GPU comparable pairs are retained or replayed.
 
-The current physics path remains incomplete as an operational claim. Radiation cadence is no longer disabled in the post-fix path; it runs every 180 steps. The remaining blockers are theta guard-envelope saturation, frozen land and surface state, boundary width-1 application rather than WRF `spec_bdy_width=5`, and skill still outside tolerance. Microphysics admissibility and finite guards remain load-bearing in at least one diagnostic history.
+The current physics path remains incomplete as an operational claim. Radiation cadence is no longer disabled in the post-fix path; it runs every 180 steps. The boundary forcing widens to `spec_bdy_width=5` in iteration 2, and the land/surface state is refreshed hourly from Gen2 wrfouts in iteration 2. The remaining blockers are now narrower: a surface-flux magnitude or sign-coupling issue that drives T2 overshoot once the theta envelope is widened to allow diurnal warming, residual upper-bound saturation in the theta guard, the hourly land-refresh path being a data replay rather than a prognostic Noah-MP scheme, and skill still outside the pre-declared 20 percent tolerance against CPU WRF. Microphysics admissibility and finite guards remain load-bearing in at least one diagnostic history.
 
 The observation and verification path is narrow. AEMET station scoring on T2, U10, and V10 is useful and directly relevant to Canary operations, but it does not cover precipitation structure, cloud, radiation, vertical profiles, or regime-specific diagnostics. METplus-style verification, FSS, SAL, and a multi-day event corpus remain future work.
 
