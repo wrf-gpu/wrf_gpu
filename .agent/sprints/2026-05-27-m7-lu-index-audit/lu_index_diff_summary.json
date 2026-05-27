@@ -1,0 +1,45 @@
+{
+  "cell_count": 10494,
+  "classification": "CATEGORICAL_COLLAPSE_TO_LAND_WATER_DEFAULT",
+  "cpu_distribution": {
+    "10": 251,
+    "13": 15,
+    "16": 255,
+    "17": 9726,
+    "5": 164,
+    "9": 83
+  },
+  "cpu_reference_path": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d02_2026-05-21_19:00:00",
+  "cpu_wrfinput_equals_cpu_wrfout": true,
+  "cpu_wrfinput_path": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfinput_d02",
+  "diagnosis": "GPU LU_INDEX is 2 on every land cell and 17 on water; Gen2 preserves wrfinput categories 5/9/10/13/16/17.",
+  "diff_distribution_gpu_minus_cpu": {
+    "-11": 15,
+    "-14": 255,
+    "-3": 164,
+    "-7": 83,
+    "-8": 251,
+    "0": 9726
+  },
+  "gpu_distribution": {
+    "17": 9726,
+    "2": 768
+  },
+  "gpu_path": "/tmp/m7_pipeline_runs/20260521/wrfout_d02_2026-05-21_19:00:00",
+  "land_cell_count": 768,
+  "land_mismatch_count": 768,
+  "land_mismatch_fraction": 1.0,
+  "max_abs_diff": 14.0,
+  "mean_diff_gpu_minus_cpu": -0.649514008004574,
+  "mismatch_count": 768,
+  "mismatch_fraction": 0.07318467695826186,
+  "schema": "M7LuIndexDiffSummary",
+  "schema_version": 1,
+  "shape": [
+    66,
+    159
+  ],
+  "water_cell_count": 9726,
+  "water_mismatch_count": 0,
+  "water_mismatch_fraction": 0.0
+}
