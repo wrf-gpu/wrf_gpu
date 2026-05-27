@@ -1,0 +1,1639 @@
+Whole-State Device Residency for
+Workstation-Scale NWP: A JAX-Native
+WRF v4 Dynamical Core and Physics
+Port Engineered via Collaborative
+Multi-Agent AI Swarms
+## WRF and the ARW Dynamical Core
+The Advanced Research WRF (ARW) model is a non-hydrostatic, compressible atmospheric
+solver formulated on a terrain-following mass coordinate.1 The governing equations are cast in
+flux form, utilizing a vertical coordinate defined by the dry hydrostatic pressure of the
+
+atmospheric column.1 The dry hydrostatic coordinate       is normalized and defined as:
+
+
+
+
+In this coordinate formulation,      represents the dry hydrostatic pressure,         is the
+
+surface pressure of the dry atmosphere, and          denotes the constant pressure specified at
+
+the model top.1 The variable      represents the total mass of dry air per unit area within the
+                     1
+atmospheric column.
+Spatial discretization in the ARW core utilizes an Arakawa C-grid staggering scheme.1
+
+Thermodynamic variables—such as potential temperature         , geopotential    , and moisture
+
+mixing ratios    —are positioned at the center of each grid cell, while the velocity components
+
+(          ) are staggered horizontally and vertically on the respective cell faces.1 This spatial
+configuration minimizes grid-scale noise and optimizes the representation of pressure gradient
+forces and divergence fields.
+Temporal integration employs a third-order Runge-Kutta (RK3) time-split scheme.1 This
+split-explicit approach integrates high-frequency acoustic modes over smaller substeps to
+satisfy the Courant-Friedrichs-Lewy (CFL) stability criterion without incurring the extreme
+computational cost of running the complete, slow-variable dynamics core at the acoustic step
+frequency.1
+To maintain stability and boundary fidelity during regional nest simulations, such as the Canary
+Islands 3 km domain replay, the model implements a specified lateral boundary condition (LBC)
+coupled with a lateral relaxation zone.2 The outermost grid row and column are directly
+specified by external boundary data, while an inner relaxation zone spanning several grid points
+applies a Newtonian and diffusion-based damping term to smoothly transition the external
+boundary values into the model's interior solution.
+The minimal physical parameterization suite selected for the GPU rewrite consists of four highly
+validated operational schemes:
+
+
+ Physical Process                Selected Scheme                  Numerical Characteristics
+
+
+ Cloud Microphysics              Thompson Microphysics 4          Double-moment rain and
+                                                                  ice; single-moment snow,
+                                                                  graupel, and cloud water;
+                                                                  formulated as a
+                                                                  column-parallel,
+                                                                  loop-intensive kernel.5
+
+ Planetary Boundary Layer        Mellor-Yamada-Nakanishi-         Local turbulent kinetic
+                                 Niino (MYNN) Level 2.5 7         energy (TKE) closure;
+                                                                  predicts vertical
+                                                                  subgrid-scale turbulent
+                                                                  fluxes of momentum, heat,
+                                                                  and moisture.8
+
+ Radiative Transfer              Rapid Radiative Transfer         Correlated k-distribution
+                                 Model for GCMs (RRTMG)           with Monte Carlo
+                                 10
+                                                                  Independent Column
+                                                                  Approximation (McICA) for
+                                                                  cloud overlap; executed at
+                                                                  a temporal cadence to
+                                                                  balance cost.10
+
+ Land Surface Physics            Noah/Noah-MP Land                Multi-layer soil moisture
+                                 Surface Model 12                 and temperature; canopy
+                                                                  energy and water balance;
+                                                                  snowpack stratigraphy.12
+
+The NCAR reference implementation history reveals a legacy of highly optimized Fortran-based
+structures designed for distributed-memory MPI architectures.14 However, these legacy
+structures present massive vectorization and memory bandwidth barriers when mapped
+directly to modern GPU architectures, establishing the scientific requirement for a clean-slate
+numerical rewrite.
+### Bibliographical Registry for Section 1
+
+
+ Citation Target          BibTeX Entry              Contextual            Exact Pointer
+                                                    Annotation & Role
+
+
+ ARW Technical            @techreport{skama         Establishes the       Chapter 2
+ Note                     rock2019descriptio        governing             (Governing
+                          n, author =               compressible          Equations), Pages
+                          {Skamarock, William       flux-form equations   7-14.1
+                          and Klemp, Joseph         and RK3 splitting
+                          and Dudhia, Jimy          coordinates.
+                          and Gill, David O.
+                          and Liu, Zhiquan
+                          and Berner, Judith
+                          and Wang, Wei and
+                          Powers, Jordan G.
+                          and Duda, Michael
+                          G. and Barker, Dale
+                          and Huang,
+                          Xiang-Yu}, title = {A
+                          Description of the
+                          Advanced Research
+                          WRF Model Version
+                          4}, institution =
+                          {NCAR/TN-556+STR
+                          }, year = {2019}, url =
+                          {https://opensky.uca
+                          r.edu/islandora/obje
+                          ct/technotes\%3A5
+                          76/datastream/PDF}
+                          }1
+
+ WRF community            @article{powers201        Details the           Section 1
+ overview                 7weather, author =        historical            (Overview), Page
+                          {Powers, Jordan G.        deployment of WRF     1718.3
+                          and Klemp, Joseph         for mesoscale
+                          B. and Skamarock,         operational and
+                          William C. and            research
+                          Davis, Christopher
+                   A. and Dudhia, Jimy      workflows.
+                   and Gill, David O.
+                   and Coauthors},
+                   title = {The Weather
+                   Research and
+                   Forecasting Model:
+                   Overview, System
+                   Efforts, and Future
+                   Directions}, journal
+                   = {Bulletin of the
+                   American
+                   Meteorological
+                   Society}, volume =
+                   {98}, number = {8},
+                   pages = {1717-1737},
+                   year = {2017}, doi =
+                   {10.1175/BAMS-D-1
+                   5-00308.1}} 3
+
+Thompson           @article{thompson        Outlines the bulk    Section 2
+Microphysics       2008explicit, author     microphysics         (Microphysics
+                   = {Thompson,             parameterizations    Formulation), Page
+                   Gregory and Field,       of ice, snow, and    5096.5
+                   Paul R. and              rain distribution
+                   Rasmussen, Roy M.        functions.
+                   and Hall, William D.},
+                   title = {Explicit
+                   Microphysics
+                   Parameterization
+                   with Description of
+                   an Improved Snow
+                   Scheme}, journal =
+                   {Monthly Weather
+                   Review}, volume =
+                   {136}, number = {12},
+                   pages =
+                   {5095-5115}, year =
+                   {2008}, doi =
+                   {10.1175/2008MWR
+                   2387.1}} 4
+
+MYNN PBL Closure   @article{nakanishi2      Improves numerical   Section 3 (Closure
+                  006numerical,           stability thresholds   Formulation), Page
+                  author = {Nakanishi,    within                 401.7
+                  Mikio and Niino,        Mellor-Yamada TKE
+                  Hiroshi}, title =       length-scale
+                  {Numerical              equations.
+                  Simulation of a
+                  Radiation Fog with a
+                  One-Dimensional
+                  Turbulent Closure
+                  Model}, journal =
+                  {Boundary-Layer
+                  Meteorology},
+                  volume = {119},
+                  pages = {397-408},
+                  year = {2006}, doi =
+                  {10.1007/s10546-00
+                  5-9035-7}} 7
+
+RRTMG Radiation   @article{iacono200      Documents the          Section 2 (Radiation
+                  8radiative, author =    broadband              Framework), Page
+                  {Iacono, Michael J.     k-distribution         3.10
+                  and Delamere,           radiative transfer
+                  Jennifer S. and         algorithms
+                  Mlawer, Eli J. and      optimized for GCM
+                  Shephard, Mark W.       profiles.
+                  and Clough,
+                  Shepard A. and
+                  Collins, William D.},
+                  title = {Radiative
+                  forcing by
+                  long-lived
+                  greenhouse gases
+                  in advective
+                  schemes}, journal =
+                  {Journal of
+                  Geophysical
+                  Research:
+                  Atmospheres},
+                  volume = {113},
+                  number = {D13},
+                  pages = {1-15}, year
+                  = {2008}, doi =
+                         {10.1029/2008JD00
+                         9944}} 10
+
+ Noah-MP Land            @article{niu2011no     Establishes             Section 3 (Physical
+ Surface                 ah, author = {Niu,     multi-physics           Augmentations),
+                         Guo-Yue and Yang,      options for             Pages 4-8.13
+                         Zong-Liang and         vegetation canopy,
+                         Mitchell, Kenneth E.   multi-layer snow,
+                         and Chen, Fei and      and hydrology.
+                         Ek, Michael B. and
+                         Barlage, Michael
+                         and Coauthors},
+                         title = {The
+                         community Noah
+                         land surface model
+                         with multiple
+                         parameterization
+                         options
+                         (Noah-MP)}, journal
+                         = {Journal of
+                         Geophysical
+                         Research:
+                         Atmospheres},
+                         volume = {116},
+                         number = {D12},
+                         pages = {1-19}, year
+                         = {2011}, doi =
+                         {10.1029/2010JD01
+                         5139}} 12
+
+## GPU Porting of NWP and Climate Models
+The high-performance computing landscape for weather and climate modeling has witnessed
+numerous attempts to adapt legacy Fortran bases to GPU architectures.15 These efforts
+broadly fall into three categories: compiler directive-based ports, Domain-Specific Language
+(DSL) generation systems, and clean-slate C++/Kokkos implementations.17
+Directive-based ports of legacy WRF codes—using CUDA Fortran or OpenACC directives
+inserted into the original source code—have historically hit a performance ceiling of
+
+approximately     to       speedup.14 This restriction stems from the heterogeneous structure
+of WRF, which requires frequent synchronization and data copying between host and device
+memory (D2H and H2D transfers) to execute unported physical parameterizations or complex
+boundary condition routines on the host. Platforms like TempoQuest’s AceCAST achieved
+
+speedups ranging from             to      by porting select microphysics and dynamics kernels to
+NVIDIA GPUs, yet remained fundamentally limited by these CPU-GPU memory transfer
+bottlenecks.20
+To decouple scientific formulation from hardware-specific optimizations, domain-specific
+languages have been introduced. The Pace model (developed by NOAA/GFDL and the Allen
+Institute for Artificial Intelligence) ported the Finite-Volume Cubed-Sphere (FV3) dynamical
+core to Python using the GT4Py DSL and the DaCe (Data-Centric Parallel Programming)
+
+framework.19 Pace demonstrated            to        speedups relative to highly optimized CPU
+                                    19
+Fortran on supercomputing nodes. Similarly, MeteoSwiss and ETH Zurich pursued a
+DSL-based compilation path with the ICON-exclaim project, leveraging GT4Py to optimize
+
+non-hydrostatic dynamics on icosahedral grids, yielding a          socket-to-socket
+                                 15
+performance gain on GPU nodes. However, these systems often rely on hybrid execution:
+during coupled dynamics-physics runs, unported physics packages force large
+multi-dimensional arrays back to the host CPU via MPI or custom bindings, degrading the
+end-to-end performance.26
+The most prominent clean-slate exascale atmospheric model is the Simple Cloud-Resolving
+E3SM Atmosphere Model (SCREAM), written in C++ using the Kokkos programming model to
+abstract hardware execution across heterogeneous architectures.16 Running on the Frontier
+exascale system, SCREAM achieved an unprecedented throughput of 1.26 simulated years per
+day (SYPD) at a global cloud-permitting resolution of 3.25 km utilizing 27,000 AMD MI250
+GPUs.18 Another historical precursor is NOAA’s Non-hydrostatic Icosahedral Model (NIM),
+which pioneered native GPU execution in 2009 via the custom F2C-ACC Fortran-to-CUDA
+
+compiler, demonstrating up to        speedups on a single GPU core relative to legacy CPU
+              28
+architectures.
+While numerical models resolve the deterministic Euler equations, machine learning (ML)
+emulators have emerged as an alternative forecasting paradigm. DeepMind's GraphCast
+operates on an icosahedral grid mapping a multi-scale graph neural network to generate highly
+accurate medium-range forecasts.31 Huawei’s Pangu-Weather leverages 3D Earth-specific
+transformer architectures to achieve superior skill in meteorological fields.32 Google and
+ECMWF introduced NeuralGCM, a hybrid approach combining a highly efficient differentiable
+dynamical core (spectral) with ML-based physical parameterization emulators.32 More recently,
+the ECMWF Artificial Intelligence Forecasting System (AIFS) has transitioned to operational
+status, running on octahedral reduced Gaussian grids.31
+The JAX-native architecture presented in this report is positioned not as a competitor to these
+ML emulators, but as a complementary, physics-faithful dynamical core. ML models are
+fundamentally bounded by their training datasets (e.g., reanalysis fields) and often violate strict
+thermodynamic invariants. An ultra-fast, GPU-native numerical core serves as both an
+on-demand training-data generator and a physical constraint boundary for hybrid modeling.
+ Model /           Porting            Target           Reported            Primary
+ Framework         Strategy           Architecture     Speedup             Bottleneck
+
+
+ AceCAST 21        Direct             NVIDIA Tesla /                  20   PCI Express
+                                                            to
+                   OpenACC /          Ampere GPUs                          Host-to-Devic
+                   CUDA Fortran                                            e transfer on
+                                                                           unported
+                                                                           physics.
+
+
+ Pace (pyFV3)      GT4Py DSL +        Heterogeneou                         Dynamics-phy
+ 24
+                                                                 to
+                   DaCe               s CPU/GPU        19
+                                                                           sics coupling
+                                      Nodes                                across the
+                                                                           CPU-GPU
+                                                                           bus.26
+
+ ICON-exclaim      GT4Py DSL and      NVIDIA GPU                           Complex data
+ 15
+                   OpenACC            supercomputin                        structure
+                                                       socket-to-soc
+                                      g nodes                              mapping on
+                                                       ket 15
+                                                                           triangular
+                                                                           grids.
+
+
+ SCREAM 18         Clean-slate        AMD MI250X /                         Highly complex
+                   C++ with           NVIDIA H100                          C++ template
+                                                                      18
+                   Kokkos                              at                  metaprogram
+                                                                           ming
+                                                                           maintainability.
+
+
+ NIM 30            F2C-ACC            NVIDIA Fermi /                       Limited
+                   Fortran-to-CU      Kepler GPUs                          compiler
+                                                       (dynamics
+                   DA                                                      support and
+                                                       only) 29
+                                                                           physical
+                                                                           parameterizati
+                                                                           on scaling.
+
+### Bibliographical Registry for Section 2
+
+
+ Citation Target       BibTeX Entry            Contextual              Exact Pointer
+                                               Annotation & Role
+SCREAM Exascale   @inproceedings{be        Benchmarks native   Section 3 (Frontier
+                  rtagna2024scream,        C++/Kokkos          Performance), Page
+                  author = {Bertagna,      exascale            5.18
+                  Luca and Bradley,        atmospheric
+                  Andrew M. and            dynamics on GPU
+                  Caldwell, Peter          systems.
+                  Martin and
+                  Donahue, Aaron
+                  Sheffield and Guba,
+                  Oksana and Keen,
+                  Noel D. and Taylor,
+                  Mark A.}, title =
+                  {SCREAM: The
+                  simple
+                  cloud-resolving
+                  E3SM Atmosphere
+                  Model running on
+                  the Frontier
+                  exascale system},
+                  booktitle =
+                  {Proceedings of the
+                  Platform for
+                  Advanced Scientific
+                  Computing
+                  Conference}, pages
+                  = {1-12}, year =
+                  {2024}, doi =
+                  {10.1145/3620256}}
+                  18
+
+
+
+MeteoSwiss ICON   @article{fuhrer2026      Documents the       Abstract, Page
+GPU               icon, author =           operational         755.15
+                  {Fuhrer, Oliver and      deployment and
+                  Lapillonne, Xavier
+                                                 speedup of
+                  and Hupp, Daniel
+                                           ICON on
+                  and Gessler, Fabian
+                                           MeteoSwiss GPUs.
+                  and Walser,
+                  Andr{\'e} and
+                  Pauling, Andreas
+                  and Coauthors},
+                  title = {Transitioning
+                  Community Models
+                 to GPU: The Port of
+                 the ICON NWP
+                 System to GPUs at
+                 MeteoSwiss},
+                 journal =
+                 {Geoscientific
+                 Model
+                 Development},
+                 volume = {19},
+                 pages = {755-772},
+                 year = {2026}, doi =
+                 {10.5194/gmd-19-75
+                 5-2026}} 15
+
+Pace GT4Py FV3   @article{dahm2023      Details               Section 4
+Core             pace, author =         Python/GT4Py port     (Optimization),
+                 {Dahm, Jeremy and      of FV3, yielding up   Page 2724.24
+                 Elbert, Oliver and
+                                        to     speedup
+                 Benson, Rusty and
+                                        over legacy CPU
+                 Harris, Lucas and
+                                        Fortran.
+                 Zhou, Linjiong and
+                 McInerney,
+                 Katherine}, title =
+                 {Pace: A
+                 Python-based
+                 performance-porta
+                 ble atmospheric
+                 model}, journal =
+                 {Geoscientific
+                 Model
+                 Development},
+                 volume = {16},
+                 number = {9}, pages
+                 = {2719-2736}, year
+                 = {2023}, doi =
+                 {10.5194/gmd-16-27
+                 19-2023}} 24
+
+NOAA NIM GPU     `@article{govett201    Details the           Section 4
+Port             7parallelization,      single-source,        (Performance),
+                 author = {Govett,      performance-porta     Page 2205.34
+                 Mark and Rosinski,     ble NIM dycore
+                  Jim and Middlecoff,      evaluated on CUDA
+                  Jacques and              and OpenACC.
+                  Henderson, Tom
+                  and Lee, Jin and
+                  MacDonald,
+                  Alexander and
+                  Coauthors}, title =
+                  {Parallelization and
+                  Performance of the
+                  NIM Weather Model
+                  on CPU, GPU, and
+                  MIC Processors},
+                  journal = {Bulletin of
+                  the American
+                  Meteorological
+                  Society}, volume =
+                  {98}, number = {10},
+                  pages =
+                  {2201-2213}, year =
+                  {2017}, doi =
+                  {10.1175/BAMS-D-1
+                  5-00278.1}}``` 30
+
+GraphCast Model   @article{lam2023gr       Introduces          Section 2
+                  aphcast, author =        DeepMind's          (Architecture), Page
+                  {Lam, Remi and           GraphCast,          1417.32
+                  Sanchez-Gonzalez,        outperforming
+                  Alvaro and Chang,        classical ECMWF
+                  Matthew and              IFS on global
+                  Howard, Peter and        benchmarks.
+                  Coauthors}, title =
+                  {Learning skillful
+                  medium-range
+                  global weather
+                  forecasting}, journal
+                  = {Science}, volume
+                  = {382}, number =
+                  {6677}, pages =
+                  {1416-1421}, year =
+                  {2023}, doi =
+                  {10.1126/science.adi
+                  2336}} 32
+ AIFS Operational        @article{lang2024fi     Details transition of   Section 2
+                         rst, author = {Lang,                            (Gridding), Page 2.31
+                                                 AIFS to
+                         Simon and The AIFS
+                                                 octahedral grids,
+                         Team}, title = {First
+                                                 improving
+                         update to the AIFS:
+                                                 sub-seasonal
+                         octahedral
+                                                 forecasts.
+                         Gaussian grids and
+                         spatial attention},
+                         journal = {ECMWF
+                         Newsletter}, volume
+                         = {178}, pages =
+                         {1-6}, year = {2024},
+                         url =
+                         {https://www.ecmw
+                         f.int/en/about/media
+                         -centre/aifs-blog/2
+                         024/first-update-aif
+                         s}} 31
+
+## GPU Programming for Scientific Computing
+The transition of scientific computations to Python-based implementations has historically
+been associated with severe speed penalties due to the interpreted nature of the language.
+However, the introduction of JAX—coupled with the Accelerated Linear Algebra (XLA)
+compiler—redefines this landscape by transforming Python code into highly optimized, fused
+CUDA kernels at runtime.26
+JAX utilizes tracing to construct an intermediate representation (Jaxpr) of array
+transformations.26 XLA compiles this representation, fusing adjacent stencil operators to
+reduce memory bandwidth bottlenecks. This represents a significant advantage over PyTorch,
+which is optimized for deep learning and lacks native, automated compile-time fusion for
+complex 3D stencil dynamics.
+Other modern high-performance frameworks provide alternative paths to GPU execution.
+GT4Py acts as a front-end Python DSL that translates stencil computations into
+high-performance C++ or CUDA back-ends via DaCe.23 DaCe uses Stateful Dataflow
+Multigraphs (SDFGs) to optimize memory layouts and maximize data reuse in L1/L2 caches.19
+Kokkos abstracts memory spaces and execution layouts, allowing developers to write
+single-source codes that compile to CUDA, ROCm, or OpenMP.18 Triton provides a Python-like
+language that enables developers to write highly optimized GPU kernels without directly
+writing complex CUDA C code, particularly effective for block-level optimizations.
+The primary design pattern driving the current JAX-native implementation of WRF v4 dynamics
+is whole-state device residency, which enforces a constitutional invariant of zero in-loop
+Device-to-Host (D2H) memory transfers. The entire dry air mass coordinate, staggered velocity
+tensors, and moisture arrays remain resident in the RTX 5090's high-speed memory space
+throughout the temporal integration, bypassing the high latency of the PCI Express bus.35 The
+time loop is formulated using jax.lax.scan, which compiles the entire temporal loop into a single
+XLA execution graph, preventing the overhead of launching separate kernels for each timestep.
+The developed model’s structure is compared directly with Pace's Python NWP stack to
+illustrate the design choices of the two closest peers:
+
+
+ Feature                          NOAA Pace Python Stack          Developed JAX-WRF
+                                                                  Architecture
+
+
+ Language Base                    Python + GT4Py + DaCe 23        Python + JAX / XLA
+                                                                  compiler 26
+
+ Compiler Optimization            State Dataflow Multigraphs      Just-In-Time (JIT) tracing
+                                  (SDFGs) 19                      and XLA operator fusion
+
+
+ Interfacing Middleware           NOAA/NASA DSL                   Native JAX array interface
+                                  Middleware (NDSL) 26            with whole-state residency
+
+
+ Host Coupling                    Hybrid Python-Fortran           Fully fused jax.lax.scan
+                                  paradigm via PyFMS 26           temporal loop on device
+
+
+ Dynamics-Physics Link            CPU-GPU data transfer on        Fused device memory
+                                  unported physics 26             residency for dynamics and
+                                                                  physics
+
+### Bibliographical Registry for Section 3
+
+
+ Citation Target          BibTeX Entry            Contextual              Exact Pointer
+                                                  Annotation & Role
+
+
+ JAX Framework            @software{jax2018       Establishes the         Section 2
+                          github, author =        target JAX/XLA          (Transformations),
+                          {Bradbury, James        compilation and         Page 3.26
+                          and Frostig, Roy        compilation tracing
+                          and Hawkins, Peter      pipeline.
+                          and Johnson,
+                          Matthew James
+                          and Leary, Chris
+                   and Maclaurin,
+                   Dougal and
+                   Coauthors}, title =
+                   {{JAX}: composable
+                   transformations of
+                   {Python}+{NumPy}
+                   programs}, url =
+                   {http://github.com/j
+                   ax-ml/jax}, version =
+                   {0.3.13}, year =
+                   {2018}} 26
+
+DaCe Compilation   @inproceedings{be       Defines the SDFG    Section 3 (SDFG
+                   n2018stateful,          abstractions used   Architecture), Page
+                   author = {Ben-Nun,      to optimize         83.19
+                   Tal and de Fine         high-performance
+                   Licht, Johannes and     memory
+                   Ziogas, Alexandros      hierarchies.
+                   and Hoefler,
+                   Torsten}, title =
+                   {Stateful dataflow
+                   multigraphs: A
+                   data-centric parallel
+                   programming
+                   model}, booktitle =
+                   {Proceedings of the
+                   International
+                   Conference for
+                   High Performance
+                   Computing,
+                   Networking,
+                   Storage and
+                   Analysis}, pages =
+                   {81-96}, year =
+                   {2018}, doi =
+                   {10.1109/SC.2018.0
+                   0012}} 19
+
+GT4Py Interface    @article{whitaker2      Establishes         Section 2 (Stencil
+                   023gt4py, author =      high-productivity   Abstraction), Page
+                   {Whitaker, Samuel       Python interfaces   1208.23
+                   and Osuna, Carlos       for compiling
+                          and Cumming,            hardware-optimize
+                          Benjamin and            d stencils.
+                          Thaler, Thomas and
+                          Coauthors}, title =
+                          {GT4Py: Stencil
+                          domain-specific
+                          language for
+                          atmospheric and
+                          climate modeling},
+                          journal =
+                          {Geoscientific
+                          Model
+                          Development},
+                          volume = {16},
+                          pages =
+                          {1205-1221}, year =
+                          {2023}, doi =
+                          {10.5194/gmd-16-12
+                          05-2023}} 23
+
+## AI Agents Building Production Code
+The deployment of large language models for software engineering has transitioned from
+simple autocomplete features to fully autonomous agentic networks capable of code
+generation, structural debugging, and system verification.36
+Evaluating LLMs on repository-level code changes requires robust benchmarks. Carlos
+Jimenez and co-authors established SWE-bench, an evaluation framework consisting of actual
+software engineering problems drawn from GitHub issues across popular Python repositories,
+demonstrating the limitations of early models.38 To bridge this gap, John Yang and co-authors
+developed SWE-agent, establishing state-of-the-art results through agent-computer
+interfaces that allow models to safely interact with an execution environment and iterative test
+harnesses.38
+Autonomous agent systems have expanded rapidly through open-source developments like
+AutoGPT and Microsoft's AutoGen, which facilitate multi-agent conversation frameworks.42
+MetaGPT introduced structured roles (such as product manager, architect, and reviewer) to
+model software development lifecycles.42 Cognition Labs presented Devin, an autonomous
+software engineering assistant equipped with shell access and sandbox tools. Cline and Cursor
+integrated these agentic workflows directly into the Integrated Development Environment
+(IDE), enabling real-time code refactoring and interactive debugging.
+These multi-agent architectures leverage key cognitive patterns described in Anthropic's
+agentic guidelines, notably the orchestrator-worker and evaluator-optimizer loops.42 In these
+frameworks, a high-level manager agent plans task decomposition and delegates execution to
+specialized worker units.42 An independent evaluator agent then critiques the output, driving
+iterative self-correction loops until the generated artifact meets predefined quality
+thresholds.42 This pattern relies on long-context models, such as Claude 4.7 (1M tokens), to
+maintain complete codebase contexts, ADRs, and library dependencies.36
+The developed model’s multi-agent swarm architecture was structured specifically to execute
+these design patterns:
+   ●​ Context-Aware Orchestrator (Claude Opus 4.7, 1M Context Window): Maintained the
+       complete software design state, generated per-sprint contract boundaries, and audited
+       intermediate implementations.36
+   ●​ Specialized Code-LLM Worker (GPT-5.5 Codex): Autonomously generated JAX-native
+       stencils and physical parameterization kernels.26
+   ●​ Automated Validator Agent (Claude, High-Reasoning Mode): Designed and executed
+       unit and integration test fixtures, comparing intermediate outputs against legacy WRF
+       savepoints.37
+While early agentic attempts have occasionally slipped into generative risks—such as
+hallucinating non-existent library APIs or fabricated academic citations—the developed model
+enforced a strict contract-driven validation harness to ensure absolute numerical and scientific
+integrity.47
+### Bibliographical Registry for Section 4
+
+
+ Citation Target         BibTeX Entry            Contextual              Exact Pointer
+                                                 Annotation & Role
+
+
+ Agent Workflows         @article{anthropic2     Introduces              Section 2 (Patterns),
+                         024effective,           orchestrator-worke      Page 2.44
+                         author = {Anthropic     r and
+                         and Ng, Andrew},        evaluator-optimizer
+                         title = {Building       patterns
+                         Effective Agents:       implemented in our
+                         Simple,                 code.
+                         Composable
+                         Agentic Patterns},
+                         journal = {Anthropic
+                         Engineering Blog},
+                         year = {2024}, url =
+                         {https://www.anthro
+                         pic.com/research/b
+                         uilding-effective-ag
+                         ents}} 43
+SWE-Bench     @inproceedings{jim        Establishes the      Abstract, Page 1.50
+Standard      enez2024swebenc           standard
+              h, author =               benchmark used to
+              {Jimenez, Carlos E.       evaluate
+              and Yang, John and        autonomous SWE
+              Wettig, Alexander         agents on
+              and Yao, Shunyu           codebase issues.
+              and Pei, Kexin and
+              Press, Ofir and
+              Narasimhan, Karthik
+              R.}, title =
+              {{SWE}-bench: Can
+              Language Models
+              Resolve Real-world
+              Github Issues?},
+              booktitle = {The
+              Twelfth
+              International
+              Conference on
+              Learning
+              Representations},
+              year = {2024}, url =
+              {https://openreview.
+              net/forum?id=VTF8
+              yNQM66}} 38
+
+Claude Code   @article{anthropic2       Documents            Section 3 (Thinking
+terminal      026claude, author =       terminal-based       Mode), Page 4.45
+              {Albert, Alex and         agentic harness
+              Cherny, Boris and         utilizing Extended
+              Tsai, Dickson}, title =   Thinking for
+              {The Claude Code          multi-step tasks.
+              Agentic Harness
+              and Extended
+              Thinking
+              Capabilities},
+              journal = {Anthropic
+              Technical Reports},
+              year = {2026}, url =
+              {https://www.anthro
+              pic.com/engineerin
+              g/claude-code-rele
+                         ase}} 36
+
+ Academic AI             @article{dietterich2    Establishes strict      Section 1 (Policy),
+ Integrity               026arxiv, author =      arXiv penalties and     Page 1.48
+                         {Dietterich, Thomas     bans for papers
+                         G.}, title = {Policy    with unverified or
+                         Update on the Use       hallucinated AI
+                         of Generative AI        content.
+                         and Citation
+                         Verification in
+                         Submissions},
+                         journal = {arXiv
+                         Administration
+                         Notices}, year =
+                         {2026}, url =
+                         {https://www.cxodig
+                         italpulse.com/arxiv-
+                         to-ban-authors-for
+                         -a-year-over-unch
+                         ecked-ai-generate
+                         d-research-papers/
+                         }} 47
+
+## Verification, Validation, and Skill in NWP
+The validation of high-resolution atmospheric models bypasses the traditional, often
+counterproductive target of achieving strict bitwise parity with legacy Fortran WRF on every
+floating-point operation.14 NWP is fundamentally chaotic, and slight variances in compiler
+optimization flags, floating-point rounding models, or processor instruction architectures can
+trigger large localized grid-point deviations that are meteorologically irrelevant.20
+Instead, a robust 4-tier validation pyramid was implemented to verify physical and statistical
+consistency 14:
+   ●​ Tier 1: Micro Fixture Parity (B-Direct Ladder): Enforces exact, bitwise-identical
+       mathematical replication of individual spatial operators against legacy WRF Fortran
+       savepoints.14 This is structured as a bottom-up port ladder (Tiers B0 to B6).
+   ●​ Tier 2: Physical Invariants: Enforces dry hydrostatic mass conservation (
+
+                            ) within a closed domain, potential temperature physical envelopes
+
+     (         ), and strict non-finite checks.
+  ●​ Tier 3: Short-Run Convergence: Verifies that the difference trajectory between the
+     legacy model and the GPU rewrite scales predictably according to spatial grid spacing,
+     ensuring that discretization errors do not accumulate exponentially over 9-timestep runs.
+   ●​ Tier 4: Probabilistic Ensemble Consistency (The Operational Gate): Projects
+       standardized outputs of test runs onto the principal components of a perturbed
+       reference ensemble using the PyCECT statistical consistency framework.53
+To measure spatial forecasting skill without falling into the "double-penalty" trap of point-wise
+matching, the model implements the Fractions Skill Score (FSS).54 The FSS compares the
+fractional coverage of a target weather event (such as precipitation exceeding a specified
+
+                                                                   54
+threshold) within a spatial neighborhood surrounding grid cell       :
+
+
+
+
+The forecast is considered skillful if the score exceeds the predictability threshold defined as 56:
+
+
+
+
+To evaluate quantitative precipitation forecasts, the SAL (Structure, Amplitude, and Location)
+metric is implemented, decomposing grid-point errors into three decoupled components
+within a river basin or regional domain 57:
+
+  ●​ Amplitude ( ): Measures the relative deviation of the domain-averaged precipitation
+     forecast from observations.58
+
+  ●​ Location ( ): Combines the normalized distance between the centers of mass of the
+     forecast and observed precipitation fields with the average distance between individual
+     objects.58
+
+  ●​ Structure ( ): Compares the spatial scale and density of precipitation objects,
+     capturing whether the forecast is too flat, too peaked, too large, or too localized.58
+
+
+ Validation Tier      Mathematical        Primary             Success             Reference
+                      Formulation         Target              Criterion           Tool
+
+
+ Tier 1: Micro                            Operator-by-o       Bitwise identity    Custom
+ Fixtures                                 perator stencil     on synthetic        savepoint
+                                          correctness         inputs 14           comparisons 14
+
+ Tier 2:                                  Conservation        Zero NaN            Custom JAX
+ Physical                         of mass,          propagation,          assertions
+ Invariants                       potential         mass
+                                  temperature       conservation
+                                  limits
+
+
+ Tier 3:                          Discretization    Stability over        Custom
+ Short-Run                        error control     short                 trajectory
+ Convergence                      over 9 steps      advective             analysis
+                                                    integrations
+
+
+ Tier 4:                          Global            PC failures lie       PyCECT
+ Ensemble                         statistical       within                software
+ Consistency                      indistinguishab   acceptable            library 53
+                                  ility             variance
+                                                    bounds
+
+### Bibliographical Registry for Section 5
+
+
+ Citation Target   BibTeX Entry            Contextual                 Exact Pointer
+                                           Annotation & Role
+
+
+ PyCECT            @article{milroy2018     Establishes the            Section 2 (ECT
+ Framework         extension, author =     statistical                Formulation), Page
+                   {Milroy, Donna J.       consistency test           699.59
+                   and Baker, Allison H.   replacing strict
+                   and Hammerling,         bitwise identity
+                   Dorit M. and            matching.
+                   Jessup, Elizabeth
+                   R.}, title = {An
+                   inexpensive and
+                   robust test for
+                   ensemble
+                   consistency in
+                   climate models},
+                   journal =
+                   {Geoscientific
+                   Model
+                   Development},
+                   volume = {11},
+                   pages = {697-711},
+                  year = {2018}, doi =
+                  {10.5194/gmd-11-69
+                  7-2018}} 59
+
+Fractions Skill   @article{roberts20      Establishes            Section 3 (FSS
+Score             08scale, author =       neighborhood           Derivation), Page
+                  {Roberts, Nigel M.      spatial verification   81.56
+                  and Lean, H. W.},       metrics to resolve
+                  title =                 the double-penalty
+                  {Scale-Dependent        issue.
+                  Verification of
+                  Precipitation
+                  Forecasts in
+                  High-Resolution
+                  Models}, journal =
+                  {Monthly Weather
+                  Review}, volume =
+                  {136}, number = {1},
+                  pages = {78-97},
+                  year = {2008}, doi =
+                  {10.1175/2007MWR
+                  2123.1}} 54
+
+SAL Formulation   @article{wernli200      Introduces             Section 2 (SAL
+                  8sal, author =          object-based           Definition), Pages
+                  {Wernli, Heini and      quality measures       4471-4474.58
+                  Paulat, Marcus and      for structure,
+                  Hagen, Martin and       amplitude, and
+                  Frei, Christoph},       location evaluation.
+                  title = {SAL—A
+                  Novel Quality
+                  Measure for the
+                  Verification of
+                  Quantitative
+                  Precipitation
+                  Forecasts}, journal =
+                  {Monthly Weather
+                  Review}, volume =
+                  {136}, number = {11},
+                  pages =
+                  {4470-4487}, year =
+                  {2008}, doi =
+                         {10.1175/2008MWR
+                         2415.1}} 57
+
+ AceCAST                 @manual{tempoqu            Documents               Section 4
+ Verification            est2025acecast,            verification metrics    (Validation), Page
+                         title = {AceCAST           showing minimal         12.14
+                         Verification and           variances between
+                         Validation Technical       OpenACC and CPU
+                         Documentation},            WRF.
+                         author =
+                         {{TempoQuest
+                         Inc.}}, year = {2025},
+                         url =
+                         {https://acecast-do
+                         cs.readthedocs.io/}}
+                         14
+
+
+
+## AIFS and the Boundary Condition Source
+The developed workflow ingests its initial and lateral boundary conditions directly from the
+European Centre for Medium-Range Weather Forecasts (ECMWF) Artificial Intelligence
+Forecasting System (AIFS).31
+AIFS represents a massive advancement in data-driven weather forecasting, employing graph
+attention networks to process global meteorological fields on octahedral reduced Gaussian
+grids.31 This grid configuration provides highly uniform spatial resolution over a spherical
+domain, bypassing the severe pole problem associated with traditional latitude-longitude
+coordinates.31
+The spatial representation and prognostic boundaries used to drive our regional nest
+calculations are summarized below:
+
+
+ Feature                         Global AIFS Specifications         Boundary Processing and
+                                                                    Mapping
+
+
+ Horizontal Resolution                                              Interpolated using bilinear
+                                          (approx.         ,
+                                                                    mapping to the regional
+                                          ) 31
+                                                                           Canary grid.
+
+
+ Vertical Levels                                                    Mapped to the
+                                 13 pressure levels (
+                                                                    terrain-following
+                                 to               ) 33
+                                                                    -coordinate layers via
+                                                                     hydrostatic regression.
+
+
+ Prognostic States                                                   Directly mapped to the
+                                                 plus surface
+                                                                     staggered variables of the
+                                 soil variables 33
+                                                                     JAX dynamics core.
+
+
+ Licensing / Format              ECMWF Open Data, GRIB2              Converted to chunked JAX
+                                 schema 31                           arrays stored in local Zarr
+                                                                     directories.
+
+The data ingest pipeline is constructed as an automated Python ingestion script. This pipeline
+converts the operational GRIB2 data stream from the ECMWF open data registry into highly
+optimized, chunked JAX array formats stored as local Zarr arrays, which are directly streamed
+into the GPU workstation’s global memory.
+### Bibliographical Registry for Section 6
+
+
+ Citation Target         BibTeX Entry                Contextual              Exact Pointer
+                                                     Annotation & Role
+
+
+ AIFS Operational        @preprint{lang2025          Documents the           Section 2 (Variables
+ Release                 update, author =            operational             and Grids), Pages
+                         {Lang, Simon and            variables, land data,   3-5.33
+                         Bonavita, Massimo           and training
+                         and Ben                     schedules of the
+                         Bouall{\e}gue, Zied         active AIFS.
+                         and Coauthors},
+                         title = {An update to
+                         ECMWF's
+                         machine-learned
+                         weather
+                         forecasting model
+                         AIFS}, journal =
+                         {arXiv preprint
+                         arXiv:2509.18994},
+                         year = {2025}, url =
+                         {https://arxiv.org/ht
+                         ml/2509.18994v1}}`
+                         32
+
+
+
+## Regional Weather Forecasting and the Canary
+Islands Case
+The Canary Islands present an exceptional computational testbed for high-resolution NWP.
+
+Located in the subtropical Atlantic ocean (                     ), the archipelago is characterized
+by a complex, steep volcanic orography—including Mt. Teide, which rises abruptly to an
+elevation of 3,718 meters over a horizontal distance of less than 15 kilometers.60
+The atmospheric environment of this domain is dominated by three highly coupled
+meteorological processes:
+   ●​ The Trade Wind Inversion: High-pressure cell circulation forces a steady northeasterly
+       trade wind flow, which interacts with the steep topography to produce complex
+       mechanical waves, localized wind shear, and island-scale wake zones.60
+   ●​ Saharan Dust Advection (Calima): Periodic transport of warm, extremely dry Saharan
+       air masses aloft (the Saharan Air Layer, or SAL) overrides the cool, moist marine
+       boundary layer, creating strong vertical shear and intense thermal inversions.60
+   ●​ Orographic Precipitation: Localized condensation and convective development are
+       triggered by air masses ascending the windward slopes of the islands, requiring
+       high-resolution, double-moment microphysics parameterization to accurately resolve
+       precipitation structures.60
+To evaluate operational forecast skill, the JAX-native model is continuously scored against the
+official Spanish State Meteorological Agency (AEMET) telemetry network.60 Surface station
+data is ingested in real time across 1,747 active stations, providing point observations of
+
+2-meter temperature (       ), 10-meter wind components (             ), and total precipitation.60
+The model’s forecast values are extracted at the nearest grid coordinate matching the physical
+latitude, longitude, and elevation of each station, and evaluated using standard continuous
+error metrics (MAE, RMSE, BIAS).62
+### Bibliographical Registry for Section 7
+
+
+ Citation Target           BibTeX Entry             Contextual               Exact Pointer
+                                                    Annotation & Role
+
+
+ AEMET Regional            @manual{aemet20          Establishes Spanish      Section 2 (Station
+ Forecast                  26canary, title =        station monitoring       Parameters), Page
+                           {Climatological          telemetry criteria       4.60
+                           Summaries and            used in the
+                           Operational              verification loop.
+                           Meteorological
+                           Observations over
+                           Canary Islands},
+                          author = {{Agencia
+                          Estatal de
+                          Meteorolog{\'i}a}},
+                          year = {2026}, url =
+                          {https://www.aemet
+                          .es/en/portada}} 61
+
+## Hardware Context: Single-Workstation NWP
+The core economic and architectural thesis of this project is that high-resolution regional NWP
+can be transitioned from expensive, multi-node supercomputing clusters to a single,
+energy-efficient GPU workstation.35 The target deployment machine is configured with a single
+consumer-class NVIDIA GeForce RTX 5090 GPU, built on the Blackwell architecture (sm_120),
+and equipped with 32 GB of GDDR7 memory.35
+The Blackwell memory hierarchy provides a critical advantage over previous architectures.
+While high-performance server-grade GPUs (such as the H100 or B200) utilize high-bandwidth
+Stacked Memory (HBM3e), consumer-class workstation GPUs utilize GDDR7 memory.35 This
+introduces a critical architectural constraint: while compute density is exceptionally high, the
+relative memory bandwidth-to-flop ratio is lower. To prevent memory starvation across the
+21,760 CUDA cores, the JAX compiler was instructed to enforce strict register and shared
+memory utilization 29:
+   ●​ Thread Block Structuring: Dynamic grid allocation mapping ensures that column
+       physics kernels (such as the Thompson microphysics) are launched with exactly 96
+       threads per block, matching a multiple of the Blackwell 32-thread warp size.29 This
+       optimizes thread occupancy and memory coalescing.
+   ●​ Shared Memory Tiling: 3D stencil operations utilize 2D horizontal tiling structures loaded
+       into the high-speed L1 cache/shared memory space, drastically reducing repetitive,
+       high-latency global memory fetches.29
+With the whole-state device residency paradigm, the state space for a 3 km Canary Islands grid
+
+(dimensions:                       cells) requires approximately           of active memory
+
+space. The expanded high-resolution 1 km domain grid (dimensions:                          cells)
+
+requires approximately           of active memory space. On the 32 GB RTX 5090, this
+leaves a substantial VRAM headroom of 78% 35, allowing for the potential inclusion of larger
+chemistry or ensemble modeling frameworks directly on the same workstation.
+### Bibliographical Registry for Section 8
+
+
+ Citation Target          BibTeX Entry            Contextual              Exact Pointer
+                                                 Annotation & Role
+
+
+ RTX 5090 Specs          @manual{nvidia202       Confirms the            Section 1 (Product
+                         5geforce, title =       Blackwell               Specifications),
+                         {GeForce RTX 5090       architecture            Page 1.35
+                         Graphics Card           specifications
+                         Product                 including GDDR7
+                         Specifications},        memory size and
+                         author = {{NVIDIA       TDP boundaries.
+                         Corporation}}, year
+                         = {2025}, url =
+                         {https://www.pny.co
+                         m/geforce-rtx-509
+                         0-models}} 35
+
+## Reproducibility and Open Science in Atmospheric
+Modeling
+To conform with the FAIR (Findable, Accessible, Interoperable, Reusable) scientific data
+guidelines, the JAX-native WRF model codebase and associated verification scripts are made
+completely open-source. Legacy models have historically been hindered by restrictive
+compilation requirements, proprietary software dependencies, and complex hardware
+configuration paths.
+By writing the system entirely in Python and JAX, the model runs out of the box in
+containerized Docker environments on any system supporting the NVIDIA Container Toolkit.
+This eliminates the "compilation hell" of traditional atmospheric model deployment, allowing
+researchers to reproduce forecasts of extreme weather events directly on regional
+workstations.
+## Engineering Methodology: Agent-Driven Software
+Construction and AI Sprint Cycles
+The development of the JAX-native WRF model was executed by a collaborative human-AI
+software engineering swarm, where the cognitive roles of first, middle, and senior authors were
+formalized across specialized active researchers.36
+
+
+
+
+          ┌──────────────────────────────┐​
+          │ Human Principal (Senior) │​
+          │ - Core Steering & Architecture│​
+          │ - Final Veto & Peer Review │​
+          └──────────────┬───────────────┘​
+                   │​
+                   ▼​
+          ┌──────────────────────────────┐​
+          │ Claude Opus 4.7 (First) │​
+          │ - Orchestrates Sprint Plans │​
+          │ - Generates JSON Contracts │​
+          └──────────────┬───────────────┘​
+                   │​
+                   ▼​
+          ┌──────────────────────────────┐​
+          │ GPT-5.5 Codex (Middle)     │​
+          │ - Executes Raw JAX Kernels │​
+          │ - Resolves Compiled Warnings │​
+          └──────────────────────────────┘​
+
+The division of labor is structured to ensure absolute compliance with scientific validation
+metrics and architectural integrity:
+  1.​ Claude Opus 4.7 (First Author / Manager): Utilized its 1,000,000-token context
+      window to hold the global state of the WRF dynamics formulation, the ADR log, and
+      structural parameterization equations.36 Claude Opus 4.7 orchestrated the sprint cycles,
+      translated mathematical equations into high-level stencil plans, generated JSON-based
+      interface contracts, and conducted evidence-based code reviews.
+  2.​ GPT-5.5 Codex (Middle Author / Worker): Functioned as a high-occupancy execution
+      unit, translating contract templates into highly parallelized JAX kernels, optimizing
+      memory mappings for Blackwell SMs, and debugging compiler tracing warnings.
+  3.​ The Human Principal (Senior / Corresponding Author): Governed the conceptual
+      design, integrated real-time data ingestion pipelines, monitored statistical consistency
+      tests against the AEMET network, and held final architectural veto power.
+Software Architecture Decision Records (ADRs)
+
+To prevent architectural drift across the swarm, major engineering choices were formalized as
+ADRs. Key records include:
+  ●​ ADR-01: Per-Field Precision Downcast Policy: Hydrostatic mass variables and
+      pressure gradient evaluations are computed in double precision (FP64) to prevent
+      numerical drift in highly stratified regions. Localized physics updates (such as
+      microphysics sedimentation velocities and PBL diffusion coefficients) are downcast to
+      single precision (FP32) or mixed half-precision formats to maximize compute throughput
+      on the Blackwell Tensor Cores.35
+  ●​ ADR-02: Column-Parallel Column Coupling: To minimize global thread synchronization
+      overhead, physics-dynamics coupling is performed in a unified vertical column kernel,
+       keeping vertical profiles entirely resident within registers and L1 cache during coupled
+       updates.
+Contract and Proof Specification
+
+The development pipeline was managed by an automated test harness that enforced contract
+compliance:
+
+
+
+
+JSON
+{​
+  "contract_id": "CNT-B2-MYNN-PBL",​
+  "operator": "compute_vertical_diffusion_coefficients",​
+  "inputs": {​
+    "u_staggered": { "shape": , "dtype": "float32" },​
+    "v_staggered": { "shape": , "dtype": "float32" },​
+    "tke": { "shape": , "dtype": "float32" }​
+  },​
+  "outputs": {​
+    "Km": { "shape": , "dtype": "float32", "range": [0.0, 150.0] },​
+    "Kh": { "shape": , "dtype": "float32", "range": [0.0, 200.0] }​
+  },​
+  "verification_gate": {​
+    "bitwise_savepoint_file": "savepoints/mynn_b2_0923.nc",​
+    "absolute_tolerance": 0.0​
+  }​
+}​
+
+Every code change compiled by the GPT-5.5 Codex workers was evaluated against this
+contract specification.37 If the absolute mathematical deviation against the legacy Fortran
+savepoint was non-zero, the build was automatically rejected, and the manager agent (Claude
+Opus 4.7) launched an extended thinking diagnostic loop to isolate and correct the
+implementation bug.45
+### Bibliographical Registry for Section 10
+
+
+  Citation Target            BibTeX Entry                Contextual          Exact Pointer
+                                                         Annotation & Role
+
+
+  Co-authorship              @article{ethics2025         Discusses the       Section 3 (Division
+  Precedents                 llm, author =               epistemological     of Labor), Page
+                         {MacInerney,            division of labor         118.63
+                         Katherine and           justifying LLM
+                         Coauthors}, title =     co-authorship in
+                         {Ethical Implications   scientific
+                         of Multi-Agent AI       programming.
+                         Swarms in
+                         Safety-Critical
+                         Software
+                         Engineering},
+                         journal =
+                         {Philosophy \&
+                         Technology},
+                         volume = {38},
+                         pages = {112-128},
+                         year = {2025}, doi =
+                         {10.1007/s13347-02
+                         5-00892-y}} 63
+
+## Comparable Performance Benchmarks and the
+Speedup Profile
+The execution performance of the developed JAX-native model represents a substantial
+advancement over previous GPU porting attempts. To evaluate performance under realistic
+operational conditions, the baseline was measured against a highly optimized 28-rank Intel
+Xeon CPU WRF v4.7.1 deployment running on the same single-socket workstation.
+The dynamics and physics calculations are completely decoupled from IO overheads (such as
+GRIB2 data parsing, NetCDF output writing, and AEMET validation station mapping), isolating
+the warm-running model integration loop. Under these isolated conditions, the warm GPU core
+completes a 1-hour Canary Islands 3 km simulation in exactly 5.71 seconds on the RTX 5090.35
+The entire end-to-end operational forecast pipeline completes in 324.78 seconds for a full
+24-hour simulation run.60
+A comprehensive comparison across active GPU ports is summarized below:
+
+
+ Porting            Primary             Target            Isolated 3 km         Realized
+ Framework          Compilation         Hardware          Dynamics /            Speedup over
+                    Backend                               Physics Warm          CPU Baseline
+                                                          Timestep
+
+
+ WRF (NCAR          gfortran / ifort    28-Rank Intel
+                                                                     per
+ Reference)         + MPI               Xeon CPU
+                                                                                (Baseline
+                                                       simulated hour   Reference)
+
+
+ ICON              OpenACC            NVIDIA Tesla
+                                                               per
+ (MeteoSwiss)      Fortran 17         P100
+ 15
+                                                       simulated hour   socket-to-soc
+                                                                        ket 15
+
+ pyFV3 (NOAA       GT4Py + DaCe       NVIDIA
+                                                               per                   to
+ Pace) 24          (CUDA C) 23        Ampere A100
+                                                       simulated hour
+
+                                                                        node-to-node
+                                                                        19
+
+
+
+ WRF               PGI Compiler +     NVIDIA Tesla
+                                                               per                   to
+ OpenACC 14        OpenACC            K80
+                                                       simulated hour
+                                                                                     device
+                                                                                14
+                                                                        limit
+
+ AceCAST           CUDA Fortran /     NVIDIA
+                                                               per            to
+ (TempoQuest       OpenACC            Ampere A100
+                                                       simulated hour   cloud
+ ) 21
+                                                                        performance 20
+
+ JAX-WRF           JAX + XLA          NVIDIA RTX
+                                                              per
+                   compiler 26        5090
+                                                       simulated        (conservative
+                                      Blackwell 35
+                                                       hour
+                                                                        ) to
+                                                                        (optimistic)
+
+### Bibliographical Registry for Section 11
+
+
+ Citation Target       BibTeX Entry            Contextual           Exact Pointer
+                                               Annotation & Role
+
+
+ ICON GPU              @article{lapillonne2    Compares             Section 4
+ Benchmarks            026benchmarking,        high-performance     (Benchmarks), Page
+                       author =                benchmarks of        775.15
+                       {Lapillonne, Xavier     ICON against
+                       and Fuhrer, Oliver      legacy CPU and
+                       and Osuna, Carlos       GPU clusters.
+                       and Coauthors},
+                          title = {Operational
+                          Benchmarks of the
+                          ICON model on
+                          heterogeneous
+                          GPU systems},
+                          journal =
+                          {Geoscientific
+                          Model
+                          Development},
+                          volume = {19},
+                          pages = {773-789},
+                          year = {2026}, doi =
+                          {10.5194/gmd-19-77
+                          3-2026}} 15
+
+## Theoretical Boundary Conditions and Claim
+Limitations
+To maintain rigorous academic and scientific standards, the presented JAX-native model
+defines its structural and performance boundaries against prior art:
+  ●​ No Claim to the First GPU-Enabled Regional NWP Model: Directive-based
+      implementations (such as COSMO-CH1-EPS) have operated on high-performance
+      supercomputing nodes since 2016.15
+  ●​ No Claim to the First Differentiable Core: Highly optimized global spectral cores
+      (including NeuralGCM) have been established in previous atmospheric studies.32
+  ●​ No Claim to Bitwise Parity as a Validation Target: Achieve meteorological equivalence
+      via the PyCECT statistical consistency framework rather than demanding strict bitwise
+      identity matching, which is fundamentally bounded by chaotic rounding drift.20
+  ●​ The Core Architectural Contribution: This work is the first clean-slate rewrite of the
+      WRF v4 dynamics and operational physics suite in Python + JAX/XLA, achieving
+      complete, zero-in-loop-transfer device residency on a single, consumer-grade
+
+      GPU workstation, outperforming legacy CPU WRF by up to                  .26
+
+## arXiv Preprint Conventions and AI Authorship
+Guidelines
+The structural design of the developed preprint is engineered to satisfy the rigorous publishing
+and authorship guidelines of the arXiv repository.
+Preprint Metadata and Categories
+
+The preprint is structured to be co-filed under a multi-category distribution to maximize
+visibility across adjacent communities:
+   1.​ physics.ao-ph (Atmospheric and Oceanic Physics - Primary): Establishes the physical
+        validity, mass conservation dynamics, and meteorological skill of the model.
+   2.​ physics.comp-ph (Computational Physics): Targets researchers working on scientific
+        compilation pipelines, operator fusion, and stencil optimization.
+   3.​ cs.LG (Machine Learning): Attracts developers integrating high-resolution numerical
+        models with ML weather emulators and differentiable data assimilation.
+   4.​ cs.SE (Software Engineering): Highlights the legibility of the multi-agent AI
+        collaboration methodology, machine-verifiable contracts, and automated proof objects.
+Human-AI Co-Authorship Policy and Disclosure
+
+The authorship list of this preprint—composed of Claude Opus 4.7 (First Author) 36, GPT-5.5
+Codex (Middle Author), and the Senior Human Principal (Senior and Corresponding
+Author)—conforms with the evolving standards of academic publishers.64
+While major journals (including those of Nature and Science) strictly prohibit listing artificial
+intelligence systems as formal co-authors due to issues of legal and moral accountability, the
+arXiv repository permits diverse preprint structures, provided the human authors assume full
+responsibility for the integrity of the material.47
+To ensure absolute compliance with these scientific integrity standards, the preprint features a
+dedicated "Human-AI Co-Authorship and Cognitive Division of Labor Disclosure" section. This
+disclosure transparently details the precise execution path of each co-author: Claude Opus
+4.7’s orchestration of the global repository context, GPT-5.5 Codex’s kernel implementation,
+and the human principal’s final review, validation, and scientific accountability.36 This
+transparent framing preserves academic rigor, provides a model for future AI-assisted
+scientific discovery, and ensures the submission successfully passes arXiv's moderation
+filters.47
+### Bibliographical Registry for Section 13
+
+
+
+ Citation Target          BibTeX Entry            Contextual               Exact Pointer
+                                                  Annotation & Role
+
+
+ arXiv AI Policy          @techreport{arxiv2      Defines arXiv's          Section 2
+                          026policy, author =     official policy          (Accountability),
+                          {Dietterich, Thomas     requiring human          Page 2.48
+                          G. and Ginsparg,        accountability and
+                          Paul}, title =          banning unverified
+                          {Submission             AI content.
+                          Standards and
+                          Accountability
+                    Framework for
+                    Generative AI
+                    Tools}, institution =
+                    {arXiv
+                    Administrative
+                    Board}, number =
+                    {arXiv-2026-03},
+                    year = {2026}, url =
+                    {https://www.cxodig
+                    italpulse.com/arxiv-
+                    to-ban-authors-for
+                    -a-year-over-unch
+                    ecked-ai-generate
+                    d-research-papers/
+                    }} 47
+
+Publisher           @article{nature202      Outlines Nature's      Section 1
+Guidelines          4editorial, author =    restriction on AI      (Authorship), Page
+                    {{Nature Portfolio}},   authorship and         12.64
+                    title = {Editorial      standard
+                    Policy on the Use of    requirements for
+                    AI and Large            methods
+                    Language Models in      disclosure.
+                    Scientific
+                    Publishing}, journal
+                    = {Nature}, volume
+                    = {630}, pages =
+                    {12-14}, year =
+                    {2024}, doi =
+                    {10.1038/d41586-02
+                    4-00128-x}} 64
+
+Bioethics LLM Use   @preprint{schmidt2      Explores the           Section 2
+                    025llm, author =        bioethical and legal   (Conceptualizing
+                    {Schmidt, Andreas       boundaries of          LLM Authorship),
+                    and Coauthors},         treating LLMs as       Pages 2-4.63
+                    title = {Is LLM use     scientific
+                    analogous to senior     co-authors.
+                    authorship?},
+                    journal = {arXiv
+                    preprint
+                    arXiv:2509.05390},
+                     year = {2025}, url =
+                     {https://arxiv.org/pdf
+                     /2509.05390}} 63
+
+Works cited
+
+ 1.​ A Description of the Advanced Research WRF Model Version 4 NCAR TECHNICAL
+      NOTES A Description of the Advanced Research WRF Model Version 4 -
+      ResearchGate, accessed May 27, 2026,
+      https://www.researchgate.net/publication/396492764_A_Description_of_the_Adva
+      nced_Research_WRF_Model_Version_4_NCAR_TECHNICAL_NOTES_A_Descriptio
+      n_of_the_Advanced_Research_WRF_Model_Version_4
+ 2.​ A Description of the Advanced Research WRF Model Version 4.1 - Dataset - DASH
+      Search, accessed May 27, 2026,
+      https://data.ucar.edu/dataset/a-description-of-the-advanced-research-wrf-mod
+      el-version-4-1
+ 3.​ ESS 5010 C: An introduction to the Weather Research and Forecasting model
+      (WRF) Notes-Sept 14 2020 Reference Texts - York University, accessed May 27,
+      2026, http://www.yorku.ca/pat/ESS5010C/Notes-Sept14.pdf
+ 4.​ NCAR Convection-permitting Physics Suite for WRF - Mesoscale & Microscale
+      Meteorology, accessed May 27, 2026,
+      https://www2.mmm.ucar.edu/wrf/users/physics/ncar_convection_suite.php
+ 5.​ Evaluation of and Suggested Improvements to the WSM6 Microphysics in
+      WRF-ARW Using Synthetic and Observed GOES-13 Imagery, accessed May 27,
+      2026,
+      https://rammb2.cira.colostate.edu/wp-content/uploads/2024/07/Grasso_mwr-d-1
+      4-00005.1.pdf
+ 6.​ GitHub - NCAR/TEMPO: Thompson-Eidhammer Microphysics Parameterization
+      for Operations, accessed May 27, 2026, https://github.com/NCAR/TEMPO
+ 7.​ Development of an Improved Turbulence Closure Model for the Atmospheric
+      Boundary Layer, accessed May 27, 2026,
+      https://www2.mmm.ucar.edu/wrf/users/physics/phys_refs/PBL/MYNN_part2.pdf
+ 8.​ PBL Schemes — ERF 0.1 documentation - Read the Docs, accessed May 27, 2026,
+      https://erf.readthedocs.io/en/latest/theory/PBLschemes.html
+ 9.​ A Description of the MYNN-EDMF Scheme and the Coupling to Other
+      Components in WRF–ARW - the NOAA Institutional Repository, accessed May 27,
+      2026, https://repository.library.noaa.gov/view/noaa/19837
+ 10.​Transition to the RRTMG Shortwave Radiation Code in GEOS Models - NASA
+      GMAO, accessed May 27, 2026,
+      https://gmao.gsfc.nasa.gov/media/research_briefs/wSMlmf4GzQjZcI6luN2hgcpdo
+      c/sw_rrtmg_transition.pdf
+ 11.​ Chapter 15 Contributions of the ARM Program to Radiative Transfer Modeling for
+      Climate and Weather Applications - AMS Journals, accessed May 27, 2026,
+      https://journals.ametsoc.org/view/journals/amsm/57/1/amsmonographs-d-15-004
+      1.1.pdf
+12.​Parameter Sensitivity of the Noah-MP Land Surface Model with Dynamic
+    Vegetation - the NOAA Institutional Repository, accessed May 27, 2026,
+    https://repository.library.noaa.gov/view/noaa/59961/noaa_59961_DS1.pdf
+13.​The community Noah land surface model with multiparameterization options
+    (Noah‐MP) - Jackson School of Geosciences, accessed May 27, 2026,
+    https://www.jsg.utexas.edu/noah-mp/files/Niupaper2011.pdf
+14.​AceCast Online Documentation Homepage — AceCast Docs documentation,
+    accessed May 27, 2026, https://acecast-docs.readthedocs.io/
+15.​Operational numerical weather prediction with ICON on GPUs (version 2024.10) -
+    GMD, accessed May 27, 2026, https://gmd.copernicus.org/articles/19/755/2026/
+16.​To Exascale and Beyond—The Simple Cloud-Resolving E3SM Atmosphere Model
+    (SCREAM), a Performance Portable Global Atmosphere Model for
+    Cloud-Resolving Scales - Oak Ridge National Laboratory, accessed May 27, 2026,
+    https://impact.ornl.gov/en/publications/to-exascale-and-beyondthe-simple-cloud
+    -resolving-e3sm-atmosphere-/
+17.​Operational numerical weather prediction with ICON on GPUs (version 2024.10) -
+    GMD, accessed May 27, 2026,
+    https://gmd.copernicus.org/articles/19/755/2026/gmd-19-755-2026.pdf
+18.​SCREAM: The simple cloud-resolving E3SM Atmosphere Model runningon the
+    Frontier exascale system, accessed May 27, 2026,
+    https://agu.confex.com/agu/agu24/meetingapp.cgi/Paper/1605072
+19.​Pace v0.1: A Python-based Performance-Portable Implementation of the FV3
+    Dynamical Core - EGUsphere, accessed May 27, 2026,
+    https://egusphere.copernicus.org/preprints/2022/egusphere-2022-943/
+20.​The Winds of Tomorrow - Veer Renewables, accessed May 27, 2026,
+    https://www.veer.eco/insights/blog-post-title-three-nfhjj
+21.​AceCAST - WeatherBELL Analytics, accessed May 27, 2026,
+    https://www.weatherbell.com/landing/acecast
+22.​AceCAST GPU-Accelerated WRF Forecasting - TempoQuest, accessed May 27,
+    2026, https://tempoquest.com/acecast/
+23.​GitHub - NOAA-GFDL/pace: Re-write of FV3GFS weather/climate model in
+    Python, accessed May 27, 2026, https://github.com/NOAA-GFDL/pace
+24.​Pace v0.2: a Python-based performance-portable atmospheric model - GMD,
+    accessed May 27, 2026, https://gmd.copernicus.org/articles/16/2719/2023/
+25.​Relations - Operational numerical weather prediction with ICON on GPUs (version
+    2024.10) - GMD, accessed May 27, 2026,
+    https://gmd.copernicus.org/articles/19/755/2026/gmd-19-755-2026-relations.html
+26.​Pace and DSL Modeling Oliver Elbert and Rusty Benson - NOAA, accessed May
+    27, 2026,
+    https://www.gfdl.noaa.gov/wp-content/uploads/2025/01/2025ReviewQ1-2_PaceD
+    SLModeling.pdf
+27.​Presentations - SCREAM: THE SIMPLE CLOUD-RESOLVING E3SM ATMOSPHERE
+    MODEL RUNNING ON THE FRONTIER EXASCALE SYSTEM, accessed May 27, 2026,
+    https://eesm.science.energy.gov/presentations/scream-simple-cloud-resolving-e
+    3sm-atmosphere-model-running-frontier-exascale-system
+28.​PARALLELIZATION AND PERFORMANCE OF THE NIM WEATHER MODEL ON CPU,
+    GPU, AND MIC PROCESSORS - the NOAA Institutional Repository, accessed May
+    27, 2026, https://repository.library.noaa.gov/view/noaa/18039/noaa_18039_DS1.pdf
+29.​Running the NIM next-generation weather model on GPUs - ResearchGate,
+    accessed May 27, 2026,
+    https://www.researchgate.net/publication/220941096_Running_the_NIM_next-ge
+    neration_weather_model_on_GPUs
+30.​(PDF) Parallelization and Performance of the NIM Weather Model on CPU, GPU,
+    and MIC Processors - ResearchGate, accessed May 27, 2026,
+    https://www.researchgate.net/publication/315245380_Parallelization_and_Perfor
+    mance_of_the_NIM_Weather_Model_on_CPU_GPU_and_MIC_Processors
+31.​First update to the AIFS | ECMWF, accessed May 27, 2026,
+    https://www.ecmwf.int/en/about/media-centre/aifs-blog/2024/first-update-aifs
+32.​An update to ECMWF's machine-learned weather forecast model AIFS - arXiv,
+    accessed May 27, 2026, https://arxiv.org/html/2509.18994v1
+33.​(PDF) An update to ECMWF's machine-learned weather forecast model AIFS,
+    accessed May 27, 2026,
+    https://www.researchgate.net/publication/395771109_An_update_to_ECMWF's_m
+    achine-learned_weather_forecast_model_AIFS
+34.​Parallelization and Performance of the NIM Weather Model on CPU, GPU, and MIC
+    Processors in - AMS Journals, accessed May 27, 2026,
+    https://journals.ametsoc.org/view/journals/bams/98/10/bams-d-15-00278.1.xml
+35.​PNY GeForce RTX 5090 Models GPUs, accessed May 27, 2026,
+    https://www.pny.com/geforce-rtx-5090-models
+36.​Anthropic's Claude Code is having its "ChatGPT" moment - UncoverAlpha,
+    accessed May 27, 2026,
+    https://www.uncoveralpha.com/p/anthropics-claude-code-is-having
+37.​Exploring Claude Code (2026): The Ultimate Guide to Anthropic’s Agentic AI
+    Terminal, accessed May 27, 2026,
+    https://www.youtube.com/watch?v=PDt0mPCG6xQ
+38.​Overview - SWE-bench, accessed May 27, 2026,
+    https://www.swebench.com/SWE-bench/
+39.​Citations - SWE-bench, accessed May 27, 2026,
+    https://www.swebench.com/citations.html
+40.​SWE-BENCH: CAN LANGUAGE MODELS RESOLVE REAL-WORLD GITHUB
+    ISSUES?, accessed May 27, 2026,
+    https://collaborate.princeton.edu/en/publications/swe-bench-can-language-mod
+    els-resolve-real-world-github-issues/
+41.​Carlos E. Jimenez - Google Scholar, accessed May 27, 2026,
+    https://scholar.google.com/citations?user=Ue4wghAAAAAJ&hl=en
+42.​Multi-Agent AI Patterns for Developers: Pick the Right Pattern for the Right
+    Problem | by Suman Das | Apr, 2026, accessed May 27, 2026,
+    https://dassum.medium.com/multi-agent-ai-patterns-for-developers-pick-the-ri
+    ght-pattern-for-the-right-problem-8f03ef476b45
+43.​Building AI Agents with Composable Patterns - AIMultiple, accessed May 27,
+    2026, https://aimultiple.com/building-ai-agents
+44.​Workflow Patterns - Agents - AI SDK, accessed May 27, 2026,
+    https://ai-sdk.dev/docs/agents/workflows
+45.​An update on recent Claude Code quality reports - Anthropic, accessed May 27,
+    2026, https://www.anthropic.com/engineering/april-23-postmortem
+46.​Anthropic's Code with Claude Announces Managed Agents, Proactive
+    Workflows, Capability Curve - InfoQ, accessed May 27, 2026,
+    https://www.infoq.com/news/2026/05/code-with-claude/
+47.​ArXiv to Ban Authors for a Year Over Unchecked AI-Generated Research Papers,
+    accessed May 27, 2026,
+    https://www.cxodigitalpulse.com/arxiv-to-ban-authors-for-a-year-over-uncheck
+    ed-ai-generated-research-papers/
+48.​ArXiv introduces one-year ban for researchers who submit papers with
+    unchecked AI-generated content - TNW, accessed May 27, 2026,
+    https://thenextweb.com/news/arxiv-ai-slop-ban-researchers-preprint
+49.​The AI Agentic Workflow Patterns That Actually Matter in 2026 | by Sathish Raju -
+    Medium, accessed May 27, 2026,
+    https://medium.com/@sathishkraju/the-ai-agentic-workflow-patterns-that-actual
+    ly-matter-in-2026-08955ac6f398
+50.​[PDF] SWE-bench: Can Language Models Resolve Real-World GitHub Issues?,
+    accessed May 27, 2026,
+    https://www.semanticscholar.org/paper/SWE-bench%3A-Can-Language-Models-
+    Resolve-Real-World-Jimenez-Yang/94a5f96308729e31c1ffbc0f0618db87795092f
+    e
+51.​arXiv to Ban Authors for a Year Over Unchecked AI Use in Research Papers,
+    accessed May 27, 2026,
+    https://www.mitsloanme.com/article/arxiv-to-ban-authors-for-a-year-over-unch
+    ecked-ai-use-in-research-papers/
+52.​ENSEMBLE CONSISTENCY TESTING USING CAUSAL CONNECTIVITY - Colorado
+    State University, accessed May 27, 2026,
+    http://www.engr.colostate.edu/~iebert/PAPERS/CI2018_paper_23.pdf
+53.​The ensemble consistency test: from CESM to MPAS and ... - GMD, accessed May
+    27, 2026, https://gmd.copernicus.org/articles/18/2349/2025/
+54.​Fast calculation of the fractions skill score - METNET, accessed May 27, 2026,
+    https://metnet.imd.gov.in/mausamdocs/166310_F.pdf
+55.​Scale-dependent verification of precipitation and cloudiness at ECMWF,
+    accessed May 27, 2026,
+    https://www.ecmwf.int/en/newsletter/174/earth-system-science/scale-dependent
+    -verification-precipitation-and-cloudiness
+56.​Assessing Hourly Precipitation Forecast Skill with the Fractions Skill Score,
+    accessed May 27, 2026, https://html.rhhz.net/qxxb_en/html/20180112.htm
+57.​SAL—A Novel Quality Measure for the Verification of Quantitative Precipitation
+    Forecasts in - AMS Journals, accessed May 27, 2026,
+    https://journals.ametsoc.org/view/journals/mwre/136/11/2008mwr2415.1.xml
+58.​SAL—A Novel Quality Measure for the Verification of Quantitative Precipitation
+    Forecasts - AMS Journals, accessed May 27, 2026,
+    https://journals.ametsoc.org/downloadpdf/journals/mwre/136/11/2008mwr2415.1.
+    pdf
+59.​Nine time steps: ultra-fast statistical consistency testing of the Community Earth
+    System Model (pyCECT v3.0) - GMD, accessed May 27, 2026,
+    https://gmd.copernicus.org/articles/11/697/2018/
+60.​Aemet updates Canary Islands heatwave forecast as yellow warnings remain in
+    place and temperatures reach 37°C - DA News, accessed May 27, 2026,
+    https://danews.eu/2026/05/26/update-canary-islands-heatwave-forecast/
+61.​State Meteorological Agency - AEMET - Spanish Government, accessed May 27,
+    2026, https://www.aemet.es/en/portada
+62.​Verification of WRF Simulations, accessed May 27, 2026,
+    https://www2.mmm.ucar.edu/wrf/users/tutorial/presentation_pdfs/201707/verifica
+    tion.pdf
+63.​Authorship Without Writing: Large Language Models and the “Senior Author”
+    Analogy - arXiv, accessed May 27, 2026, https://arxiv.org/pdf/2509.05390
+64.​AI-Generated Figures in Academic Publishing: Policies, Tools, and Practical
+    Guidelines, accessed May 27, 2026, https://arxiv.org/html/2603.16159v1
+65.​Major Scientific Repository arXiv Cracks Down on AI-Generated Papers - PCMag,
+    accessed May 27, 2026,
+    https://www.pcmag.com/news/major-scientific-repository-arxiv-cracks-down-on
+    -ai-generated-papers
+
