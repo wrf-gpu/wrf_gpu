@@ -1,0 +1,20 @@
+usage: m7_daily_pipeline.py [-h] [--run-id RUN_ID] [--hours HOURS]
+                            [--output-dir OUTPUT_DIR] [--proof-dir PROOF_DIR]
+                            [--run-root RUN_ROOT] [--aemet-root AEMET_ROOT]
+                            [--score] [--restart-at-hour RESTART_AT_HOUR]
+                            [--repeat] [--domain DOMAIN]
+
+M7 daily pipeline CLI.
+
+options:
+  -h, --help            show this help message and exit
+  --run-id RUN_ID
+  --hours HOURS
+  --output-dir OUTPUT_DIR
+  --proof-dir PROOF_DIR
+  --run-root RUN_ROOT
+  --aemet-root AEMET_ROOT
+  --score
+  --restart-at-hour RESTART_AT_HOUR
+  --repeat
+  --domain DOMAIN
