@@ -1,0 +1,22 @@
+{
+  "changed_files_considered": [
+    ".agent/sprints/2026-05-27-m7-lu-index-audit/lu_fix_lead1_verification.json",
+    ".agent/sprints/2026-05-27-m7-lu-index-audit/lu_index_diff_map.nc",
+    ".agent/sprints/2026-05-27-m7-lu-index-audit/lu_index_diff_summary.json",
+    ".agent/sprints/2026-05-27-m7-lu-index-audit/lu_index_source_audit.md",
+    ".agent/sprints/2026-05-27-m7-lu-index-audit/pipeline_run_20260521.json",
+    ".agent/sprints/2026-05-27-m7-lu-index-audit/repeatability.json",
+    ".agent/sprints/2026-05-27-m7-lu-index-audit/restart_in_pipeline.json",
+    ".agent/sprints/2026-05-27-m7-lu-index-audit/speedup_vs_cpu_24h.json",
+    ".agent/sprints/2026-05-27-m7-lu-index-audit/station_scores_20260521.json",
+    ".agent/sprints/2026-05-27-m7-lu-index-audit/wrfout_inventory.json",
+    "tests/test_m7_lu_index_audit.py"
+  ],
+  "forbidden_core_files_changed": [],
+  "reason": "The audit found no owned end-to-end LU_INDEX fix to apply. The worker did not modify dycore, physics couplers, runtime operational mode, contracts, or validation code; running the historical step2 probe would write aggregate files into a different sprint directory.",
+  "schema": "M7LuIndexInvariantPreservation",
+  "schema_version": 1,
+  "static_field_fix_applied": false,
+  "status": "NO_DYCORE_PHYSICS_FILES_TOUCHED",
+  "step2_bitwise_command_status": "NOT_RUN_BLOCKED_BY_SCOPE"
+}
