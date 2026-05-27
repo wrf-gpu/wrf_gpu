@@ -1,0 +1,67 @@
+{
+  "artifacts": {},
+  "diagnostic": {
+    "name": "conservation_tracker",
+    "purpose": "Track integral invariant drift."
+  },
+  "input": {
+    "path": ".agent/sprints/2026-05-27-testing-plan-execution/inputs/conservation_static_smoke_states.json",
+    "state_count": 2
+  },
+  "measurements": {
+    "max_abs_relative_drift": {
+      "dry_static_energy": 0.0,
+      "mass": 0.0
+    },
+    "time_series": [
+      {
+        "boundary_terms": {},
+        "relative_drift": {
+          "dry_static_energy": 0.0,
+          "kinetic_energy": null,
+          "mass": 0.0,
+          "water": null
+        },
+        "source_terms": {},
+        "step": 0,
+        "time_s": 0.0,
+        "totals": {
+          "dry_static_energy": 1.0,
+          "kinetic_energy": 0.0,
+          "mass": 1.0,
+          "water": 0.0
+        }
+      },
+      {
+        "boundary_terms": {},
+        "relative_drift": {
+          "dry_static_energy": 0.0,
+          "kinetic_energy": null,
+          "mass": 0.0,
+          "water": null
+        },
+        "source_terms": {},
+        "step": 8640,
+        "time_s": 86400.0,
+        "totals": {
+          "dry_static_energy": 1.0,
+          "kinetic_energy": 0.0,
+          "mass": 1.0,
+          "water": 0.0
+        }
+      }
+    ]
+  },
+  "schema_version": "m6x-s1-diagnostic-sidecar-v1",
+  "source_citations": [
+    ".agent/milestones/ROADMAP.md:78-88",
+    ".agent/milestones/ROADMAP.md:89-98"
+  ],
+  "status": "OK",
+  "units": {
+    "dry_static_energy": "J",
+    "kinetic_energy": "J",
+    "mass": "kg or Pa-column equivalent",
+    "water": "kg"
+  }
+}

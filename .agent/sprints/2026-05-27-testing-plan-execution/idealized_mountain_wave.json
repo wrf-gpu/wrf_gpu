@@ -1,0 +1,188 @@
+{
+  "blockers": [
+    "GPU preflight did not return a usable device in this execution session.",
+    "No idealized GPU integration was run; generated IC summaries are not forecast evidence.",
+    "Stock WRF idealized compile/reference run was not attempted in this partial execution."
+  ],
+  "generated_utc": "2026-05-27T17:58:46.765827Z",
+  "gpu_hours_used": 0.0,
+  "honesty_note": "Blocked after Schaer IC generation; no 5 h GPU mountain-wave integration was produced.",
+  "inputs": {
+    "array_stats": {
+      "density_kg_m3": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 1.1612378795796319,
+        "min": 0.028077567650015792,
+        "shape": [
+          121,
+          401
+        ]
+      },
+      "pressure_pa": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 100000.0,
+        "min": 3283.185533924196,
+        "shape": [
+          121,
+          401
+        ]
+      },
+      "terrain_m": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 250.0,
+        "min": 4.376477813940725e-70,
+        "shape": [
+          401
+        ]
+      },
+      "terrain_slope": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 0.19300129727857052,
+        "min": -0.19300129727857052,
+        "shape": [
+          401
+        ]
+      },
+      "theta_k": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 407.36000944282404,
+        "min": 300.0,
+        "shape": [
+          121,
+          401
+        ]
+      },
+      "u_m_s": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 10.0,
+        "min": 10.0,
+        "shape": [
+          121,
+          401
+        ]
+      },
+      "w_surface_linear_m_s": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 1.9300129727857052,
+        "min": -1.9300129727857052,
+        "shape": [
+          401
+        ]
+      },
+      "x_m": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 50000.0,
+        "min": -50000.0,
+        "shape": [
+          401
+        ]
+      },
+      "z_m": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 30000.0,
+        "min": 0.0,
+        "shape": [
+          121
+        ]
+      }
+    },
+    "case_id": "idealized-mountain-wave-schaer-2002",
+    "grid": {
+      "dx_m": 250.0,
+      "dz_m": 250.0,
+      "nx": 401,
+      "nz": 121,
+      "staggering": "2d-xz-mass"
+    },
+    "parameters": {
+      "background_wind_m_s": 10.0,
+      "brunt_vaisala_s": 0.01,
+      "envelope_half_width_m": 5000.0,
+      "mountain_height_m": 250.0,
+      "theta0_k": 300.0,
+      "wavelength_m": 4000.0
+    },
+    "reference": {
+      "linear_oracle": "surface vertical velocity is U * dh/dx; full steady wave comparison is a separate runner.",
+      "name": "Schaer et al. 2002 non-hydrostatic mountain-wave benchmark",
+      "purpose": "terrain-following pressure-gradient and vertical wave propagation"
+    }
+  },
+  "proof": {
+    "gpu_preflight": {
+      "available": false,
+      "command": {
+        "cmd": [
+          "nvidia-smi",
+          "--query-gpu=name,memory.total,memory.used",
+          "--format=csv,noheader"
+        ],
+        "cwd": "/tmp/wrf_gpu2_testexec",
+        "returncode": 124,
+        "stderr": "",
+        "stdout": "",
+        "timed_out": true,
+        "timeout_s": 5
+      },
+      "skipped": false
+    },
+    "reference": {
+      "linear_oracle": "surface vertical velocity is U * dh/dx; full steady wave comparison is a separate runner.",
+      "name": "Schaer et al. 2002 non-hydrostatic mountain-wave benchmark",
+      "purpose": "terrain-following pressure-gradient and vertical wave propagation"
+    },
+    "wrf_provenance": {
+      "env_script": "/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/env_wrf_gpu.sh",
+      "env_script_exists": true,
+      "stable_wrf_exe": "/home/enric/src/wrf_gpu/builds/stable_20260509T213321Z/wrf.exe",
+      "stable_wrf_exe_executable": true,
+      "stable_wrf_exe_exists": true,
+      "stable_wrf_exe_sha256": "1ec3815497887f980293cf8ffc4b1219476d93dbed760538241fc3087e70dd37",
+      "wrf_source_commit": "115e5756f98ee2370d62b6709baac6417d8f7338",
+      "wrf_source_exists": true,
+      "wrf_source_path": "/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/WRF"
+    }
+  },
+  "repo_commit": "eb9a13db09cb8b5258db63ace9a2758dd43277a5",
+  "schema": "PublicationHighPriorityProof",
+  "schema_version": 1,
+  "status": "BLOCKED_NO_GPU_IDEALIZED_RUN",
+  "test_id": "IDEALIZED-MOUNTAIN-WAVE",
+  "thresholds": {
+    "dominant_wave_phase": {
+      "passed": null,
+      "threshold": "<=1 grid cell horizontal and vertical",
+      "value": null
+    },
+    "finite_fields": {
+      "passed": true,
+      "threshold": "all fields finite",
+      "value": 1.0
+    },
+    "open_boundary_mass_residual": {
+      "passed": null,
+      "threshold": "<=1e-6",
+      "value": null
+    },
+    "pressure_nrmse": {
+      "passed": null,
+      "threshold": "<=0.10 vs analytic",
+      "value": null
+    },
+    "w_peak_5h": {
+      "passed": null,
+      "threshold": "within 10% of Schaer analytic steady-state solution",
+      "value": null
+    }
+  },
+  "verdict": "BLOCKED"
+}
