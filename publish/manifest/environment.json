@@ -1,0 +1,27 @@
+{
+  "schema": "M8PublishEnvironmentManifest",
+  "schema_version": 1,
+  "generated_utc": "2026-05-27T11:12:55.382436Z",
+  "runtime": {
+    "python": "3.13.11",
+    "jax": "0.10.0",
+    "jaxlib": "0.10.0",
+    "cuda_runtime": "13.1.115",
+    "nvidia_driver": "595.71.05"
+  },
+  "gpu": {
+    "model": "NVIDIA GeForce RTX 5090",
+    "architecture": "Blackwell (sm_120)",
+    "memory_total_mib": 32607,
+    "memory_peak_during_1km_probe_mib": 7278
+  },
+  "host": {
+    "os": "Linux 6.17.0-29-generic x86_64",
+    "cpu_pinning_pattern": "taskset -c 0-3 for AI workers; cores 4-31 reserved for CPU WRF baseline jobs"
+  },
+  "notes": [
+    "JAX 0.10.0 is the version installed in the development environment. The project's pyproject.toml declares jax>=0.4 as the minimum; the release manifest is more permissive than the as-built environment.",
+    "CUDA 13.1.115 is from the local nvcc install used to compile project tooling; JAX/jaxlib carry their own CUDA shim.",
+    "Hardware was verified by nvidia-smi during the M7 1km memory audit."
+  ]
+}
