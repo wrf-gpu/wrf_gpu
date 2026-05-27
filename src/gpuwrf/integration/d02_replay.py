@@ -158,6 +158,7 @@ P0_THETA_OFFSET_K = 300.0
 DEFAULT_REPLAY_RUN_DIR = Path("/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z")
 DEFAULT_OUTPUT_FIELD_PATH = Path("/home/enric/.cache/gpuwrf_outputs/m6x_d02_replay/proof_d02_replay_fields.npz")
 DEFAULT_TRACE_ROOT = Path(os.environ.get("GPUWRF_TMPDIR", "/home/enric/.cache/gpuwrf_tmp"))
+EXPECTED_L2_D02_MASS_SHAPE_YX = (66, 159)
 
 
 @dataclass(frozen=True)
@@ -332,10 +333,250 @@ def load_history_boundary_leaves(
     return leaves, meta
 
 
-def build_replay_case(run_dir: str | Path = DEFAULT_REPLAY_RUN_DIR, *, domain: str = "d02") -> ReplayCase:
+def _nested_axis_coords(child_meta: Any, *, y_len: int, x_len: int) -> tuple[np.ndarray, np.ndarray]:
+    ratio = int(getattr(child_meta, "parent_grid_ratio"))
+    if ratio <= 1:
+        raise ValueError(f"nested child domain requires parent_grid_ratio > 1, got {ratio}")
+    y0 = float(int(getattr(child_meta, "j_parent_start")) - 1)
+    x0 = float(int(getattr(child_meta, "i_parent_start")) - 1)
+    return (
+        y0 + np.arange(int(y_len), dtype=np.float64) / float(ratio),
+        x0 + np.arange(int(x_len), dtype=np.float64) / float(ratio),
+    )
+
+
+def _interp_parent_horizontal(field: np.ndarray, y_coords: np.ndarray, x_coords: np.ndarray) -> np.ndarray:
+    data = np.asarray(field)
+    if data.ndim not in {2, 3}:
+        raise ValueError(f"nested parent interpolation expects 2D or 3D field, got shape {data.shape}")
+    y_size = int(data.shape[-2])
+    x_size = int(data.shape[-1])
+    if y_size < 2 or x_size < 2:
+        raise ValueError(f"parent field too small for bilinear interpolation: {data.shape}")
+
+    y = np.clip(np.asarray(y_coords, dtype=np.float64), 0.0, float(y_size - 1))
+    x = np.clip(np.asarray(x_coords, dtype=np.float64), 0.0, float(x_size - 1))
+    y0 = np.floor(y).astype(np.int64)
+    x0 = np.floor(x).astype(np.int64)
+    y1 = np.clip(y0 + 1, 0, y_size - 1)
+    x1 = np.clip(x0 + 1, 0, x_size - 1)
+    wy = y - y0.astype(np.float64)
+    wx = x - x0.astype(np.float64)
+
+    if data.ndim == 3:
+        f00 = np.take(np.take(data, y0, axis=1), x0, axis=2)
+        f10 = np.take(np.take(data, y1, axis=1), x0, axis=2)
+        f01 = np.take(np.take(data, y0, axis=1), x1, axis=2)
+        f11 = np.take(np.take(data, y1, axis=1), x1, axis=2)
+        wy3 = wy[None, :, None]
+        wx3 = wx[None, None, :]
+        out = (1.0 - wy3) * ((1.0 - wx3) * f00 + wx3 * f01) + wy3 * ((1.0 - wx3) * f10 + wx3 * f11)
+    else:
+        f00 = np.take(np.take(data, y0, axis=0), x0, axis=1)
+        f10 = np.take(np.take(data, y1, axis=0), x0, axis=1)
+        f01 = np.take(np.take(data, y0, axis=0), x1, axis=1)
+        f11 = np.take(np.take(data, y1, axis=0), x1, axis=1)
+        wy2 = wy[:, None]
+        wx2 = wx[None, :]
+        out = (1.0 - wy2) * ((1.0 - wx2) * f00 + wx2 * f01) + wy2 * ((1.0 - wx2) * f10 + wx2 * f11)
+    return np.asarray(out, dtype=data.dtype)
+
+
+def _pack_nested_parent_history_3d(
+    run: Gen2Run,
+    child_meta: Any,
+    parent_domain: str,
+    var: str,
+    *,
+    ntimes: int,
+    child_shape: tuple[int, int, int],
+    max_side: int,
+    dtype: Any,
+    transform=None,
+) -> np.ndarray:
+    z_len, y_len, x_len = (int(item) for item in child_shape)
+    y_coords, x_coords = _nested_axis_coords(child_meta, y_len=y_len, x_len=x_len)
+    packed = np.zeros((ntimes, 4, z_len, max_side), dtype=dtype)
+    _debug(
+        f"pack nested parent history start {parent_domain}:{var} ntimes={ntimes} "
+        f"child_shape={(z_len, y_len, x_len)} max_side={max_side}"
+    )
+    for time_index in range(ntimes):
+        parent = np.asarray(_load(run, parent_domain, var, time_index), dtype=dtype)
+        if transform is not None:
+            parent = np.asarray(transform(run, parent_domain, parent, time_index), dtype=dtype)
+        child = _interp_parent_horizontal(parent, y_coords, x_coords)
+        for side, values in _field_sides_3d(child).items():
+            packed[time_index, SIDE_INDEX[side], : values.shape[0], : values.shape[1]] = values
+    _debug(f"pack nested parent history done {parent_domain}:{var} {_shape_dtype(packed)}")
+    return packed
+
+
+def _pack_nested_parent_history_mu(
+    run: Gen2Run,
+    child_meta: Any,
+    parent_domain: str,
+    *,
+    ntimes: int,
+    child_shape: tuple[int, int],
+    max_side: int,
+) -> np.ndarray:
+    y_len, x_len = (int(item) for item in child_shape)
+    y_coords, x_coords = _nested_axis_coords(child_meta, y_len=y_len, x_len=x_len)
+    packed = np.zeros((ntimes, 4, 1, max_side), dtype=np.float64)
+    _debug(
+        f"pack nested parent history start {parent_domain}:MU+MUB ntimes={ntimes} "
+        f"child_shape={(y_len, x_len)} max_side={max_side}"
+    )
+    for time_index in range(ntimes):
+        parent = np.asarray(
+            _load(run, parent_domain, "MU", time_index) + _load(run, parent_domain, "MUB", time_index),
+            dtype=np.float64,
+        )
+        child = _interp_parent_horizontal(parent, y_coords, x_coords)
+        for side, values in _field_sides_2d(child).items():
+            packed[time_index, SIDE_INDEX[side], 0, : values.shape[0]] = values
+    _debug(f"pack nested parent history done {parent_domain}:MU+MUB {_shape_dtype(packed)}")
+    return packed
+
+
+def load_nested_parent_boundary_leaves(
+    run: Gen2Run,
+    grid: GridSpec,
+    *,
+    child_domain: str = "d02",
+    parent_domain: str = "d01",
+    ntimes: int | None = None,
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    """Build child-sized boundary leaves by interpolating L2 parent-domain history."""
+
+    _debug(f"load nested parent boundary leaves start child={child_domain} parent={parent_domain}")
+    child_meta = run.grid(child_domain)
+    parent_meta = run.grid(parent_domain)
+    parent_count = len(run.history_files(parent_domain))
+    child_count = len(run.history_files(child_domain))
+    if parent_count < 2:
+        raise FileNotFoundError(f"{run.path} has fewer than two wrfout_{parent_domain} history files")
+    n = min(parent_count, int(ntimes if ntimes is not None else parent_count))
+    parent_times = run.time_axis(parent_domain)
+    child_times = run.time_axis(child_domain)
+    if parent_times and child_times and parent_times[0] != child_times[0]:
+        raise ValueError(
+            f"parent/child history start mismatch: {parent_domain}={parent_times[0].isoformat()} "
+            f"{child_domain}={child_times[0].isoformat()}"
+        )
+    max_side = int(max(grid.nx + 1, grid.ny + 1))
+
+    def add_theta(_run: Gen2Run, _domain: str, data: np.ndarray, _time_index: int) -> np.ndarray:
+        return data + P0_THETA_OFFSET_K
+
+    def add_phb(_run: Gen2Run, _domain: str, data: np.ndarray, time_index: int) -> np.ndarray:
+        return data + np.asarray(_load(_run, _domain, "PHB", time_index), dtype=data.dtype)
+
+    leaves_np = {
+        "u_bdy": _pack_nested_parent_history_3d(
+            run,
+            child_meta,
+            parent_domain,
+            "U",
+            ntimes=n,
+            child_shape=(grid.nz, grid.ny, grid.nx + 1),
+            max_side=max_side,
+            dtype=np.float32,
+        ),
+        "v_bdy": _pack_nested_parent_history_3d(
+            run,
+            child_meta,
+            parent_domain,
+            "V",
+            ntimes=n,
+            child_shape=(grid.nz, grid.ny + 1, grid.nx),
+            max_side=max_side,
+            dtype=np.float32,
+        ),
+        "theta_bdy": _pack_nested_parent_history_3d(
+            run,
+            child_meta,
+            parent_domain,
+            "T",
+            ntimes=n,
+            child_shape=(grid.nz, grid.ny, grid.nx),
+            max_side=max_side,
+            dtype=np.float32,
+            transform=add_theta,
+        ),
+        "qv_bdy": _pack_nested_parent_history_3d(
+            run,
+            child_meta,
+            parent_domain,
+            "QVAPOR",
+            ntimes=n,
+            child_shape=(grid.nz, grid.ny, grid.nx),
+            max_side=max_side,
+            dtype=np.float32,
+        ),
+        "ph_bdy": _pack_nested_parent_history_3d(
+            run,
+            child_meta,
+            parent_domain,
+            "PH",
+            ntimes=n,
+            child_shape=(grid.nz + 1, grid.ny, grid.nx),
+            max_side=max_side,
+            dtype=np.float64,
+            transform=add_phb,
+        ),
+        "mu_bdy": _pack_nested_parent_history_mu(
+            run,
+            child_meta,
+            parent_domain,
+            ntimes=n,
+            child_shape=(grid.ny, grid.nx),
+            max_side=max_side,
+        ),
+    }
+    leaves = {name: jax.device_put(jnp.asarray(value)) for name, value in leaves_np.items()}
+    meta = {
+        "source": "Gen2 L2 parent-domain hourly wrfout nested interpolation",
+        "source_run_dir": str(run.path),
+        "child_domain": child_domain,
+        "parent_domain": parent_domain,
+        "times": int(n),
+        "child_history_file_count": int(child_count),
+        "parent_history_file_count": int(parent_count),
+        "side_order": list(SIDES),
+        "padded_side_length": max_side,
+        "schema": "nested-parent-side-pack-v1",
+        "parent_grid": {
+            "mass_shape": [int(parent_meta.mass_nz), int(parent_meta.mass_ny), int(parent_meta.mass_nx)],
+            "dx_m": float(parent_meta.dx_m),
+            "dy_m": float(parent_meta.dy_m),
+        },
+        "child_grid": {
+            "mass_shape": [int(grid.nz), int(grid.ny), int(grid.nx)],
+            "dx_m": float(grid.projection.dx_m),
+            "dy_m": float(grid.projection.dy_m),
+        },
+        "nesting": {
+            "parent_grid_ratio": int(child_meta.parent_grid_ratio),
+            "i_parent_start": int(child_meta.i_parent_start),
+            "j_parent_start": int(child_meta.j_parent_start),
+            "horizontal_interpolation": "bilinear on native WRF parent index coordinates",
+        },
+    }
+    _debug("load nested parent boundary leaves done")
+    return leaves, meta
+
+
+def build_replay_case(
+    run_dir: str | Path = DEFAULT_REPLAY_RUN_DIR,
+    *,
+    domain: str = "d02",
+    boundary_domain: str | None = None,
+) -> ReplayCase:
     """Load a Gen2 d02 initial state with WRF perturbation/base splits preserved."""
 
-    _debug(f"build_replay_case start run_dir={run_dir} domain={domain}")
+    _debug(f"build_replay_case start run_dir={run_dir} domain={domain} boundary_domain={boundary_domain}")
     run = Gen2Run(run_dir)
     _debug("Gen2Run created")
     grid = run.grid(domain).as_grid_spec()
@@ -348,8 +589,18 @@ def build_replay_case(run_dir: str | Path = DEFAULT_REPLAY_RUN_DIR, *, domain: s
     _debug("load_wrfinput_metrics complete")
     land = load_prescribed_land_state(run, domain=domain, time=0)
     _debug("load_prescribed_land_state complete")
-    boundary_leaves, boundary_meta = load_history_boundary_leaves(run, grid, domain=domain)
-    _debug("load_history_boundary_leaves complete")
+    source_domain = boundary_domain or domain
+    if source_domain == domain:
+        boundary_leaves, boundary_meta = load_history_boundary_leaves(run, grid, domain=domain)
+        _debug("load_history_boundary_leaves complete")
+    else:
+        boundary_leaves, boundary_meta = load_nested_parent_boundary_leaves(
+            run,
+            grid,
+            child_domain=domain,
+            parent_domain=source_domain,
+        )
+        _debug("load_nested_parent_boundary_leaves complete")
 
     p_perturbation = _load(run, domain, "P", 0)
     pb = _load(run, domain, "PB", 0)
@@ -425,6 +676,37 @@ def build_replay_case(run_dir: str | Path = DEFAULT_REPLAY_RUN_DIR, *, domain: s
     }
     _debug("build_replay_case done")
     return ReplayCase(run, state, tendencies, grid, metrics, base, state.p_perturbation, metadata)
+
+
+def build_l2_d02_replay_case(run_dir: str | Path, *, domain: str = "d02", parent_domain: str = "d01") -> ReplayCase:
+    """Load an L2 d02 replay case with d01-derived one-way-nest boundary forcing."""
+
+    case = build_replay_case(run_dir, domain=domain, boundary_domain=parent_domain)
+    actual_yx = (int(case.grid.ny), int(case.grid.nx))
+    if actual_yx != EXPECTED_L2_D02_MASS_SHAPE_YX:
+        raise ValueError(
+            f"L2 {domain} mass grid must be {EXPECTED_L2_D02_MASS_SHAPE_YX} for drop-in M7 d02 replay; "
+            f"got {actual_yx} from {run_dir}"
+        )
+    metadata = dict(case.metadata)
+    metadata["l2_replay_adapter"] = {
+        "domain": domain,
+        "parent_domain": parent_domain,
+        "expected_mass_shape_yx": list(EXPECTED_L2_D02_MASS_SHAPE_YX),
+        "actual_mass_shape_yx": list(actual_yx),
+        "ic_source": "wrfout snapshot at t=0 plus wrfinput metrics/land state",
+        "boundary_source": "parent d01 hourly wrfout interpolated to child d02 side strips",
+    }
+    return ReplayCase(
+        case.run,
+        case.state,
+        case.tendencies,
+        case.grid,
+        case.metrics,
+        case.base_state,
+        case.previous_pressure,
+        metadata,
+    )
 
 
 def _total_steps(replay_config: ReplayConfig) -> int:
@@ -1221,11 +1503,13 @@ __all__ = [
     "DEFAULT_REPLAY_RUN_DIR",
     "ReplayCase",
     "ReplayConfig",
+    "build_l2_d02_replay_case",
     "build_replay_case",
     "diagnostics_summary",
     "forecast_comparison",
     "invoked_schemes",
     "load_history_boundary_leaves",
+    "load_nested_parent_boundary_leaves",
     "replay_steps",
     "run_replay_proof",
     "run_replay_scan",
