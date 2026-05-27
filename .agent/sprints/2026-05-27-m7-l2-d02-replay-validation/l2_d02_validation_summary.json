@@ -1,0 +1,21 @@
+{
+  "output_dir": "/tmp/m7_pipeline_runs/l2_d02_20260525_18z_l2_72h_20260526T221207Z",
+  "proofs": {
+    "bounds": "/tmp/wrf_gpu2_l2d02/.agent/sprints/2026-05-27-m7-l2-d02-replay-validation/bounds_check_l2_d02.json",
+    "inventory": "/tmp/wrf_gpu2_l2d02/.agent/sprints/2026-05-27-m7-l2-d02-replay-validation/l2_inventory.json",
+    "tier4_rmse": "/tmp/wrf_gpu2_l2d02/.agent/sprints/2026-05-27-m7-l2-d02-replay-validation/tier4_rmse_l2_d02.json",
+    "wall_clock": "/tmp/wrf_gpu2_l2d02/.agent/sprints/2026-05-27-m7-l2-d02-replay-validation/wall_clock_l2_d02.json"
+  },
+  "publish_readiness": "nested-grid backfills are not publish-ready from this sprint evidence",
+  "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l2/20260525_18z_l2_72h_20260526T221207Z",
+  "run_id": "20260525_18z_l2_72h_20260526T221207Z",
+  "schema": "M7L2D02ReplayValidationSummary",
+  "schema_version": 1,
+  "statuses": {
+    "bounds": "PASS",
+    "pipeline": "PIPELINE_PARTIAL",
+    "rmse": "FAIL",
+    "wall_clock": "PASS"
+  },
+  "verdict": "L2_D02_BOUNDED_FAIL"
+}
