@@ -1,0 +1,41 @@
+{
+  "phase_results": [
+    {
+      "cmd": [
+        "/home/enric/miniconda3/bin/python",
+        "/tmp/wrf_gpu2_1kmaudit/scripts/m7_1km_memory_audit.py",
+        "--phase",
+        "live",
+        "--output-dir",
+        "/tmp/wrf_gpu2_1kmaudit/.agent/sprints/2026-05-27-m7-1km-memory-audit"
+      ],
+      "phase": "live",
+      "returncode": 0,
+      "stderr_path": "/tmp/wrf_gpu2_1kmaudit/.agent/sprints/2026-05-27-m7-1km-memory-audit/phase_live.stderr.txt",
+      "stdout_path": "/tmp/wrf_gpu2_1kmaudit/.agent/sprints/2026-05-27-m7-1km-memory-audit/phase_live.stdout.txt"
+    },
+    {
+      "cmd": [
+        "/home/enric/miniconda3/bin/python",
+        "/tmp/wrf_gpu2_1kmaudit/scripts/m7_1km_memory_audit.py",
+        "--phase",
+        "step",
+        "--output-dir",
+        "/tmp/wrf_gpu2_1kmaudit/.agent/sprints/2026-05-27-m7-1km-memory-audit"
+      ],
+      "phase": "step",
+      "returncode": 0,
+      "stderr_path": "/tmp/wrf_gpu2_1kmaudit/.agent/sprints/2026-05-27-m7-1km-memory-audit/phase_step.stderr.txt",
+      "stdout_path": "/tmp/wrf_gpu2_1kmaudit/.agent/sprints/2026-05-27-m7-1km-memory-audit/phase_step.stdout.txt"
+    }
+  ],
+  "proof_objects": [
+    "/tmp/wrf_gpu2_1kmaudit/.agent/sprints/2026-05-27-m7-1km-memory-audit/static_memory_model.json",
+    "/tmp/wrf_gpu2_1kmaudit/.agent/sprints/2026-05-27-m7-1km-memory-audit/grid_shape_1km.json",
+    "/tmp/wrf_gpu2_1kmaudit/.agent/sprints/2026-05-27-m7-1km-memory-audit/live_vram_probe.json",
+    "/tmp/wrf_gpu2_1kmaudit/.agent/sprints/2026-05-27-m7-1km-memory-audit/step_feasibility.json",
+    "/tmp/wrf_gpu2_1kmaudit/.agent/sprints/2026-05-27-m7-1km-memory-audit/operational_gaps.md"
+  ],
+  "status": "PASS",
+  "verdict": "FITS_WITH_HEADROOM"
+}

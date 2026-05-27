@@ -1,0 +1,1778 @@
+{
+  "after_cleanup": {
+    "jax_memory_stats": {
+      "device": "cuda:0",
+      "ok": true,
+      "raw_keys": [
+        "bytes_in_use",
+        "bytes_limit",
+        "bytes_reserved",
+        "largest_alloc_size",
+        "largest_free_block_bytes",
+        "num_allocs",
+        "peak_bytes_in_use",
+        "peak_bytes_reserved",
+        "peak_pool_bytes",
+        "pool_bytes"
+      ],
+      "stats": {
+        "bytes_in_use": 13869824,
+        "bytes_limit": 25248645120,
+        "bytes_reserved": 0,
+        "largest_alloc_size": 67108864,
+        "largest_free_block_bytes": 0,
+        "num_allocs": 1011,
+        "peak_bytes_in_use": 733771264,
+        "peak_bytes_reserved": 0,
+        "peak_pool_bytes": 1071644672,
+        "pool_bytes": 1071644672
+      }
+    },
+    "nvidia_smi": {
+      "memory_total_bytes": 34190917632,
+      "memory_total_mib": 32607,
+      "memory_used_bytes": 3651141632,
+      "memory_used_mib": 3482,
+      "name": "NVIDIA GeForce RTX 5090",
+      "ok": true,
+      "query": {
+        "cmd": [
+          "nvidia-smi",
+          "--query-gpu=name,memory.used,memory.total",
+          "--format=csv,noheader,nounits"
+        ],
+        "returncode": 0,
+        "stderr": "",
+        "stdout": "NVIDIA GeForce RTX 5090, 3482, 32607\n"
+      }
+    }
+  },
+  "before": {
+    "jax_memory_stats": {
+      "device": "cuda:0",
+      "ok": true,
+      "raw_keys": [
+        "bytes_in_use",
+        "bytes_limit",
+        "bytes_reserved",
+        "largest_alloc_size",
+        "largest_free_block_bytes",
+        "num_allocs",
+        "peak_bytes_in_use",
+        "peak_bytes_reserved",
+        "peak_pool_bytes",
+        "pool_bytes"
+      ],
+      "stats": {
+        "bytes_in_use": 13869824,
+        "bytes_limit": 25248645120,
+        "bytes_reserved": 0,
+        "largest_alloc_size": 2222848,
+        "largest_free_block_bytes": 0,
+        "num_allocs": 225,
+        "peak_bytes_in_use": 13870336,
+        "peak_bytes_reserved": 0,
+        "peak_pool_bytes": 14680064,
+        "pool_bytes": 14680064
+      }
+    },
+    "nvidia_smi": {
+      "memory_total_bytes": 34190917632,
+      "memory_total_mib": 32607,
+      "memory_used_bytes": 2589982720,
+      "memory_used_mib": 2470,
+      "name": "NVIDIA GeForce RTX 5090",
+      "ok": true,
+      "query": {
+        "cmd": [
+          "nvidia-smi",
+          "--query-gpu=name,memory.used,memory.total",
+          "--format=csv,noheader,nounits"
+        ],
+        "returncode": 0,
+        "stderr": "",
+        "stdout": "NVIDIA GeForce RTX 5090, 2470, 32607\n"
+      }
+    }
+  },
+  "device": "cuda:0",
+  "full_domain_synthetic_state": {
+    "after": {
+      "jax_memory_stats": {
+        "device": "cuda:0",
+        "ok": true,
+        "raw_keys": [
+          "bytes_in_use",
+          "bytes_limit",
+          "bytes_reserved",
+          "largest_alloc_size",
+          "largest_free_block_bytes",
+          "num_allocs",
+          "peak_bytes_in_use",
+          "peak_bytes_reserved",
+          "peak_pool_bytes",
+          "pool_bytes"
+        ],
+        "stats": {
+          "bytes_in_use": 733771008,
+          "bytes_limit": 25248645120,
+          "bytes_reserved": 0,
+          "largest_alloc_size": 67108864,
+          "largest_free_block_bytes": 0,
+          "num_allocs": 1011,
+          "peak_bytes_in_use": 733771264,
+          "peak_bytes_reserved": 0,
+          "peak_pool_bytes": 1071644672,
+          "pool_bytes": 1071644672
+        }
+      },
+      "nvidia_smi": {
+        "memory_total_bytes": 34190917632,
+        "memory_total_mib": 32607,
+        "memory_used_bytes": 3651141632,
+        "memory_used_mib": 3482,
+        "name": "NVIDIA GeForce RTX 5090",
+        "ok": true,
+        "query": {
+          "cmd": [
+            "nvidia-smi",
+            "--query-gpu=name,memory.used,memory.total",
+            "--format=csv,noheader,nounits"
+          ],
+          "returncode": 0,
+          "stderr": "",
+          "stdout": "NVIDIA GeForce RTX 5090, 3482, 32607\n"
+        }
+      }
+    },
+    "allocation_trace": [
+      {
+        "bytes": 16657344,
+        "dtype": "float32",
+        "field": "u",
+        "nvidia_smi_after_field": {
+          "memory_total_bytes": 34190917632,
+          "memory_total_mib": 32607,
+          "memory_used_bytes": 2711617536,
+          "memory_used_mib": 2586,
+          "name": "NVIDIA GeForce RTX 5090",
+          "ok": true,
+          "query": {
+            "cmd": [
+              "nvidia-smi",
+              "--query-gpu=name,memory.used,memory.total",
+              "--format=csv,noheader,nounits"
+            ],
+            "returncode": 0,
+            "stderr": "",
+            "stdout": "NVIDIA GeForce RTX 5090, 2586, 32607\n"
+          }
+        },
+        "running_total_bytes": 16657344,
+        "shape": [
+          44,
+          198,
+          478
+        ],
+        "wall_s": 0.03132826000000932
+      },
+      {
+        "bytes": 16706448,
+        "dtype": "float32",
+        "field": "v",
+        "nvidia_smi_after_field": {
+          "memory_total_bytes": 34190917632,
+          "memory_total_mib": 32607,
+          "memory_used_bytes": 2711617536,
+          "memory_used_mib": 2586,
+          "name": "NVIDIA GeForce RTX 5090",
+          "ok": true,
+          "query": {
+            "cmd": [
+              "nvidia-smi",
+              "--query-gpu=name,memory.used,memory.total",
+              "--format=csv,noheader,nounits"
+            ],
+            "returncode": 0,
+            "stderr": "",
+            "stdout": "NVIDIA GeForce RTX 5090, 2586, 32607\n"
+          }
+        },
+        "running_total_bytes": 33363792,
+        "shape": [
+          44,
+          199,
+          477
+        ],
+        "wall_s": 0.035814161999951466
+      },
+      {
+        "bytes": 34000560,
+        "dtype": "float64",
+        "field": "w",
+        "nvidia_smi_after_field": {
+          "memory_total_bytes": 34190917632,
+          "memory_total_mib": 32607,
+          "memory_used_bytes": 2711617536,
+          "memory_used_mib": 2586,
+          "name": "NVIDIA GeForce RTX 5090",
+          "ok": true,
+          "query": {
+            "cmd": [
+              "nvidia-smi",
+              "--query-gpu=name,memory.used,memory.total",
+              "--format=csv,noheader,nounits"
+            ],
+            "returncode": 0,
+            "stderr": "",
+            "stdout": "NVIDIA GeForce RTX 5090, 2586, 32607\n"
+          }
+        },
+        "running_total_bytes": 67364352,
+        "shape": [
+          45,
+          198,
+          477
+        ],
+        "wall_s": 0.03287622100015142
+      },
+      {
+        "bytes": 16622496,
+        "dtype": "float32",
+        "field": "theta",
+        "nvidia_smi_after_field": {
+          "memory_total_bytes": 34190917632,
+          "memory_total_mib": 32607,
+          "memory_used_bytes": 2711617536,
+          "memory_used_mib": 2586,
+          "name": "NVIDIA GeForce RTX 5090",
+          "ok": true,
+          "query": {
+            "cmd": [
+              "nvidia-smi",
+              "--query-gpu=name,memory.used,memory.total",
+              "--format=csv,noheader,nounits"
+            ],
+            "returncode": 0,
+            "stderr": "",
+            "stdout": "NVIDIA GeForce RTX 5090, 2586, 32607\n"
+          }
+        },
+        "running_total_bytes": 83986848,
+        "shape": [
+          44,
+          198,
+          477
+        ],
+        "wall_s": 0.03779542700067395
+      },
+      {
+        "bytes": 16622496,
+        "dtype": "float32",
+        "field": "qv",
+        "nvidia_smi_after_field": {
+          "memory_total_bytes": 34190917632,
+          "memory_total_mib": 32607,
+          "memory_used_bytes": 2845835264,
+          "memory_used_mib": 2714,
+          "name": "NVIDIA GeForce RTX 5090",
+          "ok": true,
+          "query": {
+            "cmd": [
+              "nvidia-smi",
+              "--query-gpu=name,memory.used,memory.total",
+              "--format=csv,noheader,nounits"
+            ],
+            "returncode": 0,
+            "stderr": "",
+            "stdout": "NVIDIA GeForce RTX 5090, 2714, 32607\n"
+          }
+        },
+        "running_total_bytes": 100609344,
+        "shape": [
+          44,
+          198,
+          477
+        ],
+        "wall_s": 0.0012911300000268966
+      },
+      {
+        "bytes": 33244992,
+        "dtype": "float64",
+        "field": "p",
+        "nvidia_smi_after_field": {
+          "memory_total_bytes": 34190917632,
+          "memory_total_mib": 32607,
+          "memory_used_bytes": 2845835264,
+          "memory_used_mib": 2714,
+          "name": "NVIDIA GeForce RTX 5090",
+          "ok": true,
+          "query": {
+            "cmd": [
+              "nvidia-smi",
+              "--query-gpu=name,memory.used,memory.total",
+              "--format=csv,noheader,nounits"
+            ],
+            "returncode": 0,
+            "stderr": "",
+            "stdout": "NVIDIA GeForce RTX 5090, 2714, 32607\n"
+          }
+        },
+        "running_total_bytes": 133854336,
+        "shape": [
+          44,
+          198,
+          477
+        ],
+        "wall_s": 0.04211927899996226
+      },
+      {
+        "bytes": 33244992,
+        "dtype": "float64",
+        "field": "p_total",
+        "nvidia_smi_after_field": {
+          "memory_total_bytes": 34190917632,
+          "memory_total_mib": 32607,
+          "memory_used_bytes": 2845835264,
+          "memory_used_mib": 2714,
+          "name": "NVIDIA GeForce RTX 5090",
+          "ok": true,
+          "query": {
+            "cmd": [
+              "nvidia-smi",
+              "--query-gpu=name,memory.used,memory.total",
+              "--format=csv,noheader,nounits"
+            ],
+            "returncode": 0,
+            "stderr": "",
+            "stdout": "NVIDIA GeForce RTX 5090, 2714, 32607\n"
+          }
+        },
+        "running_total_bytes": 167099328,
+        "shape": [
+          44,
+          198,
+          477
+        ],
+        "wall_s": 0.000892437000402424
+      },
+      {
+        "bytes": 33244992,
+        "dtype": "float64",
+        "field": "p_perturbation",
+        "nvidia_smi_after_field": {
+          "memory_total_bytes": 34190917632,
+          "memory_total_mib": 32607,
+          "memory_used_bytes": 2845835264,
+          "memory_used_mib": 2714,
+          "name": "NVIDIA GeForce RTX 5090",
+          "ok": true,
+          "query": {
+            "cmd": [
+              "nvidia-smi",
+              "--query-gpu=name,memory.used,memory.total",
+              "--format=csv,noheader,nounits"
+            ],
+            "returncode": 0,
+            "stderr": "",
+            "stdout": "NVIDIA GeForce RTX 5090, 2714, 32607\n"
+          }
+        },
+        "running_total_bytes": 200344320,
+        "shape": [
+          44,
+          198,
+          477
+        ],
+        "wall_s": 0.0010460369994689245
+      },
+      {
+        "bytes": 34000560,
+        "dtype": "float64",
+        "field": "ph",
+        "nvidia_smi_after_field": {
+          "memory_total_bytes": 34190917632,
+          "memory_total_mib": 32607,
+          "memory_used_bytes": 3114270720,
+          "memory_used_mib": 2970,
+          "name": "NVIDIA GeForce RTX 5090",
+          "ok": true,
+          "query": {
+            "cmd": [
+              "nvidia-smi",
+              "--query-gpu=name,memory.used,memory.total",
+              "--format=csv,noheader,nounits"
+            ],
+            "returncode": 0,
+            "stderr": "",
+            "stdout": "NVIDIA GeForce RTX 5090, 2970, 32607\n"
+          }
+        },
+        "running_total_bytes": 234344880,
+        "shape": [
+          45,
+          198,
+          477
+        ],
+        "wall_s": 0.004409693000525294
+      },
+      {
+        "bytes": 34000560,
+        "dtype": "float64",
+        "field": "ph_total",
+        "nvidia_smi_after_field": {
+          "memory_total_bytes": 34190917632,
+          "memory_total_mib": 32607,
+          "memory_used_bytes": 3114270720,
+          "memory_used_mib": 2970,
+          "name": "NVIDIA GeForce RTX 5090",
+          "ok": true,
+          "query": {
+            "cmd": [
+              "nvidia-smi",
+              "--query-gpu=name,memory.used,memory.total",
+              "--format=csv,noheader,nounits"
+            ],
+            "returncode": 0,
+            "stderr": "",
+            "stdout": "NVIDIA GeForce RTX 5090, 2970, 32607\n"
+          }
+        },
+        "running_total_bytes": 268345440,
+        "shape": [
+          45,
+          198,
+          477
+        ],
+        "wall_s": 0.0009571170003255247
+      },
+      {
+        "bytes": 34000560,
+        "dtype": "float64",
+        "field": "ph_perturbation",
+        "nvidia_smi_after_field": {
+          "memory_total_bytes": 34190917632,
+          "memory_total_mib": 32607,
+          "memory_used_bytes": 3114270720,
+          "memory_used_mib": 2970,
+          "name": "NVIDIA GeForce RTX 5090",
+          "ok": true,
+          "query": {
+            "cmd": [
+              "nvidia-smi",
+              "--query-gpu=name,memory.used,memory.total",
+              "--format=csv,noheader,nounits"
+            ],
+            "returncode": 0,
+            "stderr": "",
+            "stdout": "NVIDIA GeForce RTX 5090, 2970, 32607\n"
+          }
+        },
+        "running_total_bytes": 302346000,
+        "shape": [
+          45,
+          198,
+          477
+        ],
+        "wall_s": 0.0007927260003270931
+      },
+      {
+        "bytes": 755568,
+        "dtype": "float64",
+        "field": "mu",
+        "nvidia_smi_after_field": {
+          "memory_total_bytes": 34190917632,
+          "memory_total_mib": 32607,
+          "memory_used_bytes": 3114270720,
+          "memory_used_mib": 2970,
+          "name": "NVIDIA GeForce RTX 5090",
+          "ok": true,
+          "query": {
+            "cmd": [
+              "nvidia-smi",
+              "--query-gpu=name,memory.used,memory.total",
+              "--format=csv,noheader,nounits"
+            ],
+            "returncode": 0,
+            "stderr": "",
+            "stdout": "NVIDIA GeForce RTX 5090, 2970, 32607\n"
+          }
+        },
+        "running_total_bytes": 303101568,
+        "shape": [
+          198,
+          477
+        ],
+        "wall_s": 0.0016980520003926358
+      },
+      {
+        "bytes": 755568,
+        "dtype": "float64",
+        "field": "mu_total",
+        "nvidia_smi_after_field": {
+          "memory_total_bytes": 34190917632,
+          "memory_total_mib": 32607,
+          "memory_used_bytes": 3114270720,
+          "memory_used_mib": 2970,
+          "name": "NVIDIA GeForce RTX 5090",
+          "ok": true,
+          "query": {
+            "cmd": [
+              "nvidia-smi",
+              "--query-gpu=name,memory.used,memory.total",
+              "--format=csv,noheader,nounits"
+            ],
+            "returncode": 0,
+            "stderr": "",
+            "stdout": "NVIDIA GeForce RTX 5090, 2970, 32607\n"
+          }
+        },
+        "running_total_bytes": 303857136,
+        "shape": [
+          198,
+          477
+        ],
+        "wall_s": 0.0018727429996943101
+      },
+      {
+        "bytes": 755568,
+        "dtype": "float64",
+        "field": "mu_perturbation",
+        "nvidia_smi_after_field": {
+          "memory_total_bytes": 34190917632,
+          "memory_total_mib": 32607,
+          "memory_used_bytes": 3114270720,
+          "memory_used_mib": 2970,
+          "name": "NVIDIA GeForce RTX 5090",
+          "ok": true,
+          "query": {
+            "cmd": [
+              "nvidia-smi",
+              "--query-gpu=name,memory.used,memory.total",
+              "--format=csv,noheader,nounits"
+            ],
+            "returncode": 0,
+            "stderr": "",
+            "stdout": "NVIDIA GeForce RTX 5090, 2970, 32607\n"
+          }
+        },
+        "running_total_bytes": 304612704,
+        "shape": [
+          198,
+          477
+        ],
+        "wall_s": 0.0009175670002150582
+      },
+      {
+        "bytes": 16622496,
+        "dtype": "float32",
+        "field": "qc",
+        "nvidia_smi_after_field": {
+          "memory_total_bytes": 34190917632,
+          "memory_total_mib": 32607,
+          "memory_used_bytes": 3114270720,
+          "memory_used_mib": 2970,
+          "name": "NVIDIA GeForce RTX 5090",
+          "ok": true,
+          "query": {
+            "cmd": [
+              "nvidia-smi",
+              "--query-gpu=name,memory.used,memory.total",
+              "--format=csv,noheader,nounits"
+            ],
+            "returncode": 0,
+            "stderr": "",
+            "stdout": "NVIDIA GeForce RTX 5090, 2970, 32607\n"
+          }
+        },
+        "running_total_bytes": 321235200,
+        "shape": [
+          44,
+          198,
+          477
+        ],
+        "wall_s": 0.0007572360000267508
+      },
+      {
+        "bytes": 16622496,
+        "dtype": "float32",
+        "field": "qr",
+        "nvidia_smi_after_field": {
+          "memory_total_bytes": 34190917632,
+          "memory_total_mib": 32607,
+          "memory_used_bytes": 3114270720,
+          "memory_used_mib": 2970,
+          "name": "NVIDIA GeForce RTX 5090",
+          "ok": true,
+          "query": {
+            "cmd": [
+              "nvidia-smi",
+              "--query-gpu=name,memory.used,memory.total",
+              "--format=csv,noheader,nounits"
+            ],
+            "returncode": 0,
+            "stderr": "",
+            "stdout": "NVIDIA GeForce RTX 5090, 2970, 32607\n"
+          }
+        },
+        "running_total_bytes": 337857696,
+        "shape": [
+          44,
+          198,
+          477
+        ],
+        "wall_s": 0.0008446760002698284
+      },
+      {
+        "bytes": 16622496,
+        "dtype": "float32",
+        "field": "qi",
+        "nvidia_smi_after_field": {
+          "memory_total_bytes": 34190917632,
+          "memory_total_mib": 32607,
+          "memory_used_bytes": 3114270720,
+          "memory_used_mib": 2970,
+          "name": "NVIDIA GeForce RTX 5090",
+          "ok": true,
+          "query": {
+            "cmd": [
+              "nvidia-smi",
+              "--query-gpu=name,memory.used,memory.total",
+              "--format=csv,noheader,nounits"
+            ],
+            "returncode": 0,
+            "stderr": "",
+            "stdout": "NVIDIA GeForce RTX 5090, 2970, 32607\n"
+          }
+        },
+        "running_total_bytes": 354480192,
+        "shape": [
+          44,
+          198,
+          477
+        ],
+        "wall_s": 0.0013893400000597467
+      },
+      {
+        "bytes": 16622496,
+        "dtype": "float32",
+        "field": "qs",
+        "nvidia_smi_after_field": {
+          "memory_total_bytes": 34190917632,
+          "memory_total_mib": 32607,
+          "memory_used_bytes": 3114270720,
+          "memory_used_mib": 2970,
+          "name": "NVIDIA GeForce RTX 5090",
+          "ok": true,
+          "query": {
+            "cmd": [
+              "nvidia-smi",
+              "--query-gpu=name,memory.used,memory.total",
+              "--format=csv,noheader,nounits"
+            ],
+            "returncode": 0,
+            "stderr": "",
+            "stdout": "NVIDIA GeForce RTX 5090, 2970, 32607\n"
+          }
+        },
+        "running_total_bytes": 371102688,
+        "shape": [
+          44,
+          198,
+          477
+        ],
+        "wall_s": 0.0017117029992732569
+      },
+      {
+        "bytes": 16622496,
+        "dtype": "float32",
+        "field": "qg",
+        "nvidia_smi_after_field": {
+          "memory_total_bytes": 34190917632,
+          "memory_total_mib": 32607,
+          "memory_used_bytes": 3114270720,
+          "memory_used_mib": 2970,
+          "name": "NVIDIA GeForce RTX 5090",
+          "ok": true,
+          "query": {
+            "cmd": [
+              "nvidia-smi",
+              "--query-gpu=name,memory.used,memory.total",
+              "--format=csv,noheader,nounits"
+            ],
+            "returncode": 0,
+            "stderr": "",
+            "stdout": "NVIDIA GeForce RTX 5090, 2970, 32607\n"
+          }
+        },
+        "running_total_bytes": 387725184,
+        "shape": [
+          44,
+          198,
+          477
+        ],
+        "wall_s": 0.0016706329997759894
+      },
+      {
+        "bytes": 16622496,
+        "dtype": "float32",
+        "field": "Ni",
+        "nvidia_smi_after_field": {
+          "memory_total_bytes": 34190917632,
+          "memory_total_mib": 32607,
+          "memory_used_bytes": 3114270720,
+          "memory_used_mib": 2970,
+          "name": "NVIDIA GeForce RTX 5090",
+          "ok": true,
+          "query": {
+            "cmd": [
+              "nvidia-smi",
+              "--query-gpu=name,memory.used,memory.total",
+              "--format=csv,noheader,nounits"
+            ],
+            "returncode": 0,
+            "stderr": "",
+            "stdout": "NVIDIA GeForce RTX 5090, 2970, 32607\n"
+          }
+        },
+        "running_total_bytes": 404347680,
+        "shape": [
+          44,
+          198,
+          477
+        ],
+        "wall_s": 0.0012013389996354817
+      },
+      {
+        "bytes": 16622496,
+        "dtype": "float32",
+        "field": "Nr",
+        "nvidia_smi_after_field": {
+          "memory_total_bytes": 34190917632,
+          "memory_total_mib": 32607,
+          "memory_used_bytes": 3114270720,
+          "memory_used_mib": 2970,
+          "name": "NVIDIA GeForce RTX 5090",
+          "ok": true,
+          "query": {
+            "cmd": [
+              "nvidia-smi",
+              "--query-gpu=name,memory.used,memory.total",
+              "--format=csv,noheader,nounits"
+            ],
+            "returncode": 0,
+            "stderr": "",
+            "stdout": "NVIDIA GeForce RTX 5090, 2970, 32607\n"
+          }
+        },
+        "running_total_bytes": 420970176,
+        "shape": [
+          44,
+          198,
+          477
+        ],
+        "wall_s": 0.0008640760006528581
+      },
+      {
+        "bytes": 16622496,
+        "dtype": "float32",
+        "field": "Ns",
+        "nvidia_smi_after_field": {
+          "memory_total_bytes": 34190917632,
+          "memory_total_mib": 32607,
+          "memory_used_bytes": 3114270720,
+          "memory_used_mib": 2970,
+          "name": "NVIDIA GeForce RTX 5090",
+          "ok": true,
+          "query": {
+            "cmd": [
+              "nvidia-smi",
+              "--query-gpu=name,memory.used,memory.total",
+              "--format=csv,noheader,nounits"
+            ],
+            "returncode": 0,
+            "stderr": "",
+            "stdout": "NVIDIA GeForce RTX 5090, 2970, 32607\n"
+          }
+        },
+        "running_total_bytes": 437592672,
+        "shape": [
+          44,
+          198,
+          477
+        ],
+        "wall_s": 0.0011137080000480637
+      },
+      {
+        "bytes": 16622496,
+        "dtype": "float32",
+        "field": "Ng",
+        "nvidia_smi_after_field": {
+          "memory_total_bytes": 34190917632,
+          "memory_total_mib": 32607,
+          "memory_used_bytes": 3114270720,
+          "memory_used_mib": 2970,
+          "name": "NVIDIA GeForce RTX 5090",
+          "ok": true,
+          "query": {
+            "cmd": [
+              "nvidia-smi",
+              "--query-gpu=name,memory.used,memory.total",
+              "--format=csv,noheader,nounits"
+            ],
+            "returncode": 0,
+            "stderr": "",
+            "stdout": "NVIDIA GeForce RTX 5090, 2970, 32607\n"
+          }
+        },
+        "running_total_bytes": 454215168,
+        "shape": [
+          44,
+          198,
+          477
+        ],
+        "wall_s": 0.0016125719994306564
+      },
+      {
+        "bytes": 16622496,
+        "dtype": "float32",
+        "field": "qke",
+        "nvidia_smi_after_field": {
+          "memory_total_bytes": 34190917632,
+          "memory_total_mib": 32607,
+          "memory_used_bytes": 3651141632,
+          "memory_used_mib": 3482,
+          "name": "NVIDIA GeForce RTX 5090",
+          "ok": true,
+          "query": {
+            "cmd": [
+              "nvidia-smi",
+              "--query-gpu=name,memory.used,memory.total",
+              "--format=csv,noheader,nounits"
+            ],
+            "returncode": 0,
+            "stderr": "",
+            "stdout": "NVIDIA GeForce RTX 5090, 3482, 32607\n"
+          }
+        },
+        "running_total_bytes": 470837664,
+        "shape": [
+          44,
+          198,
+          477
+        ],
+        "wall_s": 0.004273382000064885
+      },
+      {
+        "bytes": 755568,
+        "dtype": "float64",
+        "field": "ustar",
+        "nvidia_smi_after_field": {
+          "memory_total_bytes": 34190917632,
+          "memory_total_mib": 32607,
+          "memory_used_bytes": 3651141632,
+          "memory_used_mib": 3482,
+          "name": "NVIDIA GeForce RTX 5090",
+          "ok": true,
+          "query": {
+            "cmd": [
+              "nvidia-smi",
+              "--query-gpu=name,memory.used,memory.total",
+              "--format=csv,noheader,nounits"
+            ],
+            "returncode": 0,
+            "stderr": "",
+            "stdout": "NVIDIA GeForce RTX 5090, 3482, 32607\n"
+          }
+        },
+        "running_total_bytes": 471593232,
+        "shape": [
+          198,
+          477
+        ],
+        "wall_s": 0.0008587860002080561
+      },
+      {
+        "bytes": 755568,
+        "dtype": "float64",
+        "field": "theta_flux",
+        "nvidia_smi_after_field": {
+          "memory_total_bytes": 34190917632,
+          "memory_total_mib": 32607,
+          "memory_used_bytes": 3651141632,
+          "memory_used_mib": 3482,
+          "name": "NVIDIA GeForce RTX 5090",
+          "ok": true,
+          "query": {
+            "cmd": [
+              "nvidia-smi",
+              "--query-gpu=name,memory.used,memory.total",
+              "--format=csv,noheader,nounits"
+            ],
+            "returncode": 0,
+            "stderr": "",
+            "stdout": "NVIDIA GeForce RTX 5090, 3482, 32607\n"
+          }
+        },
+        "running_total_bytes": 472348800,
+        "shape": [
+          198,
+          477
+        ],
+        "wall_s": 0.0007609750000483473
+      },
+      {
+        "bytes": 755568,
+        "dtype": "float64",
+        "field": "qv_flux",
+        "nvidia_smi_after_field": {
+          "memory_total_bytes": 34190917632,
+          "memory_total_mib": 32607,
+          "memory_used_bytes": 3651141632,
+          "memory_used_mib": 3482,
+          "name": "NVIDIA GeForce RTX 5090",
+          "ok": true,
+          "query": {
+            "cmd": [
+              "nvidia-smi",
+              "--query-gpu=name,memory.used,memory.total",
+              "--format=csv,noheader,nounits"
+            ],
+            "returncode": 0,
+            "stderr": "",
+            "stdout": "NVIDIA GeForce RTX 5090, 3482, 32607\n"
+          }
+        },
+        "running_total_bytes": 473104368,
+        "shape": [
+          198,
+          477
+        ],
+        "wall_s": 0.001079028000276594
+      },
+      {
+        "bytes": 755568,
+        "dtype": "float64",
+        "field": "tau_u",
+        "nvidia_smi_after_field": {
+          "memory_total_bytes": 34190917632,
+          "memory_total_mib": 32607,
+          "memory_used_bytes": 3651141632,
+          "memory_used_mib": 3482,
+          "name": "NVIDIA GeForce RTX 5090",
+          "ok": true,
+          "query": {
+            "cmd": [
+              "nvidia-smi",
+              "--query-gpu=name,memory.used,memory.total",
+              "--format=csv,noheader,nounits"
+            ],
+            "returncode": 0,
+            "stderr": "",
+            "stdout": "NVIDIA GeForce RTX 5090, 3482, 32607\n"
+          }
+        },
+        "running_total_bytes": 473859936,
+        "shape": [
+          198,
+          477
+        ],
+        "wall_s": 0.0007354150002356619
+      },
+      {
+        "bytes": 755568,
+        "dtype": "float64",
+        "field": "tau_v",
+        "nvidia_smi_after_field": {
+          "memory_total_bytes": 34190917632,
+          "memory_total_mib": 32607,
+          "memory_used_bytes": 3651141632,
+          "memory_used_mib": 3482,
+          "name": "NVIDIA GeForce RTX 5090",
+          "ok": true,
+          "query": {
+            "cmd": [
+              "nvidia-smi",
+              "--query-gpu=name,memory.used,memory.total",
+              "--format=csv,noheader,nounits"
+            ],
+            "returncode": 0,
+            "stderr": "",
+            "stdout": "NVIDIA GeForce RTX 5090, 3482, 32607\n"
+          }
+        },
+        "running_total_bytes": 474615504,
+        "shape": [
+          198,
+          477
+        ],
+        "wall_s": 0.0008775569995123078
+      },
+      {
+        "bytes": 755568,
+        "dtype": "float64",
+        "field": "rhosfc",
+        "nvidia_smi_after_field": {
+          "memory_total_bytes": 34190917632,
+          "memory_total_mib": 32607,
+          "memory_used_bytes": 3651141632,
+          "memory_used_mib": 3482,
+          "name": "NVIDIA GeForce RTX 5090",
+          "ok": true,
+          "query": {
+            "cmd": [
+              "nvidia-smi",
+              "--query-gpu=name,memory.used,memory.total",
+              "--format=csv,noheader,nounits"
+            ],
+            "returncode": 0,
+            "stderr": "",
+            "stdout": "NVIDIA GeForce RTX 5090, 3482, 32607\n"
+          }
+        },
+        "running_total_bytes": 475371072,
+        "shape": [
+          198,
+          477
+        ],
+        "wall_s": 0.0006561650006915443
+      },
+      {
+        "bytes": 755568,
+        "dtype": "float64",
+        "field": "fltv",
+        "nvidia_smi_after_field": {
+          "memory_total_bytes": 34190917632,
+          "memory_total_mib": 32607,
+          "memory_used_bytes": 3651141632,
+          "memory_used_mib": 3482,
+          "name": "NVIDIA GeForce RTX 5090",
+          "ok": true,
+          "query": {
+            "cmd": [
+              "nvidia-smi",
+              "--query-gpu=name,memory.used,memory.total",
+              "--format=csv,noheader,nounits"
+            ],
+            "returncode": 0,
+            "stderr": "",
+            "stdout": "NVIDIA GeForce RTX 5090, 3482, 32607\n"
+          }
+        },
+        "running_total_bytes": 476126640,
+        "shape": [
+          198,
+          477
+        ],
+        "wall_s": 0.0008944660003180616
+      },
+      {
+        "bytes": 755568,
+        "dtype": "float64",
+        "field": "t_skin",
+        "nvidia_smi_after_field": {
+          "memory_total_bytes": 34190917632,
+          "memory_total_mib": 32607,
+          "memory_used_bytes": 3651141632,
+          "memory_used_mib": 3482,
+          "name": "NVIDIA GeForce RTX 5090",
+          "ok": true,
+          "query": {
+            "cmd": [
+              "nvidia-smi",
+              "--query-gpu=name,memory.used,memory.total",
+              "--format=csv,noheader,nounits"
+            ],
+            "returncode": 0,
+            "stderr": "",
+            "stdout": "NVIDIA GeForce RTX 5090, 3482, 32607\n"
+          }
+        },
+        "running_total_bytes": 476882208,
+        "shape": [
+          198,
+          477
+        ],
+        "wall_s": 0.000739795999834314
+      },
+      {
+        "bytes": 755568,
+        "dtype": "float64",
+        "field": "soil_moisture",
+        "nvidia_smi_after_field": {
+          "memory_total_bytes": 34190917632,
+          "memory_total_mib": 32607,
+          "memory_used_bytes": 3651141632,
+          "memory_used_mib": 3482,
+          "name": "NVIDIA GeForce RTX 5090",
+          "ok": true,
+          "query": {
+            "cmd": [
+              "nvidia-smi",
+              "--query-gpu=name,memory.used,memory.total",
+              "--format=csv,noheader,nounits"
+            ],
+            "returncode": 0,
+            "stderr": "",
+            "stdout": "NVIDIA GeForce RTX 5090, 3482, 32607\n"
+          }
+        },
+        "running_total_bytes": 477637776,
+        "shape": [
+          198,
+          477
+        ],
+        "wall_s": 0.0012827489999835961
+      },
+      {
+        "bytes": 377784,
+        "dtype": "float32",
+        "field": "xland",
+        "nvidia_smi_after_field": {
+          "memory_total_bytes": 34190917632,
+          "memory_total_mib": 32607,
+          "memory_used_bytes": 3651141632,
+          "memory_used_mib": 3482,
+          "name": "NVIDIA GeForce RTX 5090",
+          "ok": true,
+          "query": {
+            "cmd": [
+              "nvidia-smi",
+              "--query-gpu=name,memory.used,memory.total",
+              "--format=csv,noheader,nounits"
+            ],
+            "returncode": 0,
+            "stderr": "",
+            "stdout": "NVIDIA GeForce RTX 5090, 3482, 32607\n"
+          }
+        },
+        "running_total_bytes": 478015560,
+        "shape": [
+          198,
+          477
+        ],
+        "wall_s": 0.028960702999938803
+      },
+      {
+        "bytes": 377784,
+        "dtype": "float32",
+        "field": "lakemask",
+        "nvidia_smi_after_field": {
+          "memory_total_bytes": 34190917632,
+          "memory_total_mib": 32607,
+          "memory_used_bytes": 3651141632,
+          "memory_used_mib": 3482,
+          "name": "NVIDIA GeForce RTX 5090",
+          "ok": true,
+          "query": {
+            "cmd": [
+              "nvidia-smi",
+              "--query-gpu=name,memory.used,memory.total",
+              "--format=csv,noheader,nounits"
+            ],
+            "returncode": 0,
+            "stderr": "",
+            "stdout": "NVIDIA GeForce RTX 5090, 3482, 32607\n"
+          }
+        },
+        "running_total_bytes": 478393344,
+        "shape": [
+          198,
+          477
+        ],
+        "wall_s": 0.0016575520003243582
+      },
+      {
+        "bytes": 377784,
+        "dtype": "float32",
+        "field": "mavail",
+        "nvidia_smi_after_field": {
+          "memory_total_bytes": 34190917632,
+          "memory_total_mib": 32607,
+          "memory_used_bytes": 3651141632,
+          "memory_used_mib": 3482,
+          "name": "NVIDIA GeForce RTX 5090",
+          "ok": true,
+          "query": {
+            "cmd": [
+              "nvidia-smi",
+              "--query-gpu=name,memory.used,memory.total",
+              "--format=csv,noheader,nounits"
+            ],
+            "returncode": 0,
+            "stderr": "",
+            "stdout": "NVIDIA GeForce RTX 5090, 3482, 32607\n"
+          }
+        },
+        "running_total_bytes": 478771128,
+        "shape": [
+          198,
+          477
+        ],
+        "wall_s": 0.0016727319998608436
+      },
+      {
+        "bytes": 755568,
+        "dtype": "float64",
+        "field": "roughness_m",
+        "nvidia_smi_after_field": {
+          "memory_total_bytes": 34190917632,
+          "memory_total_mib": 32607,
+          "memory_used_bytes": 3651141632,
+          "memory_used_mib": 3482,
+          "name": "NVIDIA GeForce RTX 5090",
+          "ok": true,
+          "query": {
+            "cmd": [
+              "nvidia-smi",
+              "--query-gpu=name,memory.used,memory.total",
+              "--format=csv,noheader,nounits"
+            ],
+            "returncode": 0,
+            "stderr": "",
+            "stdout": "NVIDIA GeForce RTX 5090, 3482, 32607\n"
+          }
+        },
+        "running_total_bytes": 479526696,
+        "shape": [
+          198,
+          477
+        ],
+        "wall_s": 0.0008061160006036516
+      },
+      {
+        "bytes": 755568,
+        "dtype": "float64",
+        "field": "rain_acc",
+        "nvidia_smi_after_field": {
+          "memory_total_bytes": 34190917632,
+          "memory_total_mib": 32607,
+          "memory_used_bytes": 3651141632,
+          "memory_used_mib": 3482,
+          "name": "NVIDIA GeForce RTX 5090",
+          "ok": true,
+          "query": {
+            "cmd": [
+              "nvidia-smi",
+              "--query-gpu=name,memory.used,memory.total",
+              "--format=csv,noheader,nounits"
+            ],
+            "returncode": 0,
+            "stderr": "",
+            "stdout": "NVIDIA GeForce RTX 5090, 3482, 32607\n"
+          }
+        },
+        "running_total_bytes": 480282264,
+        "shape": [
+          198,
+          477
+        ],
+        "wall_s": 0.0010329169999749865
+      },
+      {
+        "bytes": 755568,
+        "dtype": "float64",
+        "field": "snow_acc",
+        "nvidia_smi_after_field": {
+          "memory_total_bytes": 34190917632,
+          "memory_total_mib": 32607,
+          "memory_used_bytes": 3651141632,
+          "memory_used_mib": 3482,
+          "name": "NVIDIA GeForce RTX 5090",
+          "ok": true,
+          "query": {
+            "cmd": [
+              "nvidia-smi",
+              "--query-gpu=name,memory.used,memory.total",
+              "--format=csv,noheader,nounits"
+            ],
+            "returncode": 0,
+            "stderr": "",
+            "stdout": "NVIDIA GeForce RTX 5090, 3482, 32607\n"
+          }
+        },
+        "running_total_bytes": 481037832,
+        "shape": [
+          198,
+          477
+        ],
+        "wall_s": 0.0008197359993573627
+      },
+      {
+        "bytes": 755568,
+        "dtype": "float64",
+        "field": "graupel_acc",
+        "nvidia_smi_after_field": {
+          "memory_total_bytes": 34190917632,
+          "memory_total_mib": 32607,
+          "memory_used_bytes": 3651141632,
+          "memory_used_mib": 3482,
+          "name": "NVIDIA GeForce RTX 5090",
+          "ok": true,
+          "query": {
+            "cmd": [
+              "nvidia-smi",
+              "--query-gpu=name,memory.used,memory.total",
+              "--format=csv,noheader,nounits"
+            ],
+            "returncode": 0,
+            "stderr": "",
+            "stdout": "NVIDIA GeForce RTX 5090, 3482, 32607\n"
+          }
+        },
+        "running_total_bytes": 481793400,
+        "shape": [
+          198,
+          477
+        ],
+        "wall_s": 0.002511629000764515
+      },
+      {
+        "bytes": 755568,
+        "dtype": "float64",
+        "field": "ice_acc",
+        "nvidia_smi_after_field": {
+          "memory_total_bytes": 34190917632,
+          "memory_total_mib": 32607,
+          "memory_used_bytes": 3651141632,
+          "memory_used_mib": 3482,
+          "name": "NVIDIA GeForce RTX 5090",
+          "ok": true,
+          "query": {
+            "cmd": [
+              "nvidia-smi",
+              "--query-gpu=name,memory.used,memory.total",
+              "--format=csv,noheader,nounits"
+            ],
+            "returncode": 0,
+            "stderr": "",
+            "stdout": "NVIDIA GeForce RTX 5090, 3482, 32607\n"
+          }
+        },
+        "running_total_bytes": 482548968,
+        "shape": [
+          198,
+          477
+        ],
+        "wall_s": 0.000746534999962023
+      },
+      {
+        "bytes": 336512,
+        "dtype": "float32",
+        "field": "u_bdy",
+        "nvidia_smi_after_field": {
+          "memory_total_bytes": 34190917632,
+          "memory_total_mib": 32607,
+          "memory_used_bytes": 3651141632,
+          "memory_used_mib": 3482,
+          "name": "NVIDIA GeForce RTX 5090",
+          "ok": true,
+          "query": {
+            "cmd": [
+              "nvidia-smi",
+              "--query-gpu=name,memory.used,memory.total",
+              "--format=csv,noheader,nounits"
+            ],
+            "returncode": 0,
+            "stderr": "",
+            "stdout": "NVIDIA GeForce RTX 5090, 3482, 32607\n"
+          }
+        },
+        "running_total_bytes": 482885480,
+        "shape": [
+          1,
+          4,
+          44,
+          478
+        ],
+        "wall_s": 0.03713906299981318
+      },
+      {
+        "bytes": 336512,
+        "dtype": "float32",
+        "field": "v_bdy",
+        "nvidia_smi_after_field": {
+          "memory_total_bytes": 34190917632,
+          "memory_total_mib": 32607,
+          "memory_used_bytes": 3651141632,
+          "memory_used_mib": 3482,
+          "name": "NVIDIA GeForce RTX 5090",
+          "ok": true,
+          "query": {
+            "cmd": [
+              "nvidia-smi",
+              "--query-gpu=name,memory.used,memory.total",
+              "--format=csv,noheader,nounits"
+            ],
+            "returncode": 0,
+            "stderr": "",
+            "stdout": "NVIDIA GeForce RTX 5090, 3482, 32607\n"
+          }
+        },
+        "running_total_bytes": 483221992,
+        "shape": [
+          1,
+          4,
+          44,
+          478
+        ],
+        "wall_s": 0.0014870699997118209
+      },
+      {
+        "bytes": 336512,
+        "dtype": "float32",
+        "field": "theta_bdy",
+        "nvidia_smi_after_field": {
+          "memory_total_bytes": 34190917632,
+          "memory_total_mib": 32607,
+          "memory_used_bytes": 3651141632,
+          "memory_used_mib": 3482,
+          "name": "NVIDIA GeForce RTX 5090",
+          "ok": true,
+          "query": {
+            "cmd": [
+              "nvidia-smi",
+              "--query-gpu=name,memory.used,memory.total",
+              "--format=csv,noheader,nounits"
+            ],
+            "returncode": 0,
+            "stderr": "",
+            "stdout": "NVIDIA GeForce RTX 5090, 3482, 32607\n"
+          }
+        },
+        "running_total_bytes": 483558504,
+        "shape": [
+          1,
+          4,
+          44,
+          478
+        ],
+        "wall_s": 0.0011313079994579311
+      },
+      {
+        "bytes": 336512,
+        "dtype": "float32",
+        "field": "qv_bdy",
+        "nvidia_smi_after_field": {
+          "memory_total_bytes": 34190917632,
+          "memory_total_mib": 32607,
+          "memory_used_bytes": 3651141632,
+          "memory_used_mib": 3482,
+          "name": "NVIDIA GeForce RTX 5090",
+          "ok": true,
+          "query": {
+            "cmd": [
+              "nvidia-smi",
+              "--query-gpu=name,memory.used,memory.total",
+              "--format=csv,noheader,nounits"
+            ],
+            "returncode": 0,
+            "stderr": "",
+            "stdout": "NVIDIA GeForce RTX 5090, 3482, 32607\n"
+          }
+        },
+        "running_total_bytes": 483895016,
+        "shape": [
+          1,
+          4,
+          44,
+          478
+        ],
+        "wall_s": 0.0025559290006640367
+      },
+      {
+        "bytes": 688320,
+        "dtype": "float64",
+        "field": "ph_bdy",
+        "nvidia_smi_after_field": {
+          "memory_total_bytes": 34190917632,
+          "memory_total_mib": 32607,
+          "memory_used_bytes": 3651141632,
+          "memory_used_mib": 3482,
+          "name": "NVIDIA GeForce RTX 5090",
+          "ok": true,
+          "query": {
+            "cmd": [
+              "nvidia-smi",
+              "--query-gpu=name,memory.used,memory.total",
+              "--format=csv,noheader,nounits"
+            ],
+            "returncode": 0,
+            "stderr": "",
+            "stdout": "NVIDIA GeForce RTX 5090, 3482, 32607\n"
+          }
+        },
+        "running_total_bytes": 484583336,
+        "shape": [
+          1,
+          4,
+          45,
+          478
+        ],
+        "wall_s": 0.029013441999268252
+      },
+      {
+        "bytes": 15296,
+        "dtype": "float64",
+        "field": "mu_bdy",
+        "nvidia_smi_after_field": {
+          "memory_total_bytes": 34190917632,
+          "memory_total_mib": 32607,
+          "memory_used_bytes": 3651141632,
+          "memory_used_mib": 3482,
+          "name": "NVIDIA GeForce RTX 5090",
+          "ok": true,
+          "query": {
+            "cmd": [
+              "nvidia-smi",
+              "--query-gpu=name,memory.used,memory.total",
+              "--format=csv,noheader,nounits"
+            ],
+            "returncode": 0,
+            "stderr": "",
+            "stdout": "NVIDIA GeForce RTX 5090, 3482, 32607\n"
+          }
+        },
+        "running_total_bytes": 484598632,
+        "shape": [
+          1,
+          4,
+          1,
+          478
+        ],
+        "wall_s": 0.027722232999622065
+      }
+    ],
+    "grid": {
+      "dx_m": 1000.0,
+      "dy_m": 1000.0,
+      "mass_shape": [
+        44,
+        198,
+        477
+      ]
+    },
+    "resident_bytes": {
+      "grid_metric_bytes": 8332800,
+      "state_bytes": 484598632,
+      "tendency_bytes": 168610464,
+      "total_known_resident_bytes": 661541896
+    },
+    "sampler": {
+      "peak_memory_used_bytes": 3651141632,
+      "peak_memory_used_mib": 3482.0,
+      "sample_count": 7,
+      "samples": [
+        {
+          "memory_total_bytes": 34190917632,
+          "memory_total_mib": 32607,
+          "memory_used_bytes": 2711617536,
+          "memory_used_mib": 2586,
+          "name": "NVIDIA GeForce RTX 5090",
+          "ok": true,
+          "query": {
+            "cmd": [
+              "nvidia-smi",
+              "--query-gpu=name,memory.used,memory.total",
+              "--format=csv,noheader,nounits"
+            ],
+            "returncode": 0,
+            "stderr": "",
+            "stdout": "NVIDIA GeForce RTX 5090, 2586, 32607\n"
+          },
+          "timestamp_s": 1779841089.3036287
+        },
+        {
+          "memory_total_bytes": 34190917632,
+          "memory_total_mib": 32607,
+          "memory_used_bytes": 2845835264,
+          "memory_used_mib": 2714,
+          "name": "NVIDIA GeForce RTX 5090",
+          "ok": true,
+          "query": {
+            "cmd": [
+              "nvidia-smi",
+              "--query-gpu=name,memory.used,memory.total",
+              "--format=csv,noheader,nounits"
+            ],
+            "returncode": 0,
+            "stderr": "",
+            "stdout": "NVIDIA GeForce RTX 5090, 2714, 32607\n"
+          },
+          "timestamp_s": 1779841089.5203476
+        },
+        {
+          "memory_total_bytes": 34190917632,
+          "memory_total_mib": 32607,
+          "memory_used_bytes": 3114270720,
+          "memory_used_mib": 2970,
+          "name": "NVIDIA GeForce RTX 5090",
+          "ok": true,
+          "query": {
+            "cmd": [
+              "nvidia-smi",
+              "--query-gpu=name,memory.used,memory.total",
+              "--format=csv,noheader,nounits"
+            ],
+            "returncode": 0,
+            "stderr": "",
+            "stdout": "NVIDIA GeForce RTX 5090, 2970, 32607\n"
+          },
+          "timestamp_s": 1779841089.7357247
+        },
+        {
+          "memory_total_bytes": 34190917632,
+          "memory_total_mib": 32607,
+          "memory_used_bytes": 3651141632,
+          "memory_used_mib": 3482,
+          "name": "NVIDIA GeForce RTX 5090",
+          "ok": true,
+          "query": {
+            "cmd": [
+              "nvidia-smi",
+              "--query-gpu=name,memory.used,memory.total",
+              "--format=csv,noheader,nounits"
+            ],
+            "returncode": 0,
+            "stderr": "",
+            "stdout": "NVIDIA GeForce RTX 5090, 3482, 32607\n"
+          },
+          "timestamp_s": 1779841089.9518363
+        },
+        {
+          "memory_total_bytes": 34190917632,
+          "memory_total_mib": 32607,
+          "memory_used_bytes": 3651141632,
+          "memory_used_mib": 3482,
+          "name": "NVIDIA GeForce RTX 5090",
+          "ok": true,
+          "query": {
+            "cmd": [
+              "nvidia-smi",
+              "--query-gpu=name,memory.used,memory.total",
+              "--format=csv,noheader,nounits"
+            ],
+            "returncode": 0,
+            "stderr": "",
+            "stdout": "NVIDIA GeForce RTX 5090, 3482, 32607\n"
+          },
+          "timestamp_s": 1779841090.1717007
+        },
+        {
+          "memory_total_bytes": 34190917632,
+          "memory_total_mib": 32607,
+          "memory_used_bytes": 3651141632,
+          "memory_used_mib": 3482,
+          "name": "NVIDIA GeForce RTX 5090",
+          "ok": true,
+          "query": {
+            "cmd": [
+              "nvidia-smi",
+              "--query-gpu=name,memory.used,memory.total",
+              "--format=csv,noheader,nounits"
+            ],
+            "returncode": 0,
+            "stderr": "",
+            "stdout": "NVIDIA GeForce RTX 5090, 3482, 32607\n"
+          },
+          "timestamp_s": 1779841090.3881996
+        },
+        {
+          "memory_total_bytes": 34190917632,
+          "memory_total_mib": 32607,
+          "memory_used_bytes": 3651141632,
+          "memory_used_mib": 3482,
+          "name": "NVIDIA GeForce RTX 5090",
+          "ok": true,
+          "query": {
+            "cmd": [
+              "nvidia-smi",
+              "--query-gpu=name,memory.used,memory.total",
+              "--format=csv,noheader,nounits"
+            ],
+            "returncode": 0,
+            "stderr": "",
+            "stdout": "NVIDIA GeForce RTX 5090, 3482, 32607\n"
+          },
+          "timestamp_s": 1779841090.478636
+        }
+      ]
+    },
+    "status": "PASS"
+  },
+  "gen2_nested_build_replay_case": {
+    "after": {
+      "jax_memory_stats": {
+        "device": "cuda:0",
+        "ok": true,
+        "raw_keys": [
+          "bytes_in_use",
+          "bytes_limit",
+          "bytes_reserved",
+          "largest_alloc_size",
+          "largest_free_block_bytes",
+          "num_allocs",
+          "peak_bytes_in_use",
+          "peak_bytes_reserved",
+          "peak_pool_bytes",
+          "pool_bytes"
+        ],
+        "stats": {
+          "bytes_in_use": 87731968,
+          "bytes_limit": 25248645120,
+          "bytes_reserved": 0,
+          "largest_alloc_size": 2222848,
+          "largest_free_block_bytes": 0,
+          "num_allocs": 846,
+          "peak_bytes_in_use": 108508160,
+          "peak_bytes_reserved": 0,
+          "peak_pool_bytes": 132120576,
+          "pool_bytes": 132120576
+        }
+      },
+      "nvidia_smi": {
+        "memory_total_bytes": 34190917632,
+        "memory_total_mib": 32607,
+        "memory_used_bytes": 2711617536,
+        "memory_used_mib": 2586,
+        "name": "NVIDIA GeForce RTX 5090",
+        "ok": true,
+        "query": {
+          "cmd": [
+            "nvidia-smi",
+            "--query-gpu=name,memory.used,memory.total",
+            "--format=csv,noheader,nounits"
+          ],
+          "returncode": 0,
+          "stderr": "",
+          "stdout": "NVIDIA GeForce RTX 5090, 2586, 32607\n"
+        }
+      }
+    },
+    "domain": "d04",
+    "grid": {
+      "dx_m": 1000.0,
+      "dy_m": 1000.0,
+      "mass_shape": [
+        44,
+        60,
+        69
+      ],
+      "wrf_staggered_extent": [
+        45,
+        61,
+        70
+      ]
+    },
+    "note": "This proves the existing Gen2 1 km nest loader path, but the full-domain audit uses the derived 3 km -> 1 km shape.",
+    "resident_bytes": {
+      "grid_metric_bytes": 372768,
+      "state_bytes": 23871264,
+      "tendency_bytes": 7408464,
+      "total_known_resident_bytes": 31652496
+    },
+    "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T072630Z",
+    "status": "PASS"
+  },
+  "status": "PASS"
+}
