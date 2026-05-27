@@ -1,0 +1,726 @@
+{
+  "all_finite_check": {
+    "all_finite": true,
+    "field_count": 47,
+    "fields": {
+      "Ng": {
+        "dtype": "float32",
+        "finite": true,
+        "max": 0.0,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "Ni": {
+        "dtype": "float32",
+        "finite": true,
+        "max": 284961.875,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "Nr": {
+        "dtype": "float32",
+        "finite": true,
+        "max": 311.73529052734375,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "Ns": {
+        "dtype": "float32",
+        "finite": true,
+        "max": 0.0,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "fltv": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 0.5192397808731258,
+        "min": -1.8535914856706777,
+        "nonfinite_count": 0,
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "graupel_acc": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 0.0,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "ice_acc": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 0.0,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "lakemask": {
+        "dtype": "float32",
+        "finite": true,
+        "max": 0.0,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "mavail": {
+        "dtype": "float32",
+        "finite": true,
+        "max": 1.0,
+        "min": 0.01736450009047985,
+        "nonfinite_count": 0,
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "mu": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 96729.41145833333,
+        "min": 66812.296875,
+        "nonfinite_count": 0,
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "mu_bdy": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 97142.7734375,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          73,
+          4,
+          1,
+          160
+        ]
+      },
+      "mu_perturbation": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 2286.2421875,
+        "min": 1136.3602463690913,
+        "nonfinite_count": 0,
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "mu_total": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 96729.41145833333,
+        "min": 66812.296875,
+        "nonfinite_count": 0,
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "p": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 101878.2890625,
+        "min": 5225.23779296875,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "p_perturbation": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 2346.0078125,
+        "min": -0.0556640625,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "p_total": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 101878.2890625,
+        "min": 5225.23779296875,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "ph": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 204837.84375,
+        "min": -0.0012689754600027831,
+        "nonfinite_count": 0,
+        "shape": [
+          45,
+          66,
+          159
+        ]
+      },
+      "ph_bdy": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 204760.57291666666,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          73,
+          4,
+          45,
+          160
+        ]
+      },
+      "ph_perturbation": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 9617.65625,
+        "min": -289.0464680989626,
+        "nonfinite_count": 0,
+        "shape": [
+          45,
+          66,
+          159
+        ]
+      },
+      "ph_total": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 204837.84375,
+        "min": -0.0012689754600027831,
+        "nonfinite_count": 0,
+        "shape": [
+          45,
+          66,
+          159
+        ]
+      },
+      "qc": {
+        "dtype": "float32",
+        "finite": true,
+        "max": 0.0003937386500183493,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "qg": {
+        "dtype": "float32",
+        "finite": true,
+        "max": 0.0006123650236986578,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "qi": {
+        "dtype": "float32",
+        "finite": true,
+        "max": 1.594941204530187e-05,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "qke": {
+        "dtype": "float32",
+        "finite": true,
+        "max": 128.87083435058594,
+        "min": 9.999999747378752e-06,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "qr": {
+        "dtype": "float32",
+        "finite": true,
+        "max": 0.0003090635873377323,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "qs": {
+        "dtype": "float32",
+        "finite": true,
+        "max": 0.004520727787166834,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "qv": {
+        "dtype": "float32",
+        "finite": true,
+        "max": 0.01310186181217432,
+        "min": 2.3404254534398206e-06,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "qv_bdy": {
+        "dtype": "float32",
+        "finite": true,
+        "max": 0.015823960304260254,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          73,
+          4,
+          44,
+          160
+        ]
+      },
+      "qv_flux": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 0.0007631690659577341,
+        "min": 1.2643300712941828e-06,
+        "nonfinite_count": 0,
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "rain_acc": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 0.0,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "rhosfc": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 1.1994072773618103,
+        "min": 0.8724868626247538,
+        "nonfinite_count": 0,
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "roughness_m": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 0.13519002990722656,
+        "min": 0.00285,
+        "nonfinite_count": 0,
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "snow_acc": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 0.0,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "soil_moisture": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 1.0,
+        "min": 0.01736450009047985,
+        "nonfinite_count": 0,
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "t_skin": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 311.96539306640625,
+        "min": 285.86798095703125,
+        "nonfinite_count": 0,
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "tau_u": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 10.602542760332385,
+        "min": -8.490310165506019,
+        "nonfinite_count": 0,
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "tau_v": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 6.560557352276518,
+        "min": -8.318461600917523,
+        "nonfinite_count": 0,
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "theta": {
+        "dtype": "float32",
+        "finite": true,
+        "max": 492.6715393066406,
+        "min": 291.5322570800781,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "theta_bdy": {
+        "dtype": "float32",
+        "finite": true,
+        "max": 494.138916015625,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          73,
+          4,
+          44,
+          160
+        ]
+      },
+      "theta_flux": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 0.5133271279347346,
+        "min": -1.8690969990959565,
+        "nonfinite_count": 0,
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "u": {
+        "dtype": "float32",
+        "finite": true,
+        "max": 55.990047454833984,
+        "min": -70.18179321289062,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          66,
+          160
+        ]
+      },
+      "u_bdy": {
+        "dtype": "float32",
+        "finite": true,
+        "max": 25.886476516723633,
+        "min": -11.809823989868164,
+        "nonfinite_count": 0,
+        "shape": [
+          73,
+          4,
+          44,
+          160
+        ]
+      },
+      "ustar": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 3.277117761968849,
+        "min": 0.012843984966284796,
+        "nonfinite_count": 0,
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "v": {
+        "dtype": "float32",
+        "finite": true,
+        "max": 48.044471740722656,
+        "min": -47.329811096191406,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          67,
+          159
+        ]
+      },
+      "v_bdy": {
+        "dtype": "float32",
+        "finite": true,
+        "max": 14.716999053955078,
+        "min": -15.964210510253906,
+        "nonfinite_count": 0,
+        "shape": [
+          73,
+          4,
+          44,
+          160
+        ]
+      },
+      "w": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 0.202228400122453,
+        "min": -0.2738195117462926,
+        "nonfinite_count": 0,
+        "shape": [
+          45,
+          66,
+          159
+        ]
+      },
+      "xland": {
+        "dtype": "float32",
+        "finite": true,
+        "max": 2.0,
+        "min": 1.0,
+        "nonfinite_count": 0,
+        "shape": [
+          66,
+          159
+        ]
+      }
+    }
+  },
+  "cpu_affinity": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "device": "cuda:0",
+  "domain": "d02",
+  "hours": 24,
+  "metadata": {
+    "boundary": {
+      "child_domain": "d02",
+      "child_grid": {
+        "dx_m": 3000.0,
+        "dy_m": 3000.0,
+        "mass_shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "child_history_file_count": 73,
+      "nesting": {
+        "horizontal_interpolation": "bilinear on native WRF parent index coordinates",
+        "i_parent_start": 24,
+        "j_parent_start": 20,
+        "parent_grid_ratio": 3
+      },
+      "padded_side_length": 160,
+      "parent_domain": "d01",
+      "parent_grid": {
+        "dx_m": 9000.0,
+        "dy_m": 9000.0,
+        "mass_shape": [
+          44,
+          59,
+          93
+        ]
+      },
+      "parent_history_file_count": 73,
+      "schema": "nested-parent-side-pack-v1",
+      "side_order": [
+        "W",
+        "E",
+        "S",
+        "N"
+      ],
+      "source": "Gen2 L2 parent-domain hourly wrfout nested interpolation",
+      "source_run_dir": "/mnt/data/canairy_meteo/runs/wrf_l2/20260525_18z_l2_72h_20260526T221207Z",
+      "times": 73
+    },
+    "domain": "d02",
+    "grid": {
+      "dx_m": 3000.0,
+      "dy_m": 3000.0,
+      "mass_shape": [
+        44,
+        66,
+        159
+      ],
+      "wrf_staggered_extent": [
+        45,
+        67,
+        160
+      ]
+    },
+    "l2_replay_adapter": {
+      "actual_mass_shape_yx": [
+        66,
+        159
+      ],
+      "boundary_source": "parent d01 hourly wrfout interpolated to child d02 side strips",
+      "domain": "d02",
+      "expected_mass_shape_yx": [
+        66,
+        159
+      ],
+      "ic_source": "wrfout snapshot at t=0 plus wrfinput metrics/land state",
+      "parent_domain": "d01"
+    },
+    "namelist": {
+      "acoustic_substeps": 10,
+      "dt_s": 10.0,
+      "radiation_cadence_steps": 999999,
+      "rk_order": 3,
+      "run_boundary": true,
+      "run_physics": true,
+      "use_vertical_solver": true
+    },
+    "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l2/20260525_18z_l2_72h_20260526T221207Z",
+    "run_id": "20260525_18z_l2_72h_20260526T221207Z",
+    "source": "gpuwrf.integration.d02_replay.build_l2_d02_replay_case"
+  },
+  "output_dir": "/tmp/m7_pipeline_runs/l2_d02_20260525_18z_l2_72h_20260526T221207Z",
+  "repeatability_status": "NOT_RUN",
+  "restart_probe_status": "NOT_RUN",
+  "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l2/20260525_18z_l2_72h_20260526T221207Z",
+  "run_id": "20260525_18z_l2_72h_20260526T221207Z",
+  "run_start_utc": "2026-05-25T18:00:00+00:00",
+  "schema": "M7DailyPipelineRun",
+  "schema_version": 1,
+  "speedup_status": "PASS",
+  "station_score_summary": {
+    "acceptance": {
+      "finite_scores": false,
+      "joined_rows_at_least_100": false
+    },
+    "joined_rows": 0,
+    "scores": {},
+    "status": "NOT_RUN"
+  },
+  "verdict": "PIPELINE_PARTIAL",
+  "wall_clock_forecast_only_s": 245.38321175600504,
+  "wall_clock_per_forecast_hour_s": 11.693617639833368,
+  "wall_clock_per_hour_s": [
+    66.30768048699974,
+    53.88939991599909,
+    5.669132652001281,
+    5.668749240001489,
+    5.72708775099818,
+    5.676468396999553,
+    5.688848709000013,
+    5.688967719001084,
+    5.7170432370003255,
+    5.72380716599946,
+    5.689448972996615,
+    5.692997899001057,
+    5.666828916000668,
+    5.692324453997571,
+    5.703849639001419,
+    5.667456880000827,
+    5.6769498200010275,
+    5.662101699999766,
+    5.666677614000946,
+    5.6955606670017005,
+    5.710805151000386,
+    5.71572072699928,
+    5.700762046002637,
+    5.684541996000917
+  ],
+  "wall_clock_total_s": 280.6468233560008,
+  "wrfout_files": [
+    "/tmp/m7_pipeline_runs/l2_d02_20260525_18z_l2_72h_20260526T221207Z/wrfout_d02_2026-05-25_19:00:00",
+    "/tmp/m7_pipeline_runs/l2_d02_20260525_18z_l2_72h_20260526T221207Z/wrfout_d02_2026-05-25_20:00:00",
+    "/tmp/m7_pipeline_runs/l2_d02_20260525_18z_l2_72h_20260526T221207Z/wrfout_d02_2026-05-25_21:00:00",
+    "/tmp/m7_pipeline_runs/l2_d02_20260525_18z_l2_72h_20260526T221207Z/wrfout_d02_2026-05-25_22:00:00",
+    "/tmp/m7_pipeline_runs/l2_d02_20260525_18z_l2_72h_20260526T221207Z/wrfout_d02_2026-05-25_23:00:00",
+    "/tmp/m7_pipeline_runs/l2_d02_20260525_18z_l2_72h_20260526T221207Z/wrfout_d02_2026-05-26_00:00:00",
+    "/tmp/m7_pipeline_runs/l2_d02_20260525_18z_l2_72h_20260526T221207Z/wrfout_d02_2026-05-26_01:00:00",
+    "/tmp/m7_pipeline_runs/l2_d02_20260525_18z_l2_72h_20260526T221207Z/wrfout_d02_2026-05-26_02:00:00",
+    "/tmp/m7_pipeline_runs/l2_d02_20260525_18z_l2_72h_20260526T221207Z/wrfout_d02_2026-05-26_03:00:00",
+    "/tmp/m7_pipeline_runs/l2_d02_20260525_18z_l2_72h_20260526T221207Z/wrfout_d02_2026-05-26_04:00:00",
+    "/tmp/m7_pipeline_runs/l2_d02_20260525_18z_l2_72h_20260526T221207Z/wrfout_d02_2026-05-26_05:00:00",
+    "/tmp/m7_pipeline_runs/l2_d02_20260525_18z_l2_72h_20260526T221207Z/wrfout_d02_2026-05-26_06:00:00",
+    "/tmp/m7_pipeline_runs/l2_d02_20260525_18z_l2_72h_20260526T221207Z/wrfout_d02_2026-05-26_07:00:00",
+    "/tmp/m7_pipeline_runs/l2_d02_20260525_18z_l2_72h_20260526T221207Z/wrfout_d02_2026-05-26_08:00:00",
+    "/tmp/m7_pipeline_runs/l2_d02_20260525_18z_l2_72h_20260526T221207Z/wrfout_d02_2026-05-26_09:00:00",
+    "/tmp/m7_pipeline_runs/l2_d02_20260525_18z_l2_72h_20260526T221207Z/wrfout_d02_2026-05-26_10:00:00",
+    "/tmp/m7_pipeline_runs/l2_d02_20260525_18z_l2_72h_20260526T221207Z/wrfout_d02_2026-05-26_11:00:00",
+    "/tmp/m7_pipeline_runs/l2_d02_20260525_18z_l2_72h_20260526T221207Z/wrfout_d02_2026-05-26_12:00:00",
+    "/tmp/m7_pipeline_runs/l2_d02_20260525_18z_l2_72h_20260526T221207Z/wrfout_d02_2026-05-26_13:00:00",
+    "/tmp/m7_pipeline_runs/l2_d02_20260525_18z_l2_72h_20260526T221207Z/wrfout_d02_2026-05-26_14:00:00",
+    "/tmp/m7_pipeline_runs/l2_d02_20260525_18z_l2_72h_20260526T221207Z/wrfout_d02_2026-05-26_15:00:00",
+    "/tmp/m7_pipeline_runs/l2_d02_20260525_18z_l2_72h_20260526T221207Z/wrfout_d02_2026-05-26_16:00:00",
+    "/tmp/m7_pipeline_runs/l2_d02_20260525_18z_l2_72h_20260526T221207Z/wrfout_d02_2026-05-26_17:00:00",
+    "/tmp/m7_pipeline_runs/l2_d02_20260525_18z_l2_72h_20260526T221207Z/wrfout_d02_2026-05-26_18:00:00"
+  ],
+  "wrfout_inventory_status": "PASS"
+}

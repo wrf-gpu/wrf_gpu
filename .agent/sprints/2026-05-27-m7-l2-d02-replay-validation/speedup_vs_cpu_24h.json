@@ -1,0 +1,28 @@
+{
+  "cpu_baseline": {
+    "cpu_wall_24h_s": 2041.0792866666666,
+    "domain_id": 2,
+    "mean_step_wall_s": 0.14174161712962963,
+    "median_model_step_s": 6.0,
+    "median_step_wall_s": 0.13428,
+    "method": "mean WRF per-step Timing for main on d02 multiplied by 24h step count",
+    "record_count": 86400,
+    "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l2/20260525_18z_l2_72h_20260526T221207Z",
+    "source_files": [
+      "/mnt/data/canairy_meteo/runs/wrf_l2/20260525_18z_l2_72h_20260526T221207Z/rsl.error.0000",
+      "/mnt/data/canairy_meteo/runs/wrf_l2/20260525_18z_l2_72h_20260526T221207Z/rsl.out.0000"
+    ],
+    "status": "PASS",
+    "steps_per_24h": 14400
+  },
+  "note": "CPU denominator is derived from existing Gen2 WRF logs for the contracted run. Pipeline wall includes IC load, hourly GPU forecast calls, wrfout writes, inventory, and scoring.",
+  "pipeline_wall_24h_s": 280.6468233560008,
+  "schema": "M7DailyPipelineSpeedupVsCpu24h",
+  "schema_version": 1,
+  "speedup": 7.272768179804249,
+  "status": "PASS",
+  "target_speedup_band": [
+    4.0,
+    8.0
+  ]
+}
