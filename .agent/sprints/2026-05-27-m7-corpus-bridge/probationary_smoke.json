@@ -1,0 +1,191 @@
+{
+  "M7_close_class": "probationary",
+  "artifact_type": "m7_tier4_rmse_corpus_bridge",
+  "corpus_gate": "BLOCKED_CORPUS",
+  "corpus_size_class": "bounded",
+  "created_utc": "2026-05-27T01:54:06+00:00",
+  "domain": "d02",
+  "ending_cycle": "20260525_18z",
+  "finite_rmse_record_count": 6,
+  "heldout_cycle_excluded": "20260519_18z",
+  "leads_h": [
+    1
+  ],
+  "member_count": 3,
+  "member_split": {
+    "available": [
+      {
+        "advertised_hours": 24,
+        "created": "20260522T133443Z",
+        "cycle": "20260521_18z",
+        "domain": "d02",
+        "grid_shape_yx": [
+          66,
+          159
+        ],
+        "history_count": 25,
+        "level": "l3",
+        "path": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
+        "run_id": "20260521_18z_l3_24h_20260522T133443Z"
+      },
+      {
+        "advertised_hours": 72,
+        "created": "20260525T225640Z",
+        "cycle": "20260524_18z",
+        "domain": "d02",
+        "grid_shape_yx": [
+          66,
+          159
+        ],
+        "history_count": 73,
+        "level": "l2",
+        "path": "/mnt/data/canairy_meteo/runs/wrf_l2/20260524_18z_l2_72h_20260525T225640Z",
+        "run_id": "20260524_18z_l2_72h_20260525T225640Z"
+      },
+      {
+        "advertised_hours": 24,
+        "created": "20260525T225640Z",
+        "cycle": "20260524_18z",
+        "domain": "d02",
+        "grid_shape_yx": [
+          66,
+          159
+        ],
+        "history_count": 25,
+        "level": "l3",
+        "path": "/mnt/data/canairy_meteo/runs/wrf_l3/20260524_18z_l3_24h_20260525T225640Z",
+        "run_id": "20260524_18z_l3_24h_20260525T225640Z"
+      }
+    ],
+    "available_count": 3,
+    "selected": [
+      {
+        "advertised_hours": 24,
+        "created": "20260522T133443Z",
+        "cycle": "20260521_18z",
+        "domain": "d02",
+        "grid_shape_yx": [
+          66,
+          159
+        ],
+        "history_count": 25,
+        "level": "l3",
+        "path": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
+        "run_id": "20260521_18z_l3_24h_20260522T133443Z"
+      },
+      {
+        "advertised_hours": 72,
+        "created": "20260525T225640Z",
+        "cycle": "20260524_18z",
+        "domain": "d02",
+        "grid_shape_yx": [
+          66,
+          159
+        ],
+        "history_count": 73,
+        "level": "l2",
+        "path": "/mnt/data/canairy_meteo/runs/wrf_l2/20260524_18z_l2_72h_20260525T225640Z",
+        "run_id": "20260524_18z_l2_72h_20260525T225640Z"
+      },
+      {
+        "advertised_hours": 24,
+        "created": "20260525T225640Z",
+        "cycle": "20260524_18z",
+        "domain": "d02",
+        "grid_shape_yx": [
+          66,
+          159
+        ],
+        "history_count": 25,
+        "level": "l3",
+        "path": "/mnt/data/canairy_meteo/runs/wrf_l3/20260524_18z_l3_24h_20260525T225640Z",
+        "run_id": "20260524_18z_l3_24h_20260525T225640Z"
+      }
+    ],
+    "selected_count": 3
+  },
+  "message": "non-operational bridge needs +2 member(s) to reach N=5",
+  "mode": "non_operational",
+  "needed_members": 2,
+  "non_operational": true,
+  "pinned_grid_yx": [
+    66,
+    159
+  ],
+  "required_member_count": 5,
+  "rmse_record_policy": "pairwise corpus smoke against the first selected member; not a production M7 tolerance freeze",
+  "rmse_records": [
+    {
+      "bias": -2.588637752294462,
+      "finite": true,
+      "grid_cell_count": 10494,
+      "lead_h": 1,
+      "member_run_id": "20260524_18z_l2_72h_20260525T225640Z",
+      "record_kind": "pairwise_corpus_smoke",
+      "reference_run_id": "20260521_18z_l3_24h_20260522T133443Z",
+      "rmse": 3.1522013113423752,
+      "variable": "U10"
+    },
+    {
+      "bias": 0.8490299384972124,
+      "finite": true,
+      "grid_cell_count": 10494,
+      "lead_h": 1,
+      "member_run_id": "20260524_18z_l2_72h_20260525T225640Z",
+      "record_kind": "pairwise_corpus_smoke",
+      "reference_run_id": "20260521_18z_l3_24h_20260522T133443Z",
+      "rmse": 2.3603888594029234,
+      "variable": "V10"
+    },
+    {
+      "bias": 0.758461523446806,
+      "finite": true,
+      "grid_cell_count": 10494,
+      "lead_h": 1,
+      "member_run_id": "20260524_18z_l2_72h_20260525T225640Z",
+      "record_kind": "pairwise_corpus_smoke",
+      "reference_run_id": "20260521_18z_l3_24h_20260522T133443Z",
+      "rmse": 1.1709533906584717,
+      "variable": "T2"
+    },
+    {
+      "bias": -2.588636104726013,
+      "finite": true,
+      "grid_cell_count": 10494,
+      "lead_h": 1,
+      "member_run_id": "20260524_18z_l3_24h_20260525T225640Z",
+      "record_kind": "pairwise_corpus_smoke",
+      "reference_run_id": "20260521_18z_l3_24h_20260522T133443Z",
+      "rmse": 3.152199700940652,
+      "variable": "U10"
+    },
+    {
+      "bias": 0.8490250177079218,
+      "finite": true,
+      "grid_cell_count": 10494,
+      "lead_h": 1,
+      "member_run_id": "20260524_18z_l3_24h_20260525T225640Z",
+      "record_kind": "pairwise_corpus_smoke",
+      "reference_run_id": "20260521_18z_l3_24h_20260522T133443Z",
+      "rmse": 2.3603914474545715,
+      "variable": "V10"
+    },
+    {
+      "bias": 0.7584605957636135,
+      "finite": true,
+      "grid_cell_count": 10494,
+      "lead_h": 1,
+      "member_run_id": "20260524_18z_l3_24h_20260525T225640Z",
+      "record_kind": "pairwise_corpus_smoke",
+      "reference_run_id": "20260521_18z_l3_24h_20260522T133443Z",
+      "rmse": 1.1709507804236647,
+      "variable": "T2"
+    }
+  ],
+  "status": "PASS_PROBATIONARY_PENDING",
+  "variables": [
+    "U10",
+    "V10",
+    "T2"
+  ]
+}
