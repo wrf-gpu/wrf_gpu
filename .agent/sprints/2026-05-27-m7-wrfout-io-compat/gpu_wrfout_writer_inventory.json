@@ -1,0 +1,381 @@
+{
+  "container_format": "npz",
+  "container_writer": "numpy.savez",
+  "function": "write_wrfout_gpu",
+  "function_lines": {
+    "end": 1166,
+    "start": 1139
+  },
+  "generated_utc": "2026-05-27T00:15:01+00:00",
+  "missing_hand_metadata": [],
+  "no_gpu_runtime": true,
+  "parse_method": "ast_static_payload_dict_parse",
+  "payload_key_count": 20,
+  "payload_keys": [
+    "U",
+    "V",
+    "W",
+    "T",
+    "QVAPOR",
+    "P",
+    "PH",
+    "MU",
+    "U10",
+    "V10",
+    "T2",
+    "Q2",
+    "UST",
+    "HFX_KIN",
+    "QFX_KIN",
+    "lead_hours",
+    "mass_shape",
+    "wrf_staggered_extent",
+    "run_start_label",
+    "container_note"
+  ],
+  "schema": "m7_gpu_wrfout_writer_inventory_v1",
+  "source_file": "/tmp/wrf_gpu2_iocompat/src/gpuwrf/coupling/driver.py",
+  "variables": {
+    "HFX_KIN": {
+      "container_format": "npz",
+      "dimensions": [
+        "south_north",
+        "west_east"
+      ],
+      "dtype": "float32",
+      "netcdf_dimensions_present": false,
+      "note": "GPU-only kinematic heat-flux diagnostic; WRF HFX is W m-2.",
+      "semantic_agreement": false,
+      "source_expression": "np.asarray(jax.device_get(surface.fluxes.theta_flux), dtype=np.float32)",
+      "source_fields": [
+        "surface.fluxes.theta_flux"
+      ],
+      "time_dimension_present": false,
+      "units": "K m s-1"
+    },
+    "MU": {
+      "container_format": "npz",
+      "dimensions": [
+        "south_north",
+        "west_east"
+      ],
+      "dtype": "float32",
+      "netcdf_dimensions_present": false,
+      "note": "Current State.mu is aligned with mu_total; WRF MU is perturbation dry-column mass and MUB is omitted.",
+      "semantic_agreement": false,
+      "source_expression": "np.asarray(jax.device_get(state.mu), dtype=np.float32)",
+      "source_fields": [
+        "state.mu"
+      ],
+      "time_dimension_present": false,
+      "units": "Pa"
+    },
+    "P": {
+      "container_format": "npz",
+      "dimensions": [
+        "bottom_top",
+        "south_north",
+        "west_east"
+      ],
+      "dtype": "float32",
+      "netcdf_dimensions_present": false,
+      "note": "Current State.p is aligned with p_total; WRF P is perturbation pressure and PB is omitted.",
+      "semantic_agreement": false,
+      "source_expression": "np.asarray(jax.device_get(state.p), dtype=np.float32)",
+      "source_fields": [
+        "state.p"
+      ],
+      "time_dimension_present": false,
+      "units": "Pa"
+    },
+    "PH": {
+      "container_format": "npz",
+      "dimensions": [
+        "bottom_top_stag",
+        "south_north",
+        "west_east"
+      ],
+      "dtype": "float32",
+      "netcdf_dimensions_present": false,
+      "note": "Current State.ph is aligned with ph_total; WRF PH is perturbation geopotential and PHB is omitted.",
+      "semantic_agreement": false,
+      "source_expression": "np.asarray(jax.device_get(state.ph), dtype=np.float32)",
+      "source_fields": [
+        "state.ph"
+      ],
+      "time_dimension_present": false,
+      "units": "m2 s-2"
+    },
+    "Q2": {
+      "container_format": "npz",
+      "dimensions": [
+        "south_north",
+        "west_east"
+      ],
+      "dtype": "float32",
+      "netcdf_dimensions_present": false,
+      "note": "Surface diagnostic present; Time dimension and NetCDF attributes omitted.",
+      "semantic_agreement": true,
+      "source_expression": "np.asarray(jax.device_get(surface.q2), dtype=np.float32)",
+      "source_fields": [
+        "surface.q2"
+      ],
+      "time_dimension_present": false,
+      "units": "kg kg-1"
+    },
+    "QFX_KIN": {
+      "container_format": "npz",
+      "dimensions": [
+        "south_north",
+        "west_east"
+      ],
+      "dtype": "float32",
+      "netcdf_dimensions_present": false,
+      "note": "GPU-only kinematic moisture-flux diagnostic; WRF QFX uses mass flux units.",
+      "semantic_agreement": false,
+      "source_expression": "np.asarray(jax.device_get(surface.fluxes.qv_flux), dtype=np.float32)",
+      "source_fields": [
+        "surface.fluxes.qv_flux"
+      ],
+      "time_dimension_present": false,
+      "units": "kg kg-1 m s-1"
+    },
+    "QVAPOR": {
+      "container_format": "npz",
+      "dimensions": [
+        "bottom_top",
+        "south_north",
+        "west_east"
+      ],
+      "dtype": "float32",
+      "netcdf_dimensions_present": false,
+      "note": "WRF-shaped water-vapor field; writer omits Time dimension and NetCDF metadata.",
+      "semantic_agreement": true,
+      "source_expression": "np.asarray(jax.device_get(state.qv), dtype=np.float32)",
+      "source_fields": [
+        "state.qv"
+      ],
+      "time_dimension_present": false,
+      "units": "kg kg-1"
+    },
+    "T": {
+      "container_format": "npz",
+      "dimensions": [
+        "bottom_top",
+        "south_north",
+        "west_east"
+      ],
+      "dtype": "float32",
+      "netcdf_dimensions_present": false,
+      "note": "Writes state.theta - 300 K, matching WRF perturbation-theta convention; Time dimension omitted.",
+      "semantic_agreement": true,
+      "source_expression": "np.asarray(jax.device_get(state.theta - P0_THETA_OFFSET_K), dtype=np.float32)",
+      "source_fields": [
+        "state.theta"
+      ],
+      "time_dimension_present": false,
+      "units": "K"
+    },
+    "T2": {
+      "container_format": "npz",
+      "dimensions": [
+        "south_north",
+        "west_east"
+      ],
+      "dtype": "float32",
+      "netcdf_dimensions_present": false,
+      "note": "Surface diagnostic present; Time dimension and NetCDF attributes omitted.",
+      "semantic_agreement": true,
+      "source_expression": "np.asarray(jax.device_get(surface.t2), dtype=np.float32)",
+      "source_fields": [
+        "surface.t2"
+      ],
+      "time_dimension_present": false,
+      "units": "K"
+    },
+    "U": {
+      "container_format": "npz",
+      "dimensions": [
+        "bottom_top",
+        "south_north",
+        "west_east_stag"
+      ],
+      "dtype": "float32",
+      "netcdf_dimensions_present": false,
+      "note": "WRF-shaped staggered U array; writer omits Time dimension and NetCDF metadata.",
+      "semantic_agreement": true,
+      "source_expression": "np.asarray(jax.device_get(state.u), dtype=np.float32)",
+      "source_fields": [
+        "state.u"
+      ],
+      "time_dimension_present": false,
+      "units": "m s-1"
+    },
+    "U10": {
+      "container_format": "npz",
+      "dimensions": [
+        "south_north",
+        "west_east"
+      ],
+      "dtype": "float32",
+      "netcdf_dimensions_present": false,
+      "note": "Surface diagnostic present; Time dimension and NetCDF attributes omitted.",
+      "semantic_agreement": true,
+      "source_expression": "np.asarray(jax.device_get(surface.u10), dtype=np.float32)",
+      "source_fields": [
+        "surface.u10"
+      ],
+      "time_dimension_present": false,
+      "units": "m s-1"
+    },
+    "UST": {
+      "container_format": "npz",
+      "dimensions": [
+        "south_north",
+        "west_east"
+      ],
+      "dtype": "float32",
+      "netcdf_dimensions_present": false,
+      "note": "Surface friction velocity present; Time dimension and NetCDF attributes omitted.",
+      "semantic_agreement": true,
+      "source_expression": "np.asarray(jax.device_get(surface.fluxes.ustar), dtype=np.float32)",
+      "source_fields": [
+        "surface.fluxes.ustar"
+      ],
+      "time_dimension_present": false,
+      "units": "m s-1"
+    },
+    "V": {
+      "container_format": "npz",
+      "dimensions": [
+        "bottom_top",
+        "south_north_stag",
+        "west_east"
+      ],
+      "dtype": "float32",
+      "netcdf_dimensions_present": false,
+      "note": "WRF-shaped staggered V array; writer omits Time dimension and NetCDF metadata.",
+      "semantic_agreement": true,
+      "source_expression": "np.asarray(jax.device_get(state.v), dtype=np.float32)",
+      "source_fields": [
+        "state.v"
+      ],
+      "time_dimension_present": false,
+      "units": "m s-1"
+    },
+    "V10": {
+      "container_format": "npz",
+      "dimensions": [
+        "south_north",
+        "west_east"
+      ],
+      "dtype": "float32",
+      "netcdf_dimensions_present": false,
+      "note": "Surface diagnostic present; Time dimension and NetCDF attributes omitted.",
+      "semantic_agreement": true,
+      "source_expression": "np.asarray(jax.device_get(surface.v10), dtype=np.float32)",
+      "source_fields": [
+        "surface.v10"
+      ],
+      "time_dimension_present": false,
+      "units": "m s-1"
+    },
+    "W": {
+      "container_format": "npz",
+      "dimensions": [
+        "bottom_top_stag",
+        "south_north",
+        "west_east"
+      ],
+      "dtype": "float32",
+      "netcdf_dimensions_present": false,
+      "note": "WRF-shaped staggered W array; writer omits Time dimension and NetCDF metadata.",
+      "semantic_agreement": true,
+      "source_expression": "np.asarray(jax.device_get(state.w), dtype=np.float32)",
+      "source_fields": [
+        "state.w"
+      ],
+      "time_dimension_present": false,
+      "units": "m s-1"
+    },
+    "container_note": {
+      "container_format": "npz",
+      "dimensions": [],
+      "dtype": "str",
+      "netcdf_dimensions_present": false,
+      "note": "GPU-only string metadata documenting the NPZ container.",
+      "semantic_agreement": false,
+      "source_expression": "np.asarray('npz proof container; dimensions match WRF variable staggering')",
+      "source_fields": [
+        "literal"
+      ],
+      "time_dimension_present": false,
+      "units": ""
+    },
+    "lead_hours": {
+      "container_format": "npz",
+      "dimensions": [],
+      "dtype": "float32",
+      "netcdf_dimensions_present": false,
+      "note": "GPU-only scalar metadata replacing WRF Times/XTIME.",
+      "semantic_agreement": false,
+      "source_expression": "np.asarray(float(lead_hours), dtype=np.float32)",
+      "source_fields": [
+        "lead_hours"
+      ],
+      "time_dimension_present": false,
+      "units": "h"
+    },
+    "mass_shape": {
+      "container_format": "npz",
+      "dimensions": [
+        "shape_component"
+      ],
+      "dtype": "int32",
+      "netcdf_dimensions_present": false,
+      "note": "GPU-only shape metadata.",
+      "semantic_agreement": false,
+      "source_expression": "np.asarray([grid.nz, grid.ny, grid.nx], dtype=np.int32)",
+      "source_fields": [
+        "grid.nz",
+        "grid.ny",
+        "grid.nx"
+      ],
+      "time_dimension_present": false,
+      "units": "1"
+    },
+    "run_start_label": {
+      "container_format": "npz",
+      "dimensions": [],
+      "dtype": "str",
+      "netcdf_dimensions_present": false,
+      "note": "GPU-only string metadata replacing WRF Times/XTIME.",
+      "semantic_agreement": false,
+      "source_expression": "np.asarray(run_start_label)",
+      "source_fields": [
+        "run_start_label"
+      ],
+      "time_dimension_present": false,
+      "units": ""
+    },
+    "wrf_staggered_extent": {
+      "container_format": "npz",
+      "dimensions": [
+        "shape_component"
+      ],
+      "dtype": "int32",
+      "netcdf_dimensions_present": false,
+      "note": "GPU-only shape metadata.",
+      "semantic_agreement": false,
+      "source_expression": "np.asarray([grid.nz + 1, grid.ny + 1, grid.nx + 1], dtype=np.int32)",
+      "source_fields": [
+        "grid.nz + 1",
+        "grid.ny + 1",
+        "grid.nx + 1"
+      ],
+      "time_dimension_present": false,
+      "units": "1"
+    }
+  },
+  "writer_summary": "compact WRF-shaped NumPy proof container, not NetCDF wrfout"
+}
