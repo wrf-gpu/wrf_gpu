@@ -24,6 +24,8 @@ from netCDF4 import Dataset
 
 from gpuwrf.integration.d02_replay import build_replay_case
 from gpuwrf.io.data_inventory import parse_wrfout_valid_time
+from gpuwrf.io.gen2_accessor import Gen2Run
+from gpuwrf.io.land_state import load_hourly_land_state
 from gpuwrf.io.wrfout_writer import MINIMUM_WRFOUT_VARIABLES, write_wrfout_netcdf
 from gpuwrf.profiling.transfer_audit import block_until_ready, visible_gpu_name
 from gpuwrf.runtime.checkpoint import read_checkpoint, write_checkpoint
@@ -40,7 +42,7 @@ from gpuwrf.validation.forecast_vs_obs import (
 ROOT = Path(__file__).resolve().parents[3]
 SPRINT_DIR = ROOT / ".agent" / "sprints" / "2026-05-27-m7-daily-pipeline-integration"
 RUN_ROOT = Path("/mnt/data/canairy_meteo/runs/wrf_l3")
-DEFAULT_RUN_ID = "20260521_18z_l3_24h_20260522T072630Z"
+DEFAULT_RUN_ID = "20260521_18z_l3_24h_20260522T133443Z"
 DEFAULT_OUTPUT_ROOT = Path("/tmp/m7_pipeline_runs/20260521")
 DT_S = 10.0
 CPU_TIMING_RE = re.compile(
@@ -74,6 +76,7 @@ class DailyPipelineConfig:
     dt_s: float = DT_S
     acoustic_substeps: int = 10
     radiation_cadence_steps: int = 180
+    refresh_land_state_hourly: bool = True
 
 
 @dataclass(frozen=True)
@@ -232,6 +235,32 @@ def _default_forecast_fn(state: Any, namelist: Any, hours: float) -> Any:
     return result
 
 
+def _refresh_hourly_land_state(state: Any, run_dir: Path, domain: str, hour: int) -> tuple[Any, dict[str, Any]]:
+    if not hasattr(state, "replace"):
+        return state, {"status": "SKIPPED", "reason": "state has no replace method", "hour": int(hour)}
+    land = load_hourly_land_state(Gen2Run(run_dir), domain=domain, time=int(hour))
+    top_soil = land.soil_moisture[0] if getattr(land.soil_moisture, "ndim", 0) == 3 else land.soil_moisture
+    updates = {
+        "t_skin": land.t_skin,
+        "soil_moisture": top_soil,
+        "xland": land.xland,
+        "lakemask": land.lakemask,
+        "mavail": land.mavail,
+        "roughness_m": land.roughness_m,
+    }
+    available = {name: value for name, value in updates.items() if hasattr(state, name)}
+    refreshed = state.replace(**available)
+    return refreshed, {
+        "status": "PASS",
+        "hour": int(hour),
+        "source_file": land.source.get("source_file"),
+        "requested_time_index": land.source.get("requested_time_index"),
+        "time_index": land.source.get("time_index"),
+        "fields_refreshed": sorted(available),
+        "full_hourly_payload": ["TSK", "SST", "SMOIS", "SH2O", "TSLB"],
+    }
+
+
 def _run_forecast_sequence(
     config: DailyPipelineConfig,
     *,
@@ -251,6 +280,7 @@ def _run_forecast_sequence(
     files: list[Path] = []
     per_hour_wall_s: list[float] = []
     checkpoint_payload: dict[str, Any] | None = None
+    land_refresh_records: list[dict[str, Any]] = []
 
     for hour in range(1, int(config.hours) + 1):
         start = time.perf_counter()
@@ -269,6 +299,22 @@ def _run_forecast_sequence(
                     "output_files_before_failure": [str(path) for path in files],
                 },
             )
+
+        if bool(config.refresh_land_state_hourly) and case.metadata.get("source") == "gpuwrf.integration.d02_replay.build_replay_case":
+            state, land_record = _refresh_hourly_land_state(state, run_dir, config.domain, hour)
+            land_refresh_records.append(land_record)
+            summary = finite_summary(state)
+            if not summary["all_finite"]:
+                raise PipelineBlocked(
+                    f"nonfinite model state after land-state refresh hour {hour}",
+                    {
+                        "failure_mode": "NONFINITE_LAND_STATE_REFRESH",
+                        "failed_hour": int(hour),
+                        "finite_summary": summary,
+                        "land_refresh_record": land_record,
+                        "output_files_before_failure": [str(path) for path in files],
+                    },
+                )
 
         valid_time = case.run_start + timedelta(hours=hour)
         wrfout = output_dir / _wrfout_name(valid_time, config.domain)
@@ -301,6 +347,12 @@ def _run_forecast_sequence(
                 "restored": True,
             }
 
+    metadata = dict(case.metadata)
+    metadata["land_state_refresh"] = {
+        "enabled": bool(config.refresh_land_state_hourly),
+        "cadence": "hourly forecast output boundary",
+        "records": land_refresh_records,
+    }
     return ForecastSequenceResult(
         status="PASS",
         run_id=config.run_id,
@@ -311,7 +363,7 @@ def _run_forecast_sequence(
         per_hour_wall_s=per_hour_wall_s,
         final_state=state,
         run_start=case.run_start,
-        metadata=case.metadata,
+        metadata=metadata,
         finite_summary=finite_summary(state),
         checkpoint=checkpoint_payload,
     )
