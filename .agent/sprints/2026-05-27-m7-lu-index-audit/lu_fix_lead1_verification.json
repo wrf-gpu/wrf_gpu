@@ -1,0 +1,137 @@
+{
+  "improvement_assessment": "No LU improvement claim: the required fix is blocked by file ownership and the fresh one-hour probe still emits land cells as category 2.",
+  "lead1_fields": {
+    "HFX": {
+      "cpu_mean": 10.356302599765312,
+      "finite_count": 10494,
+      "gpu_mean": 23.605942160930013,
+      "mae": 17.177195342734795,
+      "max_abs_diff": 986.8938541412354,
+      "mean_diff": 13.249639561164702,
+      "rmse": 65.25587803869163,
+      "shape": [
+        66,
+        159
+      ],
+      "status": "OK"
+    },
+    "LH": {
+      "cpu_mean": 85.3189115797948,
+      "finite_count": 10494,
+      "gpu_mean": 103.95932654655614,
+      "mae": 28.524423812431777,
+      "max_abs_diff": 360.98781394958496,
+      "mean_diff": 18.640414966761337,
+      "rmse": 49.63153068467333,
+      "shape": [
+        66,
+        159
+      ],
+      "status": "OK"
+    },
+    "LU_INDEX": {
+      "cpu_mean": 16.551743853630647,
+      "finite_count": 10494,
+      "gpu_mean": 15.902229845626072,
+      "mae": 0.649514008004574,
+      "max_abs_diff": 14.0,
+      "mean_diff": -0.649514008004574,
+      "rmse": 2.6447426372532217,
+      "shape": [
+        66,
+        159
+      ],
+      "status": "OK"
+    },
+    "PBLH": {
+      "cpu_mean": 387.1298316408844,
+      "finite_count": 10494,
+      "gpu_mean": 0.0,
+      "mae": 387.1298316408844,
+      "max_abs_diff": 756.0424194335938,
+      "mean_diff": -387.1298316408844,
+      "rmse": 426.1624730221864,
+      "shape": [
+        66,
+        159
+      ],
+      "status": "OK"
+    },
+    "T2": {
+      "cpu_mean": 293.38805935399654,
+      "finite_count": 10494,
+      "gpu_mean": 292.3560362565579,
+      "mae": 1.7823119064456103,
+      "max_abs_diff": 29.339935302734375,
+      "mean_diff": -1.0320230974386777,
+      "rmse": 2.5727235046813717,
+      "shape": [
+        66,
+        159
+      ],
+      "status": "OK"
+    }
+  },
+  "lu_index": {
+    "cell_count": 10494,
+    "classification": "CATEGORICAL_COLLAPSE_TO_LAND_WATER_DEFAULT",
+    "cpu_distribution": {
+      "10": 251,
+      "13": 15,
+      "16": 255,
+      "17": 9726,
+      "5": 164,
+      "9": 83
+    },
+    "cpu_reference_path": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d02_2026-05-21_19:00:00",
+    "cpu_wrfinput_equals_cpu_wrfout": true,
+    "cpu_wrfinput_path": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfinput_d02",
+    "diagnosis": "GPU LU_INDEX is 2 on every land cell and 17 on water; Gen2 preserves wrfinput categories 5/9/10/13/16/17.",
+    "diff_distribution_gpu_minus_cpu": {
+      "-11": 15,
+      "-14": 255,
+      "-3": 164,
+      "-7": 83,
+      "-8": 251,
+      "0": 9726
+    },
+    "gpu_distribution": {
+      "17": 9726,
+      "2": 768
+    },
+    "gpu_path": "/tmp/m7_pipeline_runs/20260521/wrfout_d02_2026-05-21_19:00:00",
+    "land_cell_count": 768,
+    "land_mismatch_count": 768,
+    "land_mismatch_fraction": 1.0,
+    "max_abs_diff": 14.0,
+    "mean_diff_gpu_minus_cpu": -0.649514008004574,
+    "mismatch_count": 768,
+    "mismatch_fraction": 0.07318467695826186,
+    "schema": "M7LuIndexDiffSummary",
+    "schema_version": 1,
+    "shape": [
+      66,
+      159
+    ],
+    "water_cell_count": 9726,
+    "water_mismatch_count": 0,
+    "water_mismatch_fraction": 0.0
+  },
+  "pipeline_probe": {
+    "command": "PYTHONPATH=src taskset -c 0-3 python scripts/m7_daily_pipeline.py --run-id 20260521_18z_l3_24h_20260522T133443Z --hours 1 --output-dir /tmp/m7_lu_index_audit_20260521 --proof-dir .agent/sprints/2026-05-27-m7-lu-index-audit",
+    "cpu_reference": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d02_2026-05-21_19:00:00",
+    "exit_code": 2,
+    "gpu_wrfout": "/tmp/m7_lu_index_audit_20260521/wrfout_d02_2026-05-21_19:00:00",
+    "note": "script exits 2 for PIPELINE_PARTIAL when optional score/restart/repeat probes are not requested; the one-hour wrfout was emitted."
+  },
+  "proof_objects": [
+    ".agent/sprints/2026-05-27-m7-lu-index-audit/lu_index_source_audit.md",
+    ".agent/sprints/2026-05-27-m7-lu-index-audit/lu_index_diff_map.nc",
+    ".agent/sprints/2026-05-27-m7-lu-index-audit/lu_index_diff_summary.json"
+  ],
+  "reason": "land_state.py loads the correct Gen2 LU_INDEX categories, but State/wrfout emission drops lu_index and those files are outside this worker contract.",
+  "schema": "M7LuIndexFixLead1Verification",
+  "schema_version": 1,
+  "status": "BLOCKED_NO_OWNED_END_TO_END_FIX",
+  "verdict": "BLOCKED"
+}
