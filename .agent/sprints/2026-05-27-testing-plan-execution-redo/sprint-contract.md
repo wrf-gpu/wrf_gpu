@@ -32,7 +32,7 @@ The full spec is in `.agent/sprints/2026-05-27-testing-plan-critique/test_plan_r
 7. STABILITY-ACOUSTIC-SUBSTEP-SWEEP
 8. DETERMINISM-REPEAT (with JAX_DETERMINISTIC_OPS if needed)
 9. SAVEPOINT-PARITY-DEEP
-10. CANARY-MULTIDAY-SIDE-BY-SIDE (≥14 days; per-variable thresholds — T2 expected to FAIL ±20%)
+10. CANARY-MULTIDAY-SIDE-BY-SIDE (**5 days**, per-user direction 2026-05-27; per-variable thresholds — T2 expected to FAIL ±20%). The user explicitly said: "just do 5 canary days, that will suffice for the message: Equivalence and benchmark." Pick 5 contiguous or representative days from the 34 available in `/mnt/data/canairy_meteo/runs/wrf_l3/`. Budget cut from 4.0 → ~1.4 GPU-hours.
 
 Reuse the existing `scripts/pubtest_*.py` orchestrators. The previous sprint scaffolded them but every GPU branch returned BLOCKED. **This sprint actually runs the GPU branch.**
 
@@ -44,7 +44,7 @@ Opportunistic MEDIUM-priority bonuses if budget allows:
 
 - **AC1-AC10** per-test proof object at `.agent/sprints/2026-05-27-testing-plan-execution-redo/<test_id_lowercase>.json` with REAL verdicts (PASS / FAIL / SKIP_<reason>). No BLOCKED stubs.
 
-- **AC11 — Real GPU usage**: total GPU-hours used recorded in `aggregate_report.md` (must be >0; the previous sprint's `0.0` is the trigger for re-dispatch).
+- **AC11 — Real GPU usage**: total GPU-hours used recorded in `aggregate_report.md` (must be >0; the previous sprint's `0.0` is the trigger for re-dispatch). Revised budget per user direction: **14.8 GPU-hours HIGH** (was 17.4 — CANARY cut from 14 days to 5 days saves 2.6 hours).
 
 - **AC12 — Invariant preservation**: 20260521 multi-step step-2 bitwise 0.0, B6 savepoint parity, restart bitwise, D2H/H2D = 0. These already-merged guardrails must still hold. Confirm with the existing pytest suite + the existing proof JSONs.
 
