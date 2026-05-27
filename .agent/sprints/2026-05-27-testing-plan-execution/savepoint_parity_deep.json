@@ -1,0 +1,50 @@
+{
+  "current_b6_evidence": {
+    "exists": true,
+    "outcome": "SEVENTH-COUPLED-STEP-PARITY-ACHIEVED",
+    "passed": true,
+    "path": "/tmp/wrf_gpu2_testexec/.agent/sprints/2026-05-25-m6b6-coupled-step-parity/proof_coupled_step_parity.json",
+    "tier_savepoint_counts": {
+      "column": 10,
+      "golden": 10,
+      "patch16": 10
+    }
+  },
+  "generated_utc": "2026-05-27T17:58:46.828636Z",
+  "gpu_hours_used": 0.0,
+  "honesty_note": "The locked B6 10-step parity artifact is PASS, but the revised deep-parity depths were not executed.",
+  "observed_max_depth": 10,
+  "repo_commit": "eb9a13db09cb8b5258db63ace9a2758dd43277a5",
+  "required_depths": [
+    100,
+    1000,
+    10000
+  ],
+  "schema": "PublicationHighPriorityProof",
+  "schema_version": 1,
+  "status": "FAIL_INSUFFICIENT_SAVEPOINT_DEPTH",
+  "test_id": "SAVEPOINT-PARITY-DEEP",
+  "thresholds": {
+    "existing_b6_10_step_parity": {
+      "passed": true,
+      "threshold": "10-step B6 remains PASS as guardrail",
+      "value": 10.0
+    },
+    "step_10000_relative": {
+      "passed": null,
+      "threshold": "<1e-12 relative for all fields",
+      "value": null
+    },
+    "step_1000_relative": {
+      "passed": null,
+      "threshold": "<1e-12 relative for all fields",
+      "value": null
+    },
+    "step_100_bitwise": {
+      "passed": null,
+      "threshold": "max delta 0.0",
+      "value": null
+    }
+  },
+  "verdict": "FAIL"
+}

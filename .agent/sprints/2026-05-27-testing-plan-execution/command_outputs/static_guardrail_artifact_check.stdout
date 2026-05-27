@@ -1,0 +1,3 @@
+static_guardrails_pass=true
+m6b6_depths=column:10,golden:10,patch16:10
+restart_fields=47
