@@ -1,0 +1,1039 @@
+WRF-GPU-Port und agentische KI-Entwicklung
+Executive Summary
+Dieser Brief ist auf eine ehrliche, arXiv-taugliche Positionierung Ihres Projekts ausgerichtet: nicht als
+„noch ein schneller Wetter-Emulator“, sondern als Kombination aus einer physiktreuen, GPU-nativen
+Neuschreibung zentraler WRF-ARW-Bausteine und einer explizit veriﬁzierten Multi-Agenten-
+Entwicklungsmethodik. Das von Ihnen bereitgestellte interne Projektbrieﬁng beschreibt dabei den
+konkreten Untersuchungsgegenstand: eine Clean-Slate-Neuentwicklung in Python + JAX/XLA für eine
+einzelne RTX-5090-Workstation, mit minimaler Physik-Suite, Whole-State-Device-Residency, vertraglich
+ﬁxierten Sprint-Artefakten, ADRs und einer vierstuﬁgen Validierungspyramide; diese projektspeziﬁschen
+Angaben sind intern, nicht extern peer-reviewt, und sollten im Paper als eigene Mess- und
+Methodendaten gekennzeichnet werden. ﬁleciteturn0ﬁle0
+
+
+Die belastbare Literatur stützt vor allem fünf Aussagen. Erstens: WRF-ARW ist ein sehr gut speziﬁzierter
+Referenzkörper mit Euler’schen Flussform-Gleichungen auf Massenkoordinate, zeitgesplittetem RK3
+plus akustischen Subschritten, C-Grid-Staggering, deﬁnierter Lateral-Boundary-Logik und breiter
+Physik-Infrastruktur; damit ist eine „physiktreue Neuschreibung“ wissenschaftlich anschlussfähig.
+Zweitens: In Wetter- und Klimamodellen existiert seit Jahren ein klarer Trend weg von monolithischen
+Legacy-Implementierungen hin zu performance-portablen Abstraktionen und DSLs; GT4Py ist hier die
+engste veriﬁzierbare Python/DSL-Analogie und zeigt auf Single-Node-Stencil-Benchmarks 5–10× GPU-
+vs-CPU für die generierten Backends. Drittens: Moderne ML-Wettermodelle wie GraphCast, Pangu-
+Weather, NeuralGCM, AIFS, FourCastNet, GenCast, Aurora und Stormer zeigen, wie stark die Community
+hohe Geschwindigkeit inzwischen wertschätzt — aber sie bilden eine parallele Forschungslinie und
+sind kein Ersatz für eine WRF-nahe, dynamik- und physiktreue Regionalmodell-Neuschreibung. Viertens:
+Die Literatur zu Code-LLMs und Repo-Agenten liefert inzwischen ein brauchbares Vokabular für Ihre
+Build-Methodik — Codex, Copilot, SWE-bench, SWE-agent, ReAct, Toolformer, Reﬂexion, AutoGen und
+MetaGPT machen „agentische Softwareentwicklung“ zitierfähig. Fünftens: Die größte Gefahr liegt nicht
+in mangelnder Neuheit, sondern in überzogenen Erstheits- und Benchmark-Claims. 1
+
+
+Die beste Positionierung ist deshalb: kein „First-ever“-Papier, sondern ein Paper über einen GPU-
+nativen, auf einer einzelnen Workstation lauﬀähigen, skill-orientiert validierten WRF-ARW-
+Rebuild — plus ein zweites, ebenso wichtiges Resultat: eine beweisobjektbasierte agentische SE-
+Methodik für wissenschaftliche Software. Publikatorisch ist das stark, weil die Kombination aus
+Regional-NWP, JAX/XLA-Implementierung, Null-D2H-Inloop-Architektur, Restart-/Repeatability-Gates und
+explizitem Agenten-Governance-Rahmen in dieser Form in der veriﬁzierten Literaturspur dieses
+Suchlaufs nicht dicht vorbesetzt ist. Gerade deshalb sollten die Claims schmal, präzise und auditierbar
+formuliert werden. ﬁleciteturn0ﬁle0
+
+
+ Kernfrage                          Belastbarer Befund               Publikative Konsequenz
+
+ Ist WRF-ARW als                                                     Sie können „faithful
+ Referenzmodell sauber              Ja, sehr gut.                    reimplementation“ sauber
+ speziﬁziert?                                                        begründen.
+
+ Gibt es GPU-/DSL-Vorläufer im                                       Kein pauschaler „ﬁrst GPU
+                                    Ja.
+ Wetter-/Klimabereich?                                               weather model“-Claim.
+
+
+
+
+                                                    1
+  Kernfrage                          Belastbarer Befund                  Publikative Konsequenz
+
+  Ist Python als                     Ja, insbesondere über GT4Py/
+                                                                         Python ist kein Nachteil, sondern
+  Hochleistungsweg in diesem         DSL- und JAX/XLA-ähnliche
+                                                                         Teil der Story.
+  Feld plausibel?                    Toolchains.
+
+  Ist agentische KI-Entwicklung      Ja, für Muster, Benchmarks          Methodik gehört ins Paper, nicht
+  inzwischen zitierfähig?            und Grenzen.                        nur in ein Blogpost-Appendix.
+
+                                                                         Als interne, reproduzierbare
+  Sind Ihre Performancezahlen        Nein, laut Projektbrieﬁng
+                                                                         Messungen kennzeichnen; kein
+  bereits extern abgesichert?        vorläuﬁg.
+                                                                         Oversell.
+
+Die Tabelle verdichtet die hochkonﬁdenten Schlussfolgerungen dieses Recherchelaufs.          2
+
+
+
+
+Titel und Positionierungsoptionen
+Die stärkste Titelstrategie ist engen Systembeitrag + klare Domäne + nüchterne Methodik. Was
+aktuell am überzeugendsten wirkt, ist nicht ein Titel mit maximaler Sensationsdichte, sondern ein Titel,
+der die doppelte Neuheit sauber trennt: numerische Reimplementierung und agentische
+Entwicklungsgovernance. Das ist auch deshalb wichtig, weil die Literatur zu GraphCast/Pangu/AIFS/
+GenCast/Aurora bereits sehr starke Speed- und Skill-Claims besetzt; Ihr Diﬀerenzierungsraum liegt in
+Regionalmodelltreue, Workstation-Ökonomie und Beweisführung. 3
+
+
+  Kandidat                        Vorteil                  Hauptrisiko               Empfehlung
+
+  A GPU-native JAX/XLA
+                                  Präzise, defensibel,
+  Reimplementation of WRF-                                 Methodikteil kommt        Sehr stark als
+                                  klar technischer
+  ARW for Single-Workstation                               etwas kurz                Standardtitel
+                                  Fokus
+  Regional Forecasting
+
+                                                           „Operationally
+  Operationally Useful
+                                  Hebt Workstation-        useful“ muss mit          Gut, wenn
+  Canary-Islands Forecasting
+                                  und Skill-Nutzen         Ihren Gates sehr          Validierungskapitel
+  on One GPU with a Physics-
+                                  hervor                   sauber deﬁniert           stark ist
+  Faithful WRF-ARW Rewrite
+                                                           werden
+
+  Contracts, Proof Objects,
+  and Forecast Skill: Building    Macht den                Wirkt für                 Gut als
+  a GPU-Native Regional           Methodenbeitrag          Meteorologie-Leser        methodenbetonte
+  Weather Model with Multi-       sichtbar                 leichter „cs.SE-lastig“   Alternative
+  Agent AI
+
+Meine klare Empfehlung ist der erste Titel für die Hauptfassung und der dritte als Untertitel- oder
+Framing-Variante in Abstract und Einleitung. Ihre belastbarste „novelty sentence“ wäre dann
+sinngemäß: We present a GPU-native, JAX/XLA reimplementation of key WRF-ARW dynamics and selected
+physics for single-workstation regional forecasting, together with a contract- and proof-object-based multi-
+agent software engineering methodology. Das ist enger und glaubwürdiger als „ﬁrst AI-authored weather
+model“ oder „ﬁrst operational single-GPU regional NWP“. ﬁleciteturn0ﬁle0
+
+
+Für das arXiv-Framing selbst ist als empfohlene inhaltliche Schwerpunktsetzung eine
+Primärverortung im Atmosphären-/Computational-Physics-Raum mit klarer Nebenadressierung an
+
+
+
+
+                                                      2
+Software Engineering am sinnvollsten. Praktisch heißt das: im Manuskript zuerst Wettermodell,
+Validierung und Skill; anschließend Implementierung und Agentenmethodik. Das wirkt für ein arXiv-
+Publikum glaubwürdiger als die Umkehrung. Diese Empfehlung ist eine inhaltliche Schlussfolgerung
+aus der Quellenlage dieses Recherchelaufs, nicht die Wiedergabe einer speziﬁschen arXiv-Richtlinie.
+ 4
+
+
+
+
+Outline for arXiv paper
+Die überzeugendste Papierstruktur ist eine evidenzgetriebene Argumentkette, in der numerische
+Wettermodellierung und agentische Entwicklungsorganisation gleichrangige, aber klar getrennte
+Beiträge sind. Wichtig ist, dass Sie die Arbeit nicht als WRF-Port, sondern als clean-slate
+reimplementation anchored to WRF-ARW equations and validated against WRF behavior,
+invariants, convergence and ensemble consistency beschreiben — genau diese Trennung ist mit
+Ihrem internen Brieﬁng vereinbar und literaturstrategisch klüger als ein Porting-Narrativ.
+ﬁleciteturn0ﬁle0
+
+
+
+                                                WRF-ARW Referenzkörper
+
+
+
+
+                                                      GPU-native
+                                                  Reimplementation in
+                                                       JAX/XLA
+
+
+
+
+                                Minimalphysik +
+                                                                        Agentische
+                               Whole-state device
+                                                                 Entwicklungsorganisation
+                                   residency
+
+
+
+
+                                                                   Verträge, ADRs, Proof
+                              Validierungspyramide
+                                                                          Objects
+
+
+
+
+                                                                     Reproduzierbare
+                            Forecast skill auf Canary 3
+                                                                   software-engineering
+                                       km
+                                                                        Methodik
+
+
+
+
+                                                    Methodenbeitrag
+
+
+
+
+Eine empfehlenswerte Gliederung ist inhaltlich wie folgt:
+
+
+ Empfohlenes
+                           Was hinein sollte                                Schlüsselliteratur
+ Manuskriptkapitel
+
+                           Problem, Ziel, warum Workstation-
+                                                                            WRF technical note; GT4Py; Code-
+ Einführung                GPU + regionale NWP +
+                                                                            LLM/agent papers
+                           agentische Methodik relevant sind
+
+
+
+
+                                                          3
+  Empfohlenes
+                           Was hinein sollte                       Schlüsselliteratur
+  Manuskriptkapitel
+
+                           ARW-Dynamik, Gitter,
+  Referenzmodell           Zeitintegration, LBCs, relevante        Skamarock et al.
+                           Physik
+
+                           JAX/XLA-Architektur, Device-
+  Systemdesign             Residency, Fusions-/Scan-Idee,          GT4Py, DaCe, JAX/XLA-Kontext
+                           Precision-Policy
+
+                           Mikro-Fixture-Parität, Invarianten,     SWE-agent-ähnliche CI-Disziplin nur
+  Validierung              Kurzlauf/Konvergenz,                    als Methodikrahmen; für NWP v. a.
+                           probabilistische Konsistenz             WRF/AIFS/Veriﬁkationsliteratur
+
+                           Domain, d02-Replay, CPU-                interner Projektbrief + WRF/AIFS
+  Experimente
+                           Baseline, Metriken, Stationscoring      Kontexte
+
+                           Wall-clock, Restart/Repeatability,
+  Ergebnisse                                                       eigene Daten
+                           ﬁnite skill, Unsicherheiten
+
+                           Manager/Worker/Tester/Reviewer,         ReAct, Toolformer, Reﬂexion,
+  Agentische Methodik      Verträge, Proof Objects, ADRs,          AutoGen, MetaGPT, SWE-bench,
+                           Failure modes                           SWE-agent
+
+                           Was dies nicht ist: kein ML-
+                           Emulator, kein                          GraphCast, Pangu, NeuralGCM,
+  Diskussion
+                           Gleichsetzungsclaim mit globalen        AIFS, GenCast, Aurora
+                           AIs
+
+                           Code, Daten, Kompilats,
+  Reproduzierbarkeit                                               FAIR-orientiert, intern gestützt
+                           Hardware, Seeds, Proof-Artifakte
+
+Die Gliederung folgt direkt der stärksten verfügbaren Beweislage: (a) ARW ist zitierbar und formell
+genug, (b) Python/GPU im Wetterbereich ist längst kein Exot mehr, (c) agentische Softwareentwicklung
+ist nun benchmarkbar, und (d) ML-Wettermodelle deﬁnieren das Umfeld, gegen das Sie sich begriﬄich
+abgrenzen müssen. 5
+
+
+Priorisierte Quellen mit annotiertem BibTeX
+Die folgende Bibliographie ist priorisiert: erst die Quellen, die Sie im Paper fast sicher brauchen, dann
+Quellen für Kontext und Methodik. Wo mir in diesem Recherchelauf nur Abstract- oder Referenzlisten-
+Evidenz vorlag, habe ich das im Pointer oﬀengelegt. Alle unten aufgeführten Einträge sind aus diesem
+Lauf veriﬁzierbar; absichtlich nicht aufgenommen habe ich Quellen, die zwar plausibel sind, deren
+exakte bibliographische Form ich hier aber nicht sicher belegen konnte.
+
+
+WRF und ARW-Kern
+
+
+Skamarock2019. Kanonische Speziﬁkation von WRF-ARW v4; zentrale Quelle für Gleichungen,
+Zeitintegration, Gitter, Laterale Randbedingungen und Überblick über Physikoptionen. Pointer: Kap. 2–
+8, besonders 2–6 und 8. 6
+
+
+
+
+                                                    4
+  @techreport{Skamarock2019WRFv4,
+    author    = {William C. Skamarock and Joseph B. Klemp and Jimy Dudhia and
+  David O. Gill and Zhiquan Liu and Judith Berner and Wei Wang and Jordan G.
+  Powers and Michael G. Duda and Dale M. Barker and Xiang-Yu Huang},
+    title     = {A Description of the Advanced Research WRF Model Version 4},
+    institution = {National Center for Atmospheric Research},
+    number     = {NCAR/TN-556+STR},
+    year      = {2019},
+    url       = {https://www2.mmm.ucar.edu/wrf/users/docs/technote/
+  v4_technote.pdf}
+  }
+
+
+Skamarock2008WRFv3. Historischer Vorläufer; nützlich, wenn Sie Kontinuität der ARW-Formulierung
+oder Zitierpraxis über Versionen hinweg zeigen wollen. Pointer: Gesamtwerk; im Lauf nur die PDF-
+Existenz veriﬁziert. 7
+
+
+
+  @techreport{Skamarock2008WRFv3,
+    author    = {William C. Skamarock and Joseph B. Klemp and Jimy Dudhia and
+  David O. Gill and Dale M. Barker and Wei Wang and Jordan G. Powers},
+    title     = {A Description of the Advanced Research WRF Version 3},
+    institution = {National Center for Atmospheric Research},
+    year      = {2008},
+    url       = {https://www2.mmm.ucar.edu/wrf/users/docs/technote/
+  v3_technote.pdf}
+  }
+
+
+Fredj2023ADIOS2WRF. Zeigt, dass Modernisierung in Legacy-WRF real ist, aber im hier belegten Fall
+primär I/O betriﬀt; sehr nützlich, um Ihren „Rewrite statt punktuelle Optimierung“-Standpunkt zu
+begründen. Pointer: Abstract. 8
+
+
+
+  @article{Fredj2023ADIOS2WRF,
+    author = {Erick Fredj and Yann Delorme and Sameeh Jubran and Mark
+  Wasserman and Zhaohui Ding and Michael Laufer},
+    title   = {Accelerating WRF I/O Performance with ADIOS2 and Network-based
+  Streaming},
+    journal = {arXiv preprint arXiv:2304.06603},
+    year    = {2023},
+    eprint = {2304.06603},
+    archivePrefix = {arXiv}
+  }
+
+
+ML-Wettermodelle und AIFS-Kontext
+
+
+Lam2023GraphCast. Wichtigste saubere Kontrastfolie: globales ML-Wettermodell, sehr schnell, sehr
+skillstark, aber nicht dieselbe wissenschaftliche Kategorie wie Ihr Projekt. Pointer: Abstract. 9
+
+
+
+
+                                                 5
+  @article{Lam2023GraphCast,
+    author = {Remi Lam and Alvaro Sanchez-Gonzalez and Matthew Willson and
+  Peter Wirnsberger and Meire Fortunato and Ferran Alet and Suman Ravuri and
+  Timo Ewalds and Zach Eaton-Rosen and Weihua Hu and Alexander Merose and
+  Stephan Hoyer and George Holland and Oriol Vinyals and Jacklynn Stott and
+  Alexander Pritzel and Shakir Mohamed and Peter Battaglia},
+    title   = {GraphCast: Learning skillful medium-range global weather
+  forecasting},
+      journal = {arXiv preprint arXiv:2212.12794},
+      year    = {2023},
+      eprint = {2212.12794},
+      archivePrefix = {arXiv}
+  }
+
+
+Bi2022PanguWeather. Zweite Schlüsselfolie im ML-Lager; etabliert den Stand der Kunst für
+datengetriebene globale Vorhersage. Pointer: Abstract. 10
+
+
+
+  @article{Bi2022PanguWeather,
+    author = {Kaifeng Bi and Lingxi Xie and Hengheng Zhang and Xin Chen and
+  Xiaotao Gu and Qi Tian},
+    title   = {Pangu-Weather: A 3D High-Resolution Model for Fast and Accurate
+  Global Weather Forecast},
+    journal = {arXiv preprint arXiv:2211.02556},
+    year    = {2022},
+    eprint = {2211.02556},
+    archivePrefix = {arXiv}
+  }
+
+
+Kochkov2023NeuralGCM. Relevante Hybridreferenz, weil sie ML mit explizitem Simulatorrahmen
+kombiniert und damit am ehesten zeigt, wie „physics + learning“ argumentiert wird. Pointer: Abstract.
+ 11
+
+
+
+
+  @article{Kochkov2023NeuralGCM,
+    author = {Dmitrii Kochkov and Janni Yuval and Ian Langmore and Peter
+  Norgaard and Jamie Smith and Griffin Mooers and Milan Kl{\"o}wer and James
+  Lottes and Stephan Rasp and Peter D{\"u}ben and Sam Hatfield and Peter
+  Battaglia and Alvaro Sanchez-Gonzalez and Matthew Willson and Michael P.
+  Brenner and Stephan Hoyer},
+    title   = {Neural General Circulation Models for Weather and Climate},
+    journal = {arXiv preprint arXiv:2311.07222},
+    year    = {2023},
+    eprint = {2311.07222},
+    archivePrefix = {arXiv}
+  }
+
+
+Lang2024AIFS. Pﬂichtquelle, weil AIFS in Ihrem Projektbrieﬁng als IC/BC-Quelle auftaucht; außerdem
+nützlich, um „AIFS“ formal als ECMWF Artiﬁcial Intelligence Forecasting System zu verankern. Pointer:
+Abstract. 12
+
+
+
+                                                   6
+  @article{Lang2024AIFS,
+    author = {Simon Lang and Mihai Alexe and Matthew Chantry and Jesper
+  Dramsch and Florian Pinault and Baudouin Raoult and Mariana C. A. Clare and
+  Christian Lessig and Michael Maier-Gerber and Linus Magnusson and Zied Ben
+  Bouall{\`e}gue and Ana Prieto Nemesio and Peter D. Dueben and Andrew Brown
+  and Florian Pappenberger and Florence Rabier},
+    title   = {AIFS -- ECMWF's data-driven forecasting system},
+    journal = {arXiv preprint arXiv:2406.01465},
+      year    = {2024},
+      eprint = {2406.01465},
+      archivePrefix = {arXiv}
+  }
+
+
+Price2023GenCast. Wichtig für das probabilistische ML-Wetterlager; besonders brauchbar, um Ihr
+eigenes „probabilistic consistency“-Kapitel sprachlich sauber von ML-Ensamples zu unterscheiden.
+Pointer: Abstract. 13
+
+
+
+  @article{Price2023GenCast,
+    author = {Ilan Price and Alvaro Sanchez-Gonzalez and Ferran Alet and Tom
+  R. Andersson and Andrew El-Kadi and Dominic Masters and Timo Ewalds and
+  Jacklynn Stott and Shakir Mohamed and Peter Battaglia and Remi Lam and
+  Matthew Willson},
+    title   = {GenCast: Diffusion-based ensemble forecasting for medium-range
+  weather},
+    journal = {arXiv preprint arXiv:2312.15796},
+    year    = {2023},
+    eprint = {2312.15796},
+    archivePrefix = {arXiv}
+  }
+
+
+Pathak2022FourCastNet. Relevante Quelle für „GPU- und AI-Performance als Kontext, nicht als direkte
+Konkurrenz“. Pointer: Abstract. 14
+
+
+
+  @article{Pathak2022FourCastNet,
+    author =
+  {Jaideep Pathak and Shashank Subramanian and Peter Harrington and Sanjeev
+  Raja and Ashesh Chattopadhyay and Morteza Mardani and Thorsten Kurth and
+  David Hall and Zongyi Li and Kamyar Azizzadenesheli and Pedram Hassanzadeh
+  and Karthik Kashinath and Animashree Anandkumar},
+    title   = {FourCastNet: A Global Data-driven High-resolution Weather Model
+  using Adaptive Fourier Neural Operators},
+    journal = {arXiv preprint arXiv:2202.11214},
+    year    = {2022},
+    eprint = {2202.11214},
+    archivePrefix = {arXiv}
+  }
+
+
+
+
+                                                  7
+Bodnar2024Aurora. Stark für die Foundation-Model-Kontrastfolie; sehr nützlich, wenn Sie im Related
+Work eine „parallel track“-Tabelle machen. Pointer: Abstract. 15
+
+
+
+  @article{Bodnar2024Aurora,
+    author = {Cristian Bodnar and Wessel P. Bruinsma and Ana Lucic and Megan
+  Stanley and Anna Vaughan and Johannes Brandstetter and Patrick Garvan and
+  Maik Riechert and Jonathan A. Weyn and Haiyu Dong and Jayesh K. Gupta and Kit
+  Thambiratnam and Alexander T. Archibald and Chun-Chieh Wu and Elizabeth
+  Heider and Max Welling and Richard E. Turner and Paris Perdikaris},
+    title   = {A Foundation Model for the Earth System},
+    journal = {arXiv preprint arXiv:2405.13063},
+    year    = {2024},
+    eprint = {2405.13063},
+    archivePrefix = {arXiv}
+  }
+
+
+Nguyen2023Stormer. Nützlich als kompakte Gegenfolie: einfachere Transformer-Architektur, weniger
+Compute, trotzdem konkurrenzfähig. Pointer: Abstract. 16
+
+
+
+  @article{Nguyen2023Stormer,
+    author = {Tung Nguyen and Rohan Shah and Hritik Bansal and Troy Arcomano
+  and Romit Maulik and Veerabhadra Kotamarthi and Ian Foster and Sandeep
+  Madireddy and Aditya Grover},
+    title   = {Scaling transformer neural networks for skillful and reliable
+  medium-range weather forecasting},
+    journal = {arXiv preprint arXiv:2312.03876},
+    year    = {2023},
+    eprint = {2312.03876},
+    archivePrefix = {arXiv}
+  }
+
+
+Wissenschaftliches GPU/Python-Tooling
+
+
+Paredes2023GT4Py. Engste veriﬁzierbare Python-DSL-Referenz im Wetter-/Klimabereich; in dieser
+Arbeit sind Single-Node-Regular-Grid, GPU-Backend und 5–10× Stencil-Speedups direkt dokumentiert.
+Pointer: Sec. 3.1, besonders Performance-Abschnitt. 17
+
+
+
+  @article{Paredes2023GT4Py,
+    author = {Enrique G. Paredes and Linus Groner and Stefano Ubbiali and
+  Hannes Vogt and Alberto Madonna and Kean Mariotti and Felipe Cruz and Lucas
+  Benedicic and Mauro Bianco and Joost VandeVondele and Thomas C. Schulthess},
+    title   = {GT4Py: High Performance Stencils for Weather and Climate
+  Applications using Python},
+    journal = {SoftwareX},
+    year    = {2023},
+    eprint = {2311.08322},
+    archivePrefix = {arXiv},
+
+
+
+
+                                                 8
+      doi     = {10.48550/arXiv.2311.08322}
+  }
+
+
+BenNun2019DaCe. Wichtig für den datenﬂuss-/graphorientierten Compilerrahmen, der intellektuell
+gut neben Ihrer JAX/XLA-Story steht. Pointer: Abstract. 18
+
+
+
+  @inproceedings{BenNun2019DaCe,
+    author    =
+  {Tal Ben-Nun and Johannes de Fine Licht and Alexandros Nikolaos Ziogas and
+  Timo Schneider and Torsten Hoefler},
+    title     = {Stateful Dataflow Multigraphs: A Data-Centric Model for
+  Performance Portability on Heterogeneous Architectures},
+    booktitle = {Proceedings of SC19},
+    year      = {2019},
+    eprint    = {1902.10345},
+    archivePrefix = {arXiv}
+  }
+
+
+Frostig2018Tracing. Die beste in diesem Lauf explizit belegte JAX/XLA-nahe Methodenquelle; gut für
+das Argument „high-level tracing + compiler lowering“. Pointer: bibliographisch über die JAX-
+Quellenangabe veriﬁziert. 19
+
+
+
+  @inproceedings{Frostig2018Tracing,
+    author    = {Roy Frostig and Matthew James Johnson and Chris Leary},
+    title     = {Compiling machine learning programs via high-level tracing},
+    booktitle = {MLSys},
+    year      = {2018},
+    url       = {https://mlsys.org/Conferences/doc/2018/146.pdf}
+  }
+
+
+Agentische Softwareentwicklung und Code-LLMs
+
+
+Chen2021Codex. Fundamentale Code-LLM-Quelle; Pﬂichtzitat für Codegen-Hintergrund, HumanEval
+und Sampling/limitations. Pointer: Abstract. 20
+
+
+
+  @article{Chen2021Codex,
+    author = {Mark Chen and Jerry Tworek and Heewoo Jun and Qiming Yuan and
+  Henrique Ponde de Oliveira Pinto and Jared Kaplan and Harri Edwards and Yuri
+  Burda and Nicholas Joseph and Greg Brockman and Alex Ray and Raul Puri and
+  Gretchen Krueger and Michael Petrov and Heidy Khlaaf and Girish Sastry and
+  Pamela Mishkin and Brooke Chan and Scott Gray and Nick Ryder and Mikhail
+  Pavlov and Alethea Power and Lukasz Kaiser and Mohammad Bavarian and Clemens
+  Winter and Philippe Tillet and Felipe Petroski Such and Dave Cummings and
+  Matthias Plappert and Fotios Chantzis and Elizabeth Barnes and Ariel Herbert-
+  Voss and William Hebgen Guss and Alex Nichol and Alex Paino and Nikolas Tezak
+  and Jie Tang and Igor Babuschkin and Suchir Balaji and Shantanu Jain and
+  William Saunders and Christopher Hesse and Andrew N. Carr and Jan Leike and
+
+
+
+
+                                                  9
+  Josh Achiam and Vedant Misra and Evan Morikawa and Alec Radford and Matthew
+  Knight and Miles Brundage and Mira Murati and Katie Mayer and Peter Welinder
+  and Bob McGrew and Dario Amodei and Sam McCandlish and Ilya Sutskever and
+  Wojciech Zaremba},
+    title   = {Evaluating Large Language Models Trained on Code},
+      journal = {arXiv preprint arXiv:2107.03374},
+      year    = {2021},
+      eprint = {2107.03374},
+      archivePrefix = {arXiv}
+  }
+
+
+Peng2023Copilot. Wichtigster direkt belegter Produktivitätsanker aus kontrolliertem Experiment.
+Pointer: Abstract. 21
+
+
+
+  @article{Peng2023Copilot,
+    author = {Sida Peng and Eirini Kalliamvakou and Peter Cihon and Mert
+  Demirer},
+    title   =
+  {The Impact of AI on Developer Productivity: Evidence from GitHub Copilot},
+    journal = {arXiv preprint arXiv:2302.06590},
+    year    = {2023},
+    eprint = {2302.06590},
+    archivePrefix = {arXiv}
+  }
+
+
+Jimenez2023SWEBench. Maßstab für repo-level software engineering; zentral, um Ihre Methodik von
+bloßer Code-Vervollständigung abzugrenzen. Pointer: Abstract. 22
+
+
+
+  @article{Jimenez2023SWEBench,
+    author = {Carlos E. Jimenez and John Yang and Alexander Wettig and Shunyu
+  Yao and Kexin Pei and Ofir Press and Karthik Narasimhan},
+    title   = {SWE-bench: Can Language Models Resolve Real-World GitHub
+  Issues?},
+    journal = {arXiv preprint arXiv:2310.06770},
+    year    = {2023},
+      eprint = {2310.06770},
+      archivePrefix = {arXiv}
+  }
+
+
+Yang2024SWEAgent. Direkt relevant für agentisches Arbeiten mit Repositories, Tests und Tools.
+Pointer: Abstract. 23
+
+
+
+  @article{Yang2024SWEAgent,
+    author = {John Yang and Carlos E. Jimenez and Alexander Wettig and Kilian
+  Lieret and Shunyu Yao and Karthik Narasimhan and Ofir Press},
+    title   = {SWE-agent: Agent-Computer Interfaces Enable Automated Software
+  Engineering},
+    journal = {arXiv preprint arXiv:2405.15793},
+
+
+
+                                                 10
+      year    = {2024},
+      eprint = {2405.15793},
+      archivePrefix = {arXiv}
+  }
+
+
+Yao2022ReAct. Beste knappe Quelle für „Denken + Handeln + Toolnutzung“ als agentischer
+Grundbaustein. Pointer: Abstract. 24
+
+
+
+  @article{Yao2022ReAct,
+    author = {Shunyu Yao and Jeffrey Zhao and Dian Yu and Nan Du and Izhak
+  Shafran and Karthik Narasimhan and Yuan Cao},
+    title   = {ReAct: Synergizing Reasoning and Acting in Language Models},
+    journal = {arXiv preprint arXiv:2210.03629},
+    year    = {2022},
+    eprint = {2210.03629},
+    archivePrefix = {arXiv}
+  }
+
+
+Schick2023Toolformer. Stützt die Idee, dass Tool-Aufrufe nicht „Hack“, sondern legitimer Kern
+moderner LLM-Agenten sind. Pointer: Abstract. 25
+
+
+
+  @article{Schick2023Toolformer,
+    author = {Timo Schick and Jane Dwivedi-Yu and Roberto Dess{\`i} and
+  Roberta Raileanu and Maria Lomeli and Luke Zettlemoyer and Nicola Cancedda
+  and Thomas Scialom},
+    title   = {Toolformer: Language Models Can Teach Themselves to Use Tools},
+    journal = {arXiv preprint arXiv:2302.04761},
+    year    = {2023},
+    eprint = {2302.04761},
+    archivePrefix = {arXiv}
+  }
+
+
+Shinn2023Reﬂexion. Sehr brauchbar, um Ihre Test-/Reviewer-/Rework-Logik begriﬄich an
+selbstreﬂexive Agenten anzubinden. Pointer: Abstract. 26
+
+
+
+  @article{Shinn2023Reflexion,
+    author = {Noah Shinn and Federico Cassano and Edward Berman and Ashwin
+  Gopinath and Karthik Narasimhan and Shunyu Yao},
+    title   = {Reflexion: Language Agents with Verbal Reinforcement Learning},
+    journal = {arXiv preprint arXiv:2303.11366},
+    year    = {2023},
+    eprint = {2303.11366},
+    archivePrefix = {arXiv}
+  }
+
+
+Wu2023AutoGen. Wichtig für Multi-Agent-Konversation als verbreitetes Muster. Pointer: Abstract.   27
+
+
+
+
+                                                  11
+  @article{Wu2023AutoGen,
+    author = {Qingyun Wu and Gagan Bansal and Jieyu Zhang and Yiran Wu and
+  Beibin Li and Erkang Zhu and Li Jiang and Xiaoyun Zhang and Shaokun Zhang and
+  Jiale Liu and Ahmed Hassan Awadallah and Ryen W. White and Doug Burger and
+  Chi Wang},
+    title    = {AutoGen: Enabling Next-Gen LLM Applications via Multi-Agent
+  Conversation},
+    journal = {arXiv preprint arXiv:2308.08155},
+      year    = {2023},
+      eprint = {2308.08155},
+      archivePrefix = {arXiv}
+  }
+
+
+Hong2023MetaGPT. Nützlichstes Zitat für SOPs, Rollenverteilung und „software company in a prompt“-
+Muster — also sehr nahe an Ihrem Verträge/ADR/Manager-Worker-Modell. Pointer: Abstract. 28
+
+
+
+  @article{Hong2023MetaGPT,
+    author =
+  {Sirui Hong and Mingchen Zhuge and Jiaqi Chen and Xiawu Zheng and Yuheng
+  Cheng and Ceyao Zhang and Jinlin Wang and Zili Wang and Steven Ka Shing Yau
+  and Zijuan Lin and Liyang Zhou and Chenyu Ran and Lingfeng Xiao and Chenglin
+  Wu and J{\"u}rgen Schmidhuber},
+    title   = {MetaGPT: Meta Programming for A Multi-Agent Collaborative
+  Framework},
+    journal = {arXiv preprint arXiv:2308.00352},
+    year    = {2023},
+    eprint = {2308.00352},
+    archivePrefix = {arXiv}
+  }
+
+
+
+Oﬀene Lücken und Risiken
+Die größte oﬀene Lücke dieses Recherchelaufs liegt nicht bei WRF, Code-LLMs oder den globalen AI-
+Wettermodellen; diese Bereiche sind gut genug abgedeckt. Die Lücken liegen vielmehr in genau den
+Spezialfeldern, die für aggressive Neuheitsclaims entscheidend wären: SCREAM/HOMMEXX, ICON-
+exclaim, PACE/FV3 via GT4Py/DaCe, NIM/MPAS-A/GEOS-MP GPU, WRF OpenACC- und CUDA-Fortran-
+Zahlen, AceCAST, PyCECT/probtest, die Originalarbeiten zu Thompson/MYNN/RRTMG, die AEMET-
+Stationsmethodik sowie formale Publikations- und Co-Autorenschaftsrichtlinien zu KI. Für diese
+Cluster konnte ich in diesem Lauf keine hinreichend saubere, primärquellenstarke Bibliographie
+zusammentragen, ohne das Risiko halluzinierter oder verfälschter Zitate einzugehen. Genau diese
+Lücken müssen deshalb im späteren Manuskript ausdrücklich als remaining bibliography pass behandelt
+werden — nicht als stillschweigend gelöste Punkte. 29
+
+
+Daraus folgen direkte Claim-Risiken:
+
+
+
+
+                                                12
+ Potenzieller Claim            Risiko                          Sichere Umformulierung
+
+ „First single-GPU             Zu breit; Vorarbeiten im        „single-workstation, GPU-native
+ operational regional          GPU-/DSL-Ökosystem              reimplementation of key WRF-ARW
+ NWP forecast“                 sind zu nahe                    components for regional forecasting“
+
+                               Vermutlich unprüfbar;           „developed with a contract- and proof-
+ „First AI-authored
+                               „AI-authored“ ist               object-based multi-agent AI workﬂow under
+ weather model“
+                               deﬁnitorisch unscharf           human oversight“
+
+                                                               „preliminary speedups bracketed by internal
+ „30–150× faster than          Laut Brieﬁng noch
+                                                               measurements; ﬁnal apples-to-apples timing
+ CPU WRF“                      apples-to-apples-oﬀen
+                                                               reported in the paper“
+
+                               Begriﬀ ist ohne Gate-           „operationally useful under the project’s
+ „Operational skill“
+                               Deﬁnition weich                 predeﬁned veriﬁcation gates“
+
+                               Ihr Brieﬁng sagt selbst,        „bitwise parity where appropriate in micro-
+ „Bitwise parity with
+                               dass das nicht der              ﬁxtures; forecast acceptance governed by
+ WRF“
+                               Hauptzieltyp ist                invariants and probabilistic consistency“
+
+Diese Formulierungen sind deshalb stark, weil sie die eigentliche Innovation nicht verwässern. Im
+Gegenteil: Sie machen deutlich, dass Ihr Beitrag eine veriﬁzierte Engineering-Leistung ist und nicht
+bloß ein Benchmark-Marketingtext. Das ist wissenschaftlich meistens überzeugender.
+ﬁleciteturn0ﬁle0
+
+
+Die wichtigste positive Lücke ist zugleich Ihre Chance: Ich habe in den belastbaren Quellen dieses Laufs
+keine dichte, etablierte Literaturspur gefunden, in der ein regionales, physiknahes Wettermodell in
+dieser Art durch ein explizit dokumentiertes Multi-Agenten-Team mit Verträgen, ADRs und Proof Objects
+entwickelt wurde. Das erlaubt Ihnen, die Methodik als eigenständigen wissenschaftlichen Beitrag zu
+verkaufen — aber genau deshalb sollten Sie diese Story nicht mit unbelegbaren Superlativen
+überladen.
+
+
+Empfohlene Abbildungen und Tabellen
+Für dieses Paper würde ich wenige, aber hochinformative Visualisierungen empfehlen. Entscheidend
+ist, dass jede Abbildung unmittelbar eine mögliche Skepsis adressiert: Ist das numerisch glaubwürdig? Ist
+das wirklich neu? Ist die KI-Methodik mehr als eine Anekdote?
+
+
+ Abbildung/Tabelle                      Zweck                          Warum sie wichtig ist
+
+ Systemdiagramm des GPU-                Architektur sichtbar           Trennt Reimplementation von
+ Rebuilds                               machen                         Legacy-Porting
+
+                                        Ihre Annahmen
+ Validierungspyramide                                                  Macht „operational skill“ prüfbar
+                                        operationalisieren
+
+ Vergleichstabelle prior art            Neuheit erden                  Verhindert Oversell
+
+ Wall-clock-Zeitachse GPU vs            Performance transparent
+                                                                       Zeigt, wo Beschleunigung entsteht
+ CPU                                    machen
+
+
+
+
+                                                        13
+ Abbildung/Tabelle                Zweck                        Warum sie wichtig ist
+
+ Fehler-/Skill-Tabelle T2/U10/    meteorologischen Nutzen
+                                                               essenziell für Glaubwürdigkeit
+ V10                              belegen
+
+ Agenten-Workﬂow-                 Methodenbeitrag              macht Verträge/Proof Objects zitier-
+ Diagramm                         konkretisieren               und diskutierbar
+
+ Reproduzierbarkeits-Matrix       Nachnutzbarkeit              wichtig für arXiv-Kommentarkultur
+
+Eine sinnvoll komprimierte Vergleichstabelle im Paper sollte die Forschung in drei Klassen teilen:
+klassische physiknahe GPU-/DSL-Arbeiten, Modernisierung von Legacy-WRF, und ML-Wettermodelle.
+Gerade diese Trennung verhindert, dass Reviewer Ihnen „Äpfel mit Birnen“ vorwerfen. 30
+
+
+Als CSV-ready-Tabelle für das Manuskript empfehle ich folgende Kernstruktur:
+
+
+
+  bucket,representative_source,verified_quant_anchor,what_it_shows,implication_for_this_paper
+  WRF_reference,Skamarock2019WRFv4,"ARW v4 equations + RK3/acoustic split + C-
+  grid + LBCs","Canonical scientific baseline","Justifies faithful
+  reimplementation framing"
+  Python_GPU_weather,GT4Py2023,"5-10x GPU-vs-CPU for stencil backends on
+  single-node examples","Python/DSL path is credible in weather-climate
+  HPC","Supports JAX/XLA implementation legitimacy"
+  Legacy_WRF_modernization,Fredj2023ADIOS2WRF,">10x I/O speedup","Legacy WRF
+  can be improved without core rewrite","Helps motivate why your work targets
+  dynamics/architecture, not only I/O"
+  ML_weather_global,GraphCast2023,"<1 min for 10-day forecast; better on 90% of
+  1380 targets","AI weather models define the adjacent frontier","Use as
+  contrast, not direct competition"
+  ML_weather_global,AIFS2024,"Public forecasts four times daily under ECMWF
+  open data policy","AIFS is the likely meaning of IC/BC source","Clarify
+  pipeline data provenance"
+  Agentic_SE,SWEBench2023,"repo-level issue resolution benchmark","Code
+  generation is not enough; repository engineering is harder","Supports
+  inclusion of rigorous methodology section"
+  Agentic_SE,SWEAgent2024,"tool-using repository agent","Interactive agent-
+  computer interfaces matter","Supports contracts/tests/proof-object workflow"
+
+
+
+Vorlage für Reproduzierbarkeitserklärung
+Die Reproduzierbarkeitserklärung in diesem Preprint sollte ungewöhnlich konkret sein, weil gerade Ihr
+Projekt aus der Kombination von numerischer Wissenschaft und agentischer Softwareproduktion seine
+Glaubwürdigkeit zieht. Ein geeigneter Textbaustein wäre:
+
+
+      Reproduzierbarkeit. Wir veröﬀentlichen den vollständigen Quellcode der in dieser Arbeit
+      beschriebenen GPU-nativen Reimplementierung, inklusive Commit-Hash, Build-/Run-
+      Skripten, Tests, ADRs und maschinenlesbaren Proof Objects, die während der
+      agentischen Entwicklung erzeugt wurden. Wir dokumentieren die exakte
+      Hardwarekonﬁguration der Einzelworkstation, den Software-Stack, Compiler-/Runtime-
+      Versionen, Präzisionsmodi, Seeds, Eingangsdatensätze, Boundary-/Initial-Condition-
+
+
+
+
+                                                 14
+         Quellen, Postprocessing-Schritte und Stations-Scoring-Pipeline. Zusätzlich veröﬀentlichen
+         wir die Konﬁguration aller numerischen Experimente, Restart-Dateien für ausgewählte
+         Läufe, sowie eine minimale Referenzsuite für Mikro-Fixture-Paritätsprüfungen,
+         Invariantenprüfungen und Kurzlauf-/Konvergenztests. Vorläuﬁge Leistungszahlen
+         werden getrennt von endgültigen apples-to-apples-Benchmarks berichtet. Die AIFS-
+         bezogenen Eingabedaten werden im Rahmen der jeweils geltenden ECMWF/Open-Data-
+         Bedingungen referenziert; proprietäre oder nicht frei weitergebbare Bestandteile werden
+         explizit markiert.
+
+
+Für Ihre Arbeit ist außerdem eine zweistuﬁge Freigabestruktur sinnvoll. Stufe eins ist „scientiﬁc
+reproducibility“: Gleichungen, Tests, Metriken, Datenpfade, Hashes. Stufe zwei ist „agentic process
+reproducibility“: Sprint-Verträge, Akzeptanzkriterien, Reviewer-Urteile, Proof Objects, ADRs, eventuelle
+menschliche Eingriﬀe und abgelehnte Agentenoutputs. Genau diese zweite Ebene unterscheidet Ihre
+Arbeit von fast allen existierenden Wettermodell-Papers.
+
+
+Wenn Platz da ist, sollten Sie zudem einen knappen Negativkatalog aufnehmen: welche Teile nicht
+freigegeben werden können, welche Messungen intern vorläuﬁg sind, und welche externen
+Bibliographie- oder Policy-Prüfungen noch oﬀen waren. Das wirkt auf arXiv nicht schwach, sondern
+professionell. ﬁleciteturn0ﬁle0
+
+
+Diskussion zur KI-Co-Autorenschaft
+Hier rate ich zu einer konservativen, publizistisch risikoarmen Linie. Auch wenn Ihr internes Brieﬁng
+explizit eine Ko-Autorenschaft von Claude, GPT und einer menschlichen Hauptperson als Zielbild
+formuliert, ist die robusteste Form für ein arXiv-Preprint derzeit: nur Menschen im Author-byline, KI-
+Systeme dagegen explizit in Methoden-, Contribution- und Acknowledgement-Sektionen. Der
+Grund ist pragmatisch: Für diesen Recherchelauf habe ich keine ausreichend saubere, direkt zitierbare
+Policy-Sammlung zu arXiv/Nature/Science/ACM/IEEE veriﬁziert, und genau deshalb sollte Ihre
+Einreichung bei der Byline nicht auf eine umstrittene Grenzpraxis setzen. Diese Empfehlung ist hier
+ausdrücklich eine vorsichtige Risikosteuerung, keine Aussage über eine formal nachgewiesene
+Einzelrichtlinie.
+
+
+Die gute Nachricht ist: Sie verlieren dadurch keinen wissenschaftlichen Gehalt. Im Gegenteil, Ihre
+agentische Methodik wird sogar klarer, wenn Sie sie so beschreiben:
+
+
+         The software and veriﬁcation workﬂow was executed by a managed team of AI systems under
+         human research supervision. A long-context manager decomposed work into sprint contracts;
+         coding agents implemented bounded tasks; independent tester agents validated acceptance
+         gates; and human authors retained responsibility for architectural decisions, interpretation,
+         and manuscript-level scientiﬁc claims.
+
+
+Für die Author Contributions eignet sich eine Formulierung wie:
+
+
+ Rolle                         Empfohlene Formulierung
+
+ Menschlicher                  Forschungsfrage, Abnahme der Claims, ﬁnaler wissenschaftlicher Text,
+ Seniorautor                   Freigabe aller Ergebnisse
+
+                               Task-Decomposition, Kontextkonsolidierung, Vertragsentwürfe, ADR-
+ KI-Manager-System
+                               Entwürfe
+
+
+
+
+                                                      15
+     Rolle                         Empfohlene Formulierung
+
+     KI-Coding-Systeme             Implementierung unter Vertrag, Test-Fixes, Refactoring
+
+                                   unabhängige Validierung, Gegenprüfung von Akzeptanzkriterien, Review-
+     KI-Tester/Reviewer
+                                   Memos
+
+     Alle menschlichen             Verantwortung für Korrektheit des Manuskripts und die Entscheidung,
+     Autoren                       was behauptet wird
+
+Diese Darstellung ist stark, weil sie KI nicht mystiﬁziert, sondern als klar abgegrenzte
+Forschungsinfrastruktur behandelt. Gleichzeitig erlaubt sie Ihnen, die eigentliche methodische
+Innovation — no production code without contract; no accepted work without proof object — als einen
+ernsthaften Beitrag zur Governance wissenschaftlicher Software zu verkaufen. In Kombination mit SWE-
+bench/SWE-agent/ReAct/Toolformer/Reﬂexion/AutoGen/MetaGPT ist das genug Literaturfundament,
+um die Methodik überzeugend und ohne Science-Fiction-Ton zu schreiben. 31
+
+
+Der entscheidende Schlusssatz für diesen Abschnitt lautet daher: Die KI ist in Ihrem Papier am
+überzeugendsten als dokumentierte Entwicklungs- und Veriﬁkationsmethode, nicht als
+juristische Autorperson. Genau so wird aus einer potenziellen Kontroverse ein sauberer
+wissenschaftlicher Beitrag.
+
+
+
+ 1     2     4   5   6   https://www2.mmm.ucar.edu/wrf/users/docs/technote/v4_technote.pdf
+https://www2.mmm.ucar.edu/wrf/users/docs/technote/v4_technote.pdf
+
+ 3     10    https://arxiv.org/abs/2211.02556
+https://arxiv.org/abs/2211.02556
+
+ 7    https://www2.mmm.ucar.edu/wrf/users/docs/technote/v3_technote.pdf
+https://www2.mmm.ucar.edu/wrf/users/docs/technote/v3_technote.pdf
+
+ 8    https://arxiv.org/abs/2304.06603
+https://arxiv.org/abs/2304.06603
+
+ 9    https://arxiv.org/abs/2212.12794
+https://arxiv.org/abs/2212.12794
+
+11    https://arxiv.org/abs/2311.07222
+https://arxiv.org/abs/2311.07222
+
+12    https://arxiv.org/abs/2406.01465
+https://arxiv.org/abs/2406.01465
+
+13    https://arxiv.org/abs/2312.15796
+https://arxiv.org/abs/2312.15796
+
+14    https://arxiv.org/abs/2202.11214
+https://arxiv.org/abs/2202.11214
+
+15    https://arxiv.org/abs/2405.13063
+https://arxiv.org/abs/2405.13063
+
+16    https://arxiv.org/abs/2312.03876
+https://arxiv.org/abs/2312.03876
+
+17    https://arxiv.org/abs/2311.08322
+https://arxiv.org/abs/2311.08322
+
+
+
+
+                                                         16
+18   https://arxiv.org/abs/1902.10345
+https://arxiv.org/abs/1902.10345
+
+19   https://en.wikipedia.org/wiki/JAX_%28software%29
+https://en.wikipedia.org/wiki/JAX_%28software%29
+
+20   https://arxiv.org/abs/2107.03374
+https://arxiv.org/abs/2107.03374
+
+21   https://arxiv.org/abs/2302.06590
+https://arxiv.org/abs/2302.06590
+
+22   31   https://arxiv.org/abs/2310.06770
+https://arxiv.org/abs/2310.06770
+
+23   https://arxiv.org/abs/2405.15793
+https://arxiv.org/abs/2405.15793
+
+24   https://arxiv.org/abs/2210.03629
+https://arxiv.org/abs/2210.03629
+
+25   https://arxiv.org/abs/2302.04761
+https://arxiv.org/abs/2302.04761
+
+26   https://arxiv.org/abs/2303.11366
+https://arxiv.org/abs/2303.11366
+
+27   https://arxiv.org/abs/2308.08155
+https://arxiv.org/abs/2308.08155
+
+28   https://arxiv.org/abs/2308.00352
+https://arxiv.org/abs/2308.00352
+
+29   30   https://ar5iv.org/pdf/2311.08322
+https://ar5iv.org/pdf/2311.08322
+
+
+
+
+                                                   17
+
