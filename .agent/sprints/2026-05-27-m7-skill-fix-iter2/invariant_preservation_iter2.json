@@ -1,0 +1,47 @@
+{
+  "checks": {
+    "20260521_multistep_parity_final": true,
+    "20260521_multistep_parity_step2_bitwise": true,
+    "b6_savepoint_parity": true,
+    "d2h_inter_kernel": true,
+    "restart_bitwise": true
+  },
+  "commands": [
+    "taskset -c 0-3 pytest -q tests/test_m7_restart_checkpoint_roundtrip.py tests/test_m6c_20260509_mu_regression.py tests/test_m6b6_coupled_step_parity.py tests/test_m6b_d2h_warmed_zero_v2.py -k 'not artifacts_present'"
+  ],
+  "details": {
+    "20260521_final_max_abs_delta": 0.0,
+    "20260521_step2": {
+      "all_fields_finite": true,
+      "largest_bad_field": null,
+      "max_abs_delta": 0.0,
+      "mu_delta": 0.0,
+      "status": "PASS",
+      "theta_delta": 0.0,
+      "u_delta": 0.0,
+      "v_delta": 0.0
+    },
+    "b6": {
+      "command": "taskset -c 0-3 python scripts/m6b6_coupled_step_compare.py --tier all --output .agent/sprints/2026-05-26-m6c-20260509-mu-regression/b6_coupled_step_parity.json --savepoint-root .agent/sprints/2026-05-26-m6c-20260509-mu-regression/savepoints",
+      "outcome": "SEVENTH-COUPLED-STEP-PARITY-ACHIEVED",
+      "passed": true,
+      "proof_path": ".agent/sprints/2026-05-26-m6c-20260509-mu-regression/b6_coupled_step_parity.json",
+      "returncode": 0,
+      "stderr_path": ".agent/sprints/2026-05-26-m6c-20260509-mu-regression/validation_logs/b6_coupled_step_compare.stderr.txt",
+      "stdout_path": ".agent/sprints/2026-05-26-m6c-20260509-mu-regression/validation_logs/b6_coupled_step_compare.stdout.txt"
+    },
+    "d2h_inter_kernel": 0,
+    "restart_probe_status": "PASS"
+  },
+  "generated_utc": "2026-05-27T10:06:53.955342+00:00",
+  "schema": "M7SkillFixIter2InvariantPreservation",
+  "schema_version": 1,
+  "source_artifacts": {
+    "b6_parity": ".agent/sprints/2026-05-26-m6c-20260509-mu-regression/b6_coupled_step_parity.json",
+    "d2h": ".agent/sprints/2026-05-25-m6b-d2h-warmed-recapture-v2/proof_nsys_transfers_inside_loop.json",
+    "m6c_fix_validation": ".agent/sprints/2026-05-26-m6c-20260509-mu-regression/proof_fix_validation.json",
+    "pipeline": ".agent/sprints/2026-05-27-m7-skill-fix-iter2/pipeline_run_20260521.json",
+    "restart": ".agent/sprints/2026-05-27-m7-skill-fix-iter2/restart_in_pipeline.json"
+  },
+  "status": "PASS"
+}
