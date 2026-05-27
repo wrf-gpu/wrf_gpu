@@ -43,6 +43,8 @@ Regional GPU NWP did not begin with this work. MeteoSwiss COSMO-CH and later ICO
 
 Domain-specific-language approaches separate scientific stencil expression from backend code generation. Pace rewrote the FV3 dynamical core in Python using GT4Py and DaCe \cite{dahm2023pace,bennun2019dace,whitaker2023gt4py,paredes2023gt4py}. ICON-exclaim and operational ICON GPU work show that large weather centers can migrate production NWP to GPU systems \cite{fuhrer2026icon,lapillonne2026benchmarking}. SCREAM represents the clean-slate C++/Kokkos path at exascale \cite{bertagna2024scream}. NIM is an earlier native-GPU precursor \cite{govett2017parallelization}. These systems differ in model equations, grid, hardware class, institution, and maturity. They establish that GPU NWP is real and that production-quality ports require more than kernel translation.
 
+The brief-derived comparator rows used for this related-work framing are staged in `publish/tables/comparators.md`.
+
 ### 2.3 ML Weather Models
 
 The recent ML weather-model literature changes the background for speed and skill. GraphCast, Pangu-Weather, FourCastNet, GenCast, Aurora, NeuralGCM, Stormer, and AIFS all show that data-driven or hybrid global forecasting systems can produce very fast and skillful forecasts under the right evaluation regime \cite{lam2023graphcast,bi2022pangu,pathak2022fourcastnet,price2023gencast,bodnar2024aurora,kochkov2023neuralgcm,nguyen2023stormer,lang2024aifs,lang2025update}. The present work is not an ML emulator. It is a numerical regional replay model that may eventually support ML by generating physically constrained training data, assimilating ML boundary products, or coupling learned parameterizations to a traditional solver.
@@ -175,6 +177,8 @@ The station verification is still incomplete. It does not include a robust preci
 
 Table 1 separates the pre-fix diagnostic path from the current post-fix corrected-physics path. The current headline result is the post-fix row group.
 
+The consolidated pre-fix, iteration-1, and iteration-2 performance table is staged in `publish/tables/performance_evolution.md`.
+
 | System state | Claim | Value | Proof object |
 |---|---|---:|---|
 | Post-fix corrected-physics path | 24 h d02 pipeline wall time | 708.32 s | `.agent/sprints/2026-05-27-m7-skill-fix-algorithmic/pipeline_run_20260521.json` |
@@ -204,6 +208,8 @@ The D2H result is an architectural proof. The audit reports zero D2H inter-kerne
 ### 8.1 Pre-fix Skill Regression Discovery
 
 The pre-fix forecast-quality result was negative. Side-by-side scoring was performed on 73 AEMET station IDs over 24 common valid hours, producing 1747 joined station-time rows. GPU and CPU wrfouts were evaluated through the same `gpuwrf.validation.forecast_vs_obs` scaffold. Table 2 separates the pre-fix failure from the post-fix partial recovery.
+
+The full CPU, pre-fix GPU, iteration-1 GPU, and iteration-2 GPU BIAS/MAE/RMSE matrix is staged in `publish/tables/skill_evolution.md`.
 
 | System state | Variable | CPU WRF RMSE | GPU RMSE | Relative change vs CPU | Verdict |
 |---|---|---:|---:|---:|---|
@@ -242,7 +248,7 @@ The publication claim is therefore specific: the whole-state-resident architectu
 
 A second fix sprint addressed the three remaining named defects from iteration 1: it widened the lower-30 theta envelope from 400 K to 450 K, added a Gen2 hourly land-state refresh path that reloads `t_skin`, `SST`, `SMOIS`, `SH2O`, and `TSLB` from retained CPU wrfouts at each output boundary, and packed a WRF-ordered 5-row lateral boundary strip (`spec_bdy_width=5`, `relax_zone=4`) replacing the iter-1 outermost-row pack. Verdict: `BLOCKED`.
 
-All systems invariants again held: step-2 multi-step parity 0.0 bitwise, B6 savepoint parity preserved, inter-kernel D2H = 0 bytes, restart bitwise PASS, and AgentOS validation green. The d02-only apples-to-apples speedup settled at 22.26x (down from iter-1's 23.02x due to the modest overhead of hourly land refresh and 5-row boundary handling) — still well above the 4x-8x target.
+All systems invariants again held: step-2 multi-step parity 0.0 bitwise, B6 savepoint parity preserved, inter-kernel D2H = 0 bytes, restart bitwise PASS, and AgentOS validation green. The d02-only apples-to-apples speedup settled at 22.26x (down from iter-1's 23.02x due to the modest overhead of hourly land refresh and 5-row boundary handling) - still well above the 4x-8x target.
 
 The post-iter-2 AEMET station scoring on the same 20260521 day, 73 stations, 24 valid hours, 1747 joined rows, produced:
 
@@ -254,7 +260,7 @@ The post-iter-2 AEMET station scoring on the same 20260521 day, 73 stations, 24 
 
 Wind metrics recovered meaningfully: U10 RMSE dropped from +390 percent to +213 percent of CPU, and V10 RMSE dropped from +243 percent to +177 percent. The 5-row boundary strip and the hourly land refresh both contributed plausible relax-zone behavior, and the lower-troposphere wind field began to track the CPU reference more closely. T2 regressed: with the envelope widened from 400 K to 450 K, lower-column theta could climb further during daytime heating, but surface flux magnitudes from the current `surface_adapter` plus MYNN coupling now over-deposit heat into the bottom level. The diurnal warming overshoots rather than saturating.
 
-All three variables remain outside the pre-declared 20 percent tolerance. The publication therefore continues to reject any operational replacement claim. The remaining defect is now narrower: it is not a missing radiation source, a discarded RK3 advance, a width-1 boundary, or a frozen land state. It is a surface-flux magnitude or sign-coupling issue in the iteration-2 path, and it is the next root-cause target for an iteration 3 sprint. The proof-object backbone for iter 2 — `post_iter2_skill_diff.json`, `post_iter2_speedup.json`, `invariant_preservation_iter2.json` — is preserved on disk for that follow-up.
+All three variables remain outside the pre-declared 20 percent tolerance. The publication therefore continues to reject any operational replacement claim. The remaining defect is now narrower: it is not a missing radiation source, a discarded RK3 advance, a width-1 boundary, or a frozen land state. It is a surface-flux magnitude or sign-coupling issue in the iteration-2 path, and it is the next root-cause target for an iteration 3 sprint. The proof-object backbone for iter 2 - `post_iter2_skill_diff.json`, `post_iter2_speedup.json`, `invariant_preservation_iter2.json` - is preserved on disk for that follow-up.
 
 ## 9. Discussion
 
