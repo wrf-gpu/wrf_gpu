@@ -1,0 +1,7 @@
+{
+  "reason": "ValueError: --restart-at-hour must be between 1 and hours - 1",
+  "schema": "M7DailyPipelineStationScores",
+  "schema_version": 1,
+  "status": "BLOCKED",
+  "upstream_verdict": "PIPELINE_BLOCKED"
+}

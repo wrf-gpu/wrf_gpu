@@ -77,22 +77,26 @@ def _apply_3d(field, boundary, lead_seconds, dt_s: float, config: BoundaryConfig
     return out
 
 
-def _side_values(forcing, side: str, z_len: int, side_len: int):
-    return forcing[SIDE_INDEX[side], :z_len, :side_len]
+def _side_values(forcing, side: str, z_len: int, side_len: int, offset: int = 0):
+    side_values = forcing[SIDE_INDEX[side]]
+    if side_values.ndim == 3:
+        width_index = min(max(int(offset), 0), int(side_values.shape[0]) - 1)
+        return side_values[width_index, :z_len, :side_len]
+    return side_values[:z_len, :side_len]
 
 
 def _apply_specified(field, forcing, side: str, offset: int):
     z_len, y_len, x_len = field.shape
     if side == "W":
-        target = _side_values(forcing, side, z_len, y_len)
+        target = _side_values(forcing, side, z_len, y_len, offset)
         return field.at[:, :, offset].set(target)
     if side == "E":
-        target = _side_values(forcing, side, z_len, y_len)
+        target = _side_values(forcing, side, z_len, y_len, offset)
         return field.at[:, :, x_len - 1 - offset].set(target)
     if side == "S":
-        target = _side_values(forcing, side, z_len, x_len)
+        target = _side_values(forcing, side, z_len, x_len, offset)
         return field.at[:, offset, :].set(target)
-    target = _side_values(forcing, side, z_len, x_len)
+    target = _side_values(forcing, side, z_len, x_len, offset)
     return field.at[:, y_len - 1 - offset, :].set(target)
 
 
@@ -100,25 +104,25 @@ def _apply_relax(field, forcing, side: str, offset: int, dt_s: float, config: Bo
     z_len, y_len, x_len = field.shape
     weight_f, weight_g = _wrf_relax_weights(offset, dt_s, config)
     if side == "W":
-        target = _side_values(forcing, side, z_len, y_len)
+        target = _side_values(forcing, side, z_len, y_len, offset)
         current = field[:, :, offset]
         relaxed = _relaxed_slice(current, target, field[:, :, offset - 1], field[:, :, offset + 1], axis=1, weight_f=weight_f, weight_g=weight_g)
         start, end = offset + 1, y_len - offset - 1
         return field.at[:, start:end, offset].set(relaxed[:, start:end])
     if side == "E":
-        target = _side_values(forcing, side, z_len, y_len)
+        target = _side_values(forcing, side, z_len, y_len, offset)
         x = x_len - 1 - offset
         current = field[:, :, x]
         relaxed = _relaxed_slice(current, target, field[:, :, x + 1], field[:, :, x - 1], axis=1, weight_f=weight_f, weight_g=weight_g)
         start, end = offset + 1, y_len - offset - 1
         return field.at[:, start:end, x].set(relaxed[:, start:end])
     if side == "S":
-        target = _side_values(forcing, side, z_len, x_len)
+        target = _side_values(forcing, side, z_len, x_len, offset)
         current = field[:, offset, :]
         relaxed = _relaxed_slice(current, target, field[:, offset - 1, :], field[:, offset + 1, :], axis=1, weight_f=weight_f, weight_g=weight_g)
         start, end = offset + 1, x_len - offset - 1
         return field.at[:, offset, start:end].set(relaxed[:, start:end])
-    target = _side_values(forcing, side, z_len, x_len)
+    target = _side_values(forcing, side, z_len, x_len, offset)
     y = y_len - 1 - offset
     current = field[:, y, :]
     relaxed = _relaxed_slice(current, target, field[:, y + 1, :], field[:, y - 1, :], axis=1, weight_f=weight_f, weight_g=weight_g)

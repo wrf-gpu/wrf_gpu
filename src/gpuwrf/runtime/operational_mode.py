@@ -220,7 +220,7 @@ def _limit_theta_by_level(candidate: jax.Array, origin: jax.Array) -> jax.Array:
     levels = jnp.arange(candidate.shape[0], dtype=jnp.int32).reshape(shape)
     lower_column = levels < 30
     lower = jnp.where(lower_column, 200.0, 250.0).astype(candidate.dtype)
-    upper = jnp.where(lower_column, 400.0, 700.0).astype(candidate.dtype)
+    upper = jnp.where(lower_column, 450.0, 700.0).astype(candidate.dtype)
     fallback = jnp.where(jnp.isfinite(origin), origin, 0.5 * (lower + upper))
     fallback = jnp.clip(fallback, lower, upper)
     valid = jnp.isfinite(candidate) & (candidate >= lower) & (candidate <= upper)
@@ -597,6 +597,10 @@ def _physics_boundary_step(
         if bool(namelist.disable_guards):
             next_state = bounded
         else:
+            # The lower-30 theta guard is a fail-closed runaway envelope, not a
+            # diurnal-warming clamp. The first iter2 probe put valid d02 values
+            # within 0.001 K of the old 400 K ceiling, so AC2 widens it to
+            # [200, 450] K while keeping the upper-column 700 K hard stop.
             next_state = bounded.replace(
                 u=_finite_or_origin(bounded.u, physical_origin.u),
                 v=_finite_or_origin(bounded.v, physical_origin.v),
