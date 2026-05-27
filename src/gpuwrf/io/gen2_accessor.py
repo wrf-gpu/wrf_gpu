@@ -25,7 +25,7 @@ from gpuwrf.contracts.grid import BCMetadata, GridSpec, Projection, TerrainProve
 
 GEN2_READ_ONLY_ROOT = Path("/mnt/data/canairy_meteo")
 DEFAULT_M6_GEN2_RUN_DIR = Path(
-    "/mnt/data/canairy_meteo/runs/wrf_l3/20260520_18z_l3_24h_20260521T045847Z"
+    "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z"
 )
 DEFAULT_M6_BOUNDARY_REPLAY = Path("data/fixtures/m6/d02_boundary_replay_v2.zarr")
 MAP_PROJ_NAMES = {1: "lambert", 2: "polar", 3: "mercator"}
