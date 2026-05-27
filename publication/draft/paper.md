@@ -148,8 +148,10 @@ Table 1 summarizes the performance and systems claims that survive the post-clos
 | 24 h d02 pipeline wall time | 324.78 s | `.agent/sprints/2026-05-27-m7-daily-pipeline-integration/pipeline_run_20260521.json` |
 | 24 h forecast-only wall time | 310.27 s | same |
 | CPU d02-only wall timing | 16305 s | `.agent/sprints/2026-05-27-m7-honest-speedup-skill-diff/honest_speedup_table.json` |
-| Corrected apples-to-apples speedup | 50.20x | same |
-| Full five-domain CPU aggregate framing | 138.24x, not apples-to-apples | same |
+| Pre-fix apples-to-apples speedup | 50.20x | same |
+| Post-fix apples-to-apples speedup (with correct physics) | 23.02x | `.agent/sprints/2026-05-27-m7-skill-fix-algorithmic/post_fix_speedup.json` |
+| 24 h post-fix pipeline wall time | 708.32 s | `.agent/sprints/2026-05-27-m7-skill-fix-algorithmic/pipeline_run_20260521.json` |
+| Full five-domain CPU aggregate framing (pre-fix) | 138.24x, not apples-to-apples | same |
 | Inter-kernel D2H inside loop | 0 copies, 0 bytes | `.agent/sprints/2026-05-27-m7-profiler-window-fix/d2h_audit_v2.json` |
 | Restart continuity | max delta 0.0 | `.agent/sprints/2026-05-27-m7-restart-continuity/restart_continuity.json` |
 | Pipeline wrfout inventory | 24/24 files readable | `.agent/sprints/2026-05-27-m7-daily-pipeline-integration/wrfout_inventory.json` |
@@ -173,9 +175,30 @@ The honest forecast-quality result is negative. Side-by-side scoring was perform
 
 The regression is broad: GPU was materially worse on every metric of every variable in the aggregate comparison, and the report verdict was `FAIL_SKILL_DIFF`. The failure is not just a station-scorer artifact. A separate L2 d02 replay validation on the same 3 km grid but with L2-d01 boundary forcing produced `L2_D02_BOUNDED_FAIL`: T2 RMSE 4.07 K against a 3.0 K threshold, U10 RMSE 10.78 m s-1 against 7.5 m s-1, and V10 RMSE 7.83 m s-1 against 7.5 m s-1.
 
-The root cause was not known at this draft point. The active hypotheses were radiation cadence effectively disabled by `radiation_cadence_steps=999999`, boundary-forcing application differences relative to WRF Fortran, and physics-coupling order. These are hypotheses, not conclusions. The in-flight RCA sprints had not yet produced reports when this draft was written. This paper therefore does not claim that any one of those factors explains the skill gap.
+### 8.1 Root-cause analysis and fix iteration
 
-The negative result changes the publication claim. The engineering result is that a JAX-native, whole-state-resident WRF-compatible pipeline can run very fast on a single workstation GPU and can satisfy restart, repeatability, and transfer-audit gates. The meteorological result is that the current forecast is not skill-equivalent to CPU WRF and cannot be advertised as an operational replacement.
+After the initial draft of this paper was written, two parallel root-cause-analysis sprints landed and converged. An opus architectural audit (`.agent/sprints/2026-05-27-m7-skill-regression-rca-opus/top_3_suspects.md`) and a codex empirical bisection (`.agent/sprints/2026-05-27-m7-skill-regression-rca-codex/worker-report.md`) independently identified three coupled defects in the operational forecast path:
+
+1. **Dycore state reset every timestep.** The `disable_guards=False` production branch of `_physics_boundary_step` was overwriting the post-RK3 `theta`, `mu`, `mu_total`, and `mu_perturbation` with the pre-step values. The RK3+acoustic advance was being discarded each step. Independent corroboration came from on-disk bounds-check artifacts that recorded `theta_lower_30_max_k` identical to seven decimal places across all 24 hourly snapshots of the L2 d02 replay run.
+2. **Surface fluxes computed but not applied.** The MYNN PBL adapter received `jnp.zeros_like(theta_columns)` as its bottom boundary heat, moisture, and momentum flux inputs. `surface_adapter` computed `theta_flux`, `qv_flux`, `tau_u`, and `tau_v` but wrote them only into the State record without advancing the atmospheric profile. The ordering in `_physics_boundary_step` was also inverse to WRF's convention.
+3. **Radiation effectively disabled.** `DailyPipelineConfig.radiation_cadence_steps` defaulted to 999999, which meant `rrtmg_adapter` was never invoked in the 8640-step 24 h integration. The surface energy balance had no shortwave forcing during the day and no longwave forcing at night.
+
+The codex bisection also surfaced a max-14-category `LU_INDEX` mismatch between GPU and Gen2 wrfouts at lead 1 h. A follow-up audit confirmed that the in-memory `LU_INDEX` from `wrfinput_d02` matched Gen2 exactly; only the `wrfout_writer` fallback collapsed land cells to category 2 and water to 17 because the GPU `State` carries no `LU_INDEX` field. The forecast physics used the correct categories. `LU_INDEX` is therefore a publication-quality cleanup target for the output writer rather than a root cause of the skill regression itself.
+
+### 8.2 Partial fix outcome
+
+A combined fix sprint applied all three algorithmic changes: theta and mu now flow through RK3 with inline bounded guards instead of being reset, `surface_adapter` runs before `mynn_adapter` and feeds its computed fluxes into the PBL bottom boundary, and `radiation_cadence_steps` was reduced to 180 (so RRTMG runs 48 times in a 24 h integration). The post-fix sprint produced `SKILL_IMPROVED_PARTIAL` (`.agent/sprints/2026-05-27-m7-skill-fix-algorithmic/worker-report.md`):
+
+- All M6 and M7 invariants are preserved: 20260521 multi-step parity step 2 = 0.0 bitwise, B6 savepoint parity preserved, inter-kernel D2H = 0 bytes, restart bitwise PASS.
+- Six of nine T2/U10/V10 aggregate metrics improved versus the pre-fix baseline. U10 RMSE and V10 RMSE saw real recovery; T2 RMSE worsened because the inline theta envelope `[200 K, 400 K]` for the lower 30 levels saturates the diurnal warming maximum. Three metrics worsened overall.
+- All three variables remain outside the pre-declared ±20 percent tolerance against CPU WRF. The post-fix forecast is still not operationally skill-equivalent.
+- The wall-clock cost of running correct physics is 700.89 s for 24 h end-to-end (compared to 324.78 s for the pre-fix path that was running incorrectly). The corrected speedup is 23.02x apples-to-apples d02-only, still 3x above the 4-8x target.
+
+Remaining defects named for the next iteration: (a) the theta guard envelope is too tight and pins the lower-column maximum, suppressing diurnal evolution; (b) land surface state (`t_skin`, `SST`, `SMOIS`, `SH2O`, `TSLB`) is still frozen at the IC, with no time evolution from the Gen2 reference or from a prognostic Noah-MP-style scheme; (c) the lateral boundary application uses only the outermost parent row (`bdy_width=1`) instead of the WRF `spec_bdy_width=5` strip.
+
+The publication claim is therefore: the fast, whole-state-resident, restart-bitwise architecture is correct, and the validation and fix discipline can localize coupled defects under operational scoring. The forecast is improving but is not yet a WRF skill replacement. The next iteration is in progress.
+
+The negative result reframes the publication claim. The engineering result is that a JAX-native, whole-state-resident WRF-compatible pipeline can run very fast on a single workstation GPU and can satisfy restart, repeatability, and transfer-audit gates. The meteorological result is that the current forecast is improving but not yet skill-equivalent to CPU WRF; it cannot be advertised as an operational replacement.
 
 ## 9. Discussion
 
