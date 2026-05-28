@@ -1,0 +1,716 @@
+{
+  "case_manifest": ".agent/sprints/2026-05-27-testing-plan-execution-redo/canary_case_manifest.json",
+  "case_results": [
+    {
+      "common_valid_time_count": 2,
+      "complete_24h": false,
+      "day": "20260428",
+      "forecast_wall_s": 571.7290438479995,
+      "history_count": 3,
+      "output_dir": "/tmp/pubtest_redo/canary/20260428",
+      "pipeline_verdict": "PIPELINE_PARTIAL",
+      "planned_hours": 2,
+      "proof_dir": ".agent/sprints/2026-05-27-testing-plan-execution-redo/canary_runs/20260428",
+      "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260428_18z_l3_24h_20260525T221139Z",
+      "run_id": "20260428_18z_l3_24h_20260525T221139Z",
+      "selection_class": "partial_history",
+      "skill_diff_path": ".agent/sprints/2026-05-27-testing-plan-execution-redo/canary_runs/20260428/gpu_vs_cpu_skill_diff.json",
+      "skill_verdict": "FAIL_SKILL_DIFF",
+      "station_count_scored": 0,
+      "station_score_summary": {
+        "acceptance": {
+          "finite_scores": false,
+          "joined_rows_at_least_100": false,
+          "minimum_joined_rows": 100
+        },
+        "joined_rows": 0,
+        "scores": {
+          "T2": {
+            "bias": null,
+            "mae": null,
+            "rmse": null,
+            "sample_count": 0,
+            "status": "NO_VALID_PAIRS"
+          },
+          "U10": {
+            "bias": null,
+            "mae": null,
+            "rmse": null,
+            "sample_count": 0,
+            "status": "NO_VALID_PAIRS"
+          },
+          "V10": {
+            "bias": null,
+            "mae": null,
+            "rmse": null,
+            "sample_count": 0,
+            "status": "NO_VALID_PAIRS"
+          }
+        },
+        "status": "FAIL"
+      },
+      "variables": {
+        "T2": {
+          "cpu_sample_count": 0,
+          "gpu_sample_count": 0,
+          "metrics": {
+            "bias": {
+              "comparison_basis": "absolute bias magnitude",
+              "cpu": null,
+              "gpu": null,
+              "materially_worse": false,
+              "relative_delta": null,
+              "within_20pct": false
+            },
+            "mae": {
+              "comparison_basis": "direct error magnitude",
+              "cpu": null,
+              "gpu": null,
+              "materially_worse": false,
+              "relative_delta": null,
+              "within_20pct": false
+            },
+            "rmse": {
+              "comparison_basis": "direct error magnitude",
+              "cpu": null,
+              "gpu": null,
+              "materially_worse": false,
+              "relative_delta": null,
+              "within_20pct": false
+            }
+          },
+          "within_20pct_all_metrics": false
+        },
+        "U10": {
+          "cpu_sample_count": 0,
+          "gpu_sample_count": 0,
+          "metrics": {
+            "bias": {
+              "comparison_basis": "absolute bias magnitude",
+              "cpu": null,
+              "gpu": null,
+              "materially_worse": false,
+              "relative_delta": null,
+              "within_20pct": false
+            },
+            "mae": {
+              "comparison_basis": "direct error magnitude",
+              "cpu": null,
+              "gpu": null,
+              "materially_worse": false,
+              "relative_delta": null,
+              "within_20pct": false
+            },
+            "rmse": {
+              "comparison_basis": "direct error magnitude",
+              "cpu": null,
+              "gpu": null,
+              "materially_worse": false,
+              "relative_delta": null,
+              "within_20pct": false
+            }
+          },
+          "within_20pct_all_metrics": false
+        },
+        "V10": {
+          "cpu_sample_count": 0,
+          "gpu_sample_count": 0,
+          "metrics": {
+            "bias": {
+              "comparison_basis": "absolute bias magnitude",
+              "cpu": null,
+              "gpu": null,
+              "materially_worse": false,
+              "relative_delta": null,
+              "within_20pct": false
+            },
+            "mae": {
+              "comparison_basis": "direct error magnitude",
+              "cpu": null,
+              "gpu": null,
+              "materially_worse": false,
+              "relative_delta": null,
+              "within_20pct": false
+            },
+            "rmse": {
+              "comparison_basis": "direct error magnitude",
+              "cpu": null,
+              "gpu": null,
+              "materially_worse": false,
+              "relative_delta": null,
+              "within_20pct": false
+            }
+          },
+          "within_20pct_all_metrics": false
+        }
+      },
+      "wall_clock_s": 579.6162731719996,
+      "wrfout_files": [
+        "/tmp/pubtest_redo/canary/20260428/wrfout_d02_2026-04-28_19:00:00",
+        "/tmp/pubtest_redo/canary/20260428/wrfout_d02_2026-04-28_20:00:00"
+      ]
+    },
+    {
+      "common_valid_time_count": 24,
+      "complete_24h": true,
+      "day": "20260509",
+      "forecast_wall_s": 712.7780016120028,
+      "history_count": 25,
+      "output_dir": "/tmp/pubtest_redo/canary/20260509",
+      "pipeline_verdict": "PIPELINE_PARTIAL",
+      "planned_hours": 24,
+      "proof_dir": ".agent/sprints/2026-05-27-testing-plan-execution-redo/canary_runs/20260509",
+      "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260509_18z_l3_24h_20260511T190519Z",
+      "run_id": "20260509_18z_l3_24h_20260511T190519Z",
+      "selection_class": "complete_24h",
+      "skill_diff_path": ".agent/sprints/2026-05-27-testing-plan-execution-redo/canary_runs/20260509/gpu_vs_cpu_skill_diff.json",
+      "skill_verdict": "FAIL_SKILL_DIFF",
+      "station_count_scored": 73,
+      "station_score_summary": {
+        "acceptance": {
+          "finite_scores": true,
+          "joined_rows_at_least_100": false,
+          "minimum_joined_rows": 100
+        },
+        "joined_rows": 73,
+        "scores": {
+          "T2": {
+            "bias": 7.144220814351387,
+            "mae": 10.101203004002423,
+            "rmse": 11.97498937261758,
+            "sample_count": 61,
+            "status": "OK"
+          },
+          "U10": {
+            "bias": 4.48194942122715,
+            "mae": 6.108450551683159,
+            "rmse": 7.214357183550917,
+            "sample_count": 59,
+            "status": "OK"
+          },
+          "V10": {
+            "bias": 3.1041785513417217,
+            "mae": 5.041906251197649,
+            "rmse": 6.51070212965877,
+            "sample_count": 59,
+            "status": "OK"
+          }
+        },
+        "status": "FAIL"
+      },
+      "variables": {
+        "T2": {
+          "cpu_sample_count": 61,
+          "gpu_sample_count": 61,
+          "metrics": {
+            "bias": {
+              "comparison_basis": "absolute bias magnitude",
+              "cpu": -1.8961745648719874,
+              "gpu": 7.144220814351387,
+              "materially_worse": true,
+              "relative_delta": 2.7677020600862767,
+              "within_20pct": false
+            },
+            "mae": {
+              "comparison_basis": "direct error magnitude",
+              "cpu": 2.052115178167578,
+              "gpu": 10.101203004002423,
+              "materially_worse": true,
+              "relative_delta": 3.922337260339462,
+              "within_20pct": false
+            },
+            "rmse": {
+              "comparison_basis": "direct error magnitude",
+              "cpu": 2.5064749120665457,
+              "gpu": 11.97498937261758,
+              "materially_worse": true,
+              "relative_delta": 3.7776218764321907,
+              "within_20pct": false
+            }
+          },
+          "within_20pct_all_metrics": false
+        },
+        "U10": {
+          "cpu_sample_count": 59,
+          "gpu_sample_count": 59,
+          "metrics": {
+            "bias": {
+              "comparison_basis": "absolute bias magnitude",
+              "cpu": 0.7520187140837923,
+              "gpu": 4.48194942122715,
+              "materially_worse": true,
+              "relative_delta": 4.959890807621255,
+              "within_20pct": false
+            },
+            "mae": {
+              "comparison_basis": "direct error magnitude",
+              "cpu": 1.7419555715148642,
+              "gpu": 6.108450551683159,
+              "materially_worse": true,
+              "relative_delta": 2.5066626563678893,
+              "within_20pct": false
+            },
+            "rmse": {
+              "comparison_basis": "direct error magnitude",
+              "cpu": 2.120557318296732,
+              "gpu": 7.214357183550917,
+              "materially_worse": true,
+              "relative_delta": 2.4021043059310525,
+              "within_20pct": false
+            }
+          },
+          "within_20pct_all_metrics": false
+        },
+        "V10": {
+          "cpu_sample_count": 59,
+          "gpu_sample_count": 59,
+          "metrics": {
+            "bias": {
+              "comparison_basis": "absolute bias magnitude",
+              "cpu": -1.1867318693786184,
+              "gpu": 3.1041785513417217,
+              "materially_worse": true,
+              "relative_delta": 1.6157370771268598,
+              "within_20pct": false
+            },
+            "mae": {
+              "comparison_basis": "direct error magnitude",
+              "cpu": 1.758997362690245,
+              "gpu": 5.041906251197649,
+              "materially_worse": true,
+              "relative_delta": 1.8663523653534415,
+              "within_20pct": false
+            },
+            "rmse": {
+              "comparison_basis": "direct error magnitude",
+              "cpu": 2.2090282804553425,
+              "gpu": 6.51070212965877,
+              "materially_worse": true,
+              "relative_delta": 1.947314974309307,
+              "within_20pct": false
+            }
+          },
+          "within_20pct_all_metrics": false
+        }
+      },
+      "wall_clock_s": 766.2819292019994,
+      "wrfout_files": [
+        "/tmp/pubtest_redo/canary/20260509/wrfout_d02_2026-05-09_19:00:00",
+        "/tmp/pubtest_redo/canary/20260509/wrfout_d02_2026-05-09_20:00:00",
+        "/tmp/pubtest_redo/canary/20260509/wrfout_d02_2026-05-09_21:00:00",
+        "/tmp/pubtest_redo/canary/20260509/wrfout_d02_2026-05-09_22:00:00",
+        "/tmp/pubtest_redo/canary/20260509/wrfout_d02_2026-05-09_23:00:00",
+        "/tmp/pubtest_redo/canary/20260509/wrfout_d02_2026-05-10_00:00:00",
+        "/tmp/pubtest_redo/canary/20260509/wrfout_d02_2026-05-10_01:00:00",
+        "/tmp/pubtest_redo/canary/20260509/wrfout_d02_2026-05-10_02:00:00",
+        "/tmp/pubtest_redo/canary/20260509/wrfout_d02_2026-05-10_03:00:00",
+        "/tmp/pubtest_redo/canary/20260509/wrfout_d02_2026-05-10_04:00:00",
+        "/tmp/pubtest_redo/canary/20260509/wrfout_d02_2026-05-10_05:00:00",
+        "/tmp/pubtest_redo/canary/20260509/wrfout_d02_2026-05-10_06:00:00",
+        "/tmp/pubtest_redo/canary/20260509/wrfout_d02_2026-05-10_07:00:00",
+        "/tmp/pubtest_redo/canary/20260509/wrfout_d02_2026-05-10_08:00:00",
+        "/tmp/pubtest_redo/canary/20260509/wrfout_d02_2026-05-10_09:00:00",
+        "/tmp/pubtest_redo/canary/20260509/wrfout_d02_2026-05-10_10:00:00",
+        "/tmp/pubtest_redo/canary/20260509/wrfout_d02_2026-05-10_11:00:00",
+        "/tmp/pubtest_redo/canary/20260509/wrfout_d02_2026-05-10_12:00:00",
+        "/tmp/pubtest_redo/canary/20260509/wrfout_d02_2026-05-10_13:00:00",
+        "/tmp/pubtest_redo/canary/20260509/wrfout_d02_2026-05-10_14:00:00",
+        "/tmp/pubtest_redo/canary/20260509/wrfout_d02_2026-05-10_15:00:00",
+        "/tmp/pubtest_redo/canary/20260509/wrfout_d02_2026-05-10_16:00:00",
+        "/tmp/pubtest_redo/canary/20260509/wrfout_d02_2026-05-10_17:00:00",
+        "/tmp/pubtest_redo/canary/20260509/wrfout_d02_2026-05-10_18:00:00"
+      ]
+    },
+    {
+      "common_valid_time_count": 24,
+      "complete_24h": true,
+      "day": "20260521",
+      "forecast_wall_s": 706.9543214300029,
+      "history_count": 25,
+      "output_dir": "/tmp/pubtest_redo/canary/20260521",
+      "pipeline_verdict": "PIPELINE_GREEN",
+      "planned_hours": 24,
+      "proof_dir": ".agent/sprints/2026-05-27-testing-plan-execution-redo/canary_runs/20260521",
+      "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
+      "run_id": "20260521_18z_l3_24h_20260522T133443Z",
+      "selection_class": "complete_24h",
+      "skill_diff_path": ".agent/sprints/2026-05-27-testing-plan-execution-redo/canary_runs/20260521/gpu_vs_cpu_skill_diff.json",
+      "skill_verdict": "FAIL_SKILL_DIFF",
+      "station_count_scored": 73,
+      "station_score_summary": {
+        "acceptance": {
+          "finite_scores": true,
+          "joined_rows_at_least_100": true,
+          "minimum_joined_rows": 100
+        },
+        "joined_rows": 1747,
+        "scores": {
+          "T2": {
+            "bias": 6.354676235180052,
+            "mae": 8.238441952147152,
+            "rmse": 10.80126250539068,
+            "sample_count": 1615,
+            "status": "OK"
+          },
+          "U10": {
+            "bias": 3.1051626060090483,
+            "mae": 5.627775357955326,
+            "rmse": 7.237992941570328,
+            "sample_count": 1604,
+            "status": "OK"
+          },
+          "V10": {
+            "bias": -0.03376545499677291,
+            "mae": 6.016755192731049,
+            "rmse": 7.621687554701543,
+            "sample_count": 1604,
+            "status": "OK"
+          }
+        },
+        "status": "PASS"
+      },
+      "variables": {
+        "T2": {
+          "cpu_sample_count": 1639,
+          "gpu_sample_count": 1615,
+          "metrics": {
+            "bias": {
+              "comparison_basis": "absolute bias magnitude",
+              "cpu": 0.34371109041729947,
+              "gpu": 6.354676235180052,
+              "materially_worse": true,
+              "relative_delta": 17.48842359862419,
+              "within_20pct": false
+            },
+            "mae": {
+              "comparison_basis": "direct error magnitude",
+              "cpu": 1.6806882826593696,
+              "gpu": 8.238441952147152,
+              "materially_worse": true,
+              "relative_delta": 3.901826256033263,
+              "within_20pct": false
+            },
+            "rmse": {
+              "comparison_basis": "direct error magnitude",
+              "cpu": 2.148692978020805,
+              "gpu": 10.80126250539068,
+              "materially_worse": true,
+              "relative_delta": 4.026898964104166,
+              "within_20pct": false
+            }
+          },
+          "within_20pct_all_metrics": false
+        },
+        "U10": {
+          "cpu_sample_count": 1628,
+          "gpu_sample_count": 1604,
+          "metrics": {
+            "bias": {
+              "comparison_basis": "absolute bias magnitude",
+              "cpu": -0.13524676994285947,
+              "gpu": 3.1051626060090483,
+              "materially_worse": true,
+              "relative_delta": 21.959236714643545,
+              "within_20pct": false
+            },
+            "mae": {
+              "comparison_basis": "direct error magnitude",
+              "cpu": 1.71219939470298,
+              "gpu": 5.627775357955326,
+              "materially_worse": true,
+              "relative_delta": 2.2868691434922455,
+              "within_20pct": false
+            },
+            "rmse": {
+              "comparison_basis": "direct error magnitude",
+              "cpu": 2.3064713972582305,
+              "gpu": 7.237992941570328,
+              "materially_worse": true,
+              "relative_delta": 2.138123867555583,
+              "within_20pct": false
+            }
+          },
+          "within_20pct_all_metrics": false
+        },
+        "V10": {
+          "cpu_sample_count": 1628,
+          "gpu_sample_count": 1604,
+          "metrics": {
+            "bias": {
+              "comparison_basis": "absolute bias magnitude",
+              "cpu": -0.6699518392745473,
+              "gpu": -0.03376545499677291,
+              "materially_worse": false,
+              "relative_delta": -0.9496001756882472,
+              "within_20pct": false
+            },
+            "mae": {
+              "comparison_basis": "direct error magnitude",
+              "cpu": 1.972527324422458,
+              "gpu": 6.016755192731049,
+              "materially_worse": true,
+              "relative_delta": 2.0502772348123046,
+              "within_20pct": false
+            },
+            "rmse": {
+              "comparison_basis": "direct error magnitude",
+              "cpu": 2.7523205379208537,
+              "gpu": 7.621687554701543,
+              "materially_worse": true,
+              "relative_delta": 1.7691860194667173,
+              "within_20pct": false
+            }
+          },
+          "within_20pct_all_metrics": false
+        }
+      },
+      "wall_clock_s": 766.1863274529996,
+      "wrfout_files": [
+        "/tmp/pubtest_redo/canary/20260521/wrfout_d02_2026-05-21_19:00:00",
+        "/tmp/pubtest_redo/canary/20260521/wrfout_d02_2026-05-21_20:00:00",
+        "/tmp/pubtest_redo/canary/20260521/wrfout_d02_2026-05-21_21:00:00",
+        "/tmp/pubtest_redo/canary/20260521/wrfout_d02_2026-05-21_22:00:00",
+        "/tmp/pubtest_redo/canary/20260521/wrfout_d02_2026-05-21_23:00:00",
+        "/tmp/pubtest_redo/canary/20260521/wrfout_d02_2026-05-22_00:00:00",
+        "/tmp/pubtest_redo/canary/20260521/wrfout_d02_2026-05-22_01:00:00",
+        "/tmp/pubtest_redo/canary/20260521/wrfout_d02_2026-05-22_02:00:00",
+        "/tmp/pubtest_redo/canary/20260521/wrfout_d02_2026-05-22_03:00:00",
+        "/tmp/pubtest_redo/canary/20260521/wrfout_d02_2026-05-22_04:00:00",
+        "/tmp/pubtest_redo/canary/20260521/wrfout_d02_2026-05-22_05:00:00",
+        "/tmp/pubtest_redo/canary/20260521/wrfout_d02_2026-05-22_06:00:00",
+        "/tmp/pubtest_redo/canary/20260521/wrfout_d02_2026-05-22_07:00:00",
+        "/tmp/pubtest_redo/canary/20260521/wrfout_d02_2026-05-22_08:00:00",
+        "/tmp/pubtest_redo/canary/20260521/wrfout_d02_2026-05-22_09:00:00",
+        "/tmp/pubtest_redo/canary/20260521/wrfout_d02_2026-05-22_10:00:00",
+        "/tmp/pubtest_redo/canary/20260521/wrfout_d02_2026-05-22_11:00:00",
+        "/tmp/pubtest_redo/canary/20260521/wrfout_d02_2026-05-22_12:00:00",
+        "/tmp/pubtest_redo/canary/20260521/wrfout_d02_2026-05-22_13:00:00",
+        "/tmp/pubtest_redo/canary/20260521/wrfout_d02_2026-05-22_14:00:00",
+        "/tmp/pubtest_redo/canary/20260521/wrfout_d02_2026-05-22_15:00:00",
+        "/tmp/pubtest_redo/canary/20260521/wrfout_d02_2026-05-22_16:00:00",
+        "/tmp/pubtest_redo/canary/20260521/wrfout_d02_2026-05-22_17:00:00",
+        "/tmp/pubtest_redo/canary/20260521/wrfout_d02_2026-05-22_18:00:00"
+      ]
+    },
+    {
+      "common_valid_time_count": 24,
+      "complete_24h": true,
+      "day": "20260525",
+      "forecast_wall_s": 687.4308476999995,
+      "history_count": 25,
+      "output_dir": "/tmp/pubtest_redo/canary/20260525",
+      "pipeline_verdict": "PIPELINE_GREEN",
+      "planned_hours": 24,
+      "proof_dir": ".agent/sprints/2026-05-27-testing-plan-execution-redo/canary_runs/20260525",
+      "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260525_18z_l3_24h_20260526T221207Z",
+      "run_id": "20260525_18z_l3_24h_20260526T221207Z",
+      "selection_class": "complete_24h",
+      "skill_diff_path": ".agent/sprints/2026-05-27-testing-plan-execution-redo/canary_runs/20260525/gpu_vs_cpu_skill_diff.json",
+      "skill_verdict": "FAIL_SKILL_DIFF",
+      "station_count_scored": 73,
+      "station_score_summary": {
+        "acceptance": {
+          "finite_scores": true,
+          "joined_rows_at_least_100": true,
+          "minimum_joined_rows": 100
+        },
+        "joined_rows": 1738,
+        "scores": {
+          "T2": {
+            "bias": 4.60883759673723,
+            "mae": 5.813516742510718,
+            "rmse": 7.711605864298857,
+            "sample_count": 1603,
+            "status": "OK"
+          },
+          "U10": {
+            "bias": 0.19915636559110048,
+            "mae": 7.694163058207723,
+            "rmse": 9.918086433559914,
+            "sample_count": 1606,
+            "status": "OK"
+          },
+          "V10": {
+            "bias": 2.2366740569677113,
+            "mae": 7.944731134928151,
+            "rmse": 10.164377197059688,
+            "sample_count": 1606,
+            "status": "OK"
+          }
+        },
+        "status": "PASS"
+      },
+      "variables": {
+        "T2": {
+          "cpu_sample_count": 1627,
+          "gpu_sample_count": 1603,
+          "metrics": {
+            "bias": {
+              "comparison_basis": "absolute bias magnitude",
+              "cpu": 0.6330087509101904,
+              "gpu": 4.60883759673723,
+              "materially_worse": true,
+              "relative_delta": 6.280843416635673,
+              "within_20pct": false
+            },
+            "mae": {
+              "comparison_basis": "direct error magnitude",
+              "cpu": 2.446363009462878,
+              "gpu": 5.813516742510718,
+              "materially_worse": true,
+              "relative_delta": 1.3763916965810934,
+              "within_20pct": false
+            },
+            "rmse": {
+              "comparison_basis": "direct error magnitude",
+              "cpu": 2.952759509772082,
+              "gpu": 7.711605864298857,
+              "materially_worse": true,
+              "relative_delta": 1.6116606648043958,
+              "within_20pct": false
+            }
+          },
+          "within_20pct_all_metrics": false
+        },
+        "U10": {
+          "cpu_sample_count": 1630,
+          "gpu_sample_count": 1606,
+          "metrics": {
+            "bias": {
+              "comparison_basis": "absolute bias magnitude",
+              "cpu": -0.2631520190953662,
+              "gpu": 0.19915636559110048,
+              "materially_worse": false,
+              "relative_delta": -0.24318891310149401,
+              "within_20pct": false
+            },
+            "mae": {
+              "comparison_basis": "direct error magnitude",
+              "cpu": 1.5711601236408976,
+              "gpu": 7.694163058207723,
+              "materially_worse": true,
+              "relative_delta": 3.8971221598838715,
+              "within_20pct": false
+            },
+            "rmse": {
+              "comparison_basis": "direct error magnitude",
+              "cpu": 2.1119848351756456,
+              "gpu": 9.918086433559914,
+              "materially_worse": true,
+              "relative_delta": 3.6960973717100885,
+              "within_20pct": false
+            }
+          },
+          "within_20pct_all_metrics": false
+        },
+        "V10": {
+          "cpu_sample_count": 1630,
+          "gpu_sample_count": 1606,
+          "metrics": {
+            "bias": {
+              "comparison_basis": "absolute bias magnitude",
+              "cpu": -0.5138619818875211,
+              "gpu": 2.2366740569677113,
+              "materially_worse": true,
+              "relative_delta": 3.3526747177363583,
+              "within_20pct": false
+            },
+            "mae": {
+              "comparison_basis": "direct error magnitude",
+              "cpu": 1.6819754249897079,
+              "gpu": 7.944731134928151,
+              "materially_worse": true,
+              "relative_delta": 3.723452564698896,
+              "within_20pct": false
+            },
+            "rmse": {
+              "comparison_basis": "direct error magnitude",
+              "cpu": 2.244187254910792,
+              "gpu": 10.164377197059688,
+              "materially_worse": true,
+              "relative_delta": 3.5292019080928823,
+              "within_20pct": false
+            }
+          },
+          "within_20pct_all_metrics": false
+        }
+      },
+      "wall_clock_s": 743.0811903610002,
+      "wrfout_files": [
+        "/tmp/pubtest_redo/canary/20260525/wrfout_d02_2026-05-25_19:00:00",
+        "/tmp/pubtest_redo/canary/20260525/wrfout_d02_2026-05-25_20:00:00",
+        "/tmp/pubtest_redo/canary/20260525/wrfout_d02_2026-05-25_21:00:00",
+        "/tmp/pubtest_redo/canary/20260525/wrfout_d02_2026-05-25_22:00:00",
+        "/tmp/pubtest_redo/canary/20260525/wrfout_d02_2026-05-25_23:00:00",
+        "/tmp/pubtest_redo/canary/20260525/wrfout_d02_2026-05-26_00:00:00",
+        "/tmp/pubtest_redo/canary/20260525/wrfout_d02_2026-05-26_01:00:00",
+        "/tmp/pubtest_redo/canary/20260525/wrfout_d02_2026-05-26_02:00:00",
+        "/tmp/pubtest_redo/canary/20260525/wrfout_d02_2026-05-26_03:00:00",
+        "/tmp/pubtest_redo/canary/20260525/wrfout_d02_2026-05-26_04:00:00",
+        "/tmp/pubtest_redo/canary/20260525/wrfout_d02_2026-05-26_05:00:00",
+        "/tmp/pubtest_redo/canary/20260525/wrfout_d02_2026-05-26_06:00:00",
+        "/tmp/pubtest_redo/canary/20260525/wrfout_d02_2026-05-26_07:00:00",
+        "/tmp/pubtest_redo/canary/20260525/wrfout_d02_2026-05-26_08:00:00",
+        "/tmp/pubtest_redo/canary/20260525/wrfout_d02_2026-05-26_09:00:00",
+        "/tmp/pubtest_redo/canary/20260525/wrfout_d02_2026-05-26_10:00:00",
+        "/tmp/pubtest_redo/canary/20260525/wrfout_d02_2026-05-26_11:00:00",
+        "/tmp/pubtest_redo/canary/20260525/wrfout_d02_2026-05-26_12:00:00",
+        "/tmp/pubtest_redo/canary/20260525/wrfout_d02_2026-05-26_13:00:00",
+        "/tmp/pubtest_redo/canary/20260525/wrfout_d02_2026-05-26_14:00:00",
+        "/tmp/pubtest_redo/canary/20260525/wrfout_d02_2026-05-26_15:00:00",
+        "/tmp/pubtest_redo/canary/20260525/wrfout_d02_2026-05-26_16:00:00",
+        "/tmp/pubtest_redo/canary/20260525/wrfout_d02_2026-05-26_17:00:00",
+        "/tmp/pubtest_redo/canary/20260525/wrfout_d02_2026-05-26_18:00:00"
+      ]
+    },
+    {
+      "complete_24h": false,
+      "day": "20260429",
+      "history_count": 0,
+      "pipeline_verdict": "SKIP_INSUFFICIENT_CPU_HISTORY",
+      "planned_hours": 0,
+      "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260429_18z_l3_24h_20260524T204451Z",
+      "run_id": "20260429_18z_l3_24h_20260524T204451Z",
+      "selection_class": "missing_history",
+      "skip_reason": "fewer than two wrfout_d02 files available"
+    }
+  ],
+  "completed_gpu_case_count": 2,
+  "generated_utc": "2026-05-27T23:53:13.373406Z",
+  "gpu_hours_used": 0.7441367262750013,
+  "honesty_note": "The local wrf_l3 inventory exposes only three complete 24h distinct d02 history days; the requested five-day publication gate therefore fails even though real GPU runs were executed for every runnable selected case.",
+  "per_variable_pass": {
+    "T2": false,
+    "U10": false,
+    "V10": false
+  },
+  "repo_commit": "9beec8efccee3b5e9f85601cc52f96b3dfe0d3b3",
+  "required_gpu_case_count": 5,
+  "schema": "PublicationHighPriorityProof",
+  "schema_version": 1,
+  "status": "FAIL_FIVE_DAY_OR_SKILL_GATE",
+  "test_id": "CANARY-MULTIDAY-SIDE-BY-SIDE",
+  "thresholds": {
+    "T2_within_20pct": {
+      "passed": false,
+      "threshold": "GPU within +/-20% CPU RMSE for every complete case",
+      "value": null
+    },
+    "U10_within_20pct": {
+      "passed": false,
+      "threshold": "GPU within +/-20% CPU RMSE for every complete case",
+      "value": null
+    },
+    "V10_within_20pct": {
+      "passed": false,
+      "threshold": "GPU within +/-20% CPU RMSE for every complete case",
+      "value": null
+    },
+    "case_count": {
+      "passed": false,
+      "threshold": ">=5 complete 24h GPU cases",
+      "value": 2.0
+    }
+  },
+  "verdict": "FAIL"
+}

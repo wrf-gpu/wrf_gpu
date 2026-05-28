@@ -1,0 +1,167 @@
+{
+  "generated_utc": "2026-05-27T23:05:28.792735Z",
+  "gpu_hours_used": 0.0,
+  "inputs": {
+    "array_stats": {
+      "density_kg_m3": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 1.1612378795796319,
+        "min": 0.4722938852139243,
+        "shape": [
+          80,
+          201
+        ]
+      },
+      "pressure_pa": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 100000.0,
+        "min": 40671.58792519709,
+        "shape": [
+          80,
+          201
+        ]
+      },
+      "theta_k": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 302.0,
+        "min": 300.0,
+        "shape": [
+          80,
+          201
+        ]
+      },
+      "theta_perturbation_k": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 2.0,
+        "min": 0.0,
+        "shape": [
+          80,
+          201
+        ]
+      },
+      "u_m_s": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 0.0,
+        "min": 0.0,
+        "shape": [
+          80,
+          201
+        ]
+      },
+      "w_m_s": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 0.0,
+        "min": 0.0,
+        "shape": [
+          80,
+          201
+        ]
+      },
+      "x_m": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 20000.0,
+        "min": 0.0,
+        "shape": [
+          201
+        ]
+      },
+      "z_m": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 7900.0,
+        "min": 0.0,
+        "shape": [
+          80
+        ]
+      }
+    },
+    "case_id": "idealized-warmbubble-bryan-fritsch-2002",
+    "grid": {
+      "dx_m": 100.0,
+      "dz_m": 100.0,
+      "nx": 201,
+      "nz": 80,
+      "staggering": "2d-xz-mass"
+    },
+    "parameters": {
+      "center_x_m": 10000.0,
+      "center_z_m": 2000.0,
+      "moisture": "dry",
+      "radius_x_m": 2000.0,
+      "radius_z_m": 2000.0,
+      "theta0_k": 300.0,
+      "theta_perturbation_k": 2.0
+    },
+    "reference": {
+      "name": "Bryan and Fritsch 2002 dry warm-bubble benchmark",
+      "notes": "Compact dry thermal bubble; WRF em_quarter_ss is the stock-ARW reference path.",
+      "purpose": "buoyant response, acoustic stability, symmetry"
+    }
+  },
+  "proof": {
+    "gpu_preflight": {
+      "available": true,
+      "command": {
+        "cmd": [
+          "nvidia-smi",
+          "--query-gpu=name,memory.total,memory.used",
+          "--format=csv,noheader"
+        ],
+        "cwd": "/tmp/wrf_gpu2_testexec2",
+        "returncode": 0,
+        "stderr": "",
+        "stdout": "NVIDIA GeForce RTX 5090, 32607 MiB, 26201 MiB\n",
+        "timed_out": false,
+        "timeout_s": 5
+      },
+      "skipped": false
+    },
+    "reference": {
+      "name": "Bryan and Fritsch 2002 dry warm-bubble benchmark",
+      "notes": "Compact dry thermal bubble; WRF em_quarter_ss is the stock-ARW reference path.",
+      "purpose": "buoyant response, acoustic stability, symmetry"
+    },
+    "wrf_provenance": {
+      "env_script": "/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/env_wrf_gpu.sh",
+      "env_script_exists": true,
+      "stable_wrf_exe": "/home/enric/src/wrf_gpu/builds/stable_20260509T213321Z/wrf.exe",
+      "stable_wrf_exe_executable": true,
+      "stable_wrf_exe_exists": true,
+      "stable_wrf_exe_sha256": "1ec3815497887f980293cf8ffc4b1219476d93dbed760538241fc3087e70dd37",
+      "wrf_source_commit": "115e5756f98ee2370d62b6709baac6417d8f7338",
+      "wrf_source_exists": true,
+      "wrf_source_path": "/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/WRF"
+    }
+  },
+  "repo_commit": "9beec8efccee3b5e9f85601cc52f96b3dfe0d3b3",
+  "schema": "PublicationHighPriorityProof",
+  "schema_version": 1,
+  "skip_reason": "The repo contains analytic IC builders and comparison wrappers, but no reviewed GPU idealized forecast integrator for this case inside the sprint's editable scope.",
+  "status": "SKIP_NO_IDEALIZED_GPU_FORECAST_RUNNER",
+  "test_id": "IDEALIZED-WARMBUBBLE",
+  "thresholds": {
+    "dry_mass_drift": {
+      "passed": null,
+      "threshold": "<=1e-10 after integration",
+      "value": null
+    },
+    "finite_initial_condition": {
+      "passed": true,
+      "threshold": "all IC fields finite",
+      "value": 1.0
+    },
+    "theta_w_nrmse_ladder": {
+      "passed": null,
+      "threshold": "<=0.05/0.08/0.12/0.18 vs CPU WRF after integration",
+      "value": null
+    }
+  },
+  "verdict": "SKIP_NO_IDEALIZED_GPU_FORECAST_RUNNER"
+}
