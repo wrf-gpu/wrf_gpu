@@ -1,0 +1,106 @@
+{
+  "case_required_by_plan": "density_current",
+  "generated_utc": "2026-05-28T00:24:21.125599Z",
+  "gpu_hours_used": 0.2646330154000003,
+  "gpu_preflight": {
+    "available": true,
+    "command": {
+      "cmd": [
+        "nvidia-smi",
+        "--query-gpu=name,memory.total,memory.used",
+        "--format=csv,noheader"
+      ],
+      "cwd": "/tmp/wrf_gpu2_testexec2",
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "NVIDIA GeForce RTX 5090, 32607 MiB, 26201 MiB\n",
+      "timed_out": false,
+      "timeout_s": 5
+    },
+    "skipped": false
+  },
+  "honesty_note": "The requested density-current runner is absent; a real Canary d02 acoustic-substep surrogate was run when GPU execution was enabled.",
+  "repo_commit": "9beec8efccee3b5e9f85601cc52f96b3dfe0d3b3",
+  "schema": "PublicationHighPriorityProof",
+  "schema_version": 1,
+  "status": "SKIP_NO_DENSITY_CURRENT_GPU_RUNNER",
+  "supporting_surrogate_case": "Canary d02 1h",
+  "surrogate_pairwise_surface_nrmse": {
+    "4_vs_6": {
+      "T2": 0.002051707316454498,
+      "U10": 0.0041215971397830274,
+      "V10": 0.001776119650103945
+    },
+    "4_vs_8": {
+      "T2": 6.622938179150981e-06,
+      "U10": 0.00019353745936101686,
+      "V10": 0.00014700805505156548
+    },
+    "6_vs_8": {
+      "T2": 0.002052097804997906,
+      "U10": 0.004158463622770741,
+      "V10": 0.0017678389843979322
+    }
+  },
+  "surrogate_passed": false,
+  "surrogate_runs": [
+    {
+      "acoustic_substeps": 4,
+      "all_finite": true,
+      "forecast_wall_s": 304.9989978000003,
+      "label": "n4",
+      "output_dir": "/tmp/pubtest_redo/stability_acoustic/n4",
+      "pipeline_verdict": "PIPELINE_PARTIAL",
+      "proof_dir": ".agent/sprints/2026-05-27-testing-plan-execution-redo/stability_acoustic_runs/n4",
+      "wall_clock_s": 329.4368985889996,
+      "wrfout_files": [
+        "/tmp/pubtest_redo/stability_acoustic/n4/wrfout_d02_2026-05-21_19:00:00"
+      ]
+    },
+    {
+      "acoustic_substeps": 6,
+      "all_finite": true,
+      "forecast_wall_s": 322.7206610330004,
+      "label": "n6",
+      "output_dir": "/tmp/pubtest_redo/stability_acoustic/n6",
+      "pipeline_verdict": "PIPELINE_PARTIAL",
+      "proof_dir": ".agent/sprints/2026-05-27-testing-plan-execution-redo/stability_acoustic_runs/n6",
+      "wall_clock_s": 349.6722608810005,
+      "wrfout_files": [
+        "/tmp/pubtest_redo/stability_acoustic/n6/wrfout_d02_2026-05-21_19:00:00"
+      ]
+    },
+    {
+      "acoustic_substeps": 8,
+      "all_finite": true,
+      "forecast_wall_s": 324.9591966070002,
+      "label": "n8",
+      "output_dir": "/tmp/pubtest_redo/stability_acoustic/n8",
+      "pipeline_verdict": "PIPELINE_PARTIAL",
+      "proof_dir": ".agent/sprints/2026-05-27-testing-plan-execution-redo/stability_acoustic_runs/n8",
+      "wall_clock_s": 352.3219568020004,
+      "wrfout_files": [
+        "/tmp/pubtest_redo/stability_acoustic/n8/wrfout_d02_2026-05-21_19:00:00"
+      ]
+    }
+  ],
+  "test_id": "STABILITY-ACOUSTIC-SUBSTEP-SWEEP",
+  "thresholds": {
+    "all_runs_finite": {
+      "passed": null,
+      "threshold": "density-current finite for n in {4,6,8}",
+      "value": 0.0
+    },
+    "front_position_variation": {
+      "passed": null,
+      "threshold": "<=1 cell across settings",
+      "value": null
+    },
+    "ke_pairwise_nrmse": {
+      "passed": null,
+      "threshold": "<=0.05 on density-current KE",
+      "value": null
+    }
+  },
+  "verdict": "SKIP_NO_DENSITY_CURRENT_GPU_RUNNER"
+}

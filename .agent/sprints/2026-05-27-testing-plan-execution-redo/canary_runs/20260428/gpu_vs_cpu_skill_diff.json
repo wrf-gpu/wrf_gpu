@@ -1,0 +1,212 @@
+{
+  "aemet_root": "/mnt/data/canairy_meteo/artifacts/datasets/aemet_stations",
+  "aggregate_comparison": {
+    "all_variables_within_20pct": false,
+    "gpu_materially_worse_than_cpu": false,
+    "tolerance_fraction": 0.2,
+    "tolerance_note": "BIAS is compared by absolute error magnitude; RMSE and MAE are positive direct magnitudes.",
+    "variables": {
+      "T2": {
+        "cpu_sample_count": 0,
+        "gpu_sample_count": 0,
+        "metrics": {
+          "bias": {
+            "comparison_basis": "absolute bias magnitude",
+            "cpu": null,
+            "gpu": null,
+            "materially_worse": false,
+            "relative_delta": null,
+            "within_20pct": false
+          },
+          "mae": {
+            "comparison_basis": "direct error magnitude",
+            "cpu": null,
+            "gpu": null,
+            "materially_worse": false,
+            "relative_delta": null,
+            "within_20pct": false
+          },
+          "rmse": {
+            "comparison_basis": "direct error magnitude",
+            "cpu": null,
+            "gpu": null,
+            "materially_worse": false,
+            "relative_delta": null,
+            "within_20pct": false
+          }
+        },
+        "within_20pct_all_metrics": false
+      },
+      "U10": {
+        "cpu_sample_count": 0,
+        "gpu_sample_count": 0,
+        "metrics": {
+          "bias": {
+            "comparison_basis": "absolute bias magnitude",
+            "cpu": null,
+            "gpu": null,
+            "materially_worse": false,
+            "relative_delta": null,
+            "within_20pct": false
+          },
+          "mae": {
+            "comparison_basis": "direct error magnitude",
+            "cpu": null,
+            "gpu": null,
+            "materially_worse": false,
+            "relative_delta": null,
+            "within_20pct": false
+          },
+          "rmse": {
+            "comparison_basis": "direct error magnitude",
+            "cpu": null,
+            "gpu": null,
+            "materially_worse": false,
+            "relative_delta": null,
+            "within_20pct": false
+          }
+        },
+        "within_20pct_all_metrics": false
+      },
+      "V10": {
+        "cpu_sample_count": 0,
+        "gpu_sample_count": 0,
+        "metrics": {
+          "bias": {
+            "comparison_basis": "absolute bias magnitude",
+            "cpu": null,
+            "gpu": null,
+            "materially_worse": false,
+            "relative_delta": null,
+            "within_20pct": false
+          },
+          "mae": {
+            "comparison_basis": "direct error magnitude",
+            "cpu": null,
+            "gpu": null,
+            "materially_worse": false,
+            "relative_delta": null,
+            "within_20pct": false
+          },
+          "rmse": {
+            "comparison_basis": "direct error magnitude",
+            "cpu": null,
+            "gpu": null,
+            "materially_worse": false,
+            "relative_delta": null,
+            "within_20pct": false
+          }
+        },
+        "within_20pct_all_metrics": false
+      }
+    }
+  },
+  "common_valid_time_count": 2,
+  "common_valid_time_range": {
+    "end": "2026-04-28T20:00:00+00:00",
+    "start": "2026-04-28T19:00:00+00:00"
+  },
+  "cpu_run": "/mnt/data/canairy_meteo/runs/wrf_l3/20260428_18z_l3_24h_20260525T221139Z",
+  "generated_utc": "2026-05-27T23:15:09.094005+00:00",
+  "gpu_root": "/tmp/pubtest_redo/canary/20260428",
+  "schema": "M7GpuVsCpuSkillDiff",
+  "schema_version": 1,
+  "sources": {
+    "cpu": {
+      "aggregate": {
+        "joined_rows": 0,
+        "schema": "M7StationScoreReport",
+        "schema_version": 1,
+        "scores": {
+          "T2": {
+            "bias": null,
+            "mae": null,
+            "rmse": null,
+            "sample_count": 0,
+            "status": "NO_VALID_PAIRS"
+          },
+          "U10": {
+            "bias": null,
+            "mae": null,
+            "rmse": null,
+            "sample_count": 0,
+            "status": "NO_VALID_PAIRS"
+          },
+          "V10": {
+            "bias": null,
+            "mae": null,
+            "rmse": null,
+            "sample_count": 0,
+            "status": "NO_VALID_PAIRS"
+          }
+        },
+        "status": "NO_OVERLAP",
+        "variables": [
+          "T2",
+          "U10",
+          "V10"
+        ]
+      },
+      "forecast_rows": 0,
+      "label": "cpu",
+      "per_station": [],
+      "wrfout_file_count": 2,
+      "wrfout_files": [
+        "/mnt/data/canairy_meteo/runs/wrf_l3/20260428_18z_l3_24h_20260525T221139Z/wrfout_d02_2026-04-28_19:00:00",
+        "/mnt/data/canairy_meteo/runs/wrf_l3/20260428_18z_l3_24h_20260525T221139Z/wrfout_d02_2026-04-28_20:00:00"
+      ]
+    },
+    "gpu": {
+      "aggregate": {
+        "joined_rows": 0,
+        "schema": "M7StationScoreReport",
+        "schema_version": 1,
+        "scores": {
+          "T2": {
+            "bias": null,
+            "mae": null,
+            "rmse": null,
+            "sample_count": 0,
+            "status": "NO_VALID_PAIRS"
+          },
+          "U10": {
+            "bias": null,
+            "mae": null,
+            "rmse": null,
+            "sample_count": 0,
+            "status": "NO_VALID_PAIRS"
+          },
+          "V10": {
+            "bias": null,
+            "mae": null,
+            "rmse": null,
+            "sample_count": 0,
+            "status": "NO_VALID_PAIRS"
+          }
+        },
+        "status": "NO_OVERLAP",
+        "variables": [
+          "T2",
+          "U10",
+          "V10"
+        ]
+      },
+      "forecast_rows": 0,
+      "label": "gpu",
+      "per_station": [],
+      "wrfout_file_count": 2,
+      "wrfout_files": [
+        "/tmp/pubtest_redo/canary/20260428/wrfout_d02_2026-04-28_19:00:00",
+        "/tmp/pubtest_redo/canary/20260428/wrfout_d02_2026-04-28_20:00:00"
+      ]
+    }
+  },
+  "station_count_scored": 0,
+  "station_observation_rows": 0,
+  "variables": [
+    "T2",
+    "U10",
+    "V10"
+  ],
+  "verdict": "FAIL_SKILL_DIFF"
+}

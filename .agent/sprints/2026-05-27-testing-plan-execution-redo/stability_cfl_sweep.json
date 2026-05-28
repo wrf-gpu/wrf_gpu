@@ -1,0 +1,89 @@
+{
+  "case_required_by_plan": "warmbubble",
+  "generated_utc": "2026-05-28T00:24:21.124190Z",
+  "gpu_hours_used": 0.21275061200111117,
+  "gpu_preflight": {
+    "available": true,
+    "command": {
+      "cmd": [
+        "nvidia-smi",
+        "--query-gpu=name,memory.total,memory.used",
+        "--format=csv,noheader"
+      ],
+      "cwd": "/tmp/wrf_gpu2_testexec2",
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "NVIDIA GeForce RTX 5090, 32607 MiB, 26201 MiB\n",
+      "timed_out": false,
+      "timeout_s": 5
+    },
+    "skipped": false
+  },
+  "honesty_note": "The requested warmbubble CFL runner is absent; a real Canary d02 surrogate was run when GPU execution was enabled.",
+  "repo_commit": "9beec8efccee3b5e9f85601cc52f96b3dfe0d3b3",
+  "schema": "PublicationHighPriorityProof",
+  "schema_version": 1,
+  "status": "SKIP_NO_WARMBUBBLE_GPU_RUNNER",
+  "supporting_surrogate_case": "Canary d02 1h",
+  "surrogate_passed": false,
+  "surrogate_runs": [
+    {
+      "all_finite": true,
+      "dt_s": 5.0,
+      "forecast_wall_s": 529.8401709960008,
+      "label": "dt_0p5",
+      "output_dir": "/tmp/pubtest_redo/stability_cfl/dt_0p5",
+      "pipeline_verdict": "PIPELINE_PARTIAL",
+      "proof_dir": ".agent/sprints/2026-05-27-testing-plan-execution-redo/stability_cfl_runs/dt_0p5",
+      "wall_clock_s": 551.6223598280003,
+      "wrfout_files": [
+        "/tmp/pubtest_redo/stability_cfl/dt_0p5/wrfout_d02_2026-05-21_19:00:00"
+      ]
+    },
+    {
+      "all_finite": true,
+      "dt_s": 10.0,
+      "forecast_wall_s": 5.877050403999419,
+      "label": "dt_1p0",
+      "output_dir": "/tmp/pubtest_redo/stability_cfl/dt_1p0",
+      "pipeline_verdict": "PIPELINE_PARTIAL",
+      "proof_dir": ".agent/sprints/2026-05-27-testing-plan-execution-redo/stability_cfl_runs/dt_1p0",
+      "wall_clock_s": 29.57655664899994,
+      "wrfout_files": [
+        "/tmp/pubtest_redo/stability_cfl/dt_1p0/wrfout_d02_2026-05-21_19:00:00"
+      ]
+    },
+    {
+      "all_finite": true,
+      "dt_s": 12.5,
+      "forecast_wall_s": 230.18498180400002,
+      "label": "dt_1p25",
+      "output_dir": "/tmp/pubtest_redo/stability_cfl/dt_1p25",
+      "pipeline_verdict": "PIPELINE_PARTIAL",
+      "proof_dir": ".agent/sprints/2026-05-27-testing-plan-execution-redo/stability_cfl_runs/dt_1p25",
+      "wall_clock_s": 254.80177892400025,
+      "wrfout_files": [
+        "/tmp/pubtest_redo/stability_cfl/dt_1p25/wrfout_d02_2026-05-21_19:00:00"
+      ]
+    }
+  ],
+  "test_id": "STABILITY-CFL-SWEEP",
+  "thresholds": {
+    "dt_0p5_finite_mass": {
+      "passed": null,
+      "threshold": "warmbubble complete finite, mass drift <=1e-10",
+      "value": null
+    },
+    "dt_1p0_finite_mass": {
+      "passed": null,
+      "threshold": "warmbubble complete finite, mass drift <=1e-10",
+      "value": null
+    },
+    "dt_1p25_deterministic_outcome": {
+      "passed": false,
+      "threshold": "Canary surrogate complete or fail deterministically",
+      "value": 0.0
+    }
+  },
+  "verdict": "SKIP_NO_WARMBUBBLE_GPU_RUNNER"
+}

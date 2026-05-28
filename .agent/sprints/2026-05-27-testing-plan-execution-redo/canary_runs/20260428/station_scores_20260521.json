@@ -1,0 +1,64 @@
+{
+  "acceptance": {
+    "finite_scores": false,
+    "joined_rows_at_least_100": false,
+    "minimum_joined_rows": 100
+  },
+  "aemet_inventory": {
+    "file_count": 106,
+    "station_count": 106,
+    "temporal_coverage": {
+      "end": "2026-05-27T21:00:00+00:00",
+      "start": "2006-05-11T00:00:00+00:00"
+    },
+    "variables_present": {
+      "PRECIP": 581319,
+      "PRESSURE": 6009,
+      "RH": 479653,
+      "T2": 586216,
+      "U10": 464253,
+      "V10": 464253,
+      "WIND10": 469051
+    }
+  },
+  "aemet_root": "/mnt/data/canairy_meteo/artifacts/datasets/aemet_stations",
+  "forecast_rows": 0,
+  "joined_rows": 0,
+  "schema": "M7DailyPipelineStationScores",
+  "schema_version": 1,
+  "scores": {
+    "T2": {
+      "bias": null,
+      "mae": null,
+      "rmse": null,
+      "sample_count": 0,
+      "status": "NO_VALID_PAIRS"
+    },
+    "U10": {
+      "bias": null,
+      "mae": null,
+      "rmse": null,
+      "sample_count": 0,
+      "status": "NO_VALID_PAIRS"
+    },
+    "V10": {
+      "bias": null,
+      "mae": null,
+      "rmse": null,
+      "sample_count": 0,
+      "status": "NO_VALID_PAIRS"
+    }
+  },
+  "station_count_scored": 0,
+  "station_observation_rows": 0,
+  "status": "FAIL",
+  "valid_time_range": {
+    "end": "2026-04-28T20:00:00+00:00",
+    "start": "2026-04-28T19:00:00+00:00"
+  },
+  "variables": [
+    "T2",
+    "U10",
+    "V10"
+  ]
+}

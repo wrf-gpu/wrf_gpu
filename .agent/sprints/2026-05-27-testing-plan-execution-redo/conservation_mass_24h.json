@@ -1,0 +1,258 @@
+{
+  "canary_case_source": {
+    "common_valid_time_count": 24,
+    "complete_24h": true,
+    "day": "20260521",
+    "forecast_wall_s": 706.9543214300029,
+    "history_count": 25,
+    "output_dir": "/tmp/pubtest_redo/canary/20260521",
+    "pipeline_verdict": "PIPELINE_GREEN",
+    "planned_hours": 24,
+    "proof_dir": ".agent/sprints/2026-05-27-testing-plan-execution-redo/canary_runs/20260521",
+    "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
+    "run_id": "20260521_18z_l3_24h_20260522T133443Z",
+    "selection_class": "complete_24h",
+    "skill_diff_path": ".agent/sprints/2026-05-27-testing-plan-execution-redo/canary_runs/20260521/gpu_vs_cpu_skill_diff.json",
+    "skill_verdict": "FAIL_SKILL_DIFF",
+    "station_count_scored": 73,
+    "station_score_summary": {
+      "acceptance": {
+        "finite_scores": true,
+        "joined_rows_at_least_100": true,
+        "minimum_joined_rows": 100
+      },
+      "joined_rows": 1747,
+      "scores": {
+        "T2": {
+          "bias": 6.354676235180052,
+          "mae": 8.238441952147152,
+          "rmse": 10.80126250539068,
+          "sample_count": 1615,
+          "status": "OK"
+        },
+        "U10": {
+          "bias": 3.1051626060090483,
+          "mae": 5.627775357955326,
+          "rmse": 7.237992941570328,
+          "sample_count": 1604,
+          "status": "OK"
+        },
+        "V10": {
+          "bias": -0.03376545499677291,
+          "mae": 6.016755192731049,
+          "rmse": 7.621687554701543,
+          "sample_count": 1604,
+          "status": "OK"
+        }
+      },
+      "status": "PASS"
+    },
+    "variables": {
+      "T2": {
+        "cpu_sample_count": 1639,
+        "gpu_sample_count": 1615,
+        "metrics": {
+          "bias": {
+            "comparison_basis": "absolute bias magnitude",
+            "cpu": 0.34371109041729947,
+            "gpu": 6.354676235180052,
+            "materially_worse": true,
+            "relative_delta": 17.48842359862419,
+            "within_20pct": false
+          },
+          "mae": {
+            "comparison_basis": "direct error magnitude",
+            "cpu": 1.6806882826593696,
+            "gpu": 8.238441952147152,
+            "materially_worse": true,
+            "relative_delta": 3.901826256033263,
+            "within_20pct": false
+          },
+          "rmse": {
+            "comparison_basis": "direct error magnitude",
+            "cpu": 2.148692978020805,
+            "gpu": 10.80126250539068,
+            "materially_worse": true,
+            "relative_delta": 4.026898964104166,
+            "within_20pct": false
+          }
+        },
+        "within_20pct_all_metrics": false
+      },
+      "U10": {
+        "cpu_sample_count": 1628,
+        "gpu_sample_count": 1604,
+        "metrics": {
+          "bias": {
+            "comparison_basis": "absolute bias magnitude",
+            "cpu": -0.13524676994285947,
+            "gpu": 3.1051626060090483,
+            "materially_worse": true,
+            "relative_delta": 21.959236714643545,
+            "within_20pct": false
+          },
+          "mae": {
+            "comparison_basis": "direct error magnitude",
+            "cpu": 1.71219939470298,
+            "gpu": 5.627775357955326,
+            "materially_worse": true,
+            "relative_delta": 2.2868691434922455,
+            "within_20pct": false
+          },
+          "rmse": {
+            "comparison_basis": "direct error magnitude",
+            "cpu": 2.3064713972582305,
+            "gpu": 7.237992941570328,
+            "materially_worse": true,
+            "relative_delta": 2.138123867555583,
+            "within_20pct": false
+          }
+        },
+        "within_20pct_all_metrics": false
+      },
+      "V10": {
+        "cpu_sample_count": 1628,
+        "gpu_sample_count": 1604,
+        "metrics": {
+          "bias": {
+            "comparison_basis": "absolute bias magnitude",
+            "cpu": -0.6699518392745473,
+            "gpu": -0.03376545499677291,
+            "materially_worse": false,
+            "relative_delta": -0.9496001756882472,
+            "within_20pct": false
+          },
+          "mae": {
+            "comparison_basis": "direct error magnitude",
+            "cpu": 1.972527324422458,
+            "gpu": 6.016755192731049,
+            "materially_worse": true,
+            "relative_delta": 2.0502772348123046,
+            "within_20pct": false
+          },
+          "rmse": {
+            "comparison_basis": "direct error magnitude",
+            "cpu": 2.7523205379208537,
+            "gpu": 7.621687554701543,
+            "materially_worse": true,
+            "relative_delta": 1.7691860194667173,
+            "within_20pct": false
+          }
+        },
+        "within_20pct_all_metrics": false
+      }
+    },
+    "wall_clock_s": 766.1863274529996,
+    "wrfout_files": [
+      "/tmp/pubtest_redo/canary/20260521/wrfout_d02_2026-05-21_19:00:00",
+      "/tmp/pubtest_redo/canary/20260521/wrfout_d02_2026-05-21_20:00:00",
+      "/tmp/pubtest_redo/canary/20260521/wrfout_d02_2026-05-21_21:00:00",
+      "/tmp/pubtest_redo/canary/20260521/wrfout_d02_2026-05-21_22:00:00",
+      "/tmp/pubtest_redo/canary/20260521/wrfout_d02_2026-05-21_23:00:00",
+      "/tmp/pubtest_redo/canary/20260521/wrfout_d02_2026-05-22_00:00:00",
+      "/tmp/pubtest_redo/canary/20260521/wrfout_d02_2026-05-22_01:00:00",
+      "/tmp/pubtest_redo/canary/20260521/wrfout_d02_2026-05-22_02:00:00",
+      "/tmp/pubtest_redo/canary/20260521/wrfout_d02_2026-05-22_03:00:00",
+      "/tmp/pubtest_redo/canary/20260521/wrfout_d02_2026-05-22_04:00:00",
+      "/tmp/pubtest_redo/canary/20260521/wrfout_d02_2026-05-22_05:00:00",
+      "/tmp/pubtest_redo/canary/20260521/wrfout_d02_2026-05-22_06:00:00",
+      "/tmp/pubtest_redo/canary/20260521/wrfout_d02_2026-05-22_07:00:00",
+      "/tmp/pubtest_redo/canary/20260521/wrfout_d02_2026-05-22_08:00:00",
+      "/tmp/pubtest_redo/canary/20260521/wrfout_d02_2026-05-22_09:00:00",
+      "/tmp/pubtest_redo/canary/20260521/wrfout_d02_2026-05-22_10:00:00",
+      "/tmp/pubtest_redo/canary/20260521/wrfout_d02_2026-05-22_11:00:00",
+      "/tmp/pubtest_redo/canary/20260521/wrfout_d02_2026-05-22_12:00:00",
+      "/tmp/pubtest_redo/canary/20260521/wrfout_d02_2026-05-22_13:00:00",
+      "/tmp/pubtest_redo/canary/20260521/wrfout_d02_2026-05-22_14:00:00",
+      "/tmp/pubtest_redo/canary/20260521/wrfout_d02_2026-05-22_15:00:00",
+      "/tmp/pubtest_redo/canary/20260521/wrfout_d02_2026-05-22_16:00:00",
+      "/tmp/pubtest_redo/canary/20260521/wrfout_d02_2026-05-22_17:00:00",
+      "/tmp/pubtest_redo/canary/20260521/wrfout_d02_2026-05-22_18:00:00"
+    ]
+  },
+  "canary_uncorrected_mass_series": {
+    "files": [
+      "/tmp/pubtest_redo/canary/20260521/wrfout_d02_2026-05-21_19:00:00",
+      "/tmp/pubtest_redo/canary/20260521/wrfout_d02_2026-05-21_20:00:00",
+      "/tmp/pubtest_redo/canary/20260521/wrfout_d02_2026-05-21_21:00:00",
+      "/tmp/pubtest_redo/canary/20260521/wrfout_d02_2026-05-21_22:00:00",
+      "/tmp/pubtest_redo/canary/20260521/wrfout_d02_2026-05-21_23:00:00",
+      "/tmp/pubtest_redo/canary/20260521/wrfout_d02_2026-05-22_00:00:00",
+      "/tmp/pubtest_redo/canary/20260521/wrfout_d02_2026-05-22_01:00:00",
+      "/tmp/pubtest_redo/canary/20260521/wrfout_d02_2026-05-22_02:00:00",
+      "/tmp/pubtest_redo/canary/20260521/wrfout_d02_2026-05-22_03:00:00",
+      "/tmp/pubtest_redo/canary/20260521/wrfout_d02_2026-05-22_04:00:00",
+      "/tmp/pubtest_redo/canary/20260521/wrfout_d02_2026-05-22_05:00:00",
+      "/tmp/pubtest_redo/canary/20260521/wrfout_d02_2026-05-22_06:00:00",
+      "/tmp/pubtest_redo/canary/20260521/wrfout_d02_2026-05-22_07:00:00",
+      "/tmp/pubtest_redo/canary/20260521/wrfout_d02_2026-05-22_08:00:00",
+      "/tmp/pubtest_redo/canary/20260521/wrfout_d02_2026-05-22_09:00:00",
+      "/tmp/pubtest_redo/canary/20260521/wrfout_d02_2026-05-22_10:00:00",
+      "/tmp/pubtest_redo/canary/20260521/wrfout_d02_2026-05-22_11:00:00",
+      "/tmp/pubtest_redo/canary/20260521/wrfout_d02_2026-05-22_12:00:00",
+      "/tmp/pubtest_redo/canary/20260521/wrfout_d02_2026-05-22_13:00:00",
+      "/tmp/pubtest_redo/canary/20260521/wrfout_d02_2026-05-22_14:00:00",
+      "/tmp/pubtest_redo/canary/20260521/wrfout_d02_2026-05-22_15:00:00",
+      "/tmp/pubtest_redo/canary/20260521/wrfout_d02_2026-05-22_16:00:00",
+      "/tmp/pubtest_redo/canary/20260521/wrfout_d02_2026-05-22_17:00:00",
+      "/tmp/pubtest_redo/canary/20260521/wrfout_d02_2026-05-22_18:00:00"
+    ],
+    "final": 992846157.6268833,
+    "initial": 992841390.1863027,
+    "max_abs_relative_uncorrected_drift": 4.810991895107257e-06,
+    "relative_drift_series": [
+      0.0,
+      2.5466904138632684e-06,
+      3.5037324061754693e-06,
+      3.9946696758425185e-06,
+      4.266901565929743e-06,
+      4.434680861991614e-06,
+      4.525705617565189e-06,
+      4.570352497066705e-06,
+      4.604868324972419e-06,
+      4.641926572701782e-06,
+      4.672574356945629e-06,
+      4.700175488293421e-06,
+      4.723787381758989e-06,
+      4.7422684224456345e-06,
+      4.7541453417351035e-06,
+      4.765018808353148e-06,
+      4.775484616608901e-06,
+      4.787820549253881e-06,
+      4.798659941182611e-06,
+      4.8055075627376625e-06,
+      4.809082268558054e-06,
+      4.810991895107257e-06,
+      4.809947497889178e-06,
+      4.801814899872244e-06
+    ],
+    "status": "PASS",
+    "value_count": 24
+  },
+  "generated_utc": "2026-05-27T23:53:13.669340Z",
+  "gpu_hours_used": 0.0,
+  "honesty_note": "A real GPU Canary mass series was read when available, but the required closed-domain warmbubble run and Canary boundary-flux correction are not implemented in the pubtest scope.",
+  "repo_commit": "9beec8efccee3b5e9f85601cc52f96b3dfe0d3b3",
+  "schema": "PublicationHighPriorityProof",
+  "schema_version": 1,
+  "status": "FAIL_MISSING_CLOSED_DOMAIN_AND_BOUNDARY_FLUX_CORRECTION",
+  "test_id": "CONSERVATION-MASS-24H",
+  "thresholds": {
+    "canary_flux_corrected_residual": {
+      "passed": false,
+      "threshold": "<=1e-5 after boundary-flux correction",
+      "value": 4.810991895107257e-06
+    },
+    "closed_domain_dry_mass_drift": {
+      "passed": null,
+      "threshold": "<=1e-10 over 24 h warm-bubble closed domain",
+      "value": null
+    },
+    "nonfinite_mass_fields": {
+      "passed": true,
+      "threshold": "zero",
+      "value": 0.0
+    }
+  },
+  "verdict": "FAIL"
+}

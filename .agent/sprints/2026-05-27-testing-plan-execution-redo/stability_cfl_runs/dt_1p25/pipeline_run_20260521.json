@@ -1,0 +1,676 @@
+{
+  "all_finite_check": {
+    "all_finite": true,
+    "field_count": 47,
+    "fields": {
+      "Ng": {
+        "dtype": "float32",
+        "finite": true,
+        "max": 0.0,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "Ni": {
+        "dtype": "float32",
+        "finite": true,
+        "max": 3486146.75,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "Nr": {
+        "dtype": "float32",
+        "finite": true,
+        "max": 11783.5224609375,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "Ns": {
+        "dtype": "float32",
+        "finite": true,
+        "max": 0.0,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "fltv": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 0.7170621526273636,
+        "min": -0.1070999344748251,
+        "nonfinite_count": 0,
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "graupel_acc": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 0.0,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "ice_acc": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 0.0,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "lakemask": {
+        "dtype": "float32",
+        "finite": true,
+        "max": 0.0,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "mavail": {
+        "dtype": "float32",
+        "finite": true,
+        "max": 1.0,
+        "min": 0.017378246411681175,
+        "nonfinite_count": 0,
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "mu": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 96758.765625,
+        "min": 66591.71114219955,
+        "nonfinite_count": 0,
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "mu_bdy": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 96966.484375,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          25,
+          4,
+          5,
+          1,
+          160
+        ]
+      },
+      "mu_perturbation": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 2093.0840188318107,
+        "min": -755.01959232238,
+        "nonfinite_count": 0,
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "mu_total": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 96758.765625,
+        "min": 66591.71114219955,
+        "nonfinite_count": 0,
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "p": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 101898.5390625,
+        "min": 5225.23876953125,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "p_perturbation": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 2192.3359375,
+        "min": -0.052734375,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "p_total": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 101898.5390625,
+        "min": 5225.23876953125,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "ph": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 204077.453125,
+        "min": -0.012109687304279972,
+        "nonfinite_count": 0,
+        "shape": [
+          45,
+          66,
+          159
+        ]
+      },
+      "ph_bdy": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 204128.2939453125,
+        "min": -4.5681374238881745e-09,
+        "nonfinite_count": 0,
+        "shape": [
+          25,
+          4,
+          5,
+          45,
+          160
+        ]
+      },
+      "ph_perturbation": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 8856.96875,
+        "min": -34.68757783680053,
+        "nonfinite_count": 0,
+        "shape": [
+          45,
+          66,
+          159
+        ]
+      },
+      "ph_total": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 204077.453125,
+        "min": -0.012109687304279972,
+        "nonfinite_count": 0,
+        "shape": [
+          45,
+          66,
+          159
+        ]
+      },
+      "qc": {
+        "dtype": "float32",
+        "finite": true,
+        "max": 0.0026712464168667793,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "qg": {
+        "dtype": "float32",
+        "finite": true,
+        "max": 0.0006147167296148837,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "qi": {
+        "dtype": "float32",
+        "finite": true,
+        "max": 0.0006783188437111676,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "qke": {
+        "dtype": "float32",
+        "finite": true,
+        "max": 150.0,
+        "min": 9.999999747378752e-06,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "qr": {
+        "dtype": "float32",
+        "finite": true,
+        "max": 0.011682532727718353,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "qs": {
+        "dtype": "float32",
+        "finite": true,
+        "max": 0.004579346161335707,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "qv": {
+        "dtype": "float32",
+        "finite": true,
+        "max": 0.014784622937440872,
+        "min": 5.274446834846458e-07,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "qv_bdy": {
+        "dtype": "float32",
+        "finite": true,
+        "max": 0.014462422579526901,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          25,
+          4,
+          5,
+          44,
+          160
+        ]
+      },
+      "qv_flux": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 0.00019137845714107868,
+        "min": 9.58026488083905e-07,
+        "nonfinite_count": 0,
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "rain_acc": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 0.0,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "rhosfc": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 1.280707814433863,
+        "min": 0.9306927065150801,
+        "nonfinite_count": 0,
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "roughness_m": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 1.0123519109200805,
+        "min": 3.6989915960921864e-05,
+        "nonfinite_count": 0,
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "snow_acc": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 0.0,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "soil_moisture": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 1.0,
+        "min": 0.017378246411681175,
+        "nonfinite_count": 0,
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "t_skin": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 302.8785705566406,
+        "min": 286.32867431640625,
+        "nonfinite_count": 0,
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "tau_u": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 1.4237388306027148,
+        "min": -1.565396039948098,
+        "nonfinite_count": 0,
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "tau_v": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 1.689542252464666,
+        "min": -1.7782534803652137,
+        "nonfinite_count": 0,
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "theta": {
+        "dtype": "float32",
+        "finite": true,
+        "max": 699.9990844726562,
+        "min": 200.11502075195312,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "theta_bdy": {
+        "dtype": "float32",
+        "finite": true,
+        "max": 492.52838134765625,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          25,
+          4,
+          5,
+          44,
+          160
+        ]
+      },
+      "theta_flux": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 0.7150532601744354,
+        "min": -0.11739111393427487,
+        "nonfinite_count": 0,
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "u": {
+        "dtype": "float32",
+        "finite": true,
+        "max": 40.52745056152344,
+        "min": -40.442535400390625,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          66,
+          160
+        ]
+      },
+      "u_bdy": {
+        "dtype": "float32",
+        "finite": true,
+        "max": 25.663454055786133,
+        "min": -11.665651321411133,
+        "nonfinite_count": 0,
+        "shape": [
+          25,
+          4,
+          5,
+          44,
+          160
+        ]
+      },
+      "ustar": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 1.3357753678839954,
+        "min": 0.032836023583999,
+        "nonfinite_count": 0,
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "v": {
+        "dtype": "float32",
+        "finite": true,
+        "max": 34.2127685546875,
+        "min": -39.881553649902344,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          67,
+          159
+        ]
+      },
+      "v_bdy": {
+        "dtype": "float32",
+        "finite": true,
+        "max": 11.606193542480469,
+        "min": -14.229497909545898,
+        "nonfinite_count": 0,
+        "shape": [
+          25,
+          4,
+          5,
+          44,
+          160
+        ]
+      },
+      "w": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 0.5795110759798041,
+        "min": -0.4706152086308376,
+        "nonfinite_count": 0,
+        "shape": [
+          45,
+          66,
+          159
+        ]
+      },
+      "xland": {
+        "dtype": "float32",
+        "finite": true,
+        "max": 2.0,
+        "min": 1.0,
+        "nonfinite_count": 0,
+        "shape": [
+          66,
+          159
+        ]
+      }
+    }
+  },
+  "cpu_affinity": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "device": "cuda:0",
+  "domain": "d02",
+  "hours": 1,
+  "metadata": {
+    "boundary": {
+      "bdy_width": 5,
+      "padded_side_length": 160,
+      "schema": "history-strip-pack-v2",
+      "side_order": [
+        "W",
+        "E",
+        "S",
+        "N"
+      ],
+      "source": "Gen2 d02 hourly wrfout side-history replay",
+      "source_run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
+      "strip_order": "WRF wrfbdy order: outer-to-inner bdy_width, vertical, side_index",
+      "times": 25,
+      "wrfbdy_path": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfbdy_d01",
+      "wrfbdy_width_source": "decode_wrfbdy"
+    },
+    "domain": "d02",
+    "grid": {
+      "dx_m": 3000.0,
+      "dy_m": 3000.0,
+      "mass_shape": [
+        44,
+        66,
+        159
+      ],
+      "wrf_staggered_extent": [
+        45,
+        67,
+        160
+      ]
+    },
+    "land_state_refresh": {
+      "cadence": "hourly forecast output boundary",
+      "enabled": true,
+      "records": [
+        {
+          "fields_refreshed": [
+            "lakemask",
+            "mavail",
+            "roughness_m",
+            "soil_moisture",
+            "t_skin",
+            "xland"
+          ],
+          "full_hourly_payload": [
+            "TSK",
+            "SST",
+            "SMOIS",
+            "SH2O",
+            "TSLB"
+          ],
+          "hour": 1,
+          "requested_time_index": 1,
+          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d02_2026-05-21_19:00:00",
+          "status": "PASS",
+          "time_index": 1
+        }
+      ]
+    },
+    "namelist": {
+      "acoustic_substeps": 10,
+      "dt_s": 12.5,
+      "radiation_cadence_steps": 180,
+      "rk_order": 3,
+      "run_boundary": true,
+      "run_physics": true,
+      "use_vertical_solver": true
+    },
+    "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
+    "run_id": "20260521_18z_l3_24h_20260522T133443Z",
+    "source": "gpuwrf.integration.d02_replay.build_replay_case"
+  },
+  "output_dir": "/tmp/pubtest_redo/stability_cfl/dt_1p25",
+  "repeatability_status": "NOT_RUN",
+  "restart_probe_status": "NOT_RUN",
+  "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
+  "run_id": "20260521_18z_l3_24h_20260522T133443Z",
+  "run_start_utc": "2026-05-21T18:00:00+00:00",
+  "schema": "M7DailyPipelineRun",
+  "schema_version": 1,
+  "speedup_status": "PASS",
+  "station_score_summary": {
+    "acceptance": {
+      "finite_scores": false,
+      "joined_rows_at_least_100": false
+    },
+    "joined_rows": 0,
+    "scores": {},
+    "status": "NOT_RUN"
+  },
+  "verdict": "PIPELINE_PARTIAL",
+  "wall_clock_forecast_only_s": 230.18498180400002,
+  "wall_clock_per_forecast_hour_s": 254.62922669199997,
+  "wall_clock_per_hour_s": [
+    230.18498180400002
+  ],
+  "wall_clock_total_s": 254.62922669199997,
+  "wrfout_files": [
+    "/tmp/pubtest_redo/stability_cfl/dt_1p25/wrfout_d02_2026-05-21_19:00:00"
+  ],
+  "wrfout_inventory_status": "PASS"
+}
