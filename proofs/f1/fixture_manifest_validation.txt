@@ -1,0 +1,6 @@
+python .agent/skills/building-wrf-oracles/scripts/validate_fixture_manifest.py tests/savepoint/fixtures/wrf_b6_100step/column/manifest.yaml
+
+{
+  "ok": true,
+  "missing": []
+}

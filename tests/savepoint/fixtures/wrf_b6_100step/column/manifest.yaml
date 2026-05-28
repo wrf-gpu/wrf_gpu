@@ -1,0 +1,7 @@
+fixture_id: f1-wrf-b6-100step-column-history-fallback
+source: /mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T072630Z/wrfout_d02_2026-05-22_00:00:00
+source_commit: 115e5756f98ee2370d62b6709baac6417d8f7338
+scenario: F1 fallback; compact column fixture linearly interpolated from real CPU WRF hourly wrfout history.
+variables: See manifest.json for per-field shape, dtype, units, staggering, dimensions, and tolerance metadata.
+files: wrf_step001_history_interp_full_timestep.nc through wrf_step100_history_interp_full_timestep.nc
+license_notes: Derived compact fixture from local real CPU WRF NetCDF history; original WRF outputs stay outside git.
