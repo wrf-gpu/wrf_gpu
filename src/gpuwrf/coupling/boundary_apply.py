@@ -38,15 +38,32 @@ def apply_lateral_boundaries(
 
     u = _apply_3d(state.u, state.u_bdy, lead_seconds, dt_s, config)
     v = _apply_3d(state.v, state.v_bdy, lead_seconds, dt_s, config)
+    w = _apply_3d(state.w, state.w_bdy, lead_seconds, dt_s, config)
     theta = _apply_3d(state.theta, state.theta_bdy, lead_seconds, dt_s, config)
     qv = jnp.maximum(_apply_3d(state.qv, state.qv_bdy, lead_seconds, dt_s, config), 0.0)
-    ph = _apply_3d(state.ph, state.ph_bdy, lead_seconds, dt_s, config)
-    mu = _apply_3d(state.mu[None, :, :], state.mu_bdy, lead_seconds, dt_s, config)[0]
-    return state.replace(u=u, v=v, theta=theta, qv=qv, ph=ph, mu=mu)
+    p_perturbation = _apply_3d(state.p_perturbation, state.p_bdy, lead_seconds, dt_s, config)
+    pb = _apply_3d(_base_pressure(state), state.pb_bdy, lead_seconds, dt_s, config)
+    ph_perturbation = _apply_3d(state.ph_perturbation, state.ph_bdy, lead_seconds, dt_s, config)
+    phb = _apply_3d(_base_geopotential(state), state.phb_bdy, lead_seconds, dt_s, config)
+    mu_perturbation = _apply_3d(state.mu_perturbation[None, :, :], state.mu_bdy, lead_seconds, dt_s, config)[0]
+    mub = _apply_3d(_base_mu(state)[None, :, :], state.mub_bdy, lead_seconds, dt_s, config)[0]
+    return state.replace(
+        u=u,
+        v=v,
+        w=w,
+        theta=theta,
+        qv=qv,
+        p_total=pb + p_perturbation,
+        p_perturbation=p_perturbation,
+        ph_total=phb + ph_perturbation,
+        ph_perturbation=ph_perturbation,
+        mu_total=mub + mu_perturbation,
+        mu_perturbation=mu_perturbation,
+    )
 
 
 def interpolate_boundary_leaf(boundary, lead_seconds, cadence_s: float = 3600.0):
-    """Linearly interpolate one `(time, side, z, side_index)` boundary leaf."""
+    """Linearly interpolate one boundary leaf along its leading time axis."""
 
     max_index = int(boundary.shape[0]) - 1
     lead_index = jnp.asarray(lead_seconds, dtype=jnp.float64) / float(cadence_s)
@@ -56,6 +73,18 @@ def interpolate_boundary_leaf(boundary, lead_seconds, cadence_s: float = 3600.0)
     lower_values = jnp.take(boundary, lower, axis=0)
     upper_values = jnp.take(boundary, upper, axis=0)
     return (lower_values * (1.0 - alpha) + upper_values * alpha).astype(boundary.dtype)
+
+
+def _base_pressure(state: State):
+    return state.p_total - state.p_perturbation
+
+
+def _base_geopotential(state: State):
+    return state.ph_total - state.ph_perturbation
+
+
+def _base_mu(state: State):
+    return state.mu_total - state.mu_perturbation
 
 
 def _apply_3d(field, boundary, lead_seconds, dt_s: float, config: BoundaryConfig):

@@ -30,14 +30,26 @@ def test_apply_lateral_boundaries_sets_specified_zone_and_relaxes_inner_zone():
         qv=jnp.zeros((grid.nz, grid.ny, grid.nx), dtype=jnp.float32),
         u=jnp.zeros((grid.nz, grid.ny, grid.nx + 1), dtype=jnp.float32),
         v=jnp.zeros((grid.nz, grid.ny + 1, grid.nx), dtype=jnp.float32),
+        w=jnp.zeros((grid.nz + 1, grid.ny, grid.nx), dtype=jnp.float64),
+        p_total=jnp.ones((grid.nz, grid.ny, grid.nx), dtype=jnp.float64) * 1000.0,
+        p_perturbation=jnp.zeros((grid.nz, grid.ny, grid.nx), dtype=jnp.float64),
         ph=jnp.zeros((grid.nz + 1, grid.ny, grid.nx), dtype=jnp.float64),
+        ph_total=jnp.ones((grid.nz + 1, grid.ny, grid.nx), dtype=jnp.float64) * 100.0,
+        ph_perturbation=jnp.zeros((grid.nz + 1, grid.ny, grid.nx), dtype=jnp.float64),
         mu=jnp.zeros((grid.ny, grid.nx), dtype=jnp.float64),
+        mu_total=jnp.ones((grid.ny, grid.nx), dtype=jnp.float64) * 1000.0,
+        mu_perturbation=jnp.zeros((grid.ny, grid.nx), dtype=jnp.float64),
         theta_bdy=_boundary(grid, grid.nz, 10.0),
         qv_bdy=_boundary(grid, grid.nz, 0.002),
         u_bdy=_boundary(grid, grid.nz, 3.0),
         v_bdy=_boundary(grid, grid.nz, 4.0),
+        w_bdy=_boundary(grid, grid.nz + 1, 7.0, dtype=jnp.float64),
+        p_bdy=_boundary(grid, grid.nz, 8.0, dtype=jnp.float64),
+        pb_bdy=_boundary(grid, grid.nz, 900.0, dtype=jnp.float64),
         ph_bdy=_boundary(grid, grid.nz + 1, 5.0, dtype=jnp.float64),
+        phb_bdy=_boundary(grid, grid.nz + 1, 95.0, dtype=jnp.float64),
         mu_bdy=_boundary(grid, 1, 6.0, dtype=jnp.float64),
+        mub_bdy=_boundary(grid, 1, 990.0, dtype=jnp.float64),
     )
 
     out = apply_lateral_boundaries(state, 0.0, 60.0)
@@ -47,8 +59,13 @@ def test_apply_lateral_boundaries_sets_specified_zone_and_relaxes_inner_zone():
     assert np.allclose(np.asarray(out.theta[:, 3:5, 1]), 1.2)
     assert np.allclose(np.asarray(out.qv[:, 1:-1, 0]), 0.002)
     assert np.all(np.asarray(out.qv) >= 0.0)
-    assert np.allclose(np.asarray(out.mu[1:-1, 0]), 6.0)
-    assert np.allclose(np.asarray(out.ph[:, 1:-1, 0]), 5.0)
+    assert np.allclose(np.asarray(out.w[:, 1:-1, 0]), 7.0)
+    assert np.allclose(np.asarray(out.p_perturbation[:, 1:-1, 0]), 8.0)
+    assert np.allclose(np.asarray(out.p_total[:, 1:-1, 0]), 908.0)
+    assert np.allclose(np.asarray(out.mu_perturbation[1:-1, 0]), 6.0)
+    assert np.allclose(np.asarray(out.mu_total[1:-1, 0]), 996.0)
+    assert np.allclose(np.asarray(out.ph_perturbation[:, 1:-1, 0]), 5.0)
+    assert np.allclose(np.asarray(out.ph_total[:, 1:-1, 0]), 100.0)
 
 
 def test_boundary_side_order_matches_west_east_south_north_contract():
