@@ -28,7 +28,10 @@ from gpuwrf.dynamics.acoustic_wrf import (
     moisture_coupling_factors,
 )
 from gpuwrf.dynamics.core.acoustic import AcousticCoreConfig, AcousticCoreState, acoustic_substep_core
+from gpuwrf.dynamics.core.calc_p_rho import CalcPRhoStep0, calc_p_rho_wrf
 from gpuwrf.dynamics.core.coupled import CoupledCoreConfig, coupled_timestep_core
+from gpuwrf.dynamics.core.small_step_finish import small_step_finish_wrf
+from gpuwrf.dynamics.core.small_step_prep import SmallStepPrepState, small_step_prep_wrf
 from gpuwrf.dynamics.tendencies import add_scaled_tendencies
 from gpuwrf.runtime.operational_state import OperationalCarry, initial_operational_carry
 
@@ -155,6 +158,16 @@ class OperationalNamelist:
             use_vertical_solver=use_vertical_solver,
             disable_guards=disable_guards,
         )
+
+
+@dataclass(frozen=True)
+class _RKStageDescriptor:
+    """Static WRF RK/acoustic cadence descriptor from ``solve_em.F:1472-1483``."""
+
+    rk_step: int
+    dt_rk: float
+    dts_rk: float
+    number_of_small_timesteps: int
 
 
 def _steps_for_hours(hours: float, dt_s: float) -> int:
@@ -486,6 +499,71 @@ def _acoustic_core_state(carry: OperationalCarry, namelist: OperationalNamelist)
     )
 
 
+def _acoustic_core_state_from_prep(
+    carry: OperationalCarry,
+    prep: SmallStepPrepState,
+    pressure: CalcPRhoStep0,
+    namelist: OperationalNamelist,
+    tendencies: Tendencies,
+) -> AcousticCoreState:
+    """Build the acoustic work-state directly from WRF ``small_step_prep``."""
+
+    state = prep.entry_state
+    theta_pert = (state.theta - prep.theta_offset).astype(jnp.float64)
+    ph_base = state.ph_total - state.ph_perturbation
+    return AcousticCoreState(
+        ww=carry.ww,
+        ww_1=prep.ww_save,
+        u=prep.u_work,
+        u_1=prep.u_save,
+        v=prep.v_work,
+        v_1=prep.v_save,
+        w=prep.w_work,
+        mu=prep.mu_save + prep.mu_work,
+        mut=prep.mut,
+        muave=carry.muave,
+        muts=prep.muts,
+        muu=prep.muu,
+        muv=prep.muv,
+        mudf=carry.mudf,
+        theta=theta_pert,
+        theta_1=prep.t_save,
+        theta_ave=carry.t_2ave - prep.theta_offset,
+        theta_tend=namelist.tendencies.theta,
+        mu_tend=namelist.tendencies.mu,
+        ph_tend=carry.ph_tend,
+        ph=prep.ph_work,
+        p=pressure.p,
+        t_2ave=carry.t_2ave - prep.theta_offset,
+        dnw=namelist.metrics.dnw,
+        fnm=namelist.metrics.fnm,
+        fnp=namelist.metrics.fnp,
+        rdnw=namelist.metrics.rdnw,
+        c1h=namelist.metrics.c1h,
+        c2h=namelist.metrics.c2h,
+        msfuy=namelist.metrics.msfuy,
+        msfvx_inv=1.0 / namelist.metrics.msfvx,
+        msftx=namelist.metrics.msftx,
+        msfty=namelist.metrics.msfty,
+        coef_mut=prep.muts,
+        u_tend=tendencies.u,
+        v_tend=tendencies.v,
+        p_base=prep.pb,
+        ph_base=ph_base,
+        al=pressure.al,
+        alt=prep.alt,
+        cqu=prep.cqu,
+        cqv=prep.cqv,
+        msfux=namelist.metrics.msfux,
+        msfvx=namelist.metrics.msfvx,
+        msfvy=namelist.metrics.msfvy,
+        cf1=namelist.metrics.cf1,
+        cf2=namelist.metrics.cf2,
+        cf3=namelist.metrics.cf3,
+        theta_work_reference=prep.theta_1,
+    )
+
+
 def _carry_from_acoustic_core(acoustic: AcousticCoreState, template: State, theta_offset: jax.Array) -> OperationalCarry:
     theta = acoustic.theta + theta_offset
     p_total = template.p_total - template.p_perturbation + acoustic.p
@@ -529,6 +607,27 @@ def _carry_from_acoustic_core(acoustic: AcousticCoreState, template: State, thet
     )
 
 
+def _carry_from_finished_stage(carry: OperationalCarry, prep: SmallStepPrepState, acoustic: AcousticCoreState) -> OperationalCarry:
+    next_state = small_step_finish_wrf(prep, acoustic)
+    ww = acoustic.ww + prep.ww_save
+    return carry.replace(
+        state=next_state,
+        t_2ave=acoustic.t_2ave + prep.theta_offset,
+        ww=ww,
+        mudf=acoustic.mudf,
+        muave=acoustic.muave,
+        muts=acoustic.muts,
+        ph_tend=acoustic.ph_tend,
+        u_save=prep.u_save,
+        v_save=prep.v_save,
+        w_save=prep.w_save,
+        t_save=prep.t_save + prep.theta_offset,
+        ph_save=prep.ph_save,
+        mu_save=prep.mu_save,
+        ww_save=prep.ww_save,
+    )
+
+
 def _operational_acoustic_substep_core(carry: OperationalCarry, namelist: OperationalNamelist, dt_sub: float) -> OperationalCarry:
     """Run one operational acoustic substep through the shared core."""
 
@@ -563,32 +662,51 @@ def _operational_acoustic_substep_core(carry: OperationalCarry, namelist: Operat
 def _acoustic_scan(
     carry: OperationalCarry,
     namelist: OperationalNamelist,
-    dt_stage: float,
     *,
-    substeps: int | None = None,
+    stage: _RKStageDescriptor,
+    prep: SmallStepPrepState,
+    pressure: CalcPRhoStep0,
+    tendencies: Tendencies,
 ) -> OperationalCarry:
-    scan_substeps = int(namelist.acoustic_substeps if substeps is None else substeps)
-    del dt_stage
-    # WRF ``solve_em.F:1472-1483`` separates RK stage span from acoustic cadence;
-    # the contracted operational parity path uses one acoustic slice of the
-    # parent timestep per configured acoustic substep, not ``dt_stage / n``.
-    dt_sub = float(namelist.dt_s) / float(namelist.acoustic_substeps)
+    acoustic = _acoustic_core_state_from_prep(carry, prep, pressure, namelist, tendencies)
+    if bool(namelist.use_vertical_solver):
+        a, alpha, gamma = calc_coef_w_wrf_coefficients(
+            prep.muts,
+            namelist.metrics,
+            dt=float(stage.dts_rk),
+            epssm=float(namelist.epssm),
+            top_lid=bool(namelist.top_lid),
+            c2a=prep.c2a,
+        )
 
-    def body(scan_carry: OperationalCarry, _):
-        if bool(namelist.use_vertical_solver):
-            return _operational_acoustic_substep_core(scan_carry, namelist, dt_sub), None
-        next_state = add_scaled_tendencies(scan_carry.state, namelist.tendencies, dt_sub)
-        return _with_save_family(scan_carry.replace(state=next_state), next_state), None
+        def body(scan_acoustic: AcousticCoreState, _):
+            return acoustic_substep_core(
+                scan_acoustic,
+                a=a,
+                alpha=alpha,
+                gamma=gamma,
+                cfg=AcousticCoreConfig(
+                    dt=float(stage.dts_rk),
+                    dx=float(namelist.grid.projection.dx_m),
+                    dy=float(namelist.grid.projection.dy_m),
+                    epssm=float(namelist.epssm),
+                    top_lid=bool(namelist.top_lid),
+                ),
+            ), None
 
-    next_carry, _ = jax.lax.scan(body, carry, xs=None, length=scan_substeps)
-    return next_carry.replace(state=apply_halo(next_carry.state, halo_spec(namelist.grid)))
+        acoustic, _ = jax.lax.scan(body, acoustic, xs=None, length=int(stage.number_of_small_timesteps))
+        next_carry = _carry_from_finished_stage(carry, prep, acoustic)
+        return next_carry.replace(state=apply_halo(next_carry.state, halo_spec(namelist.grid)))
+
+    del tendencies
+    return _with_save_family(carry, carry.state)
 
 
 def _rk_scan_step(carry: OperationalCarry, namelist: OperationalNamelist, *, debug: bool = False) -> OperationalCarry:
     origin = apply_halo(carry.state, halo_spec(namelist.grid))
-    carry = _with_save_family(carry.replace(state=origin), origin)
+    rk1_reference = origin
 
-    def advance_stage(stage_carry: OperationalCarry, factor: float, acoustic_substeps: int) -> OperationalCarry:
+    def advance_stage(stage_carry: OperationalCarry, stage: _RKStageDescriptor) -> OperationalCarry:
         haloed = apply_halo(stage_carry.state, halo_spec(namelist.grid))
         # WRF dyn_em/module_em.F:rk_scalar_tend computes large-step advection
         # tendencies before the split-explicit acoustic advance.
@@ -598,13 +716,24 @@ def _rk_scan_step(carry: OperationalCarry, namelist: OperationalNamelist, *, deb
             u=tendencies.u + du_dt,
             v=tendencies.v + dv_dt,
         )
-        candidate = add_scaled_tendencies(origin, tendencies, float(namelist.dt_s) * float(factor))
-        stage_carry = _with_save_family(stage_carry.replace(state=candidate), candidate)
+        candidate = add_scaled_tendencies(origin, tendencies, float(stage.dt_rk))
+        candidate = apply_halo(candidate, halo_spec(namelist.grid))
+        prep = small_step_prep_wrf(
+            candidate,
+            int(stage.rk_step),
+            float(stage.dt_rk),
+            metrics=namelist.metrics,
+            reference_state=rk1_reference,
+            ww=stage_carry.ww,
+        )
+        pressure = calc_p_rho_wrf(prep, step=0, non_hydrostatic=True)
         stage_carry = _acoustic_scan(
-            stage_carry,
+            stage_carry.replace(state=candidate),
             namelist,
-            float(namelist.dt_s) * float(factor),
-            substeps=acoustic_substeps,
+            stage=stage,
+            prep=prep,
+            pressure=pressure,
+            tendencies=tendencies,
         )
         return stage_carry.replace(state=apply_halo(stage_carry.state, halo_spec(namelist.grid)))
 
@@ -615,9 +744,17 @@ def _rk_scan_step(carry: OperationalCarry, namelist: OperationalNamelist, *, deb
     # lambda value: advance_stage(value, 1.0 / 3.0, 1)
     if debug:
         jax.debug.print("GPUWRF_M6B_RK1_ACOUSTIC_LOOP_ENTER substeps=1")
-    carry = advance_stage(carry, 1.0 / 3.0, 1)
-    carry = advance_stage(carry, 0.5, max(1, int(namelist.acoustic_substeps) // 2))
-    return advance_stage(carry, 1.0, int(namelist.acoustic_substeps))
+    dt = float(namelist.dt_s)
+    configured_sound_steps = int(namelist.acoustic_substeps)
+    stages = (
+        _RKStageDescriptor(1, dt / 3.0, dt / 3.0, 1),
+        _RKStageDescriptor(2, 0.5 * dt, dt / float(configured_sound_steps), max(1, configured_sound_steps // 2)),
+        _RKStageDescriptor(3, dt, dt / float(configured_sound_steps), configured_sound_steps),
+    )
+    carry = carry.replace(state=origin)
+    carry = advance_stage(carry, stages[0])
+    carry = advance_stage(carry, stages[1])
+    return advance_stage(carry, stages[2])
 
 
 def _coupled_core_extras(state: State) -> dict[str, jax.Array]:
