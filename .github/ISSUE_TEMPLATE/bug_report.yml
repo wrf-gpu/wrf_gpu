@@ -1,0 +1,90 @@
+name: Bug report
+description: Report something that doesn't work as expected.
+title: "[bug] "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a bug. Please fill out the fields below to make triage tractable.
+
+        Before filing: please check that the same issue is not already in https://github.com/wrf-gpu/wrf_gpu/issues.
+
+  - type: textarea
+    id: what_happened
+    attributes:
+      label: What happened
+      description: A clear and concise description of the unexpected behaviour.
+      placeholder: When I ran ... I expected ... but observed ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Minimal reproduction
+      description: Commands or code that reproduce the issue. Smaller is better.
+      placeholder: |
+        ```bash
+        $ git checkout v0.0.1
+        $ pytest -q tests/test_foo.py::test_bar
+        ```
+      render: shell
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: wrf_gpu version
+      description: Output of `git describe --tags --always` or the release tag.
+      placeholder: "v0.0.1"
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: |
+        Please paste the output of:
+        ```bash
+        python --version
+        nvidia-smi --query-gpu=name,driver_version,memory.total --format=csv
+        python -c "import jax; print(jax.__version__); jax.print_environment_info()"
+        uname -a
+        ```
+      render: shell
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs / tracebacks
+      description: Paste the full traceback or the relevant log lines. Use code fences.
+      render: shell
+    validations:
+      required: false
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      options:
+        - "low — cosmetic or minor inconvenience"
+        - "medium — workaround exists but is awkward"
+        - "high — blocks a real use case"
+        - "critical — produces incorrect numerical output"
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Confirmations
+      options:
+        - label: "I have read the [README](https://github.com/wrf-gpu/wrf_gpu#what-remains) and confirmed this is a bug, not a known limitation."
+          required: true
+        - label: "I have read the [CODE_OF_CONDUCT](https://github.com/wrf-gpu/wrf_gpu/blob/main/CODE_OF_CONDUCT.md)."
+          required: true

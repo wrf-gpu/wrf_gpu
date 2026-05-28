@@ -1,0 +1,19 @@
+# v0.0.1 reviewer environment.
+# Seeded from `python -m pip freeze` on the release-prep workstation, then
+# narrowed to the packages needed for CPU tests and the documented CUDA/JAX path.
+h5py==3.16.0
+jax==0.10.0
+jax-cuda13-pjrt==0.10.0
+jax-cuda13-plugin[with-cuda]==0.10.0
+jaxlib==0.10.0
+ml_dtypes==0.5.4
+netCDF4==1.7.4
+numcodecs==0.16.5
+numpy==2.4.4
+opt_einsum==3.4.0
+pandas==3.0.2
+pytest==9.0.3
+PyYAML==6.0.3
+scipy==1.17.1
+xarray==2026.2.0
+zarr==3.1.6

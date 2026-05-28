@@ -1,0 +1,4207 @@
+{
+  "aemet_root": "<reference-data-root>/artifacts/datasets/aemet_stations",
+  "aggregate_comparison": {
+    "all_variables_within_20pct": false,
+    "gpu_materially_worse_than_cpu": true,
+    "tolerance_fraction": 0.2,
+    "tolerance_note": "BIAS is compared by absolute error magnitude; RMSE and MAE are positive direct magnitudes.",
+    "variables": {
+      "T2": {
+        "cpu_sample_count": 1639,
+        "gpu_sample_count": 1615,
+        "metrics": {
+          "bias": {
+            "comparison_basis": "absolute bias magnitude",
+            "cpu": 0.34371109041729947,
+            "gpu": 6.900656598324024,
+            "materially_worse": true,
+            "relative_delta": 19.076909912758243,
+            "within_20pct": false
+          },
+          "mae": {
+            "comparison_basis": "direct error magnitude",
+            "cpu": 1.6806882826593696,
+            "gpu": 7.464725931977783,
+            "materially_worse": true,
+            "relative_delta": 3.441469610394542,
+            "within_20pct": false
+          },
+          "rmse": {
+            "comparison_basis": "direct error magnitude",
+            "cpu": 2.148692978020805,
+            "gpu": 8.846077477618918,
+            "materially_worse": true,
+            "relative_delta": 3.116957409972634,
+            "within_20pct": false
+          }
+        },
+        "within_20pct_all_metrics": false
+      },
+      "U10": {
+        "cpu_sample_count": 1628,
+        "gpu_sample_count": 1604,
+        "metrics": {
+          "bias": {
+            "comparison_basis": "absolute bias magnitude",
+            "cpu": -0.13524676994285947,
+            "gpu": 3.0123152380878113,
+            "materially_worse": true,
+            "relative_delta": 21.272733310824997,
+            "within_20pct": false
+          },
+          "mae": {
+            "comparison_basis": "direct error magnitude",
+            "cpu": 1.71219939470298,
+            "gpu": 5.286288906214164,
+            "materially_worse": true,
+            "relative_delta": 2.0874259870481913,
+            "within_20pct": false
+          },
+          "rmse": {
+            "comparison_basis": "direct error magnitude",
+            "cpu": 2.3064713972582305,
+            "gpu": 6.746677458584775,
+            "materially_worse": true,
+            "relative_delta": 1.9251077930577183,
+            "within_20pct": false
+          }
+        },
+        "within_20pct_all_metrics": false
+      },
+      "V10": {
+        "cpu_sample_count": 1628,
+        "gpu_sample_count": 1604,
+        "metrics": {
+          "bias": {
+            "comparison_basis": "absolute bias magnitude",
+            "cpu": -0.6699518392745473,
+            "gpu": 0.11532014453805496,
+            "materially_worse": false,
+            "relative_delta": -0.827868008149767,
+            "within_20pct": false
+          },
+          "mae": {
+            "comparison_basis": "direct error magnitude",
+            "cpu": 1.972527324422458,
+            "gpu": 5.749496326657922,
+            "materially_worse": true,
+            "relative_delta": 1.9147866574377284,
+            "within_20pct": false
+          },
+          "rmse": {
+            "comparison_basis": "direct error magnitude",
+            "cpu": 2.7523205379208537,
+            "gpu": 7.233764228647868,
+            "materially_worse": true,
+            "relative_delta": 1.6282419249439481,
+            "within_20pct": false
+          }
+        },
+        "within_20pct_all_metrics": false
+      }
+    }
+  },
+  "common_valid_time_count": 24,
+  "common_valid_time_range": {
+    "end": "2026-05-22T18:00:00+00:00",
+    "start": "2026-05-21T19:00:00+00:00"
+  },
+  "contract_verdict": "improved but partial",
+  "cpu_run": "<reference-data-root>/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
+  "generated_update_utc": "2026-05-27T08:50:16.988784+00:00",
+  "generated_utc": "2026-05-27T08:49:27.506495+00:00",
+  "gpu_root": "/tmp/m7_skillfix_algorithmic_20260521_r2",
+  "pre_fix_comparison": {
+    "metric_count": 9,
+    "metric_rows": [
+      {
+        "cpu": 0.34371109041729947,
+        "error_delta_vs_pre_fix": 1.4451817203355164,
+        "improved": false,
+        "metric": "bias",
+        "post_fix_gpu": 6.900656598324024,
+        "pre_fix_gpu": 5.455474877988507,
+        "variable": "T2",
+        "within_20pct": false
+      },
+      {
+        "cpu": 1.6806882826593696,
+        "error_delta_vs_pre_fix": 1.7073142552228848,
+        "improved": false,
+        "metric": "mae",
+        "post_fix_gpu": 7.464725931977783,
+        "pre_fix_gpu": 5.757411676754898,
+        "variable": "T2",
+        "within_20pct": false
+      },
+      {
+        "cpu": 2.148692978020805,
+        "error_delta_vs_pre_fix": 0.987297978445544,
+        "improved": false,
+        "metric": "rmse",
+        "post_fix_gpu": 8.846077477618918,
+        "pre_fix_gpu": 7.858779499173374,
+        "variable": "T2",
+        "within_20pct": false
+      },
+      {
+        "cpu": -0.13524676994285947,
+        "error_delta_vs_pre_fix": -4.999269776349012,
+        "improved": true,
+        "metric": "bias",
+        "post_fix_gpu": 3.0123152380878113,
+        "pre_fix_gpu": 8.011585014436823,
+        "variable": "U10",
+        "within_20pct": false
+      },
+      {
+        "cpu": 1.71219939470298,
+        "error_delta_vs_pre_fix": -3.883280318815073,
+        "improved": true,
+        "metric": "mae",
+        "post_fix_gpu": 5.286288906214164,
+        "pre_fix_gpu": 9.169569225029237,
+        "variable": "U10",
+        "within_20pct": false
+      },
+      {
+        "cpu": 2.3064713972582305,
+        "error_delta_vs_pre_fix": -4.564438989861096,
+        "improved": true,
+        "metric": "rmse",
+        "post_fix_gpu": 6.746677458584775,
+        "pre_fix_gpu": 11.31111644844587,
+        "variable": "U10",
+        "within_20pct": false
+      },
+      {
+        "cpu": -0.6699518392745473,
+        "error_delta_vs_pre_fix": -3.5309090996613866,
+        "improved": true,
+        "metric": "bias",
+        "post_fix_gpu": 0.11532014453805496,
+        "pre_fix_gpu": -3.6462292441994415,
+        "variable": "V10",
+        "within_20pct": false
+      },
+      {
+        "cpu": 1.972527324422458,
+        "error_delta_vs_pre_fix": -1.6841137869703795,
+        "improved": true,
+        "metric": "mae",
+        "post_fix_gpu": 5.749496326657922,
+        "pre_fix_gpu": 7.433610113628301,
+        "variable": "V10",
+        "within_20pct": false
+      },
+      {
+        "cpu": 2.7523205379208537,
+        "error_delta_vs_pre_fix": -2.201549070600029,
+        "improved": true,
+        "metric": "rmse",
+        "post_fix_gpu": 7.233764228647868,
+        "pre_fix_gpu": 9.435313299247897,
+        "variable": "V10",
+        "within_20pct": false
+      }
+    ],
+    "metrics_improved": 6,
+    "metrics_worsened": 3,
+    "source": "proofs/2026-05-27-m7-honest-speedup-skill-diff__gpu_vs_cpu_skill_diff.json"
+  },
+  "schema": "M7GpuVsCpuSkillDiff",
+  "schema_version": 1,
+  "sources": {
+    "cpu": {
+      "aggregate": {
+        "joined_rows": 1747,
+        "schema": "M7StationScoreReport",
+        "schema_version": 1,
+        "scores": {
+          "T2": {
+            "bias": 0.34371109041729947,
+            "mae": 1.6806882826593696,
+            "rmse": 2.148692978020805,
+            "sample_count": 1639,
+            "status": "OK"
+          },
+          "U10": {
+            "bias": -0.13524676994285947,
+            "mae": 1.71219939470298,
+            "rmse": 2.3064713972582305,
+            "sample_count": 1628,
+            "status": "OK"
+          },
+          "V10": {
+            "bias": -0.6699518392745473,
+            "mae": 1.972527324422458,
+            "rmse": 2.7523205379208537,
+            "sample_count": 1628,
+            "status": "OK"
+          }
+        },
+        "status": "OK",
+        "variables": [
+          "T2",
+          "U10",
+          "V10"
+        ]
+      },
+      "forecast_rows": 1752,
+      "label": "cpu",
+      "per_station": [
+        {
+          "bias": 2.272613413387011,
+          "mae": 2.272613413387011,
+          "rmse": 2.4994714349884837,
+          "sample_count": 24,
+          "station_id": "C018J",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": -0.9954888391976607,
+          "mae": 1.5650719022267043,
+          "rmse": 1.8572486347460981,
+          "sample_count": 24,
+          "station_id": "C018J",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": -0.335834714907892,
+          "mae": 0.7501922191836057,
+          "rmse": 0.8899092737522861,
+          "sample_count": 24,
+          "station_id": "C018J",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": -0.18883145291891879,
+          "mae": 0.5267939796816515,
+          "rmse": 0.575731222829335,
+          "sample_count": 24,
+          "station_id": "C019V",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": 1.0267251456316915,
+          "mae": 1.179632404605948,
+          "rmse": 1.4603200135402745,
+          "sample_count": 24,
+          "station_id": "C019V",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": -1.1050782549118499,
+          "mae": 1.1091195140259085,
+          "rmse": 1.3128426861776863,
+          "sample_count": 24,
+          "station_id": "C019V",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "sample_count": 0,
+          "station_id": "C029O",
+          "status": "NO_VALID_PAIRS",
+          "variable": "T2"
+        },
+        {
+          "sample_count": 0,
+          "station_id": "C029O",
+          "status": "NO_VALID_PAIRS",
+          "variable": "U10"
+        },
+        {
+          "sample_count": 0,
+          "station_id": "C029O",
+          "status": "NO_VALID_PAIRS",
+          "variable": "V10"
+        },
+        {
+          "sample_count": 0,
+          "station_id": "C038N",
+          "status": "NO_VALID_PAIRS",
+          "variable": "T2"
+        },
+        {
+          "sample_count": 0,
+          "station_id": "C038N",
+          "status": "NO_VALID_PAIRS",
+          "variable": "U10"
+        },
+        {
+          "sample_count": 0,
+          "station_id": "C038N",
+          "status": "NO_VALID_PAIRS",
+          "variable": "V10"
+        },
+        {
+          "sample_count": 0,
+          "station_id": "C048W",
+          "status": "NO_VALID_PAIRS",
+          "variable": "T2"
+        },
+        {
+          "sample_count": 0,
+          "station_id": "C048W",
+          "status": "NO_VALID_PAIRS",
+          "variable": "U10"
+        },
+        {
+          "sample_count": 0,
+          "station_id": "C048W",
+          "status": "NO_VALID_PAIRS",
+          "variable": "V10"
+        },
+        {
+          "bias": -2.1609133331471018,
+          "mae": 2.1609133331471018,
+          "rmse": 2.4534298217724504,
+          "sample_count": 22,
+          "station_id": "C101A",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": -1.1264963207319694,
+          "mae": 1.2358677587393159,
+          "rmse": 1.3970499041236966,
+          "sample_count": 22,
+          "station_id": "C101A",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": 1.2916564587961452,
+          "mae": 2.0791424600492188,
+          "rmse": 2.59736182190036,
+          "sample_count": 22,
+          "station_id": "C101A",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": 4.67657765426126,
+          "mae": 4.67657765426126,
+          "rmse": 4.784720794848699,
+          "sample_count": 23,
+          "station_id": "C117A",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": -1.0316470713960675,
+          "mae": 1.4168930592219742,
+          "rmse": 1.5743574477069855,
+          "sample_count": 24,
+          "station_id": "C117A",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": -3.3097805549202577,
+          "mae": 3.3097805549202577,
+          "rmse": 3.542186649219304,
+          "sample_count": 24,
+          "station_id": "C117A",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": 3.103428723467038,
+          "mae": 3.103428723467038,
+          "rmse": 3.2138421676534565,
+          "sample_count": 24,
+          "station_id": "C117Z",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": -0.17800588003457288,
+          "mae": 0.8473795739980746,
+          "rmse": 1.0295581503894888,
+          "sample_count": 24,
+          "station_id": "C117Z",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": 1.2437184352868627,
+          "mae": 1.3829250063419398,
+          "rmse": 1.5623308657557942,
+          "sample_count": 24,
+          "station_id": "C117Z",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": 0.4113181928481758,
+          "mae": 1.512808391300713,
+          "rmse": 1.7702625170335948,
+          "sample_count": 23,
+          "station_id": "C129V",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": -2.1793514830831433,
+          "mae": 3.148806703315747,
+          "rmse": 3.6243511435073743,
+          "sample_count": 24,
+          "station_id": "C129V",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": 1.1601161591033995,
+          "mae": 1.9072516971263134,
+          "rmse": 2.328231456335677,
+          "sample_count": 24,
+          "station_id": "C129V",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": 0.10122460902046271,
+          "mae": 0.7718323655834022,
+          "rmse": 0.9430661919465664,
+          "sample_count": 24,
+          "station_id": "C139E",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": -1.1095967533342912,
+          "mae": 2.1893613373278886,
+          "rmse": 2.7004549552231296,
+          "sample_count": 24,
+          "station_id": "C139E",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": -0.5983831263897145,
+          "mae": 2.4917678656738356,
+          "rmse": 3.1268869830379336,
+          "sample_count": 24,
+          "station_id": "C139E",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": 1.235704324348357,
+          "mae": 1.235704324348357,
+          "rmse": 1.3544233843150817,
+          "sample_count": 24,
+          "station_id": "C148F",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": 1.676481259259588,
+          "mae": 1.676481259259588,
+          "rmse": 1.9261954098615355,
+          "sample_count": 24,
+          "station_id": "C148F",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": -0.7203927131798059,
+          "mae": 1.3418703828471312,
+          "rmse": 1.6422794378703425,
+          "sample_count": 24,
+          "station_id": "C148F",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": -2.016956799657978,
+          "mae": 2.016956799657978,
+          "rmse": 2.1601584766058104,
+          "sample_count": 24,
+          "station_id": "C229J",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": 1.7096041539799725,
+          "mae": 2.1562452201219284,
+          "rmse": 2.372407465657423,
+          "sample_count": 24,
+          "station_id": "C229J",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": -7.4333441240984115,
+          "mae": 7.4333441240984115,
+          "rmse": 7.733080065269127,
+          "sample_count": 24,
+          "station_id": "C229J",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": 0.026497634186781575,
+          "mae": 0.759462819093936,
+          "rmse": 0.856891513058503,
+          "sample_count": 23,
+          "station_id": "C239N",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": 0.9151976103949954,
+          "mae": 1.4479573684405185,
+          "rmse": 1.6955277202636043,
+          "sample_count": 24,
+          "station_id": "C239N",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": 0.020558157495202917,
+          "mae": 1.5140794469094,
+          "rmse": 1.893664450088056,
+          "sample_count": 24,
+          "station_id": "C239N",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": 0.5127378859225331,
+          "mae": 1.0411117212989847,
+          "rmse": 1.1969049759063286,
+          "sample_count": 24,
+          "station_id": "C248E",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": -0.8938064779648757,
+          "mae": 0.9922335235345359,
+          "rmse": 1.1454770132808592,
+          "sample_count": 24,
+          "station_id": "C248E",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": 2.488304107200889,
+          "mae": 2.488304107200889,
+          "rmse": 2.730574082508416,
+          "sample_count": 24,
+          "station_id": "C248E",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": -0.47981064953518643,
+          "mae": 0.8787348050986736,
+          "rmse": 1.0037306638723256,
+          "sample_count": 24,
+          "station_id": "C249I",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": -3.6984824251999986,
+          "mae": 3.912358902066034,
+          "rmse": 4.428883600763343,
+          "sample_count": 24,
+          "station_id": "C249I",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": -2.319602341451943,
+          "mae": 2.384788350843864,
+          "rmse": 2.7376737998457097,
+          "sample_count": 24,
+          "station_id": "C249I",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": -0.19208243619785273,
+          "mae": 0.48551383826319494,
+          "rmse": 0.6372225334349897,
+          "sample_count": 24,
+          "station_id": "C258K",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": -0.7535029598063622,
+          "mae": 0.9335812168154772,
+          "rmse": 1.1226258998785652,
+          "sample_count": 24,
+          "station_id": "C258K",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": -0.8876498591299589,
+          "mae": 0.9882077480079227,
+          "rmse": 1.168800835392542,
+          "sample_count": 24,
+          "station_id": "C258K",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": -0.16087197615969728,
+          "mae": 0.5137983053642708,
+          "rmse": 0.5797367939407201,
+          "sample_count": 24,
+          "station_id": "C259X",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": -0.5635395718082481,
+          "mae": 0.9377670731969362,
+          "rmse": 1.220623744756492,
+          "sample_count": 24,
+          "station_id": "C259X",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": -0.08257538617372545,
+          "mae": 0.5106550501691299,
+          "rmse": 0.6257871979293026,
+          "sample_count": 24,
+          "station_id": "C259X",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": -2.6171026264279837,
+          "mae": 2.6171026264279837,
+          "rmse": 2.973229187563182,
+          "sample_count": 24,
+          "station_id": "C314Z",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": 2.5740643552183173,
+          "mae": 2.9635074987613748,
+          "rmse": 3.4866975683328842,
+          "sample_count": 24,
+          "station_id": "C314Z",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": -0.05768770091341855,
+          "mae": 1.2508819609356123,
+          "rmse": 1.5351197960681784,
+          "sample_count": 24,
+          "station_id": "C314Z",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": 2.4086812117841965,
+          "mae": 2.4507105815768733,
+          "rmse": 3.0941804355147733,
+          "sample_count": 24,
+          "station_id": "C316I",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": 0.22557638658564597,
+          "mae": 1.0724980983761105,
+          "rmse": 1.3273769003051081,
+          "sample_count": 24,
+          "station_id": "C316I",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": 0.762964317431608,
+          "mae": 1.5543840381106933,
+          "rmse": 1.8423333860739046,
+          "sample_count": 24,
+          "station_id": "C316I",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": 2.5711476441040255,
+          "mae": 2.5711476441040255,
+          "rmse": 2.7711937472608974,
+          "sample_count": 24,
+          "station_id": "C317B",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": 0.7457163626129972,
+          "mae": 0.9407293062674716,
+          "rmse": 1.1477742201731884,
+          "sample_count": 24,
+          "station_id": "C317B",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": -2.77313932199475,
+          "mae": 2.77313932199475,
+          "rmse": 2.9551255403638845,
+          "sample_count": 24,
+          "station_id": "C317B",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": 1.4488474677484267,
+          "mae": 2.47420223542143,
+          "rmse": 2.836718954113932,
+          "sample_count": 24,
+          "station_id": "C319W",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": -0.8685971220012814,
+          "mae": 1.201638761377823,
+          "rmse": 1.4126513797165983,
+          "sample_count": 24,
+          "station_id": "C319W",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": 0.44869717396832504,
+          "mae": 1.373151349054894,
+          "rmse": 1.6936801080151724,
+          "sample_count": 24,
+          "station_id": "C319W",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": -1.6062246611264825,
+          "mae": 1.6457679562204082,
+          "rmse": 2.0619209631319797,
+          "sample_count": 24,
+          "station_id": "C328W",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": 2.27538171147996,
+          "mae": 2.27538171147996,
+          "rmse": 2.358461107085266,
+          "sample_count": 24,
+          "station_id": "C328W",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": -2.3163148372460127,
+          "mae": 2.3163148372460127,
+          "rmse": 2.4381294777838147,
+          "sample_count": 24,
+          "station_id": "C328W",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": -0.9988574936043216,
+          "mae": 1.010008961049273,
+          "rmse": 1.2735312916490809,
+          "sample_count": 24,
+          "station_id": "C329Z",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": 2.0315712516621924,
+          "mae": 2.191620035076332,
+          "rmse": 2.4277148008863114,
+          "sample_count": 24,
+          "station_id": "C329Z",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": -4.990813091608017,
+          "mae": 4.990813091608017,
+          "rmse": 5.299165547157489,
+          "sample_count": 24,
+          "station_id": "C329Z",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": -1.6180737797992724,
+          "mae": 3.11503572446365,
+          "rmse": 3.462781432805272,
+          "sample_count": 24,
+          "station_id": "C406G",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": -0.802415613619378,
+          "mae": 1.5832889853436105,
+          "rmse": 2.0435707462066817,
+          "sample_count": 24,
+          "station_id": "C406G",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": 0.861172601386245,
+          "mae": 1.1574545250488606,
+          "rmse": 1.5439925155148357,
+          "sample_count": 24,
+          "station_id": "C406G",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": 1.6346132184480286,
+          "mae": 1.6346132184480286,
+          "rmse": 1.781564609451227,
+          "sample_count": 24,
+          "station_id": "C419L",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": 0.06162279763787789,
+          "mae": 0.5938378109523604,
+          "rmse": 0.6975213447101719,
+          "sample_count": 24,
+          "station_id": "C419L",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": 0.4416849968683095,
+          "mae": 0.7339081145329548,
+          "rmse": 0.9557154010838117,
+          "sample_count": 24,
+          "station_id": "C419L",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": -0.03293381304598834,
+          "mae": 0.6456231700078163,
+          "rmse": 0.8557783289660157,
+          "sample_count": 24,
+          "station_id": "C419X",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "sample_count": 0,
+          "station_id": "C419X",
+          "status": "NO_VALID_PAIRS",
+          "variable": "U10"
+        },
+        {
+          "sample_count": 0,
+          "station_id": "C419X",
+          "status": "NO_VALID_PAIRS",
+          "variable": "V10"
+        },
+        {
+          "bias": 1.2863021064767892,
+          "mae": 1.5550385000279594,
+          "rmse": 1.911231794747223,
+          "sample_count": 24,
+          "station_id": "C428T",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": 0.2795484010895288,
+          "mae": 1.3780267466772411,
+          "rmse": 1.590422068069802,
+          "sample_count": 24,
+          "station_id": "C428T",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": 1.1117787813067401,
+          "mae": 1.595679100885527,
+          "rmse": 1.8756093146617343,
+          "sample_count": 24,
+          "station_id": "C428T",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": -0.813572683849437,
+          "mae": 1.0150205445759468,
+          "rmse": 1.136638055503535,
+          "sample_count": 22,
+          "station_id": "C429I",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": -0.21208322233870777,
+          "mae": 3.1380221830866337,
+          "rmse": 4.030425672371777,
+          "sample_count": 23,
+          "station_id": "C429I",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": 0.47548416854697345,
+          "mae": 1.7923111228855195,
+          "rmse": 2.0849273465847866,
+          "sample_count": 23,
+          "station_id": "C429I",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": -1.4032142544530306,
+          "mae": 1.4032142544530306,
+          "rmse": 1.5198783703893506,
+          "sample_count": 24,
+          "station_id": "C430E",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": -1.3853957027822867,
+          "mae": 1.3994525716427855,
+          "rmse": 1.5763492586371382,
+          "sample_count": 24,
+          "station_id": "C430E",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": 3.4947578072943712,
+          "mae": 3.4947578072943712,
+          "rmse": 3.6298356104236453,
+          "sample_count": 24,
+          "station_id": "C430E",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": 2.936570180167564,
+          "mae": 2.936570180167564,
+          "rmse": 3.100652678850623,
+          "sample_count": 24,
+          "station_id": "C438N",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": -0.09469582791662119,
+          "mae": 1.017488093502093,
+          "rmse": 1.2979118526289135,
+          "sample_count": 24,
+          "station_id": "C438N",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": 0.8675291165039773,
+          "mae": 1.0048898244666138,
+          "rmse": 1.3951374126154317,
+          "sample_count": 24,
+          "station_id": "C438N",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": 0.9762450575542665,
+          "mae": 1.1339364721323602,
+          "rmse": 1.4234724078070302,
+          "sample_count": 23,
+          "station_id": "C439J",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": -0.8416745673321266,
+          "mae": 1.0664676544558125,
+          "rmse": 1.2135887974810748,
+          "sample_count": 23,
+          "station_id": "C439J",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": 1.285228562787561,
+          "mae": 1.6772906031596968,
+          "rmse": 2.110679397262303,
+          "sample_count": 23,
+          "station_id": "C439J",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": 3.5853006048765126,
+          "mae": 3.5853006048765126,
+          "rmse": 4.004772491390519,
+          "sample_count": 23,
+          "station_id": "C446G",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": -1.3803286903025098,
+          "mae": 2.0281546757487408,
+          "rmse": 2.454852124998142,
+          "sample_count": 24,
+          "station_id": "C446G",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": 3.1728402888344056,
+          "mae": 3.1884791739745495,
+          "rmse": 3.498210685342613,
+          "sample_count": 24,
+          "station_id": "C446G",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": 1.1709580757451121,
+          "mae": 1.605258136593238,
+          "rmse": 2.0019041444576384,
+          "sample_count": 24,
+          "station_id": "C447A",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": -3.100400809178288,
+          "mae": 3.100400809178288,
+          "rmse": 3.255542718475417,
+          "sample_count": 24,
+          "station_id": "C447A",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": -0.9755450048294941,
+          "mae": 1.2355591683942333,
+          "rmse": 1.5276388450352174,
+          "sample_count": 24,
+          "station_id": "C447A",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": -0.13298240807750497,
+          "mae": 0.8010625854874434,
+          "rmse": 0.9460027879634311,
+          "sample_count": 24,
+          "station_id": "C449C",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": 2.88343349430016,
+          "mae": 3.6452192737629425,
+          "rmse": 3.9032747837074533,
+          "sample_count": 24,
+          "station_id": "C449C",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": -2.883724924308664,
+          "mae": 2.883724924308664,
+          "rmse": 3.0487484690838356,
+          "sample_count": 24,
+          "station_id": "C449C",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": -1.3200051230308365,
+          "mae": 1.3200051230308365,
+          "rmse": 1.462983172841504,
+          "sample_count": 24,
+          "station_id": "C449F",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": 5.339535115936453,
+          "mae": 5.339535115936453,
+          "rmse": 5.476427553191351,
+          "sample_count": 24,
+          "station_id": "C449F",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": -3.620076114407876,
+          "mae": 3.620076114407876,
+          "rmse": 3.7635168455528807,
+          "sample_count": 24,
+          "station_id": "C449F",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": 1.4870118679024884,
+          "mae": 1.867729873680993,
+          "rmse": 2.0850708617103257,
+          "sample_count": 24,
+          "station_id": "C457I",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": 0.87566279485845,
+          "mae": 1.0123073562397213,
+          "rmse": 1.1865771136863763,
+          "sample_count": 24,
+          "station_id": "C457I",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": -0.6401946218044258,
+          "mae": 0.7644545174009331,
+          "rmse": 1.133940294633297,
+          "sample_count": 24,
+          "station_id": "C457I",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": 0.5109565278665684,
+          "mae": 0.9425140726875867,
+          "rmse": 1.0834757613764014,
+          "sample_count": 24,
+          "station_id": "C458A",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": 0.5946214597355213,
+          "mae": 0.9771343351178806,
+          "rmse": 1.199302522491787,
+          "sample_count": 24,
+          "station_id": "C458A",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": -0.2291166082220816,
+          "mae": 0.768642206091343,
+          "rmse": 0.8832147844843026,
+          "sample_count": 24,
+          "station_id": "C458A",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": -1.180817802684172,
+          "mae": 1.180817802684172,
+          "rmse": 1.4257471820091878,
+          "sample_count": 24,
+          "station_id": "C459Z",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": 1.3477105506247773,
+          "mae": 1.3815817572579456,
+          "rmse": 1.767333091558496,
+          "sample_count": 24,
+          "station_id": "C459Z",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": -1.218155101099304,
+          "mae": 1.2544703856991872,
+          "rmse": 1.5158846327837188,
+          "sample_count": 24,
+          "station_id": "C459Z",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": 2.226808477560406,
+          "mae": 2.346673100443406,
+          "rmse": 2.7917882738722906,
+          "sample_count": 24,
+          "station_id": "C468X",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": -0.030187833965596766,
+          "mae": 0.3905825687518374,
+          "rmse": 0.5516713313706055,
+          "sample_count": 24,
+          "station_id": "C468X",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": -0.9542001529375886,
+          "mae": 0.9635241400149073,
+          "rmse": 1.2612610596925855,
+          "sample_count": 24,
+          "station_id": "C468X",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": -1.9156892228466889,
+          "mae": 1.9156892228466889,
+          "rmse": 1.9935355551989018,
+          "sample_count": 23,
+          "station_id": "C469E",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": -0.42838463172363245,
+          "mae": 0.8103308696524557,
+          "rmse": 1.0189840925560678,
+          "sample_count": 24,
+          "station_id": "C469E",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": -0.886533161287688,
+          "mae": 0.8933062502225901,
+          "rmse": 1.091320801214262,
+          "sample_count": 24,
+          "station_id": "C469E",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": -0.9414910982889163,
+          "mae": 1.5345846103831065,
+          "rmse": 1.753865425457477,
+          "sample_count": 24,
+          "station_id": "C611E",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": -0.9681584864520186,
+          "mae": 1.0775673536347752,
+          "rmse": 1.2533752375338465,
+          "sample_count": 24,
+          "station_id": "C611E",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": 0.7127260557611299,
+          "mae": 0.7718675143794366,
+          "rmse": 0.9186694194540135,
+          "sample_count": 24,
+          "station_id": "C611E",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": -0.7138858627174021,
+          "mae": 1.182744998431778,
+          "rmse": 1.4125607651783232,
+          "sample_count": 23,
+          "station_id": "C612F",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": -0.7300410255876005,
+          "mae": 1.095118814452893,
+          "rmse": 1.221311631416743,
+          "sample_count": 24,
+          "station_id": "C612F",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": 0.473333992116944,
+          "mae": 1.3826666124002387,
+          "rmse": 1.553703764705854,
+          "sample_count": 24,
+          "station_id": "C612F",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": -1.783147072771482,
+          "mae": 2.2926046365234334,
+          "rmse": 3.0277763308679835,
+          "sample_count": 24,
+          "station_id": "C614H",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": -1.1689701475299,
+          "mae": 1.3621713072556527,
+          "rmse": 1.513267426935428,
+          "sample_count": 24,
+          "station_id": "C614H",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": 0.44559708611171506,
+          "mae": 0.8704559965532237,
+          "rmse": 1.0769652452503897,
+          "sample_count": 24,
+          "station_id": "C614H",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": -0.9578980744183122,
+          "mae": 1.045257328461685,
+          "rmse": 1.259424528395172,
+          "sample_count": 24,
+          "station_id": "C619X",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": -1.3345382415686957,
+          "mae": 1.3613191641572742,
+          "rmse": 1.5632572755745848,
+          "sample_count": 24,
+          "station_id": "C619X",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": -0.0314506643452648,
+          "mae": 0.6538462727239648,
+          "rmse": 0.8914234478175719,
+          "sample_count": 24,
+          "station_id": "C619X",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": -1.5044175795046424,
+          "mae": 1.5044175795046424,
+          "rmse": 1.5445820049803554,
+          "sample_count": 24,
+          "station_id": "C619Y",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": 1.7278325989068162,
+          "mae": 1.839213224504782,
+          "rmse": 2.188385802854352,
+          "sample_count": 24,
+          "station_id": "C619Y",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": -1.535297417104922,
+          "mae": 1.7252505804609661,
+          "rmse": 2.3792100703187224,
+          "sample_count": 24,
+          "station_id": "C619Y",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": -2.754012049989866,
+          "mae": 2.8190185841790627,
+          "rmse": 3.2806424008539965,
+          "sample_count": 23,
+          "station_id": "C623I",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": -0.13359416342035227,
+          "mae": 0.9933442827103501,
+          "rmse": 1.191360679242775,
+          "sample_count": 24,
+          "station_id": "C623I",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": 0.7276068353053273,
+          "mae": 2.4797499668289187,
+          "rmse": 2.750230290914149,
+          "sample_count": 24,
+          "station_id": "C623I",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": 0.6072078654605164,
+          "mae": 1.3028749490205083,
+          "rmse": 1.5393748034757944,
+          "sample_count": 24,
+          "station_id": "C625O",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": -0.7220765654720469,
+          "mae": 0.8935857142056346,
+          "rmse": 0.9936863149077217,
+          "sample_count": 24,
+          "station_id": "C625O",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": 1.316120194774129,
+          "mae": 1.6611084152354512,
+          "rmse": 2.0818595651145357,
+          "sample_count": 24,
+          "station_id": "C625O",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": 0.32825862111576737,
+          "mae": 0.9408218305600423,
+          "rmse": 1.2055593072328339,
+          "sample_count": 24,
+          "station_id": "C628B",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": 1.8198105840428251,
+          "mae": 2.0725643929594355,
+          "rmse": 2.3867102661984836,
+          "sample_count": 24,
+          "station_id": "C628B",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": -2.334943050629159,
+          "mae": 3.001317529547753,
+          "rmse": 3.375632255669118,
+          "sample_count": 24,
+          "station_id": "C628B",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": 0.7470276601448419,
+          "mae": 1.1410371363420198,
+          "rmse": 1.3443409858609423,
+          "sample_count": 23,
+          "station_id": "C629Q",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": -1.0678436273914824,
+          "mae": 2.414777815627738,
+          "rmse": 3.1428668862451494,
+          "sample_count": 24,
+          "station_id": "C629Q",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": 0.36927110980071826,
+          "mae": 0.8504602698213833,
+          "rmse": 1.1284295527976786,
+          "sample_count": 24,
+          "station_id": "C629Q",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": 0.5799509041550053,
+          "mae": 1.7876777548557239,
+          "rmse": 1.9844952034812544,
+          "sample_count": 24,
+          "station_id": "C629X",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": -0.5392306436942721,
+          "mae": 2.0126604948212408,
+          "rmse": 2.9096632163224663,
+          "sample_count": 24,
+          "station_id": "C629X",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": 1.2990513814438052,
+          "mae": 2.016901083838364,
+          "rmse": 2.3841178317205887,
+          "sample_count": 24,
+          "station_id": "C629X",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": -1.211004206490846,
+          "mae": 1.3000633532564194,
+          "rmse": 1.557184652170132,
+          "sample_count": 24,
+          "station_id": "C635B",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": 0.024784055578207276,
+          "mae": 1.201634807703506,
+          "rmse": 1.333135848621699,
+          "sample_count": 24,
+          "station_id": "C635B",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": -0.041270652242013005,
+          "mae": 2.479438672648828,
+          "rmse": 2.5733133294796167,
+          "sample_count": 24,
+          "station_id": "C635B",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": 0.09501907146861062,
+          "mae": 1.1560836423510235,
+          "rmse": 1.2566273769712972,
+          "sample_count": 24,
+          "station_id": "C639M",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": -0.3481656794318965,
+          "mae": 1.8292964227803115,
+          "rmse": 2.0916896229617117,
+          "sample_count": 24,
+          "station_id": "C639M",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": -0.027825889780642182,
+          "mae": 0.7061381137856465,
+          "rmse": 0.9023174635054476,
+          "sample_count": 24,
+          "station_id": "C639M",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": 1.9203080452070793,
+          "mae": 2.0119417253414533,
+          "rmse": 2.5407729503630945,
+          "sample_count": 24,
+          "station_id": "C639U",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": -1.0235682378904178,
+          "mae": 1.5044923213152106,
+          "rmse": 2.0614332743590698,
+          "sample_count": 24,
+          "station_id": "C639U",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": -1.4582521118898182,
+          "mae": 2.8348977751036606,
+          "rmse": 3.5828887100431204,
+          "sample_count": 24,
+          "station_id": "C639U",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": 2.938325331888502,
+          "mae": 2.938325331888502,
+          "rmse": 3.0553780017092578,
+          "sample_count": 24,
+          "station_id": "C648C",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": -0.33372302647256197,
+          "mae": 1.0118730865787076,
+          "rmse": 1.3165630356511442,
+          "sample_count": 24,
+          "station_id": "C648C",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": -3.074532047250429,
+          "mae": 3.1621057324040103,
+          "rmse": 4.499116640822642,
+          "sample_count": 24,
+          "station_id": "C648C",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": 0.22149645252847242,
+          "mae": 0.8690517041416461,
+          "rmse": 1.2056008234308488,
+          "sample_count": 23,
+          "station_id": "C648N",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": 0.1244168358251949,
+          "mae": 1.0116281095881325,
+          "rmse": 1.3045828715892385,
+          "sample_count": 24,
+          "station_id": "C648N",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": -0.9185912785757218,
+          "mae": 1.5455894018079925,
+          "rmse": 1.9844000093418293,
+          "sample_count": 24,
+          "station_id": "C648N",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": 1.4013264291284198,
+          "mae": 1.4013264291284198,
+          "rmse": 1.5323465596374326,
+          "sample_count": 24,
+          "station_id": "C649I",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": 0.15352041672144584,
+          "mae": 1.1511238954889105,
+          "rmse": 1.4836049122496564,
+          "sample_count": 24,
+          "station_id": "C649I",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": 3.371505052529635,
+          "mae": 4.313815683975382,
+          "rmse": 4.636893226631766,
+          "sample_count": 24,
+          "station_id": "C649I",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": -0.16422565195452896,
+          "mae": 0.3383511620395628,
+          "rmse": 0.4322879707429113,
+          "sample_count": 24,
+          "station_id": "C649R",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": 1.0227541312786244,
+          "mae": 1.0227541312786244,
+          "rmse": 1.0972930806216095,
+          "sample_count": 24,
+          "station_id": "C649R",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": -1.9040549242818106,
+          "mae": 1.9040549242818106,
+          "rmse": 2.0430879897048015,
+          "sample_count": 24,
+          "station_id": "C649R",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": 2.644933367096563,
+          "mae": 2.644933367096563,
+          "rmse": 2.944458214186229,
+          "sample_count": 24,
+          "station_id": "C656V",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": -0.3561633744570462,
+          "mae": 1.180230225118378,
+          "rmse": 1.4700128653965572,
+          "sample_count": 24,
+          "station_id": "C656V",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": -1.029303850814988,
+          "mae": 1.057573465957155,
+          "rmse": 1.2972992402330767,
+          "sample_count": 24,
+          "station_id": "C656V",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": -0.01965246166992311,
+          "mae": 1.2410491349646335,
+          "rmse": 1.4130523412222036,
+          "sample_count": 24,
+          "station_id": "C658X",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": -0.10526168226383242,
+          "mae": 0.46373176260092625,
+          "rmse": 0.5861140783783012,
+          "sample_count": 24,
+          "station_id": "C658X",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": -1.2591380801362733,
+          "mae": 1.2591380801362733,
+          "rmse": 1.346099159010243,
+          "sample_count": 24,
+          "station_id": "C658X",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": -0.2721831805913458,
+          "mae": 1.3709907545012026,
+          "rmse": 1.4597297616177574,
+          "sample_count": 24,
+          "station_id": "C659H",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": -0.2885127904464092,
+          "mae": 0.7354900555282233,
+          "rmse": 0.9366507779693773,
+          "sample_count": 24,
+          "station_id": "C659H",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": 0.9094624751670103,
+          "mae": 1.0077635415682804,
+          "rmse": 1.1320988970308428,
+          "sample_count": 24,
+          "station_id": "C659H",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": -0.7604732910117656,
+          "mae": 0.7859033268464822,
+          "rmse": 0.907147034146094,
+          "sample_count": 24,
+          "station_id": "C659M",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": 2.7776362668891466,
+          "mae": 2.7776362668891466,
+          "rmse": 2.842932122459284,
+          "sample_count": 24,
+          "station_id": "C659M",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": -1.0271231086530668,
+          "mae": 1.044214464979065,
+          "rmse": 1.1502565291368108,
+          "sample_count": 24,
+          "station_id": "C659M",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": 4.458338758922832,
+          "mae": 4.458338758922832,
+          "rmse": 4.792149247930257,
+          "sample_count": 22,
+          "station_id": "C665T",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": -0.6100342207351303,
+          "mae": 0.9232084491948548,
+          "rmse": 1.0364349118271328,
+          "sample_count": 24,
+          "station_id": "C665T",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": -0.3150764503130279,
+          "mae": 0.5656119571845317,
+          "rmse": 0.6727308815832115,
+          "sample_count": 24,
+          "station_id": "C665T",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": 0.3615277596518898,
+          "mae": 1.7209698981795352,
+          "rmse": 1.847165936470573,
+          "sample_count": 24,
+          "station_id": "C668V",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": 0.7514389411595942,
+          "mae": 0.8588640082668942,
+          "rmse": 1.0191302274427632,
+          "sample_count": 24,
+          "station_id": "C668V",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": -0.6536795147402885,
+          "mae": 0.9128924010084166,
+          "rmse": 1.1778340035080688,
+          "sample_count": 24,
+          "station_id": "C668V",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": -1.2069657913664533,
+          "mae": 1.2182245772921265,
+          "rmse": 1.4568978678264324,
+          "sample_count": 23,
+          "station_id": "C669B",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": 0.48890946342184094,
+          "mae": 0.5339534557712438,
+          "rmse": 0.609720287913253,
+          "sample_count": 24,
+          "station_id": "C669B",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": -0.2245868069952642,
+          "mae": 0.43619785774218056,
+          "rmse": 0.5572303678260881,
+          "sample_count": 24,
+          "station_id": "C669B",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": 0.16127694987967325,
+          "mae": 0.25038773486867666,
+          "rmse": 0.3302307999032935,
+          "sample_count": 24,
+          "station_id": "C689E",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": -0.3822608514206381,
+          "mae": 1.7759336337271536,
+          "rmse": 2.0759843648542726,
+          "sample_count": 24,
+          "station_id": "C689E",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": 0.4902269587602961,
+          "mae": 0.8417409059396513,
+          "rmse": 1.1136422759458795,
+          "sample_count": 24,
+          "station_id": "C689E",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "sample_count": 0,
+          "station_id": "C839X",
+          "status": "NO_VALID_PAIRS",
+          "variable": "T2"
+        },
+        {
+          "sample_count": 0,
+          "station_id": "C839X",
+          "status": "NO_VALID_PAIRS",
+          "variable": "U10"
+        },
+        {
+          "sample_count": 0,
+          "station_id": "C839X",
+          "status": "NO_VALID_PAIRS",
+          "variable": "V10"
+        },
+        {
+          "bias": -0.1230028890315727,
+          "mae": 1.643961112487285,
+          "rmse": 1.9292598731724306,
+          "sample_count": 24,
+          "station_id": "C916Q",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": 2.409292299153385,
+          "mae": 2.409292299153385,
+          "rmse": 2.5428694348441687,
+          "sample_count": 24,
+          "station_id": "C916Q",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": -3.5389570929597824,
+          "mae": 3.5389570929597824,
+          "rmse": 3.9963705460776042,
+          "sample_count": 24,
+          "station_id": "C916Q",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": 0.1676807412891037,
+          "mae": 2.2838005828239667,
+          "rmse": 2.613916798855697,
+          "sample_count": 24,
+          "station_id": "C917E",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": -3.6301499097857874,
+          "mae": 4.272957534513036,
+          "rmse": 5.291562634940214,
+          "sample_count": 24,
+          "station_id": "C917E",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": -9.333200586264335,
+          "mae": 9.333200586264335,
+          "rmse": 9.532997402251407,
+          "sample_count": 24,
+          "station_id": "C917E",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": 2.8422435473174894,
+          "mae": 2.8422435473174894,
+          "rmse": 3.285428093430699,
+          "sample_count": 24,
+          "station_id": "C919K",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": -1.4694293509553271,
+          "mae": 2.539574453999526,
+          "rmse": 3.0316640556014067,
+          "sample_count": 24,
+          "station_id": "C919K",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": -2.045367095320065,
+          "mae": 2.694414670583649,
+          "rmse": 3.3920749337647926,
+          "sample_count": 24,
+          "station_id": "C919K",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": 1.5709966591179523,
+          "mae": 1.9294203382555868,
+          "rmse": 2.4578240851923807,
+          "sample_count": 24,
+          "station_id": "C925F",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": -0.062118676010976315,
+          "mae": 1.3359363171734338,
+          "rmse": 1.5440454275418443,
+          "sample_count": 24,
+          "station_id": "C925F",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": -1.1338338779576551,
+          "mae": 1.457998569203383,
+          "rmse": 1.7562156967802092,
+          "sample_count": 24,
+          "station_id": "C925F",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": 1.9790791290247445,
+          "mae": 1.9790791290247445,
+          "rmse": 2.403699954005282,
+          "sample_count": 24,
+          "station_id": "C928I",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": -5.946215535956786,
+          "mae": 5.946215535956786,
+          "rmse": 6.1061183612581855,
+          "sample_count": 24,
+          "station_id": "C928I",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": -0.9656462447274429,
+          "mae": 1.2712201531427627,
+          "rmse": 1.4765060744696787,
+          "sample_count": 24,
+          "station_id": "C928I",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": -0.7140603513829665,
+          "mae": 0.7376475608356993,
+          "rmse": 0.8865847924689778,
+          "sample_count": 24,
+          "station_id": "C929I",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": -0.4497287521688502,
+          "mae": 1.655188269706956,
+          "rmse": 1.980752806071878,
+          "sample_count": 24,
+          "station_id": "C929I",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": 0.7932617522351206,
+          "mae": 1.2532557912137579,
+          "rmse": 1.5170292545999484,
+          "sample_count": 24,
+          "station_id": "C929I",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": -1.878011551350724,
+          "mae": 1.878011551350724,
+          "rmse": 2.1515393089214405,
+          "sample_count": 24,
+          "station_id": "C939T",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": -1.8310021469101467,
+          "mae": 2.01218720229836,
+          "rmse": 2.3782807687428162,
+          "sample_count": 24,
+          "station_id": "C939T",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": -4.108446928096832,
+          "mae": 4.108446928096832,
+          "rmse": 4.3115540859056205,
+          "sample_count": 24,
+          "station_id": "C939T",
+          "status": "OK",
+          "variable": "V10"
+        }
+      ],
+      "wrfout_file_count": 24,
+      "wrfout_files": [
+        "<reference-data-root>/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d02_2026-05-21_19:00:00",
+        "<reference-data-root>/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d02_2026-05-21_20:00:00",
+        "<reference-data-root>/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d02_2026-05-21_21:00:00",
+        "<reference-data-root>/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d02_2026-05-21_22:00:00",
+        "<reference-data-root>/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d02_2026-05-21_23:00:00",
+        "<reference-data-root>/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d02_2026-05-22_00:00:00",
+        "<reference-data-root>/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d02_2026-05-22_01:00:00",
+        "<reference-data-root>/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d02_2026-05-22_02:00:00",
+        "<reference-data-root>/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d02_2026-05-22_03:00:00",
+        "<reference-data-root>/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d02_2026-05-22_04:00:00",
+        "<reference-data-root>/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d02_2026-05-22_05:00:00",
+        "<reference-data-root>/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d02_2026-05-22_06:00:00",
+        "<reference-data-root>/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d02_2026-05-22_07:00:00",
+        "<reference-data-root>/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d02_2026-05-22_08:00:00",
+        "<reference-data-root>/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d02_2026-05-22_09:00:00",
+        "<reference-data-root>/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d02_2026-05-22_10:00:00",
+        "<reference-data-root>/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d02_2026-05-22_11:00:00",
+        "<reference-data-root>/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d02_2026-05-22_12:00:00",
+        "<reference-data-root>/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d02_2026-05-22_13:00:00",
+        "<reference-data-root>/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d02_2026-05-22_14:00:00",
+        "<reference-data-root>/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d02_2026-05-22_15:00:00",
+        "<reference-data-root>/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d02_2026-05-22_16:00:00",
+        "<reference-data-root>/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d02_2026-05-22_17:00:00",
+        "<reference-data-root>/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d02_2026-05-22_18:00:00"
+      ]
+    },
+    "gpu": {
+      "aggregate": {
+        "joined_rows": 1747,
+        "schema": "M7StationScoreReport",
+        "schema_version": 1,
+        "scores": {
+          "T2": {
+            "bias": 6.900656598324024,
+            "mae": 7.464725931977783,
+            "rmse": 8.846077477618918,
+            "sample_count": 1615,
+            "status": "OK"
+          },
+          "U10": {
+            "bias": 3.0123152380878113,
+            "mae": 5.286288906214164,
+            "rmse": 6.746677458584775,
+            "sample_count": 1604,
+            "status": "OK"
+          },
+          "V10": {
+            "bias": 0.11532014453805496,
+            "mae": 5.749496326657922,
+            "rmse": 7.233764228647868,
+            "sample_count": 1604,
+            "status": "OK"
+          }
+        },
+        "status": "OK",
+        "variables": [
+          "T2",
+          "U10",
+          "V10"
+        ]
+      },
+      "forecast_rows": 1752,
+      "label": "gpu",
+      "per_station": [
+        {
+          "sample_count": 0,
+          "station_id": "C018J",
+          "status": "NO_VALID_PAIRS",
+          "variable": "T2"
+        },
+        {
+          "sample_count": 0,
+          "station_id": "C018J",
+          "status": "NO_VALID_PAIRS",
+          "variable": "U10"
+        },
+        {
+          "sample_count": 0,
+          "station_id": "C018J",
+          "status": "NO_VALID_PAIRS",
+          "variable": "V10"
+        },
+        {
+          "bias": 12.228254937924133,
+          "mae": 16.177583508498525,
+          "rmse": 26.21841970860217,
+          "sample_count": 24,
+          "station_id": "C019V",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": 4.184759977935758,
+          "mae": 4.184759977935758,
+          "rmse": 4.263179135330485,
+          "sample_count": 24,
+          "station_id": "C019V",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": 3.0921539320599902,
+          "mae": 3.0921539320599902,
+          "rmse": 3.3916132875693954,
+          "sample_count": 24,
+          "station_id": "C019V",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "sample_count": 0,
+          "station_id": "C029O",
+          "status": "NO_VALID_PAIRS",
+          "variable": "T2"
+        },
+        {
+          "sample_count": 0,
+          "station_id": "C029O",
+          "status": "NO_VALID_PAIRS",
+          "variable": "U10"
+        },
+        {
+          "sample_count": 0,
+          "station_id": "C029O",
+          "status": "NO_VALID_PAIRS",
+          "variable": "V10"
+        },
+        {
+          "sample_count": 0,
+          "station_id": "C038N",
+          "status": "NO_VALID_PAIRS",
+          "variable": "T2"
+        },
+        {
+          "sample_count": 0,
+          "station_id": "C038N",
+          "status": "NO_VALID_PAIRS",
+          "variable": "U10"
+        },
+        {
+          "sample_count": 0,
+          "station_id": "C038N",
+          "status": "NO_VALID_PAIRS",
+          "variable": "V10"
+        },
+        {
+          "sample_count": 0,
+          "station_id": "C048W",
+          "status": "NO_VALID_PAIRS",
+          "variable": "T2"
+        },
+        {
+          "sample_count": 0,
+          "station_id": "C048W",
+          "status": "NO_VALID_PAIRS",
+          "variable": "U10"
+        },
+        {
+          "sample_count": 0,
+          "station_id": "C048W",
+          "status": "NO_VALID_PAIRS",
+          "variable": "V10"
+        },
+        {
+          "bias": 10.717191789600916,
+          "mae": 10.717191789600916,
+          "rmse": 10.937565932521446,
+          "sample_count": 22,
+          "station_id": "C101A",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": -2.4770989426868586,
+          "mae": 2.4770989426868586,
+          "rmse": 2.6055050950099496,
+          "sample_count": 22,
+          "station_id": "C101A",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": -0.4213114757345915,
+          "mae": 1.5680251918823374,
+          "rmse": 1.7806786468320701,
+          "sample_count": 22,
+          "station_id": "C101A",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": 10.925309212287887,
+          "mae": 10.925309212287887,
+          "rmse": 11.311573910350504,
+          "sample_count": 23,
+          "station_id": "C117A",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": -6.748928690415794,
+          "mae": 6.748928690415794,
+          "rmse": 6.83007953517273,
+          "sample_count": 24,
+          "station_id": "C117A",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": -4.189719253474295,
+          "mae": 4.301321239520596,
+          "rmse": 4.8001793194905344,
+          "sample_count": 24,
+          "station_id": "C117A",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": 7.329868514447457,
+          "mae": 7.329868514447457,
+          "rmse": 7.813707050607611,
+          "sample_count": 24,
+          "station_id": "C117Z",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": -4.991897046868176,
+          "mae": 4.991897046868176,
+          "rmse": 5.07913431677084,
+          "sample_count": 24,
+          "station_id": "C117Z",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": -9.266733414546392,
+          "mae": 9.266733414546392,
+          "rmse": 9.30667616830581,
+          "sample_count": 24,
+          "station_id": "C117Z",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": 2.413089364752058,
+          "mae": 4.469541369130164,
+          "rmse": 4.9817899861443475,
+          "sample_count": 23,
+          "station_id": "C129V",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": 0.9406221776888404,
+          "mae": 1.6753133613986708,
+          "rmse": 2.048645403456532,
+          "sample_count": 24,
+          "station_id": "C129V",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": -14.106895122326385,
+          "mae": 14.106895122326385,
+          "rmse": 14.285323469700934,
+          "sample_count": 24,
+          "station_id": "C129V",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": 6.032069450424463,
+          "mae": 6.032069450424463,
+          "rmse": 6.140426682276739,
+          "sample_count": 24,
+          "station_id": "C139E",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": 12.847856289603603,
+          "mae": 12.847856289603603,
+          "rmse": 13.127010206094962,
+          "sample_count": 24,
+          "station_id": "C139E",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": -2.969152855579118,
+          "mae": 3.32063786328769,
+          "rmse": 4.618546534442546,
+          "sample_count": 24,
+          "station_id": "C139E",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": 7.597100971420787,
+          "mae": 7.597100971420787,
+          "rmse": 7.848772845833665,
+          "sample_count": 24,
+          "station_id": "C148F",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": 8.15448426343301,
+          "mae": 8.15448426343301,
+          "rmse": 8.386521292322339,
+          "sample_count": 24,
+          "station_id": "C148F",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": 1.9832419570099298,
+          "mae": 2.182555032748597,
+          "rmse": 2.8537203675045104,
+          "sample_count": 24,
+          "station_id": "C148F",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": -1.5273793908653914,
+          "mae": 2.1754755107865456,
+          "rmse": 2.7027433516649175,
+          "sample_count": 24,
+          "station_id": "C229J",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": 7.556288757125991,
+          "mae": 7.556288757125991,
+          "rmse": 7.76745076586564,
+          "sample_count": 24,
+          "station_id": "C229J",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": -2.197157538095065,
+          "mae": 3.0112271188345914,
+          "rmse": 3.618562311451515,
+          "sample_count": 24,
+          "station_id": "C229J",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": 3.0744150385943385,
+          "mae": 3.1478931407141415,
+          "rmse": 3.6533806537294033,
+          "sample_count": 23,
+          "station_id": "C239N",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": 3.595540394895076,
+          "mae": 3.595540394895076,
+          "rmse": 3.7960303661073587,
+          "sample_count": 24,
+          "station_id": "C239N",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": -4.353366988119327,
+          "mae": 4.594933077370956,
+          "rmse": 5.5789826960905975,
+          "sample_count": 24,
+          "station_id": "C239N",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": 8.678590835832354,
+          "mae": 8.678590835832354,
+          "rmse": 8.999560035818904,
+          "sample_count": 24,
+          "station_id": "C248E",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": -0.5863420137505088,
+          "mae": 0.7177413869194824,
+          "rmse": 0.8559586566589632,
+          "sample_count": 24,
+          "station_id": "C248E",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": 3.7765584086820585,
+          "mae": 3.7765584086820585,
+          "rmse": 3.9393440460503477,
+          "sample_count": 24,
+          "station_id": "C248E",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": 4.1535705354787495,
+          "mae": 4.1535705354787495,
+          "rmse": 4.856011535843114,
+          "sample_count": 24,
+          "station_id": "C249I",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": -1.6050354061831074,
+          "mae": 2.3652747058476566,
+          "rmse": 2.8426675741208447,
+          "sample_count": 24,
+          "station_id": "C249I",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": -0.14240381056329066,
+          "mae": 0.9790969590186215,
+          "rmse": 1.4001020821415229,
+          "sample_count": 24,
+          "station_id": "C249I",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": 8.73979787643267,
+          "mae": 8.73979787643267,
+          "rmse": 9.327729104050736,
+          "sample_count": 24,
+          "station_id": "C258K",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": 2.7900198643987473,
+          "mae": 2.7900198643987473,
+          "rmse": 2.8958447904262425,
+          "sample_count": 24,
+          "station_id": "C258K",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": 2.2742509871913286,
+          "mae": 2.2742509871913286,
+          "rmse": 2.5134499110543644,
+          "sample_count": 24,
+          "station_id": "C258K",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": -7.649386915574607,
+          "mae": 9.124064747191419,
+          "rmse": 10.377528459727035,
+          "sample_count": 24,
+          "station_id": "C259X",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": 1.9494541807519266,
+          "mae": 1.9494541807519266,
+          "rmse": 2.1307522550772604,
+          "sample_count": 24,
+          "station_id": "C259X",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": 3.731951217351438,
+          "mae": 3.731951217351438,
+          "rmse": 3.969150709426756,
+          "sample_count": 24,
+          "station_id": "C259X",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": 8.686497386759351,
+          "mae": 8.686497386759351,
+          "rmse": 9.483322380115322,
+          "sample_count": 24,
+          "station_id": "C314Z",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": 1.575669513604521,
+          "mae": 2.663925427959996,
+          "rmse": 3.1517176579617763,
+          "sample_count": 24,
+          "station_id": "C314Z",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": -1.339844691151962,
+          "mae": 1.925825514610369,
+          "rmse": 2.3054714809996284,
+          "sample_count": 24,
+          "station_id": "C314Z",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": 9.297422916411682,
+          "mae": 9.297422916411682,
+          "rmse": 9.936008925281193,
+          "sample_count": 24,
+          "station_id": "C316I",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": 0.2725280921281525,
+          "mae": 2.2650663552857737,
+          "rmse": 2.678212513635085,
+          "sample_count": 24,
+          "station_id": "C316I",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": -2.276715934296751,
+          "mae": 2.321833137483701,
+          "rmse": 2.9030057165687064,
+          "sample_count": 24,
+          "station_id": "C316I",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": 8.201956891447123,
+          "mae": 8.201956891447123,
+          "rmse": 8.677452289305617,
+          "sample_count": 24,
+          "station_id": "C317B",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": -7.744001126502709,
+          "mae": 7.769811355246897,
+          "rmse": 8.038422325668142,
+          "sample_count": 24,
+          "station_id": "C317B",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": -1.1231701671819179,
+          "mae": 1.4076103860726903,
+          "rmse": 1.674941331494425,
+          "sample_count": 24,
+          "station_id": "C317B",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": 5.599398953161763,
+          "mae": 5.599398953161763,
+          "rmse": 6.368212672148373,
+          "sample_count": 24,
+          "station_id": "C319W",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": -1.6860513274890423,
+          "mae": 2.156069875974594,
+          "rmse": 2.7707379611759824,
+          "sample_count": 24,
+          "station_id": "C319W",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": -9.05632943400103,
+          "mae": 9.05632943400103,
+          "rmse": 9.141600349318287,
+          "sample_count": 24,
+          "station_id": "C319W",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": 7.557454039303965,
+          "mae": 7.557454039303965,
+          "rmse": 7.924400792320158,
+          "sample_count": 24,
+          "station_id": "C328W",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": -4.806034203438167,
+          "mae": 4.806034203438167,
+          "rmse": 5.0943106436646195,
+          "sample_count": 24,
+          "station_id": "C328W",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": -0.9306467798216117,
+          "mae": 2.078047922788466,
+          "rmse": 2.3409016865119905,
+          "sample_count": 24,
+          "station_id": "C328W",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": 4.073607037484204,
+          "mae": 4.278127017694634,
+          "rmse": 4.492462241581853,
+          "sample_count": 24,
+          "station_id": "C329Z",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": -0.4128678619265351,
+          "mae": 1.2074923890082723,
+          "rmse": 1.6560042842951022,
+          "sample_count": 24,
+          "station_id": "C329Z",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": -2.0799104566945434,
+          "mae": 2.274904373183332,
+          "rmse": 2.9086907819558947,
+          "sample_count": 24,
+          "station_id": "C329Z",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": 13.672111677290195,
+          "mae": 13.672111677290195,
+          "rmse": 14.800763203380585,
+          "sample_count": 24,
+          "station_id": "C406G",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": -1.2752058383549183,
+          "mae": 1.6666790619202694,
+          "rmse": 2.185862332137185,
+          "sample_count": 24,
+          "station_id": "C406G",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": -6.857260429715912,
+          "mae": 6.857260429715912,
+          "rmse": 6.965968745774966,
+          "sample_count": 24,
+          "station_id": "C406G",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": 8.896777276783169,
+          "mae": 8.896777276783169,
+          "rmse": 9.162567862854257,
+          "sample_count": 24,
+          "station_id": "C419L",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": -13.243374641973313,
+          "mae": 13.243374641973313,
+          "rmse": 13.294077270206989,
+          "sample_count": 24,
+          "station_id": "C419L",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": -6.237897445442634,
+          "mae": 6.237897445442634,
+          "rmse": 6.412425776032154,
+          "sample_count": 24,
+          "station_id": "C419L",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": 5.41555056343861,
+          "mae": 5.41555056343861,
+          "rmse": 5.861359540931709,
+          "sample_count": 24,
+          "station_id": "C419X",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "sample_count": 0,
+          "station_id": "C419X",
+          "status": "NO_VALID_PAIRS",
+          "variable": "U10"
+        },
+        {
+          "sample_count": 0,
+          "station_id": "C419X",
+          "status": "NO_VALID_PAIRS",
+          "variable": "V10"
+        },
+        {
+          "bias": 9.180422230574672,
+          "mae": 9.180422230574672,
+          "rmse": 9.896327801474033,
+          "sample_count": 24,
+          "station_id": "C428T",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": 11.691672384517446,
+          "mae": 11.691672384517446,
+          "rmse": 11.808211588481448,
+          "sample_count": 24,
+          "station_id": "C428T",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": -10.049857681991062,
+          "mae": 10.049857681991062,
+          "rmse": 10.172257774391412,
+          "sample_count": 24,
+          "station_id": "C428T",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": 4.717714262645315,
+          "mae": 4.717714262645315,
+          "rmse": 5.226494871952821,
+          "sample_count": 22,
+          "station_id": "C429I",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": -1.9680387725846225,
+          "mae": 3.190920605906277,
+          "rmse": 3.8452986321659366,
+          "sample_count": 23,
+          "station_id": "C429I",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": -19.62747337202704,
+          "mae": 19.62747337202704,
+          "rmse": 19.738744535501898,
+          "sample_count": 23,
+          "station_id": "C429I",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": 14.774578993142123,
+          "mae": 14.774578993142123,
+          "rmse": 15.050279700416274,
+          "sample_count": 24,
+          "station_id": "C430E",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": 9.898260350337805,
+          "mae": 9.898260350337805,
+          "rmse": 9.968393624332363,
+          "sample_count": 24,
+          "station_id": "C430E",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": 6.415967255622874,
+          "mae": 6.415967255622874,
+          "rmse": 6.4543347613619995,
+          "sample_count": 24,
+          "station_id": "C430E",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": 9.772224509183708,
+          "mae": 9.772224509183708,
+          "rmse": 10.239513946526587,
+          "sample_count": 24,
+          "station_id": "C438N",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": 15.691241088335223,
+          "mae": 15.691241088335223,
+          "rmse": 15.720560771869687,
+          "sample_count": 24,
+          "station_id": "C438N",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": -1.495645486523916,
+          "mae": 1.7181875855829771,
+          "rmse": 2.030183336081047,
+          "sample_count": 24,
+          "station_id": "C438N",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": 6.675947805526193,
+          "mae": 6.675947805526193,
+          "rmse": 7.320329454845823,
+          "sample_count": 23,
+          "station_id": "C439J",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": 18.179379881937376,
+          "mae": 18.179379881937376,
+          "rmse": 18.20312775221389,
+          "sample_count": 23,
+          "station_id": "C439J",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": -5.0037336555203,
+          "mae": 5.0037336555203,
+          "rmse": 5.354699664638685,
+          "sample_count": 23,
+          "station_id": "C439J",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": 13.023749567916525,
+          "mae": 13.023749567916525,
+          "rmse": 13.101920594090021,
+          "sample_count": 23,
+          "station_id": "C446G",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": 0.3002746997356214,
+          "mae": 2.1523488680402334,
+          "rmse": 2.4948955186019446,
+          "sample_count": 24,
+          "station_id": "C446G",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": 7.714908862005431,
+          "mae": 7.714908862005431,
+          "rmse": 7.820948114973843,
+          "sample_count": 24,
+          "station_id": "C446G",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": 10.405857236832885,
+          "mae": 10.405857236832885,
+          "rmse": 10.519750197297068,
+          "sample_count": 24,
+          "station_id": "C447A",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": -2.7102468939701545,
+          "mae": 2.772163154660779,
+          "rmse": 2.9453572494816584,
+          "sample_count": 24,
+          "station_id": "C447A",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": 0.8130751806569766,
+          "mae": 1.0583038238388625,
+          "rmse": 1.3565291741141465,
+          "sample_count": 24,
+          "station_id": "C447A",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": 3.0906734039836414,
+          "mae": 3.4684078462578256,
+          "rmse": 4.190447746957667,
+          "sample_count": 24,
+          "station_id": "C449C",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": 7.255638262418813,
+          "mae": 7.255638262418813,
+          "rmse": 7.979237112120374,
+          "sample_count": 24,
+          "station_id": "C449C",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": -2.8886984681577217,
+          "mae": 2.8886984681577217,
+          "rmse": 3.3134707081644796,
+          "sample_count": 24,
+          "station_id": "C449C",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": 3.9062303131739333,
+          "mae": 3.9062303131739333,
+          "rmse": 4.340269310832444,
+          "sample_count": 24,
+          "station_id": "C449F",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": 10.752668476062714,
+          "mae": 10.752668476062714,
+          "rmse": 10.770110662342626,
+          "sample_count": 24,
+          "station_id": "C449F",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": -1.869908157505986,
+          "mae": 1.9446968284970019,
+          "rmse": 2.135399766350369,
+          "sample_count": 24,
+          "station_id": "C449F",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": 11.912398321070272,
+          "mae": 11.912398321070272,
+          "rmse": 12.047425221227163,
+          "sample_count": 24,
+          "station_id": "C457I",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": 4.665116587019406,
+          "mae": 4.665116587019406,
+          "rmse": 4.846310311636344,
+          "sample_count": 24,
+          "station_id": "C457I",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": 10.309079785435417,
+          "mae": 10.309079785435417,
+          "rmse": 10.478884501933607,
+          "sample_count": 24,
+          "station_id": "C457I",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": -3.306826141352637,
+          "mae": 6.898907240866623,
+          "rmse": 8.181261910620771,
+          "sample_count": 24,
+          "station_id": "C458A",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": 2.0653039650661142,
+          "mae": 2.118260182250619,
+          "rmse": 2.5401155335415817,
+          "sample_count": 24,
+          "station_id": "C458A",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": 8.018073692726269,
+          "mae": 8.018073692726269,
+          "rmse": 8.145117305518333,
+          "sample_count": 24,
+          "station_id": "C458A",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": 5.410032485631483,
+          "mae": 5.410032485631483,
+          "rmse": 5.661703901744028,
+          "sample_count": 24,
+          "station_id": "C459Z",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": 3.5039192306014257,
+          "mae": 3.5039192306014257,
+          "rmse": 3.721876357585298,
+          "sample_count": 24,
+          "station_id": "C459Z",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": 15.433302474335195,
+          "mae": 15.433302474335195,
+          "rmse": 15.467344930394884,
+          "sample_count": 24,
+          "station_id": "C459Z",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": 13.574014299643457,
+          "mae": 13.574014299643457,
+          "rmse": 13.678744979792416,
+          "sample_count": 24,
+          "station_id": "C468X",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": 1.0927752531978718,
+          "mae": 1.3724733129456332,
+          "rmse": 1.557102890362418,
+          "sample_count": 24,
+          "station_id": "C468X",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": 17.187768612340424,
+          "mae": 17.187768612340424,
+          "rmse": 17.22748485223383,
+          "sample_count": 24,
+          "station_id": "C468X",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": 6.862880070648828,
+          "mae": 6.862880070648828,
+          "rmse": 6.912366052912809,
+          "sample_count": 23,
+          "station_id": "C469E",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": -2.3289490409033036,
+          "mae": 2.3316115894393983,
+          "rmse": 2.687302533572555,
+          "sample_count": 24,
+          "station_id": "C469E",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": 11.677720306520731,
+          "mae": 11.677720306520731,
+          "rmse": 11.740995272700866,
+          "sample_count": 24,
+          "station_id": "C469E",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": 4.777577143004943,
+          "mae": 4.896001427153332,
+          "rmse": 6.394933661403605,
+          "sample_count": 24,
+          "station_id": "C611E",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": 1.6648156249669872,
+          "mae": 2.0695147757580137,
+          "rmse": 2.404676370577753,
+          "sample_count": 24,
+          "station_id": "C611E",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": 0.16322320866117035,
+          "mae": 0.941903091647053,
+          "rmse": 1.2216482334521714,
+          "sample_count": 24,
+          "station_id": "C611E",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": 8.513715844318567,
+          "mae": 8.513715844318567,
+          "rmse": 9.052232578136055,
+          "sample_count": 23,
+          "station_id": "C612F",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": 0.6374838360538744,
+          "mae": 1.0851576565883356,
+          "rmse": 1.191869358686791,
+          "sample_count": 24,
+          "station_id": "C612F",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": 3.1680682183540565,
+          "mae": 3.1680682183540565,
+          "rmse": 3.235948339646194,
+          "sample_count": 24,
+          "station_id": "C612F",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": 6.655348937436853,
+          "mae": 6.655348937436853,
+          "rmse": 7.38471993484513,
+          "sample_count": 24,
+          "station_id": "C614H",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": -1.7480625887030314,
+          "mae": 1.786357318622752,
+          "rmse": 2.259946722300382,
+          "sample_count": 24,
+          "station_id": "C614H",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": 1.8085357349102908,
+          "mae": 1.8085357349102908,
+          "rmse": 1.8957653460379429,
+          "sample_count": 24,
+          "station_id": "C614H",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": 6.0661833887736,
+          "mae": 6.0661833887736,
+          "rmse": 6.104842126367908,
+          "sample_count": 24,
+          "station_id": "C619X",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": 2.8788841885489256,
+          "mae": 3.018533563226704,
+          "rmse": 3.192724066889151,
+          "sample_count": 24,
+          "station_id": "C619X",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": 12.359198020289055,
+          "mae": 12.359198020289055,
+          "rmse": 12.622861624368737,
+          "sample_count": 24,
+          "station_id": "C619X",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": 5.114755861089752,
+          "mae": 5.114755861089752,
+          "rmse": 5.386604138488584,
+          "sample_count": 24,
+          "station_id": "C619Y",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": -6.568069592581524,
+          "mae": 6.568069592581524,
+          "rmse": 6.763172382802424,
+          "sample_count": 24,
+          "station_id": "C619Y",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": 8.33923543568841,
+          "mae": 8.33923543568841,
+          "rmse": 8.801397402530359,
+          "sample_count": 24,
+          "station_id": "C619Y",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": 5.673244135750587,
+          "mae": 5.673244135750587,
+          "rmse": 5.952122562503498,
+          "sample_count": 23,
+          "station_id": "C623I",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": 1.4429347446478904,
+          "mae": 1.6145655988049599,
+          "rmse": 1.73646738373801,
+          "sample_count": 24,
+          "station_id": "C623I",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": -4.20210000074628,
+          "mae": 4.20210000074628,
+          "rmse": 4.3876588453902725,
+          "sample_count": 24,
+          "station_id": "C623I",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": 6.400291629461935,
+          "mae": 6.400291629461935,
+          "rmse": 7.107109300072224,
+          "sample_count": 24,
+          "station_id": "C625O",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": 0.6426740126762697,
+          "mae": 1.4638456679141356,
+          "rmse": 1.5951637533773062,
+          "sample_count": 24,
+          "station_id": "C625O",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": -6.9013538899264,
+          "mae": 6.9013538899264,
+          "rmse": 6.931156672651095,
+          "sample_count": 24,
+          "station_id": "C625O",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": 6.732086349734348,
+          "mae": 6.732086349734348,
+          "rmse": 7.38553265533169,
+          "sample_count": 24,
+          "station_id": "C628B",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": -5.007606164731258,
+          "mae": 5.007606164731258,
+          "rmse": 5.287093511937049,
+          "sample_count": 24,
+          "station_id": "C628B",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": 0.3227853041379887,
+          "mae": 1.6895035952901383,
+          "rmse": 2.434954228548564,
+          "sample_count": 24,
+          "station_id": "C628B",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": 5.831505316775218,
+          "mae": 5.831505316775218,
+          "rmse": 5.872703430126284,
+          "sample_count": 23,
+          "station_id": "C629Q",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": 1.112016344954805,
+          "mae": 1.7338724079509502,
+          "rmse": 2.148156638283216,
+          "sample_count": 24,
+          "station_id": "C629Q",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": -8.117073260674998,
+          "mae": 8.117073260674998,
+          "rmse": 8.251147902583046,
+          "sample_count": 24,
+          "station_id": "C629Q",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": 5.818655243863266,
+          "mae": 5.818655243863266,
+          "rmse": 6.1841143369001115,
+          "sample_count": 24,
+          "station_id": "C629X",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": -1.0275276403483056,
+          "mae": 1.7703238084441513,
+          "rmse": 1.958421594357977,
+          "sample_count": 24,
+          "station_id": "C629X",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": -5.868541301829744,
+          "mae": 5.868541301829744,
+          "rmse": 6.324034074910633,
+          "sample_count": 24,
+          "station_id": "C629X",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": 6.083153828399181,
+          "mae": 6.083153828399181,
+          "rmse": 6.610348356387322,
+          "sample_count": 24,
+          "station_id": "C635B",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": 4.087023512054004,
+          "mae": 4.087023512054004,
+          "rmse": 4.234814754543149,
+          "sample_count": 24,
+          "station_id": "C635B",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": -5.3581696368350675,
+          "mae": 5.3581696368350675,
+          "rmse": 5.449626304820542,
+          "sample_count": 24,
+          "station_id": "C635B",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": 2.8476703569542132,
+          "mae": 2.9620863028274655,
+          "rmse": 3.3227980952049885,
+          "sample_count": 24,
+          "station_id": "C639M",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": 4.264952404312165,
+          "mae": 4.264952404312165,
+          "rmse": 4.595211067239782,
+          "sample_count": 24,
+          "station_id": "C639M",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": -9.79865672069209,
+          "mae": 9.79865672069209,
+          "rmse": 9.858160374360612,
+          "sample_count": 24,
+          "station_id": "C639M",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": 3.8456805117647668,
+          "mae": 3.9028229088329573,
+          "rmse": 4.760743724613431,
+          "sample_count": 24,
+          "station_id": "C639U",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": 5.84138146293308,
+          "mae": 5.84138146293308,
+          "rmse": 5.966991954799066,
+          "sample_count": 24,
+          "station_id": "C639U",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": -6.741643628616178,
+          "mae": 6.741643628616178,
+          "rmse": 6.99966485374266,
+          "sample_count": 24,
+          "station_id": "C639U",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": 5.9605899902809485,
+          "mae": 5.9605899902809485,
+          "rmse": 7.003928010894274,
+          "sample_count": 24,
+          "station_id": "C648C",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": 10.874899562198843,
+          "mae": 10.874899562198843,
+          "rmse": 10.89770695381154,
+          "sample_count": 24,
+          "station_id": "C648C",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": -5.371757277107689,
+          "mae": 5.371757277107689,
+          "rmse": 5.567256128562266,
+          "sample_count": 24,
+          "station_id": "C648C",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": 6.754907608581346,
+          "mae": 6.754907608581346,
+          "rmse": 7.655912234168624,
+          "sample_count": 23,
+          "station_id": "C648N",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": 9.160348664939269,
+          "mae": 9.160348664939269,
+          "rmse": 9.266225096973152,
+          "sample_count": 24,
+          "station_id": "C648N",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": 2.753006719514138,
+          "mae": 2.933049224913083,
+          "rmse": 3.8367222754427277,
+          "sample_count": 24,
+          "station_id": "C648N",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": 3.924921362537608,
+          "mae": 3.924921362537608,
+          "rmse": 4.6159207268774205,
+          "sample_count": 24,
+          "station_id": "C649I",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": 13.070829094735481,
+          "mae": 13.070829094735481,
+          "rmse": 13.252138099945917,
+          "sample_count": 24,
+          "station_id": "C649I",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": 4.411636647188538,
+          "mae": 5.163238795933154,
+          "rmse": 5.884070691901248,
+          "sample_count": 24,
+          "station_id": "C649I",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": 4.511493103538844,
+          "mae": 4.511493103538844,
+          "rmse": 4.815439245794415,
+          "sample_count": 24,
+          "station_id": "C649R",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": 13.534450216609002,
+          "mae": 13.534450216609002,
+          "rmse": 13.58799396290624,
+          "sample_count": 24,
+          "station_id": "C649R",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": 3.4988258390841516,
+          "mae": 3.4988258390841516,
+          "rmse": 3.8336663231632517,
+          "sample_count": 24,
+          "station_id": "C649R",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": 11.606196997038444,
+          "mae": 11.606196997038444,
+          "rmse": 11.895183254212318,
+          "sample_count": 24,
+          "station_id": "C656V",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": 3.526362570292901,
+          "mae": 3.619664556619197,
+          "rmse": 4.094082292501723,
+          "sample_count": 24,
+          "station_id": "C656V",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": 8.987169181518567,
+          "mae": 8.987169181518567,
+          "rmse": 9.126374686377828,
+          "sample_count": 24,
+          "station_id": "C656V",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": 7.655922408051673,
+          "mae": 7.655922408051673,
+          "rmse": 7.760878852641637,
+          "sample_count": 24,
+          "station_id": "C658X",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": 5.62455668945439,
+          "mae": 5.62455668945439,
+          "rmse": 5.733744046869283,
+          "sample_count": 24,
+          "station_id": "C658X",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": 5.520175977713696,
+          "mae": 5.520175977713696,
+          "rmse": 5.653130896463777,
+          "sample_count": 24,
+          "station_id": "C658X",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": 5.518750843180882,
+          "mae": 5.518750843180882,
+          "rmse": 5.543052410534789,
+          "sample_count": 24,
+          "station_id": "C659H",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": 6.760603454654696,
+          "mae": 6.760603454654696,
+          "rmse": 6.9417015043132215,
+          "sample_count": 24,
+          "station_id": "C659H",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": 6.31117761210525,
+          "mae": 6.31117761210525,
+          "rmse": 6.460635937456458,
+          "sample_count": 24,
+          "station_id": "C659H",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": 4.6804699049173,
+          "mae": 4.6804699049173,
+          "rmse": 4.787672246647806,
+          "sample_count": 24,
+          "station_id": "C659M",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": 8.957391829862006,
+          "mae": 8.957391829862006,
+          "rmse": 9.041520269126304,
+          "sample_count": 24,
+          "station_id": "C659M",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": 4.607728787834888,
+          "mae": 4.607728787834888,
+          "rmse": 4.80077980104937,
+          "sample_count": 24,
+          "station_id": "C659M",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": 13.520703655713543,
+          "mae": 13.520703655713543,
+          "rmse": 13.621069324273062,
+          "sample_count": 22,
+          "station_id": "C665T",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": 2.589644586528944,
+          "mae": 2.592152686548873,
+          "rmse": 2.905615825394169,
+          "sample_count": 24,
+          "station_id": "C665T",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": 9.487002831809427,
+          "mae": 9.487002831809427,
+          "rmse": 9.539250251815771,
+          "sample_count": 24,
+          "station_id": "C665T",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": 9.025710401652601,
+          "mae": 9.025710401652601,
+          "rmse": 9.082441740983953,
+          "sample_count": 24,
+          "station_id": "C668V",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": 4.384555818920965,
+          "mae": 4.384555818920965,
+          "rmse": 4.594436157012811,
+          "sample_count": 24,
+          "station_id": "C668V",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": 9.864818738492417,
+          "mae": 9.864818738492417,
+          "rmse": 10.113268414398961,
+          "sample_count": 24,
+          "station_id": "C668V",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": 5.6158622115504375,
+          "mae": 5.6158622115504375,
+          "rmse": 5.707228711602162,
+          "sample_count": 23,
+          "station_id": "C669B",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": 5.705233357828917,
+          "mae": 5.705233357828917,
+          "rmse": 5.926401009012269,
+          "sample_count": 24,
+          "station_id": "C669B",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": 9.2319767459105,
+          "mae": 9.2319767459105,
+          "rmse": 9.29532348804944,
+          "sample_count": 24,
+          "station_id": "C669B",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": 3.729530770309443,
+          "mae": 4.141907761913771,
+          "rmse": 4.371441504706483,
+          "sample_count": 24,
+          "station_id": "C689E",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": 4.596409816548206,
+          "mae": 4.596409816548206,
+          "rmse": 4.9846074682014,
+          "sample_count": 24,
+          "station_id": "C689E",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": -10.595645254366445,
+          "mae": 10.595645254366445,
+          "rmse": 10.666979816138547,
+          "sample_count": 24,
+          "station_id": "C689E",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "sample_count": 0,
+          "station_id": "C839X",
+          "status": "NO_VALID_PAIRS",
+          "variable": "T2"
+        },
+        {
+          "sample_count": 0,
+          "station_id": "C839X",
+          "status": "NO_VALID_PAIRS",
+          "variable": "U10"
+        },
+        {
+          "sample_count": 0,
+          "station_id": "C839X",
+          "status": "NO_VALID_PAIRS",
+          "variable": "V10"
+        },
+        {
+          "bias": 7.270582987184618,
+          "mae": 7.270582987184618,
+          "rmse": 7.789483679134263,
+          "sample_count": 24,
+          "station_id": "C916Q",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": 9.10864572640957,
+          "mae": 9.10864572640957,
+          "rmse": 9.211349290894727,
+          "sample_count": 24,
+          "station_id": "C916Q",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": -2.38680438275928,
+          "mae": 2.423386667957812,
+          "rmse": 2.9116562184839783,
+          "sample_count": 24,
+          "station_id": "C916Q",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": 8.907556920909919,
+          "mae": 8.907556920909919,
+          "rmse": 9.1586224165071,
+          "sample_count": 24,
+          "station_id": "C917E",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": 4.485342774356758,
+          "mae": 4.571283333924008,
+          "rmse": 5.672652101519897,
+          "sample_count": 24,
+          "station_id": "C917E",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": -3.887739803282617,
+          "mae": 3.887739803282617,
+          "rmse": 4.356531536246487,
+          "sample_count": 24,
+          "station_id": "C917E",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": 6.220737704750559,
+          "mae": 6.220737704750559,
+          "rmse": 6.546928824256001,
+          "sample_count": 24,
+          "station_id": "C919K",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": 3.0033086066658115,
+          "mae": 3.151272876500179,
+          "rmse": 3.796475607390521,
+          "sample_count": 24,
+          "station_id": "C919K",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": -6.102524908388811,
+          "mae": 6.102524908388811,
+          "rmse": 6.482969934037271,
+          "sample_count": 24,
+          "station_id": "C919K",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": 13.488634974744128,
+          "mae": 13.488634974744128,
+          "rmse": 13.871646763636317,
+          "sample_count": 24,
+          "station_id": "C925F",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": 5.769400092482191,
+          "mae": 5.769400092482191,
+          "rmse": 5.879302371007235,
+          "sample_count": 24,
+          "station_id": "C925F",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": 2.6793486323626503,
+          "mae": 2.6793486323626503,
+          "rmse": 2.859948806726576,
+          "sample_count": 24,
+          "station_id": "C925F",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": 11.728207385319642,
+          "mae": 11.728207385319642,
+          "rmse": 11.7802558298841,
+          "sample_count": 24,
+          "station_id": "C928I",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": -2.372177862775642,
+          "mae": 2.5833071064122897,
+          "rmse": 3.184391139798008,
+          "sample_count": 24,
+          "station_id": "C928I",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": 0.6086166135322411,
+          "mae": 1.2202619153088223,
+          "rmse": 1.5048701012695156,
+          "sample_count": 24,
+          "station_id": "C928I",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": 4.953254599168716,
+          "mae": 4.953254599168716,
+          "rmse": 5.088706114608863,
+          "sample_count": 24,
+          "station_id": "C929I",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": 3.4382912494482483,
+          "mae": 3.638450929224154,
+          "rmse": 3.9594311937397095,
+          "sample_count": 24,
+          "station_id": "C929I",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": 2.695183316620502,
+          "mae": 2.7478839307868745,
+          "rmse": 3.1487347187913124,
+          "sample_count": 24,
+          "station_id": "C929I",
+          "status": "OK",
+          "variable": "V10"
+        },
+        {
+          "bias": 6.362775130365766,
+          "mae": 6.362775130365766,
+          "rmse": 6.556722428262588,
+          "sample_count": 24,
+          "station_id": "C939T",
+          "status": "OK",
+          "variable": "T2"
+        },
+        {
+          "bias": 4.973717768841843,
+          "mae": 4.973717768841843,
+          "rmse": 5.099244481330884,
+          "sample_count": 24,
+          "station_id": "C939T",
+          "status": "OK",
+          "variable": "U10"
+        },
+        {
+          "bias": 1.215896523531436,
+          "mae": 2.0734582840120854,
+          "rmse": 2.351716568994341,
+          "sample_count": 24,
+          "station_id": "C939T",
+          "status": "OK",
+          "variable": "V10"
+        }
+      ],
+      "wrfout_file_count": 24,
+      "wrfout_files": [
+        "/tmp/m7_skillfix_algorithmic_20260521_r2/wrfout_d02_2026-05-21_19:00:00",
+        "/tmp/m7_skillfix_algorithmic_20260521_r2/wrfout_d02_2026-05-21_20:00:00",
+        "/tmp/m7_skillfix_algorithmic_20260521_r2/wrfout_d02_2026-05-21_21:00:00",
+        "/tmp/m7_skillfix_algorithmic_20260521_r2/wrfout_d02_2026-05-21_22:00:00",
+        "/tmp/m7_skillfix_algorithmic_20260521_r2/wrfout_d02_2026-05-21_23:00:00",
+        "/tmp/m7_skillfix_algorithmic_20260521_r2/wrfout_d02_2026-05-22_00:00:00",
+        "/tmp/m7_skillfix_algorithmic_20260521_r2/wrfout_d02_2026-05-22_01:00:00",
+        "/tmp/m7_skillfix_algorithmic_20260521_r2/wrfout_d02_2026-05-22_02:00:00",
+        "/tmp/m7_skillfix_algorithmic_20260521_r2/wrfout_d02_2026-05-22_03:00:00",
+        "/tmp/m7_skillfix_algorithmic_20260521_r2/wrfout_d02_2026-05-22_04:00:00",
+        "/tmp/m7_skillfix_algorithmic_20260521_r2/wrfout_d02_2026-05-22_05:00:00",
+        "/tmp/m7_skillfix_algorithmic_20260521_r2/wrfout_d02_2026-05-22_06:00:00",
+        "/tmp/m7_skillfix_algorithmic_20260521_r2/wrfout_d02_2026-05-22_07:00:00",
+        "/tmp/m7_skillfix_algorithmic_20260521_r2/wrfout_d02_2026-05-22_08:00:00",
+        "/tmp/m7_skillfix_algorithmic_20260521_r2/wrfout_d02_2026-05-22_09:00:00",
+        "/tmp/m7_skillfix_algorithmic_20260521_r2/wrfout_d02_2026-05-22_10:00:00",
+        "/tmp/m7_skillfix_algorithmic_20260521_r2/wrfout_d02_2026-05-22_11:00:00",
+        "/tmp/m7_skillfix_algorithmic_20260521_r2/wrfout_d02_2026-05-22_12:00:00",
+        "/tmp/m7_skillfix_algorithmic_20260521_r2/wrfout_d02_2026-05-22_13:00:00",
+        "/tmp/m7_skillfix_algorithmic_20260521_r2/wrfout_d02_2026-05-22_14:00:00",
+        "/tmp/m7_skillfix_algorithmic_20260521_r2/wrfout_d02_2026-05-22_15:00:00",
+        "/tmp/m7_skillfix_algorithmic_20260521_r2/wrfout_d02_2026-05-22_16:00:00",
+        "/tmp/m7_skillfix_algorithmic_20260521_r2/wrfout_d02_2026-05-22_17:00:00",
+        "/tmp/m7_skillfix_algorithmic_20260521_r2/wrfout_d02_2026-05-22_18:00:00"
+      ]
+    }
+  },
+  "station_count_scored": 73,
+  "station_observation_rows": 1747,
+  "variables": [
+    "T2",
+    "U10",
+    "V10"
+  ],
+  "verdict": "FAIL_SKILL_DIFF"
+}

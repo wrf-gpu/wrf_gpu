@@ -1,0 +1,54 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+.tox/
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# JAX / XLA
+jax_compilation_cache/
+.jax_cache/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Local-only artefacts (must never be committed)
+/tmp/
+*.nsys-rep
+*.qdrep
+*.sqlite
+*.nc.tmp
+
+# Build / packaging
+build/
+dist/
+*.whl
+
+# Logs
+logs/
+*.log
+
+# Local development scratch
+scratch/
+local/

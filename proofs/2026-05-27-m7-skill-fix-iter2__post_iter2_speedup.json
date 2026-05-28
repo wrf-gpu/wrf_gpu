@@ -1,0 +1,65 @@
+{
+  "generated_utc": "2026-05-27T10:05:04.495296+00:00",
+  "gpu_d02_24h_end_to_end_wall_s": 732.6321056330053,
+  "gpu_wall_source": "proofs/2026-05-27-m7-skill-fix-iter2__pipeline_run_20260521.json",
+  "rows": [
+    {
+      "comparison_id": "cpu_full_nest_5_domain_aggregate_24h",
+      "cpu_wall_s": 44897.14166,
+      "fairness_verdict": "CONSERVATIVE_BUT_NOT_APPLES_TO_APPLES_FULL_NEST_AGGREGATE",
+      "gpu_wall_s": 732.6321056330053,
+      "included_cpu_domains": [
+        "d01",
+        "d02",
+        "d03",
+        "d04",
+        "d05"
+      ],
+      "ratio": 61.28197401505929,
+      "source_run_id": "20260521_18z_l3_24h_20260522T133443Z",
+      "whats_being_compared": "GPU d02 24h end-to-end wall-clock versus de-duplicated aggregate sum of WRF per-domain Timing for main records across d01-d05."
+    },
+    {
+      "comparison_id": "cpu_d02_only_24h",
+      "cpu_wall_s": 16305.31132,
+      "fairness_verdict": "BEST_APPLES_TO_APPLES_DOMAIN_DENOMINATOR_AND_LOWEST_DEFENSIBLE_RATIO",
+      "gpu_wall_s": 732.6321056330053,
+      "included_cpu_domains": [
+        "d02"
+      ],
+      "ratio": 22.25579686534753,
+      "source_run_id": "20260521_18z_l3_24h_20260522T133443Z",
+      "whats_being_compared": "GPU d02 24h end-to-end wall-clock versus CPU d02-only cumulative WRF timing."
+    },
+    {
+      "comparison_id": "cpu_d01_plus_d02_minimum_physical_subset_24h",
+      "cpu_wall_s": 33329.11539,
+      "fairness_verdict": "PHYSICALLY_CONSERVATIVE_SUBSET_BUT_CPU_DENOMINATOR_INCLUDES_D01_WORK_GPU_DID_NOT_RUN",
+      "gpu_wall_s": 732.6321056330053,
+      "included_cpu_domains": [
+        "d01",
+        "d02"
+      ],
+      "ratio": 45.492294336736904,
+      "source_run_id": "20260521_18z_l3_24h_20260522T133443Z",
+      "whats_being_compared": "GPU d02 24h end-to-end wall-clock versus CPU d01+d02 timing, the minimum nested-domain subset that accounts for d02 boundary forcing context."
+    },
+    {
+      "comparison_id": "cpu_d01_only_24h",
+      "cpu_wall_s": 17023.80407,
+      "fairness_verdict": "CONTEXT_ONLY_NOT_A_D02_COMPARISON",
+      "gpu_wall_s": 732.6321056330053,
+      "included_cpu_domains": [
+        "d01"
+      ],
+      "ratio": 23.236497471389374,
+      "source_run_id": "20260521_18z_l3_24h_20260522T133443Z",
+      "whats_being_compared": "GPU d02 24h end-to-end wall-clock versus CPU d01-only cumulative WRF timing."
+    }
+  ],
+  "schema": "M7HonestSpeedupTable",
+  "schema_version": 1,
+  "selected_cpu_run_id": "20260521_18z_l3_24h_20260522T133443Z",
+  "selected_cpu_run_path": "<reference-data-root>/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
+  "timing_precision": "de-duplicated Timing for main records from sibling rsl logs; namelist.output had zero timing records"
+}

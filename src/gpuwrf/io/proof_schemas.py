@@ -1,0 +1,515 @@
+"""Machine-readable proof-object schemas for sprint artifacts."""
+
+from __future__ import annotations
+
+from dataclasses import dataclass
+import json
+from pathlib import Path
+from typing import Any, ClassVar
+
+
+JsonType = str
+
+
+@dataclass(frozen=True)
+class FieldRule:
+    """One JSON-schema field rule with a short human-facing description."""
+
+    json_type: JsonType | tuple[JsonType, ...]
+    description: str
+
+    def as_json_schema(self) -> dict[str, Any]:
+        schema: dict[str, Any] = {"description": self.description}
+        schema["type"] = list(self.json_type) if isinstance(self.json_type, tuple) else self.json_type
+        return schema
+
+
+class ProofObjectSchema:
+    """Small dataclass-backed schema helper used instead of adding pydantic."""
+
+    schema_name: ClassVar[str]
+    description: ClassVar[str]
+    required: ClassVar[dict[str, FieldRule]]
+    optional: ClassVar[dict[str, FieldRule]] = {}
+
+    @classmethod
+    def json_schema(cls) -> dict[str, Any]:
+        properties = {name: rule.as_json_schema() for name, rule in {**cls.required, **cls.optional}.items()}
+        return {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "title": cls.schema_name,
+            "description": cls.description,
+            "type": "object",
+            "required": list(cls.required),
+            "properties": properties,
+            "additionalProperties": True,
+        }
+
+    @classmethod
+    def validate_dict(cls, data: dict[str, Any]) -> dict[str, Any]:
+        if not isinstance(data, dict):
+            raise TypeError(f"{cls.schema_name} must be a JSON object")
+        for name, rule in cls.required.items():
+            if name not in data:
+                raise ValueError(f"{cls.schema_name} missing required field {name!r}")
+            _assert_json_type(cls.schema_name, name, data[name], rule.json_type)
+        for name, rule in cls.optional.items():
+            if name in data:
+                _assert_json_type(cls.schema_name, name, data[name], rule.json_type)
+        return data
+
+    @classmethod
+    def validate_file(cls, path: str | Path) -> dict[str, Any]:
+        data = json.loads(Path(path).read_text(encoding="utf-8"))
+        return cls.validate_dict(data)
+
+
+def _assert_json_type(schema_name: str, field: str, value: Any, json_type: JsonType | tuple[JsonType, ...]) -> None:
+    allowed = (json_type,) if isinstance(json_type, str) else json_type
+    if any(_matches_json_type(value, item) for item in allowed):
+        return
+    raise TypeError(f"{schema_name}.{field} expected {allowed}, got {type(value).__name__}")
+
+
+def _matches_json_type(value: Any, json_type: JsonType) -> bool:
+    if json_type == "object":
+        return isinstance(value, dict)
+    if json_type == "array":
+        return isinstance(value, list)
+    if json_type == "string":
+        return isinstance(value, str)
+    if json_type == "integer":
+        return isinstance(value, int) and not isinstance(value, bool)
+    if json_type == "number":
+        return (isinstance(value, int | float) and not isinstance(value, bool))
+    if json_type == "boolean":
+        return isinstance(value, bool)
+    if json_type == "null":
+        return value is None
+    raise ValueError(f"unsupported schema type {json_type!r}")
+
+
+class CoupledDummyCarry(ProofObjectSchema):
+    """M6-S1 proof that the coupled dummy carry stays device-resident."""
+
+    schema_name = "CoupledDummyCarry"
+    description = "M6-S1 coupled dummy carry transfer and launch proof."
+    required = {
+        "domain": FieldRule("array", "Domain dimensions as [nx, ny, nz]."),
+        "steps": FieldRule("integer", "Number of dummy coupled steps."),
+        "host_to_device_bytes_post_init": FieldRule("integer", "H2D bytes after initialization."),
+        "device_to_host_bytes_post_init": FieldRule("integer", "D2H bytes after initialization."),
+        "temporary_bytes_per_step": FieldRule("integer", "Temporary allocation bytes per step."),
+        "wall_time_per_step_ms": FieldRule("number", "Median wall time per step in ms."),
+        "kernel_launches_per_step": FieldRule("integer", "HLO-derived launches per step."),
+        "hlo_bytes": FieldRule("integer", "Compiled HLO text size in bytes."),
+    }
+    optional = {
+        "trace_dir": FieldRule("string", "Profiler trace directory."),
+        "trace_transfer_event_files": FieldRule("array", "Raw transfer-audit files."),
+    }
+
+
+class SpacetimeBudget(ProofObjectSchema):
+    """M6-S1 proof object summarizing per-kernel cost and transfer budget."""
+
+    schema_name = "SpacetimeBudget"
+    description = "M6 spacetime budget and transfer accounting artifact."
+    required = {
+        "benchmark": FieldRule("string", "Benchmark identifier."),
+        "backend": FieldRule("string", "Execution backend."),
+        "case": FieldRule("string", "Case identifier."),
+        "host_device_transfer_bytes": FieldRule("integer", "Total post-init host/device transfer bytes."),
+        "temporary_bytes_per_step": FieldRule("integer", "Temporary allocation bytes per step."),
+        "total_per_step_ms": FieldRule("number", "Total per-step wall time."),
+        "per_kernel": FieldRule("object", "Per-kernel cost records."),
+        "artifact_paths": FieldRule("array", "Related proof-object paths."),
+    }
+
+
+class ForecastSmoke(ProofObjectSchema):
+    """M6-S2 short forecast smoke proof."""
+
+    schema_name = "ForecastSmoke"
+    description = "Short coupled forecast smoke result with transfer and boundary metadata."
+    required = {
+        "run_id": FieldRule("string", "Forecast run identifier."),
+        "domain": FieldRule("string", "WRF/GPU domain ID."),
+        "lead_hours": FieldRule("number", "Forecast lead length in hours."),
+        "status": FieldRule("string", "PASS/FAIL/BLOCKED status."),
+        "boundary_artifact": FieldRule("string", "Boundary replay fixture or source path."),
+        "host_device_transfer_bytes_post_init": FieldRule("integer", "Post-init transfer bytes."),
+        "artifact_paths": FieldRule("array", "Related proof-object paths."),
+    }
+
+
+class Forecast24h(ProofObjectSchema):
+    """M6-S2 24-hour d02 forecast proof."""
+
+    schema_name = "Forecast24h"
+    description = "Full 24h d02 coupled forecast summary and correctness envelope."
+    required = {
+        "run_id": FieldRule("string", "Forecast run identifier."),
+        "domain": FieldRule("string", "Domain ID."),
+        "lead_hours": FieldRule("number", "Forecast lead length."),
+        "status": FieldRule("string", "PASS/FAIL/BLOCKED status."),
+        "boundary_artifact": FieldRule("string", "Boundary replay fixture path."),
+        "output_manifest": FieldRule("string", "Forecast output manifest path."),
+        "artifact_paths": FieldRule("array", "Related proof-object paths."),
+    }
+
+
+class Tier2CoupledInvariants(ProofObjectSchema):
+    """M6-S4 invariant proof with source/sink/boundary accounting."""
+
+    schema_name = "Tier2CoupledInvariants"
+    description = "Tier-2 coupled conservation and positivity proof."
+    required = {
+        "run_id": FieldRule("string", "Validation run identifier."),
+        "domain": FieldRule("string", "WRF/GPU domain ID."),
+        "status": FieldRule("string", "PASS/FAIL/BLOCKED status."),
+        "budgets": FieldRule("object", "Dry-mass, water, positivity, and energy budget records."),
+        "per_step": FieldRule("array", "Per-step per-leaf residual table."),
+        "thresholds": FieldRule("object", "Binding AC6 thresholds and pass/fail state."),
+        "boundary_terms": FieldRule("object", "Boundary-flux terms used by the independent oracle."),
+        "artifact_paths": FieldRule("array", "Raw and summary proof paths."),
+    }
+    optional = {
+        "sanitize_policy": FieldRule("object", "PRE-sanitize tap or sanitize-OFF policy evidence."),
+        "gen2_pin": FieldRule("object", "Pinned Gen2 run path and history inventory."),
+    }
+
+
+class Tier3DriftEnvelope(ProofObjectSchema):
+    """M6-S6 timestep/drift envelope proof."""
+
+    schema_name = "Tier3DriftEnvelope"
+    description = "Tier-3 controlled short-run convergence and drift envelope."
+    required = {
+        "run_id": FieldRule("string", "Validation run identifier."),
+        "domain": FieldRule("string", "WRF/GPU domain ID for the pinned drift comparison."),
+        "status": FieldRule("string", "GREEN/PARTIAL/BLOCKED/FAIL status."),
+        "base_dt_s": FieldRule("number", "Base timestep in seconds."),
+        "refined_dt_s": FieldRule("number", "Refined timestep in seconds."),
+        "further_refined_dt_s": FieldRule("number", "Second refinement timestep in seconds."),
+        "lead_hours": FieldRule("array", "Lead times evaluated by the envelope."),
+        "variables": FieldRule("array", "Variables evaluated by the envelope."),
+        "boundary_mode": FieldRule("object", "Boundary forcing mode and provenance."),
+        "forcing_mode": FieldRule("object", "Physics/forcing cadence used by reduced and pinned runs."),
+        "regridding": FieldRule("object", "Regridding and staggering policy."),
+        "norm_definitions": FieldRule("object", "Definitions for max_abs/rmse/mean_abs norms."),
+        "envelope_derivation": FieldRule("object", "Controlled dt-refinement and CPU/analytic reference derivation."),
+        "envelope": FieldRule("object", "Per-variable per-lead dt-sensitivity envelope."),
+        "gpu_drift": FieldRule("object", "Per-variable per-lead GPU-vs-reference drift."),
+        "per_variable_status": FieldRule("object", "GREEN/PARTIAL/FAIL/BLOCKED status by variable and lead."),
+        "artifact_paths": FieldRule("array", "Raw and summary proof paths."),
+    }
+    optional = {
+        "thompson_water_budget_oracle": FieldRule("object", "F-min-1 independent Thompson water-budget side-channel proof."),
+        "wrfbdy_boundary_oracle": FieldRule("object", "F-min-2 wrfbdy decoder comparison proof."),
+    }
+
+
+class Tier4ProbtestTolerances(ProofObjectSchema):
+    """M6-S7 statistical tolerance proof."""
+
+    schema_name = "Tier4ProbtestTolerances"
+    description = "Tier-4 probtest-style tolerance freeze artifact."
+    required = {
+        "run_id": FieldRule("string", "Tolerance-generation run identifier."),
+        "status": FieldRule("string", "PASS/FAIL/BLOCKED status."),
+        "prototype_label": FieldRule("string", "Explicit M6 prototype/full-M7-ensemble label."),
+        "domain": FieldRule("string", "WRF/GPU domain ID."),
+        "sample_size": FieldRule("integer", "Number of historical deterministic members."),
+        "variables": FieldRule("array", "Variables covered by the tolerance table."),
+        "leads_h": FieldRule("array", "Forecast lead hours covered by the tolerance table."),
+        "strata": FieldRule("array", "Land/sea/elevation strata covered by the tolerance table."),
+        "member_manifest": FieldRule("string", "Ensemble or historical-member manifest path."),
+        "tolerances": FieldRule("object", "Per-variable and per-lead tolerances."),
+        "freeze_time_utc": FieldRule("string", "Time when tolerances were frozen."),
+        "tolerance_factor": FieldRule("number", "k factor applied to member-to-member standard deviation."),
+        "method": FieldRule("object", "Variance, reduction, precipitation, and no-peek policy."),
+        "heldout_policy": FieldRule("object", "Held-out candidate exclusion policy."),
+        "artifact_paths": FieldRule("array", "Raw and summary proof paths."),
+    }
+    optional = {
+        "units": FieldRule("object", "Variable units for tolerance and RMSE fields."),
+    }
+
+
+class Gen2Comparison(ProofObjectSchema):
+    """M6-S8 operational GPU-vs-Gen2 comparison proof."""
+
+    schema_name = "Gen2Comparison"
+    description = "Operational comparison against pinned Gen2 WRF backfill truth."
+    required = {
+        "run_id": FieldRule("string", "Pinned Gen2 run identifier."),
+        "domain": FieldRule("string", "Domain ID."),
+        "status": FieldRule("string", "GREEN/PARTIAL/BLOCKED/FAIL status."),
+        "variables": FieldRule("object", "Per-variable RMSE/bias/lead records."),
+        "binding_gate": FieldRule("string", "Operational gate policy."),
+        "artifact_paths": FieldRule("array", "Raw and summary proof paths."),
+    }
+
+
+class AIFSIngestManifest(ProofObjectSchema):
+    """M7-S0a AIFS-to-WPS ingest readiness manifest."""
+
+    schema_name = "AIFSIngestManifest"
+    description = "Read-only Gen2 WPS reuse contract for AIFS GRIB2 to WRF input/boundary products."
+    required = {
+        "manifest_version": FieldRule("string", "Manifest schema/version identifier."),
+        "status": FieldRule("string", "AVAILABLE/PARTIAL/BLOCKED readiness status."),
+        "strategy": FieldRule("string", "Ingest strategy, e.g. reuse_gen2_wps_v0."),
+        "source": FieldRule("object", "Upstream and local AIFS source locations."),
+        "valid_time_window": FieldRule("object", "Cycle init/end times and required forecast steps."),
+        "dimensions": FieldRule("object", "Domain and vertical-level dimensions."),
+        "projection": FieldRule("object", "Lambert or other grid projection metadata."),
+        "frequency_hours": FieldRule("integer", "IC/BC forcing cadence in hours."),
+        "completeness_gate": FieldRule("object", "Files and checks required before allocation."),
+        "gen2_wps_reuse": FieldRule("object", "Read-only Gen2 WPS files and reuse policy."),
+        "artifact_paths": FieldRule("array", "Paths proving the manifest inputs exist."),
+    }
+    optional = {
+        "variables": FieldRule("object", "Pressure-level, surface, and soil variables expected from AIFS."),
+        "notes": FieldRule("array", "Human-readable caveats or follow-up notes."),
+    }
+
+
+class StationObservationSourceManifest(ProofObjectSchema):
+    """M7-S0a station-observation source readiness manifest."""
+
+    schema_name = "StationObservationSourceManifest"
+    description = "Candidate station-observation sources for Canary operational verification."
+    required = {
+        "manifest_version": FieldRule("string", "Manifest schema/version identifier."),
+        "status": FieldRule("string", "AVAILABLE/PARTIAL/BLOCKED aggregate readiness status."),
+        "domain": FieldRule("string", "Verification domain label."),
+        "generated_utc": FieldRule("string", "Manifest generation time."),
+        "sources": FieldRule("array", "Source records with access status, variables, and evidence."),
+        "binding_policy": FieldRule("object", "How sources bind or qualify operational verification."),
+        "artifact_paths": FieldRule("array", "Local manifests, sample fetches, or evidence paths."),
+    }
+    optional = {
+        "station_priority": FieldRule("array", "Preferred source order for M7-S5."),
+        "notes": FieldRule("array", "Human-readable caveats or follow-up notes."),
+    }
+
+
+class OperationalOutput(ProofObjectSchema):
+    """M7 operational NetCDF/Zarr output proof schema."""
+
+    schema_name = "OperationalOutput"
+    description = "Operational model-output manifest for NetCDF-like hourly files and cycle Zarr products."
+    required = {
+        "cycle_id": FieldRule("string", "Immutable cycle identifier, e.g. YYYYMMDD_18z."),
+        "status": FieldRule("string", "PUBLISHED/PARTIAL/BLOCKED/FAILED output status."),
+        "init_time_utc": FieldRule("string", "Cycle initialization time in UTC."),
+        "valid_times_utc": FieldRule("array", "Output valid times included in the product."),
+        "domains": FieldRule("object", "Domain IDs mapped to grid shape and resolution metadata."),
+        "fields": FieldRule("object", "Field names mapped to units, dimensions, and optionality."),
+        "output_formats": FieldRule("array", "Formats written for this cycle, e.g. netcdf_hourly and zarr_cycle."),
+        "root_path": FieldRule("string", "Cycle output root path."),
+        "attrs": FieldRule("object", "Global product attributes and provenance."),
+        "artifact_paths": FieldRule("array", "Related manifests and product proof paths."),
+    }
+    optional = {
+        "checksums": FieldRule("object", "Per-output checksum records."),
+        "retention_class": FieldRule("string", "Retention policy class."),
+    }
+
+
+class OperationalStatus(ProofObjectSchema):
+    """M7 operational cycle status JSON schema."""
+
+    schema_name = "OperationalStatus"
+    description = "Single-cycle operational status snapshot consumed by monitoring and dashboard hooks."
+    required = {
+        "cycle_id": FieldRule("string", "Immutable cycle identifier."),
+        "status": FieldRule("string", "WAITING_AIFS/AIFS_LATE/RUNNING/POSTPROCESSING/VERIFYING/PUBLISHED/FAILED/STALE_PUBLISHED."),
+        "init_time_utc": FieldRule("string", "Cycle initialization time in UTC."),
+        "updated_utc": FieldRule("string", "Status update time in UTC."),
+        "wall_clock_s": FieldRule("number", "Wall-clock seconds spent in the current attempt."),
+        "exit_code": FieldRule(("integer", "null"), "Process exit code, or null before process completion."),
+        "current_step": FieldRule("string", "Current operational step."),
+        "alert_flags": FieldRule("array", "Active alert classes."),
+        "artifact_index_path": FieldRule("string", "Path to the cycle proof index or partial index."),
+        "last_good_cycle_id": FieldRule(("string", "null"), "Most recent publishable cycle, if any."),
+    }
+    optional = {
+        "error_class": FieldRule(("string", "null"), "Failure class when status is FAILED or AIFS_LATE."),
+        "wall_time_budget_s": FieldRule("number", "Configured wall-time budget for the cycle."),
+    }
+
+
+class OperationalScheduler(ProofObjectSchema):
+    """M7 operational scheduler configuration schema."""
+
+    schema_name = "OperationalScheduler"
+    description = "Cron-like daily-cycle scheduler contract for the single-machine M7 v0 pipeline."
+    required = {
+        "scheduler_id": FieldRule("string", "Scheduler configuration identifier."),
+        "status": FieldRule("string", "ACTIVE/DRAFT/BLOCKED scheduler config status."),
+        "cycle_hour_utc": FieldRule("integer", "Forecast initialization cycle hour in UTC."),
+        "timezone": FieldRule("string", "Timezone for local operator display."),
+        "aifs_poll_start_utc": FieldRule("string", "Daily UTC time to begin polling for AIFS readiness."),
+        "aifs_poll_timeout_utc": FieldRule("string", "Daily UTC time at which AIFS is declared late."),
+        "forecast_hours_minimum": FieldRule("integer", "Minimum required forecast horizon."),
+        "locks": FieldRule("object", "Single-machine lock and rerun policy."),
+        "retention_policy": FieldRule("object", "Output and proof retention policy."),
+        "failure_states": FieldRule("array", "Scheduler-visible failure states."),
+        "artifact_paths": FieldRule("array", "Related scheduler/status proof paths."),
+    }
+    optional = {
+        "publish_target_utc": FieldRule("string", "Provisional daily publish target."),
+        "stale_publish_policy": FieldRule("object", "Rules for publishing the previous good cycle."),
+    }
+
+
+class FullDomainBatchingVerdict(ProofObjectSchema):
+    """M6-S5 ADR-007 full-domain performance verdict proof."""
+
+    schema_name = "FullDomainBatchingVerdict"
+    description = "Full-domain batching speedup verdict against fair CPU denominator."
+    required = {
+        "speedup_ratio": FieldRule("number", "CPU wall divided by GPU end-to-end wall."),
+        "pass": FieldRule("boolean", "True only when speedup and Tier-2 gates pass."),
+        "gpu_wall_s": FieldRule("number", "Binding GPU end-to-end wall numerator."),
+        "cpu_wall_s": FieldRule("number", "Binding CPU wall denominator."),
+        "cpu_denominator_basis": FieldRule("string", "Chosen CPU denominator basis."),
+        "fp_precision_caveat": FieldRule("string", "WRF -r4 and ADR-007 precision caveat."),
+        "dycore_cap_status": FieldRule("string", "How the M6-S2 dycore cap was lifted."),
+        "tier2_invariants_under_lifted_cap": FieldRule("string", "pass/fail Tier-2 status under lifted cap."),
+        "profiler_raw_paths": FieldRule("array", "Raw JAX/nsys/ncu profiler artifact paths."),
+        "transfer_audit": FieldRule("object", "Parsed transfer audit summary."),
+        "op_count": FieldRule("integer", "Compiled HLO operation count."),
+        "hlo_size_bytes": FieldRule("integer", "Compiled HLO text size in bytes."),
+        "temp_peak_bytes": FieldRule("integer", "XLA temporary memory peak in bytes."),
+        "compile_retries": FieldRule("integer", "Compile retry count."),
+        "cache_size_bytes": FieldRule("integer", "Compilation cache size in bytes."),
+        "allocator_fragmentation": FieldRule("number", "Allocator fragmentation estimate."),
+        "artifact_paths": FieldRule("array", "Raw and summary proof paths."),
+    }
+    optional = {
+        "benchmark": FieldRule("string", "Benchmark identifier."),
+        "backend": FieldRule("string", "Execution backend."),
+        "hardware": FieldRule("string", "Hardware description."),
+        "case": FieldRule("string", "Case identifier."),
+        "wall_time_s": FieldRule("number", "Measured wall time."),
+        "host_device_transfer_bytes": FieldRule("integer", "Total transfer bytes."),
+        "cpu_denominator_artifact": FieldRule("string", "Fair CPU denominator JSON path."),
+        "verdict": FieldRule("string", "PASS/FAIL/BLOCKED verdict."),
+        "kernel_launches": FieldRule(("integer", "null"), "Kernel launch count, null if profiler unavailable."),
+        "occupancy_pct": FieldRule(("number", "null"), "Profiler occupancy, null if unavailable."),
+        "registers_per_thread": FieldRule(("integer", "null"), "Register count, null if unavailable."),
+        "local_memory_bytes": FieldRule(("integer", "null"), "Local-memory bytes, null if unavailable."),
+    }
+
+
+class SurfaceLayerArtifact(ProofObjectSchema):
+    """M6-S3 surface-layer, land-state, and operational-delta proof object."""
+
+    schema_name = "SurfaceLayerArtifact"
+    description = "M6-S3 surface-layer proof object covering land state, radiation feasibility, and deltas."
+    required = {
+        "artifact_type": FieldRule("string", "Surface-layer proof subtype."),
+        "status": FieldRule("string", "PASS/PARTIAL/BLOCKED/FAIL status."),
+        "run_id": FieldRule("string", "Pinned Gen2 run identifier."),
+        "domain": FieldRule("string", "Domain ID."),
+        "artifact_paths": FieldRule("array", "Related proof-object paths."),
+    }
+    optional = {
+        "variables": FieldRule("object", "Variable inventory or per-variable validation payload."),
+        "operational_delta": FieldRule("object", "Per-variable and per-lead operational delta metrics."),
+        "prerequisites": FieldRule("object", "F-S3 prerequisite evidence."),
+    }
+
+
+class MilestoneCloseoutM6(ProofObjectSchema):
+    """M6 closeout proof index."""
+
+    schema_name = "MilestoneCloseoutM6"
+    description = "M6 manager closeout proof index and final dispatch decision state."
+    required = {
+        "milestone": FieldRule("string", "Milestone identifier."),
+        "status": FieldRule("string", "GREEN/PARTIAL/BLOCKED/FAIL status."),
+        "proof_index": FieldRule("object", "Artifact paths grouped by sprint."),
+        "blocking_risks": FieldRule("array", "Remaining blocking risks."),
+        "next_decision": FieldRule("string", "Manager/human decision needed next."),
+    }
+
+
+SCHEMA_REGISTRY: dict[str, type[ProofObjectSchema]] = {
+    "coupled_dummy_carry": CoupledDummyCarry,
+    "coupled_dummy_carry.json": CoupledDummyCarry,
+    "spacetime_budget": SpacetimeBudget,
+    "spacetime_budget.json": SpacetimeBudget,
+    "forecast_smoke": ForecastSmoke,
+    "forecast_6h_summary": ForecastSmoke,
+    "forecast_24h": Forecast24h,
+    "forecast_24h_summary": Forecast24h,
+    "tier2_coupled_invariants": Tier2CoupledInvariants,
+    "tier3_drift_envelope": Tier3DriftEnvelope,
+    "tsc_envelope": Tier3DriftEnvelope,
+    "tier4_probtest_tolerances": Tier4ProbtestTolerances,
+    "probtest_tolerances": Tier4ProbtestTolerances,
+    "gen2_comparison": Gen2Comparison,
+    "aifs_ingest_manifest": AIFSIngestManifest,
+    "aifs_ingest_v0": AIFSIngestManifest,
+    "aifs_ingest_v0.json": AIFSIngestManifest,
+    "station_observation_source_manifest": StationObservationSourceManifest,
+    "station_obs_sources_v0": StationObservationSourceManifest,
+    "station_obs_sources_v0.json": StationObservationSourceManifest,
+    "operational_output": OperationalOutput,
+    "operational_output.json": OperationalOutput,
+    "operational_status": OperationalStatus,
+    "operational_status.json": OperationalStatus,
+    "ops_status_schema": OperationalStatus,
+    "ops_status_schema.json": OperationalStatus,
+    "operational_scheduler": OperationalScheduler,
+    "operational_scheduler.json": OperationalScheduler,
+    "full_domain_batching_verdict": FullDomainBatchingVerdict,
+    "surface_layer_artifact": SurfaceLayerArtifact,
+    "radiation_conditioning_feasibility": SurfaceLayerArtifact,
+    "surface_operational_delta": SurfaceLayerArtifact,
+    "land_state_manifest": SurfaceLayerArtifact,
+    "milestone_closeout_m6": MilestoneCloseoutM6,
+}
+
+
+def schema_for_artifact(path: str | Path) -> type[ProofObjectSchema]:
+    name = Path(path).name
+    stem = Path(path).stem
+    if name in SCHEMA_REGISTRY:
+        return SCHEMA_REGISTRY[name]
+    if stem in SCHEMA_REGISTRY:
+        return SCHEMA_REGISTRY[stem]
+    raise KeyError(f"no M6 proof schema registered for {path}")
+
+
+def validate_artifact(path: str | Path) -> dict[str, Any]:
+    schema = schema_for_artifact(path)
+    return schema.validate_file(path)
+
+
+__all__ = [
+    "AIFSIngestManifest",
+    "CoupledDummyCarry",
+    "Forecast24h",
+    "ForecastSmoke",
+    "FullDomainBatchingVerdict",
+    "Gen2Comparison",
+    "MilestoneCloseoutM6",
+    "OperationalOutput",
+    "OperationalScheduler",
+    "OperationalStatus",
+    "SCHEMA_REGISTRY",
+    "SpacetimeBudget",
+    "StationObservationSourceManifest",
+    "SurfaceLayerArtifact",
+    "Tier2CoupledInvariants",
+    "Tier3DriftEnvelope",
+    "Tier4ProbtestTolerances",
+    "schema_for_artifact",
+    "validate_artifact",
+]

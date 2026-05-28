@@ -1,0 +1,54 @@
+name: Feature request
+description: Suggest a new capability or improvement.
+title: "[feature] "
+labels: ["enhancement", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the suggestion. Please fill out the fields below.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does this solve?
+      description: Describe the user problem or research need this feature would address.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed approach
+      description: How might this be implemented? Reference specific files or interfaces if you have a concrete idea.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: What else did you consider and why is the proposed approach preferable?
+    validations:
+      required: false
+
+  - type: dropdown
+    id: scope
+    attributes:
+      label: Estimated scope
+      options:
+        - "small — single-file change"
+        - "medium — a few modules"
+        - "large — multi-file refactor or new subsystem"
+        - "very large — new architectural feature (e.g. multi-GPU)"
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: willingness
+    attributes:
+      label: Are you willing to contribute the implementation?
+      options:
+        - label: "Yes, I'd like to submit a PR after discussion."
+        - label: "Yes, with mentorship / pairing."
+        - label: "No, I'm only suggesting; someone else would implement."

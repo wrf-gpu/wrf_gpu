@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gpuwrf"
+version = "0.0.1"
+description = "AgentOS bootstrap for a GPU-native WRF-compatible regional NWP project"
+requires-python = ">=3.10"
+dependencies = [
+  "jax>=0.4",
+  "h5py>=3.10",
+  "netCDF4>=1.6",
+  "numpy>=1.24",
+  "pandas>=2.0",
+  "PyYAML>=6",
+  "xarray>=2024.1",
+  "zarr>=3.0,<4",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=7"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests", "evals/agentos"]
+pythonpath = ["src"]

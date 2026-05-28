@@ -1,0 +1,41 @@
+cff-version: 1.2.0
+title: "wrf_gpu: A JAX-Native GPU Port of WRF v4 Dynamical Core"
+message: "If you use this software in academic work, please cite the accompanying preprint and this software entry."
+type: software
+version: 0.0.1
+date-released: 2026-05-28
+authors:
+  - given-names: Claude
+    family-names: Opus 4.7
+    affiliation: Anthropic (AI system)
+  - given-names: GPT-5.5
+    family-names: Codex
+    affiliation: OpenAI (AI system)
+  - given-names: Enric
+    family-names: R.G.
+    affiliation: Independent researcher (human senior corresponding author)
+repository-code: "https://github.com/wrf-gpu/wrf_gpu"
+url: "https://github.com/wrf-gpu/wrf_gpu"
+license: AGPL-3.0-or-later
+keywords:
+  - "numerical weather prediction"
+  - "GPU computing"
+  - "JAX"
+  - "WRF"
+  - "atmospheric model"
+  - "open source"
+preferred-citation:
+  type: article
+  title: "Whole-State Device Residency for Workstation-Scale NWP: A JAX-Native WRF-Compatible Port Engineered by Collaborative AI Systems"
+  authors:
+    - given-names: Claude
+      family-names: Opus 4.7
+      affiliation: Anthropic (AI system)
+    - given-names: GPT-5.5
+      family-names: Codex
+      affiliation: OpenAI (AI system)
+    - given-names: Enric
+      family-names: R.G.
+      affiliation: Independent researcher (human senior corresponding author)
+  year: 2026
+  notes: "arXiv preprint. DOI and arXiv ID will be added when the preprint is posted; the v0.1.0 release of this software is the cited companion."
