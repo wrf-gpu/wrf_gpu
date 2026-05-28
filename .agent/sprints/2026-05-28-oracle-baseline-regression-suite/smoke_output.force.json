@@ -1,0 +1,334 @@
+{
+  "aggregate_path": "/tmp/wrf_gpu2_oracle/proofs/regression/aggregate_SMOKE.json",
+  "aggregate_status": "FAIL",
+  "blocked_case_count": 0,
+  "blocked_test_count": 0,
+  "case_count": 1,
+  "case_results": [
+    {
+      "case_id": "canary_20260521_24h_d02",
+      "case_status": "FAIL",
+      "matched_hour_count": 1,
+      "output_path": "/tmp/wrf_gpu2_oracle/proofs/regression/canary_20260521_24h_d02_SMOKE.json",
+      "passed": false
+    }
+  ],
+  "commit": "da04f108dfbbcf46131fb8321d2b831e79ea012a",
+  "executed_case_count": 1,
+  "failed_test_count": 14,
+  "field_test_count": 16,
+  "generated_utc": "2026-05-28T14:57:29.873065+00:00",
+  "milestone": "SMOKE",
+  "mode": "smoke",
+  "passed": false,
+  "passed_test_count": 2,
+  "schema": "OracleBaselineRegressionAggregate",
+  "schema_version": 1,
+  "snapshot_path": null,
+  "tests": {
+    "canary_20260521_24h_d02::GLW": {
+      "case_id": "canary_20260521_24h_d02",
+      "field": "GLW",
+      "first_failure_hour": 1,
+      "metrics": {
+        "finite_count": 10494,
+        "max_abs_diff": 349.9502868652344,
+        "rmse": 331.60206910607366
+      },
+      "normalized_score": 9.474344831602105,
+      "passed": false,
+      "status": "FAIL",
+      "tolerance": {
+        "max_abs_diff": 100.0,
+        "rmse": 35.0,
+        "units": "W m-2"
+      },
+      "tolerance_class": "EQUIVALENCE_TIGHT"
+    },
+    "canary_20260521_24h_d02::HFX": {
+      "case_id": "canary_20260521_24h_d02",
+      "field": "HFX",
+      "first_failure_hour": 1,
+      "metrics": {
+        "finite_count": 10494,
+        "max_abs_diff": 625.9212002754211,
+        "rmse": 39.02727323000066
+      },
+      "normalized_score": 4.172808001836141,
+      "passed": false,
+      "status": "FAIL",
+      "tolerance": {
+        "max_abs_diff": 150.0,
+        "rmse": 50.0,
+        "units": "W m-2"
+      },
+      "tolerance_class": "EQUIVALENCE_TIGHT"
+    },
+    "canary_20260521_24h_d02::LH": {
+      "case_id": "canary_20260521_24h_d02",
+      "field": "LH",
+      "first_failure_hour": 1,
+      "metrics": {
+        "finite_count": 10494,
+        "max_abs_diff": 412.6992950439453,
+        "rmse": 41.06350587139293
+      },
+      "normalized_score": 2.751328633626302,
+      "passed": false,
+      "status": "FAIL",
+      "tolerance": {
+        "max_abs_diff": 150.0,
+        "rmse": 50.0,
+        "units": "W m-2"
+      },
+      "tolerance_class": "EQUIVALENCE_TIGHT"
+    },
+    "canary_20260521_24h_d02::LU_INDEX": {
+      "case_id": "canary_20260521_24h_d02",
+      "field": "LU_INDEX",
+      "first_failure_hour": null,
+      "metrics": {
+        "finite_count": 10494,
+        "max_abs_diff": 0.0,
+        "rmse": 0.0
+      },
+      "normalized_score": 0.0,
+      "passed": true,
+      "status": "PASS",
+      "tolerance": {
+        "max_abs_diff": 0.0,
+        "rmse": 0.0,
+        "units": "category"
+      },
+      "tolerance_class": "EQUIVALENCE_TIGHT"
+    },
+    "canary_20260521_24h_d02::PBLH": {
+      "case_id": "canary_20260521_24h_d02",
+      "field": "PBLH",
+      "first_failure_hour": 1,
+      "metrics": {
+        "finite_count": 10494,
+        "max_abs_diff": 756.0424194335938,
+        "rmse": 426.1624730221864
+      },
+      "normalized_score": 4.261624730221865,
+      "passed": false,
+      "status": "FAIL",
+      "tolerance": {
+        "max_abs_diff": 300.0,
+        "rmse": 100.0,
+        "units": "m"
+      },
+      "tolerance_class": "EQUIVALENCE_TIGHT"
+    },
+    "canary_20260521_24h_d02::PSFC": {
+      "case_id": "canary_20260521_24h_d02",
+      "field": "PSFC",
+      "first_failure_hour": 1,
+      "metrics": {
+        "finite_count": 10494,
+        "max_abs_diff": 467.8046875,
+        "rmse": 322.22470994893797
+      },
+      "normalized_score": 3.2222470994893797,
+      "passed": false,
+      "status": "FAIL",
+      "tolerance": {
+        "max_abs_diff": 300.0,
+        "rmse": 100.0,
+        "units": "Pa"
+      },
+      "tolerance_class": "EQUIVALENCE_TIGHT"
+    },
+    "canary_20260521_24h_d02::QVAPOR": {
+      "case_id": "canary_20260521_24h_d02",
+      "field": "QVAPOR",
+      "first_failure_hour": 1,
+      "metrics": {
+        "finite_count": 461736,
+        "max_abs_diff": 0.005898630013689399,
+        "rmse": 0.00026553462341001637
+      },
+      "normalized_score": 1.1797260027378798,
+      "passed": false,
+      "status": "FAIL",
+      "tolerance": {
+        "max_abs_diff": 0.005,
+        "rmse": 0.001,
+        "units": "kg kg-1"
+      },
+      "tolerance_class": "EQUIVALENCE_TIGHT"
+    },
+    "canary_20260521_24h_d02::SWDOWN": {
+      "case_id": "canary_20260521_24h_d02",
+      "field": "SWDOWN",
+      "first_failure_hour": 1,
+      "metrics": {
+        "finite_count": 10494,
+        "max_abs_diff": 235.2116241455078,
+        "rmse": 186.45805575521135
+      },
+      "normalized_score": 3.729161115104227,
+      "passed": false,
+      "status": "FAIL",
+      "tolerance": {
+        "max_abs_diff": 150.0,
+        "rmse": 50.0,
+        "units": "W m-2"
+      },
+      "tolerance_class": "EQUIVALENCE_TIGHT"
+    },
+    "canary_20260521_24h_d02::T2": {
+      "case_id": "canary_20260521_24h_d02",
+      "field": "T2",
+      "first_failure_hour": 1,
+      "metrics": {
+        "finite_count": 10494,
+        "max_abs_diff": 17.1719970703125,
+        "rmse": 3.5328326749107424
+      },
+      "normalized_score": 3.5328326749107424,
+      "passed": false,
+      "status": "FAIL",
+      "tolerance": {
+        "max_abs_diff": 5.0,
+        "rmse": 1.0,
+        "units": "K"
+      },
+      "tolerance_class": "EQUIVALENCE_TIGHT"
+    },
+    "canary_20260521_24h_d02::TSK": {
+      "case_id": "canary_20260521_24h_d02",
+      "field": "TSK",
+      "first_failure_hour": null,
+      "metrics": {
+        "finite_count": 10494,
+        "max_abs_diff": 0.0,
+        "rmse": 0.0
+      },
+      "normalized_score": 0.0,
+      "passed": true,
+      "status": "PASS",
+      "tolerance": {
+        "max_abs_diff": 5.0,
+        "rmse": 1.0,
+        "units": "K"
+      },
+      "tolerance_class": "EQUIVALENCE_TIGHT"
+    },
+    "canary_20260521_24h_d02::U": {
+      "case_id": "canary_20260521_24h_d02",
+      "field": "U",
+      "first_failure_hour": 1,
+      "metrics": {
+        "finite_count": 464640,
+        "max_abs_diff": 38.37719888985157,
+        "rmse": 2.94288790680537
+      },
+      "normalized_score": 7.675439777970314,
+      "passed": false,
+      "status": "FAIL",
+      "tolerance": {
+        "max_abs_diff": 5.0,
+        "rmse": 1.0,
+        "units": "m s-1"
+      },
+      "tolerance_class": "EQUIVALENCE_TIGHT"
+    },
+    "canary_20260521_24h_d02::U10": {
+      "case_id": "canary_20260521_24h_d02",
+      "field": "U10",
+      "first_failure_hour": 1,
+      "metrics": {
+        "finite_count": 10494,
+        "max_abs_diff": 20.244948625564575,
+        "rmse": 3.2552992993509435
+      },
+      "normalized_score": 6.748316208521525,
+      "passed": false,
+      "status": "FAIL",
+      "tolerance": {
+        "max_abs_diff": 3.0,
+        "rmse": 0.5,
+        "units": "m s-1"
+      },
+      "tolerance_class": "EQUIVALENCE_TIGHT"
+    },
+    "canary_20260521_24h_d02::V": {
+      "case_id": "canary_20260521_24h_d02",
+      "field": "V",
+      "first_failure_hour": 1,
+      "metrics": {
+        "finite_count": 468732,
+        "max_abs_diff": 35.33758933842182,
+        "rmse": 3.4443545778900813
+      },
+      "normalized_score": 7.067517867684364,
+      "passed": false,
+      "status": "FAIL",
+      "tolerance": {
+        "max_abs_diff": 5.0,
+        "rmse": 1.0,
+        "units": "m s-1"
+      },
+      "tolerance_class": "EQUIVALENCE_TIGHT"
+    },
+    "canary_20260521_24h_d02::V10": {
+      "case_id": "canary_20260521_24h_d02",
+      "field": "V10",
+      "first_failure_hour": 1,
+      "metrics": {
+        "finite_count": 10494,
+        "max_abs_diff": 19.519250869750977,
+        "rmse": 3.894658235699968
+      },
+      "normalized_score": 7.789316471399936,
+      "passed": false,
+      "status": "FAIL",
+      "tolerance": {
+        "max_abs_diff": 3.0,
+        "rmse": 0.5,
+        "units": "m s-1"
+      },
+      "tolerance_class": "EQUIVALENCE_TIGHT"
+    },
+    "canary_20260521_24h_d02::W": {
+      "case_id": "canary_20260521_24h_d02",
+      "field": "W",
+      "first_failure_hour": 1,
+      "metrics": {
+        "finite_count": 472230,
+        "max_abs_diff": 2.270935744047165,
+        "rmse": 0.05201150524333511
+      },
+      "normalized_score": 2.270935744047165,
+      "passed": false,
+      "status": "FAIL",
+      "tolerance": {
+        "max_abs_diff": 1.0,
+        "rmse": 0.25,
+        "units": "m s-1"
+      },
+      "tolerance_class": "EQUIVALENCE_TIGHT"
+    },
+    "canary_20260521_24h_d02::theta": {
+      "case_id": "canary_20260521_24h_d02",
+      "field": "theta",
+      "first_failure_hour": 1,
+      "metrics": {
+        "finite_count": 461736,
+        "max_abs_diff": 335.496826171875,
+        "rmse": 16.0995506657032
+      },
+      "normalized_score": 33.5496826171875,
+      "passed": false,
+      "status": "FAIL",
+      "tolerance": {
+        "max_abs_diff": 10.0,
+        "rmse": 3.0,
+        "units": "K"
+      },
+      "tolerance_class": "EQUIVALENCE_TIGHT"
+    }
+  }
+}
