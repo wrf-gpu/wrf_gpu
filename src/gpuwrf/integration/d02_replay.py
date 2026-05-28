@@ -686,6 +686,7 @@ def build_replay_case(
         lakemask=land.lakemask,
         mavail=land.mavail,
         roughness_m=land.roughness_m,
+        lu_index=land.lu_index,
         **boundary_leaves,
     )
     _debug("state.replace with initial fields complete")
