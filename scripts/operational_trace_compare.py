@@ -49,7 +49,7 @@ FIELD_SPECS: tuple[FieldSpec, ...] = (
     FieldSpec("U", "U"),
     FieldSpec("V", "V"),
     FieldSpec("W", "W"),
-    FieldSpec("theta", "T", "theta = T + 300.0"),
+    FieldSpec("theta", "T", "theta = canonical absolute potential temperature"),
     FieldSpec("QVAPOR", "QVAPOR"),
     FieldSpec("PSFC", "PSFC"),
     FieldSpec("T2", "T2"),
@@ -154,7 +154,39 @@ def _load_wrf_files(wrf_root: Path, domain: str) -> list[Path]:
     return sorted(wrf_root.glob(f"wrfout_{domain}_*"), key=_parse_valid_stamp)
 
 
-def _read_field(dataset: Dataset, spec: FieldSpec) -> tuple[np.ndarray | None, dict[str, Any]]:
+def _theta_to_absolute(values: np.ndarray, *, side: str) -> tuple[np.ndarray, dict[str, Any]]:
+    finite = values[np.isfinite(values)]
+    raw_min = float(np.min(finite)) if finite.size else None
+    raw_max = float(np.max(finite)) if finite.size else None
+    raw_mean = float(np.mean(finite)) if finite.size else None
+
+    if side == "wrf":
+        return values + 300.0, {
+            "reference_state": "perturbation_from_300K_base",
+            "canonical_transform": "theta = T + 300.0",
+            "raw_min": raw_min,
+            "raw_max": raw_max,
+            "raw_mean": raw_mean,
+        }
+
+    if finite.size and float(np.median(finite)) > 150.0:
+        return values, {
+            "reference_state": "absolute_theta",
+            "canonical_transform": "theta = T",
+            "raw_min": raw_min,
+            "raw_max": raw_max,
+            "raw_mean": raw_mean,
+        }
+    return values + 300.0, {
+        "reference_state": "perturbation_from_300K_base",
+        "canonical_transform": "theta = T + 300.0",
+        "raw_min": raw_min,
+        "raw_max": raw_max,
+        "raw_mean": raw_mean,
+    }
+
+
+def _read_field(dataset: Dataset, spec: FieldSpec, *, side: str) -> tuple[np.ndarray | None, dict[str, Any]]:
     if spec.variable_name not in dataset.variables:
         return None, {"status": "MISSING", "variable": spec.variable_name}
     variable = dataset.variables[spec.variable_name]
@@ -162,14 +194,17 @@ def _read_field(dataset: Dataset, spec: FieldSpec) -> tuple[np.ndarray | None, d
     if values.ndim > 0 and values.shape[0] == 1:
         values = values[0]
     values = values.astype(np.float64, copy=False)
+    convention: dict[str, Any] = {}
     if spec.output_name == "theta":
-        values = values + 300.0
+        values, convention = _theta_to_absolute(values, side=side)
     return values, {
         "status": "OK",
         "variable": spec.variable_name,
         "units": "K" if spec.output_name == "theta" else str(getattr(variable, "units", "")),
         "stagger": str(getattr(variable, "stagger", "")),
         "transform": spec.transform,
+        "side": side,
+        **convention,
     }
 
 
@@ -229,8 +264,8 @@ def _stats(gpu: np.ndarray, wrf: np.ndarray) -> dict[str, Any]:
 
 
 def _compare_field(gpu_ds: Dataset, wrf_ds: Dataset, spec: FieldSpec) -> dict[str, Any]:
-    gpu_values, gpu_meta = _read_field(gpu_ds, spec)
-    wrf_values, wrf_meta = _read_field(wrf_ds, spec)
+    gpu_values, gpu_meta = _read_field(gpu_ds, spec, side="gpu")
+    wrf_values, wrf_meta = _read_field(wrf_ds, spec, side="wrf")
     if gpu_values is None or wrf_values is None:
         return {
             "status": "MISSING",
@@ -390,7 +425,11 @@ def compare_hourly(
         "status": "PASS" if first is None and rows else "FAIL",
         "field_order": [spec.output_name for spec in FIELD_SPECS],
         "field_mapping": {
-            spec.output_name: {"gpu_variable": spec.variable_name, "wrf_variable": spec.variable_name, "transform": spec.transform}
+            spec.output_name: {
+                "gpu_variable": spec.variable_name,
+                "wrf_variable": spec.variable_name,
+                "transform": spec.transform,
+            }
             for spec in FIELD_SPECS
         },
         "gpu_source": {**gpu_provenance, "wrfout_files": [str(path) for path in gpu_files]},
@@ -406,7 +445,7 @@ def compare_hourly(
         "first_divergence": first,
         "notes": [
             "Only d02 is compared because the available GPU M7 operational artifact writes d02 wrfout files.",
-            "theta is derived from the WRF T perturbation-potential-temperature variable by adding 300 K on both sides.",
+            "theta is compared as canonical absolute potential temperature: WRF T is T+300 K; GPU T is auto-detected as absolute or perturbation before conversion.",
             "Differences are reported over the common overlapping array shape; shape mismatches are listed per field.",
         ],
         "wall_clock_seconds": time.perf_counter() - start,
