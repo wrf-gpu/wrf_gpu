@@ -1,0 +1,89 @@
+schema: OracleBaselineRegressionTolerances
+schema_version: 1
+metric_semantics:
+  max_abs_diff: Maximum absolute GPU minus CPU WRF difference over compared cells.
+  rmse: Root-mean-square GPU minus CPU WRF difference over compared cells.
+  null_threshold: Metric is reported but not used for pass/fail.
+classes:
+  BITWISE:
+    description: Exact equality gate for deterministic or synthetic Oracle cases.
+    default:
+      max_abs_diff: 0.0
+      rmse: 0.0
+    fields: {}
+
+  EQUIVALENCE_TIGHT:
+    description: Fixed operational component-test target, not fitted to current output.
+    default:
+      max_abs_diff: null
+      rmse: null
+    fields:
+      U:
+        units: m s-1
+        max_abs_diff: 5.0
+        rmse: 1.0
+      V:
+        units: m s-1
+        max_abs_diff: 5.0
+        rmse: 1.0
+      W:
+        units: m s-1
+        max_abs_diff: 1.0
+        rmse: 0.25
+      theta:
+        units: K
+        max_abs_diff: 10.0
+        rmse: 3.0
+      QVAPOR:
+        units: kg kg-1
+        max_abs_diff: 0.005
+        rmse: 0.001
+      PSFC:
+        units: Pa
+        max_abs_diff: 300.0
+        rmse: 100.0
+      T2:
+        units: K
+        max_abs_diff: 5.0
+        rmse: 1.0
+      U10:
+        units: m s-1
+        max_abs_diff: 3.0
+        rmse: 0.5
+      V10:
+        units: m s-1
+        max_abs_diff: 3.0
+        rmse: 0.5
+      SWDOWN:
+        units: W m-2
+        max_abs_diff: 150.0
+        rmse: 50.0
+      GLW:
+        units: W m-2
+        max_abs_diff: 100.0
+        rmse: 35.0
+      HFX:
+        units: W m-2
+        max_abs_diff: 150.0
+        rmse: 50.0
+      LH:
+        units: W m-2
+        max_abs_diff: 150.0
+        rmse: 50.0
+      PBLH:
+        units: m
+        max_abs_diff: 300.0
+        rmse: 100.0
+      TSK:
+        units: K
+        max_abs_diff: 5.0
+        rmse: 1.0
+      LU_INDEX:
+        units: category
+        max_abs_diff: 0.0
+        rmse: 0.0
+
+  EQUIVALENCE_LOOSE:
+    description: Two-times EQUIVALENCE_TIGHT for longer or lower-resolution gates.
+    inherits: EQUIVALENCE_TIGHT
+    scale: 2.0
