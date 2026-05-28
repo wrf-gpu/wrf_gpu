@@ -1,0 +1,23 @@
+{
+  "acceptance_checks": {
+    "boundary_strip_rmse_drops_vs_m11": "NOT_EVALUATED",
+    "interior_rmse_holds_or_improves": "NOT_EVALUATED"
+  },
+  "baseline_available": {
+    "m11": true,
+    "wrf": true
+  },
+  "boundary_width_cells": 10,
+  "case": "20260521",
+  "commit": "0fc227a3350b734cf0b88a5a59e1d2bbf7b684b2",
+  "domain": "d02",
+  "gpu_hour1": "/tmp/m14_lateral_bc_20260521/wrfout_d02_2026-05-21_19:00:00",
+  "m11_baseline_hour1": "/tmp/m11_theta_pd_limiter_20260521/wrfout_d02_2026-05-21_19:00:00",
+  "pipeline_reason": "nonfinite model state after forecast hour 1",
+  "pipeline_verdict": "PIPELINE_BLOCKED",
+  "reason": "No M14 hour-1 wrfout was produced; the 1h pipeline emitted PIPELINE_BLOCKED after nonfinite model state at hour 1.",
+  "schema": "m14_interior_vs_boundary_split_v1",
+  "status": "BLOCKED",
+  "verdict": "M14_BLOCKED",
+  "wrf_hour1": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d02_2026-05-21_19:00:00"
+}

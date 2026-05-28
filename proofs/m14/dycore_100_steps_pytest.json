@@ -1,0 +1,7 @@
+{
+  "command": "taskset -c 0-3 pytest -q tests/savepoint/test_dycore_100_steps.py",
+  "exit_code": 0,
+  "schema": "command_result_v1",
+  "summary": "1 passed in 468.54s (0:07:48)",
+  "verdict": "PASS"
+}

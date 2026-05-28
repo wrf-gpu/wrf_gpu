@@ -174,7 +174,6 @@ def load_boundary_leaves(
     group = zarr.open_group(str(path), mode="r")
     ntimes = int(group["lead_hours"].shape[0])
     max_side = _max_boundary_side(grid)
-    phb_sides = _field_sides_3d(np.asarray(_load(run, domain, "PHB", 0)))
 
     leaves = {
         "u_bdy": _pack_replay(group, "U", ntimes, grid.nz, max_side, np.float32),
@@ -189,6 +188,9 @@ def load_boundary_leaves(
             transform=lambda data, _side: data + P0_THETA_OFFSET_K,
         ),
         "qv_bdy": _pack_replay(group, "QVAPOR", ntimes, grid.nz, max_side, np.float32),
+        "w_bdy": _pack_history_3d_boundary(run, domain, "W", ntimes, grid.nz + 1, max_side, np.float64),
+        "p_bdy": _pack_history_3d_boundary(run, domain, "P", ntimes, grid.nz, max_side, np.float64),
+        "pb_bdy": _pack_history_3d_boundary(run, domain, "PB", 1, grid.nz, max_side, np.float64),
         "ph_bdy": _pack_replay(
             group,
             "PH",
@@ -196,9 +198,10 @@ def load_boundary_leaves(
             grid.nz + 1,
             max_side,
             np.float64,
-            transform=lambda data, side: data + phb_sides[side][None, :, :],
         ),
-        "mu_bdy": _pack_mu_boundaries(run, domain, ntimes, max_side),
+        "phb_bdy": _pack_history_3d_boundary(run, domain, "PHB", 1, grid.nz + 1, max_side, np.float64),
+        "mu_bdy": _pack_history_2d_boundary(run, domain, "MU", ntimes, max_side, np.float64),
+        "mub_bdy": _pack_history_2d_boundary(run, domain, "MUB", 1, max_side, np.float64),
     }
     device_leaves = {name: jax.device_put(jnp.asarray(value)) for name, value in leaves.items()}
     meta = {
@@ -207,7 +210,8 @@ def load_boundary_leaves(
         "times": int(ntimes),
         "side_order": list(SIDES),
         "padded_side_length": int(max_side),
-        "source": "M6-S2a replay for U/V/T/QVAPOR/PH plus d02 MU/MUB side history for mu_bdy",
+        "source": "M6-S2a replay for U/V/T/QVAPOR/PH plus d02 side history for W/P/PB/PHB/MU/MUB",
+        "variables": ["U", "V", "W", "T", "QVAPOR", "P", "PB", "PH", "PHB", "MU", "MUB"],
     }
     return device_leaves, meta
 
@@ -222,13 +226,25 @@ def _pack_replay(group, var: str, ntimes: int, z_len: int, max_side: int, dtype,
     return packed
 
 
-def _pack_mu_boundaries(run: Gen2Run, domain: str, ntimes: int, max_side: int):
-    packed = np.zeros((ntimes, 4, 1, max_side), dtype=np.float64)
+def _pack_history_3d_boundary(run: Gen2Run, domain: str, var: str, ntimes: int, z_len: int, max_side: int, dtype):
+    packed = np.zeros((ntimes, 4, z_len, max_side), dtype=dtype)
     max_history = len(run.history_files(domain))
     for index in range(ntimes):
         history_index = min(index, max_history - 1)
-        mu = np.asarray(_load(run, domain, "MU", history_index) + _load(run, domain, "MUB", history_index))
-        sides = _field_sides_2d(mu)
+        data = np.asarray(_load(run, domain, var, history_index), dtype=dtype)
+        sides = _field_sides_3d(data)
+        for side in SIDES:
+            packed[index, SIDE_INDEX[side], : sides[side].shape[0], : sides[side].shape[1]] = sides[side]
+    return packed
+
+
+def _pack_history_2d_boundary(run: Gen2Run, domain: str, var: str, ntimes: int, max_side: int, dtype):
+    packed = np.zeros((ntimes, 4, 1, max_side), dtype=dtype)
+    max_history = len(run.history_files(domain))
+    for index in range(ntimes):
+        history_index = min(index, max_history - 1)
+        data = np.asarray(_load(run, domain, var, history_index), dtype=dtype)
+        sides = _field_sides_2d(data)
         for side in SIDES:
             packed[index, SIDE_INDEX[side], 0, : sides[side].shape[0]] = sides[side]
     return packed

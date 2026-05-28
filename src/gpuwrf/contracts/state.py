@@ -39,6 +39,10 @@ def _state_field_shapes(grid: GridSpec) -> dict[str, tuple[int, ...]]:
     mass_3d = (nz, ny, nx)
     surface_2d = (ny, nx)
     boundary_side = max(nx + 1, ny + 1)
+    boundary_width = 5
+    boundary_mass = (1, 4, boundary_width, nz, boundary_side)
+    boundary_face = (1, 4, boundary_width, nz + 1, boundary_side)
+    boundary_surface = (1, 4, boundary_width, 1, boundary_side)
     return {
         "u": (nz, ny, nx + 1),
         "v": (nz, ny + 1, nx),
@@ -82,12 +86,17 @@ def _state_field_shapes(grid: GridSpec) -> dict[str, tuple[int, ...]]:
         "snow_acc": surface_2d,
         "graupel_acc": surface_2d,
         "ice_acc": surface_2d,
-        "u_bdy": (1, 4, nz, boundary_side),
-        "v_bdy": (1, 4, nz, boundary_side),
-        "theta_bdy": (1, 4, nz, boundary_side),
-        "qv_bdy": (1, 4, nz, boundary_side),
-        "ph_bdy": (1, 4, nz + 1, boundary_side),
-        "mu_bdy": (1, 4, 1, boundary_side),
+        "u_bdy": boundary_mass,
+        "v_bdy": boundary_mass,
+        "theta_bdy": boundary_mass,
+        "qv_bdy": boundary_mass,
+        "ph_bdy": boundary_face,
+        "mu_bdy": boundary_surface,
+        "w_bdy": boundary_face,
+        "p_bdy": boundary_mass,
+        "pb_bdy": boundary_mass,
+        "phb_bdy": boundary_face,
+        "mub_bdy": boundary_surface,
     }
 
 
@@ -178,7 +187,7 @@ class BoundaryState:
     the prognostic timestep state.
     """
 
-    __slots__ = ("u", "v", "w", "theta", "qv", "p", "pb", "ph", "mu")
+    __slots__ = ("u", "v", "w", "theta", "qv", "p", "pb", "ph", "phb", "mu", "mub")
 
     def __init__(
         self,
@@ -190,7 +199,9 @@ class BoundaryState:
         p: jax.Array,
         pb: jax.Array,
         ph: jax.Array,
+        phb: jax.Array,
         mu: jax.Array,
+        mub: jax.Array,
     ) -> None:
         self.u = u
         self.v = v
@@ -200,7 +211,9 @@ class BoundaryState:
         self.p = p
         self.pb = pb
         self.ph = ph
+        self.phb = phb
         self.mu = mu
+        self.mub = mub
 
     @classmethod
     def zeros(cls, grid: GridSpec, *, n_times: int = 1) -> "BoundaryState":
@@ -221,6 +234,8 @@ class BoundaryState:
             _zeros(shape_mass, "p", device),
             _zeros(shape_mass, "p", device),
             _zeros(shape_face, "ph", device),
+            _zeros(shape_face, "ph", device),
+            _zeros(shape_mu, "mu", device),
             _zeros(shape_mu, "mu", device),
         )
 
@@ -231,13 +246,19 @@ class BoundaryState:
         return cls(
             u=state.u_bdy,
             v=state.v_bdy,
-            w=jnp.zeros((state.u_bdy.shape[0], 4, state.ph_bdy.shape[2], state.u_bdy.shape[3]), dtype=state.w.dtype),
+            w=getattr(
+                state,
+                "w_bdy",
+                jnp.zeros((state.u_bdy.shape[0], 4, state.ph_bdy.shape[-2], state.u_bdy.shape[-1]), dtype=state.w.dtype),
+            ),
             theta=state.theta_bdy,
             qv=state.qv_bdy,
-            p=jnp.zeros_like(state.theta_bdy),
-            pb=jnp.zeros_like(state.theta_bdy),
+            p=getattr(state, "p_bdy", jnp.zeros_like(state.theta_bdy, dtype=state.p_perturbation.dtype)),
+            pb=getattr(state, "pb_bdy", jnp.zeros_like(state.theta_bdy, dtype=state.p_total.dtype)),
             ph=state.ph_bdy,
+            phb=getattr(state, "phb_bdy", jnp.zeros_like(state.ph_bdy, dtype=state.ph_total.dtype)),
             mu=state.mu_bdy,
+            mub=getattr(state, "mub_bdy", jnp.zeros_like(state.mu_bdy, dtype=state.mu_total.dtype)),
         )
 
     def replace(self, **updates) -> "BoundaryState":
@@ -352,8 +373,10 @@ class State:
       land-use category on mass points from `wrfinput_d02`.
     - `rain_acc/snow_acc/graupel_acc/ice_acc`: mm accumulated precipitation
       on surface mass points.
-    - `u_bdy/v_bdy/theta_bdy/qv_bdy/ph_bdy/mu_bdy`: time-varying lateral
-      forcing as `(time, side=W/E/S/N, z-like, padded side index)`.
+    - `*_bdy`: time-varying lateral forcing as
+      `(time, side=W/E/S/N, bdy_width, z-like, padded side index)`.
+      Legacy four-dimensional leaves without `bdy_width` are still accepted
+      by the boundary application adapter.
     """
 
     __slots__ = (
@@ -404,6 +427,11 @@ class State:
         "qv_bdy",
         "ph_bdy",
         "mu_bdy",
+        "w_bdy",
+        "p_bdy",
+        "pb_bdy",
+        "phb_bdy",
+        "mub_bdy",
         "lu_index",
     )
 
@@ -456,6 +484,11 @@ class State:
         qv_bdy: jax.Array,
         ph_bdy: jax.Array,
         mu_bdy: jax.Array,
+        w_bdy: jax.Array | None = None,
+        p_bdy: jax.Array | None = None,
+        pb_bdy: jax.Array | None = None,
+        phb_bdy: jax.Array | None = None,
+        mub_bdy: jax.Array | None = None,
         lu_index: jax.Array | None = None,
     ) -> None:
         self.u = u
@@ -501,10 +534,15 @@ class State:
         self.ice_acc = ice_acc
         self.u_bdy = u_bdy
         self.v_bdy = v_bdy
+        self.w_bdy = jnp.zeros_like(ph_bdy, dtype=w.dtype) if w_bdy is None else w_bdy
         self.theta_bdy = theta_bdy
         self.qv_bdy = qv_bdy
+        self.p_bdy = jnp.zeros_like(theta_bdy, dtype=p_perturbation.dtype) if p_bdy is None else p_bdy
+        self.pb_bdy = jnp.zeros_like(theta_bdy, dtype=p_total.dtype) if pb_bdy is None else pb_bdy
         self.ph_bdy = ph_bdy
+        self.phb_bdy = jnp.zeros_like(ph_bdy, dtype=ph_total.dtype) if phb_bdy is None else phb_bdy
         self.mu_bdy = mu_bdy
+        self.mub_bdy = jnp.zeros_like(mu_bdy, dtype=mu_total.dtype) if mub_bdy is None else mub_bdy
         self.lu_index = (
             jnp.zeros_like(xland, dtype=jnp.int32)
             if lu_index is None

@@ -29,7 +29,19 @@ SURFACE_2D = (
     "graupel_acc",
     "ice_acc",
 )
-BOUNDARY = ("u_bdy", "v_bdy", "theta_bdy", "qv_bdy", "ph_bdy", "mu_bdy")
+BOUNDARY = (
+    "u_bdy",
+    "v_bdy",
+    "theta_bdy",
+    "qv_bdy",
+    "ph_bdy",
+    "mu_bdy",
+    "w_bdy",
+    "p_bdy",
+    "pb_bdy",
+    "phb_bdy",
+    "mub_bdy",
+)
 
 
 def _platform(array) -> str:
@@ -61,12 +73,18 @@ def test_m6_new_state_leaves_are_device_arrays_with_expected_shape_and_dtype():
     assert state.lu_index.dtype == jnp.int32
 
     side = max(grid.nx + 1, grid.ny + 1)
-    assert state.u_bdy.shape == (1, 4, grid.nz, side)
-    assert state.v_bdy.shape == (1, 4, grid.nz, side)
-    assert state.theta_bdy.shape == (1, 4, grid.nz, side)
-    assert state.qv_bdy.shape == (1, 4, grid.nz, side)
-    assert state.ph_bdy.shape == (1, 4, grid.nz + 1, side)
-    assert state.mu_bdy.shape == (1, 4, 1, side)
+    width = 5
+    assert state.u_bdy.shape == (1, 4, width, grid.nz, side)
+    assert state.v_bdy.shape == (1, 4, width, grid.nz, side)
+    assert state.theta_bdy.shape == (1, 4, width, grid.nz, side)
+    assert state.qv_bdy.shape == (1, 4, width, grid.nz, side)
+    assert state.ph_bdy.shape == (1, 4, width, grid.nz + 1, side)
+    assert state.mu_bdy.shape == (1, 4, width, 1, side)
+    assert state.w_bdy.shape == state.ph_bdy.shape
+    assert state.p_bdy.shape == state.theta_bdy.shape
+    assert state.pb_bdy.shape == state.theta_bdy.shape
+    assert state.phb_bdy.shape == state.ph_bdy.shape
+    assert state.mub_bdy.shape == state.mu_bdy.shape
     for field in BOUNDARY:
         leaf = getattr(state, field)
         assert isinstance(leaf, jax.Array)

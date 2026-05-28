@@ -1,0 +1,1049 @@
+{
+  "MU": {
+    "full_relax_strip_diagnostic": {
+      "max_abs": 0.8281298828123909,
+      "rel_rmse": 2.3168387202018165e-05,
+      "rmse": 0.03492344839773784,
+      "sides": {
+        "E": {
+          "compared_shape": [
+            5,
+            66
+          ],
+          "max_abs": 0.8281298828123909,
+          "rel_rmse": 5.9319520665020964e-05,
+          "rmse": 0.07817894148993713
+        },
+        "N": {
+          "compared_shape": [
+            5,
+            159
+          ],
+          "max_abs": 0.8281298828123909,
+          "rel_rmse": 1.9228311288909308e-05,
+          "rmse": 0.02991968452011488
+        },
+        "S": {
+          "compared_shape": [
+            5,
+            159
+          ],
+          "max_abs": 0.029531249999990905,
+          "rel_rmse": 2.3664722540381297e-06,
+          "rmse": 0.003504028988101004
+        },
+        "W": {
+          "compared_shape": [
+            5,
+            66
+          ],
+          "max_abs": 0.01359374999992724,
+          "rel_rmse": 2.556526417222025e-06,
+          "rmse": 0.00420265767793353
+        }
+      }
+    },
+    "max_abs": 0.0,
+    "rel_rmse": 0.0,
+    "rmse": 0.0,
+    "sides": {
+      "E": {
+        "compared_shape": [
+          1,
+          46
+        ],
+        "max_abs": 0.0,
+        "rel_rmse": 0.0,
+        "rmse": 0.0
+      },
+      "N": {
+        "compared_shape": [
+          1,
+          139
+        ],
+        "max_abs": 0.0,
+        "rel_rmse": 0.0,
+        "rmse": 0.0
+      },
+      "S": {
+        "compared_shape": [
+          1,
+          139
+        ],
+        "max_abs": 0.0,
+        "rel_rmse": 0.0,
+        "rmse": 0.0
+      },
+      "W": {
+        "compared_shape": [
+          1,
+          46
+        ],
+        "max_abs": 0.0,
+        "rel_rmse": 0.0,
+        "rmse": 0.0
+      }
+    },
+    "verdict": "PASS"
+  },
+  "MUB": {
+    "full_relax_strip_diagnostic": {
+      "max_abs": 5.308876953116851,
+      "rel_rmse": 3.616396572014073e-06,
+      "rmse": 0.3434056366973077,
+      "sides": {
+        "E": {
+          "compared_shape": [
+            5,
+            66
+          ],
+          "max_abs": 5.308876953116851,
+          "rel_rmse": 8.984666709413698e-06,
+          "rmse": 0.851280054331292
+        },
+        "N": {
+          "compared_shape": [
+            5,
+            159
+          ],
+          "max_abs": 3.2842773437441792,
+          "rel_rmse": 1.852303004230731e-06,
+          "rmse": 0.1759430205697534
+        },
+        "S": {
+          "compared_shape": [
+            5,
+            159
+          ],
+          "max_abs": 0.6952026367216604,
+          "rel_rmse": 4.6972990975682754e-07,
+          "rmse": 0.04462410161353116
+        },
+        "W": {
+          "compared_shape": [
+            5,
+            66
+          ],
+          "max_abs": 2.19726498471573e-05,
+          "rel_rmse": 1.9427092411752837e-11,
+          "rmse": 1.8455737791165194e-06
+        }
+      }
+    },
+    "max_abs": 0.0,
+    "rel_rmse": 0.0,
+    "rmse": 0.0,
+    "sides": {
+      "E": {
+        "compared_shape": [
+          1,
+          46
+        ],
+        "max_abs": 0.0,
+        "rel_rmse": 0.0,
+        "rmse": 0.0
+      },
+      "N": {
+        "compared_shape": [
+          1,
+          139
+        ],
+        "max_abs": 0.0,
+        "rel_rmse": 0.0,
+        "rmse": 0.0
+      },
+      "S": {
+        "compared_shape": [
+          1,
+          139
+        ],
+        "max_abs": 0.0,
+        "rel_rmse": 0.0,
+        "rmse": 0.0
+      },
+      "W": {
+        "compared_shape": [
+          1,
+          46
+        ],
+        "max_abs": 0.0,
+        "rel_rmse": 0.0,
+        "rmse": 0.0
+      }
+    },
+    "verdict": "PASS"
+  },
+  "P": {
+    "full_relax_strip_diagnostic": {
+      "max_abs": 0.830468749999909,
+      "rel_rmse": 3.152643057218856e-05,
+      "rmse": 0.015412551049695874,
+      "sides": {
+        "E": {
+          "compared_shape": [
+            5,
+            44,
+            66
+          ],
+          "max_abs": 0.830468749999909,
+          "rel_rmse": 7.725956516347701e-05,
+          "rmse": 0.03321181099304015
+        },
+        "N": {
+          "compared_shape": [
+            5,
+            44,
+            159
+          ],
+          "max_abs": 0.7457812499999363,
+          "rel_rmse": 2.5655701674365483e-05,
+          "rmse": 0.012944794011526636
+        },
+        "S": {
+          "compared_shape": [
+            5,
+            44,
+            159
+          ],
+          "max_abs": 0.3225958333332528,
+          "rel_rmse": 1.4174423586184224e-05,
+          "rmse": 0.00678109303880769
+        },
+        "W": {
+          "compared_shape": [
+            5,
+            44,
+            66
+          ],
+          "max_abs": 0.011562500000081855,
+          "rel_rmse": 2.738263328818639e-06,
+          "rmse": 0.0014658913949965391
+        }
+      }
+    },
+    "max_abs": 0.0,
+    "rel_rmse": 0.0,
+    "rmse": 0.0,
+    "sides": {
+      "E": {
+        "compared_shape": [
+          1,
+          44,
+          46
+        ],
+        "max_abs": 0.0,
+        "rel_rmse": 0.0,
+        "rmse": 0.0
+      },
+      "N": {
+        "compared_shape": [
+          1,
+          44,
+          139
+        ],
+        "max_abs": 0.0,
+        "rel_rmse": 0.0,
+        "rmse": 0.0
+      },
+      "S": {
+        "compared_shape": [
+          1,
+          44,
+          139
+        ],
+        "max_abs": 0.0,
+        "rel_rmse": 0.0,
+        "rmse": 0.0
+      },
+      "W": {
+        "compared_shape": [
+          1,
+          44,
+          46
+        ],
+        "max_abs": 0.0,
+        "rel_rmse": 0.0,
+        "rmse": 0.0
+      }
+    },
+    "verdict": "PASS"
+  },
+  "PB": {
+    "full_relax_strip_diagnostic": {
+      "max_abs": 5.294999999998254,
+      "rel_rmse": 3.786508571299582e-06,
+      "rmse": 0.16734813693939588,
+      "sides": {
+        "E": {
+          "compared_shape": [
+            5,
+            44,
+            66
+          ],
+          "max_abs": 5.294999999998254,
+          "rel_rmse": 9.400240630219131e-06,
+          "rmse": 0.4148581342590404
+        },
+        "N": {
+          "compared_shape": [
+            5,
+            44,
+            159
+          ],
+          "max_abs": 3.274374999993597,
+          "rel_rmse": 1.9390690917490524e-06,
+          "rmse": 0.08571531725839632
+        },
+        "S": {
+          "compared_shape": [
+            5,
+            44,
+            159
+          ],
+          "max_abs": 0.6931250000052387,
+          "rel_rmse": 4.917958808028815e-07,
+          "rmse": 0.021741508318429116
+        },
+        "W": {
+          "compared_shape": [
+            5,
+            44,
+            66
+          ],
+          "max_abs": 0.0,
+          "rel_rmse": 0.0,
+          "rmse": 0.0
+        }
+      }
+    },
+    "max_abs": 0.0,
+    "rel_rmse": 0.0,
+    "rmse": 0.0,
+    "sides": {
+      "E": {
+        "compared_shape": [
+          1,
+          44,
+          46
+        ],
+        "max_abs": 0.0,
+        "rel_rmse": 0.0,
+        "rmse": 0.0
+      },
+      "N": {
+        "compared_shape": [
+          1,
+          44,
+          139
+        ],
+        "max_abs": 0.0,
+        "rel_rmse": 0.0,
+        "rmse": 0.0
+      },
+      "S": {
+        "compared_shape": [
+          1,
+          44,
+          139
+        ],
+        "max_abs": 0.0,
+        "rel_rmse": 0.0,
+        "rmse": 0.0
+      },
+      "W": {
+        "compared_shape": [
+          1,
+          44,
+          46
+        ],
+        "max_abs": 0.0,
+        "rel_rmse": 0.0,
+        "rmse": 0.0
+      }
+    },
+    "verdict": "PASS"
+  },
+  "PH": {
+    "full_relax_strip_diagnostic": {
+      "max_abs": 0.7161035156250364,
+      "rel_rmse": 6.048046465290385e-06,
+      "rmse": 0.02285481815031741,
+      "sides": {
+        "E": {
+          "compared_shape": [
+            5,
+            45,
+            66
+          ],
+          "max_abs": 0.7161035156250364,
+          "rel_rmse": 1.301408604824039e-05,
+          "rmse": 0.04996720336456465
+        },
+        "N": {
+          "compared_shape": [
+            5,
+            45,
+            159
+          ],
+          "max_abs": 0.7161035156250364,
+          "rel_rmse": 5.252125614568685e-06,
+          "rmse": 0.019558558264600203
+        },
+        "S": {
+          "compared_shape": [
+            5,
+            45,
+            159
+          ],
+          "max_abs": 0.1122886503906102,
+          "rel_rmse": 1.8622826658259332e-06,
+          "rmse": 0.007133877020641442
+        },
+        "W": {
+          "compared_shape": [
+            5,
+            45,
+            66
+          ],
+          "max_abs": 0.025917968749126885,
+          "rel_rmse": 1.2162875419292162e-06,
+          "rmse": 0.004531593598729173
+        }
+      }
+    },
+    "max_abs": 0.0,
+    "rel_rmse": 0.0,
+    "rmse": 0.0,
+    "sides": {
+      "E": {
+        "compared_shape": [
+          1,
+          45,
+          46
+        ],
+        "max_abs": 0.0,
+        "rel_rmse": 0.0,
+        "rmse": 0.0
+      },
+      "N": {
+        "compared_shape": [
+          1,
+          45,
+          139
+        ],
+        "max_abs": 0.0,
+        "rel_rmse": 0.0,
+        "rmse": 0.0
+      },
+      "S": {
+        "compared_shape": [
+          1,
+          45,
+          139
+        ],
+        "max_abs": 0.0,
+        "rel_rmse": 0.0,
+        "rmse": 0.0
+      },
+      "W": {
+        "compared_shape": [
+          1,
+          45,
+          46
+        ],
+        "max_abs": 0.0,
+        "rel_rmse": 0.0,
+        "rmse": 0.0
+      }
+    },
+    "verdict": "PASS"
+  },
+  "PHB": {
+    "full_relax_strip_diagnostic": {
+      "max_abs": 4.497307128906186,
+      "rel_rmse": 1.8617557859130434e-06,
+      "rmse": 0.15746788103200787,
+      "sides": {
+        "E": {
+          "compared_shape": [
+            5,
+            45,
+            66
+          ],
+          "max_abs": 4.497307128906186,
+          "rel_rmse": 4.614609403329043e-06,
+          "rmse": 0.39059377806570905
+        },
+        "N": {
+          "compared_shape": [
+            5,
+            45,
+            159
+          ],
+          "max_abs": 2.739230089187622,
+          "rel_rmse": 9.486517030079661e-07,
+          "rmse": 0.08022929614124373
+        },
+        "S": {
+          "compared_shape": [
+            5,
+            45,
+            159
+          ],
+          "max_abs": 0.5792592191696168,
+          "rel_rmse": 2.4023220228812347e-07,
+          "rmse": 0.020315940544481714
+        },
+        "W": {
+          "compared_shape": [
+            5,
+            45,
+            66
+          ],
+          "max_abs": 0.0009765625,
+          "rel_rmse": 2.173284413324133e-09,
+          "rmse": 0.0001837898402660672
+        }
+      }
+    },
+    "max_abs": 0.0,
+    "rel_rmse": 0.0,
+    "rmse": 0.0,
+    "sides": {
+      "E": {
+        "compared_shape": [
+          1,
+          45,
+          46
+        ],
+        "max_abs": 0.0,
+        "rel_rmse": 0.0,
+        "rmse": 0.0
+      },
+      "N": {
+        "compared_shape": [
+          1,
+          45,
+          139
+        ],
+        "max_abs": 0.0,
+        "rel_rmse": 0.0,
+        "rmse": 0.0
+      },
+      "S": {
+        "compared_shape": [
+          1,
+          45,
+          139
+        ],
+        "max_abs": 0.0,
+        "rel_rmse": 0.0,
+        "rmse": 0.0
+      },
+      "W": {
+        "compared_shape": [
+          1,
+          45,
+          46
+        ],
+        "max_abs": 0.0,
+        "rel_rmse": 0.0,
+        "rmse": 0.0
+      }
+    },
+    "verdict": "PASS"
+  },
+  "QVAPOR": {
+    "full_relax_strip_diagnostic": {
+      "max_abs": 4.246458411216736e-05,
+      "rel_rmse": 0.00021616742654663175,
+      "rmse": 4.790446568430448e-07,
+      "sides": {
+        "E": {
+          "compared_shape": [
+            5,
+            44,
+            66
+          ],
+          "max_abs": 4.246458411216736e-05,
+          "rel_rmse": 0.0005824851622815608,
+          "rmse": 1.2379257446602527e-06
+        },
+        "N": {
+          "compared_shape": [
+            5,
+            44,
+            159
+          ],
+          "max_abs": 7.248483598232269e-06,
+          "rel_rmse": 3.9810990245932555e-05,
+          "rmse": 9.074603830004505e-08
+        },
+        "S": {
+          "compared_shape": [
+            5,
+            44,
+            159
+          ],
+          "max_abs": 8.540228009223938e-07,
+          "rel_rmse": 2.336817082497134e-05,
+          "rmse": 4.985503094289687e-08
+        },
+        "W": {
+          "compared_shape": [
+            5,
+            44,
+            66
+          ],
+          "max_abs": 1.1213123798370361e-06,
+          "rel_rmse": 3.392913003583517e-05,
+          "rmse": 7.984778742210792e-08
+        }
+      }
+    },
+    "max_abs": 0.0,
+    "rel_rmse": 0.0,
+    "rmse": 0.0,
+    "sides": {
+      "E": {
+        "compared_shape": [
+          1,
+          44,
+          46
+        ],
+        "max_abs": 0.0,
+        "rel_rmse": 0.0,
+        "rmse": 0.0
+      },
+      "N": {
+        "compared_shape": [
+          1,
+          44,
+          139
+        ],
+        "max_abs": 0.0,
+        "rel_rmse": 0.0,
+        "rmse": 0.0
+      },
+      "S": {
+        "compared_shape": [
+          1,
+          44,
+          139
+        ],
+        "max_abs": 0.0,
+        "rel_rmse": 0.0,
+        "rmse": 0.0
+      },
+      "W": {
+        "compared_shape": [
+          1,
+          44,
+          46
+        ],
+        "max_abs": 0.0,
+        "rel_rmse": 0.0,
+        "rmse": 0.0
+      }
+    },
+    "verdict": "PASS"
+  },
+  "T": {
+    "full_relax_strip_diagnostic": {
+      "max_abs": 0.062286376953125,
+      "rel_rmse": 2.3247487821556555e-06,
+      "rmse": 0.0008096239862550086,
+      "sides": {
+        "E": {
+          "compared_shape": [
+            5,
+            44,
+            66
+          ],
+          "max_abs": 0.062286376953125,
+          "rel_rmse": 5.9995794377708575e-06,
+          "rmse": 0.00209316790805219
+        },
+        "N": {
+          "compared_shape": [
+            5,
+            44,
+            159
+          ],
+          "max_abs": 0.01007080078125,
+          "rel_rmse": 4.0140459130358853e-07,
+          "rmse": 0.00013975884267883337
+        },
+        "S": {
+          "compared_shape": [
+            5,
+            44,
+            159
+          ],
+          "max_abs": 0.009185791015625,
+          "rel_rmse": 3.623283602952519e-07,
+          "rmse": 0.0001261598092709895
+        },
+        "W": {
+          "compared_shape": [
+            5,
+            44,
+            66
+          ],
+          "max_abs": 0.00091552734375,
+          "rel_rmse": 1.438249546164811e-07,
+          "rmse": 5.005459994715593e-05
+        }
+      }
+    },
+    "max_abs": 0.0,
+    "rel_rmse": 0.0,
+    "rmse": 0.0,
+    "sides": {
+      "E": {
+        "compared_shape": [
+          1,
+          44,
+          46
+        ],
+        "max_abs": 0.0,
+        "rel_rmse": 0.0,
+        "rmse": 0.0
+      },
+      "N": {
+        "compared_shape": [
+          1,
+          44,
+          139
+        ],
+        "max_abs": 0.0,
+        "rel_rmse": 0.0,
+        "rmse": 0.0
+      },
+      "S": {
+        "compared_shape": [
+          1,
+          44,
+          139
+        ],
+        "max_abs": 0.0,
+        "rel_rmse": 0.0,
+        "rmse": 0.0
+      },
+      "W": {
+        "compared_shape": [
+          1,
+          44,
+          46
+        ],
+        "max_abs": 0.0,
+        "rel_rmse": 0.0,
+        "rmse": 0.0
+      }
+    },
+    "verdict": "PASS"
+  },
+  "U": {
+    "full_relax_strip_diagnostic": {
+      "max_abs": 0.019108891487121582,
+      "rel_rmse": 3.418862446659879e-05,
+      "rmse": 0.0002659967163829231,
+      "sides": {
+        "E": {
+          "compared_shape": [
+            5,
+            44,
+            66
+          ],
+          "max_abs": 0.019108891487121582,
+          "rel_rmse": 9.409258103446499e-05,
+          "rmse": 0.0006772389560275209
+        },
+        "N": {
+          "compared_shape": [
+            5,
+            44,
+            160
+          ],
+          "max_abs": 0.003850385546684265,
+          "rel_rmse": 6.518397639170596e-06,
+          "rmse": 5.4523640881938955e-05
+        },
+        "S": {
+          "compared_shape": [
+            5,
+            44,
+            160
+          ],
+          "max_abs": 0.0016133785247802734,
+          "rel_rmse": 1.1277897931131587e-05,
+          "rmse": 8.043989932671e-05
+        },
+        "W": {
+          "compared_shape": [
+            5,
+            44,
+            66
+          ],
+          "max_abs": 0.00041997432708740234,
+          "rel_rmse": 6.445824539365854e-06,
+          "rmse": 5.4897398395646035e-05
+        }
+      }
+    },
+    "max_abs": 0.0,
+    "rel_rmse": 0.0,
+    "rmse": 0.0,
+    "sides": {
+      "E": {
+        "compared_shape": [
+          1,
+          44,
+          46
+        ],
+        "max_abs": 0.0,
+        "rel_rmse": 0.0,
+        "rmse": 0.0
+      },
+      "N": {
+        "compared_shape": [
+          1,
+          44,
+          140
+        ],
+        "max_abs": 0.0,
+        "rel_rmse": 0.0,
+        "rmse": 0.0
+      },
+      "S": {
+        "compared_shape": [
+          1,
+          44,
+          140
+        ],
+        "max_abs": 0.0,
+        "rel_rmse": 0.0,
+        "rmse": 0.0
+      },
+      "W": {
+        "compared_shape": [
+          1,
+          44,
+          46
+        ],
+        "max_abs": 0.0,
+        "rel_rmse": 0.0,
+        "rmse": 0.0
+      }
+    },
+    "verdict": "PASS"
+  },
+  "V": {
+    "full_relax_strip_diagnostic": {
+      "max_abs": 0.05144834518432617,
+      "rel_rmse": 0.00018075361325588907,
+      "rmse": 0.0006184933007147081,
+      "sides": {
+        "E": {
+          "compared_shape": [
+            5,
+            44,
+            67
+          ],
+          "max_abs": 0.05144834518432617,
+          "rel_rmse": 0.0004903412480020583,
+          "rmse": 0.0015700905150941781
+        },
+        "N": {
+          "compared_shape": [
+            5,
+            44,
+            159
+          ],
+          "max_abs": 0.003698110580444336,
+          "rel_rmse": 1.6274348232883204e-05,
+          "rmse": 5.688315601034815e-05
+        },
+        "S": {
+          "compared_shape": [
+            5,
+            44,
+            159
+          ],
+          "max_abs": 0.01255655288696289,
+          "rel_rmse": 4.719683459624333e-05,
+          "rmse": 0.00016607733653915092
+        },
+        "W": {
+          "compared_shape": [
+            5,
+            44,
+            67
+          ],
+          "max_abs": 0.0020742416381835938,
+          "rel_rmse": 6.358878675634252e-05,
+          "rmse": 0.00020581275093076932
+        }
+      }
+    },
+    "max_abs": 0.0,
+    "rel_rmse": 0.0,
+    "rmse": 0.0,
+    "sides": {
+      "E": {
+        "compared_shape": [
+          1,
+          44,
+          47
+        ],
+        "max_abs": 0.0,
+        "rel_rmse": 0.0,
+        "rmse": 0.0
+      },
+      "N": {
+        "compared_shape": [
+          1,
+          44,
+          139
+        ],
+        "max_abs": 0.0,
+        "rel_rmse": 0.0,
+        "rmse": 0.0
+      },
+      "S": {
+        "compared_shape": [
+          1,
+          44,
+          139
+        ],
+        "max_abs": 0.0,
+        "rel_rmse": 0.0,
+        "rmse": 0.0
+      },
+      "W": {
+        "compared_shape": [
+          1,
+          44,
+          47
+        ],
+        "max_abs": 0.0,
+        "rel_rmse": 0.0,
+        "rmse": 0.0
+      }
+    },
+    "verdict": "PASS"
+  },
+  "W": {
+    "full_relax_strip_diagnostic": {
+      "max_abs": 0.0005601108074188219,
+      "rel_rmse": 0.027355341221085093,
+      "rmse": 1.471107523500809e-05,
+      "sides": {
+        "E": {
+          "compared_shape": [
+            5,
+            45,
+            66
+          ],
+          "max_abs": 0.0005601108074188219,
+          "rel_rmse": 0.01221757370623487,
+          "rmse": 3.341676374933299e-05
+        },
+        "N": {
+          "compared_shape": [
+            5,
+            45,
+            159
+          ],
+          "max_abs": 0.0005451533943414688,
+          "rel_rmse": 0.03501260205283269,
+          "rmse": 1.0980229665247176e-05
+        },
+        "S": {
+          "compared_shape": [
+            5,
+            45,
+            159
+          ],
+          "max_abs": 0.0001449778368303784,
+          "rel_rmse": 0.07297787701788128,
+          "rmse": 5.3295698461642506e-06
+        },
+        "W": {
+          "compared_shape": [
+            5,
+            45,
+            66
+          ],
+          "max_abs": 1.410992748181646e-07,
+          "rel_rmse": 0.07885244271481966,
+          "rmse": 6.0674318879598495e-09
+        }
+      }
+    },
+    "max_abs": 0.0,
+    "rel_rmse": 0.0,
+    "rmse": 0.0,
+    "sides": {
+      "E": {
+        "compared_shape": [
+          1,
+          45,
+          46
+        ],
+        "max_abs": 0.0,
+        "rel_rmse": 0.0,
+        "rmse": 0.0
+      },
+      "N": {
+        "compared_shape": [
+          1,
+          45,
+          139
+        ],
+        "max_abs": 0.0,
+        "rel_rmse": 0.0,
+        "rmse": 0.0
+      },
+      "S": {
+        "compared_shape": [
+          1,
+          45,
+          139
+        ],
+        "max_abs": 0.0,
+        "rel_rmse": 0.0,
+        "rmse": 0.0
+      },
+      "W": {
+        "compared_shape": [
+          1,
+          45,
+          46
+        ],
+        "max_abs": 0.0,
+        "rel_rmse": 0.0,
+        "rmse": 0.0
+      }
+    },
+    "verdict": "PASS"
+  },
+  "_metadata": {
+    "bdy_width": 5,
+    "commit": "0fc227a3350b734cf0b88a5a59e1d2bbf7b684b2",
+    "domain": "d02",
+    "dt_s": 10.0,
+    "full_relax_strip_note": "The five-cell relaxation strip is width-checked separately; rows outside spec_zone are nudged by WRF-style relaxation and are not expected to equal forcing targets exactly after one apply.",
+    "headline": "11/11 variables PASS",
+    "lead_seconds": 0.0,
+    "oracle": "GPU-applied WRF specified-zone boundary row compared to d02 hourly wrfout side-history replay leaves.",
+    "pass_count": 11,
+    "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
+    "schema": "m14_boundary_strip_parity_v1",
+    "theta_transform": "T boundary leaves are stored as absolute theta = WRF T + 300 K.",
+    "threshold_rel_rmse": 1e-06,
+    "variable_count": 11,
+    "wrfbdy_d02_note": "No wrfbdy_d02 exists under /mnt/data/canairy_meteo for the pinned 20260521 run; wrfbdy_d01 only provides U/V/W/T/QVAPOR/PH/MU and cannot cover P/PB/PHB/MUB.",
+    "wrfbdy_d02_status": "MISSING"
+  }
+}
