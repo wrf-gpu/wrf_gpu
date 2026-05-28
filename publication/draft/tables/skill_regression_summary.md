@@ -1,15 +1,15 @@
-# Skill Regression and Post-fix Recovery Summary Table
+# Skill Regression Summary Table
 
-Table 2. Skill summary separated by pre-fix and post-fix state. The post-fix path improves 6 of 9 aggregate T2/U10/V10 metrics versus the pre-fix GPU baseline, but all variables remain outside the pre-declared 20 percent tolerance against CPU WRF.
+Table 2. Three complete Canary d02 days scored against in-situ AEMET station observations. The partial-history 20260428 case has zero valid joined station pairs and is excluded.
 
-| System state | Variable | CPU WRF RMSE | GPU RMSE | Relative change vs CPU | Proof object |
+| Day | Variable | CPU RMSE (m/s or K) | GPU RMSE | Relative delta | Proof object |
 |---|---|---:|---:|---:|---|
-| Pre-fix diagnostic path | T2 | 2.15 K | 7.86 K | +266 percent | `.agent/sprints/2026-05-27-m7-honest-speedup-skill-diff/gpu_vs_cpu_skill_diff.json` |
-| Pre-fix diagnostic path | U10 | 2.31 m s-1 | 11.31 m s-1 | +390 percent | `.agent/sprints/2026-05-27-m7-honest-speedup-skill-diff/gpu_vs_cpu_skill_diff.json` |
-| Pre-fix diagnostic path | V10 | 2.75 m s-1 | 9.44 m s-1 | +243 percent | `.agent/sprints/2026-05-27-m7-honest-speedup-skill-diff/gpu_vs_cpu_skill_diff.json` |
-| Post-fix corrected-physics path | T2 | 2.15 K | 8.85 K | +312 percent | `.agent/sprints/2026-05-27-m7-skill-fix-algorithmic/post_fix_skill_diff.json` |
-| Post-fix corrected-physics path | U10 | 2.31 m s-1 | 6.75 m s-1 | +193 percent | `.agent/sprints/2026-05-27-m7-skill-fix-algorithmic/post_fix_skill_diff.json` |
-| Post-fix corrected-physics path | V10 | 2.75 m s-1 | 7.23 m s-1 | +163 percent | `.agent/sprints/2026-05-27-m7-skill-fix-algorithmic/post_fix_skill_diff.json` |
-| L2 d02 replay validation | T2 bounded check | threshold 3.0 K | 4.07 K | FAIL | `.agent/sprints/2026-05-27-m7-l2-d02-replay-validation/tier4_rmse_l2_d02.json` |
-| L2 d02 replay validation | U10 bounded check | threshold 7.5 m s-1 | 10.78 m s-1 | FAIL | `.agent/sprints/2026-05-27-m7-l2-d02-replay-validation/tier4_rmse_l2_d02.json` |
-| L2 d02 replay validation | V10 bounded check | threshold 7.5 m s-1 | 7.83 m s-1 | FAIL | `.agent/sprints/2026-05-27-m7-l2-d02-replay-validation/tier4_rmse_l2_d02.json` |
+| 2026-05-09 | T2 (K) | 2.51 | 11.97 | +378 % | `.agent/sprints/2026-05-27-testing-plan-execution-redo/canary_multiday_skill.json` |
+| 2026-05-09 | U10 (m/s) | 2.12 | 7.21 | +240 % | `.agent/sprints/2026-05-27-testing-plan-execution-redo/canary_multiday_skill.json` |
+| 2026-05-09 | V10 (m/s) | 2.21 | 6.51 | +195 % | `.agent/sprints/2026-05-27-testing-plan-execution-redo/canary_multiday_skill.json` |
+| 2026-05-21 | T2 (K) | 2.15 | 10.80 | +303 % | `.agent/sprints/2026-05-27-testing-plan-execution-redo/canary_multiday_skill.json` |
+| 2026-05-21 | U10 (m/s) | 2.31 | 7.24 | +214 % | `.agent/sprints/2026-05-27-testing-plan-execution-redo/canary_multiday_skill.json` |
+| 2026-05-21 | V10 (m/s) | 2.75 | 7.62 | +177 % | `.agent/sprints/2026-05-27-testing-plan-execution-redo/canary_multiday_skill.json` |
+| 2026-05-25 | T2 (K) | 2.95 | 7.71 | +161 % | `.agent/sprints/2026-05-27-testing-plan-execution-redo/canary_multiday_skill.json` |
+| 2026-05-25 | U10 (m/s) | 2.11 | 9.92 | +370 % | `.agent/sprints/2026-05-27-testing-plan-execution-redo/canary_multiday_skill.json` |
+| 2026-05-25 | V10 (m/s) | 2.24 | 10.16 | +353 % | `.agent/sprints/2026-05-27-testing-plan-execution-redo/canary_multiday_skill.json` |
