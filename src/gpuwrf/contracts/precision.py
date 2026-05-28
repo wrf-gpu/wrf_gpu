@@ -66,6 +66,11 @@ STATE_FIELD_ORDER = (
     "qv_bdy",
     "ph_bdy",
     "mu_bdy",
+    "w_bdy",
+    "p_bdy",
+    "pb_bdy",
+    "phb_bdy",
+    "mub_bdy",
 )
 
 
@@ -121,10 +126,15 @@ PRECISION_MATRIX = {
     # Time-varying lateral-boundary forcing leaves.
     "u_bdy": (FP32_GATED, True),
     "v_bdy": (FP32_GATED, True),
+    "w_bdy": (FP64, False),
     "theta_bdy": (FP32_GATED, True),
     "qv_bdy": (FP32_GATED, True),
+    "p_bdy": (FP64, False),
+    "pb_bdy": (FP64, False),
     "ph_bdy": (FP64, False),
+    "phb_bdy": (FP64, False),
     "mu_bdy": (FP64, False),
+    "mub_bdy": (FP64, False),
 }
 
 

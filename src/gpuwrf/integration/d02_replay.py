@@ -277,14 +277,23 @@ def _pack_history_3d(
     return packed
 
 
-def _pack_history_mu(run: Gen2Run, domain: str, *, ntimes: int, max_side: int, bdy_width: int) -> np.ndarray:
-    _debug(f"pack history start {domain}:MU+MUB ntimes={ntimes} max_side={max_side}")
-    packed = np.zeros((ntimes, 4, int(bdy_width), 1, max_side), dtype=np.float64)
+def _pack_history_2d(
+    run: Gen2Run,
+    domain: str,
+    var: str,
+    *,
+    ntimes: int,
+    max_side: int,
+    bdy_width: int,
+    dtype: Any,
+) -> np.ndarray:
+    _debug(f"pack history start {domain}:{var} ntimes={ntimes} max_side={max_side}")
+    packed = np.zeros((ntimes, 4, int(bdy_width), 1, max_side), dtype=dtype)
     for time_index in range(ntimes):
-        data = np.asarray(_load(run, domain, "MU", time_index) + _load(run, domain, "MUB", time_index), dtype=np.float64)
+        data = np.asarray(_load(run, domain, var, time_index), dtype=dtype)
         for side, values in _field_sides_2d(data, int(bdy_width)).items():
             packed[time_index, SIDE_INDEX[side], : values.shape[0], 0, : values.shape[1]] = values
-    _debug(f"pack history done {domain}:MU+MUB {_shape_dtype(packed)}")
+    _debug(f"pack history done {domain}:{var} {_shape_dtype(packed)}")
     return packed
 
 
@@ -308,9 +317,6 @@ def load_history_boundary_leaves(
 
     def add_theta(_run: Gen2Run, _domain: str, data: np.ndarray, _time_index: int) -> np.ndarray:
         return data + P0_THETA_OFFSET_K
-
-    def add_phb(_run: Gen2Run, _domain: str, data: np.ndarray, time_index: int) -> np.ndarray:
-        return data + np.asarray(_load(_run, _domain, "PHB", time_index), dtype=data.dtype)
 
     leaves_np = {
         "u_bdy": _pack_history_3d(run, domain, "U", ntimes=n, z_len=grid.nz, max_side=max_side, bdy_width=bdy_width, dtype=np.float32),
@@ -336,6 +342,36 @@ def load_history_boundary_leaves(
             bdy_width=bdy_width,
             dtype=np.float32,
         ),
+        "w_bdy": _pack_history_3d(
+            run,
+            domain,
+            "W",
+            ntimes=n,
+            z_len=grid.nz + 1,
+            max_side=max_side,
+            bdy_width=bdy_width,
+            dtype=np.float64,
+        ),
+        "p_bdy": _pack_history_3d(
+            run,
+            domain,
+            "P",
+            ntimes=n,
+            z_len=grid.nz,
+            max_side=max_side,
+            bdy_width=bdy_width,
+            dtype=np.float64,
+        ),
+        "pb_bdy": _pack_history_3d(
+            run,
+            domain,
+            "PB",
+            ntimes=1,
+            z_len=grid.nz,
+            max_side=max_side,
+            bdy_width=bdy_width,
+            dtype=np.float64,
+        ),
         "ph_bdy": _pack_history_3d(
             run,
             domain,
@@ -345,9 +381,35 @@ def load_history_boundary_leaves(
             max_side=max_side,
             bdy_width=bdy_width,
             dtype=np.float64,
-            transform=add_phb,
         ),
-        "mu_bdy": _pack_history_mu(run, domain, ntimes=n, max_side=max_side, bdy_width=bdy_width),
+        "phb_bdy": _pack_history_3d(
+            run,
+            domain,
+            "PHB",
+            ntimes=1,
+            z_len=grid.nz + 1,
+            max_side=max_side,
+            bdy_width=bdy_width,
+            dtype=np.float64,
+        ),
+        "mu_bdy": _pack_history_2d(
+            run,
+            domain,
+            "MU",
+            ntimes=n,
+            max_side=max_side,
+            bdy_width=bdy_width,
+            dtype=np.float64,
+        ),
+        "mub_bdy": _pack_history_2d(
+            run,
+            domain,
+            "MUB",
+            ntimes=1,
+            max_side=max_side,
+            bdy_width=bdy_width,
+            dtype=np.float64,
+        ),
     }
     _debug("device_put boundary leaves start")
     leaves = {name: jax.device_put(jnp.asarray(value)) for name, value in leaves_np.items()}
@@ -363,6 +425,7 @@ def load_history_boundary_leaves(
         "wrfbdy_path": wrfbdy_path,
         "strip_order": "WRF wrfbdy order: outer-to-inner bdy_width, vertical, side_index",
         "schema": "history-strip-pack-v2",
+        "variables": ["U", "V", "W", "T", "QVAPOR", "P", "PB", "PH", "PHB", "MU", "MUB"],
     }
     return leaves, meta
 
@@ -447,32 +510,31 @@ def _pack_nested_parent_history_3d(
     return packed
 
 
-def _pack_nested_parent_history_mu(
+def _pack_nested_parent_history_2d(
     run: Gen2Run,
     child_meta: Any,
     parent_domain: str,
+    var: str,
     *,
     ntimes: int,
     child_shape: tuple[int, int],
     max_side: int,
     bdy_width: int,
+    dtype: Any,
 ) -> np.ndarray:
     y_len, x_len = (int(item) for item in child_shape)
     y_coords, x_coords = _nested_axis_coords(child_meta, y_len=y_len, x_len=x_len)
-    packed = np.zeros((ntimes, 4, int(bdy_width), 1, max_side), dtype=np.float64)
+    packed = np.zeros((ntimes, 4, int(bdy_width), 1, max_side), dtype=dtype)
     _debug(
-        f"pack nested parent history start {parent_domain}:MU+MUB ntimes={ntimes} "
+        f"pack nested parent history start {parent_domain}:{var} ntimes={ntimes} "
         f"child_shape={(y_len, x_len)} max_side={max_side}"
     )
     for time_index in range(ntimes):
-        parent = np.asarray(
-            _load(run, parent_domain, "MU", time_index) + _load(run, parent_domain, "MUB", time_index),
-            dtype=np.float64,
-        )
+        parent = np.asarray(_load(run, parent_domain, var, time_index), dtype=dtype)
         child = _interp_parent_horizontal(parent, y_coords, x_coords)
         for side, values in _field_sides_2d(child, int(bdy_width)).items():
             packed[time_index, SIDE_INDEX[side], : values.shape[0], 0, : values.shape[1]] = values
-    _debug(f"pack nested parent history done {parent_domain}:MU+MUB {_shape_dtype(packed)}")
+    _debug(f"pack nested parent history done {parent_domain}:{var} {_shape_dtype(packed)}")
     return packed
 
 
@@ -506,9 +568,6 @@ def load_nested_parent_boundary_leaves(
 
     def add_theta(_run: Gen2Run, _domain: str, data: np.ndarray, _time_index: int) -> np.ndarray:
         return data + P0_THETA_OFFSET_K
-
-    def add_phb(_run: Gen2Run, _domain: str, data: np.ndarray, time_index: int) -> np.ndarray:
-        return data + np.asarray(_load(_run, _domain, "PHB", time_index), dtype=data.dtype)
 
     leaves_np = {
         "u_bdy": _pack_nested_parent_history_3d(
@@ -556,6 +615,39 @@ def load_nested_parent_boundary_leaves(
             bdy_width=bdy_width,
             dtype=np.float32,
         ),
+        "w_bdy": _pack_nested_parent_history_3d(
+            run,
+            child_meta,
+            parent_domain,
+            "W",
+            ntimes=n,
+            child_shape=(grid.nz + 1, grid.ny, grid.nx),
+            max_side=max_side,
+            bdy_width=bdy_width,
+            dtype=np.float64,
+        ),
+        "p_bdy": _pack_nested_parent_history_3d(
+            run,
+            child_meta,
+            parent_domain,
+            "P",
+            ntimes=n,
+            child_shape=(grid.nz, grid.ny, grid.nx),
+            max_side=max_side,
+            bdy_width=bdy_width,
+            dtype=np.float64,
+        ),
+        "pb_bdy": _pack_nested_parent_history_3d(
+            run,
+            child_meta,
+            parent_domain,
+            "PB",
+            ntimes=1,
+            child_shape=(grid.nz, grid.ny, grid.nx),
+            max_side=max_side,
+            bdy_width=bdy_width,
+            dtype=np.float64,
+        ),
         "ph_bdy": _pack_nested_parent_history_3d(
             run,
             child_meta,
@@ -566,16 +658,39 @@ def load_nested_parent_boundary_leaves(
             max_side=max_side,
             bdy_width=bdy_width,
             dtype=np.float64,
-            transform=add_phb,
         ),
-        "mu_bdy": _pack_nested_parent_history_mu(
+        "phb_bdy": _pack_nested_parent_history_3d(
             run,
             child_meta,
             parent_domain,
+            "PHB",
+            ntimes=1,
+            child_shape=(grid.nz + 1, grid.ny, grid.nx),
+            max_side=max_side,
+            bdy_width=bdy_width,
+            dtype=np.float64,
+        ),
+        "mu_bdy": _pack_nested_parent_history_2d(
+            run,
+            child_meta,
+            parent_domain,
+            "MU",
             ntimes=n,
             child_shape=(grid.ny, grid.nx),
             max_side=max_side,
             bdy_width=bdy_width,
+            dtype=np.float64,
+        ),
+        "mub_bdy": _pack_nested_parent_history_2d(
+            run,
+            child_meta,
+            parent_domain,
+            "MUB",
+            ntimes=1,
+            child_shape=(grid.ny, grid.nx),
+            max_side=max_side,
+            bdy_width=bdy_width,
+            dtype=np.float64,
         ),
     }
     leaves = {name: jax.device_put(jnp.asarray(value)) for name, value in leaves_np.items()}
@@ -594,6 +709,7 @@ def load_nested_parent_boundary_leaves(
         "wrfbdy_path": wrfbdy_path,
         "strip_order": "WRF wrfbdy order: outer-to-inner bdy_width, vertical, side_index",
         "schema": "nested-parent-strip-pack-v2",
+        "variables": ["U", "V", "W", "T", "QVAPOR", "P", "PB", "PH", "PHB", "MU", "MUB"],
         "parent_grid": {
             "mass_shape": [int(parent_meta.mass_nz), int(parent_meta.mass_ny), int(parent_meta.mass_nx)],
             "dx_m": float(parent_meta.dx_m),

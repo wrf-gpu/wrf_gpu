@@ -1,0 +1,63 @@
+{
+  "commit": "0fc227a3350b734cf0b88a5a59e1d2bbf7b684b2",
+  "metadata_boundary": {
+    "bdy_width": 5,
+    "padded_side_length": 160,
+    "schema": "history-strip-pack-v2",
+    "side_order": [
+      "W",
+      "E",
+      "S",
+      "N"
+    ],
+    "source": "Gen2 d02 hourly wrfout side-history replay",
+    "source_run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
+    "strip_order": "WRF wrfbdy order: outer-to-inner bdy_width, vertical, side_index",
+    "times": 25,
+    "variables": [
+      "U",
+      "V",
+      "W",
+      "T",
+      "QVAPOR",
+      "P",
+      "PB",
+      "PH",
+      "PHB",
+      "MU",
+      "MUB"
+    ],
+    "wrfbdy_path": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfbdy_d01",
+    "wrfbdy_width_source": "decode_wrfbdy"
+  },
+  "namelist_bdy_control": {
+    "relax_zone": 4,
+    "spec_bdy_width": 5,
+    "spec_zone": 1
+  },
+  "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
+  "schema": "m14_relax_zone_width_parity_v1",
+  "state_boundary_widths": {
+    "mu_bdy": 5,
+    "mub_bdy": 5,
+    "p_bdy": 5,
+    "pb_bdy": 5,
+    "ph_bdy": 5,
+    "phb_bdy": 5,
+    "qv_bdy": 5,
+    "theta_bdy": 5,
+    "u_bdy": 5,
+    "v_bdy": 5,
+    "w_bdy": 5
+  },
+  "verdict": "PASS",
+  "wrfbdy_d01": {
+    "bdy_width": 5,
+    "path": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfbdy_d01"
+  },
+  "wrfbdy_d02": {
+    "exists": false,
+    "path": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfbdy_d02",
+    "status": "MISSING"
+  }
+}

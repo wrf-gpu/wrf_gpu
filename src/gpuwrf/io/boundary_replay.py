@@ -18,10 +18,11 @@ from gpuwrf.io.gen2_accessor import GEN2_READ_ONLY_ROOT, Gen2Run
 
 BOUNDARY_VARIABLES = ("U", "V", "T", "QVAPOR", "PH")
 SIDES = ("W", "E", "S", "N")
-WRFBDY_VARIABLES = ("U", "V", "T", "QVAPOR", "PH", "MU")
+WRFBDY_VARIABLES = ("U", "V", "W", "T", "QVAPOR", "PH", "MU")
 WRFBDY_STATE_FIELDS = {
     "U": "u",
     "V": "v",
+    "W": "w",
     "T": "theta",
     "QVAPOR": "qv",
     "PH": "ph",
@@ -32,16 +33,28 @@ WRFBDY_TENDENCY_SUFFIXES = {"W": "BTXS", "E": "BTXE", "S": "BTYS", "N": "BTYE"}
 COORDS = {
     "U": ("XLAT_U", "XLONG_U", "ZNU"),
     "V": ("XLAT_V", "XLONG_V", "ZNU"),
+    "W": ("XLAT", "XLONG", "ZNW"),
     "T": ("XLAT", "XLONG", "ZNU"),
     "QVAPOR": ("XLAT", "XLONG", "ZNU"),
+    "P": ("XLAT", "XLONG", "ZNU"),
+    "PB": ("XLAT", "XLONG", "ZNU"),
     "PH": ("XLAT", "XLONG", "ZNW"),
+    "PHB": ("XLAT", "XLONG", "ZNW"),
+    "MU": ("XLAT", "XLONG", "ZNU"),
+    "MUB": ("XLAT", "XLONG", "ZNU"),
 }
 TOLERANCES = {
     "U": {"rel_mae_max": 0.03, "rmse_max": 0.5, "units": "m s-1"},
     "V": {"rel_mae_max": 0.03, "rmse_max": 0.5, "units": "m s-1"},
+    "W": {"rmse_max": 0.2, "units": "m s-1"},
     "T": {"rmse_max": 0.5, "units": "K"},
     "QVAPOR": {"rel_mae_max": 0.03, "rmse_max": 1.0e-4, "units": "kg kg-1"},
+    "P": {"rmse_max": 50.0, "units": "Pa"},
+    "PB": {"rmse_max": 50.0, "units": "Pa"},
     "PH": {"rel_mae_max": 0.005, "rmse_max": 20.0, "units": "m2 s-2"},
+    "PHB": {"rel_mae_max": 0.005, "rmse_max": 20.0, "units": "m2 s-2"},
+    "MU": {"rmse_max": 50.0, "units": "Pa"},
+    "MUB": {"rmse_max": 50.0, "units": "Pa"},
 }
 
 
