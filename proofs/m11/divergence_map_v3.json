@@ -1,0 +1,820 @@
+{
+  "case": "20260521",
+  "commit": "753c6c71cb515f33cfc7418bb29af88e21377317",
+  "corrections_applied": {
+    "m11_limiter": "positive-definite theta increment limiter with per-level monotonic origin-state bounds and dry-mass weighted residual redistribution",
+    "old_theta_envelope_clip_removed": true,
+    "theta_convention": "side-aware canonical absolute theta; GPU and WRF T both detected as perturbation_from_300K_base for this run"
+  },
+  "diagnosis": {
+    "fields_that_appear_HEALTHY": [
+      {
+        "evidence": "RMSE 0.0 and max absolute difference 0.0 across 24 hours",
+        "field": "TSK"
+      },
+      {
+        "evidence": "RMSE 0.0 and max absolute difference 0.0 across 24 hours",
+        "field": "LU_INDEX"
+      }
+    ],
+    "m11_theta_result": {
+      "baseline_m9_v2_theta_rmse": 77.3589529727313,
+      "m11_theta_rmse": 7.50392988504,
+      "rmse_reduction_pct": 90.29985593563411,
+      "theta_max_abs_diff_over_hours": 30.25408935546875
+    },
+    "method_artifacts_remaining_to_audit": [
+      "Station score comparison is against observations, not CPU-vs-GPU parity directly; use together with trace metrics."
+    ],
+    "method_artifacts_resolved": [
+      "theta convention audit remains clean; GPU and WRF wrfout T are both perturbation fields"
+    ],
+    "primary_residual_defects_ranked_by_likely_impact": [
+      {
+        "evidence": [
+          "SWDOWN/GLW/PBLH remain large in 24h RMSE",
+          "surface station skill still fails 20% aggregate tolerance"
+        ],
+        "hypothesis": "radiation/surface/PBL outputs still dominate remaining skill and wrfout divergence",
+        "rank": 1
+      },
+      {
+        "evidence": [
+          "U/V/U10/V10 still diverge from WRF in the hourly trace"
+        ],
+        "hypothesis": "wind/pressure divergence remains downstream of unresolved physics and boundary coupling",
+        "rank": 2
+      }
+    ]
+  },
+  "domain": "d02",
+  "first_divergence_ranking": [
+    {
+      "field": "LU_INDEX",
+      "first_divergence_hour": null,
+      "first_divergence_valid_time_utc": null,
+      "max_abs_diff_at_first_divergence": null,
+      "max_abs_diff_over_hours": 0.0,
+      "rmse_at_first_divergence": null,
+      "rmse_over_all_hours": 0.0
+    },
+    {
+      "field": "TSK",
+      "first_divergence_hour": null,
+      "first_divergence_valid_time_utc": null,
+      "max_abs_diff_at_first_divergence": null,
+      "max_abs_diff_over_hours": 0.0,
+      "rmse_at_first_divergence": null,
+      "rmse_over_all_hours": 0.0
+    },
+    {
+      "field": "PBLH",
+      "first_divergence_hour": 1,
+      "first_divergence_valid_time_utc": "2026-05-21T19:00:00+00:00",
+      "max_abs_diff_at_first_divergence": 756.0424194335938,
+      "max_abs_diff_over_hours": 986.0338745117188,
+      "rmse_at_first_divergence": 426.1624730221864,
+      "rmse_over_all_hours": 411.71659455625155
+    },
+    {
+      "field": "GLW",
+      "first_divergence_hour": 1,
+      "first_divergence_valid_time_utc": "2026-05-21T19:00:00+00:00",
+      "max_abs_diff_at_first_divergence": 349.9502868652344,
+      "max_abs_diff_over_hours": 414.7230224609375,
+      "rmse_at_first_divergence": 331.60206910607366,
+      "rmse_over_all_hours": 342.6959332604137
+    },
+    {
+      "field": "PSFC",
+      "first_divergence_hour": 1,
+      "first_divergence_valid_time_utc": "2026-05-21T19:00:00+00:00",
+      "max_abs_diff_at_first_divergence": 467.8046875,
+      "max_abs_diff_over_hours": 654.875,
+      "rmse_at_first_divergence": 322.22470994893797,
+      "rmse_over_all_hours": 448.9830840015671
+    },
+    {
+      "field": "SWDOWN",
+      "first_divergence_hour": 1,
+      "first_divergence_valid_time_utc": "2026-05-21T19:00:00+00:00",
+      "max_abs_diff_at_first_divergence": 235.2116241455078,
+      "max_abs_diff_over_hours": 1122.4453125,
+      "rmse_at_first_divergence": 186.45805575521135,
+      "rmse_over_all_hours": 509.5374240541832
+    },
+    {
+      "field": "LH",
+      "first_divergence_hour": 1,
+      "first_divergence_valid_time_utc": "2026-05-21T19:00:00+00:00",
+      "max_abs_diff_at_first_divergence": 351.6034698486328,
+      "max_abs_diff_over_hours": 735.1005935668945,
+      "rmse_at_first_divergence": 39.013969393894214,
+      "rmse_over_all_hours": 64.25670069007775
+    },
+    {
+      "field": "HFX",
+      "first_divergence_hour": 1,
+      "first_divergence_valid_time_utc": "2026-05-21T19:00:00+00:00",
+      "max_abs_diff_at_first_divergence": 559.9627170562744,
+      "max_abs_diff_over_hours": 2984.791748046875,
+      "rmse_at_first_divergence": 32.4717271528904,
+      "rmse_over_all_hours": 131.61197983374637
+    },
+    {
+      "field": "V10",
+      "first_divergence_hour": 1,
+      "first_divergence_valid_time_utc": "2026-05-21T19:00:00+00:00",
+      "max_abs_diff_at_first_divergence": 19.704360961914062,
+      "max_abs_diff_over_hours": 26.08137856423855,
+      "rmse_at_first_divergence": 3.94094554302438,
+      "rmse_over_all_hours": 5.270719741867078
+    },
+    {
+      "field": "V",
+      "first_divergence_hour": 1,
+      "first_divergence_valid_time_utc": "2026-05-21T19:00:00+00:00",
+      "max_abs_diff_at_first_divergence": 35.63090904057026,
+      "max_abs_diff_over_hours": 51.55219650268555,
+      "rmse_at_first_divergence": 3.4489070760899208,
+      "rmse_over_all_hours": 9.704625682113713
+    },
+    {
+      "field": "U10",
+      "first_divergence_hour": 1,
+      "first_divergence_valid_time_utc": "2026-05-21T19:00:00+00:00",
+      "max_abs_diff_at_first_divergence": 19.69854474067688,
+      "max_abs_diff_over_hours": 29.352608680725098,
+      "rmse_at_first_divergence": 3.226287298612545,
+      "rmse_over_all_hours": 6.374304532384891
+    },
+    {
+      "field": "T2",
+      "first_divergence_hour": 1,
+      "first_divergence_valid_time_utc": "2026-05-21T19:00:00+00:00",
+      "max_abs_diff_at_first_divergence": 19.266998291015625,
+      "max_abs_diff_over_hours": 30.12847900390625,
+      "rmse_at_first_divergence": 3.1601074567257696,
+      "rmse_over_all_hours": 15.108215640703374
+    },
+    {
+      "field": "U",
+      "first_divergence_hour": 1,
+      "first_divergence_valid_time_utc": "2026-05-21T19:00:00+00:00",
+      "max_abs_diff_at_first_divergence": 38.76594138145447,
+      "max_abs_diff_over_hours": 57.72237968444824,
+      "rmse_at_first_divergence": 2.9430641913301883,
+      "rmse_over_all_hours": 10.191580152352449
+    },
+    {
+      "field": "theta",
+      "first_divergence_hour": 1,
+      "first_divergence_valid_time_utc": "2026-05-21T19:00:00+00:00",
+      "max_abs_diff_at_first_divergence": 23.318817138671875,
+      "max_abs_diff_over_hours": 30.25408935546875,
+      "rmse_at_first_divergence": 2.1526707086273262,
+      "rmse_over_all_hours": 7.50392988504
+    },
+    {
+      "field": "W",
+      "first_divergence_hour": 1,
+      "first_divergence_valid_time_utc": "2026-05-21T19:00:00+00:00",
+      "max_abs_diff_at_first_divergence": 2.2709358632564545,
+      "max_abs_diff_over_hours": 2.6956440955400467,
+      "rmse_at_first_divergence": 0.052011505792554286,
+      "rmse_over_all_hours": 0.044339955513556246
+    },
+    {
+      "field": "QVAPOR",
+      "first_divergence_hour": 1,
+      "first_divergence_valid_time_utc": "2026-05-21T19:00:00+00:00",
+      "max_abs_diff_at_first_divergence": 0.005857800133526325,
+      "max_abs_diff_over_hours": 0.009780770866200328,
+      "rmse_at_first_divergence": 0.0002290989657960307,
+      "rmse_over_all_hours": 0.0014467116977556545
+    }
+  ],
+  "input_artifacts": {
+    "gpu_output_dir": "/tmp/m11_theta_pd_limiter_20260521",
+    "m11_trace": "proofs/m11/operational_trace_hourly_v3.json",
+    "m9_v2_divergence_map": "proofs/m9/divergence_map_v2.json",
+    "pipeline_run": "proofs/m11/pipeline_run_20260521.json",
+    "post_m11_skill_diff": "proofs/m11/post_m11_skill_diff.json",
+    "wrf_reference_root": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z"
+  },
+  "method": "hour-by-hour wrfout GPU-vs-WRF d02 across 24 forecast hours and 16 operational fields after M11 theta positive-definite limiter",
+  "method_caveat": "wrfout-level comparison, not per-operator WRF Fortran trace; theta is canonicalized side-aware using the existing operational trace comparator.",
+  "method_source": "proofs/m11/operational_trace_hourly_v3.json",
+  "per_field_per_hour_rmse": {
+    "1": {
+      "GLW": 331.60206910607366,
+      "HFX": 32.4717271528904,
+      "LH": 39.013969393894214,
+      "LU_INDEX": 0.0,
+      "PBLH": 426.1624730221864,
+      "PSFC": 322.22470994893797,
+      "QVAPOR": 0.0002290989657960307,
+      "SWDOWN": 186.45805575521135,
+      "T2": 3.1601074567257696,
+      "TSK": 0.0,
+      "U": 2.9430641913301883,
+      "U10": 3.226287298612545,
+      "V": 3.4489070760899208,
+      "V10": 3.94094554302438,
+      "W": 0.052011505792554286,
+      "theta": 2.1526707086273262
+    },
+    "10": {
+      "GLW": 345.77839436199025,
+      "HFX": 58.38034561800093,
+      "LH": 53.17437111944215,
+      "LU_INDEX": 0.0,
+      "PBLH": 392.78012036737897,
+      "PSFC": 429.35410068894026,
+      "QVAPOR": 0.0009335956736944353,
+      "SWDOWN": 0.0,
+      "T2": 6.993051593469489,
+      "TSK": 0.0,
+      "U": 9.505726191785651,
+      "U10": 6.380325106864214,
+      "V": 10.078576577988104,
+      "V10": 4.8439869879043975,
+      "W": 0.04268606825484879,
+      "theta": 5.610943255157154
+    },
+    "11": {
+      "GLW": 347.9842204866785,
+      "HFX": 70.37754046920357,
+      "LH": 56.10875428600782,
+      "LU_INDEX": 0.0,
+      "PBLH": 394.9965084810502,
+      "PSFC": 414.37412624104087,
+      "QVAPOR": 0.001042235219824009,
+      "SWDOWN": 0.0,
+      "T2": 9.053346791812363,
+      "TSK": 0.0,
+      "U": 9.884911725881246,
+      "U10": 6.451108364529935,
+      "V": 10.218939608017894,
+      "V10": 4.886010969297594,
+      "W": 0.04280532197846058,
+      "theta": 6.401519026379395
+    },
+    "12": {
+      "GLW": 350.3571411209971,
+      "HFX": 86.11886071783344,
+      "LH": 58.6197811697402,
+      "LU_INDEX": 0.0,
+      "PBLH": 399.9039003106802,
+      "PSFC": 402.2957010201138,
+      "QVAPOR": 0.001232694144927561,
+      "SWDOWN": 0.0,
+      "T2": 12.428731146559617,
+      "TSK": 0.0,
+      "U": 10.229413053060505,
+      "U10": 6.538468135975661,
+      "V": 10.325712652959169,
+      "V10": 4.961521743823477,
+      "W": 0.0425331420257537,
+      "theta": 7.399344511928309
+    },
+    "13": {
+      "GLW": 353.2953189242579,
+      "HFX": 108.60060460817022,
+      "LH": 55.05530242861482,
+      "LU_INDEX": 0.0,
+      "PBLH": 404.6896185239804,
+      "PSFC": 431.56015836490343,
+      "QVAPOR": 0.001405466374374891,
+      "SWDOWN": 61.3365754537126,
+      "T2": 17.21206833365047,
+      "TSK": 0.0,
+      "U": 10.539870431949122,
+      "U10": 7.080524440736428,
+      "V": 10.405272941080495,
+      "V10": 5.028210853696407,
+      "W": 0.04213983957446431,
+      "theta": 8.442988008298551
+    },
+    "14": {
+      "GLW": 355.1214173264468,
+      "HFX": 133.92328585543174,
+      "LH": 55.26131679343079,
+      "LU_INDEX": 0.0,
+      "PBLH": 408.89897229345104,
+      "PSFC": 457.75236313623464,
+      "QVAPOR": 0.0016141509828414965,
+      "SWDOWN": 242.27056342326745,
+      "T2": 19.212537862146405,
+      "TSK": 0.0,
+      "U": 10.797878478265922,
+      "U10": 7.367846928306295,
+      "V": 10.464774961956612,
+      "V10": 5.465468289257767,
+      "W": 0.03748678350763174,
+      "theta": 9.028615161066858
+    },
+    "15": {
+      "GLW": 355.6990450871253,
+      "HFX": 151.85203302258785,
+      "LH": 58.667208574089365,
+      "LU_INDEX": 0.0,
+      "PBLH": 415.02070487665816,
+      "PSFC": 478.3330130841519,
+      "QVAPOR": 0.0017596089071741975,
+      "SWDOWN": 436.81572435733574,
+      "T2": 19.80947469487728,
+      "TSK": 0.0,
+      "U": 11.097789259166479,
+      "U10": 7.08015630576644,
+      "V": 10.509753756414598,
+      "V10": 5.458921836542833,
+      "W": 0.03711813909667939,
+      "theta": 9.300174175567701
+    },
+    "16": {
+      "GLW": 354.40715137133236,
+      "HFX": 159.7960169267276,
+      "LH": 61.52778296754115,
+      "LU_INDEX": 0.0,
+      "PBLH": 417.666307947314,
+      "PSFC": 494.38538605089263,
+      "QVAPOR": 0.001841778953230413,
+      "SWDOWN": 627.0655059042101,
+      "T2": 20.145096554292312,
+      "TSK": 0.0,
+      "U": 11.420672683448164,
+      "U10": 6.958705274814932,
+      "V": 10.55524161357197,
+      "V10": 5.4249853535032075,
+      "W": 0.0384585120473767,
+      "theta": 9.443868652714169
+    },
+    "17": {
+      "GLW": 351.7897106290839,
+      "HFX": 173.17021756576995,
+      "LH": 67.08224139279193,
+      "LU_INDEX": 0.0,
+      "PBLH": 415.7638106098949,
+      "PSFC": 509.2726239827513,
+      "QVAPOR": 0.0018748952518548693,
+      "SWDOWN": 796.8198613094943,
+      "T2": 20.341700390672557,
+      "TSK": 0.0,
+      "U": 11.752461005709126,
+      "U10": 7.063062212063515,
+      "V": 10.606510056091704,
+      "V10": 5.4371758252973255,
+      "W": 0.04000638257205609,
+      "theta": 9.539157365099951
+    },
+    "18": {
+      "GLW": 347.95601667012636,
+      "HFX": 189.89232201438884,
+      "LH": 76.6379327239963,
+      "LU_INDEX": 0.0,
+      "PBLH": 410.9218512350808,
+      "PSFC": 524.263107634386,
+      "QVAPOR": 0.0019003440642667777,
+      "SWDOWN": 928.6418932038391,
+      "T2": 20.52498268213089,
+      "TSK": 0.0,
+      "U": 12.079599393817396,
+      "U10": 7.295090134481648,
+      "V": 10.66006483064269,
+      "V10": 5.53034735608881,
+      "W": 0.040057541149609,
+      "theta": 9.625902642420408
+    },
+    "19": {
+      "GLW": 344.70190108638985,
+      "HFX": 204.25577338307366,
+      "LH": 86.19291627128244,
+      "LU_INDEX": 0.0,
+      "PBLH": 406.29544967025845,
+      "PSFC": 512.4046140078262,
+      "QVAPOR": 0.0019360401068413307,
+      "SWDOWN": 998.9913022053305,
+      "T2": 20.710507479594348,
+      "TSK": 0.0,
+      "U": 12.383857073951742,
+      "U10": 7.386272948208439,
+      "V": 10.73832564701075,
+      "V10": 5.678992211528073,
+      "W": 0.04136585865418106,
+      "theta": 9.716385948659742
+    },
+    "2": {
+      "GLW": 332.1919494953342,
+      "HFX": 41.22628377390262,
+      "LH": 47.998875158184354,
+      "LU_INDEX": 0.0,
+      "PBLH": 453.61759273966766,
+      "PSFC": 351.2614750990956,
+      "QVAPOR": 0.00036735169721759705,
+      "SWDOWN": 8.222358658929467,
+      "T2": 3.903445753760856,
+      "TSK": 0.0,
+      "U": 4.110021180256768,
+      "U10": 3.556381563598039,
+      "V": 5.157631999473649,
+      "V10": 4.396758791885832,
+      "W": 0.05052943574063234,
+      "theta": 2.736552162011088
+    },
+    "20": {
+      "GLW": 342.2735792097829,
+      "HFX": 211.45450009560884,
+      "LH": 91.52723632798025,
+      "LU_INDEX": 0.0,
+      "PBLH": 402.1016480488055,
+      "PSFC": 491.44474212045117,
+      "QVAPOR": 0.0019845243162005814,
+      "SWDOWN": 999.0599700846291,
+      "T2": 20.926273714001773,
+      "TSK": 0.0,
+      "U": 12.67938323784061,
+      "U10": 7.3243725936834005,
+      "V": 10.853002679589,
+      "V10": 5.76279799543079,
+      "W": 0.04392376614846774,
+      "theta": 9.80828198354409
+    },
+    "21": {
+      "GLW": 339.98033304826396,
+      "HFX": 212.30497272020006,
+      "LH": 91.58442104539627,
+      "LU_INDEX": 0.0,
+      "PBLH": 396.44478890590807,
+      "PSFC": 469.7041283665066,
+      "QVAPOR": 0.0020281476626475984,
+      "SWDOWN": 931.2416476938323,
+      "T2": 21.161367375964065,
+      "TSK": 0.0,
+      "U": 12.969998964543414,
+      "U10": 7.265980561805864,
+      "V": 11.009965975982542,
+      "V10": 5.800633982025205,
+      "W": 0.04251797600383252,
+      "theta": 9.894954927012812
+    },
+    "22": {
+      "GLW": 338.4641019126516,
+      "HFX": 206.94686850889352,
+      "LH": 88.35884377475745,
+      "LU_INDEX": 0.0,
+      "PBLH": 390.09147837841954,
+      "PSFC": 449.7024922068994,
+      "QVAPOR": 0.002070468402368177,
+      "SWDOWN": 800.3676249872699,
+      "T2": 21.48874037993107,
+      "TSK": 0.0,
+      "U": 13.238522675934165,
+      "U10": 7.277986499176223,
+      "V": 11.16444674346127,
+      "V10": 5.885425631076295,
+      "W": 0.04249941705637699,
+      "theta": 10.001742902900743
+    },
+    "23": {
+      "GLW": 337.5564748551819,
+      "HFX": 192.11541756015194,
+      "LH": 81.88239987645605,
+      "LU_INDEX": 0.0,
+      "PBLH": 384.30323843417983,
+      "PSFC": 431.8181570329743,
+      "QVAPOR": 0.002106217927758303,
+      "SWDOWN": 619.6361623712047,
+      "T2": 21.658600258018303,
+      "TSK": 0.0,
+      "U": 13.475321421395735,
+      "U10": 7.225318097786509,
+      "V": 11.28735710502774,
+      "V10": 5.972957297435753,
+      "W": 0.04474953348849102,
+      "theta": 10.091154164709895
+    },
+    "24": {
+      "GLW": 337.4454138447235,
+      "HFX": 173.30580147161652,
+      "LH": 74.12545926865701,
+      "LU_INDEX": 0.0,
+      "PBLH": 378.7496358869169,
+      "PSFC": 415.445871097549,
+      "QVAPOR": 0.0021428844481371345,
+      "SWDOWN": 405.73429392987214,
+      "T2": 21.912993046304663,
+      "TSK": 0.0,
+      "U": 13.696310898603542,
+      "U10": 7.100779609937676,
+      "V": 11.396860145899122,
+      "V10": 5.987980171933158,
+      "W": 0.04837849034134776,
+      "theta": 10.178934915170576
+    },
+    "3": {
+      "GLW": 332.8218174058942,
+      "HFX": 33.6565785442556,
+      "LH": 50.868113045538536,
+      "LU_INDEX": 0.0,
+      "PBLH": 461.0044851790195,
+      "PSFC": 385.99164029703854,
+      "QVAPOR": 0.0004619976879376732,
+      "SWDOWN": 0.0,
+      "T2": 4.01961177099145,
+      "TSK": 0.0,
+      "U": 5.024119522781214,
+      "U10": 3.9412135695294257,
+      "V": 6.380821536595628,
+      "V10": 4.96735840872437,
+      "W": 0.05065551033033661,
+      "theta": 3.0333744137625467
+    },
+    "4": {
+      "GLW": 333.0180533945677,
+      "HFX": 36.76482966170906,
+      "LH": 52.103027485151266,
+      "LU_INDEX": 0.0,
+      "PBLH": 449.63257585968,
+      "PSFC": 422.60224087282563,
+      "QVAPOR": 0.0005502512872047377,
+      "SWDOWN": 0.0,
+      "T2": 4.097089263682098,
+      "TSK": 0.0,
+      "U": 5.879570585550376,
+      "U10": 4.421898782698203,
+      "V": 7.306744634674369,
+      "V10": 5.233592639411077,
+      "W": 0.04972398919919846,
+      "theta": 3.248789953723586
+    },
+    "5": {
+      "GLW": 334.11439352811664,
+      "HFX": 37.71253088495164,
+      "LH": 51.59794385108913,
+      "LU_INDEX": 0.0,
+      "PBLH": 433.43401438071845,
+      "PSFC": 452.0896609614617,
+      "QVAPOR": 0.0006318040141817598,
+      "SWDOWN": 0.0,
+      "T2": 4.07403173776248,
+      "TSK": 0.0,
+      "U": 6.704116542827235,
+      "U10": 5.074061793423849,
+      "V": 8.054046252713091,
+      "V10": 5.22250044279387,
+      "W": 0.048184546376971914,
+      "theta": 3.4546434737118514
+    },
+    "6": {
+      "GLW": 335.7379595187996,
+      "HFX": 38.69032290645204,
+      "LH": 50.112065673105285,
+      "LU_INDEX": 0.0,
+      "PBLH": 419.95991983761263,
+      "PSFC": 481.9315209565812,
+      "QVAPOR": 0.000687488429606191,
+      "SWDOWN": 0.0,
+      "T2": 4.15383809008464,
+      "TSK": 0.0,
+      "U": 7.441954105159393,
+      "U10": 5.6219147998417185,
+      "V": 8.659742640920323,
+      "V10": 5.125474000940821,
+      "W": 0.046685776848097264,
+      "theta": 3.707485670791585
+    },
+    "7": {
+      "GLW": 337.55536608044457,
+      "HFX": 40.35688123785308,
+      "LH": 49.385846656958265,
+      "LU_INDEX": 0.0,
+      "PBLH": 408.9000763994205,
+      "PSFC": 475.2423546342031,
+      "QVAPOR": 0.0007344803764986617,
+      "SWDOWN": 0.0,
+      "T2": 4.3762211363850465,
+      "TSK": 0.0,
+      "U": 8.079152120424864,
+      "U10": 5.949687151163134,
+      "V": 9.164815263308975,
+      "V10": 5.061294351730966,
+      "W": 0.04575224592609993,
+      "theta": 4.021920769734173
+    },
+    "8": {
+      "GLW": 339.63647596516637,
+      "HFX": 44.572745235780346,
+      "LH": 49.9596280959767,
+      "LU_INDEX": 0.0,
+      "PBLH": 401.80277152267337,
+      "PSFC": 463.0671203242212,
+      "QVAPOR": 0.0007816101778705718,
+      "SWDOWN": 0.0,
+      "T2": 4.946187559703541,
+      "TSK": 0.0,
+      "U": 8.628222135036554,
+      "U10": 6.109716874170883,
+      "V": 9.57745364573796,
+      "V10": 4.994125589907128,
+      "W": 0.045361854772563395,
+      "theta": 4.435470601264833
+    },
+    "9": {
+      "GLW": 343.1050177918022,
+      "HFX": 50.22891185840004,
+      "LH": 50.585083216469464,
+      "LU_INDEX": 0.0,
+      "PBLH": 395.55037516721984,
+      "PSFC": 446.3603292657349,
+      "QVAPOR": 0.0008470590039420426,
+      "SWDOWN": 0.0,
+      "T2": 5.733045590903945,
+      "TSK": 0.0,
+      "U": 9.089790271548335,
+      "U10": 6.260432517833641,
+      "V": 9.872638038970917,
+      "V10": 4.8924766574538685,
+      "W": 0.04395197357724819,
+      "theta": 4.966258661692762
+    }
+  },
+  "produced_at": "2026-05-28T15:15:30.010949+00:00",
+  "produced_by": "worker/gpt/m11-theta-pd-limiter",
+  "recommended_next_dispatch_order": [
+    "M12 surface/PBL flux diagnosis",
+    "M13 radiation/output diagnosis",
+    "M14 wind-pressure coupling after physics fixes"
+  ],
+  "schema_ref": "proof_index://schemas/divergence_map_v1+corrections_applied",
+  "summary": {
+    "headline_reduction": {
+      "field": "theta",
+      "new_max_abs_diff_over_hours": 30.25408935546875,
+      "new_rmse_over_all_hours": 7.50392988504,
+      "old_max_abs_diff_over_hours": 345.2015075683594,
+      "old_rmse_over_all_hours": 77.3589529727313,
+      "rmse_delta_old_minus_new": 69.85502308769131,
+      "rmse_reduction_pct": 90.29985593563411
+    },
+    "matched_hour_count": 24,
+    "operational_first_divergence": {
+      "argmax_diff_idx": [
+        9,
+        30,
+        56
+      ],
+      "field": "U",
+      "hour": 1,
+      "max_abs_diff": 38.76594138145447,
+      "rel_diff": 1.6205993206158917,
+      "rmse": 2.9430641913301883,
+      "valid_time_utc": "2026-05-21T19:00:00+00:00"
+    },
+    "operational_variable_24h_summary": {
+      "GLW": {
+        "first_divergence_hour": 1,
+        "max_max_abs": 414.7230224609375,
+        "mean_rmse": 342.6959332604137,
+        "verdict": "RADIATION_OR_OUTPUT_REAL_BUG"
+      },
+      "HFX": {
+        "first_divergence_hour": 1,
+        "max_max_abs": 2984.791748046875,
+        "mean_rmse": 131.61197983374637,
+        "verdict": "SURFACE_FLUX_REAL_BUG"
+      },
+      "LH": {
+        "first_divergence_hour": 1,
+        "max_max_abs": 735.1005935668945,
+        "mean_rmse": 64.25670069007775,
+        "verdict": "SURFACE_FLUX_REAL_BUG"
+      },
+      "LU_INDEX": {
+        "first_divergence_hour": null,
+        "max_max_abs": 0.0,
+        "mean_rmse": 0.0,
+        "verdict": "BITWISE_MATCH"
+      },
+      "PBLH": {
+        "first_divergence_hour": 1,
+        "max_max_abs": 986.0338745117188,
+        "mean_rmse": 411.71659455625155,
+        "verdict": "PBL_DIAGNOSTIC_REAL_BUG"
+      },
+      "PSFC": {
+        "first_divergence_hour": 1,
+        "max_max_abs": 654.875,
+        "mean_rmse": 448.9830840015671,
+        "verdict": "DIVERGES"
+      },
+      "QVAPOR": {
+        "first_divergence_hour": 1,
+        "max_max_abs": 0.009780770866200328,
+        "mean_rmse": 0.0014467116977556545,
+        "verdict": "LOW_RELATIVE_DIVERGENCE_BUT_NOT_BITWISE"
+      },
+      "SWDOWN": {
+        "first_divergence_hour": 1,
+        "max_max_abs": 1122.4453125,
+        "mean_rmse": 509.5374240541832,
+        "verdict": "RADIATION_OR_OUTPUT_REAL_BUG"
+      },
+      "T2": {
+        "first_divergence_hour": 1,
+        "max_max_abs": 30.12847900390625,
+        "mean_rmse": 15.108215640703374,
+        "verdict": "DIVERGES"
+      },
+      "TSK": {
+        "first_divergence_hour": null,
+        "max_max_abs": 0.0,
+        "mean_rmse": 0.0,
+        "verdict": "BITWISE_MATCH"
+      },
+      "U": {
+        "first_divergence_hour": 1,
+        "max_max_abs": 57.72237968444824,
+        "mean_rmse": 10.191580152352449,
+        "verdict": "DIVERGES"
+      },
+      "U10": {
+        "first_divergence_hour": 1,
+        "max_max_abs": 29.352608680725098,
+        "mean_rmse": 6.374304532384891,
+        "verdict": "DIVERGES"
+      },
+      "V": {
+        "first_divergence_hour": 1,
+        "max_max_abs": 51.55219650268555,
+        "mean_rmse": 9.704625682113713,
+        "verdict": "DIVERGES"
+      },
+      "V10": {
+        "first_divergence_hour": 1,
+        "max_max_abs": 26.08137856423855,
+        "mean_rmse": 5.270719741867078,
+        "verdict": "DIVERGES"
+      },
+      "W": {
+        "first_divergence_hour": 1,
+        "max_max_abs": 2.6956440955400467,
+        "mean_rmse": 0.044339955513556246,
+        "verdict": "LOW_RELATIVE_DIVERGENCE_BUT_NOT_BITWISE"
+      },
+      "theta": {
+        "first_divergence_hour": 1,
+        "max_max_abs": 30.25408935546875,
+        "mean_rmse": 7.50392988504,
+        "verdict": "M11_THETA_IMPROVED_BUT_NOT_BITWISE"
+      }
+    },
+    "pipeline_verdict": "PIPELINE_PARTIAL",
+    "station_skill_summary": {
+      "T2": {
+        "gpu_rmse": 13.111946791392588,
+        "m10_gpu_rmse": 10.80126250539068
+      },
+      "U10": {
+        "gpu_rmse": 7.618270919252392,
+        "m10_gpu_rmse": 7.237992941570328
+      },
+      "V10": {
+        "gpu_rmse": 7.614133182228181,
+        "m10_gpu_rmse": 7.621687554701543
+      }
+    },
+    "theta_convention_audit": {
+      "conclusion": "GPU NetCDF T and WRF T were both detected as perturbation theta; M11 theta improvement is not a 300 K convention artifact.",
+      "gpu_State_theta_convention": "absolute potential temperature K in src/gpuwrf/contracts/state.py",
+      "gpu_raw_T_mean_range_K": [
+        48.33349696902134,
+        53.30349379565481
+      ],
+      "gpu_transforms": {
+        "theta = T + 300.0": 24
+      },
+      "gpu_wrfout_T_detected_reference_states": {
+        "perturbation_from_300K_base": 24
+      },
+      "wrf_T_detected_reference_states": {
+        "perturbation_from_300K_base": 24
+      },
+      "wrf_raw_T_mean_range_K": [
+        48.00458344445439,
+        48.46829999255537
+      ],
+      "wrf_transforms": {
+        "theta = T + 300.0": 24
+      }
+    },
+    "trace_status": "FAIL"
+  },
+  "verdict_evidence": "Theta 24h RMSE changed from 77.358953 K to 7.503930 K (90.30% reduction); trace still diverges in winds/physics fields.",
+  "version": "3.0",
+  "viability_caveats": [
+    "Pipeline verdict remains PIPELINE_PARTIAL because the M7 runner only emits station scores when --score is requested.",
+    "The divergence proof remains wrfout-level evidence, not operator-level WRF fixture evidence."
+  ],
+  "viability_verdict": "VIABLE_WITH_RESIDUAL_DIVERGENCE"
+}
