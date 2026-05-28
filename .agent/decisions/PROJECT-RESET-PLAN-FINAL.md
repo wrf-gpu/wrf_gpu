@@ -50,7 +50,13 @@ Each milestone names: definable numeric proof, weeks, Δ% completion gained, ris
 | **M9** | Operational-mode savepoint parity audit | `divergence_map.json` lists first bitwise-divergence operator in `_physics_boundary_step`, step, magnitude, side-by-side WRF Fortran trace, including SWDOWN/GLW/HFX/LH/PBLH/TSK/T2/U10/V10/PSFC/LU_INDEX comparisons | 3-4 | +5 | Medium *(was Low; critic re-rate)* |
 | **M10** | Static-field + LU_INDEX parity | `LU_INDEX/HGT/LANDMASK/XLAND/roughness/soil_category` bitwise vs WRF inputs; State pytree extended with `lu_index` leaf | 1-2 | +3 | Low |
 
-### Phase B — Atmospheric correctness (10-16 weeks, partly parallel)
+### Phase A.1 — Comparator audit (NEW, 2-4 days) — inserted 2026-05-28 per plan-critic PC1+PC4
+
+| # | Milestone | Definable proof | Days | Δ% | Risk |
+|---|---|---|---:|---:|---|
+| **M9.C** | Theta-convention + comparator audit | `divergence_map_v2.json` with post-correction RMSE under 4 theta-transforms (raw/raw, +300 both, +300 WRF only, +300 GPU only); 5 PC3 disambiguation tests applied | 2-4 days | +2 | Low (diagnostic, not code) |
+
+### Phase B — Atmospheric correctness (12-18 weeks, partly parallel) — re-estimated per plan-critic PC6
 
 | # | Milestone | Definable proof | Weeks | Δ% | Risk |
 |---|---|---|---:|---:|---|
@@ -70,7 +76,7 @@ Each milestone names: definable numeric proof, weeks, Δ% completion gained, ris
 
 | # | Milestone | Definable proof | Weeks | Δ% | Risk |
 |---|---|---|---:|---:|---|
-| **M16** | Prognostic Noah-MP on GPU | Multi-layer soil/snow/canopy thermal + moisture evolution; replaces hourly data replay; bitwise match vs WRF Noah-MP at 24 h on Canary | 8-14 | +14 | Very High *(critic re-rate — full physics port, not extension)* |
+| **M16** | Prognostic Noah-MP on GPU — **CONDITIONAL for v0.1.0 per ADR-030** | If decision tree at M19+M20 routes "deferred": no v0.1.0 deliverable, M16 moves to v0.2.0. If routes "mandatory": multi-layer soil/snow/canopy thermal + moisture evolution; bitwise match vs WRF Noah-MP at 24 h on Canary | 0 (deferred) – 14 (mandatory) | 0–14 | Very High *if mandatory* |
 
 ### Phase E — Skill recovery + microphysics (3-5 weeks)
 
