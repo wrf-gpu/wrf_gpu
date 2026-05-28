@@ -6,15 +6,18 @@ from dataclasses import dataclass
 from datetime import date, datetime
 from math import cos, pi
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Any, Mapping
 
 import numpy as np
 from netCDF4 import Dataset
 
+from gpuwrf.physics.surface_constants import CP_D, KARMAN, P0_PA, R_D_OVER_CP, XLV
+from gpuwrf.physics.surface_layer import surface_layer_with_diagnostics
 
 P0_THETA_OFFSET_K = 300.0
-CP_AIR_J_KG_K = 1004.0
-LV_J_KG = 2.5e6
+CP_AIR_J_KG_K = CP_D
+LV_J_KG = XLV
 DATE_STR_LEN = 19
 DEFAULT_SOIL_LAYERS = 4
 
@@ -549,9 +552,25 @@ def _build_output_fields(
     terrain = _grid_or_state_array(state, grid, ("HGT", "hgt", "terrain_height"), shape_xy)
     landmask = _landmask(state, shape_xy)
     lu_index = _field_array(state, ("LU_INDEX", "lu_index", "ivgtyp"), shape_xy, default=np.where(landmask > 0.5, 2.0, 17.0))
-    rhosfc = _field_array(state, ("rhosfc", "rho_surface"), shape_xy, default=1.2)
-    theta_flux = _field_array(state, ("theta_flux", "HFX_KIN"), shape_xy)
-    qv_flux = _field_array(state, ("qv_flux", "QFX_KIN"), shape_xy)
+    hfx = _optional_field_array(state, ("HFX", "hfx"), shape_xy)
+    lh = _optional_field_array(state, ("LH", "lh"), shape_xy)
+    if hfx is None or lh is None:
+        surface_fluxes = _surface_flux_fallbacks(
+            state=state,
+            grid=grid,
+            theta=theta,
+            qv=qv,
+            p_total=p_pert + p_base,
+            ph_total=ph_pert + ph_base,
+            u=u,
+            v=v,
+            landmask=landmask,
+            shape_xy=shape_xy,
+        )
+        if hfx is None:
+            hfx = surface_fluxes["HFX"]
+        if lh is None:
+            lh = surface_fluxes["LH"]
 
     fields = {
         "XLAT": xlat,
@@ -595,11 +614,67 @@ def _build_output_fields(
         "GLW": _field_array(state, ("GLW", "glw"), shape_xy),
         "PBLH": _field_array(state, ("PBLH", "pblh"), shape_xy),
         "UST": _field_array(state, ("UST", "ustar"), shape_xy),
-        "HFX": _field_array(state, ("HFX", "hfx"), shape_xy, default=theta_flux * rhosfc * CP_AIR_J_KG_K),
-        "LH": _field_array(state, ("LH", "lh"), shape_xy, default=qv_flux * rhosfc * LV_J_KG),
+        "HFX": hfx,
+        "LH": lh,
         "TSK": _field_array(state, ("TSK", "tsk", "t_skin"), shape_xy, default=theta[0]),
     }
     return {name: np.asarray(value, dtype=np.float32) for name, value in fields.items()}
+
+
+def _surface_flux_fallbacks(
+    *,
+    state: Any,
+    grid: Any,
+    theta: np.ndarray,
+    qv: np.ndarray,
+    p_total: np.ndarray,
+    ph_total: np.ndarray,
+    u: np.ndarray,
+    v: np.ndarray,
+    landmask: np.ndarray,
+    shape_xy: tuple[int, int],
+) -> dict[str, np.ndarray]:
+    """Recompute sfclay-style HFX/LH when direct WRF flux diagnostics are absent."""
+
+    u_mass = _unstagger_x(u)
+    v_mass = _unstagger_y(v)
+    dz = np.maximum((ph_total[1:, :, :] - ph_total[:-1, :, :]) / 9.80665, 1.0)
+    t_air0 = theta[0] * (np.maximum(p_total[0], 1.0) / P0_PA) ** R_D_OVER_CP
+    t_skin = _field_array(state, ("TSK", "tsk", "t_skin"), shape_xy, default=t_air0)
+    xland = _field_array(state, ("xland", "XLAND"), shape_xy, default=np.where(landmask > 0.5, 1.0, 2.0))
+    soil_moisture = _optional_field_array(state, ("soil_moisture", "SMOIS"), shape_xy)
+    mavail = _optional_field_array(state, ("mavail", "MAVAIL"), shape_xy)
+    if mavail is None:
+        mavail = soil_moisture if soil_moisture is not None else np.ones(shape_xy, dtype=np.float32)
+    column_state = SimpleNamespace(
+        u=np.moveaxis(u_mass, 0, -1),
+        v=np.moveaxis(v_mass, 0, -1),
+        theta=np.moveaxis(theta, 0, -1),
+        qv=np.moveaxis(qv, 0, -1),
+        p=np.moveaxis(p_total, 0, -1),
+        dz=np.moveaxis(dz, 0, -1),
+        t_skin=t_skin,
+        soil_moisture=soil_moisture,
+        xland=xland,
+        lakemask=_field_array(state, ("lakemask", "LAKEMASK"), shape_xy),
+        mavail=mavail,
+        roughness_m=_optional_field_array(state, ("roughness_m", "ZNT"), shape_xy),
+        ustar=_field_array(state, ("UST", "ustar"), shape_xy),
+        dx_m=float(_lookup(_lookup(grid, "projection"), "dx_m", _lookup(grid, "dx", 3000.0))),
+    )
+    diag = surface_layer_with_diagnostics(column_state)
+    ustar = np.asarray(diag.fluxes.ustar, dtype=np.float64)
+    rhosfc = np.asarray(diag.fluxes.rhosfc, dtype=np.float64)
+    fh = np.asarray(diag.fh, dtype=np.float64)
+    qv_flux = np.asarray(diag.fluxes.qv_flux, dtype=np.float64)
+
+    theta_air = theta[0].astype(np.float64)
+    theta_surface = np.asarray(t_skin, dtype=np.float64) * (P0_PA / np.maximum(p_total[0], 1.0)) ** R_D_OVER_CP
+    cpm = CP_AIR_J_KG_K * (1.0 + 0.8 * np.maximum(qv[0].astype(np.float64), 0.0))
+    aerodynamic_resistance = fh / np.maximum(KARMAN * ustar, 1.0e-12)
+    hfx = rhosfc * cpm * (theta_surface - theta_air) / np.maximum(aerodynamic_resistance, 1.0e-12)
+    lh = qv_flux * rhosfc * LV_J_KG
+    return {"HFX": hfx.astype(np.float32), "LH": lh.astype(np.float32)}
 
 
 def _perturbation_base_pair(
