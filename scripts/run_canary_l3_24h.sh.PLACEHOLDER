@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+cat >&2 <<'EOF'
+scripts/run_canary_l3_24h.sh is a contract placeholder.
+
+Intended M19 interface:
+  scripts/run_canary_l3_24h.sh --run-id <wrf_l3 run id> --run-root <path> --output-dir <path> --proof-dir <path> --score
+
+Expected outputs:
+  - hourly GPU forecast files for the selected L3 d02 run
+  - pipeline_run.json
+  - optional station-score proof objects for T2, U10, and V10
+  - wall-clock and bounds metadata
+
+M19 implements this.
+EOF
+
+exit 19
