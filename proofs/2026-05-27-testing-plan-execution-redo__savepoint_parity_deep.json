@@ -1,0 +1,58 @@
+{
+  "binary_intermediates_committed": false,
+  "binary_intermediates_note": "The HDF5 files emitted by m6b6_coupled_step_compare.py are generated intermediates and are not committed; the JSON comparison output is the retained proof object.",
+  "current_b6_evidence": {
+    "exists": true,
+    "outcome": "SEVENTH-COUPLED-STEP-PARITY-ACHIEVED",
+    "passed": true,
+    "path": "/tmp/wrf_gpu2_testexec2/.agent/sprints/2026-05-25-m6b6-coupled-step-parity/proof_coupled_step_parity.json",
+    "tier_savepoint_counts": {
+      "column": 10,
+      "golden": 10,
+      "patch16": 10
+    }
+  },
+  "deep_column100_command": {
+    "not_rerun": true,
+    "note": "Existing JSON comparison proof reused; binary HDF5 intermediates are not committed.",
+    "reused_output": ".agent/sprints/2026-05-27-testing-plan-execution-redo/savepoint_deep_column100.json"
+  },
+  "deep_column100_output": ".agent/sprints/2026-05-27-testing-plan-execution-redo/savepoint_deep_column100.json",
+  "generated_utc": "2026-05-28T00:36:28.702171Z",
+  "gpu_hours_used": 0.0,
+  "honesty_note": "B6 parity remains PASS. The redo optionally extends the column tier to 100 steps, but the 1000/10000 publication-depth gates are still unmet unless observed_max_depth reaches them.",
+  "observed_max_depth": 100,
+  "repo_commit": "9beec8efccee3b5e9f85601cc52f96b3dfe0d3b3",
+  "required_depths": [
+    100,
+    1000,
+    10000
+  ],
+  "schema": "PublicationHighPriorityProof",
+  "schema_version": 1,
+  "status": "FAIL_INSUFFICIENT_SAVEPOINT_DEPTH",
+  "test_id": "SAVEPOINT-PARITY-DEEP",
+  "thresholds": {
+    "existing_b6_10_step_parity": {
+      "passed": true,
+      "threshold": "B6 parity remains PASS as guardrail",
+      "value": 100.0
+    },
+    "step_10000_relative": {
+      "passed": false,
+      "threshold": "<1e-12 relative for all fields",
+      "value": null
+    },
+    "step_1000_relative": {
+      "passed": false,
+      "threshold": "<1e-12 relative for all fields",
+      "value": null
+    },
+    "step_100_bitwise": {
+      "passed": true,
+      "threshold": "max delta 0.0 at step 100",
+      "value": 100.0
+    }
+  },
+  "verdict": "FAIL"
+}

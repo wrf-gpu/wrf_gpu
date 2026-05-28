@@ -1,0 +1,12 @@
+{
+  "case_skill_paths": [
+    ".agent/sprints/2026-05-27-testing-plan-execution-redo/canary_runs/20260428/gpu_vs_cpu_skill_diff.json",
+    ".agent/sprints/2026-05-27-testing-plan-execution-redo/canary_runs/20260509/gpu_vs_cpu_skill_diff.json",
+    ".agent/sprints/2026-05-27-testing-plan-execution-redo/canary_runs/20260521/gpu_vs_cpu_skill_diff.json",
+    ".agent/sprints/2026-05-27-testing-plan-execution-redo/canary_runs/20260525/gpu_vs_cpu_skill_diff.json"
+  ],
+  "reason": "Per-hour first-divergence curves are not implemented in the current pubtest scorer; aggregate per-case skill diffs are listed instead.",
+  "schema": "PublicationFirstErrorGrowth",
+  "schema_version": 1,
+  "status": "FAIL_NOT_EMITTED"
+}
