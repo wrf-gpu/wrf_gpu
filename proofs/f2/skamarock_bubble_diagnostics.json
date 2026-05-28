@@ -1,0 +1,97 @@
+{
+  "blocked_reason": "JAX GPU backend is not visible; idealized dycore runs require GPU",
+  "case_id": "skamarock-wicker-1998-rising-thermal-contract-f2",
+  "case_name": "warm_bubble",
+  "checks": {
+    "gpu_available": {
+      "passed": false,
+      "threshold": "JAX GPU backend visible",
+      "value": 0.0
+    },
+    "initial_condition_finite": {
+      "passed": true,
+      "threshold": "analytic IC arrays finite",
+      "value": 1.0
+    }
+  },
+  "cpu_affinity": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "device": null,
+  "device_inventory": {
+    "default_backend": "cpu",
+    "devices": [
+      "cpu:0"
+    ],
+    "gpu_devices": [],
+    "ok": true
+  },
+  "initial_condition_stats": {
+    "pressure_pa": {
+      "dtype": "float64",
+      "finite": true,
+      "max": 98583.49348706468,
+      "min": 25744.339482300627,
+      "shape": [
+        40,
+        80
+      ]
+    },
+    "theta_k": {
+      "dtype": "float64",
+      "finite": true,
+      "max": 302.0,
+      "min": 300.0,
+      "shape": [
+        40,
+        80
+      ]
+    },
+    "theta_prime_k": {
+      "dtype": "float64",
+      "finite": true,
+      "max": 2.0,
+      "min": 0.0,
+      "shape": [
+        40,
+        80
+      ]
+    }
+  },
+  "interpretation": "The analytic initial condition was generated, but the dycore integration was not run because no JAX GPU backend was visible.",
+  "parameters": {
+    "bubble_center_x_m": 10000.0,
+    "bubble_center_z_m": 2000.0,
+    "bubble_radius_m": 2000.0,
+    "domain_height_m": 10000.0,
+    "domain_width_m": 20000.0,
+    "dx_m": 250.0,
+    "dz_m": 250.0,
+    "initial_u_v_w_m_s": 0.0,
+    "theta0_k": 300.0,
+    "theta_perturbation_max_k": 2.0
+  },
+  "plots": [
+    "proofs/f2/plots/warm_bubble_initial_theta_prime.ppm"
+  ],
+  "reference": {
+    "description": "Dry rising thermal: coherent mushroom-like rise by 500-1000 s, bounded theta prime, O(10 m/s) vertical velocity, horizontal symmetry.",
+    "sources": [
+      "https://www2.mmm.ucar.edu/people/skamarock/Papers/cv_20.pdf"
+    ]
+  },
+  "schema": "f2_idealized_case_verdict",
+  "schema_version": 1,
+  "snapshot_seconds": [
+    100.0,
+    250.0,
+    500.0
+  ],
+  "status": "BLOCKED_GPU_UNAVAILABLE",
+  "timesteps": 0,
+  "title": "Skamarock warm bubble verdict",
+  "verdict": "BLOCKED"
+}
