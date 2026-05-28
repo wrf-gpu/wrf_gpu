@@ -4,25 +4,28 @@ A GPU-native, WRF-compatible regional NWP system designed and built almost entir
 
 This is not a port of legacy WRF. It is a clean rewrite that targets the GPU memory hierarchy from day one and validates against WRF as an oracle rather than inheriting WRF's architecture.
 
-## Current status
+## Current status — PROJECT RESET 2026-05-28
 
-M0-M5 are closed. M6 is active and focused on dycore stabilization: S2/S2.1 did not produce a real d02 baseline because the d02 replay probe hangs with zero stdout/stderr, S2.2 is investigating that infrastructure blocker, S3-narrow reduced stabilizer provenance debt from 28 to 20 experiment-backed findings and raised source-backed findings from 8 to 37, S4-prep is building Tier-3 convergence infrastructure, and S5/S6 remain queued for Tier-4 comparison and closeout. M7 has a completed prologue (`m7-s0a`) but is not ready for implementation dispatch until M6 closes.
+M0-M7 closed. **v0.0.1 shipped to `github.com/wrf-gpu/wrf_gpu` 2026-05-28** with bitwise dycore savepoint parity at 100 coupled steps vs unmodified WRF v4 and a corrected **22.26× apples-to-apples speedup** vs 28-rank CPU WRF. The same release also documented an **operational skill regression**: T2 RMSE +161-378 %, U10 +214-370 %, V10 +177-353 % vs CPU WRF on a 5-day Canary case.
 
-### Where the project actually stands
+The principal's reading 2026-05-28: that is not a usable GPU port. The project is therefore **reset** to close the operational-skill gap. The active plan is **[`.agent/decisions/PROJECT-RESET-PLAN-FINAL.md`](.agent/decisions/PROJECT-RESET-PLAN-FINAL.md)**, merged from an Opus draft + a codex adversarial critique + a codex blinded plan-from-scratch (2026-05-28).
 
-The active dycore path is ADR-023, the conservative column solver, but ADR-023 is still **PROPOSED**. It is the unified path on main and is currently favored by elimination: the ADR-021 carry-expansion prototype only passed the old warm-bubble target through unphysical clamps, and the clamp-stripped honest test becomes nonfinite at step 2 with catastrophic theta and vertical-velocity growth. ADR-021 remains evidence, not the accepted architecture.
+### Where the project actually stands (2026-05-28)
 
-ADR-024 is also **PROPOSED**. It changes the warm-bubble harness from an amplitude gate into an operator-sanity diagnostic. The current honest warm-bubble verdict is `FAIL_PHYSICAL_BOUNDS` because `mu_perturbation_max_Pa` exceeds the 50 kPa bound; the old `[5, 10] m/s` amplitude band is no longer a binding architecture gate. M6 close is Tier-3 convergence plus initial Tier-4 RMSE/consistency, not a single warm-bubble number.
-
-The source-mining lock is [`.agent/decisions/source_mining_operator_table.md`](.agent/decisions/source_mining_operator_table.md). It identifies the remaining operator debts, including the temporary `_mu_continuity_increment` limiter and the stabilizer cleanup still deferred after S3-narrow.
+- **Position**: ~33 % of the way to "Canary L2/L3 forecasts statistically equivalent to CPU WRF v4 under a TOST equivalence test on a ≥15-case seasonal ensemble" — both critic and blinded independently converged on this number.
+- **Rails are built**: foundation, dycore-in-isolation, governance, multi-agent orchestration. The dycore parity is real and rare.
+- **Operational stack is two-thirds remaining work**: physics couplers savepoint-verified, surface-flux + MYNN parity, radiation + land-surface diurnal, lateral boundary completeness, conservation closure, prognostic Noah-MP, static-field/LU_INDEX parity, idealized-case suite, statistics design, validation corpus, TOST equivalence ensemble.
+- **Roadmap M8 → M23** in 7 phases over **32-45 honest weeks** (target Q1-Q2 2027). The earlier 17-23 week target is rejected as not honest after the critic + blinded review.
+- **Publish repo + v0.0.1 paper/tag are frozen** until M23 (v0.1.0).
 
 ## Core goals (immutable)
 
-1. **GPU-native architecture.** Whole-state device residency after init. No host/device transfers inside the timestep loop without an ADR. Fused timestep-scale kernels, not 200,000-launch micro-kernels.
-2. **Performance target: 4–8× wall-clock vs the 28-rank CPU WRF baseline** on the same workstation. (The previous attempt, `../wrf_gpu/`, hit a 5.5× literature ceiling on OpenACC and never reached it.)
-3. **Validation against WRF, not bitwise reproducibility.** Four-tier pyramid: micro fixture parity → physical invariants → short-run / timestep convergence → probabilistic ensemble consistency.
-4. **Forkable and auditable.** Every claim has a proof object on disk. Every architecture decision has an ADR with cross-model review.
-5. **Manager-led, agent-executed.** The user is consulted only at milestone closure and on genuine blockers. All sprint work runs autonomously in a self-paced loop.
+1. **GPU-native architecture.** Whole-state device residency after init. No host/device transfers inside the timestep loop without an ADR. Fused timestep-scale kernels, not 200 000-launch micro-kernels.
+2. **Operational skill parity with CPU WRF v4** on Canary L2/L3 cases: 24-72 h RMSE on T2, U10, V10 is **statistically equivalent under TOST** at predeclared operational margins on a **≥ 15-case seasonal ensemble**.
+3. **Performance ≥ 10× vs 28-rank CPU WRF** on the same workstation, re-certified after every correctness fix (no stale speedup claims). Current corrected number: 22.26× on the d02 5-day Canary case (pre-skill-fix).
+4. **Validation against WRF, not bitwise reproducibility.** Tiered pyramid: micro fixture parity → physical invariants → short-run / timestep convergence → station-RMSE TOST equivalence.
+5. **Forkable and auditable.** Every claim has a proof object on disk. Every architecture decision has an ADR with cross-model review.
+6. **Manager-led, agent-executed.** The user is consulted only at milestone closure and on genuine blockers. All sprint work runs autonomously, with workers auto-notifying the manager on exit via tmux send-keys.
 
 ## Where to look first (in this order)
 
