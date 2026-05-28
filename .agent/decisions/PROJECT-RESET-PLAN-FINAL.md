@@ -137,6 +137,22 @@ Each sprint close MUST satisfy, with a `proof.json` listing measured values:
 
 This is the **one-way ratchet**: invariants only tighten, never loosen. The merge gate blocks if any invariant trips.
 
+### Diagnostic harness — project-level single-source-of-truth (2026-05-28)
+
+From 2026-05-28 onward, the **comprehensive diagnostic harness**
+(`src/gpuwrf/diagnostics/comprehensive_harness.py`, driver
+`scripts/run_diagnostic_harness.py`, artifact
+`proofs/diagnostic_harness/diagnostic_report.json`) is the project-level
+single-source-of-truth for "what is wrong with the operational forecast?".
+Every sprint that touches dycore, physics, coupling, or boundary code MUST
+attach a fresh `diagnostic_report.json` to its proof object: the manager
+opens that file top-to-bottom (`headline_diagnosis` → `first_failure_attribution`
+→ `operator_attribution_24h` → `internal_consistency_24h` →
+`coupling_chain_audit` → `next_sprint_recommendations`) and uses it to
+decide go/no-go. The harness is opt-in via a `diagnostic_on: bool` static
+JIT argument so production paths pay zero overhead. Design contract at
+`.agent/sprints/2026-05-28-diagnostic-harness/design.md`.
+
 ---
 
 ## Multi-AI verification (per critic C7)
