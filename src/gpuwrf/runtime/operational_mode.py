@@ -28,6 +28,7 @@ from gpuwrf.dynamics.acoustic_wrf import (
     moisture_coupling_factors,
 )
 from gpuwrf.dynamics.core.acoustic import AcousticCoreConfig, AcousticCoreState, acoustic_substep_core
+from gpuwrf.dynamics.core.advance_w import dry_cqw
 from gpuwrf.dynamics.core.calc_p_rho import CalcPRhoStep0, calc_p_rho_wrf
 from gpuwrf.dynamics.core.coupled import CoupledCoreConfig, coupled_timestep_core
 from gpuwrf.dynamics.core.small_step_finish import small_step_finish_wrf
@@ -561,6 +562,23 @@ def _acoustic_core_state_from_prep(
         cf2=namelist.metrics.cf2,
         cf3=namelist.metrics.cf3,
         theta_work_reference=prep.theta_1,
+        c2a=prep.c2a,
+        cqw=dry_cqw(
+            int(prep.theta_work.shape[0]),
+            int(prep.theta_work.shape[1]),
+            int(prep.theta_work.shape[2]),
+            dtype=prep.theta_work.dtype,
+        ),
+        c1f=namelist.metrics.c1f,
+        c2f=namelist.metrics.c2f,
+        rdn=namelist.metrics.rdn,
+        phb=state.ph_total - state.ph_perturbation,
+        ph_1=prep.ph_1,
+        ht=jnp.zeros_like(prep.mut),
+        pm1=pressure.pm1,
+        ru_m=jnp.zeros_like(prep.u_work),
+        rv_m=jnp.zeros_like(prep.v_work),
+        ww_m=jnp.zeros_like(carry.ww),
     )
 
 
@@ -670,12 +688,21 @@ def _acoustic_scan(
 ) -> OperationalCarry:
     acoustic = _acoustic_core_state_from_prep(carry, prep, pressure, namelist, tendencies)
     if bool(namelist.use_vertical_solver):
+        # WRF calc_coef_w uses the FULL dry mass ``mut`` (solve_em.F:2676-2681),
+        # real ``c2a`` from small_step_prep, and the real dry ``cqw``.
+        cqw_field = dry_cqw(
+            int(prep.theta_work.shape[0]),
+            int(prep.theta_work.shape[1]),
+            int(prep.theta_work.shape[2]),
+            dtype=prep.theta_work.dtype,
+        )
         a, alpha, gamma = calc_coef_w_wrf_coefficients(
-            prep.muts,
+            prep.mut,
             namelist.metrics,
             dt=float(stage.dts_rk),
             epssm=float(namelist.epssm),
             top_lid=bool(namelist.top_lid),
+            cqw=cqw_field,
             c2a=prep.c2a,
         )
 
@@ -692,6 +719,7 @@ def _acoustic_scan(
                     epssm=float(namelist.epssm),
                     top_lid=bool(namelist.top_lid),
                 ),
+                cqw=cqw_field,
             ), None
 
         acoustic, _ = jax.lax.scan(body, acoustic, xs=None, length=int(stage.number_of_small_timesteps))

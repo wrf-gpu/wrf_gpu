@@ -45,22 +45,31 @@ from gpuwrf.coupling.physics_couplers import mynn_adapter, rrtmg_adapter, surfac
 from gpuwrf.diagnostics.comprehensive_harness import DIAGNOSTIC_OPERATORS
 from gpuwrf.dynamics.advection import compute_advection_tendencies, halo_spec
 from gpuwrf.dynamics.acoustic_wrf import calc_coef_w_wrf_coefficients
+from gpuwrf.dynamics.core.advance_w import dry_cqw
+from gpuwrf.dynamics.core import acoustic as acoustic_module
 from gpuwrf.dynamics.core.acoustic import (
     AcousticCoreConfig,
     AcousticCoreState,
-    _advance_geopotential,
     _decouple_theta_after_advance,
-    _diagnose_pressure,
     _mass_couple_theta_before_advance,
-    _ph_tend_increment,
+    acoustic_substep_core,
     advance_uv_wrf,
     advance_mu_t_core,
     w_solve_core,
 )
 from gpuwrf.dynamics.core.calc_p_rho import calc_p_rho_wrf
 from gpuwrf.dynamics.core.small_step_prep import small_step_prep_wrf
-from gpuwrf.dynamics.small_step_scratch import ScratchInputs, build_scratch_state
 from gpuwrf.dynamics.tendencies import add_scaled_tendencies
+
+
+# AC1 no-stub audit: the three legacy approximations must be absent from the
+# operational acoustic call path. Importing/using them here would re-introduce
+# the stubbed path, so we assert they are gone from the core module.
+_LEGACY_STUB_NAMES = ("_advance_geopotential", "_diagnose_pressure", "_ph_tend_increment")
+NO_STUB_AUDIT = {
+    name: (not hasattr(acoustic_module, name)) for name in _LEGACY_STUB_NAMES
+}
+NO_STUB_AUDIT["all_removed"] = all(NO_STUB_AUDIT[name] for name in _LEGACY_STUB_NAMES)
 from gpuwrf.integration.d02_replay import build_replay_case
 from gpuwrf.runtime.operational_mode import (
     OperationalNamelist,
@@ -490,162 +499,6 @@ def _record_carry(
     )
 
 
-def _instrumented_acoustic_substep(
-    recorder: AuditRecorder,
-    carry: OperationalCarry,
-    namelist: OperationalNamelist,
-    dt_sub: float,
-    *,
-    step: int,
-    rk_stage: int,
-    acoustic_substep: int,
-    stage_factor: float,
-    expected_theta_1: jax.Array | None,
-) -> OperationalCarry:
-    state = apply_halo(carry.state, halo_spec(namelist.grid))
-    theta_offset = _theta_base_offset(state.theta)
-    acoustic = _acoustic_core_state(carry.replace(state=state), namelist)
-    base_pressure = jnp.asarray(state.p_total, dtype=jnp.float64) - jnp.asarray(state.p_perturbation, dtype=jnp.float64)
-    coeff_mut = acoustic.coef_mut if acoustic.coef_mut is not None else acoustic.muts
-    a, alpha, gamma = calc_coef_w_wrf_coefficients(
-        coeff_mut,
-        namelist.metrics,
-        dt=float(dt_sub),
-        epssm=float(namelist.epssm),
-        top_lid=bool(namelist.top_lid),
-    )
-    cfg = AcousticCoreConfig(
-        dt=float(dt_sub),
-        dx=float(namelist.grid.projection.dx_m),
-        dy=float(namelist.grid.projection.dy_m),
-        epssm=float(namelist.epssm),
-        top_lid=bool(namelist.top_lid),
-    )
-
-    theta_old = acoustic.theta
-    mu_old = acoustic.mu
-    theta_mass_before = _theta_mass(acoustic)
-    explicit_delta = _explicit_theta_delta(acoustic, dt_sub)
-
-    coupled_state = acoustic.replace(theta=_mass_couple_theta_before_advance(acoustic))
-    advanced = advance_mu_t_core(coupled_state, cfg)
-    after_mu_t = acoustic.replace(
-        mu=advanced["mu"],
-        mudf=advanced["mudf"],
-        muts=advanced["muts"],
-        muave=advanced["muave"],
-        ww=advanced["ww"],
-        theta=advanced["theta"],
-    )
-    recorder.record(
-        after_mu_t,
-        step=step,
-        operator="advance_mu_t",
-        carry_mu_save=carry.mu_save,
-        base_pressure=base_pressure,
-        rk_stage=rk_stage,
-        acoustic_substep=acoustic_substep,
-        stage_factor=stage_factor,
-        theta_mass_before=theta_mass_before,
-        explicit_theta_delta=explicit_delta,
-        expected_theta_1=expected_theta_1,
-    )
-
-    theta_new = _decouple_theta_after_advance(acoustic, advanced["theta"], advanced["muts"])
-    after_decouple = after_mu_t.replace(theta=theta_new, theta_ave=theta_new)
-    recorder.record(
-        after_decouple,
-        step=step,
-        operator="_decouple_theta_after_advance",
-        carry_mu_save=carry.mu_save,
-        base_pressure=base_pressure,
-        rk_stage=rk_stage,
-        acoustic_substep=acoustic_substep,
-        stage_factor=stage_factor,
-        expected_theta_1=expected_theta_1,
-    )
-
-    w_solved = w_solve_core(acoustic, a=a, alpha=alpha, gamma=gamma)
-    after_w_solve = after_decouple.replace(w=w_solved)
-    recorder.record(
-        after_w_solve,
-        step=step,
-        operator="w_solve_core",
-        carry_mu_save=carry.mu_save,
-        base_pressure=base_pressure,
-        rk_stage=rk_stage,
-        acoustic_substep=acoustic_substep,
-        stage_factor=stage_factor,
-        expected_theta_1=expected_theta_1,
-    )
-
-    ph_next = _advance_geopotential(acoustic, w_solved, cfg)
-    p_next = _diagnose_pressure(acoustic, advanced["mu"])
-    after_pressure = after_w_solve.replace(ph=ph_next, p=p_next)
-    recorder.record(
-        after_pressure,
-        step=step,
-        operator="_diagnose_pressure",
-        carry_mu_save=carry.mu_save,
-        base_pressure=base_pressure,
-        rk_stage=rk_stage,
-        acoustic_substep=acoustic_substep,
-        stage_factor=stage_factor,
-        expected_theta_1=expected_theta_1,
-    )
-
-    ph_increment = _ph_tend_increment(theta_old, theta_new, acoustic.ph_tend)
-    scratch = build_scratch_state(
-        ScratchInputs(
-            theta_old=theta_old,
-            theta_new=theta_new,
-            t_2ave_prev=acoustic.t_2ave,
-            ww_old=acoustic.ww,
-            ww_new=advanced["ww"],
-            mu_old=mu_old,
-            mu_new=advanced["mu"],
-            mut=acoustic.mut,
-            muave_prev=acoustic.muave,
-            muts_prev=acoustic.muts,
-            ph_tend_old=acoustic.ph_tend,
-            ph_tend_increment=ph_increment,
-            u_current=acoustic.u,
-            v_current=acoustic.v,
-            w_current=w_solved,
-            ph_current=acoustic.ph,
-            epssm=float(cfg.epssm),
-        )
-    )
-    next_acoustic = acoustic.replace(
-        mu=advanced["mu"],
-        mudf=advanced["mudf"],
-        muts=advanced["muts"],
-        muave=advanced["muave"],
-        ww=scratch["ww"],
-        theta=theta_new,
-        theta_ave=theta_new,
-        ph_tend=scratch["ph_tend"],
-        w=w_solved,
-        ph=ph_next,
-        p=p_next,
-        t_2ave=scratch["t_2ave"],
-    )
-    recorder.note_acoustic_uv_delta(acoustic, next_acoustic)
-    next_carry = _carry_from_acoustic_core(next_acoustic, state, theta_offset)
-    _record_carry(
-        recorder,
-        next_carry,
-        namelist,
-        step=step,
-        operator="acoustic_substep_commit",
-        rk_stage=rk_stage,
-        acoustic_substep=acoustic_substep,
-        stage_factor=stage_factor,
-        expected_theta_1=expected_theta_1,
-    )
-    return next_carry
-
-
 def _instrumented_prepared_acoustic_substep(
     recorder: AuditRecorder,
     acoustic: AcousticCoreState,
@@ -659,7 +512,18 @@ def _instrumented_prepared_acoustic_substep(
     acoustic_substep: int,
     stage_factor: float,
     expected_theta_1: jax.Array | None,
+    a: jax.Array,
+    alpha: jax.Array,
+    gamma: jax.Array,
+    cqw: jax.Array,
 ) -> AcousticCoreState:
+    """Record one WRF-faithful acoustic substep via the production core.
+
+    The substep is the single ``acoustic_substep_core`` call (no stubs); the
+    recorder samples ``advance_uv`` and the committed state so the audit still
+    localises which operator first breaches an invariant.
+    """
+
     cfg = AcousticCoreConfig(
         dt=float(dt_sub),
         dx=float(namelist.grid.projection.dx_m),
@@ -668,12 +532,16 @@ def _instrumented_prepared_acoustic_substep(
         top_lid=bool(namelist.top_lid),
     )
 
+    theta_mass_before = _theta_mass(acoustic)
+    explicit_delta = _explicit_theta_delta(acoustic, dt_sub)
+
     after_uv = advance_uv_wrf(
         acoustic,
         dts_rk=float(dt_sub),
         dx=float(namelist.grid.projection.dx_m),
         dy=float(namelist.grid.projection.dy_m),
         top_lid=bool(namelist.top_lid),
+        emdiv=0.01,
     )
     recorder.record(
         after_uv,
@@ -687,25 +555,17 @@ def _instrumented_prepared_acoustic_substep(
         expected_theta_1=expected_theta_1,
     )
 
-    theta_old = after_uv.theta
-    mu_old = after_uv.mu
-    theta_mass_before = _theta_mass(after_uv)
-    explicit_delta = _explicit_theta_delta(after_uv, dt_sub)
-
-    coupled_state = after_uv.replace(theta=_mass_couple_theta_before_advance(after_uv))
-    advanced = advance_mu_t_core(coupled_state, cfg)
-    theta_new = _decouple_theta_after_advance(after_uv, advanced["theta"], advanced["muts"])
-    after_mu_t = after_uv.replace(
-        mu=advanced["mu"],
-        mudf=advanced["mudf"],
-        muts=advanced["muts"],
-        muave=advanced["muave"],
-        ww=advanced["ww"],
-        theta=theta_new,
-        theta_coupled_work=advanced["theta"],
+    next_acoustic = acoustic_substep_core(
+        acoustic,
+        a=a,
+        alpha=alpha,
+        gamma=gamma,
+        cfg=cfg,
+        cqw=cqw,
     )
+    recorder.note_acoustic_uv_delta(acoustic, next_acoustic)
     recorder.record(
-        after_mu_t,
+        next_acoustic,
         step=step,
         operator="advance_mu_t",
         carry_mu_save=carry_mu_save,
@@ -717,95 +577,6 @@ def _instrumented_prepared_acoustic_substep(
         explicit_theta_delta=explicit_delta,
         expected_theta_1=expected_theta_1,
     )
-
-    after_decouple = after_mu_t.replace(theta=theta_new, theta_ave=theta_new)
-    recorder.record(
-        after_decouple,
-        step=step,
-        operator="_decouple_theta_after_advance",
-        carry_mu_save=carry_mu_save,
-        base_pressure=base_pressure,
-        rk_stage=rk_stage,
-        acoustic_substep=acoustic_substep,
-        stage_factor=stage_factor,
-        expected_theta_1=expected_theta_1,
-    )
-
-    coeff_mut = after_uv.coef_mut if after_uv.coef_mut is not None else after_uv.muts
-    a, alpha, gamma = calc_coef_w_wrf_coefficients(
-        coeff_mut,
-        namelist.metrics,
-        dt=float(dt_sub),
-        epssm=float(namelist.epssm),
-        top_lid=bool(namelist.top_lid),
-    )
-    w_solved = w_solve_core(after_uv, a=a, alpha=alpha, gamma=gamma)
-    after_w_solve = after_decouple.replace(w=w_solved)
-    recorder.record(
-        after_w_solve,
-        step=step,
-        operator="w_solve_core",
-        carry_mu_save=carry_mu_save,
-        base_pressure=base_pressure,
-        rk_stage=rk_stage,
-        acoustic_substep=acoustic_substep,
-        stage_factor=stage_factor,
-        expected_theta_1=expected_theta_1,
-    )
-
-    ph_next = _advance_geopotential(after_uv, w_solved, cfg)
-    p_next = _diagnose_pressure(after_uv, advanced["mu"])
-    after_pressure = after_w_solve.replace(ph=ph_next, p=p_next)
-    recorder.record(
-        after_pressure,
-        step=step,
-        operator="_diagnose_pressure",
-        carry_mu_save=carry_mu_save,
-        base_pressure=base_pressure,
-        rk_stage=rk_stage,
-        acoustic_substep=acoustic_substep,
-        stage_factor=stage_factor,
-        expected_theta_1=expected_theta_1,
-    )
-
-    ph_increment = _ph_tend_increment(theta_old, theta_new, after_uv.ph_tend)
-    scratch = build_scratch_state(
-        ScratchInputs(
-            theta_old=theta_old,
-            theta_new=theta_new,
-            t_2ave_prev=after_uv.t_2ave,
-            ww_old=after_uv.ww,
-            ww_new=advanced["ww"],
-            mu_old=mu_old,
-            mu_new=advanced["mu"],
-            mut=after_uv.mut,
-            muave_prev=after_uv.muave,
-            muts_prev=after_uv.muts,
-            ph_tend_old=after_uv.ph_tend,
-            ph_tend_increment=ph_increment,
-            u_current=after_uv.u,
-            v_current=after_uv.v,
-            w_current=w_solved,
-            ph_current=after_uv.ph,
-            epssm=float(cfg.epssm),
-        )
-    )
-    next_acoustic = after_uv.replace(
-        mu=advanced["mu"],
-        mudf=advanced["mudf"],
-        muts=advanced["muts"],
-        muave=advanced["muave"],
-        ww=scratch["ww"],
-        theta=theta_new,
-        theta_coupled_work=advanced["theta"],
-        theta_ave=theta_new,
-        ph_tend=scratch["ph_tend"],
-        w=w_solved,
-        ph=ph_next,
-        p=p_next,
-        t_2ave=scratch["t_2ave"],
-    )
-    recorder.note_acoustic_uv_delta(acoustic, next_acoustic)
     recorder.record(
         next_acoustic,
         step=step,
@@ -873,6 +644,20 @@ def _instrumented_rk_scan_step(
         )
         expected_theta_1 = theta_rk1_start if rk_stage in (2, 3) else None
         base_pressure = candidate.p_total - candidate.p_perturbation
+        # WRF calc_coef_w: real mut, real c2a, real cqw, built once per RK stage.
+        nz_a = int(acoustic.theta.shape[0])
+        ny_a = int(acoustic.theta.shape[1])
+        nx_a = int(acoustic.theta.shape[2])
+        cqw_field = dry_cqw(nz_a, ny_a, nx_a, dtype=acoustic.theta.dtype)
+        a, alpha, gamma = calc_coef_w_wrf_coefficients(
+            prep.mut,
+            namelist.metrics,
+            dt=float(dts_rk),
+            epssm=float(namelist.epssm),
+            top_lid=bool(namelist.top_lid),
+            cqw=cqw_field,
+            c2a=prep.c2a,
+        )
         recorder.record(
             acoustic,
             step=step,
@@ -896,6 +681,10 @@ def _instrumented_rk_scan_step(
                 acoustic_substep=substep,
                 stage_factor=factor,
                 expected_theta_1=expected_theta_1,
+                a=a,
+                alpha=alpha,
+                gamma=gamma,
+                cqw=cqw_field,
             )
         carry = _carry_from_finished_stage(carry.replace(state=candidate), prep, acoustic)
         carry = carry.replace(state=apply_halo(carry.state, halo_spec(namelist.grid)))

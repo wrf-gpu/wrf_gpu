@@ -21,9 +21,10 @@ from jax import config
 import jax.numpy as jnp
 
 from gpuwrf.contracts.grid import DycoreMetrics
-from gpuwrf.dynamics.acoustic_wrf import GRAVITY_M_S2, calc_coef_w_wrf_coefficients
+from gpuwrf.dynamics.acoustic_wrf import calc_coef_w_wrf_coefficients
+from gpuwrf.dynamics.core.advance_w import GRAVITY_M_S2, advance_w_wrf, dry_cqw, pg_buoy_w_dry
+from gpuwrf.dynamics.core.calc_p_rho import calc_p_rho_step
 from gpuwrf.dynamics.mu_t_advance import AdvanceMuTInputs, advance_mu_t_wrf
-from gpuwrf.dynamics.small_step_scratch import ScratchInputs, build_scratch_state
 from gpuwrf.dynamics.tridiag_solve import thomas_solve_scan
 
 
@@ -114,6 +115,19 @@ class AcousticCoreState:
     cf3: jax.Array | None = None
     theta_work_reference: jax.Array | None = None
     theta_coupled_work: jax.Array | None = None
+    # WRF advance_w inputs (F7 acoustic core)
+    c2a: jax.Array | None = None
+    cqw: jax.Array | None = None
+    c1f: jax.Array | None = None
+    c2f: jax.Array | None = None
+    rdn: jax.Array | None = None
+    phb: jax.Array | None = None
+    ph_1: jax.Array | None = None
+    ht: jax.Array | None = None
+    pm1: jax.Array | None = None
+    ru_m: jax.Array | None = None
+    rv_m: jax.Array | None = None
+    ww_m: jax.Array | None = None
 
     @classmethod
     def from_mapping(cls, values: dict[str, object]) -> "AcousticCoreState":
@@ -272,13 +286,17 @@ def advance_uv_wrf(
     dx: float = 1.0,
     dy: float = 1.0,
     top_lid: bool = False,
+    emdiv: float = 0.0,
 ) -> AcousticCoreState:
     """Advance coupled perturbation ``u/v`` like WRF ``advance_uv``.
 
     Source: WRF ``dyn_em/module_small_step_em.F:654-942``.  The routine adds
     RK-stage large-step momentum tendencies and then applies the small-step
     horizontal pressure-gradient terms before ``advance_mu_t`` consumes the
-    updated mass fluxes.
+    updated mass fluxes.  The external-mode divergence-damping term
+    (``mudf``/``emdiv``; WRF ``:808-810``, ``:866-869``, ``:879-880``,
+    ``:940-942``) is added when ``emdiv > 0`` and ``state.mudf`` is the WRF
+    in-loop divergence-damping mass tendency from ``advance_mu_t``.
     """
 
     del prep
@@ -323,6 +341,12 @@ def advance_uv_wrf(
     )
     dpx = dpx + (msfux / state.msfuy)[None, :, :] * rdx * (php_right_x - php_left_x) * bracket_x
     u = u - dts * cqu * dpx
+    if float(emdiv) != 0.0:
+        # WRF :808-810, :868 -- mudf_xy = -emdiv*dx*(mudf(i)-mudf(i-1))/msfuy ;
+        # u += c1h(k)*mudf_xy.  mudf is a (ny, nx) mass tendency from advance_mu_t.
+        mudf_l_x, mudf_r_x = _x_face_pair_2d(state.mudf)
+        mudf_xy_u = -float(emdiv) * float(dx) * (mudf_r_x - mudf_l_x) / state.msfuy
+        u = u + state.c1h[:, None, None] * mudf_xy_u[None, :, :]
 
     ph_south_y, ph_north_y = _y_face_pair_3d(state.ph)
     p_south_y, p_north_y = _y_face_pair_3d(state.p)
@@ -343,6 +367,13 @@ def advance_uv_wrf(
     )
     dpy = dpy + (msfvy / msfvx)[None, :, :] * rdy * (php_north_y - php_south_y) * bracket_y
     v = v - dts * cqv * dpy
+    if float(emdiv) != 0.0:
+        # WRF :879-880, :942 -- mudf_xy = -emdiv*dy*(mudf(j)-mudf(j-1))*msfvx_inv ;
+        # v += c1h(k)*mudf_xy.
+        mudf_s_y, mudf_n_y = _y_face_pair_2d(state.mudf)
+        msfvx_inv = state.msfvx_inv
+        mudf_xy_v = -float(emdiv) * float(dy) * (mudf_n_y - mudf_s_y) * msfvx_inv
+        v = v + state.c1h[:, None, None] * mudf_xy_v[None, :, :]
     return state.replace(u=u, v=v)
 
 
@@ -377,29 +408,21 @@ def _decouple_theta_after_advance(state: AcousticCoreState, theta_mass: jax.Arra
     return numerator / denominator
 
 
-def _ph_tend_increment(theta_old: jax.Array, theta_new: jax.Array, ph_tend: jax.Array) -> jax.Array:
-    """Build the M6B3-bound geopotential tendency increment."""
+def _decouple_theta_for_finish(state: AcousticCoreState, theta_mass: jax.Array, muts_new: jax.Array) -> jax.Array:
+    """Project coupled theta work back to perturbation theta (diagnostic view).
 
-    theta_delta = jnp.asarray(theta_new) - jnp.asarray(theta_old)
-    increment = jnp.zeros_like(ph_tend)
-    return increment.at[: theta_delta.shape[0], :, :].set(0.01 * theta_delta)
+    This mirrors WRF ``small_step_finish`` theta reconstruction for the
+    operational physical-theta carry, but the canonical decouple happens inside
+    :func:`gpuwrf.dynamics.core.small_step_finish.small_step_finish_wrf`.
+    """
 
-
-def _advance_geopotential(state: AcousticCoreState, w_next: jax.Array, cfg: AcousticCoreConfig) -> jax.Array:
-    """Advance WRF perturbation geopotential after the implicit w solve."""
-
-    ph_delta = GRAVITY_M_S2 * float(cfg.dt) * (
-        0.5 * (1.0 - float(cfg.epssm)) * state.w
-        + 0.5 * (1.0 + float(cfg.epssm)) * w_next
-    )
-    return state.ph + ph_delta
+    numerator = theta_mass + state.theta_1 * (state.c1h[:, None, None] * state.mut[None, :, :] + state.c2h[:, None, None])
+    denominator = state.c1h[:, None, None] * muts_new[None, :, :] + state.c2h[:, None, None]
+    return numerator / denominator
 
 
-def _diagnose_pressure(state: AcousticCoreState, mu_perturbation: jax.Array) -> jax.Array:
-    """Refresh resident perturbation pressure from eta-layer dry-mass change."""
-
-    mu_delta = jnp.asarray(mu_perturbation) - jnp.asarray(state.mu)
-    return state.p + jnp.abs(state.dnw)[:, None, None] * mu_delta[None, :, :]
+# Back-compat alias for callers/tests that referenced the old name.
+_decouple_theta_after_advance = _decouple_theta_for_finish
 
 
 def acoustic_substep_core(
@@ -409,61 +432,168 @@ def acoustic_substep_core(
     alpha: jax.Array,
     gamma: jax.Array,
     cfg: AcousticCoreConfig,
+    cqw: jax.Array | None = None,
+    emdiv: float = 0.01,
+    smdiv: float = 0.1,
 ) -> AcousticCoreState:
-    """Compose one WRF-shaped acoustic substep."""
+    """Compose one WRF-faithful acoustic substep.
 
+    WRF cadence (``solve_em.F:3065-4206``): ``advance_uv`` -> ``advance_mu_t``
+    -> ``advance_w`` -> ``sumflux`` -> ``calc_p_rho(step=iteration)``.  All of
+    ``u``, ``v``, ``w``, ``ph``, ``theta`` are the *coupled* small-step work
+    arrays; ``mu`` is the perturbation dry-mass work array.  ``a/alpha/gamma``
+    are the ``calc_coef_w`` coefficients built once per RK stage with real
+    ``c2a``/``cqw``.
+    """
+
+    # --- 1. advance_uv (with external-mode divergence damping) ---
     uv_state = advance_uv_wrf(
         state,
         dts_rk=float(cfg.dt),
         dx=float(cfg.dx),
         dy=float(cfg.dy),
         top_lid=bool(cfg.top_lid),
+        emdiv=float(emdiv),
     )
-    theta_old = uv_state.theta
-    mu_old = uv_state.mu
+
+    # --- 2. advance_mu_t (coupled theta + mu/muts/muave/mudf/ww) ---
     coupled_state = uv_state.replace(theta=_mass_couple_theta_before_advance(uv_state))
     advanced = advance_mu_t_core(coupled_state, cfg)
-    theta_new = _decouple_theta_after_advance(uv_state, advanced["theta"], advanced["muts"])
-    w_solved = w_solve_core(uv_state, a=a, alpha=alpha, gamma=gamma)
-    ph_next = _advance_geopotential(uv_state, w_solved, cfg)
-    p_next = _diagnose_pressure(uv_state, advanced["mu"])
+    theta_coupled = advanced["theta"]
+    ww_new = advanced["ww"]
+    muave_new = advanced["muave"]
+    muts_new = advanced["muts"]
+    mu_new = advanced["mu"]
+    mudf_new = advanced["mudf"]
 
-    ph_increment = _ph_tend_increment(theta_old, theta_new, uv_state.ph_tend)
-    scratch = build_scratch_state(
-        ScratchInputs(
-            theta_old=theta_old,
-            theta_new=theta_new,
-            t_2ave_prev=uv_state.t_2ave,
-            ww_old=uv_state.ww,
-            ww_new=advanced["ww"],
-            mu_old=mu_old,
-            mu_new=advanced["mu"],
-            mut=uv_state.mut,
-            muave_prev=uv_state.muave,
-            muts_prev=uv_state.muts,
-            ph_tend_old=uv_state.ph_tend,
-            ph_tend_increment=ph_increment,
-            u_current=uv_state.u,
-            v_current=uv_state.v,
-            w_current=w_solved,
-            ph_current=uv_state.ph,
-            epssm=float(cfg.epssm),
-        )
+    # Refresh advance_uv divergence damping bookkeeping field after advance_mu_t
+    # (mudf was used by THIS substep's advance_uv from the previous mudf state).
+    state_for_w = uv_state.replace(
+        mu=mu_new, muts=muts_new, muave=muave_new, ww=ww_new, mudf=mudf_new, theta=theta_coupled
     )
+
+    # --- 3. advance_w (implicit w + geopotential), real RHS ---
+    nz = int(uv_state.theta.shape[0])
+    ny = int(uv_state.theta.shape[1])
+    nx = int(uv_state.theta.shape[2])
+    cqw_field = cqw if cqw is not None else (uv_state.cqw if uv_state.cqw is not None else dry_cqw(nz, ny, nx, dtype=uv_state.theta.dtype))
+    c2a_field = uv_state.c2a if uv_state.c2a is not None else jnp.ones_like(uv_state.theta)
+    alt_field = uv_state.alt if uv_state.alt is not None else jnp.ones_like(uv_state.theta)
+    phb_field = uv_state.phb if uv_state.phb is not None else jnp.zeros_like(uv_state.ph)
+    ph_1_field = uv_state.ph_1 if uv_state.ph_1 is not None else jnp.zeros_like(uv_state.ph)
+    ht_field = uv_state.ht if uv_state.ht is not None else jnp.zeros((ny, nx), dtype=uv_state.theta.dtype)
+    c1f_field = uv_state.c1f if uv_state.c1f is not None else jnp.zeros((nz + 1,), dtype=uv_state.theta.dtype)
+    c2f_field = uv_state.c2f if uv_state.c2f is not None else jnp.zeros((nz + 1,), dtype=uv_state.theta.dtype)
+    rdn_field = uv_state.rdn if uv_state.rdn is not None else uv_state.rdnw
+    cf1 = _optional_or(uv_state.cf1, jnp.asarray(0.0, dtype=uv_state.theta.dtype))
+    cf2 = _optional_or(uv_state.cf2, jnp.asarray(0.0, dtype=uv_state.theta.dtype))
+    cf3 = _optional_or(uv_state.cf3, jnp.asarray(0.0, dtype=uv_state.theta.dtype))
+    msfux = _optional_or(uv_state.msfux, jnp.ones_like(uv_state.msfuy))
+    msfvx = _optional_or(uv_state.msfvx, 1.0 / uv_state.msfvx_inv)
+
+    mu_work = muts_new - uv_state.mut  # WRF perturbation dry-mass work array
+    rw_tend = pg_buoy_w_dry(
+        uv_state.p,
+        mu_work,
+        c1f=c1f_field,
+        rdnw=uv_state.rdnw,
+        rdn=rdn_field,
+        msfty=uv_state.msfty,
+        gravity=GRAVITY_M_S2,
+    )
+
+    w_solved, ph_next, t_2ave_next = advance_w_wrf(
+        w=uv_state.w,
+        rw_tend=rw_tend,
+        ww=ww_new,
+        u=uv_state.u,
+        v=uv_state.v,
+        mu_work=mu_work,
+        mut=uv_state.mut,
+        muave=muave_new,
+        muts=muts_new,
+        t_2ave=uv_state.t_2ave,
+        t_2=theta_coupled,
+        t_1=uv_state.theta_1,
+        ph=uv_state.ph,
+        ph_1=ph_1_field,
+        phb=phb_field,
+        ph_tend=uv_state.ph_tend,
+        ht=ht_field,
+        c2a=c2a_field,
+        cqw=cqw_field,
+        alt=alt_field,
+        a=a,
+        alpha=alpha,
+        gamma=gamma,
+        c1h=uv_state.c1h,
+        c2h=uv_state.c2h,
+        c1f=c1f_field,
+        c2f=c2f_field,
+        rdnw=uv_state.rdnw,
+        rdn=rdn_field,
+        fnm=uv_state.fnm,
+        fnp=uv_state.fnp,
+        cf1=cf1,
+        cf2=cf2,
+        cf3=cf3,
+        msftx=uv_state.msftx,
+        msfty=uv_state.msfty,
+        rdx=1.0 / float(cfg.dx),
+        rdy=1.0 / float(cfg.dy),
+        dts=float(cfg.dt),
+        epssm=float(cfg.epssm),
+        top_lid=bool(cfg.top_lid),
+        gravity=GRAVITY_M_S2,
+    )
+
+    # --- 4. sumflux accumulators (Sprint B consumer); WRF solve_em.F:4048-4093 ---
+    ru_m = uv_state.ru_m if uv_state.ru_m is not None else jnp.zeros_like(uv_state.u)
+    rv_m = uv_state.rv_m if uv_state.rv_m is not None else jnp.zeros_like(uv_state.v)
+    ww_m = uv_state.ww_m if uv_state.ww_m is not None else jnp.zeros_like(uv_state.ww)
+    ru_m = ru_m + uv_state.u
+    rv_m = rv_m + uv_state.v
+    ww_m = ww_m + ww_new
+
+    # --- 5. calc_p_rho(step=iteration): smdiv pressure memory ---
+    pm1 = uv_state.pm1 if uv_state.pm1 is not None else uv_state.p
+    p_rho = calc_p_rho_step(
+        mu_work=mu_work,
+        mut=uv_state.mut,
+        ph_work=ph_next,
+        theta_work=theta_coupled,
+        theta_1=uv_state.theta_1,
+        c2a=c2a_field,
+        alt=alt_field,
+        c1h=uv_state.c1h,
+        c2h=uv_state.c2h,
+        rdnw=uv_state.rdnw,
+        pm1=pm1,
+        smdiv=float(smdiv),
+        t0=300.0,
+    )
+
+    # Physical-theta diagnostic view for the operational carry / audit budget.
+    theta_phys = _decouple_theta_for_finish(uv_state, theta_coupled, muts_new)
+
     return uv_state.replace(
-        mu=advanced["mu"],
-        mudf=advanced["mudf"],
-        muts=advanced["muts"],
-        muave=advanced["muave"],
-        ww=scratch["ww"],
-        theta=theta_new,
-        theta_coupled_work=advanced["theta"],
-        theta_ave=theta_new,
-        ph_tend=scratch["ph_tend"],
+        mu=mu_new,
+        mudf=mudf_new,
+        muts=muts_new,
+        muave=muave_new,
+        ww=ww_new,
+        theta=theta_phys,
+        theta_coupled_work=theta_coupled,
+        theta_ave=theta_phys,
         w=w_solved,
         ph=ph_next,
-        p=p_next,
-        t_2ave=scratch["t_2ave"],
+        p=p_rho.p,
+        al=p_rho.al,
+        pm1=p_rho.pm1,
+        t_2ave=t_2ave_next,
+        ru_m=ru_m,
+        rv_m=rv_m,
+        ww_m=ww_m,
     )
 
 
@@ -483,18 +613,25 @@ def acoustic_scan_core(
 ) -> tuple[list[dict[str, jax.Array]], dict[str, jax.Array], dict[str, jax.Array]]:
     """Run all acoustic substeps in one RK stage for core callers."""
 
-    coeff_mut = state.coef_mut if state.coef_mut is not None else state.muts
+    # WRF calc_coef_w uses the FULL dry mass ``mut`` (solve_em.F:2676-2681),
+    # not the small-step work array ``muts``; real ``c2a``/``cqw`` are required.
+    nz = int(state.theta.shape[0])
+    ny = int(state.theta.shape[1])
+    nx = int(state.theta.shape[2])
+    cqw_field = state.cqw if state.cqw is not None else dry_cqw(nz, ny, nx, dtype=state.theta.dtype)
     a, alpha, gamma = calc_coef_w_wrf_coefficients(
-        coeff_mut,
+        state.mut,
         metrics,
         dt=float(cfg.dt),
         epssm=float(cfg.epssm),
         top_lid=bool(cfg.top_lid),
+        cqw=cqw_field,
+        c2a=state.c2a,
     )
     current = state
     snapshots: list[dict[str, jax.Array]] = []
     for _ in range(int(substeps)):
-        current = acoustic_substep_core(current, a=a, alpha=alpha, gamma=gamma, cfg=cfg)
+        current = acoustic_substep_core(current, a=a, alpha=alpha, gamma=gamma, cfg=cfg, cqw=cqw_field)
         snapshots.append(snapshot_full_state(current))
     return snapshots, snapshot_full_state(current), {"a": a, "alpha": alpha, "gamma": gamma}
 
