@@ -333,9 +333,12 @@ class State:
     - `u`, `v`, `w`: m s^-1 on Arakawa C-grid faces.
     - `theta`: K, `qv/qc/qr/qi/qs/qg`: kg kg^-1 on mass points.
     - `p`/`p_total`: Pa total pressure on mass points; `p_perturbation`
-      is first-class WRF perturbation pressure used by c2 PGF terms.
+      is WRF perturbation pressure. It is diagnostically refreshed inside
+      the dycore after acoustic `ph/theta/mu` changes and is used by c2 PGF
+      terms.
     - `ph`/`ph_total`: m2 s^-2 total geopotential on vertical faces;
-      `ph_perturbation` is the perturbation geopotential.
+      `ph_perturbation` is WRF perturbation geopotential advanced by the
+      nonhydrostatic acoustic dycore.
     - `mu`/`mu_total`: Pa column dry mass on mass points; `mu_perturbation`
       is the perturbation dry-column mass relative to `BaseState.mub`.
     - `Ni/Nr/Ns/Ng`: m^-3 number concentrations on mass points.
