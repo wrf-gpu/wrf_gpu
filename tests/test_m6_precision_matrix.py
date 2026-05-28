@@ -3,7 +3,7 @@ from __future__ import annotations
 import jax.numpy as jnp
 
 from gpuwrf.contracts.grid import GridSpec
-from gpuwrf.contracts.precision import FP32_GATED, FP64, PRECISION_MATRIX
+from gpuwrf.contracts.precision import FP32_GATED, FP64, INT32, PRECISION_MATRIX
 from gpuwrf.contracts.state import State
 
 
@@ -41,7 +41,8 @@ def test_precision_matrix_gate_flags_match_adr007_boundary_classes():
         "theta_bdy",
         "qv_bdy",
     }
-    locked = set(State.__slots__) - gated
+    integer_static = {"lu_index"}
+    locked = set(State.__slots__) - gated - integer_static
 
     for field in gated:
         dtype, gate_required = PRECISION_MATRIX[field]
@@ -52,4 +53,10 @@ def test_precision_matrix_gate_flags_match_adr007_boundary_classes():
         dtype, gate_required = PRECISION_MATRIX[field]
         assert dtype == FP64
         assert dtype == jnp.float64
+        assert gate_required is False
+
+    for field in integer_static:
+        dtype, gate_required = PRECISION_MATRIX[field]
+        assert dtype == INT32
+        assert dtype == jnp.int32
         assert gate_required is False

@@ -77,6 +77,7 @@ def _state_field_shapes(grid: GridSpec) -> dict[str, tuple[int, ...]]:
         "lakemask": surface_2d,
         "mavail": surface_2d,
         "roughness_m": surface_2d,
+        "lu_index": surface_2d,
         "rain_acc": surface_2d,
         "snow_acc": surface_2d,
         "graupel_acc": surface_2d,
@@ -344,7 +345,8 @@ class State:
       `t_skin`: K, `soil_moisture`: m3 m^-3 on surface mass points.
     - `xland`, `lakemask`, `mavail`: prescribed land/water and moisture
       availability fields from Gen2 `wrfinput_d02`; `roughness_m`: prescribed
-      or derived surface roughness length in m.
+      or derived surface roughness length in m; `lu_index`: int32 WRF
+      land-use category on mass points from `wrfinput_d02`.
     - `rain_acc/snow_acc/graupel_acc/ice_acc`: mm accumulated precipitation
       on surface mass points.
     - `u_bdy/v_bdy/theta_bdy/qv_bdy/ph_bdy/mu_bdy`: time-varying lateral
@@ -399,6 +401,7 @@ class State:
         "qv_bdy",
         "ph_bdy",
         "mu_bdy",
+        "lu_index",
     )
 
     def __init__(
@@ -450,6 +453,7 @@ class State:
         qv_bdy: jax.Array,
         ph_bdy: jax.Array,
         mu_bdy: jax.Array,
+        lu_index: jax.Array | None = None,
     ) -> None:
         self.u = u
         self.v = v
@@ -498,6 +502,11 @@ class State:
         self.qv_bdy = qv_bdy
         self.ph_bdy = ph_bdy
         self.mu_bdy = mu_bdy
+        self.lu_index = (
+            jnp.zeros_like(xland, dtype=jnp.int32)
+            if lu_index is None
+            else jnp.asarray(lu_index, dtype=jnp.int32)
+        )
 
     @classmethod
     def zeros(cls, grid: GridSpec) -> "State":
