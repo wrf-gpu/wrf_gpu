@@ -1,5 +1,19 @@
 # Sprint Contract — Oracle-Baseline Regression Suite (per principal directive 2026-05-28)
 
+## SUPREME COMMANDMENT (added 2026-05-28 after dispatch by principal directive)
+
+> **"Er muss absolut 'vollständig' sein. Ein erfolgreicher Testlauf muss zu 99% garantieren, dass jede realistische Real-Case WRF-Berechnung später in der Praxis funktioniert. Wir wollen keine bösen Überraschungen am Ende, wenn wir glauben fertig zu sein. Falsche Sicherheit durch einen lückenhaften Test wäre noch schlimmer, als lange an einem echten Case zu debuggen."**
+
+Translation: the suite MUST be absolutely COMPLETE. A successful run must give ≥99 % confidence that any realistic real-case WRF computation will work in practice. Nasty surprises at "we think we're done" are unacceptable. **False security from a gap-filled test is WORSE than long debugging on a real case.**
+
+**Operational implication for this sprint**:
+- If you can build only a partial suite that gives the appearance of coverage but actually misses entire regimes/processes/edge-cases, you MUST surface the gap as `ORACLE_SUITE_PARTIAL` with explicit unfilled regime list, not as `ORACLE_SUITE_COMPLETE`.
+- Coverage table is required: every (process × regime × geometry × season) combination listed with PRESENT / MISSING / WAIVED-WITH-REASON. Examples of dimensions: { tropics, midlatitude, polar } × { land, sea, mixed } × { day, night, sunrise, sunset } × { stable PBL, unstable PBL, neutral, convective } × { dry, moist with rain, moist with snow, mixed-phase } × { flat, complex orography, coastal } × { low BC forcing, strong BC forcing } × { idealized, real }. List every cell.
+- If a cell is not yet representable by an Oracle case, that cell is MISSING and the suite is incomplete. Either find/generate an Oracle case for it OR document explicitly as a known coverage hole.
+- The suite acceptance is not "tests pass" — it is "every regime cell is covered by at least one passing or known-failing test." Acceptance JSON must include `coverage_completeness_pct` (target 99 %) and `missing_regime_cells` (the holes).
+
+This directive is **above** all subsequent acceptance criteria. AC1 (oracle_cases.yaml) must include a `regime_coverage` block describing what each case exercises. AC8 verdict must reference completeness, not just count of passing tests.
+
 **Sprint ID**: `2026-05-28-oracle-baseline-regression-suite`
 **Worker**: codex gpt-5.5 xhigh
 **Branch**: `worker/gpt/oracle-baseline-regression`
