@@ -56,11 +56,17 @@ Each milestone names: definable numeric proof, weeks, Δ% completion gained, ris
 |---|---|---|---:|---:|---|
 | **M9.C** | Theta-convention + comparator audit | `divergence_map_v2.json` with post-correction RMSE under 4 theta-transforms (raw/raw, +300 both, +300 WRF only, +300 GPU only); 5 PC3 disambiguation tests applied | 2-4 days | +2 | Low (diagnostic, not code) |
 
-### Phase B — Atmospheric correctness (12-18 weeks, partly parallel) — re-estimated per plan-critic PC6
+### Phase B — Atmospheric correctness (16-24 weeks per plan-critic round 2 PC2.5) — re-restructured around silent-coupling triage
+
+**Phase B closure precondition**: post-M17 and post-M11.1 diagnostic_report.json must show NO unexplained `NOISY_ZERO` / `MISSING` operator verdicts. M12/M13/M14 cannot be declared COMPLETE while silent coupled-graph fields remain.
+
+**Diagnostic harness merge gate** (per plan-critic PC2.3): every sprint that touches dycore, physics, coupling, boundary conditions, runtime operator order, or wrfout diagnostics must attach a **pre-fix** AND **post-fix** `diagnostic_report.json`, configured so every touched operator is ACTIVE unless intentionally inactive; unexplained NOISY_ZERO / MISSING blocks COMPLETE.
 
 | # | Milestone | Definable proof | Weeks | Δ% | Risk |
 |---|---|---|---:|---:|---|
 | **M11** | Dycore theta/mu + guard accounting | Zero unexpected guard fallbacks on valid WRF-range states; per-step clip counts logged (INV-10); theta first-hour normalized RMSE vs WRF savepoint ≤ 1e-3; positive-definite limiter replaces envelope clip | 2-3 | +6 | High *(was Low; critic re-rate)* |
+| **M11.1** *(NEW per pc2.10)* | Dycore p_perturbation + ph_perturbation activity triage | Harness post-fix shows `dycore_rk3` verdict `ACTIVE` on `p_perturbation` and `ph_perturbation`; OR state-contract documents both as derived/diagnostic (with harness expectation corrected) | 1-2 | +3 | High |
+| **M17** *(PROMOTED into Phase B)* | Thompson microphysics silent-failure fix | Harness post-fix shows `microphysics_thompson` verdict `ACTIVE` on ≥4 of {qv, qr, qc, qg, qs, qi}; T2 RMSE drops ≥20 % vs post-iter2 baseline | 1-2 | +6 | Medium-High |
 | **M12** | Surface flux + MYNN bottom-BC parity | `surface_layer.F` outputs reproduce bitwise; 1h column oracle: post-PBL column-integrated theta/qv/u/v changes within 5 % of expected flux budget; T2 RMSE ≤ 5.0 K on pinned 5-day Canary | 2-4 | +12 | High *(was Medium; critic re-rate — current iter2 wiring exists yet skill still bad)* |
 | **M13** | Radiation + land-surface diurnal physics | RRTMG cadence verified; time-varying coszen/albedo/emissivity; land-station T2 diurnal amplitude differs from CPU WRF by ≤ 1 K on pinned case; radiation heating rates all finite | 3-4 | +8 | High |
 | **M14** | Lateral boundary + nesting completeness | `apply_lateral_boundaries` covers U/V/W/T/QVAPOR/P/PB/PH/MU; relax-zone width = WRF; boundary strip RMSE ≤ 1e-6 relative vs decoded wrfbdy; interior-vs-boundary first-hour split no longer boundary-dominated | 2-3 | +5 | High *(NEW — critic C5#2 + blinded M5)* |
