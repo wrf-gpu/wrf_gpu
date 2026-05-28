@@ -1,0 +1,71 @@
+{
+  "case": "20260521",
+  "commit": "db7a8039f969d5eb2db3f80782b0e5fa414edd1b",
+  "dt_seconds": 10.0,
+  "first_divergence": null,
+  "horizon_steps": 360,
+  "jax_trace": {
+    "reason": "Skipped because no independent WRF Fortran reference trace was available for comparison.",
+    "run": false
+  },
+  "operators": [],
+  "status": "M9A_PARTIAL_MISSING_WRF_REFERENCE_TRACE",
+  "trace_version": "1.0",
+  "wall_clock_seconds": 0.003084553999997297,
+  "wrf_reference_trace": {
+    "found": false,
+    "how_to_generate": [
+      "Build/run the instrumented WRF savepoint patch from external/wrf_savepoint_patch against the same Gen2 case.",
+      "Emit per-step operator-boundary arrays for dycore RK3 outer, acoustic substeps, microphysics, surface, PBL, radiation, and lateral BC.",
+      "Write either a trace JSON with an operators array or a directory of step/operator .npz files under wrf_savepoint_dumps/ for this run.",
+      "Rerun: taskset -c 0-3 python scripts/operational_trace_compare.py --case 20260521 --horizon-steps 360 --output proofs/m9/operational_trace_360steps.json"
+    ],
+    "missing": "WRF Fortran operational operator-boundary trace for _physics_boundary_step case=20260521 horizon_steps=360",
+    "required_fields": [
+      "u",
+      "v",
+      "w",
+      "theta",
+      "qv",
+      "qc",
+      "qr",
+      "qi",
+      "qs",
+      "qg",
+      "qke",
+      "p",
+      "ph",
+      "mu",
+      "p_total",
+      "ph_total",
+      "mu_total",
+      "t_skin",
+      "ustar",
+      "theta_flux",
+      "qv_flux",
+      "tau_u",
+      "tau_v"
+    ],
+    "required_operator_boundaries": [
+      "state_before",
+      "dycore_rk3_outer",
+      "dycore_acoustic_substep",
+      "microphysics",
+      "surface",
+      "pbl",
+      "radiation",
+      "lateral_bc",
+      "state_after"
+    ],
+    "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T072630Z",
+    "run_id": "20260521_18z_l3_24h_20260522T072630Z",
+    "searched": [
+      "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T072630Z/wrf_savepoint_dumps/operational_trace_20260521_360steps.json",
+      "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T072630Z/wrf_savepoint_dumps/operational_trace_20260521",
+      "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T072630Z/wrf_savepoint_dumps",
+      "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T072630Z/operational_trace",
+      "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T072630Z/savepoint_trace",
+      "/tmp/wrf_gpu2_m9a/.agent/sprints/2026-05-28-m9a-trace-harness/wrf_reference_trace"
+    ]
+  }
+}
