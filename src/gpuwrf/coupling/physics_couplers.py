@@ -7,6 +7,7 @@ MYNN, and RRTMG kernels are column-batched in that convention.
 
 from __future__ import annotations
 
+from datetime import date, datetime, timezone
 from typing import NamedTuple
 
 import jax.numpy as jnp
@@ -28,6 +29,151 @@ from gpuwrf.physics.thompson_column import (
 P0_PA = 100000.0
 R_D_OVER_CP = 287.0 / 1004.0
 GRAVITY_M_S2 = 9.80665
+DEG_TO_RAD = 3.141592653589793 / 180.0
+MINUTES_PER_DAY = 1440.0
+
+# MODIFIED_IGBP_MODIS_NOAH LANDUSE.TBL summer values:
+# columns ALBD (%), SFEM. Index 0 is a water fallback for legacy zero LU_INDEX
+# analytic states; WRF category indices are used directly for entries 1..61.
+_MODIS_NOAH_ALBEDO = jnp.asarray(
+    (
+        0.08,
+        0.12,
+        0.12,
+        0.14,
+        0.16,
+        0.13,
+        0.22,
+        0.20,
+        0.22,
+        0.20,
+        0.19,
+        0.14,
+        0.17,
+        0.15,
+        0.18,
+        0.55,
+        0.25,
+        0.08,
+        0.15,
+        0.15,
+        0.25,
+        0.15,
+        0.15,
+        0.15,
+        0.15,
+        0.15,
+        0.15,
+        0.15,
+        0.15,
+        0.15,
+        0.15,
+        0.15,
+        0.15,
+        0.15,
+        0.15,
+        0.15,
+        0.15,
+        0.15,
+        0.15,
+        0.15,
+        0.15,
+        0.15,
+        0.15,
+        0.15,
+        0.15,
+        0.15,
+        0.15,
+        0.15,
+        0.15,
+        0.15,
+        0.15,
+        0.10,
+        0.10,
+        0.10,
+        0.10,
+        0.10,
+        0.10,
+        0.10,
+        0.10,
+        0.10,
+        0.10,
+        0.10,
+    ),
+    dtype=jnp.float64,
+)
+_MODIS_NOAH_EMISSIVITY = jnp.asarray(
+    (
+        0.98,
+        0.95,
+        0.95,
+        0.94,
+        0.93,
+        0.97,
+        0.93,
+        0.95,
+        0.93,
+        0.92,
+        0.96,
+        0.95,
+        0.985,
+        0.88,
+        0.98,
+        0.95,
+        0.90,
+        0.98,
+        0.93,
+        0.92,
+        0.90,
+        0.88,
+        0.88,
+        0.88,
+        0.88,
+        0.88,
+        0.88,
+        0.88,
+        0.88,
+        0.88,
+        0.88,
+        0.88,
+        0.88,
+        0.88,
+        0.88,
+        0.88,
+        0.88,
+        0.88,
+        0.88,
+        0.88,
+        0.88,
+        0.88,
+        0.88,
+        0.88,
+        0.88,
+        0.88,
+        0.88,
+        0.88,
+        0.88,
+        0.88,
+        0.88,
+        0.97,
+        0.97,
+        0.97,
+        0.97,
+        0.97,
+        0.97,
+        0.97,
+        0.97,
+        0.97,
+        0.97,
+        0.97,
+    ),
+    dtype=jnp.float64,
+)
+
+# Existing production callers have no model-time argument yet. This fallback is
+# deterministic and keeps legacy no-time call sites in the same SW magnitude
+# range until a future interface sprint threads model time through the scan.
+_LEGACY_RRTMG_TIME_UTC = datetime(2000, 5, 21, 17, 30, tzinfo=timezone.utc)
 
 
 class _SurfaceColumnState(NamedTuple):
@@ -63,6 +209,18 @@ class ThompsonTendencySideChannel(NamedTuple):
     qg: object
     column_water_tendency: object
     precip_out_tendency: object
+
+
+class RRTMGRadiationDiagnostics(NamedTuple):
+    """Surface radiation diagnostics emitted by the RRTMG adapter inputs."""
+
+    surface_albedo: object
+    surface_emissivity: object
+    coszen: object
+    swdown: object
+    swup: object
+    glw: object
+    glw_up: object
 
 
 def _to_columns(field):
@@ -134,6 +292,154 @@ def _field_dtype(field: str):
     """Returns the frozen M6 storage dtype for a State field."""
 
     return DEFAULT_DTYPES.dtype_for(field)
+
+
+def _coerce_datetime_utc(time_utc) -> datetime:
+    """Normalize accepted host-side time values to a timezone-aware UTC datetime."""
+
+    if time_utc is None:
+        return _LEGACY_RRTMG_TIME_UTC
+    if isinstance(time_utc, datetime):
+        value = time_utc
+    elif isinstance(time_utc, date):
+        value = datetime(time_utc.year, time_utc.month, time_utc.day)
+    else:
+        text = str(time_utc).strip().replace("Z", "+00:00")
+        value = datetime.fromisoformat(text)
+    if value.tzinfo is None:
+        value = value.replace(tzinfo=timezone.utc)
+    return value.astimezone(timezone.utc)
+
+
+def _time_utc_parts(time_utc) -> tuple[float, float]:
+    """Return WRF-style Julian day and UTC minutes since midnight."""
+
+    value = _coerce_datetime_utc(time_utc)
+    julian = float(value.timetuple().tm_yday)
+    minute = (
+        float(value.hour) * 60.0
+        + float(value.minute)
+        + float(value.second) / 60.0
+        + float(value.microsecond) / 60_000_000.0
+    )
+    return julian, minute
+
+
+def _compute_coszen(lat, lon, time_utc):
+    """Compute WRF-style cosine solar zenith from lat/lon and UTC time.
+
+    This mirrors `module_radiation_driver.F` `radconst` + `calc_coszen`:
+    23.5 degree obliquity and the same equation-of-time correction.
+    """
+
+    julian, utc_minute = _time_utc_parts(time_utc)
+    lat_rad = jnp.asarray(lat, dtype=jnp.float64) * DEG_TO_RAD
+    lon_deg = jnp.asarray(lon, dtype=jnp.float64)
+
+    obecl = 23.5 * DEG_TO_RAD
+    sxlong_day = jnp.where(julian >= 80.0, julian - 80.0, julian + 285.0)
+    sxlong = sxlong_day * (360.0 / 365.0) * DEG_TO_RAD
+    declin = jnp.arcsin(jnp.sin(obecl) * jnp.sin(sxlong))
+
+    da = 2.0 * jnp.pi * (julian - 1.0) / 365.0
+    eot = (
+        0.000075
+        + 0.001868 * jnp.cos(da)
+        - 0.032077 * jnp.sin(da)
+        - 0.014615 * jnp.cos(2.0 * da)
+        - 0.04089 * jnp.sin(2.0 * da)
+    ) * 229.18
+    xt24 = jnp.mod(utc_minute, MINUTES_PER_DAY) + eot
+    local_time_h = xt24 / 60.0 + lon_deg / 15.0
+    hour_angle = 15.0 * (local_time_h - 12.0) * DEG_TO_RAD
+    coszen = jnp.sin(lat_rad) * jnp.sin(declin) + jnp.cos(lat_rad) * jnp.cos(declin) * jnp.cos(hour_angle)
+    return jnp.clip(coszen, -1.0, 1.0)
+
+
+def _grid_lat_lon(surface_shape: tuple[int, int], grid: GridSpec | None, dtype):
+    """Build a deterministic mass-grid lat/lon approximation from GridSpec metadata."""
+
+    if grid is None:
+        return (
+            jnp.zeros(surface_shape, dtype=dtype),
+            jnp.zeros(surface_shape, dtype=dtype),
+        )
+    projection = grid.projection
+    ny, nx = surface_shape
+    y = jnp.arange(ny, dtype=jnp.float64) - (float(ny) - 1.0) / 2.0
+    x = jnp.arange(nx, dtype=jnp.float64) - (float(nx) - 1.0) / 2.0
+    lat_step = float(projection.dy_m) / 111_320.0
+    lon_scale = jnp.maximum(111_320.0 * jnp.cos(float(projection.lat_0) * DEG_TO_RAD), 1.0)
+    lon_step = float(projection.dx_m) / lon_scale
+    lat = float(projection.lat_0) + y[:, None] * lat_step
+    lon = float(projection.lon_0) + x[None, :] * lon_step
+    return (
+        jnp.broadcast_to(lat, surface_shape).astype(dtype),
+        jnp.broadcast_to(lon, surface_shape).astype(dtype),
+    )
+
+
+def _surface_radiation_properties(state: State):
+    """Lookup MODIS land-use albedo/emissivity using `state.lu_index`."""
+
+    lu = jnp.clip(jnp.asarray(state.lu_index, dtype=jnp.int32), 0, _MODIS_NOAH_ALBEDO.shape[0] - 1)
+    albedo = jnp.take(_MODIS_NOAH_ALBEDO, lu).astype(state.t_skin.dtype)
+    emissivity = jnp.take(_MODIS_NOAH_EMISSIVITY, lu).astype(state.t_skin.dtype)
+    return albedo, emissivity
+
+
+def _rrtmg_column_inputs(
+    state: State,
+    grid: GridSpec | None,
+    *,
+    time_utc=None,
+) -> tuple[RRTMGSWColumnState, RRTMGLWColumnState, object, object, object]:
+    """Build SW/LW RRTMG column states and expose shared surface fields."""
+
+    T = _temperature_from_theta(state.theta, state.p)
+    p_columns = _to_columns(state.p)
+    qv_columns = _to_columns(state.qv)
+    qc_columns = _to_columns(state.qc)
+    qi_columns = _to_columns(state.qi)
+    qs_columns = _to_columns(state.qs)
+    qg_columns = _to_columns(state.qg)
+    cloud_fraction = _cloud_fraction_columns(state)
+    dz = _column_dz_from_state(state, grid)
+    rho = _to_columns(_rho_from_state(state))
+    surface_shape = state.t_skin.shape
+    surface_albedo, surface_emissivity = _surface_radiation_properties(state)
+    lat, lon = _grid_lat_lon(surface_shape, grid, state.t_skin.dtype)
+    coszen = _compute_coszen(lat, lon, time_utc).astype(state.t_skin.dtype)
+
+    sw_state = RRTMGSWColumnState(
+        _to_columns(T),
+        p_columns,
+        qv_columns,
+        qc_columns,
+        qi_columns,
+        qs_columns,
+        qg_columns,
+        cloud_fraction,
+        surface_albedo,
+        coszen,
+        dz,
+        rho,
+    )
+    lw_state = RRTMGLWColumnState(
+        _to_columns(T),
+        p_columns,
+        qv_columns,
+        qc_columns,
+        qi_columns,
+        qs_columns,
+        qg_columns,
+        cloud_fraction,
+        state.t_skin,
+        surface_emissivity,
+        dz,
+        rho,
+    )
+    return sw_state, lw_state, surface_albedo, surface_emissivity, coszen
 
 
 def _bottom_column(surface_field, template_columns):
@@ -361,53 +667,37 @@ def surface_adapter(state: State, dt: float) -> State:
     )
 
 
-def rrtmg_adapter(state: State, dt: float, grid: GridSpec | None = None) -> State:
+def rrtmg_radiation_diagnostics(
+    state: State,
+    grid: GridSpec | None = None,
+    *,
+    time_utc=None,
+) -> RRTMGRadiationDiagnostics:
+    """Return surface RRTMG radiation diagnostics without changing State."""
+
+    sw_state, lw_state, surface_albedo, surface_emissivity, coszen = _rrtmg_column_inputs(
+        state,
+        grid,
+        time_utc=time_utc,
+    )
+    sw = solve_rrtmg_sw_column(sw_state, debug=False)
+    lw = solve_rrtmg_lw_column(lw_state, debug=False)
+    return RRTMGRadiationDiagnostics(
+        surface_albedo=surface_albedo,
+        surface_emissivity=surface_emissivity,
+        coszen=coszen,
+        swdown=sw.surface_down,
+        swup=sw.surface_up,
+        glw=lw.surface_down,
+        glw_up=lw.surface_up,
+    )
+
+
+def rrtmg_adapter(state: State, dt: float, grid: GridSpec | None = None, *, time_utc=None) -> State:
     """Run SW and LW RRTMG column kernels and apply their temperature tendency."""
 
     T = _temperature_from_theta(state.theta, state.p)
-    theta_columns = _to_columns(state.theta)
-    p_columns = _to_columns(state.p)
-    qv_columns = _to_columns(state.qv)
-    qc_columns = _to_columns(state.qc)
-    qi_columns = _to_columns(state.qi)
-    qs_columns = _to_columns(state.qs)
-    qg_columns = _to_columns(state.qg)
-    cloud_fraction = _cloud_fraction_columns(state)
-    dz = _column_dz_from_state(state, grid)
-    rho = _to_columns(_rho_from_state(state))
-    surface_shape = state.t_skin.shape
-    surface_albedo = jnp.ones(surface_shape, dtype=state.t_skin.dtype) * 0.15
-    surface_emissivity = jnp.ones(surface_shape, dtype=state.t_skin.dtype) * 0.98
-    coszen = jnp.ones(surface_shape, dtype=state.t_skin.dtype) * 0.50
-
-    sw_state = RRTMGSWColumnState(
-        _to_columns(T),
-        p_columns,
-        qv_columns,
-        qc_columns,
-        qi_columns,
-        qs_columns,
-        qg_columns,
-        cloud_fraction,
-        surface_albedo,
-        coszen,
-        dz,
-        rho,
-    )
-    lw_state = RRTMGLWColumnState(
-        _to_columns(T),
-        p_columns,
-        qv_columns,
-        qc_columns,
-        qi_columns,
-        qs_columns,
-        qg_columns,
-        cloud_fraction,
-        state.t_skin,
-        surface_emissivity,
-        dz,
-        rho,
-    )
+    sw_state, lw_state, _, _, _ = _rrtmg_column_inputs(state, grid, time_utc=time_utc)
     sw = solve_rrtmg_sw_column(sw_state, debug=False)
     lw = solve_rrtmg_lw_column(lw_state, debug=False)
     T_next = T + float(dt) * _from_columns(sw.heating_rate + lw.heating_rate)
@@ -415,8 +705,11 @@ def rrtmg_adapter(state: State, dt: float, grid: GridSpec | None = None) -> Stat
 
 
 __all__ = [
+    "RRTMGRadiationDiagnostics",
     "ThompsonTendencySideChannel",
+    "_compute_coszen",
     "mynn_adapter",
+    "rrtmg_radiation_diagnostics",
     "rrtmg_adapter",
     "surface_adapter",
     "thompson_adapter",
