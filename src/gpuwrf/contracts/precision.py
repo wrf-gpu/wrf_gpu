@@ -14,6 +14,7 @@ import jax.numpy as jnp
 
 FP64 = jnp.float64
 FP32_GATED = jnp.float32
+INT32 = jnp.int32
 
 
 STATE_FIELD_ORDER = (
@@ -54,6 +55,7 @@ STATE_FIELD_ORDER = (
     "lakemask",
     "mavail",
     "roughness_m",
+    "lu_index",
     "rain_acc",
     "snow_acc",
     "graupel_acc",
@@ -110,6 +112,7 @@ PRECISION_MATRIX = {
     "lakemask": (FP32_GATED, True),
     "mavail": (FP32_GATED, True),
     "roughness_m": (FP64, False),
+    "lu_index": (INT32, False),
     # Accumulated precipitation diagnostics.
     "rain_acc": (FP64, False),
     "snow_acc": (FP64, False),

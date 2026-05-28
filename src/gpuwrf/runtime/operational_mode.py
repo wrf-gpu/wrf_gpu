@@ -479,6 +479,7 @@ def _coupled_core_extras(state: State) -> dict[str, jax.Array]:
         "t_skin": state.t_skin,
         "xland": state.xland,
         "lakemask": state.lakemask,
+        "lu_index": state.lu_index,
         "u_bdy": state.u_bdy,
         "v_bdy": state.v_bdy,
         "theta_bdy": state.theta_bdy,
