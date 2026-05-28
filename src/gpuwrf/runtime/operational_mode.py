@@ -20,7 +20,7 @@ from gpuwrf.contracts.precision import DEFAULT_DTYPES, STATE_FIELD_ORDER
 from gpuwrf.contracts.halo import apply_halo
 from gpuwrf.coupling.boundary_apply import BoundaryConfig, DEFAULT_BOUNDARY_CONFIG, apply_lateral_boundaries
 from gpuwrf.coupling.physics_couplers import mynn_adapter, rrtmg_adapter, surface_adapter, thompson_adapter
-from gpuwrf.dynamics.advection import halo_spec
+from gpuwrf.dynamics.advection import compute_advection_tendencies, halo_spec
 from gpuwrf.dynamics.acoustic_wrf import (
     calc_coef_w_wrf_coefficients,
     diagnose_pressure_al_alt,
@@ -490,12 +490,11 @@ def _carry_from_acoustic_core(acoustic: AcousticCoreState, template: State, thet
     theta = acoustic.theta + theta_offset
     p_total = template.p_total - template.p_perturbation + acoustic.p
     ph_total = template.ph_total - template.ph_perturbation + acoustic.ph
-    # ``advance_mu_t_wrf`` stores the acoustic small-step mass delta in
-    # ``muts - mut``.  Keep that delta basis in the operational state between
-    # substeps; expanding by ``mu_save`` each iteration recreates the near-zero
-    # hybrid mass denominators seen in the step-46/47 failure.
     mu_base = template.mu_total - template.mu_perturbation
-    mu_perturbation = acoustic.muts - acoustic.mut
+    # ``acoustic_substep_core`` returns ``advanced["mu"]``: the total physical
+    # perturbation needed by ``advance_mu_t`` to preserve ``mu_save`` on the next
+    # small step.  ``muts`` remains the WRF work array ``mut + mu_work``.
+    mu_perturbation = acoustic.mu
     mu_total = mu_base + mu_perturbation
     next_state = template.replace(
         u=acoustic.u,
@@ -591,10 +590,13 @@ def _rk_scan_step(carry: OperationalCarry, namelist: OperationalNamelist, *, deb
 
     def advance_stage(stage_carry: OperationalCarry, factor: float, acoustic_substeps: int) -> OperationalCarry:
         haloed = apply_halo(stage_carry.state, halo_spec(namelist.grid))
+        # WRF dyn_em/module_em.F:rk_scalar_tend computes large-step advection
+        # tendencies before the split-explicit acoustic advance.
+        tendencies = compute_advection_tendencies(haloed, namelist.tendencies, namelist.grid)
         du_dt, dv_dt = _horizontal_pressure_gradient_tendencies(haloed, namelist)
-        tendencies = namelist.tendencies.replace(
-            u=namelist.tendencies.u + du_dt,
-            v=namelist.tendencies.v + dv_dt,
+        tendencies = tendencies.replace(
+            u=tendencies.u + du_dt,
+            v=tendencies.v + dv_dt,
         )
         candidate = add_scaled_tendencies(origin, tendencies, float(namelist.dt_s) * float(factor))
         stage_carry = _with_save_family(stage_carry.replace(state=candidate), candidate)

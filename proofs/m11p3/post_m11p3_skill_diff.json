@@ -1,0 +1,16 @@
+{
+  "cpu_run": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
+  "failed_command": "taskset -c 0-3 env PYTHONPATH=src python scripts/m7_gpu_vs_cpu_skill_diff.py --gpu-root /tmp/m11p3_coordinated_dycore_20260521 --cpu-run /mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z --output proofs/m11p3/post_m11p3_skill_diff.json --variables T2 U10 V10",
+  "failure": "FileNotFoundError: no wrfout_d02_* files found under /tmp/m11p3_coordinated_dycore_20260521",
+  "generated_utc": "2026-05-28T17:51:31.994872+00:00",
+  "gpu_root": "/tmp/m11p3_coordinated_dycore_20260521",
+  "reason": "24h pipeline blocked at forecast hour 1 before writing wrfout_d02_* files; T2 RMSE not measurable.",
+  "schema": "M7GpuVsCpuSkillDiff",
+  "schema_version": 1,
+  "variables": [
+    "T2",
+    "U10",
+    "V10"
+  ],
+  "verdict": "BLOCKED_NO_GPU_WRFOUTS"
+}
