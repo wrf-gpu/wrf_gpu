@@ -20,7 +20,7 @@ from jax import config
 import jax.numpy as jnp
 
 from gpuwrf.contracts.grid import DycoreMetrics
-from gpuwrf.dynamics.acoustic_wrf import calc_coef_w_wrf_coefficients
+from gpuwrf.dynamics.acoustic_wrf import GRAVITY_M_S2, calc_coef_w_wrf_coefficients
 from gpuwrf.dynamics.mu_t_advance import AdvanceMuTInputs, advance_mu_t_wrf
 from gpuwrf.dynamics.small_step_scratch import ScratchInputs, build_scratch_state
 from gpuwrf.dynamics.tridiag_solve import thomas_solve_scan
@@ -198,6 +198,23 @@ def _ph_tend_increment(theta_old: jax.Array, theta_new: jax.Array, ph_tend: jax.
     return increment.at[: theta_delta.shape[0], :, :].set(0.01 * theta_delta)
 
 
+def _advance_geopotential(state: AcousticCoreState, w_next: jax.Array, cfg: AcousticCoreConfig) -> jax.Array:
+    """Advance WRF perturbation geopotential after the implicit w solve."""
+
+    ph_delta = GRAVITY_M_S2 * float(cfg.dt) * (
+        0.5 * (1.0 - float(cfg.epssm)) * state.w
+        + 0.5 * (1.0 + float(cfg.epssm)) * w_next
+    )
+    return state.ph + ph_delta
+
+
+def _diagnose_pressure(state: AcousticCoreState, mu_perturbation: jax.Array) -> jax.Array:
+    """Refresh resident perturbation pressure from eta-layer dry-mass change."""
+
+    mu_delta = jnp.asarray(mu_perturbation) - jnp.asarray(state.mu)
+    return state.p + jnp.abs(state.dnw)[:, None, None] * mu_delta[None, :, :]
+
+
 def acoustic_substep_core(
     state: AcousticCoreState,
     *,
@@ -214,6 +231,9 @@ def acoustic_substep_core(
     advanced = advance_mu_t_core(coupled_state, cfg)
     theta_new = _decouple_theta_after_advance(state, advanced["theta"], advanced["muts"])
     w_solved = w_solve_core(state, a=a, alpha=alpha, gamma=gamma)
+    mu_delta = advanced["muts"] - state.mut
+    ph_next = _advance_geopotential(state, w_solved, cfg)
+    p_next = _diagnose_pressure(state, mu_delta)
 
     ph_increment = _ph_tend_increment(theta_old, theta_new, state.ph_tend)
     scratch = build_scratch_state(
@@ -237,7 +257,6 @@ def acoustic_substep_core(
             epssm=float(cfg.epssm),
         )
     )
-    mu_delta = advanced["muts"] - state.mut
     return state.replace(
         mu=mu_delta,
         mudf=advanced["mudf"],
@@ -248,6 +267,8 @@ def acoustic_substep_core(
         theta_ave=theta_new,
         ph_tend=scratch["ph_tend"],
         w=w_solved,
+        ph=ph_next,
+        p=p_next,
         t_2ave=scratch["t_2ave"],
     )
 
