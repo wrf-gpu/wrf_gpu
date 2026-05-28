@@ -616,7 +616,14 @@ def _apply_surface_flux_bottom_bc(
     dz_columns,
     rho_columns,
 ) -> MynnPBLColumnState:
-    """Apply stored surface-layer fluxes as MYNN bottom boundary tendencies."""
+    """Apply WRF-sign surface-layer fluxes as MYNN bottom boundary tendencies.
+
+    `theta_flux`, `qv_flux`, `tau_u`, and `tau_v` are kinematic fluxes that are
+    positive upward into the atmosphere. WRF MYNN adds scalar fluxes to the
+    bottom RHS with `+dt/dz*rhosfc/rho`; signed momentum flux components use the
+    same positive-upward convention, so drag over fixed ground is normally
+    opposite-signed to the lowest-level wind.
+    """
 
     dz0 = jnp.maximum(dz_columns[..., 0], 1.0)
     rho0 = jnp.maximum(rho_columns[..., 0], 1.0e-4)
@@ -628,7 +635,7 @@ def _apply_surface_flux_bottom_bc(
     qv_flux = jnp.maximum(jnp.asarray(state.qv_flux, dtype=out.qv.dtype), qv_flux_floor)
     qv_increment = (scalar_scale * qv_flux.astype(scalar_scale.dtype)).astype(out.qv.dtype)
     qv = out.qv.at[..., 0].add(qv_increment)
-    momentum_scale = float(dt) / dz0
+    momentum_scale = scalar_scale
     u_increment = (momentum_scale * jnp.asarray(state.tau_u, dtype=momentum_scale.dtype)).astype(out.u.dtype)
     v_increment = (momentum_scale * jnp.asarray(state.tau_v, dtype=momentum_scale.dtype)).astype(out.v.dtype)
     u = out.u.at[..., 0].add(u_increment)
