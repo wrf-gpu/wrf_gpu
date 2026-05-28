@@ -35,6 +35,9 @@ from gpuwrf.runtime.operational_state import OperationalCarry, initial_operation
 
 config.update("jax_enable_x64", True)
 
+_THETA_LIMITER_MIN_K = 0.0
+_THETA_LIMITER_MAX_K = 500.0
+
 
 @jax.tree_util.register_pytree_node_class
 @dataclass(frozen=True)
@@ -211,26 +214,136 @@ def _finite_or_origin(candidate: jax.Array, origin: jax.Array) -> jax.Array:
     return jnp.where(jnp.isfinite(candidate), candidate, origin)
 
 
-def _limit_theta_by_level(candidate: jax.Array, origin: jax.Array) -> jax.Array:
-    """Apply the M7 operational theta envelope without resetting RK output."""
+def _theta_mass_weights(theta: jax.Array, mu_total: jax.Array) -> jax.Array:
+    """Broadcast positive column dry mass onto theta mass points."""
 
-    candidate = jnp.asarray(candidate)
-    origin = jnp.asarray(origin, dtype=candidate.dtype)
-    shape = (candidate.shape[0],) + (1,) * (candidate.ndim - 1)
-    levels = jnp.arange(candidate.shape[0], dtype=jnp.int32).reshape(shape)
-    lower_column = levels < 30
-    lower = jnp.where(lower_column, 200.0, 250.0).astype(candidate.dtype)
-    upper = jnp.where(lower_column, 450.0, 700.0).astype(candidate.dtype)
-    fallback = jnp.where(jnp.isfinite(origin), origin, 0.5 * (lower + upper))
-    fallback = jnp.clip(fallback, lower, upper)
-    valid = jnp.isfinite(candidate) & (candidate >= lower) & (candidate <= upper)
-    return jnp.where(valid, candidate, fallback)
+    theta = jnp.asarray(theta)
+    mass_2d = jnp.asarray(mu_total, dtype=theta.dtype)
+    mass_2d = jnp.where(jnp.isfinite(mass_2d) & (mass_2d > 0.0), mass_2d, 0.0)
+    return jnp.broadcast_to(mass_2d[None, :, :], theta.shape)
 
 
-def _limit_guarded_dynamics_state(candidate: State, origin: State) -> State:
-    """Keep finite bounded dynamics from RK3 while preserving positive dry mass."""
+def _theta_level_monotonic_bounds(
+    origin: jax.Array,
+    *,
+    minimum_k: float = _THETA_LIMITER_MIN_K,
+    maximum_k: float = _THETA_LIMITER_MAX_K,
+) -> tuple[jax.Array, jax.Array]:
+    """Return per-level monotonicity bounds for positive-definite theta advection."""
 
-    theta = _limit_theta_by_level(candidate.theta, origin.theta)
+    origin = jnp.asarray(origin, dtype=jnp.float64)
+    safe = jnp.where(jnp.isfinite(origin), origin, 0.5 * (float(minimum_k) + float(maximum_k)))
+    lower = jnp.min(safe, axis=(1, 2), keepdims=True)
+    upper = jnp.max(safe, axis=(1, 2), keepdims=True)
+    lower = jnp.maximum(lower, float(minimum_k))
+    upper = jnp.minimum(jnp.maximum(upper, lower), float(maximum_k))
+    return lower, upper
+
+
+def _first_limited_cell_xyz(mask: jax.Array) -> jax.Array:
+    """Return first limited mass-cell coordinate as ``[x, y, z]`` or ``[-1, -1, -1]``."""
+
+    flat = jnp.ravel(mask)
+    count = jnp.sum(flat.astype(jnp.int32))
+    flat_index = jnp.argmax(flat.astype(jnp.int32))
+    ny = int(mask.shape[1])
+    nx = int(mask.shape[2])
+    z = flat_index // (ny * nx)
+    rem = flat_index - z * ny * nx
+    y = rem // nx
+    x = rem - y * nx
+    xyz = jnp.stack((x, y, z)).astype(jnp.int32)
+    missing = jnp.full((3,), -1, dtype=jnp.int32)
+    return jnp.where(count > 0, xyz, missing)
+
+
+def _empty_theta_limiter_diagnostics(theta: jax.Array) -> dict[str, jax.Array]:
+    """Build the INV-10 diagnostic record used when the limiter is inactive."""
+
+    dtype = jnp.asarray(theta).dtype
+    return {
+        "theta_limited_cell_count": jnp.asarray(0, dtype=jnp.int32),
+        "theta_first_limited_cell_xyz": jnp.full((3,), -1, dtype=jnp.int32),
+        "theta_mass_before": jnp.asarray(0.0, dtype=dtype),
+        "theta_mass_after": jnp.asarray(0.0, dtype=dtype),
+        "theta_mass_residual": jnp.asarray(0.0, dtype=dtype),
+    }
+
+
+def _positive_definite_theta_increment_limiter(
+    candidate: jax.Array,
+    origin: jax.Array,
+    mass: jax.Array,
+    *,
+    minimum_k: float = _THETA_LIMITER_MIN_K,
+    maximum_k: float = _THETA_LIMITER_MAX_K,
+    lower_bound: jax.Array | None = None,
+    upper_bound: jax.Array | None = None,
+) -> tuple[jax.Array, dict[str, jax.Array]]:
+    """Limit theta increments to a positive finite interval while conserving mass.
+
+    Offending cells keep the RK direction but receive a smaller increment.  The
+    removed mass-weighted theta increment is then redistributed over cells with
+    available room, so feasible updates preserve the raw dycore scalar integral.
+    """
+
+    output_dtype = jnp.asarray(candidate).dtype
+    candidate64 = jnp.asarray(candidate, dtype=jnp.float64)
+    origin64 = jnp.asarray(origin, dtype=jnp.float64)
+    mass64 = jnp.asarray(mass, dtype=jnp.float64)
+    lower = jnp.asarray(float(minimum_k), dtype=jnp.float64)
+    upper = jnp.asarray(float(maximum_k), dtype=jnp.float64)
+    if lower_bound is not None:
+        lower = jnp.maximum(lower, jnp.asarray(lower_bound, dtype=jnp.float64))
+    if upper_bound is not None:
+        upper = jnp.minimum(upper, jnp.asarray(upper_bound, dtype=jnp.float64))
+    upper = jnp.maximum(upper, lower)
+    midpoint = 0.5 * (lower + upper)
+
+    safe_origin = jnp.where(jnp.isfinite(origin64), origin64, midpoint)
+    safe_origin = jnp.minimum(jnp.maximum(safe_origin, lower), upper)
+    finite_candidate = jnp.where(jnp.isfinite(candidate64), candidate64, safe_origin)
+    raw_delta = finite_candidate - safe_origin
+
+    over_upper = finite_candidate > upper
+    under_lower = finite_candidate < lower
+    invalid = ~jnp.isfinite(candidate64)
+    limited_mask = invalid | over_upper | under_lower
+
+    positive_delta = raw_delta > 0.0
+    negative_delta = raw_delta < 0.0
+    upper_alpha = (upper - safe_origin) / jnp.where(positive_delta, raw_delta, 1.0)
+    lower_alpha = (lower - safe_origin) / jnp.where(negative_delta, raw_delta, -1.0)
+    alpha = jnp.where(positive_delta, upper_alpha, jnp.where(negative_delta, lower_alpha, 1.0))
+    alpha = jnp.where(limited_mask, jnp.minimum(jnp.maximum(alpha, 0.0), 1.0), 1.0)
+    limited0 = safe_origin + alpha * raw_delta
+
+    target_mass = jnp.sum(finite_candidate * mass64)
+    mass0 = jnp.sum(limited0 * mass64)
+    residual = target_mass - mass0
+    add_room = upper - limited0
+    subtract_room = limited0 - lower
+    room = jnp.where(residual >= 0.0, add_room, subtract_room)
+    capacity = jnp.sum(room * mass64)
+    fraction = jnp.where(capacity > 0.0, jnp.minimum(jnp.abs(residual) / capacity, 1.0), 0.0)
+    limited = limited0 + jnp.sign(residual) * fraction * room
+    limited = jnp.minimum(jnp.maximum(limited, lower), upper)
+    limited = limited.astype(output_dtype)
+
+    after_mass = jnp.sum(limited.astype(jnp.float64) * mass64)
+    diagnostics = {
+        "theta_limited_cell_count": jnp.sum(limited_mask.astype(jnp.int32)),
+        "theta_first_limited_cell_xyz": _first_limited_cell_xyz(limited_mask),
+        "theta_mass_before": target_mass.astype(output_dtype),
+        "theta_mass_after": after_mass.astype(output_dtype),
+        "theta_mass_residual": (after_mass - target_mass).astype(output_dtype),
+    }
+    return limited, diagnostics
+
+
+def _limit_guarded_mass_state(candidate: State, origin: State) -> State:
+    """Keep finite positive dry mass without changing theta after physics/boundary."""
+
     mu_base = jnp.asarray(origin.mu_total) - jnp.asarray(origin.mu_perturbation)
     mu_perturbation = _finite_or_origin(candidate.mu_perturbation, origin.mu_perturbation)
     candidate_mu_total = mu_base + mu_perturbation
@@ -238,7 +351,30 @@ def _limit_guarded_dynamics_state(candidate: State, origin: State) -> State:
     mu_perturbation = jnp.where(valid_mu, mu_perturbation, origin.mu_perturbation)
     mu_total = jnp.maximum(mu_base + mu_perturbation, jnp.asarray(1.0, dtype=mu_perturbation.dtype))
     mu_perturbation = mu_total - mu_base
-    return candidate.replace(theta=theta, mu=mu_total, mu_total=mu_total, mu_perturbation=mu_perturbation)
+    return candidate.replace(mu=mu_total, mu_total=mu_total, mu_perturbation=mu_perturbation)
+
+
+def _limit_guarded_dynamics_state_with_diagnostics(candidate: State, origin: State) -> tuple[State, dict[str, jax.Array]]:
+    """Apply the dycore theta limiter and dry-mass guard after one RK3 step."""
+
+    mass = _theta_mass_weights(candidate.theta, candidate.mu_total)
+    lower, upper = _theta_level_monotonic_bounds(origin.theta)
+    theta, diagnostics = _positive_definite_theta_increment_limiter(
+        candidate.theta,
+        origin.theta,
+        mass,
+        lower_bound=lower,
+        upper_bound=upper,
+    )
+    limited = _limit_guarded_mass_state(candidate.replace(theta=theta), origin)
+    return limited, diagnostics
+
+
+def _limit_guarded_dynamics_state(candidate: State, origin: State) -> State:
+    """Keep finite bounded dynamics from RK3 while preserving positive dry mass."""
+
+    limited, _diagnostics = _limit_guarded_dynamics_state_with_diagnostics(candidate, origin)
+    return limited
 
 
 def _with_save_family(carry: OperationalCarry, state: State, ww: jax.Array | None = None) -> OperationalCarry:
@@ -565,19 +701,21 @@ def _coupled_core_step(carry: OperationalCarry, namelist: OperationalNamelist, s
     return _carry_from_coupled_core(snapshot, carry.state, theta_offset, float(namelist.dt_s))
 
 
-def _physics_boundary_step(
+def _physics_boundary_step_with_limiter_diagnostics(
     carry: OperationalCarry,
     namelist: OperationalNamelist,
     step_index,
     *,
     run_radiation: bool,
     debug: bool = False,
-) -> OperationalCarry:
+) -> tuple[OperationalCarry, dict[str, jax.Array]]:
     physical_origin = carry.state
     carry = _rk_scan_step(carry, namelist, debug=debug)
     next_state = carry.state
+    limiter_diagnostics = _empty_theta_limiter_diagnostics(next_state.theta)
     if not bool(namelist.disable_guards):
-        next_state = _limit_guarded_dynamics_state(next_state, physical_origin).replace(
+        next_state, limiter_diagnostics = _limit_guarded_dynamics_state_with_diagnostics(next_state, physical_origin)
+        next_state = next_state.replace(
             qv=_valid_mixing_ratio(next_state.qv, physical_origin.qv),
             qc=_valid_mixing_ratio(next_state.qc, physical_origin.qc),
             qr=_valid_mixing_ratio(next_state.qr, physical_origin.qr),
@@ -598,15 +736,11 @@ def _physics_boundary_step(
         if bool(namelist.disable_guards):
             next_state = bounded
         else:
-            # The lower-30 theta guard is a fail-closed runaway envelope, not a
-            # diurnal-warming clamp. The first iter2 probe put valid d02 values
-            # within 0.001 K of the old 400 K ceiling, so AC2 widens it to
-            # [200, 450] K while keeping the upper-column 700 K hard stop.
             next_state = bounded.replace(
                 u=_finite_or_origin(bounded.u, physical_origin.u),
                 v=_finite_or_origin(bounded.v, physical_origin.v),
                 w=_finite_or_origin(bounded.w, physical_origin.w),
-                theta=_limit_theta_by_level(bounded.theta, physical_origin.theta),
+                theta=_finite_or_origin(bounded.theta, physical_origin.theta),
                 qv=_valid_mixing_ratio(bounded.qv, physical_origin.qv),
                 p=_finite_or_origin(bounded.p, physical_origin.p),
                 ph=_finite_or_origin(bounded.ph, physical_origin.ph),
@@ -615,9 +749,27 @@ def _physics_boundary_step(
                 p_perturbation=_finite_or_origin(bounded.p_perturbation, physical_origin.p_perturbation),
                 ph_perturbation=_finite_or_origin(bounded.ph_perturbation, physical_origin.ph_perturbation),
             )
-            next_state = _limit_guarded_dynamics_state(next_state, physical_origin)
+            next_state = _limit_guarded_mass_state(next_state, physical_origin)
     next_state = _enforce_operational_precision(next_state)
-    return carry.replace(state=next_state)
+    return carry.replace(state=next_state), limiter_diagnostics
+
+
+def _physics_boundary_step(
+    carry: OperationalCarry,
+    namelist: OperationalNamelist,
+    step_index,
+    *,
+    run_radiation: bool,
+    debug: bool = False,
+) -> OperationalCarry:
+    next_carry, _diagnostics = _physics_boundary_step_with_limiter_diagnostics(
+        carry,
+        namelist,
+        step_index,
+        run_radiation=run_radiation,
+        debug=debug,
+    )
+    return next_carry
 
 
 def _scan_forecast_segment(
@@ -636,6 +788,37 @@ def _scan_forecast_segment(
 
     next_carry, _ = jax.lax.scan(body, carry, indices)
     return next_carry
+
+
+def _scan_forecast_segment_with_limiter_diagnostics(
+    carry: OperationalCarry,
+    namelist: OperationalNamelist,
+    *,
+    start_step: int,
+    steps: int,
+    run_radiation: bool,
+    debug: bool = False,
+) -> tuple[OperationalCarry, dict[str, jax.Array]]:
+    indices = jnp.arange(start_step, start_step + steps, dtype=jnp.int32)
+
+    def body(scan_carry: OperationalCarry, step_index):
+        next_carry, diagnostics = _physics_boundary_step_with_limiter_diagnostics(
+            scan_carry,
+            namelist,
+            step_index,
+            run_radiation=run_radiation,
+            debug=debug,
+        )
+        diagnostics = dict(diagnostics)
+        diagnostics["step_index"] = step_index
+        return next_carry, diagnostics
+
+    next_carry, diagnostics = jax.lax.scan(body, carry, indices)
+    return next_carry, diagnostics
+
+
+def _concat_theta_limiter_diagnostics(chunks: list[dict[str, jax.Array]]) -> dict[str, jax.Array]:
+    return {key: jnp.concatenate([chunk[key] for chunk in chunks], axis=0) for key in chunks[0]}
 
 
 @partial(jax.jit, static_argnames=("hours",), donate_argnums=(0,))
@@ -692,6 +875,63 @@ def run_forecast_operational(state: State, namelist: OperationalNamelist, hours:
     return carry.state
 
 
+@partial(jax.jit, static_argnames=("hours",), donate_argnums=(0,))
+def run_forecast_operational_with_limiter_diagnostics(
+    state: State,
+    namelist: OperationalNamelist,
+    hours: float,
+) -> tuple[State, dict[str, jax.Array]]:
+    """Run an operational forecast and return INV-10 theta limiter diagnostics."""
+
+    if int(namelist.rk_order) != 3:
+        raise ValueError("operational mode currently supports RK3 only")
+    initial = initial_operational_carry(_enforce_operational_precision(state))
+    steps = _steps_for_hours(hours, float(namelist.dt_s))
+    cadence = int(namelist.radiation_cadence_steps)
+    if cadence <= 0:
+        raise ValueError("radiation_cadence_steps must be positive")
+
+    carry = initial
+    step = 1
+    diagnostic_chunks: list[dict[str, jax.Array]] = []
+    while step <= steps:
+        next_radiation = ((step + cadence - 1) // cadence) * cadence
+        if bool(namelist.run_physics) and next_radiation <= steps:
+            non_radiation_steps = next_radiation - step
+            if non_radiation_steps:
+                carry, diagnostics = _scan_forecast_segment_with_limiter_diagnostics(
+                    carry,
+                    namelist,
+                    start_step=step,
+                    steps=non_radiation_steps,
+                    run_radiation=False,
+                    debug=False,
+                )
+                diagnostic_chunks.append(diagnostics)
+            carry, diagnostics = _scan_forecast_segment_with_limiter_diagnostics(
+                carry,
+                namelist,
+                start_step=next_radiation,
+                steps=1,
+                run_radiation=True,
+                debug=False,
+            )
+            diagnostic_chunks.append(diagnostics)
+            step = next_radiation + 1
+        else:
+            carry, diagnostics = _scan_forecast_segment_with_limiter_diagnostics(
+                carry,
+                namelist,
+                start_step=step,
+                steps=steps - step + 1,
+                run_radiation=False,
+                debug=False,
+            )
+            diagnostic_chunks.append(diagnostics)
+            step = steps + 1
+    return carry.state, _concat_theta_limiter_diagnostics(diagnostic_chunks)
+
+
 @partial(jax.jit, static_argnames=("hours", "debug"), donate_argnums=(0,))
 def run_forecast_operational_debug(state: State, namelist: OperationalNamelist, hours: float, *, debug: bool = False) -> State:
     """Diagnostic operational forecast entry point with static debug markers."""
@@ -741,4 +981,9 @@ def run_forecast_operational_debug(state: State, namelist: OperationalNamelist, 
     return carry.state
 
 
-__all__ = ["OperationalNamelist", "run_forecast_operational", "run_forecast_operational_debug"]
+__all__ = [
+    "OperationalNamelist",
+    "run_forecast_operational",
+    "run_forecast_operational_debug",
+    "run_forecast_operational_with_limiter_diagnostics",
+]
