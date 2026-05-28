@@ -1,0 +1,40 @@
+{
+  "aggregate_report": ".agent/sprints/2026-05-27-testing-plan-execution-redo/aggregate_report.md",
+  "execution_root": "/tmp/pubtest_redo",
+  "gpu_preflight": {
+    "available": true,
+    "command": {
+      "cmd": [
+        "nvidia-smi",
+        "--query-gpu=name,memory.total,memory.used",
+        "--format=csv,noheader"
+      ],
+      "cwd": "/tmp/wrf_gpu2_testexec2",
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "NVIDIA GeForce RTX 5090, 32607 MiB, 26201 MiB\n",
+      "timed_out": false,
+      "timeout_s": 5
+    },
+    "skipped": false
+  },
+  "missing_or_invalid_verdicts": [],
+  "proof_dir": ".agent/sprints/2026-05-27-testing-plan-execution-redo",
+  "proof_objects": [
+    ".agent/sprints/2026-05-27-testing-plan-execution-redo/idealized_warmbubble.json",
+    ".agent/sprints/2026-05-27-testing-plan-execution-redo/idealized_density_current.json",
+    ".agent/sprints/2026-05-27-testing-plan-execution-redo/idealized_mountain_wave.json",
+    ".agent/sprints/2026-05-27-testing-plan-execution-redo/canary_case_manifest.json",
+    ".agent/sprints/2026-05-27-testing-plan-execution-redo/canary_multiday_skill.json",
+    ".agent/sprints/2026-05-27-testing-plan-execution-redo/canary_first_error_growth.json",
+    ".agent/sprints/2026-05-27-testing-plan-execution-redo/conservation_mass_24h.json",
+    ".agent/sprints/2026-05-27-testing-plan-execution-redo/conservation_energy_24h.json",
+    ".agent/sprints/2026-05-27-testing-plan-execution-redo/stability_cfl_sweep.json",
+    ".agent/sprints/2026-05-27-testing-plan-execution-redo/stability_acoustic_substep.json",
+    ".agent/sprints/2026-05-27-testing-plan-execution-redo/determinism_repeat.json",
+    ".agent/sprints/2026-05-27-testing-plan-execution-redo/savepoint_parity_deep.json"
+  ],
+  "run_heavy": true,
+  "status": "EXECUTION_PARTIAL",
+  "total_gpu_hours_used": 1.226422552104446
+}
