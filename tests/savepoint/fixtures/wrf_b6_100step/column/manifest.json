@@ -1,0 +1,991 @@
+{
+  "created_utc": "2026-05-28T18:39:46.158313+00:00",
+  "dt_seconds": 6.0,
+  "file_sha256": {
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step001_history_interp_full_timestep.nc": "697541203c315d8e0fbfac30c109cf00df632c91d188fdc683725900d860a644",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step002_history_interp_full_timestep.nc": "5782bb3a20b82d0057e7385149fe1463bb92fbd1d3ed1fc8bda0b0c5726a87ad",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step003_history_interp_full_timestep.nc": "ee2d04d50e38cb85ad46ee32f038a0c011c2a0a68634841a1050d495f0e4ec3b",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step004_history_interp_full_timestep.nc": "8e29813a31373762f421a3ed2e442e5dcc880009caa7a9756aeb17eb312a4743",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step005_history_interp_full_timestep.nc": "9af4d0e47d6a56d0e7db92b0dfef49b37119c6c3c999091fcd5e550c4772266c",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step006_history_interp_full_timestep.nc": "b1a6612175167f6be5fda3327107ae059190f5f3fe568f3f14a77c9138d1db8a",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step007_history_interp_full_timestep.nc": "552a5e538407c8c1d781b38a7b5702376d932f7d6d474bd1abd75e3ddec52fe7",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step008_history_interp_full_timestep.nc": "b6abef0ba508674ecc7a4f9c5dc281e0c048191a0793e55ad69cac1f899391a0",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step009_history_interp_full_timestep.nc": "f1e9b83bce32cade7b9f6b031baab36433d36c3b04024d77b647f1619947a87a",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step010_history_interp_full_timestep.nc": "76976f21065a4c91e41caa356ddeb04867cb703d07385fb573659ba03bafc05c",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step011_history_interp_full_timestep.nc": "f8bb40ef8791bfef2542728974f1996cf5486ac89c1619b1b5a1a685e95bf7ac",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step012_history_interp_full_timestep.nc": "a8be59f5f34bb2511aab5a5195a817c89d42681351cd5615ee524355b305a6f5",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step013_history_interp_full_timestep.nc": "2be9d088cc644b64d062884696719b7c8aa8cc5528b31d98335270b63d87f241",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step014_history_interp_full_timestep.nc": "40d95c56b2e92235aa14519e53e2fb09da7658fc70fc57cb8faf4f39723d6da9",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step015_history_interp_full_timestep.nc": "ea5bf0c456dcd90c7cc4841c133c1099f631064a1f51a1c5d343e7f3d6aecb78",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step016_history_interp_full_timestep.nc": "a39acd34fafcfe3da7d1bc97738a30b2231cdc94662b9ae6b5fcc2d7f7892e1b",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step017_history_interp_full_timestep.nc": "800870662abd48c03e97142f3f18259878a340b1a579912f518fff043c2d3995",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step018_history_interp_full_timestep.nc": "fa1ef3d05068177f9dfbbfdb86c8bc44acf4741b0f27ceb4c4f9a298aaa76cfd",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step019_history_interp_full_timestep.nc": "fea3b33824cae5f0ea2e9f8e7b95f36a6b9893b1ca43d7a9bcb09c56e8ba5167",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step020_history_interp_full_timestep.nc": "a549250aba82f193f85d1b6fe075efb8386ae49dfdc6b6b027e5ade4f48d2ace",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step021_history_interp_full_timestep.nc": "9f3d6680fdbe9440428de00f3f1716d454964b357f58dd2f912ae0019f73e61a",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step022_history_interp_full_timestep.nc": "88d2b751350348def6191539c9d27026341ff4ba26dd5d1e943b2ad6b3ba7e8a",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step023_history_interp_full_timestep.nc": "fdc376ee383e6efd94aaf9d7cf92dbfdba50de73bff5fbfd503844473ce93986",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step024_history_interp_full_timestep.nc": "75759ecd4fddcb882bc3620662ddb11ab9b0116814860e2420877696f1d3d38f",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step025_history_interp_full_timestep.nc": "8d0fa680f02e6d1fd882304ee1e83fe9051ee52da3d5e34609a579e4a3329512",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step026_history_interp_full_timestep.nc": "abfcc165f481ad4d8597b8a09cf8a303ea24937a6ab3f3b8e342db2a942b1479",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step027_history_interp_full_timestep.nc": "f2bff5a9b0d587bc6466d639b8d5af933a6641b844388cef8564535bf44a2275",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step028_history_interp_full_timestep.nc": "c68d9089b65ad43de2a7bc52de7493896d1ff05925ea0ba93d6d9b9ed719acd9",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step029_history_interp_full_timestep.nc": "2b7545cf3b8ef8c6ffaaaad837a5e24498d0447616c53bba720688f7d2151ef5",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step030_history_interp_full_timestep.nc": "6b77b355ca7f003f4567e979e34419a5dc5339f4632000aff29f01e490de0ee8",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step031_history_interp_full_timestep.nc": "3ae06714115c0cc97cda19d2c338092edf76ccf8209d4b13204a963bce773a07",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step032_history_interp_full_timestep.nc": "fc79d24d6e1742dc5f2b60c45f7b3730ce1daca8903874958e5b613997339910",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step033_history_interp_full_timestep.nc": "3806a03fcff978e767a946d16424b55a4bb99f3605fb43d9eb0546faf1e22a66",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step034_history_interp_full_timestep.nc": "691d56a11bc116cee649f6798bcf8bd758221404fbfc1d3cbf0cc1000de9c13f",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step035_history_interp_full_timestep.nc": "a34a621f2268d40a0cadbc54dac2a1e757994bb2e03da8fd5b8d2c63527d767a",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step036_history_interp_full_timestep.nc": "fc5f2c8406ae22a658dd8da5e1001ad6adde2bd3ea67716516e6ee997be7c660",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step037_history_interp_full_timestep.nc": "e073ab2d09ce1ebeb6d5c62e5a4bc3f0f5cbb98d7ea15bd207edce89db7f858e",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step038_history_interp_full_timestep.nc": "b5f668e27663f32961cfc2400f92cf1062f3783b265d448de571b498bc735bc4",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step039_history_interp_full_timestep.nc": "d9e6ba7b32dfb85580775c22209b9470e1937a46301e19452b697d83281dd68c",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step040_history_interp_full_timestep.nc": "8f006da8cdebefe7a4d15dc1004804bbedb23eb2a090ecaebed423cf3bd93b93",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step041_history_interp_full_timestep.nc": "77b083ffc60f1e7cf514503ea5d23a5e300abac6585bb9387222529bf9c850d7",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step042_history_interp_full_timestep.nc": "5791b4147c1ca34f1bd85d804f59b0b47fd60d8e89c604b5a9e94dda97711baa",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step043_history_interp_full_timestep.nc": "f46b65857af603b22e5e1490e7018cda2ad335f773924ee0252c648865f059e7",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step044_history_interp_full_timestep.nc": "ada1d02061a22817ad558573907c1062748bf3e76bc40b2627434ad4ed6ab952",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step045_history_interp_full_timestep.nc": "d802401e3339fa0b287825c7b56483aa8738745b54f06a8f75a0c66fe88bd1d1",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step046_history_interp_full_timestep.nc": "92b7e14bd9db9be67ece58a826625118d95207780b00676b870dad09ba5c0495",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step047_history_interp_full_timestep.nc": "27781097087d9bde499af45e756bbe51cc4faade2f1a6003f967de1a8365739a",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step048_history_interp_full_timestep.nc": "cb794495b35cfcda61fcc62e66cabbddec849f4e94783901ed994f6158b6f1f7",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step049_history_interp_full_timestep.nc": "8e421b81a9cb2da29b8ec27dc6ae4cdea3f7c37f67c97e74fbaf2f2a98840489",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step050_history_interp_full_timestep.nc": "bb1b67ce97bf299d78f45925b7df4e8fb79d47f4883440235ef970a73cf7910e",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step051_history_interp_full_timestep.nc": "412c28cdc782eedebcedddf3c6460c07ad47875292df32f67781cb6e24b3f196",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step052_history_interp_full_timestep.nc": "b712366b0902b9706ef8e8253af15d22d275c26ee5f0ff4e1cb702aab4cffdac",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step053_history_interp_full_timestep.nc": "bbc183ef4bf05d8e3d57563d788e5394b263f0b80eb355e2e441bdd85d759c23",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step054_history_interp_full_timestep.nc": "edc2da50ec2185711e9cda790bc9ffaff32bf30da28e7ffeb169457cd639398f",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step055_history_interp_full_timestep.nc": "66c64fbab32403c5831291b6d2b7e9902e2611394b6f371fae751e9bb040ad34",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step056_history_interp_full_timestep.nc": "a7953c4b0a88f1e05f4a7dcaa5145e808d47f4d1b5c71e34d423f41d1374b519",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step057_history_interp_full_timestep.nc": "b36ce2d9cd8e5c3ba6e11f4d50bcc63280ca60af0d3fd114a3792a516b6a002f",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step058_history_interp_full_timestep.nc": "6bd788420ed3a771005580788d863e43ced70b05dbad5ee0523abd81b2913b7a",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step059_history_interp_full_timestep.nc": "cd08e7e08ed1beb62b7c4ac02ecc45c9ac60026e7506421f6f554343f20edf97",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step060_history_interp_full_timestep.nc": "3c6c7b4b613cbfd2cced7095b5923e01c698a4bafd1b44912546e580e0a6eefd",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step061_history_interp_full_timestep.nc": "9c328fab2daef860d452c326e5bca44a2fbdd8129c2be025caab1b5faa58ae51",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step062_history_interp_full_timestep.nc": "beca7ae1e5e7d5054f19afa8be0fff6bedef110c78479075621de748d9a71c57",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step063_history_interp_full_timestep.nc": "364ed3ae521509bae4778a3b3a2f81779f8f81500a8846507117f11283a0ad03",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step064_history_interp_full_timestep.nc": "a0cda852f3ba11fd242fb108853e2733f2b1a99b8448b3db176e21fd18c0c254",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step065_history_interp_full_timestep.nc": "350e303c57db1c97224e38cce1dd1da4ccc3ac3d1021a292dd8e2cc5d186c1cd",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step066_history_interp_full_timestep.nc": "e6320aa321f7df6fadb634fdc97fae25154cf16bbce99e0b0c16abf1867f6ded",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step067_history_interp_full_timestep.nc": "381390f906ba79c1bba1f97f26bea5b400f6e4fe9a4f7beb78ff458b260dac94",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step068_history_interp_full_timestep.nc": "02e1aab1f9c77e2c85e1c3335f6df5682ec3afb381dc0c015255b830d325740f",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step069_history_interp_full_timestep.nc": "8aa8dbba231680765f6bc80c9791dc622b84fc4e9097c1cde1766c8d7ea68ba0",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step070_history_interp_full_timestep.nc": "fef2220f874855252c710866691920519da7e9712fe22abf67a969827d1e80b1",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step071_history_interp_full_timestep.nc": "d993fff1abaea345484c1358ae56c05b872a9901224987e2ed30481b43474af0",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step072_history_interp_full_timestep.nc": "a1544a4cf9e969f0b7a5c200ad87fbe52e75bca4c35278c8d4aa153f62abc54b",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step073_history_interp_full_timestep.nc": "8776aa0d91d1a0032fade802becef9d71ccbc407ec0541a2f0341dfd5ccb40c6",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step074_history_interp_full_timestep.nc": "69015e18d2a97cb9b2221b702297bc4698d6ae0e55f07062b64cd3b809f4fc93",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step075_history_interp_full_timestep.nc": "b70afc0dc5e1ea9309dfbb9c2a0af7ab203d9368e78633536559e78426b6e056",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step076_history_interp_full_timestep.nc": "1e1a41b10cd7addb846494fd5bc7f243409302e52a8150ce73afb017037c694b",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step077_history_interp_full_timestep.nc": "4801e40f7b7928484eea5aff57605120d0c48d13ae4640367c01dba1450275dc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step078_history_interp_full_timestep.nc": "371e00b20f53d31411ebd23e99eee3f34e287ac49ee347e0139a92dfc08202fd",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step079_history_interp_full_timestep.nc": "4cbc352f940807f7338c6738c9a888b078cc2d9f2a9fc4b720fc3d159b343947",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step080_history_interp_full_timestep.nc": "70b610ad9727fe0f441b88f79a4523d43480c040455fce194af674c382fceb55",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step081_history_interp_full_timestep.nc": "cd8c0d70256346016e348421532a7ddff1ac783fe21d6cb2e592071ae3734536",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step082_history_interp_full_timestep.nc": "ff05cce265ed25aff1ebc839c41deb071e13c891227d21e3129a19237d951b62",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step083_history_interp_full_timestep.nc": "5e145b9b4ad6bae11a7c21c0852a03506b36b35d662dfcd5d0f954277f536c06",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step084_history_interp_full_timestep.nc": "13e014452e46c3ad4f8e2968d9b936d5475070b9c27f01752b09628408c17368",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step085_history_interp_full_timestep.nc": "bc4bdcac6602b24f25ff773973105a2a5eda593dea8db4ec44c3dfc4433b324f",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step086_history_interp_full_timestep.nc": "f816bc38d4515df101dbdbbc68b859e316aa373a722c4325252df6858c8eaefc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step087_history_interp_full_timestep.nc": "e11b824be1ad67f526c2ed1afdda44b642d8edb026ec2927e4065cd3b4a9ea59",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step088_history_interp_full_timestep.nc": "29af8c25037ad25377e093b3c3b53d5a9bd1b7031497d0c9f62cd0f0b1f4760e",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step089_history_interp_full_timestep.nc": "ea18aabf9a010d57398d3b903e693465e9d3341d677368a74fb4c00b32a320be",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step090_history_interp_full_timestep.nc": "40572602e739d17a73b5c0a2af81ec52348e72ea4418f9d7141e08a36f3ca2d3",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step091_history_interp_full_timestep.nc": "f7008aaedca1f465156c68ec2ffd9036f125286f8bd7c3a5b78b3748e20c5846",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step092_history_interp_full_timestep.nc": "f7805c68eb1fbc3d4462aca8028d4f4b8f3dcab3d31b3e7a81c73d748a65100e",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step093_history_interp_full_timestep.nc": "89e0aa594ff27a2847f0c806856aa44f8824c671beb677d4cc6d5027bede7628",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step094_history_interp_full_timestep.nc": "34c8ec495decaa8ef8579d7fdd7a164d11823680f8946f2e8327dbbff80db4f3",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step095_history_interp_full_timestep.nc": "4eb290f1d88e88d2db83389b766c78e2c53201579c0204081c18267b1bfb7366",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step096_history_interp_full_timestep.nc": "69307875519e8c83c73e542e5b34ea63522f9f1cc1827c0c1d9c0850927bf3e1",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step097_history_interp_full_timestep.nc": "3a2a7dad5b93547e983fcae9e46a7deee8a54057af58531453ddec6ee8fc9e11",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step098_history_interp_full_timestep.nc": "b1840cf342bfde100dc000040f1a4fa2dc886c312fc9cc0f0ee1811c07c67a8b",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step099_history_interp_full_timestep.nc": "38f49e700319c49a932dfebd6c4f0165b1eff8baf767f0287ef8b130bd84467d",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step100_history_interp_full_timestep.nc": "d1fa2fcc8d1a48a9dd830d4f714d210f298c72df71ff4c3653c8c39df3d830f0"
+  },
+  "files": [
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step001_history_interp_full_timestep.nc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step002_history_interp_full_timestep.nc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step003_history_interp_full_timestep.nc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step004_history_interp_full_timestep.nc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step005_history_interp_full_timestep.nc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step006_history_interp_full_timestep.nc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step007_history_interp_full_timestep.nc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step008_history_interp_full_timestep.nc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step009_history_interp_full_timestep.nc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step010_history_interp_full_timestep.nc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step011_history_interp_full_timestep.nc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step012_history_interp_full_timestep.nc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step013_history_interp_full_timestep.nc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step014_history_interp_full_timestep.nc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step015_history_interp_full_timestep.nc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step016_history_interp_full_timestep.nc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step017_history_interp_full_timestep.nc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step018_history_interp_full_timestep.nc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step019_history_interp_full_timestep.nc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step020_history_interp_full_timestep.nc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step021_history_interp_full_timestep.nc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step022_history_interp_full_timestep.nc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step023_history_interp_full_timestep.nc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step024_history_interp_full_timestep.nc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step025_history_interp_full_timestep.nc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step026_history_interp_full_timestep.nc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step027_history_interp_full_timestep.nc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step028_history_interp_full_timestep.nc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step029_history_interp_full_timestep.nc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step030_history_interp_full_timestep.nc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step031_history_interp_full_timestep.nc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step032_history_interp_full_timestep.nc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step033_history_interp_full_timestep.nc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step034_history_interp_full_timestep.nc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step035_history_interp_full_timestep.nc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step036_history_interp_full_timestep.nc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step037_history_interp_full_timestep.nc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step038_history_interp_full_timestep.nc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step039_history_interp_full_timestep.nc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step040_history_interp_full_timestep.nc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step041_history_interp_full_timestep.nc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step042_history_interp_full_timestep.nc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step043_history_interp_full_timestep.nc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step044_history_interp_full_timestep.nc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step045_history_interp_full_timestep.nc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step046_history_interp_full_timestep.nc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step047_history_interp_full_timestep.nc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step048_history_interp_full_timestep.nc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step049_history_interp_full_timestep.nc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step050_history_interp_full_timestep.nc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step051_history_interp_full_timestep.nc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step052_history_interp_full_timestep.nc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step053_history_interp_full_timestep.nc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step054_history_interp_full_timestep.nc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step055_history_interp_full_timestep.nc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step056_history_interp_full_timestep.nc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step057_history_interp_full_timestep.nc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step058_history_interp_full_timestep.nc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step059_history_interp_full_timestep.nc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step060_history_interp_full_timestep.nc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step061_history_interp_full_timestep.nc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step062_history_interp_full_timestep.nc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step063_history_interp_full_timestep.nc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step064_history_interp_full_timestep.nc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step065_history_interp_full_timestep.nc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step066_history_interp_full_timestep.nc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step067_history_interp_full_timestep.nc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step068_history_interp_full_timestep.nc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step069_history_interp_full_timestep.nc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step070_history_interp_full_timestep.nc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step071_history_interp_full_timestep.nc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step072_history_interp_full_timestep.nc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step073_history_interp_full_timestep.nc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step074_history_interp_full_timestep.nc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step075_history_interp_full_timestep.nc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step076_history_interp_full_timestep.nc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step077_history_interp_full_timestep.nc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step078_history_interp_full_timestep.nc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step079_history_interp_full_timestep.nc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step080_history_interp_full_timestep.nc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step081_history_interp_full_timestep.nc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step082_history_interp_full_timestep.nc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step083_history_interp_full_timestep.nc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step084_history_interp_full_timestep.nc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step085_history_interp_full_timestep.nc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step086_history_interp_full_timestep.nc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step087_history_interp_full_timestep.nc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step088_history_interp_full_timestep.nc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step089_history_interp_full_timestep.nc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step090_history_interp_full_timestep.nc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step091_history_interp_full_timestep.nc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step092_history_interp_full_timestep.nc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step093_history_interp_full_timestep.nc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step094_history_interp_full_timestep.nc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step095_history_interp_full_timestep.nc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step096_history_interp_full_timestep.nc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step097_history_interp_full_timestep.nc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step098_history_interp_full_timestep.nc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step099_history_interp_full_timestep.nc",
+    "/tmp/wrf_gpu2_f1/tests/savepoint/fixtures/wrf_b6_100step/column/wrf_step100_history_interp_full_timestep.nc"
+  ],
+  "fixture_id": "f1-wrf-b6-100step-column-history-fallback",
+  "history_interval_seconds": 3600.0,
+  "license_notes": "Derived, compact column/patch fixture from local real CPU WRF NetCDF history; original WRF outputs stay outside git.",
+  "limitation": "Fallback only: linear interpolation between hourly WRF history outputs. No per-RK-stage or per-acoustic-substep Fortran savepoints were available.",
+  "schema": "f1-real-wrf-history-fallback-v1",
+  "self_compare": false,
+  "source_end": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T072630Z/wrfout_d02_2026-05-22_01:00:00",
+  "source_end_sha256": "729ba65073da81132a4f984d21c573a1a5553464482ef8eec587d89a0ed69ff5",
+  "source_start": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T072630Z/wrfout_d02_2026-05-22_00:00:00",
+  "source_start_sha256": "53c4455feb27094a4e823c73e6ef7aa5c8f75d0fd592aad637a71320972d0523",
+  "source_type": "real_wrf_history_fallback",
+  "source_wrf_commit": "115e5756f98ee2370d62b6709baac6417d8f7338",
+  "stage": "history_interp_full_timestep",
+  "steps": 100,
+  "tier": "column",
+  "variables": {
+    "MU": {
+      "abs_tolerance": null,
+      "dimension_order": [
+        "south_north",
+        "west_east"
+      ],
+      "dtype": "float64",
+      "rel_tolerance": null,
+      "shape": [
+        3,
+        3
+      ],
+      "stagger": "mass",
+      "units": "Pa"
+    },
+    "MUB": {
+      "abs_tolerance": null,
+      "dimension_order": [
+        "south_north",
+        "west_east"
+      ],
+      "dtype": "float64",
+      "rel_tolerance": null,
+      "shape": [
+        3,
+        3
+      ],
+      "stagger": "mass",
+      "units": "Pa"
+    },
+    "P": {
+      "abs_tolerance": null,
+      "dimension_order": [
+        "bottom_top",
+        "south_north",
+        "west_east"
+      ],
+      "dtype": "float64",
+      "rel_tolerance": null,
+      "shape": [
+        44,
+        3,
+        3
+      ],
+      "stagger": "mass",
+      "units": "Pa"
+    },
+    "PB": {
+      "abs_tolerance": null,
+      "dimension_order": [
+        "bottom_top",
+        "south_north",
+        "west_east"
+      ],
+      "dtype": "float64",
+      "rel_tolerance": null,
+      "shape": [
+        44,
+        3,
+        3
+      ],
+      "stagger": "mass",
+      "units": "Pa"
+    },
+    "PH": {
+      "abs_tolerance": null,
+      "dimension_order": [
+        "bottom_top_stag",
+        "south_north",
+        "west_east"
+      ],
+      "dtype": "float64",
+      "rel_tolerance": null,
+      "shape": [
+        45,
+        3,
+        3
+      ],
+      "stagger": "w",
+      "units": "m2 s-2"
+    },
+    "PHB": {
+      "abs_tolerance": null,
+      "dimension_order": [
+        "bottom_top_stag",
+        "south_north",
+        "west_east"
+      ],
+      "dtype": "float64",
+      "rel_tolerance": null,
+      "shape": [
+        45,
+        3,
+        3
+      ],
+      "stagger": "w",
+      "units": "m2 s-2"
+    },
+    "QVAPOR": {
+      "abs_tolerance": null,
+      "dimension_order": [
+        "bottom_top",
+        "south_north",
+        "west_east"
+      ],
+      "dtype": "float64",
+      "rel_tolerance": null,
+      "shape": [
+        44,
+        3,
+        3
+      ],
+      "stagger": "mass",
+      "units": "kg kg-1"
+    },
+    "T": {
+      "abs_tolerance": null,
+      "dimension_order": [
+        "bottom_top",
+        "south_north",
+        "west_east"
+      ],
+      "dtype": "float64",
+      "rel_tolerance": null,
+      "shape": [
+        44,
+        3,
+        3
+      ],
+      "stagger": "mass",
+      "units": "K"
+    },
+    "U": {
+      "abs_tolerance": null,
+      "dimension_order": [
+        "bottom_top",
+        "south_north",
+        "west_east_stag"
+      ],
+      "dtype": "float64",
+      "rel_tolerance": null,
+      "shape": [
+        44,
+        3,
+        4
+      ],
+      "stagger": "u",
+      "units": "m s-1"
+    },
+    "V": {
+      "abs_tolerance": null,
+      "dimension_order": [
+        "bottom_top",
+        "south_north_stag",
+        "west_east"
+      ],
+      "dtype": "float64",
+      "rel_tolerance": null,
+      "shape": [
+        44,
+        4,
+        3
+      ],
+      "stagger": "v",
+      "units": "m s-1"
+    },
+    "W": {
+      "abs_tolerance": null,
+      "dimension_order": [
+        "bottom_top_stag",
+        "south_north",
+        "west_east"
+      ],
+      "dtype": "float64",
+      "rel_tolerance": null,
+      "shape": [
+        45,
+        3,
+        3
+      ],
+      "stagger": "w",
+      "units": "m s-1"
+    },
+    "mu": {
+      "abs_tolerance": 3e-06,
+      "dimension_order": [
+        "south_north",
+        "west_east"
+      ],
+      "dtype": "float64",
+      "rel_tolerance": 3e-10,
+      "shape": [
+        3,
+        3
+      ],
+      "stagger": "mass",
+      "units": "Pa"
+    },
+    "mu_bdy_tend": {
+      "abs_tolerance": 1e-10,
+      "dimension_order": [
+        "south_north",
+        "west_east"
+      ],
+      "dtype": "float64",
+      "rel_tolerance": 1e-10,
+      "shape": [
+        3,
+        3
+      ],
+      "stagger": "mass",
+      "units": "Pa s-1"
+    },
+    "muave": {
+      "abs_tolerance": 3e-06,
+      "dimension_order": [
+        "south_north",
+        "west_east"
+      ],
+      "dtype": "float64",
+      "rel_tolerance": 3e-10,
+      "shape": [
+        3,
+        3
+      ],
+      "stagger": "mass",
+      "units": "Pa"
+    },
+    "mudf": {
+      "abs_tolerance": 3e-08,
+      "dimension_order": [
+        "south_north",
+        "west_east"
+      ],
+      "dtype": "float64",
+      "rel_tolerance": 3e-10,
+      "shape": [
+        3,
+        3
+      ],
+      "stagger": "mass",
+      "units": "Pa s-1"
+    },
+    "mut": {
+      "abs_tolerance": 3e-06,
+      "dimension_order": [
+        "south_north",
+        "west_east"
+      ],
+      "dtype": "float64",
+      "rel_tolerance": 3e-10,
+      "shape": [
+        3,
+        3
+      ],
+      "stagger": "mass",
+      "units": "Pa"
+    },
+    "muts": {
+      "abs_tolerance": 3e-06,
+      "dimension_order": [
+        "south_north",
+        "west_east"
+      ],
+      "dtype": "float64",
+      "rel_tolerance": 3e-10,
+      "shape": [
+        3,
+        3
+      ],
+      "stagger": "mass",
+      "units": "Pa"
+    },
+    "p": {
+      "abs_tolerance": 3e-06,
+      "dimension_order": [
+        "bottom_top",
+        "south_north",
+        "west_east"
+      ],
+      "dtype": "float64",
+      "rel_tolerance": 3e-10,
+      "shape": [
+        44,
+        3,
+        3
+      ],
+      "stagger": "mass",
+      "units": "Pa"
+    },
+    "pb": {
+      "abs_tolerance": null,
+      "dimension_order": [
+        "bottom_top",
+        "south_north",
+        "west_east"
+      ],
+      "dtype": "float64",
+      "rel_tolerance": null,
+      "shape": [
+        44,
+        3,
+        3
+      ],
+      "stagger": "mass",
+      "units": "Pa"
+    },
+    "ph": {
+      "abs_tolerance": 3e-06,
+      "dimension_order": [
+        "bottom_top_stag",
+        "south_north",
+        "west_east"
+      ],
+      "dtype": "float64",
+      "rel_tolerance": 3e-10,
+      "shape": [
+        45,
+        3,
+        3
+      ],
+      "stagger": "w",
+      "units": "m2 s-2"
+    },
+    "ph_tend": {
+      "abs_tolerance": 3e-08,
+      "dimension_order": [
+        "bottom_top_stag",
+        "south_north",
+        "west_east"
+      ],
+      "dtype": "float64",
+      "rel_tolerance": 3e-10,
+      "shape": [
+        45,
+        3,
+        3
+      ],
+      "stagger": "w",
+      "units": "m2 s-3"
+    },
+    "phb": {
+      "abs_tolerance": null,
+      "dimension_order": [
+        "bottom_top_stag",
+        "south_north",
+        "west_east"
+      ],
+      "dtype": "float64",
+      "rel_tolerance": null,
+      "shape": [
+        45,
+        3,
+        3
+      ],
+      "stagger": "w",
+      "units": "m2 s-2"
+    },
+    "qc": {
+      "abs_tolerance": null,
+      "dimension_order": [
+        "bottom_top",
+        "south_north",
+        "west_east"
+      ],
+      "dtype": "float64",
+      "rel_tolerance": null,
+      "shape": [
+        44,
+        3,
+        3
+      ],
+      "stagger": "mass",
+      "units": "kg kg-1"
+    },
+    "qc_phys_tend": {
+      "abs_tolerance": 1e-10,
+      "dimension_order": [
+        "bottom_top",
+        "south_north",
+        "west_east"
+      ],
+      "dtype": "float64",
+      "rel_tolerance": 1e-10,
+      "shape": [
+        44,
+        3,
+        3
+      ],
+      "stagger": "mass",
+      "units": "kg kg-1 s-1"
+    },
+    "qg": {
+      "abs_tolerance": null,
+      "dimension_order": [
+        "bottom_top",
+        "south_north",
+        "west_east"
+      ],
+      "dtype": "float64",
+      "rel_tolerance": null,
+      "shape": [
+        44,
+        3,
+        3
+      ],
+      "stagger": "mass",
+      "units": "kg kg-1"
+    },
+    "qg_phys_tend": {
+      "abs_tolerance": 1e-10,
+      "dimension_order": [
+        "bottom_top",
+        "south_north",
+        "west_east"
+      ],
+      "dtype": "float64",
+      "rel_tolerance": 1e-10,
+      "shape": [
+        44,
+        3,
+        3
+      ],
+      "stagger": "mass",
+      "units": "kg kg-1 s-1"
+    },
+    "qi": {
+      "abs_tolerance": null,
+      "dimension_order": [
+        "bottom_top",
+        "south_north",
+        "west_east"
+      ],
+      "dtype": "float64",
+      "rel_tolerance": null,
+      "shape": [
+        44,
+        3,
+        3
+      ],
+      "stagger": "mass",
+      "units": "kg kg-1"
+    },
+    "qi_phys_tend": {
+      "abs_tolerance": 1e-10,
+      "dimension_order": [
+        "bottom_top",
+        "south_north",
+        "west_east"
+      ],
+      "dtype": "float64",
+      "rel_tolerance": 1e-10,
+      "shape": [
+        44,
+        3,
+        3
+      ],
+      "stagger": "mass",
+      "units": "kg kg-1 s-1"
+    },
+    "qke": {
+      "abs_tolerance": null,
+      "dimension_order": [
+        "bottom_top",
+        "south_north",
+        "west_east"
+      ],
+      "dtype": "float64",
+      "rel_tolerance": null,
+      "shape": [
+        44,
+        3,
+        3
+      ],
+      "stagger": "mass",
+      "units": "m2 s-2"
+    },
+    "qke_phys_tend": {
+      "abs_tolerance": 1e-10,
+      "dimension_order": [
+        "bottom_top",
+        "south_north",
+        "west_east"
+      ],
+      "dtype": "float64",
+      "rel_tolerance": 1e-10,
+      "shape": [
+        44,
+        3,
+        3
+      ],
+      "stagger": "mass",
+      "units": "m2 s-3"
+    },
+    "qr": {
+      "abs_tolerance": null,
+      "dimension_order": [
+        "bottom_top",
+        "south_north",
+        "west_east"
+      ],
+      "dtype": "float64",
+      "rel_tolerance": null,
+      "shape": [
+        44,
+        3,
+        3
+      ],
+      "stagger": "mass",
+      "units": "kg kg-1"
+    },
+    "qr_phys_tend": {
+      "abs_tolerance": 1e-10,
+      "dimension_order": [
+        "bottom_top",
+        "south_north",
+        "west_east"
+      ],
+      "dtype": "float64",
+      "rel_tolerance": 1e-10,
+      "shape": [
+        44,
+        3,
+        3
+      ],
+      "stagger": "mass",
+      "units": "kg kg-1 s-1"
+    },
+    "qs": {
+      "abs_tolerance": null,
+      "dimension_order": [
+        "bottom_top",
+        "south_north",
+        "west_east"
+      ],
+      "dtype": "float64",
+      "rel_tolerance": null,
+      "shape": [
+        44,
+        3,
+        3
+      ],
+      "stagger": "mass",
+      "units": "kg kg-1"
+    },
+    "qs_phys_tend": {
+      "abs_tolerance": 1e-10,
+      "dimension_order": [
+        "bottom_top",
+        "south_north",
+        "west_east"
+      ],
+      "dtype": "float64",
+      "rel_tolerance": 1e-10,
+      "shape": [
+        44,
+        3,
+        3
+      ],
+      "stagger": "mass",
+      "units": "kg kg-1 s-1"
+    },
+    "qv": {
+      "abs_tolerance": null,
+      "dimension_order": [
+        "bottom_top",
+        "south_north",
+        "west_east"
+      ],
+      "dtype": "float64",
+      "rel_tolerance": null,
+      "shape": [
+        44,
+        3,
+        3
+      ],
+      "stagger": "mass",
+      "units": "kg kg-1"
+    },
+    "qv_phys_tend": {
+      "abs_tolerance": 1e-10,
+      "dimension_order": [
+        "bottom_top",
+        "south_north",
+        "west_east"
+      ],
+      "dtype": "float64",
+      "rel_tolerance": 1e-10,
+      "shape": [
+        44,
+        3,
+        3
+      ],
+      "stagger": "mass",
+      "units": "kg kg-1 s-1"
+    },
+    "t_2ave": {
+      "abs_tolerance": 3e-08,
+      "dimension_order": [
+        "bottom_top",
+        "south_north",
+        "west_east"
+      ],
+      "dtype": "float64",
+      "rel_tolerance": 3e-10,
+      "shape": [
+        44,
+        3,
+        3
+      ],
+      "stagger": "mass",
+      "units": "K"
+    },
+    "theta": {
+      "abs_tolerance": 3e-08,
+      "dimension_order": [
+        "bottom_top",
+        "south_north",
+        "west_east"
+      ],
+      "dtype": "float64",
+      "rel_tolerance": 3e-10,
+      "shape": [
+        44,
+        3,
+        3
+      ],
+      "stagger": "mass",
+      "units": "K"
+    },
+    "theta_phys_tend": {
+      "abs_tolerance": 1e-10,
+      "dimension_order": [
+        "bottom_top",
+        "south_north",
+        "west_east"
+      ],
+      "dtype": "float64",
+      "rel_tolerance": 1e-10,
+      "shape": [
+        44,
+        3,
+        3
+      ],
+      "stagger": "mass",
+      "units": "K s-1"
+    },
+    "u": {
+      "abs_tolerance": 3e-08,
+      "dimension_order": [
+        "bottom_top",
+        "south_north",
+        "west_east_stag"
+      ],
+      "dtype": "float64",
+      "rel_tolerance": 3e-10,
+      "shape": [
+        44,
+        3,
+        4
+      ],
+      "stagger": "u",
+      "units": "m s-1"
+    },
+    "u_phys_tend": {
+      "abs_tolerance": 1e-10,
+      "dimension_order": [
+        "bottom_top",
+        "south_north",
+        "west_east_stag"
+      ],
+      "dtype": "float64",
+      "rel_tolerance": 1e-10,
+      "shape": [
+        44,
+        3,
+        4
+      ],
+      "stagger": "u",
+      "units": "m s-2"
+    },
+    "v": {
+      "abs_tolerance": 3e-08,
+      "dimension_order": [
+        "bottom_top",
+        "south_north_stag",
+        "west_east"
+      ],
+      "dtype": "float64",
+      "rel_tolerance": 3e-10,
+      "shape": [
+        44,
+        4,
+        3
+      ],
+      "stagger": "v",
+      "units": "m s-1"
+    },
+    "v_phys_tend": {
+      "abs_tolerance": 1e-10,
+      "dimension_order": [
+        "bottom_top",
+        "south_north_stag",
+        "west_east"
+      ],
+      "dtype": "float64",
+      "rel_tolerance": 1e-10,
+      "shape": [
+        44,
+        4,
+        3
+      ],
+      "stagger": "v",
+      "units": "m s-2"
+    },
+    "w": {
+      "abs_tolerance": 3e-07,
+      "dimension_order": [
+        "bottom_top_stag",
+        "south_north",
+        "west_east"
+      ],
+      "dtype": "float64",
+      "rel_tolerance": 3e-10,
+      "shape": [
+        45,
+        3,
+        3
+      ],
+      "stagger": "w",
+      "units": "m s-1"
+    },
+    "w_phys_tend": {
+      "abs_tolerance": 1e-10,
+      "dimension_order": [
+        "bottom_top_stag",
+        "south_north",
+        "west_east"
+      ],
+      "dtype": "float64",
+      "rel_tolerance": 1e-10,
+      "shape": [
+        45,
+        3,
+        3
+      ],
+      "stagger": "w",
+      "units": "m s-2"
+    },
+    "ww": {
+      "abs_tolerance": 3e-07,
+      "dimension_order": [
+        "bottom_top_stag",
+        "south_north",
+        "west_east"
+      ],
+      "dtype": "float64",
+      "rel_tolerance": 3e-10,
+      "shape": [
+        45,
+        3,
+        3
+      ],
+      "stagger": "w",
+      "units": "Pa s-1"
+    }
+  }
+}

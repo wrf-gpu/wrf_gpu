@@ -8,14 +8,16 @@ import hashlib
 import importlib.util
 import json
 import os
+import re
 import sys
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 os.environ.setdefault("JAX_PLATFORM_NAME", "cpu")
+os.environ.setdefault("JAX_PLATFORMS", "cpu")
 os.environ.setdefault("XLA_PYTHON_CLIENT_PREALLOCATE", "false")
 
 import numpy as np
@@ -25,22 +27,28 @@ from gpuwrf.dynamics.acoustic_loop import AcousticLoopState
 from gpuwrf.dynamics.coupled_step import (
     COUPLED_STATE_FIELDS,
     NAMELIST_PHYSICS_BOUNDARY_ON,
+    PHYSICS_TENDENCY_FIELDS,
     CoupledStepConfig,
     coupled_timesteps_wrf,
 )
 from gpuwrf.io.boundary_replay import SIDES, decode_wrfbdy
 from gpuwrf.validation.comparator_common import DEFAULT_GEN2_WRFOUT, field_compare
-from gpuwrf.validation.savepoint_io import read_savepoint, write_savepoint
+from gpuwrf.validation.savepoint_io import write_savepoint
 from gpuwrf.validation.savepoint_schema import Savepoint, SavepointMetadata, VariableMetadata, load_tolerance_ladder
 
 
 SPRINT = ROOT / ".agent/sprints/2026-05-25-m6b6-coupled-step-parity"
+WRF_REFERENCE_FIXTURE_ROOT = ROOT / "tests/savepoint/fixtures/wrf_b6_100step"
 WRF_COMMIT = "115e5756f98ee2370d62b6709baac6417d8f7338"
 SOURCE_WRFOUT = DEFAULT_GEN2_WRFOUT
 SOURCE_WRFBDY = DEFAULT_GEN2_WRFOUT.parent / "wrfbdy_d01"
 COMPARE_FIELDS = COUPLED_STATE_FIELDS
 ACOUSTIC_SUBSTEPS_PER_RK = 10
 RK_ORDER = 3
+WRF_FALLBACK_STAGE = "history_interp_full_timestep"
+WRF_HISTORY_INTERVAL_SECONDS = 3600.0
+WRF_RAW_FIELDS = ("U", "V", "W", "T", "MU", "MUB", "P", "PB", "PH", "PHB", "QVAPOR")
+HYDRO_FIELDS = ("QCLOUD", "QRAIN", "QICE", "QSNOW", "QGRAUP", "QKE")
 
 
 def _import_script(name: str):
@@ -61,6 +69,335 @@ def _sha256_path(path: Path) -> str:
         for chunk in iter(lambda: handle.read(1024 * 1024), b""):
             digest.update(chunk)
     return digest.hexdigest()
+
+
+def _parse_wrfout_stamp(path: Path) -> tuple[str, datetime]:
+    match = re.match(r"wrfout_d(?P<domain>\d{2})_(?P<stamp>\d{4}-\d{2}-\d{2}_\d{2}:\d{2}:\d{2})$", path.name)
+    if match is None:
+        raise ValueError(f"cannot parse WRF history timestamp from {path}")
+    stamp = datetime.strptime(match.group("stamp"), "%Y-%m-%d_%H:%M:%S")
+    return match.group("domain"), stamp.replace(tzinfo=timezone.utc)
+
+
+def _resolve_next_wrfout(path: Path) -> Path:
+    domain, stamp = _parse_wrfout_stamp(path)
+    next_stamp = stamp + timedelta(seconds=WRF_HISTORY_INTERVAL_SECONDS)
+    direct = path.parent / f"wrfout_d{domain}_{next_stamp:%Y-%m-%d_%H:%M:%S}"
+    if direct.exists():
+        return direct
+    candidates: list[tuple[datetime, Path]] = []
+    for candidate in sorted(path.parent.glob(f"wrfout_d{domain}_*")):
+        try:
+            _, candidate_stamp = _parse_wrfout_stamp(candidate)
+        except ValueError:
+            continue
+        if candidate_stamp > stamp:
+            candidates.append((candidate_stamp, candidate))
+    if not candidates:
+        raise FileNotFoundError(f"no later WRF history file found next to {path}")
+    return candidates[0][1]
+
+
+def _fixture_file(tier: str, step: int, stage: str = WRF_FALLBACK_STAGE, fixture_root: Path = WRF_REFERENCE_FIXTURE_ROOT) -> Path:
+    return fixture_root / tier / f"wrf_step{int(step):03d}_{stage}.nc"
+
+
+def _stagger_for_field(name: str) -> str:
+    if name in {"u", "U", "u_phys_tend"}:
+        return "u"
+    if name in {"v", "V", "v_phys_tend"}:
+        return "v"
+    if name in {"w", "W", "ww", "ph", "PH", "phb", "PHB", "ph_tend", "w_phys_tend"}:
+        return "w"
+    if name in {"mu", "MU", "mut", "MUB", "mudf", "muts", "muave", "mu_bdy_tend"}:
+        return "mass"
+    if name in {"theta", "T", "t_2ave", "p", "P", "pb", "PB", "qv", "QVAPOR", "qc", "qr", "qi", "qs", "qg", "qke"}:
+        return "mass"
+    if name.endswith("_phys_tend"):
+        return "mass"
+    return "scalar"
+
+
+def _units_for_field(name: str) -> str:
+    ladder = _coupled_ladder()
+    if name in ladder["fields"]:
+        return str(ladder["fields"][name]["units"])  # type: ignore[index]
+    raw_units = {
+        "U": "m s-1",
+        "V": "m s-1",
+        "W": "m s-1",
+        "T": "K",
+        "MU": "Pa",
+        "MUB": "Pa",
+        "P": "Pa",
+        "PB": "Pa",
+        "PH": "m2 s-2",
+        "PHB": "m2 s-2",
+        "QVAPOR": "kg kg-1",
+        "pb": "Pa",
+        "phb": "m2 s-2",
+        "qv": "kg kg-1",
+        "qc": "kg kg-1",
+        "qr": "kg kg-1",
+        "qi": "kg kg-1",
+        "qs": "kg kg-1",
+        "qg": "kg kg-1",
+        "qke": "m2 s-2",
+    }
+    return raw_units.get(name, "operator-native")
+
+
+def _dims_for_array(name: str, array: np.ndarray) -> tuple[str, ...]:
+    stagger = _stagger_for_field(name)
+    if array.ndim == 2:
+        return ("south_north", "west_east")
+    if array.ndim != 3:
+        return tuple(f"{name}_dim_{idx}" for idx in range(array.ndim))
+    if stagger == "u":
+        return ("bottom_top", "south_north", "west_east_stag")
+    if stagger == "v":
+        return ("bottom_top", "south_north_stag", "west_east")
+    if stagger == "w":
+        return ("bottom_top_stag", "south_north", "west_east")
+    return ("bottom_top", "south_north", "west_east")
+
+
+def _optional_history_var(
+    ds: Dataset,
+    name: str,
+    shape: tuple[int, ...],
+    ys: slice,
+    xs: slice,
+    default: float = 0.0,
+) -> np.ndarray:
+    if name not in ds.variables:
+        return np.ones(shape, dtype=np.float64) * default
+    data = ds.variables[name]
+    if len(data.shape) == 4:
+        return np.asarray(data[0, :, ys, xs], dtype=np.float64)
+    if len(data.shape) == 3:
+        return np.asarray(data[0, ys, xs], dtype=np.float64)
+    return np.asarray(data[:], dtype=np.float64)
+
+
+def _load_wrf_history_arrays(path: Path, attrs: dict[str, object]) -> dict[str, np.ndarray]:
+    ys, xs = _slice_attrs(attrs)
+    u_x = slice(xs.start, xs.stop + 1)
+    v_y = slice(ys.start, ys.stop + 1)
+    with Dataset(path) as ds:
+        theta = np.asarray(ds.variables["T"][0, :, ys, xs], dtype=np.float64)
+        w = np.asarray(ds.variables["W"][0, :, ys, xs], dtype=np.float64)
+        mu = np.asarray(ds.variables["MU"][0, ys, xs], dtype=np.float64)
+        mut = np.asarray(ds.variables["MUB"][0, ys, xs], dtype=np.float64)
+        arrays = {
+            "U": np.asarray(ds.variables["U"][0, :, ys, u_x], dtype=np.float64),
+            "V": np.asarray(ds.variables["V"][0, :, v_y, xs], dtype=np.float64),
+            "W": w,
+            "T": theta,
+            "MU": mu,
+            "MUB": mut,
+            "P": np.asarray(ds.variables["P"][0, :, ys, xs], dtype=np.float64),
+            "PB": np.asarray(ds.variables["PB"][0, :, ys, xs], dtype=np.float64),
+            "PH": np.asarray(ds.variables["PH"][0, :, ys, xs], dtype=np.float64),
+            "PHB": np.asarray(ds.variables["PHB"][0, :, ys, xs], dtype=np.float64),
+            "QVAPOR": np.asarray(ds.variables["QVAPOR"][0, :, ys, xs], dtype=np.float64),
+        }
+        mass_shape = theta.shape
+        for raw_name in HYDRO_FIELDS:
+            arrays[raw_name] = _optional_history_var(ds, raw_name, mass_shape, ys, xs, 0.0)
+    return arrays
+
+
+def _interpolate_history(
+    start: dict[str, np.ndarray],
+    end: dict[str, np.ndarray],
+    fraction: float,
+    interval_seconds: float,
+) -> dict[str, np.ndarray]:
+    fraction = float(max(0.0, min(1.0, fraction)))
+    interp = {name: np.asarray(start[name] + fraction * (end[name] - start[name]), dtype=np.float64) for name in start}
+    zeros_w = np.zeros_like(interp["W"], dtype=np.float64)
+    arrays = {
+        "mu": interp["MU"],
+        "mut": interp["MUB"],
+        "mudf": (end["MU"] - start["MU"]) / float(interval_seconds),
+        "muts": interp["MU"] + interp["MUB"],
+        "muave": interp["MU"],
+        "ww": zeros_w,
+        "theta": interp["T"],
+        "ph_tend": (end["PH"] - start["PH"]) / float(interval_seconds),
+        "u": interp["U"],
+        "v": interp["V"],
+        "w": interp["W"],
+        "ph": interp["PH"],
+        "p": interp["P"],
+        "t_2ave": interp["T"],
+        "theta_phys_tend": (end["T"] - start["T"]) / float(interval_seconds),
+        "qv_phys_tend": (end["QVAPOR"] - start["QVAPOR"]) / float(interval_seconds),
+        "qc_phys_tend": (end["QCLOUD"] - start["QCLOUD"]) / float(interval_seconds),
+        "qr_phys_tend": (end["QRAIN"] - start["QRAIN"]) / float(interval_seconds),
+        "qi_phys_tend": (end["QICE"] - start["QICE"]) / float(interval_seconds),
+        "qs_phys_tend": (end["QSNOW"] - start["QSNOW"]) / float(interval_seconds),
+        "qg_phys_tend": (end["QGRAUP"] - start["QGRAUP"]) / float(interval_seconds),
+        "qke_phys_tend": (end["QKE"] - start["QKE"]) / float(interval_seconds),
+        "u_phys_tend": (end["U"] - start["U"]) / float(interval_seconds),
+        "v_phys_tend": (end["V"] - start["V"]) / float(interval_seconds),
+        "w_phys_tend": (end["W"] - start["W"]) / float(interval_seconds),
+        "mu_bdy_tend": (end["MU"] - start["MU"]) / float(interval_seconds),
+        "pb": interp["PB"],
+        "phb": interp["PHB"],
+        "qv": interp["QVAPOR"],
+        "qc": interp["QCLOUD"],
+        "qr": interp["QRAIN"],
+        "qi": interp["QICE"],
+        "qs": interp["QSNOW"],
+        "qg": interp["QGRAUP"],
+        "qke": interp["QKE"],
+    }
+    arrays.update({name: interp[name] for name in WRF_RAW_FIELDS})
+    return arrays
+
+
+def _write_wrf_fixture_nc(
+    path: Path,
+    arrays: dict[str, np.ndarray],
+    *,
+    tier: str,
+    step: int,
+    attrs: dict[str, object],
+    source_start: Path,
+    source_end: Path,
+    fraction: float,
+) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    mass = np.asarray(arrays["theta"])
+    w = np.asarray(arrays["w"])
+    with Dataset(path, "w") as ds:
+        ds.createDimension("bottom_top", int(mass.shape[0]))
+        ds.createDimension("bottom_top_stag", int(w.shape[0]))
+        ds.createDimension("south_north", int(mass.shape[1]))
+        ds.createDimension("west_east", int(mass.shape[2]))
+        ds.createDimension("south_north_stag", int(mass.shape[1] + 1))
+        ds.createDimension("west_east_stag", int(mass.shape[2] + 1))
+        ds.setncattr("schema", "f1-real-wrf-history-fallback-v1")
+        ds.setncattr("tier", tier)
+        ds.setncattr("step", int(step))
+        ds.setncattr("stage", WRF_FALLBACK_STAGE)
+        ds.setncattr("source_start", str(source_start))
+        ds.setncattr("source_end", str(source_end))
+        ds.setncattr("history_fraction", float(fraction))
+        ds.setncattr("dt_seconds", float(attrs["dt"]))
+        ds.setncattr("limitation", "Linear interpolation between real CPU WRF hourly wrfout files; not a Fortran RK/acoustic savepoint.")
+        for name in sorted(arrays):
+            array = np.asarray(arrays[name], dtype=np.float64)
+            dims = _dims_for_array(name, array)
+            var = ds.createVariable(name, "f8", dims, zlib=True, complevel=1)
+            var[:] = array
+            var.setncattr("units", _units_for_field(name))
+            var.setncattr("stagger", _stagger_for_field(name))
+            var.setncattr("dimension_order", ",".join(dims))
+            var.setncattr("source", "real CPU WRF wrfout history fallback")
+
+
+def ensure_wrf_reference_fixture(
+    tier: str,
+    steps: int,
+    fixture_root: Path = WRF_REFERENCE_FIXTURE_ROOT,
+) -> dict[str, object]:
+    """Create or reuse the F1 fallback fixture from real CPU WRF history.
+
+    This is intentionally a fallback, not a parity-grade RK/acoustic oracle. It
+    keeps the comparator honest by separating the WRF reference path from JAX
+    emissions when true Fortran savepoint hooks are unavailable.
+    """
+
+    fixture_dir = fixture_root / tier
+    manifest_path = fixture_dir / "manifest.json"
+    expected_files = [_fixture_file(tier, step, fixture_root=fixture_root) for step in range(1, int(steps) + 1)]
+    if manifest_path.exists() and all(path.exists() for path in expected_files):
+        try:
+            manifest = json.loads(manifest_path.read_text())
+            if (
+                manifest.get("source_start") == str(SOURCE_WRFOUT)
+                and manifest.get("steps") == int(steps)
+                and manifest.get("stage") == WRF_FALLBACK_STAGE
+                and manifest.get("self_compare") is False
+            ):
+                return manifest
+        except json.JSONDecodeError:
+            pass
+
+    _state, attrs, _extras = _load_initial_state(tier)
+    source_start = SOURCE_WRFOUT
+    source_end = _resolve_next_wrfout(source_start)
+    start_arrays = _load_wrf_history_arrays(source_start, attrs)
+    end_arrays = _load_wrf_history_arrays(source_end, attrs)
+    dt_seconds = float(attrs["dt"])
+    files: list[str] = []
+    for step in range(1, int(steps) + 1):
+        fraction = min(float(step) * dt_seconds / WRF_HISTORY_INTERVAL_SECONDS, 1.0)
+        arrays = _interpolate_history(start_arrays, end_arrays, fraction, WRF_HISTORY_INTERVAL_SECONDS)
+        path = _fixture_file(tier, step, fixture_root=fixture_root)
+        _write_wrf_fixture_nc(
+            path,
+            arrays,
+            tier=tier,
+            step=step,
+            attrs=attrs,
+            source_start=source_start,
+            source_end=source_end,
+            fraction=fraction,
+        )
+        files.append(str(path))
+
+    ladder = _coupled_ladder()
+    variables = {}
+    sample_arrays = _interpolate_history(
+        start_arrays,
+        end_arrays,
+        min(dt_seconds / WRF_HISTORY_INTERVAL_SECONDS, 1.0),
+        WRF_HISTORY_INTERVAL_SECONDS,
+    )
+    for name, array in sample_arrays.items():
+        entry = ladder["fields"].get(name, {"abs": None, "rel": None, "units": _units_for_field(name)})  # type: ignore[union-attr]
+        variables[name] = {
+            "shape": list(np.asarray(array).shape),
+            "dtype": str(np.asarray(array).dtype),
+            "units": str(entry["units"]),
+            "stagger": _stagger_for_field(name),
+            "dimension_order": list(_dims_for_array(name, np.asarray(array))),
+            "abs_tolerance": entry.get("abs"),
+            "rel_tolerance": entry.get("rel"),
+        }
+
+    manifest = {
+        "fixture_id": f"f1-wrf-b6-100step-{tier}-history-fallback",
+        "schema": "f1-real-wrf-history-fallback-v1",
+        "source_type": "real_wrf_history_fallback",
+        "self_compare": False,
+        "stage": WRF_FALLBACK_STAGE,
+        "tier": tier,
+        "steps": int(steps),
+        "dt_seconds": dt_seconds,
+        "history_interval_seconds": WRF_HISTORY_INTERVAL_SECONDS,
+        "source_start": str(source_start),
+        "source_end": str(source_end),
+        "source_start_sha256": _sha256_path(source_start),
+        "source_end_sha256": _sha256_path(source_end),
+        "source_wrf_commit": WRF_COMMIT,
+        "created_utc": datetime.now(timezone.utc).isoformat(),
+        "files": files,
+        "file_sha256": {path: _sha256_path(Path(path)) for path in files},
+        "variables": variables,
+        "license_notes": "Derived, compact column/patch fixture from local real CPU WRF NetCDF history; original WRF outputs stay outside git.",
+        "limitation": (
+            "Fallback only: linear interpolation between hourly WRF history outputs. "
+            "No per-RK-stage or per-acoustic-substep Fortran savepoints were available."
+        ),
+    }
+    manifest_path.parent.mkdir(parents=True, exist_ok=True)
+    manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n")
+    return manifest
 
 
 def _set_source_paths(wrfout: Path, wrfbdy: Path | None = None) -> None:
@@ -257,7 +594,7 @@ def _savepoint(
     )
 
 
-def emit_tier(tier: str, steps: int, output: Path, snapshots: list[dict[str, np.ndarray]] | None = None) -> dict[str, object]:
+def emit_jax_savepoints(tier: str, steps: int, output: Path, snapshots: list[dict[str, np.ndarray]] | None = None) -> dict[str, object]:
     output.mkdir(parents=True, exist_ok=True)
     if snapshots is None:
         snapshots, context = _coupled_steps(tier, steps)
@@ -290,11 +627,22 @@ def emit_tier(tier: str, steps: int, output: Path, snapshots: list[dict[str, np.
         "sanitizer_mode": "off",
         "cpu_operator_path": True,
         "direct_relinked_wrf": False,
+        "ground_truth": "none; JAX candidate emission only",
         "composition_order": "dycore_step -> Thompson mp=8 -> MYNN bl=5 -> RRTMG LW/SW ra=4/4 -> Gen2 wrfbdy boundary",
         "tolerance_rationale": "M6B5 dycore-step tolerance plus 1e-10 abs cap for physics-tendency fields per ADR-007 fp64-strict exception.",
     }
     (output / "manifest.json").write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n")
     return manifest
+
+
+def emit_tier(tier: str, steps: int, output: Path, snapshots: list[dict[str, np.ndarray]] | None = None) -> dict[str, object]:
+    """Backward-compatible wrapper for old call sites.
+
+    The F1 comparator treats this as candidate JAX emission only; it is never
+    used as expected truth.
+    """
+
+    return emit_jax_savepoints(tier, steps, output, snapshots)
 
 
 def _coupled_ladder() -> dict[str, object]:
@@ -307,43 +655,154 @@ def _coupled_ladder() -> dict[str, object]:
     }
 
 
+def _field_operator(name: str) -> str:
+    if name in PHYSICS_TENDENCY_FIELDS:
+        return "physics_or_boundary_tendency"
+    if name in {"u", "v", "w", "theta", "mu", "mut", "muts", "muave", "mudf", "ww", "ph", "p", "ph_tend", "t_2ave"}:
+        return "dycore_coupled_step"
+    return "unknown"
+
+
 def _compare_snapshot(expected: dict[str, np.ndarray], actual: dict[str, np.ndarray], ladder: dict[str, object]) -> dict[str, object]:
-    fields = {
-        name: field_compare(name, np.asarray(actual[name]), np.asarray(expected[name]), ladder)
-        for name in COMPARE_FIELDS
-    }
+    fields = {}
+    for name in COMPARE_FIELDS:
+        got = np.asarray(actual[name])
+        exp = np.asarray(expected[name])
+        item = field_compare(name, got, exp, ladder)
+        common_shape = tuple(min(a, b) for a, b in zip(exp.shape, got.shape))
+        slices = tuple(slice(0, dim) for dim in common_shape)
+        delta = got[slices] - exp[slices]
+        item["mean_abs_delta"] = float(np.nanmean(np.abs(delta))) if delta.size else float("nan")
+        item["operator"] = _field_operator(name)
+        fields[name] = item
     return {"passed": all(bool(item["passed"]) for item in fields.values()), "fields": fields}
 
 
-def compare_tier(tier: str, steps: int, savepoint_root: Path) -> dict[str, object]:
-    output = savepoint_root / tier
-    actual_steps, _context = _coupled_steps(tier, steps)
-    manifest = emit_tier(tier, steps, output, actual_steps)
-    expected_steps = [
-        read_savepoint(output / f"coupled_step_complete_step{step:03d}.h5").arrays
-        for step in range(1, int(steps) + 1)
+def load_wrf_savepoints(
+    step: int,
+    stage: str = WRF_FALLBACK_STAGE,
+    *,
+    tier: str = "column",
+    fixture_root: Path = WRF_REFERENCE_FIXTURE_ROOT,
+) -> dict[str, np.ndarray]:
+    path = _fixture_file(tier, int(step), stage, fixture_root)
+    if not path.exists():
+        raise FileNotFoundError(f"WRF reference savepoint missing: {path}")
+    with Dataset(path) as ds:
+        missing = [name for name in COMPARE_FIELDS if name not in ds.variables]
+        if missing:
+            raise ValueError(f"{path} missing WRF reference variables: {', '.join(missing)}")
+        return {name: np.asarray(ds.variables[name][:], dtype=np.float64) for name in COMPARE_FIELDS}
+
+
+def compare_jax_vs_wrf(
+    *,
+    tier: str,
+    step: int,
+    stage: str,
+    jax_snapshot: dict[str, np.ndarray],
+    fixture_root: Path,
+    ladder: dict[str, object],
+) -> dict[str, object]:
+    expected = load_wrf_savepoints(step, stage, tier=tier, fixture_root=fixture_root)
+    compared = _compare_snapshot(
+        {name: np.asarray(value) for name, value in expected.items()},
+        {name: np.asarray(value) for name, value in jax_snapshot.items()},
+        ladder,
+    )
+    first_failed = next((name for name, item in compared["fields"].items() if not bool(item["passed"])), None)
+    result = {
+        "step": int(step),
+        "tier": tier,
+        "stage": stage,
+        "path": str(_fixture_file(tier, int(step), stage, fixture_root)),
+        "boundary": "real_wrf_reference",
+        "first_failed_field": first_failed,
+        "first_failed_operator": _field_operator(str(first_failed)) if first_failed is not None else None,
+        **compared,
+    }
+    return result
+
+
+def _first_divergence(results: list[dict[str, object]]) -> dict[str, object] | None:
+    for result in results:
+        if bool(result["passed"]):
+            continue
+        field = result.get("first_failed_field")
+        if not field:
+            continue
+        field_result = result["fields"][field]  # type: ignore[index]
+        return {
+            "step": int(result["step"]),
+            "stage": str(result["stage"]),
+            "field": str(field),
+            "operator": str(result["first_failed_operator"]),
+            "max_abs_delta": float(field_result["max_abs_delta"]),  # type: ignore[index]
+            "mean_abs_delta": float(field_result["mean_abs_delta"]),  # type: ignore[index]
+            "tolerance": float(field_result["tolerance"]),  # type: ignore[index]
+            "location": field_result["location"],  # type: ignore[index]
+        }
+    return None
+
+
+def _delta_histogram(results: list[dict[str, object]]) -> dict[str, object]:
+    values = [
+        float(item["max_abs_delta"])
+        for result in results
+        for item in result["fields"].values()  # type: ignore[union-attr]
+        if np.isfinite(float(item["max_abs_delta"]))
     ]
+    if not values:
+        return {"bins": [], "counts": []}
+    counts, edges = np.histogram(np.asarray(values, dtype=np.float64), bins=10)
+    return {"bins": [float(value) for value in edges], "counts": [int(value) for value in counts]}
+
+
+def compare_tier(tier: str, steps: int, savepoint_root: Path) -> dict[str, object]:
+    output = savepoint_root / tier / "jax"
+    actual_steps, _context = _coupled_steps(tier, steps)
+    jax_manifest = emit_jax_savepoints(tier, steps, output, actual_steps)
+    wrf_manifest = ensure_wrf_reference_fixture(tier, int(steps), WRF_REFERENCE_FIXTURE_ROOT)
     ladder = _coupled_ladder()
     results = []
-    for step, (expected, actual) in enumerate(zip(expected_steps, actual_steps, strict=True), start=1):
-        compared = _compare_snapshot(
-            {name: np.asarray(value) for name, value in expected.items()},
-            {name: np.asarray(value) for name, value in actual.items()},
-            ladder,
+    for step, actual in enumerate(actual_steps, start=1):
+        results.append(
+            compare_jax_vs_wrf(
+                tier=tier,
+                step=step,
+                stage=WRF_FALLBACK_STAGE,
+                jax_snapshot=actual,
+                fixture_root=WRF_REFERENCE_FIXTURE_ROOT,
+                ladder=ladder,
+            )
         )
-        results.append({"step": step, "tier": tier, "path": str(output / f"coupled_step_complete_step{step:03d}.h5"), "boundary": "coupled_step_complete", **compared})
     passed = all(bool(item["passed"]) for item in results)
-    first_failed = next((item["step"] for item in results if not bool(item["passed"])), None)
-    failed_fields = 0 if passed else sum(1 for item in results[0]["fields"].values() if not bool(item["passed"]))
-    location = "PHYSICS" if failed_fields else "BOUNDARY"
-    outcome = "SEVENTH-COUPLED-STEP-PARITY-ACHIEVED" if passed else f"PARITY-DEFECT-LOCALIZED-AT-{location}-STEP-{first_failed}"
+    first = _first_divergence(results)
+    if passed:
+        outcome = f"REAL-WRF-PARITY-ACHIEVED-THROUGH-STEP-{int(steps)}"
+    elif first is not None:
+        outcome = (
+            "REAL-WRF-DIVERGENCE-AT-"
+            f"STEP-{first['step']}-STAGE-{first['stage']}-FIELD-{first['field']}-OPERATOR-{first['operator']}"
+        )
+    else:
+        outcome = "REAL-WRF-DIVERGENCE-WITHOUT-FIELD-ATTRIBUTION"
     return {
         "operator": "coupled_step",
         "tier": tier,
         "passed": bool(passed),
         "outcome": outcome,
         "savepoint_count": int(steps),
-        "manifest": manifest,
+        "manifest": jax_manifest,
+        "wrf_manifest": wrf_manifest,
+        "oracle": {
+            "source_type": wrf_manifest["source_type"],
+            "self_compare": False,
+            "stage": WRF_FALLBACK_STAGE,
+            "limitation": wrf_manifest["limitation"],
+        },
+        "first_divergence": first,
+        "delta_histogram": _delta_histogram(results),
         "results": results,
         "tolerance_ladder_path": str(ROOT / "src/gpuwrf/validation/tolerance_ladder.json"),
         "sanitizer_mode": "off",
