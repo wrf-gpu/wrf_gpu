@@ -1,0 +1,624 @@
+{
+  "registry_version": "1.0",
+  "registry_commit": "db7a8039f969d5eb2db3f80782b0e5fa414edd1b",
+  "generated_at": "2026-05-28T11:52:12Z",
+  "registry_rule_source": ".agent/sprints/2026-05-28-m8a-manifest-stats/sprint-contract.md:79",
+  "gate_contract": {
+    "required_fields": [
+      "id",
+      "name",
+      "schema_ref",
+      "schema_version",
+      "command",
+      "owner"
+    ],
+    "required_fields_source": ".agent/sprints/2026-05-28-m8a-manifest-stats/sprint-contract.md:86",
+    "future_detail_rule": "If exact command or schema location is premature, keep the gate enumerated and set specified_at to the milestone that must freeze it.",
+    "future_detail_rule_source": ".agent/sprints/2026-05-28-m8a-manifest-stats/sprint-contract.md:99"
+  },
+  "gates": {
+    "M8": [
+      {
+        "id": "M8.A.1",
+        "name": "current_state_manifest",
+        "schema_ref": "proof_index://schemas/current_state_manifest_v1",
+        "schema_version": "1.0",
+        "command": "taskset -c 0-3 python -m json.tool .agent/sprints/2026-05-28-m8a-manifest-stats/current_state_manifest.json >/tmp/current_state_manifest.normalized.json",
+        "owner": "manager",
+        "source": ".agent/sprints/2026-05-28-m8a-manifest-stats/sprint-contract.md:37"
+      },
+      {
+        "id": "M8.A.2",
+        "name": "proof_index_registry",
+        "schema_ref": "proof_index://schemas/proof_index_v1",
+        "schema_version": "1.0",
+        "command": "taskset -c 0-3 python -m json.tool .agent/sprints/2026-05-28-m8a-manifest-stats/proof_index.json >/tmp/proof_index.normalized.json",
+        "owner": "manager",
+        "source": ".agent/sprints/2026-05-28-m8a-manifest-stats/sprint-contract.md:79"
+      },
+      {
+        "id": "M8.A.3",
+        "name": "statistics_design_adr",
+        "schema_ref": "proof_index://schemas/adr_statistics_design_v1",
+        "schema_version": "1.0",
+        "command": "taskset -c 0-3 test -s .agent/decisions/ADR-029-STATISTICS-DESIGN-TOST.md",
+        "owner": "manager",
+        "source": ".agent/sprints/2026-05-28-m8a-manifest-stats/sprint-contract.md:101"
+      },
+      {
+        "id": "M8.B.1",
+        "name": "savepoint_harness_inventory_or_replacement",
+        "schema_ref": "proof_index://schemas/savepoint_harness_inventory_v1",
+        "schema_version": "1.0",
+        "command": "taskset -c 0-3 python scripts/close_sprint.py \"$SPRINT_DIR\"",
+        "owner": "codex",
+        "specified_at": "M8.B",
+        "source": ".agent/decisions/PROJECT-RESET-PLAN-FINAL.md:49"
+      },
+      {
+        "id": "M8.B.2",
+        "name": "operational_entry_point_inventory",
+        "schema_ref": "proof_index://schemas/operational_entry_inventory_v1",
+        "schema_version": "1.0",
+        "command": "taskset -c 0-3 python scripts/close_sprint.py \"$SPRINT_DIR\"",
+        "owner": "codex",
+        "specified_at": "M8.B",
+        "source": ".agent/decisions/PROJECT-RESET-PLAN-FINAL.md:201"
+      }
+    ],
+    "M9": [
+      {
+        "id": "M9.A.1",
+        "name": "divergence_map",
+        "schema_ref": "proof_index://schemas/divergence_map_v1",
+        "schema_version": "1.0",
+        "command": "taskset -c 0-3 python scripts/close_sprint.py \"$SPRINT_DIR\"",
+        "owner": "codex",
+        "specified_at": "M9",
+        "source": ".agent/decisions/PROJECT-RESET-PLAN-FINAL.md:50"
+      },
+      {
+        "id": "M9.A.2",
+        "name": "wrf_fortran_trace_bundle",
+        "schema_ref": "proof_index://schemas/wrf_trace_bundle_v1",
+        "schema_version": "1.0",
+        "command": "taskset -c 0-3 python scripts/close_sprint.py \"$SPRINT_DIR\"",
+        "owner": "codex",
+        "specified_at": "M9",
+        "source": ".agent/decisions/PROJECT-RESET-PLAN-FINAL.md:50"
+      },
+      {
+        "id": "M9.A.3",
+        "name": "operational_variable_parity_matrix",
+        "schema_ref": "proof_index://schemas/operational_variable_parity_v1",
+        "schema_version": "1.0",
+        "command": "taskset -c 0-3 python scripts/close_sprint.py \"$SPRINT_DIR\"",
+        "owner": "domain_reviewer",
+        "specified_at": "M9",
+        "source": ".agent/decisions/PROJECT-RESET-PLAN-FINAL.md:50"
+      }
+    ],
+    "M10": [
+      {
+        "id": "M10.A.1",
+        "name": "static_field_bitwise_parity",
+        "schema_ref": "proof_index://schemas/static_field_parity_v1",
+        "schema_version": "1.0",
+        "command": "taskset -c 0-3 pytest tests/test_m7_lu_index_audit.py tests/test_m6_noah_mp_prescribed.py",
+        "owner": "codex",
+        "source": ".agent/decisions/PROJECT-RESET-PLAN-FINAL.md:51"
+      },
+      {
+        "id": "M10.A.2",
+        "name": "state_lu_index_contract",
+        "schema_ref": "proof_index://schemas/state_contract_static_fields_v1",
+        "schema_version": "1.0",
+        "command": "taskset -c 0-3 python scripts/close_sprint.py \"$SPRINT_DIR\"",
+        "owner": "codex",
+        "specified_at": "M10",
+        "source": ".agent/sprints/2026-05-28-project-reset-critic/critique.md:76"
+      },
+      {
+        "id": "M10.A.3",
+        "name": "static_field_regression_proof",
+        "schema_ref": "proof_index://schemas/static_field_regression_v1",
+        "schema_version": "1.0",
+        "command": "taskset -c 0-3 python scripts/close_sprint.py \"$SPRINT_DIR\"",
+        "owner": "domain_reviewer",
+        "specified_at": "M10",
+        "source": ".agent/decisions/PROJECT-RESET-PLAN-FINAL.md:127"
+      }
+    ],
+    "M11": [
+      {
+        "id": "M11.A.1",
+        "name": "theta_mu_guard_accounting",
+        "schema_ref": "proof_index://schemas/guard_accounting_v1",
+        "schema_version": "1.0",
+        "command": "taskset -c 0-3 python scripts/close_sprint.py \"$SPRINT_DIR\"",
+        "owner": "codex",
+        "specified_at": "M11",
+        "source": ".agent/decisions/PROJECT-RESET-PLAN-FINAL.md:57"
+      },
+      {
+        "id": "M11.A.2",
+        "name": "theta_first_hour_savepoint_parity",
+        "schema_ref": "proof_index://schemas/theta_mu_savepoint_parity_v1",
+        "schema_version": "1.0",
+        "command": "taskset -c 0-3 python scripts/m6b6_coupled_step_compare.py",
+        "owner": "codex",
+        "specified_at": "M11",
+        "source": ".agent/decisions/PROJECT-RESET-PLAN-FINAL.md:57"
+      },
+      {
+        "id": "M11.A.3",
+        "name": "positive_definite_limiter_proof",
+        "schema_ref": "proof_index://schemas/positive_definite_limiter_v1",
+        "schema_version": "1.0",
+        "command": "taskset -c 0-3 python scripts/close_sprint.py \"$SPRINT_DIR\"",
+        "owner": "domain_reviewer",
+        "specified_at": "M11",
+        "source": ".agent/decisions/PROJECT-RESET-PLAN-FINAL.md:57"
+      }
+    ],
+    "M12": [
+      {
+        "id": "M12.A.1",
+        "name": "surface_layer_bitwise_outputs",
+        "schema_ref": "proof_index://schemas/surface_layer_bitwise_v1",
+        "schema_version": "1.0",
+        "command": "taskset -c 0-3 pytest tests/test_m5_mynn_column_shapes.py",
+        "owner": "codex",
+        "source": ".agent/decisions/PROJECT-RESET-PLAN-FINAL.md:58"
+      },
+      {
+        "id": "M12.A.2",
+        "name": "pbl_bottom_bc_flux_budget",
+        "schema_ref": "proof_index://schemas/pbl_flux_budget_v1",
+        "schema_version": "1.0",
+        "command": "taskset -c 0-3 python scripts/close_sprint.py \"$SPRINT_DIR\"",
+        "owner": "codex",
+        "specified_at": "M12",
+        "source": ".agent/decisions/PROJECT-RESET-PLAN-FINAL.md:58"
+      },
+      {
+        "id": "M12.A.3",
+        "name": "pinned_t2_skill_bound",
+        "schema_ref": "proof_index://schemas/pinned_skill_bound_v1",
+        "schema_version": "1.0",
+        "command": "taskset -c 0-3 python scripts/m7_gpu_vs_cpu_skill_diff.py",
+        "owner": "domain_reviewer",
+        "specified_at": "M12",
+        "source": ".agent/decisions/PROJECT-RESET-PLAN-FINAL.md:58"
+      }
+    ],
+    "M13": [
+      {
+        "id": "M13.A.1",
+        "name": "rrtmg_cadence_and_coszen",
+        "schema_ref": "proof_index://schemas/rrtmg_cadence_coszen_v1",
+        "schema_version": "1.0",
+        "command": "taskset -c 0-3 pytest tests/test_m5_rrtmg_column_shapes.py tests/test_m5_rrtmg_transfer_solver.py",
+        "owner": "codex",
+        "source": ".agent/decisions/PROJECT-RESET-PLAN-FINAL.md:59"
+      },
+      {
+        "id": "M13.A.2",
+        "name": "land_station_diurnal_amplitude",
+        "schema_ref": "proof_index://schemas/land_diurnal_amplitude_v1",
+        "schema_version": "1.0",
+        "command": "taskset -c 0-3 python scripts/m7_gpu_vs_cpu_skill_diff.py",
+        "owner": "domain_reviewer",
+        "specified_at": "M13",
+        "source": ".agent/decisions/PROJECT-RESET-PLAN-FINAL.md:59"
+      },
+      {
+        "id": "M13.A.3",
+        "name": "radiation_heating_rate_finiteness",
+        "schema_ref": "proof_index://schemas/radiation_heating_finite_v1",
+        "schema_version": "1.0",
+        "command": "taskset -c 0-3 python scripts/close_sprint.py \"$SPRINT_DIR\"",
+        "owner": "codex",
+        "specified_at": "M13",
+        "source": ".agent/decisions/PROJECT-RESET-PLAN-FINAL.md:59"
+      }
+    ],
+    "M14": [
+      {
+        "id": "M14.A.1",
+        "name": "boundary_field_coverage",
+        "schema_ref": "proof_index://schemas/boundary_field_coverage_v1",
+        "schema_version": "1.0",
+        "command": "taskset -c 0-3 pytest tests/test_m6_boundary_apply.py tests/test_m6_boundary_replay.py",
+        "owner": "codex",
+        "source": ".agent/decisions/PROJECT-RESET-PLAN-FINAL.md:60"
+      },
+      {
+        "id": "M14.A.2",
+        "name": "relax_zone_width_parity",
+        "schema_ref": "proof_index://schemas/relax_zone_width_v1",
+        "schema_version": "1.0",
+        "command": "taskset -c 0-3 python scripts/m6_boundary_dynamics_audit.py",
+        "owner": "codex",
+        "specified_at": "M14",
+        "source": ".agent/decisions/PROJECT-RESET-PLAN-FINAL.md:60"
+      },
+      {
+        "id": "M14.A.3",
+        "name": "boundary_strip_rmse",
+        "schema_ref": "proof_index://schemas/boundary_strip_rmse_v1",
+        "schema_version": "1.0",
+        "command": "taskset -c 0-3 python scripts/m6_d02_boundary_replay_1h.py",
+        "owner": "domain_reviewer",
+        "specified_at": "M14",
+        "source": ".agent/decisions/PROJECT-RESET-PLAN-FINAL.md:60"
+      }
+    ],
+    "M15": [
+      {
+        "id": "M15.A.1",
+        "name": "dry_mass_budget",
+        "schema_ref": "proof_index://schemas/conservation_mass_v1",
+        "schema_version": "1.0",
+        "command": "taskset -c 0-3 python scripts/diagnostic_conservation_tracker.py",
+        "owner": "codex",
+        "specified_at": "M15",
+        "source": ".agent/decisions/PROJECT-RESET-PLAN-FINAL.md:66"
+      },
+      {
+        "id": "M15.A.2",
+        "name": "water_budget_residual",
+        "schema_ref": "proof_index://schemas/conservation_water_v1",
+        "schema_version": "1.0",
+        "command": "taskset -c 0-3 python scripts/diagnostic_conservation_tracker.py",
+        "owner": "codex",
+        "specified_at": "M15",
+        "source": ".agent/decisions/PROJECT-RESET-PLAN-FINAL.md:66"
+      },
+      {
+        "id": "M15.A.3",
+        "name": "energy_budget_closure",
+        "schema_ref": "proof_index://schemas/conservation_energy_v1",
+        "schema_version": "1.0",
+        "command": "taskset -c 0-3 python scripts/diagnostic_conservation_tracker.py",
+        "owner": "domain_reviewer",
+        "specified_at": "M15",
+        "source": ".agent/decisions/PROJECT-RESET-PLAN-FINAL.md:66"
+      }
+    ],
+    "M16": [
+      {
+        "id": "M16.A.1",
+        "name": "prognostic_noah_mp_state_contract",
+        "schema_ref": "proof_index://schemas/noah_mp_state_contract_v1",
+        "schema_version": "1.0",
+        "command": "taskset -c 0-3 pytest tests/test_m6_noah_mp_prescribed.py",
+        "owner": "codex",
+        "specified_at": "M16",
+        "source": ".agent/decisions/PROJECT-RESET-PLAN-FINAL.md:73"
+      },
+      {
+        "id": "M16.A.2",
+        "name": "noah_mp_24h_wrf_parity",
+        "schema_ref": "proof_index://schemas/noah_mp_24h_parity_v1",
+        "schema_version": "1.0",
+        "command": "taskset -c 0-3 python scripts/close_sprint.py \"$SPRINT_DIR\"",
+        "owner": "domain_reviewer",
+        "specified_at": "M16",
+        "source": ".agent/decisions/PROJECT-RESET-PLAN-FINAL.md:73"
+      },
+      {
+        "id": "M16.A.3",
+        "name": "hourly_replay_removed_or_waived",
+        "schema_ref": "proof_index://schemas/land_replay_exit_v1",
+        "schema_version": "1.0",
+        "command": "taskset -c 0-3 python scripts/close_sprint.py \"$SPRINT_DIR\"",
+        "owner": "manager",
+        "specified_at": "M16",
+        "source": ".agent/decisions/PROJECT-RESET-PLAN-FINAL.md:73"
+      }
+    ],
+    "M17": [
+      {
+        "id": "M17.A.1",
+        "name": "microphysics_guard_removal",
+        "schema_ref": "proof_index://schemas/microphysics_guard_removal_v1",
+        "schema_version": "1.0",
+        "command": "taskset -c 0-3 pytest tests/test_m5_thompson_column_shapes.py",
+        "owner": "codex",
+        "specified_at": "M17",
+        "source": ".agent/decisions/PROJECT-RESET-PLAN-FINAL.md:79"
+      },
+      {
+        "id": "M17.A.2",
+        "name": "thompson_no_nan_24h",
+        "schema_ref": "proof_index://schemas/thompson_24h_stability_v1",
+        "schema_version": "1.0",
+        "command": "taskset -c 0-3 python scripts/close_sprint.py \"$SPRINT_DIR\"",
+        "owner": "codex",
+        "specified_at": "M17",
+        "source": ".agent/decisions/PROJECT-RESET-PLAN-FINAL.md:79"
+      },
+      {
+        "id": "M17.A.3",
+        "name": "microphysics_t2_skill_bound",
+        "schema_ref": "proof_index://schemas/pinned_skill_bound_v1",
+        "schema_version": "1.0",
+        "command": "taskset -c 0-3 python scripts/m7_gpu_vs_cpu_skill_diff.py",
+        "owner": "domain_reviewer",
+        "specified_at": "M17",
+        "source": ".agent/decisions/PROJECT-RESET-PLAN-FINAL.md:79"
+      }
+    ],
+    "M18": [
+      {
+        "id": "M18.A.1",
+        "name": "warm_bubble_runner",
+        "schema_ref": "proof_index://schemas/idealized_case_v1",
+        "schema_version": "1.0",
+        "command": "taskset -c 0-3 python scripts/pubtest_run_gpu_ideal.py",
+        "owner": "codex",
+        "specified_at": "M18",
+        "source": ".agent/decisions/PROJECT-RESET-PLAN-FINAL.md:67"
+      },
+      {
+        "id": "M18.A.2",
+        "name": "density_current_and_schaer_mountain_wave",
+        "schema_ref": "proof_index://schemas/idealized_case_v1",
+        "schema_version": "1.0",
+        "command": "taskset -c 0-3 python scripts/pubtest_compare_ideal.py",
+        "owner": "domain_reviewer",
+        "specified_at": "M18",
+        "source": ".agent/decisions/PROJECT-RESET-PLAN-FINAL.md:67"
+      },
+      {
+        "id": "M18.A.3",
+        "name": "acoustic_substep_and_cfl_ladder",
+        "schema_ref": "proof_index://schemas/idealized_cfl_ladder_v1",
+        "schema_version": "1.0",
+        "command": "taskset -c 0-3 pytest tests/test_pubtest_idealized_cases.py",
+        "owner": "codex",
+        "specified_at": "M18",
+        "source": ".agent/decisions/PROJECT-RESET-PLAN-FINAL.md:67"
+      }
+    ],
+    "M19": [
+      {
+        "id": "M19.A.1",
+        "name": "pinned_20260521_l3_skill",
+        "schema_ref": "proof_index://schemas/single_case_skill_v1",
+        "schema_version": "1.0",
+        "command": "taskset -c 0-3 python scripts/m7_gpu_vs_cpu_skill_diff.py",
+        "owner": "codex",
+        "specified_at": "M19",
+        "source": ".agent/decisions/PROJECT-RESET-PLAN-FINAL.md:80"
+      },
+      {
+        "id": "M19.A.2",
+        "name": "l2_d02_replay_skill",
+        "schema_ref": "proof_index://schemas/single_case_skill_v1",
+        "schema_version": "1.0",
+        "command": "taskset -c 0-3 python scripts/validate_skill.py",
+        "owner": "codex",
+        "specified_at": "M19",
+        "source": ".agent/decisions/PROJECT-RESET-PLAN-FINAL.md:80"
+      },
+      {
+        "id": "M19.A.3",
+        "name": "same_scorer_same_mask_audit",
+        "schema_ref": "proof_index://schemas/skill_mask_audit_v1",
+        "schema_version": "1.0",
+        "command": "taskset -c 0-3 python scripts/close_sprint.py \"$SPRINT_DIR\"",
+        "owner": "domain_reviewer",
+        "specified_at": "M19",
+        "source": ".agent/decisions/PROJECT-RESET-PLAN-FINAL.md:80"
+      }
+    ],
+    "M20": [
+      {
+        "id": "M20.A.1",
+        "name": "fifteen_case_l2_l3_manifest",
+        "schema_ref": "proof_index://schemas/validation_case_manifest_v1",
+        "schema_version": "1.0",
+        "command": "taskset -c 0-3 python scripts/pubtest_select_canary_cases.py",
+        "owner": "codex",
+        "specified_at": "M20",
+        "source": ".agent/decisions/PROJECT-RESET-PLAN-FINAL.md:86"
+      },
+      {
+        "id": "M20.A.2",
+        "name": "ic_bc_data_verification",
+        "schema_ref": "proof_index://schemas/ic_bc_data_manifest_v1",
+        "schema_version": "1.0",
+        "command": "taskset -c 0-3 python scripts/validate_fixture_manifest.py",
+        "owner": "codex",
+        "specified_at": "M20",
+        "source": ".agent/decisions/PROJECT-RESET-PLAN-FINAL.md:86"
+      },
+      {
+        "id": "M20.A.3",
+        "name": "statistics_design_reconfirmation",
+        "schema_ref": "proof_index://schemas/statistics_design_review_v1",
+        "schema_version": "1.0",
+        "command": "taskset -c 0-3 python scripts/close_sprint.py \"$SPRINT_DIR\"",
+        "owner": "statistics_reviewer",
+        "specified_at": "M20",
+        "source": ".agent/decisions/PROJECT-RESET-PLAN-FINAL.md:146"
+      }
+    ],
+    "M21": [
+      {
+        "id": "M21.A.1",
+        "name": "tost_equivalence_t2_u10_v10",
+        "schema_ref": "proof_index://schemas/tost_equivalence_v1",
+        "schema_version": "1.0",
+        "command": "taskset -c 0-3 python scripts/validate_skill.py",
+        "owner": "codex",
+        "specified_at": "M21",
+        "source": ".agent/decisions/PROJECT-RESET-PLAN-FINAL.md:87"
+      },
+      {
+        "id": "M21.A.2",
+        "name": "effect_sizes_and_confidence_intervals",
+        "schema_ref": "proof_index://schemas/tost_effects_ci_v1",
+        "schema_version": "1.0",
+        "command": "taskset -c 0-3 python scripts/close_sprint.py \"$SPRINT_DIR\"",
+        "owner": "statistics_reviewer",
+        "specified_at": "M21",
+        "source": ".agent/decisions/PROJECT-RESET-PLAN-FINAL.md:87"
+      },
+      {
+        "id": "M21.A.3",
+        "name": "blinded_statistics_audit",
+        "schema_ref": "proof_index://schemas/blinded_statistics_audit_v1",
+        "schema_version": "1.0",
+        "command": "taskset -c 0-3 python scripts/close_sprint.py \"$SPRINT_DIR\"",
+        "owner": "independent_verifier",
+        "specified_at": "M21",
+        "source": ".agent/decisions/PROJECT-RESET-PLAN-FINAL.md:150"
+      }
+    ],
+    "M22": [
+      {
+        "id": "M22.A.1",
+        "name": "warmed_nsys_transfer_audit",
+        "schema_ref": "proof_index://schemas/nsys_transfer_audit_v1",
+        "schema_version": "1.0",
+        "command": "taskset -c 0-3 python scripts/m7_d2h_audit.py",
+        "owner": "performance_auditor",
+        "specified_at": "M22",
+        "source": ".agent/decisions/PROJECT-RESET-PLAN-FINAL.md:93"
+      },
+      {
+        "id": "M22.A.2",
+        "name": "final_speedup_vs_28_rank_cpu",
+        "schema_ref": "proof_index://schemas/final_speedup_v1",
+        "schema_version": "1.0",
+        "command": "taskset -c 0-3 python scripts/m7_nsys_stats_extract.py",
+        "owner": "performance_auditor",
+        "specified_at": "M22",
+        "source": ".agent/decisions/PROJECT-RESET-PLAN-FINAL.md:93"
+      },
+      {
+        "id": "M22.A.3",
+        "name": "raw_timing_log_dedup_audit",
+        "schema_ref": "proof_index://schemas/cpu_timing_dedup_v1",
+        "schema_version": "1.0",
+        "command": "taskset -c 0-3 python scripts/close_sprint.py \"$SPRINT_DIR\"",
+        "owner": "independent_verifier",
+        "specified_at": "M22",
+        "source": ".agent/decisions/PROJECT-RESET-PLAN-FINAL.md:144"
+      }
+    ],
+    "M23": [
+      {
+        "id": "M23.A.1",
+        "name": "v0_1_0_release_tag_and_disclaimer",
+        "schema_ref": "proof_index://schemas/release_tag_v1",
+        "schema_version": "1.0",
+        "command": "taskset -c 0-3 python scripts/close_sprint.py \"$SPRINT_DIR\"",
+        "owner": "manager",
+        "specified_at": "M23",
+        "source": ".agent/decisions/PROJECT-RESET-PLAN-FINAL.md:94"
+      },
+      {
+        "id": "M23.A.2",
+        "name": "adr_coverage_audit",
+        "schema_ref": "proof_index://schemas/adr_coverage_audit_v1",
+        "schema_version": "1.0",
+        "command": "taskset -c 0-3 python scripts/close_sprint.py \"$SPRINT_DIR\"",
+        "owner": "independent_verifier",
+        "specified_at": "M23",
+        "source": ".agent/decisions/PROJECT-RESET-PLAN-FINAL.md:94"
+      },
+      {
+        "id": "M23.A.3",
+        "name": "no_156x_public_claim_scan",
+        "schema_ref": "proof_index://schemas/claim_scan_v1",
+        "schema_version": "1.0",
+        "command": "taskset -c 0-3 rg -n \"156(\\\\.82)?x|156(\\\\.82)?×\" README.md docs publication .agent || true",
+        "owner": "manager",
+        "specified_at": "M23",
+        "source": ".agent/decisions/PROJECT-RESET-PLAN-FINAL.md:170"
+      },
+      {
+        "id": "M23.A.4",
+        "name": "arxiv_preprint_companion",
+        "schema_ref": "proof_index://schemas/preprint_companion_v1",
+        "schema_version": "1.0",
+        "command": "taskset -c 0-3 python scripts/close_sprint.py \"$SPRINT_DIR\"",
+        "owner": "manager",
+        "specified_at": "M23",
+        "source": ".agent/decisions/PROJECT-RESET-PLAN-FINAL.md:94"
+      }
+    ]
+  },
+  "invariants": {
+    "INV-1": {
+      "name": "D2H zero",
+      "schema": "proof_index://schemas/nsys_transfer_audit_v1",
+      "applies_from": "M8",
+      "source": ".agent/decisions/PROJECT-RESET-PLAN-FINAL.md:120"
+    },
+    "INV-2": {
+      "name": "B6 savepoint parity at 100 coupled steps",
+      "schema": "proof_index://schemas/savepoint_parity_v1",
+      "applies_from": "M8",
+      "source": ".agent/decisions/PROJECT-RESET-PLAN-FINAL.md:121"
+    },
+    "INV-3": {
+      "name": "Operational-mode parity to 1000 plus steps",
+      "schema": "proof_index://schemas/operational_parity_v1",
+      "applies_from": "M9",
+      "source": ".agent/decisions/PROJECT-RESET-PLAN-FINAL.md:122"
+    },
+    "INV-4": {
+      "name": "Pinned smoke case and mini-ensemble skill ratchet",
+      "schema": "proof_index://schemas/skill_ratchet_v1",
+      "applies_from": "M8",
+      "source": ".agent/decisions/PROJECT-RESET-PLAN-FINAL.md:123"
+    },
+    "INV-5": {
+      "name": "Speedup floor with transfer audit",
+      "schema": "proof_index://schemas/final_speedup_v1",
+      "applies_from": "M8",
+      "source": ".agent/decisions/PROJECT-RESET-PLAN-FINAL.md:124"
+    },
+    "INV-6": {
+      "name": "No silent test deletion, xfail, or tolerance widening",
+      "schema": "proof_index://schemas/test_policy_audit_v1",
+      "applies_from": "M8",
+      "source": ".agent/decisions/PROJECT-RESET-PLAN-FINAL.md:125"
+    },
+    "INV-7": {
+      "name": "Mass, moisture, and energy conservation budgets",
+      "schema": "proof_index://schemas/conservation_budget_v1",
+      "applies_from": "M15",
+      "source": ".agent/decisions/PROJECT-RESET-PLAN-FINAL.md:126"
+    },
+    "INV-8": {
+      "name": "Static-field parity",
+      "schema": "proof_index://schemas/static_field_parity_v1",
+      "applies_from": "M10",
+      "source": ".agent/decisions/PROJECT-RESET-PLAN-FINAL.md:127"
+    },
+    "INV-9": {
+      "name": "Boundary forcing completeness",
+      "schema": "proof_index://schemas/boundary_field_coverage_v1",
+      "applies_from": "M14",
+      "source": ".agent/decisions/PROJECT-RESET-PLAN-FINAL.md:128"
+    },
+    "INV-10": {
+      "name": "Guard and limiter accounting",
+      "schema": "proof_index://schemas/guard_accounting_v1",
+      "applies_from": "M11",
+      "source": ".agent/decisions/PROJECT-RESET-PLAN-FINAL.md:129"
+    },
+    "INV-11": {
+      "name": "Evaluation sufficiency",
+      "schema": "proof_index://schemas/evaluation_sufficiency_v1",
+      "applies_from": "M20",
+      "source": ".agent/decisions/PROJECT-RESET-PLAN-FINAL.md:130"
+    }
+  }
+}
