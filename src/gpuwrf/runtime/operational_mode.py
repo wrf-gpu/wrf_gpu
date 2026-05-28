@@ -377,6 +377,21 @@ def _limit_guarded_dynamics_state(candidate: State, origin: State) -> State:
     return limited
 
 
+def _limit_theta_by_level(theta: jax.Array, origin_theta: jax.Array) -> jax.Array:
+    """Back-compat thin envelope clip for diagnostic harness leaf-level interface.
+
+    M11 removed the production [200K, 450K] envelope limiter in favor of the
+    positive-definite increment limiter inside _limit_guarded_dynamics_state.
+    The diagnostic harness still wants a leaf-level clip with origin fallback
+    for instrumentation purposes; this preserves the old signature without
+    changing production semantics (production calls the full state limiter).
+    """
+    lower_bound = jnp.asarray(200.0, dtype=theta.dtype)
+    upper_bound = jnp.asarray(450.0, dtype=theta.dtype)
+    in_envelope = jnp.isfinite(theta) & (theta >= lower_bound) & (theta <= upper_bound)
+    return jnp.where(in_envelope, theta, jnp.clip(origin_theta, lower_bound, upper_bound))
+
+
 def _with_save_family(carry: OperationalCarry, state: State, ww: jax.Array | None = None) -> OperationalCarry:
     """Update WRF ``*_save`` transition fields in resident operational carry."""
 
