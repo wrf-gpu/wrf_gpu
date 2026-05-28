@@ -185,7 +185,7 @@ def _mass_couple_theta_before_advance(state: AcousticCoreState) -> jax.Array:
 def _decouple_theta_after_advance(state: AcousticCoreState, theta_mass: jax.Array, muts_new: jax.Array) -> jax.Array:
     """Apply WRF ``small_step_finish`` projection back to perturbation theta."""
 
-    numerator = theta_mass + state.theta * (state.c1h[:, None, None] * state.mut[None, :, :] + state.c2h[:, None, None])
+    numerator = theta_mass + state.theta_1 * (state.c1h[:, None, None] * state.mut[None, :, :] + state.c2h[:, None, None])
     denominator = state.c1h[:, None, None] * muts_new[None, :, :] + state.c2h[:, None, None]
     return numerator / denominator
 
@@ -231,9 +231,8 @@ def acoustic_substep_core(
     advanced = advance_mu_t_core(coupled_state, cfg)
     theta_new = _decouple_theta_after_advance(state, advanced["theta"], advanced["muts"])
     w_solved = w_solve_core(state, a=a, alpha=alpha, gamma=gamma)
-    mu_delta = advanced["muts"] - state.mut
     ph_next = _advance_geopotential(state, w_solved, cfg)
-    p_next = _diagnose_pressure(state, mu_delta)
+    p_next = _diagnose_pressure(state, advanced["mu"])
 
     ph_increment = _ph_tend_increment(theta_old, theta_new, state.ph_tend)
     scratch = build_scratch_state(
@@ -258,7 +257,7 @@ def acoustic_substep_core(
         )
     )
     return state.replace(
-        mu=mu_delta,
+        mu=advanced["mu"],
         mudf=advanced["mudf"],
         muts=advanced["muts"],
         muave=advanced["muave"],
