@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+cat >&2 <<'EOF'
+scripts/run_canary_l2_24h.sh is a contract placeholder.
+
+Intended M19 interface:
+  scripts/run_canary_l2_24h.sh --run-id <wrf_l2 run id> --run-root <path> --output-root <path> --proof-dir <path>
+
+Expected outputs:
+  - hourly GPU forecast files for the selected L2 d02 run
+  - pipeline_run_l2_d02.json
+  - tier4_rmse_l2_d02.json
+  - bounds_check_l2_d02.json
+  - wall_clock_l2_d02.json
+
+M19 implements this.
+EOF
+
+exit 19
