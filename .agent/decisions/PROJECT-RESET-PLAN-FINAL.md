@@ -83,8 +83,8 @@ Each milestone names: definable numeric proof, weeks, Δ% completion gained, ris
 
 | # | Milestone | Definable proof | Weeks | Δ% | Risk |
 |---|---|---|---:|---:|---|
-| **M20** | Validation corpus build + data manifest + statistics design | ≥ 15 Canary L2 + L3 seasonal cases with verified IC/BC data on disk; TOST margins predeclared per variable; case manifest committed | 3-6 | +6 | High *(NEW — current local inventory failed five-day gate; critic C5#4)* |
-| **M21** | TOST equivalence on ≥ 15 cases at predeclared margins | TOST p < 0.05 (both lower and upper bounds rejected) on T2/U10/V10 RMSE deltas at the M20 margins; effect sizes + CIs reported | 4-6 | +10 | High |
+| **M20** | Validation corpus build + data manifest + statistics design | **≥ 30 Canary L2 + L3 seasonal cases** with verified IC/BC data on disk; TOST margins predeclared per variable; case manifest committed *(amended 2026-05-28 per ADR-029 power analysis: n=27 required for T2 10% MDE at α=0.05/β=0.20; original ≥15 was under-powered ~45%)* | 4-8 | +6 | High |
+| **M21** | TOST equivalence on ≥ 30 cases at predeclared margins | TOST p < 0.05 (both lower and upper bounds rejected) on T2/U10/V10 RMSE deltas at the M20 margins; effect sizes + CIs reported | 4-6 | +10 | High |
 
 ### Phase G — Release (3-5 weeks)
 
