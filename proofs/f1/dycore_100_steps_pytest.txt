@@ -1,0 +1,4 @@
+taskset -c 0-3 pytest -q tests/savepoint/test_dycore_100_steps.py
+
+.                                                                        [100%]
+1 passed in 435.16s (0:07:15)
