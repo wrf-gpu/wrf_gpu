@@ -152,6 +152,58 @@ def constant_k_diffusion_tendency(
     return tend
 
 
+def conservative_constant_k_diffusion_tendency(
+    field: jax.Array,
+    *,
+    mass: jax.Array,
+    k_m2_s: float,
+    dx_m: float,
+    dy_m: float,
+    dz_m: float,
+    horizontal: bool = True,
+    vertical: bool = True,
+) -> jax.Array:
+    """Mass-conservative constant-K diffusion: ``d/dx_j( mass*K*d field/dx_j )``.
+
+    Source: WRF ``horizontal_diffusion_s`` / ``vertical_diffusion`` (km_opt=1,
+    ``module_diffusion_em.F:2999-3018, 3234``), which build the diffusive flux
+    ``F_j = rho*xkh*d field/dx_j`` at cell faces and take its divergence so the
+    column-mass-weighted integral of ``field`` is conserved to round-off.  The
+    previous JAX path used the *non-conservative* ``mass*K*∇²field`` form, which
+    leaks the dry-column mass integral at the sharp Straka cold front (relative
+    drift ~3.4e-8 over 900 s; F7N).  This flux-divergence form is the WRF-faithful
+    replacement: it returns the ALREADY mass-coupled tendency (do NOT multiply by
+    ``mass`` again).  ``mass`` is the field-specific face/level dry-air mass
+    ``c1*mu+c2`` (mass_h for theta, mass_u/mass_v/mass_f for u/v/w).  Periodic in
+    the horizontal, rigid (zero-flux) top/bottom.
+    """
+
+    K = float(k_m2_s)
+    tend = jnp.zeros_like(field)
+    if horizontal:
+        # x flux at face i+1/2: mass_face * K * (f(i+1)-f(i))/dx ; mass at face =
+        # 0.5*(mass(i)+mass(i+1)).  div = (F(i+1/2)-F(i-1/2))/dx (periodic).
+        mass_xf = 0.5 * (mass + jnp.roll(mass, -1, axis=2))
+        fx = mass_xf * K * (jnp.roll(field, -1, axis=2) - field) / float(dx_m)
+        tend = tend + (fx - jnp.roll(fx, 1, axis=2)) / float(dx_m)
+        if field.shape[1] > 1:
+            mass_yf = 0.5 * (mass + jnp.roll(mass, -1, axis=1))
+            fy = mass_yf * K * (jnp.roll(field, -1, axis=1) - field) / float(dy_m)
+            tend = tend + (fy - jnp.roll(fy, 1, axis=1)) / float(dy_m)
+    if vertical and field.shape[0] > 2:
+        # vertical flux at interior faces k+1/2 (between mass levels k and k+1);
+        # zero flux through the rigid top/bottom -> conserves the column integral.
+        sp = jnp.asarray(dz_m, dtype=field.dtype)
+        mass_zf = 0.5 * (mass[:-1, :, :] + mass[1:, :, :])
+        fz_int = mass_zf * K * (field[1:, :, :] - field[:-1, :, :]) / sp  # (nz-1,..) at faces 1..nz-1
+        nz = int(field.shape[0])
+        flux = jnp.zeros((nz + 1,) + tuple(field.shape[1:]), dtype=field.dtype)
+        flux = flux.at[1:nz, :, :].set(fz_int)
+        # divergence on mass levels: (flux(k+1/2)-flux(k-1/2))/dz
+        tend = tend + (flux[1:, :, :] - flux[:nz, :, :]) / sp
+    return tend
+
+
 def _ddx_periodic(field: jax.Array, spacing: float, axis: int = 2) -> jax.Array:
     """Centered first derivative d/dx along a periodic axis (2nd order)."""
 

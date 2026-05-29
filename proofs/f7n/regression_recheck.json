@@ -1,0 +1,36 @@
+{
+  "title": "F7N regression recheck after the vertical-momentum-advection sign fix + conservative const-K diffusion",
+  "date": "2026-05-29",
+  "branch": "worker/opus/f7d-pressure-mass-fix",
+  "m4_dycore_tests": {
+    "command": "pytest tests/test_m4_acoustic.py tests/test_m4_dycore_step.py tests/test_m4_tier2_invariants.py",
+    "result": "10 passed",
+    "passed": true
+  },
+  "straka_density_current_900s": {
+    "verdict": "PASS",
+    "checks": {
+      "all_snapshots_finite": {"value": 1.0, "passed": true},
+      "theta_prime_min_900s": {"value": -9.970995032353756, "threshold": "-9..-10 K", "passed": true},
+      "max_abs_w_900s": {"value": 14.57491907301182, "threshold": "12-18 m/s", "passed": true},
+      "front_position_900s": {"value": 14150.0, "threshold": "15000 +/- 2000 m", "passed": true},
+      "rotor_count_proxy_900s": {"value": 4.0, "threshold": "2-4", "passed": true},
+      "relative_mass_drift": {"value": 2.2509471651212643e-09, "threshold": "<= 1e-8", "passed": true}
+    }
+  },
+  "skamarock_warm_bubble_500s": {
+    "verdict": "PASS",
+    "checks": {
+      "all_snapshots_finite": {"value": 1.0, "passed": true},
+      "theta_prime_max_500s": {"value": 1.9200603163246228, "passed": true},
+      "max_abs_w_500s": {"value": 11.680187856366164, "passed": true},
+      "thermal_rise_500s": {"value": 1924.3475674059687, "passed": true},
+      "horizontal_drift_500s": {"value": 1.8189894035458565e-12, "passed": true},
+      "relative_mass_drift": {"value": 0.0, "passed": true}
+    },
+    "note": "Identical to the pre-fix F7M/F7L warm bubble (the bubble is inviscid, nu=0, so the diffusion change is a no-op there; the vertical-momentum-advection fix does not change the smooth coherent bubble). No regression."
+  },
+  "flat_rest_stability": {
+    "note": "Flat-rest exact machine-zero stability and rest-state-zero of the advection/diffusion are preserved: at rest u=v=w=0 so the vertical momentum flux (rom*flux3) is zero regardless of the correction sign, and the conservative diffusion flux mass*K*(d field/dx) is zero for a uniform field."
+  }
+}

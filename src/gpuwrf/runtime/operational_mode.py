@@ -23,6 +23,7 @@ from gpuwrf.coupling.physics_couplers import mynn_adapter, rrtmg_adapter, surfac
 from gpuwrf.dynamics.advection import compute_advection_tendencies, halo_spec
 from gpuwrf.dynamics.explicit_diffusion import (
     constant_k_diffusion_tendency,
+    conservative_constant_k_diffusion_tendency,
     sixth_order_diffusion_tendency,
 )
 from gpuwrf.dynamics.flux_advection import (
@@ -1169,10 +1170,19 @@ def _augment_large_step_tendencies(
         # deformation operator carries a half-cell cross-term stagger approximation
         # and did not help, so the plain WRF-faithful K∇² baseline is retained
         # pending the touchdown root-cause fix.
-        u_t = u_t + mass_u * constant_k_diffusion_tendency(haloed.u, k_m2_s=nu, dx_m=dx, dy_m=dy, dz_m=dz)
-        v_t = v_t + mass_v * constant_k_diffusion_tendency(haloed.v, k_m2_s=nu, dx_m=dx, dy_m=dy, dz_m=dz)
-        w_t = w_t + mass_f * constant_k_diffusion_tendency(haloed.w, k_m2_s=nu, dx_m=dx, dy_m=dy, dz_m=dz)
-        th_t = th_t + mass_h * constant_k_diffusion_tendency(haloed.theta, k_m2_s=nu, dx_m=dx, dy_m=dy, dz_m=dz)
+        # F7N: use the mass-CONSERVATIVE flux-divergence form d/dx_j(mass*K*d./dx_j)
+        # (WRF horizontal_diffusion_s/vertical_diffusion, module_diffusion_em.F:
+        # 2999-3018) instead of the non-conservative mass*K*∇² form.  The latter
+        # leaked the dry-column mass integral at the sharp Straka cold front
+        # (relative drift ~3.4e-8 over 900 s once the touchdown 2Δz fix let Straka
+        # run to completion).  The conservative helper already carries the field
+        # face mass, so it is NOT multiplied by mass again.  mass_u/mass_v are the
+        # u/v face masses (u-face x-diffusion uses the u-face mass; conserves the
+        # mass-weighted momentum integral to the same order as WRF).
+        u_t = u_t + conservative_constant_k_diffusion_tendency(haloed.u, mass=mass_u, k_m2_s=nu, dx_m=dx, dy_m=dy, dz_m=dz)
+        v_t = v_t + conservative_constant_k_diffusion_tendency(haloed.v, mass=mass_v, k_m2_s=nu, dx_m=dx, dy_m=dy, dz_m=dz)
+        w_t = w_t + conservative_constant_k_diffusion_tendency(haloed.w, mass=mass_f, k_m2_s=nu, dx_m=dx, dy_m=dy, dz_m=dz)
+        th_t = th_t + conservative_constant_k_diffusion_tendency(haloed.theta, mass=mass_h, k_m2_s=nu, dx_m=dx, dy_m=dy, dz_m=dz)
 
     # WRF rk_tendency adds the large-step horizontal pressure-gradient force to
     # the *coupled* large-step ru/rv_tend (module_em.F:1325 ->
