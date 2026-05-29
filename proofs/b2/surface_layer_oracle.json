@@ -1,0 +1,37 @@
+{
+  "cb05_table_vs_full": {
+    "pass": true,
+    "psih_stable": {
+      "max_abs_table_vs_full": 0.0008463695219099801,
+      "pass": true
+    },
+    "psih_unstable": {
+      "max_abs_table_vs_full": 0.0010565457574492967,
+      "pass": true
+    },
+    "psim_stable": {
+      "max_abs_table_vs_full": 6.770764963636919e-05,
+      "pass": true
+    },
+    "psim_unstable": {
+      "max_abs_table_vs_full": 0.0004463505162839061,
+      "pass": true
+    }
+  },
+  "kind": "independent algebraic invariants of sf_sfclayrev_run (NOT a self-compare)",
+  "monin_obukhov_consistency": {
+    "expectation": "warm ground -> regime 4 (unstable), z/L<0, hfx>0",
+    "hfx_W_m2": 388.58466790490365,
+    "pass": true,
+    "regime": 4.0,
+    "ustar_m_s": 0.39983341069335365,
+    "z_over_L": -1.4611042264575267
+  },
+  "pass": true,
+  "proof": "b2-surface-layer-analytic-oracle",
+  "zolri_residual": {
+    "max_abs_residual": 0.0001256227926296205,
+    "n_samples": 400,
+    "pass": true
+  }
+}

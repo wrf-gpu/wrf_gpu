@@ -164,10 +164,18 @@ def _virtual_potential(theta, qv):
     return theta * (1.0 + P608 * qv)
 
 
-def _surface_terms(state: MynnPBLColumnState):
-    """Builds the M5 neutral-bulk surface fluxes used by the column kernel."""
+def _surface_terms(state: MynnPBLColumnState, surface=None):
+    """Builds the surface fluxes used by the column kernel.
 
-    flux = surface_layer(state)
+    When ``surface`` (a :class:`mynn_surface_stub.SurfaceFluxes`) is provided —
+    the operational coupling path, where the real WRF revised surface layer
+    (``physics.surface_layer.surface_layer``) ran first in ``surface_adapter`` —
+    the kernel consumes those fluxes directly. When it is ``None`` (the analytic
+    Tier-1/Tier-2 MYNN fixture path) the legacy neutral-bulk stub is used so the
+    standalone MYNN fixture stays a pure PBL test. The surface→MYNN order and
+    flux hand-off are the FROZEN Gate-1 coupling (coupler_interface.md §3)."""
+
+    flux = surface_layer(state) if surface is None else surface
     wind = jnp.maximum(jnp.sqrt(state.u[..., 0] * state.u[..., 0] + state.v[..., 0] * state.v[..., 0]), 0.2)
     return flux, wind, flux.fltv, flux.rhosfc
 
@@ -504,11 +512,11 @@ def _retrieve_exchange_coeffs(state: MynnPBLColumnState, turb):
     return km, kh
 
 
-def _step_mynn_pbl_impl(state: MynnPBLColumnState, dt: float, debug: bool) -> MynnPBLColumnState:
-    """Unjitted implementation shared by production and stripped entry points."""
+def _step_mynn_pbl_impl_with_pblh(state: MynnPBLColumnState, dt: float, debug: bool, surface=None):
+    """Unjitted implementation; returns the advanced state and the MYNN PBLH."""
 
     state = _clip_state(state)
-    flux, wind, fltv, rhosfc = _surface_terms(state)
+    flux, wind, fltv, rhosfc = _surface_terms(state, surface)
     qke = 2.0 * state.tke
     turb = _mym_turbulence(state, qke, fltv)
     qke_new, _qwt, qdiss, _pdk = _mym_predict_qke(state, qke, turb, dt, flux.ustar, flux)
@@ -525,14 +533,21 @@ def _step_mynn_pbl_impl(state: MynnPBLColumnState, dt: float, debug: bool) -> My
     kh = assert_finite(kh, "mynn_kh", enabled=debug)
     el = assert_finite(turb["el"], "mynn_el", enabled=debug)
     del qdiss
-    return state.replace(u=u, v=v, theta=theta, qv=qv, tke=tke, km=km, kh=kh, el=el)
+    return state.replace(u=u, v=v, theta=theta, qv=qv, tke=tke, km=km, kh=kh, el=el), turb["pblh"]
 
 
-def _mynn_budget_diagnostics(state: MynnPBLColumnState, dt: float):
+def _step_mynn_pbl_impl(state: MynnPBLColumnState, dt: float, debug: bool, surface=None) -> MynnPBLColumnState:
+    """Unjitted implementation shared by production and stripped entry points."""
+
+    next_state, _pblh = _step_mynn_pbl_impl_with_pblh(state, dt, debug, surface)
+    return next_state
+
+
+def _mynn_budget_diagnostics(state: MynnPBLColumnState, dt: float, surface=None):
     """Returns one-step budget diagnostics for Tier-2 validation."""
 
     state = _clip_state(state)
-    flux, wind, fltv, rhosfc = _surface_terms(state)
+    flux, wind, fltv, rhosfc = _surface_terms(state, surface)
     qke = 2.0 * state.tke
     turb = _mym_turbulence(state, qke, fltv)
     qke_new, qwt, qdiss, pdk = _mym_predict_qke(state, qke, turb, dt, flux.ustar, flux)
@@ -559,10 +574,28 @@ def _mynn_budget_diagnostics(state: MynnPBLColumnState, dt: float):
 
 
 @partial(jax.jit, static_argnames=("dt", "debug"))
-def step_mynn_pbl_column(state: MynnPBLColumnState, dt: float, *, debug: bool = False) -> MynnPBLColumnState:
-    """Advances one fused MYNN2.5 column step."""
+def step_mynn_pbl_column(
+    state: MynnPBLColumnState, dt: float, *, debug: bool = False, surface=None
+) -> MynnPBLColumnState:
+    """Advances one fused MYNN2.5 column step.
 
-    return _step_mynn_pbl_impl(state, dt, debug)
+    ``surface`` (a :class:`SurfaceFluxes` pytree) is the operational coupling
+    hand-off from the WRF revised surface layer; ``None`` uses the standalone
+    neutral-bulk stub for the analytic MYNN fixture."""
+
+    return _step_mynn_pbl_impl(state, dt, debug, surface)
+
+
+@partial(jax.jit, static_argnames=("dt", "debug"))
+def step_mynn_pbl_column_with_pblh(
+    state: MynnPBLColumnState, dt: float, *, debug: bool = False, surface=None
+):
+    """Advance one MYNN column step and also return the diagnosed PBL height.
+
+    Used by the operational ``mynn_adapter`` to emit the PBLH operational
+    diagnostic (coupler_interface.md §4) without adding a prognostic State leaf."""
+
+    return _step_mynn_pbl_impl_with_pblh(state, dt, debug, surface)
 
 
 @partial(jax.jit, static_argnames=("dt",))

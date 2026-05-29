@@ -15,8 +15,13 @@ import jax.numpy as jnp
 from gpuwrf.contracts.grid import GridSpec
 from gpuwrf.contracts.precision import DEFAULT_DTYPES
 from gpuwrf.contracts.state import State
-from gpuwrf.physics.mynn_pbl import MynnPBLColumnState, step_mynn_pbl_column
-from gpuwrf.physics.surface_layer import surface_layer
+from gpuwrf.physics.mynn_pbl import (
+    MynnPBLColumnState,
+    step_mynn_pbl_column,
+    step_mynn_pbl_column_with_pblh,
+)
+from gpuwrf.physics.mynn_surface_stub import SurfaceFluxes
+from gpuwrf.physics.surface_layer import surface_layer, surface_layer_with_diagnostics
 from gpuwrf.physics.rrtmg_lw import RRTMGLWColumnState, solve_rrtmg_lw_column
 from gpuwrf.physics.rrtmg_sw import RRTMGSWColumnState, solve_rrtmg_sw_column
 from gpuwrf.physics.thompson_column import (
@@ -211,6 +216,25 @@ class ThompsonTendencySideChannel(NamedTuple):
     precip_out_tendency: object
 
 
+class SurfaceMynnDiagnostics(NamedTuple):
+    """B2 operational surface/PBL diagnostics (coupler_interface.md §4).
+
+    Side-channel only — NOT prognostic State leaves. All fields are mass-point
+    2-D ``(ny, nx)``. ``hfx``/``lh`` in W m^-2 (upward positive); ``t2`` in K;
+    ``u10``/``v10`` in m s^-1; ``pblh`` in m; ``ustar`` in m s^-1. ``hfx``/``lh``
+    are the WRF-form W m^-2 fluxes from the revised surface layer; the kinematic
+    ``theta_flux``/``qv_flux`` written to State are HFX/(rho*cpm) and QFX/rho.
+    """
+
+    hfx: object
+    lh: object
+    pblh: object
+    t2: object
+    u10: object
+    v10: object
+    ustar: object
+
+
 class RRTMGRadiationDiagnostics(NamedTuple):
     """Surface radiation diagnostics emitted by the RRTMG adapter inputs."""
 
@@ -254,17 +278,47 @@ def _w_mass(state: State):
 
 
 def _mass_to_u_face(field):
-    """Maps a mass-point wind update back to periodic x faces."""
+    """Reconstruct x-face wind from a mass-point wind field, non-periodic edges.
 
-    face = 0.5 * (jnp.roll(field, 1, axis=2) + field)
-    return jnp.concatenate((face, face[:, :, :1]), axis=2)
+    Gate-1 decision #4: the prior periodic ``jnp.roll`` reconstruction wrapped the
+    last interior column onto the first u-face, which is wrong for the Canary
+    domain (NOT periodic). Interior faces are the centred average of the two
+    adjacent mass cells; the two domain-edge faces (x=0 and x=nx) are filled by
+    one-sided extrapolation from the nearest interior mass cell (zero-gradient at
+    the wall), so no cross-domain wrap occurs.
+
+    B4 SEAM: this zero-gradient edge fill is a placeholder. When B4 lateral
+    boundaries are wired, the two edge u-faces inside the relaxation/specified
+    zone are OWNED by ``apply_lateral_boundaries`` (it runs AFTER mynn_adapter in
+    the bundle, operational_mode.py:1453) and will overwrite them with the
+    wrfbdy-driven values. MYNN must not assume periodicity here; it only provides
+    a finite interior-consistent guess that B4 then corrects at the edge. See
+    coupler_interface.md §6 item 4.
+
+    ``field`` is mass-point ``(nz, ny, nx)``; returns u-face ``(nz, ny, nx+1)``.
+    """
+
+    interior = 0.5 * (field[:, :, :-1] + field[:, :, 1:])  # (nz, ny, nx-1)
+    left = field[:, :, :1]   # zero-gradient extrapolation to the x=0 wall face
+    right = field[:, :, -1:]  # zero-gradient extrapolation to the x=nx wall face
+    return jnp.concatenate((left, interior, right), axis=2)
 
 
 def _mass_to_v_face(field):
-    """Maps a mass-point wind update back to periodic y faces."""
+    """Reconstruct y-face wind from a mass-point wind field, non-periodic edges.
 
-    face = 0.5 * (jnp.roll(field, 1, axis=1) + field)
-    return jnp.concatenate((face, face[:, :1, :]), axis=1)
+    Same non-periodic treatment as :func:`_mass_to_u_face` on the y axis (Gate-1
+    decision #4). Interior y-faces are centred averages; the y=0 and y=ny wall
+    faces use zero-gradient extrapolation. B4 SEAM: the edge v-faces are corrected
+    by ``apply_lateral_boundaries`` after MYNN.
+
+    ``field`` is mass-point ``(nz, ny, nx)``; returns v-face ``(nz, ny+1, nx)``.
+    """
+
+    interior = 0.5 * (field[:, :-1, :] + field[:, 1:, :])  # (nz, ny-1, nx)
+    bottom = field[:, :1, :]
+    top = field[:, -1:, :]
+    return jnp.concatenate((bottom, interior, top), axis=1)
 
 
 def _mass_to_w_face(field):
@@ -594,31 +648,55 @@ def thompson_adapter_with_tendencies(state: State, dt: float) -> tuple[State, Th
     return thompson_adapter(state, dt, return_tendencies=True)
 
 
-def mynn_adapter(state: State, dt: float, grid: GridSpec | None = None) -> State:
-    """Slice state to MYNN PBL-column inputs, call the kernel, and reassemble State."""
+def _surface_fluxes_from_state(state: State) -> SurfaceFluxes:
+    """Read the surface-flux handles ``surface_adapter`` wrote earlier in the chain.
 
-    theta_columns = _to_columns(state.theta)
-    qke_columns = _to_columns(state.qke)
+    MYNN consumes the WRF revised surface layer's kinematic fluxes (the FROZEN
+    surface→MYNN hand-off, coupler_interface.md §3). The kernel applies them as
+    its bottom boundary condition inside the implicit vertical solve — no separate
+    bottom-BC pass is needed (that would double-count the surface flux).
+    """
+
+    return SurfaceFluxes(
+        ustar=jnp.asarray(state.ustar, dtype=jnp.float64),
+        theta_flux=jnp.asarray(state.theta_flux, dtype=jnp.float64),
+        qv_flux=jnp.asarray(state.qv_flux, dtype=jnp.float64),
+        tau_u=jnp.asarray(state.tau_u, dtype=jnp.float64),
+        tau_v=jnp.asarray(state.tau_v, dtype=jnp.float64),
+        rhosfc=jnp.asarray(state.rhosfc, dtype=jnp.float64),
+        fltv=jnp.asarray(state.fltv, dtype=jnp.float64),
+    )
+
+
+def _mynn_column_from_state(state: State, grid: GridSpec | None) -> MynnPBLColumnState:
+    """Build the MYNN column-kernel input view from State (mass-point winds)."""
+
     rho_columns = _to_columns(_rho_from_state(state))
     dz_columns = _column_dz_from_state(state, grid)
-    theta_flux_columns, qv_flux_columns, tau_u_columns, tau_v_columns = _surface_flux_column_inputs(state, theta_columns)
-    momentum_flux_columns = jnp.sqrt(tau_u_columns * tau_u_columns + tau_v_columns * tau_v_columns)
-    column = MynnPBLColumnState(
+    zeros = jnp.zeros_like(rho_columns)
+    return MynnPBLColumnState(
         _to_columns(_u_mass(state)),
         _to_columns(_v_mass(state)),
         _to_columns(_w_mass(state)),
-        theta_columns,
+        _to_columns(state.theta),
         _to_columns(state.qv),
-        0.5 * qke_columns,
+        0.5 * _to_columns(state.qke),  # tke = qke/2
         _to_columns(state.p),
         rho_columns,
         dz_columns,
-        theta_flux_columns,
-        qv_flux_columns,
-        momentum_flux_columns,
+        zeros,  # km (kernel output)
+        zeros,  # kh (kernel output)
+        zeros,  # el (kernel output)
     )
-    out = step_mynn_pbl_column(column, dt, debug=False)
-    out = _apply_surface_flux_bottom_bc(out, state, dt, dz_columns, rho_columns)
+
+
+def _state_from_mynn_output(state: State, out: MynnPBLColumnState) -> State:
+    """Reassemble State from MYNN column output, reconstructing C-grid winds.
+
+    Wind reconstruction uses the non-periodic ``_mass_to_*_face`` maps (Gate-1
+    decision #4); domain-edge faces are corrected later by B4 lateral boundaries.
+    """
+
     u_mass = _from_columns(out.u)
     v_mass = _from_columns(out.v)
     w_mass = _from_columns(out.w)
@@ -632,45 +710,35 @@ def mynn_adapter(state: State, dt: float, grid: GridSpec | None = None) -> State
     )
 
 
-def _apply_surface_flux_bottom_bc(
-    out: MynnPBLColumnState,
-    state: State,
-    dt: float,
-    dz_columns,
-    rho_columns,
-) -> MynnPBLColumnState:
-    """Apply WRF-sign surface-layer fluxes as MYNN bottom boundary tendencies.
+def mynn_adapter(state: State, dt: float, grid: GridSpec | None = None) -> State:
+    """Advance the MYNN PBL using the surface fluxes ``surface_adapter`` wrote.
 
-    `theta_flux`, `qv_flux`, `tau_u`, and `tau_v` are kinematic fluxes that are
-    positive upward into the atmosphere. WRF MYNN adds scalar fluxes to the
-    bottom RHS with `+dt/dz*rhosfc/rho`; signed momentum flux components use the
-    same positive-upward convention, so drag over fixed ground is normally
-    opposite-signed to the lowest-level wind.
+    THIN adapter: builds the column view, hands the FROZEN surface→MYNN flux
+    contract to the kernel (which applies it as the implicit bottom BC), and
+    reassembles State with non-periodic C-grid wind reconstruction.
     """
 
-    dz0 = jnp.maximum(dz_columns[..., 0], 1.0)
-    rho0 = jnp.maximum(rho_columns[..., 0], 1.0e-4)
-    rhosfc = jnp.maximum(jnp.asarray(state.rhosfc, dtype=rho0.dtype), 1.0e-4)
-    scalar_scale = float(dt) / dz0 * rhosfc / rho0
-    theta_increment = (scalar_scale * jnp.asarray(state.theta_flux, dtype=scalar_scale.dtype)).astype(out.theta.dtype)
-    theta = out.theta.at[..., 0].add(theta_increment)
-    qv_flux_floor = jnp.minimum(0.9 * out.qv[..., 0] - 1.0e-8, 0.0) / jnp.maximum(float(dt) / dz0, 1.0e-12)
-    qv_flux = jnp.maximum(jnp.asarray(state.qv_flux, dtype=out.qv.dtype), qv_flux_floor)
-    qv_increment = (scalar_scale * qv_flux.astype(scalar_scale.dtype)).astype(out.qv.dtype)
-    qv = out.qv.at[..., 0].add(qv_increment)
-    momentum_scale = scalar_scale
-    u_increment = (momentum_scale * jnp.asarray(state.tau_u, dtype=momentum_scale.dtype)).astype(out.u.dtype)
-    v_increment = (momentum_scale * jnp.asarray(state.tau_v, dtype=momentum_scale.dtype)).astype(out.v.dtype)
-    u = out.u.at[..., 0].add(u_increment)
-    v = out.v.at[..., 0].add(v_increment)
-    return out.replace(u=u, v=v, theta=theta, qv=jnp.maximum(qv, 0.0))
+    column = _mynn_column_from_state(state, grid)
+    surface = _surface_fluxes_from_state(state)
+    out = step_mynn_pbl_column(column, dt, debug=False, surface=surface)
+    return _state_from_mynn_output(state, out)
 
 
-def surface_adapter(state: State, dt: float) -> State:
-    """Wrap `surface_layer(state) -> SurfaceFluxes` and store its surface handles."""
+def mynn_adapter_with_diagnostics(
+    state: State, dt: float, grid: GridSpec | None = None
+) -> tuple[State, object]:
+    """``mynn_adapter`` plus the PBLH operational diagnostic (mass-point 2-D)."""
 
-    del dt
-    column_state = _SurfaceColumnState(
+    column = _mynn_column_from_state(state, grid)
+    surface = _surface_fluxes_from_state(state)
+    out, pblh = step_mynn_pbl_column_with_pblh(column, dt, debug=False, surface=surface)
+    return _state_from_mynn_output(state, out), pblh
+
+
+def _surface_column_view(state: State) -> _SurfaceColumnState:
+    """Build the column-oriented view consumed by the WRF revised surface layer."""
+
+    return _SurfaceColumnState(
         u=_to_columns(_u_mass(state)),
         v=_to_columns(_v_mass(state)),
         theta=_to_columns(state.theta),
@@ -685,7 +753,19 @@ def surface_adapter(state: State, dt: float) -> State:
         roughness_m=state.roughness_m,
         ustar=state.ustar,
     )
-    flux = surface_layer(column_state)
+
+
+def surface_adapter(state: State, dt: float) -> State:
+    """Run the WRF revised surface layer and store its surface-flux handles.
+
+    THIN adapter: the algebra lives in ``physics.surface_layer`` (a faithful port
+    of ``sf_sfclayrev_run``). Writes only the B2 flux handles
+    (coupler_interface.md §3); the operational diagnostics (HFX/LH/T2/U10/V10)
+    are exposed separately via :func:`surface_layer_diagnostics`.
+    """
+
+    del dt
+    flux = surface_layer(_surface_column_view(state))
     return state.replace(
         ustar=flux.ustar.astype(_field_dtype("ustar")),
         theta_flux=flux.theta_flux.astype(_field_dtype("theta_flux")),
@@ -694,6 +774,30 @@ def surface_adapter(state: State, dt: float) -> State:
         tau_v=flux.tau_v.astype(_field_dtype("tau_v")),
         rhosfc=flux.rhosfc.astype(_field_dtype("rhosfc")),
         fltv=flux.fltv.astype(_field_dtype("fltv")),
+    )
+
+
+def surface_layer_diagnostics(state: State, grid: GridSpec | None = None) -> SurfaceMynnDiagnostics:
+    """Return B2 operational surface/PBL diagnostics without changing State.
+
+    HFX/LH/T2/U10/V10/ustar come from the revised surface layer; PBLH is the
+    MYNN-diagnosed PBL height. Side-channel only (coupler_interface.md §4): no
+    prognostic State leaves are written. Call on a State whose surface-flux
+    handles have already been written by ``surface_adapter`` (so MYNN sees the
+    real fluxes when diagnosing PBLH)."""
+
+    diag = surface_layer_with_diagnostics(_surface_column_view(state))
+    column = _mynn_column_from_state(state, grid)
+    surface = _surface_fluxes_from_state(state)
+    _out, pblh = step_mynn_pbl_column_with_pblh(column, 1.0, debug=False, surface=surface)
+    return SurfaceMynnDiagnostics(
+        hfx=diag.hfx,
+        lh=diag.lh,
+        pblh=pblh,
+        t2=diag.t2,
+        u10=diag.u10,
+        v10=diag.v10,
+        ustar=diag.fluxes.ustar,
     )
 
 
@@ -759,12 +863,15 @@ def rrtmg_adapter(
 
 __all__ = [
     "RRTMGRadiationDiagnostics",
+    "SurfaceMynnDiagnostics",
     "ThompsonTendencySideChannel",
     "_compute_coszen",
     "mynn_adapter",
+    "mynn_adapter_with_diagnostics",
     "rrtmg_radiation_diagnostics",
     "rrtmg_adapter",
     "surface_adapter",
+    "surface_layer_diagnostics",
     "thompson_adapter",
     "thompson_adapter_with_tendencies",
 ]
