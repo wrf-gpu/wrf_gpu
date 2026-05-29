@@ -1,0 +1,86 @@
+{
+  "comparisons": [
+    {
+      "bias": 0.3651,
+      "field": "SWDOWN",
+      "kernel_range": [
+        194.01,
+        339.99
+      ],
+      "max_abs_err": 1.4171,
+      "n_active": 5487,
+      "operational_rmse_band": 20.0,
+      "pass": true,
+      "rmse": 0.5808,
+      "units": "W m^-2",
+      "wrf_range": [
+        194.59,
+        338.66
+      ]
+    },
+    {
+      "field": "SW_heating",
+      "kernel_range_k_day": [
+        0.05,
+        1.939
+      ],
+      "n_active_cols": 5487,
+      "operational_rmse_band_k_day": 5.0,
+      "pass": true,
+      "rmse_k_day": 0.105,
+      "units": "K/day",
+      "wrf_range_k_day": [
+        0.052,
+        1.912
+      ]
+    },
+    {
+      "bias": 0.1394,
+      "field": "GLW",
+      "kernel_range": [
+        249.79,
+        345.05
+      ],
+      "max_abs_err": 0.5846,
+      "n_active": 5487,
+      "operational_rmse_band": 20.0,
+      "pass": true,
+      "rmse": 0.1534,
+      "units": "W m^-2",
+      "wrf_range": [
+        249.37,
+        344.96
+      ]
+    },
+    {
+      "field": "LW_heating",
+      "kernel_range_k_day": [
+        -11.43,
+        15.074
+      ],
+      "n_active_cols": 5487,
+      "operational_rmse_band_k_day": 5.0,
+      "pass": true,
+      "rmse_k_day": 0.0856,
+      "units": "K/day",
+      "wrf_range_k_day": [
+        -12.676,
+        16.437
+      ]
+    }
+  ],
+  "is_self_compare": false,
+  "note": "REAL WRF RRTMG SW/LW (ra_*_physics=4) raw physics-sidecar dump. Single low-sun timestep (coszen ~0.2-0.36). SWDOWN/GLW are operational W/m^2 surface fluxes; heating compared as temperature-tendency.",
+  "oracle_dir": "/mnt/data/wrf_gpu2/physics_oracle/radiation",
+  "pass": true,
+  "physics_options": {
+    "bl_pbl_physics": 5,
+    "mp_physics": 8,
+    "ra_lw_physics": 4,
+    "ra_sw_physics": 4,
+    "sf_sfclay_physics": 5,
+    "sf_surface_physics": 4
+  },
+  "source_run": "/mnt/data/canairy_meteo/runs/wrf_l3/20260428_18z_l3_24h_20260525T221139Z",
+  "status": "EVALUATED"
+}

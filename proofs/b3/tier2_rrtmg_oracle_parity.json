@@ -1,0 +1,14 @@
+{
+  "boundaries_found": {},
+  "note": "Radiation operator-boundary savepoints not yet populated by the WRF-oracle factory. Harness is built against the frozen Gate-1 schema and validates REAL WRF parity (no self-compare) once the savepoints appear. Re-run run_tier2_oracle_parity() to evaluate.",
+  "oracle_dir": "/mnt/data/wrf_gpu2/physics_oracle/radiation",
+  "oracle_dir_exists": true,
+  "pass": null,
+  "required_boundaries": [
+    "radiation_driver_pre",
+    "rrtmg_sw_post",
+    "rrtmg_lw_post",
+    "radiation_driver_post"
+  ],
+  "status": "PENDING-ORACLE"
+}

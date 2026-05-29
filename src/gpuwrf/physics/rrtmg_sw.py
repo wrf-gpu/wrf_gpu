@@ -1114,6 +1114,14 @@ def _shortwave_impl(state: RRTMGSWColumnState, tables: RRTMGTableBundle, debug: 
     """Unjitted SW implementation shared by production and stripped paths."""
 
     state = _clip_state(state)
+    # Precision boundary (ADR-007 / Phase-B coupler_interface §5): WRF RRTMG cloud
+    # optics + the reftra/vrtqdr two-stream are single precision in
+    # `module_ra_rrtmg_sw.F`, and we keep that internally for WRF fidelity
+    # (cloud_dtype below).  But the EXPORTED diagnostics (SWDOWN/SWUP, heating
+    # rate) must not silently downcast below the state's precision regime — under
+    # force_fp64 every emitted field is fp64.  Derive the export dtype from the
+    # fp64-locked pressure input and cast result fields at the kernel boundary.
+    out_dtype = jnp.result_type(state.p.dtype, jnp.float32)
     original_layers = state.p.shape[-1]
     original_interfaces = _pressure_interfaces(state.p)
     top_pressure = 0.5 * original_interfaces[..., -1:]
@@ -1243,12 +1251,19 @@ def _shortwave_impl(state: RRTMGSWColumnState, tables: RRTMGTableBundle, debug: 
     down_band = jnp.flip(down_top_down * top_flux_band[..., None, :, :], axis=-3)
     up_band = jnp.flip(up_top_down * top_flux_band[..., None, :, :], axis=-3)
 
-    flux_down_model = jnp.sum(down_band, axis=(-1, -2))
-    flux_up_model = jnp.sum(up_band, axis=(-1, -2))
+    # Promote the band-summed fluxes to the export dtype (fp64 under force_fp64)
+    # at the accumulation point, BEFORE deriving net flux / column absorption /
+    # heating rate.  Doing the cast here (rather than only on the returned
+    # leaves) keeps heating_rate, flux_down/up and column_absorbed mutually
+    # consistent in one precision, so the energy-closure invariant
+    # (flux divergence == heating*mass*cp) is preserved exactly while the
+    # exported diagnostics never silently downcast below the state regime.
+    flux_down_model = jnp.sum(down_band, axis=(-1, -2)).astype(out_dtype)
+    flux_up_model = jnp.sum(up_band, axis=(-1, -2)).astype(out_dtype)
     net_down = flux_down_model - flux_up_model
     column_absorbed_layers = net_down[..., 1 : original_layers + 1] - net_down[..., :original_layers]
     column_absorbed_total = net_down[..., -1] - net_down[..., 0]
-    heating_rate = column_absorbed_layers / (layer_mass * CP_AIR)
+    heating_rate = column_absorbed_layers / (layer_mass.astype(out_dtype) * CP_AIR)
     surface_absorbed = flux_down_model[..., 0] - flux_up_model[..., 0]
     flux_down = flux_down_model
     flux_up = flux_up_model

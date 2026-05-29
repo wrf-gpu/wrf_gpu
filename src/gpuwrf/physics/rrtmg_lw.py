@@ -1805,16 +1805,31 @@ def _lw_rtrnmc_outputs(state, intermediate_base, cldfmc, taucmc, transfer_tau, t
         efclfrac = (1.0 - jnp.exp(-odcld)) * cldf_b
         scale = scale_band[band]
 
-        radld = jnp.zeros_like(tau_b[..., 0, :])
-        radclrd = jnp.zeros_like(radld)
-        iclddn = jnp.zeros(radld.shape[:-1], dtype=bool)
-
         def layer0(value):
             return jnp.moveaxis(value, -2, 0)
 
         plank_b = planklay[..., :, band]
         dplankdn_b = planklev[..., :-1, band] - plank_b
         dplankup_b = planklev[..., 1:, band] - plank_b
+
+        # The down-recurrence body broadcasts the per-layer optical depth
+        # (`sec*tau`, batch from `tau`/`sec`), the cloudy overlap terms
+        # (`odcld`/`efclfrac`, batch from the cloud grid) and the per-layer
+        # Planck source (batch from `plank_b`, i.e. the temperature grid).  Any
+        # of these can carry the full (ny,nx) surface batch independently, so
+        # initialize the scan carry at the FULL broadcast batch — this keeps the
+        # lax.scan carry in/out shapes equal for single-column fixtures AND
+        # (ny,nx) operational grids regardless of which input is broadcast.
+        carry_batch = jnp.broadcast_shapes(
+            tau_b[..., 0, :].shape,
+            sec.shape,
+            plank_b[..., :1].shape,
+            odcld[..., 0, :].shape,
+            efclfrac[..., 0, :].shape,
+        )
+        radld = jnp.zeros(carry_batch, dtype=tau_b.dtype)
+        radclrd = jnp.zeros_like(radld)
+        iclddn = jnp.zeros(carry_batch[:-1], dtype=bool)
         down_xs = (
             layer0(jnp.flip(tau_b, axis=-2)),
             layer0(jnp.flip(frac_b, axis=-2)),
