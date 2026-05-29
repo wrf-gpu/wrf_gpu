@@ -1001,12 +1001,19 @@ def _candidate_timestep_adr023(
         base_state,
         replay_config,
     )
-    next_state = thompson_adapter(next_state, float(replay_config.dt_s))
-    next_state = mynn_adapter(next_state, float(replay_config.dt_s), grid)
-    next_state = surface_adapter(next_state, float(replay_config.dt_s))
-    if bool(run_radiation):
-        next_state = rrtmg_adapter(next_state, float(replay_config.dt_s), grid)
+    # FROZEN Gate-1 physics order (coupler_interface.md S1):
+    # thompson -> surface -> mynn -> rrtmg. MYNN READS the surface-flux handles
+    # (theta_flux, qv_flux, tau_u/v, rhosfc) that surface_adapter writes, so
+    # surface MUST run before mynn (previously mynn ran first here, reading stale
+    # fluxes -- a recomposition order bug).
     lead_seconds = global_step.astype(jnp.float64) * float(replay_config.dt_s)
+    next_state = thompson_adapter(next_state, float(replay_config.dt_s))
+    next_state = surface_adapter(next_state, float(replay_config.dt_s))
+    next_state = mynn_adapter(next_state, float(replay_config.dt_s), grid)
+    if bool(run_radiation):
+        next_state = rrtmg_adapter(
+            next_state, float(replay_config.dt_s), grid, lead_seconds=lead_seconds
+        )
     next_state = apply_lateral_boundaries(next_state, lead_seconds, float(replay_config.dt_s), replay_config.boundary_config)
     return next_state, next_previous_pressure
 
