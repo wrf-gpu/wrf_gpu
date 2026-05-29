@@ -1550,7 +1550,14 @@ def run_forecast_operational(state: State, namelist: OperationalNamelist, hours:
 
     if int(namelist.rk_order) != 3:
         raise ValueError("operational mode currently supports RK3 only")
-    initial = initial_operational_carry(_enforce_operational_precision(state))
+    # Honour namelist.force_fp64 at the PUBLIC entry: the in-scan enforcement
+    # (line ~1471) upcasts each step's output to fp64 when force_fp64, so the
+    # INITIAL carry must also be fp64 or jax.lax.scan rejects the carry dtype
+    # mismatch -- and the production path would otherwise start fp32 (GPT
+    # re-confirm: proofs that pre-upcast manually did not exercise this entry).
+    initial = initial_operational_carry(
+        _enforce_operational_precision(state, force_fp64=bool(namelist.force_fp64))
+    )
     steps = _steps_for_hours(hours, float(namelist.dt_s))
     cadence = int(namelist.radiation_cadence_steps)
     if cadence <= 0:
@@ -1603,7 +1610,14 @@ def run_forecast_operational_with_limiter_diagnostics(
 
     if int(namelist.rk_order) != 3:
         raise ValueError("operational mode currently supports RK3 only")
-    initial = initial_operational_carry(_enforce_operational_precision(state))
+    # Honour namelist.force_fp64 at the PUBLIC entry: the in-scan enforcement
+    # (line ~1471) upcasts each step's output to fp64 when force_fp64, so the
+    # INITIAL carry must also be fp64 or jax.lax.scan rejects the carry dtype
+    # mismatch -- and the production path would otherwise start fp32 (GPT
+    # re-confirm: proofs that pre-upcast manually did not exercise this entry).
+    initial = initial_operational_carry(
+        _enforce_operational_precision(state, force_fp64=bool(namelist.force_fp64))
+    )
     steps = _steps_for_hours(hours, float(namelist.dt_s))
     cadence = int(namelist.radiation_cadence_steps)
     if cadence <= 0:
@@ -1656,7 +1670,14 @@ def run_forecast_operational_debug(state: State, namelist: OperationalNamelist, 
 
     if int(namelist.rk_order) != 3:
         raise ValueError("operational mode currently supports RK3 only")
-    initial = initial_operational_carry(_enforce_operational_precision(state))
+    # Honour namelist.force_fp64 at the PUBLIC entry: the in-scan enforcement
+    # (line ~1471) upcasts each step's output to fp64 when force_fp64, so the
+    # INITIAL carry must also be fp64 or jax.lax.scan rejects the carry dtype
+    # mismatch -- and the production path would otherwise start fp32 (GPT
+    # re-confirm: proofs that pre-upcast manually did not exercise this entry).
+    initial = initial_operational_carry(
+        _enforce_operational_precision(state, force_fp64=bool(namelist.force_fp64))
+    )
     steps = _steps_for_hours(hours, float(namelist.dt_s))
     cadence = int(namelist.radiation_cadence_steps)
     if cadence <= 0:
