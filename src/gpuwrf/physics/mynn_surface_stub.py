@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-from typing import Protocol
+from typing import NamedTuple, Protocol
 
+import jax
 from jax import config
 import jax.numpy as jnp
 
@@ -24,22 +24,24 @@ class SurfaceLayerState(Protocol):
     p: object
 
 
-@dataclass(frozen=True)
-class SurfaceFluxes:
+class SurfaceFluxes(NamedTuple):
     """Surface-layer flux contract consumed by MYNN.
 
-    Scalar fluxes are kinematic and positive upward into the atmosphere.
-    Momentum fluxes are kinematic components; for flow over fixed ground they
-    are normally opposite-signed to the lowest model-level wind components.
+    A ``NamedTuple`` so JAX traces it as a pytree of array leaves: the operational
+    coupling passes the real WRF revised surface-layer fluxes through the jitted
+    MYNN column kernel as a single argument. Scalar fluxes are kinematic and
+    positive upward into the atmosphere. Momentum fluxes are kinematic components;
+    for flow over fixed ground they are normally opposite-signed to the lowest
+    model-level wind components.
     """
 
-    ustar: object
-    theta_flux: object
-    qv_flux: object
-    tau_u: object
-    tau_v: object
-    rhosfc: object
-    fltv: object
+    ustar: jax.Array
+    theta_flux: jax.Array
+    qv_flux: jax.Array
+    tau_u: jax.Array
+    tau_v: jax.Array
+    rhosfc: jax.Array
+    fltv: jax.Array
 
 
 def bulk_surface_fluxes(
