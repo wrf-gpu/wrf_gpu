@@ -1,0 +1,31 @@
+{
+  "config": "straka_deformation_momentum_diffusion_ON",
+  "use_deformation_momentum_diffusion": true,
+  "verdict": "PASS",
+  "checks": {
+    "all_snapshots_finite": {
+      "value": 1.0,
+      "passed": true
+    },
+    "theta_prime_min_900s": {
+      "value": -9.945279351789964,
+      "passed": true
+    },
+    "max_abs_w_900s": {
+      "value": 14.545819813944185,
+      "passed": true
+    },
+    "front_position_900s": {
+      "value": 14150.0,
+      "passed": true
+    },
+    "rotor_count_proxy_900s": {
+      "value": 4.0,
+      "passed": true
+    },
+    "relative_mass_drift": {
+      "value": 1.3988391320986085e-16,
+      "passed": true
+    }
+  }
+}
