@@ -38,16 +38,16 @@
         "u_ip1face_surface": 181.07641601562
       },
       "jax": {
-        "w_min": -3985.206595822432,
-        "w_max": 688.5535066795607,
+        "w_min": -3984.589859220063,
+        "w_max": 688.6159351104355,
         "w_argmin_face": 7,
-        "ww_lowlevel_absmax": 0.879529567432968,
+        "ww_lowlevel_absmax": 0.879418214795237,
         "ww_lowlevel_signed_min": 0.0,
-        "dudx_surface": 4.837295697350085,
-        "dudx_lowlevel_absmax": 5.183979392717739,
-        "dudx_lowlevel_mean": 1.9223942815051334,
-        "u_iface_surface": -483.72634604938827,
-        "u_ip1face_surface": 0.003223685620264208
+        "dudx_surface": 4.828899337204874,
+        "dudx_lowlevel_absmax": 5.18353032816687,
+        "dudx_lowlevel_mean": 1.9221737435338233,
+        "u_iface_surface": -482.8867172022124,
+        "u_ip1face_surface": 0.003216518274919505
       }
     },
     {
@@ -75,16 +75,16 @@
         "u_ip1face_surface": 227.39343261719
       },
       "jax": {
-        "w_min": -4011.167440576906,
-        "w_max": 425.3882884101295,
+        "w_min": -4010.5868081822223,
+        "w_max": 425.422719002918,
         "w_argmin_face": 7,
-        "ww_lowlevel_absmax": 0.7661216565022926,
+        "ww_lowlevel_absmax": 0.7659886356855452,
         "ww_lowlevel_signed_min": 0.0,
-        "dudx_surface": 4.386483977126234,
-        "dudx_lowlevel_absmax": 4.727663850053638,
-        "dudx_lowlevel_mean": 1.4368754379113255,
-        "u_iface_surface": -438.64403148802285,
-        "u_ip1face_surface": 0.004366224600551554
+        "dudx_surface": 4.378068193939708,
+        "dudx_lowlevel_absmax": 4.727162702883425,
+        "dudx_lowlevel_mean": 1.4366237562897908,
+        "u_iface_surface": -437.80246038080384,
+        "u_ip1face_surface": 0.004359013166946339
       }
     },
     {
@@ -112,16 +112,16 @@
         "u_ip1face_surface": 275.75799560547
       },
       "jax": {
-        "w_min": -4008.1952601672156,
-        "w_max": 136.6810418720908,
+        "w_min": -4007.649253595316,
+        "w_max": 136.68350207306224,
         "w_argmin_face": 7,
-        "ww_lowlevel_absmax": 0.6623838378731222,
+        "ww_lowlevel_absmax": 0.6622246977004522,
         "ww_lowlevel_signed_min": 0.0,
-        "dudx_surface": 4.144653565279658,
-        "dudx_lowlevel_absmax": 4.476506201372921,
-        "dudx_lowlevel_mean": 1.149246076602161,
-        "u_iface_surface": -414.460969323998,
-        "u_ip1face_surface": 0.004387203967768441
+        "dudx_surface": 4.136214860374002,
+        "dudx_lowlevel_absmax": 4.475975816034734,
+        "dudx_lowlevel_mean": 1.1489784053718934,
+        "u_iface_surface": -413.6171062357378,
+        "u_ip1face_surface": 0.0043798016624018495
       }
     },
     {
@@ -149,16 +149,16 @@
         "u_ip1face_surface": 308.79235839844
       },
       "jax": {
-        "w_min": -4000.4681173655695,
+        "w_min": -3999.5128440898734,
         "w_max": 0.0,
         "w_argmin_face": 6,
-        "ww_lowlevel_absmax": 0.5929229601621699,
+        "ww_lowlevel_absmax": 0.5927582007349059,
         "ww_lowlevel_signed_min": 0.0,
-        "dudx_surface": 4.088722015527116,
-        "dudx_lowlevel_absmax": 4.40719526934761,
-        "dudx_lowlevel_mean": 1.0339590688024394,
-        "u_iface_surface": -408.8683472560491,
-        "u_ip1face_surface": 0.003854296662525662
+        "dudx_surface": 4.080255294353559,
+        "dudx_lowlevel_absmax": 4.4066487301158705,
+        "dudx_lowlevel_mean": 1.0336862804611409,
+        "u_iface_surface": -408.0216828269063,
+        "u_ip1face_surface": 0.0038466084495670724
       }
     },
     {
@@ -186,16 +186,16 @@
         "u_ip1face_surface": 325.74618530273
       },
       "jax": {
-        "w_min": -4021.1094685120233,
+        "w_min": -4020.1896032894538,
         "w_max": 0.0,
         "w_argmin_face": 6,
-        "ww_lowlevel_absmax": 0.5618179737001441,
+        "ww_lowlevel_absmax": 0.5616489140368941,
         "ww_lowlevel_signed_min": 0.0,
-        "dudx_surface": 4.142531216432104,
-        "dudx_lowlevel_absmax": 4.444668054880577,
-        "dudx_lowlevel_mean": 1.02346292618422,
-        "u_iface_surface": -414.2496811253854,
-        "u_ip1face_surface": 0.003440517825018227
+        "dudx_surface": 4.134023432670123,
+        "dudx_lowlevel_absmax": 4.444100235539822,
+        "dudx_lowlevel_mean": 1.0231838708355363,
+        "u_iface_surface": -413.3989107042972,
+        "u_ip1face_surface": 0.0034325627151557117
       }
     },
     {
@@ -223,16 +223,16 @@
         "u_ip1face_surface": 318.12850952148
       },
       "jax": {
-        "w_min": -4025.074943286081,
+        "w_min": -4024.1974033098572,
         "w_max": 0.0,
         "w_argmin_face": 6,
-        "ww_lowlevel_absmax": 0.5672345804652394,
+        "ww_lowlevel_absmax": 0.5670654776807709,
         "ww_lowlevel_signed_min": 0.0,
-        "dudx_surface": 4.241354118452252,
-        "dudx_lowlevel_absmax": 4.524687761158452,
-        "dudx_lowlevel_mean": 1.057404515233628,
-        "u_iface_surface": -424.13194220551884,
-        "u_ip1face_surface": 0.003469639706314414
+        "dudx_surface": 4.232793595668694,
+        "dudx_lowlevel_absmax": 4.524086329554508,
+        "dudx_lowlevel_mean": 1.0571094709844486,
+        "u_iface_surface": -423.2758980955447,
+        "u_ip1face_surface": 0.0034614713247459487
       }
     },
     {
@@ -260,16 +260,16 @@
         "u_ip1face_surface": 295.55563354492
       },
       "jax": {
-        "w_min": -4017.2190355331863,
+        "w_min": -4016.390810473265,
         "w_max": 0.0,
         "w_argmin_face": 6,
-        "ww_lowlevel_absmax": 0.591050352767013,
+        "ww_lowlevel_absmax": 0.5908838238374159,
         "ww_lowlevel_signed_min": 0.0,
-        "dudx_surface": 4.366000884300836,
-        "dudx_lowlevel_absmax": 4.6270560166226185,
-        "dudx_lowlevel_mean": 1.110492185999475,
-        "u_iface_surface": -436.5962215484786,
-        "u_ip1face_surface": 0.003866881604986928
+        "dudx_surface": 4.357388457714702,
+        "dudx_lowlevel_absmax": 4.626413798168268,
+        "dudx_lowlevel_mean": 1.1101703682981756,
+        "u_iface_surface": -435.73498722208024,
+        "u_ip1face_surface": 0.003858549389945209
       }
     },
     {
@@ -297,16 +297,16 @@
         "u_ip1face_surface": 259.36099243164
       },
       "jax": {
-        "w_min": -3999.0299643606018,
+        "w_min": -3998.2576586643454,
         "w_max": 0.0,
         "w_argmin_face": 6,
-        "ww_lowlevel_absmax": 0.6138428238356255,
+        "ww_lowlevel_absmax": 0.6136761591755828,
         "ww_lowlevel_signed_min": 0.0,
-        "dudx_surface": 4.534819902686786,
-        "dudx_lowlevel_absmax": 4.768618211317003,
-        "dudx_lowlevel_mean": 1.1973065381913428,
-        "u_iface_surface": -453.47761395857435,
-        "u_ip1face_surface": 0.004376310104285779
+        "dudx_surface": 4.526176403403194,
+        "dudx_lowlevel_absmax": 4.767938945849746,
+        "dudx_lowlevel_mean": 1.1969563331941173,
+        "u_iface_surface": -452.61327254518557,
+        "u_ip1face_surface": 0.004367795133821622
       }
     },
     {
@@ -334,16 +334,16 @@
         "u_ip1face_surface": 210.14971923828
       },
       "jax": {
-        "w_min": -3970.2821788818906,
+        "w_min": -3969.572443063089,
         "w_max": 0.0,
         "w_argmin_face": 6,
-        "ww_lowlevel_absmax": 0.6333013143834307,
+        "ww_lowlevel_absmax": 0.6331325633544793,
         "ww_lowlevel_signed_min": 0.0,
-        "dudx_surface": 4.770546114195708,
-        "dudx_lowlevel_absmax": 4.9734245388648075,
-        "dudx_lowlevel_mean": 1.348635128461503,
-        "u_iface_surface": -477.04980993421526,
-        "u_ip1face_surface": 0.004801485355604404
+        "dudx_surface": 4.761911021306205,
+        "dudx_lowlevel_absmax": 4.972725994524624,
+        "dudx_lowlevel_mean": 1.3482747272933215,
+        "u_iface_surface": -476.18630930512126,
+        "u_ip1face_surface": 0.004792825499256292
       }
     },
     {
@@ -371,16 +371,16 @@
         "u_ip1face_surface": 176.85026550293
       },
       "jax": {
-        "w_min": -3930.0004087750804,
-        "w_max": 181.68997197335992,
+        "w_min": -3929.3596434931706,
+        "w_max": 181.68289891928052,
         "w_argmin_face": 6,
-        "ww_lowlevel_absmax": 0.6567345344899707,
+        "ww_lowlevel_absmax": 0.6565676791063026,
         "ww_lowlevel_signed_min": 0.0,
-        "dudx_surface": 5.061408814382824,
-        "dudx_lowlevel_absmax": 5.2315329769597145,
-        "dudx_lowlevel_mean": 1.5584674481768768,
-        "u_iface_surface": -506.1357714341301,
-        "u_ip1face_surface": 0.005110004152322895
+        "dudx_surface": 5.0528249294386,
+        "dudx_lowlevel_absmax": 5.230838428760124,
+        "dudx_lowlevel_mean": 1.558121617858416,
+        "u_iface_surface": -505.27739172774307,
+        "u_ip1face_surface": 0.005101216116926214
       }
     },
     {
@@ -408,16 +408,16 @@
         "u_ip1face_surface": 169.60285949707
       },
       "jax": {
-        "w_min": -3875.806076061573,
-        "w_max": 378.8310415609351,
+        "w_min": -3875.2393189373734,
+        "w_max": 378.8393941043533,
         "w_argmin_face": 6,
-        "ww_lowlevel_absmax": 0.6814427155438239,
+        "ww_lowlevel_absmax": 0.68128121934879,
         "ww_lowlevel_signed_min": 0.0,
-        "dudx_surface": 5.35905980511038,
-        "dudx_lowlevel_absmax": 5.5155313413383995,
-        "dudx_lowlevel_mean": 1.774664634669834,
-        "u_iface_surface": -535.9006293126934,
-        "u_ip1face_surface": 0.00535119834469095
+        "dudx_surface": 5.350557906357217,
+        "dudx_lowlevel_absmax": 5.514501678782668,
+        "dudx_lowlevel_mean": 1.7743393746830587,
+        "u_iface_surface": -535.0504483312471,
+        "u_ip1face_surface": 0.005342304474568229
       }
     },
     {
@@ -445,16 +445,16 @@
         "u_ip1face_surface": 168.62419128418
       },
       "jax": {
-        "w_min": -3804.844388435027,
-        "w_max": 566.1526076494379,
+        "w_min": -3804.3549308500064,
+        "w_max": 566.1765054649721,
         "w_argmin_face": 6,
-        "ww_lowlevel_absmax": 0.698880080111735,
+        "ww_lowlevel_absmax": 0.6987226937036439,
         "ww_lowlevel_signed_min": 0.0,
-        "dudx_surface": 5.62056423932817,
-        "dudx_lowlevel_absmax": 5.764511532469213,
-        "dudx_lowlevel_mean": 1.9530219207014865,
-        "u_iface_surface": -562.0508704279816,
-        "u_ip1face_surface": 0.005553504835384154
+        "dudx_surface": 5.612164338874663,
+        "dudx_lowlevel_absmax": 5.763445517755395,
+        "dudx_lowlevel_mean": 1.9527092441505318,
+        "u_iface_surface": -561.2108893320268,
+        "u_ip1face_surface": 0.005544555439584297
       }
     },
     {
@@ -482,16 +482,16 @@
         "u_ip1face_surface": 201.12796020508
       },
       "jax": {
-        "w_min": -3716.3328309527283,
-        "w_max": 725.7104613452232,
+        "w_min": -3715.9233538829335,
+        "w_max": 725.7478735429605,
         "w_argmin_face": 6,
-        "ww_lowlevel_absmax": 0.707535015420973,
+        "ww_lowlevel_absmax": 0.7073599865035902,
         "ww_lowlevel_signed_min": 0.0,
-        "dudx_surface": 5.828650472966364,
-        "dudx_lowlevel_absmax": 5.958064705442369,
-        "dudx_lowlevel_mean": 2.0798479747808125,
-        "u_iface_surface": -582.8593412029361,
-        "u_ip1face_surface": 0.005706093700359136
+        "dudx_surface": 5.820375063380464,
+        "dudx_lowlevel_absmax": 5.956959126052364,
+        "dudx_lowlevel_mean": 2.0795446570112923,
+        "u_iface_surface": -582.0318092154506,
+        "u_ip1face_surface": 0.005697122595684749
       }
     },
     {
@@ -519,16 +519,16 @@
         "u_ip1face_surface": 238.27816772461
       },
       "jax": {
-        "w_min": -3731.8553805966044,
-        "w_max": 841.6036474842946,
+        "w_min": -3731.399192908075,
+        "w_max": 841.6524113037997,
         "w_argmin_face": 5,
-        "ww_lowlevel_absmax": 0.7097773734466983,
+        "ww_lowlevel_absmax": 0.7096076549159562,
         "ww_lowlevel_signed_min": 0.0,
-        "dudx_surface": 5.973086291587182,
-        "dudx_lowlevel_absmax": 6.086421583778122,
-        "dudx_lowlevel_mean": 2.148746879554186,
-        "u_iface_surface": -597.3028364194687,
-        "u_ip1face_surface": 0.0057927392494643275
+        "dudx_surface": 5.9649547938984995,
+        "dudx_lowlevel_absmax": 6.0852754059002025,
+        "dudx_lowlevel_mean": 2.1484516650375114,
+        "u_iface_surface": -596.4896956839248,
+        "u_ip1face_surface": 0.005783705925149517
       }
     },
     {
@@ -556,16 +556,16 @@
         "u_ip1face_surface": 277.91513061523
       },
       "jax": {
-        "w_min": -3755.5720700877546,
-        "w_max": 904.7160786988702,
+        "w_min": -3755.2729556595464,
+        "w_max": 904.7727596000531,
         "w_argmin_face": 5,
-        "ww_lowlevel_absmax": 0.7029846109679738,
+        "ww_lowlevel_absmax": 0.7028196230828456,
         "ww_lowlevel_signed_min": 0.0,
-        "dudx_surface": 6.045067317100196,
-        "dudx_lowlevel_absmax": 6.140942587277412,
-        "dudx_lowlevel_mean": 2.155864295252305,
-        "u_iface_surface": -604.5009182999642,
-        "u_ip1face_surface": 0.005813410055485869
+        "dudx_surface": 6.037087978704811,
+        "dudx_lowlevel_absmax": 6.139748827695221,
+        "dudx_lowlevel_mean": 2.155571038744541,
+        "u_iface_surface": -603.7029935488531,
+        "u_ip1face_surface": 0.005804321628058476
       }
     },
     {
@@ -593,16 +593,16 @@
         "u_ip1face_surface": 309.70516967773
       },
       "jax": {
-        "w_min": -3776.276733133946,
-        "w_max": 912.9792830865928,
+        "w_min": -3776.1560032765515,
+        "w_max": 913.0415568202889,
         "w_argmin_face": 5,
-        "ww_lowlevel_absmax": 0.6875249876889313,
+        "ww_lowlevel_absmax": 0.6873635673324969,
         "ww_lowlevel_signed_min": 0.0,
-        "dudx_surface": 6.0474123704776455,
-        "dudx_lowlevel_absmax": 6.124458380804583,
-        "dudx_lowlevel_mean": 2.1066900960420756,
-        "u_iface_surface": -604.7354418501112,
-        "u_ip1face_surface": 0.005795197653394692
+        "dudx_surface": 6.039585606864928,
+        "dudx_lowlevel_absmax": 6.123207604456853,
+        "dudx_lowlevel_mean": 2.1063908373147977,
+        "u_iface_surface": -603.9527746752875,
+        "u_ip1face_surface": 0.005786011205291946
       }
     },
     {
@@ -630,16 +630,16 @@
         "u_ip1face_surface": 320.02508544922
       },
       "jax": {
-        "w_min": -3793.975015621433,
-        "w_max": 869.3345383089422,
+        "w_min": -3794.0542391759254,
+        "w_max": 869.3958470851983,
         "w_argmin_face": 5,
-        "ww_lowlevel_absmax": 0.6655555548464065,
+        "ww_lowlevel_absmax": 0.6653975699124004,
         "ww_lowlevel_signed_min": 0.0,
-        "dudx_surface": 5.996899025969558,
-        "dudx_lowlevel_absmax": 6.053326366703836,
-        "dudx_lowlevel_mean": 2.0135247782223424,
-        "u_iface_surface": -599.6841164116603,
-        "u_ip1face_surface": 0.005786185295561357
+        "dudx_surface": 5.989230013084929,
+        "dudx_lowlevel_absmax": 6.052018460075771,
+        "dudx_lowlevel_mean": 2.0132151472384248,
+        "u_iface_surface": -598.9172244150901,
+        "u_ip1face_surface": 0.005776893402733153
       }
     },
     {
@@ -667,16 +667,16 @@
         "u_ip1face_surface": 314.74072265625
       },
       "jax": {
-        "w_min": -3807.3751344603706,
-        "w_max": 783.4825643710482,
+        "w_min": -3807.6756933425418,
+        "w_max": 783.5394433210297,
         "w_argmin_face": 5,
-        "ww_lowlevel_absmax": 0.6389886780668377,
+        "ww_lowlevel_absmax": 0.6388346843011163,
         "ww_lowlevel_signed_min": 0.0,
-        "dudx_surface": 5.9107551779432015,
-        "dudx_lowlevel_absmax": 5.948352898716812,
-        "dudx_lowlevel_mean": 1.889979053871214,
-        "u_iface_surface": -591.0696866397784,
-        "u_ip1face_surface": 0.005831154541712531
+        "dudx_surface": 5.903253653914458,
+        "dudx_lowlevel_absmax": 5.947615027745822,
+        "dudx_lowlevel_mean": 1.8896592940539323,
+        "u_iface_surface": -590.3195436090139,
+        "u_ip1face_surface": 0.005821782431866272
       }
     },
     {
@@ -704,16 +704,16 @@
         "u_ip1face_surface": 290.02163696289
       },
       "jax": {
-        "w_min": -3814.166276005502,
-        "w_max": 669.4419255701895,
+        "w_min": -3814.708990663102,
+        "w_max": 669.4921532208102,
         "w_argmin_face": 5,
-        "ww_lowlevel_absmax": 0.6085306423322834,
+        "ww_lowlevel_absmax": 0.608380508217877,
         "ww_lowlevel_signed_min": 0.0,
-        "dudx_surface": 5.794056015133671,
-        "dudx_lowlevel_absmax": 5.826033002321835,
-        "dudx_lowlevel_mean": 1.7456155524045645,
-        "u_iface_surface": -579.3996666122105,
-        "u_ip1face_surface": 0.0059349011566367195
+        "dudx_surface": 5.786723819200962,
+        "dudx_lowlevel_absmax": 5.825241348939188,
+        "dudx_lowlevel_mean": 1.7452847461868055,
+        "u_iface_surface": -578.6664564454976,
+        "u_ip1face_surface": 0.005925474598627123
       }
     },
     {
@@ -741,16 +741,16 @@
         "u_ip1face_surface": 246.71269226074
       },
       "jax": {
-        "w_min": -3810.4856051164056,
-        "w_max": 542.2638748120193,
+        "w_min": -3811.289822114132,
+        "w_max": 542.3068991015476,
         "w_argmin_face": 5,
-        "ww_lowlevel_absmax": 0.5795275714799857,
+        "ww_lowlevel_absmax": 0.579355690417998,
         "ww_lowlevel_signed_min": 0.0,
-        "dudx_surface": 5.650216089421888,
-        "dudx_lowlevel_absmax": 5.676071337410364,
-        "dudx_lowlevel_mean": 1.5882683317565451,
-        "u_iface_surface": -565.0155429833871,
-        "u_ip1face_surface": 0.006065958801630405
+        "dudx_surface": 5.643045591505572,
+        "dudx_lowlevel_absmax": 5.675219206398486,
+        "dudx_lowlevel_mean": 1.5879215433195946,
+        "u_iface_surface": -564.2985026076733,
+        "u_ip1face_surface": 0.0060565428838860276
       }
     },
     {
@@ -778,16 +778,16 @@
         "u_ip1face_surface": 188.1958770752
       },
       "jax": {
-        "w_min": -3790.6381599606,
-        "w_max": 415.207337306727,
+        "w_min": -3791.7204781176642,
+        "w_max": 415.2441024828412,
         "w_argmin_face": 5,
-        "ww_lowlevel_absmax": 0.5509093177888644,
+        "ww_lowlevel_absmax": 0.5507407499242589,
         "ww_lowlevel_signed_min": 0.0,
-        "dudx_surface": 5.493986317100425,
-        "dudx_lowlevel_absmax": 5.513043017099076,
-        "dudx_lowlevel_mean": 1.429612256916832,
-        "u_iface_surface": -549.3924514885408,
-        "u_ip1face_surface": 0.006180221501659066
+        "dudx_surface": 5.486969971039843,
+        "dudx_lowlevel_absmax": 5.512126544930892,
+        "dudx_lowlevel_mean": 1.429244642206482,
+        "u_iface_surface": -548.6908261968384,
+        "u_ip1face_surface": 0.006170907145985683
       }
     },
     {
@@ -815,16 +815,16 @@
         "u_ip1face_surface": 138.39018249512
       },
       "jax": {
-        "w_min": -3748.288100784336,
-        "w_max": 297.77352128761623,
+        "w_min": -3749.6614514370567,
+        "w_max": 297.8046898520276,
         "w_argmin_face": 5,
-        "ww_lowlevel_absmax": 0.5232094078563989,
+        "ww_lowlevel_absmax": 0.5230443165300187,
         "ww_lowlevel_signed_min": 0.0,
-        "dudx_surface": 5.348081627946621,
-        "dudx_lowlevel_absmax": 5.359393858451918,
-        "dudx_lowlevel_mean": 1.2846547956906742,
-        "u_iface_surface": -534.8019220737883,
-        "u_ip1face_surface": 0.006240720873763668
+        "dudx_surface": 5.341219762634783,
+        "dudx_lowlevel_absmax": 5.358418084068644,
+        "dudx_lowlevel_mean": 1.2842652908459522,
+        "u_iface_surface": -534.1157454601655,
+        "u_ip1face_surface": 0.006230803312763568
       }
     },
     {
@@ -852,16 +852,16 @@
         "u_ip1face_surface": 89.335914611816
       },
       "jax": {
-        "w_min": -3678.381544817608,
-        "w_max": 196.12859402990713,
+        "w_min": -3680.0548754055244,
+        "w_max": 196.1529816477533,
         "w_argmin_face": 5,
-        "ww_lowlevel_absmax": 0.49870963267373725,
+        "ww_lowlevel_absmax": 0.4985488556781519,
         "ww_lowlevel_signed_min": 0.0,
-        "dudx_surface": 5.231986688677179,
-        "dudx_lowlevel_absmax": 5.234503491238071,
-        "dudx_lowlevel_mean": 1.1678112778207712,
-        "u_iface_surface": -523.1924427546244,
-        "u_ip1face_surface": 0.006226113093612454
+        "dudx_surface": 5.2252896061231855,
+        "dudx_lowlevel_absmax": 5.233481035070309,
+        "dudx_lowlevel_mean": 1.1674031676992653,
+        "u_iface_surface": -522.52274311075,
+        "u_ip1face_surface": 0.0062175015686083464
       }
     },
     {
@@ -889,16 +889,16 @@
         "u_ip1face_surface": 54.087097167969
       },
       "jax": {
-        "w_min": -3578.219372220487,
-        "w_max": 115.19239940013075,
+        "w_min": -3580.197017704599,
+        "w_max": 115.20777602195204,
         "w_argmin_face": 5,
-        "ww_lowlevel_absmax": 0.4784600351320307,
+        "ww_lowlevel_absmax": 0.4783047052996494,
         "ww_lowlevel_signed_min": 0.0,
-        "dudx_surface": 5.15445416760719,
-        "dudx_lowlevel_absmax": 5.15445416760719,
-        "dudx_lowlevel_mean": 1.088059828608629,
-        "u_iface_surface": -515.4392849675563,
-        "u_ip1face_surface": 0.006131793162739193
+        "dudx_surface": 5.147937983889001,
+        "dudx_lowlevel_absmax": 5.147937983889001,
+        "dudx_lowlevel_mean": 1.0876397529575799,
+        "u_iface_surface": -514.7876764143679,
+        "u_ip1face_surface": 0.006121974532180007
       }
     },
     {
@@ -926,16 +926,16 @@
         "u_ip1face_surface": 34.507179260254
       },
       "jax": {
-        "w_min": -3607.723998801018,
-        "w_max": 60.04599251100032,
+        "w_min": -3604.0669292969833,
+        "w_max": 60.05159274599485,
         "w_argmin_face": 4,
-        "ww_lowlevel_absmax": 0.46247105847605496,
+        "ww_lowlevel_absmax": 0.462322349014471,
         "ww_lowlevel_signed_min": 0.0,
-        "dudx_surface": 5.116087033870797,
-        "dudx_lowlevel_absmax": 5.116087033870797,
-        "dudx_lowlevel_mean": 1.046940257865186,
-        "u_iface_surface": -511.60271753452497,
-        "u_ip1face_surface": 0.0059858525547548
+        "dudx_surface": 5.109771347806644,
+        "dudx_lowlevel_absmax": 5.109771347806644,
+        "dudx_lowlevel_mean": 1.0465154867080981,
+        "u_iface_surface": -510.97115837426935,
+        "u_ip1face_surface": 0.005976406395054213
       }
     },
     {
@@ -963,16 +963,16 @@
         "u_ip1face_surface": 40.963062286377
       },
       "jax": {
-        "w_min": -3647.18559084014,
-        "w_max": 35.07677425219368,
+        "w_min": -3643.5589864807594,
+        "w_max": 35.07473814968479,
         "w_argmin_face": 4,
-        "ww_lowlevel_absmax": 0.4507676028154748,
+        "ww_lowlevel_absmax": 0.4505958488616102,
         "ww_lowlevel_signed_min": 0.0,
-        "dudx_surface": 5.1112494378469435,
-        "dudx_lowlevel_absmax": 5.1112494378469435,
-        "dudx_lowlevel_mean": 1.0399913257004647,
-        "u_iface_surface": -511.1191111810205,
-        "u_ip1face_surface": 0.0058326036738597835
+        "dudx_surface": 5.105164142412434,
+        "dudx_lowlevel_absmax": 5.105164142412434,
+        "dudx_lowlevel_mean": 1.0395680921512838,
+        "u_iface_surface": -510.5105910408658,
+        "u_ip1face_surface": 0.005823200377627077
       }
     },
     {
@@ -1000,16 +1000,16 @@
         "u_ip1face_surface": 53.917831420898
       },
       "jax": {
-        "w_min": -3669.5802172566,
-        "w_max": 41.83964734227048,
+        "w_min": -3666.0255563099704,
+        "w_max": 41.83356513993832,
         "w_argmin_face": 4,
-        "ww_lowlevel_absmax": 0.44453484643176466,
+        "ww_lowlevel_absmax": 0.4443733291796974,
         "ww_lowlevel_signed_min": 0.0,
-        "dudx_surface": 5.128087494822657,
-        "dudx_lowlevel_absmax": 5.128087494822657,
-        "dudx_lowlevel_mean": 1.0594950316994045,
-        "u_iface_surface": -512.8030366551261,
-        "u_ip1face_surface": 0.00571282713968323
+        "dudx_surface": 5.122261643243506,
+        "dudx_lowlevel_absmax": 5.122261643243506,
+        "dudx_lowlevel_mean": 1.059078467459618,
+        "u_iface_surface": -512.2204610810444,
+        "u_ip1face_surface": 0.005703243306296757
       }
     },
     {
@@ -1037,16 +1037,16 @@
         "u_ip1face_surface": 76.971672058105
       },
       "jax": {
-        "w_min": -3674.6181894754777,
-        "w_max": 78.41444802071213,
+        "w_min": -3671.1848540962687,
+        "w_max": 78.4074177332828,
         "w_argmin_face": 4,
-        "ww_lowlevel_absmax": 0.43870100212831176,
+        "ww_lowlevel_absmax": 0.43855056533166703,
         "ww_lowlevel_signed_min": 0.0,
-        "dudx_surface": 5.15380296936725,
-        "dudx_lowlevel_absmax": 5.15380296936725,
-        "dudx_lowlevel_mean": 1.0968196953681328,
-        "u_iface_surface": -515.374640823589,
-        "u_ip1face_surface": 0.005656113136057809
+        "dudx_surface": 5.148260312764418,
+        "dudx_lowlevel_absmax": 5.148260312764418,
+        "dudx_lowlevel_mean": 1.0964132011468102,
+        "u_iface_surface": -514.8203848503947,
+        "u_ip1face_surface": 0.005646426047201438
       }
     },
     {
@@ -1074,16 +1074,16 @@
         "u_ip1face_surface": 110.91725158691
       },
       "jax": {
-        "w_min": -3661.1060442963894,
-        "w_max": 140.57961439068328,
+        "w_min": -3657.8505443811114,
+        "w_max": 140.57376995638182,
         "w_argmin_face": 4,
-        "ww_lowlevel_absmax": 0.43250138476074085,
+        "ww_lowlevel_absmax": 0.432362944148835,
         "ww_lowlevel_signed_min": 0.0,
-        "dudx_surface": 5.180110513552352,
-        "dudx_lowlevel_absmax": 5.180110513552352,
-        "dudx_lowlevel_mean": 1.1440332326368585,
-        "u_iface_surface": -518.0053807533255,
-        "u_ip1face_surface": 0.0056706019095730965
+        "dudx_surface": 5.1748800282314535,
+        "dudx_lowlevel_absmax": 5.1748800282314535,
+        "dudx_lowlevel_mean": 1.1436400926439678,
+        "u_iface_surface": -517.4823419250758,
+        "u_ip1face_surface": 0.005660898069590089
       }
     },
     {
@@ -1111,16 +1111,16 @@
         "u_ip1face_surface": 131.62509155273
       },
       "jax": {
-        "w_min": -3627.175913395856,
-        "w_max": 224.73641873109355,
+        "w_min": -3624.161715494165,
+        "w_max": 224.7393191324899,
         "w_argmin_face": 4,
-        "ww_lowlevel_absmax": 0.4256553816473456,
+        "ww_lowlevel_absmax": 0.4255301595957235,
         "ww_lowlevel_signed_min": 0.0,
-        "dudx_surface": 5.203878466553639,
-        "dudx_lowlevel_absmax": 5.203878466553639,
-        "dudx_lowlevel_mean": 1.1945237274872091,
-        "u_iface_surface": -520.3820907937588,
-        "u_ip1face_surface": 0.0057558616050927755
+        "dudx_surface": 5.198991401216923,
+        "dudx_lowlevel_absmax": 5.198991401216923,
+        "dudx_lowlevel_mean": 1.1941475372216257,
+        "u_iface_surface": -519.8933938943596,
+        "u_ip1face_surface": 0.005746227332662363
       }
     },
     {
@@ -1148,16 +1148,16 @@
         "u_ip1face_surface": 146.16381835938
       },
       "jax": {
-        "w_min": -3571.543628245394,
-        "w_max": 323.32505123984225,
+        "w_min": -3568.841776035774,
+        "w_max": 323.3326126366391,
         "w_argmin_face": 4,
-        "ww_lowlevel_absmax": 0.41793223689643355,
+        "ww_lowlevel_absmax": 0.41782202225385845,
         "ww_lowlevel_signed_min": 0.0,
-        "dudx_surface": 5.222117385557451,
-        "dudx_lowlevel_absmax": 5.222117385557451,
-        "dudx_lowlevel_mean": 1.2427766702942162,
-        "u_iface_surface": -522.2058347027471,
-        "u_ip1face_surface": 0.005903852998006251
+        "dudx_surface": 5.217616317425082,
+        "dudx_lowlevel_absmax": 5.217616317425082,
+        "dudx_lowlevel_mean": 1.2424216585768793,
+        "u_iface_surface": -521.7557373974197,
+        "u_ip1face_surface": 0.005894345088619122
       }
     },
     {
@@ -1185,16 +1185,16 @@
         "u_ip1face_surface": 152.71978759766
       },
       "jax": {
-        "w_min": -3494.2532942699095,
-        "w_max": 428.24827435050423,
+        "w_min": -3491.945059524501,
+        "w_max": 428.2616879126536,
         "w_argmin_face": 4,
-        "ww_lowlevel_absmax": 0.40877877390845185,
+        "ww_lowlevel_absmax": 0.40868528226108936,
         "ww_lowlevel_signed_min": 0.0,
-        "dudx_surface": 5.227502744985101,
-        "dudx_lowlevel_absmax": 5.227502744985101,
-        "dudx_lowlevel_mean": 1.2841758440562394,
-        "u_iface_surface": -522.7441837864702,
-        "u_ip1face_surface": 0.006090712039890968
+        "dudx_surface": 5.223433189739715,
+        "dudx_lowlevel_absmax": 5.223433189739715,
+        "dudx_lowlevel_mean": 1.28384686171719,
+        "u_iface_surface": -522.3372375868242,
+        "u_ip1face_surface": 0.006081387147232367
       }
     },
     {
@@ -1222,16 +1222,16 @@
         "u_ip1face_surface": 139.23583984375
       },
       "jax": {
-        "w_min": -3395.8140639258545,
-        "w_max": 531.8383388406262,
+        "w_min": -3393.9926208451075,
+        "w_max": 531.8591712183503,
         "w_argmin_face": 4,
-        "ww_lowlevel_absmax": 0.39755802973375864,
+        "ww_lowlevel_absmax": 0.397482326650902,
         "ww_lowlevel_signed_min": 0.0,
-        "dudx_surface": 5.211560032368497,
-        "dudx_lowlevel_absmax": 5.211560032368497,
-        "dudx_lowlevel_mean": 1.3148565247842166,
-        "u_iface_surface": -521.1497088339796,
-        "u_ip1face_surface": 0.006294402869989877
+        "dudx_surface": 5.207960199541782,
+        "dudx_lowlevel_absmax": 5.207960199541782,
+        "dudx_lowlevel_mean": 1.314557673876179,
+        "u_iface_surface": -520.7897346866017,
+        "u_ip1face_surface": 0.006285267576422061
       }
     },
     {
@@ -1259,16 +1259,16 @@
         "u_ip1face_surface": 121.38916015625
       },
       "jax": {
-        "w_min": -3275.978176367599,
-        "w_max": 627.3593752577065,
+        "w_min": -3274.747972694909,
+        "w_max": 627.3959018124439,
         "w_argmin_face": 4,
-        "ww_lowlevel_absmax": 0.3978971576995889,
+        "ww_lowlevel_absmax": 0.39780193652222806,
         "ww_lowlevel_signed_min": 0.0,
-        "dudx_surface": 5.17048618050496,
-        "dudx_lowlevel_absmax": 5.17048618050496,
-        "dudx_lowlevel_mean": 1.3320697341096497,
-        "u_iface_surface": -517.0421313915612,
-        "u_ip1face_surface": 0.0064866589348092805
+        "dudx_surface": 5.167400905943192,
+        "dudx_lowlevel_absmax": 5.167400905943192,
+        "dudx_lowlevel_mean": 1.3318048387498458,
+        "u_iface_surface": -516.7336128673458,
+        "u_ip1face_surface": 0.006477726973410543
       }
     },
     {
@@ -1296,16 +1296,16 @@
         "u_ip1face_surface": 86.126998901367
       },
       "jax": {
-        "w_min": -3133.728515625131,
-        "w_max": 709.186182468623,
+        "w_min": -3133.2061046547296,
+        "w_max": 709.232297668124,
         "w_argmin_face": 4,
-        "ww_lowlevel_absmax": 0.39602481990192473,
+        "ww_lowlevel_absmax": 0.39593759853491406,
         "ww_lowlevel_signed_min": 0.0,
-        "dudx_surface": 5.104700600194703,
-        "dudx_lowlevel_absmax": 5.104700600194703,
-        "dudx_lowlevel_mean": 1.3349516830573036,
-        "u_iface_surface": -510.463405344307,
-        "u_ip1face_surface": 0.006654675163354683
+        "dudx_surface": 5.102174376419249,
+        "dudx_lowlevel_absmax": 5.102174376419249,
+        "dudx_lowlevel_mean": 1.3347243333254586,
+        "u_iface_surface": -510.2107916595874,
+        "u_ip1face_surface": 0.006645982337465924
       }
     },
     {
@@ -1333,16 +1333,16 @@
         "u_ip1face_surface": 47.459197998047
       },
       "jax": {
-        "w_min": -3017.406023176933,
-        "w_max": 770.8206941292967,
+        "w_min": -3015.0978658818826,
+        "w_max": 770.8767096331686,
         "w_argmin_face": 3,
-        "ww_lowlevel_absmax": 0.3906334896275041,
+        "ww_lowlevel_absmax": 0.3905552994762047,
         "ww_lowlevel_signed_min": 0.0,
-        "dudx_surface": 5.016616278554183,
-        "dudx_lowlevel_absmax": 5.016616278554183,
-        "dudx_lowlevel_mean": 1.3243659364002622,
-        "u_iface_surface": -501.6548397811355,
-        "u_ip1face_surface": 0.00678807428281826
+        "dudx_surface": 5.014696051014798,
+        "dudx_lowlevel_absmax": 5.014696051014798,
+        "dudx_lowlevel_mean": 1.324181118918988,
+        "u_iface_surface": -501.4628254364404,
+        "u_ip1face_surface": 0.006779665039471562
       }
     }
   ],
@@ -1438,142 +1438,142 @@
         {
           "rk": 3,
           "iter": 1,
-          "w_min": -241.0803656034522,
-          "w_max": 2767.6980142491307,
+          "w_min": -241.0813671022944,
+          "w_max": 2766.8570101784485,
           "w_argmin_face": 40,
-          "ww_lowlevel_absmax": 0.5286383559351577,
-          "ww_lowlevel_signed_min": -0.5286383559351577,
-          "dudx_surface": -4.165827477610287,
-          "dudx_lowlevel_absmax": 4.3924990420692485,
-          "dudx_lowlevel_mean": -1.335407108534234,
-          "u_iface_surface": 416.5785518133513,
-          "u_ip1face_surface": -0.004195947677392977
+          "ww_lowlevel_absmax": 0.5285077896813277,
+          "ww_lowlevel_signed_min": -0.5285077896813277,
+          "dudx_surface": -4.15882502920814,
+          "dudx_lowlevel_absmax": 4.391819980652361,
+          "dudx_lowlevel_mean": -1.3351439850676803,
+          "u_iface_surface": 415.8783141230066,
+          "u_ip1face_surface": -0.004188797807432643
         },
         {
           "rk": 3,
           "iter": 2,
-          "w_min": -176.20165041247793,
-          "w_max": 1877.0606450809476,
+          "w_min": -176.2029724174401,
+          "w_max": 1876.7710313649088,
           "w_argmin_face": 40,
-          "ww_lowlevel_absmax": 0.39850368374229106,
-          "ww_lowlevel_signed_min": -0.39850368374229106,
-          "dudx_surface": -3.1428842656510407,
-          "dudx_lowlevel_absmax": 3.3166387111837543,
-          "dudx_lowlevel_mean": -1.0159012178089049,
-          "u_iface_surface": 314.2852686813227,
-          "u_ip1face_surface": -0.0031578837813702604
+          "ww_lowlevel_absmax": 0.39840537682462696,
+          "ww_lowlevel_signed_min": -0.39840537682462696,
+          "dudx_surface": -3.1376385764986825,
+          "dudx_lowlevel_absmax": 3.316103380847786,
+          "dudx_lowlevel_mean": -1.0157023936959895,
+          "u_iface_surface": 313.76070512387565,
+          "u_ip1face_surface": -0.003152525992615653
         },
         {
           "rk": 3,
           "iter": 3,
-          "w_min": -110.30737723939228,
-          "w_max": 1489.66337506506,
+          "w_min": -110.30867960145304,
+          "w_max": 1489.260203136944,
           "w_argmin_face": 40,
-          "ww_lowlevel_absmax": 0.26746674632127565,
-          "ww_lowlevel_signed_min": -0.26746674632127565,
-          "dudx_surface": -2.111068781897007,
-          "dudx_lowlevel_absmax": 2.2300281755864466,
-          "dudx_lowlevel_mean": -0.6896854663644946,
-          "u_iface_surface": 211.10476419096747,
-          "u_ip1face_surface": -0.00211399873323777
+          "ww_lowlevel_absmax": 0.267400743275374,
+          "ww_lowlevel_signed_min": -0.267400743275374,
+          "dudx_surface": -2.107576859887705,
+          "dudx_lowlevel_absmax": 2.229660407814621,
+          "dudx_lowlevel_mean": -0.6895512358836896,
+          "u_iface_surface": 210.7555755583561,
+          "u_ip1face_surface": -0.00211043041440222
         },
         {
           "rk": 3,
           "iter": 4,
-          "w_min": -91.06613698918834,
-          "w_max": 1173.0681209243162,
+          "w_min": -91.15818514860005,
+          "w_max": 1172.8717841422526,
           "w_argmin_face": 10,
-          "ww_lowlevel_absmax": 0.13534581958745662,
-          "ww_lowlevel_signed_min": -0.13534581958745662,
-          "dudx_surface": -1.0703469866447586,
-          "dudx_lowlevel_absmax": 1.1375809950726679,
-          "dudx_lowlevel_mean": -0.35688245298139487,
-          "u_iface_surface": 107.03363430809266,
-          "u_ip1face_surface": -0.0010643563832173197
+          "ww_lowlevel_absmax": 0.1353121468093832,
+          "ww_lowlevel_signed_min": -0.1353121468093832,
+          "dudx_surface": -1.0685933841091635,
+          "dudx_lowlevel_absmax": 1.1373965526712615,
+          "dudx_lowlevel_mean": -0.35681312964708384,
+          "u_iface_surface": 106.85827583877155,
+          "u_ip1face_surface": -0.0010625721448063623
         },
         {
           "rk": 3,
           "iter": 5,
-          "w_min": -728.9059510476535,
-          "w_max": 702.2964483473571,
+          "w_min": -728.9159227422903,
+          "w_max": 702.247668597774,
           "w_argmin_face": 10,
-          "ww_lowlevel_absmax": 0.0038135174645503866,
-          "ww_lowlevel_signed_min": -0.0038135174645503866,
-          "dudx_surface": -0.02073771708331428,
-          "dudx_lowlevel_absmax": 0.05003193006520518,
-          "dudx_lowlevel_mean": -0.017588514206810315,
-          "u_iface_surface": 2.0737626792411916,
-          "u_ip1face_surface": -9.029090236412947e-06
+          "ww_lowlevel_absmax": 0.003812482532367767,
+          "ww_lowlevel_signed_min": -0.003812482532367767,
+          "dudx_surface": -0.020702055404665572,
+          "dudx_lowlevel_absmax": 0.05002321958730774,
+          "dudx_lowlevel_mean": -0.01758440055852945,
+          "u_iface_surface": 2.0701965178440784,
+          "u_ip1face_surface": -9.022622479046006e-06
         },
         {
           "rk": 3,
           "iter": 6,
-          "w_min": -1258.3435393655782,
-          "w_max": 94.92735246543823,
+          "w_min": -1258.2660434375273,
+          "w_max": 94.92823049377378,
           "w_argmin_face": 10,
-          "ww_lowlevel_absmax": 0.13255073886747937,
+          "ww_lowlevel_absmax": 0.1325145474869487,
           "ww_lowlevel_signed_min": 0.0,
-          "dudx_surface": 1.037723816320012,
-          "dudx_lowlevel_absmax": 1.0581339278641892,
-          "dudx_lowlevel_mean": 0.3281265064906388,
-          "u_iface_surface": -103.77132970817567,
-          "u_ip1face_surface": 0.0010519238255349787
+          "dudx_surface": 1.0360587719765824,
+          "dudx_lowlevel_absmax": 1.0579806414019823,
+          "dudx_lowlevel_mean": 0.3280651402445518,
+          "u_iface_surface": -103.60482704199973,
+          "u_ip1face_surface": 0.0010501556585113827
         },
         {
           "rk": 3,
           "iter": 7,
-          "w_min": -1680.273831165059,
-          "w_max": 164.04042457513577,
+          "w_min": -1680.0874517228892,
+          "w_max": 164.04277281046325,
           "w_argmin_face": 10,
-          "ww_lowlevel_absmax": 0.26830773286070553,
+          "ww_lowlevel_absmax": 0.26824415510679955,
           "ww_lowlevel_signed_min": 0.0,
-          "dudx_surface": 2.1050048116486098,
-          "dudx_lowlevel_absmax": 2.1614834412630715,
-          "dudx_lowlevel_mean": 0.6802180447648108,
-          "u_iface_surface": -210.49836270234005,
-          "u_ip1face_surface": 0.002118462520937259
+          "dudx_surface": 2.101646947578551,
+          "dudx_lowlevel_absmax": 2.1611567608955538,
+          "dudx_lowlevel_mean": 0.6800909692813247,
+          "u_iface_surface": -210.16257983724807,
+          "u_ip1face_surface": 0.0021149206070022195
         },
         {
           "rk": 3,
           "iter": 8,
-          "w_min": -1997.1009520688308,
-          "w_max": 234.19781163370394,
+          "w_min": -1996.7728152037837,
+          "w_max": 234.2017143049363,
           "w_argmin_face": 10,
-          "ww_lowlevel_absmax": 0.40517992667835756,
+          "ww_lowlevel_absmax": 0.40508379303784636,
           "ww_lowlevel_signed_min": 0.0,
-          "dudx_surface": 3.1810622161683955,
-          "dudx_lowlevel_absmax": 3.270871998532314,
-          "dudx_lowlevel_mean": 1.038665788208207,
-          "u_iface_surface": -318.10303105979324,
-          "u_ip1face_surface": 0.003190557046318393
+          "dudx_surface": 3.1760073246046625,
+          "dudx_lowlevel_absmax": 3.270342895987982,
+          "dudx_lowlevel_mean": 1.0384728111879131,
+          "u_iface_surface": -317.5975472234999,
+          "u_ip1face_surface": 0.0031852369663535576
         },
         {
           "rk": 3,
           "iter": 9,
-          "w_min": -2836.4536758399545,
-          "w_max": 306.04055435148706,
+          "w_min": -2835.7845527960494,
+          "w_max": 306.0465141113518,
           "w_argmin_face": 6,
-          "ww_lowlevel_absmax": 0.5429727473537866,
+          "ww_lowlevel_absmax": 0.5428439753670773,
           "ww_lowlevel_signed_min": 0.0,
-          "dudx_surface": 4.2658054111693104,
-          "dudx_lowlevel_absmax": 4.388004971254534,
-          "dudx_lowlevel_mean": 1.403472786856893,
-          "u_iface_surface": -426.57627295381366,
-          "u_ip1face_surface": 0.004268163117394853
+          "dudx_surface": 4.259038226884879,
+          "dudx_lowlevel_absmax": 4.387239278234252,
+          "dudx_lowlevel_mean": 1.4032137425173992,
+          "u_iface_surface": -425.8995616288057,
+          "u_ip1face_surface": 0.0042610596822384005
         },
         {
           "rk": 3,
           "iter": 10,
-          "w_min": -3875.806076061573,
-          "w_max": 378.8310415609351,
+          "w_min": -3875.2393189373734,
+          "w_max": 378.8393941043533,
           "w_argmin_face": 6,
-          "ww_lowlevel_absmax": 0.6814427155438239,
+          "ww_lowlevel_absmax": 0.68128121934879,
           "ww_lowlevel_signed_min": 0.0,
-          "dudx_surface": 5.35905980511038,
-          "dudx_lowlevel_absmax": 5.5155313413383995,
-          "dudx_lowlevel_mean": 1.774664634669834,
-          "u_iface_surface": -535.9006293126934,
-          "u_ip1face_surface": 0.00535119834469095
+          "dudx_surface": 5.350557906357217,
+          "dudx_lowlevel_absmax": 5.514501678782668,
+          "dudx_lowlevel_mean": 1.7743393746830587,
+          "u_iface_surface": -535.0504483312471,
+          "u_ip1face_surface": 0.005342304474568229
         }
       ]
     },
@@ -1668,142 +1668,142 @@
         {
           "rk": 3,
           "iter": 1,
-          "w_min": -43.067264599423396,
-          "w_max": 2387.6663130988845,
+          "w_min": -43.06784820444038,
+          "w_max": 2388.316467963105,
           "w_argmin_face": 38,
-          "ww_lowlevel_absmax": 0.35532378072154813,
-          "ww_lowlevel_signed_min": -0.35532378072154813,
-          "dudx_surface": -4.035099203178302,
-          "dudx_lowlevel_absmax": 4.105494497546714,
-          "dudx_lowlevel_mean": -0.8010911391604202,
-          "u_iface_surface": 403.50520856744214,
-          "u_ip1face_surface": -0.004711750388083974
+          "ww_lowlevel_absmax": 0.3551998705913917,
+          "ww_lowlevel_signed_min": -0.3551998705913917,
+          "dudx_surface": -4.030376701138463,
+          "dudx_lowlevel_absmax": 4.10473497142413,
+          "dudx_lowlevel_mean": -0.8007785219657727,
+          "u_iface_surface": 403.03296596347116,
+          "u_ip1face_surface": -0.004704150375191907
         },
         {
           "rk": 3,
           "iter": 2,
-          "w_min": -21.68687003561086,
-          "w_max": 1439.4250434385879,
+          "w_min": -21.68718439063845,
+          "w_max": 1438.5057158252234,
           "w_argmin_face": 38,
-          "ww_lowlevel_absmax": 0.2672842913065665,
-          "ww_lowlevel_signed_min": -0.2672842913065665,
-          "dudx_surface": -3.0344235473454035,
-          "dudx_lowlevel_absmax": 3.091623093909759,
-          "dudx_lowlevel_mean": -0.6029605430381234,
-          "u_iface_surface": 303.4388181857257,
-          "u_ip1face_surface": -0.0035365488146382974
+          "ww_lowlevel_absmax": 0.26719145581202497,
+          "ww_lowlevel_signed_min": -0.26719145581202497,
+          "dudx_surface": -3.030915091056321,
+          "dudx_lowlevel_absmax": 3.091013311051061,
+          "dudx_lowlevel_mean": -0.6027241579617131,
+          "u_iface_surface": 303.08797823065424,
+          "u_ip1face_surface": -0.003530874977859348
         },
         {
           "rk": 3,
           "iter": 3,
-          "w_min": -3.647437182031572,
-          "w_max": 1244.8995094185284,
+          "w_min": -3.6476156665153754,
+          "w_max": 1245.871959696652,
           "w_argmin_face": 38,
-          "ww_lowlevel_absmax": 0.1790916087598191,
-          "ww_lowlevel_signed_min": -0.1790916087598191,
-          "dudx_surface": -2.0311208124931492,
-          "dudx_lowlevel_absmax": 2.073072136256604,
-          "dudx_lowlevel_mean": -0.40344245007659885,
-          "u_iface_surface": 203.10971827734025,
-          "u_ip1face_surface": -0.002362971974702499
+          "ww_lowlevel_absmax": 0.17902971346939012,
+          "ww_lowlevel_signed_min": -0.17902971346939012,
+          "dudx_surface": -2.028824857843208,
+          "dudx_lowlevel_absmax": 2.0726305782681247,
+          "dudx_lowlevel_mean": -0.4032836731440717,
+          "u_iface_surface": 202.88012656292523,
+          "u_ip1face_surface": -0.0023592213956178704
         },
         {
           "rk": 3,
           "iter": 4,
-          "w_min": -409.546192209379,
-          "w_max": 1139.7261984176068,
+          "w_min": -409.7851613626474,
+          "w_max": 1140.0507151986792,
           "w_argmin_face": 8,
-          "ww_lowlevel_absmax": 0.09051048744663603,
-          "ww_lowlevel_signed_min": -0.09051048744663603,
-          "dudx_surface": -1.0241730867330292,
-          "dudx_lowlevel_absmax": 1.0524287989616323,
-          "dudx_lowlevel_mean": -0.20247296673164258,
-          "u_iface_surface": 102.41611817634731,
-          "u_ip1face_surface": -0.001190496955619018
+          "ww_lowlevel_absmax": 0.09047990719246002,
+          "ww_lowlevel_signed_min": -0.09047990719246002,
+          "dudx_surface": -1.02308188157874,
+          "dudx_lowlevel_absmax": 1.0521812712296468,
+          "dudx_lowlevel_mean": -0.20239323923469776,
+          "u_iface_surface": 102.30699949821847,
+          "u_ip1face_surface": -0.0011886596555314385
         },
         {
           "rk": 3,
           "iter": 5,
-          "w_min": -910.3695960069826,
-          "w_max": 799.9121847585169,
+          "w_min": -910.3495424011297,
+          "w_max": 799.9383827516546,
           "w_argmin_face": 8,
-          "ww_lowlevel_absmax": 0.00354459545101804,
-          "ww_lowlevel_signed_min": -0.00354459545101804,
-          "dudx_surface": -0.012694361364416946,
-          "dudx_lowlevel_absmax": 0.060276785214639625,
-          "dudx_lowlevel_mean": 3.853811669208875e-05,
-          "u_iface_surface": 1.2694174829359104,
-          "u_ip1face_surface": -1.8653505784159352e-05
+          "ww_lowlevel_absmax": 0.003544603743961261,
+          "ww_lowlevel_signed_min": -0.003544603743961261,
+          "dudx_surface": -0.01279836565764943,
+          "dudx_lowlevel_absmax": 0.06029086947305214,
+          "dudx_lowlevel_mean": 3.779004203093095e-05,
+          "u_iface_surface": 1.2798178498877952,
+          "u_ip1face_surface": -1.8715877147937098e-05
         },
         {
           "rk": 3,
           "iter": 6,
-          "w_min": -1272.0465247158759,
-          "w_max": 330.5067185315488,
+          "w_min": -1271.9145268456457,
+          "w_max": 331.03459303087317,
           "w_argmin_face": 8,
-          "ww_lowlevel_absmax": 0.08832103292098736,
+          "ww_lowlevel_absmax": 0.08828652082313226,
           "ww_lowlevel_signed_min": 0.0,
-          "dudx_surface": 1.0037797402450912,
-          "dudx_lowlevel_absmax": 1.0037797402450912,
-          "dudx_lowlevel_mean": 0.2042014401029405,
-          "u_iface_surface": -100.37682118553316,
-          "u_ip1face_surface": 0.0011528389759556908
+          "dudx_surface": 1.0024876323631642,
+          "dudx_lowlevel_absmax": 1.0024876323631642,
+          "dudx_lowlevel_mean": 0.20411885071942587,
+          "u_iface_surface": -100.24761234394191,
+          "u_ip1face_surface": 0.0011508923745157656
         },
         {
           "rk": 3,
           "iter": 7,
-          "w_min": -1490.6480333298075,
-          "w_max": 36.51743541976518,
+          "w_min": -1490.5448821680336,
+          "w_max": 36.51662107973272,
           "w_argmin_face": 8,
-          "ww_lowlevel_absmax": 0.17856949526678534,
+          "ww_lowlevel_absmax": 0.1785011052654113,
           "ww_lowlevel_signed_min": 0.0,
-          "dudx_surface": 2.0251532739008407,
-          "dudx_lowlevel_absmax": 2.0251532739008407,
-          "dudx_lowlevel_mean": 0.4101385236907028,
-          "u_iface_surface": -202.51300338597548,
-          "u_ip1face_surface": 0.0023240041085727586
+          "dudx_surface": 2.022674857402488,
+          "dudx_lowlevel_absmax": 2.022674857402488,
+          "dudx_lowlevel_mean": 0.4099727845495884,
+          "u_iface_surface": -202.2651655533179,
+          "u_ip1face_surface": 0.0023201869309216207
         },
         {
           "rk": 3,
           "iter": 8,
-          "w_min": -1571.4370846406107,
-          "w_max": 38.92544484183154,
+          "w_min": -1573.1331854192188,
+          "w_max": 38.92426810217124,
           "w_argmin_face": 5,
-          "ww_lowlevel_absmax": 0.2692105234099387,
+          "ww_lowlevel_absmax": 0.2691076831718249,
           "ww_lowlevel_signed_min": 0.0,
-          "dudx_surface": 3.0508030370463355,
-          "dudx_lowlevel_absmax": 3.0508030370463355,
-          "dudx_lowlevel_mean": 0.6179836115360773,
-          "u_iface_surface": -305.07680909230606,
-          "u_ip1face_surface": 0.0034946123274476816
+          "dudx_surface": 3.0471337999104366,
+          "dudx_lowlevel_absmax": 3.0471337999104366,
+          "dudx_lowlevel_mean": 0.6177334260762335,
+          "u_iface_surface": -304.70989105741654,
+          "u_ip1face_surface": 0.003488933627117084
         },
         {
           "rk": 3,
           "iter": 9,
-          "w_min": -2555.2519858328214,
-          "w_max": 38.422781722898165,
+          "w_min": -2552.2785824599646,
+          "w_max": 38.4211962028899,
           "w_argmin_face": 4,
-          "ww_lowlevel_absmax": 0.36002892169292977,
+          "ww_lowlevel_absmax": 0.35989148022039785,
           "ww_lowlevel_signed_min": 0.0,
-          "dudx_surface": 4.079791935613731,
-          "dudx_lowlevel_absmax": 4.079791935613731,
-          "dudx_lowlevel_mean": 0.8278818279014722,
-          "u_iface_surface": -407.97452928980584,
-          "u_ip1face_surface": 0.0046642715672883285
+          "dudx_surface": 4.074921744998331,
+          "dudx_lowlevel_absmax": 4.074921744998331,
+          "dudx_lowlevel_mean": 0.8275458465319978,
+          "u_iface_surface": -407.4875177660755,
+          "u_ip1face_surface": 0.004656733757604297
         },
         {
           "rk": 3,
           "iter": 10,
-          "w_min": -3647.18559084014,
-          "w_max": 35.07677425219368,
+          "w_min": -3643.5589864807594,
+          "w_max": 35.07473814968479,
           "w_argmin_face": 4,
-          "ww_lowlevel_absmax": 0.4507676028154748,
+          "ww_lowlevel_absmax": 0.4505958488616102,
           "ww_lowlevel_signed_min": 0.0,
-          "dudx_surface": 5.1112494378469435,
-          "dudx_lowlevel_absmax": 5.1112494378469435,
-          "dudx_lowlevel_mean": 1.0399913257004647,
-          "u_iface_surface": -511.1191111810205,
-          "u_ip1face_surface": 0.0058326036738597835
+          "dudx_surface": 5.105164142412434,
+          "dudx_lowlevel_absmax": 5.105164142412434,
+          "dudx_lowlevel_mean": 1.0395680921512838,
+          "u_iface_surface": -510.5105910408658,
+          "u_ip1face_surface": 0.005823200377627077
         }
       ]
     },
@@ -1898,142 +1898,142 @@
         {
           "rk": 3,
           "iter": 1,
-          "w_min": -231.13130246443035,
-          "w_max": 2149.2147886977527,
+          "w_min": -231.13450288007493,
+          "w_max": 2148.515890427159,
           "w_argmin_face": 37,
-          "ww_lowlevel_absmax": 0.32594349175471393,
-          "ww_lowlevel_signed_min": -0.32594349175471393,
-          "dudx_surface": -4.115606027654875,
-          "dudx_lowlevel_absmax": 4.1846053357612485,
-          "dudx_lowlevel_mean": -0.9468553091075373,
-          "u_iface_surface": 411.55594984968064,
-          "u_ip1face_surface": -0.004652915806892511
+          "ww_lowlevel_absmax": 0.32586315479241534,
+          "ww_lowlevel_signed_min": -0.32586315479241534,
+          "dudx_surface": -4.112762013050817,
+          "dudx_lowlevel_absmax": 4.183486395731199,
+          "dudx_lowlevel_mean": -0.946598440603096,
+          "u_iface_surface": 411.2715554085007,
+          "u_ip1face_surface": -0.004645896581059774
         },
         {
           "rk": 3,
           "iter": 2,
-          "w_min": -166.23224049972598,
-          "w_max": 1228.295393745737,
+          "w_min": -166.23488439704718,
+          "w_max": 1227.5415559135647,
           "w_argmin_face": 37,
-          "ww_lowlevel_absmax": 0.24517377774697025,
-          "ww_lowlevel_signed_min": -0.24517377774697025,
-          "dudx_surface": -3.097964041008585,
-          "dudx_lowlevel_absmax": 3.152050072793833,
-          "dudx_lowlevel_mean": -0.7140845401130194,
-          "u_iface_surface": 309.7929010723323,
-          "u_ip1face_surface": -0.003503028526222248
+          "ww_lowlevel_absmax": 0.24511402308567654,
+          "ww_lowlevel_signed_min": -0.24511402308567654,
+          "dudx_surface": -3.09584528110879,
+          "dudx_lowlevel_absmax": 3.151264986830989,
+          "dudx_lowlevel_mean": -0.7138903589362396,
+          "u_iface_surface": 309.58103030539485,
+          "u_ip1face_surface": -0.003497805484161279
         },
         {
           "rk": 3,
           "iter": 3,
-          "w_min": -102.21889090262859,
-          "w_max": 1090.7044916634607,
+          "w_min": -102.22087894431799,
+          "w_max": 1088.5728640665818,
           "w_argmin_face": 37,
-          "ww_lowlevel_absmax": 0.16429505508995135,
-          "ww_lowlevel_signed_min": -0.16429505508995135,
-          "dudx_surface": -2.076928404342847,
-          "dudx_lowlevel_absmax": 2.1131564757985566,
-          "dudx_lowlevel_mean": -0.47881183796251,
-          "u_iface_surface": 207.69049186631264,
-          "u_ip1face_surface": -0.002348567972066949
+          "ww_lowlevel_absmax": 0.1642555644143897,
+          "ww_lowlevel_signed_min": -0.1642555644143897,
+          "dudx_surface": -2.075544140324887,
+          "dudx_lowlevel_absmax": 2.1126716510388284,
+          "dudx_lowlevel_mean": -0.4786814372613582,
+          "u_iface_surface": 207.55206891269611,
+          "u_ip1face_surface": -0.002345119792590613
         },
         {
           "rk": 3,
           "iter": 4,
-          "w_min": -504.7873739237038,
-          "w_max": 1030.2428117736486,
+          "w_min": -505.21803848898514,
+          "w_max": 1028.8852507460279,
           "w_argmin_face": 8,
-          "ww_lowlevel_absmax": 0.08294335484180237,
-          "ww_lowlevel_signed_min": -0.08294335484180237,
-          "dudx_surface": -1.0508472613712845,
-          "dudx_lowlevel_absmax": 1.0738132291020717,
-          "dudx_lowlevel_mean": -0.24101849218993998,
-          "u_iface_surface": 105.08353766225794,
-          "u_ip1face_surface": -0.001188474870513431
+          "ww_lowlevel_absmax": 0.08292402815115452,
+          "ww_lowlevel_signed_min": -0.08292402815115452,
+          "dudx_surface": -1.0502337022531507,
+          "dudx_lowlevel_absmax": 1.0735589044238223,
+          "dudx_lowlevel_mean": -0.24095316496530134,
+          "u_iface_surface": 105.02218342261199,
+          "u_ip1face_surface": -0.0011868027030931452
         },
         {
           "rk": 3,
           "iter": 5,
-          "w_min": -953.9691543433714,
-          "w_max": 809.021822933586,
+          "w_min": -953.828047186422,
+          "w_max": 808.7372930323207,
           "w_argmin_face": 7,
-          "ww_lowlevel_absmax": 0.0033568922404754176,
-          "ww_lowlevel_signed_min": -0.0033568922404754176,
-          "dudx_surface": -0.018421005788907936,
-          "dudx_lowlevel_absmax": 0.056793552440422085,
-          "dudx_lowlevel_mean": -0.0006514761874778607,
-          "u_iface_surface": 1.842078689220622,
-          "u_ip1face_surface": -2.188967017155793e-05
+          "ww_lowlevel_absmax": 0.0033567310052546873,
+          "ww_lowlevel_signed_min": -0.0033567310052546873,
+          "dudx_surface": -0.018625938284136105,
+          "dudx_lowlevel_absmax": 0.05685078955029616,
+          "dudx_lowlevel_mean": -0.0006526004543248597,
+          "u_iface_surface": 1.8625718139724694,
+          "u_ip1face_surface": -2.201444114111807e-05
         },
         {
           "rk": 3,
           "iter": 6,
-          "w_min": -1206.4585573675813,
-          "w_max": 420.5633737207679,
+          "w_min": -1206.509781348446,
+          "w_max": 421.27904917451536,
           "w_argmin_face": 7,
-          "ww_lowlevel_absmax": 0.08198718506261571,
+          "ww_lowlevel_absmax": 0.08196550888459342,
           "ww_lowlevel_signed_min": 0.0,
-          "dudx_surface": 1.020742125171963,
-          "dudx_lowlevel_absmax": 1.020742125171963,
-          "dudx_lowlevel_mean": 0.24236544465140084,
-          "u_iface_surface": -102.0730609699386,
-          "u_ip1face_surface": 0.0011515472577157532
+          "dudx_surface": 1.0196764859485974,
+          "dudx_lowlevel_absmax": 1.0196764859485974,
+          "dudx_lowlevel_mean": 0.24229648341724677,
+          "u_iface_surface": -101.96649900190573,
+          "u_ip1face_surface": 0.0011495929540112017
         },
         {
           "rk": 3,
           "iter": 7,
-          "w_min": -1292.9498381960607,
-          "w_max": 145.5519577565603,
+          "w_min": -1293.0706331783806,
+          "w_max": 145.5544654084958,
           "w_argmin_face": 8,
-          "ww_lowlevel_absmax": 0.16557425118135427,
+          "ww_lowlevel_absmax": 0.16553132289405426,
           "ww_lowlevel_signed_min": 0.0,
-          "dudx_surface": 2.0659549053708366,
-          "dudx_lowlevel_absmax": 2.0659549053708366,
-          "dudx_lowlevel_mean": 0.488121728753777,
-          "u_iface_surface": -206.59315893856927,
-          "u_ip1face_surface": 0.002331598514381881
+          "dudx_surface": 2.064005530664364,
+          "dudx_lowlevel_absmax": 2.064005530664364,
+          "dudx_lowlevel_mean": 0.4879835512994381,
+          "u_iface_surface": -206.39822528663018,
+          "u_ip1face_surface": 0.00232777980620722
         },
         {
           "rk": 3,
           "iter": 8,
-          "w_min": -1530.6147617772401,
-          "w_max": 205.5514015957731,
+          "w_min": -1529.0657706019042,
+          "w_max": 205.55550672350907,
           "w_argmin_face": 4,
-          "ww_lowlevel_absmax": 0.2496594497529827,
+          "ww_lowlevel_absmax": 0.24959463137983562,
           "ww_lowlevel_signed_min": 0.0,
-          "dudx_surface": 3.115689077906927,
-          "dudx_lowlevel_absmax": 3.115689077906927,
-          "dudx_lowlevel_mean": 0.7367120678346741,
-          "u_iface_surface": -311.56539024232103,
-          "u_ip1face_surface": 0.0035175483716179947
+          "dudx_surface": 3.1128584542218847,
+          "dudx_lowlevel_absmax": 3.1128584542218847,
+          "dudx_lowlevel_mean": 0.7365032500223804,
+          "u_iface_surface": -311.2823335834126,
+          "u_ip1face_surface": 0.0035118387758891817
         },
         {
           "rk": 3,
           "iter": 9,
-          "w_min": -2547.2843531489557,
-          "w_max": 264.8069438512491,
+          "w_min": -2545.0062809304063,
+          "w_max": 264.81274925844707,
           "w_argmin_face": 4,
-          "ww_lowlevel_absmax": 0.33390982874210806,
+          "ww_lowlevel_absmax": 0.3338225269586559,
           "ww_lowlevel_signed_min": 0.0,
-          "dudx_surface": 4.168159557419314,
-          "dudx_lowlevel_absmax": 4.168159557419314,
-          "dudx_lowlevel_mean": 0.9882318831540001,
-          "u_iface_surface": -416.811247231447,
-          "u_ip1face_surface": 0.004708510484499933
+          "dudx_surface": 4.164473569311918,
+          "dudx_lowlevel_absmax": 4.164473569311918,
+          "dudx_lowlevel_mean": 0.9879508638858981,
+          "u_iface_surface": -416.44265603262386,
+          "u_ip1face_surface": 0.004700898567939981
         },
         {
           "rk": 3,
           "iter": 10,
-          "w_min": -3571.543628245394,
-          "w_max": 323.32505123984225,
+          "w_min": -3568.841776035774,
+          "w_max": 323.3326126366391,
           "w_argmin_face": 4,
-          "ww_lowlevel_absmax": 0.41793223689643355,
+          "ww_lowlevel_absmax": 0.41782202225385845,
           "ww_lowlevel_signed_min": 0.0,
-          "dudx_surface": 5.222117385557451,
-          "dudx_lowlevel_absmax": 5.222117385557451,
-          "dudx_lowlevel_mean": 1.2427766702942162,
-          "u_iface_surface": -522.2058347027471,
-          "u_ip1face_surface": 0.005903852998006251
+          "dudx_surface": 5.217616317425082,
+          "dudx_lowlevel_absmax": 5.217616317425082,
+          "dudx_lowlevel_mean": 1.2424216585768793,
+          "u_iface_surface": -521.7557373974197,
+          "u_ip1face_surface": 0.005894345088619122
         }
       ]
     },
@@ -2128,146 +2128,144 @@
         {
           "rk": 3,
           "iter": 1,
-          "w_min": -606.088517103687,
-          "w_max": 1923.344125657704,
+          "w_min": -606.1311006517153,
+          "w_max": 1923.5476187075813,
           "w_argmin_face": 36,
-          "ww_lowlevel_absmax": 0.31454533798805073,
-          "ww_lowlevel_signed_min": -0.31454533798805073,
-          "dudx_surface": -3.986686165128495,
-          "dudx_lowlevel_absmax": 4.029110120924832,
-          "dudx_lowlevel_mean": -1.0301068225920458,
-          "u_iface_surface": 398.66324345045206,
-          "u_ip1face_surface": -0.005373062397426865
+          "ww_lowlevel_absmax": 0.31448632864419324,
+          "ww_lowlevel_signed_min": -0.31448632864419324,
+          "dudx_surface": -3.987042147375174,
+          "dudx_lowlevel_absmax": 4.027511750217308,
+          "dudx_lowlevel_mean": -1.0299760724396274,
+          "u_iface_surface": 398.69884754311477,
+          "u_ip1face_surface": -0.005367194402661271
         },
         {
           "rk": 3,
           "iter": 2,
-          "w_min": -446.11586289098085,
-          "w_max": 1002.362194981376,
+          "w_min": -446.1482565000142,
+          "w_max": 1002.4767095926226,
           "w_argmin_face": 36,
-          "ww_lowlevel_absmax": 0.23680736759285992,
-          "ww_lowlevel_signed_min": -0.23680736759285992,
-          "dudx_surface": -3.0000337222343934,
-          "dudx_lowlevel_absmax": 3.027694576537242,
-          "dudx_lowlevel_mean": -0.7738845401751775,
-          "u_iface_surface": 299.99932628516154,
-          "u_ip1face_surface": -0.004045938277807213
+          "ww_lowlevel_absmax": 0.2367624401802857,
+          "ww_lowlevel_signed_min": -0.2367624401802857,
+          "dudx_surface": -3.0002502553950476,
+          "dudx_lowlevel_absmax": 3.0267544311374497,
+          "dudx_lowlevel_mean": -0.7737837860914978,
+          "u_iface_surface": 300.02098400841385,
+          "u_ip1face_surface": -0.004041531090951182
         },
         {
           "rk": 3,
           "iter": 3,
-          "w_min": -287.8244881243285,
-          "w_max": 935.3395409975706,
+          "w_min": -287.84630419327624,
+          "w_max": 935.2379846225783,
           "w_argmin_face": 36,
-          "ww_lowlevel_absmax": 0.1589175624321797,
-          "ww_lowlevel_signed_min": -0.1589175624321797,
-          "dudx_surface": -2.0113901679070985,
-          "dudx_lowlevel_absmax": 2.022050686584695,
-          "dudx_lowlevel_mean": -0.5164410498949977,
-          "u_iface_surface": 201.13630316767035,
-          "u_ip1face_surface": -0.002713623039507038
+          "ww_lowlevel_absmax": 0.15888683173602658,
+          "ww_lowlevel_signed_min": -0.15888683173602658,
+          "dudx_surface": -2.0115005455523525,
+          "dudx_lowlevel_absmax": 2.0216225185067773,
+          "dudx_lowlevel_mean": -0.5163708518010678,
+          "u_iface_surface": 201.14734386168453,
+          "u_ip1face_surface": -0.0027106935506992745
         },
         {
           "rk": 3,
           "iter": 4,
-          "w_min": -655.0257649840627,
-          "w_max": 996.8460282473878,
+          "w_min": -654.6505487989803,
+          "w_max": 996.355608719578,
           "w_argmin_face": 7,
-          "ww_lowlevel_absmax": 0.08089010162061072,
-          "ww_lowlevel_signed_min": -0.08089010162061072,
-          "dudx_surface": -1.018537614472655,
-          "dudx_lowlevel_absmax": 1.0220289045022688,
-          "dudx_lowlevel_mean": -0.25777004565670325,
-          "u_iface_surface": 101.85238661262059,
-          "u_ip1face_surface": -0.0013748346449106448
+          "ww_lowlevel_absmax": 0.08087381166535579,
+          "ww_lowlevel_signed_min": -0.08087381166535579,
+          "dudx_surface": -1.0186718482286339,
+          "dudx_lowlevel_absmax": 1.0218402482447961,
+          "dudx_lowlevel_mean": -0.25773143767061335,
+          "u_iface_surface": 101.8658113857209,
+          "u_ip1face_surface": -0.001373437142488774
         },
         {
           "rk": 3,
           "iter": 5,
-          "w_min": -992.976922987705,
-          "w_max": 848.5449807388004,
+          "w_min": -993.0420400810006,
+          "w_max": 848.5229501687877,
           "w_argmin_face": 7,
-          "ww_lowlevel_absmax": 0.0030609622444046636,
-          "ww_lowlevel_signed_min": -0.0030609622444046636,
-          "dudx_surface": -0.019996621237478023,
-          "dudx_lowlevel_absmax": 0.06928990752370384,
-          "dudx_lowlevel_mean": 0.0021757272015994725,
-          "u_iface_surface": 1.9996334157516698,
-          "u_ip1face_surface": -2.870799613252901e-05
+          "ww_lowlevel_absmax": 0.0030600230994366484,
+          "ww_lowlevel_signed_min": -0.0030600230994366484,
+          "dudx_surface": -0.020324040584012118,
+          "dudx_lowlevel_absmax": 0.0692834309070074,
+          "dudx_lowlevel_mean": 0.002181379147751112,
+          "u_iface_surface": 2.0323751470946263,
+          "u_ip1face_surface": -2.8911306585801663e-05
         },
         {
           "rk": 3,
           "iter": 6,
-          "w_min": -1181.4249770139656,
-          "w_max": 448.3110606568599,
+          "w_min": -1181.7147756259642,
+          "w_max": 448.17862861958463,
           "w_argmin_face": 7,
-          "ww_lowlevel_absmax": 0.07557809536928062,
+          "ww_lowlevel_absmax": 0.07556447262194865,
           "ww_lowlevel_signed_min": 0.0,
-          "dudx_surface": 0.9841892444040403,
-          "dudx_lowlevel_absmax": 0.9841892444040403,
-          "dudx_lowlevel_mean": 0.2634759579247122,
-          "u_iface_surface": -98.41759969419554,
-          "u_ip1face_surface": 0.0013247462084860653
+          "dudx_surface": 0.9835221088390784,
+          "dudx_lowlevel_absmax": 0.9835221088390784,
+          "dudx_lowlevel_mean": 0.2634470980939578,
+          "u_iface_surface": -98.3508879987546,
+          "u_ip1face_surface": 0.0013228851532376595
         },
         {
           "rk": 3,
           "iter": 7,
-          "w_min": -1202.9002989640899,
-          "w_max": 328.12316190965146,
+          "w_min": -1203.0603380508692,
+          "w_max": 328.14555436431124,
           "w_argmin_face": 7,
-          "ww_lowlevel_absmax": 0.15404341373587727,
+          "ww_lowlevel_absmax": 0.15401426568485022,
           "ww_lowlevel_signed_min": 0.0,
-          "dudx_surface": 1.9923771086127382,
-          "dudx_lowlevel_absmax": 1.9923771086127382,
-          "dudx_lowlevel_mean": 0.526232844699039,
-          "u_iface_surface": -199.23502627452504,
-          "u_ip1face_surface": 0.0026845867487887273
+          "dudx_surface": 1.9912946235074784,
+          "dudx_lowlevel_absmax": 1.9912946235074784,
+          "dudx_lowlevel_mean": 0.5261678174012137,
+          "u_iface_surface": -199.1267813082386,
+          "u_ip1face_surface": 0.002681042509233611
         },
         {
           "rk": 3,
           "iter": 8,
-          "w_min": -1330.6067283438315,
-          "w_max": 477.62617750204254,
+          "w_min": -1330.715502773144,
+          "w_max": 477.65967248989614,
           "w_argmin_face": 4,
-          "ww_lowlevel_absmax": 0.23269068157165407,
+          "ww_lowlevel_absmax": 0.23264561910593784,
           "ww_lowlevel_signed_min": 0.0,
-          "dudx_surface": 3.001944446454605,
-          "dudx_lowlevel_absmax": 3.001944446454605,
-          "dudx_lowlevel_mean": 0.7905594175003586,
-          "u_iface_surface": -300.1903953602943,
-          "u_ip1face_surface": 0.00404928516615826
+          "dudx_surface": 3.0004634297793173,
+          "dudx_lowlevel_absmax": 3.0004634297793173,
+          "dudx_lowlevel_mean": 0.7904564743962214,
+          "u_iface_surface": -300.0422989084335,
+          "u_ip1face_surface": 0.004044069498207234
         },
         {
           "rk": 3,
           "iter": 9,
-          "w_min": -2154.7575351473033,
-          "w_max": 625.2163696045687,
+          "w_min": -2154.971719245648,
+          "w_max": 625.2610298696501,
           "w_argmin_face": 4,
-          "ww_lowlevel_absmax": 0.31154523881767204,
+          "ww_lowlevel_absmax": 0.3114838484881659,
           "ww_lowlevel_signed_min": 0.0,
-          "dudx_surface": 4.010395809153819,
-          "dudx_lowlevel_absmax": 4.010395809153819,
-          "dudx_lowlevel_mean": 1.056568675313154,
-          "u_iface_surface": -401.0341635616519,
-          "u_ip1face_surface": 0.005417353730044662
+          "dudx_surface": 4.008617618698309,
+          "dudx_lowlevel_absmax": 4.008617618698309,
+          "dudx_lowlevel_mean": 1.0564259002759882,
+          "u_iface_surface": -400.8563513601642,
+          "u_ip1face_surface": 0.005410509666698497
         },
         {
           "rk": 3,
           "iter": 10,
-          "w_min": -3017.406023176933,
-          "w_max": 770.8206941292967,
+          "w_min": -3015.0978658818826,
+          "w_max": 770.8767096331686,
           "w_argmin_face": 3,
-          "ww_lowlevel_absmax": 0.3906334896275041,
+          "ww_lowlevel_absmax": 0.3905552994762047,
           "ww_lowlevel_signed_min": 0.0,
-          "dudx_surface": 5.016616278554183,
-          "dudx_lowlevel_absmax": 5.016616278554183,
-          "dudx_lowlevel_mean": 1.3243659364002622,
-          "u_iface_surface": -501.6548397811355,
-          "u_ip1face_surface": 0.00678807428281826
+          "dudx_surface": 5.014696051014798,
+          "dudx_lowlevel_absmax": 5.014696051014798,
+          "dudx_lowlevel_mean": 1.324181118918988,
+          "u_iface_surface": -501.4628254364404,
+          "u_ip1face_surface": 0.006779665039471562
         }
       ]
     }
-  },
-  "post_fix_status": "POST-FIX (vertical-momentum-advection sign corrected + conservative const-K diffusion). JAX center-column ww low-level stays bounded (~0) matching WRF; the pre-fix runaway (ww low to -68/-165, coupled w_min to -2.4e6) is gone. Coupled w_min ~-3000 runs larger-magnitude than WRF ~-1000..-2500 due to (a) half-cell grid registration (WRF bubble center on mass point i=256; JAX center on a cell face) and (b) vertical grid (JAX 60 uniform 100m vs WRF 65 stretched); both bounded, and the operational physics gate max|w|@900s=14.57 matches WRF ~14-15.",
-  "pre_fix_reference": "See git history / touchdown_fix.md for the pre-fix table: ww low-level -68/-165, coupled w_min -2.4e6, max|u| 16->523 m/s, front frozen 2350-2450 m -> NaN ~205 s."
+  }
 }

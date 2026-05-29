@@ -1,7 +1,27 @@
 # Dry Dynamical Core — Status (single source of truth for the F7 rewrite)
 
-**Last updated: 2026-05-29 (~12:00). Branch `worker/opus/f7d-pressure-mass-fix` (unmerged until idealized cases pass).**
+**Last updated: 2026-05-29 (~17:30, F7N). Branch `worker/opus/f7d-pressure-mass-fix` (idealized cases now PASS; ready for pre-close critique + merge).**
 This file exists so future agents do NOT waste tokens re-investigating already-cleared components. Update it when the dycore status changes.
+
+## ✅ DRY DYNAMICAL CORE CLOSED (F7N, 2026-05-29)
+Both idealized gates PASS against published references + WRF ground truth:
+- **Skamarock warm bubble: PASS 6/6** (thermal_rise 1924 m, max|w| 11.68, θ′max 1.92, mass drift 0).
+- **Straka density current: PASS 6/6** (finite to 900 s; front **14.15 km**; θ′min **−9.97 K**; max|w| **14.57**; **4 rotors**; mass drift **2.25e-9**).
+- m4 **10/10**; flat-rest machine-zero; no masking clamps.
+
+**F7N root cause + fix (the close):** the per-acoustic-substep WRF `em_grav2d_x`
+touchdown-column diff (`proofs/f7n/touchdown_substep_diff.json`,
+`touchdown_fix.md`) localized the Straka detonation to a **growing 2Δz vertical
+mode in `u`** in the cold-pool descent layer (z≈2000–4000 m) that pumped omega
+(`ww`) and ran w→NaN. Cause: `flux_advection._vertical_flux_div_3` (the
+`advect_u`/`advect_v` 3rd-order vertical flux) applied the upwind correction with
+the **opposite sign** to WRF (`module_advect_em.F:1474-1480, :202-204` →
+`vflux = vel*flux4 - |vel|*corr`), making it **anti-dissipative**. Fixed to the WRF
+sign. Secondary: replaced the non-conservative `mass*K∇²` const-K diffusion with
+the WRF flux-divergence form (`conservative_constant_k_diffusion_tendency`,
+`module_diffusion_em.F:2999-3018`) → mass drift 3.4e-8 → 2.25e-9. Bisection proof:
+disabling vertical momentum advection removed the mode (it was *generating* it,
+not under-damping). The scalar/`w` vertical-flux paths were already sign-correct.
 
 ## Why the F7 rewrite exists
 The pre-reset "dycore done, bitwise WRF parity at 100 steps" was a **JAX-vs-JAX self-compare tautology** (discredited 2026-05-28) — the operational dycore was actually missing ~7 WRF operators and produced fast-but-wrong forecasts. The F7.A–J chain is the honest rebuild, validated against **published idealized-case references** (Skamarock warm bubble, Straka density current) and now against **pristine WRF v4.7.1 ground-truth savepoints**.
