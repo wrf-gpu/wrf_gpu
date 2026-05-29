@@ -1,0 +1,23 @@
+{
+  "status": "BUILD_DEFERRED",
+  "reason": "WRF em_quarter_ss ideal binary could not be built in bounded effort (~35 min, 6 documented attempts) on the canonical Gen2 source tree, which is an NVHPC/OpenACC GPU fork, not pristine WRF.",
+  "what_was_set_up": {
+    "build_tree": "/home/enric/src/wrf_ideal_f7i/WRF (rsync copy of Gen2 WRF source; canonical Gen2 em_real tree NOT modified, its sha256 unchanged)",
+    "toolchain_env": "conda env 'wrfbuild' = gfortran/gcc 14.3.0 + netcdf-fortran + tcsh + m4 (NVHPC pgf90/nvfortran that built the canonical tree is no longer installed on the box)",
+    "configure": "option 32 (GNU gfortran serial); em_quarter_ss namelist confirmed present"
+  },
+  "blockers_encountered_in_order": [
+    "csh interpreter absent -> resolved (tcsh from conda, shebang rewrite)",
+    "parallel -j registry race generating nl_config.inc/scalar_tables.inc/allocs.inc -> resolved (serial build; registry .inc files generated)",
+    "PGI-only flags -Mnofma/-Kieee hardcoded in dyn_em/Makefile GPU-phase rule -> resolved (stripped, replaced with -ffp-contract=off)",
+    "module_advect_gpu_phase1-5.F90 import 'use module_wrf_error, only: wrf_error_fatal, wrf_message' but these are external (non-module) subroutines in this fork -> resolved (commented the broken module-only imports)",
+    "module_diffusion_gpu_phase1-5.F90 / small_step_gpu*.F90 / eulerian_mass_core_gpu.F90 (~13 more GPU-phase modules) fail to produce .mod under gfortran; module_bep_bem_helper 'save' symbol linkage (nurbm) undefined -> NOT resolved (open-ended GPU-fork surface)"
+  ],
+  "assessment": "The canonical Gen2 tree carries ~18 *_gpu_phase*/small_step_gpu*/eulerian_mass_core_gpu modules plus PGI-specific build rules and refactored module interfaces. CPU-building it with gfortran requires unwinding an open-ended set of GPU customizations, each a separate build-fight. This is the 'genuinely infeasible in bounded effort / toolchain' case the sprint contract (charter item 5, hard rule 2) anticipated. Per contract, the build was not allowed to block the fix.",
+  "resolution_path_for_next_sprint": [
+    "Option A: reinstall NVHPC SDK (nvfortran cc120) that built the canonical tree, then build em_quarter_ss with the original GPU toolchain (fastest, matches the validated binary).",
+    "Option B: obtain a pristine upstream WRFv4 source (no Gen2 GPU fork) and build em_quarter_ss serial with the existing 'wrfbuild' gfortran env (clean, well-trodden path).",
+    "Option C: continue the gfortran build of the Gen2 fork by stubbing/excluding all *_gpu_phase* modules from the CPU dyn_em link (bounded but tedious)."
+  ],
+  "definitive_arbiter_still_outstanding": "center-column calc_coef_w (a/alpha/gamma), w, ph, p, t_2ave, muave, epssm after IC + steps 1-3 from WRF em_quarter_ss vs JAX same IC. The advance_w in this fork already carries WRF_DIAG_ADVANCE_W_POINT_* env-var instrumentation (module_small_step_em.F:1265-1586) ready to dump those once a binary exists."
+}

@@ -1,0 +1,20 @@
+{
+  "nsteps": 1000,
+  "results": {
+    "baseline": {
+      "finite": 1.0,
+      "max_abs_w": 4.386309468574186,
+      "zz_energy_center": 4.069136843637429
+    },
+    "no_pgbuoy": {
+      "finite": 1.0,
+      "max_abs_w": 0.0012568255837336155,
+      "zz_energy_center": 7.806654248494887e-08
+    },
+    "no_thadv": {
+      "finite": 1.0,
+      "max_abs_w": 0.3227485121096422,
+      "zz_energy_center": 0.018088992269208445
+    }
+  }
+}

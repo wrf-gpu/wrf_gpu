@@ -1,0 +1,30 @@
+{
+  "baseline_t100": {
+    "centroid_z": 2064.4274825216444,
+    "finite": 1.0,
+    "max_abs_w": 4.386309468574186,
+    "thp_max": 2.0156789013571483,
+    "zz_energy_center": 4.069136843637429
+  },
+  "wadv_t100": {
+    "centroid_z": 2064.43460257017,
+    "finite": 1.0,
+    "max_abs_w": 4.363555688162843,
+    "thp_max": 2.0156783713989626,
+    "zz_energy_center": 4.672234353602997
+  },
+  "wadv_t500": {
+    "centroid_z": 0.0,
+    "finite": 0.0,
+    "max_abs_w": NaN,
+    "thp_max": NaN,
+    "zz_energy_center": NaN
+  },
+  "wadv_t900": {
+    "centroid_z": 0.0,
+    "finite": 0.0,
+    "max_abs_w": NaN,
+    "thp_max": NaN,
+    "zz_energy_center": NaN
+  }
+}
