@@ -1,0 +1,23 @@
+{
+  "schema_version": "f7a-no-stub-audit-1.0",
+  "generated_utc": "2026-05-29T00:18:34.604842+00:00",
+  "commit": "eb9a9461f65e01bbbf8054dac3fa6a3cb507ef47",
+  "legacy_stub_names": [
+    "_advance_geopotential",
+    "_diagnose_pressure",
+    "_ph_tend_increment"
+  ],
+  "stub_attribute_present_in_module": {
+    "_advance_geopotential": false,
+    "_diagnose_pressure": false,
+    "_ph_tend_increment": false
+  },
+  "all_stubs_removed_from_module": true,
+  "production_substep_references": {
+    "advance_w_wrf": true,
+    "calc_p_rho_step": true,
+    "pg_buoy_w_dry": true,
+    "no_stub_symbol_referenced": true
+  },
+  "verdict": true
+}

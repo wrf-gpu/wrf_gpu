@@ -22,6 +22,8 @@ from gpuwrf.coupling.boundary_apply import BoundaryConfig, DEFAULT_BOUNDARY_CONF
 from gpuwrf.coupling.physics_couplers import mynn_adapter, rrtmg_adapter, surface_adapter, thompson_adapter
 from gpuwrf.dynamics.advection import compute_advection_tendencies, halo_spec
 from gpuwrf.dynamics.acoustic_wrf import (
+    CPOVCV,
+    _inverse_density_from_theta_pressure,
     calc_coef_w_wrf_coefficients,
     diagnose_pressure_al_alt,
     horizontal_pressure_gradient,
@@ -462,6 +464,22 @@ def _acoustic_core_state(carry: OperationalCarry, namelist: OperationalNamelist)
     theta_ave_pert = (carry.t_2ave - theta_offset).astype(jnp.float64)
     mu_base = _base_mu(state)
     mu_total = mu_base + state.mu_perturbation
+    metrics = namelist.metrics
+    # Real advance_w inputs for the legacy non-prep helper path so the WRF
+    # implicit-w solve receives finite, consistent coefficients (matches the
+    # production prep-path semantics): real c2a from the dry EOS, real dry cqw,
+    # base pressure/geopotential, and terrain ht = phb(sfc)/g.
+    p_base = (state.p_total - state.p_perturbation).astype(jnp.float64)
+    ph_base = (state.ph_total - state.ph_perturbation).astype(jnp.float64)
+    alt = _inverse_density_from_theta_pressure(
+        state.theta.astype(jnp.float64), state.p_total.astype(jnp.float64)
+    )
+    c2a = CPOVCV * (p_base + state.p_perturbation.astype(jnp.float64)) / jnp.maximum(
+        jnp.abs(alt), jnp.asarray(1.0e-12, dtype=alt.dtype)
+    )
+    nz = int(state.theta.shape[0])
+    ny = int(state.theta.shape[1])
+    nx = int(state.theta.shape[2])
     return AcousticCoreState(
         ww=carry.ww,
         ww_1=carry.ww_save,
@@ -486,17 +504,41 @@ def _acoustic_core_state(carry: OperationalCarry, namelist: OperationalNamelist)
         ph=state.ph_perturbation,
         p=state.p_perturbation,
         t_2ave=theta_ave_pert,
-        dnw=namelist.metrics.dnw,
-        fnm=namelist.metrics.fnm,
-        fnp=namelist.metrics.fnp,
-        rdnw=namelist.metrics.rdnw,
-        c1h=namelist.metrics.c1h,
-        c2h=namelist.metrics.c2h,
-        msfuy=namelist.metrics.msfuy,
-        msfvx_inv=1.0 / namelist.metrics.msfvx,
-        msftx=namelist.metrics.msftx,
-        msfty=namelist.metrics.msfty,
-        coef_mut=carry.muts,
+        dnw=metrics.dnw,
+        fnm=metrics.fnm,
+        fnp=metrics.fnp,
+        rdnw=metrics.rdnw,
+        c1h=metrics.c1h,
+        c2h=metrics.c2h,
+        msfuy=metrics.msfuy,
+        msfvx_inv=1.0 / metrics.msfvx,
+        msftx=metrics.msftx,
+        msfty=metrics.msfty,
+        coef_mut=mu_base,
+        al=jnp.zeros_like(state.p_perturbation),
+        alt=alt,
+        p_base=p_base,
+        ph_base=ph_base,
+        cqu=jnp.ones_like(state.u, dtype=jnp.float64),
+        cqv=jnp.ones_like(state.v, dtype=jnp.float64),
+        msfux=metrics.msfux,
+        msfvx=metrics.msfvx,
+        msfvy=metrics.msfvy,
+        cf1=metrics.cf1,
+        cf2=metrics.cf2,
+        cf3=metrics.cf3,
+        c2a=c2a,
+        cqw=dry_cqw(nz, ny, nx, dtype=jnp.float64),
+        c1f=metrics.c1f,
+        c2f=metrics.c2f,
+        rdn=metrics.rdn,
+        phb=ph_base,
+        ph_1=carry.ph_save.astype(jnp.float64) - ph_base,
+        ht=ph_base[0, :, :] / GRAVITY_M_S2,
+        pm1=state.p_perturbation.astype(jnp.float64),
+        ru_m=jnp.zeros_like(state.u, dtype=jnp.float64),
+        rv_m=jnp.zeros_like(state.v, dtype=jnp.float64),
+        ww_m=jnp.zeros_like(carry.ww),
     )
 
 
@@ -656,11 +698,13 @@ def _operational_acoustic_substep_core(carry: OperationalCarry, namelist: Operat
     # WRF solve_em.F:2409-2717 builds the vertical-solve coefficients for the
     # acoustic small step before solve_em.F:3065 enters the recurrence.
     a, alpha, gamma = calc_coef_w_wrf_coefficients(
-        acoustic.coef_mut if acoustic.coef_mut is not None else acoustic.muts,
+        acoustic.mut,
         namelist.metrics,
         dt=float(dt_sub),
         epssm=float(namelist.epssm),
         top_lid=bool(namelist.top_lid),
+        cqw=acoustic.cqw,
+        c2a=acoustic.c2a,
     )
     next_acoustic = acoustic_substep_core(
         acoustic,
@@ -674,6 +718,7 @@ def _operational_acoustic_substep_core(carry: OperationalCarry, namelist: Operat
             epssm=float(namelist.epssm),
             top_lid=bool(namelist.top_lid),
         ),
+        cqw=acoustic.cqw,
     )
     return _carry_from_acoustic_core(next_acoustic, state, theta_offset)
 
