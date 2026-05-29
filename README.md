@@ -13,10 +13,16 @@ The principal's reading 2026-05-28: that is not a usable GPU port. The project i
 ### Where the project actually stands (2026-05-28)
 
 - **Position**: ~33 % of the way to "Canary L2/L3 forecasts statistically equivalent to CPU WRF v4 under a TOST equivalence test on a ≥15-case seasonal ensemble" — both critic and blinded independently converged on this number.
-- **Rails are built**: foundation, dycore-in-isolation, governance, multi-agent orchestration. The dycore parity is real and rare.
+- **Rails are built**: foundation, governance, multi-agent orchestration. ⚠️ The earlier "bitwise dycore parity at 100 steps" claim is **RETRACTED** — it was a JAX-vs-JAX self-compare, not vs WRF Fortran (see the 2026-05-29 update below). The dycore is being honestly rebuilt.
 - **Operational stack is two-thirds remaining work**: physics couplers savepoint-verified, surface-flux + MYNN parity, radiation + land-surface diurnal, lateral boundary completeness, conservation closure, prognostic Noah-MP, static-field/LU_INDEX parity, idealized-case suite, statistics design, validation corpus, TOST equivalence ensemble.
 - **Roadmap M8 → M23** in 7 phases over **32-45 honest weeks** (target Q1-Q2 2027). The earlier 17-23 week target is rejected as not honest after the critic + blinded review.
 - **Publish repo + v0.0.1 paper/tag are frozen** until M23 (v0.1.0).
+
+### Dycore rewrite update (2026-05-29)
+
+The "bitwise dycore savepoint parity at 100 coupled steps" headline from v0.0.1 was found to be a **JAX-vs-JAX self-compare** (the comparator read back JAX's own output, never WRF Fortran). The operational dycore was in fact missing ~7 WRF operators. It is therefore being **honestly rebuilt** (the F7.A–J sprint chain), validated against **published idealized-case references** (Skamarock warm bubble, Straka density current) and against **pristine WRF v4.7.1 ground-truth savepoints** (now built — see `proofs/f7/DYCORE_STATUS.md`).
+
+Status: large operator classes are now **verified correct vs WRF** (acoustic small-step core, implicit w/ph solve + `calc_coef_w`/`epssm`, flux-form WS5/3 advection, MUT/MUTS mass semantics, `calc_p_rho_phi`, `rhs_ph`/`ph_tend`). The exponential vertical runaway is eliminated and the warm bubble rises coherently. One localized residual remains (vertical scalar transport / deformation-vs-translation); the idealized-case gate is **not yet fully passing**, so the dycore is **not yet closed**. Single source of truth: **`proofs/f7/DYCORE_STATUS.md`**.
 
 ## Core goals (immutable)
 
