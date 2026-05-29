@@ -261,12 +261,12 @@ def _max_abs(x) -> float:
     return float(np.asarray(jax.device_get(jnp.max(jnp.abs(jnp.asarray(x, dtype=jnp.float64))))))
 
 
-def run_flat_rest(metrics, fields, *, dts: float, dx: float, dy: float) -> dict:
+def run_flat_rest(metrics, fields, *, dts: float, dx: float, dy: float, epssm: float = 0.5) -> dict:
     state = rest_acoustic_state(metrics, fields)
-    cfg = AcousticCoreConfig(dt=dts, dx=dx, dy=dy, epssm=0.1, top_lid=False)
+    cfg = AcousticCoreConfig(dt=dts, dx=dx, dy=dy, epssm=float(epssm), top_lid=False)
     cqw = state.cqw
     a, alpha, gamma = calc_coef_w_wrf_coefficients(
-        state.mut, metrics, dt=dts, epssm=0.1, top_lid=False, cqw=cqw, c2a=state.c2a
+        state.mut, metrics, dt=dts, epssm=float(epssm), top_lid=False, cqw=cqw, c2a=state.c2a
     )
     nxt = acoustic_substep_core(state, a=a, alpha=alpha, gamma=gamma, cfg=cfg, cqw=cqw)
     deltas = {
@@ -293,7 +293,7 @@ def run_flat_rest(metrics, fields, *, dts: float, dx: float, dy: float) -> dict:
             "pressure_scale": pscale, "ph_scale": phscale}
 
 
-def run_analytic_acoustic(metrics, fields, *, dts: float, dx: float, dy: float) -> dict:
+def run_analytic_acoustic(metrics, fields, *, dts: float, dx: float, dy: float, epssm: float = 0.5) -> dict:
     """Hydrostatic-adjustment oracle (AC4): a warm mid-column theta bubble.
 
     Analytic expectation (sign + order of magnitude): a positive potential-
@@ -314,10 +314,10 @@ def run_analytic_acoustic(metrics, fields, *, dts: float, dx: float, dy: float) 
     theta_pert = np.zeros((nz, ny, nx))
     theta_pert[kc, :, :] = theta_amp  # one mass level warmed by +1 K
     state = rest_acoustic_state(metrics, fields, theta_pert_mass=theta_pert)
-    cfg = AcousticCoreConfig(dt=dts, dx=dx, dy=dy, epssm=0.1, top_lid=False)
+    cfg = AcousticCoreConfig(dt=dts, dx=dx, dy=dy, epssm=float(epssm), top_lid=False)
     cqw = state.cqw
     a, alpha, gamma = calc_coef_w_wrf_coefficients(
-        state.mut, metrics, dt=dts, epssm=0.1, top_lid=False, cqw=cqw, c2a=state.c2a
+        state.mut, metrics, dt=dts, epssm=float(epssm), top_lid=False, cqw=cqw, c2a=state.c2a
     )
     nxt = acoustic_substep_core(state, a=a, alpha=alpha, gamma=gamma, cfg=cfg, cqw=cqw)
 
@@ -369,7 +369,7 @@ def run_analytic_acoustic(metrics, fields, *, dts: float, dx: float, dy: float) 
     }
 
 
-def run_conservation(metrics, fields, *, dts: float, dx: float, dy: float, steps: int) -> dict:
+def run_conservation(metrics, fields, *, dts: float, dx: float, dy: float, steps: int, epssm: float = 0.5) -> dict:
     """AC5: long pure-acoustic run; dry-mass + theta-mass drift, finiteness."""
 
     nz = int(metrics.c1h.shape[0])
@@ -380,10 +380,10 @@ def run_conservation(metrics, fields, *, dts: float, dx: float, dy: float, steps
     kc = nz // 2
     theta_pert[kc, :, :] = 0.5
     state = rest_acoustic_state(metrics, fields, theta_pert_mass=theta_pert)
-    cfg = AcousticCoreConfig(dt=dts, dx=dx, dy=dy, epssm=0.1, top_lid=False)
+    cfg = AcousticCoreConfig(dt=dts, dx=dx, dy=dy, epssm=float(epssm), top_lid=False)
     cqw = state.cqw
     a, alpha, gamma = calc_coef_w_wrf_coefficients(
-        state.mut, metrics, dt=dts, epssm=0.1, top_lid=False, cqw=cqw, c2a=state.c2a
+        state.mut, metrics, dt=dts, epssm=float(epssm), top_lid=False, cqw=cqw, c2a=state.c2a
     )
 
     def dry_mass(s):
@@ -401,8 +401,18 @@ def run_conservation(metrics, fields, *, dts: float, dx: float, dy: float, steps
         return acoustic_substep_core(s, a=a, alpha=alpha, gamma=gamma, cfg=cfg, cqw=cqw)
 
     cur = state
-    for _ in range(int(steps)):
+    # Early-transient w amplitude (first 10% of the run) is the reference scale;
+    # a stable scheme keeps later w within a small factor, an unstable one grows.
+    settle = max(1, int(steps) // 10)
+    w_early_max = 0.0
+    w_late_max = 0.0
+    for i in range(int(steps)):
         cur = body(cur)
+        wmax = _max_abs(cur.w)
+        if i < settle:
+            w_early_max = max(w_early_max, wmax)
+        else:
+            w_late_max = max(w_late_max, wmax)
     jax.block_until_ready(cur)
 
     dryN = dry_mass(cur)
@@ -414,8 +424,10 @@ def run_conservation(metrics, fields, *, dts: float, dx: float, dy: float, steps
     )
     dry_drift = abs(dryN - dry0) / max(abs(dry0), 1.0)
     th_drift = abs(thN - th0) / max(abs(th0), 1.0)
+    w_bounded = bool(w_late_max <= 5.0 * max(w_early_max, 1.0))
     return {
         "steps": int(steps),
+        "epssm": float(epssm),
         "dry_mass_initial": dry0,
         "dry_mass_final": dryN,
         "dry_mass_relative_drift": dry_drift,
@@ -424,9 +436,12 @@ def run_conservation(metrics, fields, *, dts: float, dx: float, dy: float, steps
         "theta_mass_final": thN,
         "theta_mass_relative_drift": th_drift,
         "finite": finite,
+        "w_early_transient_max": w_early_max,
+        "w_late_max": w_late_max,
         "w_abs_max_final": _max_abs(cur.w),
+        "w_bounded": w_bounded,
         "theta_abs_max_final": _max_abs(cur.theta),
-        "passed": bool(dry_drift <= 1.0e-6 and finite and np.isfinite(th_drift)),
+        "passed": bool(dry_drift <= 1.0e-6 and finite and np.isfinite(th_drift) and w_bounded),
     }
 
 
@@ -440,6 +455,7 @@ def main(argv=None) -> int:
     parser.add_argument("--dx", type=float, default=1000.0)
     parser.add_argument("--dy", type=float, default=1000.0)
     parser.add_argument("--conservation-steps", type=int, default=300)
+    parser.add_argument("--epssm", type=float, default=0.5, help="off-centering (Gen2 d02 namelist uses 0.5)")
     parser.add_argument("--hybrid", action="store_true", help="use hybrid sigma-pressure metrics (nonzero c2)")
     args = parser.parse_args(argv)
 
@@ -452,26 +468,29 @@ def main(argv=None) -> int:
         "generated_utc": datetime.now(timezone.utc).isoformat(),
         "commit": _git_commit(),
         "grid": {"nz": args.nz, "ny": args.ny, "nx": args.nx},
-        "dts_s": args.dts, "dx_m": args.dx, "dy_m": args.dy,
+        "dts_s": args.dts, "dx_m": args.dx, "dy_m": args.dy, "epssm": args.epssm,
         "device": [str(d) for d in jax.devices()],
     }
 
-    flat = run_flat_rest(metrics, fields, dts=args.dts, dx=args.dx, dy=args.dy)
+    flat = run_flat_rest(metrics, fields, dts=args.dts, dx=args.dx, dy=args.dy, epssm=args.epssm)
     flat_payload = {**meta, "oracle": "flat_rest_AC3", **flat}
     (args.output_dir / "flat_rest_oracle.json").write_text(json.dumps(flat_payload, indent=2) + "\n")
     print("[AC3 flat-rest] passed =", flat["passed"], "deltas =", flat["deltas"])
 
-    ana = run_analytic_acoustic(metrics, fields, dts=args.dts, dx=args.dx, dy=args.dy)
+    ana = run_analytic_acoustic(metrics, fields, dts=args.dts, dx=args.dx, dy=args.dy, epssm=args.epssm)
     ana_payload = {**meta, "oracle": "analytic_hydrostatic_adjustment_AC4", **ana}
     (args.output_dir / "analytic_acoustic_oracle.json").write_text(json.dumps(ana_payload, indent=2) + "\n")
     print("[AC4 analytic] passed =", ana["passed"], "sign_dipole_ok =", ana["sign_dipole_ok"],
           "ph_rise_ok =", ana["ph_rise_ok"], "w_abs_max =", ana["w_abs_max"])
 
-    cons = run_conservation(metrics, fields, dts=args.dts, dx=args.dx, dy=args.dy, steps=args.conservation_steps)
+    cons = run_conservation(
+        metrics, fields, dts=args.dts, dx=args.dx, dy=args.dy, steps=args.conservation_steps, epssm=args.epssm
+    )
     cons_payload = {**meta, "oracle": "conservation_AC5", **cons}
     (args.output_dir / "conservation_long_run.json").write_text(json.dumps(cons_payload, indent=2) + "\n")
     print("[AC5 conservation] passed =", cons["passed"], "dry_drift =", cons["dry_mass_relative_drift"],
-          "theta_drift =", cons["theta_mass_relative_drift"], "finite =", cons["finite"])
+          "theta_drift =", cons["theta_mass_relative_drift"], "w_bounded =", cons["w_bounded"],
+          "w_final =", cons["w_abs_max_final"])
 
     return 0
 
