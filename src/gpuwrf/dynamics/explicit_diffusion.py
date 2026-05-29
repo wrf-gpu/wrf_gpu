@@ -107,15 +107,17 @@ def _laplacian_axis_periodic(field: jax.Array, axis: int, spacing: float) -> jax
     ) / (float(spacing) * float(spacing))
 
 
-def _laplacian_z_rigid(field: jax.Array, spacing: float) -> jax.Array:
-    """Second-order vertical Laplacian with zero-gradient (rigid) top/bottom."""
+def _laplacian_z_rigid(field: jax.Array, spacing) -> jax.Array:
+    """Second-order vertical Laplacian with zero-gradient (rigid) top/bottom.
+
+    ``spacing`` may be a Python float or a traced JAX scalar (used inside jit).
+    """
 
     nz = int(field.shape[0])
     if nz < 3:
         return jnp.zeros_like(field)
-    interior = (field[2:, :, :] - 2.0 * field[1:-1, :, :] + field[:-2, :, :]) / (
-        float(spacing) * float(spacing)
-    )
+    sp2 = jnp.asarray(spacing, dtype=field.dtype) ** 2
+    interior = (field[2:, :, :] - 2.0 * field[1:-1, :, :] + field[:-2, :, :]) / sp2
     lap = jnp.zeros_like(field)
     lap = lap.at[1:-1, :, :].set(interior)
     return lap

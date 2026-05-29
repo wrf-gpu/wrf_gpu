@@ -638,6 +638,9 @@ def _acoustic_core_state(carry: OperationalCarry, namelist: OperationalNamelist)
         ru_m=jnp.zeros_like(state.u, dtype=jnp.float64),
         rv_m=jnp.zeros_like(state.v, dtype=jnp.float64),
         ww_m=jnp.zeros_like(carry.ww),
+        # Physical perturbation w from the carry save family (WRF w_save) for the
+        # damp_opt=3 implicit Rayleigh damping in advance_w.
+        w_save=carry.w_save.astype(jnp.float64),
     )
 
 
@@ -842,6 +845,10 @@ def _operational_acoustic_substep_core(carry: OperationalCarry, namelist: Operat
             dy=float(namelist.grid.projection.dy_m),
             epssm=float(namelist.epssm),
             top_lid=bool(namelist.top_lid),
+            w_damping=int(namelist.w_damping),
+            damp_opt=int(namelist.damp_opt),
+            dampcoef=float(namelist.dampcoef),
+            zdamp=float(namelist.zdamp),
         ),
         cqw=acoustic.cqw,
     )
@@ -975,9 +982,9 @@ def _augment_large_step_tendencies(
 
     nu = float(namelist.const_nu_m2_s)
     if nu > 0.0:
-        u_t = u_t + constant_k_diffusion_tendency(haloed.u, k_m2_s=nu, dx_m=dx, dy_m=dy, dz_m=float(dz))
-        v_t = v_t + constant_k_diffusion_tendency(haloed.v, k_m2_s=nu, dx_m=dx, dy_m=dy, dz_m=float(dz))
-        th_t = th_t + constant_k_diffusion_tendency(haloed.theta, k_m2_s=nu, dx_m=dx, dy_m=dy, dz_m=float(dz))
+        u_t = u_t + constant_k_diffusion_tendency(haloed.u, k_m2_s=nu, dx_m=dx, dy_m=dy, dz_m=dz)
+        v_t = v_t + constant_k_diffusion_tendency(haloed.v, k_m2_s=nu, dx_m=dx, dy_m=dy, dz_m=dz)
+        th_t = th_t + constant_k_diffusion_tendency(haloed.theta, k_m2_s=nu, dx_m=dx, dy_m=dy, dz_m=dz)
 
     # NOTE: WRF rk_tendency also adds the horizontal PGF to the large-step
     # ru/rv_tend (module_em.F:1325).  A prototype that diagnoses the absolute p'

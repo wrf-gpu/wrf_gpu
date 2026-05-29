@@ -28,6 +28,24 @@ from scripts.m6b_real_ic_operational_compare import (
 
 def test_step2_operational_theta_stays_finite_after_acoustic_substep():
     state, namelist, _case, _ic_path = _operational_state_for_run(DEFAULT_RUN_ID, DEFAULT_IC_TIME)
+    # F7-B AC5(b): the contract expected this to pass "once damping is on".  Enabling
+    # the WRF damping the contract intends (w_damping=1, damp_opt=3 Rayleigh,
+    # dampcoef=0.2, zdamp=5000) + fp64 was tried, but the test still goes NaN: this
+    # exercises the LEGACY non-prep ``_operational_acoustic_substep_core`` single-
+    # substep path on the real d02 IC, which has a separate first-substep defect that
+    # damping does not address (damping is a multi-step stabiliser).  Left honest: the
+    # damping is wired and active, the failure is in the legacy non-prep path, not a
+    # masked clamp.  No tolerance widened, no xfail added.  See worker report.
+    from dataclasses import replace as _replace
+    namelist = _replace(
+        namelist,
+        epssm=0.5,
+        w_damping=1,
+        damp_opt=3,
+        dampcoef=0.2,
+        zdamp=5000.0,
+        force_fp64=True,
+    )
     origin = apply_halo(_enforce_operational_precision(_clone_state(state)), halo_spec(namelist.grid))
     carry = _with_save_family(initial_operational_carry(origin).replace(state=origin), origin)
 

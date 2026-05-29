@@ -45,12 +45,26 @@ def test_w_coefficients_and_dt_sub_follow_contracted_acoustic_cadence():
 
 
 def test_ph_tend_matches_validation_bound_theta_delta_formula():
-    mode = _source(OPERATIONAL_MODE)
-    core = _source(ROOT / "src" / "gpuwrf" / "dynamics" / "core" / "acoustic.py")
+    """Geopotential now uses the WRF advance_w geopotential finish, not the stub.
 
-    assert "theta_delta = jnp.asarray(theta_new) - jnp.asarray(theta_old)" in core
-    assert "set(0.01 * theta_delta)" in core
-    assert "new_state.ph) - jnp.asarray(old_state.ph" not in mode
+    F7 Sprint A deleted the legacy ``_ph_tend_increment`` ``0.01*theta_delta``
+    stub by design (the no-stub audit asserts its absence).  This is INV-6
+    compliant because the previously-asserted code was itself a deleted stub.
+    The acoustic core now advances ``ph`` inside ``advance_w_wrf`` (the WRF
+    geopotential equation), so this test asserts the NEW behaviour: the stub is
+    gone and ph is produced by the WRF advance_w path.
+    """
+
+    core = _source(ROOT / "src" / "gpuwrf" / "dynamics" / "core" / "acoustic.py")
+    advance_w = _source(ROOT / "src" / "gpuwrf" / "dynamics" / "core" / "advance_w.py")
+
+    # The deleted 0.01*theta_delta stub must be absent (no-stub audit, AC1 F7.A).
+    assert "set(0.01 * theta_delta)" not in core
+    assert "0.01 * theta_delta" not in core
+    # ph is advanced by the WRF advance_w geopotential finish (module_small_step_em.F:1581-1586).
+    assert "advance_w_wrf" in core
+    assert "geopotential finish" in advance_w
+    assert "module_small_step_em.F:1581-1586" in advance_w or "1581-1586" in advance_w
 
 
 def test_operational_fix_does_not_import_validation_only_composition():
