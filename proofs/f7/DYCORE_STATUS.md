@@ -16,12 +16,21 @@ The pre-reset "dycore done, bitwise WRF parity at 100 steps" was a **JAX-vs-JAX 
 | grid%p refresh from finished ph'/θ + full-perturbation grid%p for pg_buoy_w | F7H: cut warm-bubble max|w| 10× |
 | `calc_p_rho_phi` geopotential term (`rdnw·Δph'` + full-θ EOS) | F7F (was dropped → dead bubble) |
 | `rhs_ph`/`ph_tend` (full 4-term WRF, was a stub=0) + `advect_w` fold | F7J: **killed the exponential vertical standing mode**; warm bubble now rises coherently, finite past 600s |
+| Persistent coupled work-theta across acoustic substeps (couple-once / advance-N / decouple-once) | F7K: was re-coupled+decoupled EVERY substep → theta advanced only 1/N_sound of correct (warm bubble rose 213 m not ~2000 m). Fixed: advance `theta_coupled_work`. **Skamarock warm bubble now PASSES 6/6 (thermal_rise 1925 m).** |
 | Flat-rest exactly stable (machine-0); mass conserved to 0 over 300+ steps | continuous regression gate |
 
-## OPEN RESIDUAL (one localized issue, as of F7J)
-The exponential runaway is GONE. Remaining: the warm bubble **rises but under-translates** (`thermal_rise`≈213 m vs ≥500 m target in 500 s); Straka still NaNs at ~240 s (was 30 s). F7J localizes this to **prognostic-w ↔ continuity-omega (ww) ↔ scalar vertical transport consistency (deformation vs translation)** — distinct from the implicit solve and the geopotential RHS.
+## OPEN RESIDUAL (one localized issue, as of F7K)
+The warm-bubble under-translation is FIXED (F7K: theta mass-coupling cadence bug;
+**Skamarock warm bubble PASS 6/6, thermal_rise 1925 m**). Remaining: **Straka
+density current NaNs at 240 s** (max|w| ramps 7→15→21 m/s then detonates) — the
+**same time as F7J, unchanged by the F7K fix**, so it is a **separate stiff-regime
+residual** (dx=100 m, −15 K cold pool): a CFL/stability runaway, NOT a
+scalar-transport-direction defect. Likely an acoustic-CFL or WRF-faithful
+diffusion / external-mode divergence-damping (`emdiv`/`smdiv`) balance issue.
 
-**Next step is GROUND-TRUTH-DRIVEN, not a guess:** diff JAX center-column per-substep fields against the WRF savepoints (below). See [[project-dycore-rewrite-status-2026-05-29]] in memory.
+**Next step:** a focused Straka stability probe (acoustic CFL audit +
+WRF-faithful 2nd-order diffusion / divergence-damping) — NOT a diffusion fudge.
+The scalar-translation defect that blocked F7 is RESOLVED.
 
 ## WRF ground truth (the arbiter — USE IT)
 Pristine WRF **v4.7.1** (same version as Gen2) built at `/home/enric/src/wrf_pristine/WRF` (gfortran serial, conda env `wrfbuild`; `csh -f ./compile`). Center-column (i=20,j=20) per-acoustic-substep `em_quarter_ss` savepoints at:
