@@ -125,13 +125,14 @@ def build_hydrostatic_column(
     # Inverse density (alpha) from dry EOS: alpha = (R_d theta / p0)*(p/p0)^(cv/cp).
     cvocp = (CP_D - R_D) / CP_D
     alpha_mass = (R_D * T0 / P0) * (p_full_mass / P0) ** (-cvocp)  # alt on mass levels (nz,)
-    # Geopotential on faces from the WRF hydrostatic relation
-    # dphi/deta = -(c1h*mut + c2h)*alt  (column-mass weighted), integrate up.
-    dnw_abs = np.abs(dnw)
+    # Geopotential on faces from the WRF hydrostatic relation (signed metric):
+    # phb(k+1) = phb(k) - dnw(k)*(c1h*mut+c2h)*alt  (module_initialize_ideal.F:982),
+    # with WRF-signed dnw<0 so -dnw*(...)>0 integrates the column upward.  F7G uses
+    # the signed ``dnw`` directly (was abs(dnw)); numerically identical column.
     mass_h = c1h_np * mu + c2h_np
     phi_faces = np.zeros(nz + 1)
     for k in range(nz):
-        phi_faces[k + 1] = phi_faces[k] + mass_h[k] * alpha_mass[k] * dnw_abs[k]
+        phi_faces[k + 1] = phi_faces[k] - dnw[k] * mass_h[k] * alpha_mass[k]
 
     def b3(arr1d):
         return jnp.broadcast_to(jnp.asarray(arr1d, dtype=jnp.float64)[:, None, None], (arr1d.shape[0], ny, nx))
