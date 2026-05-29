@@ -21,6 +21,11 @@ from gpuwrf.contracts.halo import apply_halo
 from gpuwrf.coupling.boundary_apply import BoundaryConfig, DEFAULT_BOUNDARY_CONFIG, apply_lateral_boundaries
 from gpuwrf.coupling.physics_couplers import mynn_adapter, rrtmg_adapter, surface_adapter, thompson_adapter
 from gpuwrf.dynamics.advection import compute_advection_tendencies, halo_spec
+from gpuwrf.dynamics.explicit_diffusion import (
+    constant_k_diffusion_tendency,
+    sixth_order_diffusion_tendency,
+)
+from gpuwrf.dynamics.flux_advection import advect_scalar_flux, couple_velocities_periodic
 from gpuwrf.dynamics.acoustic_wrf import (
     CPOVCV,
     _inverse_density_from_theta_pressure,
@@ -70,6 +75,25 @@ class OperationalNamelist:
     boundary_config: BoundaryConfig = DEFAULT_BOUNDARY_CONFIG
     use_vertical_solver: bool = True
     disable_guards: bool = False
+    # WRF damping (Gen2 d02 namelist: w_damping=1, damp_opt=3, zdamp=5000, dampcoef=0.2).
+    # Defaults OFF so the bare acoustic core (Sprint A) behaviour is unchanged unless
+    # the caller explicitly enables WRF damping for the operational dt.
+    w_damping: int = 0
+    damp_opt: int = 0
+    dampcoef: float = 0.0
+    zdamp: float = 5000.0
+    diff_opt: int = 0
+    km_opt: int = 0
+    khdif: float = 0.0
+    kvdif: float = 0.0
+    diff_6th_opt: int = 0
+    diff_6th_factor: float = 0.12
+    # Constant eddy viscosity (Straka ν=75) on u, v, theta when > 0.
+    const_nu_m2_s: float = 0.0
+    # Use WRF flux-form mass-coupled scalar advection (Block 2) for theta.
+    use_flux_advection: bool = False
+    # Force pure fp64 (Sprint F7-B is fp64-correctness-only; idealized cases set it).
+    force_fp64: bool = False
 
     @classmethod
     def from_grid(
@@ -84,6 +108,20 @@ class OperationalNamelist:
         boundary_config: BoundaryConfig = DEFAULT_BOUNDARY_CONFIG,
         use_vertical_solver: bool = True,
         disable_guards: bool = False,
+        epssm: float = 0.1,
+        w_damping: int = 0,
+        damp_opt: int = 0,
+        dampcoef: float = 0.0,
+        zdamp: float = 5000.0,
+        diff_opt: int = 0,
+        km_opt: int = 0,
+        khdif: float = 0.0,
+        kvdif: float = 0.0,
+        diff_6th_opt: int = 0,
+        diff_6th_factor: float = 0.12,
+        const_nu_m2_s: float = 0.0,
+        use_flux_advection: bool = False,
+        force_fp64: bool = False,
     ) -> "OperationalNamelist":
         """Build a namelist using resident zero tendencies and flat metrics."""
 
@@ -104,10 +142,24 @@ class OperationalNamelist:
             metrics=metrics,
             dt_s=dt_s,
             acoustic_substeps=acoustic_substeps,
+            epssm=epssm,
             radiation_cadence_steps=radiation_cadence_steps,
             boundary_config=boundary_config,
             use_vertical_solver=use_vertical_solver,
             disable_guards=disable_guards,
+            w_damping=w_damping,
+            damp_opt=damp_opt,
+            dampcoef=dampcoef,
+            zdamp=zdamp,
+            diff_opt=diff_opt,
+            km_opt=km_opt,
+            khdif=khdif,
+            kvdif=kvdif,
+            diff_6th_opt=diff_6th_opt,
+            diff_6th_factor=diff_6th_factor,
+            const_nu_m2_s=const_nu_m2_s,
+            use_flux_advection=use_flux_advection,
+            force_fp64=force_fp64,
         )
 
     def tree_flatten(self):
@@ -125,6 +177,19 @@ class OperationalNamelist:
             self.boundary_config,
             bool(self.use_vertical_solver),
             bool(self.disable_guards),
+            int(self.w_damping),
+            int(self.damp_opt),
+            float(self.dampcoef),
+            float(self.zdamp),
+            int(self.diff_opt),
+            int(self.km_opt),
+            float(self.khdif),
+            float(self.kvdif),
+            int(self.diff_6th_opt),
+            float(self.diff_6th_factor),
+            float(self.const_nu_m2_s),
+            bool(self.use_flux_advection),
+            bool(self.force_fp64),
         )
         return children, aux
 
@@ -144,6 +209,19 @@ class OperationalNamelist:
             boundary_config,
             use_vertical_solver,
             disable_guards,
+            w_damping,
+            damp_opt,
+            dampcoef,
+            zdamp,
+            diff_opt,
+            km_opt,
+            khdif,
+            kvdif,
+            diff_6th_opt,
+            diff_6th_factor,
+            const_nu_m2_s,
+            use_flux_advection,
+            force_fp64,
         ) = aux
         return cls(
             grid=grid,
@@ -160,6 +238,19 @@ class OperationalNamelist:
             boundary_config=boundary_config,
             use_vertical_solver=use_vertical_solver,
             disable_guards=disable_guards,
+            w_damping=w_damping,
+            damp_opt=damp_opt,
+            dampcoef=dampcoef,
+            zdamp=zdamp,
+            diff_opt=diff_opt,
+            km_opt=km_opt,
+            khdif=khdif,
+            kvdif=kvdif,
+            diff_6th_opt=diff_6th_opt,
+            diff_6th_factor=diff_6th_factor,
+            const_nu_m2_s=const_nu_m2_s,
+            use_flux_advection=use_flux_advection,
+            force_fp64=force_fp64,
         )
 
 
@@ -181,7 +272,15 @@ def _steps_for_hours(hours: float, dt_s: float) -> int:
     return rounded
 
 
-def _enforce_operational_precision(state: State) -> State:
+def _enforce_operational_precision(state: State, *, force_fp64: bool = False) -> State:
+    if bool(force_fp64):
+        # Sprint F7-B is fp64-correctness-only: idealized cases and any caller
+        # that sets force_fp64 keep every prognostic in float64.  The fp32-gated
+        # operational matrix (ADR-007) is a perf decision deferred to F7-perf.
+        updates = {
+            field: getattr(state, field).astype(jnp.float64) for field in STATE_FIELD_ORDER
+        }
+        return state.replace(**updates)
     updates = {
         field: getattr(state, field).astype(DEFAULT_DTYPES.dtype_for(field))
         for field in STATE_FIELD_ORDER
@@ -625,6 +724,9 @@ def _acoustic_core_state_from_prep(
         ru_m=jnp.zeros_like(prep.u_work),
         rv_m=jnp.zeros_like(prep.v_work),
         ww_m=jnp.zeros_like(carry.ww),
+        # Uncoupled physical perturbation w saved by small_step_prep (WRF :272);
+        # consumed by the damp_opt=3 implicit Rayleigh w-damping in advance_w.
+        w_save=prep.w_save,
     )
 
 
@@ -755,19 +857,25 @@ def _acoustic_scan(
             c2a=prep.c2a,
         )
 
+        stage_cfg = AcousticCoreConfig(
+            dt=float(stage.dts_rk),
+            dx=float(namelist.grid.projection.dx_m),
+            dy=float(namelist.grid.projection.dy_m),
+            epssm=float(namelist.epssm),
+            top_lid=bool(namelist.top_lid),
+            w_damping=int(namelist.w_damping),
+            damp_opt=int(namelist.damp_opt),
+            dampcoef=float(namelist.dampcoef),
+            zdamp=float(namelist.zdamp),
+        )
+
         def body(scan_acoustic: AcousticCoreState, _):
             return acoustic_substep_core(
                 scan_acoustic,
                 a=a,
                 alpha=alpha,
                 gamma=gamma,
-                cfg=AcousticCoreConfig(
-                    dt=float(stage.dts_rk),
-                    dx=float(namelist.grid.projection.dx_m),
-                    dy=float(namelist.grid.projection.dy_m),
-                    epssm=float(namelist.epssm),
-                    top_lid=bool(namelist.top_lid),
-                ),
+                cfg=stage_cfg,
                 cqw=cqw_field,
             ), None
 
@@ -777,6 +885,81 @@ def _acoustic_scan(
 
     del tendencies
     return _with_save_family(carry, carry.state)
+
+
+def _augment_large_step_tendencies(
+    haloed: State, tendencies: Tendencies, namelist: OperationalNamelist
+) -> Tendencies:
+    """Add WRF explicit diffusion + flux-form scalar advection to the large step.
+
+    All contributions are returned as *uncoupled* tendencies to match the
+    operational RK convention (``add_scaled_tendencies`` adds them uncoupled,
+    then ``small_step_prep`` couples).  Sources:
+    * 6th-order monotonic filter -- ``module_big_step_utilities_em.F:6504-6920``.
+    * constant-K diffusion (Straka ν) -- ``:2999-3234``.
+    * flux-form theta advection -- ``module_advect_em.F:3029-4359`` (h=5/v=3).
+    """
+
+    metrics = namelist.metrics
+    grid = namelist.grid
+    dx = float(grid.projection.dx_m)
+    dy = float(grid.projection.dy_m)
+    nz = int(haloed.theta.shape[0])
+    # mean physical dz from the geopotential column (for the const-K vertical term).
+    ph = haloed.ph_total
+    dz = jnp.maximum(jnp.mean((ph[1:] - ph[:-1]) / GRAVITY_M_S2), jnp.asarray(1.0, dtype=ph.dtype))
+
+    u_t = tendencies.u
+    v_t = tendencies.v
+    w_t = tendencies.w
+    th_t = tendencies.theta
+
+    if bool(namelist.use_flux_advection):
+        # Replace the roll-based theta advection with WRF flux-form mass-coupled
+        # advection (h=5/v=3), uncoupled by the local dry mass for this path.
+        mu_total = haloed.mu_total
+        vel = couple_velocities_periodic(
+            haloed.u,
+            haloed.v,
+            mu_total,
+            c1h=metrics.c1h,
+            c2h=metrics.c2h,
+            dnw=metrics.dnw,
+            rdx=1.0 / dx,
+            rdy=1.0 / dy,
+        )
+        theta_offset = _theta_base_offset(haloed.theta)
+        coupled_tend = advect_scalar_flux(
+            haloed.theta - theta_offset,
+            vel,
+            mut=_base_mu(haloed) + haloed.mu_perturbation,
+            c1=metrics.c1h,
+            rdx=1.0 / dx,
+            rdy=1.0 / dy,
+            rdzw=metrics.rdnw,
+            fzm=metrics.fnm,
+            fzp=metrics.fnp,
+        )
+        mass_h = metrics.c1h[:, None, None] * mu_total[None, :, :] + metrics.c2h[:, None, None]
+        safe_mass = jnp.where(jnp.abs(mass_h) > 1.0e-12, mass_h, jnp.asarray(1.0e-12, dtype=mass_h.dtype))
+        # tendencies.theta carries the base zero; replace the advective theta part.
+        th_t = namelist.tendencies.theta + coupled_tend / safe_mass
+
+    if int(namelist.diff_6th_opt) != 0:
+        f = float(namelist.diff_6th_factor)
+        dt_diff = float(namelist.dt_s)
+        u_t = u_t + sixth_order_diffusion_tendency(haloed.u, dt=dt_diff, diff_6th_factor=f)
+        v_t = v_t + sixth_order_diffusion_tendency(haloed.v, dt=dt_diff, diff_6th_factor=f)
+        w_t = w_t + sixth_order_diffusion_tendency(haloed.w, dt=dt_diff, diff_6th_factor=f)
+        th_t = th_t + sixth_order_diffusion_tendency(haloed.theta, dt=dt_diff, diff_6th_factor=f)
+
+    nu = float(namelist.const_nu_m2_s)
+    if nu > 0.0:
+        u_t = u_t + constant_k_diffusion_tendency(haloed.u, k_m2_s=nu, dx_m=dx, dy_m=dy, dz_m=float(dz))
+        v_t = v_t + constant_k_diffusion_tendency(haloed.v, k_m2_s=nu, dx_m=dx, dy_m=dy, dz_m=float(dz))
+        th_t = th_t + constant_k_diffusion_tendency(haloed.theta, k_m2_s=nu, dx_m=dx, dy_m=dy, dz_m=float(dz))
+
+    return tendencies.replace(u=u_t, v=v_t, w=w_t, theta=th_t)
 
 
 def _rk_scan_step(carry: OperationalCarry, namelist: OperationalNamelist, *, debug: bool = False) -> OperationalCarry:
@@ -794,6 +977,7 @@ def _rk_scan_step(carry: OperationalCarry, namelist: OperationalNamelist, *, deb
         # only.  (Flux-form advection itself is Sprint B; for the periodic dry
         # gate it is inert.)
         tendencies = compute_advection_tendencies(haloed, namelist.tendencies, namelist.grid)
+        tendencies = _augment_large_step_tendencies(haloed, tendencies, namelist)
         candidate = add_scaled_tendencies(origin, tendencies, float(stage.dt_rk))
         candidate = apply_halo(candidate, halo_spec(namelist.grid))
         prep = small_step_prep_wrf(
@@ -982,7 +1166,7 @@ def _physics_boundary_step_with_limiter_diagnostics(
                 ph_perturbation=_finite_or_origin(bounded.ph_perturbation, physical_origin.ph_perturbation),
             )
             next_state = _limit_guarded_mass_state(next_state, physical_origin)
-    next_state = _enforce_operational_precision(next_state)
+    next_state = _enforce_operational_precision(next_state, force_fp64=bool(namelist.force_fp64))
     return carry.replace(state=next_state), limiter_diagnostics
 
 

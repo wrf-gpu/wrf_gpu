@@ -22,7 +22,14 @@ import jax.numpy as jnp
 
 from gpuwrf.contracts.grid import DycoreMetrics
 from gpuwrf.dynamics.acoustic_wrf import calc_coef_w_wrf_coefficients
-from gpuwrf.dynamics.core.advance_w import GRAVITY_M_S2, advance_w_wrf, dry_cqw, pg_buoy_w_dry
+from gpuwrf.dynamics.core.advance_w import (
+    GRAVITY_M_S2,
+    W_ALPHA,
+    W_BETA,
+    advance_w_wrf,
+    dry_cqw,
+    pg_buoy_w_dry,
+)
 from gpuwrf.dynamics.core.calc_p_rho import calc_p_rho_step
 from gpuwrf.dynamics.mu_t_advance import AdvanceMuTInputs, advance_mu_t_wrf
 from gpuwrf.dynamics.tridiag_solve import thomas_solve_scan
@@ -51,13 +58,26 @@ FULL_STATE_FIELDS = (
 
 @dataclass(frozen=True)
 class AcousticCoreConfig:
-    """Static shared config for the M6B4 acoustic recurrence."""
+    """Static shared config for the M6B4 acoustic recurrence.
+
+    Damping fields (Block 1) carry the WRF namelist damping controls into the
+    acoustic small-step.  Defaults are OFF so existing callers/tests keep the
+    bare-core behaviour; the operational path sets them from the Gen2 namelist
+    (``w_damping=1``, ``damp_opt=3``, ``zdamp=5000``, ``dampcoef=0.2``).
+    """
 
     dt: float
     dx: float
     dy: float
     epssm: float = 0.1
     top_lid: bool = False
+    # WRF damping (module_small_step_em.F:1559-1572, module_big_step_utilities_em.F:2766-2770)
+    w_damping: int = 0
+    damp_opt: int = 0
+    dampcoef: float = 0.0
+    zdamp: float = 5000.0
+    w_alpha: float = W_ALPHA
+    w_crit_cfl: float = W_BETA
 
 
 @jax.tree_util.register_pytree_node_class
@@ -128,6 +148,9 @@ class AcousticCoreState:
     ru_m: jax.Array | None = None
     rv_m: jax.Array | None = None
     ww_m: jax.Array | None = None
+    # Uncoupled physical perturbation w from small_step_prep (WRF w_save, :272),
+    # required by the damp_opt=3 implicit Rayleigh damping in advance_w.
+    w_save: jax.Array | None = None
 
     @classmethod
     def from_mapping(cls, values: dict[str, object]) -> "AcousticCoreState":
@@ -545,6 +568,13 @@ def acoustic_substep_core(
         epssm=float(cfg.epssm),
         top_lid=bool(cfg.top_lid),
         gravity=GRAVITY_M_S2,
+        w_save=uv_state.w_save,
+        damp_opt=int(cfg.damp_opt),
+        dampcoef=float(cfg.dampcoef),
+        zdamp=float(cfg.zdamp),
+        w_damping=int(cfg.w_damping),
+        w_alpha=float(cfg.w_alpha),
+        w_crit_cfl=float(cfg.w_crit_cfl),
     )
 
     # --- 4. sumflux accumulators (Sprint B consumer); WRF solve_em.F:4048-4093 ---

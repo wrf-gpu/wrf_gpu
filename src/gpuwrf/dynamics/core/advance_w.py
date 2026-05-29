@@ -26,6 +26,53 @@ import jax.numpy as jnp
 
 GRAVITY_M_S2 = 9.81  # WRF ``g`` constant used in the small-step solver.
 
+# WRF vertical-CFL ``w_damping`` constants (``share/module_model_constants.F:88-89``).
+W_ALPHA = 0.3   # strength m/s/s
+W_BETA = 1.0    # activation CFL number (w_damp_on for non-IEVA)
+
+
+def w_damp_vertical_cfl(
+    rw_tend: jax.Array,
+    *,
+    ww: jax.Array,
+    w: jax.Array,
+    mut: jax.Array,
+    c1f: jax.Array,
+    c2f: jax.Array,
+    rdnw: jax.Array,
+    dt: float,
+    w_alpha: float = W_ALPHA,
+    w_crit_cfl: float = W_BETA,
+    w_damp_on: float = W_BETA,
+) -> jax.Array:
+    """Add the WRF ``w_damping=1`` vertical-CFL damping to the large-step ``rw_tend``.
+
+    Source: WRF ``module_big_step_utilities_em.F:2714-2774`` (subroutine
+    ``w_damp``).  For interior faces ``k=2..kde-1`` (Python faces ``1..nz-1``):
+
+    ``vert_cfl = |ww/(c1f*mut+c2f) * rdnw * dt|``; when ``vert_cfl > w_damp_on``
+    the routine adds ``-sign(w)*w_alpha*(vert_cfl-w_crit_cfl)*(c1f*mut+c2f)`` to
+    ``rw_tend``.  ``rw_tend`` and ``w`` are the coupled small-step arrays; ``ww``
+    is the coupled small-step omega.  This is a physical CFL limiter, not a clamp:
+    it only acts where the vertical Courant number exceeds the activation value.
+    """
+
+    nz = int(rw_tend.shape[0]) - 1
+    if nz < 2:
+        return rw_tend
+    # interior faces 1..nz-1 (WRF k=2..kde-1).  WRF accesses c1f/c2f/rdnw at the
+    # face index k; rdnw is a mass-level array indexed by the same k value.
+    mass_f = c1f[1:nz, None, None] * mut[None, :, :] + c2f[1:nz, None, None]  # (nz-1, ny, nx)
+    safe_mass_f = jnp.where(jnp.abs(mass_f) > 1.0e-12, mass_f, jnp.asarray(1.0e-12, dtype=mass_f.dtype))
+    ww_int = ww[1:nz, :, :]
+    w_int = w[1:nz, :, :]
+    rdnw_int = rdnw[1:nz, None, None]
+    vert_cfl = jnp.abs(ww_int / safe_mass_f * rdnw_int * float(dt))
+    activate = vert_cfl > float(w_damp_on)
+    damp = -jnp.sign(w_int) * float(w_alpha) * (vert_cfl - float(w_crit_cfl)) * mass_f
+    damp = jnp.where(activate, damp, jnp.zeros_like(damp))
+    return rw_tend.at[1:nz, :, :].add(damp)
+
 
 def dry_cqw(nz: int, ny: int, nx: int, dtype=jnp.float64) -> jax.Array:
     """Return the dry post-``pg_buoy_w`` ``cqw`` face field.
@@ -126,6 +173,13 @@ def advance_w_wrf(
     t0: float = 300.0,
     top_lid: bool = False,
     gravity: float = GRAVITY_M_S2,
+    w_save: jax.Array | None = None,
+    damp_opt: int = 0,
+    dampcoef: float = 0.0,
+    zdamp: float = 5000.0,
+    w_damping: int = 0,
+    w_alpha: float = W_ALPHA,
+    w_crit_cfl: float = W_BETA,
 ) -> tuple[jax.Array, jax.Array, jax.Array]:
     """Advance implicit ``w`` and geopotential ``ph`` for one acoustic substep.
 
@@ -133,6 +187,15 @@ def advance_w_wrf(
     *coupled* small-step work arrays; the caller decouples them in
     ``small_step_finish``.  Terrain (``ht``) is honoured at the lower
     boundary; the top is rigid only when ``top_lid``.
+
+    Damping (Block 1, WRF-faithful, citations inline):
+    * ``w_damping=1``: vertical-CFL limiter added to ``rw_tend`` before the solve
+      (``module_big_step_utilities_em.F:2714-2774``).
+    * ``damp_opt=3``: implicit Rayleigh ``w`` damping at the model top applied
+      after the Thomas back-substitution, before the geopotential finish
+      (``module_small_step_em.F:1559-1572``), using ``dampmag=dts*dampcoef`` and
+      ``hdepth=zdamp``.  ``w_save`` is the uncoupled physical perturbation ``w``
+      from ``small_step_prep`` (``module_small_step_em.F:272``).
 
     WRF source lines are cited inline.
     """
@@ -142,6 +205,24 @@ def advance_w_wrf(
     msft_inv = (1.0 / msfty)[None, :, :]
     eps_p = 1.0 + float(epssm)
     eps_m = 1.0 - float(epssm)
+
+    # --- WRF w_damping=1 vertical-CFL damping of the large-step rw_tend ---
+    # (module_big_step_utilities_em.F:2766-2770).  Acts on rw_tend before the
+    # implicit solve; only where the vertical Courant number exceeds w_beta.
+    if int(w_damping) == 1:
+        rw_tend = w_damp_vertical_cfl(
+            rw_tend,
+            ww=ww,
+            w=w,
+            mut=mut,
+            c1f=c1f,
+            c2f=c2f,
+            rdnw=rdnw,
+            dt=float(dts),
+            w_alpha=float(w_alpha),
+            w_crit_cfl=float(w_crit_cfl),
+            w_damp_on=float(W_BETA),
+        )
 
     # --- t_2ave (WRF :1341-1344) on mass levels k=1..k_end (Python 0..nz-1) ---
     mass_h = c1h[:, None, None] * muts[None, :, :] + c2h[:, None, None]
@@ -314,6 +395,31 @@ def advance_w_wrf(
         w_solved = jnp.concatenate((w_fwd[0][None, ...], interior, w_fwd[nz][None, ...]), axis=0)
     else:
         w_solved = w_fwd
+
+    # --- damp_opt=3 implicit Rayleigh w-damping at the model top (WRF :1559-1572) ---
+    # Applied after the Thomas back-substitution, before the geopotential finish.
+    #   dampmag = dts*dampcoef; hdepth = zdamp
+    #   htop = (ph_1(kde)+phb(kde))/g; hk = (ph_1(k)+phb(k))/g; hbot = htop-hdepth
+    #   dampwt(k) = dampmag*sin(0.5*pi*(hk-hbot)/hdepth)^2 for hk>=hbot else 0
+    #   w(k) = (w(k) - dampwt(k)*(c1f(k)*mut(i,j)+c2f(k))*w_save(k)) / (1+dampwt(k))
+    # w_save is the uncoupled physical perturbation w from small_step_prep (:272);
+    # (c1f*mut+c2f) couples it to the same coupled representation as the solved w.
+    if int(damp_opt) == 3 and w_save is not None and float(dampcoef) > 0.0:
+        dampmag = float(dts) * float(dampcoef)
+        hdepth = float(zdamp)
+        ph_total_damp = ph_1 + phb  # (nz+1, ny, nx)
+        htop = ph_total_damp[nz, :, :] / g  # (ny, nx)
+        hk = ph_total_damp / g  # (nz+1, ny, nx)
+        hbot = (htop - hdepth)[None, :, :]
+        pi = jnp.asarray(jnp.pi, dtype=w_solved.dtype)
+        ramp = jnp.sin(0.5 * pi * (hk - hbot) / hdepth) ** 2
+        dampwt = jnp.where(hk >= hbot, dampmag * ramp, jnp.zeros_like(ramp))
+        mass_f_mut_damp = c1f[:, None, None] * mut[None, :, :] + c2f[:, None, None]
+        w_damped = (w_solved - dampwt * mass_f_mut_damp * w_save) / (1.0 + dampwt)
+        # WRF damps faces k=2..kde+? loop is k=kde+1,2,-1 -> all faces 1..nz; the
+        # surface face k=1 (Python 0) is the terrain BC and is reset below, so
+        # keep faces 1..nz here.
+        w_solved = w_solved.at[1:, :, :].set(w_damped[1:, :, :])
 
     # --- geopotential finish (WRF :1581-1586): ph(k)=rhs(k)+msfty*0.5*dts*g*(1+eps)*w(k)/(c1f(k)*muts+c2f(k))
     # for k=k_end+1..2 (faces 1..nz). ---
