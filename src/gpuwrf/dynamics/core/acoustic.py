@@ -148,6 +148,12 @@ class AcousticCoreState:
     ru_m: jax.Array | None = None
     rv_m: jax.Array | None = None
     ww_m: jax.Array | None = None
+    # Large-step ABSOLUTE perturbation pressure for the pg_buoy_w buoyancy source
+    # (WRF rk_step_prep diagnostic p'; module_em.F:184-225 -> rk_tendency pg_buoy_w
+    # :1354-1368).  The acoustic small-step ``p`` is a delta-from-reference and is
+    # ~0 for a static balanced perturbation, so the buoyancy must use this
+    # absolute p' once per RK stage rather than the substep delta.
+    p_buoy: jax.Array | None = None
     # Uncoupled physical perturbation w from small_step_prep (WRF w_save, :272),
     # required by the damp_opt=3 implicit Rayleigh damping in advance_w.
     w_save: jax.Array | None = None
@@ -515,8 +521,13 @@ def acoustic_substep_core(
     msfvx = _optional_or(uv_state.msfvx, 1.0 / uv_state.msfvx_inv)
 
     mu_work = muts_new - uv_state.mut  # WRF perturbation dry-mass work array
+    # WRF pg_buoy_w is a LARGE-STEP tendency built once per RK stage from the
+    # ABSOLUTE perturbation pressure (rk_step_prep diagnostic p'), not the
+    # small-step delta pressure.  Use ``p_buoy`` (the absolute p') when the prep
+    # path supplies it; fall back to the substep ``p`` for the legacy/oracle path.
+    p_for_buoy = uv_state.p_buoy if uv_state.p_buoy is not None else uv_state.p
     rw_tend = pg_buoy_w_dry(
-        uv_state.p,
+        p_for_buoy,
         mu_work,
         c1f=c1f_field,
         rdnw=uv_state.rdnw,
