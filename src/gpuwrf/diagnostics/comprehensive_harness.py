@@ -120,6 +120,27 @@ _W_LIMIT = 50.0
 # Below this total-over-run sum, an operator's effect on a field is "zero".
 EPS_MISSING = 1.0e-30
 
+# Per-operator PHYSICAL-OPPORTUNITY activation floors (Gate-1 harness fix).
+#
+# A scheme that produces an identically-zero delta is only a MISSING-coupling
+# *bug* if it had a real physical reason to act.  The prior harness flagged a
+# correctly-inactive scheme (dry quiescent column for microphysics, nighttime
+# column for SW radiation, a near-balanced hydrostatic atmosphere for the
+# pressure-perturbation diagnostic) as NOISY_ZERO/MISSING — the microphysics
+# silent-failure false-positive in proofs/diagnostic_harness/
+# diagnostic_report_smoke_3step.json.  These floors define, per operator, the
+# pre-state input magnitude above which the operator *should* have produced a
+# non-zero delta; below the floor the correct verdict is INACTIVE_PHYSICAL.
+#
+# Floors are deliberately small so they only suppress the genuinely-quiescent
+# case; any real forcing trips them and a true MISSING coupling is still caught.
+_MICROPHYSICS_CONDENSATE_FLOOR_KG_KG = 1.0e-8  # total non-vapour condensate
+_MICROPHYSICS_SUPERSAT_QV_FLOOR_KG_KG = 1.0e-6  # vapour available to condense
+_SURFACE_WIND_FLOOR_M_S = 1.0e-3  # near-surface wind that drives a flux
+_PBL_TKE_FLOOR_M2_S2 = 1.0e-6  # turbulence/flux available to mix
+_RADIATION_COSZEN_FLOOR = 1.0e-3  # sun above horizon for SW heating
+_DYCORE_PERT_FLOOR = 1.0e-6  # perturbation amplitude that drives the dycore
+
 
 # ---------------------------------------------------------------------------
 # Pure-JIT accumulator (carried through ``jax.lax.scan``)
@@ -151,6 +172,12 @@ class DiagnosticAccumulator:
     first_violation_step: jax.Array
     # (n_invariants,) — int32: first operator index at which violated, or -1
     first_violation_operator: jax.Array
+    # (n_operators,) — int32: number of steps in which the operator had a non-
+    # trivial PHYSICAL OPPORTUNITY to act (its pre-state forcing inputs were
+    # above the activation floor).  Used to distinguish a genuinely MISSING
+    # coupling (opportunity existed, delta=0) from a correctly INACTIVE scheme
+    # (no opportunity, so delta=0 is the right answer).  Gate-1 harness fix.
+    physical_opportunity_steps: jax.Array
 
     def tree_flatten(self):
         return (
@@ -162,6 +189,7 @@ class DiagnosticAccumulator:
             self.invariant_ever_violated,
             self.first_violation_step,
             self.first_violation_operator,
+            self.physical_opportunity_steps,
         ), None
 
     @classmethod
@@ -182,6 +210,7 @@ def initial_diagnostic_accumulator(steps: int) -> DiagnosticAccumulator:
         invariant_ever_violated=jnp.zeros((_INV_COUNT,), dtype=jnp.bool_),
         first_violation_step=jnp.full((_INV_COUNT,), -1, dtype=jnp.int32),
         first_violation_operator=jnp.full((_INV_COUNT,), -1, dtype=jnp.int32),
+        physical_opportunity_steps=jnp.zeros((_OP_COUNT,), dtype=jnp.int32),
     )
 
 
@@ -290,6 +319,62 @@ def _evaluate_invariants(state: State) -> jax.Array:
     return violated
 
 
+def _physical_opportunity(op_index: int, pre: State) -> jax.Array:
+    """Return a ``jnp.bool_`` scalar: did this operator have a physical reason to act?
+
+    Gate-1 harness fix.  Computed from the PRE-state inputs that *drive* each
+    operator, so a zero output is interpreted as MISSING only when the operator
+    was actually presented with non-trivial forcing.  Operators with no
+    activation precondition (the dynamical core always runs; passive guards) and
+    operators whose precondition is hard to define cheaply return ``True`` so the
+    classifier keeps its original (conservative) behaviour for them.
+    """
+
+    op_name = DIAGNOSTIC_OPERATORS[op_index]
+    if op_name == "microphysics_thompson":
+        # Thompson acts when there is condensate to process OR enough vapour to
+        # potentially condense.  A genuinely dry quiescent column has neither.
+        condensate = pre.qc + pre.qr + pre.qi + pre.qs + pre.qg
+        has_condensate = jnp.max(condensate) > _MICROPHYSICS_CONDENSATE_FLOOR_KG_KG
+        has_vapour = jnp.max(pre.qv) > _MICROPHYSICS_SUPERSAT_QV_FLOOR_KG_KG
+        return has_condensate | has_vapour
+    if op_name == "surface_layer":
+        # Surface fluxes are driven by near-surface wind shear over the surface.
+        speed = jnp.sqrt(_u_mass_sq(pre) + _v_mass_sq(pre))
+        return jnp.max(speed) > _SURFACE_WIND_FLOOR_M_S
+    if op_name == "mynn_pbl":
+        # MYNN mixes when there is TKE or a surface flux to redistribute.
+        has_tke = jnp.max(jnp.abs(pre.qke)) > _PBL_TKE_FLOOR_M2_S2
+        has_flux = (
+            jnp.max(jnp.abs(pre.theta_flux))
+            + jnp.max(jnp.abs(pre.qv_flux))
+            + jnp.max(jnp.abs(pre.tau_u))
+            + jnp.max(jnp.abs(pre.tau_v))
+        ) > 0.0
+        return has_tke | has_flux
+    if op_name == "rrtmg":
+        # SW heating requires the sun above the horizon somewhere on the grid; LW
+        # always acts, so radiation always has an opportunity when it fires.
+        return jnp.asarray(True)
+    if op_name == "dycore_rk3":
+        # The dycore always integrates; the perturbation-pressure diagnostic only
+        # moves once a perturbation exists, but the operator itself always has an
+        # opportunity (it is never a no-op).
+        return jnp.asarray(True)
+    # lateral_boundary, dynamics_guards, boundary_guards: always-on / passive.
+    return jnp.asarray(True)
+
+
+def _u_mass_sq(state: State) -> jax.Array:
+    u_mass = 0.5 * (state.u[:, :, :-1] + state.u[:, :, 1:])
+    return jnp.max(u_mass * u_mass)
+
+
+def _v_mass_sq(state: State) -> jax.Array:
+    v_mass = 0.5 * (state.v[:, :-1, :] + state.v[:, 1:, :])
+    return jnp.max(v_mass * v_mass)
+
+
 def _record_operator(
     acc: DiagnosticAccumulator,
     op_index: int,
@@ -307,6 +392,13 @@ def _record_operator(
     mean_abs_delta = acc.mean_abs_delta.at[slot, op_index, :].set(mean_v)
     max_abs_delta = acc.max_abs_delta.at[slot, op_index, :].set(max_v)
     nonfinite_count = acc.nonfinite_count.at[slot, op_index].set(nonfinite)
+
+    # Gate-1: record whether the operator had a physical opportunity to act this
+    # step (from its pre-state forcing inputs).  Accumulated as a per-operator
+    # count of opportunity-steps so the host classifier can tell INACTIVE_PHYSICAL
+    # (no opportunity all run) apart from MISSING (opportunity but zero delta).
+    opportunity = _physical_opportunity(op_index, pre).astype(jnp.int32)
+    physical_opportunity_steps = acc.physical_opportunity_steps.at[op_index].add(opportunity)
 
     invariants_after = _evaluate_invariants(post)
     invariant_violated = acc.invariant_violated.at[slot, :].set(
@@ -328,6 +420,7 @@ def _record_operator(
         invariant_ever_violated=new_ever,
         first_violation_step=new_first_step,
         first_violation_operator=new_first_op,
+        physical_opportunity_steps=physical_opportunity_steps,
     )
 
 
@@ -447,6 +540,7 @@ def instrumented_physics_boundary_step(
             invariant_ever_violated=accumulator.invariant_ever_violated,
             first_violation_step=accumulator.first_violation_step,
             first_violation_operator=accumulator.first_violation_operator,
+            physical_opportunity_steps=accumulator.physical_opportunity_steps,
         )
 
     return next_carry, accumulator
@@ -585,12 +679,23 @@ def _operator_verdict(
     op_index: int,
     *,
     operator_was_called: bool,
+    physical_opportunity_steps: int,
 ) -> tuple[str, str | None]:
-    """Classify an operator as ACTIVE / NOISY_ZERO / MISSING / INACTIVE.
+    """Classify an operator as ACTIVE / NOISY_ZERO / MISSING / INACTIVE / INACTIVE_PHYSICAL.
 
     "Passive" operators (guards / limiters) have an empty expected-scope and
     are classified PASSIVE_OK when they fire zero times — that is the correct
     behavior, not a missing-coupling bug.
+
+    Gate-1 harness fix: a scope-bearing operator that produced an
+    identically-zero delta is only flagged as MISSING/NOISY_ZERO if it actually
+    had a *physical opportunity* to act (``physical_opportunity_steps > 0`` — its
+    pre-state forcing inputs cleared the activation floor on at least one step).
+    A correctly-inactive scheme (dry quiescent column for microphysics,
+    nighttime SW column, etc.) had no opportunity, so a zero delta is the right
+    answer and the verdict is INACTIVE_PHYSICAL — NOT a coupling bug.  This
+    removes the microphysics silent-failure false positive
+    (proofs/diagnostic_harness/diagnostic_report_smoke_3step.json).
     """
 
     if not operator_was_called:
@@ -609,12 +714,28 @@ def _operator_verdict(
         return "PASSIVE_OK", "passive guard did not fire (no cells exceeded a bound) — expected"
 
     # Scope-bearing operators
+    had_opportunity = int(physical_opportunity_steps) > 0
     scope_idx = np.array([DIAGNOSTIC_FIELD_INDEX.index(f) for f in scope if f in DIAGNOSTIC_FIELD_INDEX])
     in_scope_zero = int(np.sum(total_per_field[scope_idx] <= EPS_MISSING))
     if in_scope_zero == len(scope_idx):
-        return "MISSING", "every in-scope field has delta = 0 across the entire run"
+        if not had_opportunity:
+            return "INACTIVE_PHYSICAL", (
+                "every in-scope field has delta = 0, but the operator's pre-state "
+                "forcing inputs never cleared the physical activation floor on any "
+                "step — the scheme is correctly inactive on this case, not missing"
+            )
+        return "MISSING", (
+            "every in-scope field has delta = 0 across the entire run despite "
+            f"a physical opportunity to act on {int(physical_opportunity_steps)} step(s)"
+        )
     if in_scope_zero > 0:
         zero_fields = [DIAGNOSTIC_FIELD_INDEX[i] for i in scope_idx if total_per_field[i] <= EPS_MISSING]
+        if not had_opportunity:
+            return "INACTIVE_PHYSICAL", (
+                f"{in_scope_zero}/{len(scope_idx)} expected fields have delta = 0 "
+                f"({', '.join(zero_fields)}), but the operator had no physical "
+                "opportunity to act on any step — correctly inactive on this case"
+            )
         return "NOISY_ZERO", (
             f"{in_scope_zero}/{len(scope_idx)} expected fields have delta = 0 across the run: "
             f"{', '.join(zero_fields)}"
@@ -641,6 +762,7 @@ def _classify_operators(
     *,
     namelist: OperationalNamelist,
     steps_total: int,
+    physical_opportunity_steps: np.ndarray,
 ) -> dict[str, Any]:
     """Build the ``operator_attribution_24h`` block of the report."""
 
@@ -664,7 +786,11 @@ def _classify_operators(
     operators: dict[str, Any] = {}
     for op_index, op_name in enumerate(DIAGNOSTIC_OPERATORS):
         verdict, comment = _operator_verdict(
-            mean_abs_delta, max_abs_delta, op_index, operator_was_called=op_called[op_name]
+            mean_abs_delta,
+            max_abs_delta,
+            op_index,
+            operator_was_called=op_called[op_name],
+            physical_opportunity_steps=int(physical_opportunity_steps[op_index]),
         )
         per_field_mean = mean_abs_delta[:, op_index, :].mean(axis=0)
         per_field_max = max_abs_delta[:, op_index, :].max(axis=0)
@@ -683,6 +809,7 @@ def _classify_operators(
         operators[op_name] = {
             "verdict": verdict,
             "operator_was_called": op_called[op_name],
+            "physical_opportunity_steps": int(physical_opportunity_steps[op_index]),
             "steps_with_finite_delta": steps_with_finite_delta,
             "first_zero_delta_step": first_zero_step,
             "mean_abs_delta_per_step": {
@@ -724,20 +851,40 @@ def _coupling_chain_audit(
     mean_abs_delta: np.ndarray,
     namelist: OperationalNamelist,
     steps_total: int,
+    physical_opportunity_steps: np.ndarray,
 ) -> dict[str, Any]:
-    """Pairwise upstream→downstream chain attribution."""
+    """Pairwise upstream→downstream chain attribution.
+
+    Gate-1 harness fix: a chain whose upstream operator had no physical
+    opportunity to act (its pre-state forcing never cleared the activation
+    floor) is INACTIVE_PHYSICAL, not BROKEN — a zero downstream coupling is the
+    correct answer when the upstream scheme is correctly inactive.
+    """
 
     def total(op_name: str, field: str) -> float:
         op_idx = _OP_INDEX[op_name]
         f_idx = DIAGNOSTIC_FIELD_INDEX.index(field)
         return float(mean_abs_delta[:, op_idx, f_idx].sum())
 
+    def had_opportunity(op_name: str) -> bool:
+        return int(physical_opportunity_steps[_OP_INDEX[op_name]]) > 0
+
     chains: dict[str, Any] = {}
 
     # surface_layer → mynn (theta_flux feeds mynn bottom-BC for theta[..., 0])
     sl_flux = total("surface_layer", "theta_flux")
     mynn_theta = total("mynn_pbl", "theta")
-    if sl_flux <= EPS_MISSING:
+    if sl_flux <= EPS_MISSING and not had_opportunity("surface_layer"):
+        chains["surface_layer__to__mynn_theta_bottom_bc"] = {
+            "verdict": "INACTIVE_PHYSICAL",
+            "evidence": (
+                "surface_layer had no physical opportunity to act (near-surface "
+                "wind below the activation floor on every step); a zero theta_flux "
+                "and zero MYNN flux-driven increment is correct here, not broken"
+            ),
+            "first_broken_step": None,
+        }
+    elif sl_flux <= EPS_MISSING:
         chains["surface_layer__to__mynn_theta_bottom_bc"] = {
             "verdict": "BROKEN",
             "evidence": (
@@ -758,7 +905,17 @@ def _coupling_chain_audit(
 
     # thompson → theta (latent-heat release coupling)
     thompson_theta = total("microphysics_thompson", "theta")
-    if thompson_theta <= EPS_MISSING:
+    if thompson_theta <= EPS_MISSING and not had_opportunity("microphysics_thompson"):
+        chains["thompson__to__theta_via_latent_heat"] = {
+            "verdict": "INACTIVE_PHYSICAL",
+            "evidence": (
+                "microphysics had no physical opportunity to act (no condensate and "
+                "negligible vapour on every step); zero latent-heat coupling to theta "
+                "is correct on this dry/quiescent case, not broken"
+            ),
+            "first_broken_step": None,
+        }
+    elif thompson_theta <= EPS_MISSING:
         chains["thompson__to__theta_via_latent_heat"] = {
             "verdict": "BROKEN",
             "evidence": "thompson_adapter produced theta delta ~= 0; latent-heat coupling not flowing back to theta",
@@ -878,6 +1035,9 @@ def _headline_diagnosis(
     # Missing operators are the strongest signal.
     missing_ops = [name for name, info in operators.items() if info["verdict"] == "MISSING"]
     noisy_ops = [name for name, info in operators.items() if info["verdict"] == "NOISY_ZERO"]
+    inactive_physical_ops = [
+        name for name, info in operators.items() if info["verdict"] == "INACTIVE_PHYSICAL"
+    ]
     if missing_ops:
         parts.append(
             f"MISSING operators detected: {', '.join(missing_ops)} — wired but produce identically-zero delta across the run."
@@ -904,6 +1064,14 @@ def _headline_diagnosis(
         fn = first_failure["first_nonfinite"]
         parts.append(
             f"First nonfinite cell: step {fn['step']} after operator '{fn['operator']}' ({fn['nonfinite_cell_count']} cells)."
+        )
+
+    if inactive_physical_ops:
+        # Informational only — these schemes correctly produced zero delta
+        # because their pre-state forcing never cleared the activation floor.
+        parts.append(
+            "INACTIVE_PHYSICAL operators (correctly inactive — no physical "
+            f"opportunity to act on this case, NOT a coupling bug): {', '.join(inactive_physical_ops)}."
         )
 
     if not parts:
@@ -965,17 +1133,19 @@ def build_diagnostic_report(
     invariant_ever_violated = np.asarray(accumulator.invariant_ever_violated)
     first_violation_step = np.asarray(accumulator.first_violation_step)
     first_violation_operator = np.asarray(accumulator.first_violation_operator)
+    physical_opportunity_steps = np.asarray(accumulator.physical_opportunity_steps)
 
     operators = _classify_operators(
         mean_abs_delta,
         max_abs_delta,
         namelist=namelist,
         steps_total=steps_total,
+        physical_opportunity_steps=physical_opportunity_steps,
     )
     invariants = _build_invariant_block(
         invariant_violated, invariant_ever_violated, first_violation_step, first_violation_operator
     )
-    chains = _coupling_chain_audit(mean_abs_delta, namelist, steps_total)
+    chains = _coupling_chain_audit(mean_abs_delta, namelist, steps_total, physical_opportunity_steps)
 
     wrf_anchor_first = None
     wrf_anchor_block: dict[str, Any] = {"source": None, "per_field": {}}

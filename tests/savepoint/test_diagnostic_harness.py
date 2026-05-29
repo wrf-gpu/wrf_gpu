@@ -141,9 +141,14 @@ def test_diagnostic_report_operator_block(harness_report: dict) -> None:
     }
     assert set(operators.keys()) == expected
     for name, info in operators.items():
-        assert info["verdict"] in {"ACTIVE", "INACTIVE", "MISSING", "NOISY_ZERO", "PASSIVE_OK"}, (
-            f"operator {name} has unknown verdict {info['verdict']}"
-        )
+        assert info["verdict"] in {
+            "ACTIVE",
+            "INACTIVE",
+            "INACTIVE_PHYSICAL",
+            "MISSING",
+            "NOISY_ZERO",
+            "PASSIVE_OK",
+        }, (f"operator {name} has unknown verdict {info['verdict']}")
         assert "mean_abs_delta_per_step" in info
         assert "max_abs_delta_per_step" in info
 
@@ -172,7 +177,7 @@ def test_diagnostic_report_invariants_block(harness_report: dict) -> None:
 def test_diagnostic_report_coupling_chains(harness_report: dict) -> None:
     chains = harness_report["coupling_chain_audit"]
     for chain_name, info in chains.items():
-        assert info["verdict"] in {"ACTIVE", "INACTIVE", "BROKEN"}, (
+        assert info["verdict"] in {"ACTIVE", "INACTIVE", "INACTIVE_PHYSICAL", "BROKEN"}, (
             f"chain {chain_name} has unknown verdict {info['verdict']}"
         )
         assert "evidence" in info

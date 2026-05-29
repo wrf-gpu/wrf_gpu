@@ -1,0 +1,827 @@
+{
+  "schema": "phase-b-oracle-freeze-v1",
+  "gate": "Gate-1 (Phase B interface + oracle freeze)",
+  "status": "FROZEN",
+  "branch": "worker/opus/gate1",
+  "frozen_at_commit_at_generation": "f7b9fcb2ab737487d4acedc5c1fed97b636a2e0d",
+  "generated_utc": "2026-05-29T21:35:14Z",
+  "deliverables": {
+    "coupler_interface": ".agent/contracts/phase_b/coupler_interface.md",
+    "savepoint_schema_doc": ".agent/contracts/phase_b/savepoint_schema.md",
+    "savepoint_loader": "src/gpuwrf/validation/phase_b_savepoint.py",
+    "oracle_manifest": ".agent/contracts/phase_b/oracle_manifest.json",
+    "file_ownership": ".agent/contracts/phase_b/file_ownership.md",
+    "diagnostic_harness_fix": "src/gpuwrf/diagnostics/comprehensive_harness.py",
+    "diagnostic_harness_fix_tests": "tests/savepoint/test_diagnostic_harness_inactive_physical.py"
+  },
+  "coupling_convention": {
+    "summary": "WRF process-split RK1 physics bundle: each scheme is a pure State->State adapter applied sequentially after the dry dycore + dynamics guards, inside one jax.lax.scan timestep.",
+    "entry": "gpuwrf.runtime.operational_mode.run_forecast_operational (operational_mode.py:1542)",
+    "per_step": "_physics_boundary_step_with_limiter_diagnostics (operational_mode.py:1422)",
+    "order": [
+      "dycore_rk3 (CLOSED)",
+      "dynamics_guards",
+      "thompson_adapter (B1)",
+      "surface_adapter (B2)",
+      "mynn_adapter (B2)",
+      "rrtmg_adapter (B3, radiation cadence)",
+      "apply_lateral_boundaries (B4)",
+      "boundary_guards",
+      "_enforce_operational_precision"
+    ],
+    "physics_does_not_use_tendencies_buffer": true,
+    "radiation_cadence_namelist_default_steps": 60
+  },
+  "schemes": [
+    "B1_thompson_microphysics",
+    "B2_surface_and_pbl",
+    "B3_radiation_and_land",
+    "B4_static_and_lateral_boundaries"
+  ],
+  "state_field_order": [
+    "u",
+    "v",
+    "w",
+    "theta",
+    "qv",
+    "p",
+    "p_total",
+    "p_perturbation",
+    "ph",
+    "ph_total",
+    "ph_perturbation",
+    "mu",
+    "mu_total",
+    "mu_perturbation",
+    "qc",
+    "qr",
+    "qi",
+    "qs",
+    "qg",
+    "Ni",
+    "Nr",
+    "Ns",
+    "Ng",
+    "qke",
+    "ustar",
+    "theta_flux",
+    "qv_flux",
+    "tau_u",
+    "tau_v",
+    "rhosfc",
+    "fltv",
+    "t_skin",
+    "soil_moisture",
+    "xland",
+    "lakemask",
+    "mavail",
+    "roughness_m",
+    "lu_index",
+    "rain_acc",
+    "snow_acc",
+    "graupel_acc",
+    "ice_acc",
+    "u_bdy",
+    "v_bdy",
+    "theta_bdy",
+    "qv_bdy",
+    "ph_bdy",
+    "mu_bdy",
+    "w_bdy",
+    "p_bdy",
+    "pb_bdy",
+    "phb_bdy",
+    "mub_bdy"
+  ],
+  "precision_matrix": {
+    "mu": [
+      "float64",
+      false
+    ],
+    "p": [
+      "float64",
+      false
+    ],
+    "p_total": [
+      "float64",
+      false
+    ],
+    "p_perturbation": [
+      "float64",
+      false
+    ],
+    "ph": [
+      "float64",
+      false
+    ],
+    "ph_total": [
+      "float64",
+      false
+    ],
+    "ph_perturbation": [
+      "float64",
+      false
+    ],
+    "mu_total": [
+      "float64",
+      false
+    ],
+    "mu_perturbation": [
+      "float64",
+      false
+    ],
+    "pgeop": [
+      "float64",
+      false
+    ],
+    "u": [
+      "float32",
+      true
+    ],
+    "v": [
+      "float32",
+      true
+    ],
+    "w": [
+      "float64",
+      false
+    ],
+    "theta": [
+      "float32",
+      true
+    ],
+    "qv": [
+      "float32",
+      true
+    ],
+    "qc": [
+      "float32",
+      true
+    ],
+    "qr": [
+      "float32",
+      true
+    ],
+    "qi": [
+      "float32",
+      true
+    ],
+    "qs": [
+      "float32",
+      true
+    ],
+    "qg": [
+      "float32",
+      true
+    ],
+    "Ni": [
+      "float32",
+      true
+    ],
+    "Nr": [
+      "float32",
+      true
+    ],
+    "Ns": [
+      "float32",
+      true
+    ],
+    "Ng": [
+      "float32",
+      true
+    ],
+    "qke": [
+      "float32",
+      true
+    ],
+    "ustar": [
+      "float64",
+      false
+    ],
+    "theta_flux": [
+      "float64",
+      false
+    ],
+    "qv_flux": [
+      "float64",
+      false
+    ],
+    "tau_u": [
+      "float64",
+      false
+    ],
+    "tau_v": [
+      "float64",
+      false
+    ],
+    "rhosfc": [
+      "float64",
+      false
+    ],
+    "fltv": [
+      "float64",
+      false
+    ],
+    "t_skin": [
+      "float64",
+      false
+    ],
+    "soil_moisture": [
+      "float64",
+      false
+    ],
+    "xland": [
+      "float32",
+      true
+    ],
+    "lakemask": [
+      "float32",
+      true
+    ],
+    "mavail": [
+      "float32",
+      true
+    ],
+    "roughness_m": [
+      "float64",
+      false
+    ],
+    "lu_index": [
+      "int32",
+      false
+    ],
+    "rain_acc": [
+      "float64",
+      false
+    ],
+    "snow_acc": [
+      "float64",
+      false
+    ],
+    "graupel_acc": [
+      "float64",
+      false
+    ],
+    "ice_acc": [
+      "float64",
+      false
+    ],
+    "u_bdy": [
+      "float32",
+      true
+    ],
+    "v_bdy": [
+      "float32",
+      true
+    ],
+    "w_bdy": [
+      "float64",
+      false
+    ],
+    "theta_bdy": [
+      "float32",
+      true
+    ],
+    "qv_bdy": [
+      "float32",
+      true
+    ],
+    "p_bdy": [
+      "float64",
+      false
+    ],
+    "pb_bdy": [
+      "float64",
+      false
+    ],
+    "ph_bdy": [
+      "float64",
+      false
+    ],
+    "phb_bdy": [
+      "float64",
+      false
+    ],
+    "mu_bdy": [
+      "float64",
+      false
+    ],
+    "mub_bdy": [
+      "float64",
+      false
+    ]
+  },
+  "per_scheme_read_write": {
+    "B1_thompson": {
+      "read": [
+        "theta",
+        "p",
+        "qv",
+        "qc",
+        "qr",
+        "qi",
+        "qs",
+        "qg",
+        "Ni",
+        "Nr"
+      ],
+      "write": [
+        "theta",
+        "qv",
+        "qc",
+        "qr",
+        "qi",
+        "qs",
+        "qg",
+        "Ni",
+        "Nr"
+      ],
+      "to_wire": [
+        "Ns",
+        "Ng",
+        "rain_acc",
+        "snow_acc",
+        "graupel_acc",
+        "ice_acc"
+      ]
+    },
+    "B2_surface": {
+      "read": [
+        "u",
+        "v",
+        "theta",
+        "qv",
+        "p",
+        "ph",
+        "t_skin",
+        "soil_moisture",
+        "xland",
+        "lakemask",
+        "mavail",
+        "roughness_m",
+        "ustar"
+      ],
+      "write": [
+        "ustar",
+        "theta_flux",
+        "qv_flux",
+        "tau_u",
+        "tau_v",
+        "rhosfc",
+        "fltv"
+      ]
+    },
+    "B2_mynn": {
+      "read": [
+        "u",
+        "v",
+        "w",
+        "theta",
+        "qv",
+        "qke",
+        "p",
+        "ph",
+        "theta_flux",
+        "qv_flux",
+        "tau_u",
+        "tau_v",
+        "rhosfc"
+      ],
+      "write": [
+        "u",
+        "v",
+        "w",
+        "theta",
+        "qv",
+        "qke"
+      ]
+    },
+    "B3_rrtmg": {
+      "read": [
+        "theta",
+        "p",
+        "qv",
+        "qc",
+        "qi",
+        "qs",
+        "qg",
+        "ph",
+        "t_skin",
+        "lu_index"
+      ],
+      "write": [
+        "theta"
+      ],
+      "diagnostics": [
+        "swdown",
+        "swup",
+        "glw",
+        "glw_up",
+        "coszen",
+        "surface_albedo",
+        "surface_emissivity"
+      ]
+    },
+    "B4_boundary": {
+      "read": [
+        "u_bdy",
+        "v_bdy",
+        "w_bdy",
+        "theta_bdy",
+        "qv_bdy",
+        "ph_bdy",
+        "mu_bdy",
+        "p_bdy",
+        "pb_bdy",
+        "phb_bdy",
+        "mub_bdy"
+      ],
+      "write": [
+        "u",
+        "v",
+        "w",
+        "theta",
+        "qv",
+        "p",
+        "ph",
+        "mu"
+      ]
+    }
+  },
+  "operational_diagnostic_set_M9": {
+    "fields": [
+      "SWDOWN",
+      "GLW",
+      "HFX",
+      "LH",
+      "PBLH",
+      "TSK",
+      "T2",
+      "U10",
+      "V10",
+      "PSFC"
+    ],
+    "all_mass_stagger_2d_ny_nx": true,
+    "owners": {
+      "SWDOWN": "B3",
+      "GLW": "B3",
+      "HFX": "B2",
+      "LH": "B2",
+      "PBLH": "B2",
+      "TSK": "B4/B2",
+      "T2": "B2",
+      "U10": "B2",
+      "V10": "B2",
+      "PSFC": "B4"
+    },
+    "source": "proofs/m9/divergence_map.json"
+  },
+  "ownership_map": {
+    "shared_core_manager_merge_only": [
+      "runtime/operational_mode.py",
+      "runtime/operational_state.py",
+      "contracts/state.py",
+      "contracts/precision.py",
+      "contracts/grid.py",
+      "contracts/halo.py",
+      "dynamics/**",
+      "validation/savepoint_schema.py",
+      "validation/savepoint_io.py",
+      "validation/tolerance_ladder.json",
+      "validation/phase_b_savepoint.py",
+      "diagnostics/comprehensive_harness.py",
+      "coupling/physics_couplers.py (call-order + shared helpers)"
+    ],
+    "B1": [
+      "physics/thompson_column.py",
+      "physics/thompson_constants.py",
+      "physics/thompson_saturation.py",
+      "physics/thompson_tables.py",
+      "physics/thompson_column_debug_stripped.py",
+      "validation/tier1_thompson.py",
+      "validation/tier2_thompson.py"
+    ],
+    "B2": [
+      "physics/surface_layer.py",
+      "physics/surface_constants.py",
+      "physics/mynn_pbl.py",
+      "physics/mynn_constants.py",
+      "physics/mynn_surface_stub.py",
+      "physics/tridiagonal_solver.py",
+      "validation/tier1_mynn.py",
+      "validation/tier2_mynn.py"
+    ],
+    "B3": [
+      "physics/rrtmg_sw.py",
+      "physics/rrtmg_lw.py",
+      "physics/rrtmg_constants.py",
+      "physics/rrtmg_tables.py",
+      "physics/noah_mp.py",
+      "validation/tier1_rrtmg.py",
+      "validation/tier2_rrtmg.py",
+      "validation/rrtmg_intermediate_oracles.py"
+    ],
+    "B4": [
+      "coupling/boundary_apply.py",
+      "io/boundary_replay.py",
+      "io/land_state.py",
+      "io/gen2_accessor.py",
+      "io/gen2_wrfout_loader.py",
+      "io/data_inventory.py",
+      "io/wrfout_writer.py",
+      "io/validation.py",
+      "integration/d02_replay.py",
+      "integration/daily_pipeline.py"
+    ]
+  },
+  "tolerance_ladders": {
+    "regimes": [
+      "transcription_tight (Tier-1, operator-boundary, does not bind milestone)",
+      "operational_rmse (Tier-4, divergence-map fields, the operational gate)"
+    ],
+    "phase_b_bands": {
+      "qv": {
+        "units": "kg kg^-1",
+        "transcription_abs": 1e-09,
+        "transcription_rel": 1e-06,
+        "operational_rmse": 0.0001,
+        "rmse_units": "kg kg^-1"
+      },
+      "qc": {
+        "units": "kg kg^-1",
+        "transcription_abs": 1e-09,
+        "transcription_rel": 1e-06,
+        "operational_rmse": 0.0001,
+        "rmse_units": "kg kg^-1"
+      },
+      "qr": {
+        "units": "kg kg^-1",
+        "transcription_abs": 1e-09,
+        "transcription_rel": 1e-06,
+        "operational_rmse": 0.0001,
+        "rmse_units": "kg kg^-1"
+      },
+      "qi": {
+        "units": "kg kg^-1",
+        "transcription_abs": 1e-09,
+        "transcription_rel": 1e-06,
+        "operational_rmse": 0.0001,
+        "rmse_units": "kg kg^-1"
+      },
+      "qs": {
+        "units": "kg kg^-1",
+        "transcription_abs": 1e-09,
+        "transcription_rel": 1e-06,
+        "operational_rmse": 0.0001,
+        "rmse_units": "kg kg^-1"
+      },
+      "qg": {
+        "units": "kg kg^-1",
+        "transcription_abs": 1e-09,
+        "transcription_rel": 1e-06,
+        "operational_rmse": 0.0001,
+        "rmse_units": "kg kg^-1"
+      },
+      "Ni": {
+        "units": "m^-3",
+        "transcription_abs": 0.001,
+        "transcription_rel": 0.0001,
+        "operational_rmse": 0.1,
+        "rmse_units": "m^-3"
+      },
+      "Nr": {
+        "units": "m^-3",
+        "transcription_abs": 0.001,
+        "transcription_rel": 0.0001,
+        "operational_rmse": 0.1,
+        "rmse_units": "m^-3"
+      },
+      "Ns": {
+        "units": "m^-3",
+        "transcription_abs": 0.001,
+        "transcription_rel": 0.0001,
+        "operational_rmse": 0.1,
+        "rmse_units": "m^-3"
+      },
+      "Ng": {
+        "units": "m^-3",
+        "transcription_abs": 0.001,
+        "transcription_rel": 0.0001,
+        "operational_rmse": 0.1,
+        "rmse_units": "m^-3"
+      },
+      "ustar": {
+        "units": "m s^-1",
+        "transcription_abs": 1e-07,
+        "transcription_rel": 1e-07,
+        "operational_rmse": 0.05,
+        "rmse_units": "m s^-1"
+      },
+      "theta_flux": {
+        "units": "K m s^-1",
+        "transcription_abs": 1e-07,
+        "transcription_rel": 1e-06,
+        "operational_rmse": 30.0,
+        "rmse_units": "W m^-2 (via HFX)"
+      },
+      "qv_flux": {
+        "units": "kg kg^-1 m s^-1",
+        "transcription_abs": 1e-07,
+        "transcription_rel": 1e-06,
+        "operational_rmse": 30.0,
+        "rmse_units": "W m^-2 (via LH)"
+      },
+      "tau_u": {
+        "units": "m2 s^-2",
+        "transcription_abs": 1e-07,
+        "transcription_rel": 1e-06,
+        "operational_rmse": 0.05,
+        "rmse_units": "m2 s^-2"
+      },
+      "tau_v": {
+        "units": "m2 s^-2",
+        "transcription_abs": 1e-07,
+        "transcription_rel": 1e-06,
+        "operational_rmse": 0.05,
+        "rmse_units": "m2 s^-2"
+      },
+      "rhosfc": {
+        "units": "kg m^-3",
+        "transcription_abs": 1e-07,
+        "transcription_rel": 1e-07,
+        "operational_rmse": 0.02,
+        "rmse_units": "kg m^-3"
+      },
+      "SWDOWN": {
+        "units": "W m^-2",
+        "transcription_abs": 0.0001,
+        "transcription_rel": 1e-05,
+        "operational_rmse": 20.0,
+        "rmse_units": "W m^-2"
+      },
+      "GLW": {
+        "units": "W m^-2",
+        "transcription_abs": 0.0001,
+        "transcription_rel": 1e-05,
+        "operational_rmse": 20.0,
+        "rmse_units": "W m^-2"
+      },
+      "HFX": {
+        "units": "W m^-2",
+        "transcription_abs": 0.0001,
+        "transcription_rel": 1e-05,
+        "operational_rmse": 30.0,
+        "rmse_units": "W m^-2"
+      },
+      "LH": {
+        "units": "W m^-2",
+        "transcription_abs": 0.0001,
+        "transcription_rel": 1e-05,
+        "operational_rmse": 30.0,
+        "rmse_units": "W m^-2"
+      },
+      "PBLH": {
+        "units": "m",
+        "transcription_abs": 0.01,
+        "transcription_rel": 0.0001,
+        "operational_rmse": 150.0,
+        "rmse_units": "m"
+      },
+      "TSK": {
+        "units": "K",
+        "transcription_abs": 1e-05,
+        "transcription_rel": 1e-06,
+        "operational_rmse": 0.0,
+        "rmse_units": "K"
+      },
+      "T2": {
+        "units": "K",
+        "transcription_abs": 1e-05,
+        "transcription_rel": 1e-06,
+        "operational_rmse": 1.5,
+        "rmse_units": "K"
+      },
+      "U10": {
+        "units": "m s^-1",
+        "transcription_abs": 1e-05,
+        "transcription_rel": 1e-06,
+        "operational_rmse": 1.5,
+        "rmse_units": "m s^-1"
+      },
+      "V10": {
+        "units": "m s^-1",
+        "transcription_abs": 1e-05,
+        "transcription_rel": 1e-06,
+        "operational_rmse": 1.5,
+        "rmse_units": "m s^-1"
+      },
+      "PSFC": {
+        "units": "Pa",
+        "transcription_abs": 0.001,
+        "transcription_rel": 1e-07,
+        "operational_rmse": 50.0,
+        "rmse_units": "Pa"
+      },
+      "theta": {
+        "units": "K",
+        "transcription_abs": 1e-06,
+        "transcription_rel": 1e-07,
+        "operational_rmse": 1.5,
+        "rmse_units": "K"
+      }
+    },
+    "activation_floors": {
+      "microphysics_condensate_kg_kg": 1e-08,
+      "microphysics_vapour_kg_kg": 1e-06,
+      "surface_wind_m_s": 0.001,
+      "pbl_tke_m2_s2": 1e-06,
+      "radiation_coszen": 0.001,
+      "dycore_perturbation": 1e-06
+    },
+    "dycore_ladder": "src/gpuwrf/validation/tolerance_ladder.json (unchanged, frozen)"
+  },
+  "savepoint_schema": {
+    "format": "hdf5-savepoint-v1 (reuses dycore savepoint machinery)",
+    "checksum": "payload_sha256 over canonical metadata + array bytes; re-verified by load_phase_b_savepoint",
+    "phase_b_operators": [
+      "lateral_boundary",
+      "mp_gt_driver",
+      "mynn_bl_driver",
+      "mynn_pbl",
+      "mynn_surface",
+      "radiation_driver",
+      "rrtmg_lw",
+      "rrtmg_sw",
+      "sfclay",
+      "surface_layer",
+      "thompson_microphysics"
+    ],
+    "phase_b_boundaries": [
+      "lateral_boundary_post",
+      "lateral_boundary_pre",
+      "mp_gt_driver_post",
+      "mp_gt_driver_pre",
+      "mp_thompson_process_boundary",
+      "mym_length",
+      "mym_level2",
+      "mym_predict",
+      "mym_turbulence",
+      "mynn_bl_driver_post",
+      "mynn_bl_driver_pre",
+      "mynn_tendencies",
+      "radiation_driver_post",
+      "radiation_driver_pre",
+      "rrtmg_lw_post",
+      "rrtmg_lw_pre",
+      "rrtmg_sw_post",
+      "rrtmg_sw_pre",
+      "sfclay_post",
+      "sfclay_pre"
+    ],
+    "source_run_id_tuple": [
+      "run_id",
+      "wrf_version",
+      "wrf_commit",
+      "namelist_hash",
+      "source_path",
+      "domain_index"
+    ]
+  },
+  "diagnostic_harness_fix": {
+    "problem": "physically-inactive scheme (dry/quiescent column for microphysics, night column for SW) was flagged MISSING/NOISY_ZERO \u2014 the microphysics silent-failure FALSE POSITIVE in proofs/diagnostic_harness/diagnostic_report_smoke_3step.json",
+    "fix": "added per-operator physical-opportunity signal (_physical_opportunity) recorded in the scan accumulator (physical_opportunity_steps leaf); _operator_verdict now returns INACTIVE_PHYSICAL when in-scope delta=0 AND no opportunity, vs MISSING when opportunity existed; coupling-chain audit mirrors the rule",
+    "new_verdict": "INACTIVE_PHYSICAL",
+    "operators_index": [
+      "dycore_rk3",
+      "dynamics_guards",
+      "microphysics_thompson",
+      "surface_layer",
+      "mynn_pbl",
+      "rrtmg",
+      "lateral_boundary",
+      "boundary_guards"
+    ],
+    "activation_floors_used": {
+      "microphysics_condensate_kg_kg": 1e-08,
+      "microphysics_vapour_kg_kg": 1e-06,
+      "surface_wind_m_s": 0.001,
+      "pbl_tke_m2_s2": 1e-06,
+      "radiation_coszen": 0.001
+    },
+    "host_transfer_in_scan": false
+  },
+  "proof_gates": {
+    "interface_stubs_import_clean": true,
+    "phase_b_savepoint_imports_without_gpu": true,
+    "diagnostic_harness_imports_clean": true,
+    "diagnostic_harness_classifier_tests": "tests/savepoint/test_diagnostic_harness_inactive_physical.py \u2014 6 passed",
+    "dycore_close_gate_baseline_pre_change": "tests/idealized/test_dycore_close_gate.py \u2014 2 passed in 402.33s",
+    "dycore_close_gate_post_change": "see proofs/gate1/dycore_close_gate_post.txt"
+  },
+  "open_decisions_for_manager": [
+    "Diagnostic side-channel transport: add a DiagnosticsCarry to the operational scan (recommended) vs recompute from State snapshots \u2014 SHARED-CORE, manager-owned.",
+    "Confirm Tendencies stays dry-only (frozen as such); any coupled physics tendency would be an ADR.",
+    "B1 must wire precip accumulators (rain/snow/graupel/ice_acc) as per-step += and declare them.",
+    "MYNN C-grid wind reconstruction at non-periodic edges interacts with B4 boundaries \u2014 B2/B4 coordination."
+  ]
+}

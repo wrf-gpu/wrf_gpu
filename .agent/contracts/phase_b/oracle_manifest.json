@@ -1,0 +1,132 @@
+{
+  "schema": "phase-b-oracle-manifest-v1",
+  "status": "FROZEN-gate1",
+  "frozen_at_commit": "f7b9fcb",
+  "purpose": "Per-scheme list of WRF savepoints (operator boundaries) each physics lane validates against. The WRF-oracle factory emits these; lanes read them via gpuwrf.validation.phase_b_savepoint.load_phase_b_savepoint. Boundary/operator names must be in PHASE_B_OPERATORS / PHASE_B_BOUNDARIES (or the frozen dycore sets).",
+  "ground_truth_source": "/home/enric/src/wrf_pristine (pristine WRF v4 em_quarter_ss, gfortran serial) + Gen2 d02 wrfout for operational RMSE",
+  "tolerance_reference": "src/gpuwrf/validation/tolerance_ladder.json + PHASE_B_TOLERANCES in phase_b_savepoint.py",
+  "lanes": {
+    "B1_thompson_microphysics": {
+      "wrf_routine": "module_mp_thompson.F (mp_gt_driver)",
+      "gpuwrf_adapter": "gpuwrf.coupling.physics_couplers.thompson_adapter",
+      "operator": "mp_gt_driver",
+      "savepoints": [
+        {
+          "boundary": "mp_gt_driver_pre",
+          "role": "input",
+          "captures": "full pre-microphysics column: theta/T, p, rho, qv, qc, qr, qi, qs, qg, Ni, Nr",
+          "tolerance_regime": "transcription"
+        },
+        {
+          "boundary": "mp_thompson_process_boundary",
+          "role": "expected",
+          "captures": "internal process cuts: condensation/evaporation, ice nucleation, riming, melting, sedimentation flux — each process delta on q* and N*",
+          "tolerance_regime": "transcription",
+          "note": "one savepoint per internal process boundary the factory can cut; lane validates the cumulative q*/N*/theta after each"
+        },
+        {
+          "boundary": "mp_gt_driver_post",
+          "role": "expected",
+          "captures": "post-microphysics theta (latent heat), qv, qc, qr, qi, qs, qg, Ni, Nr, precip accumulators rain/snow/graupel/ice",
+          "tolerance_regime": "transcription"
+        }
+      ],
+      "operational_diagnostics": ["rain_acc", "snow_acc", "graupel_acc", "ice_acc"],
+      "inactive_physical_rule": "zero output is correct (INACTIVE_PHYSICAL) where pre-state condensate < 1e-8 kg/kg AND qv < 1e-6 kg/kg"
+    },
+    "B2_surface_and_pbl": {
+      "wrf_routine": "module_sf_sfclayrev.F (sfclay) + module_bl_mynn.F (mynn_bl_driver)",
+      "gpuwrf_adapter": "gpuwrf.coupling.physics_couplers.surface_adapter + mynn_adapter",
+      "operator": ["sfclay", "mynn_bl_driver"],
+      "savepoints": [
+        {
+          "boundary": "sfclay_pre",
+          "role": "input",
+          "captures": "u/v mass-point, theta, qv, p, dz, t_skin, soil_moisture, xland, lakemask, mavail, roughness_m, ustar",
+          "tolerance_regime": "transcription"
+        },
+        {
+          "boundary": "sfclay_post",
+          "role": "expected",
+          "captures": "ustar, theta_flux (HFX kinematic), qv_flux (LH kinematic), tau_u, tau_v, rhosfc, fltv; operational T2/U10/V10",
+          "tolerance_regime": "transcription+operational"
+        },
+        {
+          "boundary": "mym_level2",
+          "role": "expected",
+          "captures": "MYNN Level-2 stability functions / fluxes (module_bl_mynn.F mym_level2)",
+          "tolerance_regime": "transcription"
+        },
+        {
+          "boundary": "mym_length",
+          "role": "expected",
+          "captures": "MYNN master mixing length (mym_length)",
+          "tolerance_regime": "transcription"
+        },
+        {
+          "boundary": "mym_turbulence",
+          "role": "expected",
+          "captures": "MYNN turbulence Km/Kh, TKE production/dissipation (mym_turbulence)",
+          "tolerance_regime": "transcription"
+        },
+        {
+          "boundary": "mym_predict",
+          "role": "expected",
+          "captures": "MYNN predicted TKE/qke after time-advance (mym_predict)",
+          "tolerance_regime": "transcription"
+        },
+        {
+          "boundary": "mynn_tendencies",
+          "role": "expected",
+          "captures": "MYNN tendencies on u, v, theta, qv, qke applied to the column (mynn_tendencies)",
+          "tolerance_regime": "transcription"
+        },
+        {
+          "boundary": "mynn_bl_driver_post",
+          "role": "expected",
+          "captures": "post-PBL u, v, w, theta, qv, qke; operational PBLH",
+          "tolerance_regime": "transcription+operational"
+        }
+      ],
+      "operational_diagnostics": ["HFX", "LH", "PBLH", "T2", "U10", "V10", "ustar"],
+      "inactive_physical_rule": "zero surface flux is correct (INACTIVE_PHYSICAL) where near-surface wind speed < 1e-3 m/s; zero MYNN mixing is correct where TKE < 1e-6 m2/s2 and surface fluxes are zero"
+    },
+    "B3_radiation_and_land": {
+      "wrf_routine": "module_radiation_driver.F + module_ra_rrtmg_sw.F + module_ra_rrtmg_lw.F",
+      "gpuwrf_adapter": "gpuwrf.coupling.physics_couplers.rrtmg_adapter + rrtmg_radiation_diagnostics",
+      "operator": ["radiation_driver", "rrtmg_sw", "rrtmg_lw"],
+      "savepoints": [
+        {
+          "boundary": "radiation_driver_pre",
+          "role": "input",
+          "captures": "theta/T, p, rho, dz, qv, qc, qi, qs, qg, cloud fraction, t_skin, lu_index, coszen (lat/lon + model time)",
+          "tolerance_regime": "transcription"
+        },
+        {
+          "boundary": "rrtmg_sw_post",
+          "role": "expected",
+          "captures": "SW heating-rate profile, SWDOWN, SWUP at surface; albedo, coszen",
+          "tolerance_regime": "transcription+operational"
+        },
+        {
+          "boundary": "rrtmg_lw_post",
+          "role": "expected",
+          "captures": "LW heating-rate profile, GLW (down) and GLW_up at surface; emissivity",
+          "tolerance_regime": "transcription+operational"
+        },
+        {
+          "boundary": "radiation_driver_post",
+          "role": "expected",
+          "captures": "post-radiation theta after combined SW+LW heating tendency applied",
+          "tolerance_regime": "transcription+operational"
+        }
+      ],
+      "operational_diagnostics": ["SWDOWN", "GLW", "TSK", "coszen"],
+      "inactive_physical_rule": "zero SW heating is correct (INACTIVE_PHYSICAL) where coszen <= 1e-3 (sun below horizon, nighttime column); LW always active when the operator fires"
+    }
+  },
+  "notes": {
+    "factory_caveat": "M9 divergence_map.json records that per-operator WRF Fortran trace requires WRF recompilation; the pristine WRF build at /home/enric/src/wrf_pristine is the arbiter for operator-boundary savepoints, while Gen2 d02 wrfout supplies the operational hour-by-hour RMSE comparison.",
+    "B4_excluded": "B4 (static fields + lateral boundaries) validates against wrfinput/wrfbdy data-replay (bitwise for prescribed static fields per divergence_map.json), not against per-operator physics savepoints; it therefore has no scheme entry here."
+  }
+}
