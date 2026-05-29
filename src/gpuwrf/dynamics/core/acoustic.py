@@ -521,10 +521,13 @@ def acoustic_substep_core(
     msfvx = _optional_or(uv_state.msfvx, 1.0 / uv_state.msfvx_inv)
 
     mu_work = muts_new - uv_state.mut  # WRF perturbation dry-mass work array
-    # WRF pg_buoy_w is a LARGE-STEP tendency built once per RK stage from the
-    # ABSOLUTE perturbation pressure (rk_step_prep diagnostic p'), not the
-    # small-step delta pressure.  Use ``p_buoy`` (the absolute p') when the prep
-    # path supplies it; fall back to the substep ``p`` for the legacy/oracle path.
+    # WRF pg_buoy_w consumes the small-step perturbation-pressure diagnostic
+    # ``grid%p`` (= calc_p_rho work pressure), NOT a separate absolute p'
+    # (module_big_step_utilities_em.F:2564-2571; module_em.F:1361-1368).  The
+    # rising-thermal buoyancy enters through the in-solver c2a*alt*t_2ave term in
+    # advance_w (module_small_step_em.F:1486-1489), not through this term, so the
+    # live substep ``p`` is the correct WRF input.  ``p_buoy`` is retained only as
+    # an explicit oracle/test override and is None on the operational path (F7F).
     p_for_buoy = uv_state.p_buoy if uv_state.p_buoy is not None else uv_state.p
     rw_tend = pg_buoy_w_dry(
         p_for_buoy,

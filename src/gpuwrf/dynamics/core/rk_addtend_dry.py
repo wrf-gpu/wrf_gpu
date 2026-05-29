@@ -93,44 +93,43 @@ class DryPhysicsTendencies:
 def _absolute_diagnostics(
     state: State, metrics: DycoreMetrics, *, t0: float = 300.0
 ) -> tuple[jax.Array, jax.Array, jax.Array, jax.Array, jax.Array]:
-    """Return WRF ``rk_step_prep`` absolute diagnostics ``(ph, p, al, alt, php)``.
+    """Return WRF ``rk_step_prep`` diagnostics ``(ph', p', al', alt, php)``.
 
-    Mirrors the discrete-hydrostatic decomposition used for ``p_buoy`` in the
-    operational acoustic prep path (``operational_mode._acoustic_core_state_from_prep``)
-    so the large-step PGF sees the same absolute perturbation pressure/inverse
-    density that drives the buoyancy (WRF ``module_em.F:184-225``):
+    These feed the large-step *horizontal* PGF (WRF ``rk_tendency`` ->
+    ``horizontal_pressure_gradient``, ``module_em.F:1325``).  WRF builds them in
+    ``rk_step_prep``/``calc_p_rho_phi`` (``module_em.F:184-225``;
+    ``module_big_step_utilities_em.F:1023-1030``) from the *state* perturbation
+    fields, NOT by re-deriving a synthetic pressure from absolute theta:
 
-      ``alt`` = full inverse density from the EOS (θ_total, p_total).
-      ``al'`` = -(alt*c1h*mu' + rdnw*(ph'(k+1)-ph'(k))) / (c1h*mut+c2h)
-      ``p'``  = c2a*( alt*(θ' - c1h*mu'*θ_base)/((c1h*mut+c2h)*(t0+θ_base)) - al' )
-      ``php`` = 0.5*(phb+ph' faces) on mass levels (full geopotential).
+      ``p'``   = ``grid%p`` = ``state.p_perturbation`` (the WRF perturbation
+                 pressure diagnostic; this is the field passed to the PGF, not a
+                 second theta-derived pressure).  F7F: previously this re-derived
+                 ``p_abs`` from absolute θ, inventing a vertical pressure source
+                 that double-counted the buoyancy; removed.
+      ``al'``  = ``-(alt*c1h*mu' + rdnw*(ph'(k+1)-ph'(k))) / (c1h*mut+c2h)``
+                 from the perturbation geopotential ``ph'`` and ``mu'``
+                 (``module_big_step_utilities_em.F:1023-1027``).
+      ``alt``  = full inverse density from the EOS (θ_total, p_total).
+      ``php``  = ``0.5*(phb+ph' faces)`` on mass levels (full geopotential).
     """
 
     ph_pert = state.ph_perturbation.astype(jnp.float64)
     mu_pert = state.mu_perturbation.astype(jnp.float64)
     mut = (state.mu_total - state.mu_perturbation).astype(jnp.float64)
-    theta_pert = (state.theta.astype(jnp.float64) - jnp.asarray(t0, dtype=jnp.float64))
-    theta_base = jnp.zeros_like(theta_pert)  # neutral base θ0; θ_base perturbation ref = 0
     alt = _inverse_density_from_theta_pressure(
         state.theta.astype(jnp.float64), state.p_total.astype(jnp.float64)
     )
-    pb = (state.p_total - state.p_perturbation).astype(jnp.float64)
-    p_full = pb + state.p_perturbation.astype(jnp.float64)
-    from gpuwrf.dynamics.acoustic_wrf import CPOVCV
-
-    c2a = CPOVCV * p_full / jnp.maximum(jnp.abs(alt), jnp.asarray(1.0e-12, dtype=alt.dtype))
+    # WRF p for the horizontal PGF is grid%p = the perturbation-pressure
+    # diagnostic carried on the state, not a re-derived absolute-θ pressure.
+    p_pert = state.p_perturbation.astype(jnp.float64)
     mass_h = metrics.c1h[:, None, None] * mut[None, :, :] + metrics.c2h[:, None, None]
     safe_mass = jnp.where(jnp.abs(mass_h) > 1.0e-12, mass_h, jnp.asarray(1.0e-12, dtype=mass_h.dtype))
     mu_term = metrics.c1h[:, None, None] * mu_pert[None, :, :]
     al = -(alt * mu_term + metrics.rdnw[:, None, None] * (ph_pert[1:, :, :] - ph_pert[:-1, :, :])) / safe_mass
-    theta_total_ref = jnp.asarray(t0, dtype=jnp.float64) + theta_base
-    p_abs = c2a * (
-        alt * (theta_pert - mu_term * theta_base) / (safe_mass * theta_total_ref) - al
-    )
     phb = (state.ph_total - state.ph_perturbation).astype(jnp.float64)
     ph_total = phb + ph_pert
     php = 0.5 * (ph_total[:-1, :, :] + ph_total[1:, :, :])
-    return ph_pert, p_abs, al, alt, php
+    return ph_pert, p_pert, al, alt, php
 
 
 def large_step_horizontal_pgf(
