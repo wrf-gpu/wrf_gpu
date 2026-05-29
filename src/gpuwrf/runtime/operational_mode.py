@@ -37,6 +37,7 @@ from gpuwrf.dynamics.acoustic_wrf import (
 from gpuwrf.dynamics.core.acoustic import AcousticCoreConfig, AcousticCoreState, acoustic_substep_core
 from gpuwrf.dynamics.core.advance_w import GRAVITY_M_S2, dry_cqw, pg_buoy_w_dry
 from gpuwrf.dynamics.core.calc_p_rho import CalcPRhoStep0, calc_p_rho_wrf
+from gpuwrf.dynamics.core.rhs_ph import rhs_ph_wrf
 from gpuwrf.dynamics.core.coupled import CoupledCoreConfig, coupled_timestep_core
 from gpuwrf.dynamics.core.rk_addtend_dry import (
     DryPhysicsTendencies,
@@ -704,6 +705,46 @@ def _acoustic_core_state_from_prep(
         msfty=namelist.metrics.msfty,
         gravity=GRAVITY_M_S2,
     )
+    # F7J item 2: WRF ``rk_tendency`` builds ``rw_tend`` as ``advect_w(w)`` (the
+    # large-step vertical+horizontal advection of coupled w) THEN ``pg_buoy_w``
+    # ADDS the vertical PGF/buoyancy (module_em.F:1011-1067 then :1361-1368).
+    # ``tendencies.w`` is the COUPLED large-step w advection from
+    # ``_augment_large_step_tendencies`` (``tendencies.w * mass_f``); fold it into
+    # the stage ``rw_tend`` so the WRF assembly order is preserved.  Without #1
+    # below it does not stabilise the mode (F7I wadv_fix_probe), but it is
+    # WRF-correct and required together with the geopotential RHS.
+    rw_tend_stage = rw_tend_stage + tendencies.w
+
+    # F7J item 1 (PRIME): the large-step geopotential-equation RHS ``rhs_ph`` was
+    # stubbed (``carry.ph_tend`` stayed 0; ``accumulate_ph_tend`` never wired in),
+    # so the w/phi acoustic restoring loop never closed and the warm-bubble
+    # buoyancy pumped without saturating.  WRF computes it once per RK stage in
+    # ``rk_tendency`` (module_em.F:1254-1266 -> rhs_ph,
+    # module_big_step_utilities_em.F:1365-2232) using the STAGE explicit omega
+    # ``wwE = grid%ww`` and the STAGE geopotential perturbation ``ph``.  This is
+    # the large-step (frozen-during-acoustic-loop) half of the geopotential
+    # tendency; ``advance_w_wrf`` adds the small-step half (omega/ph_1 evolution).
+    ph_tend_stage = rhs_ph_wrf(
+        u=state.u,
+        v=state.v,
+        ww=carry.ww,
+        ph=state.ph_perturbation,
+        phb=ph_base,
+        w=state.w,
+        mut=prep.mut,
+        muu=prep.muu,
+        muv=prep.muv,
+        c1f=namelist.metrics.c1f,
+        c2f=namelist.metrics.c2f,
+        fnm=namelist.metrics.fnm,
+        fnp=namelist.metrics.fnp,
+        rdnw=namelist.metrics.rdnw,
+        rdx=1.0 / float(namelist.grid.projection.dx_m),
+        rdy=1.0 / float(namelist.grid.projection.dy_m),
+        msfty=namelist.metrics.msfty,
+        non_hydrostatic=True,
+        gravity=GRAVITY_M_S2,
+    )
     return AcousticCoreState(
         ww=carry.ww,
         ww_1=prep.ww_save,
@@ -734,7 +775,8 @@ def _acoustic_core_state_from_prep(
         # (advection + diffusion), consumed by advance_mu_t (t_2 += msfty*dts*t_tend).
         theta_tend=tendencies.theta,
         mu_tend=tendencies.mu,
-        ph_tend=carry.ph_tend,
+        # F7J: real WRF rhs_ph large-step geopotential tendency (was stub=0).
+        ph_tend=ph_tend_stage,
         ph=prep.ph_work,
         p=pressure.p,
         t_2ave=jnp.zeros_like(prep.theta_work),
