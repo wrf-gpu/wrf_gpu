@@ -1,0 +1,19 @@
+{
+  "schema": "f7k_regression_recheck",
+  "note": "AC4 no-regression checks after the F7K per-substep theta-coupling fix (core/acoustic.py acoustic_substep_core: advance the persistent theta_coupled_work instead of re-coupling from the perturbation theta every substep).",
+  "fix_scope": "1 line in src/gpuwrf/dynamics/core/acoustic.py; no clamps/caps/diffusion-fudge; no tolerance widening.",
+  "m4_tests": {
+    "command": "pytest tests/test_m4_acoustic.py tests/test_m4_dycore_step.py tests/test_m4_tier2_invariants.py -q",
+    "result": "10 passed in 26.30s",
+    "passed": true
+  },
+  "prior_f7_fixes_preserved": {
+    "rhs_ph_ph_tend_F7J": "untouched (operational_mode._acoustic_core_state_from_prep ph_tend_stage = rhs_ph_wrf)",
+    "advect_w_fold_F7J": "untouched (rw_tend_stage += tendencies.w)",
+    "grid_p_full_pg_buoy_F7H": "untouched",
+    "calc_p_rho_phi_geopotential_F7F": "untouched",
+    "mut_muts_mass_semantics_F7D": "untouched",
+    "implicit_w_ph_solve_F7I": "untouched"
+  },
+  "u_v_w_ph_unaffected": "Only theta was re-coupled/decoupled per substep; u/v (advance_uv), w/ph (advance_w) already carry coupled work arrays forward across substeps, so the fix is theta-specific."
+}
