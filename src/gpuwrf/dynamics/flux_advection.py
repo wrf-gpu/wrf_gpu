@@ -238,9 +238,262 @@ def advect_scalar_flux(
     return tend
 
 
+# --- flux-form momentum advection (advect_u / advect_v / advect_w, h=5/v=3) ---
+#
+# WRF advances momentum with the *conservative* flux-divergence form
+# ``d(coupled u)/dt = -[ rdx d/dx (vel_x u) + rdy d/dy (vel_y u)
+#                        + rdzw d/dz (vel_z u) ]`` where the transporting
+# velocities are the mass-coupled fluxes ``ru/rv/rom`` averaged onto the u
+# stagger (``vel = 0.5*(r(i)+r(i-1))``):
+#   - advect_u  : module_advect_em.F:126-1526 (x-flux :420, y-flux :298,
+#                 z-flux :1366/1406, assembly :480/:1395).
+#   - advect_w  : module_advect_em.F:4364-6064 (vel averaged onto the w/full
+#                 level via fzm/fzp; z-flux uses the mass-level rom average).
+# The previous JAX path used the *advective* (non-conservative) primitive form
+# ``u du/dx`` (advection.py advect_u_face), which does not conserve momentum and
+# lets the Straka cold-front outflow pile up instead of propagating (the front
+# crawls while |w| at the head runs away).  ``ru/rv`` differ from the advective
+# form by ``u (div . vel)`` which is non-zero for compressible mass flux.
+
+
+def _avg_to_u_face_x(field_mass: jax.Array) -> jax.Array:
+    """Average a mass-located (nz,ny,nx) field onto u x-faces: 0.5*(r(i)+r(i-1))."""
+
+    return 0.5 * (field_mass + jnp.roll(field_mass, 1, axis=-1))
+
+
+def _avg_to_v_face_y(field_mass: jax.Array) -> jax.Array:
+    return 0.5 * (field_mass + jnp.roll(field_mass, 1, axis=-2))
+
+
+def advect_u_flux(
+    u: jax.Array,
+    vel: CoupledVelocities,
+    *,
+    rdx: float,
+    rdy: float,
+    rdzw: jax.Array,
+    fzm: jax.Array,
+    fzp: jax.Array,
+) -> jax.Array:
+    """WRF flux-form coupled u advection tendency (h=5, v=3), periodic dry slab.
+
+    ``u`` is on x-faces ``(nz, ny, nx+1)`` (periodic: face nx == face 0).  The
+    transporting velocities are ``ru/rv/rom`` averaged onto the u faces.
+    Returns the COUPLED tendency ``d(mu*u)/dt`` (so callers add it directly to
+    the coupled momentum, exactly like ``advect_scalar_flux``).
+    """
+
+    nx = vel.ru.shape[-1]
+    u_f = u[:, :, :nx] if u.shape[-1] == nx + 1 else u  # collapse to nx periodic faces
+    # x-flux: at u-face i the velocity is 0.5*(ru(i)+ru(i-1)); flux5 stencil on u_f.
+    velx = _avg_to_u_face_x(vel.ru)
+    fqx = velx * flux5_face_periodic(u_f, velx, axis=2)
+    tend = -rdx * (jnp.roll(fqx, -1, axis=2) - fqx)
+    # y-flux: velocity 0.5*(rv(i)+rv(i-1)) averaged in x onto the u stagger.
+    if u_f.shape[1] > 1:
+        rv_collapsed = vel.rv[:, : u_f.shape[1], :]
+        vely = _avg_to_u_face_x(rv_collapsed)
+        fqy = vely * flux5_face_periodic(u_f, vely, axis=1)
+        tend = tend - rdy * (jnp.roll(fqy, -1, axis=1) - fqy)
+    # z-flux (order 3): vel = 0.5*(rom(i)+rom(i-1)) averaged in x onto u faces.
+    tend = tend + _vertical_flux_div_3(u_f, _avg_to_u_face_x_w(vel.rom), rdzw, fzm, fzp)
+    return _restore_periodic_u_face(tend, u.shape[-1] == nx + 1)
+
+
+def advect_v_flux(
+    v: jax.Array,
+    vel: CoupledVelocities,
+    *,
+    rdx: float,
+    rdy: float,
+    rdzw: jax.Array,
+    fzm: jax.Array,
+    fzp: jax.Array,
+) -> jax.Array:
+    """WRF flux-form coupled v advection tendency (h=5, v=3).  v on y-faces."""
+
+    ny = vel.rv.shape[-2]
+    v_f = v[:, :ny, :] if v.shape[-2] == ny + 1 else v
+    # x-flux: velocity 0.5*(ru(j)+ru(j-1)) averaged in y onto the v stagger.
+    velx = _avg_to_v_face_y(vel.ru[:, : v_f.shape[1], :])
+    fqx = velx * flux5_face_periodic(v_f, velx, axis=2)
+    tend = -rdx * (jnp.roll(fqx, -1, axis=2) - fqx)
+    # y-flux: velocity 0.5*(rv(j)+rv(j-1)).
+    vely = _avg_to_v_face_y(vel.rv)
+    fqy = vely * flux5_face_periodic(v_f, vely, axis=1)
+    tend = tend - rdy * (jnp.roll(fqy, -1, axis=1) - fqy)
+    # z-flux (order 3).
+    tend = tend + _vertical_flux_div_3(v_f, _avg_to_v_face_y_w(vel.rom), rdzw, fzm, fzp)
+    if v.shape[-2] == ny + 1:
+        return jnp.concatenate((tend, tend[:, :1, :]), axis=1)
+    return tend
+
+
+def advect_w_flux(
+    w: jax.Array,
+    vel: CoupledVelocities,
+    *,
+    rdx: float,
+    rdy: float,
+    rdn: jax.Array,
+    fzm: jax.Array,
+    fzp: jax.Array,
+) -> jax.Array:
+    """WRF flux-form coupled w advection tendency (h=5, v=3).
+
+    ``w`` is on z-faces ``(nz+1, ny, nx)``.  The horizontal transporting
+    velocities ``ru/rv`` are interpolated to w (full) levels with ``fzm/fzp``;
+    the vertical flux uses the mass-level coupled velocity built from rom.
+    Source: ``advect_w`` (``module_advect_em.F:4364-6064``).  Returns the
+    coupled tendency ``d(mu*w)/dt`` on the w faces (surface/top faces zeroed by
+    the lower-BC / rigid-lid handling downstream).
+    """
+
+    nz_mass = vel.ru.shape[0]  # = nz
+    nzp1 = w.shape[0]  # nz+1
+    # ru/rv on mass levels -> interpolate to w (full) levels: rw(k)=fzm(k)*r(k)+fzp(k)*r(k-1).
+    ru_w = _mass_to_full_levels(vel.ru, fzm, fzp)  # (nz+1, ny, nx)
+    rv_w = _mass_to_full_levels(vel.rv, fzm, fzp)
+    # x-flux of w by ru_w (w and ru_w both on full levels, mass-located in x).
+    fqx = ru_w * flux5_face_periodic(w, ru_w, axis=2)
+    tend = -rdx * (jnp.roll(fqx, -1, axis=2) - fqx)
+    if w.shape[1] > 1:
+        fqy = rv_w * flux5_face_periodic(w, rv_w, axis=1)
+        tend = tend - rdy * (jnp.roll(fqy, -1, axis=1) - fqy)
+    # vertical flux of w lives on MASS levels (between w faces): vel = mass-level rom
+    # average 0.5*(rom(k)+rom(k+1)); flux3 of the w faces; tend on faces via rdn.
+    tend = tend + _vertical_flux_div_w(w, vel.rom, rdn)
+    return tend
+
+
+def _mass_to_full_levels(field_mass: jax.Array, fzm: jax.Array, fzp: jax.Array) -> jax.Array:
+    """Interpolate a mass-level (nz,..) field to full/w levels (nz+1,..).
+
+    Interior face k: fzm(k)*field(k)+fzp(k)*field(k-1).  Bottom/top faces use the
+    nearest mass level (rigid extrapolation); they carry no net flux divergence
+    contribution for the rigid-boundary w advection.
+    """
+
+    nz = int(field_mass.shape[0])
+    out = jnp.zeros((nz + 1,) + tuple(field_mass.shape[1:]), dtype=field_mass.dtype)
+    interior = fzm[1:nz, None, None] * field_mass[1:nz, :, :] + fzp[1:nz, None, None] * field_mass[: nz - 1, :, :]
+    out = out.at[1:nz, :, :].set(interior)
+    out = out.at[0, :, :].set(field_mass[0, :, :])
+    out = out.at[nz, :, :].set(field_mass[nz - 1, :, :])
+    return out
+
+
+def _avg_to_u_face_x_w(rom: jax.Array) -> jax.Array:
+    """rom (nz+1,ny,nx) averaged in x onto u faces: 0.5*(rom(i)+rom(i-1))."""
+
+    return 0.5 * (rom + jnp.roll(rom, 1, axis=-1))
+
+
+def _avg_to_v_face_y_w(rom: jax.Array) -> jax.Array:
+    return 0.5 * (rom + jnp.roll(rom, 1, axis=-2))
+
+
+def _vertical_flux_div_3(field_mass: jax.Array, romq: jax.Array, rdzw: jax.Array, fzm: jax.Array, fzp: jax.Array) -> jax.Array:
+    """Vertical flux divergence (order 3) of a MASS-level field (u or v stagger).
+
+    ``romq`` is the transporting vertical velocity at w faces (nz+1).  Interior
+    w faces k=2..nz-1 use flux3 on the mass field; faces 1 and nz-1 use the
+    2nd-order fzm/fzp interpolation; surface/top faces carry zero flux.  The
+    tendency is on mass levels: ``-rdzw(k)*(vflux(k+1)-vflux(k))``.
+    """
+
+    nz = int(field_mass.shape[0])
+    vflux = jnp.zeros((nz + 1,) + tuple(field_mass.shape[1:]), dtype=field_mass.dtype)
+    if nz >= 4:
+        q_km2 = field_mass[: nz - 3, :, :]
+        q_km1 = field_mass[1 : nz - 2, :, :]
+        q_k = field_mass[2 : nz - 1, :, :]
+        q_kp1 = field_mass[3:nz, :, :]
+        velz = romq[2 : nz - 1, :, :]
+        flux4 = (7.0 * (q_k + q_km1) - (q_kp1 + q_km2)) / 12.0
+        corr = ((q_kp1 - q_km2) - 3.0 * (q_k - q_km1)) / 12.0
+        flux3 = flux4 + jnp.sign(velz) * corr
+        vflux = vflux.at[2 : nz - 1, :, :].set(velz * flux3)
+    if nz >= 2:
+        vflux = vflux.at[1, :, :].set(
+            romq[1, :, :] * (fzm[1] * field_mass[1, :, :] + fzp[1] * field_mass[0, :, :])
+        )
+        vflux = vflux.at[nz - 1, :, :].set(
+            romq[nz - 1, :, :] * (fzm[nz - 1] * field_mass[nz - 1, :, :] + fzp[nz - 1] * field_mass[nz - 2, :, :])
+        )
+    return -rdzw[:, None, None] * (vflux[1:, :, :] - vflux[:nz, :, :])
+
+
+def _vertical_flux_div_w(w: jax.Array, rom: jax.Array, rdn: jax.Array) -> jax.Array:
+    """Vertical flux divergence (order 3) of the w field (on z-faces, nz+1).
+
+    Source: ``advect_w`` vertical block (``module_advect_em.F:5912-5956``,
+    ``vert_order==3`` mirrors the ==5 code with flux3/flux2).  WRF indexes ``w``
+    and ``rom`` at full levels k; the vertical flux at level k uses
+    ``vel = 0.5*(rom(k)+rom(k-1))`` and ``flux3(w[k-2..k+1], -vel)`` (note the
+    flipped sign on ``vel``).  Interior w faces ``k=kts+3..ktf-1`` use flux3;
+    ``kts+1`` uses 2nd order; ``kts+2`` and ``ktf`` use flux3 (here approximated
+    by the same flux3 stencil).  The tendency on w faces ``k=kts+1..ktf`` is
+    ``-rdn(k)*(vflux(k+1)-vflux(k))`` plus the lid pickup
+    ``+2*rdn(ktf)*vflux(ktf+1)`` at the top.  WRF Python 0-based: w faces 0..nz,
+    flux at face k from ``vel(k)=0.5*(rom(k)+rom(k-1))``.
+    """
+
+    nzp1 = int(w.shape[0])
+    nz = nzp1 - 1  # mass levels; w faces 0..nz
+    # vel at face k = 0.5*(rom(k)+rom(k-1)); valid for faces 1..nz.
+    vel_face = 0.5 * (rom + jnp.roll(rom, 1, axis=0))  # (nz+1,..); index 0 invalid
+    vflux = jnp.zeros_like(w)  # (nz+1, ny, nx); vflux at face k
+    # flux3 at interior faces k=3..nz-1 (WRF kts+3..ktf-1): stencil w[k-2,k-1,k,k+1], vel=-vel_face(k)
+    if nz >= 4:
+        q_km2 = w[1 : nz - 2, :, :]  # w(k-2) for k=3..nz-1 -> idx 1..nz-3
+        q_km1 = w[2 : nz - 1, :, :]
+        q_k = w[3:nz, :, :]
+        q_kp1 = w[4 : nz + 1, :, :]
+        velz = -vel_face[3:nz, :, :]
+        flux4 = (7.0 * (q_k + q_km1) - (q_kp1 + q_km2)) / 12.0
+        corr = ((q_kp1 - q_km2) - 3.0 * (q_k - q_km1)) / 12.0
+        flux3 = flux4 + jnp.sign(velz) * corr
+        vflux = vflux.at[3:nz, :, :].set(vel_face[3:nz, :, :] * flux3)
+    # k=1 (kts+1): 2nd order 0.25*(rom(1)+rom(0))*(w(1)+w(0)) = vel_face(1)*0.5*(w1+w0)
+    if nz >= 2:
+        vflux = vflux.at[1, :, :].set(vel_face[1, :, :] * 0.5 * (w[1, :, :] + w[0, :, :]))
+    # k=2 (kts+2) and k=nz-1 (ktf): flux3 with stencil w[k-2..k+1], vel=-vel_face(k)
+    def _flux3_at(k: int) -> jax.Array:
+        velz = -vel_face[k, :, :]
+        q_km2 = w[k - 2, :, :]
+        q_km1 = w[k - 1, :, :]
+        q_k = w[k, :, :]
+        q_kp1 = w[k + 1, :, :]
+        flux4 = (7.0 * (q_k + q_km1) - (q_kp1 + q_km2)) / 12.0
+        corr = ((q_kp1 - q_km2) - 3.0 * (q_k - q_km1)) / 12.0
+        return vel_face[k, :, :] * (flux4 + jnp.sign(velz) * corr)
+    if nz >= 4:
+        vflux = vflux.at[2, :, :].set(_flux3_at(2))
+        vflux = vflux.at[nz - 1, :, :].set(_flux3_at(nz - 1))
+    # tendency on interior w faces k=1..nz-1: -rdn(k)*(vflux(k+1)-vflux(k)).
+    tend = jnp.zeros_like(w)
+    if nz >= 2:
+        interior = -rdn[1:nz, None, None] * (vflux[2 : nz + 1, :, :] - vflux[1:nz, :, :])
+        tend = tend.at[1:nz, :, :].set(interior)
+    return tend
+
+
+def _restore_periodic_u_face(tend: jax.Array, was_face: bool) -> jax.Array:
+    """If u was passed as nx+1 faces, append the periodic wrap face."""
+
+    if was_face:
+        return jnp.concatenate((tend, tend[:, :, :1]), axis=2)
+    return tend
+
+
 __all__ = [
     "CoupledVelocities",
     "couple_velocities_periodic",
     "flux5_face_periodic",
     "advect_scalar_flux",
+    "advect_u_flux",
+    "advect_v_flux",
+    "advect_w_flux",
 ]

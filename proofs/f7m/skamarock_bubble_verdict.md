@@ -20,7 +20,7 @@ Status: RAN_TO_COMPLETION
 - CPU affinity: [0, 1, 2, 3]
 - Timesteps: 5000
 - Snapshot seconds: [100.0, 250.0, 500.0]
-- Plots: proofs/f7l/plots/warm_bubble_theta_prime_100s.ppm, proofs/f7l/plots/warm_bubble_theta_prime_250s.ppm, proofs/f7l/plots/warm_bubble_theta_prime_500s.ppm
+- Plots: proofs/f7m/plots/warm_bubble_theta_prime_100s.ppm, proofs/f7m/plots/warm_bubble_theta_prime_250s.ppm, proofs/f7m/plots/warm_bubble_theta_prime_500s.ppm
 
 ## References
 

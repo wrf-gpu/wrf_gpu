@@ -81,9 +81,9 @@
     "theta_perturbation_max_k": 2.0
   },
   "plots": [
-    "proofs/f7l/plots/warm_bubble_theta_prime_100s.ppm",
-    "proofs/f7l/plots/warm_bubble_theta_prime_250s.ppm",
-    "proofs/f7l/plots/warm_bubble_theta_prime_500s.ppm"
+    "proofs/f7m/plots/warm_bubble_theta_prime_100s.ppm",
+    "proofs/f7m/plots/warm_bubble_theta_prime_250s.ppm",
+    "proofs/f7m/plots/warm_bubble_theta_prime_500s.ppm"
   ],
   "reference": {
     "description": "Dry rising thermal: coherent mushroom-like rise by 500-1000 s, bounded theta prime, O(10 m/s) vertical velocity, horizontal symmetry.",

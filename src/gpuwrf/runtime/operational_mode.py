@@ -25,7 +25,13 @@ from gpuwrf.dynamics.explicit_diffusion import (
     constant_k_diffusion_tendency,
     sixth_order_diffusion_tendency,
 )
-from gpuwrf.dynamics.flux_advection import advect_scalar_flux, couple_velocities_periodic
+from gpuwrf.dynamics.flux_advection import (
+    advect_scalar_flux,
+    advect_u_flux,
+    advect_v_flux,
+    advect_w_flux,
+    couple_velocities_periodic,
+)
 from gpuwrf.dynamics.acoustic_wrf import (
     CPOVCV,
     _inverse_density_from_theta_pressure,
@@ -1087,8 +1093,9 @@ def _augment_large_step_tendencies(
     th_t = tendencies.theta * mass_h
 
     if bool(namelist.use_flux_advection):
-        # WRF flux-form mass-coupled scalar advection (h=5/v=3).  advect_scalar_flux
-        # returns the COUPLED theta tendency (mass*K/s); keep it coupled here.
+        # WRF flux-form mass-coupled advection (h=5/v=3).  The *_flux helpers
+        # return the COUPLED tendency d(mu*field)/dt, so they replace the
+        # primitive coupled products built above (not add to them).
         vel = couple_velocities_periodic(
             haloed.u,
             haloed.v,
@@ -1099,6 +1106,29 @@ def _augment_large_step_tendencies(
             rdx=1.0 / dx,
             rdy=1.0 / dy,
         )
+        # --- momentum: WRF advect_u/advect_v/advect_w (conservative flux form) ---
+        # The previous JAX path advanced momentum with the *advective* (non-
+        # conservative) primitive form u*du/dx (advection.py advect_u_face),
+        # which does not conserve momentum and lets the Straka cold-front outflow
+        # pile up instead of propagating (front crawls ~5 m/s while head |w| runs
+        # away).  WRF advances coupled momentum with mass-flux-form advect_u/v/w
+        # (module_advect_em.F:126/1530/4364).  Confirmed against pristine WRF
+        # v4.7.1 em_grav2d_x ground truth (proofs/m9/wrf_em_grav2d_x_front_*):
+        # WRF max|w| saturates ~22 m/s and the front reaches ~4.25 km by 300 s,
+        # while the primitive JAX path detonates ~270-300 s with a stalled front.
+        u_t = namelist.tendencies.u * mass_u + advect_u_flux(
+            haloed.u, vel, rdx=1.0 / dx, rdy=1.0 / dy,
+            rdzw=metrics.rdnw, fzm=metrics.fnm, fzp=metrics.fnp,
+        )
+        v_t = namelist.tendencies.v * mass_v + advect_v_flux(
+            haloed.v, vel, rdx=1.0 / dx, rdy=1.0 / dy,
+            rdzw=metrics.rdnw, fzm=metrics.fnm, fzp=metrics.fnp,
+        )
+        w_t = namelist.tendencies.w * mass_f + advect_w_flux(
+            haloed.w, vel, rdx=1.0 / dx, rdy=1.0 / dy,
+            rdn=metrics.rdn, fzm=metrics.fnm, fzp=metrics.fnp,
+        )
+        # --- scalar theta: WRF advect_scalar (h=5/v=3) ---
         theta_offset = _theta_base_offset(haloed.theta)
         coupled_tend = advect_scalar_flux(
             haloed.theta - theta_offset,
@@ -1125,16 +1155,20 @@ def _augment_large_step_tendencies(
 
     nu = float(namelist.const_nu_m2_s)
     if nu > 0.0:
-        # WRF diff_opt=2 / km_opt=4 constant-K diffusion is applied to u, v, w AND
-        # theta (horizontal_diffusion_2 -> {_u_2,_v_2,_w_2,_s}; vertical_diffusion_2
-        # likewise; module_diffusion_em.F:2864-3113 / :4004-4458).  Straka et al.
-        # (1993) define the reference solution with constant ν=75 m²/s on u, w, θ;
-        # the w component is REQUIRED — without it the sharp cold front's vertical
-        # velocity grows a grid-scale (2Δx) mode that diffusing only u/v/θ cannot
-        # arrest (F7L: max|w| ramped 7→15→21 m/s then detonated at 240 s).  For the
-        # flat (zx=zy=0) uniform-z idealized slab the deformation-tensor momentum
-        # diffusion reduces to the Laplacian ∇²·field (the divergence-correction
-        # term is O(∇·u) and small), which is the Straka spec form.
+        # WRF diff_opt=2 / km_opt=1 constant-K diffusion on u, v, w AND theta
+        # (Straka ν=75).  Plain K∇² form (F7L baseline).  NOTE (F7M): WRF actually
+        # diffuses MOMENTUM with the deformation stress tensor — factor-2 diagonal
+        # (D11=2 du/dx, D33=2 dw/dz) plus du/dz<->dw/dx cross terms
+        # (module_diffusion_em.F cal_deform_and_div :41-47, horizontal/
+        # vertical_diffusion_{u,w}_2 :3118-4784, cal_titau_* :5331-5744).  F7M
+        # implemented that deformation form (constant_k_deformation_momentum_
+        # tendency) and verified it ~2-3x stronger than this Laplacian, but it left
+        # the Straka 180s trace byte-identical and still detonated at 240s — the
+        # residual is NOT diffusion-controlled (it is the touchdown horizontal-
+        # spreading coupling; see proofs/f7m/wrf_vs_jax_straka_front.json).  The
+        # deformation operator carries a half-cell cross-term stagger approximation
+        # and did not help, so the plain WRF-faithful K∇² baseline is retained
+        # pending the touchdown root-cause fix.
         u_t = u_t + mass_u * constant_k_diffusion_tendency(haloed.u, k_m2_s=nu, dx_m=dx, dy_m=dy, dz_m=dz)
         v_t = v_t + mass_v * constant_k_diffusion_tendency(haloed.v, k_m2_s=nu, dx_m=dx, dy_m=dy, dz_m=dz)
         w_t = w_t + mass_f * constant_k_diffusion_tendency(haloed.w, k_m2_s=nu, dx_m=dx, dy_m=dy, dz_m=dz)
