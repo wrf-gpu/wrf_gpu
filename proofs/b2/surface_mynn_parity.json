@@ -1,0 +1,6 @@
+{
+  "message": "No WRF-oracle savepoints present yet; the WRF-oracle factory is still populating surface_mynn/. Harness is built against the frozen schema and will compare HFX/LH/ustar/T2/U10/V10 at transcription tolerance the moment savepoints appear.",
+  "oracle_dir": "/mnt/data/wrf_gpu2/physics_oracle/surface_mynn",
+  "proof": "b2-surface-mynn-parity",
+  "status": "PENDING-ORACLE"
+}
