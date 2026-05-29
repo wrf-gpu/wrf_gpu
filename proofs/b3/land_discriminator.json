@@ -1,0 +1,19 @@
+{
+  "domain": "Canary d02, land columns (XLAND<1.5)",
+  "evidence_source": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z/wrfout_d02_* (Gen2 Canary L2, 72h, hourly, REAL WRF)",
+  "finding_freerun_mode": "When TSK FREE-RUNS without wrfout to replay (true operational forecast beyond replay coverage), a TSK frozen at t0 is wrong by up to the static-TSK error above. TSK leads T2, so that error far exceeds the 1.5 K T2 RMSE gate. A static TSK is NOT adequate for free-running 24-72h T2.",
+  "finding_replay_mode": "When TSK is DATA-REPLAYED from wrfout (current divergence_map design), TSK carries the full real diurnal swing -> radiation lower boundary is correct -> static-per-step-replay TSK is ADEQUATE for the M9 validation gate; the diurnal SW driver (this lane) responds to it.",
+  "forecast_length_h": 72,
+  "land_vs_water": "Ocean (SST) TSK swing is small (thermal inertia); concern is land-only. Canary d02 is ocean-dominated -> reduces but does not eliminate the need on the islands themselves.",
+  "n_samples": 73,
+  "question": "Is a static/prescribed TSK lower boundary adequate for 24-72h T2, or is prognostic Noah-MP needed?",
+  "recommendation_report_not_decide": "M9 replay/validation gate: static TSK replay adequate; promote nothing yet. Operational free-running 24-72h: a prognostic skin-temperature budget (minimum) or prognostic Noah-MP IS required; the prescribed-subset noah_mp.py is insufficient as a free lower boundary. Manager + later discriminator decide; threshold = whether the operational product runs beyond wrfout-replay coverage.",
+  "static_tsk_max_abs_error_K": 12.99,
+  "static_tsk_t0_K": 290.56,
+  "swdown_land_peak_w_m2": 780.8,
+  "t2_land_diurnal_swing_K": 6.18,
+  "t2_rmse_gate_K": 1.5,
+  "tsk_land_diurnal_swing_K": 21.88,
+  "tsk_land_max_K": 303.56,
+  "tsk_land_min_K": 281.67
+}
