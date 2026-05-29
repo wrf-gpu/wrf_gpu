@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from functools import partial
+from typing import NamedTuple
 
 import jax
 from jax import config
@@ -19,7 +20,14 @@ from gpuwrf.contracts.state import BaseState, State, Tendencies
 from gpuwrf.contracts.precision import DEFAULT_DTYPES, STATE_FIELD_ORDER
 from gpuwrf.contracts.halo import apply_halo
 from gpuwrf.coupling.boundary_apply import BoundaryConfig, DEFAULT_BOUNDARY_CONFIG, apply_lateral_boundaries
-from gpuwrf.coupling.physics_couplers import mynn_adapter, rrtmg_adapter, surface_adapter, thompson_adapter
+from gpuwrf.coupling.physics_couplers import (
+    mynn_adapter,
+    rrtmg_adapter,
+    rrtmg_radiation_diagnostics,
+    surface_adapter,
+    surface_layer_diagnostics,
+    thompson_adapter,
+)
 from gpuwrf.dynamics.advection import compute_advection_tendencies, halo_spec
 from gpuwrf.dynamics.explicit_diffusion import (
     constant_k_diffusion_tendency,
@@ -113,6 +121,11 @@ class OperationalNamelist:
     # the conservative scalar flux-divergence (WRF horizontal_diffusion_s).  Only
     # active when const_nu_m2_s > 0.  Sprint U (P0-2).
     use_deformation_momentum_diffusion: bool = False
+    # Model-init UTC instant (recomp B3 hook). Static aux (datetime / ISO string /
+    # None). When set, the RRTMG radiation adapter is driven by the actual forecast
+    # clock (time_utc + lead_seconds) inside the scan, so the diurnal SW cycle
+    # evolves over the run; None keeps the adapter's legacy fixed-time behaviour.
+    time_utc: object = None
 
     @classmethod
     def from_grid(
@@ -142,6 +155,7 @@ class OperationalNamelist:
         use_flux_advection: bool = False,
         force_fp64: bool = False,
         use_deformation_momentum_diffusion: bool = False,
+        time_utc: object = None,
     ) -> "OperationalNamelist":
         """Build a namelist using resident zero tendencies and flat metrics."""
 
@@ -181,6 +195,7 @@ class OperationalNamelist:
             use_flux_advection=use_flux_advection,
             force_fp64=force_fp64,
             use_deformation_momentum_diffusion=use_deformation_momentum_diffusion,
+            time_utc=time_utc,
         )
 
     def tree_flatten(self):
@@ -212,6 +227,7 @@ class OperationalNamelist:
             bool(self.use_flux_advection),
             bool(self.force_fp64),
             bool(self.use_deformation_momentum_diffusion),
+            self.time_utc,
         )
         return children, aux
 
@@ -245,6 +261,7 @@ class OperationalNamelist:
             use_flux_advection,
             force_fp64,
             use_deformation_momentum_diffusion,
+            time_utc,
         ) = aux
         return cls(
             grid=grid,
@@ -275,6 +292,7 @@ class OperationalNamelist:
             use_flux_advection=use_flux_advection,
             force_fp64=force_fp64,
             use_deformation_momentum_diffusion=use_deformation_momentum_diffusion,
+            time_utc=time_utc,
         )
 
 
@@ -1441,15 +1459,24 @@ def _physics_boundary_step_with_limiter_diagnostics(
             qs=_valid_mixing_ratio(next_state.qs, physical_origin.qs),
             qg=_valid_mixing_ratio(next_state.qg, physical_origin.qg),
         )
+    # Forecast clock for this step: lead_seconds is a traced scalar (step_index is
+    # the global step). rrtmg uses it (with the static namelist.time_utc init
+    # instant) so the diurnal SW cycle evolves inside the scan; boundaries reuse it.
+    lead_seconds = step_index.astype(jnp.float64) * float(namelist.dt_s)
     if bool(namelist.run_physics):
         if not bool(namelist.disable_guards):
             next_state = thompson_adapter(next_state, float(namelist.dt_s))
         next_state = surface_adapter(next_state, float(namelist.dt_s))
         next_state = mynn_adapter(next_state, float(namelist.dt_s), namelist.grid)
         if run_radiation:
-            next_state = rrtmg_adapter(next_state, float(namelist.dt_s), namelist.grid)
+            next_state = rrtmg_adapter(
+                next_state,
+                float(namelist.dt_s),
+                namelist.grid,
+                time_utc=namelist.time_utc,
+                lead_seconds=lead_seconds,
+            )
     if bool(namelist.run_boundary):
-        lead_seconds = step_index.astype(jnp.float64) * float(namelist.dt_s)
         bounded = apply_lateral_boundaries(next_state, lead_seconds, float(namelist.dt_s), namelist.boundary_config)
         if bool(namelist.disable_guards):
             next_state = bounded
@@ -1537,6 +1564,147 @@ def _scan_forecast_segment_with_limiter_diagnostics(
 
 def _concat_theta_limiter_diagnostics(chunks: list[dict[str, jax.Array]]) -> dict[str, jax.Array]:
     return {key: jnp.concatenate([chunk[key] for chunk in chunks], axis=0) for key in chunks[0]}
+
+
+# --------------------------------------------------------------------------
+# M9 operational diagnostics carry (coupler_interface.md §4, §6 item 1)
+# --------------------------------------------------------------------------
+
+
+class M9Diagnostics(NamedTuple):
+    """The M9 operational divergence-map surface fields, all mass-point (ny,nx).
+
+    Side-channel only -- recomputed from the post-step State at OUTPUT cadence,
+    not prognostic leaves. SWDOWN/GLW W m^-2; HFX/LH W m^-2 (upward +); PBLH m;
+    TSK/T2 K; U10/V10 m s^-1; PSFC Pa. ``swdown``/``glw`` follow the forecast
+    clock (namelist.time_utc + lead_seconds) so the diurnal cycle is captured.
+    """
+
+    swdown: jax.Array
+    glw: jax.Array
+    hfx: jax.Array
+    lh: jax.Array
+    pblh: jax.Array
+    tsk: jax.Array
+    t2: jax.Array
+    u10: jax.Array
+    v10: jax.Array
+    psfc: jax.Array
+
+
+def _psfc_from_state(state: State) -> jax.Array:
+    """Surface pressure (Pa) = column-bottom total pressure (mass point, ny,nx).
+
+    coupler_interface.md §4 sources PSFC from mu_total+pb at the column bottom;
+    ``state.p`` already carries the total pressure (pb + p'), so its bottom level
+    is the diagnosed surface pressure for the M9 map.
+    """
+    return state.p[0, :, :]
+
+
+def compute_m9_diagnostics(
+    state: State,
+    namelist: OperationalNamelist,
+    lead_seconds,
+) -> M9Diagnostics:
+    """Recompute the M9 surface map from a post-step State (side-channel only)."""
+    surf = surface_layer_diagnostics(state, namelist.grid)
+    rad = rrtmg_radiation_diagnostics(
+        state, namelist.grid, time_utc=namelist.time_utc, lead_seconds=lead_seconds
+    )
+    return M9Diagnostics(
+        swdown=rad.swdown,
+        glw=rad.glw,
+        hfx=surf.hfx,
+        lh=surf.lh,
+        pblh=surf.pblh,
+        tsk=state.t_skin,
+        t2=surf.t2,
+        u10=surf.u10,
+        v10=surf.v10,
+        psfc=_psfc_from_state(state),
+    )
+
+
+@partial(jax.jit, static_argnames=("hours", "output_cadence_steps"))
+def run_forecast_operational_with_m9_diagnostics(
+    state: State,
+    namelist: OperationalNamelist,
+    hours: float,
+    *,
+    output_cadence_steps: int = 60,
+) -> tuple[State, M9Diagnostics]:
+    """Run the operational forecast and emit the M9 surface map at output cadence.
+
+    Mirrors ``run_forecast_operational`` (same compiled scan / same per-step
+    cadence split) but threads a diagnostics carry: every ``output_cadence_steps``
+    steps the M9 surface fields are recomputed from the live State and stacked
+    along a leading time axis. The production ``run_forecast_operational`` path is
+    untouched (zero-cost in production); this variant is for M9/M19 scoring.
+    """
+    if int(namelist.rk_order) != 3:
+        raise ValueError("operational mode currently supports RK3 only")
+    if int(output_cadence_steps) <= 0:
+        raise ValueError("output_cadence_steps must be positive")
+
+    initial = initial_operational_carry(
+        _enforce_operational_precision(state, force_fp64=bool(namelist.force_fp64))
+    )
+    steps = _steps_for_hours(hours, float(namelist.dt_s))
+    cadence = int(namelist.radiation_cadence_steps)
+    if cadence <= 0:
+        raise ValueError("radiation_cadence_steps must be positive")
+    out_cad = int(output_cadence_steps)
+    dt_s = float(namelist.dt_s)
+
+    # Reproduce the radiation-cadence segmentation of run_forecast_operational
+    # while collecting per-step diagnostics; we keep diagnostics for every step
+    # and let the caller subselect emitted steps via the returned mask. The
+    # per-segment ``run_radiation`` is a STATIC python bool captured in the body
+    # closure (not in the scan carry) so the radiation branch stays static.
+    carry = initial
+    step = 1
+    diag_chunks: list[M9Diagnostics] = []
+    emit_chunks: list[jax.Array] = []
+
+    def scan_segment(carry, start_step, n, run_radiation):
+        indices = jnp.arange(start_step, start_step + n, dtype=jnp.int32)
+
+        def body(scan_carry, step_index):
+            scan_carry = _physics_boundary_step(
+                scan_carry, namelist, step_index, run_radiation=run_radiation
+            )
+            lead_seconds = step_index.astype(jnp.float64) * dt_s
+            diag = compute_m9_diagnostics(scan_carry.state, namelist, lead_seconds)
+            emit = jnp.mod(step_index, out_cad) == 0
+            return scan_carry, (diag, emit)
+
+        next_carry, (diags, emits) = jax.lax.scan(body, carry, indices)
+        return next_carry, diags, emits
+
+    while step <= steps:
+        next_radiation = ((step + cadence - 1) // cadence) * cadence
+        if bool(namelist.run_physics) and next_radiation <= steps:
+            non_radiation_steps = next_radiation - step
+            if non_radiation_steps:
+                carry, d, e = scan_segment(carry, step, non_radiation_steps, False)
+                diag_chunks.append(d)
+                emit_chunks.append(e)
+            carry, d, e = scan_segment(carry, next_radiation, 1, True)
+            diag_chunks.append(d)
+            emit_chunks.append(e)
+            step = next_radiation + 1
+        else:
+            carry, d, e = scan_segment(carry, step, steps - step + 1, False)
+            diag_chunks.append(d)
+            emit_chunks.append(e)
+            step = steps + 1
+
+    all_diags = M9Diagnostics(
+        *(jnp.concatenate([getattr(chunk, name) for chunk in diag_chunks], axis=0)
+          for name in M9Diagnostics._fields)
+    )
+    return carry.state, all_diags
 
 
 @partial(jax.jit, static_argnames=("hours",), donate_argnums=(0,))
