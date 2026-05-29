@@ -1,0 +1,38 @@
+{
+  "schema": "f7d_source_parity",
+  "schema_version": 1,
+  "ac1": {
+    "warm_bubble": {
+      "max_abs_mu_work": 0.0,
+      "max_abs_theta_work": 0.0,
+      "max_abs_ph_work": 0.0,
+      "max_abs_work_p": 0.0,
+      "max_abs_work_al": 0.0,
+      "max_abs_stage_p_buoy": 743.9650179372494,
+      "max_abs(mut - mub)": 0.0,
+      "max_abs(muts - mut)": 0.0,
+      "work_arrays_zero": true,
+      "stage_p_buoy_nonzero": true
+    },
+    "density_current": {
+      "max_abs_mu_work": 0.0,
+      "max_abs_theta_work": 0.0,
+      "max_abs_ph_work": 0.0,
+      "max_abs_work_p": 0.0,
+      "max_abs_work_al": 0.0,
+      "max_abs_stage_p_buoy": 5176.155664653868,
+      "max_abs(mut - mub)": 0.0,
+      "max_abs(muts - mut)": 0.0,
+      "work_arrays_zero": true,
+      "stage_p_buoy_nonzero": true
+    }
+  },
+  "ac1_mass_semantics": {
+    "max_abs(mut - (mub+mu_current))": 0.0,
+    "max_abs(muts - (mub+mu_ref))": 0.0,
+    "max_abs(mu_work - (mu_ref-mu_current))": 0.0,
+    "max_abs((muts-mut) - mu_work)": 0.0,
+    "passed": true
+  },
+  "ac1_pass": true
+}

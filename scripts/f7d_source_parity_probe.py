@@ -61,7 +61,7 @@ def _build_prep_rk1(setup):
     tendencies = _augment_large_step_tendencies(haloed, tendencies, namelist, rk_step=1)
     candidate = apply_halo(carry.state, halo_spec(namelist.grid))
     prep = small_step_prep_wrf(
-        candidate, 1, float(setup.case.dt_s) / 3.0,
+        candidate, 1, float(setup.numpy_case.dt_s) / 3.0,
         metrics=namelist.metrics, reference_state=candidate, ww=carry.ww,
     )
     pressure = calc_p_rho_wrf(prep, step=0, non_hydrostatic=True)
@@ -120,7 +120,7 @@ def main() -> int:
     mu_ref = 12.0 * jnp.ones_like(state0.mu_perturbation)      # synthetic MU_ref
     state_cur = state0.replace(mu_perturbation=mu_current, mu_total=mub + mu_current)
     state_ref = state0.replace(mu_perturbation=mu_ref, mu_total=mub + mu_ref)
-    prep_syn = small_step_prep_wrf(state_cur, 2, float(setup.case.dt_s) * 0.5, metrics=nl.metrics, reference_state=state_ref, ww=base_carry.ww)
+    prep_syn = small_step_prep_wrf(state_cur, 2, float(setup.numpy_case.dt_s) * 0.5, metrics=nl.metrics, reference_state=state_ref, ww=base_carry.ww)
     err_mut = _max_abs(prep_syn.mut - (mub + mu_current))
     err_muts = _max_abs(prep_syn.muts - (mub + mu_ref))
     err_work = _max_abs(prep_syn.mu_work - (mu_ref - mu_current))
@@ -138,7 +138,7 @@ def main() -> int:
     setup = _build_setup(build_warm_bubble_numpy(), require_gpu=True)
     namelist, prep, pressure, acoustic = _build_prep_rk1(setup)
     cqw = dry_cqw(int(prep.theta_work.shape[0]), int(prep.theta_work.shape[1]), int(prep.theta_work.shape[2]), dtype=prep.theta_work.dtype)
-    dts = float(setup.case.dt_s) / 3.0
+    dts = float(setup.numpy_case.dt_s) / 3.0
     a, alpha, gamma = calc_coef_w_wrf_coefficients(
         prep.mut, namelist.metrics, dt=dts, epssm=float(namelist.epssm),
         top_lid=bool(namelist.top_lid), cqw=cqw, c2a=prep.c2a,

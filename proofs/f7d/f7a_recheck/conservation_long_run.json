@@ -1,0 +1,32 @@
+{
+  "generated_utc": "2026-05-29T04:21:19.956480+00:00",
+  "commit": "5fb6d36bfbc8a250c40e6baf000e045a872340ff",
+  "grid": {
+    "nz": 20,
+    "ny": 4,
+    "nx": 4
+  },
+  "dts_s": 2.0,
+  "dx_m": 1000.0,
+  "dy_m": 1000.0,
+  "epssm": 0.5,
+  "device": [
+    "cuda:0"
+  ],
+  "oracle": "conservation_AC5",
+  "steps": 300,
+  "dry_mass_initial": 1440000.0,
+  "dry_mass_final": 1440000.0,
+  "dry_mass_relative_drift": 0.0,
+  "dry_mass_tolerance": 1e-06,
+  "theta_mass_initial": 720000.0,
+  "theta_mass_final": 720000.0,
+  "theta_mass_relative_drift": 0.0,
+  "finite": true,
+  "w_early_transient_max": 28690.266706899678,
+  "w_late_max": 15834.847181502579,
+  "w_abs_max_final": 15392.315235167589,
+  "w_bounded": true,
+  "theta_abs_max_final": 0.5,
+  "passed": true
+}
