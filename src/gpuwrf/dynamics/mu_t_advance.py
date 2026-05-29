@@ -141,11 +141,12 @@ def advance_mu_t_wrf(inputs: AdvanceMuTInputs) -> dict[str, jnp.ndarray]:
     # ``muts - mut`` so callers can keep the physical perturbation in ``mu``.
     mu_work_old = inputs.muts[yy, xx] - inputs.mut[yy, xx]
     mu_save = inputs.mu[yy, xx] - mu_work_old
-    # The JAX arrays carry WRF's negative ``dnw`` directly, while the local
-    # ``dvdxi`` stack is already an outward C-grid flux divergence in Python
-    # index order.  This is the WRF line-1104 ``DMDT + MU_TEND`` update with
-    # the stored divergence orientation converted back to WRF's mass tendency.
-    mu_tendency = -dmdt + inputs.mu_tend[yy, xx]
+    # WRF advance_mu_t (module_small_step_em.F:1099-1104): DMDT = sum_k dnw(k)*dvdxi(k)
+    # with WRF-SIGNED dnw (negative for normal eta), then MU += dts*(DMDT+MU_TEND).
+    # F7G adopts the WRF-signed metric throughout, so ``dmdt`` here already carries
+    # the WRF sign and the mass tendency is the literal WRF ``DMDT + MU_TEND`` --
+    # NOT the previous positive-|dnw| ``-dmdt`` compensation.
+    mu_tendency = dmdt + inputs.mu_tend[yy, xx]
     mu_work_new = mu_work_old + float(inputs.dts) * mu_tendency
     mu_new_i = mu_save + mu_work_new
     mudf_i = mu_tendency

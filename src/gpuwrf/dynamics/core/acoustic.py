@@ -157,6 +157,14 @@ class AcousticCoreState:
     # Uncoupled physical perturbation w from small_step_prep (WRF w_save, :272),
     # required by the damp_opt=3 implicit Rayleigh damping in advance_w.
     w_save: jax.Array | None = None
+    # F7G: the large-step vertical PGF/buoyancy tendency ``rw_tend`` built ONCE per
+    # RK stage from the stage ``grid%p``/``mu`` (WRF module_em.F:1361-1368 ->
+    # pg_buoy_w, module_big_step_utilities_em.F:2553-2572) and carried UNCHANGED
+    # through every acoustic substep.  WRF does NOT recompute pg_buoy_w from the
+    # live small-step ``calc_p_rho`` work pressure each substep; that was the F7F
+    # workaround (gpt-council-findings.md §2/§3.3).  When None, the substep falls
+    # back to the legacy per-substep recompute (bare-core/oracle callers only).
+    rw_tend_pg_buoy: jax.Array | None = None
 
     @classmethod
     def from_mapping(cls, values: dict[str, object]) -> "AcousticCoreState":
@@ -521,23 +529,27 @@ def acoustic_substep_core(
     msfvx = _optional_or(uv_state.msfvx, 1.0 / uv_state.msfvx_inv)
 
     mu_work = muts_new - uv_state.mut  # WRF perturbation dry-mass work array
-    # WRF pg_buoy_w consumes the small-step perturbation-pressure diagnostic
-    # ``grid%p`` (= calc_p_rho work pressure), NOT a separate absolute p'
-    # (module_big_step_utilities_em.F:2564-2571; module_em.F:1361-1368).  The
-    # rising-thermal buoyancy enters through the in-solver c2a*alt*t_2ave term in
-    # advance_w (module_small_step_em.F:1486-1489), not through this term, so the
-    # live substep ``p`` is the correct WRF input.  ``p_buoy`` is retained only as
-    # an explicit oracle/test override and is None on the operational path (F7F).
-    p_for_buoy = uv_state.p_buoy if uv_state.p_buoy is not None else uv_state.p
-    rw_tend = pg_buoy_w_dry(
-        p_for_buoy,
-        mu_work,
-        c1f=c1f_field,
-        rdnw=uv_state.rdnw,
-        rdn=rdn_field,
-        msfty=uv_state.msfty,
-        gravity=GRAVITY_M_S2,
-    )
+    # F7G: WRF builds the large-step vertical PGF/buoyancy ``rw_tend`` via
+    # pg_buoy_w ONCE per RK stage from the stage ``grid%p``/``mu`` in rk_tendency
+    # (module_em.F:1361-1368) and carries it UNCHANGED through all acoustic
+    # substeps.  When the caller supplies that stage array (``rw_tend_pg_buoy``),
+    # use it verbatim -- do NOT recompute from the live small-step ``calc_p_rho``
+    # work pressure each substep (that was the refuted F7F workaround;
+    # gpt-council-findings.md §2/§3.3).  The legacy per-substep recompute is kept
+    # only for bare-core/oracle callers that do not stage rw_tend.
+    if uv_state.rw_tend_pg_buoy is not None:
+        rw_tend = uv_state.rw_tend_pg_buoy
+    else:
+        p_for_buoy = uv_state.p_buoy if uv_state.p_buoy is not None else uv_state.p
+        rw_tend = pg_buoy_w_dry(
+            p_for_buoy,
+            mu_work,
+            c1f=c1f_field,
+            rdnw=uv_state.rdnw,
+            rdn=rdn_field,
+            msfty=uv_state.msfty,
+            gravity=GRAVITY_M_S2,
+        )
 
     w_solved, ph_next, t_2ave_next = advance_w_wrf(
         w=uv_state.w,

@@ -35,7 +35,7 @@ from gpuwrf.dynamics.acoustic_wrf import (
     moisture_coupling_factors,
 )
 from gpuwrf.dynamics.core.acoustic import AcousticCoreConfig, AcousticCoreState, acoustic_substep_core
-from gpuwrf.dynamics.core.advance_w import GRAVITY_M_S2, dry_cqw
+from gpuwrf.dynamics.core.advance_w import GRAVITY_M_S2, dry_cqw, pg_buoy_w_dry
 from gpuwrf.dynamics.core.calc_p_rho import CalcPRhoStep0, calc_p_rho_wrf
 from gpuwrf.dynamics.core.coupled import CoupledCoreConfig, coupled_timestep_core
 from gpuwrf.dynamics.core.rk_addtend_dry import (
@@ -661,19 +661,30 @@ def _acoustic_core_state_from_prep(
     state = prep.entry_state
     theta_pert = (state.theta - prep.theta_offset).astype(jnp.float64)
     ph_base = state.ph_total - state.ph_perturbation
-    # F7F (PARTIAL): WRF builds the large-step vertical buoyancy ``rw_tend`` once
-    # per RK stage via ``pg_buoy_w(rw_tend, grid%p, ...)`` (module_em.F:1361) where
-    # ``grid%p`` is the rk_step_prep absolute perturbation-pressure diagnostic
-    # from calc_p_rho_phi.  We removed Sprint B's SYNTHETIC theta-derived absolute
-    # pressure (linearized EOS, over-forced 9.4x -> 0.615 m/s^2; GPT-5.5 refuted).
-    # Feeding the (now geopotential-correct) calc_p_rho_phi grid%p into pg_buoy_w
-    # over-forces the OTHER way (max|w|~1.2*t) because the in-solver
-    # c2a*alt*t_2ave - c1f*muave buoyancy in advance_w does not subtract the same
-    # hydrostatic reference (muave=0 for mu'=0), so pg_buoy_w(grid%p) double-counts
-    # the perturbation column weight.  Resolving that large-step/small-step
-    # buoyancy-reference consistency is the open F7F item (see worker-report).
-    # Until then we feed the live small-step work pressure (p_buoy=None below),
-    # which removes the runaway but leaves the bubble weakly forced.
+    # F7G: WRF builds the large-step vertical PGF/buoyancy ``rw_tend`` ONCE per RK
+    # stage in rk_tendency (module_em.F:1361-1368) by calling pg_buoy_w with the
+    # stage diagnostic ``grid%p`` (the rk_step_prep calc_p_rho_phi perturbation
+    # pressure) and the stage perturbation dry mass ``mu' = mut - mub``, then
+    # carries it UNCHANGED through every acoustic substep (the small-step
+    # ``calc_p_rho`` only refreshes substep pressure/density + smdiv memory, it is
+    # NOT a per-substep pg_buoy_w source).  ``pressure.p`` is that WRF-signed-
+    # metric stage ``grid%p``; with the F7G signed-metric fix it is the exact
+    # discrete inverse of the IC geopotential, so on a balanced rest column the
+    # interior rw_tend is ~0 and the bubble forcing comes from the real θ′
+    # pressure structure (gpt-council-findings.md §3.3/§3.4).
+    nz_stage = int(prep.theta_work.shape[0])
+    ny_stage = int(prep.theta_work.shape[1])
+    nx_stage = int(prep.theta_work.shape[2])
+    mu_prime_stage = prep.mut - prep.mub  # stage perturbation dry mass mu' (WRF grid%mu_2)
+    rw_tend_stage = pg_buoy_w_dry(
+        pressure.p,
+        mu_prime_stage,
+        c1f=namelist.metrics.c1f,
+        rdnw=namelist.metrics.rdnw,
+        rdn=namelist.metrics.rdn,
+        msfty=namelist.metrics.msfty,
+        gravity=GRAVITY_M_S2,
+    )
     return AcousticCoreState(
         ww=carry.ww,
         ww_1=prep.ww_save,
@@ -684,14 +695,22 @@ def _acoustic_core_state_from_prep(
         w=prep.w_work,
         mu=prep.mu_save + prep.mu_work,
         mut=prep.mut,
-        muave=carry.muave,
+        # F7G: stage-entry small-step mass-WORK average is ZERO; advance_mu_t
+        # (module_small_step_em.F:1102-1108) rebuilds it from actual small-step
+        # mass evolution.  For a fixed-mass mu'=0 thermal it stays zero.
+        muave=jnp.zeros_like(prep.mu_work),
         muts=prep.muts,
         muu=prep.muu,
         muv=prep.muv,
         mudf=carry.mudf,
         theta=theta_pert,
         theta_1=prep.t_save,
-        theta_ave=carry.t_2ave - prep.theta_offset,
+        # F7G: stage-entry small-step WORK-theta average is ZERO (the coupled work
+        # theta t_2 is zero at a fresh RK stage on a fixed-mass rest thermal); the
+        # WRF advance_w t_2ave half-step (module_small_step_em.F:1341-1344) builds
+        # it up from actual small-step evolution.  Seeding the full initialized
+        # theta here was the double-count bug (gpt-council-findings.md §3.5).
+        theta_ave=jnp.zeros_like(prep.theta_work),
         # Large-step coupled theta / mu tendencies from rk_tendency+rk_addtend_dry
         # (advection + diffusion), consumed by advance_mu_t (t_2 += msfty*dts*t_tend).
         theta_tend=tendencies.theta,
@@ -699,7 +718,7 @@ def _acoustic_core_state_from_prep(
         ph_tend=carry.ph_tend,
         ph=prep.ph_work,
         p=pressure.p,
-        t_2ave=carry.t_2ave - prep.theta_offset,
+        t_2ave=jnp.zeros_like(prep.theta_work),
         dnw=namelist.metrics.dnw,
         fnm=namelist.metrics.fnm,
         fnp=namelist.metrics.fnp,
@@ -747,9 +766,11 @@ def _acoustic_core_state_from_prep(
         ru_m=jnp.zeros_like(prep.u_work),
         rv_m=jnp.zeros_like(prep.v_work),
         ww_m=jnp.zeros_like(carry.ww),
-        # F7F: live small-step work pressure into pg_buoy_w (no synthetic absolute
-        # p').  See the large-step/small-step buoyancy-reference note above.
+        # F7G: the once-per-RK-stage pg_buoy_w tendency from the stage grid%p/mu'
+        # (computed above), carried UNCHANGED through all acoustic substeps.  The
+        # legacy per-substep ``p_buoy`` recompute is disabled (None).
         p_buoy=None,
+        rw_tend_pg_buoy=rw_tend_stage,
         # Uncoupled physical perturbation w saved by small_step_prep (WRF :272);
         # consumed by the damp_opt=3 implicit Rayleigh w-damping in advance_w.
         w_save=prep.w_save,

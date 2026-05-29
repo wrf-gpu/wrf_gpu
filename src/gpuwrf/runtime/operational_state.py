@@ -94,10 +94,20 @@ def initial_operational_carry(state: State) -> OperationalCarry:
     ph_tend = jnp.zeros_like(state.ph, dtype=jnp.float64)
     return OperationalCarry(
         state=state,
-        t_2ave=jnp.asarray(state.theta, dtype=jnp.float64),
+        # F7G: ``t_2ave`` is the WRF small-step WORK-theta running average
+        # (module_small_step_em.F:1341-1344), NOT the full initialized theta.  At a
+        # fresh RK stage on a fixed-mass rest thermal the coupled work theta ``t_2``
+        # is zero, so ``t_2ave`` must start at ZERO; seeding it with the full
+        # initialized theta double-counts the thermal as a spurious advance_w term-B
+        # buoyancy source (gpt-council-findings.md §3.5).
+        t_2ave=jnp.zeros_like(state.theta, dtype=jnp.float64),
         ww=ww,
         mudf=mudf,
-        muave=jnp.asarray(state.mu_perturbation),
+        # F7G: ``muave`` is the small-step mass-WORK running average
+        # (module_small_step_em.F:1102-1108).  For a fixed-mass thermal with mu'=0
+        # and no mass tendency it is zero; it becomes nonzero only from actual
+        # small-step mass evolution, so seed it at zero rather than the full mu'.
+        muave=jnp.zeros_like(state.mu_perturbation),
         muts=muts,
         ph_tend=ph_tend,
         u_save=jnp.asarray(state.u),
