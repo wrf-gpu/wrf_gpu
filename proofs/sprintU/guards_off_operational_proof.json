@@ -6,12 +6,14 @@
     3
   ],
   "device": "cuda:0",
-  "interpretation": "The idealized warm bubble PASSES the full F7N gate 6/6 with ALL guards DISABLED (the idealized harness namelist is disable_guards=True: no theta limiter, no dry-mass guard, no finite fallback), and the real Canary d02 operational dycore advances a finite state guards-off.  So the closed F7 dycore is stable on its own.  The conservative per-level theta limiter does engage when guards are ON, but since the guards-off run PASSES it is NOT load-bearing for the gate -- it is a production safety net, not a prop.",
+  "interpretation": "The idealized warm bubble PASSES the full F7N gate 6/6 with ALL guards DISABLED (the idealized harness namelist is disable_guards=True: no theta limiter, no dry-mass guard, no finite fallback), and the real Canary d02 operational dycore advances a finite state guards-off over a 50-step window.  Sprint U P0-1: that real-case window is now GENUINELY fp64 -- every prognostic (u/v/w/theta/ph/mu) stays float64 across all 50 steps (state_summary.*.dtype == float64), not silently downcast to fp32 under force_fp64 (the pre-fix bug).  So the closed F7 dycore is stable on its own in true double precision.  The conservative per-level theta limiter does engage when guards are ON, but since the guards-off run PASSES it is NOT load-bearing for the gate -- it is a production safety net, not a prop.",
   "objective": "Prove the operational dycore is stable WITHOUT guards (P1-6).",
   "real_case_guards_off": {
     "all_finite_without_guards": true,
+    "all_prognostics_fp64": true,
     "config": "real_canary_d02_dycore",
     "disable_guards": true,
+    "force_fp64": true,
     "grid": {
       "nx": 159,
       "ny": 66,
@@ -20,31 +22,37 @@
     "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
     "state_summary": {
       "mu": {
-        "absmax": 97173.64216761875,
+        "absmax": 97814.21879654659,
+        "dtype": "float64",
         "finite": true
       },
       "ph": {
-        "absmax": 216696.44157203677,
+        "absmax": 226174.4953537554,
+        "dtype": "float64",
         "finite": true
       },
       "theta": {
-        "absmax": 492.5312805175781,
+        "absmax": 492.9970981490251,
+        "dtype": "float64",
         "finite": true
       },
       "u": {
-        "absmax": 25.61875343322754,
+        "absmax": 29.73406628888263,
+        "dtype": "float64",
         "finite": true
       },
       "v": {
-        "absmax": 11.649989128112793,
+        "absmax": 17.834513614508293,
+        "dtype": "float64",
         "finite": true
       },
       "w": {
-        "absmax": 182.9824058565785,
+        "absmax": 16.20775907788355,
+        "dtype": "float64",
         "finite": true
       }
     },
-    "steps": 6
+    "steps": 50
   },
   "schema": "sprintU_guards_off_operational_proof",
   "schema_version": 1,

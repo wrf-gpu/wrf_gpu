@@ -1,17 +1,36 @@
 {
-  "blocked_reason": "JAX GPU backend is not visible; idealized dycore runs require GPU",
   "case_id": "straka-1993-density-current-contract-f2",
   "case_name": "density_current",
   "checks": {
-    "gpu_available": {
-      "passed": false,
-      "threshold": "JAX GPU backend visible",
-      "value": 0.0
-    },
-    "initial_condition_finite": {
+    "all_snapshots_finite": {
       "passed": true,
-      "threshold": "analytic IC arrays finite",
+      "threshold": "all snapshot arrays finite",
       "value": 1.0
+    },
+    "front_position_900s": {
+      "passed": true,
+      "threshold": "|front position - 15000 m| <= 2000 m",
+      "value": 14150.0
+    },
+    "max_abs_w_900s": {
+      "passed": true,
+      "threshold": "1 <= max(|w|) <= 50 m/s",
+      "value": 14.574919073012929
+    },
+    "relative_mass_drift": {
+      "passed": true,
+      "threshold": "max relative dry-column mass drift <= 1e-8",
+      "value": 2.2509470252373515e-09
+    },
+    "rotor_count_proxy_900s": {
+      "passed": true,
+      "threshold": "2 <= rotor proxy count <= 4",
+      "value": 4.0
+    },
+    "theta_prime_min_900s": {
+      "passed": true,
+      "threshold": "-25 <= min(theta prime) <= -5 K",
+      "value": -9.970995032353471
     }
   },
   "cpu_affinity": [
@@ -20,48 +39,35 @@
     2,
     3
   ],
-  "device": null,
+  "device": "cuda:0",
   "device_inventory": {
-    "default_backend": "cpu",
+    "default_backend": "gpu",
     "devices": [
-      "cpu:0"
+      "cuda:0"
     ],
-    "gpu_devices": [],
+    "gpu_devices": [
+      "cuda:0"
+    ],
     "ok": true
   },
-  "initial_condition_stats": {
-    "pressure_pa": {
-      "dtype": "float64",
-      "finite": true,
-      "max": 99431.66524726275,
-      "min": 47082.185931906206,
-      "shape": [
-        60,
-        500
-      ]
-    },
-    "theta_k": {
-      "dtype": "float64",
-      "finite": true,
-      "max": 300.0,
-      "min": 285.0,
-      "shape": [
-        60,
-        500
-      ]
-    },
-    "theta_prime_k": {
-      "dtype": "float64",
-      "finite": true,
-      "max": -0.0,
-      "min": -15.000000000000002,
-      "shape": [
-        60,
-        500
-      ]
-    }
+  "dt_s": 0.1,
+  "initial_snapshot": {
+    "cold_theta_center_x_m": -1.0425583977044813e-14,
+    "cold_theta_center_z_m": 3000.0,
+    "finite": true,
+    "front_position_m": 1150.0,
+    "mass_total_pa": 26631298.86045615,
+    "max_abs_u_m_s": 0.0,
+    "max_abs_w_m_s": 0.0,
+    "positive_theta_center_x_m": null,
+    "positive_theta_center_z_m": null,
+    "second": 0.0,
+    "theta_prime_max_k": 0.0,
+    "theta_prime_min_k": -15.0,
+    "theta_symmetry_linf_k": 0.0,
+    "w_symmetry_linf_m_s": 0.0
   },
-  "interpretation": "The analytic initial condition was generated, but the dycore integration was not run because no JAX GPU backend was visible.",
+  "interpretation": "The density current matched the declared front-position, rotor-proxy, bounded-theta, active-motion, and mass checks.",
   "parameters": {
     "bubble_center_x_m": 0.0,
     "bubble_center_z_m": 3000.0,
@@ -76,7 +82,7 @@
     "theta_perturbation_min_k": -15.0
   },
   "plots": [
-    "proofs/f2/plots/density_current_initial_theta_prime.ppm"
+    "proofs/f2/plots/density_current_theta_prime_900s.ppm"
   ],
   "reference": {
     "description": "Cold-pool density current: about three rotors and front position near 15 km by 900 s on 100 m grids.",
@@ -90,8 +96,26 @@
   "snapshot_seconds": [
     900.0
   ],
-  "status": "BLOCKED_GPU_UNAVAILABLE",
-  "timesteps": 0,
+  "snapshots": [
+    {
+      "cold_theta_center_x_m": -0.029224717982037202,
+      "cold_theta_center_z_m": 626.5420763300409,
+      "finite": true,
+      "front_position_m": 14150.0,
+      "mass_total_pa": 26631298.800510507,
+      "max_abs_u_m_s": 37.85770731299794,
+      "max_abs_w_m_s": 14.574919073012929,
+      "positive_theta_center_x_m": 0.22459778789053997,
+      "positive_theta_center_z_m": 1395.366433642411,
+      "second": 900.0,
+      "theta_prime_max_k": 0.08727039319609275,
+      "theta_prime_min_k": -9.970995032353471,
+      "theta_symmetry_linf_k": 0.0028571811311621786,
+      "w_symmetry_linf_m_s": 0.0021862931548035647
+    }
+  ],
+  "status": "RAN_TO_COMPLETION",
+  "timesteps": 9000,
   "title": "Straka density current verdict",
-  "verdict": "BLOCKED"
+  "verdict": "PASS"
 }
