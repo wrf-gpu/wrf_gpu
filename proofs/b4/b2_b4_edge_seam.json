@@ -1,0 +1,42 @@
+{
+  "artifact_type": "b4_b2_edge_seam",
+  "b4_restores_outer_faces_after_mynn": {
+    "u_east_face_vs_wrf_bdy": 0.0,
+    "u_west_face_vs_wrf_bdy": 0.0,
+    "v_north_face_vs_wrf_bdy": 0.0,
+    "v_south_face_vs_wrf_bdy": 0.0
+  },
+  "edge_faces_restored_to_wrf": true,
+  "gate1_decision": "#4 -- MYNN periodic wind reconstruction vs B4 non-periodic boundaries",
+  "method": "periodicity-specific test: periodic jnp.roll inverse vs non-periodic edge-extrapolation inverse on a smooth mass-point wind increment; they differ ONLY where periodicity wraps.",
+  "operator_order_required": "physics(surface, MYNN) -> apply_lateral_boundaries (frozen RK1 bundle order)",
+  "periodicity_specific_corruption": {
+    "confined_to_outer_faces": true,
+    "interior_periodic_vs_nonperiodic_u_err_beyond_relax": 0.0,
+    "interior_periodic_vs_nonperiodic_v_err_beyond_relax": 0.0,
+    "u_outer_faces": [
+      0,
+      159
+    ],
+    "u_wrapped_face_x_indices": [
+      0,
+      159
+    ],
+    "v_outer_faces": [
+      0,
+      66
+    ],
+    "v_wrapped_face_y_indices": [
+      0,
+      66
+    ]
+  },
+  "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T072630Z",
+  "seam_contract": [
+    "The periodicity-SPECIFIC corruption from MYNN's jnp.roll mass->face inverse is confined to exactly the outer staggered faces u[:, :, {0, nx}] and v[:, {0, ny}, :]; interior faces are identical to a non-periodic inverse. (The generic mass<->face averaging loss is a staggering effect present for any inverse and is not a seam issue.)",
+    "B4 spec_zone (>=1) HARD-SETS those exact outer faces to the WRF boundary value every step, AFTER the physics block, so the wrap artefact is fully overwritten (post-MYNN restoration error = 0).",
+    "Required invariants, all satisfied for the pinned run: (a) operator order physics(MYNN)->apply_lateral_boundaries (frozen RK1 bundle order), (b) spec_zone>=1, (c) u/v boundary leaves carry the staggered outer faces.",
+    "Recommended (non-blocking) B2 hardening: replace the periodic jnp.roll inverse with edge-extrapolation so the relaxation columns b_dist=1..relax-1 (which B4 only NUDGES, not hard-sets) are not seeded with a wrap artefact before relaxation. With spec_zone=1 the residual is one relaxation row deep and the relaxation drives it out; edge-extrapolation removes it entirely."
+  ],
+  "status": "PASS"
+}

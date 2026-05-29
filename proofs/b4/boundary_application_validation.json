@@ -1,0 +1,53 @@
+{
+  "artifact_type": "b4_boundary_application_validation",
+  "boundary_config": {
+    "relax_zone": 4,
+    "spec_bdy_width": 5,
+    "spec_exp": 0.0,
+    "spec_zone": 1,
+    "update_cadence_s": 3600.0
+  },
+  "checks": {
+    "boundary_not_dominant_in_wrf": true,
+    "fp64_preserved_under_force_fp64": true,
+    "interior_beyond_relax_untouched_max_abs_diff": 0.0,
+    "interior_untouched_pass": true,
+    "relaxation_consistency_pass": true,
+    "relaxation_reduces_strip_error": true,
+    "relaxation_toward_truth": {
+      "boundary_strip_theta_rmse_vs_wrf_t1_after": 0.049619198221499156,
+      "boundary_strip_theta_rmse_vs_wrf_t1_before": 0.683209111472659,
+      "spec_zone_W_equals_wrf_t1_max_abs_diff": 0.0
+    },
+    "relaxation_zero_residual_when_consistent": 0.0,
+    "spec_zone_exact_max_abs_diff": {
+      "E": 0.0,
+      "N": 0.0,
+      "S": 0.0,
+      "W": 0.0
+    },
+    "spec_zone_exact_pass": true,
+    "wrf_formula_crosscheck_max_abs_diff": 0.0,
+    "wrf_formula_crosscheck_pass": true,
+    "wrf_intrinsic_change_t0_t1": {
+      "theta": {
+        "boundary_strip_rmse": 0.683209111472659,
+        "interior_rmse": 0.7897273360655058
+      },
+      "u": {
+        "boundary_strip_rmse": 0.7620824260628934,
+        "interior_rmse": 0.9062673725545795
+      },
+      "v": {
+        "boundary_strip_rmse": 0.9809651487529655,
+        "interior_rmse": 1.2346546996862533
+      }
+    }
+  },
+  "domain": "d02",
+  "dt_s": 6.0,
+  "note": "Forcing = decoupled wrfout side-history; WRF relaxes mass-coupled vars (documented O(mu') departure in boundary_apply.py).",
+  "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T072630Z",
+  "status": "PASS",
+  "wrf_source": "share/module_bc.F relax_bdytend/spec_bdytend; dyn_em/module_bc_em.F lbc_fcx_gcx"
+}

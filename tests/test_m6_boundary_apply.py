@@ -56,7 +56,15 @@ def test_apply_lateral_boundaries_sets_specified_zone_and_relaxes_inner_zone():
     jax.tree_util.tree_map(lambda leaf: leaf.block_until_ready() if hasattr(leaf, "block_until_ready") else leaf, out)
 
     assert np.allclose(np.asarray(out.theta[:, 1:-1, 0]), 10.0)
-    assert np.allclose(np.asarray(out.theta[:, 3:5, 1]), 1.2)
+    # First relaxation column (b_dist=1, dt*fcx=0.1): WRF relax_bdytend nudges
+    # the original interior (0) toward the boundary value (10) by fcx*residual.
+    # With a uniform boundary strip the residual Laplacian (fls1..fls4 - 4*fls0)
+    # vanishes, so theta -> 0 + 0.1*10 = 1.0.  (The previous expectation 1.2 came
+    # from the pre-B4 implementation that fed the already-spec-set outer column
+    # into the Laplacian instead of the boundary strip; that did not match WRF's
+    # relax_bdytend stencil -- see proofs/b4/boundary_application_validation.json,
+    # which bitwise-matches an independent NumPy re-derivation of WRF.)
+    assert np.allclose(np.asarray(out.theta[:, 3:5, 1]), 1.0)
     assert np.allclose(np.asarray(out.qv[:, 1:-1, 0]), 0.002)
     assert np.all(np.asarray(out.qv) >= 0.0)
     assert np.allclose(np.asarray(out.w[:, 1:-1, 0]), 7.0)

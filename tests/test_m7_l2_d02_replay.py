@@ -86,6 +86,9 @@ def test_pack_nested_parent_history_returns_child_sides_with_padding() -> None:
 
     child = SimpleNamespace(parent_grid_ratio=2, i_parent_start=1, j_parent_start=1)
 
+    # 5-D leaf layout (time, side, bdy_width, z, side_len) -- bdy_width axis was
+    # added after this test was first written; bdy_width=1 reproduces the
+    # original single-strip behaviour. Indices below carry the extra width axis.
     packed = _pack_nested_parent_history_3d(
         FakeRun(),
         child,
@@ -94,14 +97,15 @@ def test_pack_nested_parent_history_returns_child_sides_with_padding() -> None:
         ntimes=2,
         child_shape=(1, 2, 3),
         max_side=4,
+        bdy_width=1,
         dtype=np.float32,
     )
 
-    assert packed.shape == (2, 4, 1, 4)
-    np.testing.assert_allclose(packed[0, 0, 0, :2], [0.0, 5.0])
-    np.testing.assert_allclose(packed[0, 2, 0, :3], [0.0, 0.5, 1.0])
-    assert packed[0, 0, 0, 2] == 0.0
-    np.testing.assert_allclose(packed[1, 2, 0, :3], [1.0, 1.5, 2.0])
+    assert packed.shape == (2, 4, 1, 1, 4)
+    np.testing.assert_allclose(packed[0, 0, 0, 0, :2], [0.0, 5.0])
+    np.testing.assert_allclose(packed[0, 2, 0, 0, :3], [0.0, 0.5, 1.0])
+    assert packed[0, 0, 0, 0, 2] == 0.0
+    np.testing.assert_allclose(packed[1, 2, 0, 0, :3], [1.0, 1.5, 2.0])
 
 
 def test_l2_inventory_marks_complete_runs_and_selects_latest_full(tmp_path: Path) -> None:

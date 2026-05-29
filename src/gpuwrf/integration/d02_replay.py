@@ -748,8 +748,21 @@ def build_replay_case(
     _debug("State.zeros complete")
     tendencies = Tendencies.zeros(grid)
     _debug("Tendencies.zeros complete")
-    metrics = load_wrfinput_metrics(run.wrfinput_file(domain))
-    _debug("load_wrfinput_metrics complete")
+    # B4 loader-consistency fix: the prognostic state (PH/PHB) and the GridSpec
+    # terrain are both built from the t=0 ``wrfout_<domain>`` snapshot, whose
+    # surface geopotential PHB[0]/g matches that file's HGT to fp32 round-off.
+    # The ``wrfinput_<domain>`` HGT differs from the wrfout HGT by up to ~228 m
+    # near the nest boundary (parent->nest terrain blending applied during
+    # init), so loading the dycore terrain slopes from wrfinput left the
+    # pressure-gradient terrain inconsistent with the base-state geopotential by
+    # the same amount -- a boundary-strip-dominant init error.  All map factors
+    # and hybrid-eta coefficients are bitwise-identical between the two files;
+    # only HGT differs, so sourcing the metrics from the same wrfout snapshot
+    # makes the terrain slopes consistent with PHB without changing any other
+    # metric.  See proofs/b4/static_field_parity.json and metrics_consistency.json.
+    metrics_source = run.history_files(domain)[0]
+    metrics = load_wrfinput_metrics(metrics_source)
+    _debug(f"load_wrfinput_metrics complete (source={metrics_source})")
     land = load_prescribed_land_state(run, domain=domain, time=0)
     _debug("load_prescribed_land_state complete")
     source_domain = boundary_domain or domain
