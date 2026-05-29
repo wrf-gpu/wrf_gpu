@@ -1,7 +1,48 @@
 # Dry Dynamical Core — Status (single source of truth for the F7 rewrite)
 
-**Last updated: 2026-05-29 (~17:30, F7N). Branch `worker/opus/f7d-pressure-mass-fix` (idealized cases now PASS; ready for pre-close critique + merge).**
+**Last updated: 2026-05-29 (Sprint U, operationalize+harden). Branch `worker/opus/f7d-pressure-mass-fix`.**
 This file exists so future agents do NOT waste tokens re-investigating already-cleared components. Update it when the dycore status changes.
+
+## ✅ DRY DYCORE OPERATIONAL-READY FOR PHASE B (Sprint U, 2026-05-29)
+Sprint U closed the 4 P0 + 3 P1 GPT pre-close findings. The dry dycore is now
+**operationally unified, WRF-validated, and CI-gated** — the operational/real-case
+path uses the SAME validated F7 operators as the idealized gates.
+
+- **P0-1 operational unification**: `daily_pipeline._build_real_case` now builds the
+  real-case namelist with the F7 operators (flux advection incl. F7N sign fix, fp64,
+  diff_6th_opt=2, WRF Rayleigh+w damping, open top). `run_forecast_operational`
+  matches the idealized harness **BITWISE** over 50 warm-bubble steps (theta/w
+  linf=0.0 → same dycore), and the full warm bubble PASSES 6/6 through the
+  operational entry point. Real Canary d02 (44×66×159) builds + runs finite.
+  (`proofs/sprintU/operational_path_unification.md`, `real_case_smoke.json`)
+- **P0-2 WRF deformation momentum diffusion**: `wrf_deformation_momentum_tendency`
+  wired for u/v/w (theta keeps the conservative scalar flux-divergence). Analytic
+  oracle: du matches FD to round-off, dw to ~1% + 2nd-order convergence. Straka
+  PASSES 6/6 WITH the deformation operator (mass drift 1.4e-16).
+  (`proofs/sprintU/momentum_diffusion_deformation.md`, `straka_deformation_gate.md`)
+- **P0-3 canonical-WRF Straka parity**: reran under canonical em_grav2d_x controls
+  (dt=1, 6 acoustic substeps==time_step_sound, damp_opt=0, nz=64); array-level
+  WRF-vs-JAX through touchdown PASSES — worst max|w| rel diff 0.119 (5% at the 240s
+  touchdown peak, 0% at 300s), front within 400m, finite through 360s. The dycore
+  DECELERATES like WRF instead of the old runaway → NaN.
+  (`proofs/sprintU/straka_canonical_parity.{json,md}`)
+- **P0-4/P0-5 CI close-gate**: `tests/idealized/test_dycore_close_gate.py` +
+  `close_gate` marker assert `verdict==PASS` (not `in {PASS,FAIL}`) and archive the
+  proof JSON; existing idealized tests tightened to assert PASS. Both PASS (411s).
+  (`proofs/sprintU/ci_close_gate.md`, `proofs/sprintU/close_gate/`)
+- **P1-5 advect_w open-top face**: WRF top-face flux + lid pickup
+  (`module_advect_em.F:6014-6028`) wired behind `top_lid`; rigid-lid idealized path
+  byte-unchanged (top tendency stays 0). 4 unit tests.
+  (`proofs/sprintU/advect_w_topface.md`)
+- **P1-6 guards-off proof**: warm bubble PASSES 6/6 fully guards-off; real Canary
+  dycore finite guards-off. The theta limiter is a safety net, NOT load-bearing.
+  (`proofs/sprintU/guards_off_operational_proof.json`)
+
+**Honest remaining scope (Phase-B gates, NOT closed):** 3D terrain slope (zx/zy)
+diffusion cross-coordinate terms, map factors, lateral specified/nested boundaries,
+moist/scalar coupling through the RK bundle, and per-cell (vs time-series) WRF field
+parity. The operational ADVECTION/DIFFUSION/DAMPING/PRECISION operators are unified
+and validated; terrain/map-factor/boundary coupling remains for Phase B.
 
 ## ✅ DRY DYNAMICAL CORE CLOSED (F7N, 2026-05-29)
 Both idealized gates PASS against published references + WRF ground truth:
