@@ -81,14 +81,37 @@ Decisive localization (no clamps, pure observation):
    metrics are in perfect discrete balance at rest.
 
 Therefore the residual runaway is **NOT** the MUT/MUTS mass-semantics (which is
-correct: AC1/AC2/AC5 prove it) and **NOT** the dycore core. It is an
-**idealized-harness IC defect**: the perturbed-column pre-loaded
-`ph_perturbation` (idealized.py `_make_state`) is not on the dycore's discrete
-hydrostatic-balance manifold, so the stage-entry absolute `p_buoy`
-(`_acoustic_core_state_from_prep`, the `-al_abs` ph'-driven term) carries a
-spurious constant component (~9× the physical buoyancy) that pumps a uniform
-vertical acoustic-gravity mode. This is in the harness file
-`src/gpuwrf/ic_generators/idealized.py`, not the protected dycore.
+correct: AC1/AC2/AC5 prove it).
+
+**Decisive ph'=0 experiment** (`proofs/f7d/ic_phzero_warm_bubble.json`): zeroing
+the pre-loaded `ph_perturbation` (injecting the bubble through θ' only, exactly
+as the f7a analytic warm-bubble oracle that PASSES) makes the run **completely
+stable to 200 s** (max|w| ~ 1.6e-3 m/s, no runaway) — BUT the bubble then does
+NOT rise at all (centroid 2000 m stationary, θ'max pinned at 2.000). So the
+pre-loaded ph' is REQUIRED to provide the buoyancy (WRF
+`module_initialize_ideal.F:1107-1130` integrates the perturbation geopotential
+`ph_1` from the perturbation inverse-density `al = alt-alb` for exactly this
+reason), and it is precisely that (WRF-correct) buoyancy loading that excites the
+runaway.
+
+**Conclusion:** the residual is a genuine **dycore vertical-acoustic-mode
+instability under sustained buoyancy forcing** — the buoyancy drives a
+horizontally-uniform, linearly-growing vertical acoustic-gravity mode (~9× the
+physical 0.065 m/s² buoyancy) instead of a coherent bubble updraft, and the
+current off-centering (epssm=0.1) + WRF divergence/Rayleigh damping does not
+control it on these idealized grids. The harness IC ph' construction matches
+WRF's `al`-based discrete operator (verified: for mu'=0, `ph_pert(k+1)-ph_pert(k)
+= dnw·mu·(alt_full-alt_base)` == WRF's form), so it is not a simple IC bug. This
+is beyond the verified mass-semantics scope and the dycore's protected files.
+**Off-centering is NOT the fix**: a WRF-cited `epssm=0.5` (vs 0.1) gives the SAME
+linear runaway (max|w| 15→30→44 → NaN at 100 s, `proofs/f7d/warm_bubble_epssm0p5.json`).
+The growth being LINEAR (slope ~0.6 m/s/s, R²≈1) and epssm-insensitive means it is a
+**constant forcing**, not an exponential eigenmode — the stage-entry absolute
+`p_buoy` buoyancy source and the substep acoustic restoring do not form a closed
+adjustment for a buoyant column. Next step: audit the stage-entry `p_buoy`
+diagnostic vs the substep `calc_p_rho`/`advance_w` vertical-restoring closure (are
+`al`/`alt`/`c2a` mutually consistent), and/or adopt the WRF
+`module_initialize_ideal.F:1107-1130` iterative column balance for the IC — NOT a clamp.
 
 ## Unresolved risk / next decision
 The mass-semantics fix is complete, WRF-faithful, and a strict improvement
