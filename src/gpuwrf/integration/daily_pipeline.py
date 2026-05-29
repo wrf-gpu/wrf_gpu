@@ -159,6 +159,23 @@ def _build_real_case(config: DailyPipelineConfig) -> tuple[DailyCase, Path]:
         raise FileNotFoundError(f"missing run directory: {run_dir}")
     replay = build_replay_case(run_dir, domain=config.domain)
     state = replay.state.replace(p=replay.state.p_total, ph=replay.state.ph_total, mu=replay.state.mu_total)
+    # Sprint U (P0-1): the real-case operational path MUST use the same F7-closed
+    # dycore operators that the idealized gates use, not the pre-F7 primitive
+    # advection path.  Concretely:
+    #   * use_flux_advection=True  -> WRF flux-form mass-coupled advect_u/v/w +
+    #     advect_scalar (incl. the F7N vertical-momentum sign fix), NOT the legacy
+    #     primitive compute_advection_tendencies path.
+    #   * force_fp64=True          -> the F7 gates require fp64 for the acoustic
+    #     solve (fp32 loses the perturbation and detonates; perf downcast is a
+    #     later gated decision, ADR-007).
+    #   * diff_6th_opt=2 / 0.12    -> the operational d02 numerical filter (WRF
+    #     diff_6th_opt=2, diff_6th_factor=0.12) that suppresses 2dx noise.
+    #   * w_damping=1, damp_opt=3, zdamp=5000, dampcoef=0.2 -> the Gen2 d02 WRF
+    #     upper-level Rayleigh + vertical-velocity damping (open top, NOT a lid).
+    #   * top_lid=False            -> real runs have an OPEN/top-damped top, so the
+    #     WRF advect_w top-face flux + lid pickup (P1-5) is active.
+    # Guards stay ON for the production real path (the operational safety net); the
+    # guards-off stability of the dycore itself is proven separately (Sprint U P1-6).
     namelist = OperationalNamelist.from_grid(
         replay.grid,
         tendencies=replay.tendencies,
@@ -167,6 +184,14 @@ def _build_real_case(config: DailyPipelineConfig) -> tuple[DailyCase, Path]:
         acoustic_substeps=int(config.acoustic_substeps),
         radiation_cadence_steps=int(config.radiation_cadence_steps),
         use_vertical_solver=True,
+        use_flux_advection=True,
+        force_fp64=True,
+        diff_6th_opt=2,
+        diff_6th_factor=0.12,
+        w_damping=1,
+        damp_opt=3,
+        zdamp=5000.0,
+        dampcoef=0.2,
     )
     run_start = _coerce_run_start(str(replay.metadata["run_start_label"]))
     metadata = {
@@ -183,6 +208,17 @@ def _build_real_case(config: DailyPipelineConfig) -> tuple[DailyCase, Path]:
             "run_boundary": bool(namelist.run_boundary),
             "radiation_cadence_steps": int(namelist.radiation_cadence_steps),
             "use_vertical_solver": bool(namelist.use_vertical_solver),
+            # Sprint U (P0-1): F7 dycore operators on the real-case operational path.
+            "use_flux_advection": bool(namelist.use_flux_advection),
+            "force_fp64": bool(namelist.force_fp64),
+            "diff_6th_opt": int(namelist.diff_6th_opt),
+            "diff_6th_factor": float(namelist.diff_6th_factor),
+            "w_damping": int(namelist.w_damping),
+            "damp_opt": int(namelist.damp_opt),
+            "zdamp": float(namelist.zdamp),
+            "dampcoef": float(namelist.dampcoef),
+            "top_lid": bool(namelist.top_lid),
+            "disable_guards": bool(namelist.disable_guards),
         },
         "source": "gpuwrf.integration.d02_replay.build_replay_case",
     }
