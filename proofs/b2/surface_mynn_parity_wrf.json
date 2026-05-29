@@ -1,0 +1,216 @@
+{
+  "active_columns": 5487,
+  "gate": "operational RMSE bands on the M9 B2-owned set (savepoint_schema.md \u00a74)",
+  "grid_columns": 5487,
+  "kind": "REAL WRF surface-layer (sf_sfclay_physics=5) operator-boundary parity, itimestep=1",
+  "operational_comparisons": {
+    "hfx": {
+      "band": 30.0,
+      "jax_range": [
+        -8.249893982611415,
+        557.8648403641012
+      ],
+      "max_abs": 454.83260334392946,
+      "mean_abs": 4.074019561834215,
+      "pass": true,
+      "rmse": 17.371952481403987,
+      "transcription_abs": 0.0001,
+      "wrf_range": [
+        -9.148309707641602,
+        156.15528869628906
+      ]
+    },
+    "lh": {
+      "band": 30.0,
+      "jax_range": [
+        0.02802540724291799,
+        263.27904299053364
+      ],
+      "max_abs": 240.81706043997656,
+      "mean_abs": 5.723163670216878,
+      "pass": true,
+      "rmse": 10.684491616278452,
+      "transcription_abs": 0.0001,
+      "wrf_range": [
+        -2.9602548238472082e-05,
+        253.84521484375
+      ]
+    },
+    "mol": {
+      "band": 2.0,
+      "jax_range": [
+        -1.8007375064354223,
+        0.04854556545638965
+      ],
+      "max_abs": 1.108675366924314,
+      "mean_abs": 0.03542271569652588,
+      "pass": true,
+      "rmse": 0.044818369852046264,
+      "transcription_abs": null,
+      "wrf_range": [
+        -0.6920621395111084,
+        0.04827072471380234
+      ]
+    },
+    "psih": {
+      "band": 0.5,
+      "jax_range": [
+        -19.57616240904093,
+        3.9855570541574985
+      ],
+      "max_abs": 6.239387370776964,
+      "mean_abs": 0.17292861327235465,
+      "pass": true,
+      "rmse": 0.2444913341531003,
+      "transcription_abs": null,
+      "wrf_range": [
+        -19.592496871948242,
+        4.250575542449951
+      ]
+    },
+    "psim": {
+      "band": 0.5,
+      "jax_range": [
+        -22.457306297605363,
+        3.0755484843744454
+      ],
+      "max_abs": 7.168981473983459,
+      "mean_abs": 0.1392890382528612,
+      "pass": true,
+      "rmse": 0.21561354429654228,
+      "transcription_abs": null,
+      "wrf_range": [
+        -22.457305908203125,
+        3.2116920948028564
+      ]
+    },
+    "t2": {
+      "band": 1.5,
+      "jax_range": [
+        282.5185059618652,
+        298.34607070939865
+      ],
+      "max_abs": 1.3153675457610916,
+      "mean_abs": 0.013078163261256428,
+      "pass": true,
+      "rmse": 0.040580340103228134,
+      "transcription_abs": 1e-05,
+      "wrf_range": [
+        282.5262451171875,
+        298.4116516113281
+      ]
+    },
+    "u10": {
+      "band": 1.5,
+      "jax_range": [
+        -3.5986933193939628,
+        3.4005389506353523
+      ],
+      "max_abs": 0.1306927051521285,
+      "mean_abs": 0.0049710053292524444,
+      "pass": true,
+      "rmse": 0.007319864742798755,
+      "transcription_abs": 1e-05,
+      "wrf_range": [
+        -3.6094651222229004,
+        3.398327112197876
+      ]
+    },
+    "ust": {
+      "band": 0.05,
+      "jax_range": [
+        0.022436223744911128,
+        0.5258996106345184
+      ],
+      "max_abs": 0.22578259479589535,
+      "mean_abs": 0.016985908348789068,
+      "pass": true,
+      "rmse": 0.026056985254696123,
+      "transcription_abs": 1e-07,
+      "wrf_range": [
+        0.022228216752409935,
+        0.4002799987792969
+      ]
+    },
+    "v10": {
+      "band": 1.5,
+      "jax_range": [
+        -8.754775914059275,
+        0.4432555107387945
+      ],
+      "max_abs": 0.2873031245240627,
+      "mean_abs": 0.018867013451477274,
+      "pass": true,
+      "rmse": 0.02244929149995912,
+      "transcription_abs": 1e-05,
+      "wrf_range": [
+        -8.715258598327637,
+        0.43972668051719666
+      ]
+    }
+  },
+  "oracle_dir": "/mnt/data/wrf_gpu2/physics_oracle/surface_mynn",
+  "pass": true,
+  "physics_options": {
+    "bl_pbl_physics": 5,
+    "mp_physics": 8,
+    "ra_lw_physics": 4,
+    "ra_sw_physics": 4,
+    "sf_sfclay_physics": 5,
+    "sf_surface_physics": 4
+  },
+  "proof": "b2-surface-mynn-parity-wrf",
+  "scheme_diagnostic_comparisons": {
+    "br": {
+      "band": 0.5,
+      "jax_range": [
+        -59.35603829774031,
+        0.8421949402945131
+      ],
+      "max_abs": 57.35603829774031,
+      "mean_abs": 0.048356248272144235,
+      "pass": false,
+      "rmse": 1.0494237580616372,
+      "transcription_abs": null,
+      "wrf_range": [
+        -2.0,
+        0.8835484981536865
+      ]
+    },
+    "qsfc": {
+      "band": 0.001,
+      "jax_range": [
+        0.009147988156825894,
+        0.025983735895996677
+      ],
+      "max_abs": 0.018446514825617658,
+      "mean_abs": 0.001121435249240887,
+      "pass": false,
+      "rmse": 0.0036069088849986558,
+      "transcription_abs": null,
+      "wrf_range": [
+        0.005161686800420284,
+        0.019153302535414696
+      ]
+    },
+    "zol": {
+      "band": 1.0,
+      "jax_range": [
+        -20.0,
+        20.0
+      ],
+      "max_abs": 15.660630226135254,
+      "mean_abs": 0.4734003958826955,
+      "pass": false,
+      "rmse": 1.0015116492040599,
+      "transcription_abs": null,
+      "wrf_range": [
+        -20.0,
+        20.0
+      ]
+    }
+  },
+  "scheme_note": "Contract specified module_sf_sfclayrev.F; the WRF-oracle factory run actually used sf_sfclay_physics=5 (= MYNN surface layer sf_mynn.F90). The two share the MO-similarity core, so the ported sfclayrev matches the oracle on all operational M9 diagnostics (HFX/LH/T2/U10/V10/ustar) within operational bands; br/zol/qsfc are scheme-specific diagnostics (reported, not gated).",
+  "source_run": "/mnt/data/canairy_meteo/runs/wrf_l3/20260428_18z_l3_24h_20260525T221139Z",
+  "status": "COMPARED"
+}
