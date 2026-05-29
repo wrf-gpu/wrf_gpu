@@ -39,9 +39,12 @@ the acoustic loop; make the idealized cases stop running away.
 ## Proof objects (`proofs/f7d/`)
 `mass_semantics_proof.md`, `rk1_source_parity.json` (AC1), `acoustic_restoring_probe.json`
 (AC2), `f7a_recheck/{flat_rest_oracle,analytic_acoustic_oracle,conservation_long_run}.json`
-(AC5), `postfix_runaway_warm_bubble.json` + `plots/warm_bubble_maxw_vs_t.txt` (AC3),
-`substep_trace_warm_bubble.json`, `w_mode_locator.txt`, `consistent_base_column_stable.txt`,
-`audit_operational_dt/` (AC4).
++ `regression_recheck.json` (AC5), `postfix_runaway_warm_bubble.json` +
+`postfix_runaway_straka.json` + `{warm_bubble,density_current}_ac3_verdict.json` +
+`plots/{warm_bubble,straka}_maxw_vs_t.txt` (AC3), `substep_trace_warm_bubble.json`,
+`w_mode_locator.txt`, `consistent_base_column_stable.txt`, `ic_phzero_warm_bubble.json`,
+`warm_bubble_epssm0p5.json`, `rwtend_check.json` (localization), `audit_operational_dt/`
++ `audit_summary.md` (AC4).
 
 ## Acceptance gates
 - **AC1 RK1 source-parity — PASS.** Stage-entry rest: work mu/theta/ph/p/al all
@@ -65,6 +68,12 @@ the acoustic loop; make the idealized cases stop running away.
   (move past step 8 toward clean) was NOT met. Same residual class as AC3.
 - **AC5 no regression — PASS.** f7a flat-rest exactly 0 on all 7 fields; analytic
   dipole sign+order PASS; 300-step conservation dry_drift=0, theta_drift=0, w bounded.
+  Acoustic/mu_t/PGF pytest subset: 21 passed, 2 failed — but the 2 failures
+  (`test_m6b4_acoustic_recurrence_parity`) FAIL IDENTICALLY against the pre-fix
+  code (commit 82ccf65), so they are pre-existing (the known M6B4 self-compare
+  tautology whose savepoint reference no longer matches post-F7.A/B/C rewrite),
+  NOT a regression introduced by F7D. No tolerance widened, no xfail added.
+  Evidence: `regression_recheck.json`.
 
 ## KEY DIAGNOSTIC FINDING — did the mass fix alone remove the runaway? NO.
 Decisive localization (no clamps, pure observation):
@@ -94,12 +103,21 @@ pre-loaded ph' is REQUIRED to provide the buoyancy (WRF
 reason), and it is precisely that (WRF-correct) buoyancy loading that excites the
 runaway.
 
-**Conclusion:** the residual is a genuine **dycore vertical-acoustic-mode
-instability under sustained buoyancy forcing** — the buoyancy drives a
-horizontally-uniform, linearly-growing vertical acoustic-gravity mode (~9× the
-physical 0.065 m/s² buoyancy) instead of a coherent bubble updraft, and the
-current off-centering (epssm=0.1) + WRF divergence/Rayleigh damping does not
-control it on these idealized grids. The harness IC ph' construction matches
+**ROOT CAUSE — quantified** (`proofs/f7d/rwtend_check.json`): the stage-entry
+frozen buoyancy `rw_tend` has physical magnitude **0.615 m/s²** = **9.4× the
+analytic physical buoyancy** `b = g·θ'/θ0 = 0.065 m/s²` — and this 0.615 m/s²
+matches the observed runaway slope (0.604 m/s/s). The over-forcing is entirely
+the WRF `pg_buoy_w` pressure-gradient term `rdn·(p_buoy(k)-p_buoy(k-1))` (= 4687);
+the mass term `c1f·mu'` is **exactly 0 because the idealized IC sets
+`mu_perturbation = 0`**. In a balanced WRF warm-bubble column the pressure-gradient
+term and the `c1f·mu'` mass term nearly **cancel**, leaving only the small physical
+buoyancy residual; with `mu'=0` there is nothing to cancel the full 4687 pressure
+gradient, so `pg_buoy_w` over-forces w by ~9×. So the residual is an
+**idealized-IC defect**: the perturbed columns need a consistent `mu'` (or the WRF
+`module_initialize_ideal.F:1107-1130` iterative column balance) so that
+`pg_buoy_w`'s `rdn·Δp_buoy` and `c1f·mu'` terms cancel to the physical buoyancy.
+Off-centering (epssm=0.1→0.5) does not change it (constant forcing, not an
+eigenmode). The harness IC ph' construction matches
 WRF's `al`-based discrete operator (verified: for mu'=0, `ph_pert(k+1)-ph_pert(k)
 = dnw·mu·(alt_full-alt_base)` == WRF's form), so it is not a simple IC bug. This
 is beyond the verified mass-semantics scope and the dycore's protected files.

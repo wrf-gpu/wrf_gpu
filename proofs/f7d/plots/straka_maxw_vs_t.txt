@@ -1,0 +1,13 @@
+# F7D Straka density-current max|w|(t) — post-mass-fix (runaway persists)
+# t(s)  max|w|(m/s)
+     0      0.000  
+    20     85.479  ##########################################
+    40    NaN(non-finite)
+    60    NaN(non-finite)
+    80    NaN(non-finite)
+   100    NaN(non-finite)
+   120    NaN(non-finite)
+   140    NaN(non-finite)
+   160    NaN(non-finite)
+   180    NaN(non-finite)
+   200    NaN(non-finite)

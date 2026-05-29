@@ -1,0 +1,226 @@
+{
+  "schema": "f7d_idealized_ac3_verdict",
+  "case": "warm_bubble",
+  "verdict": "FAIL",
+  "reason": "runaway persists after MUT/MUTS mass-semantics fix; coherent LINEAR max|w| growth -> non-finite",
+  "first_nonfinite_second": 80.0,
+  "last_finite": {
+    "second": 70.0,
+    "max_abs_w": 42.1514619739404,
+    "theta_prime_min": -0.008776753863969589,
+    "theta_prime_max": 2.0082732196153756
+  },
+  "localization": "NOT mass-semantics (AC1/AC2/AC5 pass; flat-rest=0; consistent base column stable). rw_tend over-forces w by 9.4x physical buoyancy via pg_buoy_w pressure-gradient term with mu prime=0 IC (rwtend_check.json). ph prime=0 IC -> stable but dead bubble; epssm=0.5 -> same runaway. Root cause = idealized-IC balanced-perturbation defect, not the dycore mass-semantics.",
+  "trace": [
+    {
+      "second": 0.0,
+      "finite": true,
+      "mass_total_pa": 5984191.922416771,
+      "max_abs_p_pert": 0.0,
+      "max_abs_u": 0.0,
+      "max_abs_w": 0.0,
+      "theta_prime_max": 2.0,
+      "theta_prime_min": 0.0
+    },
+    {
+      "second": 10.0,
+      "finite": true,
+      "mass_total_pa": 5984191.922416771,
+      "max_abs_p_pert": 1.355183492571964,
+      "max_abs_u": 3.958814813857647,
+      "max_abs_w": 5.949013772015582,
+      "theta_prime_max": 2.001843573265546,
+      "theta_prime_min": -1.2361372910163482e-05
+    },
+    {
+      "second": 20.0,
+      "finite": true,
+      "mass_total_pa": 5984191.922416771,
+      "max_abs_p_pert": 0.8854952811107479,
+      "max_abs_u": 7.889663516719687,
+      "max_abs_w": 12.039611374126265,
+      "theta_prime_max": 2.0027257891128443,
+      "theta_prime_min": -0.0006938080498457566
+    },
+    {
+      "second": 30.0,
+      "finite": true,
+      "mass_total_pa": 5984191.922416771,
+      "max_abs_p_pert": 0.5239729333180706,
+      "max_abs_u": 11.940276578071932,
+      "max_abs_w": 18.1438205255778,
+      "theta_prime_max": 2.003829664659577,
+      "theta_prime_min": -0.001903129607626397
+    },
+    {
+      "second": 40.0,
+      "finite": true,
+      "mass_total_pa": 5984191.922416771,
+      "max_abs_p_pert": 0.7244941567630389,
+      "max_abs_u": 16.216435913380977,
+      "max_abs_w": 24.235103106979746,
+      "theta_prime_max": 2.0046295196355572,
+      "theta_prime_min": -0.0033179954986053417
+    },
+    {
+      "second": 50.0,
+      "finite": true,
+      "mass_total_pa": 5984191.922416771,
+      "max_abs_p_pert": 0.6612787408827031,
+      "max_abs_u": 20.229893547789118,
+      "max_abs_w": 30.290947698451237,
+      "theta_prime_max": 2.004075482180383,
+      "theta_prime_min": -0.004664529179592591
+    },
+    {
+      "second": 60.0,
+      "finite": true,
+      "mass_total_pa": 5984191.922416771,
+      "max_abs_p_pert": 0.7837478826874734,
+      "max_abs_u": 24.243220449827053,
+      "max_abs_w": 36.22608298972659,
+      "theta_prime_max": 1.9997594465330621,
+      "theta_prime_min": -0.006746463473518816
+    },
+    {
+      "second": 70.0,
+      "finite": true,
+      "mass_total_pa": 5984191.922416771,
+      "max_abs_p_pert": 0.5827105564740375,
+      "max_abs_u": 28.497847977495226,
+      "max_abs_w": 42.1514619739404,
+      "theta_prime_max": 2.0082732196153756,
+      "theta_prime_min": -0.008776753863969589
+    },
+    {
+      "second": 80.0,
+      "finite": false,
+      "mass_total_pa": NaN,
+      "max_abs_p_pert": NaN,
+      "max_abs_u": NaN,
+      "max_abs_w": NaN,
+      "theta_prime_max": NaN,
+      "theta_prime_min": NaN
+    },
+    {
+      "second": 90.0,
+      "finite": false,
+      "mass_total_pa": NaN,
+      "max_abs_p_pert": NaN,
+      "max_abs_u": NaN,
+      "max_abs_w": NaN,
+      "theta_prime_max": NaN,
+      "theta_prime_min": NaN
+    },
+    {
+      "second": 100.0,
+      "finite": false,
+      "mass_total_pa": NaN,
+      "max_abs_p_pert": NaN,
+      "max_abs_u": NaN,
+      "max_abs_w": NaN,
+      "theta_prime_max": NaN,
+      "theta_prime_min": NaN
+    },
+    {
+      "second": 110.0,
+      "finite": false,
+      "mass_total_pa": NaN,
+      "max_abs_p_pert": NaN,
+      "max_abs_u": NaN,
+      "max_abs_w": NaN,
+      "theta_prime_max": NaN,
+      "theta_prime_min": NaN
+    },
+    {
+      "second": 120.0,
+      "finite": false,
+      "mass_total_pa": NaN,
+      "max_abs_p_pert": NaN,
+      "max_abs_u": NaN,
+      "max_abs_w": NaN,
+      "theta_prime_max": NaN,
+      "theta_prime_min": NaN
+    },
+    {
+      "second": 130.0,
+      "finite": false,
+      "mass_total_pa": NaN,
+      "max_abs_p_pert": NaN,
+      "max_abs_u": NaN,
+      "max_abs_w": NaN,
+      "theta_prime_max": NaN,
+      "theta_prime_min": NaN
+    },
+    {
+      "second": 140.0,
+      "finite": false,
+      "mass_total_pa": NaN,
+      "max_abs_p_pert": NaN,
+      "max_abs_u": NaN,
+      "max_abs_w": NaN,
+      "theta_prime_max": NaN,
+      "theta_prime_min": NaN
+    },
+    {
+      "second": 150.0,
+      "finite": false,
+      "mass_total_pa": NaN,
+      "max_abs_p_pert": NaN,
+      "max_abs_u": NaN,
+      "max_abs_w": NaN,
+      "theta_prime_max": NaN,
+      "theta_prime_min": NaN
+    },
+    {
+      "second": 160.0,
+      "finite": false,
+      "mass_total_pa": NaN,
+      "max_abs_p_pert": NaN,
+      "max_abs_u": NaN,
+      "max_abs_w": NaN,
+      "theta_prime_max": NaN,
+      "theta_prime_min": NaN
+    },
+    {
+      "second": 170.0,
+      "finite": false,
+      "mass_total_pa": NaN,
+      "max_abs_p_pert": NaN,
+      "max_abs_u": NaN,
+      "max_abs_w": NaN,
+      "theta_prime_max": NaN,
+      "theta_prime_min": NaN
+    },
+    {
+      "second": 180.0,
+      "finite": false,
+      "mass_total_pa": NaN,
+      "max_abs_p_pert": NaN,
+      "max_abs_u": NaN,
+      "max_abs_w": NaN,
+      "theta_prime_max": NaN,
+      "theta_prime_min": NaN
+    },
+    {
+      "second": 190.0,
+      "finite": false,
+      "mass_total_pa": NaN,
+      "max_abs_p_pert": NaN,
+      "max_abs_u": NaN,
+      "max_abs_w": NaN,
+      "theta_prime_max": NaN,
+      "theta_prime_min": NaN
+    },
+    {
+      "second": 200.0,
+      "finite": false,
+      "mass_total_pa": NaN,
+      "max_abs_p_pert": NaN,
+      "max_abs_u": NaN,
+      "max_abs_w": NaN,
+      "theta_prime_max": NaN,
+      "theta_prime_min": NaN
+    }
+  ]
+}

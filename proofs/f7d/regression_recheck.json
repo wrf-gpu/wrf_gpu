@@ -1,0 +1,31 @@
+{
+  "schema": "f7d_regression_recheck",
+  "schema_version": 1,
+  "device": "cuda:0",
+  "fp64": true,
+  "f7a_oracles": {
+    "flat_rest_AC3": {"passed": true, "deltas_all_zero": true,
+      "deltas": {"u": 0.0, "v": 0.0, "w": 0.0, "ph": 0.0, "theta": 0.0, "p": 0.0, "mu": 0.0}},
+    "analytic_dipole_AC4": {"passed": true, "sign_dipole_ok": true, "ph_rise_ok": true, "w_abs_max": 0.3243531513289849},
+    "conservation_AC5": {"passed": true, "dry_mass_relative_drift": 0.0, "theta_drift": 0.0, "w_bounded": true, "steps": 300}
+  },
+  "pytest_acoustic_mu_t_pgf_subset": {
+    "files": [
+      "test_m6b1_advance_mu_t_parity.py",
+      "test_m6b4_acoustic_recurrence_parity.py",
+      "test_m6x_c2_pgf.py",
+      "test_m6x_c2_acoustic.py",
+      "test_m6x_vertical_acoustic_oracle.py"
+    ],
+    "passed": 21,
+    "failed": 2,
+    "failed_tests": [
+      "test_m6b4_acoustic_recurrence_parity.py::test_m6b4_column_acoustic_recurrence_parity_one_substep",
+      "test_m6b4_acoustic_recurrence_parity.py::test_m6b4_synthetic_dryrun_catches_boundary_perturbations"
+    ],
+    "regression_introduced_by_f7d": false,
+    "pre_existing": true,
+    "evidence": "Both m6b4 tests FAIL identically against the PRE-FIX code (commit 82ccf65) as against the post-fix code -- they are the known M6B4 JAX-vs-savepoint self-compare tautology whose reference no longer matches after the F7.A/B/C dycore rewrite (see memory project_b6_self_compare_tautology). NOT weakened or broken by F7D; no tolerance widened, no xfail added."
+  },
+  "verdict": "AC5 PASS -- no regression introduced by the MUT/MUTS fix; the only failing tests were already failing pre-fix."
+}
