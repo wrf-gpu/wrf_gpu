@@ -621,9 +621,9 @@ def _instrumented_rk_scan_step(
     )
     for rk_stage, factor, dts_rk, substeps in stages:
         haloed = apply_halo(carry.state, halo_spec(namelist.grid))
+        # Large-step DYNAMIC tendency only (advection); the horizontal PGF is a
+        # small-step term inside advance_uv, so adding it here double-counts.
         tendencies = compute_advection_tendencies(haloed, namelist.tendencies, namelist.grid)
-        du_dt, dv_dt = _horizontal_pressure_gradient_tendencies(haloed, namelist)
-        tendencies = tendencies.replace(u=tendencies.u + du_dt, v=tendencies.v + dv_dt)
         candidate = add_scaled_tendencies(origin, tendencies, float(namelist.dt_s) * float(factor))
         candidate = apply_halo(candidate, halo_spec(namelist.grid))
         prep = small_step_prep_wrf(
@@ -862,7 +862,9 @@ def _run_combination(
     return payload
 
 
-def _load_case(run_dir: Path, domain: str, dt_s: float, acoustic_substeps: int) -> tuple[Any, OperationalNamelist, dict[str, Any]]:
+def _load_case(
+    run_dir: Path, domain: str, dt_s: float, acoustic_substeps: int, epssm: float = 0.1
+) -> tuple[Any, OperationalNamelist, dict[str, Any]]:
     case = build_replay_case(run_dir, domain=domain)
     state = case.state.replace(p=case.state.p_total, ph=case.state.ph_total, mu=case.state.mu_total)
     namelist = OperationalNamelist.from_grid(
@@ -875,6 +877,8 @@ def _load_case(run_dir: Path, domain: str, dt_s: float, acoustic_substeps: int) 
         use_vertical_solver=True,
         disable_guards=True,
     )
+    # WRF off-centering coefficient ``epssm`` (this Gen2 d02 namelist uses 0.5).
+    namelist = replace(namelist, epssm=float(epssm))
     metadata = {
         "run_id": case.metadata.get("run_id"),
         "run_dir": str(run_dir),
@@ -998,6 +1002,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--steps", type=int, default=12)
     parser.add_argument("--dt-s", type=float, default=10.0)
     parser.add_argument("--acoustic-substeps", type=int, default=10)
+    parser.add_argument("--epssm", type=float, default=0.1)
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
     parser.add_argument("--combination", choices=tuple(COMBINATIONS), default=None)
     parser.add_argument("--jax-platform", choices=("cpu", "gpu"), default=None)
@@ -1009,7 +1014,9 @@ def main(argv: list[str] | None = None) -> int:
     if args.steps <= 0:
         raise ValueError("--steps must be positive")
     args.output_dir.mkdir(parents=True, exist_ok=True)
-    state, base_namelist, metadata = _load_case(args.run_dir, args.domain, args.dt_s, args.acoustic_substeps)
+    state, base_namelist, metadata = _load_case(
+        args.run_dir, args.domain, args.dt_s, args.acoustic_substeps, epssm=args.epssm
+    )
     selected = [args.combination] if args.combination else ["a", "b", "c", "d"]
     payloads: dict[str, dict[str, Any]] = {}
     for key in selected:
