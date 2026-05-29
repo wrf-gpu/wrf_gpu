@@ -28,7 +28,7 @@ from gpuwrf.dynamics.acoustic_wrf import (
     moisture_coupling_factors,
 )
 from gpuwrf.dynamics.core.acoustic import AcousticCoreConfig, AcousticCoreState, acoustic_substep_core
-from gpuwrf.dynamics.core.advance_w import dry_cqw
+from gpuwrf.dynamics.core.advance_w import GRAVITY_M_S2, dry_cqw
 from gpuwrf.dynamics.core.calc_p_rho import CalcPRhoStep0, calc_p_rho_wrf
 from gpuwrf.dynamics.core.coupled import CoupledCoreConfig, coupled_timestep_core
 from gpuwrf.dynamics.core.small_step_finish import small_step_finish_wrf
@@ -574,7 +574,8 @@ def _acoustic_core_state_from_prep(
         rdn=namelist.metrics.rdn,
         phb=state.ph_total - state.ph_perturbation,
         ph_1=prep.ph_1,
-        ht=jnp.zeros_like(prep.mut),
+        # Terrain height ht = phb(surface)/g (WRF advance_w lower BC :1417-1429).
+        ht=(state.ph_total - state.ph_perturbation)[0, :, :] / GRAVITY_M_S2,
         pm1=pressure.pm1,
         ru_m=jnp.zeros_like(prep.u_work),
         rv_m=jnp.zeros_like(prep.v_work),
@@ -736,14 +737,15 @@ def _rk_scan_step(carry: OperationalCarry, namelist: OperationalNamelist, *, deb
 
     def advance_stage(stage_carry: OperationalCarry, stage: _RKStageDescriptor) -> OperationalCarry:
         haloed = apply_halo(stage_carry.state, halo_spec(namelist.grid))
-        # WRF dyn_em/module_em.F:rk_scalar_tend computes large-step advection
-        # tendencies before the split-explicit acoustic advance.
+        # WRF rk_tendency builds the large-step DYNAMIC tendencies (advection,
+        # curvature, diffusion).  The horizontal pressure-gradient force is NOT
+        # part of the large-step tendency -- it is applied inside the acoustic
+        # small-step advance_uv (module_small_step_em.F:802-942).  Adding the
+        # PGF here as well double-counts the gradient and seeds an acoustic
+        # imbalance, so F7.A feeds advance_uv the dynamic (advection) tendency
+        # only.  (Flux-form advection itself is Sprint B; for the periodic dry
+        # gate it is inert.)
         tendencies = compute_advection_tendencies(haloed, namelist.tendencies, namelist.grid)
-        du_dt, dv_dt = _horizontal_pressure_gradient_tendencies(haloed, namelist)
-        tendencies = tendencies.replace(
-            u=tendencies.u + du_dt,
-            v=tendencies.v + dv_dt,
-        )
         candidate = add_scaled_tendencies(origin, tendencies, float(stage.dt_rk))
         candidate = apply_halo(candidate, halo_spec(namelist.grid))
         prep = small_step_prep_wrf(
