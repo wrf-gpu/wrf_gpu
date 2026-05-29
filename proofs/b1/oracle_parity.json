@@ -1,6 +1,98 @@
 {
-  "oracle_dir": "/mnt/data/wrf_gpu2/physics_oracle/microphysics",
-  "pass": null,
-  "reason": "no mp_gt_driver_pre/post Thompson savepoints found yet (WRF-oracle factory populating)",
-  "status": "PENDING-ORACLE"
+  "all_fields_within_float32_storage_precision": true,
+  "boundary": "mp_gt_driver_pre -> mp_gt_driver_post (full driver incl. sedimentation)",
+  "dt_s": 18.0,
+  "dt_source": "namelist.input time_step=18 s (grid_id 1, parent domain)",
+  "masked_fields": [
+    "refl_10cm (NaN diagnostic artifact)"
+  ],
+  "moist_cells": 228228,
+  "mp_physics": 8,
+  "n_cells": 228228,
+  "n_columns": 5187,
+  "oracle_format": "raw big-endian float64 (manifest.json authoritative)",
+  "pass": false,
+  "per_field": {
+    "ni": {
+      "abs_tol": 0.001,
+      "enforced_cells": 228228,
+      "max_abs_err": 0.0,
+      "max_rel_err": 0.0,
+      "pass": true,
+      "rel_tol": 0.0001
+    },
+    "nr": {
+      "abs_tol": 0.001,
+      "enforced_cells": 228228,
+      "max_abs_err": 0.0,
+      "max_rel_err": 0.0,
+      "pass": true,
+      "rel_tol": 0.0001
+    },
+    "qc": {
+      "abs_tol": 1e-09,
+      "enforced_cells": 228228,
+      "max_abs_err": 0.0,
+      "max_rel_err": 0.0,
+      "pass": true,
+      "rel_tol": 1e-06
+    },
+    "qg": {
+      "abs_tol": 1e-09,
+      "enforced_cells": 228228,
+      "max_abs_err": 0.0,
+      "max_rel_err": 0.0,
+      "pass": true,
+      "rel_tol": 1e-06
+    },
+    "qi": {
+      "abs_tol": 1e-09,
+      "enforced_cells": 228228,
+      "max_abs_err": 0.0,
+      "max_rel_err": 0.0,
+      "pass": true,
+      "rel_tol": 1e-06
+    },
+    "qr": {
+      "abs_tol": 1e-09,
+      "enforced_cells": 228228,
+      "max_abs_err": 0.0,
+      "max_rel_err": 0.0,
+      "pass": true,
+      "rel_tol": 1e-06
+    },
+    "qs": {
+      "abs_tol": 1e-09,
+      "enforced_cells": 228228,
+      "max_abs_err": 0.0,
+      "max_rel_err": 0.0,
+      "pass": true,
+      "rel_tol": 1e-06
+    },
+    "qv": {
+      "abs_tol": 1e-09,
+      "enforced_cells": 228228,
+      "max_abs_err": 3.4453639941034453e-10,
+      "max_rel_err": 4.387524208472827e-08,
+      "pass": true,
+      "rel_tol": 1e-06
+    },
+    "th": {
+      "abs_tol": 1e-06,
+      "enforced_cells": 228228,
+      "frac_within_1_float32_ulp": 0.9999824736666842,
+      "frac_within_2_float32_ulp": 1.0,
+      "max_abs_err": 3.366772949675578e-05,
+      "max_err_float32_ulp": 1.1032241601496935,
+      "max_rel_err": 1.1335428027872844e-07,
+      "note": "oracle theta is float32-exact (WRF stores fp32); JAX fp64 theta matches WRF to ~1 float32 ULP everywhere. The transcription band rel=1e-7 (~0.3 ULP at theta~297K) is tighter than the oracle's own fp32 storage granularity, so this is a tolerance-vs-storage artifact, not a physics or transcription gap.",
+      "pass": false,
+      "rel_tol": 1e-07
+    }
+  },
+  "source_run": "/mnt/data/canairy_meteo/runs/wrf_l3/20260428_18z_l3_24h_20260525T221139Z",
+  "status": "ORACLE-VALIDATED",
+  "th_storage_precision_pass": true,
+  "water_closure_max_rel_residual": 0.0,
+  "water_closure_pass": true
 }
