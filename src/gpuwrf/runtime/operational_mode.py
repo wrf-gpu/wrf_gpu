@@ -15,7 +15,7 @@ from jax import config
 import jax.numpy as jnp
 
 from gpuwrf.contracts.grid import DycoreMetrics, GridSpec
-from gpuwrf.contracts.state import State, Tendencies
+from gpuwrf.contracts.state import BaseState, State, Tendencies
 from gpuwrf.contracts.precision import DEFAULT_DTYPES, STATE_FIELD_ORDER
 from gpuwrf.contracts.halo import apply_halo
 from gpuwrf.coupling.boundary_apply import BoundaryConfig, DEFAULT_BOUNDARY_CONFIG, apply_lateral_boundaries
@@ -661,23 +661,42 @@ def _acoustic_core_state_from_prep(
     state = prep.entry_state
     theta_pert = (state.theta - prep.theta_offset).astype(jnp.float64)
     ph_base = state.ph_total - state.ph_perturbation
-    # F7G: WRF builds the large-step vertical PGF/buoyancy ``rw_tend`` ONCE per RK
+    # F7H: WRF builds the large-step vertical PGF/buoyancy ``rw_tend`` ONCE per RK
     # stage in rk_tendency (module_em.F:1361-1368) by calling pg_buoy_w with the
-    # stage diagnostic ``grid%p`` (the rk_step_prep calc_p_rho_phi perturbation
-    # pressure) and the stage perturbation dry mass ``mu' = mut - mub``, then
-    # carries it UNCHANGED through every acoustic substep (the small-step
-    # ``calc_p_rho`` only refreshes substep pressure/density + smdiv memory, it is
-    # NOT a per-substep pg_buoy_w source).  ``pressure.p`` is that WRF-signed-
-    # metric stage ``grid%p``; with the F7G signed-metric fix it is the exact
-    # discrete inverse of the IC geopotential, so on a balanced rest column the
-    # interior rw_tend is ~0 and the bubble forcing comes from the real θ′
-    # pressure structure (gpt-council-findings.md §3.3/§3.4).
+    # stage diagnostic ``grid%p`` and the stage perturbation dry mass
+    # ``mu' = mut - mub``.  In WRF that ``grid%p`` is the FULL-perturbation
+    # ``calc_p_rho_phi`` diagnostic (module_big_step_utilities_em.F:1029,1083-1087)
+    # built from the FULL ``ph'``, ``mu'`` and ``theta'`` — NOT the small-step
+    # work-delta pressure.  Its ``rdn*(p[k]-p[k-1])`` interior PGF term
+    # hydrostatically balances the ``-c1f*mu'`` weight of the perturbation column,
+    # so the net interior forcing on a near-balanced thermal stays small.
+    #
+    # The previous F7G code fed ``pressure.p`` = ``calc_p_rho_wrf(prep)``, which is
+    # built from ``prep.ph_work`` (= ph_ref - ph_cur ~ 0) and ``prep.mu_work``
+    # (~0) — the small-step WORK-DELTA pressure, near zero and carrying NONE of the
+    # ph'/mu' hydrostatic structure.  The PGF term then could not cancel the
+    # ``-c1f*mu'`` weight, leaving a net forcing ~ g*c1f*mu' that grows as mu'
+    # grows (w runaway).  Trace: proofs/f7h/full_p_compare.json (interior net
+    # work_p >> full_p).  Fix = feed pg_buoy_w the full-perturbation grid%p via the
+    # F7F-fixed diagnose_pressure_al_alt (the JAX calc_p_rho_phi), exactly as WRF
+    # rk_tendency does.  ``pressure.p`` (work-delta) still correctly seeds the
+    # substep ``p``/``pm1`` smdiv memory below.
     nz_stage = int(prep.theta_work.shape[0])
     ny_stage = int(prep.theta_work.shape[1])
     nx_stage = int(prep.theta_work.shape[2])
     mu_prime_stage = prep.mut - prep.mub  # stage perturbation dry mass mu' (WRF grid%mu_2)
+    stage_base = BaseState(
+        pb=prep.pb,
+        phb=ph_base,
+        mub=prep.mub,
+        t0=jnp.asarray(prep.theta_offset),
+        theta_base=jnp.full_like(state.theta, prep.theta_offset),
+    )
+    grid_p_full, _stage_al_full, _stage_alt_full = diagnose_pressure_al_alt(
+        state, stage_base, namelist.metrics
+    )
     rw_tend_stage = pg_buoy_w_dry(
-        pressure.p,
+        grid_p_full,
         mu_prime_stage,
         c1f=namelist.metrics.c1f,
         rdnw=namelist.metrics.rdnw,
