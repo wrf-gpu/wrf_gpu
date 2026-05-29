@@ -1125,8 +1125,19 @@ def _augment_large_step_tendencies(
 
     nu = float(namelist.const_nu_m2_s)
     if nu > 0.0:
+        # WRF diff_opt=2 / km_opt=4 constant-K diffusion is applied to u, v, w AND
+        # theta (horizontal_diffusion_2 -> {_u_2,_v_2,_w_2,_s}; vertical_diffusion_2
+        # likewise; module_diffusion_em.F:2864-3113 / :4004-4458).  Straka et al.
+        # (1993) define the reference solution with constant ν=75 m²/s on u, w, θ;
+        # the w component is REQUIRED — without it the sharp cold front's vertical
+        # velocity grows a grid-scale (2Δx) mode that diffusing only u/v/θ cannot
+        # arrest (F7L: max|w| ramped 7→15→21 m/s then detonated at 240 s).  For the
+        # flat (zx=zy=0) uniform-z idealized slab the deformation-tensor momentum
+        # diffusion reduces to the Laplacian ∇²·field (the divergence-correction
+        # term is O(∇·u) and small), which is the Straka spec form.
         u_t = u_t + mass_u * constant_k_diffusion_tendency(haloed.u, k_m2_s=nu, dx_m=dx, dy_m=dy, dz_m=dz)
         v_t = v_t + mass_v * constant_k_diffusion_tendency(haloed.v, k_m2_s=nu, dx_m=dx, dy_m=dy, dz_m=dz)
+        w_t = w_t + mass_f * constant_k_diffusion_tendency(haloed.w, k_m2_s=nu, dx_m=dx, dy_m=dy, dz_m=dz)
         th_t = th_t + mass_h * constant_k_diffusion_tendency(haloed.theta, k_m2_s=nu, dx_m=dx, dy_m=dy, dz_m=dz)
 
     # WRF rk_tendency adds the large-step horizontal pressure-gradient force to
