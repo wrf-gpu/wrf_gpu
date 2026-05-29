@@ -158,14 +158,21 @@ class DycoreMetrics:
         if tuple(eta.shape) != (nz + 1,):
             raise ValueError("eta_levels shape must be (nz + 1,)")
         eta_mass = 0.5 * (eta[:-1] + eta[1:])
-        dn = jnp.abs(eta[:-1] - eta[1:])
+        # WRF metric construction (module_initialize_ideal.F:711-727).  ``dnw`` is
+        # the eta FACE spacing; ``dn`` is the MASS-LEVEL spacing dn(k)=0.5*(dnw(k)
+        # +dnw(k-1)), distinct from ``dnw`` whenever eta is non-uniform.  The
+        # earlier ``dn=dnw`` shortcut was only correct for uniform eta levels and
+        # produced a singular calc_coef_w tridiagonal on hydrostatic eta grids.
+        dnw = jnp.abs(eta[1:] - eta[:-1])  # (nz,) face spacing
+        rdnw = 1.0 / dnw
+        dn = jnp.ones((nz,), dtype=jnp.float64)
+        dn = dn.at[1:].set(0.5 * (dnw[1:] + dnw[:-1]))  # dn[k]=0.5*(dnw[k]+dnw[k-1]), k=1..nz-1
+        dn = dn.at[0].set(dnw[0])  # dn[0] is unused by WRF; set finite.
         rdn = 1.0 / dn
-        dnw = dn
-        rdnw = rdn
-        fnm = 0.5 * jnp.ones((nz,), dtype=jnp.float64)
-        fnp = 0.5 * jnp.ones((nz,), dtype=jnp.float64)
-        fnm = fnm.at[1:].set(0.5 * dnw[:-1] / dn[1:])
+        fnm = jnp.zeros((nz,), dtype=jnp.float64)
+        fnp = jnp.zeros((nz,), dtype=jnp.float64)
         fnp = fnp.at[1:].set(0.5 * dnw[1:] / dn[1:])
+        fnm = fnm.at[1:].set(0.5 * dnw[:-1] / dn[1:])
         cof1 = (2.0 * dn[1] + dn[2]) / (dn[1] + dn[2]) * dnw[0] / dn[1]
         cof2 = dn[1] / (dn[1] + dn[2]) * dnw[0] / dn[2]
         return cls(
