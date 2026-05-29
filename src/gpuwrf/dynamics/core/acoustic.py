@@ -494,7 +494,19 @@ def acoustic_substep_core(
     )
 
     # --- 2. advance_mu_t (coupled theta + mu/muts/muave/mudf/ww) ---
-    coupled_state = uv_state.replace(theta=_mass_couple_theta_before_advance(uv_state))
+    # WRF couples the work theta ``t_2`` ONCE per RK stage in small_step_prep
+    # (module_small_step_em.F:263) and then advances that PERSISTENT coupled
+    # array in place across every acoustic substep (advance_mu_t,
+    # :1141-1172), decoupling ONLY once at the end (small_step_finish).  The
+    # previous code re-coupled from the (nearly static) perturbation theta every
+    # substep (``_mass_couple_theta_before_advance``) and decoupled every
+    # substep, which RESET the work theta each substep and discarded the
+    # accumulated large-step tendency + vertical/horizontal transport — the warm
+    # bubble's theta then advanced only ~1 substep worth per full step (≈1/N_sound
+    # too slow; F7K WRF-diff: integrated dtheta == 0.1× the correct rate, exactly
+    # 1/acoustic_substeps).  Advance the carried ``theta_coupled_work`` instead so
+    # the work theta accumulates across substeps exactly as WRF ``t_2``.
+    coupled_state = uv_state.replace(theta=uv_state.theta_coupled_work)
     advanced = advance_mu_t_core(coupled_state, cfg)
     theta_coupled = advanced["theta"]
     ww_new = advanced["ww"]

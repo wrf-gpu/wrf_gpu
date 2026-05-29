@@ -1,0 +1,155 @@
+{
+  "case_id": "skamarock-wicker-1998-rising-thermal-contract-f2",
+  "case_name": "warm_bubble",
+  "checks": {
+    "all_snapshots_finite": {
+      "passed": true,
+      "threshold": "all snapshot arrays finite",
+      "value": 1.0
+    },
+    "horizontal_drift_500s": {
+      "passed": true,
+      "threshold": "positive-theta centroid drift <= 250 m",
+      "value": 0.0
+    },
+    "max_abs_w_500s": {
+      "passed": true,
+      "threshold": "1 <= max(|w|) <= 30 m/s",
+      "value": 11.716959426387108
+    },
+    "relative_mass_drift": {
+      "passed": true,
+      "threshold": "max relative dry-column mass drift <= 1e-8",
+      "value": 0.0
+    },
+    "thermal_rise_500s": {
+      "passed": true,
+      "threshold": "positive-theta centroid rises by at least 500 m",
+      "value": 1925.0650879522118
+    },
+    "theta_prime_max_500s": {
+      "passed": true,
+      "threshold": "0.5 <= max(theta prime) <= 2.5 K",
+      "value": 1.9150350459075298
+    }
+  },
+  "cpu_affinity": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "device": "cuda:0",
+  "device_inventory": {
+    "default_backend": "gpu",
+    "devices": [
+      "cuda:0"
+    ],
+    "gpu_devices": [
+      "cuda:0"
+    ],
+    "ok": true
+  },
+  "dt_s": 0.1,
+  "initial_snapshot": {
+    "cold_theta_center_x_m": null,
+    "cold_theta_center_z_m": null,
+    "finite": true,
+    "front_position_m": null,
+    "mass_total_pa": 5984191.922416771,
+    "max_abs_u_m_s": 0.0,
+    "max_abs_w_m_s": 0.0,
+    "positive_theta_center_x_m": 10000.000000000002,
+    "positive_theta_center_z_m": 2000.0,
+    "second": 0.0,
+    "theta_prime_max_k": 2.0,
+    "theta_prime_min_k": 0.0,
+    "theta_symmetry_linf_k": 0.0,
+    "w_symmetry_linf_m_s": 0.0
+  },
+  "interpretation": "The warm bubble rose coherently with bounded theta prime, active vertical motion, symmetry, and conserved dry mass under the declared checks.",
+  "parameters": {
+    "bubble_center_x_m": 10000.0,
+    "bubble_center_z_m": 2000.0,
+    "bubble_radius_m": 2000.0,
+    "domain_height_m": 10000.0,
+    "domain_width_m": 20000.0,
+    "dx_m": 250.0,
+    "dz_m": 250.0,
+    "initial_u_v_w_m_s": 0.0,
+    "theta0_k": 300.0,
+    "theta_perturbation_max_k": 2.0
+  },
+  "plots": [
+    "proofs/f7k/plots/warm_bubble_theta_prime_100s.ppm",
+    "proofs/f7k/plots/warm_bubble_theta_prime_250s.ppm",
+    "proofs/f7k/plots/warm_bubble_theta_prime_500s.ppm"
+  ],
+  "reference": {
+    "description": "Dry rising thermal: coherent mushroom-like rise by 500-1000 s, bounded theta prime, O(10 m/s) vertical velocity, horizontal symmetry.",
+    "sources": [
+      "https://www2.mmm.ucar.edu/people/skamarock/Papers/cv_20.pdf"
+    ]
+  },
+  "schema": "f2_idealized_case_verdict",
+  "schema_version": 1,
+  "snapshot_seconds": [
+    100.0,
+    250.0,
+    500.0
+  ],
+  "snapshots": [
+    {
+      "cold_theta_center_x_m": 10000.0,
+      "cold_theta_center_z_m": 2555.483747445885,
+      "finite": true,
+      "front_position_m": null,
+      "mass_total_pa": 5984191.922416771,
+      "max_abs_u_m_s": 1.309311688691975,
+      "max_abs_w_m_s": 2.9935274112087145,
+      "positive_theta_center_x_m": 10000.0,
+      "positive_theta_center_z_m": 2085.5458072889855,
+      "second": 100.0,
+      "theta_prime_max_k": 2.017772064604003,
+      "theta_prime_min_k": -0.0020038287995021165,
+      "theta_symmetry_linf_k": 0.0,
+      "w_symmetry_linf_m_s": 0.0
+    },
+    {
+      "cold_theta_center_x_m": 10000.0,
+      "cold_theta_center_z_m": 2585.4043346974054,
+      "finite": true,
+      "front_position_m": null,
+      "mass_total_pa": 5984191.922416771,
+      "max_abs_u_m_s": 3.1868562764588377,
+      "max_abs_w_m_s": 7.280488040142273,
+      "positive_theta_center_x_m": 10000.0,
+      "positive_theta_center_z_m": 2535.041832559655,
+      "second": 250.0,
+      "theta_prime_max_k": 2.017685656970855,
+      "theta_prime_min_k": -0.008890353379229055,
+      "theta_symmetry_linf_k": 0.0,
+      "w_symmetry_linf_m_s": 0.0
+    },
+    {
+      "cold_theta_center_x_m": 10000.0,
+      "cold_theta_center_z_m": 3928.7988653852267,
+      "finite": true,
+      "front_position_m": null,
+      "mass_total_pa": 5984191.922416771,
+      "max_abs_u_m_s": 6.017121078172783,
+      "max_abs_w_m_s": 11.716959426387108,
+      "positive_theta_center_x_m": 10000.0,
+      "positive_theta_center_z_m": 3925.065087952212,
+      "second": 500.0,
+      "theta_prime_max_k": 1.9150350459075298,
+      "theta_prime_min_k": -0.0347629317258793,
+      "theta_symmetry_linf_k": 0.0,
+      "w_symmetry_linf_m_s": 0.0
+    }
+  ],
+  "status": "RAN_TO_COMPLETION",
+  "timesteps": 5000,
+  "title": "Skamarock warm bubble verdict",
+  "verdict": "PASS"
+}
