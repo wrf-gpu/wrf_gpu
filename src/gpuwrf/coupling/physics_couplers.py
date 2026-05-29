@@ -23,6 +23,7 @@ from gpuwrf.physics.thompson_column import (
     ThompsonColumnState,
     density_from_pressure_temperature,
     step_thompson_column,
+    step_thompson_column_with_precip,
 )
 
 
@@ -483,11 +484,19 @@ def _cloud_fraction_columns(state: State):
     return _to_columns(jnp.clip(condensate * 1.0e5, 0.0, 1.0))
 
 
-def _thompson_column_from_state(state: State) -> ThompsonColumnState:
-    """Build the column-kernel input view for Thompson microphysics."""
+def _thompson_column_from_state(state: State, grid: GridSpec | None = None) -> ThompsonColumnState:
+    """Build the column-kernel input view for Thompson microphysics.
+
+    Carries snow/graupel number (``Ns``/``Ng``), layer thickness (``dz``, from
+    geopotential interfaces) and vertical velocity (``w``, mass-point) so the
+    full WRF ``mp_gt_driver`` column kernel — including sedimentation — can run.
+    """
 
     T = _temperature_from_theta(state.theta, state.p)
     rho = density_from_pressure_temperature(state.p, T, state.qv)
+    # _column_dz_from_state already returns columns (trailing z); the others are
+    # converted here. dz must be at least 1 m to keep the flux finite.
+    dz_columns = _column_dz_from_state(state, grid)
     return ThompsonColumnState(
         _to_columns(state.qv),
         _to_columns(state.qc),
@@ -500,14 +509,24 @@ def _thompson_column_from_state(state: State) -> ThompsonColumnState:
         _to_columns(T),
         _to_columns(state.p),
         _to_columns(rho),
+        Ns=_to_columns(state.Ns),
+        Ng=_to_columns(state.Ng),
+        dz=dz_columns,
+        w=_to_columns(_w_mass(state)),
     )
 
 
-def _state_from_thompson_output(state: State, out: ThompsonColumnState) -> State:
-    """Reassemble a State from Thompson column-kernel output."""
+def _state_from_thompson_output(state: State, out: ThompsonColumnState, precip=None) -> State:
+    """Reassemble a State from Thompson column-kernel output.
+
+    When ``precip`` (per-channel surface accumulation, mm) is supplied, the
+    precip accumulators are advanced with a per-step ``+=`` (Gate-1 decision #3,
+    coupler_interface.md §6.3): rain_acc<-pptrain, snow_acc<-pptsnow,
+    graupel_acc<-pptgraul, ice_acc<-pptice.
+    """
 
     theta = _theta_from_temperature(_from_columns(out.T), state.p, _field_dtype("theta"))
-    return state.replace(
+    updates = dict(
         theta=theta,
         qv=_from_columns(out.qv).astype(_field_dtype("qv")),
         qc=_from_columns(out.qc).astype(_field_dtype("qc")),
@@ -517,7 +536,16 @@ def _state_from_thompson_output(state: State, out: ThompsonColumnState) -> State
         qg=_from_columns(out.qg).astype(_field_dtype("qg")),
         Ni=_from_columns(out.Ni).astype(_field_dtype("Ni")),
         Nr=_from_columns(out.Nr).astype(_field_dtype("Nr")),
+        Ns=_from_columns(out.Ns).astype(_field_dtype("Ns")),
+        Ng=_from_columns(out.Ng).astype(_field_dtype("Ng")),
     )
+    if precip is not None:
+        # precip values are surface (ny, nx) in mm; State accumulators are (ny, nx).
+        updates["rain_acc"] = (jnp.asarray(state.rain_acc, dtype=jnp.float64) + precip["rain"]).astype(_field_dtype("rain_acc"))
+        updates["snow_acc"] = (jnp.asarray(state.snow_acc, dtype=jnp.float64) + precip["snow"]).astype(_field_dtype("snow_acc"))
+        updates["graupel_acc"] = (jnp.asarray(state.graupel_acc, dtype=jnp.float64) + precip["graupel"]).astype(_field_dtype("graupel_acc"))
+        updates["ice_acc"] = (jnp.asarray(state.ice_acc, dtype=jnp.float64) + precip["ice"]).astype(_field_dtype("ice_acc"))
+    return state.replace(**updates)
 
 
 def _thompson_tendency_side_channel(
@@ -550,16 +578,23 @@ def _thompson_tendency_side_channel(
     )
 
 
-def thompson_adapter(state: State, dt: float, *, return_tendencies: bool = False):
+def thompson_adapter(state: State, dt: float, grid: GridSpec | None = None, *, return_tendencies: bool = False):
     """Slice state to Thompson inputs, call the kernel, and reassemble State.
 
-    `return_tendencies=True` exposes the M6-S6 water-budget oracle while
-    existing coupled-driver calls keep the original State-only API.
+    Advances all hydrometeor mixing ratios (qv,qc,qr,qi,qs,qg), all number
+    concentrations (Ni,Nr,Ns,Ng), and `theta` (latent heat), runs sedimentation,
+    and accumulates surface precipitation into rain/snow/graupel/ice accumulators
+    via a per-step `+=` (Gate-1 decision #3).
+
+    `return_tendencies=True` exposes the water-budget side channel while existing
+    coupled-driver calls keep the original State-only API. The adapter is a no-op
+    on columns that are physically inactive (handled inside the column kernel's
+    thermodynamic-admissibility gate).
     """
 
-    column = _thompson_column_from_state(state)
-    out = step_thompson_column(column, dt, debug=False)
-    next_state = _state_from_thompson_output(state, out)
+    column = _thompson_column_from_state(state, grid)
+    out, precip = step_thompson_column_with_precip(column, dt, debug=False)
+    next_state = _state_from_thompson_output(state, out, precip)
     if return_tendencies:
         return next_state, _thompson_tendency_side_channel(state, out, dt)
     return next_state

@@ -1,0 +1,6 @@
+{
+  "oracle_dir": "/mnt/data/wrf_gpu2/physics_oracle/microphysics",
+  "pass": null,
+  "reason": "no mp_gt_driver_pre/post Thompson savepoints found yet (WRF-oracle factory populating)",
+  "status": "PENDING-ORACLE"
+}

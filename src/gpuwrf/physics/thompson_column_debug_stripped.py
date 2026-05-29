@@ -23,7 +23,11 @@ config.update("jax_enable_x64", True)
 
 
 def _step_thompson_column_stripped_impl(state: ThompsonColumnState, dt: float) -> ThompsonColumnState:
-    """Duplicates production sequencing while physically omitting debug hooks."""
+    """Duplicates the source/sink production sequencing without debug hooks.
+
+    Mirrors :func:`_step_thompson_column_impl` (no sedimentation), which is the
+    HLO-identity sibling used by the M5 debuggability test.
+    """
 
     state = _clip_species(state)
     state = _warm_rain_collection(state, dt)

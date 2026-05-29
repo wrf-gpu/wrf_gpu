@@ -27,7 +27,12 @@ def _total_water(state: ThompsonColumnState):
 
 
 def _trajectory_metrics(state: ThompsonColumnState, dt: float, n_steps: int):
-    """Runs a scan and carries trajectory-wide invariant counters."""
+    """Runs a scan and carries trajectory-wide invariant counters.
+
+    Uses the source/sink-only kernel (:func:`_step_thompson_column_impl`) so the
+    sedimentation-free total-water budget is closed; the operational +precip path
+    is validated separately by the coupled smoke and the WRF oracle harness.
+    """
 
     water0 = jnp.sum(_total_water(state))
     T0 = state.T
