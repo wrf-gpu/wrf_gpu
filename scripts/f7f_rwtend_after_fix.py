@@ -93,6 +93,29 @@ def _probe(state: State, setup, label: str) -> dict:
     return result
 
 
+def _grid_p_diagnostic(state: State, setup) -> dict:
+    """WRF rk_step_prep grid%p (calc_p_rho_phi) for the IC: balanced vs unbalanced.
+
+    A WRF-balanced bubble produces a smooth hydrostatic perturbation pressure
+    consistent with al; a base-ph (no-rebalance) bubble produces a large spurious
+    grid%p, so this distinguishes the two ICs (non-tautological AC2)."""
+
+    from gpuwrf.contracts.state import BaseState
+    from gpuwrf.dynamics.acoustic_wrf import diagnose_pressure_al_alt
+
+    m = setup.namelist.metrics
+    pb = state.p_total - state.p_perturbation
+    phb = state.ph_total - state.ph_perturbation
+    mub = state.mu_total - state.mu_perturbation
+    bs = BaseState(pb=pb, phb=phb, mub=mub, t0=jnp.asarray(300.0),
+                   theta_base=jnp.full_like(state.theta, 300.0))
+    p_pert, al, alt = diagnose_pressure_al_alt(state, bs, m)
+    return {
+        "max_abs_grid_p_Pa": float(np.max(np.abs(np.asarray(jax.device_get(p_pert))))),
+        "max_abs_al": float(np.max(np.abs(np.asarray(jax.device_get(al))))),
+    }
+
+
 def _unbalanced_state(state: State) -> State:
     """Deliberately-bad IC: keep the theta perturbation, reset ph_perturbation to
     base (no hydrostatic rebalance) -- the pre-F7F bug that drove the dead bubble
@@ -133,6 +156,21 @@ def main() -> int:
     print(f"[AC2 control] max|ph'|={control['max_abs_ph_perturbation_m2_s2']:.4e}  "
           f"max|rw_phys|={control['max_abs_rw_phys_m_s2']:.4e} m/s^2", flush=True)
 
+    # AC2 non-tautological discriminator: the WRF grid%p (calc_p_rho_phi) diagnostic.
+    gp_balanced = _grid_p_diagnostic(setup.state, setup)
+    gp_unbalanced = _grid_p_diagnostic(_unbalanced_state(setup.state), setup)
+    print(f"[AC2 grid%p] balanced max|grid_p|={gp_balanced['max_abs_grid_p_Pa']:.4e} Pa  "
+          f"unbalanced(base-ph) max|grid_p|={gp_unbalanced['max_abs_grid_p_Pa']:.4e} Pa", flush=True)
+    # Non-tautology: the unbalanced (base-ph) IC reproduces the ~744 Pa spurious
+    # grid%p that Sprint B turned into the 9.4x over-forcing (proofs/f7d:743.97 Pa),
+    # while the WRF-rebalanced IC gives a DIFFERENT, hydrostatically-consistent
+    # grid%p (~1.5e3 Pa) whose al carries the rebalanced ph' term.  The two ICs are
+    # numerically distinct, so the checker is not a tautology and can fail.
+    ac2_reproduces_artifact = bool(700.0 <= gp_unbalanced["max_abs_grid_p_Pa"] <= 800.0)
+    ac2_discriminates = bool(
+        abs(gp_balanced["max_abs_grid_p_Pa"] - gp_unbalanced["max_abs_grid_p_Pa"]) > 100.0
+    )
+
     out = Path("proofs/f7f/rwtend_after_fix.json")
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps({
@@ -144,6 +182,10 @@ def main() -> int:
             "pass": ac1_pass,
         },
         "ac2_negative_control": control,
+        "ac2_grid_p_balanced": gp_balanced,
+        "ac2_grid_p_unbalanced": gp_unbalanced,
+        "ac2_discriminates": ac2_discriminates,
+        "ac2_unbalanced_reproduces_744Pa_artifact": ac2_reproduces_artifact,
         "prefix_baseline_reference": {
             "note": "pre-F7F synthetic-p_buoy probe (proofs/f7d/rwtend_check.json)",
             "max_abs_rw_phys_m_s2": 0.61474,

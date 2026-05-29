@@ -253,10 +253,22 @@ def diagnose_pressure_al_alt(
     alb = _inverse_density_from_theta_pressure(base_state.theta_base, base_pressure)
     muts = base_state.mub + state.mu_perturbation
     mass_weight = metrics.c1h[:, None, None] * muts[None, :, :] + metrics.c2h[:, None, None]
+    safe_mass = jnp.where(jnp.abs(mass_weight) > 1.0e-12, mass_weight, jnp.asarray(1.0e-12, dtype=mass_weight.dtype))
+    # WRF calc_p_rho_phi non-hydrostatic al (module_big_step_utilities_em.F:1029):
+    #   al = -1/(c1*muts+c2) * ( alb*c1*mu' + rdnw*(ph'(k+1)-ph'(k)) )
+    # The rdnw*(ph'(k+1)-ph'(k)) geopotential term was previously DROPPED, so a
+    # hydrostatically rebalanced bubble (mu'=0, ph'!=0) produced al==0 and a dead
+    # p_perturbation -- the warm/cold thermal never developed a perturbation
+    # pressure.  Restore it (F7F).
+    ph_pert = state.ph_perturbation.astype(alb.dtype)
     mu_term = alb * metrics.c1h[:, None, None] * state.mu_perturbation[None, :, :]
-    al = -mu_term / jnp.maximum(jnp.abs(mass_weight), 1.0e-12)
+    geo_term = metrics.rdnw[:, None, None] * (ph_pert[1:, :, :] - ph_pert[:-1, :, :])
+    al = -(mu_term + geo_term) / safe_mass
     alt = al + alb
-    total_pressure = _pressure_from_theta_alt(base_state.theta_base, alt, state.qv)
+    # WRF diagnostic perturbation pressure (module_big_step_utilities_em.F:1083-1087)
+    # uses the FULL theta (t0+theta') in the nonlinear EOS, not the base theta:
+    #   p = p0*( Rd*(t0+theta')/(p0*(al+alb)) )^cpovcv - pb
+    total_pressure = _pressure_from_theta_alt(state.theta, alt, state.qv)
     pressure_perturbation = total_pressure - base_state.pb
     return pressure_perturbation, al, alt
 

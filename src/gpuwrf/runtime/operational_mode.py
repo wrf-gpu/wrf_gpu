@@ -661,19 +661,19 @@ def _acoustic_core_state_from_prep(
     state = prep.entry_state
     theta_pert = (state.theta - prep.theta_offset).astype(jnp.float64)
     ph_base = state.ph_total - state.ph_perturbation
-    # F7F: the buoyancy that lifts the WRF-balanced bubble does NOT enter through
-    # ``pg_buoy_w``.  WRF passes the small-step perturbation-pressure diagnostic
-    # ``grid%p`` (= ``calc_p_rho`` work pressure, ~0 for a static balanced
-    # perturbation at RK1) into ``pg_buoy_w`` (module_em.F:1361-1368 ->
-    # module_big_step_utilities_em.F:2564-2571).  The rising-thermal buoyancy is
-    # instead the in-solver ``c2a*alt*t_2ave`` term inside ``advance_w``
-    # (module_small_step_em.F:1486-1489), driven by the EOS inverse density
-    # ``alt`` of the full (bubble) theta and the hydrostatically rebalanced ph.
-    # Sprint B fed a SECOND, synthetic absolute theta-derived pressure here to
-    # force a dead (unbalanced-IC) bubble to rise, which over-forced w by 9.4x
-    # (0.615 m/s^2 frozen).  GPT-5.5 WRF fork resolution refuted that hack: feed
-    # ``pg_buoy_w`` the real ``calc_p_rho`` work pressure (p_buoy=None below ->
-    # acoustic_substep_core falls back to the live substep ``p``).
+    # F7F (PARTIAL): WRF builds the large-step vertical buoyancy ``rw_tend`` once
+    # per RK stage via ``pg_buoy_w(rw_tend, grid%p, ...)`` (module_em.F:1361) where
+    # ``grid%p`` is the rk_step_prep absolute perturbation-pressure diagnostic
+    # from calc_p_rho_phi.  We removed Sprint B's SYNTHETIC theta-derived absolute
+    # pressure (linearized EOS, over-forced 9.4x -> 0.615 m/s^2; GPT-5.5 refuted).
+    # Feeding the (now geopotential-correct) calc_p_rho_phi grid%p into pg_buoy_w
+    # over-forces the OTHER way (max|w|~1.2*t) because the in-solver
+    # c2a*alt*t_2ave - c1f*muave buoyancy in advance_w does not subtract the same
+    # hydrostatic reference (muave=0 for mu'=0), so pg_buoy_w(grid%p) double-counts
+    # the perturbation column weight.  Resolving that large-step/small-step
+    # buoyancy-reference consistency is the open F7F item (see worker-report).
+    # Until then we feed the live small-step work pressure (p_buoy=None below),
+    # which removes the runaway but leaves the bubble weakly forced.
     return AcousticCoreState(
         ww=carry.ww,
         ww_1=prep.ww_save,
@@ -747,9 +747,8 @@ def _acoustic_core_state_from_prep(
         ru_m=jnp.zeros_like(prep.u_work),
         rv_m=jnp.zeros_like(prep.v_work),
         ww_m=jnp.zeros_like(carry.ww),
-        # F7F: no synthetic absolute p' for pg_buoy_w.  acoustic_substep_core
-        # consumes the live ``calc_p_rho`` work pressure (WRF grid%p), matching
-        # module_big_step_utilities_em.F:2564-2571.
+        # F7F: live small-step work pressure into pg_buoy_w (no synthetic absolute
+        # p').  See the large-step/small-step buoyancy-reference note above.
         p_buoy=None,
         # Uncoupled physical perturbation w saved by small_step_prep (WRF :272);
         # consumed by the damp_opt=3 implicit Rayleigh w-damping in advance_w.
