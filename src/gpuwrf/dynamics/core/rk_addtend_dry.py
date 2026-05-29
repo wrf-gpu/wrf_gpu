@@ -1,0 +1,305 @@
+"""WRF ``rk_tendency`` large-step PGF + ``rk_addtend_dry`` per-stage merge.
+
+Two distinct WRF behaviours live here:
+
+* :func:`large_step_horizontal_pgf` reproduces the large-step horizontal
+  pressure-gradient force that WRF ``rk_tendency`` adds into the *coupled*
+  large-step momentum tendencies ``ru_tend``/``rv_tend``
+  (``dyn_em/module_em.F:1325`` calls ``horizontal_pressure_gradient`` whose body
+  is ``dyn_em/module_big_step_utilities_em.F:2459-2466`` for u and ``:2379-2386``
+  for v).  This term uses the **absolute** ``rk_step_prep`` diagnostics
+  (``ph``, ``alt``, ``p``, ``pb``, ``al``, ``php``) and is the steady gradient
+  that drives the mean circulation.  It is a *different split term* from the
+  small-step ``advance_uv`` acoustic PGF (``module_small_step_em.F:828-868``),
+  which uses the small-step work-array perturbation pressure that starts ~0 at
+  each RK stage; the two are NOT a double-count.
+
+* :func:`rk_addtend_dry` reproduces the WRF per-RK-stage merge of the
+  RK1-fixed physics tendencies ``*_tendf`` into the per-stage dry-dynamics
+  tendencies ``*_tend`` with field-specific map-factor / mass coupling
+  (``dyn_em/module_em.F:1711-1786``).  u uses ``1/msfuy``, v uses ``msfvx_inv``,
+  w/ph/theta use ``1/msfty``, mu is uncoupled, and the final-RK theta picks up
+  the diabatic-heating term ``(c1*mut+c2)*h_diabatic/msfty``.  With physics off
+  and periodic boundaries (the idealized dry gate) ``*_tendf == 0`` and the
+  RK1 boundary-save adds vanish, so the merge is the identity on ``*_tend`` --
+  it is implemented faithfully so the cadence is correct once physics is on.
+"""
+
+from __future__ import annotations
+
+from dataclasses import dataclass
+
+import jax
+import jax.numpy as jnp
+
+from gpuwrf.contracts.grid import DycoreMetrics
+from gpuwrf.contracts.state import State, Tendencies
+from gpuwrf.dynamics.acoustic_wrf import (
+    _inverse_density_from_theta_pressure,
+    moisture_coupling_factors,
+)
+
+
+def _x_face_pair_3d(field: jax.Array) -> tuple[jax.Array, jax.Array]:
+    """Return (left=west mass cell, right=east mass cell) on u-faces (nx+1).
+
+    Edge-padded to match ``advance_uv_wrf``: face ``i`` sits between mass cells
+    ``i-1`` (left) and ``i`` (right); boundary faces repeat the edge mass cell.
+    """
+    padded = jnp.pad(field, ((0, 0), (0, 0), (1, 1)), mode="edge")
+    return padded[:, :, :-1], padded[:, :, 1:]
+
+
+def _y_face_pair_3d(field: jax.Array) -> tuple[jax.Array, jax.Array]:
+    padded = jnp.pad(field, ((0, 0), (1, 1), (0, 0)), mode="edge")
+    return padded[:, :-1, :], padded[:, 1:, :]
+
+
+def _x_face_pair_2d(field: jax.Array) -> tuple[jax.Array, jax.Array]:
+    padded = jnp.pad(field, ((0, 0), (1, 1)), mode="edge")
+    return padded[:, :-1], padded[:, 1:]
+
+
+def _y_face_pair_2d(field: jax.Array) -> tuple[jax.Array, jax.Array]:
+    padded = jnp.pad(field, ((1, 1), (0, 0)), mode="edge")
+    return padded[:-1, :], padded[1:, :]
+
+
+@dataclass(frozen=True)
+class DryPhysicsTendencies:
+    """RK1-fixed physics + boundary tendencies (``*_tendf`` in WRF).
+
+    All leaves default to zero (physics-off dry gate).  ``h_diabatic`` is the
+    diabatic heating that enters the final-RK theta tendency
+    (``module_em.F:1770-1773``).  ``*_save`` are the boundary tendencies that
+    WRF adds to ``*_tendf`` only on ``rk_step == 1`` (``:1735``, ``:1746``,
+    ``:1757``, ``:1760``, ``:1770``); for periodic idealized cases they are 0.
+    """
+
+    ru_tendf: jax.Array | None = None
+    rv_tendf: jax.Array | None = None
+    rw_tendf: jax.Array | None = None
+    ph_tendf: jax.Array | None = None
+    t_tendf: jax.Array | None = None
+    mu_tendf: jax.Array | None = None
+    h_diabatic: jax.Array | None = None
+    u_save: jax.Array | None = None
+    v_save: jax.Array | None = None
+    w_save: jax.Array | None = None
+    ph_save: jax.Array | None = None
+    t_save: jax.Array | None = None
+
+
+def _absolute_diagnostics(
+    state: State, metrics: DycoreMetrics, *, t0: float = 300.0
+) -> tuple[jax.Array, jax.Array, jax.Array, jax.Array, jax.Array]:
+    """Return WRF ``rk_step_prep`` absolute diagnostics ``(ph, p, al, alt, php)``.
+
+    Mirrors the discrete-hydrostatic decomposition used for ``p_buoy`` in the
+    operational acoustic prep path (``operational_mode._acoustic_core_state_from_prep``)
+    so the large-step PGF sees the same absolute perturbation pressure/inverse
+    density that drives the buoyancy (WRF ``module_em.F:184-225``):
+
+      ``alt`` = full inverse density from the EOS (θ_total, p_total).
+      ``al'`` = -(alt*c1h*mu' + rdnw*(ph'(k+1)-ph'(k))) / (c1h*mut+c2h)
+      ``p'``  = c2a*( alt*(θ' - c1h*mu'*θ_base)/((c1h*mut+c2h)*(t0+θ_base)) - al' )
+      ``php`` = 0.5*(phb+ph' faces) on mass levels (full geopotential).
+    """
+
+    ph_pert = state.ph_perturbation.astype(jnp.float64)
+    mu_pert = state.mu_perturbation.astype(jnp.float64)
+    mut = (state.mu_total - state.mu_perturbation).astype(jnp.float64)
+    theta_pert = (state.theta.astype(jnp.float64) - jnp.asarray(t0, dtype=jnp.float64))
+    theta_base = jnp.zeros_like(theta_pert)  # neutral base θ0; θ_base perturbation ref = 0
+    alt = _inverse_density_from_theta_pressure(
+        state.theta.astype(jnp.float64), state.p_total.astype(jnp.float64)
+    )
+    pb = (state.p_total - state.p_perturbation).astype(jnp.float64)
+    p_full = pb + state.p_perturbation.astype(jnp.float64)
+    from gpuwrf.dynamics.acoustic_wrf import CPOVCV
+
+    c2a = CPOVCV * p_full / jnp.maximum(jnp.abs(alt), jnp.asarray(1.0e-12, dtype=alt.dtype))
+    mass_h = metrics.c1h[:, None, None] * mut[None, :, :] + metrics.c2h[:, None, None]
+    safe_mass = jnp.where(jnp.abs(mass_h) > 1.0e-12, mass_h, jnp.asarray(1.0e-12, dtype=mass_h.dtype))
+    mu_term = metrics.c1h[:, None, None] * mu_pert[None, :, :]
+    al = -(alt * mu_term + metrics.rdnw[:, None, None] * (ph_pert[1:, :, :] - ph_pert[:-1, :, :])) / safe_mass
+    theta_total_ref = jnp.asarray(t0, dtype=jnp.float64) + theta_base
+    p_abs = c2a * (
+        alt * (theta_pert - mu_term * theta_base) / (safe_mass * theta_total_ref) - al
+    )
+    phb = (state.ph_total - state.ph_perturbation).astype(jnp.float64)
+    ph_total = phb + ph_pert
+    php = 0.5 * (ph_total[:-1, :, :] + ph_total[1:, :, :])
+    return ph_pert, p_abs, al, alt, php
+
+
+def large_step_horizontal_pgf(
+    state: State,
+    metrics: DycoreMetrics,
+    *,
+    dx_m: float,
+    dy_m: float,
+    non_hydrostatic: bool = True,
+    top_lid: bool = False,
+) -> tuple[jax.Array, jax.Array]:
+    """Return the WRF large-step *coupled* horizontal PGF for ``ru/rv_tend``.
+
+    Source: WRF ``rk_tendency`` -> ``horizontal_pressure_gradient``
+    (``module_em.F:1325``; body ``module_big_step_utilities_em.F:2453-2488`` for
+    u, ``:2373-2404`` for v).  WRF adds ``ru_tend -= cqu*dpx`` where ``dpx``
+    carries the coupled ``c1h*muu+c2h`` mass factor, so the returned tendency is
+    the **coupled** momentum tendency consumed by ``advance_uv`` (``u +=
+    dts*ru_tend``, ``module_small_step_em.F:805``).
+
+    Uses the *absolute* ``rk_step_prep`` diagnostics (full geopotential ``php``,
+    full inverse density ``alt``, absolute perturbation pressure ``p'``, base
+    pressure ``pb``, perturbation inverse density ``al'``) so the steady gradient
+    from the bubble's hydrostatic imbalance is captured -- this is the
+    DISTINCT split term from the small-step acoustic PGF in ``advance_uv``, which
+    uses the work-array perturbation pressure that restarts ~0 each RK stage.
+
+    C-grid (periodic): the u-face at index ``i`` lies between mass cells ``i-1``
+    and ``i``; ``dpx(i)`` differences ``field(i)-field(i-1)``.  The 2dx slab has a
+    singleton y axis, so the v-PGF is structurally zero there.
+    """
+
+    ph, p_abs, al, alt, php = _absolute_diagnostics(state, metrics)
+    pb = (state.p_total - state.p_perturbation).astype(jnp.float64)
+    mut = (state.mu_total - state.mu_perturbation).astype(jnp.float64)
+    mu_pert = state.mu_perturbation.astype(jnp.float64)
+    cqu, cqv = moisture_coupling_factors(state)
+    rdx = 1.0 / float(dx_m)
+    rdy = 1.0 / float(dy_m)
+
+    c1h = metrics.c1h[:, None, None]
+    c2h = metrics.c2h[:, None, None]
+    rdnw = metrics.rdnw[:, None, None]
+    msf_u = (metrics.msfux / metrics.msfuy)[None, :, :]
+    msf_v = (metrics.msfvy / metrics.msfvx)[None, :, :]
+    mu_total = mut + mu_pert
+
+    def _dpn_faces(pair_sum: jax.Array) -> jax.Array:
+        nz = int(pair_sum.shape[0])
+        dpn = jnp.zeros((nz + 1,) + pair_sum.shape[1:], dtype=pair_sum.dtype)
+        bottom = 0.5 * (metrics.cf1 * pair_sum[0] + metrics.cf2 * pair_sum[1] + metrics.cf3 * pair_sum[2])
+        dpn = dpn.at[0, :, :].set(bottom)
+        interior = 0.5 * (
+            metrics.fnm[1:, None, None] * pair_sum[1:, :, :] + metrics.fnp[1:, None, None] * pair_sum[:-1, :, :]
+        )
+        dpn = dpn.at[1:nz, :, :].set(interior)
+        if bool(top_lid):
+            top = 0.5 * (metrics.cf1 * pair_sum[-1] + metrics.cf2 * pair_sum[-2] + metrics.cf3 * pair_sum[-3])
+            dpn = dpn.at[nz, :, :].set(top)
+        return dpn
+
+    # --- x PGF (WRF module_big_step_utilities_em.F:2459-2466) on u-faces (nx+1) ---
+    ph_l, ph_r = _x_face_pair_3d(ph)
+    p_l, p_r = _x_face_pair_3d(p_abs)
+    pb_l, pb_r = _x_face_pair_3d(pb)
+    al_l, al_r = _x_face_pair_3d(al)
+    alt_l, alt_r = _x_face_pair_3d(alt)
+    muu = _x_face_pair_2d(mu_total)
+    muu = 0.5 * (muu[0] + muu[1])
+    mass_u = c1h * muu[None, :, :] + c2h
+    ph_term_x = (ph_r[1:, :, :] - ph_l[1:, :, :]) + (ph_r[:-1, :, :] - ph_l[:-1, :, :])
+    p_term_x = (alt_l + alt_r) * (p_r - p_l)
+    pb_term_x = (al_l + al_r) * (pb_r - pb_l)
+    dpx = msf_u * 0.5 * rdx * mass_u * (ph_term_x + p_term_x + pb_term_x)
+    if bool(non_hydrostatic):
+        php_l, php_r = _x_face_pair_3d(php)
+        psum_l, psum_r = _x_face_pair_3d(p_abs)
+        dpn = _dpn_faces(psum_l + psum_r)
+        mu_l, mu_r = _x_face_pair_2d(mu_pert)
+        bracket = rdnw * (dpn[1:, :, :] - dpn[:-1, :, :]) - 0.5 * (c1h * (mu_l + mu_r)[None, :, :])
+        dpx = dpx + msf_u * rdx * (php_r - php_l) * bracket
+
+    # --- y PGF (WRF module_big_step_utilities_em.F:2379-2386) on v-faces (ny+1) ---
+    ph_s, ph_n = _y_face_pair_3d(ph)
+    p_s, p_n = _y_face_pair_3d(p_abs)
+    pb_s, pb_n = _y_face_pair_3d(pb)
+    al_s, al_n = _y_face_pair_3d(al)
+    alt_s, alt_n = _y_face_pair_3d(alt)
+    muv = _y_face_pair_2d(mu_total)
+    muv = 0.5 * (muv[0] + muv[1])
+    mass_v = c1h * muv[None, :, :] + c2h
+    ph_term_y = (ph_n[1:, :, :] - ph_s[1:, :, :]) + (ph_n[:-1, :, :] - ph_s[:-1, :, :])
+    p_term_y = (alt_s + alt_n) * (p_n - p_s)
+    pb_term_y = (al_s + al_n) * (pb_n - pb_s)
+    dpy = msf_v * 0.5 * rdy * mass_v * (ph_term_y + p_term_y + pb_term_y)
+    if bool(non_hydrostatic):
+        php_s, php_n = _y_face_pair_3d(php)
+        psum_s, psum_n = _y_face_pair_3d(p_abs)
+        dpn_y = _dpn_faces(psum_s + psum_n)
+        mu_s, mu_n = _y_face_pair_2d(mu_pert)
+        bracket_y = rdnw * (dpn_y[1:, :, :] - dpn_y[:-1, :, :]) - 0.5 * (c1h * (mu_s + mu_n)[None, :, :])
+        dpy = dpy + msf_v * rdy * (php_n - php_s) * bracket_y
+
+    ru_pgf = -cqu * dpx
+    rv_pgf = -cqv * dpy
+    return ru_pgf, rv_pgf
+
+
+def _zeros_like(reference: jax.Array, candidate: jax.Array | None) -> jax.Array:
+    return jnp.zeros_like(reference) if candidate is None else jnp.asarray(candidate, dtype=reference.dtype)
+
+
+def rk_addtend_dry(
+    tendencies: Tendencies,
+    physics: DryPhysicsTendencies,
+    *,
+    rk_step: int,
+    metrics: DycoreMetrics,
+    mut: jax.Array,
+) -> Tendencies:
+    """Merge RK1-fixed physics tendencies into per-stage dry tendencies.
+
+    Source: WRF ``dyn_em/module_em.F:1711-1786`` (subroutine ``rk_addtend_dry``).
+    Field-specific coupling (WRF comments ``:1722-1729``):
+
+    * u: ``ru_tend += (ru_tendf + [rk1] u_save*msfuy)/msfuy``  (``:1735-1737``)
+    * v: ``rv_tend += (rv_tendf + [rk1] v_save*msfvx)*msfvx_inv``  (``:1746-1748``)
+    * w: ``rw_tend += (rw_tendf + [rk1] w_save*msfty)/msfty``  (``:1757-1759``)
+    * ph: ``ph_tend += (ph_tendf + [rk1] ph_save)/msfty``  (``:1760-1762``)
+    * theta: ``t_tend += (t_tendf + [rk1] t_save)/msfty + (c1*mut+c2)*h_diabatic/msfty``  (``:1770-1773``)
+    * mu: ``mu_tend += mu_tendf``  (uncoupled, ``:1782``)
+
+    ``tendencies`` carries the per-stage dry dynamics (advection + large-step PGF
+    + diffusion), in the same uncoupled / coupled convention the operational RK
+    path already uses for ``advance_uv``/``advance_mu_t``/``advance_w``.  With
+    physics off and periodic boundaries every ``*_tendf`` and ``*_save`` is zero,
+    so this returns ``tendencies`` unchanged numerically.
+    """
+
+    one = jnp.asarray(1.0, dtype=tendencies.u.dtype)
+    msfuy = metrics.msfuy[None, :, :]
+    msfvx_inv = (one / metrics.msfvx)[None, :, :]
+    msfvx = metrics.msfvx[None, :, :]
+    msfty = metrics.msfty[None, :, :]
+
+    ru_tendf = _zeros_like(tendencies.u, physics.ru_tendf)
+    rv_tendf = _zeros_like(tendencies.v, physics.rv_tendf)
+    rw_tendf = _zeros_like(tendencies.w, physics.rw_tendf)
+    ph_tendf = _zeros_like(tendencies.ph, physics.ph_tendf)
+    t_tendf = _zeros_like(tendencies.theta, physics.t_tendf)
+    mu_tendf = _zeros_like(tendencies.mu, physics.mu_tendf)
+
+    if int(rk_step) == 1:
+        ru_tendf = ru_tendf + _zeros_like(tendencies.u, physics.u_save) * msfuy
+        rv_tendf = rv_tendf + _zeros_like(tendencies.v, physics.v_save) * msfvx
+        rw_tendf = rw_tendf + _zeros_like(tendencies.w, physics.w_save) * msfty
+        ph_tendf = ph_tendf + _zeros_like(tendencies.ph, physics.ph_save)
+        t_tendf = t_tendf + _zeros_like(tendencies.theta, physics.t_save)
+
+    u = tendencies.u + ru_tendf / msfuy
+    v = tendencies.v + rv_tendf * msfvx_inv
+    w = tendencies.w + rw_tendf / msfty
+    ph = tendencies.ph + ph_tendf / msfty
+    mass_h = metrics.c1h[:, None, None] * mut[None, :, :] + metrics.c2h[:, None, None]
+    h_diabatic = _zeros_like(tendencies.theta, physics.h_diabatic)
+    theta = tendencies.theta + t_tendf / msfty + mass_h * h_diabatic / msfty
+    mu = tendencies.mu + mu_tendf
+
+    return tendencies.replace(u=u, v=v, w=w, ph=ph, theta=theta, mu=mu)
+
+
+__all__ = ["DryPhysicsTendencies", "large_step_horizontal_pgf", "rk_addtend_dry"]
