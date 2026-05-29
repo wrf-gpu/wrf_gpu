@@ -25,6 +25,7 @@ from gpuwrf.dynamics.explicit_diffusion import (
     constant_k_diffusion_tendency,
     conservative_constant_k_diffusion_tendency,
     sixth_order_diffusion_tendency,
+    wrf_deformation_momentum_tendency,
 )
 from gpuwrf.dynamics.flux_advection import (
     advect_scalar_flux,
@@ -107,6 +108,11 @@ class OperationalNamelist:
     use_flux_advection: bool = False
     # Force pure fp64 (Sprint F7-B is fp64-correctness-only; idealized cases set it).
     force_fp64: bool = False
+    # Use the WRF deformation-tensor momentum diffusion (diff_opt=2/km_opt=1) for
+    # u/v/w instead of the scalar flux-divergence Laplacian.  Theta always keeps
+    # the conservative scalar flux-divergence (WRF horizontal_diffusion_s).  Only
+    # active when const_nu_m2_s > 0.  Sprint U (P0-2).
+    use_deformation_momentum_diffusion: bool = False
 
     @classmethod
     def from_grid(
@@ -135,6 +141,7 @@ class OperationalNamelist:
         const_nu_m2_s: float = 0.0,
         use_flux_advection: bool = False,
         force_fp64: bool = False,
+        use_deformation_momentum_diffusion: bool = False,
     ) -> "OperationalNamelist":
         """Build a namelist using resident zero tendencies and flat metrics."""
 
@@ -173,6 +180,7 @@ class OperationalNamelist:
             const_nu_m2_s=const_nu_m2_s,
             use_flux_advection=use_flux_advection,
             force_fp64=force_fp64,
+            use_deformation_momentum_diffusion=use_deformation_momentum_diffusion,
         )
 
     def tree_flatten(self):
@@ -203,6 +211,7 @@ class OperationalNamelist:
             float(self.const_nu_m2_s),
             bool(self.use_flux_advection),
             bool(self.force_fp64),
+            bool(self.use_deformation_momentum_diffusion),
         )
         return children, aux
 
@@ -235,6 +244,7 @@ class OperationalNamelist:
             const_nu_m2_s,
             use_flux_advection,
             force_fp64,
+            use_deformation_momentum_diffusion,
         ) = aux
         return cls(
             grid=grid,
@@ -264,6 +274,7 @@ class OperationalNamelist:
             const_nu_m2_s=const_nu_m2_s,
             use_flux_advection=use_flux_advection,
             force_fp64=force_fp64,
+            use_deformation_momentum_diffusion=use_deformation_momentum_diffusion,
         )
 
 
@@ -1128,6 +1139,7 @@ def _augment_large_step_tendencies(
         w_t = namelist.tendencies.w * mass_f + advect_w_flux(
             haloed.w, vel, rdx=1.0 / dx, rdy=1.0 / dy,
             rdn=metrics.rdn, fzm=metrics.fnm, fzp=metrics.fnp,
+            top_lid=bool(namelist.top_lid),
         )
         # --- scalar theta: WRF advect_scalar (h=5/v=3) ---
         theta_offset = _theta_base_offset(haloed.theta)
@@ -1179,10 +1191,33 @@ def _augment_large_step_tendencies(
         # face mass, so it is NOT multiplied by mass again.  mass_u/mass_v are the
         # u/v face masses (u-face x-diffusion uses the u-face mass; conserves the
         # mass-weighted momentum integral to the same order as WRF).
-        u_t = u_t + conservative_constant_k_diffusion_tendency(haloed.u, mass=mass_u, k_m2_s=nu, dx_m=dx, dy_m=dy, dz_m=dz)
-        v_t = v_t + conservative_constant_k_diffusion_tendency(haloed.v, mass=mass_v, k_m2_s=nu, dx_m=dx, dy_m=dy, dz_m=dz)
-        w_t = w_t + conservative_constant_k_diffusion_tendency(haloed.w, mass=mass_f, k_m2_s=nu, dx_m=dx, dy_m=dy, dz_m=dz)
+        #
+        # Sprint U (P0-2): theta ALWAYS uses the conservative scalar flux-divergence
+        # (WRF horizontal_diffusion_s).  MOMENTUM (u, v, w) optionally uses the WRF
+        # deformation-tensor operator (diff_opt=2/km_opt=1, the factor-2 diagonal +
+        # du/dz<->dw/dx cross terms) when use_deformation_momentum_diffusion is set;
+        # otherwise it keeps the scalar flux-divergence (the F7N close default).  The
+        # deformation operator returns the UNCOUPLED tendency K*(2u_xx+u_zz+w_xz);
+        # multiply by the field face mass to enter the dry-mass-coupled tendency
+        # space, exactly as the scalar diffusion does.  On the flat hydrostatic slab
+        # WRF's g*dz/dnw*rho coupling reduces to the same dry-mass face weight
+        # (|dnw|=rho*g*dz/mu => g*dz/|dnw|*rho = mu), so this is WRF-faithful.
         th_t = th_t + conservative_constant_k_diffusion_tendency(haloed.theta, mass=mass_h, k_m2_s=nu, dx_m=dx, dy_m=dy, dz_m=dz)
+        if bool(namelist.use_deformation_momentum_diffusion):
+            unit_rho = jnp.ones_like(haloed.theta)
+            du_def, dw_def = wrf_deformation_momentum_tendency(
+                haloed.u, haloed.w, rho=unit_rho, k_m2_s=nu, dx_m=dx, dz_m=dz,
+            )
+            u_t = u_t + mass_u * du_def
+            w_t = w_t + mass_f * dw_def
+            # v: one-row slab has degenerate y-deformation; keep the scalar
+            # flux-divergence (D22/D12 vanish for ny=1, so this is identical to the
+            # deformation v-diffusion on the slab).
+            v_t = v_t + conservative_constant_k_diffusion_tendency(haloed.v, mass=mass_v, k_m2_s=nu, dx_m=dx, dy_m=dy, dz_m=dz)
+        else:
+            u_t = u_t + conservative_constant_k_diffusion_tendency(haloed.u, mass=mass_u, k_m2_s=nu, dx_m=dx, dy_m=dy, dz_m=dz)
+            v_t = v_t + conservative_constant_k_diffusion_tendency(haloed.v, mass=mass_v, k_m2_s=nu, dx_m=dx, dy_m=dy, dz_m=dz)
+            w_t = w_t + conservative_constant_k_diffusion_tendency(haloed.w, mass=mass_f, k_m2_s=nu, dx_m=dx, dy_m=dy, dz_m=dz)
 
     # WRF rk_tendency adds the large-step horizontal pressure-gradient force to
     # the *coupled* large-step ru/rv_tend (module_em.F:1325 ->

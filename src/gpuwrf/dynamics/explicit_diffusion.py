@@ -299,8 +299,120 @@ def constant_k_deformation_momentum_tendency(
     return du, dw
 
 
+def wrf_deformation_momentum_tendency(
+    u: jax.Array,
+    w: jax.Array,
+    *,
+    rho: jax.Array,
+    k_m2_s: float,
+    dx_m: float,
+    dz_m: jax.Array | float,
+) -> tuple[jax.Array, jax.Array]:
+    """WRF ``diff_opt=2`` deformation-tensor momentum diffusion (coupled tendency).
+
+    Returns ``(d(rho*u)/dt, d(rho*w)/dt)`` -- the mass/density-weighted
+    (*coupled*) momentum-diffusion tendencies, exactly as WRF's
+    ``horizontal_diffusion_{u,w}_2`` + ``vertical_diffusion_{u,w}_2`` build the
+    coupled ``ru_tendf``/``rw_tendf`` (``module_diffusion_em.F:2979-3007,
+    4131-4155``).  This is the WRF momentum operator (stress divergence of the
+    deformation tensor), NOT the scalar Laplacian / scalar flux divergence.
+
+    Flat-slab reduction (zx=zy=0, msf=1, ny=1, uniform physical dz):
+
+    * deformations (``cal_deform_and_div`` ``:215,:373,:820/:885``):
+        - ``D11 = 2 du/dx``                (mass levels, u-x faces)
+        - ``D33 = 2 dw/dz``                (mass levels, from w faces)
+        - ``D13 = dw/dx + du/dz``          (w faces / vorticity points)
+    * stresses ``titau_ij = -rho * K * D_ij`` (``cal_titau_* :5428,:5441``).
+    * u-tendency (``horizontal_diffusion_u_2 :3308`` flat: ``g*dz/dnw * rdx *
+      d/dx(titau11)``; ``vertical_diffusion_u_2 :4552`` flat:
+      ``+ g/dnw * d/dz(titau13)``).
+    * w-tendency (``horizontal_diffusion_w_2`` flat: ``g*dz/dn * rdx *
+      d/dx(titau13)``; ``vertical_diffusion_w_2 :4779``:
+      ``+ g * d/dz(titau33) / dn``).
+
+    On the uniform-z neutral slab the mass-coordinate weights ``g*dz/dnw`` and
+    ``g/dnw`` are the SAME constant column factor ``C = rho*K`` carries through
+    as the only field-dependent term, so the operator reduces to the
+    density-weighted stress divergence
+
+        d(rho*u)/dt = d/dx( rho*K*D11 ) + d/dz( rho*K*D13 )
+                    = d/dx( rho*K*2 u_x ) + d/dz( rho*K*(w_x + u_z) )
+        d(rho*w)/dt = d/dx( rho*K*D13 ) + d/dz( rho*K*D33 )
+                    = d/dx( rho*K*(w_x + u_z) ) + d/dz( rho*K*2 w_z )
+
+    which is the mass-conservative (flux-divergence) WRF deformation operator
+    with the diagonal factor 2 (D11/D33) and the off-diagonal cross terms
+    (the ``w_x`` term in u and the ``u_z`` term in w) that the scalar Laplacian
+    and the scalar flux-divergence both omit.  ``rho`` is the full air density
+    (WRF ``grid%rho``, = inverse specific volume) on mass levels ``(nz,ny,nx)``.
+
+    ``u`` is on x-faces ``(nz,ny,nx+1)`` (periodic: face nx == face 0); ``w`` on
+    z-faces ``(nz+1,ny,nx)``.  Periodic x, rigid (zero-stress) top/bottom.
+    """
+
+    k = float(k_m2_s)
+    dx = float(dx_m)
+    dz = jnp.asarray(dz_m, dtype=u.dtype)
+    nx = w.shape[-1]
+    nz = w.shape[0] - 1
+    u_f = u[:, :, :nx] if u.shape[-1] == nx + 1 else u  # (nz, ny, nx) mass-x faces
+
+    # rho at mass levels (nz,ny,nx); rho at w faces via fzm/fzp -> simple average
+    # (uniform dz neutral slab): rho_f(k) = 0.5*(rho(k)+rho(k-1)), faces 1..nz-1.
+    rho_m = rho  # (nz, ny, nx)
+    rho_f = jnp.zeros((nz + 1,) + tuple(rho.shape[1:]), dtype=rho.dtype)
+    rho_f = rho_f.at[1:nz, :, :].set(0.5 * (rho_m[1:nz, :, :] + rho_m[0 : nz - 1, :, :]))
+
+    # ---- D11 = 2 du/dx at mass-x (u faces) -> titau11 = -rho*K*D11 at mass cells ----
+    # du/dx centered to mass cell i: (u(i+1)-u(i))/dx with u on x faces; here u_f(i)
+    # is the left x-face of mass cell i, so du/dx at cell i = (u_f(i+1)-u_f(i))/dx.
+    dudx = (jnp.roll(u_f, -1, axis=2) - u_f) / dx  # (nz,ny,nx) at mass cells
+    titau11 = -rho_m * k * (2.0 * dudx)  # at mass cells i
+    # d/dx(titau11) back to u faces: (titau11(i)-titau11(i-1))/dx.
+    du = (titau11 - jnp.roll(titau11, 1, axis=2)) / dx  # (nz,ny,nx) at u faces
+
+    # ---- D33 = 2 dw/dz at mass cells -> titau33 = -rho*K*D33 ----
+    dwdz = (w[1 : nz + 1, :, :] - w[0:nz, :, :]) / dz  # (nz,ny,nx) at mass cells
+    titau33 = -rho_m * k * (2.0 * dwdz)
+    # d/dz(titau33) to w faces 1..nz-1: (titau33(k)-titau33(k-1))/dz.
+    dw = jnp.zeros_like(w)
+    if nz >= 2:
+        dw_int = (titau33[1:nz, :, :] - titau33[0 : nz - 1, :, :]) / dz
+        dw = dw.at[1:nz, :, :].set(dw_int)
+
+    # ---- D13 = dw/dx + du/dz at w faces (vorticity-point stagger) ----
+    # dw/dx at w faces (mass-x): centered (w(i+1)-w(i-1))/(2dx).
+    dwdx_f = _ddx_periodic(w, dx, axis=2)  # (nz+1,ny,nx) at w faces
+    # du/dz at w faces 1..nz-1: (u_f(k)-u_f(k-1))/dz; faces 0,nz -> 0 (rigid).
+    dudz_f = jnp.zeros_like(w)
+    if nz >= 2:
+        dudz_f = dudz_f.at[1:nz, :, :].set((u_f[1:nz, :, :] - u_f[0 : nz - 1, :, :]) / dz)
+    D13 = dwdx_f + dudz_f  # (nz+1,ny,nx) at w faces
+    titau13 = -rho_f * k * D13  # rho at w faces; faces 0,nz carry rho_f=0 -> 0 stress
+    # u gets d/dz(titau13) at mass levels (u stagger): (titau13(k+1)-titau13(k))/dz.
+    du = du + (titau13[1 : nz + 1, :, :] - titau13[0:nz, :, :]) / dz
+    # w gets d/dx(titau13) at w faces: centered (titau13(i+1)-titau13(i-1))/(2dx).
+    dw = dw + _ddx_periodic(titau13, dx, axis=2)
+
+    # NOTE: titau is -rho*K*D, so d/dx(titau11) etc. already carry the minus sign;
+    # the WRF tendency is +g*dz/dnw*rdx*(titau11(i)-titau11(i-1)) and with the
+    # WRF-signed dnw<0 the net diffusive sign is +K d2u/dx2 (down-gradient).  We
+    # have folded the column factor into rho weighting; the operator above is the
+    # density-weighted stress divergence d/dx_j(rho*K*D_ij) which is +rho*K*Lap to
+    # leading order (down-gradient).  Flip the assembled sign so du/dt is down-gradient.
+    du = -du
+    dw = -dw
+
+    if u.shape[-1] == nx + 1:
+        du = jnp.concatenate((du, du[:, :, :1]), axis=2)
+    return du, dw
+
+
 __all__ = [
     "sixth_order_diffusion_tendency",
     "constant_k_diffusion_tendency",
+    "conservative_constant_k_diffusion_tendency",
     "constant_k_deformation_momentum_tendency",
+    "wrf_deformation_momentum_tendency",
 ]

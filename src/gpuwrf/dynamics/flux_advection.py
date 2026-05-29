@@ -339,6 +339,7 @@ def advect_w_flux(
     rdn: jax.Array,
     fzm: jax.Array,
     fzp: jax.Array,
+    top_lid: bool = True,
 ) -> jax.Array:
     """WRF flux-form coupled w advection tendency (h=5, v=3).
 
@@ -348,6 +349,14 @@ def advect_w_flux(
     Source: ``advect_w`` (``module_advect_em.F:4364-6064``).  Returns the
     coupled tendency ``d(mu*w)/dt`` on the w faces (surface/top faces zeroed by
     the lower-BC / rigid-lid handling downstream).
+
+    ``top_lid`` selects the WRF top-face (lid) handling.  When ``top_lid`` is
+    True (the idealized rigid-lid configuration) the top w-face carries zero
+    vertical flux and no lid pickup, matching the closed F7 idealized path
+    exactly.  When ``top_lid`` is False (open/top-damped real configs) the WRF
+    ``advect_w`` top-face branch (``module_advect_em.F:6014-6028``) is applied:
+    the top face gets the 2nd-order flux ``0.25*(rom(kde)+rom(kde-1))*(w(kde)+
+    w(kde-1))`` and the lid pickup ``tend(kde) += 2*rdn(ktf)*vflux(kde)``.
     """
 
     nz_mass = vel.ru.shape[0]  # = nz
@@ -363,7 +372,7 @@ def advect_w_flux(
         tend = tend - rdy * (jnp.roll(fqy, -1, axis=1) - fqy)
     # vertical flux of w lives on MASS levels (between w faces): vel = mass-level rom
     # average 0.5*(rom(k)+rom(k+1)); flux3 of the w faces; tend on faces via rdn.
-    tend = tend + _vertical_flux_div_w(w, vel.rom, rdn)
+    tend = tend + _vertical_flux_div_w(w, vel.rom, rdn, top_lid=top_lid)
     return tend
 
 
@@ -436,19 +445,27 @@ def _vertical_flux_div_3(field_mass: jax.Array, romq: jax.Array, rdzw: jax.Array
     return -rdzw[:, None, None] * (vflux[1:, :, :] - vflux[:nz, :, :])
 
 
-def _vertical_flux_div_w(w: jax.Array, rom: jax.Array, rdn: jax.Array) -> jax.Array:
+def _vertical_flux_div_w(w: jax.Array, rom: jax.Array, rdn: jax.Array, *, top_lid: bool = True) -> jax.Array:
     """Vertical flux divergence (order 3) of the w field (on z-faces, nz+1).
 
-    Source: ``advect_w`` vertical block (``module_advect_em.F:5912-5956``,
-    ``vert_order==3`` mirrors the ==5 code with flux3/flux2).  WRF indexes ``w``
-    and ``rom`` at full levels k; the vertical flux at level k uses
-    ``vel = 0.5*(rom(k)+rom(k-1))`` and ``flux3(w[k-2..k+1], -vel)`` (note the
-    flipped sign on ``vel``).  Interior w faces ``k=kts+3..ktf-1`` use flux3;
-    ``kts+1`` uses 2nd order; ``kts+2`` and ``ktf`` use flux3 (here approximated
-    by the same flux3 stencil).  The tendency on w faces ``k=kts+1..ktf`` is
-    ``-rdn(k)*(vflux(k+1)-vflux(k))`` plus the lid pickup
-    ``+2*rdn(ktf)*vflux(ktf+1)`` at the top.  WRF Python 0-based: w faces 0..nz,
-    flux at face k from ``vel(k)=0.5*(rom(k)+rom(k-1))``.
+    Source: ``advect_w`` vertical block (``module_advect_em.F:5996-6029``,
+    ``vert_order==3``).  WRF indexes ``w`` and ``rom`` at full levels k; the
+    vertical flux at face k uses ``vel = 0.5*(rom(k)+rom(k-1))`` and
+    ``flux3(w[k-2..k+1], -vel)`` (note the flipped sign on ``vel``).  Interior w
+    faces ``k=kts+2..ktf`` (JAX 0-based ``2..nz-1``) use flux3; ``kts+1`` (JAX 1)
+    uses 2nd order.  The tendency on w faces ``k=kts+1..ktf`` (JAX ``1..nz-1``) is
+    ``-rdn(k)*(vflux(k+1)-vflux(k))``.
+
+    Top face (lid), WRF Python 0-based index ``nz`` = WRF ``ktf+1=kde``:
+
+    * ``top_lid=True`` (rigid-lid idealized config): the top-face flux stays 0
+      and there is no lid pickup, matching the closed F7 idealized path.
+    * ``top_lid=False`` (open/top-damped real config): the WRF
+      ``advect_w`` top branch is applied --
+      ``vflux(kde)=0.25*(rom(kde)+rom(kde-1))*(w(kde)+w(kde-1))``
+      (``module_advect_em.F:6014-6015``) is added into the interior face-(nz-1)
+      tendency via ``vflux(k+1)`` and the lid pickup
+      ``tend(kde) += 2*rdn(ktf)*vflux(kde)`` (``:6025-6028``) closes the open top.
     """
 
     nzp1 = int(w.shape[0])
@@ -483,11 +500,19 @@ def _vertical_flux_div_w(w: jax.Array, rom: jax.Array, rdn: jax.Array) -> jax.Ar
     if nz >= 4:
         vflux = vflux.at[2, :, :].set(_flux3_at(2))
         vflux = vflux.at[nz - 1, :, :].set(_flux3_at(nz - 1))
+    # Top-face (lid) flux.  WRF advect_w (module_advect_em.F:6014-6015) overwrites
+    # vflux(kde) with the 2nd-order form for the open top; the rigid lid keeps it 0.
+    if (not top_lid) and nz >= 1:
+        vflux = vflux.at[nz, :, :].set(vel_face[nz, :, :] * 0.5 * (w[nz, :, :] + w[nz - 1, :, :]))
     # tendency on interior w faces k=1..nz-1: -rdn(k)*(vflux(k+1)-vflux(k)).
     tend = jnp.zeros_like(w)
     if nz >= 2:
         interior = -rdn[1:nz, None, None] * (vflux[2 : nz + 1, :, :] - vflux[1:nz, :, :])
         tend = tend.at[1:nz, :, :].set(interior)
+    # Lid pickup (WRF module_advect_em.F:6025-6028): tend(kde) += 2*rdn(ktf)*vflux(kde).
+    # ktf = kde-1 (JAX nz-1), so rdn(ktf) = rdn[nz-1].  Only for the open top.
+    if (not top_lid) and nz >= 1:
+        tend = tend.at[nz, :, :].add(2.0 * rdn[nz - 1] * vflux[nz, :, :])
     return tend
 
 
