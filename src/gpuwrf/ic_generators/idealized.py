@@ -45,11 +45,67 @@ config.update("jax_enable_x64", True)
 
 CaseName = Literal["warm_bubble", "density_current"]
 
-GRAVITY_M_S2 = 9.80665
+# Use the SAME gravity the dycore ``advance_w`` solve uses (9.81), so the
+# initial (mu, p, ph) column is in discrete hydrostatic balance with the
+# acoustic solver and ``calc_p_rho`` diagnoses ~zero perturbation at rest.
+GRAVITY_M_S2 = 9.81
 R_DRY_AIR = 287.0
 CP_DRY_AIR = 1004.0
+CV_DRY_AIR = CP_DRY_AIR - R_DRY_AIR
 P0_PA = 100000.0
 THETA0_K = 300.0
+
+
+def _alpha_dry(theta_k: np.ndarray, pressure_pa: np.ndarray) -> np.ndarray:
+    """Dry specific volume ``alt`` from the WRF EOS (matches acoustic_wrf).
+
+    ``alt = (R_d/p0) * theta * (p/p0)^(cv/cp)``.
+    """
+
+    theta_k = np.asarray(theta_k, dtype=np.float64)
+    pressure_pa = np.asarray(pressure_pa, dtype=np.float64)
+    return (R_DRY_AIR / P0_PA) * theta_k * (pressure_pa / P0_PA) ** (-CV_DRY_AIR / CP_DRY_AIR)
+
+
+def _uniform_z_hydrostatic_base(
+    z_face_m: np.ndarray,
+    theta0_k: float,
+    *,
+    p_surface_pa: float = P0_PA,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, float]:
+    """Build an eta-coordinate hydrostatic base column on uniform-z faces.
+
+    A neutral (constant-θ) dry column is integrated in physical height so the
+    z-grid stays uniform (which keeps the front/centroid diagnostics meaningful),
+    while the returned eta levels make the WRF mass-coordinate metrics
+    (``dnw = |Δeta|``) discretely consistent with that column.
+
+    Returns ``(eta_levels, p_mass, ph_face, mu)``:
+
+    * ``p_face(k)`` is integrated from ``dp = -g dz / alpha`` (hydrostatic) with
+      ``alpha(z)`` the dry specific volume at the local pressure and ``θ0``.
+    * ``mu = p_face(surface) - p_face(top)``; ``eta(k) = (p_face(k)-p_top)/mu``.
+    * ``ph_face(k) = g * z_face(k)`` (flat terrain, uniform z).
+    * ``p_mass(k) = 0.5*(p_face(k)+p_face(k+1))``.
+    """
+
+    z_face = np.asarray(z_face_m, dtype=np.float64)
+    nz = int(z_face.size) - 1
+    p_face = np.zeros(nz + 1, dtype=np.float64)
+    p_face[0] = float(p_surface_pa)
+    for k in range(nz):
+        dz = z_face[k + 1] - z_face[k]
+        # midpoint specific volume for a second-order hydrostatic integration.
+        alpha_lo = _alpha_dry(np.array([theta0_k]), np.array([p_face[k]]))[0]
+        p_mid = p_face[k] - 0.5 * GRAVITY_M_S2 * dz / alpha_lo
+        alpha_mid = _alpha_dry(np.array([theta0_k]), np.array([p_mid]))[0]
+        p_face[k + 1] = p_face[k] - GRAVITY_M_S2 * dz / alpha_mid
+    p_top = float(p_face[-1])
+    mu = float(p_face[0] - p_top)
+    eta_levels = (p_face - p_top) / mu  # 1.0 at surface, 0.0 at top
+    ph_face = GRAVITY_M_S2 * z_face
+    p_mass = 0.5 * (p_face[:-1] + p_face[1:])
+    return eta_levels, p_mass, ph_face, mu
 
 REFERENCE_URLS = {
     "warm_bubble": [
@@ -83,6 +139,10 @@ class NumpyIdealizedCase:
     dt_s: float
     dx_m: float
     dz_m: float
+    # Eta levels and model-top pressure for the WRF mass-coordinate metrics so the
+    # IC is discretely hydrostatic (set by the eta-hydrostatic base builder).
+    eta_levels: np.ndarray | None = None
+    p_top_pa: float | None = None
 
     @property
     def nx(self) -> int:
@@ -168,16 +228,21 @@ def build_warm_bubble_numpy() -> NumpyIdealizedCase:
     radius = np.sqrt(((xx - 10000.0) / 2000.0) ** 2 + ((zz - 2000.0) / 2000.0) ** 2)
     theta_prime = 2.0 * _centered_cosine(radius)
     theta_prime *= 2.0 / float(np.max(theta_prime))
-    pressure_1d = _stable_pressure(z_m)
-    pressure = np.broadcast_to(pressure_1d[:, None], theta_prime.shape).copy()
-    ph_total = np.broadcast_to((GRAVITY_M_S2 * z_face_m)[:, None], (nz + 1, nx)).copy()
-    mu_base = np.ones((1, nx), dtype=np.float64) * (P0_PA - float(_stable_pressure(np.array([10000.0]))[0]))
+    # Eta-hydrostatic neutral base (θ0=300) on the uniform-z faces.  Base p/ph
+    # are shared by every column; the θ' bubble breaks balance via buoyancy only.
+    eta_levels, p_mass_1d, ph_face_1d, mu = _uniform_z_hydrostatic_base(z_face_m, THETA0_K)
+    p_top_pa = float(P0_PA - mu)
+    pressure = np.broadcast_to(p_mass_1d[:, None], theta_prime.shape).copy()
+    ph_total = np.broadcast_to(ph_face_1d[:, None], (nz + 1, nx)).copy()
+    mu_base = np.ones((1, nx), dtype=np.float64) * mu
     return NumpyIdealizedCase(
         case_name="warm_bubble",
         case_id="skamarock-wicker-1998-rising-thermal-contract-f2",
         x_m=x_m,
         z_m=z_m,
         z_face_m=z_face_m,
+        eta_levels=eta_levels.astype(np.float64),
+        p_top_pa=p_top_pa,
         theta_prime_k=theta_prime.astype(np.float64),
         theta_k=(THETA0_K + theta_prime).astype(np.float64),
         pressure_pa=pressure.astype(np.float64),
@@ -221,16 +286,20 @@ def build_density_current_numpy() -> NumpyIdealizedCase:
     radius = np.sqrt((xx / 4000.0) ** 2 + ((zz - 3000.0) / 2000.0) ** 2)
     theta_prime = -15.0 * _centered_cosine(radius)
     theta_prime *= 15.0 / abs(float(np.min(theta_prime)))
-    pressure_1d = _stable_pressure(z_m)
-    pressure = np.broadcast_to(pressure_1d[:, None], theta_prime.shape).copy()
-    ph_total = np.broadcast_to((GRAVITY_M_S2 * z_face_m)[:, None], (nz + 1, nx)).copy()
-    mu_base = np.ones((1, nx), dtype=np.float64) * (P0_PA - float(_stable_pressure(np.array([6000.0]))[0]))
+    # Eta-hydrostatic neutral base (θ0=300) on the uniform-z faces.
+    eta_levels, p_mass_1d, ph_face_1d, mu = _uniform_z_hydrostatic_base(z_face_m, THETA0_K)
+    p_top_pa = float(P0_PA - mu)
+    pressure = np.broadcast_to(p_mass_1d[:, None], theta_prime.shape).copy()
+    ph_total = np.broadcast_to(ph_face_1d[:, None], (nz + 1, nx)).copy()
+    mu_base = np.ones((1, nx), dtype=np.float64) * mu
     return NumpyIdealizedCase(
         case_name="density_current",
         case_id="straka-1993-density-current-contract-f2",
         x_m=x_m,
         z_m=z_m,
         z_face_m=z_face_m,
+        eta_levels=eta_levels.astype(np.float64),
+        p_top_pa=p_top_pa,
         theta_prime_k=theta_prime.astype(np.float64),
         theta_k=(THETA0_K + theta_prime).astype(np.float64),
         pressure_pa=pressure.astype(np.float64),
@@ -287,20 +356,34 @@ def _select_device(*, require_gpu: bool) -> jax.Device:
     return jax.devices("cpu")[0]
 
 
+# F7-B is fp64-correctness-only: build every idealized field in float64.  The
+# fp32-gated operational matrix (ADR-007) loses the warm-bubble 2 K perturbation
+# on a 300 K base and detonates the acoustic solve; perf downcast is F7-perf.
 def _put(value: np.ndarray | float, field: str, device: jax.Device) -> jax.Array:
-    return jax.device_put(jnp.asarray(value, dtype=DEFAULT_DTYPES.dtype_for(field)), device)
+    del field
+    return jax.device_put(jnp.asarray(value, dtype=jnp.float64), device)
 
 
 def _zeros(shape: tuple[int, ...], field: str, device: jax.Device) -> jax.Array:
-    return jax.device_put(jnp.zeros(shape, dtype=DEFAULT_DTYPES.dtype_for(field)), device)
+    del field
+    return jax.device_put(jnp.zeros(shape, dtype=jnp.float64), device)
 
 
 def _ones(shape: tuple[int, ...], field: str, device: jax.Device) -> jax.Array:
-    return jax.device_put(jnp.ones(shape, dtype=DEFAULT_DTYPES.dtype_for(field)), device)
+    del field
+    return jax.device_put(jnp.ones(shape, dtype=jnp.float64), device)
 
 
 def _make_grid(case: NumpyIdealizedCase, device: jax.Device) -> GridSpec:
-    eta_levels = jax.device_put(jnp.linspace(1.0, 0.0, case.nz + 1, dtype=jnp.float64), device)
+    # Use the eta levels from the hydrostatic base builder so the WRF mass
+    # metrics (dnw = |Δeta|) are discretely consistent with the IC column.
+    eta_source = (
+        jnp.asarray(case.eta_levels, dtype=jnp.float64)
+        if case.eta_levels is not None
+        else jnp.linspace(1.0, 0.0, case.nz + 1, dtype=jnp.float64)
+    )
+    eta_levels = jax.device_put(eta_source, device)
+    top_pressure_pa = float(case.p_top_pa) if case.p_top_pa is not None else float(case.parameters["domain_height_m"])
     terrain_height = jax.device_put(jnp.zeros((1, case.nx), dtype=jnp.float64), device)
     projection = Projection("lambert", 0.0, 0.0, float(case.dx_m), float(case.dx_m), case.nx, 1)
     terrain = TerrainProvenance(
@@ -325,7 +408,7 @@ def _make_grid(case: NumpyIdealizedCase, device: jax.Device) -> GridSpec:
         nx=case.nx,
         nz=case.nz,
         eta_levels=eta_levels,
-        top_pressure_pa=float(case.parameters["domain_height_m"]),
+        top_pressure_pa=top_pressure_pa,
         provenance=f"analytic-f2-{case.case_name}",
     )
     return GridSpec(
@@ -397,6 +480,9 @@ def _build_setup(case: NumpyIdealizedCase, *, require_gpu: bool = True) -> Ideal
     grid = _make_grid(case, device)
     state = _make_state(case, grid, device)
     tendencies = _make_tendencies(grid, device)
+    # Straka et al. (1993) defines the reference solution with constant ν=75 m²/s
+    # on u, v, θ; the dry rising-thermal benchmark uses weak numerical diffusion.
+    const_nu = 75.0 if case.case_name == "density_current" else 0.0
     namelist = OperationalNamelist.from_grid(
         grid,
         tendencies=tendencies,
@@ -406,6 +492,9 @@ def _build_setup(case: NumpyIdealizedCase, *, require_gpu: bool = True) -> Ideal
         radiation_cadence_steps=999999,
         use_vertical_solver=True,
         disable_guards=True,
+        force_fp64=True,
+        use_flux_advection=True,
+        const_nu_m2_s=const_nu,
     )
     namelist = dataclass_replace(namelist, run_physics=False, run_boundary=False)
     return IdealizedSetup(case, grid, state, namelist, str(device))
@@ -430,7 +519,8 @@ def _block_state_leaf(state: State) -> jax.Array:
 
 @jax.jit
 def _initial_carry(state: State) -> OperationalCarry:
-    return initial_operational_carry(_enforce_operational_precision(state))
+    # F7-B fp64-correctness: keep the IC in float64 (no operational fp32 downcast).
+    return initial_operational_carry(_enforce_operational_precision(state, force_fp64=True))
 
 
 @jax.jit

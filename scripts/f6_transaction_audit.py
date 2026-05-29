@@ -530,6 +530,10 @@ def _instrumented_prepared_acoustic_substep(
         dy=float(namelist.grid.projection.dy_m),
         epssm=float(namelist.epssm),
         top_lid=bool(namelist.top_lid),
+        w_damping=int(namelist.w_damping),
+        damp_opt=int(namelist.damp_opt),
+        dampcoef=float(namelist.dampcoef),
+        zdamp=float(namelist.zdamp),
     )
 
     theta_mass_before = _theta_mass(acoustic)
@@ -863,7 +867,16 @@ def _run_combination(
 
 
 def _load_case(
-    run_dir: Path, domain: str, dt_s: float, acoustic_substeps: int, epssm: float = 0.1
+    run_dir: Path,
+    domain: str,
+    dt_s: float,
+    acoustic_substeps: int,
+    epssm: float = 0.1,
+    *,
+    w_damping: int = 0,
+    damp_opt: int = 0,
+    dampcoef: float = 0.0,
+    zdamp: float = 5000.0,
 ) -> tuple[Any, OperationalNamelist, dict[str, Any]]:
     case = build_replay_case(run_dir, domain=domain)
     state = case.state.replace(p=case.state.p_total, ph=case.state.ph_total, mu=case.state.mu_total)
@@ -876,6 +889,10 @@ def _load_case(
         radiation_cadence_steps=999999,
         use_vertical_solver=True,
         disable_guards=True,
+        w_damping=int(w_damping),
+        damp_opt=int(damp_opt),
+        dampcoef=float(dampcoef),
+        zdamp=float(zdamp),
     )
     # WRF off-centering coefficient ``epssm`` (this Gen2 d02 namelist uses 0.5).
     namelist = replace(namelist, epssm=float(epssm))
@@ -1006,6 +1023,12 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
     parser.add_argument("--combination", choices=tuple(COMBINATIONS), default=None)
     parser.add_argument("--jax-platform", choices=("cpu", "gpu"), default=None)
+    # WRF damping (Gen2 d02 namelist: w_damping=1, damp_opt=3, zdamp=5000, dampcoef=0.2).
+    parser.add_argument("--damping", action="store_true", help="enable WRF w_damping + Rayleigh top-damping (damp_opt=3)")
+    parser.add_argument("--w-damping", type=int, default=1)
+    parser.add_argument("--damp-opt", type=int, default=3)
+    parser.add_argument("--dampcoef", type=float, default=0.2)
+    parser.add_argument("--zdamp", type=float, default=5000.0)
     return parser.parse_args(argv)
 
 
@@ -1014,8 +1037,22 @@ def main(argv: list[str] | None = None) -> int:
     if args.steps <= 0:
         raise ValueError("--steps must be positive")
     args.output_dir.mkdir(parents=True, exist_ok=True)
+    damping_on = bool(args.damping)
     state, base_namelist, metadata = _load_case(
-        args.run_dir, args.domain, args.dt_s, args.acoustic_substeps, epssm=args.epssm
+        args.run_dir,
+        args.domain,
+        args.dt_s,
+        args.acoustic_substeps,
+        epssm=args.epssm,
+        w_damping=int(args.w_damping) if damping_on else 0,
+        damp_opt=int(args.damp_opt) if damping_on else 0,
+        dampcoef=float(args.dampcoef) if damping_on else 0.0,
+        zdamp=float(args.zdamp),
+    )
+    print(
+        f"[f6] damping {'ON' if damping_on else 'OFF'}"
+        + (f" (w_damping={args.w_damping}, damp_opt={args.damp_opt}, dampcoef={args.dampcoef}, zdamp={args.zdamp})" if damping_on else ""),
+        flush=True,
     )
     selected = [args.combination] if args.combination else ["a", "b", "c", "d"]
     payloads: dict[str, dict[str, Any]] = {}
