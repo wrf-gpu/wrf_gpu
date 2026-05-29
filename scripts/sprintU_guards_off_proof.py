@@ -46,11 +46,17 @@ def _finite(state) -> dict:
     out = {}
     for name in ("u", "v", "w", "theta", "ph", "mu"):
         arr = np.asarray(jax.device_get(getattr(state, name)))
-        out[name] = {"finite": bool(np.all(np.isfinite(arr))), "absmax": float(np.nanmax(np.abs(arr)))}
+        out[name] = {
+            "finite": bool(np.all(np.isfinite(arr))),
+            "absmax": float(np.nanmax(np.abs(arr))),
+            # Sprint U P0-1: record the dtype so the proof shows the guards-off
+            # window ran genuinely fp64 (not silently fp32 under force_fp64).
+            "dtype": str(arr.dtype),
+        }
     return out
 
 
-def real_case_guards_off(n_steps: int = 6) -> dict:
+def real_case_guards_off(n_steps: int = 50) -> dict:
     cfg = DailyPipelineConfig(hours=1, dt_s=10.0, acoustic_substeps=10)
     case, run_dir = _build_real_case(cfg)
     nl = dataclasses.replace(
@@ -66,13 +72,17 @@ def real_case_guards_off(n_steps: int = 6) -> dict:
         carry = _step(carry, jnp.asarray(s, dtype=jnp.int32))
     jax.block_until_ready(carry.state.theta)
     summary = _finite(carry.state)
+    all_fp64 = all(v["dtype"] == "float64" for v in summary.values())
     return {
         "config": "real_canary_d02_dycore",
         "disable_guards": True,
+        "force_fp64": True,
         "run_dir": str(run_dir),
         "grid": {"nz": int(case.grid.nz), "ny": int(case.grid.ny), "nx": int(case.grid.nx)},
         "steps": n_steps,
         "all_finite_without_guards": bool(all(v["finite"] for v in summary.values())),
+        # Sprint U P0-1: every prognostic stays float64 across the longer window.
+        "all_prognostics_fp64": bool(all_fp64),
         "state_summary": summary,
     }
 
@@ -134,6 +144,7 @@ def main() -> int:
     warm = warm_bubble_guards_off_passes()
     verdict = "PASS" if (
         real["all_finite_without_guards"]
+        and real["all_prognostics_fp64"]
         and warm["passes_without_guards"]
     ) else "FAIL"
     payload = {
@@ -147,8 +158,12 @@ def main() -> int:
             "The idealized warm bubble PASSES the full F7N gate 6/6 with ALL guards "
             "DISABLED (the idealized harness namelist is disable_guards=True: no theta "
             "limiter, no dry-mass guard, no finite fallback), and the real Canary d02 "
-            "operational dycore advances a finite state guards-off.  So the closed F7 "
-            "dycore is stable on its own.  The conservative per-level theta limiter "
+            "operational dycore advances a finite state guards-off over a 50-step "
+            "window.  Sprint U P0-1: that real-case window is now GENUINELY fp64 -- "
+            "every prognostic (u/v/w/theta/ph/mu) stays float64 across all 50 steps "
+            "(state_summary.*.dtype == float64), not silently downcast to fp32 under "
+            "force_fp64 (the pre-fix bug).  So the closed F7 dycore is stable on its "
+            "own in true double precision.  The conservative per-level theta limiter "
             "does engage when guards are ON, but since the guards-off run PASSES it is "
             "NOT load-bearing for the gate -- it is a production safety net, not a prop."
         ),

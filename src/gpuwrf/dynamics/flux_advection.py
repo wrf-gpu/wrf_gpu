@@ -149,7 +149,14 @@ def couple_velocities_periodic(
     increments = -(dnw[:, None, None] * c1h[:, None, None] * dmdt) - divv  # (nz, ny, nx) per k-1
     # ww at faces 1..nz-1 = cumulative sum of increments[0..k-1]; ww(0)=0, ww(nz)=0 (rigid).
     cum = jnp.cumsum(increments, axis=0)  # (nz, ny, nx); cum[k-1] is ww at face k
-    rom = jnp.zeros((nz + 1,) + tuple(mu_total.shape), dtype=u.dtype)
+    # Sprint U P0-1: ``rom`` must carry the result dtype of the increment chain
+    # (which promotes to fp64 whenever the c1h/c2h/dnw metrics are fp64), not
+    # ``u.dtype``.  Allocating at ``u.dtype`` silently down-cast the coupled
+    # vertical velocity to fp32 when ``u`` was fp32, which both (a) tripped the
+    # fp64->fp32 scatter warning and (b) ran the whole flux-form advection in
+    # fp32 despite force_fp64.  result_type keeps it fp64 on the operational
+    # force_fp64 path and is the identity once ``u`` is fp64.
+    rom = jnp.zeros((nz + 1,) + tuple(mu_total.shape), dtype=cum.dtype)
     rom = rom.at[1:nz, :, :].set(cum[: nz - 1, :, :])
     # face nz (top) stays 0 (rigid lid); face 0 (surface) stays 0.
     return CoupledVelocities(ru=ru, rv=rv, rom=rom)
@@ -206,7 +213,11 @@ def advect_scalar_flux(
     # ---- z flux divergence (order 3, rigid top/bottom) ----
     nz = int(field.shape[0])
     rom = vel.rom  # (nz+1, ny, nx) at w faces; rom[0]=rom[nz]=0
-    vflux = jnp.zeros((nz + 1,) + tuple(field.shape[1:]), dtype=field.dtype)
+    # Sprint U P0-1: promote the scatter buffer to result_type(field, rom) so an
+    # fp64 transporting velocity against an fp32 scalar field is carried in fp64
+    # rather than silently down-cast on the .at[].set (identity when both fp64).
+    out_dtype = jnp.result_type(field.dtype, rom.dtype)
+    vflux = jnp.zeros((nz + 1,) + tuple(field.shape[1:]), dtype=out_dtype)
     # interior faces k=2..nz-2 (WRF kts+2..ktf-1, 0-based face index 2..nz-2): flux3
     if nz >= 4:
         # flux3 face value at face k uses field[k-2,k-1,k,k+1] with vel=-rom(k).
@@ -385,7 +396,10 @@ def _mass_to_full_levels(field_mass: jax.Array, fzm: jax.Array, fzp: jax.Array) 
     """
 
     nz = int(field_mass.shape[0])
-    out = jnp.zeros((nz + 1,) + tuple(field_mass.shape[1:]), dtype=field_mass.dtype)
+    # Sprint U P0-1: result_type(field, fzm/fzp) so fp64 metric weights do not
+    # force a silent fp64->fp32 scatter when ``field_mass`` is fp32.
+    out_dtype = jnp.result_type(field_mass.dtype, fzm.dtype, fzp.dtype)
+    out = jnp.zeros((nz + 1,) + tuple(field_mass.shape[1:]), dtype=out_dtype)
     interior = fzm[1:nz, None, None] * field_mass[1:nz, :, :] + fzp[1:nz, None, None] * field_mass[: nz - 1, :, :]
     out = out.at[1:nz, :, :].set(interior)
     out = out.at[0, :, :].set(field_mass[0, :, :])
@@ -413,7 +427,13 @@ def _vertical_flux_div_3(field_mass: jax.Array, romq: jax.Array, rdzw: jax.Array
     """
 
     nz = int(field_mass.shape[0])
-    vflux = jnp.zeros((nz + 1,) + tuple(field_mass.shape[1:]), dtype=field_mass.dtype)
+    # Sprint U P0-1: allocate vflux at the promoted dtype of the advected field
+    # and the (metric-derived) transporting velocity so an fp64 ``romq`` against
+    # an fp32 ``field_mass`` is computed in fp64 instead of triggering a silent
+    # fp64->fp32 scatter down-cast.  When both are fp64 (the operational
+    # force_fp64 path) this is the identity; it never drops precision.
+    out_dtype = jnp.result_type(field_mass.dtype, romq.dtype)
+    vflux = jnp.zeros((nz + 1,) + tuple(field_mass.shape[1:]), dtype=out_dtype)
     if nz >= 4:
         q_km2 = field_mass[: nz - 3, :, :]
         q_km1 = field_mass[1 : nz - 2, :, :]
@@ -472,7 +492,11 @@ def _vertical_flux_div_w(w: jax.Array, rom: jax.Array, rdn: jax.Array, *, top_li
     nz = nzp1 - 1  # mass levels; w faces 0..nz
     # vel at face k = 0.5*(rom(k)+rom(k-1)); valid for faces 1..nz.
     vel_face = 0.5 * (rom + jnp.roll(rom, 1, axis=0))  # (nz+1,..); index 0 invalid
-    vflux = jnp.zeros_like(w)  # (nz+1, ny, nx); vflux at face k
+    # Sprint U P0-1: carry vflux/tend at result_type(w, rom) so an fp64
+    # transporting rom against an fp32 w is computed in fp64 (no silent scatter
+    # down-cast); identity when both are fp64 (the operational force_fp64 path).
+    out_dtype = jnp.result_type(w.dtype, rom.dtype)
+    vflux = jnp.zeros((nzp1,) + tuple(w.shape[1:]), dtype=out_dtype)  # vflux at face k
     # flux3 at interior faces k=3..nz-1 (WRF kts+3..ktf-1): stencil w[k-2,k-1,k,k+1], vel=-vel_face(k)
     if nz >= 4:
         q_km2 = w[1 : nz - 2, :, :]  # w(k-2) for k=3..nz-1 -> idx 1..nz-3
@@ -505,7 +529,7 @@ def _vertical_flux_div_w(w: jax.Array, rom: jax.Array, rdn: jax.Array, *, top_li
     if (not top_lid) and nz >= 1:
         vflux = vflux.at[nz, :, :].set(vel_face[nz, :, :] * 0.5 * (w[nz, :, :] + w[nz - 1, :, :]))
     # tendency on interior w faces k=1..nz-1: -rdn(k)*(vflux(k+1)-vflux(k)).
-    tend = jnp.zeros_like(w)
+    tend = jnp.zeros((nzp1,) + tuple(w.shape[1:]), dtype=out_dtype)
     if nz >= 2:
         interior = -rdn[1:nz, None, None] * (vflux[2 : nz + 1, :, :] - vflux[1:nz, :, :])
         tend = tend.at[1:nz, :, :].set(interior)

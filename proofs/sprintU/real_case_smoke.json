@@ -16,7 +16,7 @@
     "w_damping": 1,
     "zdamp": 5000.0
   },
-  "build_seconds": 12.61,
+  "build_seconds": 20.82,
   "cpu_affinity": [
     0,
     1,
@@ -29,13 +29,13 @@
     "boundary": false,
     "dt_s": 10.0,
     "physics": false,
-    "run_seconds": 50.09,
+    "run_seconds": 100.04,
     "state_summary": {
       "mu": {
         "dtype": "float64",
         "finite": true,
-        "max": 97173.29285307179,
-        "min": 65238.32440889112,
+        "max": 97173.29285307178,
+        "min": 65238.324408891145,
         "shape": [
           66,
           159
@@ -44,7 +44,7 @@
       "p": {
         "dtype": "float64",
         "finite": true,
-        "max": 105341.78436139792,
+        "max": 105341.78436139796,
         "min": 6261.126362228673,
         "shape": [
           44,
@@ -66,7 +66,7 @@
       "theta": {
         "dtype": "float64",
         "finite": true,
-        "max": 492.4984493877051,
+        "max": 492.498449387705,
         "min": 288.92699642685784,
         "shape": [
           44,
@@ -78,7 +78,7 @@
         "dtype": "float64",
         "finite": true,
         "max": 25.618281396960473,
-        "min": -10.476713115758544,
+        "min": -10.476713115758482,
         "shape": [
           44,
           66,
@@ -88,8 +88,8 @@
       "v": {
         "dtype": "float64",
         "finite": true,
-        "max": 11.219434340308705,
-        "min": -11.649577505277811,
+        "max": 11.219434340308634,
+        "min": -11.649577505277799,
         "shape": [
           44,
           67,
@@ -99,8 +99,8 @@
       "w": {
         "dtype": "float64",
         "finite": true,
-        "max": 182.97363061250084,
-        "min": -9.447131133792375,
+        "max": 182.97363061250078,
+        "min": -9.447131133792334,
         "shape": [
           45,
           66,
@@ -111,7 +111,7 @@
     "steps": 6
   },
   "flux_form_branch_active": true,
-  "flux_vs_primitive_theta_linf": 8724.04837738763,
+  "flux_vs_primitive_theta_linf": 8724.047172095774,
   "grid": {
     "nx": 159,
     "ny": 66,

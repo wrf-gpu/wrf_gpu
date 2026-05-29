@@ -15,11 +15,21 @@ path uses the SAME validated F7 operators as the idealized gates.
   linf=0.0 → same dycore), and the full warm bubble PASSES 6/6 through the
   operational entry point. Real Canary d02 (44×66×159) builds + runs finite.
   (`proofs/sprintU/operational_path_unification.md`, `real_case_smoke.json`)
-- **P0-2 WRF deformation momentum diffusion**: `wrf_deformation_momentum_tendency`
-  wired for u/v/w (theta keeps the conservative scalar flux-divergence). Analytic
-  oracle: du matches FD to round-off, dw to ~1% + 2nd-order convergence. Straka
-  PASSES 6/6 WITH the deformation operator (mass drift 1.4e-16).
-  (`proofs/sprintU/momentum_diffusion_deformation.md`, `straka_deformation_gate.md`)
+- **P0-2 WRF deformation momentum diffusion (2D one-row u/w subcase ONLY;
+  full 3D u/v/w DEFERRED to Phase B — honest scope, GPT confirm-close)**:
+  `wrf_deformation_momentum_tendency` implements the flat-slab **one-row u/w**
+  deformation reduction (`du`/`dw` from `defor11/33/13`); it does NOT implement
+  the full WRF deformation tensor (`defor22/12/23`, `horizontal_diffusion_v_2`,
+  `horizontal_diffusion_u/w_2` multi-row). When deformation mode is enabled, the
+  runtime explicitly keeps **v** on the scalar flux-divergence form
+  (`operational_mode.py:1206-1216`). Analytic oracle: du matches FD to round-off,
+  dw to ~1% + 2nd-order convergence (constant-density u/w closed forms only).
+  Straka (2D x-z) PASSES 6/6 WITH the one-row operator (mass drift 1.4e-16).
+  **This is sufficient and correct for the 2D Straka density-current gate and is
+  NOT on the operational real-case critical path** — see the P0-2 deferral entry
+  below.
+  (`proofs/sprintU/momentum_diffusion_deformation.md`, `straka_deformation_gate.md`;
+  GPT confirm-close `.agent/sprints/2026-05-29-sprintU-operationalize-dycore/gpt-confirm-close-findings.md`)
 - **P0-3 canonical-WRF Straka parity**: reran under canonical em_grav2d_x controls
   (dt=1, 6 acoustic substeps==time_step_sound, damp_opt=0, nz=64); array-level
   WRF-vs-JAX through touchdown PASSES — worst max|w| rel diff 0.119 (5% at the 240s
@@ -38,8 +48,26 @@ path uses the SAME validated F7 operators as the idealized gates.
   dycore finite guards-off. The theta limiter is a safety net, NOT load-bearing.
   (`proofs/sprintU/guards_off_operational_proof.json`)
 
-**Honest remaining scope (Phase-B gates, NOT closed):** 3D terrain slope (zx/zy)
-diffusion cross-coordinate terms, map factors, lateral specified/nested boundaries,
+**P0-2 deferral — full 3D u/v/w deformation tensor is NOT on the operational
+critical path (Sprint U, GPT-conditionally-blessed deferral, documented honestly):**
+The operational real-case path (`daily_pipeline._build_real_case`) runs WRF's
+`diff_6th_opt=2` (6th-order numerical filter, `module_big_step_utilities_em.F:6504-6920`)
+for momentum/scalar dissipation — it does **NOT** enable `km_opt` deformation
+diffusion (`use_deformation_momentum_diffusion=False` in the real-case namelist).
+Therefore the full WRF deformation tensor (`defor11/22/33/12/13/23`,
+`horizontal_diffusion_u/v/w_2`, `cal_deform_and_div`,
+`module_diffusion_em.F:3323/3503-3508`) is **NOT** exercised by the operational
+forecast. The implemented **one-row u/w** deformation operator is sufficient for
+the 2D Straka x-z density-current gate (the only place deformation diffusion is
+turned on). The full 3D u/v/w deformation tensor (incl. v / D22 / D12 / D23, the
+multi-row terms, and terrain-slope coupling) is **DEFERRED to Phase B** (terrain /
+3D coupling), where it becomes load-bearing. No overclaim: P0-2 is closed only for
+the 2D one-row u/w subcase; the stated full u/v/w WRF deformation remediation is a
+Phase-B item.
+
+**Honest remaining scope (Phase-B gates, NOT closed):** full 3D u/v/w deformation
+tensor (see P0-2 deferral above), 3D terrain slope (zx/zy) diffusion
+cross-coordinate terms, map factors, lateral specified/nested boundaries,
 moist/scalar coupling through the RK bundle, and per-cell (vs time-series) WRF field
 parity. The operational ADVECTION/DIFFUSION/DAMPING/PRECISION operators are unified
 and validated; terrain/map-factor/boundary coupling remains for Phase B.

@@ -86,7 +86,13 @@ def main() -> int:
 
     # --- Static branch verification: confirm the flux-form branch is taken and
     #     produces a DIFFERENT tendency than the primitive path for this namelist.
-    haloed = apply_halo(case.state, halo_spec(nl.grid))
+    #     Use the fp64-enforced state so the static check exercises exactly the
+    #     precision the operational dycore step runs (Sprint U P0-1): the
+    #     operational carry is built from _enforce_operational_precision(.., True),
+    #     so verifying against the raw mixed-precision template would test a
+    #     different (and now-eliminated) fp32/fp64 promotion path.
+    fp64_state = _enforce_operational_precision(case.state, force_fp64=True)
+    haloed = apply_halo(fp64_state, halo_spec(nl.grid))
     base = compute_advection_tendencies(haloed, nl.tendencies, nl.grid)
     fluxed = _augment_large_step_tendencies(haloed, base, nl, rk_step=3)
     # The flux-form theta tendency must differ materially from the primitive base.
