@@ -158,16 +158,23 @@ class DycoreMetrics:
         if tuple(eta.shape) != (nz + 1,):
             raise ValueError("eta_levels shape must be (nz + 1,)")
         eta_mass = 0.5 * (eta[:-1] + eta[1:])
-        # WRF metric construction (module_initialize_ideal.F:711-727).  ``dnw`` is
-        # the eta FACE spacing; ``dn`` is the MASS-LEVEL spacing dn(k)=0.5*(dnw(k)
-        # +dnw(k-1)), distinct from ``dnw`` whenever eta is non-uniform.  The
-        # earlier ``dn=dnw`` shortcut was only correct for uniform eta levels and
-        # produced a singular calc_coef_w tridiagonal on hydrostatic eta grids.
-        dnw = jnp.abs(eta[1:] - eta[:-1])  # (nz,) face spacing
+        # WRF metric construction (module_initialize_ideal.F:711-718).  ``dnw`` is
+        # the SIGNED eta FACE spacing ``dnw(k)=znw(k+1)-znw(k)``; for the normal
+        # eta ordering (1 -> 0, decreasing) this is NEGATIVE, and ``rdnw=1/dnw``
+        # is likewise negative.  WRF's hydrostatic/al inverse, pg_buoy_w, advance_w
+        # and the flux-form omega recurrence are written for this SIGNED metric and
+        # are exact discrete inverses only with it (F7G; gpt-council-findings.md
+        # Q1/§4).  ``dn`` is the MASS-LEVEL spacing dn(k)=0.5*(dnw(k)+dnw(k-1)),
+        # distinct from ``dnw`` whenever eta is non-uniform; it inherits the same
+        # (negative) sign.  ``load_wrfinput_metrics`` already returns WRF-signed
+        # DNW/RDNW from netCDF, so this keeps the analytic fixture consistent with
+        # real WRF input.  NOTE: fnm/fnp/cf1/cf2/cf3 are ratios dnw/dn and are
+        # therefore SIGN-INVARIANT (both numerator and denominator flip together).
+        dnw = eta[1:] - eta[:-1]  # (nz,) WRF-signed face spacing (negative for normal eta)
         rdnw = 1.0 / dnw
         dn = jnp.ones((nz,), dtype=jnp.float64)
         dn = dn.at[1:].set(0.5 * (dnw[1:] + dnw[:-1]))  # dn[k]=0.5*(dnw[k]+dnw[k-1]), k=1..nz-1
-        dn = dn.at[0].set(dnw[0])  # dn[0] is unused by WRF; set finite.
+        dn = dn.at[0].set(dnw[0])  # dn[0] is unused by WRF; set finite (same sign).
         rdn = 1.0 / dn
         fnm = jnp.zeros((nz,), dtype=jnp.float64)
         fnp = jnp.zeros((nz,), dtype=jnp.float64)

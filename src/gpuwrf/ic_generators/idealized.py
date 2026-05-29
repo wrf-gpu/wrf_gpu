@@ -488,10 +488,15 @@ def _make_state(case: NumpyIdealizedCase, grid: GridSpec, device: jax.Device) ->
     # (module_small_step_em.F:1486-1489), NOT a synthetic ph/p source.
     #
     # The JAX pure-sigma grid has c1h=1, c2h=0 and mu'=0, so (c1h*mub+c2h)=mu and
-    # the recurrence collapses to ph'(k+1)=ph'(k) - dnw(k)*mu*al(k).  We use the
-    # |dnw| upward-positive convention (WRF dnw<0) so the integration adds upward.
+    # the recurrence collapses to ph'(k+1)=ph'(k) - dnw(k)*mu*al(k).  F7G uses the
+    # WRF-SIGNED ``dnw=znw(k+1)-znw(k)`` (negative for normal eta), so the equation
+    # is written literally as WRF (module_initialize_ideal.F:1124-1129 / :1308-1313)
+    # ``ph'(k+1)=ph'(k) - wrf_dnw(k)*(...)`` -- NOT hidden behind abs(dnw).  This is
+    # numerically identical to the previous +|dnw| form (since -wrf_dnw=+|dnw|) but
+    # is now the exact discrete inverse of the WRF-signed calc_p_rho_phi diagnostic
+    # the dycore applies (gpt-council-findings.md Q1; AC1 round-trip).
     eta = np.asarray(case.eta_levels, dtype=np.float64)
-    dnw = np.abs(eta[1:] - eta[:-1])  # (nz,) WRF |dnw|
+    wrf_dnw = eta[1:] - eta[:-1]  # (nz,) WRF-signed dnw (negative for normal eta)
     mu = float(case.mu_base_pa[0, 0])
     p_mass = case.pressure_pa  # (nz, nx) base hydrostatic mass-level pressure (p+pb)
     mass_h = mu  # c1h*mub + c2h with c1h=1, c2h=0, mub=mu (pure sigma)
@@ -503,17 +508,37 @@ def _make_state(case: NumpyIdealizedCase, grid: GridSpec, device: jax.Device) ->
     phb_col = np.zeros(case.nz + 1, dtype=np.float64)
     ph_pert_col = np.zeros((case.nz + 1, case.nx), dtype=np.float64)
     for k in range(case.nz):
-        phb_col[k + 1] = phb_col[k] + dnw[k] * mass_h * alb[k]
-        ph_pert_col[k + 1, :] = ph_pert_col[k, :] + dnw[k] * mass_h * al[k, :]
+        phb_col[k + 1] = phb_col[k] - wrf_dnw[k] * mass_h * alb[k]
+        ph_pert_col[k + 1, :] = ph_pert_col[k, :] - wrf_dnw[k] * mass_h * al[k, :]
     ph_total = (phb_col[:, None] + ph_pert_col)[:, None, :]  # ph0 = phb + ph'
     ph_pert = ph_pert_col[:, None, :]
+
+    # F7G start_em-equivalent post-init recompute (start_em.F:819-868): WRF derives
+    # the diagnostic perturbation pressure ``grid%p`` from the rebalanced ph_1, the
+    # WRF-signed calc_p_rho_phi al inverse, and the EOS BEFORE the first RK tendency
+    # so that rk_tendency's once-per-stage pg_buoy_w(grid%p) has the real θ′ pressure
+    # structure to act on.  Previously p_perturbation was left at 0, so the stage
+    # grid%p (hence pg_buoy_w) was zero and the bubble was unforced.  With c1h=1,
+    # c2h=0, mu'=0 (pure sigma fixed-mass) the al inverse reduces to
+    #   al(k) = -rdnw(k)*(ph'(k+1)-ph'(k))/mu     [signed rdnw<0]
+    # which by construction equals al_init = alt_full-alb (AC1 round-trip), and
+    #   p'(k) = p0*((R_d*(t0+t')*qvf)/(p0*(al+alb)))^(cp/cv) - pb(k).
+    wrf_rdnw = 1.0 / wrf_dnw  # (nz,) signed rdnw (negative)
+    al_diag = -(wrf_rdnw[:, None] * (ph_pert_col[1:, :] - ph_pert_col[:-1, :])) / mass_h  # (nz, nx)
+    alt_diag = al_diag + alb[:, None]  # full inverse density
+    cpovcv = CP_DRY_AIR / CV_DRY_AIR
+    pb_col = p_mass  # (nz, nx) base hydrostatic pressure (neutral θ0 column)
+    p_full = P0_PA * ((R_DRY_AIR * case.theta_k) / (P0_PA * alt_diag)) ** cpovcv  # (nz, nx)
+    p_pert = (p_full - pb_col)[:, None, :]  # (nz, 1, nx) WRF grid%p = p_total - pb
+    p_total_field = (pb_col[:, None, :] + p_pert)  # already (nz,1,nx) via p_pert broadcast
+    p_total_field = pb_col[:, None, :] + p_pert
 
     fields.update(
         {
             "theta": _put(theta, "theta", device),
-            "p": _put(pressure, "p", device),
-            "p_total": _put(pressure, "p_total", device),
-            "p_perturbation": _put(zero_mass, "p_perturbation", device),
+            "p": _put(p_total_field, "p", device),
+            "p_total": _put(p_total_field, "p_total", device),
+            "p_perturbation": _put(p_pert, "p_perturbation", device),
             "ph": _put(ph_total, "ph", device),
             "ph_total": _put(ph_total, "ph_total", device),
             "ph_perturbation": _put(ph_pert, "ph_perturbation", device),
