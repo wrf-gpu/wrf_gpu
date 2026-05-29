@@ -54,9 +54,13 @@ re-running the Sprint A gates. WRF Fortran source treated as ground truth.
 
 ## Acceptance gate status
 
-- **AC1 Straka density current — NOT MET (RAN_TO_COMPLETION, verdict FAIL).** Runs
-  finite/stable but does not reach the reference front position (same transport gap
-  as the warm bubble; see below). [run pending in final pass]
+- **AC1 Straka density current — NOT MET (RAN_TO_COMPLETION, verdict FAIL).** The
+  case now runs end-to-end on GPU (was BLOCKED/never-ran in F2), but goes non-finite
+  by 900 s (`all_snapshots_finite=False`): the cold pool needs the horizontal
+  circulation to spread the front, which is the missing large-step PGF/transport
+  coupling (below); over the long 9000-step integration the unbalanced vertical
+  motion + const-K (ν=75) diffusion destabilises. Front position not reached.
+  `proofs/f7b/straka_density_current_*`.
 - **AC2 Skamarock warm bubble — PARTIAL: RAN_TO_COMPLETION, verdict FAIL.** Finite
   for the full 5000 steps, dry-mass drift ≤1e-8, bounded θ′; the buoyancy now drives
   coherent upward `w` (0→3→11→23→41 m/s). FAILS `thermal_rise` and the `max|w|≤30`
