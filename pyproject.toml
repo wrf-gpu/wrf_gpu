@@ -24,3 +24,6 @@ where = ["src"]
 [tool.pytest.ini_options]
 testpaths = ["tests", "evals/agentos"]
 pythonpath = ["src"]
+markers = [
+    "close_gate: dycore close-gate tests that MUST assert verdict==PASS (require a JAX GPU backend); a regression to FAIL fails CI rather than being false-green.",
+]
