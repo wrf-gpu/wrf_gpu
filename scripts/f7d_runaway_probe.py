@@ -32,14 +32,18 @@ from gpuwrf.runtime.operational_mode import _physics_boundary_step
 from gpuwrf.runtime.operational_state import initial_operational_carry
 
 
-def _diag(carry) -> dict:
+def _diag(carry, z_m) -> dict:
     """Per-step scalar diagnostics on the (k, 1, x) idealized slab."""
     state = carry.state
     w = state.w[:, 0, :]
     u = state.u[:, 0, :]
     theta = state.theta[:, 0, :]
+    thp = theta - 300.0
     p = state.p_perturbation[:, 0, :]
     mu = state.mu_total[0, :]
+    wpos = jnp.maximum(thp, 0.0)
+    tot = jnp.sum(wpos)
+    cz = jnp.where(tot > 1e-9, jnp.sum(wpos * z_m[:, None]) / jnp.maximum(tot, 1e-12), 0.0)
     finite = (
         jnp.all(jnp.isfinite(w)) & jnp.all(jnp.isfinite(u))
         & jnp.all(jnp.isfinite(theta)) & jnp.all(jnp.isfinite(p))
@@ -49,10 +53,11 @@ def _diag(carry) -> dict:
         "finite": finite,
         "max_abs_w": jnp.max(jnp.abs(w)),
         "max_abs_u": jnp.max(jnp.abs(u)),
-        "theta_prime_min": jnp.min(theta) - 300.0,
-        "theta_prime_max": jnp.max(theta) - 300.0,
+        "theta_prime_min": jnp.min(thp),
+        "theta_prime_max": jnp.max(thp),
         "max_abs_p_pert": jnp.max(jnp.abs(p)),
         "mass_total_pa": jnp.sum(mu),
+        "pos_theta_cz": cz,
     }
 
 
@@ -61,17 +66,22 @@ def main(argv=None) -> int:
     parser.add_argument("--case", choices=("warm_bubble", "density_current"), required=True)
     parser.add_argument("--end-seconds", type=float, default=200.0)
     parser.add_argument("--stride-seconds", type=float, default=10.0)
+    parser.add_argument("--epssm", type=float, default=None, help="override off-centering (WRF-cited; e.g. 0.5)")
     parser.add_argument("--output", type=Path, default=None)
     args = parser.parse_args(argv)
 
     case = build_warm_bubble_numpy() if args.case == "warm_bubble" else build_density_current_numpy()
     setup = _build_setup(case, require_gpu=True)
     namelist = setup.namelist
+    if args.epssm is not None:
+        import dataclasses as _dc
+        namelist = _dc.replace(namelist, epssm=float(args.epssm))
     carry0 = initial_operational_carry(_enforce_operational_precision(setup.state, force_fp64=True))
 
     dt = float(case.dt_s)
     stride = max(1, int(round(args.stride_seconds / dt)))
     n_marks = int(round(args.end_seconds / args.stride_seconds))
+    z_m = jnp.asarray(case.z_m)
 
     @jax.jit
     def run(carry):
@@ -82,11 +92,11 @@ def main(argv=None) -> int:
             base = mark_idx * stride
             steps = base + jnp.arange(stride, dtype=jnp.int32) + 1
             c, _ = jax.lax.scan(stride_body, c, steps)
-            return c, _diag(c)
+            return c, _diag(c, z_m)
 
         marks = jnp.arange(n_marks, dtype=jnp.int32)
         final, diags = jax.lax.scan(mark_body, carry, marks)
-        return final, diags, _diag(carry)
+        return final, diags, _diag(carry, z_m)
 
     print(f"case={args.case} dt={dt} device={setup.device} compiling+running...", flush=True)
     final, diags, diag0 = run(carry0)
