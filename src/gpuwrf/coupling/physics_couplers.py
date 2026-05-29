@@ -325,23 +325,45 @@ def _time_utc_parts(time_utc) -> tuple[float, float]:
     return julian, minute
 
 
-def _compute_coszen(lat, lon, time_utc):
-    """Compute WRF-style cosine solar zenith from lat/lon and UTC time.
+def _compute_coszen(lat, lon, time_utc, lead_seconds=0.0):
+    """Compute WRF-style cosine solar zenith from lat/lon and the forecast clock.
 
-    This mirrors `module_radiation_driver.F` `radconst` + `calc_coszen`:
-    23.5 degree obliquity and the same equation-of-time correction.
+    Faithful transcription of `module_radiation_driver.F` `radconst`
+    (`:3594-3636`, 23.5 deg obliquity + vernal-equinox solar longitude) and
+    `calc_coszen` (`:3639-3666`, equation-of-time + hour-angle), verified
+    line-for-line against the pristine WRF v4 source.
+
+    Model time is THREADED, not fixed. WRF's `calc_coszen` uses
+    `tloctm = gmt + xt24/60 + xlon/15` with `xt24 = mod(xtime,1440) + eot`,
+    where `xtime` is *minutes since simulation start* and `gmt` is the start
+    hour. We carry the static base instant in `time_utc` (-> Julian day +
+    absolute UTC minutes-of-day = `gmt*60 + xtime_at_base`) and add the elapsed
+    forecast `lead_seconds`. `lead_seconds` may be a traced JAX value, so the
+    diurnal cycle advances correctly *inside* `jax.lax.scan` — no fixed-time
+    fallback once a caller threads the step lead through.
+
+    `time_utc=None` is the LEGACY no-clock path (kept only for old call sites
+    that never plumbed a clock); it pins a deterministic mid-day base. Callers
+    on the operational diurnal path pass the real init instant + lead.
     """
 
     julian, utc_minute = _time_utc_parts(time_utc)
     lat_rad = jnp.asarray(lat, dtype=jnp.float64) * DEG_TO_RAD
     lon_deg = jnp.asarray(lon, dtype=jnp.float64)
+    lead_minutes = jnp.asarray(lead_seconds, dtype=jnp.float64) / 60.0
+    # Absolute UTC minutes-of-(base)-day advanced by elapsed forecast minutes,
+    # then rolled into Julian-day for the declination/EOT terms so multi-day
+    # forecasts keep the seasonal term correct.
+    abs_minute = utc_minute + lead_minutes
+    day_advance = jnp.floor(abs_minute / MINUTES_PER_DAY)
+    julian_now = julian + day_advance
 
     obecl = 23.5 * DEG_TO_RAD
-    sxlong_day = jnp.where(julian >= 80.0, julian - 80.0, julian + 285.0)
+    sxlong_day = jnp.where(julian_now >= 80.0, julian_now - 80.0, julian_now + 285.0)
     sxlong = sxlong_day * (360.0 / 365.0) * DEG_TO_RAD
     declin = jnp.arcsin(jnp.sin(obecl) * jnp.sin(sxlong))
 
-    da = 2.0 * jnp.pi * (julian - 1.0) / 365.0
+    da = 2.0 * jnp.pi * (julian_now - 1.0) / 365.0
     eot = (
         0.000075
         + 0.001868 * jnp.cos(da)
@@ -349,7 +371,7 @@ def _compute_coszen(lat, lon, time_utc):
         - 0.014615 * jnp.cos(2.0 * da)
         - 0.04089 * jnp.sin(2.0 * da)
     ) * 229.18
-    xt24 = jnp.mod(utc_minute, MINUTES_PER_DAY) + eot
+    xt24 = jnp.mod(abs_minute, MINUTES_PER_DAY) + eot
     local_time_h = xt24 / 60.0 + lon_deg / 15.0
     hour_angle = 15.0 * (local_time_h - 12.0) * DEG_TO_RAD
     coszen = jnp.sin(lat_rad) * jnp.sin(declin) + jnp.cos(lat_rad) * jnp.cos(declin) * jnp.cos(hour_angle)
@@ -393,6 +415,7 @@ def _rrtmg_column_inputs(
     grid: GridSpec | None,
     *,
     time_utc=None,
+    lead_seconds=0.0,
 ) -> tuple[RRTMGSWColumnState, RRTMGLWColumnState, object, object, object]:
     """Build SW/LW RRTMG column states and expose shared surface fields."""
 
@@ -409,7 +432,7 @@ def _rrtmg_column_inputs(
     surface_shape = state.t_skin.shape
     surface_albedo, surface_emissivity = _surface_radiation_properties(state)
     lat, lon = _grid_lat_lon(surface_shape, grid, state.t_skin.dtype)
-    coszen = _compute_coszen(lat, lon, time_utc).astype(state.t_skin.dtype)
+    coszen = _compute_coszen(lat, lon, time_utc, lead_seconds).astype(state.t_skin.dtype)
 
     sw_state = RRTMGSWColumnState(
         _to_columns(T),
@@ -679,13 +702,20 @@ def rrtmg_radiation_diagnostics(
     grid: GridSpec | None = None,
     *,
     time_utc=None,
+    lead_seconds=0.0,
 ) -> RRTMGRadiationDiagnostics:
-    """Return surface RRTMG radiation diagnostics without changing State."""
+    """Return surface RRTMG radiation diagnostics without changing State.
+
+    `time_utc` is the simulation init instant; `lead_seconds` (may be traced)
+    is elapsed forecast time, so SWDOWN/GLW/coszen follow the real forecast
+    clock (diurnal cycle) at the M9 I/O cadence.
+    """
 
     sw_state, lw_state, surface_albedo, surface_emissivity, coszen = _rrtmg_column_inputs(
         state,
         grid,
         time_utc=time_utc,
+        lead_seconds=lead_seconds,
     )
     sw = solve_rrtmg_sw_column(sw_state, debug=False)
     lw = solve_rrtmg_lw_column(lw_state, debug=False)
@@ -700,11 +730,27 @@ def rrtmg_radiation_diagnostics(
     )
 
 
-def rrtmg_adapter(state: State, dt: float, grid: GridSpec | None = None, *, time_utc=None) -> State:
-    """Run SW and LW RRTMG column kernels and apply their temperature tendency."""
+def rrtmg_adapter(
+    state: State,
+    dt: float,
+    grid: GridSpec | None = None,
+    *,
+    time_utc=None,
+    lead_seconds=0.0,
+) -> State:
+    """Run SW and LW RRTMG column kernels and apply their temperature tendency.
+
+    Model time is threaded: `time_utc` is the init instant and `lead_seconds`
+    (may be a traced JAX value inside the operational scan) is elapsed forecast
+    time. The solar-zenith / diurnal forcing therefore responds to the actual
+    forecast clock; there is NO fixed-time fallback on the diurnal path once a
+    caller passes the step lead.
+    """
 
     T = _temperature_from_theta(state.theta, state.p)
-    sw_state, lw_state, _, _, _ = _rrtmg_column_inputs(state, grid, time_utc=time_utc)
+    sw_state, lw_state, _, _, _ = _rrtmg_column_inputs(
+        state, grid, time_utc=time_utc, lead_seconds=lead_seconds
+    )
     sw = solve_rrtmg_sw_column(sw_state, debug=False)
     lw = solve_rrtmg_lw_column(lw_state, debug=False)
     T_next = T + float(dt) * _from_columns(sw.heating_rate + lw.heating_rate)
