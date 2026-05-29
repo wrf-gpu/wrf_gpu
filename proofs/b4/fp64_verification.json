@@ -1,0 +1,53 @@
+{
+  "artifact_type": "b4_fp64_verification",
+  "conclusion": "Boundary apply preserves float64 end-to-end under force_fp64, and on the operational perf path never downcasts an fp64-locked prognostic nor reads its forcing leaf in fp32. fp32-gated u/v/theta/qv stay fp32 (sanctioned ADR-007 storage; the wrfout data source is itself fp32).",
+  "regime_A_force_fp64": {
+    "all_fp64": true,
+    "boundary_leaf_dtypes": {
+      "mu_bdy": "float64",
+      "mub_bdy": "float64",
+      "p_bdy": "float64",
+      "pb_bdy": "float64",
+      "ph_bdy": "float64",
+      "phb_bdy": "float64",
+      "qv_bdy": "float64",
+      "theta_bdy": "float64",
+      "u_bdy": "float64",
+      "v_bdy": "float64",
+      "w_bdy": "float64"
+    },
+    "prognostic_dtypes_after_apply": {
+      "mu_perturbation": "float64",
+      "mu_total": "float64",
+      "p_perturbation": "float64",
+      "p_total": "float64",
+      "ph_perturbation": "float64",
+      "ph_total": "float64",
+      "qv": "float64",
+      "theta": "float64",
+      "u": "float64",
+      "v": "float64",
+      "w": "float64"
+    }
+  },
+  "regime_B_operational_perf_matrix": {
+    "fp64_locked_forcing_leaves_are_fp64": true,
+    "fp64_locked_not_downcast": true,
+    "matches_adr007_matrix": true,
+    "prognostic_dtypes_after_apply": {
+      "mu_perturbation": "float64",
+      "mu_total": "float64",
+      "p_perturbation": "float64",
+      "p_total": "float64",
+      "ph_perturbation": "float64",
+      "ph_total": "float64",
+      "qv": "float32",
+      "theta": "float32",
+      "u": "float32",
+      "v": "float32",
+      "w": "float64"
+    }
+  },
+  "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T072630Z",
+  "status": "PASS"
+}

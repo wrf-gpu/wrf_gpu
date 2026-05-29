@@ -1,0 +1,212 @@
+{
+  "artifact_type": "b4_static_field_parity",
+  "domain": "d02",
+  "explainable_rel_tol": 1e-05,
+  "grid": {
+    "nx": 159,
+    "ny": 66,
+    "nz": 44
+  },
+  "n_compared": 7,
+  "n_mismatch": 0,
+  "note": "State leaves compared bitwise/explainable vs WRF; informational rows are WRF inputs/diagnostics not stored as distinct State leaves.",
+  "rows": [
+    {
+      "field": "XLAND",
+      "max_abs_diff": 0.0,
+      "model_max": 2.0,
+      "model_min": 1.0,
+      "note": "wrfinput_d02 -> State.xland",
+      "ref_max": 2.0,
+      "ref_min": 1.0,
+      "ref_range": 1.0,
+      "rel_to_range": 0.0,
+      "shape": [
+        66,
+        159
+      ],
+      "verdict": "BITWISE"
+    },
+    {
+      "field": "LANDMASK",
+      "note": "consumed via xland/lakemask; not a separate State leaf",
+      "ref_max": 1.0,
+      "ref_min": 0.0,
+      "shape": [
+        66,
+        159
+      ],
+      "verdict": "INFORMATIONAL"
+    },
+    {
+      "field": "LU_INDEX",
+      "max_abs_diff": 0.0,
+      "model_max": 17.0,
+      "model_min": 5.0,
+      "note": "wrfinput_d02 -> State.lu_index (int32)",
+      "ref_max": 17.0,
+      "ref_min": 5.0,
+      "ref_range": 12.0,
+      "rel_to_range": 0.0,
+      "shape": [
+        66,
+        159
+      ],
+      "verdict": "BITWISE"
+    },
+    {
+      "field": "LAKEMASK",
+      "max_abs_diff": 0.0,
+      "model_max": 0.0,
+      "model_min": 0.0,
+      "note": "wrfinput_d02 -> State.lakemask",
+      "ref_max": 0.0,
+      "ref_min": 0.0,
+      "ref_range": 0.0,
+      "rel_to_range": 0.0,
+      "shape": [
+        66,
+        159
+      ],
+      "verdict": "BITWISE"
+    },
+    {
+      "field": "TSK->t_skin",
+      "max_abs_diff": 0.0,
+      "model_max": 306.7973327636719,
+      "model_min": 282.8561706542969,
+      "note": "State.t_skin = clip(TSK,180,340); raw TSK range printed in ref",
+      "ref_max": 306.7973327636719,
+      "ref_min": 282.8561706542969,
+      "ref_range": 23.941162109375,
+      "rel_to_range": 0.0,
+      "shape": [
+        66,
+        159
+      ],
+      "verdict": "BITWISE"
+    },
+    {
+      "field": "SMOIS[0]->soil_moisture",
+      "max_abs_diff": 0.0,
+      "model_max": 1.0,
+      "model_min": 0.01736450009047985,
+      "note": "State.soil_moisture = top SMOIS layer",
+      "ref_max": 1.0,
+      "ref_min": 0.01736450009047985,
+      "ref_range": 0.9826354999095201,
+      "rel_to_range": 0.0,
+      "shape": [
+        66,
+        159
+      ],
+      "verdict": "BITWISE"
+    },
+    {
+      "field": "IVGTYP",
+      "note": "WRF land-use category (input to lu_index/Noah); not a State leaf",
+      "ref_max": 17.0,
+      "ref_min": 5.0,
+      "shape": [
+        66,
+        159
+      ],
+      "verdict": "INFORMATIONAL"
+    },
+    {
+      "field": "ISLTYP",
+      "note": "WRF soil category (Noah input); not a State leaf",
+      "ref_max": 14.0,
+      "ref_min": 6.0,
+      "shape": [
+        66,
+        159
+      ],
+      "verdict": "INFORMATIONAL"
+    },
+    {
+      "field": "HGT->GridSpec.terrain_height",
+      "max_abs_diff": 0.0,
+      "model_max": 2987.11767578125,
+      "model_min": -7.947286206899662e-08,
+      "note": "wrfout t0 HGT -> GridSpec.terrain_height (consistent with state PHB)",
+      "ref_max": 2987.11767578125,
+      "ref_min": -7.947286206899662e-08,
+      "ref_range": 2987.117675860723,
+      "rel_to_range": 0.0,
+      "shape": [
+        66,
+        159
+      ],
+      "verdict": "BITWISE"
+    },
+    {
+      "field": "HGT wrfinput-vs-wrfout delta",
+      "max_abs_diff": 228.12867736816406,
+      "note": "WRF parent->nest terrain blending at init; loader now sources terrain+metrics from wrfout to match PHB",
+      "shape": [
+        66,
+        159
+      ],
+      "verdict": "INFORMATIONAL"
+    },
+    {
+      "field": "VEGFRA",
+      "note": "vegetation fraction (roughness/RRTMG input); not a State leaf",
+      "ref_max": 64.00043487548828,
+      "ref_min": 0.0,
+      "shape": [
+        66,
+        159
+      ],
+      "verdict": "INFORMATIONAL"
+    },
+    {
+      "field": "SST",
+      "note": "sea-surface temperature (water t_skin source in hourly land state); not init State leaf",
+      "ref_max": 306.7973327636719,
+      "ref_min": 282.8561706542969,
+      "shape": [
+        66,
+        159
+      ],
+      "verdict": "INFORMATIONAL"
+    },
+    {
+      "field": "ALBEDO",
+      "note": "wrfout diagnostic; surface radiation prop owned by B3 (_surface_radiation_properties)",
+      "ref_max": 0.25,
+      "ref_min": 0.07999999821186066,
+      "shape": [
+        66,
+        159
+      ],
+      "verdict": "INFORMATIONAL"
+    },
+    {
+      "field": "EMISS",
+      "note": "wrfout diagnostic; surface radiation prop owned by B3",
+      "ref_max": 0.9800000190734863,
+      "ref_min": 0.8799999952316284,
+      "shape": [
+        66,
+        159
+      ],
+      "verdict": "INFORMATIONAL"
+    },
+    {
+      "field": "ZNT",
+      "note": "ABSENT in this physics config; State.roughness_m derived from VEGFRA/land-water surrogate (documented)",
+      "ref_max": NaN,
+      "ref_min": NaN,
+      "shape": [
+        1
+      ],
+      "verdict": "INFORMATIONAL"
+    }
+  ],
+  "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T072630Z",
+  "status": "PASS",
+  "wrfinput": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T072630Z/wrfinput_d02",
+  "wrfout_t0": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T072630Z/wrfout_d02_2026-05-21_18:00:00"
+}
