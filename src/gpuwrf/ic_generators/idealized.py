@@ -543,7 +543,21 @@ def _build_setup(case: NumpyIdealizedCase, *, require_gpu: bool = True) -> Ideal
         use_flux_advection=True,
         const_nu_m2_s=const_nu,
     )
-    namelist = dataclass_replace(namelist, run_physics=False, run_boundary=False)
+    # Rigid lid + WRF top damping for the bounded idealized box: without the
+    # rigid lid the open-top w accumulates a spurious top-face mode; WRF
+    # idealized cases run with a rigid lid and an upper Rayleigh layer
+    # (damp_opt=3, dampcoef=0.2, zdamp top ~3 km).  Cited WRF coefficients,
+    # not a masking clamp.
+    namelist = dataclass_replace(
+        namelist,
+        run_physics=False,
+        run_boundary=False,
+        top_lid=True,
+        w_damping=1,
+        damp_opt=3,
+        dampcoef=0.2,
+        zdamp=3000.0,
+    )
     return IdealizedSetup(case, grid, state, namelist, str(device))
 
 

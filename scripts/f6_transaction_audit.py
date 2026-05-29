@@ -75,6 +75,7 @@ from gpuwrf.runtime.operational_mode import (
     OperationalNamelist,
     _acoustic_core_state,
     _acoustic_core_state_from_prep,
+    _augment_large_step_tendencies,
     _carry_from_acoustic_core,
     _carry_from_finished_stage,
     _enforce_operational_precision,
@@ -625,22 +626,14 @@ def _instrumented_rk_scan_step(
     )
     for rk_stage, factor, dts_rk, substeps in stages:
         haloed = apply_halo(carry.state, halo_spec(namelist.grid))
-        # Large-step DYNAMIC tendency only (advection); the horizontal PGF is a
-        # small-step term inside advance_uv, so adding it here double-counts.
+        # Match the production cadence exactly: per-stage large-step tendency =
+        # advection + diffusion + large-step horizontal PGF + rk_addtend_dry
+        # (operational_mode._augment_large_step_tendencies, all coupled), consumed
+        # ONLY inside the acoustic substep advance_uv/advance_mu_t -- no separate
+        # add_scaled_tendencies forward-Euler of the dynamics prognostics.
         tendencies = compute_advection_tendencies(haloed, namelist.tendencies, namelist.grid)
-        # WRF 6th-order numerical filter (diff_6th_opt) when enabled (Gen2 d02 = 2).
-        if int(namelist.diff_6th_opt) != 0:
-            from gpuwrf.dynamics.explicit_diffusion import sixth_order_diffusion_tendency as _s6
-            _f = float(namelist.diff_6th_factor)
-            _dt = float(namelist.dt_s)
-            tendencies = tendencies.replace(
-                u=tendencies.u + _s6(haloed.u, dt=_dt, diff_6th_factor=_f),
-                v=tendencies.v + _s6(haloed.v, dt=_dt, diff_6th_factor=_f),
-                w=tendencies.w + _s6(haloed.w, dt=_dt, diff_6th_factor=_f),
-                theta=tendencies.theta + _s6(haloed.theta, dt=_dt, diff_6th_factor=_f),
-            )
-        candidate = add_scaled_tendencies(origin, tendencies, float(namelist.dt_s) * float(factor))
-        candidate = apply_halo(candidate, halo_spec(namelist.grid))
+        tendencies = _augment_large_step_tendencies(haloed, tendencies, namelist, rk_step=int(rk_stage))
+        candidate = apply_halo(carry.state, halo_spec(namelist.grid))
         prep = small_step_prep_wrf(
             candidate,
             rk_stage,

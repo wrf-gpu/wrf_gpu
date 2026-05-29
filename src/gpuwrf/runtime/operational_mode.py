@@ -38,6 +38,11 @@ from gpuwrf.dynamics.core.acoustic import AcousticCoreConfig, AcousticCoreState,
 from gpuwrf.dynamics.core.advance_w import GRAVITY_M_S2, dry_cqw
 from gpuwrf.dynamics.core.calc_p_rho import CalcPRhoStep0, calc_p_rho_wrf
 from gpuwrf.dynamics.core.coupled import CoupledCoreConfig, coupled_timestep_core
+from gpuwrf.dynamics.core.rk_addtend_dry import (
+    DryPhysicsTendencies,
+    large_step_horizontal_pgf,
+    rk_addtend_dry,
+)
 from gpuwrf.dynamics.core.small_step_finish import small_step_finish_wrf
 from gpuwrf.dynamics.core.small_step_prep import SmallStepPrepState, small_step_prep_wrf
 from gpuwrf.dynamics.tendencies import add_scaled_tendencies
@@ -692,8 +697,10 @@ def _acoustic_core_state_from_prep(
         theta=theta_pert,
         theta_1=prep.t_save,
         theta_ave=carry.t_2ave - prep.theta_offset,
-        theta_tend=namelist.tendencies.theta,
-        mu_tend=namelist.tendencies.mu,
+        # Large-step coupled theta / mu tendencies from rk_tendency+rk_addtend_dry
+        # (advection + diffusion), consumed by advance_mu_t (t_2 += msfty*dts*t_tend).
+        theta_tend=tendencies.theta,
+        mu_tend=tendencies.mu,
         ph_tend=carry.ph_tend,
         ph=prep.ph_work,
         p=pressure.p,
@@ -915,7 +922,7 @@ def _acoustic_scan(
 
 
 def _augment_large_step_tendencies(
-    haloed: State, tendencies: Tendencies, namelist: OperationalNamelist
+    haloed: State, tendencies: Tendencies, namelist: OperationalNamelist, *, rk_step: int = 3
 ) -> Tendencies:
     """Add WRF explicit diffusion + flux-form scalar advection to the large step.
 
@@ -931,20 +938,37 @@ def _augment_large_step_tendencies(
     grid = namelist.grid
     dx = float(grid.projection.dx_m)
     dy = float(grid.projection.dy_m)
-    nz = int(haloed.theta.shape[0])
     # mean physical dz from the geopotential column (for the const-K vertical term).
     ph = haloed.ph_total
     dz = jnp.maximum(jnp.mean((ph[1:] - ph[:-1]) / GRAVITY_M_S2), jnp.asarray(1.0, dtype=ph.dtype))
 
-    u_t = tendencies.u
-    v_t = tendencies.v
-    w_t = tendencies.w
-    th_t = tendencies.theta
+    # All large-step tendencies are built *coupled* (mass-weighted) so they net
+    # correctly with the coupled small-step work arrays consumed by advance_uv /
+    # advance_mu_t / advance_w (u_work = mass*u etc.).  WRF rk_tendency works in
+    # the coupled ru/rv/rw/t_tend space (module_em.F:855-1388); advance_uv adds
+    # ``u += dts*ru_tend`` to the coupled u (module_small_step_em.F:805), and
+    # advance_mu_t adds ``t_2 += msfty*dts*t_tend`` to the coupled theta
+    # (module_small_step_em.F theta update).  Face dry-air masses below match the
+    # coupling in small_step_prep_wrf.
+    mu_total = haloed.mu_total
+    muu = _u_face_average_2d(mu_total)
+    muv = _v_face_average_2d(mu_total)
+    mass_u = metrics.c1h[:, None, None] * muu[None, :, :] + metrics.c2h[:, None, None]
+    mass_v = metrics.c1h[:, None, None] * muv[None, :, :] + metrics.c2h[:, None, None]
+    mass_h = metrics.c1h[:, None, None] * mu_total[None, :, :] + metrics.c2h[:, None, None]
+    mass_f = metrics.c1f[:, None, None] * mu_total[None, :, :] + metrics.c2f[:, None, None]
+
+    # Advection from compute_advection_tendencies is an UNCOUPLED velocity/scalar
+    # acceleration; couple it by the field-specific face mass so it lives in the
+    # same coupled tendency space as the PGF and the small-step work arrays.
+    u_t = tendencies.u * mass_u
+    v_t = tendencies.v * mass_v
+    w_t = tendencies.w * mass_f
+    th_t = tendencies.theta * mass_h
 
     if bool(namelist.use_flux_advection):
-        # Replace the roll-based theta advection with WRF flux-form mass-coupled
-        # advection (h=5/v=3), uncoupled by the local dry mass for this path.
-        mu_total = haloed.mu_total
+        # WRF flux-form mass-coupled scalar advection (h=5/v=3).  advect_scalar_flux
+        # returns the COUPLED theta tendency (mass*K/s); keep it coupled here.
         vel = couple_velocities_periodic(
             haloed.u,
             haloed.v,
@@ -959,7 +983,7 @@ def _augment_large_step_tendencies(
         coupled_tend = advect_scalar_flux(
             haloed.theta - theta_offset,
             vel,
-            mut=_base_mu(haloed) + haloed.mu_perturbation,
+            mut=mu_total,
             c1=metrics.c1h,
             rdx=1.0 / dx,
             rdy=1.0 / dy,
@@ -967,37 +991,59 @@ def _augment_large_step_tendencies(
             fzm=metrics.fnm,
             fzp=metrics.fnp,
         )
-        mass_h = metrics.c1h[:, None, None] * mu_total[None, :, :] + metrics.c2h[:, None, None]
-        safe_mass = jnp.where(jnp.abs(mass_h) > 1.0e-12, mass_h, jnp.asarray(1.0e-12, dtype=mass_h.dtype))
-        # tendencies.theta carries the base zero; replace the advective theta part.
-        th_t = namelist.tendencies.theta + coupled_tend / safe_mass
+        # tendencies.theta carries the base zero; replace the advective theta part
+        # with the flux-form coupled tendency.
+        th_t = namelist.tendencies.theta * mass_h + coupled_tend
 
     if int(namelist.diff_6th_opt) != 0:
         f = float(namelist.diff_6th_factor)
         dt_diff = float(namelist.dt_s)
-        u_t = u_t + sixth_order_diffusion_tendency(haloed.u, dt=dt_diff, diff_6th_factor=f)
-        v_t = v_t + sixth_order_diffusion_tendency(haloed.v, dt=dt_diff, diff_6th_factor=f)
-        w_t = w_t + sixth_order_diffusion_tendency(haloed.w, dt=dt_diff, diff_6th_factor=f)
-        th_t = th_t + sixth_order_diffusion_tendency(haloed.theta, dt=dt_diff, diff_6th_factor=f)
+        u_t = u_t + mass_u * sixth_order_diffusion_tendency(haloed.u, dt=dt_diff, diff_6th_factor=f)
+        v_t = v_t + mass_v * sixth_order_diffusion_tendency(haloed.v, dt=dt_diff, diff_6th_factor=f)
+        w_t = w_t + mass_f * sixth_order_diffusion_tendency(haloed.w, dt=dt_diff, diff_6th_factor=f)
+        th_t = th_t + mass_h * sixth_order_diffusion_tendency(haloed.theta, dt=dt_diff, diff_6th_factor=f)
 
     nu = float(namelist.const_nu_m2_s)
     if nu > 0.0:
-        u_t = u_t + constant_k_diffusion_tendency(haloed.u, k_m2_s=nu, dx_m=dx, dy_m=dy, dz_m=dz)
-        v_t = v_t + constant_k_diffusion_tendency(haloed.v, k_m2_s=nu, dx_m=dx, dy_m=dy, dz_m=dz)
-        th_t = th_t + constant_k_diffusion_tendency(haloed.theta, k_m2_s=nu, dx_m=dx, dy_m=dy, dz_m=dz)
+        u_t = u_t + mass_u * constant_k_diffusion_tendency(haloed.u, k_m2_s=nu, dx_m=dx, dy_m=dy, dz_m=dz)
+        v_t = v_t + mass_v * constant_k_diffusion_tendency(haloed.v, k_m2_s=nu, dx_m=dx, dy_m=dy, dz_m=dz)
+        th_t = th_t + mass_h * constant_k_diffusion_tendency(haloed.theta, k_m2_s=nu, dx_m=dx, dy_m=dy, dz_m=dz)
 
-    # NOTE: WRF rk_tendency also adds the horizontal PGF to the large-step
-    # ru/rv_tend (module_em.F:1325).  A prototype that diagnoses the absolute p'
-    # and adds horizontal_pressure_gradient here was verified to produce a
-    # nonzero u-tendency (~0.6 m/s/s) but did NOT move u in the integrated state,
-    # because the operational tendency cadence applies the large-step tendency in
-    # both add_scaled_tendencies and advance_uv and reconstructs u in
-    # small_step_finish, so without WRF rk_addtend_dry the contributions do not
-    # net to the physical horizontal acceleration.  Restoring the large-step PGF
-    # therefore requires rk_addtend_dry (Block 2) and is left out here to avoid a
-    # double-application; the gap is documented in the worker report.
+    # WRF rk_tendency adds the large-step horizontal pressure-gradient force to
+    # the *coupled* large-step ru/rv_tend (module_em.F:1325 ->
+    # horizontal_pressure_gradient, module_big_step_utilities_em.F:2459-2466).
+    # This is the steady gradient that drives the mean circulation; it is a
+    # DIFFERENT split term from the small-step advance_uv acoustic PGF
+    # (module_small_step_em.F:828-868), which uses the work-array perturbation
+    # pressure that restarts ~0 at each RK stage -- NOT a double-count.  The
+    # operational cadence applies ru/rv_tend only inside advance_uv (one
+    # forward-Euler per acoustic substep, u += dts*ru_tend), matching WRF; the
+    # earlier add_scaled_tendencies forward-Euler of the dynamics fields has been
+    # removed so there is no double-application.
+    ru_pgf, rv_pgf = large_step_horizontal_pgf(
+        haloed,
+        metrics,
+        dx_m=dx,
+        dy_m=dy,
+        non_hydrostatic=True,
+        top_lid=bool(namelist.top_lid),
+    )
+    u_t = u_t + ru_pgf
+    v_t = v_t + rv_pgf
 
-    return tendencies.replace(u=u_t, v=v_t, w=w_t, theta=th_t)
+    tendencies = tendencies.replace(u=u_t, v=v_t, w=w_t, theta=th_t)
+
+    # WRF rk_addtend_dry per-stage merge (module_em.F:1711-1786): field-specific
+    # map/mass coupling of RK1-fixed physics tendencies.  Physics-off + periodic
+    # dry gate => all *_tendf == 0, so this is numerically identity but keeps the
+    # cadence WRF-faithful for the coupled physics path.
+    return rk_addtend_dry(
+        tendencies,
+        DryPhysicsTendencies(),
+        rk_step=int(rk_step),
+        metrics=metrics,
+        mut=_base_mu(haloed),
+    )
 
 
 def _rk_scan_step(carry: OperationalCarry, namelist: OperationalNamelist, *, debug: bool = False) -> OperationalCarry:
@@ -1006,18 +1052,22 @@ def _rk_scan_step(carry: OperationalCarry, namelist: OperationalNamelist, *, deb
 
     def advance_stage(stage_carry: OperationalCarry, stage: _RKStageDescriptor) -> OperationalCarry:
         haloed = apply_halo(stage_carry.state, halo_spec(namelist.grid))
-        # WRF rk_tendency builds the large-step DYNAMIC tendencies (advection,
-        # curvature, diffusion).  The horizontal pressure-gradient force is NOT
-        # part of the large-step tendency -- it is applied inside the acoustic
-        # small-step advance_uv (module_small_step_em.F:802-942).  Adding the
-        # PGF here as well double-counts the gradient and seeds an acoustic
-        # imbalance, so F7.A feeds advance_uv the dynamic (advection) tendency
-        # only.  (Flux-form advection itself is Sprint B; for the periodic dry
-        # gate it is inert.)
+        # WRF rk_tendency builds the per-stage large-step tendencies (advection,
+        # diffusion, and the LARGE-STEP horizontal PGF; module_em.F:1325) and
+        # rk_addtend_dry merges the RK1-fixed physics tendencies; both are inside
+        # _augment_large_step_tendencies.  The large-step momentum tendency is
+        # consumed ONLY inside the acoustic small-step advance_uv (one
+        # forward-Euler per substep: u += dts*ru_tend, module_small_step_em.F:805),
+        # exactly as WRF does -- there is no separate add_scaled_tendencies
+        # forward-Euler of the dynamics prognostics (that was the Sprint A/B
+        # double-application that prevented u/v from moving).  The stage-entry
+        # physical state (carried forward across RK stages) is the small-step
+        # prognostic ``u_2``; ``rk1_reference`` is the RK reference ``u_1``.
         tendencies = compute_advection_tendencies(haloed, namelist.tendencies, namelist.grid)
-        tendencies = _augment_large_step_tendencies(haloed, tendencies, namelist)
-        candidate = add_scaled_tendencies(origin, tendencies, float(stage.dt_rk))
-        candidate = apply_halo(candidate, halo_spec(namelist.grid))
+        tendencies = _augment_large_step_tendencies(
+            haloed, tendencies, namelist, rk_step=int(stage.rk_step)
+        )
+        candidate = apply_halo(stage_carry.state, halo_spec(namelist.grid))
         prep = small_step_prep_wrf(
             candidate,
             int(stage.rk_step),
