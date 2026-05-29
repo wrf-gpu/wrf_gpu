@@ -76,19 +76,24 @@ No clamps/caps/diffusion-fudge/tolerance-widening.
   in-pipeline `1/N_sound` ratio, not the cross-model column parity.
 - **AC2 (warm bubble): PASS 6/6.** finite-500s; θ'max 1.92 K; max|w| 11.7 m/s;
   **thermal_rise 1925 m (≥500)**; drift 0; mass drift 0. (was 213 m FAIL.)
-- **AC3 (Straka): FAIL (non-finite).** Separate stiff-regime residual; see
-  `straka_density_current_diagnostics.json` + timing trace.
+- **AC3 (Straka): FAIL (non-finite).** finite to 180 s with max|w| ramping
+  7.3→14.7→21.3 m/s, NaN at **240 s** — the **SAME detonation time as F7J**
+  (`proofs/f7k/straka_detonation_timing.txt`), i.e. the theta-coupling fix did
+  NOT change Straka's failure → **proven separate residual** (a steady max|w|
+  CFL-style ramp-to-detonation in the dx=100 m, −15 K cold-pool regime), distinct
+  from the warm-bubble cadence bug just fixed.
 - **AC4 (no regression): PASS.** m4 10/10; all prior F7 fixes (F7D/F/H/I/J)
   untouched; no clamps/caps/diffusion-fudge.
 
 ## Unresolved risk / next decision
-Straka detonates even with the corrected (now physically stronger) vertical
-scalar transport. This is a **distinct** residual from the warm-bubble cadence
-bug just fixed — likely a stiff-regime acoustic/CFL or diffusion-balance issue
-specific to the dx=100 m, −15 K cold-pool configuration (the warm bubble, the
-cleaner buoyancy test, is fully closed). Recommended next: a focused Straka
-stability probe (acoustic CFL audit + WRF-faithful diffusion/divergence-damping
-check) — NOT a diffusion fudge. The dynamical-core translation defect that has
-blocked F7 is resolved; the warm bubble is the headline close.
+Straka detonates at 240 s — **unchanged from F7J**, confirming it is a residual
+**distinct** from the warm-bubble cadence bug just fixed. max|w| ramps steadily
+(7.3→14.7→21.3 m/s through 180 s) then blows up: a CFL/stability runaway in the
+dx=100 m, −15 K cold-pool regime, not a transport-direction defect (the warm
+bubble, the cleaner buoyancy test, is fully closed). Recommended next: a focused
+Straka stability probe (acoustic CFL audit + WRF-faithful 2nd-order
+diffusion/external-mode divergence-damping check `emdiv`/`smdiv`) — NOT a
+diffusion fudge. The dynamical-core scalar-translation defect that blocked F7 is
+RESOLVED; the warm bubble is the headline close.
 
 F7K_PARTIAL
