@@ -604,6 +604,9 @@ def _acoustic_core_state_from_prep(
         cf2=namelist.metrics.cf2,
         cf3=namelist.metrics.cf3,
         theta_work_reference=prep.theta_1,
+        # Initialise the coupled-theta work leaf so the lax.scan carry structure
+        # is invariant across substeps (advance_mu_t fills it each substep).
+        theta_coupled_work=prep.theta_work,
         c2a=prep.c2a,
         cqw=dry_cqw(
             int(prep.theta_work.shape[0]),
