@@ -1,0 +1,31 @@
+{
+  "schema": "f7h_regression_recheck",
+  "schema_version": 1,
+  "description": "AC5 no-regression recheck after the F7H Phase-1 full-perturbation grid%p + RK-stage grid%p refresh fixes (operational_mode.py only; the theta-carry change in acoustic.py was REVERTED because it broke the bare-core m4 path and detonated the bubble earlier).",
+  "device": "cuda:0",
+  "precision": "fp64",
+  "cpu_affinity": [0, 1, 2, 3],
+  "pytest": {
+    "tests/test_m4_acoustic.py": "3 passed (cgrid divergence=0 still-air, acoustic-once shapes, acoustic-scan finite)",
+    "tests/test_m4_dycore_step.py": "3 passed (pytree shape/dtype, no-nan small density current, debug-true compiles)",
+    "tests/test_m4_tier2_invariants.py": "4 passed (tier-2 invariants)",
+    "combined_10_tests": "10 passed in 30.45s",
+    "note": "When 3+ heavy GPU test files share one pytest process they cross-contaminate (all-NaN GPU device state / cache pressure); each file passes in isolation and the 2-file combo passes identically on the committed baseline -- NOT a code regression."
+  },
+  "f7g_ac1_signed_metric_roundtrip": {
+    "verdict": "PASS",
+    "warm_bubble_positive": 4.336808689942018e-18,
+    "density_current_positive": 7.28583859910259e-17,
+    "note": "IC still round-trips through calc_p_rho_phi to ~1e-17; unchanged by F7H."
+  },
+  "f7g_ac2_pg_buoy_ratio": {
+    "verdict": "FAIL",
+    "note": "Pre-existing FAIL on the bare-core per-substep pg_buoy recompute metric (ratio band [0.9,1.1]); NOT introduced by F7H. The operational path no longer uses that per-substep recompute."
+  },
+  "m6b4_column_acoustic_recurrence_parity": {
+    "verdict": "FAIL",
+    "note": "Pre-existing self-compare/savepoint parity defect (PARITY-DEFECT-LOCALIZED-AT-SUBSTEP-1); identical FAIL on HEAD~1 before any F7H change. Documented in project memory (B6 self-compare tautology)."
+  },
+  "verdict": "NO_NEW_REGRESSION",
+  "weakened_invariants": "none -- no clamps/caps/sanitizers/xfails added or weakened"
+}
