@@ -19,7 +19,34 @@ The pre-reset "dycore done, bitwise WRF parity at 100 steps" was a **JAX-vs-JAX 
 | Persistent coupled work-theta across acoustic substeps (couple-once / advance-N / decouple-once) | F7K: was re-coupled+decoupled EVERY substep → theta advanced only 1/N_sound of correct (warm bubble rose 213 m not ~2000 m). Fixed: advance `theta_coupled_work`. **Skamarock warm bubble now PASSES 6/6 (thermal_rise 1925 m).** |
 | Flat-rest exactly stable (machine-0); mass conserved to 0 over 300+ steps | continuous regression gate |
 
-## OPEN RESIDUAL — PARTIALLY ADVANCED in F7L (w-diffusion added; Straka still detonates)
+## OPEN RESIDUAL — F7M localized it to the COLD-POOL TOUCHDOWN with WRF ground truth (Straka still detonates)
+**F7M built pristine WRF v4.7.1 `em_grav2d_x` (the Straka case) ground truth and
+diffed it against JAX.** Decisive result (`proofs/f7m/wrf_vs_jax_straka_front.json`,
+`proofs/m9/wrf_em_grav2d_x_front_savepoints.json`):
+**JAX and WRF AGREE to ~3% through 180 s** (both peak ~21 m/s central downdraft at
+z~2050 m; w@1100m −17.4 vs −17.5) — buoyancy/descent/acoustic/advection are correct
+up to touchdown. **At touchdown (180→200 s) they diverge:** WRF's central downdraft
+DECELERATES (21→19→18→15 at 180/240/300/360 s) as the cold air spreads along the
+rigid floor (front 2650→5750 m); JAX's central downdraft ACCELERATES (21.1→29.5→NaN)
+while its front crawls (2350→2650 m). The runaway is a **smooth central downdraft**
+(NOT 2Δx, NOT the front, NOT the top — top w<0.13) at x=0, z~1100–2050 m: the cold
+pool reaches the surface but JAX **fails to convert vertical motion into horizontal
+outflow** (GPT probe: u_outflow 25–36 m/s while front crawls ~5 m/s) → trapped
+descending air → w→NaN ~220–240 s.
+**F7M ruled OUT by ground truth:** advection FORM (flux-form WRF `advect_u/v/w`
+implemented+wired — ~4% diff, trace byte-identical, still NaN); diffusion
+MAGNITUDE/STRUCTURE (deformation-tensor const-K, factor-2 diagonal + du/dz↔dw/dx
+cross terms, implemented, ~2–3× stronger — trace byte-identical, still NaN); CFL;
+time discretization; top/Rayleigh damping; lower-BC w; scalar limiter.
+**→ residual is the TOUCHDOWN horizontal-spreading coupling, NOT advection/diffusion.**
+Next instrument: per-acoustic-substep WRF savepoint diff at the touchdown column
+(center, z<1500m, t=180–200s) to resolve omega/ww continuity vs advance_uv acoustic
+PGF vs surface mass coupling. **F7M_PARTIAL** (warm bubble still PASS 6/6; m4 10/10).
+KEPT: WRF-faithful flux-form momentum advection. Operator available (not wired):
+`constant_k_deformation_momentum_tendency`.
+
+### (superseded) F7L residual notes
+
 **F7L found+fixed a genuine missing operator** but Straka is NOT fully closed.
 The F7.B constant-K (ν=75) diffusion was wired only on u, v, θ, but WRF's
 `diff_opt=2` const-K path diffuses **u, v, w AND θ** (`module_diffusion_em.F:2864-3113`

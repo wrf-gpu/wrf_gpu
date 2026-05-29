@@ -1,0 +1,51 @@
+{
+  "title": "F7M Straka density-current: WRF v4.7.1 em_grav2d_x ground truth vs JAX dycore, front/center region",
+  "wrf": {
+    "source": "pristine WRF v4.7.1 serial gfortran, /home/enric/src/wrf_pristine/WRF, case em_grav2d_x (ideal_case=6), canonical 100m Straka namelist",
+    "namelist": {
+      "dx_m": 100, "dz_m": "~100 (ztop=6409/64)", "e_we": 513, "e_vert": 65,
+      "time_step_s": 1, "time_step_sound": 6, "diff_opt": 2, "km_opt": 1,
+      "khdif": 75, "kvdif": 75, "damp_opt": 0, "epssm": 0.1, "non_hydrostatic": true,
+      "h_mom_adv_order": 5, "v_mom_adv_order": 3, "h_sca_adv_order": 5, "v_sca_adv_order": 3
+    },
+    "ic_theta_prime_min_k": -16.63,
+    "ic_note": "WRF delt = -15.0/Exner (temperature->theta), so theta'min ~ -16.6 K; JAX uses theta'min = -15.0 K exactly (module_initialize_ideal.F:1291-1293).",
+    "savepoints": "/mnt/data/wrf_gpu2/wrf_truth/em_grav2d_x_front_savepoints.json (+ proofs/m9/wrf_em_grav2d_x_front_savepoints.json)"
+  },
+  "jax": {
+    "source": "gpuwrf operational dycore, build_density_current_setup, dt=0.1, 10 acoustic substeps, nu=75, damp_opt=3 zdamp=3000 dampcoef=0.2 (NOT canonical: WRF uses damp_opt=0), nx=500 nz=60",
+    "ic_theta_prime_min_k": -15.0
+  },
+  "front_and_center_parity": [
+    {"t_s": 60,  "wrf_domain_maxw": 9.65,  "jax_domain_maxw": 7.30,  "wrf_center_maxw": 9.62,  "jax_center_maxw": 7.30,  "wrf_front_m": 1750, "jax_front_m": 1550, "wrf_thmin_k": -16.26, "jax_thmin_k": -14.92},
+    {"t_s": 120, "wrf_domain_maxw": 17.58, "jax_domain_maxw": 14.62, "wrf_center_maxw": 17.54, "jax_center_maxw": 14.62, "wrf_front_m": 2250, "jax_front_m": 2050, "wrf_thmin_k": -15.83, "jax_thmin_k": -14.80},
+    {"t_s": 180, "wrf_domain_maxw": 21.01, "jax_domain_maxw": 21.12, "wrf_center_maxw": 21.01, "jax_center_maxw": 21.12, "wrf_front_m": 2650, "jax_front_m": 2350, "wrf_thmin_k": -15.20, "jax_thmin_k": -14.69},
+    {"t_s": 200, "wrf_domain_maxw": "~21.5", "jax_domain_maxw": 29.47, "wrf_center_maxw": "~20", "jax_center_maxw": 29.47, "wrf_front_m": "~2900", "jax_front_m": 2450, "wrf_thmin_k": "~-14.5", "jax_thmin_k": -14.62},
+    {"t_s": 240, "wrf_domain_maxw": 22.14, "jax_domain_maxw": "NaN (detonates)", "wrf_center_maxw": 19.31, "jax_center_maxw": "NaN", "wrf_front_m": 3150, "jax_front_m": "NaN", "wrf_thmin_k": -13.44, "jax_thmin_k": "NaN"},
+    {"t_s": 300, "wrf_domain_maxw": 22.05, "jax_domain_maxw": "NaN", "wrf_center_maxw": 17.58, "jax_center_maxw": "NaN", "wrf_front_m": 4250, "jax_front_m": "NaN", "wrf_thmin_k": -11.93, "jax_thmin_k": "NaN"},
+    {"t_s": 360, "wrf_domain_maxw": 19.14, "jax_domain_maxw": "NaN", "wrf_center_maxw": 15.43, "jax_front_m": "NaN", "wrf_front_m": 5750, "wrf_thmin_k": -11.08}
+  ],
+  "center_column_downdraft_at_z_1100m": {
+    "note": "Center column (cold-pool core) w at z~1100m; JAX and WRF AGREE through 180s then diverge.",
+    "t180_wrf": -17.47, "t180_jax": -17.41,
+    "t200_wrf": "~-17 (decaying)", "t200_jax": -17.41
+  },
+  "diagnosis": {
+    "agreement_window": "JAX and WRF center/domain downdraft agree to within ~3% through 180 s (both peak ~21 m/s central downdraft at z~2050 m); the buoyancy/descent dynamics, acoustic solve, and advection are correct up to touchdown.",
+    "divergence": "At the cold-pool TOUCHDOWN (180-200 s): WRF's central downdraft DECELERATES (21.0 -> 19.3 -> 17.6 -> 15.4 at 180/240/300/360 s) as the cold air spreads horizontally along the rigid floor; JAX's central downdraft ACCELERATES (21.1 @180s -> 29.5 @200s -> NaN @220-240s).",
+    "localization": "Smooth (NOT 2dx grid-mode) central DOWNDRAFT runaway at the domain center, z~1100-2050 m, exactly at/after touchdown. max|w| is at x=0 (center), not the gust front. Top boundary w is negligible (<0.13). The descending cold pool reaches the surface but fails to convert vertical motion into horizontal outflow: WRF spreads (front 2650->5750 m, 180->360s; ~17 m/s late front speed) while JAX's front crawls (front 2350->2650 m to 240s; ~5 m/s, GPT probe) and the trapped descending air keeps accelerating to NaN.",
+    "ruled_out_this_sprint": [
+      "Acoustic CFL (c*dts/dx=0.034, trivial)",
+      "Under-diffusion of the magnitude tested: F7L K-grad2 w-diffusion, and F7M deformation-tensor momentum diffusion (factor-2 diagonal + du/dz, dw/dx cross terms) both left the 180s trace byte-identical and still detonate at 240s",
+      "Primitive-vs-flux momentum advection (F7M flux-form advect_u/v/w wired and verified ~4% different from primitive at 120s) also left the trace unchanged and still detonates",
+      "Time discretization (dt=1.0/substeps=6 == dt=0.1/substeps=10 trace)",
+      "Top boundary / Rayleigh damping (max|w| is at the center, not the top; damp_opt is strictly stabilizing and cannot cause growth)",
+      "Lower BC surface w (w(surface)=0 correctly enforced in both; matches WRF advance_w :1417-1429)"
+    ],
+    "remaining_root_cause_candidates": [
+      "Touchdown horizontal-spreading coupling: the descending cold pool's surface high-pressure cushion is not converting w into horizontal u-outflow strongly enough -> the front theta' does not advance despite large low-level u (GPT probe: u_outflow 25-36 m/s while front crawls at 5 m/s) -> trapped descending air accelerates w to NaN.",
+      "Possible thin spurious surface u-jet (large |u| confined to a near-surface layer that does not transport the bulk cold theta' front).",
+      "Per-substep WRF savepoint diff at the touchdown column (~i=center, z<1500m, t=180-200s) is the next decisive instrument; the front-region wrfout-only diff localizes to touchdown but cannot resolve which acoustic-substep operator (omega/ww continuity vs advance_uv acoustic PGF vs mass coupling) under-drives the horizontal spreading."
+    ]
+  }
+}

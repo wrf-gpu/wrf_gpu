@@ -152,7 +152,103 @@ def constant_k_diffusion_tendency(
     return tend
 
 
+def _ddx_periodic(field: jax.Array, spacing: float, axis: int = 2) -> jax.Array:
+    """Centered first derivative d/dx along a periodic axis (2nd order)."""
+
+    return (jnp.roll(field, -1, axis=axis) - jnp.roll(field, 1, axis=axis)) / (2.0 * float(spacing))
+
+
+def constant_k_deformation_momentum_tendency(
+    u: jax.Array,
+    w: jax.Array,
+    *,
+    k_m2_s: float,
+    dx_m: float,
+    dz_m: float,
+) -> tuple[jax.Array, jax.Array]:
+    """WRF diff_opt=2 / km_opt=1 constant-K *deformation-tensor* momentum diffusion.
+
+    Returns ``(du/dt, dw/dt)`` uncoupled momentum-diffusion tendencies for the
+    flat (zx=zy=0), uniform-z, periodic-x, single-row (ny=1) idealized slab.
+
+    WRF (``module_diffusion_em.F``) diffuses momentum with the deformation
+    stress tensor, NOT a plain Laplacian.  On the flat slab the relevant
+    deformations reduce to (``cal_deform_and_div`` :41-47):
+      * ``D11 = 2 du/dx``      (``:207-215``)
+      * ``D33 = 2 dw/dz``      (``:368-373``)
+      * ``D13 = dw/dx + du/dz`` (``:799-902``, vorticity points)
+    and the stress is ``tau_ij = -K * rho * D_ij`` (``cal_titau_* :5428/:5714``,
+    rho folds into the mass coupling done by the caller).  The momentum tendency
+    is the stress divergence:
+      * u :  d/dx(K D11) + d/dz(K D13) = 2K u_xx + K(u_zz + w_xz)
+             (``horizontal_diffusion_u_2`` D11 path + ``vertical_diffusion_u_2``
+             D13 path ``:4463-4571``)
+      * w :  d/dx(K D13) + d/dz(K D33) = K(w_xx + u_xz) + 2K w_zz
+             (``horizontal_diffusion_w_2`` :3519/:3695 D13 path +
+             ``vertical_diffusion_w_2`` :4688/:4779 D33 path)
+
+    vs the previous plain ``K(u_xx+u_zz)`` / ``K(w_xx+w_zz)``: the diagonal
+    terms carry the WRF factor 2 (D11/D33), and the **cross terms** ``K w_xz``
+    (in u) and ``K u_xz`` (in w) were entirely missing — these are first-order
+    at the sheared descending cold front (large du/dz + dw/dx) and are what
+    bound the head |w| and let the front mix/propagate (WRF ground truth
+    ``proofs/m9/wrf_em_grav2d_x_front_*``: max|w| saturates ~22 m/s, theta'min
+    decays -16.6 -> -11 K by 360 s; the plain-Laplacian JAX path leaves the
+    front unmixed and the head |w| runs away to NaN ~270-300 s).
+
+    ``u`` is on x-faces ``(nz, ny, nx+1)``; ``w`` on z-faces ``(nz+1, ny, nx)``.
+    The returned ``du/dt`` is on the u stagger, ``dw/dt`` on the w stagger.
+    """
+
+    k = float(k_m2_s)
+    dx = float(dx_m)
+    # dz may be a traced JAX scalar (mean physical dz computed inside jit).
+    dz = jnp.asarray(dz_m, dtype=u.dtype)
+    nx_u = u.shape[-1]
+    # work on the nx periodic mass columns of u (face i == mass-cell left face)
+    u_f = u[:, :, : nx_u - 1] if nx_u > w.shape[-1] else u  # (nz, ny, nx)
+    nz = w.shape[0] - 1
+
+    # --- diagonal terms (factor 2 from D11=2 du/dx, D33=2 dw/dz) ---
+    # u: 2K d2u/dx2 ; w: 2K d2w/dz2.  (vs plain Laplacian K d2/d.. -> factor 2.)
+    u_xx = (jnp.roll(u_f, -1, axis=2) - 2.0 * u_f + jnp.roll(u_f, 1, axis=2)) / (dx * dx)
+    du = 2.0 * k * u_xx
+    # u vertical diagonal part K d2u/dz2 (from D13 = du/dz + dw/dx, the du/dz part)
+    u_zz = jnp.zeros_like(u_f)
+    if u_f.shape[0] >= 3:
+        u_zz = u_zz.at[1:-1, :, :].set((u_f[2:, :, :] - 2.0 * u_f[1:-1, :, :] + u_f[:-2, :, :]) / (dz * dz))
+    du = du + k * u_zz
+    # w: K d2w/dx2 (from D13 = dw/dx + du/dz, the dw/dx part) + 2K d2w/dz2 (D33)
+    w_xx = (jnp.roll(w, -1, axis=2) - 2.0 * w + jnp.roll(w, 1, axis=2)) / (dx * dx)
+    w_zz = jnp.zeros_like(w)
+    if nz >= 2:
+        w_zz = w_zz.at[1:nz, :, :].set((w[2 : nz + 1, :, :] - 2.0 * w[1:nz, :, :] + w[0 : nz - 1, :, :]) / (dz * dz))
+    dw = k * w_xx + 2.0 * k * w_zz
+
+    # --- cross terms: u gets K d/dz(dw/dx) = K w_xz ; w gets K d/dx(du/dz) = K u_xz ---
+    # w_xz on the u stagger: w is at mass-x / z-faces; dw/dx -> u-faces, then d/dz to
+    # mass levels (where u lives).  Build dw/dx at mass-x by centered x-derivative of w
+    # (on w faces), interpolate the z-derivative to mass levels.
+    wx = _ddx_periodic(w, dx, axis=2)  # (nz+1, ny, nx) dw/dx at w faces (mass-x)
+    # d/dz of wx from w-faces to mass levels: (wx(k+1)-wx(k))/dz  -> (nz, ny, nx)
+    wxz_mass = (wx[1 : nz + 1, :, :] - wx[0:nz, :, :]) / dz  # (nz, ny, nx) at mass levels
+    du = du + k * wxz_mass  # u_zz/u lives on mass levels; same stagger in z, mass-x ~ u-face approx
+    # u_xz on the w stagger: du/dz at mass-x / z-faces, then d/dx.
+    # du/dz from u-faces(mass-levels) to z-faces: (u(k)-u(k-1))/dz on faces 1..nz-1.
+    uz_face = jnp.zeros_like(w)
+    if nz >= 2:
+        uz_face = uz_face.at[1:nz, :, :].set((u_f[1:nz, :, :] - u_f[0 : nz - 1, :, :]) / dz)
+    uxz = _ddx_periodic(uz_face, dx, axis=2)  # d/dx of du/dz at w faces (mass-x)
+    dw = dw + k * uxz
+
+    # restore u to the (nx+1) face layout if needed (periodic wrap)
+    if nx_u > w.shape[-1]:
+        du = jnp.concatenate((du, du[:, :, :1]), axis=2)
+    return du, dw
+
+
 __all__ = [
     "sixth_order_diffusion_tendency",
     "constant_k_diffusion_tendency",
+    "constant_k_deformation_momentum_tendency",
 ]
