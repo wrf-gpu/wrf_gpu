@@ -21,7 +21,7 @@ acoustic substep used the stubs `_advance_geopotential` (off-centred `g·dt·w`)
 `advance_w` explicit predictor. The vertical solve had no real buoyancy /
 pressure coupling, so the acoustic mode grew without restoring force.
 
-## After F7.A (commit `90c0ce0`)
+## After F7.A (branch `worker/opus/f7-acoustic-core`, tip `595d4f2`)
 
 ### Same harness default (dt = 10 s, epssm = 0.1)
 
