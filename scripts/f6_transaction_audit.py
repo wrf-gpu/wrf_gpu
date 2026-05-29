@@ -628,6 +628,17 @@ def _instrumented_rk_scan_step(
         # Large-step DYNAMIC tendency only (advection); the horizontal PGF is a
         # small-step term inside advance_uv, so adding it here double-counts.
         tendencies = compute_advection_tendencies(haloed, namelist.tendencies, namelist.grid)
+        # WRF 6th-order numerical filter (diff_6th_opt) when enabled (Gen2 d02 = 2).
+        if int(namelist.diff_6th_opt) != 0:
+            from gpuwrf.dynamics.explicit_diffusion import sixth_order_diffusion_tendency as _s6
+            _f = float(namelist.diff_6th_factor)
+            _dt = float(namelist.dt_s)
+            tendencies = tendencies.replace(
+                u=tendencies.u + _s6(haloed.u, dt=_dt, diff_6th_factor=_f),
+                v=tendencies.v + _s6(haloed.v, dt=_dt, diff_6th_factor=_f),
+                w=tendencies.w + _s6(haloed.w, dt=_dt, diff_6th_factor=_f),
+                theta=tendencies.theta + _s6(haloed.theta, dt=_dt, diff_6th_factor=_f),
+            )
         candidate = add_scaled_tendencies(origin, tendencies, float(namelist.dt_s) * float(factor))
         candidate = apply_halo(candidate, halo_spec(namelist.grid))
         prep = small_step_prep_wrf(
@@ -877,6 +888,8 @@ def _load_case(
     damp_opt: int = 0,
     dampcoef: float = 0.0,
     zdamp: float = 5000.0,
+    diff_6th_opt: int = 0,
+    diff_6th_factor: float = 0.12,
 ) -> tuple[Any, OperationalNamelist, dict[str, Any]]:
     case = build_replay_case(run_dir, domain=domain)
     state = case.state.replace(p=case.state.p_total, ph=case.state.ph_total, mu=case.state.mu_total)
@@ -893,6 +906,8 @@ def _load_case(
         damp_opt=int(damp_opt),
         dampcoef=float(dampcoef),
         zdamp=float(zdamp),
+        diff_6th_opt=int(diff_6th_opt),
+        diff_6th_factor=float(diff_6th_factor),
     )
     # WRF off-centering coefficient ``epssm`` (this Gen2 d02 namelist uses 0.5).
     namelist = replace(namelist, epssm=float(epssm))
@@ -1029,6 +1044,8 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--damp-opt", type=int, default=3)
     parser.add_argument("--dampcoef", type=float, default=0.2)
     parser.add_argument("--zdamp", type=float, default=5000.0)
+    parser.add_argument("--diff-6th-opt", type=int, default=0, help="WRF 6th-order numerical filter (Gen2 d02 = 2)")
+    parser.add_argument("--diff-6th-factor", type=float, default=0.12)
     return parser.parse_args(argv)
 
 
@@ -1048,6 +1065,8 @@ def main(argv: list[str] | None = None) -> int:
         damp_opt=int(args.damp_opt) if damping_on else 0,
         dampcoef=float(args.dampcoef) if damping_on else 0.0,
         zdamp=float(args.zdamp),
+        diff_6th_opt=int(args.diff_6th_opt),
+        diff_6th_factor=float(args.diff_6th_factor),
     )
     print(
         f"[f6] damping {'ON' if damping_on else 'OFF'}"
