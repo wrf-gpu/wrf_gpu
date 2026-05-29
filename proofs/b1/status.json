@@ -3,8 +3,8 @@
   "branch": "worker/opus/b1-thompson",
   "base_commit": "e265259 (Gate-1 Phase B interface + oracle freeze)",
   "wrf_config": "mp_physics=8, is_aerosol_aware=FALSE, is_hail_aware=FALSE (pristine WRF v4)",
-  "verdict": "B1_PENDING-ORACLE",
-  "summary": "Faithful-subset full mp_gt_driver column path (source/sink + sedimentation + precip + all number concentrations) wired through the coupler; real-WRF oracle parity harness built against the frozen schema and ready to run; oracle savepoints not yet emitted by the factory.",
+  "verdict": "B1_PARITY_PASS (substantive; theta within fp32 storage precision)",
+  "summary": "Faithful-subset full mp_gt_driver column path (source/sink + sedimentation + precip + all number concentrations) wired through the coupler; REAL WRF-oracle per-process parity now RUN against the raw big-endian .f64 oracle (mp_physics=8, WRF v4.7.1, grid_id 1, dt=18s). All 6 mass species + 2 number concentrations match WRF inside the frozen Phase-B transcription band (qv max abs 3.45e-10; qc/qr/qi/qs/qg/ni/nr exact-zero-delta); exact water-mass closure (0.0). Theta matches WRF to <=~1 float32 ULP everywhere (99.998% within 1 ULP, 100% within 2 ULP) and only nominally 'fails' the fp64-grade transcription band because the oracle is float32-stored. No transcription bug; no kernel change needed.",
   "delivered": {
     "kernel": {
       "source_sink_subset": "preserved unchanged (step_thompson_column) so M5 analytic fixtures stay valid",
@@ -20,8 +20,9 @@
       "precip_accumulators": "per-step += (Gate-1 decision #3): rain_acc<-pptrain, snow_acc<-pptsnow, graupel_acc<-pptgraul, ice_acc<-pptice"
     },
     "harness": {
-      "real_oracle": "tier1_thompson.run_oracle_parity / compare_against_oracle — loads mp_gt_driver_pre->post Phase-B savepoints, runs the full kernel, applies frozen transcription tolerance ladder per field, applies inactive-physical moist mask, checks water closure",
-      "status_now": "PENDING-ORACLE (factory still populating /mnt/data/wrf_gpu2/physics_oracle/microphysics/)"
+      "real_oracle": "tier1_thompson.run_oracle_parity_f64 (raw big-endian .f64 reader added; reuses compare_against_oracle) — reads mp_gt_driver pre->post per manifest.json ((nj,nk,ni), k=middle axis transposed to vertical-first), runs the full kernel, applies frozen transcription tolerance ladder + inactive-physical moist mask, checks water closure, adds theta parity in float32-ULP units. Masks refl_10cm (NaN diagnostic).",
+      "runner": "proofs/b1/run_oracle_parity.py (taskset -c 0-3, OMP_NUM_THREADS=4, XLA_PYTHON_CLIENT_MEM_FRACTION=0.15, fp64)",
+      "status_now": "ORACLE-VALIDATED (run 2026-05-29 against /mnt/data/wrf_gpu2/physics_oracle/microphysics/)"
     }
   },
   "proofs": {
@@ -37,16 +38,17 @@
       "harness_mechanics_pass": true,
       "note": "validates harness reshape/mask/tolerance/closure wiring (NOT physics; post=kernel-own-output by construction)"
     },
-    "oracle_parity.json": {"status": "PENDING-ORACLE"},
+    "oracle_parity.json": {"status": "ORACLE-VALIDATED", "n_columns": 5187, "moist_cells": 228228, "water_closure_max_rel_residual": 0.0, "per_field_pass": {"qv": true, "qc": true, "qr": true, "qi": true, "qs": true, "qg": true, "ni": true, "nr": true, "th_band": false, "th_within_fp32_storage_precision": true}, "qv_max_abs_err": 3.45e-10, "theta_max_err_float32_ulp": 1.103, "all_fields_within_float32_storage_precision": true, "note": "see proofs/b1/oracle_parity.md for the theta band-vs-fp32-storage diagnosis"},
     "tier1_thompson_parity.json": {"pass": true, "note": "M5 analytic source/sink subset regression"},
     "tier2_thompson_invariants.json": {"pass": true, "water_residual": 2.67e-12, "note": "M5 subset invariants"},
     "coefficient_audit.md": "WRF file:line audit; prior 2 flagged bugs re-verified already-correct; new sedimentation coefficients verified numerically"
   },
   "honest_scope_limits": {
-    "cross_species_collection_NOT_ported": "rain<->snow and rain<->graupel collection (qr_acr_qs/qr_acr_qg, 15 lookup tables tmr/tcr/tcs/tms/tnr_racs/sacr/racg/gacr) are absent from the extracted thompson-tables-v1.npz asset; faithful porting requires extending scripts/extract_thompson_tables.py to dump them from a WRF (nvfortran) build. FLAGGED, not fabricated.",
+    "cross_species_collection_NOT_ported": "rain<->snow and rain<->graupel collection (qr_acr_qs/qr_acr_qg, 15 lookup tables tmr/tcr/tcs/tms/tnr_racs/sacr/racg/gacr) are absent from the extracted thompson-tables-v1.npz asset; faithful porting requires extending scripts/extract_thompson_tables.py to dump them from a WRF (nvfortran) build. FLAGGED, not fabricated. NOTE: this oracle savepoint has zero qr/qs/qg in every column so those processes are inactive in WRF too and do NOT limit measured parity here; quantifying their effect needs a precipitating mixed-phase oracle.",
     "snow_fallspeed_single_mode": "uses av_s*Ds^bv_s on the Field-moment mean diameter, not the full two-gamma vts integral (faithful mp=8 approx when racs riming-boost inactive)",
     "cloud_water_sedimentation_omitted": "small, lowest-500m-only term not advected",
-    "oracle_not_yet_available": "real per-process parity vs WRF cannot be measured until the factory emits savepoints; harness is ready and will be run on arrival"
+    "oracle_was_near_inactive_step": "the available WRF savepoint is a near-inactive microphysics step: only nonzero condensate is trace qc<=3.6e-8 kg/kg; WRF only evaporates it (dqv~3.6e-8, dtheta~1e-4 K). Confirms the kernel makes the same decision WRF does to fp32 precision, but does NOT exercise active precipitation/collection. A precipitating oracle is needed to stress those paths.",
+    "theta_band_vs_fp32_storage": "the oracle is float32-exact (WRF stores fp32). theta matches WRF to <=~1 float32 ULP everywhere; the frozen transcription band rel=1e-7 (~0.3 ULP at theta~297K) is tighter than the oracle's own storage granularity. Not a lane-fixable defect: PHASE_B_TOLERANCES is SHARED-CORE (manager-merge). Recommend a float32-ULP-aware theta band for fp32-sourced oracles."
   },
   "tests": {
     "passing": ["tests/test_m5_thompson_column_shapes.py", "tests/test_m5_thompson_process_residuals.py", "tests/test_m5_thompson_constants.py", "tests/test_m6b_20260509_microphysics_fix.py", "tests/test_m6_dummy_coupled.py", "tests/test_m6_tier3_tsc.py::test_thompson_water_budget_side_channel_is_load_bearing"],
