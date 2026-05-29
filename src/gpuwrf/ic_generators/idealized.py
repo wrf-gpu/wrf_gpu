@@ -411,6 +411,27 @@ def _make_grid(case: NumpyIdealizedCase, device: jax.Device) -> GridSpec:
         top_pressure_pa=top_pressure_pa,
         provenance=f"analytic-f2-{case.case_name}",
     )
+    # WRF idealized cases default to a PURE SIGMA coordinate (hybrid_opt=0):
+    # c1h=c1f=1, c2h=c2f=0 (module_initialize_ideal.F).  DycoreMetrics.flat uses a
+    # HYBRID c1f=eta which makes the top face dry mass (c1f[nz]*mut+c2f[nz]) vanish
+    # and produces a singular calc_coef_w tridiagonal (gamma=inf).  Override to
+    # pure sigma so the top-face mass is mut (nonzero), matching the f7a oracle and
+    # the eta-hydrostatic IC builder (p_face = eta*mu + p_top).
+    nz = case.nz
+    one_h = jnp.ones((nz,), dtype=jnp.float64)
+    zero_h = jnp.zeros((nz,), dtype=jnp.float64)
+    one_f = jnp.ones((nz + 1,), dtype=jnp.float64)
+    zero_f = jnp.zeros((nz + 1,), dtype=jnp.float64)
+    metrics = DycoreMetrics(
+        msftx=metrics.msftx, msfty=metrics.msfty, msfux=metrics.msfux, msfuy=metrics.msfuy,
+        msfvx=metrics.msfvx, msfvy=metrics.msfvy,
+        c1h=one_h, c2h=zero_h, c3h=one_h, c4h=zero_h,
+        c1f=one_f, c2f=zero_f, c3f=one_f, c4f=zero_f,
+        dn=metrics.dn, dnw=metrics.dnw, rdn=metrics.rdn, rdnw=metrics.rdnw,
+        cf1=metrics.cf1, cf2=metrics.cf2, cf3=metrics.cf3, fnm=metrics.fnm, fnp=metrics.fnp,
+        dzdx=metrics.dzdx, dzdy=metrics.dzdy, dzdx_u=metrics.dzdx_u, dzdy_v=metrics.dzdy_v,
+        p_top=metrics.p_top, provenance=f"analytic-f2-{case.case_name}-pure-sigma",
+    )
     return GridSpec(
         projection=projection,
         terrain=terrain,
@@ -446,10 +467,36 @@ def _make_state(case: NumpyIdealizedCase, grid: GridSpec, device: jax.Device) ->
 
     theta = case.theta_k[:, None, :]
     pressure = case.pressure_pa[:, None, :]
-    ph_total = case.ph_total_m2_s2[:, None, :]
     mu_total = np.broadcast_to(case.mu_base_pa, (1, case.nx)).copy()
     zero_mass = np.zeros((case.nz, 1, case.nx), dtype=np.float64)
+
+    # Per-column hydrostatic geopotential from the FULL θ (bubble included).  WRF
+    # idealized init integrates dφ/dη = -mut*alt for each column, so the warm/cold
+    # parcel gets a geopotential that differs from the neutral base column; that
+    # ph perturbation (relative to the base column φ used for all x) is the
+    # out-of-balance signal that drives buoyancy in the acoustic w-solve.  Without
+    # it the parcel is artificially balanced and never moves.
+    eta = np.asarray(case.eta_levels, dtype=np.float64)
+    dnw = np.abs(eta[1:] - eta[:-1])  # (nz,)
+    mu = float(case.mu_base_pa[0, 0])
+    p_top = float(case.p_top_pa)
+    p_mass = case.pressure_pa  # (nz, nx) base hydrostatic mass-level pressure
+    # alt per column from full θ at the (shared) base pressure profile.
+    # φ increases with height: dφ = mut*alt*|dnw| upward (f7a oracle convention).
+    alt_full = _alpha_dry(case.theta_k, p_mass)  # (nz, nx) full-θ specific volume
+    ph_col = np.zeros((case.nz + 1, case.nx), dtype=np.float64)
+    for k in range(case.nz):
+        ph_col[k + 1, :] = ph_col[k, :] + dnw[k] * mu * alt_full[k, :]
+    # Base reference φ integrated the SAME way with the neutral θ0 column, so that
+    # ph_perturbation is exactly zero wherever θ'=0 (and calc_p_rho is balanced).
+    alt_base = _alpha_dry(np.full(case.nz, THETA0_K), p_mass[:, 0])  # (nz,)
+    ph_base_col = np.zeros(case.nz + 1, dtype=np.float64)
+    for k in range(case.nz):
+        ph_base_col[k + 1] = ph_base_col[k] + dnw[k] * mu * alt_base[k]
+    ph_total = ph_col[:, None, :]
+    ph_pert = (ph_col - ph_base_col[:, None])[:, None, :]
     zero_face = np.zeros((case.nz + 1, 1, case.nx), dtype=np.float64)
+    del zero_face
 
     fields.update(
         {
@@ -459,7 +506,7 @@ def _make_state(case: NumpyIdealizedCase, grid: GridSpec, device: jax.Device) ->
             "p_perturbation": _put(zero_mass, "p_perturbation", device),
             "ph": _put(ph_total, "ph", device),
             "ph_total": _put(ph_total, "ph_total", device),
-            "ph_perturbation": _put(zero_face, "ph_perturbation", device),
+            "ph_perturbation": _put(ph_pert, "ph_perturbation", device),
             "mu": _put(mu_total, "mu", device),
             "mu_total": _put(mu_total, "mu_total", device),
             "mu_perturbation": _put(np.zeros((1, case.nx), dtype=np.float64), "mu_perturbation", device),
