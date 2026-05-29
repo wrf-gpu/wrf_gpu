@@ -304,7 +304,11 @@ def _enforce_operational_precision(state: State, *, force_fp64: bool = False) ->
         updates = {
             field: getattr(state, field).astype(jnp.float64) for field in STATE_FIELD_ORDER
         }
-        return state.replace(**updates)
+        # _cast=False so the fp64 upcast is NOT canonicalised back to each
+        # field's loaded dtype.  Real-case states arrive mixed-precision
+        # (DEFAULT_DTYPES perf matrix: theta/u/v fp32, w/mu/ph fp64); without
+        # this the force_fp64 path is a silent no-op (Sprint U P0-1).
+        return state.replace(_cast=False, **updates)
     updates = {
         field: getattr(state, field).astype(DEFAULT_DTYPES.dtype_for(field))
         for field in STATE_FIELD_ORDER
