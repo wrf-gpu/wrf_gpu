@@ -1,0 +1,27 @@
+{
+  "schema": "f7l_regression_recheck",
+  "sprint": "F7L straka-diffusion-close",
+  "edit": "operational_mode.py _augment_large_step_tendencies: add mass_f*const_k_diffusion_tendency(w) inside the nu>0 block (WRF diff_opt=2 const-K diffuses u,v,w,theta).",
+  "scope": "Edit is gated on namelist.const_nu_m2_s > 0. Warm bubble uses nu=0 so the entire block is skipped; bubble is byte-for-byte unaffected.",
+  "ac2_warm_bubble_no_regression": {
+    "verdict": "PASS",
+    "checks": {
+      "all_snapshots_finite": true,
+      "theta_prime_max_500s": 1.9150350459075298,
+      "max_abs_w_500s": 11.716959426387108,
+      "thermal_rise_500s": 1925.0650879522118,
+      "horizontal_drift_500s": 0.0,
+      "relative_mass_drift": 0.0
+    },
+    "note": "Identical to the F7K baseline (thermal_rise 1925m, max|w| 11.72) -> no regression."
+  },
+  "ac3_m4_tests": {
+    "command": "pytest tests/test_m4_acoustic.py tests/test_m4_dycore_step.py tests/test_m4_tier2_invariants.py",
+    "result": "10 passed",
+    "note": "Same as F7K (10/10). All prior F7 operators (F7D/F/H/I/J/K) untouched; no clamps/caps/tolerance-widening."
+  },
+  "ac1_straka": {
+    "verdict": "FAIL (non-finite by 900s; detonates between 240-300s)",
+    "note": "Stabilizers applied are WRF-faithful only (benchmark nu=75 on u,v,w,theta + WRF emdiv/smdiv/w_damping/damp_opt/CFL). No masking clamps added."
+  }
+}

@@ -19,18 +19,30 @@ The pre-reset "dycore done, bitwise WRF parity at 100 steps" was a **JAX-vs-JAX 
 | Persistent coupled work-theta across acoustic substeps (couple-once / advance-N / decouple-once) | F7K: was re-coupled+decoupled EVERY substep → theta advanced only 1/N_sound of correct (warm bubble rose 213 m not ~2000 m). Fixed: advance `theta_coupled_work`. **Skamarock warm bubble now PASSES 6/6 (thermal_rise 1925 m).** |
 | Flat-rest exactly stable (machine-0); mass conserved to 0 over 300+ steps | continuous regression gate |
 
-## OPEN RESIDUAL (one localized issue, as of F7K)
-The warm-bubble under-translation is FIXED (F7K: theta mass-coupling cadence bug;
-**Skamarock warm bubble PASS 6/6, thermal_rise 1925 m**). Remaining: **Straka
-density current NaNs at 240 s** (max|w| ramps 7→15→21 m/s then detonates) — the
-**same time as F7J, unchanged by the F7K fix**, so it is a **separate stiff-regime
-residual** (dx=100 m, −15 K cold pool): a CFL/stability runaway, NOT a
-scalar-transport-direction defect. Likely an acoustic-CFL or WRF-faithful
-diffusion / external-mode divergence-damping (`emdiv`/`smdiv`) balance issue.
+## OPEN RESIDUAL — PARTIALLY ADVANCED in F7L (w-diffusion added; Straka still detonates)
+**F7L found+fixed a genuine missing operator** but Straka is NOT fully closed.
+The F7.B constant-K (ν=75) diffusion was wired only on u, v, θ, but WRF's
+`diff_opt=2` const-K path diffuses **u, v, w AND θ** (`module_diffusion_em.F:2864-3113`
+calls `horizontal_diffusion_w_2` at :2999; `:4004-4458` `vertical_diffusion_2`
+likewise; Straka et al. 1993 define ν=75 on u, w, θ). **F7L fix**
+(`operational_mode.py` `_augment_large_step_tendencies`, committed): add
+`mass_f*K*∇²w` in the `nu>0` block. Decisive A/B: nu0 NaN at 240 s; nu75+w-diff
+**finite past 240 s** (max|w|=23.9 at 240, ramp flattening) — but it **still
+detonates between 240–300 s** at the cold-pool touchdown. max|w|=23.9 m/s at 240 s
+EXCEEDS the canonical Straka ν=75 reference (~12–18) while the gust front is only
+~2.65 km from center (reference head is further along): **excess vertical velocity
++ sluggish lateral spreading** → a residual operator/coupling defect at the
+descending sharp cold front (candidate: gust-front horizontal-PGF→cold-pool-outflow
+conversion or descending-front lower-boundary w handling), NOT mere under-diffusion.
+Acoustic CFL was never the issue (c·dts/dx≈0.035); emdiv=0.01/smdiv=0.1/w_damping=1/
+damp_opt=3 already active+WRF-correct. **F7L_PARTIAL** (no ad-hoc clamps per the
+hard rule). Warm bubble unaffected (ν=0 ⇒ block skipped; still **PASS 6/6**).
+See `proofs/f7l/straka_diffusion_fix.md` + `straka_wdiff_compare.json`.
 
-**Next step:** a focused Straka stability probe (acoustic CFL audit +
-WRF-faithful 2nd-order diffusion / divergence-damping) — NOT a diffusion fudge.
-The scalar-translation defect that blocked F7 is RESOLVED.
+**Next step (F7M):** target the descending-cold-front residual — multi-angle:
+(1) gust-front horizontal-PGF / cold-pool u-outflow vs WRF at the sharp ground
+front; (2) descending-front w lower-BC; (3) cold-pool front-speed deficit
+(u too weak ⇒ air sinks not spreads). NOT more diffusion (ν=75 is the spec).
 
 ## WRF ground truth (the arbiter — USE IT)
 Pristine WRF **v4.7.1** (same version as Gen2) built at `/home/enric/src/wrf_pristine/WRF` (gfortran serial, conda env `wrfbuild`; `csh -f ./compile`). Center-column (i=20,j=20) per-acoustic-substep `em_quarter_ss` savepoints at:
