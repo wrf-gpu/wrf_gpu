@@ -661,24 +661,19 @@ def _acoustic_core_state_from_prep(
     state = prep.entry_state
     theta_pert = (state.theta - prep.theta_offset).astype(jnp.float64)
     ph_base = state.ph_total - state.ph_perturbation
-    # Large-step ABSOLUTE perturbation pressure p' for the pg_buoy_w buoyancy
-    # source (WRF rk_step_prep diagnostic, module_em.F:184-225).  Uses the
-    # absolute perturbation fields (ph_perturbation, mu_perturbation, theta_pert),
-    # not the small-step work deltas, so a statically-imbalanced parcel (warm/cold
-    # bubble) produces a real buoyancy even though its work-delta pressure is ~0.
-    #   al' = -(alt*c1h*mu' + rdnw*(ph'(k+1)-ph'(k))) / (c1h*mut+c2h)
-    #   p'  = c2a*( alt*(theta_pert - c1h*mu'*t_1)/((c1h*mut+c2h)*(t0+t_1)) - al' )
-    ph_pert_abs = state.ph_perturbation.astype(jnp.float64)
-    mu_pert_abs = state.mu_perturbation.astype(jnp.float64)
-    mass_h_buoy = prep.c1h[:, None, None] * prep.mut[None, :, :] + prep.c2h[:, None, None]
-    safe_mass_buoy = jnp.where(jnp.abs(mass_h_buoy) > 1.0e-12, mass_h_buoy, jnp.asarray(1.0e-12, dtype=mass_h_buoy.dtype))
-    mu_term_buoy = prep.c1h[:, None, None] * mu_pert_abs[None, :, :]
-    al_abs = -(prep.alt * mu_term_buoy + prep.rdnw[:, None, None] * (ph_pert_abs[1:, :, :] - ph_pert_abs[:-1, :, :])) / safe_mass_buoy
-    theta_total_ref = 300.0 + prep.theta_1
-    safe_theta_ref = jnp.where(jnp.abs(theta_total_ref) > 1.0e-6, theta_total_ref, jnp.asarray(1.0e-6, dtype=theta_total_ref.dtype))
-    p_buoy_abs = prep.c2a * (
-        prep.alt * (theta_pert - mu_term_buoy * prep.theta_1) / (safe_mass_buoy * safe_theta_ref) - al_abs
-    )
+    # F7F: the buoyancy that lifts the WRF-balanced bubble does NOT enter through
+    # ``pg_buoy_w``.  WRF passes the small-step perturbation-pressure diagnostic
+    # ``grid%p`` (= ``calc_p_rho`` work pressure, ~0 for a static balanced
+    # perturbation at RK1) into ``pg_buoy_w`` (module_em.F:1361-1368 ->
+    # module_big_step_utilities_em.F:2564-2571).  The rising-thermal buoyancy is
+    # instead the in-solver ``c2a*alt*t_2ave`` term inside ``advance_w``
+    # (module_small_step_em.F:1486-1489), driven by the EOS inverse density
+    # ``alt`` of the full (bubble) theta and the hydrostatically rebalanced ph.
+    # Sprint B fed a SECOND, synthetic absolute theta-derived pressure here to
+    # force a dead (unbalanced-IC) bubble to rise, which over-forced w by 9.4x
+    # (0.615 m/s^2 frozen).  GPT-5.5 WRF fork resolution refuted that hack: feed
+    # ``pg_buoy_w`` the real ``calc_p_rho`` work pressure (p_buoy=None below ->
+    # acoustic_substep_core falls back to the live substep ``p``).
     return AcousticCoreState(
         ww=carry.ww,
         ww_1=prep.ww_save,
@@ -752,8 +747,10 @@ def _acoustic_core_state_from_prep(
         ru_m=jnp.zeros_like(prep.u_work),
         rv_m=jnp.zeros_like(prep.v_work),
         ww_m=jnp.zeros_like(carry.ww),
-        # Absolute perturbation pressure for the large-step pg_buoy_w buoyancy.
-        p_buoy=p_buoy_abs,
+        # F7F: no synthetic absolute p' for pg_buoy_w.  acoustic_substep_core
+        # consumes the live ``calc_p_rho`` work pressure (WRF grid%p), matching
+        # module_big_step_utilities_em.F:2564-2571.
+        p_buoy=None,
         # Uncoupled physical perturbation w saved by small_step_prep (WRF :272);
         # consumed by the damp_opt=3 implicit Rayleigh w-damping in advance_w.
         w_save=prep.w_save,

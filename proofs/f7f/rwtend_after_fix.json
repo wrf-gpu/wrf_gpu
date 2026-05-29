@@ -1,0 +1,38 @@
+{
+  "schema": "f7f_rwtend_after_fix",
+  "ac1_balanced": {
+    "label": "balanced_wrf_rebalanced_ic",
+    "p_buoy_is_synthetic": false,
+    "theta_prime_max_K": 2.0,
+    "analytic_buoyancy_m_s2": 0.0654,
+    "max_abs_rw_phys_m_s2": 0.0,
+    "ratio_rw_over_analytic": 0.0,
+    "max_abs_p_for_buoy_Pa": 0.0,
+    "max_abs_mu_prime": 0.0,
+    "max_abs_c1f_mu_term": 0.0,
+    "max_abs_ph_perturbation_m2_s2": 131.82738277021667
+  },
+  "ac1_thresholds": {
+    "max_abs_c1f_mu_term_eq_0": true,
+    "max_abs_rw_phys_lt_0p01": true,
+    "pass": true
+  },
+  "ac2_negative_control": {
+    "label": "unbalanced_base_ph_ic",
+    "p_buoy_is_synthetic": false,
+    "theta_prime_max_K": 2.0,
+    "analytic_buoyancy_m_s2": 0.0654,
+    "max_abs_rw_phys_m_s2": 0.0,
+    "ratio_rw_over_analytic": 0.0,
+    "max_abs_p_for_buoy_Pa": 0.0,
+    "max_abs_mu_prime": 0.0,
+    "max_abs_c1f_mu_term": 0.0,
+    "max_abs_ph_perturbation_m2_s2": 0.0
+  },
+  "prefix_baseline_reference": {
+    "note": "pre-F7F synthetic-p_buoy probe (proofs/f7d/rwtend_check.json)",
+    "max_abs_rw_phys_m_s2": 0.61474,
+    "ratio_rw_over_analytic": 9.4,
+    "max_abs_p_buoy_Pa": 743.97
+  }
+}

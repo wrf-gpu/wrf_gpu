@@ -470,33 +470,43 @@ def _make_state(case: NumpyIdealizedCase, grid: GridSpec, device: jax.Device) ->
     mu_total = np.broadcast_to(case.mu_base_pa, (1, case.nx)).copy()
     zero_mass = np.zeros((case.nz, 1, case.nx), dtype=np.float64)
 
-    # Per-column hydrostatic geopotential from the FULL θ (bubble included).  WRF
-    # idealized init integrates dφ/dη = -mut*alt for each column, so the warm/cold
-    # parcel gets a geopotential that differs from the neutral base column; that
-    # ph perturbation (relative to the base column φ used for all x) is the
-    # out-of-balance signal that drives buoyancy in the acoustic w-solve.  Without
-    # it the parcel is artificially balanced and never moves.
+    # WRF fixed-mass hydrostatic rebalance of the geopotential after the theta
+    # perturbation (module_initialize_ideal.F:1103-1130 quarter_ss / :1278-1313
+    # grav2d_x).  The column dry mass does NOT change (mu' = 0, verified below);
+    # WRF perturbs theta, recomputes the full inverse density from the EOS, and
+    # re-integrates ph_1/ph_2/ph0 hydrostatically at fixed mass:
+    #
+    #   alt_full = (R_d/p0)*(t_1+t0)*((p+pb)/p0)^cvpm           (:1113-1116)
+    #   al       = alt_full - alb                                (:1117)
+    #   phb(k+1) = phb(k) - dnw(k)*(c1h*mub+c2h)*alb(k)          (base, :982)
+    #   ph'(k+1) = ph'(k) - dnw(k)*[ (c1h*mub+c2h + c1h*mu')*al(k)
+    #                                + c1h*mu'*alb(k) ]          (:1124-1129)
+    #
+    # with ph'(1) = 0 at the lower boundary (:1056) and ph0 = phb + ph'.  This is
+    # the ONLY change the bubble makes to the geometry; the buoyancy that lifts
+    # the thermal is then the in-solver c2a*alt*t_2ave term in advance_w
+    # (module_small_step_em.F:1486-1489), NOT a synthetic ph/p source.
+    #
+    # The JAX pure-sigma grid has c1h=1, c2h=0 and mu'=0, so (c1h*mub+c2h)=mu and
+    # the recurrence collapses to ph'(k+1)=ph'(k) - dnw(k)*mu*al(k).  We use the
+    # |dnw| upward-positive convention (WRF dnw<0) so the integration adds upward.
     eta = np.asarray(case.eta_levels, dtype=np.float64)
-    dnw = np.abs(eta[1:] - eta[:-1])  # (nz,)
+    dnw = np.abs(eta[1:] - eta[:-1])  # (nz,) WRF |dnw|
     mu = float(case.mu_base_pa[0, 0])
-    p_top = float(case.p_top_pa)
-    p_mass = case.pressure_pa  # (nz, nx) base hydrostatic mass-level pressure
-    # alt per column from full θ at the (shared) base pressure profile.
-    # φ increases with height: dφ = mut*alt*|dnw| upward (f7a oracle convention).
-    alt_full = _alpha_dry(case.theta_k, p_mass)  # (nz, nx) full-θ specific volume
-    ph_col = np.zeros((case.nz + 1, case.nx), dtype=np.float64)
+    p_mass = case.pressure_pa  # (nz, nx) base hydrostatic mass-level pressure (p+pb)
+    mass_h = mu  # c1h*mub + c2h with c1h=1, c2h=0, mub=mu (pure sigma)
+    # Full inverse density alt = EOS(theta_full, p+pb) and base alb = EOS(theta0).
+    alt_full = _alpha_dry(case.theta_k, p_mass)  # (nz, nx)
+    alb = _alpha_dry(np.full(case.nz, THETA0_K), p_mass[:, 0])  # (nz,) neutral base
+    al = alt_full - alb[:, None]  # (nz, nx) WRF grid%al = alt - alb (:1117)
+    # Base geopotential phb from alb (WRF :982); ph'(1)=0 at the lower boundary.
+    phb_col = np.zeros(case.nz + 1, dtype=np.float64)
+    ph_pert_col = np.zeros((case.nz + 1, case.nx), dtype=np.float64)
     for k in range(case.nz):
-        ph_col[k + 1, :] = ph_col[k, :] + dnw[k] * mu * alt_full[k, :]
-    # Base reference φ integrated the SAME way with the neutral θ0 column, so that
-    # ph_perturbation is exactly zero wherever θ'=0 (and calc_p_rho is balanced).
-    alt_base = _alpha_dry(np.full(case.nz, THETA0_K), p_mass[:, 0])  # (nz,)
-    ph_base_col = np.zeros(case.nz + 1, dtype=np.float64)
-    for k in range(case.nz):
-        ph_base_col[k + 1] = ph_base_col[k] + dnw[k] * mu * alt_base[k]
-    ph_total = ph_col[:, None, :]
-    ph_pert = (ph_col - ph_base_col[:, None])[:, None, :]
-    zero_face = np.zeros((case.nz + 1, 1, case.nx), dtype=np.float64)
-    del zero_face
+        phb_col[k + 1] = phb_col[k] + dnw[k] * mass_h * alb[k]
+        ph_pert_col[k + 1, :] = ph_pert_col[k, :] + dnw[k] * mass_h * al[k, :]
+    ph_total = (phb_col[:, None] + ph_pert_col)[:, None, :]  # ph0 = phb + ph'
+    ph_pert = ph_pert_col[:, None, :]
 
     fields.update(
         {
