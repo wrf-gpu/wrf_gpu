@@ -597,10 +597,14 @@ def acoustic_substep_core(
     ww_m = ww_m + ww_new
 
     # --- 5. calc_p_rho(step=iteration): smdiv pressure memory ---
+    # WRF solve_em.F:4164-4171 passes the *live* ``grid%muts`` (refreshed by
+    # advance_mu_t this substep) as the ``Mut`` denominator -- NOT the
+    # stage-entry ``grid%mut`` (=uv_state.mut).  Feeding the base/stage mass here
+    # was the broken-restoring-loop bug (gpt-findings.md §3.2).
     pm1 = uv_state.pm1 if uv_state.pm1 is not None else uv_state.p
     p_rho = calc_p_rho_step(
         mu_work=mu_work,
-        mut=uv_state.mut,
+        muts_total=muts_new,
         ph_work=ph_next,
         theta_work=theta_coupled,
         theta_1=uv_state.theta_1,

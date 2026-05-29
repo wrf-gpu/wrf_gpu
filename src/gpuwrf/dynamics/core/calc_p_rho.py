@@ -51,7 +51,7 @@ class CalcPRhoStep0:
 def _calc_al_p(
     *,
     mu_work: jax.Array,
-    mut: jax.Array,
+    muts_total: jax.Array,
     ph_work: jax.Array,
     theta_work: jax.Array,
     theta_1: jax.Array,
@@ -64,13 +64,18 @@ def _calc_al_p(
 ) -> tuple[jax.Array, jax.Array]:
     """Return WRF non-hydrostatic ``al`` and ``p`` (``:522-528``).
 
-    ``mu_work`` is the perturbation dry-mass work array (WRF ``mu``),
-    ``mut`` the full base dry mass (WRF ``mut``), ``ph_work`` the perturbation
-    geopotential work array (WRF ``ph``), ``theta_work`` the coupled theta work
-    array (WRF ``t_2``), and ``theta_1`` the perturbation theta (WRF ``t_1``).
+    ``mu_work`` is the perturbation dry-mass work array (WRF ``mu`` = ``mu_2``),
+    ``muts_total`` is the WRF full small-step *total* dry mass denominator
+    (WRF ``Mut`` argument, which solve_em.F:2628-2635 / :4164-4171 supplies as
+    ``grid%muts`` = MUB + MU_current + MU_work, **not** the base/stage-entry mass).
+    ``ph_work`` is the perturbation geopotential work array (WRF ``ph``),
+    ``theta_work`` the coupled theta work array (WRF ``t_2``), and ``theta_1``
+    the perturbation theta (WRF ``t_1``).  The numerator stays the work
+    variables (``mu_work``/``ph_work``/``theta_work``); only the total-mass
+    denominator is the full ``muts`` total.
     """
 
-    mass_h = c1h[:, None, None] * mut[None, :, :] + c2h[:, None, None]
+    mass_h = c1h[:, None, None] * muts_total[None, :, :] + c2h[:, None, None]
     safe_mass = jnp.where(jnp.abs(mass_h) > 1.0e-12, mass_h, jnp.asarray(1.0e-12, dtype=mass_h.dtype))
     mu_term = c1h[:, None, None] * mu_work[None, :, :]
     # WRF :522-523 -- al = -1/(c1h*mut+c2h) * ( alt*(c1h*mu) + rdnw*(ph(k+1)-ph(k)) )
@@ -106,9 +111,11 @@ def calc_p_rho_wrf(
     if not bool(non_hydrostatic):
         raise NotImplementedError("F7.A implements the nonhydrostatic calc_p_rho path only")
 
+    # WRF solve_em.F:2628-2635 passes ``grid%muts`` (the full small-step total
+    # dry mass) as the ``Mut`` denominator into calc_p_rho, NOT ``grid%mut``.
     al, p = _calc_al_p(
         mu_work=prep.mu_work,
-        mut=prep.mut,
+        muts_total=prep.muts,
         ph_work=prep.ph_work,
         theta_work=prep.theta_work,
         theta_1=prep.theta_1,
@@ -125,7 +132,7 @@ def calc_p_rho_wrf(
 def calc_p_rho_step(
     *,
     mu_work: jax.Array,
-    mut: jax.Array,
+    muts_total: jax.Array,
     ph_work: jax.Array,
     theta_work: jax.Array,
     theta_1: jax.Array,
@@ -141,14 +148,16 @@ def calc_p_rho_step(
     """Compute WRF ``calc_p_rho(step=iteration)`` with divergence-damping memory.
 
     Source: WRF ``dyn_em/module_small_step_em.F:515-567``.  ``c2a`` is
-    ``INTENT(IN)`` and never recomputed.  Applies the smdiv pressure memory
-    update ``p = p + smdiv*(p - pm1)`` then refreshes ``pm1`` with the
-    pre-update pressure (WRF lines 557-567).
+    ``INTENT(IN)`` and never recomputed.  ``muts_total`` is the WRF ``Mut``
+    denominator which solve_em.F:4164-4171 supplies as the *live* ``grid%muts``
+    (refreshed each substep by advance_mu_t), NOT the stage-entry ``grid%mut``.
+    Applies the smdiv pressure memory update ``p = p + smdiv*(p - pm1)`` then
+    refreshes ``pm1`` with the pre-update pressure (WRF lines 557-567).
     """
 
     al, p = _calc_al_p(
         mu_work=mu_work,
-        mut=mut,
+        muts_total=muts_total,
         ph_work=ph_work,
         theta_work=theta_work,
         theta_1=theta_1,

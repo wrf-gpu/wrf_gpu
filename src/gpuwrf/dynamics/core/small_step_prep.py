@@ -61,6 +61,7 @@ class SmallStepPrepState:
     ph_save: jax.Array
     mu_save: jax.Array
     ww_save: jax.Array
+    mub: jax.Array
     mut: jax.Array
     muu: jax.Array
     muv: jax.Array
@@ -111,6 +112,7 @@ class SmallStepPrepState:
             self.ph_save,
             self.mu_save,
             self.ww_save,
+            self.mub,
             self.mut,
             self.muu,
             self.muv,
@@ -168,19 +170,36 @@ def small_step_prep_wrf(
     theta_ref = jnp.asarray(reference.theta) - theta_offset
     theta_cur = jnp.asarray(state.theta) - theta_offset
 
-    mut = _base_mu(state)
+    # WRF mass semantics (module_small_step_em.F:172-215; solve_em.F passes
+    # ``grid%mut`` = full stage-entry dry mass and ``grid%muts`` as the work-total
+    # denominator into calc_p_rho/advance_w):
+    #   ``mub``       = MUB  (base dry mass, INTENT(IN) ``mub``)
+    #   ``mut``       = grid%mut = MUB + MU_current  (full *current* dry mass;
+    #                   calculate_full in rk_step_prep, module_em.F:184-187)
+    #   ``mu_work``   = small-step work ``MU_2`` after small_step_prep:
+    #                     RK1 -> 0                (:187-190)
+    #                     else -> MU_ref - MU_cur (:213-214)
+    #   ``muts``      = MUB + MU_ref = mut + mu_work  (full *stage/reference* dry
+    #                   mass; WRF MUTS = MUB+MU_2(RK1) / MUB+MU_1(else),
+    #                   :172-175, :196-199).
+    # Previously JAX set ``mut = MUB`` which fed calc_p_rho/calc_coef_w/advance_w
+    # the wrong (base) total mass and broke the acoustic restoring loop.
+    mub = _base_mu(state)
     mu_current = jnp.asarray(state.mu_perturbation)
     mu_ref = jnp.asarray(reference.mu_perturbation)
     mu_save = mu_current
     mu_work = jnp.zeros_like(mu_current) if int(rk_step) == 1 else mu_ref - mu_current
+    mut = mub + mu_current
     muts = mut + mu_work
 
-    mu_current_total = mut + mu_current
-    mu_stage_total = mut + mu_ref
-    muu = _u_face_average_2d(mu_current_total)
-    muv = _v_face_average_2d(mu_current_total)
-    muus = _u_face_average_2d(mu_stage_total)
-    muvs = _v_face_average_2d(mu_stage_total)
+    # ``muu/muv`` = face averages of the full *current* dry mass ``mut`` (WRF
+    # ``grid%muu/muv`` from calculate_full); ``muus/muvs`` = face averages of the
+    # full *stage* dry mass ``muts`` (WRF :172-207, RK1 sets muus=muu, but for the
+    # rest/balanced RK1 state reference==state so the two are identical anyway).
+    muu = _u_face_average_2d(mut)
+    muv = _v_face_average_2d(mut)
+    muus = _u_face_average_2d(muts)
+    muvs = _v_face_average_2d(muts)
 
     mass_u_ref = metrics.c1h[:, None, None] * muus[None, :, :] + metrics.c2h[:, None, None]
     mass_u_cur = metrics.c1h[:, None, None] * muu[None, :, :] + metrics.c2h[:, None, None]
@@ -222,6 +241,7 @@ def small_step_prep_wrf(
         ph_save=jnp.asarray(state.ph_perturbation),
         mu_save=mu_save,
         ww_save=ww_save,
+        mub=mub,
         mut=mut,
         muu=muu,
         muv=muv,
