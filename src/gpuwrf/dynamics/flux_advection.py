@@ -410,11 +410,22 @@ def _vertical_flux_div_3(field_mass: jax.Array, romq: jax.Array, rdzw: jax.Array
         q_km1 = field_mass[1 : nz - 2, :, :]
         q_k = field_mass[2 : nz - 1, :, :]
         q_kp1 = field_mass[3:nz, :, :]
-        velz = romq[2 : nz - 1, :, :]
+        rom_k = romq[2 : nz - 1, :, :]
         flux4 = (7.0 * (q_k + q_km1) - (q_kp1 + q_km2)) / 12.0
         corr = ((q_kp1 - q_km2) - 3.0 * (q_k - q_km1)) / 12.0
-        flux3 = flux4 + jnp.sign(velz) * corr
-        vflux = vflux.at[2 : nz - 1, :, :].set(velz * flux3)
+        # WRF advect_u/v vertical flux (module_advect_em.F:1474-1480): the flux at
+        # face k is ``vel*flux3(u(k-2..k+1), -vel)`` with ``vel=0.5*(rom(i-1,k)+
+        # rom(i,k))`` (here ``romq`` is that x-averaged rom).  WRF's flux3
+        # (:202-204) applies ``sign(1.,ua)`` to the correction with ``ua = -vel``,
+        # so the upwind correction enters as ``-sign(vel)*|...| = -|vel|*corr``
+        # (DISSIPATIVE).  The previous JAX code used ``sign(+romq)``, i.e. it
+        # ADDED ``+|vel|*corr`` -- the opposite sign, an ANTI-dissipative term that
+        # excited a growing 2Δz vertical mode in u/v in the Straka cold-pool
+        # descent column (F7N: novadv test removed the mode; the scalar path
+        # advect_scalar_flux already negates the velocity correctly).  Use the WRF
+        # sign: subtract |vel|*corr.
+        flux3 = flux4 + jnp.sign(-rom_k) * corr
+        vflux = vflux.at[2 : nz - 1, :, :].set(rom_k * flux3)
     if nz >= 2:
         vflux = vflux.at[1, :, :].set(
             romq[1, :, :] * (fzm[1] * field_mass[1, :, :] + fzp[1] * field_mass[0, :, :])
