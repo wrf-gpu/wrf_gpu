@@ -839,8 +839,50 @@ def _carry_from_acoustic_core(acoustic: AcousticCoreState, template: State, thet
     )
 
 
-def _carry_from_finished_stage(carry: OperationalCarry, prep: SmallStepPrepState, acoustic: AcousticCoreState) -> OperationalCarry:
+def _refresh_grid_p_from_finished(next_state: State, prep: SmallStepPrepState, namelist: OperationalNamelist) -> State:
+    """Recompute WRF ``grid%p`` from the finished physical ``ph'`` and ``theta``.
+
+    WRF closes every RK step by calling ``calc_p_rho_phi`` (solve_em.F:6180,
+    :7542) which rebuilds the diagnostic perturbation pressure ``grid%p`` (and
+    ``al``) from the updated geopotential ``ph`` and theta
+    (module_big_step_utilities_em.F:1029, :1083-1087).  The next RK stage's
+    large-step horizontal PGF and once-per-stage ``pg_buoy_w`` then act on THAT
+    refreshed pressure.
+
+    The JAX operational path previously carried ``p_perturbation`` =
+    ``calc_p_rho_step`` work pressure (a delta-from-reference, O(1-10 Pa) for a
+    near-balanced thermal), which is NOT the WRF ``grid%p`` diagnostic
+    (O(1e3-1e4 Pa) once ``ph'`` evolves).  Feeding that stale O(1) pressure to
+    the next stage suppressed the restoring vertical/horizontal PGF, leaving a
+    near-constant net vertical force -> w runaway (see proofs/f7h, GPT bughunt
+    §2).  This refresh restores the WRF closing diagnostic.  The acoustic substep
+    still uses ``calc_p_rho_step`` for its own work-array pressure + smdiv memory.
+    """
+
+    base = BaseState(
+        pb=prep.pb,
+        phb=next_state.ph_total - next_state.ph_perturbation,
+        mub=prep.mub,
+        t0=jnp.asarray(prep.theta_offset),
+        theta_base=jnp.full_like(next_state.theta, prep.theta_offset),
+    )
+    p_pert, _al, _alt = diagnose_pressure_al_alt(next_state, base, namelist.metrics)
+    p_base = next_state.p_total - next_state.p_perturbation
+    p_total = p_base + p_pert
+    return next_state.replace(
+        p=p_total, p_total=p_total, p_perturbation=p_pert,
+    )
+
+
+def _carry_from_finished_stage(
+    carry: OperationalCarry,
+    prep: SmallStepPrepState,
+    acoustic: AcousticCoreState,
+    namelist: OperationalNamelist | None = None,
+) -> OperationalCarry:
     next_state = small_step_finish_wrf(prep, acoustic)
+    if namelist is not None:
+        next_state = _refresh_grid_p_from_finished(next_state, prep, namelist)
     ww = acoustic.ww + prep.ww_save
     return carry.replace(
         state=next_state,
@@ -950,7 +992,7 @@ def _acoustic_scan(
             ), None
 
         acoustic, _ = jax.lax.scan(body, acoustic, xs=None, length=int(stage.number_of_small_timesteps))
-        next_carry = _carry_from_finished_stage(carry, prep, acoustic)
+        next_carry = _carry_from_finished_stage(carry, prep, acoustic, namelist)
         return next_carry.replace(state=apply_halo(next_carry.state, halo_spec(namelist.grid)))
 
     del tendencies
