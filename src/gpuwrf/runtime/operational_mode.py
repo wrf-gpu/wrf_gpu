@@ -979,6 +979,17 @@ def _augment_large_step_tendencies(
         v_t = v_t + constant_k_diffusion_tendency(haloed.v, k_m2_s=nu, dx_m=dx, dy_m=dy, dz_m=float(dz))
         th_t = th_t + constant_k_diffusion_tendency(haloed.theta, k_m2_s=nu, dx_m=dx, dy_m=dy, dz_m=float(dz))
 
+    # NOTE: WRF rk_tendency also adds the horizontal PGF to the large-step
+    # ru/rv_tend (module_em.F:1325).  A prototype that diagnoses the absolute p'
+    # and adds horizontal_pressure_gradient here was verified to produce a
+    # nonzero u-tendency (~0.6 m/s/s) but did NOT move u in the integrated state,
+    # because the operational tendency cadence applies the large-step tendency in
+    # both add_scaled_tendencies and advance_uv and reconstructs u in
+    # small_step_finish, so without WRF rk_addtend_dry the contributions do not
+    # net to the physical horizontal acceleration.  Restoring the large-step PGF
+    # therefore requires rk_addtend_dry (Block 2) and is left out here to avoid a
+    # double-application; the gap is documented in the worker report.
+
     return tendencies.replace(u=u_t, v=v_t, w=w_t, theta=th_t)
 
 
