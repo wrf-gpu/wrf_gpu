@@ -1,0 +1,881 @@
+{
+  "commit": "db43d4c716128841d9265d203474379fd0a27232",
+  "first_violation_per_combination": {
+    "a": {
+      "acoustic_uv_max_delta": 3.8731561639125816e+121,
+      "first_any": {
+        "acoustic_substep": 1,
+        "combination": "a",
+        "details": {
+          "relative_residual": 3.7367095293547695e-06,
+          "residual": -7910971.923583984,
+          "rtol": 1e-10
+        },
+        "invariant": "theta_mass_residual",
+        "operator": "advance_mu_t",
+        "rk_stage": 1,
+        "step": 1
+      },
+      "first_by_invariant": {
+        "all_values_finite": {
+          "acoustic_substep": null,
+          "combination": "a",
+          "details": {
+            "first_nonfinite_budget_field": "theta"
+          },
+          "invariant": "all_values_finite",
+          "operator": "rk_stage_halo",
+          "rk_stage": 2,
+          "step": 2
+        },
+        "dry_mass_nonnegative": {
+          "acoustic_substep": 10,
+          "combination": "a",
+          "details": {
+            "dry_mass_min": -31171.824127837404
+          },
+          "invariant": "dry_mass_nonnegative",
+          "operator": "advance_mu_t",
+          "rk_stage": 3,
+          "step": 1
+        },
+        "muts_mut_work_mu_consistency": {
+          "acoustic_substep": 1,
+          "combination": "a",
+          "details": {
+            "atol": 1e-08,
+            "max_abs_error": 0.000244140625
+          },
+          "invariant": "muts_mut_work_mu_consistency",
+          "operator": "advance_mu_t",
+          "rk_stage": 2,
+          "step": 2
+        },
+        "pressure_bounded": {
+          "acoustic_substep": null,
+          "combination": "a",
+          "details": {
+            "abs_p_over_base_max": 113571690444.56227,
+            "threshold": 2.0
+          },
+          "invariant": "pressure_bounded",
+          "operator": "rk_stage_candidate",
+          "rk_stage": 1,
+          "step": 2
+        },
+        "theta_mass_residual": {
+          "acoustic_substep": 1,
+          "combination": "a",
+          "details": {
+            "relative_residual": 3.7367095293547695e-06,
+            "residual": -7910971.923583984,
+            "rtol": 1e-10
+          },
+          "invariant": "theta_mass_residual",
+          "operator": "advance_mu_t",
+          "rk_stage": 1,
+          "step": 1
+        },
+        "theta_sanity_bounds": {
+          "acoustic_substep": 8,
+          "combination": "a",
+          "details": {
+            "allowed": [
+              200.0,
+              700.0
+            ],
+            "max": 492.5280456542969,
+            "min": -24.120135852431645
+          },
+          "invariant": "theta_sanity_bounds",
+          "operator": "advance_mu_t",
+          "rk_stage": 3,
+          "step": 1
+        },
+        "wind_sanity_bounds": {
+          "acoustic_substep": null,
+          "combination": "a",
+          "details": {
+            "allowed": {
+              "u_v": 100.0,
+              "w": 50.0
+            },
+            "u_abs_max": 2233.8564453125,
+            "v_abs_max": 2568.14453125,
+            "w_abs_max": 5279.542028535317
+          },
+          "invariant": "wind_sanity_bounds",
+          "operator": "rk_stage_halo",
+          "rk_stage": 3,
+          "step": 1
+        }
+      },
+      "first_critical": {
+        "acoustic_substep": 8,
+        "combination": "a",
+        "details": {
+          "allowed": [
+            200.0,
+            700.0
+          ],
+          "max": 492.5280456542969,
+          "min": -24.120135852431645
+        },
+        "invariant": "theta_sanity_bounds",
+        "operator": "advance_mu_t",
+        "rk_stage": 3,
+        "step": 1
+      }
+    },
+    "b": {
+      "acoustic_uv_max_delta": 1.309240721299581e+118,
+      "first_any": {
+        "acoustic_substep": 1,
+        "combination": "b",
+        "details": {
+          "relative_residual": 3.7367095293547695e-06,
+          "residual": -7910971.923583984,
+          "rtol": 1e-10
+        },
+        "invariant": "theta_mass_residual",
+        "operator": "advance_mu_t",
+        "rk_stage": 1,
+        "step": 1
+      },
+      "first_by_invariant": {
+        "all_values_finite": {
+          "acoustic_substep": null,
+          "combination": "b",
+          "details": {
+            "first_nonfinite_budget_field": "theta"
+          },
+          "invariant": "all_values_finite",
+          "operator": "rk_stage_halo",
+          "rk_stage": 2,
+          "step": 2
+        },
+        "dry_mass_nonnegative": {
+          "acoustic_substep": 10,
+          "combination": "b",
+          "details": {
+            "dry_mass_min": -31171.824127837404
+          },
+          "invariant": "dry_mass_nonnegative",
+          "operator": "advance_mu_t",
+          "rk_stage": 3,
+          "step": 1
+        },
+        "muts_mut_work_mu_consistency": {
+          "acoustic_substep": 1,
+          "combination": "b",
+          "details": {
+            "atol": 1e-08,
+            "max_abs_error": 0.25
+          },
+          "invariant": "muts_mut_work_mu_consistency",
+          "operator": "advance_mu_t",
+          "rk_stage": 2,
+          "step": 2
+        },
+        "pressure_bounded": {
+          "acoustic_substep": null,
+          "combination": "b",
+          "details": {
+            "abs_p_over_base_max": 70470408500.04443,
+            "threshold": 2.0
+          },
+          "invariant": "pressure_bounded",
+          "operator": "rk_stage_candidate",
+          "rk_stage": 1,
+          "step": 2
+        },
+        "theta_mass_residual": {
+          "acoustic_substep": 1,
+          "combination": "b",
+          "details": {
+            "relative_residual": 3.7367095293547695e-06,
+            "residual": -7910971.923583984,
+            "rtol": 1e-10
+          },
+          "invariant": "theta_mass_residual",
+          "operator": "advance_mu_t",
+          "rk_stage": 1,
+          "step": 1
+        },
+        "theta_sanity_bounds": {
+          "acoustic_substep": 8,
+          "combination": "b",
+          "details": {
+            "allowed": [
+              200.0,
+              700.0
+            ],
+            "max": 492.5280456542969,
+            "min": -24.120135852431645
+          },
+          "invariant": "theta_sanity_bounds",
+          "operator": "advance_mu_t",
+          "rk_stage": 3,
+          "step": 1
+        },
+        "wind_sanity_bounds": {
+          "acoustic_substep": null,
+          "combination": "b",
+          "details": {
+            "allowed": {
+              "u_v": 100.0,
+              "w": 50.0
+            },
+            "u_abs_max": 2233.8564453125,
+            "v_abs_max": 2568.14453125,
+            "w_abs_max": 5279.542028535317
+          },
+          "invariant": "wind_sanity_bounds",
+          "operator": "rk_stage_halo",
+          "rk_stage": 3,
+          "step": 1
+        }
+      },
+      "first_critical": {
+        "acoustic_substep": 8,
+        "combination": "b",
+        "details": {
+          "allowed": [
+            200.0,
+            700.0
+          ],
+          "max": 492.5280456542969,
+          "min": -24.120135852431645
+        },
+        "invariant": "theta_sanity_bounds",
+        "operator": "advance_mu_t",
+        "rk_stage": 3,
+        "step": 1
+      }
+    },
+    "c": {
+      "acoustic_uv_max_delta": 3.873124216079007e+121,
+      "first_any": {
+        "acoustic_substep": 1,
+        "combination": "c",
+        "details": {
+          "relative_residual": 3.7367095293547695e-06,
+          "residual": -7910971.923583984,
+          "rtol": 1e-10
+        },
+        "invariant": "theta_mass_residual",
+        "operator": "advance_mu_t",
+        "rk_stage": 1,
+        "step": 1
+      },
+      "first_by_invariant": {
+        "all_values_finite": {
+          "acoustic_substep": null,
+          "combination": "c",
+          "details": {
+            "first_nonfinite_budget_field": "theta"
+          },
+          "invariant": "all_values_finite",
+          "operator": "rk_stage_halo",
+          "rk_stage": 2,
+          "step": 2
+        },
+        "dry_mass_nonnegative": {
+          "acoustic_substep": 10,
+          "combination": "c",
+          "details": {
+            "dry_mass_min": -31171.824127837404
+          },
+          "invariant": "dry_mass_nonnegative",
+          "operator": "advance_mu_t",
+          "rk_stage": 3,
+          "step": 1
+        },
+        "muts_mut_work_mu_consistency": {
+          "acoustic_substep": null,
+          "combination": "c",
+          "details": {
+            "atol": 1e-08,
+            "max_abs_error": 446.90899924818996
+          },
+          "invariant": "muts_mut_work_mu_consistency",
+          "operator": "lateral_boundary",
+          "rk_stage": null,
+          "step": 1
+        },
+        "pressure_bounded": {
+          "acoustic_substep": null,
+          "combination": "c",
+          "details": {
+            "abs_p_over_base_max": 113571690444.56227,
+            "threshold": 2.0
+          },
+          "invariant": "pressure_bounded",
+          "operator": "rk_stage_candidate",
+          "rk_stage": 1,
+          "step": 2
+        },
+        "theta_mass_residual": {
+          "acoustic_substep": 1,
+          "combination": "c",
+          "details": {
+            "relative_residual": 3.7367095293547695e-06,
+            "residual": -7910971.923583984,
+            "rtol": 1e-10
+          },
+          "invariant": "theta_mass_residual",
+          "operator": "advance_mu_t",
+          "rk_stage": 1,
+          "step": 1
+        },
+        "theta_sanity_bounds": {
+          "acoustic_substep": 8,
+          "combination": "c",
+          "details": {
+            "allowed": [
+              200.0,
+              700.0
+            ],
+            "max": 492.5280456542969,
+            "min": -24.120135852431645
+          },
+          "invariant": "theta_sanity_bounds",
+          "operator": "advance_mu_t",
+          "rk_stage": 3,
+          "step": 1
+        },
+        "wind_sanity_bounds": {
+          "acoustic_substep": null,
+          "combination": "c",
+          "details": {
+            "allowed": {
+              "u_v": 100.0,
+              "w": 50.0
+            },
+            "u_abs_max": 2233.8564453125,
+            "v_abs_max": 2568.14453125,
+            "w_abs_max": 5279.542028535317
+          },
+          "invariant": "wind_sanity_bounds",
+          "operator": "rk_stage_halo",
+          "rk_stage": 3,
+          "step": 1
+        }
+      },
+      "first_critical": {
+        "acoustic_substep": 8,
+        "combination": "c",
+        "details": {
+          "allowed": [
+            200.0,
+            700.0
+          ],
+          "max": 492.5280456542969,
+          "min": -24.120135852431645
+        },
+        "invariant": "theta_sanity_bounds",
+        "operator": "advance_mu_t",
+        "rk_stage": 3,
+        "step": 1
+      }
+    },
+    "d": {
+      "acoustic_uv_max_delta": 1.5367778177864473e+35,
+      "first_any": {
+        "acoustic_substep": 1,
+        "combination": "d",
+        "details": {
+          "relative_residual": 3.7367095293547695e-06,
+          "residual": -7910971.923583984,
+          "rtol": 1e-10
+        },
+        "invariant": "theta_mass_residual",
+        "operator": "advance_mu_t",
+        "rk_stage": 1,
+        "step": 1
+      },
+      "first_by_invariant": {
+        "all_values_finite": {
+          "acoustic_substep": null,
+          "combination": "d",
+          "details": {
+            "first_nonfinite_budget_field": "theta"
+          },
+          "invariant": "all_values_finite",
+          "operator": "rk_stage_candidate",
+          "rk_stage": 3,
+          "step": 2
+        },
+        "dry_mass_nonnegative": {
+          "acoustic_substep": 10,
+          "combination": "d",
+          "details": {
+            "dry_mass_min": -31171.824127837404
+          },
+          "invariant": "dry_mass_nonnegative",
+          "operator": "advance_mu_t",
+          "rk_stage": 3,
+          "step": 1
+        },
+        "muts_mut_work_mu_consistency": {
+          "acoustic_substep": null,
+          "combination": "d",
+          "details": {
+            "atol": 1e-08,
+            "max_abs_error": 120059.8475653374
+          },
+          "invariant": "muts_mut_work_mu_consistency",
+          "operator": "dynamics_guards",
+          "rk_stage": null,
+          "step": 1
+        },
+        "pressure_bounded": {
+          "acoustic_substep": null,
+          "combination": "d",
+          "details": {
+            "abs_p_over_base_max": 55.744404454055946,
+            "threshold": 2.0
+          },
+          "invariant": "pressure_bounded",
+          "operator": "rk_stage_candidate",
+          "rk_stage": 1,
+          "step": 2
+        },
+        "theta_mass_residual": {
+          "acoustic_substep": 1,
+          "combination": "d",
+          "details": {
+            "relative_residual": 3.7367095293547695e-06,
+            "residual": -7910971.923583984,
+            "rtol": 1e-10
+          },
+          "invariant": "theta_mass_residual",
+          "operator": "advance_mu_t",
+          "rk_stage": 1,
+          "step": 1
+        },
+        "theta_sanity_bounds": {
+          "acoustic_substep": 8,
+          "combination": "d",
+          "details": {
+            "allowed": [
+              200.0,
+              700.0
+            ],
+            "max": 492.5280456542969,
+            "min": -24.120135852431645
+          },
+          "invariant": "theta_sanity_bounds",
+          "operator": "advance_mu_t",
+          "rk_stage": 3,
+          "step": 1
+        },
+        "wind_sanity_bounds": {
+          "acoustic_substep": null,
+          "combination": "d",
+          "details": {
+            "allowed": {
+              "u_v": 100.0,
+              "w": 50.0
+            },
+            "u_abs_max": 2233.8564453125,
+            "v_abs_max": 2568.14453125,
+            "w_abs_max": 5279.542028535317
+          },
+          "invariant": "wind_sanity_bounds",
+          "operator": "rk_stage_halo",
+          "rk_stage": 3,
+          "step": 1
+        }
+      },
+      "first_critical": {
+        "acoustic_substep": 8,
+        "combination": "d",
+        "details": {
+          "allowed": [
+            200.0,
+            700.0
+          ],
+          "max": 492.5280456542969,
+          "min": -24.120135852431645
+        },
+        "invariant": "theta_sanity_bounds",
+        "operator": "advance_mu_t",
+        "rk_stage": 3,
+        "step": 1
+      }
+    }
+  },
+  "generated_utc": "2026-05-28T23:51:58.440507+00:00",
+  "schema_version": "f6-invariant-violations-1.0",
+  "violations": [
+    {
+      "acoustic_substep": 10,
+      "combination": "a",
+      "details": {
+        "dry_mass_min": -31171.824127837404
+      },
+      "invariant": "dry_mass_nonnegative",
+      "operator": "advance_mu_t",
+      "rk_stage": 3,
+      "step": 1
+    },
+    {
+      "acoustic_substep": 1,
+      "combination": "a",
+      "details": {
+        "relative_residual": 3.7367095293547695e-06,
+        "residual": -7910971.923583984,
+        "rtol": 1e-10
+      },
+      "invariant": "theta_mass_residual",
+      "operator": "advance_mu_t",
+      "rk_stage": 1,
+      "step": 1
+    },
+    {
+      "acoustic_substep": 8,
+      "combination": "a",
+      "details": {
+        "allowed": [
+          200.0,
+          700.0
+        ],
+        "max": 492.5280456542969,
+        "min": -24.120135852431645
+      },
+      "invariant": "theta_sanity_bounds",
+      "operator": "advance_mu_t",
+      "rk_stage": 3,
+      "step": 1
+    },
+    {
+      "acoustic_substep": null,
+      "combination": "a",
+      "details": {
+        "allowed": {
+          "u_v": 100.0,
+          "w": 50.0
+        },
+        "u_abs_max": 2233.8564453125,
+        "v_abs_max": 2568.14453125,
+        "w_abs_max": 5279.542028535317
+      },
+      "invariant": "wind_sanity_bounds",
+      "operator": "rk_stage_halo",
+      "rk_stage": 3,
+      "step": 1
+    },
+    {
+      "acoustic_substep": 1,
+      "combination": "a",
+      "details": {
+        "atol": 1e-08,
+        "max_abs_error": 0.000244140625
+      },
+      "invariant": "muts_mut_work_mu_consistency",
+      "operator": "advance_mu_t",
+      "rk_stage": 2,
+      "step": 2
+    },
+    {
+      "acoustic_substep": null,
+      "combination": "a",
+      "details": {
+        "abs_p_over_base_max": 113571690444.56227,
+        "threshold": 2.0
+      },
+      "invariant": "pressure_bounded",
+      "operator": "rk_stage_candidate",
+      "rk_stage": 1,
+      "step": 2
+    },
+    {
+      "acoustic_substep": null,
+      "combination": "a",
+      "details": {
+        "first_nonfinite_budget_field": "theta"
+      },
+      "invariant": "all_values_finite",
+      "operator": "rk_stage_halo",
+      "rk_stage": 2,
+      "step": 2
+    },
+    {
+      "acoustic_substep": 10,
+      "combination": "b",
+      "details": {
+        "dry_mass_min": -31171.824127837404
+      },
+      "invariant": "dry_mass_nonnegative",
+      "operator": "advance_mu_t",
+      "rk_stage": 3,
+      "step": 1
+    },
+    {
+      "acoustic_substep": 1,
+      "combination": "b",
+      "details": {
+        "relative_residual": 3.7367095293547695e-06,
+        "residual": -7910971.923583984,
+        "rtol": 1e-10
+      },
+      "invariant": "theta_mass_residual",
+      "operator": "advance_mu_t",
+      "rk_stage": 1,
+      "step": 1
+    },
+    {
+      "acoustic_substep": 8,
+      "combination": "b",
+      "details": {
+        "allowed": [
+          200.0,
+          700.0
+        ],
+        "max": 492.5280456542969,
+        "min": -24.120135852431645
+      },
+      "invariant": "theta_sanity_bounds",
+      "operator": "advance_mu_t",
+      "rk_stage": 3,
+      "step": 1
+    },
+    {
+      "acoustic_substep": null,
+      "combination": "b",
+      "details": {
+        "allowed": {
+          "u_v": 100.0,
+          "w": 50.0
+        },
+        "u_abs_max": 2233.8564453125,
+        "v_abs_max": 2568.14453125,
+        "w_abs_max": 5279.542028535317
+      },
+      "invariant": "wind_sanity_bounds",
+      "operator": "rk_stage_halo",
+      "rk_stage": 3,
+      "step": 1
+    },
+    {
+      "acoustic_substep": 1,
+      "combination": "b",
+      "details": {
+        "atol": 1e-08,
+        "max_abs_error": 0.25
+      },
+      "invariant": "muts_mut_work_mu_consistency",
+      "operator": "advance_mu_t",
+      "rk_stage": 2,
+      "step": 2
+    },
+    {
+      "acoustic_substep": null,
+      "combination": "b",
+      "details": {
+        "abs_p_over_base_max": 70470408500.04443,
+        "threshold": 2.0
+      },
+      "invariant": "pressure_bounded",
+      "operator": "rk_stage_candidate",
+      "rk_stage": 1,
+      "step": 2
+    },
+    {
+      "acoustic_substep": null,
+      "combination": "b",
+      "details": {
+        "first_nonfinite_budget_field": "theta"
+      },
+      "invariant": "all_values_finite",
+      "operator": "rk_stage_halo",
+      "rk_stage": 2,
+      "step": 2
+    },
+    {
+      "acoustic_substep": 10,
+      "combination": "c",
+      "details": {
+        "dry_mass_min": -31171.824127837404
+      },
+      "invariant": "dry_mass_nonnegative",
+      "operator": "advance_mu_t",
+      "rk_stage": 3,
+      "step": 1
+    },
+    {
+      "acoustic_substep": 1,
+      "combination": "c",
+      "details": {
+        "relative_residual": 3.7367095293547695e-06,
+        "residual": -7910971.923583984,
+        "rtol": 1e-10
+      },
+      "invariant": "theta_mass_residual",
+      "operator": "advance_mu_t",
+      "rk_stage": 1,
+      "step": 1
+    },
+    {
+      "acoustic_substep": 8,
+      "combination": "c",
+      "details": {
+        "allowed": [
+          200.0,
+          700.0
+        ],
+        "max": 492.5280456542969,
+        "min": -24.120135852431645
+      },
+      "invariant": "theta_sanity_bounds",
+      "operator": "advance_mu_t",
+      "rk_stage": 3,
+      "step": 1
+    },
+    {
+      "acoustic_substep": null,
+      "combination": "c",
+      "details": {
+        "atol": 1e-08,
+        "max_abs_error": 446.90899924818996
+      },
+      "invariant": "muts_mut_work_mu_consistency",
+      "operator": "lateral_boundary",
+      "rk_stage": null,
+      "step": 1
+    },
+    {
+      "acoustic_substep": null,
+      "combination": "c",
+      "details": {
+        "allowed": {
+          "u_v": 100.0,
+          "w": 50.0
+        },
+        "u_abs_max": 2233.8564453125,
+        "v_abs_max": 2568.14453125,
+        "w_abs_max": 5279.542028535317
+      },
+      "invariant": "wind_sanity_bounds",
+      "operator": "rk_stage_halo",
+      "rk_stage": 3,
+      "step": 1
+    },
+    {
+      "acoustic_substep": null,
+      "combination": "c",
+      "details": {
+        "abs_p_over_base_max": 113571690444.56227,
+        "threshold": 2.0
+      },
+      "invariant": "pressure_bounded",
+      "operator": "rk_stage_candidate",
+      "rk_stage": 1,
+      "step": 2
+    },
+    {
+      "acoustic_substep": null,
+      "combination": "c",
+      "details": {
+        "first_nonfinite_budget_field": "theta"
+      },
+      "invariant": "all_values_finite",
+      "operator": "rk_stage_halo",
+      "rk_stage": 2,
+      "step": 2
+    },
+    {
+      "acoustic_substep": 10,
+      "combination": "d",
+      "details": {
+        "dry_mass_min": -31171.824127837404
+      },
+      "invariant": "dry_mass_nonnegative",
+      "operator": "advance_mu_t",
+      "rk_stage": 3,
+      "step": 1
+    },
+    {
+      "acoustic_substep": 1,
+      "combination": "d",
+      "details": {
+        "relative_residual": 3.7367095293547695e-06,
+        "residual": -7910971.923583984,
+        "rtol": 1e-10
+      },
+      "invariant": "theta_mass_residual",
+      "operator": "advance_mu_t",
+      "rk_stage": 1,
+      "step": 1
+    },
+    {
+      "acoustic_substep": 8,
+      "combination": "d",
+      "details": {
+        "allowed": [
+          200.0,
+          700.0
+        ],
+        "max": 492.5280456542969,
+        "min": -24.120135852431645
+      },
+      "invariant": "theta_sanity_bounds",
+      "operator": "advance_mu_t",
+      "rk_stage": 3,
+      "step": 1
+    },
+    {
+      "acoustic_substep": null,
+      "combination": "d",
+      "details": {
+        "atol": 1e-08,
+        "max_abs_error": 120059.8475653374
+      },
+      "invariant": "muts_mut_work_mu_consistency",
+      "operator": "dynamics_guards",
+      "rk_stage": null,
+      "step": 1
+    },
+    {
+      "acoustic_substep": null,
+      "combination": "d",
+      "details": {
+        "allowed": {
+          "u_v": 100.0,
+          "w": 50.0
+        },
+        "u_abs_max": 2233.8564453125,
+        "v_abs_max": 2568.14453125,
+        "w_abs_max": 5279.542028535317
+      },
+      "invariant": "wind_sanity_bounds",
+      "operator": "rk_stage_halo",
+      "rk_stage": 3,
+      "step": 1
+    },
+    {
+      "acoustic_substep": null,
+      "combination": "d",
+      "details": {
+        "first_nonfinite_budget_field": "theta"
+      },
+      "invariant": "all_values_finite",
+      "operator": "rk_stage_candidate",
+      "rk_stage": 3,
+      "step": 2
+    },
+    {
+      "acoustic_substep": null,
+      "combination": "d",
+      "details": {
+        "abs_p_over_base_max": 55.744404454055946,
+        "threshold": 2.0
+      },
+      "invariant": "pressure_bounded",
+      "operator": "rk_stage_candidate",
+      "rk_stage": 1,
+      "step": 2
+    }
+  ]
+}
