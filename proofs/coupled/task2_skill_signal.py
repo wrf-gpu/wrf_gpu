@@ -28,6 +28,7 @@ from gpuwrf.io.gen2_wrfout_loader import read_wrfout_file
 from gpuwrf.runtime.operational_mode import (
     compute_m9_diagnostics,
     run_forecast_operational,
+    run_forecast_operational_segmented,
 )
 
 PROOF = Path("proofs/coupled")
@@ -54,6 +55,11 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--hours", type=float, default=1.0,
                     help="verification lead in hours (must exist in wrfout_d02)")
+    ap.add_argument("--entry", choices=("production", "segmented"), default="production",
+                    help="forecast entry point: production while-loop (reference) or "
+                         "the host-loop segmented path (no-regression check)")
+    ap.add_argument("--segment-steps", type=int, default=180,
+                    help="inner-segment length for --entry segmented")
     args = ap.parse_args()
 
     cfg = DailyPipelineConfig(hours=1, dt_s=10.0, acoustic_substeps=10)
@@ -72,8 +78,8 @@ def main() -> int:
     hours = float(args.hours)
     steps = int(round(hours * 3600.0 / float(nl.dt_s)))
 
-    print(f"=== Task 2 SKILL SIGNAL (+{hours}h = {steps} steps, guards OFF) ===",
-          flush=True)
+    print(f"=== Task 2 SKILL SIGNAL (+{hours}h = {steps} steps, guards OFF, "
+          f"entry={args.entry}) ===", flush=True)
     print(f"  run_dir={run_dir}", flush=True)
 
     # Lean path: run the compiled operational scan (no per-step diagnostics
@@ -81,7 +87,15 @@ def main() -> int:
     # state at the verification lead. (The full M9 DiagnosticsCarry stacks all 360
     # steps and needs >20GB; we only need the single verification slice, so the
     # M9 diagnostic kernels are applied once post-forecast on the final State.)
-    final_state = run_forecast_operational(case.state, nl, hours)
+    if args.entry == "segmented":
+        # No-regression check: the host-loop segmented long-run path must reproduce
+        # the production while-loop skill within FP round-off (the two differ only in
+        # how RRTMG is gated -- jax.lax.cond vs static-bool -- per segscan_equiv.json).
+        final_state = run_forecast_operational_segmented(
+            case.state, nl, hours, segment_steps=int(args.segment_steps)
+        )
+    else:
+        final_state = run_forecast_operational(case.state, nl, hours)
     jax.block_until_ready(final_state.theta)
     lead_seconds = float(steps) * float(nl.dt_s)
     diags = compute_m9_diagnostics(final_state, nl, lead_seconds)
@@ -116,6 +130,8 @@ def main() -> int:
         "lead_hours": hours,
         "steps": steps,
         "grid_shape": list(t2_jax.shape),
+        "entry": args.entry,
+        "segment_steps": int(args.segment_steps) if args.entry == "segmented" else None,
         "config": {
             "run_physics": True, "run_boundary": True, "disable_guards": True,
             "force_fp64": bool(nl.force_fp64), "top_lid": bool(nl.top_lid),
@@ -128,7 +144,8 @@ def main() -> int:
             "v10": bool(np.isfinite(v10_jax).all()),
         },
     }
-    fn = PROOF / f"task2_skill_signal_{int(round(hours))}h.json"
+    suffix = "" if args.entry == "production" else f"_{args.entry}"
+    fn = PROOF / f"task2_skill_signal_{int(round(hours))}h{suffix}.json"
     fn.write_text(json.dumps(out, indent=2) + "\n")
     print(f"\nwrote {fn}", flush=True)
     for fld in ("T2", "U10", "V10"):
