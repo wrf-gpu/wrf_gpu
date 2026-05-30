@@ -1,0 +1,16 @@
+{
+  "tag": "coupled_base",
+  "xla_flags": "",
+  "acoustic_unroll": "1",
+  "run_physics": true,
+  "device": "cuda:0",
+  "n_small": 20,
+  "n_big": 80,
+  "reps": 4,
+  "warm_small_s": 0.8846496859914623,
+  "warm_big_s": 3.521747916005552,
+  "warmed_per_step_ms": 43.95163716690149,
+  "peak_gpu_mem_mb": 9682.02001953125,
+  "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
+  "radiation_in_window": false
+}

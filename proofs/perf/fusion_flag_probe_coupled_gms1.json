@@ -1,0 +1,16 @@
+{
+  "tag": "coupled_gms1",
+  "xla_flags": "--xla_gpu_graph_min_graph_size=1",
+  "acoustic_unroll": "1",
+  "run_physics": true,
+  "device": "cuda:0",
+  "n_small": 20,
+  "n_big": 80,
+  "reps": 4,
+  "warm_small_s": 1.0178287090093363,
+  "warm_big_s": 4.210325457999716,
+  "warmed_per_step_ms": 53.208279149839655,
+  "peak_gpu_mem_mb": 9682.02001953125,
+  "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
+  "radiation_in_window": false
+}
