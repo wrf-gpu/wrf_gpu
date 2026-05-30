@@ -75,6 +75,28 @@ CRE2 = 1.0
 CRE9 = 4.0
 CRE10 = 2.0
 CRE11 = 3.0
+# Sedimentation fall-speed gamma exponents/coefficients for rain and cloud ice.
+# WRF module_mp_thompson.F:705-725 (cre/crg) and :687-702 (cie/cig), with
+# mp=8 values mu_r=0, bm_r=3, bv_r=1, mu_i=0, bm_i=3, bv_i=1.
+BV_R = 1.0  # WRF module_mp_thompson.F:144
+BV_I = 1.0  # WRF module_mp_thompson.F:162
+AV_I = 1493.9  # WRF module_mp_thompson.F:161
+CRE3 = BM_R + MU_R + 1.0  # = 4
+CRE6 = BM_R + MU_R + BV_R + 1.0  # = 5
+CRE7 = BM_R * 0.5 + MU_R + BV_R + 1.0  # = 3.5
+CRE12 = BM_R * 0.5 + MU_R + 1.0  # = 2.5
+CRG3_SED = math.gamma(CRE3)  # = 6 (== crg(3))
+CRG6 = math.gamma(CRE6)  # = 24
+CRG7 = math.gamma(CRE7)  # = Gamma(3.5)
+CRG12 = math.gamma(CRE12)  # = Gamma(2.5)
+CIE3 = BM_I + MU_I + BV_I + 1.0  # = 5
+CIE6 = BM_I * 0.5 + MU_I + BV_I + 1.0  # = 3.5
+CIE7 = BM_I * 0.5 + MU_I + 1.0  # = 2.5
+CIG3 = math.gamma(CIE3)  # = 24 (cig(3))
+CIG6 = math.gamma(CIE6)  # = Gamma(3.5) (cig(6))
+CIG7 = math.gamma(CIE7)  # = Gamma(2.5) (cig(7))
+CIG2_GAMMA = math.gamma(BM_I + MU_I + 1.0)  # = Gamma(4) = 6 (cig(2))
+OIG2_SED = 1.0 / CIG2_GAMMA
 # WRF module_mp_thompson.F.pre lines 104, 156, 763, and 767.
 MU_G_MP8 = MU_G
 CGE11 = 0.5 * (BV_G_MP8 + 5.0 + 2.0 * MU_G_MP8)

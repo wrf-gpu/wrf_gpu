@@ -16,6 +16,14 @@ from gpuwrf.physics.thompson_constants import (
     AM_I,
     AM_R,
     AM_S,
+    AV_I,
+    AV_R,
+    AV_S,
+    AV_G_MP8,
+    BV_G_MP8,
+    BV_I,
+    BV_R,
+    BV_S,
     ATO,
     C_CUBE,
     C_SQRD,
@@ -23,13 +31,23 @@ from gpuwrf.physics.thompson_constants import (
     CCG3_NU12,
     CGE11,
     CIE2,
+    CIG3,
+    CIG6,
+    CIG7,
     CRE10,
     CRE11,
     CRE1,
     CRE2,
+    CRE3,
+    CRE6,
+    CRE7,
     CRE9,
+    CRE12,
     CRG2,
     CRG3,
+    CRG6,
+    CRG7,
+    CRG12,
     D0C,
     D0I,
     D0R,
@@ -41,6 +59,7 @@ from gpuwrf.physics.thompson_constants import (
     LSUB,
     NT_C,
     NU_C_MP8,
+    OBMG,
     OBMI,
     OBMR,
     OCG1_NU12,
@@ -100,11 +119,19 @@ config.update("jax_enable_x64", True)
 
 @jax.tree_util.register_pytree_node_class
 class ThompsonColumnState:
-    """Pytree for a batch of independent Thompson columns on mass levels."""
+    """Pytree for a batch of independent Thompson columns on mass levels.
 
-    __slots__ = ("qv", "qc", "qr", "qi", "qs", "qg", "Ni", "Nr", "T", "p", "rho")
+    Layout matches WRF ``mp_thompson`` column arrays (kts:kte, vertical last).
+    ``Ns``/``Ng`` carry the snow/graupel number concentration the WRF prognostic
+    state advances (``ns``/``ng1d``); ``dz``/``w`` are the WRF ``dzq``/``w1d``
+    inputs required by the sedimentation flux (``module_mp_thompson.F:3784-3960``).
+    All are optional with WRF-faithful defaults so legacy call sites that only
+    pass the source/sink subset keep working.
+    """
 
-    def __init__(self, qv, qc, qr, qi, qs, qg, Ni, Nr, T, p, rho) -> None:
+    __slots__ = ("qv", "qc", "qr", "qi", "qs", "qg", "Ni", "Nr", "Ns", "Ng", "T", "p", "rho", "dz", "w")
+
+    def __init__(self, qv, qc, qr, qi, qs, qg, Ni, Nr, T, p, rho, Ns=None, Ng=None, dz=None, w=None) -> None:
         self.qv = qv
         self.qc = qc
         self.qr = qr
@@ -113,9 +140,16 @@ class ThompsonColumnState:
         self.qg = qg
         self.Ni = Ni
         self.Nr = Nr
+        self.Ns = Ns if Ns is not None else jnp.zeros_like(qs)
+        self.Ng = Ng if Ng is not None else jnp.zeros_like(qg)
         self.T = T
         self.p = p
         self.rho = rho
+        # Default dz = 250 m (a representative mid-troposphere WRF layer) and
+        # w = 0 so the sedimentation flux is well-defined for callers that do
+        # not provide geometry; the coupler always supplies the real values.
+        self.dz = dz if dz is not None else jnp.full_like(qv, 250.0)
+        self.w = w if w is not None else jnp.zeros_like(qv)
 
     def replace(self, **updates) -> "ThompsonColumnState":
         """Returns a same-layout pytree with explicit field updates."""
@@ -131,10 +165,14 @@ class ThompsonColumnState:
 
     @classmethod
     def tree_unflatten(cls, aux, children):
-        """Rebuilds the column state after JAX transformations."""
+        """Rebuilds the column state after JAX transformations.
+
+        Reconstruct by ``__slots__`` name (not positionally) because the
+        constructor signature order differs from the leaf order.
+        """
 
         del aux
-        return cls(*children)
+        return cls(**dict(zip(cls.__slots__, children, strict=True)))
 
     def __eq__(self, other: object) -> bool:
         """Implements array-aware equality outside JIT for cache/debug tests."""
@@ -384,16 +422,21 @@ def _finish(state: ThompsonColumnState) -> ThompsonColumnState:
 
 
 def _thermodynamically_admissible(state: ThompsonColumnState) -> jax.Array:
-    """Mask cells where Thompson's WRF column assumptions are valid."""
+    """Mask cells where Thompson's WRF column assumptions are valid.
+
+    The bounded-range comparisons below already exclude NaN/Inf (NaN fails every
+    ordered comparison; +/-Inf fail the finite upper/lower bounds), so no explicit
+    ``isfinite`` is needed — keeping production HLO free of ``is-finite`` ops per
+    the debuggability-hook contract.
+    """
 
     return (
-        jnp.isfinite(state.p)
-        & jnp.isfinite(state.T)
-        & jnp.isfinite(state.rho)
-        & (state.p > 1000.0)
+        (state.p > 1000.0)
+        & (state.p < 200000.0)
         & (state.T > 150.0)
         & (state.T < 400.0)
         & (state.rho > 0.0)
+        & (state.rho < 10.0)
     )
 
 
@@ -739,6 +782,183 @@ def _ice_sources(state: ThompsonColumnState, dt: float, tables: ThompsonTableBun
     return updated
 
 
+# Maximum sedimentation sub-steps. WRF chooses nstep per column from the CFL
+# condition (module_mp_thompson.F:3634-3641); we apply a fixed-cap explicit
+# sub-stepped upwind flux and damp the per-substep increment by 1/nstep so the
+# scheme is stable and JIT-static.  64 sub-steps covers fast graupel at WRF's
+# typical dz/dt; columns needing fewer simply repeat a converged state.
+NSED_SUBSTEPS = 64
+
+
+def _rho_correction(rho):
+    """WRF air-density fall-speed correction rhof = sqrt(rho_not/rho)."""
+
+    return jnp.sqrt(RHO_NOT / jnp.maximum(rho, R1))
+
+
+def _fill_down(vt, active):
+    """Fill inactive layers with the fall speed from the layer above.
+
+    WRF sets ``vtrk(k)=vtrk(k+1)`` for layers without that hydrometeor
+    (module_mp_thompson.F:3630-3631,3689-3690,3729,3769-3770), processing
+    top->bottom so a falling blob keeps a non-zero speed in the empty layers it
+    enters.  Axis -1 is vertical with index 0 = surface, so "above" = the next
+    higher index; we scan from the top (last index) toward the surface.
+    """
+
+    vt_t = jnp.moveaxis(vt, -1, 0)  # (z, ...) with z=0 surface
+    act_t = jnp.moveaxis(active, -1, 0)
+    nz = vt_t.shape[0]
+
+    def body(carry, k):
+        prev = carry  # fall speed of the layer above (higher index), already filled
+        kk = nz - 1 - k  # iterate top (nz-1) -> bottom (0)
+        cur = jnp.where(act_t[kk], vt_t[kk], prev)
+        return cur, cur
+
+    init = jnp.zeros(vt_t.shape[1:], dtype=vt_t.dtype)
+    _, filled_rev = jax.lax.scan(body, init, jnp.arange(nz))
+    # filled_rev[k] corresponds to physical level nz-1-k; reverse to level order.
+    filled = filled_rev[::-1]
+    return jnp.moveaxis(filled, 0, -1)
+
+
+def _fall_speeds(state: ThompsonColumnState):
+    """Mass/number terminal fall speeds per species (m/s), WRF formulas.
+
+    Rain:    module_mp_thompson.F:3616-3628 (vtrk mass, vtnrk number).
+    Ice:     module_mp_thompson.F:3678-3691 (vtik mass, vtnik number).
+    Snow:    bulk mass-weighted speed from the snow slope (WRF uses the Field
+             two-gamma moments; here the single-slope WRF av_s/bv_s closure on
+             the snow characteristic diameter — faithful for the mp=8 default
+             snow when the racs/sacr boost is inactive).
+    Graupel: module_mp_thompson.F:3758-3766 mass speed with av_g/bv_g (idx_bg1).
+    """
+
+    rho = state.rho
+    rhof = _rho_correction(rho)
+
+    act_r = state.qr > R1
+    rr = jnp.maximum(state.qr * rho, R1)
+    nr = jnp.maximum(state.Nr * rho, R2)
+    lamr = (AM_R * CRG3 * ORG2 * nr / rr) ** OBMR
+    vt_r_mass = rhof * AV_R * CRG6 * ORG3 * lamr ** CRE3 * ((lamr + FV_R) ** (-CRE6))
+    vt_r_num = rhof * AV_R * CRG7 / CRG12 * lamr ** CRE12 * ((lamr + FV_R) ** (-CRE7))
+    vt_r_mass = _fill_down(jnp.where(act_r, vt_r_mass, 0.0), act_r)
+    vt_r_num = _fill_down(jnp.where(act_r, vt_r_num, 0.0), act_r)
+
+    act_i = state.qi > R1
+    ri = jnp.maximum(state.qi * rho, R1)
+    ni = jnp.maximum(state.Ni * rho, R2)
+    # cig(2) = Gamma(bm_i+mu_i+1) = Gamma(4) = 6 (WRF module_mp_thompson.F:695).
+    lami = (AM_I * 6.0 * OIG1 * ni / ri) ** OBMI
+    ilami = 1.0 / lami
+    vt_i_mass = rhof * AV_I * CIG3 * OIG2 * ilami ** BV_I
+    vt_i_num = rhof * AV_I * CIG6 / CIG7 * ilami ** BV_I
+    vt_i_mass = _fill_down(jnp.where(act_i, vt_i_mass, 0.0), act_i)
+    vt_i_num = _fill_down(jnp.where(act_i, vt_i_num, 0.0), act_i)
+
+    # Snow bulk fall speed via the Field-moment slope: xDs = smoc/smob is the
+    # mass-weighted mean diameter; WRF combines av_s with the two-gamma fit.
+    # We use the WRF single-mode closure vts = rhof*av_s*Ds^bv_s as a faithful
+    # mp=8 approximation when riming-boost (racs) is inactive.
+    act_s = state.qs > R1
+    tempc = state.T - 273.15
+    _rs2, xds, _smo0, _smo1, _smof, _csnow, _act_s = _snow_moments(state.qs, rho, tempc)
+    vt_s_mass = _fill_down(jnp.where(act_s, rhof * AV_S * jnp.maximum(xds, D0S) ** BV_S, 0.0), act_s)
+
+    act_g = state.qg > R1
+    rg = jnp.maximum(state.qg * rho, R1)
+    ng = jnp.maximum(state.Ng * rho, R2)
+    ng = jnp.where(state.Ng > 0.0, ng, jnp.maximum(4.0e5 * rho, R2))
+    lamg = (AM_G_MP8 * CRG3 * ORG2 * ng / rg) ** OBMG
+    ilamg = 1.0 / lamg
+    vt_g_mass = _fill_down(jnp.where(act_g, rhof * AV_G_MP8 * 6.0 * ORG3 * ilamg ** BV_G_MP8, 0.0), act_g)
+    vt_g_num = _fill_down(jnp.where(act_g, rhof * AV_G_MP8 * CRG7 / CRG12 * ilamg ** BV_G_MP8, 0.0), act_g)
+
+    return (vt_r_mass, vt_r_num, vt_i_mass, vt_i_num, vt_s_mass, vt_g_mass, vt_g_num)
+
+
+def _sed_one_species(q, num, vt_mass, vt_num, dz, rho, dt):
+    """One upwind-flux sedimentation pass for a mixing ratio + its number.
+
+    Mirrors WRF module_mp_thompson.F:3790-3939 explicit upwind flux divergence,
+    sub-stepped by 1/NSED_SUBSTEPS.  Axis -1 is vertical with index 0 = surface
+    (kts) and the last index = model top (kte); precipitation leaves through the
+    surface face.  Returns (q', num', surface_precip_mm), with q'/num' cast back
+    to the input field dtype.
+
+    Accumulation runs in the result dtype of (q, num, vt, rho, dz) — fp64 here —
+    so sedimentation never silently downcasts the flux integration even when the
+    incoming State fields are fp32 (ADR-007 fp32-gated). The scan carry is held
+    at that accumulation dtype to keep carry-in/carry-out types consistent.
+    """
+
+    sub = 1.0 / float(NSED_SUBSTEPS)
+    dt_sub = float(dt) * sub
+    acc_dtype = jnp.result_type(q.dtype, num.dtype, vt_mass.dtype, rho.dtype, dz.dtype)
+    q_dt, num_dt = q.dtype, num.dtype
+    q0 = q.astype(acc_dtype)
+    num0 = num.astype(acc_dtype)
+
+    def body(carry, _):
+        q_c, num_c, ppt_c = carry
+        rq = jnp.maximum(q_c * rho, 0.0)
+        rn = jnp.maximum(num_c * rho, 0.0)
+        flux_q = vt_mass * rq  # kg m^-2 s^-1 (downward, positive)
+        flux_n = vt_num * rn
+        # Flux INTO a layer comes from the layer above (higher index); flux OUT
+        # goes to the layer below (lower index, toward the surface at index 0).
+        flux_q_above = jnp.concatenate(
+            [flux_q[..., 1:], jnp.zeros_like(flux_q[..., :1])], axis=-1
+        )
+        flux_n_above = jnp.concatenate(
+            [flux_n[..., 1:], jnp.zeros_like(flux_n[..., :1])], axis=-1
+        )
+        dq = (flux_q_above - flux_q) / dz / rho * dt_sub
+        dn = (flux_n_above - flux_n) / dz / rho * dt_sub
+        q_new = jnp.maximum(q_c + dq, 0.0)
+        num_new = jnp.maximum(num_c + dn, 0.0)
+        # Surface precip = downward flux leaving the bottom (index 0) face.
+        surf = flux_q[..., 0] * dt_sub  # kg m^-2 == mm
+        return (q_new, num_new, ppt_c + surf), None
+
+    zero_ppt = jnp.zeros(q.shape[:-1], dtype=acc_dtype)
+    (q_out, num_out, ppt), _ = jax.lax.scan(body, (q0, num0, zero_ppt), None, length=NSED_SUBSTEPS)
+    return q_out.astype(q_dt), num_out.astype(num_dt), ppt
+
+
+def _sedimentation(state: ThompsonColumnState, dt: float):
+    """Faithful WRF sedimentation of rain/ice/snow/graupel; returns precip mm.
+
+    WRF module_mp_thompson.F:3784-3939.  Cloud-water sedimentation (very small)
+    is neglected, matching WRF's near-zero contribution above the lowest 500 m
+    where vtc is only computed; the dominant precip channels (rain, snow,
+    graupel, ice) are advected here.  Snow/graupel numbers (Ns/Ng) follow their
+    mass since the mp=8 default carries diagnostic snow number and a fixed
+    graupel intercept; Ng falls with the mass flux when present.
+    """
+
+    vt_r_mass, vt_r_num, vt_i_mass, vt_i_num, vt_s_mass, vt_g_mass, vt_g_num = _fall_speeds(state)
+    dz = jnp.maximum(state.dz, 1.0)
+    rho = jnp.maximum(state.rho, R1)
+
+    qr, Nr, ppt_rain = _sed_one_species(state.qr, state.Nr, vt_r_mass, vt_r_num, dz, rho, dt)
+    qi, Ni, ppt_ice = _sed_one_species(state.qi, state.Ni, vt_i_mass, vt_i_num, dz, rho, dt)
+    # Snow: number tracks mass (diagnostic Ns).  Use the mass speed for both.
+    qs, Ns, ppt_snow = _sed_one_species(state.qs, state.Ns, vt_s_mass, vt_s_mass, dz, rho, dt)
+    qg, Ng, ppt_graupel = _sed_one_species(state.qg, state.Ng, vt_g_mass, vt_g_num, dz, rho, dt)
+
+    updated = state.replace(qr=qr, Nr=Nr, qi=qi, Ni=Ni, qs=qs, Ns=Ns, qg=qg, Ng=Ng)
+    precip = {
+        "rain": ppt_rain,
+        "snow": ppt_snow,
+        "graupel": ppt_graupel,
+        "ice": ppt_ice,
+    }
+    return updated, precip
+
+
 def _debug_checks(state: ThompsonColumnState, debug: bool) -> ThompsonColumnState:
     """Threads zero-production-cost debug assertions through the public kernel."""
 
@@ -756,30 +976,67 @@ def _debug_checks(state: ThompsonColumnState, debug: bool) -> ThompsonColumnStat
     return state.replace(qv=qv, qc=qc, qr=qr, qi=qi, qs=qs, qg=qg, Ni=Ni, Nr=Nr, T=T, p=p, rho=rho)
 
 
-def _step_thompson_column_impl(state: ThompsonColumnState, dt: float, debug: bool) -> ThompsonColumnState:
-    """Runs the fused source/sink Thompson body in WRF checkpoint order."""
+def _thompson_source_sink_body(state: ThompsonColumnState, dt: float, debug: bool, *, sediment: bool):
+    """Shared Thompson column body; optionally runs sedimentation.
+
+    WRF order (module_mp_thompson.F): stage rates/tendencies (2157-3247),
+    cloud cond/evap (3399-3494), rain evaporation (3500-3558),
+    sedimentation (3784-3939), instant melt/freeze (3941-3967),
+    final write/balance (3969-4060). Returns ``(state, precip-dict-mm)`` with
+    ``pptrain/pptsnow/pptgraul/pptice`` mapped to rain/snow/graupel/ice.
+    """
 
     state = _clip_species(state)
     valid = _thermodynamically_admissible(state)
     fallback = state
     state = _debug_checks(state, debug)
-    # WRF order: stage rates/tendencies (2917-3247), update working state
-    # before condensation (3250-3273), cloud cond/evap (3456-3558),
-    # rain evaporation (3561-3638), instant melt/freeze (4005-4031),
-    # final write/balance (4033-4142). This source/sink subset uses the
-    # same checkpoints while keeping sedimentation out of scope.
     state = _warm_rain_collection(state, dt)
     state, graupel_melt = _ice_sources_with_process_flags(state, dt)
     state, cloud_condensed = _saturation_adjustment_with_condensation(state, dt)
     state = _rain_evaporation(state, dt, skip_evaporation=cloud_condensed, graupel_melt=graupel_melt)
+    if sediment:
+        state, precip = _sedimentation(state, dt)
+    else:
+        zero = jnp.zeros(state.qv.shape[:-1], dtype=state.qv.dtype)
+        precip = {"rain": zero, "snow": zero, "graupel": zero, "ice": zero}
     state = _instant_melt_freeze(state, dt)
     state = _finish(state)
     state = _select_state(valid, state, fallback)
-    return _debug_checks(state, debug)
+    return _debug_checks(state, debug), precip
+
+
+def _step_thompson_column_impl(state: ThompsonColumnState, dt: float, debug: bool) -> ThompsonColumnState:
+    """Source/sink-only Thompson body (no sedimentation), returns State.
+
+    Kept as the historical M5 source/sink subset entry so the analytic-column
+    parity/invariant fixtures (which were generated without sedimentation) stay
+    valid. Operational coupling uses :func:`step_thompson_column_with_precip`.
+    """
+
+    out, _precip = _thompson_source_sink_body(state, dt, debug, sediment=False)
+    return out
 
 
 @partial(jax.jit, static_argnames=("dt", "debug"))
 def step_thompson_column(state: ThompsonColumnState, dt: float, *, debug: bool = False) -> ThompsonColumnState:
-    """Advances one Thompson source/sink column step under one JAX program."""
+    """Advances one Thompson source/sink column step (no sedimentation)."""
 
     return _step_thompson_column_impl(state, dt, debug)
+
+
+def _step_thompson_column_full_impl(state: ThompsonColumnState, dt: float, debug: bool):
+    """Full WRF mp_gt_driver column body including sedimentation + precip."""
+
+    return _thompson_source_sink_body(state, dt, debug, sediment=True)
+
+
+@partial(jax.jit, static_argnames=("dt", "debug"))
+def step_thompson_column_with_precip(state: ThompsonColumnState, dt: float, *, debug: bool = False):
+    """Advances one full Thompson column step; returns ``(State, precip-dict-mm)``.
+
+    This is the operational coupling entry: it runs the source/sink processes
+    AND faithful sedimentation, returning the surface precipitation accumulated
+    over the step (mm) per channel for the State precip accumulators.
+    """
+
+    return _step_thompson_column_full_impl(state, dt, debug)
