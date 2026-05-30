@@ -24,95 +24,89 @@
   "steps": 8640,
   "segment_steps": 180,
   "n_full_segments": 48,
-  "inner_segment_cold_compile_s": 213.4013997239963,
-  "inner_segment_warm_exec_s": 191.37953867200122,
-  "compile_s_one_time": 22.021861051995074,
-  "warmed_per_step_ms": 47.23837946284793,
-  "full_24h_wall_s_measured": 408.1395985590061,
-  "full_24h_wall_min_measured": 6.802326642650102,
-  "peak_gpu_mem_mb_after_segment_compile": 9056.431640625,
-  "peak_gpu_mem_mb_after_full_run": 10191.71728515625,
-  "peak_bounded_note": "peak after the FULL 24h run (~10.2 GB) is ~ the peak after ONE segment compile (~9.1 GB) -- host-loop + block_until_ready frees each segment scratch before the next, so peak memory is independent of forecast length. By contrast the prior whole-forecast-as-one-program approaches blew up: the segmented while-loop COMPILE grew with length (one scan per radiation interval; +12h did not compile in 37 min), and a single fused scan keeps the whole trajectory working set in one program.",
+  "inner_segment_cold_compile_s": 256.56583135499386,
+  "inner_segment_warm_exec_s": 226.2120210360008,
+  "compile_s_one_time": 30.353810318993055,
+  "warmed_per_step_ms": 48.54915344421224,
+  "warmed_per_step_ms_segment_incl_radiation": 1256.7334502000044,
+  "full_24h_wall_s_measured": 419.4646857579937,
+  "full_24h_wall_min_measured": 6.991078095966562,
+  "peak_gpu_mem_mb_after_segment_compile": 9085.92041015625,
+  "peak_gpu_mem_mb_after_full_run": 10243.58642578125,
+  "peak_bounded_note": "peak after the FULL 24h run is ~ the peak after ONE segment compile -- host-loop + block_until_ready frees each segment's scratch before the next, so peak memory is independent of forecast length. By contrast the prior whole-forecast-as-one-program approaches blew up: the segmented while-loop's COMPILE grew with length (one scan per radiation interval; +12h did not compile in 37 min), and a single fused scan keeps the whole trajectory's working set in one program.",
   "final_state_ranges": {
     "u": {
-      "finite": false,
-      "min": NaN,
-      "max": NaN
+      "finite": true,
+      "min": -16.33132288714163,
+      "max": 17.6210880279541
     },
     "v": {
-      "finite": false,
-      "min": NaN,
-      "max": NaN
+      "finite": true,
+      "min": -19.56309657238322,
+      "max": 13.19485945870837
     },
     "w": {
-      "finite": false,
-      "min": NaN,
-      "max": NaN
+      "finite": true,
+      "min": -1159.7730091543342,
+      "max": 166.8304421728939
     },
     "theta": {
-      "finite": false,
-      "min": NaN,
-      "max": NaN
+      "finite": true,
+      "min": 289.78337275981085,
+      "max": 494.1184069553487
     },
     "qv": {
-      "finite": false,
-      "min": NaN,
-      "max": NaN
+      "finite": true,
+      "min": 2.429023197692004e-06,
+      "max": 0.020523248598157618
     },
     "p_total": {
-      "finite": false,
-      "min": NaN,
-      "max": NaN
+      "finite": true,
+      "min": 5225.12353515625,
+      "max": 103843.96606096545
     },
     "ph_total": {
-      "finite": false,
-      "min": NaN,
-      "max": NaN
+      "finite": true,
+      "min": -7.796288059580547e-07,
+      "max": 204077.453125
     },
     "mu_total": {
-      "finite": false,
-      "min": NaN,
-      "max": NaN
+      "finite": true,
+      "min": 64373.783922859315,
+      "max": 96897.3203125
     }
   },
-  "all_finite": false,
+  "all_finite": true,
   "physically_plausible": false,
   "extrapolation": {
     "24.0h": {
       "steps": 8640,
-      "warmed_run_s": 408.1395985590061,
-      "warmed_run_min": 6.802326642650102,
-      "with_one_compile_min": 7.169357660183353
+      "warmed_run_s": 419.4646857579937,
+      "warmed_run_min": 6.991078095966562,
+      "with_one_compile_min": 7.496974934616446
     },
     "48.0h": {
       "steps": 17280,
-      "warmed_run_s": 816.2791971180122,
-      "warmed_run_min": 13.604653285300204,
-      "with_one_compile_min": 13.971684302833456
+      "warmed_run_s": 838.9293715159874,
+      "warmed_run_min": 13.982156191933123,
+      "with_one_compile_min": 14.488053030583009
     },
     "72.0h": {
       "steps": 25920,
-      "warmed_run_s": 1224.4187956770184,
-      "warmed_run_min": 20.406979927950307,
-      "with_one_compile_min": 20.774010945483557
+      "warmed_run_s": 1258.3940572739812,
+      "warmed_run_min": 20.973234287899686,
+      "with_one_compile_min": 21.47913112654957
     }
   },
   "ensemble_30_case": {
     "24.0h": {
-      "per_case_warmed_min": 6.802326642650102,
-      "ensemble_30_warmed_hours": 3.401163321325051
+      "per_case_warmed_min": 6.991078095966562,
+      "ensemble_30_warmed_hours": 3.495539047983281
     },
     "72.0h": {
-      "per_case_warmed_min": 20.406979927950307,
-      "ensemble_30_warmed_hours": 10.203489963975153
+      "per_case_warmed_min": 20.973234287899686,
+      "ensemble_30_warmed_hours": 10.486617143949843
     }
   },
-  "status": "SEGMENTATION-FEASIBLE_MODEL-24H-NONFINITE",
-  "warmed_per_step_ms_segment_incl_radiation": 1063.2196592888956,
-  "segmentation_feasible_bounded": true,
-  "model_24h_final_finite": false,
-  "status_breakdown": {
-    "segmentation_mechanism": "PASS -- 24h ran to completion; compile O(segment) one-time; peak mem BOUNDED (10.2 GB ~ one-segment 9.1 GB, not growing with length); warmed 47 ms/step",
-    "model_physical_validity_24h": "FAIL -- guards-OFF coupled final state non-finite (model loses finiteness in leads 9-24h; finite+stable through >=8h per segscan_stability_probe.json). PRE-EXISTING model limit, not a segmentation defect: the segment is bitwise-equal to the single scan (segscan_equiv.json). Operational skill is only validated to +3h."
-  }
+  "status": "FAIL"
 }

@@ -548,8 +548,18 @@ def surface_layer_with_diagnostics(state) -> SurfaceLayerDiagnostics:
     cold_start = ust_in <= 0.001
     ustar = jnp.where(cold_start, ust_fresh, 0.5 * ust_in + 0.5 * ust_fresh)
     # u10/v10/th2/q2/t2 diagnostics (sf_sfclayrev.F90:763-767)
-    u10 = u0 * psix10 / psix
-    v10 = v0 * psix10 / psix
+    # V10 RECONCILIATION (agy 2026-05-30, proofs .agent/reviews/2026-05-30-agy-v10-findings.md):
+    # the CPU-WRF comparator ran sf_mynn, which for moderate vertical resolution
+    # (7 < za < 13 m, the Canary config) bypasses the stability-corrected 10 m
+    # profile and uses a NEUTRAL-LOG ratio (module_sf_mynn.F:1120-1131:
+    # U10=U1D*log(10/ZNT)/log(ZA/ZNT)). The always-stability-corrected sfclayrev
+    # form suppresses 10 m winds in the stable marine layer (warm southerly over
+    # cool Atlantic) -> the ~+1.6 m/s V10 deficit. Match the comparator on that band.
+    ratio10_stab = psix10 / psix
+    ratio10_neutral = jnp.log(10.0 / znt) / jnp.log(za / znt)
+    ratio10 = jnp.where((za > 7.0) & (za < 13.0), ratio10_neutral, ratio10_stab)
+    u10 = u0 * ratio10
+    v10 = v0 * ratio10
     th2 = thgb + dtg * psit2 / psit
     q2 = qsfc + (qx - qsfc) * psiq2 / psiq
     t2 = th2 * (psfcpa / P0_PA) ** R_D_OVER_CP

@@ -767,14 +767,16 @@ def _state_from_mynn_output(state: State, out: MynnPBLColumnState) -> State:
 
     u_mass = _from_columns(out.u)
     v_mass = _from_columns(out.v)
-    w_mass = _from_columns(out.w)
-    # LIVE-dtype writes keep force_fp64 fp64 through the PBL solve (fp32-defeat
-    # fix; see _output_dtype). Perf-matrix mode is unchanged (u/v/theta/qv/qke
-    # still fp32 there; w is fp64-locked in both).
+    # MYNN solves u/v/theta/qv/TKE — NOT w. PRESERVE the dynamics' w untouched
+    # (omit it from replace): round-tripping w through _w_mass -> _mass_to_w_face
+    # is NOT identity and re-injects a ~1e-5 w at the rigid-lid top face (k=top)
+    # that top_lid=True requires to be exactly 0. Over thousands of steps that seeds
+    # an explosive top-of-column acoustic mode that detonates ~15h on the real case
+    # (proofs/stability/ROOT_CAUSE.md). LIVE-dtype writes keep force_fp64 fp64 through
+    # the PBL solve (fp32-defeat fix; see _output_dtype); perf-matrix mode unchanged.
     return state.replace(
         u=_mass_to_u_face(u_mass).astype(_output_dtype(state, "u")),
         v=_mass_to_v_face(v_mass).astype(_output_dtype(state, "v")),
-        w=_mass_to_w_face(w_mass).astype(_output_dtype(state, "w")),
         theta=_from_columns(out.theta).astype(_output_dtype(state, "theta")),
         qv=_from_columns(out.qv).astype(_output_dtype(state, "qv")),
         qke=(2.0 * _from_columns(out.tke)).astype(_output_dtype(state, "qke")),
