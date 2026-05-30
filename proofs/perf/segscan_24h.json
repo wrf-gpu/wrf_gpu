@@ -1,0 +1,112 @@
+{
+  "scope": "SEGSCAN long-run feasibility -- 24h coupled real d02 via host-loop segmentation",
+  "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
+  "init_utc": "2026-05-21 18:00:00+00:00",
+  "grid": {
+    "ny": 66,
+    "nx": 159,
+    "nz": 44
+  },
+  "device": "cuda:0",
+  "config": {
+    "run_physics": true,
+    "run_boundary": true,
+    "disable_guards": true,
+    "force_fp64": true,
+    "use_flux_advection": true,
+    "epssm": 0.5,
+    "top_lid": true,
+    "w_damping": 1,
+    "damp_opt": 3,
+    "radiation_cadence_steps": 180
+  },
+  "hours": 24.0,
+  "steps": 8640,
+  "segment_steps": 180,
+  "n_full_segments": 48,
+  "inner_segment_cold_compile_s": 213.4013997239963,
+  "inner_segment_warm_exec_s": 191.37953867200122,
+  "compile_s_one_time": 22.021861051995074,
+  "warmed_per_step_ms": 47.23837946284793,
+  "full_24h_wall_s_measured": 408.1395985590061,
+  "full_24h_wall_min_measured": 6.802326642650102,
+  "peak_gpu_mem_mb_after_segment_compile": 9056.431640625,
+  "peak_gpu_mem_mb_after_full_run": 10191.71728515625,
+  "peak_bounded_note": "peak after the FULL 24h run is ~ the peak after ONE segment compile -- host-loop + block_until_ready frees each segment's scratch before the next, so peak memory is independent of forecast length (the single fused-scan path's memory grew with length and failed +12h).",
+  "final_state_ranges": {
+    "u": {
+      "finite": false,
+      "min": NaN,
+      "max": NaN
+    },
+    "v": {
+      "finite": false,
+      "min": NaN,
+      "max": NaN
+    },
+    "w": {
+      "finite": false,
+      "min": NaN,
+      "max": NaN
+    },
+    "theta": {
+      "finite": false,
+      "min": NaN,
+      "max": NaN
+    },
+    "qv": {
+      "finite": false,
+      "min": NaN,
+      "max": NaN
+    },
+    "p_total": {
+      "finite": false,
+      "min": NaN,
+      "max": NaN
+    },
+    "ph_total": {
+      "finite": false,
+      "min": NaN,
+      "max": NaN
+    },
+    "mu_total": {
+      "finite": false,
+      "min": NaN,
+      "max": NaN
+    }
+  },
+  "all_finite": false,
+  "physically_plausible": false,
+  "extrapolation": {
+    "24.0h": {
+      "steps": 8640,
+      "warmed_run_s": 408.1395985590061,
+      "warmed_run_min": 6.802326642650102,
+      "with_one_compile_min": 7.169357660183353
+    },
+    "48.0h": {
+      "steps": 17280,
+      "warmed_run_s": 816.2791971180122,
+      "warmed_run_min": 13.604653285300204,
+      "with_one_compile_min": 13.971684302833456
+    },
+    "72.0h": {
+      "steps": 25920,
+      "warmed_run_s": 1224.4187956770184,
+      "warmed_run_min": 20.406979927950307,
+      "with_one_compile_min": 20.774010945483557
+    }
+  },
+  "ensemble_30_case": {
+    "24.0h": {
+      "per_case_warmed_min": 6.802326642650102,
+      "ensemble_30_warmed_hours": 3.401163321325051
+    },
+    "72.0h": {
+      "per_case_warmed_min": 20.406979927950307,
+      "ensemble_30_warmed_hours": 10.203489963975153
+    }
+  },
+  "status": "FAIL",
+  "warmed_per_step_ms_segment_incl_radiation": 1063.2196592888956
+}
