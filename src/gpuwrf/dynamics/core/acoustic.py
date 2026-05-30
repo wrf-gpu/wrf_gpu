@@ -567,8 +567,21 @@ def acoustic_substep_core(
         w=uv_state.w,
         rw_tend=rw_tend,
         ww=ww_new,
-        u=uv_state.u,
-        v=uv_state.v,
+        # advance_w uses u/v ONLY for the kinematic terrain-following surface w BC
+        # (advance_w.py:274-303; WRF module_small_step_em.F:1384, "w=mx*u*dz/dx+my*v*dz/dy").
+        # WRF passes the DECOUPLED prognostic winds grid%u_2/grid%v_2 there
+        # (solve_em.F:1500-1501) -- physical m/s.  uv_state.u/v are the COUPLED
+        # small-step perturbation work arrays (small_step_prep u_work =
+        # (c1h*muu+c2h)*u/msf, ~1e4-1e5x the physical wind), so feeding them to the
+        # cf1/cf2/cf3 surface extrapolation (which has NO mass-factor division)
+        # produced a spurious O(40x) surface w@k0 over the steepest Canary volcanic
+        # cells -- a LINEARLY-ramping k0-only artifact (73 m/s @ k0 vs 1.4 m/s @ k1,
+        # interior column physical) that only surfaced once MYNN sustained a near-
+        # surface wind there (proofs/stability/ 2026-05-30 localization).  Pass the
+        # decoupled stage winds u_1/v_1 (= WRF grid%u_2/v_2 at stage entry; the
+        # surface BC is slowly varying) so the kinematic w matches WRF's physical m/s.
+        u=uv_state.u_1,
+        v=uv_state.v_1,
         mu_work=mu_work,
         mut=uv_state.mut,
         muave=muave_new,
