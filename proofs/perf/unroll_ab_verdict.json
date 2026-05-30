@@ -1,0 +1,18 @@
+{
+  "scope": "acoustic-substep unroll A/B: u1 (unroll=1) vs u4 (unroll=4)",
+  "baseline_per_step_ms": 44.7553510218212,
+  "unrolled_per_step_ms": 36.53345725518496,
+  "speedup": 1.225051073299923,
+  "max_abs_diff_per_field": {
+    "u": 6.462053114830724e-13,
+    "v": 9.167111514329918e-13,
+    "w": 5.280220705117245e-13,
+    "theta": 9.094947017729282e-13,
+    "qv": 1.5942108744226857e-15,
+    "p_total": 2.473825588822365e-10,
+    "ph_total": 4.94765117764473e-10,
+    "mu_total": 8.731149137020111e-11
+  },
+  "bitwise_identical": false,
+  "verdict": "NOT-BITWISE-IDENTICAL"
+}

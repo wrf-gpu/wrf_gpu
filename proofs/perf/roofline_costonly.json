@@ -1,0 +1,97 @@
+{
+  "scope": "Per-step FLOP/byte roofline (single-scan cost-analysis marginal; wall from chunked entry)",
+  "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
+  "device": "cuda:0",
+  "grid": {
+    "ny": 66,
+    "nx": 159,
+    "nz": 44,
+    "mass_cells": 461736
+  },
+  "peak_specs": {
+    "fp32_tflops": 104.8832,
+    "fp64_tflops": 1.6388,
+    "hbm_tbytes_s": 1.792
+  },
+  "method": "per-step body = (cost(40) - cost(20))/20 on ONE scan (trip count only); wall from segmented entry",
+  "coupled_step": {
+    "series_steps": [
+      10,
+      20,
+      40
+    ],
+    "series_flops": [
+      232142094336.0,
+      232142094336.0,
+      232142094336.0
+    ],
+    "series_bytes": [
+      155966832640.0,
+      155966832640.0,
+      155966832640.0
+    ],
+    "per_step_flops": -4.3888625379848906e-07,
+    "per_step_bytes": 2.9490473448276216e-08,
+    "scales_with_trip_count": false,
+    "roofline": {
+      "method": "per-step = single-scan body cost-analysis (constant across trip counts = body-once)",
+      "warmed_per_step_ms": 26.879,
+      "gflops_per_step": 232.142094336,
+      "gbytes_per_step": 155.96683264,
+      "arithmetic_intensity_flop_per_byte": 1.4884068003857363,
+      "achieved_tflops": 8.636559929164031,
+      "achieved_hbm_tbytes_s": 5.802553392611332,
+      "pct_fp64_peak": 527.1368010399858,
+      "pct_fp32_peak": 8.236512516249778,
+      "pct_hbm_peak": 323.80320271268596,
+      "ridge_AI_fp64": 0.9142804827008928,
+      "ridge_AI_fp32": 58.51395089285714,
+      "hbm_bound_floor_ms": 87.03506285714285,
+      "fp64_compute_floor_ms": 141.6891007515378,
+      "launch_overhead_factor_vs_hbm_floor": 0.3088295580841771,
+      "caveat": "156 GB body includes the RRTMG cond-branch g-point transient counted once; over-counts the non-radiation step. Use dycore-only for the clean dycore roofline."
+    },
+    "per_step_flops_body_once": 232142094336.0,
+    "per_step_bytes_body_once": 155966832640.0
+  },
+  "dycore_only_step": {
+    "series_steps": [
+      10,
+      20,
+      40
+    ],
+    "series_flops": [
+      2263408640.0,
+      2263408640.0,
+      2263408640.0
+    ],
+    "series_bytes": [
+      5661487104.0,
+      5661487104.0,
+      5661487104.0
+    ],
+    "per_step_flops": -1.5200431806320238e-08,
+    "per_step_bytes": -1.5997872792637157e-08,
+    "scales_with_trip_count": false,
+    "roofline": {
+      "method": "per-step = single-scan body cost-analysis (constant across trip counts = body-once)",
+      "warmed_per_step_ms": 16.898,
+      "gflops_per_step": 2.26340864,
+      "gbytes_per_step": 5.661487104,
+      "arithmetic_intensity_flop_per_byte": 0.39979047879502155,
+      "achieved_tflops": 0.13394535684696415,
+      "achieved_hbm_tbytes_s": 0.3350388864954432,
+      "pct_fp64_peak": 8.175422564259616,
+      "pct_fp32_peak": 0.1277409775665565,
+      "pct_hbm_peak": 18.696366433897502,
+      "ridge_AI_fp64": 0.9142804827008928,
+      "ridge_AI_fp32": 58.51395089285714,
+      "hbm_bound_floor_ms": 3.159312,
+      "fp64_compute_floor_ms": 1.3814829049085897,
+      "launch_overhead_factor_vs_hbm_floor": 5.348632866902667
+    },
+    "per_step_flops_body_once": 2263408640.0,
+    "per_step_bytes_body_once": 5661487104.0
+  },
+  "note": "per-step body = the single-scan cost-analysis value, which is CONSTANT across trip counts (verified at 10/20/40) => it IS the per-step body cost, not the whole forecast. The slope-based marginal is ~0 (identical points) and must NOT be used."
+}

@@ -1,0 +1,89 @@
+{
+  "scope": "Per-phase isolated cost breakdown -- warmed per-step coupled d02",
+  "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
+  "device": "cuda:0",
+  "grid": {
+    "ny": 66,
+    "nx": 159,
+    "nz": 44
+  },
+  "per_step_call_counts": {
+    "acoustic_substeps_total": "16 = 1(RK1)+5(RK2)+10(RK3)",
+    "calc_coef_w": 3,
+    "small_step_prep": 3,
+    "calc_p_rho_eos": 3,
+    "advection_tendencies": 3,
+    "augment_large_step_tend": 3,
+    "halo_apply": "~8 (per stage entry/exit + step entry/exit)",
+    "physics": "1/step (rrtmg @ cadence 180)",
+    "boundary": "1/step"
+  },
+  "phases_isolated": {
+    "halo_apply": {
+      "median_ms": 0.545493996469304,
+      "min_ms": 0.5213329859543592,
+      "flops": NaN,
+      "gbytes": 0.562104256
+    },
+    "advection_tendencies": {
+      "median_ms": 1.9986939732916653,
+      "min_ms": 0.9908570209518075,
+      "flops": 211717440.0,
+      "gbytes": 0.655195072
+    },
+    "augment_large_step_tend_flux_adv": {
+      "median_ms": 0.6947639922145754,
+      "min_ms": 0.677625008393079,
+      "flops": 288473280.0,
+      "gbytes": 0.78552416
+    },
+    "small_step_prep": {
+      "median_ms": 1.9974250171799213,
+      "min_ms": 0.9980770119000226,
+      "flops": 29889378.0,
+      "gbytes": 0.76281984
+    },
+    "calc_p_rho_eos": {
+      "median_ms": 1.987994008231908,
+      "min_ms": 0.9998479799833149,
+      "flops": 10619928.0,
+      "gbytes": 0.037107888
+    },
+    "calc_coef_w_coeffs": {
+      "median_ms": 0.3550630062818527,
+      "min_ms": 0.3366020100656897,
+      "flops": 249756928.0,
+      "gbytes": 0.076328184
+    },
+    "tridiag_thomas_solve_vertical": {
+      "median_ms": 1.9999539945274591,
+      "min_ms": 0.9993969870265573,
+      "flops": 52474.0,
+      "gbytes": 0.060445744
+    },
+    "physics_thompson": {
+      "median_ms": 21.0018579964526,
+      "min_ms": 19.959199998993427,
+      "flops": 719591360.0,
+      "gbytes": 1.768861568
+    },
+    "physics_surface": {
+      "median_ms": 4.993654991267249,
+      "min_ms": 3.993697988335043,
+      "flops": 32573380.0,
+      "gbytes": 0.607314944
+    },
+    "physics_mynn": {
+      "median_ms": 3.0004110012669116,
+      "min_ms": 2.8973210137337446,
+      "flops": 196911648.0,
+      "gbytes": 1.30442752
+    },
+    "boundary_apply": {
+      "median_ms": 1.9997839990537614,
+      "min_ms": 0.9998370078392327,
+      "flops": 42449560.0,
+      "gbytes": 0.866023232
+    }
+  }
+}
