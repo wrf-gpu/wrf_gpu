@@ -24,46 +24,46 @@
   "steps": 8640,
   "segment_steps": 180,
   "n_full_segments": 48,
-  "inner_segment_cold_compile_s": 213.32146895899496,
-  "inner_segment_warm_exec_s": 200.46601213999384,
-  "compile_s_one_time": 12.85545681900112,
-  "warmed_per_step_ms": 42.63367922650374,
-  "warmed_per_step_ms_segment_incl_radiation": 1113.7000674444103,
-  "full_24h_wall_s_measured": 368.3549885169923,
-  "full_24h_wall_min_measured": 6.139249808616539,
-  "peak_gpu_mem_mb_after_segment_compile": 9074.79541015625,
-  "peak_gpu_mem_mb_after_full_run": 10232.373046875,
+  "inner_segment_cold_compile_s": 273.4532208000019,
+  "inner_segment_warm_exec_s": 219.47261287100264,
+  "compile_s_one_time": 53.980607928999234,
+  "warmed_per_step_ms": 45.53688859826219,
+  "warmed_per_step_ms_segment_incl_radiation": 1219.2922937277924,
+  "full_24h_wall_s_measured": 393.4387174889853,
+  "full_24h_wall_min_measured": 6.5573119581497545,
+  "peak_gpu_mem_mb_after_segment_compile": 9085.324951171875,
+  "peak_gpu_mem_mb_after_full_run": 10245.528076171875,
   "peak_bounded_note": "peak after the FULL 24h run is ~ the peak after ONE segment compile -- host-loop + block_until_ready frees each segment's scratch before the next, so peak memory is independent of forecast length. By contrast the prior whole-forecast-as-one-program approaches blew up: the segmented while-loop's COMPILE grew with length (one scan per radiation interval; +12h did not compile in 37 min), and a single fused scan keeps the whole trajectory's working set in one program.",
   "final_state_ranges": {
     "u": {
       "finite": true,
-      "min": -17.108598030123073,
-      "max": 20.369423307469486
+      "min": -22.566255065502304,
+      "max": 22.788465517883964
     },
     "v": {
       "finite": true,
-      "min": -24.433207921576102,
-      "max": 17.75071931250564
+      "min": -17.440507808379415,
+      "max": 14.452858221579204
     },
     "w": {
       "finite": true,
-      "min": -14.324832364026491,
-      "max": 0.9723263828279577
+      "min": -9.449318997222434,
+      "max": 0.9432129108846773
     },
     "theta": {
       "finite": true,
-      "min": 290.2250092098159,
-      "max": 494.2641105966164
+      "min": 290.08381793734065,
+      "max": 491.7882291552998
     },
     "qv": {
       "finite": true,
       "min": 2.429023197692004e-06,
-      "max": 0.01884661094173716
+      "max": 0.01856670358389174
     },
     "p_total": {
       "finite": true,
       "min": 5225.12353515625,
-      "max": 103663.10528797751
+      "max": 104468.47761194238
     },
     "ph_total": {
       "finite": true,
@@ -72,7 +72,7 @@
     },
     "mu_total": {
       "finite": true,
-      "min": 64370.13418509639,
+      "min": 65185.76151450816,
       "max": 96897.3203125
     }
   },
@@ -81,31 +81,31 @@
   "extrapolation": {
     "24.0h": {
       "steps": 8640,
-      "warmed_run_s": 368.3549885169923,
-      "warmed_run_min": 6.139249808616539,
-      "with_one_compile_min": 6.353507422266557
+      "warmed_run_s": 393.4387174889853,
+      "warmed_run_min": 6.5573119581497545,
+      "with_one_compile_min": 7.456988756966409
     },
     "48.0h": {
       "steps": 17280,
-      "warmed_run_s": 736.7099770339846,
-      "warmed_run_min": 12.278499617233077,
-      "with_one_compile_min": 12.492757230883095
+      "warmed_run_s": 786.8774349779706,
+      "warmed_run_min": 13.114623916299509,
+      "with_one_compile_min": 14.014300715116162
     },
     "72.0h": {
       "steps": 25920,
-      "warmed_run_s": 1105.064965550977,
-      "warmed_run_min": 18.417749425849614,
-      "with_one_compile_min": 18.632007039499634
+      "warmed_run_s": 1180.3161524669558,
+      "warmed_run_min": 19.671935874449265,
+      "with_one_compile_min": 20.571612673265918
     }
   },
   "ensemble_30_case": {
     "24.0h": {
-      "per_case_warmed_min": 6.139249808616539,
-      "ensemble_30_warmed_hours": 3.0696249043082693
+      "per_case_warmed_min": 6.5573119581497545,
+      "ensemble_30_warmed_hours": 3.2786559790748773
     },
     "72.0h": {
-      "per_case_warmed_min": 18.417749425849614,
-      "ensemble_30_warmed_hours": 9.208874712924807
+      "per_case_warmed_min": 19.671935874449265,
+      "ensemble_30_warmed_hours": 9.835967937224632
     }
   },
   "status": "PASS"

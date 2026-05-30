@@ -30,6 +30,7 @@ from gpuwrf.dynamics.core.advance_w import (
     dry_cqw,
     pg_buoy_w_dry,
 )
+from gpuwrf.coupling.boundary_apply import DEFAULT_BOUNDARY_CONFIG, apply_normal_bdy_work
 from gpuwrf.dynamics.core.calc_p_rho import calc_p_rho_step
 from gpuwrf.dynamics.mu_t_advance import AdvanceMuTInputs, advance_mu_t_wrf
 from gpuwrf.dynamics.tridiag_solve import thomas_solve_scan
@@ -78,6 +79,11 @@ class AcousticCoreConfig:
     zdamp: float = 5000.0
     w_alpha: float = W_ALPHA
     w_crit_cfl: float = W_BETA
+    # WIND-FIX: full model timestep ``grid%dt`` (the acoustic ``dt`` field is the
+    # substep ``dts``).  Used only to scale the in-loop NORMAL-momentum relaxation
+    # weight to a per-substep increment (boundary_apply.apply_normal_bdy_work).
+    # Defaults to ``dt`` so bare-core/oracle callers are unaffected.
+    dt_full: float | None = None
 
 
 @jax.tree_util.register_pytree_node_class
@@ -165,6 +171,17 @@ class AcousticCoreState:
     # workaround (gpt-council-findings.md §2/§3.3).  When None, the substep falls
     # back to the legacy per-substep recompute (bare-core/oracle callers only).
     rw_tend_pg_buoy: jax.Array | None = None
+    # WIND-FIX (2026-05-30): coupled small-step WORK-array boundary targets for the
+    # NORMAL momentum (u at W/E, v at S/N), built ONCE per RK stage from the
+    # interpolated decoupled wrfbdy leaf so small_step_finish reconstructs the
+    # boundary velocity.  When present, ``advance_uv_wrf`` reproduces WRF's
+    # spec_zone freeze + relax_bdy_dry nudge on the normal momentum INSIDE the
+    # acoustic loop (the end-of-step coupling-layer nudge cannot remove the in-loop
+    # spike -- proofs/wind/WIND_SKILL_ROOT_CAUSE.md §4b).  None for idealized /
+    # oracle / bare-core callers (no lateral boundary), leaving the bare PGF
+    # advance untouched so the idealized dycore gates are unaffected.
+    u_work_bdy: jax.Array | None = None
+    v_work_bdy: jax.Array | None = None
 
     @classmethod
     def from_mapping(cls, values: dict[str, object]) -> "AcousticCoreState":
@@ -324,6 +341,7 @@ def advance_uv_wrf(
     dy: float = 1.0,
     top_lid: bool = False,
     emdiv: float = 0.0,
+    dt_full: float | None = None,
 ) -> AcousticCoreState:
     """Advance coupled perturbation ``u/v`` like WRF ``advance_uv``.
 
@@ -411,6 +429,22 @@ def advance_uv_wrf(
         msfvx_inv = state.msfvx_inv
         mudf_xy_v = -float(emdiv) * float(dy) * (mudf_n_y - mudf_s_y) * msfvx_inv
         v = v + state.c1h[:, None, None] * mudf_xy_v[None, :, :]
+
+    # WIND-FIX: reproduce WRF's spec_zone-restricted advance_uv + relax_bdy_dry on
+    # the NORMAL momentum work array INSIDE the acoustic loop (boundary_apply
+    # comment block; WRF module_small_step_em.F:734-942 loop bounds +
+    # solve_em.F:1346-1364 spec_bdyupdate + module_bc_em.F:161-346 relax_bdy_dry).
+    # The bare PGF above freely advanced the outer spec/relax normal faces (the
+    # source of the +/-7..17 m/s blow-up); here we freeze the spec face to the
+    # boundary work target and relax the relax-zone faces toward it.  Skipped when
+    # no boundary target is staged (idealized/oracle/bare-core), so those paths and
+    # the idealized dycore gates are byte-for-byte unaffected.
+    if state.u_work_bdy is not None and state.v_work_bdy is not None:
+        u, v = apply_normal_bdy_work(
+            u, v, state.u_work_bdy, state.v_work_bdy,
+            dts, float(dt_full) if dt_full is not None else dts,
+            config=DEFAULT_BOUNDARY_CONFIG,
+        )
     return state.replace(u=u, v=v)
 
 
@@ -491,6 +525,7 @@ def acoustic_substep_core(
         dy=float(cfg.dy),
         top_lid=bool(cfg.top_lid),
         emdiv=float(emdiv),
+        dt_full=(float(cfg.dt_full) if cfg.dt_full is not None else float(cfg.dt)),
     )
 
     # --- 2. advance_mu_t (coupled theta + mu/muts/muave/mudf/ww) ---
