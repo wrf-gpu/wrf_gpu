@@ -1,0 +1,103 @@
++ cd /home/enric/src/wrf_gpu2/.claude/worktrees/agent-aed38ddc03ff3ad39
++ export PYTHONPATH=src
++ PYTHONPATH=src
++ export OMP_NUM_THREADS=2
++ OMP_NUM_THREADS=2
++ export XLA_PYTHON_CLIENT_MEM_FRACTION=0.9
++ XLA_PYTHON_CLIENT_MEM_FRACTION=0.9
++ export XLA_PYTHON_CLIENT_PREALLOCATE=false
++ XLA_PYTHON_CLIENT_PREALLOCATE=false
++ export TF_GPU_ALLOCATOR=cuda_malloc_async
++ TF_GPU_ALLOCATOR=cuda_malloc_async
++ echo '==================== CONFIRM: COUPLED WITH FLAG first (reps 6) ===================='
+==================== CONFIRM: COUPLED WITH FLAG first (reps 6) ====================
++ XLA_FLAGS=--xla_gpu_graph_min_graph_size=1
++ taskset -c 0-3 python proofs/perf/fusion_flag_probe.py --tag coupled_gms1_c --reps 6
+E0530 22:40:13.423904 1177472 slow_operation_alarm.cc:73] 
+********************************
+[Compiling module jit__advance_chunk for GPU] Very slow compile? If you want to file a bug, run with envvar XLA_FLAGS=--xla_dump_to=/tmp/foo and attach the results.
+********************************
+E0530 22:40:14.774146 1177402 slow_operation_alarm.cc:140] The operation took 2m1.350292147s
+
+********************************
+[Compiling module jit__advance_chunk for GPU] Very slow compile? If you want to file a bug, run with envvar XLA_FLAGS=--xla_dump_to=/tmp/foo and attach the results.
+********************************
+{
+  "tag": "coupled_gms1_c",
+  "xla_flags": "--xla_gpu_graph_min_graph_size=1",
+  "acoustic_unroll": "1",
+  "run_physics": true,
+  "device": "cuda:0",
+  "n_small": 20,
+  "n_big": 80,
+  "reps": 6,
+  "warm_small_s": 1.0285700039821677,
+  "warm_big_s": 4.084993000986287,
+  "warmed_per_step_ms": 50.94038328340199,
+  "peak_gpu_mem_mb": 9681.96435546875,
+  "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
+  "radiation_in_window": false
+}
++ echo GMS1C_EXIT=0
+GMS1C_EXIT=0
++ echo '==================== CONFIRM: COUPLED BASELINE (reps 6) ===================='
+==================== CONFIRM: COUPLED BASELINE (reps 6) ====================
++ XLA_FLAGS=
++ taskset -c 0-3 python proofs/perf/fusion_flag_probe.py --tag coupled_base_c --reps 6
+{
+  "tag": "coupled_base_c",
+  "xla_flags": "",
+  "acoustic_unroll": "1",
+  "run_physics": true,
+  "device": "cuda:0",
+  "n_small": 20,
+  "n_big": 80,
+  "reps": 6,
+  "warm_small_s": 0.8903804940055124,
+  "warm_big_s": 3.5358103520120494,
+  "warmed_per_step_ms": 44.09049763344228,
+  "peak_gpu_mem_mb": 9681.963623046875,
+  "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
+  "radiation_in_window": false
+}
++ echo BASEC_EXIT=0
+BASEC_EXIT=0
++ echo '==================== COMPARE (confirm) ===================='
+==================== COMPARE (confirm) ====================
++ taskset -c 0-3 python proofs/perf/fusion_flag_probe.py --compare coupled_base_c coupled_gms1_c
+{
+  "scope": "XLA scheduling-flag A/B: coupled_base_c vs coupled_gms1_c (coupled real d02, segmented, no-radiation window)",
+  "flags_a": "",
+  "flags_b": "--xla_gpu_graph_min_graph_size=1",
+  "unroll_a": "1",
+  "unroll_b": "1",
+  "baseline_per_step_ms": 44.09049763344228,
+  "candidate_per_step_ms": 50.94038328340199,
+  "speedup": 0.8655313288113475,
+  "max_abs_diff_per_field": {
+    "u": 0.0,
+    "v": 0.0,
+    "w": 0.0,
+    "theta": 0.0,
+    "qv": 0.0,
+    "p_total": 0.0,
+    "ph_total": 0.0,
+    "mu_total": 0.0
+  },
+  "max_rel_diff_per_field": {
+    "u": 0.0,
+    "v": 0.0,
+    "w": 0.0,
+    "theta": 0.0,
+    "qv": 0.0,
+    "p_total": 0.0,
+    "ph_total": 0.0,
+    "mu_total": 0.0
+  },
+  "bitwise_identical": true,
+  "verdict": "SAFE-NO-GAIN"
+}
++ echo COMPARE_C_EXIT=0
+COMPARE_C_EXIT=0
++ echo ALL_DONE_CONFIRM
+ALL_DONE_CONFIRM

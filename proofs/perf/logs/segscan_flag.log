@@ -1,0 +1,53 @@
++ cd /home/enric/src/wrf_gpu2/.claude/worktrees/agent-aed38ddc03ff3ad39
++ export PYTHONPATH=src
++ PYTHONPATH=src
++ export OMP_NUM_THREADS=4
++ OMP_NUM_THREADS=4
++ export XLA_PYTHON_CLIENT_MEM_FRACTION=0.9
++ XLA_PYTHON_CLIENT_MEM_FRACTION=0.9
++ export XLA_PYTHON_CLIENT_PREALLOCATE=false
++ XLA_PYTHON_CLIENT_PREALLOCATE=false
++ export TF_GPU_ALLOCATOR=cuda_malloc_async
++ TF_GPU_ALLOCATOR=cuda_malloc_async
++ echo '==================== 24h SEGSCAN — NO FLAG (current wind-fixed base) ===================='
+==================== 24h SEGSCAN — NO FLAG (current wind-fixed base) ====================
++ XLA_FLAGS=
++ taskset -c 0-3 python proofs/perf/segscan_24h.py --hours 24 --out segscan_24h_windfix_noflag.json
+=== SEGSCAN 24h feasibility: +24.0h=8640 steps, segment=180 steps, cadence=180 ===
+  run_dir=/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z
+{
+  "inner_segment_cold_compile_s": 257.92054109001765,
+  "compile_s_one_time": 38.68359148100717,
+  "warmed_per_step_ms": 46.273527782755586,
+  "full_24h_wall_min_measured": 6.663388000716805,
+  "peak_gpu_mem_mb_after_full_run": 10249.00927734375,
+  "all_finite": true,
+  "physically_plausible": true,
+  "status": "PASS"
+}
+
+wrote proofs/perf/segscan_24h_windfix_noflag.json
++ echo NOFLAG_24H_EXIT=0
+NOFLAG_24H_EXIT=0
++ echo '==================== 24h SEGSCAN — WITH FLAG (graph_min_graph_size=1) ===================='
+==================== 24h SEGSCAN — WITH FLAG (graph_min_graph_size=1) ====================
++ XLA_FLAGS=--xla_gpu_graph_min_graph_size=1
++ taskset -c 0-3 python proofs/perf/segscan_24h.py --hours 24 --out segscan_24h_windfix_gms1.json
+=== SEGSCAN 24h feasibility: +24.0h=8640 steps, segment=180 steps, cadence=180 ===
+  run_dir=/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z
+{
+  "inner_segment_cold_compile_s": 260.17247532799956,
+  "compile_s_one_time": 29.642924737010617,
+  "warmed_per_step_ms": 54.58431911712843,
+  "full_24h_wall_min_measured": 7.860141952866495,
+  "peak_gpu_mem_mb_after_full_run": 10249.009521484375,
+  "all_finite": true,
+  "physically_plausible": true,
+  "status": "PASS"
+}
+
+wrote proofs/perf/segscan_24h_windfix_gms1.json
++ echo FLAG_24H_EXIT=0
+FLAG_24H_EXIT=0
++ echo ALL_DONE_24H
+ALL_DONE_24H
