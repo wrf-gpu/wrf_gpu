@@ -1477,20 +1477,33 @@ def _physics_boundary_step_with_limiter_diagnostics(
         next_state = thompson_adapter(next_state, float(namelist.dt_s))
         next_state = surface_adapter(next_state, float(namelist.dt_s))
         next_state = mynn_adapter(next_state, float(namelist.dt_s), namelist.grid)
-        if run_radiation:
-            # B3 cadence scaling: radiation is invoked once per
-            # radiation_cadence_steps, but WRF applies the radiative heating RATE
-            # at every dynamics step over the whole radt interval. Integrate the
-            # rate over the full interval (cadence_steps * dt) so the delivered
-            # forcing matches WRF instead of being radiation_cadence_steps x weak.
-            next_state = rrtmg_adapter(
-                next_state,
+        # B3 cadence scaling: radiation is invoked once per radiation_cadence_steps,
+        # but WRF applies the radiative heating RATE at every dynamics step over the
+        # whole radt interval. Integrate the rate over the full interval
+        # (cadence_steps * dt) so the delivered forcing matches WRF instead of being
+        # radiation_cadence_steps x weak.
+        def _apply_rrtmg(s: State) -> State:
+            return rrtmg_adapter(
+                s,
                 float(namelist.dt_s),
                 namelist.grid,
                 time_utc=namelist.time_utc,
                 lead_seconds=lead_seconds,
                 apply_seconds=float(namelist.dt_s) * float(int(namelist.radiation_cadence_steps)),
             )
+
+        if isinstance(run_radiation, bool):
+            # STATIC gate (production segmented path): the rrtmg call is either
+            # traced or absent -- the radiation branch is fully resolved at trace
+            # time, so each radiation interval is its own compiled scan.
+            if run_radiation:
+                next_state = _apply_rrtmg(next_state)
+        else:
+            # TRACED gate (single-scan path): run_radiation is a traced bool
+            # (step_index %% cadence == 0). jax.lax.cond keeps the WHOLE forecast in
+            # ONE scan (one compile regardless of length) while still firing RRTMG
+            # only at the cadence -- numerically identical to the static gate.
+            next_state = jax.lax.cond(run_radiation, _apply_rrtmg, lambda s: s, next_state)
     if bool(namelist.run_boundary):
         bounded = apply_lateral_boundaries(next_state, lead_seconds, float(namelist.dt_s), namelist.boundary_config)
         if bool(namelist.disable_guards):
@@ -1641,7 +1654,54 @@ def compute_m9_diagnostics(
     )
 
 
-@partial(jax.jit, static_argnames=("hours", "output_cadence_steps"))
+@partial(jax.jit, static_argnames=("n_steps", "cadence"))
+def _advance_chunk(
+    carry: OperationalCarry,
+    namelist: OperationalNamelist,
+    start_step,
+    *,
+    n_steps: int,
+    cadence: int,
+) -> OperationalCarry:
+    """Advance one output interval as a SINGLE compiled scan (no diagnostics).
+
+    Radiation is gated by the traced ``step_index %% cadence == 0`` predicate via
+    ``_physics_boundary_step``'s cond path, so this is byte-identical to the
+    production per-step cadence.  ``start_step`` is TRACED (only ``n_steps``/
+    ``cadence`` static) so equal-length intervals reuse the SAME compiled executable
+    -- one compile for the whole forecast, not one per interval.  Kept SEPARATE from
+    the diagnostics call so the dynamics scratch is freed before the large RRTMG
+    diagnostic transient is allocated (peak-memory bound, Task 2 OOM fix).
+    """
+    run_physics = bool(namelist.run_physics)
+    start_step = jnp.asarray(start_step, dtype=jnp.int32)
+    indices = start_step + jnp.arange(int(n_steps), dtype=jnp.int32)
+
+    def body(scan_carry: OperationalCarry, step_index):
+        if run_physics:
+            run_radiation = jnp.equal(jnp.mod(step_index, int(cadence)), 0)
+        else:
+            run_radiation = False
+        next_carry = _physics_boundary_step(
+            scan_carry, namelist, step_index, run_radiation=run_radiation, debug=False
+        )
+        return next_carry, None
+
+    carry, _ = jax.lax.scan(body, carry, indices)
+    return carry
+
+
+@jax.jit
+def _m9_snapshot(carry: OperationalCarry, namelist: OperationalNamelist, lead_seconds) -> M9Diagnostics:
+    """Compute the M9 surface map once from a post-chunk State (separate program).
+
+    Isolated in its own ``jax.jit`` so XLA cannot co-schedule the ~15 GiB RRTMG
+    g-point diagnostic transient with the dynamics-chunk scratch; the host loop
+    blocks after the chunk so the chunk scratch is freed first.
+    """
+    return compute_m9_diagnostics(carry.state, namelist, lead_seconds)
+
+
 def run_forecast_operational_with_m9_diagnostics(
     state: State,
     namelist: OperationalNamelist,
@@ -1651,69 +1711,69 @@ def run_forecast_operational_with_m9_diagnostics(
 ) -> tuple[State, M9Diagnostics]:
     """Run the operational forecast and emit the M9 surface map at output cadence.
 
-    Mirrors ``run_forecast_operational`` (same compiled scan / same per-step
-    cadence split) but threads a diagnostics carry: every ``output_cadence_steps``
-    steps the M9 surface fields are recomputed from the live State and stacked
-    along a leading time axis. The production ``run_forecast_operational`` path is
-    untouched (zero-cost in production); this variant is for M9/M19 scoring.
+    Materializes the M9 surface diagnostics ONLY at the OUTPUT cadence (never every
+    step) and bounds peak memory to (forecast working set + ONE RRTMG diagnostic
+    transient), independent of forecast length.
+
+    OOM FIX (Sprint perf-diag Task 2).  Two compounding problems killed the previous
+    implementation at 1080 steps (+3h, >20 GB OOM):
+
+    1. ``compute_m9_diagnostics`` was called inside the per-step scan body and
+       ``jax.lax.scan`` stacked ``(diag, emit)`` for EVERY step -- 1080 copies of all
+       10 surface maps plus every step's diagnostic intermediates kept live.
+    2. ``compute_m9_diagnostics`` re-runs the FULL RRTMG SW+LW column solver, whose
+       g-point intermediate is ~15 GiB on this d02 grid.  Even computing it a few
+       times inside ONE jit lets XLA overlap those transients (measured: a single
+       jit over the 3h forecast tried to allocate 27.8 GiB).
+
+    Fix: a HOST-driven loop walks one output interval at a time, calling the jit'd
+    ``_advance_chunk_and_snapshot`` (each chunk is ONE compiled scan, reused across
+    intervals) and ``block_until_ready``-ing between chunks so each RRTMG transient is
+    freed before the next chunk allocates its own.  The host loop runs only
+    ``steps // out_cad`` iterations (e.g. 3 for +3h hourly) -- NOT per step -- so there
+    is no per-timestep host/device transfer.  The dynamics are byte-identical to the
+    production scan (same per-step body, same traced radiation schedule); only the
+    emitted-snapshot set differs.  ``run_forecast_operational`` is untouched.
     """
     if int(namelist.rk_order) != 3:
         raise ValueError("operational mode currently supports RK3 only")
     if int(output_cadence_steps) <= 0:
         raise ValueError("output_cadence_steps must be positive")
-
-    initial = initial_operational_carry(
-        _enforce_operational_precision(state, force_fp64=bool(namelist.force_fp64))
-    )
-    steps = _steps_for_hours(hours, float(namelist.dt_s))
     cadence = int(namelist.radiation_cadence_steps)
     if cadence <= 0:
         raise ValueError("radiation_cadence_steps must be positive")
+
+    carry = initial_operational_carry(
+        _enforce_operational_precision(state, force_fp64=bool(namelist.force_fp64))
+    )
+    steps = _steps_for_hours(hours, float(namelist.dt_s))
     out_cad = int(output_cadence_steps)
+
+    # Output-interval boundaries: every multiple of out_cad up to steps, plus a final
+    # partial interval if steps is not a multiple of out_cad (so the final state is
+    # always emitted).
+    boundaries: list[int] = list(range(out_cad, steps + 1, out_cad))
+    if not boundaries or boundaries[-1] != steps:
+        boundaries.append(steps)
+
     dt_s = float(namelist.dt_s)
-
-    # Reproduce the radiation-cadence segmentation of run_forecast_operational
-    # while collecting per-step diagnostics; we keep diagnostics for every step
-    # and let the caller subselect emitted steps via the returned mask. The
-    # per-segment ``run_radiation`` is a STATIC python bool captured in the body
-    # closure (not in the scan carry) so the radiation branch stays static.
-    carry = initial
-    step = 1
     diag_chunks: list[M9Diagnostics] = []
-    emit_chunks: list[jax.Array] = []
-
-    def scan_segment(carry, start_step, n, run_radiation):
-        indices = jnp.arange(start_step, start_step + n, dtype=jnp.int32)
-
-        def body(scan_carry, step_index):
-            scan_carry = _physics_boundary_step(
-                scan_carry, namelist, step_index, run_radiation=run_radiation
-            )
-            lead_seconds = step_index.astype(jnp.float64) * dt_s
-            diag = compute_m9_diagnostics(scan_carry.state, namelist, lead_seconds)
-            emit = jnp.mod(step_index, out_cad) == 0
-            return scan_carry, (diag, emit)
-
-        next_carry, (diags, emits) = jax.lax.scan(body, carry, indices)
-        return next_carry, diags, emits
-
-    while step <= steps:
-        next_radiation = ((step + cadence - 1) // cadence) * cadence
-        if bool(namelist.run_physics) and next_radiation <= steps:
-            non_radiation_steps = next_radiation - step
-            if non_radiation_steps:
-                carry, d, e = scan_segment(carry, step, non_radiation_steps, False)
-                diag_chunks.append(d)
-                emit_chunks.append(e)
-            carry, d, e = scan_segment(carry, next_radiation, 1, True)
-            diag_chunks.append(d)
-            emit_chunks.append(e)
-            step = next_radiation + 1
-        else:
-            carry, d, e = scan_segment(carry, step, steps - step + 1, False)
-            diag_chunks.append(d)
-            emit_chunks.append(e)
-            step = steps + 1
+    start = 1
+    for end in boundaries:
+        n = end - start + 1
+        carry = _advance_chunk(
+            carry, namelist, jnp.asarray(start, dtype=jnp.int32), n_steps=n, cadence=cadence
+        )
+        # Free the dynamics-chunk scratch BEFORE the RRTMG diagnostic transient is
+        # allocated, then free the transient before the next chunk -- this is what
+        # bounds peak memory to (working set + ONE transient) for any forecast length.
+        jax.block_until_ready(carry.state.theta)
+        diag = _m9_snapshot(carry, namelist, jnp.asarray(float(end) * dt_s, dtype=jnp.float64))
+        jax.block_until_ready(diag.t2)
+        diag_chunks.append(
+            M9Diagnostics(*(getattr(diag, name)[None, ...] for name in M9Diagnostics._fields))
+        )
+        start = end + 1
 
     all_diags = M9Diagnostics(
         *(jnp.concatenate([getattr(chunk, name) for chunk in diag_chunks], axis=0)
@@ -1780,6 +1840,57 @@ def run_forecast_operational(state: State, namelist: OperationalNamelist, hours:
                 debug=False,
             )
             step = steps + 1
+    return carry.state
+
+
+@partial(jax.jit, static_argnames=("hours",), donate_argnums=(0,))
+def run_forecast_operational_single_scan(state: State, namelist: OperationalNamelist, hours: float) -> State:
+    """Whole forecast as ONE jax.lax.scan -- compile-blowup remedy for 24-72h.
+
+    The production ``run_forecast_operational`` Python while-loop emits one
+    ``jax.lax.scan`` per radiation interval (a non-radiation scan plus an isolated
+    1-step radiation scan), so the number of distinct XLA scan subcomputations -- and
+    thus the COMPILE time -- scales with the forecast length: ~4 scans at 1h, 12 at
+    3h, 96 at 24h, 288 at 72h.  Measured: the cold compile of the 3h (12-scan)
+    program exceeds ~30 min (proofs/perf -- the +3h's ~32 min was almost entirely
+    this cold compile; warmed steady-state is ~45 ms/step).  At 24-72h the segmented
+    compile is a hard wall.
+
+    This entry collapses the whole forecast into a SINGLE scan whose trip count is
+    the static step total, and gates RRTMG with ``jax.lax.cond`` on the traced
+    predicate ``(step_index %% cadence == 0)``.  Compile cost is then independent of
+    forecast length (one scan body), while the per-step cadence and the RRTMG firing
+    schedule are numerically IDENTICAL to the segmented path (cond fires RRTMG on
+    exactly the same steps).  Warmed throughput is unchanged.  This is the
+    recommended path for long-lead / ensemble runs; the segmented production path is
+    left untouched and remains the validated default until this entry passes its own
+    short-horizon equivalence gate (proofs/perf/single_scan_equiv.json).
+    """
+
+    if int(namelist.rk_order) != 3:
+        raise ValueError("operational mode currently supports RK3 only")
+    initial = initial_operational_carry(
+        _enforce_operational_precision(state, force_fp64=bool(namelist.force_fp64))
+    )
+    steps = _steps_for_hours(hours, float(namelist.dt_s))
+    cadence = int(namelist.radiation_cadence_steps)
+    if cadence <= 0:
+        raise ValueError("radiation_cadence_steps must be positive")
+    run_physics = bool(namelist.run_physics)
+
+    indices = jnp.arange(1, steps + 1, dtype=jnp.int32)
+
+    def body(scan_carry: OperationalCarry, step_index):
+        if run_physics:
+            run_radiation = jnp.equal(jnp.mod(step_index, cadence), 0)
+        else:
+            run_radiation = False  # static: no radiation branch traced at all
+        next_carry = _physics_boundary_step(
+            scan_carry, namelist, step_index, run_radiation=run_radiation, debug=False
+        )
+        return next_carry, None
+
+    carry, _ = jax.lax.scan(body, initial, indices)
     return carry.state
 
 
@@ -1905,7 +2016,11 @@ def run_forecast_operational_debug(state: State, namelist: OperationalNamelist, 
 
 __all__ = [
     "OperationalNamelist",
+    "M9Diagnostics",
+    "compute_m9_diagnostics",
     "run_forecast_operational",
+    "run_forecast_operational_single_scan",
     "run_forecast_operational_debug",
     "run_forecast_operational_with_limiter_diagnostics",
+    "run_forecast_operational_with_m9_diagnostics",
 ]
