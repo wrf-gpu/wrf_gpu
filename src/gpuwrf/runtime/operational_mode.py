@@ -1843,6 +1843,73 @@ def run_forecast_operational(state: State, namelist: OperationalNamelist, hours:
     return carry.state
 
 
+def run_forecast_operational_segmented(
+    state: State,
+    namelist: OperationalNamelist,
+    hours: float,
+    *,
+    segment_steps: int | None = None,
+) -> State:
+    """Run a long operational forecast as a HOST loop over ONE compiled segment.
+
+    Long-run (24-72h) compile-blowup remedy that keeps compile O(segment) and peak
+    GPU memory bounded, independent of forecast length.
+
+    Why this exists.  ``run_forecast_operational`` is a Python while-loop that emits
+    one ``jax.lax.scan`` per radiation interval, so the number of distinct XLA scan
+    subcomputations -- and thus COMPILE time / peak memory -- grows with the forecast
+    length (measured: +12h did not compile in 37 min).  This entry instead compiles a
+    SINGLE fixed-length inner segment (``_advance_chunk`` with a static ``n_steps``)
+    and drives it from a host ``for`` loop, carrying ``State`` across segments and
+    ``block_until_ready``-ing between them so each segment's dynamics scratch is freed
+    before the next segment allocates.  Compile happens ONCE for the full-length
+    segment (every equal-length segment reuses the same executable via the traced
+    ``start_step``); a single shorter compile covers a final partial tail segment.
+
+    Equivalence.  Global step indices run ``1..steps`` exactly as in
+    ``run_forecast_operational_single_scan`` and ``run_forecast_operational``; the
+    in-segment radiation gate is the SAME traced ``step_index %% cadence == 0``
+    predicate.  Because the segments are contiguous in the global step index, RRTMG
+    fires on exactly the same global steps as the single scan, so the result is
+    bit/round-off identical to the single scan and to the validated segmented
+    while-loop (proof: proofs/perf/single_scan_equiv.json, segmented column).
+
+    ``segment_steps`` defaults to one radiation cadence interval so radiation fires
+    exactly once at each full segment's last step; any positive value is accepted
+    (the radiation schedule is unaffected by where the segment boundaries fall).
+    """
+
+    if int(namelist.rk_order) != 3:
+        raise ValueError("operational mode currently supports RK3 only")
+    cadence = int(namelist.radiation_cadence_steps)
+    if cadence <= 0:
+        raise ValueError("radiation_cadence_steps must be positive")
+    seg = int(segment_steps) if segment_steps is not None else cadence
+    if seg <= 0:
+        raise ValueError("segment_steps must be positive")
+
+    carry = initial_operational_carry(
+        _enforce_operational_precision(state, force_fp64=bool(namelist.force_fp64))
+    )
+    steps = _steps_for_hours(hours, float(namelist.dt_s))
+
+    # Host loop over contiguous fixed-length segments covering global steps 1..steps.
+    # Every full segment has identical static ``n_steps`` so it reuses ONE compiled
+    # executable (``start_step`` is traced); a final partial segment compiles once.
+    start = 1
+    while start <= steps:
+        n = min(seg, steps - start + 1)
+        carry = _advance_chunk(
+            carry, namelist, jnp.asarray(start, dtype=jnp.int32), n_steps=int(n), cadence=cadence
+        )
+        # Block so this segment's device scratch is freed before the next segment's
+        # buffers are allocated -- this is what bounds peak memory to one segment's
+        # working set regardless of forecast length.
+        jax.block_until_ready(carry.state.theta)
+        start += n
+    return carry.state
+
+
 @partial(jax.jit, static_argnames=("hours",), donate_argnums=(0,))
 def run_forecast_operational_single_scan(state: State, namelist: OperationalNamelist, hours: float) -> State:
     """Whole forecast as ONE jax.lax.scan -- compile-blowup remedy for 24-72h.
@@ -2019,6 +2086,7 @@ __all__ = [
     "M9Diagnostics",
     "compute_m9_diagnostics",
     "run_forecast_operational",
+    "run_forecast_operational_segmented",
     "run_forecast_operational_single_scan",
     "run_forecast_operational_debug",
     "run_forecast_operational_with_limiter_diagnostics",
