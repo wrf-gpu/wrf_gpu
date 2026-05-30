@@ -24,6 +24,17 @@ The "bitwise dycore savepoint parity at 100 coupled steps" headline from v0.0.1 
 
 Status: large operator classes are now **verified correct vs WRF** (acoustic small-step core, implicit w/ph solve + `calc_coef_w`/`epssm`, flux-form WS5/3 advection, MUT/MUTS mass semantics, `calc_p_rho_phi`, `rhs_ph`/`ph_tend`). The exponential vertical runaway is eliminated and the warm bubble rises coherently. One localized residual remains (vertical scalar transport / deformation-vs-translation); the idealized-case gate is **not yet fully passing**, so the dycore is **not yet closed**. Single source of truth: **`proofs/f7/DYCORE_STATUS.md`**.
 
+### M19 viability-drive update (2026-05-30)
+
+The dycore is now **closed** (Skamarock warm bubble + Straka density current idealized gates pass vs the benchmark references). On top of it, the **full coupled real-case forecast now runs end-to-end**: a stable, physical, finite **72 h Canary d02 forecast** (dycore + Thompson microphysics + revised surface layer + MYNN PBL + RRTMG radiation + lateral boundaries), across 3 independent corpus cases. This drive closed the perf bottleneck (segmented host-loop scan), made the couplers genuinely fp64, and fixed two coupled-stability defects (a MYNN `w` re-injection that detonated at ~15 h, and a coupled-vs-decoupled surface-`w` boundary condition; the latter stress-tested by an adversarial cross-check and resolved with GPU-vs-CPU-WRF data).
+
+**Honest skill + speed status — real engineering progress, but not yet at the v0.1.0 bar:**
+
+- **Skill** (vs corpus CPU-WRF at 24/48/72 h): **T2 carries genuine skill** (RMSE ~1.0–1.2 K; beats a persistence baseline by 3–7 % at every lead). **Winds do not yet** — U10 is persistence-grade and **V10 is currently *beaten* by persistence**. The operational wind-skill goal is **not met**; V10/wind skill is the **#1 remaining science gap**.
+- **Speed:** the honest, provenance-backed number is **~5.7× vs 28-rank CPU-WRF** on the same 3 km d02 (per-forecast-hour, fp64). The earlier **"22.26×" is retracted** — it compared one GPU domain against the *whole multi-domain CPU nest*. An fp32 downcast was implemented and validated numerically but gives **~0× additional speedup** (the fp64 acoustic core is the per-step hot path), so **≥10× is not yet reached** and needs deeper fusion/kernel work.
+
+**Net:** the *engineering* — a stable, physically-faithful, fast-enough multi-day GPU WRF forecast — is in hand; the two gaps to v0.1.0 are **(1) wind forecast skill** and **(2) ≥10× speed**, both active milestones. Single source of truth for this drive: `proofs/m19/` (3-case verdict + persistence baseline + terrain-w resolution), `proofs/perf/` (segmented scan + speedup denominator + fp32 gates), `proofs/stability/`.
+
 ## Core goals (immutable)
 
 1. **GPU-native architecture.** Whole-state device residency after init. No host/device transfers inside the timestep loop without an ADR. Fused timestep-scale kernels, not 200 000-launch micro-kernels.
