@@ -171,9 +171,25 @@ def _build_real_case(config: DailyPipelineConfig) -> tuple[DailyCase, Path]:
     #   * diff_6th_opt=2 / 0.12    -> the operational d02 numerical filter (WRF
     #     diff_6th_opt=2, diff_6th_factor=0.12) that suppresses 2dx noise.
     #   * w_damping=1, damp_opt=3, zdamp=5000, dampcoef=0.2 -> the Gen2 d02 WRF
-    #     upper-level Rayleigh + vertical-velocity damping (open top, NOT a lid).
-    #   * top_lid=False            -> real runs have an OPEN/top-damped top, so the
-    #     WRF advect_w top-face flux + lid pickup (P1-5) is active.
+    #     upper-level Rayleigh + vertical-velocity damping.
+    #   * epssm=0.5                -> MATCH the real Gen2 d02 namelist.input
+    #     (&dynamics epssm=0.5).  The dataclass default (0.1) is WRF's generic
+    #     default, but the operational d02 run off-centres the vertically-implicit
+    #     acoustic solve at 0.5 (eps_m=1-epssm weights the explicit old-time
+    #     pressure/w in advance_w / calc_coef_w; cof=(0.5*dts*g*(1+epssm))^2,
+    #     module_small_step_em.F:624,646).  Leaving it at 0.1 under-damps the
+    #     vertical acoustic / top-face mode on the real init.
+    #   * top_lid=True             -> RIGID lid at the model top.  Root-cause
+    #     (proofs/dycore_realinit/): with top_lid=False (open top) the WRF-faithful
+    #     advance_w top-face equation (module_small_step_em.F:1421-1429) produces a
+    #     ~300 m/s spurious w on the model-top face on the very first step from the
+    #     real d02 upper-level state; with run_boundary on, the lateral relaxation
+    #     re-feeds that top-corner w mode faster than damp_opt=3 removes it, and the
+    #     horizontal u-mode runs away to ~200 m/s.  top_lid=True (w(kde)=0, the SAME
+    #     top BC every idealized validation gate used) zeroes the top face and the
+    #     dycore-only + real-boundary run is STABLE for the full hour (|w|~14,
+    #     |u|~31, theta physical over 360 steps).  proofs/dycore_realinit/
+    #     step4_fix_longrun.json + step2_bc_isolation.json + step5_opentop_bndy.json.
     # Guards stay ON for the production real path (the operational safety net); the
     # guards-off stability of the dycore itself is proven separately (Sprint U P1-6).
     namelist = OperationalNamelist.from_grid(
@@ -192,6 +208,8 @@ def _build_real_case(config: DailyPipelineConfig) -> tuple[DailyCase, Path]:
         damp_opt=3,
         zdamp=5000.0,
         dampcoef=0.2,
+        epssm=0.5,
+        top_lid=True,
     )
     run_start = _coerce_run_start(str(replay.metadata["run_start_label"]))
     metadata = {
