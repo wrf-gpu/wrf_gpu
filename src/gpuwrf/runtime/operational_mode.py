@@ -22,8 +22,8 @@ from gpuwrf.contracts.halo import apply_halo
 from gpuwrf.coupling.boundary_apply import BoundaryConfig, DEFAULT_BOUNDARY_CONFIG, apply_lateral_boundaries
 from gpuwrf.coupling.physics_couplers import (
     mynn_adapter,
-    rrtmg_adapter,
     rrtmg_radiation_diagnostics,
+    rrtmg_theta_tendency,
     surface_adapter,
     surface_layer_diagnostics,
     thompson_adapter,
@@ -920,6 +920,10 @@ def _carry_from_acoustic_core(acoustic: AcousticCoreState, template: State, thet
         ph_save=next_state.ph,
         mu_save=acoustic.mu,
         ww_save=acoustic.ww,
+        # rthraten is a physics-layer held tendency refreshed in the physics
+        # chain (rrtmg cadence), not the dycore acoustic core; this legacy
+        # single-substep constructor (test-only path) carries no radiation.
+        rthraten=jnp.zeros_like(next_state.theta),
     )
 
 
@@ -1395,7 +1399,7 @@ def _state_from_coupled_core(snapshot: dict[str, jax.Array], template: State, th
     )
 
 
-def _carry_from_coupled_core(snapshot: dict[str, jax.Array], template: State, theta_offset: jax.Array, dt_s: float) -> OperationalCarry:
+def _carry_from_coupled_core(snapshot: dict[str, jax.Array], template: State, theta_offset: jax.Array, dt_s: float, *, rthraten: jax.Array | None = None) -> OperationalCarry:
     next_state = _state_from_coupled_core(snapshot, template, theta_offset, float(dt_s))
     return OperationalCarry(
         state=next_state,
@@ -1412,6 +1416,9 @@ def _carry_from_coupled_core(snapshot: dict[str, jax.Array], template: State, th
         ph_save=next_state.ph,
         mu_save=jnp.asarray(snapshot["mu"]),
         ww_save=jnp.asarray(snapshot["ww"]),
+        # Preserve the held radiative theta tendency across the coupled core
+        # (it is refreshed in the physics chain, not the dycore core).
+        rthraten=jnp.zeros_like(next_state.theta) if rthraten is None else rthraten,
     )
 
 
@@ -1436,7 +1443,7 @@ def _coupled_core_step(carry: OperationalCarry, namelist: OperationalNamelist, s
         extras=_coupled_core_extras(carry.state),
         step_index=step_index,
     )
-    return _carry_from_coupled_core(snapshot, carry.state, theta_offset, float(namelist.dt_s))
+    return _carry_from_coupled_core(snapshot, carry.state, theta_offset, float(namelist.dt_s), rthraten=carry.rthraten)
 
 
 def _physics_boundary_step_with_limiter_diagnostics(
@@ -1477,33 +1484,42 @@ def _physics_boundary_step_with_limiter_diagnostics(
         next_state = thompson_adapter(next_state, float(namelist.dt_s))
         next_state = surface_adapter(next_state, float(namelist.dt_s))
         next_state = mynn_adapter(next_state, float(namelist.dt_s), namelist.grid)
-        # B3 cadence scaling: radiation is invoked once per radiation_cadence_steps,
-        # but WRF applies the radiative heating RATE at every dynamics step over the
-        # whole radt interval. Integrate the rate over the full interval
-        # (cadence_steps * dt) so the delivered forcing matches WRF instead of being
-        # radiation_cadence_steps x weak.
-        def _apply_rrtmg(s: State) -> State:
-            return rrtmg_adapter(
-                s,
-                float(namelist.dt_s),
+        # B3 radiation cadence -- WRF-faithful HELD-RATE (Sprint coupler-fp64 FIX #2,
+        # GPT P0-2). WRF recomputes the radiative theta tendency RTHRATEN (K/s) only
+        # once per radt interval (module_radiation_driver.F run_param gate) and then
+        # ADDS dt*RTHRATEN into theta at EVERY dynamics step over that interval
+        # (phy_ra_ten, module_physics_addtendc.F). The previous code lumped the whole
+        # interval (dt*cadence*rate) at one step, so the intervening dynamics/micro/PBL
+        # saw a wrong temperature trajectory. Here the held rate lives in the carry
+        # (resident on device, no host transfer): refreshed at the cadence step,
+        # applied every step.
+        def _refresh_rthraten(_unused) -> jnp.ndarray:
+            return rrtmg_theta_tendency(
+                next_state,
                 namelist.grid,
                 time_utc=namelist.time_utc,
                 lead_seconds=lead_seconds,
-                apply_seconds=float(namelist.dt_s) * float(int(namelist.radiation_cadence_steps)),
             )
 
         if isinstance(run_radiation, bool):
-            # STATIC gate (production segmented path): the rrtmg call is either
+            # STATIC gate (production segmented path): the rrtmg recompute is either
             # traced or absent -- the radiation branch is fully resolved at trace
             # time, so each radiation interval is its own compiled scan.
-            if run_radiation:
-                next_state = _apply_rrtmg(next_state)
+            held_rthraten = _refresh_rthraten(None) if run_radiation else carry.rthraten
         else:
             # TRACED gate (single-scan path): run_radiation is a traced bool
             # (step_index %% cadence == 0). jax.lax.cond keeps the WHOLE forecast in
-            # ONE scan (one compile regardless of length) while still firing RRTMG
-            # only at the cadence -- numerically identical to the static gate.
-            next_state = jax.lax.cond(run_radiation, _apply_rrtmg, lambda s: s, next_state)
+            # ONE scan (one compile regardless of length) while still recomputing
+            # RRTMG only at the cadence; the held rate is reused on the other steps.
+            held_rthraten = jax.lax.cond(
+                run_radiation, _refresh_rthraten, lambda _u: carry.rthraten, None
+            )
+        # Apply the HELD radiative theta tendency every dynamics step (theta += dt*rate),
+        # matching WRF's phy_ra_ten. fp64-safe: held_rthraten and theta share dtype.
+        next_state = next_state.replace(
+            theta=next_state.theta + float(namelist.dt_s) * held_rthraten
+        )
+        carry = carry.replace(rthraten=held_rthraten)
     if bool(namelist.run_boundary):
         bounded = apply_lateral_boundaries(next_state, lead_seconds, float(namelist.dt_s), namelist.boundary_config)
         if bool(namelist.disable_guards):

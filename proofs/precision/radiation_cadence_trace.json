@@ -1,0 +1,69 @@
+{
+  "case": "m6 dummy thermo state (6x6x10), force_fp64=True; radiation cadence isolated (dycore NOT run)",
+  "purpose": "FIX #2 / GPT P0-2: radiation is a resident HELD rate applied every step, not lumped at the cadence step.",
+  "method": "Unit trace of the exact held-rate logic in _physics_boundary_step (rrtmg_theta_tendency refresh at cadence + theta+=dt*held every step), thermodynamic state held fixed to isolate radiation from dummy-grid dynamics.",
+  "dt_s": 10.0,
+  "radiation_cadence_steps": 3,
+  "per_step": [
+    {
+      "step": 1,
+      "radiation_recomputed_this_step": true,
+      "held_rate_max_abs_K_per_s": 0.00012134615374113724,
+      "applied_increment_max_abs_K": 0.0012134615374113724,
+      "applied_increment_mean_abs_K": 0.00025897425184607636,
+      "rthraten_dtype": "float64"
+    },
+    {
+      "step": 2,
+      "radiation_recomputed_this_step": false,
+      "held_rate_max_abs_K_per_s": 0.00012134615374113724,
+      "applied_increment_max_abs_K": 0.0012134615374113724,
+      "applied_increment_mean_abs_K": 0.00025897425184607636,
+      "rthraten_dtype": "float64"
+    },
+    {
+      "step": 3,
+      "radiation_recomputed_this_step": false,
+      "held_rate_max_abs_K_per_s": 0.00012134615374113724,
+      "applied_increment_max_abs_K": 0.0012134615374113724,
+      "applied_increment_mean_abs_K": 0.00025897425184607636,
+      "rthraten_dtype": "float64"
+    },
+    {
+      "step": 4,
+      "radiation_recomputed_this_step": true,
+      "held_rate_max_abs_K_per_s": 0.00012130604470824236,
+      "applied_increment_max_abs_K": 0.0012130604470824236,
+      "applied_increment_mean_abs_K": 0.00025917035186934803,
+      "rthraten_dtype": "float64"
+    },
+    {
+      "step": 5,
+      "radiation_recomputed_this_step": false,
+      "held_rate_max_abs_K_per_s": 0.00012130604470824236,
+      "applied_increment_max_abs_K": 0.0012130604470824236,
+      "applied_increment_mean_abs_K": 0.00025917035186934803,
+      "rthraten_dtype": "float64"
+    },
+    {
+      "step": 6,
+      "radiation_recomputed_this_step": false,
+      "held_rate_max_abs_K_per_s": 0.00012130604470824236,
+      "applied_increment_max_abs_K": 0.0012130604470824236,
+      "applied_increment_mean_abs_K": 0.00025917035186934803,
+      "rthraten_dtype": "float64"
+    }
+  ],
+  "first_radiation_step": 1,
+  "steps_from_first_fire": 6,
+  "steps_from_first_fire_with_nonzero_radiative_increment": 6,
+  "NON_radiation_steps_with_nonzero_increment (held-rate signature)": 4,
+  "held_distribution_ok": true,
+  "all_increments_finite": true,
+  "contrast": {
+    "lumped_old_one_step_increment_max_abs_K (zero on in-between steps)": 0.003640384612234117,
+    "held_new_per_step_increment_max_abs_K (applied every step)": 0.0012134615374113724,
+    "ratio_lumped_to_held": 3.0,
+    "note": "Lumped delivered cadence x the per-step held increment but ONLY at the cadence step (zero between); held delivers the per-step rate at EVERY step (ratio == cadence), which is WRF's phy_ra_ten behavior."
+  }
+}
