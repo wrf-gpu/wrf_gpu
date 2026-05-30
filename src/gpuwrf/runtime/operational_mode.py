@@ -1466,17 +1466,30 @@ def _physics_boundary_step_with_limiter_diagnostics(
     # instant) so the diurnal SW cycle evolves inside the scan; boundaries reuse it.
     lead_seconds = step_index.astype(jnp.float64) * float(namelist.dt_s)
     if bool(namelist.run_physics):
-        if not bool(namelist.disable_guards):
-            next_state = thompson_adapter(next_state, float(namelist.dt_s))
+        # Gate-1 physics call order: thompson -> surface -> mynn -> rrtmg(cadence).
+        # Thompson microphysics is gated ONLY by run_physics, NOT by disable_guards.
+        # (Coupling fix 2026-05-30: previously Thompson was wired behind
+        # `if not disable_guards`, which silently dropped the validated B1
+        # microphysics whenever guards were turned off -- making the operational
+        # safety net load-bearing for moisture physics, in violation of the
+        # guards-must-not-be-load-bearing rule. surface/mynn/rrtmg always ran;
+        # only Thompson was mistakenly tied to the guard flag.)
+        next_state = thompson_adapter(next_state, float(namelist.dt_s))
         next_state = surface_adapter(next_state, float(namelist.dt_s))
         next_state = mynn_adapter(next_state, float(namelist.dt_s), namelist.grid)
         if run_radiation:
+            # B3 cadence scaling: radiation is invoked once per
+            # radiation_cadence_steps, but WRF applies the radiative heating RATE
+            # at every dynamics step over the whole radt interval. Integrate the
+            # rate over the full interval (cadence_steps * dt) so the delivered
+            # forcing matches WRF instead of being radiation_cadence_steps x weak.
             next_state = rrtmg_adapter(
                 next_state,
                 float(namelist.dt_s),
                 namelist.grid,
                 time_utc=namelist.time_utc,
                 lead_seconds=lead_seconds,
+                apply_seconds=float(namelist.dt_s) * float(int(namelist.radiation_cadence_steps)),
             )
     if bool(namelist.run_boundary):
         bounded = apply_lateral_boundaries(next_state, lead_seconds, float(namelist.dt_s), namelist.boundary_config)
