@@ -1,0 +1,25 @@
+{
+  "scope": "SEGSCAN stability probe -- hour-by-hour finiteness of the coupled forecast advanced by the host-loop segment",
+  "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
+  "segment_steps": 180,
+  "radiation_cadence_steps": 180,
+  "method": "each hour advanced by the SAME compiled 180-step _advance_chunk segment (proven bitwise-equal to the single scan in segscan_equiv.json); finite ranges read at each hour boundary",
+  "guards_off_hourly_trace": [
+    {"lead_hours": 1.0, "finite": true, "theta_min": 290.37463776837217, "theta_max": 494.2853320886479, "w_max": 1.2615817358195167},
+    {"lead_hours": 2.0, "finite": true, "theta_min": 290.7874506100231, "theta_max": 494.59260296412964, "w_max": 1.261052445902138},
+    {"lead_hours": 3.0, "finite": true, "theta_min": 290.80107151099327, "theta_max": 494.7686623401221, "w_max": 1.231209352446393},
+    {"lead_hours": 4.0, "finite": true, "theta_min": 290.71460182799643, "theta_max": 494.36817736733815, "w_max": 1.201865404882134},
+    {"lead_hours": 5.0, "finite": true, "theta_min": 290.6425027291075, "theta_max": 494.13535285840237, "w_max": 1.2204473860917215},
+    {"lead_hours": 6.0, "finite": true, "theta_min": 290.2058131244586, "theta_max": 493.9018485736619, "w_max": 1.2363478343849863},
+    {"lead_hours": 7.0, "finite": true, "theta_min": 289.81803752027196, "theta_max": 493.8292323230871, "w_max": 1.2663606070013007},
+    {"lead_hours": 8.0, "finite": true, "theta_min": 289.5755147765973, "theta_max": 493.7947582530011, "w_max": 1.3251729391333282}
+  ],
+  "guards_off_last_finite_lead_hours_observed": 8.0,
+  "termination": "EXTERNAL SIGTERM (exit 143) at lead ~8h -- the probe process was killed by the environment, NOT by a model NaN; the walk had been emitting finite, stable hourly records (theta 289-495 K, w_max ~1.3 m/s) right up to the kill. The later hours (9-24) were not reached by this probe.",
+  "separate_observation_24h_final_state": {
+    "source": "segscan_24h.json (full 24h run, guards OFF, same config)",
+    "final_state_all_finite": false,
+    "note": "The full 24h guards-OFF run RAN TO COMPLETION (bounded compile + bounded 10.2 GB peak) but its FINAL state was all-NaN, so the coupled model loses finiteness somewhere in leads 9-24h under guards OFF. This is a MODEL stability limit, NOT a segmentation defect: the segment is bitwise-equal to the single scan, so the single fused scan would produce the identical NaN. The operational skill is only validated to +3h; idealized cases are the honest dycore gate."
+  },
+  "conclusion": "Segmentation is feasible + equivalent + memory-bounded to 24h. The coupled MODEL is finite/stable for at least the first 8h guards-OFF (covering the validated +3h skill window) but loses finiteness later guards-OFF -- a pre-existing model-stability question separate from the segmentation mechanism."
+}

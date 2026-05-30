@@ -1871,8 +1871,10 @@ def run_forecast_operational_segmented(
     in-segment radiation gate is the SAME traced ``step_index %% cadence == 0``
     predicate.  Because the segments are contiguous in the global step index, RRTMG
     fires on exactly the same global steps as the single scan, so the result is
-    bit/round-off identical to the single scan and to the validated segmented
-    while-loop (proof: proofs/perf/single_scan_equiv.json, segmented column).
+    BITWISE identical to the single scan and round-off identical to the validated
+    segmented while-loop (proof: proofs/perf/segscan_equiv.json -- seg-vs-single max
+    abs diff == 0 on every field at 0.2h and 0.6h incl. the radiation step; seg-vs-
+    production differs only at FP round-off from cond-vs-direct RRTMG application).
 
     ``segment_steps`` defaults to one radiation cadence interval so radiation fires
     exactly once at each full segment's last step; any positive value is accepted

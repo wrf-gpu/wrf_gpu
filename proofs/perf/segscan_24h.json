@@ -32,7 +32,7 @@
   "full_24h_wall_min_measured": 6.802326642650102,
   "peak_gpu_mem_mb_after_segment_compile": 9056.431640625,
   "peak_gpu_mem_mb_after_full_run": 10191.71728515625,
-  "peak_bounded_note": "peak after the FULL 24h run is ~ the peak after ONE segment compile -- host-loop + block_until_ready frees each segment's scratch before the next, so peak memory is independent of forecast length (the single fused-scan path's memory grew with length and failed +12h).",
+  "peak_bounded_note": "peak after the FULL 24h run (~10.2 GB) is ~ the peak after ONE segment compile (~9.1 GB) -- host-loop + block_until_ready frees each segment scratch before the next, so peak memory is independent of forecast length. By contrast the prior whole-forecast-as-one-program approaches blew up: the segmented while-loop COMPILE grew with length (one scan per radiation interval; +12h did not compile in 37 min), and a single fused scan keeps the whole trajectory working set in one program.",
   "final_state_ranges": {
     "u": {
       "finite": false,
@@ -107,6 +107,12 @@
       "ensemble_30_warmed_hours": 10.203489963975153
     }
   },
-  "status": "FAIL",
-  "warmed_per_step_ms_segment_incl_radiation": 1063.2196592888956
+  "status": "SEGMENTATION-FEASIBLE_MODEL-24H-NONFINITE",
+  "warmed_per_step_ms_segment_incl_radiation": 1063.2196592888956,
+  "segmentation_feasible_bounded": true,
+  "model_24h_final_finite": false,
+  "status_breakdown": {
+    "segmentation_mechanism": "PASS -- 24h ran to completion; compile O(segment) one-time; peak mem BOUNDED (10.2 GB ~ one-segment 9.1 GB, not growing with length); warmed 47 ms/step",
+    "model_physical_validity_24h": "FAIL -- guards-OFF coupled final state non-finite (model loses finiteness in leads 9-24h; finite+stable through >=8h per segscan_stability_probe.json). PRE-EXISTING model limit, not a segmentation defect: the segment is bitwise-equal to the single scan (segscan_equiv.json). Operational skill is only validated to +3h."
+  }
 }

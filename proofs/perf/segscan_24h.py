@@ -52,13 +52,6 @@ def _peak_mb() -> float:
         return float("nan")
 
 
-def _reset_peak() -> None:
-    # No public reset; record the running peak. Each process starts fresh, so the
-    # reported peak is the whole-process peak (compile + run), which is the figure
-    # that must stay bounded.
-    pass
-
-
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--hours", type=float, default=24.0)
@@ -180,8 +173,11 @@ def main() -> int:
         "peak_bounded_note": (
             "peak after the FULL 24h run is ~ the peak after ONE segment compile -- "
             "host-loop + block_until_ready frees each segment's scratch before the "
-            "next, so peak memory is independent of forecast length (the single "
-            "fused-scan path's memory grew with length and failed +12h)."
+            "next, so peak memory is independent of forecast length. By contrast the "
+            "prior whole-forecast-as-one-program approaches blew up: the segmented "
+            "while-loop's COMPILE grew with length (one scan per radiation interval; "
+            "+12h did not compile in 37 min), and a single fused scan keeps the whole "
+            "trajectory's working set in one program."
         ),
         "final_state_ranges": ranges,
         "all_finite": all_finite,
