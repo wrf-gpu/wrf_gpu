@@ -569,17 +569,29 @@ def acoustic_substep_core(
         ww=ww_new,
         # advance_w uses u/v ONLY for the kinematic terrain-following surface w BC
         # (advance_w.py:274-303; WRF module_small_step_em.F:1384, "w=mx*u*dz/dx+my*v*dz/dy").
-        # WRF passes the DECOUPLED prognostic winds grid%u_2/grid%v_2 there
-        # (solve_em.F:1500-1501) -- physical m/s.  uv_state.u/v are the COUPLED
-        # small-step perturbation work arrays (small_step_prep u_work =
-        # (c1h*muu+c2h)*u/msf, ~1e4-1e5x the physical wind), so feeding them to the
-        # cf1/cf2/cf3 surface extrapolation (which has NO mass-factor division)
-        # produced a spurious O(40x) surface w@k0 over the steepest Canary volcanic
-        # cells -- a LINEARLY-ramping k0-only artifact (73 m/s @ k0 vs 1.4 m/s @ k1,
-        # interior column physical) that only surfaced once MYNN sustained a near-
-        # surface wind there (proofs/stability/ 2026-05-30 localization).  Pass the
-        # decoupled stage winds u_1/v_1 (= WRF grid%u_2/v_2 at stage entry; the
-        # surface BC is slowly varying) so the kinematic w matches WRF's physical m/s.
+        #
+        # HONEST DEVIATION FROM WRF (do NOT "fix" by reverting to coupled u/v):
+        # WRF feeds the COUPLED prognostic winds grid%u_2/grid%v_2 here. They are
+        # NOT physical m/s at this point: inside the acoustic loop grid%u_2/v_2 are
+        # the mass-coupled work arrays ((c1h*muu+c2h)*u/msf, ~1e4-1e5x the physical
+        # wind) and stay coupled through the whole small-step loop (advance call at
+        # solve_em.F:1500-1501; coupling held through module_small_step_em.F:805) --
+        # WRF only decouples them back to physical m/s afterwards, in
+        # small_step_finish_em.  So WRF's surface-w BC extrapolation operates on the
+        # COUPLED winds, consistent with its later decoupling of w.
+        #
+        # We DELIBERATELY feed the DECOUPLED stage winds u_1/v_1 (physical m/s)
+        # instead, as a STABILITY TRADE-OFF. Feeding the coupled winds through the
+        # cf1/cf2/cf3 surface extrapolation (which has no mass-factor division here)
+        # reintroduced a spurious ~73 m/s k0-only surface-w mode over the steepest
+        # Canary volcanic cells (vs 1.4 m/s @ k1 -- a linearly-ramping k0 artifact
+        # that detonated once MYNN sustained a near-surface wind there; global
+        # blow-up; proofs/stability/ + proofs/m19 terrain-w localization,
+        # 2026-05-30). The decoupled feed suppresses that mode and keeps the run
+        # stable, at the cost of an under-energetic terrain-w (mountain-wave W ~2-3x
+        # weak vs CPU-WRF; see proofs/m19 terrain-w resolution). This is a KNOWN
+        # MINOR ACCURACY ITEM to tighten in M20 (e.g. correct mass-factor handling
+        # of the coupled surface BC so the coupled feed is stable), NOT a WRF match.
         u=uv_state.u_1,
         v=uv_state.v_1,
         mu_work=mu_work,
