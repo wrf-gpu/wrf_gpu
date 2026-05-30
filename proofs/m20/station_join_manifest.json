@@ -1,0 +1,791 @@
+{
+  "schema": "M20StationJoinManifest",
+  "schema_version": 1,
+  "generated_utc": "2026-05-29T16:07:06.155154+00:00",
+  "obs_source": "/mnt/data/canairy_meteo/artifacts/datasets/aemet_stations",
+  "obs_kind": "AEMET station daily+hourly parquet (Canary Islands network)",
+  "scorer": "src/gpuwrf/validation/forecast_vs_obs.py (interpolate_to_stations + compute_station_scores; bilinear inverse-map station->grid, inner time-join on station_id x valid_time)",
+  "score_variables": [
+    "T2",
+    "U10",
+    "V10"
+  ],
+  "unit_conventions": {
+    "T2": "obs temp_c + 273.15 -> K; forecast T2 in K",
+    "U10": "obs -wind_speed*sin(dir_rad); forecast U10 m/s",
+    "V10": "obs -wind_speed*cos(dir_rad); forecast V10 m/s"
+  },
+  "station_count_total": 106,
+  "station_count_hourly_reporting": 73,
+  "station_bbox": {
+    "lat_min": 27.665278,
+    "lat_max": 29.231944,
+    "lon_min": -18.115,
+    "lon_max": -13.489167
+  },
+  "score_domain_grid_covers_bbox": true,
+  "hourly_obs": {
+    "total_rows": 30791,
+    "time_start_utc": "2026-05-11T09:00:00+00:00",
+    "time_end_utc": "2026-05-29T15:00:00+00:00",
+    "T2_nonnull_rows": 30403,
+    "UV10_nonnull_rows": 30395,
+    "note": "Hourly obs only begin 2026-05-11 09z. Cases initialized before that cannot be scored against hourly obs for their full lead window."
+  },
+  "daily_obs_rows": 573769,
+  "case_coverage": [
+    {
+      "case_id": "20260509_18z_l2_72h_20260511T190519Z",
+      "level": "L2",
+      "init_time_utc": "2026-05-09T18:00:00+00:00",
+      "forecast_hours": 72,
+      "obs_hours_in_window": 28,
+      "obs_window_fully_covered": false,
+      "lead_block_obs_coverage": {
+        "0-24h": {
+          "obs_hours_available": 0,
+          "max_hours": 24
+        },
+        "24-48h": {
+          "obs_hours_available": 10,
+          "max_hours": 24
+        },
+        "48-72h": {
+          "obs_hours_available": 18,
+          "max_hours": 24
+        }
+      },
+      "scoreable": true
+    },
+    {
+      "case_id": "20260528_18z_l2_72h_20260529T002423Z",
+      "level": "L2",
+      "init_time_utc": "2026-05-28T18:00:00+00:00",
+      "forecast_hours": 72,
+      "obs_hours_in_window": 22,
+      "obs_window_fully_covered": false,
+      "lead_block_obs_coverage": {
+        "0-24h": {
+          "obs_hours_available": 21,
+          "max_hours": 24
+        },
+        "24-48h": {
+          "obs_hours_available": 0,
+          "max_hours": 24
+        },
+        "48-72h": {
+          "obs_hours_available": 0,
+          "max_hours": 24
+        }
+      },
+      "scoreable": true
+    },
+    {
+      "case_id": "20260509_18z_l3_24h_20260511T190519Z",
+      "level": "L3",
+      "init_time_utc": "2026-05-09T18:00:00+00:00",
+      "forecast_hours": 24,
+      "obs_hours_in_window": 0,
+      "obs_window_fully_covered": false,
+      "lead_block_obs_coverage": {
+        "0-24h": {
+          "obs_hours_available": 0,
+          "max_hours": 24
+        },
+        "24-48h": {
+          "obs_hours_available": 10,
+          "max_hours": 24
+        },
+        "48-72h": {
+          "obs_hours_available": 18,
+          "max_hours": 24
+        }
+      },
+      "scoreable": false
+    },
+    {
+      "case_id": "20260521_18z_l3_24h_20260522T133443Z",
+      "level": "L3",
+      "init_time_utc": "2026-05-21T18:00:00+00:00",
+      "forecast_hours": 24,
+      "obs_hours_in_window": 25,
+      "obs_window_fully_covered": true,
+      "lead_block_obs_coverage": {
+        "0-24h": {
+          "obs_hours_available": 24,
+          "max_hours": 24
+        },
+        "24-48h": {
+          "obs_hours_available": 24,
+          "max_hours": 24
+        },
+        "48-72h": {
+          "obs_hours_available": 24,
+          "max_hours": 24
+        }
+      },
+      "scoreable": true
+    },
+    {
+      "case_id": "20260528_18z_l3_24h_20260529T002423Z",
+      "level": "L3",
+      "init_time_utc": "2026-05-28T18:00:00+00:00",
+      "forecast_hours": 24,
+      "obs_hours_in_window": 22,
+      "obs_window_fully_covered": false,
+      "lead_block_obs_coverage": {
+        "0-24h": {
+          "obs_hours_available": 21,
+          "max_hours": 24
+        },
+        "24-48h": {
+          "obs_hours_available": 0,
+          "max_hours": 24
+        },
+        "48-72h": {
+          "obs_hours_available": 0,
+          "max_hours": 24
+        }
+      },
+      "scoreable": true
+    }
+  ],
+  "stations": [
+    {
+      "station_id": "C018J",
+      "lat": 28.969722,
+      "lon": -13.690278,
+      "elev_m": 376.0
+    },
+    {
+      "station_id": "C019V",
+      "lat": 28.858889,
+      "lon": -13.835,
+      "elev_m": 6.0
+    },
+    {
+      "station_id": "C029O",
+      "lat": 28.951944,
+      "lon": -13.600278,
+      "elev_m": 14.0
+    },
+    {
+      "station_id": "C038N",
+      "lat": 29.143611,
+      "lon": -13.489167,
+      "elev_m": 277.0
+    },
+    {
+      "station_id": "C048W",
+      "lat": 29.0425,
+      "lon": -13.680833,
+      "elev_m": 275.0
+    },
+    {
+      "station_id": "C101A",
+      "lat": 28.755833,
+      "lon": -17.895278,
+      "elev_m": 2223.0
+    },
+    {
+      "station_id": "C117A",
+      "lat": 28.760556,
+      "lon": -17.985556,
+      "elev_m": 684.0
+    },
+    {
+      "station_id": "C117Z",
+      "lat": 28.674722,
+      "lon": -17.936667,
+      "elev_m": 733.0
+    },
+    {
+      "station_id": "C126A",
+      "lat": 28.653889,
+      "lon": -17.853056,
+      "elev_m": 844.0
+    },
+    {
+      "station_id": "C129V",
+      "lat": 28.455,
+      "lon": -17.841111,
+      "elev_m": 19.0
+    },
+    {
+      "station_id": "C129Z",
+      "lat": 28.595833,
+      "lon": -17.915278,
+      "elev_m": 62.0
+    },
+    {
+      "station_id": "C139E",
+      "lat": 28.633056,
+      "lon": -17.755,
+      "elev_m": 33.0
+    },
+    {
+      "station_id": "C148F",
+      "lat": 28.804722,
+      "lon": -17.782222,
+      "elev_m": 362.0
+    },
+    {
+      "station_id": "C229J",
+      "lat": 28.049167,
+      "lon": -14.358056,
+      "elev_m": 15.0
+    },
+    {
+      "station_id": "C239N",
+      "lat": 28.208611,
+      "lon": -14.023056,
+      "elev_m": 1.0
+    },
+    {
+      "station_id": "C248E",
+      "lat": 28.416944,
+      "lon": -14.019167,
+      "elev_m": 252.0
+    },
+    {
+      "station_id": "C249I",
+      "lat": 28.444722,
+      "lon": -13.863056,
+      "elev_m": 25.0
+    },
+    {
+      "station_id": "C258K",
+      "lat": 28.6125,
+      "lon": -13.931667,
+      "elev_m": 217.0
+    },
+    {
+      "station_id": "C259X",
+      "lat": 28.740556,
+      "lon": -13.863056,
+      "elev_m": 6.0
+    },
+    {
+      "station_id": "C314Z",
+      "lat": 28.106944,
+      "lon": -17.249167,
+      "elev_m": 1474.0
+    },
+    {
+      "station_id": "C316I",
+      "lat": 28.128333,
+      "lon": -17.315,
+      "elev_m": 916.0
+    },
+    {
+      "station_id": "C317B",
+      "lat": 28.178889,
+      "lon": -17.213056,
+      "elev_m": 765.0
+    },
+    {
+      "station_id": "C319W",
+      "lat": 28.054167,
+      "lon": -17.306389,
+      "elev_m": 190.0
+    },
+    {
+      "station_id": "C328W",
+      "lat": 28.163611,
+      "lon": -17.194167,
+      "elev_m": 252.0
+    },
+    {
+      "station_id": "C329B",
+      "lat": 28.031667,
+      "lon": -17.210833,
+      "elev_m": 219.0
+    },
+    {
+      "station_id": "C329Z",
+      "lat": 28.089722,
+      "lon": -17.111389,
+      "elev_m": 15.0
+    },
+    {
+      "station_id": "C406G",
+      "lat": 28.224167,
+      "lon": -16.626111,
+      "elev_m": 2150.0
+    },
+    {
+      "station_id": "C412N",
+      "lat": 28.219722,
+      "lon": -16.705278,
+      "elev_m": 2071.0
+    },
+    {
+      "station_id": "C415A",
+      "lat": 28.305278,
+      "lon": -16.805556,
+      "elev_m": 990.0
+    },
+    {
+      "station_id": "C417J",
+      "lat": 28.233333,
+      "lon": -16.789167,
+      "elev_m": 735.0
+    },
+    {
+      "station_id": "C418I",
+      "lat": 28.214444,
+      "lon": -16.789722,
+      "elev_m": 476.0
+    },
+    {
+      "station_id": "C418L",
+      "lat": 28.200278,
+      "lon": -16.763056,
+      "elev_m": 700.0
+    },
+    {
+      "station_id": "C419L",
+      "lat": 28.206944,
+      "lon": -16.791944,
+      "elev_m": 403.0
+    },
+    {
+      "station_id": "C419X",
+      "lat": 28.081389,
+      "lon": -16.710556,
+      "elev_m": 130.0
+    },
+    {
+      "station_id": "C422A",
+      "lat": 28.171944,
+      "lon": -16.651389,
+      "elev_m": 1833.0
+    },
+    {
+      "station_id": "C423R",
+      "lat": 28.224167,
+      "lon": -16.521111,
+      "elev_m": 1654.0
+    },
+    {
+      "station_id": "C426E",
+      "lat": 28.144167,
+      "lon": -16.628056,
+      "elev_m": 1258.0
+    },
+    {
+      "station_id": "C426I",
+      "lat": 28.126944,
+      "lon": -16.605833,
+      "elev_m": 880.0
+    },
+    {
+      "station_id": "C426R",
+      "lat": 28.216944,
+      "lon": -16.490556,
+      "elev_m": 930.0
+    },
+    {
+      "station_id": "C428T",
+      "lat": 28.180833,
+      "lon": -16.483333,
+      "elev_m": 418.0
+    },
+    {
+      "station_id": "C428U",
+      "lat": 28.131111,
+      "lon": -16.4725,
+      "elev_m": 135.0
+    },
+    {
+      "station_id": "C429I",
+      "lat": 28.046944,
+      "lon": -16.561111,
+      "elev_m": 64.0
+    },
+    {
+      "station_id": "C430E",
+      "lat": 28.308333,
+      "lon": -16.499722,
+      "elev_m": 2369.0
+    },
+    {
+      "station_id": "C436I",
+      "lat": 28.326389,
+      "lon": -16.405556,
+      "elev_m": 290.0
+    },
+    {
+      "station_id": "C436L",
+      "lat": 28.370556,
+      "lon": -16.3975,
+      "elev_m": 525.0
+    },
+    {
+      "station_id": "C437E",
+      "lat": 28.269722,
+      "lon": -16.419722,
+      "elev_m": 500.0
+    },
+    {
+      "station_id": "C438N",
+      "lat": 28.359167,
+      "lon": -16.401667,
+      "elev_m": 463.0
+    },
+    {
+      "station_id": "C439J",
+      "lat": 28.318333,
+      "lon": -16.382222,
+      "elev_m": 115.0
+    },
+    {
+      "station_id": "C446G",
+      "lat": 28.526389,
+      "lon": -16.280278,
+      "elev_m": 868.0
+    },
+    {
+      "station_id": "C447A",
+      "lat": 28.4775,
+      "lon": -16.329444,
+      "elev_m": 632.0
+    },
+    {
+      "station_id": "C448C",
+      "lat": 28.4625,
+      "lon": -16.273333,
+      "elev_m": 136.0
+    },
+    {
+      "station_id": "C449C",
+      "lat": 28.463333,
+      "lon": -16.255278,
+      "elev_m": 36.0
+    },
+    {
+      "station_id": "C449F",
+      "lat": 28.508056,
+      "lon": -16.195556,
+      "elev_m": 19.0
+    },
+    {
+      "station_id": "C449Q",
+      "lat": 28.56,
+      "lon": -16.228056,
+      "elev_m": 305.0
+    },
+    {
+      "station_id": "C453I",
+      "lat": 28.394722,
+      "lon": -16.433333,
+      "elev_m": 1744.0
+    },
+    {
+      "station_id": "C455M",
+      "lat": 28.361667,
+      "lon": -16.496944,
+      "elev_m": 1065.0
+    },
+    {
+      "station_id": "C456E",
+      "lat": 28.453889,
+      "lon": -16.408611,
+      "elev_m": 922.0
+    },
+    {
+      "station_id": "C456P",
+      "lat": 28.361389,
+      "lon": -16.546667,
+      "elev_m": 906.0
+    },
+    {
+      "station_id": "C456R",
+      "lat": 28.372778,
+      "lon": -16.541944,
+      "elev_m": 551.0
+    },
+    {
+      "station_id": "C457E",
+      "lat": 28.449444,
+      "lon": -16.438056,
+      "elev_m": 650.0
+    },
+    {
+      "station_id": "C457I",
+      "lat": 28.434444,
+      "lon": -16.454444,
+      "elev_m": 567.0
+    },
+    {
+      "station_id": "C458A",
+      "lat": 28.496389,
+      "lon": -16.42,
+      "elev_m": 310.0
+    },
+    {
+      "station_id": "C458U",
+      "lat": 28.368611,
+      "lon": -16.578056,
+      "elev_m": 595.0
+    },
+    {
+      "station_id": "C459Z",
+      "lat": 28.418056,
+      "lon": -16.548333,
+      "elev_m": 25.0
+    },
+    {
+      "station_id": "C466O",
+      "lat": 28.339167,
+      "lon": -16.794444,
+      "elev_m": 878.0
+    },
+    {
+      "station_id": "C467I",
+      "lat": 28.353333,
+      "lon": -16.708333,
+      "elev_m": 525.0
+    },
+    {
+      "station_id": "C468I",
+      "lat": 28.366944,
+      "lon": -16.722222,
+      "elev_m": 218.0
+    },
+    {
+      "station_id": "C468O",
+      "lat": 28.356944,
+      "lon": -16.801389,
+      "elev_m": 450.0
+    },
+    {
+      "station_id": "C468X",
+      "lat": 28.373056,
+      "lon": -16.625833,
+      "elev_m": 667.0
+    },
+    {
+      "station_id": "C469E",
+      "lat": 28.371389,
+      "lon": -16.7725,
+      "elev_m": 62.0
+    },
+    {
+      "station_id": "C611E",
+      "lat": 27.976667,
+      "lon": -15.583889,
+      "elev_m": 1702.0
+    },
+    {
+      "station_id": "C612F",
+      "lat": 28.006944,
+      "lon": -15.598889,
+      "elev_m": 1514.0
+    },
+    {
+      "station_id": "C614H",
+      "lat": 27.995,
+      "lon": -15.615833,
+      "elev_m": 1060.0
+    },
+    {
+      "station_id": "C619I",
+      "lat": 28.000833,
+      "lon": -15.813889,
+      "elev_m": 10.0
+    },
+    {
+      "station_id": "C619X",
+      "lat": 28.101111,
+      "lon": -15.712778,
+      "elev_m": 5.0
+    },
+    {
+      "station_id": "C619Y",
+      "lat": 28.001111,
+      "lon": -15.8075,
+      "elev_m": 13.0
+    },
+    {
+      "station_id": "C623I",
+      "lat": 27.926667,
+      "lon": -15.599722,
+      "elev_m": 1220.0
+    },
+    {
+      "station_id": "C625O",
+      "lat": 27.856944,
+      "lon": -15.645,
+      "elev_m": 806.0
+    },
+    {
+      "station_id": "C628B",
+      "lat": 27.908889,
+      "lon": -15.77,
+      "elev_m": 318.0
+    },
+    {
+      "station_id": "C629Q",
+      "lat": 27.78,
+      "lon": -15.711111,
+      "elev_m": 10.0
+    },
+    {
+      "station_id": "C629X",
+      "lat": 27.816389,
+      "lon": -15.764167,
+      "elev_m": 10.0
+    },
+    {
+      "station_id": "C635B",
+      "lat": 27.92,
+      "lon": -15.574167,
+      "elev_m": 960.0
+    },
+    {
+      "station_id": "C639M",
+      "lat": 27.758056,
+      "lon": -15.575556,
+      "elev_m": 45.0
+    },
+    {
+      "station_id": "C639U",
+      "lat": 27.8125,
+      "lon": -15.453056,
+      "elev_m": 41.0
+    },
+    {
+      "station_id": "C648C",
+      "lat": 27.9025,
+      "lon": -15.453889,
+      "elev_m": 306.0
+    },
+    {
+      "station_id": "C648N",
+      "lat": 27.9875,
+      "lon": -15.457778,
+      "elev_m": 344.0
+    },
+    {
+      "station_id": "C649I",
+      "lat": 27.917778,
+      "lon": -15.395278,
+      "elev_m": 24.0
+    },
+    {
+      "station_id": "C649R",
+      "lat": 27.986667,
+      "lon": -15.377778,
+      "elev_m": 9.0
+    },
+    {
+      "station_id": "C656V",
+      "lat": 28.075278,
+      "lon": -15.547222,
+      "elev_m": 683.0
+    },
+    {
+      "station_id": "C658L",
+      "lat": 28.075,
+      "lon": -15.450833,
+      "elev_m": 269.0
+    },
+    {
+      "station_id": "C658X",
+      "lat": 28.078056,
+      "lon": -15.453333,
+      "elev_m": 269.0
+    },
+    {
+      "station_id": "C659H",
+      "lat": 28.089722,
+      "lon": -15.416111,
+      "elev_m": 55.0
+    },
+    {
+      "station_id": "C659M",
+      "lat": 28.113056,
+      "lon": -15.421389,
+      "elev_m": 15.0
+    },
+    {
+      "station_id": "C665T",
+      "lat": 28.065556,
+      "lon": -15.565556,
+      "elev_m": 900.0
+    },
+    {
+      "station_id": "C668V",
+      "lat": 28.094444,
+      "lon": -15.675,
+      "elev_m": 352.0
+    },
+    {
+      "station_id": "C669B",
+      "lat": 28.141667,
+      "lon": -15.506667,
+      "elev_m": 86.0
+    },
+    {
+      "station_id": "C689E",
+      "lat": 27.735833,
+      "lon": -15.595833,
+      "elev_m": 6.0
+    },
+    {
+      "station_id": "C839I",
+      "lat": 29.231944,
+      "lon": -13.501944,
+      "elev_m": 10.0
+    },
+    {
+      "station_id": "C839X",
+      "lat": 29.229722,
+      "lon": -13.510278,
+      "elev_m": 19.0
+    },
+    {
+      "station_id": "C916Q",
+      "lat": 27.718889,
+      "lon": -17.978056,
+      "elev_m": 948.0
+    },
+    {
+      "station_id": "C917E",
+      "lat": 27.725278,
+      "lon": -18.115,
+      "elev_m": 713.0
+    },
+    {
+      "station_id": "C919K",
+      "lat": 27.665278,
+      "lon": -18.018611,
+      "elev_m": 98.0
+    },
+    {
+      "station_id": "C925F",
+      "lat": 27.768889,
+      "lon": -17.960278,
+      "elev_m": 1070.0
+    },
+    {
+      "station_id": "C928I",
+      "lat": 27.810833,
+      "lon": -17.919444,
+      "elev_m": 670.0
+    },
+    {
+      "station_id": "C929I",
+      "lat": 27.818889,
+      "lon": -17.888889,
+      "elev_m": 32.0
+    },
+    {
+      "station_id": "C939T",
+      "lat": 27.756389,
+      "lon": -18.1075,
+      "elev_m": 20.0
+    }
+  ]
+}

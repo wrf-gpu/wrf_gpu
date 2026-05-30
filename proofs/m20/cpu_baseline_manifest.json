@@ -1,0 +1,246 @@
+{
+  "schema": "M20CpuBaselineManifest",
+  "schema_version": 1,
+  "generated_utc": "2026-05-29T16:07:05.816023+00:00",
+  "description": "CPU WRF v4 baseline runs (the denominator for skill comparison and speedup). Built by Gen2 nightly pipeline; physics suite = CONUS with Thompson MP(8), MYNN PBL(5), Noah-MP LSM(4), RRTMG(4).",
+  "wrf_build": "/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_src/WRF/install_gen2_dmpar",
+  "cpu_baseline_28rank_note": "Operational CPU baseline = 28-rank WRF on the same workstation (nproc_x=7, nproc_y=4 = 28 MPI ranks per namelist).",
+  "count": 5,
+  "cases": [
+    {
+      "case_id": "20260509_18z_l2_72h_20260511T190519Z",
+      "level": "L2",
+      "init_time_utc": "2026-05-09T18:00:00+00:00",
+      "forecast_hours": 72,
+      "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z",
+      "score_domain": "d02",
+      "score_frames": 73,
+      "namelist": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z/namelist.input",
+      "namelist_sha256": "e1a7aaf86b0b2f8256687780a4eca3b89dd5bb545727bc4890c551324048c55a",
+      "config": {
+        "physics_suite": "'CONUS'",
+        "mp_physics": "8",
+        "bl_pbl_physics": "5",
+        "sf_sfclay_physics": "5",
+        "sf_surface_physics": "4",
+        "ra_lw_physics": "4",
+        "ra_sw_physics": "4",
+        "cu_physics": "1",
+        "time_step": "18",
+        "max_dom": "2",
+        "e_we": "90",
+        "e_sn": "60",
+        "e_vert": "45",
+        "dx": "9000",
+        "p_top_requested": "5000",
+        "nproc_x": "7",
+        "nproc_y": "4"
+      },
+      "grid": {
+        "shape": [
+          66,
+          120
+        ],
+        "lat_min": 27.446521759033203,
+        "lat_max": 29.218124389648438,
+        "lon_min": -18.56512451171875,
+        "lon_max": -14.884368896484375,
+        "score_vars_present": [
+          "T2",
+          "U10",
+          "V10"
+        ]
+      },
+      "sample_wrfout": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z/wrfout_d02_2026-05-11_06:00:00",
+      "sample_wrfout_sha256_head1m": "36b903bc6f7fc6260bddd281a3550b8dfbe9d4fdd5fb1dbe065d425bb75c9616"
+    },
+    {
+      "case_id": "20260528_18z_l2_72h_20260529T002423Z",
+      "level": "L2",
+      "init_time_utc": "2026-05-28T18:00:00+00:00",
+      "forecast_hours": 72,
+      "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l2/20260528_18z_l2_72h_20260529T002423Z",
+      "score_domain": "d02",
+      "score_frames": 73,
+      "namelist": "/mnt/data/canairy_meteo/runs/wrf_l2/20260528_18z_l2_72h_20260529T002423Z/namelist.input",
+      "namelist_sha256": "5c7684ad44db054fc9f91a8c24252d2f72459e664a62e302c0b476484eb9f8b1",
+      "config": {
+        "physics_suite": "'CONUS'",
+        "mp_physics": "8",
+        "bl_pbl_physics": "5",
+        "sf_sfclay_physics": "5",
+        "sf_surface_physics": "4",
+        "ra_lw_physics": "4",
+        "ra_sw_physics": "4",
+        "cu_physics": "1",
+        "time_step": "18",
+        "max_dom": "2",
+        "e_we": "94",
+        "e_sn": "60",
+        "e_vert": "45",
+        "dx": "9000",
+        "p_top_requested": "5000",
+        "nproc_x": "7",
+        "nproc_y": "4"
+      },
+      "grid": {
+        "shape": [
+          66,
+          159
+        ],
+        "lat_min": 27.437095642089844,
+        "lat_max": 29.218124389648438,
+        "lon_min": -18.565093994140625,
+        "lon_max": -13.678314208984375,
+        "score_vars_present": [
+          "T2",
+          "U10",
+          "V10"
+        ]
+      },
+      "sample_wrfout": "/mnt/data/canairy_meteo/runs/wrf_l2/20260528_18z_l2_72h_20260529T002423Z/wrfout_d02_2026-05-30_06:00:00",
+      "sample_wrfout_sha256_head1m": "f311d1dc5995656003f83f0196cfa9ea16bd0db2273be7d7ff2b2be4a5136572"
+    },
+    {
+      "case_id": "20260509_18z_l3_24h_20260511T190519Z",
+      "level": "L3",
+      "init_time_utc": "2026-05-09T18:00:00+00:00",
+      "forecast_hours": 24,
+      "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260509_18z_l3_24h_20260511T190519Z",
+      "score_domain": "d02",
+      "score_frames": 25,
+      "namelist": "/mnt/data/canairy_meteo/runs/wrf_l3/20260509_18z_l3_24h_20260511T190519Z/namelist.input",
+      "namelist_sha256": "657b96b5d64fc313156c29c86bd78fb4882cdf46b0c660672f534b05d21bbec8",
+      "config": {
+        "physics_suite": "'CONUS'",
+        "mp_physics": "8",
+        "bl_pbl_physics": "5",
+        "sf_sfclay_physics": "5",
+        "sf_surface_physics": "4",
+        "ra_lw_physics": "4",
+        "ra_sw_physics": "4",
+        "cu_physics": "1",
+        "time_step": "18",
+        "max_dom": "5",
+        "e_we": "90",
+        "e_sn": "60",
+        "e_vert": "45",
+        "dx": "9000",
+        "p_top_requested": "5000",
+        "nproc_x": "7",
+        "nproc_y": "4"
+      },
+      "grid": {
+        "shape": [
+          66,
+          120
+        ],
+        "lat_min": 27.446521759033203,
+        "lat_max": 29.218124389648438,
+        "lon_min": -18.56512451171875,
+        "lon_max": -14.884368896484375,
+        "score_vars_present": [
+          "T2",
+          "U10",
+          "V10"
+        ]
+      },
+      "sample_wrfout": "/mnt/data/canairy_meteo/runs/wrf_l3/20260509_18z_l3_24h_20260511T190519Z/wrfout_d02_2026-05-10_06:00:00",
+      "sample_wrfout_sha256_head1m": "5f1585797942f6ec852aa2f06760a19438abed3f55200335d431096fdf0a30d8"
+    },
+    {
+      "case_id": "20260521_18z_l3_24h_20260522T133443Z",
+      "level": "L3",
+      "init_time_utc": "2026-05-21T18:00:00+00:00",
+      "forecast_hours": 24,
+      "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
+      "score_domain": "d02",
+      "score_frames": 25,
+      "namelist": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/namelist.input",
+      "namelist_sha256": "69cf9e267aafa69febb129b1c965fefe8abd9a70b7c5a41763a8688397f13784",
+      "config": {
+        "physics_suite": "'CONUS'",
+        "mp_physics": "8",
+        "bl_pbl_physics": "5",
+        "sf_sfclay_physics": "5",
+        "sf_surface_physics": "4",
+        "ra_lw_physics": "4",
+        "ra_sw_physics": "4",
+        "cu_physics": "1",
+        "time_step": "18",
+        "max_dom": "5",
+        "e_we": "94",
+        "e_sn": "60",
+        "e_vert": "45",
+        "dx": "9000",
+        "p_top_requested": "5000",
+        "nproc_x": "7",
+        "nproc_y": "4"
+      },
+      "grid": {
+        "shape": [
+          66,
+          159
+        ],
+        "lat_min": 27.437095642089844,
+        "lat_max": 29.218124389648438,
+        "lon_min": -18.565093994140625,
+        "lon_max": -13.678314208984375,
+        "score_vars_present": [
+          "T2",
+          "U10",
+          "V10"
+        ]
+      },
+      "sample_wrfout": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d02_2026-05-22_06:00:00",
+      "sample_wrfout_sha256_head1m": "11f6b115e2f86aa3b2f28189987d2afafb04edd852e4526f984cc35160b8018a"
+    },
+    {
+      "case_id": "20260528_18z_l3_24h_20260529T002423Z",
+      "level": "L3",
+      "init_time_utc": "2026-05-28T18:00:00+00:00",
+      "forecast_hours": 24,
+      "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260528_18z_l3_24h_20260529T002423Z",
+      "score_domain": "d02",
+      "score_frames": 25,
+      "namelist": "/mnt/data/canairy_meteo/runs/wrf_l3/20260528_18z_l3_24h_20260529T002423Z/namelist.input",
+      "namelist_sha256": "f920013a675cd34ce0fc2fa90f6e8268e10f9673a73727ab861f1305bdf60cb2",
+      "config": {
+        "physics_suite": "'CONUS'",
+        "mp_physics": "8",
+        "bl_pbl_physics": "5",
+        "sf_sfclay_physics": "5",
+        "sf_surface_physics": "4",
+        "ra_lw_physics": "4",
+        "ra_sw_physics": "4",
+        "cu_physics": "1",
+        "time_step": "18",
+        "max_dom": "5",
+        "e_we": "94",
+        "e_sn": "60",
+        "e_vert": "45",
+        "dx": "9000",
+        "p_top_requested": "5000",
+        "nproc_x": "7",
+        "nproc_y": "4"
+      },
+      "grid": {
+        "shape": [
+          66,
+          159
+        ],
+        "lat_min": 27.437095642089844,
+        "lat_max": 29.218124389648438,
+        "lon_min": -18.565093994140625,
+        "lon_max": -13.678314208984375,
+        "score_vars_present": [
+          "T2",
+          "U10",
+          "V10"
+        ]
+      },
+      "sample_wrfout": "/mnt/data/canairy_meteo/runs/wrf_l3/20260528_18z_l3_24h_20260529T002423Z/wrfout_d02_2026-05-29_06:00:00",
+      "sample_wrfout_sha256_head1m": "f02d2a24a9bbedc60562a94f6c47c1228600b784450fa771cbefe80964c77681"
+    }
+  ]
+}

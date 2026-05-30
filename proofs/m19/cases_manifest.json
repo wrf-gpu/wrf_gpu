@@ -1,0 +1,141 @@
+{
+  "_doc": "M19 3-case fail-fast verdict manifest. Validation = 3 cases (NOT 30); the principal runs more after v0.1.0. END-OF-CORE-DEV stamp, not a gate that slows core dev. All CPU-WRF truth is REUSED from the existing corpus -- NO new WRF runs. Verification domain is d02 (3 km nest, 159x66x44) for every case/level; the GPU operational scorer (proofs/coupled/task2_skill_signal.py) reads wrfout_d02 at the valid time. The GPU init source is the t=0 wrfout_d02 snapshot of each run dir (build_replay_case uses run.history_files(domain)[0]; boundary leaves need >=2 history files -- satisfied: every chosen run has >=25 hourly d02 files).",
+  "_corpus_finding": "Most run dirs under wrf_l2/wrf_l3 contain ONLY static-table + met_em symlinks and ZERO wrfout output (purged or never-completed overnight runs). Only a handful of runs retain real hourly wrfout history. The chosen 3 cases are ALL of the corpus inits that retain a complete, contiguous d02 history at the leads M19 needs.",
+  "_fail_fast_spec": "Run Case 1 FIRST on BOTH L2 and L3. If it FAILS on either -> STOP (do not run cases 2/3) and emit a probe-pointer (which field/lead/level failed). If Case 1 PASSES on both, run cases 2 and 3 to CONFIRM. 24-72h is the real gate (+1h/+3h already validated, see proofs/coupled/task2_skill_signal_{1,3}h.json).",
+  "_l2_vs_l3": "L2 and L3 share an IDENTICAL d02 nest geometry (159x66, DX=3000 m, 44 levels) and the same GPU forecast config; they differ in the parent configuration / max lead (L2 = 72h forecast, L3 = 24h triple/penta-nest forecast). Case 1 must pass on BOTH the L2 d02 and the L3 d02 corpus solutions for the same init -- i.e. the GPU forecast initialized from each family's own t=0 d02 snapshot, scored against that family's d02 history.",
+  "verification": {
+    "domain": "d02",
+    "grid_shape_yx": [66, 159],
+    "dx_m": 3000.0,
+    "n_levels": 44,
+    "fields": ["T2", "U10", "V10"],
+    "metrics": ["rmse", "bias", "mae"],
+    "real_gate_leads_h": [24, 48, 72],
+    "already_validated_leads_h": [1, 3],
+    "truth_source": "corpus CPU-WRF wrfout_d02 (Gen2 NVHPC build), REUSED"
+  },
+  "cases": [
+    {
+      "case_id": "case1",
+      "role": "fail-fast trigger (run FIRST, BOTH levels)",
+      "init_utc": "2026-05-28T18:00:00Z",
+      "synoptic_note": "Strongest-flow regime of the three: 10 m wind mean 7.4 m/s (max 12.8), NE-to-SW flow (U10mean -2.9, V10mean -6.5), T2 mean 293.4 K range [291.5,296.6]. Chosen as Case 1 because it is the freshest full-coverage corpus init AND the most dynamically stressful -> best early-failure detector.",
+      "levels": {
+        "L3": {
+          "run_root": "/mnt/data/canairy_meteo/runs/wrf_l3",
+          "run_id": "20260528_18z_l3_24h_20260529T002423Z",
+          "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260528_18z_l3_24h_20260529T002423Z",
+          "domain": "d02",
+          "gpu_init_source": "/mnt/data/canairy_meteo/runs/wrf_l3/20260528_18z_l3_24h_20260529T002423Z/wrfout_d02_2026-05-28_18:00:00",
+          "n_d02_history": 25,
+          "max_lead_h": 24,
+          "available_lead_h": [1, 3, 6, 12, 18, 24],
+          "wrfout_d02_truth": {
+            "1": "/mnt/data/canairy_meteo/runs/wrf_l3/20260528_18z_l3_24h_20260529T002423Z/wrfout_d02_2026-05-28_19:00:00",
+            "3": "/mnt/data/canairy_meteo/runs/wrf_l3/20260528_18z_l3_24h_20260529T002423Z/wrfout_d02_2026-05-28_21:00:00",
+            "6": "/mnt/data/canairy_meteo/runs/wrf_l3/20260528_18z_l3_24h_20260529T002423Z/wrfout_d02_2026-05-29_00:00:00",
+            "12": "/mnt/data/canairy_meteo/runs/wrf_l3/20260528_18z_l3_24h_20260529T002423Z/wrfout_d02_2026-05-29_06:00:00",
+            "18": "/mnt/data/canairy_meteo/runs/wrf_l3/20260528_18z_l3_24h_20260529T002423Z/wrfout_d02_2026-05-29_12:00:00",
+            "24": "/mnt/data/canairy_meteo/runs/wrf_l3/20260528_18z_l3_24h_20260529T002423Z/wrfout_d02_2026-05-29_18:00:00"
+          }
+        },
+        "L2": {
+          "run_root": "/mnt/data/canairy_meteo/runs/wrf_l2",
+          "run_id": "20260528_18z_l2_72h_20260529T002423Z",
+          "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l2/20260528_18z_l2_72h_20260529T002423Z",
+          "domain": "d02",
+          "gpu_init_source": "/mnt/data/canairy_meteo/runs/wrf_l2/20260528_18z_l2_72h_20260529T002423Z/wrfout_d02_2026-05-28_18:00:00",
+          "n_d02_history": 73,
+          "max_lead_h": 72,
+          "available_lead_h": [1, 3, 6, 12, 18, 24, 36, 48, 60, 72],
+          "wrfout_d02_truth": {
+            "1": "/mnt/data/canairy_meteo/runs/wrf_l2/20260528_18z_l2_72h_20260529T002423Z/wrfout_d02_2026-05-28_19:00:00",
+            "3": "/mnt/data/canairy_meteo/runs/wrf_l2/20260528_18z_l2_72h_20260529T002423Z/wrfout_d02_2026-05-28_21:00:00",
+            "6": "/mnt/data/canairy_meteo/runs/wrf_l2/20260528_18z_l2_72h_20260529T002423Z/wrfout_d02_2026-05-29_00:00:00",
+            "12": "/mnt/data/canairy_meteo/runs/wrf_l2/20260528_18z_l2_72h_20260529T002423Z/wrfout_d02_2026-05-29_06:00:00",
+            "18": "/mnt/data/canairy_meteo/runs/wrf_l2/20260528_18z_l2_72h_20260529T002423Z/wrfout_d02_2026-05-29_12:00:00",
+            "24": "/mnt/data/canairy_meteo/runs/wrf_l2/20260528_18z_l2_72h_20260529T002423Z/wrfout_d02_2026-05-29_18:00:00",
+            "36": "/mnt/data/canairy_meteo/runs/wrf_l2/20260528_18z_l2_72h_20260529T002423Z/wrfout_d02_2026-05-30_06:00:00",
+            "48": "/mnt/data/canairy_meteo/runs/wrf_l2/20260528_18z_l2_72h_20260529T002423Z/wrfout_d02_2026-05-30_18:00:00",
+            "60": "/mnt/data/canairy_meteo/runs/wrf_l2/20260528_18z_l2_72h_20260529T002423Z/wrfout_d02_2026-05-31_06:00:00",
+            "72": "/mnt/data/canairy_meteo/runs/wrf_l2/20260528_18z_l2_72h_20260529T002423Z/wrfout_d02_2026-05-31_18:00:00"
+          }
+        }
+      }
+    },
+    {
+      "case_id": "case2",
+      "role": "confirmation (run only if Case 1 passes)",
+      "init_utc": "2026-05-09T18:00:00Z",
+      "synoptic_note": "Distinct weak-flow regime: 10 m wind mean 4.5 m/s (max 8.1), SE flow with REVERSED zonal sign vs Case 1 (U10mean +3.0, V10mean -3.1), cooler/wider T2 [285.1,294.1]. 19 days before Case 1 -> independent synoptic situation. Has full L2 (72h) AND full L3 (24h), so it can also exercise the long-lead path if the manager wants a second 72h confirmation.",
+      "levels": {
+        "L3": {
+          "run_root": "/mnt/data/canairy_meteo/runs/wrf_l3",
+          "run_id": "20260509_18z_l3_24h_20260511T190519Z",
+          "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260509_18z_l3_24h_20260511T190519Z",
+          "domain": "d02",
+          "gpu_init_source": "/mnt/data/canairy_meteo/runs/wrf_l3/20260509_18z_l3_24h_20260511T190519Z/wrfout_d02_2026-05-09_18:00:00",
+          "n_d02_history": 25,
+          "max_lead_h": 24,
+          "available_lead_h": [1, 3, 6, 12, 18, 24],
+          "wrfout_d02_truth": {
+            "1": "/mnt/data/canairy_meteo/runs/wrf_l3/20260509_18z_l3_24h_20260511T190519Z/wrfout_d02_2026-05-09_19:00:00",
+            "3": "/mnt/data/canairy_meteo/runs/wrf_l3/20260509_18z_l3_24h_20260511T190519Z/wrfout_d02_2026-05-09_21:00:00",
+            "6": "/mnt/data/canairy_meteo/runs/wrf_l3/20260509_18z_l3_24h_20260511T190519Z/wrfout_d02_2026-05-10_00:00:00",
+            "12": "/mnt/data/canairy_meteo/runs/wrf_l3/20260509_18z_l3_24h_20260511T190519Z/wrfout_d02_2026-05-10_06:00:00",
+            "18": "/mnt/data/canairy_meteo/runs/wrf_l3/20260509_18z_l3_24h_20260511T190519Z/wrfout_d02_2026-05-10_12:00:00",
+            "24": "/mnt/data/canairy_meteo/runs/wrf_l3/20260509_18z_l3_24h_20260511T190519Z/wrfout_d02_2026-05-10_18:00:00"
+          }
+        },
+        "L2": {
+          "run_root": "/mnt/data/canairy_meteo/runs/wrf_l2",
+          "run_id": "20260509_18z_l2_72h_20260511T190519Z",
+          "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z",
+          "domain": "d02",
+          "gpu_init_source": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z/wrfout_d02_2026-05-09_18:00:00",
+          "n_d02_history": 73,
+          "max_lead_h": 72,
+          "available_lead_h": [1, 3, 6, 12, 18, 24, 36, 48, 60, 72],
+          "wrfout_d02_truth": {
+            "24": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z/wrfout_d02_2026-05-10_18:00:00",
+            "48": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z/wrfout_d02_2026-05-11_18:00:00",
+            "72": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z/wrfout_d02_2026-05-12_18:00:00"
+          }
+        }
+      }
+    },
+    {
+      "case_id": "case3",
+      "role": "confirmation (run only if Case 1 passes)",
+      "init_utc": "2026-05-21T18:00:00Z",
+      "synoptic_note": "Moderate-flow regime: 10 m wind mean 5.8 m/s (max 10.0), U10mean +1.0, V10mean -5.4, T2 [289.8,297.1]. This is the EXACT pin used for the already-validated +1h/+3h GPU preview (proofs/coupled/task2_skill_signal_{1,3}h.json: T2 RMSE 1.33/1.83, U10 2.22/1.90, V10 3.69/2.75), so it gives direct continuity / regression-anchor with the prior preview. L3-only at full coverage (its L2 sibling run is a partial 20h history), so case3 confirmation is L3 24h only.",
+      "levels": {
+        "L3": {
+          "run_root": "/mnt/data/canairy_meteo/runs/wrf_l3",
+          "run_id": "20260521_18z_l3_24h_20260522T133443Z",
+          "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
+          "domain": "d02",
+          "gpu_init_source": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d02_2026-05-21_18:00:00",
+          "n_d02_history": 25,
+          "max_lead_h": 24,
+          "available_lead_h": [1, 3, 6, 12, 18, 24],
+          "wrfout_d02_truth": {
+            "1": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d02_2026-05-21_19:00:00",
+            "3": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d02_2026-05-21_21:00:00",
+            "6": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d02_2026-05-22_00:00:00",
+            "12": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d02_2026-05-22_06:00:00",
+            "18": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d02_2026-05-22_12:00:00",
+            "24": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d02_2026-05-22_18:00:00"
+          }
+        }
+      }
+    }
+  ],
+  "rejected_or_unavailable": {
+    "note": "Inits considered but lacking full d02 coverage at M19 leads.",
+    "20260521_18z_l2_72h": "partial: only 20 hourly d02 (+0..+19h); cannot serve the 24-72h L2 gate -> case3 is L3-only.",
+    "20260509_18z_l3_24h_20260512T154354Z": "stub run: only 3 d02 outputs.",
+    "20260528_18z_l3 sibling timestamps": "all other 20260528 L3/L2 run-timestamps either 0 outputs or superseded by the 20260529T002423Z full run.",
+    "all_zero_output_dirs": "~50 corpus run dirs contain only static-table+met_em symlinks and ZERO wrfout (purged/incomplete); unusable."
+  }
+}
