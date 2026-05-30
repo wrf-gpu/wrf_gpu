@@ -1,0 +1,62 @@
+{
+  "schema": "M20TostDesign",
+  "schema_version": 1,
+  "generated_utc": "2026-05-29T16:07:06.563179+00:00",
+  "binding_goal": "Canary L2/L3 24-72h forecast RMSE on T2/U10/V10 statistically equivalent to CPU WRF v4 under paired TOST at predeclared margins on a >=15-case (target >=30) seasonal ensemble, speed floor preserved.",
+  "test": "paired TOST on case-level RMSE deltas (RMSE_GPU - RMSE_CPU) per variable; equivalence accepted only if BOTH one-sided tests reject at alpha=0.05 for EVERY required variable.",
+  "alpha": 0.05,
+  "beta": 0.2,
+  "margin_fraction_of_cpu_rmse": 0.1,
+  "provisional_sigma_fraction": 0.2,
+  "margin_source": ".agent/sprints/2026-05-27-m7-skill-fix-iter2/post_iter2_skill_diff.json (CPU WRF v4 vs AEMET, same scorer)",
+  "predeclared_margins": {
+    "T2": {
+      "cpu_wrf_rmse_benchmark": 2.148692978020805,
+      "equivalence_margin": 0.2148692978020805,
+      "margin_units": "K",
+      "provisional_sigma": 0.429738595604161,
+      "mde_at_n15": 0.29174914682029846,
+      "mde_at_n30": 0.20033130121985668,
+      "required_n_for_10pct_mde": 27
+    },
+    "U10": {
+      "cpu_wrf_rmse_benchmark": 2.3064713972582305,
+      "equivalence_margin": 0.23064713972582307,
+      "margin_units": "m/s",
+      "provisional_sigma": 0.46129427945164614,
+      "mde_at_n15": 0.3131722722598272,
+      "mde_at_n30": 0.21504161877269765,
+      "required_n_for_10pct_mde": 27
+    },
+    "V10": {
+      "cpu_wrf_rmse_benchmark": 2.7523205379208537,
+      "equivalence_margin": 0.2752320537920854,
+      "margin_units": "m/s",
+      "provisional_sigma": 0.5504641075841707,
+      "mde_at_n15": 0.37370958853974484,
+      "mde_at_n30": 0.25660993002532245,
+      "required_n_for_10pct_mde": 27
+    }
+  },
+  "pairing_key": "case_id x domain x valid_time_utc x lead_hour x station_id x variable",
+  "aggregation_unit": "per (case, domain, lead-block, variable): RMSE over the EXACT same complete-pair row set for CPU and GPU; store paired delta RMSE_GPU-RMSE_CPU. TOST operates on case-level paired deltas, not unpaired station rows.",
+  "missing_data_rule": "complete-pair deletion only; NO imputation of obs, CPU, GPU, or station metadata. A case/variable losing enough rows to be unrepresentative must be marked excluded BEFORE looking at GPU-vs-CPU deltas, signed by stats reviewer.",
+  "exclusion_rules_predeclared": [
+    "exclude (case,variable,lead-block) if complete-pair count < 30 rows",
+    "exclude a case entirely if its score domain (d02) grid differs in shape from the CPU run (no cross-grid scoring)",
+    "exclude lead hours with no overlapping hourly obs (obs begin 2026-05-11 09z)",
+    "exclude rerun duplicates: keep the canonical (non-l2rerun) run when both exist for a date"
+  ],
+  "season_stratification": "each case labeled by meteorological season + domain family; M21 reports pooled TOST AND season-stratified descriptive deltas. A single-season corpus cannot claim SEASONAL equivalence without reviewer approval.",
+  "power_interpretation": "With conservative 20% sigma, n=15 is underpowered for a 10% MDE; n~=27 reaches the 10% target; n=30 has margin. M20 must compute EMPIRICAL sigma_v from real paired deltas before M21; if empirical sigma materially exceeds the 20% planning value, expand the corpus or report TOST as underpowered.",
+  "reviewer_requirement": "M20 and M21 both require a statistics reviewer (Opus or Gemini agy).",
+  "proof_object_requirements": [
+    "case list + season labels",
+    "complete-pair masks",
+    "per-case paired deltas",
+    "effect sizes + 90% CIs (TOST uses 1-2*alpha CI)",
+    "both one-sided p-values per variable",
+    "empirical sigma_v",
+    "exclusion log signed by stats reviewer"
+  ]
+}

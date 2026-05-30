@@ -1,0 +1,69 @@
+{
+  "schema": "M20MiniEnsembleSelection",
+  "schema_version": 1,
+  "generated_utc": "2026-05-29T16:08:53.491242+00:00",
+  "purpose": "Anti-overfit gate: before M19 single-case skill recovery is declared durable, the GPU must recover comparable skill on 5 regime-diverse cases (not just the one tuned case). Guards against overfitting the dycore/physics to a single day.",
+  "selection_criteria": [
+    "maximize spread in domain-mean 10m wind speed (calm 3.4 -> strong 8.3 m/s)",
+    "include both L2 (3km final) and L3 (1km final) domain families",
+    "include both 24h and 72h forecast lengths",
+    "include the ADR-029 benchmark-anchor case (20260521 L3)",
+    "temporal spacing across the obs window to reduce synoptic correlation",
+    "every selected case must have hourly-obs overlap for at least one lead block"
+  ],
+  "scoreable_now_count": 4,
+  "scoreable_now_case_ids": [
+    "20260509_18z_l2_72h_20260511T190519Z",
+    "20260528_18z_l2_72h_20260529T002423Z",
+    "20260521_18z_l3_24h_20260522T133443Z",
+    "20260528_18z_l3_24h_20260529T002423Z"
+  ],
+  "selection": [
+    {
+      "case_id": "20260528_18z_l2_72h_20260529T002423Z",
+      "level": "L2",
+      "regime": "strong trade-wind, dry",
+      "mean_ws_ms": 8.26,
+      "status": "scoreable_now",
+      "rationale": "Strongest sustained 10m wind in the surviving set; 72h lead; tests momentum/PBL skill at the windy end."
+    },
+    {
+      "case_id": "20260521_18z_l3_24h_20260522T133443Z",
+      "level": "L3",
+      "regime": "moderate trade-wind, 1km nests",
+      "mean_ws_ms": 6.48,
+      "status": "scoreable_now",
+      "rationale": "Moderate regime AND the only fully-obs-covered L3 (1km) case; this is the exact CPU run used to set the ADR-029 TOST benchmark, so it anchors the margin derivation. 25/25 obs hours."
+    },
+    {
+      "case_id": "20260509_18z_l2_72h_20260511T190519Z",
+      "level": "L2",
+      "regime": "weak-wind, light precip",
+      "mean_ws_ms": 3.36,
+      "status": "scoreable_now",
+      "rationale": "Weakest-wind, wettest case in the surviving set (0.31mm acc); tests the calm/convective end. Obs only cover its 48-72h block (hourly obs begin 2026-05-11 09z), so score the 48-72h lead window only."
+    },
+    {
+      "case_id": "20260528_18z_l3_24h_20260529T002423Z",
+      "level": "L3",
+      "regime": "strong trade-wind, 1km nests",
+      "mean_ws_ms": 8.0,
+      "status": "scoreable_now",
+      "rationale": "Same synoptic day as the strong-wind L2 case but at 1km; cross-checks nest-resolution sensitivity of the equivalence claim at high wind."
+    },
+    {
+      "case_id": "TARGET_BACKFILL:20260516_18z_72h",
+      "level": "L2/L3",
+      "regime": "mid-window transitional (to be measured post-backfill)",
+      "mean_ws_ms": null,
+      "status": "needs_backfill",
+      "rationale": "5th slot reserved for a mid-window date (2026-05-16) whose AIFS forcing is preserved in forcing_cases/ but whose wrfout was purged. Re-run via WPS->real->wrf to fill a regime/temporal gap between the 05-09 calm and 05-21/05-28 windy cases. Selected for temporal spacing + independence from the 4 retained dates."
+    }
+  ],
+  "honesty_notes": [
+    "ALL candidate cases are MAM (spring) 2026 - the mini-ensemble proves regime diversity in WIND/PRECIP but NOT seasonal diversity.",
+    "4 of 5 slots are scoreable today; the 5th requires a ~1.8GB WRF re-run from preserved AIFS forcing (no external data fetch needed).",
+    "The 20260509 case can only be scored on its 48-72h block because hourly obs start 2026-05-11 09z. Its 0-48h leads have no hourly obs.",
+    "This mini-ensemble is the M19-durability gate, NOT the M20/M21 TOST corpus (which needs >=15, target >=30 cases)."
+  ]
+}
