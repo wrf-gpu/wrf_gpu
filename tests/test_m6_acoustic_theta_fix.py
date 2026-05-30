@@ -3,6 +3,7 @@ from pathlib import Path
 import jax
 import jax.numpy as jnp
 import numpy as np
+import pytest
 
 from gpuwrf.contracts.state import State
 from gpuwrf.integration.d02_replay import build_replay_case
@@ -36,6 +37,23 @@ def _carry_from_fixture(payload: np.lib.npyio.NpzFile) -> OperationalCarry:
     )
 
 
+@pytest.mark.skipif(
+    not FIXTURE.exists(),
+    reason=(
+        "STALE/UN-RUNNABLE TEST (test-triage 2026-05-30): depends on a one-off M6 "
+        "debug fixture (data/fixtures/m6-acoustic-theta-fix/step17_input_state.npz) "
+        "that was INTENTIONALLY never committed and is gitignored "
+        "(.agent/sprints/2026-05-26-m6-acoustic-theta-fix/worker-report.md: 'the .npz "
+        "fixtures are intentionally ignored under data/ and are not in git'). The "
+        "local artifact from that 2026-05-26 session no longer exists on disk. The "
+        "test also drives the orphaned legacy helper "
+        "_operational_acoustic_substep_core (test-only, no src/ callers, NOT on the "
+        "operational path), which post-F7K crashes on theta_coupled_work=None "
+        "regardless of the fixture (see test_mu_persistence_two_substeps). TRACKING: "
+        "manager to delete this pre-F7 one-off regression test (and its orphaned "
+        "helper) or regenerate against the production _rk_scan_step path."
+    ),
+)
 def test_step17_bad_cell_acoustic_theta_increment_is_bounded():
     assert FIXTURE.exists(), f"missing sprint fixture: {FIXTURE}"
     payload = np.load(FIXTURE)
