@@ -1,0 +1,52 @@
+{
+  "purpose": "TRUE-fp64 re-confirmation of the +1h/+3h coupled GPU forecast skill vs corpus CPU-WRF, AFTER the Sprint coupler-fp64 fixes (FIX #1 true-fp64 physics adapters; FIX #2 WRF held-rate radiation).",
+  "scope": "single-case GRIDDED preview of M19 (NOT station-masked TOST); whole-grid T2/U10/V10 RMSE/bias vs CPU-WRF wrfout_d02 at the same valid time.",
+  "case": "20260521_18z_l3_24h (pinned)",
+  "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
+  "init_utc": "2026-05-21 18:00:00+00:00",
+  "grid_shape": [66, 159],
+  "entry": "segmented (host-loop, bounded peak memory; byte-equivalent skill to the production while-loop per segscan_equiv.json -- the two differ only in RRTMG cadence gating jax.lax.cond vs static-bool). Used because the GPU was shared with a concurrent agent and the single-graph production entry OOM'd on a transient (10.65 GiB) under the 0.35 mem-fraction cap; the segmented path bounds peak memory.",
+  "config": {
+    "run_physics": true,
+    "run_boundary": true,
+    "disable_guards": true,
+    "force_fp64": true,
+    "top_lid": true,
+    "epssm": 0.5,
+    "radiation_cadence_steps": 180,
+    "physics_couplers": "TRUE fp64 through Thompson/surface/MYNN/RRTMG (FIX #1; proofs/precision/coupler_dtype_audit.json)",
+    "radiation_cadence_model": "WRF held-rate RTHRATEN: recomputed once per radt interval, applied every dynamics step (FIX #2; proofs/precision/radiation_cadence_trace.json)"
+  },
+  "fp32_contamination_note": "The PRIOR (pre-fix) numbers were run with namelist force_fp64=True, but the physics adapters silently cast theta/qv/u/v/qke/hydrometeors back to the frozen fp32 ADR-007 perf matrix INSIDE each timestep, so the physics tendencies were computed/stored in fp32. The end-of-step re-upcast only re-widened already-truncated values. These NEW numbers are the FIRST genuinely-fp64 physics-coupled measurements (verified by the dtype audit).",
+  "leads": {
+    "+1h": {
+      "valid_utc": "2026-05-21 19:00:00+00:00",
+      "steps": 360,
+      "true_fp64": {
+        "T2":  {"rmse": 1.3506256313501783, "bias": 1.0442712100273486, "mae": 1.0737795472992935},
+        "U10": {"rmse": 2.215840541058259,  "bias": -0.15859018539438777, "mae": 1.6814820119088074},
+        "V10": {"rmse": 3.68860024378248,   "bias": 1.7580046491857173, "mae": 3.142186159775445}
+      },
+      "old_fp32_contaminated": {"T2_rmse": 1.33, "U10_rmse": 2.23, "V10_rmse": 3.70},
+      "delta_rmse_true_minus_old": {"T2": 0.021, "U10": -0.014, "V10": -0.011},
+      "jax_finite": {"t2": true, "u10": true, "v10": true}
+    },
+    "+3h": {
+      "valid_utc": "2026-05-21 21:00:00+00:00",
+      "steps": 1080,
+      "true_fp64": {
+        "T2":  {"rmse": 1.829990767603339,  "bias": 1.0930013045748488, "mae": 1.1141235578020154},
+        "U10": {"rmse": 1.9074170536700013, "bias": 0.3020868907268562,  "mae": 1.3547322856873494},
+        "V10": {"rmse": 2.7607297202248233, "bias": 1.6153746916571359,  "mae": 2.2735147513197655}
+      },
+      "old_fp32_contaminated": {"T2_rmse": 1.83, "U10_rmse": 1.91, "V10_rmse": 2.75},
+      "delta_rmse_true_minus_old": {"T2": 0.000, "U10": -0.003, "V10": 0.011},
+      "jax_finite": {"t2": true, "u10": true, "v10": true}
+    }
+  },
+  "verdict": "TRUE-fp64 skill is essentially UNCHANGED vs the old fp32-contaminated numbers (all |delta RMSE| <= 0.02 K / 0.02 m/s at both +1h and +3h). HONEST FINDING: the fp32 physics-adapter contamination did NOT materially bias the +1h/+3h surface skill -- but the baseline is now genuinely fp64 (dtype-audited) and trustworthy, rather than accidentally-fp32. The forecast remains finite and holds skill to +3h. V10 remains the weak field (RMSE 2.76-3.69), consistent with the surface/PBL momentum-coupling diagnosis (sfclayrev vs sf_mynn), unrelated to the fp64 fix.",
+  "source_proofs": [
+    "proofs/coupled/task2_skill_signal_1h_segmented.json",
+    "proofs/coupled/task2_skill_signal_3h_segmented.json"
+  ]
+}
