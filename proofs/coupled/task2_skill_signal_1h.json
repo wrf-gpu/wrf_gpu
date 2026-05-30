@@ -1,0 +1,61 @@
+{
+  "scope": "single-case GRIDDED preview of M19 (NOT station-masked TOST)",
+  "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
+  "init_utc": "2026-05-21 18:00:00+00:00",
+  "valid_utc": "2026-05-21 19:00:00+00:00",
+  "lead_hours": 1.0,
+  "steps": 360,
+  "grid_shape": [
+    66,
+    159
+  ],
+  "config": {
+    "run_physics": true,
+    "run_boundary": true,
+    "disable_guards": true,
+    "force_fp64": true,
+    "top_lid": true,
+    "epssm": 0.5,
+    "radiation_cadence_steps": 180
+  },
+  "scores": {
+    "T2": {
+      "rmse": 1.3339276632379558,
+      "bias": 0.997660051812171,
+      "mae": 1.026670447229889,
+      "jax_mean": 294.3857194058087,
+      "wrf_mean": 293.38805935399654,
+      "jax_min": 284.497083496749,
+      "jax_max": 303.1476151053646,
+      "wrf_min": 283.92529296875,
+      "wrf_max": 298.8335876464844
+    },
+    "U10": {
+      "rmse": 2.2246371321232727,
+      "bias": -0.15630428446869096,
+      "mae": 1.6888862718992979,
+      "jax_mean": 1.0941790222811654,
+      "wrf_mean": 1.2504833067498564,
+      "jax_min": -8.091815789407285,
+      "jax_max": 11.269482986304373,
+      "wrf_min": -7.922458648681641,
+      "wrf_max": 9.914774894714355
+    },
+    "V10": {
+      "rmse": 3.694855994403368,
+      "bias": 1.7528710338713904,
+      "mae": 3.146768009064741,
+      "jax_mean": -3.9794823680054416,
+      "wrf_mean": -5.732353401876832,
+      "jax_min": -15.742094454886933,
+      "jax_max": 4.063498318469099,
+      "wrf_min": -13.702826499938965,
+      "wrf_max": 3.5154478549957275
+    }
+  },
+  "jax_finite": {
+    "t2": true,
+    "u10": true,
+    "v10": true
+  }
+}

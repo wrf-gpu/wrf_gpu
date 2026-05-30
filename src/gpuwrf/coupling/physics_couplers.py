@@ -876,6 +876,7 @@ def rrtmg_adapter(
     *,
     time_utc=None,
     lead_seconds=0.0,
+    apply_seconds: float | None = None,
 ) -> State:
     """Run SW and LW RRTMG column kernels and apply their temperature tendency.
 
@@ -884,15 +885,29 @@ def rrtmg_adapter(
     time. The solar-zenith / diurnal forcing therefore responds to the actual
     forecast clock; there is NO fixed-time fallback on the diurnal path once a
     caller passes the step lead.
+
+    B3 CADENCE SCALING (coupling fix 2026-05-30): the SW/LW kernels return the
+    instantaneous radiative heating RATE (K s^-1). WRF computes this rate once per
+    `radt` interval and then applies the persisted RTHRATEN tendency at EVERY
+    dynamics step over that whole interval (module_radiation_driver.F; the rate is
+    held constant between radiation calls). When the operational scan only invokes
+    this adapter once per `radiation_cadence_steps`, the heating must be integrated
+    over the WHOLE cadence interval, not a single dynamics `dt`, or the radiative
+    forcing is delivered `radiation_cadence_steps`x too weak. `apply_seconds` is
+    that interval (= cadence_steps * dt); it defaults to `dt` for legacy
+    every-step callers. (The previous `dt * heating_rate` was the artifact behind
+    the B3 isolation-ladder anomaly the dycore-realinit frontrunner flagged: at
+    cadence it under-heated; applied every step at full rate it could over-heat.)
     """
 
+    seconds = float(dt) if apply_seconds is None else float(apply_seconds)
     T = _temperature_from_theta(state.theta, state.p)
     sw_state, lw_state, _, _, _ = _rrtmg_column_inputs(
         state, grid, time_utc=time_utc, lead_seconds=lead_seconds
     )
     sw = solve_rrtmg_sw_column(sw_state, debug=False)
     lw = solve_rrtmg_lw_column(lw_state, debug=False)
-    T_next = T + float(dt) * _from_columns(sw.heating_rate + lw.heating_rate)
+    T_next = T + seconds * _from_columns(sw.heating_rate + lw.heating_rate)
     return state.replace(theta=_theta_from_temperature(T_next, state.p, _field_dtype("theta")))
 
 

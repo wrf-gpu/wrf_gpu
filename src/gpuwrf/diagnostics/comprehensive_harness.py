@@ -475,8 +475,9 @@ def instrumented_physics_boundary_step(
     # -- Physics block --------------------------------------------------------
     if bool(namelist.run_physics):
         pre = next_state
-        if not bool(namelist.disable_guards):
-            next_state = thompson_adapter(next_state, float(namelist.dt_s))
+        # Thompson is gated ONLY by run_physics, NOT by disable_guards (coupling
+        # fix 2026-05-30; mirrors operational_mode._physics_boundary_step).
+        next_state = thompson_adapter(next_state, float(namelist.dt_s))
         if diagnostic_on:
             accumulator = _record_operator(
                 accumulator, _OP_INDEX["microphysics_thompson"], pre, next_state, step_1b
@@ -494,7 +495,14 @@ def instrumented_physics_boundary_step(
 
         if run_radiation:
             pre = next_state
-            next_state = rrtmg_adapter(next_state, float(namelist.dt_s), namelist.grid)
+            # B3 cadence scaling: integrate the radiative heating rate over the
+            # whole radt interval (cadence_steps * dt), mirroring operational_mode.
+            next_state = rrtmg_adapter(
+                next_state,
+                float(namelist.dt_s),
+                namelist.grid,
+                apply_seconds=float(namelist.dt_s) * float(int(namelist.radiation_cadence_steps)),
+            )
             if diagnostic_on:
                 accumulator = _record_operator(accumulator, _OP_INDEX["rrtmg"], pre, next_state, step_1b)
 
@@ -775,7 +783,7 @@ def _classify_operators(
     op_called = {
         "dycore_rk3": True,
         "dynamics_guards": guards_called,
-        "microphysics_thompson": physics_called and guards_called,
+        "microphysics_thompson": physics_called,
         "surface_layer": physics_called,
         "mynn_pbl": physics_called,
         "rrtmg": rrtmg_fired,
