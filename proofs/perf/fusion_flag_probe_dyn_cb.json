@@ -1,0 +1,16 @@
+{
+  "tag": "dyn_cb",
+  "xla_flags": "--xla_gpu_enable_command_buffer=FUSION,CUSTOM_CALL --xla_gpu_graph_min_graph_size=1 --xla_gpu_enable_latency_hiding_scheduler=true",
+  "acoustic_unroll": "1",
+  "run_physics": false,
+  "device": "cuda:0",
+  "n_small": 20,
+  "n_big": 80,
+  "reps": 4,
+  "warm_small_s": 0.5457504869846161,
+  "warm_big_s": 2.156132712989347,
+  "warmed_per_step_ms": 26.839703766745515,
+  "peak_gpu_mem_mb": 1448.291748046875,
+  "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
+  "radiation_in_window": false
+}

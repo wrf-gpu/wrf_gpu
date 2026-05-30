@@ -1,0 +1,32 @@
+{
+  "scope": "XLA scheduling-flag A/B: dyn_base vs dyn_gms1 (coupled real d02, segmented, no-radiation window)",
+  "flags_a": "",
+  "flags_b": "--xla_gpu_graph_min_graph_size=1",
+  "unroll_a": "1",
+  "unroll_b": "1",
+  "baseline_per_step_ms": 45.94135068327887,
+  "candidate_per_step_ms": 26.909209067040745,
+  "speedup": 1.7072724273991873,
+  "max_abs_diff_per_field": {
+    "u": 4.3567927043852706e-13,
+    "v": 4.178879464689089e-13,
+    "w": 2.922107000813412e-13,
+    "theta": 4.547473508864641e-13,
+    "qv": 0.0,
+    "p_total": 2.764863893389702e-10,
+    "ph_total": 3.7834979593753815e-10,
+    "mu_total": 8.731149137020111e-11
+  },
+  "max_rel_diff_per_field": {
+    "u": 1.3294001079074273e-14,
+    "v": 2.3573798413739387e-14,
+    "w": 2.4936173989429166e-14,
+    "theta": 9.227837065103236e-16,
+    "qv": 0.0,
+    "p_total": 2.6325290030670995e-15,
+    "ph_total": 1.8539519684508907e-15,
+    "mu_total": 9.001889173648576e-16
+  },
+  "bitwise_identical": false,
+  "verdict": "ROUNDOFF+FASTER"
+}

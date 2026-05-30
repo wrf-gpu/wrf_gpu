@@ -53,12 +53,16 @@ def _peak_mb() -> float:
 
 
 def main() -> int:
+    import os as _os
     ap = argparse.ArgumentParser()
     ap.add_argument("--hours", type=float, default=24.0)
     ap.add_argument("--segment-steps", type=int, default=180)
+    ap.add_argument("--out", type=str, default="segscan_24h.json",
+                    help="output JSON filename under proofs/perf/")
     args = ap.parse_args()
     hours = float(args.hours)
     seg_steps = int(args.segment_steps)
+    acoustic_unroll = int(_os.environ.get("GPUWRF_ACOUSTIC_UNROLL", "1"))
 
     cfg = DailyPipelineConfig(hours=1, dt_s=10.0, acoustic_substeps=10)
     case, run_dir = _build_real_case(cfg)
@@ -156,6 +160,7 @@ def main() -> int:
             "epssm": float(nl.epssm), "top_lid": bool(nl.top_lid),
             "w_damping": int(nl.w_damping), "damp_opt": int(nl.damp_opt),
             "radiation_cadence_steps": cadence,
+            "acoustic_unroll": acoustic_unroll,
         },
         "hours": hours,
         "steps": steps,
@@ -192,7 +197,7 @@ def main() -> int:
         "status": "PASS" if (all_finite and physical) else "FAIL",
     }
     PROOF.mkdir(parents=True, exist_ok=True)
-    fn = PROOF / "segscan_24h.json"
+    fn = PROOF / args.out
     fn.write_text(json.dumps(out, indent=2) + "\n")
     print(json.dumps({k: out[k] for k in (
         "inner_segment_cold_compile_s", "compile_s_one_time", "warmed_per_step_ms",
