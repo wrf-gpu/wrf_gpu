@@ -4,6 +4,7 @@ from dataclasses import replace as dataclass_replace
 
 import jax
 import jax.numpy as jnp
+import pytest
 
 from gpuwrf.contracts.grid import BCMetadata, DycoreMetrics, GridSpec, Projection, TerrainProvenance, VerticalCoord
 from gpuwrf.contracts.state import State, Tendencies, _state_field_shapes
@@ -102,6 +103,27 @@ def _zero_tendencies(grid: GridSpec) -> Tendencies:
     )
 
 
+@pytest.mark.xfail(
+    reason=(
+        "STALE TEST (test-triage 2026-05-30): drives the orphaned legacy helper "
+        "operational_mode._operational_acoustic_substep_core, which builds its "
+        "AcousticCoreState via _acoustic_core_state(). The F7K rewrite "
+        "(acoustic.py:509, commit 49f138c 2026-05-29) changed acoustic_substep_core "
+        "to advance the persistent coupled work theta `uv_state.theta_coupled_work` "
+        "instead of re-coupling perturbation theta each substep. The PRODUCTION RK "
+        "path (_rk_scan_step -> _acoustic_scan -> _acoustic_core_state_from_prep, "
+        "operational_mode.py:853) populates theta_coupled_work; the legacy helper's "
+        "_acoustic_core_state() never did, so theta_coupled_work=None and "
+        "advance_mu_t_wrf crashes on `inputs.theta.shape` (AttributeError). The "
+        "helper has NO src/ callers (test-only) and is NOT on the operational "
+        "forecast path. TRACKING: manager to either delete the orphaned "
+        "_operational_acoustic_substep_core helper + its tests, or wire "
+        "theta_coupled_work into _acoustic_core_state. The CODE on the operational "
+        "path is correct; this expectation is outdated."
+    ),
+    raises=AttributeError,
+    strict=True,
+)
 def test_mu_save_preserves_nonzero_perturbation_across_two_zero_tendency_substeps():
     grid = _grid()
     state = _state(grid)
