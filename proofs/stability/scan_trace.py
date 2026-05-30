@@ -33,10 +33,29 @@ def _identity_dt(state, dt, *a, **k):
     return state
 
 
-_REAL = {n: getattr(om, n) for n in
-         ("thompson_adapter", "mynn_adapter", "rrtmg_adapter", "surface_adapter")}
+def _zero_rthraten(state, *a, **k):
+    """No-op radiation: return a zero RTHRATEN (theta-shaped, theta dtype)."""
+    return jnp.zeros_like(state.theta)
 
-# variant -> (namelist kwargs, set of adapters to no-op)
+
+# The state-returning physics adapters (thompson/surface/mynn) are no-op'd by
+# substituting an identity; the radiation path is NO LONGER an adapter -- after
+# Agent A's rewrite (HEAD 6c45f9c) it is the HELD-RATE primitive
+# `rrtmg_theta_tendency` called inside
+# `_physics_boundary_step_with_limiter_diagnostics`, so "no_rrtmg" is now done by
+# zeroing that tendency (theta += dt*0 = no radiative heating).
+_NOOP_TARGET = {
+    "thompson_adapter": ("thompson_adapter", _identity_dt),
+    "mynn_adapter":     ("mynn_adapter", _identity_dt),
+    "surface_adapter":  ("surface_adapter", _identity_dt),
+    # legacy alias "rrtmg_adapter" preserved so existing variants below still mean
+    # "radiation off"; it now retargets the held-rate tendency primitive.
+    "rrtmg_adapter":    ("rrtmg_theta_tendency", _zero_rthraten),
+}
+_REAL = {n: getattr(om, n) for n in
+         ("thompson_adapter", "mynn_adapter", "rrtmg_theta_tendency", "surface_adapter")}
+
+# variant -> (namelist kwargs, set of adapter-noop keys)
 VARIANTS = {
     "full":        (dict(run_physics=True), set()),
     "no_physics":  (dict(run_physics=False), set()),
@@ -57,6 +76,11 @@ VARIANTS = {
     # top-BC / damping sensitivity on the (memory-light) no_rrtmg blowup:
     "norad_no_raydamp":  (dict(run_physics=True, damp_opt=0), {"rrtmg_adapter"}),
     "norad_no_damp_all": (dict(run_physics=True, w_damping=0, damp_opt=0), {"rrtmg_adapter"}),
+    # --- damping-coverage / coupled-path probes (residual w-growth, 2026-05-30) ---
+    # strengthen the Rayleigh/w damping on the memory-light coupled path: if the
+    # residual w-growth is a damping-coverage gap, this should suppress it.
+    "norad_strong_damp": (dict(run_physics=True, zdamp=10000.0, dampcoef=0.5),
+                          {"rrtmg_adapter"}),
 }
 
 
@@ -100,8 +124,12 @@ def main():
     if args.variant not in VARIANTS:
         raise SystemExit(f"variant must be one of {list(VARIANTS)}")
     nlkw, noops = VARIANTS[args.variant]
-    for n in _REAL:
-        setattr(om, n, _identity_dt if n in noops else _REAL[n])
+    # restore all real adapters first, then apply each requested noop to its target
+    for sym, real in _REAL.items():
+        setattr(om, sym, real)
+    for key in noops:
+        target_sym, repl = _NOOP_TARGET[key]
+        setattr(om, target_sym, repl)
 
     cfg = DailyPipelineConfig(hours=1, dt_s=10.0, acoustic_substeps=10)
     case, run_dir = _build_real_case(cfg)

@@ -758,25 +758,80 @@ def _mynn_column_from_state(state: State, grid: GridSpec | None) -> MynnPBLColum
     )
 
 
-def _state_from_mynn_output(state: State, out: MynnPBLColumnState) -> State:
-    """Reassemble State from MYNN column output, reconstructing C-grid winds.
+def _add_a2c_u_increment(u_face: jax.Array, du_mass: jax.Array) -> jax.Array:
+    """Add a mass-point u increment to the C-grid u-faces, WRF ``add_a2c_u`` style.
 
-    Wind reconstruction uses the non-periodic ``_mass_to_*_face`` maps (Gate-1
-    decision #4); domain-edge faces are corrected later by B4 lateral boundaries.
+    WRF source anchor: ``phys/module_physics_addtendc.F:2531-2582`` (``add_a2c_u``)
+    adds ``0.5*(RUBLTEN(i)+RUBLTEN(i-1))`` -- the centred A-grid->C-grid average of
+    the PBL momentum *increment* -- onto the EXISTING C-grid u tendency, leaving the
+    dynamics' large-scale wind exactly as the dycore produced it. The interior u-face
+    at x-index ``i`` (Python ``i``, between mass cells ``i-1`` and ``i``) gets
+    ``0.5*(du(i-1)+du(i))``; the two domain-edge faces (x=0, x=nx) are NOT updated
+    (``i_start=MAX(ids+1,its)``, ``i_end=MIN(ide-1,ite)`` for specified/nested) and are
+    OWNED by ``apply_lateral_boundaries`` downstream.
+
+    ``u_face`` is C-grid ``(nz, ny, nx+1)``; ``du_mass`` is ``(nz, ny, nx)``.
     """
 
-    u_mass = _from_columns(out.u)
-    v_mass = _from_columns(out.v)
-    # MYNN solves u/v/theta/qv/TKE — NOT w. PRESERVE the dynamics' w untouched
-    # (omit it from replace): round-tripping w through _w_mass -> _mass_to_w_face
-    # is NOT identity and re-injects a ~1e-5 w at the rigid-lid top face (k=top)
-    # that top_lid=True requires to be exactly 0. Over thousands of steps that seeds
-    # an explosive top-of-column acoustic mode that detonates ~15h on the real case
-    # (proofs/stability/ROOT_CAUSE.md). LIVE-dtype writes keep force_fp64 fp64 through
-    # the PBL solve (fp32-defeat fix; see _output_dtype); perf-matrix mode unchanged.
+    # interior faces 1..nx-1 = avg of the two adjacent mass-cell increments
+    interior = 0.5 * (du_mass[:, :, :-1] + du_mass[:, :, 1:])  # (nz, ny, nx-1)
+    du_face = jnp.zeros_like(u_face)
+    du_face = du_face.at[:, :, 1:-1].set(interior)  # edges (0, nx) stay 0
+    return u_face + du_face
+
+
+def _add_a2c_v_increment(v_face: jax.Array, dv_mass: jax.Array) -> jax.Array:
+    """Add a mass-point v increment to the C-grid v-faces, WRF ``add_a2c_v`` style.
+
+    Same as :func:`_add_a2c_u_increment` on the y axis (WRF ``add_a2c_v``): interior
+    y-faces get ``0.5*(dv(j-1)+dv(j))``; the y=0 / y=ny edge faces are left for the
+    lateral-boundary pass.  ``v_face`` is ``(nz, ny+1, nx)``; ``dv_mass`` is
+    ``(nz, ny, nx)``.
+    """
+
+    interior = 0.5 * (dv_mass[:, :-1, :] + dv_mass[:, 1:, :])  # (nz, ny-1, nx)
+    dv_face = jnp.zeros_like(v_face)
+    dv_face = dv_face.at[:, 1:-1, :].set(interior)
+    return v_face + dv_face
+
+
+def _state_from_mynn_output(state: State, out: MynnPBLColumnState) -> State:
+    """Reassemble State from MYNN column output, WRF-faithful incremental coupling.
+
+    WRF couples PBL momentum by ADDING the A-grid PBL increment (RUBLTEN/RVBLTEN),
+    averaged to the C-grid faces, onto the existing C-grid wind tendency
+    (``phys/module_physics_addtendc.F::add_a2c_u/add_a2c_v``).  It never replaces
+    the full C-grid wind with a mass->face reconstruction.
+
+    The previous code did ``u = _mass_to_u_face(u_mass_after_mynn)`` -- a
+    face->mass->face round trip of the WHOLE field every step.  That round trip is
+    NOT identity: it spuriously re-interpolates (smooths/shifts) the dynamics'
+    near-surface u/v each step.  The kinematic terrain-following surface w boundary
+    condition (``advance_w.py``: ``w_surface = msftx*rdx*dht*u_low3 + ...``) reads
+    those low-level winds, so the per-step reconstruction error -- amplified by
+    ``rdx ~ 1/dx`` over the steep Canary d02 terrain -- seeded a LINEARLY RAMPING
+    spurious surface w (w@k0: 42->1147 m/s over 24h; ``proofs/stability/`` 2026-05-30
+    localization).  With MYNN off the same dycore is stable (w~14 m/s @ mid-level).
+
+    The fix: form the MYNN increment on mass points (``Δ = out - input_mass``) and
+    add ONLY that increment, A2C-averaged, onto the dynamics' ORIGINAL C-grid faces.
+    The large-scale C-grid winds (and hence the surface-w BC) are then preserved
+    exactly; only the genuine PBL friction increment is applied -- exactly WRF's
+    contract.  theta/qv/qke live on the mass grid where read-back is identity, so
+    those keep their direct writes (the increment form is mathematically identical
+    there).  w is untouched (MYNN does not solve it).  LIVE-dtype writes keep
+    force_fp64 truly fp64 through the PBL solve (fp32-defeat fix; see _output_dtype).
+    """
+
+    # MYNN reads the input winds via _u_mass/_v_mass; the increment it produced is
+    # the difference between its output mass winds and that SAME input mass wind.
+    du_mass = _from_columns(out.u) - _u_mass(state)
+    dv_mass = _from_columns(out.v) - _v_mass(state)
+    u_new = _add_a2c_u_increment(state.u, du_mass).astype(_output_dtype(state, "u"))
+    v_new = _add_a2c_v_increment(state.v, dv_mass).astype(_output_dtype(state, "v"))
     return state.replace(
-        u=_mass_to_u_face(u_mass).astype(_output_dtype(state, "u")),
-        v=_mass_to_v_face(v_mass).astype(_output_dtype(state, "v")),
+        u=u_new,
+        v=v_new,
         theta=_from_columns(out.theta).astype(_output_dtype(state, "theta")),
         qv=_from_columns(out.qv).astype(_output_dtype(state, "qv")),
         qke=(2.0 * _from_columns(out.tke)).astype(_output_dtype(state, "qke")),
