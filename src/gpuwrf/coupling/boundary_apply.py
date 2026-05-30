@@ -336,6 +336,218 @@ def _wrf_relax_weights(b_dist: int, dt_s: float, config: BoundaryConfig) -> tupl
     return float(dt_s) * fcx, float(dt_s) * gcx
 
 
+# ---------------------------------------------------------------------------
+# In-loop NORMAL-momentum boundary protection (WRF advance_uv spec_zone +
+# relax_bdy_dry on the COUPLED small-step work array).
+# ---------------------------------------------------------------------------
+#
+# WRF treats the normal momentum (u at W/E, v at S/N) inside the acoustic
+# small-step loop, NOT as an end-of-step value nudge:
+#
+#   * advance_uv (module_small_step_em.F:734-942) restricts its u/v PGF/tendency
+#     loops to ``i_start = max(its, ids+spec_zone)`` .. ``i_endu = min(ite,
+#     ide-spec_zone)`` (and analogously for v in j), so the OUTERMOST
+#     ``spec_zone`` normal face (the domain-edge face, b_dist=0) is NEVER
+#     advanced by the acoustic solver.  It is instead driven by
+#     ``spec_bdyupdate(u_2, ru_tend, dts_rk, spec_zone)`` (solve_em.F:1346-1364,
+#     INSIDE the small_steps DO loop) toward the boundary tendency that
+#     ``spec_bdy_dry`` (module_bc_em.F:479-494) wrote into ``ru_tend``/``rv_tend``.
+#   * The relaxation zone (b_dist = spec_zone .. relax_zone-1) gets a relaxation
+#     tendency folded into ``ru_tend``/``rv_tend`` ONCE per full step at rk_step==1
+#     (relax_bdy_dry -> relax_bdytend_core, module_bc.F:1221-1427) computed from
+#     the COUPLED momentum residual ``(bdy - ru)``; that tendency is then applied
+#     every acoustic substep via ``u_2 += dts*ru_tend`` inside advance_uv.
+#
+# Our acoustic core advances the COUPLED perturbation work array ``u_work``
+# (= ``(mass_ref*u_1 - mass_cur*u_2)/msf``, small_step_prep_wrf), exactly WRF's
+# ``grid%u_2``.  So we reproduce both effects directly on the work array:
+#   * spec face   : DRIVE ``u_work`` to the work-array boundary target each substep
+#                   (equivalent to WRF not advancing it + spec_bdyupdate pinning it
+#                   to the boundary value);
+#   * relax faces : NUDGE ``u_work`` toward the work-array boundary target with the
+#                   relax_bdytend Laplacian stencil, scaled by ``dts`` per substep
+#                   (so the per-full-step total matches the WRF tendency once-set,
+#                   applied-every-substep behaviour).
+#
+# The work-array target is the value whose small_step_finish reconstruction equals
+# the interpolated decoupled boundary velocity ``u_bdy``:
+#     u = (msf*u_work + u_save*mass_cur)/mass_stage   (small_step_finish_wrf)
+#  => u_work_bdy = (u_bdy*mass_stage - u_save*mass_cur)/msf .
+
+
+def normal_bdy_work_target_u(
+    u_bdy_strip, u_save, mass_u_cur, mass_u_stage, msfuy, *, config: BoundaryConfig = DEFAULT_BOUNDARY_CONFIG
+):
+    """Coupled work-array target for the W/E normal face (whole ``(z, ny, nx+1)``).
+
+    Only the ``spec_zone + relax_zone`` outer columns at W and E are meaningful;
+    interior columns stay zero (the caller only reads the boundary columns).
+    ``u_bdy_strip`` is the time-interpolated decoupled boundary leaf for u
+    (``(side, bdy_width, z, side_len)``).
+    """
+
+    z_len, y_len, x_len = u_save.shape  # x_len == nx+1
+    target = jnp.zeros_like(u_save)
+    nzone = int(config.spec_zone + config.relax_zone)
+    for b_dist in range(nzone):
+        w_strip = _strip(u_bdy_strip, "W", b_dist, z_len, y_len)
+        e_strip = _strip(u_bdy_strip, "E", b_dist, z_len, y_len)
+        cw = b_dist
+        ce = x_len - 1 - b_dist
+        # msfuy is (ny, nx+1); the W/E column ``c`` map factor is msfuy[:, c] (ny,),
+        # broadcast against the (nz, ny) column slice.
+        tw = (w_strip * mass_u_stage[:, :, cw] - u_save[:, :, cw] * mass_u_cur[:, :, cw]) / msfuy[:, cw][None, :]
+        te = (e_strip * mass_u_stage[:, :, ce] - u_save[:, :, ce] * mass_u_cur[:, :, ce]) / msfuy[:, ce][None, :]
+        target = target.at[:, :, cw].set(tw)
+        target = target.at[:, :, ce].set(te)
+    return target
+
+
+def normal_bdy_work_target_v(
+    v_bdy_strip, v_save, mass_v_cur, mass_v_stage, msfvx, *, config: BoundaryConfig = DEFAULT_BOUNDARY_CONFIG
+):
+    """Coupled work-array target for the S/N normal face (whole ``(z, ny+1, nx)``)."""
+
+    z_len, y_len, x_len = v_save.shape  # y_len == ny+1
+    target = jnp.zeros_like(v_save)
+    nzone = int(config.spec_zone + config.relax_zone)
+    for b_dist in range(nzone):
+        s_strip = _strip(v_bdy_strip, "S", b_dist, z_len, x_len)
+        n_strip = _strip(v_bdy_strip, "N", b_dist, z_len, x_len)
+        rs = b_dist
+        rn = y_len - 1 - b_dist
+        # msfvx is (ny+1, nx); the S/N row ``r`` map factor is msfvx[r, :] (nx,),
+        # broadcast against the (nz, nx) row slice.
+        ts = (s_strip * mass_v_stage[:, rs, :] - v_save[:, rs, :] * mass_v_cur[:, rs, :]) / msfvx[rs, :][None, :]
+        tn = (n_strip * mass_v_stage[:, rn, :] - v_save[:, rn, :] * mass_v_cur[:, rn, :]) / msfvx[rn, :][None, :]
+        target = target.at[:, rs, :].set(ts)
+        target = target.at[:, rn, :].set(tn)
+    return target
+
+
+# WIND-FIX relaxation strength multiplier on the WRF per-step relax weight.
+# WRF's nominal ``fcx=0.1/dt_model`` (relax_strength=1) is calibrated for WRF's
+# fully mass-coupled, consistent boundary pressure.  This side-history replay
+# forces the boundary with DECOUPLED wrfout leaves (boundary_apply module
+# docstring: an O(mu') approximation), so the nominal weight is far too weak to
+# hold the normal momentum against the per-substep acoustic PGF (at strength 1
+# the relax zone still spiked v row1 -17->-14.5; proofs/wind/
+# fixed_probe_05h_v1_persubstep.log).  The spike-elimination sweep
+# (proofs/wind/fixed_probe_vec_s20.log) found strength 20 removes it cleanly:
+# v row1 -17->-6, u col1 -10->+0.9, both tracking the boundary smoothly, run
+# finite, v|max| 27->18.  This is a single decoupled-replay calibration constant
+# (a per-substep convex-blend weight ~0.86/step at the spec-adjacent relax cell),
+# NOT a per-cell masking clamp.
+NORMAL_BDY_RELAX_STRENGTH = 20.0
+
+
+def _normal_relax_weights_u(z_len, y_len, x_len, sub_ratio, config: BoundaryConfig, dtype):
+    """Static per-substep convex-blend weight mask for the W/E NORMAL u face.
+
+    Built with numpy at trace time (shapes + config are static), so the whole
+    in-loop boundary protection is ONE vectorised ``u += w*(target-u)`` op rather
+    than dozens of per-(b_dist, side) scatters -- the loop form produced a
+    pathologically slow XLA compile (proofs/wind/fixed_probe_s20 compile alarm).
+
+    Spec columns (b_dist < spec_zone) get weight 1 (full drive to the boundary
+    work target == WRF advance_uv excluding them + spec_bdyupdate pinning them).
+    Relax columns get ``clip(sub_ratio*0.1*linear(b_dist), 0, 1)`` with WRF's
+    X-boundary tangential corner trim ``j in [b_dist+1, ny-b_dist-2]``.
+    """
+
+    import numpy as _np
+
+    spec_zone = int(config.spec_zone)
+    relax_zone = int(config.relax_zone)
+    w = _np.zeros((y_len, x_len), dtype=_np.float64)
+    for b_dist in range(spec_zone):
+        w[:, b_dist] = 1.0
+        w[:, x_len - 1 - b_dist] = 1.0
+    for b_dist in range(spec_zone, relax_zone):
+        loop_1based = b_dist + 1
+        linear = max(0.0, (spec_zone + relax_zone - loop_1based) / float(relax_zone - 1)) if relax_zone > 1 else 0.0
+        weight = min(1.0, max(0.0, sub_ratio * 0.1 * linear))
+        start, end = b_dist + 1, y_len - b_dist - 1  # WRF tangential corner trim
+        w[start:end, b_dist] = weight
+        w[start:end, x_len - 1 - b_dist] = weight
+    return jnp.asarray(w[None, :, :], dtype=dtype)
+
+
+def _normal_relax_weights_v(z_len, y_len, x_len, sub_ratio, config: BoundaryConfig, dtype):
+    """Static per-substep convex-blend weight mask for the S/N NORMAL v face.
+
+    Relax rows use WRF's Y-boundary tangential corner trim ``i in [b_dist,
+    nx-b_dist-1]`` so the diagonal corners are owned by the W/E (u) boundaries.
+    """
+
+    import numpy as _np
+
+    spec_zone = int(config.spec_zone)
+    relax_zone = int(config.relax_zone)
+    w = _np.zeros((y_len, x_len), dtype=_np.float64)
+    for b_dist in range(spec_zone):
+        w[b_dist, :] = 1.0
+        w[y_len - 1 - b_dist, :] = 1.0
+    for b_dist in range(spec_zone, relax_zone):
+        loop_1based = b_dist + 1
+        linear = max(0.0, (spec_zone + relax_zone - loop_1based) / float(relax_zone - 1)) if relax_zone > 1 else 0.0
+        weight = min(1.0, max(0.0, sub_ratio * 0.1 * linear))
+        start, end = b_dist, x_len - b_dist  # WRF tangential corner trim
+        w[b_dist, start:end] = weight
+        w[y_len - 1 - b_dist, start:end] = weight
+    return jnp.asarray(w[None, :, :], dtype=dtype)
+
+
+def apply_normal_bdy_work(
+    u_work,
+    v_work,
+    u_target,
+    v_target,
+    dts: float,
+    dt_full: float,
+    *,
+    config: BoundaryConfig = DEFAULT_BOUNDARY_CONFIG,
+    relax_strength: float | None = None,
+):
+    """Apply WRF spec-freeze + relaxation to the NORMAL momentum work arrays.
+
+    ``u_work``/``v_work`` are the post-``advance_uv`` coupled small-step work
+    arrays (WRF ``grid%u_2``/``grid%v_2``); ``u_target``/``v_target`` are the
+    work-array boundary targets from :func:`normal_bdy_work_target_u`/``_v``.
+
+    Implementation: a per-substep CONVEX BLEND toward the boundary work target,
+    ``u = u + w*(target - u)``.  The weight ``w`` is built from the WRF
+    relaxation taper -- spec column weight 1 (WRF advance_uv excludes the spec
+    face + spec_bdyupdate pins it), relax columns
+    ``clip(dts/dt_full * strength * 0.1 * linear(b_dist), 0, 1)`` with WRF's
+    corner trimming.  WRF folds ``fcx*fls0`` into ``ru_tend`` once and applies it
+    every substep via ``u_2 += dts*ru_tend``; the convex blend is the
+    contraction-stable equivalent on the recomputed residual (the WRF additive
+    form on a decoupled-replay boundary was too weak to hold the normal momentum
+    against the per-substep acoustic PGF, so ``strength`` raises the pull -- a
+    single calibration constant, NOT a per-cell clamp).  ``dts`` is the acoustic
+    substep, ``dt_full`` the model timestep (WRF ``grid%dt``).
+
+    Tangential components (v at W/E, u at S/N) are LEFT UNTOUCHED -- WRF's
+    relax/spec for those is the existing end-of-step ``apply_lateral_boundaries``
+    path, and the diagnosis localised the blow-up to the normal component only.
+    """
+
+    strength = float(NORMAL_BDY_RELAX_STRENGTH if relax_strength is None else relax_strength)
+    # dts/dt_full converts the WRF per-step relax weight to a per-substep one.
+    sub_ratio = strength * (float(dts) / float(dt_full) if float(dt_full) != 0.0 else 0.0)
+
+    zu, yu, xu = u_work.shape
+    wu = _normal_relax_weights_u(zu, yu, xu, sub_ratio, config, u_work.dtype)
+    u = u_work + wu * (u_target - u_work)
+
+    zv, yv, xv = v_work.shape
+    wv = _normal_relax_weights_v(zv, yv, xv, sub_ratio, config, v_work.dtype)
+    v = v_work + wv * (v_target - v_work)
+
+    return u, v
+
+
 __all__ = [
     "BoundaryConfig",
     "DEFAULT_BOUNDARY_CONFIG",
@@ -343,4 +555,7 @@ __all__ = [
     "SIDE_INDEX",
     "apply_lateral_boundaries",
     "interpolate_boundary_leaf",
+    "normal_bdy_work_target_u",
+    "normal_bdy_work_target_v",
+    "apply_normal_bdy_work",
 ]

@@ -19,7 +19,14 @@ from gpuwrf.contracts.grid import DycoreMetrics, GridSpec
 from gpuwrf.contracts.state import BaseState, State, Tendencies
 from gpuwrf.contracts.precision import DEFAULT_DTYPES, STATE_FIELD_ORDER
 from gpuwrf.contracts.halo import apply_halo
-from gpuwrf.coupling.boundary_apply import BoundaryConfig, DEFAULT_BOUNDARY_CONFIG, apply_lateral_boundaries
+from gpuwrf.coupling.boundary_apply import (
+    BoundaryConfig,
+    DEFAULT_BOUNDARY_CONFIG,
+    apply_lateral_boundaries,
+    interpolate_boundary_leaf,
+    normal_bdy_work_target_u,
+    normal_bdy_work_target_v,
+)
 from gpuwrf.coupling.physics_couplers import (
     mynn_adapter,
     rrtmg_radiation_diagnostics,
@@ -698,6 +705,8 @@ def _acoustic_core_state_from_prep(
     pressure: CalcPRhoStep0,
     namelist: OperationalNamelist,
     tendencies: Tendencies,
+    *,
+    lead_seconds=None,
 ) -> AcousticCoreState:
     """Build the acoustic work-state directly from WRF ``small_step_prep``."""
 
@@ -787,6 +796,36 @@ def _acoustic_core_state_from_prep(
         non_hydrostatic=True,
         gravity=GRAVITY_M_S2,
     )
+
+    # WIND-FIX: stage-constant coupled WORK-array boundary targets for the NORMAL
+    # momentum, consumed by ``advance_uv_wrf`` inside the acoustic loop.  Built
+    # once per RK stage from the time-interpolated decoupled wrfbdy leaf so that
+    # ``small_step_finish_wrf`` reconstructs the boundary velocity ``u_bdy``:
+    #     u = (msf*u_work + u_save*mass_cur)/mass_stage
+    #  => u_work_bdy = (u_bdy*mass_stage - u_save*mass_cur)/msf .
+    # Only staged when the real-case lateral boundary is active; ``None`` keeps the
+    # idealized / replay / bare-core paths on the unmodified PGF advance.
+    u_work_bdy = None
+    v_work_bdy = None
+    if bool(namelist.run_boundary) and lead_seconds is not None:
+        c1h = namelist.metrics.c1h[:, None, None]
+        c2h = namelist.metrics.c2h[:, None, None]
+        mass_u_cur = c1h * prep.muu[None, :, :] + c2h
+        mass_u_stage = c1h * prep.muus[None, :, :] + c2h
+        mass_v_cur = c1h * prep.muv[None, :, :] + c2h
+        mass_v_stage = c1h * prep.muvs[None, :, :] + c2h
+        cadence = float(namelist.boundary_config.update_cadence_s)
+        u_bdy_strip = interpolate_boundary_leaf(state.u_bdy, lead_seconds, cadence)
+        v_bdy_strip = interpolate_boundary_leaf(state.v_bdy, lead_seconds, cadence)
+        u_work_bdy = normal_bdy_work_target_u(
+            u_bdy_strip, prep.u_save, mass_u_cur, mass_u_stage, namelist.metrics.msfuy,
+            config=namelist.boundary_config,
+        )
+        v_work_bdy = normal_bdy_work_target_v(
+            v_bdy_strip, prep.v_save, mass_v_cur, mass_v_stage, namelist.metrics.msfvx,
+            config=namelist.boundary_config,
+        )
+
     return AcousticCoreState(
         ww=carry.ww,
         ww_1=prep.ww_save,
@@ -877,6 +916,10 @@ def _acoustic_core_state_from_prep(
         # Uncoupled physical perturbation w saved by small_step_prep (WRF :272);
         # consumed by the damp_opt=3 implicit Rayleigh w-damping in advance_w.
         w_save=prep.w_save,
+        # WIND-FIX: NORMAL-momentum boundary work targets (None unless real-case
+        # boundary is active); see advance_uv_wrf / boundary_apply.apply_normal_bdy_work.
+        u_work_bdy=u_work_bdy,
+        v_work_bdy=v_work_bdy,
     )
 
 
@@ -1036,8 +1079,11 @@ def _acoustic_scan(
     prep: SmallStepPrepState,
     pressure: CalcPRhoStep0,
     tendencies: Tendencies,
+    lead_seconds=None,
 ) -> OperationalCarry:
-    acoustic = _acoustic_core_state_from_prep(carry, prep, pressure, namelist, tendencies)
+    acoustic = _acoustic_core_state_from_prep(
+        carry, prep, pressure, namelist, tendencies, lead_seconds=lead_seconds
+    )
     if bool(namelist.use_vertical_solver):
         # WRF calc_coef_w uses the FULL dry mass ``mut`` (solve_em.F:2676-2681),
         # real ``c2a`` from small_step_prep, and the real dry ``cqw``.
@@ -1067,6 +1113,9 @@ def _acoustic_scan(
             damp_opt=int(namelist.damp_opt),
             dampcoef=float(namelist.dampcoef),
             zdamp=float(namelist.zdamp),
+            # WIND-FIX: full model dt so the in-loop normal-momentum relaxation
+            # weight is scaled to a per-substep increment.
+            dt_full=float(namelist.dt_s),
         )
 
         def body(scan_acoustic: AcousticCoreState, _):
@@ -1284,7 +1333,13 @@ def _augment_large_step_tendencies(
     )
 
 
-def _rk_scan_step(carry: OperationalCarry, namelist: OperationalNamelist, *, debug: bool = False) -> OperationalCarry:
+def _rk_scan_step(
+    carry: OperationalCarry,
+    namelist: OperationalNamelist,
+    *,
+    debug: bool = False,
+    lead_seconds=None,
+) -> OperationalCarry:
     origin = apply_halo(carry.state, halo_spec(namelist.grid))
     rk1_reference = origin
 
@@ -1322,6 +1377,7 @@ def _rk_scan_step(carry: OperationalCarry, namelist: OperationalNamelist, *, deb
             prep=prep,
             pressure=pressure,
             tendencies=tendencies,
+            lead_seconds=lead_seconds,
         )
         return stage_carry.replace(state=apply_halo(stage_carry.state, halo_spec(namelist.grid)))
 
@@ -1455,7 +1511,12 @@ def _physics_boundary_step_with_limiter_diagnostics(
     debug: bool = False,
 ) -> tuple[OperationalCarry, dict[str, jax.Array]]:
     physical_origin = carry.state
-    carry = _rk_scan_step(carry, namelist, debug=debug)
+    # Forecast clock for this step (traced scalar). Hoisted above the dycore so the
+    # in-acoustic-loop NORMAL-momentum boundary targets are interpolated at the
+    # step-start lead (matching WRF, which fixes ru_tend/rv_tend at the step start);
+    # also reused below by rrtmg + the end-of-step lateral boundary nudge.
+    lead_seconds = step_index.astype(jnp.float64) * float(namelist.dt_s)
+    carry = _rk_scan_step(carry, namelist, debug=debug, lead_seconds=lead_seconds)
     next_state = carry.state
     limiter_diagnostics = _empty_theta_limiter_diagnostics(next_state.theta)
     if not bool(namelist.disable_guards):
@@ -1468,10 +1529,6 @@ def _physics_boundary_step_with_limiter_diagnostics(
             qs=_valid_mixing_ratio(next_state.qs, physical_origin.qs),
             qg=_valid_mixing_ratio(next_state.qg, physical_origin.qg),
         )
-    # Forecast clock for this step: lead_seconds is a traced scalar (step_index is
-    # the global step). rrtmg uses it (with the static namelist.time_utc init
-    # instant) so the diurnal SW cycle evolves inside the scan; boundaries reuse it.
-    lead_seconds = step_index.astype(jnp.float64) * float(namelist.dt_s)
     if bool(namelist.run_physics):
         # Gate-1 physics call order: thompson -> surface -> mynn -> rrtmg(cadence).
         # Thompson microphysics is gated ONLY by run_physics, NOT by disable_guards.
