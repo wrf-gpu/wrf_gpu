@@ -41,6 +41,14 @@ class OperationalCarry:
     - ``ph_tend`` follows the WRF small-step geopotential tendency accumulator.
     - ``*_save`` fields keep the RK/acoustic transition state consumed across
       WRF small-step stages.
+    - ``rthraten`` is the resident WRF radiative potential-temperature tendency
+      (K/s, ``module_radiation_driver.F`` ``RTHRATEN``).  WRF refreshes it only
+      once per ``radt`` interval and ADDS ``dt*RTHRATEN`` into theta at EVERY
+      dynamics step over that interval (``phy_ra_ten`` in
+      ``module_physics_addtendc.F``).  Carrying it here (instead of lumping the
+      whole interval at one step) makes the radiation cadence WRF-faithful while
+      keeping the held rate resident on device (no host transfer in the loop).
+      Mass-grid (nz, ny, nx); starts at zero.
     """
 
     state: State
@@ -57,6 +65,7 @@ class OperationalCarry:
     ph_save: jax.Array
     mu_save: jax.Array
     ww_save: jax.Array
+    rthraten: jax.Array
 
     def replace(self, **updates) -> "OperationalCarry":
         values = {name: getattr(self, name) for name in self.__dataclass_fields__}
@@ -117,6 +126,10 @@ def initial_operational_carry(state: State) -> OperationalCarry:
         ph_save=jnp.asarray(state.ph),
         mu_save=jnp.asarray(state.mu_perturbation),
         ww_save=ww,
+        # Held WRF radiative theta tendency (K/s). Zero until the first radiation
+        # call refreshes it; theta += dt*rthraten is applied every dynamics step.
+        # Match theta dtype so force_fp64 keeps the held rate fp64.
+        rthraten=jnp.zeros_like(state.theta),
     )
 
 

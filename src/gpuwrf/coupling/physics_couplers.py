@@ -349,6 +349,33 @@ def _field_dtype(field: str):
     return DEFAULT_DTYPES.dtype_for(field)
 
 
+def _output_dtype(state: State, field: str):
+    """Return the dtype the adapter must WRITE for ``field`` on this State.
+
+    fp32-defeat fix (Sprint coupler-fp64 / GPT P0-1): the physics adapters used
+    to cast every reassembled field back to the *frozen* ADR-007 perf matrix
+    (``_field_dtype``), which pins ``theta``/``qv``/``u``/``v``/hydrometeors to
+    fp32.  Under ``force_fp64`` the *state* fields arrive as fp64 (the
+    operational precision enforcement upcast them), but that frozen-matrix cast
+    silently downcast every physics-coupled field to fp32 *inside* the timestep
+    -- so the physics tendencies (and the theta/qv/wind they advance) were
+    computed and stored in fp32 even on the "fp64" path; the end-of-step
+    re-upcast only re-widened already-truncated values.
+
+    The dtype an adapter writes must therefore track the *live* state field, not
+    the frozen matrix: fp64 when ``force_fp64`` has upcast the carry, fp32 in the
+    default mixed-precision perf mode.  ``getattr(state, field).dtype`` is exactly
+    that contract -- it preserves the existing perf-matrix behaviour byte-for-byte
+    (the field is still fp32 there) while keeping force_fp64 truly fp64 through
+    Thompson/MYNN/RRTMG.  Equivalent to letting ``state.replace`` default-cast to
+    the current dtype, but made explicit so the intermediate math (e.g. the
+    ``_theta_from_temperature`` round trip) also stays fp64 rather than being
+    truncated before the write.
+    """
+
+    return getattr(state, field).dtype
+
+
 def _coerce_datetime_utc(time_utc) -> datetime:
     """Normalize accepted host-side time values to a timezone-aware UTC datetime."""
 
@@ -602,26 +629,32 @@ def _state_from_thompson_output(state: State, out: ThompsonColumnState, precip=N
     graupel_acc<-pptgraul, ice_acc<-pptice.
     """
 
-    theta = _theta_from_temperature(_from_columns(out.T), state.p, _field_dtype("theta"))
+    # Write at the LIVE state field dtype so force_fp64 stays truly fp64 through
+    # the microphysics (fp32-defeat fix; see _output_dtype). The theta round
+    # trip and every hydrometeor tendency are computed in fp64 when the carry is
+    # fp64; in the default perf matrix the live dtype is still fp32 (unchanged).
+    theta = _theta_from_temperature(_from_columns(out.T), state.p, _output_dtype(state, "theta"))
     updates = dict(
         theta=theta,
-        qv=_from_columns(out.qv).astype(_field_dtype("qv")),
-        qc=_from_columns(out.qc).astype(_field_dtype("qc")),
-        qr=_from_columns(out.qr).astype(_field_dtype("qr")),
-        qi=_from_columns(out.qi).astype(_field_dtype("qi")),
-        qs=_from_columns(out.qs).astype(_field_dtype("qs")),
-        qg=_from_columns(out.qg).astype(_field_dtype("qg")),
-        Ni=_from_columns(out.Ni).astype(_field_dtype("Ni")),
-        Nr=_from_columns(out.Nr).astype(_field_dtype("Nr")),
-        Ns=_from_columns(out.Ns).astype(_field_dtype("Ns")),
-        Ng=_from_columns(out.Ng).astype(_field_dtype("Ng")),
+        qv=_from_columns(out.qv).astype(_output_dtype(state, "qv")),
+        qc=_from_columns(out.qc).astype(_output_dtype(state, "qc")),
+        qr=_from_columns(out.qr).astype(_output_dtype(state, "qr")),
+        qi=_from_columns(out.qi).astype(_output_dtype(state, "qi")),
+        qs=_from_columns(out.qs).astype(_output_dtype(state, "qs")),
+        qg=_from_columns(out.qg).astype(_output_dtype(state, "qg")),
+        Ni=_from_columns(out.Ni).astype(_output_dtype(state, "Ni")),
+        Nr=_from_columns(out.Nr).astype(_output_dtype(state, "Nr")),
+        Ns=_from_columns(out.Ns).astype(_output_dtype(state, "Ns")),
+        Ng=_from_columns(out.Ng).astype(_output_dtype(state, "Ng")),
     )
     if precip is not None:
         # precip values are surface (ny, nx) in mm; State accumulators are (ny, nx).
-        updates["rain_acc"] = (jnp.asarray(state.rain_acc, dtype=jnp.float64) + precip["rain"]).astype(_field_dtype("rain_acc"))
-        updates["snow_acc"] = (jnp.asarray(state.snow_acc, dtype=jnp.float64) + precip["snow"]).astype(_field_dtype("snow_acc"))
-        updates["graupel_acc"] = (jnp.asarray(state.graupel_acc, dtype=jnp.float64) + precip["graupel"]).astype(_field_dtype("graupel_acc"))
-        updates["ice_acc"] = (jnp.asarray(state.ice_acc, dtype=jnp.float64) + precip["ice"]).astype(_field_dtype("ice_acc"))
+        # Accumulators are fp64-locked in both modes (PRECISION_MATRIX), so the
+        # live dtype is fp64 here -- the += already runs in fp64.
+        updates["rain_acc"] = (jnp.asarray(state.rain_acc, dtype=jnp.float64) + precip["rain"]).astype(_output_dtype(state, "rain_acc"))
+        updates["snow_acc"] = (jnp.asarray(state.snow_acc, dtype=jnp.float64) + precip["snow"]).astype(_output_dtype(state, "snow_acc"))
+        updates["graupel_acc"] = (jnp.asarray(state.graupel_acc, dtype=jnp.float64) + precip["graupel"]).astype(_output_dtype(state, "graupel_acc"))
+        updates["ice_acc"] = (jnp.asarray(state.ice_acc, dtype=jnp.float64) + precip["ice"]).astype(_output_dtype(state, "ice_acc"))
     return state.replace(**updates)
 
 
@@ -735,13 +768,16 @@ def _state_from_mynn_output(state: State, out: MynnPBLColumnState) -> State:
     u_mass = _from_columns(out.u)
     v_mass = _from_columns(out.v)
     w_mass = _from_columns(out.w)
+    # LIVE-dtype writes keep force_fp64 fp64 through the PBL solve (fp32-defeat
+    # fix; see _output_dtype). Perf-matrix mode is unchanged (u/v/theta/qv/qke
+    # still fp32 there; w is fp64-locked in both).
     return state.replace(
-        u=_mass_to_u_face(u_mass).astype(_field_dtype("u")),
-        v=_mass_to_v_face(v_mass).astype(_field_dtype("v")),
-        w=_mass_to_w_face(w_mass).astype(_field_dtype("w")),
-        theta=_from_columns(out.theta).astype(_field_dtype("theta")),
-        qv=_from_columns(out.qv).astype(_field_dtype("qv")),
-        qke=(2.0 * _from_columns(out.tke)).astype(_field_dtype("qke")),
+        u=_mass_to_u_face(u_mass).astype(_output_dtype(state, "u")),
+        v=_mass_to_v_face(v_mass).astype(_output_dtype(state, "v")),
+        w=_mass_to_w_face(w_mass).astype(_output_dtype(state, "w")),
+        theta=_from_columns(out.theta).astype(_output_dtype(state, "theta")),
+        qv=_from_columns(out.qv).astype(_output_dtype(state, "qv")),
+        qke=(2.0 * _from_columns(out.tke)).astype(_output_dtype(state, "qke")),
     )
 
 
@@ -801,14 +837,17 @@ def surface_adapter(state: State, dt: float) -> State:
 
     del dt
     flux = surface_layer(_surface_column_view(state))
+    # Surface flux handles are fp64-locked in PRECISION_MATRIX, so the live
+    # dtype is fp64 in both modes; written via _output_dtype for one consistent
+    # adapter-write contract (fp32-defeat fix; see _output_dtype).
     return state.replace(
-        ustar=flux.ustar.astype(_field_dtype("ustar")),
-        theta_flux=flux.theta_flux.astype(_field_dtype("theta_flux")),
-        qv_flux=flux.qv_flux.astype(_field_dtype("qv_flux")),
-        tau_u=flux.tau_u.astype(_field_dtype("tau_u")),
-        tau_v=flux.tau_v.astype(_field_dtype("tau_v")),
-        rhosfc=flux.rhosfc.astype(_field_dtype("rhosfc")),
-        fltv=flux.fltv.astype(_field_dtype("fltv")),
+        ustar=flux.ustar.astype(_output_dtype(state, "ustar")),
+        theta_flux=flux.theta_flux.astype(_output_dtype(state, "theta_flux")),
+        qv_flux=flux.qv_flux.astype(_output_dtype(state, "qv_flux")),
+        tau_u=flux.tau_u.astype(_output_dtype(state, "tau_u")),
+        tau_v=flux.tau_v.astype(_output_dtype(state, "tau_v")),
+        rhosfc=flux.rhosfc.astype(_output_dtype(state, "rhosfc")),
+        fltv=flux.fltv.astype(_output_dtype(state, "fltv")),
     )
 
 
@@ -908,7 +947,50 @@ def rrtmg_adapter(
     sw = solve_rrtmg_sw_column(sw_state, debug=False)
     lw = solve_rrtmg_lw_column(lw_state, debug=False)
     T_next = T + seconds * _from_columns(sw.heating_rate + lw.heating_rate)
-    return state.replace(theta=_theta_from_temperature(T_next, state.p, _field_dtype("theta")))
+    # LIVE-dtype write keeps force_fp64 fp64 through radiation (fp32-defeat fix;
+    # see _output_dtype). The fp32 RRTMG band optics are an intrinsic property of
+    # the RRTMG kernel (WRF uses r4 there too); the heating-rate ADD onto T and
+    # the theta round trip run in fp64 when the carry is fp64.
+    return state.replace(theta=_theta_from_temperature(T_next, state.p, _output_dtype(state, "theta")))
+
+
+def rrtmg_theta_tendency(
+    state: State,
+    grid: GridSpec | None = None,
+    *,
+    time_utc=None,
+    lead_seconds=0.0,
+) -> "jnp.ndarray":
+    """Return the WRF ``RTHRATEN`` radiative potential-temperature tendency (K/s).
+
+    This is the HELD-RATE primitive behind the WRF-faithful radiation cadence
+    (Sprint coupler-fp64 FIX #2 / GPT P0-2).  WRF recomputes ``RTHRATEN`` only
+    once per ``radt`` interval (``module_radiation_driver.F`` run_param gate,
+    :1111-1127) and then ADDS it into the theta tendency at EVERY dynamics step
+    over that interval (``phy_ra_ten`` in ``module_physics_addtendc.F:131-229``,
+    fed by ``module_first_rk_step_part2.F:392-394``).  The lumped
+    ``dt*cadence*rate``-at-one-step alternative is NOT equivalent: the
+    intervening dynamics/microphysics/PBL would see a different temperature
+    trajectory.
+
+    The returned 3-D field is on the (nz, ny, nx) mass grid and matches the
+    state's theta dtype (fp64 under force_fp64).  Computing the tendency in
+    theta-space (not T-space) means the per-step application is the exact WRF
+    ``theta += dt * RTHRATEN`` -- no extra exner round trip per step.
+    """
+
+    T = _temperature_from_theta(state.theta, state.p)
+    sw_state, lw_state, _, _, _ = _rrtmg_column_inputs(
+        state, grid, time_utc=time_utc, lead_seconds=lead_seconds
+    )
+    sw = solve_rrtmg_sw_column(sw_state, debug=False)
+    lw = solve_rrtmg_lw_column(lw_state, debug=False)
+    heating_rate_T = _from_columns(sw.heating_rate + lw.heating_rate)  # dT/dt (K/s)
+    # Convert the temperature heating rate to a theta tendency via the exner
+    # factor (theta = T / exner; for fixed pressure d(theta)/dt = (dT/dt)/exner).
+    exner = (jnp.maximum(state.p, 1.0) / P0_PA) ** R_D_OVER_CP
+    rthraten = heating_rate_T / jnp.maximum(exner, 1.0e-12)
+    return rthraten.astype(_output_dtype(state, "theta"))
 
 
 __all__ = [
@@ -920,6 +1002,7 @@ __all__ = [
     "mynn_adapter_with_diagnostics",
     "rrtmg_radiation_diagnostics",
     "rrtmg_adapter",
+    "rrtmg_theta_tendency",
     "surface_adapter",
     "surface_layer_diagnostics",
     "thompson_adapter",
