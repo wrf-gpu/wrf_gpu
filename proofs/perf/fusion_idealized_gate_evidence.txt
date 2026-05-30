@@ -1,0 +1,13 @@
+# Idealized close-gate PASS evidence for the fusion launch-tax levers
+# Base commit d9846a3 (wind fix landed). Generated 2026-05-30 by worker/opus/fusion.
+# The .log files are gitignored; this captures the verbatim pytest verdict lines.
+
+## GPUWRF_ACOUSTIC_UNROLL=4 (acoustic-substep scan unroll)
+tests/idealized/test_dycore_close_gate.py::test_warm_bubble_close_gate_passes PASSED [ 50%]
+tests/idealized/test_dycore_close_gate.py::test_density_current_close_gate_passes PASSED [100%]
+======================== 2 passed in 1153.06s (0:19:13) ========================
+
+## XLA command buffers (--xla_gpu_enable_command_buffer=FUSION,CUSTOM_CALL --xla_gpu_graph_min_graph_size=1), unroll=1
+tests/idealized/test_dycore_close_gate.py::test_warm_bubble_close_gate_passes PASSED [ 50%]
+tests/idealized/test_dycore_close_gate.py::test_density_current_close_gate_passes PASSED [100%]
+======================== 2 passed in 690.56s (0:11:30) =========================
