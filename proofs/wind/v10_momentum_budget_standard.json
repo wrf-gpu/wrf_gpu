@@ -1,0 +1,175 @@
+{
+  "_doc": "case3 V10 momentum-budget attribution. mode=standard dumps the water-mean vertical u/v profile vs CPU-WRF + the single-step MYNN k0 momentum increment; mode=mynn_off zeroes ONLY the PBL u/v increment (separate process, no stale jit cache) to isolate dycore vs MYNN momentum. Truth = corpus CPU-WRF wrfout_d02.",
+  "case": "case3_0521_18z_L3",
+  "init_utc": "2026-05-21T18:00:00+00:00",
+  "lead_h": 24,
+  "mode": "standard",
+  "grid": {
+    "all": 10494,
+    "land": 768,
+    "water": 9726
+  },
+  "config": {
+    "dt_s": 10.0,
+    "acoustic_substeps": 10,
+    "segment_steps": 180
+  },
+  "result": {
+    "wall_s": 916.7,
+    "finite": true,
+    "k0_diag_skill": {
+      "U10": {
+        "all": {
+          "skill": -0.0011816437328144858,
+          "pers_rmse": 2.389109451171362,
+          "gpu_rmse": 2.3919325273813463
+        },
+        "water": {
+          "skill": -0.0029010027958644713,
+          "pers_rmse": 2.416891217140064,
+          "gpu_rmse": 2.4239026253182874
+        }
+      },
+      "V10": {
+        "all": {
+          "skill": -0.09885054475381483,
+          "pers_rmse": 3.0833950025527077,
+          "gpu_rmse": 3.388190278246233
+        },
+        "water": {
+          "skill": -0.13169190308876288,
+          "pers_rmse": 3.0501964266976827,
+          "gpu_rmse": 3.4518825989240445
+        }
+      }
+    },
+    "water_profile": [
+      {
+        "k": 0,
+        "gpu_u": 1.119760290894566,
+        "wrf_u": -0.6893069794393244,
+        "gpu_v": -4.853100956942165,
+        "wrf_v": -7.109305881672396,
+        "gpu_wspd": 6.104515379456594,
+        "wrf_wspd": 7.899734611463077
+      },
+      {
+        "k": 1,
+        "gpu_u": 1.3827802289275224,
+        "wrf_u": -0.7914105407066111,
+        "gpu_v": -6.340106055578122,
+        "wrf_v": -7.594593756529019,
+        "gpu_wspd": 7.680453297088002,
+        "wrf_wspd": 8.400713892301585
+      },
+      {
+        "k": 2,
+        "gpu_u": 1.4000846034943846,
+        "wrf_u": -0.8765613449834718,
+        "gpu_v": -6.892260335943053,
+        "wrf_v": -7.816873275675837,
+        "gpu_wspd": 8.175889714002773,
+        "wrf_wspd": 8.601189881490413
+      },
+      {
+        "k": 3,
+        "gpu_u": 1.275078392045387,
+        "wrf_u": -1.0100973684264003,
+        "gpu_v": -7.512637106013108,
+        "wrf_v": -7.922586324344152,
+        "gpu_wspd": 8.580829098423104,
+        "wrf_wspd": 8.63499515785091
+      },
+      {
+        "k": 4,
+        "gpu_u": 0.5367224327573965,
+        "wrf_u": -1.385219075699784,
+        "gpu_v": -8.124662505495143,
+        "wrf_v": -7.967193358247047,
+        "gpu_wspd": 8.81938790195784,
+        "wrf_wspd": 8.596869285408973
+      },
+      {
+        "k": 5,
+        "gpu_u": -0.41605610554569167,
+        "wrf_u": -2.0161961469948757,
+        "gpu_v": -8.190809962842597,
+        "wrf_v": -7.517252040300162,
+        "gpu_wspd": 8.69803954892069,
+        "wrf_wspd": 8.156740736147745
+      },
+      {
+        "k": 6,
+        "gpu_u": -0.5636186891917129,
+        "wrf_u": -1.9446348593872977,
+        "gpu_v": -7.310929448204099,
+        "wrf_v": -6.507581674836656,
+        "gpu_wspd": 7.862564658449774,
+        "wrf_wspd": 7.161194462074821
+      },
+      {
+        "k": 7,
+        "gpu_u": -0.2545138123593807,
+        "wrf_u": -1.348150012748329,
+        "gpu_v": -5.719999716549219,
+        "wrf_v": -5.13994524626095,
+        "gpu_wspd": 6.247990880491889,
+        "wrf_wspd": 5.710099129097043
+      },
+      {
+        "k": 8,
+        "gpu_u": -0.29525871851032964,
+        "wrf_u": -0.9843419587951078,
+        "gpu_v": -3.9930789968568914,
+        "wrf_v": -3.580627307994914,
+        "gpu_wspd": 4.421315146919746,
+        "wrf_wspd": 4.150786564348151
+      },
+      {
+        "k": 9,
+        "gpu_u": -0.8455121473008512,
+        "wrf_u": -1.07221785586339,
+        "gpu_v": -2.3019729559372824,
+        "wrf_v": -2.057443631013224,
+        "gpu_wspd": 3.204778271846682,
+        "wrf_wspd": 2.8464192716952903
+      },
+      {
+        "k": 10,
+        "gpu_u": -1.0950308953999661,
+        "wrf_u": -1.0195809663175244,
+        "gpu_v": -1.122543230430918,
+        "wrf_v": -1.3326035037980473,
+        "gpu_wspd": 2.636535045176992,
+        "wrf_wspd": 2.416783661366891
+      },
+      {
+        "k": 11,
+        "gpu_u": -1.0488363273405255,
+        "wrf_u": -0.6559642571835267,
+        "gpu_v": -0.2010521415340355,
+        "wrf_v": -0.4489227282521094,
+        "gpu_wspd": 2.1486952712644762,
+        "wrf_wspd": 1.837719640623747
+      }
+    ],
+    "mynn_k0_increment_single_step_water": {
+      "full": {
+        "mean_du0": -0.001217756557215901,
+        "mean_dv0": 0.003582888852147253,
+        "mean_abs_du0": 0.004038506388978508,
+        "mean_abs_dv0": 0.005369788260581815
+      },
+      "drag_only": {
+        "mean_du0": -0.00287118740901193,
+        "mean_dv0": 0.014122102640423758
+      },
+      "diffusion_only": {
+        "mean_du0": 0.0016279236677222073,
+        "mean_dv0": -0.010350248991100179
+      },
+      "_doc": "one mynn step on the post-dycore state, mean over water; dt*RUBLTEN at k0. full=drag+vertical diffusion; drag_only=dfm=0; diffusion_only=bottom_drag=0. negative=decelerating that component. ERROR VECTOR to beat: GPU-WRF k0 ~ (+u too positive, +v too weak); a harmful PBL term has increment aligned with (+du0,+dv0)."
+    }
+  },
+  "generated_utc": "2026-05-31T03:25:48.302881+00:00"
+}
