@@ -868,6 +868,82 @@ def _sed_unroll() -> int:
         return 2
 
 
+def _implicit_sed_nsub() -> int:
+    """Number of backward-Euler implicit-sedimentation sweeps.
+
+    ``GPUWRF_THOMPSON_IMPLICIT_SED`` selects the EXPERIMENTAL implicit
+    (backward-Euler upwind) sedimentation instead of the faithful WRF explicit
+    sub-stepped upwind.  Value = number of implicit sweeps (``0`` = OFF = faithful
+    explicit default; ``1`` = single full-step BE; ``2``/``4`` reduce implicit
+    diffusion at proportional cost).  This is a NUMERICAL SCHEME CHANGE (more
+    diffusive vertical precip) gated behind this flag; default is OFF so the
+    shipped kernel is the faithful explicit scheme, byte-identical to base.
+    """
+
+    try:
+        return max(0, int(os.environ.get("GPUWRF_THOMPSON_IMPLICIT_SED", "0")))
+    except ValueError:
+        return 0
+
+
+def _sed_implicit_q(q, vt, dz, rho, dt, nsub):
+    """Backward-Euler upwind sedimentation of one field in ``nsub`` implicit sweeps.
+
+    Axis -1 is vertical, index 0 = surface, last = model top.  Sedimentation flux
+    enters a layer only from the layer ABOVE (higher index), so the implicit solve
+    is a top->bottom bidiagonal recurrence:
+        (1 + dt_s*vt_k/dz_k) q_k' = q_k + (dt_s/(rho_k dz_k)) rho_{k+1} vt_{k+1} q_{k+1}'
+    Returns (q', surface_precip_mm).  Unconditionally stable; mass-conserving up to
+    the surface flux.  See proofs/thompson_perf/implicit_sedimentation_prototype.py.
+    """
+
+    acc = jnp.result_type(q.dtype, vt.dtype, rho.dtype, dz.dtype)
+    q_dt = q.dtype
+    q = q.astype(acc)
+    dts = float(dt) / nsub
+    qr0 = jnp.moveaxis(q, -1, 0)[::-1]      # (z, ...) z=0 == model top
+    vtr = jnp.moveaxis(vt, -1, 0)[::-1]
+    rhor = jnp.moveaxis(rho, -1, 0)[::-1]
+    dzr = jnp.moveaxis(dz, -1, 0)[::-1]
+    nz = qr0.shape[0]
+    diag = 1.0 + dts * vtr / dzr
+
+    def one(qcur):
+        def body(inflow_mass, k):
+            qk = (qcur[k] + dts / (rhor[k] * dzr[k]) * inflow_mass) / diag[k]
+            return rhor[k] * vtr[k] * qk, qk
+        _, qsol = jax.lax.scan(body, jnp.zeros(qcur.shape[1:], acc), jnp.arange(nz))
+        surf = rhor[nz - 1] * vtr[nz - 1] * qsol[nz - 1]  # bottom (surface) flux
+        return jnp.maximum(qsol, 0.0), surf
+
+    def step(carry, _):
+        qc, sacc = carry
+        qsol, surf = one(qc)
+        return (qsol, sacc + surf * dts), None
+
+    (qf, sf), _ = jax.lax.scan(step, (qr0, jnp.zeros(qr0.shape[1:], acc)), None, length=nsub)
+    qf = jnp.moveaxis(jnp.maximum(qf, 0.0)[::-1], 0, -1)
+    return qf.astype(q_dt), sf
+
+
+def _sedimentation_implicit(state: ThompsonColumnState, dt: float, nsub: int):
+    """EXPERIMENTAL implicit backward-Euler sedimentation (gated, default OFF)."""
+
+    vt_r_mass, vt_r_num, vt_i_mass, vt_i_num, vt_s_mass, vt_g_mass, vt_g_num = _fall_speeds(state)
+    dz = jnp.maximum(state.dz, 1.0)
+    rho = jnp.maximum(state.rho, R1)
+    qr, pr = _sed_implicit_q(state.qr, vt_r_mass, dz, rho, dt, nsub)
+    Nr, _ = _sed_implicit_q(state.Nr, vt_r_num, dz, rho, dt, nsub)
+    qi, pi = _sed_implicit_q(state.qi, vt_i_mass, dz, rho, dt, nsub)
+    Ni, _ = _sed_implicit_q(state.Ni, vt_i_num, dz, rho, dt, nsub)
+    qs, ps = _sed_implicit_q(state.qs, vt_s_mass, dz, rho, dt, nsub)
+    Ns, _ = _sed_implicit_q(state.Ns, vt_s_mass, dz, rho, dt, nsub)
+    qg, pg = _sed_implicit_q(state.qg, vt_g_mass, dz, rho, dt, nsub)
+    Ng, _ = _sed_implicit_q(state.Ng, vt_g_num, dz, rho, dt, nsub)
+    updated = state.replace(qr=qr, Nr=Nr, qi=qi, Ni=Ni, qs=qs, Ns=Ns, qg=qg, Ng=Ng)
+    return updated, {"rain": pr, "snow": ps, "graupel": pg, "ice": pi}
+
+
 def _rho_correction(rho):
     """WRF air-density fall-speed correction rhof = sqrt(rho_not/rho)."""
 
@@ -1018,6 +1094,11 @@ def _sedimentation(state: ThompsonColumnState, dt: float):
     mass since the mp=8 default carries diagnostic snow number and a fixed
     graupel intercept; Ng falls with the mass flux when present.
     """
+
+    nsub = _implicit_sed_nsub()
+    if nsub > 0:
+        # EXPERIMENTAL implicit backward-Euler sedimentation (gated, default OFF).
+        return _sedimentation_implicit(state, dt, nsub)
 
     vt_r_mass, vt_r_num, vt_i_mass, vt_i_num, vt_s_mass, vt_g_mass, vt_g_num = _fall_speeds(state)
     dz = jnp.maximum(state.dz, 1.0)

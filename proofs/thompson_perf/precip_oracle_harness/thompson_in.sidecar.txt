@@ -1,0 +1,7 @@
+# WRFGPU2 physics oracle sidecar
+scheme thompson
+tag in
+grid_id 1
+itimestep 1
+dims_ni_nk_nj 8 44 1
+# FIELD name rank ni nk nj units stagger desc
