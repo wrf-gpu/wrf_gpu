@@ -72,6 +72,24 @@ class BoundaryConfig:
     relax_zone: int = 4
     update_cadence_s: float = 3600.0
     spec_exp: float = 0.0
+    # Whether to overwrite the prognostic geopotential ``ph`` in the boundary
+    # strip from the ``ph_bdy`` parent leaf.  This is correct ONLY when the
+    # boundary leaves are SELF-CONSISTENT with the child column (the d02 self-
+    # replay path, where the strips are the child's own hourly wrfout history).
+    # For a NESTED parent->child boundary the ``ph_bdy`` strip is the PARENT's
+    # perturbation geopotential bilinearly interpolated onto the finer child
+    # grid; that interpolated value is NOT hydrostatically consistent with the
+    # child's own mu/theta column, so overwriting ``ph`` in the ring feeds an
+    # inconsistent geopotential directly into the acoustic w-ph solve
+    # (small_step_prep ph_1/ph_save/ph_work), pumping spurious vertical motion
+    # that warms the interior (root cause of the d03 1km +6.8 K T2 bias --
+    # the ph forcing alone reproduces +2.84 K/10 min while every other forced
+    # field stays within +/-0.13 K).  WRF does not independently overwrite the
+    # nest geopotential from the interpolated parent field; here we instead leave
+    # ``ph`` dynamically/hydrostatically consistent (still forcing u/v/w/theta/
+    # qv/mu/p, which are individually harmless).  ``True`` preserves the
+    # validated d02 self-replay path byte-for-byte.
+    force_geopotential: bool = True
 
 
 DEFAULT_BOUNDARY_CONFIG = BoundaryConfig()
@@ -100,10 +118,17 @@ def apply_lateral_boundaries(
     qv = jnp.maximum(_apply_3d(state.qv, state.qv_bdy, lead_seconds, dt_s, config), 0.0)
     p_perturbation = _apply_3d(state.p_perturbation, state.p_bdy, lead_seconds, dt_s, config)
     pb = _apply_3d(_base_pressure(state), state.pb_bdy, lead_seconds, dt_s, config)
-    ph_perturbation = _apply_3d(state.ph_perturbation, state.ph_bdy, lead_seconds, dt_s, config)
-    phb = _apply_3d(_base_geopotential(state), state.phb_bdy, lead_seconds, dt_s, config)
     mu_perturbation = _apply_3d(state.mu_perturbation[None, :, :], state.mu_bdy, lead_seconds, dt_s, config)[0]
     mub = _apply_3d(_base_mu(state)[None, :, :], state.mub_bdy, lead_seconds, dt_s, config)[0]
+    if config.force_geopotential:
+        ph_perturbation = _apply_3d(state.ph_perturbation, state.ph_bdy, lead_seconds, dt_s, config)
+        phb = _apply_3d(_base_geopotential(state), state.phb_bdy, lead_seconds, dt_s, config)
+        ph_total = phb + ph_perturbation
+    else:
+        # Leave the geopotential dynamically/hydrostatically consistent with the
+        # child column (do NOT overwrite from the interpolated parent strip).
+        ph_perturbation = state.ph_perturbation
+        ph_total = state.ph_total
     return state.replace(
         u=u,
         v=v,
@@ -112,7 +137,7 @@ def apply_lateral_boundaries(
         qv=qv,
         p_total=pb + p_perturbation,
         p_perturbation=p_perturbation,
-        ph_total=phb + ph_perturbation,
+        ph_total=ph_total,
         ph_perturbation=ph_perturbation,
         mu_total=mub + mu_perturbation,
         mu_perturbation=mu_perturbation,
