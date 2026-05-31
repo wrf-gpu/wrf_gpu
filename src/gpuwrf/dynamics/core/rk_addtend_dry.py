@@ -238,6 +238,126 @@ def large_step_horizontal_pgf(
     return ru_pgf, rv_pgf
 
 
+def large_step_coriolis(
+    state: State,
+    metrics: DycoreMetrics,
+    *,
+    specified: bool = True,
+) -> tuple[jax.Array, jax.Array]:
+    """Return the WRF large-step *coupled* Coriolis tendency for ``ru/rv_tend``.
+
+    Source: WRF ``rk_tendency`` -> ``coriolis``
+    (``module_em.F:761``; body ``module_big_step_utilities_em.F:3640-3850``;
+    ``config_flags%pert_coriolis`` defaults to ``.false.`` (``Registry.EM_COMMON``)
+    so the Canary real case uses the standard ``coriolis``).  WRF assembles this
+    term in the SAME coupled ``ru/rv_tend`` space as the PGF and consumes it inside
+    ``advance_uv`` (``u += dts*ru_tend``, ``module_small_step_em.F:805``), so the
+    returned tendency is added to the PGF before ``rk_addtend_dry`` exactly as the
+    Fortran does (``module_em.F:717`` PGF then ``:761`` coriolis).
+
+    Coupled momentum (``couple_momentum``, ``module_big_step_utilities_em.F:372/383``):
+    ``ru = u*(c1h*muu+c2h)/msfuy`` on u-faces, ``rv = v*(c1h*muv+c2h)/msfvx`` on
+    v-faces, ``rw = w*(c1f*mut+c2f)/msfty`` on w-faces.
+
+    C-grid staggering (the key correctness risk): ``f``/``e``/``sina``/``cosa`` live
+    on mass points; they are averaged onto the u-face (``0.5*(f(i)+f(i-1))``,
+    :3726) and v-face (``0.5*(f(j)+f(j-1))``, :3800).  The off-axis coupled momentum
+    is averaged from its four surrounding faces onto the target face: ``rv`` over the
+    x-pair ``(i-1,i)`` and y-pair ``(j,j+1)`` for the u-eqn (:3727); ``ru`` over the
+    x-pair ``(i,i+1)`` and y-pair ``(j-1,j)`` for the v-eqn (:3801).  Sign: ``+f*rv``
+    into ``ru_tend`` (:3726), ``-f*ru`` into ``rv_tend`` (:3800).
+
+    The cosine-Coriolis ``e*rw`` and the ``sina/cosa`` map-rotation pieces are kept
+    (they enter the *horizontal* tendencies only, never ``rw_tend``/the w-solve);
+    at the Canary domain ``e~1.3e-4`` against ``w~O(0.05)`` makes them ~1% of the
+    ``f`` term and ``sina~0.02`` the rotation ~2%, but they are WRF-faithful and the
+    leaves default to ``e=0,sina=0,cosa=1`` for idealized cases.  The vertical-
+    momentum Coriolis (``rw_tend += e*ru``, :3839) is intentionally NOT applied here
+    (it feeds the acoustic w-phi solve, which is out of scope).
+
+    ``specified``: WRF skips the outermost u-face column / v-face row for
+    specified/nested boundaries (``i_start=MAX(ids+1,its)`` etc., :3714/:3776).
+    The Canary real case is nested (``specified=True``); the excluded edge faces are
+    overwritten by the lateral-boundary relaxation anyway, so zeroing Coriolis there
+    keeps the interior identical to WRF without perturbing the boundary frame.  For
+    idealized cases ``f=0`` makes every term identically zero regardless.
+    """
+
+    u = jnp.asarray(state.u, dtype=jnp.float64)  # (nz, ny, nx+1)
+    v = jnp.asarray(state.v, dtype=jnp.float64)  # (nz, ny+1, nx)
+    w = jnp.asarray(state.w, dtype=jnp.float64)  # (nz+1, ny, nx)
+    mu_total = jnp.asarray(state.mu_total, dtype=jnp.float64)  # (ny, nx)
+
+    c1h = metrics.c1h[:, None, None]
+    c2h = metrics.c2h[:, None, None]
+    c1f = metrics.c1f[:, None, None]
+    c2f = metrics.c2f[:, None, None]
+
+    # --- coupled momentum (couple_momentum, :372/383/394) ---
+    muu = 0.5 * sum(_x_face_pair_2d(mu_total))  # (ny, nx+1)
+    muv = 0.5 * sum(_y_face_pair_2d(mu_total))  # (ny+1, nx)
+    ru = u * (c1h * muu[None, :, :] + c2h) / metrics.msfuy[None, :, :]
+    rv = v * (c1h * muv[None, :, :] + c2h) / metrics.msfvx[None, :, :]
+    rw = w * (c1f * mu_total[None, :, :] + c2f) / metrics.msfty[None, :, :]
+
+    # f/e/sina/cosa on mass points -> staggered face averages.
+    f_u = 0.5 * sum(_x_face_pair_2d(metrics.f))  # (ny, nx+1)
+    e_u = 0.5 * sum(_x_face_pair_2d(metrics.e))
+    cosa_u = 0.5 * sum(_x_face_pair_2d(metrics.cosa))
+    f_v = 0.5 * sum(_y_face_pair_2d(metrics.f))  # (ny+1, nx)
+    e_v = 0.5 * sum(_y_face_pair_2d(metrics.e))
+    sina_v = 0.5 * sum(_y_face_pair_2d(metrics.sina))
+
+    msf_u = (metrics.msfux / metrics.msfuy)[None, :, :]  # (1, ny, nx+1)
+    msf_v = (metrics.msfvy / metrics.msfvx)[None, :, :]  # (1, ny+1, nx)
+
+    # === u-momentum coriolis (:3726-3729) on u-faces (nz, ny, nx+1) ===
+    # rv averaged from the four surrounding v-faces: x-pair (i-1,i), y-pair (j,j+1).
+    # rv is (nz, ny+1, nx); pad x by edge to reach the nx+1 u-faces, take the j and
+    # j+1 v-face rows, then average the (i-1,i) and (j,j+1) quad.
+    rv_xpad = jnp.pad(rv, ((0, 0), (0, 0), (1, 1)), mode="edge")  # (nz, ny+1, nx+2)
+    rv_im1 = rv_xpad[:, :, :-1]  # west neighbour for each u-face (nz, ny+1, nx+1)
+    rv_i = rv_xpad[:, :, 1:]  # east neighbour for each u-face (nz, ny+1, nx+1)
+    rv_quad = 0.25 * (rv_im1[:, :-1, :] + rv_i[:, :-1, :] + rv_im1[:, 1:, :] + rv_i[:, 1:, :])
+    ru_cor = msf_u * f_u[None, :, :] * rv_quad
+
+    # cosine-coriolis -e*cosa*0.25*(rw quad over x-pair (i-1,i), z-pair (k,k+1)).
+    rw_xpad = jnp.pad(rw, ((0, 0), (0, 0), (1, 1)), mode="edge")  # (nz+1, ny, nx+2)
+    rw_im1 = rw_xpad[:, :, :-1]  # (nz+1, ny, nx+1)
+    rw_i = rw_xpad[:, :, 1:]
+    rw_u_quad = 0.25 * (rw_im1[:-1] + rw_im1[1:] + rw_i[:-1] + rw_i[1:])  # (nz, ny, nx+1)
+    ru_cor = ru_cor - e_u[None, :, :] * cosa_u[None, :, :] * rw_u_quad
+
+    if specified:
+        # WRF excludes the first/last u-face column for specified/nested (:3714-3717).
+        edge_mask_u = jnp.ones((1, 1, u.shape[2]), dtype=jnp.float64)
+        edge_mask_u = edge_mask_u.at[:, :, 0].set(0.0).at[:, :, -1].set(0.0)
+        ru_cor = ru_cor * edge_mask_u
+
+    # === v-momentum coriolis (:3800-3803) on v-faces (nz, ny+1, nx) ===
+    # ru averaged from the four surrounding u-faces: x-pair (i,i+1), y-pair (j-1,j).
+    ru_ypad = jnp.pad(ru, ((0, 0), (1, 1), (0, 0)), mode="edge")  # (nz, ny+2, nx+1)
+    ru_jm1 = ru_ypad[:, :-1, :]  # south neighbour for each v-face (nz, ny+1, nx+1)
+    ru_j = ru_ypad[:, 1:, :]  # north neighbour for each v-face (nz, ny+1, nx+1)
+    ru_quad = 0.25 * (ru_jm1[:, :, :-1] + ru_jm1[:, :, 1:] + ru_j[:, :, :-1] + ru_j[:, :, 1:])
+    rv_cor = -msf_v * f_v[None, :, :] * ru_quad
+
+    # cosine-coriolis +msf_v*e*sina*0.25*(rw quad over y-pair (j-1,j), z-pair (k,k+1)).
+    rw_ypad = jnp.pad(rw, ((0, 0), (1, 1), (0, 0)), mode="edge")  # (nz+1, ny+2, nx)
+    rw_jm1 = rw_ypad[:, :-1, :]  # (nz+1, ny+1, nx)
+    rw_j = rw_ypad[:, 1:, :]
+    rw_v_quad = 0.25 * (rw_jm1[:-1] + rw_jm1[1:] + rw_j[:-1] + rw_j[1:])  # (nz, ny+1, nx)
+    rv_cor = rv_cor + msf_v * e_v[None, :, :] * sina_v[None, :, :] * rw_v_quad
+
+    if specified:
+        # WRF excludes the first/last v-face row for specified/nested (:3776-3778).
+        edge_mask_v = jnp.ones((1, v.shape[1], 1), dtype=jnp.float64)
+        edge_mask_v = edge_mask_v.at[:, 0, :].set(0.0).at[:, -1, :].set(0.0)
+        rv_cor = rv_cor * edge_mask_v
+
+    return ru_cor, rv_cor
+
+
 def _zeros_like(reference: jax.Array, candidate: jax.Array | None) -> jax.Array:
     return jnp.zeros_like(reference) if candidate is None else jnp.asarray(candidate, dtype=reference.dtype)
 

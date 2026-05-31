@@ -64,6 +64,7 @@ from gpuwrf.dynamics.core.rhs_ph import rhs_ph_wrf
 from gpuwrf.dynamics.core.coupled import CoupledCoreConfig, coupled_timestep_core
 from gpuwrf.dynamics.core.rk_addtend_dry import (
     DryPhysicsTendencies,
+    large_step_coriolis,
     large_step_horizontal_pgf,
     rk_addtend_dry,
 )
@@ -1317,6 +1318,24 @@ def _augment_large_step_tendencies(
     )
     u_t = u_t + ru_pgf
     v_t = v_t + rv_pgf
+
+    # WRF rk_tendency adds the Coriolis force to the SAME coupled ru/rv_tend
+    # immediately AFTER the horizontal PGF (module_em.F:717 PGF then :761 coriolis;
+    # body module_big_step_utilities_em.F:3640).  This is the rotational body force
+    # that lets the interior flow reach geostrophic balance; its complete absence
+    # was the proven root cause of the below-persistence, wrong-sign-u Canary winds
+    # (proofs/wind/case3_v10_momentum_budget_findings.md).  ``f=0`` for idealized
+    # cases makes every Coriolis term identically zero, so the warm-bubble / Straka
+    # / oracle dycore gates stay bit-identical.  ``specified`` follows WRF's
+    # nested/specified boundary edge-face exclusion for the real (boundary-driven)
+    # case; for periodic idealized runs the choice is moot under f=0.
+    ru_cor, rv_cor = large_step_coriolis(
+        haloed,
+        metrics,
+        specified=bool(namelist.run_boundary),
+    )
+    u_t = u_t + ru_cor
+    v_t = v_t + rv_cor
 
     tendencies = tendencies.replace(u=u_t, v=v_t, w=w_t, theta=th_t)
 

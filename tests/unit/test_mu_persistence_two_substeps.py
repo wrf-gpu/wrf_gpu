@@ -28,6 +28,7 @@ def _pure_sigma_metrics(base: DycoreMetrics, nz: int) -> DycoreMetrics:
         dn=base.dn, dnw=base.dnw, rdn=base.rdn, rdnw=base.rdnw,
         cf1=base.cf1, cf2=base.cf2, cf3=base.cf3, fnm=base.fnm, fnp=base.fnp,
         dzdx=base.dzdx, dzdy=base.dzdy, dzdx_u=base.dzdx_u, dzdy_v=base.dzdy_v,
+        f=base.f, e=base.e, sina=base.sina, cosa=base.cosa,
         p_top=base.p_top, provenance="unit-pure-sigma",
     )
 

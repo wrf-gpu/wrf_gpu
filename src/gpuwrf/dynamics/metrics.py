@@ -38,6 +38,44 @@ def terrain_slope_metrics(terrain_height: jax.Array, dx_m: float, dy_m: float) -
     return dzdx, dzdy, dzdx_u, dzdy_v
 
 
+# 2*Omega for the analytic Coriolis fallback (WRF EARTH_OMEGA, module_model_constants.F).
+_TWO_OMEGA = 2.0 * 7.2921e-5
+
+
+def _coriolis_metrics(
+    dataset: Dataset, mass_shape: tuple[int, int]
+) -> tuple[jax.Array, jax.Array, jax.Array, jax.Array]:
+    """Reads the WRF Coriolis metrics (F/E/SINALPHA/COSALPHA) from a wrfout/wrfinput.
+
+    ``F = 2*Omega*sin(lat)`` and ``E = 2*Omega*cos(lat)`` are stored on mass points.
+    If a field is absent we fall back to the analytic value from ``XLAT`` (F, E) or
+    to the no-rotation default (sina=0, cosa=1), so the loader never silently drops
+    the Coriolis force on a real case while still tolerating slim fixtures.
+    """
+
+    variables = dataset.variables
+    if "XLAT" in variables:
+        xlat = np.asarray(variables["XLAT"][0], dtype=np.float64)
+        lat_rad = np.deg2rad(xlat)
+    else:
+        lat_rad = None
+
+    def _read(name: str, analytic: np.ndarray | None, default: float) -> jax.Array:
+        if name in variables:
+            return jnp.asarray(np.asarray(variables[name][0], dtype=np.float64))
+        if analytic is not None:
+            return jnp.asarray(analytic)
+        return jnp.full(mass_shape, default, dtype=jnp.float64)
+
+    f_analytic = _TWO_OMEGA * np.sin(lat_rad) if lat_rad is not None else None
+    e_analytic = _TWO_OMEGA * np.cos(lat_rad) if lat_rad is not None else None
+    f = _read("F", f_analytic, 0.0)
+    e = _read("E", e_analytic, 0.0)
+    sina = _read("SINALPHA", None, 0.0)
+    cosa = _read("COSALPHA", None, 1.0)
+    return f, e, sina, cosa
+
+
 def load_wrfinput_metrics(path: str | Path) -> DycoreMetrics:
     """Loads WRF map factors and hybrid-eta coefficients from ``wrfinput``.
 
@@ -54,6 +92,7 @@ def load_wrfinput_metrics(path: str | Path) -> DycoreMetrics:
             float(getattr(dataset, "DY")),
         )
         nz = int(dataset.dimensions["bottom_top"].size)
+        f, e, sina, cosa = _coriolis_metrics(dataset, terrain_height.shape)
         return DycoreMetrics(
             msftx=_first_time_variable(dataset, "MAPFAC_MX"),
             msfty=_first_time_variable(dataset, "MAPFAC_MY"),
@@ -82,6 +121,10 @@ def load_wrfinput_metrics(path: str | Path) -> DycoreMetrics:
             dzdy=dzdy,
             dzdx_u=dzdx_u,
             dzdy_v=dzdy_v,
+            f=f,
+            e=e,
+            sina=sina,
+            cosa=cosa,
             p_top=_first_time_variable(dataset, "P_TOP"),
             provenance=f"wrfinput:{Path(path)}:nz={nz}:eta={tuple(eta_levels.shape)}",
         )
