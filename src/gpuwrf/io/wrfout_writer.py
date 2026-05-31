@@ -663,17 +663,13 @@ def _surface_flux_fallbacks(
         dx_m=float(_lookup(_lookup(grid, "projection"), "dx_m", _lookup(grid, "dx", 3000.0))),
     )
     diag = surface_layer_with_diagnostics(column_state)
-    ustar = np.asarray(diag.fluxes.ustar, dtype=np.float64)
-    rhosfc = np.asarray(diag.fluxes.rhosfc, dtype=np.float64)
-    fh = np.asarray(diag.fh, dtype=np.float64)
-    qv_flux = np.asarray(diag.fluxes.qv_flux, dtype=np.float64)
-
-    theta_air = theta[0].astype(np.float64)
-    theta_surface = np.asarray(t_skin, dtype=np.float64) * (P0_PA / np.maximum(p_total[0], 1.0)) ** R_D_OVER_CP
-    cpm = CP_AIR_J_KG_K * (1.0 + 0.8 * np.maximum(qv[0].astype(np.float64), 0.0))
-    aerodynamic_resistance = fh / np.maximum(KARMAN * ustar, 1.0e-12)
-    hfx = rhosfc * cpm * (theta_surface - theta_air) / np.maximum(aerodynamic_resistance, 1.0e-12)
-    lh = qv_flux * rhosfc * LV_J_KG
+    # SurfaceLayerDiagnostics already carries the WRF-faithful sfclayrev surface
+    # fluxes (hfx = flhc*(thgb-thx), lh = XLV*qfx; sf_sfclayrev.F90:856-878), both
+    # W m^-2 positive-upward -- exactly the wrfout HFX/LH contract. Use them directly
+    # instead of re-deriving HFX from an aerodynamic resistance: the old path read a
+    # nonexistent diag.fh and raised AttributeError on the full operational/d03 path.
+    hfx = np.asarray(diag.hfx, dtype=np.float64)
+    lh = np.asarray(diag.lh, dtype=np.float64)
     return {"HFX": hfx.astype(np.float32), "LH": lh.astype(np.float32)}
 
 
