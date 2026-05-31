@@ -77,7 +77,17 @@ def main() -> int:
     ap.add_argument("--radiation-cadence-steps", type=int, default=180)
     ap.add_argument("--out", type=Path, default=Path("proofs/wind/gpu_wind_localize.json"))
     ap.add_argument("--npz", type=Path, default=Path("proofs/wind/gpu_wind_localize_fields.npz"))
+    # Optional case override (defaults preserve the original case2 0509 L2 behavior).
+    ap.add_argument("--run-id", type=str, default=L2_RUN_ID)
+    ap.add_argument("--run-root", type=Path, default=L2_RUN_ROOT)
+    ap.add_argument("--init", type=str, default=None,
+                    help="init UTC 'YYYY-MM-DD_HH:MM:SS'; default = case2 0509 18z")
+    ap.add_argument("--case-label", type=str, default="case2_0509_18z_L2")
     args = ap.parse_args()
+
+    global INIT
+    if args.init is not None:
+        INIT = datetime.strptime(args.init, "%Y-%m-%d_%H:%M:%S").replace(tzinfo=timezone.utc)
 
     import jax
     import jax.numpy as jnp
@@ -94,7 +104,7 @@ def main() -> int:
     from gpuwrf.physics.surface_layer import surface_layer_with_diagnostics
 
     cfg = DailyPipelineConfig(
-        run_id=L2_RUN_ID, run_root=L2_RUN_ROOT, domain=DOMAIN,
+        run_id=args.run_id, run_root=args.run_root, domain=DOMAIN,
         dt_s=args.dt_s, acoustic_substeps=args.acoustic_substeps,
         radiation_cadence_steps=args.radiation_cadence_steps,
     )
@@ -188,7 +198,7 @@ def main() -> int:
                 "case2 (0509 18z) L2, V10/U10/T2 error decomposed by land/water/"
                 "coast mask + surface-layer internals (u0,v0,ustar,zol,regime,Cd-"
                 "proxy,10m-ratio). Truth = corpus CPU-WRF wrfout_d02.",
-        "case": "case2_0509_18z_L2",
+        "case": args.case_label,
         "init_utc": INIT.isoformat(),
         "config": {"dt_s": args.dt_s, "acoustic_substeps": args.acoustic_substeps,
                    "segment_steps": args.segment_steps,

@@ -547,20 +547,43 @@ def surface_layer_with_diagnostics(state) -> SurfaceLayerDiagnostics:
     ust_fresh = KARMAN * wspd / psix
     cold_start = ust_in <= 0.001
     ustar = jnp.where(cold_start, ust_fresh, 0.5 * ust_in + 0.5 * ust_fresh)
-    # u10/v10/th2/q2/t2 diagnostics (sf_sfclayrev.F90:763-767)
-    # V10 RECONCILIATION (agy 2026-05-30, proofs .agent/reviews/2026-05-30-agy-v10-findings.md):
-    # the CPU-WRF comparator ran sf_mynn, which for moderate vertical resolution
-    # (7 < za < 13 m, the Canary config) bypasses the stability-corrected 10 m
-    # profile and uses a NEUTRAL-LOG ratio (module_sf_mynn.F:1120-1131:
-    # U10=U1D*log(10/ZNT)/log(ZA/ZNT)). The always-stability-corrected sfclayrev
-    # form suppresses 10 m winds in the stable marine layer (warm southerly over
-    # cool Atlantic) -> the ~+1.6 m/s V10 deficit. Match the comparator on that band.
+    # u10/v10 diagnostics (sf_sfclayrev.F90:763-764).
+    # WRF MYNN 10 m wind branches on the lowest mass-level height za
+    # (module_sf_mynn.F:1109-1131):
+    #   za <= 7 m      -> neutral-log (high vertical resolution)
+    #   7 < za < 13 m  -> neutral-log (moderate resolution; stability form commented out)
+    #   za >= 13 m     -> stability-corrected ratio U10 = U1D*PSIX10/PSIX
+    # The Canary d02 lowest mass level is za ~= 25.7 m (lowest layer ~51 m thick,
+    # verified for BOTH L2 and L3, proofs/wind/case3_regime_diagnostic + the
+    # WIND_SKILL_ROOT_CAUSE.md za audit), so the >=13 m STABILITY-CORRECTED branch
+    # always applies and matches the MYNN comparator here. The 7<za<13 neutral-log
+    # gate below is therefore INERT at the operational Canary grid; it is retained
+    # only for fidelity at hypothetical high-vertical-resolution configs and does
+    # NOT affect the real-case V10 (confirmed: the case3 24h V10 deficit is the
+    # PROGNOSTIC lowest-level wind being ~2 m/s too weak over water -- u0 +1.81 /
+    # v0 +2.26 bias vs CPU-WRF, with matching u* 0.255 vs 0.261 -- which is a
+    # dycore/PBL momentum residual, NOT a surface-diagnostic lever; a ratio change
+    # here trades V10 for U10 and still cannot beat persistence. See
+    # proofs/wind/case3_wind_residual_findings.md).
     ratio10_stab = psix10 / psix
     ratio10_neutral = jnp.log(10.0 / znt) / jnp.log(za / znt)
     ratio10 = jnp.where((za > 7.0) & (za < 13.0), ratio10_neutral, ratio10_stab)
     u10 = u0 * ratio10
     v10 = v0 * ratio10
     th2 = thgb + dtg * psit2 / psit
+    # WRF 2-m theta BRACKET GUARD (module_sf_mynn.F:1140-1144; the sfclayrev call
+    # path inherits the same MYNN diagnostic in the comparator). th2 must lie
+    # between the surface (thgb) and lowest-level (thx) potential temperatures; a
+    # psit2/psit ratio outside [0,1] (e.g. from a sign-flipped/ill-conditioned
+    # stable-layer psit) can push th2 past either anchor and inject a spurious 2-m
+    # temperature. When that happens WRF falls back to the linear-in-height
+    # interpolation thgb + 2*(thx-thgb)/za. This is WRF reference code, not a
+    # masking clamp: it only fires on physically-impossible (unbracketed) th2.
+    th2_lin = thgb + 2.0 * (thx - thgb) / za
+    warm_lo = thx > thgb
+    th2_out_warm = warm_lo & ((th2 < thgb) | (th2 > thx))
+    th2_out_cold = (~warm_lo) & ((th2 > thgb) | (th2 < thx))
+    th2 = jnp.where(th2_out_warm | th2_out_cold, th2_lin, th2)
     q2 = qsfc + (qx - qsfc) * psiq2 / psiq
     t2 = th2 * (psfcpa / P0_PA) ** R_D_OVER_CP
     ustar = jnp.where(is_land, jnp.maximum(ustar, 0.001), ustar)
