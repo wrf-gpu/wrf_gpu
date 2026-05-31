@@ -1,373 +1,380 @@
-# Whole-State Device Residency for Workstation-Scale NWP: A JAX-Native WRF-Compatible Canary Replay Prototype Engineered by Collaborative AI Systems
+# Verifiable AI-Engineered Scientific Software: A GPU-Native JAX Reimplementation of a WRF-Compatible Regional Forecast Path
 
-**Preprint categories:** physics.ao-ph primary; cs.LG secondary; cs.SE tertiary.
+**Preprint categories:** cs.SE primary; cs.AI secondary; physics.ao-ph secondary; cs.DC tertiary.
 
-**Authors:** Claude Opus 4.7 (AI system); GPT-5.5 Codex / OpenAI (AI system); Enric R.G. (human senior corresponding author).
+**Authors:** Enric R.G. (human principal, initiator, and corresponding author); the wrf_gpu2 multi-agent AI system — Claude Opus 4.7 / 4.8 (Anthropic) and GPT-5.5 Codex (OpenAI), with Gemini 3.5 (Google) in a reactive tiebreak role.
+
+> **Authorship and AI-use disclosure (read first; see also §9.5).** The model code, the validation harnesses, the performance analysis, and the bulk of this manuscript were produced by AI agents under a governed multi-agent process. The human author was the initiator and roughly-daily top-level steerer, and is the sole accountable party for the public claims. We disclose this plainly because it is the literal subject of the paper, and because the same honesty discipline that caught the system's own bugs (§3, §6.5) must apply to its authorship.
+
+---
 
 ## Abstract
 
-We report a current corrected-physics result from an agent-built, JAX-native, WRF-compatible regional numerical-weather replay prototype for a Canary Islands 3 km d02 domain. The system keeps the high-frequency forecast state resident on a single NVIDIA RTX 5090 GPU and compiles the operational time loop through JAX/XLA. On the 20260521 case, the iteration-2 24 h pipeline completed in 732.63 s, a 22.26x apples-to-apples speedup against the same-workstation 28-rank CPU WRF d02 timing. The run preserved the M7 systems invariants: zero inter-kernel device-to-host transfer in the forecast loop, bitwise restart continuity, retained B6 savepoint and multi-step parity evidence, and a 1 km one-step feasibility probe reporting 7278 MiB `nvidia-smi` memory used on a 32607 MiB RTX 5090. A faster pre-fix path had completed in 324.78 s and appeared to offer 50.20x speedup, but the validation workflow identified it as an overclaim episode because the operational physics path was defective. After root-cause analysis, two iterations of algorithmic fixes were applied. Side-by-side AEMET station scoring on 73 stations and 24 valid hours shows all three of T2, U10, and V10 remain outside the pre-declared 20 percent tolerance versus CPU WRF, although wind metrics improved substantially relative to the pre-fix path. The scientific result is therefore not yet an operational WRF replacement. The methodological result is a proof-object-driven multi-agent engineering process that produced a fast device-resident prototype, found its own publication-blocking overclaim, and preserved the evidence needed to continue repair. Forecast skill is currently characterised on a single-day verification case and should be treated as a preliminary engineering diagnostic.
+AI code generation and the modernization of legacy scientific software both suffer from the same evidence gap: it is easy to produce code quickly and hard to prove that the result is trustworthy at real scale. We report a governed multi-agent AI system that planned, implemented, falsified, repaired, and proof-object-validated a GPU-native, JAX/XLA, WRF-compatible regional forecast path with the high-frequency model state resident on a single consumer GPU, built end-to-end on free-tier model budgets with only roughly-daily human steering. The evidence is what makes the claim falsifiable: the artifact is validated against hard oracles — idealized analytic benchmarks (Skamarock warm bubble, Straka density current), WRF operator savepoints, persistence baselines, three real 72 h Canary 3 km cases scored against same-workstation CPU-WRF, conservation and finiteness invariants, a zero-in-loop device-transfer audit, and a roofline-grounded performance study reporting an honest ~5.3x (clean) to ~7.8x (realistic) speedup over 28-rank CPU-WRF on one RTX 5090 — and, equally, by the errors the process caught and publicly retracted (a "bitwise WRF parity" claim that was a JAX-vs-JAX self-compare; an inflated 22.26x speedup; a missing Coriolis force exposed by a persistence baseline; a 1 km nested-boundary pressure-pump). The artifact is not a complete WRF replacement: v0.1.0 is a single-domain replay path that still consumes CPU-WRF/Gen2 boundary and land artifacts, and lacks live nesting, native initialization, prognostic land surface, and a passing strict 1 km gate; these are scoped as release gates, not hidden. The contribution is therefore methodological as much as numerical: in a domain with objective oracles, an autonomous AI process can build hard, correctness-critical scientific software whose trustworthiness — and whose failures — can be checked rather than asserted.
+
+---
 
 ## 1. Introduction
 
-Regional numerical weather prediction (NWP) remains one of the demanding production workloads in scientific computing. It combines sparse operational windows, irregular regional boundaries, terrain-following coordinates, coupled physical parameterizations, and a long tail of input/output and verification requirements. The Weather Research and Forecasting model (WRF), especially its Advanced Research WRF (ARW) core, remains widely used for mesoscale forecasting because it provides a mature non-hydrostatic dynamical core, many tested physics options, and a large operational community \cite{skamarock2019description,powers2017weather}. That same maturity makes WRF difficult to move wholesale to modern GPUs. The legacy source architecture was built around Fortran, MPI, host-resident control flow, and many scheme-specific memory layouts. A directive-based port can accelerate important components, but a full regional forecast remains constrained when any unported component forces repeated host/device movement.
+This project began from a wish, not a research agenda. The human author runs a nightly WRF v4 forecast for the Canary Islands and wanted it fast enough to be operationally useful — to compress the runs from roughly 8 h on CPU toward ~2 h on GPU so the local forecast system works in time, and so it could eventually be offered for free to people on the islands, whose complex microclimates are poorly served by coarser regional products. **[VERIFY: AEMET/HARMONIE-AROME resolution-adequacy claim for the Canaries — cite a product spec or soften to "in the author's operational experience." See `missing_elements.md` (ii).]** The author judged the task beyond a single agent and gave a single, roughly-reconstructed brief to a frontier model:
 
-The project described here asks a narrower question than "Can WRF be mechanically ported?" The question is whether a WRF-compatible regional forecast path can be rebuilt in a GPU-native form while preserving enough physical and verification behavior to make the result scientifically inspectable. The first operational target is the Canary Islands at 3 km grid spacing, with a 1 km feasibility path. The domain is small enough to fit on one workstation GPU but difficult enough to stress an atmospheric model: volcanic topography, trade-wind inversion, island wakes, lateral forcing, boundary-layer structure, and surface coupling all matter.
+> *"I need a WRF GPU port that is at least 3–4x faster on my system, stays true to WRF v4 solutions, and is built with a modern architecture. This is beyond a single agent, so build an agent framework: a manager keeps the project plan and dispatches workers. To minimize bias and maximize swarm intelligence, use both GPT-5.5 and Opus. Phase 0 explores the optimal kernel architecture and estimates how fast each could theoretically be. The remaining phases work toward the goal with verifiable milestones. Research what standardized tests should be passed to declare success. The mandatory test is comparison against the existing 3 km and 1 km WRF v4 solutions in [the corpus folder]."*
 
-The second question is methodological. Recent code models can make repository-scale edits, run test harnesses, and use shell environments, but safety-critical scientific software cannot be treated like an ordinary feature backlog. A model that silently invents a formula, citation, unit conversion, or validation gate can move quickly in the wrong direction. This project therefore used a collaborative AI-agent process in which work was not considered complete until a proof object existed on disk. Claude Opus 4.7 acted as long-context manager and reviewer. GPT-5.5 Codex acted as implementation worker and critic. Separate tester and reviewer roles challenged numerical, performance, and completion claims. The human principal, Enric R.G., set scope, validation policy, operational constraints, and final acceptance authority.
+That brief, plus occasional top-level steering (about once or twice a day: a status check, an occasional context compaction, a small course correction such as which model to prefer when one was short on tokens, and — toward the end — a request for real-world proof and for help framing this release), is essentially the entire human engineering contribution.
 
-This paper has four contributions.
+The result is a testable scientific question that we believe is more interesting than either of its halves:
 
-1. We describe a WRF-compatible regional replay prototype implemented in Python/JAX with whole-state device residency for the high-frequency model loop, rather than an incremental directive port of legacy WRF.
-2. We report the current corrected-physics workstation result: 732.63 s for the iteration-2 24 h Canary 3 km d02 pipeline and 22.26x d02-only apples-to-apples speedup over the 28-rank CPU WRF baseline on the same workstation. The iteration-1 result (708.32 s / 23.02x) and the pre-fix path (324.78 s / 50.20x) are retained as diagnostic history; the latter exposed the workflow's overclaim risk and the former exposed the cost of correct physics.
-3. We document the multi-agent engineering method that produced the system, including sprint contracts, proof objects, Architecture Decision Records (ADRs), independent tester/reviewer roles, and rejection loops where the process corrected its own claims.
-4. We report the current scientific blocker: side-by-side AEMET station verification remains outside tolerance versus CPU WRF even after partial skill recovery. The result is a fast, reproducible, device-resident prototype, not yet an operational replacement for WRF.
+> **Can autonomous AI agents produce trustworthy scientific software when the domain has hard oracles?**
 
-The final point is central. Performance is useful only when the proof object matches the claim. The original M7 closeout celebrated an inflated speedup and treated finite station scores as a milestone gate. Follow-up sprints corrected the denominator, found the skill regression, identified three coupled algorithmic defects, applied two fix iterations, and remeasured. This paper therefore uses the slower 732.63 s / 22.26x iteration-2 number as the current engineering claim and keeps the pre-fix faster number as a cautionary validation story.
+Neither half of this question makes a strong paper alone. "AI writes code" is demonstrated often, usually on toy or unverifiable tasks, and amounts to an anecdote. "A JAX GPU weather model" is interesting systems work but incremental against the broader GPU-NWP and ML-weather wave. The conjunction is what matters: numerical weather prediction (NWP) is *objectively verifiable*. WRF savepoints, published idealized analytic cases, persistence baselines, CPU-WRF comparison, conservation diagnostics, and GPU profilers are *hard oracles*. They make "an AI built it" falsifiable rather than rhetorical. The verifiability is what turns the AI story from a demo into science.
 
-Current limitations are explicit. The validation corpus is small: three V3 initial-condition checks plus one 20260521 side-by-side station day. A single-day verification cannot characterise seasonal or regime-dependent behaviour, so the skill result is reported as a preliminary diagnostic case study rather than a physical-validity proof. The d02 system is replay-driven from retained Gen2 WRF side histories rather than live AIFS ingestion. Iteration 2 widened the lateral boundary from a width-1 strip to WRF's `spec_bdy_width=5` and added hourly land-surface refresh from retained Gen2 wrfouts, so those iteration-1 blockers are no longer current; the remaining blockers are surface-flux magnitude coupling that drives T2 overshoot, residual theta-guard saturation, the data-replay nature of the hourly land refresh (it is not a prognostic Noah-MP scheme), and no independent human numerical-methods review. These are release blockers, not footnotes.
+WRF — the Weather Research and Forecasting model, in its Advanced Research WRF (ARW) configuration [CITE: skamarock2019description; powers2017weather] — is a deliberately hard target. It couples a fully compressible nonhydrostatic dynamical core (third-order Runge–Kutta with split-explicit acoustic substeps) on an Arakawa C-grid in terrain-following hybrid mass coordinates, lateral boundary relaxation, a suite of physics parameterizations (microphysics, surface layer, planetary boundary layer, radiation, land surface, cumulus), a radiation cadence, and an extensive I/O and verification surface. It is over twenty years of accreted Fortran, MPI, and host-resident control flow. A directive-based GPU port can accelerate components, but any unported component forces repeated host/device transfer; and as the author observes, a clean GPU rewrite sits at the intersection of GPU kernel design, senior software engineering, atmospheric physics, and the ability to read WRF's Fortran — a combination of expertise that is individually rare and jointly very rare.
 
-## 2. Background and Related Work
+The second motivation is methodological. Repository-scale code agents can now make edits, run harnesses, and use shell environments, but safety-critical scientific software cannot be treated like an ordinary feature backlog. A model that silently invents a formula, a unit conversion, or a validation gate moves quickly in the wrong direction and produces plausible-looking but wrong fields. This project therefore ran under a governance discipline in which nothing was "done" without a falsifiable *proof object* on disk, and in which a cross-model adversarial critic was tasked with rejecting claims.
 
-### 2.1 WRF and ARW
+We bound our claims carefully. We do **not** claim the first GPU NWP system, the first GPU regional model, or a full WRF port. Following the narrowest defensible wording, the artifact is, to our knowledge, *the first open, JAX-native, whole-state-device-resident, WRF-compatible regional replay forecast path built and validated end-to-end by a multi-agent AI process on a consumer workstation GPU.* **[VERIFY: prior abandoned open-source GPU-WRF attempts and the completeness of commercial variants — soften to "to the best of our knowledge" if not citable. See `missing_elements.md` (ii).]**
 
-The ARW core solves a fully compressible, non-hydrostatic system in flux form on a terrain-following dry hydrostatic pressure coordinate \cite{skamarock2019description}. Prognostic thermodynamic and moisture variables are held at mass points, while velocities are staggered on an Arakawa C grid. The time integrator is split explicit: a third-order Runge-Kutta outer step advances meteorological modes, while acoustic substeps handle fast pressure waves at a smaller step size. This numerical structure is attractive for regional forecasting but awkward for GPUs because the algorithm mixes horizontally coupled stencils, vertically implicit solves, boundary relaxation, and physics tendencies with different memory-access patterns.
+**Contributions.**
 
-The target operational physics family follows conventional WRF choices: Thompson microphysics \cite{thompson2008explicit}, MYNN planetary-boundary-layer closure \cite{nakanishi2006numerical}, RRTMG radiation \cite{iacono2008radiative}, and Noah/Noah-MP style land-surface behavior \cite{niu2011noah}. In this paper, "WRF-compatible" does not mean bitwise reproduction of every Fortran floating-point operation. It means a disciplined attempt to preserve useful ARW interfaces, state variables, boundary behavior, validation savepoints, and meteorological outputs. The project constitution rejects a line-by-line Fortran port as the architecture. The validation strategy instead requires per-operator parity where it is useful, physical invariants where they are decisive, and forecast-skill evidence where the system must make external claims.
+1. A proof-object-governed multi-agent method for producing correctness-critical scientific software, including its role structure, sprint-contract and file-ownership discipline, patch protocol, and — as first-class evidence — a documented record of the false claims the process caught and corrected (§3, §6.5).
+2. A JAX/XLA, GPU-native, WRF-compatible regional forecast implementation with whole-state device residency (§4).
+3. A tiered validation stack spanning WRF savepoints, idealized analytic cases, real-case CPU-WRF comparison, persistence baselines, conservation/finiteness invariants, transfer audits, and profiler provenance, reported with both passes and failures (§5, §6).
+4. An honest, roofline-grounded performance characterization explaining *why* a faithful fp64 GPU NWP workload is memory- and launch-bound, with four candidate accelerations measured and refuted (§6.4).
+5. A real Canary d02 demonstration and a gap-bounded roadmap (§6, §8), explicitly scoping what v0.1.0 is and is not.
 
-### 2.2 GPU NWP and Regional Models
+A recurring theme: performance is only meaningful when the proof object matches the claim. The project's own history is the strongest evidence for this — the system repeatedly produced fast, finite, restartable forecasts that were nonetheless wrong, and the process is what caught them.
 
-GPU acceleration in atmospheric modeling has followed several paths. Directive-based approaches use OpenACC, CUDA Fortran, or similar techniques to move parts of established Fortran codes to accelerators. Those approaches preserve a large existing model but often leave unported physics, boundary conditions, or I/O routines on the host. WRF-specific acceleration history includes microphysics and workflow modernization efforts; for example, ADIOS2 work targets WRF I/O and streaming rather than whole-forecast device residency \cite{fredj2023adios2wrf}. AceCAST represents a commercial WRF-acceleration line; vendor documentation reports meaningful WRF acceleration, but the public citation is not a peer-reviewed end-to-end benchmark and is treated here as context rather than as a hard comparator \cite{tempoquest2025acecast}.
+---
 
-Regional GPU NWP did not begin with this work. MeteoSwiss COSMO-CH and later ICON-CH systems are important precedents for GPU-enabled operational regional forecasting, and recent ICON GPU work documents the operational migration context and COSMO-1E/ICON-CH1-EPS verification comparisons \cite{fuhrer2026icon,lapillonne2026benchmarking}. This paper therefore makes no claim to be the first GPU regional NWP system. Its narrower claim is workstation-scale JAX/XLA execution with the high-frequency d02 state resident on one consumer GPU.
+## 2. Related Work
 
-Domain-specific-language approaches separate scientific stencil expression from backend code generation. Pace rewrote the FV3 dynamical core in Python using GT4Py and DaCe \cite{dahm2023pace,bennun2019dace,whitaker2023gt4py,paredes2023gt4py}. ICON-exclaim and operational ICON GPU work show that large weather centers can migrate production NWP to GPU systems \cite{fuhrer2026icon,lapillonne2026benchmarking}. SCREAM represents the clean-slate C++/Kokkos path at exascale \cite{bertagna2024scream}. NIM is an earlier native-GPU precursor \cite{govett2017parallelization}. These systems differ in model equations, grid, hardware class, institution, and maturity. They establish that GPU NWP is real and that production-quality ports require more than kernel translation.
+### 2.1 WRF and prior WRF GPU efforts
 
-The brief-derived comparator rows used for this related-work framing are staged in `publish/tables/comparators.md`.
+ARW solves a fully compressible nonhydrostatic system in flux form on a terrain-following dry-hydrostatic-pressure coordinate, with C-grid staggering and a split-explicit RK3 + acoustic-substep integrator [CITE: skamarock2019description]. This structure is attractive for regional forecasting but awkward for GPUs, mixing horizontally coupled stencils, vertically implicit solves, boundary relaxation, and physics tendencies with disparate memory-access patterns. Prior WRF acceleration has largely been directive-based — moving microphysics or selected kernels to accelerators while leaving other components host-resident — or commercial. AceCAST represents a CUDA-Fortran/OpenACC WRF-acceleration line reporting a 5–14x range in vendor materials; we treat that as context, not a peer-reviewed end-to-end comparator [CITE: tempoquest2025acecast]. WRF I/O modernization work (e.g. ADIOS2) targets streaming rather than whole-forecast device residency [CITE: fredj2023adios2wrf]. We make no first-GPU-WRF claim.
 
-### 2.3 ML Weather Models
+### 2.2 GPU NWP and model rewrites
 
-The recent ML weather-model literature changes the background for speed and skill. GraphCast, Pangu-Weather, FourCastNet, GenCast, Aurora, NeuralGCM, Stormer, and AIFS all show that data-driven or hybrid global forecasting systems can produce very fast and skillful forecasts under the right evaluation regime \cite{lam2023graphcast,bi2022pangu,pathak2022fourcastnet,price2023gencast,bodnar2024aurora,kochkov2023neuralgcm,nguyen2023stormer,lang2024aifs,lang2025update}. The present work is not an ML emulator. It is a numerical regional replay model that may eventually support ML by generating physically constrained training data, assimilating ML boundary products, or coupling learned parameterizations to a traditional solver.
+GPU regional NWP is established. MeteoSwiss COSMO and the ICON-CH migration are important precedents for operational GPU regional forecasting [CITE: fuhrer2026icon; lapillonne2026benchmarking]. Domain-specific-language approaches separate stencil expression from backend codegen: Pace reimplemented the FV3 dynamical core in Python using GT4Py and DaCe [CITE: dahm2023pace; bennun2019dace; whitaker2023gt4py]. SCREAM is the clean-slate C++/Kokkos exascale path [CITE: bertagna2024scream]; NIM is an earlier native-GPU precursor [CITE: govett2017parallelization]. A comparator table of reported speedups and hardware classes is staged at `publish/tables/comparators.md` (it must be re-grounded against current proof objects; see `missing_elements.md`). These systems establish that GPU NWP is real and that production ports require more than kernel translation. Our distinct combination is: open, JAX-native, whole-state-device-resident, workstation-scale, proof-objected, and AI-built.
 
-The distinction matters. ML forecast systems are often evaluated on global reanalysis-style fields and medium-range lead times. A 3 km Canary Islands regional model must satisfy local boundary forcing, terrain, surface, and station-verification requirements. A fast regional core that lacks local skill is not operationally useful even if it is valuable as an engineering artifact.
+### 2.3 ML weather models
 
-### 2.4 AI Agents for Scientific Software
+Data-driven and hybrid global forecasting — GraphCast, Pangu-Weather, FourCastNet, GenCast, Aurora, NeuralGCM, Stormer, AIFS — produces fast, skillful forecasts under the right evaluation regime [CITE: lam2023graphcast; bi2022pangu; pathak2022fourcastnet; price2023gencast; bodnar2024aurora; kochkov2023neuralgcm; nguyen2023stormer; lang2024aifs; lang2025update]. The present work is not an ML emulator: we reimplement the physics-based equations rather than learn a surrogate. The distinction matters for evaluation — ML systems are usually scored on global reanalysis fields at medium range, whereas a 3 km regional model must satisfy local terrain, boundary forcing, and station-scale requirements. A JAX core does, however, open ML-hybrid futures (differentiability, learned parameterizations, gradient-based assimilation); we state this as a structural property and future work only — we did not exercise it (§7).
 
-Repository-level AI coding has moved beyond autocomplete. SWE-bench measures whether language-model agents can resolve real GitHub issues \cite{jimenez2024swebench}. SWE-agent frames agent-computer interfaces as a route to automated software-engineering work \cite{yang2024sweagent}. Agent patterns such as orchestrator-worker and evaluator-optimizer loops describe how one model can decompose a task while another executes or critiques it \cite{anthropic2024effective}. Claude Code-style terminal harnesses and similar systems made it practical for agents to run tests, inspect files, edit code, and report evidence in a persistent repository \cite{anthropic2026claude}.
+### 2.4 AI agents and repository-scale software engineering
 
-Scientific software changes the risk profile. A web-service bug may be caught by integration tests and user reports. A numerical-weather bug can produce plausible-looking fields while losing the correct forecast. The relevant question is not whether an AI can write code quickly. It is whether a multi-agent process can build, test, falsify, and revise scientific claims under explicit governance. Prior discussions of AI authorship and accountability emphasize that human responsibility and disclosure remain central \cite{arxiv2026policy,pcmag2026arxiv,nature2024editorial,schmidt2025senior}.
+Repository-level AI coding has moved beyond autocomplete. SWE-bench measures whether agents resolve real GitHub issues [CITE: jimenez2024swebench]; SWE-agent frames agent–computer interfaces for software work [CITE: yang2024sweagent]; orchestrator–worker and evaluator–optimizer patterns describe decomposition and critique loops [CITE: anthropic2024effective]; terminal harnesses made it practical for agents to run tests, edit code, and report evidence in a persistent repository [CITE: anthropic2026claude]. Scientific software changes the risk profile: a web bug is caught by integration tests and users, whereas a numerical-weather bug can produce plausible fields while losing the forecast. The open question is not whether an AI can write code quickly, but whether a multi-agent process can build, test, falsify, and revise scientific claims under explicit governance — and whether a verifiable domain makes that result *checkable*. Discussions of AI authorship and accountability emphasize that human responsibility and disclosure remain central [CITE: arxiv2026policy; pcmag2026arxiv; nature2024editorial; schmidt2025senior].
 
-### 2.5 Chronology of the Release Claim
+---
 
-- M6 closeout: savepoint parity, coupled-step evidence, and initial M7 dispatch gates landed.
-- M7 performance measurement: warm 1 h and pipeline timings established device-resident speed.
-- Pipeline integration: the 20260521 d02 24 h pipeline wrote 24/24 readable wrfouts.
-- Original celebration: an inflated 156.82x claim was recorded and then questioned.
-- Honest-speedup correction: d02-only CPU timing gave 324.78 s / 50.20x for the pre-fix path.
-- Skill regression discovery: side-by-side AEMET scoring returned `FAIL_SKILL_DIFF`.
-- RCA convergence: Opus and Codex sprints identified theta/mu reset, surface/PBL flux disconnect, and radiation cadence defects.
-- Algorithmic fix: the post-fix path preserved systems invariants and produced 708.32 s / 23.02x.
-- Current state: `SKILL_IMPROVED_PARTIAL`, with iteration 2 in progress for remaining skill blockers.
+## 3. The AI Engineering System
 
-## 3. Methods: AI Collaboration Model
+This section is deliberately early: the governed multi-agent process is the headline contribution, and the artifact (§4) is its existence proof.
 
 ### 3.1 Roles
 
-The development process used a role taxonomy rather than a single assistant. The manager role, Claude Opus 4.7 with a long context window, owned sprint definition, repository-state synthesis, cross-sprint memory, ADR routing, and final closeout recommendations. The worker role, GPT-5.5 Codex, implemented scoped changes under a sprint contract. Tester and reviewer roles were separate agents instructed to challenge the worker's result, rerun commands, inspect proof objects, and refuse completion if the evidence did not support the claim. When a failure was hard to localize, the manager dispatched parallel debugger or critic sprints, often with one model taking an architectural angle and another taking an empirical bisection angle.
+The build used a role taxonomy rather than a single assistant:
 
-This division encoded different failure surfaces. The worker could move quickly inside a narrow file-ownership boundary. The tester could assume the implementation was wrong until proof said otherwise. The reviewer could reject a sprint even if the code ran. The manager could see repeated failure patterns and change the contract. The human principal remained the senior corresponding author and final accountable party, setting the scientific target, accepting or rejecting milestone state, and deciding what could be said externally.
+- **Manager / frontrunner** — owned the project plan, sprint definition, repository-state synthesis, cross-sprint memory, ADR routing, diff review, acceptance-gate execution, and merge/closeout decisions.
+- **Implementer (worker)** — implemented scoped changes inside a frozen file-ownership boundary under a sprint contract, producing proof objects.
+- **Verifier / tester** — challenged the worker's result, reran commands, inspected proof objects, and could refuse completion if the evidence did not support the claim.
+- **Critic** — a cross-model adversary tasked with arguing the opposing position before milestone closes and major plan commitments.
+- **Tiebreak** — a third model engaged reactively only when the first two had both failed on the same defect or for an architecture tiebreak.
 
-### 3.2 Sprint Contracts and File Ownership
+This division encodes different failure surfaces: the worker moves fast inside a narrow boundary, the verifier assumes the implementation is wrong until proof says otherwise, the critic attacks the plan, and the manager sees repeated failure patterns and changes the contract. Crucially, *the critic and verifier were different models from the implementer*, so single-model blind spots were less likely to survive review.
 
-Every implementation sprint was launched from a contract. A contract stated the objective, non-goals, acceptance criteria, file ownership, proof objects, validation commands, branch name, and report token. Workers were not allowed to edit outside the owned paths. Governance files, memory, rules, and sprint contracts were treated as production assets and could not be changed directly without a patch protocol. The contracts also avoided cross-worker collisions: two active workers could not edit the same core files unless an interface had been frozen.
+### 3.2 Model-role timeline
 
-A condensed excerpt from the `m7-honest-speedup-skill-diff` contract shows the style:
+The role assignments shifted over the build week as the foundations became trustworthy and as relative model strengths became clear:
 
-```yaml
-sprint_id: 2026-05-27-m7-honest-speedup-skill-diff
-objective:
-  - isolate CPU d02-only timing from existing Gen2 records
-  - compare GPU and CPU wrfouts against AEMET stations
-acceptance:
-  - emit cpu_per_domain_wall_clock.json
-  - emit honest_speedup_table.json
-  - emit gpu_vs_cpu_skill_diff.json
-  - write a verdict memo with publication-ready YES / NEEDS-CAVEAT / NO
-hard_rules:
-  - no fresh CPU WRF runs
-  - taskset -c 0-3
-  - be ruthless with the speedup denominator
-failure_gate:
-  - amend M7 closeout if speedup < 4x or GPU skill is materially worse
+- **GPT-5.5 Pro built the foundations** — the skill files, the memory system, and the manager/frontrunner/verifier role scaffolding the rest of the project ran on.
+- **Manager:** Opus 4.7 initially; **Opus 4.8** took the manager role toward the end of the build.
+- **Implementer (frontrunner):** mostly **GPT-5.5** early/middle; **Opus 4.8 (max effort)** became the code frontrunner in the later stages.
+- **Verifier:** ran **every sprint** initially, then **every milestone** (to conserve tokens once the foundations were trustworthy).
+- **When stuck:** GPT-5.5, and occasionally **Gemini 3.5**, were dispatched for independent angles; the manager collected the intel and decided.
+- **Human:** roughly once or twice a day — a status check, an occasional `/compact`, and small high-level course corrections.
+
+**[PLACEHOLDER: a model-role timeline figure (stage on x-axis, role band per model) — render to `publish/figures/model_role_timeline.png` from the git-history accounting in `publish/tables/effort_accounting.md`.]** The existing `publish/figures/timeline.md` spec is M7-era and must be regenerated for the v0.1.0 stages.
+
+### 3.3 Proof-object discipline
+
+Work was not considered complete until a falsifiable artifact existed on disk: a JSON measurement, a Markdown verdict, a log, or a generated figure — never a chat summary. Each claim type binds to a required proof:
+
+| Claim type | Required proof object |
+|---|---|
+| Performance | timing/roofline JSON with an explicit denominator definition |
+| Transfer residency | device-to-host (D2H) audit with a defined profiler window |
+| Restart / repeatability | comparator output over a defined window |
+| Operator / savepoint correctness | WRF (or analytic) savepoint parity comparator |
+| Physical stability | finite/bounds/invariant/conservation JSON |
+| Idealized correctness | analytic-benchmark close-gate verdict (PASS asserted, not PASS-or-FAIL) |
+| Operational skill | CPU/GPU/observation side-by-side scoring with persistence baseline |
+| Release readiness | closeout memo plus an audit script |
+
+Several historical failures came precisely from matching the *wrong* proof to a claim — finite station scores are a measurement, not a skill-equivalence proof; a warm wall-clock is speed under a window definition, not meteorological usefulness; bitwise agreement at one step is local evidence, not a 24 h forecast gate (§6.5). Making "done" auditable is what allowed those mismatches to be caught.
+
+### 3.4 Sprint contracts, file ownership, and the patch protocol
+
+Every implementation sprint launched from a contract stating objective, non-goals, acceptance criteria, file ownership, proof objects, validation commands, branch name, and a worker-report token. Workers could not edit outside owned paths; two active workers could not edit the same core files unless an interface had been frozen first. Governance files — memory, rules, skills, contracts — were production assets changeable only via a patch protocol (evidence + reviewer approval + validation), never edited in-place by a worker. This prevented the most insidious agentic failure mode: silently relaxing the goal or the gate to make a sprint "pass."
+
+### 3.5 Process metrics
+
+**[PLACEHOLDER: AI process-metrics table — sprints by stage, role, model, objective, proof objects produced, verdict, and major claim affected. Render to `publish/tables/ai_process_ledger.md` (the existing `publish/tables/sprint_ledger.md` is an M7-era seed and must be regenerated from git history for v0.1.0).]**
+
+**[PLACEHOLDER: effort accounting — agent-runs/sprints per stage (the honest unit; the build was nightly free-token runs, not 24/7 wall-clock), an approximate total-token count, and the real cost envelope (the build fit within a €200/mo Claude Max + €100/mo GPT Pro budget, plausibly reproducible for ~€100, with no funding of any kind). Render to `publish/tables/effort_accounting.md`. Wall-clock must be reported as the span from nothing to (a) the v0.0.1 working kernel, (b) the v0.1.0 path, and (c) publication, explicitly excluding the dead earlier attempt — see human author notes §3.]** We deliberately report agent-runs/sprints rather than human-equivalent hours, and we make no claim that future work will be "finished within hours or days": a future-work cadence is not evidence.
+
+### 3.6 Error-catch ledger
+
+The following false or inflated claims were *generated and then caught* by the process. They are the strongest evidence that the validation regime has teeth, and we feature rather than hide them (full case studies in §6.5):
+
+| Caught claim | What it actually was | How / who caught it | Resolution |
+|---|---|---|---|
+| "Bitwise WRF parity at 100 coupled steps" (v0.0.1 headline) | A JAX-vs-JAX self-compare (the comparator read back the model's own output, never WRF Fortran); the dycore was missing ~7 WRF operators | Reactive cross-model audit during the project reset | Publicly retracted; dycore honestly rebuilt against analytic references + pristine WRF savepoints |
+| "22.26x speedup" (and earlier 50.20x / 156.82x lineage) | One GPU d02 domain divided by the *whole multi-domain CPU nest* wall time | Roofline / denominator audit | Corrected to ~5.3x clean / ~7.8x realistic, d02-vs-d02 |
+| "Winds operationally usable" / finite station scores as a gate | A measurement, not a CPU-vs-GPU skill comparison; V10 was below persistence | Persistence baseline + side-by-side CPU-WRF scoring | Root cause = missing Coriolis force in the dycore; added; winds now beat persistence on the main case |
+| d03 1 km "validated" implied by d02 success | A nested geopotential-boundary forcing term pumping the interior (+6.8 K T2, 2.5x wind bias) | Nested-domain validation against CPU-WRF | WRF-faithful boundary fix collapsed overnight bias to d02-quality; a separate daytime surface-flux warm bias remains, scoped honestly |
+
+**[PLACEHOLDER: workflow visualization — the manager→dispatch→worker→verifier→critic→manager-decide→merge loop, with the human's roughly-daily top-level steering. Render both a mermaid diagram and an ASCII version to `publish/figures/workflow_loop.{md,png}`. A draft is given below; it must be reconciled with the final process-metrics ledger.]**
+
+```mermaid
+flowchart TD
+    H["Human principal — initiator,\n~daily top-level steering"] -->|brief, milestone steering| M
+    M["Manager / frontrunner\n(Opus 4.7→4.8)"] -->|sprint contract + frozen file ownership| W["Implementer (worker)\nGPT-5.5 / Opus 4.8"]
+    W -->|diff + proof objects| M
+    M -->|dispatch acceptance gates| V["Verifier / tester\n(cross-model)"]
+    V -->|pass / refuse + reports| M
+    M -->|before milestone / major plan| C["Critic\n(GPT-5.5, adversarial)"]
+    C -->|opposing case| M
+    M -.->|both failed / tiebreak| T["Tiebreak\n(Gemini 3.5, reactive)"]
+    T -.-> M
+    M -->|proof object on disk?| D{"Claim backed\nby proof?"}
+    D -->|yes| MERGE["Merge + closeout note"]
+    D -->|no| W
+    MERGE -->|status| H
 ```
 
-The useful feature of the contract pattern is that "done" becomes auditable. A sprint that claims zero device-to-host transfer must produce an Nsight or equivalent transfer audit. A sprint that claims forecast skill must produce station or ensemble metrics. A sprint that fails must write a blocker report rather than silently changing the goal.
+```text
+   Human principal (initiator; ~daily status + small course corrections)
+        |  brief / milestone steering                         ^ status
+        v                                                     |
+   +----------- MANAGER / FRONTRUNNER (Opus 4.7 -> 4.8) -------------+
+   |   scopes contract, freezes file ownership, reviews diff,       |
+   |   runs acceptance gates, decides, merges                       |
+   +---------------------------------------------------------------+
+        | dispatch (contract)        | dispatch gates    | before milestone
+        v                            v                   v
+   WORKER (GPT-5.5 / Opus 4.8)   VERIFIER (cross-model)  CRITIC (GPT-5.5)
+   edits owned files,            reruns, inspects proofs adversarial
+   writes proof objects          pass / REFUSE           opposing case
+        |                            |                   |
+        +------------> "Claim backed by a proof object on disk?" <----+
+                          yes -> merge + note      no -> back to WORKER
+                          (tiebreak: Gemini 3.5, only if both above failed)
+```
 
-### 3.3 Claim Types and Required Proof
+---
 
-| Claim type | Required proof object | Example in this paper |
+## 4. The Model Artifact
+
+The numerical implementation follows ARW *structure* without inheriting WRF's *software architecture*. It is a clean Python/JAX rewrite that targets the GPU memory hierarchy from day one.
+
+**State and grid.** Model state is a structure-of-arrays JAX pytree (ADR-002) of fp64 device arrays with explicit C-grid staggering conventions, in a terrain-following hybrid mass (eta) coordinate. The operational d02 grid for the measured cases has mass shape (44, 66, 159) and WRF staggered extent (45, 67, 160). The state carries dry-air mass, perturbation and base pressure and geopotential, staggered winds, water species and number concentrations, surface fluxes, lateral boundary side histories, and Coriolis metrics (`f`, `e`, `sina`, `cosa`). A halo interface (`contracts/halo.py`) is designed in as an MPI-shaped no-op for future multi-GPU work; v0.1.0 is single-GPU and makes no scaling claim.
+
+**Whole-state device residency.** After initialization, the entire high-frequency state remains in GPU memory through the operational loop, which is expressed as a `jax.lax.scan` compiled graph rather than a Python loop. Step-boundary I/O for output and restart is allowed; inter-kernel host/device transfer inside the forecast loop is a constitutional prohibition without an ADR, and is verified to be zero by audit (§6.4). This distinguishes the design from partial ports where an unported scheme pulls full fields to the host at every coupling point.
+
+**Dynamical core.** RK3 outer steps advance the meteorological modes; split-explicit acoustic substeps (10 per step at dt = 10 s for d02) handle fast pressure waves. The acoustic core advances `u/v` momentum, then dry-air mass and coupled potential temperature, then `w` and geopotential via an implicit vertical solve, then recomputes pressure/density each substep — matching the WRF cadence. The vertical implicit `w`/φ solve is lowered by XLA to an NVIDIA cuSPARSE batched parallel-cyclic-reduction kernel. Advection is WRF flux-form (5th-order horizontal, 3rd-order vertical) with the WRF-correct upwind-correction sign (a sign error here was a real bug, §6.5). The Coriolis force is the WRF-faithful standard form on the coupled `ru/rv` tendency (added late; §6.5). Dissipation uses WRF's 6th-order numerical filter (`diff_6th_opt=2`), Rayleigh damping, and `w_damping`.
+
+**Physics suite.** The operational column physics is Thompson microphysics, the WRF revised surface layer (`sfclayrev`), a MYNN level-2.5 PBL closure, and RRTMG-style shortwave/longwave radiation called at a held cadence (180 steps). Land surface is a *prescribed* Noah-MP subset (skin temperature, top soil moisture, land/lake masks, roughness), explicitly **not** prognostic Noah-MP; in the operational replay path the land fields are refreshed hourly from corpus artifacts. The implemented physics has documented parity debts (fixed-cap Thompson sedimentation substeps, neglected cloud-water sedimentation, MYNN EDMF/cloud terms disabled, RRTMG topographic-shading/slope-radiation and real-lat/lon coupling absent); these are inventoried in §8.
+
+**Boundary replay and limits.** The d02 forecast uses lateral boundary side histories (`spec_bdy_width=5`, relaxation zone) packed from corpus WRF/Gen2 hourly output, not live AIFS/GFS ingestion. **This makes v0.1.0 a single-domain replay path, not a native WPS/`real.exe` replacement** — it still consumes CPU-WRF/Gen2 boundary, metric, and land artifacts.
+
+**Output and precision.** The writer is a minimal WRF-compatible `wrfout` producer (a defined minimum variable set plus M9 surface diagnostics); restart is via project checkpoints, not full `wrfrst` interoperability. Precision is fail-closed fp64 in the operational mode (declared and re-gated), with fp32 paths gated opt-in only where validated; §6.4 shows fp32 gives no speedup on this workload, so fp64 is kept as the safe default.
+
+---
+
+## 5. The Validation Stack
+
+The validation stack is the paper's trust engine. It is organized by *evidence type*, and we report pass **and** fail status (§6).
+
+- **Tier 1 — WRF savepoints / operator parity.** Local, strict comparison of individual operators against WRF Fortran (and analytic) savepoints: coefficient generation, the tridiagonal/implicit solve, the acoustic-substep recurrence, advection convergence order, mass semantics. This is decisive for transcription bugs but is *not* a forecast-skill gate. The pristine WRF v4.7.1 arbiter is a from-scratch gfortran build with per-acoustic-substep center-column savepoints.
+- **Tier 2 — invariants / conservation / guards.** Finiteness, physical bounds, dry-mass and water-budget behavior, tracer positivity, and limiter/guard-engagement reporting. This prevents a model from matching a local savepoint yet producing an impossible coupled state, and it blocks "performance fixes" that silently introduce NaNs or negative species. The idealized warm bubble passes 6/6 fully guards-off, and the real d02 dycore runs finite guards-off — i.e. the safety guards are a net, not load-bearing.
+- **Tier 3 — idealized analytic benchmarks.** Skamarock warm bubble and Straka density current versus published references, through the *operational* entry point (bitwise-identical to the idealized harness over 50 warm-bubble steps).
+- **Tier 4 — real-case skill + persistence baselines.** RMSE versus same-workstation CPU-WRF at multiple leads on real Canary cases, with a persistence baseline (1 − GPU_RMSE/persistence_RMSE) as the skill discriminant. The persistence baseline is what exposed the wind deficiency that finite-forecast checks missed (§6.5). A formal seasonal-ensemble TOST equivalence test is *future work*, not claimed here.
+- **Systems validation.** Zero in-loop D2H transfer audit, restart continuity, warm-run repeatability, and profiler provenance, each bound to a proof object.
+
+**[PLACEHOLDER: validation-pyramid figure — regenerate `publish/figures/validation_pyramid.png` from the M7-era `publish/figures/validation_pyramid.md` spec to reflect v0.1.0 status (Tier 1–3 green; Tier 4 d02 green / d03 marginal / TOST future).]**
+
+---
+
+## 6. Results
+
+We order Results from the most local oracle to the most operational, then performance, then the AI self-correction case studies. We do **not** lead with any historical speedup multiplier.
+
+### 6.1 Dynamical core and idealized validation
+
+Both idealized analytic gates **PASS** through the operational entry point [proof: `proofs/sprintU/close_gate/warm_bubble_verdict.json`, `density_current_verdict.json`; `proofs/f7/DYCORE_STATUS.md`]:
+
+- **Skamarock warm bubble — PASS 6/6:** coherent thermal rise (~1925 m), bounded `w` (max |w| ≈ 11.7 m/s), θ′ max ≈ 1.9 K, symmetry, dry-mass drift ≈ 0.
+- **Straka density current — PASS 6/6:** finite through the integration; front ≈ 14.15 km; θ′ min ≈ −9.97 K; max |w| ≈ 14.6 m/s; rotor structure present; mass drift ≈ 2.25e-9.
+
+The operational/real-case path uses the *same* validated dycore operators as the idealized gates (50-step warm-bubble bitwise identity), so the idealized PASS transfers to the operational dynamics. Honest scope: the full 3D u/v/w deformation tensor, 3D terrain-slope diffusion cross-terms, map factors, and lateral specified/nested-boundary order degradation remain Phase-B items (§8); the operational forecast uses the 6th-order filter, not `km_opt` deformation diffusion.
+
+**[PLACEHOLDER: idealized figure set — warm-bubble θ′/w panel and Straka density-current panel. Render to `publish/figures/warm_bubble_panel.png`, `publish/figures/straka_density_current_panel.png` from existing PPM/plot outputs under `proofs/f7n/`, `proofs/sprintU/close_gate/`, `proofs/wind/idealized_postfix/plots`. Companion table `publish/tables/idealized_gate_summary.md` (case, reference target, GPU metric, pass/fail, proof path).]**
+
+### 6.2 Real-case d02 (3 km) validation
+
+Across three independent real Canary cases (init 2026-05-09, -21, -29 18Z), the GPU d02 forecast runs **stable and finite to 72 h** and is scored against same-workstation CPU-WRF at 6/12/24/48/72 h. The verdict is **D02_VALIDATED (all cases pass)** [proof: `proofs/v010_validation/v010_d02_result.json`, HEAD `5319b8d`, Coriolis-corrected dycore]. Representative full-domain RMSE (case1):
+
+| Field | 6 h | 12 h | 24 h | 48 h | 72 h | Units |
+|---|---:|---:|---:|---:|---:|---|
+| T2 | 1.88 | 2.10 | 1.34 | 1.09 | 1.06 | K |
+| U10 | 1.51 | 1.55 | 1.54 | 1.79 | 1.80 | m s⁻¹ |
+| V10 | 1.70 | 1.76 | 2.07 | 2.34 | 2.38 | m s⁻¹ |
+| PRECIP | 0.01 | 0.10 | 0.35 | 1.25 | 1.56 | mm |
+
+These surface RMSEs are in a physically meaningful range against CPU-WRF, and after the Coriolis fix the winds beat the persistence baseline broadly on the main case family (e.g. case3 V10 skill went from −0.13 to +0.17; §6.5) [proof: `proofs/m19/verdict_result.json`, `proofs/wind/revalidate_wind.json`]. **PRECIP is explicitly not a skill claim:** its RMSE grows monotonically with lead and persistence skill is poor at longer leads in the full-domain comparison; we report precipitation as a diagnostic/limitation, not validated skill (§8).
+
+**[PLACEHOLDER: d02 validation table — full-domain and Tenerife-box RMSE at 6/12/24/48/72 h for T2/U10/V10/PRECIP with persistence-skill columns for T2/U10/V10, all three cases. Render to `publish/tables/v010_d02_validation.md` via `proofs/v010_validation/render_table.py --result proofs/v010_validation/v010_d02_result.json`. Note: a parallel worker is generating this; the numbers above are read directly from the proof JSON and must match the rendered table.]**
+
+### 6.3 Real-case d03 (1 km) status — boundary-pump fix and an honest residual
+
+The 1 km Tenerife nest is the harder case and the honest one. An earlier d03 run failed badly (final T2 RMSE ≈ 10.8 K, U10 ≈ 8.6, V10 ≈ 9.8, all beaten by persistence). Root cause: a **nested geopotential-boundary forcing term that pumped the interior** (+6.8 K T2, ~2.5x wind bias). The WRF-faithful boundary fix collapsed the overnight bias to d02-quality. The current 24 h d03 proof [`proofs/v010_validation/d03_summary_run24h_v5fix.json`]:
+
+| Field | RMSE | Threshold | Within threshold | Beats persistence | Units |
+|---|---:|---:|:--:|:--:|---|
+| T2 | 3.01 | 3.0 | no (marginal) | no | K |
+| U10 | 3.49 | 7.5 | yes | no | m s⁻¹ |
+| V10 | 4.40 | 7.5 | yes | yes | m s⁻¹ |
+
+The strict bounded gate is therefore still **`D03_1KM_BOUNDED_FAIL`** — T2 RMSE 3.01 K sits marginally above the 3.0 K threshold — even though this is a dramatic improvement (≈ 10.8 K → 3.0 K) and U10/V10 are within their thresholds. The remaining residual is a **daytime surface-flux (HFX) warm bias shared across domains**: once the lower-column temperature is allowed to warm diurnally, the surface-layer/MYNN coupling over-deposits sensible heat into the bottom level and T2 overshoots. We state d03 precisely: *the boundary-pump bug is fixed and overnight d03 reaches d02-quality, but the strict 1 km gate is not yet passed*; 1 km is therefore **not** in the positive v0.1.0 claim and is listed as a release gate (§8).
+
+**[PLACEHOLDER: d03 status table + before/after — final-lead RMSE and the pre-fix → post-fix bias collapse. Render to `publish/tables/v010_d03_status.md` from `proofs/v010_validation/d03_summary_run24h_v5fix.json` (and the pre-fix d03 summary for the self-correction row).]**
+
+### 6.4 Performance and roofline
+
+On one RTX 5090 (fp64, single domain, dt = 10 s, RRTMG cadence 180), the 3 km Canary d02 forecast runs **~5.3x faster (clean) / ~7.8x faster (realistic)** than 28-rank CPU-WRF v4.7.1 on the same workstation and the same domain [proof: `publish/runtime_optimization_analysis.md`; `proofs/perf/roofline_costonly.json`, `speedup_denominator.md`, `compute_cycle_analysis.md`; `proofs/thompson_perf/coupled_timing_base_vs_opt.json`].
+
+| Framing | CPU-WRF d02 (s/fc-hr) | GPU d02 (s/fc-hr) | Speedup |
+|---|---:|---:|---:|
+| Conservative — CPU clean compute | 83 | 15.68 | **5.29x** |
+| Realistic — CPU incl. radiation + I/O | 123 | 15.68 | **7.84x** |
+| dt-matched floor (GPU forced to CPU dt = 6 s) | 83 | ~26.1 | ~3.2x |
+
+The headline is the *analysis*, not the multiplier. The dycore sits at arithmetic intensity ≈ 0.40 FLOP/byte — below even the fp64 roofline ridge (0.915) and 146x below the fp32 ridge (58.5) — achieving ~18.7% of HBM bandwidth and only ~8.2% of fp64 peak, with a ~5.3x kernel-launch/serialization tax over the bandwidth floor. The step issues ~11,000 GPU operations (~7,200 tiny elementwise kernels + ~3,900 memory ops), and the GPU is idle ~43–68% of each step waiting between dependent micro-launches. **The model is memory- and launch-bound, not fp64-compute-bound** — which is why fp32 does not help. Four candidate accelerations were each implemented and measured, and each refuted:
+
+| Lever | Measured effect | Why it fails faithfully |
 |---|---|---|
-| Performance | timing/profiler JSON with denominator definition | `post_fix_speedup.json` and `pipeline_run_20260521.json` |
-| Transfer residency | D2H/H2D audit with window definition | `d2h_audit_v2.json` |
-| Restart correctness | restart comparator output | `restart_continuity.json` and `restart_in_pipeline.json` |
-| Savepoint or operator correctness | WRF/JAX savepoint or parity comparator | `proof_coupled_step_parity.json` and `proof_fix_validation.json` |
-| Physical stability | finite/bounds/invariant JSON | `post_fix_bounds.json` and `invariant_preservation.json` |
-| Operational skill | side-by-side CPU/GPU/observation scoring | `gpu_vs_cpu_skill_diff.json` and `post_fix_skill_diff.json` |
-| Release readiness | closeout memo plus audit script | `MILESTONE-M7-CLOSEOUT-AMENDMENT.md` and `scripts/m7_publication_audit.sh` |
+| fp32 dynamics | ~1.00x | launch/bandwidth-bound; mandatory-fp64 acoustic-island boundary converts cancel the byte saving |
+| CUDA command-buffer graph capture | **0.83–0.87x (slower)** coupled | coupled step is physics-compute-dominated; graph-capture overhead exceeds launch-tax saving |
+| fp32 Thompson microphysics | ~1.0x | Thompson is ~85% sedimentation = launch/bandwidth-bound (64 substeps × 4 species) |
+| implicit (backward-Euler) sedimentation | 2.25–2.44x kernel, **REJECTED** | over-precipitates +47% vs a purpose-built precipitating WRF oracle; accuracy-recovering nsub≥4 erodes the win below 1.6x |
 
-This table was added because several failures came from matching the wrong proof to the claim. Finite station scores are a measurement, not a skill-equivalence proof. A warm wall-clock proves speed under a window definition, not meteorological usefulness. Bitwise agreement at one step is useful lower-level evidence, not a 24 h forecast gate.
+The one shipped safe win is a bit-identical sedimentation scan-unroll (~+5% coupled), which moves the headline from 5.06x/7.5x to 5.29x/7.84x; a gated acoustic-substep unroll adds ~1.225x on the dynamics at fp64 round-off (default off). The scientifically grounded ceiling under strict WRF fidelity is ~8–11x, reachable only by precision-invariant kernel-launch-count reduction (fusion), which must be re-certified against the idealized gates. The retracted 22.26x/50.20x/156.82x headlines came from dividing one GPU d02 against the *whole multi-domain CPU nest* — apples-to-oranges (§6.5).
 
-### 3.4 ADRs and Proof Objects
+**[PLACEHOLDER: roofline figure — dycore AI 0.40, HBM/fp64 ridges, 5.3x-over-floor placement. Render to `publish/figures/roofline_dycore.png` from `proofs/perf/roofline_costonly.json` + `phase_breakdown.json`. Companion table `publish/tables/performance_current.md` (replaces the stale `publish/tables/performance_evolution.md`) and `publish/tables/optimization_refutations.md`.]**
 
-Architectural decisions were recorded as ADRs when they affected state layout, validation mode, precision, profiling, or release claims. The project distinguished validation mode and operational mode. Validation mode could emit savepoints, use stricter precision, and carry WRF scratch fields to support comparison against Fortran. Operational mode had to preserve the constitutional invariant of no host/device transfer inside the timestep loop, and it could fuse operators or drop validation-only scratch if evidence showed that the operational forecast stayed within the accepted envelope.
+**Systems evidence.** Inter-kernel D2H inside the compiled forecast loop is **0 copies / 0 bytes** (the constitutional invariant) [historical M7 proof `proofs/perf` / `d2h_audit_v2.json`; **needs a fresh v0.1.0 re-audit — see `missing_elements.md` (ii)**]. The current v0.1.0 d02 pipeline reports a 24 h end-to-end speedup of ~9.1x against the derived CPU d02 denominator [proof: `proofs/v010_validation/speedup_vs_cpu_24h.json`], consistent with the per-forecast-hour roofline framing once IC load, hourly writes, inventory and scoring overhead are included. **[PLACEHOLDER: device-residency / restart / repeatability systems table → `publish/tables/systems_invariants.md`. The current v0.1.0 `repeatability.json` and `restart_in_pipeline.json` proofs are `NOT_RUN` (the validation flags were not requested); these must be re-run for release — `missing_elements.md` (ii).]**
 
-Proof objects were ordinary files: JSON measurements, Markdown verdicts, logs, and reports. They were not replaced by chat summaries. Examples used here include `.agent/sprints/2026-05-27-m7-honest-speedup-skill-diff/honest_speedup_table.json`, `.agent/sprints/2026-05-27-m7-honest-speedup-skill-diff/gpu_vs_cpu_skill_diff.json`, `.agent/sprints/2026-05-27-m7-profiler-window-fix/d2h_audit_v2.json`, `.agent/sprints/2026-05-27-m7-restart-continuity/restart_continuity.json`, `.agent/sprints/2026-05-27-m7-1km-memory-audit/step_feasibility.json`, `.agent/sprints/2026-05-27-m7-skill-fix-algorithmic/post_fix_speedup.json`, `.agent/sprints/2026-05-27-m7-skill-fix-algorithmic/post_fix_skill_diff.json`, and `.agent/sprints/2026-05-27-m7-skill-fix-algorithmic/invariant_preservation.json`.
+### 6.5 AI self-correction case studies
 
-### 3.5 Rejection Loop Example
+Each case below is a *receipt* that the multi-agent process detects and corrects its own errors — the core credibility question for autonomous AI scientific engineering.
 
-The 20260509 M6c mu-regression sprint is a representative rejection loop. Its contract hypothesis was that operational and validation initialization differed at step 2. The worker found the opposite: step-2 and step-5 bitwise parity were already clean, while the remaining raw failure occurred at step 10 with nonfinite `mu`/`theta`. The sprint localized the first nonfinite to RK1 acoustic substep 1, tested scoped scratch/core variants, reverted variants that failed, and reported `BLOCKED` rather than declaring a fix. That blocked report changed the next contract. It also preserved useful evidence: 20260521 step 10 remained at 0.0 delta, B6 coupled-step parity still held, and the failed hypothesis was removed from the active explanation set.
+**(a) The self-compare retraction.** The v0.0.1 headline "bitwise dycore parity at 100 coupled steps vs WRF" was found to be a JAX-vs-JAX self-compare: the comparator read back the model's own output and never touched WRF Fortran. The operational dycore was in fact missing ~7 WRF operators (a stubbed `rhs_ph`, a re-coupled/decoupled work-theta that advanced θ at 1/N of the correct rate, a dropped geopotential EOS term, and more) and produced fast-but-wrong forecasts. The claim was publicly retracted; the dycore was honestly rebuilt (the F7 chain) against published analytic references and a from-scratch pristine WRF v4.7.1 savepoint arbiter [proof: `proofs/f7/DYCORE_STATUS.md`]. *Lesson: validate against the external oracle, never against the system's own output.*
 
-The D2H performance loop had a different shape. The initial trace reported inter-kernel device-to-host transfers and returned `BLOCKED-D2H`. A follow-up recaptured the profile window with explicit markers and separated pre-kernel boundary activity from the compiled forecast loop. The final audit reported zero inter-kernel D2H bytes. The method worked because both the failure and the correction were anchored to files rather than conversational confidence.
+**(b) The speedup denominator correction.** A roofline/denominator audit found the celebrated 22.26x (and the earlier 50.20x and 156.82x) divided one GPU d02 domain by the full five-domain CPU nest wall time. Corrected to a like-for-like d02-vs-d02 comparison, the honest number is ~5.3x clean / ~7.8x realistic, with a ~3.2x dt-matched floor [proof: `proofs/perf/speedup_denominator.md`]. *Lesson: a performance number is only as good as its denominator definition.*
 
-## 4. Methods: Numerical Port
+**(c) Missing Coriolis, exposed by a persistence baseline.** Finite-forecast and savepoint checks passed, yet near-surface winds were below persistence (V10 skill negative). A persistence baseline — *holding the initial condition constant* — discriminated a genuine model deficiency from a metric artifact, and a momentum-budget probe localized it: **the GPU dycore momentum tendency had no Coriolis force.** Adding the WRF-faithful Coriolis term (with `f`/`e`/`sina`/`cosa` defaulting to the no-rotation values so the idealized f=0 gates stayed bit-identical and PASS) flipped the wrong-sign lower-column wind, improved case2 winds ~50%, and moved case3 V10 from beating-persistence-by −0.13 to **+0.17** [proof: `proofs/wind/coriolis_fix_verdict.md`, `proofs/wind/WIND_SKILL_ROOT_CAUSE.md`]. *Lesson: a cheap baseline (persistence) catches what "the forecast is finite and looks plausible" cannot.*
 
-The numerical port follows ARW structure but not the legacy software architecture. State variables are stored as JAX arrays with explicit staggering conventions. The operational d02 grid for the main measured case has mass shape `(44, 66, 159)` and WRF staggered extent `(45, 67, 160)`. The timestep is 10 s, with 360 RK steps per forecast hour, RK order 3, and 10 acoustic substeps. The implementation uses `jax.lax.scan` to express the time loop as a compiled graph rather than a Python loop. The warm timing window measures `run_forecast_operational` plus `block_until_ready`, excluding replay-case construction. The grid and timing values are recorded in `wall_clock.json` and `reproducibility_v2.json`.
+**(d) The d03 boundary-pump self-correction.** The 1 km nest blew up its surface bias (+6.8 K T2, ~2.5x wind bias). Validation against CPU-WRF localized it to a nested geopotential-boundary forcing term pumping the interior; a WRF-faithful fix collapsed the overnight bias to d02-quality and — critically — *exposed a separate, previously masked daytime surface-flux warm bias* now reported honestly (§6.3, §8). *Lesson: fixing one defect often unmasks another; the proof-object trail keeps both visible.*
 
-The core design principle is whole-state device residency. Dry-air mass, pressure, geopotential, staggered winds, water species, surface fluxes, and boundary side histories remain in GPU memory through the operational loop. Step-boundary I/O is allowed for output and restart handling; inter-kernel transfer inside the forecast loop is not. The final D2H audit classifies this distinction explicitly: broad-window transfers were pre-kernel copies or boundary activity, while inter-kernel D2H inside the compiled forecast loop was zero.
+Two meta-lessons run through these: agents benefit from narrow contracts but suffer when the contract names the *wrong proxy* (the pipeline-integration sprint correctly produced finite fields and station-score rows — the error was treating those as proof of operational *skill*); and cross-model disagreement is useful only when *attached to files* — the productive sprints wrote JSON tables, verdicts, and failed hypotheses, so the repository could preserve both the result and the contradiction.
 
-The validation history used a bottom-up savepoint ladder. In M6, the project shifted from RMSE tuning toward direct WRF small-step instrumentation. Coefficient, tridiagonal, scratch-state, acoustic-recurrence, dycore-step, and coupled-step parity sprints progressively reduced ambiguity about where the JAX path differed from WRF. At M6 close, the manager recorded B6 savepoint parity and multi-step CPU parity on the 20260521 case at 0.0 bitwise for 2, 5, and 10 steps. The bitwise statement applies to the compared fields at the relevant step boundaries in validation/comparator mode; it does not imply long-range operational skill or full physics equivalence.
+---
 
-Precision is fail-closed. Hydrostatic mass and pressure-gradient-sensitive paths use FP64 where the validation history demands it. Local physics fields and moisture species may be FP32 only when allowed by policy and evidence. No downcast is production-safe merely because it is faster. This separation matters because JAX/XLA can produce excellent fused kernels, but a numerically unstable fused kernel is still wrong.
+## 7. Discussion
 
-The current single-GPU implementation includes a halo placeholder for future multi-GPU work. The paper makes no multi-GPU scaling claim. Boundary forcing in the measured d02 pipeline uses Gen2 d02 hourly side-history replay rather than direct live AIFS ingestion. AIFS is the planned IC/BC source for the broader operational path \cite{lang2024aifs,lang2025update}, but the current result should be understood as a replay-driven Canary d02 system.
+**What verifiability buys the AI claim.** The reason this is science rather than a demo is that every load-bearing assertion is checkable against an oracle the AI did not author: analytic benchmark solutions, WRF Fortran savepoints, a persistence baseline, same-workstation CPU-WRF, conservation laws, and hardware profilers. In that setting, "an autonomous AI built it" stops being a marketing claim and becomes a falsifiable one — and the four self-correction case studies (§6.5) are the demonstration that the process can falsify *itself*. The method is not infallible: the manager was itself an AI system and initially made the v0.0.1 over-claim; the validation discipline is stronger than chat-based coding but is not yet equivalent to an independent human numerical-methods review (§8). What it reliably provides is *internal friction* — adversarial, proof-object-driven review that caught a self-compare, a denominator error, a missing force, and a boundary pump before they reached a public claim.
 
-### 4.1 Validation Pyramid
+**Implications for legacy scientific-code modernization.** The transferable result is a *recipe*, not a WRF-specific artifact: target the GPU memory hierarchy in a clean rewrite, validate against the legacy code (and analytic cases) as an oracle rather than inheriting its architecture, and bind every claim to a proof object under multi-agent governance. WRF is the existence proof, not the boundary; the recipe should apply to any correctness-critical domain with hard oracles. The human author's reflection is pointed here: this codebase sits at the intersection of GPU engineering, software engineering, physics, and Fortran archaeology — exactly the multi-field intersection where individual human experts are scarcest and where, strikingly, the AI swarm performed well.
 
-The project uses a four-tier validation pyramid. Tier 1 is micro-fixture and savepoint parity. It is intentionally local and strict. When a single operator claims to reproduce a WRF Fortran expression, the comparison can require identical shapes, units, staggering, and, where practical, bitwise equality. This tier is useful for coefficient generation, tridiagonal-solve components, acoustic-substep recurrence checks, and boundary pack/unpack behavior. It is not, by itself, a forecast-skill gate.
+**What JAX enables (future work, not claimed).** A physics-based JAX core is end-to-end differentiable in principle, which opens gradient-based data assimilation, parameter calibration, and ML-hybrid parameterizations, and makes the model a natural generator of physically constrained training data. We did not exercise differentiability and make no skill claim from it; we flag it as a structural property and a future direction.
 
-Tier 2 is physical-invariant validation. This includes finite-value checks, basic bounds, dry-air mass behavior, tracer positivity, and water-budget checks when physics is active. Tier 2 exists because a model can match a local savepoint and still produce an impossible state after coupling. It also prevents "performance fixes" that silently introduce NaNs, negative water species, or pressure states outside the physical envelope.
+**Why the performance ceiling is fidelity-bounded.** The honest ~5.3–7.8x is not a failure of GPU engineering; it is what faithful fp64 split-explicit acoustic integration costs on a memory- and launch-bound workload (§6.4). The one large algorithmic lever that would roughly halve the microphysics cost (implicit sedimentation) is fidelity-rejected because it over-precipitates against a WRF oracle. This is itself a small methodological point: component micro-benchmarks routinely over-promise relative to a faithful coupled forecast, and the honest number plus the refutations is the contribution.
 
-Tier 3 is short-run trajectory behavior. The purpose is not to require long-run bitwise identity, which is a poor target for chaotic floating-point systems. The purpose is to show that short integrations diverge in a controlled way relative to a reference trajectory and that numerical changes do not produce explosive growth at the first few steps.
+**The human reflection (first person, author's voice).** *A GPU port of WRF — one of the most complex, 20-plus-year-old codebases in the geosciences — has never really existed as open source, not because it isn't useful but because it is hard: it eluded single-agent attempts and an earlier GPT-5.4-era swarm. AI seems to have become just capable enough, right now, to actually do it — and once capable, to do it fast. What struck me most is how well it performs at the intersection of several scientific fields, exactly where human experts are scarcest. The genuinely impressive thing was the end-to-end capability: from a simple wish — "I need a faster WRF so my runs fit in time and I can offer a free forecast" — through to a written publication and a published repository, for code that had never been open-sourced. My own input was so simplistic that it feels only one iteration away from being fully replaceable. One of the hardest, most battle-tested codebases on Earth went from not-doable to done in roughly a week in May 2026, on free tokens, with barely any human input — predictable if you extrapolate the curves, but still genuinely striking.*
 
-Tier 4 is the operational statistical gate. The project originally framed Tier 4 around ensemble consistency ideas such as PyCECT \cite{milroy2018ensemble}; for the M6/M7 Canary work, the practical surface gate was RMSE and station scoring on T2, U10, and V10 against CPU WRF and AEMET observations. Object-based and neighborhood precipitation verification methods such as FSS and SAL remain planned tools for precipitation-focused milestones \cite{roberts2008scale,wernli2008sal}. The skill regression and partial recovery reported in this draft are Tier 4 evidence.
+---
 
-## 5. Methods: Physics Suite
+## 8. Limitations and Roadmap
 
-The prototype contains selected implementations from the target operational physics families: Thompson-style cloud microphysics, MYNN-style boundary-layer mixing, RRTMG radiation with cadence control, and Noah/Noah-MP-like surface state. The physics implementation is not presented as a validated replacement for the full WRF physics suite. It is the physics path present in the measured pipeline and the current source of remaining uncertainty in the skill results.
+We state the claim boundary precisely and without apology. **v0.1.0 IS** a validated single-domain GPU *replay* forecast for Canary d02 (3 km), with a WRF-faithful fp64 RK3+acoustic dycore (including Coriolis), flux-form advection, Thompson/MYNN/`sfclayrev`/RRTMG physics, passing idealized analytic gates and WRF operator savepoints, near-CPU-WRF surface skill that beats persistence on winds over three 72 h cases, an honest ~5.3–7.8x speedup, and a much-improved-but-not-strictly-passing 1 km nest. **v0.1.0 IS NOT** a complete WRF replacement: it consumes CPU-WRF/Gen2 boundary and land artifacts. The single source of truth for the gap inventory is `publish/GPU_PORT_GAPS_TODO.md`; the sequencing is `.agent/decisions/POST-0.1.0-ROADMAP.md`.
 
-The pre-fix path had three coupled defects. First, a guard branch reset `theta`, `mu`, `mu_total`, and `mu_perturbation` to pre-RK values every timestep, discarding the prognostic update. Second, `surface_adapter` computed fluxes but MYNN received zero bottom-boundary flux arrays. Third, `DailyPipelineConfig.radiation_cadence_steps` defaulted to 999999, so RRTMG was not invoked in the 8640-step 24 h integration.
+**P0 — blocks a true standalone port (each closes with a proof object and a 0.1.x/0.2.0 release note):**
 
-The post-fix path changed all three: theta and mu now flow through RK3 with inline bounded guards, `surface_adapter` runs before `mynn_adapter` and feeds its computed fluxes into the PBL bottom boundary, and radiation cadence is 180 steps, so RRTMG runs 48 times in a 24 h integration. The fix preserved systems invariants and improved 6 of 9 aggregate skill metrics, but it did not close the skill gap. Remaining physics limitations are concrete: the lower-column theta guard envelope still saturates maximum diurnal warming, land/surface state fields such as `t_skin`, `SST`, `SMOIS`, `SH2O`, and `TSLB` remain frozen at the initial condition, and boundary forcing uses a width-1 strip rather than the WRF width-5 relaxation zone.
+| Gap | What is missing | Target |
+|---|---|---|
+| P0-6 | Real-terrain / map-factor / specified-nested boundary dynamics closure (full 3D u/v/w deformation, terrain-slope diffusion/PGF, boundary-order degradation) — tied to residual wind skill | 0.1.x, first |
+| P0-1 | Live multi-domain nesting (parent/child state carries, interpolation, subcycling) | 0.2.0 |
+| P0-3 | Prognostic Noah-MP land surface (currently a prescribed subset, refreshed from corpus) | 0.2.0 |
+| P0-5 | Full WRF-compatible `wrfout`/`wrfrst` + diagnostics; true restart interoperability | 0.1.x |
+| P0-4 | d01 parent-domain Kain–Fritsch cumulus (needed for a live parent) | 0.2.0 |
+| P0-7 | Coupled conservation budgets + non-masking guard policy (report limiter engagement; remove/justify fallbacks) | 0.1.x |
+| P0-2 | Native initialization / WPS / `real.exe` replacement | LAST, after 0.2.0 (highest risk) |
 
-## 6. Hardware and Software Setup
+**P1 — fidelity/robustness debts:** RRTMG topo-shading/slope-radiation and real lat/lon (P1-3); MYNN EDMF/cloud completeness, central to marine PBL and the residual wind skill (P1-4); Thompson parity debts — adaptive sedimentation substeps, cloud-water sedimentation (P1-5); explicit precision-policy proof gates (P1-8); gravity-wave drag if load-bearing (P1-7); positive-definite/monotonic scalar advection and boundary-order options (P1-6); data assimilation/FDDA only if a future namelist requires it (P1-1). **0.2.0 scalability:** single-node multi-GPU domain decomposition (S1), pre-designed via the frozen halo interface.
 
-The measured target workstation uses a single NVIDIA GeForce RTX 5090 with 32607 MiB reported by `nvidia-smi` and CUDA device `cuda:0` \cite{nvidia2025geforce}. The 3 km d02 measured grid is `(44, 66, 159)` at 3000 m horizontal spacing. The 1 km memory audit used a derived full-domain synthetic state and reported 7278 MiB `nvidia-smi` memory used after a warm one-step feasibility probe, leaving approximately 78 percent of the reported GPU memory unused for that probe. This is not a peak allocator trace and is not a full 1 km forecast validation.
+**Honest caveats on timing.** The validated core benefited from unusually clean oracles (analytic cases + WRF savepoints); the two items with the messiest validation — native init (P0-2) and prognostic Noah-MP (P0-3) — have error bars that skew high. We report a roadmap, not a schedule, and explicitly do not promise that unfinished items will be "finished within hours or days." Hardware portability is favorable: the pure JAX/XLA code recompiles for Hopper (H100/H200) with no source changes and should run faster (full-rate fp64, higher HBM bandwidth) on larger single-GPU domains; speedup-vs-CPU is hardware-specific and must be re-measured on that hardware (we have none).
 
-The runtime path is Python and JAX/XLA \cite{jax2018github,frostig2018tracing}. The current publication environment reports Python 3.13.11, JAX 0.10.0, jaxlib 0.10.0, CUDA toolkit 13.1.115, NVIDIA driver 595.71.05, and Linux 6.17.0-29-generic x86_64. The project package itself currently declares Python `>=3.10` and `jax>=0.4`; the public release must pin the exact runtime manifest. The CPU comparison baseline is WRF v4.7.1 running with 28 MPI ranks on the same workstation. Sprint-side processing used `taskset -c 0-3`, leaving cores 4-31 for CPU WRF comparison jobs when those jobs are active.
+---
 
-### 6.1 Canary Workflow and Verification Data
+## 9. Reproducibility and Release
 
-The measured M7 run is a d02 replay case, not a full live forecast cycle. It starts from a retained Gen2 WRF run, constructs a JAX replay state, advances the GPU operational path for the d02 domain, writes hourly `wrfout`-style NetCDF products, and evaluates station scores. The replay structure was a deliberate isolation choice. It allowed the project to test the GPU core against a known Gen2 source without simultaneously solving raw AIFS ingestion, nested d01 production, and retention-policy gaps.
+### 9.1 Repository and version
 
-The AEMET verification scaffold joins forecast values to station observations and reports BIAS, MAE, and RMSE for T2, U10, and V10 \cite{aemet2026observations}. For the 20260521 side-by-side comparison used here, the common valid-time range was 2026-05-21 19:00 UTC to 2026-05-22 18:00 UTC. The scoring report contains 73 station IDs, 24 common valid hours, and 1747 joined station-time rows. CPU and GPU outputs were passed through the same scoring code; only the wrfout source differed.
-
-The station verification is still incomplete. It does not include a robust precipitation event set, a multi-day seasonal sample, or object/neighborhood precipitation metrics. It also does not replace grid-to-grid Tier 4 comparisons against Gen2 or WRF fields. The current station scaffold is sufficient to reject an operational replacement claim because the GPU remains materially worse than CPU WRF on the aggregate surface variables. It is not sufficient to diagnose every root cause by itself.
-
-## 7. Results: Performance and Systems Evidence
-
-Table 1 separates the pre-fix diagnostic path from the current post-fix corrected-physics path. The current headline result is the post-fix row group.
-
-The consolidated pre-fix, iteration-1, and iteration-2 performance table is staged in `publish/tables/performance_evolution.md`.
-
-| System state | Claim | Value | Proof object |
-|---|---|---:|---|
-| Iteration-2 path (current headline) | 24 h d02 pipeline wall time | 732.63 s | `.agent/sprints/2026-05-27-m7-skill-fix-iter2/pipeline_run_20260521.json` |
-| Iteration-2 path (current headline) | 24 h forecast-only wall time | 687.90 s | `.agent/sprints/2026-05-27-m7-skill-fix-iter2/pipeline_run_20260521.json` |
-| Iteration-2 path (current headline) | Apples-to-apples d02-only speedup | 22.26x | `.agent/sprints/2026-05-27-m7-skill-fix-iter2/post_iter2_speedup.json` |
-| Iteration-1 path (predecessor) | 24 h d02 pipeline wall time | 708.32 s | `.agent/sprints/2026-05-27-m7-skill-fix-algorithmic/pipeline_run_20260521.json` |
-| Iteration-1 path (predecessor) | 24 h forecast-only wall time | 700.73 s | `.agent/sprints/2026-05-27-m7-skill-fix-algorithmic/pipeline_run_20260521.json` |
-| Iteration-1 path (predecessor) | CPU d02-only timing denominator | 16305 s | `.agent/sprints/2026-05-27-m7-skill-fix-algorithmic/post_fix_speedup.json` |
-| Iteration-1 path (predecessor) | Apples-to-apples d02-only speedup | 23.02x | `.agent/sprints/2026-05-27-m7-skill-fix-algorithmic/post_fix_speedup.json` |
-| Iteration-1 path (predecessor) | Full five-domain CPU aggregate framing | 63.39x, not apples-to-apples | `.agent/sprints/2026-05-27-m7-skill-fix-algorithmic/post_fix_speedup.json` |
-| Pre-fix diagnostic path | 24 h d02 pipeline wall time | 324.78 s | `.agent/sprints/2026-05-27-m7-daily-pipeline-integration/pipeline_run_20260521.json` |
-| Pre-fix diagnostic path | 24 h forecast-only wall time | 310.27 s | `.agent/sprints/2026-05-27-m7-daily-pipeline-integration/pipeline_run_20260521.json` |
-| Pre-fix diagnostic path | Apples-to-apples d02-only speedup | 50.20x | `.agent/sprints/2026-05-27-m7-honest-speedup-skill-diff/honest_speedup_table.json` |
-| Pre-fix diagnostic path | Full five-domain CPU aggregate framing | 138.24x, not apples-to-apples | `.agent/sprints/2026-05-27-m7-honest-speedup-skill-diff/honest_speedup_table.json` |
-| Shared systems evidence | Warm 1 h d02 forecast wall time | 5.71 s | `.agent/sprints/2026-05-26-m7-gpu-profile-prep/wall_clock.json` |
-| Shared systems evidence | Three-run warm reproducibility CV | 0.42 percent | `.agent/sprints/2026-05-27-m7-profiler-window-fix/reproducibility_v2.json` |
-| Shared systems evidence | Inter-kernel D2H inside forecast loop | 0 copies, 0 bytes | `.agent/sprints/2026-05-27-m7-profiler-window-fix/d2h_audit_v2.json` |
-| Shared systems evidence | Restart continuity | max delta 0.0 | `.agent/sprints/2026-05-27-m7-restart-continuity/restart_continuity.json` |
-| Shared systems evidence | Pipeline wrfout inventory | 24/24 files readable | `.agent/sprints/2026-05-27-m7-daily-pipeline-integration/wrfout_inventory.json` |
-| Shared systems evidence | 1 km one-step memory probe | 7278 MiB of 32607 MiB | `.agent/sprints/2026-05-27-m7-1km-memory-audit/step_feasibility.json` |
-
-The current speedup should be read conservatively. The selected GPU number is the post-fix d02 pipeline wall time for the 20260521 case. The selected CPU denominator is the de-duplicated d02-only WRF timing for the same source run family. The five-domain aggregate CPU framing is reported because it appears in earlier proof objects, but it includes d01-d05 CPU work that the single-domain GPU d02 pipeline did not perform. It is not the headline comparison.
-
-Cold compilation remains operationally relevant. The 1 h profile recorded cold JIT compile-inclusive walls of 102.58 s for the 20260509 case and 106.18 s for the 20260521 case. The daily 24 h pipeline amortizes compile cost across hourly chained forecasts, but a production deployment must still manage compile-cache invalidation across code, driver, JAX, and shape changes. The current result is strongest as a warm-run throughput result with reproducibility evidence, not as a complete operations-SLA result.
-
-The D2H result is an architectural proof. The audit reports zero D2H inter-kernel bytes inside the XLA module window for `jit_run_forecast_operational`. This supports the project's central rule: no host/device transfer inside timestep loops unless explicitly approved and documented. It also distinguishes this design from partial ports where an unported scheme pulls full fields back to the host at each coupling point.
-
-## 8. Results: Forecast Quality and Skill
-
-### 8.1 Pre-fix Skill Regression Discovery
-
-The pre-fix forecast-quality result was negative. Side-by-side scoring was performed on 73 AEMET station IDs over 24 common valid hours, producing 1747 joined station-time rows. GPU and CPU wrfouts were evaluated through the same `gpuwrf.validation.forecast_vs_obs` scaffold. Table 2 separates the pre-fix failure from the post-fix partial recovery.
-
-The full CPU, pre-fix GPU, iteration-1 GPU, and iteration-2 GPU BIAS/MAE/RMSE matrix is staged in `publish/tables/skill_evolution.md`.
-
-| System state | Variable | CPU WRF RMSE | GPU RMSE | Relative change vs CPU | Verdict |
-|---|---|---:|---:|---:|---|
-| Pre-fix diagnostic path | T2 | 2.15 K | 7.86 K | +266 percent | material regression |
-| Pre-fix diagnostic path | U10 | 2.31 m s-1 | 11.31 m s-1 | +390 percent | material regression |
-| Pre-fix diagnostic path | V10 | 2.75 m s-1 | 9.44 m s-1 | +243 percent | material regression |
-| Post-fix corrected-physics path | T2 | 2.15 K | 8.85 K | +312 percent | still outside tolerance |
-| Post-fix corrected-physics path | U10 | 2.31 m s-1 | 6.75 m s-1 | +193 percent | improved, still outside tolerance |
-| Post-fix corrected-physics path | V10 | 2.75 m s-1 | 7.23 m s-1 | +163 percent | improved, still outside tolerance |
-
-The pre-fix regression was broad: GPU was materially worse on every metric of every variable in the aggregate comparison, and the report verdict was `FAIL_SKILL_DIFF`. The failure was not just a station-scorer artifact. A separate L2 d02 replay validation on the same 3 km grid but with L2-d01 boundary forcing produced `L2_D02_BOUNDED_FAIL`: T2 RMSE 4.07 K against a 3.0 K threshold, U10 RMSE 10.78 m s-1 against 7.5 m s-1, and V10 RMSE 7.83 m s-1 against 7.5 m s-1.
-
-### 8.2 Root-Cause Analysis
-
-After the first draft of this paper was written, two parallel root-cause-analysis sprints landed and converged. An Opus architectural audit and a Codex empirical bisection independently identified three coupled defects in the operational forecast path.
-
-First, the production guard branch overwrote post-RK3 `theta`, `mu`, `mu_total`, and `mu_perturbation` with pre-step values. The RK3+acoustic advance was being discarded each step. Independent corroboration came from on-disk bounds-check artifacts that recorded `theta_lower_30_max_k` identical to seven decimal places across all 24 hourly snapshots of the L2 d02 replay run.
-
-Second, surface fluxes were computed but not applied to the atmosphere. The MYNN PBL adapter received zero bottom-boundary heat, moisture, and momentum flux inputs. `surface_adapter` computed `theta_flux`, `qv_flux`, `tau_u`, and `tau_v`, but those values did not feed the PBL bottom boundary in the correct order.
-
-Third, radiation cadence was effectively disabled in the pre-fix path. `DailyPipelineConfig.radiation_cadence_steps` defaulted to 999999, so `rrtmg_adapter` was never invoked in the 8640-step 24 h integration. The post-fix path changes this cadence to 180.
-
-The Codex bisection also surfaced a max-14-category `LU_INDEX` mismatch between GPU and Gen2 wrfouts at lead 1 h. A follow-up audit confirmed that in-memory `LU_INDEX` from `wrfinput_d02` matched Gen2 exactly; only the `wrfout_writer` fallback collapsed land cells to category 2 and water to 17 because the GPU `State` carries no `LU_INDEX` field. The forecast physics used the correct categories. `LU_INDEX` is therefore a publication-quality cleanup target for output, not the main root cause of the skill regression.
-
-### 8.3 Post-fix Partial Recovery
-
-A combined fix sprint applied all three algorithmic changes: theta and mu now flow through RK3 with inline bounded guards, `surface_adapter` runs before `mynn_adapter` and feeds computed fluxes into the PBL bottom boundary, and radiation cadence is 180. The post-fix sprint produced `SKILL_IMPROVED_PARTIAL`.
-
-All M6 and M7 systems invariants were preserved: 20260521 multi-step parity step 2 remained 0.0 bitwise, B6 savepoint parity was preserved, inter-kernel D2H remained 0 bytes, and restart bitwise continuity passed. Six of nine T2/U10/V10 aggregate metrics improved versus the pre-fix GPU baseline, mainly wind metrics. T2 worsened because the inline theta envelope for the lower 30 levels still saturates the diurnal warming maximum. All three variables remain outside the pre-declared 20 percent tolerance against CPU WRF.
-
-The post-fix wall-clock cost is 708.32 s end-to-end for 24 h, with 700.73 s forecast-only. The corrected current speedup is 23.02x apples-to-apples d02-only. This remains comfortably above the project's initial 4x to 8x exploratory target, but the speed is not a release-quality operational result until the skill blockers are closed.
-
-The publication claim is therefore specific: the whole-state-resident architecture remains viable under current systems evidence, and the validation/fix discipline can localize coupled defects under operational scoring. The forecast is improving but is not yet a WRF skill replacement.
-
-### 8.4 Second iteration: partial wind recovery, T2 regression
-
-A second fix sprint addressed the three remaining named defects from iteration 1: it widened the lower-30 theta envelope from 400 K to 450 K, added a Gen2 hourly land-state refresh path that reloads `t_skin`, `SST`, `SMOIS`, `SH2O`, and `TSLB` from retained CPU wrfouts at each output boundary, and packed a WRF-ordered 5-row lateral boundary strip (`spec_bdy_width=5`, `relax_zone=4`) replacing the iter-1 outermost-row pack. Verdict: `BLOCKED`.
-
-All systems invariants again held: step-2 multi-step parity 0.0 bitwise, B6 savepoint parity preserved, inter-kernel D2H = 0 bytes, restart bitwise PASS, and AgentOS validation green. The d02-only apples-to-apples speedup settled at 22.26x (down from iter-1's 23.02x due to the modest overhead of hourly land refresh and 5-row boundary handling) - still well above the 4x-8x target.
-
-The post-iter-2 AEMET station scoring on the same 20260521 day, 73 stations, 24 valid hours, 1747 joined rows, produced:
-
-The full per-variable comparison is staged in `publish/tables/skill_evolution.md`. The headline RMSE summary, comparing pre-fix, iteration-1, and iteration-2 GPU paths against the CPU WRF baseline, is:
-
-| Variable | CPU WRF RMSE | Pre-fix GPU RMSE | Iteration-1 GPU RMSE | Iteration-2 GPU RMSE | Iter-2 vs CPU |
-|---|---:|---:|---:|---:|---:|
-| T2 (K) | 2.15 | 7.86 | 8.85 | **10.80** | **+403 percent** |
-| U10 (m s-1) | 2.31 | 11.31 | 6.75 | **7.24** | **+214 percent** |
-| V10 (m s-1) | 2.75 | 9.44 | 7.23 | **7.62** | **+177 percent** |
-
-Compared to the pre-fix path, iteration 2 substantially reduces wind RMSE (U10 +390 to +214 percent of CPU; V10 +243 to +177 percent of CPU), confirming that the named iteration-1 fixes (theta/mu reset removal, surface-PBL wiring, RRTMG enablement) and the iteration-2 boundary widening together do carry real meteorological information into the wind field. T2 RMSE worsens monotonically across the three GPU paths (7.86 to 8.85 to 10.80 K) and is the variable that the present coupling stack handles worst. Comparing iteration 2 to iteration 1 directly: RMSE worsens slightly on all three variables (T2 +22 percent, U10 +7 percent, V10 +5 percent), while bias magnitudes are mixed. The strongest engineering claim from iteration 2 is therefore not "RMSE improved" but "the named iteration-1 blockers (boundary width 1, frozen land state) are removed and the M7 systems invariants still hold." The RMSE direction shows that releasing those blockers exposed an underlying surface-flux magnitude coupling defect that iteration 1's tighter envelope had been masking.
-
-The mechanism is consistent across the proof objects: with the envelope widened from 400 K to 450 K, lower-column theta can climb further during daytime heating, but surface-flux magnitudes from the current `surface_adapter` plus MYNN coupling over-deposit heat into the bottom level, and the diurnal warming overshoots rather than saturating. All three variables remain outside the pre-declared 20 percent tolerance. The publication therefore continues to reject any operational replacement claim. The remaining defect is narrower: not a missing radiation source, a discarded RK3 advance, a width-1 boundary, or a frozen land state, but a surface-flux magnitude or sign-coupling issue in the iteration-2 path. The proof-object backbone for iteration 2 - `post_iter2_skill_diff.json`, `post_iter2_speedup.json`, `invariant_preservation_iter2.json` - is preserved on disk for that follow-up.
-
-## 9. Discussion
-
-The project is best understood as two intertwined experiments: one in GPU-native NWP architecture and one in AI-agent scientific-software production.
-
-The architectural experiment supports the value of whole-state residency. The current 23.02x corrected-physics d02 throughput ratio is large enough to matter even after rejecting both the original 156.82x celebration number and the pre-fix 50.20x diagnostic path as current headline results. A single consumer GPU can run the measured 3 km Canary replay in minutes rather than CPU-WRF hours for the same d02 timing denominator. If the skill gap is resolved, this would make high-frequency local ensembles, repeated sensitivity tests, or rapid backfills more accessible than with a CPU-only operational path.
-
-The result also shows why performance without validation can mislead. A forecast that is fast, finite, restartable, and repeatable can still be wrong. The original M7 closeout overinterpreted finite AEMET station scores. The scorer produced real measurements, but it had not compared GPU skill against CPU WRF. Once the correct side-by-side comparison was run, the claim changed immediately. The central scientific lesson is that proof objects must match the claim being made.
-
-The AI-agent methodology helped because it made that correction possible. A single human plus autocomplete workflow might have moved from the inflated closeout directly to public communication. Here, the manager's later validation step launched an honest-speedup and skill-diff sprint before release. The process found a timing-denominator bug, a skill regression, and then a partial fix that improved winds while exposing remaining land/surface, boundary, and theta-guard defects. That does not make the process infallible. It shows that adversarial, proof-object-driven AI collaboration can create useful internal friction.
-
-The method also has weaknesses. The manager was itself an AI system and initially made the celebration error. The validation discipline was stronger than ordinary chat-based coding, but it was not equivalent to an independent human numerical-methods review. Guard behavior, radiation cadence, and surface/PBL coupling were allowed to survive long enough to affect publication readiness. The project caught those issues, but late. A future workflow should require side-by-side CPU/GPU skill comparison before any closeout can use operational language.
-
-One practical lesson is that AI agents benefit from narrow contracts but suffer when the contract names the wrong proxy. The pipeline-integration sprint correctly produced a working 24 h pipeline, hourly files, finite fields, station-score rows, and wall-clock evidence. Those were the requested artifacts. The later error was treating those artifacts as proof of operational skill. This is not a worker failure so much as a specification failure.
-
-Another lesson is that cross-model disagreement is useful only when attached to files. Parallel critic sprints that merely argue would not have helped. The useful sprints wrote JSON tables, verdict markdown, command outputs, and failed hypotheses. The repository could then preserve both the positive result and the contradiction. That property matters for scientific software because many wrong paths are locally plausible.
-
-The most defensible publication frame is therefore modest but valuable: a governed AI-agent process built a nontrivial GPU-native regional NWP replay prototype, produced a large corrected-physics speedup, and generated the evidence that prevented an overclaim. In a field where numerical trust matters more than demonstration speed, that self-correction is part of the result.
-
-## 10. Limitations
-
-The current system is single-GPU only. The halo interface is a placeholder, and no multi-GPU MPI or GPU-aware exchange result is claimed. The 1 km result is a memory-feasibility probe, not a full 1 km forecast validation.
-
-The Canary workflow is replay-based. The GPU d02 system receives boundary side histories derived from existing Gen2 WRF output. That is acceptable for isolating d02 dynamics and physics while the port is validated, but it is not the same as running the full nested operational stack from raw AIFS IC/BC. A production system must either ingest AIFS and geog/static fields directly or document a reproducible bridge from Gen2 products to GPU state.
-
-The validation corpus is too small. M6 used three V3 initial conditions for operational Tier-4 RMSE gates, and M7 side-by-side station scoring used one 24 h 20260521 case. That is enough to expose a serious problem and measure partial recovery; it is not enough to characterize seasonal or regime-dependent behavior. A full Tier-4 ensemble remains corpus-blocked until more Gen2 d02 CPU/GPU comparable pairs are retained or replayed.
-
-The current physics path remains incomplete as an operational claim. Radiation cadence is no longer disabled in the post-fix path; it runs every 180 steps. The boundary forcing widens to `spec_bdy_width=5` in iteration 2, and the land/surface state is refreshed hourly from Gen2 wrfouts in iteration 2. The remaining blockers are now narrower: a surface-flux magnitude or sign-coupling issue that drives T2 overshoot once the theta envelope is widened to allow diurnal warming, residual upper-bound saturation in the theta guard, the hourly land-refresh path being a data replay rather than a prognostic Noah-MP scheme, and skill still outside the pre-declared 20 percent tolerance against CPU WRF. Microphysics admissibility and finite guards remain load-bearing in at least one diagnostic history.
-
-The observation and verification path is narrow. AEMET station scoring on T2, U10, and V10 is useful and directly relevant to Canary operations, but it does not cover precipitation structure, cloud, radiation, vertical profiles, or regime-specific diagnostics. METplus-style verification, FSS, SAL, and a multi-day event corpus remain future work.
-
-The authorship process needs external review before public release. AI systems wrote and reviewed much of the system, and this draft discloses that. The project has not yet had a truly independent human numerical-methods reviewer audit the code and paper claims. Enric R.G. remains responsible for final acceptance.
-
-The release manifest is not yet frozen. This drafting environment reports Python 3.13.11, JAX 0.10.0, jaxlib 0.10.0, CUDA toolkit 13.1.115, NVIDIA driver 595.71.05, and Linux 6.17.0-29-generic x86_64. The final reproducibility package must pin the exact Python, JAX, jaxlib, CUDA, driver, XLA flags, git commit, and proof-object commit hashes.
-
-Several citations remain release-quality checks rather than claims of final bibliographic perfection. The included BibTeX file parses locally, and this revision removes the unresolved Mollick TODO citation, but publisher metadata for several brief-derived entries should be rechecked before arXiv submission.
-
-## 11. Reproducibility
-
-The public code URL placeholder is `github.com/<TBD>`. The release package should include the final repository commit, a hardware manifest, a software-version manifest, and the proof-object directories listed below.
-
-| Item | Current value |
+| Item | Value |
 |---|---|
-| Public repository | `github.com/<TBD>` |
-| Release commit | `TBD at public release` |
-| Current revision branch | `worker/gpt/publication-revision-pass` |
-| Paper post-fix framing commit | `c9ab7c0` |
-| Skill-fix proof-object merge commit | `d14d76c` |
-| Critique merge commit | `53fbf11` |
-| Current dispatch commit | `093f93c` |
+| Public repository | **[PLACEHOLDER: public repo URL at release — `missing_elements.md` (ii)]** |
+| Release tag | **[PLACEHOLDER: `v0.1.0` tag at release]** |
+| Exact commit | **[PLACEHOLDER: release commit hash; current validated HEAD is `5319b8d` (Coriolis), with d02/d03 fixes through `234265a`]** |
 
-| Environment field | Value |
-|---|---|
-| Python | 3.13.11 |
-| JAX | 0.10.0 |
-| jaxlib | 0.10.0 |
-| CUDA toolkit | 13.1.115 |
-| NVIDIA driver | 595.71.05 |
-| GPU | NVIDIA GeForce RTX 5090, 32607 MiB |
-| OS | Linux 6.17.0-29-generic x86_64 |
-| CPU pinning for publication checks | `taskset -c 0-3` |
+### 9.2 Environment manifest
 
-The canonical proof-object manifest for this paper is:
+**[PLACEHOLDER: pin the exact runtime — Python, JAX, jaxlib, CUDA toolkit, NVIDIA driver, XLA flags, OS — at the release commit. The drafting environment reports Python 3.13.x / JAX 0.10.x / CUDA 13.x / RTX 5090 (32607 MiB), but the package currently declares only `python>=3.10`, `jax>=0.4`; the release must pin a single manifest. — `missing_elements.md` (ii)]** CPU baseline: WRF v4.7.1, 28 MPI ranks, same workstation; AI/Python work pinned to cores 0–3 (`taskset -c 0-3`), leaving 4–31 for CPU-WRF.
 
-- `.agent/decisions/MILESTONE-M6-CLOSEOUT.md`
-- `.agent/decisions/MILESTONE-M7-CLOSEOUT-AMENDMENT.md`
-- `.agent/sprints/2026-05-26-m7-gpu-profile-prep/wall_clock.json`
-- `.agent/sprints/2026-05-27-m7-profiler-window-fix/reproducibility_v2.json`
-- `.agent/sprints/2026-05-27-m7-profiler-window-fix/d2h_audit_v2.json`
-- `.agent/sprints/2026-05-27-m7-daily-pipeline-integration/pipeline_run_20260521.json`
-- `.agent/sprints/2026-05-27-m7-honest-speedup-skill-diff/honest_speedup_table.json`
-- `.agent/sprints/2026-05-27-m7-honest-speedup-skill-diff/gpu_vs_cpu_skill_diff.json`
-- `.agent/sprints/2026-05-27-m7-l2-d02-replay-validation/tier4_rmse_l2_d02.json`
-- `.agent/sprints/2026-05-27-m7-restart-continuity/restart_continuity.json`
-- `.agent/sprints/2026-05-27-m7-1km-memory-audit/step_feasibility.json`
-- `.agent/sprints/2026-05-27-m7-skill-fix-algorithmic/pipeline_run_20260521.json`
-- `.agent/sprints/2026-05-27-m7-skill-fix-algorithmic/post_fix_speedup.json`
-- `.agent/sprints/2026-05-27-m7-skill-fix-algorithmic/post_fix_skill_diff.json`
-- `.agent/sprints/2026-05-27-m7-skill-fix-algorithmic/invariant_preservation.json`
-- `.agent/sprints/2026-05-27-publication-revision-pass/revision_decisions.md`
-- `publication/draft/honesty_audit.md`
+### 9.3 Proof-object manifest
 
-The lightweight audit command is:
+The canonical proof objects backing this paper:
+
+- Idealized gates: `proofs/sprintU/close_gate/{warm_bubble,density_current}_verdict.json`, `proofs/f7/DYCORE_STATUS.md`, `proofs/f7n/`.
+- Real-case d02: `proofs/v010_validation/v010_d02_result.json`, `proofs/m19/verdict_result.json`, `proofs/m19/persistence_baseline.json`.
+- Real-case d03: `proofs/v010_validation/d03_summary_run24h_v5fix.json` (+ pre-fix summary for the self-correction row).
+- Winds / Coriolis: `proofs/wind/coriolis_fix_verdict.md`, `WIND_SKILL_ROOT_CAUSE.md`, `revalidate_wind.json`.
+- Performance: `publish/runtime_optimization_analysis.md`; `proofs/perf/{roofline_costonly.json,speedup_denominator.md,compute_cycle_analysis.md,phase_breakdown.json}`; `proofs/thompson_perf/{PRECIP_ORACLE_AND_IMPLICIT_SED.md,kernel_lever_summary.json,coupled_timing_base_vs_opt.json}`.
+- Systems (v0.1.0 pipeline): `proofs/v010_validation/{speedup_vs_cpu_24h.json,wrfout_inventory.json}` (+ **re-run** `repeatability.json`, `restart_in_pipeline.json`, and a fresh D2H audit — currently `NOT_RUN`/historical).
+- Gaps + roadmap: `publish/GPU_PORT_GAPS_TODO.md`, `.agent/decisions/POST-0.1.0-ROADMAP.md`.
+- Process: `.agent/` (decisions, sprints, roles), git history, and the to-be-generated `publish/tables/ai_process_ledger.md` + `effort_accounting.md`.
+
+### 9.4 Data/fixture policy and audit command
+
+The real-case validation consumes the author's existing Gen2/CPU-WRF Canary corpus (boundary side histories, metric fields, land state) and AEMET station observations [CITE: aemet2026observations]. **[PLACEHOLDER: data-availability statement — which fixtures ship with the release, which are too large or licensed and are described for regeneration. `missing_elements.md` (ii).]** A lightweight publication audit (word count, BibTeX/cited-key integrity, required-proof existence, AgentOS validation) is invoked as below; heavy GPU/CPU reruns are separate as they require the RTX 5090 and the corpus:
 
 ```bash
 taskset -c 0-3 bash scripts/m7_publication_audit.sh
 ```
 
-The script checks the paper word count, BibTeX parseability through `bibtexparser`, cited-key integrity, non-ASCII characters in the publication files, required proof-object existence, and `scripts/validate_agentos.py`. Heavy GPU and CPU forecast reruns remain separate because they depend on the RTX 5090 and retained Gen2 CPU WRF corpus.
+**[PLACEHOLDER: update `scripts/m7_publication_audit.sh` to target the new `publish/paper/` paths and the current v0.1.0 proof objects (it currently targets `publication/draft`); paste its output into `publish/manifest/publication_audit_v1.json`. — `missing_elements.md` (i).]**
 
-## 12. Author Contributions and AI Use Disclosure
+### 9.5 AI-use disclosure and human responsibility
 
-This draft names Claude Opus 4.7 and GPT-5.5 Codex / OpenAI as AI systems, not as human authors. The reason is disclosure: both systems made substantial cognitive and engineering contributions to the repository and to this manuscript. Claude Opus 4.7 designed and managed sprint contracts, maintained long-horizon repository context, synthesized proof objects, drafted and revised this manuscript, and made the original closeout error that was later corrected. GPT-5.5 Codex implemented much of the repository code as worker, performed targeted debugging and critical-review sprints, generated proof objects under manager contracts, and contributed the empirical evidence base used here.
+The model code, validation harnesses, performance analysis, and the bulk of this manuscript were produced by the AI agents named in the byline; the human author was initiator and roughly-daily steerer and is the sole party accountable for the public claims. The AI systems cannot approve the manuscript, hold legal accountability, or satisfy human-only authorship criteria; if a target venue requires human-only authorship, the byline becomes Enric R.G. alone with the AI systems moved to this disclosure and acknowledgements [CITE: arxiv2026policy; pcmag2026arxiv; nature2024editorial; schmidt2025senior]. The project has **not** yet had an independent human numerical-methods review; for an arXiv preprint this is disclosed as a limitation, and it should precede any journal submission. This is a hobby project with no funding; the author intends to step back from active contribution and welcomes others continuing it.
 
-Enric R.G. defined the Canary Islands operational target, supplied and maintained the Gen2 CPU WRF baseline context, set validation gates and performance expectations, monitored the AI-agent process, and retains senior corresponding-author responsibility for final scientific acceptance and submission. All external publication responsibility rests with the human author. The AI systems cannot approve the final manuscript, hold legal accountability, or satisfy human-only authorship criteria.
+---
 
-This authorship framing is policy-sensitive. The briefed arXiv discussion emphasizes author responsibility for unchecked AI-generated content \cite{arxiv2026policy,pcmag2026arxiv}, while publisher policies such as Nature's do not treat AI tools as authors \cite{nature2024editorial}. For an arXiv preprint, the current byline is a transparent AI-contribution disclosure. If a target venue requires only human authors, the byline should be changed to Enric R.G. alone, with Claude Opus 4.7 and GPT-5.5 Codex / OpenAI moved to acknowledgements plus this AI-use disclosure.
+## 10. Conclusion
 
-## 13. Acknowledgements
+We set out to answer a testable question: can autonomous AI agents produce trustworthy scientific software when the domain has hard oracles? On the evidence here, the answer is a qualified yes. A governed multi-agent AI system, steered by a human for minutes a day on free-tier budgets, built a GPU-native, WRF-compatible regional forecast path that passes published idealized analytic gates and WRF operator savepoints, reproduces real Canary 3 km surface fields near same-workstation CPU-WRF over three 72 h cases while beating a persistence baseline on winds, runs with the full state resident on a single consumer GPU at an honest ~5.3–7.8x over 28-rank CPU-WRF, and exposes — rather than hides — a not-yet-passing 1 km gate and a clear inventory of what separates it from a complete WRF replacement. The deeper result is methodological: the same process that built the artifact also caught and publicly retracted its own false claims — a self-compare, an inflated speedup, a missing Coriolis force, a boundary pump — and it could do so *because the domain is verifiable*. In a field where numerical trust matters more than demonstration speed, that self-correction is not a caveat on the result. It is the result.
 
-The project depends on the WRF and NCAR modeling community, ECMWF AIFS context, AEMET station observations, NVIDIA GPU tooling, and Enric R.G.'s prior Gen2 operational Canary forecasting system. The authors also acknowledge the repository's internal reviewer and tester roles, which forced the correction from pre-fix performance celebration to current corrected-physics reporting.
+---
 
 ## References
 
-References will be rendered from `publication/draft/references.bib` during LaTeX conversion.
+References are rendered from `publish/paper/references.bib`. Existing bibkeys cover WRF and ARW, GPU-NWP comparators (Pace, ICON, SCREAM, NIM, AceCAST, ADIOS2-WRF), ML weather models, agentic software engineering, AI-authorship policy, JAX, and the RTX 5090 / AEMET / observation references. New bibkeys assumed in this draft and flagged for addition are listed in `publish/paper/missing_elements.md`.
