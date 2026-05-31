@@ -1,3 +1,5 @@
+> **STALE / RETIRED (M6/M7-era).** Superseded by `publish/tables/ai_process_ledger.md` + `publish/tables/effort_accounting.md` (the full-project per-stage process metrics wired into §3.5). This M6/M7-only ledger is retained as history; not used by `publish/paper/paper.md`.
+
 # M6/M7 Sprint Ledger
 
 Generated from `.agent/sprints/` directories whose names contain `m6` or `m7`. `not recorded` means the available sprint contract/report did not expose that field. The key proof column points to the first high-priority proof object found in the sprint directory, not necessarily the only proof object.

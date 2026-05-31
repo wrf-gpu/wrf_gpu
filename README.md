@@ -39,7 +39,7 @@ The dycore is now **closed** (Skamarock warm bubble + Straka density current ide
 
 1. **GPU-native architecture.** Whole-state device residency after init. No host/device transfers inside the timestep loop without an ADR. Fused timestep-scale kernels, not 200 000-launch micro-kernels.
 2. **Operational skill parity with CPU WRF v4** on Canary L2/L3 cases: 24-72 h RMSE on T2, U10, V10 is **statistically equivalent under TOST** at predeclared operational margins on a **≥ 15-case seasonal ensemble**.
-3. **Performance ≥ 10× vs 28-rank CPU WRF** on the same workstation, re-certified after every correctness fix (no stale speedup claims). Current corrected number: 22.26× on the d02 5-day Canary case (pre-skill-fix).
+3. **Performance ≥ 10× vs 28-rank CPU WRF** on the same workstation, re-certified after every correctness fix (no stale speedup claims). Current honest number: **~5.29× clean / ~7.84× realistic** on the d02 3 km Canary case (per-forecast-hour, fp64), with a **~3.2× dt-matched floor**. The earlier "22.26×" is **retracted** — it divided one GPU domain by the whole multi-domain CPU nest. See `publish/runtime_optimization_analysis.md` for the roofline-grounded provenance.
 4. **Validation against WRF, not bitwise reproducibility.** Tiered pyramid: micro fixture parity → physical invariants → short-run / timestep convergence → station-RMSE TOST equivalence.
 5. **Forkable and auditable.** Every claim has a proof object on disk. Every architecture decision has an ADR with cross-model review.
 6. **Manager-led, agent-executed.** The user is consulted only at milestone closure and on genuine blockers. All sprint work runs autonomously, with workers auto-notifying the manager on exit via tmux send-keys.

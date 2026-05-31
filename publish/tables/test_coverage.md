@@ -1,3 +1,5 @@
+> **STALE / RETIRED (M7-era).** Enumerates only the `tests/test_m6*/test_m7*` suite at M7 sprint time; it does not reflect the F7 dycore-rewrite, Phase-B physics, or v0.1.0 validation tests. Retained as history; not used by `publish/paper/paper.md`.
+
 # Test Suite Coverage Table
 
 This table enumerates every pytest file matching `tests/test_m6*.py` or `tests/test_m7*.py` at sprint time. Counts are AST-derived from top-level and nested functions whose names start with `test_`.

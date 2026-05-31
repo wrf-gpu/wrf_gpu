@@ -1,3 +1,5 @@
+> **STALE / RETIRED (M7-era).** Superseded by `publish/tables/v010_d02_validation.md`, `v010_d03_status.md`, and `wind_persistence_skill.md` (the Coriolis-corrected, persistence-baselined v0.1.0 skill evidence). The M7 station-RMSE deltas below predate the Coriolis fix; do not cite them as current. Not used by `publish/paper/paper.md`.
+
 # Skill Evolution Table
 
 The same 20260521 side-by-side AEMET scoring setup is used for all rows: 73 stations, 24 common valid hours, and 1747 joined station-time rows. Relative deltas compare each GPU metric to the CPU WRF metric; BIAS deltas use absolute bias magnitude, matching the proof JSON schema.

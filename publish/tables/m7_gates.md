@@ -1,3 +1,5 @@
+> **STALE / RETIRED (M7-era).** The binding v0.1.0 proof contract is now `publish/VERIFICATION.md` (11-row PASS/FAIL table) + `scripts/verify_all.sh`. This M7 eight-gate table is retained as history only; do not cite it as the current release contract. Not used by `publish/paper/paper.md`.
+
 # M7 Acceptance Gate Table
 
 This table uses the eight-gate framing used by the M7 closeout and updates the status with the later honest-speedup and skill-fix evidence. `DONE` means the named proof object exists and passes its local contract. `PARTIAL` or `BLOCKED` means the proof exists but does not close the operational M7 claim.
