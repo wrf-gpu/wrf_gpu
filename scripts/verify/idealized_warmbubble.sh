@@ -23,17 +23,17 @@ config.update("jax_enable_x64", True)
 from gpuwrf.ic_generators.idealized import run_warm_bubble_case
 proof_dir = sys.argv[1]
 r = run_warm_bubble_case(proof_dir=proof_dir, require_gpu=True)
-payload = r.payload
-checks = payload.get("checks", {})
+# IdealizedRunResult exposes verdict/status/checks directly (no .payload).
+checks = r.checks or {}
 all_pass = all(c.get("passed") for c in checks.values())
-print("VERDICT", payload.get("verdict"), "STATUS", payload.get("status"))
+print("VERDICT", r.verdict, "STATUS", r.status)
 for k, c in sorted(checks.items()):
     print(f"  {k}: value={c.get('value')} passed={c.get('passed')}")
-ok = (payload.get("verdict") == "PASS") and (payload.get("status") == "RAN_TO_COMPLETION") and all_pass
+ok = (r.verdict == "PASS") and (r.status == "RAN_TO_COMPLETION") and all_pass
 mw = checks.get("max_abs_w_500s", {}).get("value")
 rise = checks.get("thermal_rise_500s", {}).get("value")
 md = checks.get("relative_mass_drift", {}).get("value")
-note = f"verdict={payload.get('verdict')} max|w|500s={mw} thermal_rise={rise} mass_drift={md} checks={sum(bool(c.get('passed')) for c in checks.values())}/{len(checks)}"
+note = f"verdict={r.verdict} max|w|500s={mw} thermal_rise={rise} mass_drift={md} checks={sum(bool(c.get('passed')) for c in checks.values())}/{len(checks)}"
 print("ASSERT", "PASS" if ok else "FAIL", note)
 sys.exit(0 if ok else 1)
 PY
