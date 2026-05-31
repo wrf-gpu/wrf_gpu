@@ -1,3 +1,5 @@
+> **STALE / RETIRED (M7-era).** Superseded by `publish/tables/performance_current.md` (roofline-grounded ~5.29× clean / ~7.84× realistic / ~3.2× dt-matched floor). The 22.26×/50.20×/156.82× figures below are retained only as retracted self-correction history; do not cite them as current. Not used by `publish/paper/paper.md`.
+
 # Performance Evolution Table
 
 All timings use the 20260521 Canary 3 km d02 case. The d02-only speedup row is the defensible apples-to-apples denominator; full five-domain CPU aggregate ratios are retained only as context.
