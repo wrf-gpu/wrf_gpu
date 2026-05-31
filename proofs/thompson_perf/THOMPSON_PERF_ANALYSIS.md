@@ -119,6 +119,26 @@ Thompson exists (implicit sedimentation, ~2.4x on the kernel) but it is a
 **scheme change** gated on a precipitating oracle + coupled skill, which is the
 recommended next sprint (manager/ADR decision).
 
+## 4b. Gates (default mode = shipped)
+
+- **WRF microphysics oracle** (`run_oracle_parity_f64`): BYTE-IDENTICAL to base in
+  both default and fp32 modes (8 mass/number fields exact; `th` within fp32
+  storage, same `all_fields_within_float32_storage_precision=True` as base).
+  `proofs/thompson_perf/oracle_default.json`, `oracle_fp32.json`.
+- **Bit-identity vs base**: full kernel (incl. sedimentation + precip) is
+  byte-for-byte identical to base `4e3a9ff` on a moist column, all fields.
+- **Coupled +1h skill vs CPU-WRF** (`task2_skill_signal.py`, production entry,
+  guards off, fp64): T2 RMSE **1.55 K**, U10 **0.70 m/s**, V10 **1.61 m/s**, all
+  finite — strong skill, no below-persistence regression. (Default change is
+  bit-identical, so this matches base by construction; the run also confirms the
+  coupled forecast is stable through the modified Thompson path.)
+  `proofs/thompson_perf/skill_default_1h.json`.
+- **Coupled stability / idealized**: the default change is bit-identical and
+  `thompson_column` is NOT imported by the dycore (verified), so the idealized
+  warm-bubble/Straka close gate and the 24h segscan stability are unaffected by
+  construction (base PASSES; no re-run can change a byte-identical default).
+- **17/17 Thompson pytest** pass in both default and fp32 modes.
+
 ## 5. Files / provenance
 
 - `src/gpuwrf/physics/thompson_column.py` — shipped: sed scan `unroll=_sed_unroll()`
