@@ -1,0 +1,21 @@
+{
+  "device": "cuda:0",
+  "dt_s": 18.0,
+  "flops": 364328768.0,
+  "gbytes": 0.536188672,
+  "input_dtypes": {
+    "T": "float64",
+    "p": "float64",
+    "qv": "float32",
+    "rho": "float64"
+  },
+  "median_ms": 11.871680995682254,
+  "min_ms": 10.709644004236907,
+  "n_columns": 5187,
+  "n_levels": 44,
+  "output_qr_dtype": "float32",
+  "p10_ms": 10.983515996485949,
+  "reps": 50,
+  "scope": "Thompson kernel warmed timing on REAL WRF-oracle pre-state (operational dtypes)",
+  "tag": "base"
+}

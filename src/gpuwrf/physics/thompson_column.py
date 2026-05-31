@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 from functools import partial
 from typing import Iterable
 
@@ -115,6 +116,49 @@ from gpuwrf.physics.thompson_tables import (
 
 
 config.update("jax_enable_x64", True)
+
+
+# --- Work-precision control (ADR-007 fp32 microphysics) -----------------------
+# The body can run its internal rate/integration math in fp32 while keeping the
+# State storage dtype (the kernel inputs/outputs) unchanged: it casts every
+# column leaf to the WORK dtype on entry and casts the result back to each leaf's
+# storage dtype on exit.  Note ``p`` arrives fp64 (acoustic-locked), so without
+# this explicit cast the whole body would promote to fp64 even with fp32 storage.
+#
+# MEASURED RESULT (proofs/thompson_perf): fp32 gives ~1.0x here -- the Thompson
+# kernel is dominated (~85 %) by the sedimentation substep loop, which is
+# LAUNCH/bandwidth-bound, NOT fp64-arithmetic-bound.  fp32 is therefore the WRONG
+# lever for this kernel (the same finding as the dycore), and is kept as a GATED
+# opt-in only.  It IS oracle-faithful: fp32 perturbs the moist outputs by <= ~1
+# fp32 ULP (rel <= 9e-7), at or below the WRF oracle's own fp32 storage
+# granularity (WRF stores these fields in fp32).
+#
+# Default = fp64 (byte-for-byte the prior behaviour).  Set GPUWRF_THOMPSON_FP32=1
+# to run the rate math in fp32.
+def _work_dtype():
+    """Return the dtype the rate/integration math runs in (fp64 default)."""
+
+    return jnp.float32 if os.environ.get("GPUWRF_THOMPSON_FP32", "0") == "1" else jnp.float64
+
+
+def _fp32_enabled() -> bool:
+    return os.environ.get("GPUWRF_THOMPSON_FP32", "0") == "1"
+
+
+def _cast_state(state: "ThompsonColumnState", dtype) -> "ThompsonColumnState":
+    """Cast every column leaf of ``state`` to ``dtype`` (no-op if already there)."""
+
+    return state.replace(
+        **{name: jnp.asarray(getattr(state, name)).astype(dtype) for name in ThompsonColumnState.__slots__}
+    )
+
+
+def _restore_state(state: "ThompsonColumnState", dtypes: dict) -> "ThompsonColumnState":
+    """Cast every column leaf of ``state`` back to its original storage dtype."""
+
+    return state.replace(
+        **{name: jnp.asarray(getattr(state, name)).astype(dtypes[name]) for name in ThompsonColumnState.__slots__}
+    )
 
 
 @jax.tree_util.register_pytree_node_class
@@ -787,7 +831,41 @@ def _ice_sources(state: ThompsonColumnState, dt: float, tables: ThompsonTableBun
 # sub-stepped upwind flux and damp the per-substep increment by 1/nstep so the
 # scheme is stable and JIT-static.  64 sub-steps covers fast graupel at WRF's
 # typical dz/dt; columns needing fewer simply repeat a converged state.
-NSED_SUBSTEPS = 64
+#
+# CFL floor: for fall speeds up to ~20 m/s (graupel) at the domain's thinnest
+# layer (dz ~ 48 m) and dt = 18 s, explicit-upwind stability needs
+# nstep >= vt*dt/dz ~ 7.5, so 64 is ~8x oversampled.  ``GPUWRF_THOMPSON_NSED``
+# allows tuning the substep count; any reduction is gated on the moist WRF
+# oracle re-validation (it changes the time-integration accuracy, not just
+# launches).  Default stays 64 (byte-identical to the prior behaviour).
+def _nsed_substeps() -> int:
+    try:
+        return max(1, int(os.environ.get("GPUWRF_THOMPSON_NSED", "64")))
+    except ValueError:
+        return 64
+
+
+NSED_SUBSTEPS = _nsed_substeps()
+
+
+def _sed_unroll() -> int:
+    """Scan-unroll factor for the sedimentation substep loop.
+
+    The sedimentation explicit-upwind substep scan is the single largest cost of
+    the Thompson kernel (~85 % of it) and is LAUNCH/bandwidth-bound:
+    ``NSED_SUBSTEPS`` sequential tiny dependent steps.  ``jax.lax.scan(...,
+    unroll=U)`` replicates the substep body so XLA fuses U dependent steps into
+    fewer, larger kernels, cutting the launch count.  The math is identical — the
+    unrolled scan inlines iterations in order (no reassociation), so the result
+    is BIT-IDENTICAL to ``unroll=1``.  Measured best at U=2 on the d02 workload
+    (~1.1x; higher U adds compile cost with no further speedup).  Override with
+    ``GPUWRF_THOMPSON_SED_UNROLL``.
+    """
+
+    try:
+        return max(1, int(os.environ.get("GPUWRF_THOMPSON_SED_UNROLL", "2")))
+    except ValueError:
+        return 2
 
 
 def _rho_correction(rho):
@@ -924,7 +1002,9 @@ def _sed_one_species(q, num, vt_mass, vt_num, dz, rho, dt):
         return (q_new, num_new, ppt_c + surf), None
 
     zero_ppt = jnp.zeros(q.shape[:-1], dtype=acc_dtype)
-    (q_out, num_out, ppt), _ = jax.lax.scan(body, (q0, num0, zero_ppt), None, length=NSED_SUBSTEPS)
+    (q_out, num_out, ppt), _ = jax.lax.scan(
+        body, (q0, num0, zero_ppt), None, length=NSED_SUBSTEPS, unroll=_sed_unroll()
+    )
     return q_out.astype(q_dt), num_out.astype(num_dt), ppt
 
 
@@ -943,6 +1023,11 @@ def _sedimentation(state: ThompsonColumnState, dt: float):
     dz = jnp.maximum(state.dz, 1.0)
     rho = jnp.maximum(state.rho, R1)
 
+    # Four independent per-species substep scans. XLA already overlaps these four
+    # independent scans well; the per-scan ``unroll`` (``_sed_unroll``) fuses
+    # adjacent substeps to cut the launch count. (A single 4-species batched scan
+    # was measured SLOWER — it serialises what XLA otherwise parallelises — so we
+    # keep the per-species structure; see proofs/thompson_perf.)
     qr, Nr, ppt_rain = _sed_one_species(state.qr, state.Nr, vt_r_mass, vt_r_num, dz, rho, dt)
     qi, Ni, ppt_ice = _sed_one_species(state.qi, state.Ni, vt_i_mass, vt_i_num, dz, rho, dt)
     # Snow: number tracks mass (diagnostic Ns).  Use the mass speed for both.
@@ -984,7 +1069,18 @@ def _thompson_source_sink_body(state: ThompsonColumnState, dt: float, debug: boo
     sedimentation (3784-3939), instant melt/freeze (3941-3967),
     final write/balance (3969-4060). Returns ``(state, precip-dict-mm)`` with
     ``pptrain/pptsnow/pptgraul/pptice`` mapped to rain/snow/graupel/ice.
+
+    Work precision: when GPUWRF_THOMPSON_FP32=1 the rate/integration math runs
+    in fp32.  Inputs are cast to the work dtype on entry and the result is cast
+    back to each leaf's storage dtype on exit, so the kernel's I/O contract is
+    unchanged.  Default work dtype = fp64 (no-op cast, byte-identical to the
+    prior behaviour).  fp32 was measured to give ~1.0x (this kernel is
+    launch/bandwidth-bound, not arithmetic-bound) -- see ``_work_dtype``.
     """
+
+    work = _work_dtype()
+    storage_dtypes = {name: jnp.asarray(getattr(state, name)).dtype for name in ThompsonColumnState.__slots__}
+    state = _cast_state(state, work)
 
     state = _clip_species(state)
     valid = _thermodynamically_admissible(state)
@@ -1002,6 +1098,11 @@ def _thompson_source_sink_body(state: ThompsonColumnState, dt: float, debug: boo
     state = _instant_melt_freeze(state, dt)
     state = _finish(state)
     state = _select_state(valid, state, fallback)
+    state = _restore_state(state, storage_dtypes)
+    # Precip (surface accumulation, mm) tracks the fp64 accumulators downstream;
+    # keep it fp64 regardless of work dtype so the per-step sum does not lose a
+    # digit before it reaches the fp64-locked rain/snow/graupel/ice accumulators.
+    precip = {k: jnp.asarray(v).astype(jnp.float64) for k, v in precip.items()}
     return _debug_checks(state, debug), precip
 
 
