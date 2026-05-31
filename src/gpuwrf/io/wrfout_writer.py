@@ -604,7 +604,13 @@ def _build_output_fields(
         ),
         "U10": _field_array(state, ("U10", "u10"), shape_xy, default=_unstagger_x(u)[0]),
         "V10": _field_array(state, ("V10", "v10"), shape_xy, default=_unstagger_y(v)[0]),
-        "T2": _field_array(state, ("T2", "t2"), shape_xy, default=theta[0]),
+        # T2/TSK fall back to lowest-level *actual* temperature (theta -> T via the
+        # local Exner factor), NOT raw potential temperature: theta[0] over high
+        # terrain (e.g. Teide ~3.4km, psfc~660hPa) reads ~+34K too warm when mislabeled
+        # as a 2-m/skin temperature. Level-1 air T is a sane proxy when the real
+        # surface diagnostic is absent. (The proper fix routes the operational
+        # surface-layer T2/U10/V10 diagnostics into the writer state; see task.)
+        "T2": _field_array(state, ("T2", "t2"), shape_xy, default=theta[0] * (np.maximum(p_pert[0] + p_base[0], 1.0) / P0_PA) ** R_D_OVER_CP),
         "Q2": _field_array(state, ("Q2", "q2"), shape_xy, default=qv[0]),
         "PSFC": _field_array(state, ("PSFC", "psfc"), shape_xy, default=p_pert[0] + p_base[0]),
         "RAINC": _field_array(state, ("RAINC", "rainc"), shape_xy),
@@ -616,7 +622,7 @@ def _build_output_fields(
         "UST": _field_array(state, ("UST", "ustar"), shape_xy),
         "HFX": hfx,
         "LH": lh,
-        "TSK": _field_array(state, ("TSK", "tsk", "t_skin"), shape_xy, default=theta[0]),
+        "TSK": _field_array(state, ("TSK", "tsk", "t_skin"), shape_xy, default=theta[0] * (np.maximum(p_pert[0] + p_base[0], 1.0) / P0_PA) ** R_D_OVER_CP),
     }
     return {name: np.asarray(value, dtype=np.float32) for name, value in fields.items()}
 
