@@ -29,7 +29,11 @@ from gpuwrf.io.land_state import load_hourly_land_state
 from gpuwrf.io.wrfout_writer import MINIMUM_WRFOUT_VARIABLES, write_wrfout_netcdf
 from gpuwrf.profiling.transfer_audit import block_until_ready, visible_gpu_name
 from gpuwrf.runtime.checkpoint import read_checkpoint, write_checkpoint
-from gpuwrf.runtime.operational_mode import OperationalNamelist, run_forecast_operational
+from gpuwrf.runtime.operational_mode import (
+    OperationalNamelist,
+    compute_m9_diagnostics,
+    run_forecast_operational,
+)
 from gpuwrf.validation.forecast_vs_obs import (
     DEFAULT_AEMET_ROOT,
     compute_station_scores,
@@ -289,6 +293,70 @@ def _default_forecast_fn(state: Any, namelist: Any, hours: float) -> Any:
     return result
 
 
+# Surface fields the operational M9 diagnostics supply to the wrfout writer.
+# Each entry maps a wrfout variable name to its M9Diagnostics attribute. The
+# writer keeps its own default for any field omitted or returned as None.
+_M9_OUTPUT_FIELDS: tuple[tuple[str, str], ...] = (
+    ("T2", "t2"),
+    ("U10", "u10"),
+    ("V10", "v10"),
+    ("Q2", None),  # M9Diagnostics carries no q2; resolved from surf below.
+    ("PSFC", "psfc"),
+    ("SWDOWN", "swdown"),
+    ("GLW", "glw"),
+    ("PBLH", "pblh"),
+    ("TSK", "tsk"),
+)
+
+
+def _surface_diagnostics_for_output(
+    state: Any, namelist: Any, run_start: Any, *, lead_seconds: float
+) -> dict[str, np.ndarray] | None:
+    """Recompute the operational surface map for the wrfout writer.
+
+    Returns a ``{wrfout_name: numpy_array}`` mapping of the physically diagnosed
+    surface fields (mass-point ``(ny, nx)``, K / m s^-1 / Pa / W m^-2) so the
+    writer overrides its raw lowest-level fallbacks. Mirrors the d02-validate
+    diagnostic source exactly (``compute_m9_diagnostics``). ``time_utc`` is
+    threaded onto the namelist so SWDOWN/GLW follow the real forecast diurnal
+    clock; ``lead_seconds`` is the elapsed forecast time at this output cadence.
+
+    Degrades to ``None`` (writer keeps its defaults, no regression) when the
+    namelist is not an operational namelist with a ``grid`` -- e.g. dict-driven
+    or synthetic test callers.
+    """
+
+    if not hasattr(namelist, "grid"):
+        return None
+    import jax  # local import: keeps module import light for non-GPU callers.
+
+    clock_namelist = namelist
+    if getattr(namelist, "time_utc", None) is None and hasattr(namelist, "__dataclass_fields__"):
+        clock_namelist = replace(namelist, time_utc=run_start)
+    try:
+        m9 = compute_m9_diagnostics(state, clock_namelist, lead_seconds)
+    except Exception:  # noqa: BLE001 -- diagnostics are best-effort; never block output.
+        return None
+
+    # Q2 (2-m mixing ratio) is a surface-layer field; M9Diagnostics does not
+    # expose it, so source it directly from surface_layer_diagnostics.
+    q2 = None
+    try:
+        from gpuwrf.runtime.operational_mode import surface_layer_diagnostics
+
+        q2 = getattr(surface_layer_diagnostics(state, clock_namelist.grid), "q2", None)
+    except Exception:  # noqa: BLE001
+        q2 = None
+
+    out: dict[str, np.ndarray] = {}
+    for wrf_name, attr in _M9_OUTPUT_FIELDS:
+        value = q2 if wrf_name == "Q2" else (getattr(m9, attr, None) if attr else None)
+        if value is None:
+            continue
+        out[wrf_name] = np.asarray(jax.device_get(value))
+    return out or None
+
+
 def _refresh_hourly_land_state(state: Any, run_dir: Path, domain: str, hour: int) -> tuple[Any, dict[str, Any]]:
     if not hasattr(state, "replace"):
         return state, {"status": "SKIPPED", "reason": "state has no replace method", "hour": int(hour)}
@@ -372,6 +440,16 @@ def _run_forecast_sequence(
 
         valid_time = case.run_start + timedelta(hours=hour)
         wrfout = output_dir / _wrfout_name(valid_time, config.domain)
+        # Route the operational surface-layer diagnostics into the writer so the
+        # wrfout surface map (T2/U10/V10/Q2/PSFC/SWDOWN/GLW/PBLH/TSK) is the
+        # physically diagnosed 2-m/10-m/skin field, NOT the raw lowest-level
+        # fallback (which reads far too warm/strong over terrain -- the d03 1km
+        # T2 +8K-mean / +34K-summit bias). Mirrors the d02-validate diagnostic
+        # source: compute_m9_diagnostics(state, namelist_with_clock, lead_seconds).
+        # time_utc is threaded so SWDOWN/GLW follow the real forecast diurnal clock.
+        diagnostics = _surface_diagnostics_for_output(
+            state, case.namelist, case.run_start, lead_seconds=float(hour) * 3600.0
+        )
         write_wrfout_netcdf(
             state,
             case.grid,
@@ -380,6 +458,7 @@ def _run_forecast_sequence(
             valid_time=valid_time,
             lead_hours=float(hour),
             run_start=case.run_start,
+            diagnostics=diagnostics,
         )
         files.append(wrfout)
 
