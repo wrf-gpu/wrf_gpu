@@ -484,6 +484,60 @@ def surface_layer_with_diagnostics(state) -> SurfaceLayerDiagnostics:
     psiq2 = jnp.log(KARMAN * ust_in * 2.0 / XKA + 2.0 / zl_land_or_water) - pq2
     psiq10 = jnp.log(KARMAN * ust_in * 10.0 / XKA + 10.0 / zl_land_or_water) - pq10
 
+    # --- land: thermal/moisture roughness z_t (the scheme the Canary corpus ran) ---
+    # The corpus L3 uses ``sf_sfclay_physics=5`` = the MYNN surface layer
+    # (module_sf_mynn.F), which over land carries a SEPARATE thermal roughness
+    # ``z_t`` for the heat/moisture profiles, distinct from the momentum roughness
+    # ``znt``. The heat profile is then  psit = log((za+znt)/z_t) - psih  with the
+    # psih differences taken about z_t, NOT znt. Because z_t << znt (z_t/znt ~ 1/8
+    # over land), the effective psit is several-fold LARGER, so the sensible-heat
+    # flux  HFX = cpm*rhox*ust*karman*(thgb-thx)/psit  is several-fold SMALLER.
+    # Without z_t the bare sfclayrev land heat profile uses znt and over-fluxes
+    # midday sensible heat ~4x (HFX ~505 vs corpus ~137 all-domain; ~1900 vs ~460
+    # over land), injecting a +3.6 K daytime T2 warm bias. This block ports the
+    # MYNN default land roughness (zilitinkevich_1995, module_sf_mynn.F:746-749,
+    # CZIL=0.085) and is the same z0t-over-land mechanism sfclayrev exposes under
+    # ``iz0tlnd>=1`` (sf_sfclayrev.F90:704-753). Momentum (psim/psix/ustar/u10/v10)
+    # is UNCHANGED and stays on znt; only the heat (psit/psit2) and moisture (psiq)
+    # land profiles move to z_t. Water keeps the Fairall z0t recomputation below.
+    visc_l = (1.32 + 0.009 * (t1d - 273.15)) * 1.0e-5
+    restar_l = jnp.maximum(ust_in * znt / visc_l, 0.1)
+    CZIL = 0.085
+    z_t_land = jnp.minimum(znt * jnp.exp(-KARMAN * CZIL * jnp.sqrt(restar_l)), 0.75 * znt)
+    z_t_land = jnp.maximum(z_t_land, 2.0e-9)
+
+    def _psih_zt(z0x, height):
+        """psih(height profile) about a heat roughness z0x (zol fixed)."""
+
+        zz = zol * (height + znt) / za
+        z0 = zol * z0x / za
+        return jnp.where(
+            zol > 0.0,
+            _psih_stable(zz) - _psih_stable(z0),
+            jnp.where(zol == 0.0, 0.0, _psih_unstable(zz) - _psih_unstable(z0)),
+        )
+
+    gz1ozt = jnp.log((za + znt) / z_t_land)
+    gz2ozt = jnp.log((2.0 + znt) / z_t_land)
+    psih_zt = _psih_zt(z_t_land, za)
+    psih2_zt = _psih_zt(z_t_land, 2.0)
+    psit_land = gz1ozt - psih_zt
+    psit2_land = gz2ozt - psih2_zt
+    # moisture profile shares z_t over land (MYNN uses z_q ~= z_t; the corpus runs
+    # isftcflx default so z_q follows the same Zilitinkevich form).
+    psih10_zt = _psih_zt(z_t_land, 10.0)
+    psiq_land = jnp.log((za + znt) / z_t_land) - psih_zt
+    psiq2_land = jnp.log((2.0 + znt) / z_t_land) - psih2_zt
+    psiq10_land = jnp.log((10.0 + znt) / z_t_land) - psih10_zt
+    psit = jnp.where(is_land, psit_land, psit)
+    psit2 = jnp.where(is_land, psit2_land, psit2)
+    psiq = jnp.where(is_land, psiq_land, psiq)
+    psiq2 = jnp.where(is_land, psiq2_land, psiq2)
+    psiq10 = jnp.where(is_land, psiq10_land, psiq10)
+    psih = jnp.where(is_land, psih_zt, psih)
+    psih2 = jnp.where(is_land, psih2_zt, psih2)
+    psih10 = jnp.where(is_land, psih10_zt, psih10)
+
     # --- water: Fairall (2003) z0t/z0q recomputation (sf_sfclayrev.F90:529-585) ---
     visc = (1.32 + 0.009 * (t1d - 273.15)) * 1.0e-5
     restar = ust_in * znt / visc
