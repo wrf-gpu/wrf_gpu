@@ -1,16 +1,18 @@
 # Missing Elements — v0.1.0 Paper Cross-Reference List
 
 Status: refreshed 2026-05-31 alongside the filled `publish/paper/paper.md` (branch
-`worker/opus/final-verdict`). This is the manager's pre-tag cross-reference list. The 9
-evidence tables under `publish/tables/` + the effort/process ledgers are now **landed and
-wired into the paper prose** (every quantitative claim in the text traces to a generated
-table or a committed proof object). What remains is grouped into:
+`worker/opus/final-verdict`) and updated after the GPT editorial pass. This is the
+manager's pre-tag cross-reference list. The 9 evidence tables under `publish/tables/` +
+the effort/process ledgers are now **landed and wired into the paper prose** (every
+quantitative claim in the text traces to a generated table or a committed proof object).
+What remains is grouped into:
 
 - **(i) DONE / filled** — text + table evidence complete; only a figure *render* or a
   release-hygiene paste is outstanding (no new science).
 - **(ii) IN-PROGRESS (GPU campaign)** — needs a live GPU/CPU run on the final release commit;
-  the paper carries an explicit `[PLACEHOLDER]` + "in-progress" note for each.
-- **(iii) v0.2.0 / later** — referenced only as future work / proof-promise; not a v0.1.0 blocker.
+  the paper carries explicit release-gate wording for each.
+- **(iii) v0.2.0 / later** — referenced only as future work / planned proof targets; not a
+  v0.1.0 blocker.
 
 Conventions: each item gives the paper location, what is needed, the proof/table/figure that
 fills it, and the owner type.
@@ -37,7 +39,7 @@ The only outstanding work is rendering PNGs and one script-path update.
 3. **§6.3 — d03 status + before/after table — DONE.** `publish/tables/v010_d03_status.md`
    generated (v4→v5fix bias collapse, v5fix scores vs persistence, per-lead win/loss). The
    HFX/MYNN column-oracle fix is wired into §6.3 + §6.5(d) + the §3.6 error-catch ledger.
-   Owner: DONE (the 24 h re-run is item #14, ii).
+   Owner: DONE (the 24 h re-run is item #13, ii).
 
 4. **§6.1 — idealized gate table — DONE.** `publish/tables/idealized_gate_summary.md` generated;
    §6.1 numbers (warm bubble θ′ 1.920 K / w 11.68 / rise 1924 m; Straka front 14150 m / θ′
@@ -50,18 +52,21 @@ The only outstanding work is rendering PNGs and one script-path update.
 
 6. **§6.5 — wind-skill (Coriolis) evidence — DONE.** `publish/tables/wind_persistence_skill.md`
    generated; §6.2/§6.5(c) carry the before/after (case3 V10 −0.13→+0.17, case2 winds ~50%),
-   and "U10/V10 beat persistence in every case/region." Owner: DONE.
+   and the now-narrowed claim: U10/V10 have positive mean persistence skill in every case/region
+   (not every lead; V10 has isolated case2 losses/ties). Owner: DONE.
 
 7. **§3.6 / §9.3 — workflow visualization — DONE (text).** mermaid + ASCII loop reconciled to
    the §3.5 ledger role names; placeholder removed. Owner: DONE (clean PNG render optional, #11).
 
 8. **§8 — claim boundary + roadmap — DONE.** `publish/tables/v010_claim_boundary.md` +
    `publish/GPU_PORT_GAPS_TODO.md` + `.agent/decisions/POST-0.1.0-ROADMAP.md` wired into §8.
-   The seasonal-TOST v0.2.0 proof-promise is added to §5 + §8 (see iii). Owner: DONE.
+   Seasonal TOST is now framed as future evidence / planned proof target, not a v0.1.0 claim
+   and not a timing promise (see iii). Owner: DONE.
 
 9. **§2.2 — comparator table re-grounding.** `publish/tables/comparators.md` exists; re-confirm
    each row's bibkey resolves in `references.bib` and the wording stays "context, not normalized
-   benchmark." (All 29 [CITE] keys already resolve; 40 bib entries.) Owner: citation-check.
+   benchmark." Current `paper.md` uses `\cite{...}` syntax; all 29 unique inline citation keys
+   resolve in the 40-entry `references.bib`. Owner: citation-check.
 
 10. **§9.4 — publication-audit script + manifest.** Update `scripts/m7_publication_audit.sh` to
     target `publish/paper/` (currently `publication/draft`) + current v0.1.0 proofs; paste output
@@ -70,7 +75,7 @@ The only outstanding work is rendering PNGs and one script-path update.
     cross-check against them. Owner: release-hygiene.
 
 11. **Figure renders (all (i)).** Render the PNGs the prose references (each has a clear
-    `[PLACEHOLDER ... Figure pending; the table/text carries the content]`):
+    `[MISSING FIGURE ...]` marker; the table/text carries the content until rendered):
     `model_role_timeline.png` (§3.2), `validation_pyramid.png` (§5, updated status),
     `warm_bubble_panel.png` + `straka_density_current_panel.png` (§6.1; PPMs already in
     `publish/figures/idealized/`), `roofline_dycore.png` (§6.4), `workflow_loop.png` (§3.6),
@@ -81,7 +86,7 @@ The only outstanding work is rendering PNGs and one script-path update.
 
 ## (ii) IN-PROGRESS (GPU campaign) — live run on the final release commit required
 
-Each of these has a clear `[PLACEHOLDER]` + "in-progress" note in the paper. Per
+Each of these has clear release-gate wording in the paper. Per
 `publish/VERIFICATION.md`, v0.1.0 tags only when the 11-row proof table is all-PASS on the
 release commit, and the d02/d03 validations MUST be re-run on the final post-HFX-fix code.
 
@@ -92,7 +97,7 @@ release commit, and the d02/d03 validations MUST be re-run on the final post-HFX
 13. **§6.3 / §8 — d03 24 h HFX-fix confirmation.** The MYNN land-thermal-roughness fix is
     VALIDATED at the 1 h midday column oracle (`sfclay_hfx_oracle_parity.json`: HFX land 4.22×→2.30×,
     T2 land bias +3.6 K→+1.2 K). The 24 h d03 re-run with the fix is currently
-    `D03_1KM_BLOCKED` (a GPU OOM under shared-GPU contention — NOT a forecast failure;
+    `D03_1KM_BLOCKED` (a GPU OOM under shared-GPU contention — not validation evidence;
     `d03_summary_run24h_hfxfix.json`). Re-run on an idle GPU to either pass the bounded gate
     (VERIFICATION.md row 5, currently FAIL/BLOCKED) or keep 1 km out of the positive claim
     (the paper currently does the latter — confirm the manager's decision). Owner: validation-run.
@@ -111,18 +116,18 @@ release commit, and the d02/d03 validations MUST be re-run on the final post-HFX
 
 ---
 
-## (iii) v0.2.0 / later — future work / proof-promise; not a v0.1.0 blocker
+## (iii) v0.2.0 / later — future work / planned proof targets; not a v0.1.0 blocker
 
-16. **§5 / §8 — seasonal TOST equivalence (explicit v0.2.0 proof-promise).** The paper states
-    plainly: the reuse-only corpus = **3 distinct usable MAM (spring) days** → any TOST on it is
-    underpowered + single-season and is **never called "seasonal."** The harness, station-paired
-    scorer, and predeclared ADR-029 margins are **built and self-tested** (CPU-vs-CPU reproduces
-    the benchmarks to 0.00 delta — `proofs/m20/selftest_verify_release.json`,
-    `tost_campaign_plan.md`). The paper makes the ONE allowed timing commitment: the full
-    single-season ≥15-case TOST (≈13 CPU-WRF backfill runs ≈68 CPU-h + ≈5.5 GPU-h) ships at the
-    v0.2.0 release within days of the backfill, executed by the same AI process — phrased as a
-    proof-promise, not a generic cadence. A truly multi-season TOST needs going-forward nightly
-    capture (calendar-bound). Owner: v0.2.0.
+16. **§5 / §8 — statistical equivalence (TOST) as future evidence.** The paper states plainly:
+    the reuse-only corpus = **3 distinct usable MAM (spring) days** → any TOST on it is underpowered
+    + single-season and is **never called "seasonal."** The harness, station-paired scorer, and
+    predeclared ADR-029 margins are **built and self-tested** (CPU-vs-CPU reproduces the benchmarks
+    to 0.00 delta — `proofs/m20/selftest_verify_release.json`, `tost_campaign_plan.md`). The
+    May-only n≈15 backfill is technically feasible from preserved AIFS forcing (≈13 CPU-WRF runs
+    ≈68 CPU-h + ≈5.5 GPU-h), but it would prove only spring/MAM equivalence. The paper no longer
+    promises "within days"; it frames TOST as a v0.2.0 / near-term planned proof target. A truly
+    multi-season TOST needs going-forward retained-output capture or cross-season backfill
+    (calendar-bound). Owner: v0.2.0.
 
 17. **§7 — differentiability / ML-hybrid / DA.** Structural JAX property only; no gradient/DA/ML
     result is claimed for v0.1.0. Owner: v0.2.0.
@@ -142,7 +147,8 @@ release commit, and the d02/d03 validations MUST be re-run on the final post-HFX
 
 ## Release-hygiene + human decisions (gate the tag; not science)
 
-21. **§9.1 — public repo URL, `v0.1.0` tag, exact release commit.** Placeholders. Current
+21. **§9.1 — public repo URL, `v0.1.0` tag, exact release commit.** Paper marker:
+    `[MISSING RELEASE ITEM]`. Current
     validated HEAD `5319b8d` (Coriolis) + fixes through `234265a`; confirm the final commit after
     the (ii) re-runs land. v0.1.0 is the FIRST tag (no v0.0.1 git tag ever existed). Owner:
     release-hygiene + human.
@@ -154,13 +160,14 @@ release commit, and the d02/d03 validations MUST be re-run on the final post-HFX
 23. **§9.4 — data/fixture availability statement.** State which Gen2/CPU-WRF corpus + AEMET obs
     ship vs are described-for-regeneration. Owner: human + release-hygiene.
 
-24. **§1 — [VERIFY] AEMET/HARMONIE-AROME adequacy.** Cite an AEMET/HARMONIE-AROME product-resolution
-    reference (new bibkey `aemet_harmonie_arome`) OR soften to "in the author's operational
-    experience." The paper already degrades gracefully (hedge present). Owner: citation-check + human.
+24. **§1 — `[GPT suggestion]` AEMET/HARMONIE-AROME adequacy.** Cite an AEMET/HARMONIE-AROME
+    product-resolution reference (new bibkey `aemet_harmonie_arome`) or keep the current softened
+    "in the author's operational experience" wording. Owner: citation-check + human.
 
-25. **§1 / §2.1 — [VERIFY] prior abandoned open-source GPU-WRF + commercial completeness.** Cite the
-    prior attempt (new bibkey) OR keep the "to the best of our knowledge" hedge (present). Owner:
-    citation-check + human.
+25. **§1 / §2.1 — `[GPT suggestion]` prior open GPU-WRF / commercial completeness audit.** Add a
+    dated prior-art audit table for open WRF GPU attempts and commercial WRF accelerators; if not
+    completed, keep "to the best of our current knowledge" and avoid "first" in title/abstract.
+    Owner: citation-check + human.
 
 26. **§9.5 — independent human numerical-methods review.** Disclosed as an arXiv limitation
     (acceptable); REQUIRED before any journal submission. Owner: human.
@@ -171,6 +178,11 @@ release commit, and the d02/d03 validations MUST be re-run on the final post-HFX
     and `publish/paper/honesty_audit.md` (M7-era — refresh so every quantitative claim in the new
     paper has a current proof path). The new `paper.md` treats 22.26×/50.20×/156.82× ONLY as
     retracted self-correction history. Owner: manager + honesty-audit-refresh-worker.
+
+28. **§7 — `[GPT suggestion]` author-reflection placement.** Decide whether the first-person human
+    reflection stays in the main arXiv methodological preprint, moves to an author note, or is
+    substantially softened for a journal submission. Scientific claims should rest on proof tables,
+    not on the subjective reflection. Owner: human + editor.
 
 ---
 
@@ -187,10 +199,12 @@ In priority order — these are the gates between the now-filled draft and an ho
    11-row `publish/VERIFICATION.md` table is all-PASS — the binding tag condition.
 4. **Render the 5–6 figures** (i #11) — no new science, but the paper references them.
 5. **Pin the environment manifest + set repo URL / tag / commit** (hygiene #21, #22).
-6. **Resolve or hedge the two [VERIFY] claims** (#24, #25) and complete the stale-text purge (#27).
-7. **Confirm the seasonal-TOST proof-promise wording** (iii #16) is acceptable as the ONE timing
-   commitment in the paper (machinery built + self-tested; only corpus backfill outstanding).
+6. **Resolve or keep the two `[GPT suggestion]` hedges** (#24, #25) and complete the stale-text
+   purge (#27).
+7. **Confirm the TOST wording stays evidence-first** (#16): no "within days" promise; n≈15 May
+   backfill is a planned proof target / v0.2.0 gate, not current evidence.
+8. **Decide author-reflection placement** (#28) before journal submission.
 
-Citation status: all 29 [CITE] keys resolve in `references.bib` (40 entries). The only possibly
-new bibkeys are the two optional [VERIFY] ones (#24, #25); both claims are written to degrade to a
-hedge if uncitable.
+Citation status: current `paper.md` uses inline `\cite{...}` syntax; all 29 unique cited keys
+resolve in `references.bib` (40 entries). The only possibly new bibkeys are optional evidence for
+#24 and #25; both claims are written to degrade to a hedge if uncitable.
