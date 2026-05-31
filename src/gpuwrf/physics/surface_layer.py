@@ -484,6 +484,28 @@ def surface_layer_with_diagnostics(state) -> SurfaceLayerDiagnostics:
     psiq2 = jnp.log(KARMAN * ust_in * 2.0 / XKA + 2.0 / zl_land_or_water) - pq2
     psiq10 = jnp.log(KARMAN * ust_in * 10.0 / XKA + 10.0 / zl_land_or_water) - pq10
 
+    # --- friction velocity, diagnosed BEFORE the land z_t block (it feeds restar) ---
+    # WRF: ust = 0.5*ust_old + 0.5*k*wspd/psix, "to prevent oscillations" between
+    # timesteps. That averaging only makes sense for a WARM start where ust_old is
+    # the previous step's physical friction velocity. On a COLD start (ust_old at
+    # the reset placeholder <= ~1e-3, as in the WRF oracle's uniform 1e-4 input),
+    # halving toward the placeholder is spurious and ~halves the result; WRF's own
+    # downstream code treats ust<0.001 as effectively unset. So use the freshly
+    # diagnosed k*wspd/psix when ust_old is below that cold-start floor, and the
+    # WRF blend otherwise (matches WRF for warm starts AND the cold-start oracle).
+    # NOTE: this is computed HERE (not after the profiles) because the land thermal
+    # roughness z_t below scales the roughness Reynolds number ``restar`` by the
+    # friction velocity. WRF's restar uses the surface-layer ``ust`` for that
+    # column (module_sf_mynn.F:461,511); the spun-up ust(i) -- ~0.3 over rough
+    # land, not the lagged input placeholder -- yields z_t ~ znt/10 (z_t/znt~0.09
+    # at znt=0.5), giving the LARGE heat resistance the corpus exhibits. Using the
+    # lagged ``ust_in`` instead clamps restar to its 0.1 floor on a cold/under-spun
+    # ustar, capping z_t at 0.75*znt and under-resisting heat -> the daytime HFX
+    # over-flux. Diagnosing ustar first removes that one-step lag.
+    ust_fresh = KARMAN * wspd / psix
+    cold_start = ust_in <= 0.001
+    ustar = jnp.where(cold_start, ust_fresh, 0.5 * ust_in + 0.5 * ust_fresh)
+
     # --- land: thermal/moisture roughness z_t (the scheme the Canary corpus ran) ---
     # The corpus L3 uses ``sf_sfclay_physics=5`` = the MYNN surface layer
     # (module_sf_mynn.F), which over land carries a SEPARATE thermal roughness
@@ -501,7 +523,7 @@ def surface_layer_with_diagnostics(state) -> SurfaceLayerDiagnostics:
     # is UNCHANGED and stays on znt; only the heat (psit/psit2) and moisture (psiq)
     # land profiles move to z_t. Water keeps the Fairall z0t recomputation below.
     visc_l = (1.32 + 0.009 * (t1d - 273.15)) * 1.0e-5
-    restar_l = jnp.maximum(ust_in * znt / visc_l, 0.1)
+    restar_l = jnp.maximum(ustar * znt / visc_l, 0.1)
     CZIL = 0.085
     z_t_land = jnp.minimum(znt * jnp.exp(-KARMAN * CZIL * jnp.sqrt(restar_l)), 0.75 * znt)
     z_t_land = jnp.maximum(z_t_land, 2.0e-9)
@@ -519,16 +541,26 @@ def surface_layer_with_diagnostics(state) -> SurfaceLayerDiagnostics:
 
     gz1ozt = jnp.log((za + znt) / z_t_land)
     gz2ozt = jnp.log((2.0 + znt) / z_t_land)
+    gz10ozt = jnp.log((10.0 + znt) / z_t_land)
     psih_zt = _psih_zt(z_t_land, za)
     psih2_zt = _psih_zt(z_t_land, 2.0)
-    psit_land = gz1ozt - psih_zt
-    psit2_land = gz2ozt - psih2_zt
+    psih10_zt = _psih_zt(z_t_land, 10.0)
+    # MYNN thin-layer / high-roughness caps on the heat psih about the THERMAL
+    # roughness (module_sf_mynn.F:716-720) -- these use gz?ozt (z_t), not gz?oz0.
+    psih_zt = jnp.minimum(psih_zt, 0.9 * gz1ozt)
+    psih2_zt = jnp.minimum(psih2_zt, 0.9 * gz2ozt)
+    psih10_zt = jnp.minimum(psih10_zt, 0.9 * gz10ozt)
+    # MYNN clamps the heat/moisture resistance to >= 1 to prevent a vanishing
+    # denominator (and the runaway flhc that follows) in thin layers / high z0
+    # (module_sf_mynn.F:756-760 ``psit=max(gz1ozt-psih,1.)``). sfclayrev leaves
+    # this commented; the corpus is MYNN, so the floor is part of faithful parity.
+    psit_land = jnp.maximum(gz1ozt - psih_zt, 1.0)
+    psit2_land = jnp.maximum(gz2ozt - psih2_zt, 1.0)
     # moisture profile shares z_t over land (MYNN uses z_q ~= z_t; the corpus runs
     # isftcflx default so z_q follows the same Zilitinkevich form).
-    psih10_zt = _psih_zt(z_t_land, 10.0)
-    psiq_land = jnp.log((za + znt) / z_t_land) - psih_zt
-    psiq2_land = jnp.log((2.0 + znt) / z_t_land) - psih2_zt
-    psiq10_land = jnp.log((10.0 + znt) / z_t_land) - psih10_zt
+    psiq_land = jnp.maximum(jnp.log((za + znt) / z_t_land) - psih_zt, 1.0)
+    psiq2_land = jnp.maximum(jnp.log((2.0 + znt) / z_t_land) - psih2_zt, 1.0)
+    psiq10_land = jnp.maximum(jnp.log((10.0 + znt) / z_t_land) - psih10_zt, 1.0)
     psit = jnp.where(is_land, psit_land, psit)
     psit2 = jnp.where(is_land, psit2_land, psit2)
     psiq = jnp.where(is_land, psiq_land, psiq)
@@ -589,18 +621,9 @@ def surface_layer_with_diagnostics(state) -> SurfaceLayerDiagnostics:
     psih2 = jnp.where(is_water, psih2_q, psih2)
     psih10 = jnp.where(is_water, psih10_q, psih10)
 
-    # --- ustar update (averaged with old; sf_sfclayrev.F90:756) ---
-    # WRF: ust = 0.5*ust_old + 0.5*k*wspd/psix, "to prevent oscillations" between
-    # timesteps. That averaging only makes sense for a WARM start where ust_old is
-    # the previous step's physical friction velocity. On a COLD start (ust_old at
-    # the reset placeholder <= ~1e-3, as in the WRF oracle's uniform 1e-4 input),
-    # halving toward the placeholder is spurious and ~halves the result; WRF's own
-    # downstream code treats ust<0.001 as effectively unset. So use the freshly
-    # diagnosed k*wspd/psix when ust_old is below that cold-start floor, and the
-    # WRF blend otherwise (matches WRF for warm starts AND the cold-start oracle).
-    ust_fresh = KARMAN * wspd / psix
-    cold_start = ust_in <= 0.001
-    ustar = jnp.where(cold_start, ust_fresh, 0.5 * ust_in + 0.5 * ust_fresh)
+    # ``ustar`` was diagnosed above (before the land z_t block, which needs it for
+    # the roughness Reynolds number). sf_sfclayrev.F90:756 places the same blend
+    # here; the value is identical -- moved only so restar sees the spun-up ust.
     # u10/v10 diagnostics (sf_sfclayrev.F90:763-764).
     # WRF MYNN 10 m wind branches on the lowest mass-level height za
     # (module_sf_mynn.F:1109-1131):

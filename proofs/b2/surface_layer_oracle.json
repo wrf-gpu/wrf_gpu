@@ -21,7 +21,7 @@
   "kind": "independent algebraic invariants of sf_sfclayrev_run (NOT a self-compare)",
   "monin_obukhov_consistency": {
     "expectation": "warm ground -> regime 4 (unstable), z/L<0, hfx>0",
-    "hfx_W_m2": 388.58466790490365,
+    "hfx_W_m2": 254.7827158093448,
     "pass": true,
     "regime": 4.0,
     "ustar_m_s": 0.39983341069335365,
