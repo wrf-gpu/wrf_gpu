@@ -55,6 +55,7 @@ SRC = ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
+from gpuwrf.coupling.boundary_apply import BoundaryConfig  # noqa: E402
 from gpuwrf.integration.d02_replay import build_replay_case  # noqa: E402
 from gpuwrf.integration.daily_pipeline import (  # noqa: E402
     DailyCase,
@@ -149,6 +150,18 @@ def build_l3_d03_daily_case(config: DailyPipelineConfig) -> tuple[DailyCase, Pat
     # IDENTICAL Sprint-U operational numerics to daily_pipeline._build_real_case
     # (grid-agnostic: epssm/diff_6th/damp_opt/non_hydrostatic are per-domain
     # constants in the real L3 namelist).  dt is the only knob scaled for 1km.
+    # NESTED-boundary geopotential fix: the d02->d03 boundary leaves are the
+    # PARENT (3 km) perturbation geopotential bilinearly interpolated to the 1 km
+    # child grid, which is NOT hydrostatically consistent with the child column.
+    # Overwriting the prognostic ``ph`` in the boundary ring from that strip every
+    # acoustic-coupled step pumps spurious vertical motion that warms the interior
+    # (proven root cause of the d03 +6.8 K T2 / +7 K theta[0] bias: the ph forcing
+    # alone reproduces +2.84 K/10 min, while forcing u/v/w/theta/qv/mu/p each stays
+    # within +/-0.13 K).  Disable geopotential overwrite for the nested boundary;
+    # ``ph`` then stays dynamically/hydrostatically consistent with the forced
+    # mu/theta.  The validated d02 SELF-REPLAY path keeps force_geopotential=True
+    # (its strips ARE self-consistent), so this does not touch d02.
+    nested_boundary_config = BoundaryConfig(force_geopotential=False)
     namelist = OperationalNamelist.from_grid(
         replay.grid,
         tendencies=replay.tendencies,
@@ -156,6 +169,7 @@ def build_l3_d03_daily_case(config: DailyPipelineConfig) -> tuple[DailyCase, Pat
         dt_s=float(config.dt_s),
         acoustic_substeps=int(config.acoustic_substeps),
         radiation_cadence_steps=int(config.radiation_cadence_steps),
+        boundary_config=nested_boundary_config,
         use_vertical_solver=True,
         use_flux_advection=True,
         force_fp64=True,
