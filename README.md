@@ -67,6 +67,7 @@ These change as the project advances. Trust the latest commit, not screenshots:
 - [`.agent/decisions/MILESTONE-M*-CLOSEOUT.md`](.agent/decisions/) — written by the manager at every milestone close
 - [`RISK_REGISTER.md`](RISK_REGISTER.md) — grows as new risks surface
 - [`.agent/sprints/<date>-<id>/`](.agent/sprints/) — live during execution; archived once closed
+- **Performance / optimization analysis** — [`publish/runtime_optimization_analysis.md`](publish/runtime_optimization_analysis.md): roofline-grounded, proof-cited account of where the per-step compute time goes (~5.3× clean / ~7.8× realistic vs 28-rank CPU-WRF d02, fp64, single RTX 5090), why the fp64 acoustic core is near-optimal, and the four measured-and-refuted optimizations (fp32 dynamics, CUDA command-buffers, fp32-Thompson, implicit sedimentation)
 
 ## Frozen governance (do not edit during sprints)
 
