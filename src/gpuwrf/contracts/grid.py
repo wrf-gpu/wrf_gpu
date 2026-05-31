@@ -90,6 +90,16 @@ class DycoreMetrics:
     dzdy: jax.Array
     dzdx_u: jax.Array
     dzdy_v: jax.Array
+    # Coriolis metrics on mass points (ny, nx), WRF wrfout F/E/SINALPHA/COSALPHA.
+    # f = 2*Omega*sin(lat), e = 2*Omega*cos(lat); sina/cosa rotate the projection
+    # frame (generally sina=0, cosa=1).  Consumed by the large-step ``coriolis``
+    # tendency (rk_addtend_dry.large_step_coriolis); idealized cases default to
+    # f=e=sina=0, cosa=1 so every Coriolis term is identically zero and the
+    # passing idealized dycore gates stay bit-identical.
+    f: jax.Array
+    e: jax.Array
+    sina: jax.Array
+    cosa: jax.Array
     p_top: jax.Array
     provenance: str = "analytic-flat"
 
@@ -136,6 +146,10 @@ class DycoreMetrics:
             "dzdy",
             "dzdx_u",
             "dzdy_v",
+            "f",
+            "e",
+            "sina",
+            "cosa",
             "p_top",
         )
 
@@ -210,6 +224,12 @@ class DycoreMetrics:
             dzdy=jnp.zeros((ny, nx), dtype=jnp.float64),
             dzdx_u=jnp.zeros((ny, nx + 1), dtype=jnp.float64),
             dzdy_v=jnp.zeros((ny + 1, nx), dtype=jnp.float64),
+            # Idealized/non-rotating default: no Coriolis (f=e=sina=0, cosa=1) so the
+            # warm-bubble / Straka / oracle gates stay bit-identical to the f-free core.
+            f=jnp.zeros((ny, nx), dtype=jnp.float64),
+            e=jnp.zeros((ny, nx), dtype=jnp.float64),
+            sina=jnp.zeros((ny, nx), dtype=jnp.float64),
+            cosa=jnp.ones((ny, nx), dtype=jnp.float64),
             p_top=jnp.asarray(top_pressure_pa, dtype=jnp.float64),
             provenance=provenance,
         )
@@ -245,6 +265,10 @@ class DycoreMetrics:
             "dzdy": (ny, nx),
             "dzdx_u": (ny, nx + 1),
             "dzdy_v": (ny + 1, nx),
+            "f": (ny, nx),
+            "e": (ny, nx),
+            "sina": (ny, nx),
+            "cosa": (ny, nx),
         }
         for name, shape in expected.items():
             if tuple(getattr(self, name).shape) != shape:

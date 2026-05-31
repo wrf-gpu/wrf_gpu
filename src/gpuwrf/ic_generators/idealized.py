@@ -430,6 +430,10 @@ def _make_grid(case: NumpyIdealizedCase, device: jax.Device) -> GridSpec:
         dn=metrics.dn, dnw=metrics.dnw, rdn=metrics.rdn, rdnw=metrics.rdnw,
         cf1=metrics.cf1, cf2=metrics.cf2, cf3=metrics.cf3, fnm=metrics.fnm, fnp=metrics.fnp,
         dzdx=metrics.dzdx, dzdy=metrics.dzdy, dzdx_u=metrics.dzdx_u, dzdy_v=metrics.dzdy_v,
+        # Idealized non-rotating frame: carry the f=e=sina=0, cosa=1 defaults so the
+        # large-step Coriolis term is identically zero and the dycore gates stay
+        # bit-identical to the f-free core.
+        f=metrics.f, e=metrics.e, sina=metrics.sina, cosa=metrics.cosa,
         p_top=metrics.p_top, provenance=f"analytic-f2-{case.case_name}-pure-sigma",
     )
     return GridSpec(

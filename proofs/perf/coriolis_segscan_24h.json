@@ -1,0 +1,113 @@
+{
+  "scope": "SEGSCAN long-run feasibility -- 24h coupled real d02 via host-loop segmentation",
+  "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
+  "init_utc": "2026-05-21 18:00:00+00:00",
+  "grid": {
+    "ny": 66,
+    "nx": 159,
+    "nz": 44
+  },
+  "device": "cuda:0",
+  "config": {
+    "run_physics": true,
+    "run_boundary": true,
+    "disable_guards": true,
+    "force_fp64": true,
+    "use_flux_advection": true,
+    "epssm": 0.5,
+    "top_lid": true,
+    "w_damping": 1,
+    "damp_opt": 3,
+    "radiation_cadence_steps": 180,
+    "acoustic_unroll": 1
+  },
+  "hours": 24.0,
+  "steps": 8640,
+  "segment_steps": 180,
+  "n_full_segments": 48,
+  "inner_segment_cold_compile_s": 171.74519981001504,
+  "inner_segment_warm_exec_s": 121.57509069700609,
+  "compile_s_one_time": 50.17010911300895,
+  "warmed_per_step_ms": 43.977099297107664,
+  "warmed_per_step_ms_segment_incl_radiation": 675.4171705389227,
+  "full_24h_wall_s_measured": 379.9621379270102,
+  "full_24h_wall_min_measured": 6.332702298783503,
+  "peak_gpu_mem_mb_after_segment_compile": 9047.99658203125,
+  "peak_gpu_mem_mb_after_full_run": 10211.4013671875,
+  "peak_bounded_note": "peak after the FULL 24h run is ~ the peak after ONE segment compile -- host-loop + block_until_ready frees each segment's scratch before the next, so peak memory is independent of forecast length. By contrast the prior whole-forecast-as-one-program approaches blew up: the segmented while-loop's COMPILE grew with length (one scan per radiation interval; +12h did not compile in 37 min), and a single fused scan keeps the whole trajectory's working set in one program.",
+  "final_state_ranges": {
+    "u": {
+      "finite": true,
+      "min": -22.457176582798944,
+      "max": 22.864694655194274
+    },
+    "v": {
+      "finite": true,
+      "min": -17.64342672230307,
+      "max": 14.111446284824417
+    },
+    "w": {
+      "finite": true,
+      "min": -9.532883571827831,
+      "max": 0.9641597572266103
+    },
+    "theta": {
+      "finite": true,
+      "min": 290.183194359344,
+      "max": 491.79779619542427
+    },
+    "qv": {
+      "finite": true,
+      "min": 2.429023197692004e-06,
+      "max": 0.019365476413121967
+    },
+    "p_total": {
+      "finite": true,
+      "min": 5225.12353515625,
+      "max": 104506.90528433646
+    },
+    "ph_total": {
+      "finite": true,
+      "min": -7.796288059580547e-07,
+      "max": 204077.453125
+    },
+    "mu_total": {
+      "finite": true,
+      "min": 65177.86184747198,
+      "max": 96897.3203125
+    }
+  },
+  "all_finite": true,
+  "physically_plausible": true,
+  "extrapolation": {
+    "24.0h": {
+      "steps": 8640,
+      "warmed_run_s": 379.9621379270102,
+      "warmed_run_min": 6.332702298783503,
+      "with_one_compile_min": 7.168870784000319
+    },
+    "48.0h": {
+      "steps": 17280,
+      "warmed_run_s": 759.9242758540204,
+      "warmed_run_min": 12.665404597567006,
+      "with_one_compile_min": 13.501573082783823
+    },
+    "72.0h": {
+      "steps": 25920,
+      "warmed_run_s": 1139.8864137810306,
+      "warmed_run_min": 18.99810689635051,
+      "with_one_compile_min": 19.834275381567327
+    }
+  },
+  "ensemble_30_case": {
+    "24.0h": {
+      "per_case_warmed_min": 6.332702298783503,
+      "ensemble_30_warmed_hours": 3.1663511493917516
+    },
+    "72.0h": {
+      "per_case_warmed_min": 18.99810689635051,
+      "ensemble_30_warmed_hours": 9.499053448175255
+    }
+  },
+  "status": "PASS"
+}
