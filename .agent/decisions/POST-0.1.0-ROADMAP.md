@@ -45,6 +45,7 @@ pure I/O / orchestration ≈ a bit less. Wall-clock = at demonstrated multi-agen
 | **P2-1** | Map-projection / grid generality | P2 | defer | restrict claim to Canary grids |
 | **P1-1** | DA / FDDA / nudging | P2 (defer) | 0.5–1.5 wk if ever | not in Canary baseline namelist |
 | **P1-2** | Physics scheme breadth | P2 (document) | doc ~1 d | only if changing namelist |
+| **S1** | **Multi-GPU single-node domain decomposition** (sharded stencils + halo exchange) | **0.2.0 (scalability)** | ~1–1.5 wk | Med-High — halo interface pre-designed (`contracts/halo.py`); extension not rearchitecture |
 | **P0-2** | **Native init (WPS/real.exe replacement)** | **LAST** | 1.5–3 wk *(or ~2–3 d if real.exe kept)* | **HIGHEST risk** — do AFTER 0.2.0 |
 
 ## Release cadence & sequencing (principal-directed 2026-05-31)
@@ -59,8 +60,9 @@ pure I/O / orchestration ≈ a bit less. Wall-clock = at demonstrated multi-agen
 3. **0.1.x cadence** — cut a `0.1.x` release after each completed table item (continuous,
    honest, incremental).
 4. **v0.2.0** — **all table items complete EXCEPT native init (P0-2).** I.e. P0-1, P0-3,
-   P0-4, P0-5, P0-6, P0-7 + the P1 quality items closed; standalone forecast still permitted
-   to consume `real.exe`-produced static/IC/boundary inputs.
+   P0-4, P0-5, P0-6, P0-7 + the P1 quality items + **S1 (multi-GPU domain decomposition)**
+   closed; standalone forecast still permitted to consume `real.exe`-produced static/IC/
+   boundary inputs.
 5. **After 0.2.0** — **native init (P0-2) LAST**, deliberately, to avoid hiccups and long
    delays on the riskiest, never-before-done item. Pragmatic default: **keep `real.exe`** as
    cheap one-shot CPU preprocessing (it is run nightly already); full WPS/real.exe replacement
@@ -76,6 +78,27 @@ Established escalation (`AGENTS.md` operating model):
 
 Every item closes with a proof object (idealized gate, WRF savepoint, conservation budget, or
 real-case skill + persistence baseline) and a 0.1.x/0.2.0 release note. No "done" without proof.
+
+## Hardware portability & scaling (added 2026-05-31, principal-directed)
+
+Grounded in a code audit (no `shard_map`/`pmap`/`jax.sharding`/`Mesh`/`jax.distributed` anywhere;
+no `sm_*`/Blackwell/32 GB/`XLA_FLAGS` device-specifics; `contracts/halo.py::apply_halo` is a
+designed-in no-op with an MPI-compatible call shape):
+
+- **Single H100 / H200 — compatible AS-IS, zero source changes.** Pure JAX/XLA recompiles for
+  Hopper (sm_90) like it does for Blackwell (sm_120); only needs a standard `jax[cuda12]` install.
+  Expected to run **faster** (full-rate fp64 vs throttled consumer fp64; ~2–2.7× HBM bandwidth on
+  the bandwidth-bound core) and handle **larger** single-GPU domains (80/141 GB vs 32 GB — just
+  raise `XLA_PYTHON_CLIENT_MEM_FRACTION`). Speedup-vs-CPU is hardware-specific → re-measure on the
+  actual Hopper box (we have none). **No roadmap item needed — adoption is unblocked today.**
+- **Throughput scaling (ensembles / many independent forecasts) across a multi-GPU node** —
+  trivial today: one single-GPU job per GPU, linear. No code change.
+- **One forecast across multiple GPUs (domain decomposition)** — the only real change → **S1**,
+  added to the v0.2.0 list. Needed only for the upper tail (domains too big for 141 GB:
+  continental@1 km / global, or strong-scaling for latency); a single H200 already serves most
+  high-power-GPU users. Pre-designed-for (the frozen halo interface), so it's an extension:
+  `jax.sharding.Mesh`/`NamedSharding` + per-stencil halo exchange via `shard_map` + collective
+  permutes (or `jax.distributed` multi-node); keep the host-loop scan collective-correct.
 
 ## Honest caveat on the estimates
 
