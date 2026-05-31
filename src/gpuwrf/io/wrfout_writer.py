@@ -353,12 +353,22 @@ def write_wrfout_netcdf(
     valid_time: datetime | date | str,
     lead_hours: float,
     run_start: datetime | date | str,
+    diagnostics: Mapping[str, Any] | None = None,
 ) -> Path:
     """Write one WRF-style ``wrfout`` NetCDF file for the M7 minimum variable set.
 
     The function accepts plain Python/numpy objects as well as the project
     ``State``/``GridSpec`` objects. Device arrays, if passed after an operational
     run, are converted only at this output boundary.
+
+    ``diagnostics`` optionally carries operational surface-layer diagnostics
+    (e.g. the M9 surface map: ``T2``/``U10``/``V10``/``Q2``/``PSFC``/``SWDOWN``/
+    ``GLW``/``PBLH``/``TSK``). When a name is present there, it OVERRIDES the
+    state/default for that output field -- the writer otherwise falls back to raw
+    lowest-level fields which are physically wrong over terrain (e.g. raw level-1
+    wind/theta read far too strong/warm at a high summit). When ``diagnostics`` is
+    ``None`` the behaviour is byte-for-byte identical to the legacy path, so no
+    other caller regresses.
     """
 
     target = Path(path)
@@ -367,7 +377,7 @@ def write_wrfout_netcdf(
     valid_dt = _coerce_datetime(valid_time)
     nx, ny, nz = _grid_extent(grid)
     dimensions = _dimension_sizes(nx=nx, ny=ny, nz=nz, namelist=namelist)
-    fields = _build_output_fields(state, grid, namelist, dimensions)
+    fields = _build_output_fields(state, grid, namelist, dimensions, diagnostics=diagnostics)
 
     with Dataset(target, "w", format="NETCDF4") as dataset:
         _create_dimensions(dataset, dimensions)
@@ -504,6 +514,8 @@ def _build_output_fields(
     grid: Any,
     namelist: Mapping[str, Any] | Any | None,
     dimensions: Mapping[str, int | None],
+    *,
+    diagnostics: Mapping[str, Any] | None = None,
 ) -> dict[str, np.ndarray]:
     shape_xy = _shape_for_dimensions(XY, dimensions)
     shape_xyz = _shape_for_dimensions(XYZ, dimensions)
@@ -624,6 +636,14 @@ def _build_output_fields(
         "LH": lh,
         "TSK": _field_array(state, ("TSK", "tsk", "t_skin"), shape_xy, default=theta[0] * (np.maximum(p_pert[0] + p_base[0], 1.0) / P0_PA) ** R_D_OVER_CP),
     }
+    if diagnostics is not None:
+        # Operational surface-layer diagnostics OVERRIDE the raw lowest-level
+        # fallbacks for the surface map. These are physically diagnosed 2-m / 10-m /
+        # skin / surface fields (mass-point ``(ny, nx)``), not raw level-1 values.
+        for name, value in diagnostics.items():
+            if value is None or name not in fields:
+                continue
+            fields[name] = _coerce_array(name, value, shape_xy)
     return {name: np.asarray(value, dtype=np.float32) for name, value in fields.items()}
 
 
