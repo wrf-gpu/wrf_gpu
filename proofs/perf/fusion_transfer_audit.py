@@ -41,7 +41,7 @@ PROOF = Path("proofs/perf")
 def _hlo_text(state, nl, hours: float) -> str:
     lowered = jax.jit(
         run_forecast_operational, static_argnames=("hours",), donate_argnums=(0,)
-    ).lower(state, nl, float(hours))
+    ).lower(state, nl, hours=float(hours))
     compiled = lowered.compile()
     try:
         return compiled.as_text()
