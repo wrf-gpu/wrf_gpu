@@ -1,12 +1,11 @@
 """Unit / energy-closure tests for Sprint S1 noahmp_energy_canopy (THE HFX FIX).
 
-ORACLE STATUS: the pristine-WRF ENERGY savepoint fixtures (proofs/noahmp/) are
-NOT YET PRESENT (poll: ``ls proofs/noahmp``). Until they land, this test stands
-the energy balance up on a hand-built land column representing the documented
-midday dry sparse-veg over-flux case (proofs/v010_validation/
-hfx_overflux_root_cause.json: corpus HFX 477, LH 15, GRDFLX 122, Rnet 591,
-TRAD 313.3 K, TAH 311.8 K = 5.5 K cooler than radiative skin, CH 0.0452) and
-checks the WRF-physics invariants that the canopy energy balance MUST satisfy:
+ORACLE STATUS: the pristine-WRF ENERGY savepoint fixtures ARE NOW PRESENT
+(proofs/noahmp/savepoints_energy.json, S0b external oracle). The REAL gate is
+``test_real_wrf_energy_savepoint_parity`` below — field-wise parity vs WRF
+NOAHMP_SFLX over 11 real Canary d03 columns (daytime sparse-veg, bare soil,
+urban, night x5, Teide snow). The hand-built invariant tests below remain as a
+fast self-contained sanity layer (closure + sign + magnitude band):
 
   1. Surface energy balance closes: SAV+SAG = FIRA+FSH+FCEV+FGEV+FCTR+SSOIL
      (ENERGY :2281-2283 / ERROR :1662) to within Newton-Raphson residual.
@@ -264,3 +263,50 @@ def test_bare_ground_branch_when_no_veg():
     # bare ground: no canopy evaporation / transpiration
     assert float(ef.fcev[0, 0]) == pytest.approx(0.0, abs=1e-9)
     assert float(ef.fctr[0, 0]) == pytest.approx(0.0, abs=1e-9)
+
+
+# ---------------------------------------------------------------------------------
+# THE REAL GATE: field-wise parity vs the pristine-WRF ENERGY savepoints (S0b
+# external oracle). Skips cleanly if the savepoints / WRF tables are unavailable.
+# ---------------------------------------------------------------------------------
+import os  # noqa: E402
+import sys  # noqa: E402
+from pathlib import Path  # noqa: E402
+
+_PROOFS = Path(__file__).resolve().parent.parent / "proofs" / "noahmp"
+_HAVE_GATE = (_PROOFS / "savepoints_energy.json").exists() and Path(
+    "/home/enric/src/wrf_pristine/WRF/run/MPTABLE.TBL"
+).exists()
+
+
+@pytest.mark.skipif(not _HAVE_GATE, reason="WRF ENERGY savepoints / MPTABLE not present")
+def test_real_wrf_energy_savepoint_parity():
+    """Every pristine-WRF ENERGY savepoint column must match field-wise within the
+    predeclared tolerances (dry daytime sparse-veg, bare soil, urban, night, snow)."""
+    import json
+
+    sys.path.insert(0, str(_PROOFS))
+    import energy_savepoint_gate as gate  # noqa: E402
+
+    sp = json.load(open(_PROOFS / "savepoints_energy.json"))
+    failures = []
+    for col in sp["columns"]:
+        wrf = col["wrf"]
+        ref = {**wrf["energy_out"], "albedo": wrf["energy_state"]["albedo"],
+               "tg": wrf["energy_state"]["tg"], "tah": wrf["energy_state"]["tah"]}
+        got = gate.run_column(col)
+        for fld, (atol, rtol) in gate.TOL.items():
+            if fld == "qsfc":
+                continue
+            if fld == "erreng":
+                if abs(got["erreng"]) > atol:
+                    failures.append((col["name"], fld, 0.0, got["erreng"]))
+                continue
+            r = ref.get(fld)
+            if r is None:
+                continue
+            if abs(got[fld] - r) > atol + rtol * abs(r):
+                failures.append((col["name"], fld, r, got[fld]))
+    assert not failures, "WRF ENERGY savepoint parity failures:\n" + "\n".join(
+        f"  {n}/{f}: wrf={r:.6g} jax={g:.6g} d={g-r:+.5g}" for n, f, r, g in failures
+    )

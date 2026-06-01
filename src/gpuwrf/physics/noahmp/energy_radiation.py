@@ -41,22 +41,24 @@ from gpuwrf.physics.noahmp.types import NoahMPForcing, NoahMPPhenology, NoahMPRa
 TFRZ = 273.16
 MPE = 1.0e-6
 
-# --- scoped scalar/per-band radiation parameters (MPTABLE.TBL) ---
-OMEGAS = (0.8, 0.4)   # two-stream omega for snow (vis, nir)
-BETADS = 0.5
-BETAIS = 0.5
-SWEMX = 1.0           # m water-equivalent fresh-snow full-cover (GLOBAL block)
-# SNOW_AGE (BATS) advances TAUSS; opt_alb=2 does not consume FAGE but TAUSS is
-# still aged each step.
-TAU0 = 1.0e6
-GRAIN_GROWTH = 5000.0
-EXTRA_GROWTH = 10.0
-DIRT_SOOT = 0.3
-
-# MFSNO/SCFFAC default for the FSNO tanh (MPTABLE; sparse-veg ~ 2.5/0.042).
-# Snow-free land columns short-circuit to FSNO=0 so this only matters under snow.
-_MFSNO = 2.5
-_SCFFAC = 0.042
+# Module-default radiation/snow-age constants — RETAINED ONLY as the fallback
+# when a caller passes a pre-S1 ``TwoStreamParams`` without the table-derived
+# fields (backward compatibility). The WRF-faithful path now reads these from
+# the MPTABLE-backed ``TwoStreamParams`` (P2 fix): WRF reads them via
+# ``parameters%OMEGAS/BETADS/BETAIS/SWEMX/TAU0/...`` (module_sf_noahmplsm.F:3147-
+# 3160, 3267, 3483-3485). These literals equal the active MODIS-fixture table
+# values (OMEGAS 0.8/0.4, BETADS/BETAIS 0.5, SWEMX 1.0, TAU0 1e6, GRAIN 5000,
+# EXTRA 10, DIRT 0.3); verified by proofs/noahmp/energy_savepoint_gate.py.
+_OMEGAS_DEF = (0.8, 0.4)
+_BETADS_DEF = 0.5
+_BETAIS_DEF = 0.5
+_SWEMX_DEF = 1.0
+_TAU0_DEF = 1.0e6
+_GRAIN_GROWTH_DEF = 5000.0
+_EXTRA_GROWTH_DEF = 10.0
+_DIRT_SOOT_DEF = 0.3
+_MFSNO_DEF = 2.5
+_SCFFAC_DEF = 0.042
 
 
 class TwoStreamParams(NamedTuple):
@@ -65,6 +67,12 @@ class TwoStreamParams(NamedTuple):
 
     Per-band arrays are stacked on a leading length-2 axis (0 = vis, 1 = nir)
     and broadcast over the land-column grid (ny, nx).
+
+    The trailing block (``omegas``..``dirt_soot``) is the P2 table-derive fix:
+    snow two-stream + SNOW_AGE BATS parameters read from MPTABLE
+    (``NoahMPParameters``) instead of hard-coded. All default ``None`` so any
+    pre-S1 caller keeps working (the module-default literals are then used, which
+    equal the active fixture's table values).
     """
 
     rhol: jnp.ndarray    # (2, ny, nx) leaf reflectance
@@ -74,36 +82,65 @@ class TwoStreamParams(NamedTuple):
     xl: jnp.ndarray      # (ny, nx) leaf orientation index
     albsat: jnp.ndarray  # (2, ny, nx) saturated soil albedo
     albdry: jnp.ndarray  # (2, ny, nx) dry soil albedo
+    # --- P2 table-derived (default None -> module-default literals) ---
+    omegas: jnp.ndarray = None        # (2, ny, nx) two-stream omega for snow
+    betads: jnp.ndarray = None        # two-stream betad for snow
+    betais: jnp.ndarray = None        # two-stream betaI for snow
+    swemx: jnp.ndarray = None         # fresh-snow full-cover SWE [mm]
+    mfsno: jnp.ndarray = None         # FSNO tanh m-parameter
+    scffac: jnp.ndarray = None        # FSNO tanh snow-cover factor [m]
+    tau0: jnp.ndarray = None          # SNOW_AGE tau0 (Yang97 10a)
+    grain_growth: jnp.ndarray = None  # SNOW_AGE grain growth (10b)
+    extra_growth: jnp.ndarray = None  # SNOW_AGE extra growth (10c)
+    dirt_soot: jnp.ndarray = None     # SNOW_AGE dirt/soot (10d)
 
 
-def _fsno(snowh, sneqv):
+def _omegas(p: "TwoStreamParams", ib: int):
+    if p.omegas is None:
+        return _OMEGAS_DEF[ib]
+    return p.omegas[ib]
+
+
+def _scalar(val, default):
+    return default if val is None else val
+
+
+def _fsno(snowh, sneqv, p: "TwoStreamParams"):
+    mfsno = _scalar(p.mfsno, _MFSNO_DEF)
+    scffac = _scalar(p.scffac, _SCFFAC_DEF)
     bdsno = sneqv / jnp.maximum(snowh, MPE)
-    fmelt = (bdsno / 100.0) ** _MFSNO
-    return jnp.tanh(snowh / (_SCFFAC * fmelt))
+    fmelt = (bdsno / 100.0) ** mfsno
+    return jnp.tanh(snowh / (scffac * fmelt))
 
 
-def snow_age(dt, tg, sneqvo, sneqv, tauss):
-    """SNOW_AGE (:3119-3167). Returns (tauss_new, fage)."""
-    arg = GRAIN_GROWTH * (1.0 / TFRZ - 1.0 / tg)
+def snow_age(dt, tg, sneqvo, sneqv, tauss, p: "TwoStreamParams"):
+    """SNOW_AGE (:3119-3167). Returns (tauss_new, fage). Parameters from MPTABLE."""
+    grain_growth = _scalar(p.grain_growth, _GRAIN_GROWTH_DEF)
+    extra_growth = _scalar(p.extra_growth, _EXTRA_GROWTH_DEF)
+    dirt_soot = _scalar(p.dirt_soot, _DIRT_SOOT_DEF)
+    tau0 = _scalar(p.tau0, _TAU0_DEF)
+    swemx = _scalar(p.swemx, _SWEMX_DEF)
+    arg = grain_growth * (1.0 / TFRZ - 1.0 / tg)
     age1 = jnp.exp(arg)
-    age2 = jnp.exp(jnp.minimum(0.0, EXTRA_GROWTH * arg))
-    age3 = DIRT_SOOT
+    age2 = jnp.exp(jnp.minimum(0.0, extra_growth * arg))
+    age3 = dirt_soot
     tage = age1 + age2 + age3
-    dela0 = dt / TAU0
+    dela0 = dt / tau0
     dela = dela0 * tage
-    dels = jnp.maximum(0.0, sneqv - sneqvo) / SWEMX
+    dels = jnp.maximum(0.0, sneqv - sneqvo) / swemx
     sge = (tauss + dela) * (1.0 - dels)
     tauss_new = jnp.where(sneqv <= 0.0, 0.0, jnp.maximum(0.0, sge))
     fage = tauss_new / (tauss_new + 1.0)
     return tauss_new, fage
 
 
-def snowalb_class(qsnow, dt, albold):
+def snowalb_class(qsnow, dt, albold, p: "TwoStreamParams"):
     """SNOWALB_CLASS (:3226-3275, opt_alb=2). Returns (alb, albsnd, albsni)."""
+    swemx = _scalar(p.swemx, _SWEMX_DEF)
     alb = 0.55 + (albold - 0.55) * jnp.exp(-0.01 * dt / 3600.0)
     alb = jnp.where(
         qsnow > 0.0,
-        alb + jnp.minimum(qsnow, SWEMX / dt) * (0.84 - alb) / (SWEMX / dt),
+        alb + jnp.minimum(qsnow, swemx / dt) * (0.84 - alb) / (swemx / dt),
         alb,
     )
     albsn = jnp.stack([alb, alb], axis=0)  # vis, nir identical for CLASS
@@ -144,11 +181,13 @@ def twostream(ib, ic, cosz, vai, fwet, tveg, albgr_d, albgr_i, rho, tau, fveg, p
     betadl = (1.0 + avmu * ext) / (omegal * avmu * ext) * asu
     betail = 0.5 * (rho + tau + (rho - tau) * ((1.0 + chil) / 2.0) ** 2) / omegal
 
-    omegas_b = OMEGAS[ib]
+    omegas_b = _omegas(p, ib)
+    betads = _scalar(p.betads, _BETADS_DEF)
+    betais = _scalar(p.betais, _BETAIS_DEF)
     no_snow = tveg > TFRZ
     omega_sn = (1.0 - fwet) * omegal + fwet * omegas_b
-    betad_sn = ((1.0 - fwet) * omegal * betadl + fwet * omegas_b * BETADS) / omega_sn
-    betai_sn = ((1.0 - fwet) * omegal * betail + fwet * omegas_b * BETAIS) / omega_sn
+    betad_sn = ((1.0 - fwet) * omegal * betadl + fwet * omegas_b * betads) / omega_sn
+    betai_sn = ((1.0 - fwet) * omegal * betail + fwet * omegas_b * betais) / omega_sn
     omega = jnp.where(no_snow, omegal, omega_sn)
     betad = jnp.where(no_snow, betadl, betad_sn)
     betai = jnp.where(no_snow, betail, betai_sn)
@@ -247,10 +286,18 @@ def radiation_twostream(
     solai = jnp.stack([swdown * 0.3 * 0.5, swdown * 0.3 * 0.5], axis=0)
 
     vai = elai + esai
-    fsno = jnp.where(snowh > 0.0, _fsno(snowh, sneqv), 0.0)
+    fsno = jnp.where(snowh > 0.0, _fsno(snowh, sneqv, params), 0.0)
 
-    tauss_new, _fage = snow_age(dt, tg, sneqvo, sneqv, land_state.tauss)
-    alb_new, albsnd, albsni = snowalb_class(qsnow, dt, land_state.albold)
+    # WRF ALBEDO (:2925-2988): SNOW_AGE runs ALWAYS (allows nighttime aging),
+    # but RHO/TAU weighting, SNOWALB_CLASS, GROUNDALB, both TWOSTREAM, FSUN, and
+    # the ALBOLD advance are all INSIDE IF(COSZ>0). At night ALBD/ALBI/FABD/FABI/
+    # FTDD/FTID/FTII = 0 (their init), so SAV/SAG/FSA/FSR = 0 and ALBOLD is frozen.
+    day = cosz > 0.0
+
+    tauss_new, _fage = snow_age(dt, tg, sneqvo, sneqv, land_state.tauss, params)
+    alb_new, albsnd, albsni = snowalb_class(qsnow, dt, land_state.albold, params)
+    # ALBOLD = ALB only when COSZ>0 (:2944-2945); otherwise carry old value.
+    albold_new = jnp.where(day, alb_new, land_state.albold)
 
     wl = elai / jnp.maximum(vai, MPE)
     ws = esai / jnp.maximum(vai, MPE)
@@ -278,18 +325,23 @@ def radiation_twostream(
         ftii.append(fti_i)
         if ib == 0:
             gdir_vis = gdir
-    fabd = jnp.stack(fabd, 0)
-    albd = jnp.stack(albd, 0)
-    ftdd = jnp.stack(ftdd, 0)
-    ftid = jnp.stack(ftid, 0)
-    fabi = jnp.stack(fabi, 0)
-    albi = jnp.stack(albi, 0)
-    ftii = jnp.stack(ftii, 0)
+    # NIGHT GUARD (:2906-2921 init + IF(cosz>0)): zero all two-stream outputs at
+    # night so SAV/SAG/FSA/FSR collapse to 0 exactly as WRF (which never enters
+    # the cosz>0 block and keeps the zero-initialized ALBD/FABD/... arrays).
+    def _day0(arr):
+        return jnp.where(day, arr, 0.0)
+    fabd = jnp.stack([_day0(a) for a in fabd], 0)
+    albd = jnp.stack([_day0(a) for a in albd], 0)
+    ftdd = jnp.stack([_day0(a) for a in ftdd], 0)
+    ftid = jnp.stack([_day0(a) for a in ftid], 0)
+    fabi = jnp.stack([_day0(a) for a in fabi], 0)
+    albi = jnp.stack([_day0(a) for a in albi], 0)
+    ftii = jnp.stack([_day0(a) for a in ftii], 0)
 
     ext = gdir_vis / jnp.maximum(cosz, MPE) * jnp.sqrt(jnp.maximum(1.0 - rho[0] - tau[0], 0.0))
     fsun = (1.0 - jnp.exp(-jnp.minimum(ext * vai, 40.0))) / jnp.maximum(ext * vai, MPE)
     fsun = jnp.where(fsun < 0.01, 0.0, fsun)
-    fsun = jnp.where(cosz > 0.0, fsun, 0.0)
+    fsun = jnp.where(day, fsun, 0.0)
 
     fsha = 1.0 - fsun
     laisun = elai * fsun
@@ -328,7 +380,10 @@ def radiation_twostream(
     rnir = albd[1] * solad[1] + albi[1] * solai[1]
     fsr = rvis + rnir
 
-    albedo = jnp.where(swdown != 0.0, fsr / jnp.maximum(swdown, MPE), land_state.albedo)
+    # SALB (NOAHMP_SFLX :1072-1076): ALBEDO = FSR/SWDOWN if SWDOWN/=0 else -999.9.
+    # The WRF SWDOWN is the ATM-passed downward solar (forcing.soldn); at night
+    # SWDOWN=0 -> -999.9 sentinel (matches the savepoint energy_state.albedo).
+    albedo = jnp.where(forcing.soldn != 0.0, fsr / jnp.maximum(forcing.soldn, MPE), -999.9)
 
     rad = NoahMPRadInputs(
         sav=sav,
@@ -345,7 +400,7 @@ def radiation_twostream(
         "laisun": laisun,
         "laisha": laisha,
         "tauss": tauss_new,
-        "albold": alb_new,
+        "albold": albold_new,
         "vai": vai,
     }
     return rad, extras
