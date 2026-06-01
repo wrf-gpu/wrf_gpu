@@ -499,10 +499,44 @@ def _snapshot(state: dict[str, np.ndarray]) -> dict[str, np.ndarray]:
     return {name: np.asarray(state[name], dtype=np.float64) for name in COMPARE_FIELDS}
 
 
+def _seed_coupled_work_theta(loop_state: AcousticLoopState) -> AcousticLoopState:
+    """Seed the persistent coupled-work theta (``t_2``) on the comparator state.
+
+    The dycore rewrite made ``acoustic_substep_core`` advance a PERSISTENT
+    coupled work theta (``theta_coupled_work``) across acoustic substeps instead
+    of re-coupling the perturbation theta every substep (acoustic.py:531-557).
+    The OPERATIONAL path seeds this leaf from WRF ``small_step_prep``
+    (``operational_mode.py:893`` -> ``theta_coupled_work=prep.theta_work``); the
+    bare ``AcousticLoopState.from_mapping`` used by THIS validation comparator
+    never did, so ``advance_mu_t_core`` saw ``theta=None`` and raised
+    (the row-3 ``theta=None`` harness defect).
+
+    Thread it WRF-faithfully here.  WRF ``small_step_prep``
+    (``module_small_step_em.F`` / ``small_step_prep.py:204-215``) couples once
+    per RK stage as ``theta_work = mass_h_ref*theta_ref - mass_h_cur*theta_cur``
+    with ``mass_h = c1h*muts + c2h`` (ref) and ``c1h*mut + c2h`` (cur).  The
+    comparator carries the perturbation ``theta``/``theta_1`` and the mass
+    coefficients, so this seed is exact for the RK1/ref==cur core path that
+    decouples back via ``_decouple_theta_for_finish``.
+    """
+
+    theta = np.asarray(loop_state.theta, dtype=np.float64)
+    theta_1 = np.asarray(loop_state.theta_1, dtype=np.float64)
+    mut = np.asarray(loop_state.mut, dtype=np.float64)
+    muts = np.asarray(loop_state.muts, dtype=np.float64)
+    c1h = np.asarray(loop_state.c1h, dtype=np.float64)
+    c2h = np.asarray(loop_state.c2h, dtype=np.float64)
+    mass_mut = c1h[:, None, None] * mut[None, :, :] + c2h[:, None, None]
+    mass_muts = c1h[:, None, None] * muts[None, :, :] + c2h[:, None, None]
+    theta_work = mass_muts * theta_1 - mass_mut * theta
+    return loop_state.replace(theta_coupled_work=theta_work)
+
+
 def _coupled_steps(tier: str, steps: int) -> tuple[list[dict[str, np.ndarray]], dict[str, Any]]:
     state, attrs, extras = _load_initial_state(tier)
+    loop_state = _seed_coupled_work_theta(AcousticLoopState.from_mapping(state))
     snapshots = coupled_timesteps_wrf(
-        AcousticLoopState.from_mapping(state),
+        loop_state,
         _m6b4._metrics(),
         _cfg(attrs),
         steps=int(steps),
@@ -758,12 +792,90 @@ def _delta_histogram(results: list[dict[str, object]]) -> dict[str, object]:
     return {"bins": [float(value) for value in edges], "counts": [int(value) for value in counts]}
 
 
+def _nonfinite_fields(snapshot: dict[str, np.ndarray]) -> list[str]:
+    """Return the names of any JAX-snapshot fields with NaN/Inf entries."""
+
+    bad = []
+    for name, value in snapshot.items():
+        array = np.asarray(value)
+        if array.size and not np.isfinite(array).all():
+            bad.append(name)
+    return bad
+
+
 def compare_tier(tier: str, steps: int, savepoint_root: Path) -> dict[str, object]:
     output = savepoint_root / tier / "jax"
     actual_steps, _context = _coupled_steps(tier, steps)
     jax_manifest = emit_jax_savepoints(tier, steps, output, actual_steps)
     wrf_manifest = ensure_wrf_reference_fixture(tier, int(steps), WRF_REFERENCE_FIXTURE_ROOT)
     ladder = _coupled_ladder()
+
+    # HONEST GUARD (do NOT mask): the m6b6 coupled-step comparator drives the
+    # validation-only ``coupled_timestep_core`` composition
+    # (dycore_timestep_core -> rk_stage_core -> acoustic_scan_core).  That core
+    # path is fed a bare ``AcousticLoopState.from_mapping`` state that lacks the
+    # ~30 derived leaves (c2a, alt, al, phb, ph_1, cf1/2/3, c1f/c2f, rdn, ht,
+    # pm1, rw_tend_pg_buoy, ...) which the OPERATIONAL path builds per RK stage
+    # via small_step_prep (operational_mode.py:712-924).  With those leaves
+    # absent the substep's calc_p_rho/advance_w produce non-finite pressure /
+    # geopotential, so the coupled-step output blows up.  This is a COMPARATOR
+    # COMPOSITION gap in a superseded validation lane -- NOT a production-dycore
+    # defect (the operational dycore is independently validated by the idealized
+    # warm-bubble/Straka, conservation, and d02/d03-vs-CPU-WRF rows, all of which
+    # run the real small_step_prep operational path).  Report it truthfully
+    # rather than crashing on nanargmax or fabricating a pass.
+    nonfinite_by_step = {
+        int(step): _nonfinite_fields(actual)
+        for step, actual in enumerate(actual_steps, start=1)
+    }
+    first_nonfinite = next(
+        ((step, fields) for step, fields in nonfinite_by_step.items() if fields),
+        None,
+    )
+    if first_nonfinite is not None:
+        step_idx, fields = first_nonfinite
+        return {
+            "operator": "coupled_step",
+            "tier": tier,
+            "passed": False,
+            "outcome": (
+                "COMPARATOR-COMPOSITION-GAP-NONFINITE-JAX-OUTPUT-AT-"
+                f"STEP-{step_idx}-FIELDS-{'|'.join(fields)}"
+            ),
+            "savepoint_count": int(steps),
+            "manifest": jax_manifest,
+            "wrf_manifest": wrf_manifest,
+            "oracle": {
+                "source_type": wrf_manifest["source_type"],
+                "self_compare": False,
+                "stage": WRF_FALLBACK_STAGE,
+                "limitation": wrf_manifest["limitation"],
+            },
+            "comparator_composition_gap": {
+                "is_production_dycore_defect": False,
+                "first_nonfinite_step": step_idx,
+                "nonfinite_fields_by_step": nonfinite_by_step,
+                "root_cause": (
+                    "validation-only coupled_timestep_core core path is fed a bare "
+                    "AcousticLoopState.from_mapping lacking the derived small_step_prep "
+                    "leaves (c2a/alt/al/phb/ph_1/cf*/c1f/c2f/rdn/ht/pm1/rw_tend_pg_buoy); "
+                    "calc_p_rho/advance_w then emit non-finite p/ph and the step diverges. "
+                    "theta=None (the original row-3 error) was only the first missing leaf; "
+                    "it is now seeded WRF-faithfully (_seed_coupled_work_theta), exposing the "
+                    "remaining harness-composition gap underneath."
+                ),
+                "production_dycore_evidence": (
+                    "idealized warm-bubble + Straka (operational small_step_prep path), "
+                    "conservation (guards-off), and d02/d03-vs-CPU-WRF all PASS"
+                ),
+                "followup": "v0.2.0: build the derived leaves in the comparator (port small_step_prep) "
+                            "or route the comparator through the operational _rk_scan_step stepper.",
+            },
+            "tolerance_ladder_path": str(ROOT / "src/gpuwrf/validation/tolerance_ladder.json"),
+            "sanitizer_mode": "off",
+            "namelist_physics_boundary_on": NAMELIST_PHYSICS_BOUNDARY_ON,
+        }
+
     results = []
     for step, actual in enumerate(actual_steps, start=1):
         results.append(
