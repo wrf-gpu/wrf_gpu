@@ -181,6 +181,14 @@ class NoahMPStatic:
         "lat",        # latitude [deg]
         "dx_m",       # grid spacing [m]
         "parameters",  # NoahMPParameters bundle (Sprint 0b)
+        # --- ADDITIVE (S6a integrate, patch protocol): per-column green-vegetation
+        # fraction fields from wrfinput. SHDMAX/SHDFAC are 2-D input fields, NOT
+        # MPTABLE parameters (arbiter = pristine WRF module_sf_noahmplsm.F:864 +
+        # module_sf_noahmpdrv.F:752-753: FVEG=VEGFRA/100, FVGMAX=VEGMAX/100; for
+        # dveg=4 FVEG=SHDMAX=FVGMAX). Default None so pre-S6a positional
+        # NoahMPStatic(...) constructions (energy gate) keep working unchanged.
+        "shdmax",     # annual-max green-veg fraction [0-1] (= VEGMAX/100); FVEG source for dveg=4
+        "shdfac",     # instantaneous green-veg fraction [0-1] (= VEGFRA/100)
     )
 
     def __init__(
@@ -197,10 +205,12 @@ class NoahMPStatic:
         lat: jax.Array,
         dx_m: Any,
         parameters: Any,
+        shdmax: Any = None,
+        shdfac: Any = None,
     ) -> None:
         for name, value in zip(self.__slots__, (
             ivgtyp, isltyp, xland, landmask, lakemask, lu_index, tbot, dzs,
-            zsoil, lat, dx_m, parameters,
+            zsoil, lat, dx_m, parameters, shdmax, shdfac,
         )):
             setattr(self, name, value)
 

@@ -13,10 +13,27 @@ import numpy as np
 
 from gpuwrf.contracts.state import State
 
+try:  # NoahMPLandState lives in the v0.2.0 land package; import is optional so a
+    # pure-dycore checkout without the noahmp package can still read/write v1.
+    from gpuwrf.contracts.noahmp_state import NoahMPLandState
+except Exception:  # pragma: no cover
+    NoahMPLandState = None  # type: ignore
+
 
 config.update("jax_enable_x64", True)
 
-FORMAT_VERSION = 1
+# v2 (ADR-NOAHMP-INTERFACES.md §5): adds the optional prognostic Noah-MP land
+# carry + a scope-options guard. v1 checkpoints (no land state) stay READABLE and
+# load with ``noahmp_land_state = None`` -> driver cold-inits land from wrfinput.
+FORMAT_VERSION = 2
+SUPPORTED_FORMAT_VERSIONS = (1, 2)
+
+# The frozen Noah-MP scope-options the land carry is valid under (tables.py mirror).
+NOAHMP_SCOPE_OPTIONS = {
+    "dveg": 4, "opt_crs": 1, "opt_btr": 1, "opt_run": 3, "opt_sfc": 1,
+    "opt_frz": 1, "opt_inf": 1, "opt_rad": 3, "opt_alb": 2, "opt_snf": 1,
+    "opt_tbot": 2, "opt_stc": 1,
+}
 
 
 def _hostify_tree(tree: Any) -> Any:
@@ -49,6 +66,16 @@ def _state_to_host_fields(state: State) -> dict[str, np.ndarray]:
     return {field: np.asarray(getattr(state, field)) for field in State.__slots__}
 
 
+def _land_field_order() -> tuple[str, ...]:
+    if NoahMPLandState is None:
+        raise ValueError("NoahMPLandState unavailable; cannot serialize land carry")
+    return tuple(NoahMPLandState.__slots__)
+
+
+def _land_to_host_fields(land_state) -> dict[str, np.ndarray]:
+    return {field: np.asarray(getattr(land_state, field)) for field in _land_field_order()}
+
+
 def write_checkpoint(
     state: State,
     namelist: Any,
@@ -57,11 +84,17 @@ def write_checkpoint(
     path: str | Path,
     *,
     runtime_state: Any | None = None,
+    land_state: Any | None = None,
+    scope_options: dict | None = None,
 ) -> Path:
     """Write a restart checkpoint containing State, namelist, grid, and step index.
 
     The State payload is stored as an explicit field dictionary so schema drift
-    fails closed instead of silently relying on pickle internals.
+    fails closed instead of silently relying on pickle internals. When
+    ``land_state`` is given, the prognostic Noah-MP land carry is written under
+    ``noahmp_land_state`` with the same fail-closed field-order discipline (v2);
+    omitting it yields a payload a v1 reader can consume (the land keys are simply
+    absent / None).
     """
 
     target = Path(path)
@@ -78,7 +111,19 @@ def write_checkpoint(
         "grid": host_grid,
         "step_index": int(step_index),
         "runtime_state": None if runtime_state is None else _hostify_tree(runtime_state),
+        # --- v2 Noah-MP land carry (ADR §5). None when not coupled. ---
+        "noahmp_land_state": None,
+        "noahmp_land_field_order": None,
+        "noahmp_format": None,
     }
+    if land_state is not None:
+        order = _land_field_order()
+        payload["noahmp_land_state"] = _land_to_host_fields(land_state)
+        payload["noahmp_land_field_order"] = list(order)
+        payload["noahmp_format"] = {
+            "nsoil": 4, "nsnow": 3,
+            "scope_options": dict(scope_options) if scope_options else dict(NOAHMP_SCOPE_OPTIONS),
+        }
     tmp = target.with_name(f"{target.name}.tmp")
     with tmp.open("wb") as handle:
         pickle.dump(payload, handle, protocol=pickle.HIGHEST_PROTOCOL)
@@ -93,10 +138,11 @@ def _read_payload(path: str | Path) -> dict[str, Any]:
 
     if payload.get("format") != "gpuwrf-runtime-checkpoint":
         raise ValueError(f"unsupported checkpoint format in {source}")
-    if int(payload.get("format_version", -1)) != FORMAT_VERSION:
+    version = int(payload.get("format_version", -1))
+    if version not in SUPPORTED_FORMAT_VERSIONS:
         raise ValueError(
             f"unsupported checkpoint version {payload.get('format_version')} in {source}; "
-            f"expected {FORMAT_VERSION}"
+            f"supported {SUPPORTED_FORMAT_VERSIONS}"
         )
 
     expected = tuple(State.__slots__)
@@ -106,6 +152,18 @@ def _read_payload(path: str | Path) -> dict[str, Any]:
     fields = payload.get("state_fields")
     if not isinstance(fields, dict) or set(fields) != set(expected):
         raise ValueError("checkpoint State fields do not match current State schema")
+
+    # v2 land carry: exact-match the field order (fail-closed, like State). A v1
+    # checkpoint or a v2 with no land carry simply has noahmp_land_state == None.
+    land_fields = payload.get("noahmp_land_state")
+    if land_fields is not None:
+        land_order = tuple(payload.get("noahmp_land_field_order", ()))
+        if NoahMPLandState is None:
+            raise ValueError("checkpoint carries Noah-MP land state but NoahMPLandState is unavailable")
+        if land_order != tuple(NoahMPLandState.__slots__):
+            raise ValueError("checkpoint Noah-MP land field order does not match current schema")
+        if set(land_fields) != set(NoahMPLandState.__slots__):
+            raise ValueError("checkpoint Noah-MP land fields do not match current schema")
     return payload
 
 
@@ -136,4 +194,34 @@ def read_checkpoint_with_runtime_state(path: str | Path) -> tuple[State, Any, An
     return state, namelist, grid, step_index, runtime_state
 
 
-__all__ = ["read_checkpoint", "read_checkpoint_with_runtime_state", "write_checkpoint"]
+def _restore_land_state(payload: dict[str, Any]):
+    """Rebuild the NoahMPLandState carry (or None for a v1 / land-less payload)."""
+    land_fields = payload.get("noahmp_land_state")
+    if land_fields is None:
+        return None
+    order = tuple(NoahMPLandState.__slots__)
+    return NoahMPLandState(**{f: jax.device_put(land_fields[f]) for f in order})
+
+
+def read_checkpoint_with_land_state(
+    path: str | Path,
+) -> tuple[State, Any, Any, int, Any]:
+    """Read a checkpoint and the prognostic Noah-MP land carry (ADR §5).
+
+    Returns ``(state, namelist, grid, step_index, land_state)`` where
+    ``land_state`` is the restored ``NoahMPLandState`` for a v2 checkpoint, or
+    ``None`` for a v1 (or land-less v2) checkpoint — in which case the caller
+    cold-initialises Noah-MP land state from ``wrfinput``.
+    """
+    payload = _read_payload(path)
+    state, namelist, grid, step_index = _restore_checkpoint_payload(payload)
+    land_state = _restore_land_state(payload)
+    return state, namelist, grid, step_index, land_state
+
+
+__all__ = [
+    "read_checkpoint",
+    "read_checkpoint_with_runtime_state",
+    "read_checkpoint_with_land_state",
+    "write_checkpoint",
+]
