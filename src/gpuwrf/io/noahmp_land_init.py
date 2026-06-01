@@ -309,4 +309,19 @@ def _wrf_snow_init(swe, snodep, tg, zsoil, ny: int, nx: int):
     return isnow, tsno, snice, snliq, zsnso
 
 
-__all__ = ["build_noahmp_land_state", "DEFAULT_TABLE_DIR"]
+def build_noahmp_params(static: NoahMPStatic):
+    """Pre-build the per-run Noah-MP energy/radiation parameter bundles ONCE.
+
+    Returns ``(energy_params, rad_params, nroot)``. ``nroot`` is the CONCRETE static
+    root-depth slice bound (the energy kernel uses ``range(nroot)``); it is carried
+    separately so the operational scan can reattach it to the (otherwise-traced)
+    pre-built energy params without re-running the frozen ``build_energy_params``
+    inside jit. Must be called EAGERLY (outside jit) with concrete ``static``.
+    """
+    from gpuwrf.physics.noahmp.noahmp_driver import build_energy_params
+    scalar_shape = jnp.asarray(static.xland, dtype=jnp.float64).shape
+    energy, rad = build_energy_params(static, scalar_shape)
+    return energy, rad, int(energy.nroot)
+
+
+__all__ = ["build_noahmp_land_state", "build_noahmp_params", "DEFAULT_TABLE_DIR"]

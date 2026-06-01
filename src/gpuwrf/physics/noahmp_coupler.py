@@ -142,6 +142,8 @@ def noahmp_surface_adapter(
     clock: Any = None,
     dt: float = 1.0,
     forcing: NoahMPForcing | None = None,
+    energy_params: Any = None,
+    rad_params: Any = None,
 ) -> tuple[Any, NoahMPLandState, SurfaceFluxes]:
     """Run the land-masked Noah-MP / sfclay blend for one physics step.
 
@@ -150,6 +152,10 @@ def noahmp_surface_adapter(
     sole land/water switch). ``forcing`` may be supplied pre-assembled; otherwise
     it is built from ``state``/``radiation``/``clock`` via
     :func:`assemble_noahmp_forcing`.
+
+    ``energy_params``/``rad_params`` (S6b ACTIVATE) may be supplied pre-built so the
+    operational scan never re-runs the (concrete-``nroot``) ``build_energy_params``
+    inside jit; when None the driver builds them itself (the eager S6a gate path).
     """
     # ---- 1. sfclay over ALL columns (UNCHANGED) ----
     diag = surface_layer_with_diagnostics(state)
@@ -169,7 +175,10 @@ def noahmp_surface_adapter(
     cm_seed = _surface(_get(diag, "cm", land_state.cm))
     land_state = land_state.replace(ch=ch_seed, cm=cm_seed)
 
-    land_state_out, nm = noah_mp_step(land_state, forcing, static, dt)
+    land_state_out, nm = noah_mp_step(
+        land_state, forcing, static, dt,
+        energy_params=energy_params, rad_params=rad_params,
+    )
 
     # ---- 3. masked blend (land vs water). Water path = sfclay diagnostics. ----
     # rho*cpm with the WRF moist heat capacity (surface_layer.py:481): cpm =

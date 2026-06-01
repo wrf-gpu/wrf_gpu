@@ -87,15 +87,17 @@ def run_forecast(run_dir, domain, *, use_noahmp, leads, segment_steps, dt_s,
     noahmp_rad = None
     init_meta = None
     if use_noahmp:
-        from gpuwrf.io.noahmp_land_init import build_noahmp_land_state
+        from gpuwrf.io.noahmp_land_init import build_noahmp_land_state, build_noahmp_params
         from gpuwrf.runtime.operational_mode import noahmp_initial_rad
         julian = float(time_utc.timetuple().tm_yday)
         noahmp_land, static, init_meta = build_noahmp_land_state(run_dir, domain)
+        energy_params, rad_params, nroot = build_noahmp_params(static)
         noahmp_rad = noahmp_initial_rad(
             _enforce_operational_precision(case.state, force_fp64=bool(nl.force_fp64)))
         nl = dataclasses.replace(
             nl, use_noahmp=True, noahmp_static=static,
-            noahmp_julian=julian, noahmp_yearlen=365.0,
+            noahmp_energy_params=energy_params, noahmp_rad_params=rad_params,
+            noahmp_nroot=nroot, noahmp_julian=julian, noahmp_yearlen=365.0,
         )
 
     cadence = int(nl.radiation_cadence_steps)
