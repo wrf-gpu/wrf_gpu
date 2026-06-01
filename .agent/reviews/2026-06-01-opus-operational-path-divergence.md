@@ -100,9 +100,71 @@ that fix, the validated d02 T2 number STANDS as the operational number, and v0.1
 be promoted. (The +2.6 kPa pressure-Exner item is separate and pre-existing on BOTH
 paths; it does not block the path-divergence resolution.)
 
+## THE FIX (applied) + all gates PASS
+
+`operational_mode._limit_guarded_dynamics_state_with_diagnostics`: dropped the tight
+per-level domain-min/max monotonic bounds (`_theta_level_monotonic_bounds`) and the
+mass-redistribution they drove. The increment limiter now uses ONLY the wide physical
+envelope `[0, 500] K` + the non-finite trap, so for any physical theta it is a STRICT
+IDENTITY (verified: 0 cells limited, 0 mass residual) — a genuine non-load-bearing
+safety net that still catches NaN/Inf and true blow-ups. Guards-on now == guards-off ==
+the validated path == CPU-WRF for all physical states.
+
+GATES (STOP+report mandate — all PASS, nothing forced):
+- (a) **idealized warm-bubble + Straka 6/6 PASS**, bit-identical to baseline (round-off
+  only; they run `disable_guards=True` so the limiter change is a no-op). proofs/f7n.
+- (b) **the two paths CONVERGE.** Post-fix case3 6 h: PERHOUR theta0 bias -0.33 -> -0.08 K
+  (was +1.05 -> +3.27); PERHOUR-CONT divergence collapsed from +3.70 K to +0.34 K mean.
+  `proofs/v010_validation/path_divergence_case3_postfix.json`.
+- (c) **full d02 24 h PRODUCTION re-score (the wrfout-writing path):**
+  **T2 RMSE 3.78 -> 1.52 K, T2 bias +3.44 -> +1.31 K, THonly +3.10 -> -0.22 K.**
+  The theta-side warm bias is ELIMINATED; the production T2 now MATCHES the validated
+  harness (1.88/2.14/1.12 @6/12/24h). all_finite, 24/24 wrfouts, stable 24 h, wall 1195 s.
+  **PSFC bias UNCHANGED at +2456 Pa (Ponly +2.0 K)** — the +2.6 kPa pressure-Exner
+  artifact is untouched, confirming it is the SEPARATE dycore ph'-equilibration issue,
+  exactly as predicted. proofs/v010_validation/d02_t2bias_diag_case3_postfix.json.
+
+So the prior diagnosis's "genuine theta-side lower-troposphere physics drift"
+(attributed to a MYNN PBL ventilation deficit) was MIS-attributed: it was the
+load-bearing theta limiter the whole time. After the fix the d02 T2 RMSE = ~ pure
+pressure-Exner artifact (Ponly ~+2.0 K); there is NO residual theta-physics warm drift.
+
+## d03 implication
+
+d03 uses the same per-hour `execute_daily_pipeline` -> `run_forecast_operational`
+(guards-on, now fixed). So d03 inherits the fix. BUT d03's interior theta is
+boundary-pinned by the forced parent leaves (small 1 km nest), so the guard had little
+to clamp there — the limiter fix helps d03 only marginally. d03's dominant +1.5 K T2
+bias is the +2.6 kPa pressure-Exner artifact (the dycore ph' free-drift), which this
+fix does NOT address. d03 therefore still needs the separate ph' / pressure-diagnosis
+fix (the d03-phfix-INLOOP track). The +2.6 kPa does NOT collapse on either domain from
+this fix — that was never its mechanism.
+
+## FINAL v0.1.0 d02 proof-validity verdict
+
+The D02_VALIDATED proof's PHYSICS is sound (it was measured on the correct guards-off
+integration that matches CPU-WRF). The shipped PRODUCT previously diverged from it
+(+3.3 K warm via the load-bearing limiter). With this fix the PRODUCT now reproduces
+the validated number (T2 RMSE 1.52 K, 24-lead mean; matching the harness), so the
+validated d02 claim STANDS and the product is now consistent with it. **v0.1.0 d02 is
+promotable on the science** — with the standing caveat that the d02 T2 RMSE is now
+limited by the +2.6 kPa pressure-Exner dycore artifact (Ponly ~+2.0 K), a separate
+pre-existing item present on BOTH the validated harness and the product (and on d03),
+NOT introduced or hidden by the path divergence. If the release wants T2 RMSE below
+~1.5 K it needs the pressure-Exner dycore fix next; the path divergence itself is
+resolved.
+
 ## Files / proofs
 - `scripts/diag/d02_operational_path_divergence.py` — the isolation experiment.
-- `proofs/v010_validation/path_divergence_case3.json` — per-hour psfc/theta0 bias by config.
+- `proofs/v010_validation/path_divergence_case3.json` — pre-fix psfc/theta0 by config.
+- `proofs/v010_validation/path_divergence_case3_postfix.json` — post-fix convergence.
+- `proofs/v010_validation/d02_t2bias_diag_case3_postfix.json` — full 24 h production
+  re-score (Gate c): T2 RMSE 1.52 K, THonly -0.22 K, PSFC +2456 Pa.
+- `proofs/v010_validation/pipeline_run_d02_diag_postfix.json` — the 24 h run object.
+- `proofs/f7n/` — idealized 6/6 PASS post-fix.
 - analytic coszen check (inline): per-hour path pins coszen at +0.39..+0.49 for all
-  24 h (sun never sets) vs the correct diurnal cycle of CONT — REAL but second-order
-  vs the guard (PERHOUR==PH_CLOCK proves it).
+  24 h (sun never sets) vs CONT's correct diurnal cycle — REAL but second-order vs the
+  guard (PERHOUR==PH_CLOCK proved the clock is not the cause). The residual ~+0.3 K /
+  +6 K-max post-fix path divergence at hour 6 is this clock + ww/rthraten per-hour
+  reset; small, not load-bearing, optionally fixable by threading the global clock/lead
+  + carrying the operational carry across hours in the pipeline (left as a follow-up).
