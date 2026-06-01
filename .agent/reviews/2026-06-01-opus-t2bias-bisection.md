@@ -133,6 +133,25 @@ not the cause (TSK bias 0.000, theta bias ~0, HFX low not high). The P1-4a
 surface-layer port is correct; it could not move this bias because the bias is
 upstream in the pressure state, not in the similarity functions.
 
+## In-flight GPU confirmation (prognostic state, not just the writer)
+
+`scripts/diag/d03_pressure_knockout.py` (3 h GPU, dumps the live prognostic
+state.p[0] and ph_perturbation profile each hour):
+
+```
+hour    gpu_psfc  corpus_psfc  psfc_bias
+   0     98693.6      98693.6       +0.0      <- IC == corpus exactly
+   1    101381.3      98664.4    +2716.9      <- offset appears within hour 1
+   2    101382.7      98679.2    +2703.5
+   3    101382.6      98699.2    +2683.4
+   ph_pert bias by level (h1): {0:0.0, 1:-31.3, 5:-252.7, 10:-842.2, 20:-1912.7, 44:+88.8}
+```
+
+Confirms the +2.7 kPa surface-pressure offset lives in the live prognostic state
+(not a writer artifact), is generated within the first forecast hour, and is
+driven by a mid-column-depressed perturbation geopotential anchored at 0 at the
+surface and ~0 at the lid -- the `force_geopotential=False` free-drift signature.
+
 ## Files mapped
 - physics/noah_mp.py, io/land_state.py — prescribed (non-prognostic) land state;
   hourly corpus refresh.
