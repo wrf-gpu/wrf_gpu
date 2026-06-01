@@ -529,16 +529,38 @@ def _limit_guarded_mass_state(candidate: State, origin: State) -> State:
 
 
 def _limit_guarded_dynamics_state_with_diagnostics(candidate: State, origin: State) -> tuple[State, dict[str, jax.Array]]:
-    """Apply the dycore theta limiter and dry-mass guard after one RK3 step."""
+    """Apply the dycore theta safety net and dry-mass guard after one RK3 step.
+
+    GUARDS-MUST-NOT-BE-LOAD-BEARING FIX (2026-06-01, operational-path-divergence
+    sprint).  Previously this passed the per-level domain-MIN/MAX monotonic bounds
+    (``_theta_level_monotonic_bounds(origin.theta)``) into the increment limiter and
+    then mass-conservatively REDISTRIBUTED the clamped-away increment over the
+    column.  On the operational d02/d03 path that made the guard LOAD-BEARING: over
+    the cooling open ocean the coldest columns hit the per-level minimum, the
+    suppressed cooling was treated as "removed mass" and pumped back as warming, so
+    the integration drifted +3.3 K warm in the lowest levels over 6 h relative to the
+    guards-off path that the v0.1.0 D02_VALIDATED proof used (and that matches
+    CPU-WRF).  Root cause + isolation experiment: PERHOUR(guards-on) warm-drifts
+    +3.3 K; PH_GUARDOFF (only difference = guards) collapses to the validated
+    -0.1 K; see ``.agent/reviews/2026-06-01-opus-operational-path-divergence.md`` and
+    ``proofs/v010_validation/path_divergence_case3.json``.
+
+    The fix drops the tight per-level monotonic bounds so the limiter uses ONLY the
+    WIDE physical envelope ``[_THETA_LIMITER_MIN_K, _THETA_LIMITER_MAX_K]`` =
+    ``[0, 500] K`` plus the non-finite trap.  For any physically reasonable theta the
+    envelope never fires (``limited_mask`` all-False), so the increment limiter is a
+    strict identity AND its mass-redistribution residual is ~0 — i.e. it becomes a
+    genuine non-load-bearing safety net that catches only NaN/Inf and true blow-ups,
+    leaving the physical trajectory bit-equivalent to the guards-off integration.
+    The idealized warm-bubble/Straka gates already run ``disable_guards=True`` so this
+    path is a no-op for them; the change only affects the operational guards-on path.
+    """
 
     mass = _theta_mass_weights(candidate.theta, candidate.mu_total)
-    lower, upper = _theta_level_monotonic_bounds(origin.theta)
     theta, diagnostics = _positive_definite_theta_increment_limiter(
         candidate.theta,
         origin.theta,
         mass,
-        lower_bound=lower,
-        upper_bound=upper,
     )
     limited = _limit_guarded_mass_state(candidate.replace(theta=theta), origin)
     return limited, diagnostics
