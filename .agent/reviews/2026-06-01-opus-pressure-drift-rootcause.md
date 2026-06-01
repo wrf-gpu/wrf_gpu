@@ -162,7 +162,31 @@ idealized base (phb-inversion returns its own neutral `alb`). Dycore protected.
    Proof: /tmp/d03_albfix2_proofs/d03_validation_albfix2_6h.json, wrfouts in
    /tmp/d03_albfix2_runs/...albfix2_6h/. Scorer scripts/diag/d03_psfc_t2_check.py.
 
-(c) d02 24 h full re-score (primary product): <PENDING — running>.
+(c) d02 re-score (primary product) — **PASS, d02 T2 also collapses.**
+ - The d02 full-pipeline diagnosis harness (`d02_t2bias_diagnosis.py run` ->
+   per-hour `run_forecast_operational`) hit a harness CUDA_ERROR_OUT_OF_MEMORY (a
+   16 GiB single XLA intermediate on the 159x66 grid, at MEM_FRACTION 0.80 AND 0.92)
+   — an infrastructure limit of THAT harness, NOT the fix. Re-ran via the OOM-safe
+   segmented `_advance_chunk` validation (`v010_d02_validate.py --segment-steps 60`),
+   which routes through the SAME `_physics_boundary_step` ->
+   `_refresh_grid_p_from_finished` -> `diagnose_pressure_al_alt` (exercises the fix).
+ - Result (case3, full-domain T2 vs corpus L3 d02): **D02_VALIDATED, case passed,
+   no OOM, wall 732 s.** T2 RMSE **6h 1.88->1.14, 12h 2.14->1.35, 24h 1.11->0.63 K**;
+   T2 bias **6h +1.39->+0.08, 12h +1.58->+0.31, 24h +0.88->-0.26 K** (warm bias
+   eliminated). The d02 pressure-Exner half of the warm bias is removed; the smaller
+   theta-side PBL residual remains only at mid-leads (12h 1.35 K). Proof
+   proofs/v010_validation/pressure_drift_fix/d02_validate_albfix_case3.json.
+
+## FINAL VERDICT
+
+THE +2.6 kPa is CRACKED. Single localized mechanism (candidate 1+3 unified): the
+base inverse density `alb` was recomputed at a constant 300 K instead of WRF's
+`t0+t_init` base profile, in `diagnose_pressure_al_alt` (driven on the operational
+path by `_refresh_grid_p_from_finished`'s const-300 base). WRF-faithful one-spot fix
+(invert the loaded `phb` for the exact discrete `alb`). All gates PASS, nothing
+forced: idealized 6/6 bit-identical; d03 psfc +2656 -> -293 Pa, T2 RMSE 1.45 -> 0.72 K
+(< 1 K); d02 T2 RMSE 1.88/2.14/1.11 -> 1.14/1.35/0.63 K, warm bias eliminated. The
+fix is the SAME single change on both domains (they share the operational path).
 
 ## Files / diag artifacts
 - `src/gpuwrf/integration/d02_replay.py` — the fix (`_wrf_base_theta_from_loaded_state`
