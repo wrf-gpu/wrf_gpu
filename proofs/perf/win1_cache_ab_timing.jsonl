@@ -1,0 +1,2 @@
+{"win": "1-persistent-compilation-cache", "tag": "cold", "cache_status": {"enabled": true, "dir": "/tmp/win1_cache_ab", "min_compile_time_secs": 0, "source": "env", "error": null}, "hours": 1.0, "segment_steps": 60, "case_build_s": 13.62, "forecast_compile_plus_run_s": 257.7}
+{"win": "1-persistent-compilation-cache", "tag": "hot", "cache_status": {"enabled": true, "dir": "/tmp/win1_cache_ab", "min_compile_time_secs": 0, "source": "env", "error": null}, "hours": 1.0, "segment_steps": 60, "case_build_s": 13.16, "forecast_compile_plus_run_s": 33.5}
