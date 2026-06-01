@@ -10,7 +10,7 @@ All array fields are (ny, nx) on land columns unless noted; fp64; device-residen
 
 from __future__ import annotations
 
-from typing import NamedTuple
+from typing import NamedTuple, Optional
 
 import jax
 
@@ -21,6 +21,14 @@ class NoahMPForcing(NamedTuple):
     Assembled by the coupler from the atmosphere lowest level, radiation
     (SOLDN/LWDN/COSZ), microphysics precip partition, and the run clock. All
     (ny, nx) on land columns except scalars ``julian``/``yearlen``.
+
+    The trailing block (``pahv``..``foln``) is an ADDITIVE, backward-compatible
+    amendment (Sprint S1 energy FIX, patch protocol): all default ``None`` so any
+    pre-S1 caller continues to construct ``NoahMPForcing`` unchanged. S1 energy and
+    its callers default them at the energy-function boundary (PAH=0 no-precip,
+    O2/CO2 from STOMATA carbon block) when not supplied. S6/PRECIP_HEAT supplies
+    the PAH* terms when precipitation is present; the coupler supplies o2air/co2air/
+    foln from the WRF carbon block (``co2air = parameters%CO2 * SFCPRS`` etc.).
     """
 
     sfctmp: jax.Array     # lowest-level air temperature [K]
@@ -41,6 +49,13 @@ class NoahMPForcing(NamedTuple):
     zlvl: jax.Array       # reference (forcing) height [m]
     julian: jax.Array     # day-of-year (scalar)
     yearlen: jax.Array    # days in year (scalar)
+    # --- ADDITIVE (S1 energy FIX); default None -> energy boundary fills them ---
+    pahv: Optional[jax.Array] = None   # precip-advected heat, vegetation net [W/m2]
+    pahg: Optional[jax.Array] = None   # precip-advected heat, under-canopy ground [W/m2]
+    pahb: Optional[jax.Array] = None   # precip-advected heat, bare ground [W/m2]
+    o2air: Optional[jax.Array] = None  # atmos O2 partial pressure [Pa] (STOMATA)
+    co2air: Optional[jax.Array] = None  # atmos CO2 partial pressure [Pa] (STOMATA)
+    foln: Optional[jax.Array] = None   # foliage nitrogen concentration [%] (STOMATA)
 
 
 class NoahMPRadInputs(NamedTuple):
@@ -73,7 +88,13 @@ class NoahMPPhenology(NamedTuple):
 
 
 class NoahMPEnergyFluxes(NamedTuple):
-    """Energy-balance outputs (Sprint S1). FSH is the HFX fix (FSH from TAH)."""
+    """Energy-balance outputs (Sprint S1). FSH is the HFX fix (FSH from TAH).
+
+    ``canhs`` (ADDITIVE, default None) is the WRF canopy heat-storage change
+    ``DTV*FVEG*HCV/DT`` (module_sf_noahmplsm.F:4062), required by the WRF energy
+    closure check ``ERRENG`` (:1662). The coupler does not map it; it is returned
+    for the closure proof and budget accounting.
+    """
 
     fsh: jax.Array        # total sensible heat [W/m2] -> HFX
     fcev: jax.Array       # canopy evaporation latent heat [W/m2]
@@ -86,6 +107,7 @@ class NoahMPEnergyFluxes(NamedTuple):
     z0wrf: jax.Array      # combined roughness [m] -> ZNT
     chv: jax.Array        # canopy heat exchange coeff
     chb: jax.Array        # bare heat exchange coeff
+    canhs: "jax.Array | None" = None  # canopy heat-storage change [W/m2] (closure)
 
 
 class NoahMPEtFluxes(NamedTuple):
