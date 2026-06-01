@@ -1,0 +1,75 @@
+{
+  "proof": "daytime-land HFX over-flux root-cause diagnosis (TOST-T2 precondition)",
+  "date": "2026-06-01",
+  "agent": "Opus 4.8 MAX surface-physics (worker/opus/final-verdict)",
+  "head_context": "post-fix consolidation 75b9b40 (theta-limiter removed + base-alb fix)",
+  "verdict": "ROOT_CAUSE_IS_ARCHITECTURAL_NOT_A_SURFACE_LAYER_BUG",
+  "summary": "The daytime-land HFX over-flux (+107..+328 W/m2, +1.5 K midday T2 warm bias) is NOT FLHC, NOT the similarity functions, NOT PBL under-mixing. The MYNN surface-layer heat-exchange coefficient CHS = ust*K/psit = 0.0430 MATCHES WRF Noah-MP CH = 0.0452 to within 5%. The over-flux is entirely the bulk land HFX formula HFX = rho*cpm*CHS*(thgb-thx) using the aggregate RADIATIVE skin temperature TSK, while WRF Noah-MP computes FSH from the CANOPY-AIR temperature TAH (5.5 K cooler than radiative TSK at midday over dry land). With CHS matched, the over-flux factor is exactly the gradient ratio (TSK-thx)/(TAH-thx) = 19.77/14.15 = 1.397.",
+  "diagnosis_steps": {
+    "1_oracle_parity": {
+      "harness": "proofs/v010_validation/sfclay_mynn_full_parity.py",
+      "result": "P1-4A_MYNN_PARITY_PASS on gated no-LSM metrics; WATER HFX/LH/Q2/T2/UST all tight (water HFX rmse 0.17, T2 bias 0.005 K). LAND HFX reported-not-gated: standalone 923 vs WRF 459 (2.0x) but LSM-contaminated (mavail=1, snapped Noah-MP TSK).",
+      "conclusion": "scheme is correct where cleanly testable (water, no LSM); land comparison confounded by LSM"
+    },
+    "2_integrated_d02_land_day": {
+      "source": "proofs/v010_validation/d02_t2bias_diag_case3_COMBINED.json + GPU/corpus wrfout 2026-05-22_12:00",
+      "HFX_W_m2": {"gpu": 776.9, "corpus": 476.9, "over_flux": 300.0, "ratio": 1.63},
+      "LH_W_m2": {"gpu": 278.7, "corpus": 15.2, "ratio": 18.3},
+      "T2_K": {"gpu_minus_corpus_land_midday": 1.343},
+      "lowest_theta_thx_K": {"gpu_minus_corpus": 1.059, "note": "thx is too WARM not too cool -> rules out under-mixed PBL / thx-side"},
+      "PBLH_m": {"gpu_minus_corpus": -22.2, "note": "PBLH near-matched; mixing depth fine"},
+      "UST_m_s": {"gpu": 0.509, "corpus": 0.524, "note": "momentum roughness matched"}
+    },
+    "3_diurnal_timeseries": {
+      "note": "HFX over-flux phase-locked to insolation; ratio ~1.6x stable across all daytime hours (architecture, not drift). Night over-flux small (+10-12 W/m2).",
+      "peak_13_14z": {"gpu_HFX": 849, "corpus_HFX": 522, "over_flux": 328, "gpu_LH": 325, "corpus_LH": 16}
+    },
+    "4_exchange_coefficient_match": {
+      "CHS_gpu_ust_K_over_psit": 0.04303,
+      "CH_corpus_noahmp": 0.04521,
+      "ratio": 0.952,
+      "conclusion": "FLHC/CHS is CORRECT within 5%. The over-flux is NOT the exchange coefficient."
+    },
+    "5_gradient_decomposition": {
+      "tsk_radiative_skin_K": 313.30,
+      "thgb_skin_theta_K": 317.44,
+      "thx_air_theta_K": 297.66,
+      "gpu_gradient_thgb_minus_thx_K": 19.77,
+      "noahmp_effective_surface_theta_TAH_K": 311.81,
+      "noahmp_gradient_TAH_minus_thx_K": 14.15,
+      "over_flux_factor": 1.397,
+      "radiative_minus_canopyair_T_K": 5.50,
+      "conclusion": "GPU bulk formula uses radiative TSK; Noah-MP FSH uses canopy-air TAH which is 5.5 K cooler over dry sparse-veg land at midday. Over-flux factor = gradient ratio = 1.40."
+    },
+    "6_land_energy_budget_corpus": {
+      "Rnet_W_m2": 590.7, "HFX": 476.9, "LH": 15.2, "GRDFLX": 122.3,
+      "bowen_ratio": 31.4,
+      "note": "Noah-MP balances Rnet across HFX(81%)/GRDFLX(21%)/LH(3%); the GPU bulk formulae have NO surface-energy-balance constraint and independently over-predict both HFX (1.6x) and LH (18x)."
+    },
+    "7_LH_overflux_separate": {
+      "cause": "mavail = raw top SMOIS (0.065) with saturation qsfc(TSK) -> effective moisture deficit 0.00288 vs corpus QFX ~6e-6 kg/m2/s. WRF Noah-MP evaporation is soil-hydraulic + canopy-resistance limited, NOT mavail*saturation. This is a SECOND architectural gap (moisture, not the T2/HFX target).",
+      "land_state_py_line": "src/gpuwrf/physics/noah_mp.py:97  mavail = where(water,1.0,top_soil)"
+    }
+  },
+  "wrf_references": {
+    "noahmp_sets_HFX_directly": "phys/module_sf_noahmpdrv.F:1223  HFX(I,J) = FSH  (NOT surface-layer FLHC*(thgb-thx))",
+    "noahmp_FSH_uses_canopy_air_temp": "module_sf_noahmplsm.F energy balance: FSH = rho*cpm*CH*(TAH - SFCTMP), TAH = canopy air temperature",
+    "namelist": "corpus L3 namelist.input: sf_surface_physics=4 (Noah-MP), sf_sfclay_physics=5 (MYNN sfc), bl_pbl_physics=5 (MYNN PBL)",
+    "gpu_architecture": "ADR-012 / ADR-013: PRESCRIBED land state (no prognostic Noah-MP); TSK snapped hourly; surface layer computes land HFX/LH from bulk formulae."
+  },
+  "minor_wrf_faithfulness_gaps_found_but_negligible": {
+    "VCONVC": {"gpu": 1.0, "mynn": 1.25, "file": "surface_constants.py:41", "impact_on_overflux": "negligible (<1% on HFX; deeply-unstable BR insensitive)"},
+    "land_wstar_pblh_enhancement": {"gpu": "plain pblh", "mynn": "MIN(1.5*pblh,4000)", "file": "surface_layer.py:503 vs module_sf_mynn.F:578", "impact": "modest (BR -0.95 -> -0.77); does not close 1.4x"},
+    "br_warm_step_cap": {"gpu": "+-250 (seed only)", "mynn": "+-4 warm step", "file": "surface_constants.py:60 / module_sf_mynn.F:594-598", "impact": "small at these BR"},
+    "note": "These three are genuine sfclayrev-vs-MYNN hybrid inconsistencies (the vconv/BR block uses sfclayrev values, the flux block uses MYNN). Worth fixing for faithfulness but they do NOT close the over-flux; the over-flux is the radiative-TSK-vs-canopy-TAH gradient."
+  },
+  "why_p1_4a_did_not_fix_it": "P1-4a (0c4a4ce) correctly ported the 3 similarity-function mismatches (thermal-z_t zolrib, prior-step ust, momentum-baseline PSIH2/10) and PASSES oracle. But the over-flux was never in the similarity functions or the exchange coefficient -- it is the bulk-HFX-with-radiative-TSK architecture, untouched by P1-4a.",
+  "recommended_fix_path_NOT_a_fudge": {
+    "principle": "Given the prescribed-LSM architecture (ADR-012/013, no prognostic Noah-MP), the WRF-faithful operational choice is to NOT recompute land sensible/latent heat from a bulk formula with the radiative skin temperature. Two defensible options, both WRF-consistent:",
+    "option_A_prescribe_noahmp_fluxes": "Snap the corpus Noah-MP HFX/LH/GRDFLX hourly the same way TSK is already snapped (the hourly wrfout_d02 carries HFX/LH/QFX/GRDFLX/CH/TAH/TV/TG), and drive the PBL bottom BC with the prescribed Noah-MP surface sensible/latent heat flux over land instead of the bulk recompute. Keeps the surface layer for momentum/water-side exchange coefficients and for the no-LSM water path. This is the smallest honest step and matches what WRF's coupled system actually fed the PBL. By construction it collapses the land-day over-flux to ~0.",
+    "tested_temperature_swaps_NOT_clean": "A one-line surface-temperature swap is NOT a clean fix: rho*cpm*CH*(theta(T)-thx) with CH from corpus gives HFX ratio 1.79 (TSK), 0.91 (TV canopy), 0.57 (TAH), 2.12 (TG ground). None reproduce corpus HFX=477 because Noah-MP FSH = rho*cpm*CH*(TAH - SFCTMP) partitions between ground(TG) and canopy(TV) with its own reference and uses the forcing air temp SFCTMP, not the reconstructed surface-layer thx. Hence prescribing the Noah-MP HFX/LH directly (Option A) is the faithful path, not a temperature substitution.",
+    "option_B_port_noahmp_energy_balance": "Port the Noah-MP canopy/ground surface-energy-balance solve (FSH from TAH, GRDFLX, soil hydraulics for LE). Large (full LSM), out of scope for the equivalence-gate closer; this is the M-roadmap native-LSM item.",
+    "do_not": "Do NOT scale FLHC or clamp HFX by an empirical 1/1.4 factor -- that is a masking fudge with no WRF basis and would break the no-LSM water path and other land regimes."
+  },
+  "gpu_discipline": "single same-step / single-hour evaluations only; no forecast run launched; GPU free throughout (~2.5 GB desktop only); no orphan CUDA processes."
+}
