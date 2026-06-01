@@ -1,7 +1,48 @@
 # Dry Dynamical Core — Status (single source of truth for the F7 rewrite)
 
-**Last updated: 2026-05-29 (Sprint U, operationalize+harden). Branch `worker/opus/f7d-pressure-mass-fix`.**
+**Last updated: 2026-06-01 (v0.1.0 release-doc refresh). Earlier body: Sprint U, 2026-05-29.**
 This file exists so future agents do NOT waste tokens re-investigating already-cleared components. Update it when the dycore status changes.
+
+## ✅ v0.1.0 RELEASE STATUS (2026-06-01) — dycore CLOSED (idealized) + validated on real cases via the operational path
+
+For v0.1.0, the dycore is validated at two levels, both traceable to
+[`proofs/PROOF_TABLE.md`](../PROOF_TABLE.md) and the binding contract
+[`publish/VERIFICATION.md`](../../publish/VERIFICATION.md):
+
+- **Idealized gates PASS (proof rows 1/2):** Skamarock warm bubble **6/6** and Straka density
+  current **6/6** vs the published references + pristine WRF v4.7.1 ground truth. The OPEN-RESIDUAL
+  notes below (F7M/F7L "Straka still detonates") are **SUPERSEDED** — the residual was the
+  vertical-momentum-advection sign error and a non-conservative constant-K diffusion, both fixed at
+  F7N (see the "DRY DYNAMICAL CORE CLOSED (F7N)" section). Straka now PASSES 6/6.
+- **Real-case validation via the OPERATIONAL path (proof rows 4/5/7):** the production dycore runs
+  the operational `small_step_prep → _rk_scan_step` stepper inside the full coupled forecast and is
+  finite/stable over complete runs: d02 3 km 3-case **D02_VALIDATED** (72 h, beats persistence on
+  winds), d03 1 km 24 h **D03_1KM_VALIDATED** (T2 RMSE 1.92 K ≤ 3.0 K, beats persistence), and
+  conservation **guards-off finite + fp64** on real d02.
+
+### Row 3 (savepoint operator parity) = FAIL — comparator-harness gap, NOT a production-dycore defect
+
+The `scripts/verify/savepoint_parity.sh` row is the one **FAIL** in the proof table, and it is
+honestly a **fixture/harness gap, not a dycore defect**:
+
+- The original `theta=None` threading bug in the comparator is genuinely **FIXED**
+  (`_seed_coupled_work_theta` now seeds the persistent coupled-work theta WRF-faithfully:
+  `theta_work = mass_muts*theta_1 - mass_mut*theta`).
+- Fixing it **exposed** a deeper gap: the savepoint oracle is an **hourly `wrfout` history state**,
+  not a true per-RK / restart-complete WRF savepoint. The validation-only `coupled_timestep_core`
+  path (`rk_stage_core → acoustic_scan_core`; **zero operational callers**) is therefore fed a bare
+  `AcousticLoopState.from_mapping` lacking the ~30 `small_step_prep`-derived leaves
+  (c2a/alt/al/phb/ph_1/cf*/c1f/c2f/rdn/ht/pm1/rw_tend_pg_buoy …); `calc_p_rho`/`advance_w` then emit
+  non-finite `p`/`ph` and the comparator step blows up across all 3 tiers at step 1.
+- The comparator asserts `FAIL_COMPARATOR_HARNESS_GAP` (`is_production_dycore_defect=False`) — **not
+  masked, not a manufactured pass.** This was **independently confirmed by two models (Opus +
+  GPT-5.5).** The production dycore is independently proven by rows 1/2/7 + the d02/d03 real-case
+  runs that exercise the operational `small_step_prep → _rk_scan_step` path.
+- **v0.2.0 follow-up:** regenerate true per-step / restart-complete WRF savepoints — or route the
+  comparator through the operational `small_step_prep → _rk_scan_step` stepper — so row 3 exercises
+  a numerically-stable composition. Tracked in `.agent/decisions/V0.2.0-PLAN.md`.
+
+Everything below is the F7-era engineering record (retained for provenance).
 
 ## ✅ DRY DYCORE OPERATIONAL-READY FOR PHASE B (Sprint U, 2026-05-29)
 Sprint U closed the 4 P0 + 3 P1 GPT pre-close findings. The dry dycore is now
@@ -108,7 +149,13 @@ The pre-reset "dycore done, bitwise WRF parity at 100 steps" was a **JAX-vs-JAX 
 | Persistent coupled work-theta across acoustic substeps (couple-once / advance-N / decouple-once) | F7K: was re-coupled+decoupled EVERY substep → theta advanced only 1/N_sound of correct (warm bubble rose 213 m not ~2000 m). Fixed: advance `theta_coupled_work`. **Skamarock warm bubble now PASSES 6/6 (thermal_rise 1925 m).** |
 | Flat-rest exactly stable (machine-0); mass conserved to 0 over 300+ steps | continuous regression gate |
 
-## OPEN RESIDUAL — F7M localized it to the COLD-POOL TOUCHDOWN with WRF ground truth (Straka still detonates)
+## (SUPERSEDED by F7N — Straka now PASSES 6/6) OPEN RESIDUAL — F7M localized it to the COLD-POOL TOUCHDOWN with WRF ground truth
+**NOTE (2026-06-01): This residual is CLOSED.** F7N traced the Straka detonation to the
+vertical-momentum-advection upwind-correction **sign error** (`_vertical_flux_div_3`, opposite sign
+to WRF) plus a non-conservative const-K diffusion; both were fixed and Straka now PASSES 6/6 (see
+the "DRY DYNAMICAL CORE CLOSED (F7N)" section above). The investigation notes below are retained for
+provenance only.
+
 **F7M built pristine WRF v4.7.1 `em_grav2d_x` (the Straka case) ground truth and
 diffed it against JAX.** Decisive result (`proofs/f7m/wrf_vs_jax_straka_front.json`,
 `proofs/m9/wrf_em_grav2d_x_front_savepoints.json`):
@@ -167,5 +214,11 @@ Pristine WRF **v4.7.1** (same version as Gen2) built at `/home/enric/src/wrf_pri
 Fields per (step,rk,substep)×41 levels: `w_2, ph_2, p, rw_tend, ph_tend, t_2save, muave, muts, mut` + `a, alpha, gamma, cqw, c2a`; scalars `dts_rk=4.0, epssm=0.1`.
 **Do NOT try to CPU-build the canonical Gen2 WRF tree — it's an NVHPC/OpenACC GPU fork that won't build under gfortran (F7I burned 6 attempts).** See [[project-wrf-ground-truth-build-2026-05-29]].
 
-## Honest gate for "dycore CLOSED"
-Skamarock warm bubble (rises ≥500 m, bounded w) + Straka density current (front ≈15 km at 900 s, min θ′≈−9..−10 K) both PASS, ideally confirmed by the WRF center-column savepoint diff. Then: GPT-5.5 pre-close critique → merge `f7d` chain → Phase B.
+## Honest gate for "dycore CLOSED" — MET (idealized) for v0.1.0
+Skamarock warm bubble (rises ≥500 m, bounded w) + Straka density current (front ≈15 km at 900 s,
+min θ′≈−9..−10 K) **both PASS 6/6** (F7N). For v0.1.0 the production dycore is additionally
+validated on real Canary cases via the operational `small_step_prep → _rk_scan_step` path
+(D02_VALIDATED / D03_1KM_VALIDATED / guards-off fp64 conservation — proof rows 4/5/7). The
+remaining per-operator savepoint comparator (row 3) is a fixture/harness gap, not a dycore defect
+(see the v0.1.0 banner at the top), and full-3D-deformation / terrain / map-factor / boundary
+dynamics closure are Phase-B / v0.2.0 items, not v0.1.0 dycore blockers.
