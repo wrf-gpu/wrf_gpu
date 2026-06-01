@@ -116,16 +116,23 @@ def noahmp_surface_step(
     *,
     radiation: Any = None,
     clock: Any = None,
+    energy_params: Any = None,
+    rad_params: Any = None,
 ) -> tuple[Any, NoahMPLandState]:
     """Run the Noah-MP/sfclay blend and write the blended flux handles into State.
 
     Returns ``(state', land_state')``. ``state'`` carries the blended kinematic
     surface-flux handles MYNN consumes, plus t_skin/roughness_m/qsfc. ``land_state'``
     is the prognostically advanced Noah-MP land carry for the next step.
+
+    ``energy_params``/``rad_params`` are the PRE-BUILT (concrete-``nroot``) parameter
+    bundles; passing them avoids re-running the frozen ``build_energy_params``
+    (which concretizes ``nroot``) inside the jitted scan.
     """
     view = _build_column_view(state)
     view_wb, land_out, blended = noahmp_surface_adapter(
-        view, land_state, static, radiation=radiation, clock=clock, dt=float(dt)
+        view, land_state, static, radiation=radiation, clock=clock, dt=float(dt),
+        energy_params=energy_params, rad_params=rad_params,
     )
     # ``view_wb`` carries the blended 2-D t_skin/roughness_m/qsfc; the blended
     # kinematic flux handles come from ``blended``. Map both back onto the State.
@@ -160,6 +167,8 @@ def overlay_noahmp_land_diagnostics(
     *,
     radiation: Any = None,
     clock: Any = None,
+    energy_params: Any = None,
+    rad_params: Any = None,
 ):
     """Overlay prognostic Noah-MP land HFX/LH/TSK onto the bulk diagnostics.
 
@@ -175,7 +184,10 @@ def overlay_noahmp_land_diagnostics(
     """
     view = _build_column_view(state)
     forcing: NoahMPForcing = assemble_noahmp_forcing(view, static, radiation, clock, float(dt))
-    _land_out, nm = noah_mp_step(land_state, forcing, static, float(dt))
+    _land_out, nm = noah_mp_step(
+        land_state, forcing, static, float(dt),
+        energy_params=energy_params, rad_params=rad_params,
+    )
 
     xland = _surface_2d(getattr(state, "xland", jnp.ones_like(jnp.asarray(bulk_hfx, dtype=jnp.float64))))
     is_land = (xland - 1.5) < 0.0

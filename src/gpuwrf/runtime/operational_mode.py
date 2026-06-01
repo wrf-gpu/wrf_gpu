@@ -153,6 +153,15 @@ class OperationalNamelist:
     # not pollute the static jit cache key.
     use_noahmp: bool = False
     noahmp_static: object = None
+    # Pre-built per-run Noah-MP energy/radiation parameter bundles (pytree CHILDREN
+    # of array fields). They are gathered ONCE outside jit so the driver's
+    # ``build_energy_params`` (which concretizes ``nroot`` via int(round(...)) and
+    # is FROZEN) is never re-run INSIDE the scan with traced static. ``noahmp_nroot``
+    # is the concrete static root-depth slice bound (static aux) reattached to the
+    # energy params inside the hook (the energy kernel uses ``range(nroot)``).
+    noahmp_energy_params: object = None
+    noahmp_rad_params: object = None
+    noahmp_nroot: int = 0
     # phenology clock scalars (static aux): Julian day + year length for the
     # seasonal greenness term; default to WRF's day-1 / 365 when unset.
     noahmp_julian: float = 1.0
@@ -232,9 +241,11 @@ class OperationalNamelist:
         )
 
     def tree_flatten(self):
-        # noahmp_static rides as a pytree CHILD (its device arrays must NOT enter
-        # the static aux jit cache key); use_noahmp + clock scalars are static aux.
-        children = (self.tendencies, self.metrics, self.noahmp_static)
+        # noahmp_static + pre-built params ride as pytree CHILDREN (device arrays
+        # must NOT enter the static aux jit cache key); use_noahmp + clock scalars +
+        # the concrete nroot slice bound are static aux.
+        children = (self.tendencies, self.metrics, self.noahmp_static,
+                    self.noahmp_energy_params, self.noahmp_rad_params)
         aux = (
             self.grid,
             float(self.dt_s),
@@ -264,6 +275,7 @@ class OperationalNamelist:
             bool(self.use_deformation_momentum_diffusion),
             self.time_utc,
             bool(self.use_noahmp),
+            int(self.noahmp_nroot),
             float(self.noahmp_julian),
             float(self.noahmp_yearlen),
         )
@@ -271,7 +283,8 @@ class OperationalNamelist:
 
     @classmethod
     def tree_unflatten(cls, aux, children):
-        tendencies, metrics, noahmp_static = children
+        (tendencies, metrics, noahmp_static,
+         noahmp_energy_params, noahmp_rad_params) = children
         (
             grid,
             dt_s,
@@ -301,6 +314,7 @@ class OperationalNamelist:
             use_deformation_momentum_diffusion,
             time_utc,
             use_noahmp,
+            noahmp_nroot,
             noahmp_julian,
             noahmp_yearlen,
         ) = aux
@@ -336,6 +350,9 @@ class OperationalNamelist:
             time_utc=time_utc,
             use_noahmp=use_noahmp,
             noahmp_static=noahmp_static,
+            noahmp_energy_params=noahmp_energy_params,
+            noahmp_rad_params=noahmp_rad_params,
+            noahmp_nroot=noahmp_nroot,
             noahmp_julian=noahmp_julian,
             noahmp_yearlen=noahmp_yearlen,
         )
@@ -1666,6 +1683,19 @@ def noahmp_initial_rad(state: State) -> tuple:
     return (zero, zero, zero)
 
 
+def _noahmp_params(namelist: OperationalNamelist):
+    """Reattach the CONCRETE static ``nroot`` slice bound to the pre-built energy
+    params (the params ride as a pytree child whose ``nroot`` leaf is traced inside
+    jit; the energy kernel needs ``range(nroot)`` concrete). Returns ``(energy, rad)``
+    or ``(None, None)`` when the params were not pre-built (the driver then builds
+    them eagerly -- only valid outside jit)."""
+    ep = namelist.noahmp_energy_params
+    rp = namelist.noahmp_rad_params
+    if ep is None:
+        return None, None
+    return ep._replace(nroot=int(namelist.noahmp_nroot)), rp
+
+
 class _NoahMPRadiation(NamedTuple):
     """Held surface-radiation forcing into Noah-MP (the coupler reads soldn/lwdn/cosz)."""
 
@@ -1749,9 +1779,11 @@ def _physics_boundary_step_with_limiter_diagnostics(
                 yearlen=float(namelist.noahmp_yearlen),
             )
             radiation = _NoahMPRadiation(*next_carry_rad)
+            ep, rp = _noahmp_params(namelist)
             next_state, next_land = noahmp_surface_step(
                 next_state, carry.noahmp_land, namelist.noahmp_static,
                 float(namelist.dt_s), radiation=radiation, clock=clock,
+                energy_params=ep, rad_params=rp,
             )
             carry = carry.replace(noahmp_land=next_land, noahmp_rad=next_carry_rad)
         else:
@@ -1950,9 +1982,11 @@ def compute_m9_diagnostics(
             _NoahMPRadiation(*noahmp_rad) if noahmp_rad is not None
             else _NoahMPRadiation(rad.swdown, rad.glw, rad.coszen)
         )
+        ep, rp = _noahmp_params(namelist)
         hfx, lh, tsk = overlay_noahmp_land_diagnostics(
             state, noahmp_land, namelist.noahmp_static, surf.hfx, surf.lh, state.t_skin,
             float(namelist.dt_s), radiation=radiation, clock=clock,
+            energy_params=ep, rad_params=rp,
         )
     return M9Diagnostics(
         swdown=rad.swdown,
