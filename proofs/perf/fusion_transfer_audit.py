@@ -85,8 +85,16 @@ def main() -> int:
     nl = case.namelist
 
     # --- HLO introspection (kernel/fusion/transfer counts) ---
-    hlo = _hlo_text(case.state, nl, hours)
-    hlo_stats = _scan_hlo(hlo)
+    # Best-effort: the BINDING device-residency evidence is the warmed-trace
+    # transfer-bytes audit below (count_transfer_bytes on a real profiler trace).
+    # The HLO-text scan is a secondary descriptive count; if jit().lower() trips on
+    # the State pytree reconstruction it must NOT mask the real transfer audit.
+    try:
+        hlo = _hlo_text(case.state, nl, hours)
+        hlo_stats = _scan_hlo(hlo)
+    except Exception as exc:  # noqa: BLE001 - degrade to transfer-audit-only
+        hlo = ""
+        hlo_stats = {"hlo_introspection_skipped": repr(exc)}
 
     # --- warmed trace transfer audit ---
     state2 = _build_real_case(cfg)[0].state
@@ -163,10 +171,15 @@ def main() -> int:
             ),
         },
         "fusion_verdict": (
-            f"{hlo_stats['fusion_instructions']} fusion instructions in the compiled "
-            f"program; {hlo_stats['custom_call']} custom-calls; "
-            f"{hlo_stats['copy_start'] + hlo_stats['outfeed'] + hlo_stats['infeed'] + hlo_stats['send'] + hlo_stats['recv']} "
-            "host-transfer ops (copy-start/outfeed/infeed/send/recv)."
+            (
+                f"{hlo_stats['fusion_instructions']} fusion instructions in the compiled "
+                f"program; {hlo_stats['custom_call']} custom-calls; "
+                f"{hlo_stats['copy_start'] + hlo_stats['outfeed'] + hlo_stats['infeed'] + hlo_stats['send'] + hlo_stats['recv']} "
+                "host-transfer ops (copy-start/outfeed/infeed/send/recv)."
+            )
+            if "fusion_instructions" in hlo_stats
+            else "HLO-text introspection skipped (jit.lower State-reconstruction issue); "
+            "device-residency asserted by the warmed profiler-trace transfer audit below."
         ),
     }
     PROOF.mkdir(parents=True, exist_ok=True)

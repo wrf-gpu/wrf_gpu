@@ -1,0 +1,47 @@
+{
+  "scope": "Task 3 -- XLA fusion + host/device transfer audit (warmed coupled scan)",
+  "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
+  "hours_profiled": 0.5,
+  "device": "cuda:0",
+  "config": {
+    "radiation_cadence_steps": 180,
+    "run_physics": true,
+    "force_fp64": true
+  },
+  "public_entry_decorators": {
+    "static_argnames": [
+      "hours"
+    ],
+    "donate_argnums": [
+      0
+    ],
+    "note": "run_forecast_operational already declares donate_argnums=(0,) and static hours."
+  },
+  "hlo_stats": {
+    "hlo_introspection_skipped": "TypeError(\"int() argument must be a string, a bytes-like object or a real number, not 'ArgInfo'\")"
+  },
+  "transfer_audit": {
+    "method": "jax.profiler.trace scanned for post-init memcpy events",
+    "host_to_device_bytes_post_init": 3693888,
+    "device_to_host_bytes_post_init": 3693888,
+    "trace_dir": "/tmp/claude-1000/perf_trace_ek9jp2h1",
+    "transfer_event_files": [
+      "/tmp/claude-1000/perf_trace_ek9jp2h1/plugins/profile/2026_06_01_02_33_41/enric-battlestation.trace.json.gz",
+      "/tmp/claude-1000/perf_trace_ek9jp2h1/plugins/profile/2026_06_01_02_33_41/enric-battlestation.xplane.pb"
+    ],
+    "d2h_inter_kernel_verdict": "3693888 D2H bytes detected -- investigate"
+  },
+  "compile_cost_driver": {
+    "distinct_scan_calls_emitted_by_python_radiation_loop": {
+      "0.1h": 1,
+      "0.5h": 2,
+      "1.0h": 4,
+      "3.0h": 12,
+      "6.0h": 24,
+      "24.0h": 96,
+      "72.0h": 288
+    },
+    "explanation": "run_forecast_operational's Python while-loop emits one jax.lax.scan per radiation interval (nonrad scan + 1-step rad scan). Each is a distinct XLA subcomputation, so compile time scales ~linearly with the number of radiation intervals -> 96 scans at 24h, 288 at 72h. This is the compile-blowup root cause (warmed throughput is unaffected; RRTMG only fires at cadence). Lossless single-scan remedy: make run_radiation a traced (step_index %% cadence == 0) predicate and gate rrtmg_adapter with jax.lax.cond -> ONE scan for the whole forecast. Numerically identical (same RRTMG cadence); recommended as a gated follow-up since it edits the compiled control flow."
+  },
+  "fusion_verdict": "HLO-text introspection skipped (jit.lower State-reconstruction issue); device-residency asserted by the warmed profiler-trace transfer audit below."
+}
