@@ -30,7 +30,11 @@ from gpuwrf.dynamics.core.advance_w import (
     dry_cqw,
     pg_buoy_w_dry,
 )
-from gpuwrf.coupling.boundary_apply import DEFAULT_BOUNDARY_CONFIG, apply_normal_bdy_work
+from gpuwrf.coupling.boundary_apply import (
+    DEFAULT_BOUNDARY_CONFIG,
+    apply_normal_bdy_work,
+    spec_bdyupdate_ph_inloop,
+)
 from gpuwrf.dynamics.core.calc_p_rho import calc_p_rho_step
 from gpuwrf.dynamics.mu_t_advance import AdvanceMuTInputs, advance_mu_t_wrf
 from gpuwrf.dynamics.tridiag_solve import thomas_solve_scan
@@ -182,6 +186,17 @@ class AcousticCoreState:
     # advance untouched so the idealized dycore gates are unaffected.
     u_work_bdy: jax.Array | None = None
     v_work_bdy: jax.Array | None = None
+    # P0-6 (2026-06-01): NESTED-child ph' boundary forcing for the d03 T2 Exner
+    # bias.  The relaxation-zone half is folded into ``ph_tend``/``rw_tend_pg_buoy``
+    # at staging time (so it flows through advance_w coupled with w, WRF-faithful);
+    # these two fields stage the in-loop SPEC-ZONE (outermost row) ph update applied
+    # AFTER advance_w_wrf every substep (WRF spec_bdyupdate_ph, solve_em.F:1587).
+    # ``ph_bdy_target`` is the time-interpolated PARENT perturbation-geopotential
+    # leaf (frozen per stage); ``ph_save_for_spec`` is the stage-entry uncoupled ph'
+    # (prep.ph_save).  Both None for idealized / d02 self-replay / bare-core callers
+    # -> the spec update is skipped, so those paths are byte-for-byte unchanged.
+    ph_bdy_target: jax.Array | None = None
+    ph_save_for_spec: jax.Array | None = None
 
     @classmethod
     def from_mapping(cls, values: dict[str, object]) -> "AcousticCoreState":
@@ -674,6 +689,29 @@ def acoustic_substep_core(
         w_alpha=float(cfg.w_alpha),
         w_crit_cfl=float(cfg.w_crit_cfl),
     )
+
+    # --- 3b. NESTED ph' spec-zone boundary update (WRF spec_bdyupdate_ph) ---
+    # WRF applies spec_bdyupdate_ph to the COUPLED ph_2 in the outermost spec_zone
+    # row every acoustic substep AFTER advance_w and BEFORE calc_p_rho
+    # (solve_em.F:1587-1597).  Our ph work array (``ph_next``) is the uncoupled
+    # perturbation-delta ``ph'_ref - ph'``; the spec-zone delta is pinned so the
+    # reconstructed spec-zone ph' equals the parent boundary leaf.  The relaxation
+    # zone is owned by the ``ph_tend`` path inside advance_w above (it has already
+    # been folded into the carried tendency once per RK stage).  Skipped (None
+    # targets) for idealized / d02 self-replay / bare-core callers, leaving those
+    # paths byte-for-byte unchanged.
+    if uv_state.ph_bdy_target is not None and uv_state.ph_save_for_spec is not None:
+        ph_next = spec_bdyupdate_ph_inloop(
+            ph_next,
+            uv_state.ph_bdy_target,
+            uv_state.ph_save_for_spec,
+            mu_tend=None,
+            muts=muts_new,
+            c1f=c1f_field,
+            c2f=c2f_field,
+            dts=float(cfg.dt),
+            config=DEFAULT_BOUNDARY_CONFIG,
+        )
 
     # --- 4. sumflux accumulators (Sprint B consumer); WRF solve_em.F:4048-4093 ---
     ru_m = uv_state.ru_m if uv_state.ru_m is not None else jnp.zeros_like(uv_state.u)
