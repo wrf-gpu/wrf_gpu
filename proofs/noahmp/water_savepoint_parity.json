@@ -1,0 +1,128 @@
+{
+  "proof": "S4 Schaake water REAL-WRF savepoint: mass conservation (binding) + parity (reported)",
+  "kind": "external oracle pristine-WRF WATER (savepoints_all.json); binding gate = water-mass conservation residual < 1e-6 mm; parity reported with the honest standalone limitation (dump lacks per-layer BTRANI + soil-substep flag). Full daytime soil-evap parity is in the COUPLED integration_step_gate. NOT a self-compare.",
+  "oracle": "proofs/noahmp/savepoints_all.json",
+  "ncolumns": 11,
+  "conservation_npass": 11,
+  "conservation_nfail": 0,
+  "parity_constrained_pass": 8,
+  "finite": true,
+  "limitation": "dump exposes only scalar ET sinks; per-layer transpiration BTRANI and the calculate_soil sub-timestep flag are not in the dump, so daytime high-soil-evap top-layer drawdown is validated only in the coupled path",
+  "tolerances": {
+    "smc": {
+      "atol": 5e-06,
+      "rtol": 5e-06
+    },
+    "sh2o": {
+      "atol": 5e-06,
+      "rtol": 5e-06
+    },
+    "smcwtd": {
+      "atol": 5e-06,
+      "rtol": 5e-06
+    }
+  },
+  "conservation_atol_mm": 1e-06,
+  "columns": [
+    {
+      "name": "daytime_veg5",
+      "parity_constrained": true,
+      "conservation_pass": true,
+      "smc_max_abs_err": 1.9955725074627395e-06,
+      "sh2o_max_abs_err": 1.9955725074627395e-06,
+      "smcwtd_abs_err": 3.2303619501572456e-10,
+      "conservation_resid_mm": 4.518683604376461e-16
+    },
+    {
+      "name": "daytime_veg9",
+      "parity_constrained": false,
+      "conservation_pass": true,
+      "smc_max_abs_err": 2.0948697918979353e-05,
+      "sh2o_max_abs_err": 2.0948697918979353e-05,
+      "smcwtd_abs_err": 4.062500058577001e-10,
+      "conservation_resid_mm": 1.0582680565196512e-14
+    },
+    {
+      "name": "daytime_veg10",
+      "parity_constrained": false,
+      "conservation_pass": true,
+      "smc_max_abs_err": 2.0661620956860527e-05,
+      "sh2o_max_abs_err": 2.0661620956860527e-05,
+      "smcwtd_abs_err": 4.062500058577001e-10,
+      "conservation_resid_mm": 1.498670978983263e-14
+    },
+    {
+      "name": "daytime_veg13",
+      "parity_constrained": true,
+      "conservation_pass": true,
+      "smc_max_abs_err": 8.20368624074308e-07,
+      "sh2o_max_abs_err": 8.20368624074308e-07,
+      "smcwtd_abs_err": 1.1993406268118179e-11,
+      "conservation_resid_mm": 2.3114464463094717e-14
+    },
+    {
+      "name": "daytime_veg16",
+      "parity_constrained": false,
+      "conservation_pass": true,
+      "smc_max_abs_err": 1.355299082717032e-05,
+      "sh2o_max_abs_err": 1.355299082717032e-05,
+      "smcwtd_abs_err": 2.3781585034576835e-10,
+      "conservation_resid_mm": 6.297913579533798e-15
+    },
+    {
+      "name": "nighttime_veg5",
+      "parity_constrained": true,
+      "conservation_pass": true,
+      "smc_max_abs_err": 1.1973466376574704e-06,
+      "sh2o_max_abs_err": 1.1973466376574704e-06,
+      "smcwtd_abs_err": 3.2303619501572456e-10,
+      "conservation_resid_mm": 2.8107873559050922e-15
+    },
+    {
+      "name": "nighttime_veg9",
+      "parity_constrained": true,
+      "conservation_pass": true,
+      "smc_max_abs_err": 5.534536903495368e-07,
+      "sh2o_max_abs_err": 5.534536903495368e-07,
+      "smcwtd_abs_err": 4.062500058577001e-10,
+      "conservation_resid_mm": 2.2159811691787462e-14
+    },
+    {
+      "name": "nighttime_veg10",
+      "parity_constrained": true,
+      "conservation_pass": true,
+      "smc_max_abs_err": 3.1915109155455923e-07,
+      "sh2o_max_abs_err": 3.1915109155455923e-07,
+      "smcwtd_abs_err": 4.062500058577001e-10,
+      "conservation_resid_mm": 7.438141899282491e-15
+    },
+    {
+      "name": "nighttime_veg13",
+      "parity_constrained": true,
+      "conservation_pass": true,
+      "smc_max_abs_err": 8.259641317842625e-07,
+      "sh2o_max_abs_err": 8.259641317842625e-07,
+      "smcwtd_abs_err": 1.1993406268118179e-11,
+      "conservation_resid_mm": 1.893729464335362e-14
+    },
+    {
+      "name": "nighttime_veg16",
+      "parity_constrained": true,
+      "conservation_pass": true,
+      "smc_max_abs_err": 9.762807154367614e-08,
+      "sh2o_max_abs_err": 9.762807154367614e-08,
+      "smcwtd_abs_err": 2.3781585034576835e-10,
+      "conservation_resid_mm": 9.505278373211565e-15
+    },
+    {
+      "name": "teide_snow",
+      "parity_constrained": true,
+      "conservation_pass": true,
+      "smc_max_abs_err": 3.0832423694726607e-07,
+      "sh2o_max_abs_err": 3.0832423694726607e-07,
+      "smcwtd_abs_err": 4.820556731566228e-10,
+      "conservation_resid_mm": 1.753689591869103e-14
+    }
+  ],
+  "verdict": "S4_WATER_CONSERVATION_PASS"
+}

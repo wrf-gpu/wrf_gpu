@@ -1,0 +1,299 @@
+{
+  "kind": "noahmp_snow_savepoint_parity",
+  "oracle": "verbatim module_sf_noahmplsm.F snow routines (gfortran fp64)",
+  "fixtures": "proofs/noahmp/fixtures/snow_oracle_savepoints.txt",
+  "n_scenarios": 14,
+  "all_pass": true,
+  "worst_abs_diff": {
+    "isnow": 0.0,
+    "snowh": 1.1102230246251565e-16,
+    "sneqv": 2.842170943040401e-14,
+    "tauss": 3.165870343657673e-17,
+    "albold": 0.0,
+    "sh2o0": 0.0,
+    "snice": 2.842170943040401e-14,
+    "snliq": 1.7763568394002505e-15,
+    "tsno": 0.0,
+    "zsnso": 4.440892098500626e-16
+  },
+  "tolerances": {
+    "isnow": 0,
+    "snowh": 1e-09,
+    "sneqv": 1e-07,
+    "tauss": 1e-06,
+    "albold": 1e-09,
+    "sh2o0": 1e-09,
+    "snice": 1e-06,
+    "snliq": 1e-06,
+    "tsno": 1e-06,
+    "zsnso": 1e-07
+  },
+  "scenarios": [
+    {
+      "scenario": 1,
+      "pass": true,
+      "wrf_isnow": 0,
+      "got_isnow": 0,
+      "diffs": {
+        "isnow": 0.0,
+        "snowh": 0.0,
+        "sneqv": 0.0,
+        "tauss": 0.0,
+        "albold": 0.0,
+        "sh2o0": 0.0,
+        "snice": 0.0,
+        "snliq": 0.0,
+        "tsno": 0.0,
+        "zsnso": 0.0
+      },
+      "swe_conservation_residual": 0.0
+    },
+    {
+      "scenario": 2,
+      "pass": true,
+      "wrf_isnow": -2,
+      "got_isnow": -2,
+      "diffs": {
+        "isnow": 0.0,
+        "snowh": 0.0,
+        "sneqv": 0.0,
+        "tauss": 0.0,
+        "albold": 0.0,
+        "sh2o0": 0.0,
+        "snice": 0.0,
+        "snliq": 0.0,
+        "tsno": 0.0,
+        "zsnso": 0.0
+      },
+      "swe_conservation_residual": 0.0
+    },
+    {
+      "scenario": 3,
+      "pass": true,
+      "wrf_isnow": -3,
+      "got_isnow": -3,
+      "diffs": {
+        "isnow": 0.0,
+        "snowh": 0.0,
+        "sneqv": 0.0,
+        "tauss": 0.0,
+        "albold": 0.0,
+        "sh2o0": 0.0,
+        "snice": 3.552713678800501e-15,
+        "snliq": 0.0,
+        "tsno": 0.0,
+        "zsnso": 0.0
+      },
+      "swe_conservation_residual": 0.0
+    },
+    {
+      "scenario": 4,
+      "pass": true,
+      "wrf_isnow": -3,
+      "got_isnow": -3,
+      "diffs": {
+        "isnow": 0.0,
+        "snowh": 0.0,
+        "sneqv": 7.105427357601002e-15,
+        "tauss": 0.0,
+        "albold": 0.0,
+        "sh2o0": 0.0,
+        "snice": 3.552713678800501e-15,
+        "snliq": 0.0,
+        "tsno": 0.0,
+        "zsnso": 0.0
+      },
+      "swe_conservation_residual": 0.0
+    },
+    {
+      "scenario": 5,
+      "pass": true,
+      "wrf_isnow": -3,
+      "got_isnow": -3,
+      "diffs": {
+        "isnow": 0.0,
+        "snowh": 0.0,
+        "sneqv": 1.4210854715202004e-14,
+        "tauss": 3.165870343657673e-17,
+        "albold": 0.0,
+        "sh2o0": 0.0,
+        "snice": 1.4210854715202004e-14,
+        "snliq": 0.0,
+        "tsno": 0.0,
+        "zsnso": 0.0
+      },
+      "swe_conservation_residual": 0.0
+    },
+    {
+      "scenario": 6,
+      "pass": true,
+      "wrf_isnow": -3,
+      "got_isnow": -3,
+      "diffs": {
+        "isnow": 0.0,
+        "snowh": 5.551115123125783e-17,
+        "sneqv": 0.0,
+        "tauss": 0.0,
+        "albold": 0.0,
+        "sh2o0": 0.0,
+        "snice": 0.0,
+        "snliq": 1.7763568394002505e-15,
+        "tsno": 0.0,
+        "zsnso": 2.220446049250313e-16
+      },
+      "swe_conservation_residual": 0.0
+    },
+    {
+      "scenario": 7,
+      "pass": true,
+      "wrf_isnow": -3,
+      "got_isnow": -3,
+      "diffs": {
+        "isnow": 0.0,
+        "snowh": 1.1102230246251565e-16,
+        "sneqv": 2.842170943040401e-14,
+        "tauss": 0.0,
+        "albold": 0.0,
+        "sh2o0": 0.0,
+        "snice": 2.842170943040401e-14,
+        "snliq": 0.0,
+        "tsno": 0.0,
+        "zsnso": 4.440892098500626e-16
+      },
+      "swe_conservation_residual": 0.0
+    },
+    {
+      "scenario": 8,
+      "pass": true,
+      "wrf_isnow": -2,
+      "got_isnow": -2,
+      "diffs": {
+        "isnow": 0.0,
+        "snowh": 0.0,
+        "sneqv": 0.0,
+        "tauss": 0.0,
+        "albold": 0.0,
+        "sh2o0": 0.0,
+        "snice": 0.0,
+        "snliq": 0.0,
+        "tsno": 0.0,
+        "zsnso": 0.0
+      },
+      "swe_conservation_residual": 0.0
+    },
+    {
+      "scenario": 9,
+      "pass": true,
+      "wrf_isnow": 0,
+      "got_isnow": 0,
+      "diffs": {
+        "isnow": 0.0,
+        "snowh": 0.0,
+        "sneqv": 0.0,
+        "tauss": 0.0,
+        "albold": 0.0,
+        "sh2o0": 0.0,
+        "snice": 0.0,
+        "snliq": 0.0,
+        "tsno": 0.0,
+        "zsnso": 0.0
+      },
+      "swe_conservation_residual": 0.0
+    },
+    {
+      "scenario": 10,
+      "pass": true,
+      "wrf_isnow": 0,
+      "got_isnow": 0,
+      "diffs": {
+        "isnow": 0.0,
+        "snowh": 0.0,
+        "sneqv": 0.0,
+        "tauss": 0.0,
+        "albold": 0.0,
+        "sh2o0": 0.0,
+        "snice": 0.0,
+        "snliq": 0.0,
+        "tsno": 0.0,
+        "zsnso": 0.0
+      },
+      "swe_conservation_residual": 0.0
+    },
+    {
+      "scenario": 11,
+      "pass": true,
+      "wrf_isnow": 0,
+      "got_isnow": 0,
+      "diffs": {
+        "isnow": 0.0,
+        "snowh": 0.0,
+        "sneqv": 0.0,
+        "tauss": 0.0,
+        "albold": 0.0,
+        "sh2o0": 0.0,
+        "snice": 0.0,
+        "snliq": 0.0,
+        "tsno": 0.0,
+        "zsnso": 0.0
+      },
+      "swe_conservation_residual": 0.0
+    },
+    {
+      "scenario": 12,
+      "pass": true,
+      "wrf_isnow": -3,
+      "got_isnow": -3,
+      "diffs": {
+        "isnow": 0.0,
+        "snowh": 0.0,
+        "sneqv": 3.552713678800501e-15,
+        "tauss": 0.0,
+        "albold": 0.0,
+        "sh2o0": 0.0,
+        "snice": 1.7763568394002505e-15,
+        "snliq": 0.0,
+        "tsno": 0.0,
+        "zsnso": 0.0
+      },
+      "swe_conservation_residual": 0.0
+    },
+    {
+      "scenario": 13,
+      "pass": true,
+      "wrf_isnow": -2,
+      "got_isnow": -2,
+      "diffs": {
+        "isnow": 0.0,
+        "snowh": 0.0,
+        "sneqv": 0.0,
+        "tauss": 0.0,
+        "albold": 0.0,
+        "sh2o0": 0.0,
+        "snice": 0.0,
+        "snliq": 0.0,
+        "tsno": 0.0,
+        "zsnso": 0.0
+      },
+      "swe_conservation_residual": 0.0
+    },
+    {
+      "scenario": 14,
+      "pass": true,
+      "wrf_isnow": -1,
+      "got_isnow": -1,
+      "diffs": {
+        "isnow": 0.0,
+        "snowh": 0.0,
+        "sneqv": 0.0,
+        "tauss": 4.336808689942018e-19,
+        "albold": 0.0,
+        "sh2o0": 0.0,
+        "snice": 0.0,
+        "snliq": 0.0,
+        "tsno": 0.0,
+        "zsnso": 0.0
+      },
+      "swe_conservation_residual": 0.0
+    }
+  ]
+}

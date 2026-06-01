@@ -1,0 +1,243 @@
+{
+  "proof": "S5 phenology REAL-WRF savepoint parity (LAI/SAI/FVEG; dveg=4 FVEG=SHDMAX)",
+  "kind": "external oracle: pristine-WRF NOAHMP_SFLX phen_out vs JAX port; NOT a self-compare",
+  "oracle": "proofs/noahmp/savepoints_all.json",
+  "ncolumns": 11,
+  "npass": 11,
+  "nfail": 0,
+  "fveg_arbiter": "module_sf_noahmplsm.F:864 dveg=4 FVEG=SHDMAX (verified: phen_out.fveg==shdmax)",
+  "columns": [
+    {
+      "name": "daytime_veg5",
+      "pass": true,
+      "fields": {
+        "lai": {
+          "wrf": 3.63479471,
+          "jax": 3.6347945205479455,
+          "pass": true
+        },
+        "sai": {
+          "wrf": 0.400000036,
+          "jax": 0.4,
+          "pass": true
+        },
+        "fveg": {
+          "wrf": 0.346469223,
+          "jax": 0.3464692306518555,
+          "pass": true
+        }
+      }
+    },
+    {
+      "name": "daytime_veg9",
+      "pass": true,
+      "fields": {
+        "lai": {
+          "wrf": 2.10328794,
+          "jax": 2.103287671232877,
+          "pass": true
+        },
+        "sai": {
+          "wrf": 0.316849351,
+          "jax": 0.3168493150684932,
+          "pass": true
+        },
+        "fveg": {
+          "wrf": 0.259317577,
+          "jax": 0.259317569732666,
+          "pass": true
+        }
+      }
+    },
+    {
+      "name": "daytime_veg10",
+      "pass": true,
+      "fields": {
+        "lai": {
+          "wrf": 1.50328791,
+          "jax": 1.5032876712328773,
+          "pass": true
+        },
+        "sai": {
+          "wrf": 0.316849351,
+          "jax": 0.3168493150684932,
+          "pass": true
+        },
+        "fveg": {
+          "wrf": 0.292573452,
+          "jax": 0.2925734519958496,
+          "pass": true
+        }
+      }
+    },
+    {
+      "name": "daytime_veg13",
+      "pass": true,
+      "fields": {
+        "lai": {
+          "wrf": 0.0,
+          "jax": 0.0,
+          "pass": true
+        },
+        "sai": {
+          "wrf": 0.0,
+          "jax": 0.0,
+          "pass": true
+        },
+        "fveg": {
+          "wrf": 0.0,
+          "jax": 0.0,
+          "pass": true
+        }
+      }
+    },
+    {
+      "name": "daytime_veg16",
+      "pass": true,
+      "fields": {
+        "lai": {
+          "wrf": 0.0,
+          "jax": 0.0,
+          "pass": true
+        },
+        "sai": {
+          "wrf": 0.0,
+          "jax": 0.0,
+          "pass": true
+        },
+        "fveg": {
+          "wrf": 0.0,
+          "jax": 0.0,
+          "pass": true
+        }
+      }
+    },
+    {
+      "name": "nighttime_veg5",
+      "pass": true,
+      "fields": {
+        "lai": {
+          "wrf": 3.63479471,
+          "jax": 3.6347945205479455,
+          "pass": true
+        },
+        "sai": {
+          "wrf": 0.400000036,
+          "jax": 0.4,
+          "pass": true
+        },
+        "fveg": {
+          "wrf": 0.346469223,
+          "jax": 0.3464692306518555,
+          "pass": true
+        }
+      }
+    },
+    {
+      "name": "nighttime_veg9",
+      "pass": true,
+      "fields": {
+        "lai": {
+          "wrf": 2.10328794,
+          "jax": 2.103287671232877,
+          "pass": true
+        },
+        "sai": {
+          "wrf": 0.316849351,
+          "jax": 0.3168493150684932,
+          "pass": true
+        },
+        "fveg": {
+          "wrf": 0.259317577,
+          "jax": 0.259317569732666,
+          "pass": true
+        }
+      }
+    },
+    {
+      "name": "nighttime_veg10",
+      "pass": true,
+      "fields": {
+        "lai": {
+          "wrf": 1.50328791,
+          "jax": 1.5032876712328773,
+          "pass": true
+        },
+        "sai": {
+          "wrf": 0.316849351,
+          "jax": 0.3168493150684932,
+          "pass": true
+        },
+        "fveg": {
+          "wrf": 0.292573452,
+          "jax": 0.2925734519958496,
+          "pass": true
+        }
+      }
+    },
+    {
+      "name": "nighttime_veg13",
+      "pass": true,
+      "fields": {
+        "lai": {
+          "wrf": 0.0,
+          "jax": 0.0,
+          "pass": true
+        },
+        "sai": {
+          "wrf": 0.0,
+          "jax": 0.0,
+          "pass": true
+        },
+        "fveg": {
+          "wrf": 0.0,
+          "jax": 0.0,
+          "pass": true
+        }
+      }
+    },
+    {
+      "name": "nighttime_veg16",
+      "pass": true,
+      "fields": {
+        "lai": {
+          "wrf": 0.0,
+          "jax": 0.0,
+          "pass": true
+        },
+        "sai": {
+          "wrf": 0.0,
+          "jax": 0.0,
+          "pass": true
+        },
+        "fveg": {
+          "wrf": 0.0,
+          "jax": 0.0,
+          "pass": true
+        }
+      }
+    },
+    {
+      "name": "teide_snow",
+      "pass": true,
+      "fields": {
+        "lai": {
+          "wrf": 0.0,
+          "jax": 0.0,
+          "pass": true
+        },
+        "sai": {
+          "wrf": 0.0,
+          "jax": 0.0,
+          "pass": true
+        },
+        "fveg": {
+          "wrf": 0.0,
+          "jax": 0.0,
+          "pass": true
+        }
+      }
+    }
+  ],
+  "verdict": "S5_PHENOLOGY_WRF_PARITY_PASS"
+}
