@@ -1597,7 +1597,9 @@ def _physics_boundary_step_with_limiter_diagnostics(
         )
         carry = carry.replace(rthraten=held_rthraten)
     if bool(namelist.run_boundary):
-        bounded = apply_lateral_boundaries(next_state, lead_seconds, float(namelist.dt_s), namelist.boundary_config)
+        bounded = apply_lateral_boundaries(
+            next_state, lead_seconds, float(namelist.dt_s), namelist.boundary_config, namelist.metrics
+        )
         if bool(namelist.disable_guards):
             next_state = bounded
         else:
