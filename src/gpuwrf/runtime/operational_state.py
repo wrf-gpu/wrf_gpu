@@ -7,7 +7,8 @@ that production carry separate from validation savepoint modules.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from typing import Any
 
 import jax
 import jax.numpy as jnp
@@ -66,6 +67,17 @@ class OperationalCarry:
     mu_save: jax.Array
     ww_save: jax.Array
     rthraten: jax.Array
+    # --- v0.2.0 S6b: prognostic Noah-MP land carry threaded through the scan ---
+    # ``noahmp_land`` is the prognostic NoahMPLandState (a registered pytree), or
+    # ``None`` when Noah-MP is not activated (the carry pytree then has the same
+    # structure as the pre-S6b carry; None is a consistent empty subtree). It
+    # EVOLVES each physics step -- the standalone-replacement land fix.
+    # ``noahmp_rad`` is the HELD surface radiation forcing for Noah-MP
+    # (SOLDN/LWDN/COSZ as a 3-tuple of (ny,nx) device arrays), refreshed at the
+    # radiation cadence and held between calls (WRF-faithful), resident on device;
+    # ``None`` when Noah-MP is off.
+    noahmp_land: Any = field(default=None)
+    noahmp_rad: Any = field(default=None)
 
     def replace(self, **updates) -> "OperationalCarry":
         values = {name: getattr(self, name) for name in self.__dataclass_fields__}
@@ -87,13 +99,22 @@ def _base_mu(state: State) -> jax.Array:
     return jnp.asarray(state.mu_total) - jnp.asarray(state.mu_perturbation)
 
 
-def initial_operational_carry(state: State) -> OperationalCarry:
+def initial_operational_carry(
+    state: State,
+    *,
+    noahmp_land: Any = None,
+    noahmp_rad: Any = None,
+) -> OperationalCarry:
     """Build promoted carry from the initialized operational ``State``.
 
     WRF history output does not expose all small-step scratch directly, so the
     production initial condition mirrors the M6B3 savepoint extractor: ``ww``
     and ``ph_tend`` start at zero, ``muave`` starts from perturbation ``MU``,
     and ``muts`` starts from ``MUB + MU``.
+
+    ``noahmp_land``/``noahmp_rad`` (v0.2.0 S6b) seed the prognostic Noah-MP land
+    carry + held surface-radiation forcing when Noah-MP is activated; both default
+    to ``None`` (Noah-MP off; the carry is structurally identical to pre-S6b).
     """
 
     mu_base = _base_mu(state)
@@ -130,6 +151,8 @@ def initial_operational_carry(state: State) -> OperationalCarry:
         # call refreshes it; theta += dt*rthraten is applied every dynamics step.
         # Match theta dtype so force_fp64 keeps the held rate fp64.
         rthraten=jnp.zeros_like(state.theta),
+        noahmp_land=noahmp_land,
+        noahmp_rad=noahmp_rad,
     )
 
 
