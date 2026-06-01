@@ -22,32 +22,32 @@
     "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
     "state_summary": {
       "mu": {
-        "absmax": 97814.21879654659,
+        "absmax": 97874.86121289476,
         "dtype": "float64",
         "finite": true
       },
       "ph": {
-        "absmax": 226174.4953537554,
+        "absmax": 204077.453125,
         "dtype": "float64",
         "finite": true
       },
       "theta": {
-        "absmax": 492.9970981490251,
+        "absmax": 492.68779307250554,
         "dtype": "float64",
         "finite": true
       },
       "u": {
-        "absmax": 29.73406628888263,
+        "absmax": 30.368244871971505,
         "dtype": "float64",
         "finite": true
       },
       "v": {
-        "absmax": 17.834513614508293,
+        "absmax": 18.540220421820596,
         "dtype": "float64",
         "finite": true
       },
       "w": {
-        "absmax": 16.20775907788355,
+        "absmax": 7.599057959692256,
         "dtype": "float64",
         "finite": true
       }
