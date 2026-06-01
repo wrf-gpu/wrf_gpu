@@ -1,7 +1,33 @@
 # Project Plan
 
-Status: **M0-M5 closed. M6 entered post-blocker execution on 2026-05-24 following external consultation. The HYBRID exit-rule fired: S2.1-redo real Gen2 1h baseline produced T2 136.9 K / U10 106.4 m/s / V10 102.2 m/s (218×/73×/64× Gen2 noise floor); the operator bug-hunt (7 A/B toggles, sanitizer-bypass) returned `NO-BUG-LOCALIZED`. External consultation diagnosed the root cause as missing operator-by-operator instrumentation (not WRF un-portability) and recommended **B-direct with savepoint-first discipline**: build the WRF `module_small_step_em` savepoint harness *first*, then port the small-step bottom-up under per-operator parity. M6 is split into M6a (savepoint parity, sanitizer-off), M6b (honest 1h Canary d02), M6c (6h/24h Gen2 consistency) — see `MILESTONES.md`. ADR-023 is **superseded-provisional**; ADR-024 (operator-sanity gate) is promoted to ACCEPTED per consultation; ADR-025 covering savepoint-harness + B-direct port ladder is to be drafted. M7 implementation remains gated by M6b close. See §14 for the post-blocker execution plan.**
-Author: manager (Opus 4.7 1M).
+Status (2026-06-01): **v0.1.0 release candidate — tag PENDING.** The project completed the
+2026-05-28 reset (M8–M23 roadmap in `.agent/decisions/PROJECT-RESET-PLAN-FINAL.md`) and rebuilt
+the dycore honestly. v0.1.0 is a **JAX-native single-GPU WRF v4 dycore + physics port**, validated
+for **Canary 1–3 km daily forecasting** on one RTX 5090 along a **single-domain REPLAY path**
+(boundaries + land/SST replayed from CPU-WRF / Gen2 corpus artifacts) — **not yet** a self-contained
+multi-domain live-nesting WRF with native WPS/real.exe init.
+
+- **Authoritative outcome record:** [`proofs/PROOF_TABLE.md`](proofs/PROOF_TABLE.md) — **9 PASS /
+  1 FAIL (comparator-harness gap, not a production defect) / 1 INCONCLUSIVE** on the HFX-fix
+  release HEAD. **Binding proof contract:** [`publish/VERIFICATION.md`](publish/VERIFICATION.md)
+  (11 rows). Release narrative: [`RELEASE_NOTES_v0.1.0.md`](RELEASE_NOTES_v0.1.0.md).
+- **Validated capability:** idealized warm bubble + Straka (rows 1/2); d02 3 km 3-case
+  D02_VALIDATED finite/stable to 72 h, beats persistence on winds (row 4); d03 1 km 24 h
+  D03_1KM_VALIDATED, T2 RMSE 1.92 K ≤ 3.0 K beats persistence, field-qualified U10/V10 (row 5,
+  secondary claim); conservation guards-off fp64 (row 7); repeatability + restart (row 8);
+  performance ~5–8× vs 28-rank CPU-WRF, floor 3.2× (row 9, **NOT ≥10×**); precipitation honest
+  characterization ratio 1.13 not parity (row 10).
+- **Honest qualifiers:** TOST (row 6) is an **underpowered single-season n=3 MAM descriptive
+  check**, never an equivalence PASS — full seasonal n≥15–27 is v0.2.0. The HFX/surface-layer fix
+  is an **empirical, partial, MYNN-inspired land thermal-roughness repair**, not a faithful
+  `module_sf_mynn.F` port. Row 3 (savepoint comparator) and row 11 (byte-counted device audit) are
+  tracked v0.2.0 follow-ups, not relaxed-away passes.
+- **Next:** [`.agent/decisions/V0.2.0-PLAN.md`](.agent/decisions/V0.2.0-PLAN.md) — all gap items
+  except native init; 0.1.x cadence (0.1.1 = MYNN/HFX parity debt first).
+
+The sections below are the **historical M0–M7 synthesis layer** (the original backend-bakeoff and
+M6 dycore-blocker planning). They are retained for provenance and are superseded by the reset
+roadmap and the v0.1.0 status above. Author: manager (Opus 4.7 1M).
 Inputs: `v2 ai driven from scratch plan by deepthink.txt`, `wrf to gpu gpt5.5 deep research.pdf`, `WRF GPU Porting_ Architecture & Verification.pdf`, all governance files in this repo.
 Scope: this document is the **synthesis layer** that reconciles the two research briefs with the bootstrap. It does not restate the constitution, scope, spec, principles, validation strategy, precision policy, performance targets, or risk register. Those remain authoritative as-is.
 
