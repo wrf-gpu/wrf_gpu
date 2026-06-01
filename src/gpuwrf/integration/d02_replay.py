@@ -156,6 +156,13 @@ def _count_replay_transfer_bytes(trace_dir: Path) -> tuple[int, int, list[str]]:
     return h2d, d2h, matched
 
 P0_THETA_OFFSET_K = 300.0
+# WRF dry equation-of-state constants used to invert the loaded base state for the
+# base potential-temperature profile (must match
+# ``dynamics/acoustic_wrf._inverse_density_from_theta_pressure``).
+_EOS_R_D = 287.0
+_EOS_CP_D = 1004.0
+_EOS_P0_PA = 100000.0
+_EOS_CVPM = -(_EOS_CP_D - _EOS_R_D) / _EOS_CP_D
 DEFAULT_REPLAY_RUN_DIR = Path("/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z")
 DEFAULT_OUTPUT_FIELD_PATH = Path("/home/enric/.cache/gpuwrf_outputs/m6x_d02_replay/proof_d02_replay_fields.npz")
 DEFAULT_TRACE_ROOT = Path(os.environ.get("GPUWRF_TMPDIR", "/home/enric/.cache/gpuwrf_tmp"))
@@ -731,6 +738,54 @@ def load_nested_parent_boundary_leaves(
     return leaves, meta
 
 
+def _wrf_base_theta_from_loaded_state(
+    *,
+    pb: jax.Array,
+    phb: jax.Array,
+    mub: jax.Array,
+    metrics: DycoreMetrics,
+) -> jax.Array:
+    """Recover the WRF base potential-temperature profile ``t0 + t_init``.
+
+    The replay IC (PB/PHB/MUB) is the corpus base state, which WRF built in
+    ``dyn_em/module_initialize_real.F:3793-3818`` so that the base geopotential
+    is in EXACT discrete hydrostatic balance with the base inverse density::
+
+        alb(k) = (R_d/p0)*(t_init(k)+t0)*(pb(k)/p0)**cvpm        (:3802)
+        phb(k+1) = phb(k) - dnw(k)*(c1h(k)*mub + c2h(k))*alb(k)  (:3817)
+
+    The dycore's ``diagnose_pressure_al_alt`` recomputes ``alb`` from a base
+    potential-temperature field via the SAME EOS, then forms ``alt = al + alb``
+    and the EOS pressure.  If that base theta is the constant 300 K (the prior
+    behaviour) instead of WRF's height-varying ``t_init`` profile, the recomputed
+    ``alb`` disagrees with the discrete ``alb`` the loaded ``phb`` was integrated
+    from -- by up to ~35 % aloft (300 K vs the ~465 K base profile near the lid).
+    The loaded IC is then NOT in the dycore's discrete hydrostatic balance, so the
+    prognostic perturbation geopotential ``ph'`` equilibrates over the first
+    forecast hour to absorb the base-state mismatch, producing the steady
+    near-uniform +2.6 kPa diagnostic perturbation-pressure offset seen on BOTH
+    d02 (force_geopotential=True) and d03.
+
+    Fix: invert the loaded discrete base state to recover the EXACT ``alb`` it was
+    balanced against, then back out the base potential temperature so the dycore's
+    recomputed ``alb`` reproduces the loaded ``phb`` to round-off.  This is exact
+    and grid-agnostic (uses the file's own hybrid c1h/c2h/dnw), so it requires no
+    namelist base-profile parameters.
+    """
+
+    mass_h = metrics.c1h[:, None, None] * mub[None, :, :] + metrics.c2h[:, None, None]  # (nz, ny, nx)
+    dphb = phb[1:, :, :] - phb[:-1, :, :]  # (nz, ny, nx)
+    # Invert phb(k+1)-phb(k) = -dnw(k)*(c1h*mub+c2h)*alb(k) for the discrete alb.
+    denom = metrics.dnw[:, None, None] * mass_h
+    safe_denom = jnp.where(jnp.abs(denom) > 1.0e-12, denom, jnp.asarray(1.0e-12, dtype=denom.dtype))
+    alb = -dphb / safe_denom
+    # Back out theta_base from alb = (R_d/p0)*theta_base*(pb/p0)**cvpm so the
+    # dycore's _inverse_density_from_theta_pressure(theta_base, pb) reproduces it.
+    p_ratio = (jnp.maximum(pb, jnp.asarray(1.0, dtype=pb.dtype)) / _EOS_P0_PA) ** _EOS_CVPM
+    theta_base = alb * (_EOS_P0_PA / _EOS_R_D) / p_ratio
+    return theta_base
+
+
 def build_replay_case(
     run_dir: str | Path = DEFAULT_REPLAY_RUN_DIR,
     *,
@@ -785,7 +840,15 @@ def build_replay_case(
     mu_perturbation = _load(run, domain, "MU", 0)
     mub = _load(run, domain, "MUB", 0)
     theta = _load(run, domain, "T", 0) + P0_THETA_OFFSET_K
-    theta_base = jnp.full_like(theta, P0_THETA_OFFSET_K)
+    # WRF-faithful base potential temperature ``t0 + t_init``, recovered by
+    # inverting the loaded discrete base state (PB/PHB/MUB) so the dycore's
+    # recomputed base inverse density ``alb`` matches the discrete ``alb`` the
+    # loaded ``phb`` was hydrostatically integrated from.  Using the constant
+    # 300 K here (the prior behaviour) left the loaded IC out of the dycore's
+    # discrete hydrostatic balance and drove the steady +2.6 kPa perturbation-
+    # pressure / Exner-T2 offset on both d02 and d03 (root cause documented in
+    # .agent/reviews/2026-06-01-opus-pressure-drift-rootcause.md).
+    theta_base = _wrf_base_theta_from_loaded_state(pb=pb, phb=phb, mub=mub, metrics=metrics)
 
     state = state.replace(
         u=_load(run, domain, "U", 0),
@@ -823,7 +886,10 @@ def build_replay_case(
         pb=pb.astype(state.p_total.dtype),
         phb=phb.astype(state.ph_total.dtype),
         mub=mub.astype(state.mu_total.dtype),
-        t0=theta_base.astype(state.theta.dtype),
+        # ``t0`` is the WRF constant theta reference (= 300 K, the EOS ``t0``), not
+        # the base profile; ``theta_base`` carries the recovered WRF ``t0+t_init``
+        # profile used for the base inverse density ``alb``.
+        t0=jnp.full_like(theta_base, P0_THETA_OFFSET_K).astype(state.theta.dtype),
         theta_base=theta_base.astype(state.theta.dtype),
     )
     metadata = {
@@ -845,7 +911,8 @@ def build_replay_case(
             "missing_optional_variables": land.source.get("missing_optional_variables", []),
         },
         "base_state": {
-            "theta_base_k": P0_THETA_OFFSET_K,
+            "theta_base_k": "WRF t0+t_init profile recovered from loaded PB/PHB/MUB",
+            "t0_reference_k": P0_THETA_OFFSET_K,
             "pressure_split": "p_total=PB+P, p_perturbation=P",
             "geopotential_split": "ph_total=PHB+PH, ph_perturbation=PH",
             "mu_split": "mu_total=MUB+MU, mu_perturbation=MU",

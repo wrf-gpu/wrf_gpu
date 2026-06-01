@@ -249,8 +249,29 @@ def diagnose_pressure_al_alt(
         al = jnp.zeros_like(alt)
         return state.p_perturbation, al, alt
 
+    # Base inverse density ``alb`` must be the EXACT discrete inverse density the
+    # base geopotential ``phb`` was hydrostatically integrated from at init
+    # (WRF dyn_em/module_initialize_real.F:3817:
+    #   phb(k+1) = phb(k) - dnw(k)*(c1h(k)*mub + c2h(k))*alb(k)).
+    # Recover it by inverting that relation from the base state's OWN phb/mub
+    # rather than recomputing it from a base potential temperature, because the
+    # operational path historically rebuilds ``theta_base`` as a CONSTANT 300 K
+    # (operational_mode._theta_base_offset, _refresh_grid_p_from_finished), which
+    # makes the recomputed ``alb`` disagree with the discrete ``alb`` the loaded
+    # ``phb`` carries -- by up to ~35 % aloft (300 K vs the realistic t0+t_init
+    # base profile that reaches ~465 K near the lid).  That mismatch put the loaded
+    # IC out of the dycore's discrete hydrostatic balance and drove the steady
+    # ~+2.6 kPa diagnostic perturbation-pressure / Exner-T2 offset on BOTH d02
+    # (force_geopotential=True) and d03.  Inverting phb makes ``alb`` exact and
+    # caller-agnostic.  See .agent/reviews/2026-06-01-opus-pressure-drift-rootcause.md.
     base_pressure = _safe_pressure(base_state.pb)
-    alb = _inverse_density_from_theta_pressure(base_state.theta_base, base_pressure)
+    mass_h_base = metrics.c1h[:, None, None] * base_state.mub[None, :, :] + metrics.c2h[:, None, None]
+    dphb = base_state.phb[1:, :, :] - base_state.phb[:-1, :, :]
+    denom_alb = metrics.dnw[:, None, None] * mass_h_base
+    safe_denom_alb = jnp.where(
+        jnp.abs(denom_alb) > 1.0e-12, denom_alb, jnp.asarray(1.0e-12, dtype=denom_alb.dtype)
+    )
+    alb = -dphb / safe_denom_alb
     muts = base_state.mub + state.mu_perturbation
     mass_weight = metrics.c1h[:, None, None] * muts[None, :, :] + metrics.c2h[:, None, None]
     safe_mass = jnp.where(jnp.abs(mass_weight) > 1.0e-12, mass_weight, jnp.asarray(1.0e-12, dtype=mass_weight.dtype))
