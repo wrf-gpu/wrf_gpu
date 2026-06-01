@@ -1,0 +1,228 @@
+{
+  "win": "2-dynamic-clock-cache-key",
+  "run_id": "20260521_18z_l3_24h_20260522T133443Z",
+  "hours": 1.0,
+  "segment_steps": 60,
+  "run_start": "2026-05-21 18:00:00+00:00",
+  "start_julian_day": 141.0,
+  "start_utc_minute": 1080.0,
+  "fields_compared": 53,
+  "max_abs_diff_over_all_fields": 4.462989042328672,
+  "worst_field": "p_perturbation",
+  "bit_identical": false,
+  "verdict": "FAIL",
+  "fields": {
+    "Ng": {
+      "max_abs_diff": 0.0,
+      "dtype": "float64"
+    },
+    "Ni": {
+      "max_abs_diff": 0.0,
+      "dtype": "float64"
+    },
+    "Nr": {
+      "max_abs_diff": 0.0,
+      "dtype": "float64"
+    },
+    "Ns": {
+      "max_abs_diff": 0.0,
+      "dtype": "float64"
+    },
+    "fltv": {
+      "max_abs_diff": 0.0008168714549039169,
+      "dtype": "float64"
+    },
+    "graupel_acc": {
+      "max_abs_diff": 0.0,
+      "dtype": "float64"
+    },
+    "ice_acc": {
+      "max_abs_diff": 0.0,
+      "dtype": "float64"
+    },
+    "lakemask": {
+      "max_abs_diff": 0.0,
+      "dtype": "float64"
+    },
+    "lu_index": {
+      "max_abs_diff": 0.0,
+      "dtype": "int32"
+    },
+    "mavail": {
+      "max_abs_diff": 0.0,
+      "dtype": "float64"
+    },
+    "mu": {
+      "max_abs_diff": 0.8921219488693168,
+      "dtype": "float64"
+    },
+    "mu_bdy": {
+      "max_abs_diff": 0.0,
+      "dtype": "float64"
+    },
+    "mu_perturbation": {
+      "max_abs_diff": 0.8921219488693168,
+      "dtype": "float64"
+    },
+    "mu_total": {
+      "max_abs_diff": 0.8921219488693168,
+      "dtype": "float64"
+    },
+    "mub_bdy": {
+      "max_abs_diff": 0.0,
+      "dtype": "float64"
+    },
+    "p": {
+      "max_abs_diff": 4.462989042323898,
+      "dtype": "float64"
+    },
+    "p_bdy": {
+      "max_abs_diff": 0.0,
+      "dtype": "float64"
+    },
+    "p_perturbation": {
+      "max_abs_diff": 4.462989042328672,
+      "dtype": "float64"
+    },
+    "p_total": {
+      "max_abs_diff": 4.462989042323898,
+      "dtype": "float64"
+    },
+    "pb_bdy": {
+      "max_abs_diff": 0.0,
+      "dtype": "float64"
+    },
+    "ph": {
+      "max_abs_diff": 0.7565330142970197,
+      "dtype": "float64"
+    },
+    "ph_bdy": {
+      "max_abs_diff": 0.0,
+      "dtype": "float64"
+    },
+    "ph_perturbation": {
+      "max_abs_diff": 0.7565330143097526,
+      "dtype": "float64"
+    },
+    "ph_total": {
+      "max_abs_diff": 0.7565330142970197,
+      "dtype": "float64"
+    },
+    "phb_bdy": {
+      "max_abs_diff": 0.0,
+      "dtype": "float64"
+    },
+    "qc": {
+      "max_abs_diff": 0.0,
+      "dtype": "float64"
+    },
+    "qg": {
+      "max_abs_diff": 0.0,
+      "dtype": "float64"
+    },
+    "qi": {
+      "max_abs_diff": 0.0,
+      "dtype": "float64"
+    },
+    "qke": {
+      "max_abs_diff": 0.04308938265951279,
+      "dtype": "float64"
+    },
+    "qr": {
+      "max_abs_diff": 0.0,
+      "dtype": "float64"
+    },
+    "qs": {
+      "max_abs_diff": 0.0,
+      "dtype": "float64"
+    },
+    "qv": {
+      "max_abs_diff": 1.1998239230493965e-05,
+      "dtype": "float64"
+    },
+    "qv_bdy": {
+      "max_abs_diff": 0.0,
+      "dtype": "float64"
+    },
+    "qv_flux": {
+      "max_abs_diff": 2.503392989785907e-07,
+      "dtype": "float64"
+    },
+    "rain_acc": {
+      "max_abs_diff": 0.0,
+      "dtype": "float64"
+    },
+    "rhosfc": {
+      "max_abs_diff": 5.5249961271153225e-05,
+      "dtype": "float64"
+    },
+    "roughness_m": {
+      "max_abs_diff": 0.0,
+      "dtype": "float64"
+    },
+    "snow_acc": {
+      "max_abs_diff": 0.0,
+      "dtype": "float64"
+    },
+    "soil_moisture": {
+      "max_abs_diff": 0.0,
+      "dtype": "float64"
+    },
+    "t_skin": {
+      "max_abs_diff": 0.0,
+      "dtype": "float64"
+    },
+    "tau_u": {
+      "max_abs_diff": 0.0005544534517027931,
+      "dtype": "float64"
+    },
+    "tau_v": {
+      "max_abs_diff": 0.0010432583862013955,
+      "dtype": "float64"
+    },
+    "theta": {
+      "max_abs_diff": 0.028677940676061553,
+      "dtype": "float64"
+    },
+    "theta_bdy": {
+      "max_abs_diff": 0.0,
+      "dtype": "float64"
+    },
+    "theta_flux": {
+      "max_abs_diff": 0.0007788823362591124,
+      "dtype": "float64"
+    },
+    "u": {
+      "max_abs_diff": 0.05342158417384457,
+      "dtype": "float64"
+    },
+    "u_bdy": {
+      "max_abs_diff": 0.0,
+      "dtype": "float64"
+    },
+    "ustar": {
+      "max_abs_diff": 0.002294106001605345,
+      "dtype": "float64"
+    },
+    "v": {
+      "max_abs_diff": 0.05682509689221149,
+      "dtype": "float64"
+    },
+    "v_bdy": {
+      "max_abs_diff": 0.0,
+      "dtype": "float64"
+    },
+    "w": {
+      "max_abs_diff": 0.007982832120751737,
+      "dtype": "float64"
+    },
+    "w_bdy": {
+      "max_abs_diff": 0.0,
+      "dtype": "float64"
+    },
+    "xland": {
+      "max_abs_diff": 0.0,
+      "dtype": "float64"
+    }
+  }
+}

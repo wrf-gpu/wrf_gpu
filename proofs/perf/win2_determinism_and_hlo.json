@@ -1,0 +1,24 @@
+{
+  "win": "2-root-cause",
+  "determinism_same_path_max_abs_diff": 0.0,
+  "determinism_pairs": {
+    "d12": [
+      0.0,
+      null
+    ],
+    "d13": [
+      0.0,
+      null
+    ],
+    "d23": [
+      0.0,
+      null
+    ]
+  },
+  "dynamic_vs_legacy_max_abs_diff": 4.462989042328672,
+  "dynamic_vs_legacy_worst_field": "p_perturbation",
+  "within_noise_floor": false,
+  "run_start": "2026-05-21 18:00:00+00:00",
+  "hours": 1.0,
+  "segment_steps": 60
+}
