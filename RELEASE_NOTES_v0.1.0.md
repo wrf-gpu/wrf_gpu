@@ -1,8 +1,8 @@
 # Release Notes — v0.1.0
 
 - **Tag:** `v0.1.0`
-- **Release commit:** `PENDING-TAG` (filled by the manager at tag time)
-- **Tag date:** `PENDING-TAG`
+- **Release commit:** the commit this annotated tag points at — resolve with `git rev-parse v0.1.0^{commit}`.
+- **Tag date:** 2026-06-01 (annotated tag on branch `release/v0.1.0`; promoted to `main` by the principal — Option B).
 - **Source HEAD basis:** HFX/surface-layer fix `d1c373b`; proofs executed on branch
   `worker/opus/final-verdict` (RTX 5090).
 - **Binding proof contract:** [`publish/VERIFICATION.md`](publish/VERIFICATION.md) (11 rows).
