@@ -26,10 +26,15 @@ WHY THIS IS THE FIX (proofs/v010_validation/hfx_overflux_root_cause.json):
   land). The v0.1.0 bulk path used the radiative TSK and over-fluxed by the
   gradient ratio 1.40. Solving the canopy-air energy balance for TAH closes it.
 
-opt_sfc=1: sfclay supplies the INITIAL CM/CH (carried in ``land_state``), but
-SFCDIF1 re-derives the canopy/bare-specific CM/CH each Newton iteration from the
-evolving sensible-heat flux (WRF semantics: VEGE_FLUX/BARE_FLUX own the in-loop
-drag; sfclay's CM/CH seed the inout slot and remain the ocean/lake path's coeffs).
+opt_sfc=1 CH/CM SEMANTICS (authoritative; do NOT mis-wire in S6): sfclay only
+SEEDS the inout CM/CH slot (carried in ``land_state``). VEGE_FLUX/BARE_FLUX call
+SFCDIF1 INSIDE their Newton loops (WRF :3889-3895 / :4359-4365), RE-DERIVE the
+canopy/bare drag from the evolving sensible-heat flux, overwrite CH with the
+conductance output (:4165-4168 CH=CAH / :4476-4477 CH=EHB), and the top-level
+tile-combines CM/CH (:2298-2299). Over LAND the Noah-MP-returned CM/CH (and the
+ef.chv/chb diagnostics) are AUTHORITATIVE; sfclay's seed remains only the
+ocean/lake path's coeffs. S6 must read back ``land_state.cm/ch`` over land, NOT
+the sfclay seed (see ADR-NOAHMP-INTERFACES.md §4, S1-amend).
 
 All operations are fully vectorized over the land-column grid (ny, nx); fp64
 (x64 enabled at package import). No host transfer; pure functional pytree I/O.
@@ -161,13 +166,14 @@ def _es_dest(t_k):
 
 
 # ----------------------------------------------------------------------------------
-# THERMOPROP / TDFCND (module_sf_noahmplsm.F:2400-2510, 2573-2680), soil branch.
-# Snow-free land columns (FSNO=0, ISNOW=0): ground BC layer = soil layer 1.
+# THERMOPROP / TDFCND (module_sf_noahmplsm.F:2400-2510, 2573-2680).
+# Soil branch (TDFCND) for the NSOIL layers + CSNOW (:2514-2569) for active snow
+# layers, plus the snow/soil interface conductivity blend (:2503-2507).
+# Ground BC layer = STC(ISNOW+1): soil layer 1 when ISNOW=0; the bottom active
+# snow layer when ISNOW<0.
 # ----------------------------------------------------------------------------------
-def thermoprop_soil(land_state: NoahMPLandState, p: EnergyParams):
-    """Soil-layer thermal conductivity DF and heat capacity HCPCT, (NSOIL, ny, nx)."""
-    smc = land_state.smois
-    sh2o = land_state.sh2o
+def _tdfcnd_soil(smc, sh2o, p: EnergyParams):
+    """TDFCND (:2573-2680) soil-layer thermal conductivity DF and HCPCT."""
     sice = smc - sh2o
     hcpct = (sh2o * CWAT + (1.0 - p.smcmax) * p.csoil
              + (p.smcmax - smc) * CPAIR + sice * CICE)
@@ -186,6 +192,83 @@ def thermoprop_soil(land_state: NoahMPLandState, p: EnergyParams):
     ake = jnp.where(frozen, satratio, ake_unfroz)
     df = ake * (thksat - thkdry) + thkdry
     return df, hcpct
+
+
+def thermoprop_soil(land_state: NoahMPLandState, p: EnergyParams):
+    """Soil-layer thermal conductivity DF and heat capacity HCPCT, (NSOIL, ny, nx).
+
+    Snow-free convenience wrapper (used by the snow-free test fixtures and the
+    STC update). The snow-aware ground-BC quantities are assembled by
+    ``thermoprop_full`` below.
+    """
+    return _tdfcnd_soil(land_state.smois, land_state.sh2o, p)
+
+
+def _csnow(land_state):
+    """CSNOW (:2514-2569): per-snow-layer thermal conductivity TKSNO and volumetric
+    heat capacity CVSNO, (NSNOW, ny, nx). Stieglitz/Yen TKSNO = 3.2217e-6*rho^2.
+
+    Inactive snow slots (above ISNOW) carry harmless values; the caller only reads
+    the active-layer / interface values via masked gathers on ISNOW.
+    """
+    dz = _full_dz(land_state)            # (NSNOW+NSOIL, ny, nx)
+    dz_sn = dz[:NSNOW]                   # snow-layer thicknesses
+    snice = land_state.snice
+    snliq = land_state.snliq
+    dzpos = jnp.maximum(dz_sn, MPE)
+    snicev = jnp.minimum(1.0, snice / (dzpos * DENICE))
+    epore = 1.0 - snicev
+    snliqv = jnp.minimum(epore, snliq / (dzpos * DENH2O))
+    cvsno = CICE * snicev + CWAT * snliqv
+    bdsnoi = (snice + snliq) / dzpos
+    tksno = 3.2217e-6 * bdsnoi ** 2.0
+    return tksno, cvsno
+
+
+def thermoprop_full(land_state: NoahMPLandState, p: EnergyParams, urban=None):
+    """Full snow+soil DF/HCPCT plus the WRF-faithful ground-BC quantities.
+
+    Returns ``(df_full, hcpct_full, df_top, stc_top, dz_top)`` where:
+      - ``df_full``/``hcpct_full`` are (NSNOW+NSOIL, ny, nx) with the snow/soil
+        interface conductivity blend applied to the top SOIL layer (:2503-2507);
+      - ``df_top``/``stc_top``/``dz_top`` are the ground-BC layer values
+        DF(ISNOW+1)/STC(ISNOW+1)/DZSNSO(ISNOW+1) gathered at concat index
+        ``NSNOW+ISNOW`` (soil layer 1 when ISNOW=0; bottom snow layer when <0).
+
+    ``urban`` (bool (ny,nx) or None): WRF sets soil DF=3.24 for urban
+    (:2468-2472); applied before the snow/soil interface blend.
+    """
+    df_soil, hcpct_soil = _tdfcnd_soil(land_state.smois, land_state.sh2o, p)
+    if urban is not None:
+        df_soil = jnp.where(urban[None, ...], 3.24, df_soil)
+    tksno, cvsno = _csnow(land_state)
+    df_full = jnp.concatenate([tksno, df_soil], axis=0)        # (NSNOW+NSOIL,...)
+    hcpct_full = jnp.concatenate([cvsno, hcpct_soil], axis=0)
+    dz = _full_dz(land_state)
+    snowh = land_state.snowh
+    isnow = land_state.isnow                                   # int32 (ny,nx), <=0
+
+    # snow/soil interface conductivity for the TOP soil layer (concat index NSNOW):
+    #   ISNOW==0: DF(1)=(DF1*DZ1+0.35*SNOWH)/(SNOWH+DZ1)            (:2504)
+    #   ISNOW<0 : DF(1)=(DF1*DZ1+DF0*DZ0)/(DZ0+DZ1)                 (:2506)
+    dz1 = dz[NSNOW]                       # soil layer-1 thickness
+    df1 = df_soil[0]
+    df0 = df_full[NSNOW - 1]              # bottom snow layer conductivity (Fortran DF(0))
+    dz0 = dz[NSNOW - 1]                   # bottom snow layer thickness
+    iface_nosnow = (df1 * dz1 + 0.35 * snowh) / (snowh + dz1)
+    iface_snow = (df1 * dz1 + df0 * dz0) / (dz0 + dz1)
+    df1_blend = jnp.where(isnow == 0, iface_nosnow, iface_snow)
+    df_full = df_full.at[NSNOW].set(df1_blend)
+
+    # ground-BC layer (ISNOW+1) -> concat index NSNOW+ISNOW, gathered per column.
+    bc_idx = NSNOW + isnow               # int32 (ny,nx): 3 (soil1) when ISNOW=0
+    iz = jnp.arange(NSNOW + NSOIL).reshape((-1,) + (1,) * isnow.ndim)
+    sel = iz == bc_idx[None, ...]        # (NSNOW+NSOIL, ny, nx) one-hot
+    stc_full = jnp.concatenate([land_state.tsno, land_state.tslb], axis=0)
+    df_top = jnp.sum(jnp.where(sel, df_full, 0.0), axis=0)
+    stc_top = jnp.sum(jnp.where(sel, stc_full, 0.0), axis=0)
+    dz_top = jnp.sum(jnp.where(sel, dz, 0.0), axis=0)
+    return df_full, hcpct_full, df_top, stc_top, dz_top
 
 
 # ----------------------------------------------------------------------------------
@@ -363,37 +446,50 @@ def noahmp_radiation_twostream(
 # column-thickness helpers (ZSNSO interface depths <0)
 # ----------------------------------------------------------------------------------
 def _soil_dz(land_state):
-    """Soil-layer thicknesses (NSOIL, ny, nx) from ZSNSO. Soil occupies
-    zsnso[NSNOW:]; for ISNOW=0 the soil-surface interface is 0."""
-    z = land_state.zsnso
-    dz = jnp.zeros((NSOIL,) + land_state.tg.shape)
-    dz = dz.at[0].set(-z[NSNOW])
-    for j in range(1, NSOIL):
-        dz = dz.at[j].set(z[NSNOW + j - 1] - z[NSNOW + j])
-    return dz
-
-
-def _dz1(land_state):
-    """DZSNSO(ISNOW+1) for ISNOW=0 = soil layer-1 thickness = -(zsnso[NSNOW])."""
-    return -land_state.zsnso[NSNOW]
+    """Soil-layer thicknesses (NSOIL, ny, nx) = the soil slice of the WRF-faithful
+    DZSNSO (:827-833). For ISNOW=0 soil layer 1 is the top active layer
+    (DZSNSO = -ZSNSO(1)); for snow columns the soil DZSNSO are the ZSNSO diffs."""
+    return _full_dz(land_state)[NSNOW:]
 
 
 def _full_dz(land_state):
+    """DZSNSO over snow+soil (NSNOW+NSOIL, ny, nx), WRF-faithful (:827-833).
+
+    WRF computes DZSNSO only from the top ACTIVE layer ISNOW+1: that layer gets
+    ``-ZSNSO(ISNOW+1)`` and every layer below gets ``ZSNSO(IZ-1)-ZSNSO(IZ)``.
+    Inactive snow slots above ISNOW are left zero. Implemented vectorized with
+    a per-column ISNOW-dependent first-active mask.
+    """
     z = land_state.zsnso
-    dz = jnp.zeros((NSNOW + NSOIL,) + land_state.tg.shape)
-    dz = dz.at[0].set(-z[0])
-    for j in range(1, NSNOW + NSOIL):
-        dz = dz.at[j].set(z[j - 1] - z[j])
+    isnow = land_state.isnow                       # int32 (ny,nx) <=0
+    first = NSNOW + isnow                           # concat index of ISNOW+1
+    nl = NSNOW + NSOIL
+    iz = jnp.arange(nl).reshape((-1,) + (1,) * isnow.ndim)
+    zprev = jnp.concatenate([jnp.zeros((1,) + z.shape[1:]), z[:-1]], axis=0)
+    dz_diff = zprev - z                             # ZSNSO(IZ-1)-ZSNSO(IZ)
+    dz_first = -z                                   # -ZSNSO(IZ) for the top active
+    is_first = iz == first[None, ...]
+    is_active = iz >= first[None, ...]
+    dz = jnp.where(is_first, dz_first, dz_diff)
+    dz = jnp.where(is_active, dz, 0.0)
     return dz
 
 
 # ==================================================================================
 # VEGE_FLUX / BARE_FLUX tiles
 # ==================================================================================
-def _vege_flux(land_state, forcing, radd, phen, p, df1, zlvl, zpd, z0m, z0mg,
-               hcan, ur, emv, emg, gammav, gammag, rsurf, rhsur, latheav,
-               dt, o2air, co2air, foln, btran):
-    """VEGE_FLUX (:3578-4170): TV / TAH-EAH / TG Newton-Raphson, vectorized."""
+def _vege_flux(land_state, forcing, radd, phen, p, df_top, stc_top, dz_top,
+               zlvl, zpd, z0m, z0mg, hcan, ur, emv, emg, gammav, gammag, rsurf,
+               rhsur, latheav, dt, o2air, co2air, foln, btran, fsno,
+               pahv, pahg):
+    """VEGE_FLUX (:3578-4170): TV / TAH-EAH / TG Newton-Raphson, vectorized.
+
+    Newton loop1 uses WRF's finite-iteration semantics (:4075-4080): once
+    ``ITER>=5 .AND. |DTV|<=0.01`` the next sweep is the LAST (LITER=1) and the
+    loop exits. Implemented branch-free as a fixed NITERC-trip scan with a per-
+    column ``active`` mask that freezes a column's state on the iteration AFTER
+    its last sweep (matching the Fortran "execute one more loop, then exit").
+    """
     eair = forcing.qair * forcing.sfcprs / (0.622 + 0.378 * forcing.qair)
     rhoair = (forcing.sfcprs - 0.378 * eair) / (RAIR * forcing.sfctmp)
     sfctmp = forcing.sfctmp
@@ -420,7 +516,7 @@ def _vege_flux(land_state, forcing, radd, phen, p, df1, zlvl, zpd, z0m, z0mg,
     tah = land_state.tah
     cm = land_state.cm
     ch = land_state.ch
-    stc1 = land_state.tslb[0]
+    snowh = land_state.snowh
     lwdn = forcing.lwdn
 
     estg, _ = _es_dest(tg)
@@ -444,12 +540,22 @@ def _vege_flux(land_state, forcing, radd, phen, p, df1, zlvl, zpd, z0m, z0mg,
     rssha = jnp.zeros_like(tah)
     irc = shc = evc = tr = jnp.zeros_like(tah)
     cah = jnp.zeros_like(tah)
+    canhs = jnp.zeros_like(tah)
     rahg = rawg = rb = jnp.zeros_like(tah)
 
     z0h = z0m
     z0hg = z0mg
 
+    # WRF finite-iteration state (:3817, :4075-4080), per column.
+    liter = jnp.zeros_like(tah, dtype=bool)   # this sweep is the last
+    active = jnp.ones_like(tah, dtype=bool)    # column still iterating
+
     for it in range(1, NITERC + 1):
+        # frozen carries (restored where a column has stopped iterating)
+        prev = (cm, ch, fv, moz, mozsgn, fm, fh, fm2, fh2, fhg, rahg, rawg, rb,
+                rssun, rssha, cah, irc, shc, evc, tr, tah, eah, tv, h, hg, qsfc,
+                canhs)
+
         cm, ch, fv, moz, mozsgn, fm, fh, fm2, fh2 = sfcdif1(
             it, sfctmp, rhoair, h, qair, zlvl, zpd, z0m, z0h, ur,
             moz, mozsgn, fm, fh, fm2, fh2, fv,
@@ -495,7 +601,7 @@ def _vege_flux(land_state, forcing, radd, phen, p, df1, zlvl, zpd, z0m, z0mg,
                         jnp.minimum(canice * latheav / dt, evc))
         hcv = p.cbiom * vaie * CWAT + canliq * CWAT / DENH2O + canice * CICE / DENICE
 
-        b = sav - irc - shc - evc - tr
+        b = sav - irc - shc - evc - tr + pahv
         a = fveg * (4.0 * cir * tv ** 3 + csh + (cev + ctr) * destv + hcv / dt)
         dtv = b / a
 
@@ -503,26 +609,44 @@ def _vege_flux(land_state, forcing, radd, phen, p, df1, zlvl, zpd, z0m, z0mg,
         shc = shc + fveg * csh * dtv
         evc = evc + fveg * cev * destv * dtv
         tr = tr + fveg * ctr * destv * dtv
+        canhs = dtv * fveg * hcv / dt
         tv = tv + dtv
 
         h = rhoair * CPAIR * (tah - sfctmp) / rahc
         hg = rhoair * CPAIR * (tg - tah) / rahg
         qsfc = (0.622 * eah) / (sfcprs - 0.378 * eah)
 
+        # WRF :4075-4080: if this column already had LITER=1, it has now done its
+        # one extra sweep -> stop. Else if it converged this sweep, next is last.
+        stop_now = liter & active
+        active = active & ~liter
+        liter = jnp.where((it >= 5) & (jnp.abs(dtv) <= 0.01), True, liter)
+
+        # freeze any column that has stopped (restore its pre-sweep carries).
+        keep = active | stop_now  # columns that legitimately ran THIS sweep
+        cur = (cm, ch, fv, moz, mozsgn, fm, fh, fm2, fh2, fhg, rahg, rawg, rb,
+               rssun, rssha, cah, irc, shc, evc, tr, tah, eah, tv, h, hg, qsfc,
+               canhs)
+        frozen = [jnp.where(keep, c, o) for c, o in zip(cur, prev)]
+        (cm, ch, fv, moz, mozsgn, fm, fh, fm2, fh2, fhg, rahg, rawg, rb,
+         rssun, rssha, cah, irc, shc, evc, tr, tah, eah, tv, h, hg, qsfc,
+         canhs) = frozen
+
     # under-canopy ground loop (loop2)
     air_g = -emg * (1.0 - emv) * lwdn - emg * emv * SB * tv ** 4
     cir_g = emg * SB
     csh_g = rhoair * CPAIR / rahg
     cev_g = rhoair * CPAIR / (gammag_of(land_state, forcing) * (rawg + rsurf))
-    cgh_g = 2.0 * df1 / _dz1(land_state)
+    cgh_g = 2.0 * df_top / dz_top
     irg = shg = evg = gh = jnp.zeros_like(tah)
+    estg = destg = jnp.zeros_like(tah)
     for _ in range(NITERG):
         estg, destg = _es_dest(tg)
         irg = cir_g * tg ** 4 + air_g
         shg = csh_g * (tg - tah)
         evg = cev_g * (estg * rhsur - eah)
-        gh = cgh_g * (tg - stc1)
-        b = sag - irg - shg - evg - gh
+        gh = cgh_g * (tg - stc_top)
+        b = sag - irg - shg - evg - gh + pahg
         a = 4.0 * cir_g * tg ** 3 + csh_g + cev_g * destg + cgh_g
         dtg = b / a
         irg = irg + 4.0 * cir_g * tg ** 3 * dtg
@@ -531,11 +655,25 @@ def _vege_flux(land_state, forcing, radd, phen, p, df1, zlvl, zpd, z0m, z0mg,
         gh = gh + cgh_g * dtg
         tg = tg + dtg
 
+    # snow on ground & TG>TFRZ: reset TG=TFRZ, re-evaluate ground fluxes (opt_stc=1,
+    # :4125-4133). estg/destg held at the final loop2 ESTG (TG before clamp).
+    snow_clamp = (snowh > 0.05) & (tg > TFRZ)
+    tg_c = jnp.where(snow_clamp, TFRZ, tg)
+    irg_c = cir_g * tg_c ** 4 - emg * (1.0 - emv) * lwdn - emg * emv * SB * tv ** 4
+    shg_c = csh_g * (tg_c - tah)
+    evg_c = cev_g * (estg * rhsur - eah)
+    gh_c = sag + pahg - (irg_c + shg_c + evg_c)
+    tg = tg_c
+    irg = jnp.where(snow_clamp, irg_c, irg)
+    shg = jnp.where(snow_clamp, shg_c, shg)
+    evg = jnp.where(snow_clamp, evg_c, evg)
+    gh = jnp.where(snow_clamp, gh_c, gh)
+
     return {
         "irc": irc, "shc": shc, "evc": evc, "tr": tr,
         "irg": irg, "shg": shg, "evg": evg, "ghv": gh,
         "tv": tv, "tg": tg, "tah": tah, "eah": eah,
-        "cm": cm, "chv": cah, "qsfc": qsfc,
+        "cm": cm, "chv": cah, "qsfc": qsfc, "canhs": canhs,
     }
 
 
@@ -544,20 +682,25 @@ def gammag_of(land_state, forcing):
     return CPAIR * forcing.sfcprs / (0.622 * latheag)
 
 
-def _bare_flux(land_state, forcing, radd, p, df1, zlvl, zpdg, z0mg, ur, emg,
-               gammag, rsurf, rhsur):
-    """BARE_FLUX (:4174-4479): bare-tile ground (TG) Newton-Raphson, vectorized."""
+def _bare_flux(land_state, forcing, radd, p, df_top, stc_top, dz_top, zlvl,
+               zpdg, z0mg, ur, emg, gammag, rsurf, rhsur, pahb):
+    """BARE_FLUX (:4174-4479): bare-tile ground (TG) Newton-Raphson, vectorized.
+
+    Recomputes and returns QSFC from the bare-ground saturation path
+    (:4428-4437) and applies the opt_stc=1 snow TG clamp (:4444-4451).
+    """
     eair = forcing.qair * forcing.sfcprs / (0.622 + 0.378 * forcing.qair)
     rhoair = (forcing.sfcprs - 0.378 * eair) / (RAIR * forcing.sfctmp)
     sfctmp = forcing.sfctmp
+    psfc = forcing.psfc
     qair = forcing.qair
     sag = radd["sag"]
     lwdn = forcing.lwdn
     tgb = land_state.tg
-    stc1 = land_state.tslb[0]
+    snowh = land_state.snowh
 
     cir = emg * SB
-    cgh = 2.0 * df1 / _dz1(land_state)
+    cgh = 2.0 * df_top / dz_top
 
     moz = jnp.zeros_like(tgb)
     mozsgn = jnp.zeros_like(tgb)
@@ -572,6 +715,9 @@ def _bare_flux(land_state, forcing, radd, p, df1, zlvl, zpdg, z0mg, ur, emg,
     irb = shb = evb = ghb = jnp.zeros_like(tgb)
     ehb = jnp.zeros_like(tgb)
     cm = land_state.cm
+    qsfc = land_state.qsfc
+    estg = jnp.zeros_like(tgb)
+    csh = cev = jnp.zeros_like(tgb)
 
     for it in range(1, NITERB + 1):
         cm, ch, fv, moz, mozsgn, fm, fh, fm2, fh2 = sfcdif1(
@@ -587,8 +733,8 @@ def _bare_flux(land_state, forcing, radd, p, df1, zlvl, zpdg, z0mg, ur, emg,
         irb = cir * tgb ** 4 - emg * lwdn
         shb = csh * (tgb - sfctmp)
         evb = cev * (estg * rhsur - eair)
-        ghb = cgh * (tgb - stc1)
-        b = sag - irb - shb - evb - ghb
+        ghb = cgh * (tgb - stc_top)
+        b = sag - irb - shb - evb - ghb + pahb
         a = 4.0 * cir * tgb ** 3 + csh + cev * destg + cgh
         dtg = b / a
         irb = irb + 4.0 * cir * tgb ** 3 * dtg
@@ -597,9 +743,28 @@ def _bare_flux(land_state, forcing, radd, p, df1, zlvl, zpdg, z0mg, ur, emg,
         ghb = ghb + cgh * dtg
         tgb = tgb + dtg
         h = csh * (tgb - sfctmp)
+        # QSFC from bare-ground saturation at the updated TGB (:4428-4435)
+        estg_q, _ = _es_dest(tgb)
+        qsfc = 0.622 * (estg_q * rhsur) / (psfc - 0.378 * (estg_q * rhsur))
+        estg = estg_q
+
+    # snow on ground & TGB>TFRZ: reset TGB=TFRZ, re-evaluate ground fluxes
+    # (opt_stc=1, :4444-4451). ESTG held at the final loop3 saturation value.
+    snow_clamp = (snowh > 0.05) & (tgb > TFRZ)
+    tgb_c = jnp.where(snow_clamp, TFRZ, tgb)
+    # csh/cev held at the final loop3 values (RAHB/RAWB from the last sweep).
+    irb_c = cir * tgb_c ** 4 - emg * lwdn
+    shb_c = csh * (tgb_c - sfctmp)
+    evb_c = cev * (estg * rhsur - eair)
+    ghb_c = sag + pahb - (irb_c + shb_c + evb_c)
+    tgb = tgb_c
+    irb = jnp.where(snow_clamp, irb_c, irb)
+    shb = jnp.where(snow_clamp, shb_c, shb)
+    evb = jnp.where(snow_clamp, evb_c, evb)
+    ghb = jnp.where(snow_clamp, ghb_c, ghb)
 
     return {"irb": irb, "shb": shb, "evb": evb, "ghb": ghb, "tgb": tgb,
-            "cm": cm, "ch": ehb}
+            "cm": cm, "ch": ehb, "qsfc": qsfc}
 
 
 # ==================================================================================
@@ -618,6 +783,10 @@ def noahmp_energy_canopy(
     o2air: jnp.ndarray | float = 0.209 * 101325.0,
     co2air: jnp.ndarray | float = 395.0e-06 * 101325.0,
     foln: jnp.ndarray | float = 1.0,
+    pahv_kw: jnp.ndarray | float = 0.0,
+    pahg_kw: jnp.ndarray | float = 0.0,
+    pahb_kw: jnp.ndarray | float = 0.0,
+    isurban: int | None = None,
 ) -> tuple[NoahMPLandState, NoahMPEnergyFluxes, NoahMPEtFluxes]:
     """Canopy/ground surface-energy balance — THE HFX FIX.
 
@@ -627,6 +796,11 @@ def noahmp_energy_canopy(
     second element of ``energy_radiation.radiation_twostream`` and is required.
 
     Returns ``(land_state', energy_fluxes, et_fluxes)``.
+
+    PAH (precip-advected heat) and the STOMATA carbon forcing (o2air/co2air/foln)
+    are taken from the ADDITIVE ``NoahMPForcing`` fields when supplied (S6 path);
+    otherwise from the keyword fallbacks below (PAH=0 no-precip; carbon from the
+    WRF block ``co2air=395e-6*SFCPRS``, ``o2air=0.209*SFCPRS``).
     """
     radd = {
         "sav": rad.sav, "sag": rad.sag, "parsun": rad.parsun, "parsha": rad.parsha,
@@ -639,21 +813,43 @@ def noahmp_energy_canopy(
     vai = elai + esai
     veg = vai > 0.0
     fsno = rad.fsno
+    zero = jnp.zeros_like(fveg)
+
+    # PAH + STOMATA carbon forcing: prefer the additive forcing fields (S6),
+    # else the keyword fallbacks. (PAHV/PAHG/PAHB default 0 -> no-precip.)
+    pahv = forcing.pahv if forcing.pahv is not None else (pahv_kw + zero)
+    pahg = forcing.pahg if forcing.pahg is not None else (pahg_kw + zero)
+    pahb = forcing.pahb if forcing.pahb is not None else (pahb_kw + zero)
+    o2 = forcing.o2air if forcing.o2air is not None else (o2air + zero)
+    co2 = forcing.co2air if forcing.co2air is not None else (co2air + zero)
+    foln_v = forcing.foln if forcing.foln is not None else (foln + zero)
+
+    # urban special-case mask (ENERGY :2099-2106, THERMOPROP :2468, FVEG :874).
+    # Urban is CUT from the active land scope (ADR §1); this branch is carried
+    # only so an urban cell that reaches S1 stays WRF-faithful (Z0MG=Z0MVT,
+    # ZPDG=0.65*HVT, soil DF=3.24). ``urban`` defaults False (no urban cells).
+    urban = (static.ivgtyp == isurban) if isurban is not None else jnp.zeros_like(veg)
 
     # roughness / displacement (ENERGY :2075-2109)
     z0mg = Z0_BARE * (1.0 - fsno) + p.z0sno * fsno
     zpdg = land_state.snowh
     z0m = jnp.where(veg, p.z0mvt, z0mg)
     zpd = jnp.where(veg, jnp.maximum(0.65 * p.hvt, land_state.snowh), zpdg)
+    # special case for urban (:2101-2106): Z0MG=Z0MVT, ZPDG=0.65*HVT, Z0M=ZPD=...
+    z0mg = jnp.where(urban, p.z0mvt, z0mg)
+    zpdg = jnp.where(urban, 0.65 * p.hvt, zpdg)
+    z0m = jnp.where(urban, p.z0mvt, z0m)
+    zpd = jnp.where(urban, 0.65 * p.hvt, zpd)
     zref = forcing.zlvl
     zlvl = jnp.maximum(zpd, p.hvt) + zref
     zlvl = jnp.where(zpdg >= zlvl, zpdg + zref, zlvl)
     hcan = p.hvt
     ur = jnp.maximum(jnp.sqrt(forcing.uu ** 2 + forcing.vv ** 2), 1.0)
 
-    # THERMOPROP DF/HCPCT (soil branch); df1 = DF(1) for ISNOW=0
-    df, hcpct = thermoprop_soil(land_state, p)
-    df1 = df[0]
+    # THERMOPROP DF/HCPCT incl. snow (CSNOW) + snow/soil interface blend; the
+    # ground-BC layer DF(ISNOW+1)/STC(ISNOW+1)/DZSNSO(ISNOW+1) for the flux solve.
+    df_full, hcpct_full, df_top, stc_top, dz_top = thermoprop_full(land_state, p, urban)
+    df = df_full[NSNOW:]   # soil-layer DF (post-interface-blend) for STC update
 
     # emissivities (ENERGY :2139-2144)
     emv = 1.0 - jnp.exp(-(elai + esai) / 1.0)
@@ -685,6 +881,8 @@ def noahmp_energy_canopy(
     d_rsurf = 2.2e-5 * smcmax1 * smcmax1 * (1.0 - p.smcwlt[0] / smcmax1) ** (2.0 + 3.0 / bexp1)
     rsurf = l_rsurf / d_rsurf
     rsurf = jnp.where((sh2o1 < 0.01) & (land_state.snowh == 0.0), 1.0e6, rsurf)
+    # urban impervious surface (:2204-2206): RSURF=1e6 when snow-free
+    rsurf = jnp.where(urban & (land_state.snowh == 0.0), 1.0e6, rsurf)
     psi = -psisat1 * (jnp.maximum(0.01, sh2o1) / smcmax1) ** (-bexp1)
     rhsur = fsno + (1.0 - fsno) * jnp.exp(psi * GRAV / (RW * land_state.tg))
 
@@ -694,11 +892,12 @@ def noahmp_energy_canopy(
     latheag = jnp.where(land_state.tg > TFRZ, HVAP, HSUB)
     gammag = CPAIR * forcing.sfcprs / (0.622 * latheag)
 
-    vf = _vege_flux(land_state, forcing, radd, phen, p, df1, zlvl, zpd, z0m,
-                    z0mg, hcan, ur, emv, emg, gammav, gammag, rsurf, rhsur,
-                    latheav, dt, o2air, co2air, foln, btran)
-    bf = _bare_flux(land_state, forcing, radd, p, df1, zlvl, zpdg, z0mg, ur,
-                    emg, gammag, rsurf, rhsur)
+    vf = _vege_flux(land_state, forcing, radd, phen, p, df_top, stc_top, dz_top,
+                    zlvl, zpd, z0m, z0mg, hcan, ur, emv, emg, gammav, gammag,
+                    rsurf, rhsur, latheav, dt, o2, co2, foln_v, btran, fsno,
+                    pahv, pahg)
+    bf = _bare_flux(land_state, forcing, radd, p, df_top, stc_top, dz_top, zlvl,
+                    zpdg, z0mg, ur, emg, gammag, rsurf, rhsur, pahb)
 
     # FVEG-weighted tile sum (ENERGY :2285-2325)
     use_veg = veg & (fveg > 0.0)
@@ -708,6 +907,9 @@ def noahmp_energy_canopy(
     ssoil = jnp.where(use_veg, fveg * vf["ghv"] + (1.0 - fveg) * bf["ghb"], bf["ghb"])
     fcev = jnp.where(use_veg, vf["evc"], 0.0)
     fctr = jnp.where(use_veg, vf["tr"], 0.0)
+    canhs = jnp.where(use_veg, vf["canhs"], 0.0)
+    # PAH tile sum (ENERGY :2294/2314): veg = FVEG*PAHG+(1-FVEG)*PAHB+PAHV; bare=PAHB
+    pah = jnp.where(use_veg, fveg * pahg + (1.0 - fveg) * pahb + pahv, pahb)
     tg = jnp.where(use_veg, fveg * vf["tg"] + (1.0 - fveg) * bf["tgb"], bf["tgb"])
     tv = jnp.where(use_veg, vf["tv"], land_state.tv)
     tah = jnp.where(use_veg, vf["tah"], land_state.tah)
@@ -716,7 +918,11 @@ def noahmp_energy_canopy(
     chb = bf["ch"]
     ch = jnp.where(use_veg, fveg * vf["chv"] + (1.0 - fveg) * bf["ch"], bf["ch"])
     cm = jnp.where(use_veg, fveg * vf["cm"] + (1.0 - fveg) * bf["cm"], bf["cm"])
-    qsfc = jnp.where(use_veg, vf["qsfc"], land_state.qsfc)
+    # QSFC = Q1 tile-combine (ENERGY :2300/2318): veg = FVEG*(EAH canopy-air q) +
+    # (1-FVEG)*QSFC_bare; bare = QSFC_bare. The driver writes Q1 back as QSFC
+    # (module_sf_noahmpdrv.F:1244).
+    q1_canopy = vf["eah"] * 0.622 / (forcing.sfcprs - 0.378 * vf["eah"])
+    qsfc = jnp.where(use_veg, fveg * q1_canopy + (1.0 - fveg) * bf["qsfc"], bf["qsfc"])
     z0wrf = jnp.where(use_veg, z0m, z0mg)
 
     # net emissivity + TRAD (ENERGY :2337-2348)
@@ -734,6 +940,11 @@ def noahmp_energy_canopy(
     qfx = ecan + edir + etran
     lh = fcev + fgev + fctr  # noqa: F841  (LH mapping; coupler reads ef fields)
 
+    # urban surface humidity (NOAHMP_SFLX :1062-1064): QSFC=QFX/(RHOAIR*CH)+QAIR.
+    rhoair_top = (forcing.sfcprs - 0.378 * forcing.qair * forcing.sfcprs
+                  / (0.622 + 0.378 * forcing.qair)) / (RAIR * forcing.sfctmp)
+    qsfc = jnp.where(urban, qfx / (rhoair_top * jnp.maximum(ch, MPE)) + forcing.qair, qsfc)
+
     # semi-implicit STC update (TSNOSOI / Sprint S2). Fluxes above used the OLD
     # STC(1) as the ground BC, so this does not change this step's HFX/LH/SSOIL/
     # TRAD. Tolerate S2 unmerged (stub raises NotImplementedError).
@@ -743,8 +954,6 @@ def noahmp_energy_canopy(
 
         stc = jnp.concatenate([land_state.tsno, land_state.tslb], axis=0)
         dzsnso = _full_dz(land_state)
-        df_full = jnp.concatenate([jnp.zeros((NSNOW,) + fveg.shape), df], axis=0)
-        hcpct_full = jnp.concatenate([jnp.zeros((NSNOW,) + fveg.shape), hcpct], axis=0)
         stc_new = noahmp_soil_thermo(
             stc, df_full, hcpct_full, ssoil, static.tbot, land_state.zsnso,
             dzsnso, land_state.isnow, dt,
@@ -762,7 +971,7 @@ def noahmp_energy_canopy(
     )
     ef = NoahMPEnergyFluxes(
         fsh=fsh, fcev=fcev, fgev=fgev, fctr=fctr, ssoil=ssoil, fira=fira,
-        trad=trad, emissi=emissi, z0wrf=z0wrf, chv=chv, chb=chb,
+        trad=trad, emissi=emissi, z0wrf=z0wrf, chv=chv, chb=chb, canhs=canhs,
     )
     et = NoahMPEtFluxes(
         ecan=ecan, etran=etran, edir=edir, qseva=qvap, btrani=btrani,

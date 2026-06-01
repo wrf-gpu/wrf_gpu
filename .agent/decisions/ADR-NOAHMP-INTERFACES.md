@@ -46,7 +46,7 @@ LAND-ONLY prognostic Noah-MP. Active-option scope-bound (WRF `iopt_*`, verified 
 | `opt_crs`  | 1 | Ball-Berry stomatal resistance | canopy resistance for transpiration |
 | `opt_btr`  | 1 | Noah soil-moisture stomatal factor | |
 | `opt_run`  | 3 | **Schaake96** surface/subsurface runoff | **no groundwater (SIMGM/SIMTOP) — CUT** |
-| `opt_sfc`  | 1 | Monin-Obukhov drag (CH/CM) | **Noah-MP does NOT own CH/CM here — sfclay supplies them** (see §4) |
+| `opt_sfc`  | 1 | Monin-Obukhov drag (CH/CM) | **sfclay SEEDS CH/CM; Noah-MP RE-DERIVES the land-tile CH/CM in-loop and they are AUTHORITATIVE over land** (see §4, S1-amend) |
 | `opt_frz`  | 1 | NY06 supercooled liquid | within soil thermo/water |
 | `opt_inf`  | 1 | NY06 frozen-soil permeability | within Schaake water |
 | `opt_rad`  | (3 → gap = 1−FVEG) | radiation transfer | within canopy energy balance |
@@ -104,8 +104,8 @@ All temperatures K, moisture m³/m³ (volumetric) or kg/m², geopotential-free.
 | `fwet`     | surface | – | FWET | wetted canopy fraction |
 | `lai`      | surface | m²/m² | LAI | leaf area index (table-driven, dveg=4) |
 | `sai`      | surface | m²/m² | SAI | stem area index (table-driven) |
-| `cm`       | surface | – | CM | momentum drag coeff (carried; **supplied by sfclay**, §4) |
-| `ch`       | surface | – | CH | heat drag coeff (carried; **supplied by sfclay**, §4) |
+| `cm`       | surface | – | CM | momentum drag coeff (**sfclay SEEDS the inout slot; Noah-MP VEGE/BARE_FLUX re-derive & return the land-tile value**, §4) |
+| `ch`       | surface | – | CH | heat drag coeff (**sfclay SEEDS the inout slot; Noah-MP VEGE/BARE_FLUX re-derive & return the land-tile value**, §4) |
 | `t_skin`   | surface | K | TSK=TRAD | radiative skin temperature (diagnostic carry, mirrors `State.t_skin`) |
 | `qsfc`     | surface | kg/kg | QSFC | surface mixing ratio |
 | `znt`      | surface | m | ZNT=Z0WRF | combined roughness (Noah-MP-owned over land) |
@@ -276,9 +276,17 @@ here, perf-sidecar owns it):
 
 1. **sfclay first (unchanged).** `surface_layer_with_diagnostics(state)` runs over ALL columns to produce
    `CH/CM` (heat/momentum exchange coeffs), `ustar`, `tau_u/tau_v`, and the **water/lake** HFX/LH/QFX/T2/Q2
-   exactly as today. `opt_sfc=1`: sfclay OWNS CH/CM; they are fed INTO Noah-MP (`forcing`/`land_state.cm/ch`).
+   exactly as today. `opt_sfc=1`: sfclay **SEEDS** CH/CM and they are fed INTO Noah-MP as the inout slot
+   (`forcing`/`land_state.cm/ch`). **CORRECTION (S1-amend, GPT-5.5 blind review 2026-06-02):** sfclay does
+   NOT *own* the FINAL land CH/CM. WRF Noah-MP `VEGE_FLUX`/`BARE_FLUX` call `SFCDIF1` INSIDE their
+   Newton loops (`module_sf_noahmplsm.F:3889-3895`, `4359-4365`), RE-DERIVE the canopy/bare drag from the
+   evolving sensible-heat flux, overwrite `CH` with the conductance output (`:4165-4168`, `:4476-4477`),
+   and tile-combine `CM/CH` (`:2298-2299`). So over land the **Noah-MP-returned CH/CM are authoritative**;
+   sfclay's seed only initializes the inout slot and remains the water/lake path's coeffs.
 2. **Noah-MP over land.** `noah_mp_step(land_state, forcing, static, dt)` runs on the land mask
-   (`is_land = (xland−1.5) < 0`). It OWNS land `HFX/LH/QFX/TSK/albedo/emiss/ZNT`.
+   (`is_land = (xland−1.5) < 0`). It OWNS land `HFX/LH/QFX/TSK/albedo/emiss/ZNT` **and the re-derived land
+   CH/CM**. **S6 MUST NOT treat the sfclay CH/CM as final over land** — read back the Noah-MP-returned
+   `land_state.cm/ch` (and `ef.chv/chb`) for any land-tile use; using the sfclay seed over land breaks parity.
 3. **Masked blend (the only place land vs water flux is selected):**
    ```
    hfx   = where(is_land, noahmp.hfx,   sfclay.hfx)

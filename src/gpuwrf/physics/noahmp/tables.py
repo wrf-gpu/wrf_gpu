@@ -166,6 +166,16 @@ class NoahMPParameters(NamedTuple):
     iscrop: int
     isurban: int
 
+    # --- SNOW_AGE (BATS) globals (&noahmp_global_parameters, Yang97 eqn.10) -----
+    # ADDITIVE amendment (S1 energy FIX, patch protocol): WRF reads these through
+    # parameters%TAU0/GRAIN_GROWTH/... (module_sf_noahmplsm.F:3153-3160). Defaulted
+    # so any pre-S1 NoahMPParameters constructor keeps working; load_noahmp_
+    # parameters now fills them from MPTABLE.
+    tau0: jnp.ndarray = None             # tau0 from Yang97 eqn.10a
+    grain_growth: jnp.ndarray = None     # vapor-diffusion grain growth (eqn.10b)
+    extra_growth: jnp.ndarray = None     # near-freezing extra growth (eqn.10c)
+    dirt_soot: jnp.ndarray = None        # dirt/soot term (eqn.10d)
+
 
 # ---------------------------------------------------------------------------
 # WRF text-table parsers (faithful to the Fortran read order).
@@ -403,6 +413,11 @@ def load_noahmp_parameters(
         iswater=int(veg["ISWATER"][0]), isbarren=int(veg["ISBARREN"][0]),
         isice=int(veg["ISICE"][0]), iscrop=int(veg["ISCROP"][0]),
         isurban=int(veg["ISURBAN"][0]),
+        # SNOW_AGE BATS globals (read from &noahmp_global_parameters)
+        tau0=jnp.asarray(glob["TAU0"][0]),
+        grain_growth=jnp.asarray(glob["GRAIN_GROWTH"][0]),
+        extra_growth=jnp.asarray(glob["EXTRA_GROWTH"][0]),
+        dirt_soot=jnp.asarray(glob["DIRT_SOOT"][0]),
     )
     _validate(bundle, nveg, slcats)
     return bundle
