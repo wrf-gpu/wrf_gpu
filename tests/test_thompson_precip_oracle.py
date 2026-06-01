@@ -39,19 +39,31 @@ def test_faithful_thompson_validates_against_precip_oracle():
     pf = r["per_field"]
     pm = r["precip_mass"]
 
-    # #32 tolerance band (precip oracle, one 18 s step):
+    # P1-5 PRECIP PARITY tolerance band (precip oracle, one 18 s step). These are
+    # PREDECLARED and tightened from the old #32 *functional* gate after the
+    # WRF-faithful adaptive-nstep sedimentation fix (NSED_MAX masked scan, per-
+    # column nstep = MAX_k INT(DT/(dz/vt)+1)), which collapsed the +13% surface-
+    # precip bias to within +-3% and the rain-field error to <1%.
     #  - water closure mass-conserving
     assert pm["water_closure_max_rel_residual"] < 1e-5, pm
-    #  - qv faithful (<1% mean), qr faithful (<10% mean) -- profiles match WRF
+    #  - qv faithful (<1% mean), qr now WRF-PARITY (<1% mean / <2% max)
     assert pf["qv"]["mean_rel"] < 0.01, pf["qv"]
-    assert pf["qr"]["mean_rel"] < 0.10, pf["qr"]
-    #  - it actually precipitates and is within order of WRF (functional gate,
-    #    NOT RAINNCV parity -- see PRECIP_ORACLE_AND_IMPLICIT_SED.md caveat)
+    assert pf["qr"]["mean_rel"] < 0.01, pf["qr"]
+    assert pf["qr"]["max_rel"] < 0.02, pf["qr"]
+    #  - snow profile placement (mean_rel) within the WRF single-mode closure band
+    assert pf["qs"]["mean_rel"] < 0.15, pf["qs"]
+    #  - SURFACE PRECIP PARITY: total within +-3% of WRF RAINNCV (was +13%).
     jax_total = pm["total_surface_precip_mm"]
     wrf_total = wrf["wrf_total_rainncv_mm"]
     assert jax_total > 0.0
     assert wrf_total > 0.0
-    assert jax_total < 4.0 * wrf_total, (jax_total, wrf_total)
+    ratio = jax_total / wrf_total
+    assert 0.97 <= ratio <= 1.03, (jax_total, wrf_total, ratio)
+    #  - per-column surface precip tracks WRF within 3% on every column.
+    jper = pm["surface_precip_mm_per_col"]
+    wper = wrf["wrf_rainncv_mm_per_col"]
+    for jc, wc in zip(jper, wper):
+        assert abs(jc - wc) <= 0.03 * wc + 1e-6, (jc, wc)
 
 
 @pytest.mark.skipif(not _have_oracle(), reason="precip oracle savepoint absent")

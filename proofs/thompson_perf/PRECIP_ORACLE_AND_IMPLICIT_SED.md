@@ -4,6 +4,18 @@
 **Base commit:** `f756753` (thompson-perf tip)
 **Date:** 2026-05-31
 
+> **UPDATE 2026-06-01 (v0.2.0 P1-5, precip-parity lane):** the "+13% surface
+> precip" caveat below (section A) is now CLOSED. The excess was the FIXED 64
+> sedimentation substeps over-resolving the falling front vs WRF's coarser
+> adaptive `nstep`. Adopting WRF's exact adaptive `nstep = MAX_k INT(DT/(dz/vt)+1)`
+> via a masked fixed-length scan (and the WRF `rr(kts)>1e-9` surface threshold,
+> which is a no-op on this column) collapses the surface-precip ratio from 1.134
+> to **0.983 (-1.7%)** and the rain-field error from 1.53%/23% (mean/max) to
+> **0.08%/0.41%** — genuine WRF parity, byte-faithful per-column nstep, no fudge.
+> Predeclared P1-5 parity gates all PASS: see `precip_parity_p1_5.json` /
+> `precip_parity_p1_5.py`. The implicit-sed REJECT decision (section B/D) stands
+> unchanged. The diagnosis that isolated the two effects is `_diag_sed_wrf_faithful.py`.
+
 ## Mission
 (A) Build a PRECIPITATING WRF Thompson oracle and validate the shipped
 faithful-explicit GPU Thompson on precipitation (the 0.1.0 functional gate #32).
