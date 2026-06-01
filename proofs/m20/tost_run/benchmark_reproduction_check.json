@@ -1,0 +1,18 @@
+{
+  "schema": "M20BenchmarkReproductionCheck",
+  "schema_version": 1,
+  "generated_utc_note": "2026-05-31 — 2nd Opus verification pass (worker/opus/final-verdict)",
+  "purpose": "Prove paired_tost_scorer.py reproduces the ADR-029 predeclared CPU-WRF RMSE benchmarks EXACTLY on the anchor case, confirming margins + obs-join + station-interp + complete-pair logic are mutually consistent and the harness is ready. Reuse-only, CPU-only, no GPU.",
+  "case_id": "bench_check_20260521_l3",
+  "cpu_run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
+  "domain": "d02",
+  "init_utc": "2026-05-21T18:00:00+00:00",
+  "forecast_hours": 24,
+  "total_complete_pairs": 5100,
+  "block": "0-24h",
+  "measured_cpu_rmse": {"T2": 2.148692978020805, "U10": 2.3064713972582305, "V10": 2.7523205379208537},
+  "adr029_predeclared_benchmark": {"T2": 2.148692978020805, "U10": 2.3064713972582305, "V10": 2.7523205379208537},
+  "n_pairs": {"T2": 1639, "U10": 1628, "V10": 1628},
+  "match": "EXACT (bit-for-bit) for all three variables",
+  "verdict": "Harness + scorer + margins mutually consistent. Paired-TOST plumbing READY. Only the live GPU forecast leg remains (manager-sequenced)."
+}
