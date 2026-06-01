@@ -398,7 +398,20 @@ The model code, validation harnesses, performance analysis, and the bulk of this
 We set out to answer a testable question: can autonomous AI agents produce trustworthy scientific software when the domain has hard oracles? On the evidence here, the answer is a qualified yes. A governed multi-agent AI system, steered by a human for minutes a day on subscription-limited budgets, built a GPU-native, WRF-compatible regional forecast path that passes published idealized analytic gates and WRF operator savepoints, reproduces real Canary 3 km surface fields near same-workstation CPU-WRF over three 72 h cases while beating a persistence baseline on winds, runs with the high-frequency state resident on a single consumer GPU at an honest ~5.3–7.8x over 28-rank CPU-WRF, brings a 1 km nest within its predeclared bounded gate while disclosing — rather than hiding — that the surface-layer repair that unblocked it is an empirical partial fix (full MYNN parity pending), and lays out a clear inventory of what separates it from a complete WRF replacement. The deeper result is methodological: the same process that built the artifact also caught and publicly retracted its own false claims — a self-compare, an inflated speedup, a missing Coriolis force, a boundary pump, and a surface-flux warm bias the boundary fix unmasked — and it could do so *because the domain is verifiable*. In a field where numerical trust matters more than demonstration speed, that self-correction is not a caveat on the result. It is the result.
 [Enric: The ai agent swarm will continue running at least until version 0.2.0 is realeast which is liely within hours or days after this publication given the speed of the AI agent swarm. This version will already be much closer to a true WRF gpu port and cleaner veriefied, refer to (REF ROADMAP DOC IN REPO HERE)]
 
+
+[Enric: General comment:
+I think what is missing is an honest estimated table of agent runs and tokens used for each stage of the project with the 0.0.1 (dycore done) and the 0.1.0 (functional minimal gpu port done) beeing the main milestones. I suggest to use the git history and the file creation/change dates to estimate the days / time / hours and if no token count can be reproduced (are the run ids logged?) estimate them. Usually the manager used 1mio once a day and was then "reset" with compactification, sprints and I remember were usually between 200k and 1mio, verify sprints and plan revision usually 200k. 
+Send an opus 4.8 high worker to research this and crate a table for the publication if meaningful data can be reproduced there. 
+
+I think in that context it is also in the interest for the reader that this was done with the 200€ claude max pland and the 100€ gpt pro plan within the free token limits. So anywhere between free and 300€ total.
+
+Why i think this is importt and interesting is because it adds an important message. Extremely complex scientific software that was barely developable by expert teams has become near zero cost. This is a huge opporunity for sciences with large computational elements like meterology, geology , ecology and other and this project as an early sign of this proves that soon probably even the most complex computer codes especially the ones that require rare corssfield expert knowlege will be basically free to develop.
+
+]
+
 ---
+
+
 
 ## References
 
