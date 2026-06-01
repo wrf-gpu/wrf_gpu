@@ -142,9 +142,9 @@ def fig_validation_pyramid():
          [("PASS", PASS_G)]),
         ("Tier 4 — real-case skill + persistence baseline",
          "d02 3 km: D02_VALIDATED (3 cases, stable 72 h, U10/V10 beat persistence)\n"
-         "d03 1 km: bounded-fail — HFX/MYNN thermal-roughness fix, 24 h re-confirmation pending\n"
-         "TOST equivalence: harness built/self-tested; underpowered, single-season (n=3 MAM) only",
-         [("d02 PASS", PASS_G), ("d03 pending", WARN_O), ("TOST underpowered", WARN_O)]),
+         "d03 1 km: D03_1KM_VALIDATED (24 h, T2 RMSE 1.92 K < 3.0 gate, beats persistence; secondary — empirical-partial HFX repair)\n"
+         "TOST: n=3 MAM GPU paired-delta, underpowered single-season descriptive check (NOT 'equivalence PASS')",
+         [("d02 PASS", PASS_G), ("d03 PASS (secondary)", PASS_G), ("TOST underpowered", WARN_O)]),
     ]
     n = len(tiers)
     H = 1.35           # height per tier band
@@ -412,7 +412,7 @@ def fig_self_correction_timeline():
         ("Missing-Coriolis fix\nV10 −0.13 → +0.17", "fix"),
         ("d03 boundary-pump fix\n+6.8 K → d02-quality", "fix"),
         ("HFX/MYNN thermal-rough fix\nHFX 4.22×→2.30×, T2 +3.6→+1.2 K", "fix"),
-        ("v0.1.0: d02 validated;\nd03 24 h re-confirm pending", "status"),
+        ("v0.1.0: d02 validated;\nd03 24 h validated (secondary)", "status"),
     ]
     col = {"overclaim": FAIL_R, "fix": PASS_G, "status": "#2166ac"}
 

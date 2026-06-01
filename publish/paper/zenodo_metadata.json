@@ -1,0 +1,77 @@
+{
+  "_README": "Zenodo deposition metadata for the v0.1.0 software + preprint release. Schema follows the Zenodo legacy deposition API `metadata` object (https://developers.zenodo.org/#representation) and the newer InvenioRDM record metadata; both accept `creators`, `contributors` (DataCite contributorType controlled vocabulary), `keywords`, `license`, `version`, `related_identifiers`, `description`. POLICY BASIS: Zenodo `creators` appear in the citation and are the accountable authors; AI systems cannot hold accountability or satisfy human-only authorship criteria (consistent with arXiv 2026 / Nature 2024 AI-authorship policy and the manuscript Section 9.5), so the sole human author is the only `creator`, and the AI systems are recorded as `contributors` with the DataCite type `Other`. Zenodo permits organizations as contributors. Fields marked PENDING-TAG are filled when the tag/repo/DOI are cut.",
+  "metadata": {
+    "upload_type": "software",
+    "title": "Verifiable AI-Engineered Scientific Software: A GPU-Native JAX Reimplementation of a WRF-Compatible Regional Forecast Path",
+    "version": "0.1.0",
+    "language": "eng",
+    "access_right": "open",
+    "license": "AGPL-3.0-or-later",
+    "creators": [
+      {
+        "name": "Guenther, Enric",
+        "affiliation": "Independent (hobby project; corresponding and sole accountable author)"
+      }
+    ],
+    "contributors": [
+      {
+        "name": "Anthropic",
+        "type": "Other",
+        "_role_note": "Claude Opus 4.7 / 4.8 — AI implementation agent: authored the bulk of the model code, validation harnesses, performance analysis, and manuscript under the human author's direction."
+      },
+      {
+        "name": "OpenAI",
+        "type": "Other",
+        "_role_note": "GPT-5.5 Codex — AI implementation and review agent: built the governance scaffolding (skills/memory/roles), served as cross-model verifier/critic, and implemented the dynamical core in the early/middle stages."
+      },
+      {
+        "name": "Google",
+        "type": "Other",
+        "_role_note": "Gemini 3.5 — reactive tiebreak / orthogonal bug-finding AI agent engaged only when the primary models had both failed on the same defect."
+      }
+    ],
+    "description": "<p>A governed multi-agent AI system planned, implemented, falsified, repaired, and proof-object-validated a GPU-native, JAX/XLA, WRF-compatible regional forecast path with the high-frequency model state resident on a single consumer GPU (NVIDIA RTX 5090), built on subscription-limited model budgets with only roughly-daily human steering.</p><p>The artifact is validated against hard oracles: idealized analytic benchmarks (Skamarock warm bubble, Straka density current), WRF Fortran operator savepoints, persistence baselines, three real 72&nbsp;h Canary Islands 3&nbsp;km cases scored against same-workstation CPU-WRF, conservation and finiteness invariants, a length-independent device-residency check, and a roofline-grounded performance study reporting an honest ~5.3x (clean) to ~7.8x (realistic) speedup over 28-rank CPU-WRF. The process also caught and publicly retracted its own false claims: a JAX-vs-JAX self-compare mistaken for bitwise WRF parity, an inflated 22.26x speedup, a missing Coriolis force exposed by a persistence baseline, and a 1&nbsp;km nested-boundary pressure-pump.</p><p>v0.1.0 is a single-domain GPU replay forecast path: it still consumes CPU-WRF/Gen2 boundary and land artifacts and lacks live nesting, native initialization, and prognostic land surface. The 1&nbsp;km nest passes its predeclared bounded 24&nbsp;h gate (T2 RMSE 1.92&nbsp;K, beating persistence) only after an empirical partial surface-layer repair (full MYNN parity pending) and is reported as a secondary result behind the primary 3&nbsp;km domain.</p><p><strong>AI-use disclosure:</strong> the model code, validation harnesses, performance analysis, and the bulk of the manuscript were produced by AI agents&nbsp;&mdash;&nbsp;by the author's estimate roughly 99.9% of the implementation&nbsp;&mdash;&nbsp;under a governed multi-agent process directed by the human author, who is the sole accountable party for the public claims. Because AI systems cannot hold accountability, they are credited as contributors rather than authors.</p>",
+    "keywords": [
+      "numerical weather prediction",
+      "WRF",
+      "GPU",
+      "JAX",
+      "XLA",
+      "regional forecasting",
+      "scientific software engineering",
+      "multi-agent AI",
+      "AI code generation",
+      "verifiable AI",
+      "proof-object validation",
+      "reproducible research"
+    ],
+    "subjects": [
+      { "term": "Software Engineering", "identifier": "cs.SE", "scheme": "arxiv" },
+      { "term": "Artificial Intelligence", "identifier": "cs.AI", "scheme": "arxiv" },
+      { "term": "Atmospheric and Oceanic Physics", "identifier": "physics.ao-ph", "scheme": "arxiv" },
+      { "term": "Distributed, Parallel, and Cluster Computing", "identifier": "cs.DC", "scheme": "arxiv" }
+    ],
+    "notes": "Hobby project, no funding, no metered API spend; built within the free token limits of a Claude Max + GPT Pro subscription pair (somewhere between free and ~EUR 300 total). This is an experimental research prototype with known skill regressions vs CPU-WRF (see Section 8 of the manuscript); no operational suitability is claimed; use at your own risk. Released under AGPL-3.0-or-later: forks, including hosted services, must stay open.",
+    "related_identifiers": [
+      {
+        "_PENDING_TAG": true,
+        "relation": "isSupplementTo",
+        "identifier": "arXiv:XXXX.XXXXX",
+        "resource_type": "publication-preprint",
+        "_note": "arXiv preprint identifier, set when the preprint is posted."
+      },
+      {
+        "_PENDING_TAG": true,
+        "relation": "isSupplementedBy",
+        "identifier": "https://github.com/OWNER/wrf_gpu/tree/v0.1.0",
+        "resource_type": "software",
+        "_note": "Public source repository at the v0.1.0 tag; set at release."
+      }
+    ],
+    "_pending_tag_fields": {
+      "publication_date": "PENDING-TAG: day the v0.1.0 tag is cut",
+      "release_commit": "PENDING-TAG: final tagged commit hash (validation ran on HFX-fix HEAD d1c373b)",
+      "doi": "PENDING-TAG: Zenodo mints the DOI on first publish; reserve the concept DOI and back-fill into CITATION.cff and the paper"
+    }
+  }
+}

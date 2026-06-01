@@ -1,11 +1,14 @@
 # Missing Elements — v0.1.0 Paper Cross-Reference List
 
-Status: refreshed 2026-05-31 alongside the filled `publish/paper/paper.md` (branch
-`worker/opus/final-verdict`) and updated after the GPT editorial pass. This is the
-manager's pre-tag cross-reference list. The 9 evidence tables under `publish/tables/` +
-the effort/process ledgers are now **landed and wired into the paper prose** (every
-quantitative claim in the text traces to a generated table or a committed proof object).
-What remains is grouped into:
+Status: refreshed 2026-06-01 after the **groundwork paper rewrite** (branch
+`worker/opus/final-verdict`), the completed GPU verification campaign
+(`proofs/PROOF_TABLE.md`: 9 PASS / 1 comparator-harness FAIL / 1 device-residency
+INCONCLUSIVE), and the figure renders (all 7 PNGs wired in as Figures 1–7). Every inline
+`[Enric:]`/`[GPT suggestion]` comment in `paper.md` has been resolved or flagged
+`<!-- NEEDS-PRINCIPAL -->`. The 9 evidence tables under `publish/tables/` + the
+effort/process ledgers are landed and wired into the paper prose (every quantitative claim
+in the text traces to a generated table or a committed proof object). What remains is
+grouped into:
 
 - **(i) DONE / filled** — text + table evidence complete; only a figure *render* or a
   release-hygiene paste is outstanding (no new science).
@@ -74,45 +77,53 @@ The only outstanding work is rendering PNGs and one script-path update.
     `publish/VERIFICATION.md` now exist as the binding 11-row contract — the audit script should
     cross-check against them. Owner: release-hygiene.
 
-11. **Figure renders (all (i)).** Render the PNGs the prose references (each has a clear
-    `[MISSING FIGURE ...]` marker; the table/text carries the content until rendered):
-    `model_role_timeline.png` (§3.2), `validation_pyramid.png` (§5, updated status),
-    `warm_bubble_panel.png` + `straka_density_current_panel.png` (§6.1; PPMs already in
-    `publish/figures/idealized/`), `roofline_dycore.png` (§6.4), `workflow_loop.png` (§3.6),
-    optional `self_correction_timeline.png` (§6.5). No new science; pure rendering.
-    Owner: figure-worker.
+11. **Figure renders — DONE.** All 7 PNGs are rendered and wired into the paper as Figures 1–7
+    (the `[MISSING FIGURE ...]` markers are removed): `model_role_timeline.png` (§3.2, Fig 1),
+    `workflow_loop.png` (§3.6, Fig 2), `validation_pyramid.png` (§5, Fig 3 — re-rendered to show
+    **d03 PASS (secondary)** and TOST underpowered), `warm_bubble_panel.png` (§6.1, Fig 4),
+    `straka_density_current_panel.png` (§6.1, Fig 5), `roofline_dycore.png` (§6.4, Fig 6),
+    `self_correction_timeline.png` (§6.5, Fig 7 — re-rendered to show d03 24 h validated).
+    Re-render with `taskset -c 0-3 python3 publish/figures/render_paper_figures.py`. Owner: DONE.
 
 ---
 
-## (ii) IN-PROGRESS (GPU campaign) — live run on the final release commit required
+## (ii) GPU campaign — EXECUTED. Only the final tag (PENDING-TAG) remains.
 
-Each of these has clear release-gate wording in the paper. Per
-`publish/VERIFICATION.md`, v0.1.0 tags only when the 11-row proof table is all-PASS on the
-release commit, and the d02/d03 validations MUST be re-run on the final post-HFX-fix code.
+The GPU verification campaign is complete; the outcomes are recorded in
+`proofs/PROOF_TABLE.md` (HFX-fix HEAD `d1c373b`; 9 PASS / 1 comparator-harness FAIL — not a
+production defect / 1 device-residency INCONCLUSIVE — architecturally fine). The only remaining
+step is release hygiene: cut and tag the final commit so the published numbers are tied to a
+tagged hash (PENDING-TAG). `publish/VERIFICATION.md` has been updated to the executed outcomes.
 
-12. **§6.2 — d02 re-validate on final commit.** The published d02 table is on `5319b8d`
-    (Coriolis); VERIFICATION.md row 4 requires a re-run on the final post-HFX commit so no number
-    rests on a pre-fix proof. Owner: validation-run (GPU; manager).
+12. **§6.2 — d02 re-validate on final commit — DONE (PENDING-TAG hash).** The 3-case d02
+    validation was re-run post-HFX-fix: **D02_VALIDATED**, T2 RMSE unchanged vs pre-fix (no
+    regression), winds beat persistence at every lead, finite/stable to 72 h (proof table row 4).
+    The numbers are tied to the final tagged commit once cut. Owner: PENDING-TAG (manager).
 
-13. **§6.3 / §8 — d03 24 h HFX-fix confirmation.** The MYNN land-thermal-roughness fix is
-    VALIDATED at the 1 h midday column oracle (`sfclay_hfx_oracle_parity.json`: HFX land 4.22×→2.30×,
-    T2 land bias +3.6 K→+1.2 K). The 24 h d03 re-run with the fix is currently
-    `D03_1KM_BLOCKED` (a GPU OOM under shared-GPU contention — not validation evidence;
-    `d03_summary_run24h_hfxfix.json`). Re-run on an idle GPU to either pass the bounded gate
-    (VERIFICATION.md row 5, currently FAIL/BLOCKED) or keep 1 km out of the positive claim
-    (the paper currently does the latter — confirm the manager's decision). Owner: validation-run.
+13. **§6.3 / §8 — d03 24 h HFX-fix confirmation — DONE.** The 24 h d03 re-run now passes:
+    **D03_1KM_VALIDATED** (proof table row 5), T2 RMSE 1.92 K ≤ 3.0 gate (beats persistence,
+    skill +0.16), U10 3.45 / V10 4.24 ≤ 7.5 gate (V10 beats persistence). The earlier OOM-BLOCKED
+    state is resolved. d03 enters the positive claim **as a secondary result** with field
+    qualifiers (T2 beats persistence; V10 mostly; U10 short-leads only, loses at long leads but
+    within gate) because the unblocking HFX repair is an empirical partial fix. Owner: DONE.
 
-14. **§6.4 / §9.3 — counted D2H audit + repeatability + restart.** `systems_invariants.md`:
-    speedup (9.09×), all-finite-guards-off, and length-independent device residency are PASS;
-    but the *counted* in-loop D2H proof (script exists, no committed count),
-    `repeatability.json`, and `restart_in_pipeline.json` are NOT_RUN (switches not enabled).
-    Re-run the d02 pipeline with `--repeat`/`--restart-at-hour` + emit a counted transfer audit,
-    or drop those specific systems claims (VERIFICATION.md rows 8, 11). Owner: validation-run.
+14. **§6.4 / §9.3 — counted D2H audit + repeatability + restart — DONE / INCONCLUSIVE.**
+    Repeatability (`--repeat`) and restart-continuity (`--restart-at-hour 1`) both **PASS** now
+    (proof table row 8). The *byte-counted* in-loop D2H audit is **INCONCLUSIVE** (proof table row
+    11): the classifier finds in-loop events but cannot extract per-event byte sizes, so a
+    `bytes_accounted` guard yields INCONCLUSIVE rather than a fabricated zero. Residency stays
+    architecturally guaranteed by construction. The paper now states this precisely (no false
+    zero-in-loop claim). The byte-counted audit is a tracked v0.2.0 follow-up. Owner: DONE
+    (v0.2.0 for the byte-size extraction).
 
-15. **§6.1 / §6.4 / §9 — re-confirm PASS rows on the release commit.** VERIFICATION.md rows
-    1–3 (idealized + savepoint parity), 7 (conservation), 9 (performance) are PASS but must be
-    re-confirmed on the final commit via `scripts/verify_all.sh` (`VERIFY_RUN_GPU=1`). Owner:
-    validation-run (GPU; manager).
+15. **§6.1 / §6.4 / §9 — PASS rows confirmed via the campaign.** Rows 1, 2 (idealized), 7
+    (conservation), 9 (performance), 10 (precip) are PASS on the HFX-fix HEAD (proof table). Row 3
+    (savepoint-parity *comparator harness*) is **FAIL — comparator-harness gap, not a
+    production-dycore defect** (the validation-only core path is fed a state missing ~30
+    `small_step_prep` leaves; the production dycore is validated by rows 1/2/7 + d02/d03). The
+    paper and VERIFICATION.md report this honestly; the comparator fix is a v0.2.0 follow-up.
+    *PENDING-TAG:* a final `scripts/verify_all.sh` (`VERIFY_RUN_GPU=1`) re-run on the tagged commit
+    regenerates `proofs/PROOF_TABLE.md` against that exact hash. Owner: PENDING-TAG (manager).
 
 ---
 
@@ -147,64 +158,70 @@ release commit, and the d02/d03 validations MUST be re-run on the final post-HFX
 
 ## Release-hygiene + human decisions (gate the tag; not science)
 
-21. **§9.1 — public repo URL, `v0.1.0` tag, exact release commit.** Paper marker:
-    `[MISSING RELEASE ITEM]`. Current
-    validated HEAD `5319b8d` (Coriolis) + fixes through `234265a`; confirm the final commit after
-    the (ii) re-runs land. v0.1.0 is the FIRST tag (no v0.0.1 git tag ever existed). Owner:
-    release-hygiene + human.
+21. **§9.1 — public repo URL, `v0.1.0` tag, exact release commit — PENDING-TAG.** Paper now uses
+    `_PENDING-TAG_` markers (not `[MISSING RELEASE ITEM]`). Validation ran on the HFX-fix HEAD
+    `d1c373b` (proofs on `worker/opus/final-verdict`); the tag is cut from the final commit after
+    the docs refresh. v0.1.0 is the FIRST tag (no v0.0.1 git tag ever existed). The same hash must
+    be back-filled into `CITATION.cff`, `zenodo_metadata.json`, and §9.1. Owner: release-hygiene + human.
 
-22. **§9.2 — pinned environment manifest.** Pin Python/JAX/jaxlib/CUDA/driver/XLA-flags/OS at the
-    release commit (package declares only `python>=3.10`, `jax>=0.4`; drafting env reports
-    Python 3.13 / JAX 0.10 / CUDA 13 / RTX 5090). Owner: release-hygiene.
+22. **§9.2 — pinned environment manifest — PENDING-TAG.** Pin Python/JAX/jaxlib/CUDA/driver/
+    XLA-flags/OS at the release commit (drafting env: Python 3.13.11 / JAX 0.10.0 / CUDA 13.1 /
+    driver 595.71.05 / RTX 5090, per `publish/manifest/environment.json`). The package still
+    declares only `python>=3.10`, `jax>=0.4`; the release replaces these floors with pins. Owner:
+    release-hygiene.
 
-23. **§9.4 — data/fixture availability statement.** State which Gen2/CPU-WRF corpus + AEMET obs
-    ship vs are described-for-regeneration. Owner: human + release-hygiene.
+23. **§9.4 — data/fixture availability statement — PENDING-TAG.** Paper now carries the
+    `_PENDING-TAG_` statement (small references/proofs ship; full Gen2/CPU-WRF corpus + AEMET obs
+    are too large/licensed → described for regeneration). Finalize at release. Owner: human + release-hygiene.
 
-24. **§1 — `[GPT suggestion]` AEMET/HARMONIE-AROME adequacy.** Cite an AEMET/HARMONIE-AROME
-    product-resolution reference (new bibkey `aemet_harmonie_arome`) or keep the current softened
-    "in the author's operational experience" wording. Owner: citation-check + human.
+24. **§1 — `[GPT suggestion]` AEMET/HARMONIE-AROME adequacy — flagged NEEDS-PRINCIPAL.** No citation
+    produced; wording kept at the softened "in the author's operational experience." A
+    `<!-- NEEDS-PRINCIPAL -->` note in §1 records this. Provide bibkey `aemet_harmonie_arome` to
+    strengthen, or leave as-is. Owner: citation-check + human.
 
-25. **§1 / §2.1 — `[GPT suggestion]` prior open GPU-WRF / commercial completeness audit.** Add a
-    dated prior-art audit table for open WRF GPU attempts and commercial WRF accelerators; if not
-    completed, keep "to the best of our current knowledge" and avoid "first" in title/abstract.
-    Owner: citation-check + human.
+25. **§1 / §2.1 — `[GPT suggestion]` prior open GPU-WRF / commercial completeness audit — flagged
+    NEEDS-PRINCIPAL.** No prior-art audit table produced; "to the best of our current knowledge" is
+    retained and no bare "first" appears in the title/abstract. A `<!-- NEEDS-PRINCIPAL -->` note in
+    §1 records this for journal submission. Owner: citation-check + human.
 
-26. **§9.5 — independent human numerical-methods review.** Disclosed as an arXiv limitation
-    (acceptable); REQUIRED before any journal submission. Owner: human.
+26. **§9.5 — independent human numerical-methods review — OPEN (human).** Disclosed as an arXiv
+    limitation (acceptable); REQUIRED before any journal submission. Owner: human.
 
-27. **Stale-text purge (cross-cutting).** Confirm no surviving stale claims at assembly: the old
-    22.26× in the README "Core goals" line; M7-era `publish/tables/{performance_evolution,
-    skill_evolution,m7_gates,sprint_ledger,test_coverage}.md`; the old `publication/draft/` paper;
-    and `publish/paper/honesty_audit.md` (M7-era — refresh so every quantitative claim in the new
-    paper has a current proof path). The new `paper.md` treats 22.26×/50.20×/156.82× ONLY as
-    retracted self-correction history. Owner: manager + honesty-audit-refresh-worker.
+27. **Stale-text purge (cross-cutting) — DONE in paper-owned scope; manager owns the rest.** The
+    stale earlier-draft `publish/paper/paper.pdf` (2026-05-28) was REMOVED (rebuild via the
+    `publish/paper/README.md` instructions). `publish/VERIFICATION.md` was refreshed to the executed
+    proof-table outcomes. The new `paper.md` treats 22.26×/50.20×/156.82× ONLY as retracted
+    self-correction history. STILL OWNED BY MANAGER (outside this doc pass's file ownership):
+    the README 22.26× "Core goals" line, the M7-era `publish/tables/{performance_evolution,
+    skill_evolution,m7_gates,sprint_ledger,test_coverage}.md` STALE banners, and any old
+    `publication/draft/` paper. `publish/paper/honesty_audit.md` is already refreshed to v0.1.0.
 
-28. **§7 — `[GPT suggestion]` author-reflection placement.** Decide whether the first-person human
-    reflection stays in the main arXiv methodological preprint, moves to an author note, or is
-    substantially softened for a journal submission. Scientific claims should rest on proof tables,
-    not on the subjective reflection. Owner: human + editor.
+28. **§7 — `[GPT suggestion]` author-reflection placement — RESOLVED + NEEDS-PRINCIPAL.** The
+    reflection was converted from first person to third-person professional "human author" voice
+    (per Enric's note) and explicitly marked non-load-bearing. A `<!-- NEEDS-PRINCIPAL -->` note
+    flags the journal-vs-arXiv placement decision. Owner: human + editor.
 
 ---
 
-## TOP remaining items for the manager to cross-reference BEFORE tagging
+## TOP remaining items for the manager BEFORE tagging (post-groundwork)
 
-In priority order — these are the gates between the now-filled draft and an honest tag:
+The GPU campaign is done; the science is settled in `proofs/PROOF_TABLE.md`. What remains is
+release hygiene and a few human decisions:
 
-1. **Re-run d02 + d03 on the FINAL post-HFX commit** (ii #12, #13) and tie every published number
-   to the release commit. The d03 24 h HFX confirmation is the single open scientific question
-   (currently OOM-BLOCKED, not failed); decide pass-the-bounded-gate vs keep-1km-out-of-claim.
-2. **Run the counted D2H audit + repeatability + restart** (ii #14) or drop those systems claims;
-   they are currently NOT_RUN.
-3. **Execute `scripts/verify_all.sh` with `VERIFY_RUN_GPU=1`** on the release commit (ii #15) so the
-   11-row `publish/VERIFICATION.md` table is all-PASS — the binding tag condition.
-4. **Render the 5–6 figures** (i #11) — no new science, but the paper references them.
-5. **Pin the environment manifest + set repo URL / tag / commit** (hygiene #21, #22).
-6. **Resolve or keep the two `[GPT suggestion]` hedges** (#24, #25) and complete the stale-text
-   purge (#27).
-7. **Confirm the TOST wording stays evidence-first** (#16): no "within days" promise; n≈15 May
-   backfill is a planned proof target / v0.2.0 gate, not current evidence.
-8. **Decide author-reflection placement** (#28) before journal submission.
+1. **Cut + tag the final commit (PENDING-TAG)** and back-fill the hash into §9.1, `CITATION.cff`,
+   and `zenodo_metadata.json`; optionally re-run `scripts/verify_all.sh VERIFY_RUN_GPU=1` on the
+   tagged commit to regenerate `proofs/PROOF_TABLE.md` against that exact hash (#21, #15).
+2. **Pin the environment manifest** (#22) and finalize the data-availability statement (#23).
+3. **Build the PDF** on a machine with pandoc+LaTeX (instructions in `publish/paper/README.md`);
+   figures (Fig 1–7) are rendered and wired.
+4. **Human decisions:** AEMET citation (#24), prior-art "first" audit (#25), independent
+   numerical-methods review before any journal submission (#26), author-reflection placement
+   (#28), and the v0.2.0 "within hours/days" conclusion wording (RESOLVED to honesty-preserving
+   text; principal may override — flagged in §10).
+5. **Manager-owned stale-text purge** of files outside `publish/paper/` (#27): README 22.26× line,
+   M7-era table banners.
 
-Citation status: current `paper.md` uses inline `\cite{...}` syntax; all 29 unique cited keys
-resolve in `references.bib` (40 entries). The only possibly new bibkeys are optional evidence for
-#24 and #25; both claims are written to degrade to a hedge if uncitable.
+Citation status: current `paper.md` uses inline `\cite{...}` syntax; the 16 inline `\cite{}` calls
+cover all unique cited keys, and every key resolves in `references.bib` (40 entries). The only
+possibly new bibkeys are optional evidence for #24 and #25; both claims degrade to a hedge if
+uncitable.

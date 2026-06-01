@@ -1,0 +1,88 @@
+cff-version: 1.2.0
+title: >-
+  Verifiable AI-Engineered Scientific Software: A GPU-Native
+  JAX Reimplementation of a WRF-Compatible Regional Forecast Path
+message: >-
+  If you use this software or refer to this work, please cite it
+  using the metadata below. Authorship: the human author is the
+  sole accountable creator of record. AI agents performed roughly
+  99.9% of the implementation under the author's direction and are
+  credited as non-author contributors (see the `contributors` block
+  and the AI-use disclosure in the manuscript, Section 9.5). AI
+  systems cannot hold accountability and are therefore not authors.
+type: software
+authors:
+  # Creators (included in the citation). AI systems are NOT listed here:
+  # per arXiv/Nature/Zenodo-DataCite practice and the manuscript's own
+  # disclosure (Section 9.5), AI cannot be an author/creator because it
+  # cannot hold accountability. The human author is the sole creator.
+  - given-names: Enric
+    family-names: Guenther
+    # orcid: 'https://orcid.org/0000-0000-0000-0000'  # PENDING-TAG: add ORCID if available
+    # email: enric.r.g@gmail.com                       # PENDING-TAG: confirm public contact at release
+abstract: >-
+  A governed multi-agent AI system planned, implemented, falsified,
+  repaired, and proof-object-validated a GPU-native, JAX/XLA,
+  WRF-compatible regional forecast path with the high-frequency model
+  state resident on a single consumer GPU (RTX 5090), built on
+  subscription-limited model budgets with only roughly-daily human
+  steering. The artifact is validated against hard oracles: idealized
+  analytic benchmarks (Skamarock warm bubble, Straka density current),
+  WRF Fortran operator savepoints, persistence baselines, three real
+  72 h Canary Islands 3 km cases scored against same-workstation
+  CPU-WRF, conservation and finiteness invariants, a length-independent
+  device-residency check, and a roofline-grounded performance study
+  (~5.3x clean / ~7.8x realistic over 28-rank CPU-WRF). v0.1.0 is a
+  single-domain replay path: it still consumes CPU-WRF/Gen2 boundary
+  and land artifacts and lacks live nesting, native initialization, and
+  prognostic land surface. The contribution is methodological as much
+  as numerical: in a domain with objective oracles, an autonomous AI
+  process can build correctness-critical scientific software whose
+  trustworthiness — and whose failures — can be checked rather than
+  asserted.
+keywords:
+  - numerical weather prediction
+  - WRF
+  - GPU
+  - JAX
+  - XLA
+  - regional forecasting
+  - scientific software engineering
+  - multi-agent AI
+  - AI code generation
+  - verifiable AI
+  - proof-object validation
+  - reproducible research
+license: AGPL-3.0-or-later
+version: 0.1.0  # PENDING-TAG: first tag; no v0.0.1 git tag ever existed
+# date-released: '2026-06-01'  # PENDING-TAG: set on the day the tag is cut
+# repository-code: 'https://github.com/.../wrf_gpu'  # PENDING-TAG: public repo URL at release
+# commit: 'd1c373b'                                   # PENDING-TAG: final tagged release commit hash
+# doi: '10.5281/zenodo.XXXXXXX'                        # PENDING-TAG: Zenodo concept DOI at release
+# Non-author contributors (DataCite/Zenodo roles). Recorded here as a
+# CFF reference; these AI systems are credited but are NOT authors.
+references:
+  - type: software
+    title: 'Claude (Opus 4.7 / 4.8) — AI implementation agent'
+    notes: >-
+      Non-author contributor (DataCite contributorType "Other"): authored
+      the bulk of the model code, validation harnesses, and manuscript
+      under the human author's direction.
+    authors:
+      - name: 'Anthropic'
+  - type: software
+    title: 'GPT-5.5 Codex — AI implementation and review agent'
+    notes: >-
+      Non-author contributor (DataCite contributorType "Other"): built the
+      governance scaffolding, served as cross-model verifier/critic, and
+      implemented the dycore in early/middle stages.
+    authors:
+      - name: 'OpenAI'
+  - type: software
+    title: 'Gemini 3.5 — reactive tiebreak AI agent'
+    notes: >-
+      Non-author contributor (DataCite contributorType "Other"): reactive
+      tiebreak / orthogonal bug-finder engaged when the primary models had
+      both failed on the same defect.
+    authors:
+      - name: 'Google'
