@@ -12,7 +12,7 @@
         "shape": [
           44,
           66,
-          159
+          120
         ]
       },
       "Ni": {
@@ -24,19 +24,19 @@
         "shape": [
           44,
           66,
-          159
+          120
         ]
       },
       "Nr": {
         "dtype": "float64",
         "finite": true,
-        "max": 0.0,
+        "max": 35.18017169272827,
         "min": 0.0,
         "nonfinite_count": 0,
         "shape": [
           44,
           66,
-          159
+          120
         ]
       },
       "Ns": {
@@ -48,18 +48,18 @@
         "shape": [
           44,
           66,
-          159
+          120
         ]
       },
       "fltv": {
         "dtype": "float64",
         "finite": true,
-        "max": 0.0916171705600418,
-        "min": -0.16335391345861347,
+        "max": 0.9555597279850461,
+        "min": -0.012721705661916638,
         "nonfinite_count": 0,
         "shape": [
           66,
-          159
+          120
         ]
       },
       "graupel_acc": {
@@ -70,7 +70,7 @@
         "nonfinite_count": 0,
         "shape": [
           66,
-          159
+          120
         ]
       },
       "ice_acc": {
@@ -81,7 +81,7 @@
         "nonfinite_count": 0,
         "shape": [
           66,
-          159
+          120
         ]
       },
       "lakemask": {
@@ -92,7 +92,7 @@
         "nonfinite_count": 0,
         "shape": [
           66,
-          159
+          120
         ]
       },
       "lu_index": {
@@ -103,65 +103,65 @@
         "nonfinite_count": 0,
         "shape": [
           66,
-          159
+          120
         ]
       },
       "mavail": {
         "dtype": "float64",
         "finite": true,
         "max": 1.0,
-        "min": 0.017392002046108246,
+        "min": 0.08490170538425446,
         "nonfinite_count": 0,
         "shape": [
           66,
-          159
+          120
         ]
       },
       "mu": {
         "dtype": "float64",
         "finite": true,
-        "max": 96758.76513671875,
-        "min": 65246.55682254061,
+        "max": 96567.23901367188,
+        "min": 65891.85396690306,
         "nonfinite_count": 0,
         "shape": [
           66,
-          159
+          120
         ]
       },
       "mu_bdy": {
         "dtype": "float64",
         "finite": true,
-        "max": 1966.482666015625,
+        "max": 2096.36181640625,
         "min": 0.0,
         "nonfinite_count": 0,
         "shape": [
-          25,
+          73,
           4,
           5,
           1,
-          160
+          121
         ]
       },
       "mu_perturbation": {
         "dtype": "float64",
         "finite": true,
-        "max": 1758.76513671875,
-        "min": 485.4777119594073,
+        "max": 1567.239013671875,
+        "min": 1260.067795873605,
         "nonfinite_count": 0,
         "shape": [
           66,
-          159
+          120
         ]
       },
       "mu_total": {
         "dtype": "float64",
         "finite": true,
-        "max": 96758.76513671875,
-        "min": 65246.55682254061,
+        "max": 96567.23901367188,
+        "min": 65891.85396690306,
         "nonfinite_count": 0,
         "shape": [
           66,
-          159
+          120
         ]
       },
       "mub_bdy": {
@@ -175,57 +175,57 @@
           4,
           5,
           1,
-          160
+          121
         ]
       },
       "p": {
         "dtype": "float64",
         "finite": true,
-        "max": 104379.43253191684,
-        "min": 5224.58349609375,
+        "max": 101454.921875,
+        "min": 5173.842466935534,
         "nonfinite_count": 0,
         "shape": [
           44,
           66,
-          159
+          120
         ]
       },
       "p_bdy": {
         "dtype": "float64",
         "finite": true,
-        "max": 2106.3828125,
-        "min": -6.7734375,
+        "max": 2214.0,
+        "min": -11.990234375,
         "nonfinite_count": 0,
         "shape": [
-          25,
+          73,
           4,
           5,
           44,
-          160
+          121
         ]
       },
       "p_perturbation": {
         "dtype": "float64",
         "finite": true,
-        "max": 4673.229406916836,
-        "min": -5.115234375,
+        "max": 1748.71875,
+        "min": -54.89221230803378,
         "nonfinite_count": 0,
         "shape": [
           44,
           66,
-          159
+          120
         ]
       },
       "p_total": {
         "dtype": "float64",
         "finite": true,
-        "max": 104379.43253191684,
-        "min": 5224.58349609375,
+        "max": 101454.921875,
+        "min": 5173.842466935534,
         "nonfinite_count": 0,
         "shape": [
           44,
           66,
-          159
+          120
         ]
       },
       "pb_bdy": {
@@ -239,83 +239,83 @@
           4,
           5,
           44,
-          160
+          121
         ]
       },
       "ph": {
         "dtype": "float64",
         "finite": true,
-        "max": 204077.453125,
+        "max": 203623.6875,
         "min": -7.796288059580547e-07,
         "nonfinite_count": 0,
         "shape": [
           45,
           66,
-          159
+          120
         ]
       },
       "ph_bdy": {
         "dtype": "float64",
         "finite": true,
-        "max": 8907.8564453125,
+        "max": 8647.1435546875,
         "min": 0.0,
         "nonfinite_count": 0,
         "shape": [
-          25,
+          73,
           4,
           5,
           45,
-          160
+          121
         ]
       },
       "ph_perturbation": {
         "dtype": "float64",
         "finite": true,
-        "max": 8856.96875,
-        "min": -377.5570102938287,
+        "max": 8403.2041015625,
+        "min": 0.0,
         "nonfinite_count": 0,
         "shape": [
           45,
           66,
-          159
+          120
         ]
       },
       "ph_total": {
         "dtype": "float64",
         "finite": true,
-        "max": 204077.453125,
+        "max": 203623.6875,
         "min": -7.796288059580547e-07,
         "nonfinite_count": 0,
         "shape": [
           45,
           66,
-          159
+          120
         ]
       },
       "phb_bdy": {
         "dtype": "float64",
         "finite": true,
         "max": 195220.515625,
-        "min": -4.5681374238881745e-09,
+        "min": -2.2840687119440872e-09,
         "nonfinite_count": 0,
         "shape": [
           1,
           4,
           5,
           45,
-          160
+          121
         ]
       },
       "qc": {
         "dtype": "float64",
         "finite": true,
-        "max": 0.0,
+        "max": 0.0019746788962221834,
         "min": 0.0,
         "nonfinite_count": 0,
         "shape": [
           44,
           66,
-          159
+          120
         ]
       },
       "qg": {
@@ -327,7 +327,7 @@
         "shape": [
           44,
           66,
-          159
+          120
         ]
       },
       "qi": {
@@ -339,31 +339,31 @@
         "shape": [
           44,
           66,
-          159
+          120
         ]
       },
       "qke": {
         "dtype": "float64",
         "finite": true,
-        "max": 14.9183509810311,
+        "max": 8.7359357369312,
         "min": 1e-05,
         "nonfinite_count": 0,
         "shape": [
           44,
           66,
-          159
+          120
         ]
       },
       "qr": {
         "dtype": "float64",
         "finite": true,
-        "max": 0.0,
+        "max": 3.4878663558793755e-05,
         "min": 0.0,
         "nonfinite_count": 0,
         "shape": [
           44,
           66,
-          159
+          120
         ]
       },
       "qs": {
@@ -375,77 +375,77 @@
         "shape": [
           44,
           66,
-          159
+          120
         ]
       },
       "qv": {
         "dtype": "float64",
         "finite": true,
-        "max": 0.014682210302713742,
-        "min": 2.4403203904093713e-06,
+        "max": 0.01499363998625741,
+        "min": 2.7209249350228945e-06,
         "nonfinite_count": 0,
         "shape": [
           44,
           66,
-          159
+          120
         ]
       },
       "qv_bdy": {
         "dtype": "float64",
         "finite": true,
-        "max": 0.014462422579526901,
+        "max": 0.01136792916804552,
         "min": 0.0,
         "nonfinite_count": 0,
         "shape": [
-          25,
+          73,
           4,
           5,
           44,
-          160
+          121
         ]
       },
       "qv_flux": {
         "dtype": "float64",
         "finite": true,
-        "max": 0.00010546966780945588,
-        "min": 9.16147751579146e-09,
+        "max": 0.00020890210238515573,
+        "min": 2.4329369053175826e-08,
         "nonfinite_count": 0,
         "shape": [
           66,
-          159
+          120
         ]
       },
       "rain_acc": {
         "dtype": "float64",
         "finite": true,
-        "max": 0.0,
+        "max": 16.91838994570261,
         "min": 0.0,
         "nonfinite_count": 0,
         "shape": [
           66,
-          159
+          120
         ]
       },
       "rhosfc": {
         "dtype": "float64",
         "finite": true,
-        "max": 1.2448025314877935,
-        "min": 0.8877234215301449,
+        "max": 1.203515690071844,
+        "min": 0.8795816904507999,
         "nonfinite_count": 0,
         "shape": [
           66,
-          159
+          120
         ]
       },
       "roughness_m": {
         "dtype": "float64",
         "finite": true,
-        "max": 0.9035613054290287,
-        "min": 7.12885360914516e-06,
+        "max": 1.2873562327535142,
+        "min": 0.0018932941043451027,
         "nonfinite_count": 0,
         "shape": [
           66,
-          159
+          120
         ]
       },
       "snow_acc": {
@@ -456,177 +456,177 @@
         "nonfinite_count": 0,
         "shape": [
           66,
-          159
+          120
         ]
       },
       "soil_moisture": {
         "dtype": "float64",
         "finite": true,
         "max": 1.0,
-        "min": 0.017392002046108246,
+        "min": 0.08490170538425446,
         "nonfinite_count": 0,
         "shape": [
           66,
-          159
+          120
         ]
       },
       "t_skin": {
         "dtype": "float64",
         "finite": true,
-        "max": 300.850341796875,
-        "min": 278.0006408691406,
+        "max": 309.5020751953125,
+        "min": 279.69219970703125,
         "nonfinite_count": 0,
         "shape": [
           66,
-          159
+          120
         ]
       },
       "tau_u": {
         "dtype": "float64",
         "finite": true,
-        "max": 0.4086488425718103,
-        "min": -1.4913766195708376,
+        "max": 0.4616822218960829,
+        "min": -1.0566037404748725,
         "nonfinite_count": 0,
         "shape": [
           66,
-          159
+          120
         ]
       },
       "tau_v": {
         "dtype": "float64",
         "finite": true,
-        "max": 1.1569128500221983,
-        "min": -0.39161292810662024,
+        "max": 0.6347762732307641,
+        "min": -0.43244873116698057,
         "nonfinite_count": 0,
         "shape": [
           66,
-          159
+          120
         ]
       },
       "theta": {
         "dtype": "float64",
         "finite": true,
-        "max": 492.507918056912,
-        "min": 291.2662048339844,
+        "max": 500.5399169921875,
+        "min": 291.06794513356624,
         "nonfinite_count": 0,
         "shape": [
           44,
           66,
-          159
+          120
         ]
       },
       "theta_bdy": {
         "dtype": "float64",
         "finite": true,
-        "max": 492.52838134765625,
+        "max": 501.2938232421875,
         "min": 0.0,
         "nonfinite_count": 0,
         "shape": [
-          25,
+          73,
           4,
           5,
           44,
-          160
+          121
         ]
       },
       "theta_flux": {
         "dtype": "float64",
         "finite": true,
-        "max": 0.08512257358649367,
-        "min": -0.16537281069889165,
+        "max": 0.9111675757190356,
+        "min": -0.018120590380492782,
         "nonfinite_count": 0,
         "shape": [
           66,
-          159
+          120
         ]
       },
       "u": {
         "dtype": "float64",
         "finite": true,
-        "max": 31.878945016998365,
-        "min": -19.33976138615669,
+        "max": 54.20829115181129,
+        "min": -7.527854451187398,
         "nonfinite_count": 0,
         "shape": [
           44,
           66,
-          160
+          121
         ]
       },
       "u_bdy": {
         "dtype": "float64",
         "finite": true,
-        "max": 25.663454055786133,
-        "min": -11.665651321411133,
+        "max": 61.704322814941406,
+        "min": -7.07191801071167,
         "nonfinite_count": 0,
         "shape": [
-          25,
+          73,
           4,
           5,
           44,
-          160
+          121
         ]
       },
       "ustar": {
         "dtype": "float64",
         "finite": true,
-        "max": 1.3738627146340296,
-        "min": 0.0012446716018711917,
+        "max": 1.041636120332201,
+        "min": 0.030586698436678224,
         "nonfinite_count": 0,
         "shape": [
           66,
-          159
+          120
         ]
       },
       "v": {
         "dtype": "float64",
         "finite": true,
-        "max": 16.022749717841698,
-        "min": -18.50417386382305,
+        "max": 14.882971785797265,
+        "min": -10.10726180258593,
         "nonfinite_count": 0,
         "shape": [
           44,
           67,
-          159
+          120
         ]
       },
       "v_bdy": {
         "dtype": "float64",
         "finite": true,
-        "max": 11.606193542480469,
-        "min": -14.229497909545898,
+        "max": 38.599761962890625,
+        "min": -8.233677864074707,
         "nonfinite_count": 0,
         "shape": [
-          25,
+          73,
           4,
           5,
           44,
-          160
+          121
         ]
       },
       "w": {
         "dtype": "float64",
         "finite": true,
-        "max": 0.9327384981672567,
-        "min": -9.662071244430265,
+        "max": 1.5393206570150522,
+        "min": -2.314888985317826,
         "nonfinite_count": 0,
         "shape": [
           45,
           66,
-          159
+          120
         ]
       },
       "w_bdy": {
         "dtype": "float64",
         "finite": true,
-        "max": 0.4328787326812744,
-        "min": -0.5074310898780823,
+        "max": 0.6940456628799438,
+        "min": -0.4470023810863495,
         "nonfinite_count": 0,
         "shape": [
-          25,
+          73,
           4,
           5,
           45,
-          160
+          121
         ]
       },
       "xland": {
@@ -637,7 +637,7 @@
         "nonfinite_count": 0,
         "shape": [
           66,
-          159
+          120
         ]
       }
     }
@@ -650,11 +650,11 @@
   ],
   "device": "cuda:0",
   "domain": "d02",
-  "hours": 2,
+  "hours": 72,
   "metadata": {
     "boundary": {
       "bdy_width": 5,
-      "padded_side_length": 160,
+      "padded_side_length": 121,
       "schema": "history-strip-pack-v2",
       "side_order": [
         "W",
@@ -663,9 +663,9 @@
         "N"
       ],
       "source": "Gen2 d02 hourly wrfout side-history replay",
-      "source_run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
+      "source_run_dir": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z",
       "strip_order": "WRF wrfbdy order: outer-to-inner bdy_width, vertical, side_index",
-      "times": 25,
+      "times": 73,
       "variables": [
         "U",
         "V",
@@ -679,7 +679,7 @@
         "MU",
         "MUB"
       ],
-      "wrfbdy_path": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfbdy_d01",
+      "wrfbdy_path": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z/wrfbdy_d01",
       "wrfbdy_width_source": "decode_wrfbdy"
     },
     "domain": "d02",
@@ -689,12 +689,12 @@
       "mass_shape": [
         44,
         66,
-        159
+        120
       ],
       "wrf_staggered_extent": [
         45,
         67,
-        160
+        121
       ]
     },
     "land_state_refresh": {
@@ -719,7 +719,7 @@
           ],
           "hour": 1,
           "requested_time_index": 1,
-          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d02_2026-05-21_19:00:00",
+          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z/wrfout_d02_2026-05-09_19:00:00",
           "status": "PASS",
           "time_index": 1
         },
@@ -741,9 +741,1549 @@
           ],
           "hour": 2,
           "requested_time_index": 2,
-          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d02_2026-05-21_20:00:00",
+          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z/wrfout_d02_2026-05-09_20:00:00",
           "status": "PASS",
           "time_index": 2
+        },
+        {
+          "fields_refreshed": [
+            "lakemask",
+            "mavail",
+            "roughness_m",
+            "soil_moisture",
+            "t_skin",
+            "xland"
+          ],
+          "full_hourly_payload": [
+            "TSK",
+            "SST",
+            "SMOIS",
+            "SH2O",
+            "TSLB"
+          ],
+          "hour": 3,
+          "requested_time_index": 3,
+          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z/wrfout_d02_2026-05-09_21:00:00",
+          "status": "PASS",
+          "time_index": 3
+        },
+        {
+          "fields_refreshed": [
+            "lakemask",
+            "mavail",
+            "roughness_m",
+            "soil_moisture",
+            "t_skin",
+            "xland"
+          ],
+          "full_hourly_payload": [
+            "TSK",
+            "SST",
+            "SMOIS",
+            "SH2O",
+            "TSLB"
+          ],
+          "hour": 4,
+          "requested_time_index": 4,
+          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z/wrfout_d02_2026-05-09_22:00:00",
+          "status": "PASS",
+          "time_index": 4
+        },
+        {
+          "fields_refreshed": [
+            "lakemask",
+            "mavail",
+            "roughness_m",
+            "soil_moisture",
+            "t_skin",
+            "xland"
+          ],
+          "full_hourly_payload": [
+            "TSK",
+            "SST",
+            "SMOIS",
+            "SH2O",
+            "TSLB"
+          ],
+          "hour": 5,
+          "requested_time_index": 5,
+          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z/wrfout_d02_2026-05-09_23:00:00",
+          "status": "PASS",
+          "time_index": 5
+        },
+        {
+          "fields_refreshed": [
+            "lakemask",
+            "mavail",
+            "roughness_m",
+            "soil_moisture",
+            "t_skin",
+            "xland"
+          ],
+          "full_hourly_payload": [
+            "TSK",
+            "SST",
+            "SMOIS",
+            "SH2O",
+            "TSLB"
+          ],
+          "hour": 6,
+          "requested_time_index": 6,
+          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z/wrfout_d02_2026-05-10_00:00:00",
+          "status": "PASS",
+          "time_index": 6
+        },
+        {
+          "fields_refreshed": [
+            "lakemask",
+            "mavail",
+            "roughness_m",
+            "soil_moisture",
+            "t_skin",
+            "xland"
+          ],
+          "full_hourly_payload": [
+            "TSK",
+            "SST",
+            "SMOIS",
+            "SH2O",
+            "TSLB"
+          ],
+          "hour": 7,
+          "requested_time_index": 7,
+          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z/wrfout_d02_2026-05-10_01:00:00",
+          "status": "PASS",
+          "time_index": 7
+        },
+        {
+          "fields_refreshed": [
+            "lakemask",
+            "mavail",
+            "roughness_m",
+            "soil_moisture",
+            "t_skin",
+            "xland"
+          ],
+          "full_hourly_payload": [
+            "TSK",
+            "SST",
+            "SMOIS",
+            "SH2O",
+            "TSLB"
+          ],
+          "hour": 8,
+          "requested_time_index": 8,
+          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z/wrfout_d02_2026-05-10_02:00:00",
+          "status": "PASS",
+          "time_index": 8
+        },
+        {
+          "fields_refreshed": [
+            "lakemask",
+            "mavail",
+            "roughness_m",
+            "soil_moisture",
+            "t_skin",
+            "xland"
+          ],
+          "full_hourly_payload": [
+            "TSK",
+            "SST",
+            "SMOIS",
+            "SH2O",
+            "TSLB"
+          ],
+          "hour": 9,
+          "requested_time_index": 9,
+          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z/wrfout_d02_2026-05-10_03:00:00",
+          "status": "PASS",
+          "time_index": 9
+        },
+        {
+          "fields_refreshed": [
+            "lakemask",
+            "mavail",
+            "roughness_m",
+            "soil_moisture",
+            "t_skin",
+            "xland"
+          ],
+          "full_hourly_payload": [
+            "TSK",
+            "SST",
+            "SMOIS",
+            "SH2O",
+            "TSLB"
+          ],
+          "hour": 10,
+          "requested_time_index": 10,
+          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z/wrfout_d02_2026-05-10_04:00:00",
+          "status": "PASS",
+          "time_index": 10
+        },
+        {
+          "fields_refreshed": [
+            "lakemask",
+            "mavail",
+            "roughness_m",
+            "soil_moisture",
+            "t_skin",
+            "xland"
+          ],
+          "full_hourly_payload": [
+            "TSK",
+            "SST",
+            "SMOIS",
+            "SH2O",
+            "TSLB"
+          ],
+          "hour": 11,
+          "requested_time_index": 11,
+          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z/wrfout_d02_2026-05-10_05:00:00",
+          "status": "PASS",
+          "time_index": 11
+        },
+        {
+          "fields_refreshed": [
+            "lakemask",
+            "mavail",
+            "roughness_m",
+            "soil_moisture",
+            "t_skin",
+            "xland"
+          ],
+          "full_hourly_payload": [
+            "TSK",
+            "SST",
+            "SMOIS",
+            "SH2O",
+            "TSLB"
+          ],
+          "hour": 12,
+          "requested_time_index": 12,
+          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z/wrfout_d02_2026-05-10_06:00:00",
+          "status": "PASS",
+          "time_index": 12
+        },
+        {
+          "fields_refreshed": [
+            "lakemask",
+            "mavail",
+            "roughness_m",
+            "soil_moisture",
+            "t_skin",
+            "xland"
+          ],
+          "full_hourly_payload": [
+            "TSK",
+            "SST",
+            "SMOIS",
+            "SH2O",
+            "TSLB"
+          ],
+          "hour": 13,
+          "requested_time_index": 13,
+          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z/wrfout_d02_2026-05-10_07:00:00",
+          "status": "PASS",
+          "time_index": 13
+        },
+        {
+          "fields_refreshed": [
+            "lakemask",
+            "mavail",
+            "roughness_m",
+            "soil_moisture",
+            "t_skin",
+            "xland"
+          ],
+          "full_hourly_payload": [
+            "TSK",
+            "SST",
+            "SMOIS",
+            "SH2O",
+            "TSLB"
+          ],
+          "hour": 14,
+          "requested_time_index": 14,
+          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z/wrfout_d02_2026-05-10_08:00:00",
+          "status": "PASS",
+          "time_index": 14
+        },
+        {
+          "fields_refreshed": [
+            "lakemask",
+            "mavail",
+            "roughness_m",
+            "soil_moisture",
+            "t_skin",
+            "xland"
+          ],
+          "full_hourly_payload": [
+            "TSK",
+            "SST",
+            "SMOIS",
+            "SH2O",
+            "TSLB"
+          ],
+          "hour": 15,
+          "requested_time_index": 15,
+          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z/wrfout_d02_2026-05-10_09:00:00",
+          "status": "PASS",
+          "time_index": 15
+        },
+        {
+          "fields_refreshed": [
+            "lakemask",
+            "mavail",
+            "roughness_m",
+            "soil_moisture",
+            "t_skin",
+            "xland"
+          ],
+          "full_hourly_payload": [
+            "TSK",
+            "SST",
+            "SMOIS",
+            "SH2O",
+            "TSLB"
+          ],
+          "hour": 16,
+          "requested_time_index": 16,
+          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z/wrfout_d02_2026-05-10_10:00:00",
+          "status": "PASS",
+          "time_index": 16
+        },
+        {
+          "fields_refreshed": [
+            "lakemask",
+            "mavail",
+            "roughness_m",
+            "soil_moisture",
+            "t_skin",
+            "xland"
+          ],
+          "full_hourly_payload": [
+            "TSK",
+            "SST",
+            "SMOIS",
+            "SH2O",
+            "TSLB"
+          ],
+          "hour": 17,
+          "requested_time_index": 17,
+          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z/wrfout_d02_2026-05-10_11:00:00",
+          "status": "PASS",
+          "time_index": 17
+        },
+        {
+          "fields_refreshed": [
+            "lakemask",
+            "mavail",
+            "roughness_m",
+            "soil_moisture",
+            "t_skin",
+            "xland"
+          ],
+          "full_hourly_payload": [
+            "TSK",
+            "SST",
+            "SMOIS",
+            "SH2O",
+            "TSLB"
+          ],
+          "hour": 18,
+          "requested_time_index": 18,
+          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z/wrfout_d02_2026-05-10_12:00:00",
+          "status": "PASS",
+          "time_index": 18
+        },
+        {
+          "fields_refreshed": [
+            "lakemask",
+            "mavail",
+            "roughness_m",
+            "soil_moisture",
+            "t_skin",
+            "xland"
+          ],
+          "full_hourly_payload": [
+            "TSK",
+            "SST",
+            "SMOIS",
+            "SH2O",
+            "TSLB"
+          ],
+          "hour": 19,
+          "requested_time_index": 19,
+          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z/wrfout_d02_2026-05-10_13:00:00",
+          "status": "PASS",
+          "time_index": 19
+        },
+        {
+          "fields_refreshed": [
+            "lakemask",
+            "mavail",
+            "roughness_m",
+            "soil_moisture",
+            "t_skin",
+            "xland"
+          ],
+          "full_hourly_payload": [
+            "TSK",
+            "SST",
+            "SMOIS",
+            "SH2O",
+            "TSLB"
+          ],
+          "hour": 20,
+          "requested_time_index": 20,
+          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z/wrfout_d02_2026-05-10_14:00:00",
+          "status": "PASS",
+          "time_index": 20
+        },
+        {
+          "fields_refreshed": [
+            "lakemask",
+            "mavail",
+            "roughness_m",
+            "soil_moisture",
+            "t_skin",
+            "xland"
+          ],
+          "full_hourly_payload": [
+            "TSK",
+            "SST",
+            "SMOIS",
+            "SH2O",
+            "TSLB"
+          ],
+          "hour": 21,
+          "requested_time_index": 21,
+          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z/wrfout_d02_2026-05-10_15:00:00",
+          "status": "PASS",
+          "time_index": 21
+        },
+        {
+          "fields_refreshed": [
+            "lakemask",
+            "mavail",
+            "roughness_m",
+            "soil_moisture",
+            "t_skin",
+            "xland"
+          ],
+          "full_hourly_payload": [
+            "TSK",
+            "SST",
+            "SMOIS",
+            "SH2O",
+            "TSLB"
+          ],
+          "hour": 22,
+          "requested_time_index": 22,
+          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z/wrfout_d02_2026-05-10_16:00:00",
+          "status": "PASS",
+          "time_index": 22
+        },
+        {
+          "fields_refreshed": [
+            "lakemask",
+            "mavail",
+            "roughness_m",
+            "soil_moisture",
+            "t_skin",
+            "xland"
+          ],
+          "full_hourly_payload": [
+            "TSK",
+            "SST",
+            "SMOIS",
+            "SH2O",
+            "TSLB"
+          ],
+          "hour": 23,
+          "requested_time_index": 23,
+          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z/wrfout_d02_2026-05-10_17:00:00",
+          "status": "PASS",
+          "time_index": 23
+        },
+        {
+          "fields_refreshed": [
+            "lakemask",
+            "mavail",
+            "roughness_m",
+            "soil_moisture",
+            "t_skin",
+            "xland"
+          ],
+          "full_hourly_payload": [
+            "TSK",
+            "SST",
+            "SMOIS",
+            "SH2O",
+            "TSLB"
+          ],
+          "hour": 24,
+          "requested_time_index": 24,
+          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z/wrfout_d02_2026-05-10_18:00:00",
+          "status": "PASS",
+          "time_index": 24
+        },
+        {
+          "fields_refreshed": [
+            "lakemask",
+            "mavail",
+            "roughness_m",
+            "soil_moisture",
+            "t_skin",
+            "xland"
+          ],
+          "full_hourly_payload": [
+            "TSK",
+            "SST",
+            "SMOIS",
+            "SH2O",
+            "TSLB"
+          ],
+          "hour": 25,
+          "requested_time_index": 25,
+          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z/wrfout_d02_2026-05-10_19:00:00",
+          "status": "PASS",
+          "time_index": 25
+        },
+        {
+          "fields_refreshed": [
+            "lakemask",
+            "mavail",
+            "roughness_m",
+            "soil_moisture",
+            "t_skin",
+            "xland"
+          ],
+          "full_hourly_payload": [
+            "TSK",
+            "SST",
+            "SMOIS",
+            "SH2O",
+            "TSLB"
+          ],
+          "hour": 26,
+          "requested_time_index": 26,
+          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z/wrfout_d02_2026-05-10_20:00:00",
+          "status": "PASS",
+          "time_index": 26
+        },
+        {
+          "fields_refreshed": [
+            "lakemask",
+            "mavail",
+            "roughness_m",
+            "soil_moisture",
+            "t_skin",
+            "xland"
+          ],
+          "full_hourly_payload": [
+            "TSK",
+            "SST",
+            "SMOIS",
+            "SH2O",
+            "TSLB"
+          ],
+          "hour": 27,
+          "requested_time_index": 27,
+          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z/wrfout_d02_2026-05-10_21:00:00",
+          "status": "PASS",
+          "time_index": 27
+        },
+        {
+          "fields_refreshed": [
+            "lakemask",
+            "mavail",
+            "roughness_m",
+            "soil_moisture",
+            "t_skin",
+            "xland"
+          ],
+          "full_hourly_payload": [
+            "TSK",
+            "SST",
+            "SMOIS",
+            "SH2O",
+            "TSLB"
+          ],
+          "hour": 28,
+          "requested_time_index": 28,
+          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z/wrfout_d02_2026-05-10_22:00:00",
+          "status": "PASS",
+          "time_index": 28
+        },
+        {
+          "fields_refreshed": [
+            "lakemask",
+            "mavail",
+            "roughness_m",
+            "soil_moisture",
+            "t_skin",
+            "xland"
+          ],
+          "full_hourly_payload": [
+            "TSK",
+            "SST",
+            "SMOIS",
+            "SH2O",
+            "TSLB"
+          ],
+          "hour": 29,
+          "requested_time_index": 29,
+          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z/wrfout_d02_2026-05-10_23:00:00",
+          "status": "PASS",
+          "time_index": 29
+        },
+        {
+          "fields_refreshed": [
+            "lakemask",
+            "mavail",
+            "roughness_m",
+            "soil_moisture",
+            "t_skin",
+            "xland"
+          ],
+          "full_hourly_payload": [
+            "TSK",
+            "SST",
+            "SMOIS",
+            "SH2O",
+            "TSLB"
+          ],
+          "hour": 30,
+          "requested_time_index": 30,
+          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z/wrfout_d02_2026-05-11_00:00:00",
+          "status": "PASS",
+          "time_index": 30
+        },
+        {
+          "fields_refreshed": [
+            "lakemask",
+            "mavail",
+            "roughness_m",
+            "soil_moisture",
+            "t_skin",
+            "xland"
+          ],
+          "full_hourly_payload": [
+            "TSK",
+            "SST",
+            "SMOIS",
+            "SH2O",
+            "TSLB"
+          ],
+          "hour": 31,
+          "requested_time_index": 31,
+          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z/wrfout_d02_2026-05-11_01:00:00",
+          "status": "PASS",
+          "time_index": 31
+        },
+        {
+          "fields_refreshed": [
+            "lakemask",
+            "mavail",
+            "roughness_m",
+            "soil_moisture",
+            "t_skin",
+            "xland"
+          ],
+          "full_hourly_payload": [
+            "TSK",
+            "SST",
+            "SMOIS",
+            "SH2O",
+            "TSLB"
+          ],
+          "hour": 32,
+          "requested_time_index": 32,
+          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z/wrfout_d02_2026-05-11_02:00:00",
+          "status": "PASS",
+          "time_index": 32
+        },
+        {
+          "fields_refreshed": [
+            "lakemask",
+            "mavail",
+            "roughness_m",
+            "soil_moisture",
+            "t_skin",
+            "xland"
+          ],
+          "full_hourly_payload": [
+            "TSK",
+            "SST",
+            "SMOIS",
+            "SH2O",
+            "TSLB"
+          ],
+          "hour": 33,
+          "requested_time_index": 33,
+          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z/wrfout_d02_2026-05-11_03:00:00",
+          "status": "PASS",
+          "time_index": 33
+        },
+        {
+          "fields_refreshed": [
+            "lakemask",
+            "mavail",
+            "roughness_m",
+            "soil_moisture",
+            "t_skin",
+            "xland"
+          ],
+          "full_hourly_payload": [
+            "TSK",
+            "SST",
+            "SMOIS",
+            "SH2O",
+            "TSLB"
+          ],
+          "hour": 34,
+          "requested_time_index": 34,
+          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z/wrfout_d02_2026-05-11_04:00:00",
+          "status": "PASS",
+          "time_index": 34
+        },
+        {
+          "fields_refreshed": [
+            "lakemask",
+            "mavail",
+            "roughness_m",
+            "soil_moisture",
+            "t_skin",
+            "xland"
+          ],
+          "full_hourly_payload": [
+            "TSK",
+            "SST",
+            "SMOIS",
+            "SH2O",
+            "TSLB"
+          ],
+          "hour": 35,
+          "requested_time_index": 35,
+          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z/wrfout_d02_2026-05-11_05:00:00",
+          "status": "PASS",
+          "time_index": 35
+        },
+        {
+          "fields_refreshed": [
+            "lakemask",
+            "mavail",
+            "roughness_m",
+            "soil_moisture",
+            "t_skin",
+            "xland"
+          ],
+          "full_hourly_payload": [
+            "TSK",
+            "SST",
+            "SMOIS",
+            "SH2O",
+            "TSLB"
+          ],
+          "hour": 36,
+          "requested_time_index": 36,
+          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z/wrfout_d02_2026-05-11_06:00:00",
+          "status": "PASS",
+          "time_index": 36
+        },
+        {
+          "fields_refreshed": [
+            "lakemask",
+            "mavail",
+            "roughness_m",
+            "soil_moisture",
+            "t_skin",
+            "xland"
+          ],
+          "full_hourly_payload": [
+            "TSK",
+            "SST",
+            "SMOIS",
+            "SH2O",
+            "TSLB"
+          ],
+          "hour": 37,
+          "requested_time_index": 37,
+          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z/wrfout_d02_2026-05-11_07:00:00",
+          "status": "PASS",
+          "time_index": 37
+        },
+        {
+          "fields_refreshed": [
+            "lakemask",
+            "mavail",
+            "roughness_m",
+            "soil_moisture",
+            "t_skin",
+            "xland"
+          ],
+          "full_hourly_payload": [
+            "TSK",
+            "SST",
+            "SMOIS",
+            "SH2O",
+            "TSLB"
+          ],
+          "hour": 38,
+          "requested_time_index": 38,
+          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z/wrfout_d02_2026-05-11_08:00:00",
+          "status": "PASS",
+          "time_index": 38
+        },
+        {
+          "fields_refreshed": [
+            "lakemask",
+            "mavail",
+            "roughness_m",
+            "soil_moisture",
+            "t_skin",
+            "xland"
+          ],
+          "full_hourly_payload": [
+            "TSK",
+            "SST",
+            "SMOIS",
+            "SH2O",
+            "TSLB"
+          ],
+          "hour": 39,
+          "requested_time_index": 39,
+          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z/wrfout_d02_2026-05-11_09:00:00",
+          "status": "PASS",
+          "time_index": 39
+        },
+        {
+          "fields_refreshed": [
+            "lakemask",
+            "mavail",
+            "roughness_m",
+            "soil_moisture",
+            "t_skin",
+            "xland"
+          ],
+          "full_hourly_payload": [
+            "TSK",
+            "SST",
+            "SMOIS",
+            "SH2O",
+            "TSLB"
+          ],
+          "hour": 40,
+          "requested_time_index": 40,
+          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z/wrfout_d02_2026-05-11_10:00:00",
+          "status": "PASS",
+          "time_index": 40
+        },
+        {
+          "fields_refreshed": [
+            "lakemask",
+            "mavail",
+            "roughness_m",
+            "soil_moisture",
+            "t_skin",
+            "xland"
+          ],
+          "full_hourly_payload": [
+            "TSK",
+            "SST",
+            "SMOIS",
+            "SH2O",
+            "TSLB"
+          ],
+          "hour": 41,
+          "requested_time_index": 41,
+          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z/wrfout_d02_2026-05-11_11:00:00",
+          "status": "PASS",
+          "time_index": 41
+        },
+        {
+          "fields_refreshed": [
+            "lakemask",
+            "mavail",
+            "roughness_m",
+            "soil_moisture",
+            "t_skin",
+            "xland"
+          ],
+          "full_hourly_payload": [
+            "TSK",
+            "SST",
+            "SMOIS",
+            "SH2O",
+            "TSLB"
+          ],
+          "hour": 42,
+          "requested_time_index": 42,
+          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z/wrfout_d02_2026-05-11_12:00:00",
+          "status": "PASS",
+          "time_index": 42
+        },
+        {
+          "fields_refreshed": [
+            "lakemask",
+            "mavail",
+            "roughness_m",
+            "soil_moisture",
+            "t_skin",
+            "xland"
+          ],
+          "full_hourly_payload": [
+            "TSK",
+            "SST",
+            "SMOIS",
+            "SH2O",
+            "TSLB"
+          ],
+          "hour": 43,
+          "requested_time_index": 43,
+          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z/wrfout_d02_2026-05-11_13:00:00",
+          "status": "PASS",
+          "time_index": 43
+        },
+        {
+          "fields_refreshed": [
+            "lakemask",
+            "mavail",
+            "roughness_m",
+            "soil_moisture",
+            "t_skin",
+            "xland"
+          ],
+          "full_hourly_payload": [
+            "TSK",
+            "SST",
+            "SMOIS",
+            "SH2O",
+            "TSLB"
+          ],
+          "hour": 44,
+          "requested_time_index": 44,
+          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z/wrfout_d02_2026-05-11_14:00:00",
+          "status": "PASS",
+          "time_index": 44
+        },
+        {
+          "fields_refreshed": [
+            "lakemask",
+            "mavail",
+            "roughness_m",
+            "soil_moisture",
+            "t_skin",
+            "xland"
+          ],
+          "full_hourly_payload": [
+            "TSK",
+            "SST",
+            "SMOIS",
+            "SH2O",
+            "TSLB"
+          ],
+          "hour": 45,
+          "requested_time_index": 45,
+          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z/wrfout_d02_2026-05-11_15:00:00",
+          "status": "PASS",
+          "time_index": 45
+        },
+        {
+          "fields_refreshed": [
+            "lakemask",
+            "mavail",
+            "roughness_m",
+            "soil_moisture",
+            "t_skin",
+            "xland"
+          ],
+          "full_hourly_payload": [
+            "TSK",
+            "SST",
+            "SMOIS",
+            "SH2O",
+            "TSLB"
+          ],
+          "hour": 46,
+          "requested_time_index": 46,
+          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z/wrfout_d02_2026-05-11_16:00:00",
+          "status": "PASS",
+          "time_index": 46
+        },
+        {
+          "fields_refreshed": [
+            "lakemask",
+            "mavail",
+            "roughness_m",
+            "soil_moisture",
+            "t_skin",
+            "xland"
+          ],
+          "full_hourly_payload": [
+            "TSK",
+            "SST",
+            "SMOIS",
+            "SH2O",
+            "TSLB"
+          ],
+          "hour": 47,
+          "requested_time_index": 47,
+          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z/wrfout_d02_2026-05-11_17:00:00",
+          "status": "PASS",
+          "time_index": 47
+        },
+        {
+          "fields_refreshed": [
+            "lakemask",
+            "mavail",
+            "roughness_m",
+            "soil_moisture",
+            "t_skin",
+            "xland"
+          ],
+          "full_hourly_payload": [
+            "TSK",
+            "SST",
+            "SMOIS",
+            "SH2O",
+            "TSLB"
+          ],
+          "hour": 48,
+          "requested_time_index": 48,
+          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z/wrfout_d02_2026-05-11_18:00:00",
+          "status": "PASS",
+          "time_index": 48
+        },
+        {
+          "fields_refreshed": [
+            "lakemask",
+            "mavail",
+            "roughness_m",
+            "soil_moisture",
+            "t_skin",
+            "xland"
+          ],
+          "full_hourly_payload": [
+            "TSK",
+            "SST",
+            "SMOIS",
+            "SH2O",
+            "TSLB"
+          ],
+          "hour": 49,
+          "requested_time_index": 49,
+          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z/wrfout_d02_2026-05-11_19:00:00",
+          "status": "PASS",
+          "time_index": 49
+        },
+        {
+          "fields_refreshed": [
+            "lakemask",
+            "mavail",
+            "roughness_m",
+            "soil_moisture",
+            "t_skin",
+            "xland"
+          ],
+          "full_hourly_payload": [
+            "TSK",
+            "SST",
+            "SMOIS",
+            "SH2O",
+            "TSLB"
+          ],
+          "hour": 50,
+          "requested_time_index": 50,
+          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z/wrfout_d02_2026-05-11_20:00:00",
+          "status": "PASS",
+          "time_index": 50
+        },
+        {
+          "fields_refreshed": [
+            "lakemask",
+            "mavail",
+            "roughness_m",
+            "soil_moisture",
+            "t_skin",
+            "xland"
+          ],
+          "full_hourly_payload": [
+            "TSK",
+            "SST",
+            "SMOIS",
+            "SH2O",
+            "TSLB"
+          ],
+          "hour": 51,
+          "requested_time_index": 51,
+          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z/wrfout_d02_2026-05-11_21:00:00",
+          "status": "PASS",
+          "time_index": 51
+        },
+        {
+          "fields_refreshed": [
+            "lakemask",
+            "mavail",
+            "roughness_m",
+            "soil_moisture",
+            "t_skin",
+            "xland"
+          ],
+          "full_hourly_payload": [
+            "TSK",
+            "SST",
+            "SMOIS",
+            "SH2O",
+            "TSLB"
+          ],
+          "hour": 52,
+          "requested_time_index": 52,
+          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z/wrfout_d02_2026-05-11_22:00:00",
+          "status": "PASS",
+          "time_index": 52
+        },
+        {
+          "fields_refreshed": [
+            "lakemask",
+            "mavail",
+            "roughness_m",
+            "soil_moisture",
+            "t_skin",
+            "xland"
+          ],
+          "full_hourly_payload": [
+            "TSK",
+            "SST",
+            "SMOIS",
+            "SH2O",
+            "TSLB"
+          ],
+          "hour": 53,
+          "requested_time_index": 53,
+          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z/wrfout_d02_2026-05-11_23:00:00",
+          "status": "PASS",
+          "time_index": 53
+        },
+        {
+          "fields_refreshed": [
+            "lakemask",
+            "mavail",
+            "roughness_m",
+            "soil_moisture",
+            "t_skin",
+            "xland"
+          ],
+          "full_hourly_payload": [
+            "TSK",
+            "SST",
+            "SMOIS",
+            "SH2O",
+            "TSLB"
+          ],
+          "hour": 54,
+          "requested_time_index": 54,
+          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z/wrfout_d02_2026-05-12_00:00:00",
+          "status": "PASS",
+          "time_index": 54
+        },
+        {
+          "fields_refreshed": [
+            "lakemask",
+            "mavail",
+            "roughness_m",
+            "soil_moisture",
+            "t_skin",
+            "xland"
+          ],
+          "full_hourly_payload": [
+            "TSK",
+            "SST",
+            "SMOIS",
+            "SH2O",
+            "TSLB"
+          ],
+          "hour": 55,
+          "requested_time_index": 55,
+          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z/wrfout_d02_2026-05-12_01:00:00",
+          "status": "PASS",
+          "time_index": 55
+        },
+        {
+          "fields_refreshed": [
+            "lakemask",
+            "mavail",
+            "roughness_m",
+            "soil_moisture",
+            "t_skin",
+            "xland"
+          ],
+          "full_hourly_payload": [
+            "TSK",
+            "SST",
+            "SMOIS",
+            "SH2O",
+            "TSLB"
+          ],
+          "hour": 56,
+          "requested_time_index": 56,
+          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z/wrfout_d02_2026-05-12_02:00:00",
+          "status": "PASS",
+          "time_index": 56
+        },
+        {
+          "fields_refreshed": [
+            "lakemask",
+            "mavail",
+            "roughness_m",
+            "soil_moisture",
+            "t_skin",
+            "xland"
+          ],
+          "full_hourly_payload": [
+            "TSK",
+            "SST",
+            "SMOIS",
+            "SH2O",
+            "TSLB"
+          ],
+          "hour": 57,
+          "requested_time_index": 57,
+          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z/wrfout_d02_2026-05-12_03:00:00",
+          "status": "PASS",
+          "time_index": 57
+        },
+        {
+          "fields_refreshed": [
+            "lakemask",
+            "mavail",
+            "roughness_m",
+            "soil_moisture",
+            "t_skin",
+            "xland"
+          ],
+          "full_hourly_payload": [
+            "TSK",
+            "SST",
+            "SMOIS",
+            "SH2O",
+            "TSLB"
+          ],
+          "hour": 58,
+          "requested_time_index": 58,
+          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z/wrfout_d02_2026-05-12_04:00:00",
+          "status": "PASS",
+          "time_index": 58
+        },
+        {
+          "fields_refreshed": [
+            "lakemask",
+            "mavail",
+            "roughness_m",
+            "soil_moisture",
+            "t_skin",
+            "xland"
+          ],
+          "full_hourly_payload": [
+            "TSK",
+            "SST",
+            "SMOIS",
+            "SH2O",
+            "TSLB"
+          ],
+          "hour": 59,
+          "requested_time_index": 59,
+          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z/wrfout_d02_2026-05-12_05:00:00",
+          "status": "PASS",
+          "time_index": 59
+        },
+        {
+          "fields_refreshed": [
+            "lakemask",
+            "mavail",
+            "roughness_m",
+            "soil_moisture",
+            "t_skin",
+            "xland"
+          ],
+          "full_hourly_payload": [
+            "TSK",
+            "SST",
+            "SMOIS",
+            "SH2O",
+            "TSLB"
+          ],
+          "hour": 60,
+          "requested_time_index": 60,
+          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z/wrfout_d02_2026-05-12_06:00:00",
+          "status": "PASS",
+          "time_index": 60
+        },
+        {
+          "fields_refreshed": [
+            "lakemask",
+            "mavail",
+            "roughness_m",
+            "soil_moisture",
+            "t_skin",
+            "xland"
+          ],
+          "full_hourly_payload": [
+            "TSK",
+            "SST",
+            "SMOIS",
+            "SH2O",
+            "TSLB"
+          ],
+          "hour": 61,
+          "requested_time_index": 61,
+          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z/wrfout_d02_2026-05-12_07:00:00",
+          "status": "PASS",
+          "time_index": 61
+        },
+        {
+          "fields_refreshed": [
+            "lakemask",
+            "mavail",
+            "roughness_m",
+            "soil_moisture",
+            "t_skin",
+            "xland"
+          ],
+          "full_hourly_payload": [
+            "TSK",
+            "SST",
+            "SMOIS",
+            "SH2O",
+            "TSLB"
+          ],
+          "hour": 62,
+          "requested_time_index": 62,
+          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z/wrfout_d02_2026-05-12_08:00:00",
+          "status": "PASS",
+          "time_index": 62
+        },
+        {
+          "fields_refreshed": [
+            "lakemask",
+            "mavail",
+            "roughness_m",
+            "soil_moisture",
+            "t_skin",
+            "xland"
+          ],
+          "full_hourly_payload": [
+            "TSK",
+            "SST",
+            "SMOIS",
+            "SH2O",
+            "TSLB"
+          ],
+          "hour": 63,
+          "requested_time_index": 63,
+          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z/wrfout_d02_2026-05-12_09:00:00",
+          "status": "PASS",
+          "time_index": 63
+        },
+        {
+          "fields_refreshed": [
+            "lakemask",
+            "mavail",
+            "roughness_m",
+            "soil_moisture",
+            "t_skin",
+            "xland"
+          ],
+          "full_hourly_payload": [
+            "TSK",
+            "SST",
+            "SMOIS",
+            "SH2O",
+            "TSLB"
+          ],
+          "hour": 64,
+          "requested_time_index": 64,
+          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z/wrfout_d02_2026-05-12_10:00:00",
+          "status": "PASS",
+          "time_index": 64
+        },
+        {
+          "fields_refreshed": [
+            "lakemask",
+            "mavail",
+            "roughness_m",
+            "soil_moisture",
+            "t_skin",
+            "xland"
+          ],
+          "full_hourly_payload": [
+            "TSK",
+            "SST",
+            "SMOIS",
+            "SH2O",
+            "TSLB"
+          ],
+          "hour": 65,
+          "requested_time_index": 65,
+          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z/wrfout_d02_2026-05-12_11:00:00",
+          "status": "PASS",
+          "time_index": 65
+        },
+        {
+          "fields_refreshed": [
+            "lakemask",
+            "mavail",
+            "roughness_m",
+            "soil_moisture",
+            "t_skin",
+            "xland"
+          ],
+          "full_hourly_payload": [
+            "TSK",
+            "SST",
+            "SMOIS",
+            "SH2O",
+            "TSLB"
+          ],
+          "hour": 66,
+          "requested_time_index": 66,
+          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z/wrfout_d02_2026-05-12_12:00:00",
+          "status": "PASS",
+          "time_index": 66
+        },
+        {
+          "fields_refreshed": [
+            "lakemask",
+            "mavail",
+            "roughness_m",
+            "soil_moisture",
+            "t_skin",
+            "xland"
+          ],
+          "full_hourly_payload": [
+            "TSK",
+            "SST",
+            "SMOIS",
+            "SH2O",
+            "TSLB"
+          ],
+          "hour": 67,
+          "requested_time_index": 67,
+          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z/wrfout_d02_2026-05-12_13:00:00",
+          "status": "PASS",
+          "time_index": 67
+        },
+        {
+          "fields_refreshed": [
+            "lakemask",
+            "mavail",
+            "roughness_m",
+            "soil_moisture",
+            "t_skin",
+            "xland"
+          ],
+          "full_hourly_payload": [
+            "TSK",
+            "SST",
+            "SMOIS",
+            "SH2O",
+            "TSLB"
+          ],
+          "hour": 68,
+          "requested_time_index": 68,
+          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z/wrfout_d02_2026-05-12_14:00:00",
+          "status": "PASS",
+          "time_index": 68
+        },
+        {
+          "fields_refreshed": [
+            "lakemask",
+            "mavail",
+            "roughness_m",
+            "soil_moisture",
+            "t_skin",
+            "xland"
+          ],
+          "full_hourly_payload": [
+            "TSK",
+            "SST",
+            "SMOIS",
+            "SH2O",
+            "TSLB"
+          ],
+          "hour": 69,
+          "requested_time_index": 69,
+          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z/wrfout_d02_2026-05-12_15:00:00",
+          "status": "PASS",
+          "time_index": 69
+        },
+        {
+          "fields_refreshed": [
+            "lakemask",
+            "mavail",
+            "roughness_m",
+            "soil_moisture",
+            "t_skin",
+            "xland"
+          ],
+          "full_hourly_payload": [
+            "TSK",
+            "SST",
+            "SMOIS",
+            "SH2O",
+            "TSLB"
+          ],
+          "hour": 70,
+          "requested_time_index": 70,
+          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z/wrfout_d02_2026-05-12_16:00:00",
+          "status": "PASS",
+          "time_index": 70
+        },
+        {
+          "fields_refreshed": [
+            "lakemask",
+            "mavail",
+            "roughness_m",
+            "soil_moisture",
+            "t_skin",
+            "xland"
+          ],
+          "full_hourly_payload": [
+            "TSK",
+            "SST",
+            "SMOIS",
+            "SH2O",
+            "TSLB"
+          ],
+          "hour": 71,
+          "requested_time_index": 71,
+          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z/wrfout_d02_2026-05-12_17:00:00",
+          "status": "PASS",
+          "time_index": 71
+        },
+        {
+          "fields_refreshed": [
+            "lakemask",
+            "mavail",
+            "roughness_m",
+            "soil_moisture",
+            "t_skin",
+            "xland"
+          ],
+          "full_hourly_payload": [
+            "TSK",
+            "SST",
+            "SMOIS",
+            "SH2O",
+            "TSLB"
+          ],
+          "hour": 72,
+          "requested_time_index": 72,
+          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z/wrfout_d02_2026-05-12_18:00:00",
+          "status": "PASS",
+          "time_index": 72
         }
       ]
     },
@@ -766,19 +2306,19 @@
       "w_damping": 1,
       "zdamp": 5000.0
     },
-    "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
-    "run_id": "20260521_18z_l3_24h_20260522T133443Z",
+    "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z",
+    "run_id": "20260509_18z_l2_72h_20260511T190519Z",
     "source": "gpuwrf.integration.d02_replay.build_replay_case"
   },
-  "output_dir": "/tmp/m7_pipeline_runs/20260521",
-  "repeatability_status": "PASS",
-  "restart_probe_status": "PASS",
-  "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
-  "run_id": "20260521_18z_l3_24h_20260522T133443Z",
-  "run_start_utc": "2026-05-21T18:00:00+00:00",
+  "output_dir": "/tmp/v010_d02_oomsafe_runs/d02_20260509_18z_l2_72h_20260511T190519Z_postfix_case2_L2",
+  "repeatability_status": "NOT_RUN",
+  "restart_probe_status": "NOT_RUN",
+  "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z",
+  "run_id": "20260509_18z_l2_72h_20260511T190519Z",
+  "run_start_utc": "2026-05-09T18:00:00+00:00",
   "schema": "M7DailyPipelineRun",
   "schema_version": 1,
-  "speedup_status": "PASS",
+  "speedup_status": "BELOW_TARGET",
   "station_score_summary": {
     "acceptance": {
       "finite_scores": false,
@@ -789,16 +2329,156 @@
     "status": "NOT_RUN"
   },
   "verdict": "PIPELINE_PARTIAL",
-  "wall_clock_forecast_only_s": 837.2882042810015,
-  "wall_clock_per_forecast_hour_s": 439.0474494779992,
+  "wall_clock_forecast_only_s": 1252.6656114429643,
+  "wall_clock_per_forecast_hour_s": 20.728453978222305,
   "wall_clock_per_hour_s": [
-    69.17885634300183,
-    768.1093479379997
+    231.9440859130118,
+    110.63414413399005,
+    12.970495239002048,
+    12.972686995999538,
+    12.97334933100501,
+    12.99107172001095,
+    12.988866771993344,
+    12.993169926994597,
+    12.99350189899269,
+    12.992848205001792,
+    12.992554651995306,
+    12.984683960996335,
+    12.98789388500154,
+    12.998042845007149,
+    13.006748882995453,
+    12.981913198993425,
+    12.980655728999409,
+    12.996883315994637,
+    12.98564062800142,
+    12.994412925996585,
+    13.00059103500098,
+    12.990985059994273,
+    12.987177300004987,
+    12.991750729997875,
+    13.001157659993623,
+    13.036632205999922,
+    13.040743809993728,
+    13.026387446996523,
+    12.966045323992148,
+    12.968675445008557,
+    12.966428657004144,
+    12.991567944001872,
+    12.965791482012719,
+    12.936442742007785,
+    12.981915938988095,
+    12.983296898994013,
+    12.970086265995633,
+    12.96403384799487,
+    12.966175875000772,
+    12.926372232992435,
+    12.960031046997756,
+    12.934373905009124,
+    12.958296002994757,
+    12.972058220999315,
+    12.963626165001187,
+    12.96104802499758,
+    13.00280170199403,
+    13.142593618991668,
+    13.267470648002927,
+    13.365900469987537,
+    13.230550328007666,
+    13.252857434010366,
+    13.182942516010371,
+    12.9865795049991,
+    13.05092248400615,
+    12.983617186997435,
+    12.974993297990295,
+    12.972620970002026,
+    12.970255621999968,
+    12.97164808299567,
+    12.962820043001557,
+    12.968092194991186,
+    12.96744585999113,
+    12.956088891005493,
+    12.950345866003772,
+    12.949798721005209,
+    12.962937934004003,
+    12.954870361005305,
+    12.959123234992148,
+    12.963586188998306,
+    12.971725063005579,
+    12.967681791007635
   ],
-  "wall_clock_total_s": 878.0948989559984,
+  "wall_clock_total_s": 1492.448686432006,
   "wrfout_files": [
-    "/tmp/m7_pipeline_runs/20260521/wrfout_d02_2026-05-21_19:00:00",
-    "/tmp/m7_pipeline_runs/20260521/wrfout_d02_2026-05-21_20:00:00"
+    "/tmp/v010_d02_oomsafe_runs/d02_20260509_18z_l2_72h_20260511T190519Z_postfix_case2_L2/wrfout_d02_2026-05-09_19:00:00",
+    "/tmp/v010_d02_oomsafe_runs/d02_20260509_18z_l2_72h_20260511T190519Z_postfix_case2_L2/wrfout_d02_2026-05-09_20:00:00",
+    "/tmp/v010_d02_oomsafe_runs/d02_20260509_18z_l2_72h_20260511T190519Z_postfix_case2_L2/wrfout_d02_2026-05-09_21:00:00",
+    "/tmp/v010_d02_oomsafe_runs/d02_20260509_18z_l2_72h_20260511T190519Z_postfix_case2_L2/wrfout_d02_2026-05-09_22:00:00",
+    "/tmp/v010_d02_oomsafe_runs/d02_20260509_18z_l2_72h_20260511T190519Z_postfix_case2_L2/wrfout_d02_2026-05-09_23:00:00",
+    "/tmp/v010_d02_oomsafe_runs/d02_20260509_18z_l2_72h_20260511T190519Z_postfix_case2_L2/wrfout_d02_2026-05-10_00:00:00",
+    "/tmp/v010_d02_oomsafe_runs/d02_20260509_18z_l2_72h_20260511T190519Z_postfix_case2_L2/wrfout_d02_2026-05-10_01:00:00",
+    "/tmp/v010_d02_oomsafe_runs/d02_20260509_18z_l2_72h_20260511T190519Z_postfix_case2_L2/wrfout_d02_2026-05-10_02:00:00",
+    "/tmp/v010_d02_oomsafe_runs/d02_20260509_18z_l2_72h_20260511T190519Z_postfix_case2_L2/wrfout_d02_2026-05-10_03:00:00",
+    "/tmp/v010_d02_oomsafe_runs/d02_20260509_18z_l2_72h_20260511T190519Z_postfix_case2_L2/wrfout_d02_2026-05-10_04:00:00",
+    "/tmp/v010_d02_oomsafe_runs/d02_20260509_18z_l2_72h_20260511T190519Z_postfix_case2_L2/wrfout_d02_2026-05-10_05:00:00",
+    "/tmp/v010_d02_oomsafe_runs/d02_20260509_18z_l2_72h_20260511T190519Z_postfix_case2_L2/wrfout_d02_2026-05-10_06:00:00",
+    "/tmp/v010_d02_oomsafe_runs/d02_20260509_18z_l2_72h_20260511T190519Z_postfix_case2_L2/wrfout_d02_2026-05-10_07:00:00",
+    "/tmp/v010_d02_oomsafe_runs/d02_20260509_18z_l2_72h_20260511T190519Z_postfix_case2_L2/wrfout_d02_2026-05-10_08:00:00",
+    "/tmp/v010_d02_oomsafe_runs/d02_20260509_18z_l2_72h_20260511T190519Z_postfix_case2_L2/wrfout_d02_2026-05-10_09:00:00",
+    "/tmp/v010_d02_oomsafe_runs/d02_20260509_18z_l2_72h_20260511T190519Z_postfix_case2_L2/wrfout_d02_2026-05-10_10:00:00",
+    "/tmp/v010_d02_oomsafe_runs/d02_20260509_18z_l2_72h_20260511T190519Z_postfix_case2_L2/wrfout_d02_2026-05-10_11:00:00",
+    "/tmp/v010_d02_oomsafe_runs/d02_20260509_18z_l2_72h_20260511T190519Z_postfix_case2_L2/wrfout_d02_2026-05-10_12:00:00",
+    "/tmp/v010_d02_oomsafe_runs/d02_20260509_18z_l2_72h_20260511T190519Z_postfix_case2_L2/wrfout_d02_2026-05-10_13:00:00",
+    "/tmp/v010_d02_oomsafe_runs/d02_20260509_18z_l2_72h_20260511T190519Z_postfix_case2_L2/wrfout_d02_2026-05-10_14:00:00",
+    "/tmp/v010_d02_oomsafe_runs/d02_20260509_18z_l2_72h_20260511T190519Z_postfix_case2_L2/wrfout_d02_2026-05-10_15:00:00",
+    "/tmp/v010_d02_oomsafe_runs/d02_20260509_18z_l2_72h_20260511T190519Z_postfix_case2_L2/wrfout_d02_2026-05-10_16:00:00",
+    "/tmp/v010_d02_oomsafe_runs/d02_20260509_18z_l2_72h_20260511T190519Z_postfix_case2_L2/wrfout_d02_2026-05-10_17:00:00",
+    "/tmp/v010_d02_oomsafe_runs/d02_20260509_18z_l2_72h_20260511T190519Z_postfix_case2_L2/wrfout_d02_2026-05-10_18:00:00",
+    "/tmp/v010_d02_oomsafe_runs/d02_20260509_18z_l2_72h_20260511T190519Z_postfix_case2_L2/wrfout_d02_2026-05-10_19:00:00",
+    "/tmp/v010_d02_oomsafe_runs/d02_20260509_18z_l2_72h_20260511T190519Z_postfix_case2_L2/wrfout_d02_2026-05-10_20:00:00",
+    "/tmp/v010_d02_oomsafe_runs/d02_20260509_18z_l2_72h_20260511T190519Z_postfix_case2_L2/wrfout_d02_2026-05-10_21:00:00",
+    "/tmp/v010_d02_oomsafe_runs/d02_20260509_18z_l2_72h_20260511T190519Z_postfix_case2_L2/wrfout_d02_2026-05-10_22:00:00",
+    "/tmp/v010_d02_oomsafe_runs/d02_20260509_18z_l2_72h_20260511T190519Z_postfix_case2_L2/wrfout_d02_2026-05-10_23:00:00",
+    "/tmp/v010_d02_oomsafe_runs/d02_20260509_18z_l2_72h_20260511T190519Z_postfix_case2_L2/wrfout_d02_2026-05-11_00:00:00",
+    "/tmp/v010_d02_oomsafe_runs/d02_20260509_18z_l2_72h_20260511T190519Z_postfix_case2_L2/wrfout_d02_2026-05-11_01:00:00",
+    "/tmp/v010_d02_oomsafe_runs/d02_20260509_18z_l2_72h_20260511T190519Z_postfix_case2_L2/wrfout_d02_2026-05-11_02:00:00",
+    "/tmp/v010_d02_oomsafe_runs/d02_20260509_18z_l2_72h_20260511T190519Z_postfix_case2_L2/wrfout_d02_2026-05-11_03:00:00",
+    "/tmp/v010_d02_oomsafe_runs/d02_20260509_18z_l2_72h_20260511T190519Z_postfix_case2_L2/wrfout_d02_2026-05-11_04:00:00",
+    "/tmp/v010_d02_oomsafe_runs/d02_20260509_18z_l2_72h_20260511T190519Z_postfix_case2_L2/wrfout_d02_2026-05-11_05:00:00",
+    "/tmp/v010_d02_oomsafe_runs/d02_20260509_18z_l2_72h_20260511T190519Z_postfix_case2_L2/wrfout_d02_2026-05-11_06:00:00",
+    "/tmp/v010_d02_oomsafe_runs/d02_20260509_18z_l2_72h_20260511T190519Z_postfix_case2_L2/wrfout_d02_2026-05-11_07:00:00",
+    "/tmp/v010_d02_oomsafe_runs/d02_20260509_18z_l2_72h_20260511T190519Z_postfix_case2_L2/wrfout_d02_2026-05-11_08:00:00",
+    "/tmp/v010_d02_oomsafe_runs/d02_20260509_18z_l2_72h_20260511T190519Z_postfix_case2_L2/wrfout_d02_2026-05-11_09:00:00",
+    "/tmp/v010_d02_oomsafe_runs/d02_20260509_18z_l2_72h_20260511T190519Z_postfix_case2_L2/wrfout_d02_2026-05-11_10:00:00",
+    "/tmp/v010_d02_oomsafe_runs/d02_20260509_18z_l2_72h_20260511T190519Z_postfix_case2_L2/wrfout_d02_2026-05-11_11:00:00",
+    "/tmp/v010_d02_oomsafe_runs/d02_20260509_18z_l2_72h_20260511T190519Z_postfix_case2_L2/wrfout_d02_2026-05-11_12:00:00",
+    "/tmp/v010_d02_oomsafe_runs/d02_20260509_18z_l2_72h_20260511T190519Z_postfix_case2_L2/wrfout_d02_2026-05-11_13:00:00",
+    "/tmp/v010_d02_oomsafe_runs/d02_20260509_18z_l2_72h_20260511T190519Z_postfix_case2_L2/wrfout_d02_2026-05-11_14:00:00",
+    "/tmp/v010_d02_oomsafe_runs/d02_20260509_18z_l2_72h_20260511T190519Z_postfix_case2_L2/wrfout_d02_2026-05-11_15:00:00",
+    "/tmp/v010_d02_oomsafe_runs/d02_20260509_18z_l2_72h_20260511T190519Z_postfix_case2_L2/wrfout_d02_2026-05-11_16:00:00",
+    "/tmp/v010_d02_oomsafe_runs/d02_20260509_18z_l2_72h_20260511T190519Z_postfix_case2_L2/wrfout_d02_2026-05-11_17:00:00",
+    "/tmp/v010_d02_oomsafe_runs/d02_20260509_18z_l2_72h_20260511T190519Z_postfix_case2_L2/wrfout_d02_2026-05-11_18:00:00",
+    "/tmp/v010_d02_oomsafe_runs/d02_20260509_18z_l2_72h_20260511T190519Z_postfix_case2_L2/wrfout_d02_2026-05-11_19:00:00",
+    "/tmp/v010_d02_oomsafe_runs/d02_20260509_18z_l2_72h_20260511T190519Z_postfix_case2_L2/wrfout_d02_2026-05-11_20:00:00",
+    "/tmp/v010_d02_oomsafe_runs/d02_20260509_18z_l2_72h_20260511T190519Z_postfix_case2_L2/wrfout_d02_2026-05-11_21:00:00",
+    "/tmp/v010_d02_oomsafe_runs/d02_20260509_18z_l2_72h_20260511T190519Z_postfix_case2_L2/wrfout_d02_2026-05-11_22:00:00",
+    "/tmp/v010_d02_oomsafe_runs/d02_20260509_18z_l2_72h_20260511T190519Z_postfix_case2_L2/wrfout_d02_2026-05-11_23:00:00",
+    "/tmp/v010_d02_oomsafe_runs/d02_20260509_18z_l2_72h_20260511T190519Z_postfix_case2_L2/wrfout_d02_2026-05-12_00:00:00",
+    "/tmp/v010_d02_oomsafe_runs/d02_20260509_18z_l2_72h_20260511T190519Z_postfix_case2_L2/wrfout_d02_2026-05-12_01:00:00",
+    "/tmp/v010_d02_oomsafe_runs/d02_20260509_18z_l2_72h_20260511T190519Z_postfix_case2_L2/wrfout_d02_2026-05-12_02:00:00",
+    "/tmp/v010_d02_oomsafe_runs/d02_20260509_18z_l2_72h_20260511T190519Z_postfix_case2_L2/wrfout_d02_2026-05-12_03:00:00",
+    "/tmp/v010_d02_oomsafe_runs/d02_20260509_18z_l2_72h_20260511T190519Z_postfix_case2_L2/wrfout_d02_2026-05-12_04:00:00",
+    "/tmp/v010_d02_oomsafe_runs/d02_20260509_18z_l2_72h_20260511T190519Z_postfix_case2_L2/wrfout_d02_2026-05-12_05:00:00",
+    "/tmp/v010_d02_oomsafe_runs/d02_20260509_18z_l2_72h_20260511T190519Z_postfix_case2_L2/wrfout_d02_2026-05-12_06:00:00",
+    "/tmp/v010_d02_oomsafe_runs/d02_20260509_18z_l2_72h_20260511T190519Z_postfix_case2_L2/wrfout_d02_2026-05-12_07:00:00",
+    "/tmp/v010_d02_oomsafe_runs/d02_20260509_18z_l2_72h_20260511T190519Z_postfix_case2_L2/wrfout_d02_2026-05-12_08:00:00",
+    "/tmp/v010_d02_oomsafe_runs/d02_20260509_18z_l2_72h_20260511T190519Z_postfix_case2_L2/wrfout_d02_2026-05-12_09:00:00",
+    "/tmp/v010_d02_oomsafe_runs/d02_20260509_18z_l2_72h_20260511T190519Z_postfix_case2_L2/wrfout_d02_2026-05-12_10:00:00",
+    "/tmp/v010_d02_oomsafe_runs/d02_20260509_18z_l2_72h_20260511T190519Z_postfix_case2_L2/wrfout_d02_2026-05-12_11:00:00",
+    "/tmp/v010_d02_oomsafe_runs/d02_20260509_18z_l2_72h_20260511T190519Z_postfix_case2_L2/wrfout_d02_2026-05-12_12:00:00",
+    "/tmp/v010_d02_oomsafe_runs/d02_20260509_18z_l2_72h_20260511T190519Z_postfix_case2_L2/wrfout_d02_2026-05-12_13:00:00",
+    "/tmp/v010_d02_oomsafe_runs/d02_20260509_18z_l2_72h_20260511T190519Z_postfix_case2_L2/wrfout_d02_2026-05-12_14:00:00",
+    "/tmp/v010_d02_oomsafe_runs/d02_20260509_18z_l2_72h_20260511T190519Z_postfix_case2_L2/wrfout_d02_2026-05-12_15:00:00",
+    "/tmp/v010_d02_oomsafe_runs/d02_20260509_18z_l2_72h_20260511T190519Z_postfix_case2_L2/wrfout_d02_2026-05-12_16:00:00",
+    "/tmp/v010_d02_oomsafe_runs/d02_20260509_18z_l2_72h_20260511T190519Z_postfix_case2_L2/wrfout_d02_2026-05-12_17:00:00",
+    "/tmp/v010_d02_oomsafe_runs/d02_20260509_18z_l2_72h_20260511T190519Z_postfix_case2_L2/wrfout_d02_2026-05-12_18:00:00"
   ],
   "wrfout_inventory_status": "PASS"
 }
