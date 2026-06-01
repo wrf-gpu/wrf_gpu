@@ -120,6 +120,33 @@ class RRTMGSWColumnResult(NamedTuple):
     surface_up: jnp.ndarray
     column_absorbed: jnp.ndarray
     surface_absorbed: jnp.ndarray
+    surface_direct: jnp.ndarray
+    surface_diffuse: jnp.ndarray
+    surface_diffuse_fraction: jnp.ndarray
+    topographic_correction_factor: jnp.ndarray
+    surface_down_topographic: jnp.ndarray
+    surface_up_topographic: jnp.ndarray
+    surface_absorbed_topographic: jnp.ndarray
+
+
+class RRTMGSWTopographyState(NamedTuple):
+    """WRF `TOPO_RAD_ADJ` geometry fields for terrain-adjusted SW flux."""
+
+    latitude_deg: jnp.ndarray
+    declination_rad: jnp.ndarray
+    hour_angle_rad: jnp.ndarray
+    slope_rad: jnp.ndarray
+    slope_azimuth_rad: jnp.ndarray
+    shadow_mask: jnp.ndarray
+
+
+class RRTMGSWTopographicAdjustment(NamedTuple):
+    """Surface SW fluxes after WRF slope/aspect/shadow correction."""
+
+    surface_down: jnp.ndarray
+    surface_up: jnp.ndarray
+    surface_absorbed: jnp.ndarray
+    correction_factor: jnp.ndarray
 
 
 class RRTMGSWIntermediateState(NamedTuple):
@@ -234,6 +261,89 @@ def _clip_state(state: RRTMGSWColumnState) -> RRTMGSWColumnState:
         coszen=jnp.maximum(state.coszen, MIN_COSZEN),
         dz=jnp.maximum(state.dz, 1.0),
         rho=jnp.maximum(state.rho, MIN_LAYER_MASS),
+    )
+
+
+def wrf_topographic_sw_correction_factor(
+    coszen,
+    diffuse_fraction,
+    latitude_deg,
+    declination_rad,
+    hour_angle_rad,
+    slope_rad,
+    slope_azimuth_rad,
+    shadow_mask,
+):
+    """Ports WRF `TOPO_RAD_ADJ` slope/aspect/shadow SW correction factor."""
+
+    dtype = jnp.result_type(
+        coszen,
+        diffuse_fraction,
+        latitude_deg,
+        declination_rad,
+        hour_angle_rad,
+        slope_rad,
+        slope_azimuth_rad,
+        jnp.float32,
+    )
+    csza = jnp.asarray(coszen, dtype=dtype)
+    diffuse = jnp.asarray(diffuse_fraction, dtype=dtype)
+    xlat = jnp.asarray(latitude_deg, dtype=dtype) * jnp.asarray(jnp.pi / 180.0, dtype=dtype)
+    declin = jnp.asarray(declination_rad, dtype=dtype)
+    hrang = jnp.asarray(hour_angle_rad, dtype=dtype)
+    slope = jnp.asarray(slope_rad, dtype=dtype)
+    slp_azi = jnp.asarray(slope_azimuth_rad, dtype=dtype)
+    shadowed = jnp.asarray(shadow_mask) == 1
+
+    sin_slope = jnp.sin(slope)
+    cos_slope = jnp.cos(slope)
+    sin_slp_azi = jnp.sin(slp_azi)
+    cos_slp_azi = jnp.cos(slp_azi)
+    sin_lat = jnp.sin(xlat)
+    cos_lat = jnp.cos(xlat)
+    sin_hrang = jnp.sin(hrang)
+    cos_hrang = jnp.cos(hrang)
+
+    csza_slp = (
+        (sin_lat * cos_hrang) * (-cos_slp_azi * sin_slope)
+        - sin_hrang * (sin_slp_azi * sin_slope)
+        + (cos_lat * cos_hrang) * cos_slope
+    ) * jnp.cos(declin) + (cos_lat * (cos_slp_azi * sin_slope) + sin_lat * cos_slope) * jnp.sin(declin)
+    csza_slp = jnp.where(csza_slp <= 1.0e-4, 0.0, csza_slp)
+    csza_slp = jnp.where(shadowed, 0.0, csza_slp)
+
+    no_slope_effect = (slope == 0.0) | (diffuse == 1.0)
+    branch_correction = jnp.where(shadowed, diffuse, 1.0)
+    slope_correction = diffuse + (1.0 - diffuse) * csza_slp / jnp.maximum(csza, 1.0e-12)
+    correction = jnp.where(no_slope_effect, branch_correction, slope_correction)
+    return jnp.where(csza <= 1.0e-4, 1.0, correction)
+
+
+def apply_wrf_topographic_sw_adjustment(
+    surface_down,
+    surface_up,
+    surface_absorbed,
+    coszen,
+    diffuse_fraction,
+    topography: RRTMGSWTopographyState,
+) -> RRTMGSWTopographicAdjustment:
+    """Applies WRF terrain SW correction while preserving surface albedo."""
+
+    correction = wrf_topographic_sw_correction_factor(
+        coszen=coszen,
+        diffuse_fraction=diffuse_fraction,
+        latitude_deg=topography.latitude_deg,
+        declination_rad=topography.declination_rad,
+        hour_angle_rad=topography.hour_angle_rad,
+        slope_rad=topography.slope_rad,
+        slope_azimuth_rad=topography.slope_azimuth_rad,
+        shadow_mask=topography.shadow_mask,
+    )
+    return RRTMGSWTopographicAdjustment(
+        surface_down=surface_down * correction,
+        surface_up=surface_up * correction,
+        surface_absorbed=surface_absorbed * correction,
+        correction_factor=correction,
     )
 
 
@@ -1107,10 +1217,15 @@ def _vertical_quadrature(pref, prefd, ptra, ptrad, direct_trans):
     zreflect = 1.0 / jnp.maximum(1.0 - prdnd * prupd, 1.0e-12)
     flux_up = (ptdbt * prup + (ztdn - ptdbt) * prupd) * zreflect
     flux_down = (ptdbt + (ztdn - ptdbt + ptdbt * prup * prdnd) * zreflect)
-    return flux_down, flux_up
+    return flux_down, flux_up, ptdbt
 
 
-def _shortwave_impl(state: RRTMGSWColumnState, tables: RRTMGTableBundle, debug: bool) -> RRTMGSWColumnResult:
+def _shortwave_impl(
+    state: RRTMGSWColumnState,
+    tables: RRTMGTableBundle,
+    debug: bool,
+    topography: RRTMGSWTopographyState | None = None,
+) -> RRTMGSWColumnResult:
     """Unjitted SW implementation shared by production and stripped paths."""
 
     state = _clip_state(state)
@@ -1246,10 +1361,11 @@ def _shortwave_impl(state: RRTMGSWColumnState, tables: RRTMGTableBundle, debug: 
     direct_cloud = _sw_transmittance_lookup((tau_cloud_top_down / mu0).astype(pref_lay.dtype))
     direct_trans = ((1.0 - cloud_top_down) * direct_clear + cloud_top_down * direct_cloud) * active_top_down
     direct_trans = jnp.where(active_top_down > 0.0, direct_trans, 1.0).astype(pref_lay.dtype)
-    down_top_down, up_top_down = _vertical_quadrature(pref, prefd, ptra, ptrad, direct_trans)
+    down_top_down, up_top_down, direct_top_down = _vertical_quadrature(pref, prefd, ptra, ptrad, direct_trans)
     top_flux_band = (state.coszen[..., None, None] * sfluxzen).astype(down_top_down.dtype)
     down_band = jnp.flip(down_top_down * top_flux_band[..., None, :, :], axis=-3)
     up_band = jnp.flip(up_top_down * top_flux_band[..., None, :, :], axis=-3)
+    direct_band = jnp.flip(direct_top_down * top_flux_band[..., None, :, :], axis=-3)
 
     # Promote the band-summed fluxes to the export dtype (fp64 under force_fp64)
     # at the accumulation point, BEFORE deriving net flux / column absorption /
@@ -1260,6 +1376,7 @@ def _shortwave_impl(state: RRTMGSWColumnState, tables: RRTMGTableBundle, debug: 
     # exported diagnostics never silently downcast below the state regime.
     flux_down_model = jnp.sum(down_band, axis=(-1, -2)).astype(out_dtype)
     flux_up_model = jnp.sum(up_band, axis=(-1, -2)).astype(out_dtype)
+    direct_down_model = jnp.sum(direct_band, axis=(-1, -2)).astype(out_dtype)
     net_down = flux_down_model - flux_up_model
     column_absorbed_layers = net_down[..., 1 : original_layers + 1] - net_down[..., :original_layers]
     column_absorbed_total = net_down[..., -1] - net_down[..., 0]
@@ -1267,6 +1384,29 @@ def _shortwave_impl(state: RRTMGSWColumnState, tables: RRTMGTableBundle, debug: 
     surface_absorbed = flux_down_model[..., 0] - flux_up_model[..., 0]
     flux_down = flux_down_model
     flux_up = flux_up_model
+    surface_down = flux_down[..., 0]
+    surface_up = flux_up[..., 0]
+    surface_direct = direct_down_model[..., 0]
+    surface_diffuse = surface_down - surface_direct
+    surface_diffuse_fraction = jnp.where(surface_down > 0.001, jnp.minimum(surface_diffuse / surface_down, 1.0), 0.0).astype(out_dtype)
+    if topography is None:
+        topographic_correction_factor = jnp.ones_like(surface_down)
+        surface_down_topographic = surface_down
+        surface_up_topographic = surface_up
+        surface_absorbed_topographic = surface_absorbed
+    else:
+        topographic = apply_wrf_topographic_sw_adjustment(
+            surface_down=surface_down,
+            surface_up=surface_up,
+            surface_absorbed=surface_absorbed,
+            coszen=state.coszen.astype(out_dtype),
+            diffuse_fraction=surface_diffuse_fraction,
+            topography=topography,
+        )
+        topographic_correction_factor = topographic.correction_factor.astype(out_dtype)
+        surface_down_topographic = topographic.surface_down.astype(out_dtype)
+        surface_up_topographic = topographic.surface_up.astype(out_dtype)
+        surface_absorbed_topographic = topographic.surface_absorbed.astype(out_dtype)
 
     heating_rate = assert_finite(heating_rate, "rrtmg_sw.heating_rate", enabled=debug)
     flux_down = assert_physical_bounds(flux_down, 0.0, 2000.0, "rrtmg_sw.flux_down", enabled=debug)
@@ -1277,10 +1417,17 @@ def _shortwave_impl(state: RRTMGSWColumnState, tables: RRTMGTableBundle, debug: 
         flux_up=flux_up,
         toa_down=flux_down[..., -1],
         toa_up=flux_up[..., -1],
-        surface_down=flux_down[..., 0],
-        surface_up=flux_up[..., 0],
+        surface_down=surface_down,
+        surface_up=surface_up,
         column_absorbed=column_absorbed_total,
         surface_absorbed=surface_absorbed,
+        surface_direct=surface_direct,
+        surface_diffuse=surface_diffuse,
+        surface_diffuse_fraction=surface_diffuse_fraction,
+        topographic_correction_factor=topographic_correction_factor,
+        surface_down_topographic=surface_down_topographic,
+        surface_up_topographic=surface_up_topographic,
+        surface_absorbed_topographic=surface_absorbed_topographic,
     )
 
 
@@ -1422,7 +1569,7 @@ def compute_rrtmg_sw_intermediates(
     direct_cloud = _sw_transmittance_lookup((tau_cloud_top_down / mu0).astype(pref_lay.dtype))
     direct_trans = ((1.0 - cloud_top_down) * direct_clear + cloud_top_down * direct_cloud) * active_top_down
     direct_trans = jnp.where(active_top_down > 0.0, direct_trans, 1.0).astype(pref_lay.dtype)
-    down_top_down, up_top_down = _vertical_quadrature(pref, prefd, ptra, ptrad, direct_trans)
+    down_top_down, up_top_down, _direct_top_down = _vertical_quadrature(pref, prefd, ptra, ptrad, direct_trans)
     top_flux_band = (state.coszen[..., None, None] * sfluxzen).astype(down_top_down.dtype)
     down_band = jnp.flip(down_top_down * top_flux_band[..., None, :, :], axis=-3)
     up_band = jnp.flip(up_top_down * top_flux_band[..., None, :, :], axis=-3)
@@ -1472,10 +1619,11 @@ def solve_rrtmg_sw_column(
     tables: RRTMGTableBundle = RRTMG_TABLES,
     *,
     debug: bool = False,
+    topography: RRTMGSWTopographyState | None = None,
 ) -> RRTMGSWColumnResult:
     """Computes one fused shortwave column radiation call."""
 
-    return _shortwave_impl(state, tables, debug)
+    return _shortwave_impl(state, tables, debug, topography)
 
 
 @jax.jit
