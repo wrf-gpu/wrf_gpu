@@ -1,0 +1,93 @@
+{
+  "schema": "M21TostPostfixResult",
+  "schema_version": 1,
+  "generated_utc": "2026-06-01T18:59:36.475730+00:00",
+  "title": "POST-FIX TOST re-measure (HEAD 75b9b40: theta-limiter-removed 512a40e + alb-from-phb 75b9b40)",
+  "do_not_confuse_with": "This is a NEW file. The frozen pre-fix aggregate proofs/m20/tost_run/tost_aggregate.json is UNCHANGED (md5 c12427318eacfd76672e29c22d1d40f6).",
+  "n_independent_days": 3,
+  "honesty_label": "SINGLE-SEASON MAM (spring trade-wind) equivalence check, n=3 INDEPENDENT DAYS (05-09 case2_L2 24-72h block, 05-21 case3_L3 0-24h, 05-30 case4_0530_L3 0-24h). UNDERPOWERED for a full seasonal claim (ADR-029 floor n>=15, target n~=27). NEVER 'seasonal'. Same harness (_advance_chunk disable_guards=True, station-paired vs AEMET, complete-pair deletion, >=30-pair-per-block floor) as the frozen pre-fix run; swapped the purged 05-29 day for the fresh 05-30 day.",
+  "method": "paired TOST on case-level RMSE deltas (RMSE_GPU - RMSE_CPU) vs AEMET station obs; frozen ADR-029 margins (10% of CPU-WRF-vs-AEMET RMSE benchmark); alpha=0.05 beta=0.20.",
+  "frozen_margins_adr029": {
+    "T2": 0.2148692978020805,
+    "U10": 0.23064713972582307,
+    "V10": 0.2752320537920854
+  },
+  "verdict": "NOT_EQUIVALENT_OR_UNDERPOWERED",
+  "variables": {
+    "T2": {
+      "frozen_margin": 0.2148692978020805,
+      "cpu_wrf_rmse_benchmark": 2.148692978020805,
+      "prefix_mean_delta_rmse": 0.8629968433886906,
+      "postfix_mean_delta_rmse": 0.7343242958563855,
+      "postfix_ci90": [
+        0.4801335080359157,
+        0.9885150836768553
+      ],
+      "postfix_within_margin_point": false,
+      "postfix_tost_equivalent": false,
+      "postfix_tost_p": 0.986523040317421,
+      "delta_improvement_vs_prefix": 0.12867254753230517,
+      "x_over_margin_prefix": 4.016380433204611,
+      "x_over_margin_postfix": 3.417539422187637,
+      "per_day_deltas": [
+        0.6353271578159374,
+        0.9078545682136365,
+        0.6597911615395824
+      ]
+    },
+    "U10": {
+      "frozen_margin": 0.23064713972582307,
+      "cpu_wrf_rmse_benchmark": 2.3064713972582305,
+      "prefix_mean_delta_rmse": 0.09478054415716465,
+      "postfix_mean_delta_rmse": 0.18405455423687656,
+      "postfix_ci90": [
+        0.028456208820072743,
+        0.3396528996536804
+      ],
+      "postfix_within_margin_point": true,
+      "postfix_tost_equivalent": false,
+      "postfix_tost_p": 0.23706209405991804,
+      "delta_improvement_vs_prefix": -0.0892740100797119,
+      "x_over_margin_prefix": 0.410933100101883,
+      "x_over_margin_postfix": 0.7979919215805907,
+      "per_day_deltas": [
+        0.10173036396830071,
+        0.2838312930581366,
+        0.16660200568419237
+      ]
+    },
+    "V10": {
+      "frozen_margin": 0.2752320537920854,
+      "cpu_wrf_rmse_benchmark": 2.7523205379208537,
+      "prefix_mean_delta_rmse": 0.055009334545213485,
+      "postfix_mean_delta_rmse": 0.25254925695068925,
+      "postfix_ci90": [
+        0.21269258629829707,
+        0.29240592760308143
+      ],
+      "postfix_within_margin_point": true,
+      "postfix_tost_equivalent": false,
+      "postfix_tost_p": 0.11922167728963007,
+      "delta_improvement_vs_prefix": -0.19753992240547577,
+      "x_over_margin_prefix": 0.1998652910782274,
+      "x_over_margin_postfix": 0.9175866454183746,
+      "per_day_deltas": [
+        0.25041703050645725,
+        0.23004577231360912,
+        0.2771849680320013
+      ]
+    }
+  },
+  "interpretation": "Both fixes IMPROVED the station-paired T2 delta (prefix +0.863 -> postfix +0.734 K; 4.0x -> 3.4x over the +/-0.215 margin) and removed the +2.6 kPa pressure-Exner artifact (Ponly +2.0 -> -0.3 K on the d02/d03 corpus compare). But T2 is STILL OUTSIDE the frozen margin: the GPU still runs ~0.7 K worse than CPU-WRF against real AEMET stations, driven by the residual DAYTIME PBL theta-side over-flux (Task 5; land_day HFX +100..+184 W/m2, THonly peaks +0.9..+1.6 K at local-midday leads 12-15h). T2 fails by BIAS, not power -- backfilling n cannot fix it; closing the daytime MYNN/HFX over-flux (V0.2.0 Wave-1 P1-4a) is the precondition. U10 (+0.184) and V10 (+0.253) means are now WITHIN their margins by point estimate but TOST is NOT formally equivalent at n=3 (CI upper bound crosses margin -> underpowered). The honest NOT_EQUIVALENT_OR_UNDERPOWERED verdict is preserved, not amended.",
+  "source_artifacts": {
+    "postfix_aggregate": "proofs/m20/tost_run/postfix/tost_aggregate.json",
+    "postfix_campaign_result": "proofs/m20/tost_run/postfix/tost_campaign_result.json",
+    "postfix_per_case": [
+      "proofs/m20/tost_run/postfix/paired_score_case2_L2.json",
+      "proofs/m20/tost_run/postfix/paired_score_case3_L3.json",
+      "proofs/m20/tost_run/postfix/paired_score_case4_0530_L3.json"
+    ],
+    "manifest": "proofs/m20/tost_postfix_manifest.json",
+    "frozen_prefix_aggregate_UNCHANGED": "proofs/m20/tost_run/tost_aggregate.json"
+  }
+}
