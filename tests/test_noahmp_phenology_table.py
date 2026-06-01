@@ -191,15 +191,34 @@ def _build_inputs(vegtyp_grid, snowh_grid, tv_grid, lat_grid, julian, yearlen):
         return jnp.asarray(table_1d[c], dtype=jnp.float64)
 
     z2 = jnp.zeros((ny, nx), dtype=jnp.float64)
-    params = NoahMPParameters(
-        rhol=z2, rhos=z2, taul=z2, taus=z2, xl=z2, rgl=z2, rsmin=z2, hs=z2,
-        rsmax=z2, z0mvt=z2, hvt=per_col_scalar(_HVT), hvb=per_col_scalar(_HVB),
-        saim=per_col(_SAIM), laim=per_col(_LAIM), sla=z2,
-        shdfac=per_col_scalar(_SHDMAX),
-        bexp=z2, smcmax=z2, smcref=z2, smcwlt=z2, smcdry=z2, dksat=z2, dwsat=z2,
-        psisat=z2, quartz=z2,
-        csoil=jnp.float64(0.0), zbot=jnp.float64(0.0), czil=jnp.float64(0.0),
+    s0 = jnp.float64(0.0)
+    # Build the real (S0b) NoahMPParameters schema. Phenology reads only
+    # hvt/hvb/saim/laim from parameters; SHDMAX is NOT a table param — it is a 2-D
+    # wrfinput field passed via NoahMPStatic.shdmax (arbiter module_sf_noahmplsm.F:864).
+    # All other table fields are zero placeholders (unread by phenology).
+    veg_kw = dict(
+        rhol=z2, rhos=z2, taul=z2, taus=z2, xl=z2, z0mvt=z2,
+        hvt=per_col_scalar(_HVT), hvb=per_col_scalar(_HVB),
+        dleaf=z2, rc=z2, den=z2, cwpvt=z2,
+        saim=per_col(_SAIM), laim=per_col(_LAIM), sla=z2, ch2op=z2, nroot=z2,
+        mfsno=z2, scffac=z2,
+        rsmin=z2, rsmax=z2, rgl=z2, hs=z2, topt=z2, bp=z2, mp=z2, c3psn=z2,
+        kc25=z2, akc=z2, ko25=z2, ako=z2, vcmx25=z2, avcmx=z2, qe25=z2, aqe=z2,
+        folnmx=z2,
     )
+    soil_kw = dict(
+        bexp=z2, smcmax=z2, smcref=z2, smcwlt=z2, smcdry=z2, dksat=z2, dwsat=z2,
+        psisat=z2, quartz=z2, albsat=z2, albdry=z2,
+    )
+    gen_kw = dict(
+        csoil=s0, zbot=s0, czil=s0, refdk=s0, refkdt=s0, frzk=s0,
+        slope=jnp.zeros(1, dtype=jnp.float64), eg=jnp.zeros(2, dtype=jnp.float64),
+        omegas=jnp.zeros(2, dtype=jnp.float64), betads=s0, betais=s0,
+        swemx=s0, z0sno=s0, ssi=s0, snow_ret_fac=s0, snow_emis=s0,
+        iswater=ISWATER_MODIS, isbarren=ISBARREN_MODIS, isice=ISICE_MODIS,
+        iscrop=0, isurban=ISURBAN_MODIS,
+    )
+    params = NoahMPParameters(**veg_kw, **soil_kw, **gen_kw)
 
     # NoahMPLandState: only snowh + tv are read by phenology; rest are placeholders.
     def land_field(shape):
@@ -228,6 +247,9 @@ def _build_inputs(vegtyp_grid, snowh_grid, tv_grid, lat_grid, julian, yearlen):
         zsoil=jnp.zeros(4, dtype=jnp.float64),
         lat=jnp.asarray(lat_grid, dtype=jnp.float64),
         dx_m=3000.0, parameters=params,
+        # SHDMAX is the dveg=4 FVEG source (2-D wrfinput field, = VEGMAX/100).
+        shdmax=per_col_scalar(_SHDMAX),
+        shdfac=per_col_scalar(_SHDMAX),
     )
 
     forcing = NoahMPForcing(

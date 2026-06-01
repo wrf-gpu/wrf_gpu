@@ -36,6 +36,7 @@ _REFDK = 2.0e-6
 _REFKDT = 3.0
 _FRZK = 0.15
 _SLOPE_TYPE_1 = 0.1
+_SLOPETYP = 1   # WRF default subsurface-runoff slope category (opt_run=3)
 
 
 def _soil_field(value, template: jnp.ndarray) -> jnp.ndarray:
@@ -528,7 +529,17 @@ def noahmp_water_hydro(
     sice = jnp.maximum(0.0, smc - sh2o)
 
     ch2op = _veg_param(parameters, "ch2op", static, surface, 0.1)
-    fveg = _veg_param(parameters, "shdfac", static, surface, 1.0)
+    # FVEG (dveg=4) = SHDMAX, a per-column wrfinput field on NoahMPStatic (= VEGMAX/100),
+    # NOT an MPTABLE parameter (arbiter: module_sf_noahmplsm.F:864). Must match the
+    # phenology/energy FVEG. Fall back: instantaneous SHDFAC, then 1.0 (defensive).
+    fveg_src = static.shdmax if static.shdmax is not None else static.shdfac
+    if fveg_src is None:
+        fveg = jnp.broadcast_to(jnp.asarray(1.0, dtype=surface.dtype), surface.shape)
+    else:
+        fveg = jnp.broadcast_to(
+            jnp.asarray(fveg_src, dtype=surface.dtype), surface.shape
+        )
+        fveg = jnp.where(fveg <= 0.05, 0.05, fveg)
     ivgtyp = jnp.asarray(static.ivgtyp)
     fveg = jnp.where((ivgtyp == 25) | (ivgtyp == 26) | (ivgtyp == 27), 0.0, fveg)
     canliq, canice, fwet, tv, etran = _canwater(land_state, forcing, static, et_fluxes, fveg, ch2op, dt_arr)
@@ -566,7 +577,15 @@ def noahmp_water_hydro(
     frzx_default = _FRZK * (smcmax[0] / smcref_safe) * (0.412 / 0.468)
     kdt = _surface_field(getattr(parameters, "kdt", kdt_default), surface)
     frzx = _surface_field(getattr(parameters, "frzx", frzx_default), surface)
-    slope = _surface_field(getattr(parameters, "slope", _SLOPE_TYPE_1), surface)
+    # SLOPE: the frozen S0b NoahMPParameters carries the per-slope-type table
+    # (nslope+1,); WRF gathers it by SLOPETYP (TRANSFER_MP_PARAMETERS, opt_run=3
+    # default SLOPETYP=1). A pre-gathered scalar (oracle fixtures) is used as-is.
+    slope_raw = jnp.asarray(getattr(parameters, "slope", _SLOPE_TYPE_1), dtype=surface.dtype)
+    if slope_raw.ndim == 1 and slope_raw.shape[0] > 1:
+        slope_val = slope_raw[jnp.clip(jnp.int32(_SLOPETYP), 0, slope_raw.shape[0] - 1)]
+    else:
+        slope_val = slope_raw
+    slope = _surface_field(slope_val, surface)
 
     sh2o, smc, runsrf_mm_s, qdrain_mm_s, runsub_mm_s = _soilwater(
         qinsur, qseva, etrani, sh2o, smc, sice, zsoil, dzs, land_state.smcwtd,

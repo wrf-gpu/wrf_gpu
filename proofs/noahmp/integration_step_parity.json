@@ -1,0 +1,375 @@
+{
+  "proof": "S6a integrated noah_mp_step REAL-WRF driver-mapping + closure gate",
+  "kind": "end-to-end integrated driver vs pristine-WRF NOAHMP_SFLX driver dump (savepoints_all.json); HFX/GRDFLX/TSK/LH driver mapping + ENERGY ERRENG closure; NOT a self-compare",
+  "oracle": "proofs/noahmp/savepoints_all.json",
+  "ncolumns": 11,
+  "npass": 11,
+  "nfail": 0,
+  "end_to_end_finite": true,
+  "tolerances": {
+    "hfx": {
+      "atol": 2.0,
+      "rtol": 0.02
+    },
+    "grdflx": {
+      "atol": 2.0,
+      "rtol": 0.02
+    },
+    "tsk": {
+      "atol": 0.3,
+      "rtol": 0.0
+    },
+    "lh": {
+      "atol": 3.0,
+      "rtol": 0.05
+    },
+    "erreng": {
+      "atol": 0.1,
+      "rtol": 0.0
+    }
+  },
+  "columns": [
+    {
+      "name": "daytime_veg5",
+      "pass": true,
+      "fields": {
+        "hfx": {
+          "wrf": 263.232666,
+          "jax": 263.2331231999918,
+          "pass": true
+        },
+        "grdflx": {
+          "wrf": 120.7658,
+          "jax": 120.76591710125446,
+          "pass": true
+        },
+        "tsk": {
+          "wrf": 302.342133,
+          "jax": 302.3421577590373,
+          "pass": true
+        },
+        "lh": {
+          "wrf": 12.9113331,
+          "jax": 12.911476162776337,
+          "pass": true
+        },
+        "erreng": {
+          "wrf": 0.0,
+          "jax": 1.1368683772161603e-13,
+          "pass": true
+        }
+      }
+    },
+    {
+      "name": "daytime_veg9",
+      "pass": true,
+      "fields": {
+        "hfx": {
+          "wrf": 283.923615,
+          "jax": 283.7983781398963,
+          "pass": true
+        },
+        "grdflx": {
+          "wrf": 230.173492,
+          "jax": 230.16468801375947,
+          "pass": true
+        },
+        "tsk": {
+          "wrf": 311.081085,
+          "jax": 311.07931773379494,
+          "pass": true
+        },
+        "lh": {
+          "wrf": 45.2010841,
+          "jax": 45.52442656870027,
+          "pass": true
+        },
+        "erreng": {
+          "wrf": 0.0,
+          "jax": 1.1368683772161603e-13,
+          "pass": true
+        }
+      }
+    },
+    {
+      "name": "daytime_veg10",
+      "pass": true,
+      "fields": {
+        "hfx": {
+          "wrf": 266.804626,
+          "jax": 266.7384723632763,
+          "pass": true
+        },
+        "grdflx": {
+          "wrf": 232.829315,
+          "jax": 232.82243850200484,
+          "pass": true
+        },
+        "tsk": {
+          "wrf": 309.958374,
+          "jax": 309.95675531590734,
+          "pass": true
+        },
+        "lh": {
+          "wrf": 41.4582481,
+          "jax": 41.70065129376083,
+          "pass": true
+        },
+        "erreng": {
+          "wrf": 0.0,
+          "jax": -1.1368683772161603e-13,
+          "pass": true
+        }
+      }
+    },
+    {
+      "name": "daytime_veg13",
+      "pass": true,
+      "fields": {
+        "hfx": {
+          "wrf": 625.086426,
+          "jax": 625.0858372582559,
+          "pass": true
+        },
+        "grdflx": {
+          "wrf": 81.7431335,
+          "jax": 81.74322091513716,
+          "pass": true
+        },
+        "tsk": {
+          "wrf": 295.380066,
+          "jax": 295.38006177475046,
+          "pass": true
+        },
+        "lh": {
+          "wrf": 0.0101256277,
+          "jax": 0.010697795992723956,
+          "pass": true
+        },
+        "erreng": {
+          "wrf": 0.0,
+          "jax": 0.0,
+          "pass": true
+        }
+      }
+    },
+    {
+      "name": "daytime_veg16",
+      "pass": true,
+      "fields": {
+        "hfx": {
+          "wrf": 297.528717,
+          "jax": 297.5287053245545,
+          "pass": true
+        },
+        "grdflx": {
+          "wrf": 278.637665,
+          "jax": 278.63762197439945,
+          "pass": true
+        },
+        "tsk": {
+          "wrf": 311.028625,
+          "jax": 311.02864138509017,
+          "pass": true
+        },
+        "lh": {
+          "wrf": 19.4280682,
+          "jax": 19.428073685803543,
+          "pass": true
+        },
+        "erreng": {
+          "wrf": 0.0,
+          "jax": 0.0,
+          "pass": true
+        }
+      }
+    },
+    {
+      "name": "nighttime_veg5",
+      "pass": true,
+      "fields": {
+        "hfx": {
+          "wrf": -10.2516117,
+          "jax": -10.250007255443247,
+          "pass": true
+        },
+        "grdflx": {
+          "wrf": -43.4395752,
+          "jax": -43.43952773012415,
+          "pass": true
+        },
+        "tsk": {
+          "wrf": 287.664246,
+          "jax": 287.6642207569444,
+          "pass": true
+        },
+        "lh": {
+          "wrf": -1.36667597,
+          "jax": -1.3666732826394388,
+          "pass": true
+        },
+        "erreng": {
+          "wrf": 0.0,
+          "jax": -7.105427357601002e-15,
+          "pass": true
+        }
+      }
+    },
+    {
+      "name": "nighttime_veg9",
+      "pass": true,
+      "fields": {
+        "hfx": {
+          "wrf": -3.62953091,
+          "jax": -3.6301081640639183,
+          "pass": true
+        },
+        "grdflx": {
+          "wrf": -54.2802277,
+          "jax": -54.28021863040341,
+          "pass": true
+        },
+        "tsk": {
+          "wrf": 288.978302,
+          "jax": 288.97830800425214,
+          "pass": true
+        },
+        "lh": {
+          "wrf": 1.25665951,
+          "jax": 1.256661581767477,
+          "pass": true
+        },
+        "erreng": {
+          "wrf": 0.0,
+          "jax": -3.552713678800501e-15,
+          "pass": true
+        }
+      }
+    },
+    {
+      "name": "nighttime_veg10",
+      "pass": true,
+      "fields": {
+        "hfx": {
+          "wrf": -4.65856981,
+          "jax": -4.659239932430387,
+          "pass": true
+        },
+        "grdflx": {
+          "wrf": -53.3270073,
+          "jax": -53.327017845317826,
+          "pass": true
+        },
+        "tsk": {
+          "wrf": 287.258331,
+          "jax": 287.2583006149077,
+          "pass": true
+        },
+        "lh": {
+          "wrf": 2.07631207,
+          "jax": 2.0763117751003266,
+          "pass": true
+        },
+        "erreng": {
+          "wrf": 0.0,
+          "jax": -1.4210854715202004e-14,
+          "pass": true
+        }
+      }
+    },
+    {
+      "name": "nighttime_veg13",
+      "pass": true,
+      "fields": {
+        "hfx": {
+          "wrf": -2.47534657,
+          "jax": -2.475388890366212,
+          "pass": true
+        },
+        "grdflx": {
+          "wrf": -73.4903793,
+          "jax": -73.49074810398002,
+          "pass": true
+        },
+        "tsk": {
+          "wrf": 290.319519,
+          "jax": 290.31950789880733,
+          "pass": true
+        },
+        "lh": {
+          "wrf": 0.00232181977,
+          "jax": 0.0027456257127572185,
+          "pass": true
+        },
+        "erreng": {
+          "wrf": 0.0,
+          "jax": 0.0,
+          "pass": true
+        }
+      }
+    },
+    {
+      "name": "nighttime_veg16",
+      "pass": true,
+      "fields": {
+        "hfx": {
+          "wrf": -7.63812447,
+          "jax": -7.638134155227171,
+          "pass": true
+        },
+        "grdflx": {
+          "wrf": -64.1910477,
+          "jax": -64.19102970271278,
+          "pass": true
+        },
+        "tsk": {
+          "wrf": 277.165039,
+          "jax": 277.16503443723,
+          "pass": true
+        },
+        "lh": {
+          "wrf": 0.59293288,
+          "jax": 0.5929338346157792,
+          "pass": true
+        },
+        "erreng": {
+          "wrf": 0.0,
+          "jax": -1.4210854715202004e-14,
+          "pass": true
+        }
+      }
+    },
+    {
+      "name": "teide_snow",
+      "pass": true,
+      "fields": {
+        "hfx": {
+          "wrf": -75.812294,
+          "jax": -75.81230809656071,
+          "pass": true
+        },
+        "grdflx": {
+          "wrf": 359.636566,
+          "jax": 359.6366937730421,
+          "pass": true
+        },
+        "tsk": {
+          "wrf": 273.160004,
+          "jax": 273.16,
+          "pass": true
+        },
+        "lh": {
+          "wrf": 7.28153419,
+          "jax": 7.281529941177985,
+          "pass": true
+        },
+        "erreng": {
+          "wrf": 0.0,
+          "jax": 0.0,
+          "pass": true
+        }
+      }
+    }
+  ],
+  "verdict": "S6a_INTEGRATION_PASS"
+}

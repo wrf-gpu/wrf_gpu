@@ -177,6 +177,6 @@
       }
     }
   ],
-  "S0b_savepoint_fixtures_present": false,
+  "S0b_savepoint_fixtures_present": true,
   "verdict": "PASS"
 }

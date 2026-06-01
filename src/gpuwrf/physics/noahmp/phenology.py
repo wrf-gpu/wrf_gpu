@@ -56,6 +56,8 @@ import jax.numpy as jnp
 from gpuwrf.contracts.noahmp_state import NoahMPLandState, NoahMPStatic
 from gpuwrf.physics.noahmp.types import NoahMPForcing, NoahMPPhenology
 
+NMONTH: int = 12  # monthly LAI/SAI table length (module_sf_noahmplsm.F)
+
 # --- MODIS (MODIFIED_IGBP_MODIS_NOAH, NVEG=20) category sentinels --------------
 # Verbatim from /home/enric/src/wrf_pristine/WRF/run/MPTABLE.TBL
 # &noahmp_modis_parameters (1-based VEGTYP indices).
@@ -102,11 +104,44 @@ def noahmp_phenology_table(
     lat = jnp.asarray(static.lat, dtype=jnp.float64)           # LAT (deg; sign test)
     vegtyp = jnp.asarray(static.ivgtyp, dtype=jnp.int32)       # VEGTYP (1-based)
 
-    laim = jnp.asarray(p.laim, dtype=jnp.float64)              # (12, ...) monthly LAI
-    saim = jnp.asarray(p.saim, dtype=jnp.float64)              # (12, ...) monthly SAI
-    hvt = jnp.asarray(p.hvt, dtype=jnp.float64)                # canopy top [m]
-    hvb = jnp.asarray(p.hvb, dtype=jnp.float64)                # canopy bottom [m]
-    shdmax = jnp.asarray(p.shdfac, dtype=jnp.float64)          # FVEG source (dveg=4)
+    # Monthly LAI/SAI + canopy heights. The frozen S0b NoahMPParameters provides
+    # PER-CATEGORY tables (laim/saim shape (nveg+1, 12); hvt/hvb shape (nveg+1,)),
+    # so gather by VEGTYP here. A caller that passes PRE-GATHERED tables
+    # (laim shape (12, ny, nx); hvt shape (ny, nx)) — e.g. the unit oracle — is also
+    # supported: detected by the leading axis being the 12-month axis / a non-1D map.
+    nveg_p1 = jnp.asarray(p.laim, dtype=jnp.float64).shape[0]
+
+    def _gather_monthly(tbl):
+        a = jnp.asarray(tbl, dtype=jnp.float64)
+        if a.ndim == 2 and a.shape[0] == NMONTH and a.shape[1] != NMONTH:
+            return a  # already (12, ...) pre-gathered (and not a (12,12) ambiguity)
+        if a.ndim == 2 and a.shape[1] == NMONTH:
+            # per-category (nveg+1, 12) -> (12, ny, nx) gathered by vegtyp.
+            idx = jnp.clip(vegtyp, 0, a.shape[0] - 1)
+            return jnp.moveaxis(a[idx], -1, 0)
+        return a  # (12,) broadcastable
+
+    def _gather_scalar(tbl):
+        a = jnp.asarray(tbl, dtype=jnp.float64)
+        if a.ndim == 1 and a.shape[0] == nveg_p1:
+            idx = jnp.clip(vegtyp, 0, a.shape[0] - 1)
+            return a[idx]                       # (ny, nx)
+        return a                                # already per-column or scalar
+
+    laim = _gather_monthly(p.laim)                            # (12, ...) monthly LAI
+    saim = _gather_monthly(p.saim)                            # (12, ...) monthly SAI
+    hvt = _gather_scalar(p.hvt)                               # canopy top [m]
+    hvb = _gather_scalar(p.hvb)                               # canopy bottom [m]
+    # FVEG source for dveg=4 = SHDMAX (annual-max green-veg fraction), a per-column
+    # wrfinput field carried on NoahMPStatic (= VEGMAX/100), NOT an MPTABLE param.
+    # Arbiter: pristine WRF module_sf_noahmplsm.F:864 (FVEG=SHDMAX) +
+    # module_sf_noahmpdrv.F:753 (FVGMAX=VEGMAX/100). Fall back to instantaneous
+    # SHDFAC then to TV's shape if a caller omits both (defensive; driver supplies it).
+    shdmax_src = static.shdmax if static.shdmax is not None else static.shdfac
+    if shdmax_src is None:
+        shdmax = jnp.zeros_like(tv)
+    else:
+        shdmax = jnp.asarray(shdmax_src, dtype=jnp.float64)    # FVEG source (dveg=4)
 
     julian = jnp.asarray(forcing.julian, dtype=jnp.float64)    # day-of-year (fractional)
     yearlen = jnp.asarray(forcing.yearlen, dtype=jnp.float64)  # days in year
