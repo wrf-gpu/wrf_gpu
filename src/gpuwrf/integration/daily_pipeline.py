@@ -26,7 +26,12 @@ from gpuwrf.integration.d02_replay import build_replay_case
 from gpuwrf.io.data_inventory import parse_wrfout_valid_time
 from gpuwrf.io.gen2_accessor import Gen2Run
 from gpuwrf.io.land_state import load_hourly_land_state
-from gpuwrf.io.wrfout_writer import MINIMUM_WRFOUT_VARIABLES, write_wrfout_netcdf
+from gpuwrf.io.async_wrfout import AsyncWrfoutWriter
+from gpuwrf.io.wrfout_writer import (
+    MINIMUM_WRFOUT_VARIABLES,
+    prepare_wrfout_payload,
+    write_wrfout_netcdf,
+)
 from gpuwrf.profiling.transfer_audit import block_until_ready, visible_gpu_name
 from gpuwrf.runtime.checkpoint import read_checkpoint, write_checkpoint
 from gpuwrf.runtime.operational_mode import (
@@ -81,6 +86,12 @@ class DailyPipelineConfig:
     acoustic_substeps: int = 10
     radiation_cadence_steps: int = 180
     refresh_land_state_hourly: bool = True
+    # v0.2.0 wall-clock win #3: write each hour's wrfout on a background thread
+    # while the GPU advances the next hour (double-buffered output). The device
+    # ->host pull still happens synchronously on the main thread; only the NetCDF
+    # write is overlapped, so output bytes/ordering are unchanged. Set False to
+    # restore the fully-synchronous writer (e.g. for an A/B wall-clock baseline).
+    async_output: bool = True
 
 
 @dataclass(frozen=True)
@@ -403,6 +414,19 @@ def _run_forecast_sequence(
     per_hour_wall_s: list[float] = []
     checkpoint_payload: dict[str, Any] | None = None
     land_refresh_records: list[dict[str, Any]] = []
+    # win #3: double-buffered output -- write hour N's wrfout on a background
+    # thread while the GPU advances hour N+1. The device->host pull stays on the
+    # main thread (prepare_wrfout_payload) so no device buffer is read off-thread;
+    # only the NetCDF write is overlapped. join()ed below before any wrfout is read.
+    writer = AsyncWrfoutWriter() if bool(config.async_output) else None
+
+    def _flush_writer() -> None:
+        # Drain/join the background writer so all submitted wrfouts are on disk
+        # (and any writer error is surfaced) before the run returns OR fails. The
+        # PipelineBlocked failure paths call this so partial output is flushed and
+        # ``output_files_before_failure`` is accurate. join() is idempotent.
+        if writer is not None:
+            writer.join()
 
     for hour in range(1, int(config.hours) + 1):
         start = time.perf_counter()
@@ -412,6 +436,7 @@ def _run_forecast_sequence(
 
         summary = finite_summary(state)
         if not summary["all_finite"]:
+            _flush_writer()
             raise PipelineBlocked(
                 f"nonfinite model state after forecast hour {hour}",
                 {
@@ -427,6 +452,7 @@ def _run_forecast_sequence(
             land_refresh_records.append(land_record)
             summary = finite_summary(state)
             if not summary["all_finite"]:
+                _flush_writer()
                 raise PipelineBlocked(
                     f"nonfinite model state after land-state refresh hour {hour}",
                     {
@@ -450,16 +476,31 @@ def _run_forecast_sequence(
         diagnostics = _surface_diagnostics_for_output(
             state, case.namelist, case.run_start, lead_seconds=float(hour) * 3600.0
         )
-        write_wrfout_netcdf(
-            state,
-            case.grid,
-            case.namelist,
-            wrfout,
-            valid_time=valid_time,
-            lead_hours=float(hour),
-            run_start=case.run_start,
-            diagnostics=diagnostics,
-        )
+        if writer is not None:
+            # Pull this hour to host now (synchronous device->host), then write on
+            # the background thread while the GPU starts the next hour.
+            prepared = prepare_wrfout_payload(
+                state,
+                case.grid,
+                case.namelist,
+                wrfout,
+                valid_time=valid_time,
+                lead_hours=float(hour),
+                run_start=case.run_start,
+                diagnostics=diagnostics,
+            )
+            writer.submit(prepared)
+        else:
+            write_wrfout_netcdf(
+                state,
+                case.grid,
+                case.namelist,
+                wrfout,
+                valid_time=valid_time,
+                lead_hours=float(hour),
+                run_start=case.run_start,
+                diagnostics=diagnostics,
+            )
         files.append(wrfout)
 
         if checkpoint_at_hour is not None and hour == int(checkpoint_at_hour):
@@ -479,6 +520,10 @@ def _run_forecast_sequence(
                 "step_index": int(restored_step),
                 "restored": True,
             }
+
+    # Flush all background wrfout writes before returning: downstream
+    # validation/inventory/scoring reads these files immediately after this call.
+    _flush_writer()
 
     metadata = dict(case.metadata)
     metadata["land_state_refresh"] = {
