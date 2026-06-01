@@ -23,6 +23,11 @@ os.environ.setdefault("XLA_PYTHON_CLIENT_PREALLOCATE", "false")
 import numpy as np
 from netCDF4 import Dataset
 
+import jax.numpy as jnp
+
+from gpuwrf.contracts.grid import BCMetadata, DycoreMetrics, GridSpec, Projection, TerrainProvenance, VerticalCoord
+from gpuwrf.contracts.state import State, Tendencies
+from gpuwrf.dynamics.core.coupled import _adaptive_boundary_config, _boundary_update, _physics_update
 from gpuwrf.dynamics.acoustic_loop import AcousticLoopState
 from gpuwrf.dynamics.coupled_step import (
     COUPLED_STATE_FIELDS,
@@ -31,6 +36,13 @@ from gpuwrf.dynamics.coupled_step import (
     CoupledStepConfig,
     coupled_timesteps_wrf,
 )
+from gpuwrf.runtime.operational_mode import (
+    OperationalNamelist,
+    _carry_from_coupled_core,
+    _enforce_operational_precision,
+    _rk_scan_step,
+)
+from gpuwrf.runtime.operational_state import initial_operational_carry
 from gpuwrf.io.boundary_replay import SIDES, decode_wrfbdy
 from gpuwrf.validation.comparator_common import DEFAULT_GEN2_WRFOUT, field_compare
 from gpuwrf.validation.savepoint_io import write_savepoint

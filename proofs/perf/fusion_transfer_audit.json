@@ -24,13 +24,28 @@
     "method": "jax.profiler.trace scanned for post-init memcpy events",
     "host_to_device_bytes_post_init": 3693888,
     "device_to_host_bytes_post_init": 3693888,
-    "trace_dir": "/tmp/claude-1000/perf_trace_ek9jp2h1",
+    "trace_dir": "/tmp/claude-1000/perf_trace_2gxf3iap",
     "transfer_event_files": [
-      "/tmp/claude-1000/perf_trace_ek9jp2h1/plugins/profile/2026_06_01_02_33_41/enric-battlestation.trace.json.gz",
-      "/tmp/claude-1000/perf_trace_ek9jp2h1/plugins/profile/2026_06_01_02_33_41/enric-battlestation.xplane.pb"
+      "/tmp/claude-1000/perf_trace_2gxf3iap/plugins/profile/2026_06_01_06_41_04/enric-battlestation.trace.json.gz",
+      "/tmp/claude-1000/perf_trace_2gxf3iap/plugins/profile/2026_06_01_06_41_04/enric-battlestation.xplane.pb"
     ],
     "d2h_inter_kernel_verdict": "3693888 D2H bytes detected -- investigate"
   },
+  "in_loop_transfer_classification": {
+    "classifiable": true,
+    "compute_start_us": 12421.07,
+    "compute_end_us": 7988196.094,
+    "compute_span_us": 7975775.023999999,
+    "boundary_band_fraction": 0.02,
+    "one_time_h2d_bytes": 0,
+    "one_time_d2h_bytes": 0,
+    "in_loop_h2d_bytes": 0,
+    "in_loop_d2h_bytes": 0,
+    "in_loop_transfer_events": 161865,
+    "transfer_event_count": 176391,
+    "in_loop_total_bytes": 0
+  },
+  "device_residency_verdict": "DEVICE-RESIDENT: 0 in-loop H2D/D2H bytes; the measured 3693888+3693888 post-init bytes are one-time input/output staging (boundary of the compute span), not in-timestep-loop transfers.",
   "compile_cost_driver": {
     "distinct_scan_calls_emitted_by_python_radiation_loop": {
       "0.1h": 1,
