@@ -371,24 +371,108 @@ def write_wrfout_netcdf(
     other caller regresses.
     """
 
+    prepared = prepare_wrfout_payload(
+        state,
+        grid,
+        namelist,
+        path,
+        valid_time=valid_time,
+        lead_hours=lead_hours,
+        run_start=run_start,
+        diagnostics=diagnostics,
+    )
+    return write_prepared_wrfout(prepared)
+
+
+@dataclass(frozen=True)
+class PreparedWrfout:
+    """Fully host-materialized wrfout payload (v0.2.0 wall-clock win #3).
+
+    Everything needed to write one wrfout NetCDF file with NO device-array or live
+    model-state dependency: every field is already a host ``np.float32`` array
+    (the device->host pull happened in :func:`prepare_wrfout_payload` while the
+    GPU result was still resident). This object can therefore be handed to a
+    background writer thread while the GPU advances the next forecast hour, with
+    no risk of racing a donated/reused device buffer. The NetCDF bytes written are
+    byte-for-byte identical to the synchronous path -- only the wall-clock timing
+    of the write changes.
+    """
+
+    target: Path
+    dimensions: Mapping[str, int | None]
+    fields: Mapping[str, np.ndarray]
+    run_start_dt: datetime
+    valid_dt: datetime
+    lead_hours: float
+    grid: Any
+    namelist: Any
+
+
+def prepare_wrfout_payload(
+    state: Any,
+    grid: Any,
+    namelist: Mapping[str, Any] | Any | None,
+    path: str | Path,
+    *,
+    valid_time: datetime | date | str,
+    lead_hours: float,
+    run_start: datetime | date | str,
+    diagnostics: Mapping[str, Any] | None = None,
+) -> PreparedWrfout:
+    """Materialize all wrfout fields to host numpy (the device->host boundary).
+
+    This is the part of :func:`write_wrfout_netcdf` that touches the live model
+    state / device arrays. Calling it eagerly (before the GPU advances the next
+    hour) lets the subsequent NetCDF write run on a background thread. ``grid`` and
+    ``namelist`` are kept by reference for the global-attribute scalars only --
+    those reads are pure host metadata (projection floats / dimensions), never
+    device arrays, so they are safe to read on the writer thread.
+    """
+
     target = Path(path)
-    target.parent.mkdir(parents=True, exist_ok=True)
     run_start_dt = _coerce_datetime(run_start)
     valid_dt = _coerce_datetime(valid_time)
     nx, ny, nz = _grid_extent(grid)
     dimensions = _dimension_sizes(nx=nx, ny=ny, nz=nz, namelist=namelist)
+    # The single device->host boundary: _build_output_fields returns host
+    # np.float32 arrays, so PreparedWrfout holds no device references.
     fields = _build_output_fields(state, grid, namelist, dimensions, diagnostics=diagnostics)
+    return PreparedWrfout(
+        target=target,
+        dimensions=dimensions,
+        fields=fields,
+        run_start_dt=run_start_dt,
+        valid_dt=valid_dt,
+        lead_hours=float(lead_hours),
+        grid=grid,
+        namelist=namelist,
+    )
 
+
+def write_prepared_wrfout(prepared: PreparedWrfout) -> Path:
+    """Write a :class:`PreparedWrfout` to NetCDF. Pure host work; thread-safe.
+
+    Contains NO device-array access, so it is safe to run on a background writer
+    thread while the GPU advances. The bytes are identical to the synchronous
+    :func:`write_wrfout_netcdf` path.
+    """
+
+    target = prepared.target
+    target.parent.mkdir(parents=True, exist_ok=True)
+    dimensions = prepared.dimensions
     with Dataset(target, "w", format="NETCDF4") as dataset:
         _create_dimensions(dataset, dimensions)
-        _write_global_attrs(dataset, grid, namelist, dimensions, run_start_dt, valid_dt)
-        _write_times(dataset, valid_dt)
-        _write_xtime(dataset, run_start_dt, lead_hours)
+        _write_global_attrs(
+            dataset, prepared.grid, prepared.namelist, dimensions,
+            prepared.run_start_dt, prepared.valid_dt,
+        )
+        _write_times(dataset, prepared.valid_dt)
+        _write_xtime(dataset, prepared.run_start_dt, prepared.lead_hours)
         for name in MINIMUM_WRFOUT_VARIABLES:
             if name in {"Times", "XTIME"}:
                 continue
             spec = WRFOUT_VARIABLE_SPECS[name]
-            _write_float_variable(dataset, spec, fields[name], dimensions)
+            _write_float_variable(dataset, spec, prepared.fields[name], dimensions)
     return target
 
 
