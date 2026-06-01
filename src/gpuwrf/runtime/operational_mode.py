@@ -87,6 +87,29 @@ _THETA_LIMITER_MIN_K = 0.0
 _THETA_LIMITER_MAX_K = 500.0
 
 
+class _StaticHolder:
+    """Identity-hashable wrapper so a Noah-MP static bundle (categories + constant
+    parameter tables + pre-built params) can ride in the namelist's STATIC AUX.
+
+    The frozen Noah-MP driver concretizes several integer/scalar fields of these
+    bundles (``isurban``, ``nroot``, table scalars) inside the jitted scan, so they
+    must be COMPILE CONSTANTS, not tracers. Carrying them as static aux makes JAX
+    bake their (per-run-constant) arrays into the program. ``None`` is held as-is.
+    Hash/eq are by object identity: one run builds one static bundle -> one compile;
+    a different run's bundle is a distinct object -> a fresh compile (correct)."""
+
+    __slots__ = ("value",)
+
+    def __init__(self, value):
+        self.value = value
+
+    def __hash__(self):
+        return object.__hash__(self) if self.value is None else id(self.value)
+
+    def __eq__(self, other):
+        return isinstance(other, _StaticHolder) and self.value is other.value
+
+
 @jax.tree_util.register_pytree_node_class
 @dataclass(frozen=True)
 class OperationalNamelist:
@@ -241,11 +264,14 @@ class OperationalNamelist:
         )
 
     def tree_flatten(self):
-        # noahmp_static + pre-built params ride as pytree CHILDREN (device arrays
-        # must NOT enter the static aux jit cache key); use_noahmp + clock scalars +
-        # the concrete nroot slice bound are static aux.
-        children = (self.tendencies, self.metrics, self.noahmp_static,
-                    self.noahmp_energy_params, self.noahmp_rad_params)
+        # The Noah-MP static (categories + soil geometry + the constant parameter
+        # TABLES) and the pre-built energy/rad params ride as STATIC AUX, not traced
+        # children: the frozen driver concretizes several of their fields inside the
+        # scan (isurban, nroot, table scalars), so they must be COMPILE CONSTANTS,
+        # not tracers. They are wrapped in an identity-hashable holder so the jit
+        # cache keys on per-run object identity (one run -> one compile). use_noahmp
+        # + clock scalars are also static aux.
+        children = (self.tendencies, self.metrics)
         aux = (
             self.grid,
             float(self.dt_s),
@@ -278,13 +304,15 @@ class OperationalNamelist:
             int(self.noahmp_nroot),
             float(self.noahmp_julian),
             float(self.noahmp_yearlen),
+            _StaticHolder(self.noahmp_static),
+            _StaticHolder(self.noahmp_energy_params),
+            _StaticHolder(self.noahmp_rad_params),
         )
         return children, aux
 
     @classmethod
     def tree_unflatten(cls, aux, children):
-        (tendencies, metrics, noahmp_static,
-         noahmp_energy_params, noahmp_rad_params) = children
+        tendencies, metrics = children
         (
             grid,
             dt_s,
@@ -317,7 +345,13 @@ class OperationalNamelist:
             noahmp_nroot,
             noahmp_julian,
             noahmp_yearlen,
+            noahmp_static_holder,
+            noahmp_energy_holder,
+            noahmp_rad_holder,
         ) = aux
+        noahmp_static = noahmp_static_holder.value
+        noahmp_energy_params = noahmp_energy_holder.value
+        noahmp_rad_params = noahmp_rad_holder.value
         return cls(
             grid=grid,
             tendencies=tendencies,
@@ -1684,16 +1718,11 @@ def noahmp_initial_rad(state: State) -> tuple:
 
 
 def _noahmp_params(namelist: OperationalNamelist):
-    """Reattach the CONCRETE static ``nroot`` slice bound to the pre-built energy
-    params (the params ride as a pytree child whose ``nroot`` leaf is traced inside
-    jit; the energy kernel needs ``range(nroot)`` concrete). Returns ``(energy, rad)``
-    or ``(None, None)`` when the params were not pre-built (the driver then builds
-    them eagerly -- only valid outside jit)."""
-    ep = namelist.noahmp_energy_params
-    rp = namelist.noahmp_rad_params
-    if ep is None:
-        return None, None
-    return ep._replace(nroot=int(namelist.noahmp_nroot)), rp
+    """Return the pre-built ``(energy_params, rad_params)``. They ride as STATIC AUX
+    (compile constants), so their concrete ``nroot``/scalar fields are available
+    inside the jitted scan -- no re-build, no tracer concretization. ``(None, None)``
+    when not pre-built (the driver then builds them eagerly, valid outside jit)."""
+    return namelist.noahmp_energy_params, namelist.noahmp_rad_params
 
 
 class _NoahMPRadiation(NamedTuple):
