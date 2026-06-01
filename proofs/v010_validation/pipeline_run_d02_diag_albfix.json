@@ -1,0 +1,18 @@
+{
+  "detail": {
+    "failure_mode": "JaxRuntimeError"
+  },
+  "hours": 24,
+  "orchestration_cpu_affinity": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "output_dir": "/tmp/d02_albfix_runs/d02_20260521_18z_l3_24h_20260522T133443Z_albfix",
+  "reason": "JaxRuntimeError: RESOURCE_EXHAUSTED: [0] Failed to load in-memory CUBIN (compiled for a different GPU?).: CUDA_ERROR_OUT_OF_MEMORY: out of memory",
+  "run_id": "20260521_18z_l3_24h_20260522T133443Z",
+  "schema": "M7DailyPipelineRun",
+  "schema_version": 1,
+  "verdict": "PIPELINE_BLOCKED"
+}

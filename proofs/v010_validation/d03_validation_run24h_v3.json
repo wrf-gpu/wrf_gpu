@@ -1,0 +1,1256 @@
+{
+  "cycle": {
+    "cycle_hour_utc": 18,
+    "start_date": "2026-05-21"
+  },
+  "failures": [
+    "final-lead RMSE exceeded threshold on T2/U10/V10"
+  ],
+  "final_lead": "2026-05-22T18:00:00+00:00",
+  "final_lead_fields": {
+    "RAINNC": {
+      "beats_persistence": true,
+      "max_abs_error": 0.00040843713213689625,
+      "mean_error": -1.211093698552221e-06,
+      "persistence_rmse": 1.4421910101943408e-05,
+      "rmse": 1.4421910101943408e-05,
+      "skill_score": 0.0,
+      "threshold": null,
+      "units": "mm",
+      "within_threshold": true
+    },
+    "T2": {
+      "beats_persistence": false,
+      "max_abs_error": 41.314971923828125,
+      "mean_error": 6.991042047316029,
+      "persistence_rmse": 2.297936325392803,
+      "rmse": 10.792435840844817,
+      "skill_score": -3.69657741234409,
+      "threshold": 3.0,
+      "units": "K",
+      "within_threshold": false
+    },
+    "U10": {
+      "beats_persistence": false,
+      "max_abs_error": 24.93381702899933,
+      "mean_error": 0.798866632991891,
+      "persistence_rmse": 2.98079500303829,
+      "rmse": 8.607394274007946,
+      "skill_score": -1.8876169831318586,
+      "threshold": 7.5,
+      "units": "m s-1",
+      "within_threshold": false
+    },
+    "V10": {
+      "beats_persistence": false,
+      "max_abs_error": 30.325788497924805,
+      "mean_error": -2.4486733604937885,
+      "persistence_rmse": 4.678583125846212,
+      "rmse": 9.792607159183977,
+      "skill_score": -1.0930711063112284,
+      "threshold": 7.5,
+      "units": "m s-1",
+      "within_threshold": false
+    }
+  },
+  "lead_count": 24,
+  "notes": [
+    "RMSE is gridded GPU-d03 vs corpus-d03 (1km Tenerife) truth.",
+    "Persistence baseline holds the t=0 corpus d03 surface state at every lead.",
+    "beats_persistence requires GPU RMSE <= persistence RMSE for that field/lead."
+  ],
+  "per_lead": [
+    {
+      "fields": {
+        "RAINNC": {
+          "beats_persistence": true,
+          "max_abs_error": 3.0346000130521134e-05,
+          "mean_error": -7.318460109177247e-08,
+          "persistence_rmse": 1.1868595921981491e-06,
+          "rmse": 1.1868595921981491e-06,
+          "skill_score": 0.0,
+          "threshold": null,
+          "units": "mm",
+          "within_threshold": true
+        },
+        "T2": {
+          "beats_persistence": false,
+          "max_abs_error": 33.833648681640625,
+          "mean_error": 8.00820342689432,
+          "persistence_rmse": 1.8643178688276438,
+          "rmse": 11.339386841019037,
+          "skill_score": -5.082324817360512,
+          "threshold": 3.0,
+          "units": "K",
+          "within_threshold": false
+        },
+        "U10": {
+          "beats_persistence": false,
+          "max_abs_error": 22.351638793945312,
+          "mean_error": 0.404709549205994,
+          "persistence_rmse": 2.3236102400498018,
+          "rmse": 8.17151691926656,
+          "skill_score": -2.516733046886306,
+          "threshold": 7.5,
+          "units": "m s-1",
+          "within_threshold": false
+        },
+        "V10": {
+          "beats_persistence": false,
+          "max_abs_error": 20.91774618625641,
+          "mean_error": -1.719317389360473,
+          "persistence_rmse": 2.806423863878645,
+          "rmse": 9.124872958888885,
+          "skill_score": -2.25142366280971,
+          "threshold": 7.5,
+          "units": "m s-1",
+          "within_threshold": false
+        }
+      },
+      "valid_time_utc": "2026-05-21T19:00:00+00:00"
+    },
+    {
+      "fields": {
+        "RAINNC": {
+          "beats_persistence": true,
+          "max_abs_error": 0.0003613837470766157,
+          "mean_error": -1.017289577671514e-06,
+          "persistence_rmse": 1.2530292797011136e-05,
+          "rmse": 1.2530292797011136e-05,
+          "skill_score": 0.0,
+          "threshold": null,
+          "units": "mm",
+          "within_threshold": true
+        },
+        "T2": {
+          "beats_persistence": false,
+          "max_abs_error": 37.885040283203125,
+          "mean_error": 8.800551482169858,
+          "persistence_rmse": 2.353837146465853,
+          "rmse": 12.564922024897237,
+          "skill_score": -4.3380591957105965,
+          "threshold": 3.0,
+          "units": "K",
+          "within_threshold": false
+        },
+        "U10": {
+          "beats_persistence": false,
+          "max_abs_error": 24.540252923965454,
+          "mean_error": 0.2600629292013738,
+          "persistence_rmse": 2.6081881855630242,
+          "rmse": 8.911208732405285,
+          "skill_score": -2.416627980193707,
+          "threshold": 7.5,
+          "units": "m s-1",
+          "within_threshold": false
+        },
+        "V10": {
+          "beats_persistence": false,
+          "max_abs_error": 22.556639432907104,
+          "mean_error": -1.856778536717137,
+          "persistence_rmse": 3.5331263776748973,
+          "rmse": 9.94634763940433,
+          "skill_score": -1.8151689399658233,
+          "threshold": 7.5,
+          "units": "m s-1",
+          "within_threshold": false
+        }
+      },
+      "valid_time_utc": "2026-05-21T20:00:00+00:00"
+    },
+    {
+      "fields": {
+        "RAINNC": {
+          "beats_persistence": true,
+          "max_abs_error": 0.00040843713213689625,
+          "mean_error": -1.1889135518806704e-06,
+          "persistence_rmse": 1.4386854572659733e-05,
+          "rmse": 1.4386854572659733e-05,
+          "skill_score": 0.0,
+          "threshold": null,
+          "units": "mm",
+          "within_threshold": true
+        },
+        "T2": {
+          "beats_persistence": false,
+          "max_abs_error": 38.8155517578125,
+          "mean_error": 8.753393112784218,
+          "persistence_rmse": 2.4477004886336706,
+          "rmse": 12.714508817785813,
+          "skill_score": -4.194470841848453,
+          "threshold": 3.0,
+          "units": "K",
+          "within_threshold": false
+        },
+        "U10": {
+          "beats_persistence": false,
+          "max_abs_error": 26.6329345703125,
+          "mean_error": 0.2255318912717607,
+          "persistence_rmse": 3.17357159438674,
+          "rmse": 10.03173244228991,
+          "skill_score": -2.1610228866534955,
+          "threshold": 7.5,
+          "units": "m s-1",
+          "within_threshold": false
+        },
+        "V10": {
+          "beats_persistence": false,
+          "max_abs_error": 24.212655544281006,
+          "mean_error": -2.4883124979316005,
+          "persistence_rmse": 3.91300691048181,
+          "rmse": 10.525640263683517,
+          "skill_score": -1.6899109826482497,
+          "threshold": 7.5,
+          "units": "m s-1",
+          "within_threshold": false
+        }
+      },
+      "valid_time_utc": "2026-05-21T21:00:00+00:00"
+    },
+    {
+      "fields": {
+        "RAINNC": {
+          "beats_persistence": true,
+          "max_abs_error": 0.00040843713213689625,
+          "mean_error": -1.2094127742258158e-06,
+          "persistence_rmse": 1.4421430816915174e-05,
+          "rmse": 1.4421430816915174e-05,
+          "skill_score": 0.0,
+          "threshold": null,
+          "units": "mm",
+          "within_threshold": true
+        },
+        "T2": {
+          "beats_persistence": false,
+          "max_abs_error": 39.8359375,
+          "mean_error": 8.787625496156753,
+          "persistence_rmse": 2.4706301915411424,
+          "rmse": 12.734762342637783,
+          "skill_score": -4.154459127974158,
+          "threshold": 3.0,
+          "units": "K",
+          "within_threshold": false
+        },
+        "U10": {
+          "beats_persistence": false,
+          "max_abs_error": 25.706461906433105,
+          "mean_error": -0.16497537475232432,
+          "persistence_rmse": 3.012944702293427,
+          "rmse": 10.049796744561663,
+          "skill_score": -2.3355397252766856,
+          "threshold": 7.5,
+          "units": "m s-1",
+          "within_threshold": false
+        },
+        "V10": {
+          "beats_persistence": false,
+          "max_abs_error": 24.64505112171173,
+          "mean_error": -3.1638871175765,
+          "persistence_rmse": 3.913712000811813,
+          "rmse": 10.840997455086297,
+          "skill_score": -1.7700038870610744,
+          "threshold": 7.5,
+          "units": "m s-1",
+          "within_threshold": false
+        }
+      },
+      "valid_time_utc": "2026-05-21T22:00:00+00:00"
+    },
+    {
+      "fields": {
+        "RAINNC": {
+          "beats_persistence": true,
+          "max_abs_error": 0.00040843713213689625,
+          "mean_error": -1.2094127742258158e-06,
+          "persistence_rmse": 1.4421430816915174e-05,
+          "rmse": 1.4421430816915174e-05,
+          "skill_score": 0.0,
+          "threshold": null,
+          "units": "mm",
+          "within_threshold": true
+        },
+        "T2": {
+          "beats_persistence": false,
+          "max_abs_error": 40.5120849609375,
+          "mean_error": 8.84664558656754,
+          "persistence_rmse": 2.5333723890587003,
+          "rmse": 12.834426129759976,
+          "skill_score": -4.066142737321273,
+          "threshold": 3.0,
+          "units": "K",
+          "within_threshold": false
+        },
+        "U10": {
+          "beats_persistence": false,
+          "max_abs_error": 24.00881415605545,
+          "mean_error": -0.19010645891645528,
+          "persistence_rmse": 2.5679436503708932,
+          "rmse": 9.76107257256566,
+          "skill_score": -2.801124129478405,
+          "threshold": 7.5,
+          "units": "m s-1",
+          "within_threshold": false
+        },
+        "V10": {
+          "beats_persistence": false,
+          "max_abs_error": 25.063156962394714,
+          "mean_error": -3.3899735167744782,
+          "persistence_rmse": 3.577096850291813,
+          "rmse": 10.941075376522873,
+          "skill_score": -2.058646671987738,
+          "threshold": 7.5,
+          "units": "m s-1",
+          "within_threshold": false
+        }
+      },
+      "valid_time_utc": "2026-05-21T23:00:00+00:00"
+    },
+    {
+      "fields": {
+        "RAINNC": {
+          "beats_persistence": true,
+          "max_abs_error": 0.00040843713213689625,
+          "mean_error": -1.2094127742258158e-06,
+          "persistence_rmse": 1.4421430816915174e-05,
+          "rmse": 1.4421430816915174e-05,
+          "skill_score": 0.0,
+          "threshold": null,
+          "units": "mm",
+          "within_threshold": true
+        },
+        "T2": {
+          "beats_persistence": false,
+          "max_abs_error": 41.302154541015625,
+          "mean_error": 8.865539773920531,
+          "persistence_rmse": 2.558278781597098,
+          "rmse": 12.869585018518777,
+          "skill_score": -4.030563952254051,
+          "threshold": 3.0,
+          "units": "K",
+          "within_threshold": false
+        },
+        "U10": {
+          "beats_persistence": false,
+          "max_abs_error": 24.070250511169434,
+          "mean_error": -0.32982674878967283,
+          "persistence_rmse": 2.261110985588514,
+          "rmse": 9.352047991617214,
+          "skill_score": -3.1360411104203703,
+          "threshold": 7.5,
+          "units": "m s-1",
+          "within_threshold": false
+        },
+        "V10": {
+          "beats_persistence": false,
+          "max_abs_error": 25.893040895462036,
+          "mean_error": -3.3106364910819144,
+          "persistence_rmse": 3.4315055950713,
+          "rmse": 11.0038511880359,
+          "skill_score": -2.206712296736693,
+          "threshold": 7.5,
+          "units": "m s-1",
+          "within_threshold": false
+        }
+      },
+      "valid_time_utc": "2026-05-22T00:00:00+00:00"
+    },
+    {
+      "fields": {
+        "RAINNC": {
+          "beats_persistence": true,
+          "max_abs_error": 0.00040843713213689625,
+          "mean_error": -1.2094127742258158e-06,
+          "persistence_rmse": 1.4421430816915174e-05,
+          "rmse": 1.4421430816915174e-05,
+          "skill_score": 0.0,
+          "threshold": null,
+          "units": "mm",
+          "within_threshold": true
+        },
+        "T2": {
+          "beats_persistence": false,
+          "max_abs_error": 41.84698486328125,
+          "mean_error": 8.934183988400257,
+          "persistence_rmse": 2.544002711814773,
+          "rmse": 12.95295990368354,
+          "skill_score": -4.091566861752086,
+          "threshold": 3.0,
+          "units": "K",
+          "within_threshold": false
+        },
+        "U10": {
+          "beats_persistence": false,
+          "max_abs_error": 24.350789070129395,
+          "mean_error": -0.16145285963225717,
+          "persistence_rmse": 2.2537924665976394,
+          "rmse": 9.24546547424057,
+          "skill_score": -3.102181372625524,
+          "threshold": 7.5,
+          "units": "m s-1",
+          "within_threshold": false
+        },
+        "V10": {
+          "beats_persistence": false,
+          "max_abs_error": 26.037920236587524,
+          "mean_error": -3.206593298506925,
+          "persistence_rmse": 3.4144696583801335,
+          "rmse": 11.028275462443762,
+          "skill_score": -2.229864829923752,
+          "threshold": 7.5,
+          "units": "m s-1",
+          "within_threshold": false
+        }
+      },
+      "valid_time_utc": "2026-05-22T01:00:00+00:00"
+    },
+    {
+      "fields": {
+        "RAINNC": {
+          "beats_persistence": true,
+          "max_abs_error": 0.00040843713213689625,
+          "mean_error": -1.2094127742258158e-06,
+          "persistence_rmse": 1.4421430816915174e-05,
+          "rmse": 1.4421430816915174e-05,
+          "skill_score": 0.0,
+          "threshold": null,
+          "units": "mm",
+          "within_threshold": true
+        },
+        "T2": {
+          "beats_persistence": false,
+          "max_abs_error": 42.205841064453125,
+          "mean_error": 8.889350419676859,
+          "persistence_rmse": 2.55453706134217,
+          "rmse": 12.916602021974791,
+          "skill_score": -4.056337689298712,
+          "threshold": 3.0,
+          "units": "K",
+          "within_threshold": false
+        },
+        "U10": {
+          "beats_persistence": false,
+          "max_abs_error": 25.161911815404892,
+          "mean_error": -0.18218456466385166,
+          "persistence_rmse": 2.2742782097195096,
+          "rmse": 9.224934704170852,
+          "skill_score": -3.0562032669295016,
+          "threshold": 7.5,
+          "units": "m s-1",
+          "within_threshold": false
+        },
+        "V10": {
+          "beats_persistence": false,
+          "max_abs_error": 25.508516430854797,
+          "mean_error": -3.3390232900771424,
+          "persistence_rmse": 3.3125869074968035,
+          "rmse": 11.04611661363127,
+          "skill_score": -2.3345892265143324,
+          "threshold": 7.5,
+          "units": "m s-1",
+          "within_threshold": false
+        }
+      },
+      "valid_time_utc": "2026-05-22T02:00:00+00:00"
+    },
+    {
+      "fields": {
+        "RAINNC": {
+          "beats_persistence": true,
+          "max_abs_error": 0.00040843713213689625,
+          "mean_error": -1.2094127742258158e-06,
+          "persistence_rmse": 1.4421430816915174e-05,
+          "rmse": 1.4421430816915174e-05,
+          "skill_score": 0.0,
+          "threshold": null,
+          "units": "mm",
+          "within_threshold": true
+        },
+        "T2": {
+          "beats_persistence": false,
+          "max_abs_error": 42.523284912109375,
+          "mean_error": 8.819885813942092,
+          "persistence_rmse": 2.5420151165507647,
+          "rmse": 12.873334166916388,
+          "skill_score": -4.064224080769468,
+          "threshold": 3.0,
+          "units": "K",
+          "within_threshold": false
+        },
+        "U10": {
+          "beats_persistence": false,
+          "max_abs_error": 26.08322960138321,
+          "mean_error": -0.1809598607466536,
+          "persistence_rmse": 2.1027612853639983,
+          "rmse": 9.179703294811883,
+          "skill_score": -3.3655470350847896,
+          "threshold": 7.5,
+          "units": "m s-1",
+          "within_threshold": false
+        },
+        "V10": {
+          "beats_persistence": false,
+          "max_abs_error": 26.402015447616577,
+          "mean_error": -3.5046820865170973,
+          "persistence_rmse": 3.1130027132602685,
+          "rmse": 11.076896009853838,
+          "skill_score": -2.5582673804524028,
+          "threshold": 7.5,
+          "units": "m s-1",
+          "within_threshold": false
+        }
+      },
+      "valid_time_utc": "2026-05-22T03:00:00+00:00"
+    },
+    {
+      "fields": {
+        "RAINNC": {
+          "beats_persistence": true,
+          "max_abs_error": 0.00040843713213689625,
+          "mean_error": -1.2094127742258158e-06,
+          "persistence_rmse": 1.4421430816915174e-05,
+          "rmse": 1.4421430816915174e-05,
+          "skill_score": 0.0,
+          "threshold": null,
+          "units": "mm",
+          "within_threshold": true
+        },
+        "T2": {
+          "beats_persistence": false,
+          "max_abs_error": 42.6846923828125,
+          "mean_error": 8.713604198168683,
+          "persistence_rmse": 2.537498856475629,
+          "rmse": 12.759323754702812,
+          "skill_score": -4.028307193968328,
+          "threshold": 3.0,
+          "units": "K",
+          "within_threshold": false
+        },
+        "U10": {
+          "beats_persistence": false,
+          "max_abs_error": 26.0446298122406,
+          "mean_error": -0.43067103035405435,
+          "persistence_rmse": 1.894844512536263,
+          "rmse": 9.074344759831654,
+          "skill_score": -3.788965374095829,
+          "threshold": 7.5,
+          "units": "m s-1",
+          "within_threshold": false
+        },
+        "V10": {
+          "beats_persistence": false,
+          "max_abs_error": 26.475026547908783,
+          "mean_error": -3.5954629055993492,
+          "persistence_rmse": 2.9192288247324933,
+          "rmse": 11.003930082471006,
+          "skill_score": -2.769464726177936,
+          "threshold": 7.5,
+          "units": "m s-1",
+          "within_threshold": false
+        }
+      },
+      "valid_time_utc": "2026-05-22T04:00:00+00:00"
+    },
+    {
+      "fields": {
+        "RAINNC": {
+          "beats_persistence": true,
+          "max_abs_error": 0.00040843713213689625,
+          "mean_error": -1.2094127742258158e-06,
+          "persistence_rmse": 1.4421430816915174e-05,
+          "rmse": 1.4421430816915174e-05,
+          "skill_score": 0.0,
+          "threshold": null,
+          "units": "mm",
+          "within_threshold": true
+        },
+        "T2": {
+          "beats_persistence": false,
+          "max_abs_error": 42.92486572265625,
+          "mean_error": 8.705613532391073,
+          "persistence_rmse": 2.562653503078625,
+          "rmse": 12.776095049487587,
+          "skill_score": -3.9854945407715556,
+          "threshold": 3.0,
+          "units": "K",
+          "within_threshold": false
+        },
+        "U10": {
+          "beats_persistence": false,
+          "max_abs_error": 25.933987855911255,
+          "mean_error": -0.5677523106954387,
+          "persistence_rmse": 1.881767641276057,
+          "rmse": 9.123574367124116,
+          "skill_score": -3.8484064488096275,
+          "threshold": 7.5,
+          "units": "m s-1",
+          "within_threshold": false
+        },
+        "V10": {
+          "beats_persistence": false,
+          "max_abs_error": 26.078895390033722,
+          "mean_error": -3.622944024705823,
+          "persistence_rmse": 2.854681436374604,
+          "rmse": 10.968577149295559,
+          "skill_score": -2.8423121436714363,
+          "threshold": 7.5,
+          "units": "m s-1",
+          "within_threshold": false
+        }
+      },
+      "valid_time_utc": "2026-05-22T05:00:00+00:00"
+    },
+    {
+      "fields": {
+        "RAINNC": {
+          "beats_persistence": true,
+          "max_abs_error": 0.00040843713213689625,
+          "mean_error": -1.2094127742258158e-06,
+          "persistence_rmse": 1.4421430816915174e-05,
+          "rmse": 1.4421430816915174e-05,
+          "skill_score": 0.0,
+          "threshold": null,
+          "units": "mm",
+          "within_threshold": true
+        },
+        "T2": {
+          "beats_persistence": false,
+          "max_abs_error": 43.199310302734375,
+          "mean_error": 8.80182857390373,
+          "persistence_rmse": 2.59167381689031,
+          "rmse": 12.83088715354428,
+          "skill_score": -3.9508109662271336,
+          "threshold": 3.0,
+          "units": "K",
+          "within_threshold": false
+        },
+        "U10": {
+          "beats_persistence": false,
+          "max_abs_error": 25.16626089811325,
+          "mean_error": -0.5240863927696899,
+          "persistence_rmse": 2.04151096687412,
+          "rmse": 9.300223383757087,
+          "skill_score": -3.5555588653031913,
+          "threshold": 7.5,
+          "units": "m s-1",
+          "within_threshold": false
+        },
+        "V10": {
+          "beats_persistence": false,
+          "max_abs_error": 25.818004429340363,
+          "mean_error": -3.6791196678849465,
+          "persistence_rmse": 2.9513667562623738,
+          "rmse": 10.932057767254415,
+          "skill_score": -2.7040661734290286,
+          "threshold": 7.5,
+          "units": "m s-1",
+          "within_threshold": false
+        }
+      },
+      "valid_time_utc": "2026-05-22T06:00:00+00:00"
+    },
+    {
+      "fields": {
+        "RAINNC": {
+          "beats_persistence": true,
+          "max_abs_error": 0.00040843713213689625,
+          "mean_error": -1.2094127742258158e-06,
+          "persistence_rmse": 1.4421430816915174e-05,
+          "rmse": 1.4421430816915174e-05,
+          "skill_score": 0.0,
+          "threshold": null,
+          "units": "mm",
+          "within_threshold": true
+        },
+        "T2": {
+          "beats_persistence": false,
+          "max_abs_error": 43.224853515625,
+          "mean_error": 8.61531005421847,
+          "persistence_rmse": 2.4035132722729378,
+          "rmse": 12.553616630688365,
+          "skill_score": -4.2230277966456775,
+          "threshold": 3.0,
+          "units": "K",
+          "within_threshold": false
+        },
+        "U10": {
+          "beats_persistence": false,
+          "max_abs_error": 24.957240402698517,
+          "mean_error": -0.5047762375764422,
+          "persistence_rmse": 2.1489443950814415,
+          "rmse": 9.437520264700455,
+          "skill_score": -3.391700542043475,
+          "threshold": 7.5,
+          "units": "m s-1",
+          "within_threshold": false
+        },
+        "V10": {
+          "beats_persistence": false,
+          "max_abs_error": 26.36245620250702,
+          "mean_error": -3.720914467929712,
+          "persistence_rmse": 3.0545405953237554,
+          "rmse": 10.945278686307468,
+          "skill_score": -2.5832814607420076,
+          "threshold": 7.5,
+          "units": "m s-1",
+          "within_threshold": false
+        }
+      },
+      "valid_time_utc": "2026-05-22T07:00:00+00:00"
+    },
+    {
+      "fields": {
+        "RAINNC": {
+          "beats_persistence": true,
+          "max_abs_error": 0.00040843713213689625,
+          "mean_error": -1.2094127742258158e-06,
+          "persistence_rmse": 1.4421430816915174e-05,
+          "rmse": 1.4421430816915174e-05,
+          "skill_score": 0.0,
+          "threshold": null,
+          "units": "mm",
+          "within_threshold": true
+        },
+        "T2": {
+          "beats_persistence": false,
+          "max_abs_error": 41.509185791015625,
+          "mean_error": 8.058712556353607,
+          "persistence_rmse": 1.8994059384588227,
+          "rmse": 11.72485286160013,
+          "skill_score": -5.17290523536726,
+          "threshold": 3.0,
+          "units": "K",
+          "within_threshold": false
+        },
+        "U10": {
+          "beats_persistence": false,
+          "max_abs_error": 24.957082480192184,
+          "mean_error": -0.5988764362743362,
+          "persistence_rmse": 2.0374410876074447,
+          "rmse": 9.40972172702769,
+          "skill_score": -3.618401869021633,
+          "threshold": 7.5,
+          "units": "m s-1",
+          "within_threshold": false
+        },
+        "V10": {
+          "beats_persistence": false,
+          "max_abs_error": 29.232234716415405,
+          "mean_error": -3.735604808939969,
+          "persistence_rmse": 3.123951900874352,
+          "rmse": 10.82963704223764,
+          "skill_score": -2.466646538061796,
+          "threshold": 7.5,
+          "units": "m s-1",
+          "within_threshold": false
+        }
+      },
+      "valid_time_utc": "2026-05-22T08:00:00+00:00"
+    },
+    {
+      "fields": {
+        "RAINNC": {
+          "beats_persistence": true,
+          "max_abs_error": 0.00040843713213689625,
+          "mean_error": -1.2094127742258158e-06,
+          "persistence_rmse": 1.4421430816915174e-05,
+          "rmse": 1.4421430816915174e-05,
+          "skill_score": 0.0,
+          "threshold": null,
+          "units": "mm",
+          "within_threshold": true
+        },
+        "T2": {
+          "beats_persistence": false,
+          "max_abs_error": 40.49609375,
+          "mean_error": 7.608450490206374,
+          "persistence_rmse": 1.7755025810555491,
+          "rmse": 11.011066394811982,
+          "skill_score": -5.201661722319673,
+          "threshold": 3.0,
+          "units": "K",
+          "within_threshold": false
+        },
+        "U10": {
+          "beats_persistence": false,
+          "max_abs_error": 22.895438611507416,
+          "mean_error": -0.4182720718500129,
+          "persistence_rmse": 1.8544372763612944,
+          "rmse": 8.876271766473646,
+          "skill_score": -3.786504175482454,
+          "threshold": 7.5,
+          "units": "m s-1",
+          "within_threshold": false
+        },
+        "V10": {
+          "beats_persistence": false,
+          "max_abs_error": 27.24950337409973,
+          "mean_error": -3.8651630484890886,
+          "persistence_rmse": 3.2181146603656776,
+          "rmse": 10.290128640603054,
+          "skill_score": -2.197564327752628,
+          "threshold": 7.5,
+          "units": "m s-1",
+          "within_threshold": false
+        }
+      },
+      "valid_time_utc": "2026-05-22T09:00:00+00:00"
+    },
+    {
+      "fields": {
+        "RAINNC": {
+          "beats_persistence": true,
+          "max_abs_error": 0.00040843713213689625,
+          "mean_error": -1.2094127742258158e-06,
+          "persistence_rmse": 1.4421430816915174e-05,
+          "rmse": 1.4421430816915174e-05,
+          "skill_score": 0.0,
+          "threshold": null,
+          "units": "mm",
+          "within_threshold": true
+        },
+        "T2": {
+          "beats_persistence": false,
+          "max_abs_error": 40.36712646484375,
+          "mean_error": 7.407882390723007,
+          "persistence_rmse": 1.9065556311694498,
+          "rmse": 10.72485294278457,
+          "skill_score": -4.625250460804085,
+          "threshold": 3.0,
+          "units": "K",
+          "within_threshold": false
+        },
+        "U10": {
+          "beats_persistence": false,
+          "max_abs_error": 23.076968908309937,
+          "mean_error": -0.20054889323498834,
+          "persistence_rmse": 1.8395123049510513,
+          "rmse": 8.542032499184998,
+          "skill_score": -3.6436397713644535,
+          "threshold": 7.5,
+          "units": "m s-1",
+          "within_threshold": false
+        },
+        "V10": {
+          "beats_persistence": false,
+          "max_abs_error": 27.864916801452637,
+          "mean_error": -3.6290671184297385,
+          "persistence_rmse": 3.380810391357861,
+          "rmse": 9.960240560325815,
+          "skill_score": -1.9461103721718644,
+          "threshold": 7.5,
+          "units": "m s-1",
+          "within_threshold": false
+        }
+      },
+      "valid_time_utc": "2026-05-22T10:00:00+00:00"
+    },
+    {
+      "fields": {
+        "RAINNC": {
+          "beats_persistence": true,
+          "max_abs_error": 0.00040843713213689625,
+          "mean_error": -1.2094127742258158e-06,
+          "persistence_rmse": 1.4421430816915174e-05,
+          "rmse": 1.4421430816915174e-05,
+          "skill_score": 0.0,
+          "threshold": null,
+          "units": "mm",
+          "within_threshold": true
+        },
+        "T2": {
+          "beats_persistence": false,
+          "max_abs_error": 40.798126220703125,
+          "mean_error": 7.365580564656138,
+          "persistence_rmse": 2.097531212289483,
+          "rmse": 10.815276029417971,
+          "skill_score": -4.156193131263565,
+          "threshold": 3.0,
+          "units": "K",
+          "within_threshold": false
+        },
+        "U10": {
+          "beats_persistence": false,
+          "max_abs_error": 24.744075298309326,
+          "mean_error": -0.042267393287155265,
+          "persistence_rmse": 2.0303494743920036,
+          "rmse": 8.522568776317188,
+          "skill_score": -3.197587106953253,
+          "threshold": 7.5,
+          "units": "m s-1",
+          "within_threshold": false
+        },
+        "V10": {
+          "beats_persistence": false,
+          "max_abs_error": 26.852030992507935,
+          "mean_error": -3.3783718601146573,
+          "persistence_rmse": 3.5609057664822195,
+          "rmse": 9.813409476657421,
+          "skill_score": -1.7558745218781744,
+          "threshold": 7.5,
+          "units": "m s-1",
+          "within_threshold": false
+        }
+      },
+      "valid_time_utc": "2026-05-22T11:00:00+00:00"
+    },
+    {
+      "fields": {
+        "RAINNC": {
+          "beats_persistence": true,
+          "max_abs_error": 0.00040843713213689625,
+          "mean_error": -1.2094127742258158e-06,
+          "persistence_rmse": 1.4421430816915174e-05,
+          "rmse": 1.4421430816915174e-05,
+          "skill_score": 0.0,
+          "threshold": null,
+          "units": "mm",
+          "within_threshold": true
+        },
+        "T2": {
+          "beats_persistence": false,
+          "max_abs_error": 39.42620849609375,
+          "mean_error": 7.328988273374496,
+          "persistence_rmse": 2.2983609728581205,
+          "rmse": 10.929608533938984,
+          "skill_score": -3.7553925005729187,
+          "threshold": 3.0,
+          "units": "K",
+          "within_threshold": false
+        },
+        "U10": {
+          "beats_persistence": false,
+          "max_abs_error": 25.284106254577637,
+          "mean_error": -0.007074956048587103,
+          "persistence_rmse": 2.217596571754615,
+          "rmse": 8.62401955315238,
+          "skill_score": -2.888903718104529,
+          "threshold": 7.5,
+          "units": "m s-1",
+          "within_threshold": false
+        },
+        "V10": {
+          "beats_persistence": false,
+          "max_abs_error": 26.508967399597168,
+          "mean_error": -3.227104523647343,
+          "persistence_rmse": 3.7544540205567514,
+          "rmse": 9.800363673762305,
+          "skill_score": -1.610329922833627,
+          "threshold": 7.5,
+          "units": "m s-1",
+          "within_threshold": false
+        }
+      },
+      "valid_time_utc": "2026-05-22T12:00:00+00:00"
+    },
+    {
+      "fields": {
+        "RAINNC": {
+          "beats_persistence": true,
+          "max_abs_error": 0.00040843713213689625,
+          "mean_error": -1.2094127742258158e-06,
+          "persistence_rmse": 1.4421430816915174e-05,
+          "rmse": 1.4421430816915174e-05,
+          "skill_score": 0.0,
+          "threshold": null,
+          "units": "mm",
+          "within_threshold": true
+        },
+        "T2": {
+          "beats_persistence": false,
+          "max_abs_error": 39.285400390625,
+          "mean_error": 7.271351073343694,
+          "persistence_rmse": 2.490617549107049,
+          "rmse": 10.982802026461451,
+          "skill_score": -3.409670216287952,
+          "threshold": 3.0,
+          "units": "K",
+          "within_threshold": false
+        },
+        "U10": {
+          "beats_persistence": false,
+          "max_abs_error": 26.05676656961441,
+          "mean_error": -0.0370319180399318,
+          "persistence_rmse": 2.278309805471157,
+          "rmse": 8.649002846370536,
+          "skill_score": -2.796236501989646,
+          "threshold": 7.5,
+          "units": "m s-1",
+          "within_threshold": false
+        },
+        "V10": {
+          "beats_persistence": false,
+          "max_abs_error": 26.950565338134766,
+          "mean_error": -3.163114480409032,
+          "persistence_rmse": 3.9577754753544796,
+          "rmse": 9.843311800325472,
+          "skill_score": -1.487081912963709,
+          "threshold": 7.5,
+          "units": "m s-1",
+          "within_threshold": false
+        }
+      },
+      "valid_time_utc": "2026-05-22T13:00:00+00:00"
+    },
+    {
+      "fields": {
+        "RAINNC": {
+          "beats_persistence": true,
+          "max_abs_error": 0.00040843713213689625,
+          "mean_error": -1.2094127742258158e-06,
+          "persistence_rmse": 1.4421430816915174e-05,
+          "rmse": 1.4421430816915174e-05,
+          "skill_score": 0.0,
+          "threshold": null,
+          "units": "mm",
+          "within_threshold": true
+        },
+        "T2": {
+          "beats_persistence": false,
+          "max_abs_error": 39.941497802734375,
+          "mean_error": 7.181309473181283,
+          "persistence_rmse": 2.6249734410658885,
+          "rmse": 10.95900707338934,
+          "skill_score": -3.1749020778432566,
+          "threshold": 3.0,
+          "units": "K",
+          "within_threshold": false
+        },
+        "U10": {
+          "beats_persistence": false,
+          "max_abs_error": 25.976317703723907,
+          "mean_error": 0.019956907381413765,
+          "persistence_rmse": 2.3408513860321967,
+          "rmse": 8.52417840688531,
+          "skill_score": -2.641486365921765,
+          "threshold": 7.5,
+          "units": "m s-1",
+          "within_threshold": false
+        },
+        "V10": {
+          "beats_persistence": false,
+          "max_abs_error": 27.08980083465576,
+          "mean_error": -2.999873851975434,
+          "persistence_rmse": 4.089021718164686,
+          "rmse": 9.78166794413874,
+          "skill_score": -1.3921780362979188,
+          "threshold": 7.5,
+          "units": "m s-1",
+          "within_threshold": false
+        }
+      },
+      "valid_time_utc": "2026-05-22T14:00:00+00:00"
+    },
+    {
+      "fields": {
+        "RAINNC": {
+          "beats_persistence": true,
+          "max_abs_error": 0.00040843713213689625,
+          "mean_error": -1.2094134996517001e-06,
+          "persistence_rmse": 1.4421430816994156e-05,
+          "rmse": 1.4421430816994156e-05,
+          "skill_score": 0.0,
+          "threshold": null,
+          "units": "mm",
+          "within_threshold": true
+        },
+        "T2": {
+          "beats_persistence": false,
+          "max_abs_error": 39.8463134765625,
+          "mean_error": 7.116361517137097,
+          "persistence_rmse": 2.6372757221707324,
+          "rmse": 10.938169074335287,
+          "skill_score": -3.1475257904896337,
+          "threshold": 3.0,
+          "units": "K",
+          "within_threshold": false
+        },
+        "U10": {
+          "beats_persistence": false,
+          "max_abs_error": 25.66676527261734,
+          "mean_error": 0.157063904045718,
+          "persistence_rmse": 2.514560105958405,
+          "rmse": 8.461179114307049,
+          "skill_score": -2.364874474170557,
+          "threshold": 7.5,
+          "units": "m s-1",
+          "within_threshold": false
+        },
+        "V10": {
+          "beats_persistence": false,
+          "max_abs_error": 27.778249740600586,
+          "mean_error": -2.8006758573069823,
+          "persistence_rmse": 4.259027969947744,
+          "rmse": 9.660346804575521,
+          "skill_score": -1.2682045933344854,
+          "threshold": 7.5,
+          "units": "m s-1",
+          "within_threshold": false
+        }
+      },
+      "valid_time_utc": "2026-05-22T15:00:00+00:00"
+    },
+    {
+      "fields": {
+        "RAINNC": {
+          "beats_persistence": true,
+          "max_abs_error": 0.00040843713213689625,
+          "mean_error": -1.209414268399585e-06,
+          "persistence_rmse": 1.4421430817206103e-05,
+          "rmse": 1.4421430817206103e-05,
+          "skill_score": 0.0,
+          "threshold": null,
+          "units": "mm",
+          "within_threshold": true
+        },
+        "T2": {
+          "beats_persistence": false,
+          "max_abs_error": 38.141693115234375,
+          "mean_error": 7.0584683413488465,
+          "persistence_rmse": 2.5478120260348045,
+          "rmse": 10.89131215162171,
+          "skill_score": -3.274770681796338,
+          "threshold": 3.0,
+          "units": "K",
+          "within_threshold": false
+        },
+        "U10": {
+          "beats_persistence": false,
+          "max_abs_error": 25.50828830897808,
+          "mean_error": 0.3581557431472451,
+          "persistence_rmse": 2.75219855916699,
+          "rmse": 8.5187511620983,
+          "skill_score": -2.0952531145415163,
+          "threshold": 7.5,
+          "units": "m s-1",
+          "within_threshold": false
+        },
+        "V10": {
+          "beats_persistence": false,
+          "max_abs_error": 28.892349243164062,
+          "mean_error": -2.6150605014602464,
+          "persistence_rmse": 4.464314932209911,
+          "rmse": 9.573299060116303,
+          "skill_score": -1.1444049547322952,
+          "threshold": 7.5,
+          "units": "m s-1",
+          "within_threshold": false
+        }
+      },
+      "valid_time_utc": "2026-05-22T16:00:00+00:00"
+    },
+    {
+      "fields": {
+        "RAINNC": {
+          "beats_persistence": true,
+          "max_abs_error": 0.00040843713213689625,
+          "mean_error": -1.211093698552221e-06,
+          "persistence_rmse": 1.4421910101943408e-05,
+          "rmse": 1.4421910101943408e-05,
+          "skill_score": 0.0,
+          "threshold": null,
+          "units": "mm",
+          "within_threshold": true
+        },
+        "T2": {
+          "beats_persistence": false,
+          "max_abs_error": 40.798370361328125,
+          "mean_error": 7.070016840452789,
+          "persistence_rmse": 2.424016420630935,
+          "rmse": 10.884483200089303,
+          "skill_score": -3.490267931954123,
+          "threshold": 3.0,
+          "units": "K",
+          "within_threshold": false
+        },
+        "U10": {
+          "beats_persistence": false,
+          "max_abs_error": 25.47199209034443,
+          "mean_error": 0.5724130934758523,
+          "persistence_rmse": 2.909658660781257,
+          "rmse": 8.647582567731096,
+          "skill_score": -1.9720264731702857,
+          "threshold": 7.5,
+          "units": "m s-1",
+          "within_threshold": false
+        },
+        "V10": {
+          "beats_persistence": false,
+          "max_abs_error": 29.947874069213867,
+          "mean_error": -2.5197157197754736,
+          "persistence_rmse": 4.613336911826455,
+          "rmse": 9.630928469791211,
+          "skill_score": -1.087627384226368,
+          "threshold": 7.5,
+          "units": "m s-1",
+          "within_threshold": false
+        }
+      },
+      "valid_time_utc": "2026-05-22T17:00:00+00:00"
+    },
+    {
+      "fields": {
+        "RAINNC": {
+          "beats_persistence": true,
+          "max_abs_error": 0.00040843713213689625,
+          "mean_error": -1.211093698552221e-06,
+          "persistence_rmse": 1.4421910101943408e-05,
+          "rmse": 1.4421910101943408e-05,
+          "skill_score": 0.0,
+          "threshold": null,
+          "units": "mm",
+          "within_threshold": true
+        },
+        "T2": {
+          "beats_persistence": false,
+          "max_abs_error": 41.314971923828125,
+          "mean_error": 6.991042047316029,
+          "persistence_rmse": 2.297936325392803,
+          "rmse": 10.792435840844817,
+          "skill_score": -3.69657741234409,
+          "threshold": 3.0,
+          "units": "K",
+          "within_threshold": false
+        },
+        "U10": {
+          "beats_persistence": false,
+          "max_abs_error": 24.93381702899933,
+          "mean_error": 0.798866632991891,
+          "persistence_rmse": 2.98079500303829,
+          "rmse": 8.607394274007946,
+          "skill_score": -1.8876169831318586,
+          "threshold": 7.5,
+          "units": "m s-1",
+          "within_threshold": false
+        },
+        "V10": {
+          "beats_persistence": false,
+          "max_abs_error": 30.325788497924805,
+          "mean_error": -2.4486733604937885,
+          "persistence_rmse": 4.678583125846212,
+          "rmse": 9.792607159183977,
+          "skill_score": -1.0930711063112284,
+          "threshold": 7.5,
+          "units": "m s-1",
+          "within_threshold": false
+        }
+      },
+      "valid_time_utc": "2026-05-22T18:00:00+00:00"
+    }
+  ],
+  "persistence_beat_all_leads": {
+    "RAINNC": true,
+    "T2": false,
+    "U10": false,
+    "V10": false
+  },
+  "reference_run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
+  "run_id": "20260521_18z_l3_24h_20260522T133443Z",
+  "schema": "V010D03ReplayValidation",
+  "schema_version": 1,
+  "status": "FAIL",
+  "thresholds": {
+    "T2": 3.0,
+    "U10": 7.5,
+    "V10": 7.5
+  }
+}
