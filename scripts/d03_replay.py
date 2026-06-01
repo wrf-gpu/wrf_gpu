@@ -161,7 +161,23 @@ def build_l3_d03_daily_case(config: DailyPipelineConfig) -> tuple[DailyCase, Pat
     # ``ph`` then stays dynamically/hydrostatically consistent with the forced
     # mu/theta.  The validated d02 SELF-REPLAY path keeps force_geopotential=True
     # (its strips ARE self-consistent), so this does not touch d02.
-    nested_boundary_config = BoundaryConfig(force_geopotential=False)
+    # P0-6 in-loop nested ph'/w boundary forcing toggles (env override for the
+    # short-run isolation sweep; defaults match BoundaryConfig).
+    def _envflag(name: str, default: bool) -> bool:
+        v = os.environ.get(name)
+        return default if v is None else v.strip().lower() in ("1", "true", "yes", "on")
+
+    # Defaults match BoundaryConfig (all OFF -> validated free-drift baseline; the
+    # 2026-06-01 short-d03 sweep showed the in-loop ph' forcing toward the decoupled
+    # parent leaf pumps interior w, see ...-opus-d03-phfix-INLOOP-findings.md).  The
+    # env vars are the isolation-sweep override only.
+    _DEF = BoundaryConfig()
+    nested_boundary_config = BoundaryConfig(
+        force_geopotential=False,
+        nested_ph_relax=_envflag("D03_NESTED_PH_RELAX", _DEF.nested_ph_relax),
+        nested_w_relax=_envflag("D03_NESTED_W_RELAX", _DEF.nested_w_relax),
+        nested_ph_spec=_envflag("D03_NESTED_PH_SPEC", _DEF.nested_ph_spec),
+    )
     namelist = OperationalNamelist.from_grid(
         replay.grid,
         tendencies=replay.tendencies,

@@ -26,6 +26,9 @@ from gpuwrf.coupling.boundary_apply import (
     interpolate_boundary_leaf,
     normal_bdy_work_target_u,
     normal_bdy_work_target_v,
+    nested_ph_relax_tendency,
+    nested_w_relax_tendency,
+    _full_ring_target_from_leaf,
 )
 from gpuwrf.coupling.physics_couplers import (
     mynn_adapter,
@@ -827,6 +830,71 @@ def _acoustic_core_state_from_prep(
             config=namelist.boundary_config,
         )
 
+    # P0-6 (2026-06-01): NESTED-child ph'/w boundary forcing (d03 T2 Exner bias).
+    # Active ONLY for the nested replay path (run_boundary, lateral boundary active,
+    # AND boundary_config.force_geopotential == False -- the d03 case).  For d02
+    # self-replay (force_geopotential=True) and idealized/bare-core (lead_seconds
+    # None / run_boundary False) these stay None and the additions are skipped, so
+    # those paths are byte-for-byte unchanged.
+    #
+    # WRF cadence (solve_em.F:940 relax_bdy_dry once per stage -> rk_addtend_dry
+    # folds ph_tendf/msfty into ph_tend, rw_tendf/msfty into rw_tend; the in-loop
+    # advance_w consumes ph_tend/rw_tend every substep; spec_bdyupdate_ph pins the
+    # spec_zone row of ph_2 after advance_w):
+    #   * relax zone -> add the mass-coupled relax tendency to ph_tend_stage /
+    #     rw_tend_stage here (so it flows through advance_w coupled with w);
+    #   * spec zone  -> stage the full-ring parent ph' target + ph_save for the
+    #     in-loop spec_bdyupdate_ph applied inside acoustic_substep_core.
+    ph_bdy_target_full = None
+    ph_save_for_spec = None
+    if (
+        bool(namelist.run_boundary)
+        and lead_seconds is not None
+        and not bool(namelist.boundary_config.force_geopotential)
+    ):
+        cfg_b = namelist.boundary_config
+        cadence = float(cfg_b.update_cadence_s)
+        ph_bdy_strip = interpolate_boundary_leaf(state.ph_bdy, lead_seconds, cadence)
+        # relax-zone ph' tendency (mass-coupled, /msfty) -> add into ph_tend_stage.
+        if bool(getattr(cfg_b, "nested_ph_relax", True)):
+            ph_relax = nested_ph_relax_tendency(
+                state.ph_perturbation,
+                ph_bdy_strip,
+                prep.mut,
+                namelist.metrics.msfty,
+                namelist.metrics.c1f,
+                namelist.metrics.c2f,
+                float(namelist.dt_s),
+                cfg_b,
+            )
+            ph_tend_stage = ph_tend_stage + ph_relax
+        # relax-zone w tendency (nested only) -> add into rw_tend_stage.  Default
+        # OFF: the parent 3km w leaf interpolated to the 1km child is a poor target
+        # and pumps interior vertical motion (d03 short-run hour-1 with w-relax ON:
+        # interior theta' +11.6 K; the pressure collapse is delivered by ph-relax).
+        if bool(getattr(cfg_b, "nested_w_relax", False)):
+            w_bdy_strip = interpolate_boundary_leaf(state.w_bdy, lead_seconds, cadence)
+            w_relax = nested_w_relax_tendency(
+                state.w,
+                w_bdy_strip,
+                prep.mut,
+                namelist.metrics.msfty,
+                namelist.metrics.c1f,
+                namelist.metrics.c2f,
+                float(namelist.dt_s),
+                cfg_b,
+            )
+            rw_tend_stage = rw_tend_stage + w_relax
+        # spec-zone (outer row) ph' target for the in-loop spec_bdyupdate_ph.
+        if bool(getattr(cfg_b, "nested_ph_spec", True)):
+            nzp1 = int(state.ph_perturbation.shape[0])
+            ny_f = int(state.ph_perturbation.shape[1])
+            nx_f = int(state.ph_perturbation.shape[2])
+            ph_bdy_target_full = _full_ring_target_from_leaf(
+                ph_bdy_strip, nzp1, ny_f, nx_f, state.ph_perturbation.dtype
+            )
+            ph_save_for_spec = prep.ph_save
+
     return AcousticCoreState(
         ww=carry.ww,
         ww_1=prep.ww_save,
@@ -921,6 +989,10 @@ def _acoustic_core_state_from_prep(
         # boundary is active); see advance_uv_wrf / boundary_apply.apply_normal_bdy_work.
         u_work_bdy=u_work_bdy,
         v_work_bdy=v_work_bdy,
+        # P0-6: NESTED ph' spec-zone in-loop target + stage-entry ph_save (None
+        # unless the nested force_geopotential=False boundary is active).
+        ph_bdy_target=ph_bdy_target_full,
+        ph_save_for_spec=ph_save_for_spec,
     )
 
 

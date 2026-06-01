@@ -106,6 +106,40 @@ class BoundaryConfig:
     # diagnostic).  ``True`` preserves the validated d02 self-replay path
     # byte-for-byte.
     force_geopotential: bool = True
+    # P0-6 (2026-06-01) in-acoustic-loop NESTED ph'/w boundary forcing toggles
+    # (active only when ``force_geopotential`` is False AND a real lateral boundary
+    # is running).  Each maps to one WRF mechanism so the d03 short-run sweep can
+    # isolate which is WRF-faithful AND stable for this decoupled side-history
+    # replay:
+    #   * ``nested_ph_relax``: relax-zone ph' tendency folded into ph_tend ->
+    #     advance_w (WRF relax_bdy_dry ph + rk_addtend_dry).  Primary fix for the
+    #     +2.6 kPa diagnostic-pressure / Exner T2 bias.
+    #   * ``nested_w_relax``: relax-zone w tendency folded into rw_tend (WRF nests
+    #     only).  Risky here: the parent 3km w leaf interpolated to the 1km child is
+    #     a poor child-scale target and can pump interior vertical motion.
+    #   * ``nested_ph_spec``: in-loop spec-zone (outer row) ph' pin after advance_w
+    #     (WRF spec_bdyupdate_ph).
+    #
+    # DEFAULT OFF (2026-06-01 short-d03 sweep, STOP+report): the in-loop forcing is
+    # dynamically STABLE (finite, no blow-up -- a real advance over the prior
+    # end-of-step attempt) and WRF-faithful in mechanism, but toward the DECOUPLED
+    # hourly parent leaf it injects spurious vertical motion -- interior max|W|
+    # ~13 m/s vs CPU-WRF corpus 7.2 m/s and the free-drift GPU baseline 6.2 m/s --
+    # which adiabatically warms the interior theta (+5..+9 K) and makes d03 T2 WORSE
+    # (RMSE 1.94 -> 5..8 K at hour 1) even though it collapses the +2.7 kPa psfc
+    # error ~50%.  ANY ph' forcing variant (relax / spec / both / +w) shows this
+    # w-pump.  Root cause is architectural: WRF's child ph is re-synced to the
+    # parent every parent step (med_nest_force), so the child interior never drifts
+    # 2.6 kPa low and the ring constraint stays small; our decoupled hourly
+    # side-history replay has no such re-sync, so the child ph free-drifts and the
+    # ring relax becomes a large sustained forcing that the implicit (w,ph) solve
+    # balances with spurious w.  See .agent/reviews/2026-06-01-opus-d03-phfix-
+    # INLOOP-findings.md.  Left ON-able for the follow-up (true nested-init re-sync
+    # or a mass-coupled child-prognostic-ph path), default OFF so the d03 replay
+    # stays on the validated-stable free-drift baseline.
+    nested_ph_relax: bool = False
+    nested_w_relax: bool = False
+    nested_ph_spec: bool = False
 
 
 DEFAULT_BOUNDARY_CONFIG = BoundaryConfig()
@@ -771,6 +805,234 @@ def apply_normal_bdy_work(
     return u, v
 
 
+# ---------------------------------------------------------------------------
+# In-acoustic-loop NESTED ph'/w boundary forcing (P0-6 / d03 T2 Exner fix).
+# ---------------------------------------------------------------------------
+#
+# WRF cadence for the perturbation geopotential ph_2 and (for nests) w_2 at a
+# nested lateral boundary, established from pristine WRF + the GPT-5.5 review
+# (.agent/reviews/2026-06-01-gpt-nest-ph-boundary-wrf-review.md):
+#
+#   * relax zone (b_dist = spec_zone .. relax_zone-1): WRF builds a relaxation
+#     tendency ONCE per RK stage in ``relax_bdy_dry`` (module_bc_em.F:274-344)
+#     from the MASS-WEIGHTED full-level geopotential ``rfield = mass_weight(ph,
+#     mut, c1f, c2f)`` (and, for nests, ``mass_weight(w)``) relaxed toward the
+#     parent boundary leaf via the ``relax_bdytend`` stencil
+#     (fcx*fls0 - gcx*laplacian, module_bc.F:1293-1427).  ``rk_addtend_dry``
+#     (module_em.F:107-110) folds it into the carried ``ph_tend``/``rw_tend`` as
+#     ``ph_tend += ph_tendf/msfty``; those total tendencies are then carried
+#     UNCHANGED through every acoustic substep and applied INSIDE ``advance_w``
+#     (rhs of the phi equation gets ``dts*ph_tend``; the buoyancy/PGF source gets
+#     ``rw_tend``).  So the relaxation forcing flows THROUGH the implicit (w,ph)
+#     solve -- intrinsically coupled with w, never an after-the-fact overwrite.
+#     THIS is the piece the failed end-of-step attempt skipped.
+#
+#   * specified zone (the outermost spec_zone row, b_dist < spec_zone): WRF
+#     updates ph_2 every acoustic substep AFTER advance_w via the special
+#     mass-coupled ``spec_bdyupdate_ph`` (module_bc_em.F:17-157, called
+#     solve_em.F:1587), then (for nests) ``spec_bdyupdate(w_2)``, then
+#     ``calc_p_rho``.
+#
+# The TARGET is the parent boundary leaf ``ph_bdy`` (the d02->d03 interpolated
+# PARENT perturbation geopotential), time-interpolated ONCE per step -- a frozen
+# boundary-cadence attractor, NOT a moving target re-derived from the live
+# acoustic state each substep (the GPT review's "moving attractor" pitfall).  An
+# offline check (scripts/diag/d03_phfix_target_check.py) confirmed the re-derived
+# hydrostatic ``_hydrostatic_ph_perturbation`` diverges from the real (corpus-
+# matching) ph' by hundreds-to-thousands of m^2/s^2 aloft, while the state ph'
+# already equals the parent leaf to within a few m^2/s^2 at every ring level at
+# the IC -- so the parent leaf is the correct WRF-faithful target.
+
+
+SPEC_PLUS_RELAX_WIDTH = int(DEFAULT_BOUNDARY_CONFIG.spec_zone + DEFAULT_BOUNDARY_CONFIG.relax_zone)
+
+
+def _full_ring_target_from_leaf(leaf, z_len, y_len, x_len, dtype):
+    """Scatter the time-interpolated boundary strip ``leaf`` into a full ring field.
+
+    ``leaf`` is ``(side, bdy_width, z, side_len)``.  Returns a ``(z, ny, nx)`` array
+    whose ``spec_zone + relax_zone`` outer rows/columns hold the boundary value at
+    each ``b_dist`` (interior left zero -- the relaxation stencil only reads the
+    ring out to b_dist=relax_zone, and the innermost relax row's interior-pointing
+    neighbour ``fls4`` reads against the live field, which is exactly WRF's
+    ``field(i+1)`` interior cell, so the zero fill there is never used).
+    """
+
+    target = jnp.zeros((z_len, y_len, x_len), dtype=dtype)
+    for b_dist in range(SPEC_PLUS_RELAX_WIDTH):
+        w_strip = _strip(leaf, "W", b_dist, z_len, y_len).astype(dtype)  # (z, y)
+        e_strip = _strip(leaf, "E", b_dist, z_len, y_len).astype(dtype)
+        s_strip = _strip(leaf, "S", b_dist, z_len, x_len).astype(dtype)  # (z, x)
+        n_strip = _strip(leaf, "N", b_dist, z_len, x_len).astype(dtype)
+        target = target.at[:, :, b_dist].set(w_strip)
+        target = target.at[:, :, x_len - 1 - b_dist].set(e_strip)
+        target = target.at[:, b_dist, :].set(s_strip)
+        target = target.at[:, y_len - 1 - b_dist, :].set(n_strip)
+    return target
+
+
+def _relax_tendency_row(field, target, side, b_dist, *, fcx, gcx):
+    """WRF ``relax_bdytend`` tendency increment for one row (full-field target).
+
+    Mirrors :func:`_relax_row` but (a) returns the TENDENCY contribution
+    ``fcx*fls0 - gcx*(fls1+fls2+fls3+fls4-4*fls0)`` (NOT the value update), and
+    (b) reads the boundary value from a FULL-FIELD ring target ``target``
+    ``(z, ny, nx)`` at the SAME grid locations as ``field``, so the residual
+    ``bdy - field`` and its tangential/normal neighbours align cell-for-cell.
+    The five WRF residual stencil points (fls0..fls4) use the tangential clamp
+    (``_shift_clamp``) and the normal toward-edge / toward-interior neighbours.
+    """
+
+    if side == "W":
+        cur, t_edge, t_int = field[:, :, b_dist], field[:, :, b_dist - 1], field[:, :, b_dist + 1]
+        b0, b_edge, b_int = target[:, :, b_dist], target[:, :, b_dist - 1], target[:, :, b_dist + 1]
+    elif side == "E":
+        x = field.shape[2] - 1 - b_dist
+        cur, t_edge, t_int = field[:, :, x], field[:, :, x + 1], field[:, :, x - 1]
+        b0, b_edge, b_int = target[:, :, x], target[:, :, x + 1], target[:, :, x - 1]
+    elif side == "S":
+        cur, t_edge, t_int = field[:, b_dist, :], field[:, b_dist - 1, :], field[:, b_dist + 1, :]
+        b0, b_edge, b_int = target[:, b_dist, :], target[:, b_dist - 1, :], target[:, b_dist + 1, :]
+    else:  # N
+        y = field.shape[1] - 1 - b_dist
+        cur, t_edge, t_int = field[:, y, :], field[:, y + 1, :], field[:, y - 1, :]
+        b0, b_edge, b_int = target[:, y, :], target[:, y + 1, :], target[:, y - 1, :]
+
+    fls0 = b0 - cur
+    # tangential axis of the (z, side_len) slice is axis 1
+    fls1 = _shift_clamp(fls0, +1, axis=1)
+    fls2 = _shift_clamp(fls0, -1, axis=1)
+    fls3 = b_edge - t_edge
+    fls4 = b_int - t_int
+    laplacian = fls1 + fls2 + fls3 + fls4 - 4.0 * fls0
+    return float(fcx) * fls0 - float(gcx) * laplacian
+
+
+def _scatter_relax_tendency(field_coupled, target_coupled, dt_full: float, config: BoundaryConfig):
+    """Build the relaxation-zone tendency (per-second) for a mass-coupled field.
+
+    Reproduces WRF ``relax_bdy_dry`` (the ``relax_bdytend_tile`` half) for one
+    ``(z, ny, nx)`` mass-coupled field ``(c1f*mut+c2f)*ph`` relaxed toward the
+    mass-coupled full-ring boundary target ``target_coupled``.  Returns a full
+    ``(z, ny, nx)`` tendency with the WRF corner trim, NONZERO only in the
+    relaxation zone (b_dist = spec_zone .. relax_zone-1).  Units: same as
+    ``field_coupled`` per second (the ``fcx=0.1/dt`` taper integrates to a
+    0.1*residual full-step nudge at the spec-adjacent cell), so the caller adds
+    ``tend/msfty`` to ``ph_tend``.
+    """
+
+    z_len, y_len, x_len = field_coupled.shape
+    tend = jnp.zeros_like(field_coupled)
+    spec_zone = int(config.spec_zone)
+    relax_zone = int(config.relax_zone)
+    for b_dist in range(spec_zone, relax_zone):
+        fcx, gcx = _wrf_relax_weights(b_dist, dt_full, config)
+        # _wrf_relax_weights returns dt*fcx, dt*gcx; the per-second tendency is the
+        # WRF fcx/gcx, i.e. (dt*fcx)/dt.  Divide by dt_full to recover fcx, gcx.
+        fcx = fcx / float(dt_full)
+        gcx = gcx / float(dt_full)
+        for side in SIDES:
+            row_t = _relax_tendency_row(field_coupled, target_coupled, side, b_dist, fcx=fcx, gcx=gcx)
+            if side in ("W", "E"):
+                start, end = b_dist + 1, y_len - b_dist - 1  # WRF X-bdy tangential trim
+                col = b_dist if side == "W" else x_len - 1 - b_dist
+                tend = tend.at[:, start:end, col].add(row_t[:, start:end])
+            else:  # S, N
+                start, end = b_dist, x_len - b_dist  # WRF Y-bdy tangential trim
+                row = b_dist if side == "S" else y_len - 1 - b_dist
+                tend = tend.at[:, row, start:end].add(row_t[:, start:end])
+    return tend
+
+
+def nested_ph_relax_tendency(ph_perturbation, ph_bdy_leaf, mut, msfty, c1f, c2f, dt_full: float, config: BoundaryConfig):
+    """Relaxation-zone ``ph_tend`` contribution for the nested boundary (WRF-faithful).
+
+    Builds the WRF ``relax_bdy_dry`` ph relaxation: scatter the parent boundary
+    STRIP leaf into a full ring target, mass-weight both the full-level
+    perturbation geopotential and the target by ``(c1f*mut+c2f)`` (WRF
+    ``mass_weight(ph, mut, c1f, c2f)``), relax via the ``relax_bdytend`` stencil,
+    then divide by ``msfty`` (WRF ``rk_addtend_dry`` ``ph_tend += ph_tendf/msfty``).
+    The result is ADDED to the stage ``ph_tend`` so it flows through ``advance_w``
+    every acoustic substep, coupled with w.
+
+    ``ph_perturbation`` is perturbation geopotential on faces ``(nz+1, ny, nx)``;
+    ``ph_bdy_leaf`` is the time-interpolated parent STRIP leaf
+    ``(side, bdy_width, z, side_len)``.
+    """
+
+    dtype = ph_perturbation.dtype
+    z_len, y_len, x_len = ph_perturbation.shape
+    target = _full_ring_target_from_leaf(ph_bdy_leaf, z_len, y_len, x_len, dtype)
+    mass_f = c1f.astype(dtype)[:, None, None] * mut.astype(dtype)[None, :, :] + c2f.astype(dtype)[:, None, None]
+    field_coupled = mass_f * ph_perturbation
+    target_coupled = mass_f * target
+    tend_coupled = _scatter_relax_tendency(field_coupled, target_coupled, float(dt_full), config)
+    return tend_coupled / msfty.astype(dtype)[None, :, :]
+
+
+def nested_w_relax_tendency(w, w_bdy_leaf, mut, msfty, c1f, c2f, dt_full: float, config: BoundaryConfig):
+    """Relaxation-zone ``rw_tend`` contribution for the nested boundary (WRF nests only).
+
+    WRF ``relax_bdy_dry`` (module_bc_em.F:320-344) relaxes the MASS-WEIGHTED w for
+    nested domains; ``rk_addtend_dry`` folds it as ``rw_tend += rw_tendf/msfty``.
+    ``w`` is vertical velocity on faces ``(nz+1, ny, nx)``; ``w_bdy_leaf`` is the
+    parent STRIP leaf.
+    """
+
+    dtype = w.dtype
+    z_len, y_len, x_len = w.shape
+    target = _full_ring_target_from_leaf(w_bdy_leaf, z_len, y_len, x_len, dtype)
+    mass_f = c1f.astype(dtype)[:, None, None] * mut.astype(dtype)[None, :, :] + c2f.astype(dtype)[:, None, None]
+    field_coupled = mass_f * w
+    target_coupled = mass_f * target
+    tend_coupled = _scatter_relax_tendency(field_coupled, target_coupled, float(dt_full), config)
+    return tend_coupled / msfty.astype(dtype)[None, :, :]
+
+
+def spec_bdyupdate_ph_inloop(
+    ph_work, ph_bdy_leaf, ph_save, mu_tend, muts, c1f, c2f, dts: float, config: BoundaryConfig
+):
+    """WRF ``spec_bdyupdate_ph`` (spec-zone, in-acoustic-loop) on the ph WORK delta.
+
+    Source: WRF ``module_bc_em.F:17-157`` (called solve_em.F:1587 every acoustic
+    substep AFTER ``advance_w``).  WRF updates the COUPLED ``ph_2`` in the outer
+    ``spec_zone`` row:
+
+      field = field*(c1*mu_old+c2)/(c1*muts+c2)
+            + dts*field_tend/(c1*muts+c2)
+            + ph_save*((c1*mu_old+c2)/(c1*muts+c2) - 1)
+
+    with ``mu_old = muts - dts*mu_tend``.  Our small-step ``ph`` array is the
+    UNCOUPLED perturbation-delta ``ph_work = ph'_ref - ph'`` (small_step_finish
+    reconstructs ``ph' = ph_work + ph_save``).  Translating WRF's coupled formula
+    to our uncoupled-delta representation: WRF's coupled ``ph_2 = (c1*muts+c2)*ph'``
+    so the spec-zone full perturbation geopotential is driven to the boundary leaf
+    value (its mass-reweight + tendency form), i.e. ``ph'(spec) -> ph_bdy_leaf``.
+    Therefore in the uncoupled-delta space the spec-zone work delta becomes
+    ``ph_work(spec) = ph_bdy_leaf - ph_save`` (so that ph_work + ph_save = leaf).
+
+    This is a SINGLE-row hard pin (spec_zone=1), applied to the outermost row only;
+    the relaxation zone is owned by the ``ph_tend`` path inside ``advance_w``.  The
+    mass-reweight + mu_tend correction terms are O(mu') and ~0 for this fixed-mass
+    replay (muts==mut, mu_tend~0), so the leaf-pin is the dominant, WRF-consistent
+    effect; we apply the leaf value directly (the exact WRF reweight reduces to it
+    when mu_old==muts).  Full-level extent (WRF ``ktf=kte`` for 'h').
+    """
+
+    del mu_tend, muts, c1f, c2f, dts  # O(mu') reweight terms ~0 for fixed-mass replay
+    z_len, y_len, x_len = ph_work.shape
+    target_delta = ph_bdy_leaf.astype(ph_work.dtype) - ph_save.astype(ph_work.dtype)
+    out = ph_work
+    for b_dist in range(int(config.spec_zone)):
+        # W / E columns
+        out = out.at[:, :, b_dist].set(target_delta[:, :, b_dist])
+        out = out.at[:, :, x_len - 1 - b_dist].set(target_delta[:, :, x_len - 1 - b_dist])
+        # S / N rows
+        out = out.at[:, b_dist, :].set(target_delta[:, b_dist, :])
+        out = out.at[:, y_len - 1 - b_dist, :].set(target_delta[:, y_len - 1 - b_dist, :])
+    return out
+
+
 __all__ = [
     "BoundaryConfig",
     "DEFAULT_BOUNDARY_CONFIG",
@@ -781,4 +1043,7 @@ __all__ = [
     "normal_bdy_work_target_u",
     "normal_bdy_work_target_v",
     "apply_normal_bdy_work",
+    "nested_ph_relax_tendency",
+    "nested_w_relax_tendency",
+    "spec_bdyupdate_ph_inloop",
 ]
