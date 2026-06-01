@@ -1,0 +1,33 @@
+{
+  "mode": "DRY-PLAN (no GPU touched)",
+  "manifest": "proofs/m20/tost_postfix_manifest.json",
+  "n_cases": 3,
+  "n_scoring_units": 3,
+  "units": [
+    {
+      "unit_id": "case2_L2",
+      "init_utc": "2026-05-09T18:00:00+00:00",
+      "fh": 72,
+      "level": "L2",
+      "cpu_run_dir": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z",
+      "init_exists": true
+    },
+    {
+      "unit_id": "case3_L3",
+      "init_utc": "2026-05-21T18:00:00+00:00",
+      "fh": 24,
+      "level": "L3",
+      "cpu_run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
+      "init_exists": true
+    },
+    {
+      "unit_id": "case4_0530_L3",
+      "init_utc": "2026-05-30T18:00:00+00:00",
+      "fh": 24,
+      "level": "L3",
+      "cpu_run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260530_18z_l3_24h_20260531T161057Z",
+      "init_exists": true
+    }
+  ],
+  "note": "Pass --execute to run GPU forecasts + paired TOST. n_scoring_units is the TOST n (per variable) IF every unit yields >=1 obs-covered lead block with >=30 pairs."
+}
