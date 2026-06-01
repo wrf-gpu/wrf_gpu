@@ -826,18 +826,29 @@ def _ice_sources(state: ThompsonColumnState, dt: float, tables: ThompsonTableBun
     return updated
 
 
-# Maximum sedimentation sub-steps. WRF chooses nstep per column from the CFL
-# condition (module_mp_thompson.F:3634-3641); we apply a fixed-cap explicit
-# sub-stepped upwind flux and damp the per-substep increment by 1/nstep so the
-# scheme is stable and JIT-static.  64 sub-steps covers fast graupel at WRF's
-# typical dz/dt; columns needing fewer simply repeat a converged state.
+# Static UPPER BOUND on the per-column sedimentation sub-step count. WRF chooses
+# the substep count *adaptively per column* from the CFL condition
+# (module_mp_thompson.F:3634-3641,3791): nstep = MAX_k INT(DT/(dzq/vt) + 1) over
+# levels with a sedimenting particle, then advances exactly ``nstep`` upwind
+# substeps each of size DT/nstep.  We reproduce that EXACTLY with a masked
+# fixed-length scan: the loop runs ``NSED_MAX`` iterations (a JIT-static upper
+# bound), but per-column iteration ``n`` is a no-op once ``n >= nstep_col`` and
+# each active substep uses the per-column ``DT/nstep_col`` -- so the integration
+# is bit-faithful to WRF for any column whose ``nstep <= NSED_MAX``.
 #
-# CFL floor: for fall speeds up to ~20 m/s (graupel) at the domain's thinnest
-# layer (dz ~ 48 m) and dt = 18 s, explicit-upwind stability needs
-# nstep >= vt*dt/dz ~ 7.5, so 64 is ~8x oversampled.  ``GPUWRF_THOMPSON_NSED``
-# allows tuning the substep count; any reduction is gated on the moist WRF
-# oracle re-validation (it changes the time-integration accuracy, not just
-# launches).  Default stays 64 (byte-identical to the prior behaviour).
+# Why this matters (PRECIP PARITY, P1-5): the PRIOR code ran a *fixed* 64
+# substeps each of DT/64 with no per-column nstep.  Over-resolving the substep
+# integrates more of the falling front out the surface face within one DT than
+# WRF's coarser nstep does, biasing surface precip HIGH (+13% vs the WRF
+# precipitating oracle).  Matching WRF's adaptive nstep collapses that bias.
+#
+# Cap sizing: explicit-upwind stability needs nstep >= vt*DT/dz.  For the fastest
+# realistic graupel (~20 m/s) at the thinnest layer (dz ~ 30-48 m) and DT = 18 s,
+# WRF's nstep ~ 8-12; NSED_MAX = 64 leaves >5x headroom so the per-column nstep is
+# never clipped on operational d02/d03 columns.  If a pathological column ever
+# needs nstep > NSED_MAX the substep is silently capped at NSED_MAX (still
+# stable, slightly under-resolved) and counted as a sed-clip fallback by the
+# validation harness.  ``GPUWRF_THOMPSON_NSED`` overrides the cap.
 def _nsed_substeps() -> int:
     try:
         return max(1, int(os.environ.get("GPUWRF_THOMPSON_NSED", "64")))
@@ -845,7 +856,42 @@ def _nsed_substeps() -> int:
         return 64
 
 
-NSED_SUBSTEPS = _nsed_substeps()
+# Static upper bound on per-column substeps (loop length); the EFFECTIVE substep
+# count is WRF's adaptive per-column ``nstep`` (computed in ``_nstep_per_column``).
+NSED_MAX = _nsed_substeps()
+# Backward-compatible alias (the precip-oracle harness + perf scripts read this).
+NSED_SUBSTEPS = NSED_MAX
+
+
+# WRF surface-precip accumulation threshold: only accumulate the bottom-face flux
+# during a substep whose UPDATED surface-layer hydrometeor density exceeds
+# R1*1000 = 1e-9 kg m^-3 (module_mp_thompson.F:3817,3868,3895,3936).  On the
+# precipitating oracle this gate is a no-op (the surface rain density stays well
+# above 1e-9), but it is WRF-faithful and prevents trace numerical drizzle from
+# accumulating in lightly-precipitating columns.
+RR_SURF_THRESHOLD = R1 * 1000.0
+
+
+def _nstep_per_column(vt_a, vt_b, dz, dt):
+    """WRF adaptive substep count per column (module_mp_thompson.F:3634-3641).
+
+    ``nstep = MAX_k INT(DT/(dzq(k)/vt(k)) + 1)`` taken over levels where the
+    governing fall speed exceeds 1e-3 m/s; columns with no sedimenting particle
+    get ``nstep = 1`` (onstep = 1, a single pass).  ``vt_a``/``vt_b`` are the two
+    speeds WRF maxes for the CFL test (mass & number for rain; for ice/snow/
+    graupel pass the same array twice).  Axis -1 is vertical.  Returned as a
+    float per column (== WRF's REAL(nstep)); clipped to [1, NSED_MAX].
+    """
+
+    vt = jnp.maximum(vt_a, vt_b)
+    dz = jnp.maximum(dz, 1.0)
+    active = vt > 1.0e-3
+    # INT(DT/(dz/vt) + 1.) == floor(dt*vt/dz + 1) for the positive argument here.
+    cand = jnp.floor(dt * vt / dz + 1.0)
+    cand = jnp.where(active, cand, 0.0)
+    nstep = jnp.max(cand, axis=-1)
+    nstep = jnp.clip(nstep, 1.0, float(NSED_MAX))
+    return nstep
 
 
 def _sed_unroll() -> int:
@@ -1033,30 +1079,42 @@ def _fall_speeds(state: ThompsonColumnState):
     return (vt_r_mass, vt_r_num, vt_i_mass, vt_i_num, vt_s_mass, vt_g_mass, vt_g_num)
 
 
-def _sed_one_species(q, num, vt_mass, vt_num, dz, rho, dt):
-    """One upwind-flux sedimentation pass for a mixing ratio + its number.
+def _sed_one_species(q, num, vt_mass, vt_num, dz, rho, dt, nstep):
+    """One species' WRF-faithful adaptive-nstep upwind sedimentation.
 
-    Mirrors WRF module_mp_thompson.F:3790-3939 explicit upwind flux divergence,
-    sub-stepped by 1/NSED_SUBSTEPS.  Axis -1 is vertical with index 0 = surface
-    (kts) and the last index = model top (kte); precipitation leaves through the
-    surface face.  Returns (q', num', surface_precip_mm), with q'/num' cast back
-    to the input field dtype.
+    Mirrors WRF module_mp_thompson.F:3790-3939: ``nstep`` explicit upwind flux
+    substeps, each advancing by ``DT/nstep`` (``onstep = 1/nstep``), with surface
+    accumulation gated by the updated surface-layer density (>1e-9 kg m^-3).
+    Axis -1 is vertical with index 0 = surface (kts), last index = model top
+    (kte); precipitation leaves through the surface (index-0) face.
 
+    ``nstep`` is the WRF per-column adaptive substep count (a float, == WRF's
+    REAL(nstep); see ``_nstep_per_column``).  The scan runs a JIT-static
+    ``NSED_MAX`` iterations; iteration ``n`` is a no-op for any column where
+    ``n >= nstep`` (mask), so the result is bit-faithful to WRF for nstep<=NSED_MAX
+    yet keeps a static loop length.  ``dt_sub = DT/nstep`` is per-column.
+
+    Returns (q', num', surface_precip_mm), q'/num' cast back to the input dtype.
     Accumulation runs in the result dtype of (q, num, vt, rho, dz) — fp64 here —
     so sedimentation never silently downcasts the flux integration even when the
-    incoming State fields are fp32 (ADR-007 fp32-gated). The scan carry is held
-    at that accumulation dtype to keep carry-in/carry-out types consistent.
+    incoming State fields are fp32 (ADR-007 fp32-gated).
     """
 
-    sub = 1.0 / float(NSED_SUBSTEPS)
-    dt_sub = float(dt) * sub
     acc_dtype = jnp.result_type(q.dtype, num.dtype, vt_mass.dtype, rho.dtype, dz.dtype)
     q_dt, num_dt = q.dtype, num.dtype
     q0 = q.astype(acc_dtype)
     num0 = num.astype(acc_dtype)
+    nstep = jnp.asarray(nstep, acc_dtype)               # (...,) per column
+    dt_sub = jnp.asarray(dt, acc_dtype) / nstep         # (...,) onstep*DT
+    nstep_col = nstep[..., None]                          # broadcast over levels
+    dt_sub_col = dt_sub[..., None]
+    surf_thresh = jnp.asarray(RR_SURF_THRESHOLD, acc_dtype)
 
-    def body(carry, _):
+    def body(carry, n):
         q_c, num_c, ppt_c = carry
+        # column-level mask: this substep is real only while n < nstep_col.
+        live = (n < nstep).astype(acc_dtype)             # (...,)
+        live_col = live[..., None]
         rq = jnp.maximum(q_c * rho, 0.0)
         rn = jnp.maximum(num_c * rho, 0.0)
         flux_q = vt_mass * rq  # kg m^-2 s^-1 (downward, positive)
@@ -1069,17 +1127,25 @@ def _sed_one_species(q, num, vt_mass, vt_num, dz, rho, dt):
         flux_n_above = jnp.concatenate(
             [flux_n[..., 1:], jnp.zeros_like(flux_n[..., :1])], axis=-1
         )
-        dq = (flux_q_above - flux_q) / dz / rho * dt_sub
-        dn = (flux_n_above - flux_n) / dz / rho * dt_sub
+        dq = (flux_q_above - flux_q) / dz / rho * dt_sub_col
+        dn = (flux_n_above - flux_n) / dz / rho * dt_sub_col
         q_new = jnp.maximum(q_c + dq, 0.0)
         num_new = jnp.maximum(num_c + dn, 0.0)
-        # Surface precip = downward flux leaving the bottom (index 0) face.
-        surf = flux_q[..., 0] * dt_sub  # kg m^-2 == mm
-        return (q_new, num_new, ppt_c + surf), None
+        # apply the update only on live substeps (dead columns hold their state).
+        q_c = jnp.where(live_col > 0, q_new, q_c)
+        num_c = jnp.where(live_col > 0, num_new, num_c)
+        # Surface flux leaving the bottom (index 0) face this substep (pre-update
+        # density, WRF sed_r(kts) = vt*rr(kts)).  WRF gates the accumulation on
+        # the UPDATED surface density rr(kts) > 1e-9 kg/m3.
+        rr_surf_updated = jnp.maximum(q_c[..., 0] * rho[..., 0], 0.0)
+        gate = (live > 0) & (rr_surf_updated > surf_thresh)
+        surf = jnp.where(gate, flux_q[..., 0] * dt_sub, 0.0)  # kg m^-2 == mm
+        return (q_c, num_c, ppt_c + surf), None
 
     zero_ppt = jnp.zeros(q.shape[:-1], dtype=acc_dtype)
     (q_out, num_out, ppt), _ = jax.lax.scan(
-        body, (q0, num0, zero_ppt), None, length=NSED_SUBSTEPS, unroll=_sed_unroll()
+        body, (q0, num0, zero_ppt), jnp.arange(NSED_MAX, dtype=acc_dtype),
+        unroll=_sed_unroll(),
     )
     return q_out.astype(q_dt), num_out.astype(num_dt), ppt
 
@@ -1104,16 +1170,25 @@ def _sedimentation(state: ThompsonColumnState, dt: float):
     dz = jnp.maximum(state.dz, 1.0)
     rho = jnp.maximum(state.rho, R1)
 
+    # WRF chooses an INDEPENDENT adaptive substep count per species from the CFL
+    # of that species' fall speed (module_mp_thompson.F:3634/3693/3732/3773).
+    # Rain maxes mass & number speeds; ice/snow/graupel use their governing
+    # speed.  The masked scan then runs each species at its own nstep.
+    nstep_r = _nstep_per_column(vt_r_mass, vt_r_num, dz, dt)
+    nstep_i = _nstep_per_column(vt_i_mass, vt_i_mass, dz, dt)
+    nstep_s = _nstep_per_column(vt_s_mass, vt_s_mass, dz, dt)
+    nstep_g = _nstep_per_column(vt_g_mass, vt_g_mass, dz, dt)
+
     # Four independent per-species substep scans. XLA already overlaps these four
     # independent scans well; the per-scan ``unroll`` (``_sed_unroll``) fuses
     # adjacent substeps to cut the launch count. (A single 4-species batched scan
     # was measured SLOWER — it serialises what XLA otherwise parallelises — so we
     # keep the per-species structure; see proofs/thompson_perf.)
-    qr, Nr, ppt_rain = _sed_one_species(state.qr, state.Nr, vt_r_mass, vt_r_num, dz, rho, dt)
-    qi, Ni, ppt_ice = _sed_one_species(state.qi, state.Ni, vt_i_mass, vt_i_num, dz, rho, dt)
+    qr, Nr, ppt_rain = _sed_one_species(state.qr, state.Nr, vt_r_mass, vt_r_num, dz, rho, dt, nstep_r)
+    qi, Ni, ppt_ice = _sed_one_species(state.qi, state.Ni, vt_i_mass, vt_i_num, dz, rho, dt, nstep_i)
     # Snow: number tracks mass (diagnostic Ns).  Use the mass speed for both.
-    qs, Ns, ppt_snow = _sed_one_species(state.qs, state.Ns, vt_s_mass, vt_s_mass, dz, rho, dt)
-    qg, Ng, ppt_graupel = _sed_one_species(state.qg, state.Ng, vt_g_mass, vt_g_num, dz, rho, dt)
+    qs, Ns, ppt_snow = _sed_one_species(state.qs, state.Ns, vt_s_mass, vt_s_mass, dz, rho, dt, nstep_s)
+    qg, Ng, ppt_graupel = _sed_one_species(state.qg, state.Ng, vt_g_mass, vt_g_num, dz, rho, dt, nstep_g)
 
     updated = state.replace(qr=qr, Nr=Nr, qi=qi, Ni=Ni, qs=qs, Ns=Ns, qg=qg, Ng=Ng)
     precip = {
