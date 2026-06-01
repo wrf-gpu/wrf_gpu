@@ -1,0 +1,81 @@
+{
+  "schema": "M20PairedCaseScore",
+  "schema_version": 1,
+  "case_id": "case1_L2",
+  "self_test_cpu_vs_cpu": false,
+  "domain": "d02",
+  "init_time_utc": "2026-05-29T18:00:00+00:00",
+  "forecast_hours": 72,
+  "total_complete_pairs": 11098,
+  "per_block": {
+    "T2": {
+      "0-24h": {
+        "status": "OK",
+        "n_pairs": 1640,
+        "cpu_rmse": 2.0664229674381507,
+        "gpu_rmse": 3.032056114903255,
+        "paired_delta_rmse": 0.9656331474651045
+      },
+      "24-48h": {
+        "status": "OK",
+        "n_pairs": 1618,
+        "cpu_rmse": 2.1815010502212804,
+        "gpu_rmse": 3.109572794347652,
+        "paired_delta_rmse": 0.9280717441263717
+      },
+      "48-72h": {
+        "status": "OK",
+        "n_pairs": 436,
+        "cpu_rmse": 1.948580465643301,
+        "gpu_rmse": 3.383143434808337,
+        "paired_delta_rmse": 1.434562969165036
+      }
+    },
+    "U10": {
+      "0-24h": {
+        "status": "OK",
+        "n_pairs": 1631,
+        "cpu_rmse": 3.083169045721698,
+        "gpu_rmse": 3.179984789562292,
+        "paired_delta_rmse": 0.09681574384059433
+      },
+      "24-48h": {
+        "status": "OK",
+        "n_pairs": 1632,
+        "cpu_rmse": 3.1033573476296747,
+        "gpu_rmse": 3.138236159794584,
+        "paired_delta_rmse": 0.03487881216490907
+      },
+      "48-72h": {
+        "status": "OK",
+        "n_pairs": 439,
+        "cpu_rmse": 2.5891390747860443,
+        "gpu_rmse": 2.7811792449577735,
+        "paired_delta_rmse": 0.19204017017172914
+      }
+    },
+    "V10": {
+      "0-24h": {
+        "status": "OK",
+        "n_pairs": 1631,
+        "cpu_rmse": 3.355114322687872,
+        "gpu_rmse": 3.5065397841118946,
+        "paired_delta_rmse": 0.1514254614240227
+      },
+      "24-48h": {
+        "status": "OK",
+        "n_pairs": 1632,
+        "cpu_rmse": 3.2887063966379797,
+        "gpu_rmse": 3.432637379867699,
+        "paired_delta_rmse": 0.1439309832297191
+      },
+      "48-72h": {
+        "status": "OK",
+        "n_pairs": 439,
+        "cpu_rmse": 3.0612130640906274,
+        "gpu_rmse": 3.098068400015917,
+        "paired_delta_rmse": 0.036855335925289445
+      }
+    }
+  }
+}
