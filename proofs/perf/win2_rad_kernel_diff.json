@@ -1,0 +1,11 @@
+{
+  "win": "2-rad-kernel-isolation",
+  "coszen_max_abs_diff": 0.0,
+  "rthraten_max_abs_diff": 0.0,
+  "swdown_max_abs_diff": 0.0,
+  "glw_max_abs_diff": 0.0,
+  "diag_coszen_max_abs_diff": 0.0,
+  "julian": 141.0,
+  "utc_minute": 1080.0,
+  "all_zero": true
+}
