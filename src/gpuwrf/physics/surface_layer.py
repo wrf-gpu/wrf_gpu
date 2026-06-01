@@ -236,6 +236,114 @@ def _zolri(ri, z, z0):
 
 
 # ==================================================================================
+# zolrib brute-force fixed-point z/L solve (module_sf_mynn.F:1984-2048)
+# ==================================================================================
+
+
+def _zolrib(ri, za, z0, zt, logz0, logzt):
+    """MYNN ``zolrib`` brute-force z/L solve, module_sf_mynn.F:1984-2048.
+
+    Unlike sfclayrev's secant ``_zolri`` (which builds BOTH residual terms from the
+    momentum roughness), MYNN's ``zolrib`` builds the heat residual ``psit2`` from
+    the THERMAL roughness ``zt`` (log ``logzt`` and the ``psih`` difference taken
+    about ``zolt = zol*zt/za``) and the momentum residual ``psix2`` from ``z0``.
+    It is a fixed-point iteration on ``zolrib`` itself, NOT a secant method:
+
+        zol20 = zol*z0/za ; zol3 = zol + zol20 ; zolt = zol*zt/za
+        psit2 = max(logzt - (psih(zol3) - psih(zolt)), 1.0)
+        psix2 = max(logz0 - (psim(zol3) - psim(zol20)), 1.0)
+        zol_new = ri * psix2**2 / psit2
+
+    WRF seeds ``zolold`` with +/-99999 on the first trip then takes ``zolold = zol1``
+    (the first guess) on n==1, i.e. the iteration's first refinement uses ``zol1``.
+    The endpoint is frozen once ``|zol_new - zol_old| <= 0.01`` (``nmax=20``). On
+    non-convergence WRF falls back to ``Li_etal_2010(zolrib, ri, za/z0, z0/zt)``
+    (line 2039); ``_li_etal_2010`` mirrors that here.
+
+    Vectorized, branch-free: ``ri`` is signed per cell, so ``psih``/``psim`` pick the
+    unstable form where ``ri<0`` and the stable form where ``ri>=0`` per element.
+    """
+
+    unstable = ri < 0.0
+
+    def residual(zol_old):
+        zol20 = zol_old * z0 / za
+        zol3 = zol_old + zol20
+        zolt = zol_old * zt / za
+        psit2_u = jnp.maximum(logzt - (_psih_unstable(zol3) - _psih_unstable(zolt)), 1.0)
+        psix2_u = jnp.maximum(logz0 - (_psim_unstable(zol3) - _psim_unstable(zol20)), 1.0)
+        psit2_s = jnp.maximum(logzt - (_psih_stable(zol3) - _psih_stable(zolt)), 1.0)
+        psix2_s = jnp.maximum(logz0 - (_psim_stable(zol3) - _psim_stable(zol20)), 1.0)
+        psit2 = jnp.where(unstable, psit2_u, psit2_s)
+        psix2 = jnp.where(unstable, psix2_u, psix2_s)
+        return ri * psix2 * psix2 / psit2
+
+    # n==1: zolold = zol1 (the first guess). We seed zol1 from Li_etal_2010, the
+    # itimestep<=1 WRF path (module_sf_mynn.F:794,879); for warm steps WRF uses a
+    # MOL-based guess, but the brute-force zolrib converges to the same root from
+    # either seed (the residual, not the seed, sets the root -- spec Mismatch 1).
+    zol1 = _li_etal_2010(ri, za / z0, z0 / zt)
+
+    def body(_, carry):
+        zol_old, frozen = carry
+        zol_new = residual(zol_old)
+        converged = jnp.abs(zol_new - zol_old) <= 0.01
+        # freeze the endpoint once converged (matches WRF early-stop)
+        nxt = jnp.where(frozen, zol_old, zol_new)
+        new_frozen = frozen | converged
+        return (nxt, new_frozen)
+
+    frozen0 = jnp.zeros_like(ri, dtype=bool)
+    zol_conv, conv_flag = jax.lax.fori_loop(0, 20, body, (zol1, frozen0))
+
+    # non-convergence fallback (module_sf_mynn.F:2036-2039)
+    zol_fallback = _li_etal_2010(ri, za / z0, z0 / zt)
+    return jnp.where(conv_flag, zol_conv, zol_fallback)
+
+
+def _li_etal_2010(rib, zaz0, z0zt):
+    """Li et al. (2010) closed-form z/L, module_sf_mynn.F:1831-1890.
+
+    Robust analytic z/L matching Hogstrom (1996) (unstable) and Beljaars & Holtslag
+    (1991) (stable). Used by ``zolrib`` as the first guess (n==1, itimestep<=1) and
+    the non-convergence fallback.
+    """
+
+    au11, bu11, bu12 = 0.045, 0.003, 0.0059
+    bu21, bu22, bu31, bu32, bu33 = -0.0828, 0.8845, 0.1739, -0.9213, -0.1057
+    aw11, aw12, aw21, aw22 = 0.5738, -0.4399, -4.901, 52.50
+    bw11, bw12, bw21, bw22 = -0.0539, 1.540, -0.669, -3.282
+    as11, as21, bs11, bs21, bs22 = 0.7529, 14.94, 0.1569, -0.3091, -1.303
+
+    zaz02 = jnp.clip(zaz0, 100.0, 100000.0)
+    z0zt2 = jnp.clip(z0zt, 0.5, 100.0)
+    alfa = jnp.log(zaz02)
+    beta = jnp.log(z0zt2)
+
+    zl_uns = au11 * alfa * rib**2 + (
+        (bu11 * beta + bu12) * alfa**2
+        + (bu21 * beta + bu22) * alfa
+        + (bu31 * beta**2 + bu32 * beta + bu33)
+    ) * rib
+    zl_uns = jnp.clip(zl_uns, -15.0, 0.0)
+
+    zl_wsta = (
+        ((aw11 * beta + aw12) * alfa + (aw21 * beta + aw22)) * rib**2
+        + ((bw11 * beta + bw12) * alfa + (bw21 * beta + bw22)) * rib
+    )
+    zl_wsta = jnp.clip(zl_wsta, 0.0, 4.0)
+
+    zl_ssta = (as11 * alfa + as21) * rib + bs11 * alfa + bs21 * beta + bs22
+    zl_ssta = jnp.clip(zl_ssta, 1.0, 20.0)
+
+    return jnp.where(
+        rib <= 0.0,
+        zl_uns,
+        jnp.where(rib <= 0.2, zl_wsta, zl_ssta),
+    )
+
+
+# ==================================================================================
 # Helpers for State <-> column extraction
 # ==================================================================================
 
@@ -402,60 +510,84 @@ def surface_layer_with_diagnostics(state) -> SurfaceLayerDiagnostics:
     br = govrth * za * dthvdz / (wspd * wspd)
     br = jnp.where(mol_in < 0.0, jnp.minimum(br, 0.0), br)  # previously unstable
 
-    # --- z/L via zolri Newton/secant (sf_sfclayrev.F90:379-399) ---
-    br_capped_pos = jnp.where(br > ZOLRI_BR_CAP, ZOLRI_BR_CAP, br)
-    br_capped_neg = jnp.where(br < -ZOLRI_BR_CAP, -ZOLRI_BR_CAP, br)
-    zol_pos = _zolri(br_capped_pos, za, znt)
-    zol_neg_solve = _zolri(br_capped_neg, za, znt)
-    zol_neg = jnp.where(ust_in < 0.001, br * gz1oz0, zol_neg_solve)
-    zol = jnp.where(br > 0.0, zol_pos, jnp.where(br < 0.0, zol_neg, 0.0))
-    # Clamp the reported z/L to the physical band WRF uses for the diagnostic
-    # (sf_mynn.F90:583-592,668-676: zol in [-20, 20]). The unbounded br*gz1oz0
-    # cold-start branch can otherwise produce |z/L|>>20 for tiny-wind columns;
-    # this bound matches the WRF MYNN-surface oracle and does not affect the psi
-    # functions (which use the integrated CB05 forms, capped separately).
-    zol = jnp.clip(zol, -20.0, 20.0)
+    # ==============================================================================
+    # MYNN thermal/moisture roughness z_t/z_q, computed BEFORE the z/L solve
+    # (module_sf_mynn.F:671-760). WRF orders restar -> z_t/z_q -> GZ?OZt -> the
+    # zolrib z/L solve, because zolrib's heat residual needs the thermal log GZ1OZt.
+    # restar uses the PRIOR-STEP ust (the INTENT(INOUT) UST as it enters the column,
+    # line 675/725) -- NOT a blended/look-ahead value; the in-step ust update happens
+    # later (line 949), after the z/L solve (spec Mismatch 2).
+    # ==============================================================================
+    visc = (1.32 + 0.009 * (t1d - 273.15)) * 1.0e-5  # module_sf_mynn.F:~440 kin. visc
+    restar = jnp.maximum(ust_in * znt / visc, 0.1)   # module_sf_mynn.F:675/725
 
-    # --- regime + PSIM/PSIH/PSIM10/PSIH10/PSIM2/PSIH2 + pq (sf_sfclayrev.F90:401-499) ---
-    zolzz = zol * (za + znt) / za   # (z+z0)/L
-    zol10 = zol * (10.0 + znt) / za  # (10+z0)/L
-    zol2 = zol * (2.0 + znt) / za    # (2+z0)/L
-    zol0 = zol * znt / za            # z0/L
-    zl2_c = (2.0) / za * zol
-    zl10_c = (10.0) / za * zol
-    zl_pq = jnp.where(is_land, (0.01) / za * zol, zol0)
+    # LAND: zilitinkevich_1995 default (IZ0TLND<=1, CZIL=0.085), z_q == z_t, NO lower
+    # floor -- only MIN(z_t, 0.75*z0) (module_sf_mynn.F:1252-1265). Snow/ice
+    # (Andreas_2002) and spp_pbl perturbations are out of scope (no-snow Canary,
+    # spp_pbl=0); see spec "Out of scope".
+    CZIL = 0.085
+    z_t_land = jnp.minimum(znt * jnp.exp(-KARMAN * CZIL * jnp.sqrt(restar)), 0.75 * znt)
+    # WATER: fairall_etal_2003 (COARE_OPT=3.0 default), z_q == z_t
+    # (module_sf_mynn.F:1442-1467): Zt = 5.5e-5*restar^-0.6, clipped [2e-9, 1e-4].
+    z_t_water = jnp.clip((5.5e-5) * (restar ** (-0.60)), 2.0e-9, 1.0e-4)
+    z_t = jnp.where(is_land, z_t_land, z_t_water)
+    z_q = z_t  # zilitinkevich land + fairall water both set z_q = z_t
+
+    # thermal logs (module_sf_mynn.F:756-760): numerator is (height + ZNTstoch).
+    gz1ozt = jnp.log((za + znt) / z_t)
+    gz2ozt = jnp.log((2.0 + znt) / z_t)
+    gz10ozt = jnp.log((10.0 + znt) / z_t)
+
+    # --- z/L via MYNN zolrib brute-force solve (module_sf_mynn.F:804/889) ---
+    # zolrib's heat residual uses the THERMAL roughness z_t (spec Mismatch 1).
+    # WRF caps the bulk-Ri implicitly via the Li_etal_2010 fallback; we still guard
+    # the |br| that feeds the seed/fallback against pathological tiny-wind columns.
+    br_capped = jnp.clip(br, -ZOLRI_BR_CAP, ZOLRI_BR_CAP)
+    zol = _zolrib(br_capped, za, znt, z_t, gz1oz0, gz1ozt)
+    # per-sign clamp (module_sf_mynn.F:805-806 stable -> [0,20]; 890-891 unstable ->
+    # [-20,0]); neutral (br==0) -> zol=0 (module_sf_mynn.F:863).
+    zol = jnp.where(
+        br > 0.0,
+        jnp.clip(zol, 0.0, 20.0),
+        jnp.where(br < 0.0, jnp.clip(zol, -20.0, 0.0), 0.0),
+    )
+
+    # ==============================================================================
+    # PSIM / PSIH / PSIH2 / PSIH10 (module_sf_mynn.F:808-935), unified land+water.
+    # WRF computes the SAME structure on land and water (the only land/water
+    # difference is the z_t/z_q formula above): the MOMENTUM psi (psim/psim10/psim2)
+    # and the 2 m/10 m HEAT psi (psih2/psih10) are taken about the MOMENTUM baseline
+    # ``zolz0``; only the lowest-level HEAT psi (psih) is taken about the THERMAL
+    # baseline ``zolzt`` (spec Mismatch 3). The current GPU previously (a) solved a
+    # momentum-only z/L, (b) split land off into a thermal-baseline psih2/psih10,
+    # (c) ran water through a separate sfclayrev z0t recompute -- all replaced here
+    # by the literal MYNN path.
+    # ==============================================================================
+    zolzt = zol * z_t / za            # zt/L  (module_sf_mynn.F:808/893)
+    zolz0 = zol * znt / za            # z0/L  (module_sf_mynn.F:809/894)
+    zolza = zol * (za + znt) / za     # (za+z0)/L (module_sf_mynn.F:810/895)
+    zol10 = zol * (10.0 + znt) / za   # (10+z0)/L (module_sf_mynn.F:811/896)
+    zol2 = zol * (2.0 + znt) / za     # (2+z0)/L  (module_sf_mynn.F:812/897)
 
     stable = br > 0.0
     neutral = br == 0.0
     unstable = br < 0.0
 
-    # stable (regime 1) — CB05
-    psim_s = _psim_stable(zolzz) - _psim_stable(zol0)
-    psih_s = _psih_stable(zolzz) - _psih_stable(zol0)
-    psim10_s = _psim_stable(zol10) - _psim_stable(zol0)
-    psih10_s = _psih_stable(zol10) - _psih_stable(zol0)
-    psim2_s = _psim_stable(zol2) - _psim_stable(zol0)
-    psih2_s = _psih_stable(zol2) - _psih_stable(zol0)
-    pq_s = _psih_stable(zol) - _psih_stable(zl_pq)
-    pq2_s = _psih_stable(zl2_c) - _psih_stable(zl_pq)
-    pq10_s = _psih_stable(zl10_c) - _psih_stable(zl_pq)
+    # stable (regime 1/2) -- module_sf_mynn.F:823-827 (water) / 836-840 (land)
+    psim_s = _psim_stable(zolza) - _psim_stable(zolz0)
+    psih_s = _psih_stable(zolza) - _psih_stable(zolzt)   # THERMAL baseline (zolzt)
+    psim10_s = _psim_stable(zol10) - _psim_stable(zolz0)
+    psih10_s = _psih_stable(zol10) - _psih_stable(zolz0)  # MOMENTUM baseline (zolz0)
+    psim2_s = _psim_stable(zol2) - _psim_stable(zolz0)
+    psih2_s = _psih_stable(zol2) - _psih_stable(zolz0)    # MOMENTUM baseline (zolz0)
 
-    # unstable (regime 4) — CB05, with thin-layer caps
-    psim_u = _psim_unstable(zolzz) - _psim_unstable(zol0)
-    psih_u = _psih_unstable(zolzz) - _psih_unstable(zol0)
-    psim10_u = _psim_unstable(zol10) - _psim_unstable(zol0)
-    psih10_u = _psih_unstable(zol10) - _psih_unstable(zol0)
-    psim2_u = _psim_unstable(zol2) - _psim_unstable(zol0)
-    psih2_u = _psih_unstable(zol2) - _psih_unstable(zol0)
-    pq_u = _psih_unstable(zol) - _psih_unstable(zl_pq)
-    pq2_u = _psih_unstable(zl2_c) - _psih_unstable(zl_pq)
-    pq10_u = _psih_unstable(zl10_c) - _psih_unstable(zl_pq)
-    # thin-layer / high-roughness caps (sf_sfclayrev.F90:490-496)
-    psih_u = jnp.minimum(psih_u, 0.9 * gz1oz0)
-    psim_u = jnp.minimum(psim_u, 0.9 * gz1oz0)
-    psih2_u = jnp.minimum(psih2_u, 0.9 * gz2oz0)
-    psim10_u = jnp.minimum(psim10_u, 0.9 * gz10oz0)
-    psih10_u = jnp.minimum(psih10_u, 0.9 * gz10oz0)
+    # unstable (regime 4) -- module_sf_mynn.F:907-922
+    psim_u = _psim_unstable(zolza) - _psim_unstable(zolz0)
+    psih_u = _psih_unstable(zolza) - _psih_unstable(zolzt)   # THERMAL baseline
+    psim10_u = _psim_unstable(zol10) - _psim_unstable(zolz0)
+    psih10_u = _psih_unstable(zol10) - _psih_unstable(zolz0)  # MOMENTUM baseline
+    psim2_u = _psim_unstable(zol2) - _psim_unstable(zolz0)
+    psih2_u = _psih_unstable(zol2) - _psih_unstable(zolz0)    # MOMENTUM baseline
 
     zeros = jnp.zeros(shape, dtype=jnp.float64)
     psim = jnp.where(stable, psim_s, jnp.where(unstable, psim_u, zeros))
@@ -464,167 +596,52 @@ def surface_layer_with_diagnostics(state) -> SurfaceLayerDiagnostics:
     psih10 = jnp.where(stable, psih10_s, jnp.where(unstable, psih10_u, zeros))
     psim2 = jnp.where(stable, psim2_s, jnp.where(unstable, psim2_u, zeros))
     psih2 = jnp.where(stable, psih2_s, jnp.where(unstable, psih2_u, zeros))
-    pq = jnp.where(stable, pq_s, jnp.where(unstable, pq_u, zeros))
-    pq2 = jnp.where(stable, pq2_s, jnp.where(unstable, pq2_u, zeros))
-    pq10 = jnp.where(stable, pq10_s, jnp.where(unstable, pq10_u, zeros))
-    # neutral (regime 3): pq = psih = 0, pq2 = psih2 = 0, pq10 = 0, zol = 0
+
+    # thin-layer / high-roughness caps -- module_sf_mynn.F:931-935. NOTE the WRF
+    # cap is applied ONLY in the unstable (BR<0) block; the stable block has no
+    # caps. The heat caps use the THERMAL logs (gz?ozt) even though psih2/psih10
+    # are on the momentum baseline -- the cap and the baseline disagree on purpose
+    # (spec Mismatch 3). The momentum caps use gz?oz0.
+    psih_capped = jnp.minimum(psih, 0.9 * gz1ozt)          # 931: 0.9*GZ1OZt
+    psim_capped = jnp.minimum(psim, 0.9 * gz1oz0)          # 932: 0.9*GZ1OZ0
+    psih2_capped = jnp.minimum(psih2, 0.9 * gz2ozt)        # 933: 0.9*GZ2OZt
+    psim10_capped = jnp.minimum(psim10, 0.9 * gz10oz0)     # 934: 0.9*GZ10OZ0
+    psih10_capped = jnp.minimum(psih10, 0.9 * gz10ozt)     # 935: 0.9*GZ10OZt
+    psih = jnp.where(unstable, psih_capped, psih)
+    psim = jnp.where(unstable, psim_capped, psim)
+    psih2 = jnp.where(unstable, psih2_capped, psih2)
+    psim10 = jnp.where(unstable, psim10_capped, psim10)
+    psih10 = jnp.where(unstable, psih10_capped, psih10)
+
     regime = jnp.where(stable, 1.0, jnp.where(neutral, 3.0, 4.0))
     zol = jnp.where(neutral, 0.0, zol)
     rmol = zol / za
 
-    # --- frictional velocity & psix/psit/psiq (sf_sfclayrev.F90:504-585) ---
+    # ==============================================================================
+    # Friction velocity (module_sf_mynn.F:945-962) and thermal/moisture resistances
+    # (module_sf_mynn.F:969-977). The ust update is the WRF blend with the
+    # prior-step ust_in, placed AFTER the z/L solve (it does NOT feed restar/z_t;
+    # restar used ust_in above -- spec Mismatch 2). Land floor is 0.005 per
+    # module_sf_mynn.F:959 (no cold-start special-case: the replay path is warm).
+    # ==============================================================================
     dtg = thx - thgb
     psix = gz1oz0 - psim
     psix10 = gz10oz0 - psim10
-    psit = gz1oz0 - psih
-    psit2 = gz2oz0 - psih2
-    zl_land_or_water = jnp.where(is_land, 0.01, znt)
-    # land/initial psiq (sf_sfclayrev.F90:521-525)
-    psiq = jnp.log(KARMAN * ust_in * za / XKA + za / zl_land_or_water) - pq
-    psiq2 = jnp.log(KARMAN * ust_in * 2.0 / XKA + 2.0 / zl_land_or_water) - pq2
-    psiq10 = jnp.log(KARMAN * ust_in * 10.0 / XKA + 10.0 / zl_land_or_water) - pq10
+    ustar = 0.5 * ust_in + 0.5 * KARMAN * wspd / psix   # module_sf_mynn.F:949
+    ustar = jnp.where(is_land, jnp.maximum(ustar, 0.005), ustar)  # 959
 
-    # --- friction velocity, diagnosed BEFORE the land z_t block (it feeds restar) ---
-    # WRF: ust = 0.5*ust_old + 0.5*k*wspd/psix, "to prevent oscillations" between
-    # timesteps. That averaging only makes sense for a WARM start where ust_old is
-    # the previous step's physical friction velocity. On a COLD start (ust_old at
-    # the reset placeholder <= ~1e-3, as in the WRF oracle's uniform 1e-4 input),
-    # halving toward the placeholder is spurious and ~halves the result; WRF's own
-    # downstream code treats ust<0.001 as effectively unset. So use the freshly
-    # diagnosed k*wspd/psix when ust_old is below that cold-start floor, and the
-    # WRF blend otherwise (matches WRF for warm starts AND the cold-start oracle).
-    # NOTE: this is computed HERE (not after the profiles) because the land thermal
-    # roughness z_t below scales the roughness Reynolds number ``restar`` by the
-    # friction velocity. WRF's restar uses the surface-layer ``ust`` for that
-    # column (module_sf_mynn.F:461,511); the spun-up ust(i) -- ~0.3 over rough
-    # land, not the lagged input placeholder -- yields z_t ~ znt/10 (z_t/znt~0.09
-    # at znt=0.5), giving the LARGE heat resistance the corpus exhibits. Using the
-    # lagged ``ust_in`` instead clamps restar to its 0.1 floor on a cold/under-spun
-    # ustar, capping z_t at 0.75*znt and under-resisting heat -> the daytime HFX
-    # over-flux. Diagnosing ustar first removes that one-step lag.
-    ust_fresh = KARMAN * wspd / psix
-    cold_start = ust_in <= 0.001
-    ustar = jnp.where(cold_start, ust_fresh, 0.5 * ust_in + 0.5 * ust_fresh)
+    # Resistances (module_sf_mynn.F:972-977). Numerators always use the thermal /
+    # moisture roughness; PSIT/PSIQ subtract the thermal-baseline PSIH; PSIT2/PSIQ2
+    # subtract the MOMENTUM-baseline PSIH2; PSIQ10 subtracts the momentum-baseline
+    # PSIH10. The >=1 floor prevents a vanishing flux denominator (thin layers/high
+    # z0). z_q == z_t so the moisture numerators reuse the thermal logs.
+    psit = jnp.maximum(gz1ozt - psih, 1.0)                       # 972
+    psit2 = jnp.maximum(gz2ozt - psih2, 1.0)                     # 973
+    psiq = jnp.maximum(jnp.log((za + znt) / z_q) - psih, 1.0)    # 975
+    psiq2 = jnp.maximum(jnp.log((2.0 + znt) / z_q) - psih2, 1.0)  # 976
+    psiq10 = jnp.maximum(jnp.log((10.0 + znt) / z_q) - psih10, 1.0)  # 977
 
-    # --- land: thermal/moisture roughness z_t (the scheme the Canary corpus ran) ---
-    # The corpus L3 uses ``sf_sfclay_physics=5`` = the MYNN surface layer
-    # (module_sf_mynn.F), which over land carries a SEPARATE thermal roughness
-    # ``z_t`` for the heat/moisture profiles, distinct from the momentum roughness
-    # ``znt``. The heat profile is then  psit = log((za+znt)/z_t) - psih  with the
-    # psih differences taken about z_t, NOT znt. Because z_t << znt (z_t/znt ~ 1/8
-    # over land), the effective psit is several-fold LARGER, so the sensible-heat
-    # flux  HFX = cpm*rhox*ust*karman*(thgb-thx)/psit  is several-fold SMALLER.
-    # Without z_t the bare sfclayrev land heat profile uses znt and over-fluxes
-    # midday sensible heat ~4x (HFX ~505 vs corpus ~137 all-domain; ~1900 vs ~460
-    # over land), injecting a +3.6 K daytime T2 warm bias. This block ports the
-    # MYNN default land roughness (zilitinkevich_1995, module_sf_mynn.F:746-749,
-    # CZIL=0.085) and is the same z0t-over-land mechanism sfclayrev exposes under
-    # ``iz0tlnd>=1`` (sf_sfclayrev.F90:704-753). Momentum (psim/psix/ustar/u10/v10)
-    # is UNCHANGED and stays on znt; only the heat (psit/psit2) and moisture (psiq)
-    # land profiles move to z_t. Water keeps the Fairall z0t recomputation below.
-    visc_l = (1.32 + 0.009 * (t1d - 273.15)) * 1.0e-5
-    restar_l = jnp.maximum(ustar * znt / visc_l, 0.1)
-    CZIL = 0.085
-    z_t_land = jnp.minimum(znt * jnp.exp(-KARMAN * CZIL * jnp.sqrt(restar_l)), 0.75 * znt)
-    z_t_land = jnp.maximum(z_t_land, 2.0e-9)
-
-    def _psih_zt(z0x, height):
-        """psih(height profile) about a heat roughness z0x (zol fixed)."""
-
-        zz = zol * (height + znt) / za
-        z0 = zol * z0x / za
-        return jnp.where(
-            zol > 0.0,
-            _psih_stable(zz) - _psih_stable(z0),
-            jnp.where(zol == 0.0, 0.0, _psih_unstable(zz) - _psih_unstable(z0)),
-        )
-
-    gz1ozt = jnp.log((za + znt) / z_t_land)
-    gz2ozt = jnp.log((2.0 + znt) / z_t_land)
-    gz10ozt = jnp.log((10.0 + znt) / z_t_land)
-    psih_zt = _psih_zt(z_t_land, za)
-    psih2_zt = _psih_zt(z_t_land, 2.0)
-    psih10_zt = _psih_zt(z_t_land, 10.0)
-    # MYNN thin-layer / high-roughness caps on the heat psih about the THERMAL
-    # roughness (module_sf_mynn.F:716-720) -- these use gz?ozt (z_t), not gz?oz0.
-    psih_zt = jnp.minimum(psih_zt, 0.9 * gz1ozt)
-    psih2_zt = jnp.minimum(psih2_zt, 0.9 * gz2ozt)
-    psih10_zt = jnp.minimum(psih10_zt, 0.9 * gz10ozt)
-    # MYNN clamps the heat/moisture resistance to >= 1 to prevent a vanishing
-    # denominator (and the runaway flhc that follows) in thin layers / high z0
-    # (module_sf_mynn.F:756-760 ``psit=max(gz1ozt-psih,1.)``). sfclayrev leaves
-    # this commented; the corpus is MYNN, so the floor is part of faithful parity.
-    psit_land = jnp.maximum(gz1ozt - psih_zt, 1.0)
-    psit2_land = jnp.maximum(gz2ozt - psih2_zt, 1.0)
-    # moisture profile shares z_t over land (MYNN uses z_q ~= z_t; the corpus runs
-    # isftcflx default so z_q follows the same Zilitinkevich form).
-    psiq_land = jnp.maximum(jnp.log((za + znt) / z_t_land) - psih_zt, 1.0)
-    psiq2_land = jnp.maximum(jnp.log((2.0 + znt) / z_t_land) - psih2_zt, 1.0)
-    psiq10_land = jnp.maximum(jnp.log((10.0 + znt) / z_t_land) - psih10_zt, 1.0)
-    psit = jnp.where(is_land, psit_land, psit)
-    psit2 = jnp.where(is_land, psit2_land, psit2)
-    psiq = jnp.where(is_land, psiq_land, psiq)
-    psiq2 = jnp.where(is_land, psiq2_land, psiq2)
-    psiq10 = jnp.where(is_land, psiq10_land, psiq10)
-    psih = jnp.where(is_land, psih_zt, psih)
-    psih2 = jnp.where(is_land, psih2_zt, psih2)
-    psih10 = jnp.where(is_land, psih10_zt, psih10)
-
-    # --- water: Fairall (2003) z0t/z0q recomputation (sf_sfclayrev.F90:529-585) ---
-    visc = (1.32 + 0.009 * (t1d - 273.15)) * 1.0e-5
-    restar = ust_in * znt / visc
-    z0t = jnp.clip((5.5e-5) * (restar ** (-0.60)), 2.0e-9, 1.0e-4)
-    z0q = z0t
-
-    def _psih_zol(z0x):
-        """Recompute psih/psih10/psih2 for a given scalar roughness z0x (water)."""
-
-        zz = zol * (za + z0x) / za
-        z10 = zol * (10.0 + z0x) / za
-        z2 = zol * (2.0 + z0x) / za
-        z0 = zol * z0x / za
-        ph = jnp.where(
-            zol > 0.0,
-            _psih_stable(zz) - _psih_stable(z0),
-            jnp.where(zol == 0.0, 0.0, _psih_unstable(zz) - _psih_unstable(z0)),
-        )
-        ph10 = jnp.where(
-            zol > 0.0,
-            _psih_stable(z10) - _psih_stable(z0),
-            jnp.where(zol == 0.0, 0.0, _psih_unstable(z10) - _psih_unstable(z0)),
-        )
-        ph2 = jnp.where(
-            zol > 0.0,
-            _psih_stable(z2) - _psih_stable(z0),
-            jnp.where(zol == 0.0, 0.0, _psih_unstable(z2) - _psih_unstable(z0)),
-        )
-        return ph, ph10, ph2
-
-    # first pass uses z0t for psit, then z0q for psiq (WRF does both sequentially;
-    # the net effect with z0t==z0q here is the psih reflects z0q, psit uses z0t).
-    psih_t, psih10_t, psih2_t = _psih_zol(z0t)
-    psit_w = jnp.log((za + z0t) / z0t) - psih_t
-    psit2_w = jnp.log((2.0 + z0t) / z0t) - psih2_t
-    psih_q, psih10_q, psih2_q = _psih_zol(z0q)
-    psiq_w = jnp.log((za + z0q) / z0q) - psih_q
-    psiq2_w = jnp.log((2.0 + z0q) / z0q) - psih2_q
-    psiq10_w = jnp.log((10.0 + z0q) / z0q) - psih10_q
-
-    psit = jnp.where(is_water, psit_w, psit)
-    psit2 = jnp.where(is_water, psit2_w, psit2)
-    psiq = jnp.where(is_water, psiq_w, psiq)
-    psiq2 = jnp.where(is_water, psiq2_w, psiq2)
-    psiq10 = jnp.where(is_water, psiq10_w, psiq10)
-    # WRF overwrites psih/psih2/psih10 with the z0q versions over water (used only
-    # for the chs/cqs2 path; keep the diagnostic psih consistent).
-    psih = jnp.where(is_water, psih_q, psih)
-    psih2 = jnp.where(is_water, psih2_q, psih2)
-    psih10 = jnp.where(is_water, psih10_q, psih10)
-
-    # ``ustar`` was diagnosed above (before the land z_t block, which needs it for
-    # the roughness Reynolds number). sf_sfclayrev.F90:756 places the same blend
-    # here; the value is identical -- moved only so restar sees the spun-up ust.
-    # u10/v10 diagnostics (sf_sfclayrev.F90:763-764).
+    # u10/v10 diagnostics (module_sf_mynn.F:1109-1131).
     # WRF MYNN 10 m wind branches on the lowest mass-level height za
     # (module_sf_mynn.F:1109-1131):
     #   za <= 7 m      -> neutral-log (high vertical resolution)
@@ -662,22 +679,32 @@ def surface_layer_with_diagnostics(state) -> SurfaceLayerDiagnostics:
     th2_out_cold = (~warm_lo) & ((th2 > thgb) | (th2 < thx))
     th2 = jnp.where(th2_out_warm | th2_out_cold, th2_lin, th2)
     q2 = qsfc + (qx - qsfc) * psiq2 / psiq
+    # MYNN 2-m mixing-ratio bracket floor (module_sf_mynn.F:1148):
+    # Q2 = MAX(Q2, MIN(qsfc, qv)). Prevents an unbracketed psiq2/psiq ratio from
+    # driving Q2 below both anchors. WRF reference code, not a masking clamp.
+    q2 = jnp.maximum(q2, jnp.minimum(qsfc, qx))
     t2 = th2 * (psfcpa / P0_PA) ** R_D_OVER_CP
-    ustar = jnp.where(is_land, jnp.maximum(ustar, 0.001), ustar)
-    mol = KARMAN * dtg / psit / PRT
-    fm = psix
-    fh = psit
+    # T* (theta scale) -- module_sf_mynn.F:981-983: WRF uses the VIRTUAL dtheta
+    # (THV1D-THVGB) and the heat resistance PSIT. (The HFX flux below uses the
+    # NON-virtual dtheta, thx-thgb, per module_sf_mynn.F:1066/1074.) MOL has no
+    # wrfout truth; reported as a diagnostic.
+    dtg_v = thvx - tskv
+    mol = KARMAN * dtg_v / psit / PRT
 
-    # --- surface fluxes (sf_sfclayrev.F90:782-902) ---
-    # flqc, flhc (sf_sfclayrev.F90:834-844)
+    # --- surface fluxes (module_sf_mynn.F:1051-1076) ---
+    # FLQC/FLHC exchange coefficients (1051-1052): direct resistance form, NOT the
+    # sfclayrev mol/(thx-thgb) form. With the heat resistance PSIT this is the
+    # WRF-faithful MYNN flux and is numerically robust at thx==thgb (no divide).
     flqc = rhox * mavail * ustar * KARMAN / psiq
-    dtthx = jnp.abs(thx - thgb)
-    flhc = jnp.where(dtthx > 1.0e-5, cpm * rhox * ustar * mol / (thx - thgb), 0.0)
-    # qfx, lh (sf_sfclayrev.F90:856-860)
+    flhc = cpm * rhox * ustar * KARMAN / psit
+    # QFX/LH (1057-1060): QFX uses the surface MIXING RATIO (qsfc here is already
+    # the mixing ratio EP2*e1/(psfc-e1)); small negative QFX allowed, floored -0.02.
     qfx = flqc * (qsfc - qx)
+    qfx = jnp.maximum(qfx, -0.02)
     lh = XLV * qfx
-    # hfx (sf_sfclayrev.F90:865-878): same form on land and water here
+    # HFX (1066/1074): same FLHC*(THGB-TH1D) on land and water; land floored -250.
     hfx = flhc * (thgb - thx)
+    hfx = jnp.where(is_land, jnp.maximum(hfx, -250.0), hfx)
 
     # --- kinematic flux handles for MYNN (positive upward) ---
     theta_flux = hfx / jnp.maximum(rhox * cpm, 1.0e-12)
