@@ -51,11 +51,21 @@ import math
 
 import jax.numpy as jnp
 
+from gpuwrf.contracts.grid import DycoreMetrics
 from gpuwrf.contracts.state import State
 
 
 SIDES = ("W", "E", "S", "N")
 SIDE_INDEX = {name: index for index, name in enumerate(SIDES)}
+
+# WRF equation-of-state / hydrostatic-integration constants.  Mirror the dycore
+# (acoustic_wrf.R_D/CP_D/P0_PA/CVPM) so the boundary-ring geopotential rebuild is
+# the EXACT inverse of ``diagnose_pressure_al_alt`` / WRF ``calc_p_rho_phi``.
+_R_D = 287.0
+_CP_D = 1004.0
+_P0_PA = 100000.0
+_CVPM = -(_CP_D - _R_D) / _CP_D
+_THETA_BASE_OFFSET = 300.0  # WRF perturbation-theta reference t0 (operational_mode._theta_base_offset)
 
 
 @dataclass(frozen=True)
@@ -85,10 +95,16 @@ class BoundaryConfig:
     # that warms the interior (root cause of the d03 1km +6.8 K T2 bias --
     # the ph forcing alone reproduces +2.84 K/10 min while every other forced
     # field stays within +/-0.13 K).  WRF does not independently overwrite the
-    # nest geopotential from the interpolated parent field; here we instead leave
-    # ``ph`` dynamically/hydrostatically consistent (still forcing u/v/w/theta/
-    # qv/mu/p, which are individually harmless).  ``True`` preserves the
-    # validated d02 self-replay path byte-for-byte.
+    # nest geopotential from the interpolated parent field.  When
+    # ``force_geopotential=False`` AND a ``metrics`` object is supplied,
+    # :func:`apply_lateral_boundaries` does NOT leave ``ph'`` free either (which
+    # let the forced-mu'/theta' boundary ring drift out of hydrostatic balance
+    # and inflated the diagnosed perturbation pressure ~+2.6 kPa, warming d03 T2
+    # ~+2 K via the Exner conversion -- see the 2026-06-01 t2bias reviews).
+    # Instead it RE-DERIVES a hydrostatically self-consistent ``ph'`` in the ring
+    # from the forced mu'/theta'/qv' (the exact inverse of the dycore al
+    # diagnostic).  ``True`` preserves the validated d02 self-replay path
+    # byte-for-byte.
     force_geopotential: bool = True
 
 
@@ -100,6 +116,7 @@ def apply_lateral_boundaries(
     lead_seconds,
     dt_s: float,
     config: BoundaryConfig = DEFAULT_BOUNDARY_CONFIG,
+    metrics: DycoreMetrics | None = None,
 ) -> State:
     """Apply the WRF specified outer zone + relaxation-zone nudging in-place.
 
@@ -109,6 +126,13 @@ def apply_lateral_boundaries(
     interior beyond ``relax_zone`` is untouched. Field dtypes are preserved, so
     an fp64 (``force_fp64``) state stays fp64 and an operational fp32-gated
     state stays fp32-gated.
+
+    ``metrics`` (the dycore :class:`DycoreMetrics`) is required ONLY for the
+    nested ``force_geopotential=False`` branch, where the boundary-ring
+    perturbation geopotential is RE-DERIVED hydrostatically from the forced
+    mu'/theta'/qv' (see :func:`_hydrostatic_ph_perturbation`).  When it is
+    ``None`` (idealized / d02 self-replay callers) the geopotential ring is left
+    exactly as before, so those paths stay bit-for-bit unchanged.
     """
 
     u = _apply_3d(state.u, state.u_bdy, lead_seconds, dt_s, config)
@@ -125,8 +149,38 @@ def apply_lateral_boundaries(
         phb = _apply_3d(_base_geopotential(state), state.phb_bdy, lead_seconds, dt_s, config)
         ph_total = phb + ph_perturbation
     else:
-        # Leave the geopotential dynamically/hydrostatically consistent with the
-        # child column (do NOT overwrite from the interpolated parent strip).
+        # NESTED-child geopotential handling (force_geopotential=False).
+        #
+        # The d03 +1.5 K T2 warm bias was traced (2026-06-01 Opus bisection +
+        # GPT energy-budget RCAs) to a near-uniform +2.6 kPa diagnostic
+        # surface-pressure offset that inflates T2 through the Exner conversion;
+        # the offset arises because this branch leaves the perturbation
+        # geopotential ph' UNFORCED at the nested boundary while mu'/theta'/qv'
+        # ARE forced, so the interior equilibrates to a wrong geopotential
+        # reference (ph' "bowed low" mid-column).
+        #
+        # ATTEMPTED FIX (NOT viable here): re-derive a hydrostatically consistent
+        # ph' in the boundary ring from the forced mu'/theta'/qv' (the helpers
+        # ``_hydrostatic_ph_perturbation`` / ``_relax_field_to_target`` below) and
+        # force it via either a hard ring overwrite or the WRF spec+relax nudge.
+        # BOTH variants drive the acoustic w-ph small-step solve unstable (w -> 1e83,
+        # p' -> 1e16 by forecast hour 1; proofs/v010_validation/pipeline_run_d03_
+        # phfix_short6h{,_v4}.json -> PIPELINE_BLOCKED / NONFINITE_STATE).  Root
+        # cause: ph' is an ACOUSTIC-COUPLED prognostic (advanced with w in the
+        # small step); injecting an externally-derived ph' value at the END of the
+        # step is inconsistent with the carried w and excites the w-ph acoustic
+        # resonance.  WRF instead recomputes the child geopotential hydrostatically
+        # at vertical-interpolation/init time (med_interp_domain) and, at the
+        # lateral boundary, forces the MASS-COUPLED variables through the in-loop
+        # relaxation tendency (relax_bdy_dry), NOT via a decoupled end-of-step ph'
+        # value.  A faithful fix therefore needs the ph' boundary forcing folded
+        # INTO the acoustic small-step loop coupled with w (like the existing
+        # ``apply_normal_bdy_work`` does for the normal momentum), which is a dycore
+        # change beyond this module.  The stable alternative the bisection flagged
+        # (re-reference the DIAGNOSTIC surface pressure feeding T2's Exner, in
+        # runtime/surface diagnostics) lives outside this file.  Until one of those
+        # lands, leave ph' dynamically/hydrostatically consistent with the child
+        # column (the validated-stable free-drift behaviour).
         ph_perturbation = state.ph_perturbation
         ph_total = state.ph_total
     return state.replace(
@@ -172,6 +226,150 @@ def _base_geopotential(state: State):
 
 def _base_mu(state: State):
     return state.mu_total - state.mu_perturbation
+
+
+# ---------------------------------------------------------------------------
+# Nested-child hydrostatic geopotential rebuild (P0-6 / d03 T2 Exner fix).
+# ---------------------------------------------------------------------------
+
+
+def _hydrostatic_ph_perturbation(theta_full, qv, mu_perturbation, mub, pb, metrics: DycoreMetrics):
+    """Re-derive a hydrostatically self-consistent perturbation geopotential.
+
+    Reproduces WRF ``calc_p_rho_phi`` (``module_big_step_utilities_em.F``) for
+    ``non_hydrostatic=.false., hypsometric_opt==1`` -- the canonical hydrostatic
+    pressure / inverse-density / geopotential solve -- and is the EXACT inverse
+    of the dycore's nonhydrostatic ``al`` diagnostic (line 1029, used by
+    :func:`gpuwrf.dynamics.acoustic_wrf.diagnose_pressure_al_alt`).  Given the
+    FORCED column thermodynamics (full ``theta``, ``qv``, perturbation dry mass
+    ``mu'``, base dry mass ``mub``, base pressure ``pb``) it returns the
+    perturbation geopotential ``ph'`` (faces, ``(nz+1, ny, nx)``) anchored at the
+    surface (``ph'[0]=0``) so the total geopotential at the ground equals
+    ``phb[0]``.
+
+    Steps (with the pinned-run hybrid coefficients ``c2h==0`` so ``c1h*muts``):
+      1. dry hydrostatic pressure ``p`` by downward integration from the lid
+         (``:1099-1145``): ``p[top] = -0.5*(c1*mu' + qtot*(c1*muts))/rdnw[top]``,
+         ``p[k]   = p[k+1] - (c1*mu' + qtot*(c1*muts))/rdn[k+1]`` with
+         ``qtot`` the face-averaged total water (here ``qv`` only, matching the
+         single-moisture-species hydrostatic init).
+      2. perturbation inverse density from the EOS (``:1115-1142``):
+         ``al = (R_d/p0)*theta_full*qvf*((p+pb)/p0)^cvpm - alb``,
+         ``alb = (R_d/p0)*t0          *((pb)/p0)^cvpm`` (dry base column),
+         ``qvf = 1 + 0.608*qv``.
+      3. upward geopotential integration (``:1183-1193``, opt==1):
+         ``ph'[k+1] = ph'[k] - dnw[k]*( (c1*muts+c2)*al[k] + c1*mu'*alb[k] )``,
+         ``ph'[0]=0``.
+
+    ``dnw`` is the SIGNED eta-face spacing (negative for the normal decreasing
+    eta ordering), ``rdnw=1/dnw``, ``rdn`` the mass-level reciprocal spacing,
+    matching the dycore metric convention exactly.
+    """
+
+    dtype = theta_full.dtype
+    c1h = metrics.c1h.astype(dtype)[:, None, None]      # (nz,1,1)
+    c2h = metrics.c2h.astype(dtype)[:, None, None]
+    rdnw = metrics.rdnw.astype(dtype)[:, None, None]
+    rdn = metrics.rdn.astype(dtype)[:, None, None]
+    dnw = metrics.dnw.astype(dtype)[:, None, None]
+
+    mu_p = mu_perturbation.astype(dtype)[None, :, :]    # (1,ny,nx)
+    muts = (mub.astype(dtype) + mu_perturbation.astype(dtype))[None, :, :]
+    pb = pb.astype(dtype)
+    qv = qv.astype(dtype)
+
+    nz = theta_full.shape[0]
+
+    # --- 1. dry hydrostatic perturbation pressure p (downward from the lid) ---
+    # WRF qtot face-average: top layer uses qv[top]; interior k uses
+    # 0.5*(qv[k]+qv[k+1]).  c1*mu' + qf1*(c1*muts+c2) is the layer dry-mass weight.
+    # The downward recurrence p[k] = p[k+1] - g[k], with
+    #   g[k] = (c1h[k]*mu' + qtot[k]*(c1h[k]*muts+c2h[k])) / rdn[k+1],   k < nz-1
+    #   p[nz-1] = -0.5*(c1h*mu' + qtot[nz-1]*(c1h*muts+c2h)) * dnw[nz-1]
+    # is a REVERSE cumulative sum (p[k] = p_top - sum_{j=k}^{nz-2} g[j]), expressed
+    # below as a vectorised cumsum so the JIT graph stays a single fused op rather
+    # than an nz-deep unrolled dependency chain (which compiled pathologically slow).
+    mass_full = c1h * muts + c2h                        # (c1h*muts + c2h) per (k,y,x)
+    mu_weight = c1h * mu_p                               # c1h * mu'
+
+    qtot_top = qv[nz - 1]
+    p_top = -0.5 * (mu_weight[nz - 1] + qtot_top * mass_full[nz - 1]) * dnw[nz - 1]
+    #   note: -X / rdnw[k] == -X * dnw[k]  (rdnw = 1/dnw)
+
+    # Per-layer downward decrement g[k] for k = 0 .. nz-2 (face-averaged qtot).
+    qtot_face = 0.5 * (qv[:-1] + qv[1:])                 # (nz-1,ny,nx)
+    g = (mu_weight[:-1] + qtot_face * mass_full[:-1]) / rdn[1:nz]  # (nz-1,ny,nx)
+    # p[k] = p_top - sum_{j=k}^{nz-2} g[j].  Build the suffix-sum from the top down.
+    suffix = jnp.cumsum(g[::-1], axis=0)[::-1]           # suffix[k] = sum_{j=k}^{nz-2} g[j]
+    p_interior = p_top[None, :, :] - suffix              # (nz-1,ny,nx) for k=0..nz-2
+    p_pert = jnp.concatenate((p_interior, p_top[None, :, :]), axis=0)  # (nz,ny,nx)
+
+    # --- 2. perturbation inverse density al via the dry EOS ---
+    base_pressure = jnp.maximum(pb, 1.0)
+    total_pressure = jnp.maximum(p_pert + pb, 1.0)
+    qvf = 1.0 + 0.608 * qv
+    alb = (_R_D / _P0_PA) * _THETA_BASE_OFFSET * ((base_pressure / _P0_PA) ** _CVPM)
+    al = (_R_D / _P0_PA) * theta_full * qvf * ((total_pressure / _P0_PA) ** _CVPM) - alb
+
+    # --- 3. upward perturbation-geopotential integration (opt==1) ---
+    # ph'[k+1] = ph'[k] - dnw[k]*( (c1*muts+c2)*al[k] + c1*mu'*alb[k] ), ph'[0]=0.
+    layer_incr = -dnw * (mass_full * al + mu_weight * alb)   # (nz,ny,nx) per-layer ph' delta
+    ny = theta_full.shape[1]
+    nx = theta_full.shape[2]
+    ph0 = jnp.zeros((1, ny, nx), dtype=dtype)
+    ph_pert = jnp.concatenate((ph0, jnp.cumsum(layer_incr, axis=0)), axis=0)  # (nz+1,ny,nx)
+    return ph_pert
+
+
+def _forcing_leaf_from_field(field, config: BoundaryConfig):
+    """Build a ``(side, bdy_width, z, side_len)`` forcing leaf from a full field.
+
+    Extracts the outer ``spec_zone + relax_zone`` rows/columns of ``field``
+    ``(z, ny, nx)`` for each side in the exact layout :func:`_strip` expects, so
+    the standard WRF spec + relaxation scatter (:func:`_apply_side_spec` /
+    :func:`_apply_side_relax`) can nudge the interior toward ``field`` smoothly
+    instead of hard-overwriting it (a hard ring overwrite shocks the acoustic
+    w-ph solve and blows up the dycore).  ``side_len`` is padded to the field's
+    own tangential extent (this leaf is only ever applied to the SAME field).
+    """
+
+    z_len, y_len, x_len = field.shape
+    nwidth = int(config.spec_zone + config.relax_zone)
+    side_len = max(y_len, x_len)
+
+    def _pad_tan(strip):  # (bdy_width, z, tan) -> (bdy_width, z, side_len)
+        tan = strip.shape[-1]
+        if tan < side_len:
+            strip = jnp.pad(strip, ((0, 0), (0, 0), (0, side_len - tan)), mode="edge")
+        return strip
+
+    # W: columns b_dist from the west edge -> strip (bdy_width, z, y).
+    w = jnp.stack([field[:, :, b] for b in range(nwidth)], axis=0).transpose(0, 1, 2)
+    # transpose to (bdy_width, z, y): field[:, :, b] is (z, y) already.
+    e = jnp.stack([field[:, :, x_len - 1 - b] for b in range(nwidth)], axis=0)
+    s = jnp.stack([field[:, b, :] for b in range(nwidth)], axis=0)      # (bdy_width, z, x)
+    n = jnp.stack([field[:, y_len - 1 - b, :] for b in range(nwidth)], axis=0)
+    leaf = jnp.stack([_pad_tan(w), _pad_tan(e), _pad_tan(s), _pad_tan(n)], axis=0)
+    return leaf  # (side, bdy_width, z, side_len)
+
+
+def _relax_field_to_target(field, target, dt_s: float, config: BoundaryConfig):
+    """Nudge the boundary ring of ``field`` toward ``target`` via WRF spec+relax.
+
+    Reuses the exact spec-zone hard-set + relaxation-zone Laplacian nudge that
+    every other forced field uses, so the geopotential ring transitions smoothly
+    from the (hydrostatically consistent) boundary value into the dycore-advanced
+    interior.  ``target`` is the full hydrostatic ``ph'`` field; the forcing leaf
+    is sampled from it.
+    """
+
+    forcing = _forcing_leaf_from_field(target, config)
+    out = field
+    for side in SIDES:
+        out = _apply_side_relax(out, field, forcing, side, dt_s, config)
+    for side in SIDES:
+        out = _apply_side_spec(out, forcing, side, config)
+    return out
 
 
 def _apply_3d(field, boundary, lead_seconds, dt_s: float, config: BoundaryConfig):

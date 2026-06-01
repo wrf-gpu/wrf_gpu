@@ -1,0 +1,36 @@
+Running as unit: d03_phfix_short6h_v4_1665874.scope; invocation ID: a2b2a04f073a4b4187ba26e526a46369
+E0601 10:42:43.463777 1666030 slow_operation_alarm.cc:73] 
+********************************
+[Compiling module jit_run_forecast_operational for GPU] Very slow compile? If you want to file a bug, run with envvar XLA_FLAGS=--xla_dump_to=/tmp/foo and attach the results.
+********************************
+E0601 10:47:22.389928 1665962 slow_operation_alarm.cc:140] The operation took 6m38.926213007s
+
+********************************
+[Compiling module jit_run_forecast_operational for GPU] Very slow compile? If you want to file a bug, run with envvar XLA_FLAGS=--xla_dump_to=/tmp/foo and attach the results.
+********************************
+/home/enric/src/wrf_gpu2/src/gpuwrf/integration/daily_pipeline.py:280: RuntimeWarning: All-NaN slice encountered
+  "min": float(np.nanmin(array)) if array.size else None,
+/home/enric/src/wrf_gpu2/src/gpuwrf/integration/daily_pipeline.py:281: RuntimeWarning: All-NaN slice encountered
+  "max": float(np.nanmax(array)) if array.size else None,
+{
+  "all_finite": null,
+  "device": null,
+  "dt_s": 3.0,
+  "final_lead_fields": null,
+  "hours": 6,
+  "output_dir": "/tmp/v010_d03_runs/d03_20260521_18z_l3_24h_20260522T133443Z_phfix_short6h_v4",
+  "persistence_beat_all_leads": null,
+  "pipeline_verdict": "PIPELINE_BLOCKED",
+  "proofs": {
+    "pipeline": "/home/enric/src/wrf_gpu2/proofs/v010_validation/pipeline_run_d03_phfix_short6h_v4.json",
+    "validation": "/home/enric/src/wrf_gpu2/proofs/v010_validation/d03_validation_phfix_short6h_v4.json"
+  },
+  "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
+  "run_id": "20260521_18z_l3_24h_20260522T133443Z",
+  "schema": "V010D03ReplayValidationSummary",
+  "schema_version": 1,
+  "validation_status": "BLOCKED",
+  "verdict": "D03_1KM_BLOCKED",
+  "wall_clock_per_forecast_hour_s": null,
+  "wall_clock_total_s": null
+}
