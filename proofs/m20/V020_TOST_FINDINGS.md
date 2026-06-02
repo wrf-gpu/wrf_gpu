@@ -169,15 +169,41 @@ scorer already has both pieces; mode (A) needs the AEMET hourly obs join wired i
 parquet CPU column instead of the purged wrfout). **This is the key methodology
 question for the manager to settle before the overnight campaign.**
 
-## 5. SMOKE (2 cases) — `proofs/m20/tost_run/parquet_smoke/`
+## 5. SMOKE (2 cases) — COMPLETE — `proofs/m20/tost_run/parquet_smoke/`
 
-Cases `20260509_18z__d02` + `20260530_18z__d02` (both `parquet_workdir_match=True`,
-72 scoreable leads each). **The harness works end-to-end**: GPU 72h replay → 72
-full-grid emits → sampled at the parquet nearest-grid cells → 8640 complete pairs
-(case 1), all 9 lead-blocks (3 vars × 3 blocks) status OK, well above the 30-pair
-floor. Per-case numbers above (§4b); aggregate TOST verdict in `tost_parquet.json`
-(n=2 — a plumbing-level n, NOT a verdict). The smoke PROVES the pipeline + sane
-paired deltas; it does not and cannot make an equivalence claim at n=2.
+Cases `20260509_18z__d02` (40 stations) + `20260530_18z__d02` (278 stations),
+both `parquet_workdir_match=True`, 72 scoreable leads each. **Harness works
+end-to-end** (wall 3057 s for 2× 72h fp64 replays on the free GPU; process exited
+0). GPU 72h replay → 72 full-grid emits/case → sampled at the parquet nearest-grid
+cells → 8640 (case 1) + 60048 (case 2) complete pairs; ALL 18 lead-blocks (2 cases
+× 3 vars × 3 blocks) status OK, far above the 30-pair floor.
+
+Per-case reproduction (GPU − CPU at the same grid cell):
+
+| Var | block | 0509 bias / repro_RMSE | 0530 bias / repro_RMSE |
+|---|---|---|---|
+| T2  | 0-24h | +0.473 / 1.470 K | +0.611 / 2.556 K |
+| T2  | 24-48h | +0.324 / 1.393 | −0.278 / 2.666 |
+| T2  | 48-72h | +0.197 / 1.539 | −0.433 / 2.450 |
+| U10 | 0-24h | −0.184 / 1.059 | +0.245 / 1.706 |
+| V10 | 0-24h | +0.139 / 1.543 | −0.430 / 1.568 |
+
+The signed daytime (0-24h) T2 **bias +0.47 / +0.61 K** is exactly the known,
+state-it-honestly daytime warm residual (MYNN-EDMF mass-flux scalar terms missing,
++0.5-0.95 K) — the TOST is the arbiter of whether it is load-bearing.
+
+**Aggregate TOST (`tost_parquet.json`, n=2):**
+`verdict = NOT_EQUIVALENT_OR_UNDERPOWERED`. T2 mean_repro_RMSE 2.01 K, U10 1.65,
+V10 1.50; all tost_p ≈ 0.91-0.97 (nowhere near rejecting). **This is the
+methodology finding made concrete (§4b), NOT a GPU defect:** the point-wise
+GPU-CPU repro-RMSE (≈2 K) is ~10× the ADR-029 T2 margin (0.215 K) because the
+margin is defined for the OBS-referenced skill-RMSE DIFFERENCE, not the model-to-
+model point RMSE. The mode-(A) obs-referenced TOST (where the margin is the right
+yardstick) is what the manager should run for the formal verdict.
+
+The smoke PROVES the pipeline + produces sane, well-formed paired deltas. It is
+n=2 (plumbing-level) and makes NO equivalence claim. The aggregate "NOT_EQUIVALENT"
+is a yardstick mismatch (§4b), not evidence of GPU-vs-CPU divergence.
 
 ## 6. EXACT FULL-RUN COMMAND (manager launches after approval)
 
