@@ -58,16 +58,28 @@ near-rigid-lid cloud (CUTOP==KX) is excluded as an unphysical low-domain-top art
 9.3538e-2 (ref) vs 9.3536e-2 (oracle); CUTOP/CUBOT/ISHALL exact. All tendency fields,
 all 4 cases: max_rel <= ~7e-5 — far inside the 2e-3 gate.
 
-### 3b. JAX production port — `cumulus_kf.kf_eta_para`
+### 3b. JAX production port — `cumulus_kf.kf_eta_para`  (PARTIAL — see status)
 Same algorithm with jax.lax control flow (masked level sweeps, vmap over USL candidates,
 fori_loop closure + advection substeps), fp64, GPU-resident (no host transfer), vmappable.
-JAX helper primitives match the NumPy reference to machine precision over 3000 random
-states: tpmix2 0.0, envirtht 1.1e-13, dtfrznew 1.1e-12, condload 4.3e-19, prof5 4.4e-16.
-JAX full-column parity vs oracle: see `proofs/p0_4/jax_parity.json` (regenerate via
-`tests/test_kf_cumulus_oracle.py::test_jax_vs_oracle`). NOTE: the unrolled-KX x
-vmap-over-candidates graph is large and slow to compile on XLA:CPU; a GPU compile +
-guards-off finite check on a real d01 field is the manager GPU-integration step
-(this lane is CPU-only by constraint). [JAX_PARITY_STATUS]
+
+**PROVEN:** the JAX helper primitives (TPMIX2, TPMIX2DD, ENVIRTHT, DTFRZNEW, CONDLOAD,
+PROF5, table interp) match the NumPy reference to machine precision over 3000 random
+states (tpmix2 0.0, envirtht 1.1e-13, dtfrznew 1.1e-12, condload 4.3e-19, prof5 4.4e-16) —
+gate `test_jax_matches_reference_helpers` PASSES. These are the load-bearing physics
+kernels.
+
+**NOT YET CONFIRMED:** the FULL-column `kf_eta_para` driver. Its XLA:CPU compile did not
+finish within ~4 min on this box (CPU-only by sprint constraint) because the graph is
+pathologically large: `vmap` over KX USL candidates, each unrolling KX updraft levels with
+~50 scatter (`.at[].set()`) writes/level => O(KX^2) scatters. This is a STRUCTURAL perf
+defect of the current driver, NOT a known numerical error. **Required rework before it is
+the production path** (recommended, next sprint): replace the `vmap`-over-all-candidates
+USL search with a single `lax.while_loop` (stop at the first deep / NUCHM shallow, as the
+Fortran does — most candidates never run), and replace the Python-unrolled updraft with a
+`lax.fori_loop`. That collapses the graph from O(KX^2) candidate-scatters to O(KX). Until
+then the **validated path is the NumPy reference** (`cumulus_kf_reference`), which IS the
+binding, oracle-proven spec the JAX driver must reproduce. `test_jax_vs_oracle` is the gate
+that must pass after the rework (writes `proofs/p0_4/jax_parity.json`).
 
 ## 4. Conservation check (hard invariant)
 KF_eta_PARA enforces a column moisture budget (ERR2 = (QFNL-QINIT)*100/QINIT, abort if
@@ -119,7 +131,7 @@ cumulus tendencies. NOT called on d02/d03 (resolved convection there).
   (module_cu_kfeta.F is .gitignored — verbatim WRF copy, provenance above)
 - proofs/p0_4/savepoints/kf_case_{1..4}.json — 4 gold savepoints
 - proofs/p0_4/reference_parity.json — NumPy-reference parity proof
-- proofs/p0_4/jax_parity.json — JAX-port parity proof
+- proofs/p0_4/jax_parity.json — JAX-port parity proof (PENDING the JAX-driver perf rework; see sec 3b)
 - proofs/p0_4/run_reference_parity.py — reference parity harness
 - src/gpuwrf/physics/cumulus_kf_tables.py — KF_LUTAB lookup tables (deterministic)
 - src/gpuwrf/physics/cumulus_kf_reference.py — faithful NumPy transcription (anchor)
