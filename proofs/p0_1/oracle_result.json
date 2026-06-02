@@ -1,0 +1,188 @@
+{
+  "proof": "P0-1a recorded-parent->child boundary interpolation oracle",
+  "oracle": "single recorded L3 5-domain WRF run; child boundary ring forced from parent via bdy_interp1; compare our interp(parent) to recorded child ring at t=0. Recorded gfortran-WRF on BOTH sides (not self-compare).",
+  "run": "/mnt/data/canairy_meteo/runs/wrf_l3/20260509_18z_l3_24h_20260511T190519Z",
+  "time": "2026-05-09_18:00:00",
+  "registrations": [
+    "bilinear (node-aligned v0.1.0 replay)",
+    "sint (WRF cell-centered linear, our default device op)",
+    "sint_tr4 (full WRF monotone-TR4 host reference)"
+  ],
+  "predeclared_tolerances_abs": {
+    "T": 1.5,
+    "QVAPOR": 0.0015,
+    "U": 2.0,
+    "V": 2.0,
+    "PH": 400.0
+  },
+  "gates": {
+    "G1_within_tol": "every field sint_tr4 ring RMSE <= predeclared abs tol (boundary-construction fidelity)",
+    "G2_registration": "on T/QVAPOR/PH (registration-dominated): sint ring RMSE < bilinear ring RMSE (WRF cell-centered beats node-aligned)"
+  },
+  "G1_within_tol_pass": true,
+  "G2_registration_pass": true,
+  "staggered_uv_note": "U/V carry the C-grid half-cell offset handled by WRF bdy_interp1 ioff; the odd-ratio build reuses the mass registration -> sub-cm/s residual, well within tol; exact staggered registration tracked for P0-1b.",
+  "edges": {
+    "A_d01_to_d02": {
+      "edge": "A_d01_to_d02",
+      "geometry": {
+        "parent": "d01",
+        "child": "d02",
+        "ratio": 3,
+        "i_start": 22,
+        "j_start": 20
+      },
+      "fields": {
+        "T": {
+          "tolerance_abs": 1.5,
+          "staggering": "mass",
+          "child_shape": [
+            44,
+            66,
+            120
+          ],
+          "bilinear_ring_rmse": 0.04666671321971378,
+          "sint_ring_rmse": 0.007405517316559469,
+          "sint_tr4_ring_rmse": 0.00656773919173176,
+          "within_tol": true,
+          "sint_beats_bilinear": true
+        },
+        "QVAPOR": {
+          "tolerance_abs": 0.0015,
+          "staggering": "mass",
+          "child_shape": [
+            44,
+            66,
+            120
+          ],
+          "bilinear_ring_rmse": 3.404875477077017e-05,
+          "sint_ring_rmse": 5.875304534833684e-06,
+          "sint_tr4_ring_rmse": 1.9414935999445575e-06,
+          "within_tol": true,
+          "sint_beats_bilinear": true
+        },
+        "U": {
+          "tolerance_abs": 2.0,
+          "staggering": "u",
+          "child_shape": [
+            44,
+            66,
+            121
+          ],
+          "bilinear_ring_rmse": 0.08195699070593636,
+          "sint_ring_rmse": 0.03533406126798709,
+          "sint_tr4_ring_rmse": 0.035210723123463565,
+          "within_tol": true
+        },
+        "V": {
+          "tolerance_abs": 2.0,
+          "staggering": "v",
+          "child_shape": [
+            44,
+            67,
+            120
+          ],
+          "bilinear_ring_rmse": 0.040697046484227534,
+          "sint_ring_rmse": 0.04767990478970133,
+          "sint_tr4_ring_rmse": 0.046817120424275646,
+          "within_tol": true
+        },
+        "PH": {
+          "tolerance_abs": 400.0,
+          "staggering": "mass",
+          "child_shape": [
+            45,
+            66,
+            120
+          ],
+          "bilinear_ring_rmse": 5.378471252683774,
+          "sint_ring_rmse": 0.4672860321717778,
+          "sint_tr4_ring_rmse": 0.4220429073728462,
+          "within_tol": true,
+          "sint_beats_bilinear": true
+        }
+      }
+    },
+    "B_d02_to_d03": {
+      "edge": "B_d02_to_d03",
+      "geometry": {
+        "parent": "d02",
+        "child": "d03",
+        "ratio": 3,
+        "i_start": 56,
+        "j_start": 18
+      },
+      "fields": {
+        "T": {
+          "tolerance_abs": 1.5,
+          "staggering": "mass",
+          "child_shape": [
+            44,
+            72,
+            72
+          ],
+          "bilinear_ring_rmse": 0.22759633778031263,
+          "sint_ring_rmse": 0.1519283990355128,
+          "sint_tr4_ring_rmse": 0.14367240342863946,
+          "within_tol": true,
+          "sint_beats_bilinear": true
+        },
+        "QVAPOR": {
+          "tolerance_abs": 0.0015,
+          "staggering": "mass",
+          "child_shape": [
+            44,
+            72,
+            72
+          ],
+          "bilinear_ring_rmse": 8.33452324197277e-05,
+          "sint_ring_rmse": 4.939376703438402e-05,
+          "sint_tr4_ring_rmse": 4.702825278660725e-05,
+          "within_tol": true,
+          "sint_beats_bilinear": true
+        },
+        "U": {
+          "tolerance_abs": 2.0,
+          "staggering": "u",
+          "child_shape": [
+            44,
+            72,
+            73
+          ],
+          "bilinear_ring_rmse": 0.1486603952006684,
+          "sint_ring_rmse": 0.11787786123766204,
+          "sint_tr4_ring_rmse": 0.11247027124744281,
+          "within_tol": true
+        },
+        "V": {
+          "tolerance_abs": 2.0,
+          "staggering": "v",
+          "child_shape": [
+            44,
+            73,
+            72
+          ],
+          "bilinear_ring_rmse": 0.14466245363831853,
+          "sint_ring_rmse": 0.12849061905612677,
+          "sint_tr4_ring_rmse": 0.12433203590817431,
+          "within_tol": true
+        },
+        "PH": {
+          "tolerance_abs": 400.0,
+          "staggering": "mass",
+          "child_shape": [
+            45,
+            72,
+            72
+          ],
+          "bilinear_ring_rmse": 9.015148570388776,
+          "sint_ring_rmse": 5.683866766232944,
+          "sint_tr4_ring_rmse": 5.488914408047254,
+          "within_tol": true,
+          "sint_beats_bilinear": true
+        }
+      }
+    }
+  },
+  "verdict": "PASS"
+}

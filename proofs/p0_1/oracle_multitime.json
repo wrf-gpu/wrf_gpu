@@ -1,0 +1,44 @@
+{
+  "proof": "P0-1a supplementary: d02->d03 sint ring residual across recorded times",
+  "run": "/mnt/data/canairy_meteo/runs/wrf_l3/20260509_18z_l3_24h_20260511T190519Z",
+  "edge": {
+    "ratio": 3,
+    "i_start": 56,
+    "j_start": 18
+  },
+  "times": [
+    "2026-05-09_18:00:00",
+    "2026-05-09_21:00:00",
+    "2026-05-10_00:00:00",
+    "2026-05-10_06:00:00",
+    "2026-05-10_12:00:00"
+  ],
+  "result": [
+    {
+      "time": "2026-05-09_18:00:00",
+      "T": 0.1519283990355128,
+      "PH": 5.683866766232944
+    },
+    {
+      "time": "2026-05-09_21:00:00",
+      "T": 0.05980676862536336,
+      "PH": 1.56608642773785
+    },
+    {
+      "time": "2026-05-10_00:00:00",
+      "T": 0.05415501762561456,
+      "PH": 1.295086017750678
+    },
+    {
+      "time": "2026-05-10_06:00:00",
+      "T": 0.07796418746827219,
+      "PH": 2.300245020153923
+    },
+    {
+      "time": "2026-05-10_12:00:00",
+      "T": 0.07764261385932833,
+      "PH": 2.4774626618641062
+    }
+  ],
+  "note": "sint operator fidelity is time-invariant; ring residual bounded as child evolves under its own physics+relaxation (the small growth from t=0 is the expected interior-vs-boundary divergence, NOT an interp error)."
+}
