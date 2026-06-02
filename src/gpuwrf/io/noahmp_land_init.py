@@ -97,11 +97,23 @@ def build_noahmp_land_state(
         tbot = _layered(L("TSLB"), NSOIL)[-1]
         provenance["tbot"] = "cold-init: bottom TSLB layer (no TMN in corpus)"
 
-    # soil-layer geometry: ZS (interface depths, +) -> zsoil (<0); DZS thicknesses (>0)
-    zs = np.squeeze(np.asarray(L("ZS"), dtype=np.float64)) if has("ZS") else np.array([0.05, 0.25, 0.70, 1.50])
+    # soil-layer geometry. The wrfinput ``ZS`` field is the depth to soil-layer
+    # CENTERS (e.g. [0.05, 0.25, 0.70, 1.50]); ``DZS`` is the layer THICKNESSES
+    # ([0.10, 0.30, 0.60, 1.00]). Noah-MP's ZSOIL is the depth to soil-layer
+    # INTERFACES (bottoms), built from the cumulative thicknesses exactly as WRF
+    # does in module_sf_noahmpdrv.F:689-692:
+    #     ZSOIL(1) = -DZS(1);  ZSOIL(K) = ZSOIL(K-1) - DZS(K)
+    # -> ZSOIL = [-0.10, -0.40, -1.00, -2.00]. The previous code mapped the ZS
+    # CENTERS straight onto ``zsoil`` ([-0.05, -0.25, -0.70, -1.50]), which made
+    # every soil DZSNSO half-too-thin -- in particular the top soil thickness was
+    # 0.05 m instead of 0.10 m. That doubled the surface ground conductance
+    # CGH = 2*DF/DZSNSO(1) (energy.py BARE_FLUX/VEGE_FLUX) and inflated overnight
+    # GRDFLX, driving the residual land cold bias. Build ZSOIL from DZS, WRF-faithful.
     dzs_arr = np.squeeze(np.asarray(L("DZS"), dtype=np.float64)) if has("DZS") else np.array([0.10, 0.30, 0.60, 1.00])
-    zsoil = jnp.asarray(-np.abs(zs).reshape(NSOIL), dtype=jnp.float64)
-    dzs = jnp.asarray(np.abs(dzs_arr).reshape(NSOIL), dtype=jnp.float64)
+    dzs_np = np.abs(dzs_arr).reshape(NSOIL)
+    zsoil_np = -np.cumsum(dzs_np)                     # WRF noahmpdrv:689-692
+    zsoil = jnp.asarray(zsoil_np, dtype=jnp.float64)
+    dzs = jnp.asarray(dzs_np, dtype=jnp.float64)
 
     lat = _surface_2d(L("XLAT"))
     dx_m = float(run.grid(domain).dx_m)
