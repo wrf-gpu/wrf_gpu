@@ -51,9 +51,38 @@ _SW_EXP_EPS = 1.0e-20
 class RRTMGSWColumnState:
     """Pytree for independent shortwave radiation columns on mass levels."""
 
-    __slots__ = ("T", "p", "qv", "qc", "qi", "qs", "qg", "cloud_fraction", "surface_albedo", "coszen", "dz", "rho")
+    __slots__ = (
+        "T",
+        "p",
+        "qv",
+        "qc",
+        "qi",
+        "qs",
+        "qg",
+        "cloud_fraction",
+        "surface_albedo",
+        "coszen",
+        "dz",
+        "rho",
+        "solar_source_scale",
+    )
 
-    def __init__(self, T, p, qv, qc, qi, qs, qg, cloud_fraction, surface_albedo, coszen, dz, rho) -> None:
+    def __init__(
+        self,
+        T,
+        p,
+        qv,
+        qc,
+        qi,
+        qs,
+        qg,
+        cloud_fraction,
+        surface_albedo,
+        coszen,
+        dz,
+        rho,
+        solar_source_scale=1.0,
+    ) -> None:
         self.T = T
         self.p = p
         self.qv = qv
@@ -66,6 +95,7 @@ class RRTMGSWColumnState:
         self.coszen = coszen
         self.dz = dz
         self.rho = rho
+        self.solar_source_scale = jnp.asarray(solar_source_scale)
 
     def replace(self, **updates) -> "RRTMGSWColumnState":
         """Returns a same-layout state with named fields replaced."""
@@ -261,7 +291,15 @@ def _clip_state(state: RRTMGSWColumnState) -> RRTMGSWColumnState:
         coszen=jnp.maximum(state.coszen, MIN_COSZEN),
         dz=jnp.maximum(state.dz, 1.0),
         rho=jnp.maximum(state.rho, MIN_LAYER_MASS),
+        solar_source_scale=jnp.maximum(state.solar_source_scale, 0.0),
     )
+
+
+def _solar_source_scale(state: RRTMGSWColumnState, dtype) -> jnp.ndarray:
+    """Broadcasts WRF's RRTMG `scon / rrsw_scon` source multiplier by column."""
+
+    scale = jnp.asarray(state.solar_source_scale, dtype=dtype)
+    return jnp.broadcast_to(scale, state.coszen.shape).astype(dtype)
 
 
 def wrf_topographic_sw_correction_factor(
@@ -1362,7 +1400,8 @@ def _shortwave_impl(
     direct_trans = ((1.0 - cloud_top_down) * direct_clear + cloud_top_down * direct_cloud) * active_top_down
     direct_trans = jnp.where(active_top_down > 0.0, direct_trans, 1.0).astype(pref_lay.dtype)
     down_top_down, up_top_down, direct_top_down = _vertical_quadrature(pref, prefd, ptra, ptrad, direct_trans)
-    top_flux_band = (state.coszen[..., None, None] * sfluxzen).astype(down_top_down.dtype)
+    source_scale = _solar_source_scale(state, down_top_down.dtype)
+    top_flux_band = (state.coszen[..., None, None] * source_scale[..., None, None] * sfluxzen).astype(down_top_down.dtype)
     down_band = jnp.flip(down_top_down * top_flux_band[..., None, :, :], axis=-3)
     up_band = jnp.flip(up_top_down * top_flux_band[..., None, :, :], axis=-3)
     direct_band = jnp.flip(direct_top_down * top_flux_band[..., None, :, :], axis=-3)
@@ -1570,7 +1609,8 @@ def compute_rrtmg_sw_intermediates(
     direct_trans = ((1.0 - cloud_top_down) * direct_clear + cloud_top_down * direct_cloud) * active_top_down
     direct_trans = jnp.where(active_top_down > 0.0, direct_trans, 1.0).astype(pref_lay.dtype)
     down_top_down, up_top_down, _direct_top_down = _vertical_quadrature(pref, prefd, ptra, ptrad, direct_trans)
-    top_flux_band = (state.coszen[..., None, None] * sfluxzen).astype(down_top_down.dtype)
+    source_scale = _solar_source_scale(state, down_top_down.dtype)
+    top_flux_band = (state.coszen[..., None, None] * source_scale[..., None, None] * sfluxzen).astype(down_top_down.dtype)
     down_band = jnp.flip(down_top_down * top_flux_band[..., None, :, :], axis=-3)
     up_band = jnp.flip(up_top_down * top_flux_band[..., None, :, :], axis=-3)
 
