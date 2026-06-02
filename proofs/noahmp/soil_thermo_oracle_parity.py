@@ -56,7 +56,9 @@ TKWAT = 0.6
 TKICE = 2.2
 DENH2O = 1000.0
 DENICE = 917.0
-ZBOT = 8.0
+ZBOT = -8.0  # WRF GENPARM ZBOT_DATA = -8.0 (negative depth); see soil_thermo.ZBOT.
+             # Was +8.0 here AND in the implementation -- a self-consistent tautology
+             # that hid the wrong-sign deep-soil bottom BC. Both now match WRF.
 NSOIL = 4
 NSNOW = 3
 NLAY = NSNOW + NSOIL
