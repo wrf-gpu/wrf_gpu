@@ -1705,16 +1705,31 @@ class _NoahMPClock(NamedTuple):
     yearlen: float
 
 
-def noahmp_initial_rad(state: State) -> tuple:
-    """Seed the held Noah-MP surface-radiation forcing as a CONCRETE zero 3-tuple.
+def noahmp_initial_rad(state: State, namelist: "OperationalNamelist | None" = None) -> tuple:
+    """Seed the held Noah-MP surface-radiation forcing as a CONCRETE 3-tuple.
 
     The held forcing rides in the OperationalCarry; inside ``jax.lax.scan`` the
     carry pytree structure must be identical on every iteration, so the initial
     held value must already be the 3-tuple shape the step produces -- NOT ``None``.
-    Step 1 (a radiation step) overwrites these zeros with the real SOLDN/LWDN/COSZ.
+
+    When ``namelist`` is given, the seed is the REAL t=0 surface radiation
+    (SOLDN/LWDN/COSZ from RRTMG at the init instant), computed ONCE eagerly. This
+    matters at an evening (18z) init: zero-seeding LWDN would starve the land of
+    downward longwave for the first radt interval and drive a spurious nocturnal
+    cold bias. WRF holds the radiative forcing from the first radiation call, so
+    seeding the real t=0 value is the WRF-faithful initial held forcing. Without a
+    namelist (legacy callers) the seed is zeros (overwritten at the first radt step).
     """
-    zero = jnp.zeros(state.t_skin.shape, dtype=jnp.float64)
-    return (zero, zero, zero)
+    if namelist is None:
+        zero = jnp.zeros(state.t_skin.shape, dtype=jnp.float64)
+        return (zero, zero, zero)
+    rad = rrtmg_radiation_diagnostics(
+        state, namelist.grid, time_utc=namelist.time_utc, lead_seconds=0.0
+    )
+    soldn = jnp.maximum(jnp.asarray(rad.swdown, dtype=jnp.float64), 0.0)
+    lwdn = jnp.asarray(rad.glw, dtype=jnp.float64)
+    cosz = jnp.asarray(rad.coszen, dtype=jnp.float64)
+    return (soldn, lwdn, cosz)
 
 
 def _noahmp_params(namelist: OperationalNamelist):

@@ -92,13 +92,16 @@ def run_forecast(run_dir, domain, *, use_noahmp, leads, segment_steps, dt_s,
         julian = float(time_utc.timetuple().tm_yday)
         noahmp_land, static, init_meta = build_noahmp_land_state(run_dir, domain)
         energy_params, rad_params, nroot = build_noahmp_params(static)
-        noahmp_rad = noahmp_initial_rad(
-            _enforce_operational_precision(case.state, force_fp64=bool(nl.force_fp64)))
         nl = dataclasses.replace(
             nl, use_noahmp=True, noahmp_static=static,
             noahmp_energy_params=energy_params, noahmp_rad_params=rad_params,
             noahmp_nroot=nroot, noahmp_julian=julian, noahmp_yearlen=365.0,
         )
+        # Seed the held Noah-MP radiation with the REAL t=0 surface radiation (LWDN
+        # especially) so an evening init does not starve the land of downward
+        # longwave for the first radt interval (nocturnal cold-start mitigation).
+        noahmp_rad = noahmp_initial_rad(
+            _enforce_operational_precision(case.state, force_fp64=bool(nl.force_fp64)), nl)
 
     cadence = int(nl.radiation_cadence_steps)
     seg = int(segment_steps) if segment_steps else cadence
