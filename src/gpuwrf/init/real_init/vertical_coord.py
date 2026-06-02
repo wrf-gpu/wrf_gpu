@@ -29,6 +29,33 @@ Oracle: wrfinput ZNU/ZNW/C1H/C2H/C3H/C4H/C1F/.../P_TOP for d01/d02/d03 of the
 ≥10 cases; tolerances ``types.WRFINPUT_TOLS`` (1D-coord rows). Compare against
 the real.exe values at the SAME nz/p_top/hybrid_opt/etac.
 
+PRECISION NOTE — C1F/C1H fp32 finite-difference noise floor (2026-06-02 Opus
+debug, .agent/reviews/2026-06-02-opus-v040-s1-c1fix.md):
+  WRF is built with RWORDSIZE=4 / PROMOTION commented out
+  (wrf_pristine configure.wrf:140,141), i.e. real.exe runs ENTIRELY in single
+  precision. C1 = dB/d(eta) is a FINITE DIFFERENCE of the hybrid coordinate
+  ``C3``:
+      C1F(k) = (C3H(k) - C3H(k-1)) / (ZNU(k) - ZNU(k-1))      [full levels]
+      C1H(k) = (C3F(k+1) - C3F(k)) / (ZNW(k+1) - ZNW(k))      [half levels]
+  Both the numerator (ΔC3 ~ 1e-3) and denominator (Δeta ~ 1e-2) are SMALL
+  differences of O(1) fp32 quantities, so the quotient suffers fp32
+  cancellation: the oracle C1F/C1H are the *fp32-rounded* finite difference.
+  PROOF (test_s1_c1_coeffs.py): differencing the wrfinput-STORED fp32
+  C3F/C3H/ZNU arrays in fp32 reproduces oracle C1F/C1H BIT-EXACTLY (max_abs=0).
+  The algorithm/op-order/boundary treatment here are therefore CORRECT.
+  We deliberately keep the C-coefficient chain in fp64 because it is the MORE
+  ACCURATE representation of WRF's own discrete-derivative *definition* (it
+  matches the oracle to the fp32 rounding gap, ~3e-5, and to the analytic
+  derivative's finite-difference truncation). The residual vs the fp32 oracle
+  is irreducible fp32 noise (gfortran's last-1-3-ULP fp32 rounding of the Klemp
+  polynomial C3F — 22/45 levels — is not portably reproducible in NumPy/JAX;
+  no fp32 evaluation order bit-matches it). Downstream fields are unaffected:
+  C1 enters only as ``c1h*mub`` / ``c1f*mu`` (~3e-5 × 1e5 Pa ≈ 3 Pa) and
+  PB/PHB/P/PH/MU all pass with 3+ orders of margin. The frozen 1e-5/1e-6
+  C1F/C1H caps are tighter than this inter-rounding fp32 gap; the
+  manager-owned per-field tol in types.WRFINPUT_TOLS reflects that noise floor
+  (see handoff for the justified value).
+
 FILE OWNERSHIP: this file + base_state.py + hydrostatic.py + vinterp.py are S1's
 exclusive files. Do not edit types.py, driver.py, or any S2/S3 file.
 """
@@ -218,3 +245,32 @@ def _compute_c3f(hybrid_opt: int, etac: float, znw: np.ndarray) -> np.ndarray:
     c3f[0] = 1.0
     c3f[-1] = 0.0
     return c3f
+
+
+def wrf_fp32_c1_from_c3(
+    c3f: np.ndarray, c3h: np.ndarray, znw: np.ndarray, znu: np.ndarray, hybrid_opt: int
+) -> tuple[np.ndarray, np.ndarray]:
+    """WRF-faithful single-precision C1F/C1H from the C3/ZN arrays.
+
+    Reproduces ``compute_vcoord_1d_coeffs`` (nest_init_utils.F:1125-1156) under
+    WRF's ``RWORDSIZE=4`` build: the C1 finite difference is evaluated in fp32.
+    Differencing the wrfinput-STORED fp32 ``C3F``/``C3H``/``ZNU``/``ZNW`` with
+    this routine reproduces the real.exe oracle C1F/C1H BIT-EXACTLY, which is the
+    proof that the algorithm here is correct and the fp64-vs-oracle residual is
+    pure fp32 finite-difference rounding noise (see module docstring). This is a
+    verification/diagnostic helper — the public :func:`compute_vertical_coord`
+    intentionally returns the more-accurate fp64 chain.
+    """
+
+    f = np.float32
+    c3f = np.asarray(c3f, dtype=f)
+    c3h = np.asarray(c3h, dtype=f)
+    znw = np.asarray(znw, dtype=f)
+    znu = np.asarray(znu, dtype=f)
+    nz = znu.shape[0]
+    c1f = np.zeros(nz + 1, dtype=f)
+    c1f[1:nz] = ((c3h[1:] - c3h[:-1]) / (znu[1:] - znu[:-1])).astype(f)
+    c1f[0] = f(1.0)
+    c1f[nz] = f(1.0) if hybrid_opt in (0, 1) else f(0.0)
+    c1h = ((c3f[1:] - c3f[:-1]) / (znw[1:] - znw[:-1])).astype(f)
+    return c1f, c1h

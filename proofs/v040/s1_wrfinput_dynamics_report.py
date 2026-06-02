@@ -273,6 +273,35 @@ def _aggregate(case_reports: list[dict[str, Any]]) -> dict[str, Any]:
     }
 
 
+# Manager-RECOMMENDED per-field tol for C1F/C1H ONLY (fp32 finite-difference
+# noise floor; see c1_precision_diagnosis). NOT applied to the frozen
+# WRFINPUT_TOLS — used here only to report the projected pass count so the
+# manager can confirm 20/20 before signing the types.py change.
+RECOMMENDED_C1_TOL = {"C1F": (1e-5, 5e-5), "C1H": (1e-5, 5e-5)}
+
+
+def _projected_pass(reports: list[dict[str, Any]]) -> dict[str, Any]:
+    """Pass count if C1F/C1H used the recommended tol; all other tols frozen."""
+    n_pass = 0
+    n_gated = 0
+    for name in FIELDS:
+        tol = RECOMMENDED_C1_TOL.get(name, WRFINPUT_TOLS.get(name))
+        if tol is None:
+            continue
+        n_gated += 1
+        worst_rmse = max(c["fields"][name]["rmse"] for c in reports)
+        worst_max = max(c["fields"][name]["max_abs"] for c in reports)
+        if worst_rmse <= tol[0] and worst_max <= tol[1]:
+            n_pass += 1
+    return {
+        "recommended_c1_tol": RECOMMENDED_C1_TOL,
+        "projected_gated_pass_count": n_pass,
+        "projected_gated_field_count": n_gated,
+        "projected_overall_pass": n_pass == n_gated,
+        "note": "C1F/C1H tol is the only change vs frozen WRFINPUT_TOLS.",
+    }
+
+
 def main() -> int:
     cases = _select_cases()
     reports = [_compare_case(case) for case in cases]
@@ -286,11 +315,56 @@ def main() -> int:
         "tolerance_source": "gpuwrf.init.real_init.types.WRFINPUT_TOLS",
         "overall_pass": aggregate["overall_pass"],
         "aggregate": aggregate,
+        "projected_with_recommended_c1_tol": _projected_pass(reports),
         "cases": reports,
+        "c1_precision_diagnosis": {
+            "status": "ROOT-CAUSE RESOLVED (2026-06-02 Opus cross-model debug)",
+            "root_cause": (
+                "WRF is built RWORDSIZE=4 (configure.wrf:140; PROMOTION commented "
+                "out:141) -> real.exe runs in single precision. C1=dB/d(eta) is a "
+                "finite difference of the hybrid coordinate C3: "
+                "C1F(k)=(C3H(k)-C3H(k-1))/(ZNU(k)-ZNU(k-1)), "
+                "C1H(k)=(C3F(k+1)-C3F(k))/(ZNW(k+1)-ZNW(k)). Both numerator (~1e-3) "
+                "and denominator (~1e-2) are small differences of O(1) fp32 values, "
+                "so the oracle C1F/C1H are the fp32-rounded finite difference."
+            ),
+            "proof_algorithm_correct": (
+                "Differencing the wrfinput-STORED fp32 C3F/C3H/ZNU/ZNW in fp32 "
+                "(vertical_coord.wrf_fp32_c1_from_c3) reproduces oracle C1F/C1H "
+                "BIT-EXACTLY (max_abs=0). See tests/init/test_s1_c1_coeffs.py."
+            ),
+            "why_not_matchable": (
+                "Bit-exact recompute needs WRF's stored fp32 C3F, which is "
+                "gfortran's last-1-3-ULP fp32 rounding of the Klemp polynomial "
+                "(22/45 levels); no NumPy/JAX fp32 evaluation order reproduces it. "
+                "A from-scratch fp32 chain gets C1F maxabs=8.6e-6 (under cap) but "
+                "C1H maxabs=1.93e-5 / rmse>1e-6 still fail the frozen cap, which is "
+                "tighter than the inter-rounding fp32 gap."
+            ),
+            "our_value_more_accurate": (
+                "compute_vertical_coord keeps the C-coeff chain in fp64: it carries "
+                "WRF's discrete-derivative definition and matches the oracle to the "
+                "fp32 rounding gap (C1F maxabs 2.99e-5/rmse 5.39e-6, C1H 3.13e-5/"
+                "6.76e-6). It is the more-accurate representation, not less."
+            ),
+            "downstream_unaffected": (
+                "C1 enters only as c1h*mub / c1f*mu (~3e-5 x 1e5 Pa ~ 3 Pa); "
+                "PB(0.056/50) PHB(0.19/20) P(0.57/200) PH(0.25/20) MU(0.25/50) all "
+                "PASS with 3+ orders of margin regardless of C1 precision."
+            ),
+            "recommended_tol_manager_owned": (
+                "C1F/C1H in types.WRFINPUT_TOLS: rmse 1e-5, max_abs 5e-5 (fp32 "
+                "finite-difference noise floor + small margin). Manager applies; "
+                "types.py is FROZEN/manager-owned. All other 1D-coord caps unchanged."
+            ),
+        },
         "unresolved_residuals": [
-            "C1H/C1F max-abs may fail the frozen 1e-5 cap from WRF single-precision "
-            "hybrid coefficient differencing; ZNW/ZNU/C3*/C4* and all dynamics fields "
-            "are reported separately without masking or tolerance changes."
+            "C1F/C1H fail ONLY the frozen 1e-5/1e-6 cap, which is tighter than WRF's "
+            "own fp32 finite-difference rounding gap. Root cause proven (see "
+            "c1_precision_diagnosis); the fp64 values are the more-accurate ones and "
+            "downstream PB/PHB/P/PH/MU pass with 3+ orders of margin. Resolution = "
+            "manager-applied per-field tol (rmse 1e-5, max_abs 5e-5) on C1F/C1H only. "
+            "No masking, no recompute-precision hack, no other tol touched."
         ],
     }
     OUT.parent.mkdir(parents=True, exist_ok=True)
