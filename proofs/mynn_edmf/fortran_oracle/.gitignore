@@ -1,0 +1,4 @@
+*.o
+*.mod
+oracle
+column_d03_12z.flat
