@@ -1,0 +1,4069 @@
+{
+  "array_ranges": {
+    "DEWPT": {
+      "dtype": "float32",
+      "max": 300.6639404296875,
+      "min": 199.63267517089844,
+      "shape": [
+        721,
+        1440
+      ]
+    },
+    "GHT": {
+      "dtype": "float32",
+      "max": 20754.80859375,
+      "min": -485.72003173828125,
+      "per_level_minmax": [
+        [
+          -271.3921813964844,
+          5995.98291015625
+        ],
+        [
+          -485.72003173828125,
+          273.70184326171875
+        ],
+        [
+          107.73213958740234,
+          932.1539916992188
+        ],
+        [
+          745.8701782226562,
+          1641.2138671875
+        ],
+        [
+          2192.308349609375,
+          3246.120849609375
+        ],
+        [
+          3296.324462890625,
+          4488.01171875
+        ],
+        [
+          4538.8291015625,
+          5940.7041015625
+        ],
+        [
+          6019.68115234375,
+          7654.52490234375
+        ],
+        [
+          7892.9482421875,
+          9748.6357421875
+        ],
+        [
+          9079.1767578125,
+          11024.8017578125
+        ],
+        [
+          10519.70703125,
+          12513.95703125
+        ],
+        [
+          12344.8408203125,
+          14315.3408203125
+        ],
+        [
+          14850.853515625,
+          16698.884765625
+        ],
+        [
+          18989.37109375,
+          20754.80859375
+        ]
+      ],
+      "shape": [
+        14,
+        721,
+        1440
+      ]
+    },
+    "LANDSEA": {
+      "dtype": "float32",
+      "max": 1.0,
+      "min": 0.0,
+      "shape": [
+        721,
+        1440
+      ]
+    },
+    "PMSL": {
+      "dtype": "float32",
+      "max": 103430.984375,
+      "min": 93830.984375,
+      "shape": [
+        721,
+        1440
+      ]
+    },
+    "PRES": {
+      "dtype": "float32",
+      "max": 104550.5,
+      "min": 5000.0,
+      "per_level_minmax": [
+        [
+          48598.50390625,
+          104550.5
+        ],
+        [
+          100000.0,
+          100000.0
+        ],
+        [
+          92500.0,
+          92500.0
+        ],
+        [
+          85000.0,
+          85000.0
+        ],
+        [
+          70000.0,
+          70000.0
+        ],
+        [
+          60000.0,
+          60000.0
+        ],
+        [
+          50000.0,
+          50000.0
+        ],
+        [
+          40000.0,
+          40000.0
+        ],
+        [
+          30000.0,
+          30000.0
+        ],
+        [
+          25000.0,
+          25000.0
+        ],
+        [
+          20000.0,
+          20000.0
+        ],
+        [
+          15000.0,
+          15000.0
+        ],
+        [
+          10000.0,
+          10000.0
+        ],
+        [
+          5000.0,
+          5000.0
+        ]
+      ],
+      "shape": [
+        14,
+        721,
+        1440
+      ]
+    },
+    "PSFC": {
+      "dtype": "float32",
+      "max": 104550.5,
+      "min": 48598.50390625,
+      "shape": [
+        721,
+        1440
+      ]
+    },
+    "SKINTEMP": {
+      "dtype": "float32",
+      "max": 329.1286926269531,
+      "min": 194.81619262695312,
+      "shape": [
+        721,
+        1440
+      ]
+    },
+    "SM": {
+      "dtype": "float32",
+      "max": 0.7754364013671875,
+      "min": 0.0,
+      "per_level_minmax": [
+        [
+          0.0,
+          0.7660064697265625
+        ],
+        [
+          0.0,
+          0.7754364013671875
+        ]
+      ],
+      "shape": [
+        2,
+        721,
+        1440
+      ]
+    },
+    "SM000010": {
+      "dtype": "float32",
+      "max": 0.7754364013671875,
+      "min": 0.0,
+      "shape": [
+        721,
+        1440
+      ]
+    },
+    "SM010040": {
+      "dtype": "float32",
+      "max": 0.7660064697265625,
+      "min": 0.0,
+      "shape": [
+        721,
+        1440
+      ]
+    },
+    "SOILHGT": {
+      "dtype": "float32",
+      "max": 5995.98291015625,
+      "min": -271.3921813964844,
+      "shape": [
+        721,
+        1440
+      ]
+    },
+    "SOIL_LAYERS": {
+      "dtype": "float32",
+      "max": 40.0,
+      "min": 10.0,
+      "per_level_minmax": [
+        [
+          40.0,
+          40.0
+        ],
+        [
+          10.0,
+          10.0
+        ]
+      ],
+      "shape": [
+        2,
+        721,
+        1440
+      ]
+    },
+    "SPECHUMD": {
+      "dtype": "float32",
+      "max": 0.022531121969223022,
+      "min": -1.0,
+      "per_level_minmax": [
+        [
+          -1.0,
+          -1.0
+        ],
+        [
+          1.5194240177152096e-06,
+          0.022531121969223022
+        ],
+        [
+          5.694248557119863e-07,
+          0.020363423973321915
+        ],
+        [
+          2.7328676210913727e-08,
+          0.01739504747092724
+        ],
+        [
+          2.7328672658200048e-08,
+          0.011394527740776539
+        ],
+        [
+          1.0987554333041771e-07,
+          0.00848018191754818
+        ],
+        [
+          8.265328688139562e-08,
+          0.006094061303883791
+        ],
+        [
+          8.603090861925011e-08,
+          0.003516283119097352
+        ],
+        [
+          2.282538424935865e-08,
+          0.0011854399926960468
+        ],
+        [
+          2.282538424935865e-08,
+          0.00048031704500317574
+        ],
+        [
+          2.282538424935865e-08,
+          0.00012292760948184878
+        ],
+        [
+          2.2825389578429167e-08,
+          3.0853327189106494e-05
+        ],
+        [
+          1.1781096418417292e-06,
+          6.238916284928564e-06
+        ],
+        [
+          2.4593646230641752e-06,
+          3.6058227124158293e-06
+        ]
+      ],
+      "shape": [
+        14,
+        721,
+        1440
+      ]
+    },
+    "ST": {
+      "dtype": "float32",
+      "max": 320.0363464355469,
+      "min": 216.8277587890625,
+      "per_level_minmax": [
+        [
+          216.8277587890625,
+          316.9644775390625
+        ],
+        [
+          216.84298706054688,
+          320.0363464355469
+        ]
+      ],
+      "shape": [
+        2,
+        721,
+        1440
+      ]
+    },
+    "ST000010": {
+      "dtype": "float32",
+      "max": 320.0363464355469,
+      "min": 216.84298706054688,
+      "shape": [
+        721,
+        1440
+      ]
+    },
+    "ST010040": {
+      "dtype": "float32",
+      "max": 316.9644775390625,
+      "min": 216.8277587890625,
+      "shape": [
+        721,
+        1440
+      ]
+    },
+    "TT": {
+      "dtype": "float32",
+      "max": 315.4451904296875,
+      "min": 187.21055603027344,
+      "per_level_minmax": [
+        [
+          199.63267517089844,
+          315.4451904296875
+        ],
+        [
+          234.87008666992188,
+          315.1825866699219
+        ],
+        [
+          232.0239715576172,
+          310.64898681640625
+        ],
+        [
+          228.3434295654297,
+          303.90594482421875
+        ],
+        [
+          215.771728515625,
+          293.334228515625
+        ],
+        [
+          209.97727966308594,
+          283.164794921875
+        ],
+        [
+          224.00306701660156,
+          271.6436767578125
+        ],
+        [
+          216.20640563964844,
+          261.5657958984375
+        ],
+        [
+          207.4974822998047,
+          247.5912322998047
+        ],
+        [
+          204.99351501464844,
+          238.24351501464844
+        ],
+        [
+          205.28269958496094,
+          232.53269958496094
+        ],
+        [
+          198.88136291503906,
+          230.74073791503906
+        ],
+        [
+          187.21055603027344,
+          228.85118103027344
+        ],
+        [
+          197.52272033691406,
+          226.04615783691406
+        ]
+      ],
+      "shape": [
+        14,
+        721,
+        1440
+      ]
+    },
+    "UU": {
+      "dtype": "float32",
+      "max": 87.91465759277344,
+      "min": -42.27617263793945,
+      "per_level_minmax": [
+        [
+          -28.35826873779297,
+          27.54798126220703
+        ],
+        [
+          -27.043867111206055,
+          27.034257888793945
+        ],
+        [
+          -37.53072738647461,
+          38.87552261352539
+        ],
+        [
+          -38.045745849609375,
+          41.048004150390625
+        ],
+        [
+          -21.5456485748291,
+          46.79810333251953
+        ],
+        [
+          -21.584442138671875,
+          57.321807861328125
+        ],
+        [
+          -27.180862426757812,
+          58.81913757324219
+        ],
+        [
+          -37.71828079223633,
+          63.75046920776367
+        ],
+        [
+          -42.27617263793945,
+          82.03633117675781
+        ],
+        [
+          -37.02284240722656,
+          87.91465759277344
+        ],
+        [
+          -25.868305206298828,
+          82.81919860839844
+        ],
+        [
+          -22.02756118774414,
+          64.94119262695312
+        ],
+        [
+          -27.695505142211914,
+          46.02324676513672
+        ],
+        [
+          -23.89833641052246,
+          41.757911682128906
+        ]
+      ],
+      "shape": [
+        14,
+        721,
+        1440
+      ]
+    },
+    "VV": {
+      "dtype": "float32",
+      "max": 61.094093322753906,
+      "min": -62.57979965209961,
+      "per_level_minmax": [
+        [
+          -27.642377853393555,
+          25.998247146606445
+        ],
+        [
+          -27.025827407836914,
+          25.614797592163086
+        ],
+        [
+          -36.66900634765625,
+          39.51849365234375
+        ],
+        [
+          -41.61892318725586,
+          38.66232681274414
+        ],
+        [
+          -42.655174255371094,
+          41.219825744628906
+        ],
+        [
+          -42.9272346496582,
+          41.7602653503418
+        ],
+        [
+          -42.41554260253906,
+          44.67820739746094
+        ],
+        [
+          -51.663230895996094,
+          50.680519104003906
+        ],
+        [
+          -62.57979965209961,
+          59.48270034790039
+        ],
+        [
+          -57.405906677246094,
+          61.094093322753906
+        ],
+        [
+          -45.46864318847656,
+          57.15635681152344
+        ],
+        [
+          -38.47411346435547,
+          37.24463653564453
+        ],
+        [
+          -23.4102783203125,
+          26.7772216796875
+        ],
+        [
+          -16.732219696044922,
+          15.845905303955078
+        ]
+      ],
+      "shape": [
+        14,
+        721,
+        1440
+      ]
+    }
+  },
+  "contract_discrepancies": [
+    {
+      "contract": "derive SPECHUMD[0] from 2 m dewpoint and PSFC",
+      "implementation": "default policy follows oracle; optional 'dewpoint' policy is implemented and tested",
+      "item": "SPECHUMD surface level",
+      "oracle": "met_em SPECHUMD[0] is -1 everywhere; METGRID.TBL fills const(-1)"
+    },
+    {
+      "contract_schema_comment": "schema constant lists (10, 40) while noting met_em SOIL_LAYERS=[40,10]",
+      "implementation": "DecodedForcing uses [40, 10] for oracle parity",
+      "item": "SOIL_LAYER_DEPTHS_CM",
+      "oracle": "met_em SOIL_LAYERS values are [40, 10] and ST/SM stack is [010040, 000010]"
+    }
+  ],
+  "dewpoint_specific_humidity_subcheck": {
+    "formula": "q = eps*e/(p-(1-eps)*e), e=611.2*exp(17.67*(Td-273.15)/(Td-29.65))",
+    "max": 0.02302984893321991,
+    "min": 3.0729854643141152e-06,
+    "sample_0_0": 0.0008227117359638214,
+    "source_refs": [
+      "/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_src/WRF/dyn_em/module_initialize_real.F:1163",
+      "/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_src/WRF/dyn_em/module_initialize_real.F:1167"
+    ],
+    "tolerance_abs": 1e-06
+  },
+  "isobaric_levels_pa": [
+    100000.0,
+    92500.0,
+    85000.0,
+    70000.0,
+    60000.0,
+    50000.0,
+    40000.0,
+    30000.0,
+    25000.0,
+    20000.0,
+    15000.0,
+    10000.0,
+    5000.0
+  ],
+  "npz_roundtrip": {
+    "all_bit_equal": true,
+    "fields": {
+      "DEWPT": true,
+      "GHT": true,
+      "LANDSEA": true,
+      "PMSL": true,
+      "PRES": true,
+      "PSFC": true,
+      "SKINTEMP": true,
+      "SM": true,
+      "SM000010": true,
+      "SM010040": true,
+      "SOILHGT": true,
+      "SOIL_LAYERS": true,
+      "SPECHUMD": true,
+      "ST": true,
+      "ST000010": true,
+      "ST010040": true,
+      "TT": true,
+      "UU": true,
+      "VV": true
+    }
+  },
+  "objective": "v0.3.0 S1 native AIFS GRIB2 forcing decode/normalize",
+  "oracle_fidelity_pass": true,
+  "oracle_findings": {
+    "global_range_sanity": "The raw AIFS source is a global grid. The sampled GRIB and matching ungrib intermediate contain PSFC below 50000 Pa and ST below 220 K at global points, so those contract sanity ranges are recorded but not used as the oracle-fidelity verdict.",
+    "soil_stack_order": "Checked met_em oracle stores ST/SM layer 0 as 010040 and layer 1 as 000010, with SOIL_LAYERS [40, 10].",
+    "surface_spechumd": "Checked met_em oracle has SPECHUMD[0] == -1 everywhere for the sampled case; this follows METGRID.TBL.ARW fill_lev=200100:const(-1)."
+  },
+  "overall_pass": true,
+  "physical_range_checks": {
+    "PSFC_50000_105000_Pa": {
+      "lower": 50000.0,
+      "max": 104550.5,
+      "min": 48598.50390625,
+      "pass": false,
+      "upper": 105000.0
+    },
+    "SM_0_1_fraction": {
+      "lower": 0.0,
+      "max": 0.7754364013671875,
+      "min": 0.0,
+      "pass": true,
+      "upper": 1.0
+    },
+    "SPECHUMD_isobaric_0_0p03_kgkg": {
+      "lower": 0.0,
+      "max": 0.022531121969223022,
+      "min": 2.282538424935865e-08,
+      "pass": true,
+      "upper": 0.03
+    },
+    "SPECHUMD_surface_wps_sentinel": {
+      "expected": -1.0,
+      "pass": true
+    },
+    "ST_220_330_K": {
+      "lower": 220.0,
+      "max": 320.0363464355469,
+      "min": 216.8277587890625,
+      "pass": false,
+      "upper": 330.0
+    },
+    "TT_all_180_330_K": {
+      "lower": 180.0,
+      "max": 315.4451904296875,
+      "min": 187.21055603027344,
+      "pass": true,
+      "upper": 330.0
+    },
+    "UU_abs_le_120_mps": {
+      "max_abs": 87.91465759277344,
+      "pass": true,
+      "upper_abs": 120.0
+    },
+    "VV_abs_le_120_mps": {
+      "max_abs": 62.57979965209961,
+      "pass": true,
+      "upper_abs": 120.0
+    }
+  },
+  "provenance": {
+    "fields": {
+      "DEWPT": {
+        "dtype": "float32",
+        "grib_sha256": "42a2044498d24a29e668b8a1ed79caac4dc19acfffeaa8edf2059efe2bc0ba90",
+        "message": {
+          "field": "DEWPT",
+          "grib_keys": {
+            "discipline": 0,
+            "level": 2,
+            "parameterCategory": 0,
+            "parameterNumber": 6,
+            "scaleFactorOfFirstFixedSurface": 0,
+            "scaleFactorOfSecondFixedSurface": 2147483647,
+            "scaledValueOfFirstFixedSurface": 2,
+            "scaledValueOfSecondFixedSurface": 2147483647,
+            "shortName": "2d",
+            "typeOfFirstFixedSurface": "sfc",
+            "typeOfLevel": "heightAboveGround",
+            "typeOfSecondFixedSurface": 255
+          },
+          "grib_name": "2 metre dewpoint temperature",
+          "height_m": 2.0,
+          "level_pa": null,
+          "level_type": "heightAboveGround",
+          "short_name": "2d",
+          "soil_depth_mm": null,
+          "units": "K",
+          "vtable_line": 10,
+          "vtable_raw_line": " 168 | 105  |   2  |      | DEWPT    | K       | Dewpoint temperature at 2 m             |  0  |  0  |   6 | 103 |",
+          "wps_field": "DEWPT",
+          "wps_level": 200100.0
+        },
+        "shape": [
+          721,
+          1440
+        ],
+        "source": "aifs_grib",
+        "source_path": "/mnt/data/canairy_meteo/runs/wps_cases/20260428_18z_72h/ungrib/step_000.grib2"
+      },
+      "GHT": {
+        "dtype": "float32",
+        "grib_sha256": "42a2044498d24a29e668b8a1ed79caac4dc19acfffeaa8edf2059efe2bc0ba90",
+        "isobaric": [
+          {
+            "field": "GHT",
+            "grib_keys": {
+              "discipline": 0,
+              "level": 1000,
+              "parameterCategory": 3,
+              "parameterNumber": 5,
+              "scaleFactorOfFirstFixedSurface": 0,
+              "scaleFactorOfSecondFixedSurface": 2147483647,
+              "scaledValueOfFirstFixedSurface": 100000,
+              "scaledValueOfSecondFixedSurface": 2147483647,
+              "shortName": "gh",
+              "typeOfFirstFixedSurface": "pl",
+              "typeOfLevel": "isobaricInhPa",
+              "typeOfSecondFixedSurface": 255
+            },
+            "grib_name": "Geopotential height",
+            "height_m": null,
+            "level_pa": 100000.0,
+            "level_type": "isobaricInhPa",
+            "short_name": "gh",
+            "soil_depth_mm": null,
+            "units": "gpm",
+            "vtable_line": 8,
+            "vtable_raw_line": "   7 | 100  |   *  |      | HGT      | m       | Height derived from geopotential        |  0  |  3  |   5 | 100 |",
+            "wps_field": "HGT",
+            "wps_level": 100000.0
+          },
+          {
+            "field": "GHT",
+            "grib_keys": {
+              "discipline": 0,
+              "level": 925,
+              "parameterCategory": 3,
+              "parameterNumber": 5,
+              "scaleFactorOfFirstFixedSurface": 0,
+              "scaleFactorOfSecondFixedSurface": 2147483647,
+              "scaledValueOfFirstFixedSurface": 92500,
+              "scaledValueOfSecondFixedSurface": 2147483647,
+              "shortName": "gh",
+              "typeOfFirstFixedSurface": "pl",
+              "typeOfLevel": "isobaricInhPa",
+              "typeOfSecondFixedSurface": 255
+            },
+            "grib_name": "Geopotential height",
+            "height_m": null,
+            "level_pa": 92500.0,
+            "level_type": "isobaricInhPa",
+            "short_name": "gh",
+            "soil_depth_mm": null,
+            "units": "gpm",
+            "vtable_line": 8,
+            "vtable_raw_line": "   7 | 100  |   *  |      | HGT      | m       | Height derived from geopotential        |  0  |  3  |   5 | 100 |",
+            "wps_field": "HGT",
+            "wps_level": 92500.0
+          },
+          {
+            "field": "GHT",
+            "grib_keys": {
+              "discipline": 0,
+              "level": 850,
+              "parameterCategory": 3,
+              "parameterNumber": 5,
+              "scaleFactorOfFirstFixedSurface": 0,
+              "scaleFactorOfSecondFixedSurface": 2147483647,
+              "scaledValueOfFirstFixedSurface": 85000,
+              "scaledValueOfSecondFixedSurface": 2147483647,
+              "shortName": "gh",
+              "typeOfFirstFixedSurface": "pl",
+              "typeOfLevel": "isobaricInhPa",
+              "typeOfSecondFixedSurface": 255
+            },
+            "grib_name": "Geopotential height",
+            "height_m": null,
+            "level_pa": 85000.0,
+            "level_type": "isobaricInhPa",
+            "short_name": "gh",
+            "soil_depth_mm": null,
+            "units": "gpm",
+            "vtable_line": 8,
+            "vtable_raw_line": "   7 | 100  |   *  |      | HGT      | m       | Height derived from geopotential        |  0  |  3  |   5 | 100 |",
+            "wps_field": "HGT",
+            "wps_level": 85000.0
+          },
+          {
+            "field": "GHT",
+            "grib_keys": {
+              "discipline": 0,
+              "level": 700,
+              "parameterCategory": 3,
+              "parameterNumber": 5,
+              "scaleFactorOfFirstFixedSurface": 0,
+              "scaleFactorOfSecondFixedSurface": 2147483647,
+              "scaledValueOfFirstFixedSurface": 70000,
+              "scaledValueOfSecondFixedSurface": 2147483647,
+              "shortName": "gh",
+              "typeOfFirstFixedSurface": "pl",
+              "typeOfLevel": "isobaricInhPa",
+              "typeOfSecondFixedSurface": 255
+            },
+            "grib_name": "Geopotential height",
+            "height_m": null,
+            "level_pa": 70000.0,
+            "level_type": "isobaricInhPa",
+            "short_name": "gh",
+            "soil_depth_mm": null,
+            "units": "gpm",
+            "vtable_line": 8,
+            "vtable_raw_line": "   7 | 100  |   *  |      | HGT      | m       | Height derived from geopotential        |  0  |  3  |   5 | 100 |",
+            "wps_field": "HGT",
+            "wps_level": 70000.0
+          },
+          {
+            "field": "GHT",
+            "grib_keys": {
+              "discipline": 0,
+              "level": 600,
+              "parameterCategory": 3,
+              "parameterNumber": 5,
+              "scaleFactorOfFirstFixedSurface": 0,
+              "scaleFactorOfSecondFixedSurface": 2147483647,
+              "scaledValueOfFirstFixedSurface": 60000,
+              "scaledValueOfSecondFixedSurface": 2147483647,
+              "shortName": "gh",
+              "typeOfFirstFixedSurface": "pl",
+              "typeOfLevel": "isobaricInhPa",
+              "typeOfSecondFixedSurface": 255
+            },
+            "grib_name": "Geopotential height",
+            "height_m": null,
+            "level_pa": 60000.0,
+            "level_type": "isobaricInhPa",
+            "short_name": "gh",
+            "soil_depth_mm": null,
+            "units": "gpm",
+            "vtable_line": 8,
+            "vtable_raw_line": "   7 | 100  |   *  |      | HGT      | m       | Height derived from geopotential        |  0  |  3  |   5 | 100 |",
+            "wps_field": "HGT",
+            "wps_level": 60000.0
+          },
+          {
+            "field": "GHT",
+            "grib_keys": {
+              "discipline": 0,
+              "level": 500,
+              "parameterCategory": 3,
+              "parameterNumber": 5,
+              "scaleFactorOfFirstFixedSurface": 0,
+              "scaleFactorOfSecondFixedSurface": 2147483647,
+              "scaledValueOfFirstFixedSurface": 50000,
+              "scaledValueOfSecondFixedSurface": 2147483647,
+              "shortName": "gh",
+              "typeOfFirstFixedSurface": "pl",
+              "typeOfLevel": "isobaricInhPa",
+              "typeOfSecondFixedSurface": 255
+            },
+            "grib_name": "Geopotential height",
+            "height_m": null,
+            "level_pa": 50000.0,
+            "level_type": "isobaricInhPa",
+            "short_name": "gh",
+            "soil_depth_mm": null,
+            "units": "gpm",
+            "vtable_line": 8,
+            "vtable_raw_line": "   7 | 100  |   *  |      | HGT      | m       | Height derived from geopotential        |  0  |  3  |   5 | 100 |",
+            "wps_field": "HGT",
+            "wps_level": 50000.0
+          },
+          {
+            "field": "GHT",
+            "grib_keys": {
+              "discipline": 0,
+              "level": 400,
+              "parameterCategory": 3,
+              "parameterNumber": 5,
+              "scaleFactorOfFirstFixedSurface": 0,
+              "scaleFactorOfSecondFixedSurface": 2147483647,
+              "scaledValueOfFirstFixedSurface": 40000,
+              "scaledValueOfSecondFixedSurface": 2147483647,
+              "shortName": "gh",
+              "typeOfFirstFixedSurface": "pl",
+              "typeOfLevel": "isobaricInhPa",
+              "typeOfSecondFixedSurface": 255
+            },
+            "grib_name": "Geopotential height",
+            "height_m": null,
+            "level_pa": 40000.0,
+            "level_type": "isobaricInhPa",
+            "short_name": "gh",
+            "soil_depth_mm": null,
+            "units": "gpm",
+            "vtable_line": 8,
+            "vtable_raw_line": "   7 | 100  |   *  |      | HGT      | m       | Height derived from geopotential        |  0  |  3  |   5 | 100 |",
+            "wps_field": "HGT",
+            "wps_level": 40000.0
+          },
+          {
+            "field": "GHT",
+            "grib_keys": {
+              "discipline": 0,
+              "level": 300,
+              "parameterCategory": 3,
+              "parameterNumber": 5,
+              "scaleFactorOfFirstFixedSurface": 0,
+              "scaleFactorOfSecondFixedSurface": 2147483647,
+              "scaledValueOfFirstFixedSurface": 30000,
+              "scaledValueOfSecondFixedSurface": 2147483647,
+              "shortName": "gh",
+              "typeOfFirstFixedSurface": "pl",
+              "typeOfLevel": "isobaricInhPa",
+              "typeOfSecondFixedSurface": 255
+            },
+            "grib_name": "Geopotential height",
+            "height_m": null,
+            "level_pa": 30000.0,
+            "level_type": "isobaricInhPa",
+            "short_name": "gh",
+            "soil_depth_mm": null,
+            "units": "gpm",
+            "vtable_line": 8,
+            "vtable_raw_line": "   7 | 100  |   *  |      | HGT      | m       | Height derived from geopotential        |  0  |  3  |   5 | 100 |",
+            "wps_field": "HGT",
+            "wps_level": 30000.0
+          },
+          {
+            "field": "GHT",
+            "grib_keys": {
+              "discipline": 0,
+              "level": 250,
+              "parameterCategory": 3,
+              "parameterNumber": 5,
+              "scaleFactorOfFirstFixedSurface": 0,
+              "scaleFactorOfSecondFixedSurface": 2147483647,
+              "scaledValueOfFirstFixedSurface": 25000,
+              "scaledValueOfSecondFixedSurface": 2147483647,
+              "shortName": "gh",
+              "typeOfFirstFixedSurface": "pl",
+              "typeOfLevel": "isobaricInhPa",
+              "typeOfSecondFixedSurface": 255
+            },
+            "grib_name": "Geopotential height",
+            "height_m": null,
+            "level_pa": 25000.0,
+            "level_type": "isobaricInhPa",
+            "short_name": "gh",
+            "soil_depth_mm": null,
+            "units": "gpm",
+            "vtable_line": 8,
+            "vtable_raw_line": "   7 | 100  |   *  |      | HGT      | m       | Height derived from geopotential        |  0  |  3  |   5 | 100 |",
+            "wps_field": "HGT",
+            "wps_level": 25000.0
+          },
+          {
+            "field": "GHT",
+            "grib_keys": {
+              "discipline": 0,
+              "level": 200,
+              "parameterCategory": 3,
+              "parameterNumber": 5,
+              "scaleFactorOfFirstFixedSurface": 0,
+              "scaleFactorOfSecondFixedSurface": 2147483647,
+              "scaledValueOfFirstFixedSurface": 20000,
+              "scaledValueOfSecondFixedSurface": 2147483647,
+              "shortName": "gh",
+              "typeOfFirstFixedSurface": "pl",
+              "typeOfLevel": "isobaricInhPa",
+              "typeOfSecondFixedSurface": 255
+            },
+            "grib_name": "Geopotential height",
+            "height_m": null,
+            "level_pa": 20000.0,
+            "level_type": "isobaricInhPa",
+            "short_name": "gh",
+            "soil_depth_mm": null,
+            "units": "gpm",
+            "vtable_line": 8,
+            "vtable_raw_line": "   7 | 100  |   *  |      | HGT      | m       | Height derived from geopotential        |  0  |  3  |   5 | 100 |",
+            "wps_field": "HGT",
+            "wps_level": 20000.0
+          },
+          {
+            "field": "GHT",
+            "grib_keys": {
+              "discipline": 0,
+              "level": 150,
+              "parameterCategory": 3,
+              "parameterNumber": 5,
+              "scaleFactorOfFirstFixedSurface": 0,
+              "scaleFactorOfSecondFixedSurface": 2147483647,
+              "scaledValueOfFirstFixedSurface": 15000,
+              "scaledValueOfSecondFixedSurface": 2147483647,
+              "shortName": "gh",
+              "typeOfFirstFixedSurface": "pl",
+              "typeOfLevel": "isobaricInhPa",
+              "typeOfSecondFixedSurface": 255
+            },
+            "grib_name": "Geopotential height",
+            "height_m": null,
+            "level_pa": 15000.0,
+            "level_type": "isobaricInhPa",
+            "short_name": "gh",
+            "soil_depth_mm": null,
+            "units": "gpm",
+            "vtable_line": 8,
+            "vtable_raw_line": "   7 | 100  |   *  |      | HGT      | m       | Height derived from geopotential        |  0  |  3  |   5 | 100 |",
+            "wps_field": "HGT",
+            "wps_level": 15000.0
+          },
+          {
+            "field": "GHT",
+            "grib_keys": {
+              "discipline": 0,
+              "level": 100,
+              "parameterCategory": 3,
+              "parameterNumber": 5,
+              "scaleFactorOfFirstFixedSurface": 0,
+              "scaleFactorOfSecondFixedSurface": 2147483647,
+              "scaledValueOfFirstFixedSurface": 10000,
+              "scaledValueOfSecondFixedSurface": 2147483647,
+              "shortName": "gh",
+              "typeOfFirstFixedSurface": "pl",
+              "typeOfLevel": "isobaricInhPa",
+              "typeOfSecondFixedSurface": 255
+            },
+            "grib_name": "Geopotential height",
+            "height_m": null,
+            "level_pa": 10000.0,
+            "level_type": "isobaricInhPa",
+            "short_name": "gh",
+            "soil_depth_mm": null,
+            "units": "gpm",
+            "vtable_line": 8,
+            "vtable_raw_line": "   7 | 100  |   *  |      | HGT      | m       | Height derived from geopotential        |  0  |  3  |   5 | 100 |",
+            "wps_field": "HGT",
+            "wps_level": 10000.0
+          },
+          {
+            "field": "GHT",
+            "grib_keys": {
+              "discipline": 0,
+              "level": 50,
+              "parameterCategory": 3,
+              "parameterNumber": 5,
+              "scaleFactorOfFirstFixedSurface": 0,
+              "scaleFactorOfSecondFixedSurface": 2147483647,
+              "scaledValueOfFirstFixedSurface": 5000,
+              "scaledValueOfSecondFixedSurface": 2147483647,
+              "shortName": "gh",
+              "typeOfFirstFixedSurface": "pl",
+              "typeOfLevel": "isobaricInhPa",
+              "typeOfSecondFixedSurface": 255
+            },
+            "grib_name": "Geopotential height",
+            "height_m": null,
+            "level_pa": 5000.0,
+            "level_type": "isobaricInhPa",
+            "short_name": "gh",
+            "soil_depth_mm": null,
+            "units": "gpm",
+            "vtable_line": 8,
+            "vtable_raw_line": "   7 | 100  |   *  |      | HGT      | m       | Height derived from geopotential        |  0  |  3  |   5 | 100 |",
+            "wps_field": "HGT",
+            "wps_level": 5000.0
+          }
+        ],
+        "shape": [
+          14,
+          721,
+          1440
+        ],
+        "source": "aifs_grib",
+        "source_path": "/mnt/data/canairy_meteo/runs/wps_cases/20260428_18z_72h/ungrib/step_000.grib2",
+        "surface": {
+          "field": "SOILHGT",
+          "grib_keys": {
+            "discipline": 0,
+            "level": 0,
+            "parameterCategory": 3,
+            "parameterNumber": 5,
+            "scaleFactorOfFirstFixedSurface": 2147483647,
+            "scaleFactorOfSecondFixedSurface": 2147483647,
+            "scaledValueOfFirstFixedSurface": 2147483647,
+            "scaledValueOfSecondFixedSurface": 2147483647,
+            "shortName": "orog",
+            "typeOfFirstFixedSurface": "sfc",
+            "typeOfLevel": "surface",
+            "typeOfSecondFixedSurface": 255
+          },
+          "grib_name": "Orography",
+          "height_m": null,
+          "level_pa": null,
+          "level_type": "surface",
+          "short_name": "orog",
+          "soil_depth_mm": null,
+          "units": "m",
+          "vtable_line": 17,
+          "vtable_raw_line": "   7 |   1  |   0  |      | SOILHGT  | m       | Source surface height                   |  0  |  3  |   5 |   1 |",
+          "wps_field": "SOILHGT",
+          "wps_level": 200100.0
+        }
+      },
+      "LANDSEA": {
+        "dtype": "float32",
+        "grib_sha256": "42a2044498d24a29e668b8a1ed79caac4dc19acfffeaa8edf2059efe2bc0ba90",
+        "message": {
+          "field": "LANDSEA",
+          "grib_keys": {
+            "discipline": 2,
+            "level": 0,
+            "parameterCategory": 0,
+            "parameterNumber": 0,
+            "scaleFactorOfFirstFixedSurface": 2147483647,
+            "scaleFactorOfSecondFixedSurface": 2147483647,
+            "scaledValueOfFirstFixedSurface": 2147483647,
+            "scaledValueOfSecondFixedSurface": 2147483647,
+            "shortName": "lsm",
+            "typeOfFirstFixedSurface": "sfc",
+            "typeOfLevel": "surface",
+            "typeOfSecondFixedSurface": 255
+          },
+          "grib_name": "Land-sea mask",
+          "height_m": null,
+          "level_pa": null,
+          "level_type": "surface",
+          "short_name": "lsm",
+          "soil_depth_mm": null,
+          "units": "(0 - 1)",
+          "vtable_line": 15,
+          "vtable_raw_line": " 172 |   1  |   0  |      | LANDSEA  | 0/1 Flag| Land-sea mask                           |  2  |  0  |   0 |   1 |",
+          "wps_field": "LANDSEA",
+          "wps_level": 200100.0
+        },
+        "recipe": "ECMWF fractional LANDSEA > 0.5 -> 1, else 0",
+        "shape": [
+          721,
+          1440
+        ],
+        "source": "aifs_grib_normalized",
+        "source_path": "/mnt/data/canairy_meteo/runs/wps_cases/20260428_18z_72h/ungrib/step_000.grib2",
+        "source_refs": [
+          "/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_src/WPS/ungrib/src/rrpr.F:869",
+          "/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_src/WPS/ungrib/src/rrpr.F:978"
+        ]
+      },
+      "PMSL": {
+        "dtype": "float32",
+        "grib_sha256": "42a2044498d24a29e668b8a1ed79caac4dc19acfffeaa8edf2059efe2bc0ba90",
+        "message": {
+          "field": "PMSL",
+          "grib_keys": {
+            "discipline": 0,
+            "level": 0,
+            "parameterCategory": 3,
+            "parameterNumber": 0,
+            "scaleFactorOfFirstFixedSurface": 2147483647,
+            "scaleFactorOfSecondFixedSurface": 2147483647,
+            "scaledValueOfFirstFixedSurface": 2147483647,
+            "scaledValueOfSecondFixedSurface": 2147483647,
+            "shortName": "msl",
+            "typeOfFirstFixedSurface": "sfc",
+            "typeOfLevel": "meanSea",
+            "typeOfSecondFixedSurface": 255
+          },
+          "grib_name": "Mean sea level pressure",
+          "height_m": null,
+          "level_pa": null,
+          "level_type": "meanSea",
+          "short_name": "msl",
+          "soil_depth_mm": null,
+          "units": "Pa",
+          "vtable_line": 14,
+          "vtable_raw_line": " 151 | 102  |   0  |      | PMSL     | Pa      | Mean sea-level pressure                 |  0  |  3  |   0 | 101 |",
+          "wps_field": "PMSL",
+          "wps_level": 201300.0
+        },
+        "shape": [
+          721,
+          1440
+        ],
+        "source": "aifs_grib",
+        "source_path": "/mnt/data/canairy_meteo/runs/wps_cases/20260428_18z_72h/ungrib/step_000.grib2"
+      },
+      "PRES": {
+        "dtype": "float32",
+        "grib_sha256": "42a2044498d24a29e668b8a1ed79caac4dc19acfffeaa8edf2059efe2bc0ba90",
+        "recipe": "PRES[0]=PSFC; PRES[1..13]=isobaric level constants",
+        "shape": [
+          14,
+          721,
+          1440
+        ],
+        "source": "derived",
+        "source_path": "/mnt/data/canairy_meteo/runs/wps_cases/20260428_18z_72h/ungrib/step_000.grib2"
+      },
+      "PSFC": {
+        "dtype": "float32",
+        "grib_sha256": "42a2044498d24a29e668b8a1ed79caac4dc19acfffeaa8edf2059efe2bc0ba90",
+        "message": {
+          "field": "PSFC",
+          "grib_keys": {
+            "discipline": 0,
+            "level": 0,
+            "parameterCategory": 3,
+            "parameterNumber": 0,
+            "scaleFactorOfFirstFixedSurface": 2147483647,
+            "scaleFactorOfSecondFixedSurface": 2147483647,
+            "scaledValueOfFirstFixedSurface": 2147483647,
+            "scaledValueOfSecondFixedSurface": 2147483647,
+            "shortName": "sp",
+            "typeOfFirstFixedSurface": "sfc",
+            "typeOfLevel": "surface",
+            "typeOfSecondFixedSurface": 255
+          },
+          "grib_name": "Surface pressure",
+          "height_m": null,
+          "level_pa": null,
+          "level_type": "surface",
+          "short_name": "sp",
+          "soil_depth_mm": null,
+          "units": "Pa",
+          "vtable_line": 13,
+          "vtable_raw_line": " 134 |   1  |   0  |      | PSFC     | Pa      | Surface pressure                        |  0  |  3  |   0 |   1 |",
+          "wps_field": "PSFC",
+          "wps_level": 200100.0
+        },
+        "shape": [
+          721,
+          1440
+        ],
+        "source": "aifs_grib",
+        "source_path": "/mnt/data/canairy_meteo/runs/wps_cases/20260428_18z_72h/ungrib/step_000.grib2"
+      },
+      "SKINTEMP": {
+        "dtype": "float32",
+        "grib_sha256": "42a2044498d24a29e668b8a1ed79caac4dc19acfffeaa8edf2059efe2bc0ba90",
+        "message": {
+          "field": "SKINTEMP",
+          "grib_keys": {
+            "discipline": 0,
+            "level": 0,
+            "parameterCategory": 0,
+            "parameterNumber": 17,
+            "scaleFactorOfFirstFixedSurface": 2147483647,
+            "scaleFactorOfSecondFixedSurface": 2147483647,
+            "scaledValueOfFirstFixedSurface": 2147483647,
+            "scaledValueOfSecondFixedSurface": 2147483647,
+            "shortName": "skt",
+            "typeOfFirstFixedSurface": "sfc",
+            "typeOfLevel": "surface",
+            "typeOfSecondFixedSurface": 255
+          },
+          "grib_name": "Skin temperature",
+          "height_m": null,
+          "level_pa": null,
+          "level_type": "surface",
+          "short_name": "skt",
+          "soil_depth_mm": null,
+          "units": "K",
+          "vtable_line": 16,
+          "vtable_raw_line": " 235 |   1  |   0  |      | SKINTEMP | K       | Skin temperature                        |  0  |  0  |  17 |   1 |",
+          "wps_field": "SKINTEMP",
+          "wps_level": 200100.0
+        },
+        "shape": [
+          721,
+          1440
+        ],
+        "source": "aifs_grib",
+        "source_path": "/mnt/data/canairy_meteo/runs/wps_cases/20260428_18z_72h/ungrib/step_000.grib2"
+      },
+      "SM": {
+        "dtype": "float32",
+        "grib_sha256": "42a2044498d24a29e668b8a1ed79caac4dc19acfffeaa8edf2059efe2bc0ba90",
+        "layers": [
+          {
+            "field": "SM010040",
+            "grib_keys": {
+              "discipline": 2,
+              "level": 10,
+              "parameterCategory": 0,
+              "parameterNumber": 192,
+              "scaleFactorOfFirstFixedSurface": 0,
+              "scaleFactorOfSecondFixedSurface": 0,
+              "scaledValueOfFirstFixedSurface": 10,
+              "scaledValueOfSecondFixedSurface": 40,
+              "shortName": "unknown",
+              "typeOfFirstFixedSurface": "sfc",
+              "typeOfLevel": "depthBelowLandLayer",
+              "typeOfSecondFixedSurface": 106
+            },
+            "grib_name": "unknown",
+            "height_m": null,
+            "level_pa": null,
+            "level_type": "depthBelowLandLayer",
+            "short_name": "unknown",
+            "soil_depth_mm": [
+              1000,
+              4000
+            ],
+            "units": "unknown",
+            "vtable_line": 19,
+            "vtable_raw_line": " 144 | 112  |1000  |4000  | SM010040 | fraction| Soil moisture 10-40 cm below ground     |  2  |  0  | 192 | 106 |",
+            "wps_field": "SM010040",
+            "wps_level": 200100.0
+          },
+          {
+            "field": "SM000010",
+            "grib_keys": {
+              "discipline": 2,
+              "level": 0,
+              "parameterCategory": 0,
+              "parameterNumber": 192,
+              "scaleFactorOfFirstFixedSurface": 0,
+              "scaleFactorOfSecondFixedSurface": 0,
+              "scaledValueOfFirstFixedSurface": 0,
+              "scaledValueOfSecondFixedSurface": 10,
+              "shortName": "unknown",
+              "typeOfFirstFixedSurface": "sfc",
+              "typeOfLevel": "depthBelowLandLayer",
+              "typeOfSecondFixedSurface": 106
+            },
+            "grib_name": "unknown",
+            "height_m": null,
+            "level_pa": null,
+            "level_type": "depthBelowLandLayer",
+            "short_name": "unknown",
+            "soil_depth_mm": [
+              0,
+              1000
+            ],
+            "units": "unknown",
+            "vtable_line": 18,
+            "vtable_raw_line": " 144 | 112  |   0  |1000  | SM000010 | fraction| Soil moisture 0-10 cm below ground      |  2  |  0  | 192 | 106 |",
+            "wps_field": "SM000010",
+            "wps_level": 200100.0
+          }
+        ],
+        "recipe": "SM[0]=SM010040; SM[1]=SM000010",
+        "shape": [
+          2,
+          721,
+          1440
+        ],
+        "source": "derived_stack",
+        "source_path": "/mnt/data/canairy_meteo/runs/wps_cases/20260428_18z_72h/ungrib/step_000.grib2"
+      },
+      "SM000010": {
+        "dtype": "float32",
+        "grib_sha256": "42a2044498d24a29e668b8a1ed79caac4dc19acfffeaa8edf2059efe2bc0ba90",
+        "message": {
+          "field": "SM000010",
+          "grib_keys": {
+            "discipline": 2,
+            "level": 0,
+            "parameterCategory": 0,
+            "parameterNumber": 192,
+            "scaleFactorOfFirstFixedSurface": 0,
+            "scaleFactorOfSecondFixedSurface": 0,
+            "scaledValueOfFirstFixedSurface": 0,
+            "scaledValueOfSecondFixedSurface": 10,
+            "shortName": "unknown",
+            "typeOfFirstFixedSurface": "sfc",
+            "typeOfLevel": "depthBelowLandLayer",
+            "typeOfSecondFixedSurface": 106
+          },
+          "grib_name": "unknown",
+          "height_m": null,
+          "level_pa": null,
+          "level_type": "depthBelowLandLayer",
+          "short_name": "unknown",
+          "soil_depth_mm": [
+            0,
+            1000
+          ],
+          "units": "unknown",
+          "vtable_line": 18,
+          "vtable_raw_line": " 144 | 112  |   0  |1000  | SM000010 | fraction| Soil moisture 0-10 cm below ground      |  2  |  0  | 192 | 106 |",
+          "wps_field": "SM000010",
+          "wps_level": 200100.0
+        },
+        "shape": [
+          721,
+          1440
+        ],
+        "source": "aifs_grib",
+        "source_path": "/mnt/data/canairy_meteo/runs/wps_cases/20260428_18z_72h/ungrib/step_000.grib2"
+      },
+      "SM010040": {
+        "dtype": "float32",
+        "grib_sha256": "42a2044498d24a29e668b8a1ed79caac4dc19acfffeaa8edf2059efe2bc0ba90",
+        "message": {
+          "field": "SM010040",
+          "grib_keys": {
+            "discipline": 2,
+            "level": 10,
+            "parameterCategory": 0,
+            "parameterNumber": 192,
+            "scaleFactorOfFirstFixedSurface": 0,
+            "scaleFactorOfSecondFixedSurface": 0,
+            "scaledValueOfFirstFixedSurface": 10,
+            "scaledValueOfSecondFixedSurface": 40,
+            "shortName": "unknown",
+            "typeOfFirstFixedSurface": "sfc",
+            "typeOfLevel": "depthBelowLandLayer",
+            "typeOfSecondFixedSurface": 106
+          },
+          "grib_name": "unknown",
+          "height_m": null,
+          "level_pa": null,
+          "level_type": "depthBelowLandLayer",
+          "short_name": "unknown",
+          "soil_depth_mm": [
+            1000,
+            4000
+          ],
+          "units": "unknown",
+          "vtable_line": 19,
+          "vtable_raw_line": " 144 | 112  |1000  |4000  | SM010040 | fraction| Soil moisture 10-40 cm below ground     |  2  |  0  | 192 | 106 |",
+          "wps_field": "SM010040",
+          "wps_level": 200100.0
+        },
+        "shape": [
+          721,
+          1440
+        ],
+        "source": "aifs_grib",
+        "source_path": "/mnt/data/canairy_meteo/runs/wps_cases/20260428_18z_72h/ungrib/step_000.grib2"
+      },
+      "SOILHGT": {
+        "dtype": "float32",
+        "grib_sha256": "42a2044498d24a29e668b8a1ed79caac4dc19acfffeaa8edf2059efe2bc0ba90",
+        "message": {
+          "field": "SOILHGT",
+          "grib_keys": {
+            "discipline": 0,
+            "level": 0,
+            "parameterCategory": 3,
+            "parameterNumber": 5,
+            "scaleFactorOfFirstFixedSurface": 2147483647,
+            "scaleFactorOfSecondFixedSurface": 2147483647,
+            "scaledValueOfFirstFixedSurface": 2147483647,
+            "scaledValueOfSecondFixedSurface": 2147483647,
+            "shortName": "orog",
+            "typeOfFirstFixedSurface": "sfc",
+            "typeOfLevel": "surface",
+            "typeOfSecondFixedSurface": 255
+          },
+          "grib_name": "Orography",
+          "height_m": null,
+          "level_pa": null,
+          "level_type": "surface",
+          "short_name": "orog",
+          "soil_depth_mm": null,
+          "units": "m",
+          "vtable_line": 17,
+          "vtable_raw_line": "   7 |   1  |   0  |      | SOILHGT  | m       | Source surface height                   |  0  |  3  |   5 |   1 |",
+          "wps_field": "SOILHGT",
+          "wps_level": 200100.0
+        },
+        "shape": [
+          721,
+          1440
+        ],
+        "source": "aifs_grib",
+        "source_path": "/mnt/data/canairy_meteo/runs/wps_cases/20260428_18z_72h/ungrib/step_000.grib2"
+      },
+      "SOIL_LAYERS": {
+        "dtype": "float32",
+        "grib_sha256": "42a2044498d24a29e668b8a1ed79caac4dc19acfffeaa8edf2059efe2bc0ba90",
+        "recipe": "constant met_em soil layer order [40, 10] cm",
+        "shape": [
+          2,
+          721,
+          1440
+        ],
+        "source": "derived",
+        "source_path": "/mnt/data/canairy_meteo/runs/wps_cases/20260428_18z_72h/ungrib/step_000.grib2"
+      },
+      "SPECHUMD": {
+        "dtype": "float32",
+        "grib_sha256": "42a2044498d24a29e668b8a1ed79caac4dc19acfffeaa8edf2059efe2bc0ba90",
+        "isobaric": [
+          {
+            "field": "SPECHUMD",
+            "grib_keys": {
+              "discipline": 0,
+              "level": 1000,
+              "parameterCategory": 1,
+              "parameterNumber": 0,
+              "scaleFactorOfFirstFixedSurface": 0,
+              "scaleFactorOfSecondFixedSurface": 2147483647,
+              "scaledValueOfFirstFixedSurface": 100000,
+              "scaledValueOfSecondFixedSurface": 2147483647,
+              "shortName": "q",
+              "typeOfFirstFixedSurface": "pl",
+              "typeOfLevel": "isobaricInhPa",
+              "typeOfSecondFixedSurface": 255
+            },
+            "grib_name": "Specific humidity",
+            "height_m": null,
+            "level_pa": 100000.0,
+            "level_type": "isobaricInhPa",
+            "short_name": "q",
+            "soil_depth_mm": null,
+            "units": "kg kg**-1",
+            "vtable_line": 7,
+            "vtable_raw_line": " 133 | 100  |   *  |      | SPECHUMD | kg kg-1 | Specific humidity                       |  0  |  1  |   0 | 100 |",
+            "wps_field": "SPECHUMD",
+            "wps_level": 100000.0
+          },
+          {
+            "field": "SPECHUMD",
+            "grib_keys": {
+              "discipline": 0,
+              "level": 925,
+              "parameterCategory": 1,
+              "parameterNumber": 0,
+              "scaleFactorOfFirstFixedSurface": 0,
+              "scaleFactorOfSecondFixedSurface": 2147483647,
+              "scaledValueOfFirstFixedSurface": 92500,
+              "scaledValueOfSecondFixedSurface": 2147483647,
+              "shortName": "q",
+              "typeOfFirstFixedSurface": "pl",
+              "typeOfLevel": "isobaricInhPa",
+              "typeOfSecondFixedSurface": 255
+            },
+            "grib_name": "Specific humidity",
+            "height_m": null,
+            "level_pa": 92500.0,
+            "level_type": "isobaricInhPa",
+            "short_name": "q",
+            "soil_depth_mm": null,
+            "units": "kg kg**-1",
+            "vtable_line": 7,
+            "vtable_raw_line": " 133 | 100  |   *  |      | SPECHUMD | kg kg-1 | Specific humidity                       |  0  |  1  |   0 | 100 |",
+            "wps_field": "SPECHUMD",
+            "wps_level": 92500.0
+          },
+          {
+            "field": "SPECHUMD",
+            "grib_keys": {
+              "discipline": 0,
+              "level": 850,
+              "parameterCategory": 1,
+              "parameterNumber": 0,
+              "scaleFactorOfFirstFixedSurface": 0,
+              "scaleFactorOfSecondFixedSurface": 2147483647,
+              "scaledValueOfFirstFixedSurface": 85000,
+              "scaledValueOfSecondFixedSurface": 2147483647,
+              "shortName": "q",
+              "typeOfFirstFixedSurface": "pl",
+              "typeOfLevel": "isobaricInhPa",
+              "typeOfSecondFixedSurface": 255
+            },
+            "grib_name": "Specific humidity",
+            "height_m": null,
+            "level_pa": 85000.0,
+            "level_type": "isobaricInhPa",
+            "short_name": "q",
+            "soil_depth_mm": null,
+            "units": "kg kg**-1",
+            "vtable_line": 7,
+            "vtable_raw_line": " 133 | 100  |   *  |      | SPECHUMD | kg kg-1 | Specific humidity                       |  0  |  1  |   0 | 100 |",
+            "wps_field": "SPECHUMD",
+            "wps_level": 85000.0
+          },
+          {
+            "field": "SPECHUMD",
+            "grib_keys": {
+              "discipline": 0,
+              "level": 700,
+              "parameterCategory": 1,
+              "parameterNumber": 0,
+              "scaleFactorOfFirstFixedSurface": 0,
+              "scaleFactorOfSecondFixedSurface": 2147483647,
+              "scaledValueOfFirstFixedSurface": 70000,
+              "scaledValueOfSecondFixedSurface": 2147483647,
+              "shortName": "q",
+              "typeOfFirstFixedSurface": "pl",
+              "typeOfLevel": "isobaricInhPa",
+              "typeOfSecondFixedSurface": 255
+            },
+            "grib_name": "Specific humidity",
+            "height_m": null,
+            "level_pa": 70000.0,
+            "level_type": "isobaricInhPa",
+            "short_name": "q",
+            "soil_depth_mm": null,
+            "units": "kg kg**-1",
+            "vtable_line": 7,
+            "vtable_raw_line": " 133 | 100  |   *  |      | SPECHUMD | kg kg-1 | Specific humidity                       |  0  |  1  |   0 | 100 |",
+            "wps_field": "SPECHUMD",
+            "wps_level": 70000.0
+          },
+          {
+            "field": "SPECHUMD",
+            "grib_keys": {
+              "discipline": 0,
+              "level": 600,
+              "parameterCategory": 1,
+              "parameterNumber": 0,
+              "scaleFactorOfFirstFixedSurface": 0,
+              "scaleFactorOfSecondFixedSurface": 2147483647,
+              "scaledValueOfFirstFixedSurface": 60000,
+              "scaledValueOfSecondFixedSurface": 2147483647,
+              "shortName": "q",
+              "typeOfFirstFixedSurface": "pl",
+              "typeOfLevel": "isobaricInhPa",
+              "typeOfSecondFixedSurface": 255
+            },
+            "grib_name": "Specific humidity",
+            "height_m": null,
+            "level_pa": 60000.0,
+            "level_type": "isobaricInhPa",
+            "short_name": "q",
+            "soil_depth_mm": null,
+            "units": "kg kg**-1",
+            "vtable_line": 7,
+            "vtable_raw_line": " 133 | 100  |   *  |      | SPECHUMD | kg kg-1 | Specific humidity                       |  0  |  1  |   0 | 100 |",
+            "wps_field": "SPECHUMD",
+            "wps_level": 60000.0
+          },
+          {
+            "field": "SPECHUMD",
+            "grib_keys": {
+              "discipline": 0,
+              "level": 500,
+              "parameterCategory": 1,
+              "parameterNumber": 0,
+              "scaleFactorOfFirstFixedSurface": 0,
+              "scaleFactorOfSecondFixedSurface": 2147483647,
+              "scaledValueOfFirstFixedSurface": 50000,
+              "scaledValueOfSecondFixedSurface": 2147483647,
+              "shortName": "q",
+              "typeOfFirstFixedSurface": "pl",
+              "typeOfLevel": "isobaricInhPa",
+              "typeOfSecondFixedSurface": 255
+            },
+            "grib_name": "Specific humidity",
+            "height_m": null,
+            "level_pa": 50000.0,
+            "level_type": "isobaricInhPa",
+            "short_name": "q",
+            "soil_depth_mm": null,
+            "units": "kg kg**-1",
+            "vtable_line": 7,
+            "vtable_raw_line": " 133 | 100  |   *  |      | SPECHUMD | kg kg-1 | Specific humidity                       |  0  |  1  |   0 | 100 |",
+            "wps_field": "SPECHUMD",
+            "wps_level": 50000.0
+          },
+          {
+            "field": "SPECHUMD",
+            "grib_keys": {
+              "discipline": 0,
+              "level": 400,
+              "parameterCategory": 1,
+              "parameterNumber": 0,
+              "scaleFactorOfFirstFixedSurface": 0,
+              "scaleFactorOfSecondFixedSurface": 2147483647,
+              "scaledValueOfFirstFixedSurface": 40000,
+              "scaledValueOfSecondFixedSurface": 2147483647,
+              "shortName": "q",
+              "typeOfFirstFixedSurface": "pl",
+              "typeOfLevel": "isobaricInhPa",
+              "typeOfSecondFixedSurface": 255
+            },
+            "grib_name": "Specific humidity",
+            "height_m": null,
+            "level_pa": 40000.0,
+            "level_type": "isobaricInhPa",
+            "short_name": "q",
+            "soil_depth_mm": null,
+            "units": "kg kg**-1",
+            "vtable_line": 7,
+            "vtable_raw_line": " 133 | 100  |   *  |      | SPECHUMD | kg kg-1 | Specific humidity                       |  0  |  1  |   0 | 100 |",
+            "wps_field": "SPECHUMD",
+            "wps_level": 40000.0
+          },
+          {
+            "field": "SPECHUMD",
+            "grib_keys": {
+              "discipline": 0,
+              "level": 300,
+              "parameterCategory": 1,
+              "parameterNumber": 0,
+              "scaleFactorOfFirstFixedSurface": 0,
+              "scaleFactorOfSecondFixedSurface": 2147483647,
+              "scaledValueOfFirstFixedSurface": 30000,
+              "scaledValueOfSecondFixedSurface": 2147483647,
+              "shortName": "q",
+              "typeOfFirstFixedSurface": "pl",
+              "typeOfLevel": "isobaricInhPa",
+              "typeOfSecondFixedSurface": 255
+            },
+            "grib_name": "Specific humidity",
+            "height_m": null,
+            "level_pa": 30000.0,
+            "level_type": "isobaricInhPa",
+            "short_name": "q",
+            "soil_depth_mm": null,
+            "units": "kg kg**-1",
+            "vtable_line": 7,
+            "vtable_raw_line": " 133 | 100  |   *  |      | SPECHUMD | kg kg-1 | Specific humidity                       |  0  |  1  |   0 | 100 |",
+            "wps_field": "SPECHUMD",
+            "wps_level": 30000.0
+          },
+          {
+            "field": "SPECHUMD",
+            "grib_keys": {
+              "discipline": 0,
+              "level": 250,
+              "parameterCategory": 1,
+              "parameterNumber": 0,
+              "scaleFactorOfFirstFixedSurface": 0,
+              "scaleFactorOfSecondFixedSurface": 2147483647,
+              "scaledValueOfFirstFixedSurface": 25000,
+              "scaledValueOfSecondFixedSurface": 2147483647,
+              "shortName": "q",
+              "typeOfFirstFixedSurface": "pl",
+              "typeOfLevel": "isobaricInhPa",
+              "typeOfSecondFixedSurface": 255
+            },
+            "grib_name": "Specific humidity",
+            "height_m": null,
+            "level_pa": 25000.0,
+            "level_type": "isobaricInhPa",
+            "short_name": "q",
+            "soil_depth_mm": null,
+            "units": "kg kg**-1",
+            "vtable_line": 7,
+            "vtable_raw_line": " 133 | 100  |   *  |      | SPECHUMD | kg kg-1 | Specific humidity                       |  0  |  1  |   0 | 100 |",
+            "wps_field": "SPECHUMD",
+            "wps_level": 25000.0
+          },
+          {
+            "field": "SPECHUMD",
+            "grib_keys": {
+              "discipline": 0,
+              "level": 200,
+              "parameterCategory": 1,
+              "parameterNumber": 0,
+              "scaleFactorOfFirstFixedSurface": 0,
+              "scaleFactorOfSecondFixedSurface": 2147483647,
+              "scaledValueOfFirstFixedSurface": 20000,
+              "scaledValueOfSecondFixedSurface": 2147483647,
+              "shortName": "q",
+              "typeOfFirstFixedSurface": "pl",
+              "typeOfLevel": "isobaricInhPa",
+              "typeOfSecondFixedSurface": 255
+            },
+            "grib_name": "Specific humidity",
+            "height_m": null,
+            "level_pa": 20000.0,
+            "level_type": "isobaricInhPa",
+            "short_name": "q",
+            "soil_depth_mm": null,
+            "units": "kg kg**-1",
+            "vtable_line": 7,
+            "vtable_raw_line": " 133 | 100  |   *  |      | SPECHUMD | kg kg-1 | Specific humidity                       |  0  |  1  |   0 | 100 |",
+            "wps_field": "SPECHUMD",
+            "wps_level": 20000.0
+          },
+          {
+            "field": "SPECHUMD",
+            "grib_keys": {
+              "discipline": 0,
+              "level": 150,
+              "parameterCategory": 1,
+              "parameterNumber": 0,
+              "scaleFactorOfFirstFixedSurface": 0,
+              "scaleFactorOfSecondFixedSurface": 2147483647,
+              "scaledValueOfFirstFixedSurface": 15000,
+              "scaledValueOfSecondFixedSurface": 2147483647,
+              "shortName": "q",
+              "typeOfFirstFixedSurface": "pl",
+              "typeOfLevel": "isobaricInhPa",
+              "typeOfSecondFixedSurface": 255
+            },
+            "grib_name": "Specific humidity",
+            "height_m": null,
+            "level_pa": 15000.0,
+            "level_type": "isobaricInhPa",
+            "short_name": "q",
+            "soil_depth_mm": null,
+            "units": "kg kg**-1",
+            "vtable_line": 7,
+            "vtable_raw_line": " 133 | 100  |   *  |      | SPECHUMD | kg kg-1 | Specific humidity                       |  0  |  1  |   0 | 100 |",
+            "wps_field": "SPECHUMD",
+            "wps_level": 15000.0
+          },
+          {
+            "field": "SPECHUMD",
+            "grib_keys": {
+              "discipline": 0,
+              "level": 100,
+              "parameterCategory": 1,
+              "parameterNumber": 0,
+              "scaleFactorOfFirstFixedSurface": 0,
+              "scaleFactorOfSecondFixedSurface": 2147483647,
+              "scaledValueOfFirstFixedSurface": 10000,
+              "scaledValueOfSecondFixedSurface": 2147483647,
+              "shortName": "q",
+              "typeOfFirstFixedSurface": "pl",
+              "typeOfLevel": "isobaricInhPa",
+              "typeOfSecondFixedSurface": 255
+            },
+            "grib_name": "Specific humidity",
+            "height_m": null,
+            "level_pa": 10000.0,
+            "level_type": "isobaricInhPa",
+            "short_name": "q",
+            "soil_depth_mm": null,
+            "units": "kg kg**-1",
+            "vtable_line": 7,
+            "vtable_raw_line": " 133 | 100  |   *  |      | SPECHUMD | kg kg-1 | Specific humidity                       |  0  |  1  |   0 | 100 |",
+            "wps_field": "SPECHUMD",
+            "wps_level": 10000.0
+          },
+          {
+            "field": "SPECHUMD",
+            "grib_keys": {
+              "discipline": 0,
+              "level": 50,
+              "parameterCategory": 1,
+              "parameterNumber": 0,
+              "scaleFactorOfFirstFixedSurface": 0,
+              "scaleFactorOfSecondFixedSurface": 2147483647,
+              "scaledValueOfFirstFixedSurface": 5000,
+              "scaledValueOfSecondFixedSurface": 2147483647,
+              "shortName": "q",
+              "typeOfFirstFixedSurface": "pl",
+              "typeOfLevel": "isobaricInhPa",
+              "typeOfSecondFixedSurface": 255
+            },
+            "grib_name": "Specific humidity",
+            "height_m": null,
+            "level_pa": 5000.0,
+            "level_type": "isobaricInhPa",
+            "short_name": "q",
+            "soil_depth_mm": null,
+            "units": "kg kg**-1",
+            "vtable_line": 7,
+            "vtable_raw_line": " 133 | 100  |   *  |      | SPECHUMD | kg kg-1 | Specific humidity                       |  0  |  1  |   0 | 100 |",
+            "wps_field": "SPECHUMD",
+            "wps_level": 5000.0
+          }
+        ],
+        "shape": [
+          14,
+          721,
+          1440
+        ],
+        "source": "aifs_grib+surface_policy",
+        "source_path": "/mnt/data/canairy_meteo/runs/wps_cases/20260428_18z_72h/ungrib/step_000.grib2",
+        "surface": {
+          "policy": "wps_fill",
+          "source": "METGRID.TBL fill",
+          "value": -1.0
+        }
+      },
+      "ST": {
+        "dtype": "float32",
+        "grib_sha256": "42a2044498d24a29e668b8a1ed79caac4dc19acfffeaa8edf2059efe2bc0ba90",
+        "layers": [
+          {
+            "field": "ST010040",
+            "grib_keys": {
+              "discipline": 2,
+              "level": 10,
+              "parameterCategory": 0,
+              "parameterNumber": 2,
+              "scaleFactorOfFirstFixedSurface": 0,
+              "scaleFactorOfSecondFixedSurface": 0,
+              "scaledValueOfFirstFixedSurface": 10,
+              "scaledValueOfSecondFixedSurface": 40,
+              "shortName": "st",
+              "typeOfFirstFixedSurface": "sfc",
+              "typeOfLevel": "depthBelowLandLayer",
+              "typeOfSecondFixedSurface": 106
+            },
+            "grib_name": "Soil temperature",
+            "height_m": null,
+            "level_pa": null,
+            "level_type": "depthBelowLandLayer",
+            "short_name": "st",
+            "soil_depth_mm": [
+              1000,
+              4000
+            ],
+            "units": "K",
+            "vtable_line": 21,
+            "vtable_raw_line": "  85 | 112  |1000  |4000  | ST010040 | K       | Soil temperature 10-40 cm below ground  |  2  |  0  |   2 | 106 |",
+            "wps_field": "ST010040",
+            "wps_level": 200100.0
+          },
+          {
+            "field": "ST000010",
+            "grib_keys": {
+              "discipline": 2,
+              "level": 0,
+              "parameterCategory": 0,
+              "parameterNumber": 2,
+              "scaleFactorOfFirstFixedSurface": 0,
+              "scaleFactorOfSecondFixedSurface": 0,
+              "scaledValueOfFirstFixedSurface": 0,
+              "scaledValueOfSecondFixedSurface": 10,
+              "shortName": "st",
+              "typeOfFirstFixedSurface": "sfc",
+              "typeOfLevel": "depthBelowLandLayer",
+              "typeOfSecondFixedSurface": 106
+            },
+            "grib_name": "Soil temperature",
+            "height_m": null,
+            "level_pa": null,
+            "level_type": "depthBelowLandLayer",
+            "short_name": "st",
+            "soil_depth_mm": [
+              0,
+              1000
+            ],
+            "units": "K",
+            "vtable_line": 20,
+            "vtable_raw_line": "  85 | 112  |   0  |1000  | ST000010 | K       | Soil temperature 0-10 cm below ground   |  2  |  0  |   2 | 106 |",
+            "wps_field": "ST000010",
+            "wps_level": 200100.0
+          }
+        ],
+        "recipe": "ST[0]=ST010040; ST[1]=ST000010",
+        "shape": [
+          2,
+          721,
+          1440
+        ],
+        "source": "derived_stack",
+        "source_path": "/mnt/data/canairy_meteo/runs/wps_cases/20260428_18z_72h/ungrib/step_000.grib2"
+      },
+      "ST000010": {
+        "dtype": "float32",
+        "grib_sha256": "42a2044498d24a29e668b8a1ed79caac4dc19acfffeaa8edf2059efe2bc0ba90",
+        "message": {
+          "field": "ST000010",
+          "grib_keys": {
+            "discipline": 2,
+            "level": 0,
+            "parameterCategory": 0,
+            "parameterNumber": 2,
+            "scaleFactorOfFirstFixedSurface": 0,
+            "scaleFactorOfSecondFixedSurface": 0,
+            "scaledValueOfFirstFixedSurface": 0,
+            "scaledValueOfSecondFixedSurface": 10,
+            "shortName": "st",
+            "typeOfFirstFixedSurface": "sfc",
+            "typeOfLevel": "depthBelowLandLayer",
+            "typeOfSecondFixedSurface": 106
+          },
+          "grib_name": "Soil temperature",
+          "height_m": null,
+          "level_pa": null,
+          "level_type": "depthBelowLandLayer",
+          "short_name": "st",
+          "soil_depth_mm": [
+            0,
+            1000
+          ],
+          "units": "K",
+          "vtable_line": 20,
+          "vtable_raw_line": "  85 | 112  |   0  |1000  | ST000010 | K       | Soil temperature 0-10 cm below ground   |  2  |  0  |   2 | 106 |",
+          "wps_field": "ST000010",
+          "wps_level": 200100.0
+        },
+        "shape": [
+          721,
+          1440
+        ],
+        "source": "aifs_grib",
+        "source_path": "/mnt/data/canairy_meteo/runs/wps_cases/20260428_18z_72h/ungrib/step_000.grib2"
+      },
+      "ST010040": {
+        "dtype": "float32",
+        "grib_sha256": "42a2044498d24a29e668b8a1ed79caac4dc19acfffeaa8edf2059efe2bc0ba90",
+        "message": {
+          "field": "ST010040",
+          "grib_keys": {
+            "discipline": 2,
+            "level": 10,
+            "parameterCategory": 0,
+            "parameterNumber": 2,
+            "scaleFactorOfFirstFixedSurface": 0,
+            "scaleFactorOfSecondFixedSurface": 0,
+            "scaledValueOfFirstFixedSurface": 10,
+            "scaledValueOfSecondFixedSurface": 40,
+            "shortName": "st",
+            "typeOfFirstFixedSurface": "sfc",
+            "typeOfLevel": "depthBelowLandLayer",
+            "typeOfSecondFixedSurface": 106
+          },
+          "grib_name": "Soil temperature",
+          "height_m": null,
+          "level_pa": null,
+          "level_type": "depthBelowLandLayer",
+          "short_name": "st",
+          "soil_depth_mm": [
+            1000,
+            4000
+          ],
+          "units": "K",
+          "vtable_line": 21,
+          "vtable_raw_line": "  85 | 112  |1000  |4000  | ST010040 | K       | Soil temperature 10-40 cm below ground  |  2  |  0  |   2 | 106 |",
+          "wps_field": "ST010040",
+          "wps_level": 200100.0
+        },
+        "shape": [
+          721,
+          1440
+        ],
+        "source": "aifs_grib",
+        "source_path": "/mnt/data/canairy_meteo/runs/wps_cases/20260428_18z_72h/ungrib/step_000.grib2"
+      },
+      "TT": {
+        "dtype": "float32",
+        "grib_sha256": "42a2044498d24a29e668b8a1ed79caac4dc19acfffeaa8edf2059efe2bc0ba90",
+        "isobaric": [
+          {
+            "field": "TT",
+            "grib_keys": {
+              "discipline": 0,
+              "level": 1000,
+              "parameterCategory": 0,
+              "parameterNumber": 0,
+              "scaleFactorOfFirstFixedSurface": 0,
+              "scaleFactorOfSecondFixedSurface": 2147483647,
+              "scaledValueOfFirstFixedSurface": 100000,
+              "scaledValueOfSecondFixedSurface": 2147483647,
+              "shortName": "t",
+              "typeOfFirstFixedSurface": "pl",
+              "typeOfLevel": "isobaricInhPa",
+              "typeOfSecondFixedSurface": 255
+            },
+            "grib_name": "Temperature",
+            "height_m": null,
+            "level_pa": 100000.0,
+            "level_type": "isobaricInhPa",
+            "short_name": "t",
+            "soil_depth_mm": null,
+            "units": "K",
+            "vtable_line": 4,
+            "vtable_raw_line": " 130 | 100  |   *  |      | TT       | K       | Temperature                             |  0  |  0  |   0 | 100 |",
+            "wps_field": "TT",
+            "wps_level": 100000.0
+          },
+          {
+            "field": "TT",
+            "grib_keys": {
+              "discipline": 0,
+              "level": 925,
+              "parameterCategory": 0,
+              "parameterNumber": 0,
+              "scaleFactorOfFirstFixedSurface": 0,
+              "scaleFactorOfSecondFixedSurface": 2147483647,
+              "scaledValueOfFirstFixedSurface": 92500,
+              "scaledValueOfSecondFixedSurface": 2147483647,
+              "shortName": "t",
+              "typeOfFirstFixedSurface": "pl",
+              "typeOfLevel": "isobaricInhPa",
+              "typeOfSecondFixedSurface": 255
+            },
+            "grib_name": "Temperature",
+            "height_m": null,
+            "level_pa": 92500.0,
+            "level_type": "isobaricInhPa",
+            "short_name": "t",
+            "soil_depth_mm": null,
+            "units": "K",
+            "vtable_line": 4,
+            "vtable_raw_line": " 130 | 100  |   *  |      | TT       | K       | Temperature                             |  0  |  0  |   0 | 100 |",
+            "wps_field": "TT",
+            "wps_level": 92500.0
+          },
+          {
+            "field": "TT",
+            "grib_keys": {
+              "discipline": 0,
+              "level": 850,
+              "parameterCategory": 0,
+              "parameterNumber": 0,
+              "scaleFactorOfFirstFixedSurface": 0,
+              "scaleFactorOfSecondFixedSurface": 2147483647,
+              "scaledValueOfFirstFixedSurface": 85000,
+              "scaledValueOfSecondFixedSurface": 2147483647,
+              "shortName": "t",
+              "typeOfFirstFixedSurface": "pl",
+              "typeOfLevel": "isobaricInhPa",
+              "typeOfSecondFixedSurface": 255
+            },
+            "grib_name": "Temperature",
+            "height_m": null,
+            "level_pa": 85000.0,
+            "level_type": "isobaricInhPa",
+            "short_name": "t",
+            "soil_depth_mm": null,
+            "units": "K",
+            "vtable_line": 4,
+            "vtable_raw_line": " 130 | 100  |   *  |      | TT       | K       | Temperature                             |  0  |  0  |   0 | 100 |",
+            "wps_field": "TT",
+            "wps_level": 85000.0
+          },
+          {
+            "field": "TT",
+            "grib_keys": {
+              "discipline": 0,
+              "level": 700,
+              "parameterCategory": 0,
+              "parameterNumber": 0,
+              "scaleFactorOfFirstFixedSurface": 0,
+              "scaleFactorOfSecondFixedSurface": 2147483647,
+              "scaledValueOfFirstFixedSurface": 70000,
+              "scaledValueOfSecondFixedSurface": 2147483647,
+              "shortName": "t",
+              "typeOfFirstFixedSurface": "pl",
+              "typeOfLevel": "isobaricInhPa",
+              "typeOfSecondFixedSurface": 255
+            },
+            "grib_name": "Temperature",
+            "height_m": null,
+            "level_pa": 70000.0,
+            "level_type": "isobaricInhPa",
+            "short_name": "t",
+            "soil_depth_mm": null,
+            "units": "K",
+            "vtable_line": 4,
+            "vtable_raw_line": " 130 | 100  |   *  |      | TT       | K       | Temperature                             |  0  |  0  |   0 | 100 |",
+            "wps_field": "TT",
+            "wps_level": 70000.0
+          },
+          {
+            "field": "TT",
+            "grib_keys": {
+              "discipline": 0,
+              "level": 600,
+              "parameterCategory": 0,
+              "parameterNumber": 0,
+              "scaleFactorOfFirstFixedSurface": 0,
+              "scaleFactorOfSecondFixedSurface": 2147483647,
+              "scaledValueOfFirstFixedSurface": 60000,
+              "scaledValueOfSecondFixedSurface": 2147483647,
+              "shortName": "t",
+              "typeOfFirstFixedSurface": "pl",
+              "typeOfLevel": "isobaricInhPa",
+              "typeOfSecondFixedSurface": 255
+            },
+            "grib_name": "Temperature",
+            "height_m": null,
+            "level_pa": 60000.0,
+            "level_type": "isobaricInhPa",
+            "short_name": "t",
+            "soil_depth_mm": null,
+            "units": "K",
+            "vtable_line": 4,
+            "vtable_raw_line": " 130 | 100  |   *  |      | TT       | K       | Temperature                             |  0  |  0  |   0 | 100 |",
+            "wps_field": "TT",
+            "wps_level": 60000.0
+          },
+          {
+            "field": "TT",
+            "grib_keys": {
+              "discipline": 0,
+              "level": 500,
+              "parameterCategory": 0,
+              "parameterNumber": 0,
+              "scaleFactorOfFirstFixedSurface": 0,
+              "scaleFactorOfSecondFixedSurface": 2147483647,
+              "scaledValueOfFirstFixedSurface": 50000,
+              "scaledValueOfSecondFixedSurface": 2147483647,
+              "shortName": "t",
+              "typeOfFirstFixedSurface": "pl",
+              "typeOfLevel": "isobaricInhPa",
+              "typeOfSecondFixedSurface": 255
+            },
+            "grib_name": "Temperature",
+            "height_m": null,
+            "level_pa": 50000.0,
+            "level_type": "isobaricInhPa",
+            "short_name": "t",
+            "soil_depth_mm": null,
+            "units": "K",
+            "vtable_line": 4,
+            "vtable_raw_line": " 130 | 100  |   *  |      | TT       | K       | Temperature                             |  0  |  0  |   0 | 100 |",
+            "wps_field": "TT",
+            "wps_level": 50000.0
+          },
+          {
+            "field": "TT",
+            "grib_keys": {
+              "discipline": 0,
+              "level": 400,
+              "parameterCategory": 0,
+              "parameterNumber": 0,
+              "scaleFactorOfFirstFixedSurface": 0,
+              "scaleFactorOfSecondFixedSurface": 2147483647,
+              "scaledValueOfFirstFixedSurface": 40000,
+              "scaledValueOfSecondFixedSurface": 2147483647,
+              "shortName": "t",
+              "typeOfFirstFixedSurface": "pl",
+              "typeOfLevel": "isobaricInhPa",
+              "typeOfSecondFixedSurface": 255
+            },
+            "grib_name": "Temperature",
+            "height_m": null,
+            "level_pa": 40000.0,
+            "level_type": "isobaricInhPa",
+            "short_name": "t",
+            "soil_depth_mm": null,
+            "units": "K",
+            "vtable_line": 4,
+            "vtable_raw_line": " 130 | 100  |   *  |      | TT       | K       | Temperature                             |  0  |  0  |   0 | 100 |",
+            "wps_field": "TT",
+            "wps_level": 40000.0
+          },
+          {
+            "field": "TT",
+            "grib_keys": {
+              "discipline": 0,
+              "level": 300,
+              "parameterCategory": 0,
+              "parameterNumber": 0,
+              "scaleFactorOfFirstFixedSurface": 0,
+              "scaleFactorOfSecondFixedSurface": 2147483647,
+              "scaledValueOfFirstFixedSurface": 30000,
+              "scaledValueOfSecondFixedSurface": 2147483647,
+              "shortName": "t",
+              "typeOfFirstFixedSurface": "pl",
+              "typeOfLevel": "isobaricInhPa",
+              "typeOfSecondFixedSurface": 255
+            },
+            "grib_name": "Temperature",
+            "height_m": null,
+            "level_pa": 30000.0,
+            "level_type": "isobaricInhPa",
+            "short_name": "t",
+            "soil_depth_mm": null,
+            "units": "K",
+            "vtable_line": 4,
+            "vtable_raw_line": " 130 | 100  |   *  |      | TT       | K       | Temperature                             |  0  |  0  |   0 | 100 |",
+            "wps_field": "TT",
+            "wps_level": 30000.0
+          },
+          {
+            "field": "TT",
+            "grib_keys": {
+              "discipline": 0,
+              "level": 250,
+              "parameterCategory": 0,
+              "parameterNumber": 0,
+              "scaleFactorOfFirstFixedSurface": 0,
+              "scaleFactorOfSecondFixedSurface": 2147483647,
+              "scaledValueOfFirstFixedSurface": 25000,
+              "scaledValueOfSecondFixedSurface": 2147483647,
+              "shortName": "t",
+              "typeOfFirstFixedSurface": "pl",
+              "typeOfLevel": "isobaricInhPa",
+              "typeOfSecondFixedSurface": 255
+            },
+            "grib_name": "Temperature",
+            "height_m": null,
+            "level_pa": 25000.0,
+            "level_type": "isobaricInhPa",
+            "short_name": "t",
+            "soil_depth_mm": null,
+            "units": "K",
+            "vtable_line": 4,
+            "vtable_raw_line": " 130 | 100  |   *  |      | TT       | K       | Temperature                             |  0  |  0  |   0 | 100 |",
+            "wps_field": "TT",
+            "wps_level": 25000.0
+          },
+          {
+            "field": "TT",
+            "grib_keys": {
+              "discipline": 0,
+              "level": 200,
+              "parameterCategory": 0,
+              "parameterNumber": 0,
+              "scaleFactorOfFirstFixedSurface": 0,
+              "scaleFactorOfSecondFixedSurface": 2147483647,
+              "scaledValueOfFirstFixedSurface": 20000,
+              "scaledValueOfSecondFixedSurface": 2147483647,
+              "shortName": "t",
+              "typeOfFirstFixedSurface": "pl",
+              "typeOfLevel": "isobaricInhPa",
+              "typeOfSecondFixedSurface": 255
+            },
+            "grib_name": "Temperature",
+            "height_m": null,
+            "level_pa": 20000.0,
+            "level_type": "isobaricInhPa",
+            "short_name": "t",
+            "soil_depth_mm": null,
+            "units": "K",
+            "vtable_line": 4,
+            "vtable_raw_line": " 130 | 100  |   *  |      | TT       | K       | Temperature                             |  0  |  0  |   0 | 100 |",
+            "wps_field": "TT",
+            "wps_level": 20000.0
+          },
+          {
+            "field": "TT",
+            "grib_keys": {
+              "discipline": 0,
+              "level": 150,
+              "parameterCategory": 0,
+              "parameterNumber": 0,
+              "scaleFactorOfFirstFixedSurface": 0,
+              "scaleFactorOfSecondFixedSurface": 2147483647,
+              "scaledValueOfFirstFixedSurface": 15000,
+              "scaledValueOfSecondFixedSurface": 2147483647,
+              "shortName": "t",
+              "typeOfFirstFixedSurface": "pl",
+              "typeOfLevel": "isobaricInhPa",
+              "typeOfSecondFixedSurface": 255
+            },
+            "grib_name": "Temperature",
+            "height_m": null,
+            "level_pa": 15000.0,
+            "level_type": "isobaricInhPa",
+            "short_name": "t",
+            "soil_depth_mm": null,
+            "units": "K",
+            "vtable_line": 4,
+            "vtable_raw_line": " 130 | 100  |   *  |      | TT       | K       | Temperature                             |  0  |  0  |   0 | 100 |",
+            "wps_field": "TT",
+            "wps_level": 15000.0
+          },
+          {
+            "field": "TT",
+            "grib_keys": {
+              "discipline": 0,
+              "level": 100,
+              "parameterCategory": 0,
+              "parameterNumber": 0,
+              "scaleFactorOfFirstFixedSurface": 0,
+              "scaleFactorOfSecondFixedSurface": 2147483647,
+              "scaledValueOfFirstFixedSurface": 10000,
+              "scaledValueOfSecondFixedSurface": 2147483647,
+              "shortName": "t",
+              "typeOfFirstFixedSurface": "pl",
+              "typeOfLevel": "isobaricInhPa",
+              "typeOfSecondFixedSurface": 255
+            },
+            "grib_name": "Temperature",
+            "height_m": null,
+            "level_pa": 10000.0,
+            "level_type": "isobaricInhPa",
+            "short_name": "t",
+            "soil_depth_mm": null,
+            "units": "K",
+            "vtable_line": 4,
+            "vtable_raw_line": " 130 | 100  |   *  |      | TT       | K       | Temperature                             |  0  |  0  |   0 | 100 |",
+            "wps_field": "TT",
+            "wps_level": 10000.0
+          },
+          {
+            "field": "TT",
+            "grib_keys": {
+              "discipline": 0,
+              "level": 50,
+              "parameterCategory": 0,
+              "parameterNumber": 0,
+              "scaleFactorOfFirstFixedSurface": 0,
+              "scaleFactorOfSecondFixedSurface": 2147483647,
+              "scaledValueOfFirstFixedSurface": 5000,
+              "scaledValueOfSecondFixedSurface": 2147483647,
+              "shortName": "t",
+              "typeOfFirstFixedSurface": "pl",
+              "typeOfLevel": "isobaricInhPa",
+              "typeOfSecondFixedSurface": 255
+            },
+            "grib_name": "Temperature",
+            "height_m": null,
+            "level_pa": 5000.0,
+            "level_type": "isobaricInhPa",
+            "short_name": "t",
+            "soil_depth_mm": null,
+            "units": "K",
+            "vtable_line": 4,
+            "vtable_raw_line": " 130 | 100  |   *  |      | TT       | K       | Temperature                             |  0  |  0  |   0 | 100 |",
+            "wps_field": "TT",
+            "wps_level": 5000.0
+          }
+        ],
+        "shape": [
+          14,
+          721,
+          1440
+        ],
+        "source": "aifs_grib",
+        "source_path": "/mnt/data/canairy_meteo/runs/wps_cases/20260428_18z_72h/ungrib/step_000.grib2",
+        "surface": {
+          "field": "TT",
+          "grib_keys": {
+            "discipline": 0,
+            "level": 2,
+            "parameterCategory": 0,
+            "parameterNumber": 0,
+            "scaleFactorOfFirstFixedSurface": 0,
+            "scaleFactorOfSecondFixedSurface": 2147483647,
+            "scaledValueOfFirstFixedSurface": 2,
+            "scaledValueOfSecondFixedSurface": 2147483647,
+            "shortName": "2t",
+            "typeOfFirstFixedSurface": "sfc",
+            "typeOfLevel": "heightAboveGround",
+            "typeOfSecondFixedSurface": 255
+          },
+          "grib_name": "2 metre temperature",
+          "height_m": 2.0,
+          "level_pa": null,
+          "level_type": "heightAboveGround",
+          "short_name": "2t",
+          "soil_depth_mm": null,
+          "units": "K",
+          "vtable_line": 9,
+          "vtable_raw_line": " 167 | 105  |   2  |      | TT       | K       | Temperature at 2 m                      |  0  |  0  |   0 | 103 |",
+          "wps_field": "TT",
+          "wps_level": 200100.0
+        }
+      },
+      "UU": {
+        "dtype": "float32",
+        "grib_sha256": "42a2044498d24a29e668b8a1ed79caac4dc19acfffeaa8edf2059efe2bc0ba90",
+        "isobaric": [
+          {
+            "field": "UU",
+            "grib_keys": {
+              "discipline": 0,
+              "level": 1000,
+              "parameterCategory": 2,
+              "parameterNumber": 2,
+              "scaleFactorOfFirstFixedSurface": 0,
+              "scaleFactorOfSecondFixedSurface": 2147483647,
+              "scaledValueOfFirstFixedSurface": 100000,
+              "scaledValueOfSecondFixedSurface": 2147483647,
+              "shortName": "u",
+              "typeOfFirstFixedSurface": "pl",
+              "typeOfLevel": "isobaricInhPa",
+              "typeOfSecondFixedSurface": 255
+            },
+            "grib_name": "U component of wind",
+            "height_m": null,
+            "level_pa": 100000.0,
+            "level_type": "isobaricInhPa",
+            "short_name": "u",
+            "soil_depth_mm": null,
+            "units": "m s**-1",
+            "vtable_line": 5,
+            "vtable_raw_line": " 131 | 100  |   *  |      | UU       | m s-1   | U                                       |  0  |  2  |   2 | 100 |",
+            "wps_field": "UU",
+            "wps_level": 100000.0
+          },
+          {
+            "field": "UU",
+            "grib_keys": {
+              "discipline": 0,
+              "level": 925,
+              "parameterCategory": 2,
+              "parameterNumber": 2,
+              "scaleFactorOfFirstFixedSurface": 0,
+              "scaleFactorOfSecondFixedSurface": 2147483647,
+              "scaledValueOfFirstFixedSurface": 92500,
+              "scaledValueOfSecondFixedSurface": 2147483647,
+              "shortName": "u",
+              "typeOfFirstFixedSurface": "pl",
+              "typeOfLevel": "isobaricInhPa",
+              "typeOfSecondFixedSurface": 255
+            },
+            "grib_name": "U component of wind",
+            "height_m": null,
+            "level_pa": 92500.0,
+            "level_type": "isobaricInhPa",
+            "short_name": "u",
+            "soil_depth_mm": null,
+            "units": "m s**-1",
+            "vtable_line": 5,
+            "vtable_raw_line": " 131 | 100  |   *  |      | UU       | m s-1   | U                                       |  0  |  2  |   2 | 100 |",
+            "wps_field": "UU",
+            "wps_level": 92500.0
+          },
+          {
+            "field": "UU",
+            "grib_keys": {
+              "discipline": 0,
+              "level": 850,
+              "parameterCategory": 2,
+              "parameterNumber": 2,
+              "scaleFactorOfFirstFixedSurface": 0,
+              "scaleFactorOfSecondFixedSurface": 2147483647,
+              "scaledValueOfFirstFixedSurface": 85000,
+              "scaledValueOfSecondFixedSurface": 2147483647,
+              "shortName": "u",
+              "typeOfFirstFixedSurface": "pl",
+              "typeOfLevel": "isobaricInhPa",
+              "typeOfSecondFixedSurface": 255
+            },
+            "grib_name": "U component of wind",
+            "height_m": null,
+            "level_pa": 85000.0,
+            "level_type": "isobaricInhPa",
+            "short_name": "u",
+            "soil_depth_mm": null,
+            "units": "m s**-1",
+            "vtable_line": 5,
+            "vtable_raw_line": " 131 | 100  |   *  |      | UU       | m s-1   | U                                       |  0  |  2  |   2 | 100 |",
+            "wps_field": "UU",
+            "wps_level": 85000.0
+          },
+          {
+            "field": "UU",
+            "grib_keys": {
+              "discipline": 0,
+              "level": 700,
+              "parameterCategory": 2,
+              "parameterNumber": 2,
+              "scaleFactorOfFirstFixedSurface": 0,
+              "scaleFactorOfSecondFixedSurface": 2147483647,
+              "scaledValueOfFirstFixedSurface": 70000,
+              "scaledValueOfSecondFixedSurface": 2147483647,
+              "shortName": "u",
+              "typeOfFirstFixedSurface": "pl",
+              "typeOfLevel": "isobaricInhPa",
+              "typeOfSecondFixedSurface": 255
+            },
+            "grib_name": "U component of wind",
+            "height_m": null,
+            "level_pa": 70000.0,
+            "level_type": "isobaricInhPa",
+            "short_name": "u",
+            "soil_depth_mm": null,
+            "units": "m s**-1",
+            "vtable_line": 5,
+            "vtable_raw_line": " 131 | 100  |   *  |      | UU       | m s-1   | U                                       |  0  |  2  |   2 | 100 |",
+            "wps_field": "UU",
+            "wps_level": 70000.0
+          },
+          {
+            "field": "UU",
+            "grib_keys": {
+              "discipline": 0,
+              "level": 600,
+              "parameterCategory": 2,
+              "parameterNumber": 2,
+              "scaleFactorOfFirstFixedSurface": 0,
+              "scaleFactorOfSecondFixedSurface": 2147483647,
+              "scaledValueOfFirstFixedSurface": 60000,
+              "scaledValueOfSecondFixedSurface": 2147483647,
+              "shortName": "u",
+              "typeOfFirstFixedSurface": "pl",
+              "typeOfLevel": "isobaricInhPa",
+              "typeOfSecondFixedSurface": 255
+            },
+            "grib_name": "U component of wind",
+            "height_m": null,
+            "level_pa": 60000.0,
+            "level_type": "isobaricInhPa",
+            "short_name": "u",
+            "soil_depth_mm": null,
+            "units": "m s**-1",
+            "vtable_line": 5,
+            "vtable_raw_line": " 131 | 100  |   *  |      | UU       | m s-1   | U                                       |  0  |  2  |   2 | 100 |",
+            "wps_field": "UU",
+            "wps_level": 60000.0
+          },
+          {
+            "field": "UU",
+            "grib_keys": {
+              "discipline": 0,
+              "level": 500,
+              "parameterCategory": 2,
+              "parameterNumber": 2,
+              "scaleFactorOfFirstFixedSurface": 0,
+              "scaleFactorOfSecondFixedSurface": 2147483647,
+              "scaledValueOfFirstFixedSurface": 50000,
+              "scaledValueOfSecondFixedSurface": 2147483647,
+              "shortName": "u",
+              "typeOfFirstFixedSurface": "pl",
+              "typeOfLevel": "isobaricInhPa",
+              "typeOfSecondFixedSurface": 255
+            },
+            "grib_name": "U component of wind",
+            "height_m": null,
+            "level_pa": 50000.0,
+            "level_type": "isobaricInhPa",
+            "short_name": "u",
+            "soil_depth_mm": null,
+            "units": "m s**-1",
+            "vtable_line": 5,
+            "vtable_raw_line": " 131 | 100  |   *  |      | UU       | m s-1   | U                                       |  0  |  2  |   2 | 100 |",
+            "wps_field": "UU",
+            "wps_level": 50000.0
+          },
+          {
+            "field": "UU",
+            "grib_keys": {
+              "discipline": 0,
+              "level": 400,
+              "parameterCategory": 2,
+              "parameterNumber": 2,
+              "scaleFactorOfFirstFixedSurface": 0,
+              "scaleFactorOfSecondFixedSurface": 2147483647,
+              "scaledValueOfFirstFixedSurface": 40000,
+              "scaledValueOfSecondFixedSurface": 2147483647,
+              "shortName": "u",
+              "typeOfFirstFixedSurface": "pl",
+              "typeOfLevel": "isobaricInhPa",
+              "typeOfSecondFixedSurface": 255
+            },
+            "grib_name": "U component of wind",
+            "height_m": null,
+            "level_pa": 40000.0,
+            "level_type": "isobaricInhPa",
+            "short_name": "u",
+            "soil_depth_mm": null,
+            "units": "m s**-1",
+            "vtable_line": 5,
+            "vtable_raw_line": " 131 | 100  |   *  |      | UU       | m s-1   | U                                       |  0  |  2  |   2 | 100 |",
+            "wps_field": "UU",
+            "wps_level": 40000.0
+          },
+          {
+            "field": "UU",
+            "grib_keys": {
+              "discipline": 0,
+              "level": 300,
+              "parameterCategory": 2,
+              "parameterNumber": 2,
+              "scaleFactorOfFirstFixedSurface": 0,
+              "scaleFactorOfSecondFixedSurface": 2147483647,
+              "scaledValueOfFirstFixedSurface": 30000,
+              "scaledValueOfSecondFixedSurface": 2147483647,
+              "shortName": "u",
+              "typeOfFirstFixedSurface": "pl",
+              "typeOfLevel": "isobaricInhPa",
+              "typeOfSecondFixedSurface": 255
+            },
+            "grib_name": "U component of wind",
+            "height_m": null,
+            "level_pa": 30000.0,
+            "level_type": "isobaricInhPa",
+            "short_name": "u",
+            "soil_depth_mm": null,
+            "units": "m s**-1",
+            "vtable_line": 5,
+            "vtable_raw_line": " 131 | 100  |   *  |      | UU       | m s-1   | U                                       |  0  |  2  |   2 | 100 |",
+            "wps_field": "UU",
+            "wps_level": 30000.0
+          },
+          {
+            "field": "UU",
+            "grib_keys": {
+              "discipline": 0,
+              "level": 250,
+              "parameterCategory": 2,
+              "parameterNumber": 2,
+              "scaleFactorOfFirstFixedSurface": 0,
+              "scaleFactorOfSecondFixedSurface": 2147483647,
+              "scaledValueOfFirstFixedSurface": 25000,
+              "scaledValueOfSecondFixedSurface": 2147483647,
+              "shortName": "u",
+              "typeOfFirstFixedSurface": "pl",
+              "typeOfLevel": "isobaricInhPa",
+              "typeOfSecondFixedSurface": 255
+            },
+            "grib_name": "U component of wind",
+            "height_m": null,
+            "level_pa": 25000.0,
+            "level_type": "isobaricInhPa",
+            "short_name": "u",
+            "soil_depth_mm": null,
+            "units": "m s**-1",
+            "vtable_line": 5,
+            "vtable_raw_line": " 131 | 100  |   *  |      | UU       | m s-1   | U                                       |  0  |  2  |   2 | 100 |",
+            "wps_field": "UU",
+            "wps_level": 25000.0
+          },
+          {
+            "field": "UU",
+            "grib_keys": {
+              "discipline": 0,
+              "level": 200,
+              "parameterCategory": 2,
+              "parameterNumber": 2,
+              "scaleFactorOfFirstFixedSurface": 0,
+              "scaleFactorOfSecondFixedSurface": 2147483647,
+              "scaledValueOfFirstFixedSurface": 20000,
+              "scaledValueOfSecondFixedSurface": 2147483647,
+              "shortName": "u",
+              "typeOfFirstFixedSurface": "pl",
+              "typeOfLevel": "isobaricInhPa",
+              "typeOfSecondFixedSurface": 255
+            },
+            "grib_name": "U component of wind",
+            "height_m": null,
+            "level_pa": 20000.0,
+            "level_type": "isobaricInhPa",
+            "short_name": "u",
+            "soil_depth_mm": null,
+            "units": "m s**-1",
+            "vtable_line": 5,
+            "vtable_raw_line": " 131 | 100  |   *  |      | UU       | m s-1   | U                                       |  0  |  2  |   2 | 100 |",
+            "wps_field": "UU",
+            "wps_level": 20000.0
+          },
+          {
+            "field": "UU",
+            "grib_keys": {
+              "discipline": 0,
+              "level": 150,
+              "parameterCategory": 2,
+              "parameterNumber": 2,
+              "scaleFactorOfFirstFixedSurface": 0,
+              "scaleFactorOfSecondFixedSurface": 2147483647,
+              "scaledValueOfFirstFixedSurface": 15000,
+              "scaledValueOfSecondFixedSurface": 2147483647,
+              "shortName": "u",
+              "typeOfFirstFixedSurface": "pl",
+              "typeOfLevel": "isobaricInhPa",
+              "typeOfSecondFixedSurface": 255
+            },
+            "grib_name": "U component of wind",
+            "height_m": null,
+            "level_pa": 15000.0,
+            "level_type": "isobaricInhPa",
+            "short_name": "u",
+            "soil_depth_mm": null,
+            "units": "m s**-1",
+            "vtable_line": 5,
+            "vtable_raw_line": " 131 | 100  |   *  |      | UU       | m s-1   | U                                       |  0  |  2  |   2 | 100 |",
+            "wps_field": "UU",
+            "wps_level": 15000.0
+          },
+          {
+            "field": "UU",
+            "grib_keys": {
+              "discipline": 0,
+              "level": 100,
+              "parameterCategory": 2,
+              "parameterNumber": 2,
+              "scaleFactorOfFirstFixedSurface": 0,
+              "scaleFactorOfSecondFixedSurface": 2147483647,
+              "scaledValueOfFirstFixedSurface": 10000,
+              "scaledValueOfSecondFixedSurface": 2147483647,
+              "shortName": "u",
+              "typeOfFirstFixedSurface": "pl",
+              "typeOfLevel": "isobaricInhPa",
+              "typeOfSecondFixedSurface": 255
+            },
+            "grib_name": "U component of wind",
+            "height_m": null,
+            "level_pa": 10000.0,
+            "level_type": "isobaricInhPa",
+            "short_name": "u",
+            "soil_depth_mm": null,
+            "units": "m s**-1",
+            "vtable_line": 5,
+            "vtable_raw_line": " 131 | 100  |   *  |      | UU       | m s-1   | U                                       |  0  |  2  |   2 | 100 |",
+            "wps_field": "UU",
+            "wps_level": 10000.0
+          },
+          {
+            "field": "UU",
+            "grib_keys": {
+              "discipline": 0,
+              "level": 50,
+              "parameterCategory": 2,
+              "parameterNumber": 2,
+              "scaleFactorOfFirstFixedSurface": 0,
+              "scaleFactorOfSecondFixedSurface": 2147483647,
+              "scaledValueOfFirstFixedSurface": 5000,
+              "scaledValueOfSecondFixedSurface": 2147483647,
+              "shortName": "u",
+              "typeOfFirstFixedSurface": "pl",
+              "typeOfLevel": "isobaricInhPa",
+              "typeOfSecondFixedSurface": 255
+            },
+            "grib_name": "U component of wind",
+            "height_m": null,
+            "level_pa": 5000.0,
+            "level_type": "isobaricInhPa",
+            "short_name": "u",
+            "soil_depth_mm": null,
+            "units": "m s**-1",
+            "vtable_line": 5,
+            "vtable_raw_line": " 131 | 100  |   *  |      | UU       | m s-1   | U                                       |  0  |  2  |   2 | 100 |",
+            "wps_field": "UU",
+            "wps_level": 5000.0
+          }
+        ],
+        "shape": [
+          14,
+          721,
+          1440
+        ],
+        "source": "aifs_grib",
+        "source_path": "/mnt/data/canairy_meteo/runs/wps_cases/20260428_18z_72h/ungrib/step_000.grib2",
+        "surface": {
+          "field": "UU",
+          "grib_keys": {
+            "discipline": 0,
+            "level": 10,
+            "parameterCategory": 2,
+            "parameterNumber": 2,
+            "scaleFactorOfFirstFixedSurface": 0,
+            "scaleFactorOfSecondFixedSurface": 2147483647,
+            "scaledValueOfFirstFixedSurface": 10,
+            "scaledValueOfSecondFixedSurface": 2147483647,
+            "shortName": "10u",
+            "typeOfFirstFixedSurface": "sfc",
+            "typeOfLevel": "heightAboveGround",
+            "typeOfSecondFixedSurface": 255
+          },
+          "grib_name": "10 metre U wind component",
+          "height_m": 10.0,
+          "level_pa": null,
+          "level_type": "heightAboveGround",
+          "short_name": "10u",
+          "soil_depth_mm": null,
+          "units": "m s**-1",
+          "vtable_line": 11,
+          "vtable_raw_line": " 165 | 105  |  10  |      | UU       | m s-1   | U wind at 10 m                          |  0  |  2  |   2 | 103 |",
+          "wps_field": "UU",
+          "wps_level": 200100.0
+        }
+      },
+      "VV": {
+        "dtype": "float32",
+        "grib_sha256": "42a2044498d24a29e668b8a1ed79caac4dc19acfffeaa8edf2059efe2bc0ba90",
+        "isobaric": [
+          {
+            "field": "VV",
+            "grib_keys": {
+              "discipline": 0,
+              "level": 1000,
+              "parameterCategory": 2,
+              "parameterNumber": 3,
+              "scaleFactorOfFirstFixedSurface": 0,
+              "scaleFactorOfSecondFixedSurface": 2147483647,
+              "scaledValueOfFirstFixedSurface": 100000,
+              "scaledValueOfSecondFixedSurface": 2147483647,
+              "shortName": "v",
+              "typeOfFirstFixedSurface": "pl",
+              "typeOfLevel": "isobaricInhPa",
+              "typeOfSecondFixedSurface": 255
+            },
+            "grib_name": "V component of wind",
+            "height_m": null,
+            "level_pa": 100000.0,
+            "level_type": "isobaricInhPa",
+            "short_name": "v",
+            "soil_depth_mm": null,
+            "units": "m s**-1",
+            "vtable_line": 6,
+            "vtable_raw_line": " 132 | 100  |   *  |      | VV       | m s-1   | V                                       |  0  |  2  |   3 | 100 |",
+            "wps_field": "VV",
+            "wps_level": 100000.0
+          },
+          {
+            "field": "VV",
+            "grib_keys": {
+              "discipline": 0,
+              "level": 925,
+              "parameterCategory": 2,
+              "parameterNumber": 3,
+              "scaleFactorOfFirstFixedSurface": 0,
+              "scaleFactorOfSecondFixedSurface": 2147483647,
+              "scaledValueOfFirstFixedSurface": 92500,
+              "scaledValueOfSecondFixedSurface": 2147483647,
+              "shortName": "v",
+              "typeOfFirstFixedSurface": "pl",
+              "typeOfLevel": "isobaricInhPa",
+              "typeOfSecondFixedSurface": 255
+            },
+            "grib_name": "V component of wind",
+            "height_m": null,
+            "level_pa": 92500.0,
+            "level_type": "isobaricInhPa",
+            "short_name": "v",
+            "soil_depth_mm": null,
+            "units": "m s**-1",
+            "vtable_line": 6,
+            "vtable_raw_line": " 132 | 100  |   *  |      | VV       | m s-1   | V                                       |  0  |  2  |   3 | 100 |",
+            "wps_field": "VV",
+            "wps_level": 92500.0
+          },
+          {
+            "field": "VV",
+            "grib_keys": {
+              "discipline": 0,
+              "level": 850,
+              "parameterCategory": 2,
+              "parameterNumber": 3,
+              "scaleFactorOfFirstFixedSurface": 0,
+              "scaleFactorOfSecondFixedSurface": 2147483647,
+              "scaledValueOfFirstFixedSurface": 85000,
+              "scaledValueOfSecondFixedSurface": 2147483647,
+              "shortName": "v",
+              "typeOfFirstFixedSurface": "pl",
+              "typeOfLevel": "isobaricInhPa",
+              "typeOfSecondFixedSurface": 255
+            },
+            "grib_name": "V component of wind",
+            "height_m": null,
+            "level_pa": 85000.0,
+            "level_type": "isobaricInhPa",
+            "short_name": "v",
+            "soil_depth_mm": null,
+            "units": "m s**-1",
+            "vtable_line": 6,
+            "vtable_raw_line": " 132 | 100  |   *  |      | VV       | m s-1   | V                                       |  0  |  2  |   3 | 100 |",
+            "wps_field": "VV",
+            "wps_level": 85000.0
+          },
+          {
+            "field": "VV",
+            "grib_keys": {
+              "discipline": 0,
+              "level": 700,
+              "parameterCategory": 2,
+              "parameterNumber": 3,
+              "scaleFactorOfFirstFixedSurface": 0,
+              "scaleFactorOfSecondFixedSurface": 2147483647,
+              "scaledValueOfFirstFixedSurface": 70000,
+              "scaledValueOfSecondFixedSurface": 2147483647,
+              "shortName": "v",
+              "typeOfFirstFixedSurface": "pl",
+              "typeOfLevel": "isobaricInhPa",
+              "typeOfSecondFixedSurface": 255
+            },
+            "grib_name": "V component of wind",
+            "height_m": null,
+            "level_pa": 70000.0,
+            "level_type": "isobaricInhPa",
+            "short_name": "v",
+            "soil_depth_mm": null,
+            "units": "m s**-1",
+            "vtable_line": 6,
+            "vtable_raw_line": " 132 | 100  |   *  |      | VV       | m s-1   | V                                       |  0  |  2  |   3 | 100 |",
+            "wps_field": "VV",
+            "wps_level": 70000.0
+          },
+          {
+            "field": "VV",
+            "grib_keys": {
+              "discipline": 0,
+              "level": 600,
+              "parameterCategory": 2,
+              "parameterNumber": 3,
+              "scaleFactorOfFirstFixedSurface": 0,
+              "scaleFactorOfSecondFixedSurface": 2147483647,
+              "scaledValueOfFirstFixedSurface": 60000,
+              "scaledValueOfSecondFixedSurface": 2147483647,
+              "shortName": "v",
+              "typeOfFirstFixedSurface": "pl",
+              "typeOfLevel": "isobaricInhPa",
+              "typeOfSecondFixedSurface": 255
+            },
+            "grib_name": "V component of wind",
+            "height_m": null,
+            "level_pa": 60000.0,
+            "level_type": "isobaricInhPa",
+            "short_name": "v",
+            "soil_depth_mm": null,
+            "units": "m s**-1",
+            "vtable_line": 6,
+            "vtable_raw_line": " 132 | 100  |   *  |      | VV       | m s-1   | V                                       |  0  |  2  |   3 | 100 |",
+            "wps_field": "VV",
+            "wps_level": 60000.0
+          },
+          {
+            "field": "VV",
+            "grib_keys": {
+              "discipline": 0,
+              "level": 500,
+              "parameterCategory": 2,
+              "parameterNumber": 3,
+              "scaleFactorOfFirstFixedSurface": 0,
+              "scaleFactorOfSecondFixedSurface": 2147483647,
+              "scaledValueOfFirstFixedSurface": 50000,
+              "scaledValueOfSecondFixedSurface": 2147483647,
+              "shortName": "v",
+              "typeOfFirstFixedSurface": "pl",
+              "typeOfLevel": "isobaricInhPa",
+              "typeOfSecondFixedSurface": 255
+            },
+            "grib_name": "V component of wind",
+            "height_m": null,
+            "level_pa": 50000.0,
+            "level_type": "isobaricInhPa",
+            "short_name": "v",
+            "soil_depth_mm": null,
+            "units": "m s**-1",
+            "vtable_line": 6,
+            "vtable_raw_line": " 132 | 100  |   *  |      | VV       | m s-1   | V                                       |  0  |  2  |   3 | 100 |",
+            "wps_field": "VV",
+            "wps_level": 50000.0
+          },
+          {
+            "field": "VV",
+            "grib_keys": {
+              "discipline": 0,
+              "level": 400,
+              "parameterCategory": 2,
+              "parameterNumber": 3,
+              "scaleFactorOfFirstFixedSurface": 0,
+              "scaleFactorOfSecondFixedSurface": 2147483647,
+              "scaledValueOfFirstFixedSurface": 40000,
+              "scaledValueOfSecondFixedSurface": 2147483647,
+              "shortName": "v",
+              "typeOfFirstFixedSurface": "pl",
+              "typeOfLevel": "isobaricInhPa",
+              "typeOfSecondFixedSurface": 255
+            },
+            "grib_name": "V component of wind",
+            "height_m": null,
+            "level_pa": 40000.0,
+            "level_type": "isobaricInhPa",
+            "short_name": "v",
+            "soil_depth_mm": null,
+            "units": "m s**-1",
+            "vtable_line": 6,
+            "vtable_raw_line": " 132 | 100  |   *  |      | VV       | m s-1   | V                                       |  0  |  2  |   3 | 100 |",
+            "wps_field": "VV",
+            "wps_level": 40000.0
+          },
+          {
+            "field": "VV",
+            "grib_keys": {
+              "discipline": 0,
+              "level": 300,
+              "parameterCategory": 2,
+              "parameterNumber": 3,
+              "scaleFactorOfFirstFixedSurface": 0,
+              "scaleFactorOfSecondFixedSurface": 2147483647,
+              "scaledValueOfFirstFixedSurface": 30000,
+              "scaledValueOfSecondFixedSurface": 2147483647,
+              "shortName": "v",
+              "typeOfFirstFixedSurface": "pl",
+              "typeOfLevel": "isobaricInhPa",
+              "typeOfSecondFixedSurface": 255
+            },
+            "grib_name": "V component of wind",
+            "height_m": null,
+            "level_pa": 30000.0,
+            "level_type": "isobaricInhPa",
+            "short_name": "v",
+            "soil_depth_mm": null,
+            "units": "m s**-1",
+            "vtable_line": 6,
+            "vtable_raw_line": " 132 | 100  |   *  |      | VV       | m s-1   | V                                       |  0  |  2  |   3 | 100 |",
+            "wps_field": "VV",
+            "wps_level": 30000.0
+          },
+          {
+            "field": "VV",
+            "grib_keys": {
+              "discipline": 0,
+              "level": 250,
+              "parameterCategory": 2,
+              "parameterNumber": 3,
+              "scaleFactorOfFirstFixedSurface": 0,
+              "scaleFactorOfSecondFixedSurface": 2147483647,
+              "scaledValueOfFirstFixedSurface": 25000,
+              "scaledValueOfSecondFixedSurface": 2147483647,
+              "shortName": "v",
+              "typeOfFirstFixedSurface": "pl",
+              "typeOfLevel": "isobaricInhPa",
+              "typeOfSecondFixedSurface": 255
+            },
+            "grib_name": "V component of wind",
+            "height_m": null,
+            "level_pa": 25000.0,
+            "level_type": "isobaricInhPa",
+            "short_name": "v",
+            "soil_depth_mm": null,
+            "units": "m s**-1",
+            "vtable_line": 6,
+            "vtable_raw_line": " 132 | 100  |   *  |      | VV       | m s-1   | V                                       |  0  |  2  |   3 | 100 |",
+            "wps_field": "VV",
+            "wps_level": 25000.0
+          },
+          {
+            "field": "VV",
+            "grib_keys": {
+              "discipline": 0,
+              "level": 200,
+              "parameterCategory": 2,
+              "parameterNumber": 3,
+              "scaleFactorOfFirstFixedSurface": 0,
+              "scaleFactorOfSecondFixedSurface": 2147483647,
+              "scaledValueOfFirstFixedSurface": 20000,
+              "scaledValueOfSecondFixedSurface": 2147483647,
+              "shortName": "v",
+              "typeOfFirstFixedSurface": "pl",
+              "typeOfLevel": "isobaricInhPa",
+              "typeOfSecondFixedSurface": 255
+            },
+            "grib_name": "V component of wind",
+            "height_m": null,
+            "level_pa": 20000.0,
+            "level_type": "isobaricInhPa",
+            "short_name": "v",
+            "soil_depth_mm": null,
+            "units": "m s**-1",
+            "vtable_line": 6,
+            "vtable_raw_line": " 132 | 100  |   *  |      | VV       | m s-1   | V                                       |  0  |  2  |   3 | 100 |",
+            "wps_field": "VV",
+            "wps_level": 20000.0
+          },
+          {
+            "field": "VV",
+            "grib_keys": {
+              "discipline": 0,
+              "level": 150,
+              "parameterCategory": 2,
+              "parameterNumber": 3,
+              "scaleFactorOfFirstFixedSurface": 0,
+              "scaleFactorOfSecondFixedSurface": 2147483647,
+              "scaledValueOfFirstFixedSurface": 15000,
+              "scaledValueOfSecondFixedSurface": 2147483647,
+              "shortName": "v",
+              "typeOfFirstFixedSurface": "pl",
+              "typeOfLevel": "isobaricInhPa",
+              "typeOfSecondFixedSurface": 255
+            },
+            "grib_name": "V component of wind",
+            "height_m": null,
+            "level_pa": 15000.0,
+            "level_type": "isobaricInhPa",
+            "short_name": "v",
+            "soil_depth_mm": null,
+            "units": "m s**-1",
+            "vtable_line": 6,
+            "vtable_raw_line": " 132 | 100  |   *  |      | VV       | m s-1   | V                                       |  0  |  2  |   3 | 100 |",
+            "wps_field": "VV",
+            "wps_level": 15000.0
+          },
+          {
+            "field": "VV",
+            "grib_keys": {
+              "discipline": 0,
+              "level": 100,
+              "parameterCategory": 2,
+              "parameterNumber": 3,
+              "scaleFactorOfFirstFixedSurface": 0,
+              "scaleFactorOfSecondFixedSurface": 2147483647,
+              "scaledValueOfFirstFixedSurface": 10000,
+              "scaledValueOfSecondFixedSurface": 2147483647,
+              "shortName": "v",
+              "typeOfFirstFixedSurface": "pl",
+              "typeOfLevel": "isobaricInhPa",
+              "typeOfSecondFixedSurface": 255
+            },
+            "grib_name": "V component of wind",
+            "height_m": null,
+            "level_pa": 10000.0,
+            "level_type": "isobaricInhPa",
+            "short_name": "v",
+            "soil_depth_mm": null,
+            "units": "m s**-1",
+            "vtable_line": 6,
+            "vtable_raw_line": " 132 | 100  |   *  |      | VV       | m s-1   | V                                       |  0  |  2  |   3 | 100 |",
+            "wps_field": "VV",
+            "wps_level": 10000.0
+          },
+          {
+            "field": "VV",
+            "grib_keys": {
+              "discipline": 0,
+              "level": 50,
+              "parameterCategory": 2,
+              "parameterNumber": 3,
+              "scaleFactorOfFirstFixedSurface": 0,
+              "scaleFactorOfSecondFixedSurface": 2147483647,
+              "scaledValueOfFirstFixedSurface": 5000,
+              "scaledValueOfSecondFixedSurface": 2147483647,
+              "shortName": "v",
+              "typeOfFirstFixedSurface": "pl",
+              "typeOfLevel": "isobaricInhPa",
+              "typeOfSecondFixedSurface": 255
+            },
+            "grib_name": "V component of wind",
+            "height_m": null,
+            "level_pa": 5000.0,
+            "level_type": "isobaricInhPa",
+            "short_name": "v",
+            "soil_depth_mm": null,
+            "units": "m s**-1",
+            "vtable_line": 6,
+            "vtable_raw_line": " 132 | 100  |   *  |      | VV       | m s-1   | V                                       |  0  |  2  |   3 | 100 |",
+            "wps_field": "VV",
+            "wps_level": 5000.0
+          }
+        ],
+        "shape": [
+          14,
+          721,
+          1440
+        ],
+        "source": "aifs_grib",
+        "source_path": "/mnt/data/canairy_meteo/runs/wps_cases/20260428_18z_72h/ungrib/step_000.grib2",
+        "surface": {
+          "field": "VV",
+          "grib_keys": {
+            "discipline": 0,
+            "level": 10,
+            "parameterCategory": 2,
+            "parameterNumber": 3,
+            "scaleFactorOfFirstFixedSurface": 0,
+            "scaleFactorOfSecondFixedSurface": 2147483647,
+            "scaledValueOfFirstFixedSurface": 10,
+            "scaledValueOfSecondFixedSurface": 2147483647,
+            "shortName": "10v",
+            "typeOfFirstFixedSurface": "sfc",
+            "typeOfLevel": "heightAboveGround",
+            "typeOfSecondFixedSurface": 255
+          },
+          "grib_name": "10 metre V wind component",
+          "height_m": 10.0,
+          "level_pa": null,
+          "level_type": "heightAboveGround",
+          "short_name": "10v",
+          "soil_depth_mm": null,
+          "units": "m s**-1",
+          "vtable_line": 12,
+          "vtable_raw_line": " 166 | 105  |  10  |      | VV       | m s-1   | V wind at 10 m                          |  0  |  2  |   3 | 103 |",
+          "wps_field": "VV",
+          "wps_level": 200100.0
+        }
+      }
+    },
+    "source_grid": {
+      "di": 0.25,
+      "dj": 0.25,
+      "grid_type": "regular_ll",
+      "i_scans_negatively": false,
+      "j_scans_positively": false,
+      "latitude_first": 90.0,
+      "latitude_last": -90.0,
+      "longitude_first": 180.0,
+      "longitude_last": 179.75,
+      "shape": [
+        721,
+        1440
+      ]
+    },
+    "source_path": "/mnt/data/canairy_meteo/runs/wps_cases/20260428_18z_72h/ungrib/step_000.grib2",
+    "source_sha256": "42a2044498d24a29e668b8a1ed79caac4dc19acfffeaa8edf2059efe2bc0ba90",
+    "surface_assembly": {
+      "GHT[0]": "orog/SOILHGT at surface, already meters",
+      "PRES[0]": "PSFC at surface",
+      "SPECHUMD[0]": {
+        "assignment": "SPECHUMD[0] = -1.0",
+        "policy": "wps_fill",
+        "rationale": "Oracle met_em files have SPECHUMD k=0 equal to -1 everywhere; METGRID.TBL.ARW fills level 200100 with const(-1) for SPECHUMD.",
+        "source_refs": [
+          "/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_src/WPS/metgrid/METGRID.TBL.ARW:691",
+          "/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_src/WPS/metgrid/METGRID.TBL.ARW:695",
+          "/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_src/WRF/dyn_em/module_initialize_real.F:1144",
+          "/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_src/WRF/dyn_em/module_initialize_real.F:1163"
+        ]
+      },
+      "TT[0]": "2t at heightAboveGround 2 m",
+      "UU[0]": "10u at heightAboveGround 10 m",
+      "VV[0]": "10v at heightAboveGround 10 m",
+      "isobaric_order": "indices 1..13 = 100000..5000 Pa",
+      "soil_order": {
+        "ST[0]/SM[0]": "010040, met_em SOIL_LAYERS[0] = 40 cm",
+        "ST[1]/SM[1]": "000010, met_em SOIL_LAYERS[1] = 10 cm",
+        "source_refs": [
+          "/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_src/WPS/metgrid/METGRID.TBL.ARW:2",
+          "/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_src/WPS/metgrid/METGRID.TBL.ARW:29"
+        ]
+      },
+      "wps_level_refs": [
+        "/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_src/WPS/ungrib/src/rd_grib2.F:755",
+        "/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_src/WPS/ungrib/src/rd_grib2.F:792",
+        "/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_src/WPS/metgrid/src/process_domain_module.F:1070",
+        "/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_src/WPS/metgrid/src/process_domain_module.F:1172"
+      ]
+    },
+    "valid_time": "2026-04-28_18:00:00",
+    "vtable_path": "/home/enric/src/canairy_meteo/Gen2/configs/Vtable.AIFS_PURE"
+  },
+  "soil_layer_order_cm": [
+    40.0,
+    10.0
+  ],
+  "source_path": "/mnt/data/canairy_meteo/runs/wps_cases/20260428_18z_72h/ungrib/step_000.grib2",
+  "source_sha256": "42a2044498d24a29e668b8a1ed79caac4dc19acfffeaa8edf2059efe2bc0ba90",
+  "strict_contract_physical_ranges_pass": false,
+  "surface_assembly": {
+    "GHT[0]": "orog/SOILHGT at surface, already meters",
+    "PRES[0]": "PSFC at surface",
+    "SPECHUMD[0]": {
+      "assignment": "SPECHUMD[0] = -1.0",
+      "policy": "wps_fill",
+      "rationale": "Oracle met_em files have SPECHUMD k=0 equal to -1 everywhere; METGRID.TBL.ARW fills level 200100 with const(-1) for SPECHUMD.",
+      "source_refs": [
+        "/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_src/WPS/metgrid/METGRID.TBL.ARW:691",
+        "/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_src/WPS/metgrid/METGRID.TBL.ARW:695",
+        "/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_src/WRF/dyn_em/module_initialize_real.F:1144",
+        "/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_src/WRF/dyn_em/module_initialize_real.F:1163"
+      ]
+    },
+    "TT[0]": "2t at heightAboveGround 2 m",
+    "UU[0]": "10u at heightAboveGround 10 m",
+    "VV[0]": "10v at heightAboveGround 10 m",
+    "isobaric_order": "indices 1..13 = 100000..5000 Pa",
+    "soil_order": {
+      "ST[0]/SM[0]": "010040, met_em SOIL_LAYERS[0] = 40 cm",
+      "ST[1]/SM[1]": "000010, met_em SOIL_LAYERS[1] = 10 cm",
+      "source_refs": [
+        "/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_src/WPS/metgrid/METGRID.TBL.ARW:2",
+        "/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_src/WPS/metgrid/METGRID.TBL.ARW:29"
+      ]
+    },
+    "wps_level_refs": [
+      "/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_src/WPS/ungrib/src/rd_grib2.F:755",
+      "/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_src/WPS/ungrib/src/rd_grib2.F:792",
+      "/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_src/WPS/metgrid/src/process_domain_module.F:1070",
+      "/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_src/WPS/metgrid/src/process_domain_module.F:1172"
+    ]
+  },
+  "surface_spechumd_policy": "wps_fill",
+  "valid_time": "2026-04-28_18:00:00",
+  "wps_intermediate_compare": {
+    "all_bit_equal": true,
+    "all_pass": true,
+    "comparisons": [
+      {
+        "bit_equal": true,
+        "field": "TT",
+        "level": 200100.0,
+        "max_abs": 0.0,
+        "pass": true,
+        "tolerance_abs": 0.0,
+        "wps_field": "TT"
+      },
+      {
+        "bit_equal": true,
+        "field": "TT",
+        "level": 100000.0,
+        "max_abs": 0.0,
+        "pass": true,
+        "tolerance_abs": 0.0,
+        "wps_field": "TT"
+      },
+      {
+        "bit_equal": true,
+        "field": "TT",
+        "level": 92500.0,
+        "max_abs": 0.0,
+        "pass": true,
+        "tolerance_abs": 0.0,
+        "wps_field": "TT"
+      },
+      {
+        "bit_equal": true,
+        "field": "TT",
+        "level": 85000.0,
+        "max_abs": 0.0,
+        "pass": true,
+        "tolerance_abs": 0.0,
+        "wps_field": "TT"
+      },
+      {
+        "bit_equal": true,
+        "field": "TT",
+        "level": 70000.0,
+        "max_abs": 0.0,
+        "pass": true,
+        "tolerance_abs": 0.0,
+        "wps_field": "TT"
+      },
+      {
+        "bit_equal": true,
+        "field": "TT",
+        "level": 60000.0,
+        "max_abs": 0.0,
+        "pass": true,
+        "tolerance_abs": 0.0,
+        "wps_field": "TT"
+      },
+      {
+        "bit_equal": true,
+        "field": "TT",
+        "level": 50000.0,
+        "max_abs": 0.0,
+        "pass": true,
+        "tolerance_abs": 0.0,
+        "wps_field": "TT"
+      },
+      {
+        "bit_equal": true,
+        "field": "TT",
+        "level": 40000.0,
+        "max_abs": 0.0,
+        "pass": true,
+        "tolerance_abs": 0.0,
+        "wps_field": "TT"
+      },
+      {
+        "bit_equal": true,
+        "field": "TT",
+        "level": 30000.0,
+        "max_abs": 0.0,
+        "pass": true,
+        "tolerance_abs": 0.0,
+        "wps_field": "TT"
+      },
+      {
+        "bit_equal": true,
+        "field": "TT",
+        "level": 25000.0,
+        "max_abs": 0.0,
+        "pass": true,
+        "tolerance_abs": 0.0,
+        "wps_field": "TT"
+      },
+      {
+        "bit_equal": true,
+        "field": "TT",
+        "level": 20000.0,
+        "max_abs": 0.0,
+        "pass": true,
+        "tolerance_abs": 0.0,
+        "wps_field": "TT"
+      },
+      {
+        "bit_equal": true,
+        "field": "TT",
+        "level": 15000.0,
+        "max_abs": 0.0,
+        "pass": true,
+        "tolerance_abs": 0.0,
+        "wps_field": "TT"
+      },
+      {
+        "bit_equal": true,
+        "field": "TT",
+        "level": 10000.0,
+        "max_abs": 0.0,
+        "pass": true,
+        "tolerance_abs": 0.0,
+        "wps_field": "TT"
+      },
+      {
+        "bit_equal": true,
+        "field": "TT",
+        "level": 5000.0,
+        "max_abs": 0.0,
+        "pass": true,
+        "tolerance_abs": 0.0,
+        "wps_field": "TT"
+      },
+      {
+        "bit_equal": true,
+        "field": "UU",
+        "level": 200100.0,
+        "max_abs": 0.0,
+        "pass": true,
+        "tolerance_abs": 0.0,
+        "wps_field": "UU"
+      },
+      {
+        "bit_equal": true,
+        "field": "UU",
+        "level": 100000.0,
+        "max_abs": 0.0,
+        "pass": true,
+        "tolerance_abs": 0.0,
+        "wps_field": "UU"
+      },
+      {
+        "bit_equal": true,
+        "field": "UU",
+        "level": 92500.0,
+        "max_abs": 0.0,
+        "pass": true,
+        "tolerance_abs": 0.0,
+        "wps_field": "UU"
+      },
+      {
+        "bit_equal": true,
+        "field": "UU",
+        "level": 85000.0,
+        "max_abs": 0.0,
+        "pass": true,
+        "tolerance_abs": 0.0,
+        "wps_field": "UU"
+      },
+      {
+        "bit_equal": true,
+        "field": "UU",
+        "level": 70000.0,
+        "max_abs": 0.0,
+        "pass": true,
+        "tolerance_abs": 0.0,
+        "wps_field": "UU"
+      },
+      {
+        "bit_equal": true,
+        "field": "UU",
+        "level": 60000.0,
+        "max_abs": 0.0,
+        "pass": true,
+        "tolerance_abs": 0.0,
+        "wps_field": "UU"
+      },
+      {
+        "bit_equal": true,
+        "field": "UU",
+        "level": 50000.0,
+        "max_abs": 0.0,
+        "pass": true,
+        "tolerance_abs": 0.0,
+        "wps_field": "UU"
+      },
+      {
+        "bit_equal": true,
+        "field": "UU",
+        "level": 40000.0,
+        "max_abs": 0.0,
+        "pass": true,
+        "tolerance_abs": 0.0,
+        "wps_field": "UU"
+      },
+      {
+        "bit_equal": true,
+        "field": "UU",
+        "level": 30000.0,
+        "max_abs": 0.0,
+        "pass": true,
+        "tolerance_abs": 0.0,
+        "wps_field": "UU"
+      },
+      {
+        "bit_equal": true,
+        "field": "UU",
+        "level": 25000.0,
+        "max_abs": 0.0,
+        "pass": true,
+        "tolerance_abs": 0.0,
+        "wps_field": "UU"
+      },
+      {
+        "bit_equal": true,
+        "field": "UU",
+        "level": 20000.0,
+        "max_abs": 0.0,
+        "pass": true,
+        "tolerance_abs": 0.0,
+        "wps_field": "UU"
+      },
+      {
+        "bit_equal": true,
+        "field": "UU",
+        "level": 15000.0,
+        "max_abs": 0.0,
+        "pass": true,
+        "tolerance_abs": 0.0,
+        "wps_field": "UU"
+      },
+      {
+        "bit_equal": true,
+        "field": "UU",
+        "level": 10000.0,
+        "max_abs": 0.0,
+        "pass": true,
+        "tolerance_abs": 0.0,
+        "wps_field": "UU"
+      },
+      {
+        "bit_equal": true,
+        "field": "UU",
+        "level": 5000.0,
+        "max_abs": 0.0,
+        "pass": true,
+        "tolerance_abs": 0.0,
+        "wps_field": "UU"
+      },
+      {
+        "bit_equal": true,
+        "field": "VV",
+        "level": 200100.0,
+        "max_abs": 0.0,
+        "pass": true,
+        "tolerance_abs": 0.0,
+        "wps_field": "VV"
+      },
+      {
+        "bit_equal": true,
+        "field": "VV",
+        "level": 100000.0,
+        "max_abs": 0.0,
+        "pass": true,
+        "tolerance_abs": 0.0,
+        "wps_field": "VV"
+      },
+      {
+        "bit_equal": true,
+        "field": "VV",
+        "level": 92500.0,
+        "max_abs": 0.0,
+        "pass": true,
+        "tolerance_abs": 0.0,
+        "wps_field": "VV"
+      },
+      {
+        "bit_equal": true,
+        "field": "VV",
+        "level": 85000.0,
+        "max_abs": 0.0,
+        "pass": true,
+        "tolerance_abs": 0.0,
+        "wps_field": "VV"
+      },
+      {
+        "bit_equal": true,
+        "field": "VV",
+        "level": 70000.0,
+        "max_abs": 0.0,
+        "pass": true,
+        "tolerance_abs": 0.0,
+        "wps_field": "VV"
+      },
+      {
+        "bit_equal": true,
+        "field": "VV",
+        "level": 60000.0,
+        "max_abs": 0.0,
+        "pass": true,
+        "tolerance_abs": 0.0,
+        "wps_field": "VV"
+      },
+      {
+        "bit_equal": true,
+        "field": "VV",
+        "level": 50000.0,
+        "max_abs": 0.0,
+        "pass": true,
+        "tolerance_abs": 0.0,
+        "wps_field": "VV"
+      },
+      {
+        "bit_equal": true,
+        "field": "VV",
+        "level": 40000.0,
+        "max_abs": 0.0,
+        "pass": true,
+        "tolerance_abs": 0.0,
+        "wps_field": "VV"
+      },
+      {
+        "bit_equal": true,
+        "field": "VV",
+        "level": 30000.0,
+        "max_abs": 0.0,
+        "pass": true,
+        "tolerance_abs": 0.0,
+        "wps_field": "VV"
+      },
+      {
+        "bit_equal": true,
+        "field": "VV",
+        "level": 25000.0,
+        "max_abs": 0.0,
+        "pass": true,
+        "tolerance_abs": 0.0,
+        "wps_field": "VV"
+      },
+      {
+        "bit_equal": true,
+        "field": "VV",
+        "level": 20000.0,
+        "max_abs": 0.0,
+        "pass": true,
+        "tolerance_abs": 0.0,
+        "wps_field": "VV"
+      },
+      {
+        "bit_equal": true,
+        "field": "VV",
+        "level": 15000.0,
+        "max_abs": 0.0,
+        "pass": true,
+        "tolerance_abs": 0.0,
+        "wps_field": "VV"
+      },
+      {
+        "bit_equal": true,
+        "field": "VV",
+        "level": 10000.0,
+        "max_abs": 0.0,
+        "pass": true,
+        "tolerance_abs": 0.0,
+        "wps_field": "VV"
+      },
+      {
+        "bit_equal": true,
+        "field": "VV",
+        "level": 5000.0,
+        "max_abs": 0.0,
+        "pass": true,
+        "tolerance_abs": 0.0,
+        "wps_field": "VV"
+      },
+      {
+        "bit_equal": true,
+        "field": "GHT",
+        "level": 100000.0,
+        "max_abs": 0.0,
+        "pass": true,
+        "tolerance_abs": 0.0,
+        "wps_field": "HGT"
+      },
+      {
+        "bit_equal": true,
+        "field": "SPECHUMD",
+        "level": 100000.0,
+        "max_abs": 0.0,
+        "pass": true,
+        "tolerance_abs": 0.0,
+        "wps_field": "SPECHUMD"
+      },
+      {
+        "bit_equal": true,
+        "field": "GHT",
+        "level": 92500.0,
+        "max_abs": 0.0,
+        "pass": true,
+        "tolerance_abs": 0.0,
+        "wps_field": "HGT"
+      },
+      {
+        "bit_equal": true,
+        "field": "SPECHUMD",
+        "level": 92500.0,
+        "max_abs": 0.0,
+        "pass": true,
+        "tolerance_abs": 0.0,
+        "wps_field": "SPECHUMD"
+      },
+      {
+        "bit_equal": true,
+        "field": "GHT",
+        "level": 85000.0,
+        "max_abs": 0.0,
+        "pass": true,
+        "tolerance_abs": 0.0,
+        "wps_field": "HGT"
+      },
+      {
+        "bit_equal": true,
+        "field": "SPECHUMD",
+        "level": 85000.0,
+        "max_abs": 0.0,
+        "pass": true,
+        "tolerance_abs": 0.0,
+        "wps_field": "SPECHUMD"
+      },
+      {
+        "bit_equal": true,
+        "field": "GHT",
+        "level": 70000.0,
+        "max_abs": 0.0,
+        "pass": true,
+        "tolerance_abs": 0.0,
+        "wps_field": "HGT"
+      },
+      {
+        "bit_equal": true,
+        "field": "SPECHUMD",
+        "level": 70000.0,
+        "max_abs": 0.0,
+        "pass": true,
+        "tolerance_abs": 0.0,
+        "wps_field": "SPECHUMD"
+      },
+      {
+        "bit_equal": true,
+        "field": "GHT",
+        "level": 60000.0,
+        "max_abs": 0.0,
+        "pass": true,
+        "tolerance_abs": 0.0,
+        "wps_field": "HGT"
+      },
+      {
+        "bit_equal": true,
+        "field": "SPECHUMD",
+        "level": 60000.0,
+        "max_abs": 0.0,
+        "pass": true,
+        "tolerance_abs": 0.0,
+        "wps_field": "SPECHUMD"
+      },
+      {
+        "bit_equal": true,
+        "field": "GHT",
+        "level": 50000.0,
+        "max_abs": 0.0,
+        "pass": true,
+        "tolerance_abs": 0.0,
+        "wps_field": "HGT"
+      },
+      {
+        "bit_equal": true,
+        "field": "SPECHUMD",
+        "level": 50000.0,
+        "max_abs": 0.0,
+        "pass": true,
+        "tolerance_abs": 0.0,
+        "wps_field": "SPECHUMD"
+      },
+      {
+        "bit_equal": true,
+        "field": "GHT",
+        "level": 40000.0,
+        "max_abs": 0.0,
+        "pass": true,
+        "tolerance_abs": 0.0,
+        "wps_field": "HGT"
+      },
+      {
+        "bit_equal": true,
+        "field": "SPECHUMD",
+        "level": 40000.0,
+        "max_abs": 0.0,
+        "pass": true,
+        "tolerance_abs": 0.0,
+        "wps_field": "SPECHUMD"
+      },
+      {
+        "bit_equal": true,
+        "field": "GHT",
+        "level": 30000.0,
+        "max_abs": 0.0,
+        "pass": true,
+        "tolerance_abs": 0.0,
+        "wps_field": "HGT"
+      },
+      {
+        "bit_equal": true,
+        "field": "SPECHUMD",
+        "level": 30000.0,
+        "max_abs": 0.0,
+        "pass": true,
+        "tolerance_abs": 0.0,
+        "wps_field": "SPECHUMD"
+      },
+      {
+        "bit_equal": true,
+        "field": "GHT",
+        "level": 25000.0,
+        "max_abs": 0.0,
+        "pass": true,
+        "tolerance_abs": 0.0,
+        "wps_field": "HGT"
+      },
+      {
+        "bit_equal": true,
+        "field": "SPECHUMD",
+        "level": 25000.0,
+        "max_abs": 0.0,
+        "pass": true,
+        "tolerance_abs": 0.0,
+        "wps_field": "SPECHUMD"
+      },
+      {
+        "bit_equal": true,
+        "field": "GHT",
+        "level": 20000.0,
+        "max_abs": 0.0,
+        "pass": true,
+        "tolerance_abs": 0.0,
+        "wps_field": "HGT"
+      },
+      {
+        "bit_equal": true,
+        "field": "SPECHUMD",
+        "level": 20000.0,
+        "max_abs": 0.0,
+        "pass": true,
+        "tolerance_abs": 0.0,
+        "wps_field": "SPECHUMD"
+      },
+      {
+        "bit_equal": true,
+        "field": "GHT",
+        "level": 15000.0,
+        "max_abs": 0.0,
+        "pass": true,
+        "tolerance_abs": 0.0,
+        "wps_field": "HGT"
+      },
+      {
+        "bit_equal": true,
+        "field": "SPECHUMD",
+        "level": 15000.0,
+        "max_abs": 0.0,
+        "pass": true,
+        "tolerance_abs": 0.0,
+        "wps_field": "SPECHUMD"
+      },
+      {
+        "bit_equal": true,
+        "field": "GHT",
+        "level": 10000.0,
+        "max_abs": 0.0,
+        "pass": true,
+        "tolerance_abs": 0.0,
+        "wps_field": "HGT"
+      },
+      {
+        "bit_equal": true,
+        "field": "SPECHUMD",
+        "level": 10000.0,
+        "max_abs": 0.0,
+        "pass": true,
+        "tolerance_abs": 0.0,
+        "wps_field": "SPECHUMD"
+      },
+      {
+        "bit_equal": true,
+        "field": "GHT",
+        "level": 5000.0,
+        "max_abs": 0.0,
+        "pass": true,
+        "tolerance_abs": 0.0,
+        "wps_field": "HGT"
+      },
+      {
+        "bit_equal": true,
+        "field": "SPECHUMD",
+        "level": 5000.0,
+        "max_abs": 0.0,
+        "pass": true,
+        "tolerance_abs": 0.0,
+        "wps_field": "SPECHUMD"
+      },
+      {
+        "bit_equal": true,
+        "field": "PSFC",
+        "level": 200100.0,
+        "max_abs": 0.0,
+        "pass": true,
+        "tolerance_abs": 0.0,
+        "wps_field": "PSFC"
+      },
+      {
+        "bit_equal": true,
+        "field": "LANDSEA",
+        "level": 200100.0,
+        "max_abs": 0.0,
+        "pass": true,
+        "tolerance_abs": 0.0,
+        "wps_field": "LANDSEA"
+      },
+      {
+        "bit_equal": true,
+        "field": "SKINTEMP",
+        "level": 200100.0,
+        "max_abs": 0.0,
+        "pass": true,
+        "tolerance_abs": 0.0,
+        "wps_field": "SKINTEMP"
+      },
+      {
+        "bit_equal": true,
+        "field": "SOILHGT",
+        "level": 200100.0,
+        "max_abs": 0.0,
+        "pass": true,
+        "tolerance_abs": 0.0,
+        "wps_field": "SOILHGT"
+      },
+      {
+        "bit_equal": true,
+        "field": "DEWPT",
+        "level": 200100.0,
+        "max_abs": 0.0,
+        "pass": true,
+        "tolerance_abs": 0.0,
+        "wps_field": "DEWPT"
+      },
+      {
+        "bit_equal": true,
+        "field": "ST000010",
+        "level": 200100.0,
+        "max_abs": 0.0,
+        "pass": true,
+        "tolerance_abs": 0.0,
+        "wps_field": "ST000010"
+      },
+      {
+        "bit_equal": true,
+        "field": "ST010040",
+        "level": 200100.0,
+        "max_abs": 0.0,
+        "pass": true,
+        "tolerance_abs": 0.0,
+        "wps_field": "ST010040"
+      },
+      {
+        "bit_equal": true,
+        "field": "SM000010",
+        "level": 200100.0,
+        "max_abs": 0.0,
+        "pass": true,
+        "tolerance_abs": 0.0,
+        "wps_field": "SM000010"
+      },
+      {
+        "bit_equal": true,
+        "field": "SM010040",
+        "level": 200100.0,
+        "max_abs": 0.0,
+        "pass": true,
+        "tolerance_abs": 0.0,
+        "wps_field": "SM010040"
+      },
+      {
+        "bit_equal": true,
+        "field": "PMSL",
+        "level": 201300.0,
+        "max_abs": 0.0,
+        "pass": true,
+        "tolerance_abs": 0.0,
+        "wps_field": "PMSL"
+      }
+    ],
+    "intermediate_path": "/mnt/data/canairy_meteo/runs/wps_cases/20260428_18z_72h/ungrib/AIFS:2026-04-28_18",
+    "record_count": 78,
+    "tolerance_abs": 0.0
+  }
+}
