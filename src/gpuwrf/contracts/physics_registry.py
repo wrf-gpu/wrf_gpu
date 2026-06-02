@@ -1,45 +1,32 @@
-"""v0.6.0 Registry-driven physics field list — the SINGLE source of truth.
+"""v0.6.0 Registry-driven physics field list: the single source of truth.
 
-INTERFACE FREEZE ONLY — no physics, no allocation, no kernels. See
-``.agent/decisions/V0.6.0-S0-PLAN.md`` and
-``.agent/decisions/ADR-031-v060-physics-expansion-interfaces.md``.
+This module is an interface-freeze artifact only. It allocates no arrays and
+implements no physics kernels. It mirrors the relevant WRF
+``Registry/Registry.EM_COMMON`` package memberships for the v0.6.0 accepted
+physics menu so that scheme lanes, wrfout, restart, and nesting consume one
+field list instead of re-creating Thompson-era assumptions locally.
 
-This module is the Python-side mirror of the WRF ``Registry/Registry.EM_COMMON``
-``package <scheme> <opt> - moist:...;scalar:...;state:...`` membership lines. It
-freezes the *superset* of prognostic moisture species, number concentrations,
-scalars, accumulators and physics-coupling tendency/carry fields that the v0.6.0
-supported scheme menu introduces, so that the per-scheme lanes (built in PARALLEL)
-can NOT invent incompatible State leaves, and so the nest forcedown/feedback field
-list, the wrfout writer, and the restart schema all consume ONE list instead of
-hardcoding the Thompson-era field set (GPT plan-review §Answer 5 + Prioritized
-Correction #10: "freeze a state/Registry interface before v0.6.0 so nesting,
-restart, and wrfout do not break when new species/scalars are introduced").
+WRF Registry lines verified against
+``/home/enric/src/wrf_pristine/WRF/Registry/Registry.EM_COMMON`` on
+2026-06-02:
 
-WRF arbiter (verified against ``/home/enric/src/wrf_pristine/WRF/Registry/
-Registry.EM_COMMON`` 2026-06-02):
+* Kessler(1): ``moist:qv,qc,qr``.
+* WSM6(6): ``moist:qv,qc,qr,qi,qs,qg;state:re_cloud,re_ice,re_snow``.
+* Thompson(8): ``moist:qv,qc,qr,qi,qs,qg;scalar:qni,qnr;state:re_*``.
+* Morrison(10): ``moist:qv..qg;scalar:qni,qns,qnr,qng`` plus cuten state.
+* WDM6(16): ``moist:qv..qg;scalar:qnn,qnc,qnr;state:re_*``.
+* MYNN(5): ``scalar:qke_adv;state:qke,tke_pbl,sh3d,sm3d,tsq,qsq,cov,el_pbl``.
+* Noah classic(2): ``state:flx4,fvb,fbur,fgsn,smcrel,xlaidyn``.
+* Cumulus options KF(1), Grell-Freitas(3), Tiedtke(6/16) use the common
+  ``R*CUTEN`` tendency family and scheme-specific carry listed below.
 
-    package kesslerscheme    mp_physics==1  - moist:qv,qc,qr
-    package wsm6scheme       mp_physics==6  - moist:qv,qc,qr,qi,qs,qg;state:re_*
-    package thompson         mp_physics==8  - moist:qv..qg;scalar:qni,qnr;state:re_*
-    package morr_two_moment  mp_physics==10 - moist:qv..qg;scalar:qni,qns,qnr,qng;
-                                               state:rqrcuten,rqscuten,rqicuten
-    package wdm6scheme       mp_physics==16 - moist:qv..qg;scalar:qnn,qnc,qnr;state:re_*
-
-    package kfetascheme      cu_physics==1  - state:w0avg            (+NCA, RAINCV, RTH/RQ*CUTEN)
-    package gfscheme         cu_physics==3  - state:cugd_*           (Grell-Freitas)
-    package tiedtkescheme    cu_physics==6  - -                      (tendencies only)
-    package mynnpblscheme    bl==5          - scalar:qke_adv;state:qke,tke_pbl,sh3d,sm3d,...
-    package ysuscheme        bl==1          - -                      (no extra prognostic state)
-    package acmpblscheme     bl==7          - -                      (no extra prognostic state)
-    package lsmscheme        sf_surface==2  - state:flx4,fvb,fbur,fgsn,smcrel,xlaidyn (Noah)
-    package noahmpscheme     sf_surface==4  - state:*xy ...          (Noah-MP, sibling carry)
-
-NOTHING here is allocated or stored as a JAX array. These are *names + WRF
-mappings + which-scheme-needs-them*; the actual State leaf addition (and its
-precision-matrix entry) is performed by the per-scheme implementation lane under
-the patch protocol, by appending to ``STATE_FIELD_ORDER`` / ``PRECISION_MATRIX``
-(``contracts.precision``) and the corresponding ``State.__slots__``, and is gated
-by the contract-test in this module's ``__main__`` self-check.
+Append-only State rule:
+    Existing ``State.__slots__`` order is preserved. v0.6.0 additive dycore
+    leaves are frozen as ``Nc``, ``Nn``, and ``rainc_acc``; lanes that need
+    them must append them to ``State.__slots__`` / ``STATE_FIELD_ORDER`` /
+    ``PRECISION_MATRIX`` and bump restart schema deliberately. Land/PBL/cumulus
+    save-state fields stay in ``PhysicsCarry`` sibling trees, following the
+    existing Noah-MP carry pattern.
 """
 
 from __future__ import annotations
@@ -48,17 +35,81 @@ from dataclasses import dataclass
 from typing import Mapping
 
 
-# --------------------------------------------------------------------------- #
-# 1. Moisture species (WRF 4-D ``moist`` array members, P_QV..P_QG).
-#    State leaf name == lowercase WRF moist-array member name.
-# --------------------------------------------------------------------------- #
-# The full v0.6.0 single-moment hydrometeor superset. Thompson(8)/WSM6(6)/
-# Morrison(10)/WDM6(16) all use this 6-class set; Kessler(1) uses the warm-rain
-# subset {qv, qc, qr} (no ice). Every supported MP scheme's moist members are a
-# SUBSET of MOIST_SPECIES, so the State already carries them (qc..qg exist).
+PHYSICS_REGISTRY_VERSION = "v0.6.0-S0-frozen-2026-06-02"
+
+
+@dataclass(frozen=True)
+class SchemeOption:
+    """One accepted namelist option with its WRF Registry package source."""
+
+    key: str
+    option: int
+    name: str
+    wrf_package: str
+    status: str
+    owner_family: str
+
+
+ACCEPTED_MP_PHYSICS: tuple[int, ...] = (0, 1, 6, 8, 10, 16)
+ACCEPTED_BL_PBL_PHYSICS: tuple[int, ...] = (0, 1, 5, 7)
+ACCEPTED_SF_SFCLAY_PHYSICS: tuple[int, ...] = (0, 1, 5, 7)
+ACCEPTED_CU_PHYSICS: tuple[int, ...] = (0, 1, 3, 6, 16)
+ACCEPTED_SF_SURFACE_PHYSICS: tuple[int, ...] = (0, 2, 4)
+ACCEPTED_RA_SW_PHYSICS: tuple[int, ...] = (0, 4)
+ACCEPTED_RA_LW_PHYSICS: tuple[int, ...] = (0, 4)
+
+ACCEPTED_NAMELIST_OPTIONS: Mapping[str, tuple[int, ...]] = {
+    "mp_physics": ACCEPTED_MP_PHYSICS,
+    "bl_pbl_physics": ACCEPTED_BL_PBL_PHYSICS,
+    "sf_sfclay_physics": ACCEPTED_SF_SFCLAY_PHYSICS,
+    "cu_physics": ACCEPTED_CU_PHYSICS,
+    "sf_surface_physics": ACCEPTED_SF_SURFACE_PHYSICS,
+    "ra_sw_physics": ACCEPTED_RA_SW_PHYSICS,
+    "ra_lw_physics": ACCEPTED_RA_LW_PHYSICS,
+}
+
+MP_SCHEMES: Mapping[int, SchemeOption] = {
+    0: SchemeOption("mp_physics", 0, "disabled/passive qv", "passiveqv", "accepted", "microphysics"),
+    1: SchemeOption("mp_physics", 1, "Kessler warm rain", "kesslerscheme", "accepted", "microphysics"),
+    6: SchemeOption("mp_physics", 6, "WSM6", "wsm6scheme", "accepted", "microphysics"),
+    8: SchemeOption("mp_physics", 8, "Thompson", "thompson", "implemented", "microphysics"),
+    10: SchemeOption("mp_physics", 10, "Morrison two-moment", "morr_two_moment", "accepted", "microphysics"),
+    16: SchemeOption("mp_physics", 16, "WDM6", "wdm6scheme", "accepted", "microphysics"),
+}
+
+PBL_SCHEMES: Mapping[int, SchemeOption] = {
+    0: SchemeOption("bl_pbl_physics", 0, "disabled", "none", "accepted", "pbl"),
+    1: SchemeOption("bl_pbl_physics", 1, "YSU", "ysuscheme", "accepted", "pbl"),
+    5: SchemeOption("bl_pbl_physics", 5, "MYNN", "mynnpblscheme", "implemented", "pbl"),
+    7: SchemeOption("bl_pbl_physics", 7, "ACM2", "acmpblscheme", "accepted", "pbl"),
+}
+
+SFCLAY_SCHEMES: Mapping[int, SchemeOption] = {
+    0: SchemeOption("sf_sfclay_physics", 0, "disabled", "none", "accepted", "surface_layer"),
+    1: SchemeOption("sf_sfclay_physics", 1, "sfclayrev", "sfclayscheme", "accepted", "surface_layer"),
+    5: SchemeOption("sf_sfclay_physics", 5, "MYNN surface layer", "mynnsfclayscheme", "implemented", "surface_layer"),
+    7: SchemeOption("sf_sfclay_physics", 7, "Pleim-Xiu surface layer", "pxsfclayscheme", "accepted", "surface_layer"),
+}
+
+CU_SCHEMES: Mapping[int, SchemeOption] = {
+    0: SchemeOption("cu_physics", 0, "disabled", "no_cumulus", "accepted", "cumulus"),
+    1: SchemeOption("cu_physics", 1, "Kain-Fritsch", "kfetascheme", "accepted", "cumulus"),
+    3: SchemeOption("cu_physics", 3, "Grell-Freitas", "gfscheme", "accepted", "cumulus"),
+    6: SchemeOption("cu_physics", 6, "Tiedtke", "tiedtkescheme", "accepted", "cumulus"),
+    16: SchemeOption("cu_physics", 16, "New Tiedtke", "ntiedtkescheme", "accepted", "cumulus"),
+}
+
+SURFACE_SCHEMES: Mapping[int, SchemeOption] = {
+    0: SchemeOption("sf_surface_physics", 0, "disabled", "none", "accepted", "land_surface"),
+    2: SchemeOption("sf_surface_physics", 2, "Noah classic", "lsmscheme", "accepted", "land_surface"),
+    4: SchemeOption("sf_surface_physics", 4, "Noah-MP", "noahmpscheme", "implemented", "land_surface"),
+}
+
+
+# Moisture species: WRF 4-D ``moist`` array members. State leaf name equals the
+# lowercase WRF moist-array member name used throughout this port.
 MOIST_SPECIES: tuple[str, ...] = ("qv", "qc", "qr", "qi", "qs", "qg")
 
-# WRF moist-array member -> wrfout NetCDF variable name (writer mapping).
 MOIST_WRFOUT_NAME: Mapping[str, str] = {
     "qv": "QVAPOR",
     "qc": "QCLOUD",
@@ -68,138 +119,329 @@ MOIST_WRFOUT_NAME: Mapping[str, str] = {
     "qg": "QGRAUP",
 }
 
-# Which moist members each supported mp_physics option activates (WRF package
-# membership). Used by the namelist checker + the per-scheme lane to assert the
-# scheme only reads/writes State leaves it is allowed to.
 MP_MOIST_MEMBERS: Mapping[int, tuple[str, ...]] = {
-    0: ("qv",),                                  # passiveqv (dry/no-MP gate)
-    1: ("qv", "qc", "qr"),                        # Kessler (warm rain)
-    6: ("qv", "qc", "qr", "qi", "qs", "qg"),      # WSM6
-    8: ("qv", "qc", "qr", "qi", "qs", "qg"),      # Thompson (IN/ported)
-    10: ("qv", "qc", "qr", "qi", "qs", "qg"),     # Morrison 2-moment
-    16: ("qv", "qc", "qr", "qi", "qs", "qg"),     # WDM6
+    0: ("qv",),
+    1: ("qv", "qc", "qr"),
+    6: ("qv", "qc", "qr", "qi", "qs", "qg"),
+    8: ("qv", "qc", "qr", "qi", "qs", "qg"),
+    10: ("qv", "qc", "qr", "qi", "qs", "qg"),
+    16: ("qv", "qc", "qr", "qi", "qs", "qg"),
 }
 
 
-# --------------------------------------------------------------------------- #
-# 2. Number concentrations / scalar-array members (WRF ``scalar`` array).
-#    State leaf names follow the EXISTING Thompson convention (Ni/Nr/Ns/Ng);
-#    new schemes add the CCN/cloud-droplet number leaves.
-# --------------------------------------------------------------------------- #
-# Existing (Thompson-era, already in State): Ni<-qni, Nr<-qnr, Ns<-qns, Ng<-qng.
-# v0.6.0 ADDITIVE for Morrison(10) and WDM6(16). Morrison needs all four moment
-# numbers (qni,qns,qnr,qng -> Ni,Ns,Nr,Ng, already present). WDM6 needs the
-# warm-rain droplet/CCN numbers (qnn CCN, qnc cloud droplet, qnr rain).
-#
-# Leaf-name <- WRF scalar member:
-#   Ni <- qni   ice number             [#/kg or #/m3 per scheme convention]
-#   Nr <- qnr   rain number
-#   Ns <- qns   snow number
-#   Ng <- qng   graupel number
-#   Nc <- qnc   cloud-droplet number   (WDM6, Morrison-aero) -- ADDITIVE
-#   Nn <- qnn   CCN number             (WDM6)                -- ADDITIVE
+# Number concentrations / WRF ``scalar`` array members. Existing Thompson-era
+# State leaves are preserved; WDM6 adds ``Nc`` and ``Nn`` append-only.
 NUMBER_SPECIES_EXISTING: tuple[str, ...] = ("Ni", "Nr", "Ns", "Ng")
 NUMBER_SPECIES_ADDITIVE: tuple[str, ...] = ("Nc", "Nn")
 NUMBER_SPECIES: tuple[str, ...] = NUMBER_SPECIES_EXISTING + NUMBER_SPECIES_ADDITIVE
 
-# State leaf -> wrfout NetCDF scalar variable name (WRF ``scalar`` array names).
+NUMBER_REGISTRY_MEMBER: Mapping[str, str] = {
+    "Ni": "qni",
+    "Nr": "qnr",
+    "Ns": "qns",
+    "Ng": "qng",
+    "Nc": "qnc",
+    "Nn": "qnn",
+}
+
 NUMBER_WRFOUT_NAME: Mapping[str, str] = {
     "Ni": "QNICE",
     "Nr": "QNRAIN",
     "Ns": "QNSNOW",
     "Ng": "QNGRAUPEL",
     "Nc": "QNCLOUD",
-    "Nn": "QNN",
+    "Nn": "QNCCN",
 }
 
-# Which scalar (number) members each supported mp_physics option activates.
-# Single-moment schemes (Kessler/WSM6) activate NONE.
 MP_NUMBER_MEMBERS: Mapping[int, tuple[str, ...]] = {
     0: (),
-    1: (),                                        # Kessler single-moment
-    6: (),                                        # WSM6 single-moment
-    8: ("Ni", "Nr"),                              # Thompson: 2 numbers (qni,qnr)
-    10: ("Ni", "Ns", "Nr", "Ng"),                 # Morrison: full 2-moment
-    16: ("Nn", "Nc", "Nr"),                       # WDM6: CCN + droplet + rain
+    1: (),
+    6: (),
+    8: ("Ni", "Nr"),
+    10: ("Ni", "Ns", "Nr", "Ng"),
+    16: ("Nn", "Nc", "Nr"),
 }
 
 
-# --------------------------------------------------------------------------- #
-# 3. Precipitation accumulators (WRF surface ``misc`` state).
-#    State leaf -> wrfout name. Grid-scale (NC) vs cumulus (C) partition.
-# --------------------------------------------------------------------------- #
-# EXISTING in State: rain_acc/snow_acc/graupel_acc/ice_acc (grid-scale, from MP).
-# v0.6.0 ADDITIVE: cumulus precip accumulator (RAINC) when a cu scheme is active.
-# WRF: RAINNC = grid-scale total, RAINC = cumulus total, SNOWNC/GRAUPELNC = MP
-# partition. ``rain_acc`` maps to RAINNC; the cumulus lane adds ``rainc_acc``.
+# Precipitation accumulators. ``rainc_acc`` is additive State because cumulus
+# precipitation is a prognostic history/restart quantity in WRF (RAINC).
 ACCUMULATORS_EXISTING: tuple[str, ...] = ("rain_acc", "snow_acc", "graupel_acc", "ice_acc")
 ACCUMULATORS_ADDITIVE: tuple[str, ...] = ("rainc_acc",)
 ACCUMULATORS: tuple[str, ...] = ACCUMULATORS_EXISTING + ACCUMULATORS_ADDITIVE
 
 ACCUMULATOR_WRFOUT_NAME: Mapping[str, str] = {
-    "rain_acc": "RAINNC",        # accumulated total grid-scale precip [mm]
-    "snow_acc": "SNOWNC",        # accumulated grid-scale snow+ice [mm]
-    "graupel_acc": "GRAUPELNC",  # accumulated grid-scale graupel [mm]
-    "ice_acc": "SNOWNC",         # WRF folds ice into SNOWNC; kept distinct here
-    "rainc_acc": "RAINC",        # accumulated total cumulus precip [mm] (ADDITIVE)
+    "rain_acc": "RAINNC",
+    "snow_acc": "SNOWNC",
+    "graupel_acc": "GRAUPELNC",
+    "ice_acc": "SNOWNC",
+    "rainc_acc": "RAINC",
 }
 
+V060_EXISTING_STATE_PHYSICS_LEAVES: tuple[str, ...] = (
+    *MOIST_SPECIES,
+    *NUMBER_SPECIES_EXISTING,
+    "qke",
+    *ACCUMULATORS_EXISTING,
+)
+V060_ADDITIVE_STATE_LEAVES: tuple[str, ...] = (*NUMBER_SPECIES_ADDITIVE, *ACCUMULATORS_ADDITIVE)
 
-# --------------------------------------------------------------------------- #
-# 4. Physics-coupling carry fields (WRF ``state`` array members carried BETWEEN
-#    physics steps). These ride in OperationalCarry as OPTIONAL subtrees, NOT in
-#    the prognostic dycore State.__slots__ (mirrors noahmp_land). See
-#    contracts.physics_interfaces.PhysicsCarry.
-# --------------------------------------------------------------------------- #
-# Cumulus held carry by scheme (WRF Registry ``state:`` members):
-#   KF(1)/MSKF(11)/oldKF(99): w0avg (running-mean w) + NCA (relaxation counter)
-#   Grell-Freitas(3):         cugd_* family (deep+shallow tendencies/closure)
-#   Tiedtke(6/16):            NONE (diagnostic, no persistent carry)
+
+@dataclass(frozen=True)
+class RegistryFieldSpec:
+    """Frozen metadata for a WRF Registry-backed physics field."""
+
+    leaf: str
+    wrf_name: str
+    registry_member: str
+    kind: str
+    shape: str
+    storage: str
+    existing_state: bool
+    additive_state: bool
+    restart_required: bool
+    wrfout_required: bool
+    nest_forcedown: bool
+    nest_feedback: bool
+    lateral_bc: bool
+    schemes: tuple[str, ...]
+    notes: str = ""
+
+
+def _field(
+    leaf: str,
+    wrf_name: str,
+    registry_member: str,
+    kind: str,
+    shape: str,
+    storage: str,
+    schemes: tuple[str, ...],
+    *,
+    existing_state: bool = False,
+    additive_state: bool = False,
+    restart_required: bool = False,
+    wrfout_required: bool = False,
+    nest_forcedown: bool = False,
+    nest_feedback: bool = False,
+    lateral_bc: bool = False,
+    notes: str = "",
+) -> RegistryFieldSpec:
+    return RegistryFieldSpec(
+        leaf=leaf,
+        wrf_name=wrf_name,
+        registry_member=registry_member,
+        kind=kind,
+        shape=shape,
+        storage=storage,
+        existing_state=existing_state,
+        additive_state=additive_state,
+        restart_required=restart_required,
+        wrfout_required=wrfout_required,
+        nest_forcedown=nest_forcedown,
+        nest_feedback=nest_feedback,
+        lateral_bc=lateral_bc,
+        schemes=schemes,
+        notes=notes,
+    )
+
+
+FIELD_SPECS: tuple[RegistryFieldSpec, ...] = (
+    *(
+        _field(
+            leaf,
+            MOIST_WRFOUT_NAME[leaf],
+            leaf,
+            "moist",
+            "mass_3d",
+            "State",
+            tuple(f"mp{opt}" for opt, members in MP_MOIST_MEMBERS.items() if leaf in members),
+            existing_state=True,
+            restart_required=True,
+            wrfout_required=leaf in {"qv", "qc", "qr", "qi", "qs", "qg"},
+            nest_forcedown=True,
+            nest_feedback=True,
+            lateral_bc=True,
+        )
+        for leaf in MOIST_SPECIES
+    ),
+    *(
+        _field(
+            leaf,
+            NUMBER_WRFOUT_NAME[leaf],
+            NUMBER_REGISTRY_MEMBER[leaf],
+            "scalar_number",
+            "mass_3d",
+            "State",
+            tuple(f"mp{opt}" for opt, members in MP_NUMBER_MEMBERS.items() if leaf in members),
+            existing_state=leaf in NUMBER_SPECIES_EXISTING,
+            additive_state=leaf in NUMBER_SPECIES_ADDITIVE,
+            restart_required=True,
+            wrfout_required=True,
+            nest_forcedown=True,
+            nest_feedback=True,
+            lateral_bc=False,
+            notes="WRF have_bcs_scalar controls lateral scalar bdy; nests force/feedback active scalars.",
+        )
+        for leaf in NUMBER_SPECIES
+    ),
+    *(
+        _field(
+            leaf,
+            ACCUMULATOR_WRFOUT_NAME[leaf],
+            ACCUMULATOR_WRFOUT_NAME[leaf],
+            "accumulator",
+            "surface_2d",
+            "State",
+            ("microphysics", "cumulus") if leaf == "rainc_acc" else ("microphysics",),
+            existing_state=leaf in ACCUMULATORS_EXISTING,
+            additive_state=leaf in ACCUMULATORS_ADDITIVE,
+            restart_required=True,
+            wrfout_required=True,
+            notes="History/restart accumulator; updated as increments by scheme adapters.",
+        )
+        for leaf in ACCUMULATORS
+    ),
+    _field(
+        "qke",
+        "QKE",
+        "qke",
+        "pbl_scalar",
+        "mass_3d",
+        "State",
+        ("pbl5",),
+        existing_state=True,
+        restart_required=True,
+        wrfout_required=True,
+        nest_forcedown=True,
+        nest_feedback=True,
+        lateral_bc=False,
+        notes="MYNN persistent TKE leaf; WRF advected scalar member is qke_adv.",
+    ),
+    *(
+        _field(
+            leaf,
+            leaf.upper(),
+            leaf,
+            "microphysics_diagnostic",
+            "mass_3d",
+            "PhysicsDiagnostics",
+            ("mp6", "mp8", "mp16"),
+            notes="Effective radius diagnostic/carry; not a dycore State leaf.",
+        )
+        for leaf in ("re_cloud", "re_ice", "re_snow")
+    ),
+    *(
+        _field(
+            leaf.lower(),
+            leaf,
+            leaf.lower(),
+            "cumulus_tendency",
+            "mass_3d",
+            "PhysicsCarry",
+            ("cu1", "cu3", "cu6", "cu16", "mp10"),
+            notes="WRF R*CUTEN state/tendency family carried between physics driver calls.",
+        )
+        for leaf in (
+            "RUCUTEN",
+            "RVCUTEN",
+            "RTHCUTEN",
+            "RQVCUTEN",
+            "RQRCUTEN",
+            "RQCCUTEN",
+            "RQSCUTEN",
+            "RQICUTEN",
+            "RQCNCUTEN",
+            "RQINCUTEN",
+        )
+    ),
+    _field("raincv", "RAINCV", "RAINCV", "cumulus_diagnostic", "surface_2d", "PhysicsDiagnostics", ("cu1", "cu3", "cu6", "cu16")),
+    _field("rainshv", "RAINSHV", "RAINSHV", "cumulus_diagnostic", "surface_2d", "PhysicsDiagnostics", ("cu1", "cu3", "cu6", "cu16")),
+    _field("nca", "NCA", "NCA", "cumulus_carry", "surface_2d", "PhysicsCarry", ("cu1",), notes="KF relaxation counter."),
+    _field("w0avg", "W0AVG", "w0avg", "cumulus_carry", "mass_3d", "PhysicsCarry", ("cu1",), notes="KF average vertical velocity."),
+    *(
+        _field(leaf, leaf.upper(), leaf, "cumulus_carry", "mass_3d", "PhysicsCarry", ("cu3",))
+        for leaf in ("cugd_qvten", "cugd_tten", "cugd_qvtens", "cugd_ttens", "cugd_qcten")
+    ),
+    *(
+        _field(leaf, leaf.upper(), leaf, "cumulus_carry", "surface_2d", "PhysicsCarry", ("cu3",))
+        for leaf in ("xmb_shallow", "k22_shallow", "kbcon_shallow", "ktop_shallow")
+    ),
+    *(
+        _field(leaf, leaf.upper(), leaf, "pbl_diagnostic", "mass_3d", "PhysicsDiagnostics", ("pbl5",))
+        for leaf in ("tke_pbl", "sh3d", "sm3d", "tsq", "qsq", "cov", "el_pbl")
+    ),
+    *(
+        _field(leaf, leaf.upper(), leaf, "land_carry", "surface_2d", "PhysicsCarry", ("surface2",))
+        for leaf in ("flx4", "fvb", "fbur", "fgsn", "smcrel", "xlaidyn")
+    ),
+)
+
+FIELD_SPECS_BY_LEAF: Mapping[str, RegistryFieldSpec] = {spec.leaf: spec for spec in FIELD_SPECS}
+
+
+CUMULUS_TENDENCY_MEMBERS: Mapping[int, tuple[str, ...]] = {
+    0: (),
+    1: ("rucuten", "rvcuten", "rthcuten", "rqvcuten", "rqrcuten", "rqccuten", "rqscuten", "rqicuten"),
+    3: ("rthcuten", "rqvcuten", "rqrcuten", "rqccuten", "rqscuten", "rqicuten"),
+    6: ("rthcuten", "rqvcuten", "rqrcuten", "rqccuten", "rqscuten", "rqicuten"),
+    16: ("rthcuten", "rqvcuten", "rqrcuten", "rqccuten", "rqscuten", "rqicuten"),
+}
+
 CUMULUS_CARRY_MEMBERS: Mapping[int, tuple[str, ...]] = {
     0: (),
-    1: ("w0avg", "nca"),                          # Kain-Fritsch
-    3: ("cugd_qvten", "cugd_tten", "cugd_qvtens", "cugd_ttens", "cugd_qcten",
-        "xmb_shallow", "k22_shallow", "kbcon_shallow", "ktop_shallow"),  # Grell-Freitas
-    6: (),                                         # Tiedtke (tendency-only)
-    16: (),                                        # newer Tiedtke (tendency-only)
+    1: ("w0avg", "nca"),
+    3: (
+        "cugd_qvten",
+        "cugd_tten",
+        "cugd_qvtens",
+        "cugd_ttens",
+        "cugd_qcten",
+        "xmb_shallow",
+        "k22_shallow",
+        "kbcon_shallow",
+        "ktop_shallow",
+    ),
+    6: (),
+    16: (),
 }
 
-# PBL held carry by scheme (WRF Registry ``state:`` members):
-#   MYNN(5): qke (in State) + tke_pbl/sh3d/sm3d/tsq/qsq/cov/el_pbl (currently
-#            diagnosed in-kernel; only qke is a persistent State leaf in the port)
-#   YSU(1), ACM2(7): NONE (no extra prognostic PBL state)
 PBL_CARRY_MEMBERS: Mapping[int, tuple[str, ...]] = {
     0: (),
-    1: (),                                         # YSU
-    5: ("qke",),                                   # MYNN (qke is the State leaf)
-    7: (),                                         # ACM2
+    1: (),
+    5: ("qke",),
+    7: (),
 }
 
+PBL_DIAGNOSTIC_MEMBERS: Mapping[int, tuple[str, ...]] = {
+    0: (),
+    1: ("pblh",),
+    5: ("pblh", "tke_pbl", "sh3d", "sm3d", "tsq", "qsq", "cov", "el_pbl"),
+    7: ("pblh",),
+}
 
-# --------------------------------------------------------------------------- #
-# 5. THE FROZEN NEST / LATERAL-BOUNDARY field list (GPT hidden-dependency).
-#    BOTH v0.6.0 physics-expansion AND v0.5.0 nesting consume this. Adding a moist
-#    species here is what makes the nest forcedown / 2-way feedback / wrfbdy carry
-#    it; v0.5.0 must NOT hardcode {qv} (current boundary_construction.py only
-#    forces qv). WRF nest_forcedown_interp.inc forces every active moist+scalar
-#    member; have_bcs_moist/have_bcs_scalar control lateral wrfbdy carry of them.
-# --------------------------------------------------------------------------- #
+LAND_CARRY_MEMBERS: Mapping[int, tuple[str, ...]] = {
+    0: (),
+    2: ("flx4", "fvb", "fbur", "fgsn", "smcrel", "xlaidyn"),
+    4: ("NoahMPLandState",),
+}
+
+NOAH_CLASSIC_NUM_SOIL_LAYERS = 4
+
+
 @dataclass(frozen=True)
 class NestFieldEntry:
     """One field in the Registry-driven nest forcedown/feedback/boundary list."""
 
-    leaf: str                    # State leaf name (or carry/sibling name)
-    wrf_name: str                # WRF Registry / wrfout name
-    kind: str                    # "prognostic" | "moist" | "scalar" | "base"
-    stagger: str                 # "" mass | "X" u-face | "Y" v-face | "Z" w-face
-    forcedown: bool              # included in parent->child med_nest_force
-    feedback: bool               # included in child->parent 2-way feedback
-    lateral_bc: bool             # carried in wrfbdy (have_bcs_moist/scalar)
+    leaf: str
+    wrf_name: str
+    kind: str
+    stagger: str
+    forcedown: bool
+    feedback: bool
+    lateral_bc: bool
 
 
-# The CORE always-forced prognostic + base set (matches the current
-# boundary_construction.py forced set: u,v,w,ph,theta,mu,qv + base phb/pb/mub).
-# kind="base" entries are read-only base-state leaves the boundary consumer needs.
+# Core prognostic/base list. ``qv`` is deliberately core because WRF nests force
+# water vapor even when no microphysics package is active.
 _NEST_CORE: tuple[NestFieldEntry, ...] = (
     NestFieldEntry("u", "U", "prognostic", "X", True, True, True),
     NestFieldEntry("v", "V", "prognostic", "Y", True, True, True),
@@ -207,10 +449,48 @@ _NEST_CORE: tuple[NestFieldEntry, ...] = (
     NestFieldEntry("ph_perturbation", "PH", "prognostic", "Z", True, True, True),
     NestFieldEntry("theta", "T", "prognostic", "", True, True, True),
     NestFieldEntry("mu_perturbation", "MU", "prognostic", "", True, True, True),
+    NestFieldEntry("qv", "QVAPOR", "moist", "", True, True, True),
     NestFieldEntry("phb_bdy", "PHB", "base", "Z", True, False, True),
     NestFieldEntry("pb_bdy", "PB", "base", "", True, False, True),
     NestFieldEntry("mub_bdy", "MUB", "base", "", True, False, True),
 )
+
+
+def moist_species_for_mp(mp_physics: int) -> tuple[str, ...]:
+    """Return active WRF moist-array members for an accepted microphysics option."""
+
+    return MP_MOIST_MEMBERS[int(mp_physics)]
+
+
+def number_species_for_mp(mp_physics: int) -> tuple[str, ...]:
+    """Return active WRF scalar number leaves for an accepted microphysics option."""
+
+    return MP_NUMBER_MEMBERS[int(mp_physics)]
+
+
+def state_leaves_for_mp(mp_physics: int) -> tuple[str, ...]:
+    """Return State leaves an MP option may read/write."""
+
+    return (*moist_species_for_mp(mp_physics), *number_species_for_mp(mp_physics))
+
+
+def wrfout_names_for_mp(mp_physics: int) -> tuple[str, ...]:
+    """Return wrfout names introduced by the active MP option."""
+
+    leaves = state_leaves_for_mp(mp_physics)
+    names: list[str] = []
+    for leaf in leaves:
+        if leaf in MOIST_WRFOUT_NAME:
+            names.append(MOIST_WRFOUT_NAME[leaf])
+        elif leaf in NUMBER_WRFOUT_NAME:
+            names.append(NUMBER_WRFOUT_NAME[leaf])
+    return tuple(names)
+
+
+def physics_state_append_order() -> tuple[str, ...]:
+    """Return the append-only State leaves frozen by v0.6.0 S0."""
+
+    return V060_ADDITIVE_STATE_LEAVES
 
 
 def nest_field_list(
@@ -220,48 +500,61 @@ def nest_field_list(
     cu_physics: int = 0,
     include_numbers: bool = True,
 ) -> tuple[NestFieldEntry, ...]:
-    """Return the FROZEN, scheme-aware nest forcedown/feedback/boundary field list.
+    """Return the frozen, scheme-aware nest forcedown/feedback/boundary list.
 
-    This is the single function v0.5.0 nesting (forcedown + 2-way feedback) and
-    the lateral-boundary builder MUST call instead of hardcoding {qv}. It expands
-    the moist + scalar (number) members for the *active* mp/pbl scheme so adding
-    Morrison/WDM6 automatically widens the nest/boundary carry — no v0.5.0 rework.
-
-    Moist species are forcedown + feedback + lateral-bc (WRF forces all active
-    moist members through nest_forcedown_interp.inc and 2-way feedback copy/avg).
-    Number/scalar members are forcedown + feedback when ``include_numbers`` and the
-    scheme is 2-moment; their wrfbdy lateral carry is gated by have_bcs_scalar
-    (WRF default off for nests, so lateral_bc=False here — they are zero-gradient
-    at the nest edge unless have_bcs_scalar is set).
+    v0.5.0 nesting and v0.6.0 physics-expansion must call this function instead
+    of hardcoding the active moisture/scalar set. Moist members get forcedown,
+    feedback, and lateral boundary carry. Scalar number fields and MYNN ``qke``
+    get forcedown/feedback but default to no lateral scalar bdy unless a later
+    lane explicitly enables WRF ``have_bcs_scalar`` semantics.
     """
 
+    int(mp_physics)
+    int(bl_pbl_physics)
+    int(cu_physics)
     entries: list[NestFieldEntry] = list(_NEST_CORE)
-    # Active moist members beyond qv (qv already in core).
-    for leaf in MP_MOIST_MEMBERS.get(int(mp_physics), ("qv",)):
-        if leaf == "qv":
+    seen = {entry.leaf for entry in entries}
+
+    for leaf in moist_species_for_mp(mp_physics):
+        if leaf in seen:
             continue
-        entries.append(
-            NestFieldEntry(leaf, MOIST_WRFOUT_NAME[leaf], "moist", "", True, True, True)
-        )
-    # Active number/scalar members.
+        entries.append(NestFieldEntry(leaf, MOIST_WRFOUT_NAME[leaf], "moist", "", True, True, True))
+        seen.add(leaf)
+
     if include_numbers:
-        for leaf in MP_NUMBER_MEMBERS.get(int(mp_physics), ()):
-            entries.append(
-                NestFieldEntry(leaf, NUMBER_WRFOUT_NAME[leaf], "scalar", "", True, True, False)
-            )
-        # MYNN advects qke as a scalar (qke_adv) -> forcedown/feedback when active.
-        if int(bl_pbl_physics) == 5:
+        for leaf in number_species_for_mp(mp_physics):
+            if leaf in seen:
+                continue
+            entries.append(NestFieldEntry(leaf, NUMBER_WRFOUT_NAME[leaf], "scalar", "", True, True, False))
+            seen.add(leaf)
+        if int(bl_pbl_physics) == 5 and "qke" not in seen:
             entries.append(NestFieldEntry("qke", "QKE", "scalar", "", True, True, False))
+
     return tuple(entries)
 
 
-# --------------------------------------------------------------------------- #
-# 6. Self-check: the registry must stay internally consistent and every name it
-#    references in the precision matrix / State must actually exist once a lane
-#    has added it. Run by the contract test; new lanes extend the matrix first.
-# --------------------------------------------------------------------------- #
 def assert_registry_consistent() -> None:
     """Fail-closed internal consistency checks for the frozen registry."""
+
+    for key, accepted in ACCEPTED_NAMELIST_OPTIONS.items():
+        assert len(set(accepted)) == len(accepted), f"{key} has duplicate accepted values"
+
+    for opt in ACCEPTED_MP_PHYSICS:
+        assert opt in MP_SCHEMES, f"missing MP scheme metadata for {opt}"
+        assert opt in MP_MOIST_MEMBERS, f"missing moist members for mp={opt}"
+        assert opt in MP_NUMBER_MEMBERS, f"missing number members for mp={opt}"
+    for opt in ACCEPTED_BL_PBL_PHYSICS:
+        assert opt in PBL_SCHEMES, f"missing PBL metadata for {opt}"
+        assert opt in PBL_CARRY_MEMBERS, f"missing PBL carry metadata for {opt}"
+    for opt in ACCEPTED_SF_SFCLAY_PHYSICS:
+        assert opt in SFCLAY_SCHEMES, f"missing surface-layer metadata for {opt}"
+    for opt in ACCEPTED_CU_PHYSICS:
+        assert opt in CU_SCHEMES, f"missing cumulus metadata for {opt}"
+        assert opt in CUMULUS_CARRY_MEMBERS, f"missing cumulus carry metadata for {opt}"
+        assert opt in CUMULUS_TENDENCY_MEMBERS, f"missing cumulus tendency metadata for {opt}"
+    for opt in ACCEPTED_SF_SURFACE_PHYSICS:
+        assert opt in SURFACE_SCHEMES, f"missing surface metadata for {opt}"
+        assert opt in LAND_CARRY_MEMBERS, f"missing land carry metadata for {opt}"
 
     for opt, members in MP_MOIST_MEMBERS.items():
         for leaf in members:
@@ -270,30 +563,69 @@ def assert_registry_consistent() -> None:
     for opt, members in MP_NUMBER_MEMBERS.items():
         for leaf in members:
             assert leaf in NUMBER_SPECIES, f"mp={opt} number member {leaf!r} not in NUMBER_SPECIES"
+            assert leaf in NUMBER_REGISTRY_MEMBER, f"number {leaf!r} missing Registry scalar member"
             assert leaf in NUMBER_WRFOUT_NAME, f"number {leaf!r} missing wrfout name"
     for leaf in ACCUMULATORS:
         assert leaf in ACCUMULATOR_WRFOUT_NAME, f"accumulator {leaf!r} missing wrfout name"
-    # Every nest entry's leaf is named consistently with the species tables.
-    for entry in nest_field_list(mp_physics=10, cu_physics=1):
+
+    field_names = [spec.leaf for spec in FIELD_SPECS]
+    assert len(field_names) == len(set(field_names)), "FIELD_SPECS has duplicate leaves"
+    for leaf in V060_EXISTING_STATE_PHYSICS_LEAVES + V060_ADDITIVE_STATE_LEAVES:
+        assert leaf in FIELD_SPECS_BY_LEAF, f"{leaf!r} missing from FIELD_SPECS"
+
+    nested = nest_field_list(mp_physics=10, bl_pbl_physics=5, cu_physics=1)
+    assert "qv" in {entry.leaf for entry in nested}, "qv must remain in nest core"
+    assert len(nested) == len({entry.leaf for entry in nested}), "duplicate nest field entry"
+    for entry in nested:
         assert entry.kind in {"prognostic", "moist", "scalar", "base"}
 
 
 __all__ = [
+    "PHYSICS_REGISTRY_VERSION",
+    "SchemeOption",
+    "ACCEPTED_MP_PHYSICS",
+    "ACCEPTED_BL_PBL_PHYSICS",
+    "ACCEPTED_SF_SFCLAY_PHYSICS",
+    "ACCEPTED_CU_PHYSICS",
+    "ACCEPTED_SF_SURFACE_PHYSICS",
+    "ACCEPTED_RA_SW_PHYSICS",
+    "ACCEPTED_RA_LW_PHYSICS",
+    "ACCEPTED_NAMELIST_OPTIONS",
+    "MP_SCHEMES",
+    "PBL_SCHEMES",
+    "SFCLAY_SCHEMES",
+    "CU_SCHEMES",
+    "SURFACE_SCHEMES",
     "MOIST_SPECIES",
     "MOIST_WRFOUT_NAME",
     "MP_MOIST_MEMBERS",
     "NUMBER_SPECIES",
     "NUMBER_SPECIES_EXISTING",
     "NUMBER_SPECIES_ADDITIVE",
+    "NUMBER_REGISTRY_MEMBER",
     "NUMBER_WRFOUT_NAME",
     "MP_NUMBER_MEMBERS",
     "ACCUMULATORS",
     "ACCUMULATORS_EXISTING",
     "ACCUMULATORS_ADDITIVE",
     "ACCUMULATOR_WRFOUT_NAME",
+    "V060_EXISTING_STATE_PHYSICS_LEAVES",
+    "V060_ADDITIVE_STATE_LEAVES",
+    "RegistryFieldSpec",
+    "FIELD_SPECS",
+    "FIELD_SPECS_BY_LEAF",
+    "CUMULUS_TENDENCY_MEMBERS",
     "CUMULUS_CARRY_MEMBERS",
     "PBL_CARRY_MEMBERS",
+    "PBL_DIAGNOSTIC_MEMBERS",
+    "LAND_CARRY_MEMBERS",
+    "NOAH_CLASSIC_NUM_SOIL_LAYERS",
     "NestFieldEntry",
+    "moist_species_for_mp",
+    "number_species_for_mp",
+    "state_leaves_for_mp",
+    "wrfout_names_for_mp",
+    "physics_state_append_order",
     "nest_field_list",
     "assert_registry_consistent",
 ]
@@ -301,7 +633,12 @@ __all__ = [
 
 if __name__ == "__main__":
     assert_registry_consistent()
-    print("ok physics_registry consistent:",
-          f"moist={len(MOIST_SPECIES)} numbers={len(NUMBER_SPECIES)} "
-          f"accumulators={len(ACCUMULATORS)} "
-          f"nest_fields(mp=10,cu=1)={len(nest_field_list(mp_physics=10, cu_physics=1))}")
+    print(
+        "ok physics_registry consistent:",
+        f"version={PHYSICS_REGISTRY_VERSION}",
+        f"moist={len(MOIST_SPECIES)}",
+        f"numbers={len(NUMBER_SPECIES)}",
+        f"accumulators={len(ACCUMULATORS)}",
+        f"append={','.join(physics_state_append_order())}",
+        f"nest_fields(mp=10,cu=1)={len(nest_field_list(mp_physics=10, cu_physics=1))}",
+    )

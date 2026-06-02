@@ -1,8 +1,10 @@
 """Fail-fast support check for WRF namelist/config options.
 
-This module is deliberately conservative: a selected nonzero physics/dynamics
-option is accepted only when this branch has a faithful implementation path for
-that option. Disabled options (usually ``0``) remain valid for dry/operator gates.
+For v0.6.0, the physics values accepted here are the frozen interface matrix,
+not a claim that every scheme is already wired into the operational dispatcher.
+Unsupported option numbers still fail closed loudly. Per-scheme lanes must pass
+their WRF savepoint parity gates before a non-Thompson suite can be used for an
+integrated forecast.
 """
 
 from __future__ import annotations
@@ -12,6 +14,16 @@ from pathlib import Path
 from typing import Any, Mapping
 
 import numpy as np
+
+from gpuwrf.contracts.physics_registry import (
+    ACCEPTED_BL_PBL_PHYSICS,
+    ACCEPTED_CU_PHYSICS,
+    ACCEPTED_MP_PHYSICS,
+    ACCEPTED_RA_LW_PHYSICS,
+    ACCEPTED_RA_SW_PHYSICS,
+    ACCEPTED_SF_SFCLAY_PHYSICS,
+    ACCEPTED_SF_SURFACE_PHYSICS,
+)
 
 
 @dataclass(frozen=True)
@@ -49,43 +61,43 @@ SUPPORTED_OPTIONS: dict[str, SupportedOption] = {
     # Physics suite wired in runtime.operational_mode and coupling.physics_couplers.
     "mp_physics": SupportedOption(
         key="mp_physics",
-        supported_values=frozenset({0, 8}),
-        implemented="0=disabled, 8=Thompson microphysics",
-        action="Use mp_physics=8 for Thompson or 0 for a dry/no-microphysics gate.",
+        supported_values=frozenset(ACCEPTED_MP_PHYSICS),
+        implemented="0=disabled/passive qv, 1=Kessler, 6=WSM6, 8=Thompson, 10=Morrison, 16=WDM6",
+        action="Use one of the frozen v0.6.0 microphysics options; all other MP options remain unsupported.",
     ),
     "cu_physics": SupportedOption(
         key="cu_physics",
-        supported_values=frozenset({0}),
-        implemented="0=disabled; KF(1) is not implemented on this branch",
-        action="Set cu_physics=0 or merge a faithful KF(1) implementation before enabling cumulus.",
+        supported_values=frozenset(ACCEPTED_CU_PHYSICS),
+        implemented="0=disabled, 1=Kain-Fritsch, 3=Grell-Freitas, 6=Tiedtke, 16=New Tiedtke",
+        action="Use one of the frozen v0.6.0 cumulus options; all other CU options remain unsupported.",
     ),
     "bl_pbl_physics": SupportedOption(
         key="bl_pbl_physics",
-        supported_values=frozenset({0, 5}),
-        implemented="0=disabled, 5=MYNN PBL",
-        action="Use bl_pbl_physics=5 for MYNN or 0 when PBL is intentionally disabled.",
+        supported_values=frozenset(ACCEPTED_BL_PBL_PHYSICS),
+        implemented="0=disabled, 1=YSU, 5=MYNN, 7=ACM2",
+        action="Use one of the frozen v0.6.0 PBL options; all other PBL options remain unsupported.",
     ),
     "sf_sfclay_physics": SupportedOption(
         key="sf_sfclay_physics",
-        supported_values=frozenset({0, 5}),
-        implemented="0=disabled, 5=MYNN revised surface layer / sfclayrev path",
-        action="Use sf_sfclay_physics=5 for the MYNN-sfclayrev path or 0 when disabled.",
+        supported_values=frozenset(ACCEPTED_SF_SFCLAY_PHYSICS),
+        implemented="0=disabled, 1=sfclayrev, 5=MYNN surface layer, 7=Pleim-Xiu surface layer",
+        action="Use one of the frozen v0.6.0 surface-layer options; all other sfclay options remain unsupported.",
     ),
     "sf_surface_physics": SupportedOption(
         key="sf_surface_physics",
-        supported_values=frozenset({0, 4}),
-        implemented="0=disabled, 4=Noah-MP land surface",
-        action="Use sf_surface_physics=4 for Noah-MP or 0 when the land surface is disabled.",
+        supported_values=frozenset(ACCEPTED_SF_SURFACE_PHYSICS),
+        implemented="0=disabled, 2=Noah classic, 4=Noah-MP",
+        action="Use one of the frozen v0.6.0 land-surface options; all other land-surface options remain unsupported.",
     ),
     "ra_sw_physics": SupportedOption(
         key="ra_sw_physics",
-        supported_values=frozenset({0, 4}),
+        supported_values=frozenset(ACCEPTED_RA_SW_PHYSICS),
         implemented="0=disabled, 4=RRTMG shortwave",
         action="Use ra_sw_physics=4 for RRTMG SW or 0 when radiation is disabled.",
     ),
     "ra_lw_physics": SupportedOption(
         key="ra_lw_physics",
-        supported_values=frozenset({0, 4}),
+        supported_values=frozenset(ACCEPTED_RA_LW_PHYSICS),
         implemented="0=disabled, 4=RRTMG longwave",
         action="Use ra_lw_physics=4 for RRTMG LW or 0 when radiation is disabled.",
     ),
@@ -161,7 +173,7 @@ def validate_supported_namelist(config: Any) -> None:
                     key=key,
                     location=location,
                     value=normalized,
-                    supported_values=tuple(sorted(spec.supported_values, key=repr)),
+                    supported_values=_sorted_supported_values(spec.supported_values),
                     implemented=spec.implemented,
                     action=spec.action,
                     domain_index=idx + 1 if len(values) > 1 else None,
@@ -208,6 +220,13 @@ def _domain_values(value: Any) -> list[Any]:
         arr = np.asarray(value)
         return arr.reshape(-1).tolist()
     return [value]
+
+
+def _sorted_supported_values(values: frozenset[Any]) -> tuple[Any, ...]:
+    try:
+        return tuple(sorted(values))
+    except TypeError:
+        return tuple(sorted(values, key=repr))
 
 
 def _normalize_value(value: Any) -> Any:

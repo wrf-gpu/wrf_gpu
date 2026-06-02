@@ -87,6 +87,10 @@ MICROPHYSICS_EXTRA_VARIABLES: tuple[str, ...] = (
     "QGRAUP",
     "QNICE",
     "QNRAIN",
+    "QNSNOW",
+    "QNGRAUPEL",
+    "QNCLOUD",
+    "QNCCN",
     "QKE",
 )
 
@@ -444,6 +448,24 @@ WRFOUT_VARIABLE_SPECS: dict[str, WrfoutVariableSpec] = {
     "QGRAUP": _spec("QGRAUP", XYZ, "XYZ", "Graupel mixing ratio", "kg kg-1", coordinates="XLONG XLAT XTIME"),
     "QNICE": _spec("QNICE", XYZ, "XYZ", "Ice Number concentration", "  kg-1", coordinates="XLONG XLAT XTIME"),
     "QNRAIN": _spec("QNRAIN", XYZ, "XYZ", "Rain Number concentration", "  kg(-1)", coordinates="XLONG XLAT XTIME"),
+    "QNSNOW": _spec("QNSNOW", XYZ, "XYZ", "Snow Number concentration", "  kg(-1)", coordinates="XLONG XLAT XTIME"),
+    "QNGRAUPEL": _spec(
+        "QNGRAUPEL",
+        XYZ,
+        "XYZ",
+        "Graupel Number concentration",
+        "  kg(-1)",
+        coordinates="XLONG XLAT XTIME",
+    ),
+    "QNCLOUD": _spec(
+        "QNCLOUD",
+        XYZ,
+        "XYZ",
+        "cloud water Number concentration",
+        "  kg(-1)",
+        coordinates="XLONG XLAT XTIME",
+    ),
+    "QNCCN": _spec("QNCCN", XYZ, "XYZ", "CCN Number concentration", "  kg(-1)", coordinates="XLONG XLAT XTIME"),
     "QKE": _spec("QKE", XYZ, "XYZ", "twice TKE from MYNN", "m2 s-2", coordinates="XLONG XLAT XTIME"),
     # --- P0-5a (b) grid-static coordinate / map-factor / Coriolis fields ---
     "ZNU": _spec("ZNU", Z_HALF, "Z  ", "eta values on half (mass) levels", ""),
@@ -881,7 +903,7 @@ def _build_output_fields(
         "T2": _field_array(state, ("T2", "t2"), shape_xy, default=theta[0] * (np.maximum(p_pert[0] + p_base[0], 1.0) / P0_PA) ** R_D_OVER_CP),
         "Q2": _field_array(state, ("Q2", "q2"), shape_xy, default=qv[0]),
         "PSFC": _field_array(state, ("PSFC", "psfc"), shape_xy, default=p_pert[0] + p_base[0]),
-        "RAINC": _field_array(state, ("RAINC", "rainc"), shape_xy),
+        "RAINC": _field_array(state, ("RAINC", "rainc", "rainc_acc"), shape_xy),
         "RAINNC": _field_array(state, ("RAINNC", "rainnc", "rain_acc"), shape_xy),
         "RAINSH": _field_array(state, ("RAINSH", "rainsh"), shape_xy),
         "SWDOWN": _field_array(state, ("SWDOWN", "swdown"), shape_xy),
@@ -903,6 +925,10 @@ def _build_output_fields(
         ("QGRAUP", ("QGRAUP", "qg", "qgraup")),
         ("QNICE", ("QNICE", "Ni", "qnice")),
         ("QNRAIN", ("QNRAIN", "Nr", "qnrain")),
+        ("QNSNOW", ("QNSNOW", "Ns", "qnsnow")),
+        ("QNGRAUPEL", ("QNGRAUPEL", "Ng", "qngraupel")),
+        ("QNCLOUD", ("QNCLOUD", "Nc", "qnc", "qnc_cloud")),
+        ("QNCCN", ("QNCCN", "Nn", "qnn", "qccn")),
         ("QKE", ("QKE", "qke")),
     ):
         value = _optional_field_array(state, state_names, shape_xyz)
