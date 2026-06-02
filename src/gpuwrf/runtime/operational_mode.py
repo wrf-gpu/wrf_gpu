@@ -1372,6 +1372,11 @@ def _augment_large_step_tendencies(
             dnw=metrics.dnw,
             rdx=1.0 / dx,
             rdy=1.0 / dy,
+            msfuy=metrics.msfuy,
+            msfvx=metrics.msfvx,
+            msftx=metrics.msftx,
+            msfux=metrics.msfux,
+            msfvy=metrics.msfvy,
         )
         # --- momentum: WRF advect_u/advect_v/advect_w (conservative flux form) ---
         # The previous JAX path advanced momentum with the *advective* (non-
