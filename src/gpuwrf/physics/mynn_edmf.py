@@ -132,11 +132,19 @@ def _single_column_dmp_mf(sqw, sqv, sqc, u, v, w, th, thl, thv, tk, qke,
 
     Mirrors module_bl_mynnedmf.F:5603-6790 for the operational config
     (momentum_opt=0, tke_opt=0, env_subs=.false., no chem). Carries qt1=sqw,
-    qv1=sqv, qc1=sqc (specific contents)."""
+    qv1=sqv, qc1=sqc (specific contents).
+
+    The full WRF `DMP_mf` argument list is preserved so the JAX call mirrors the
+    Fortran interface; under this config several args are intentionally unused:
+    ``tk``/``exner`` (only WRF diagnostics), ``qke``/``ust`` (TKE-MF path off),
+    ``flqv``/``xland`` (land branch hardcoded), ``dt`` (only env_subs subsidence,
+    which is off). They are accepted-and-ignored rather than dropped.
+    """
+    del tk, qke, exner, ust, flqv, xland, dt  # WRF-interface args unused in this config
     nz = th.shape[-1]
     qv1 = sqv  # WRF names: qv1==sqv, qt1==sqw, qc1==sqc inside DMP_mf
     qt1 = sqw
-    qc1 = sqc
+    del sqc  # qc1 unused: surface updraft UPQC(1,ip)=0, plume qc from condensation_edmf
 
     # ---- activation: maxw / Psig_w (lines 5855-5879) ----
     zagl_mid = zw[:-1] + 0.5 * dz  # length nz
