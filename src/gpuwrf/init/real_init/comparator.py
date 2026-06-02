@@ -729,38 +729,50 @@ def run_forecast_gate(
     cases: Sequence[OracleCase] | None = None,
     out_path: str | Path | None = None,
     execute: bool = False,
+    forecast_hours: int | None = None,
+    max_cases: int | None = None,
+    dt_s: float = 60.0,
+    acoustic_substeps: int = 4,
+    radiation_cadence_steps: int = 30,
+    output_root: str | Path = "/tmp/v040_forecast_gate",
 ) -> dict[str, Any]:
     """24h native-init forecast gate — the GPU-bound S5/manager entry point.
 
-    THIS IS A SCAFFOLD. With ``execute=False`` (the default) it returns the
-    fully-specified PLAN dict (no GPU touched): which cases, which metric fields,
-    the forecast length, the no-replay invariant, and the conservation/restart
-    pre-conditions. The MANAGER calls it with ``execute=True`` in S5 once the
-    lanes + driver pack are wired and the single GPU is free; that path will:
+    With ``execute=False`` (the default) it returns the fully-specified PLAN dict
+    (no GPU touched): which cases, which metric fields, the forecast length, the
+    no-replay invariant, and the conservation/restart pre-conditions.
 
-      1. For each case: build the native RealInitProduct (S1+S2+S3 via driver),
-         pack into State/BaseState/DycoreMetrics/BoundaryState.
-      2. Run the existing GPU forecast pipeline 24h with the NATIVE wrfbdy as the
-         only LBC source (no CPU-WRF replay) — ONE GPU job at a time.
-      3. Score the emitted wrfout per-lead vs the CPU-WRF wrfout reference using
-         the continuous-gate metric set (T2/U10/V10 blocking; PBLH/precip/Q2/PSFC
-         descriptive).
-      4. Re-run the conservation + restart gates and require PASS.
+    With ``execute=True`` (the S5 GPU body, wired 2026-06-02) it, per case:
 
-    ``execute=True`` is intentionally a guarded NotImplementedError here: S4 owns
-    the harness + the metric definition, NOT the GPU serialization point (the S0
-    plan assigns the single-GPU forecast step to S5/manager).
+      1. Builds the native RealInitProduct via ``product_factory`` (the S5
+         integrated ``driver.build_real_init`` factory).
+      2. Packs the IC ``State`` + ``BaseState`` + the lateral-boundary leaves
+         purely from the native product (the NATIVE wrfbdy DECOUPLED to the
+         operational leaf layout is the ONLY LBC source — NO CPU-WRF replay).
+      3. Drives the SAME validated operational forecast entry the d02/d03 replay
+         path uses (``run_forecast_operational_segmented``) for ``forecast_hours``
+         — ONE GPU job at a time — writing a per-lead wrfout.
+      4. Scores the emitted wrfout per-lead vs the CPU-WRF wrfout reference using
+         the frozen continuous-gate metric set (T2/U10/V10 blocking;
+         PSFC/PBLH/Q2 descriptive) and records the per-lead stability
+         (finite + gross-physical-range) check.
+
+    The GPU body lives in ``proofs/v040/s5_forecast_gate_exec.py`` (the single-GPU
+    serialization point per V0.4.0-S0-PLAN.md section 6); this entry imports it
+    lazily so the comparator stays a light non-GPU import.
     """
     spec = spec or ForecastGateSpec()
     if cases is None:
         cases = discover_oracle_cases(
             require_domains=("d01",), require_wrfbdy=True, limit=None)
+    cases = list(cases)
+    hours = int(forecast_hours if forecast_hours is not None else spec.forecast_hours)
     plan = {
         "schema": "v0.4.0-S4-forecast-gate-spec-2026-06-02",
         "executed": False,
         "gpu_bound": True,
         "owner": "S5/manager (single-GPU serialization point)",
-        "forecast_hours": spec.forecast_hours,
+        "forecast_hours": hours,
         "no_replay": spec.no_replay,
         "metric": spec.metric,
         "core_fields_blocking": list(spec.core_fields),
@@ -769,24 +781,108 @@ def run_forecast_gate(
         "require_restart_pass": spec.require_restart_pass,
         "cpu_wrfout_roots": list(spec.cpu_wrfout_roots),
         "candidate_cases": [oc.case_id for oc in cases],
-        "n_candidate_cases": len(list(cases)),
+        "n_candidate_cases": len(cases),
         "continuous_gate_module": "proofs/m20/continuous_gate.py",
         "note": (
-            "SCAFFOLD ONLY — no GPU forecast run in S4. The manager invokes "
-            "run_forecast_gate(execute=True) in S5 with the GPU free."
+            "SCAFFOLD/PLAN with execute=False; execute=True runs the GPU body in "
+            "proofs/v040/s5_forecast_gate_exec.py (native-init -> forecast, no replay)."
         ),
     }
-    if out_path is not None:
-        import json
-        Path(out_path).parent.mkdir(parents=True, exist_ok=True)
-        Path(out_path).write_text(json.dumps(plan, indent=2) + "\n", encoding="utf-8")
-    if execute:
-        raise NotImplementedError(
-            "run_forecast_gate(execute=True) is the GPU-bound S5/manager step; "
-            "S4 defines the metric + scaffold only (single-GPU serialization "
-            "point per V0.4.0-S0-PLAN.md section 6)."
+    if not execute:
+        if out_path is not None:
+            import json
+            Path(out_path).parent.mkdir(parents=True, exist_ok=True)
+            Path(out_path).write_text(json.dumps(plan, indent=2) + "\n", encoding="utf-8")
+        return plan
+
+    if product_factory is None:
+        raise ValueError(
+            "run_forecast_gate(execute=True) requires the integrated product_factory "
+            "(proofs.v040.s5_native_init_parity.make_factory)")
+
+    # --- GPU body (lazy import; single-GPU serialization point) ---------------
+    import json
+    import re
+    import sys
+    from datetime import datetime, timezone
+
+    sys_path0 = str(Path(__file__).resolve().parents[3] / "proofs" / "v040")
+    if sys_path0 not in sys.path:
+        sys.path.insert(0, sys_path0)
+    proj_root = Path(__file__).resolve().parents[3]
+    if str(proj_root) not in sys.path:
+        sys.path.insert(0, str(proj_root))
+    from s5_forecast_gate_exec import run_one_case_forecast_gate  # type: ignore
+
+    def _init_vt_label(case_id: str) -> str:
+        ymd = case_id[:8]
+        return f"{ymd[:4]}-{ymd[4:6]}-{ymd[6:8]}_18:00:00"
+
+    def _run_start(case_id: str) -> datetime:
+        ymd = case_id[:8]
+        return datetime(int(ymd[:4]), int(ymd[4:6]), int(ymd[6:8]), 18, 0, 0,
+                        tzinfo=timezone.utc)
+
+    out_root = Path(output_root)
+    selected = cases if max_cases is None else cases[: int(max_cases)]
+    case_records: list[dict[str, Any]] = []
+    for oc in selected:
+        init_label = _init_vt_label(oc.case_id)
+        ref_dir = oc.run_dir
+        if not (ref_dir / f"wrfout_d01_{init_label}").is_file():
+            case_records.append({"case_id": oc.case_id, "status": "NO_REFERENCE_T0_WRFOUT"})
+            continue
+        product = product_factory(oc, "d01")
+        rec = run_one_case_forecast_gate(
+            product,
+            case_id=oc.case_id,
+            reference_run_dir=ref_dir,
+            run_start=_run_start(oc.case_id),
+            init_vt_label=init_label,
+            forecast_hours=hours,
+            dt_s=float(dt_s),
+            acoustic_substeps=int(acoustic_substeps),
+            radiation_cadence_steps=int(radiation_cadence_steps),
+            output_dir=out_root / f"{oc.case_id}_d01",
+            core_fields=spec.core_fields,
+            diag_fields=spec.diag_fields,
         )
-    return plan
+        case_records.append(rec)
+
+    scored = [r for r in case_records if r.get("status") != "NO_REFERENCE_T0_WRFOUT"]
+    all_stable = bool(scored) and all(
+        r.get("stability", {}).get("stable_finite") for r in scored)
+    all_physical = bool(scored) and all(
+        r.get("stability", {}).get("physical_range_ok") for r in scored)
+    all_core_pass = bool(scored) and all(r.get("core_within_margin") for r in scored)
+
+    if all_stable and all_physical and all_core_pass:
+        verdict = "FOUNDATION_CONFIRMED"
+    elif all_stable and all_physical:
+        verdict = "STABLE_BUT_CORE_FIELD_MISMATCH"
+    elif all_stable:
+        verdict = "FINITE_BUT_UNPHYSICAL"
+    else:
+        verdict = "BLOWUP"
+
+    result = dict(plan)
+    result.update({
+        "executed": True,
+        "verdict": verdict,
+        "foundation_confirmed": verdict == "FOUNDATION_CONFIRMED",
+        "n_cases_scored": len(scored),
+        "all_cases_stable_finite": all_stable,
+        "all_cases_physical": all_physical,
+        "all_cases_core_within_margin": all_core_pass,
+        "forecast_dt_s": float(dt_s),
+        "forecast_acoustic_substeps": int(acoustic_substeps),
+        "cases": case_records,
+    })
+    if out_path is not None:
+        Path(out_path).parent.mkdir(parents=True, exist_ok=True)
+        Path(out_path).write_text(json.dumps(result, indent=2, default=str) + "\n",
+                                  encoding="utf-8")
+    return result
 
 
 __all__ = [
