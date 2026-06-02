@@ -106,11 +106,9 @@ def run_gpu_case_level_noahmp(level_spec: dict, out_dir: Path, *, dt_s: float,
     seg = int(segment_steps) if segment_steps else cadence
     lead_steps = {h: int(round(h * 3600.0 / dt)) for h in leads}
 
+    st0 = _enforce_operational_precision(case.state, force_fp64=bool(nl.force_fp64))
     carry = initial_operational_carry(
-        _enforce_operational_precision(case.state, force_fp64=bool(nl.force_fp64)),
-        noahmp_land=land,
-        noahmp_rad=noahmp_initial_rad(
-            _enforce_operational_precision(case.state, force_fp64=bool(nl.force_fp64))),
+        st0, noahmp_land=land, noahmp_rad=noahmp_initial_rad(st0, nl),
     )
     timings = {}
     t0 = time.time()
