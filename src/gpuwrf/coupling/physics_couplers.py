@@ -38,6 +38,13 @@ GRAVITY_M_S2 = 9.80665
 DEG_TO_RAD = 3.141592653589793 / 180.0
 MINUTES_PER_DAY = 1440.0
 
+# RRTMG-SW built-in solar constant (W/m^2). WRF `module_ra_rrtmg_sw.F:115`
+# `rrsw_scon = 1.36822e3`; the per-band solar source `sfluxzen` integrates to
+# this value, so WRF rescales every band by `solvar(ib) = scon / rrsw_scon`
+# (`:9869`). The GPU kernel applies the identical multiplier via
+# `RRTMGSWColumnState.solar_source_scale` (rrtmg_sw.py).
+RRSW_SCON = 1368.22
+
 # MODIFIED_IGBP_MODIS_NOAH LANDUSE.TBL summer values:
 # columns ALBD (%), SFEM. Index 0 is a water fallback for legacy zero LU_INDEX
 # analytic states; WRF category indices are used directly for entries 1..61.
@@ -460,6 +467,54 @@ def _compute_coszen(lat, lon, time_utc, lead_seconds=0.0):
     return jnp.clip(coszen, -1.0, 1.0)
 
 
+def _solar_source_scale_for_time(time_utc=None, lead_seconds=0.0):
+    """WRF `solvar(ib) = scon / rrsw_scon` per-band SW source multiplier.
+
+    Faithful transcription of `module_radiation_driver.F` `radconst`
+    (`:3629-3634`) composed with `module_ra_rrtmg_sw.F` (`:9869`):
+
+        solcon = 1370. * ECCFAC                       (radconst :3634)
+        ECCFAC = 1.000110 + 0.034221*cos(RJUL)        (Paltridge & Platt 1976
+               + 0.001280*sin(RJUL)                    earth-sun eccentricity)
+               + 0.000719*cos(2*RJUL) + 0.000077*sin(2*RJUL)
+        RJUL   = JULIAN * (360/365) * DEGRAD          (radconst :3630-3631)
+        scon   = solcon                               (rrtmg_sw.F :10872, obscur=0)
+        solvar = scon / rrsw_scon                      (rrtmg_sw.F :9869)
+
+    This is a pure function of the run *date* (the fractional day-of-year),
+    NOT replay output: COSZEN cancels out exactly. The clear-sky oracle's
+    `--source-scale wrf-toa` value `SWDNTC/(COSZEN*1368.22)` reduces
+    algebraically to this same constant because WRF's clear-sky TOA-down
+    `SWDNTC = solcon * COSZEN`; the oracle merely *measured* what this formula
+    *computes* from the date. We compute it directly so the operational path
+    needs no WRF field.
+
+    `JULIAN` follows the same 0-based fractional day-of-year convention WRF's
+    radiation driver carries in `grid%julian` (Jan 1 00z = 0.0), reusing the
+    clock that `_compute_coszen` already threads through `jax.lax.scan`. The
+    scale advances correctly across a multi-day forecast.
+    """
+
+    julian, utc_minute = _time_utc_parts(time_utc)
+    lead_minutes = jnp.asarray(lead_seconds, dtype=jnp.float64) / 60.0
+    # WRF grid%julian is 0-based (Jan 1 00z -> 0.0); _time_utc_parts returns the
+    # 1-based tm_yday, so subtract one day and add the fractional time-of-day.
+    julian_now = (
+        (julian - 1.0)
+        + (jnp.asarray(utc_minute, dtype=jnp.float64) + lead_minutes) / MINUTES_PER_DAY
+    )
+    rjul = julian_now * (360.0 / 365.0) * DEG_TO_RAD
+    eccfac = (
+        1.000110
+        + 0.034221 * jnp.cos(rjul)
+        + 0.001280 * jnp.sin(rjul)
+        + 0.000719 * jnp.cos(2.0 * rjul)
+        + 0.000077 * jnp.sin(2.0 * rjul)
+    )
+    solcon = 1370.0 * eccfac
+    return solcon / RRSW_SCON
+
+
 def _grid_lat_lon(surface_shape: tuple[int, int], grid: GridSpec | None, dtype):
     """Build a deterministic mass-grid lat/lon approximation from GridSpec metadata."""
 
@@ -515,6 +570,12 @@ def _rrtmg_column_inputs(
     surface_albedo, surface_emissivity = _surface_radiation_properties(state)
     lat, lon = _grid_lat_lon(surface_shape, grid, state.t_skin.dtype)
     coszen = _compute_coszen(lat, lon, time_utc, lead_seconds).astype(state.t_skin.dtype)
+    # WRF `solvar = scon/rrsw_scon` per-band SW source normalization, computed
+    # from the run date (function-of-JULIAN, not replay output). Closes the GPU
+    # per-band source sum to WRF's date-adjusted solar constant.
+    solar_source_scale = _solar_source_scale_for_time(time_utc, lead_seconds).astype(
+        state.t_skin.dtype
+    )
 
     sw_state = RRTMGSWColumnState(
         _to_columns(T),
@@ -529,6 +590,7 @@ def _rrtmg_column_inputs(
         coszen,
         dz,
         rho,
+        solar_source_scale=solar_source_scale,
     )
     lw_state = RRTMGLWColumnState(
         _to_columns(T),
