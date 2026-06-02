@@ -342,9 +342,6 @@ def sint_block_reference(
     nf = rr * rr
     ny, nx = coarse.shape
 
-    def donor(y1, y2, a):
-        return (y1 * max(0.0, np.sign(a)) - y2 * min(0.0, np.sign(a))) * a
-
     def tr4(ym1, y0, yp1, yp2, a):
         return (
             a * one12 * (7.0 * (yp1 + y0) - (yp2 + ym1))
@@ -353,55 +350,47 @@ def sint_block_reference(
             + a * a * a * a * one24 * (3.0 * (yp1 - y0) - (yp2 - ym1))
         )
 
-    def pp(x):
-        return max(0.0, x)
+    def limited_vec(ym2, ym1, y0, yp1, yp2, a):
+        """Vectorized WRF ``sint`` monotone-limited 1-D interpolation.
 
-    def pn(x):
-        return min(0.0, x)
+        Faithful transcription of the scalar ``sint.F`` inner block, applied
+        elementwise over numpy arrays (``a`` is the scalar sub-cell offset
+        ``XIG``/``XJG``).  ``DONOR``/``PP``/``PN`` become ``np.sign``/
+        ``np.maximum``/``np.minimum`` -- identical arithmetic per element.
+        """
 
-    def limited(vals, a):
-        ym2, ym1, y0, yp1, yp2 = vals
-        fl0 = donor(ym1, y0, a)
-        fl1 = donor(y0, yp1, a)
+        sa = float(np.sign(a))
+        fl0 = (ym1 * max(0.0, sa) - y0 * min(0.0, sa)) * a
+        fl1 = (y0 * max(0.0, sa) - yp1 * min(0.0, sa)) * a
         w = y0 - (fl1 - fl0)
-        mxm = max(ym1, y0, yp1, w)
-        mn = min(ym1, y0, yp1, w)
+        mxm = np.maximum(np.maximum(ym1, y0), np.maximum(yp1, w))
+        mn = np.minimum(np.minimum(ym1, y0), np.minimum(yp1, w))
         f0 = tr4(ym2, ym1, y0, yp1, a) - fl0
         f1 = tr4(ym1, y0, yp1, yp2, a) - fl1
-        ov = (mxm - w) / (-pn(f1) + pp(f0) + ep)
-        un = (w - mn) / (pp(f1) - pn(f0) + ep)
-        f0 = pp(f0) * min(1.0, ov) + pn(f0) * min(1.0, un)
-        f1 = pp(f1) * min(1.0, un) + pn(f1) * min(1.0, ov)
+        ov = (mxm - w) / (-np.minimum(0.0, f1) + np.maximum(0.0, f0) + ep)
+        un = (w - mn) / (np.maximum(0.0, f1) - np.minimum(0.0, f0) + ep)
+        f0 = np.maximum(0.0, f0) * np.minimum(1.0, ov) + np.minimum(0.0, f0) * np.minimum(1.0, un)
+        f1 = np.maximum(0.0, f1) * np.minimum(1.0, un) + np.minimum(0.0, f1) * np.minimum(1.0, ov)
         return w - (f1 - f0)
 
     out = np.full((ny, nx, nf), np.nan, dtype=np.float64)
     cf = np.asarray(coarse, dtype=np.float64)
+    ii = np.arange(2, nx - 2)
+    jj = np.arange(2, ny - 2)
+    II, JJ = np.meshgrid(ii, jj)  # interior cell centers (with full 2-cell halo)
     for iim in range(nf):
-        # x-pass: Z[(jj, ii, J)] for J in -2..2 (jrel + 2)
+        # x-pass: for each row offset jrel in -2..2 build Z[:, :, jrel+2]
         z = np.full((ny, nx, 5), np.nan, dtype=np.float64)
-        for jj in range(2, ny - 2):
-            for jrel in range(-2, 3):
-                row = jj + jrel
-                for ii in range(2, nx - 2):
-                    vals = (
-                        cf[row, ii - 2],
-                        cf[row, ii - 1],
-                        cf[row, ii],
-                        cf[row, ii + 1],
-                        cf[row, ii + 2],
-                    )
-                    z[jj, ii, jrel + 2] = limited(vals, xig[iim])
-        # y-pass
-        for jj in range(2, ny - 2):
-            for ii in range(2, nx - 2):
-                vals = (
-                    z[jj, ii, 0],
-                    z[jj, ii, 1],
-                    z[jj, ii, 2],
-                    z[jj, ii, 3],
-                    z[jj, ii, 4],
-                )
-                out[jj, ii, iim] = limited(vals, xjg[iim])
+        for jrel in range(-2, 3):
+            row = JJ + jrel
+            z[JJ, II, jrel + 2] = limited_vec(
+                cf[row, II - 2], cf[row, II - 1], cf[row, II],
+                cf[row, II + 1], cf[row, II + 2], xig[iim],
+            )
+        # y-pass over the row-interpolated stencil
+        out[JJ, II, iim] = limited_vec(
+            z[JJ, II, 0], z[JJ, II, 1], z[JJ, II, 2], z[JJ, II, 3], z[JJ, II, 4], xjg[iim]
+        )
     return out
 
 
