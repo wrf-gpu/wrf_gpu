@@ -1,0 +1,296 @@
+{
+  "proof": "P1-5 Thompson PRECIP/WATER parity vs WRF precipitating oracle",
+  "oracle": "WRF mp_gt_driver single-column PRECIPITATING (8 cols x 44 lev, DT=18 s)",
+  "fixes": {
+    "1_adaptive_nstep": "module_mp_thompson.F:3634-3641,3693-3696,3732-3735,3773-3776 (per-species nstep = MAX_k INT(DT/(dzq/vt)+1)); base 822e8db, re-verified",
+    "2_rr_surf_threshold": "module_mp_thompson.F:3818,3868,3895,3936 (accumulate surface flux only when updated rr(kts) > R1*1000 = 1e-9 kg/m3); base 822e8db, re-verified",
+    "3_cloud_water_sed": "module_mp_thompson.F:3646-3667 (vtc=rhof*av_c*ccg(5,nu_c)*ocg2(nu_c)*ilamc^bv_c, nu_c=12, active only where rc>R1 & w<0.1) + 3824-3837 (single full-DT explicit-upwind pass below 500 m AGL; NOT counted as surface precip). ADDED this sprint"
+  },
+  "predeclared_tolerances": {
+    "surface_precip_ratio": [
+      0.97,
+      1.03
+    ],
+    "per_column_max_rel": 0.03,
+    "qr_mean_rel": 0.01,
+    "qr_max_rel": 0.02,
+    "qv_mean_rel": 0.01,
+    "qc_mean_rel": 0.001,
+    "qc_max_rel": 0.01,
+    "qs_mean_rel": 0.15,
+    "qi_mean_rel": 0.05,
+    "water_closure_rel": 1e-05
+  },
+  "wrf_reference": {
+    "wrf_rainncv_mm_per_col": [
+      0.018857767805457115,
+      0.026613179594278336,
+      0.03278670832514763,
+      0.03933486342430115,
+      0.04621913284063339,
+      0.05340641736984253,
+      0.060871273279190063,
+      0.06858163326978683
+    ],
+    "wrf_total_rainncv_mm": 0.34667097590863705
+  },
+  "after_all_three_fixes": {
+    "per_field": {
+      "qv": {
+        "active_cells": 352,
+        "max_abs": 1.449897435485412e-05,
+        "max_rel": 0.020481847433572897,
+        "mean_rel": 0.004609150462570367
+      },
+      "qc": {
+        "active_cells": 189,
+        "max_abs": 2.2305209179890664e-08,
+        "max_rel": 9.933667872572322e-05,
+        "mean_rel": 7.533631778533897e-06
+      },
+      "qr": {
+        "active_cells": 176,
+        "max_abs": 3.818381453014408e-06,
+        "max_rel": 0.004059445873549803,
+        "mean_rel": 0.0008037229739594081
+      },
+      "qi": {
+        "active_cells": 104,
+        "max_abs": 8.730310112152598e-06,
+        "max_rel": 0.07883061190261328,
+        "mean_rel": 0.03758208933342204
+      },
+      "qs": {
+        "active_cells": 176,
+        "max_abs": 2.565240791907431e-05,
+        "max_rel": 0.5890136822094644,
+        "mean_rel": 0.08875921588640973
+      },
+      "qg": {
+        "active_cells": 102,
+        "max_abs": 0.0008622994001407885,
+        "max_rel": 1.0,
+        "mean_rel": 0.6130569422857403
+      },
+      "ni": {
+        "active_cells": 104,
+        "max_abs": 8959.616654157071,
+        "max_rel": 0.07224232878923441,
+        "mean_rel": 0.017722840202288013
+      },
+      "nr": {
+        "active_cells": 176,
+        "max_abs": 259.8938766061756,
+        "max_rel": 0.03566433687248576,
+        "mean_rel": 0.01766161241765014
+      }
+    },
+    "budget": {
+      "surface_precip_mm_per_col": [
+        0.018592042073359214,
+        0.02622868899003071,
+        0.03227369684614412,
+        0.03867906191951245,
+        0.04540890313568939,
+        0.05243296800017189,
+        0.059728878149449764,
+        0.06726800593360091
+      ],
+      "total_surface_precip_mm": 0.34061224504795845,
+      "cloudw_surface_sink_mm_per_col": [
+        0.0,
+        5.62551009307372e-05,
+        5.62551009307372e-05,
+        5.62551009307372e-05,
+        5.62551009307372e-05,
+        5.62551009307372e-05,
+        5.62551009307372e-05,
+        5.62551009307372e-05
+      ],
+      "total_cloudw_surface_sink_mm": 0.0003937857065151604,
+      "water_closure_max_abs_residual_kg_m2": 9.418239134034723e-05,
+      "water_closure_max_rel_residual": 2.2881706048596966e-06
+    },
+    "precip_by_species_mm": {
+      "rain": 0.34061224504795845,
+      "snow": 0.0,
+      "graupel": 0.0,
+      "ice": 0.0,
+      "cloudw": 0.0003937857065151604
+    },
+    "n_columns": 8,
+    "n_levels": 44
+  },
+  "before_fix3_cloudw_off": {
+    "per_field": {
+      "qv": {
+        "active_cells": 352,
+        "max_abs": 1.449897435485412e-05,
+        "max_rel": 0.020481847433572897,
+        "mean_rel": 0.004609150462570367
+      },
+      "qc": {
+        "active_cells": 189,
+        "max_abs": 9.307344271512215e-06,
+        "max_rel": 1.0,
+        "mean_rel": 0.00712012462600741
+      },
+      "qr": {
+        "active_cells": 176,
+        "max_abs": 3.818381453014408e-06,
+        "max_rel": 0.004059445873549803,
+        "mean_rel": 0.0008037229739594081
+      },
+      "qi": {
+        "active_cells": 104,
+        "max_abs": 8.730310112152598e-06,
+        "max_rel": 0.07883061190261328,
+        "mean_rel": 0.03758208933342204
+      },
+      "qs": {
+        "active_cells": 176,
+        "max_abs": 2.565240791907431e-05,
+        "max_rel": 0.5890136822094644,
+        "mean_rel": 0.08875921588640973
+      },
+      "qg": {
+        "active_cells": 102,
+        "max_abs": 0.0008622994001407885,
+        "max_rel": 1.0,
+        "mean_rel": 0.6130569422857403
+      },
+      "ni": {
+        "active_cells": 104,
+        "max_abs": 8959.616654157071,
+        "max_rel": 0.07224232878923441,
+        "mean_rel": 0.017722840202288013
+      },
+      "nr": {
+        "active_cells": 176,
+        "max_abs": 259.8938766061756,
+        "max_rel": 0.03566433687248576,
+        "mean_rel": 0.01766161241765014
+      }
+    },
+    "budget": {
+      "surface_precip_mm_per_col": [
+        0.018592042073359214,
+        0.02622868899003071,
+        0.03227369684614412,
+        0.03867906191951245,
+        0.04540890313568939,
+        0.05243296800017189,
+        0.059728878149449764,
+        0.06726800593360091
+      ],
+      "total_surface_precip_mm": 0.34061224504795845,
+      "cloudw_surface_sink_mm_per_col": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "total_cloudw_surface_sink_mm": 0.0,
+      "water_closure_max_abs_residual_kg_m2": 9.405830054523556e-05,
+      "water_closure_max_rel_residual": 2.285155806597863e-06
+    },
+    "precip_by_species_mm": {
+      "rain": 0.34061224504795845,
+      "snow": 0.0,
+      "graupel": 0.0,
+      "ice": 0.0,
+      "cloudw": 0.0
+    },
+    "n_columns": 8,
+    "n_levels": 44
+  },
+  "fix3_isolation": {
+    "qc_mean_rel_before": 0.00712012462600741,
+    "qc_mean_rel_after": 7.533631778533897e-06,
+    "qc_max_rel_before": 1.0,
+    "qc_max_rel_after": 9.933667872572322e-05,
+    "surface_precip_ratio_before": 0.9825231089946355,
+    "surface_precip_ratio_after": 0.9825231089946355,
+    "cloudw_surface_sink_mm_after": 0.0003937857065151604
+  },
+  "nstep_audit_no_silent_masking": {
+    "rain": {
+      "nstep_min": 3,
+      "nstep_max": 4,
+      "clipped_at_NSED_MAX": 0,
+      "n_columns": 8
+    },
+    "ice": {
+      "nstep_min": 1,
+      "nstep_max": 1,
+      "clipped_at_NSED_MAX": 0,
+      "n_columns": 8
+    },
+    "snow": {
+      "nstep_min": 2,
+      "nstep_max": 2,
+      "clipped_at_NSED_MAX": 0,
+      "n_columns": 8
+    },
+    "graupel": {
+      "nstep_min": 1,
+      "nstep_max": 1,
+      "clipped_at_NSED_MAX": 0,
+      "n_columns": 8
+    }
+  },
+  "gates": {
+    "G1_surface_precip_ratio": {
+      "value": 0.9825231089946355,
+      "tol": [
+        0.97,
+        1.03
+      ],
+      "pass": true
+    },
+    "G2_per_column_max_rel": {
+      "value": 0.019154214817520738,
+      "tol": 0.03,
+      "pass": true
+    },
+    "G3_qr_parity": {
+      "mean_rel": 0.0008037229739594081,
+      "max_rel": 0.004059445873549803,
+      "tol_mean": 0.01,
+      "tol_max": 0.02,
+      "pass": true
+    },
+    "G4_qv_parity": {
+      "mean_rel": 0.004609150462570367,
+      "tol_mean": 0.01,
+      "pass": true
+    },
+    "G5_qc_parity": {
+      "mean_rel": 7.533631778533897e-06,
+      "max_rel": 9.933667872572322e-05,
+      "tol_mean": 0.001,
+      "tol_max": 0.01,
+      "pass": true
+    },
+    "G6_qs_parity": {
+      "mean_rel": 0.08875921588640973,
+      "tol_mean": 0.15,
+      "pass": true
+    },
+    "G7_qi_parity": {
+      "mean_rel": 0.03758208933342204,
+      "tol_mean": 0.05,
+      "pass": true
+    },
+    "G8_water_closure": {
+      "value": 2.2881706048596966e-06,
+      "tol": 1e-05,
+      "pass": true
+    }
+  },
+  "all_pass": true
+}
