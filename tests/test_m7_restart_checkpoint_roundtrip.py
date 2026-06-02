@@ -59,7 +59,7 @@ def test_checkpoint_roundtrip_preserves_all_state_fields_bitwise(tmp_path: Path)
     restored_state, restored_namelist, restored_grid, restored_step = read_checkpoint(checkpoint_path)
 
     assert restored_step == 17
-    assert len(State.__slots__) == 47
+    assert len(State.__slots__) == 53
     assert restored_grid == grid
     assert restored_namelist.grid == restored_grid
     assert restored_namelist.dt_s == namelist.dt_s
