@@ -123,10 +123,24 @@ def build_noahmp_land_state(
     # ---- prognostic land carry ----
     tslb = _layered(L("TSLB"), NSOIL)
     smois = _layered(L("SMOIS"), NSOIL)
-    sh2o = _layered(L("SH2O"), NSOIL) if has("SH2O") else smois
     provenance["tslb"] = "wrfinput TSLB"
     provenance["smois"] = "wrfinput SMOIS"
-    provenance["sh2o"] = "wrfinput SH2O" if has("SH2O") else "cold-init: = SMOIS (no SH2O)"
+
+    # WRF NOAHMP_INIT initialises the liquid soil water SH2O from SMOIS + TSLB
+    # (module_sf_noahmpdrv.F:2069-2106): SH2O = SMOIS where TSLB >= 273.149 K
+    # (all liquid above freezing), else the FK frozen-water cap. The Gen2 corpus
+    # wrfinput is the PRE-NOAHMP_INIT state -- its SH2O over land is written as 0
+    # (so sice = SMOIS - SH2O = SMOIS => the column reads as ALL-ICE even at
+    # 290-297 K). Loading that raw zero makes the first PHASECHANGE step "melt"
+    # phantom ice, dumping a latent-heat sink that craters TSLB toward TFRZ and
+    # drives the overnight cold-start transient. We therefore reconstruct SH2O
+    # via the faithful NOAHMP_INIT relation -- the SAME liquid-water state WRF
+    # integrates from (see wrfout t=0: SH2O == SMOIS over the warm Canary soil).
+    sh2o = _noahmp_init_sh2o(smois, tslb, isltyp, ivgtyp, parameters)
+    provenance["sh2o"] = (
+        "NOAHMP_INIT reconstruction from SMOIS/TSLB (module_sf_noahmpdrv.F:2088-2106); "
+        "corpus wrfinput SH2O is pre-init zero"
+    )
 
     # --- WRF NOAHMP_INIT (module_sf_noahmpdrv.F:1827-2334) ---
     # The Gen2 corpus wrfinput is the PRE-NOAHMP_INIT state: TSLB/SMOIS/SH2O/TSK/
@@ -307,6 +321,65 @@ def _wrf_snow_init(swe, snodep, tg, zsoil, ny: int, nx: int):
         [~active, jnp.zeros((NSOIL, ny, nx), dtype=bool)], axis=0)
     zsnso = jnp.where(snow_inactive, 0.0, zsnso)
     return isnow, tsno, snice, snliq, zsnso
+
+
+# WRF NOAHMP_INIT soil-ice constants (module_sf_noahmpdrv.F:1988-1990).
+_HLICE = 3.335e5   # latent heat of fusion [J/kg]
+_GRAV_INIT = 9.81  # gravity used in the NOAHMP_INIT FK expression [m/s2]
+_T0 = 273.15       # triple point [K]
+
+
+def _noahmp_init_sh2o(smois, tslb, isltyp, ivgtyp, parameters):
+    """Liquid soil water SH2O per WRF NOAHMP_INIT (module_sf_noahmpdrv.F:2069-2106).
+
+    For each soil layer:
+      * glacier veg tile (IVGTYP==ISICE): SH2O = 0 (all frozen);
+      * TSLB >= 273.149 K: SH2O = SMOIS (all liquid);
+      * TSLB <  273.149 K: SH2O = min(FK, SMOIS) with the explicit frozen-water
+        cap ``FK = ((HLICE/(GRAV*(-PSISAT)))*((TSLB-T0)/TSLB))**(-1/BEXP) * SMCMAX``,
+        floored at 0.02 (WRF :2096).
+    Returns SH2O shaped like ``smois`` (NSOIL, ny, nx). Per-soil-type BEXP/SMCMAX/
+    PSISAT are gathered from the (1-based) parameter tables by ISLTYP; PSISAT is
+    the positive matric-potential magnitude (WRF uses ``-PSISAT``).
+    """
+    smois = jnp.asarray(smois, dtype=jnp.float64)
+    tslb = jnp.asarray(tslb, dtype=jnp.float64)
+    st = jnp.clip(jnp.asarray(isltyp, dtype=jnp.int32), 0, None)
+
+    def _g(name):
+        tab = jnp.asarray(getattr(parameters, name), dtype=jnp.float64)
+        idx = jnp.clip(st, 0, tab.shape[0] - 1)
+        return tab[idx]            # (ny, nx)
+
+    bexp = _g("bexp")
+    smcmax = _g("smcmax")
+    psisat = _g("psisat")          # positive magnitude
+
+    # clamp SMOIS to porosity (WRF :2089) and broadcast soil params over layers
+    smois = jnp.minimum(smois, smcmax[None, ...])
+    bexp_l = jnp.broadcast_to(bexp[None, ...], smois.shape)
+    smcmax_l = jnp.broadcast_to(smcmax[None, ...], smois.shape)
+    psisat_l = jnp.broadcast_to(psisat[None, ...], smois.shape)
+
+    valid = (bexp_l > 0.0) & (smcmax_l > 0.0) & (psisat_l > 0.0)
+    frozen = tslb < 273.149
+    safe_bexp = jnp.where(bexp_l > 0.0, bexp_l, 1.0)
+    safe_tslb = jnp.where(tslb > 1.0, tslb, 1.0)
+    # FK base = (HLICE/(GRAV*(-PSISAT))) * ((TSLB-T0)/TSLB). For frozen soil both
+    # factors are negative so the product is positive; the warm branch never reads
+    # FK, so floor the base to keep the fractional power NaN-safe everywhere.
+    fk_base = (_HLICE / (_GRAV_INIT * (-psisat_l))) * ((safe_tslb - _T0) / safe_tslb)
+    fk_base = jnp.maximum(fk_base, 1.0e-30)
+    fk = (fk_base ** (-1.0 / safe_bexp)) * smcmax_l
+    fk = jnp.maximum(fk, 0.02)
+    sh2o_frozen = jnp.minimum(fk, smois)
+    sh2o = jnp.where(valid & frozen, sh2o_frozen, smois)
+
+    # glacier (ISICE) tile: SMOIS=1 / SH2O=0 over land. ISICE from parameters.
+    isice = int(getattr(parameters, "isice", 15))
+    is_glacier = jnp.asarray(ivgtyp, dtype=jnp.int32) == isice
+    sh2o = jnp.where(is_glacier[None, ...], 0.0, sh2o)
+    return sh2o
 
 
 def build_noahmp_params(static: NoahMPStatic):
