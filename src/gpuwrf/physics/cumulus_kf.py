@@ -390,7 +390,8 @@ def _run_updraft(NUcand, KCHECK, NCHECK, lev, idx, Z0, DZA, DP, T0p, Q0, TV0,
     F["EQFRC"] = F["EQFRC"].at[K].set(1.0)
     F["THETEU"] = F["THETEU"].at[K].set(THETEU_K)
 
-    carry = dict(F=F, WTW=WLCL * WLCL, UPOLD=VMFLCL, EE1=1.0, UD1=0.0, REI=0.0,
+    carry = dict(F=F, WTW=WLCL * WLCL, UPOLD=VMFLCL, UPNEW=VMFLCL,
+                 EE1=1.0, UD1=0.0, REI=0.0,
                  ABE=0.0, TRPPT=0.0, LET=KLCL, LTOP=K, TTEMP=_TTFRZ,
                  active=buoyant, IFLAG=0)
 
@@ -435,6 +436,8 @@ def _run_updraft(NUcand, KCHECK, NCHECK, lev, idx, Z0, DZA, DP, T0p, Q0, TV0,
         qliq, qice, WTW2, qlqout, qicout, qnewlq, qnewic = condload(
             qliq, qice, WTW, DZZ, BOTERM, ENTERM, _RATE, qnewlq, qnewic, G)
         wtw_break = WTW2 < 1.0e-3
+        F["QLQOUT"] = F["QLQOUT"].at[NK1].set(jnp.where(run, qlqout, F["QLQOUT"][NK1]))
+        F["QICOUT"] = F["QICOUT"].at[NK1].set(jnp.where(run, qicout, F["QICOUT"][NK1]))
 
         thtee = envirtht(P0p[NK1], T0p[NK1], Q0[NK1], aliq, bliq, cliq, dliq)
         REI2 = VMFLCL * DP[NK1] * 0.03 / RAD
@@ -505,6 +508,7 @@ def _run_updraft(NUcand, KCHECK, NCHECK, lev, idx, Z0, DZA, DP, T0p, Q0, TV0,
         EE1n = jnp.where(cont, EE2, EE1)
         UD1n = jnp.where(cont, UD2, UD1)
         UPOLDn = jnp.where(cont, UPOLD2, UPOLD)
+        UPNEWn = jnp.where(cont, UPNEW, c["UPNEW"])
         REIn = jnp.where(cont, REI2, REI)
         ABEn = jnp.where(run, jnp.where(det_break, ABE3, ABE2), ABE)
         LETn = jnp.where(run, LET_fin, LET)
@@ -512,12 +516,11 @@ def _run_updraft(NUcand, KCHECK, NCHECK, lev, idx, Z0, DZA, DP, T0p, Q0, TV0,
         first_stop = run & stop & c["active"]
         LTOPn = jnp.where(first_stop, nk, c["LTOP"])
         activen = jnp.where(run & stop, False, c["active"])
-        return dict(F=F, WTW=WTWn, UPOLD=UPOLDn, EE1=EE1n, UD1=UD1n, REI=REIn,
+        return dict(F=F, WTW=WTWn, UPOLD=UPOLDn, UPNEW=UPNEWn, EE1=EE1n, UD1=UD1n, REI=REIn,
                     ABE=ABEn, TRPPT=TRPPT2, LET=LETn, LTOP=LTOPn, TTEMP=TTEMP,
                     active=activen, IFLAG=IFLAG)
 
-    for nk in range(0, KL):   # unrolled K..KL-1 (mask handles nk<K)
-        carry = step(nk, carry)
+    carry = jax.lax.fori_loop(0, KL, step, carry)
     LTOP = jnp.where(carry["active"], KL, carry["LTOP"])
     F = carry["F"]
     ABE = carry["ABE"]; TRPPT = carry["TRPPT"]; LET = carry["LET"]
@@ -526,13 +529,102 @@ def _run_updraft(NUcand, KCHECK, NCHECK, lev, idx, Z0, DZA, DP, T0p, Q0, TV0,
     no_conv = (LTOP <= KLCL) | (LTOP <= KPBL) | (LET + 1 <= KPBL)
     deep = buoyant & (~no_conv) & (CLDHGT_LC > CHMIN) & (ABE > 1.0)
     shallow = buoyant & (~no_conv) & (~deep)
-    return dict(F=F, buoyant=buoyant, no_conv=no_conv, deep=deep, shallow=shallow,
+    abort = (~valid_depth) | off_top
+    return dict(F=F, abort=abort, buoyant=buoyant, no_conv=no_conv, deep=deep, shallow=shallow,
                 CLDHGT_LC=jnp.where(no_conv | (~buoyant), 0.0, CLDHGT_LC),
                 LC=LC, K=K, KLCL=KLCL, KPBL=KPBL, LET=LET, LTOP=LTOP, LCL=KLCL,
                 ZLCL=ZLCL, TLCL=TLCL, TVLCL=TVLCL, TVEN=TVEN, VMFLCL=VMFLCL,
                 WLCL=WLCL, RAD=RAD, ABE=ABE, TRPPT=TRPPT, DPTHMX=DPTHMX, AU0=AU0,
                 ZMIX=ZMIX, TMIX=TMIX, QMIX=QMIX, PMIX=PMIX, WKL=WKL, PLCL=PLCL,
-                UPNEW=carry["UPOLD"])
+                UPOLD=carry["UPOLD"], UPNEW=carry["UPNEW"])
+
+
+def _empty_candidate_state(N, KX):
+    z = jnp.zeros(N, dtype=jnp.float64)
+    one = jnp.asarray(1, dtype=jnp.int64)
+    zero = jnp.asarray(0, dtype=jnp.int64)
+    F = dict(UMF=z, UER=z, UDR=z, DETLQ=z, DETIC=z, PPTLIQ=z, PPTICE=z,
+             QLIQ=z, QICE=z, QLQOUT=z, QICOUT=z, TU=z, TVU=z, QU=z, WU=z,
+             THETEU=z, THETEE=z, TVQU=z, EQFRC=z, QDT=z, RATIO2=z,
+             DILFRC=jnp.ones(N, dtype=jnp.float64))
+    return dict(F=F, abort=jnp.array(False), buoyant=jnp.array(False),
+                no_conv=jnp.array(True), deep=jnp.array(False), shallow=jnp.array(False),
+                CLDHGT_LC=jnp.float64(0.0),
+                LC=one, K=zero, KLCL=one, KPBL=one, LET=one, LTOP=one, LCL=one,
+                ZLCL=jnp.float64(0.0), TLCL=jnp.float64(0.0), TVLCL=jnp.float64(0.0),
+                TVEN=jnp.float64(0.0), VMFLCL=jnp.float64(0.0), WLCL=jnp.float64(0.0),
+                RAD=jnp.float64(0.0), ABE=jnp.float64(0.0), TRPPT=jnp.float64(0.0),
+                DPTHMX=jnp.float64(0.0), AU0=jnp.float64(0.0), ZMIX=jnp.float64(0.0),
+                TMIX=jnp.float64(0.0), QMIX=jnp.float64(0.0), PMIX=jnp.float64(0.0),
+                WKL=jnp.float64(0.0), PLCL=jnp.float64(0.0),
+                UPOLD=jnp.float64(0.0), UPNEW=jnp.float64(0.0))
+
+
+def _tree_where(pred, on_true, on_false):
+    return jax.tree_util.tree_map(lambda a, b: jnp.where(pred, a, b), on_true, on_false)
+
+
+def _search_usl(KCHECK, NCHECK, lev, idx, Z0, DZA, DP, T0p, Q0, TV0, P0p, W0Ap,
+                dx, DXSQ, KX, KL, aliq, bliq, cliq, dliq, alu):
+    """Fortran-faithful USL walk.
+
+    Deep convection stops on the first triggering source layer. If only shallow
+    candidates are found, scan all candidates once to find NUCHM (max cloud
+    height), then rerun that candidate and stop there, matching KF_eta_PARA.
+    """
+    empty = _empty_candidate_state(idx.shape[0], KX)
+    init = dict(nu=jnp.int32(1), phase=jnp.int32(0), have_shallow=jnp.array(False),
+                best_nu=jnp.int32(0), best_height=jnp.float64(-1.0),
+                selected=empty, convect=jnp.array(False), ishall=jnp.int32(2),
+                done=jnp.array(False))
+
+    def run_current(st):
+        cand = _run_updraft(st["nu"], KCHECK, NCHECK, lev, idx, Z0, DZA, DP, T0p, Q0, TV0,
+                            P0p, W0Ap, dx, DXSQ, KX, KL, aliq, bliq, cliq, dliq, alu)
+        phase1 = st["phase"] == 1
+        deep = cand["deep"] & (~cand["abort"])
+        shallow = cand["shallow"] & (~cand["abort"])
+        accept_shallow = phase1 & shallow
+        accept = deep | accept_shallow
+        better_shallow = (st["phase"] == 0) & shallow & (
+            (~st["have_shallow"]) | (cand["CLDHGT_LC"] > st["best_height"]))
+        terminal_miss = phase1 & (~deep) & (~shallow)
+
+        done = cand["abort"] | accept | terminal_miss
+        return dict(
+            nu=jnp.where(done, st["nu"], st["nu"] + 1),
+            phase=st["phase"],
+            have_shallow=st["have_shallow"] | ((st["phase"] == 0) & shallow),
+            best_nu=jnp.where(better_shallow, st["nu"], st["best_nu"]),
+            best_height=jnp.where(better_shallow, cand["CLDHGT_LC"], st["best_height"]),
+            selected=_tree_where(accept, cand, st["selected"]),
+            convect=accept,
+            ishall=jnp.where(deep, jnp.int32(0), jnp.where(accept_shallow, jnp.int32(1), st["ishall"])),
+            done=done,
+        )
+
+    def exhausted(st):
+        rerun_shallow = (st["phase"] == 0) & st["have_shallow"]
+        return dict(
+            nu=jnp.where(rerun_shallow, st["best_nu"], st["nu"]),
+            phase=jnp.where(rerun_shallow, jnp.int32(1), st["phase"]),
+            have_shallow=st["have_shallow"],
+            best_nu=st["best_nu"],
+            best_height=st["best_height"],
+            selected=st["selected"],
+            convect=st["convect"],
+            ishall=st["ishall"],
+            done=~rerun_shallow,
+        )
+
+    def body(st):
+        return jax.lax.cond(st["nu"] <= NCHECK, run_current, exhausted, st)
+
+    def cond(st):
+        return ~st["done"]
+
+    out = jax.lax.while_loop(cond, body, init)
+    return out["selected"], out["ishall"], out["convect"]
 
 
 @partial(jax.jit, static_argnums=(10, 11, 12, 13))
@@ -578,30 +670,9 @@ def kf_eta_para(T0, QV0, P0, DZQ, RHOE, W0A, U0, V0, dt, dx,
     KCHK0 = jnp.zeros(N, dtype=jnp.int32).at[1].set(1)
     KCHECK, NCHECK, _ = jax.lax.fori_loop(2, KX + 1, kcheck_body, (KCHK0, jnp.int32(1), P0p[1] - 15.0e2))
 
-    # ---- run updraft for EVERY candidate, then pick per Fortran USL semantics ----
-    def run_one(nu):
-        return _run_updraft(nu, KCHECK, NCHECK, lev, idx, Z0, DZA, DP, T0p, Q0, TV0,
-                            P0p, W0Ap, dx, DXSQ, KX, KL, aliq, bliq, cliq, dliq, alu)
-    cands = jax.vmap(run_one)(jnp.arange(1, KX + 1))
-    valid_cand = jnp.arange(1, KX + 1) <= NCHECK
-    deep_c = cands["deep"] & valid_cand
-    shallow_c = cands["shallow"] & valid_cand
-    cldhgt_c = jnp.where(shallow_c, cands["CLDHGT_LC"], -1.0)
-
-    any_deep = jnp.any(deep_c)
-    first_deep = jnp.argmax(deep_c.astype(jnp.int32))   # first True
-    # shallow: the candidate (among shallow) with the largest CLDHGT (NUCHM)
-    any_shallow = jnp.any(shallow_c)
-    best_shallow = jnp.argmax(cldhgt_c)
-    sel = jnp.where(any_deep, first_deep, best_shallow)
-    convect = any_deep | any_shallow
-
-    def pick(name):
-        return jax.tree_util.tree_map(lambda a: a[sel], cands[name]) if isinstance(cands[name], dict) else cands[name][sel]
-    # cands fields are arrays over candidate axis; index sel
-    S = {k: (jax.tree_util.tree_map(lambda a: a[sel], v) if isinstance(v, dict) else v[sel])
-         for k, v in cands.items()}
-    ISHALL = jnp.where(any_deep, 0, jnp.where(any_shallow, 1, 2))
+    S, ISHALL, convect = _search_usl(
+        KCHECK, NCHECK, lev, idx, Z0, DZA, DP, T0p, Q0, TV0, P0p, W0Ap,
+        dx, DXSQ, KX, KL, aliq, bliq, cliq, dliq, alu)
 
     NCA_none = jnp.float64(-100.0)
     # ===== closure + feedback (only if convect); else empty =====
@@ -629,7 +700,7 @@ def _closure_feedback(S, ISHALL, lev, idx, Z0, DZA, DP, T0p, Q0, TV0, P0p,
     VMFLCL = S["VMFLCL"]; WLCL = S["WLCL"]; RAD = S["RAD"]; ABE = S["ABE"]
     TRPPT = S["TRPPT"]; DPTHMX = S["DPTHMX"]; AU0 = S["AU0"]; ZMIX = S["ZMIX"]
     TMIX = S["TMIX"]; QMIX = S["QMIX"]; PMIX = S["PMIX"]; PLCL = S["PLCL"]
-    UPNEW = S["UPNEW"]
+    UPOLD = S["UPOLD"]; UPNEW = S["UPNEW"]
     shallow = ISHALL == 1
     is_lev = lambda k: (k >= 1) & (k <= LTOP)
 
@@ -642,16 +713,13 @@ def _closure_feedback(S, ISHALL, lev, idx, Z0, DZA, DP, T0p, Q0, TV0, P0p,
     # for shallow: KSTART, LET=KSTART
     KSTART_sh = jnp.maximum(KPBL, KLCL)
     LET = jnp.where(shallow, KSTART_sh, LET)
-    UPOLD = jnp.where(UPNEW != 0, UPNEW, 1.0)  # placeholder; reference uses UPNEW/UPOLD ratio only in LET==LTOP
-
     # --- LET==LTOP vs linear-detrainment top ---
     let_eq = LET == LTOP
     # LET==LTOP branch
     udr_top = UMF[LTOP] + UDR[LTOP] - UER[LTOP]
-    ratio_up = jnp.where(UPNEW != 0, 1.0, 1.0)  # UPNEW/UPOLD; in ref UPOLD,UPNEW from last updraft else-block
-    # reference uses UPNEW/UPOLD; both equal the last computed values. Use stored ratio=1 fallback.
-    detlq_top = QLIQ[LTOP] * udr_top
-    detic_top = QICE[LTOP] * udr_top
+    ratio_up = UPNEW / jnp.where(UPOLD != 0, UPOLD, 1.0)
+    detlq_top = QLIQ[LTOP] * udr_top * ratio_up
+    detic_top = QICE[LTOP] * udr_top * ratio_up
     UDR = UDR.at[LTOP].set(jnp.where(let_eq, udr_top, UDR[LTOP]))
     DETLQ = DETLQ.at[LTOP].set(jnp.where(let_eq, detlq_top, DETLQ[LTOP]))
     DETIC = DETIC.at[LTOP].set(jnp.where(let_eq, detic_top, DETIC[LTOP]))
@@ -715,8 +783,6 @@ def _closure_feedback(S, ISHALL, lev, idx, Z0, DZA, DP, T0p, Q0, TV0, P0p,
         QU = QU.at[nk].set(jnp.where(do, jnp.where(ge_lc, QMIX, 0.0), QU[nk]))
         WU = WU.at[nk].set(jnp.where(do, jnp.where(ge_lc, WLCL, 0.0), WU[nk]))
         UDR = UDR.at[nk].set(jnp.where(do, 0.0, UDR[nk]))
-        for arr, name in ((QLIQ, "QLIQ"),):
-            pass
         QLIQ = QLIQ.at[nk].set(jnp.where(do, 0.0, QLIQ[nk]))
         QICE = QICE.at[nk].set(jnp.where(do, 0.0, QICE[nk]))
         QLQOUT = QLQOUT.at[nk].set(jnp.where(do, 0.0, QLQOUT[nk]))
@@ -733,7 +799,6 @@ def _closure_feedback(S, ISHALL, lev, idx, Z0, DZA, DP, T0p, Q0, TV0, P0p,
      DETLQ, DETIC, THETEE, EQFRC) = jax.lax.fori_loop(
         1, KX + 1, below, (UMF, UER, UDR, TU, QU, WU, QLIQ, QICE, QLQOUT, QICOUT,
                            PPTLIQ, PPTICE, DETLQ, DETIC, THETEE, EQFRC))
-    QDT = QDT.at[1:K + 1].set(0.0) if False else QDT  # QDT(NK)=0 below handled by gating in advection
 
     # above cloud top + EMS/EXN/THTA arrays
     above = (idx >= LTOP + 1) & (idx <= KX)
@@ -895,7 +960,7 @@ def _closure_feedback(S, ISHALL, lev, idx, Z0, DZA, DP, T0p, Q0, TV0, P0p,
         THTAD = THTAD.at[nd].set(jnp.where(do, thtad_v, THTAD[nd]))
         return (DDR, DER, DMF, TDER, QD, THTAD)
     DDR, DER, DMF, TDER, QD, THTAD = jax.lax.fori_loop(
-        0, KX + 1, dd_final, (DDR, DER, DMF, TDER, QD, THTAD, ) if False else (DDR, DER, DMF, jnp.float64(0.0), QD, THTAD))
+        0, KX + 1, dd_final, (DDR, DER, DMF, jnp.float64(0.0), QD, THTAD))
 
     # ---- no-downdraft vs downdraft ----
     no_dd = TDER < 1.0
@@ -923,8 +988,6 @@ def _closure_feedback(S, ISHALL, lev, idx, Z0, DZA, DP, T0p, Q0, TV0, P0p,
     # zero out arrays below LDB and above LFS (downdraft branch)
     below_ldb = (~no_dd) & lev & (idx >= 1) & (idx <= LDB - 1) & (LDB > 1)
     above_lfs = (~no_dd) & lev & (idx >= LFS + 1) & (idx <= KX)
-    for _z in ():
-        pass
     DMF = jnp.where(below_ldb | above_lfs, 0.0, DMF)
     DER = jnp.where(below_ldb | above_lfs, 0.0, DER)
     DDR = jnp.where(below_ldb | above_lfs, 0.0, DDR)
@@ -957,8 +1020,9 @@ def _closure_feedback(S, ISHALL, lev, idx, Z0, DZA, DP, T0p, Q0, TV0, P0p,
     AINC = jnp.where(shallow, AINC_sh, AINC)
 
     out = _kf_closure_iter(
-        UMF, UER, UDR, DMF, DER, DDR, DETLQ, DETIC, UMF2, UER2, UDR2, DMF2, DER2,
-        DDR2, DETLQ2, DETIC2, TDER2, PPTFL2, AINC, AINCMX, EMS, EMSD, DP, OMG_init(N),
+        UMF, UER, UDR, DMF, DER, DDR, DETLQ, DETIC, PPTLIQ, PPTICE,
+        UMF2, UER2, UDR2, DMF2, DER2, DDR2, DETLQ2, DETIC2, TDER2, PPTFL2,
+        AINC, AINCMX, EMS, EMSD, DP, OMG_init(N),
         THTA0, THTAU, THTAD, QDT, QD, Q0, P0p, Z0, DZA, DXSQ, TIMEC, TADVEC, dt,
         ABE, PMIX, TMIX, QMIX, ZMIX, DPTHMX, LC, KPBL, KLCL, LET, LTOP, K, KL, KX,
         lev, idx, TV0, TVG_zero(N), DDILFRC, QLIQ, QICE, EQFRC, LFS, DMFFRC,
@@ -979,8 +1043,9 @@ def TG_init(T0p, KX, N):
     return jnp.zeros(N)
 
 
-def _kf_closure_iter(UMF, UER, UDR, DMF, DER, DDR, DETLQ, DETIC, UMF2, UER2, UDR2,
-                     DMF2, DER2, DDR2, DETLQ2, DETIC2, TDER2, PPTFL2, AINC, AINCMX,
+def _kf_closure_iter(UMF, UER, UDR, DMF, DER, DDR, DETLQ, DETIC, PPTLIQ, PPTICE,
+                     UMF2, UER2, UDR2, DMF2, DER2, DDR2, DETLQ2, DETIC2,
+                     TDER2, PPTFL2, AINC, AINCMX,
                      EMS, EMSD, DP, OMG, THTA0, THTAU, THTAD, QDT, QD, Q0, P0p, Z0,
                      DZA, DXSQ, TIMEC, TADVEC, dt, ABE, PMIX, TMIX0, QMIX0, ZMIX,
                      DPTHMX, LC, KPBL, KLCL0, LET, LTOP, K0, KL, KX, lev, idx, TV0,
@@ -1009,7 +1074,7 @@ def _kf_closure_iter(UMF, UER, UDR, DMF, DER, DDR, DETLQ, DETIC, UMF2, UER2, UDR
         lambda a: scale_all(AINC, *a),
         lambda a: a,
         (UMF, DMF, DETLQ, DETIC, UDR, UER, DER, DDR))
-    TDER = jnp.where(shallow, TDER2 * AINC, TDER2)        # placeholder TDER live value
+    TDER = jnp.where(shallow, TDER2 * AINC, TDER2)
     PPTFLX = jnp.where(shallow, PPTFL2 * AINC, PPTFLX)
 
     carry = dict(UMF=UMF, UER=UER, UDR=UDR, DMF=DMF, DER=DER, DDR=DDR, DETLQ=DETLQ,
@@ -1119,18 +1184,6 @@ def _kf_closure_iter(UMF, UER, UDR, DMF, DER, DDR, DETLQ, DETIC, UMF2, UER2, UDR
         THETEU_K = TMIX2 * (1.0e5 / PMIX) ** (0.2854 * (1.0 - 0.28 * QMIX2)) * \
             jnp.exp((3374.6525 / TLCL - 2.5403) * QMIX2 * (1.0 + 0.81 * QMIX2))
 
-        def abeg_step(nk, ac):
-            ABEG, theteu_prev = ac
-            do = (nk >= Kk) & (nk <= LTOP - 1)
-            nk1 = nk + 1
-            tgu, qgu = tpmix2dd(P0p[nk1], theteu_prev)
-            tvqu = tgu * (1.0 + 0.608 * qgu - QLIQ[nk1] - QICE[nk1])
-            atK = nk == Kk
-            dzz = jnp.where(atK, Z0[KLCL] - ZLCL, DZA[nk])
-            # need TVQU[nk]; approximate via stored? reference uses TVQU array updated each step.
-            # Use a running prev-TVQU
-            return (ABEG, theteu_prev)  # ABEG computed below with scan storing TVQU
-
         # ABEG via explicit scan storing TVQU per level
         def abeg_scan(carry2, nk):
             ABEG, theteu_prev, tvqu_prev, tvg_prev = carry2
@@ -1178,8 +1231,15 @@ def _kf_closure_iter(UMF, UER, UDR, DMF, DER, DDR, DETLQ, DETIC, UMF2, UER2, UDR
 
         stop_iter = converged | too_small | fabe_gt1 | shallow
         c2 = dict(c)
-        c2.update(UMF=UMFn, UER=UERn, UDR=UDRn, DMF=DMFn, DER=DERn, DDR=DDRn,
-                  DETLQ=DETLQn, DETIC=DETICn, AINC=AINC_next, AINCOLD=AINC,
+        c2.update(UMF=jnp.where(stop_iter, c["UMF"], UMFn),
+                  UER=jnp.where(stop_iter, c["UER"], UERn),
+                  UDR=jnp.where(stop_iter, c["UDR"], UDRn),
+                  DMF=jnp.where(stop_iter, c["DMF"], DMFn),
+                  DER=jnp.where(stop_iter, c["DER"], DERn),
+                  DDR=jnp.where(stop_iter, c["DDR"], DDRn),
+                  DETLQ=jnp.where(stop_iter, c["DETLQ"], DETLQn),
+                  DETIC=jnp.where(stop_iter, c["DETIC"], DETICn),
+                  AINC=jnp.where(stop_iter, AINC, AINC_next), AINCOLD=AINC,
                   FABEOLD=FABE, THTAG=THTAG, QG=QG, TG=TG, TVG=TVG, OMG=OMG,
                   DOMGDP=DOMGDP, FXM=FXM, NSTEP=NSTEP, DTIME=DTIME, KLCL=KLCL,
                   K=Kk, PPTFLX=jnp.where(stop_iter, c["PPTFLX"], PPTFLXn),
@@ -1203,7 +1263,10 @@ def _kf_closure_iter(UMF, UER, UDR, DMF, DER, DDR, DETLQ, DETIC, UMF2, UER2, UDR
     UMF = carry["UMF"]; UDR = carry["UDR"]; DDR = carry["DDR"]; DETLQ = carry["DETLQ"]; DETIC = carry["DETIC"]
 
     # ---- hydrometeor advection ----
+    fbfrc = jnp.where(shallow, jnp.float64(1.0), jnp.float64(_FBFRC))
     FRC2 = jnp.where(CPR > 0.0, PPTFLX / jnp.where(CPR * AINC != 0, CPR * AINC, 1.0), 0.0)
+    RAINFB = jnp.where(inLT, PPTLIQ * AINC * fbfrc * FRC2, 0.0)
+    SNOWFB = jnp.where(inLT, PPTICE * AINC * fbfrc * FRC2, 0.0)
     QLPA = jnp.zeros(N); QIPA = jnp.zeros(N); QRPA = jnp.zeros(N); QSPA = jnp.zeros(N)
 
     def hyd_substep(s, sc):
@@ -1220,27 +1283,28 @@ def _kf_closure_iter(UMF, UER, UDR, DMF, DER, DDR, DETLQ, DETIC, UMF2, UER2, UDR
         QRFXIN, QRFXOUT = adv(QRPA); QSFXIN, QSFXOUT = adv(QSPA)
         QLn = jnp.where(do & inLT, QLPA + (QLFXIN + DETLQ - QLFXOUT) * DTIME * EMSD, QLPA)
         QIn = jnp.where(do & inLT, QIPA + (QIFXIN + DETIC - QIFXOUT) * DTIME * EMSD, QIPA)
-        QRn = jnp.where(do & inLT, QRPA + (QRFXIN - QRFXOUT) * DTIME * EMSD, QRPA)
-        QSn = jnp.where(do & inLT, QSPA + (QSFXIN - QSFXOUT) * DTIME * EMSD, QSPA)
+        QRn = jnp.where(do & inLT, QRPA + (QRFXIN - QRFXOUT + RAINFB) * DTIME * EMSD, QRPA)
+        QSn = jnp.where(do & inLT, QSPA + (QSFXIN - QSFXOUT + SNOWFB) * DTIME * EMSD, QSPA)
         return (QLn, QIn, QRn, QSn)
     QLG, QIG, QRG, QSG = jax.lax.fori_loop(0, _MAX_NSTEP, hyd_substep, (QLPA, QIPA, QRPA, QSPA))
 
-    PRATEC = PPTFLX * (1.0 - _FBFRC) / DXSQ
+    PRATEC = PPTFLX * (1.0 - fbfrc) / DXSQ
     RAINCV = dt * PRATEC
 
     # feedback tendencies (mixed-phase: f_qi=f_qs=True)
     QL0 = jnp.zeros(N); QI0 = jnp.zeros(N); QR0 = jnp.zeros(N); QS0 = jnp.zeros(N)
-    DQCDT = jnp.where(inLT, (QLG - QL0) / TIMEC, 0.0)
-    DQSDT = jnp.where(inLT, (QSG - QS0) / TIMEC, 0.0)
-    DQRDT = jnp.where(inLT, (QRG - QR0) / TIMEC, 0.0)
-    DQIDT = jnp.where(inLT, (QIG - QI0) / TIMEC, 0.0)
-    DTDT = jnp.where(inLT, (TG - T0p) / TIMEC, 0.0)
-    DQDT = jnp.where(inLT, (QG - Q0) / TIMEC, 0.0)
+    tend_time = jnp.where(shallow, jnp.float64(2400.0), TIMEC)
+    DQCDT = jnp.where(inLT, (QLG - QL0) / tend_time, 0.0)
+    DQSDT = jnp.where(inLT, (QSG - QS0) / tend_time, 0.0)
+    DQRDT = jnp.where(inLT, (QRG - QR0) / tend_time, 0.0)
+    DQIDT = jnp.where(inLT, (QIG - QI0) / tend_time, 0.0)
+    DTDT = jnp.where(inLT, (TG - T0p) / tend_time, 0.0)
+    DQDT = jnp.where(inLT, (QG - Q0) / tend_time, 0.0)
 
     # NCA
     NICf = jnp.where(TADVEC < TIMEC, jnp.round(TADVEC / dt).astype(jnp.int32), NIC)
     NCA = jnp.where(shallow, jnp.float64(0.0), NICf.astype(jnp.float64) * dt)
-    TIMEC_out = jnp.where(shallow, jnp.float64(2376.0), TIMEC)  # dump-point value
+    TIMEC_out = jnp.where(shallow, jnp.float64(2400.0), TIMEC)
 
     pii = (P0p / 1.0e5) ** (R_D / CP)
     def slice0(a):
