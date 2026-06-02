@@ -1,0 +1,78 @@
+{
+  "current_operator": {
+    "max_abs_spurious_acceleration_m_s2": 7.388079917334315e-16,
+    "parity": {
+      "ru_accel_max_abs_diff_m_s2": 0.0,
+      "ru_tend_max_abs_diff": 0.0,
+      "rv_accel_max_abs_diff_m_s2": 0.0,
+      "rv_tend_max_abs_diff": 0.0
+    },
+    "parity_pass": true,
+    "requires_operator_rewrite": false,
+    "ru_accel": {
+      "max_abs": 7.388079917334315e-16,
+      "mean_abs": 3.168874733497772e-17,
+      "rms": 8.880233676756672e-17
+    },
+    "rv_accel": {
+      "max_abs": 6.084301108392965e-16,
+      "mean_abs": 3.1536345776577954e-17,
+      "rms": 9.741389462611262e-17
+    },
+    "status": "PASS",
+    "well_balanced_pass": true
+  },
+  "diagnostic_completed": true,
+  "environment": {
+    "JAX_PLATFORMS": "cpu",
+    "JAX_PLATFORM_NAME": "cpu",
+    "OMP_NUM_THREADS": "4",
+    "cpu_affinity": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "platform": "Linux-7.0.0-15-generic-x86_64-with-glibc2.43",
+    "python": "3.13.11"
+  },
+  "fixture": {
+    "dx_m": 3000.0,
+    "dy_m": 3000.0,
+    "fourth_term_bracket_max_abs": 187.1179270939616,
+    "hydrostatic_rest_construction": "Horizontally uniform perturbation pressure and dry-mass perturbation produce a nonzero WRF fourth-term vertical bracket.  Perturbation geopotential is solved so the first-three PGF terms and the terrain-slope fourth term cancel discretely over a steep island terrain.",
+    "kind": "savepoint-shaped analytic WRF transcription",
+    "nx": 8,
+    "ny": 8,
+    "nz": 10,
+    "terrain_max_m": 3238.784373833312,
+    "terrain_max_slope_proxy_m_per_cell": 2195.828473945838,
+    "wrf_binary_savepoint_extracted": false,
+    "wrf_binary_savepoint_limitation": "No committed P0-6 horizontal_pressure_gradient WRF-binary savepoint fixture was present in this worktree; this proof uses the pristine-WRF formula as an independent NumPy oracle."
+  },
+  "schema": "p0_6_sloped_pgf_well_balanced_oracle",
+  "schema_version": 1,
+  "source": {
+    "current_gpu_operator": "src/gpuwrf/dynamics/core/rk_addtend_dry.py:large_step_horizontal_pgf",
+    "horizontal_pressure_gradient": "dyn_em/module_big_step_utilities_em.F:2183-2404",
+    "wrf_pristine_root": "/home/enric/src/wrf_pristine/WRF"
+  },
+  "status": "PASS",
+  "tolerances": {
+    "parity_abs": 2e-09,
+    "well_balanced_acceleration_m_s2": 1e-10
+  },
+  "wrf_reference": {
+    "max_abs_spurious_acceleration_m_s2": 7.388079917334315e-16,
+    "ru_accel": {
+      "max_abs": 7.388079917334315e-16,
+      "mean_abs": 3.168874733497772e-17,
+      "rms": 8.880233676756672e-17
+    },
+    "rv_accel": {
+      "max_abs": 6.084301108392965e-16,
+      "mean_abs": 3.1536345776577954e-17,
+      "rms": 9.741389462611262e-17
+    }
+  }
+}
