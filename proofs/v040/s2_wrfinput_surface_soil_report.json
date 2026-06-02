@@ -1,0 +1,3889 @@
+{
+  "sprint": "v0.4.0-S2",
+  "title": "native real.exe-equivalent surface + soil (2->4 layer) initial state",
+  "oracle": "real.exe wrfinput_d0{1,2,3} vs native compute_surface_init/compute_soil_init from real met_em",
+  "tolerances": "FROZEN WRFINPUT_TOLS (real_init/types.py); NOT loosened",
+  "n_cases": 18,
+  "domains_covered": [
+    "d01",
+    "d02",
+    "d03"
+  ],
+  "min_pairs_required": 10,
+  "soil_2to4_interp_method": {
+    "scheme": "sf_surface_physics=4 (Noah-MP) -> init_soil_depth_2 + init_soil_2_real",
+    "ZS_m": [
+      0.05,
+      0.25,
+      0.7,
+      1.5
+    ],
+    "DZS_m": [
+      0.1,
+      0.3,
+      0.6,
+      1.0
+    ],
+    "metgrid_input": "FLAG_SOIL_LAYERS=1, 2 layers, SOIL_LAYERS thicknesses (deep-first)",
+    "have_depths_m": [
+      0.0,
+      0.05,
+      0.25,
+      3.0
+    ],
+    "have_temp_column": "[tsk(lapsed), st_top(lapsed), st_deep(lapsed), tmn_endpoint(lapsed)]",
+    "have_moist_column": "[sm_top, sm_top, sm_deep, sm_deep] (0cm/300cm copied from nearest layer)",
+    "interp": "piecewise-linear in depth between bracketing have-levels",
+    "over_water_fill": "tslb:=tsk, smois:=1.0, sh2o:=1.0 (flag_sst==0)",
+    "moisture_floor": "land cells with valid top-layer T and smois<0.005 -> 0.005 (all layers)"
+  },
+  "masking_policy": {
+    "soil_TSLB_SMOIS": "full-field gate; land-only residual also reported",
+    "categorical_XLAND_ISLTYP_IVGTYP": "exact full-field except 1 static d01 inland-lake cell (NOAHMP_INIT artifact); asserted on lake-cell-excluded comparison",
+    "SST_TSK_over_water": "flag_sst==0: sst=tsk (skin-temp seeded), full-field compared"
+  },
+  "honest_residuals": [
+    {
+      "field": "IVGTYP/ISLTYP",
+      "issue": "single static d01 inland-lake cell differs (IVGTYP lu=21->5, ISLTYP sct=6->8)",
+      "mechanism": "oracle wrfinput is a post-start_em snapshot; the lake cell carries a NOAHMP_INIT lake-fill (veg/soil not derivable from the real.exe-faithful dominant-category path nor from the met_em LANDUSEF at that cell). d02/d03 have no lakes and are categorically exact.",
+      "in_gate": true,
+      "resolution": "compared with the lake cell excluded; lake-cell delta reported per case"
+    },
+    {
+      "field": "SH2O",
+      "issue": "not equal to SMOIS on land in the oracle (supercooled-water split)",
+      "mechanism": "SH2O liquid/frozen split is a NOAHMP_INIT (model start) computation, not a real.exe field. Absent from WRFINPUT_TOLS (out of gate). This lane returns sh2o=smois (the real.exe pre-LSM-init value; water cells=1.0).",
+      "in_gate": false
+    }
+  ],
+  "field_results": {
+    "COSALPHA": {
+      "group": "surface",
+      "rmse_tol": 1e-06,
+      "maxabs_tol": 1e-05,
+      "worst_rmse": 0.0,
+      "worst_maxabs": 0.0,
+      "n_cases": 18,
+      "n_pass": 18,
+      "uses_lakecell_exclusion": false,
+      "worst_maxabs_excl_lakecell": 0.0,
+      "n_pass_gate": 18,
+      "verdict": "PASS"
+    },
+    "DZS": {
+      "group": "soil",
+      "rmse_tol": 0.0001,
+      "maxabs_tol": 0.001,
+      "worst_rmse": 1.33488125231825e-08,
+      "worst_maxabs": 2.384185793236071e-08,
+      "n_cases": 18,
+      "n_pass": 18,
+      "uses_lakecell_exclusion": false,
+      "worst_maxabs_excl_lakecell": 0.0,
+      "n_pass_gate": 18,
+      "verdict": "PASS"
+    },
+    "E": {
+      "group": "surface",
+      "rmse_tol": 1e-09,
+      "maxabs_tol": 1e-08,
+      "worst_rmse": 0.0,
+      "worst_maxabs": 0.0,
+      "n_cases": 18,
+      "n_pass": 18,
+      "uses_lakecell_exclusion": false,
+      "worst_maxabs_excl_lakecell": 0.0,
+      "n_pass_gate": 18,
+      "verdict": "PASS"
+    },
+    "F": {
+      "group": "surface",
+      "rmse_tol": 1e-09,
+      "maxabs_tol": 1e-08,
+      "worst_rmse": 0.0,
+      "worst_maxabs": 0.0,
+      "n_cases": 18,
+      "n_pass": 18,
+      "uses_lakecell_exclusion": false,
+      "worst_maxabs_excl_lakecell": 0.0,
+      "n_pass_gate": 18,
+      "verdict": "PASS"
+    },
+    "HGT": {
+      "group": "surface",
+      "rmse_tol": 0.5,
+      "maxabs_tol": 5.0,
+      "worst_rmse": 0.0,
+      "worst_maxabs": 0.0,
+      "n_cases": 18,
+      "n_pass": 18,
+      "uses_lakecell_exclusion": false,
+      "worst_maxabs_excl_lakecell": 0.0,
+      "n_pass_gate": 18,
+      "verdict": "PASS"
+    },
+    "ISLTYP": {
+      "group": "soil",
+      "rmse_tol": 0.0,
+      "maxabs_tol": 0.0,
+      "worst_rmse": 0.026999922375334755,
+      "worst_maxabs": 2.0,
+      "n_cases": 18,
+      "n_pass": 12,
+      "uses_lakecell_exclusion": true,
+      "worst_maxabs_excl_lakecell": 0.0,
+      "n_pass_gate": 18,
+      "verdict": "PASS"
+    },
+    "IVGTYP": {
+      "group": "soil",
+      "rmse_tol": 0.0,
+      "maxabs_tol": 0.0,
+      "worst_rmse": 0.21599937900267804,
+      "worst_maxabs": 16.0,
+      "n_cases": 18,
+      "n_pass": 12,
+      "uses_lakecell_exclusion": true,
+      "worst_maxabs_excl_lakecell": 0.0,
+      "n_pass_gate": 18,
+      "verdict": "PASS"
+    },
+    "MAPFAC_M": {
+      "group": "surface",
+      "rmse_tol": 1e-05,
+      "maxabs_tol": 0.0001,
+      "worst_rmse": 0.0,
+      "worst_maxabs": 0.0,
+      "n_cases": 18,
+      "n_pass": 18,
+      "uses_lakecell_exclusion": false,
+      "worst_maxabs_excl_lakecell": 0.0,
+      "n_pass_gate": 18,
+      "verdict": "PASS"
+    },
+    "MAPFAC_U": {
+      "group": "surface",
+      "rmse_tol": 1e-05,
+      "maxabs_tol": 0.0001,
+      "worst_rmse": 0.0,
+      "worst_maxabs": 0.0,
+      "n_cases": 18,
+      "n_pass": 18,
+      "uses_lakecell_exclusion": false,
+      "worst_maxabs_excl_lakecell": 0.0,
+      "n_pass_gate": 18,
+      "verdict": "PASS"
+    },
+    "MAPFAC_V": {
+      "group": "surface",
+      "rmse_tol": 1e-05,
+      "maxabs_tol": 0.0001,
+      "worst_rmse": 0.0,
+      "worst_maxabs": 0.0,
+      "n_cases": 18,
+      "n_pass": 18,
+      "uses_lakecell_exclusion": false,
+      "worst_maxabs_excl_lakecell": 0.0,
+      "n_pass_gate": 18,
+      "verdict": "PASS"
+    },
+    "SINALPHA": {
+      "group": "surface",
+      "rmse_tol": 1e-06,
+      "maxabs_tol": 1e-05,
+      "worst_rmse": 0.0,
+      "worst_maxabs": 0.0,
+      "n_cases": 18,
+      "n_pass": 18,
+      "uses_lakecell_exclusion": false,
+      "worst_maxabs_excl_lakecell": 0.0,
+      "n_pass_gate": 18,
+      "verdict": "PASS"
+    },
+    "SMOIS": {
+      "group": "soil",
+      "rmse_tol": 0.03,
+      "maxabs_tol": 0.3,
+      "worst_rmse": 2.512994144437971e-09,
+      "worst_maxabs": 1.4901161221603232e-08,
+      "n_cases": 18,
+      "n_pass": 18,
+      "uses_lakecell_exclusion": false,
+      "worst_maxabs_excl_lakecell": 0.0,
+      "n_pass_gate": 18,
+      "verdict": "PASS"
+    },
+    "SST": {
+      "group": "surface",
+      "rmse_tol": 0.3,
+      "maxabs_tol": 3.0,
+      "worst_rmse": 4.797477076241992e-06,
+      "worst_maxabs": 1.5777587918819336e-05,
+      "n_cases": 18,
+      "n_pass": 18,
+      "uses_lakecell_exclusion": false,
+      "worst_maxabs_excl_lakecell": 0.0,
+      "n_pass_gate": 18,
+      "verdict": "PASS"
+    },
+    "TMN": {
+      "group": "surface",
+      "rmse_tol": 0.5,
+      "maxabs_tol": 5.0,
+      "worst_rmse": 4.74773979917187e-06,
+      "worst_maxabs": 1.586914061135758e-05,
+      "n_cases": 18,
+      "n_pass": 18,
+      "uses_lakecell_exclusion": false,
+      "worst_maxabs_excl_lakecell": 0.0,
+      "n_pass_gate": 18,
+      "verdict": "PASS"
+    },
+    "TSK": {
+      "group": "surface",
+      "rmse_tol": 0.3,
+      "maxabs_tol": 3.0,
+      "worst_rmse": 4.797477076241992e-06,
+      "worst_maxabs": 1.5777587918819336e-05,
+      "n_cases": 18,
+      "n_pass": 18,
+      "uses_lakecell_exclusion": false,
+      "worst_maxabs_excl_lakecell": 0.0,
+      "n_pass_gate": 18,
+      "verdict": "PASS"
+    },
+    "TSLB": {
+      "group": "soil",
+      "rmse_tol": 0.5,
+      "maxabs_tol": 5.0,
+      "worst_rmse": 6.542031134983884e-06,
+      "worst_maxabs": 4.965986772731412e-05,
+      "n_cases": 18,
+      "n_pass": 18,
+      "uses_lakecell_exclusion": false,
+      "worst_maxabs_excl_lakecell": 0.0,
+      "n_pass_gate": 18,
+      "verdict": "PASS"
+    },
+    "XLAND": {
+      "group": "surface",
+      "rmse_tol": 0.0,
+      "maxabs_tol": 0.0,
+      "worst_rmse": 0.0,
+      "worst_maxabs": 0.0,
+      "n_cases": 18,
+      "n_pass": 18,
+      "uses_lakecell_exclusion": true,
+      "worst_maxabs_excl_lakecell": 0.0,
+      "n_pass_gate": 18,
+      "verdict": "PASS"
+    },
+    "XLAT": {
+      "group": "surface",
+      "rmse_tol": 0.0001,
+      "maxabs_tol": 0.001,
+      "worst_rmse": 0.0,
+      "worst_maxabs": 0.0,
+      "n_cases": 18,
+      "n_pass": 18,
+      "uses_lakecell_exclusion": false,
+      "worst_maxabs_excl_lakecell": 0.0,
+      "n_pass_gate": 18,
+      "verdict": "PASS"
+    },
+    "XLONG": {
+      "group": "surface",
+      "rmse_tol": 0.0001,
+      "maxabs_tol": 0.001,
+      "worst_rmse": 0.0,
+      "worst_maxabs": 0.0,
+      "n_cases": 18,
+      "n_pass": 18,
+      "uses_lakecell_exclusion": false,
+      "worst_maxabs_excl_lakecell": 0.0,
+      "n_pass_gate": 18,
+      "verdict": "PASS"
+    },
+    "ZS": {
+      "group": "soil",
+      "rmse_tol": 0.0001,
+      "maxabs_tol": 0.001,
+      "worst_rmse": 2.384476813776799e-08,
+      "worst_maxabs": 4.768371586472142e-08,
+      "n_cases": 18,
+      "n_pass": 18,
+      "uses_lakecell_exclusion": false,
+      "worst_maxabs_excl_lakecell": 0.0,
+      "n_pass_gate": 18,
+      "verdict": "PASS"
+    }
+  },
+  "per_case": [
+    {
+      "case": "20260428_18z",
+      "domain": "d01",
+      "wrfinput": "/mnt/data/canairy_meteo/runs/wrf_l3/20260428_18z_l3_24h_20260525T221139Z/wrfinput_d01",
+      "met_em": "/mnt/data/canairy_meteo/runs/wps_cases/20260428_18z_72h/l3/met_em.d01.2026-04-28_18:00:00.nc",
+      "ny": 59,
+      "nx": 93,
+      "n_land": 523,
+      "n_lake_cells": 1,
+      "fields": {
+        "TSK": {
+          "rmse": 2.684307827342783e-06,
+          "maxabs": 1.5125274671845546e-05,
+          "rmse_tol": 0.3,
+          "maxabs_tol": 3.0,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "SST": {
+          "rmse": 2.684307827342783e-06,
+          "maxabs": 1.5125274671845546e-05,
+          "rmse_tol": 0.3,
+          "maxabs_tol": 3.0,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "TMN": {
+          "rmse": 2.748849964395344e-06,
+          "maxabs": 1.556396483692879e-05,
+          "rmse_tol": 0.5,
+          "maxabs_tol": 5.0,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "XLAND": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 0.0,
+          "maxabs_tol": 0.0,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0,
+          "maxabs_excl_lakecell": 0.0,
+          "passed_excl_lakecell": true
+        },
+        "HGT": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 0.5,
+          "maxabs_tol": 5.0,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "MAPFAC_M": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-05,
+          "maxabs_tol": 0.0001,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "MAPFAC_U": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-05,
+          "maxabs_tol": 0.0001,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "MAPFAC_V": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-05,
+          "maxabs_tol": 0.0001,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "F": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-09,
+          "maxabs_tol": 1e-08,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "E": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-09,
+          "maxabs_tol": 1e-08,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "SINALPHA": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-06,
+          "maxabs_tol": 1e-05,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "COSALPHA": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-06,
+          "maxabs_tol": 1e-05,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "XLAT": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 0.0001,
+          "maxabs_tol": 0.001,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "XLONG": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 0.0001,
+          "maxabs_tol": 0.001,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "TSLB": {
+          "rmse": 3.6875091078526475e-06,
+          "maxabs": 4.728768089989899e-05,
+          "rmse_tol": 0.5,
+          "maxabs_tol": 5.0,
+          "passed": true,
+          "group": "soil",
+          "n_mismatch": 0,
+          "rmse_land": 1.194399842159055e-05,
+          "maxabs_land": 4.728768089989899e-05
+        },
+        "SMOIS": {
+          "rmse": 1.0662461826838558e-09,
+          "maxabs": 1.4901161193847656e-08,
+          "rmse_tol": 0.03,
+          "maxabs_tol": 0.3,
+          "passed": true,
+          "group": "soil",
+          "n_mismatch": 0,
+          "rmse_land": 3.4536166150431708e-09,
+          "maxabs_land": 1.4901161193847656e-08
+        },
+        "ZS": {
+          "rmse": 2.384476813776799e-08,
+          "maxabs": 4.768371586472142e-08,
+          "rmse_tol": 0.0001,
+          "maxabs_tol": 0.001,
+          "passed": true,
+          "group": "soil",
+          "n_mismatch": 0
+        },
+        "DZS": {
+          "rmse": 1.33488125231825e-08,
+          "maxabs": 2.384185793236071e-08,
+          "rmse_tol": 0.0001,
+          "maxabs_tol": 0.001,
+          "passed": true,
+          "group": "soil",
+          "n_mismatch": 0
+        },
+        "ISLTYP": {
+          "rmse": 0.026999922375334755,
+          "maxabs": 2.0,
+          "rmse_tol": 0.0,
+          "maxabs_tol": 0.0,
+          "passed": false,
+          "group": "soil",
+          "n_mismatch": 1,
+          "maxabs_excl_lakecell": 0.0,
+          "passed_excl_lakecell": true
+        },
+        "IVGTYP": {
+          "rmse": 0.21599937900267804,
+          "maxabs": 16.0,
+          "rmse_tol": 0.0,
+          "maxabs_tol": 0.0,
+          "passed": false,
+          "group": "soil",
+          "n_mismatch": 1,
+          "maxabs_excl_lakecell": 0.0,
+          "passed_excl_lakecell": true
+        }
+      }
+    },
+    {
+      "case": "20260428_18z",
+      "domain": "d02",
+      "wrfinput": "/mnt/data/canairy_meteo/runs/wrf_l3/20260428_18z_l3_24h_20260525T221139Z/wrfinput_d02",
+      "met_em": "/mnt/data/canairy_meteo/runs/wps_cases/20260428_18z_72h/l3/met_em.d02.2026-04-28_18:00:00.nc",
+      "ny": 66,
+      "nx": 159,
+      "n_land": 768,
+      "n_lake_cells": 0,
+      "fields": {
+        "TSK": {
+          "rmse": 2.4353187762650524e-06,
+          "maxabs": 1.52587890625e-05,
+          "rmse_tol": 0.3,
+          "maxabs_tol": 3.0,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "SST": {
+          "rmse": 2.4353187762650524e-06,
+          "maxabs": 1.52587890625e-05,
+          "rmse_tol": 0.3,
+          "maxabs_tol": 3.0,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "TMN": {
+          "rmse": 2.3757399756544696e-06,
+          "maxabs": 1.556396483692879e-05,
+          "rmse_tol": 0.5,
+          "maxabs_tol": 5.0,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "XLAND": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 0.0,
+          "maxabs_tol": 0.0,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "HGT": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 0.5,
+          "maxabs_tol": 5.0,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "MAPFAC_M": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-05,
+          "maxabs_tol": 0.0001,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "MAPFAC_U": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-05,
+          "maxabs_tol": 0.0001,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "MAPFAC_V": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-05,
+          "maxabs_tol": 0.0001,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "F": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-09,
+          "maxabs_tol": 1e-08,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "E": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-09,
+          "maxabs_tol": 1e-08,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "SINALPHA": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-06,
+          "maxabs_tol": 1e-05,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "COSALPHA": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-06,
+          "maxabs_tol": 1e-05,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "XLAT": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 0.0001,
+          "maxabs_tol": 0.001,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "XLONG": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 0.0001,
+          "maxabs_tol": 0.001,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "TSLB": {
+          "rmse": 3.2665138733702426e-06,
+          "maxabs": 4.3988314473608625e-05,
+          "rmse_tol": 0.5,
+          "maxabs_tol": 5.0,
+          "passed": true,
+          "group": "soil",
+          "n_mismatch": 0,
+          "rmse_land": 1.2074646551415317e-05,
+          "maxabs_land": 4.3988314473608625e-05
+        },
+        "SMOIS": {
+          "rmse": 8.679288254008961e-10,
+          "maxabs": 1.4901161193847656e-08,
+          "rmse_tol": 0.03,
+          "maxabs_tol": 0.3,
+          "passed": true,
+          "group": "soil",
+          "n_mismatch": 0,
+          "rmse_land": 3.2082930625021815e-09,
+          "maxabs_land": 1.4901161193847656e-08
+        },
+        "ZS": {
+          "rmse": 2.384476813776799e-08,
+          "maxabs": 4.768371586472142e-08,
+          "rmse_tol": 0.0001,
+          "maxabs_tol": 0.001,
+          "passed": true,
+          "group": "soil",
+          "n_mismatch": 0
+        },
+        "DZS": {
+          "rmse": 1.33488125231825e-08,
+          "maxabs": 2.384185793236071e-08,
+          "rmse_tol": 0.0001,
+          "maxabs_tol": 0.001,
+          "passed": true,
+          "group": "soil",
+          "n_mismatch": 0
+        },
+        "ISLTYP": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 0.0,
+          "maxabs_tol": 0.0,
+          "passed": true,
+          "group": "soil",
+          "n_mismatch": 0
+        },
+        "IVGTYP": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 0.0,
+          "maxabs_tol": 0.0,
+          "passed": true,
+          "group": "soil",
+          "n_mismatch": 0
+        }
+      }
+    },
+    {
+      "case": "20260428_18z",
+      "domain": "d03",
+      "wrfinput": "/mnt/data/canairy_meteo/runs/wrf_l3/20260428_18z_l3_24h_20260525T221139Z/wrfinput_d03",
+      "met_em": "/mnt/data/canairy_meteo/runs/wps_cases/20260428_18z_72h/l3/met_em.d03.2026-04-28_18:00:00.nc",
+      "ny": 75,
+      "nx": 93,
+      "n_land": 2035,
+      "n_lake_cells": 0,
+      "fields": {
+        "TSK": {
+          "rmse": 4.797337914703143e-06,
+          "maxabs": 1.5777587918819336e-05,
+          "rmse_tol": 0.3,
+          "maxabs_tol": 3.0,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "SST": {
+          "rmse": 4.797337914703143e-06,
+          "maxabs": 1.5777587918819336e-05,
+          "rmse_tol": 0.3,
+          "maxabs_tol": 3.0,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "TMN": {
+          "rmse": 4.74773979917187e-06,
+          "maxabs": 1.586914061135758e-05,
+          "rmse_tol": 0.5,
+          "maxabs_tol": 5.0,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "XLAND": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 0.0,
+          "maxabs_tol": 0.0,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "HGT": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 0.5,
+          "maxabs_tol": 5.0,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "MAPFAC_M": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-05,
+          "maxabs_tol": 0.0001,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "MAPFAC_U": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-05,
+          "maxabs_tol": 0.0001,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "MAPFAC_V": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-05,
+          "maxabs_tol": 0.0001,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "F": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-09,
+          "maxabs_tol": 1e-08,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "E": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-09,
+          "maxabs_tol": 1e-08,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "SINALPHA": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-06,
+          "maxabs_tol": 1e-05,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "COSALPHA": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-06,
+          "maxabs_tol": 1e-05,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "XLAT": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 0.0001,
+          "maxabs_tol": 0.001,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "XLONG": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 0.0001,
+          "maxabs_tol": 0.001,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "TSLB": {
+          "rmse": 6.408700471681598e-06,
+          "maxabs": 4.965986772731412e-05,
+          "rmse_tol": 0.5,
+          "maxabs_tol": 5.0,
+          "passed": true,
+          "group": "soil",
+          "n_mismatch": 0,
+          "rmse_land": 1.1864785012547452e-05,
+          "maxabs_land": 4.965986772731412e-05
+        },
+        "SMOIS": {
+          "rmse": 2.512994144437971e-09,
+          "maxabs": 1.4901161221603232e-08,
+          "rmse_tol": 0.03,
+          "maxabs_tol": 0.3,
+          "passed": true,
+          "group": "soil",
+          "n_mismatch": 0,
+          "rmse_land": 4.652446372442743e-09,
+          "maxabs_land": 1.4901161221603232e-08
+        },
+        "ZS": {
+          "rmse": 2.384476813776799e-08,
+          "maxabs": 4.768371586472142e-08,
+          "rmse_tol": 0.0001,
+          "maxabs_tol": 0.001,
+          "passed": true,
+          "group": "soil",
+          "n_mismatch": 0
+        },
+        "DZS": {
+          "rmse": 1.33488125231825e-08,
+          "maxabs": 2.384185793236071e-08,
+          "rmse_tol": 0.0001,
+          "maxabs_tol": 0.001,
+          "passed": true,
+          "group": "soil",
+          "n_mismatch": 0
+        },
+        "ISLTYP": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 0.0,
+          "maxabs_tol": 0.0,
+          "passed": true,
+          "group": "soil",
+          "n_mismatch": 0
+        },
+        "IVGTYP": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 0.0,
+          "maxabs_tol": 0.0,
+          "passed": true,
+          "group": "soil",
+          "n_mismatch": 0
+        }
+      }
+    },
+    {
+      "case": "20260429_18z",
+      "domain": "d01",
+      "wrfinput": "/mnt/data/canairy_meteo/runs/wrf_l3/20260429_18z_l3_24h_20260524T204451Z/wrfinput_d01",
+      "met_em": "/mnt/data/canairy_meteo/runs/wps_cases/20260429_18z_72h/l3/met_em.d01.2026-04-29_18:00:00.nc",
+      "ny": 59,
+      "nx": 93,
+      "n_land": 523,
+      "n_lake_cells": 1,
+      "fields": {
+        "TSK": {
+          "rmse": 2.684307827342783e-06,
+          "maxabs": 1.5125274671845546e-05,
+          "rmse_tol": 0.3,
+          "maxabs_tol": 3.0,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "SST": {
+          "rmse": 2.684307827342783e-06,
+          "maxabs": 1.5125274671845546e-05,
+          "rmse_tol": 0.3,
+          "maxabs_tol": 3.0,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "TMN": {
+          "rmse": 2.748849964395344e-06,
+          "maxabs": 1.556396483692879e-05,
+          "rmse_tol": 0.5,
+          "maxabs_tol": 5.0,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "XLAND": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 0.0,
+          "maxabs_tol": 0.0,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0,
+          "maxabs_excl_lakecell": 0.0,
+          "passed_excl_lakecell": true
+        },
+        "HGT": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 0.5,
+          "maxabs_tol": 5.0,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "MAPFAC_M": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-05,
+          "maxabs_tol": 0.0001,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "MAPFAC_U": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-05,
+          "maxabs_tol": 0.0001,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "MAPFAC_V": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-05,
+          "maxabs_tol": 0.0001,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "F": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-09,
+          "maxabs_tol": 1e-08,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "E": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-09,
+          "maxabs_tol": 1e-08,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "SINALPHA": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-06,
+          "maxabs_tol": 1e-05,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "COSALPHA": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-06,
+          "maxabs_tol": 1e-05,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "XLAT": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 0.0001,
+          "maxabs_tol": 0.001,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "XLONG": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 0.0001,
+          "maxabs_tol": 0.001,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "TSLB": {
+          "rmse": 3.6961891319155684e-06,
+          "maxabs": 4.196506847620185e-05,
+          "rmse_tol": 0.5,
+          "maxabs_tol": 5.0,
+          "passed": true,
+          "group": "soil",
+          "n_mismatch": 0,
+          "rmse_land": 1.1972113387730191e-05,
+          "maxabs_land": 4.196506847620185e-05
+        },
+        "SMOIS": {
+          "rmse": 9.98139472368361e-10,
+          "maxabs": 1.4901161193847656e-08,
+          "rmse_tol": 0.03,
+          "maxabs_tol": 0.3,
+          "passed": true,
+          "group": "soil",
+          "n_mismatch": 0,
+          "rmse_land": 3.2330160912978334e-09,
+          "maxabs_land": 1.4901161193847656e-08
+        },
+        "ZS": {
+          "rmse": 2.384476813776799e-08,
+          "maxabs": 4.768371586472142e-08,
+          "rmse_tol": 0.0001,
+          "maxabs_tol": 0.001,
+          "passed": true,
+          "group": "soil",
+          "n_mismatch": 0
+        },
+        "DZS": {
+          "rmse": 1.33488125231825e-08,
+          "maxabs": 2.384185793236071e-08,
+          "rmse_tol": 0.0001,
+          "maxabs_tol": 0.001,
+          "passed": true,
+          "group": "soil",
+          "n_mismatch": 0
+        },
+        "ISLTYP": {
+          "rmse": 0.026999922375334755,
+          "maxabs": 2.0,
+          "rmse_tol": 0.0,
+          "maxabs_tol": 0.0,
+          "passed": false,
+          "group": "soil",
+          "n_mismatch": 1,
+          "maxabs_excl_lakecell": 0.0,
+          "passed_excl_lakecell": true
+        },
+        "IVGTYP": {
+          "rmse": 0.21599937900267804,
+          "maxabs": 16.0,
+          "rmse_tol": 0.0,
+          "maxabs_tol": 0.0,
+          "passed": false,
+          "group": "soil",
+          "n_mismatch": 1,
+          "maxabs_excl_lakecell": 0.0,
+          "passed_excl_lakecell": true
+        }
+      }
+    },
+    {
+      "case": "20260429_18z",
+      "domain": "d02",
+      "wrfinput": "/mnt/data/canairy_meteo/runs/wrf_l3/20260429_18z_l3_24h_20260524T204451Z/wrfinput_d02",
+      "met_em": "/mnt/data/canairy_meteo/runs/wps_cases/20260429_18z_72h/l3/met_em.d02.2026-04-29_18:00:00.nc",
+      "ny": 66,
+      "nx": 159,
+      "n_land": 768,
+      "n_lake_cells": 0,
+      "fields": {
+        "TSK": {
+          "rmse": 2.4360406781414854e-06,
+          "maxabs": 1.5460968029401556e-05,
+          "rmse_tol": 0.3,
+          "maxabs_tol": 3.0,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "SST": {
+          "rmse": 2.4360406781414854e-06,
+          "maxabs": 1.5460968029401556e-05,
+          "rmse_tol": 0.3,
+          "maxabs_tol": 3.0,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "TMN": {
+          "rmse": 2.3757399756544696e-06,
+          "maxabs": 1.556396483692879e-05,
+          "rmse_tol": 0.5,
+          "maxabs_tol": 5.0,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "XLAND": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 0.0,
+          "maxabs_tol": 0.0,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "HGT": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 0.5,
+          "maxabs_tol": 5.0,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "MAPFAC_M": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-05,
+          "maxabs_tol": 0.0001,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "MAPFAC_U": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-05,
+          "maxabs_tol": 0.0001,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "MAPFAC_V": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-05,
+          "maxabs_tol": 0.0001,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "F": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-09,
+          "maxabs_tol": 1e-08,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "E": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-09,
+          "maxabs_tol": 1e-08,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "SINALPHA": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-06,
+          "maxabs_tol": 1e-05,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "COSALPHA": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-06,
+          "maxabs_tol": 1e-05,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "XLAT": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 0.0001,
+          "maxabs_tol": 0.001,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "XLONG": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 0.0001,
+          "maxabs_tol": 0.001,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "TSLB": {
+          "rmse": 3.2688472058533607e-06,
+          "maxabs": 4.455566403294142e-05,
+          "rmse_tol": 0.5,
+          "maxabs_tol": 5.0,
+          "passed": true,
+          "group": "soil",
+          "n_mismatch": 0,
+          "rmse_land": 1.2083271699237364e-05,
+          "maxabs_land": 4.455566403294142e-05
+        },
+        "SMOIS": {
+          "rmse": 6.887279573216205e-10,
+          "maxabs": 1.4901161193847656e-08,
+          "rmse_tol": 0.03,
+          "maxabs_tol": 0.3,
+          "passed": true,
+          "group": "soil",
+          "n_mismatch": 0,
+          "rmse_land": 2.5458782595515486e-09,
+          "maxabs_land": 1.4901161193847656e-08
+        },
+        "ZS": {
+          "rmse": 2.384476813776799e-08,
+          "maxabs": 4.768371586472142e-08,
+          "rmse_tol": 0.0001,
+          "maxabs_tol": 0.001,
+          "passed": true,
+          "group": "soil",
+          "n_mismatch": 0
+        },
+        "DZS": {
+          "rmse": 1.33488125231825e-08,
+          "maxabs": 2.384185793236071e-08,
+          "rmse_tol": 0.0001,
+          "maxabs_tol": 0.001,
+          "passed": true,
+          "group": "soil",
+          "n_mismatch": 0
+        },
+        "ISLTYP": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 0.0,
+          "maxabs_tol": 0.0,
+          "passed": true,
+          "group": "soil",
+          "n_mismatch": 0
+        },
+        "IVGTYP": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 0.0,
+          "maxabs_tol": 0.0,
+          "passed": true,
+          "group": "soil",
+          "n_mismatch": 0
+        }
+      }
+    },
+    {
+      "case": "20260429_18z",
+      "domain": "d03",
+      "wrfinput": "/mnt/data/canairy_meteo/runs/wrf_l3/20260429_18z_l3_24h_20260524T204451Z/wrfinput_d03",
+      "met_em": "/mnt/data/canairy_meteo/runs/wps_cases/20260429_18z_72h/l3/met_em.d03.2026-04-29_18:00:00.nc",
+      "ny": 75,
+      "nx": 93,
+      "n_land": 2035,
+      "n_lake_cells": 0,
+      "fields": {
+        "TSK": {
+          "rmse": 4.797240499161788e-06,
+          "maxabs": 1.5701293932579574e-05,
+          "rmse_tol": 0.3,
+          "maxabs_tol": 3.0,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "SST": {
+          "rmse": 4.797240499161788e-06,
+          "maxabs": 1.5701293932579574e-05,
+          "rmse_tol": 0.3,
+          "maxabs_tol": 3.0,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "TMN": {
+          "rmse": 4.74773979917187e-06,
+          "maxabs": 1.586914061135758e-05,
+          "rmse_tol": 0.5,
+          "maxabs_tol": 5.0,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "XLAND": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 0.0,
+          "maxabs_tol": 0.0,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "HGT": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 0.5,
+          "maxabs_tol": 5.0,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "MAPFAC_M": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-05,
+          "maxabs_tol": 0.0001,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "MAPFAC_U": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-05,
+          "maxabs_tol": 0.0001,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "MAPFAC_V": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-05,
+          "maxabs_tol": 0.0001,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "F": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-09,
+          "maxabs_tol": 1e-08,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "E": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-09,
+          "maxabs_tol": 1e-08,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "SINALPHA": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-06,
+          "maxabs_tol": 1e-05,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "COSALPHA": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-06,
+          "maxabs_tol": 1e-05,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "XLAT": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 0.0001,
+          "maxabs_tol": 0.001,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "XLONG": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 0.0001,
+          "maxabs_tol": 0.001,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "TSLB": {
+          "rmse": 6.516279397527082e-06,
+          "maxabs": 4.4685502530228405e-05,
+          "rmse_tol": 0.5,
+          "maxabs_tol": 5.0,
+          "passed": true,
+          "group": "soil",
+          "n_mismatch": 0,
+          "rmse_land": 1.2063951884626673e-05,
+          "maxabs_land": 4.4685502530228405e-05
+        },
+        "SMOIS": {
+          "rmse": 2.38002626080911e-09,
+          "maxabs": 1.4901161221603232e-08,
+          "rmse_tol": 0.03,
+          "maxabs_tol": 0.3,
+          "passed": true,
+          "group": "soil",
+          "n_mismatch": 0,
+          "rmse_land": 4.406275505228551e-09,
+          "maxabs_land": 1.4901161221603232e-08
+        },
+        "ZS": {
+          "rmse": 2.384476813776799e-08,
+          "maxabs": 4.768371586472142e-08,
+          "rmse_tol": 0.0001,
+          "maxabs_tol": 0.001,
+          "passed": true,
+          "group": "soil",
+          "n_mismatch": 0
+        },
+        "DZS": {
+          "rmse": 1.33488125231825e-08,
+          "maxabs": 2.384185793236071e-08,
+          "rmse_tol": 0.0001,
+          "maxabs_tol": 0.001,
+          "passed": true,
+          "group": "soil",
+          "n_mismatch": 0
+        },
+        "ISLTYP": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 0.0,
+          "maxabs_tol": 0.0,
+          "passed": true,
+          "group": "soil",
+          "n_mismatch": 0
+        },
+        "IVGTYP": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 0.0,
+          "maxabs_tol": 0.0,
+          "passed": true,
+          "group": "soil",
+          "n_mismatch": 0
+        }
+      }
+    },
+    {
+      "case": "20260521_18z",
+      "domain": "d01",
+      "wrfinput": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l2rerun_l3_24h_20260522T231647Z/wrfinput_d01",
+      "met_em": "/mnt/data/canairy_meteo/runs/wps_cases/20260521_18z_72h/l3/met_em.d01.2026-05-21_18:00:00.nc",
+      "ny": 59,
+      "nx": 93,
+      "n_land": 523,
+      "n_lake_cells": 1,
+      "fields": {
+        "TSK": {
+          "rmse": 2.684307827342783e-06,
+          "maxabs": 1.5125274671845546e-05,
+          "rmse_tol": 0.3,
+          "maxabs_tol": 3.0,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "SST": {
+          "rmse": 2.684307827342783e-06,
+          "maxabs": 1.5125274671845546e-05,
+          "rmse_tol": 0.3,
+          "maxabs_tol": 3.0,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "TMN": {
+          "rmse": 2.748849964395344e-06,
+          "maxabs": 1.556396483692879e-05,
+          "rmse_tol": 0.5,
+          "maxabs_tol": 5.0,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "XLAND": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 0.0,
+          "maxabs_tol": 0.0,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0,
+          "maxabs_excl_lakecell": 0.0,
+          "passed_excl_lakecell": true
+        },
+        "HGT": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 0.5,
+          "maxabs_tol": 5.0,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "MAPFAC_M": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-05,
+          "maxabs_tol": 0.0001,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "MAPFAC_U": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-05,
+          "maxabs_tol": 0.0001,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "MAPFAC_V": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-05,
+          "maxabs_tol": 0.0001,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "F": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-09,
+          "maxabs_tol": 1e-08,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "E": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-09,
+          "maxabs_tol": 1e-08,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "SINALPHA": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-06,
+          "maxabs_tol": 1e-05,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "COSALPHA": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-06,
+          "maxabs_tol": 1e-05,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "XLAT": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 0.0001,
+          "maxabs_tol": 0.001,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "XLONG": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 0.0001,
+          "maxabs_tol": 0.001,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "TSLB": {
+          "rmse": 3.71405218038591e-06,
+          "maxabs": 4.7220403530445765e-05,
+          "rmse_tol": 0.5,
+          "maxabs_tol": 5.0,
+          "passed": true,
+          "group": "soil",
+          "n_mismatch": 0,
+          "rmse_land": 1.2029972559462189e-05,
+          "maxabs_land": 4.7220403530445765e-05
+        },
+        "SMOIS": {
+          "rmse": 1.0132387245740548e-09,
+          "maxabs": 1.4901161193847656e-08,
+          "rmse_tol": 0.03,
+          "maxabs_tol": 0.3,
+          "passed": true,
+          "group": "soil",
+          "n_mismatch": 0,
+          "rmse_land": 3.28192320969056e-09,
+          "maxabs_land": 1.4901161193847656e-08
+        },
+        "ZS": {
+          "rmse": 2.384476813776799e-08,
+          "maxabs": 4.768371586472142e-08,
+          "rmse_tol": 0.0001,
+          "maxabs_tol": 0.001,
+          "passed": true,
+          "group": "soil",
+          "n_mismatch": 0
+        },
+        "DZS": {
+          "rmse": 1.33488125231825e-08,
+          "maxabs": 2.384185793236071e-08,
+          "rmse_tol": 0.0001,
+          "maxabs_tol": 0.001,
+          "passed": true,
+          "group": "soil",
+          "n_mismatch": 0
+        },
+        "ISLTYP": {
+          "rmse": 0.026999922375334755,
+          "maxabs": 2.0,
+          "rmse_tol": 0.0,
+          "maxabs_tol": 0.0,
+          "passed": false,
+          "group": "soil",
+          "n_mismatch": 1,
+          "maxabs_excl_lakecell": 0.0,
+          "passed_excl_lakecell": true
+        },
+        "IVGTYP": {
+          "rmse": 0.21599937900267804,
+          "maxabs": 16.0,
+          "rmse_tol": 0.0,
+          "maxabs_tol": 0.0,
+          "passed": false,
+          "group": "soil",
+          "n_mismatch": 1,
+          "maxabs_excl_lakecell": 0.0,
+          "passed_excl_lakecell": true
+        }
+      }
+    },
+    {
+      "case": "20260521_18z",
+      "domain": "d02",
+      "wrfinput": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l2rerun_l3_24h_20260522T231647Z/wrfinput_d02",
+      "met_em": "/mnt/data/canairy_meteo/runs/wps_cases/20260521_18z_72h/l3/met_em.d02.2026-05-21_18:00:00.nc",
+      "ny": 66,
+      "nx": 159,
+      "n_land": 768,
+      "n_lake_cells": 0,
+      "fields": {
+        "TSK": {
+          "rmse": 2.4362979605440604e-06,
+          "maxabs": 1.557922365691411e-05,
+          "rmse_tol": 0.3,
+          "maxabs_tol": 3.0,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "SST": {
+          "rmse": 2.4362979605440604e-06,
+          "maxabs": 1.557922365691411e-05,
+          "rmse_tol": 0.3,
+          "maxabs_tol": 3.0,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "TMN": {
+          "rmse": 2.3757399756544696e-06,
+          "maxabs": 1.556396483692879e-05,
+          "rmse_tol": 0.5,
+          "maxabs_tol": 5.0,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "XLAND": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 0.0,
+          "maxabs_tol": 0.0,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "HGT": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 0.5,
+          "maxabs_tol": 5.0,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "MAPFAC_M": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-05,
+          "maxabs_tol": 0.0001,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "MAPFAC_U": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-05,
+          "maxabs_tol": 0.0001,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "MAPFAC_V": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-05,
+          "maxabs_tol": 0.0001,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "F": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-09,
+          "maxabs_tol": 1e-08,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "E": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-09,
+          "maxabs_tol": 1e-08,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "SINALPHA": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-06,
+          "maxabs_tol": 1e-05,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "COSALPHA": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-06,
+          "maxabs_tol": 1e-05,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "XLAT": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 0.0001,
+          "maxabs_tol": 0.001,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "XLONG": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 0.0001,
+          "maxabs_tol": 0.001,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "TSLB": {
+          "rmse": 3.271399280915207e-06,
+          "maxabs": 4.439683391410654e-05,
+          "rmse_tol": 0.5,
+          "maxabs_tol": 5.0,
+          "passed": true,
+          "group": "soil",
+          "n_mismatch": 0,
+          "rmse_land": 1.2092705427529686e-05,
+          "maxabs_land": 4.439683391410654e-05
+        },
+        "SMOIS": {
+          "rmse": 4.851763161237011e-10,
+          "maxabs": 1.4901161193847656e-08,
+          "rmse_tol": 0.03,
+          "maxabs_tol": 0.3,
+          "passed": true,
+          "group": "soil",
+          "n_mismatch": 0,
+          "rmse_land": 1.793450987632595e-09,
+          "maxabs_land": 1.4901161193847656e-08
+        },
+        "ZS": {
+          "rmse": 2.384476813776799e-08,
+          "maxabs": 4.768371586472142e-08,
+          "rmse_tol": 0.0001,
+          "maxabs_tol": 0.001,
+          "passed": true,
+          "group": "soil",
+          "n_mismatch": 0
+        },
+        "DZS": {
+          "rmse": 1.33488125231825e-08,
+          "maxabs": 2.384185793236071e-08,
+          "rmse_tol": 0.0001,
+          "maxabs_tol": 0.001,
+          "passed": true,
+          "group": "soil",
+          "n_mismatch": 0
+        },
+        "ISLTYP": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 0.0,
+          "maxabs_tol": 0.0,
+          "passed": true,
+          "group": "soil",
+          "n_mismatch": 0
+        },
+        "IVGTYP": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 0.0,
+          "maxabs_tol": 0.0,
+          "passed": true,
+          "group": "soil",
+          "n_mismatch": 0
+        }
+      }
+    },
+    {
+      "case": "20260521_18z",
+      "domain": "d03",
+      "wrfinput": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l2rerun_l3_24h_20260522T231647Z/wrfinput_d03",
+      "met_em": "/mnt/data/canairy_meteo/runs/wps_cases/20260521_18z_72h/l3/met_em.d03.2026-05-21_18:00:00.nc",
+      "ny": 75,
+      "nx": 93,
+      "n_land": 2035,
+      "n_lake_cells": 0,
+      "fields": {
+        "TSK": {
+          "rmse": 4.797477076241992e-06,
+          "maxabs": 1.5777587918819336e-05,
+          "rmse_tol": 0.3,
+          "maxabs_tol": 3.0,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "SST": {
+          "rmse": 4.797477076241992e-06,
+          "maxabs": 1.5777587918819336e-05,
+          "rmse_tol": 0.3,
+          "maxabs_tol": 3.0,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "TMN": {
+          "rmse": 4.74773979917187e-06,
+          "maxabs": 1.586914061135758e-05,
+          "rmse_tol": 0.5,
+          "maxabs_tol": 5.0,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "XLAND": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 0.0,
+          "maxabs_tol": 0.0,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "HGT": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 0.5,
+          "maxabs_tol": 5.0,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "MAPFAC_M": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-05,
+          "maxabs_tol": 0.0001,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "MAPFAC_U": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-05,
+          "maxabs_tol": 0.0001,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "MAPFAC_V": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-05,
+          "maxabs_tol": 0.0001,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "F": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-09,
+          "maxabs_tol": 1e-08,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "E": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-09,
+          "maxabs_tol": 1e-08,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "SINALPHA": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-06,
+          "maxabs_tol": 1e-05,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "COSALPHA": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-06,
+          "maxabs_tol": 1e-05,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "XLAT": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 0.0001,
+          "maxabs_tol": 0.001,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "XLONG": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 0.0001,
+          "maxabs_tol": 0.001,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "TSLB": {
+          "rmse": 6.4567531050087255e-06,
+          "maxabs": 4.5801786939136946e-05,
+          "rmse_tol": 0.5,
+          "maxabs_tol": 5.0,
+          "passed": true,
+          "group": "soil",
+          "n_mismatch": 0,
+          "rmse_land": 1.195374753564124e-05,
+          "maxabs_land": 4.5801786939136946e-05
+        },
+        "SMOIS": {
+          "rmse": 1.5483942108931783e-09,
+          "maxabs": 1.4901161221603232e-08,
+          "rmse_tol": 0.03,
+          "maxabs_tol": 0.3,
+          "passed": true,
+          "group": "soil",
+          "n_mismatch": 0,
+          "rmse_land": 2.8666286571043483e-09,
+          "maxabs_land": 1.4901161221603232e-08
+        },
+        "ZS": {
+          "rmse": 2.384476813776799e-08,
+          "maxabs": 4.768371586472142e-08,
+          "rmse_tol": 0.0001,
+          "maxabs_tol": 0.001,
+          "passed": true,
+          "group": "soil",
+          "n_mismatch": 0
+        },
+        "DZS": {
+          "rmse": 1.33488125231825e-08,
+          "maxabs": 2.384185793236071e-08,
+          "rmse_tol": 0.0001,
+          "maxabs_tol": 0.001,
+          "passed": true,
+          "group": "soil",
+          "n_mismatch": 0
+        },
+        "ISLTYP": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 0.0,
+          "maxabs_tol": 0.0,
+          "passed": true,
+          "group": "soil",
+          "n_mismatch": 0
+        },
+        "IVGTYP": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 0.0,
+          "maxabs_tol": 0.0,
+          "passed": true,
+          "group": "soil",
+          "n_mismatch": 0
+        }
+      }
+    },
+    {
+      "case": "20260522_18z",
+      "domain": "d01",
+      "wrfinput": "/mnt/data/canairy_meteo/runs/wrf_l3/20260522_18z_l3_24h_20260523T055700Z/wrfinput_d01",
+      "met_em": "/mnt/data/canairy_meteo/runs/wps_cases/20260522_18z_72h/l3/met_em.d01.2026-05-22_18:00:00.nc",
+      "ny": 59,
+      "nx": 93,
+      "n_land": 523,
+      "n_lake_cells": 1,
+      "fields": {
+        "TSK": {
+          "rmse": 2.684307827342783e-06,
+          "maxabs": 1.5125274671845546e-05,
+          "rmse_tol": 0.3,
+          "maxabs_tol": 3.0,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "SST": {
+          "rmse": 2.684307827342783e-06,
+          "maxabs": 1.5125274671845546e-05,
+          "rmse_tol": 0.3,
+          "maxabs_tol": 3.0,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "TMN": {
+          "rmse": 2.748849964395344e-06,
+          "maxabs": 1.556396483692879e-05,
+          "rmse_tol": 0.5,
+          "maxabs_tol": 5.0,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "XLAND": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 0.0,
+          "maxabs_tol": 0.0,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0,
+          "maxabs_excl_lakecell": 0.0,
+          "passed_excl_lakecell": true
+        },
+        "HGT": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 0.5,
+          "maxabs_tol": 5.0,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "MAPFAC_M": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-05,
+          "maxabs_tol": 0.0001,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "MAPFAC_U": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-05,
+          "maxabs_tol": 0.0001,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "MAPFAC_V": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-05,
+          "maxabs_tol": 0.0001,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "F": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-09,
+          "maxabs_tol": 1e-08,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "E": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-09,
+          "maxabs_tol": 1e-08,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "SINALPHA": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-06,
+          "maxabs_tol": 1e-05,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "COSALPHA": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-06,
+          "maxabs_tol": 1e-05,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "XLAT": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 0.0001,
+          "maxabs_tol": 0.001,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "XLONG": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 0.0001,
+          "maxabs_tol": 0.001,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "TSLB": {
+          "rmse": 3.726560371574342e-06,
+          "maxabs": 4.520984992950616e-05,
+          "rmse_tol": 0.5,
+          "maxabs_tol": 5.0,
+          "passed": true,
+          "group": "soil",
+          "n_mismatch": 0,
+          "rmse_land": 1.2070487121309221e-05,
+          "maxabs_land": 4.520984992950616e-05
+        },
+        "SMOIS": {
+          "rmse": 1.043780604917011e-09,
+          "maxabs": 1.4901161193847656e-08,
+          "rmse_tol": 0.03,
+          "maxabs_tol": 0.3,
+          "passed": true,
+          "group": "soil",
+          "n_mismatch": 0,
+          "rmse_land": 3.380849655684101e-09,
+          "maxabs_land": 1.4901161193847656e-08
+        },
+        "ZS": {
+          "rmse": 2.384476813776799e-08,
+          "maxabs": 4.768371586472142e-08,
+          "rmse_tol": 0.0001,
+          "maxabs_tol": 0.001,
+          "passed": true,
+          "group": "soil",
+          "n_mismatch": 0
+        },
+        "DZS": {
+          "rmse": 1.33488125231825e-08,
+          "maxabs": 2.384185793236071e-08,
+          "rmse_tol": 0.0001,
+          "maxabs_tol": 0.001,
+          "passed": true,
+          "group": "soil",
+          "n_mismatch": 0
+        },
+        "ISLTYP": {
+          "rmse": 0.026999922375334755,
+          "maxabs": 2.0,
+          "rmse_tol": 0.0,
+          "maxabs_tol": 0.0,
+          "passed": false,
+          "group": "soil",
+          "n_mismatch": 1,
+          "maxabs_excl_lakecell": 0.0,
+          "passed_excl_lakecell": true
+        },
+        "IVGTYP": {
+          "rmse": 0.21599937900267804,
+          "maxabs": 16.0,
+          "rmse_tol": 0.0,
+          "maxabs_tol": 0.0,
+          "passed": false,
+          "group": "soil",
+          "n_mismatch": 1,
+          "maxabs_excl_lakecell": 0.0,
+          "passed_excl_lakecell": true
+        }
+      }
+    },
+    {
+      "case": "20260522_18z",
+      "domain": "d02",
+      "wrfinput": "/mnt/data/canairy_meteo/runs/wrf_l3/20260522_18z_l3_24h_20260523T055700Z/wrfinput_d02",
+      "met_em": "/mnt/data/canairy_meteo/runs/wps_cases/20260522_18z_72h/l3/met_em.d02.2026-05-22_18:00:00.nc",
+      "ny": 66,
+      "nx": 159,
+      "n_land": 768,
+      "n_lake_cells": 0,
+      "fields": {
+        "TSK": {
+          "rmse": 2.4359427671245054e-06,
+          "maxabs": 1.557922365691411e-05,
+          "rmse_tol": 0.3,
+          "maxabs_tol": 3.0,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "SST": {
+          "rmse": 2.4359427671245054e-06,
+          "maxabs": 1.557922365691411e-05,
+          "rmse_tol": 0.3,
+          "maxabs_tol": 3.0,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "TMN": {
+          "rmse": 2.3757399756544696e-06,
+          "maxabs": 1.556396483692879e-05,
+          "rmse_tol": 0.5,
+          "maxabs_tol": 5.0,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "XLAND": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 0.0,
+          "maxabs_tol": 0.0,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "HGT": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 0.5,
+          "maxabs_tol": 5.0,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "MAPFAC_M": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-05,
+          "maxabs_tol": 0.0001,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "MAPFAC_U": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-05,
+          "maxabs_tol": 0.0001,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "MAPFAC_V": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-05,
+          "maxabs_tol": 0.0001,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "F": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-09,
+          "maxabs_tol": 1e-08,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "E": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-09,
+          "maxabs_tol": 1e-08,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "SINALPHA": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-06,
+          "maxabs_tol": 1e-05,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "COSALPHA": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-06,
+          "maxabs_tol": 1e-05,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "XLAT": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 0.0001,
+          "maxabs_tol": 0.001,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "XLONG": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 0.0001,
+          "maxabs_tol": 0.001,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "TSLB": {
+          "rmse": 3.2793666896091476e-06,
+          "maxabs": 4.476304485478977e-05,
+          "rmse_tol": 0.5,
+          "maxabs_tol": 5.0,
+          "passed": true,
+          "group": "soil",
+          "n_mismatch": 0,
+          "rmse_land": 1.2122156900151398e-05,
+          "maxabs_land": 4.476304485478977e-05
+        },
+        "SMOIS": {
+          "rmse": 8.360111838385016e-10,
+          "maxabs": 1.4901161221603232e-08,
+          "rmse_tol": 0.03,
+          "maxabs_tol": 0.3,
+          "passed": true,
+          "group": "soil",
+          "n_mismatch": 0,
+          "rmse_land": 3.0903097152516014e-09,
+          "maxabs_land": 1.4901161221603232e-08
+        },
+        "ZS": {
+          "rmse": 2.384476813776799e-08,
+          "maxabs": 4.768371586472142e-08,
+          "rmse_tol": 0.0001,
+          "maxabs_tol": 0.001,
+          "passed": true,
+          "group": "soil",
+          "n_mismatch": 0
+        },
+        "DZS": {
+          "rmse": 1.33488125231825e-08,
+          "maxabs": 2.384185793236071e-08,
+          "rmse_tol": 0.0001,
+          "maxabs_tol": 0.001,
+          "passed": true,
+          "group": "soil",
+          "n_mismatch": 0
+        },
+        "ISLTYP": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 0.0,
+          "maxabs_tol": 0.0,
+          "passed": true,
+          "group": "soil",
+          "n_mismatch": 0
+        },
+        "IVGTYP": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 0.0,
+          "maxabs_tol": 0.0,
+          "passed": true,
+          "group": "soil",
+          "n_mismatch": 0
+        }
+      }
+    },
+    {
+      "case": "20260522_18z",
+      "domain": "d03",
+      "wrfinput": "/mnt/data/canairy_meteo/runs/wrf_l3/20260522_18z_l3_24h_20260523T055700Z/wrfinput_d03",
+      "met_em": "/mnt/data/canairy_meteo/runs/wps_cases/20260522_18z_72h/l3/met_em.d03.2026-05-22_18:00:00.nc",
+      "ny": 75,
+      "nx": 93,
+      "n_land": 2035,
+      "n_lake_cells": 0,
+      "fields": {
+        "TSK": {
+          "rmse": 4.797337914703143e-06,
+          "maxabs": 1.5777587918819336e-05,
+          "rmse_tol": 0.3,
+          "maxabs_tol": 3.0,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "SST": {
+          "rmse": 4.797337914703143e-06,
+          "maxabs": 1.5777587918819336e-05,
+          "rmse_tol": 0.3,
+          "maxabs_tol": 3.0,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "TMN": {
+          "rmse": 4.74773979917187e-06,
+          "maxabs": 1.586914061135758e-05,
+          "rmse_tol": 0.5,
+          "maxabs_tol": 5.0,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "XLAND": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 0.0,
+          "maxabs_tol": 0.0,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "HGT": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 0.5,
+          "maxabs_tol": 5.0,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "MAPFAC_M": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-05,
+          "maxabs_tol": 0.0001,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "MAPFAC_U": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-05,
+          "maxabs_tol": 0.0001,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "MAPFAC_V": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-05,
+          "maxabs_tol": 0.0001,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "F": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-09,
+          "maxabs_tol": 1e-08,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "E": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-09,
+          "maxabs_tol": 1e-08,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "SINALPHA": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-06,
+          "maxabs_tol": 1e-05,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "COSALPHA": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-06,
+          "maxabs_tol": 1e-05,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "XLAT": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 0.0001,
+          "maxabs_tol": 0.001,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "XLONG": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 0.0001,
+          "maxabs_tol": 0.001,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "TSLB": {
+          "rmse": 6.542031134983884e-06,
+          "maxabs": 4.4636119469032565e-05,
+          "rmse_tol": 0.5,
+          "maxabs_tol": 5.0,
+          "passed": true,
+          "group": "soil",
+          "n_mismatch": 0,
+          "rmse_land": 1.2111627514026833e-05,
+          "maxabs_land": 4.4636119469032565e-05
+        },
+        "SMOIS": {
+          "rmse": 1.624888170307323e-09,
+          "maxabs": 1.4901161221603232e-08,
+          "rmse_tol": 0.03,
+          "maxabs_tol": 0.3,
+          "passed": true,
+          "group": "soil",
+          "n_mismatch": 0,
+          "rmse_land": 3.0082461952023974e-09,
+          "maxabs_land": 1.4901161221603232e-08
+        },
+        "ZS": {
+          "rmse": 2.384476813776799e-08,
+          "maxabs": 4.768371586472142e-08,
+          "rmse_tol": 0.0001,
+          "maxabs_tol": 0.001,
+          "passed": true,
+          "group": "soil",
+          "n_mismatch": 0
+        },
+        "DZS": {
+          "rmse": 1.33488125231825e-08,
+          "maxabs": 2.384185793236071e-08,
+          "rmse_tol": 0.0001,
+          "maxabs_tol": 0.001,
+          "passed": true,
+          "group": "soil",
+          "n_mismatch": 0
+        },
+        "ISLTYP": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 0.0,
+          "maxabs_tol": 0.0,
+          "passed": true,
+          "group": "soil",
+          "n_mismatch": 0
+        },
+        "IVGTYP": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 0.0,
+          "maxabs_tol": 0.0,
+          "passed": true,
+          "group": "soil",
+          "n_mismatch": 0
+        }
+      }
+    },
+    {
+      "case": "20260523_18z",
+      "domain": "d01",
+      "wrfinput": "/mnt/data/canairy_meteo/runs/wrf_l3/20260523_18z_l3_24h_20260524T004313Z/wrfinput_d01",
+      "met_em": "/mnt/data/canairy_meteo/runs/wps_cases/20260523_18z_72h/l3/met_em.d01.2026-05-23_18:00:00.nc",
+      "ny": 59,
+      "nx": 93,
+      "n_land": 523,
+      "n_lake_cells": 1,
+      "fields": {
+        "TSK": {
+          "rmse": 2.684307827342783e-06,
+          "maxabs": 1.5125274671845546e-05,
+          "rmse_tol": 0.3,
+          "maxabs_tol": 3.0,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "SST": {
+          "rmse": 2.684307827342783e-06,
+          "maxabs": 1.5125274671845546e-05,
+          "rmse_tol": 0.3,
+          "maxabs_tol": 3.0,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "TMN": {
+          "rmse": 2.748849964395344e-06,
+          "maxabs": 1.556396483692879e-05,
+          "rmse_tol": 0.5,
+          "maxabs_tol": 5.0,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "XLAND": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 0.0,
+          "maxabs_tol": 0.0,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0,
+          "maxabs_excl_lakecell": 0.0,
+          "passed_excl_lakecell": true
+        },
+        "HGT": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 0.5,
+          "maxabs_tol": 5.0,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "MAPFAC_M": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-05,
+          "maxabs_tol": 0.0001,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "MAPFAC_U": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-05,
+          "maxabs_tol": 0.0001,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "MAPFAC_V": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-05,
+          "maxabs_tol": 0.0001,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "F": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-09,
+          "maxabs_tol": 1e-08,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "E": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-09,
+          "maxabs_tol": 1e-08,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "SINALPHA": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-06,
+          "maxabs_tol": 1e-05,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "COSALPHA": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-06,
+          "maxabs_tol": 1e-05,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "XLAT": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 0.0001,
+          "maxabs_tol": 0.001,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "XLONG": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 0.0001,
+          "maxabs_tol": 0.001,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "TSLB": {
+          "rmse": 3.666455538967847e-06,
+          "maxabs": 4.451335553312674e-05,
+          "rmse_tol": 0.5,
+          "maxabs_tol": 5.0,
+          "passed": true,
+          "group": "soil",
+          "n_mismatch": 0,
+          "rmse_land": 1.1875805018896737e-05,
+          "maxabs_land": 4.451335553312674e-05
+        },
+        "SMOIS": {
+          "rmse": 1.0038590637589019e-09,
+          "maxabs": 1.4901161193847656e-08,
+          "rmse_tol": 0.03,
+          "maxabs_tol": 0.3,
+          "passed": true,
+          "group": "soil",
+          "n_mismatch": 0,
+          "rmse_land": 3.251542090432394e-09,
+          "maxabs_land": 1.4901161193847656e-08
+        },
+        "ZS": {
+          "rmse": 2.384476813776799e-08,
+          "maxabs": 4.768371586472142e-08,
+          "rmse_tol": 0.0001,
+          "maxabs_tol": 0.001,
+          "passed": true,
+          "group": "soil",
+          "n_mismatch": 0
+        },
+        "DZS": {
+          "rmse": 1.33488125231825e-08,
+          "maxabs": 2.384185793236071e-08,
+          "rmse_tol": 0.0001,
+          "maxabs_tol": 0.001,
+          "passed": true,
+          "group": "soil",
+          "n_mismatch": 0
+        },
+        "ISLTYP": {
+          "rmse": 0.026999922375334755,
+          "maxabs": 2.0,
+          "rmse_tol": 0.0,
+          "maxabs_tol": 0.0,
+          "passed": false,
+          "group": "soil",
+          "n_mismatch": 1,
+          "maxabs_excl_lakecell": 0.0,
+          "passed_excl_lakecell": true
+        },
+        "IVGTYP": {
+          "rmse": 0.21599937900267804,
+          "maxabs": 16.0,
+          "rmse_tol": 0.0,
+          "maxabs_tol": 0.0,
+          "passed": false,
+          "group": "soil",
+          "n_mismatch": 1,
+          "maxabs_excl_lakecell": 0.0,
+          "passed_excl_lakecell": true
+        }
+      }
+    },
+    {
+      "case": "20260523_18z",
+      "domain": "d02",
+      "wrfinput": "/mnt/data/canairy_meteo/runs/wrf_l3/20260523_18z_l3_24h_20260524T004313Z/wrfinput_d02",
+      "met_em": "/mnt/data/canairy_meteo/runs/wps_cases/20260523_18z_72h/l3/met_em.d02.2026-05-23_18:00:00.nc",
+      "ny": 66,
+      "nx": 159,
+      "n_land": 768,
+      "n_lake_cells": 0,
+      "fields": {
+        "TSK": {
+          "rmse": 2.436081663011714e-06,
+          "maxabs": 1.557922365691411e-05,
+          "rmse_tol": 0.3,
+          "maxabs_tol": 3.0,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "SST": {
+          "rmse": 2.436081663011714e-06,
+          "maxabs": 1.557922365691411e-05,
+          "rmse_tol": 0.3,
+          "maxabs_tol": 3.0,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "TMN": {
+          "rmse": 2.3757399756544696e-06,
+          "maxabs": 1.556396483692879e-05,
+          "rmse_tol": 0.5,
+          "maxabs_tol": 5.0,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "XLAND": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 0.0,
+          "maxabs_tol": 0.0,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "HGT": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 0.5,
+          "maxabs_tol": 5.0,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "MAPFAC_M": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-05,
+          "maxabs_tol": 0.0001,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "MAPFAC_U": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-05,
+          "maxabs_tol": 0.0001,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "MAPFAC_V": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-05,
+          "maxabs_tol": 0.0001,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "F": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-09,
+          "maxabs_tol": 1e-08,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "E": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-09,
+          "maxabs_tol": 1e-08,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "SINALPHA": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-06,
+          "maxabs_tol": 1e-05,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "COSALPHA": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-06,
+          "maxabs_tol": 1e-05,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "XLAT": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 0.0001,
+          "maxabs_tol": 0.001,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "XLONG": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 0.0001,
+          "maxabs_tol": 0.001,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "TSLB": {
+          "rmse": 3.296645650741849e-06,
+          "maxabs": 4.5643199598544015e-05,
+          "rmse_tol": 0.5,
+          "maxabs_tol": 5.0,
+          "passed": true,
+          "group": "soil",
+          "n_mismatch": 0,
+          "rmse_land": 1.2186028463702344e-05,
+          "maxabs_land": 4.5643199598544015e-05
+        },
+        "SMOIS": {
+          "rmse": 6.613624263123227e-10,
+          "maxabs": 1.4901161221603232e-08,
+          "rmse_tol": 0.03,
+          "maxabs_tol": 0.3,
+          "passed": true,
+          "group": "soil",
+          "n_mismatch": 0,
+          "rmse_land": 2.4447217583277702e-09,
+          "maxabs_land": 1.4901161221603232e-08
+        },
+        "ZS": {
+          "rmse": 2.384476813776799e-08,
+          "maxabs": 4.768371586472142e-08,
+          "rmse_tol": 0.0001,
+          "maxabs_tol": 0.001,
+          "passed": true,
+          "group": "soil",
+          "n_mismatch": 0
+        },
+        "DZS": {
+          "rmse": 1.33488125231825e-08,
+          "maxabs": 2.384185793236071e-08,
+          "rmse_tol": 0.0001,
+          "maxabs_tol": 0.001,
+          "passed": true,
+          "group": "soil",
+          "n_mismatch": 0
+        },
+        "ISLTYP": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 0.0,
+          "maxabs_tol": 0.0,
+          "passed": true,
+          "group": "soil",
+          "n_mismatch": 0
+        },
+        "IVGTYP": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 0.0,
+          "maxabs_tol": 0.0,
+          "passed": true,
+          "group": "soil",
+          "n_mismatch": 0
+        }
+      }
+    },
+    {
+      "case": "20260523_18z",
+      "domain": "d03",
+      "wrfinput": "/mnt/data/canairy_meteo/runs/wrf_l3/20260523_18z_l3_24h_20260524T004313Z/wrfinput_d03",
+      "met_em": "/mnt/data/canairy_meteo/runs/wps_cases/20260523_18z_72h/l3/met_em.d03.2026-05-23_18:00:00.nc",
+      "ny": 75,
+      "nx": 93,
+      "n_land": 2035,
+      "n_lake_cells": 0,
+      "fields": {
+        "TSK": {
+          "rmse": 4.7972822488847045e-06,
+          "maxabs": 1.5701293932579574e-05,
+          "rmse_tol": 0.3,
+          "maxabs_tol": 3.0,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "SST": {
+          "rmse": 4.7972822488847045e-06,
+          "maxabs": 1.5701293932579574e-05,
+          "rmse_tol": 0.3,
+          "maxabs_tol": 3.0,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "TMN": {
+          "rmse": 4.74773979917187e-06,
+          "maxabs": 1.586914061135758e-05,
+          "rmse_tol": 0.5,
+          "maxabs_tol": 5.0,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "XLAND": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 0.0,
+          "maxabs_tol": 0.0,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "HGT": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 0.5,
+          "maxabs_tol": 5.0,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "MAPFAC_M": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-05,
+          "maxabs_tol": 0.0001,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "MAPFAC_U": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-05,
+          "maxabs_tol": 0.0001,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "MAPFAC_V": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-05,
+          "maxabs_tol": 0.0001,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "F": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-09,
+          "maxabs_tol": 1e-08,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "E": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-09,
+          "maxabs_tol": 1e-08,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "SINALPHA": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-06,
+          "maxabs_tol": 1e-05,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "COSALPHA": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-06,
+          "maxabs_tol": 1e-05,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "XLAT": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 0.0001,
+          "maxabs_tol": 0.001,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "XLONG": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 0.0001,
+          "maxabs_tol": 0.001,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "TSLB": {
+          "rmse": 6.392046739129562e-06,
+          "maxabs": 4.502729933619776e-05,
+          "rmse_tol": 0.5,
+          "maxabs_tol": 5.0,
+          "passed": true,
+          "group": "soil",
+          "n_mismatch": 0,
+          "rmse_land": 1.1833953027613927e-05,
+          "maxabs_land": 4.502729933619776e-05
+        },
+        "SMOIS": {
+          "rmse": 1.4718111864502328e-09,
+          "maxabs": 1.4901161221603232e-08,
+          "rmse_tol": 0.03,
+          "maxabs_tol": 0.3,
+          "passed": true,
+          "group": "soil",
+          "n_mismatch": 0,
+          "rmse_land": 2.72484622794554e-09,
+          "maxabs_land": 1.4901161221603232e-08
+        },
+        "ZS": {
+          "rmse": 2.384476813776799e-08,
+          "maxabs": 4.768371586472142e-08,
+          "rmse_tol": 0.0001,
+          "maxabs_tol": 0.001,
+          "passed": true,
+          "group": "soil",
+          "n_mismatch": 0
+        },
+        "DZS": {
+          "rmse": 1.33488125231825e-08,
+          "maxabs": 2.384185793236071e-08,
+          "rmse_tol": 0.0001,
+          "maxabs_tol": 0.001,
+          "passed": true,
+          "group": "soil",
+          "n_mismatch": 0
+        },
+        "ISLTYP": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 0.0,
+          "maxabs_tol": 0.0,
+          "passed": true,
+          "group": "soil",
+          "n_mismatch": 0
+        },
+        "IVGTYP": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 0.0,
+          "maxabs_tol": 0.0,
+          "passed": true,
+          "group": "soil",
+          "n_mismatch": 0
+        }
+      }
+    },
+    {
+      "case": "20260524_18z",
+      "domain": "d01",
+      "wrfinput": "/mnt/data/canairy_meteo/runs/wrf_l3/20260524_18z_l3_24h_20260525T225640Z/wrfinput_d01",
+      "met_em": "/mnt/data/canairy_meteo/runs/wps_cases/20260524_18z_72h/l3/met_em.d01.2026-05-24_18:00:00.nc",
+      "ny": 59,
+      "nx": 93,
+      "n_land": 523,
+      "n_lake_cells": 1,
+      "fields": {
+        "TSK": {
+          "rmse": 2.684307827342783e-06,
+          "maxabs": 1.5125274671845546e-05,
+          "rmse_tol": 0.3,
+          "maxabs_tol": 3.0,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "SST": {
+          "rmse": 2.684307827342783e-06,
+          "maxabs": 1.5125274671845546e-05,
+          "rmse_tol": 0.3,
+          "maxabs_tol": 3.0,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "TMN": {
+          "rmse": 2.748849964395344e-06,
+          "maxabs": 1.556396483692879e-05,
+          "rmse_tol": 0.5,
+          "maxabs_tol": 5.0,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "XLAND": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 0.0,
+          "maxabs_tol": 0.0,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0,
+          "maxabs_excl_lakecell": 0.0,
+          "passed_excl_lakecell": true
+        },
+        "HGT": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 0.5,
+          "maxabs_tol": 5.0,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "MAPFAC_M": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-05,
+          "maxabs_tol": 0.0001,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "MAPFAC_U": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-05,
+          "maxabs_tol": 0.0001,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "MAPFAC_V": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-05,
+          "maxabs_tol": 0.0001,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "F": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-09,
+          "maxabs_tol": 1e-08,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "E": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-09,
+          "maxabs_tol": 1e-08,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "SINALPHA": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-06,
+          "maxabs_tol": 1e-05,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "COSALPHA": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-06,
+          "maxabs_tol": 1e-05,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "XLAT": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 0.0001,
+          "maxabs_tol": 0.001,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "XLONG": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 0.0001,
+          "maxabs_tol": 0.001,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "TSLB": {
+          "rmse": 3.7592375892168724e-06,
+          "maxabs": 4.441583809011718e-05,
+          "rmse_tol": 0.5,
+          "maxabs_tol": 5.0,
+          "passed": true,
+          "group": "soil",
+          "n_mismatch": 0,
+          "rmse_land": 1.2176330015395423e-05,
+          "maxabs_land": 4.441583809011718e-05
+        },
+        "SMOIS": {
+          "rmse": 1.0188638609608087e-09,
+          "maxabs": 1.4901161193847656e-08,
+          "rmse_tol": 0.03,
+          "maxabs_tol": 0.3,
+          "passed": true,
+          "group": "soil",
+          "n_mismatch": 0,
+          "rmse_land": 3.300143265061147e-09,
+          "maxabs_land": 1.4901161193847656e-08
+        },
+        "ZS": {
+          "rmse": 2.384476813776799e-08,
+          "maxabs": 4.768371586472142e-08,
+          "rmse_tol": 0.0001,
+          "maxabs_tol": 0.001,
+          "passed": true,
+          "group": "soil",
+          "n_mismatch": 0
+        },
+        "DZS": {
+          "rmse": 1.33488125231825e-08,
+          "maxabs": 2.384185793236071e-08,
+          "rmse_tol": 0.0001,
+          "maxabs_tol": 0.001,
+          "passed": true,
+          "group": "soil",
+          "n_mismatch": 0
+        },
+        "ISLTYP": {
+          "rmse": 0.026999922375334755,
+          "maxabs": 2.0,
+          "rmse_tol": 0.0,
+          "maxabs_tol": 0.0,
+          "passed": false,
+          "group": "soil",
+          "n_mismatch": 1,
+          "maxabs_excl_lakecell": 0.0,
+          "passed_excl_lakecell": true
+        },
+        "IVGTYP": {
+          "rmse": 0.21599937900267804,
+          "maxabs": 16.0,
+          "rmse_tol": 0.0,
+          "maxabs_tol": 0.0,
+          "passed": false,
+          "group": "soil",
+          "n_mismatch": 1,
+          "maxabs_excl_lakecell": 0.0,
+          "passed_excl_lakecell": true
+        }
+      }
+    },
+    {
+      "case": "20260524_18z",
+      "domain": "d02",
+      "wrfinput": "/mnt/data/canairy_meteo/runs/wrf_l3/20260524_18z_l3_24h_20260525T225640Z/wrfinput_d02",
+      "met_em": "/mnt/data/canairy_meteo/runs/wps_cases/20260524_18z_72h/l3/met_em.d02.2026-05-24_18:00:00.nc",
+      "ny": 66,
+      "nx": 159,
+      "n_land": 768,
+      "n_lake_cells": 0,
+      "fields": {
+        "TSK": {
+          "rmse": 2.4359268276766674e-06,
+          "maxabs": 1.5457153324405226e-05,
+          "rmse_tol": 0.3,
+          "maxabs_tol": 3.0,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "SST": {
+          "rmse": 2.4359268276766674e-06,
+          "maxabs": 1.5457153324405226e-05,
+          "rmse_tol": 0.3,
+          "maxabs_tol": 3.0,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "TMN": {
+          "rmse": 2.3757399756544696e-06,
+          "maxabs": 1.556396483692879e-05,
+          "rmse_tol": 0.5,
+          "maxabs_tol": 5.0,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "XLAND": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 0.0,
+          "maxabs_tol": 0.0,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "HGT": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 0.5,
+          "maxabs_tol": 5.0,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "MAPFAC_M": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-05,
+          "maxabs_tol": 0.0001,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "MAPFAC_U": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-05,
+          "maxabs_tol": 0.0001,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "MAPFAC_V": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-05,
+          "maxabs_tol": 0.0001,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "F": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-09,
+          "maxabs_tol": 1e-08,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "E": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-09,
+          "maxabs_tol": 1e-08,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "SINALPHA": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-06,
+          "maxabs_tol": 1e-05,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "COSALPHA": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-06,
+          "maxabs_tol": 1e-05,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "XLAT": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 0.0001,
+          "maxabs_tol": 0.001,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "XLONG": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 0.0001,
+          "maxabs_tol": 0.001,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "TSLB": {
+          "rmse": 3.2703843671926883e-06,
+          "maxabs": 4.546411690853347e-05,
+          "rmse_tol": 0.5,
+          "maxabs_tol": 5.0,
+          "passed": true,
+          "group": "soil",
+          "n_mismatch": 0,
+          "rmse_land": 1.20889538057841e-05,
+          "maxabs_land": 4.546411690853347e-05
+        },
+        "SMOIS": {
+          "rmse": 6.443983437740446e-10,
+          "maxabs": 1.4901161193847656e-08,
+          "rmse_tol": 0.03,
+          "maxabs_tol": 0.3,
+          "passed": true,
+          "group": "soil",
+          "n_mismatch": 0,
+          "rmse_land": 2.382014141382184e-09,
+          "maxabs_land": 1.4901161193847656e-08
+        },
+        "ZS": {
+          "rmse": 2.384476813776799e-08,
+          "maxabs": 4.768371586472142e-08,
+          "rmse_tol": 0.0001,
+          "maxabs_tol": 0.001,
+          "passed": true,
+          "group": "soil",
+          "n_mismatch": 0
+        },
+        "DZS": {
+          "rmse": 1.33488125231825e-08,
+          "maxabs": 2.384185793236071e-08,
+          "rmse_tol": 0.0001,
+          "maxabs_tol": 0.001,
+          "passed": true,
+          "group": "soil",
+          "n_mismatch": 0
+        },
+        "ISLTYP": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 0.0,
+          "maxabs_tol": 0.0,
+          "passed": true,
+          "group": "soil",
+          "n_mismatch": 0
+        },
+        "IVGTYP": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 0.0,
+          "maxabs_tol": 0.0,
+          "passed": true,
+          "group": "soil",
+          "n_mismatch": 0
+        }
+      }
+    },
+    {
+      "case": "20260524_18z",
+      "domain": "d03",
+      "wrfinput": "/mnt/data/canairy_meteo/runs/wrf_l3/20260524_18z_l3_24h_20260525T225640Z/wrfinput_d03",
+      "met_em": "/mnt/data/canairy_meteo/runs/wps_cases/20260524_18z_72h/l3/met_em.d03.2026-05-24_18:00:00.nc",
+      "ny": 75,
+      "nx": 93,
+      "n_land": 2035,
+      "n_lake_cells": 0,
+      "fields": {
+        "TSK": {
+          "rmse": 4.7970317449412975e-06,
+          "maxabs": 1.5701293932579574e-05,
+          "rmse_tol": 0.3,
+          "maxabs_tol": 3.0,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "SST": {
+          "rmse": 4.7970317449412975e-06,
+          "maxabs": 1.5701293932579574e-05,
+          "rmse_tol": 0.3,
+          "maxabs_tol": 3.0,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "TMN": {
+          "rmse": 4.74773979917187e-06,
+          "maxabs": 1.586914061135758e-05,
+          "rmse_tol": 0.5,
+          "maxabs_tol": 5.0,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "XLAND": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 0.0,
+          "maxabs_tol": 0.0,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "HGT": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 0.5,
+          "maxabs_tol": 5.0,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "MAPFAC_M": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-05,
+          "maxabs_tol": 0.0001,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "MAPFAC_U": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-05,
+          "maxabs_tol": 0.0001,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "MAPFAC_V": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-05,
+          "maxabs_tol": 0.0001,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "F": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-09,
+          "maxabs_tol": 1e-08,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "E": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-09,
+          "maxabs_tol": 1e-08,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "SINALPHA": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-06,
+          "maxabs_tol": 1e-05,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "COSALPHA": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 1e-06,
+          "maxabs_tol": 1e-05,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "XLAT": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 0.0001,
+          "maxabs_tol": 0.001,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "XLONG": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 0.0001,
+          "maxabs_tol": 0.001,
+          "passed": true,
+          "group": "surface",
+          "n_mismatch": 0
+        },
+        "TSLB": {
+          "rmse": 6.431582080103161e-06,
+          "maxabs": 4.3381569582834345e-05,
+          "rmse_tol": 0.5,
+          "maxabs_tol": 5.0,
+          "passed": true,
+          "group": "soil",
+          "n_mismatch": 0,
+          "rmse_land": 1.1907147011811227e-05,
+          "maxabs_land": 4.3381569582834345e-05
+        },
+        "SMOIS": {
+          "rmse": 1.5380800630332033e-09,
+          "maxabs": 1.4901161221603232e-08,
+          "rmse_tol": 0.03,
+          "maxabs_tol": 0.3,
+          "passed": true,
+          "group": "soil",
+          "n_mismatch": 0,
+          "rmse_land": 2.8475334992814827e-09,
+          "maxabs_land": 1.4901161221603232e-08
+        },
+        "ZS": {
+          "rmse": 2.384476813776799e-08,
+          "maxabs": 4.768371586472142e-08,
+          "rmse_tol": 0.0001,
+          "maxabs_tol": 0.001,
+          "passed": true,
+          "group": "soil",
+          "n_mismatch": 0
+        },
+        "DZS": {
+          "rmse": 1.33488125231825e-08,
+          "maxabs": 2.384185793236071e-08,
+          "rmse_tol": 0.0001,
+          "maxabs_tol": 0.001,
+          "passed": true,
+          "group": "soil",
+          "n_mismatch": 0
+        },
+        "ISLTYP": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 0.0,
+          "maxabs_tol": 0.0,
+          "passed": true,
+          "group": "soil",
+          "n_mismatch": 0
+        },
+        "IVGTYP": {
+          "rmse": 0.0,
+          "maxabs": 0.0,
+          "rmse_tol": 0.0,
+          "maxabs_tol": 0.0,
+          "passed": true,
+          "group": "soil",
+          "n_mismatch": 0
+        }
+      }
+    }
+  ],
+  "verdict": "PASS"
+}
