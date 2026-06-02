@@ -17,10 +17,12 @@ from gpuwrf.physics.thompson_constants import (
     AM_I,
     AM_R,
     AM_S,
+    AV_C,
     AV_I,
     AV_R,
     AV_S,
     AV_G_MP8,
+    BV_C,
     BV_G_MP8,
     BV_I,
     BV_R,
@@ -30,6 +32,8 @@ from gpuwrf.physics.thompson_constants import (
     C_SQRD,
     CCG2_NU12,
     CCG3_NU12,
+    CCG4_NU12,
+    CCG5_NU12,
     CGE11,
     CIE2,
     CIG3,
@@ -1150,15 +1154,95 @@ def _sed_one_species(q, num, vt_mass, vt_num, dz, rho, dt, nstep):
     return q_out.astype(q_dt), num_out.astype(num_dt), ppt
 
 
-def _sedimentation(state: ThompsonColumnState, dt: float):
-    """Faithful WRF sedimentation of rain/ice/snow/graupel; returns precip mm.
+def _cloud_water_fall_speed(state: ThompsonColumnState):
+    """Cloud-droplet mass terminal fall speed (m/s), WRF module_mp_thompson.F:3656-3664.
 
-    WRF module_mp_thompson.F:3784-3939.  Cloud-water sedimentation (very small)
-    is neglected, matching WRF's near-zero contribution above the lowest 500 m
-    where vtc is only computed; the dominant precip channels (rain, snow,
-    graupel, ice) are advected here.  Snow/graupel numbers (Ns/Ng) follow their
-    mass since the mp=8 default carries diagnostic snow number and a fixed
-    graupel intercept; Ng falls with the mass flux when present.
+    ``vtc = rhof*av_c*ccg(5,nu_c)*ocg2(nu_c)*ilamc**bv_c`` with the mp=8 default
+    ``nu_c = 12`` (fixed cloud number ``NT_C``), where ``lamc`` is the cloud
+    gamma slope from :func:`_cloud_distribution`.  WRF only assigns a non-zero
+    ``vtck`` where ``rc > R1`` AND the local vertical velocity ``w < 0.1 m/s``
+    (line 3657: ``w1d(k) .lt. 1.E-1`` — cloud water does not sediment inside an
+    updraft); elsewhere ``vtck`` stays 0 (NO fill-down, unlike rain/ice/snow/
+    graupel — WRF leaves vtck=0 in inactive layers).
+    """
+
+    rho = jnp.maximum(state.rho, R1)
+    rhof = _rho_correction(rho)
+    rc = jnp.maximum(state.qc * rho, R1)
+    # lamc identical to _cloud_distribution / WRF line 3659.
+    lamc = (NT_C * AM_R * CCG2_NU12 * OCG1_NU12 / rc) ** OBMR
+    ilamc = 1.0 / lamc
+    vtc = rhof * AV_C * CCG5_NU12 * OCG2_NU12 * ilamc ** BV_C
+    active = (state.qc > R1) & (state.w < 1.0e-1)
+    return jnp.where(active, vtc, 0.0)
+
+
+def _sed_cloud_water(state: ThompsonColumnState, dt: float):
+    """WRF cloud-water sedimentation (module_mp_thompson.F:3824-3837).
+
+    Distinct from rain/ice/snow/graupel sedimentation in three WRF-faithful ways:
+      1. SINGLE full-DT explicit-upwind pass (no nstep substepping; WRF runs the
+         cloud-water update once, ``onstep`` is not applied — lines 3829-3836).
+      2. Confined to BELOW 500 m AGL: ``ksed1(5)`` is the top sedimenting level,
+         and the kernel-side ``below_500m`` mask reproduces the WRF height cap
+         (lines 3646-3653).  Layers above stay untouched.
+      3. The bottom-face cloud-water flux ``sed_c(kts)`` leaves the column but is
+         NOT accumulated into any surface-precip channel in WRF (no ``pptXXX +=``
+         line) — so cloud-water sedimentation is a (small) water-budget sink that
+         we report separately, never as precip.
+
+    Returns ``(qc', cloudw_surface_loss_mm)``.  Axis -1 is vertical, index 0 ==
+    surface (kts); flux enters a layer from the layer ABOVE (higher index).  The
+    GPU column carries a FIXED cloud number (``NT_C``), so only the qc mass is
+    advected here (WRF's ``nc`` redistribution is a no-op under fixed-Nc).
+    """
+
+    rho = jnp.maximum(state.rho, R1)
+    dz = jnp.maximum(state.dz, 1.0)
+    acc_dtype = jnp.result_type(state.qc.dtype, rho.dtype, dz.dtype)
+    qc_dt = state.qc.dtype
+    qc = state.qc.astype(acc_dtype)
+    rho = rho.astype(acc_dtype)
+    dz = dz.astype(acc_dtype)
+    vtc = _cloud_water_fall_speed(state).astype(acc_dtype)
+    dt_a = jnp.asarray(dt, acc_dtype)
+
+    # Below-500 m-AGL mask: cumulative layer thickness from the surface (index 0)
+    # excluding the current layer, matching WRF's hgt_agl accumulation that stops
+    # once it exceeds 500 m (lines 3648-3653).  Cloud-water sedimentation acts
+    # only on levels below this cap.
+    hgt_agl = jnp.cumsum(dz, axis=-1) - dz  # bottom-of-layer AGL height
+    below_500m = hgt_agl < 500.0
+
+    # sed_c(k) = vtck(k)*rc(k); rc = qc*rho.  vtck is already gated (rc>R1 & w<0.1
+    # & active cloud); confine the flux to the below-500 m band.
+    rc = jnp.maximum(qc * rho, 0.0)
+    sed_c = jnp.where(below_500m, vtc * rc, 0.0)  # kg m^-2 s^-1 (downward)
+    # Flux INTO layer k comes from the layer above (k+1, higher index).
+    sed_c_above = jnp.concatenate([sed_c[..., 1:], jnp.zeros_like(sed_c[..., :1])], axis=-1)
+    # rc(k) += (sed_c(k+1) - sed_c(k))*odzq*DT  (single full-DT pass, WRF 3834).
+    dq = (sed_c_above - sed_c) / dz / rho * dt_a
+    qc_new = jnp.where(below_500m, jnp.maximum(qc + dq, 0.0), qc)
+    # Bottom-face cloud-water flux leaving the column at the surface (kg m^-2 ==
+    # mm).  WRF does NOT count this as precip; we return it as a water-budget sink.
+    cloudw_surface_loss = sed_c[..., 0] * dt_a
+    return qc_new.astype(qc_dt), cloudw_surface_loss.astype(jnp.float64)
+
+
+def _sedimentation(state: ThompsonColumnState, dt: float):
+    """Faithful WRF sedimentation of rain/ice/snow/graupel + cloud water; precip mm.
+
+    WRF module_mp_thompson.F:3784-3939.  Advects the four precipitating channels
+    (rain, snow, graupel, ice) with WRF's adaptive per-species ``nstep`` substep
+    scan, plus the cloud-water fall term (single full-DT pass below 500 m AGL,
+    :func:`_sed_cloud_water`).  Snow/graupel numbers (Ns/Ng) follow their mass
+    since the mp=8 default carries diagnostic snow number and a fixed graupel
+    intercept; Ng falls with the mass flux when present.
+
+    Returns ``(state', precip-dict-mm)``.  ``precip`` carries the four surface
+    precip channels (rain/snow/graupel/ice); cloud-water sedimentation does NOT
+    contribute to surface precip in WRF, so its small surface loss is reported
+    under ``cloudw`` (a water-budget SINK, never summed into the precip total).
     """
 
     nsub = _implicit_sed_nsub()
@@ -1190,12 +1274,18 @@ def _sedimentation(state: ThompsonColumnState, dt: float):
     qs, Ns, ppt_snow = _sed_one_species(state.qs, state.Ns, vt_s_mass, vt_s_mass, dz, rho, dt, nstep_s)
     qg, Ng, ppt_graupel = _sed_one_species(state.qg, state.Ng, vt_g_mass, vt_g_num, dz, rho, dt, nstep_g)
 
-    updated = state.replace(qr=qr, Nr=Nr, qi=qi, Ni=Ni, qs=qs, Ns=Ns, qg=qg, Ng=Ng)
+    # Cloud-water fall term: single full-DT pass below 500 m AGL, NOT counted as
+    # surface precip (WRF module_mp_thompson.F:3824-3837).  Reported under
+    # ``cloudw`` as a water-budget sink so the closure budget stays exact.
+    qc, ppt_cloudw = _sed_cloud_water(state, dt)
+
+    updated = state.replace(qc=qc, qr=qr, Nr=Nr, qi=qi, Ni=Ni, qs=qs, Ns=Ns, qg=qg, Ng=Ng)
     precip = {
         "rain": ppt_rain,
         "snow": ppt_snow,
         "graupel": ppt_graupel,
         "ice": ppt_ice,
+        "cloudw": ppt_cloudw,
     }
     return updated, precip
 
