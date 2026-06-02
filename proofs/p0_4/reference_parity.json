@@ -1,0 +1,44 @@
+{
+  "predeclared_tol": {
+    "tend_rel": 0.002,
+    "tend_abs_floor": 1e-09,
+    "raincv_rel": 0.003,
+    "raincv_abs": 0.0001,
+    "int_scalar_abs": 0.5
+  },
+  "cases": {
+    "1": {
+      "pass": true,
+      "ISHALL": 0,
+      "CUTOP_ref": 32.0,
+      "CUTOP_oracle": 32.0,
+      "RAINCV_ref": 0.09353798722931762,
+      "RAINCV_oracle": 0.0935361236333847
+    },
+    "2": {
+      "pass": true,
+      "ISHALL": 1,
+      "CUTOP_ref": 11.0,
+      "CUTOP_oracle": 11.0,
+      "RAINCV_ref": 0.0,
+      "RAINCV_oracle": 0.0
+    },
+    "3": {
+      "pass": true,
+      "ISHALL": 0,
+      "CUTOP_ref": 33.0,
+      "CUTOP_oracle": 33.0,
+      "RAINCV_ref": 0.16991311108386692,
+      "RAINCV_oracle": 0.1699147820472717
+    },
+    "4": {
+      "pass": true,
+      "ISHALL": 1,
+      "CUTOP_ref": 11.0,
+      "CUTOP_oracle": 11.0,
+      "RAINCV_ref": 0.0,
+      "RAINCV_oracle": 0.0
+    }
+  },
+  "overall": "PASS"
+}
