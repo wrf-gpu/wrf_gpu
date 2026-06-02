@@ -226,9 +226,9 @@ CONTAINS
     CASE (2)   ! cooler/drier -> marginal/shallow/none
       psfc=1000.0E2; tsfc=294.0; zml=900.0;  theta_trop_lapse=4.2E-3
       rh_ml=0.70; rh_trop=0.40; ushr=0.0;  w0peak=0.20
-    CASE (3)   ! very warm/moist + shear -> vigorous deep
-      psfc=1008.0E2; tsfc=303.0; zml=1200.0; theta_trop_lapse=2.6E-3
-      rh_ml=0.92; rh_trop=0.78; ushr=12.0; w0peak=0.60
+    CASE (3)   ! very warm/moist + shear -> vigorous deep (decisive interior top)
+      psfc=1008.0E2; tsfc=302.0; zml=1200.0; theta_trop_lapse=4.5E-3
+      rh_ml=0.90; rh_trop=0.55; ushr=12.0; w0peak=0.55
     CASE (4)   ! capped: warm-dry mid-troposphere -> suppressed/shallow
       psfc=1000.0E2; tsfc=300.0; zml=800.0;  theta_trop_lapse=5.5E-3
       rh_ml=0.78; rh_trop=0.25; ushr=4.0;  w0peak=0.25
