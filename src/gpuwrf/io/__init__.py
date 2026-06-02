@@ -5,6 +5,7 @@ from gpuwrf.io.validation import domain_mask, lead_time_slice, load_gen2_var, re
 from gpuwrf.io.wrfout_writer import (
     DOWNSTREAM_CRITICAL_VARIABLES,
     MINIMUM_WRFOUT_VARIABLES,
+    OPERATIONAL_WRFOUT_VARIABLES,
     WRFOUT_VARIABLE_SPECS,
     write_wrfout_netcdf,
 )
@@ -15,6 +16,7 @@ __all__ = [
     "Gen2Run",
     "LazyNetCDFArray",
     "MINIMUM_WRFOUT_VARIABLES",
+    "OPERATIONAL_WRFOUT_VARIABLES",
     "WRFOUT_VARIABLE_SPECS",
     "domain_mask",
     "lead_time_slice",
