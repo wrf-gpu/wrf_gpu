@@ -900,17 +900,40 @@ def _state_from_mynn_output(state: State, out: MynnPBLColumnState) -> State:
     )
 
 
+def _mynn_dx(grid: GridSpec | None) -> float:
+    """Grid spacing (m) sizing the MYNN-EDMF updraft area/excess, WRF ``dx``.
+
+    WRF's ``DMP_mf`` scales the updraft area and the excess-buoyancy closure with
+    the horizontal grid spacing (``module_bl_mynnedmf.F`` ``edmf`` block). The
+    MYNN-EDMF lane's :func:`mynn_edmf.dmp_mf_columns` takes ``dx`` as a static
+    arg; pull it from the projection (same accessor as :func:`_grid_lat_lon`),
+    defaulting to the public-entry default when no grid metadata is present.
+    """
+
+    if grid is None:
+        return 1000.0
+    return float(grid.projection.dx_m)
+
+
 def mynn_adapter(state: State, dt: float, grid: GridSpec | None = None) -> State:
     """Advance the MYNN PBL using the surface fluxes ``surface_adapter`` wrote.
 
     THIN adapter: builds the column view, hands the FROZEN surface→MYNN flux
     contract to the kernel (which applies it as the implicit bottom BC), and
     reassembles State with non-periodic C-grid wind reconstruction.
+
+    ``edmf=True`` activates the WRF-faithful MYNN-EDMF mass-flux nonlocal scalar
+    transport (``s_awqv``/``s_awthl`` updraft flux; verified <0.5% vs the pristine
+    WRF ``DMP_mf`` in ``proofs/mynn_edmf``). This matches the operational d03
+    namelist (``bl_mynn_edmf=1``); it ventilates near-surface moisture upward,
+    raising daytime QFX/LH toward WRF.
     """
 
     column = _mynn_column_from_state(state, grid)
     surface = _surface_fluxes_from_state(state)
-    out = step_mynn_pbl_column(column, dt, debug=False, surface=surface)
+    out = step_mynn_pbl_column(
+        column, dt, debug=False, surface=surface, edmf=True, dx=_mynn_dx(grid)
+    )
     return _state_from_mynn_output(state, out)
 
 
@@ -921,7 +944,9 @@ def mynn_adapter_with_diagnostics(
 
     column = _mynn_column_from_state(state, grid)
     surface = _surface_fluxes_from_state(state)
-    out, pblh = step_mynn_pbl_column_with_pblh(column, dt, debug=False, surface=surface)
+    out, pblh = step_mynn_pbl_column_with_pblh(
+        column, dt, debug=False, surface=surface, edmf=True, dx=_mynn_dx(grid)
+    )
     return _state_from_mynn_output(state, out), pblh
 
 
