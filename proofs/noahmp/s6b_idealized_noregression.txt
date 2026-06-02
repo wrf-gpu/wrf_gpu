@@ -1,0 +1,3 @@
+..                                                                       [100%]
+2 passed in 139.70s (0:02:19)
+S6b no-regression: idealized dycore close gate (use_noahmp=False default) — warm_bubble + density_current 2/2 PASS, bulk path byte-unregressed

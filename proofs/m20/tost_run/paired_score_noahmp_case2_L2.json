@@ -1,0 +1,72 @@
+{
+  "schema": "M20PairedCaseScore",
+  "schema_version": 1,
+  "case_id": "case2_L2",
+  "self_test_cpu_vs_cpu": false,
+  "domain": "d02",
+  "init_time_utc": "2026-05-09T18:00:00+00:00",
+  "forecast_hours": 72,
+  "total_complete_pairs": 4994,
+  "per_block": {
+    "T2": {
+      "0-24h": {
+        "status": "EXCLUDED_LOW_N",
+        "n_pairs": 0
+      },
+      "24-48h": {
+        "status": "OK",
+        "n_pairs": 588,
+        "cpu_rmse": 2.009108840101971,
+        "gpu_rmse": 2.4903235223414155,
+        "paired_delta_rmse": 0.4812146822394445
+      },
+      "48-72h": {
+        "status": "OK",
+        "n_pairs": 1080,
+        "cpu_rmse": 2.072715943964474,
+        "gpu_rmse": 2.621691572112588,
+        "paired_delta_rmse": 0.5489756281481144
+      }
+    },
+    "U10": {
+      "0-24h": {
+        "status": "EXCLUDED_LOW_N",
+        "n_pairs": 0
+      },
+      "24-48h": {
+        "status": "OK",
+        "n_pairs": 584,
+        "cpu_rmse": 2.3145105912510355,
+        "gpu_rmse": 2.403915398485616,
+        "paired_delta_rmse": 0.08940480723458055
+      },
+      "48-72h": {
+        "status": "OK",
+        "n_pairs": 1079,
+        "cpu_rmse": 1.964326959389596,
+        "gpu_rmse": 2.1352335330040226,
+        "paired_delta_rmse": 0.17090657361442663
+      }
+    },
+    "V10": {
+      "0-24h": {
+        "status": "EXCLUDED_LOW_N",
+        "n_pairs": 0
+      },
+      "24-48h": {
+        "status": "OK",
+        "n_pairs": 584,
+        "cpu_rmse": 2.367525973029045,
+        "gpu_rmse": 2.39969550316797,
+        "paired_delta_rmse": 0.03216953013892487
+      },
+      "48-72h": {
+        "status": "OK",
+        "n_pairs": 1079,
+        "cpu_rmse": 2.0746254565636235,
+        "gpu_rmse": 2.16185155091894,
+        "paired_delta_rmse": 0.0872260943553167
+      }
+    }
+  }
+}

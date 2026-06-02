@@ -1,0 +1,179 @@
+{
+  "proof": "S6b prognostic Noah-MP ACTIVATION + system validation",
+  "kind": "real corpus operational forecast with prognostic Noah-MP over land vs nightly CPU-WRF wrfout; land warm-started from corpus wrfinput via faithful NOAHMP_INIT; NOT a self-compare",
+  "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
+  "domain": "d03",
+  "dt_s": 3.0,
+  "hours": 3,
+  "leads": [
+    1,
+    3
+  ],
+  "n_land_cells": 2035,
+  "n_water_cells": 4940,
+  "init_meta": {
+    "source": "warm-start from corpus wrfinput",
+    "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
+    "domain": "d03",
+    "wrfinput_file": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfinput_d03",
+    "grid_shape_yx": [
+      75,
+      93
+    ],
+    "n_land_cells": 2035,
+    "table_dir": "/home/enric/src/wrf_pristine/WRF/run",
+    "prognostic_state_real_from_corpus": [
+      "CANWAT",
+      "ISLTYP",
+      "IVGTYP",
+      "LAI",
+      "LU_INDEX",
+      "SH2O",
+      "SHDMAX",
+      "SMOIS",
+      "SNOW",
+      "SNOWH",
+      "TMN",
+      "TSK",
+      "TSLB",
+      "VEGFRA",
+      "XSAI"
+    ],
+    "init_note": "corpus wrfinput is the PRE-NOAHMP_INIT state; canopy/snow prognostic XY fields are 0 over land, so they are built via a faithful module_sf_noahmpdrv.F NOAHMP_INIT replica (TV/TG/TAH=TSK, EAH=2000, CANLIQ=CANWAT, SNOW_INIT for ZSNSO/ISNOW/TSNO). This is the SAME land carry WRF integrates from.",
+    "cold_init_provenance": {
+      "tbot": "wrfinput TMN",
+      "tslb": "wrfinput TSLB",
+      "smois": "wrfinput SMOIS",
+      "sh2o": "wrfinput SH2O",
+      "canopy_tv_tg_tah": "NOAHMP_INIT: =TSK (corpus wrfinput pre-init over land)",
+      "eah": "NOAHMP_INIT: 2000 Pa (corpus pre-init)",
+      "sai": "wrfinput XSAI",
+      "snow": "WRF SNOW_INIT from SNOW/SNOWH/TG/ZSOIL (corpus pre-init over land)",
+      "sneqvo_albold_tauss": "NOAHMP_INIT: 0 / 0.65 / 0",
+      "smcwtd": "NOAHMP_INIT opt_run=3: bottom SMOIS layer",
+      "cm_ch": "NOAHMP_INIT: ~0 (sfclay seeds each step); 1e-4 floor at t=0"
+    }
+  },
+  "per_lead": [
+    {
+      "lead_h": 1,
+      "valid": "2026-05-21T19:00:00+00:00",
+      "all_finite": true,
+      "noahmp": {
+        "T2_full": {
+          "rmse": 3.414599995595736,
+          "bias": -2.0657141055499912,
+          "mae": 2.0663718281005883,
+          "n": 6975
+        },
+        "T2_land": {
+          "rmse": 6.243357024709788,
+          "bias": -5.904137221848412,
+          "mae": 5.904137221848412,
+          "n": 2035
+        },
+        "T2_water": {
+          "rmse": 0.6365500324438185,
+          "bias": -0.4845013440788807,
+          "mae": 0.4854300110405023,
+          "n": 4940
+        },
+        "U10_full": {
+          "rmse": 1.2774973083940193,
+          "bias": 0.04788123701613321,
+          "mae": 0.7114124088300577,
+          "n": 6975
+        },
+        "V10_full": {
+          "rmse": 1.4426805438970265,
+          "bias": 0.5952172535910365,
+          "mae": 1.0659174828231615,
+          "n": 6975
+        },
+        "HFX_land": {
+          "rmse": 130.8180945014563,
+          "bias": -101.21245245916256,
+          "mae": 101.21245245916256,
+          "n": 2035
+        },
+        "HFX_water": {
+          "rmse": 7.442465086081119,
+          "bias": 5.44703452682976,
+          "mae": 5.469096186397431,
+          "n": 4940
+        },
+        "LH_land": {
+          "rmse": 8.976488427102366,
+          "bias": -7.119307569648883,
+          "mae": 7.119333720348514,
+          "n": 2035
+        },
+        "gpu_HFX_land_mean": -30.291532234931076,
+        "wrf_HFX_land_mean": 70.9209202242315
+      }
+    },
+    {
+      "lead_h": 3,
+      "valid": "2026-05-21T21:00:00+00:00",
+      "all_finite": true,
+      "noahmp": {
+        "T2_full": {
+          "rmse": 3.4673920949708217,
+          "bias": -2.2020805989052463,
+          "mae": 2.204153306254714,
+          "n": 6975
+        },
+        "T2_land": {
+          "rmse": 6.306672670127797,
+          "bias": -5.94445783843505,
+          "mae": 5.94697917300963,
+          "n": 2035
+        },
+        "T2_water": {
+          "rmse": 0.768661337166517,
+          "bias": -0.6604332947669569,
+          "mae": 0.6623211931279414,
+          "n": 4940
+        },
+        "U10_full": {
+          "rmse": 0.9470759715025283,
+          "bias": 0.06779646823644545,
+          "mae": 0.613754513249,
+          "n": 6975
+        },
+        "V10_full": {
+          "rmse": 1.4777789816277036,
+          "bias": 0.5004675232742222,
+          "mae": 1.0507925327549066,
+          "n": 6975
+        },
+        "HFX_land": {
+          "rmse": 60.3316803192986,
+          "bias": -35.9954579428069,
+          "mae": 36.031365533662814,
+          "n": 2035
+        },
+        "HFX_water": {
+          "rmse": 9.632410334933148,
+          "bias": 7.874501402063803,
+          "mae": 7.908687891123352,
+          "n": 4940
+        },
+        "LH_land": {
+          "rmse": 2.527892292312622,
+          "bias": -2.225531244567707,
+          "mae": 2.2374387656323385,
+          "n": 2035
+        },
+        "gpu_HFX_land_mean": -43.10914348286003,
+        "wrf_HFX_land_mean": -7.113685540053124
+      }
+    }
+  ],
+  "timings_noahmp_s": {
+    "1": 516.4,
+    "3": 601.6
+  },
+  "timings_bulk_s": null,
+  "wall_total_s": 616.4
+}
