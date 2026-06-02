@@ -36,14 +36,23 @@ from pathlib import Path
 import numpy as np
 
 HERE = Path(__file__).resolve().parent
-ROOT = HERE.parent.parent
-sys.path.insert(0, str(ROOT / "src"))
+ROOT = HERE.parent.parent  # THIS worktree's repo root (NOT the hardcoded shared path)
+WT_SRC = str(ROOT / "src")
+sys.path.insert(0, WT_SRC)
 sys.path.insert(0, str(HERE))  # local scorer + ensemble-runner helpers
 
 from tost_ensemble_runner import (  # noqa: E402
     DEFAULT_MANIFEST, OBS_START_UTC, _emit_gpu_wrfout, expand_units, load_cases,
     score_case_level,
 )
+
+# tost_ensemble_runner hardcodes ROOT=/home/enric/src/wrf_gpu2 and inserts the
+# SHARED src at sys.path[0] on import -- which would shadow THIS worktree's gpuwrf.
+# Re-prepend the worktree src so the S6b-activated gpuwrf wins (gpuwrf is not yet
+# imported at this point; the ensemble runner only imports it inside functions).
+while WT_SRC in sys.path:
+    sys.path.remove(WT_SRC)
+sys.path.insert(0, WT_SRC)
 
 
 def run_gpu_case_level_noahmp(level_spec: dict, out_dir: Path, *, dt_s: float,
