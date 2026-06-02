@@ -1,0 +1,5 @@
+build/
+*.o
+*.mod
+case_*.txt
+morrison_oracle
