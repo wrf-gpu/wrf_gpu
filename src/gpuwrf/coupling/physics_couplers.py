@@ -10,6 +10,7 @@ from __future__ import annotations
 from datetime import date, datetime, timezone
 from typing import NamedTuple
 
+import jax
 import jax.numpy as jnp
 
 from gpuwrf.contracts.grid import GridSpec
@@ -915,6 +916,34 @@ def _mynn_dx(grid: GridSpec | None) -> float:
     return float(grid.projection.dx_m)
 
 
+def _flatten_columns_to_batch(tree, ny: int, nx: int):
+    """Collapse a ``(ny, nx, ...)`` MYNN column pytree to a single batch axis.
+
+    The MYNN-EDMF mass-flux entry (:func:`mynn_edmf.dmp_mf_columns`) is a
+    ``jax.vmap`` over a SINGLE leading column dimension — its contract is profiles
+    ``(B, nz)`` / surface scalars ``(B,)`` / interfaces ``(B, nz+1)``. The
+    operational coupler builds the column view with ``_to_columns`` as
+    ``(ny, nx, nz)`` (two spatial leading axes). The plain eddy-diffusion solve is
+    leading-axis agnostic so it tolerated the extra axis, but the EDMF vmap would
+    leave a residual ``nx`` axis inside the per-column kernel (shape clash
+    ``zw[:-1]`` vs ``dz``). Flatten the ``(ny, nx)`` spatial grid to ``B=ny*nx``
+    before the kernel and restore it after; this is the natural "batch of
+    independent columns" contract the kernel documents.
+    """
+
+    return jax.tree_util.tree_map(
+        lambda a: a.reshape((ny * nx,) + a.shape[2:]) if a.ndim >= 2 else a, tree
+    )
+
+
+def _unflatten_batch_to_columns(tree, ny: int, nx: int):
+    """Inverse of :func:`_flatten_columns_to_batch`: ``(ny*nx, ...) -> (ny, nx, ...)``."""
+
+    return jax.tree_util.tree_map(
+        lambda a: a.reshape((ny, nx) + a.shape[1:]) if a.ndim >= 1 else a, tree
+    )
+
+
 def mynn_adapter(state: State, dt: float, grid: GridSpec | None = None) -> State:
     """Advance the MYNN PBL using the surface fluxes ``surface_adapter`` wrote.
 
@@ -926,14 +955,19 @@ def mynn_adapter(state: State, dt: float, grid: GridSpec | None = None) -> State
     transport (``s_awqv``/``s_awthl`` updraft flux; verified <0.5% vs the pristine
     WRF ``DMP_mf`` in ``proofs/mynn_edmf``). This matches the operational d03
     namelist (``bl_mynn_edmf=1``); it ventilates near-surface moisture upward,
-    raising daytime QFX/LH toward WRF.
+    raising daytime QFX/LH toward WRF. The column view is flattened to the kernel's
+    single-batch-axis contract for the EDMF vmap (see _flatten_columns_to_batch).
     """
 
     column = _mynn_column_from_state(state, grid)
     surface = _surface_fluxes_from_state(state)
-    out = step_mynn_pbl_column(
-        column, dt, debug=False, surface=surface, edmf=True, dx=_mynn_dx(grid)
+    ny, nx = column.theta.shape[0], column.theta.shape[1]
+    column_b = _flatten_columns_to_batch(column, ny, nx)
+    surface_b = _flatten_columns_to_batch(surface, ny, nx)
+    out_b = step_mynn_pbl_column(
+        column_b, dt, debug=False, surface=surface_b, edmf=True, dx=_mynn_dx(grid)
     )
+    out = _unflatten_batch_to_columns(out_b, ny, nx)
     return _state_from_mynn_output(state, out)
 
 
@@ -944,9 +978,14 @@ def mynn_adapter_with_diagnostics(
 
     column = _mynn_column_from_state(state, grid)
     surface = _surface_fluxes_from_state(state)
-    out, pblh = step_mynn_pbl_column_with_pblh(
-        column, dt, debug=False, surface=surface, edmf=True, dx=_mynn_dx(grid)
+    ny, nx = column.theta.shape[0], column.theta.shape[1]
+    column_b = _flatten_columns_to_batch(column, ny, nx)
+    surface_b = _flatten_columns_to_batch(surface, ny, nx)
+    out_b, pblh_b = step_mynn_pbl_column_with_pblh(
+        column_b, dt, debug=False, surface=surface_b, edmf=True, dx=_mynn_dx(grid)
     )
+    out = _unflatten_batch_to_columns(out_b, ny, nx)
+    pblh = pblh_b.reshape((ny, nx) + pblh_b.shape[1:])
     return _state_from_mynn_output(state, out), pblh
 
 
