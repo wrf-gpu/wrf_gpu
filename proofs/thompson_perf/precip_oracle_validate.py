@@ -120,13 +120,22 @@ def column_precip_and_mass(state_in, out_state, precip_dict):
     mass_cond_out = np.sum(qout * rho * dz, axis=-1)
     mass_vap_in = np.sum(qv_in * rho * dz, axis=-1)
     mass_vap_out = np.sum(qv_out * rho * dz, axis=-1)
-    precip = sum(np.asarray(v, dtype=np.float64) for v in precip_dict.values())
+    # SURFACE PRECIP = the four WRF precipitating channels only.  Cloud-water
+    # sedimentation (``cloudw``) is NOT counted as surface precip in WRF (no
+    # pptXXX accumulation; module_mp_thompson.F:3824-3837) -- it is a (small)
+    # water-budget SINK, so it is excluded from the precip total but INCLUDED in
+    # the closure (every water-leaving channel must close the budget).
+    surface_keys = ("rain", "snow", "graupel", "ice")
+    precip = sum(np.asarray(precip_dict[k], dtype=np.float64) for k in surface_keys if k in precip_dict)
+    all_sinks = sum(np.asarray(v, dtype=np.float64) for v in precip_dict.values())
+    cloudw = np.asarray(precip_dict.get("cloudw", 0.0), dtype=np.float64)
     total_in = mass_cond_in + mass_vap_in
     total_out = mass_cond_out + mass_vap_out
-    closure = (total_out - total_in) + precip
+    closure = (total_out - total_in) + all_sinks
     return {
         "surface_precip_mm_per_col": precip.tolist(),
         "total_surface_precip_mm": float(precip.sum()),
+        "cloudw_surface_sink_mm": float(np.sum(cloudw)),
         "water_closure_max_abs_residual_kg_m2": float(np.max(np.abs(closure))),
         "water_closure_max_rel_residual": float(np.max(np.abs(closure) / np.maximum(total_in, 1e-30))),
     }
