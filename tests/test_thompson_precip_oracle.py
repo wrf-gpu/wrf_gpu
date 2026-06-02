@@ -39,19 +39,32 @@ def test_faithful_thompson_validates_against_precip_oracle():
     pf = r["per_field"]
     pm = r["precip_mass"]
 
-    # P1-5 PRECIP PARITY tolerance band (precip oracle, one 18 s step). These are
-    # PREDECLARED and tightened from the old #32 *functional* gate after the
-    # WRF-faithful adaptive-nstep sedimentation fix (NSED_MAX masked scan, per-
-    # column nstep = MAX_k INT(DT/(dz/vt)+1)), which collapsed the +13% surface-
-    # precip bias to within +-3% and the rain-field error to <1%.
-    #  - water closure mass-conserving
+    # P1-5 PRECIP/WATER PARITY tolerance band (precip oracle, one 18 s step).
+    # PREDECLARED and tightened from the old #32 *functional* gate after the three
+    # WRF-faithful fixes: (1) adaptive per-species nstep (NSED_MAX masked scan,
+    # nstep = MAX_k INT(DT/(dz/vt)+1)); (2) the rr(kts)>1e-9 surface-accumulation
+    # threshold; (3) cloud-water sedimentation (single full-DT pass below 500 m
+    # AGL, module_mp_thompson.F:3824-3837 -- NOT counted as surface precip).
+    # Fixes (1)+(2) collapsed the +13% surface-precip bias to within +-3% and the
+    # rain-field error to <1%; fix (3) collapsed the qc error (max_rel 1.0 -> ~1e-4,
+    # mean_rel 7e-3 -> ~8e-6) and is reported separately as a water-budget sink.
+    #  - water closure mass-conserving (FULL budget incl the cloud-w sink)
     assert pm["water_closure_max_rel_residual"] < 1e-5, pm
     #  - qv faithful (<1% mean), qr now WRF-PARITY (<1% mean / <2% max)
     assert pf["qv"]["mean_rel"] < 0.01, pf["qv"]
     assert pf["qr"]["mean_rel"] < 0.01, pf["qr"]
     assert pf["qr"]["max_rel"] < 0.02, pf["qr"]
+    #  - qc now WRF-PARITY after cloud-water sedimentation (fix 3): the prior
+    #    neglect of the cloud-w fall term left qc max_rel == 1.0 on the surface
+    #    layers; the faithful term closes it to <1% (predeclared band).
+    assert pf["qc"]["mean_rel"] < 0.001, pf["qc"]
+    assert pf["qc"]["max_rel"] < 0.01, pf["qc"]
     #  - snow profile placement (mean_rel) within the WRF single-mode closure band
     assert pf["qs"]["mean_rel"] < 0.15, pf["qs"]
+    #  - cloud-w sed is a water SINK, never surface precip: must be present, small,
+    #    and separate from the rain/snow/graupel/ice surface total.
+    assert "cloudw" in r["precip_by_species_mm"], r["precip_by_species_mm"]
+    assert 0.0 <= r["precip_by_species_mm"]["cloudw"] < 0.05 * pm["total_surface_precip_mm"], r["precip_by_species_mm"]
     #  - SURFACE PRECIP PARITY: total within +-3% of WRF RAINNCV (was +13%).
     jax_total = pm["total_surface_precip_mm"]
     wrf_total = wrf["wrf_total_rainncv_mm"]

@@ -112,6 +112,16 @@ CCG2_NU12 = 1307674368000.0
 CCG3_NU12 = 6402373705728000.0
 OCG1_NU12 = 1.0 / CCG1_NU12
 OCG2_NU12 = 1.0 / CCG2_NU12
+# Cloud-water terminal fall speed (WRF module_mp_thompson.F:163-164, 3658-3664).
+# av_c/bv_c are the cloud droplet fall-speed coefficient/exponent; the two gamma
+# closures ccg(4,nu_c)/ccg(5,nu_c) for the number/mass-weighted moments use the
+# mp=8 default nu_c=12 (== NU_C_MP8 at nc=NT_C: NINT(1000e6/100e6)+2 = 12).
+# cce(4,12)=n+bv_c+1=15 -> ccg(4,12)=Gamma(15); cce(5,12)=bm_r+n+bv_c+1=18 ->
+# ccg(5,12)=Gamma(18).
+AV_C = 0.316946e8  # WRF module_mp_thompson.F:163
+BV_C = 2.0  # WRF module_mp_thompson.F:164
+CCG4_NU12 = math.gamma(NU_C_MP8 + BV_C + 1.0)  # Gamma(15) = 87178291200.0
+CCG5_NU12 = math.gamma(BM_R + NU_C_MP8 + BV_C + 1.0)  # Gamma(18) = 355687428096000.0
 T1_QR_QC = PI * 0.25 * AV_R * CRG9
 T1_QR_EV = 0.78 * CRG10
 T2_QR_EV = 0.308 * SC3 * math.sqrt(AV_R) * CRG11
