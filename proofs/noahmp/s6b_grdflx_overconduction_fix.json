@@ -1,0 +1,23 @@
+{
+  "sprint": "0.2.0 noahmp GRDFLX over-conduction fix",
+  "base_commit": "f73fec0",
+  "root_cause": "ZSOIL built from wrfinput ZS (soil-layer CENTERS [0.05,0.25,0.70,1.50]) instead of cumulative DZS (WRF noahmpdrv.F:689-692 -> interface depths [-0.10,-0.40,-1.00,-2.00]). Top soil DZSNSO(1) was 0.05 m instead of 0.10 m, which DOUBLED the surface ground conductance CGH=2*DF/DZSNSO(1) and shifted the whole soil column geometry; it also mis-attributed TSLB0 (init mismatch). DF itself (TDFCND) matched WRF (0.564 vs ~0.57 W/m/K).",
+  "fix_file": "src/gpuwrf/io/noahmp_land_init.py",
+  "fix": "zsoil = -cumsum(|DZS|)  (WRF-faithful), not -|ZS|",
+  "wrf_source": "phys/module_sf_noahmpdrv.F:689-692 ZSOIL(1)=-DZS(1); ZSOIL(K)=ZSOIL(K-1)-DZS(K)",
+  "harness_artifact_note": "The localization harness grdflx_tg() passed the raw (soldn,lwdn,cosz) TUPLE to assemble_noahmp_forcing, whose rad2d('lwdn',0.0) reads .lwdn off the object -> a plain tuple has no attribute -> LWDN=0 -> one-step TG re-solve ran away cold -> bogus GRDFLX ~-200. Operationally LWDN is correct (wrapped in _NoahMPRadiation NamedTuple). GRDFLX below measured with the PROPER named-radiation wrap (real LWDN).",
+  "grdflx_land_Wm2": {
+    "21z": {"before": -246.3, "after": -65.12, "wrf": -63.67},
+    "00z": {"before": -227.5, "after": -48.23, "wrf": -48.69},
+    "03z": {"before": -226.2, "after": -39.65, "wrf": -41.25},
+    "06z": {"before": -224.4, "after": -34.15, "wrf": -36.33}
+  },
+  "tslb0_init_land_K": {"21z": {"after": 293.63, "wrf": 293.52}, "note": "init mismatch (290.09 vs 293.52, -3.4K) ELIMINATED"},
+  "t2_land_bias_K": {"21z": -0.65, "00z": -1.47, "03z": -2.09, "06z": -2.49, "note": "residual T2 cold bias is NOT a ground-flux issue: TSK matches WRF (+0.34K at 06z), GRDFLX now matches WRF. Re-localized to the surface-layer T2 skin->2m interpolation (surface_layer_diagnostics) which over-weights the cold skin in stable nocturnal conditions -- OUTSIDE this sprint's file scope."},
+  "no_regression": {
+    "daytime_land_T2_12z_K": {"gpu": 294.742, "wrf": 293.984, "bias": 0.759},
+    "ocean_TSK_12z_K": {"gpu": 294.0499, "wrf": 294.0499, "bias": 0.000009},
+    "ocean_T2_12z_K": {"gpu": 293.2334, "wrf": 293.5648, "bias": -0.33142}
+  },
+  "verdict": "GRDFLX over-conduction RESOLVED (collapsed ~225 -> WRF-matching 34-65 W/m2, within ~2 W/m2 every lead). TSLB0 init mismatch RESOLVED. Daytime/ocean preserved. Remaining overnight T2 bias re-localized to surface-layer T2 diagnostic (next sprint)."
+}
