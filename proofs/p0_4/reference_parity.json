@@ -1,0 +1,62 @@
+{
+  "oracle": "WRF module_cu_kfeta.F single-column Fortran driver (REAL*4)",
+  "comparand": "cumulus_kf_reference.kf_eta_para_np (fp64, line-for-line transcription)",
+  "predeclared_tol": {
+    "tend_rel": 0.002,
+    "tend_abs_floor": 1e-09,
+    "raincv_rel": 0.003,
+    "raincv_abs": 0.0001,
+    "int_scalar_abs": 0.5
+  },
+  "cases": {
+    "1": {
+      "pass": true,
+      "ISHALL": 0,
+      "ISHALL_oracle": 0,
+      "CUTOP_ref": 32.0,
+      "CUTOP_oracle": 32.0,
+      "CUBOT_ref": 3.0,
+      "CUBOT_oracle": 3.0,
+      "RAINCV_ref": 0.09353798722931762,
+      "RAINCV_oracle": 0.0935361236333847,
+      "ERR2_pct": 1.3916263249495138e-14
+    },
+    "2": {
+      "pass": true,
+      "ISHALL": 1,
+      "ISHALL_oracle": 1,
+      "CUTOP_ref": 11.0,
+      "CUTOP_oracle": 11.0,
+      "CUBOT_ref": 4.0,
+      "CUBOT_oracle": 4.0,
+      "RAINCV_ref": 0.0,
+      "RAINCV_oracle": 0.0,
+      "ERR2_pct": 1.4354032688239428e-14
+    },
+    "3": {
+      "pass": true,
+      "ISHALL": 0,
+      "ISHALL_oracle": 0,
+      "CUTOP_ref": 33.0,
+      "CUTOP_oracle": 33.0,
+      "CUBOT_ref": 3.0,
+      "CUBOT_oracle": 3.0,
+      "RAINCV_ref": 0.16991311108386692,
+      "RAINCV_oracle": 0.1699147820472717,
+      "ERR2_pct": 3.5428978244740815e-14
+    },
+    "4": {
+      "pass": true,
+      "ISHALL": 1,
+      "ISHALL_oracle": 1,
+      "CUTOP_ref": 11.0,
+      "CUTOP_oracle": 11.0,
+      "CUBOT_ref": 4.0,
+      "CUBOT_oracle": 4.0,
+      "RAINCV_ref": 0.0,
+      "RAINCV_oracle": 0.0,
+      "ERR2_pct": -1.7736860880453427e-14
+    }
+  },
+  "overall": "PASS"
+}
