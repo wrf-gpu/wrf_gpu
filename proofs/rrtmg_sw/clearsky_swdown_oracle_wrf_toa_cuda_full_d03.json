@@ -1,0 +1,315 @@
+{
+  "mode": "clear",
+  "source_scale": "wrf-toa",
+  "generated_utc": "2026-06-02T07:46:22.620623+00:00",
+  "command_hint": "taskset -c 0-3 env JAX_PLATFORMS=<cpu|cuda> PYTHONPATH=src python proofs/rrtmg_sw/clearsky_swdown_oracle.py clear --source-scale wrf-toa --max-columns <N> --batch-size <N>",
+  "wrf_source": "/home/enric/src/wrf_pristine/WRF/phys/module_ra_rrtmg_sw.F",
+  "results": [
+    {
+      "lead": 15,
+      "label": "09z",
+      "source_file": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d03_2026-05-22_09:00:00",
+      "selection": {
+        "method": "all land/daylit columns",
+        "selected_columns": 2035,
+        "selected_daylit_columns": 2035,
+        "domain_shape": [
+          75,
+          93
+        ],
+        "max_columns_requested": 0,
+        "batch_size": 1024,
+        "source_scale_mode": "wrf-toa"
+      },
+      "coszen_mean": 0.52162709710639,
+      "airmass_mean": 1.9171180172428797,
+      "wrf_SWDOWN": 534.8863525390625,
+      "wrf_SWDNB": 534.8863525390625,
+      "wrf_SWDNBC_clear": 535.4686889648438,
+      "wrf_SWDNTC_toa_clear": 696.75537109375,
+      "gpu_SWDOWN": 530.2991582997015,
+      "bias_Wm2": -4.587233379842022,
+      "bias_pct": -0.8576089776953167,
+      "vs_SWDOWN": {
+        "wrf_mean": 534.8863525390625,
+        "gpu_mean": 530.2991582997015,
+        "bias_Wm2": -4.587233379842022,
+        "bias_pct": -0.8576089776953167,
+        "rmse_Wm2": 8.577949732626006,
+        "mae_Wm2": 5.5909944351533705,
+        "max_abs_Wm2": 153.43844604492188
+      },
+      "vs_SWDNB": {
+        "wrf_mean": 534.8863525390625,
+        "gpu_mean": 530.2991582997015,
+        "bias_Wm2": -4.587233199885787,
+        "bias_pct": -0.8576089440514906,
+        "rmse_Wm2": 8.577949857078943,
+        "mae_Wm2": 5.5909944351533705,
+        "max_abs_Wm2": 153.43844604492188
+      },
+      "vs_SWDNBC_clear": {
+        "wrf_mean": 535.4686889648438,
+        "gpu_mean": 530.2991582997015,
+        "bias_Wm2": -5.169460437221668,
+        "bias_pct": -0.9654085371854617,
+        "rmse_Wm2": 5.181513376869047,
+        "mae_Wm2": 5.169460437221668,
+        "max_abs_Wm2": 6.25067138671875
+      },
+      "vs_SWDNTC_toa_clear": {
+        "wrf_mean": 696.75537109375,
+        "gpu_mean": 696.7564581493781,
+        "bias_Wm2": 0.0011270059121621621,
+        "bias_pct": 0.00016175058835829497,
+        "rmse_Wm2": 0.001128366457730216,
+        "mae_Wm2": 0.0011270059121621621,
+        "max_abs_Wm2": 0.00128173828125
+      },
+      "gpu_direct": 484.27691261985086,
+      "gpu_TOA_down": 696.7564581493781,
+      "solar_source_scale_mean": 0.9762571377993107,
+      "solar_source_scale_min": 0.9762566657454369,
+      "solar_source_scale_max": 0.9762577568874601,
+      "wrf_SWNORM": 528.7850341796875,
+      "albedo_mean": 0.20344995676153121,
+      "wrf_cldfra_mean": 0.0001660918239346001,
+      "wrf_cldfra_max": 0.46548062562942505,
+      "o3_source": "GPU WRF climatological ozone profile; corpus exposes only O3_GFS_DU total column",
+      "airmass_bins": [
+        {
+          "coszen_lo": 0.5170142650604248,
+          "coszen_hi": 0.5197315812110901,
+          "n": 509,
+          "mean_bias_pct": -0.9434387300772263,
+          "mean_bias_Wm2": -4.986008619746899
+        },
+        {
+          "coszen_lo": 0.5197315812110901,
+          "coszen_hi": 0.5213642716407776,
+          "n": 509,
+          "mean_bias_pct": -0.921828443023608,
+          "mean_bias_Wm2": -4.995722202983024
+        },
+        {
+          "coszen_lo": 0.5213642716407776,
+          "coszen_hi": 0.5232710540294647,
+          "n": 509,
+          "mean_bias_pct": -0.9930509236080569,
+          "mean_bias_Wm2": -5.3362219310228385
+        },
+        {
+          "coszen_lo": 0.5232710540294647,
+          "coszen_hi": 0.5277584791183472,
+          "n": 509,
+          "mean_bias_pct": -1.0034477465626654,
+          "mean_bias_Wm2": -5.359831864332637
+        }
+      ]
+    },
+    {
+      "lead": 18,
+      "label": "12z",
+      "source_file": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d03_2026-05-22_12:00:00",
+      "selection": {
+        "method": "all land/daylit columns",
+        "selected_columns": 2035,
+        "selected_daylit_columns": 2035,
+        "domain_shape": [
+          75,
+          93
+        ],
+        "max_columns_requested": 0,
+        "batch_size": 1024,
+        "source_scale_mode": "wrf-toa"
+      },
+      "coszen_mean": 0.94359639809817,
+      "airmass_mean": 1.059775708199444,
+      "wrf_SWDOWN": 1024.89013671875,
+      "wrf_SWDNB": 1024.89013671875,
+      "wrf_SWDNBC_clear": 1030.8321533203125,
+      "wrf_SWDNTC_toa_clear": 1260.3336181640625,
+      "gpu_SWDOWN": 1022.7496590729135,
+      "bias_Wm2": -2.140464599009521,
+      "bias_pct": -0.20884819965799967,
+      "vs_SWDOWN": {
+        "wrf_mean": 1024.89013671875,
+        "gpu_mean": 1022.7496590729135,
+        "bias_Wm2": -2.140464599009521,
+        "bias_pct": -0.20884819965799967,
+        "rmse_Wm2": 27.78160817804111,
+        "mae_Wm2": 12.55758425550906,
+        "max_abs_Wm2": 284.96612548828125
+      },
+      "vs_SWDNB": {
+        "wrf_mean": 1024.89013671875,
+        "gpu_mean": 1022.7496590729135,
+        "bias_Wm2": -2.1404646589949325,
+        "bias_pct": -0.2088482055108623,
+        "rmse_Wm2": 27.781607621064484,
+        "mae_Wm2": 12.557583775625767,
+        "max_abs_Wm2": 284.96612548828125
+      },
+      "vs_SWDNBC_clear": {
+        "wrf_mean": 1030.8321533203125,
+        "gpu_mean": 1022.7496590729135,
+        "bias_Wm2": -8.082619047047759,
+        "bias_pct": -0.7840868196644455,
+        "rmse_Wm2": 8.22153164776752,
+        "mae_Wm2": 8.082619047047759,
+        "max_abs_Wm2": 15.80224609375
+      },
+      "vs_SWDNTC_toa_clear": {
+        "wrf_mean": 1260.3336181640625,
+        "gpu_mean": 1260.3356549087262,
+        "bias_Wm2": 0.002063678113482801,
+        "bias_pct": 0.0001637406226209356,
+        "rmse_Wm2": 0.0020664330578621594,
+        "mae_Wm2": 0.002063678113482801,
+        "max_abs_Wm2": 0.00244140625
+      },
+      "gpu_direct": 966.0860588504876,
+      "gpu_TOA_down": 1260.3356549087262,
+      "solar_source_scale_mean": 0.9762101135341665,
+      "solar_source_scale_min": 0.9762096086823953,
+      "solar_source_scale_max": 0.9762106315649584,
+      "wrf_SWNORM": 1013.060302734375,
+      "albedo_mean": 0.19676320400519218,
+      "wrf_cldfra_mean": 0.0009485516312675352,
+      "wrf_cldfra_max": 0.8490424156188965,
+      "o3_source": "GPU WRF climatological ozone profile; corpus exposes only O3_GFS_DU total column",
+      "airmass_bins": [
+        {
+          "coszen_lo": 0.9417194128036499,
+          "coszen_hi": 0.9431107640266418,
+          "n": 509,
+          "mean_bias_pct": -0.7259521044585756,
+          "mean_bias_Wm2": -7.482730048578708
+        },
+        {
+          "coszen_lo": 0.9431107640266418,
+          "coszen_hi": 0.9436900019645691,
+          "n": 509,
+          "mean_bias_pct": -0.8780130225461964,
+          "mean_bias_Wm2": -9.127627029868615
+        },
+        {
+          "coszen_lo": 0.9436900019645691,
+          "coszen_hi": 0.944132387638092,
+          "n": 509,
+          "mean_bias_pct": -0.8126321729309635,
+          "mean_bias_Wm2": -8.37788951701406
+        },
+        {
+          "coszen_lo": 0.944132387638092,
+          "coszen_hi": 0.9451227188110352,
+          "n": 509,
+          "mean_bias_pct": -0.7182617684255025,
+          "mean_bias_Wm2": -7.340725582100319
+        }
+      ]
+    },
+    {
+      "lead": 21,
+      "label": "15z",
+      "source_file": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d03_2026-05-22_15:00:00",
+      "selection": {
+        "method": "all land/daylit columns",
+        "selected_columns": 2035,
+        "selected_daylit_columns": 2035,
+        "domain_shape": [
+          75,
+          93
+        ],
+        "max_columns_requested": 0,
+        "batch_size": 1024,
+        "source_scale_mode": "wrf-toa"
+      },
+      "coszen_mean": 0.9092732771608695,
+      "airmass_mean": 1.0997813155386449,
+      "wrf_SWDOWN": 979.677734375,
+      "wrf_SWDNB": 979.677734375,
+      "wrf_SWDNBC_clear": 983.6088256835938,
+      "wrf_SWDNTC_toa_clear": 1214.4312744140625,
+      "gpu_SWDOWN": 976.4938427374462,
+      "bias_Wm2": -3.1838838469484223,
+      "bias_pct": -0.3249929783266564,
+      "vs_SWDOWN": {
+        "wrf_mean": 979.677734375,
+        "gpu_mean": 976.4938427374462,
+        "bias_Wm2": -3.1838838469484223,
+        "bias_pct": -0.3249929783266564,
+        "rmse_Wm2": 42.76482377261927,
+        "mae_Wm2": 10.598486800510116,
+        "max_abs_Wm2": 797.1784362792969
+      },
+      "vs_SWDNB": {
+        "wrf_mean": 979.677734375,
+        "gpu_mean": 976.4938427374462,
+        "bias_Wm2": -3.1838850691511826,
+        "bias_pct": -0.32499310308224877,
+        "rmse_Wm2": 42.76482402266441,
+        "mae_Wm2": 10.59848803770923,
+        "max_abs_Wm2": 797.1784515380859
+      },
+      "vs_SWDNBC_clear": {
+        "wrf_mean": 983.6088256835938,
+        "gpu_mean": 976.4938427374462,
+        "bias_Wm2": -7.115042661624693,
+        "bias_pct": -0.723361002447273,
+        "rmse_Wm2": 7.23311795236726,
+        "mae_Wm2": 7.115042661624693,
+        "max_abs_Wm2": 12.101318359375
+      },
+      "vs_SWDNTC_toa_clear": {
+        "wrf_mean": 1214.4312744140625,
+        "gpu_mean": 1214.433289563978,
+        "bias_Wm2": 0.0019812581580159706,
+        "bias_pct": 0.00016314288010837715,
+        "rmse_Wm2": 0.001983959667966508,
+        "mae_Wm2": 0.0019812581580159706,
+        "max_abs_Wm2": 0.0023193359375
+      },
+      "gpu_direct": 920.6041284359644,
+      "gpu_TOA_down": 1214.433289563978,
+      "solar_source_scale_mean": 0.9761635628529162,
+      "solar_source_scale_min": 0.9761630030600932,
+      "solar_source_scale_max": 0.9761641271485654,
+      "wrf_SWNORM": 966.92236328125,
+      "albedo_mean": 0.19730591849407927,
+      "wrf_cldfra_mean": 0.0005582551400016794,
+      "wrf_cldfra_max": 1.0,
+      "o3_source": "GPU WRF climatological ozone profile; corpus exposes only O3_GFS_DU total column",
+      "airmass_bins": [
+        {
+          "coszen_lo": 0.9061203598976135,
+          "coszen_hi": 0.9084562361240387,
+          "n": 509,
+          "mean_bias_pct": -0.6307352417739527,
+          "mean_bias_Wm2": -6.188180260199227
+        },
+        {
+          "coszen_lo": 0.9084562361240387,
+          "coszen_hi": 0.909450888633728,
+          "n": 509,
+          "mean_bias_pct": -0.731554060941612,
+          "mean_bias_Wm2": -7.165582743047029
+        },
+        {
+          "coszen_lo": 0.909450888633728,
+          "coszen_hi": 0.9102505743503571,
+          "n": 509,
+          "mean_bias_pct": -0.8239906893733521,
+          "mean_bias_Wm2": -8.143222771365423
+        },
+        {
+          "coszen_lo": 0.9102505743503571,
+          "coszen_hi": 0.9114289879798889,
+          "n": 509,
+          "mean_bias_pct": -0.7069404965364127,
+          "mean_bias_Wm2": -6.9670729121899555
+        }
+      ]
+    }
+  ]
+}

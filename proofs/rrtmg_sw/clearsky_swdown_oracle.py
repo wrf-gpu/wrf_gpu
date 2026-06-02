@@ -29,6 +29,7 @@ RD = 287.0
 P00 = 100000.0
 CP = 1004.5
 RCP = RD / CP
+RRSW_SCON = 1368.22
 
 LEADS = [
     (15, 'wrfout_d03_2026-05-22_09:00:00', '09z'),
@@ -51,6 +52,7 @@ def load_wrf_columns(path):
     SWDOWN = g('SWDOWN')
     SWDNB = g('SWDNB') if 'SWDNB' in ds.variables else SWDOWN
     SWDNBC = g('SWDNBC') if 'SWDNBC' in ds.variables else SWDOWN
+    SWDNTC = g('SWDNTC') if 'SWDNTC' in ds.variables else None
     SWNORM = g('SWNORM')
     o3_gfs_du = g('O3_GFS_DU') if 'O3_GFS_DU' in ds.variables else None
     with nc.Dataset(RDIR + '/wrfinput_' + DOM) as inp:
@@ -65,7 +67,7 @@ def load_wrf_columns(path):
     rho = p_full / (RD * T * (1.0 + 0.61 * QV))
     return dict(T=T, p=p_full, qv=QV, qc=QC, qi=QI, qs=QS, qg=QG, cldfra=CLDFRA, dz=dz, rho=rho,
                 coszen=COSZEN, albedo=ALBEDO, swdown=SWDOWN, swdnb=SWDNB, swdnbc=SWDNBC,
-                swnorm=SWNORM, o3_gfs_du=o3_gfs_du, xland=XLAND)
+                swdntc=SWDNTC, swnorm=SWNORM, o3_gfs_du=o3_gfs_du, xland=XLAND)
 
 
 def to_columns(arr3d):
@@ -101,7 +103,7 @@ def select_columns(w, max_columns):
     return np.asarray(chosen[:max_columns], dtype=np.int64)
 
 
-def run_solver_batched(T, p, qv, qc, qi, qs, qg, cldfra, albedo, coszen, dz, rho, batch_size):
+def run_solver_batched(T, p, qv, qc, qi, qs, qg, cldfra, albedo, coszen, dz, rho, solar_source_scale, batch_size):
     outputs = []
     for start in range(0, T.shape[0], batch_size):
         end = min(start + batch_size, T.shape[0])
@@ -110,6 +112,7 @@ def run_solver_batched(T, p, qv, qc, qi, qs, qg, cldfra, albedo, coszen, dz, rho
             jnp.asarray(qc[start:end]), jnp.asarray(qi[start:end]), jnp.asarray(qs[start:end]), jnp.asarray(qg[start:end]),
             jnp.asarray(cldfra[start:end]), jnp.asarray(albedo[start:end]), jnp.asarray(coszen[start:end]),
             jnp.asarray(dz[start:end]), jnp.asarray(rho[start:end]),
+            solar_source_scale=jnp.asarray(solar_source_scale[start:end]),
         )
         sw = solve_rrtmg_sw_column(st, debug=False)
         outputs.append((
@@ -135,7 +138,7 @@ def pair_metrics(gpu, wrf, mask):
     }
 
 
-def run_oracle(clear_sky=True, max_columns=0, batch_size=512):
+def run_oracle(clear_sky=True, max_columns=0, batch_size=512, source_scale_mode='wrf-toa'):
     results = []
     for lead, fname, label in LEADS:
         w = load_wrf_columns(RDIR + '/' + fname)
@@ -155,14 +158,25 @@ def run_oracle(clear_sky=True, max_columns=0, batch_size=512):
         rho = to_columns(w['rho']).astype(np.float64)[indices]
         coszen = w['coszen'].reshape(-1).astype(np.float64)[indices]
         albedo = w['albedo'].reshape(-1).astype(np.float64)[indices]
+        if source_scale_mode == 'unit':
+            solar_source_scale = np.ones_like(coszen)
+        elif source_scale_mode == 'wrf-toa':
+            if w['swdntc'] is None:
+                raise RuntimeError('WRF SWDNTC is required for --source-scale wrf-toa')
+            wrf_swdntc_selected = w['swdntc'].reshape(-1).astype(np.float64)[indices]
+            solar_source_scale = wrf_swdntc_selected / np.maximum(coszen * RRSW_SCON, 1e-6)
+        else:
+            raise ValueError(source_scale_mode)
 
         gpu_swdown, gpu_direct, gpu_toa = run_solver_batched(
-            T, p, qv, qc, qi, qs, qg, cldfra, albedo, coszen, dz, rho, batch_size=batch_size
+            T, p, qv, qc, qi, qs, qg, cldfra, albedo, coszen, dz, rho,
+            solar_source_scale=solar_source_scale, batch_size=batch_size
         )
 
         wrf_swdown = w['swdown'].reshape(-1)[indices]
         wrf_swdnb = w['swdnb'].reshape(-1)[indices]
         wrf_swdnbc = w['swdnbc'].reshape(-1)[indices]
+        wrf_swdntc = w['swdntc'].reshape(-1)[indices] if w['swdntc'] is not None else np.full_like(wrf_swdown, np.nan)
         wrf_cldfra = to_columns(w['cldfra']).astype(np.float64)[indices]
         sel = wrf_swdown > 1.0
         cz = coszen
@@ -181,24 +195,30 @@ def run_oracle(clear_sky=True, max_columns=0, batch_size=512):
                 'domain_shape': [int(ny), int(nx)],
                 'max_columns_requested': int(max_columns or 0),
                 'batch_size': int(batch_size),
+                'source_scale_mode': source_scale_mode,
             },
             'coszen_mean': m(cz), 'airmass_mean': m(airmass),
             'wrf_SWDOWN': m(wrf_swdown), 'wrf_SWDNB': m(wrf_swdnb), 'wrf_SWDNBC_clear': m(wrf_swdnbc),
+            'wrf_SWDNTC_toa_clear': m(wrf_swdntc),
             'gpu_SWDOWN': m(gpu_swdown),
             'bias_Wm2': m(gpu_swdown - wrf_swdown),
             'bias_pct': 100.0 * m(gpu_swdown - wrf_swdown) / m(wrf_swdown),
             'vs_SWDOWN': pair_metrics(gpu_swdown, wrf_swdown, sel),
             'vs_SWDNB': pair_metrics(gpu_swdown, wrf_swdnb, sel),
             'vs_SWDNBC_clear': pair_metrics(gpu_swdown, wrf_swdnbc, sel),
+            'vs_SWDNTC_toa_clear': pair_metrics(gpu_toa, wrf_swdntc, sel),
             'gpu_direct': m(gpu_direct), 'gpu_TOA_down': m(gpu_toa),
+            'solar_source_scale_mean': m(solar_source_scale),
+            'solar_source_scale_min': float(np.min(solar_source_scale[sel])),
+            'solar_source_scale_max': float(np.max(solar_source_scale[sel])),
             'wrf_SWNORM': m(w['swnorm'].reshape(-1)[indices]),
             'albedo_mean': m(albedo),
             'wrf_cldfra_mean': float(np.mean(wrf_cldfra[sel])),
             'wrf_cldfra_max': float(np.max(wrf_cldfra[sel])),
             'o3_source': 'GPU WRF climatological ozone profile; corpus exposes only O3_GFS_DU total column',
         }
-        cz_sel = cz[sel]; bias_sel = (gpu_swdown - wrf_swdown)[sel]
-        wrf_sel = wrf_swdown[sel]
+        cz_sel = cz[sel]; bias_sel = (gpu_swdown - wrf_swdnbc)[sel]
+        wrf_sel = wrf_swdnbc[sel]
         q = np.quantile(cz_sel, [0.0, 0.25, 0.5, 0.75, 1.0])
         bins = []
         for i in range(4):
@@ -225,15 +245,19 @@ if __name__ == '__main__':
     parser.add_argument('mode', nargs='?', default='clear', choices=('clear', 'allsky'))
     parser.add_argument('--max-columns', type=int, default=0, help='0 means all land/daylit columns; positive values use a deterministic coszen-stratified subset.')
     parser.add_argument('--batch-size', type=int, default=512)
+    parser.add_argument('--source-scale', default='wrf-toa', choices=('wrf-toa', 'unit'),
+                        help='wrf-toa applies WRF SWDNTC/(COSZEN*1368.22); unit reproduces the old fixed-table source.')
     parser.add_argument('--out', default=os.path.join(os.path.dirname(__file__), 'clearsky_swdown_oracle.json'))
     args = parser.parse_args()
-    out = run_oracle(clear_sky=(args.mode != 'allsky'), max_columns=args.max_columns, batch_size=args.batch_size)
+    out = run_oracle(clear_sky=(args.mode != 'allsky'), max_columns=args.max_columns,
+                     batch_size=args.batch_size, source_scale_mode=args.source_scale)
     outpath = args.out
     with open(outpath, 'w') as f:
         json.dump({
             'mode': args.mode,
+            'source_scale': args.source_scale,
             'generated_utc': datetime.now(timezone.utc).isoformat(),
-            'command_hint': 'taskset -c 0-3 env JAX_PLATFORMS=<cpu|cuda> PYTHONPATH=src python proofs/rrtmg_sw/clearsky_swdown_oracle.py clear --max-columns <N> --batch-size <N>',
+            'command_hint': 'taskset -c 0-3 env JAX_PLATFORMS=<cpu|cuda> PYTHONPATH=src python proofs/rrtmg_sw/clearsky_swdown_oracle.py clear --source-scale wrf-toa --max-columns <N> --batch-size <N>',
             'wrf_source': '/home/enric/src/wrf_pristine/WRF/phys/module_ra_rrtmg_sw.F',
             'results': out,
         }, f, indent=2)
