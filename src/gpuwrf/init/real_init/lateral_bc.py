@@ -173,6 +173,7 @@ def _prepare_snapshots(
                 base=base,
                 surface=surface,
                 vcoord=vcoord,
+                use_theta_m=int(getattr(config, "use_theta_m", 1)),
             )
         )
     return snapshots
@@ -239,12 +240,18 @@ def _snapshot_from_parts(
     base: Any,
     surface: Any,
     vcoord: Any,
+    use_theta_m: int = 1,
 ) -> _ForcingSnapshot:
     qv = _array_attr(dynamics, "qv")
     theta = _array_attr(dynamics, "theta")
-    thm = _optional_array_attr(dynamics, "thm")
-    if thm is None:
-        thm = (theta + T0) * (1.0 + RVOVRD * qv) - T0
+    # The wrfbdy T_B* couple the prognostic theta the dycore advances:
+    # use_theta_m=1 (WRF/Canary default) -> moist theta THM; 0 -> dry theta.
+    if int(use_theta_m) == 0:
+        thm = theta
+    else:
+        thm = _optional_array_attr(dynamics, "thm")
+        if thm is None:
+            thm = (theta + T0) * (1.0 + RVOVRD * qv) - T0
 
     return _ForcingSnapshot(
         valid_time=str(valid_time),

@@ -488,6 +488,14 @@ def _score_bdy_quantity(
             continue
         nat = np.asarray(nat, dtype=np.float64)
         ora = np.asarray(ora, dtype=np.float64)
+        # The native LateralBC stacks per-side arrays over forcing INTERVALS:
+        # value/tendency side arrays are (n_intervals, bdy_width, [z,] side),
+        # while the oracle frame was already sliced to its FIRST time level above
+        # (dropping the leading Time axis). Score the matching FIRST native
+        # interval (the t0 value / first-interval tendency) so the two align —
+        # one extra leading axis on the native side means "stacked intervals".
+        if nat.ndim == ora.ndim + 1 and nat.shape[0] >= 1:
+            nat = nat[0]
         if nat.shape != ora.shape:
             return float("nan"), float("nan"), 0, "SHAPE_MISMATCH"
         rmse, maxabs, npts = _masked_rmse_maxabs(nat, ora, None)

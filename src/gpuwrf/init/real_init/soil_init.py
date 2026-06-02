@@ -168,13 +168,28 @@ def compute_soil_init(
             f"num_soil_layers={config.num_soil_layers}"
         )
 
-    sres = compute_surface_init_full(config, metem)
-    land = sres.land
-    water = sres.water
-    tsk = sres.tsk
-    tmn_endpoint = sres.tmn_soil_endpoint
-    ht = sres.ht
-    toposoil = sres.toposoil
+    # carry-batch 2e: if the surface lane already provided the pre-fix deep-soil
+    # endpoint on the frozen SurfaceInit, consume it directly (the driver runs the
+    # surface lane ONCE and passes its output here) — no doubled surface compute.
+    # The remaining consistent intermediates are all on the frozen SurfaceInit
+    # (tsk/landmask/hgt) plus met_em SOILHGT; only fall back to the internal
+    # re-run when tmn_soil_endpoint is absent (e.g. a hand-built SurfaceInit).
+    if getattr(surface, "tmn_soil_endpoint", None) is not None:
+        landmask = np.asarray(surface.landmask, dtype=np.float64)
+        land = landmask > 0.5
+        water = ~land
+        tsk = np.asarray(surface.tsk, dtype=np.float64)
+        tmn_endpoint = np.asarray(surface.tmn_soil_endpoint, dtype=np.float64)
+        ht = np.asarray(surface.hgt, dtype=np.float64)
+        toposoil = np.asarray(metem.arrays["SOILHGT"], dtype=np.float64)
+    else:
+        sres = compute_surface_init_full(config, metem)
+        land = sres.land
+        water = sres.water
+        tsk = sres.tsk
+        tmn_endpoint = sres.tmn_soil_endpoint
+        ht = sres.ht
+        toposoil = sres.toposoil
     delev = ht - toposoil
 
     st = np.asarray(metem.arrays["ST"], dtype=np.float64)  # (nst, ny, nx)

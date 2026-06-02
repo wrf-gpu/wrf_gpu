@@ -257,6 +257,9 @@ def compute_surface_init_full(
         landmask=landmask.copy(),
         snowh=snowh,
         seaice=seaice,
+        # additive optional (carry-batch 2e): the pre-fix deep-soil endpoint the
+        # soil lane interpolates to, so it need not re-run this surface lane.
+        tmn_soil_endpoint=tmn_soil_endpoint,
     )
     return _SurfaceResult(
         surface=surface,

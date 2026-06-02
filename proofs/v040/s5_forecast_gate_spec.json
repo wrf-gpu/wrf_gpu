@@ -1,0 +1,58 @@
+{
+  "schema": "v0.4.0-S4-forecast-gate-spec-2026-06-02",
+  "executed": false,
+  "gpu_bound": true,
+  "owner": "S5/manager (single-GPU serialization point)",
+  "forecast_hours": 24,
+  "no_replay": true,
+  "metric": "per-lead gridpoint-paired bias+rmse vs CPU-WRF wrfout",
+  "core_fields_blocking": [
+    "T2",
+    "U10",
+    "V10"
+  ],
+  "diag_fields_descriptive": [
+    "PBLH",
+    "RAINNC",
+    "RAINC",
+    "Q2",
+    "PSFC"
+  ],
+  "require_conservation_pass": true,
+  "require_restart_pass": true,
+  "cpu_wrfout_roots": [
+    "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output"
+  ],
+  "candidate_cases": [
+    "20260428_18z_l3_24h_20260525T221139Z",
+    "20260521_18z_l3_24h_20260522T072630Z",
+    "20260521_18z_l3_24h_20260522T133443Z",
+    "20260530_18z_l3_24h_20260531T050849Z",
+    "20260531_18z_l3_24h_20260601T125256Z",
+    "20260521_18z_l2_72h_20260522T133443Z"
+  ],
+  "n_candidate_cases": 6,
+  "continuous_gate_module": "proofs/m20/continuous_gate.py",
+  "note": "SCAFFOLD ONLY \u2014 no GPU forecast run in S4. The manager invokes run_forecast_gate(execute=True) in S5 with the GPU free.",
+  "s5_readiness": {
+    "factory_wired": "driver.build_real_init via s5_native_init_parity.make_factory",
+    "n_ready_cases": 6,
+    "ready_case_ids": [
+      "20260428_18z_l3_24h_20260525T221139Z",
+      "20260521_18z_l3_24h_20260522T072630Z",
+      "20260521_18z_l3_24h_20260522T133443Z",
+      "20260530_18z_l3_24h_20260531T050849Z",
+      "20260531_18z_l3_24h_20260601T125256Z",
+      "20260521_18z_l2_72h_20260522T133443Z"
+    ],
+    "cpu_wrfout_backfill_roots_exist": {
+      "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output": true
+    },
+    "retained_per_case_wrfout_present": true,
+    "continuous_gate_module_present": true,
+    "manager_invocation": "C.run_forecast_gate(make_factory(lbc_intervals=1), execute=True, out_path='proofs/v040/s5_forecast_gate_report.json')  # GPU, ONE job at a time",
+    "executed": false,
+    "gpu_bound": true,
+    "blocked_reason": "single-GPU serialization point (shared with v0.3.0 parity + backfill replays); manager schedules ONE GPU job at a time"
+  }
+}

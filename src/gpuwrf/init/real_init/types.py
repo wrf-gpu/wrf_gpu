@@ -38,7 +38,12 @@ from typing import Mapping
 import numpy as np
 
 
-REAL_INIT_TYPES_VERSION = "0.4.0-S0-frozen-2026-06-02"
+REAL_INIT_TYPES_VERSION = "0.4.0-S5-carrybatch-2026-06-02"
+# Provenance: frozen at S0 as 0.4.0-S0-frozen-2026-06-02; the S5 manager applied
+# the manager-approved carry-batch on 2026-06-02 (C1F/C1H tol recalibration to the
+# fp32 noise floor, drop unused ALT key, add W + hydrometeor WRFBDY_TOLS, add the
+# frozen use_theta_m switch, add the additive optional SurfaceInit.tmn_soil_endpoint
+# field). See .agent/decisions/V0.4.0-S0-PLAN.md "manager-approved 2026-06-02" note.
 
 # WRF physical constants real.exe uses (module_model_constants), pinned here so
 # every lane uses the identical values (a 0.01% constant drift poisons hour-0).
@@ -101,6 +106,12 @@ class RealInitConfig:
     # LBC
     spec_bdy_width: int = 5  # boundary relaxation/spec zone width (Canary = 5)
     interval_seconds: int = 21600  # forcing interval; Canary AIFS = 6 h
+    # use_theta_m (manager-approved carry-batch 2d, 2026-06-02): WRF
+    # dynamics%use_theta_m. 1 => moist potential temperature THM (theta_m =
+    # theta*(1+(Rv/Rd)*qv)) is the prognostic the T boundary couples; 0 => dry
+    # theta. Canary default = 1 (moist-theta). Frozen here so the LBC lane has an
+    # explicit switch instead of an implicit assumption. S3 follows this for T_B*.
+    use_theta_m: int = 1
     # provenance / identity
     grid_id: int = 1
 
@@ -238,6 +249,14 @@ class SurfaceInit:
     landmask: np.ndarray  # (ny, nx) 1=land 0=water
     snowh: np.ndarray | None = None  # (ny, nx) snow depth (m)
     seaice: np.ndarray | None = None  # (ny, nx) fractional/0-1 sea ice
+    # tmn_soil_endpoint (manager-approved carry-batch 2e, 2026-06-02; additive
+    # optional => freeze-compatible per S0 policy): the PRE-fix deep-soil (300 cm)
+    # temperature endpoint the soil interp uses, BEFORE the over-water / reasonable
+    # fixes that produce the final wrfinput-stored ``tmn``. When the surface lane
+    # populates this, ``soil_init`` consumes it directly instead of re-running the
+    # whole surface lane internally (eliminates the doubled surface compute, S2
+    # efficiency finding). ``None`` => soil_init falls back to the internal re-run.
+    tmn_soil_endpoint: np.ndarray | None = None  # (ny, nx)
 
 
 @dataclass(frozen=True)
@@ -340,15 +359,24 @@ WRFINPUT_TOLS: dict[str, tuple[float, float]] = {
     "W": (0.01, 0.1),  # m s-1 (init ~0)
     "QVAPOR": (1e-4, 1e-3),  # kg kg-1
     "AL": (1e-4, 1e-3),  # m3 kg-1  (al perturbation inverse density)
-    "ALT": (1e-4, 1e-3),
+    # NOTE: ALT dropped 2026-06-02 (manager-approved carry-batch 2b) — real.exe
+    # writes AL/ALB/T_INIT/P_HYD to wrfinput, NOT ALT (ALT=AL+ALB recomputed at
+    # runtime). The dangling key is removed; the comparator checks AL instead.
     # vertical coordinate 1D (must be near-exact)
     "ZNW": (1e-6, 1e-5),
     "ZNU": (1e-6, 1e-5),
-    "C1H": (1e-6, 1e-5),
+    # C1H/C1F (manager-approved carry-batch 2a, 2026-06-02): recalibrated to the
+    # fp32 finite-difference noise floor (rmse 1e-5, max_abs 5e-5). The oracle
+    # C1F/C1H ARE WRF's fp32 (RWORDSIZE=4) finite-difference of the stored fp32 C3
+    # (proven bit-exact in proofs/v040 c1_precision_diagnosis, max_abs=0.0); our
+    # fp64 C1 is strictly MORE accurate; downstream impact ~3 Pa with PB/PHB/P/PH/MU
+    # passing 3+ orders inside tol. NOT a loosening — a recalibration to the
+    # fp32-oracle noise floor. See V0.4.0-S0-PLAN.md manager-approved note.
+    "C1H": (1e-5, 5e-5),  # was (1e-6, 1e-5)
     "C2H": (1.0, 10.0),  # Pa-scaled
     "C3H": (1e-6, 1e-5),
     "C4H": (1.0, 10.0),  # Pa-scaled
-    "C1F": (1e-6, 1e-5),
+    "C1F": (1e-5, 5e-5),  # was (1e-6, 1e-5)
     "C3F": (1e-6, 1e-5),
     "P_TOP": (1e-3, 1e-3),  # Pa
     # surface / metric (mostly passthrough; must match met_em-derived)
@@ -389,4 +417,18 @@ WRFBDY_TOLS: dict[str, tuple[float, float]] = {
     "PH": (1.0e5, 1.0e6),  # coupled m2 s-2 * Pa
     "QV": (10.0, 100.0),  # coupled kg kg-1 * Pa
     "MU": (5.0, 50.0),  # the 2D mu boundary (Pa)
+    # W boundary (manager-approved carry-batch 2c, 2026-06-02): oracle wrfbdy
+    # carries W_B* (coupled m s-1 * Pa); same coupled scale as U/V. Native W LBC
+    # is init-0, so this is scored as a descriptive (non-blocking) check until a
+    # specified-W LBC path is wired (v0.5.0+); named so the comparator scores it.
+    "W": (2.0e4, 2.0e5),  # coupled m s-1 * Pa
+    # Hydrometeor boundaries (manager-approved carry-batch 2c, 2026-06-02): oracle
+    # wrfbdy carries QCLOUD/QRAIN/QICE/QSNOW/QGRAUP boundaries when present. Same
+    # coupled scale as QV (mixing ratios, kg kg-1 * Pa). The comparator + lateral_bc
+    # already couple any field present in BOTH LateralBC and the oracle once named.
+    "QCLOUD": (10.0, 100.0),  # coupled kg kg-1 * Pa
+    "QRAIN": (10.0, 100.0),
+    "QICE": (10.0, 100.0),
+    "QSNOW": (10.0, 100.0),
+    "QGRAUP": (10.0, 100.0),
 }
