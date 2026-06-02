@@ -1,0 +1,50 @@
+{
+  "mode": "DRY-PLAN (no GPU)",
+  "parquet": "/mnt/data/canairy_meteo/artifacts/datasets/wrf_case_bank/_all_cases_point_shadows.parquet",
+  "margins_frozen_adr029": {
+    "T2": 0.2148692978020805,
+    "U10": 0.23064713972582307,
+    "V10": 0.2752320537920854
+  },
+  "min_pairs_per_block": 30,
+  "lead_blocks": {
+    "0-24h": [
+      0,
+      24
+    ],
+    "24-48h": [
+      24,
+      48
+    ],
+    "48-72h": [
+      48,
+      72
+    ]
+  },
+  "units": [
+    {
+      "unit_id": "20260509_18z__d02",
+      "case_id": "20260509_18z",
+      "domain": "d02",
+      "init": "2026-05-09T18:00:00+00:00",
+      "max_lead_h": 72,
+      "parquet_leads_covered": 72,
+      "scoreable_leads": 72,
+      "parquet_stations": 40,
+      "parquet_workdir_match": true,
+      "caveat": null
+    },
+    {
+      "unit_id": "20260530_18z__d02",
+      "case_id": "20260530_18z",
+      "domain": "d02",
+      "init": "2026-05-30T18:00:00+00:00",
+      "max_lead_h": 72,
+      "parquet_leads_covered": 72,
+      "scoreable_leads": 72,
+      "parquet_stations": 278,
+      "parquet_workdir_match": true,
+      "caveat": null
+    }
+  ]
+}
