@@ -51,7 +51,17 @@ TKWAT: float = 0.6         # thermal conductivity of water [W/m/K]
 TKICE: float = 2.2         # thermal conductivity of ice [W/m/K]
 DENH2O: float = 1000.0     # density of water [kg/m3]
 DENICE: float = 917.0      # density of ice [kg/m3]
-ZBOT: float = 8.0          # depth of lower BC from soil surface [m] (Noah GENPARM)
+ZBOT: float = -8.0         # depth of lower BC from soil surface [m], NEGATIVE.
+# WRF GENPARM ``ZBOT_DATA = -8.0`` is loaded verbatim into ``parameters%ZBOT``
+# (module_sf_noahmpdrv.F:1687; the glacier module hard-codes ``ZBOT = -8.0``).
+# ZBOT enters TSNOSOI as ``ZBOTSNO = parameters%ZBOT - SNOWH`` and the HRT bottom
+# gradient ``DTSDZ(NSOIL)=(STC-TBOT)/(0.5*(ZSNSO(NSOIL-1)+ZSNSO(NSOIL))-ZBOTSNO)``
+# (module_sf_noahmplsm.F:5444). With ZSNSO<0 the denominator is
+# ``0.5*(-0.7-1.5) - (-8.0) = +6.9`` (deep heat flows DOWN to the cooler 8 m BC).
+# The previous ``+8.0`` flipped the denominator to ``-9.1`` -- WRONG SIGN -- which
+# inverted the deep-soil heat exchange. The single-step soil savepoint hid this
+# because the oracle replica used the same +8.0 (a self-consistent tautology on
+# this term).
 
 NSOIL: int = 4
 NSNOW: int = 3
