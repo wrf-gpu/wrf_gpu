@@ -24,7 +24,9 @@ The flux operators are the exact WRF definitions
 
 with ``time_step > 0`` so ``sign(time_step)=+1``.  Tendencies are flux
 divergences: ``tendency -= mrdx*(fqx(i+1)-fqx(i))`` etc., with
-``mrdx = msftx*rdx`` (``module_advect_em.F:3387-3388``).
+``mrdx = msftx*rdx`` (``module_advect_em.F:3387-3388``).  Real-grid map
+factor terms are threaded for the periodic high-order path; specified/nested
+boundary order degradation remains out of scope for this module.
 """
 
 from __future__ import annotations
@@ -88,11 +90,15 @@ def flux5_face_periodic(field: jax.Array, vel: jax.Array, axis: int) -> jax.Arra
 
 @dataclass(frozen=True)
 class CoupledVelocities:
-    """Mass-coupled velocities for flux-form advection (dry, map factor=1)."""
+    """Mass-coupled velocities and map factors for flux-form advection."""
 
     ru: jax.Array  # (nz, ny, nx+1) coupled u at x faces = (c1h*muu+c2h)*u/msfuy
     rv: jax.Array  # (nz, ny+1, nx) coupled v at y faces = (c1h*muv+c2h)*v*msfvx_inv
     rom: jax.Array  # (nz+1, ny, nx) coupled omega ww at w faces (calc_ww_cp)
+    msftx: jax.Array | None = None  # (ny, nx) mass-point x map factor
+    msfux: jax.Array | None = None  # (ny, nx) periodic-collapsed u-point x map factor
+    msfvy: jax.Array | None = None  # (ny, nx) periodic-collapsed v-point y map factor
+    msfvx: jax.Array | None = None  # (ny, nx) periodic-collapsed v-point x map factor
 
 
 def _muu_face(mu_total: jax.Array) -> jax.Array:
@@ -107,6 +113,32 @@ def _muv_face(mu_total: jax.Array) -> jax.Array:
     return 0.5 * (mu_total + jnp.roll(mu_total, 1, axis=-2))
 
 
+def _mass_factor_or_one(factor: jax.Array | None, reference: jax.Array) -> jax.Array:
+    """Return a mass-point map factor or shaped unity for the unit-map path."""
+
+    if factor is None:
+        return jnp.ones(tuple(reference.shape[-2:]), dtype=reference.dtype)
+    return jnp.asarray(factor, dtype=reference.dtype)
+
+
+def _x_face_factor_or_one(factor: jax.Array | None, *, nx: int, reference: jax.Array) -> jax.Array:
+    """Return an x-face map factor collapsed to the periodic ``nx`` faces."""
+
+    if factor is None:
+        return jnp.ones((int(reference.shape[-2]), nx), dtype=reference.dtype)
+    arr = jnp.asarray(factor, dtype=reference.dtype)
+    return arr[:, :nx] if arr.shape[-1] == nx + 1 else arr
+
+
+def _y_face_factor_or_one(factor: jax.Array | None, *, ny: int, reference: jax.Array) -> jax.Array:
+    """Return a y-face map factor collapsed to the periodic ``ny`` faces."""
+
+    if factor is None:
+        return jnp.ones((ny, int(reference.shape[-1])), dtype=reference.dtype)
+    arr = jnp.asarray(factor, dtype=reference.dtype)
+    return arr[:ny, :] if arr.shape[-2] == ny + 1 else arr
+
+
 def couple_velocities_periodic(
     u: jax.Array,
     v: jax.Array,
@@ -117,33 +149,49 @@ def couple_velocities_periodic(
     dnw: jax.Array,
     rdx: float,
     rdy: float,
+    msfuy: jax.Array | None = None,
+    msfvx: jax.Array | None = None,
+    msftx: jax.Array | None = None,
+    msfux: jax.Array | None = None,
+    msfvy: jax.Array | None = None,
 ) -> CoupledVelocities:
-    """Build ``ru``/``rv``/``rom`` for the periodic dry case (msf=1).
+    """Build ``ru``/``rv``/``rom`` for the periodic dry case.
 
     Source: ``couple_momentum`` (``module_em.F:195``) and ``calc_ww_cp``
     (``module_big_step_utilities_em.F:640-782``).  ``u`` is on x faces
     ``(nz, ny, nx+1)`` collapsed to ``(nz, ny, nx)`` periodically (the project's
     one-row C-grid keeps ``nx+1`` u faces; the last equals the first under
-    periodicity).  For the idealized slab the map factors are unity.
+    periodicity).  WRF map factors enter the mass-coupled velocities and the
+    diagnosed ``ww`` recurrence; when omitted they reduce exactly to unity for
+    idealized slabs.
     """
 
     nz = int(u.shape[0])
+    ny = int(mu_total.shape[-2])
+    nx = int(mu_total.shape[-1])
     # u has nx+1 faces; in the periodic project layout face nx == face 0.  Use the
     # first nx faces as the staggered u at x-faces 0..nx-1 (WRF u(i) at face i).
-    u_faces = u[:, :, :-1] if u.shape[-1] == mu_total.shape[-1] + 1 else u
-    v_faces = v[:, :-1, :] if v.shape[-2] == mu_total.shape[-2] + 1 else v
+    u_faces = u[:, :, :-1] if u.shape[-1] == nx + 1 else u
+    v_faces = v[:, :-1, :] if v.shape[-2] == ny + 1 else v
+    msfuy_u = _x_face_factor_or_one(msfuy, nx=nx, reference=mu_total)
+    msfvx_v = _y_face_factor_or_one(msfvx, ny=ny, reference=mu_total)
+    msftx_m = _mass_factor_or_one(msftx, mu_total)
+    msfux_u = _x_face_factor_or_one(msfux, nx=nx, reference=mu_total)
+    msfvy_v = _y_face_factor_or_one(msfvy, ny=ny, reference=mu_total)
 
     muu = _muu_face(mu_total)  # (ny, nx)
     muv = _muv_face(mu_total)  # (ny, nx)
     mass_u = c1h[:, None, None] * muu[None, :, :] + c2h[:, None, None]  # (nz, ny, nx)
     mass_v = c1h[:, None, None] * muv[None, :, :] + c2h[:, None, None]
-    ru = mass_u * u_faces  # msfuy = 1
-    rv = mass_v * v_faces  # msfvx_inv = 1
+    ru = mass_u * u_faces / msfuy_u[None, :, :]
+    rv = mass_v * v_faces / msfvx_v[None, :, :]
 
-    # calc_ww_cp: divv(k) = dnw(k)*(rdx*(ru(i+1)-ru(i)) + rdy*(rv(j+1)-rv(j)))  (msftx=1)
+    # calc_ww_cp: divv(k)=msftx*dnw(k)*(rdx*d_i(mu*u/msfuy)+rdy*d_j(mu*v/msfvx)).
     ru_ip1 = jnp.roll(ru, -1, axis=-1)
     rv_jp1 = jnp.roll(rv, -1, axis=-2)
-    divv = dnw[:, None, None] * (rdx * (ru_ip1 - ru) + rdy * (rv_jp1 - rv))  # (nz, ny, nx)
+    divv = dnw[:, None, None] * msftx_m[None, :, :] * (
+        rdx * (ru_ip1 - ru) + rdy * (rv_jp1 - rv)
+    )  # (nz, ny, nx)
     dmdt = jnp.sum(divv, axis=0, keepdims=True)  # (1, ny, nx) integral over levels
     # ww(k) = ww(k-1) - dnw(k-1)*c1h(k-1)*dmdt - divv(k-1), with ww(0)=ww(nz)=0.
     increments = -(dnw[:, None, None] * c1h[:, None, None] * dmdt) - divv  # (nz, ny, nx) per k-1
@@ -159,7 +207,15 @@ def couple_velocities_periodic(
     rom = jnp.zeros((nz + 1,) + tuple(mu_total.shape), dtype=cum.dtype)
     rom = rom.at[1:nz, :, :].set(cum[: nz - 1, :, :])
     # face nz (top) stays 0 (rigid lid); face 0 (surface) stays 0.
-    return CoupledVelocities(ru=ru, rv=rv, rom=rom)
+    return CoupledVelocities(
+        ru=ru,
+        rv=rv,
+        rom=rom,
+        msftx=msftx_m,
+        msfux=msfux_u,
+        msfvy=msfvy_v,
+        msfvx=msfvx_v,
+    )
 
 
 # --- scalar flux-form advection (advect_scalar, h=5/v=3) ---
@@ -187,8 +243,9 @@ def advect_scalar_flux(
 
     Source: ``advect_scalar`` (``module_advect_em.F:3029-4359``).  Returns the
     coupled tendency ``d(mu*phi)/dt`` so it is added to the coupled prognostic;
-    callers that hold uncoupled state must divide by mass.  For the idealized
-    periodic slab ``msftx = msfty = 1``.
+    callers that hold uncoupled state must divide by mass.  Horizontal
+    divergence uses WRF ``mrdx=msftx*rdx`` / ``mrdy=msftx*rdy``; vertical
+    divergence has no additional horizontal map factor in this high-order path.
 
     Horizontal (order 5, periodic, no degradation): for each x face i,
     ``fqx(i) = ru(i) * flux5(field[i-3..i+2], ru(i))`` and
@@ -203,12 +260,13 @@ def advect_scalar_flux(
     # fqx located at left face of cell i; ru is the coupled u at face i.
     fqx = vel.ru * flux5_face_periodic(field, vel.ru, axis=2)  # (nz, ny, nx)
     fqx_ip1 = jnp.roll(fqx, -1, axis=2)
-    tend = -rdx * (fqx_ip1 - fqx)
+    msftx = _mass_factor_or_one(vel.msftx, field)
+    tend = -msftx[None, :, :] * rdx * (fqx_ip1 - fqx)
 
     # ---- y flux divergence ----
     fqy = vel.rv * flux5_face_periodic(field, vel.rv, axis=1)  # (nz, ny, nx)
     fqy_jp1 = jnp.roll(fqy, -1, axis=1)
-    tend = tend - rdy * (fqy_jp1 - fqy)
+    tend = tend - msftx[None, :, :] * rdy * (fqy_jp1 - fqy)
 
     # ---- z flux divergence (order 3, rigid top/bottom) ----
     nz = int(field.shape[0])
@@ -287,7 +345,7 @@ def advect_u_flux(
     fzm: jax.Array,
     fzp: jax.Array,
 ) -> jax.Array:
-    """WRF flux-form coupled u advection tendency (h=5, v=3), periodic dry slab.
+    """WRF flux-form coupled u advection tendency (h=5, v=3), periodic path.
 
     ``u`` is on x-faces ``(nz, ny, nx+1)`` (periodic: face nx == face 0).  The
     transporting velocities are ``ru/rv/rom`` averaged onto the u faces.
@@ -297,16 +355,17 @@ def advect_u_flux(
 
     nx = vel.ru.shape[-1]
     u_f = u[:, :, :nx] if u.shape[-1] == nx + 1 else u  # collapse to nx periodic faces
+    msfux = _x_face_factor_or_one(vel.msfux, nx=nx, reference=u_f)
     # x-flux: at u-face i the velocity is 0.5*(ru(i)+ru(i-1)); flux5 stencil on u_f.
     velx = _avg_to_u_face_x(vel.ru)
     fqx = velx * flux5_face_periodic(u_f, velx, axis=2)
-    tend = -rdx * (jnp.roll(fqx, -1, axis=2) - fqx)
+    tend = -msfux[None, :, :] * rdx * (jnp.roll(fqx, -1, axis=2) - fqx)
     # y-flux: velocity 0.5*(rv(i)+rv(i-1)) averaged in x onto the u stagger.
     if u_f.shape[1] > 1:
         rv_collapsed = vel.rv[:, : u_f.shape[1], :]
         vely = _avg_to_u_face_x(rv_collapsed)
         fqy = vely * flux5_face_periodic(u_f, vely, axis=1)
-        tend = tend - rdy * (jnp.roll(fqy, -1, axis=1) - fqy)
+        tend = tend - msfux[None, :, :] * rdy * (jnp.roll(fqy, -1, axis=1) - fqy)
     # z-flux (order 3): vel = 0.5*(rom(i)+rom(i-1)) averaged in x onto u faces.
     tend = tend + _vertical_flux_div_3(u_f, _avg_to_u_face_x_w(vel.rom), rdzw, fzm, fzp)
     return _restore_periodic_u_face(tend, u.shape[-1] == nx + 1)
@@ -326,16 +385,20 @@ def advect_v_flux(
 
     ny = vel.rv.shape[-2]
     v_f = v[:, :ny, :] if v.shape[-2] == ny + 1 else v
+    msfvy = _y_face_factor_or_one(vel.msfvy, ny=ny, reference=v_f)
+    msfvx = _y_face_factor_or_one(vel.msfvx, ny=ny, reference=v_f)
     # x-flux: velocity 0.5*(ru(j)+ru(j-1)) averaged in y onto the v stagger.
     velx = _avg_to_v_face_y(vel.ru[:, : v_f.shape[1], :])
     fqx = velx * flux5_face_periodic(v_f, velx, axis=2)
-    tend = -rdx * (jnp.roll(fqx, -1, axis=2) - fqx)
+    tend = -msfvy[None, :, :] * rdx * (jnp.roll(fqx, -1, axis=2) - fqx)
     # y-flux: velocity 0.5*(rv(j)+rv(j-1)).
     vely = _avg_to_v_face_y(vel.rv)
     fqy = vely * flux5_face_periodic(v_f, vely, axis=1)
-    tend = tend - rdy * (jnp.roll(fqy, -1, axis=1) - fqy)
+    tend = tend - msfvy[None, :, :] * rdy * (jnp.roll(fqy, -1, axis=1) - fqy)
     # z-flux (order 3).
-    tend = tend + _vertical_flux_div_3(v_f, _avg_to_v_face_y_w(vel.rom), rdzw, fzm, fzp)
+    tend = tend + (msfvy / msfvx)[None, :, :] * _vertical_flux_div_3(
+        v_f, _avg_to_v_face_y_w(vel.rom), rdzw, fzm, fzp
+    )
     if v.shape[-2] == ny + 1:
         return jnp.concatenate((tend, tend[:, :1, :]), axis=1)
     return tend
@@ -370,17 +433,16 @@ def advect_w_flux(
     w(kde-1))`` and the lid pickup ``tend(kde) += 2*rdn(ktf)*vflux(kde)``.
     """
 
-    nz_mass = vel.ru.shape[0]  # = nz
-    nzp1 = w.shape[0]  # nz+1
+    msftx = _mass_factor_or_one(vel.msftx, w)
     # ru/rv on mass levels -> interpolate to w (full) levels: rw(k)=fzm(k)*r(k)+fzp(k)*r(k-1).
     ru_w = _mass_to_full_levels(vel.ru, fzm, fzp)  # (nz+1, ny, nx)
     rv_w = _mass_to_full_levels(vel.rv, fzm, fzp)
     # x-flux of w by ru_w (w and ru_w both on full levels, mass-located in x).
     fqx = ru_w * flux5_face_periodic(w, ru_w, axis=2)
-    tend = -rdx * (jnp.roll(fqx, -1, axis=2) - fqx)
+    tend = -msftx[None, :, :] * rdx * (jnp.roll(fqx, -1, axis=2) - fqx)
     if w.shape[1] > 1:
         fqy = rv_w * flux5_face_periodic(w, rv_w, axis=1)
-        tend = tend - rdy * (jnp.roll(fqy, -1, axis=1) - fqy)
+        tend = tend - msftx[None, :, :] * rdy * (jnp.roll(fqy, -1, axis=1) - fqy)
     # vertical flux of w lives on MASS levels (between w faces): vel = mass-level rom
     # average 0.5*(rom(k)+rom(k+1)); flux3 of the w faces; tend on faces via rdn.
     tend = tend + _vertical_flux_div_w(w, vel.rom, rdn, top_lid=top_lid)
