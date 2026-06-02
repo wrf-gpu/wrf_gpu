@@ -1,0 +1,41 @@
+{
+  "budget_terms_sample": {
+    "dry_mass_kg": 136098148064.46373,
+    "layer_dry_mass_total_kg": 136098148064.46371,
+    "moist_static_energy_j": 4.469870875110786e+16,
+    "total_water_air_kg": 1946203517.3218317
+  },
+  "closed_control": {
+    "dry_mass_relative_residual": 0.0,
+    "dry_mass_residual_kg": 0.0,
+    "passes_predeclared_tolerance": true,
+    "water_relative_residual": -2.4500888728189126e-16,
+    "water_residual_kg": -4.76837158203125e-07
+  },
+  "grid": {
+    "dx_m": 1000.0,
+    "dy_m": 1500.0,
+    "map_factors": "nonunit deterministic MAPFAC_MX/MAPFAC_MY",
+    "nx": 4,
+    "ny": 3,
+    "nz": 4
+  },
+  "open_lbc_corrected_control": {
+    "dry_mass_relative_residual": 0.0,
+    "dry_mass_residual_kg": 0.0,
+    "moist_static_energy_residual_j": 0.0,
+    "passes_predeclared_tolerance": true,
+    "water_relative_residual": 0.0,
+    "water_residual_kg": 0.0
+  },
+  "platform": "cpu",
+  "predeclared_tolerances": {
+    "closed_domain_dry_mass_relative_residual": 1e-10,
+    "closed_domain_total_water_relative_residual": 1e-08,
+    "controlled_cpu_budget_absolute_residual_kg": 1e-06,
+    "controlled_cpu_budget_relative_residual": 1e-12,
+    "open_domain_lbc_corrected_dry_mass_relative_residual_24h": 1e-05,
+    "open_domain_lbc_precip_evap_corrected_water_relative_residual_24h": 0.0001
+  },
+  "schema": "p0_7_conservation_budget_cpu_controlled_v1"
+}
