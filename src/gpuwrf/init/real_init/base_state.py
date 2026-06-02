@@ -34,6 +34,12 @@ import numpy as np
 
 from gpuwrf.init.real_init.types import (
     BaseStateColumns,
+    CP,
+    CVPM,
+    G,
+    P1000MB,
+    R_D,
+    T0,
     RealInitConfig,
     VerticalCoord1D,
 )
@@ -51,4 +57,64 @@ def compute_base_state(
     to both lanes (frozen single-source rule).
     """
 
-    raise NotImplementedError("v0.4.0 S1 (Opus): compute_base_state — frozen stub")
+    hgt64 = np.asarray(hgt, dtype=np.float64)
+    if hgt64.ndim != 2:
+        raise ValueError(f"hgt must be 2D (ny,nx); got shape {hgt64.shape}")
+
+    p00 = float(config.base_pres)
+    t00 = float(config.base_temp)
+    lapse = float(config.base_lapse)
+    p_top = float(config.p_top_pa)
+
+    p_surf = p00 * np.exp(
+        -t00 / lapse + np.sqrt((t00 / lapse) ** 2 - 2.0 * G * hgt64 / lapse / R_D)
+    )
+    mub = p_surf - p_top
+
+    pb = (
+        vcoord.c3h[:, None, None] * (p_surf[None, :, :] - p_top)
+        + vcoord.c4h[:, None, None]
+        + p_top
+    )
+    temp = np.maximum(
+        float(config.iso_temp),
+        t00 + lapse * np.log(pb / p00),
+    )
+    if config.base_pres_strat > 0.0:
+        strat = pb < float(config.base_pres_strat)
+        temp = np.where(
+            strat,
+            float(config.iso_temp)
+            + float(config.base_lapse_strat) * np.log(pb / float(config.base_pres_strat)),
+            temp,
+        )
+    t_init = temp * (p00 / pb) ** (R_D / CP) - T0
+    alb = (R_D / P1000MB) * (t_init + T0) * (pb / P1000MB) ** CVPM
+
+    nz = config.nz
+    phb = np.empty((nz + 1, *hgt64.shape), dtype=np.float64)
+    phb[0] = hgt64 * G
+    if config.hybrid_opt == 0:
+        for k in range(1, nz + 1):
+            h = k - 1
+            phb[k] = (
+                phb[k - 1]
+                - vcoord.dnw[h]
+                * (vcoord.c1h[h] * mub + vcoord.c2h[h])
+                * alb[h]
+            )
+    else:
+        for k in range(1, nz + 1):
+            h = k - 1
+            pfu = vcoord.c3f[k] * mub + vcoord.c4f[k] + p_top
+            pfd = vcoord.c3f[k - 1] * mub + vcoord.c4f[k - 1] + p_top
+            phm = vcoord.c3h[h] * mub + vcoord.c4h[h] + p_top
+            phb[k] = phb[k - 1] + alb[h] * phm * np.log(pfd / pfu)
+
+    return BaseStateColumns(
+        pb=pb,
+        alb=alb,
+        t_init=t_init,
+        mub=mub,
+        phb=phb,
+    )
