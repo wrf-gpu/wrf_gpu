@@ -944,6 +944,18 @@ def _unflatten_batch_to_columns(tree, ny: int, nx: int):
     )
 
 
+# MYNN-EDMF mass-flux nonlocal scalar transport (WRF ``bl_mynn_edmf``).
+# HELD OFF after the full-run remeasure (proofs/equiv_t2/VERDICT_edmf_on.md): with
+# edmf=True the d03 daytime run is STABLE (worst max|W| 6.4 m/s, no surface-w
+# blow-up) but the surface QFX/LH/T2 are a near-no-op vs edmf=False (LH delta
+# ~-0.03 W/m2 on a ~7 W/m2 deficit; the expected +7-11% rise did NOT materialize
+# because the operational coupler sets surface QFX/LH UPSTREAM in the surface
+# layer + Noah-MP, while MYNN-EDMF only redistributes existing PBL moisture).
+# Single-source flip point: a future land-vapor lane can set this True. The
+# flatten/unflatten round-trips exactly when False, so this is a lossless toggle.
+_MYNN_EDMF = False
+
+
 def mynn_adapter(state: State, dt: float, grid: GridSpec | None = None) -> State:
     """Advance the MYNN PBL using the surface fluxes ``surface_adapter`` wrote.
 
@@ -951,12 +963,11 @@ def mynn_adapter(state: State, dt: float, grid: GridSpec | None = None) -> State
     contract to the kernel (which applies it as the implicit bottom BC), and
     reassembles State with non-periodic C-grid wind reconstruction.
 
-    ``edmf=True`` activates the WRF-faithful MYNN-EDMF mass-flux nonlocal scalar
-    transport (``s_awqv``/``s_awthl`` updraft flux; verified <0.5% vs the pristine
-    WRF ``DMP_mf`` in ``proofs/mynn_edmf``). This matches the operational d03
-    namelist (``bl_mynn_edmf=1``); it ventilates near-surface moisture upward,
-    raising daytime QFX/LH toward WRF. The column view is flattened to the kernel's
-    single-batch-axis contract for the EDMF vmap (see _flatten_columns_to_batch).
+    The MYNN-EDMF mass-flux nonlocal scalar transport (``s_awqv``/``s_awthl``;
+    verified <0.5% vs pristine WRF ``DMP_mf`` in ``proofs/mynn_edmf``) is gated by
+    :data:`_MYNN_EDMF` — HELD OFF per the full-run remeasure. The column view is
+    flattened to the kernel's single-batch-axis contract for the EDMF vmap (see
+    :func:`_flatten_columns_to_batch`); the round trip is lossless when off.
     """
 
     column = _mynn_column_from_state(state, grid)
@@ -965,7 +976,7 @@ def mynn_adapter(state: State, dt: float, grid: GridSpec | None = None) -> State
     column_b = _flatten_columns_to_batch(column, ny, nx)
     surface_b = _flatten_columns_to_batch(surface, ny, nx)
     out_b = step_mynn_pbl_column(
-        column_b, dt, debug=False, surface=surface_b, edmf=True, dx=_mynn_dx(grid)
+        column_b, dt, debug=False, surface=surface_b, edmf=_MYNN_EDMF, dx=_mynn_dx(grid)
     )
     out = _unflatten_batch_to_columns(out_b, ny, nx)
     return _state_from_mynn_output(state, out)
@@ -982,7 +993,7 @@ def mynn_adapter_with_diagnostics(
     column_b = _flatten_columns_to_batch(column, ny, nx)
     surface_b = _flatten_columns_to_batch(surface, ny, nx)
     out_b, pblh_b = step_mynn_pbl_column_with_pblh(
-        column_b, dt, debug=False, surface=surface_b, edmf=True, dx=_mynn_dx(grid)
+        column_b, dt, debug=False, surface=surface_b, edmf=_MYNN_EDMF, dx=_mynn_dx(grid)
     )
     out = _unflatten_batch_to_columns(out_b, ny, nx)
     pblh = pblh_b.reshape((ny, nx) + pblh_b.shape[1:])
