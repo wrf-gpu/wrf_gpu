@@ -1,0 +1,87 @@
+{
+  "schema": "S6bNoahMPTost",
+  "land_model": "prognostic Noah-MP (S6b activated)",
+  "generated_utc": "2026-06-02T01:42:47.485355+00:00",
+  "manifest": "v010_cases_manifest.json",
+  "units": [
+    "case2_L2 (24-72h)",
+    "case3_L3 (0-24h incl first night)"
+  ],
+  "tost_aggregate": {
+    "schema": "M21TostResult",
+    "schema_version": 1,
+    "n_cases": {
+      "T2": 2,
+      "U10": 2,
+      "V10": 2
+    },
+    "per_case_deltas": {
+      "T2": [
+        0.5150951551937795,
+        1.4786150458819893
+      ],
+      "U10": [
+        0.1301556904245036,
+        -0.017234067610275794
+      ],
+      "V10": [
+        0.059697812247120785,
+        -0.14772517548588748
+      ]
+    },
+    "empirical_sigma": {
+      "T2": 0.6813114485137542,
+      "U10": 0.10422029738383694,
+      "V10": 0.1466702011999842
+    },
+    "tost": {
+      "T2": {
+        "status": "OK",
+        "n": 2,
+        "mean_delta": 0.9968551005378844,
+        "sd_delta": 0.6813114485137542,
+        "margin": 0.2148692978020805,
+        "p_lower": 0.12045490815128328,
+        "p_upper": 0.8242439981536869,
+        "tost_p": 0.8242439981536869,
+        "ci90": [
+          -2.044857484088221,
+          4.03856768516399
+        ],
+        "equivalent": false
+      },
+      "U10": {
+        "status": "OK",
+        "n": 2,
+        "mean_delta": 0.0564608114071139,
+        "sd_delta": 0.10422029738383694,
+        "margin": 0.23064713972582307,
+        "p_lower": 0.07997720710853896,
+        "p_upper": 0.12740158591289663,
+        "tost_p": 0.12740158591289663,
+        "ci90": [
+          -0.40883034261272383,
+          0.5217519654269516
+        ],
+        "equivalent": false
+      },
+      "V10": {
+        "status": "OK",
+        "n": 2,
+        "mean_delta": -0.04401368161938335,
+        "sd_delta": 0.1466702011999842,
+        "margin": 0.2752320537920854,
+        "p_lower": 0.1342128249828604,
+        "p_upper": 0.0999840066517044,
+        "tost_p": 0.1342128249828604,
+        "ci90": [
+          -0.6988222831082345,
+          0.6107949198694678
+        ],
+        "equivalent": false
+      }
+    },
+    "all_variables_equivalent": false
+  },
+  "honest_caveat": "n=2 single-season MAM (case1 corpus PURGED from disk; max n=2 here). UNDERPOWERED vs ADR-029 n>=15. NOT a seasonal equivalence claim. T2 dominated by the nighttime cold-start transient (see s6b_d03_24h.json daytime T2 bias ~+0.2K which IS within margin at the diurnal-peak leads)."
+}

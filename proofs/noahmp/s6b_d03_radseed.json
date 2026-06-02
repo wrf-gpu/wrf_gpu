@@ -1,0 +1,297 @@
+{
+  "proof": "S6b prognostic Noah-MP ACTIVATION + system validation",
+  "kind": "real corpus operational forecast with prognostic Noah-MP over land vs nightly CPU-WRF wrfout; land warm-started from corpus wrfinput via faithful NOAHMP_INIT; NOT a self-compare",
+  "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
+  "domain": "d03",
+  "dt_s": 3.0,
+  "hours": 18,
+  "leads": [
+    1,
+    3,
+    6,
+    18
+  ],
+  "n_land_cells": 2035,
+  "n_water_cells": 4940,
+  "init_meta": {
+    "source": "warm-start from corpus wrfinput",
+    "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
+    "domain": "d03",
+    "wrfinput_file": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfinput_d03",
+    "grid_shape_yx": [
+      75,
+      93
+    ],
+    "n_land_cells": 2035,
+    "table_dir": "/home/enric/src/wrf_pristine/WRF/run",
+    "prognostic_state_real_from_corpus": [
+      "CANWAT",
+      "ISLTYP",
+      "IVGTYP",
+      "LAI",
+      "LU_INDEX",
+      "SH2O",
+      "SHDMAX",
+      "SMOIS",
+      "SNOW",
+      "SNOWH",
+      "TMN",
+      "TSK",
+      "TSLB",
+      "VEGFRA",
+      "XSAI"
+    ],
+    "init_note": "corpus wrfinput is the PRE-NOAHMP_INIT state; canopy/snow prognostic XY fields are 0 over land, so they are built via a faithful module_sf_noahmpdrv.F NOAHMP_INIT replica (TV/TG/TAH=TSK, EAH=2000, CANLIQ=CANWAT, SNOW_INIT for ZSNSO/ISNOW/TSNO). This is the SAME land carry WRF integrates from.",
+    "cold_init_provenance": {
+      "tbot": "wrfinput TMN",
+      "tslb": "wrfinput TSLB",
+      "smois": "wrfinput SMOIS",
+      "sh2o": "wrfinput SH2O",
+      "canopy_tv_tg_tah": "NOAHMP_INIT: =TSK (corpus wrfinput pre-init over land)",
+      "eah": "NOAHMP_INIT: 2000 Pa (corpus pre-init)",
+      "sai": "wrfinput XSAI",
+      "snow": "WRF SNOW_INIT from SNOW/SNOWH/TG/ZSOIL (corpus pre-init over land)",
+      "sneqvo_albold_tauss": "NOAHMP_INIT: 0 / 0.65 / 0",
+      "smcwtd": "NOAHMP_INIT opt_run=3: bottom SMOIS layer",
+      "cm_ch": "NOAHMP_INIT: ~0 (sfclay seeds each step); 1e-4 floor at t=0"
+    }
+  },
+  "per_lead": [
+    {
+      "lead_h": 1,
+      "valid": "2026-05-21T19:00:00+00:00",
+      "all_finite": true,
+      "noahmp": {
+        "T2_full": {
+          "rmse": 1.889946802167983,
+          "bias": -1.1722994135293723,
+          "mae": 1.1726439001456088,
+          "n": 6975
+        },
+        "T2_land": {
+          "rmse": 3.4272539708621963,
+          "bias": -3.0353986156096404,
+          "mae": 3.035582019873804,
+          "n": 2035
+        },
+        "T2_water": {
+          "rmse": 0.45233155058865526,
+          "bias": -0.40480814303679236,
+          "mae": 0.40521898645190907,
+          "n": 4940
+        },
+        "U10_full": {
+          "rmse": 0.8860731623647651,
+          "bias": 0.005759151765976633,
+          "mae": 0.4994354634567288,
+          "n": 6975
+        },
+        "V10_full": {
+          "rmse": 1.0470795319044899,
+          "bias": 0.5743189826658246,
+          "mae": 0.7928732674632182,
+          "n": 6975
+        },
+        "HFX_land": {
+          "rmse": 103.191418474707,
+          "bias": -69.10654969850482,
+          "mae": 71.00358920409604,
+          "n": 2035
+        },
+        "HFX_water": {
+          "rmse": 5.715437340632347,
+          "bias": 4.692227406218669,
+          "mae": 4.696655881877412,
+          "n": 4940
+        },
+        "LH_land": {
+          "rmse": 7.155954708676217,
+          "bias": -5.268381061199309,
+          "mae": 5.271327576718803,
+          "n": 2035
+        },
+        "gpu_HFX_land_mean": 1.8143705257266776,
+        "wrf_HFX_land_mean": 70.9209202242315
+      }
+    },
+    {
+      "lead_h": 3,
+      "valid": "2026-05-21T21:00:00+00:00",
+      "all_finite": true,
+      "noahmp": {
+        "T2_full": {
+          "rmse": 2.9308802384312567,
+          "bias": -1.871883083632033,
+          "mae": 1.8742764466249304,
+          "n": 6975
+        },
+        "T2_land": {
+          "rmse": 5.318746214823374,
+          "bias": -4.971854247460176,
+          "mae": 4.975468839643928,
+          "n": 2035
+        },
+        "T2_water": {
+          "rmse": 0.6893377666226487,
+          "bias": -0.5948706710024236,
+          "mae": 0.5967609567881574,
+          "n": 4940
+        },
+        "U10_full": {
+          "rmse": 0.8553488312987868,
+          "bias": 0.0716391888984968,
+          "mae": 0.5475245369157187,
+          "n": 6975
+        },
+        "V10_full": {
+          "rmse": 1.3109019478009822,
+          "bias": 0.46892256704219304,
+          "mae": 0.918178332753984,
+          "n": 6975
+        },
+        "HFX_land": {
+          "rmse": 55.981796986191064,
+          "bias": -30.839441193425504,
+          "mae": 30.887302254825272,
+          "n": 2035
+        },
+        "HFX_water": {
+          "rmse": 8.991378921839228,
+          "bias": 7.318107812375496,
+          "mae": 7.352200999340999,
+          "n": 4940
+        },
+        "LH_land": {
+          "rmse": 2.1836513087938814,
+          "bias": -1.888170244771265,
+          "mae": 1.9074318427396932,
+          "n": 2035
+        },
+        "gpu_HFX_land_mean": -37.95312673347863,
+        "wrf_HFX_land_mean": -7.113685540053124
+      }
+    },
+    {
+      "lead_h": 6,
+      "valid": "2026-05-22T00:00:00+00:00",
+      "all_finite": true,
+      "noahmp": {
+        "T2_full": {
+          "rmse": 3.377587894816403,
+          "bias": -2.0800435086694145,
+          "mae": 2.0830517469454097,
+          "n": 6975
+        },
+        "T2_land": {
+          "rmse": 6.176251043726099,
+          "bias": -5.778970827528576,
+          "mae": 5.785000100347427,
+          "n": 2035
+        },
+        "T2_water": {
+          "rmse": 0.627350770536627,
+          "bias": -0.5562951090988898,
+          "mae": 0.5580588523759553,
+          "n": 4940
+        },
+        "U10_full": {
+          "rmse": 0.5794569052057535,
+          "bias": -0.10611468160852057,
+          "mae": 0.38493709173868834,
+          "n": 6975
+        },
+        "V10_full": {
+          "rmse": 1.1684812597836038,
+          "bias": 0.20351691224699928,
+          "mae": 0.8215084453315187,
+          "n": 6975
+        },
+        "HFX_land": {
+          "rmse": 37.009127988183515,
+          "bias": -23.145743280259154,
+          "mae": 23.150517888384,
+          "n": 2035
+        },
+        "HFX_water": {
+          "rmse": 7.102890856232798,
+          "bias": 5.800355135283562,
+          "mae": 5.833496578004428,
+          "n": 4940
+        },
+        "LH_land": {
+          "rmse": 2.3466324360452298,
+          "bias": -2.087002119224835,
+          "mae": 2.096992569529418,
+          "n": 2035
+        },
+        "gpu_HFX_land_mean": -39.688969261322804,
+        "wrf_HFX_land_mean": -16.54322598106365
+      }
+    },
+    {
+      "lead_h": 18,
+      "valid": "2026-05-22T12:00:00+00:00",
+      "all_finite": true,
+      "noahmp": {
+        "T2_full": {
+          "rmse": 1.2401225380103877,
+          "bias": -0.31568372063080397,
+          "mae": 0.6861222672996783,
+          "n": 6975
+        },
+        "T2_land": {
+          "rmse": 2.0362832746256596,
+          "bias": 0.24397561445547294,
+          "mae": 1.0239774356010707,
+          "n": 2035
+        },
+        "T2_water": {
+          "rmse": 0.6806841763943479,
+          "bias": -0.5462316451046043,
+          "mae": 0.5469450876451574,
+          "n": 4940
+        },
+        "U10_full": {
+          "rmse": 0.7532378365241661,
+          "bias": 0.21606632254697716,
+          "mae": 0.47425583229999013,
+          "n": 6975
+        },
+        "V10_full": {
+          "rmse": 1.2069541145740446,
+          "bias": 0.3745586103533969,
+          "mae": 0.7580355989944935,
+          "n": 6975
+        },
+        "HFX_land": {
+          "rmse": 56.913639968011736,
+          "bias": -23.425321246040912,
+          "mae": 40.8844671211852,
+          "n": 2035
+        },
+        "HFX_water": {
+          "rmse": 5.136165176438764,
+          "bias": 4.321639861458327,
+          "mae": 4.333158169558541,
+          "n": 4940
+        },
+        "LH_land": {
+          "rmse": 10.694756419057333,
+          "bias": -0.8629250318451104,
+          "mae": 7.010829408690048,
+          "n": 2035
+        },
+        "gpu_HFX_land_mean": 435.7290259567194,
+        "wrf_HFX_land_mean": 459.1543472027603
+      }
+    }
+  ],
+  "timings_noahmp_s": {
+    "1": 74.5,
+    "3": 159.8,
+    "6": 287.4,
+    "18": 793.5
+  },
+  "timings_bulk_s": null,
+  "wall_total_s": 811.0
+}

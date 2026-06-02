@@ -38,6 +38,10 @@ from gpuwrf.coupling.physics_couplers import (
     surface_layer_diagnostics,
     thompson_adapter,
 )
+from gpuwrf.coupling.noahmp_surface_hook import (
+    noahmp_surface_step,
+    overlay_noahmp_land_diagnostics,
+)
 from gpuwrf.dynamics.advection import compute_advection_tendencies, halo_spec
 from gpuwrf.dynamics.explicit_diffusion import (
     constant_k_diffusion_tendency,
@@ -81,6 +85,29 @@ config.update("jax_enable_x64", True)
 
 _THETA_LIMITER_MIN_K = 0.0
 _THETA_LIMITER_MAX_K = 500.0
+
+
+class _StaticHolder:
+    """Identity-hashable wrapper so a Noah-MP static bundle (categories + constant
+    parameter tables + pre-built params) can ride in the namelist's STATIC AUX.
+
+    The frozen Noah-MP driver concretizes several integer/scalar fields of these
+    bundles (``isurban``, ``nroot``, table scalars) inside the jitted scan, so they
+    must be COMPILE CONSTANTS, not tracers. Carrying them as static aux makes JAX
+    bake their (per-run-constant) arrays into the program. ``None`` is held as-is.
+    Hash/eq are by object identity: one run builds one static bundle -> one compile;
+    a different run's bundle is a distinct object -> a fresh compile (correct)."""
+
+    __slots__ = ("value",)
+
+    def __init__(self, value):
+        self.value = value
+
+    def __hash__(self):
+        return object.__hash__(self) if self.value is None else id(self.value)
+
+    def __eq__(self, other):
+        return isinstance(other, _StaticHolder) and self.value is other.value
 
 
 @jax.tree_util.register_pytree_node_class
@@ -137,6 +164,31 @@ class OperationalNamelist:
     # clock (time_utc + lead_seconds) inside the scan, so the diurnal SW cycle
     # evolves over the run; None keeps the adapter's legacy fixed-time behaviour.
     time_utc: object = None
+    # --- v0.2.0 S6b: prognostic Noah-MP land activation ---------------------
+    # ``use_noahmp`` (static aux) flips the LAND surface tile from the prescribed
+    # bulk path (coupling.physics_couplers.surface_adapter) to the prognostic
+    # Noah-MP coupler (coupling.noahmp_surface_hook.noahmp_surface_step). Ocean /
+    # water columns keep the bulk path byte-unchanged. Default OFF -- a run opts in
+    # by building the namelist with use_noahmp=True + a NoahMPStatic. When ON, the
+    # carry MUST carry a prognostic ``noahmp_land`` (initial_operational_carry seeds
+    # it). ``noahmp_static`` is the per-run read-only Noah-MP static (categories /
+    # tables / soil geometry); it rides as a pytree CHILD so its device arrays do
+    # not pollute the static jit cache key.
+    use_noahmp: bool = False
+    noahmp_static: object = None
+    # Pre-built per-run Noah-MP energy/radiation parameter bundles (pytree CHILDREN
+    # of array fields). They are gathered ONCE outside jit so the driver's
+    # ``build_energy_params`` (which concretizes ``nroot`` via int(round(...)) and
+    # is FROZEN) is never re-run INSIDE the scan with traced static. ``noahmp_nroot``
+    # is the concrete static root-depth slice bound (static aux) reattached to the
+    # energy params inside the hook (the energy kernel uses ``range(nroot)``).
+    noahmp_energy_params: object = None
+    noahmp_rad_params: object = None
+    noahmp_nroot: int = 0
+    # phenology clock scalars (static aux): Julian day + year length for the
+    # seasonal greenness term; default to WRF's day-1 / 365 when unset.
+    noahmp_julian: float = 1.0
+    noahmp_yearlen: float = 365.0
 
     @classmethod
     def from_grid(
@@ -212,6 +264,13 @@ class OperationalNamelist:
         )
 
     def tree_flatten(self):
+        # The Noah-MP static (categories + soil geometry + the constant parameter
+        # TABLES) and the pre-built energy/rad params ride as STATIC AUX, not traced
+        # children: the frozen driver concretizes several of their fields inside the
+        # scan (isurban, nroot, table scalars), so they must be COMPILE CONSTANTS,
+        # not tracers. They are wrapped in an identity-hashable holder so the jit
+        # cache keys on per-run object identity (one run -> one compile). use_noahmp
+        # + clock scalars are also static aux.
         children = (self.tendencies, self.metrics)
         aux = (
             self.grid,
@@ -241,6 +300,13 @@ class OperationalNamelist:
             bool(self.force_fp64),
             bool(self.use_deformation_momentum_diffusion),
             self.time_utc,
+            bool(self.use_noahmp),
+            int(self.noahmp_nroot),
+            float(self.noahmp_julian),
+            float(self.noahmp_yearlen),
+            _StaticHolder(self.noahmp_static),
+            _StaticHolder(self.noahmp_energy_params),
+            _StaticHolder(self.noahmp_rad_params),
         )
         return children, aux
 
@@ -275,7 +341,17 @@ class OperationalNamelist:
             force_fp64,
             use_deformation_momentum_diffusion,
             time_utc,
+            use_noahmp,
+            noahmp_nroot,
+            noahmp_julian,
+            noahmp_yearlen,
+            noahmp_static_holder,
+            noahmp_energy_holder,
+            noahmp_rad_holder,
         ) = aux
+        noahmp_static = noahmp_static_holder.value
+        noahmp_energy_params = noahmp_energy_holder.value
+        noahmp_rad_params = noahmp_rad_holder.value
         return cls(
             grid=grid,
             tendencies=tendencies,
@@ -306,6 +382,13 @@ class OperationalNamelist:
             force_fp64=force_fp64,
             use_deformation_momentum_diffusion=use_deformation_momentum_diffusion,
             time_utc=time_utc,
+            use_noahmp=use_noahmp,
+            noahmp_static=noahmp_static,
+            noahmp_energy_params=noahmp_energy_params,
+            noahmp_rad_params=noahmp_rad_params,
+            noahmp_nroot=noahmp_nroot,
+            noahmp_julian=noahmp_julian,
+            noahmp_yearlen=noahmp_yearlen,
         )
 
 
@@ -1615,6 +1698,82 @@ def _coupled_core_step(carry: OperationalCarry, namelist: OperationalNamelist, s
     return _carry_from_coupled_core(snapshot, carry.state, theta_offset, float(namelist.dt_s), rthraten=carry.rthraten)
 
 
+class _NoahMPClock(NamedTuple):
+    """Phenology clock the Noah-MP forcing assembler reads (julian / yearlen)."""
+
+    julian: float
+    yearlen: float
+
+
+def noahmp_initial_rad(state: State, namelist: "OperationalNamelist | None" = None) -> tuple:
+    """Seed the held Noah-MP surface-radiation forcing as a CONCRETE 3-tuple.
+
+    The held forcing rides in the OperationalCarry; inside ``jax.lax.scan`` the
+    carry pytree structure must be identical on every iteration, so the initial
+    held value must already be the 3-tuple shape the step produces -- NOT ``None``.
+
+    When ``namelist`` is given, the seed is the REAL t=0 surface radiation
+    (SOLDN/LWDN/COSZ from RRTMG at the init instant), computed ONCE eagerly. This
+    matters at an evening (18z) init: zero-seeding LWDN would starve the land of
+    downward longwave for the first radt interval and drive a spurious nocturnal
+    cold bias. WRF holds the radiative forcing from the first radiation call, so
+    seeding the real t=0 value is the WRF-faithful initial held forcing. Without a
+    namelist (legacy callers) the seed is zeros (overwritten at the first radt step).
+    """
+    if namelist is None:
+        zero = jnp.zeros(state.t_skin.shape, dtype=jnp.float64)
+        return (zero, zero, zero)
+    rad = rrtmg_radiation_diagnostics(
+        state, namelist.grid, time_utc=namelist.time_utc, lead_seconds=0.0
+    )
+    soldn = jnp.maximum(jnp.asarray(rad.swdown, dtype=jnp.float64), 0.0)
+    lwdn = jnp.asarray(rad.glw, dtype=jnp.float64)
+    cosz = jnp.asarray(rad.coszen, dtype=jnp.float64)
+    return (soldn, lwdn, cosz)
+
+
+def _noahmp_params(namelist: OperationalNamelist):
+    """Return the pre-built ``(energy_params, rad_params)``. They ride as STATIC AUX
+    (compile constants), so their concrete ``nroot``/scalar fields are available
+    inside the jitted scan -- no re-build, no tracer concretization. ``(None, None)``
+    when not pre-built (the driver then builds them eagerly, valid outside jit)."""
+    return namelist.noahmp_energy_params, namelist.noahmp_rad_params
+
+
+class _NoahMPRadiation(NamedTuple):
+    """Held surface-radiation forcing into Noah-MP (the coupler reads soldn/lwdn/cosz)."""
+
+    soldn: jax.Array
+    lwdn: jax.Array
+    cosz: jax.Array
+
+
+def _refresh_noahmp_rad(state, namelist, lead_seconds, run_radiation, held_rad):
+    """Refresh the HELD Noah-MP surface radiation (SOLDN/LWDN/COSZ) at the radiation
+    cadence; reuse the held value between calls (WRF holds the radiative forcing
+    between radt intervals). Resident on device -- no host transfer.
+
+    ``held_rad`` is the prior (soldn, lwdn, cosz) 3-tuple, or ``None`` at t=0.
+    Returns the (soldn, lwdn, cosz) 3-tuple for this step.
+    """
+
+    def _recompute(_unused):
+        rad = rrtmg_radiation_diagnostics(
+            state, namelist.grid, time_utc=namelist.time_utc, lead_seconds=lead_seconds
+        )
+        soldn = jnp.maximum(jnp.asarray(rad.swdown, dtype=jnp.float64), 0.0)
+        lwdn = jnp.asarray(rad.glw, dtype=jnp.float64)
+        cosz = jnp.asarray(rad.coszen, dtype=jnp.float64)
+        return (soldn, lwdn, cosz)
+
+    # ``held_rad`` is always a concrete 3-tuple inside the scan (seeded at carry
+    # construction by ``noahmp_initial_rad``), so the carry pytree structure is
+    # stable across scan iterations -- never None here.
+    if isinstance(run_radiation, bool):
+        return _recompute(None) if run_radiation else held_rad
+    return jax.lax.cond(run_radiation, _recompute, lambda _u: held_rad, None)
+
+
 def _physics_boundary_step_with_limiter_diagnostics(
     carry: OperationalCarry,
     namelist: OperationalNamelist,
@@ -1652,7 +1811,27 @@ def _physics_boundary_step_with_limiter_diagnostics(
         # guards-must-not-be-load-bearing rule. surface/mynn/rrtmg always ran;
         # only Thompson was mistakenly tied to the guard flag.)
         next_state = thompson_adapter(next_state, float(namelist.dt_s))
-        next_state = surface_adapter(next_state, float(namelist.dt_s))
+        if bool(namelist.use_noahmp):
+            # v0.2.0 S6b: prognostic Noah-MP over LAND (ocean keeps bulk path).
+            # Held surface radiation (SOLDN/LWDN/COSZ) is refreshed at the radiation
+            # cadence and reused between calls (WRF-faithful), resident in the carry.
+            next_carry_rad = _refresh_noahmp_rad(
+                next_state, namelist, lead_seconds, run_radiation, carry.noahmp_rad
+            )
+            clock = _NoahMPClock(
+                julian=float(namelist.noahmp_julian),
+                yearlen=float(namelist.noahmp_yearlen),
+            )
+            radiation = _NoahMPRadiation(*next_carry_rad)
+            ep, rp = _noahmp_params(namelist)
+            next_state, next_land = noahmp_surface_step(
+                next_state, carry.noahmp_land, namelist.noahmp_static,
+                float(namelist.dt_s), radiation=radiation, clock=clock,
+                energy_params=ep, rad_params=rp,
+            )
+            carry = carry.replace(noahmp_land=next_land, noahmp_rad=next_carry_rad)
+        else:
+            next_state = surface_adapter(next_state, float(namelist.dt_s))
         next_state = mynn_adapter(next_state, float(namelist.dt_s), namelist.grid)
         # B3 radiation cadence -- WRF-faithful HELD-RATE (Sprint coupler-fp64 FIX #2,
         # GPT P0-2). WRF recomputes the radiative theta tendency RTHRATEN (K/s) only
@@ -1822,19 +2001,44 @@ def compute_m9_diagnostics(
     state: State,
     namelist: OperationalNamelist,
     lead_seconds,
+    *,
+    noahmp_land=None,
+    noahmp_rad=None,
 ) -> M9Diagnostics:
-    """Recompute the M9 surface map from a post-step State (side-channel only)."""
+    """Recompute the M9 surface map from a post-step State (side-channel only).
+
+    When Noah-MP is activated (``namelist.use_noahmp`` and ``noahmp_land`` given),
+    the LAND HFX/LH/TSK are read back from the prognostic Noah-MP coupler and
+    overlaid (the standalone-replacement contract); ocean/water keeps the bulk
+    surface-layer diagnostic. T2/U10/V10 come from the bulk surface layer, which
+    already uses the Noah-MP skin temperature (in ``state.t_skin``) as its BC.
+    """
     surf = surface_layer_diagnostics(state, namelist.grid)
     rad = rrtmg_radiation_diagnostics(
         state, namelist.grid, time_utc=namelist.time_utc, lead_seconds=lead_seconds
     )
+    hfx, lh, tsk = surf.hfx, surf.lh, state.t_skin
+    if bool(namelist.use_noahmp) and noahmp_land is not None:
+        clock = _NoahMPClock(
+            julian=float(namelist.noahmp_julian), yearlen=float(namelist.noahmp_yearlen)
+        )
+        radiation = (
+            _NoahMPRadiation(*noahmp_rad) if noahmp_rad is not None
+            else _NoahMPRadiation(rad.swdown, rad.glw, rad.coszen)
+        )
+        ep, rp = _noahmp_params(namelist)
+        hfx, lh, tsk = overlay_noahmp_land_diagnostics(
+            state, noahmp_land, namelist.noahmp_static, surf.hfx, surf.lh, state.t_skin,
+            float(namelist.dt_s), radiation=radiation, clock=clock,
+            energy_params=ep, rad_params=rp,
+        )
     return M9Diagnostics(
         swdown=rad.swdown,
         glw=rad.glw,
-        hfx=surf.hfx,
-        lh=surf.lh,
+        hfx=hfx,
+        lh=lh,
         pblh=surf.pblh,
-        tsk=state.t_skin,
+        tsk=tsk,
         t2=surf.t2,
         u10=surf.u10,
         v10=surf.v10,
@@ -1887,7 +2091,10 @@ def _m9_snapshot(carry: OperationalCarry, namelist: OperationalNamelist, lead_se
     g-point diagnostic transient with the dynamics-chunk scratch; the host loop
     blocks after the chunk so the chunk scratch is freed first.
     """
-    return compute_m9_diagnostics(carry.state, namelist, lead_seconds)
+    return compute_m9_diagnostics(
+        carry.state, namelist, lead_seconds,
+        noahmp_land=carry.noahmp_land, noahmp_rad=carry.noahmp_rad,
+    )
 
 
 def run_forecast_operational_with_m9_diagnostics(

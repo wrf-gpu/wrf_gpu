@@ -86,6 +86,17 @@ class DailyPipelineConfig:
     acoustic_substeps: int = 10
     radiation_cadence_steps: int = 180
     refresh_land_state_hourly: bool = True
+    # v0.2.0 S6b: ACTIVATE prognostic Noah-MP over land. When True, the land
+    # surface is the prognostic Noah-MP coupler (land EVOLVES inside the forecast
+    # scan) instead of the prescribed bulk path -- and the hourly land snap
+    # (``_refresh_hourly_land_state``) is DISABLED over land (the prognostic state
+    # replaces the hourly corpus re-snap; re-snapping would clobber the evolved
+    # land carry). The forecast must be advanced through the carry-threading
+    # segmented entry so ``noahmp_land`` is threaded across the run (the v0.1.0
+    # single-shot-per-hour ``run_forecast_operational`` path does NOT carry land
+    # state across the hour boundary). See proofs/noahmp/s6b_activate_validate.py
+    # and proofs/m20/tost_ensemble_runner.py for the carry-threading drivers.
+    use_noahmp: bool = False
     # v0.2.0 wall-clock win #3: write each hour's wrfout on a background thread
     # while the GPU advances the next hour (double-buffered output). The device
     # ->host pull still happens synchronously on the main thread; only the NetCDF
@@ -368,7 +379,9 @@ def _surface_diagnostics_for_output(
     return out or None
 
 
-def _refresh_hourly_land_state(state: Any, run_dir: Path, domain: str, hour: int) -> tuple[Any, dict[str, Any]]:
+def _refresh_hourly_land_state(
+    state: Any, run_dir: Path, domain: str, hour: int, *, use_noahmp: bool = False
+) -> tuple[Any, dict[str, Any]]:
     if not hasattr(state, "replace"):
         return state, {"status": "SKIPPED", "reason": "state has no replace method", "hour": int(hour)}
     land = load_hourly_land_state(Gen2Run(run_dir), domain=domain, time=int(hour))
@@ -381,6 +394,34 @@ def _refresh_hourly_land_state(state: Any, run_dir: Path, domain: str, hour: int
         "mavail": land.mavail,
         "roughness_m": land.roughness_m,
     }
+    if use_noahmp:
+        # v0.2.0 S6b: prognostic Noah-MP owns the LAND tile (it evolves inside the
+        # scan). Re-snapping land would clobber that. Only WATER columns keep the
+        # prescribed-SST hourly refresh; over land the current (prognostic) values
+        # are preserved via where(is_water, corpus, current).
+        import jax.numpy as _jnp
+        is_water = _jnp.asarray(land.xland) >= 1.5
+        masked = {}
+        for name, corpus_val in updates.items():
+            if name in ("xland", "lakemask"):
+                masked[name] = corpus_val  # static masks: identical, safe to refresh
+                continue
+            if not hasattr(state, name):
+                continue
+            cur = _jnp.asarray(getattr(state, name))
+            cv = _jnp.asarray(corpus_val)
+            if cv.shape == cur.shape and is_water.shape == cur.shape:
+                masked[name] = _jnp.where(is_water, cv, cur)
+            else:
+                masked[name] = cur  # shape mismatch -> preserve prognostic
+        available = {name: value for name, value in masked.items() if hasattr(state, name)}
+        refreshed = state.replace(**available)
+        return refreshed, {
+            "status": "PASS", "hour": int(hour), "mode": "noahmp_water_only",
+            "source_file": land.source.get("source_file"),
+            "fields_refreshed_water_only": sorted(available),
+            "note": "prognostic Noah-MP owns LAND; only water SST/roughness re-snapped",
+        }
     available = {name: value for name, value in updates.items() if hasattr(state, name)}
     refreshed = state.replace(**available)
     return refreshed, {
@@ -448,7 +489,8 @@ def _run_forecast_sequence(
             )
 
         if bool(config.refresh_land_state_hourly) and case.metadata.get("source") == "gpuwrf.integration.d02_replay.build_replay_case":
-            state, land_record = _refresh_hourly_land_state(state, run_dir, config.domain, hour)
+            state, land_record = _refresh_hourly_land_state(
+                state, run_dir, config.domain, hour, use_noahmp=bool(config.use_noahmp))
             land_refresh_records.append(land_record)
             summary = finite_summary(state)
             if not summary["all_finite"]:
