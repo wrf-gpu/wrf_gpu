@@ -268,6 +268,15 @@
     "gated_pass_count": 18,
     "overall_pass": false
   },
+  "c1_precision_diagnosis": {
+    "downstream_unaffected": "C1 enters only as c1h*mub / c1f*mu (~3e-5 x 1e5 Pa ~ 3 Pa); PB(0.056/50) PHB(0.19/20) P(0.57/200) PH(0.25/20) MU(0.25/50) all PASS with 3+ orders of margin regardless of C1 precision.",
+    "our_value_more_accurate": "compute_vertical_coord keeps the C-coeff chain in fp64: it carries WRF's discrete-derivative definition and matches the oracle to the fp32 rounding gap (C1F maxabs 2.99e-5/rmse 5.39e-6, C1H 3.13e-5/6.76e-6). It is the more-accurate representation, not less.",
+    "proof_algorithm_correct": "Differencing the wrfinput-STORED fp32 C3F/C3H/ZNU/ZNW in fp32 (vertical_coord.wrf_fp32_c1_from_c3) reproduces oracle C1F/C1H BIT-EXACTLY (max_abs=0). See tests/init/test_s1_c1_coeffs.py.",
+    "recommended_tol_manager_owned": "C1F/C1H in types.WRFINPUT_TOLS: rmse 1e-5, max_abs 5e-5 (fp32 finite-difference noise floor + small margin). Manager applies; types.py is FROZEN/manager-owned. All other 1D-coord caps unchanged.",
+    "root_cause": "WRF is built RWORDSIZE=4 (configure.wrf:140; PROMOTION commented out:141) -> real.exe runs in single precision. C1=dB/d(eta) is a finite difference of the hybrid coordinate C3: C1F(k)=(C3H(k)-C3H(k-1))/(ZNU(k)-ZNU(k-1)), C1H(k)=(C3F(k+1)-C3F(k))/(ZNW(k+1)-ZNW(k)). Both numerator (~1e-3) and denominator (~1e-2) are small differences of O(1) fp32 values, so the oracle C1F/C1H are the fp32-rounded finite difference.",
+    "status": "ROOT-CAUSE RESOLVED (2026-06-02 Opus cross-model debug)",
+    "why_not_matchable": "Bit-exact recompute needs WRF's stored fp32 C3F, which is gfortran's last-1-3-ULP fp32 rounding of the Klemp polynomial (22/45 levels); no NumPy/JAX fp32 evaluation order reproduces it. A from-scratch fp32 chain gets C1F maxabs=8.6e-6 (under cap) but C1H maxabs=1.93e-5 / rmse>1e-6 still fail the frozen cap, which is tighter than the inter-rounding fp32 gap."
+  },
   "case_count": 12,
   "cases": [
     {
@@ -3074,6 +3083,22 @@
   ],
   "oracle": "real.exe wrfinput files under /mnt/data/canairy_meteo/runs",
   "overall_pass": false,
+  "projected_with_recommended_c1_tol": {
+    "note": "C1F/C1H tol is the only change vs frozen WRFINPUT_TOLS.",
+    "projected_gated_field_count": 20,
+    "projected_gated_pass_count": 20,
+    "projected_overall_pass": true,
+    "recommended_c1_tol": {
+      "C1F": [
+        1e-05,
+        5e-05
+      ],
+      "C1H": [
+        1e-05,
+        5e-05
+      ]
+    }
+  },
   "resource_limits": {
     "jax_platform": "cpu",
     "python_prefix_required": "taskset -c 0-3"
@@ -3081,6 +3106,6 @@
   "sprint": "v0.4.0-S1",
   "tolerance_source": "gpuwrf.init.real_init.types.WRFINPUT_TOLS",
   "unresolved_residuals": [
-    "C1H/C1F max-abs may fail the frozen 1e-5 cap from WRF single-precision hybrid coefficient differencing; ZNW/ZNU/C3*/C4* and all dynamics fields are reported separately without masking or tolerance changes."
+    "C1F/C1H fail ONLY the frozen 1e-5/1e-6 cap, which is tighter than WRF's own fp32 finite-difference rounding gap. Root cause proven (see c1_precision_diagnosis); the fp64 values are the more-accurate ones and downstream PB/PHB/P/PH/MU pass with 3+ orders of margin. Resolution = manager-applied per-field tol (rmse 1e-5, max_abs 5e-5) on C1F/C1H only. No masking, no recompute-precision hack, no other tol touched."
   ]
 }
