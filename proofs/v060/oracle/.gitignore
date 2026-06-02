@@ -1,0 +1,9 @@
+# build artifacts (regenerable via build_and_run.sh)
+*.o
+*.mod
+kf_oracle
+fort.*
+case_*.txt
+# verbatim copy of the pristine WRF source (provenance recorded in the v060 report);
+# do not vendor the 120 KB WRF file into this repo
+module_cu_kfeta.F
