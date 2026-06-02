@@ -1,0 +1,91 @@
+{
+  "sprint": "L1 radiation-held-time (COSZEN phase) fix -- CPU COSZEN-ratio proof",
+  "spec": ".agent/reviews/2026-06-02-gpt-rrtmg-sw-airmass-zenith.md",
+  "fixes_applied": [
+    "FIX #1 _refresh_noahmp_rad: held radiation evaluated at lead_seconds - 0.5*radt_seconds (radt_seconds = dt_s * radiation_cadence_steps), clamped >= 0 -- == coszen(t - radt/2), the field WRF's end-of-step history output carries.",
+    "FIX #2 compute_m9_diagnostics: when noahmp_rad is not None, report the HELD swdown=noahmp_rad[0]/glw=noahmp_rad[1] instead of the output-time recompute; noahmp_rad=None path unchanged."
+  ],
+  "sign_derivation": "WRF calc_coszen uses xtime + radt*0.5 (PLUS) because xtime is the interval START and WRF samples the FORWARD midpoint; but WRF outputs the PRIOR-interval held field (end-of-step output ordering), so the history value at output t is coszen((t-radt)+radt/2) = coszen(t - radt/2). Our scan refreshes the held tuple IN the output step (which lands on a refresh boundary, lead == t) and the snapshot reads it immediately, so to land on WRF's reported solar time the refresh lead is offset by - radt/2 (MINUS). Confirmed empirically: the observed GPU/WRF residual matches coszen(t)/coszen(t - radt/2) and is the OPPOSITE of coszen(t)/coszen(t + radt/2).",
+  "wrf_reference_namelist": {
+    "radt_min": 30.0,
+    "time_step_d01_s": 18,
+    "nest_ratio": [
+      1,
+      3,
+      3
+    ],
+    "d03_dt_s": 2,
+    "d03_stepra": 900,
+    "history_interval_min": 60,
+    "source": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/namelist.input:32,49,66,20"
+  },
+  "remeasure_config": {
+    "dt_s": 3.0,
+    "radiation_cadence_steps": 200,
+    "gpu_radt_s": 600.0,
+    "note": "GPU radt=10min != WRF radt=30min"
+  },
+  "init_time_utc": "2026-05-21 18:00:00+00:00",
+  "method": "Real d03 lat/lon (operational _grid_lat_lon projection) + 18z init built on CPU. Land-mean clipped COSZEN via the SAME _compute_coszen as the operational path. Residual-table GPU SWDOWN rescaled by coszen(fix-time)/coszen(t) to apply the fix; GPU/WRF recomputed.",
+  "rows": [
+    {
+      "lead_label": "09z",
+      "lead_h": 15,
+      "t_output_s": 54000.0,
+      "coszen_output_t": 0.5701038275049004,
+      "coszen_t_minus_half": 0.5222059901305354,
+      "coszen_t_plus_half": 0.6162692008439704,
+      "obs_gpu_swdown": 581.3887424778294,
+      "obs_wrf_swdown": 534.8863525390625,
+      "obs_residual_ratio": 1.0869388230191774,
+      "geom_ratio_coszen_t_over_t_minus_half": 1.0917221140308866,
+      "geom_ratio_coszen_t_over_t_plus_half_WRONGSIGN": 0.925088949316553,
+      "residual_pct_PRE": 8.693882301917743,
+      "residual_pct_POST_fix_radt30min_matched": -0.4381418082709865,
+      "residual_pct_POST_fix_remeasure_radt10min_mismatched": 5.684671261691054,
+      "correction_scale_matched": 0.9159840101688261
+    },
+    {
+      "lead_label": "12z",
+      "lead_h": 18,
+      "t_output_s": 64800.0,
+      "coszen_output_t": 0.9600885603945758,
+      "coszen_t_minus_half": 0.9438414796900018,
+      "coszen_t_plus_half": 0.9729332025660758,
+      "obs_gpu_swdown": 1041.04,
+      "obs_wrf_swdown": 1024.89,
+      "obs_residual_ratio": 1.015757788640732,
+      "geom_ratio_coszen_t_over_t_minus_half": 1.0172137811848556,
+      "geom_ratio_coszen_t_over_t_plus_half_WRONGSIGN": 0.9867980225799441,
+      "residual_pct_PRE": 1.5757788640732073,
+      "residual_pct_POST_fix_radt30min_matched": -0.1431353537530322,
+      "residual_pct_POST_fix_remeasure_radt10min_mismatched": 1.0424723402915559,
+      "correction_scale_matched": 0.983077518705257
+    },
+    {
+      "lead_label": "15z",
+      "lead_h": 21,
+      "t_output_s": 75600.0,
+      "coszen_output_t": 0.8846293672491217,
+      "coszen_t_minus_half": 0.9095503627421078,
+      "coszen_t_plus_half": 0.8566290610728163,
+      "obs_gpu_swdown": 950.69,
+      "obs_wrf_swdown": 979.68,
+      "obs_residual_ratio": 0.9704087048832273,
+      "geom_ratio_coszen_t_over_t_minus_half": 0.9726007525104444,
+      "geom_ratio_coszen_t_over_t_plus_half_WRONGSIGN": 1.0326866171703755,
+      "residual_pct_PRE": -2.959129511677272,
+      "residual_pct_POST_fix_radt30min_matched": -0.22538000526517443,
+      "residual_pct_POST_fix_remeasure_radt10min_mismatched": -2.0097390879658783,
+      "correction_scale_matched": 1.028171114837032
+    }
+  ],
+  "verdict": {
+    "observed_residual_reproduced_by_geometry": true,
+    "max_geom_vs_observed_err_pct": 0.44006993865788324,
+    "sign_is_MINUS_half_radt": true,
+    "max_abs_residual_pct_POST_fix_radt30min_matched": 0.4381418082709865,
+    "within_2pct": true,
+    "HANDOFF_to_manager": "The GPU daytime SWDOWN/T2 remeasure (use_noahmp=ON, d03 1km) is HANDED OFF to the manager to batch with the L2 Noah-MP LH fix on the single GPU. CRITICAL: the remeasure MUST set radiation_cadence_steps so radt = dt_s*radiation_cadence_steps/60 == 30 min (the pristine-WRF namelist radt). At the mismatched remeasure cadence (radt=10min) the -radt/2 offset is the wrong magnitude and leaves ~5.7% residual (see residual_pct_POST_fix_remeasure_radt10min_mismatched). With radt matched it collapses to <=0.5% (this proof) -- still subject to the SEPARATE Bowen/LH lane (L2)."
+  }
+}

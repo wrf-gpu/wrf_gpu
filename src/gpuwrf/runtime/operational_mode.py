@@ -1760,11 +1760,45 @@ def _refresh_noahmp_rad(state, namelist, lead_seconds, run_radiation, held_rad):
 
     ``held_rad`` is the prior (soldn, lwdn, cosz) 3-tuple, or ``None`` at t=0.
     Returns the (soldn, lwdn, cosz) 3-tuple for this step.
+
+    WRF radiation-held-time (L1 fix, GPT 2026-06-02 COSZEN-phase diagnosis;
+    proofs/rad_time/coszen_phase_proof.json). WRF holds the SWDOWN computed once
+    per ``radt`` interval and the HISTORY OUTPUT carries the field held GOING INTO
+    the output step -- i.e. the value last set at the PRECEDING interval midpoint.
+    Empirically (GPT + this proof) WRF's land-mean held SWDOWN at output time ``t``
+    tracks ``coszen(t - radt/2)``: the observed d03 GPU/WRF residual (1.0869 @09z,
+    1.0158 @12z, 0.9704 @15z) matches ``coszen(t)/coszen(t - radt/2)`` to ~0.5% and
+    is the OPPOSITE of ``coszen(t)/coszen(t + radt/2)``.
+
+    SIGN DERIVATION (the sprint's load-bearing trap -- do NOT blindly copy WRF's
+    ``xtime + radt*0.5`` PLUS): the radiation refresh fires here on cadence steps
+    (``step_index %% cadence == 0``), and history output lands on a refresh boundary
+    (history_interval is a multiple of radt), so at the output step the incoming
+    ``lead_seconds = step_index*dt_s`` EQUALS the output time ``t``. WRF's own
+    ``calc_coszen(..., xtime + radt*0.5, ...)`` is PLUS because WRF's ``xtime`` is
+    the interval START and it samples the FORWARD midpoint -- but WRF then OUTPUTS
+    the field held from the PRIOR interval (end-of-step output ordering), so the
+    history value at ``t`` is ``coszen((t - radt) + radt/2) = coszen(t - radt/2)``.
+    Our scan refreshes the held tuple IN the output step and the snapshot reads it
+    immediately, so to land on the SAME absolute solar time WRF reports we offset
+    the refresh lead by ``- radt/2``: ``lead_seconds - 0.5*radt_seconds`` (MINUS).
+    ``radt_seconds = dt_s * radiation_cadence_steps``. Clamped to >= 0 at cold start.
+
+    NOTE for the GPU remeasure (handed to the manager): the residual only FULLY
+    collapses (proof: max 0.44%) when the GPU ``radiation_cadence_steps`` is chosen
+    so ``radt = dt_s*radiation_cadence_steps/60 == 30 min`` (the pristine-WRF
+    namelist radt). At a mismatched cadence the ``-radt/2`` offset is the wrong
+    magnitude (proof: 10-min radt leaves ~5.7%).
     """
+
+    radt_seconds = float(namelist.dt_s) * int(namelist.radiation_cadence_steps)
+    rad_lead_seconds = jnp.maximum(
+        jnp.asarray(lead_seconds, dtype=jnp.float64) - 0.5 * radt_seconds, 0.0
+    )
 
     def _recompute(_unused):
         rad = rrtmg_radiation_diagnostics(
-            state, namelist.grid, time_utc=namelist.time_utc, lead_seconds=lead_seconds
+            state, namelist.grid, time_utc=namelist.time_utc, lead_seconds=rad_lead_seconds
         )
         soldn = jnp.maximum(jnp.asarray(rad.swdown, dtype=jnp.float64), 0.0)
         lwdn = jnp.asarray(rad.glw, dtype=jnp.float64)
@@ -2037,9 +2071,27 @@ def compute_m9_diagnostics(
             float(namelist.dt_s), radiation=radiation, clock=clock,
             energy_params=ep, rad_params=rp,
         )
+    # L1 fix (GPT 2026-06-02 COSZEN-phase; proofs/rad_time/coszen_phase_proof.json):
+    # when the HELD Noah-MP radiation tuple is available, report the held WRF-cadence
+    # SWDOWN/GLW (soldn=noahmp_rad[0], lwdn=noahmp_rad[1]) rather than the OUTPUT-time
+    # recompute. ``rad`` above is ``rrtmg_radiation_diagnostics(... lead_seconds=
+    # output_time)`` -- an instantaneous-solar recompute at the history timestamp,
+    # which carries the off-noon COSZEN-phase residual (+8.7%@09z / -3.0%@15z). WRF
+    # does NOT recompute the history SWDOWN at the output instant; it holds the
+    # radiation-cadence flux. ``noahmp_rad`` is exactly that held field
+    # (carry.noahmp_rad), refreshed by ``_refresh_noahmp_rad`` at the WRF-faithful
+    # held time ``lead_seconds - 0.5*radt_seconds`` (== coszen(t - radt/2), the field
+    # WRF's end-of-step history output carries). Reporting it makes the diagnostic
+    # equal the held WRF-cadence field. The non-Noah-MP / noahmp_rad=None path is
+    # unchanged (still the output-time recompute).
+    swdown_out = rad.swdown
+    glw_out = rad.glw
+    if noahmp_rad is not None:
+        swdown_out = jnp.asarray(noahmp_rad[0], dtype=jnp.float64)
+        glw_out = jnp.asarray(noahmp_rad[1], dtype=jnp.float64)
     return M9Diagnostics(
-        swdown=rad.swdown,
-        glw=rad.glw,
+        swdown=swdown_out,
+        glw=glw_out,
         hfx=hfx,
         lh=lh,
         pblh=surf.pblh,
