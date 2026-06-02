@@ -1,0 +1,89 @@
+{
+  "schema": "V020ParquetCaseScore",
+  "schema_version": 1,
+  "case_id": "20260509_18z",
+  "domain": "d02",
+  "truth_source": "wrf_case_bank parquet point-shadow (CPU-WRF nearest_grid_cell)",
+  "pairing": "GPU sampled at the parquet's nearest_grid_iy/ix; complete-pair on (station, valid_time, var)",
+  "total_complete_pairs": 8640,
+  "per_block": {
+    "T2": {
+      "0-24h": {
+        "status": "OK",
+        "n_pairs": 960,
+        "mean_bias": 0.47293863296508787,
+        "repro_rmse": 1.4704341200141464,
+        "cpu_mean": 291.2622930208842,
+        "gpu_mean": 291.73523165384927
+      },
+      "24-48h": {
+        "status": "OK",
+        "n_pairs": 960,
+        "mean_bias": 0.324278990427653,
+        "repro_rmse": 1.3932000680535421,
+        "cpu_mean": 291.33978198369346,
+        "gpu_mean": 291.66406097412107
+      },
+      "48-72h": {
+        "status": "OK",
+        "n_pairs": 960,
+        "mean_bias": 0.1969989776611328,
+        "repro_rmse": 1.5390309811785559,
+        "cpu_mean": 291.4969186147054,
+        "gpu_mean": 291.6939175923665
+      }
+    },
+    "U10": {
+      "0-24h": {
+        "status": "OK",
+        "n_pairs": 960,
+        "mean_bias": -0.1840341586072706,
+        "repro_rmse": 1.0585046792037365,
+        "cpu_mean": 0.5844339869096681,
+        "gpu_mean": 0.4003998283023975
+      },
+      "24-48h": {
+        "status": "OK",
+        "n_pairs": 960,
+        "mean_bias": 0.41039467947366576,
+        "repro_rmse": 1.6919913196207943,
+        "cpu_mean": -0.22502135142473587,
+        "gpu_mean": 0.1853733280489299
+      },
+      "48-72h": {
+        "status": "OK",
+        "n_pairs": 960,
+        "mean_bias": 0.16615391191953677,
+        "repro_rmse": 1.4297708312263822,
+        "cpu_mean": -0.4134061544735838,
+        "gpu_mean": -0.24725224255404707
+      }
+    },
+    "V10": {
+      "0-24h": {
+        "status": "OK",
+        "n_pairs": 960,
+        "mean_bias": 0.13936309574170688,
+        "repro_rmse": 1.542511284384892,
+        "cpu_mean": -0.7425656594803514,
+        "gpu_mean": -0.6032025637386444
+      },
+      "24-48h": {
+        "status": "OK",
+        "n_pairs": 960,
+        "mean_bias": 0.24939638896842856,
+        "repro_rmse": 1.2374999760190708,
+        "cpu_mean": -0.8533945677912319,
+        "gpu_mean": -0.6039981788228033
+      },
+      "48-72h": {
+        "status": "OK",
+        "n_pairs": 960,
+        "mean_bias": -0.45992624122494213,
+        "repro_rmse": 1.3840137283444574,
+        "cpu_mean": -2.7210683445446193,
+        "gpu_mean": -3.1809945857695614
+      }
+    }
+  }
+}

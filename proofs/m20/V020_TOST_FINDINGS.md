@@ -119,10 +119,65 @@ Additional honesty note on the runnable set:
   **NOT** match the retained `wrf_l2` dir → `(iy,ix)` alignment unverified →
   EXCLUDED from the clean campaign by default (override only after a grid re-check).
 
-## 5. SMOKE (2 cases) — see `proofs/m20/tost_run/parquet_smoke/tost_parquet.json`
+## 4b. SECOND LOAD-BEARING FINDING — the margin SCALE MISMATCH (manager must rule)
+
+The smoke surfaced a methodology decision that is more important than the n-cap.
+Case 1 (0509 d02, 40 stations, 960 pairs/block, all blocks OK) gives:
+
+| Var | block | mean_bias (GPU−CPU) | repro_RMSE | ADR-029 margin |
+|---|---|---:|---:|---:|
+| T2  | 0-24h | +0.473 K | **1.470 K** | 0.215 K |
+| T2  | 24-48h | +0.324 K | 1.393 K | 0.215 K |
+| T2  | 48-72h | +0.197 K | 1.539 K | 0.215 K |
+| U10 | 0-24h | −0.184 | 1.059 | 0.231 |
+| U10 | 24-48h | +0.410 | 1.692 | 0.231 |
+| V10 | 48-72h | −0.460 | 1.384 | 0.275 |
+
+The per-station-point **reproduction RMSE (~1.4 K T2, ~1.0-1.7 m/s wind)** is ~7×
+the ADR-029 T2 margin (0.215 K). **This is EXPECTED and is NOT a GPU defect.** The
+ADR-029 margins are 10% of CPU-WRF's RMSE-**vs-OBS** (2.15 K), i.e. they band the
+DIFFERENCE of two skill-vs-obs RMSEs (`RMSE_GPU_vs_obs − RMSE_CPU_vs_obs`). A
+point-wise GPU-minus-CPU RMSE measures how far two chaotic-divergent model
+solutions drift apart at individual station/time points, which is naturally
+O(1 K) even when the two models are equivalent in aggregate skill. **Applying the
+0.215 K margin to the point-wise reproduction RMSE would FALSELY fail equivalence.**
+
+So there are two honest, defensible scorings — the manager must predeclare WHICH
+is the v0.2.0 headline before the full campaign:
+
+- **(A) ADR-029-faithful, obs-referenced** (`RMSE_GPU_vs_obs − RMSE_CPU_vs_obs`):
+  the margin is correct, but requires OBS as the common reference. The parquet
+  has NO obs; only ~106 of 278 stations have hourly AEMET obs. This restricts the
+  station pool and re-introduces obs-sampling noise, but it is the *literal*
+  ADR-029 test and the margins apply as-is. **The mean_bias column above is the
+  closest parquet-only proxy: |bias_T2| ≈ 0.2-0.47 K straddles the 0.215 K band —
+  consistent with the known daytime warm residual.**
+- **(B) direct GPU-vs-CPU reproduction** (what this scorer computes now): lossless,
+  full-278-station, no obs — but the ADR-029 margin is the WRONG yardstick for the
+  point-wise repro RMSE. A direct-repro equivalence claim needs a DIFFERENT,
+  predeclared margin (e.g. derived from CPU-WRF's own run-to-run / IC-perturbation
+  spread, or a fraction of the field's natural variability), which is NOT yet in
+  any ADR → would require an ADR-029 addendum before it can be a TOST verdict.
+
+**Recommendation:** treat the direct-repro RMSE as a strong *descriptive
+reproduction* statistic (it cleanly shows the GPU tracks CPU-WRF: T2 bias +0.2-0.47 K,
+the expected warm residual; winds within ~0.2-0.5 m/s bias), and run the FORMAL
+TOST in mode (A) — obs-referenced paired delta on the AEMET-hourly station subset
+— so the frozen ADR-029 margins are used for the metric they were defined for. The
+scorer already has both pieces; mode (A) needs the AEMET hourly obs join wired in
+(the existing `paired_tost_scorer.paired_score` does exactly this — point it at the
+parquet CPU column instead of the purged wrfout). **This is the key methodology
+question for the manager to settle before the overnight campaign.**
+
+## 5. SMOKE (2 cases) — `proofs/m20/tost_run/parquet_smoke/`
 
 Cases `20260509_18z__d02` + `20260530_18z__d02` (both `parquet_workdir_match=True`,
-72 scoreable leads each). *[numbers filled in by the smoke run; see the JSON]*
+72 scoreable leads each). **The harness works end-to-end**: GPU 72h replay → 72
+full-grid emits → sampled at the parquet nearest-grid cells → 8640 complete pairs
+(case 1), all 9 lead-blocks (3 vars × 3 blocks) status OK, well above the 30-pair
+floor. Per-case numbers above (§4b); aggregate TOST verdict in `tost_parquet.json`
+(n=2 — a plumbing-level n, NOT a verdict). The smoke PROVES the pipeline + sane
+paired deltas; it does not and cannot make an equivalence claim at n=2.
 
 ## 6. EXACT FULL-RUN COMMAND (manager launches after approval)
 
