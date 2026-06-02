@@ -160,4 +160,7 @@ def test_total_state_split_writes_base_and_perturbation_pairs(tmp_path: Path):
 
 def test_variable_specs_cover_minimum_set():
     assert len(MINIMUM_WRFOUT_VARIABLES) == 41
-    assert set(MINIMUM_WRFOUT_VARIABLES) - {"Times"} == set(WRFOUT_VARIABLE_SPECS)
+    # Every minimum-set field (except the special-cased Times string var) must
+    # have a spec. P0-5a ADDS operational fields, so the spec dict is a SUPERSET
+    # of the minimum set rather than exactly equal.
+    assert set(MINIMUM_WRFOUT_VARIABLES) - {"Times"} <= set(WRFOUT_VARIABLE_SPECS)
