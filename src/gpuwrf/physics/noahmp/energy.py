@@ -94,7 +94,8 @@ class EnergyParams(NamedTuple):
     energy-only extras not yet in that tuple — Ball-Berry, EG, SNOW_EMIS,
     RSURF_EXP, CBIOM). All fields broadcast over the land-column grid (ny, nx);
     per-layer soil fields are (NSOIL, ny, nx). Built once per run by the oracle /
-    coupler from MPTABLE/SOILPARM. ``nroot`` is a static python int.
+    coupler from MPTABLE/SOILPARM. ``nroot`` is the static loop bound; optional
+    ``nroot_cell`` is the WRF per-column VEGPARM/MPTABLE NROOT gather.
     """
 
     # --- canopy structure / roughness ---
@@ -128,6 +129,7 @@ class EnergyParams(NamedTuple):
     avcmx: jnp.ndarray
     vcmx25: jnp.ndarray
     c3psn: jnp.ndarray
+    nroot_cell: jnp.ndarray | None = None
 
 
 # ----------------------------------------------------------------------------------
@@ -859,18 +861,26 @@ def noahmp_energy_canopy(
     sh2o = land_state.sh2o
     zsoil = static.zsoil
     dz_soil = _soil_dz(land_state)
-    nroot = p.nroot
+    nroot = max(0, min(NSOIL, int(p.nroot)))
+    if p.nroot_cell is None:
+        nroot_cell = jnp.full(fveg.shape, nroot, dtype=jnp.int32)
+    else:
+        nroot_cell = jnp.clip(jnp.asarray(p.nroot_cell, dtype=jnp.int32), 0, nroot)
+    root_depth = -zsoil[jnp.maximum(nroot_cell, 1) - 1]
     btran = jnp.zeros_like(fveg)
     btrani = jnp.zeros((NSOIL,) + fveg.shape)
     for iz in range(nroot):
+        active_root = (iz + 1) <= nroot_cell
         gx = (sh2o[iz] - p.smcwlt[iz]) / (p.smcref[iz] - p.smcwlt[iz])
         gx = jnp.minimum(1.0, jnp.maximum(0.0, gx))
-        bi = jnp.maximum(MPE, dz_soil[iz] / (-zsoil[nroot - 1]) * gx)
+        bi = jnp.maximum(MPE, dz_soil[iz] / root_depth * gx)
+        bi = jnp.where(active_root, bi, 0.0)
         btrani = btrani.at[iz].set(bi)
         btran = btran + bi
     btran = jnp.maximum(MPE, btran)
     for iz in range(nroot):
-        btrani = btrani.at[iz].set(btrani[iz] / btran)
+        active_root = (iz + 1) <= nroot_cell
+        btrani = btrani.at[iz].set(jnp.where(active_root, btrani[iz] / btran, 0.0))
 
     # ground surface resistance + RHSUR (ENERGY :2173-2201, OPT_RSF=1 SZ09)
     sh2o1 = sh2o[0]

@@ -116,11 +116,11 @@ def build_energy_params(static: NoahMPStatic, scalar_shape) -> tuple[EnergyParam
                  if rsurf_exp is not None
                  else jnp.broadcast_to(jnp.asarray(_RSURF_EXP_DEFAULT), scalar_shape))
 
-    # nroot is a static python int in EnergyParams; take the dominant (max) root
-    # depth across the grid (WRF gathers it per column, but the energy kernel uses
-    # it as a static slice bound — column-uniform on the Canary land tiles).
-    nroot_arr = _gather_vec(p.nroot, vt)
-    nroot = int(round(float(jnp.max(nroot_arr))))
+    # WRF gathers NROOT by VEGTYP/IVGTYP for every land column (VEGPARM.TBL /
+    # MPTABLE.TBL). The energy kernel still needs a static loop bound, so carry
+    # the grid max only as that bound and keep the per-cell map for BTRAN.
+    nroot_arr = jnp.asarray(jnp.rint(_gather_vec(p.nroot, vt)), dtype=jnp.int32)
+    nroot = max(0, min(NSOIL, int(round(float(jnp.max(nroot_arr))))))
 
     energy = EnergyParams(
         z0mvt=vg("z0mvt"), hvt=vg("hvt"), cwpvt=vg("cwpvt"), dleaf=vg("dleaf"),
@@ -136,6 +136,7 @@ def build_energy_params(static: NoahMPStatic, scalar_shape) -> tuple[EnergyParam
         bp=vg("bp"), mp=vg("mp"), folnmx=vg("folnmx"), qe25=vg("qe25"),
         kc25=vg("kc25"), ko25=vg("ko25"), akc=vg("akc"), ako=vg("ako"),
         avcmx=vg("avcmx"), vcmx25=vg("vcmx25"), c3psn=vg("c3psn"),
+        nroot_cell=jnp.clip(nroot_arr, 0, nroot),
     )
     rad = TwoStreamParams(
         rhol=_gather_band(p.rhol, vt), rhos=_gather_band(p.rhos, vt),
