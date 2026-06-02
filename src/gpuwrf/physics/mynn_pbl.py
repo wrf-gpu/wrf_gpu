@@ -485,8 +485,76 @@ def _diffusion_solve_with_surface(x, diffusivity, state, dt, bottom_rhs, bottom_
     return _solve_tridiagonal(a, b, c, d)
 
 
-def _apply_mean_tendencies(state: MynnPBLColumnState, turb, dt, flux, wind, rhosfc):
-    """Applies WRF-style dry U/V/theta/qv implicit tendency solves."""
+def _diffusion_solve_with_mf(x, diffusivity, state, dt, bottom_rhs, s_aw, s_awx,
+                             bottom_drag=0.0):
+    """WRF `mynn_tendencies` scalar solve WITH the MYNN-EDMF mass-flux terms.
+
+    Faithful to the qv/thl blocks of WRF ``module_bl_mynnedmf.F:4316-4382`` for the
+    operational config (no downdraft -> sd_*=0; env_subs=.false. -> sub_*=det_*=0;
+    bl_mynn_mixqt=0 -> mix qv separately). The mass-flux additions to the implicit
+    tridiagonal (s_aw on the diagonal/off-diagonals) and the explicit
+    flux-divergence source (s_awx) are added to the pure-ED coefficients.
+
+    ``s_aw`` and ``s_awx`` are interface-staggered (length nz+1), index k+1.
+    They equal the WRF ``s_aw1``/``s_awphi1`` arrays already scaled by Psig_w and
+    the flux limiter (see :func:`mynn_edmf.dmp_mf_columns`).
+    """
+    dz = state.dz
+    dtz = dt / dz
+    rhoinv = 1.0 / jnp.maximum(state.rho, 1.0e-4)
+    kdz = _rho_interfaces(state, diffusivity)  # length nz+1 (khdz on interfaces)
+
+    # WRF stability floor on khdz from the mass flux (lines 3990-3997), sd_aw=0:
+    #   khdz(k) = max(khdz(k), 0.5*s_aw(k)); max(khdz(k), -0.5*(s_aw(k)-s_aw(k+1)))
+    # for k=kts+1..kte-1. kdz here is indexed as interface k (0..nz). s_aw index k.
+    kdz_int = jnp.maximum(
+        jnp.maximum(kdz[..., 1:-1], 0.5 * s_aw[..., 1:-1]),
+        -0.5 * (s_aw[..., 1:-1] - s_aw[..., 2:]),
+    )
+    kdz = jnp.concatenate((kdz[..., :1], kdz_int, kdz[..., -1:]), axis=-1)
+
+    bottom_drag = jnp.zeros_like(bottom_rhs) + bottom_drag
+
+    # ---- k = kts (0-based 0) : WRF lines 4326-4336 (sd/sub/det = 0) ----
+    half_dtz0 = 0.5 * dtz[..., :1] * rhoinv[..., :1]
+    lower0 = -dtz[..., :1] * kdz[..., :1] * rhoinv[..., :1]
+    diag0 = (1.0 + dtz[..., :1] * (kdz[..., 1:2] + kdz[..., :1] + bottom_drag[..., None]) * rhoinv[..., :1]
+             - half_dtz0 * s_aw[..., 1:2])
+    upper0 = (-dtz[..., :1] * kdz[..., 1:2] * rhoinv[..., :1]
+              - half_dtz0 * s_aw[..., 1:2])
+    rhs0 = (x[..., :1] + bottom_rhs[..., None]
+            - dtz[..., :1] * rhoinv[..., :1] * s_awx[..., 1:2])
+
+    # ---- interior k = kts+1..kte-1 : WRF lines 4338-4352 ----
+    dtzi = dtz[..., 1:-1]
+    rhoinvi = rhoinv[..., 1:-1]
+    half_i = 0.5 * dtzi * rhoinvi
+    s_aw_k = s_aw[..., 1:-2]      # s_aw(k)   for interior k -> interface k
+    s_aw_kp1 = s_aw[..., 2:-1]    # s_aw(k+1)
+    s_awx_k = s_awx[..., 1:-2]
+    s_awx_kp1 = s_awx[..., 2:-1]
+    lower_i = (-dtzi * kdz[..., 1:-2] * rhoinvi + half_i * s_aw_k)
+    diag_i = (1.0 + dtzi * (kdz[..., 1:-2] + kdz[..., 2:-1]) * rhoinvi
+              + half_i * (s_aw_k - s_aw_kp1))
+    upper_i = (-dtzi * kdz[..., 2:-1] * rhoinvi - half_i * s_aw_kp1)
+    rhs_i = x[..., 1:-1] + dtzi * rhoinvi * (s_awx_k - s_awx_kp1)
+
+    a = jnp.concatenate((lower0, lower_i, _zero_edge_like(x)), axis=-1)
+    b = jnp.concatenate((diag0, diag_i, jnp.ones_like(x[..., -1:])), axis=-1)
+    c = jnp.concatenate((upper0, upper_i, _zero_edge_like(x)), axis=-1)
+    d = jnp.concatenate((rhs0, rhs_i, x[..., -1:]), axis=-1)
+    return _solve_tridiagonal(a, b, c, d)
+
+
+def _apply_mean_tendencies(state: MynnPBLColumnState, turb, dt, flux, wind, rhosfc,
+                           mf=None):
+    """Applies WRF-style U/V/theta/qv implicit tendency solves.
+
+    When ``mf`` (the MYNN-EDMF solver arrays from :func:`mynn_edmf.dmp_mf_columns`)
+    is provided, the theta(thl) and qv scalar solves include the mass-flux
+    nonlocal transport (``s_aw``/``s_awthl``/``s_awqv``). Momentum keeps the pure-ED
+    solve because the operational config sets ``bl_mynn_edmf_mom=0``.
+    """
 
     rhoinv0 = 1.0 / jnp.maximum(state.rho[..., 0], 1.0e-4)
     dtz0 = dt / state.dz[..., 0]
@@ -496,9 +564,65 @@ def _apply_mean_tendencies(state: MynnPBLColumnState, turb, dt, flux, wind, rhos
     theta_rhs = dtz0 * rhosfc * flux.theta_flux * rhoinv0
     qv_flux = jnp.maximum(flux.qv_flux, jnp.minimum(0.9 * state.qv[..., 0] - 1.0e-8, 0.0) / jnp.maximum(dtz0, 1.0e-12))
     qv_rhs = dtz0 * rhosfc * qv_flux * rhoinv0
-    theta = _diffusion_solve_with_surface(state.theta, turb["dfh"], state, dt, theta_rhs)
-    qv = _diffusion_solve_with_surface(state.qv, turb["dfh"], state, dt, qv_rhs)
+    if mf is None:
+        theta = _diffusion_solve_with_surface(state.theta, turb["dfh"], state, dt, theta_rhs)
+        qv = _diffusion_solve_with_surface(state.qv, turb["dfh"], state, dt, qv_rhs)
+    else:
+        # theta solve uses s_awthl; the column carries theta as thl (qc=0 in the
+        # PBL column -> thl == theta). qv solve uses s_awqv.
+        theta = _diffusion_solve_with_mf(
+            state.theta, turb["dfh"], state, dt, theta_rhs,
+            mf["s_aw"], mf["s_awthl"])
+        qv = _diffusion_solve_with_mf(
+            state.qv, turb["dfh"], state, dt, qv_rhs,
+            mf["s_aw"], mf["s_awqv"])
     return u, v, theta, jnp.maximum(qv, 0.0)
+
+
+def _edmf_arrays_from_state(state, flux, fltv, pblh, dt, dx):
+    """Build the MYNN-EDMF mass-flux solver arrays from the column state.
+
+    Calls the WRF-faithful :func:`mynn_edmf.dmp_mf_columns` (verified against the
+    pristine WRF ``DMP_mf`` to <0.5% rel error, see ``proofs/mynn_edmf``). The
+    standalone MYNN column carries only ``qv``/``theta``; the daytime convective
+    PBL is unsaturated (qc=qi=0) so ``sqw==sqv`` and ``thl==theta`` hold. The
+    surface flux struct supplies the kinematic fluxes WRF's main MYNN derives as
+    ``flqv=qfx/rho`` (=qv_flux), ``flt=hfx/(rho*cpm)`` (=theta_flux), ``flq=flqv``.
+
+    ``ts`` (skin temperature) feeds only the superadiabatic activation guard. The
+    standalone column does not carry a reliable skin temperature, so we pass the
+    ``ts<=0`` sentinel: :func:`mynn_edmf.dmp_mf_columns` then uses the physically
+    equivalent buoyancy-flux activation criterion (``fltv>0`` <=> unstable surface
+    layer). ``dx`` is the grid spacing (m).
+    """
+    from gpuwrf.physics import mynn_edmf as _edmf
+
+    qv = jnp.maximum(state.qv, 0.0)
+    sqv = qv / (1.0 + qv)
+    sqc = jnp.zeros_like(sqv)
+    sqw = sqv  # qc=qi=0 in the unsaturated PBL column
+    theta = state.theta
+    thl = theta  # thl == theta when qc=0
+    thv = theta * (1.0 + P608 * sqv)
+    exner = (state.p / 100000.0) ** (287.0 / (3.5 * 287.0))
+
+    # kinematic surface fluxes (already in flux struct)
+    flqv = flux.qv_flux
+    flq = flqv
+    flt = flux.theta_flux
+    ts = -jnp.ones_like(fltv)  # sentinel -> buoyancy-flux activation criterion
+
+    zw = jnp.concatenate(
+        (_zero_edge_like(state.dz), jnp.cumsum(state.dz, axis=-1)), axis=-1
+    )
+    xland = jnp.ones_like(fltv)  # land path (d03 land columns); see note above
+
+    return _edmf.dmp_mf_columns(
+        sqw, sqv, sqc, state.u, state.v, state.w, theta, thl, thv, state.theta * 0.0,
+        2.0 * state.tke, state.p, exner, state.rho, state.dz, zw,
+        ust=flux.ustar, flt=flt, fltv=fltv, flq=flq, flqv=flqv,
+        pblh=pblh, ts=ts, dx=dx, xland=xland, dt=dt,
+    )
 
 
 def _retrieve_exchange_coeffs(state: MynnPBLColumnState, turb):
@@ -512,15 +636,22 @@ def _retrieve_exchange_coeffs(state: MynnPBLColumnState, turb):
     return km, kh
 
 
-def _step_mynn_pbl_impl_with_pblh(state: MynnPBLColumnState, dt: float, debug: bool, surface=None):
-    """Unjitted implementation; returns the advanced state and the MYNN PBLH."""
+def _step_mynn_pbl_impl_with_pblh(state: MynnPBLColumnState, dt: float, debug: bool,
+                                  surface=None, edmf: bool = False, dx: float = 1000.0):
+    """Unjitted implementation; returns the advanced state and the MYNN PBLH.
+
+    ``edmf`` activates the MYNN-EDMF mass-flux nonlocal scalar transport (the
+    ``s_awqv``/``s_awthl`` updraft flux) in the theta/qv solves. ``dx`` is the
+    horizontal grid spacing (m) the mass-flux plume sizing needs.
+    """
 
     state = _clip_state(state)
     flux, wind, fltv, rhosfc = _surface_terms(state, surface)
     qke = 2.0 * state.tke
     turb = _mym_turbulence(state, qke, fltv)
     qke_new, _qwt, qdiss, _pdk = _mym_predict_qke(state, qke, turb, dt, flux.ustar, flux)
-    u, v, theta, qv = _apply_mean_tendencies(state, turb, dt, flux, wind, rhosfc)
+    mf = _edmf_arrays_from_state(state, flux, fltv, turb["pblh"], dt, dx) if edmf else None
+    u, v, theta, qv = _apply_mean_tendencies(state, turb, dt, flux, wind, rhosfc, mf=mf)
     km, kh = _retrieve_exchange_coeffs(state, turb)
     tke = 0.5 * qke_new
 
@@ -536,10 +667,11 @@ def _step_mynn_pbl_impl_with_pblh(state: MynnPBLColumnState, dt: float, debug: b
     return state.replace(u=u, v=v, theta=theta, qv=qv, tke=tke, km=km, kh=kh, el=el), turb["pblh"]
 
 
-def _step_mynn_pbl_impl(state: MynnPBLColumnState, dt: float, debug: bool, surface=None) -> MynnPBLColumnState:
+def _step_mynn_pbl_impl(state: MynnPBLColumnState, dt: float, debug: bool, surface=None,
+                        edmf: bool = False, dx: float = 1000.0) -> MynnPBLColumnState:
     """Unjitted implementation shared by production and stripped entry points."""
 
-    next_state, _pblh = _step_mynn_pbl_impl_with_pblh(state, dt, debug, surface)
+    next_state, _pblh = _step_mynn_pbl_impl_with_pblh(state, dt, debug, surface, edmf, dx)
     return next_state
 
 
@@ -573,29 +705,35 @@ def _mynn_budget_diagnostics(state: MynnPBLColumnState, dt: float, surface=None)
     }
 
 
-@partial(jax.jit, static_argnames=("dt", "debug"))
+@partial(jax.jit, static_argnames=("dt", "debug", "edmf", "dx"))
 def step_mynn_pbl_column(
-    state: MynnPBLColumnState, dt: float, *, debug: bool = False, surface=None
+    state: MynnPBLColumnState, dt: float, *, debug: bool = False, surface=None,
+    edmf: bool = False, dx: float = 1000.0,
 ) -> MynnPBLColumnState:
     """Advances one fused MYNN2.5 column step.
 
     ``surface`` (a :class:`SurfaceFluxes` pytree) is the operational coupling
     hand-off from the WRF revised surface layer; ``None`` uses the standalone
-    neutral-bulk stub for the analytic MYNN fixture."""
+    neutral-bulk stub for the analytic MYNN fixture. ``edmf=True`` activates the
+    MYNN-EDMF mass-flux nonlocal scalar transport (``s_awqv``/``s_awthl``); ``dx``
+    is the horizontal grid spacing (m) used by the plume sizing."""
 
-    return _step_mynn_pbl_impl(state, dt, debug, surface)
+    return _step_mynn_pbl_impl(state, dt, debug, surface, edmf, dx)
 
 
-@partial(jax.jit, static_argnames=("dt", "debug"))
+@partial(jax.jit, static_argnames=("dt", "debug", "edmf", "dx"))
 def step_mynn_pbl_column_with_pblh(
-    state: MynnPBLColumnState, dt: float, *, debug: bool = False, surface=None
+    state: MynnPBLColumnState, dt: float, *, debug: bool = False, surface=None,
+    edmf: bool = False, dx: float = 1000.0,
 ):
     """Advance one MYNN column step and also return the diagnosed PBL height.
 
     Used by the operational ``mynn_adapter`` to emit the PBLH operational
-    diagnostic (coupler_interface.md §4) without adding a prognostic State leaf."""
+    diagnostic (coupler_interface.md §4) without adding a prognostic State leaf.
+    ``edmf``/``dx`` enable + size the EDMF mass-flux transport (see
+    :func:`step_mynn_pbl_column`)."""
 
-    return _step_mynn_pbl_impl_with_pblh(state, dt, debug, surface)
+    return _step_mynn_pbl_impl_with_pblh(state, dt, debug, surface, edmf, dx)
 
 
 @partial(jax.jit, static_argnames=("dt",))

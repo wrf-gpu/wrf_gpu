@@ -150,26 +150,24 @@ def _single_column_dmp_mf(sqw, sqv, sqc, u, v, w, th, thl, thv, tk, qke,
     fltv2 = jnp.where((psig_w == 0.0) & (fltv > 0.0), -fltv, fltv)
 
     # ---- superadiabatic check up through ~50 m (lines 5892-5918) ----
-    # land hux = -0.003 for k==1 (k=0 here); -0.0005 above
+    # WRF superadiabatic test (lines 5899-5918): over LAND the k=0 criterion
+    #   dthvdz = (thv0 - tvs)/(0.5*dz0) < hux  with hux=-0.003 (dT/dz<-0.3K/100m),
+    #   tvs = ts*(1+p608*qv0)  -- requires the skin temperature ts.
+    # This is the governing check (the k=1..k50 ladder uses hux=-0.0005 and only
+    # adds levels while contiguous; for 1km d03 the first mass level is ~25 m so
+    # k=0 dominates).
+    #
+    # When ts (skin temperature) IS supplied (ts>0, the WRF coupling / oracle
+    # path) we use the exact WRF criterion. When ts is NOT available (ts<=0
+    # sentinel) we fall back to the physically-equivalent buoyancy-flux criterion
+    # ``fltv2 > 0``: a positive surface virtual-heat flux IS by definition an
+    # unstable (superadiabatic) surface layer, which is the condition WRF's test
+    # detects. This avoids fabricating a skin temperature from an underdetermined
+    # kinematic-flux/ustar relation (which needs the surface exchange coefficient
+    # ch we don't carry in the standalone column).
     tvs = ts * (1.0 + P608 * qv1[0])
-    # k=0: dthvdz = (thv0 - tvs)/(0.5*dz0)
     dthvdz0 = (thv[0] - tvs) / (0.5 * dz[0])
-    sup0 = dthvdz0 < -0.003
-    # We only need the first ~k50 levels (<50 m). For 1km d03 the first level is
-    # ~25 m; the superadiabatic test is dominated by k=0. Use a small fixed
-    # window of the lowest 4 levels with the WRF hux ladder.
-    superad = sup0
-    # subsequent levels (k=1..3): hux=-0.0005, but only matter while contiguous
-    cont = sup0
-    for k in range(1, 4):
-        dthvdz = (thv[k] - thv[k - 1]) / (0.5 * (dz[k] + dz[k - 1]))
-        zaglk = zagl_mid[k]
-        ok = (dthvdz < -0.0005) & (zaglk <= 50.0)
-        cont = cont & ok
-        superad = superad | cont  # stays true only while contiguous from k0
-    # WRF exits the loop on first failure; "superadiabatic" = state at exit.
-    # The net activation only needs: surface layer superadiabatic.
-    superad = sup0
+    superad = jnp.where(ts > 0.0, dthvdz0 < -0.003, fltv2 > 0.0)
 
     # ---- plume widths (lines 5933-5975) ----
     maxwidth_dx = jnp.minimum(dx * DCUT, LMAX)

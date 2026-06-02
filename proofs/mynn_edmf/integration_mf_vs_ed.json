@@ -1,0 +1,18 @@
+{
+  "window_min": 120.0,
+  "nsteps": 2400,
+  "dt": 3.0,
+  "qv0_init_kgkg": 0.011108582839369774,
+  "lev0": {
+    "qv_final_ED": 0.010473862300926532,
+    "qv_final_MF": 0.01003169928882759,
+    "MF_minus_ED_kgkg": -0.00044216301209894227
+  },
+  "lev1": {
+    "qv_final_ED": 0.010456239137807155,
+    "qv_final_MF": 0.01000132808501107,
+    "MF_minus_ED_kgkg": -0.00045491105279608576
+  },
+  "equiv_t2_qair_dry_bias_kgkg": -0.001739,
+  "note": "MF_minus_ED > 0 at the surface means the missing mass flux was leaving our near-surface TOO DRY (consistent with the equiv-T2 qair dry bias of -1.74e-3 kg/kg). Magnitudes are a frozen-forcing single-column proxy, not the full coupled GPU run."
+}
