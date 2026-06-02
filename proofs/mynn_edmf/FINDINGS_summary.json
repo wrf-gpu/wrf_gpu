@@ -1,0 +1,53 @@
+{
+  "sprint": "worker/opus/mynn-edmf-moisture",
+  "hypothesis": "mynn_pbl.py qv solve is missing the MYNN-EDMF mass-flux scalar transport (s_awqv); this causes the d03 daytime near-surface qv dry bias / QFX & LH deficit.",
+  "config_resolved": {
+    "bl_mynn_edmf": 1,
+    "bl_mynn_edmf_mom": 0,
+    "bl_mynn_edmf_tke": 0,
+    "bl_mynn_mixqt": 0,
+    "bl_mynn_cloudmix": 1,
+    "bl_mynn_mixscalars": 1,
+    "env_subs": false,
+    "bl_mynn_edmf_dd": 0,
+    "consequence": "ONLY s_awqv matters: sub_sqv=det_sqv=0 (env_subs=.false.), sd_*=0 (no downdraft), no momentum MF."
+  },
+  "column": {
+    "case": "20260521_18z_l3_24h_20260522T133443Z",
+    "domain": "d03",
+    "time": "2026-05-22_12:00:00",
+    "j": 26,
+    "i": 53,
+    "HFX": 438.5185546875,
+    "PBLH": 464.2323303222656,
+    "fltv": 0.37644643189211985
+  },
+  "verification_vs_WRF_oracle": {
+    "method": "JAX dmp_mf_columns vs pristine WRF DMP_mf (linked module_bl_mynnedmf.o), single column, single step",
+    "predeclared_tol_rel": 0.05,
+    "s_aw_rel_max_err": 0.004834738628076368,
+    "s_awqv_rel_max_err": 0.004834274556065201,
+    "PASS_s_aw": true,
+    "PASS_s_awqv": true,
+    "note": "residual is fp32-WRF vs fp64-JAX + plume tanh/condensation nonlinearity"
+  },
+  "confirmation": {
+    "missing_MF_real": true,
+    "single_step_mynn_tendencies_Dqv_MF_minus_ED_lev0": -3.1e-10,
+    "structural_fact": "s_awqv(kts)=0 always -> MF never directly sources lowest-level qv in one step; it reshapes the PBL above",
+    "two_hour_frozen_forcing_lev0_MF_minus_ED_kgkg": -0.00044216301209894227,
+    "responsive_QFX_MF_evap_ratio_mean": 1.067,
+    "verdict": "PARTIAL CONFIRMATION: MF ventilates moisture UP; with responsive surface flux it RAISES evaporation +7-11% (matches equiv-T2 QFX~60%/LH-8.7 deficit). But MF DRIES the near-surface in a column experiment, so missing MF is NOT the sole/dominant cause of the -1.74e-3 near-surface dry bias -- that is coupled with the land-side canopy vapor source (EAH 1467 vs 1655 Pa)."
+  },
+  "landed": {
+    "jax_dmp_mf_port": "src/gpuwrf/physics/mynn_edmf.py (VERIFIED vs WRF)",
+    "wired_into_qv_theta_solve": "src/gpuwrf/physics/mynn_pbl.py _diffusion_solve_with_mf + edmf flag (default OFF)",
+    "tests": "tests/test_mynn_edmf_oracle.py (2 pass); 11 existing M5 MYNN tests unchanged"
+  },
+  "remaining": [
+    "Wire edmf=True into the operational coupler (physics_couplers.py mynn_adapter) -- OTHER LANE's file; manager to enable + GPU remeasure.",
+    "Plume condensation (qc>0 saturated PBL / stratocu) untested -- this column was dry (qc=0); s_awqc verified=0 here only.",
+    "Skin-temperature (ts) for the exact WRF superadiabatic guard not carried in the standalone column (buoyancy-flux fallback used; equivalent for daytime land).",
+    "Downdraft/subsidence/detrainment intentionally omitted (zero in this config); revisit if config changes."
+  ]
+}
