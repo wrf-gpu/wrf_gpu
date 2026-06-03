@@ -80,12 +80,12 @@ SUPPORTED_OPTIONS: dict[str, SupportedOption] = {
         key="bl_pbl_physics",
         supported_values=frozenset(ACCEPTED_BL_PBL_PHYSICS),
         implemented=(
-            "0=disabled, 1=YSU, 5=MYNN, 7=ACM2 (all GPU-operational, scan-wired); "
+            "0=disabled, 1=YSU, 5=MYNN, 7=ACM2, 8=BouLac (all GPU-operational, scan-wired); "
             "2=MYJ (savepoint-parity-proven CPU reference, NOT yet GPU-scan-wired -- "
             "selectable for reference but fail-closed in the operational GPU scan, GPU-batching TODO)"
         ),
         action=(
-            "Use bl_pbl_physics=0/1/5/7 for the operational GPU scan; 2=MYJ remains "
+            "Use bl_pbl_physics=0/1/5/7/8 for the operational GPU scan; 2=MYJ remains "
             "CPU-reference-only and must pair with sf_sfclay_physics=2. "
             "All other PBL options remain unsupported. "
             "Pair with the matching surface layer (MYNN<->5, ACM2<->7/1, YSU<->1, MYJ<->2)."

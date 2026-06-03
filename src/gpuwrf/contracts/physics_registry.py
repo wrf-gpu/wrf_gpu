@@ -21,6 +21,8 @@ WRF Registry lines verified against
 * WDM6(16): ``moist:qv..qg;scalar:qnn,qnc,qnr;state:re_*``.
 * MYJ(2): ``state:tke_pbl,el_pbl``; requires Janjic Eta sfclay(2).
 * MYNN(5): ``scalar:qke_adv;state:qke,tke_pbl,sh3d,sm3d,tsq,qsq,cov,el_pbl``.
+* BouLac(8): ``state:qke`` reused as the prognostic TKE storage plus PBLH/K
+  diagnostics (frozen-contract extension, 2026-06-04).
 * Noah classic(2): ``state:flx4,fvb,fbur,fgsn,smcrel,xlaidyn``.
 * Cumulus options KF(1), Grell-Freitas(3), Tiedtke(6/16) use the common
   ``R*CUTEN`` tendency family and scheme-specific carry listed below.
@@ -56,7 +58,7 @@ class SchemeOption:
 
 
 ACCEPTED_MP_PHYSICS: tuple[int, ...] = (0, 1, 2, 3, 4, 6, 8, 10, 16)
-ACCEPTED_BL_PBL_PHYSICS: tuple[int, ...] = (0, 1, 2, 5, 7)
+ACCEPTED_BL_PBL_PHYSICS: tuple[int, ...] = (0, 1, 2, 5, 7, 8)
 ACCEPTED_SF_SFCLAY_PHYSICS: tuple[int, ...] = (0, 1, 2, 5, 7)
 ACCEPTED_CU_PHYSICS: tuple[int, ...] = (0, 1, 3, 6, 16)
 ACCEPTED_SF_SURFACE_PHYSICS: tuple[int, ...] = (0, 2, 4)
@@ -97,6 +99,7 @@ PBL_SCHEMES: Mapping[int, SchemeOption] = {
     2: SchemeOption("bl_pbl_physics", 2, "MYJ", "myjpblscheme", "accepted", "pbl"),
     5: SchemeOption("bl_pbl_physics", 5, "MYNN", "mynnpblscheme", "implemented", "pbl"),
     7: SchemeOption("bl_pbl_physics", 7, "ACM2", "acmpblscheme", "implemented", "pbl"),
+    8: SchemeOption("bl_pbl_physics", 8, "BouLac", "boulacscheme", "accepted", "pbl"),
 }
 
 SFCLAY_SCHEMES: Mapping[int, SchemeOption] = {
@@ -329,14 +332,14 @@ FIELD_SPECS: tuple[RegistryFieldSpec, ...] = (
         "pbl_scalar",
         "mass_3d",
         "State",
-        ("pbl5",),
+        ("pbl5", "pbl8"),
         existing_state=True,
         restart_required=True,
         wrfout_required=True,
         nest_forcedown=True,
         nest_feedback=True,
         lateral_bc=False,
-        notes="MYNN persistent TKE leaf; WRF advected scalar member is qke_adv.",
+        notes="Persistent TKE leaf for TKE-based PBL schemes; WRF MYNN advected scalar member is qke_adv.",
     ),
     *(
         _field(
@@ -434,6 +437,7 @@ PBL_CARRY_MEMBERS: Mapping[int, tuple[str, ...]] = {
     2: ("tke_pbl", "el_pbl"),
     5: ("qke",),
     7: (),
+    8: ("qke",),
 }
 
 PBL_DIAGNOSTIC_MEMBERS: Mapping[int, tuple[str, ...]] = {
@@ -442,6 +446,7 @@ PBL_DIAGNOSTIC_MEMBERS: Mapping[int, tuple[str, ...]] = {
     2: ("pblh", "kpbl", "mixht", "tke_pbl", "exch_h", "exch_m", "el_pbl"),
     5: ("pblh", "tke_pbl", "sh3d", "sm3d", "tsq", "qsq", "cov", "el_pbl"),
     7: ("pblh",),
+    8: ("pblh", "tke_pbl", "dlk", "exch_h", "exch_m"),
 }
 
 LAND_CARRY_MEMBERS: Mapping[int, tuple[str, ...]] = {
@@ -553,7 +558,7 @@ def nest_field_list(
                 continue
             entries.append(NestFieldEntry(leaf, NUMBER_WRFOUT_NAME[leaf], "scalar", "", True, True, False))
             seen.add(leaf)
-        if int(bl_pbl_physics) == 5 and "qke" not in seen:
+        if int(bl_pbl_physics) in (5, 8) and "qke" not in seen:
             entries.append(NestFieldEntry("qke", "QKE", "scalar", "", True, True, False))
 
     return tuple(entries)
