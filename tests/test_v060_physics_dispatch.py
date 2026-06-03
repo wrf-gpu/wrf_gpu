@@ -58,11 +58,20 @@ def test_every_accepted_option_routes() -> None:
 
 @pytest.mark.parametrize(
     "fam,opt",
-    [("microphysics", 2), ("pbl", 2), ("surface_layer", 2), ("cumulus", 2), ("land_surface", 1)],
+    [("microphysics", 2), ("pbl", 3), ("surface_layer", 3), ("cumulus", 2), ("land_surface", 1)],
 )
 def test_fail_closed_on_out_of_matrix(fam: str, opt: int) -> None:
     with pytest.raises(UnsupportedSchemeSelection):
         scheme_entry(fam, opt)
+
+
+def test_myj_pairing_enforced_by_dispatcher_resolution() -> None:
+    suite = resolve_physics_suite({"bl_pbl_physics": 2, "sf_sfclay_physics": 2})
+    assert suite.pbl.option == 2
+    assert suite.surface_layer.option == 2
+    for config in ({"bl_pbl_physics": 2}, {"sf_sfclay_physics": 2}, {"bl_pbl_physics": 2, "sf_sfclay_physics": 5}):
+        with pytest.raises(UnsupportedSchemeSelection, match="MYJ pairing violation"):
+            resolve_physics_suite(config)
 
 
 def test_grell_freitas_and_tiedtke_flagged_not_gpu_ready() -> None:

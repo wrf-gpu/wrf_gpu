@@ -50,9 +50,11 @@ def test_mp_registry_names_match_expected_wrfout_variables() -> None:
 
 def test_interfaces_self_check_and_scheme_specs_cover_v060_options() -> None:
     assert_interfaces_consistent()
-    # 17 single-option specs + 2 radiation variants (RRTMG LW/SW under option 4).
-    assert len(SCHEME_STEP_SPECS) == 19
+    # 19 single-option specs + 2 radiation variants (RRTMG LW/SW under option 4).
+    assert len(SCHEME_STEP_SPECS) == 21
     assert scheme_step_spec("microphysics", 16).writes_state[-3:] == ("Nn", "Nc", "Nr")
+    assert scheme_step_spec("pbl", 2).writes_carry == ("tke_pbl", "el_pbl")
+    assert scheme_step_spec("surface_layer", 2).owner_module.endswith("sfclay_janjic.py")
     assert scheme_step_spec("cumulus", 1).returns_accumulators == ("rainc_acc",)
     assert scheme_step_spec("land_surface", 2).writes_carry == ("flx4", "fvb", "fbur", "fgsn", "smcrel", "xlaidyn")
 
@@ -82,8 +84,8 @@ def test_v060_namelist_accept_matrix_and_wrfout_forward_names() -> None:
             "physics": {
                 "mp_physics": [1, 6, 8, 10, 16],
                 "cu_physics": [0, 1, 3, 6, 16],
-                "bl_pbl_physics": [0, 1, 5, 7],
-                "sf_sfclay_physics": [0, 1, 5, 7],
+                "bl_pbl_physics": [0, 1, 2, 5, 7],
+                "sf_sfclay_physics": [0, 1, 2, 5, 7],
                 "sf_surface_physics": [0, 2, 4],
                 "ra_sw_physics": [0, 4],
                 "ra_lw_physics": [0, 4],

@@ -128,6 +128,12 @@ _PBL_ENTRIES: dict[int, SchemeEntry] = {
     1: SchemeEntry("pbl", 1, PBL_SCHEMES[1].name, "gpuwrf.physics.pbl_ysu", "step_ysu_column",
                    "column_state", True,
                    reads_state=("u", "v", "theta", "qv"), writes_state=("u", "v", "theta", "qv")),
+    2: SchemeEntry("pbl", 2, PBL_SCHEMES[2].name, "gpuwrf.physics.pbl_myj", "step_myj_pbl_column",
+                   "column_state", True,
+                   reads_state=("u", "v", "theta", "qv", "tke_pbl"),
+                   writes_state=("u", "v", "theta", "qv"),
+                   carry_members=("tke_pbl", "el_pbl"),
+                   notes="MUST pair with sf_sfclay_physics=2 (Janjic Eta surface layer)."),
     5: SchemeEntry("pbl", 5, PBL_SCHEMES[5].name, "gpuwrf.coupling.physics_couplers", "mynn_adapter",
                    "state_adapter", True,
                    reads_state=("u", "v", "theta", "qv", "qke"),
@@ -148,6 +154,11 @@ _SFCLAY_ENTRIES: dict[int, SchemeEntry] = {
     1: SchemeEntry("surface_layer", 1, SFCLAY_SCHEMES[1].name, "gpuwrf.physics.sfclay_revised_mm5",
                    "step_sfclay_revised_mm5_column", "column_state", True,
                    reads_state=_SFCLAY_READS, writes_state=_SFCLAY_WRITES),
+    2: SchemeEntry("surface_layer", 2, SFCLAY_SCHEMES[2].name, "gpuwrf.physics.sfclay_janjic",
+                   "step_janjic_sfclay_column", "column_state", True,
+                   reads_state=(*_SFCLAY_READS, "tke_pbl"), writes_state=_SFCLAY_WRITES,
+                   carry_members=("tke_pbl",),
+                   notes="MUST pair with bl_pbl_physics=2 (MYJ PBL)."),
     5: SchemeEntry("surface_layer", 5, SFCLAY_SCHEMES[5].name, "gpuwrf.coupling.physics_couplers",
                    "surface_adapter", "state_adapter", True,
                    reads_state=_SFCLAY_READS, writes_state=_SFCLAY_WRITES),
@@ -346,10 +357,17 @@ def resolve_physics_suite(config: Any) -> PhysicsSuite:
     accept-matrix. This is the loud, single dispatch decision point.
     """
 
+    pbl_opt = _option_from(config, "pbl")
+    sfclay_opt = _option_from(config, "surface_layer")
+    if (pbl_opt == 2) != (sfclay_opt == 2):
+        raise UnsupportedSchemeSelection(
+            "MYJ pairing violation: bl_pbl_physics=2 and sf_sfclay_physics=2 "
+            "must be selected together; no fallback surface-layer/PBL pairing is WRF-faithful."
+        )
     return PhysicsSuite(
         microphysics=scheme_entry("microphysics", _option_from(config, "microphysics")),
-        pbl=scheme_entry("pbl", _option_from(config, "pbl")),
-        surface_layer=scheme_entry("surface_layer", _option_from(config, "surface_layer")),
+        pbl=scheme_entry("pbl", pbl_opt),
+        surface_layer=scheme_entry("surface_layer", sfclay_opt),
         cumulus=scheme_entry("cumulus", _option_from(config, "cumulus")),
         land_surface=scheme_entry("land_surface", _option_from(config, "land_surface")),
     )

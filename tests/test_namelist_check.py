@@ -57,9 +57,18 @@ def test_unsupported_selected_option_raises_actionable_error() -> None:
 
 def test_registry_records_supported_active_suite() -> None:
     assert SUPPORTED_OPTIONS["mp_physics"].supported_values == frozenset({0, 1, 6, 8, 10, 16})
-    assert SUPPORTED_OPTIONS["bl_pbl_physics"].supported_values == frozenset({0, 1, 5, 7})
-    assert SUPPORTED_OPTIONS["sf_sfclay_physics"].supported_values == frozenset({0, 1, 5, 7})
+    assert SUPPORTED_OPTIONS["bl_pbl_physics"].supported_values == frozenset({0, 1, 2, 5, 7})
+    assert SUPPORTED_OPTIONS["sf_sfclay_physics"].supported_values == frozenset({0, 1, 2, 5, 7})
     assert SUPPORTED_OPTIONS["sf_surface_physics"].supported_values == frozenset({0, 2, 4})
     assert SUPPORTED_OPTIONS["cu_physics"].supported_values == frozenset({0, 1, 3, 6, 16})
     assert SUPPORTED_OPTIONS["ra_sw_physics"].supported_values == frozenset({0, 4})
     assert SUPPORTED_OPTIONS["ra_lw_physics"].supported_values == frozenset({0, 4})
+
+
+def test_myj_janjic_pairing_is_enforced() -> None:
+    validate_supported_namelist({"physics": {"bl_pbl_physics": [2], "sf_sfclay_physics": [2]}})
+    with pytest.raises(UnsupportedNamelistOption) as excinfo:
+        validate_supported_namelist({"physics": {"bl_pbl_physics": [2], "sf_sfclay_physics": [5]}})
+    message = str(excinfo.value)
+    assert "MYJ PBL and Janjic Eta surface layer are a mandatory WRF pair" in message
+    assert "Select both option values as 2" in message
