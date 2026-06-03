@@ -26,6 +26,8 @@ from .physics_registry import (
     ACCEPTED_BL_PBL_PHYSICS,
     ACCEPTED_CU_PHYSICS,
     ACCEPTED_MP_PHYSICS,
+    ACCEPTED_RA_LW_PHYSICS,
+    ACCEPTED_RA_SW_PHYSICS,
     ACCEPTED_SF_SFCLAY_PHYSICS,
     ACCEPTED_SF_SURFACE_PHYSICS,
     ACCUMULATORS,
@@ -42,7 +44,7 @@ from .physics_registry import (
 )
 
 
-PHYSICS_INTERFACE_VERSION = "v0.6.0-S0-frozen-2026-06-02"
+PHYSICS_INTERFACE_VERSION = "v0.6.0-S0-frozen-2026-06-03-rad"
 
 ArrayLike = Any
 _EMPTY: Mapping[str, Any] = MappingProxyType({})
@@ -170,6 +172,12 @@ class PhysicsStepSpec:
     returns_accumulators: tuple[str, ...] = ()
     diagnostics: tuple[str, ...] = ()
     notes: str = ""
+    # ``variant`` disambiguates families where one namelist option maps to more
+    # than one independent adapter sharing a kernel. Radiation is the only such
+    # case in the v0.6.0 menu: ra_lw_physics=4 and ra_sw_physics=4 are distinct
+    # namelist switches that both select the RRTMG column code, so the freeze
+    # carries two specs under option 4 keyed by variant ``"lw"`` / ``"sw"``.
+    variant: str = ""
 
 
 def _mp_spec(option: int, name: str, owner: str, oracle: str, *, diagnostics: tuple[str, ...] = ()) -> PhysicsStepSpec:
@@ -370,17 +378,58 @@ SCHEME_STEP_SPECS: tuple[PhysicsStepSpec, ...] = (
         writes_carry=LAND_CARRY_MEMBERS[4],
         diagnostics=("TSK", "GRDFLX", "QFX", "ALBEDO", "EMISS"),
     ),
+    # Radiation (RRTMG, ra_lw/ra_sw option 4). Unlike the other families, the
+    # radiation drivers write a HELD-RATE potential-temperature tendency
+    # (WRF RTHRATEN) applied at every dynamics step over the radt interval; the
+    # column adapter (coupling/physics_couplers.rrtmg_held_rate) emits a `theta`
+    # state_tendency rather than an in-place replacement. SW and LW are distinct
+    # namelist options but share one RRTMG column adapter; LW reads cloud
+    # hydrometeors + qv + the LSM surface emissivity/skin temperature, SW adds
+    # the solar-geometry/coszen inputs and surface albedo. Surface fluxes
+    # (GLW/SWDOWN/GSW) are returned as radiation diagnostics consumed by the LSM.
+    PhysicsStepSpec(
+        family="radiation",
+        option=4,
+        name="RRTMG longwave",
+        wrf_slot="first_rk_radiation_driver",
+        owner_module="src/gpuwrf/physics/rrtmg_lw.py",
+        oracle="M20 physics-oracle factory savepoint at module_radiation_driver.F:RRTMG LW",
+        reads_state=("theta", "qv", "qc", "qr", "qi", "qs", "qg", "p", "pb", "ph", "phb", "t_skin"),
+        writes_state=("theta",),
+        diagnostics=("GLW", "OLR", "LWUPB", "RTHRATENLW"),
+        variant="lw",
+        notes="ra_lw_physics=4. Held-rate RTHRATEN theta tendency; SW pairs with LW under "
+        "RRTMG. cu_rad_feedback couples active cumulus cloud fraction into the column when on.",
+    ),
+    PhysicsStepSpec(
+        family="radiation",
+        option=4,
+        name="RRTMG shortwave",
+        wrf_slot="first_rk_radiation_driver",
+        owner_module="src/gpuwrf/physics/rrtmg_sw.py",
+        oracle="M20 physics-oracle factory savepoint at module_radiation_driver.F:RRTMG SW",
+        reads_state=("theta", "qv", "qc", "qr", "qi", "qs", "qg", "p", "pb", "ph", "phb"),
+        writes_state=("theta",),
+        diagnostics=("SWDOWN", "GSW", "SWUPB", "COSZEN", "RTHRATENSW"),
+        variant="sw",
+        notes="ra_sw_physics=4. Shares the RRTMG column adapter with LW; needs solar geometry "
+        "(coszen/declination/equation-of-time) and surface albedo. Held-rate RTHRATEN.",
+    ),
 )
 
-SCHEME_STEP_SPECS_BY_KEY: Mapping[tuple[str, int], PhysicsStepSpec] = {
-    (spec.family, spec.option): spec for spec in SCHEME_STEP_SPECS
+SCHEME_STEP_SPECS_BY_KEY: Mapping[tuple[str, int, str], PhysicsStepSpec] = {
+    (spec.family, spec.option, spec.variant): spec for spec in SCHEME_STEP_SPECS
 }
 
 
-def scheme_step_spec(family: str, option: int) -> PhysicsStepSpec:
-    """Return a frozen step spec for a nonzero physics option."""
+def scheme_step_spec(family: str, option: int, variant: str = "") -> PhysicsStepSpec:
+    """Return a frozen step spec for a nonzero physics option.
 
-    return SCHEME_STEP_SPECS_BY_KEY[(family, int(option))]
+    ``variant`` is only needed for radiation, where one option (4) selects both
+    the RRTMG LW (``variant="lw"``) and SW (``variant="sw"``) adapters.
+    """
+
+    return SCHEME_STEP_SPECS_BY_KEY[(family, int(option), variant)]
 
 
 def assert_interfaces_consistent() -> None:
@@ -389,15 +438,19 @@ def assert_interfaces_consistent() -> None:
     assert_registry_consistent()
 
     expected = {
-        ("microphysics", opt) for opt in ACCEPTED_MP_PHYSICS if opt != 0
+        ("microphysics", opt, "") for opt in ACCEPTED_MP_PHYSICS if opt != 0
     } | {
-        ("pbl", opt) for opt in ACCEPTED_BL_PBL_PHYSICS if opt != 0
+        ("pbl", opt, "") for opt in ACCEPTED_BL_PBL_PHYSICS if opt != 0
     } | {
-        ("surface_layer", opt) for opt in ACCEPTED_SF_SFCLAY_PHYSICS if opt != 0
+        ("surface_layer", opt, "") for opt in ACCEPTED_SF_SFCLAY_PHYSICS if opt != 0
     } | {
-        ("cumulus", opt) for opt in ACCEPTED_CU_PHYSICS if opt != 0
+        ("cumulus", opt, "") for opt in ACCEPTED_CU_PHYSICS if opt != 0
     } | {
-        ("land_surface", opt) for opt in ACCEPTED_SF_SURFACE_PHYSICS if opt != 0
+        ("land_surface", opt, "") for opt in ACCEPTED_SF_SURFACE_PHYSICS if opt != 0
+    } | {
+        ("radiation", opt, "lw") for opt in ACCEPTED_RA_LW_PHYSICS if opt != 0
+    } | {
+        ("radiation", opt, "sw") for opt in ACCEPTED_RA_SW_PHYSICS if opt != 0
     }
     actual = set(SCHEME_STEP_SPECS_BY_KEY)
     missing = expected - actual
@@ -447,9 +500,11 @@ __all__ = [
 
 if __name__ == "__main__":
     assert_interfaces_consistent()
+    families = sorted({spec.family for spec in SCHEME_STEP_SPECS})
     print(
         "ok physics_interfaces consistent:",
         f"version={PHYSICS_INTERFACE_VERSION}",
         f"scheme_specs={len(SCHEME_STEP_SPECS)}",
+        f"families={len(families)}({','.join(families)})",
         f"slots={len(WRF_CALL_ORDER_SLOTS)}",
     )
