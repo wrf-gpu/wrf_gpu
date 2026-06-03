@@ -27,15 +27,19 @@ Scope (HONEST tracability, audited 2026-06-03 -- see the scan-wire handoff):
   persistent carry through the operational carry's additive ``cumulus_carry``
   leaf. Tendencies (``RTHCUTEN``/``RQ*CUTEN``) are applied as ``state += dt*tend``
   and ``RAINCV`` accumulates into ``rainc_acc`` (mm).
+* **PBL** -- YSU (1) / ACM2 (7) are the v0.6.0 ``jax.lax.scan``-traceable / vmap-
+  batched rewrites of the host-NumPy single-column kernels
+  (``physics.pbl_{ysu,acm2}.{ysu,acm2}_columns``). Their adapters re-derive the
+  per-cell surface forcing the kernels consume via the revised-MM5 surface layer
+  (``surface_layer_with_diagnostics``) and apply the PBL momentum increment
+  A2C-averaged onto the C-grid faces (WRF ``add_a2c_u``/``add_a2c_v``), exactly
+  like the MYNN adapter. Per-case savepoint parity re-passes on the traceable path
+  (``pbl_gpuop_report.json``).
 
 NOT wired here (kept fail-closed in the scan with scheme-specific reasons; the
 dispatcher selects them, ``runtime.operational_mode._resolve_operational_suite``
 rejects them loudly):
 
-* **YSU (1) / ACM2 (7) PBL** -- single-column HOST NumPy kernels (``_scalar`` +
-  Python ``range`` loops over levels); NOT ``jax.lax.scan``-traceable on a device
-  State. They passed per-column savepoint parity but need a jit/vmap rewrite
-  before they can ride the GPU scan (cross-model follow-up).
 * **Noah-classic (2) land** -- needs a full WRF-faithful surface forcing assembler
   + 4-layer soil prognostic coupler (the analogue of the dedicated
   ``coupling.noahmp_surface_hook``); building it inside this sprint would ship an
@@ -59,8 +63,12 @@ from gpuwrf.coupling.physics_couplers import (
     GRAVITY_M_S2,
     P0_PA,
     R_D_OVER_CP,
+    _add_a2c_u_increment,
+    _add_a2c_v_increment,
+    _column_dz_from_state,
     _output_dtype,
     _rho_from_state,
+    _surface_column_view,
     _temperature_from_theta,
     _u_mass,
     _v_mass,
@@ -71,8 +79,13 @@ from gpuwrf.physics.microphysics_morrison import morrison_tendency
 from gpuwrf.physics.microphysics_wdm6 import wdm6_physics_tendency
 from gpuwrf.physics.microphysics_wsm6 import wsm6_physics_tendency
 from gpuwrf.physics.cumulus_kf import step_kf_column
+from gpuwrf.physics.pbl_acm2 import acm2_columns
+from gpuwrf.physics.pbl_ysu import ysu_columns
 from gpuwrf.physics.sfclay_pleim_xiu import step_pxsfclay_column
 from gpuwrf.physics.sfclay_revised_mm5 import step_sfclay_revised_mm5_column
+from gpuwrf.physics.surface_layer import surface_layer_with_diagnostics
+
+CP_DRY = 1004.0  # J kg^-1 K^-1 (matches R_D_OVER_CP = 287/1004)
 
 
 # --- shared helpers -----------------------------------------------------------
@@ -372,6 +385,144 @@ def initial_kf_carry(state: State):
     return (w0avg, nca)
 
 
+# --- PBL adapters (bl_pbl_physics) --------------------------------------------
+#
+# YSU (1) / ACM2 (7) are the v0.6.0 ``jax.lax.scan``-traceable / vmap-batched PBL
+# kernels (``physics.pbl_ysu.ysu_columns`` / ``physics.pbl_acm2.acm2_columns``).
+# They occupy the same operational PBL slot as the v0.2.0 ``mynn_adapter`` and
+# consume the surface-layer forcing the surface-layer slot wrote earlier in the
+# WRF call chain. Both kernels need MORE surface inputs than the State's frozen B2
+# kinematic-flux contract carries (YSU: hfx/qfx/br/psim/psih/u10/v10/znt; ACM2:
+# hfx/qfx/pblh/wspd) -- the FROZEN B2 handles are kinematic fluxes only. The
+# WRF-faithful surface-forcing assembler is the SAME revised-MM5 surface layer the
+# operational scan already runs (``surface_layer_with_diagnostics``): it returns
+# HFX/LH (W m^-2), psim/psih, the bulk Richardson number BR, U10/V10, ZNT and 1/L,
+# so the PBL adapter re-derives the full per-cell forcing here -- no host transfer,
+# fully traceable, exactly the inputs the savepoint-parity kernel was validated on.
+#
+# Momentum coupling mirrors the MYNN adapter (``_state_from_mynn_output``): form the
+# A-grid PBL momentum INCREMENT on mass points and add it A2C-averaged onto the
+# dynamics' ORIGINAL C-grid u/v faces (WRF ``add_a2c_u``/``add_a2c_v``), so the
+# large-scale C-grid winds + the surface-w BC are preserved exactly. theta/qv live
+# on the mass grid (read-back is identity) so they take the increment directly.
+
+def _pbl_surface_forcing(state: State, grid):
+    """Re-derive the YSU/ACM2 surface forcing via the revised-MM5 surface layer.
+
+    Returns the per-cell ``(ny, nx)`` diagnostics the PBL kernels consume, plus the
+    column-major ``(ncol, nz)`` profile views (mass-point winds, lowest->top) and
+    the interface pressure column. Pure-``jnp``, no host transfer.
+    """
+
+    nz, ny, nx = state.theta.shape
+    ncol = ny * nx
+    diag = surface_layer_with_diagnostics(_surface_column_view(state))
+
+    def _flat2d(field2d):  # (ny, nx) -> (ncol,)
+        return jnp.asarray(field2d, jnp.float64).reshape(ncol)
+
+    rho = _rho_from_state(state)
+    T = _temperature_from_theta(state.theta, state.p)
+    pii = _exner_columns(state.p)
+    interface_z = state.ph.astype(jnp.float64) / GRAVITY_M_S2  # (nz+1, ny, nx)
+    dz = jnp.maximum(interface_z[1:] - interface_z[:-1], 1.0)  # (nz, ny, nx)
+    # Interface pressure (nz+1): interior faces = mean of adjacent levels; edges by
+    # zero-gradient extrapolation (a reasonable assembler; the GPU forecast gate vs
+    # CPU-WRF refines this against the true half-level pressure).
+    p = state.p.astype(jnp.float64)
+    p_int_interior = 0.5 * (p[:-1] + p[1:])  # (nz-1, ny, nx)
+    p_int = jnp.concatenate([p[:1], p_int_interior, p[-1:]], axis=0)  # (nz+1, ny, nx)
+
+    def _cols(field3d):  # (nz, ny, nx) -> (ncol, nz)
+        return jnp.moveaxis(field3d, 0, -1).reshape(ncol, nz)
+
+    rhosfc = jnp.asarray(state.rhosfc, jnp.float64)  # (ny, nx)
+    cpm = CP_DRY * (1.0 + 0.84 * jnp.maximum(state.qv[0], 0.0))  # moist cp at k0
+    hfx = jnp.asarray(diag.hfx, jnp.float64)  # W m^-2 upward
+    lh = jnp.asarray(diag.lh, jnp.float64)  # W m^-2 upward
+    XLV = 2.5e6
+    qfx = lh / XLV  # kg m^-2 s^-1 (LH = XLV*QFX)
+    u_mass = _u_mass(state)
+    v_mass = _v_mass(state)
+    return {
+        "ncol": ncol, "ny": ny, "nx": nx, "nz": nz,
+        "u_mass": u_mass, "v_mass": v_mass,
+        "u_cols": _cols(u_mass), "v_cols": _cols(v_mass),
+        "theta_cols": _cols(state.theta), "T_cols": _cols(T),
+        "qv_cols": _cols(jnp.maximum(state.qv, 0.0)),
+        "p_cols": _cols(p), "pii_cols": _cols(pii), "rho_cols": _cols(rho),
+        "dz_cols": _cols(dz),
+        "p_int_cols": jnp.moveaxis(p_int, 0, -1).reshape(ncol, nz + 1),
+        # surface forcing (ncol,)
+        "hfx": _flat2d(hfx), "qfx": _flat2d(qfx),
+        "psim": _flat2d(diag.psim), "psih": _flat2d(diag.psih),
+        "br": _flat2d(diag.br),
+        "ust": jnp.maximum(_flat2d(state.ustar), 1.0e-3),
+        "znt": jnp.maximum(_flat2d(jnp.maximum(state.roughness_m, 1.0e-4)), 1.0e-7),
+        "wspd": jnp.maximum(jnp.sqrt(_flat2d(u_mass[0]) ** 2 + _flat2d(v_mass[0]) ** 2), 0.1),
+        "u10": _flat2d(diag.u10), "v10": _flat2d(diag.v10),
+        "xland": _flat2d(state.xland),
+        # ACM2 needs an INCOMING PBLH guess (pblh_initial) before it diagnoses its
+        # own height. The revised-MM5 surface layer does not export a PBLH leaf and
+        # State carries none, so seed with the surface-layer's own pblh assumption
+        # (1000 m, sf_sfclayrev default) -- ACM2 overwrites it with its diagnosis.
+        "pblh": jnp.full((ncol,), 1000.0, dtype=jnp.float64),
+        "rhosfc": rhosfc, "cpm": cpm,
+    }
+
+
+def _apply_pbl_increment(state: State, dt: float, tend: dict, *, ny: int, nx: int, nz: int) -> State:
+    """Apply batched PBL tendencies (``(ncol, nz)`` rates) WRF-faithfully.
+
+    u/v: A2C-averaged mass-point increment onto the ORIGINAL C-grid faces (WRF
+    ``add_a2c_u``/``add_a2c_v``); theta/qv: direct ``state += dt*tend`` on the mass
+    grid. Writes at the live State dtype (fp32-defeat fix).
+    """
+
+    def _back3d(field2d):  # (ncol, nz) -> (nz, ny, nx)
+        return jnp.moveaxis(field2d.reshape(ny, nx, nz), -1, 0)
+
+    dt_f = float(dt)
+    du_mass = dt_f * _back3d(tend["u"])
+    dv_mass = dt_f * _back3d(tend["v"])
+    u_new = _add_a2c_u_increment(state.u, du_mass).astype(_output_dtype(state, "u"))
+    v_new = _add_a2c_v_increment(state.v, dv_mass).astype(_output_dtype(state, "v"))
+    return state.replace(
+        u=u_new,
+        v=v_new,
+        theta=(state.theta + dt_f * _back3d(tend["theta"])).astype(_output_dtype(state, "theta")),
+        qv=(state.qv + dt_f * _back3d(tend["qv"])).astype(_output_dtype(state, "qv")),
+    )
+
+
+def ysu_pbl_adapter(state: State, dt: float, grid=None) -> State:
+    """bl_pbl=1 YSU PBL ``State -> State`` scan adapter (jit/vmap-traceable kernel)."""
+
+    f = _pbl_surface_forcing(state, grid)
+    out = ysu_columns(
+        f["u_cols"], f["v_cols"], f["T_cols"], f["qv_cols"], f["p_cols"],
+        f["p_int_cols"], f["pii_cols"], f["dz_cols"],
+        psfc=f["p_cols"][:, 0], znt=f["znt"], ust=f["ust"], hfx=f["hfx"], qfx=f["qfx"],
+        wspd=f["wspd"], br=f["br"], psim=f["psim"], psih=f["psih"], dt=float(dt),
+        xland=f["xland"], u10=f["u10"], v10=f["v10"],
+    )
+    return _apply_pbl_increment(state, dt, out, ny=f["ny"], nx=f["nx"], nz=f["nz"])
+
+
+def acm2_pbl_adapter(state: State, dt: float, grid=None) -> State:
+    """bl_pbl=7 ACM2 PBL ``State -> State`` scan adapter (jit/vmap-traceable kernel)."""
+
+    f = _pbl_surface_forcing(state, grid)
+    mut = jnp.asarray(state.mu_total if hasattr(state, "mu_total") else state.mu, jnp.float64).reshape(f["ncol"])
+    out = acm2_columns(
+        f["u_cols"], f["v_cols"], f["theta_cols"], f["T_cols"], f["qv_cols"],
+        f["rho_cols"], f["dz_cols"],
+        pblh_initial=f["pblh"], ust=f["ust"], hfx=f["hfx"], qfx=f["qfx"],
+        wspd=f["wspd"], mut=mut, dt=float(dt), xtime=60.0,
+    )
+    return _apply_pbl_increment(state, dt, out, ny=f["ny"], nx=f["nx"], nz=f["nz"])
+
+
 # --- dispatch tables ----------------------------------------------------------
 
 # Microphysics options whose State->State scan adapter is threaded into the GPU
@@ -397,6 +548,14 @@ CU_SCAN_ADAPTERS = {
     1: kf_adapter,
 }
 
+# PBL options whose scan adapter is threaded (bl=5 MYNN is the existing
+# physics_couplers.mynn_adapter; bl=0 disables). YSU(1)/ACM2(7) are the v0.6.0
+# jax.lax.scan-traceable rewrites -- GPU-operational.
+PBL_SCAN_ADAPTERS = {
+    1: ysu_pbl_adapter,
+    7: acm2_pbl_adapter,
+}
+
 
 __all__ = [
     "kessler_adapter",
@@ -406,8 +565,11 @@ __all__ = [
     "sfclay_revised_mm5_adapter",
     "pleim_xiu_sfclay_adapter",
     "kf_adapter",
+    "ysu_pbl_adapter",
+    "acm2_pbl_adapter",
     "initial_kf_carry",
     "MP_SCAN_ADAPTERS",
     "SFCLAY_SCAN_ADAPTERS",
     "CU_SCAN_ADAPTERS",
+    "PBL_SCAN_ADAPTERS",
 ]

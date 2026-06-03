@@ -53,6 +53,7 @@ from gpuwrf.coupling.physics_dispatch import (
 from gpuwrf.coupling.scan_adapters import (
     CU_SCAN_ADAPTERS,
     MP_SCAN_ADAPTERS,
+    PBL_SCAN_ADAPTERS,
     SFCLAY_SCAN_ADAPTERS,
     initial_kf_carry,
     kf_adapter,
@@ -1802,8 +1803,8 @@ def _noahmp_params(namelist: OperationalNamelist):
 _SCAN_WIRED_OPTIONS = {
     # mp=0 passive, 8 Thompson (existing couplers); 1/6/10/16 new scan adapters.
     "mp_physics": (0, 1, 6, 8, 10, 16),
-    # bl=0 off, 5 MYNN (existing). YSU(1)/ACM2(7) are host-NumPy -> NOT wired.
-    "bl_pbl_physics": (0, DEFAULT_BL_PBL_PHYSICS),
+    # bl=0 off, 5 MYNN (existing); 1 YSU / 7 ACM2 wired (v0.6.0 jax.lax.scan rewrite).
+    "bl_pbl_physics": (0, 1, DEFAULT_BL_PBL_PHYSICS, 7),
     # sf_sfclay=0 off, 5 MYNN-sfclay (existing); 1 revised-MM5 / 7 Pleim-Xiu wired.
     "sf_sfclay_physics": (0, 1, 5, 7),
     # cu=0 no cumulus, 1 KF (new scan adapter). GF(3)/Tiedtke(6,16) CPU-ref -> NOT wired.
@@ -1813,8 +1814,7 @@ _SCAN_WIRED_OPTIONS = {
 # Scheme-specific reasons a parity-passed option is NOT yet wired into the scan
 # (surfaced in the fail-closed error so the rejection is honest + actionable).
 _SCAN_UNWIRED_REASON = {
-    "bl_pbl_physics=1": "YSU is a single-column HOST-NumPy kernel (not jax.lax.scan-traceable); needs a jit/vmap rewrite",
-    "bl_pbl_physics=7": "ACM2 is a single-column HOST-NumPy kernel (not jax.lax.scan-traceable); needs a jit/vmap rewrite",
+    # YSU(1)/ACM2(7) are now jax.lax.scan-traceable + scan-wired (v0.6.0 GPU-op).
     "cu_physics=3": "Grell-Freitas is a CPU-NumPy reference port (gpu_runnable=False); GPU-batching TODO",
     "cu_physics=6": "Tiedtke is a CPU-NumPy reference port (gpu_runnable=False); GPU-batching TODO",
     "cu_physics=16": "Tiedtke is a CPU-NumPy reference port (gpu_runnable=False); GPU-batching TODO",
@@ -1855,7 +1855,7 @@ def _resolve_operational_suite(namelist: OperationalNamelist):
     if not_wired:
         raise UnsupportedSchemeSelection(
             "operational scan supports the v0.2.0 suite + the v0.6.0 scan-wired "
-            "schemes (mp_physics in {0,1,6,8,10,16}, bl_pbl_physics in {0,5}, "
+            "schemes (mp_physics in {0,1,6,8,10,16}, bl_pbl_physics in {0,1,5,7}, "
             "sf_sfclay_physics in {0,1,5,7}, cu_physics in {0,1}, Noah-MP via "
             "use_noahmp). The following selected schemes are NOT scan-wired: "
             f"{'; '.join(not_wired)}"
@@ -2041,8 +2041,14 @@ def _physics_boundary_step_with_limiter_diagnostics(
             else:
                 next_state = surface_adapter(next_state, float(namelist.dt_s))
 
-        # --- PBL slot (MYNN; YSU/ACM2 are host-NumPy -> fail-closed upstream) ---
-        next_state = mynn_adapter(next_state, float(namelist.dt_s), namelist.grid)
+        # --- PBL slot (MYNN default; YSU(1)/ACM2(7) are the v0.6.0 jax.lax.scan-
+        # traceable rewrites, dispatcher-routed by the STATIC bl_pbl option) ---
+        bl_opt = int(namelist.bl_pbl_physics)
+        if bl_opt in PBL_SCAN_ADAPTERS:
+            next_state = PBL_SCAN_ADAPTERS[bl_opt](next_state, float(namelist.dt_s), namelist.grid)
+        elif bl_opt == DEFAULT_BL_PBL_PHYSICS:
+            next_state = mynn_adapter(next_state, float(namelist.dt_s), namelist.grid)
+        # bl_opt == 0 -> no PBL mixing.
 
         # --- cumulus slot (KF; GF/Tiedtke are CPU-reference -> not in GPU scan) ---
         if cu_opt in CU_SCAN_ADAPTERS:
