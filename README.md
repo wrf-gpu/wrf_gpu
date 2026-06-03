@@ -4,7 +4,122 @@ A GPU-native, WRF-compatible regional NWP system designed and built almost entir
 
 This is not a port of legacy WRF. It is a clean rewrite that targets the GPU memory hierarchy from day one and validates against WRF as an oracle rather than inheriting WRF's architecture.
 
-## Current status — v0.1.0 (release candidate, tag PENDING)
+## Quickstart: install and run one forecast
+
+This section is self-contained: clone → install → set env → `gpuwrf run` →
+inspect `wrfout`. It needs **one CPU-WRF/Gen2 backfill case directory** as input
+(a directory holding `namelist.input`, `wrfinput_d02`, `wrfbdy_d01`, and the
+initial + hourly `wrfout_d02_*` history files for the case). On the project
+workstation these live under the Canary Gen2 corpus; a small public sample case
+is published as a release asset (see the v0.9.0 release notes for the exact URL
+and `sha256`).
+
+### 1. Clone and install
+
+```bash
+git clone https://github.com/wrf-gpu/wrf_gpu.git
+cd wrf_gpu
+git checkout v0.9.0          # the tagged release you are running
+
+python3.12 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip setuptools wheel
+
+# GPU (RTX 5090 / Blackwell, Linux): prefer the JAX CUDA 13 wheels. These need
+# an NVIDIA driver new enough for CUDA 13 (JAX docs currently say >= 580).
+python -m pip install --upgrade "jax[cuda13]"
+
+# Install gpuwrf itself (editable; adds the `gpuwrf` command).
+python -m pip install -e ".[dev]"
+```
+
+If the stable CUDA 13 wheels do not see the RTX 5090, use the official JAX
+nightly fallback:
+
+```bash
+python -m pip install -U --pre \
+  jax jaxlib "jax-cuda13-plugin[with-cuda]" jax-cuda13-pjrt \
+  -i https://us-python.pkg.dev/ml-oss-artifacts-published/jax/simple/
+```
+
+Verify the install and backend:
+
+```bash
+python -c "import gpuwrf; print('gpuwrf OK')"
+gpuwrf --help
+gpuwrf run --help
+
+python - <<'PY'
+import jax
+print("jax", jax.__version__)
+print("backend", jax.default_backend())
+print("devices", jax.devices())
+PY
+```
+
+### 2. Set environment
+
+```bash
+# Use the CUDA backend and 64-bit precision (the package enables x64 at import;
+# set it explicitly so ad hoc Python sessions behave the same).
+export JAX_PLATFORMS=cuda
+export JAX_ENABLE_X64=true
+
+# Don't preallocate nearly all VRAM before the first run.
+export XLA_PYTHON_CLIENT_PREALLOCATE=false
+export XLA_PYTHON_CLIENT_MEM_FRACTION=0.70
+
+# Keep the (large) XLA compilation cache inside the checkout, not a private path.
+export GPUWRF_JAX_CACHE_DIR="$PWD/.gpuwrf-cache/jax"
+
+# Library default root for the Canary Gen2 / CPU-WRF corpus. The CLI --input-dir
+# below is authoritative, but this keeps any library fallbacks off /mnt/data.
+export GPUWRF_CANAIRY_ROOT="$PWD/data/canairy_meteo"
+```
+
+No path is hardcoded: every location the runnable path needs is read from a
+`GPUWRF_*` environment variable with a checkout-relative default (see
+[`src/gpuwrf/config/paths.py`](src/gpuwrf/config/paths.py)). On the project
+workstation, `export GPUWRF_CANAIRY_ROOT=/mnt/data/canairy_meteo` restores the
+original layout.
+
+### 3. Run a forecast and compare against CPU-WRF
+
+`gpuwrf run` is the single public entrypoint (equivalently `python -m gpuwrf run`).
+It validates the namelist fail-closed, advances the forecast through the GPU
+port, writes `wrfout` history files, and (with `--compare-cpu-dir`) compares the
+generated dimensions against a CPU-WRF reference:
+
+```bash
+gpuwrf run \
+  --namelist  data/readme_cases/canary_d02_1h/namelist.input \
+  --input-dir data/readme_cases/canary_d02_1h \
+  --output-dir runs/readme_canary_d02_1h \
+  --domain d02 \
+  --hours 1 \
+  --compare-cpu-dir data/readme_cases/canary_d02_1h
+```
+
+On the shared workstation, prefix with `taskset -c 0-3` to keep CPU-WRF cores
+free; the command works without `taskset` on an ordinary machine.
+
+The first run spends significant time compiling XLA; a warm rerun is faster
+because `GPUWRF_JAX_CACHE_DIR` is set. A successful run writes:
+
+- `runs/readme_canary_d02_1h/wrfout_d02_<valid_time>` — the GPU forecast history
+- `runs/readme_canary_d02_1h/proofs/pipeline_run_*.json` — the run payload
+- `runs/readme_canary_d02_1h/proofs/wrfout_inventory.json` — output inventory
+- `runs/readme_canary_d02_1h/proofs/dimension_compare.json` — dimension compare
+
+`gpuwrf run` exits `0` only when the forecast verdict is `PIPELINE_GREEN` and the
+dimension compare status is `PASS`; inspect the printed JSON or open any
+`wrfout_d02_*` file (e.g. `ncdump -h runs/readme_canary_d02_1h/wrfout_d02_*`).
+
+## Current status — v0.9.0
+
+The runnable entrypoint is `gpuwrf run` (see the Quickstart above). The proof
+history below traces the science lineage from v0.1.0 through v0.4.0; the per-scheme
+v0.9.0 scope matrix and the post-0.9.0 TODO list follow further down.
 
 **What v0.1.0 is:** a JAX-native, single-GPU port of the WRF v4 split-explicit dycore plus a
 physics suite (Thompson microphysics, WRF revised surface layer, MYNN PBL, RRTMG-style SW/LW
