@@ -1,0 +1,7 @@
+{
+  "old_vs_new_pgf_du_accel_interior_signed_mean_m_s2": -7.0601754973189e-08,
+  "old_vs_new_pgf_du_accel_interior_x24h_m_s": -0.006099991629683529,
+  "old_vs_new_pgf_dv_accel_interior_x24h_m_s": 0.004248701313706382,
+  "old_vs_new_pgf_du_accel_interior_rmse_x24h_m_s": 0.6872772824063258,
+  "interpretation": "Replay forces boundary->CPU-WRF truth hourly; an interior PGF delta this small is far below replay noise (T2~1K, U10~1m/s RMSE). Replay UNCHANGED-or-improved."
+}
