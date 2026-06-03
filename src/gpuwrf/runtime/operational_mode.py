@@ -42,6 +42,11 @@ from gpuwrf.coupling.noahmp_surface_hook import (
     noahmp_surface_step,
     overlay_noahmp_land_diagnostics,
 )
+from gpuwrf.coupling.noahclassic_surface_hook import (
+    NoahClassicRadiation,
+    noahclassic_surface_step,
+    overlay_noahclassic_land_diagnostics,
+)
 from gpuwrf.coupling.physics_dispatch import (
     DEFAULT_BL_PBL_PHYSICS,
     DEFAULT_CU_PHYSICS,
@@ -218,6 +223,13 @@ class OperationalNamelist:
     sf_sfclay_physics: int = 5
     cu_physics: int = 0
     sf_surface_physics: object = None
+    # Explicit Noah-classic (sf_surface_physics=2) operational inputs. The JAX SFLX
+    # kernel consumes WRF-derived REDPRM/static fields and a 4-layer land carry; if
+    # either is absent, the scan rejects sf_surface_physics=2 rather than deriving
+    # an unvalidated land state from 2-D State.soil_moisture.
+    noahclassic_static: object = None
+    noahclassic_land: object = None
+    noahclassic_rad: object = None
 
     @classmethod
     def from_grid(
@@ -341,6 +353,9 @@ class OperationalNamelist:
             int(self.sf_sfclay_physics),
             int(self.cu_physics),
             self.sf_surface_physics,
+            _StaticHolder(self.noahclassic_static),
+            _StaticHolder(self.noahclassic_land),
+            _StaticHolder(self.noahclassic_rad),
         )
         return children, aux
 
@@ -387,10 +402,16 @@ class OperationalNamelist:
             sf_sfclay_physics,
             cu_physics,
             sf_surface_physics,
+            noahclassic_static_holder,
+            noahclassic_land_holder,
+            noahclassic_rad_holder,
         ) = aux
         noahmp_static = noahmp_static_holder.value
         noahmp_energy_params = noahmp_energy_holder.value
         noahmp_rad_params = noahmp_rad_holder.value
+        noahclassic_static = noahclassic_static_holder.value
+        noahclassic_land = noahclassic_land_holder.value
+        noahclassic_rad = noahclassic_rad_holder.value
         return cls(
             grid=grid,
             tendencies=tendencies,
@@ -433,6 +454,9 @@ class OperationalNamelist:
             sf_sfclay_physics=sf_sfclay_physics,
             cu_physics=cu_physics,
             sf_surface_physics=sf_surface_physics,
+            noahclassic_static=noahclassic_static,
+            noahclassic_land=noahclassic_land,
+            noahclassic_rad=noahclassic_rad,
         )
 
 
@@ -1796,7 +1820,7 @@ def _noahmp_params(namelist: OperationalNamelist):
 # coupling.physics_couplers adapters). The remaining schemes are kept FAIL-CLOSED
 # (loud) here -- they passed per-scheme savepoint parity but cannot ride the device
 # scan as-is for SCHEME-SPECIFIC reasons (host-NumPy single-column kernels needing
-# a jit/vmap rewrite, or a missing WRF-faithful coupler), documented per option in
+# a jit/vmap rewrite, or missing required per-run land inputs), documented per option in
 # _SCAN_UNWIRED_REASON. The dispatcher (coupling.physics_dispatch) remains the
 # single fail-closed authority for option -> scheme + GPU-runnability.
 _SCAN_WIRED_OPTIONS = {
@@ -1818,8 +1842,13 @@ _SCAN_UNWIRED_REASON = {
     "cu_physics=3": "Grell-Freitas is a CPU-NumPy reference port (gpu_runnable=False); GPU-batching TODO",
     "cu_physics=6": "Tiedtke is a CPU-NumPy reference port (gpu_runnable=False); GPU-batching TODO",
     "cu_physics=16": "Tiedtke is a CPU-NumPy reference port (gpu_runnable=False); GPU-batching TODO",
-    "sf_surface_physics=2": "Noah-classic needs a WRF-faithful surface-forcing + 4-layer soil coupler (analogue of noahmp_surface_hook); not yet built",
+    "sf_surface_physics=2": "Noah-classic requires explicit noahclassic_static + noahclassic_land bundles (WRF REDPRM + 4-layer carry)",
 }
+
+
+def _explicit_noahclassic(namelist: OperationalNamelist) -> bool:
+    explicit_land = getattr(namelist, "sf_surface_physics", None)
+    return explicit_land is not None and int(explicit_land) == 2
 
 
 def _resolve_operational_suite(namelist: OperationalNamelist):
@@ -1840,24 +1869,25 @@ def _resolve_operational_suite(namelist: OperationalNamelist):
             tag = f"{key}={selected}"
             reason = _SCAN_UNWIRED_REASON.get(tag)
             not_wired.append(f"{tag} ({reason})" if reason else tag)
-    # Land surface: the scan threads Noah-MP (use_noahmp=True) or the bulk surface
-    # path. NOTE the dispatcher maps the legacy ``use_noahmp=False`` toggle to land
-    # option 2, but in THIS scan that means the bulk surface path (surface_adapter),
-    # NOT the prognostic Noah-classic LSM. So only an EXPLICIT sf_surface_physics=2
-    # selection (genuine Noah-classic, which has no coupler yet) fails closed; the
-    # use_noahmp-derived default keeps the validated bulk path.
+    # Land surface: the scan threads Noah-MP (use_noahmp=True), explicit
+    # Noah-classic (sf_surface_physics=2 + WRF-derived land/static bundle), or the
+    # legacy bulk surface path. NOTE the dispatcher maps the legacy
+    # ``use_noahmp=False`` toggle to land option 2, but in THIS scan that still
+    # means the bulk path unless sf_surface_physics is explicitly pinned to 2.
     land_opt = suite.land_surface.option
     if land_opt == 4 and not bool(namelist.use_noahmp):
         not_wired.append("sf_surface_physics=4 (set use_noahmp=True to thread Noah-MP)")
-    explicit_land = getattr(namelist, "sf_surface_physics", None)
-    if explicit_land is not None and int(explicit_land) == 2:
-        not_wired.append(f"sf_surface_physics=2 ({_SCAN_UNWIRED_REASON['sf_surface_physics=2']})")
+    if _explicit_noahclassic(namelist):
+        if getattr(namelist, "noahclassic_static", None) is None or getattr(namelist, "noahclassic_land", None) is None:
+            not_wired.append(f"sf_surface_physics=2 ({_SCAN_UNWIRED_REASON['sf_surface_physics=2']})")
     if not_wired:
         raise UnsupportedSchemeSelection(
             "operational scan supports the v0.2.0 suite + the v0.6.0 scan-wired "
             "schemes (mp_physics in {0,1,6,8,10,16}, bl_pbl_physics in {0,5}, "
             "sf_sfclay_physics in {0,1,5,7}, cu_physics in {0,1}, Noah-MP via "
-            "use_noahmp). The following selected schemes are NOT scan-wired: "
+            "use_noahmp, explicit Noah-classic via sf_surface_physics=2 plus "
+            "noahclassic_static/noahclassic_land). The following selected schemes "
+            "are NOT scan-wired: "
             f"{'; '.join(not_wired)}"
         )
     return suite
@@ -1879,7 +1909,21 @@ def _initial_carry_for_run(state: State, namelist: OperationalNamelist) -> Opera
     cumulus_carry = None
     if int(namelist.cu_physics) in CU_SCAN_ADAPTERS:
         cumulus_carry = initial_kf_carry(enforced)
-    return initial_operational_carry(enforced, cumulus_carry=cumulus_carry)
+    noahclassic_land = None
+    noahclassic_rad = None
+    if _explicit_noahclassic(namelist):
+        noahclassic_land = namelist.noahclassic_land
+        noahclassic_rad = (
+            namelist.noahclassic_rad
+            if getattr(namelist, "noahclassic_rad", None) is not None
+            else NoahClassicRadiation(*noahmp_initial_rad(enforced, namelist))
+        )
+    return initial_operational_carry(
+        enforced,
+        cumulus_carry=cumulus_carry,
+        noahclassic_land=noahclassic_land,
+        noahclassic_rad=noahclassic_rad,
+    )
 
 
 class _NoahMPRadiation(NamedTuple):
@@ -2040,6 +2084,21 @@ def _physics_boundary_step_with_limiter_diagnostics(
                 next_state = SFCLAY_SCAN_ADAPTERS[sf_opt](next_state, float(namelist.dt_s), namelist.grid)
             else:
                 next_state = surface_adapter(next_state, float(namelist.dt_s))
+            if _explicit_noahclassic(namelist):
+                next_noahclassic_rad = _refresh_noahmp_rad(
+                    next_state, namelist, lead_seconds, run_radiation, carry.noahclassic_rad
+                )
+                next_state, next_noahclassic_land = noahclassic_surface_step(
+                    next_state,
+                    carry.noahclassic_land,
+                    namelist.noahclassic_static,
+                    float(namelist.dt_s),
+                    radiation=NoahClassicRadiation(*next_noahclassic_rad),
+                )
+                carry = carry.replace(
+                    noahclassic_land=next_noahclassic_land,
+                    noahclassic_rad=next_noahclassic_rad,
+                )
 
         # --- PBL slot (MYNN; YSU/ACM2 are host-NumPy -> fail-closed upstream) ---
         next_state = mynn_adapter(next_state, float(namelist.dt_s), namelist.grid)
@@ -2225,6 +2284,7 @@ def compute_m9_diagnostics(
     *,
     noahmp_land=None,
     noahmp_rad=None,
+    noahclassic_land=None,
 ) -> M9Diagnostics:
     """Recompute the M9 surface map from a post-step State (side-channel only).
 
@@ -2252,6 +2312,10 @@ def compute_m9_diagnostics(
             state, noahmp_land, namelist.noahmp_static, surf.hfx, surf.lh, state.t_skin,
             float(namelist.dt_s), radiation=radiation, clock=clock,
             energy_params=ep, rad_params=rp,
+        )
+    elif _explicit_noahclassic(namelist) and noahclassic_land is not None:
+        hfx, lh, tsk = overlay_noahclassic_land_diagnostics(
+            state, noahclassic_land, surf.hfx, surf.lh, state.t_skin
         )
     # L1 fix (GPT 2026-06-02 COSZEN-phase; proofs/rad_time/coszen_phase_proof.json):
     # when the HELD Noah-MP radiation tuple is available, report the held WRF-cadence
@@ -2333,6 +2397,7 @@ def _m9_snapshot(carry: OperationalCarry, namelist: OperationalNamelist, lead_se
     return compute_m9_diagnostics(
         carry.state, namelist, lead_seconds,
         noahmp_land=carry.noahmp_land, noahmp_rad=carry.noahmp_rad,
+        noahclassic_land=carry.noahclassic_land,
     )
 
 

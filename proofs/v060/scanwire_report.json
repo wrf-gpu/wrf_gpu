@@ -1,30 +1,30 @@
 {
   "schema": "gpuwrf.v060.scanwire_report.v1",
   "title": "v0.6.0 scan-wire: 11 new schemes (+ KF) into the operational forecast scan",
-  "git_head": "0d985ccd952dd6b5e28723a3c3db1330fc168eb0",
+  "git_head": "382070fe2d626a8563f1b042de8afb205bcda5d4",
   "kind": "CPU integration-wiring proof (NOT a WRF-parity claim, NOT a forecast run). Per-scheme WRF savepoint parity = committed lane reports; the GPU multi-config forecast vs CPU-WRF is MANAGER-scheduled.",
   "summary": {
     "new_schemes_total": 11,
-    "new_schemes_scan_wired_gpu": 6,
-    "new_schemes_not_scan_wired": 5,
+    "new_schemes_scan_wired_gpu": 7,
+    "new_schemes_not_scan_wired": 4,
     "scan_wired_list": [
       "mp_physics=1 (Kessler)",
       "mp_physics=6 (WSM6)",
       "mp_physics=10 (Morrison)",
       "mp_physics=16 (WDM6)",
       "sf_sfclay_physics=1 (revised-MM5)",
-      "sf_sfclay_physics=7 (Pleim-Xiu)"
+      "sf_sfclay_physics=7 (Pleim-Xiu)",
+      "sf_surface_physics=2 (Noah-classic)"
     ],
     "not_scan_wired_list": [
       "bl_pbl_physics=1 (YSU)",
       "bl_pbl_physics=7 (ACM2)",
       "cu_physics=3 (Grell-Freitas)",
-      "cu_physics=6/16 (Tiedtke)",
-      "sf_surface_physics=2 (Noah-classic)"
+      "cu_physics=6/16 (Tiedtke)"
     ],
     "plus_kf_baseline_extension_scan_wired": true,
-    "total_schemes_scan_wired_this_sprint": 7,
-    "note": "6 of the 11 new schemes (4 microphysics + 2 surface-layer) are scan-wired into the GPU scan; KF (the 12th, baseline-extension) is also newly wired (+OperationalCarry.cumulus_carry) -> 7 adapters total. 5 of the 11 fail closed: YSU/ACM2 (host-NumPy PBL, jit/vmap rewrite), GF/Tiedtke (CPU-ref cumulus, GPU-batch TODO), Noah-classic (needs a land coupler)."
+    "total_schemes_scan_wired_this_sprint": 8,
+    "note": "7 of the 11 new schemes (4 microphysics + 2 surface-layer + Noah-classic land with an explicit static/land bundle) are scan-wired into the GPU scan; KF (the 12th, baseline-extension) is also newly wired (+OperationalCarry.cumulus_carry) -> 8 adapters total. 4 of the 11 fail closed: YSU/ACM2 (host-NumPy PBL, jit/vmap rewrite), GF/Tiedtke (CPU-ref cumulus, GPU-batch TODO)."
   },
   "scheme_status": {
     "mp_physics=1 (Kessler)": {
@@ -68,8 +68,10 @@
       "reason": "CPU-NumPy reference port (gpu_runnable=False); GPU-batching TODO; selectable CPU-only, excluded from GPU scan"
     },
     "sf_surface_physics=2 (Noah-classic)": {
-      "scan_wired_gpu": false,
-      "reason": "needs WRF-faithful surface forcing + 4-layer soil coupler (analogue of noahmp_surface_hook); not yet built (cross-model)"
+      "scan_wired_gpu": true,
+      "adapter": "coupling.noahclassic_surface_hook.noahclassic_surface_step (+ OperationalCarry.noahclassic_land)",
+      "proof": "proofs/v060/noah_coupler_report.json",
+      "requires_explicit_bundle": "noahclassic_static + noahclassic_land"
     },
     "cu_physics=1 (Kain-Fritsch)": {
       "scan_wired_gpu": true,
@@ -606,7 +608,7 @@
   },
   "forecast_gate_readiness": {
     "status": "READY_NOT_RUN",
-    "note": "Integrated multi-config forecast gate. The single-GPU end-to-end run vs CPU-WRF is MANAGER-scheduled (--run). v0.6.0 scan-wire status (HONEST): combo_1 (v0.2.0 + KF) is fully scan-wired. Canonical combo_2 contains YSU (host-NumPy PBL) + Noah-classic (no coupler) and combo_3 contains ACM2 (host-NumPy PBL); those schemes are NOT yet threaded into the GPU scan, so combos 2/3 are NOT GPU-scan-runnable as defined. The SCAN_WIRED_COMBOS below swap the unwired PBL/land for MYNN/Noah-MP so the newly-wired microphysics/surface-layer/cumulus schemes run end-to-end now. GF (cu=3) and Tiedtke (cu=6/16) are CPU-reference, excluded by design.",
+    "note": "Integrated multi-config forecast gate. The single-GPU end-to-end run vs CPU-WRF is MANAGER-scheduled (--run). v0.6.0 scan-wire status (HONEST): combo_1 (v0.2.0 + KF) is fully scan-wired. Canonical combo_2 contains YSU (host-NumPy PBL) + Noah-classic without an explicit land/static bundle, and combo_3 contains ACM2 (host-NumPy PBL); those selections are NOT yet GPU-scan-runnable as defined. The SCAN_WIRED_COMBOS below swap the unwired PBL/land for MYNN/Noah-MP so the newly-wired microphysics/surface-layer/cumulus schemes run end-to-end now. GF (cu=3) and Tiedtke (cu=6/16) are CPU-reference, excluded by design.",
     "gate_fields": {
       "core": [
         "T2",
@@ -661,7 +663,7 @@
         "dispatch_resolved": true,
         "gpu_gate_ready": true,
         "scan_wired": false,
-        "scan_wire_error": "operational scan supports the v0.2.0 suite + the v0.6.0 scan-wired schemes (mp_physics in {0,1,6,8,10,16}, bl_pbl_physics in {0,5}, sf_sfclay_physics in {0,1,5,7}, cu_physics in {0,1}, Noah-MP via use_noahmp). The following selected schemes are NOT scan-wired: bl_pbl_physics=1 (YSU is a single-column HOST-NumPy kernel (not jax.lax.scan-traceable); needs a jit/vmap rewrite); sf_surface_physics=2 (Noah-classic needs a WRF-faithful surface-forcing + 4-layer soil coupler (analogue of noahmp_surface_hook); not yet built)",
+        "scan_wire_error": "operational scan supports the v0.2.0 suite + the v0.6.0 scan-wired schemes (mp_physics in {0,1,6,8,10,16}, bl_pbl_physics in {0,5}, sf_sfclay_physics in {0,1,5,7}, cu_physics in {0,1}, Noah-MP via use_noahmp, explicit Noah-classic via sf_surface_physics=2 plus noahclassic_static/noahclassic_land). The following selected schemes are NOT scan-wired: bl_pbl_physics=1 (YSU is a single-column HOST-NumPy kernel (not jax.lax.scan-traceable); needs a jit/vmap rewrite); sf_surface_physics=2 (Noah-classic requires explicit noahclassic_static + noahclassic_land bundles (WRF REDPRM + 4-layer carry))",
         "non_gpu_schemes": [],
         "error": null
       },
@@ -681,7 +683,7 @@
         "dispatch_resolved": true,
         "gpu_gate_ready": true,
         "scan_wired": false,
-        "scan_wire_error": "operational scan supports the v0.2.0 suite + the v0.6.0 scan-wired schemes (mp_physics in {0,1,6,8,10,16}, bl_pbl_physics in {0,5}, sf_sfclay_physics in {0,1,5,7}, cu_physics in {0,1}, Noah-MP via use_noahmp). The following selected schemes are NOT scan-wired: bl_pbl_physics=7 (ACM2 is a single-column HOST-NumPy kernel (not jax.lax.scan-traceable); needs a jit/vmap rewrite)",
+        "scan_wire_error": "operational scan supports the v0.2.0 suite + the v0.6.0 scan-wired schemes (mp_physics in {0,1,6,8,10,16}, bl_pbl_physics in {0,5}, sf_sfclay_physics in {0,1,5,7}, cu_physics in {0,1}, Noah-MP via use_noahmp, explicit Noah-classic via sf_surface_physics=2 plus noahclassic_static/noahclassic_land). The following selected schemes are NOT scan-wired: bl_pbl_physics=7 (ACM2 is a single-column HOST-NumPy kernel (not jax.lax.scan-traceable); needs a jit/vmap rewrite)",
         "non_gpu_schemes": [],
         "error": null
       }
@@ -689,7 +691,7 @@
     "scan_wired_combos": [
       {
         "combo_id": "combo_2w_wsm6_mynn_revisedmm5_noahmp_kf",
-        "description": "WSM6/MYNN/revised-MM5 sfclay/Noah-MP + KF cumulus + RRTMG (scan-wired variant of combo_2: MYNN instead of host-NumPy YSU, Noah-MP instead of un-coupled Noah-classic)",
+        "description": "WSM6/MYNN/revised-MM5 sfclay/Noah-MP + KF cumulus + RRTMG (scan-wired variant of combo_2: MYNN instead of host-NumPy YSU, Noah-MP instead of the canonical Noah-classic bundle path)",
         "namelist": {
           "mp_physics": 6,
           "bl_pbl_physics": 5,
@@ -762,7 +764,7 @@
       "3. Run run_forecast_operational over a corpus CPU-WRF d02 case (e.g. the v0.2.0 TOST run dates); emit wrfout with the new QNCLOUD/QNCCN/RAINC leaves.",
       "4. Score per-lead gridpoint-paired bias/RMSE vs the CPU-WRF reference (continuous_gate pattern) on the core + diagnostic fields.",
       "5. Record one proof JSON per combo under proofs/v060/forecast_gate/.",
-      "6. CARRY-OVER (cross-model): jit/vmap rewrite of YSU(1)/ACM2(7) PBL + the Noah-classic(2) surface coupler to make canonical combos 2/3 GPU-runnable; GPU-batch GF(3)/Tiedtke(6,16) cumulus."
+      "6. CARRY-OVER (cross-model): jit/vmap rewrite of YSU(1)/ACM2(7) PBL + real-run Noah-classic(2) land/static bundle assembly for canonical combo_2; GPU-batch GF(3)/Tiedtke(6,16) cumulus."
     ]
   },
   "overall_pass": true
