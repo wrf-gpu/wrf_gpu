@@ -93,52 +93,52 @@
       "case": "bmj_case_1",
       "field": "RTHCUTEN",
       "pass": false,
-      "max_abs": 1.082662492986157e-07,
-      "max_rel": 3.413640260444875e-05,
+      "max_abs": 8.562640930803375e-08,
+      "max_rel": 2.699804972138932e-05,
       "tol_abs": 5e-08,
       "tol_rel": 1e-06,
       "worst_index": [
         30
       ],
-      "candidate_at_worst": 0.0031716858502477407,
+      "candidate_at_worst": 0.00317166321040775,
       "reference_at_worst": 0.003171577583998442
     },
     {
       "case": "bmj_case_1",
       "field": "RQVCUTEN",
       "pass": true,
-      "max_abs": 1.4210854715202004e-11,
-      "max_rel": 1.5770269811653776e-05,
+      "max_abs": 1.3958517413195133e-11,
+      "max_rel": 9.447159181730494e-05,
       "tol_abs": 5e-10,
       "tol_rel": 1e-06,
       "worst_index": [
-        4
+        8
       ],
-      "candidate_at_worst": -9.01102566785994e-07,
-      "reference_at_worst": -9.011167776407092e-07
+      "candidate_at_worst": -1.477396375074001e-07,
+      "reference_at_worst": -1.477535960248133e-07
     },
     {
       "case": "bmj_case_1",
       "field": "RAINCV",
       "pass": false,
-      "max_abs": 7.301568985262907e-07,
-      "max_rel": 5.485559935380401e-06,
+      "max_abs": 7.375204638393473e-07,
+      "max_rel": 5.540881303903232e-06,
       "tol_abs": 5e-07,
       "tol_rel": 1e-06,
       "worst_index": [],
-      "candidate_at_worst": 0.13310599327087402,
+      "candidate_at_worst": 0.13310600063443934,
       "reference_at_worst": 0.1331052631139755
     },
     {
       "case": "bmj_case_1",
       "field": "PRATEC",
       "pass": false,
-      "max_abs": 1.350417733235812e-08,
-      "max_rel": 5.478562856010962e-06,
+      "max_abs": 1.3571552795639541e-08,
+      "max_rel": 5.5058966729074305e-06,
       "tol_abs": 5e-09,
       "tol_rel": 1e-06,
       "worst_index": [],
-      "candidate_at_worst": 0.0024649258702993393,
+      "candidate_at_worst": 0.0024649259376748026,
       "reference_at_worst": 0.002464912366122007
     },
     {
@@ -181,28 +181,28 @@
       "case": "bmj_case_2",
       "field": "RTHCUTEN",
       "pass": true,
-      "max_abs": 2.578599378461185e-08,
-      "max_rel": 8.422406300474549e-05,
+      "max_abs": 1.8657803806500575e-08,
+      "max_rel": 6.094145746155655e-05,
       "tol_abs": 5e-08,
       "tol_rel": 1e-06,
       "worst_index": [
         1
       ],
-      "candidate_at_worst": -0.0003061336756218225,
+      "candidate_at_worst": -0.0003061408038118006,
       "reference_at_worst": -0.0003061594616156071
     },
     {
       "case": "bmj_case_2",
       "field": "RQVCUTEN",
       "pass": true,
-      "max_abs": 4.879154857917456e-10,
-      "max_rel": 0.0015873964035905655,
+      "max_abs": 3.904563249831743e-10,
+      "max_rel": 0.001270320340482142,
       "tol_abs": 5e-10,
       "tol_rel": 1e-06,
       "worst_index": [
         6
       ],
-      "candidate_at_worst": -3.0785631111029943e-07,
+      "candidate_at_worst": -3.0775885194949086e-07,
       "reference_at_worst": -3.073683956245077e-07
     },
     {
@@ -257,64 +257,64 @@
       "case": "bmj_case_2",
       "field": "CLDEFI",
       "pass": true,
-      "max_abs": 0.0,
-      "max_rel": 0.0,
+      "max_abs": 2.384185793236071e-08,
+      "max_rel": 3.973642830828406e-08,
       "tol_abs": 5e-07,
       "tol_rel": 0.0,
       "worst_index": [],
-      "candidate_at_worst": 0.6000000238418579,
+      "candidate_at_worst": 0.6,
       "reference_at_worst": 0.6000000238418579
     },
     {
       "case": "bmj_case_3",
       "field": "RTHCUTEN",
       "pass": false,
-      "max_abs": 3.264285624027252e-07,
-      "max_rel": 8.84806856508436e-05,
+      "max_abs": 3.2632148039670253e-07,
+      "max_rel": 8.845166034360941e-05,
       "tol_abs": 5e-08,
       "tol_rel": 1e-06,
       "worst_index": [
         34
       ],
-      "candidate_at_worst": 0.003689589910209179,
+      "candidate_at_worst": 0.003689589803127173,
       "reference_at_worst": 0.003689263481646776
     },
     {
       "case": "bmj_case_3",
       "field": "RQVCUTEN",
       "pass": true,
-      "max_abs": 2.5693225324661706e-11,
-      "max_rel": 9.030290631364144e-06,
+      "max_abs": 3.1195662092383715e-11,
+      "max_rel": 8.162803265870854e-06,
       "tol_abs": 5e-10,
       "tol_rel": 1e-06,
       "worst_index": [
-        2
+        1
       ],
-      "candidate_at_worst": -2.845252538463683e-06,
-      "reference_at_worst": -2.845226845238358e-06
+      "candidate_at_worst": -3.821716109080814e-06,
+      "reference_at_worst": -3.821684913418721e-06
     },
     {
       "case": "bmj_case_3",
       "field": "RAINCV",
       "pass": false,
-      "max_abs": 3.5762786864679263e-06,
-      "max_rel": 1.8077572217925634e-05,
+      "max_abs": 2.5571417570091626e-06,
+      "max_rel": 1.2925982239225852e-05,
       "tol_abs": 5e-07,
       "tol_rel": 1e-06,
       "worst_index": [],
-      "candidate_at_worst": 0.19783316552639008,
+      "candidate_at_worst": 0.19783214638946062,
       "reference_at_worst": 0.1978295892477036
     },
     {
       "case": "bmj_case_3",
       "field": "PRATEC",
       "pass": false,
-      "max_abs": 6.612390279813266e-08,
-      "max_rel": 1.8049325501908697e-05,
+      "max_abs": 4.7250996696932e-08,
+      "max_rel": 1.2897735668691093e-05,
       "tol_abs": 5e-09,
       "tol_rel": 1e-06,
       "worst_index": [],
-      "candidate_at_worst": 0.003663577139377594,
+      "candidate_at_worst": 0.003663558266471493,
       "reference_at_worst": 0.003663511015474796
     },
     {
@@ -565,9 +565,9 @@
   "worst_abs_residual": {
     "field": "RAINCV",
     "case": "bmj_case_3",
-    "max_abs": 3.5762786864679263e-06,
-    "max_rel": 1.8077572217925634e-05,
-    "candidate_at_worst": 0.19783316552639008,
+    "max_abs": 2.5571417570091626e-06,
+    "max_rel": 1.2925982239225852e-05,
+    "candidate_at_worst": 0.19783214638946062,
     "reference_at_worst": 0.1978295892477036,
     "worst_index": []
   },
