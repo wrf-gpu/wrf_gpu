@@ -175,16 +175,14 @@ def validate_combo(combo: ForecastCombo) -> ComboReadiness:
     return readiness
 
 
-# Fully-scan-wired alternate combos (v0.6.0 scan-wire 2026-06-03). Each canonical
-# combo's PBL/land slot decides scan-runnability: YSU (bl=1) and ACM2 (bl=7) are
-# host-NumPy single-column kernels (NOT scan-traceable), and the canonical combo_2
-# readiness stub does not build the explicit Noah-classic land/static bundle -- so
-# canonical combos 2 and 3 are NOT yet GPU-scan-runnable. These alternates swap the
-# unwired PBL/land for the wired
-# MYNN(5)/Noah-MP(4) so the NEWLY-WIRED microphysics (WSM6/Morrison/WDM6/Kessler),
-# surface-layer (revised-MM5/Pleim-Xiu) and cumulus (KF) schemes can still be
-# exercised end-to-end on the GPU scan. They are the manager's runnable GPU gate
-# until the YSU/ACM2 jit/vmap rewrite + real-run Noah-classic bundle plumbing.
+# Fully-scan-wired alternate combos (post-consolidation 2026-06-04). YSU (bl=1) and
+# ACM2 (bl=7) are now the v0.6.0 jax.lax.scan/vmap GPU-op rewrites and ARE scan-wired,
+# so canonical combo_3 (ACM2) is already GPU-scan-runnable. The only canonical combo
+# still unwired is combo_2, whose Noah-classic land (sf_surface=2) needs the explicit
+# noahclassic_static/noahclassic_land bundle the readiness stub does not attach. These
+# alternates swap Noah-classic for Noah-MP(4) so the microphysics (WSM6/Morrison/WDM6/
+# Kessler), surface-layer (revised-MM5/Pleim-Xiu) and cumulus (KF/Tiedtke) schemes are
+# exercised end-to-end on the GPU scan without depending on the Noah-classic bundle.
 SCAN_WIRED_COMBOS: tuple[ForecastCombo, ...] = (
     ForecastCombo(
         combo_id="combo_2w_wsm6_mynn_revisedmm5_noahmp_kf",
@@ -218,14 +216,19 @@ def readiness_report() -> dict[str, Any]:
         "status": "READY_NOT_RUN",
         "note": (
             "Integrated multi-config forecast gate. The single-GPU end-to-end run vs "
-            "CPU-WRF is MANAGER-scheduled (--run). v0.6.0 scan-wire status (HONEST): "
-            "combo_1 (v0.2.0 + KF) is fully scan-wired. Canonical combo_2 contains YSU "
-            "(host-NumPy PBL) + Noah-classic without an explicit land/static bundle, "
-            "and combo_3 contains ACM2 (host-NumPy PBL); those selections are NOT yet "
-            "GPU-scan-runnable as defined. The SCAN_WIRED_COMBOS "
-            "below swap the unwired PBL/land for MYNN/Noah-MP so the newly-wired "
-            "microphysics/surface-layer/cumulus schemes run end-to-end now. GF (cu=3) "
-            "and Tiedtke (cu=6/16) are CPU-reference, excluded by design."
+            "CPU-WRF is MANAGER-scheduled (--run). v0.6.0 CONSOLIDATION scan-wire status "
+            "(HONEST, post-consolidation 2026-06-04): combo_1 (v0.2.0 + KF) is fully "
+            "scan-wired. YSU (bl=1) and ACM2 (bl=7) are now the v0.6.0 jax.lax.scan/vmap "
+            "GPU-op rewrites and ARE scan-wired -- so canonical combo_3 (Morrison/ACM2/"
+            "Pleim-Xiu/Noah-MP) is now GPU-scan-runnable. Canonical combo_2 still fails "
+            "ONLY because its Noah-classic land (sf_surface=2) needs the explicit "
+            "noahclassic_static/noahclassic_land bundle that the readiness stub does not "
+            "attach (YSU itself is wired); the SCAN_WIRED_COMBOS swap Noah-classic for "
+            "Noah-MP so the WSM/Morrison/WDM6 + revised-MM5/Pleim-Xiu + KF/Tiedtke schemes "
+            "run end-to-end now. Tiedtke (cu=6) is the GPU-batched jit/vmap adapter and IS "
+            "scan-wired. GF (cu=3) and New-Tiedtke (cu=16) remain CPU-reference, FAIL-CLOSED "
+            "(loud) by design; MYJ (bl=2)/Janjic (sfclay=2) are savepoint-parity-proven "
+            "CPU references, also FAIL-CLOSED in the scan."
         ),
         "gate_fields": {"core": list(GATE_FIELDS_CORE), "diagnostics": list(GATE_FIELDS_DIAG)},
         "scoring": (
@@ -249,9 +252,11 @@ def readiness_report() -> dict[str, Any]:
             "4. Score per-lead gridpoint-paired bias/RMSE vs the CPU-WRF reference "
             "(continuous_gate pattern) on the core + diagnostic fields.",
             "5. Record one proof JSON per combo under proofs/v060/forecast_gate/.",
-            "6. CARRY-OVER (cross-model): jit/vmap rewrite of YSU(1)/ACM2(7) PBL + "
-            "real-run Noah-classic(2) land/static bundle assembly for canonical combo_2; "
-            "GPU-batch GF(3)/Tiedtke(6,16) cumulus.",
+            "6. CARRY-OVER (post-consolidation, cross-model): real-run Noah-classic(2) "
+            "land/static bundle assembly for canonical combo_2 (YSU(1)/ACM2(7) PBL and "
+            "Tiedtke(6) cumulus are now GPU-scan-wired -- DONE); GPU-batch GF(3) cumulus "
+            "(~2000-LOC closure-ensemble + beta-PDF vmap rewrite) and gate New-Tiedtke(16); "
+            "GPU-scan-wire MYJ(2)/Janjic(2) (parity-proven CPU references today).",
         ],
     }
 

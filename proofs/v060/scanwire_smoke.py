@@ -247,27 +247,33 @@ def _fail_closed_checks():
 
     accepted = []
     rejected = []
-    # wired combos that should resolve
+    # wired combos that should resolve (post-consolidation 2026-06-04)
     for nl in [
         _NL(),  # v0.2.0 baseline
         _NL(mp_physics=6, sf_sfclay_physics=1, cu_physics=1),  # WSM6 + revised-MM5 + KF
         _NL(mp_physics=10, sf_sfclay_physics=7),  # Morrison + Pleim-Xiu
         _NL(mp_physics=1),  # Kessler
+        _NL(mp_physics=3),  # WSM3 (v0.6.0 scan-wired)
+        _NL(mp_physics=4),  # WSM5 (v0.6.0 scan-wired)
         _NL(mp_physics=16),  # WDM6
         _NL(bl_pbl_physics=1),  # YSU PBL (v0.6.0 jax.lax.scan rewrite -> now wired)
         _NL(bl_pbl_physics=7),  # ACM2 PBL (v0.6.0 jax.lax.scan rewrite -> now wired)
+        _NL(cu_physics=6),  # modified Tiedtke (v0.6.0 GPU-batched jit/vmap -> now wired)
     ]:
         try:
             _resolve_operational_suite(nl)
             accepted.append(True)
         except UnsupportedSchemeSelection:
             accepted.append(False)
-    # NOT-wired schemes (GF/Tiedtke CPU-ref cumulus -- YSU/ACM2 are now scan-wired),
-    # plus explicit Noah-classic WITHOUT its required static/land bundle, that MUST
-    # all fail closed.
+    # NOT-wired schemes that MUST fail closed (loud) post-consolidation:
+    #  - GF cumulus (cu=3): CPU-NumPy reference (closure-ensemble not vmap-rewritten)
+    #  - New-Tiedtke (cu=16): not separately savepoint-gated
+    #  - MYJ PBL (bl=2) + Janjic Eta sfclay (sf=2): parity-proven CPU refs, no scan adapter
+    #  - explicit Noah-classic (sf_surface=2) WITHOUT its required static/land bundle
     for nl in [
         _NL(cu_physics=3),      # Grell-Freitas CPU-ref
-        _NL(cu_physics=6),      # Tiedtke CPU-ref
+        _NL(cu_physics=16),     # New Tiedtke (not separately gated)
+        _NL(bl_pbl_physics=2, sf_sfclay_physics=2),  # MYJ + Janjic parity-only pair
         _NL(sf_surface_physics=2),  # Noah-classic missing explicit land/static bundle
     ]:
         try:
