@@ -57,6 +57,7 @@ from gpuwrf.coupling.physics_dispatch import (
 )
 from gpuwrf.coupling.scan_adapters import (
     CU_SCAN_ADAPTERS,
+    CU_STATELESS_SCAN_ADAPTERS,
     MP_SCAN_ADAPTERS,
     PBL_SCAN_ADAPTERS,
     SFCLAY_SCAN_ADAPTERS,
@@ -1858,8 +1859,10 @@ _SCAN_WIRED_OPTIONS = {
     "bl_pbl_physics": (0, 1, DEFAULT_BL_PBL_PHYSICS, 7),
     # sf_sfclay=0 off, 5 MYNN-sfclay (existing); 1 revised-MM5 / 7 Pleim-Xiu wired.
     "sf_sfclay_physics": (0, 1, 5, 7),
-    # cu=0 no cumulus, 1 KF (new scan adapter). GF(3)/Tiedtke(6,16) CPU-ref -> NOT wired.
-    "cu_physics": (0, 1),
+    # cu=0 no cumulus, 1 KF, 6 modified-Tiedtke (v0.6.0 GPU-batched jit/vmap
+    # adapter). GF(3) stays CPU-ref (not vmap-rewritten); New-Tiedtke(16) not
+    # separately gated -> NOT wired.
+    "cu_physics": (0, 1, 6),
 }
 
 # Scheme-specific reasons a parity-passed option is NOT yet wired into the scan
@@ -1868,9 +1871,10 @@ _SCAN_UNWIRED_REASON = {
     # YSU(1)/ACM2(7) are now jax.lax.scan-traceable + scan-wired (v0.6.0 GPU-op).
     "bl_pbl_physics=2": "MYJ PBL has a WRF-savepoint column adapter, but no operational scan adapter/carry path yet",
     "sf_sfclay_physics=2": "Janjic Eta surface layer has a WRF-savepoint column adapter, but no operational scan adapter/carry path yet",
-    "cu_physics=3": "Grell-Freitas is a CPU-NumPy reference port (gpu_runnable=False); GPU-batching TODO",
-    "cu_physics=6": "Tiedtke is a CPU-NumPy reference port (gpu_runnable=False); GPU-batching TODO",
-    "cu_physics=16": "Tiedtke is a CPU-NumPy reference port (gpu_runnable=False); GPU-batching TODO",
+    # cu=6 (modified Tiedtke) is now GPU-batched + scan-wired (in _SCAN_WIRED_OPTIONS),
+    # so it is intentionally absent here. GF(3) stays CPU-reference fail-closed.
+    "cu_physics=3": "Grell-Freitas is a CPU-NumPy reference port (gpu_runnable=False); GPU-batching TODO (sequential 16-member closure ensemble + beta-PDF gamma)",
+    "cu_physics=16": "New Tiedtke is interface-compatible but not separately savepoint-gated by a distinct WRF source path; GPU-batching/gating TODO",
     "sf_surface_physics=2": "Noah-classic requires explicit noahclassic_static + noahclassic_land bundles (WRF REDPRM + 4-layer carry)",
 }
 
@@ -1913,7 +1917,7 @@ def _resolve_operational_suite(namelist: OperationalNamelist):
         raise UnsupportedSchemeSelection(
             "operational scan supports the v0.2.0 suite + the v0.6.0 scan-wired "
             "schemes (mp_physics in {0,1,3,4,6,8,10,16}, bl_pbl_physics in {0,1,5,7}, "
-            "sf_sfclay_physics in {0,1,5,7}, cu_physics in {0,1}, Noah-MP via "
+            "sf_sfclay_physics in {0,1,5,7}, cu_physics in {0,1,6}, Noah-MP via "
             "use_noahmp, explicit Noah-classic via sf_surface_physics=2 plus "
             "noahclassic_static/noahclassic_land). The following selected schemes "
             "are NOT scan-wired: "
@@ -1936,7 +1940,10 @@ def _initial_carry_for_run(state: State, namelist: OperationalNamelist) -> Opera
 
     enforced = _enforce_operational_precision(state, force_fp64=bool(namelist.force_fp64))
     cumulus_carry = None
-    if int(namelist.cu_physics) in CU_SCAN_ADAPTERS:
+    # Only the STATEFUL cumulus adapter (KF) needs a persistent (w0avg, nca) carry;
+    # the stateless GPU-batched adapter (Tiedtke) keeps cumulus_carry None.
+    if (int(namelist.cu_physics) in CU_SCAN_ADAPTERS
+            and int(namelist.cu_physics) not in CU_STATELESS_SCAN_ADAPTERS):
         cumulus_carry = initial_kf_carry(enforced)
     noahclassic_land = None
     noahclassic_rad = None
@@ -2138,8 +2145,15 @@ def _physics_boundary_step_with_limiter_diagnostics(
             next_state = mynn_adapter(next_state, float(namelist.dt_s), namelist.grid)
         # bl_opt == 0 -> no PBL mixing.
 
-        # --- cumulus slot (KF; GF/Tiedtke are CPU-reference -> not in GPU scan) ---
-        if cu_opt in CU_SCAN_ADAPTERS:
+        # --- cumulus slot ---
+        # KF (1) threads a (w0avg, nca) carry; modified-Tiedtke (6) is the v0.6.0
+        # GPU-batched stateless State->State adapter. GF (3) stays CPU-reference
+        # (not vmap-rewritten) -> rejected by _resolve_operational_suite.
+        if cu_opt in CU_STATELESS_SCAN_ADAPTERS:
+            next_state = CU_STATELESS_SCAN_ADAPTERS[cu_opt](
+                next_state, float(namelist.dt_s), namelist.grid
+            )
+        elif cu_opt in CU_SCAN_ADAPTERS:
             w0avg, nca = (
                 carry.cumulus_carry if carry.cumulus_carry is not None
                 else initial_kf_carry(next_state)
