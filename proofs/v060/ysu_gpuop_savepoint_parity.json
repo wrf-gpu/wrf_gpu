@@ -1,0 +1,119 @@
+{
+  "bl_pbl_physics": 1,
+  "full_savepoint_parity_report": "proofs/v060/ysu_savepoint_parity_report.json",
+  "gpu_operational": true,
+  "oracle": {
+    "full_wrf_exe": false,
+    "generation_command": "taskset -c 0-3 bash proofs/v060/oracle/build_and_run.sh",
+    "note": "Real WRF-module oracle, not a JAX self-compare; not a coupled wrf.exe run.",
+    "source_checksums_sha256": [
+      "a69fcccd5e8115cfa4b15b209e3ce0993d494d91d8b65fbd36d1a6b0a4177f0b  ccpp_kind_types.f90",
+      "b2c9f11f92f967b053948b42a7c5dbaf1b7f72ddb9d35948e96c32a5d91092d2  bl_ysu.F90",
+      "46ad9d21ecc88461ec3fc06086f9cb25fdccf9fc0f9b8f122a0cc2ff7c92a662  module_bl_ysu.F"
+    ],
+    "type": "single-column Fortran driver linked against unmodified WRF module_bl_ysu.F and bl_ysu.F90",
+    "wrf_sources": [
+      "/home/enric/src/wrf_pristine/WRF/phys/module_bl_ysu.F",
+      "/home/enric/src/wrf_pristine/WRF/phys/physics_mmm/bl_ysu.F90"
+    ]
+  },
+  "predeclared_tolerances": {
+    "exchange_coefficients": {
+      "abs": 0.0002,
+      "rel": 0.002,
+      "relative_floor": 1e-10
+    },
+    "kpbl": "exact integer match",
+    "pblh_m": {
+      "abs": 0.02,
+      "rel": 2e-05
+    },
+    "tendencies": {
+      "abs": 2e-06,
+      "rel": 0.002,
+      "relative_floor": 1e-12
+    },
+    "wstar_delta": {
+      "abs": 0.0002,
+      "rel": 0.002
+    }
+  },
+  "savepoint_parity": {
+    "cases_pass": [
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+    ],
+    "regimes_covered": [
+      "unstable_daytime",
+      "strong_unstable",
+      "stable_nocturnal",
+      "stable_marine",
+      "neutral",
+      "low_ust_edge"
+    ],
+    "verdict": "PASS"
+  },
+  "scan_wire": {
+    "adapter": "coupling.scan_adapters.ysu_pbl_adapter",
+    "gpu_op_smoke": "proofs/v060/pbl_gpuop_smoke.json",
+    "operational_slot": "runtime.operational_mode PBL slot (PBL_SCAN_ADAPTERS dispatch on static bl_pbl_physics)"
+  },
+  "schema": "gpuwrf.v060.ysu_gpuop_savepoint_parity.v1",
+  "scheme": "YSU PBL (bl_pbl_physics=1)",
+  "tolerances_loosened_for_gpuop": false,
+  "trace_vs_host_numpy": {
+    "cases": [
+      {
+        "case": 1,
+        "kpbl_match": true,
+        "pass": true,
+        "worst_abs": 1.485356976305141e-17,
+        "worst_rel": 1.6300100430844806e-13
+      },
+      {
+        "case": 2,
+        "kpbl_match": true,
+        "pass": true,
+        "worst_abs": 7.48099499014998e-18,
+        "worst_rel": 1.8122801675153365e-14
+      },
+      {
+        "case": 3,
+        "kpbl_match": true,
+        "pass": true,
+        "worst_abs": 0.0,
+        "worst_rel": 0.0
+      },
+      {
+        "case": 4,
+        "kpbl_match": true,
+        "pass": true,
+        "worst_abs": 0.0,
+        "worst_rel": 0.0
+      },
+      {
+        "case": 5,
+        "kpbl_match": true,
+        "pass": true,
+        "worst_abs": 0.0,
+        "worst_rel": 0.0
+      },
+      {
+        "case": 6,
+        "kpbl_match": true,
+        "pass": true,
+        "worst_abs": 0.0,
+        "worst_rel": 0.0
+      }
+    ],
+    "proof": "proofs/v060/pbl_trace_vs_host.json",
+    "verdict": "PASS",
+    "worst_abs": 1.485356976305141e-17
+  },
+  "verdict": "PASS",
+  "what_this_proves": "The GPU-operational kernel -- the jax.lax.scan-traceable / jax.vmap-batched pbl_ysu._ysu_column_traceable / pbl_ysu.ysu_columns that the operational scan PBL slot dispatches via coupling.scan_adapters.ysu_pbl_adapter -- reproduces the unmodified-WRF module oracle within the SAME predeclared fp64 savepoint tolerances as the original host-NumPy lane. The single-column public entry pbl_ysu.step_ysu_column now calls the traceable kernel, so the parity report below is the GPU-op verdict directly; the trace-vs-host cross-check confirms traceable == host-NumPy == WRF to machine precision."
+}
