@@ -1,0 +1,544 @@
+{
+  "scheme": "Kessler warm rain (mp_physics=1)",
+  "verdict": "PASS",
+  "overall_pass": true,
+  "canonical_fp32_pass": true,
+  "fp64_precision_audit_pass": true,
+  "oracle": {
+    "source": "/home/enric/src/wrf_pristine/WRF/phys/module_mp_kessler.F",
+    "source_unmodified": true,
+    "full_wrf_exe": false,
+    "full_wrf_exe_note": "Standalone driver compiled the unmodified WRF Kessler module; this is not a full wrf.exe integration savepoint.",
+    "fp32_savepoints": "proofs/v060/savepoints",
+    "fp64_savepoints": "proofs/v060/savepoints_fp64",
+    "fp32_source_checksums": "56935bc95cc72084a37cdaf1b680a6015806daccc48feaf4b3cc6f167653ebfc  module_mp_kessler.F\n",
+    "fp64_source_checksums": "56935bc95cc72084a37cdaf1b680a6015806daccc48feaf4b3cc6f167653ebfc  module_mp_kessler.F\n",
+      "fp32_build_manifest": "mode=fp32\nfull_wrf_exe=false\nwrf_source=/home/enric/src/wrf_pristine/WRF/phys/module_mp_kessler.F\ncompiler=GNU Fortran (conda-forge gcc 14.3.0-19) 14.3.0\nfflags=-O2 -cpp -ffree-form -ffree-line-length-none -ffpe-summary=none\n",
+    "fp64_build_manifest": "mode=fp64\nfull_wrf_exe=false\nwrf_source=/home/enric/src/wrf_pristine/WRF/phys/module_mp_kessler.F\ncompiler=GNU Fortran (conda-forge gcc 14.3.0-19) 14.3.0\nfflags=-O2 -cpp -ffree-form -ffree-line-length-none -ffpe-summary=none -fdefault-real-8\n"
+  },
+  "jax_precision": "fp64",
+  "jax_platform": "cpu",
+  "git_head": "0ab2c7be315e630eefbbe14302b6cfd349c320c0",
+  "predeclared_tolerances": {
+    "theta_abs": 0.002,
+    "q_rel": 0.005,
+    "q_abs_floor": 1e-07,
+    "precip_rel": 0.005,
+    "precip_abs": 0.0002
+  },
+  "fp64_dust_handling": "Canonical WRF state parity is against the fp32 default REAL build. The fp64 build uses the same unmodified source with -fdefault-real-8 as an additional precision audit; no Kessler diagnostics required switching the binding reference away from fp32.",
+  "cases": {
+    "1": {
+      "label": "condensation",
+      "full_wrf_exe": false,
+      "fields": {
+        "theta": {
+          "max_abs": 2.082076969145419e-05,
+          "max_rel": 6.264228520781256e-08,
+          "tol_abs": 0.002,
+          "pass": true
+        },
+        "qv": {
+          "max_abs": 3.005137073214259e-09,
+          "max_rel": 1.953773751190917e-07,
+          "scale": 0.01538119278848171,
+          "tol_rel": 0.005,
+          "tol_abs_floor": 1e-07,
+          "pass": true
+        },
+        "qc": {
+          "max_abs": 2.9323774973976854e-09,
+          "max_rel": 7.051823697960501e-06,
+          "scale": 0.0004158325027674437,
+          "tol_rel": 0.005,
+          "tol_abs_floor": 1e-07,
+          "pass": true
+        },
+        "qr": {
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "scale": 1e-07,
+          "tol_rel": 0.005,
+          "tol_abs_floor": 1e-07,
+          "pass": true
+        },
+        "rainnc": {
+          "jax": 0.0,
+          "oracle": 0.0,
+          "abs_err": 0.0,
+          "tol": 0.0002,
+          "pass": true
+        },
+        "rainncv": {
+          "jax": 0.0,
+          "oracle": 0.0,
+          "abs_err": 0.0,
+          "tol": 0.0002,
+          "pass": true
+        }
+      },
+      "pass": true
+    },
+    "2": {
+      "label": "autoconversion",
+      "full_wrf_exe": false,
+      "fields": {
+        "theta": {
+          "max_abs": 1.489383845409975e-05,
+          "max_rel": 4.368045603405539e-08,
+          "tol_abs": 0.002,
+          "pass": true
+        },
+        "qv": {
+          "max_abs": 2.596683245162379e-09,
+          "max_rel": 1.5616506956270652e-07,
+          "scale": 0.01662781089544296,
+          "tol_rel": 0.005,
+          "tol_abs_floor": 1e-07,
+          "pass": true
+        },
+        "qc": {
+          "max_abs": 2.8892675448324856e-09,
+          "max_rel": 1.4700836281798535e-06,
+          "scale": 0.001965376315638423,
+          "tol_rel": 0.005,
+          "tol_abs_floor": 1e-07,
+          "pass": true
+        },
+        "qr": {
+          "max_abs": 3.03785778000068e-12,
+          "max_rel": 3.069655071695376e-08,
+          "scale": 9.896414121612906e-05,
+          "tol_rel": 0.005,
+          "tol_abs_floor": 1e-07,
+          "pass": true
+        },
+        "rainnc": {
+          "jax": 0.0,
+          "oracle": 0.0,
+          "abs_err": 0.0,
+          "tol": 0.0002,
+          "pass": true
+        },
+        "rainncv": {
+          "jax": 0.0,
+          "oracle": 0.0,
+          "abs_err": 0.0,
+          "tol": 0.0002,
+          "pass": true
+        }
+      },
+      "pass": true
+    },
+    "3": {
+      "label": "accretion",
+      "full_wrf_exe": false,
+      "fields": {
+        "theta": {
+          "max_abs": 1.5634502744887868e-05,
+          "max_rel": 4.5362115510336424e-08,
+          "tol_abs": 0.002,
+          "pass": true
+        },
+        "qv": {
+          "max_abs": 4.948971886811759e-09,
+          "max_rel": 3.783956603223519e-07,
+          "scale": 0.01307882834225893,
+          "tol_rel": 0.005,
+          "tol_abs_floor": 1e-07,
+          "pass": true
+        },
+        "qc": {
+          "max_abs": 4.755727130568814e-09,
+          "max_rel": 6.450171154894536e-06,
+          "scale": 0.0007373024709522724,
+          "tol_rel": 0.005,
+          "tol_abs_floor": 1e-07,
+          "pass": true
+        },
+        "qr": {
+          "max_abs": 1.2483199803708933e-10,
+          "max_rel": 1.314605623507023e-07,
+          "scale": 0.0009495775448158383,
+          "tol_rel": 0.005,
+          "tol_abs_floor": 1e-07,
+          "pass": true
+        },
+        "rainnc": {
+          "jax": 0.07457246034405315,
+          "oracle": 0.07457245886325836,
+          "abs_err": 1.4807947923412002e-09,
+          "tol": 0.00037286229431629183,
+          "pass": true
+        },
+        "rainncv": {
+          "jax": 0.033796169120824,
+          "oracle": 0.03379616886377335,
+          "abs_err": 2.570506446586407e-10,
+          "tol": 0.0002,
+          "pass": true
+        }
+      },
+      "pass": true
+    },
+    "4": {
+      "label": "evaporation",
+      "full_wrf_exe": false,
+      "fields": {
+        "theta": {
+          "max_abs": 1.4071733573928213e-05,
+          "max_rel": 3.9838714647482876e-08,
+          "tol_abs": 0.002,
+          "pass": true
+        },
+        "qv": {
+          "max_abs": 3.6939073674857603e-10,
+          "max_rel": 7.084824261993443e-08,
+          "scale": 0.00521383062005043,
+          "tol_rel": 0.005,
+          "tol_abs_floor": 1e-07,
+          "pass": true
+        },
+        "qc": {
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "scale": 1e-07,
+          "tol_rel": 0.005,
+          "tol_abs_floor": 1e-07,
+          "pass": true
+        },
+        "qr": {
+          "max_abs": 3.8072474963261535e-10,
+          "max_rel": 9.110760026771047e-07,
+          "scale": 0.0004178847302682698,
+          "tol_rel": 0.005,
+          "tol_abs_floor": 1e-07,
+          "pass": true
+        },
+        "rainnc": {
+          "jax": 0.04167246456837739,
+          "oracle": 0.0416724681854248,
+          "abs_err": 3.617047404647078e-09,
+          "tol": 0.00020836234092712398,
+          "pass": true
+        },
+        "rainncv": {
+          "jax": 0.014341152051496756,
+          "oracle": 0.0143411522731185,
+          "abs_err": 2.2162174352635677e-10,
+          "tol": 0.0002,
+          "pass": true
+        }
+      },
+      "pass": true
+    },
+    "5": {
+      "label": "sedimentation_fall",
+      "full_wrf_exe": false,
+      "fields": {
+        "theta": {
+          "max_abs": 2.0916547612159775e-05,
+          "max_rel": 5.852967938812002e-08,
+          "tol_abs": 0.002,
+          "pass": true
+        },
+        "qv": {
+          "max_abs": 5.372370628226042e-09,
+          "max_rel": 3.039581174291813e-07,
+          "scale": 0.01767470687627792,
+          "tol_rel": 0.005,
+          "tol_abs_floor": 1e-07,
+          "pass": true
+        },
+        "qc": {
+          "max_abs": 2.8157486555600404e-09,
+          "max_rel": 0.0011332433804023608,
+          "scale": 2.484681317582726e-06,
+          "tol_rel": 0.005,
+          "tol_abs_floor": 1e-07,
+          "pass": true
+        },
+        "qr": {
+          "max_abs": 4.872373866350588e-09,
+          "max_rel": 2.5567355799346276e-06,
+          "scale": 0.001905701123178005,
+          "tol_rel": 0.005,
+          "tol_abs_floor": 1e-07,
+          "pass": true
+        },
+        "rainnc": {
+          "jax": 0.4236430372979648,
+          "oracle": 0.4236430525779724,
+          "abs_err": 1.528000759254411e-08,
+          "tol": 0.002118215262889862,
+          "pass": true
+        },
+        "rainncv": {
+          "jax": 0.17577369331526432,
+          "oracle": 0.1757737100124359,
+          "abs_err": 1.669717158980788e-08,
+          "tol": 0.0008788685500621796,
+          "pass": true
+        }
+      },
+      "pass": true
+    }
+  },
+  "fp64_audit_cases": {
+    "1": {
+      "label": "condensation",
+      "full_wrf_exe": false,
+      "fields": {
+        "theta": {
+          "max_abs": 5.684341886080802e-14,
+          "max_rel": 1.7102161146737163e-16,
+          "tol_abs": 0.002,
+          "pass": true
+        },
+        "qv": {
+          "max_abs": 3.469446951953614e-18,
+          "max_rel": 2.255641688442311e-16,
+          "scale": 0.01538119715436509,
+          "tol_rel": 0.005,
+          "tol_abs_floor": 1e-07,
+          "pass": true
+        },
+        "qc": {
+          "max_abs": 9.486769009248164e-19,
+          "max_rel": 2.2813905288368188e-15,
+          "scale": 0.000415832751531806,
+          "tol_rel": 0.005,
+          "tol_abs_floor": 1e-07,
+          "pass": true
+        },
+        "qr": {
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "scale": 1e-07,
+          "tol_rel": 0.005,
+          "tol_abs_floor": 1e-07,
+          "pass": true
+        },
+        "rainnc": {
+          "jax": 0.0,
+          "oracle": 0.0,
+          "abs_err": 0.0,
+          "tol": 0.0002,
+          "pass": true
+        },
+        "rainncv": {
+          "jax": 0.0,
+          "oracle": 0.0,
+          "abs_err": 0.0,
+          "tol": 0.0002,
+          "pass": true
+        }
+      },
+      "pass": true
+    },
+    "2": {
+      "label": "autoconversion",
+      "full_wrf_exe": false,
+      "fields": {
+        "theta": {
+          "max_abs": 5.684341886080802e-14,
+          "max_rel": 1.6670963670880076e-16,
+          "tol_abs": 0.002,
+          "pass": true
+        },
+        "qv": {
+          "max_abs": 1.214306433183765e-17,
+          "max_rel": 7.302856837256178e-16,
+          "scale": 0.01662782744129492,
+          "tol_rel": 0.005,
+          "tol_abs_floor": 1e-07,
+          "pass": true
+        },
+        "qc": {
+          "max_abs": 1.3010426069826053e-17,
+          "max_rel": 6.619813785709583e-15,
+          "scale": 0.001965376442750112,
+          "tol_rel": 0.005,
+          "tol_abs_floor": 1e-07,
+          "pass": true
+        },
+        "qr": {
+          "max_abs": 4.404571325722362e-20,
+          "max_rel": 4.450673596793237e-16,
+          "scale": 9.896415070509567e-05,
+          "tol_rel": 0.005,
+          "tol_abs_floor": 1e-07,
+          "pass": true
+        },
+        "rainnc": {
+          "jax": 0.0,
+          "oracle": 0.0,
+          "abs_err": 0.0,
+          "tol": 0.0002,
+          "pass": true
+        },
+        "rainncv": {
+          "jax": 0.0,
+          "oracle": 0.0,
+          "abs_err": 0.0,
+          "tol": 0.0002,
+          "pass": true
+        }
+      },
+      "pass": true
+    },
+    "3": {
+      "label": "accretion",
+      "full_wrf_exe": false,
+      "fields": {
+        "theta": {
+          "max_abs": 5.684341886080802e-14,
+          "max_rel": 1.6492610880493532e-16,
+          "tol_abs": 0.002,
+          "pass": true
+        },
+        "qv": {
+          "max_abs": 1.734723475976807e-17,
+          "max_rel": 1.3263607258567436e-15,
+          "scale": 0.01307882118460864,
+          "tol_rel": 0.005,
+          "tol_abs_floor": 1e-07,
+          "pass": true
+        },
+        "qc": {
+          "max_abs": 1.3755815063409838e-17,
+          "max_rel": 1.8656947788781726e-14,
+          "scale": 0.000737302543756975,
+          "tol_rel": 0.005,
+          "tol_abs_floor": 1e-07,
+          "pass": true
+        },
+        "qr": {
+          "max_abs": 7.589415207398531e-19,
+          "max_rel": 7.992411624750869e-16,
+          "scale": 0.000949577619838255,
+          "tol_rel": 0.005,
+          "tol_abs_floor": 1e-07,
+          "pass": true
+        },
+        "rainnc": {
+          "jax": 0.074572468289576,
+          "oracle": 0.07457246828957599,
+          "abs_err": 1.3877787807814457e-17,
+          "tol": 0.00037286234144787996,
+          "pass": true
+        },
+        "rainncv": {
+          "jax": 0.03379617493576183,
+          "oracle": 0.03379617493576181,
+          "abs_err": 2.0816681711721685e-17,
+          "tol": 0.0002,
+          "pass": true
+        }
+      },
+      "pass": true
+    },
+    "4": {
+      "label": "evaporation",
+      "full_wrf_exe": false,
+      "fields": {
+        "theta": {
+          "max_abs": 1.1368683772161603e-13,
+          "max_rel": 3.218606465810853e-16,
+          "tol_abs": 0.002,
+          "pass": true
+        },
+        "qv": {
+          "max_abs": 1.734723475976807e-18,
+          "max_rel": 3.3271548923168693e-16,
+          "scale": 0.005213834438494776,
+          "tol_rel": 0.005,
+          "tol_abs_floor": 1e-07,
+          "pass": true
+        },
+        "qc": {
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "scale": 1e-07,
+          "tol_rel": 0.005,
+          "tol_abs_floor": 1e-07,
+          "pass": true
+        },
+        "qr": {
+          "max_abs": 1.1384122811097797e-18,
+          "max_rel": 2.7242252290489723e-15,
+          "scale": 0.0004178847875611223,
+          "tol_rel": 0.005,
+          "tol_abs_floor": 1e-07,
+          "pass": true
+        },
+        "rainnc": {
+          "jax": 0.04167245642353488,
+          "oracle": 0.04167245642353488,
+          "abs_err": 0.0,
+          "tol": 0.0002083622821176744,
+          "pass": true
+        },
+        "rainncv": {
+          "jax": 0.014341149320553132,
+          "oracle": 0.01434114932055313,
+          "abs_err": 1.734723475976807e-18,
+          "tol": 0.0002,
+          "pass": true
+        }
+      },
+      "pass": true
+    },
+    "5": {
+      "label": "sedimentation_fall",
+      "full_wrf_exe": false,
+      "fields": {
+        "theta": {
+          "max_abs": 5.684341886080802e-14,
+          "max_rel": 1.590619613442852e-16,
+          "tol_abs": 0.002,
+          "pass": true
+        },
+        "qv": {
+          "max_abs": 8.673617379884035e-18,
+          "max_rel": 4.907361280115528e-16,
+          "scale": 0.01767470720981815,
+          "tol_rel": 0.005,
+          "tol_abs_floor": 1e-07,
+          "pass": true
+        },
+        "qc": {
+          "max_abs": 1.734723475976807e-18,
+          "max_rel": 6.981443109892286e-13,
+          "scale": 2.484763463185438e-06,
+          "tol_rel": 0.005,
+          "tol_abs_floor": 1e-07,
+          "pass": true
+        },
+        "qr": {
+          "max_abs": 3.0357660829594124e-18,
+          "max_rel": 1.5929918445233104e-15,
+          "scale": 0.001905700957224825,
+          "tol_rel": 0.005,
+          "tol_abs_floor": 1e-07,
+          "pass": true
+        },
+        "rainnc": {
+          "jax": 0.42364307553419567,
+          "oracle": 0.4236430755341956,
+          "abs_err": 5.551115123125783e-17,
+          "tol": 0.002118215377670978,
+          "pass": true
+        },
+        "rainncv": {
+          "jax": 0.1757737016337086,
+          "oracle": 0.1757737016337086,
+          "abs_err": 0.0,
+          "tol": 0.0008788685081685429,
+          "pass": true
+        }
+      },
+      "pass": true
+    }
+  }
+}
