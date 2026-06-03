@@ -751,7 +751,7 @@ def _deep_branch(T, Q, PRSMID, DPRS, APE, PSFC, SM, CLDEFI_IN, TAUK, RDTCNVC,
         lm1 = jnp.maximum(l0 - 1, 0)
         new_APEKXY = jnp.where(do_update, APEK[lm1], APEKXY)
         new_THERKY = jnp.where(do_update, THERK[lm1], THERKY)
-        new_L0 = jnp.where(do_update, L, L0)
+        new_L0 = jnp.where(do_update, L, L0).astype(jnp.int32)
         frozen_new = frozen | hit_frz
         return (TREFK, new_TREFKX, new_APEKXX, new_THERKX, new_APEKXY,
                 new_THERKY, new_L0, frozen_new), None

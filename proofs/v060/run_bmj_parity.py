@@ -92,6 +92,7 @@ def _candidate_for_case(case: dict[str, Any]) -> dict[str, Any]:
         stepcu=int(sc["STEPCU"]),
         xland=float(sc["XLAND"]),
         cldefi=0.6,
+        pint=jnp.asarray(cols["PINT"], dtype=jnp.float64),
     )
     tendency = result.tendency
     diag = result.diagnostics.cumulus
