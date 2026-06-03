@@ -144,7 +144,13 @@ _EPS_TBL = 1.0e-9
 # Table construction (exact BMJINIT + SPLINE replica, host NumPy, fp64)
 # ---------------------------------------------------------------------------
 def _wrf_spline(nold, xold, yold, nnew, xnew):
-    """Direct port of WRF SUBROUTINE SPLINE (natural spline)."""
+    """Direct port of WRF SUBROUTINE SPLINE (natural spline).
+
+    Computed in fp64; the resulting tables are cast to fp32 (WRF's REAL) for the
+    kernel. The fp64->fp32 cast of the final table differs from a pure-fp32
+    SPLINE by <=1 ULP, well below the parity tolerance; the dominant fp32 effect
+    is the iterative kernel arithmetic, which IS done in fp32.
+    """
     xold = np.asarray(xold, dtype=np.float64)
     yold = np.asarray(yold, dtype=np.float64)
     xnew = np.asarray(xnew, dtype=np.float64)
@@ -347,16 +353,25 @@ def _build_bmj_tables():
 
 _QS0, _SQS, _THE0, _STHE, _THE0Q, _STHEQ, _PTBL, _TTBL, _TTBLQ = _build_bmj_tables()
 
-# Frozen jnp constants (static lookup data, built once at import).
-QS0 = jnp.asarray(_QS0)
-SQS = jnp.asarray(_SQS)
-THE0 = jnp.asarray(_THE0)
-STHE = jnp.asarray(_STHE)
-THE0Q = jnp.asarray(_THE0Q)
-STHEQ = jnp.asarray(_STHEQ)
-PTBL = jnp.asarray(_PTBL)
-TTBL = jnp.asarray(_TTBL)
-TTBLQ = jnp.asarray(_TTBLQ)
+# Working precision. The pristine WRF oracle is compiled with default REAL
+# (fp32), so to reproduce its accumulated round-off to the predeclared 1e-6
+# relative tolerance the column kernel and lookup tables run in fp32, exactly
+# mirroring the Fortran. (Driver-level array handling in scan_adapters stays
+# fp64; only the BMJ internal arithmetic is fp32, matching module_cu_bmj.F.)
+_DT = jnp.float32
+_NPDT = np.float32
+
+# Frozen jnp constants (static lookup data, built once at import) in fp32 to
+# match the WRF BMJINIT tables.
+QS0 = jnp.asarray(_QS0.astype(_NPDT))
+SQS = jnp.asarray(_SQS.astype(_NPDT))
+THE0 = jnp.asarray(_THE0.astype(_NPDT))
+STHE = jnp.asarray(_STHE.astype(_NPDT))
+THE0Q = jnp.asarray(_THE0Q.astype(_NPDT))
+STHEQ = jnp.asarray(_STHEQ.astype(_NPDT))
+PTBL = jnp.asarray(_PTBL.astype(_NPDT))
+TTBL = jnp.asarray(_TTBL.astype(_NPDT))
+TTBLQ = jnp.asarray(_TTBLQ.astype(_NPDT))
 
 
 # ---------------------------------------------------------------------------
@@ -366,13 +381,12 @@ def _ttblex(itbx, jtbx, plx, prsmid, rdpx, rdthex, sthe, the0, thesp, ttbl):
     """Port of SUBROUTINE TTBLEX. ``ttbl`` is shape (jtbx, itbx)."""
     PK = prsmid
     TPK = (PK - plx) * rdpx
-    QQ = TPK - jnp.floor(jnp.abs(TPK)) * jnp.sign(TPK)  # AINT (truncate toward zero)
-    QQ = TPK - _aint(TPK)
-    IPTB = (jnp.floor(_aint(TPK)) + 1).astype(jnp.int32)
+    QQ = TPK - _aint(TPK)  # AINT = truncate toward zero
+    IPTB = (_aint(TPK) + 1).astype(jnp.int32)
     # keep within table
     below = IPTB < 1
     above = IPTB >= itbx
-    QQ = jnp.where(below | above, 0.0, QQ)
+    QQ = jnp.where(below | above, _DT(0.0), QQ)
     IPTB = jnp.clip(IPTB, 1, itbx - 1)
     i0 = IPTB - 1  # 0-based
     BTHE00K = the0[i0]
@@ -426,8 +440,8 @@ def _bmj_kernel(T, Q, PRSMID, DPRS, APE, PSFC, SM, CLDEFI_IN, DTCNVC, nz):
     (KTS=1..LMH=nz); LBOT=0 denotes "no convection".
     """
     LMH = nz  # 1-based bottom index (LOWLYR=1 -> LMH=KTE)
-    DTCNVC = jnp.asarray(DTCNVC, jnp.float64)
-    RDTCNVC = 1.0 / DTCNVC
+    DTCNVC = jnp.asarray(DTCNVC, _DT)
+    RDTCNVC = _DT(1.0) / DTCNVC
     TAUK = DTCNVC / TREL
     TAUKSC = DTCNVC / (1.0 * TREL)
     DEPMIN = PSH * PSFC * RSFCP
@@ -606,10 +620,10 @@ def _bmj_kernel(T, Q, PRSMID, DPRS, APE, PSFC, SM, CLDEFI_IN, DTCNVC, nz):
             new_DENTPY = jnp.where(do_write, dentpy_sel, DENTPY)
             return (new_PLO, new_TRMLO, new_DENTPY, cpe, dtv, broke_new)
 
-        cpe0 = jnp.zeros(nz)
-        dtv0 = jnp.zeros(nz)
+        cpe0 = jnp.zeros(nz, _DT)
+        dtv0 = jnp.zeros(nz, _DT)
         PLO0 = PRSMID[kb0]
-        st0 = (PLO0, 0.0, 0.0, cpe0, dtv0, jnp.asarray(False))
+        st0 = (PLO0, _DT(0.0), _DT(0.0), cpe0, dtv0, jnp.asarray(False))
         # iterate i=0..LMH-1 (covers L=KB..KB-(LMH-1))
         st_final = lax.fori_loop(0, LMH, ascent_body, st0)
         (_, _, _, cpe, dtv, _) = st_final
@@ -623,30 +637,30 @@ def _bmj_kernel(T, Q, PRSMID, DPRS, APE, PSFC, SM, CLDEFI_IN, DTCNVC, nz):
             cval = cpe[l0]
             brk_new = brk | (inr & (cval < CAPEtrigr))
             take = inr & (~brk) & (cval >= CAPEtrigr) & (cval > CAPE)
-            LTP1 = jnp.where(take, L, LTP1)
+            LTP1 = jnp.where(take, L, LTP1).astype(jnp.int32)
             CAPE = jnp.where(take, cval, CAPE)
             return (LTP1, CAPE, brk_new)
-        LTP1_0 = KB
-        st_lt = lax.fori_loop(0, LMH, ltop_body, (LTP1_0, jnp.asarray(0.0), jnp.asarray(False)))
+        LTP1_0 = KB.astype(jnp.int32)
+        st_lt = lax.fori_loop(0, LMH, ltop_body, (LTP1_0, _DT(0.0), jnp.asarray(False)))
         (LTP1, CAPE, _) = st_lt
-        LTOP = jnp.minimum(LTP1, LBOT)
+        LTOP = jnp.minimum(LTP1, LBOT).astype(jnp.int32)
 
         # keep best CAPE across KB
         better = active_kb & (CAPE > CAPEcnv)
         CAPEcnv = jnp.where(better, CAPE, CAPEcnv)
         PSPcnv = jnp.where(better, PSP, PSPcnv)
         THBTcnv = jnp.where(better, THBT, THBTcnv)
-        LBOTcnv = jnp.where(better, LBOT, LBOTcnv)
-        LTOPcnv = jnp.where(better, LTOP, LTOPcnv)
+        LBOTcnv = jnp.where(better, LBOT, LBOTcnv).astype(jnp.int32)
+        LTOPcnv = jnp.where(better, LTOP, LTOPcnv).astype(jnp.int32)
         CPEcnv = jnp.where(better, cpe, CPEcnv)
         DTVcnv = jnp.where(better, dtv, DTVcnv)
-        THEScnv = jnp.where(better, jnp.full(nz, THESP), THEScnv)
+        THEScnv = jnp.where(better, jnp.full(nz, THESP, _DT), THEScnv)
         return (CAPEcnv, PSPcnv, THBTcnv, LBOTcnv, LTOPcnv,
                 CPEcnv, DTVcnv, THEScnv, new_stop)
 
-    init = (jnp.asarray(0.0), jnp.asarray(0.0), jnp.asarray(0.0),
+    init = (_DT(0.0), _DT(0.0), _DT(0.0),
             jnp.asarray(LMH, jnp.int32), jnp.asarray(LMH, jnp.int32),
-            jnp.zeros(nz), jnp.zeros(nz), jnp.zeros(nz), jnp.asarray(False))
+            jnp.zeros(nz, _DT), jnp.zeros(nz, _DT), jnp.zeros(nz, _DT), jnp.asarray(False))
     (CAPEcnv, PSP, THBT, LBOT, LTOP, CPE, DTV, THES, _) = lax.fori_loop(0, LMH, kb_body, init)
 
     PBOT = PRSMID[LBOT - 1]
@@ -676,12 +690,12 @@ def _bmj_kernel(T, Q, PRSMID, DPRS, APE, PSFC, SM, CLDEFI_IN, DTCNVC, nz):
     use_deep = DEEP & (~deep_demoted)
     use_shallow = (SHALLOW | (DEEP & deep_demoted)) & shallow_ok
 
-    zeros = jnp.zeros(nz)
+    zeros = jnp.zeros(nz, _DT)
     DTDT = jnp.where(use_deep, dtdt_deep,
             jnp.where(use_shallow, dtdt_sh, zeros))
     DQDT = jnp.where(use_deep, dqdt_deep,
             jnp.where(use_shallow, dqdt_sh, zeros))
-    PCPCOL = jnp.where(use_deep, jnp.maximum(pcp_deep, 0.0), 0.0)
+    PCPCOL = jnp.where(use_deep, jnp.maximum(pcp_deep, _DT(0.0)), _DT(0.0))
 
     LBOT_out = jnp.where(use_deep, lbot_deep,
                 jnp.where(use_shallow, lbot_sh, 0)).astype(jnp.int32)
@@ -771,7 +785,7 @@ def _deep_branch(T, Q, PRSMID, DPRS, APE, PSFC, SM, CLDEFI_IN, TAUK, RDTCNVC,
     in_above = frozen & (Lvec >= LTOP) & (Lvec <= L0 - 1)
     TREFK_above = (THERK - (PK - PKT) * DTHEM * RDP0T) / APEK
     TREFK = jnp.where(in_above, TREFK_above, TREFK)
-    EL = jnp.full(nz, ELWV)
+    EL = jnp.full(nz, ELWV, _DT)
 
     DEPWL = PKB - PK0
     DEPTH_frz = PFRZ * PSFC * RSFCP
@@ -811,7 +825,7 @@ def _deep_branch(T, Q, PRSMID, DPRS, APE, PSFC, SM, CLDEFI_IN, TAUK, RDTCNVC,
         # ---- enthalpy conservation (ITER=1,2) ----
         def enth_iter(st2, _2):
             (TREFK_i, QREFK_i) = st2
-            mask = in_col.astype(jnp.float64)
+            mask = in_col.astype(_DT)
             SUMDE = jnp.sum(((TK - TREFK_i) * CP + (QK - QREFK_i) * EL) * DPRS * mask)
             DHDT = jnp.sum((QREFK_i * A23M4L / ((TREFK_i * APEK / APESK) - A4) ** 2 + CP) * DPRS * mask)
             SUMDP = jnp.sum(DPRS * mask)
@@ -837,7 +851,7 @@ def _deep_branch(T, Q, PRSMID, DPRS, APE, PSFC, SM, CLDEFI_IN, TAUK, RDTCNVC,
         (TREFK, QREFK), _ = lax.scan(enth_iter, (TREFK, QREFK), None, length=2)
 
         # ---- heating, moistening, precip ----
-        mask = in_col.astype(jnp.float64)
+        mask = in_col.astype(_DT)
         DIFT = (TREFK - TK) * TAUK * mask
         DIFQ = (QREFK - QK) * TAUK * mask
         AVRGTL = (TK + TK + DIFT)
@@ -925,7 +939,7 @@ def _shallow_branch(T, Q, PRSMID, DPRS, APE, PSFC, SM, THBT, PSP, CPE, DTV,
     QK = Q
     APEK = APE
     QSATK = _qsat_bmj(PK, TK)
-    EL = jnp.full(nz, ELWV)
+    EL = jnp.full(nz, ELWV, _DT)
     THVREF = TK * APEK * (QK * D608 + 1.0)
     TREFK = TK
 
@@ -1018,7 +1032,7 @@ def _shallow_branch(T, Q, PRSMID, DPRS, APE, PSFC, SM, THBT, PSP, CPE, DTV,
     TREFK = carry_sh[0]
 
     in_col = (Lvec >= LTOP) & (Lvec <= LBOT)
-    mask = in_col.astype(jnp.float64)
+    mask = in_col.astype(_DT)
     # temperature correction
     SUMDT = jnp.sum((TK - TREFK) * DPRS * mask)
     SUMDP = jnp.sum(DPRS * mask)
@@ -1083,30 +1097,35 @@ def _shallow_branch(T, Q, PRSMID, DPRS, APE, PSFC, SM, THBT, PSP, CPE, DTV,
 @partial(jax.jit, static_argnames=("stepcu", "nz"))
 def _bmj_column_arrays(temperature, qv, pressure, dz, rho, pi_exner, dt, psfc,
                        *, stepcu, xland, cldefi, nz):
-    """BMJDRV wrapper: flip arrays top-down, call BMJ, flip tendencies back."""
-    T = jnp.asarray(temperature, jnp.float64)
-    qv_mix = jnp.asarray(qv, jnp.float64)
-    p = jnp.asarray(pressure, jnp.float64)
-    dz = jnp.asarray(dz, jnp.float64)
-    rho = jnp.asarray(rho, jnp.float64)
-    pi = jnp.asarray(pi_exner, jnp.float64)
-    dt_f = jnp.asarray(dt, jnp.float64)
-    stepcu_f = jnp.asarray(stepcu, jnp.float64)
-    cld0 = jnp.asarray(cldefi, jnp.float64)
-    SM = jnp.asarray(xland, jnp.float64) - 1.0  # LANDMASK: 1 sea, 0 land
+    """BMJDRV wrapper: flip arrays top-down, call BMJ, flip tendencies back.
+
+    The BMJ internal arithmetic runs in fp32 to mirror pristine WRF (default
+    REAL); inputs are cast to fp32 first, outputs cast back to fp64 for the
+    physics interface.
+    """
+    T = jnp.asarray(temperature, _DT)
+    qv_mix = jnp.asarray(qv, _DT)
+    p = jnp.asarray(pressure, _DT)
+    dz = jnp.asarray(dz, _DT)
+    rho = jnp.asarray(rho, _DT)
+    pi = jnp.asarray(pi_exner, _DT)
+    dt_f = jnp.asarray(dt, _DT)
+    stepcu_f = jnp.asarray(stepcu, _DT)
+    cld0 = jnp.asarray(cldefi, _DT)
+    SM = jnp.asarray(xland, _DT) - _DT(1.0)  # LANDMASK: 1 sea, 0 land
     DTCNVC = dt_f * stepcu_f
 
     # specific humidity (BMJDRV): QCOL=MAX(EPSQ, QV/(1+QV)) bottom-up
-    q_spec = jnp.maximum(EPSQ, qv_mix / (1.0 + qv_mix))
+    q_spec = jnp.maximum(_DT(EPSQ), qv_mix / (_DT(1.0) + qv_mix))
 
     # FLIP top-down: index 0 = model top, index nz-1 = surface
     Tf = T[::-1]
     Qf = q_spec[::-1]
     Pf = p[::-1]
-    DPRSf = (rho * G * dz)[::-1]   # DPCOL = RHO*G*DZ8W
-    PSFCv = jnp.asarray(psfc, jnp.float64)
+    DPRSf = (rho * _DT(G) * dz)[::-1]   # DPCOL = RHO*G*DZ8W
+    PSFCv = jnp.asarray(psfc, _DT)
 
-    APEf = (1.0e5 / Pf) ** CAPA
+    APEf = (_DT(1.0e5) / Pf) ** _DT(CAPA)
 
     DTDTf, DQDTf, PCPCOL, LBOT, LTOP, CLDEFI_OUT, DEEP, SHALLOW = _bmj_kernel(
         Tf, Qf, Pf, DPRSf, APEf, PSFCv, SM, cld0, DTCNVC, nz)
@@ -1115,12 +1134,12 @@ def _bmj_column_arrays(temperature, qv, pressure, dz, rho, pi_exner, dt, psfc,
     DTDT = DTDTf[::-1]
     DQDT = DQDTf[::-1]
 
-    # RTHCUTEN = DTDT/PI ; RQVCUTEN = DQDT/(1-QCOL)**2  (bottom-up)
-    rthcuten = DTDT / pi
-    rqvcuten = DQDT / (1.0 - q_spec) ** 2
+    # RTHCUTEN = DTDT/PI ; RQVCUTEN = DQDT/(1-QCOL)**2  (bottom-up), fp32 like WRF
+    rthcuten = (DTDT / pi).astype(jnp.float64)
+    rqvcuten = (DQDT / (_DT(1.0) - q_spec) ** 2).astype(jnp.float64)
 
-    raincv = PCPCOL * 1.0e3 / stepcu_f
-    pratec = PCPCOL * 1.0e3 / (stepcu_f * dt_f)
+    raincv = (PCPCOL * _DT(1.0e3) / stepcu_f).astype(jnp.float64)
+    pratec = (PCPCOL * _DT(1.0e3) / (stepcu_f * dt_f)).astype(jnp.float64)
     # CUTOP=REAL(KTE+1-LTOP); CUBOT=REAL(KTE+1-LBOT)  (LBOT/LTOP are 1-based flipped)
     cutop = jnp.asarray(nz + 1, jnp.float64) - LTOP.astype(jnp.float64)
     cubot = jnp.asarray(nz + 1, jnp.float64) - LBOT.astype(jnp.float64)
