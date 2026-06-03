@@ -7,7 +7,7 @@
   "real_data_sources": {
     "canary_grid": "GridSpec.canary_3km_template()",
     "noahmp_land_warm_start": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z (d02 wrfinput)",
-    "noahclassic_bundle": "/home/enric/src/wrf_gpu2/.claude/worktrees/v060-consolidate/proofs/v060/savepoints_noahclassic.json (WRF NOAHMP_SFLX savepoint column daytime_veg10)",
+    "noahclassic_bundle": "/home/enric/src/wrf_gpu2/.claude/worktrees/agent-af9096c6a19eed449/proofs/v060/savepoints_noahclassic.json (WRF NOAHMP_SFLX savepoint column daytime_veg10)",
     "atmospheric_profile": "validated b2 C-grid pattern (scanwire_smoke._build_state) on the Canary grid"
   },
   "sweep_rationale": "COVERING set (NOT full cartesian product): every supported scheme appears in >=1 RUN config plus the real operational Canary config. Supported = mp{8,6,10,16,1} x bl{5,1,7} x sfclay{1,5,7} x cu{1} x sf_surface{4,2} (GF/Tiedtke cumulus EXCLUDED = documented-TODO). v0.6.0 CONSOLIDATION coupler reality: the operational scan now threads MYNN(5) + YSU(1) + ACM2(7) PBL (YSU/ACM2 are the v0.6.0 jax.lax.scan-traceable rewrites from the PBL-GPU-op lane, scan-wired via PBL_SCAN_ADAPTERS) and Noah-MP(4) + Noah-classic(2) land -- so YSU/ACM2 are now RUN configs, not fail-closed. Only GF(3)/Tiedtke(6,16) remain CPU-NumPy reference ports and stay FAIL-CLOSED in the coupler, exercised here as fail-closed integration assertions (the coupler must reject them loudly, never silently no-op).",
@@ -744,7 +744,7 @@
           },
           "qv": {
             "min": 0.00392,
-            "max": 0.01317,
+            "max": 0.01316,
             "band": [
               0.0,
               0.06
