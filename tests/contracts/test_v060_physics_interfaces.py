@@ -50,10 +50,23 @@ def test_mp_registry_names_match_expected_wrfout_variables() -> None:
 
 def test_interfaces_self_check_and_scheme_specs_cover_v060_options() -> None:
     assert_interfaces_consistent()
-    assert len(SCHEME_STEP_SPECS) == 17
+    # 17 single-option specs + 2 radiation variants (RRTMG LW/SW under option 4).
+    assert len(SCHEME_STEP_SPECS) == 19
     assert scheme_step_spec("microphysics", 16).writes_state[-3:] == ("Nn", "Nc", "Nr")
     assert scheme_step_spec("cumulus", 1).returns_accumulators == ("rainc_acc",)
     assert scheme_step_spec("land_surface", 2).writes_carry == ("flx4", "fvb", "fbur", "fgsn", "smcrel", "xlaidyn")
+
+
+def test_radiation_specs_are_held_rate_theta_tendencies() -> None:
+    lw = scheme_step_spec("radiation", 4, "lw")
+    sw = scheme_step_spec("radiation", 4, "sw")
+    # Radiation is a column endpoint: it only writes a held-rate theta tendency
+    # (WRF RTHRATEN), never an in-place State replacement or a new species leaf.
+    assert lw.writes_state == ("theta",)
+    assert sw.writes_state == ("theta",)
+    assert lw.wrf_slot == "first_rk_radiation_driver"
+    assert sw.wrf_slot == "first_rk_radiation_driver"
+    assert "SWDOWN" in sw.diagnostics and "GLW" in lw.diagnostics
 
 
 def test_physics_tendency_validates_unknown_keys() -> None:
