@@ -7,6 +7,9 @@ build_*/
 *.mod
 *.smod
 *.exe
+dudhia_oracle
+rrtm_lw_oracle
+RRTM_DATA
 fort.*
 _wrfstubs.*
 _modstubs.*

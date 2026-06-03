@@ -474,6 +474,43 @@ SCHEME_STEP_SPECS: tuple[PhysicsStepSpec, ...] = (
         notes="ra_sw_physics=4. Shares the RRTMG column adapter with LW; needs solar geometry "
         "(coszen/declination/equation-of-time) and surface albedo. Held-rate RTHRATEN.",
     ),
+    # Classic Dudhia shortwave (ra_sw_physics=1) -- Stephens-1984 broadband
+    # SW. Self-contained column kernel (no external table file); reads cloud
+    # hydrometeors + qv + solar geometry (coszen) + surface albedo, emits a
+    # held-rate RTHRATEN theta tendency and the surface net SW flux GSW.
+    PhysicsStepSpec(
+        family="radiation",
+        option=1,
+        name="Dudhia shortwave",
+        wrf_slot="first_rk_radiation_driver",
+        owner_module="src/gpuwrf/physics/ra_sw_dudhia.py",
+        oracle="v0.6.0 physics-oracle factory savepoint at module_ra_sw.F:SWRAD (Dudhia SW)",
+        reads_state=("theta", "qv", "qc", "qr", "qi", "qs", "qg", "p", "pb", "ph", "phb"),
+        writes_state=("theta",),
+        diagnostics=("SWDOWN", "GSW", "COSZEN", "RTHRATENSW"),
+        variant="sw",
+        notes="ra_sw_physics=1. Stephens-1984 broadband Dudhia SW; held-rate RTHRATEN theta "
+        "tendency. No external lookup-table asset. Solar geometry via coszen + surface albedo.",
+    ),
+    # Classic RRTM longwave (ra_lw_physics=1) -- 16-band k-distribution from
+    # AER, loaded from the RRTM_DATA asset. Reads cloud hydrometeors + qv +
+    # interface T/p (t8w/p8w) + LSM surface emissivity/skin temperature; emits
+    # a held-rate RTHRATEN theta tendency, surface downwelling GLW, and TOA OLR.
+    PhysicsStepSpec(
+        family="radiation",
+        option=1,
+        name="RRTM longwave",
+        wrf_slot="first_rk_radiation_driver",
+        owner_module="src/gpuwrf/physics/ra_lw_rrtm.py",
+        oracle="v0.6.0 physics-oracle factory savepoint at module_ra_rrtm.F:RRTMLWRAD (classic RRTM LW)",
+        reads_state=("theta", "qv", "qc", "qr", "qi", "qs", "qg", "p", "pb", "ph", "phb", "t_skin"),
+        writes_state=("theta",),
+        diagnostics=("GLW", "OLR", "RTHRATENLW"),
+        variant="lw",
+        notes="ra_lw_physics=1. AER classic RRTM 16-band LW; held-rate RTHRATEN. Loads the "
+        "RRTM_DATA k-distribution asset and passes the proofs/v060/run_rrtm_lw_parity.py "
+        "fp64 savepoint gate.",
+    ),
 )
 
 SCHEME_STEP_SPECS_BY_KEY: Mapping[tuple[str, int, str], PhysicsStepSpec] = {
