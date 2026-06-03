@@ -109,6 +109,7 @@ _MP_ENTRIES: dict[int, SchemeEntry] = {
     0: SchemeEntry("microphysics", 0, "disabled/passive qv", "", "", "disabled", True,
                    reads_state=("qv",), writes_state=()),
     1: _mp_entry(1, "gpuwrf.physics.microphysics_kessler", "kessler_physics_tendency", gpu=True),
+    2: _mp_entry(2, "gpuwrf.physics.microphysics_lin", "lin_physics_tendency", gpu=True),
     3: _mp_entry(3, "gpuwrf.physics.microphysics_wsm3", "wsm3_physics_tendency", gpu=True),
     4: _mp_entry(4, "gpuwrf.physics.microphysics_wsm5", "wsm5_physics_tendency", gpu=True),
     6: _mp_entry(6, "gpuwrf.physics.microphysics_wsm6", "wsm6_physics_tendency", gpu=True),
