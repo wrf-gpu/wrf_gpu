@@ -1,0 +1,578 @@
+{
+  "schema": "wrf_gpu2.proofs.v060.bmj_savepoint_parity.v1",
+  "status": "FAIL",
+  "wrf_faithful": false,
+  "oracle": {
+    "type": "unmodified_pristine_wrf_module_cu_bmj_standalone_call",
+    "source_path": "/home/enric/src/wrf_pristine/WRF/phys/module_cu_bmj.F",
+    "source_sha256": "62d2805aae152b58093d07100000b581458b536164d90f9cecc27a157e2bd92f",
+    "generation_command": "taskset -c 0-3 bash proofs/v060/oracle/bmj_build_and_run.sh",
+    "savepoint_dir": "/home/enric/src/wrf_gpu2/.claude/worktrees/gpt-bmj/proofs/v060/savepoints",
+    "case_count": 5
+  },
+  "candidate": {
+    "module": "src/gpuwrf/physics/cumulus_bmj.py",
+    "entrypoint": "step_bmj_column",
+    "jax_platforms": "cpu",
+    "jax_enable_x64": "true"
+  },
+  "predeclared_tolerances": {
+    "RTHCUTEN": {
+      "abs": 5e-08,
+      "rel": 1e-06
+    },
+    "RQVCUTEN": {
+      "abs": 5e-10,
+      "rel": 1e-06
+    },
+    "RAINCV": {
+      "abs": 5e-07,
+      "rel": 1e-06
+    },
+    "PRATEC": {
+      "abs": 5e-09,
+      "rel": 1e-06
+    },
+    "CUTOP": {
+      "abs": 0.0,
+      "rel": 0.0
+    },
+    "CUBOT": {
+      "abs": 0.0,
+      "rel": 0.0
+    },
+    "CLDEFI": {
+      "abs": 5e-07,
+      "rel": 0.0
+    }
+  },
+  "cases": [
+    {
+      "case": "bmj_case_1",
+      "oracle_regime": "deep",
+      "candidate_regime": "deep",
+      "field_pass": false,
+      "regime_pass": true,
+      "pass": false
+    },
+    {
+      "case": "bmj_case_2",
+      "oracle_regime": "shallow",
+      "candidate_regime": "deep",
+      "field_pass": false,
+      "regime_pass": false,
+      "pass": false
+    },
+    {
+      "case": "bmj_case_3",
+      "oracle_regime": "deep",
+      "candidate_regime": "deep",
+      "field_pass": false,
+      "regime_pass": true,
+      "pass": false
+    },
+    {
+      "case": "bmj_case_4",
+      "oracle_regime": "nonconvective",
+      "candidate_regime": "nonconvective",
+      "field_pass": true,
+      "regime_pass": true,
+      "pass": true
+    },
+    {
+      "case": "bmj_case_5",
+      "oracle_regime": "nonconvective",
+      "candidate_regime": "shallow",
+      "field_pass": false,
+      "regime_pass": false,
+      "pass": false
+    }
+  ],
+  "field_residuals": [
+    {
+      "case": "bmj_case_1",
+      "field": "RTHCUTEN",
+      "pass": false,
+      "max_abs": 0.008988826264462239,
+      "max_rel": 1.902609020508685,
+      "tol_abs": 5e-08,
+      "tol_rel": 1e-06,
+      "worst_index": [
+        29
+      ],
+      "candidate_at_worst": 0.004264352571985488,
+      "reference_at_worst": -0.004724473692476749
+    },
+    {
+      "case": "bmj_case_1",
+      "field": "RQVCUTEN",
+      "pass": false,
+      "max_abs": 2.1837983455006566e-06,
+      "max_rel": 0.7971146103867611,
+      "tol_abs": 5e-10,
+      "tol_rel": 1e-06,
+      "worst_index": [
+        1
+      ],
+      "candidate_at_worst": -5.558307078936535e-07,
+      "reference_at_worst": -2.73962905339431e-06
+    },
+    {
+      "case": "bmj_case_1",
+      "field": "RAINCV",
+      "pass": false,
+      "max_abs": 1065.2513796161825,
+      "max_rel": 8003.0748198441115,
+      "tol_abs": 5e-07,
+      "tol_rel": 1e-06,
+      "worst_index": [],
+      "candidate_at_worst": 1065.3844848792965,
+      "reference_at_worst": 0.1331052631139755
+    },
+    {
+      "case": "bmj_case_1",
+      "field": "PRATEC",
+      "pass": false,
+      "max_abs": 19.726877400213443,
+      "max_rel": 8003.074539826059,
+      "tol_abs": 5e-09,
+      "tol_rel": 1e-06,
+      "worst_index": [],
+      "candidate_at_worst": 19.729342312579565,
+      "reference_at_worst": 0.002464912366122007
+    },
+    {
+      "case": "bmj_case_1",
+      "field": "CUTOP",
+      "pass": false,
+      "max_abs": 9.0,
+      "max_rel": 0.2903225806451613,
+      "tol_abs": 0.0,
+      "tol_rel": 0.0,
+      "worst_index": [],
+      "candidate_at_worst": 40.0,
+      "reference_at_worst": 31.0
+    },
+    {
+      "case": "bmj_case_1",
+      "field": "CUBOT",
+      "pass": true,
+      "max_abs": 0.0,
+      "max_rel": 0.0,
+      "tol_abs": 0.0,
+      "tol_rel": 0.0,
+      "worst_index": [],
+      "candidate_at_worst": 2.0,
+      "reference_at_worst": 2.0
+    },
+    {
+      "case": "bmj_case_1",
+      "field": "CLDEFI",
+      "pass": false,
+      "max_abs": 0.4,
+      "max_rel": 0.4,
+      "tol_abs": 5e-07,
+      "tol_rel": 0.0,
+      "worst_index": [],
+      "candidate_at_worst": 0.6,
+      "reference_at_worst": 1.0
+    },
+    {
+      "case": "bmj_case_2",
+      "field": "RTHCUTEN",
+      "pass": false,
+      "max_abs": 0.00403571866926434,
+      "max_rel": 4.03571866926434e+297,
+      "tol_abs": 5e-08,
+      "tol_rel": 1e-06,
+      "worst_index": [
+        39
+      ],
+      "candidate_at_worst": -0.00403571866926434,
+      "reference_at_worst": 0.0
+    },
+    {
+      "case": "bmj_case_2",
+      "field": "RQVCUTEN",
+      "pass": false,
+      "max_abs": 3.3103386907789826e-07,
+      "max_rel": 0.7250202368563976,
+      "tol_abs": 5e-10,
+      "tol_rel": 1e-06,
+      "worst_index": [
+        1
+      ],
+      "candidate_at_worst": -1.2555182639623385e-07,
+      "reference_at_worst": -4.565856954741321e-07
+    },
+    {
+      "case": "bmj_case_2",
+      "field": "RAINCV",
+      "pass": false,
+      "max_abs": 187.64722161711384,
+      "max_rel": 1.8764722161711383e+302,
+      "tol_abs": 5e-07,
+      "tol_rel": 1e-06,
+      "worst_index": [],
+      "candidate_at_worst": 187.64722161711384,
+      "reference_at_worst": 0.0
+    },
+    {
+      "case": "bmj_case_2",
+      "field": "PRATEC",
+      "pass": false,
+      "max_abs": 3.474948548465071,
+      "max_rel": 3.4749485484650707e+300,
+      "tol_abs": 5e-09,
+      "tol_rel": 1e-06,
+      "worst_index": [],
+      "candidate_at_worst": 3.474948548465071,
+      "reference_at_worst": 0.0
+    },
+    {
+      "case": "bmj_case_2",
+      "field": "CUTOP",
+      "pass": false,
+      "max_abs": 33.0,
+      "max_rel": 4.714285714285714,
+      "tol_abs": 0.0,
+      "tol_rel": 0.0,
+      "worst_index": [],
+      "candidate_at_worst": 40.0,
+      "reference_at_worst": 7.0
+    },
+    {
+      "case": "bmj_case_2",
+      "field": "CUBOT",
+      "pass": true,
+      "max_abs": 0.0,
+      "max_rel": 0.0,
+      "tol_abs": 0.0,
+      "tol_rel": 0.0,
+      "worst_index": [],
+      "candidate_at_worst": 2.0,
+      "reference_at_worst": 2.0
+    },
+    {
+      "case": "bmj_case_2",
+      "field": "CLDEFI",
+      "pass": true,
+      "max_abs": 2.384185793236071e-08,
+      "max_rel": 3.973642830828406e-08,
+      "tol_abs": 5e-07,
+      "tol_rel": 0.0,
+      "worst_index": [],
+      "candidate_at_worst": 0.6,
+      "reference_at_worst": 0.6000000238418579
+    },
+    {
+      "case": "bmj_case_3",
+      "field": "RTHCUTEN",
+      "pass": false,
+      "max_abs": 0.017071033674000764,
+      "max_rel": 1.9940559601916223,
+      "tol_abs": 5e-08,
+      "tol_rel": 1e-06,
+      "worst_index": [
+        33
+      ],
+      "candidate_at_worst": 0.008510073492943313,
+      "reference_at_worst": -0.008560960181057453
+    },
+    {
+      "case": "bmj_case_3",
+      "field": "RQVCUTEN",
+      "pass": false,
+      "max_abs": 3.07364329766351e-06,
+      "max_rel": 0.8042639221436902,
+      "tol_abs": 5e-10,
+      "tol_rel": 1e-06,
+      "worst_index": [
+        1
+      ],
+      "candidate_at_worst": -7.480416157552111e-07,
+      "reference_at_worst": -3.821684913418721e-06
+    },
+    {
+      "case": "bmj_case_3",
+      "field": "RAINCV",
+      "pass": false,
+      "max_abs": 1534.0692841430186,
+      "max_rel": 7754.498657034572,
+      "tol_abs": 5e-07,
+      "tol_rel": 1e-06,
+      "worst_index": [],
+      "candidate_at_worst": 1534.2671137322664,
+      "reference_at_worst": 0.1978295892477036
+    },
+    {
+      "case": "bmj_case_3",
+      "field": "PRATEC",
+      "pass": false,
+      "max_abs": 28.408690446989457,
+      "max_rel": 7754.498437971164,
+      "tol_abs": 5e-09,
+      "tol_rel": 1e-06,
+      "worst_index": [],
+      "candidate_at_worst": 28.412353958004932,
+      "reference_at_worst": 0.003663511015474796
+    },
+    {
+      "case": "bmj_case_3",
+      "field": "CUTOP",
+      "pass": false,
+      "max_abs": 5.0,
+      "max_rel": 0.14285714285714285,
+      "tol_abs": 0.0,
+      "tol_rel": 0.0,
+      "worst_index": [],
+      "candidate_at_worst": 40.0,
+      "reference_at_worst": 35.0
+    },
+    {
+      "case": "bmj_case_3",
+      "field": "CUBOT",
+      "pass": true,
+      "max_abs": 0.0,
+      "max_rel": 0.0,
+      "tol_abs": 0.0,
+      "tol_rel": 0.0,
+      "worst_index": [],
+      "candidate_at_worst": 2.0,
+      "reference_at_worst": 2.0
+    },
+    {
+      "case": "bmj_case_3",
+      "field": "CLDEFI",
+      "pass": false,
+      "max_abs": 0.4,
+      "max_rel": 0.4,
+      "tol_abs": 5e-07,
+      "tol_rel": 0.0,
+      "worst_index": [],
+      "candidate_at_worst": 0.6,
+      "reference_at_worst": 1.0
+    },
+    {
+      "case": "bmj_case_4",
+      "field": "RTHCUTEN",
+      "pass": true,
+      "max_abs": 0.0,
+      "max_rel": 0.0,
+      "tol_abs": 5e-08,
+      "tol_rel": 1e-06,
+      "worst_index": [
+        0
+      ],
+      "candidate_at_worst": 0.0,
+      "reference_at_worst": 0.0
+    },
+    {
+      "case": "bmj_case_4",
+      "field": "RQVCUTEN",
+      "pass": true,
+      "max_abs": 0.0,
+      "max_rel": 0.0,
+      "tol_abs": 5e-10,
+      "tol_rel": 1e-06,
+      "worst_index": [
+        0
+      ],
+      "candidate_at_worst": 0.0,
+      "reference_at_worst": 0.0
+    },
+    {
+      "case": "bmj_case_4",
+      "field": "RAINCV",
+      "pass": true,
+      "max_abs": 0.0,
+      "max_rel": 0.0,
+      "tol_abs": 5e-07,
+      "tol_rel": 1e-06,
+      "worst_index": [],
+      "candidate_at_worst": 0.0,
+      "reference_at_worst": 0.0
+    },
+    {
+      "case": "bmj_case_4",
+      "field": "PRATEC",
+      "pass": true,
+      "max_abs": 0.0,
+      "max_rel": 0.0,
+      "tol_abs": 5e-09,
+      "tol_rel": 1e-06,
+      "worst_index": [],
+      "candidate_at_worst": 0.0,
+      "reference_at_worst": 0.0
+    },
+    {
+      "case": "bmj_case_4",
+      "field": "CUTOP",
+      "pass": true,
+      "max_abs": 0.0,
+      "max_rel": 0.0,
+      "tol_abs": 0.0,
+      "tol_rel": 0.0,
+      "worst_index": [],
+      "candidate_at_worst": 1.0,
+      "reference_at_worst": 1.0
+    },
+    {
+      "case": "bmj_case_4",
+      "field": "CUBOT",
+      "pass": true,
+      "max_abs": 0.0,
+      "max_rel": 0.0,
+      "tol_abs": 0.0,
+      "tol_rel": 0.0,
+      "worst_index": [],
+      "candidate_at_worst": 41.0,
+      "reference_at_worst": 41.0
+    },
+    {
+      "case": "bmj_case_4",
+      "field": "CLDEFI",
+      "pass": true,
+      "max_abs": 0.0,
+      "max_rel": 0.0,
+      "tol_abs": 5e-07,
+      "tol_rel": 0.0,
+      "worst_index": [],
+      "candidate_at_worst": 1.0,
+      "reference_at_worst": 1.0
+    },
+    {
+      "case": "bmj_case_5",
+      "field": "RTHCUTEN",
+      "pass": false,
+      "max_abs": 0.0006047705479524338,
+      "max_rel": 6.047705479524338e+296,
+      "tol_abs": 5e-08,
+      "tol_rel": 1e-06,
+      "worst_index": [
+        2
+      ],
+      "candidate_at_worst": 0.0006047705479524338,
+      "reference_at_worst": 0.0
+    },
+    {
+      "case": "bmj_case_5",
+      "field": "RQVCUTEN",
+      "pass": false,
+      "max_abs": 8.083830299827696e-08,
+      "max_rel": 8.083830299827696e+292,
+      "tol_abs": 5e-10,
+      "tol_rel": 1e-06,
+      "worst_index": [
+        1
+      ],
+      "candidate_at_worst": -8.083830299827696e-08,
+      "reference_at_worst": 0.0
+    },
+    {
+      "case": "bmj_case_5",
+      "field": "RAINCV",
+      "pass": true,
+      "max_abs": 0.0,
+      "max_rel": 0.0,
+      "tol_abs": 5e-07,
+      "tol_rel": 1e-06,
+      "worst_index": [],
+      "candidate_at_worst": 0.0,
+      "reference_at_worst": 0.0
+    },
+    {
+      "case": "bmj_case_5",
+      "field": "PRATEC",
+      "pass": true,
+      "max_abs": 0.0,
+      "max_rel": 0.0,
+      "tol_abs": 5e-09,
+      "tol_rel": 1e-06,
+      "worst_index": [],
+      "candidate_at_worst": 0.0,
+      "reference_at_worst": 0.0
+    },
+    {
+      "case": "bmj_case_5",
+      "field": "CUTOP",
+      "pass": false,
+      "max_abs": 13.0,
+      "max_rel": 13.0,
+      "tol_abs": 0.0,
+      "tol_rel": 0.0,
+      "worst_index": [],
+      "candidate_at_worst": 14.0,
+      "reference_at_worst": 1.0
+    },
+    {
+      "case": "bmj_case_5",
+      "field": "CUBOT",
+      "pass": false,
+      "max_abs": 39.0,
+      "max_rel": 0.9512195121951219,
+      "tol_abs": 0.0,
+      "tol_rel": 0.0,
+      "worst_index": [],
+      "candidate_at_worst": 2.0,
+      "reference_at_worst": 41.0
+    },
+    {
+      "case": "bmj_case_5",
+      "field": "CLDEFI",
+      "pass": true,
+      "max_abs": 0.0,
+      "max_rel": 0.0,
+      "tol_abs": 5e-07,
+      "tol_rel": 0.0,
+      "worst_index": [],
+      "candidate_at_worst": 1.0,
+      "reference_at_worst": 1.0
+    }
+  ],
+  "regime_residuals": [
+    {
+      "case": "bmj_case_1",
+      "pass": true,
+      "candidate": "deep",
+      "reference": "deep"
+    },
+    {
+      "case": "bmj_case_2",
+      "pass": false,
+      "candidate": "deep",
+      "reference": "shallow"
+    },
+    {
+      "case": "bmj_case_3",
+      "pass": true,
+      "candidate": "deep",
+      "reference": "deep"
+    },
+    {
+      "case": "bmj_case_4",
+      "pass": true,
+      "candidate": "nonconvective",
+      "reference": "nonconvective"
+    },
+    {
+      "case": "bmj_case_5",
+      "pass": false,
+      "candidate": "shallow",
+      "reference": "nonconvective"
+    }
+  ],
+  "worst_abs_residual": {
+    "field": "RAINCV",
+    "case": "bmj_case_3",
+    "max_abs": 1534.0692841430186,
+    "max_rel": 7754.498657034572,
+    "candidate_at_worst": 1534.2671137322664,
+    "reference_at_worst": 0.1978295892477036,
+    "worst_index": []
+  },
+  "notes": [
+    "PASS requires all field residuals within the predeclared abs+rel tolerances and exact regime classification.",
+    "This proof compares JAX BMJ against pristine WRF savepoints only; it is not a JAX-vs-JAX self-compare."
+  ]
+}
