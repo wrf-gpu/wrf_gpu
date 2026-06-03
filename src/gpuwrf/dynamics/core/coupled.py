@@ -75,6 +75,9 @@ class CoupledCoreConfig:
     theta_base_offset: float = 300.0
     pressure_base_offset: float = 90000.0
     boundary_config: BoundaryConfig | None = None
+    periodic_x: bool = True
+    specified: bool = False
+    nested: bool = False
 
     def dycore_config(self) -> DycoreCoreConfig:
         return DycoreCoreConfig(
@@ -87,6 +90,9 @@ class CoupledCoreConfig:
             top_lid=bool(self.top_lid),
             physics_enabled=False,
             boundary_enabled=False,
+            periodic_x=bool(self.periodic_x),
+            specified=bool(self.specified),
+            nested=bool(self.nested),
         )
 
 

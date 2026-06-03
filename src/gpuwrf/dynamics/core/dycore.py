@@ -43,6 +43,9 @@ class DycoreCoreConfig:
     top_lid: bool = False
     physics_enabled: bool = False
     boundary_enabled: bool = False
+    periodic_x: bool = True
+    specified: bool = False
+    nested: bool = False
 
     def acoustic_config(self) -> AcousticCoreConfig:
         return AcousticCoreConfig(
@@ -51,6 +54,9 @@ class DycoreCoreConfig:
             dy=float(self.dy),
             epssm=float(self.epssm),
             top_lid=bool(self.top_lid),
+            periodic_x=bool(self.periodic_x),
+            specified=bool(self.specified),
+            nested=bool(self.nested),
         )
 
 

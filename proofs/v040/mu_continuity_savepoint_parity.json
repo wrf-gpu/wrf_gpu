@@ -1,0 +1,2841 @@
+{
+  "schema": "v0.4.0-mu-continuity-savepoint-parity-2026-06-03",
+  "created_utc": "2026-06-03T09:58:22.447930+00:00",
+  "case": {
+    "source_path": "/mnt/data/canairy_meteo/runs/wrf_l3/20260429_18z_l3_24h_20260524T204451Z/wrfinput_d01",
+    "source_sha256": "449d6c3af25865c5dce93e5ec96c22cd05400d9cb3582224223984c1ae4f2028",
+    "nx": 93,
+    "ny": 59,
+    "nz": 44,
+    "dx": 9000.0,
+    "dy": 9000.0,
+    "dt": 18.0,
+    "epssm": 0.5,
+    "title": " OUTPUT FROM REAL_EM V4.7.1 PREPROCESSOR",
+    "fixture_note": "Real Canary d01 specified-BC wrfinput fields; u_1/v_1 save-increment velocity arrays are zeroed because this is not a post-advance_uv WRF savepoint and raw wrfinput winds in both u and u_1 create a nonphysical theta amplification in the RWORDSIZE=4 linked-object check.",
+    "bc_type": {
+      "periodic_x": false,
+      "specified": true,
+      "nested": false
+    },
+    "active_bounds_python": {
+      "y": [
+        1,
+        58
+      ],
+      "x": [
+        1,
+        92
+      ]
+    },
+    "wrf_source_bounds": "module_small_step_em.F:1048-1063; DMDT/MU update:1092-1107; theta flux:1138-1171"
+  },
+  "wrf_provenance": {
+    "wrf_root": "/home/enric/src/wrf_pristine/WRF",
+    "wrf_git_head": "f52c197ed39d12e087d02c50f412d90d418f6186",
+    "module_small_step_em_F_sha256": "cabf1a177d50fb0096db79644af20cfe6d75217dbe63ab406a7e29bb54c17634",
+    "module_small_step_em_o_sha256": "285722ae513bba55d0cde9f7c4490282a2ca804edf2a51c619a35ca7b54cf43f",
+    "configure_wrf_sha256": "c1bd80d6d4db6c703a7af29479c75e8e6d2d9acda79c6fb928585c858f4c8aba",
+    "rwordsize": 4,
+    "unmodified_source_check": {
+      "module_small_step_em_git_diff_empty": true,
+      "note": "Only module_small_step_em.F is asserted clean; the WRF worktree has unrelated dirt in other files."
+    },
+    "linked_driver": "/tmp/v040_mu_continuity_wrf_oracle/wrf_advance_mu_t_driver",
+    "linked_driver_source": "/home/enric/src/wrf_gpu2/.claude/worktrees/v040-mu-fix/proofs/v040/wrf_advance_mu_t_driver.F90"
+  },
+  "predeclared_tolerances": {
+    "source_formula_fp64": {
+      "abs": 1e-08,
+      "rel": 1e-12
+    },
+    "linked_wrf_object_rword4": {
+      "abs": 0.025,
+      "rel": 2.5e-06
+    },
+    "note": "The linked WRF oracle is the real unmodified WRF object but was built with RWORDSIZE=4. The fp64 machine-precision gate is therefore the independent WRF-source formula oracle; the linked-object gate protects ABI/source fidelity at compiled WRF precision."
+  },
+  "source_formula_fp64": {
+    "oracle": "independent NumPy transcription of WRF module_small_step_em.F:1048-1171",
+    "candidate": "gpuwrf.dynamics.mu_t_advance.advance_mu_t_wrf, specified=True, periodic_x=False, JAX fp64 CPU",
+    "pass": true,
+    "substeps": [
+      {
+        "substep": 1,
+        "pass": true,
+        "fields": {
+          "mu": {
+            "pass": true,
+            "regions": {
+              "interior": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1.1152742243260323e-08,
+                "pass": true
+              },
+              "west_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1.109253125e-08,
+                "pass": true
+              },
+              "east_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1.114609375e-08,
+                "pass": true
+              },
+              "south_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1.1072039062500001e-08,
+                "pass": true
+              },
+              "north_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1.11549609375e-08,
+                "pass": true
+              }
+            }
+          },
+          "mudf": {
+            "pass": true,
+            "regions": {
+              "interior": {
+                "max_abs": 2.710505431213761e-20,
+                "mean_abs": 8.696680661639883e-22,
+                "mean_signed": -1.9518400596262823e-23,
+                "allowed": 1.0000000087780855e-08,
+                "pass": true
+              },
+              "west_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1e-08,
+                "pass": true
+              },
+              "east_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1e-08,
+                "pass": true
+              },
+              "south_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1e-08,
+                "pass": true
+              },
+              "north_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1e-08,
+                "pass": true
+              }
+            }
+          },
+          "muts": {
+            "pass": true,
+            "regions": {
+              "interior": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1.0616713266731482e-07,
+                "pass": true
+              },
+              "west_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1.0609253124999999e-07,
+                "pass": true
+              },
+              "east_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1.0614609375e-07,
+                "pass": true
+              },
+              "south_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1.060720390625e-07,
+                "pass": true
+              },
+              "north_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1.061549609375e-07,
+                "pass": true
+              }
+            }
+          },
+          "muave": {
+            "pass": true,
+            "regions": {
+              "interior": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1.1152742229320242e-08,
+                "pass": true
+              },
+              "west_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1.109253125e-08,
+                "pass": true
+              },
+              "east_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1.114609375e-08,
+                "pass": true
+              },
+              "south_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1.1072039062500001e-08,
+                "pass": true
+              },
+              "north_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1.11549609375e-08,
+                "pass": true
+              }
+            }
+          },
+          "ww": {
+            "pass": true,
+            "regions": {
+              "interior": {
+                "max_abs": 2.583450489125616e-20,
+                "mean_abs": 5.842682237829715e-22,
+                "mean_signed": -6.866322577075898e-24,
+                "allowed": 1.0000000036656845e-08,
+                "pass": true
+              },
+              "west_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1e-08,
+                "pass": true
+              },
+              "east_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1e-08,
+                "pass": true
+              },
+              "south_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1e-08,
+                "pass": true
+              },
+              "north_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1e-08,
+                "pass": true
+              }
+            }
+          },
+          "theta": {
+            "pass": true,
+            "regions": {
+              "interior": {
+                "max_abs": 2.842170943040401e-14,
+                "mean_abs": 2.1106161430526763e-17,
+                "mean_signed": 1.2201317134823638e-18,
+                "allowed": 1.019769136763629e-08,
+                "pass": true
+              },
+              "west_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1.0197981781005859e-08,
+                "pass": true
+              },
+              "east_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1.0196632354736328e-08,
+                "pass": true
+              },
+              "south_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1.0191245208740234e-08,
+                "pass": true
+              },
+              "north_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1.0197981781005859e-08,
+                "pass": true
+              }
+            }
+          },
+          "dmdt": {
+            "pass": true,
+            "regions": {
+              "interior": {
+                "max_abs": 2.710505431213761e-20,
+                "mean_abs": 8.696680661639883e-22,
+                "mean_signed": -1.9518400596262823e-23,
+                "allowed": 1.0000000087780855e-08,
+                "pass": true
+              },
+              "west_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1e-08,
+                "pass": true
+              },
+              "east_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1e-08,
+                "pass": true
+              },
+              "south_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1e-08,
+                "pass": true
+              },
+              "north_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1e-08,
+                "pass": true
+              }
+            }
+          },
+          "dvdxi": {
+            "pass": true,
+            "regions": {
+              "interior": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1.0000000405241629e-08,
+                "pass": true
+              },
+              "west_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1e-08,
+                "pass": true
+              },
+              "east_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1e-08,
+                "pass": true
+              },
+              "south_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1e-08,
+                "pass": true
+              },
+              "north_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1e-08,
+                "pass": true
+              }
+            }
+          },
+          "wdtn": {
+            "pass": true,
+            "regions": {
+              "interior": {
+                "max_abs": 4.807759008615409e-18,
+                "mean_abs": 3.8945572542619223e-20,
+                "mean_signed": -3.8827681745123726e-22,
+                "allowed": 1.0000000380203861e-08,
+                "pass": true
+              },
+              "west_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1e-08,
+                "pass": true
+              },
+              "east_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1e-08,
+                "pass": true
+              },
+              "south_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1e-08,
+                "pass": true
+              },
+              "north_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1e-08,
+                "pass": true
+              }
+            }
+          },
+          "theta_tendency": {
+            "pass": true,
+            "regions": {
+              "interior": {
+                "max_abs": 1.0139458717084437e-15,
+                "mean_abs": 1.1665641417437206e-18,
+                "mean_signed": -4.053992625071609e-21,
+                "allowed": 1.0000002730386378e-08,
+                "pass": true
+              },
+              "west_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1e-08,
+                "pass": true
+              },
+              "east_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1e-08,
+                "pass": true
+              },
+              "south_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1e-08,
+                "pass": true
+              },
+              "north_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1e-08,
+                "pass": true
+              }
+            }
+          }
+        }
+      },
+      {
+        "substep": 2,
+        "pass": true,
+        "fields": {
+          "mu": {
+            "pass": true,
+            "regions": {
+              "interior": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1.1152742299020644e-08,
+                "pass": true
+              },
+              "west_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1.109253125e-08,
+                "pass": true
+              },
+              "east_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1.114609375e-08,
+                "pass": true
+              },
+              "south_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1.1072039062500001e-08,
+                "pass": true
+              },
+              "north_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1.11549609375e-08,
+                "pass": true
+              }
+            }
+          },
+          "mudf": {
+            "pass": true,
+            "regions": {
+              "interior": {
+                "max_abs": 2.710505431213761e-20,
+                "mean_abs": 8.696680661639883e-22,
+                "mean_signed": -1.9518400596262823e-23,
+                "allowed": 1.0000000087780855e-08,
+                "pass": true
+              },
+              "west_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1e-08,
+                "pass": true
+              },
+              "east_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1e-08,
+                "pass": true
+              },
+              "south_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1e-08,
+                "pass": true
+              },
+              "north_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1e-08,
+                "pass": true
+              }
+            }
+          },
+          "muts": {
+            "pass": true,
+            "regions": {
+              "interior": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1.0616713252212965e-07,
+                "pass": true
+              },
+              "west_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1.0609253124999999e-07,
+                "pass": true
+              },
+              "east_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1.0614609375e-07,
+                "pass": true
+              },
+              "south_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1.060720390625e-07,
+                "pass": true
+              },
+              "north_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1.061549609375e-07,
+                "pass": true
+              }
+            }
+          },
+          "muave": {
+            "pass": true,
+            "regions": {
+              "interior": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1.1152742285080561e-08,
+                "pass": true
+              },
+              "west_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1.109253125e-08,
+                "pass": true
+              },
+              "east_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1.114609375e-08,
+                "pass": true
+              },
+              "south_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1.1072039062500001e-08,
+                "pass": true
+              },
+              "north_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1.11549609375e-08,
+                "pass": true
+              }
+            }
+          },
+          "ww": {
+            "pass": true,
+            "regions": {
+              "interior": {
+                "max_abs": 2.583450489125616e-20,
+                "mean_abs": 5.842682237829715e-22,
+                "mean_signed": -6.866322577075898e-24,
+                "allowed": 1.0000000036656845e-08,
+                "pass": true
+              },
+              "west_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1e-08,
+                "pass": true
+              },
+              "east_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1e-08,
+                "pass": true
+              },
+              "south_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1e-08,
+                "pass": true
+              },
+              "north_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1e-08,
+                "pass": true
+              }
+            }
+          },
+          "theta": {
+            "pass": true,
+            "regions": {
+              "interior": {
+                "max_abs": 5.684341886080802e-14,
+                "mean_abs": 4.2204534379965365e-17,
+                "mean_signed": 2.4324682951455317e-18,
+                "allowed": 1.0197690688153439e-08,
+                "pass": true
+              },
+              "west_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1.0197981781005859e-08,
+                "pass": true
+              },
+              "east_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1.0196632354736328e-08,
+                "pass": true
+              },
+              "south_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1.0191245208740234e-08,
+                "pass": true
+              },
+              "north_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1.0197981781005859e-08,
+                "pass": true
+              }
+            }
+          },
+          "dmdt": {
+            "pass": true,
+            "regions": {
+              "interior": {
+                "max_abs": 2.710505431213761e-20,
+                "mean_abs": 8.696680661639883e-22,
+                "mean_signed": -1.9518400596262823e-23,
+                "allowed": 1.0000000087780855e-08,
+                "pass": true
+              },
+              "west_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1e-08,
+                "pass": true
+              },
+              "east_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1e-08,
+                "pass": true
+              },
+              "south_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1e-08,
+                "pass": true
+              },
+              "north_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1e-08,
+                "pass": true
+              }
+            }
+          },
+          "dvdxi": {
+            "pass": true,
+            "regions": {
+              "interior": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1.0000000405241629e-08,
+                "pass": true
+              },
+              "west_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1e-08,
+                "pass": true
+              },
+              "east_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1e-08,
+                "pass": true
+              },
+              "south_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1e-08,
+                "pass": true
+              },
+              "north_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1e-08,
+                "pass": true
+              }
+            }
+          },
+          "wdtn": {
+            "pass": true,
+            "regions": {
+              "interior": {
+                "max_abs": 4.807759008615409e-18,
+                "mean_abs": 3.8945572542619223e-20,
+                "mean_signed": -3.8827681745123726e-22,
+                "allowed": 1.0000000380203861e-08,
+                "pass": true
+              },
+              "west_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1e-08,
+                "pass": true
+              },
+              "east_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1e-08,
+                "pass": true
+              },
+              "south_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1e-08,
+                "pass": true
+              },
+              "north_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1e-08,
+                "pass": true
+              }
+            }
+          },
+          "theta_tendency": {
+            "pass": true,
+            "regions": {
+              "interior": {
+                "max_abs": 1.0139458717084437e-15,
+                "mean_abs": 1.1665641417437206e-18,
+                "mean_signed": -4.053992625071609e-21,
+                "allowed": 1.0000002730386378e-08,
+                "pass": true
+              },
+              "west_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1e-08,
+                "pass": true
+              },
+              "east_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1e-08,
+                "pass": true
+              },
+              "south_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1e-08,
+                "pass": true
+              },
+              "north_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1e-08,
+                "pass": true
+              }
+            }
+          }
+        }
+      },
+      {
+        "substep": 3,
+        "pass": true,
+        "fields": {
+          "mu": {
+            "pass": true,
+            "regions": {
+              "interior": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1.1152742354780967e-08,
+                "pass": true
+              },
+              "west_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1.109253125e-08,
+                "pass": true
+              },
+              "east_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1.114609375e-08,
+                "pass": true
+              },
+              "south_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1.1072039062500001e-08,
+                "pass": true
+              },
+              "north_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1.11549609375e-08,
+                "pass": true
+              }
+            }
+          },
+          "mudf": {
+            "pass": true,
+            "regions": {
+              "interior": {
+                "max_abs": 2.710505431213761e-20,
+                "mean_abs": 8.696680661639883e-22,
+                "mean_signed": -1.9518400596262823e-23,
+                "allowed": 1.0000000087780855e-08,
+                "pass": true
+              },
+              "west_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1e-08,
+                "pass": true
+              },
+              "east_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1e-08,
+                "pass": true
+              },
+              "south_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1e-08,
+                "pass": true
+              },
+              "north_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1e-08,
+                "pass": true
+              }
+            }
+          },
+          "muts": {
+            "pass": true,
+            "regions": {
+              "interior": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1.0616713237694449e-07,
+                "pass": true
+              },
+              "west_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1.0609253124999999e-07,
+                "pass": true
+              },
+              "east_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1.0614609375e-07,
+                "pass": true
+              },
+              "south_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1.060720390625e-07,
+                "pass": true
+              },
+              "north_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1.061549609375e-07,
+                "pass": true
+              }
+            }
+          },
+          "muave": {
+            "pass": true,
+            "regions": {
+              "interior": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1.1152742340840881e-08,
+                "pass": true
+              },
+              "west_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1.109253125e-08,
+                "pass": true
+              },
+              "east_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1.114609375e-08,
+                "pass": true
+              },
+              "south_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1.1072039062500001e-08,
+                "pass": true
+              },
+              "north_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1.11549609375e-08,
+                "pass": true
+              }
+            }
+          },
+          "ww": {
+            "pass": true,
+            "regions": {
+              "interior": {
+                "max_abs": 2.583450489125616e-20,
+                "mean_abs": 5.842682237829715e-22,
+                "mean_signed": -6.866322577075898e-24,
+                "allowed": 1.0000000036656845e-08,
+                "pass": true
+              },
+              "west_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1e-08,
+                "pass": true
+              },
+              "east_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1e-08,
+                "pass": true
+              },
+              "south_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1e-08,
+                "pass": true
+              },
+              "north_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1e-08,
+                "pass": true
+              }
+            }
+          },
+          "theta": {
+            "pass": true,
+            "regions": {
+              "interior": {
+                "max_abs": 8.526512829121202e-14,
+                "mean_abs": 6.330299093859406e-17,
+                "mean_signed": 3.6448922864165204e-18,
+                "allowed": 1.0197690008670587e-08,
+                "pass": true
+              },
+              "west_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1.0197981781005859e-08,
+                "pass": true
+              },
+              "east_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1.0196632354736328e-08,
+                "pass": true
+              },
+              "south_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1.0191245208740234e-08,
+                "pass": true
+              },
+              "north_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1.0197981781005859e-08,
+                "pass": true
+              }
+            }
+          },
+          "dmdt": {
+            "pass": true,
+            "regions": {
+              "interior": {
+                "max_abs": 2.710505431213761e-20,
+                "mean_abs": 8.696680661639883e-22,
+                "mean_signed": -1.9518400596262823e-23,
+                "allowed": 1.0000000087780855e-08,
+                "pass": true
+              },
+              "west_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1e-08,
+                "pass": true
+              },
+              "east_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1e-08,
+                "pass": true
+              },
+              "south_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1e-08,
+                "pass": true
+              },
+              "north_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1e-08,
+                "pass": true
+              }
+            }
+          },
+          "dvdxi": {
+            "pass": true,
+            "regions": {
+              "interior": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1.0000000405241629e-08,
+                "pass": true
+              },
+              "west_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1e-08,
+                "pass": true
+              },
+              "east_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1e-08,
+                "pass": true
+              },
+              "south_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1e-08,
+                "pass": true
+              },
+              "north_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1e-08,
+                "pass": true
+              }
+            }
+          },
+          "wdtn": {
+            "pass": true,
+            "regions": {
+              "interior": {
+                "max_abs": 4.807759008615409e-18,
+                "mean_abs": 3.8945572542619223e-20,
+                "mean_signed": -3.8827681745123726e-22,
+                "allowed": 1.0000000380203861e-08,
+                "pass": true
+              },
+              "west_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1e-08,
+                "pass": true
+              },
+              "east_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1e-08,
+                "pass": true
+              },
+              "south_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1e-08,
+                "pass": true
+              },
+              "north_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1e-08,
+                "pass": true
+              }
+            }
+          },
+          "theta_tendency": {
+            "pass": true,
+            "regions": {
+              "interior": {
+                "max_abs": 1.0139458717084437e-15,
+                "mean_abs": 1.1665641417437206e-18,
+                "mean_signed": -4.053992625071609e-21,
+                "allowed": 1.0000002730386378e-08,
+                "pass": true
+              },
+              "west_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1e-08,
+                "pass": true
+              },
+              "east_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1e-08,
+                "pass": true
+              },
+              "south_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1e-08,
+                "pass": true
+              },
+              "north_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1e-08,
+                "pass": true
+              }
+            }
+          }
+        }
+      },
+      {
+        "substep": 4,
+        "pass": true,
+        "fields": {
+          "mu": {
+            "pass": true,
+            "regions": {
+              "interior": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1.115274241054129e-08,
+                "pass": true
+              },
+              "west_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1.109253125e-08,
+                "pass": true
+              },
+              "east_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1.114609375e-08,
+                "pass": true
+              },
+              "south_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1.1072039062500001e-08,
+                "pass": true
+              },
+              "north_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1.11549609375e-08,
+                "pass": true
+              }
+            }
+          },
+          "mudf": {
+            "pass": true,
+            "regions": {
+              "interior": {
+                "max_abs": 2.710505431213761e-20,
+                "mean_abs": 8.696680661639883e-22,
+                "mean_signed": -1.9518400596262823e-23,
+                "allowed": 1.0000000087780855e-08,
+                "pass": true
+              },
+              "west_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1e-08,
+                "pass": true
+              },
+              "east_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1e-08,
+                "pass": true
+              },
+              "south_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1e-08,
+                "pass": true
+              },
+              "north_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1e-08,
+                "pass": true
+              }
+            }
+          },
+          "muts": {
+            "pass": true,
+            "regions": {
+              "interior": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1.0616713223175931e-07,
+                "pass": true
+              },
+              "west_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1.0609253124999999e-07,
+                "pass": true
+              },
+              "east_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1.0614609375e-07,
+                "pass": true
+              },
+              "south_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1.060720390625e-07,
+                "pass": true
+              },
+              "north_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1.061549609375e-07,
+                "pass": true
+              }
+            }
+          },
+          "muave": {
+            "pass": true,
+            "regions": {
+              "interior": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1.1152742396601202e-08,
+                "pass": true
+              },
+              "west_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1.109253125e-08,
+                "pass": true
+              },
+              "east_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1.114609375e-08,
+                "pass": true
+              },
+              "south_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1.1072039062500001e-08,
+                "pass": true
+              },
+              "north_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1.11549609375e-08,
+                "pass": true
+              }
+            }
+          },
+          "ww": {
+            "pass": true,
+            "regions": {
+              "interior": {
+                "max_abs": 2.583450489125616e-20,
+                "mean_abs": 5.842682237829715e-22,
+                "mean_signed": -6.866322577075898e-24,
+                "allowed": 1.0000000036656845e-08,
+                "pass": true
+              },
+              "west_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1e-08,
+                "pass": true
+              },
+              "east_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1e-08,
+                "pass": true
+              },
+              "south_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1e-08,
+                "pass": true
+              },
+              "north_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1e-08,
+                "pass": true
+              }
+            }
+          },
+          "theta": {
+            "pass": true,
+            "regions": {
+              "interior": {
+                "max_abs": 1.1368683772161603e-13,
+                "mean_abs": 8.440055344895144e-17,
+                "mean_signed": 4.858231228256329e-18,
+                "allowed": 1.0197689329187736e-08,
+                "pass": true
+              },
+              "west_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1.0197981781005859e-08,
+                "pass": true
+              },
+              "east_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1.0196632354736328e-08,
+                "pass": true
+              },
+              "south_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1.0191245208740234e-08,
+                "pass": true
+              },
+              "north_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1.0197981781005859e-08,
+                "pass": true
+              }
+            }
+          },
+          "dmdt": {
+            "pass": true,
+            "regions": {
+              "interior": {
+                "max_abs": 2.710505431213761e-20,
+                "mean_abs": 8.696680661639883e-22,
+                "mean_signed": -1.9518400596262823e-23,
+                "allowed": 1.0000000087780855e-08,
+                "pass": true
+              },
+              "west_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1e-08,
+                "pass": true
+              },
+              "east_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1e-08,
+                "pass": true
+              },
+              "south_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1e-08,
+                "pass": true
+              },
+              "north_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1e-08,
+                "pass": true
+              }
+            }
+          },
+          "dvdxi": {
+            "pass": true,
+            "regions": {
+              "interior": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1.0000000405241629e-08,
+                "pass": true
+              },
+              "west_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1e-08,
+                "pass": true
+              },
+              "east_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1e-08,
+                "pass": true
+              },
+              "south_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1e-08,
+                "pass": true
+              },
+              "north_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1e-08,
+                "pass": true
+              }
+            }
+          },
+          "wdtn": {
+            "pass": true,
+            "regions": {
+              "interior": {
+                "max_abs": 4.807759008615409e-18,
+                "mean_abs": 3.8945572542619223e-20,
+                "mean_signed": -3.8827681745123726e-22,
+                "allowed": 1.0000000380203861e-08,
+                "pass": true
+              },
+              "west_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1e-08,
+                "pass": true
+              },
+              "east_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1e-08,
+                "pass": true
+              },
+              "south_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1e-08,
+                "pass": true
+              },
+              "north_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1e-08,
+                "pass": true
+              }
+            }
+          },
+          "theta_tendency": {
+            "pass": true,
+            "regions": {
+              "interior": {
+                "max_abs": 1.0139458717084437e-15,
+                "mean_abs": 1.1665641417437206e-18,
+                "mean_signed": -4.053992625071609e-21,
+                "allowed": 1.0000002730386378e-08,
+                "pass": true
+              },
+              "west_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1e-08,
+                "pass": true
+              },
+              "east_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1e-08,
+                "pass": true
+              },
+              "south_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1e-08,
+                "pass": true
+              },
+              "north_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 1e-08,
+                "pass": true
+              }
+            }
+          }
+        }
+      }
+    ]
+  },
+  "linked_wrf_object": {
+    "oracle": "standalone driver linked to unmodified WRF module_small_step_em.o advance_mu_t",
+    "candidate": "same JAX kernel with float32-rounded inputs to match WRF RWORDSIZE=4",
+    "pass": true,
+    "substeps": [
+      {
+        "substep": 1,
+        "pass": true,
+        "fields": {
+          "mu": {
+            "pass": true,
+            "regions": {
+              "interior": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.02788185546875,
+                "pass": true
+              },
+              "west_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.027731328125000003,
+                "pass": true
+              },
+              "east_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.027865234375000002,
+                "pass": true
+              },
+              "south_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.027680097656250003,
+                "pass": true
+              },
+              "north_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.027887402343750003,
+                "pass": true
+              }
+            }
+          },
+          "mudf": {
+            "pass": true,
+            "regions": {
+              "interior": {
+                "max_abs": 1.4551915228366852e-11,
+                "mean_abs": 4.702071690474523e-13,
+                "mean_signed": -1.2827988141556695e-14,
+                "allowed": 0.025000000219452125,
+                "pass": true
+              },
+              "west_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.025,
+                "pass": true
+              },
+              "east_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.025,
+                "pass": true
+              },
+              "south_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.025,
+                "pass": true
+              },
+              "north_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.025,
+                "pass": true
+              }
+            }
+          },
+          "muts": {
+            "pass": true,
+            "regions": {
+              "interior": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.26541783203125,
+                "pass": true
+              },
+              "west_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.26523132812500005,
+                "pass": true
+              },
+              "east_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.26536523437500004,
+                "pass": true
+              },
+              "south_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.26518009765625,
+                "pass": true
+              },
+              "north_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.26538740234375,
+                "pass": true
+              }
+            }
+          },
+          "muave": {
+            "pass": true,
+            "regions": {
+              "interior": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.02788185546875,
+                "pass": true
+              },
+              "west_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.027731328125000003,
+                "pass": true
+              },
+              "east_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.027865234375000002,
+                "pass": true
+              },
+              "south_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.027680097656250003,
+                "pass": true
+              },
+              "north_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.027887402343750003,
+                "pass": true
+              }
+            }
+          },
+          "ww": {
+            "pass": true,
+            "regions": {
+              "interior": {
+                "max_abs": 1.4949819160392508e-11,
+                "mean_abs": 3.150094553212824e-13,
+                "mean_signed": -9.797457926198169e-15,
+                "allowed": 0.025000000091642115,
+                "pass": true
+              },
+              "west_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.025,
+                "pass": true
+              },
+              "east_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.025,
+                "pass": true
+              },
+              "south_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.025,
+                "pass": true
+              },
+              "north_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.025,
+                "pass": true
+              }
+            }
+          },
+          "theta": {
+            "pass": true,
+            "regions": {
+              "interior": {
+                "max_abs": 1.52587890625e-05,
+                "mean_abs": 9.926500588323535e-09,
+                "mean_signed": 5.378028973700682e-10,
+                "allowed": 0.025494228401184083,
+                "pass": true
+              },
+              "west_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.02549495445251465,
+                "pass": true
+              },
+              "east_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.025491580886840823,
+                "pass": true
+              },
+              "south_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.025478113021850587,
+                "pass": true
+              },
+              "north_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.02549495445251465,
+                "pass": true
+              }
+            }
+          },
+          "dmdt": {
+            "pass": true,
+            "regions": {
+              "interior": {
+                "max_abs": 1.4551915228366852e-11,
+                "mean_abs": 4.702071690474523e-13,
+                "mean_signed": -1.2827988141556695e-14,
+                "allowed": 0.025000000219452125,
+                "pass": true
+              },
+              "west_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.025,
+                "pass": true
+              },
+              "east_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.025,
+                "pass": true
+              },
+              "south_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.025,
+                "pass": true
+              },
+              "north_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.025,
+                "pass": true
+              }
+            }
+          }
+        }
+      },
+      {
+        "substep": 2,
+        "pass": true,
+        "fields": {
+          "mu": {
+            "pass": true,
+            "regions": {
+              "interior": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.02788185546875,
+                "pass": true
+              },
+              "west_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.027731328125000003,
+                "pass": true
+              },
+              "east_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.027865234375000002,
+                "pass": true
+              },
+              "south_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.027680097656250003,
+                "pass": true
+              },
+              "north_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.027887402343750003,
+                "pass": true
+              }
+            }
+          },
+          "mudf": {
+            "pass": true,
+            "regions": {
+              "interior": {
+                "max_abs": 1.4551915228366852e-11,
+                "mean_abs": 4.702071690474523e-13,
+                "mean_signed": -1.2827988141556695e-14,
+                "allowed": 0.025000000219452125,
+                "pass": true
+              },
+              "west_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.025,
+                "pass": true
+              },
+              "east_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.025,
+                "pass": true
+              },
+              "south_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.025,
+                "pass": true
+              },
+              "north_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.025,
+                "pass": true
+              }
+            }
+          },
+          "muts": {
+            "pass": true,
+            "regions": {
+              "interior": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.26541783203125,
+                "pass": true
+              },
+              "west_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.26523132812500005,
+                "pass": true
+              },
+              "east_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.26536523437500004,
+                "pass": true
+              },
+              "south_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.26518009765625,
+                "pass": true
+              },
+              "north_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.26538740234375,
+                "pass": true
+              }
+            }
+          },
+          "muave": {
+            "pass": true,
+            "regions": {
+              "interior": {
+                "max_abs": 0.0015869140625,
+                "mean_abs": 7.293154008820128e-05,
+                "mean_signed": 2.353389483323694e-06,
+                "allowed": 0.02788185546875,
+                "pass": true
+              },
+              "west_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.027731328125000003,
+                "pass": true
+              },
+              "east_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.027865234375000002,
+                "pass": true
+              },
+              "south_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.027680097656250003,
+                "pass": true
+              },
+              "north_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.027887402343750003,
+                "pass": true
+              }
+            }
+          },
+          "ww": {
+            "pass": true,
+            "regions": {
+              "interior": {
+                "max_abs": 1.4949819160392508e-11,
+                "mean_abs": 3.150094553212824e-13,
+                "mean_signed": -9.797457926198169e-15,
+                "allowed": 0.025000000091642115,
+                "pass": true
+              },
+              "west_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.025,
+                "pass": true
+              },
+              "east_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.025,
+                "pass": true
+              },
+              "south_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.025,
+                "pass": true
+              },
+              "north_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.025,
+                "pass": true
+              }
+            }
+          },
+          "theta": {
+            "pass": true,
+            "regions": {
+              "interior": {
+                "max_abs": 3.0517578125e-05,
+                "mean_abs": 1.985299786110475e-08,
+                "mean_signed": 1.0756744009619222e-09,
+                "allowed": 0.025494226684570315,
+                "pass": true
+              },
+              "west_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.02549495445251465,
+                "pass": true
+              },
+              "east_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.025491580886840823,
+                "pass": true
+              },
+              "south_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.025478113021850587,
+                "pass": true
+              },
+              "north_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.02549495445251465,
+                "pass": true
+              }
+            }
+          },
+          "dmdt": {
+            "pass": true,
+            "regions": {
+              "interior": {
+                "max_abs": 1.4551915228366852e-11,
+                "mean_abs": 4.702071690474523e-13,
+                "mean_signed": -1.2827988141556695e-14,
+                "allowed": 0.025000000219452125,
+                "pass": true
+              },
+              "west_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.025,
+                "pass": true
+              },
+              "east_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.025,
+                "pass": true
+              },
+              "south_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.025,
+                "pass": true
+              },
+              "north_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.025,
+                "pass": true
+              }
+            }
+          }
+        }
+      },
+      {
+        "substep": 3,
+        "pass": true,
+        "fields": {
+          "mu": {
+            "pass": true,
+            "regions": {
+              "interior": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.02788185546875,
+                "pass": true
+              },
+              "west_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.027731328125000003,
+                "pass": true
+              },
+              "east_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.027865234375000002,
+                "pass": true
+              },
+              "south_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.027680097656250003,
+                "pass": true
+              },
+              "north_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.027887402343750003,
+                "pass": true
+              }
+            }
+          },
+          "mudf": {
+            "pass": true,
+            "regions": {
+              "interior": {
+                "max_abs": 1.4551915228366852e-11,
+                "mean_abs": 4.702071690474523e-13,
+                "mean_signed": -1.2827988141556695e-14,
+                "allowed": 0.025000000219452125,
+                "pass": true
+              },
+              "west_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.025,
+                "pass": true
+              },
+              "east_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.025,
+                "pass": true
+              },
+              "south_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.025,
+                "pass": true
+              },
+              "north_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.025,
+                "pass": true
+              }
+            }
+          },
+          "muts": {
+            "pass": true,
+            "regions": {
+              "interior": {
+                "max_abs": 0.0078125,
+                "mean_abs": 3.012338538654328e-06,
+                "mean_signed": 3.012338538654328e-06,
+                "allowed": 0.26541783203125,
+                "pass": true
+              },
+              "west_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.26523132812500005,
+                "pass": true
+              },
+              "east_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.26536523437500004,
+                "pass": true
+              },
+              "south_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.26518009765625,
+                "pass": true
+              },
+              "north_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.26538740234375,
+                "pass": true
+              }
+            }
+          },
+          "muave": {
+            "pass": true,
+            "regions": {
+              "interior": {
+                "max_abs": 0.003173828125,
+                "mean_abs": 9.767743050534991e-05,
+                "mean_signed": 3.282978329236553e-06,
+                "allowed": 0.02788185546875,
+                "pass": true
+              },
+              "west_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.027731328125000003,
+                "pass": true
+              },
+              "east_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.027865234375000002,
+                "pass": true
+              },
+              "south_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.027680097656250003,
+                "pass": true
+              },
+              "north_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.027887402343750003,
+                "pass": true
+              }
+            }
+          },
+          "ww": {
+            "pass": true,
+            "regions": {
+              "interior": {
+                "max_abs": 1.4949819160392508e-11,
+                "mean_abs": 3.150094553212824e-13,
+                "mean_signed": -9.797457926198169e-15,
+                "allowed": 0.025000000091642115,
+                "pass": true
+              },
+              "west_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.025,
+                "pass": true
+              },
+              "east_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.025,
+                "pass": true
+              },
+              "south_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.025,
+                "pass": true
+              },
+              "north_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.025,
+                "pass": true
+              }
+            }
+          },
+          "theta": {
+            "pass": true,
+            "regions": {
+              "interior": {
+                "max_abs": 4.57763671875e-05,
+                "mean_abs": 2.97794772809658e-08,
+                "mean_signed": 1.6135127491306084e-09,
+                "allowed": 0.025494224967956544,
+                "pass": true
+              },
+              "west_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.02549495445251465,
+                "pass": true
+              },
+              "east_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.025491580886840823,
+                "pass": true
+              },
+              "south_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.025478113021850587,
+                "pass": true
+              },
+              "north_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.02549495445251465,
+                "pass": true
+              }
+            }
+          },
+          "dmdt": {
+            "pass": true,
+            "regions": {
+              "interior": {
+                "max_abs": 1.4551915228366852e-11,
+                "mean_abs": 4.702071690474523e-13,
+                "mean_signed": -1.2827988141556695e-14,
+                "allowed": 0.025000000219452125,
+                "pass": true
+              },
+              "west_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.025,
+                "pass": true
+              },
+              "east_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.025,
+                "pass": true
+              },
+              "south_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.025,
+                "pass": true
+              },
+              "north_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.025,
+                "pass": true
+              }
+            }
+          }
+        }
+      },
+      {
+        "substep": 4,
+        "pass": true,
+        "fields": {
+          "mu": {
+            "pass": true,
+            "regions": {
+              "interior": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.02788185546875,
+                "pass": true
+              },
+              "west_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.027731328125000003,
+                "pass": true
+              },
+              "east_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.027865234375000002,
+                "pass": true
+              },
+              "south_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.027680097656250003,
+                "pass": true
+              },
+              "north_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.027887402343750003,
+                "pass": true
+              }
+            }
+          },
+          "mudf": {
+            "pass": true,
+            "regions": {
+              "interior": {
+                "max_abs": 1.4551915228366852e-11,
+                "mean_abs": 4.702071690474523e-13,
+                "mean_signed": -1.2827988141556695e-14,
+                "allowed": 0.025000000219452125,
+                "pass": true
+              },
+              "west_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.025,
+                "pass": true
+              },
+              "east_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.025,
+                "pass": true
+              },
+              "south_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.025,
+                "pass": true
+              },
+              "north_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.025,
+                "pass": true
+              }
+            }
+          },
+          "muts": {
+            "pass": true,
+            "regions": {
+              "interior": {
+                "max_abs": 0.0078125,
+                "mean_abs": 7.53084634663582e-06,
+                "mean_signed": 1.506169269327164e-06,
+                "allowed": 0.26541783203125,
+                "pass": true
+              },
+              "west_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.26523132812500005,
+                "pass": true
+              },
+              "east_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.26536523437500004,
+                "pass": true
+              },
+              "south_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.26518009765625,
+                "pass": true
+              },
+              "north_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.26538740234375,
+                "pass": true
+              }
+            }
+          },
+          "muave": {
+            "pass": true,
+            "regions": {
+              "interior": {
+                "max_abs": 0.0047607421875,
+                "mean_abs": 0.0002187946202646038,
+                "mean_signed": 7.060168449971082e-06,
+                "allowed": 0.02788185546875,
+                "pass": true
+              },
+              "west_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.027731328125000003,
+                "pass": true
+              },
+              "east_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.027865234375000002,
+                "pass": true
+              },
+              "south_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.027680097656250003,
+                "pass": true
+              },
+              "north_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.027887402343750003,
+                "pass": true
+              }
+            }
+          },
+          "ww": {
+            "pass": true,
+            "regions": {
+              "interior": {
+                "max_abs": 1.4949819160392508e-11,
+                "mean_abs": 3.150094553212824e-13,
+                "mean_signed": -9.797457926198169e-15,
+                "allowed": 0.025000000091642115,
+                "pass": true
+              },
+              "west_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.025,
+                "pass": true
+              },
+              "east_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.025,
+                "pass": true
+              },
+              "south_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.025,
+                "pass": true
+              },
+              "north_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.025,
+                "pass": true
+              }
+            }
+          },
+          "theta": {
+            "pass": true,
+            "regions": {
+              "interior": {
+                "max_abs": 6.103515625e-05,
+                "mean_abs": 3.970593017648832e-08,
+                "mean_signed": 2.151344976298094e-09,
+                "allowed": 0.025494223251342776,
+                "pass": true
+              },
+              "west_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.02549495445251465,
+                "pass": true
+              },
+              "east_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.025491580886840823,
+                "pass": true
+              },
+              "south_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.025478113021850587,
+                "pass": true
+              },
+              "north_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.02549495445251465,
+                "pass": true
+              }
+            }
+          },
+          "dmdt": {
+            "pass": true,
+            "regions": {
+              "interior": {
+                "max_abs": 1.4551915228366852e-11,
+                "mean_abs": 4.702071690474523e-13,
+                "mean_signed": -1.2827988141556695e-14,
+                "allowed": 0.025000000219452125,
+                "pass": true
+              },
+              "west_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.025,
+                "pass": true
+              },
+              "east_boundary_col": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.025,
+                "pass": true
+              },
+              "south_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.025,
+                "pass": true
+              },
+              "north_boundary_row": {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "mean_signed": 0.0,
+                "allowed": 0.025,
+                "pass": true
+              }
+            }
+          }
+        }
+      }
+    ]
+  },
+  "verdict": "PASS"
+}
