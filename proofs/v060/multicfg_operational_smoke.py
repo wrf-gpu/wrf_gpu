@@ -103,6 +103,7 @@ from gpuwrf.coupling.physics_dispatch import (  # noqa: E402
 )
 from gpuwrf.coupling.scan_adapters import (  # noqa: E402
     CU_SCAN_ADAPTERS,
+    CU_STATELESS_SCAN_ADAPTERS,
     MP_SCAN_ADAPTERS,
     PBL_SCAN_ADAPTERS,
     SFCLAY_SCAN_ADAPTERS,
@@ -234,6 +235,10 @@ SWEEP: tuple[Config, ...] = (
            16, 5, 5, 1, None, "RUN", covers=("mp16-WDM6", "Nc/Nn", "cu1-KF")),
     Config("mp_kessler", "Kessler(1) warm-rain + MYNN + revised-MM5 sfclay + bulk land, no cumulus",
            1, 5, 1, 0, None, "RUN", covers=("mp1-Kessler",)),
+    Config("mp_wsm3", "WSM3(3) simple-ice + MYNN + MYNN-sfclay + bulk land, no cumulus",
+           3, 5, 5, 0, None, "RUN", covers=("mp3-WSM3",)),
+    Config("mp_wsm5", "WSM5(4) + MYNN + MYNN-sfclay + bulk land, no cumulus",
+           4, 5, 5, 0, None, "RUN", covers=("mp4-WSM5",)),
     # --- surface-layer coverage (sfclay 1/5/7 each >=1 config; fast bulk land) ---
     Config("sfclay_mynn", "Thompson + MYNN + MYNN-sfclay(5) + bulk land, no cumulus",
            8, 5, 5, 0, None, "RUN", covers=("sf5-MYNN-sfclay",)),
@@ -264,6 +269,15 @@ SWEEP: tuple[Config, ...] = (
     # ensemble + beta-PDF gamma; not vmap-rewritten) -> still fail-closed.
     Config("cu_grellfreitas_unwired", "Grell-Freitas(3) cumulus -- CPU-NumPy reference port (gpu_runnable=False)",
            8, 5, 5, 3, 4, "FAIL_CLOSED", covers=("cu3-GF",)),
+    # New-Tiedtke(16): interface-compatible but not separately savepoint-gated by a
+    # distinct WRF source path -> not scan-wired, must fail closed.
+    Config("cu_newtiedtke_unwired", "New-Tiedtke(16) cumulus -- not separately gated (no distinct WRF source path)",
+           8, 5, 5, 16, 4, "FAIL_CLOSED", covers=("cu16-NewTiedtke",)),
+    # MYJ(2) PBL + Janjic Eta(2) sfclay: savepoint-parity-proven CPU references with
+    # no operational scan adapter/carry path yet -> must fail closed (the mandatory
+    # MYJ<->Janjic pair is selected together so the suite is otherwise valid).
+    Config("pbl_myj_janjic_unwired", "MYJ(2) PBL + Janjic Eta(2) sfclay -- parity-proven CPU references, no scan adapter yet",
+           8, 2, 2, 0, 4, "FAIL_CLOSED", covers=("bl2-MYJ", "sf2-Janjic")),
 )
 
 
@@ -630,8 +644,13 @@ def _run_config(cfg: Config, *, steps: int) -> dict[str, Any]:
         elif bl_opt == DEFAULT_BL_PBL_PHYSICS:
             state = mynn_adapter(state, dt, grid_for_adapters)
         # bl_opt == 0 -> no PBL mixing.
-        # --- cumulus slot (KF; GF/Tiedtke fail-closed upstream) ---
-        if cu_opt in CU_SCAN_ADAPTERS:
+        # --- cumulus slot (EXACT mirror of operational_mode._physics_boundary_step):
+        # modified-Tiedtke(6) is the v0.6.0 stateless GPU-batched State->State adapter
+        # (checked FIRST); KF(1) threads the (w0avg, nca) carry. GF(3)/New-Tiedtke(16)
+        # are fail-closed upstream and never reach a RUN config. ---
+        if cu_opt in CU_STATELESS_SCAN_ADAPTERS:
+            state = CU_STATELESS_SCAN_ADAPTERS[cu_opt](state, dt, grid_for_adapters)
+        elif cu_opt in CU_SCAN_ADAPTERS:
             state, w0avg, nca = kf_adapter(state, dt, w0avg, nca, grid=grid_for_adapters)
         return state, w0avg, nca, nc_land
 

@@ -33,19 +33,20 @@ The operational namelist dispatcher (`coupling.physics_dispatch` + `coupling.sca
 `runtime.operational_mode`) is fail-closed: anything outside this matrix raises loudly in
 `io/namelist_check.py`. Each row passed a WRF-savepoint parity gate in isolation and runs
 end-to-end through the operational coupler (integration smoke:
-[`proofs/v060/multicfg_smoke_report.json`](proofs/v060/multicfg_smoke_report.json) — 14/14 RUN
-configs PASS, schemes active/non-trivial, 2/2 CPU-reference cumulus correctly fail-closed).
+[`proofs/v060/multicfg_smoke_report.json`](proofs/v060/multicfg_smoke_report.json) — every RUN
+config PASS, schemes active/non-trivial, and every CPU-reference / parity-only scheme correctly
+fail-closed, loud, never silently skipped).
 
 | Family | namelist key | Supported options | GPU operational scan |
 |---|---|---|---|
-| Microphysics | `mp_physics` | 0 (passive qv), 1 (Kessler), 6 (WSM6), 8 (Thompson, default), 10 (Morrison 2-moment), 16 (WDM6) | all scan-wired |
-| PBL | `bl_pbl_physics` | 0 (off), 1 (YSU), 5 (MYNN, default), 7 (ACM2) | all scan-wired |
-| Surface layer | `sf_sfclay_physics` | 0 (off), 1 (revised-MM5), 5 (MYNN-SL, default), 7 (Pleim-Xiu) | all scan-wired |
-| Cumulus | `cu_physics` | 0 (none, default), 1 (Kain-Fritsch); **3 (Grell-Freitas), 6/16 (Tiedtke) accepted but CPU-reference only** | KF scan-wired; GF/Tiedtke fail-closed in the GPU scan (savepoint-parity reference ports, GPU-batching TODO) |
+| Microphysics | `mp_physics` | 0 (passive qv), 1 (Kessler), 3 (WSM3), 4 (WSM5), 6 (WSM6), 8 (Thompson, default), 10 (Morrison 2-moment), 16 (WDM6) | all scan-wired |
+| PBL | `bl_pbl_physics` | 0 (off), 1 (YSU), 5 (MYNN, default), 7 (ACM2); **2 (MYJ) accepted but parity-only** | YSU/MYNN/ACM2 scan-wired; MYJ(2) savepoint-parity-proven CPU reference, **fail-closed** in the GPU scan (no scan adapter yet, GPU-scan-wire TODO) |
+| Surface layer | `sf_sfclay_physics` | 0 (off), 1 (revised-MM5), 5 (MYNN-SL, default), 7 (Pleim-Xiu); **2 (Janjic Eta) accepted but parity-only** | revised-MM5/MYNN-SL/Pleim-Xiu scan-wired; Janjic(2) savepoint-parity-proven CPU reference, **fail-closed** in the GPU scan (pairs with MYJ, GPU-scan-wire TODO) |
+| Cumulus | `cu_physics` | 0 (none, default), 1 (Kain-Fritsch), 6 (Tiedtke); **3 (Grell-Freitas), 16 (New Tiedtke) accepted but CPU-reference only** | KF + Tiedtke(6) scan-wired; GF(3) + New-Tiedtke(16) **fail-closed** in the GPU scan (savepoint/reference ports; faithful GF GPU-batch ≈ 2000-LOC closure-ensemble sprint, carry-over) |
 | Land surface | `sf_surface_physics` | 0 (off), 2 (Noah classic, needs explicit static/land bundle), 4 (Noah-MP, `use_noahmp=True`) | all scan-wired |
 | Radiation | `ra_sw_physics`, `ra_lw_physics` | 0 (off), 4 (RRTMG SW / LW) | held-rate `RTHRATEN`, scan-wired |
 
-Valid PBL↔surface-layer pairings (WRF rule): MYNN(5)↔MYNN-SL(5), ACM2(7)↔Pleim-Xiu(7), YSU(1)↔revised-MM5(1).
+Valid PBL↔surface-layer pairings (WRF rule): MYNN(5)↔MYNN-SL(5), ACM2(7)↔Pleim-Xiu(7), YSU(1)↔revised-MM5(1), MYJ(2)↔Janjic Eta(2) (the MYJ/Janjic pair is mandatory; both are parity-only/fail-closed today).
 Scheme/option-number provenance: [`.agent/decisions/V0.6.0-S0-FROZEN-CONTRACT.md`](.agent/decisions/V0.6.0-S0-FROZEN-CONTRACT.md).
 Wiring/integration close record: [`.agent/decisions/V0.6.0-CLOSE.md`](.agent/decisions/V0.6.0-CLOSE.md),
 [`proofs/v060/v060_close_proof.json`](proofs/v060/v060_close_proof.json).

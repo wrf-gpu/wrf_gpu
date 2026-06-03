@@ -3,11 +3,11 @@
   "kind": "INTEGRATION smoke: the consolidated 12-scheme physics suite runs end-to-end THROUGH THE OPERATIONAL COUPLER (physics_dispatch + scan_adapters + the operational_mode._physics_boundary_step physics block, WRF call order) across the supported namelist configs. Stable + physical + compiles(jit-traceable==GPU-runnable) + schemes-active. NOT a WRF/obs skill comparison (see reference_scoring_seam). REAL Canary grid + REAL d02 wrfinput Noah-MP warm-start + REAL WRF NOAHMP_SFLX Noah-classic savepoint bundle. No masking/clamp/self-compare/synthetic-happy-path.",
   "jax_platform": "cpu",
   "x64_enabled": true,
-  "steps_per_config": 4,
+  "steps_per_config": 8,
   "real_data_sources": {
     "canary_grid": "GridSpec.canary_3km_template()",
     "noahmp_land_warm_start": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z (d02 wrfinput)",
-    "noahclassic_bundle": "/home/enric/src/wrf_gpu2/.claude/worktrees/agent-af9096c6a19eed449/proofs/v060/savepoints_noahclassic.json (WRF NOAHMP_SFLX savepoint column daytime_veg10)",
+    "noahclassic_bundle": "/home/enric/src/wrf_gpu2/.claude/worktrees/agent-ac26938a2ead891b9/proofs/v060/savepoints_noahclassic.json (WRF NOAHMP_SFLX savepoint column daytime_veg10)",
     "atmospheric_profile": "validated b2 C-grid pattern (scanwire_smoke._build_state) on the Canary grid"
   },
   "sweep_rationale": "COVERING set (NOT full cartesian product): every supported scheme appears in >=1 RUN config plus the real operational Canary config. Supported = mp{8,6,10,16,1} x bl{5,1,7} x sfclay{1,5,7} x cu{1,6} x sf_surface{4,2} (GF cumulus EXCLUDED = documented-TODO). v0.6.0 CONSOLIDATION coupler reality: the operational scan now threads MYNN(5) + YSU(1) + ACM2(7) PBL (YSU/ACM2 are the v0.6.0 jax.lax.scan-traceable rewrites from the PBL-GPU-op lane, scan-wired via PBL_SCAN_ADAPTERS), KF(1) + modified-Tiedtke(6) cumulus (Tiedtke is the v0.6.0 GPU-batched jit/vmap adapter, scan-wired via CU_SCAN_ADAPTERS), and Noah-MP(4) + Noah-classic(2) land -- so YSU/ACM2 and Tiedtke are now RUN configs. Only GF(3) (and New-Tiedtke 16, not separately gated) remain CPU-NumPy reference ports and stay FAIL-CLOSED in the coupler, exercised here as fail-closed integration assertions (the coupler must reject them loudly, never silently no-op).",
@@ -26,6 +26,8 @@
       "mp1-Kessler",
       "mp10-Morrison",
       "mp16-WDM6",
+      "mp3-WSM3",
+      "mp4-WSM5",
       "mp6-WSM6",
       "mp8",
       "no-cu",
@@ -35,19 +37,22 @@
       "sf7-PleimXiu"
     ],
     "fail_closed_schemes": [
-      "cu3-GF"
+      "bl2-MYJ",
+      "cu16-NewTiedtke",
+      "cu3-GF",
+      "sf2-Janjic"
     ],
     "excluded_documented_todo": [
       "cu_physics=3 Grell-Freitas (sequential closure ensemble; GPU-batching TODO)",
       "cu_physics=16 New Tiedtke (not separately savepoint-gated)"
     ]
   },
-  "n_configs": 16,
-  "n_run_configs": 15,
-  "n_run_pass": 15,
+  "n_configs": 20,
+  "n_run_configs": 17,
+  "n_run_pass": 17,
   "n_run_fail": 0,
-  "n_fail_closed_configs": 1,
-  "n_fail_closed_ok": 1,
+  "n_fail_closed_configs": 3,
+  "n_fail_closed_ok": 3,
   "configs": [
     {
       "cfg_id": "real_canary_v020",
@@ -95,13 +100,13 @@
         }
       },
       "compiles": true,
-      "n_steps": 4,
+      "n_steps": 8,
       "finite": true,
       "physical": {
         "per_field": {
           "theta": {
-            "min": 299.02153,
-            "max": 311.18975,
+            "min": 299.01149,
+            "max": 311.1492,
             "band": [
               180.0,
               400.0
@@ -109,8 +114,8 @@
             "ok": true
           },
           "qv": {
-            "min": 0.0036,
-            "max": 0.01297,
+            "min": 0.00362,
+            "max": 0.01298,
             "band": [
               0.0,
               0.06
@@ -118,8 +123,8 @@
             "ok": true
           },
           "u": {
-            "min": 4.37071,
-            "max": 7.70363,
+            "min": 4.37699,
+            "max": 7.69655,
             "band": [
               -150.0,
               150.0
@@ -127,8 +132,8 @@
             "ok": true
           },
           "v": {
-            "min": -3.75678,
-            "max": -0.61697,
+            "min": -3.75079,
+            "max": -0.62439,
             "band": [
               -150.0,
               150.0
@@ -154,8 +159,8 @@
             "ok": true
           },
           "t_skin": {
-            "min": 290.04707,
-            "max": 299.39321,
+            "min": 290.76611,
+            "max": 299.80265,
             "band": [
               200.0,
               360.0
@@ -223,13 +228,13 @@
         ]
       },
       "compiles": true,
-      "n_steps": 4,
+      "n_steps": 8,
       "finite": true,
       "physical": {
         "per_field": {
           "theta": {
-            "min": 298.95376,
-            "max": 310.88036,
+            "min": 298.9824,
+            "max": 310.84092,
             "band": [
               180.0,
               400.0
@@ -237,8 +242,8 @@
             "ok": true
           },
           "qv": {
-            "min": 0.00393,
-            "max": 0.01317,
+            "min": 0.00394,
+            "max": 0.01321,
             "band": [
               0.0,
               0.06
@@ -246,7 +251,7 @@
             "ok": true
           },
           "u": {
-            "min": 4.48707,
+            "min": 4.49755,
             "max": 7.62164,
             "band": [
               -150.0,
@@ -255,7 +260,7 @@
             "ok": true
           },
           "v": {
-            "min": -3.73175,
+            "min": -3.72874,
             "max": -0.25985,
             "band": [
               -150.0,
@@ -350,12 +355,12 @@
         ]
       },
       "compiles": true,
-      "n_steps": 4,
+      "n_steps": 8,
       "finite": true,
       "physical": {
         "per_field": {
           "theta": {
-            "min": 298.97947,
+            "min": 299.03404,
             "max": 310.97241,
             "band": [
               180.0,
@@ -365,7 +370,7 @@
           },
           "qv": {
             "min": 0.00389,
-            "max": 0.01316,
+            "max": 0.01319,
             "band": [
               0.0,
               0.06
@@ -373,7 +378,7 @@
             "ok": true
           },
           "u": {
-            "min": 4.48707,
+            "min": 4.49754,
             "max": 7.62164,
             "band": [
               -150.0,
@@ -382,7 +387,7 @@
             "ok": true
           },
           "v": {
-            "min": -3.73175,
+            "min": -3.72874,
             "max": -0.25985,
             "band": [
               -150.0,
@@ -476,13 +481,13 @@
         ]
       },
       "compiles": true,
-      "n_steps": 4,
+      "n_steps": 8,
       "finite": true,
       "physical": {
         "per_field": {
           "theta": {
-            "min": 298.95787,
-            "max": 310.87576,
+            "min": 298.99256,
+            "max": 310.83098,
             "band": [
               180.0,
               400.0
@@ -490,8 +495,8 @@
             "ok": true
           },
           "qv": {
-            "min": 0.00393,
-            "max": 0.01318,
+            "min": 0.00394,
+            "max": 0.01322,
             "band": [
               0.0,
               0.06
@@ -499,7 +504,7 @@
             "ok": true
           },
           "u": {
-            "min": 4.48707,
+            "min": 4.49755,
             "max": 7.62164,
             "band": [
               -150.0,
@@ -508,7 +513,7 @@
             "ok": true
           },
           "v": {
-            "min": -3.73175,
+            "min": -3.72874,
             "max": -0.25985,
             "band": [
               -150.0,
@@ -603,13 +608,13 @@
         ]
       },
       "compiles": true,
-      "n_steps": 4,
+      "n_steps": 8,
       "finite": true,
       "physical": {
         "per_field": {
           "theta": {
-            "min": 298.95553,
-            "max": 310.85499,
+            "min": 298.98572,
+            "max": 310.79181,
             "band": [
               180.0,
               400.0
@@ -617,8 +622,8 @@
             "ok": true
           },
           "qv": {
-            "min": 0.00394,
-            "max": 0.01318,
+            "min": 0.00396,
+            "max": 0.01321,
             "band": [
               0.0,
               0.06
@@ -626,7 +631,7 @@
             "ok": true
           },
           "u": {
-            "min": 4.48707,
+            "min": 4.49756,
             "max": 7.62164,
             "band": [
               -150.0,
@@ -635,7 +640,7 @@
             "ok": true
           },
           "v": {
-            "min": -3.73175,
+            "min": -3.72874,
             "max": -0.25985,
             "band": [
               -150.0,
@@ -729,13 +734,13 @@
         ]
       },
       "compiles": true,
-      "n_steps": 4,
+      "n_steps": 8,
       "finite": true,
       "physical": {
         "per_field": {
           "theta": {
-            "min": 298.94132,
-            "max": 310.89617,
+            "min": 298.98104,
+            "max": 310.8655,
             "band": [
               180.0,
               400.0
@@ -743,8 +748,8 @@
             "ok": true
           },
           "qv": {
-            "min": 0.00392,
-            "max": 0.01316,
+            "min": 0.00393,
+            "max": 0.01319,
             "band": [
               0.0,
               0.06
@@ -752,7 +757,7 @@
             "ok": true
           },
           "u": {
-            "min": 4.48707,
+            "min": 4.49755,
             "max": 7.62164,
             "band": [
               -150.0,
@@ -761,7 +766,257 @@
             "ok": true
           },
           "v": {
-            "min": -3.73175,
+            "min": -3.72874,
+            "max": -0.25985,
+            "band": [
+              -150.0,
+              150.0
+            ],
+            "ok": true
+          },
+          "w": {
+            "min": -0.17062,
+            "max": 0.14646,
+            "band": [
+              -50.0,
+              50.0
+            ],
+            "ok": true
+          },
+          "p": {
+            "min": 70123.61113,
+            "max": 98369.75616,
+            "band": [
+              1.0,
+              110000.0
+            ],
+            "ok": true
+          },
+          "t_skin": {
+            "min": 299.5,
+            "max": 304.0,
+            "band": [
+              200.0,
+              360.0
+            ],
+            "ok": true
+          }
+        },
+        "all_in_band": true
+      },
+      "schemes_active": {
+        "expected_moved_leaves": [
+          "theta",
+          "qv",
+          "qc",
+          "qr",
+          "ustar",
+          "theta_flux",
+          "u",
+          "v"
+        ],
+        "moved": {
+          "theta": true,
+          "qv": true,
+          "qc": true,
+          "qr": true,
+          "ustar": true,
+          "theta_flux": true,
+          "u": true,
+          "v": true
+        },
+        "all_active": true
+      },
+      "pass": true,
+      "verdict": "INTEGRATION_PASS"
+    },
+    {
+      "cfg_id": "mp_wsm3",
+      "description": "WSM3(3) simple-ice + MYNN + MYNN-sfclay + bulk land, no cumulus",
+      "namelist": {
+        "mp_physics": 3,
+        "bl_pbl_physics": 5,
+        "sf_sfclay_physics": 5,
+        "cu_physics": 0,
+        "sf_surface_physics": 2,
+        "ra_sw_physics": 4,
+        "ra_lw_physics": 4
+      },
+      "covers": [
+        "mp3-WSM3"
+      ],
+      "expect": "RUN",
+      "namelist_accepted": true,
+      "dispatch_resolved": true,
+      "dispatch_gpu_gate_ready": true,
+      "non_gpu_schemes": [],
+      "operational_coupler_accepts": true,
+      "land_init": {
+        "model": "bulk prescribed (surface_adapter)",
+        "grid": [
+          8,
+          8
+        ]
+      },
+      "compiles": true,
+      "n_steps": 8,
+      "finite": true,
+      "physical": {
+        "per_field": {
+          "theta": {
+            "min": 298.97915,
+            "max": 311.98723,
+            "band": [
+              180.0,
+              400.0
+            ],
+            "ok": true
+          },
+          "qv": {
+            "min": 0.00348,
+            "max": 0.01321,
+            "band": [
+              0.0,
+              0.06
+            ],
+            "ok": true
+          },
+          "u": {
+            "min": 4.49753,
+            "max": 7.62164,
+            "band": [
+              -150.0,
+              150.0
+            ],
+            "ok": true
+          },
+          "v": {
+            "min": -3.72874,
+            "max": -0.25985,
+            "band": [
+              -150.0,
+              150.0
+            ],
+            "ok": true
+          },
+          "w": {
+            "min": -0.17062,
+            "max": 0.14646,
+            "band": [
+              -50.0,
+              50.0
+            ],
+            "ok": true
+          },
+          "p": {
+            "min": 70123.61113,
+            "max": 98369.75616,
+            "band": [
+              1.0,
+              110000.0
+            ],
+            "ok": true
+          },
+          "t_skin": {
+            "min": 299.5,
+            "max": 304.0,
+            "band": [
+              200.0,
+              360.0
+            ],
+            "ok": true
+          }
+        },
+        "all_in_band": true
+      },
+      "schemes_active": {
+        "expected_moved_leaves": [
+          "theta",
+          "qv",
+          "qc",
+          "qr",
+          "ustar",
+          "theta_flux",
+          "u",
+          "v"
+        ],
+        "moved": {
+          "theta": true,
+          "qv": true,
+          "qc": true,
+          "qr": true,
+          "ustar": true,
+          "theta_flux": true,
+          "u": true,
+          "v": true
+        },
+        "all_active": true
+      },
+      "pass": true,
+      "verdict": "INTEGRATION_PASS"
+    },
+    {
+      "cfg_id": "mp_wsm5",
+      "description": "WSM5(4) + MYNN + MYNN-sfclay + bulk land, no cumulus",
+      "namelist": {
+        "mp_physics": 4,
+        "bl_pbl_physics": 5,
+        "sf_sfclay_physics": 5,
+        "cu_physics": 0,
+        "sf_surface_physics": 2,
+        "ra_sw_physics": 4,
+        "ra_lw_physics": 4
+      },
+      "covers": [
+        "mp4-WSM5"
+      ],
+      "expect": "RUN",
+      "namelist_accepted": true,
+      "dispatch_resolved": true,
+      "dispatch_gpu_gate_ready": true,
+      "non_gpu_schemes": [],
+      "operational_coupler_accepts": true,
+      "land_init": {
+        "model": "bulk prescribed (surface_adapter)",
+        "grid": [
+          8,
+          8
+        ]
+      },
+      "compiles": true,
+      "n_steps": 8,
+      "finite": true,
+      "physical": {
+        "per_field": {
+          "theta": {
+            "min": 298.97871,
+            "max": 310.97241,
+            "band": [
+              180.0,
+              400.0
+            ],
+            "ok": true
+          },
+          "qv": {
+            "min": 0.00389,
+            "max": 0.01321,
+            "band": [
+              0.0,
+              0.06
+            ],
+            "ok": true
+          },
+          "u": {
+            "min": 4.49753,
+            "max": 7.62164,
+            "band": [
+              -150.0,
+              150.0
+            ],
+            "ok": true
+          },
+          "v": {
+            "min": -3.72874,
             "max": -0.25985,
             "band": [
               -150.0,
@@ -854,13 +1109,13 @@
         ]
       },
       "compiles": true,
-      "n_steps": 4,
+      "n_steps": 8,
       "finite": true,
       "physical": {
         "per_field": {
           "theta": {
-            "min": 298.95376,
-            "max": 310.88036,
+            "min": 298.9824,
+            "max": 310.84092,
             "band": [
               180.0,
               400.0
@@ -868,8 +1123,8 @@
             "ok": true
           },
           "qv": {
-            "min": 0.00393,
-            "max": 0.01317,
+            "min": 0.00394,
+            "max": 0.01321,
             "band": [
               0.0,
               0.06
@@ -877,7 +1132,7 @@
             "ok": true
           },
           "u": {
-            "min": 4.48707,
+            "min": 4.49755,
             "max": 7.62164,
             "band": [
               -150.0,
@@ -886,7 +1141,7 @@
             "ok": true
           },
           "v": {
-            "min": -3.73175,
+            "min": -3.72874,
             "max": -0.25985,
             "band": [
               -150.0,
@@ -979,13 +1234,13 @@
         ]
       },
       "compiles": true,
-      "n_steps": 4,
+      "n_steps": 8,
       "finite": true,
       "physical": {
         "per_field": {
           "theta": {
-            "min": 298.95376,
-            "max": 310.88036,
+            "min": 298.9824,
+            "max": 310.84092,
             "band": [
               180.0,
               400.0
@@ -993,8 +1248,8 @@
             "ok": true
           },
           "qv": {
-            "min": 0.00393,
-            "max": 0.01317,
+            "min": 0.00394,
+            "max": 0.01321,
             "band": [
               0.0,
               0.06
@@ -1002,7 +1257,7 @@
             "ok": true
           },
           "u": {
-            "min": 4.48707,
+            "min": 4.49755,
             "max": 7.62164,
             "band": [
               -150.0,
@@ -1011,7 +1266,7 @@
             "ok": true
           },
           "v": {
-            "min": -3.73175,
+            "min": -3.72874,
             "max": -0.25985,
             "band": [
               -150.0,
@@ -1107,13 +1362,13 @@
         ]
       },
       "compiles": true,
-      "n_steps": 4,
+      "n_steps": 8,
       "finite": true,
       "physical": {
         "per_field": {
           "theta": {
-            "min": 298.95376,
-            "max": 310.88036,
+            "min": 298.9824,
+            "max": 310.84092,
             "band": [
               180.0,
               400.0
@@ -1121,8 +1376,8 @@
             "ok": true
           },
           "qv": {
-            "min": 0.00393,
-            "max": 0.01317,
+            "min": 0.00394,
+            "max": 0.01321,
             "band": [
               0.0,
               0.06
@@ -1130,7 +1385,7 @@
             "ok": true
           },
           "u": {
-            "min": 4.48707,
+            "min": 4.49755,
             "max": 7.62164,
             "band": [
               -150.0,
@@ -1139,7 +1394,7 @@
             "ok": true
           },
           "v": {
-            "min": -3.73175,
+            "min": -3.72874,
             "max": -0.25985,
             "band": [
               -150.0,
@@ -1233,13 +1488,13 @@
         ]
       },
       "compiles": true,
-      "n_steps": 4,
+      "n_steps": 8,
       "finite": true,
       "physical": {
         "per_field": {
           "theta": {
-            "min": 298.95376,
-            "max": 310.88036,
+            "min": 298.9824,
+            "max": 310.84092,
             "band": [
               180.0,
               400.0
@@ -1247,8 +1502,8 @@
             "ok": true
           },
           "qv": {
-            "min": 0.00393,
-            "max": 0.01317,
+            "min": 0.00394,
+            "max": 0.01321,
             "band": [
               0.0,
               0.06
@@ -1256,7 +1511,7 @@
             "ok": true
           },
           "u": {
-            "min": 4.48707,
+            "min": 4.49755,
             "max": 7.62164,
             "band": [
               -150.0,
@@ -1265,7 +1520,7 @@
             "ok": true
           },
           "v": {
-            "min": -3.73175,
+            "min": -3.72874,
             "max": -0.25985,
             "band": [
               -150.0,
@@ -1371,12 +1626,12 @@
         }
       },
       "compiles": true,
-      "n_steps": 4,
+      "n_steps": 8,
       "finite": true,
       "physical": {
         "per_field": {
           "theta": {
-            "min": 299.02098,
+            "min": 299.00724,
             "max": 311.29829,
             "band": [
               180.0,
@@ -1394,8 +1649,8 @@
             "ok": true
           },
           "u": {
-            "min": 4.37071,
-            "max": 7.70363,
+            "min": 4.37699,
+            "max": 7.69655,
             "band": [
               -150.0,
               150.0
@@ -1403,8 +1658,8 @@
             "ok": true
           },
           "v": {
-            "min": -3.75678,
-            "max": -0.61697,
+            "min": -3.75079,
+            "max": -0.62439,
             "band": [
               -150.0,
               150.0
@@ -1430,8 +1685,8 @@
             "ok": true
           },
           "t_skin": {
-            "min": 290.04721,
-            "max": 299.39334,
+            "min": 290.76607,
+            "max": 299.80191,
             "band": [
               200.0,
               360.0
@@ -1500,13 +1755,13 @@
         "column": "daytime_veg10"
       },
       "compiles": true,
-      "n_steps": 4,
+      "n_steps": 8,
       "finite": true,
       "physical": {
         "per_field": {
           "theta": {
-            "min": 298.87685,
-            "max": 310.89617,
+            "min": 298.9057,
+            "max": 310.86551,
             "band": [
               180.0,
               400.0
@@ -1514,8 +1769,8 @@
             "ok": true
           },
           "qv": {
-            "min": 0.00392,
-            "max": 0.01318,
+            "min": 0.00393,
+            "max": 0.01321,
             "band": [
               0.0,
               0.06
@@ -1523,7 +1778,7 @@
             "ok": true
           },
           "u": {
-            "min": 4.48707,
+            "min": 4.49754,
             "max": 7.62164,
             "band": [
               -150.0,
@@ -1532,7 +1787,7 @@
             "ok": true
           },
           "v": {
-            "min": -3.73175,
+            "min": -3.72874,
             "max": -0.25985,
             "band": [
               -150.0,
@@ -1560,7 +1815,7 @@
           },
           "t_skin": {
             "min": 299.5,
-            "max": 303.77153,
+            "max": 304.35321,
             "band": [
               200.0,
               360.0
@@ -1627,13 +1882,13 @@
         ]
       },
       "compiles": true,
-      "n_steps": 4,
+      "n_steps": 8,
       "finite": true,
       "physical": {
         "per_field": {
           "theta": {
-            "min": 298.95376,
-            "max": 310.88036,
+            "min": 298.9824,
+            "max": 310.84092,
             "band": [
               180.0,
               400.0
@@ -1641,8 +1896,8 @@
             "ok": true
           },
           "qv": {
-            "min": 0.00393,
-            "max": 0.01317,
+            "min": 0.00394,
+            "max": 0.01321,
             "band": [
               0.0,
               0.06
@@ -1650,7 +1905,7 @@
             "ok": true
           },
           "u": {
-            "min": 4.48707,
+            "min": 4.49755,
             "max": 7.62164,
             "band": [
               -150.0,
@@ -1659,7 +1914,7 @@
             "ok": true
           },
           "v": {
-            "min": -3.73175,
+            "min": -3.72874,
             "max": -0.25985,
             "band": [
               -150.0,
@@ -1752,13 +2007,13 @@
         ]
       },
       "compiles": true,
-      "n_steps": 4,
+      "n_steps": 8,
       "finite": true,
       "physical": {
         "per_field": {
           "theta": {
-            "min": 299.0345,
-            "max": 310.88034,
+            "min": 299.05101,
+            "max": 310.84089,
             "band": [
               180.0,
               400.0
@@ -1766,8 +2021,8 @@
             "ok": true
           },
           "qv": {
-            "min": 0.00393,
-            "max": 0.01309,
+            "min": 0.00394,
+            "max": 0.01305,
             "band": [
               0.0,
               0.06
@@ -1775,7 +2030,7 @@
             "ok": true
           },
           "u": {
-            "min": 4.47622,
+            "min": 4.47648,
             "max": 7.62164,
             "band": [
               -150.0,
@@ -1784,7 +2039,7 @@
             "ok": true
           },
           "v": {
-            "min": -3.73509,
+            "min": -3.73504,
             "max": -0.25985,
             "band": [
               -150.0,
@@ -1877,13 +2132,13 @@
         ]
       },
       "compiles": true,
-      "n_steps": 4,
+      "n_steps": 8,
       "finite": true,
       "physical": {
         "per_field": {
           "theta": {
-            "min": 299.03354,
-            "max": 310.88033,
+            "min": 299.07242,
+            "max": 310.84087,
             "band": [
               180.0,
               400.0
@@ -1891,8 +2146,8 @@
             "ok": true
           },
           "qv": {
-            "min": 0.00393,
-            "max": 0.0131,
+            "min": 0.00394,
+            "max": 0.01305,
             "band": [
               0.0,
               0.06
@@ -1900,7 +2155,7 @@
             "ok": true
           },
           "u": {
-            "min": 4.47604,
+            "min": 4.47613,
             "max": 7.62164,
             "band": [
               -150.0,
@@ -1909,7 +2164,7 @@
             "ok": true
           },
           "v": {
-            "min": -3.73511,
+            "min": -3.7351,
             "max": -0.25985,
             "band": [
               -150.0,
@@ -1996,7 +2251,70 @@
         "cu_physics=3 (Grell-Freitas)"
       ],
       "operational_coupler_accepts": false,
-      "operational_coupler_reject_reason": "operational scan supports the v0.2.0 suite + the v0.6.0 scan-wired schemes (mp_physics in {0,1,6,8,10,16}, bl_pbl_physics in {0,1,5,7}, sf_sfclay_physics in {0,1,5,7}, cu_physics in {0,1,6}, Noah-MP via use_noahmp, explicit Noah-classic via sf_surface_physics=2 plus noahclassic_static/noahclassic_land). The following selected schemes are NOT scan-wired: cu_physics=3 (Grell-Freitas is a CPU-NumPy reference port (gpu_runnable=False); GPU-batching TODO (sequential 16-member closure ensemble + beta-PDF gamma))",
+      "operational_coupler_reject_reason": "operational scan supports the v0.2.0 suite + the v0.6.0 scan-wired schemes (mp_physics in {0,1,3,4,6,8,10,16}, bl_pbl_physics in {0,1,5,7}, sf_sfclay_physics in {0,1,5,7}, cu_physics in {0,1,6}, Noah-MP via use_noahmp, explicit Noah-classic via sf_surface_physics=2 plus noahclassic_static/noahclassic_land). The following selected schemes are NOT scan-wired: cu_physics=3 (Grell-Freitas is a CPU-NumPy reference port (gpu_runnable=False); GPU-batching TODO (sequential 16-member closure ensemble + beta-PDF gamma))",
+      "compiles": null,
+      "n_steps": 0,
+      "finite": null,
+      "physical": null,
+      "schemes_active": null,
+      "pass": true,
+      "verdict": "FAIL_CLOSED_OK (coupler loudly rejected the unwired scheme)"
+    },
+    {
+      "cfg_id": "cu_newtiedtke_unwired",
+      "description": "New-Tiedtke(16) cumulus -- not separately gated (no distinct WRF source path)",
+      "namelist": {
+        "mp_physics": 8,
+        "bl_pbl_physics": 5,
+        "sf_sfclay_physics": 5,
+        "cu_physics": 16,
+        "sf_surface_physics": 4,
+        "ra_sw_physics": 4,
+        "ra_lw_physics": 4
+      },
+      "covers": [
+        "cu16-NewTiedtke"
+      ],
+      "expect": "FAIL_CLOSED",
+      "namelist_accepted": true,
+      "dispatch_resolved": true,
+      "dispatch_gpu_gate_ready": false,
+      "non_gpu_schemes": [
+        "cu_physics=16 (New Tiedtke)"
+      ],
+      "operational_coupler_accepts": false,
+      "operational_coupler_reject_reason": "operational scan supports the v0.2.0 suite + the v0.6.0 scan-wired schemes (mp_physics in {0,1,3,4,6,8,10,16}, bl_pbl_physics in {0,1,5,7}, sf_sfclay_physics in {0,1,5,7}, cu_physics in {0,1,6}, Noah-MP via use_noahmp, explicit Noah-classic via sf_surface_physics=2 plus noahclassic_static/noahclassic_land). The following selected schemes are NOT scan-wired: cu_physics=16 (New Tiedtke is interface-compatible but not separately savepoint-gated by a distinct WRF source path; GPU-batching/gating TODO)",
+      "compiles": null,
+      "n_steps": 0,
+      "finite": null,
+      "physical": null,
+      "schemes_active": null,
+      "pass": true,
+      "verdict": "FAIL_CLOSED_OK (coupler loudly rejected the unwired scheme)"
+    },
+    {
+      "cfg_id": "pbl_myj_janjic_unwired",
+      "description": "MYJ(2) PBL + Janjic Eta(2) sfclay -- parity-proven CPU references, no scan adapter yet",
+      "namelist": {
+        "mp_physics": 8,
+        "bl_pbl_physics": 2,
+        "sf_sfclay_physics": 2,
+        "cu_physics": 0,
+        "sf_surface_physics": 4,
+        "ra_sw_physics": 4,
+        "ra_lw_physics": 4
+      },
+      "covers": [
+        "bl2-MYJ",
+        "sf2-Janjic"
+      ],
+      "expect": "FAIL_CLOSED",
+      "namelist_accepted": true,
+      "dispatch_resolved": true,
+      "dispatch_gpu_gate_ready": true,
+      "non_gpu_schemes": [],
+      "operational_coupler_accepts": false,
+      "operational_coupler_reject_reason": "operational scan supports the v0.2.0 suite + the v0.6.0 scan-wired schemes (mp_physics in {0,1,3,4,6,8,10,16}, bl_pbl_physics in {0,1,5,7}, sf_sfclay_physics in {0,1,5,7}, cu_physics in {0,1,6}, Noah-MP via use_noahmp, explicit Noah-classic via sf_surface_physics=2 plus noahclassic_static/noahclassic_land). The following selected schemes are NOT scan-wired: bl_pbl_physics=2 (MYJ PBL has a WRF-savepoint column adapter, but no operational scan adapter/carry path yet); sf_sfclay_physics=2 (Janjic Eta surface layer has a WRF-savepoint column adapter, but no operational scan adapter/carry path yet)",
       "compiles": null,
       "n_steps": 0,
       "finite": null,
