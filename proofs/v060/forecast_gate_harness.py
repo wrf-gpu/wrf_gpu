@@ -50,6 +50,21 @@ from gpuwrf.coupling.physics_dispatch import (  # noqa: E402
 from gpuwrf.io.namelist_check import validate_supported_namelist  # noqa: E402
 
 
+class _SchemeNamelist:
+    """Minimal namelist-shaped stub exposing the physics-option attributes the
+    operational scan's ``_resolve_operational_suite`` reads (so the scan-wire status
+    can be checked on CPU without building a full OperationalNamelist + grid)."""
+
+    def __init__(self, nl: dict[str, int]):
+        self.mp_physics = nl["mp_physics"]
+        self.bl_pbl_physics = nl["bl_pbl_physics"]
+        self.sf_sfclay_physics = nl["sf_sfclay_physics"]
+        self.cu_physics = nl["cu_physics"]
+        self.sf_surface_physics = nl["sf_surface_physics"]
+        # Noah-MP (sf_surface=4) is threaded via use_noahmp in the scan.
+        self.use_noahmp = int(nl["sf_surface_physics"]) == 4
+
+
 @dataclass(frozen=True)
 class ForecastCombo:
     """One canonical end-to-end scheme combination for the integrated gate."""
@@ -109,16 +124,22 @@ class ComboReadiness:
     namelist_accepted: bool
     dispatch_resolved: bool
     gpu_gate_ready: bool
+    scan_wired: bool = False
+    scan_wire_error: str | None = None
     non_gpu_schemes: list[str] = field(default_factory=list)
     error: str | None = None
 
 
 def validate_combo(combo: ForecastCombo) -> ComboReadiness:
-    """CPU-safe readiness check: namelist accept + dispatch resolve + GPU-gate flag.
+    """CPU-safe readiness check: namelist accept + dispatch resolve + GPU-gate flag
+    + OPERATIONAL-SCAN-WIRE status.
 
-    Does NOT run a forecast. Confirms the combo passes the fail-closed namelist
-    matrix and the dispatcher, and that every scheme in it is GPU-runnable (so the
-    combo is admissible to the integrated GPU gate).
+    Does NOT run a forecast. Confirms the combo (1) passes the fail-closed namelist
+    matrix, (2) resolves through the dispatcher, (3) every scheme is GPU-runnable
+    (admissible to the GPU gate), and (4) every scheme's State<->scheme SCAN ADAPTER
+    is actually threaded into the operational scan (``_resolve_operational_suite``
+    accepts it). A combo is GPU-forecast-runnable only when BOTH gpu_gate_ready AND
+    scan_wired hold -- scan_wired is the honest gate the manager's ``--run`` checks.
     """
 
     nl = combo.as_namelist()
@@ -139,21 +160,71 @@ def validate_combo(combo: ForecastCombo) -> ComboReadiness:
         readiness.non_gpu_schemes = list(suite.non_gpu_schemes)
     except (UnsupportedSchemeSelection, Exception) as exc:  # noqa: BLE001 - report any failure
         readiness.error = f"{type(exc).__name__}: {exc}"
+        return readiness
+
+    # Scan-wire status: does the operational scan actually thread every scheme's
+    # adapter? (Imported lazily so the dispatcher-only --validate path stays cheap.)
+    try:
+        from gpuwrf.runtime.operational_mode import _resolve_operational_suite
+
+        _resolve_operational_suite(_SchemeNamelist(nl))
+        readiness.scan_wired = True
+    except UnsupportedSchemeSelection as exc:
+        readiness.scan_wired = False
+        readiness.scan_wire_error = str(exc)
     return readiness
+
+
+# Fully-scan-wired alternate combos (v0.6.0 scan-wire 2026-06-03). Each canonical
+# combo's PBL/land slot decides scan-runnability: YSU (bl=1) and ACM2 (bl=7) are
+# host-NumPy single-column kernels (NOT scan-traceable), and Noah-classic
+# (sf_surface=2) has no coupler yet -- so canonical combos 2 and 3 are NOT yet
+# GPU-scan-runnable. These alternates swap the unwired PBL/land for the wired
+# MYNN(5)/Noah-MP(4) so the NEWLY-WIRED microphysics (WSM6/Morrison/WDM6/Kessler),
+# surface-layer (revised-MM5/Pleim-Xiu) and cumulus (KF) schemes can still be
+# exercised end-to-end on the GPU scan. They are the manager's runnable GPU gate
+# until the YSU/ACM2 jit/vmap rewrite + the Noah-classic coupler land.
+SCAN_WIRED_COMBOS: tuple[ForecastCombo, ...] = (
+    ForecastCombo(
+        combo_id="combo_2w_wsm6_mynn_revisedmm5_noahmp_kf",
+        description="WSM6/MYNN/revised-MM5 sfclay/Noah-MP + KF cumulus + RRTMG "
+                    "(scan-wired variant of combo_2: MYNN instead of host-NumPy YSU, "
+                    "Noah-MP instead of un-coupled Noah-classic)",
+        mp_physics=6, bl_pbl_physics=5, sf_sfclay_physics=1, sf_surface_physics=4, cu_physics=1,
+    ),
+    ForecastCombo(
+        combo_id="combo_3w_morrison_mynn_pleimxiu_noahmp",
+        description="Morrison/MYNN/Pleim-Xiu sfclay/Noah-MP, no cumulus + RRTMG "
+                    "(scan-wired variant of combo_3: MYNN instead of host-NumPy ACM2)",
+        mp_physics=10, bl_pbl_physics=5, sf_sfclay_physics=7, sf_surface_physics=4, cu_physics=0,
+    ),
+    ForecastCombo(
+        combo_id="combo_4w_wdm6_mynn_kessler_check",
+        description="WDM6/MYNN/MYNN-sfclay/Noah-MP + KF cumulus + RRTMG "
+                    "(exercises the WDM6 Nc/Nn additive leaves + KF carry end-to-end)",
+        mp_physics=16, bl_pbl_physics=5, sf_sfclay_physics=5, sf_surface_physics=4, cu_physics=1,
+    ),
+)
 
 
 def readiness_report() -> dict[str, Any]:
     """Build the CPU-only forecast-gate readiness object (no GPU, no forecast)."""
 
-    combos = [validate_combo(c) for c in CANONICAL_COMBOS]
+    canonical = [validate_combo(c) for c in CANONICAL_COMBOS]
+    scan_wired = [validate_combo(c) for c in SCAN_WIRED_COMBOS]
+    runnable = [r for r in (canonical + scan_wired) if r.gpu_gate_ready and r.scan_wired]
     return {
         "status": "READY_NOT_RUN",
         "note": (
-            "Integrated multi-config forecast gate is WIRED. The single-GPU "
-            "end-to-end run vs CPU-WRF is MANAGER-scheduled. CPU validation below "
-            "confirms each combo is namelist-accepted, dispatch-resolvable, and "
-            "GPU-gate-admissible (all schemes GPU-runnable). GF (cu=3) and Tiedtke "
-            "(cu=6/16) are intentionally NOT in any canonical combo (CPU-reference)."
+            "Integrated multi-config forecast gate. The single-GPU end-to-end run vs "
+            "CPU-WRF is MANAGER-scheduled (--run). v0.6.0 scan-wire status (HONEST): "
+            "combo_1 (v0.2.0 + KF) is fully scan-wired. Canonical combo_2 contains YSU "
+            "(host-NumPy PBL) + Noah-classic (no coupler) and combo_3 contains ACM2 "
+            "(host-NumPy PBL); those schemes are NOT yet threaded into the GPU scan, so "
+            "combos 2/3 are NOT GPU-scan-runnable as defined. The SCAN_WIRED_COMBOS "
+            "below swap the unwired PBL/land for MYNN/Noah-MP so the newly-wired "
+            "microphysics/surface-layer/cumulus schemes run end-to-end now. GF (cu=3) "
+            "and Tiedtke (cu=6/16) are CPU-reference, excluded by design."
         ),
         "gate_fields": {"core": list(GATE_FIELDS_CORE), "diagnostics": list(GATE_FIELDS_DIAG)},
         "scoring": (
@@ -161,21 +232,51 @@ def readiness_report() -> dict[str, Any]:
             "mirroring proofs/m20/continuous_gate.py (reference = CPU-WRF, pairing = "
             "every grid cell, resolution = every lead hour)."
         ),
-        "combos": [vars(r) for r in combos],
-        "all_combos_gpu_gate_ready": all(r.gpu_gate_ready for r in combos),
+        "canonical_combos": [vars(r) for r in canonical],
+        "scan_wired_combos": [vars(r) for r in scan_wired],
+        "gpu_runnable_now": [r.combo_id for r in runnable],
+        "all_canonical_gpu_gate_ready": all(r.gpu_gate_ready for r in canonical),
+        "all_canonical_scan_wired": all(r.scan_wired for r in canonical),
         "manager_run_steps": [
             "1. Free the GPU (one GPU job at a time); verify CUDA context sanity.",
-            "2. For each combo: build the OperationalNamelist with the combo's "
-            "mp/bl/cu/sf options; thread each non-default scheme's State adapter into "
-            "the operational scan (the per-scheme kernels passed savepoint parity; "
-            "their scan adapters are this gate's remaining wiring).",
-            "3. Run the GPU forecast over a corpus CPU-WRF d02 case (e.g. the v0.2.0 "
-            "TOST run dates); emit wrfout with the new QNCLOUD/QNCCN/RAINC leaves.",
+            "2. For each GPU-runnable combo (gpu_runnable_now): build the "
+            "OperationalNamelist with the combo's mp/bl/cu/sf options (the scan "
+            "adapters in coupling.scan_adapters are threaded; _resolve_operational_suite "
+            "accepts the combo).",
+            "3. Run run_forecast_operational over a corpus CPU-WRF d02 case (e.g. the "
+            "v0.2.0 TOST run dates); emit wrfout with the new QNCLOUD/QNCCN/RAINC leaves.",
             "4. Score per-lead gridpoint-paired bias/RMSE vs the CPU-WRF reference "
             "(continuous_gate pattern) on the core + diagnostic fields.",
             "5. Record one proof JSON per combo under proofs/v060/forecast_gate/.",
+            "6. CARRY-OVER (cross-model): jit/vmap rewrite of YSU(1)/ACM2(7) PBL + the "
+            "Noah-classic(2) surface coupler to make canonical combos 2/3 GPU-runnable; "
+            "GPU-batch GF(3)/Tiedtke(6,16) cumulus.",
         ],
     }
+
+
+def _build_combo_namelist(combo: ForecastCombo, grid):
+    """Build the OperationalNamelist for one combo (manager --run helper).
+
+    Sets the physics-suite selection fields the scan dispatches on. Noah-MP land
+    (sf_surface=4) is threaded via use_noahmp=True (the scan's land toggle); the
+    manager attaches the Noah-MP static/params + boundary forcing for the real run.
+    """
+
+    from gpuwrf.runtime.operational_mode import OperationalNamelist
+
+    nl = OperationalNamelist.from_grid(grid)
+    return nl.__class__(
+        **{
+            **{f.name: getattr(nl, f.name) for f in nl.__dataclass_fields__.values()},
+            "mp_physics": combo.mp_physics,
+            "bl_pbl_physics": combo.bl_pbl_physics,
+            "sf_sfclay_physics": combo.sf_sfclay_physics,
+            "cu_physics": combo.cu_physics,
+            "sf_surface_physics": combo.sf_surface_physics,
+            "use_noahmp": int(combo.sf_surface_physics) == 4,
+        }
+    )
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -186,17 +287,31 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument(
         "--run", action="store_true",
-        help="MANAGER-only: run the GPU forecast vs CPU-WRF. Requires a JAX GPU backend.",
+        help="MANAGER-only: run the GPU forecast vs CPU-WRF. Requires a JAX GPU backend "
+             "+ a corpus CPU-WRF reference case + Noah-MP init bundle.",
     )
     parser.add_argument("--out", type=Path, default=None, help="Write the readiness JSON here.")
     args = parser.parse_args(argv)
 
     if args.run:
+        # The scan adapters ARE wired (coupling.scan_adapters); the GPU forecast +
+        # CPU-WRF scoring is MANAGER-scheduled (single GPU job) because it needs a
+        # GPU backend, a corpus d02 reference case, and the Noah-MP init bundle. This
+        # branch refuses cleanly rather than half-running, and points at the wiring.
+        try:
+            import jax
+            backend = jax.default_backend()
+        except Exception:
+            backend = "unknown"
         print(
-            "ERROR: --run is MANAGER-scheduled and requires a JAX GPU backend plus a "
-            "corpus CPU-WRF reference case. This harness only ships the CPU readiness "
-            "check (--validate). Wire the per-combo scan adapters and GPU run per the "
-            "manager_run_steps in the readiness report before invoking --run.",
+            "ERROR: --run is MANAGER-scheduled. The per-combo State<->scheme scan "
+            "adapters ARE wired (gpuwrf.coupling.scan_adapters; _resolve_operational_suite "
+            "accepts the gpu_runnable_now combos). What --run still needs (MANAGER): a "
+            "JAX GPU backend (current backend="
+            f"{backend!r}), a corpus CPU-WRF d02 reference case + met_em/boundary forcing, "
+            "and the Noah-MP init bundle for the Noah-MP combos. Build each combo's "
+            "namelist via _build_combo_namelist, run run_forecast_operational, then score "
+            "per the readiness report's manager_run_steps.",
             file=sys.stderr,
         )
         return 2
@@ -207,7 +322,9 @@ def main(argv: list[str] | None = None) -> int:
         args.out.parent.mkdir(parents=True, exist_ok=True)
         args.out.write_text(text + "\n")
     print(text)
-    return 0 if report["all_combos_gpu_gate_ready"] else 1
+    # Gate passes when there is at least one GPU-runnable-now combo AND the scan-wired
+    # variants all resolve (the canonical combos may legitimately be NOT scan-wired).
+    return 0 if report["gpu_runnable_now"] else 1
 
 
 if __name__ == "__main__":

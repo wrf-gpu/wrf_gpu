@@ -1,5 +1,6 @@
 import json
 import importlib.util
+import os
 from pathlib import Path
 
 import numpy as np
@@ -54,7 +55,12 @@ def test_grell_freitas_parity_report_schema_when_savepoints_exist():
     spec.loader.exec_module(module)
 
     report = module.build_report()
-    module.REPORT_PATH.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n")
+    # The committed lane report is AUTHORITATIVE. By default this test ASSERTS the
+    # schema/verdict without overwriting it (running pytest must not silently
+    # regenerate a committed proof). Set GPUWRF_WRITE_PARITY_REPORT=1 to explicitly
+    # regenerate the report (the intended, deliberate proof-refresh action).
+    if os.environ.get("GPUWRF_WRITE_PARITY_REPORT") == "1":
+        module.REPORT_PATH.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n")
     assert report["schema"] == "gpuwrf.v060.grellfreitas_savepoint_parity.v1"
     assert report["oracle"]["full_wrf_exe_run"] is False
     assert {case["regime"] for case in report["cases"]} == {

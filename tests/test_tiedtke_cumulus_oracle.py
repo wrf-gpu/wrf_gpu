@@ -216,9 +216,14 @@ def test_tiedtke_savepoint_parity_report():
             "cu_physics=16 New Tiedtke is interface-compatible but not separately gated by a distinct WRF source path in this report.",
         ],
     }
-    REPORT.parent.mkdir(parents=True, exist_ok=True)
-    with REPORT.open("w") as fh:
-        json.dump(report, fh, indent=2, sort_keys=True)
-        fh.write("\n")
+    # The committed lane report is AUTHORITATIVE. By default this test ASSERTS the
+    # parity verdict without overwriting it (running pytest must not silently
+    # regenerate a committed proof). Set GPUWRF_WRITE_PARITY_REPORT=1 to explicitly
+    # regenerate the report (the intended, deliberate proof-refresh action).
+    if os.environ.get("GPUWRF_WRITE_PARITY_REPORT") == "1":
+        REPORT.parent.mkdir(parents=True, exist_ok=True)
+        with REPORT.open("w") as fh:
+            json.dump(report, fh, indent=2, sort_keys=True)
+            fh.write("\n")
 
     assert not failures, "; ".join(failures)
