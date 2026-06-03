@@ -1,6 +1,6 @@
 {
   "status": "READY_NOT_RUN",
-  "note": "Integrated multi-config forecast gate is WIRED. The single-GPU end-to-end run vs CPU-WRF is MANAGER-scheduled. CPU validation below confirms each combo is namelist-accepted, dispatch-resolvable, and GPU-gate-admissible (all schemes GPU-runnable). GF (cu=3) and Tiedtke (cu=6/16) are intentionally NOT in any canonical combo (CPU-reference).",
+  "note": "Integrated multi-config forecast gate. The single-GPU end-to-end run vs CPU-WRF is MANAGER-scheduled (--run). v0.6.0 scan-wire status (HONEST): combo_1 (v0.2.0 + KF) is fully scan-wired. Canonical combo_2 contains YSU (host-NumPy PBL) + Noah-classic (no coupler) and combo_3 contains ACM2 (host-NumPy PBL); those schemes are NOT yet threaded into the GPU scan, so combos 2/3 are NOT GPU-scan-runnable as defined. The SCAN_WIRED_COMBOS below swap the unwired PBL/land for MYNN/Noah-MP so the newly-wired microphysics/surface-layer/cumulus schemes run end-to-end now. GF (cu=3) and Tiedtke (cu=6/16) are CPU-reference, excluded by design.",
   "gate_fields": {
     "core": [
       "T2",
@@ -18,7 +18,7 @@
     ]
   },
   "scoring": "per-lead gridpoint-paired bias/RMSE vs corpus CPU-WRF d02 reference, mirroring proofs/m20/continuous_gate.py (reference = CPU-WRF, pairing = every grid cell, resolution = every lead hour).",
-  "combos": [
+  "canonical_combos": [
     {
       "combo_id": "combo_1_thompson_mynn_noahmp_kf",
       "description": "v0.2.0 baseline (Thompson/MYNN/MYNN-sfclay/Noah-MP) + KF cumulus + RRTMG",
@@ -34,6 +34,8 @@
       "namelist_accepted": true,
       "dispatch_resolved": true,
       "gpu_gate_ready": true,
+      "scan_wired": true,
+      "scan_wire_error": null,
       "non_gpu_schemes": [],
       "error": null
     },
@@ -52,6 +54,8 @@
       "namelist_accepted": true,
       "dispatch_resolved": true,
       "gpu_gate_ready": true,
+      "scan_wired": false,
+      "scan_wire_error": "operational scan supports the v0.2.0 suite + the v0.6.0 scan-wired schemes (mp_physics in {0,1,6,8,10,16}, bl_pbl_physics in {0,5}, sf_sfclay_physics in {0,1,5,7}, cu_physics in {0,1}, Noah-MP via use_noahmp). The following selected schemes are NOT scan-wired: bl_pbl_physics=1 (YSU is a single-column HOST-NumPy kernel (not jax.lax.scan-traceable); needs a jit/vmap rewrite); sf_surface_physics=2 (Noah-classic needs a WRF-faithful surface-forcing + 4-layer soil coupler (analogue of noahmp_surface_hook); not yet built)",
       "non_gpu_schemes": [],
       "error": null
     },
@@ -70,16 +74,88 @@
       "namelist_accepted": true,
       "dispatch_resolved": true,
       "gpu_gate_ready": true,
+      "scan_wired": false,
+      "scan_wire_error": "operational scan supports the v0.2.0 suite + the v0.6.0 scan-wired schemes (mp_physics in {0,1,6,8,10,16}, bl_pbl_physics in {0,5}, sf_sfclay_physics in {0,1,5,7}, cu_physics in {0,1}, Noah-MP via use_noahmp). The following selected schemes are NOT scan-wired: bl_pbl_physics=7 (ACM2 is a single-column HOST-NumPy kernel (not jax.lax.scan-traceable); needs a jit/vmap rewrite)",
       "non_gpu_schemes": [],
       "error": null
     }
   ],
-  "all_combos_gpu_gate_ready": true,
+  "scan_wired_combos": [
+    {
+      "combo_id": "combo_2w_wsm6_mynn_revisedmm5_noahmp_kf",
+      "description": "WSM6/MYNN/revised-MM5 sfclay/Noah-MP + KF cumulus + RRTMG (scan-wired variant of combo_2: MYNN instead of host-NumPy YSU, Noah-MP instead of un-coupled Noah-classic)",
+      "namelist": {
+        "mp_physics": 6,
+        "bl_pbl_physics": 5,
+        "sf_sfclay_physics": 1,
+        "sf_surface_physics": 4,
+        "cu_physics": 1,
+        "ra_sw_physics": 4,
+        "ra_lw_physics": 4
+      },
+      "namelist_accepted": true,
+      "dispatch_resolved": true,
+      "gpu_gate_ready": true,
+      "scan_wired": true,
+      "scan_wire_error": null,
+      "non_gpu_schemes": [],
+      "error": null
+    },
+    {
+      "combo_id": "combo_3w_morrison_mynn_pleimxiu_noahmp",
+      "description": "Morrison/MYNN/Pleim-Xiu sfclay/Noah-MP, no cumulus + RRTMG (scan-wired variant of combo_3: MYNN instead of host-NumPy ACM2)",
+      "namelist": {
+        "mp_physics": 10,
+        "bl_pbl_physics": 5,
+        "sf_sfclay_physics": 7,
+        "sf_surface_physics": 4,
+        "cu_physics": 0,
+        "ra_sw_physics": 4,
+        "ra_lw_physics": 4
+      },
+      "namelist_accepted": true,
+      "dispatch_resolved": true,
+      "gpu_gate_ready": true,
+      "scan_wired": true,
+      "scan_wire_error": null,
+      "non_gpu_schemes": [],
+      "error": null
+    },
+    {
+      "combo_id": "combo_4w_wdm6_mynn_kessler_check",
+      "description": "WDM6/MYNN/MYNN-sfclay/Noah-MP + KF cumulus + RRTMG (exercises the WDM6 Nc/Nn additive leaves + KF carry end-to-end)",
+      "namelist": {
+        "mp_physics": 16,
+        "bl_pbl_physics": 5,
+        "sf_sfclay_physics": 5,
+        "sf_surface_physics": 4,
+        "cu_physics": 1,
+        "ra_sw_physics": 4,
+        "ra_lw_physics": 4
+      },
+      "namelist_accepted": true,
+      "dispatch_resolved": true,
+      "gpu_gate_ready": true,
+      "scan_wired": true,
+      "scan_wire_error": null,
+      "non_gpu_schemes": [],
+      "error": null
+    }
+  ],
+  "gpu_runnable_now": [
+    "combo_1_thompson_mynn_noahmp_kf",
+    "combo_2w_wsm6_mynn_revisedmm5_noahmp_kf",
+    "combo_3w_morrison_mynn_pleimxiu_noahmp",
+    "combo_4w_wdm6_mynn_kessler_check"
+  ],
+  "all_canonical_gpu_gate_ready": true,
+  "all_canonical_scan_wired": false,
   "manager_run_steps": [
     "1. Free the GPU (one GPU job at a time); verify CUDA context sanity.",
-    "2. For each combo: build the OperationalNamelist with the combo's mp/bl/cu/sf options; thread each non-default scheme's State adapter into the operational scan (the per-scheme kernels passed savepoint parity; their scan adapters are this gate's remaining wiring).",
-    "3. Run the GPU forecast over a corpus CPU-WRF d02 case (e.g. the v0.2.0 TOST run dates); emit wrfout with the new QNCLOUD/QNCCN/RAINC leaves.",
+    "2. For each GPU-runnable combo (gpu_runnable_now): build the OperationalNamelist with the combo's mp/bl/cu/sf options (the scan adapters in coupling.scan_adapters are threaded; _resolve_operational_suite accepts the combo).",
+    "3. Run run_forecast_operational over a corpus CPU-WRF d02 case (e.g. the v0.2.0 TOST run dates); emit wrfout with the new QNCLOUD/QNCCN/RAINC leaves.",
     "4. Score per-lead gridpoint-paired bias/RMSE vs the CPU-WRF reference (continuous_gate pattern) on the core + diagnostic fields.",
-    "5. Record one proof JSON per combo under proofs/v060/forecast_gate/."
+    "5. Record one proof JSON per combo under proofs/v060/forecast_gate/.",
+    "6. CARRY-OVER (cross-model): jit/vmap rewrite of YSU(1)/ACM2(7) PBL + the Noah-classic(2) surface coupler to make canonical combos 2/3 GPU-runnable; GPU-batch GF(3)/Tiedtke(6,16) cumulus."
   ]
 }

@@ -50,6 +50,13 @@ from gpuwrf.coupling.physics_dispatch import (
     UnsupportedSchemeSelection,
     resolve_physics_suite,
 )
+from gpuwrf.coupling.scan_adapters import (
+    CU_SCAN_ADAPTERS,
+    MP_SCAN_ADAPTERS,
+    SFCLAY_SCAN_ADAPTERS,
+    initial_kf_carry,
+    kf_adapter,
+)
 from gpuwrf.dynamics.advection import compute_advection_tendencies, halo_spec
 from gpuwrf.dynamics.explicit_diffusion import (
     constant_k_diffusion_tendency,
@@ -1782,20 +1789,36 @@ def _noahmp_params(namelist: OperationalNamelist):
     return namelist.noahmp_energy_params, namelist.noahmp_rad_params
 
 
-# v0.6.0 dispatch: the operational scan adapter currently threads the v0.2.0
-# validated suite (Thompson mp=8 + MYNN bl=5 + MYNN-sfclay sf_sfclay=5 +
-# Noah-MP/bulk surface + no cumulus). The remaining 11 schemes passed per-scheme
-# WRF-savepoint parity at the kernel level; their State<->scheme scan adapters are
-# the MANAGER-scheduled integrated-forecast-gate work. Until a scheme's scan
-# adapter is threaded here, selecting it in the production scan FAILS CLOSED
-# (loud) rather than silently running the default scheme. The dispatcher
-# (coupling.physics_dispatch) is the single fail-closed authority for which
-# option maps to which scheme + GPU-runnability.
+# v0.6.0 scan-wire (2026-06-03): the operational scan now routes the genuinely
+# jit/vmap-traceable new schemes through the dispatcher into the GPU scan path, in
+# WRF call order, alongside the v0.2.0 validated suite. Wired = each option that
+# maps to a State<->scheme adapter in coupling.scan_adapters (or the existing
+# coupling.physics_couplers adapters). The remaining schemes are kept FAIL-CLOSED
+# (loud) here -- they passed per-scheme savepoint parity but cannot ride the device
+# scan as-is for SCHEME-SPECIFIC reasons (host-NumPy single-column kernels needing
+# a jit/vmap rewrite, or a missing WRF-faithful coupler), documented per option in
+# _SCAN_UNWIRED_REASON. The dispatcher (coupling.physics_dispatch) remains the
+# single fail-closed authority for option -> scheme + GPU-runnability.
 _SCAN_WIRED_OPTIONS = {
-    "mp_physics": (0, DEFAULT_MP_PHYSICS),         # 0=passive, 8=Thompson
-    "bl_pbl_physics": (0, DEFAULT_BL_PBL_PHYSICS),  # 0=off, 5=MYNN
-    "sf_sfclay_physics": (0, DEFAULT_SF_SFCLAY_PHYSICS),  # 0=off, 5=MYNN sfclay
-    "cu_physics": (DEFAULT_CU_PHYSICS,),            # 0=no cumulus
+    # mp=0 passive, 8 Thompson (existing couplers); 1/6/10/16 new scan adapters.
+    "mp_physics": (0, 1, 6, 8, 10, 16),
+    # bl=0 off, 5 MYNN (existing). YSU(1)/ACM2(7) are host-NumPy -> NOT wired.
+    "bl_pbl_physics": (0, DEFAULT_BL_PBL_PHYSICS),
+    # sf_sfclay=0 off, 5 MYNN-sfclay (existing); 1 revised-MM5 / 7 Pleim-Xiu wired.
+    "sf_sfclay_physics": (0, 1, 5, 7),
+    # cu=0 no cumulus, 1 KF (new scan adapter). GF(3)/Tiedtke(6,16) CPU-ref -> NOT wired.
+    "cu_physics": (0, 1),
+}
+
+# Scheme-specific reasons a parity-passed option is NOT yet wired into the scan
+# (surfaced in the fail-closed error so the rejection is honest + actionable).
+_SCAN_UNWIRED_REASON = {
+    "bl_pbl_physics=1": "YSU is a single-column HOST-NumPy kernel (not jax.lax.scan-traceable); needs a jit/vmap rewrite",
+    "bl_pbl_physics=7": "ACM2 is a single-column HOST-NumPy kernel (not jax.lax.scan-traceable); needs a jit/vmap rewrite",
+    "cu_physics=3": "Grell-Freitas is a CPU-NumPy reference port (gpu_runnable=False); GPU-batching TODO",
+    "cu_physics=6": "Tiedtke is a CPU-NumPy reference port (gpu_runnable=False); GPU-batching TODO",
+    "cu_physics=16": "Tiedtke is a CPU-NumPy reference port (gpu_runnable=False); GPU-batching TODO",
+    "sf_surface_physics=2": "Noah-classic needs a WRF-faithful surface-forcing + 4-layer soil coupler (analogue of noahmp_surface_hook); not yet built",
 }
 
 
@@ -1804,9 +1827,9 @@ def _resolve_operational_suite(namelist: OperationalNamelist):
 
     Resolves the namelist's physics options through the dispatcher (which rejects
     anything outside the frozen S0 accept-matrix), then asserts the selection is
-    one whose State adapter is threaded into THIS operational scan. Non-default
-    schemes that passed per-scheme parity but whose integrated scan adapter is
-    manager-gate work raise loudly here rather than being silently ignored.
+    one whose State adapter is threaded into THIS operational scan. Schemes that
+    passed per-scheme parity but cannot ride the device scan as-is raise loudly
+    here (with a scheme-specific reason) rather than being silently ignored.
     """
 
     suite = resolve_physics_suite(namelist)  # fail-closed on out-of-matrix options
@@ -1814,21 +1837,49 @@ def _resolve_operational_suite(namelist: OperationalNamelist):
     for key, wired in _SCAN_WIRED_OPTIONS.items():
         selected = int(getattr(namelist, key))
         if selected not in wired:
-            not_wired.append(f"{key}={selected}")
+            tag = f"{key}={selected}"
+            reason = _SCAN_UNWIRED_REASON.get(tag)
+            not_wired.append(f"{tag} ({reason})" if reason else tag)
     # Land surface: the scan threads Noah-MP (use_noahmp=True) or the bulk surface
-    # path (Noah classic / disabled both map to the bulk path in this scan).
+    # path. NOTE the dispatcher maps the legacy ``use_noahmp=False`` toggle to land
+    # option 2, but in THIS scan that means the bulk surface path (surface_adapter),
+    # NOT the prognostic Noah-classic LSM. So only an EXPLICIT sf_surface_physics=2
+    # selection (genuine Noah-classic, which has no coupler yet) fails closed; the
+    # use_noahmp-derived default keeps the validated bulk path.
     land_opt = suite.land_surface.option
     if land_opt == 4 and not bool(namelist.use_noahmp):
         not_wired.append("sf_surface_physics=4 (set use_noahmp=True to thread Noah-MP)")
+    explicit_land = getattr(namelist, "sf_surface_physics", None)
+    if explicit_land is not None and int(explicit_land) == 2:
+        not_wired.append(f"sf_surface_physics=2 ({_SCAN_UNWIRED_REASON['sf_surface_physics=2']})")
     if not_wired:
         raise UnsupportedSchemeSelection(
-            "operational scan supports only the v0.2.0 wired suite "
-            "(mp_physics in {0,8}, bl_pbl_physics in {0,5}, sf_sfclay_physics in {0,5}, "
-            "cu_physics=0, Noah-MP via use_noahmp); the integrated forecast gate for "
-            "the other parity-passed schemes is manager-scheduled. Not wired: "
-            f"{', '.join(not_wired)}"
+            "operational scan supports the v0.2.0 suite + the v0.6.0 scan-wired "
+            "schemes (mp_physics in {0,1,6,8,10,16}, bl_pbl_physics in {0,5}, "
+            "sf_sfclay_physics in {0,1,5,7}, cu_physics in {0,1}, Noah-MP via "
+            "use_noahmp). The following selected schemes are NOT scan-wired: "
+            f"{'; '.join(not_wired)}"
         )
     return suite
+
+
+def _initial_carry_for_run(state: State, namelist: OperationalNamelist) -> OperationalCarry:
+    """Build the initial operational carry, seeding any scheme-specific sub-carry.
+
+    Centralizes carry construction for the public forecast entries so a stateful
+    scan-wired scheme's persistent carry is seeded to its CONCRETE pytree shape
+    BEFORE the scan (``jax.lax.scan`` requires a carry pytree that is identical on
+    every iteration; a ``None``->tuple promotion inside the body would be rejected).
+    The v0.6.0 KF cumulus carry ``(w0avg, nca)`` is seeded when ``cu_physics`` is a
+    scan-wired GPU cumulus option; otherwise ``cumulus_carry`` stays ``None`` and the
+    carry is structurally identical to the pre-v0.6.0 carry.
+    """
+
+    enforced = _enforce_operational_precision(state, force_fp64=bool(namelist.force_fp64))
+    cumulus_carry = None
+    if int(namelist.cu_physics) in CU_SCAN_ADAPTERS:
+        cumulus_carry = initial_kf_carry(enforced)
+    return initial_operational_carry(enforced, cumulus_carry=cumulus_carry)
 
 
 class _NoahMPRadiation(NamedTuple):
@@ -1927,17 +1978,46 @@ def _physics_boundary_step_with_limiter_diagnostics(
             qg=_valid_mixing_ratio(next_state.qg, physical_origin.qg),
         )
     if bool(namelist.run_physics):
-        # Gate-1 physics call order: thompson -> surface -> mynn -> rrtmg(cadence).
-        # Thompson microphysics is gated ONLY by run_physics, NOT by disable_guards.
-        # (Coupling fix 2026-05-30: previously Thompson was wired behind
-        # `if not disable_guards`, which silently dropped the validated B1
+        # Physics call order: microphysics -> surface layer -> PBL -> cumulus ->
+        # rrtmg(cadence). Microphysics is gated ONLY by run_physics, NOT by
+        # disable_guards. (Coupling fix 2026-05-30: previously Thompson was wired
+        # behind `if not disable_guards`, which silently dropped the validated B1
         # microphysics whenever guards were turned off -- making the operational
         # safety net load-bearing for moisture physics, in violation of the
-        # guards-must-not-be-load-bearing rule. surface/mynn/rrtmg always ran;
-        # only Thompson was mistakenly tied to the guard flag.)
-        next_state = thompson_adapter(next_state, float(namelist.dt_s))
+        # guards-must-not-be-load-bearing rule. surface/pbl/rrtmg always ran; only
+        # Thompson was mistakenly tied to the guard flag.)
+        #
+        # v0.6.0 scan-wire (2026-06-03): the microphysics / surface-layer / cumulus
+        # slots are dispatcher-routed. The physics options are STATIC aux (compile
+        # constants), so the per-slot scheme is selected at trace time (a Python
+        # branch, no lax.cond / no per-step dispatch overhead). Selecting the
+        # v0.2.0 defaults (mp=8 / sf_sfclay=5 / cu=0) is byte-for-byte the validated
+        # path. _resolve_operational_suite (called at every public entry) already
+        # fail-closed on any non-scan-wired option, so the maps below only ever see
+        # wired options.
+        mp_opt = int(namelist.mp_physics)
+        sf_opt = int(namelist.sf_sfclay_physics)
+        cu_opt = int(namelist.cu_physics)
+
+        # --- microphysics slot ---
+        if mp_opt == DEFAULT_MP_PHYSICS:
+            next_state = thompson_adapter(next_state, float(namelist.dt_s))
+        elif mp_opt in MP_SCAN_ADAPTERS:
+            next_state = MP_SCAN_ADAPTERS[mp_opt](next_state, float(namelist.dt_s), namelist.grid)
+        # mp_opt == 0 -> passive (no microphysics).
+
+        # --- surface-layer slot ---
         if bool(namelist.use_noahmp):
             # v0.2.0 S6b: prognostic Noah-MP over LAND (ocean keeps bulk path).
+            # Noah-MP supplies the land surface fluxes; the surface-LAYER scheme
+            # (MYNN-sfclay default, or a new sfclay adapter) still runs for the
+            # ocean/atmosphere surface-layer fluxes the PBL consumes.
+            # A new scan-wired sfclay (revised-MM5/Pleim-Xiu) supplies the surface-
+            # layer fluxes the PBL consumes; the default MYNN-sfclay (5) keeps the
+            # v0.2.0 validated path (which, under Noah-MP, did NOT call surface_adapter
+            # -- Noah-MP owns the land fluxes). sf_opt=0 (disabled) also skips.
+            if sf_opt in SFCLAY_SCAN_ADAPTERS:
+                next_state = SFCLAY_SCAN_ADAPTERS[sf_opt](next_state, float(namelist.dt_s), namelist.grid)
             # Held surface radiation (SOLDN/LWDN/COSZ) is refreshed at the radiation
             # cadence and reused between calls (WRF-faithful), resident in the carry.
             next_carry_rad = _refresh_noahmp_rad(
@@ -1956,8 +2036,24 @@ def _physics_boundary_step_with_limiter_diagnostics(
             )
             carry = carry.replace(noahmp_land=next_land, noahmp_rad=next_carry_rad)
         else:
-            next_state = surface_adapter(next_state, float(namelist.dt_s))
+            if sf_opt in SFCLAY_SCAN_ADAPTERS:
+                next_state = SFCLAY_SCAN_ADAPTERS[sf_opt](next_state, float(namelist.dt_s), namelist.grid)
+            else:
+                next_state = surface_adapter(next_state, float(namelist.dt_s))
+
+        # --- PBL slot (MYNN; YSU/ACM2 are host-NumPy -> fail-closed upstream) ---
         next_state = mynn_adapter(next_state, float(namelist.dt_s), namelist.grid)
+
+        # --- cumulus slot (KF; GF/Tiedtke are CPU-reference -> not in GPU scan) ---
+        if cu_opt in CU_SCAN_ADAPTERS:
+            w0avg, nca = (
+                carry.cumulus_carry if carry.cumulus_carry is not None
+                else initial_kf_carry(next_state)
+            )
+            next_state, w0avg_next, nca_next = kf_adapter(
+                next_state, float(namelist.dt_s), w0avg, nca, grid=namelist.grid
+            )
+            carry = carry.replace(cumulus_carry=(w0avg_next, nca_next))
         # B3 radiation cadence -- WRF-faithful HELD-RATE (Sprint coupler-fp64 FIX #2,
         # GPT P0-2). WRF recomputes the radiative theta tendency RTHRATEN (K/s) only
         # once per radt interval (module_radiation_driver.F run_param gate) and then
@@ -2282,9 +2378,7 @@ def run_forecast_operational_with_m9_diagnostics(
     if cadence <= 0:
         raise ValueError("radiation_cadence_steps must be positive")
 
-    carry = initial_operational_carry(
-        _enforce_operational_precision(state, force_fp64=bool(namelist.force_fp64))
-    )
+    carry = _initial_carry_for_run(state, namelist)
     steps = _steps_for_hours(hours, float(namelist.dt_s))
     out_cad = int(output_cadence_steps)
 
@@ -2338,9 +2432,7 @@ def run_forecast_operational(state: State, namelist: OperationalNamelist, hours:
     # INITIAL carry must also be fp64 or jax.lax.scan rejects the carry dtype
     # mismatch -- and the production path would otherwise start fp32 (GPT
     # re-confirm: proofs that pre-upcast manually did not exercise this entry).
-    initial = initial_operational_carry(
-        _enforce_operational_precision(state, force_fp64=bool(namelist.force_fp64))
-    )
+    initial = _initial_carry_for_run(state, namelist)
     steps = _steps_for_hours(hours, float(namelist.dt_s))
     cadence = int(namelist.radiation_cadence_steps)
     if cadence <= 0:
@@ -2431,9 +2523,7 @@ def run_forecast_operational_segmented(
     if seg <= 0:
         raise ValueError("segment_steps must be positive")
 
-    carry = initial_operational_carry(
-        _enforce_operational_precision(state, force_fp64=bool(namelist.force_fp64))
-    )
+    carry = _initial_carry_for_run(state, namelist)
     steps = _steps_for_hours(hours, float(namelist.dt_s))
 
     # Host loop over contiguous fixed-length segments covering global steps 1..steps.
@@ -2480,9 +2570,7 @@ def run_forecast_operational_single_scan(state: State, namelist: OperationalName
     if int(namelist.rk_order) != 3:
         raise ValueError("operational mode currently supports RK3 only")
     _resolve_operational_suite(namelist)  # fail-closed physics-suite validation
-    initial = initial_operational_carry(
-        _enforce_operational_precision(state, force_fp64=bool(namelist.force_fp64))
-    )
+    initial = _initial_carry_for_run(state, namelist)
     steps = _steps_for_hours(hours, float(namelist.dt_s))
     cadence = int(namelist.radiation_cadence_steps)
     if cadence <= 0:
@@ -2521,9 +2609,7 @@ def run_forecast_operational_with_limiter_diagnostics(
     # INITIAL carry must also be fp64 or jax.lax.scan rejects the carry dtype
     # mismatch -- and the production path would otherwise start fp32 (GPT
     # re-confirm: proofs that pre-upcast manually did not exercise this entry).
-    initial = initial_operational_carry(
-        _enforce_operational_precision(state, force_fp64=bool(namelist.force_fp64))
-    )
+    initial = _initial_carry_for_run(state, namelist)
     steps = _steps_for_hours(hours, float(namelist.dt_s))
     cadence = int(namelist.radiation_cadence_steps)
     if cadence <= 0:
@@ -2582,9 +2668,7 @@ def run_forecast_operational_debug(state: State, namelist: OperationalNamelist, 
     # INITIAL carry must also be fp64 or jax.lax.scan rejects the carry dtype
     # mismatch -- and the production path would otherwise start fp32 (GPT
     # re-confirm: proofs that pre-upcast manually did not exercise this entry).
-    initial = initial_operational_carry(
-        _enforce_operational_precision(state, force_fp64=bool(namelist.force_fp64))
-    )
+    initial = _initial_carry_for_run(state, namelist)
     steps = _steps_for_hours(hours, float(namelist.dt_s))
     cadence = int(namelist.radiation_cadence_steps)
     if cadence <= 0:

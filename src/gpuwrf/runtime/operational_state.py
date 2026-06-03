@@ -78,6 +78,14 @@ class OperationalCarry:
     # ``None`` when Noah-MP is off.
     noahmp_land: Any = field(default=None)
     noahmp_rad: Any = field(default=None)
+    # --- v0.6.0 scan-wire: persistent KF (cu=1) cumulus carry ----------------
+    # ``cumulus_carry`` is the Kain-Fritsch ``(w0avg, nca)`` persistent state: the
+    # running mean of vertical velocity (nz, ny, nx) feeding the KF trigger and the
+    # ``nca`` cloud-relaxation countdown (ny, nx). ``None`` when no GPU-scan cumulus
+    # scheme is active (the carry pytree is then structurally identical to the
+    # pre-v0.6.0 carry). Appended LAST so the prefix of the existing carry leaves
+    # keeps its pytree position; ``coupling.scan_adapters.initial_kf_carry`` seeds it.
+    cumulus_carry: Any = field(default=None)
 
     def replace(self, **updates) -> "OperationalCarry":
         values = {name: getattr(self, name) for name in self.__dataclass_fields__}
@@ -104,6 +112,7 @@ def initial_operational_carry(
     *,
     noahmp_land: Any = None,
     noahmp_rad: Any = None,
+    cumulus_carry: Any = None,
 ) -> OperationalCarry:
     """Build promoted carry from the initialized operational ``State``.
 
@@ -153,6 +162,7 @@ def initial_operational_carry(
         rthraten=jnp.zeros_like(state.theta),
         noahmp_land=noahmp_land,
         noahmp_rad=noahmp_rad,
+        cumulus_carry=cumulus_carry,
     )
 
 

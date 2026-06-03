@@ -238,10 +238,15 @@ def test_v060_pxsfclay_savepoint_parity_report() -> None:
         "cases": canonical_cases,
         "fp64_audit_cases": fp64_cases,
     }
-    REPORT_PATH.parent.mkdir(parents=True, exist_ok=True)
-    with REPORT_PATH.open("w", encoding="utf-8") as fh:
-        json.dump(report, fh, indent=2, sort_keys=True)
-        fh.write("\n")
+    # The committed lane report is AUTHORITATIVE. By default this test ASSERTS the
+    # parity verdict without overwriting it (running pytest must not silently
+    # regenerate a committed proof). Set GPUWRF_WRITE_PARITY_REPORT=1 to explicitly
+    # regenerate the report (the intended, deliberate proof-refresh action).
+    if os.environ.get("GPUWRF_WRITE_PARITY_REPORT") == "1":
+        REPORT_PATH.parent.mkdir(parents=True, exist_ok=True)
+        with REPORT_PATH.open("w", encoding="utf-8") as fh:
+            json.dump(report, fh, indent=2, sort_keys=True)
+            fh.write("\n")
     assert report["verdict"] == "PASS"
 
 

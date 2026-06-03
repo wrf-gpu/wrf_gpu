@@ -1,0 +1,131 @@
+{
+  "proof": "v060-scanwire-integration-smoke",
+  "kind": "CPU JAX integration smoke (few steps each); NOT a WRF parity claim; GPU multi-config forecast gate vs CPU-WRF is MANAGER-scheduled",
+  "x64_enabled": true,
+  "jax_platform": "cpu",
+  "scan_wired": {
+    "microphysics_gpu_scan": [
+      1,
+      6,
+      10,
+      16,
+      8
+    ],
+    "surface_layer_gpu_scan": [
+      1,
+      7,
+      5
+    ],
+    "cumulus_gpu_scan": [
+      1
+    ]
+  },
+  "per_scheme_smoke": [
+    {
+      "scheme": "Kessler (mp=1)",
+      "kind": "microphysics",
+      "steps": 3,
+      "executed_in_scan_adapter": true,
+      "finite_no_nan": true,
+      "column_water_before": 5.532928537902862,
+      "column_water_after": 5.531980610803103,
+      "column_water_rel_change": 0.00017132465985509788,
+      "conservation_ok": true,
+      "pass": true
+    },
+    {
+      "scheme": "WSM6 (mp=6)",
+      "kind": "microphysics",
+      "steps": 3,
+      "executed_in_scan_adapter": true,
+      "finite_no_nan": true,
+      "column_water_before": 5.532928537902862,
+      "column_water_after": 5.523199801929616,
+      "column_water_rel_change": 0.001758333928696164,
+      "conservation_ok": true,
+      "pass": true
+    },
+    {
+      "scheme": "Morrison (mp=10)",
+      "kind": "microphysics",
+      "steps": 3,
+      "executed_in_scan_adapter": true,
+      "finite_no_nan": true,
+      "column_water_before": 5.532928537902862,
+      "column_water_after": 5.532287688456364,
+      "column_water_rel_change": 0.00011582463827387193,
+      "conservation_ok": true,
+      "pass": true
+    },
+    {
+      "scheme": "WDM6 (mp=16)",
+      "kind": "microphysics",
+      "steps": 3,
+      "executed_in_scan_adapter": true,
+      "finite_no_nan": true,
+      "column_water_before": 5.532928537902862,
+      "column_water_after": 5.523474645903319,
+      "column_water_rel_change": 0.0017086596970808823,
+      "conservation_ok": true,
+      "pass": true
+    },
+    {
+      "scheme": "revised-MM5 (sf_sfclay=1)",
+      "kind": "surface_layer",
+      "steps": 3,
+      "executed_in_scan_adapter": true,
+      "finite_no_nan": true,
+      "ustar_band_m_s": [
+        0.26811863335454833,
+        0.5600847973955514
+      ],
+      "ustar_positive": true,
+      "pass": true
+    },
+    {
+      "scheme": "Pleim-Xiu (sf_sfclay=7)",
+      "kind": "surface_layer",
+      "steps": 3,
+      "executed_in_scan_adapter": true,
+      "finite_no_nan": true,
+      "ustar_band_m_s": [
+        0.2030207081437095,
+        0.5399184617871894
+      ],
+      "ustar_positive": true,
+      "pass": true
+    },
+    {
+      "scheme": "Kain-Fritsch (cu=1)",
+      "kind": "cumulus",
+      "steps": 3,
+      "tendency_applied": false,
+      "carry_threaded_finite": true,
+      "finite_no_nan": true,
+      "rainc_acc_min_mm": 0.0,
+      "column_water_rel_change": 0.0,
+      "conservation_ok": true,
+      "pass": true
+    }
+  ],
+  "fail_closed": {
+    "wired_combos_accepted": [
+      true,
+      true,
+      true,
+      true,
+      true
+    ],
+    "all_wired_accepted": true,
+    "unwired_schemes_rejected": [
+      true,
+      true,
+      true,
+      true,
+      true
+    ],
+    "all_unwired_rejected": true,
+    "pass": true
+  },
+  "all_pass": true
+}
