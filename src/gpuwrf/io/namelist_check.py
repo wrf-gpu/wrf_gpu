@@ -74,7 +74,7 @@ SUPPORTED_OPTIONS: dict[str, SupportedOption] = {
     "bl_pbl_physics": SupportedOption(
         key="bl_pbl_physics",
         supported_values=frozenset(ACCEPTED_BL_PBL_PHYSICS),
-        implemented="0=disabled, 1=YSU, 5=MYNN, 7=ACM2",
+        implemented="0=disabled, 1=YSU, 5=MYNN, 7=ACM2, 8=BouLac",
         action="Use one of the frozen v0.6.0 PBL options; all other PBL options remain unsupported.",
     ),
     "sf_sfclay_physics": SupportedOption(
