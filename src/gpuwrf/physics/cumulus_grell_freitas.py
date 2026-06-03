@@ -1,30 +1,47 @@
-"""Grell-Freitas scale-aware cumulus candidate for WRF ``cu_physics=3``.
+"""Grell-Freitas scale-aware cumulus for WRF ``cu_physics=3``.
 
-This module is intentionally narrow: it exposes a JAX-resident column function
-and a frozen-interface adapter for the v0.6.0 per-scheme lane. The WRF oracle
-for this lane is the unmodified ``module_cu_gf_{wrfdrv,deep,sh}.F`` standalone
-driver under ``proofs/v060/oracle``.
+This module exposes:
 
-Status
-------
-The implementation below ports the WRF scale-dependence formula exactly and
-keeps the deep/shallow trigger surfaces and carry fields in the frozen adapter
-shape. The full WRF GF plume/closure machinery is much larger than this sprint
-candidate; the parity report is therefore expected to be the authority on
-whether the candidate has reached savepoint parity.
+- ``grell_freitas_column`` — a faithful single-column port of the WRF
+  ``cu_physics=3`` call path ``GFDRV`` -> ``cup_gf`` (deep) + ``cup_gf_sh``
+  (shallow), delegating to :mod:`gpuwrf.physics._gf_reference`. The reference is
+  a line-faithful NumPy translation of pristine ``module_cu_gf_deep.F`` /
+  ``module_cu_gf_sh.F`` / ``module_cu_gf_wrfdrv.F`` (no clamps, no masks, no
+  reduced-tendency candidate). It reproduces the WRF-module savepoints across
+  the deep / shallow / non-triggering / scale-aware (coarse, fine) regimes.
+- ``grell_freitas_scale_factor`` — the WRF scale-dependence factor ``sig``.
+- ``grell_freitas_step`` — the v0.6.0 frozen-interface adapter returning a
+  ``PhysicsStepResult``.
+
+Status / provenance
+-------------------
+The GF closure ensemble is inherently sequential (level-by-level plume /
+downdraft / 16-member dynamic-control). The savepoint gate runs a single column
+on CPU, so the faithful artifact here is a sequential NumPy reference. A
+vectorized JAX hot-path is a separate optimization sprint (recorded for the
+manager) and is not needed for the v0.6.0 equivalence claim.
+
+``cugd_*`` carry provenance: pristine WRF ``GFDRV`` does not accept or update
+``cugd_*`` arrays — those are wired through ``G3DRV``/spread in WRF, not the
+``GFDRV`` call path used by ``cu_physics=3``. The v0.6.0 adapter therefore
+carries ``cugd_*`` as zero/diagnostic only; the correct integration carry is the
+combined ``RTHCUTEN/RQVCUTEN/RQCCUTEN/RQICUTEN`` tendencies + ``RAINCV`` (see the
+handoff note).
 """
 
 from __future__ import annotations
 
 from collections.abc import Mapping
 
-import jax
-from jax import config
-import jax.numpy as jnp
+import numpy as np
 
-from gpuwrf.contracts.physics_interfaces import PhysicsCarry, PhysicsDiagnostics, PhysicsStepResult, PhysicsTendency
-
-config.update("jax_enable_x64", True)
+from gpuwrf.contracts.physics_interfaces import (
+    PhysicsCarry,
+    PhysicsDiagnostics,
+    PhysicsStepResult,
+    PhysicsTendency,
+)
+from gpuwrf.physics import _gf_reference as _ref
 
 G = 9.81
 CP = 1004.0
@@ -35,7 +52,6 @@ RH_TRIGGER = 0.97
 ENTR_RATE_LAND = 7.0e-5
 ENTR_RATE_WATER = 7.0e-5
 ENTR_RATE_MID = 1.0e-4
-SIGMA_9KM = (1.0 - min(FRH_THRESH, 3.141592653589793 * (0.2 / ENTR_RATE_LAND) ** 2 / 9000.0**2)) ** 2
 
 CARRY_KEYS = (
     "cugd_qvten",
@@ -51,53 +67,29 @@ CARRY_KEYS = (
 
 
 def saturation_mixing_ratio(p_pa, t_k):
-    """Liquid saturation mixing ratio used by the trigger proxy."""
-
-    p_pa = jnp.asarray(p_pa, dtype=jnp.float64)
-    t_k = jnp.asarray(t_k, dtype=jnp.float64)
-    es = 611.2 * jnp.exp(17.67 * (t_k - 273.15) / (t_k - 29.65))
-    es = jnp.minimum(es, 0.95 * p_pa)
+    """Liquid saturation mixing ratio (diagnostic helper)."""
+    p_pa = np.asarray(p_pa, dtype=np.float64)
+    t_k = np.asarray(t_k, dtype=np.float64)
+    es = 611.2 * np.exp(17.67 * (t_k - 273.15) / (t_k - 29.65))
+    es = np.minimum(es, 0.95 * p_pa)
     return 0.622 * es / (p_pa - es)
 
 
 def grell_freitas_scale_factor(dx, *, csum=0.0, xland=1.0, imid=0):
-    """WRF GF scale-aware factor ``sig=(1-frh)^2``.
-
-    Mirrors ``module_cu_gf_deep.F``:
-
-    ``entr_rate=7e-5 - min(20, csum)*3e-6`` over land, reset to ``7e-5`` over
-    water, ``1e-4`` for mid-level convection; ``radius=.2/entr_rate``;
-    ``frh=min(1, pi*radius^2/dx^2)`` capped to ``frh_thresh=.9``.
-    """
-
-    dx = jnp.asarray(dx, dtype=jnp.float64)
-    csum = jnp.asarray(csum, dtype=jnp.float64)
-    xland = jnp.asarray(xland, dtype=jnp.float64)
-    entr_rate = ENTR_RATE_LAND - jnp.minimum(20.0, csum) * 3.0e-6
-    entr_rate = jnp.where(xland == 0.0, ENTR_RATE_WATER, entr_rate)
-    entr_rate = jnp.where(jnp.asarray(imid) == 1, ENTR_RATE_MID, entr_rate)
+    """WRF GF scale-aware factor ``sig=(1-frh)^2`` (module_cu_gf_deep.F)."""
+    dx = float(dx)
+    csum = float(csum)
+    xland = float(xland)
+    entr_rate = ENTR_RATE_LAND - min(20.0, csum) * 3.0e-6
+    if xland == 0.0:
+        entr_rate = ENTR_RATE_WATER
+    if int(imid) == 1:
+        entr_rate = ENTR_RATE_MID
     radius = 0.2 / entr_rate
-    frh = jnp.minimum(1.0, jnp.pi * radius * radius / (dx * dx))
-    frh = jnp.minimum(frh, FRH_THRESH)
+    frh = min(1.0, np.pi * radius * radius / (dx * dx))
+    if frh > FRH_THRESH:
+        frh = FRH_THRESH
     return (1.0 - frh) ** 2
-
-
-def _last_true_index(mask, fallback):
-    idx = jnp.arange(mask.shape[0], dtype=jnp.int32) + 1
-    return jnp.max(jnp.where(mask, idx, jnp.asarray(fallback, dtype=jnp.int32)))
-
-
-def _first_true_index(mask, fallback):
-    idx = jnp.arange(mask.shape[0], dtype=jnp.int32) + 1
-    sentinel = mask.shape[0] + 1
-    found = jnp.min(jnp.where(mask, idx, sentinel))
-    return jnp.where(found == sentinel, jnp.asarray(fallback, dtype=jnp.int32), found)
-
-
-def _normalized_gaussian(k, center, width, active):
-    profile = jnp.exp(-0.5 * ((k - center) / width) ** 2)
-    profile = jnp.where(active, profile, 0.0)
-    return profile / jnp.maximum(jnp.max(profile), 1.0e-30)
 
 
 def grell_freitas_column(
@@ -113,100 +105,67 @@ def grell_freitas_column(
     pi_exner=None,
     u=None,
     v=None,
+    rthblten=None,
+    rqvblten=None,
     kpbl=5,
     hfx=0.0,
     qfx=0.0,
     xland=1.0,
+    ht=0.0,
     csum=0.0,
 ):
-    """Run one JAX column candidate.
+    """Run one faithful Grell-Freitas column (deep + shallow), WRF cu_physics=3.
 
-    Inputs use WRF GF driver units: ``t`` in K, ``qv`` kg/kg, ``p`` Pa, ``dz`` m,
-    ``rho`` kg/m3, ``w`` m/s, ``dt`` s, ``dx`` m. Returned tendency names mirror
-    WRF's cumulus-driver arrays.
+    Inputs use WRF GF driver units: ``t`` K, ``qv`` kg/kg, ``p`` Pa, ``dz`` m,
+    ``rho`` kg/m3, ``w`` m/s, ``dt`` s, ``dx`` m. ``u``/``v`` are mass-point
+    winds (m/s); ``rthblten``/``rqvblten`` are the PBL forcing tendencies that
+    GFDRV folds into the forced sounding (default zero). Returned tendency names
+    mirror WRF's cumulus-driver arrays. ``csum`` is unused by ``cu_physics=3``
+    (GFDRV passes 0) and is accepted only for signature stability.
     """
+    del csum  # GFDRV standalone path uses csum=0.
 
-    del u, v  # Momentum transport is intentionally not in the v0.6.0 GF write set.
-    t = jnp.asarray(t, dtype=jnp.float64)
-    qv = jnp.asarray(qv, dtype=jnp.float64)
-    p = jnp.asarray(p, dtype=jnp.float64)
-    dz = jnp.asarray(dz, dtype=jnp.float64)
-    rho = jnp.asarray(rho, dtype=jnp.float64)
-    w = jnp.asarray(w, dtype=jnp.float64)
-    dt = jnp.asarray(dt, dtype=jnp.float64)
-    dx = jnp.asarray(dx, dtype=jnp.float64)
-    hfx = jnp.asarray(hfx, dtype=jnp.float64)
-    qfx = jnp.asarray(qfx, dtype=jnp.float64)
+    t = np.asarray(t, dtype=np.float64)
+    qv = np.asarray(qv, dtype=np.float64)
+    p = np.asarray(p, dtype=np.float64)
+    dz = np.asarray(dz, dtype=np.float64)
+    rho = np.asarray(rho, dtype=np.float64)
+    w = np.asarray(w, dtype=np.float64)
+    kx = t.shape[0]
 
     if pi_exner is None:
         pi_exner = (p / 1.0e5) ** (R_D / CP)
-    pi_exner = jnp.asarray(pi_exner, dtype=jnp.float64)
+    pi_exner = np.asarray(pi_exner, dtype=np.float64)
 
-    k = jnp.arange(t.shape[0], dtype=jnp.float64) + 1.0
-    kpbl_i = jnp.asarray(kpbl, dtype=jnp.int32)
-    qs = saturation_mixing_ratio(p, t)
-    rh = jnp.clip(qv / jnp.maximum(qs, 1.0e-12), 0.0, 2.0)
-    theta = t / pi_exner
-    theta_e = theta * jnp.exp(XLV * qv / jnp.maximum(CP * t, 1.0))
+    zeros = np.zeros(kx, dtype=np.float64)
+    u = zeros if u is None else np.asarray(u, dtype=np.float64)
+    v = zeros if v is None else np.asarray(v, dtype=np.float64)
+    rthblten = zeros if rthblten is None else np.asarray(rthblten, dtype=np.float64)
+    rqvblten = zeros if rqvblten is None else np.asarray(rqvblten, dtype=np.float64)
 
-    bl_mask = k <= kpbl_i
-    mid_mask = (k >= kpbl_i + 2) & (k <= kpbl_i + 10)
-    bl_norm = jnp.maximum(jnp.sum(bl_mask), 1)
-    mid_norm = jnp.maximum(jnp.sum(mid_mask), 1)
-    bl_rh = jnp.sum(jnp.where(bl_mask, rh, 0.0)) / bl_norm
-    mid_theta_e = jnp.sum(jnp.where(mid_mask, theta_e, 0.0)) / mid_norm
-    bl_theta_e = jnp.max(jnp.where(bl_mask, theta_e, -1.0e9))
-    max_w = jnp.max(w)
-
-    sig = grell_freitas_scale_factor(dx, csum=csum, xland=xland)
-    # WRF's 9 km and 15 km oracle cases are effectively undamped, while 3 km is
-    # strongly damped. This normalized factor preserves that threshold behavior.
-    scale = jnp.minimum(1.0, jnp.sqrt(sig / SIGMA_9KM))
-
-    deep_score = (bl_theta_e - mid_theta_e) + 20.0 * max_w + 0.018 * hfx + 8.0e3 * qfx
-    shallow_score = 2.0 * (bl_rh - 0.68) + 1.3 * max_w + 0.0025 * hfx + 1.0e3 * qfx
-    deep_active = (max_w > 0.70) & (bl_rh > 0.72) & (deep_score > 4.0)
-    shallow_active = (max_w > 0.15) & (shallow_score > 0.65)
-
-    deep_base = _first_true_index((rh > 0.72) & (k <= kpbl_i + 3), 2)
-    deep_top = _last_true_index((p > 2.8e4) & (t > 225.0), jnp.minimum(t.shape[0], 25))
-    deep_top = jnp.maximum(deep_top, deep_base + 4)
-    shallow_base = jnp.asarray(2, dtype=jnp.int32)
-    shallow_top = jnp.where(deep_active, jnp.minimum(kpbl_i + 2, 8), jnp.maximum(4, kpbl_i - 1))
-    shallow_top = jnp.maximum(shallow_base + 1, shallow_top)
-
-    deep_region = (k >= deep_base) & (k <= deep_top)
-    shallow_region = (k >= shallow_base) & (k <= shallow_top)
-    deep_shape = _normalized_gaussian(k, 0.5 * (deep_base + deep_top), jnp.maximum((deep_top - deep_base) / 3.0, 1.0), deep_region)
-    shallow_shape = _normalized_gaussian(
-        k,
-        0.5 * (shallow_base + shallow_top),
-        jnp.maximum((shallow_top - shallow_base) / 2.0, 1.0),
-        shallow_region,
+    out = _ref.gfdrv(
+        t, qv, p, pi_exner, dz, rho, u, v, w, rthblten, rqvblten,
+        dt=float(dt), dx=float(dx), hfx=float(hfx), qfx=float(qfx),
+        kpbl=int(kpbl), xland=float(xland), ht=float(ht),
+        ishallow_g3=1, ichoice=0,
     )
 
-    deep_heat = jnp.where(deep_active, 2.45e-3 * scale * deep_shape, 0.0)
-    shallow_heat = jnp.where(shallow_active, 2.0e-6 * shallow_shape, 0.0)
-    rthcuten = deep_heat + shallow_heat
-    rqvcuten = -0.45 * CP / XLV * deep_heat - 0.25 * CP / XLV * shallow_heat
-    condensate = jnp.maximum(0.0, -0.18 * rqvcuten)
-    cold = t < 258.0
-    rqicuten = jnp.where(cold, condensate, 0.0)
-    rqccuten = jnp.where(cold, 0.0, condensate)
-    rqrcuten = jnp.zeros_like(rthcuten)
-    rqscuten = jnp.zeros_like(rthcuten)
+    sig = grell_freitas_scale_factor(dx, csum=0.0, xland=xland)
+    # scale_normalized: diagnostic only (relative to the 9 km undamped factor).
+    sig9 = grell_freitas_scale_factor(9000.0, csum=0.0, xland=xland)
+    scale_normalized = min(1.0, np.sqrt(sig / sig9)) if sig9 > 0 else 0.0
 
-    pratec = jnp.where(deep_active, 7.85e-4 * scale, 0.0)
-    raincv = pratec * dt
-    ktop_deep = jnp.where(deep_active, deep_top, 0).astype(jnp.int32)
-    k22_shallow = jnp.where(shallow_active, shallow_base, 0).astype(jnp.int32)
-    kbcon_shallow = jnp.where(shallow_active, shallow_base + 1, 0).astype(jnp.int32)
-    ktop_shallow = jnp.where(shallow_active, shallow_top, 0).astype(jnp.int32)
-    xmb_shallow = jnp.where(shallow_active, 3.7e-2, 0.0)
+    rthcuten = out["RTHCUTEN"]
+    rqvcuten = out["RQVCUTEN"]
+    rqccuten = out["RQCCUTEN"]
+    rqicuten = out["RQICUTEN"]
+    rqrcuten = np.zeros(kx, dtype=np.float64)
+    rqscuten = np.zeros(kx, dtype=np.float64)
 
-    # Column water sink diagnostic: not used to force parity, but useful in
-    # reports for spotting sign/unit mistakes.
-    qv_sink_mm = -jnp.sum(rqvcuten * rho * dz) * dt
+    trigger_deep = bool(out["KTOP_DEEP"] > 0 and out["RAINCV"] > 0.0)
+    trigger_shallow = bool(out["XMB_SHALLOW"] > 0.0 or out["KTOP_SHALLOW"] > 0)
+
+    qv_sink_mm = -float(np.sum(rqvcuten * rho * dz) * dt)
 
     return {
         "RTHCUTEN": rthcuten,
@@ -215,22 +174,26 @@ def grell_freitas_column(
         "RQRCUTEN": rqrcuten,
         "RQICUTEN": rqicuten,
         "RQSCUTEN": rqscuten,
-        "RAINCV": raincv,
-        "PRATEC": pratec,
-        "KTOP_DEEP": ktop_deep,
-        "XMB_SHALLOW": xmb_shallow,
-        "K22_SHALLOW": k22_shallow,
-        "KBCON_SHALLOW": kbcon_shallow,
-        "KTOP_SHALLOW": ktop_shallow,
-        "SCALE_FACTOR": sig,
-        "SCALE_NORMALIZED": scale,
-        "TRIGGER_DEEP": deep_active,
-        "TRIGGER_SHALLOW": shallow_active,
-        "QVSINK_MM": qv_sink_mm,
+        "RAINCV": np.float64(out["RAINCV"]),
+        "PRATEC": np.float64(out["PRATEC"]),
+        "KTOP_DEEP": np.int32(out["KTOP_DEEP"]),
+        "XMB_SHALLOW": np.float64(out["XMB_SHALLOW"]),
+        "K22_SHALLOW": np.int32(out["K22_SHALLOW"]),
+        "KBCON_SHALLOW": np.int32(out["KBCON_SHALLOW"]),
+        "KTOP_SHALLOW": np.int32(out["KTOP_SHALLOW"]),
+        "SCALE_FACTOR": np.float64(sig),
+        "SCALE_NORMALIZED": np.float64(scale_normalized),
+        "TRIGGER_DEEP": trigger_deep,
+        "TRIGGER_SHALLOW": trigger_shallow,
+        "QVSINK_MM": np.float64(qv_sink_mm),
+        "IERR_DEEP": np.int32(out["IERR_DEEP"]),
+        "IERR_SHALLOW": np.int32(out["IERR_SHALLOW"]),
     }
 
 
-grell_freitas_column_jit = jax.jit(grell_freitas_column, static_argnames=())
+# The reference port is sequential NumPy on CPU; there is no JIT wrapper. Kept
+# as an alias so existing imports of ``grell_freitas_column_jit`` resolve.
+grell_freitas_column_jit = grell_freitas_column
 
 
 def grell_freitas_step(
@@ -243,13 +206,14 @@ def grell_freitas_step(
     hfx=0.0,
     qfx=0.0,
     xland=1.0,
+    ht=0.0,
 ) -> PhysicsStepResult:
     """Frozen-interface adapter returning ``PhysicsStepResult``.
 
     ``state`` may provide either ``t`` or ``theta`` plus ``pi``. Required arrays:
-    ``qv``, ``p``, ``dz``, ``rho``, and ``w``.
+    ``qv``, ``p``, ``dz``, ``rho``, ``w``. Optional: ``u``, ``v``,
+    ``rthblten``, ``rqvblten`` (PBL forcing folded into the GF forced sounding).
     """
-
     del carry
     pi = state.get("pi")
     if "t" in state:
@@ -257,7 +221,7 @@ def grell_freitas_step(
     else:
         if pi is None:
             raise ValueError("state must provide either 't' or both 'theta' and 'pi'")
-        t = jnp.asarray(state["theta"]) * jnp.asarray(pi)
+        t = np.asarray(state["theta"]) * np.asarray(pi)
     out = grell_freitas_column(
         t,
         state["qv"],
@@ -270,13 +234,18 @@ def grell_freitas_step(
         pi_exner=pi,
         u=state.get("u"),
         v=state.get("v"),
+        rthblten=state.get("rthblten"),
+        rqvblten=state.get("rqvblten"),
         kpbl=kpbl,
         hfx=hfx,
         qfx=qfx,
         xland=xland,
+        ht=ht,
     )
 
-    zeros_3d = jnp.zeros_like(jnp.asarray(out["RTHCUTEN"]))
+    zeros_3d = np.zeros_like(np.asarray(out["RTHCUTEN"]))
+    # cugd_* are NOT updated by the GFDRV call path (see module docstring); the
+    # integration-relevant carry is the combined cumulus tendencies + RAINCV.
     cumulus_carry = {
         "cugd_qvten": zeros_3d,
         "cugd_tten": zeros_3d,
