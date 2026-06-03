@@ -61,5 +61,5 @@ def test_registry_records_supported_active_suite() -> None:
     assert SUPPORTED_OPTIONS["sf_sfclay_physics"].supported_values == frozenset({0, 1, 5, 7})
     assert SUPPORTED_OPTIONS["sf_surface_physics"].supported_values == frozenset({0, 2, 4})
     assert SUPPORTED_OPTIONS["cu_physics"].supported_values == frozenset({0, 1, 3, 6, 16})
-    assert SUPPORTED_OPTIONS["ra_sw_physics"].supported_values == frozenset({0, 4})
-    assert SUPPORTED_OPTIONS["ra_lw_physics"].supported_values == frozenset({0, 4})
+    assert SUPPORTED_OPTIONS["ra_sw_physics"].supported_values == frozenset({0, 1, 4})
+    assert SUPPORTED_OPTIONS["ra_lw_physics"].supported_values == frozenset({0, 1, 4})

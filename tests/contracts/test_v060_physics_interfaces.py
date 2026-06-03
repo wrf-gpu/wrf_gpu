@@ -50,8 +50,9 @@ def test_mp_registry_names_match_expected_wrfout_variables() -> None:
 
 def test_interfaces_self_check_and_scheme_specs_cover_v060_options() -> None:
     assert_interfaces_consistent()
-    # 17 single-option specs + 2 radiation variants (RRTMG LW/SW under option 4).
-    assert len(SCHEME_STEP_SPECS) == 19
+    # 17 single-option specs + 4 radiation variants (RRTMG LW/SW under option 4,
+    # Dudhia SW + classic RRTM LW under option 1).
+    assert len(SCHEME_STEP_SPECS) == 21
     assert scheme_step_spec("microphysics", 16).writes_state[-3:] == ("Nn", "Nc", "Nr")
     assert scheme_step_spec("cumulus", 1).returns_accumulators == ("rainc_acc",)
     assert scheme_step_spec("land_surface", 2).writes_carry == ("flx4", "fvb", "fbur", "fgsn", "smcrel", "xlaidyn")
@@ -67,6 +68,17 @@ def test_radiation_specs_are_held_rate_theta_tendencies() -> None:
     assert lw.wrf_slot == "first_rk_radiation_driver"
     assert sw.wrf_slot == "first_rk_radiation_driver"
     assert "SWDOWN" in sw.diagnostics and "GLW" in lw.diagnostics
+
+    # Classic Dudhia SW (ra_sw=1) and classic RRTM LW (ra_lw=1) follow the same
+    # held-rate theta-endpoint contract.
+    dudhia = scheme_step_spec("radiation", 1, "sw")
+    rrtm = scheme_step_spec("radiation", 1, "lw")
+    assert dudhia.writes_state == ("theta",)
+    assert rrtm.writes_state == ("theta",)
+    assert dudhia.wrf_slot == "first_rk_radiation_driver"
+    assert rrtm.wrf_slot == "first_rk_radiation_driver"
+    assert "GSW" in dudhia.diagnostics and "GLW" in rrtm.diagnostics
+    assert dudhia.owner_module == "src/gpuwrf/physics/ra_sw_dudhia.py"
 
 
 def test_physics_tendency_validates_unknown_keys() -> None:
@@ -85,8 +97,8 @@ def test_v060_namelist_accept_matrix_and_wrfout_forward_names() -> None:
                 "bl_pbl_physics": [0, 1, 5, 7],
                 "sf_sfclay_physics": [0, 1, 5, 7],
                 "sf_surface_physics": [0, 2, 4],
-                "ra_sw_physics": [0, 4],
-                "ra_lw_physics": [0, 4],
+                "ra_sw_physics": [0, 1, 4],
+                "ra_lw_physics": [0, 1, 4],
             }
         }
     )
