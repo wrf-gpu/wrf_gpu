@@ -106,27 +106,51 @@ def _absolute_diagnostics(
                  second theta-derived pressure).  F7F: previously this re-derived
                  ``p_abs`` from absolute θ, inventing a vertical pressure source
                  that double-counted the buoyancy; removed.
-      ``al'``  = ``-(alt*c1h*mu' + rdnw*(ph'(k+1)-ph'(k))) / (c1h*mut+c2h)``
+      ``al'``  = ``-1/(c1h*muts+c2h) * (alb*c1h*mu' + rdnw*(ph'(k+1)-ph'(k)))``
                  from the perturbation geopotential ``ph'`` and ``mu'``
-                 (``module_big_step_utilities_em.F:1023-1027``).
+                 (WRF ``calc_p_rho_phi``, ``module_big_step_utilities_em.F:1029``).
+                 The denominator is the TOTAL column mass ``muts`` (WRF passes
+                 ``grid%muts = grid%mut + grid%mu_2``, solve_em.F:3610) and the
+                 ``mu'`` term carries the BASE-state inverse density ``alb`` --
+                 NOT the prior JAX form which used the base column mass ``mub`` in
+                 the denominator and the TOTAL inverse density ``alt`` on the
+                 ``mu'`` term.  Opus v040 round (2026-06-03) adjudicated this
+                 against agy's review: it is a REAL correctness bug but a small one
+                 (al relative error ~1.2e-4 of alt; <0.01 m/s of the 24h U10 bias).
+                 Fixed here for WRF-faithfulness regardless.
+      ``alb``  = base-state inverse density from the hydrostatic base column,
+                 ``alb = -rdnw*(phb(k+1)-phb(k)) / (c1h*mub+c2h)`` (the exact
+                 inverse of the base hydrostatic relation; WRF carries ``grid%alb``
+                 from init, identical to this reconstruction at machine precision).
       ``alt``  = full inverse density from the EOS (θ_total, p_total).
       ``php``  = ``0.5*(phb+ph' faces)`` on mass levels (full geopotential).
     """
 
     ph_pert = state.ph_perturbation.astype(jnp.float64)
     mu_pert = state.mu_perturbation.astype(jnp.float64)
-    mut = (state.mu_total - state.mu_perturbation).astype(jnp.float64)
+    mu_total = state.mu_total.astype(jnp.float64)
+    mub = (state.mu_total - state.mu_perturbation).astype(jnp.float64)
     alt = _inverse_density_from_theta_pressure(
         state.theta.astype(jnp.float64), state.p_total.astype(jnp.float64)
     )
     # WRF p for the horizontal PGF is grid%p = the perturbation-pressure
     # diagnostic carried on the state, not a re-derived absolute-θ pressure.
     p_pert = state.p_perturbation.astype(jnp.float64)
-    mass_h = metrics.c1h[:, None, None] * mut[None, :, :] + metrics.c2h[:, None, None]
-    safe_mass = jnp.where(jnp.abs(mass_h) > 1.0e-12, mass_h, jnp.asarray(1.0e-12, dtype=mass_h.dtype))
-    mu_term = metrics.c1h[:, None, None] * mu_pert[None, :, :]
-    al = -(alt * mu_term + metrics.rdnw[:, None, None] * (ph_pert[1:, :, :] - ph_pert[:-1, :, :])) / safe_mass
+    c1h = metrics.c1h[:, None, None]
+    c2h = metrics.c2h[:, None, None]
+    rdnw = metrics.rdnw[:, None, None]
     phb = (state.ph_total - state.ph_perturbation).astype(jnp.float64)
+    # WRF-faithful al (calc_p_rho_phi :1029).  Denominator = TOTAL column mass
+    # muts = mut + mu_2 (solve_em.F:3610); the mu' term carries the BASE-state
+    # inverse density alb (reconstructed from the base hydrostatic column).
+    mass_base = c1h * mub[None, :, :] + c2h
+    safe_base = jnp.where(jnp.abs(mass_base) > 1.0e-12, mass_base, jnp.asarray(1.0e-12, dtype=mass_base.dtype))
+    alb = -rdnw * (phb[1:, :, :] - phb[:-1, :, :]) / safe_base
+    muts = mu_total + mu_pert  # grid%muts = grid%mut + grid%mu_2
+    mass_t = c1h * muts[None, :, :] + c2h
+    safe_t = jnp.where(jnp.abs(mass_t) > 1.0e-12, mass_t, jnp.asarray(1.0e-12, dtype=mass_t.dtype))
+    mu_term = c1h * mu_pert[None, :, :]
+    al = -(alb * mu_term + rdnw * (ph_pert[1:, :, :] - ph_pert[:-1, :, :])) / safe_t
     ph_total = phb + ph_pert
     php = 0.5 * (ph_total[:-1, :, :] + ph_total[1:, :, :])
     return ph_pert, p_pert, al, alt, php
@@ -177,6 +201,20 @@ def large_step_horizontal_pgf(
     msf_v = (metrics.msfvy / metrics.msfvx)[None, :, :]
     mu_total = mut + mu_pert
 
+    # WRF top-face (lid) extrapolation coefficients cfn/cfn1 for dpn(kde) when
+    # top_lid is active (module_big_step_utilities_em.F:2357-2362 uses cfn/cfn1 --
+    # NOT the bottom cf1/cf2/cf3).  WRF init (e.g. module_initialize_scm_xy.F:351):
+    #   cfn  = (0.5*dnw[kde-1] + dn[kde-1]) / dn[kde-1]
+    #   cfn1 = -0.5*dnw[kde-1] / dn[kde-1]
+    # with kde-1 the top mass level (JAX index nz-1).  Opus v040 round (2026-06-03):
+    # agy flagged the prior JAX form (cf1/cf2/cf3 at the top) as a real but tiny bug
+    # active only on the top model level; fixed here for WRF-faithfulness (top-face
+    # only, ~1e-8 m/s of the 24h surface wind bias).
+    _dn_top = metrics.dn[-1]
+    _dn_top_safe = jnp.where(jnp.abs(_dn_top) > 1.0e-30, _dn_top, jnp.asarray(1.0, dtype=_dn_top.dtype))
+    cfn = (0.5 * metrics.dnw[-1] + metrics.dn[-1]) / _dn_top_safe
+    cfn1 = -0.5 * metrics.dnw[-1] / _dn_top_safe
+
     def _dpn_faces(pair_sum: jax.Array) -> jax.Array:
         nz = int(pair_sum.shape[0])
         dpn = jnp.zeros((nz + 1,) + pair_sum.shape[1:], dtype=pair_sum.dtype)
@@ -187,7 +225,7 @@ def large_step_horizontal_pgf(
         )
         dpn = dpn.at[1:nz, :, :].set(interior)
         if bool(top_lid):
-            top = 0.5 * (metrics.cf1 * pair_sum[-1] + metrics.cf2 * pair_sum[-2] + metrics.cf3 * pair_sum[-3])
+            top = 0.5 * (cfn * pair_sum[-1] + cfn1 * pair_sum[-2])
             dpn = dpn.at[nz, :, :].set(top)
         return dpn
 

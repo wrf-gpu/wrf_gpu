@@ -1,0 +1,216 @@
+{
+  "agy_al": {
+    "al_error_jax_minus_wrf(muts=mut)": {
+      "absmean": 5.5181383580939505e-05,
+      "max": 0.00021076260107597434,
+      "max_abs": 0.00021076260107597434,
+      "mean": 5.5181383580939505e-05,
+      "min": 0.0,
+      "rmse": 8.372159002311941e-05
+    },
+    "al_error_jax_minus_wrf(muts=mut+mu2)": {
+      "absmean": 0.0001343171741958539,
+      "max": 0.0006453425990492409,
+      "max_abs": 0.0006453425990492409,
+      "mean": 0.00013428086949913255,
+      "min": -2.931955935599022e-05,
+      "rmse": 0.0002010334343421395
+    },
+    "al_jax_stats": {
+      "absmean": 0.13948878022836292,
+      "max": 0.7842310832977295,
+      "max_abs": 0.7842310832977295,
+      "mean": 0.13916543682530952,
+      "min": -0.010791238350922102,
+      "rmse": 0.2304486794454039
+    },
+    "al_relative_error_over_alt": {
+      "absmean": 0.00011708531047109517,
+      "max": 0.000501803556802408,
+      "max_abs": 0.000501803556802408,
+      "mean": 0.00011706361288227809,
+      "min": -3.107225059493331e-05,
+      "rmse": 0.0001751811491513009
+    },
+    "al_wrf_muts=mut+mu2_stats": {
+      "absmean": 0.1393660817535978,
+      "max": 0.7842310832977295,
+      "max_abs": 0.7842310832977295,
+      "mean": 0.13903115595581036,
+      "min": -0.01076234753062835,
+      "rmse": 0.23044034319226978
+    },
+    "al_wrf_muts=mut_stats": {
+      "absmean": 0.13945018533177964,
+      "max": 0.7842310832977295,
+      "max_abs": 0.7842310832977295,
+      "mean": 0.13911025544172856,
+      "min": -0.010955749142302301,
+      "rmse": 0.23044669717488406
+    },
+    "alb_wrf_stats": {
+      "absmean": 3.18671616653789,
+      "max": 10.99192936706543,
+      "max_abs": 10.99192936706543,
+      "mean": 3.18671616653789,
+      "min": 0.8331885245572402,
+      "rmse": 4.224250330832298
+    },
+    "alt_stats": {
+      "absmean": 3.3194316255634937,
+      "max": 11.763869728372189,
+      "max_abs": 11.763869728372189,
+      "mean": 3.3194316255634937,
+      "min": 0.8223778078706467,
+      "rmse": 4.440902005497259
+    },
+    "note": "al error = (alt-alb)*c1*mu'/mass + al*c1*mu'/mass-type 2nd-order terms; expected sub-percent of alt."
+  },
+  "agy_al_pgf_impact": {
+    "delta_implied_u_accel_m_s2_stats": {
+      "absmean": 7.619404999328295e-07,
+      "max": 0.0002914193507096986,
+      "max_abs": 0.0002914193507096986,
+      "mean": 1.44514104893057e-07,
+      "min": -0.00028712525371936274,
+      "rmse": 6.91344889135013e-06
+    },
+    "delta_implied_v_accel_m_s2_stats": {
+      "absmean": 7.350887224149744e-07,
+      "max": 0.00031853323369623524,
+      "max_abs": 0.0003588666881036153,
+      "mean": -9.360563391360189e-08,
+      "min": -0.0003588666881036153,
+      "rmse": 7.108633211622761e-06
+    },
+    "delta_ru_pgf_coupled_stats": {
+      "absmean": 0.06907277737005758,
+      "max": 20.96423267040609,
+      "max_abs": 21.853977563396043,
+      "mean": 0.013687555008562979,
+      "min": -21.853977563396043,
+      "rmse": 0.5960863055983925
+    },
+    "delta_rv_pgf_coupled_stats": {
+      "absmean": 0.06638390516567753,
+      "max": 23.003186153614024,
+      "max_abs": 26.930915566194827,
+      "mean": -0.008936155045430164,
+      "min": -26.930915566194827,
+      "rmse": 0.6053257299311668
+    },
+    "delta_u_accel_x_24h_m_s": {
+      "absmean": 0.06583165919419647,
+      "max": 25.17863190131796,
+      "max_abs": 25.17863190131796,
+      "mean": 0.012486018662760126,
+      "min": -24.80762192135294,
+      "rmse": 0.5973219842126511
+    },
+    "note": "pb_term al-fix delta in the u/v PGF; implied accel * 86400 s bounds the 24h velocity bias the al-swap alone could explain."
+  },
+  "created_by": "Opus 4.8 MAX",
+  "dx_m": 9000.0,
+  "dy_m": 9000.0,
+  "gpt_advection_24h_bound": {
+    "u_interior_signed_mean_accel_x_24h_m_s": -9.44742986045512e-17,
+    "u_lbcring_signed_mean_accel_x_24h_m_s": 0.9835851851939548,
+    "v_interior_signed_mean_accel_x_24h_m_s": -4.213544012834179e-17
+  },
+  "gpt_advection_bc_gap": {
+    "note": "Implied-accel residual = (JAX-periodic - WRF-specified) advection / face mass. INTERIOR signed mean drives slow mean bias; LBC-ring spikes are relaxed away by the lateral BC nudge each step and average out.",
+    "u_implied_accel_resid_INTERIOR(ring5)_m_s2": {
+      "absmean": 1.7389714239315785e-19,
+      "max": 1.2976754174144987e-17,
+      "max_abs": 1.2976754174144987e-17,
+      "mean": -1.0934525301452685e-21,
+      "min": -1.2640181299311256e-17,
+      "rmse": 4.298254450881321e-19
+    },
+    "u_implied_accel_resid_LBCRING(width5)_m_s2": {
+      "absmean": 0.0017316638041507786,
+      "max": 0.04775004361096967,
+      "max_abs": 0.06539975689135026,
+      "mean": 1.1384087791596699e-05,
+      "min": -0.06539975689135026,
+      "rmse": 0.005497440953951909
+    },
+    "u_implied_accel_resid_full_m_s2": {
+      "absmean": 0.0004464982401614882,
+      "max": 0.04775004361096967,
+      "max_abs": 0.06539975689135026,
+      "mean": 2.935312935806584e-06,
+      "min": -0.06539975689135026,
+      "rmse": 0.0027915066036716903
+    },
+    "u_resid_signed_mean_INTERIOR": -1.0337372979759198e-16,
+    "u_resid_signed_mean_LBCRING": 0.8900659689969217,
+    "u_total_coupled_resid_full": {
+      "absmean": 42.45919229705668,
+      "max": 4536.254143042119,
+      "max_abs": 6212.976904678275,
+      "mean": 0.22949771649217443,
+      "min": -6212.976904678275,
+      "rmse": 265.2088153636114
+    },
+    "v_implied_accel_resid_INTERIOR(ring5)_m_s2": {
+      "absmean": 9.396666777967216e-20,
+      "max": 1.7539186477446683e-17,
+      "max_abs": 1.7539186477446683e-17,
+      "mean": -4.876787051891411e-22,
+      "min": -1.3350724035071357e-17,
+      "rmse": 3.7366541492032276e-19
+    },
+    "v_implied_accel_resid_LBCRING(width5)_m_s2": {
+      "absmean": 0.0014551070218745447,
+      "max": 0.07875970566524111,
+      "max_abs": 0.07875970566524111,
+      "mean": 0.0002774359703667947,
+      "min": -0.034521348224316906,
+      "rmse": 0.004832421562283463
+    },
+    "v_implied_accel_resid_full_m_s2": {
+      "absmean": 0.00037290377083881704,
+      "max": 0.07875970566524111,
+      "max_abs": 0.07875970566524111,
+      "mean": 7.109918236998502e-05,
+      "min": -0.034521348224316906,
+      "rmse": 0.002446333895308827
+    },
+    "v_resid_signed_mean_INTERIOR": -4.604250609227962e-17,
+    "v_resid_signed_mean_LBCRING": 26.198726016390076,
+    "v_total_coupled_resid_full": {
+      "absmean": 35.49604971547999,
+      "max": 7482.172038197906,
+      "max_abs": 7482.172038197906,
+      "mean": 6.714010430723622,
+      "min": -3279.5280813101062,
+      "rmse": 232.42744366651385
+    }
+  },
+  "pgf_faithful_interior": {
+    "al_fix_only_du_accel_LOWLEVEL_k0_2_interior_signed_mean": 0.0,
+    "al_fix_only_du_accel_interior_rmse_m_s2": 1.8750151812945104e-09,
+    "al_fix_only_du_accel_interior_signed_mean_m_s2": -7.64299800141883e-14,
+    "al_fix_only_du_accel_interior_x24h_m_s": -6.603550273225869e-09,
+    "al_fix_only_dv_accel_interior_signed_mean_m_s2": -9.662891549952103e-12,
+    "al_fix_only_dv_accel_interior_x24h_m_s": -8.348738299158618e-07,
+    "both_fixes_du_accel_LOWLEVEL_k0_2_interior_signed_mean": 0.0,
+    "both_fixes_du_accel_interior_rmse_m_s2": 4.68796743702399e-17,
+    "both_fixes_du_accel_interior_signed_mean_m_s2": -3.303162580274977e-19,
+    "both_fixes_du_accel_interior_x24h_m_s": -2.8539324693575797e-14,
+    "both_fixes_dv_accel_interior_signed_mean_m_s2": 7.11585456471218e-19,
+    "both_fixes_dv_accel_interior_x24h_m_s": 6.148098343911324e-14,
+    "cfn": 1.4784409538615364,
+    "cfn1": -0.4784409538615364,
+    "dpn_fix_only_du_accel_LOWLEVEL_k0_2_interior_signed_mean": -2.3459665144345515e-07,
+    "dpn_fix_only_du_accel_interior_rmse_m_s2": 7.954597955014881e-06,
+    "dpn_fix_only_du_accel_interior_signed_mean_m_s2": -7.06016785435393e-08,
+    "dpn_fix_only_du_accel_interior_x24h_m_s": -0.006099985026161796,
+    "dpn_fix_only_dv_accel_interior_signed_mean_m_s2": 4.918444661571503e-08,
+    "dpn_fix_only_dv_accel_interior_x24h_m_s": 0.004249536187597778,
+    "note": "JAX PGF minus a FULLY WRF-faithful PGF (correct al=alb/muts + dpn cfn/cfn1 top). GPT round-4 oracle shared both transcription bugs, so its 'source-equivalent' verdict was a self-compare for these terms.  Interior signed-mean accel x 24h bounds the surface bias each correction can explain."
+  },
+  "savepoint": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260429_18z_l2_72h_20260524T204451Z/wrfout_d01_2026-04-29_18:00:00",
+  "schema": "v040_adjudicate_al_vs_advection.v1"
+}

@@ -1,0 +1,25 @@
+{
+  "base_commit": "7170e1a",
+  "cases": {
+    "straka_density_current": {
+      "bit_identical": true,
+      "finite": true,
+      "max_abs_dtheta": 0.0,
+      "max_abs_du": 0.0,
+      "max_abs_dw": 0.0,
+      "steps": 40
+    },
+    "warm_bubble": {
+      "bit_identical": true,
+      "finite": true,
+      "max_abs_dtheta": 0.0,
+      "max_abs_du": 0.0,
+      "max_abs_dw": 0.0,
+      "steps": 30
+    }
+  },
+  "config": "run_boundary=False, top_lid=True, use_flux_advection=True (F7 idealized)",
+  "created_by": "Opus 4.8 MAX",
+  "overall_bit_identical_periodic_path": true,
+  "schema": "v040_idealized_noregress_pgf_fix.v1"
+}

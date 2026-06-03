@@ -1,0 +1,121 @@
+{
+  "cases": {
+    "20260429_d01_l2": {
+      "advection_u_jaxperiodic_vs_wrfspecified": {
+        "boundary_ring5": {
+          "max_abs": 6212.976904678275,
+          "mean": 0.8900659689969217,
+          "n": 62920,
+          "rmse": 522.2877857467034
+        },
+        "full": {
+          "max_abs": 6212.976904678275,
+          "mean": 0.22949771649217443,
+          "n": 244024,
+          "rmse": 265.2088153636114
+        },
+        "interior_ring5_excluded": {
+          "max_abs": 1.2327916465437738e-12,
+          "mean": -1.0337372979759198e-16,
+          "n": 181104,
+          "rmse": 4.0827365107786915e-14
+        },
+        "wrf_term_rmse": 31.345347364136003
+      },
+      "advection_v_jaxperiodic_vs_wrfspecified": {
+        "boundary_ring5": {
+          "max_abs": 7482.172038197906,
+          "mean": 26.198726016390076,
+          "n": 62920,
+          "rmse": 459.1308621420603
+        },
+        "full": {
+          "max_abs": 7482.172038197906,
+          "mean": 6.714010430723622,
+          "n": 245520,
+          "rmse": 232.42744366651385
+        },
+        "interior_ring5_excluded": {
+          "max_abs": 1.666222715357435e-12,
+          "mean": -4.604250609227962e-17,
+          "n": 182600,
+          "rmse": 3.55005915379093e-14
+        },
+        "wrf_term_rmse": 35.091574729770656
+      },
+      "dx_m": 9000.0,
+      "gate": {
+        "advection_interior_rmse_u": 4.0827365107786915e-14,
+        "advection_interior_rmse_v": 3.55005915379093e-14,
+        "pass": true,
+        "pgf_interior_rmse_over_wrf_u": 3.828256784901746e-17,
+        "pgf_interior_rmse_over_wrf_v": 2.5922742985205802e-17
+      },
+      "pgf_u_jax_vs_wrffaithful": {
+        "boundary_ring5": {
+          "max_abs": 5.684341886080802e-14,
+          "mean": 2.9409793806325168e-18,
+          "n": 62920,
+          "rmse": 7.812567165257723e-16
+        },
+        "full": {
+          "max_abs": 4.547473508864641e-13,
+          "mean": -8.675142222463441e-18,
+          "n": 244024,
+          "rmse": 3.511859444411512e-15
+        },
+        "interior_ring5_excluded": {
+          "max_abs": 4.547473508864641e-13,
+          "mean": -1.2710869601575984e-17,
+          "n": 181104,
+          "rmse": 4.050425286742071e-15
+        },
+        "wrf_term_rmse": 105.8033855700729
+      },
+      "pgf_v_jax_vs_wrffaithful": {
+        "boundary_ring5": {
+          "max_abs": 5.684341886080802e-14,
+          "mean": 2.303553971150893e-18,
+          "n": 62920,
+          "rmse": 8.87785111167415e-16
+        },
+        "full": {
+          "max_abs": 3.410605131648481e-13,
+          "mean": 4.875377022282894e-19,
+          "n": 245520,
+          "rmse": 3.254864420449933e-15
+        },
+        "interior_ring5_excluded": {
+          "max_abs": 3.410605131648481e-13,
+          "mean": -1.3822212055708957e-19,
+          "n": 182600,
+          "rmse": 3.738057040885369e-15
+        },
+        "wrf_term_rmse": 144.1999036528924
+      },
+      "wrfout": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260429_18z_l2_72h_20260524T204451Z/wrfout_d01_2026-04-29_18:00:00"
+    }
+  },
+  "created_by": "Opus 4.8 MAX",
+  "fixes_under_test": [
+    "rk_addtend_dry._absolute_diagnostics: al uses alb (base inv density) + muts (total column mass) \u2014 WRF calc_p_rho_phi:1029",
+    "rk_addtend_dry.large_step_horizontal_pgf._dpn_faces: top_lid face uses cfn/cfn1 (WRF :2357-2362) not cf1/cf2/cf3"
+  ],
+  "overall_savepoint_parity_pass": true,
+  "schema": "v040_boundary_transport_savepoint_parity.v1",
+  "tolerances": {
+    "advection_boundary_ring": "reported honestly; overwritten by spec/relax LBC zone each step",
+    "advection_interior_rmse_abs_max": 1e-12,
+    "pgf_interior_rmse_over_wrf_rmse_max": 1e-10
+  },
+  "wrf_source": {
+    "advection": {
+      "path": "/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/WRF/dyn_em/module_advect_em.F",
+      "sha256": "58253bdbeb188dd47ed0579fcd2891086be1889b75c0c7d3696c9ad1d213559d"
+    },
+    "pgf": {
+      "path": "/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/WRF/dyn_em/module_big_step_utilities_em.F",
+      "sha256": "a6eac120af17109af00c18fb6e08277d288067882e7d4865545604f8a9c1d766"
+    }
+  }
+}
