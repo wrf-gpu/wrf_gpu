@@ -74,14 +74,20 @@ SUPPORTED_OPTIONS: dict[str, SupportedOption] = {
     "bl_pbl_physics": SupportedOption(
         key="bl_pbl_physics",
         supported_values=frozenset(ACCEPTED_BL_PBL_PHYSICS),
-        implemented="0=disabled, 1=YSU, 5=MYNN, 7=ACM2",
-        action="Use one of the frozen v0.6.0 PBL options; all other PBL options remain unsupported.",
+        implemented="0=disabled, 1=YSU, 2=MYJ, 5=MYNN, 7=ACM2",
+        action=(
+            "Use one of the frozen v0.6.0 PBL options; bl_pbl_physics=2 must pair with "
+            "sf_sfclay_physics=2. All other PBL options remain unsupported."
+        ),
     ),
     "sf_sfclay_physics": SupportedOption(
         key="sf_sfclay_physics",
         supported_values=frozenset(ACCEPTED_SF_SFCLAY_PHYSICS),
-        implemented="0=disabled, 1=sfclayrev, 5=MYNN surface layer, 7=Pleim-Xiu surface layer",
-        action="Use one of the frozen v0.6.0 surface-layer options; all other sfclay options remain unsupported.",
+        implemented="0=disabled, 1=sfclayrev, 2=Janjic Eta, 5=MYNN surface layer, 7=Pleim-Xiu surface layer",
+        action=(
+            "Use one of the frozen v0.6.0 surface-layer options; sf_sfclay_physics=2 must pair with "
+            "bl_pbl_physics=2. All other sfclay options remain unsupported."
+        ),
     ),
     "sf_surface_physics": SupportedOption(
         key="sf_surface_physics",
@@ -179,8 +185,43 @@ def validate_supported_namelist(config: Any) -> None:
                     domain_index=idx + 1 if len(values) > 1 else None,
                 )
             )
+    failures.extend(_myj_pairing_failures(config_obj))
     if failures:
         raise UnsupportedNamelistOption(failures)
+
+
+def _myj_pairing_failures(config: Any) -> list[UnsupportedSelection]:
+    bl_found = _lookup(config, "bl_pbl_physics")
+    sf_found = _lookup(config, "sf_sfclay_physics")
+    if bl_found is None and sf_found is None:
+        return []
+
+    bl_location = bl_found[0] if bl_found is not None else "bl_pbl_physics"
+    sf_location = sf_found[0] if sf_found is not None else "sf_sfclay_physics"
+    bl_values = [_normalize_value(v) for v in _domain_values(bl_found[1])] if bl_found is not None else [None]
+    sf_values = [_normalize_value(v) for v in _domain_values(sf_found[1])] if sf_found is not None else [None]
+    ndom = max(len(bl_values), len(sf_values))
+
+    failures: list[UnsupportedSelection] = []
+    for idx in range(ndom):
+        bl = bl_values[idx] if idx < len(bl_values) else bl_values[-1]
+        sf = sf_values[idx] if idx < len(sf_values) else sf_values[-1]
+        if (bl == 2) == (sf == 2):
+            continue
+        if bl != 2 and sf != 2:
+            continue
+        failures.append(
+            UnsupportedSelection(
+                key="myj_pairing",
+                location=f"{bl_location}/{sf_location}",
+                value={"bl_pbl_physics": bl, "sf_sfclay_physics": sf},
+                supported_values=("bl_pbl_physics=2 with sf_sfclay_physics=2",),
+                implemented="MYJ PBL and Janjic Eta surface layer are a mandatory WRF pair",
+                action="Select both option values as 2, or select neither as 2.",
+                domain_index=idx + 1 if ndom > 1 else None,
+            )
+        )
+    return failures
 
 
 def _coerce_config(config: Any) -> Any:

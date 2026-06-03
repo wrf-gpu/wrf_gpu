@@ -1,0 +1,906 @@
+{
+  "cases": [
+    {
+      "case": 1,
+      "fields": {
+        "EL_MYJ": {
+          "abs_tolerance": 5e-10,
+          "argmax_flat_index": 2,
+          "jax": 23.381545592093627,
+          "max_abs": 8.665068662594422e-12,
+          "max_rel": 3.20644648761999e-13,
+          "oracle": 23.38154559210229,
+          "pass": true,
+          "rel_tolerance": 5e-11,
+          "scale": 27.02389918574982,
+          "signed_error_at_argmax": -8.665068662594422e-12
+        },
+        "EXCH_H": {
+          "abs_tolerance": 5e-10,
+          "argmax_flat_index": 1,
+          "jax": 35.73251359936652,
+          "max_abs": 1.581668129801983e-11,
+          "max_rel": 3.1111305545510656e-13,
+          "oracle": 35.73251359938234,
+          "pass": true,
+          "rel_tolerance": 5e-11,
+          "scale": 50.8390150162058,
+          "signed_error_at_argmax": -1.581668129801983e-11
+        },
+        "RQVBLTEN": {
+          "abs_tolerance": 5e-10,
+          "argmax_flat_index": 1,
+          "jax": 3.473606683768109e-07,
+          "max_abs": 4.443217203940839e-19,
+          "max_rel": 3.513529322376974e-13,
+          "oracle": 3.473606683763666e-07,
+          "pass": true,
+          "rel_tolerance": 5e-11,
+          "scale": 1.264602283419941e-06,
+          "signed_error_at_argmax": 4.443217203940839e-19
+        },
+        "RTHBLTEN": {
+          "abs_tolerance": 5e-10,
+          "argmax_flat_index": 26,
+          "jax": -4.835195947331764e-08,
+          "max_abs": 1.8947806348698824e-15,
+          "max_rel": 3.141709889410115e-12,
+          "oracle": -4.835195757853701e-08,
+          "pass": true,
+          "rel_tolerance": 5e-11,
+          "scale": 0.0006031049019696866,
+          "signed_error_at_argmax": -1.8947806348698824e-15
+        },
+        "RUBLTEN": {
+          "abs_tolerance": 5e-10,
+          "argmax_flat_index": 1,
+          "jax": -7.503953950281547e-05,
+          "max_abs": 1.0362262263530209e-16,
+          "max_rel": 3.716707843222624e-13,
+          "oracle": -7.503953950271184e-05,
+          "pass": true,
+          "rel_tolerance": 5e-11,
+          "scale": 0.0002788021738761544,
+          "signed_error_at_argmax": -1.0362262263530209e-16
+        },
+        "RVBLTEN": {
+          "abs_tolerance": 5e-10,
+          "argmax_flat_index": 1,
+          "jax": -1.8759884875700163e-05,
+          "max_abs": 2.220242761342972e-17,
+          "max_rel": 3.1854023668111236e-13,
+          "oracle": -1.875988487567796e-05,
+          "pass": true,
+          "rel_tolerance": 5e-11,
+          "scale": 6.970054346903861e-05,
+          "signed_error_at_argmax": -2.220242761342972e-17
+        },
+        "TKE_MYJ": {
+          "abs_tolerance": 5e-10,
+          "argmax_flat_index": 2,
+          "jax": 0.14866155148603155,
+          "max_abs": 3.552713678800501e-15,
+          "max_rel": 1.0890428940273957e-14,
+          "oracle": 0.148661551486028,
+          "pass": true,
+          "rel_tolerance": 5e-11,
+          "scale": 0.3262234847024427,
+          "signed_error_at_argmax": 3.552713678800501e-15
+        }
+      },
+      "full_wrf_exe": false,
+      "initial_tke_source": "0.5 * matching MYJSFC Q2 savepoint field, matching myjpbl_oracle_driver.f90",
+      "kpbl": {
+        "jax": 4,
+        "oracle": 4,
+        "pass": true
+      },
+      "pass": true,
+      "precision_mode": "fp64",
+      "regime": "unstable_daytime_land",
+      "scalars": {
+        "MIXHT": {
+          "abs_tolerance": 5e-10,
+          "argmax_flat_index": 0,
+          "jax": 1342.4214308162009,
+          "max_abs": 2.2737367544323206e-13,
+          "max_rel": 1.6937577889008175e-16,
+          "oracle": 1342.421430816201,
+          "pass": true,
+          "rel_tolerance": 5e-12,
+          "scale": 1342.421430816201,
+          "signed_error_at_argmax": -2.2737367544323206e-13
+        },
+        "PBLH": {
+          "abs_tolerance": 5e-10,
+          "argmax_flat_index": 0,
+          "jax": 734.6954533000476,
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "oracle": 734.6954533000476,
+          "pass": true,
+          "rel_tolerance": 5e-12,
+          "scale": 734.6954533000476,
+          "signed_error_at_argmax": 0.0
+        }
+      },
+      "ungated_jax_diagnostics": {
+        "AKH": {
+          "max_abs_jax": 0.2233096325018006,
+          "reason": "AKH is a local MYJPBL work array; exported WRF EXCH_H is the gated heat-exchange diagnostic"
+        },
+        "AKM": {
+          "max_abs_jax": 0.1560542863343,
+          "reason": "AKM is a local MYJPBL work array, not a dumped unmodified-WRF output field"
+        },
+        "EXCH_M": {
+          "max_abs_jax": 35.52755927906755,
+          "reason": "unmodified WRF MYJPBL does not expose EXCH_M/Km as an output argument in this oracle driver"
+        }
+      }
+    },
+    {
+      "case": 2,
+      "fields": {
+        "EL_MYJ": {
+          "abs_tolerance": 5e-10,
+          "argmax_flat_index": 1,
+          "jax": 32.149239320408945,
+          "max_abs": 1.0082601420435822e-11,
+          "max_rel": 3.136186620141385e-13,
+          "oracle": 32.14923932039886,
+          "pass": true,
+          "rel_tolerance": 5e-11,
+          "scale": 32.14923932039886,
+          "signed_error_at_argmax": 1.0082601420435822e-11
+        },
+        "EXCH_H": {
+          "abs_tolerance": 5e-10,
+          "argmax_flat_index": 0,
+          "jax": 75.23166167741984,
+          "max_abs": 2.674482857401017e-11,
+          "max_rel": 3.5549963908409747e-13,
+          "oracle": 75.23166167739309,
+          "pass": true,
+          "rel_tolerance": 5e-11,
+          "scale": 75.23166167739309,
+          "signed_error_at_argmax": 2.674482857401017e-11
+        },
+        "RQVBLTEN": {
+          "abs_tolerance": 5e-10,
+          "argmax_flat_index": 1,
+          "jax": 4.689162222112412e-07,
+          "max_abs": 6.839791049078475e-19,
+          "max_rel": 3.6959857047265133e-13,
+          "oracle": 4.689162222105572e-07,
+          "pass": true,
+          "rel_tolerance": 5e-11,
+          "scale": 1.850599974001953e-06,
+          "signed_error_at_argmax": 6.839791049078475e-19
+        },
+        "RTHBLTEN": {
+          "abs_tolerance": 5e-10,
+          "argmax_flat_index": 1,
+          "jax": 4.856280892132266e-05,
+          "max_abs": 1.8947788216899797e-15,
+          "max_rel": 1.996886009402539e-12,
+          "oracle": 4.856280891942788e-05,
+          "pass": true,
+          "rel_tolerance": 5e-11,
+          "scale": 0.000948866791979223,
+          "signed_error_at_argmax": 1.8947788216899797e-15
+        },
+        "RUBLTEN": {
+          "abs_tolerance": 5e-10,
+          "argmax_flat_index": 1,
+          "jax": -0.00013234608910249376,
+          "max_abs": 1.776465259617499e-16,
+          "max_rel": 1.0953460673300374e-12,
+          "oracle": -0.0001323460891023161,
+          "pass": true,
+          "rel_tolerance": 5e-11,
+          "scale": 0.0001621830134422927,
+          "signed_error_at_argmax": -1.776465259617499e-16
+        },
+        "RVBLTEN": {
+          "abs_tolerance": 5e-10,
+          "argmax_flat_index": 1,
+          "jax": -3.308652227561974e-05,
+          "max_abs": 4.071179157683069e-17,
+          "max_rel": 1.0040950827767572e-12,
+          "oracle": -3.308652227557903e-05,
+          "pass": true,
+          "rel_tolerance": 5e-11,
+          "scale": 4.054575336057316e-05,
+          "signed_error_at_argmax": -4.071179157683069e-17
+        },
+        "TKE_MYJ": {
+          "abs_tolerance": 5e-10,
+          "argmax_flat_index": 1,
+          "jax": 0.3670969501962922,
+          "max_abs": 6.827871601444713e-15,
+          "max_rel": 1.859964131489957e-14,
+          "oracle": 0.367096950196299,
+          "pass": true,
+          "rel_tolerance": 5e-11,
+          "scale": 0.367096950196299,
+          "signed_error_at_argmax": -6.827871601444713e-15
+        }
+      },
+      "full_wrf_exe": false,
+      "initial_tke_source": "0.5 * matching MYJSFC Q2 savepoint field, matching myjpbl_oracle_driver.f90",
+      "kpbl": {
+        "jax": 5,
+        "oracle": 5,
+        "pass": true
+      },
+      "pass": true,
+      "precision_mode": "fp64",
+      "regime": "strong_unstable_land",
+      "scalars": {
+        "MIXHT": {
+          "abs_tolerance": 5e-10,
+          "argmax_flat_index": 0,
+          "jax": 1664.6492792874315,
+          "max_abs": 4.547473508864641e-13,
+          "max_rel": 2.7317907534319966e-16,
+          "oracle": 1664.649279287431,
+          "pass": true,
+          "rel_tolerance": 5e-12,
+          "scale": 1664.649279287431,
+          "signed_error_at_argmax": 4.547473508864641e-13
+        },
+        "PBLH": {
+          "abs_tolerance": 5e-10,
+          "argmax_flat_index": 0,
+          "jax": 1031.656363604808,
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "oracle": 1031.656363604808,
+          "pass": true,
+          "rel_tolerance": 5e-12,
+          "scale": 1031.656363604808,
+          "signed_error_at_argmax": 0.0
+        }
+      },
+      "ungated_jax_diagnostics": {
+        "AKH": {
+          "max_abs_jax": 0.3304539774487258,
+          "reason": "AKH is a local MYJPBL work array; exported WRF EXCH_H is the gated heat-exchange diagnostic"
+        },
+        "AKM": {
+          "max_abs_jax": 0.2319994539403185,
+          "reason": "AKM is a local MYJPBL work array, not a dumped unmodified-WRF output field"
+        },
+        "EXCH_M": {
+          "max_abs_jax": 52.81735315439608,
+          "reason": "unmodified WRF MYJPBL does not expose EXCH_M/Km as an output argument in this oracle driver"
+        }
+      }
+    },
+    {
+      "case": 3,
+      "fields": {
+        "EL_MYJ": {
+          "abs_tolerance": 5e-10,
+          "argmax_flat_index": 0,
+          "jax": 0.0,
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "oracle": 0.0,
+          "pass": true,
+          "rel_tolerance": 5e-11,
+          "scale": 0.32,
+          "signed_error_at_argmax": 0.0
+        },
+        "EXCH_H": {
+          "abs_tolerance": 5e-10,
+          "argmax_flat_index": 1,
+          "jax": 0.09389195412273596,
+          "max_abs": 4.163336342344337e-17,
+          "max_rel": 4.43417796683836e-16,
+          "oracle": 0.09389195412273592,
+          "pass": true,
+          "rel_tolerance": 5e-11,
+          "scale": 0.09389195412273592,
+          "signed_error_at_argmax": 4.163336342344337e-17
+        },
+        "RQVBLTEN": {
+          "abs_tolerance": 5e-10,
+          "argmax_flat_index": 4,
+          "jax": 1.2163566113509522e-10,
+          "max_abs": 7.269314921904292e-21,
+          "max_rel": 5.513908186470578e-12,
+          "oracle": 1.216356611278259e-10,
+          "pass": true,
+          "rel_tolerance": 5e-11,
+          "scale": 1.318359805072732e-09,
+          "signed_error_at_argmax": 7.269314921904292e-21
+        },
+        "RTHBLTEN": {
+          "abs_tolerance": 5e-10,
+          "argmax_flat_index": 11,
+          "jax": -6.070884618717779e-08,
+          "max_abs": 9.473903108174963e-16,
+          "max_rel": 1.2915565472620291e-11,
+          "oracle": -6.070884523978748e-08,
+          "pass": true,
+          "rel_tolerance": 5e-11,
+          "scale": 7.335260022690211e-05,
+          "signed_error_at_argmax": -9.473903108174963e-16
+        },
+        "RUBLTEN": {
+          "abs_tolerance": 5e-10,
+          "argmax_flat_index": 31,
+          "jax": -1.3138534422788931e-06,
+          "max_abs": 2.368477762277211e-16,
+          "max_rel": 1.7897311737728896e-12,
+          "oracle": -1.313853442515741e-06,
+          "pass": true,
+          "rel_tolerance": 5e-11,
+          "scale": 0.000132337068101925,
+          "signed_error_at_argmax": 2.368477762277211e-16
+        },
+        "RVBLTEN": {
+          "abs_tolerance": 5e-10,
+          "argmax_flat_index": 31,
+          "jax": -3.284633605697233e-07,
+          "max_abs": 5.921189111737107e-17,
+          "max_rel": 1.7897295736298622e-12,
+          "oracle": -3.284633606289352e-07,
+          "pass": true,
+          "rel_tolerance": 5e-11,
+          "scale": 3.308426702548125e-05,
+          "signed_error_at_argmax": 5.921189111737107e-17
+        },
+        "TKE_MYJ": {
+          "abs_tolerance": 5e-10,
+          "argmax_flat_index": 2,
+          "jax": 0.10000000000000002,
+          "max_abs": 1.3877787807814457e-17,
+          "max_rel": 1.3877787807814457e-16,
+          "oracle": 0.1,
+          "pass": true,
+          "rel_tolerance": 5e-11,
+          "scale": 0.1,
+          "signed_error_at_argmax": 1.3877787807814457e-17
+        }
+      },
+      "full_wrf_exe": false,
+      "initial_tke_source": "0.5 * matching MYJSFC Q2 savepoint field, matching myjpbl_oracle_driver.f90",
+      "kpbl": {
+        "jax": 2,
+        "oracle": 2,
+        "pass": true
+      },
+      "pass": true,
+      "precision_mode": "fp64",
+      "regime": "stable_nocturnal_land",
+      "scalars": {
+        "MIXHT": {
+          "abs_tolerance": 5e-10,
+          "argmax_flat_index": 0,
+          "jax": 200.957524225555,
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "oracle": 200.957524225555,
+          "pass": true,
+          "rel_tolerance": 5e-12,
+          "scale": 200.957524225555,
+          "signed_error_at_argmax": 0.0
+        },
+        "PBLH": {
+          "abs_tolerance": 5e-10,
+          "argmax_flat_index": 0,
+          "jax": 200.957524225555,
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "oracle": 200.957524225555,
+          "pass": true,
+          "rel_tolerance": 5e-12,
+          "scale": 200.957524225555,
+          "signed_error_at_argmax": 0.0
+        }
+      },
+      "ungated_jax_diagnostics": {
+        "AKH": {
+          "max_abs_jax": 0.00041230156908345105,
+          "reason": "AKH is a local MYJPBL work array; exported WRF EXCH_H is the gated heat-exchange diagnostic"
+        },
+        "AKM": {
+          "max_abs_jax": 0.0004131262331276283,
+          "reason": "AKM is a local MYJPBL work array, not a dumped unmodified-WRF output field"
+        },
+        "EXCH_M": {
+          "max_abs_jax": 0.0940708821373318,
+          "reason": "unmodified WRF MYJPBL does not expose EXCH_M/Km as an output argument in this oracle driver"
+        }
+      }
+    },
+    {
+      "case": 4,
+      "fields": {
+        "EL_MYJ": {
+          "abs_tolerance": 5e-10,
+          "argmax_flat_index": 0,
+          "jax": 0.0,
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "oracle": 0.0,
+          "pass": true,
+          "rel_tolerance": 5e-11,
+          "scale": 0.32,
+          "signed_error_at_argmax": 0.0
+        },
+        "EXCH_H": {
+          "abs_tolerance": 5e-10,
+          "argmax_flat_index": 1,
+          "jax": 0.09399292753006773,
+          "max_abs": 2.7755575615628914e-17,
+          "max_rel": 2.952942986774199e-16,
+          "oracle": 0.09399292753006776,
+          "pass": true,
+          "rel_tolerance": 5e-11,
+          "scale": 0.09399292753006776,
+          "signed_error_at_argmax": -2.7755575615628914e-17
+        },
+        "RQVBLTEN": {
+          "abs_tolerance": 5e-10,
+          "argmax_flat_index": 0,
+          "jax": -6.039481303126666e-10,
+          "max_abs": 2.947099765919241e-20,
+          "max_rel": 4.879723303803762e-11,
+          "oracle": -6.039481303421376e-10,
+          "pass": true,
+          "rel_tolerance": 5e-11,
+          "scale": 6.039481303421376e-10,
+          "signed_error_at_argmax": 2.947099765919241e-20
+        },
+        "RTHBLTEN": {
+          "abs_tolerance": 5e-10,
+          "argmax_flat_index": 26,
+          "jax": -3.556208980626252e-08,
+          "max_abs": 1.8947806282524375e-15,
+          "max_rel": 1.376207295928382e-10,
+          "oracle": -3.556208791148189e-08,
+          "pass": true,
+          "rel_tolerance": 5e-11,
+          "scale": 1.376813386949986e-05,
+          "signed_error_at_argmax": -1.8947806282524375e-15
+        },
+        "RUBLTEN": {
+          "abs_tolerance": 5e-10,
+          "argmax_flat_index": 20,
+          "jax": -1.0378354708961978e-08,
+          "max_abs": 2.9605952176130435e-17,
+          "max_rel": 6.556444172028507e-13,
+          "oracle": -1.037835473856793e-08,
+          "pass": true,
+          "rel_tolerance": 5e-11,
+          "scale": 4.515550106021967e-05,
+          "signed_error_at_argmax": 2.9605952176130435e-17
+        },
+        "RVBLTEN": {
+          "abs_tolerance": 5e-10,
+          "argmax_flat_index": 11,
+          "jax": -2.375470616507632e-09,
+          "max_abs": 7.40148680326169e-18,
+          "max_rel": 6.556443072919082e-13,
+          "oracle": -2.375470623909119e-09,
+          "pass": true,
+          "rel_tolerance": 5e-11,
+          "scale": 1.128887526505492e-05,
+          "signed_error_at_argmax": 7.40148680326169e-18
+        },
+        "TKE_MYJ": {
+          "abs_tolerance": 5e-10,
+          "argmax_flat_index": 2,
+          "jax": 0.10000000000000002,
+          "max_abs": 1.3877787807814457e-17,
+          "max_rel": 1.3877787807814457e-16,
+          "oracle": 0.1,
+          "pass": true,
+          "rel_tolerance": 5e-11,
+          "scale": 0.1,
+          "signed_error_at_argmax": 1.3877787807814457e-17
+        }
+      },
+      "full_wrf_exe": false,
+      "initial_tke_source": "0.5 * matching MYJSFC Q2 savepoint field, matching myjpbl_oracle_driver.f90",
+      "kpbl": {
+        "jax": 2,
+        "oracle": 2,
+        "pass": true
+      },
+      "pass": true,
+      "precision_mode": "fp64",
+      "regime": "stable_marine",
+      "scalars": {
+        "MIXHT": {
+          "abs_tolerance": 5e-10,
+          "argmax_flat_index": 0,
+          "jax": 200.957524225555,
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "oracle": 200.957524225555,
+          "pass": true,
+          "rel_tolerance": 5e-12,
+          "scale": 200.957524225555,
+          "signed_error_at_argmax": 0.0
+        },
+        "PBLH": {
+          "abs_tolerance": 5e-10,
+          "argmax_flat_index": 0,
+          "jax": 200.957524225555,
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "oracle": 200.957524225555,
+          "pass": true,
+          "rel_tolerance": 5e-12,
+          "scale": 200.957524225555,
+          "signed_error_at_argmax": 0.0
+        }
+      },
+      "ungated_jax_diagnostics": {
+        "AKH": {
+          "max_abs_jax": 0.00041279214908248956,
+          "reason": "AKH is a local MYJPBL work array; exported WRF EXCH_H is the gated heat-exchange diagnostic"
+        },
+        "AKM": {
+          "max_abs_jax": 0.00041346189396273045,
+          "reason": "AKM is a local MYJPBL work array, not a dumped unmodified-WRF output field"
+        },
+        "EXCH_M": {
+          "max_abs_jax": 0.09414011584265361,
+          "reason": "unmodified WRF MYJPBL does not expose EXCH_M/Km as an output argument in this oracle driver"
+        }
+      }
+    },
+    {
+      "case": 5,
+      "fields": {
+        "EL_MYJ": {
+          "abs_tolerance": 5e-10,
+          "argmax_flat_index": 0,
+          "jax": 0.0,
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "oracle": 0.0,
+          "pass": true,
+          "rel_tolerance": 5e-11,
+          "scale": 0.32,
+          "signed_error_at_argmax": 0.0
+        },
+        "EXCH_H": {
+          "abs_tolerance": 5e-10,
+          "argmax_flat_index": 0,
+          "jax": 0.09406992501494436,
+          "max_abs": 5.551115123125783e-17,
+          "max_rel": 5.901051927323118e-16,
+          "oracle": 0.09406992501494431,
+          "pass": true,
+          "rel_tolerance": 5e-11,
+          "scale": 0.09406992501494431,
+          "signed_error_at_argmax": 5.551115123125783e-17
+        },
+        "RQVBLTEN": {
+          "abs_tolerance": 5e-10,
+          "argmax_flat_index": 1,
+          "jax": 1.7048038145644922e-10,
+          "max_abs": 2.9362120011065116e-20,
+          "max_rel": 2.0372728560606694e-11,
+          "oracle": 1.704803814270871e-10,
+          "pass": true,
+          "rel_tolerance": 5e-11,
+          "scale": 1.441246317287149e-09,
+          "signed_error_at_argmax": 2.9362120011065116e-20
+        },
+        "RTHBLTEN": {
+          "abs_tolerance": 5e-10,
+          "argmax_flat_index": 18,
+          "jax": -2.99144886639624e-08,
+          "max_abs": 9.473903240523861e-16,
+          "max_rel": 3.323301980895601e-11,
+          "oracle": -2.991448771657208e-08,
+          "pass": true,
+          "rel_tolerance": 5e-11,
+          "scale": 2.850750035653012e-05,
+          "signed_error_at_argmax": -9.473903240523861e-16
+        },
+        "RUBLTEN": {
+          "abs_tolerance": 5e-10,
+          "argmax_flat_index": 28,
+          "jax": -2.8114188133088192e-08,
+          "max_abs": 1.1842378885218704e-16,
+          "max_rel": 3.4753878178808074e-13,
+          "oracle": -2.811418825151198e-08,
+          "pass": true,
+          "rel_tolerance": 5e-11,
+          "scale": 0.0003407498531326455,
+          "signed_error_at_argmax": 1.1842378885218704e-16
+        },
+        "RVBLTEN": {
+          "abs_tolerance": 5e-10,
+          "argmax_flat_index": 28,
+          "jax": -7.028547033272048e-09,
+          "max_abs": 2.960594721304676e-17,
+          "max_rel": 3.4753878178808074e-13,
+          "oracle": -7.028547062877995e-09,
+          "pass": true,
+          "rel_tolerance": 5e-11,
+          "scale": 8.518746328316137e-05,
+          "signed_error_at_argmax": 2.960594721304676e-17
+        },
+        "TKE_MYJ": {
+          "abs_tolerance": 5e-10,
+          "argmax_flat_index": 0,
+          "jax": 0.18758415349625615,
+          "max_abs": 5.551115123125783e-17,
+          "max_rel": 2.9592665583218226e-16,
+          "oracle": 0.1875841534962561,
+          "pass": true,
+          "rel_tolerance": 5e-11,
+          "scale": 0.1875841534962561,
+          "signed_error_at_argmax": 5.551115123125783e-17
+        }
+      },
+      "full_wrf_exe": false,
+      "initial_tke_source": "0.5 * matching MYJSFC Q2 savepoint field, matching myjpbl_oracle_driver.f90",
+      "kpbl": {
+        "jax": 2,
+        "oracle": 2,
+        "pass": true
+      },
+      "pass": true,
+      "precision_mode": "fp64",
+      "regime": "neutral_land",
+      "scalars": {
+        "MIXHT": {
+          "abs_tolerance": 5e-10,
+          "argmax_flat_index": 0,
+          "jax": 200.957524225555,
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "oracle": 200.957524225555,
+          "pass": true,
+          "rel_tolerance": 5e-12,
+          "scale": 200.957524225555,
+          "signed_error_at_argmax": 0.0
+        },
+        "PBLH": {
+          "abs_tolerance": 5e-10,
+          "argmax_flat_index": 0,
+          "jax": 200.957524225555,
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "oracle": 200.957524225555,
+          "pass": true,
+          "rel_tolerance": 5e-12,
+          "scale": 200.957524225555,
+          "signed_error_at_argmax": 0.0
+        }
+      },
+      "ungated_jax_diagnostics": {
+        "AKH": {
+          "max_abs_jax": 0.00041320077459915913,
+          "reason": "AKH is a local MYJPBL work array; exported WRF EXCH_H is the gated heat-exchange diagnostic"
+        },
+        "AKM": {
+          "max_abs_jax": 0.0004137347095490972,
+          "reason": "AKM is a local MYJPBL work array, not a dumped unmodified-WRF output field"
+        },
+        "EXCH_M": {
+          "max_abs_jax": 0.09419148146834708,
+          "reason": "unmodified WRF MYJPBL does not expose EXCH_M/Km as an output argument in this oracle driver"
+        }
+      }
+    },
+    {
+      "case": 6,
+      "fields": {
+        "EL_MYJ": {
+          "abs_tolerance": 5e-10,
+          "argmax_flat_index": 1,
+          "jax": 41.876076016701965,
+          "max_abs": 7.105427357601002e-15,
+          "max_rel": 1.6967748732634483e-16,
+          "oracle": 41.87607601670197,
+          "pass": true,
+          "rel_tolerance": 5e-11,
+          "scale": 41.87607601670197,
+          "signed_error_at_argmax": -7.105427357601002e-15
+        },
+        "EXCH_H": {
+          "abs_tolerance": 5e-10,
+          "argmax_flat_index": 0,
+          "jax": 10.990301378652438,
+          "max_abs": 1.4578560580957856e-11,
+          "max_rel": 1.3264932487924845e-12,
+          "oracle": 10.99030137863786,
+          "pass": true,
+          "rel_tolerance": 5e-11,
+          "scale": 10.99030137863786,
+          "signed_error_at_argmax": 1.4578560580957856e-11
+        },
+        "RQVBLTEN": {
+          "abs_tolerance": 5e-10,
+          "argmax_flat_index": 0,
+          "jax": -2.9634056879836885e-07,
+          "max_abs": 4.164755122530988e-19,
+          "max_rel": 1.4053948601855302e-12,
+          "oracle": -2.963405687979524e-07,
+          "pass": true,
+          "rel_tolerance": 5e-11,
+          "scale": 2.963405687979524e-07,
+          "signed_error_at_argmax": -4.164755122530988e-19
+        },
+        "RTHBLTEN": {
+          "abs_tolerance": 5e-10,
+          "argmax_flat_index": 16,
+          "jax": -3.458233000704543e-08,
+          "max_abs": 9.473903240523861e-16,
+          "max_rel": 7.405643456882113e-12,
+          "oracle": -3.458232905965511e-08,
+          "pass": true,
+          "rel_tolerance": 5e-11,
+          "scale": 0.0001279281577041047,
+          "signed_error_at_argmax": -9.473903240523861e-16
+        },
+        "RUBLTEN": {
+          "abs_tolerance": 5e-10,
+          "argmax_flat_index": 0,
+          "jax": -1.4951333987263855e-05,
+          "max_abs": 8.881479265140241e-17,
+          "max_rel": 1.3398043326711032e-12,
+          "oracle": -1.495133398735267e-05,
+          "pass": true,
+          "rel_tolerance": 5e-11,
+          "scale": 6.628937560930008e-05,
+          "signed_error_at_argmax": 8.881479265140241e-17
+        },
+        "RVBLTEN": {
+          "abs_tolerance": 5e-10,
+          "argmax_flat_index": 0,
+          "jax": -3.7378334968159638e-06,
+          "max_abs": 2.220412167932423e-17,
+          "max_rel": 1.3398298882881073e-12,
+          "oracle": -3.737833496838168e-06,
+          "pass": true,
+          "rel_tolerance": 5e-11,
+          "scale": 1.657234390232502e-05,
+          "signed_error_at_argmax": 2.220412167932423e-17
+        },
+        "TKE_MYJ": {
+          "abs_tolerance": 5e-10,
+          "argmax_flat_index": 1,
+          "jax": 0.10413304130690458,
+          "max_abs": 5.7870375158586285e-15,
+          "max_rel": 5.557349946980986e-14,
+          "oracle": 0.1041330413068988,
+          "pass": true,
+          "rel_tolerance": 5e-11,
+          "scale": 0.1041330413068988,
+          "signed_error_at_argmax": 5.7870375158586285e-15
+        }
+      },
+      "full_wrf_exe": false,
+      "initial_tke_source": "0.5 * matching MYJSFC Q2 savepoint field, matching myjpbl_oracle_driver.f90",
+      "kpbl": {
+        "jax": 3,
+        "oracle": 3,
+        "pass": true
+      },
+      "pass": true,
+      "precision_mode": "fp64",
+      "regime": "unstable_marine",
+      "scalars": {
+        "MIXHT": {
+          "abs_tolerance": 5e-10,
+          "argmax_flat_index": 0,
+          "jax": 734.6954533000476,
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "oracle": 734.6954533000476,
+          "pass": true,
+          "rel_tolerance": 5e-12,
+          "scale": 734.6954533000476,
+          "signed_error_at_argmax": 0.0
+        },
+        "PBLH": {
+          "abs_tolerance": 5e-10,
+          "argmax_flat_index": 0,
+          "jax": 455.32308164814265,
+          "max_abs": 5.684341886080802e-14,
+          "max_rel": 1.2484194443877232e-16,
+          "oracle": 455.3230816481426,
+          "pass": true,
+          "rel_tolerance": 5e-12,
+          "scale": 455.3230816481426,
+          "signed_error_at_argmax": 5.684341886080802e-14
+        }
+      },
+      "ungated_jax_diagnostics": {
+        "AKH": {
+          "max_abs_jax": 0.048274738626781714,
+          "reason": "AKH is a local MYJPBL work array; exported WRF EXCH_H is the gated heat-exchange diagnostic"
+        },
+        "AKM": {
+          "max_abs_jax": 0.049770851033407386,
+          "reason": "AKM is a local MYJPBL work array, not a dumped unmodified-WRF output field"
+        },
+        "EXCH_M": {
+          "max_abs_jax": 11.330908634390848,
+          "reason": "unmodified WRF MYJPBL does not expose EXCH_M/Km as an output argument in this oracle driver"
+        }
+      }
+    }
+  ],
+  "gated_fields": {
+    "kh": "EXCH_H",
+    "kpbl": "KPBL",
+    "mixing_length": "EL_MYJ",
+    "pblh": "PBLH",
+    "tendencies": [
+      "RUBLTEN",
+      "RVBLTEN",
+      "RTHBLTEN",
+      "RQVBLTEN"
+    ],
+    "tke": "TKE_MYJ"
+  },
+  "git_head": "d762565febdc9fb722331f7588a4fb0f5c353047",
+  "jax_platform": "cpu",
+  "jax_precision": "fp64",
+  "km_limitation": "WRF MYJPBL computes AKM/Km internally but does not expose it as an output argument; the JAX port computes EXCH_M/AKM, recorded per case as ungated diagnostics, but Km is not claimed as WRF-parity-gated by this proof object.",
+  "oracle": {
+    "build_manifest": [
+      "mode=fp64",
+      "full_wrf_exe=false",
+      "wrf_source=/home/enric/src/wrf_pristine/WRF/share/module_model_constants.F",
+      "wrf_source=/home/enric/src/wrf_pristine/WRF/phys/module_sf_myjsfc.F",
+      "wrf_source=/home/enric/src/wrf_pristine/WRF/phys/module_bl_myjpbl.F",
+      "compiler=GNU Fortran (conda-forge gcc 14.3.0-19) 14.3.0",
+      "fflags=-O2 -ffree-form -ffree-line-length-none -cpp -ffpe-summary=none -fdefault-real-8 -fdefault-double-8"
+    ],
+    "full_wrf_exe": false,
+    "full_wrf_exe_note": "Standalone driver compiled unmodified WRF MYJSFC/MYJPBL source and called the mandated pair; this is a real WRF-source oracle, not a JAX self-compare, but not a coupled wrf.exe run.",
+    "generation_command": "taskset -c 0-3 env CUDA_VISIBLE_DEVICES= bash proofs/v060/oracle/myjpbl_build_and_run.sh",
+    "source_checksums_sha256": [
+      "5b80377fecdc18a5f0ad38d3b6c15cfc86ad5d76701adbbbb08a08698d0f7062  module_model_constants.F",
+      "7ae02680a9f2f781fd5c13c55b102cc86fa216f72de08ce6e58c1b012efa29f3  module_sf_myjsfc.F",
+      "ee6acc5e65b57a74a5f620d872000f46c321ddc9331d6773d88053f9144bc1cb  module_bl_myjpbl.F"
+    ],
+    "type": "single-column Fortran driver linked against unmodified WRF module_bl_myjpbl.F and module_sf_myjsfc.F",
+    "wrf_sources": [
+      "/home/enric/src/wrf_pristine/WRF/share/module_model_constants.F",
+      "/home/enric/src/wrf_pristine/WRF/phys/module_sf_myjsfc.F",
+      "/home/enric/src/wrf_pristine/WRF/phys/module_bl_myjpbl.F"
+    ]
+  },
+  "overall_pass": true,
+  "paired_scheme": "Janjic Eta surface layer (sf_sfclay_physics=2)",
+  "predeclared_tolerances": {
+    "array_fields": {
+      "abs": 5e-10,
+      "rel": 5e-11,
+      "relative_floor": 1e-30
+    },
+    "kpbl": "exact integer match",
+    "scalar_fields": {
+      "abs": 5e-10,
+      "rel": 5e-12,
+      "relative_floor": 1e-30
+    }
+  },
+  "regimes_covered": [
+    "unstable_daytime_land",
+    "strong_unstable_land",
+    "stable_nocturnal_land",
+    "stable_marine",
+    "neutral_land",
+    "unstable_marine"
+  ],
+  "schema": "gpuwrf.v060.myj_pbl_savepoint_parity.v1",
+  "scheme": "MYJ PBL (bl_pbl_physics=2)",
+  "verdict": "PASS"
+}

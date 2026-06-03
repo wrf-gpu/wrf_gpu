@@ -1866,6 +1866,8 @@ _SCAN_WIRED_OPTIONS = {
 # (surfaced in the fail-closed error so the rejection is honest + actionable).
 _SCAN_UNWIRED_REASON = {
     # YSU(1)/ACM2(7) are now jax.lax.scan-traceable + scan-wired (v0.6.0 GPU-op).
+    "bl_pbl_physics=2": "MYJ PBL has a WRF-savepoint column adapter, but no operational scan adapter/carry path yet",
+    "sf_sfclay_physics=2": "Janjic Eta surface layer has a WRF-savepoint column adapter, but no operational scan adapter/carry path yet",
     "cu_physics=3": "Grell-Freitas is a CPU-NumPy reference port (gpu_runnable=False); GPU-batching TODO",
     "cu_physics=6": "Tiedtke is a CPU-NumPy reference port (gpu_runnable=False); GPU-batching TODO",
     "cu_physics=16": "Tiedtke is a CPU-NumPy reference port (gpu_runnable=False); GPU-batching TODO",
