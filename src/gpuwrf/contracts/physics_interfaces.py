@@ -44,7 +44,7 @@ from .physics_registry import (
 )
 
 
-PHYSICS_INTERFACE_VERSION = "v0.6.0-S0-frozen-2026-06-03-rad"
+PHYSICS_INTERFACE_VERSION = "v0.6.0-S0-frozen-2026-06-03-wsm-sm-extension"
 
 ArrayLike = Any
 _EMPTY: Mapping[str, Any] = MappingProxyType({})
@@ -202,6 +202,20 @@ SCHEME_STEP_SPECS: tuple[PhysicsStepSpec, ...] = (
         "Kessler warm rain",
         "src/gpuwrf/physics/microphysics_kessler.py",
         "M20 physics-oracle factory savepoint at module_microphysics_driver.F:kessler",
+    ),
+    _mp_spec(
+        3,
+        "WSM3 simple ice",
+        "src/gpuwrf/physics/microphysics_wsm3.py",
+        "v0.6.0 WSM3 pristine-WRF savepoint parity gate at module_microphysics_driver.F:wsm3",
+        diagnostics=("re_cloud", "re_ice", "re_snow"),
+    ),
+    _mp_spec(
+        4,
+        "WSM5",
+        "src/gpuwrf/physics/microphysics_wsm5.py",
+        "v0.6.0 WSM5 pristine-WRF savepoint parity gate at module_microphysics_driver.F:wsm5",
+        diagnostics=("re_cloud", "re_ice", "re_snow"),
     ),
     _mp_spec(
         6,
