@@ -12,11 +12,14 @@ import numpy as np
 import pandas as pd
 from netCDF4 import Dataset
 
+from gpuwrf.config import paths
 from gpuwrf.io.data_inventory import parse_wrfout_valid_time
 from gpuwrf.io.gen2_wrfout_loader import normalize_valid_time
 
 
-DEFAULT_AEMET_ROOT = Path("/mnt/data/canairy_meteo/artifacts/datasets/aemet_stations")
+# Path indirection (see gpuwrf.config.paths): GPUWRF_AEMET_ROOT / GPUWRF_CANAIRY_ROOT
+# override; default is checkout-relative. Only used by the optional --score path.
+DEFAULT_AEMET_ROOT = paths.aemet_root()
 DEFAULT_SCORE_VARIABLES = ("T2", "U10", "V10", "WIND10")
 DEFAULT_FSS_THRESHOLD_MM = 1.0
 DEFAULT_FSS_WINDOW_CELLS = 9

@@ -22,6 +22,7 @@ import pandas as pd
 import xarray as xr
 from netCDF4 import Dataset
 
+from gpuwrf.config import paths
 from gpuwrf.integration.d02_replay import build_replay_case
 from gpuwrf.io.data_inventory import parse_wrfout_valid_time
 from gpuwrf.io.gen2_accessor import Gen2Run
@@ -50,7 +51,10 @@ from gpuwrf.validation.forecast_vs_obs import (
 
 ROOT = Path(__file__).resolve().parents[3]
 SPRINT_DIR = ROOT / ".agent" / "sprints" / "2026-05-27-m7-daily-pipeline-integration"
-RUN_ROOT = Path("/mnt/data/canairy_meteo/runs/wrf_l3")
+# Path indirection (see gpuwrf.config.paths): environment-overridable so the
+# pipeline default run root is not the private /mnt/data path on a clean clone.
+# The CLI passes an absolute --input-dir that bypasses this default entirely.
+RUN_ROOT = paths.wrf_l3_root()
 DEFAULT_RUN_ID = "20260521_18z_l3_24h_20260522T133443Z"
 DEFAULT_OUTPUT_ROOT = Path("/tmp/m7_pipeline_runs/20260521")
 DT_S = 10.0
