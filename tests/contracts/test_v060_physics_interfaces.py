@@ -41,6 +41,8 @@ def test_nest_field_list_is_registry_driven_for_two_moment_schemes() -> None:
 
 def test_mp_registry_names_match_expected_wrfout_variables() -> None:
     assert state_leaves_for_mp(1) == ("qv", "qc", "qr")
+    assert state_leaves_for_mp(3) == ("qv", "qc", "qr")
+    assert state_leaves_for_mp(4) == ("qv", "qc", "qr", "qi", "qs")
     assert state_leaves_for_mp(10) == ("qv", "qc", "qr", "qi", "qs", "qg", "Ni", "Ns", "Nr", "Ng")
     assert state_leaves_for_mp(16) == ("qv", "qc", "qr", "qi", "qs", "qg", "Nn", "Nc", "Nr")
     assert NUMBER_WRFOUT_NAME["Nn"] == "QNCCN"
@@ -82,7 +84,7 @@ def test_v060_namelist_accept_matrix_and_wrfout_forward_names() -> None:
     validate_supported_namelist(
         {
             "physics": {
-                "mp_physics": [1, 6, 8, 10, 16],
+                "mp_physics": [1, 3, 4, 6, 8, 10, 16],
                 "cu_physics": [0, 1, 3, 6, 16],
                 "bl_pbl_physics": [0, 1, 2, 5, 7],
                 "sf_sfclay_physics": [0, 1, 2, 5, 7],
