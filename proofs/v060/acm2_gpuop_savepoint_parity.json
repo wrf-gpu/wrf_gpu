@@ -1,0 +1,124 @@
+{
+  "bl_pbl_physics": 7,
+  "full_savepoint_parity_report": "proofs/v060/acm2_savepoint_parity_report.json",
+  "gpu_operational": true,
+  "oracle": {
+    "full_wrf_exe": false,
+    "generation_command": "taskset -c 0-3 bash proofs/v060/oracle/build_and_run.sh",
+    "note": "Real WRF-module oracle, not a JAX self-compare; not a coupled wrf.exe run.",
+    "requested_source_path_absent": "/home/enric/src/wrf_pristine/WRF/phys/module_bl_acm2.F",
+    "source_checksums_sha256": [
+      "f18685f7ea091f567c3f37e983f26357dcd7e9ec2eea9a6e70635c506a66d60c  module_bl_acm.F"
+    ],
+    "type": "single-column Fortran driver linked against unmodified WRF module_bl_acm.F",
+    "wrf_sources": [
+      "/home/enric/src/wrf_pristine/WRF/phys/module_bl_acm.F"
+    ]
+  },
+  "predeclared_tolerances": {
+    "branch_regime": "exact ACM2 noconv/regime match",
+    "exchange_coefficients": {
+      "abs": 0.0005,
+      "rel": 0.002,
+      "relative_floor": 1e-10
+    },
+    "kpbl": "exact integer match",
+    "pblh_m": {
+      "abs": 0.02,
+      "rel": 2e-05
+    },
+    "rmol": {
+      "abs": 1e-07,
+      "rel": 2e-05
+    },
+    "tendencies": {
+      "abs": 3e-06,
+      "rel": 0.002,
+      "relative_floor": 1e-12
+    }
+  },
+  "savepoint_parity": {
+    "cases_pass": [
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+    ],
+    "regimes_covered": [
+      "unstable_acm2_daytime",
+      "strong_unstable_acm2",
+      "stable_nocturnal_local",
+      "stable_marine_local",
+      "neutral_local",
+      "weak_unstable_transition"
+    ],
+    "verdict": "PASS"
+  },
+  "scan_wire": {
+    "adapter": "coupling.scan_adapters.acm2_pbl_adapter",
+    "gpu_op_smoke": "proofs/v060/pbl_gpuop_smoke.json",
+    "operational_slot": "runtime.operational_mode PBL slot (PBL_SCAN_ADAPTERS dispatch on static bl_pbl_physics)"
+  },
+  "schema": "gpuwrf.v060.acm2_gpuop_savepoint_parity.v1",
+  "scheme": "ACM2 PBL (bl_pbl_physics=7)",
+  "tolerances_loosened_for_gpuop": false,
+  "trace_vs_host_numpy": {
+    "cases": [
+      {
+        "case": 1,
+        "kpbl_match": true,
+        "noconv_match": true,
+        "pass": true,
+        "worst_abs": 1.894780628666028e-15,
+        "worst_rel": 4.965514501712845e-06
+      },
+      {
+        "case": 2,
+        "kpbl_match": true,
+        "noconv_match": true,
+        "pass": true,
+        "worst_abs": 1.894805926744292e-15,
+        "worst_rel": 5.514396711284017e-06
+      },
+      {
+        "case": 3,
+        "kpbl_match": true,
+        "noconv_match": true,
+        "pass": true,
+        "worst_abs": 1.8947806216349926e-15,
+        "worst_rel": 6.702165804782318e-07
+      },
+      {
+        "case": 4,
+        "kpbl_match": true,
+        "noconv_match": true,
+        "pass": true,
+        "worst_abs": 1.8947806287177266e-15,
+        "worst_rel": 1.3173147855399549e-05
+      },
+      {
+        "case": 5,
+        "kpbl_match": true,
+        "noconv_match": true,
+        "pass": true,
+        "worst_abs": 1.894780628666028e-15,
+        "worst_rel": 4.937540117441604e-06
+      },
+      {
+        "case": 6,
+        "kpbl_match": true,
+        "noconv_match": true,
+        "pass": true,
+        "worst_abs": 1.894780628666028e-15,
+        "worst_rel": 7.622096457519755e-06
+      }
+    ],
+    "proof": "proofs/v060/pbl_trace_vs_host.json",
+    "verdict": "PASS",
+    "worst_abs": 1.894805926744292e-15
+  },
+  "verdict": "PASS",
+  "what_this_proves": "The GPU-operational kernel -- the jax.lax.scan-traceable / jax.vmap-batched pbl_acm2._acm2_column_traceable / pbl_acm2.acm2_columns that the operational scan PBL slot dispatches via coupling.scan_adapters.acm2_pbl_adapter -- reproduces the unmodified-WRF module oracle within the SAME predeclared fp64 savepoint tolerances as the original host-NumPy lane. The single-column public entry pbl_acm2.step_acm2_column now calls the traceable kernel, so the parity report below is the GPU-op verdict directly; the trace-vs-host cross-check confirms traceable == host-NumPy == WRF to machine precision."
+}

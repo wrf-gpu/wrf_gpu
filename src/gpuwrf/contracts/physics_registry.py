@@ -84,10 +84,16 @@ MP_SCHEMES: Mapping[int, SchemeOption] = {
 
 PBL_SCHEMES: Mapping[int, SchemeOption] = {
     0: SchemeOption("bl_pbl_physics", 0, "disabled", "none", "accepted", "pbl"),
-    1: SchemeOption("bl_pbl_physics", 1, "YSU", "ysuscheme", "accepted", "pbl"),
+    # YSU(1)/ACM2(7) status bumped to "implemented" (v0.6.0 GPU-op): the host-NumPy
+    # single-column kernels were rewritten as jax.lax.scan-traceable / vmap-batched
+    # JAX and scan-wired into the operational PBL slot, with no savepoint-parity
+    # regression (proofs/v060/{ysu,acm2}_gpuop_savepoint_parity.json).
+    1: SchemeOption("bl_pbl_physics", 1, "YSU", "ysuscheme", "implemented", "pbl"),
+    # MYJ(2): savepoint-parity-proven CPU reference, NOT yet GPU-scan-wired
+    # (fail-closed in the operational scan); requires Janjic Eta sfclay(2).
     2: SchemeOption("bl_pbl_physics", 2, "MYJ", "myjpblscheme", "accepted", "pbl"),
     5: SchemeOption("bl_pbl_physics", 5, "MYNN", "mynnpblscheme", "implemented", "pbl"),
-    7: SchemeOption("bl_pbl_physics", 7, "ACM2", "acmpblscheme", "accepted", "pbl"),
+    7: SchemeOption("bl_pbl_physics", 7, "ACM2", "acmpblscheme", "implemented", "pbl"),
 }
 
 SFCLAY_SCHEMES: Mapping[int, SchemeOption] = {
