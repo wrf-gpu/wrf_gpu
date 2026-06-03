@@ -680,6 +680,536 @@ def _acm2_numpy(
     return tendencies, diagnostics
 
 
+# ---------------------------------------------------------------------------
+# jax.lax.scan-traceable / vmap-batched ACM2 column kernel (v0.6.0 GPU-op).
+#
+# 1:1 transcription of the host-NumPy reference above into pure ``jnp`` /
+# ``jax.lax`` so the kernel is jit-traceable on a device State and
+# ``jax.vmap``-batchable over ``(ncol,)``. The Fortran ``TRI``/``MATRIX`` solvers
+# and the PBL-height/eddy diagnostics use STATIC (nz-bounded) Python loops which
+# unroll at trace time into a fixed graph; the only DATA-dependent control flow
+# in the reference -- the ``break`` index searches, the ``if noconv`` /
+# ``if kmix>ksrc`` branches, and the substep count ``nlp`` -- becomes masked
+# ``jnp.where`` / argmax / a fixed-max ``jax.lax.scan`` with per-column masking.
+#
+# nlp note: WRF chooses a per-column number of semi-implicit substeps from a CFL
+# limit. That count is data-dependent, so the batched kernel scans a STATIC
+# ``_NLP_MAX`` substeps and freezes a column once it has done its own ``nlp``
+# (``jnp.where(i < nlp, advanced, vci)``) -- exact for any column with
+# ``nlp <= _NLP_MAX``. _NLP_MAX is asserted large enough at trace time.
+# ---------------------------------------------------------------------------
+
+_NLP_MAX = 16
+
+
+def _mean_first_k(arr: jax.Array, ksrc: jax.Array) -> jax.Array:
+    """Mean of ``arr[:ksrc]`` (1-based ksrc) as a traced scalar."""
+
+    n = arr.shape[0]
+    idx = jnp.arange(n)
+    mask = (idx < ksrc).astype(arr.dtype)
+    return jnp.sum(arr * mask) / jnp.maximum(jnp.sum(mask), 1.0)
+
+
+def _diagnose_pbl_height_traceable(theta_v, u, v, za, zf, mol, xtime, ust, wst, tstv, g):
+    """Traceable :func:`_diagnose_pbl_height`. Returns ``(pbl, klpbl, rib)``."""
+
+    nz = theta_v.shape[0]
+    # ksrc (1-based): first k in [1,nz] with zf[k]>30, else nz.
+    zf_k = zf[1:]  # zf[1..nz]
+    gt30 = zf_k > 30.0
+    any_gt = jnp.any(gt30)
+    first_gt = jnp.argmax(gt30)  # index into [0..nz-1] -> k = first_gt+1
+    ksrc = jnp.where(any_gt, (first_gt + 1).astype(jnp.int32), jnp.asarray(nz, jnp.int32))
+
+    th1 = _mean_first_k(theta_v, ksrc)
+    zh1 = _mean_first_k(za, ksrc)
+    uh1 = _mean_first_k(u, ksrc)
+    vh1 = _mean_first_k(v, ksrc)
+
+    wss = (ust ** 3 + 0.6 * wst ** 3) ** 0.333333
+    tconv = -8.5 * ust * tstv / wss
+    conv_correction = jnp.logical_and(mol < 0.0, xtime > 1)
+    th1 = jnp.where(conv_correction, th1 + tconv, th1)
+
+    # kmix (1-based): last k in [ksrc,nz] with theta_v[k-1]<th1, else ksrc.
+    kidx1 = jnp.arange(1, nz + 1)  # 1-based level indices
+    in_range = kidx1 >= ksrc
+    dtmp_all = theta_v - th1  # theta_v[k-1] for k=1..nz
+    unstable = jnp.logical_and(in_range, dtmp_all < 0.0)
+    any_unstable = jnp.any(unstable)
+    # last index where unstable: argmax over reversed.
+    last_unstable = nz - 1 - jnp.argmax(unstable[::-1])  # 0-based
+    kmix = jnp.where(any_unstable, (last_unstable + 1).astype(jnp.int32), ksrc)
+
+    kmix_gt_ksrc = kmix > ksrc
+    # interpolation uses theta_v[kmix-1], theta_v[kmix], za[kmix-1], za[kmix] (0-based
+    # = theta_v[kmix-1] is index kmix-1). gather with the traced kmix.
+    tvm1 = theta_v[kmix - 1]
+    tvm = theta_v[kmix]
+    fintt = (th1 - tvm1) / (tvm - tvm1)
+    zmix_i = fintt * (za[kmix] - za[kmix - 1]) + za[kmix - 1]
+    umix_i = fintt * (u[kmix] - u[kmix - 1]) + u[kmix - 1]
+    vmix_i = fintt * (v[kmix] - v[kmix - 1]) + v[kmix - 1]
+    zmix = jnp.where(kmix_gt_ksrc, zmix_i, zh1)
+    umix = jnp.where(kmix_gt_ksrc, umix_i, uh1)
+    vmix = jnp.where(kmix_gt_ksrc, vmix_i, vh1)
+
+    # rib over k in [kmix,nz]; kpblh = first k with rib>=RIC (else nz).
+    in_rib = kidx1 >= kmix
+    tog = 0.5 * (theta_v + th1) / g
+    wssq_general = (u - umix) ** 2 + (v - vmix) ** 2
+    wssq_src = u ** 2 + v ** 2 + 100.0 * ust * ust
+    wssq = jnp.where(kmix == ksrc, wssq_src, wssq_general)
+    wssq = jnp.maximum(wssq, 0.1)
+    rib_full = jnp.abs(za - zmix) * dtmp_all / (tog * wssq)
+    rib = jnp.where(in_rib, rib_full, 0.0)
+
+    ge_ric = jnp.logical_and(in_rib, rib >= RIC)
+    any_ric = jnp.any(ge_ric)
+    first_ric = jnp.argmax(ge_ric)  # 0-based
+    kpblh = jnp.where(any_ric, (first_ric + 1).astype(jnp.int32), jnp.asarray(nz, jnp.int32))
+
+    kpblh_gt_ksrc = kpblh > ksrc
+    fint0 = (RIC - rib[kpblh - 2]) / (rib[kpblh - 1] - rib[kpblh - 2])
+    fint_gt = fint0 > 0.5
+    kpblht = jnp.where(fint_gt, kpblh, kpblh - 1)
+    fint = jnp.where(fint_gt, fint0 - 0.5, fint0 + 0.5)
+    pbl_i = fint * (zf[kpblht] - zf[kpblht - 1]) + zf[kpblht - 1]
+    klpbl_i = kpblht
+    pbl = jnp.where(kpblh_gt_ksrc, pbl_i, za[ksrc - 1])
+    klpbl = jnp.where(kpblh_gt_ksrc, klpbl_i, ksrc).astype(jnp.int32)
+    return pbl, klpbl, rib
+
+
+def _eddyx_traceable(zf, za, mol, pbl, ust, u, v, temperature, theta_v, qv, qc, qi, g, rd, cpair):
+    """Traceable :func:`_eddyx`. Returns ``(eddyz, eddyzm)`` length nz (top=0)."""
+
+    nz = u.shape[0]
+    rv = 461.5
+    rlam = 80.0
+    gamh = 16.0
+    gamm = 16.0
+    betah = 5.0
+    p_exp = 2.0
+    edyz0 = 0.01
+    pr = 0.8
+    kzo = edyz0
+
+    # operate on interface index k=1..nz-1 (0-based idx=k-1 = 0..nz-2).
+    idx = jnp.arange(nz - 1)  # 0..nz-2
+    k = idx + 1  # 1..nz-1
+    zfk = zf[1:nz]  # zf[1..nz-1]
+    dzf = za[idx + 1] - za[idx]
+
+    # BL eddy (zf[k]<pbl).
+    in_bl = zfk < pbl
+    zovl = zfk / mol
+    # zovl<0 branch with z< or >= 0.1*pbl.
+    near = zfk < 0.1 * pbl
+    zsol = 0.1 * pbl / mol
+    phih_neg_near = 1.0 / jnp.sqrt(1.0 - gamh * zovl)
+    phim_neg_near = (1.0 - gamm * zovl) ** (-0.25)
+    phih_neg_far = 1.0 / jnp.sqrt(1.0 - gamh * zsol)
+    phim_neg_far = (1.0 - gamm * zsol) ** (-0.25)
+    wt_neg = jnp.where(near, ust / phih_neg_near, ust / phih_neg_far)
+    wm_neg = jnp.where(near, ust / phim_neg_near, ust / phim_neg_far)
+    # zovl in [0,1).
+    phih_mid = 1.0 + betah * zovl
+    wt_mid = ust / phih_mid
+    # zovl>=1.
+    phih_hi = betah + zovl
+    wt_hi = ust / phih_hi
+    wt = jnp.where(zovl < 0.0, wt_neg, jnp.where(zovl < 1.0, wt_mid, wt_hi))
+    wm = jnp.where(zovl < 0.0, wm_neg, jnp.where(zovl < 1.0, wt_mid, wt_hi))
+    zfunc = zfk * (1.0 - zfk / pbl) ** p_exp
+    edyz_bl = jnp.where(in_bl, KARMAN * wt * zfunc, 0.0)
+    edyzm_bl = jnp.where(in_bl, KARMAN * wm * zfunc, 0.0)
+
+    # local Ri.
+    ss = ((u[idx + 1] - u[idx]) ** 2 + (v[idx + 1] - v[idx]) ** 2) / (dzf * dzf) + 1.0e-9
+    goth = 2.0 * g / (theta_v[idx + 1] + theta_v[idx])
+    ri0 = goth * (theta_v[idx + 1] - theta_v[idx]) / (dzf * ss)
+    # cloud correction.
+    cloud = jnp.logical_or((qc[idx] + qi[idx]) > 0.01e-3, (qc[idx + 1] + qi[idx + 1]) > 0.01e-3)
+    qmean = 0.5 * (qv[idx] + qv[idx + 1])
+    tmean = 0.5 * (temperature[idx] + temperature[idx + 1])
+    xlv = (2.501 - 0.00237 * (tmean - 273.15)) * 1.0e6
+    alph = xlv * qmean / rd / tmean
+    chi = xlv * xlv * qmean / cpair / rv / tmean / tmean
+    ri_cloud = (1.0 + alph) * (ri0 - g * g / ss / tmean / cpair * ((chi - alph) / (1.0 + chi)))
+    ri = jnp.where(cloud, ri_cloud, ri0)
+
+    zk = 0.4 * zfk
+    sql = (zk * rlam / (rlam + zk)) ** 2
+    fh = 1.0 / (1.0 + 10.0 * ri + 50.0 * ri ** 2 + 5000.0 * ri ** 4) + 0.0012
+    fm = pr * fh + 0.00104
+    eddyz_pos = kzo + jnp.sqrt(ss) * fh * sql
+    eddyzm_pos = kzo + jnp.sqrt(ss) * fm * sql
+    eddyz_neg = kzo + jnp.sqrt(ss * (1.0 - 25.0 * ri)) * sql
+    eddyzm_neg = eddyz_neg * pr
+    eddyz = jnp.where(ri >= 0.0, eddyz_pos, eddyz_neg)
+    eddyzm = jnp.where(ri >= 0.0, eddyzm_pos, eddyzm_neg)
+
+    # BL override when edyz_bl > eddyz.
+    bl_wins = edyz_bl > eddyz
+    eddyzm = jnp.where(bl_wins, jnp.minimum(edyzm_bl, edyz_bl * 0.8), eddyzm)
+    eddyz = jnp.where(bl_wins, edyz_bl, eddyz)
+
+    eddyz = jnp.clip(eddyz, kzo, 1000.0)
+    eddyzm = jnp.clip(eddyzm, kzo, 1000.0)
+
+    # append top level = 0.
+    eddyz = jnp.concatenate([eddyz, jnp.zeros(1)])
+    eddyzm = jnp.concatenate([eddyzm, jnp.zeros(1)])
+    return eddyz, eddyzm
+
+
+def _tri_solve_1based_traceable(lower, diag, upper, rhs, n):
+    """Traceable WRF ``TRI`` solver. ``rhs`` is ``(nsp, n+1)``; returns ``(nsp, n+1)``.
+
+    Static (n-bounded) Python recurrence; unrolls at trace time. Index 0 of each
+    1-based array is unused padding (kept for index parity with the reference).
+    """
+
+    nsp = rhs.shape[0]
+    gam = [jnp.asarray(0.0)] * (n + 1)
+    out = [jnp.zeros(nsp)] * (n + 1)  # 1-based; out[0] padding
+    bet = 1.0 / diag[1]
+    out[1] = bet * rhs[:, 1]
+    for kk in range(2, n + 1):
+        gam[kk] = bet * upper[kk - 1]
+        bet = 1.0 / (diag[kk] - lower[kk] * gam[kk])
+        out[kk] = bet * (rhs[:, kk] - lower[kk] * out[kk - 1])
+    for kk in range(n - 1, 0, -1):
+        out[kk] = out[kk] - gam[kk + 1] * out[kk + 1]
+    return jnp.stack([jnp.zeros(nsp)] + out[1:], axis=1)  # (nsp, n+1)
+
+
+def _matrix_solve_1based_traceable(a, b, c, rhs, e, n):
+    """Traceable WRF ``MATRIX`` bordered-band solver. ``rhs`` is ``(nsp, n+1)``.
+
+    Static (n-bounded) Python loops; unrolls at trace time. ``lower`` is built as a
+    dict of traced scalars indexed by (i,j) -- only the (i,1), (i,i), (i,i-1), and
+    the recurrence (i,j) entries are ever populated, matching the reference.
+    """
+
+    nsp = rhs.shape[0]
+    lower = {}  # (i,j) -> traced scalar
+    uii = [jnp.asarray(0.0)] * (n + 1)
+    uiip1 = [jnp.asarray(0.0)] * (n + 1)
+    ruii = [jnp.asarray(0.0)] * (n + 1)
+
+    lower[(1, 1)] = jnp.asarray(1.0)
+    uii[1] = b[1]
+    ruii[1] = 1.0 / uii[1]
+
+    for i in range(2, n + 1):
+        lower[(i, i)] = jnp.asarray(1.0)
+        lower[(i, 1)] = a[i] / b[1]
+        uiip1[i - 1] = e[i - 1]
+        if i >= 3:
+            for j in range(2, i):
+                aij = c[i] if i == j + 1 else 0.0
+                lower[(i, j)] = (aij - lower[(i, j - 1)] * e[j - 1]) / (
+                    b[j] - lower[(j, j - 1)] * e[j - 1]
+                )
+
+    for i in range(2, n + 1):
+        uii[i] = b[i] - lower[(i, i - 1)] * e[i - 1]
+        ruii[i] = 1.0 / uii[i]
+
+    y = [jnp.zeros(nsp)] * (n + 1)
+    y[1] = rhs[:, 1]
+    for i in range(2, n + 1):
+        accum = rhs[:, i]
+        for j in range(1, i):
+            lij = lower.get((i, j))
+            if lij is not None:
+                accum = accum - lij * y[j]
+        y[i] = accum
+
+    out = [jnp.zeros(nsp)] * (n + 1)
+    out[n] = y[n] * ruii[n]
+    for i in range(n - 1, 0, -1):
+        out[i] = (y[i] - uiip1[i] * out[i + 1]) * ruii[i]
+    return jnp.stack([jnp.zeros(nsp)] + out[1:], axis=1)  # (nsp, n+1)
+
+
+def _mix_acm_values_traceable(dtpbl, noconv, zf, dzh, dzhi, dzfi, klpbl, pbl, mol, ust, eddy, values, surface_flux):
+    """Traceable :func:`_mix_acm_values`. ``values`` is ``(nsp, nz)``; ``noconv`` traced 0/1.
+
+    Returns ``(vci, eddy_out, fsacm)``. The semi-implicit substep loop runs a
+    fixed ``_NLP_MAX`` iterations, freezing each column after its own ``nlp``.
+    """
+
+    del ust
+    nsp, nz = values.shape
+    kl = nz
+    eddy_out = eddy
+
+    # noconv-branch mass-flux coefficients (1-based arrays length nz+2).
+    kcbl = jnp.where(noconv == 1, klpbl, jnp.asarray(1, jnp.int32))
+    hovl = -pbl / mol
+    fsacm = jnp.where(noconv == 1, 1.0 / (1.0 + ((KARMAN / hovl) ** 0.3333) / (0.72 * KARMAN)), 0.0)
+    meddy = eddy_out[0] * dzfi[0] / (pbl - zf[1])
+    mbar = meddy * fsacm
+
+    # eddy_out[k-1] *= (1-fsacm) for k in 1..kcbl-1 (0-based 0..kcbl-2), noconv only.
+    kidx0 = jnp.arange(nz)
+    reduce_mask = jnp.logical_and(noconv == 1, kidx0 <= (kcbl - 2))
+    eddy_out = jnp.where(reduce_mask, eddy_out * (1.0 - fsacm), eddy_out)
+
+    # mbarks[k], mdwn[k] for k in 2..kcbl (1-based), plus mbarks[1]=mbar,
+    # mbarks[kcbl]=mdwn[kcbl], mdwn[kcbl+1]=0. Length nz+2 1-based arrays built by a
+    # STATIC k-loop with a traced `2<=k<=kcbl` mask (mirrors range(2,kcbl+1)).
+    nl2 = nz + 2
+    jpos = jnp.arange(nl2)  # 1-based position 0..nz+1
+    in_band = jnp.logical_and(noconv == 1, jnp.logical_and(jpos >= 2, jpos <= kcbl))
+    # mdwn[k] = mbar*(pbl - zf[k-1])*dzhi[k-1]; zf len nz+1 (idx 0..nz), dzhi len nz.
+    zf_km1 = zf[jnp.clip(jpos - 1, 0, nz)]
+    dzhi_km1 = dzhi[jnp.clip(jpos - 1, 0, nz - 1)]
+    mdwn = jnp.where(in_band, mbar * (pbl - zf_km1) * dzhi_km1, 0.0)
+    mbarks = jnp.where(in_band, mbar, 0.0)
+    # mbarks[1]=mbar (noconv); else 0.
+    mbarks = mbarks.at[1].set(jnp.where(noconv == 1, mbar, 0.0))
+    # mbarks[kcbl]=mdwn[kcbl]  (noconv; kcbl in [1,nz]).
+    mbarks = mbarks.at[kcbl].set(jnp.where(noconv == 1, mdwn[kcbl], mbarks[kcbl]))
+    # mdwn[kcbl+1]=0 (already 0 outside the band; explicit for parity).
+    mdwn = mdwn.at[jnp.minimum(kcbl + 1, nz + 1)].set(
+        jnp.where(noconv == 1, 0.0, mdwn[jnp.minimum(kcbl + 1, nz + 1)])
+    )
+
+    # dtlim from local eddy CFL: for k in 1..kl-1 (0-based 0..kl-2): ekz=eddy[k-1]*dzfi*dzhi.
+    ek_idx = jnp.arange(nz - 1)  # 0..nz-2 = (k-1) for k=1..nz-1
+    ekz = eddy_out[ek_idx] * dzfi[ek_idx] * dzhi[ek_idx]
+    cfl_lim = jnp.where(ekz > 0.0, 0.75 / ekz, jnp.inf)
+    dtlim = jnp.minimum(dtpbl, jnp.min(cfl_lim))
+    # noconv mass-flux CFL: rz=(zf[kcbl]-zf[1])*dzhi[0].
+    rz = (zf[kcbl] - zf[1]) * dzhi[0]
+    mf_lim = jnp.where(jnp.logical_and(noconv == 1, mbarks[1] * rz > 0.0), 0.5 / (mbarks[1] * rz), jnp.inf)
+    dtlim = jnp.minimum(dtlim, mf_lim)
+
+    nlp = (dtpbl / dtlim + 1.0).astype(jnp.int32)
+    dts = dtpbl / nlp.astype(jnp.float64)
+
+    is_nc = noconv == 1  # traced bool
+
+    def _substep(vci, i):
+        # i in 0.._NLP_MAX-1; active when i < nlp. The coefficient build mirrors the
+        # reference's STATIC k-loops (range(2,kcbl+1)/range(kcbl+1,kl+1)/range(2,kl+1))
+        # by iterating k over the full static range with a traced `k<=kcbl` mask, so
+        # the kcbl-dependent band membership is data-dependent but the loop bound is
+        # static (unrolls into a fixed graph). 1-based coefficient lists, index 0
+        # padding (matches the WRF arrays).
+        active = i < nlp
+        z = jnp.zeros(nsp)
+        ai = [jnp.asarray(0.0)] * (kl + 1)
+        bi = [jnp.asarray(0.0)] * (kl + 1)
+        ci = [jnp.asarray(0.0)] * (kl + 1)
+        ei = [jnp.asarray(0.0)] * (kl + 1)
+        di = [z] * (kl + 1)
+
+        # --- mass-flux band: for k in range(2, kcbl+1) ---  (masked by k<=kcbl & noconv)
+        for k in range(2, kl + 1):
+            in_band = jnp.logical_and(is_nc, k <= kcbl)
+            # ei[k-1] -= CRANKP*mdwn[k]*dts*dzh[k-1]*dzhi[k-2]
+            ei[k - 1] = ei[k - 1] + jnp.where(
+                in_band, -CRANKP * mdwn[k] * dts * dzh[k - 1] * dzhi[k - 2], 0.0
+            )
+            bi[k] = bi[k] + jnp.where(in_band, 1.0 + CRANKP * mdwn[k] * dts, 0.0)
+            ai[k] = ai[k] + jnp.where(in_band, -CRANKP * mbarks[k] * dts, 0.0)
+
+        # ei[1] -= eddy[0]*CRANKP*dzhi[0]*dzfi[0]*dts ; ai[2] -= eddy[0]*...*dzhi[1].
+        # UNCONDITIONAL in WRF (lines outside the `if noconv` block): ei[1] couples
+        # level 1<->0 in BOTH the TRI (noconv=0) and MATRIX (noconv=1) solves. (ai is
+        # only read by MATRIX, but set unconditionally for exact parity.)
+        ei[1] = ei[1] - eddy_out[0] * CRANKP * dzhi[0] * dzfi[0] * dts
+        ai[2] = ai[2] - eddy_out[0] * CRANKP * dzhi[1] * dzfi[0] * dts
+
+        # --- bi[k]=1 for k in range(kcbl+1, kl+1) ---  (UNCONDITIONAL in WRF: this
+        # loop is OUTSIDE the `if noconv` block). For noconv=0, kcbl=1 so it sets
+        # bi[k]=1 for every k=2..kl (the local-diffusion base); for noconv=1 it sets
+        # the above-PBL part. Mask is k>=kcbl+1 only -- NOT gated by noconv.
+        for k in range(2, kl + 1):
+            bi[k] = jnp.where(k >= (kcbl + 1), 1.0, bi[k])
+
+        # --- diffusion band: for k in range(2, kl+1) ---
+        xplus = [jnp.asarray(0.0)] * (kl + 1)
+        xminus = [jnp.asarray(0.0)] * (kl + 1)
+        for k in range(2, kl + 1):
+            xplus[k] = eddy_out[k - 1] * dzhi[k - 1] * dzfi[k - 1] * dts
+            xminus[k] = eddy_out[k - 2] * dzhi[k - 1] * dzfi[k - 2] * dts
+            ci[k] = -xminus[k] * CRANKP
+            ei[k] = ei[k] - xplus[k] * CRANKP
+            bi[k] = bi[k] + xplus[k] * CRANKP + xminus[k] * CRANKP
+
+        # --- bi[1] ---
+        bi1_nc = 1.0 + CRANKP * mbarks[1] * (pbl - zf[1]) * dts * dzhi[0] + eddy_out[0] * CRANKP * dzhi[0] * dzfi[0] * dts
+        bi1_loc = 1.0 + eddy_out[0] * CRANKP * dzhi[0] * dzfi[0] * dts
+        bi[1] = jnp.where(is_nc, bi1_nc, bi1_loc)
+
+        # --- RHS di ---
+        # k in range(2, kcbl+1): mass-flux explicit part (noconv & k<=kcbl);
+        # k in range(kcbl+1, kl+1): di[k]=vci[k-1].
+        for k in range(2, kl + 1):
+            in_mf = jnp.logical_and(is_nc, k <= kcbl)
+            delc = dts * (
+                mbarks[k] * vci[:, 0]
+                - mdwn[k] * vci[:, k - 1]
+                + dzh[k] * dzhi[k - 1] * mdwn[k + 1] * vci[:, k]
+            )
+            di_mf = vci[:, k - 1] + (1.0 - CRANKP) * delc
+            di[k] = jnp.where(in_mf, di_mf, vci[:, k - 1])
+
+        # diffusion explicit for k in range(2, kl+1).
+        for k in range(2, kl + 1):
+            if k == kl:
+                add = -(1.0 - CRANKP) * xminus[k] * (vci[:, k - 1] - vci[:, k - 2])
+            else:
+                add = (1.0 - CRANKP) * xplus[k] * (vci[:, k] - vci[:, k - 1]) - (1.0 - CRANKP) * xminus[k] * (vci[:, k - 1] - vci[:, k - 2])
+            di[k] = di[k] + add
+
+        # di[1].
+        di1_nc = vci[:, 0] + (
+            surface_flux - (1.0 - CRANKP) * (mbarks[1] * (pbl - zf[1]) * vci[:, 0] - mdwn[2] * vci[:, 1] * dzh[1])
+        ) * dzhi[0] * dts
+        di1_loc = vci[:, 0] + surface_flux * dzhi[0] * dts
+        di[1] = jnp.where(is_nc, di1_nc, di1_loc)
+        di[1] = di[1] + (1.0 - CRANKP) * eddy_out[0] * dzhi[0] * dzfi[0] * dts * (vci[:, 1] - vci[:, 0])
+
+        ai_a = jnp.stack(ai)
+        bi_a = jnp.stack(bi)
+        ci_a = jnp.stack(ci)
+        ei_a = jnp.stack(ei)
+        di_a = jnp.stack(di, axis=1)  # (nsp, kl+1)
+
+        ui_mat = _matrix_solve_1based_traceable(ai_a, bi_a, ci_a, di_a, ei_a, kl)
+        ui_tri = _tri_solve_1based_traceable(ci_a, bi_a, ei_a, di_a, kl)
+        ui = jnp.where(is_nc, ui_mat, ui_tri)
+
+        vci_new = ui[:, 1:]  # ui[:,1..kl] -> vci[:,0..kl-1]
+        vci_out = jnp.where(active, vci_new, vci)
+        return vci_out, None
+
+    vci, _ = jax.lax.scan(_substep, values, jnp.arange(_NLP_MAX, dtype=jnp.int32))
+    return vci, eddy_out, fsacm
+
+
+def _acm2_column_traceable(
+    u, v, theta, temperature, qv, qc, qi, density, dz,
+    *, pblh_initial, ust, hfx, qfx, wspd, mut, dt, xtime, g, rd, cpd, ep1,
+):
+    """jax.lax-traceable single ACM2 column. 1:1 with :func:`_acm2_numpy`."""
+
+    nz = u.shape[0]
+    cpair = cpd * (1.0 + 0.84 * qv[0])
+    tmpfx = hfx / (cpair * density[0])
+    tmpvtcon = 1.0 + ep1 * qv[0]
+    ws1 = jnp.sqrt(u[0] ** 2 + v[0] ** 2)
+    tst = -tmpfx / ust
+    qst = -qfx / (ust * density[0])
+    ustm = ust * ws1 / wspd
+    theta_v = theta * (1.0 + ep1 * qv)
+    thv1 = tmpvtcon * theta[0]
+    tstv0 = tst * tmpvtcon + thv1 * ep1 * qst
+    # Fortran SIGN(1e-6, tstv) when |tstv|<1e-6.
+    tstv = jnp.where(
+        jnp.abs(tstv0) < 1.0e-6,
+        jnp.where(jnp.signbit(tstv0), -1.0e-6, 1.0e-6),
+        tstv0,
+    )
+    mol = thv1 * ust ** 2 / (KARMAN * g * tstv)
+    rmol = 1.0 / mol
+    wst = ust * (pblh_initial / (KARMAN * jnp.abs(mol))) ** 0.333333
+
+    zf = jnp.concatenate([jnp.zeros(1), jnp.cumsum(dz)])  # (nz+1,)
+    za = 0.5 * (zf[:-1] + zf[1:])
+    dzh = zf[1:] - zf[:-1]
+    dzhi = 1.0 / dzh
+    dzfi = jnp.concatenate([1.0 / (za[1:] - za[:-1]), (1.0 / (za[-1] - za[-2]))[None]])
+
+    pblh, kpbl, rib = _diagnose_pbl_height_traceable(
+        theta_v, u, v, za, zf, mol, xtime, ust, wst, tstv, g
+    )
+
+    noconv = jnp.where(
+        jnp.logical_and(
+            jnp.logical_and(pblh / mol < -0.02, kpbl > 3),
+            jnp.logical_and(theta_v[0] > theta_v[1], xtime > 1),
+        ),
+        jnp.asarray(1, jnp.int32),
+        jnp.asarray(0, jnp.int32),
+    )
+    regime = jnp.where(noconv == 1, 4.0, 0.0)
+
+    eddyz, eddyzm = _eddyx_traceable(
+        zf, za, mol, pblh, ust, u, v, temperature, theta_v, qv, qc, qi, g, rd, cpair
+    )
+
+    scalar_values = jnp.stack([theta, qv, qc, qi])  # (4, nz)
+    scalar_flux = jnp.stack([-ust * tst, -ust * qst, jnp.asarray(0.0), jnp.asarray(0.0)])
+    scalar_new, exch_h, fsacm_h = _mix_acm_values_traceable(
+        dt, noconv, zf, dzh, dzhi, dzfi, kpbl, pblh, mol, ust, eddyz, scalar_values, scalar_flux
+    )
+
+    momentum_values = jnp.stack([u, v])  # (2, nz)
+    fm = -ustm * ustm
+    wind1 = jnp.sqrt(u[0] * u[0] + v[0] * v[0]) + 1.0e-9
+    momentum_flux = jnp.stack([fm * u[0] / wind1, fm * v[0] / wind1])
+    momentum_new, exch_m, fsacm_m = _mix_acm_values_traceable(
+        dt, noconv, zf, dzh, dzhi, dzfi, kpbl, pblh, mol, ust, eddyzm, momentum_values, momentum_flux
+    )
+
+    rdt = 1.0 / dt
+    u_tend = (momentum_new[0] - u) * rdt
+    v_tend = (momentum_new[1] - v) * rdt
+    theta_tend = (scalar_new[0] - theta) * rdt
+    qv_tend = (scalar_new[1] - qv) * rdt
+    return (
+        u_tend, v_tend, theta_tend, qv_tend,
+        exch_h, exch_m, pblh, kpbl.astype(jnp.int32), regime, noconv, rmol, fsacm_h, fsacm_m,
+    )
+
+
+def acm2_columns(
+    u, v, theta, temperature, qv, density, dz,
+    *, pblh_initial, ust, hfx, qfx, wspd, mut, dt, xtime,
+    qc=None, qi=None, g=G_DEFAULT, rd=R_D_DEFAULT, cpd=CP_DEFAULT, ep1=EP1_DEFAULT,
+):
+    """Batched, jit/vmap-traceable ACM2 over ``(ncol,)`` columns.
+
+    Profile inputs ``(ncol, nz)``; surface inputs ``(ncol,)``. Returns a dict of
+    ``(ncol, nz)`` tendencies and diagnostics. This is the operational scan entry.
+    """
+
+    ncol = u.shape[0]
+    nz = u.shape[1]
+    if qc is None:
+        qc = jnp.zeros((ncol, nz), jnp.float64)
+    if qi is None:
+        qi = jnp.zeros((ncol, nz), jnp.float64)
+    xtime_b = jnp.broadcast_to(jnp.asarray(xtime, jnp.float64), (ncol,))
+
+    out = jax.vmap(
+        lambda *a: _acm2_column_traceable(
+            a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8],
+            pblh_initial=a[9], ust=a[10], hfx=a[11], qfx=a[12], wspd=a[13],
+            mut=a[14], dt=dt, xtime=a[15], g=g, rd=rd, cpd=cpd, ep1=ep1,
+        )
+    )(
+        u, v, theta, temperature, qv, qc, qi, density, dz,
+        pblh_initial, ust, hfx, qfx, wspd, mut, xtime_b,
+    )
+    (u_t, v_t, th_t, qv_t, exch_h, exch_m, pblh, kpbl, regime, noconv, rmol, fsacm_h, fsacm_m) = out
+    return {
+        "u": u_t, "v": v_t, "theta": th_t, "qv": qv_t,
+        "exch_h": exch_h, "exch_m": exch_m,
+        "pblh": pblh, "kpbl": kpbl, "regime": regime, "noconv": noconv,
+        "rmol": rmol, "fsacm_h": fsacm_h, "fsacm_m": fsacm_m,
+    }
+
+
 def step_acm2_column(
     u,
     v,
@@ -711,45 +1241,57 @@ def step_acm2_column(
     height; this is part of the scheme state and must come from the savepoint.
     ``density`` is WRF ``RR3D`` dry-air density, and ``mut`` is total ``MU`` in
     Pa. ``qc`` and ``qi`` default to zero arrays for the v0.6.0 ACM2 PBL gate.
+
+    Backed by the ``jax.lax.scan``-traceable :func:`_acm2_column_traceable` (a 1:1
+    transcription of the host-NumPy reference; the per-case savepoint parity
+    asserts the traceable path equals WRF within the predeclared tolerances).
     """
 
-    u_np = _as1d(u, name="u")
-    nz = u_np.shape[0]
-    qc_arr = np.zeros(nz, dtype=np.float64) if qc is None else _as1d(qc, length=nz, name="qc")
-    qi_arr = np.zeros(nz, dtype=np.float64) if qi is None else _as1d(qi, length=nz, name="qi")
-    state = ACM2ColumnState(u_np, v, theta, temperature, qv, qc_arr, qi_arr, density, dz)
-    tendencies_np, diagnostics_np = _acm2_numpy(
-        state,
-        pblh_initial=_scalar(pblh_initial),
-        ust=_scalar(ust),
-        hfx=_scalar(hfx),
-        qfx=_scalar(qfx),
-        wspd=_scalar(wspd),
-        mut=_scalar(mut),
-        dt=_scalar(dt),
-        xtime=int(_scalar(xtime)),
-        g=_scalar(g),
-        rd=_scalar(rd),
-        cpd=_scalar(cpd),
-        ep1=_scalar(ep1),
+    u_a = jnp.asarray(u, jnp.float64)
+    nz = u_a.shape[0]
+    qc_a = jnp.zeros(nz, jnp.float64) if qc is None else jnp.asarray(qc, jnp.float64)
+    qi_a = jnp.zeros(nz, jnp.float64) if qi is None else jnp.asarray(qi, jnp.float64)
+    out = _acm2_column_traceable(
+        u_a,
+        jnp.asarray(v, jnp.float64),
+        jnp.asarray(theta, jnp.float64),
+        jnp.asarray(temperature, jnp.float64),
+        jnp.asarray(qv, jnp.float64),
+        qc_a,
+        qi_a,
+        jnp.asarray(density, jnp.float64),
+        jnp.asarray(dz, jnp.float64),
+        pblh_initial=jnp.asarray(pblh_initial, jnp.float64),
+        ust=jnp.asarray(ust, jnp.float64),
+        hfx=jnp.asarray(hfx, jnp.float64),
+        qfx=jnp.asarray(qfx, jnp.float64),
+        wspd=jnp.asarray(wspd, jnp.float64),
+        mut=jnp.asarray(mut, jnp.float64),
+        dt=jnp.asarray(dt, jnp.float64),
+        xtime=jnp.asarray(xtime, jnp.float64),
+        g=jnp.asarray(g, jnp.float64),
+        rd=jnp.asarray(rd, jnp.float64),
+        cpd=jnp.asarray(cpd, jnp.float64),
+        ep1=jnp.asarray(ep1, jnp.float64),
     )
+    (u_t, v_t, th_t, qv_t, exch_h, exch_m, pblh, kpbl, regime, noconv, rmol, fsacm_h, fsacm_m) = out
 
     tendencies = {
-        "u": jnp.asarray(tendencies_np["u"], dtype=jnp.float64),
-        "v": jnp.asarray(tendencies_np["v"], dtype=jnp.float64),
-        "theta": jnp.asarray(tendencies_np["theta"], dtype=jnp.float64),
-        "qv": jnp.asarray(tendencies_np["qv"], dtype=jnp.float64),
+        "u": u_t,
+        "v": v_t,
+        "theta": th_t,
+        "qv": qv_t,
     }
     diagnostics = {
-        "pblh": jnp.asarray(diagnostics_np["pblh"], dtype=jnp.float64),
-        "kpbl": jnp.asarray(diagnostics_np["kpbl"], dtype=jnp.int32),
-        "regime": jnp.asarray(diagnostics_np["regime"], dtype=jnp.float64),
-        "noconv": jnp.asarray(diagnostics_np["noconv"], dtype=jnp.int32),
-        "rmol": jnp.asarray(diagnostics_np["rmol"], dtype=jnp.float64),
-        "exch_h": jnp.asarray(diagnostics_np["exch_h"], dtype=jnp.float64),
-        "exch_m": jnp.asarray(diagnostics_np["exch_m"], dtype=jnp.float64),
-        "fsacm_h": jnp.asarray(diagnostics_np["fsacm_h"], dtype=jnp.float64),
-        "fsacm_m": jnp.asarray(diagnostics_np["fsacm_m"], dtype=jnp.float64),
+        "pblh": pblh,
+        "kpbl": kpbl.astype(jnp.int32),
+        "regime": regime,
+        "noconv": noconv.astype(jnp.int32),
+        "rmol": rmol,
+        "exch_h": exch_h,
+        "exch_m": exch_m,
+        "fsacm_h": fsacm_h,
+        "fsacm_m": fsacm_m,
     }
     tendency = PhysicsTendency(state_tendencies=tendencies)
     tendency.validate_keys()
@@ -759,4 +1301,4 @@ def step_acm2_column(
     )
 
 
-__all__ = ["ACM2ColumnState", "ACM2Diagnostics", "step_acm2_column"]
+__all__ = ["ACM2ColumnState", "ACM2Diagnostics", "step_acm2_column", "acm2_columns"]

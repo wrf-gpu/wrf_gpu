@@ -84,7 +84,10 @@ def _land(ny=2, nx=3, seed=1.0):
 
 
 def test_format_version_is_2():
-    assert FORMAT_VERSION == 2
+    # The v0.6.0 integration bumped checkpoint FORMAT_VERSION 2->3 (additive
+    # cumulus_carry / scheme-carry leaves); versions 1/2 stay backward-readable
+    # (SUPPORTED_FORMAT_VERSIONS). The current authoritative version is 3.
+    assert FORMAT_VERSION == 3
 
 
 def test_v2_land_roundtrip_bit_identical(tmp_path: Path):

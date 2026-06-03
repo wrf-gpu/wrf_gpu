@@ -599,6 +599,504 @@ def _ysu_numpy(
     return tendencies, diagnostics
 
 
+# ---------------------------------------------------------------------------
+# jax.lax.scan-traceable / vmap-batched YSU column kernel (v0.6.0 GPU-op).
+#
+# This is a 1:1 transcription of ``_ysu_numpy`` above into pure ``jnp`` /
+# ``jax.lax`` primitives so the kernel is jit-traceable on a device State and
+# ``jax.vmap``-batchable over the ``(ncol,)`` grid. The host-NumPy reference is
+# retained for the per-case parity cross-check; the traceable path is what
+# ``step_ysu_column`` and the operational scan adapter use. Every Python
+# ``if``/``range`` over levels in the reference becomes a ``jnp.where`` masked op
+# or a ``jax.lax.scan`` over a static ``nz``; the two Thomas solves use a
+# scan-based tridiagonal solver matching ``tridin_ysu``/``tridi2n`` exactly.
+# ---------------------------------------------------------------------------
+
+
+def _thomas_scan(lower: jax.Array, diag: jax.Array, upper: jax.Array, rhs: jax.Array) -> jax.Array:
+    """Scan-based Thomas solve matching WRF ``tridin_ysu``/``tridi2n`` indexing.
+
+    Reproduces :func:`_solve_tridiagonal` exactly: forward sweep computes
+    ``cp[k] = upper[k]/denom`` and ``dp[k] = (rhs[k]-lower[k]*dp[k-1])/denom``
+    for ``k=1..n-1`` (``cp[n-1]`` is computed but unused in back-substitution,
+    matching the reference where ``cp`` stops at ``n-2``), back sweep computes
+    ``out[k] = dp[k]-cp[k]*out[k+1]``.
+    """
+
+    n = rhs.shape[0]
+    cp0 = upper[0] / diag[0]
+    dp0 = rhs[0] / diag[0]
+
+    def _fwd(carry, k):
+        cp_prev, dp_prev = carry
+        denom = diag[k] - lower[k] * cp_prev
+        cp_k = upper[k] / denom
+        dp_k = (rhs[k] - lower[k] * dp_prev) / denom
+        return (cp_k, dp_k), (cp_k, dp_k)
+
+    _, (cp_rest, dp_rest) = jax.lax.scan(_fwd, (cp0, dp0), jnp.arange(1, n))
+    cp = jnp.concatenate([cp0[None], cp_rest])
+    dp = jnp.concatenate([dp0[None], dp_rest])
+
+    def _bwd(x_next, k):
+        x_k = dp[k] - cp[k] * x_next
+        return x_k, x_k
+
+    x_last = dp[n - 1]
+    _, x_rest = jax.lax.scan(_bwd, x_last, jnp.arange(n - 2, -1, -1))
+    return jnp.concatenate([x_rest[::-1], x_last[None]])
+
+
+def _first_pbl_guess_traceable(thv, thermal, za, br, brcr, u, v):
+    """Traceable ``_first_pbl_guess``: forward scan freezing on first ``brup>brcr``."""
+
+    def _step(carry, k):
+        brdn_c, brup_c, stable_c, kpbl_c = carry
+        spdk2 = jnp.maximum(u[k] * u[k] + v[k] * v[k], 1.0)
+        brup_new = (thv[k] - thermal) * (G * za[k] / thv[0]) / spdk2
+        # Only advance while not yet stable.
+        active = jnp.logical_not(stable_c)
+        brdn_n = jnp.where(active, brup_c, brdn_c)
+        brup_n = jnp.where(active, brup_new, brup_c)
+        kpbl_n = jnp.where(active, (k + 1).astype(jnp.int32), kpbl_c)
+        stable_n = jnp.where(active, brup_new > brcr, stable_c)
+        return (brdn_n, brup_n, stable_n, kpbl_n), None
+
+    init = (br, br, jnp.asarray(False), jnp.asarray(1, jnp.int32))
+    (brdn, brup, _stable, kpbl), _ = jax.lax.scan(
+        _step, init, jnp.arange(1, thv.shape[0], dtype=jnp.int32)
+    )
+    return kpbl, brdn, brup
+
+
+def _interp_pblh_traceable(kpbl, brdn, brup, brcr, za, zq):
+    """Traceable ``_interp_pblh``."""
+
+    brint = jnp.where(
+        brdn >= brcr,
+        0.0,
+        jnp.where(brup <= brcr, 1.0, (brcr - brdn) / (brup - brdn)),
+    )
+    k0 = jnp.maximum(kpbl - 1, 1)
+    hpbl = za[k0 - 1] + brint * (za[k0] - za[k0 - 1])
+    kpbl_new = jnp.where(hpbl < zq[1], jnp.asarray(1, jnp.int32), kpbl)
+    pblflg = kpbl_new > 1
+    return hpbl, kpbl_new, pblflg
+
+
+def _ysu_column_traceable(
+    u, v, tx, qv, p, pdi, pi, dz,
+    *, psfc, znt, ust, hfx, qfx, wspd, br, psim, psih, dt, xland, u10, v10, uoce, voce,
+):
+    """jax.lax-traceable single YSU column. 1:1 with :func:`_ysu_numpy`.
+
+    All inputs are ``(nz,)`` arrays (``pdi`` is ``(nz+1,)``) or scalars; output is
+    ``(u_tend, v_tend, theta_tend, qv_tend, exch_h, exch_m, pblh, kpbl, wstar,
+    delta)``. Vectorize over the grid with ``jax.vmap``.
+    """
+
+    nz = u.shape[0]
+    kidx = jnp.arange(nz)  # 0-based level index
+    kp1 = kidx + 1  # WRF 1-based (k+1) used in the host conditionals
+
+    th = tx / pi
+    thli = th
+    thv = th * (1.0 + EP1 * qv)
+    rhox = psfc / (R_D * tx[0] * (1.0 + EP1 * qv[0]))
+    govrth = G / th[0]
+
+    zq = jnp.concatenate([jnp.zeros(1), jnp.cumsum(dz)])  # (nz+1,)
+    za = 0.5 * (zq[:-1] + zq[1:])
+    delp = pdi[:-1] - pdi[1:]
+    dza = jnp.concatenate([za[:1], za[1:] - za[:-1]])
+
+    xkzom = jnp.where(kidx == nz - 1, 0.0, XKZMINM)
+    xkzoh = jnp.where(kidx == nz - 1, 0.0, XKZMINH)
+
+    dt2 = 2.0 * dt
+    rdt = 1.0 / dt2
+    cont = CP / G
+    conpr = BFAC * KARMAN * SFCFRAC
+
+    wspd1 = jnp.sqrt((u[0] - uoce) ** 2 + (v[0] - voce) ** 2) + 1.0e-9
+    sflux = hfx / rhox / CP + qfx / rhox * EP1 * th[0]
+    sfcflg = jnp.logical_not(br > 0.0)
+    zl1 = za[0]
+
+    thermal0 = thv[0]
+    thermalli0 = thli[0]
+    kpbl, brdn, brup = _first_pbl_guess_traceable(thv, thermal0, za, br, BRCR_UB, u, v)
+    hpbl, kpbl, pblflg = _interp_pblh_traceable(kpbl, brdn, brup, BRCR_UB, za, zq)
+
+    fm = psim
+    fh = psih
+    zol1 = jnp.maximum(br * fm * fm / fh, RIMIN)
+    zol1 = jnp.where(sfcflg, jnp.minimum(zol1, -ZFMIN), jnp.maximum(zol1, ZFMIN))
+    hol1 = zol1 * hpbl / zl1 * SFCFRAC
+
+    phim_u = (1.0 - APHI16 * hol1) ** (-0.25)
+    phih_u = (1.0 - APHI16 * hol1) ** (-0.5)
+    bfx0 = jnp.maximum(sflux, 0.0)
+    wstar3_u = govrth * bfx0 * hpbl
+    wstar_u = wstar3_u ** H1
+    phim_s = 1.0 + APHI5 * hol1
+    phim = jnp.where(sfcflg, phim_u, phim_s)
+    phih = jnp.where(sfcflg, phih_u, phim_s)
+    wstar = jnp.where(sfcflg, wstar_u, 0.0)
+    wstar3 = jnp.where(sfcflg, wstar3_u, 0.0)
+
+    ust3 = ust ** 3
+    wscale = (ust3 + PHIFAC * KARMAN * wstar3 * 0.5) ** H1
+    wscale = jnp.minimum(wscale, ust * APHI16)
+    wscale = jnp.maximum(wscale, ust / APHI5)
+
+    wstar3_2 = 0.0  # YSU top-down off (no cloud branch in oracle cases)
+
+    # The sfcflg & sflux>0 convective block updates thermal/hgam* and pblflg.
+    conv = jnp.logical_and(sfcflg, sflux > 0.0)
+    gamfac = BFAC / rhox / wscale
+    hgamt_c = jnp.minimum(gamfac * hfx / CP, GAMCRT)
+    hgamq_c = jnp.minimum(gamfac * qfx, GAMCRQ)
+    vpert = (hgamt_c + EP1 * th[0] * hgamq_c) / BFAC * AFAC
+    bump = jnp.maximum(vpert, 0.0) * jnp.minimum(za[0] / (SFCFRAC * hpbl), 1.0)
+    thermal = jnp.where(conv, thermal0 + bump, thermal0)
+    thermalli = jnp.where(conv, thermalli0 + bump, thermalli0)
+    hgamt = jnp.where(conv, jnp.maximum(hgamt_c, 0.0), 0.0)
+    hgamq = jnp.where(conv, jnp.maximum(hgamq_c, 0.0), 0.0)
+    brint_m = -15.9 * ust * ust / wspd * wstar3 / (wscale ** 4)
+    hgamu = jnp.where(conv, brint_m * u[0], 0.0)
+    hgamv = jnp.where(conv, brint_m * v[0], 0.0)
+    pblflg = jnp.where(conv, pblflg, jnp.asarray(False))
+
+    # if pblflg: recompute PBL height with the convectively bumped thermal.
+    kpbl_r, brdn_r, brup_r = _first_pbl_guess_traceable(thv, thermal, za, br, BRCR_UB, u, v)
+    hpbl_r, kpbl_r, pblflg_r = _interp_pblh_traceable(kpbl_r, brdn_r, brup_r, BRCR_UB, za, zq)
+    hpbl = jnp.where(pblflg, hpbl_r, hpbl)
+    kpbl = jnp.where(pblflg, kpbl_r, kpbl)
+    pblflg = jnp.where(pblflg, pblflg_r, pblflg)
+
+    # Stable/unstable RB scan with brcr.
+    cond_stable_low = jnp.logical_and(jnp.logical_not(sfcflg), hpbl < zq[1])
+    # "stable" flag entering the scan: False when (not sfcflg and hpbl<zq1), else True.
+    stable_init = jnp.logical_not(cond_stable_low)
+    brup_pre = br
+
+    is_water = (xland - 1.5) >= 0.0
+    wspd10 = jnp.sqrt(u10 * u10 + v10 * v10)
+    ross = wspd10 / (CORI * znt)
+    brcr_water = jnp.minimum(0.16 * (1.0e-7 * ross) ** (-0.18), 0.3)
+    # brcr default BRCR_UB; if not stable_init -> water:brcr_water else BRCR_SB.
+    brcr = jnp.where(
+        stable_init,
+        BRCR_UB,
+        jnp.where(is_water, brcr_water, BRCR_SB),
+    )
+
+    def _rb_step(carry, k):
+        brdn_c, brup_c, stable_c, kpbl_c = carry
+        active = jnp.logical_not(stable_c)
+        spdk2 = jnp.maximum(u[k] * u[k] + v[k] * v[k], 1.0)
+        brup_new = (thv[k] - thermal) * (G * za[k] / thv[0]) / spdk2
+        brdn_n = jnp.where(active, brup_c, brdn_c)
+        brup_n = jnp.where(active, brup_new, brup_c)
+        kpbl_n = jnp.where(active, (k + 1).astype(jnp.int32), kpbl_c)
+        stable_n = jnp.where(active, brup_new > brcr, stable_c)
+        return (brdn_n, brup_n, stable_n, kpbl_n), None
+
+    (brdn2, brup2, _st2, kpbl2), _ = jax.lax.scan(
+        _rb_step, (brup_pre, brup_pre, stable_init, kpbl.astype(jnp.int32)),
+        jnp.arange(1, nz, dtype=jnp.int32),
+    )
+
+    # if (not sfcflg) and hpbl<zq1: re-interp pblh with brcr.
+    hpbl_b, kpbl_b, pblflg_b = _interp_pblh_traceable(kpbl2, brdn2, brup2, brcr, za, zq)
+    hpbl = jnp.where(cond_stable_low, hpbl_b, hpbl)
+    kpbl = jnp.where(cond_stable_low, kpbl_b, kpbl)
+    pblflg = jnp.where(cond_stable_low, pblflg_b, pblflg)
+
+    # Entrainment block (pblflg).
+    kpbl_f = kpbl  # traced int
+    k_ent = kpbl_f - 2  # 0-based level kpbl-2
+    wm3 = wstar3 + 5.0 * ust3
+    wm2 = wm3 ** H2
+    bfxpbl = -0.15 * thv[0] / G * wm3 / hpbl
+    thv_kp1 = thv[k_ent + 1]
+    thv_k = thv[k_ent]
+    dthvx = jnp.maximum(thv_kp1 - thv_k, TMIN)
+    we = jnp.maximum(bfxpbl / dthvx, -jnp.sqrt(wm2))
+    th_kp1 = th[k_ent + 1]
+    th_k = th[k_ent]
+    dthx = jnp.maximum(th_kp1 - th_k, TMIN)
+    dqx = jnp.minimum(qv[k_ent + 1] - qv[k_ent], 0.0)
+    hfxpbl = we * dthx
+    qfxpbl = we * dqx
+    dux = u[k_ent + 1] - u[k_ent]
+    dvx = v[k_ent + 1] - v[k_ent]
+    prpbl = 1.0
+    ufxpbl = jnp.where(
+        dux > TMIN, jnp.maximum(prpbl * we * dux, -ust * ust),
+        jnp.where(dux < -TMIN, jnp.minimum(prpbl * we * dux, ust * ust), 0.0),
+    )
+    vfxpbl = jnp.where(
+        dvx > TMIN, jnp.maximum(prpbl * we * dvx, -ust * ust),
+        jnp.where(dvx < -TMIN, jnp.minimum(prpbl * we * dvx, ust * ust), 0.0),
+    )
+    delb = govrth * D3 * hpbl
+    delta_c = jnp.minimum(D1 * hpbl + D2 * wm2 / delb, 100.0)
+    # Zero the entrainment quantities when not pblflg.
+    we = jnp.where(pblflg, we, 0.0)
+    hfxpbl = jnp.where(pblflg, hfxpbl, 0.0)
+    qfxpbl = jnp.where(pblflg, qfxpbl, 0.0)
+    ufxpbl = jnp.where(pblflg, ufxpbl, 0.0)
+    vfxpbl = jnp.where(pblflg, vfxpbl, 0.0)
+    wm2 = jnp.where(pblflg, wm2, 0.0)
+    delta = jnp.where(pblflg, delta_c, 0.0)
+
+    # entfac: pblflg and (k+1)>=kpbl. Default 1e30. delta may be 0 when not pblflg;
+    # guard the division (only used where pblflg true).
+    delta_safe = jnp.where(pblflg, delta, 1.0)
+    entfac = jnp.where(
+        jnp.logical_and(pblflg, kp1 >= kpbl),
+        ((zq[1:] - hpbl) / delta_safe) ** 2,
+        1.0e30,
+    )
+
+    # Free-convective K profile for (k+1)<kpbl.
+    in_pbl = kp1 < kpbl
+    zfac = jnp.clip(1.0 - (zq[1:] - zl1) / (hpbl - zl1), ZFMIN, 1.0)
+    zfacent = (1.0 - zfac) ** 3
+    wscalek = (ust3 + PHIFAC * KARMAN * wstar3 * (1.0 - zfac)) ** H1
+    wscalek2 = (PHIFAC * KARMAN * wstar3_2 * zfac) ** H1
+    # sfcflg branch for prfac/prnumfac; else branch overrides wscalek.
+    prfac_s = conpr
+    denom_pr = 1.0 + 4.0 * KARMAN * (wstar3 + wstar3_2) / ust3
+    prfac2_s = 15.9 * (wstar3 + wstar3_2) / ust3 / denom_pr
+    prnumfac_s = -3.0 * jnp.maximum(zq[1:] - SFCFRAC * hpbl, 0.0) ** 2 / hpbl ** 2
+    phim8z = 1.0 + APHI5 * zol1 * zq[1:] / zl1
+    wscalek_ns = jnp.maximum(ust / phim8z, 0.001)
+    prfac = jnp.where(sfcflg, prfac_s, 0.0)
+    prfac2 = jnp.where(sfcflg, prfac2_s, 0.0)
+    prnumfac = jnp.where(sfcflg, prnumfac_s, 0.0)
+    wscalek = jnp.where(sfcflg, wscalek, wscalek_ns)
+    prnum0 = jnp.clip(phih / phim + prfac, PRMIN, PRMAX)
+    xkzm_pbl = (
+        wscalek * KARMAN * zq[1:] * zfac ** PFAC
+        + wscalek2 * KARMAN * (hpbl - zq[1:]) * (1.0 - zfac) ** PFAC
+    )
+    # cloudflg always False in the oracle path -> the (k+1)==kpbl-1 zeroing is inert.
+    prnum_q = 1.0 + (prnum0 - 1.0) * jnp.exp(prnumfac)
+    xkzq_pbl = xkzm_pbl / prnum_q * zfac ** (PFAC_Q - PFAC)
+    prnum0b = prnum0 / (1.0 + prfac2 * KARMAN * SFCFRAC)
+    prnum_h = 1.0 + (prnum0b - 1.0) * jnp.exp(prnumfac)
+    xkzh_pbl = xkzm_pbl / prnum_h
+    xkzm_pbl = jnp.minimum(xkzm_pbl + xkzom, XKZMAX)
+    xkzh_pbl = jnp.minimum(xkzh_pbl + xkzoh, XKZMAX)
+    xkzq_pbl = jnp.minimum(xkzq_pbl + xkzoh, XKZMAX)
+
+    # Local Ri-based K for (k+1)>=kpbl (defined on k=0..nz-2).
+    above = jnp.logical_and(kp1 >= kpbl, kidx < nz - 1)
+    dza_kp1 = jnp.concatenate([dza[1:], dza[-1:]])  # dza[k+1] for k=0..nz-1 (last invalid)
+    u_kp1 = jnp.concatenate([u[1:], u[-1:]])
+    v_kp1 = jnp.concatenate([v[1:], v[-1:]])
+    thv_next = jnp.concatenate([thv[1:], thv[-1:]])
+    th_next = jnp.concatenate([th[1:], th[-1:]])
+    ss = ((u_kp1 - u) ** 2 + (v_kp1 - v) ** 2) / (dza_kp1 ** 2) + 1.0e-9
+    govrthv = G / (0.5 * (thv_next + thv))
+    ri = govrthv * (thv_next - thv) / (ss * dza_kp1)
+    zk = KARMAN * zq[1:]
+    rlamdz = jnp.minimum(jnp.maximum(0.1 * dza_kp1, RLAM), 300.0)
+    rlamdz = jnp.minimum(dza_kp1, rlamdz)
+    rl2 = (zk * rlamdz / (rlamdz + zk)) ** 2
+    dk = rl2 * jnp.sqrt(ss)
+    ri_neg = jnp.maximum(ri, RIMIN)
+    sri = jnp.sqrt(jnp.maximum(-ri, 0.0))
+    xkzm_un = dk * (1.0 + 8.0 * (-ri_neg) / (1.0 + 1.746 * sri))
+    xkzh_un = dk * (1.0 + 8.0 * (-ri_neg) / (1.0 + 1.286 * sri))
+    xkzh_st = dk / (1.0 + 5.0 * ri) ** 2
+    prnum_st = jnp.minimum(1.0 + 2.1 * ri, PRMAX)
+    xkzm_st = xkzh_st * prnum_st
+    xkzm_loc = jnp.where(ri < 0.0, xkzm_un, xkzm_st)
+    xkzh_loc = jnp.where(ri < 0.0, xkzh_un, xkzh_st)
+    xkzm_loc = jnp.minimum(xkzm_loc + xkzom, XKZMAX)
+    xkzh_loc = jnp.minimum(xkzh_loc + xkzoh, XKZMAX)
+
+    # Assemble the working xkzh/xkzm/xkzq on levels 0..nz-1.
+    # In-PBL free-convective values where (k+1)<kpbl; local Ri values where above.
+    xkzh = jnp.where(in_pbl, xkzh_pbl, jnp.where(above, xkzh_loc, 0.0))
+    xkzm = jnp.where(in_pbl, xkzm_pbl, jnp.where(above, xkzm_loc, 0.0))
+    xkzq = jnp.where(in_pbl, xkzq_pbl, jnp.where(above, xkzh_loc, 0.0))
+    # xkzml/xkzhl carry the local (above) values for the entrainment sqrt blend.
+    xkzml = jnp.where(above, xkzm_loc, 0.0)
+    xkzhl = jnp.where(above, xkzh_loc, 0.0)
+
+    # --- Heat solve ---
+    # Per-level (k=0..nz-2) coefficients; build lower/diag/upper/rhs by scatter.
+    dza_k1 = dza[1:]  # dza[k+1], length nz-1 valid for k=0..nz-2
+    p_k = p[:-1]
+    p_k1 = p[1:]
+    delp_k = delp[:-1]
+    delp_k1 = delp[1:]
+    dtodsd = dt2 / delp_k
+    dtodsu = dt2 / delp_k1
+    dsig = p_k - p_k1
+    rdz = 1.0 / dza_k1
+    kk = jnp.arange(nz - 1)  # interface index k=0..nz-2 (between level k and k+1)
+    kp1_face = kk + 1  # WRF 1-based (k+1)
+
+    xkzh_face = xkzh[:-1]  # xkzh on faces k=0..nz-2
+    # Entrainment-modified xkzh on faces where pblflg & (k+1)>=kpbl & entfac<4.6.
+    ent_face = jnp.logical_and(
+        jnp.logical_and(pblflg, kp1_face >= kpbl), entfac[:-1] < 4.6
+    )
+    dza_kpblm1 = dza[kpbl - 1]
+    xkzh_ent = -we * dza_kpblm1 * jnp.exp(-entfac[:-1])
+    xkzh_ent = jnp.sqrt(jnp.maximum(xkzh_ent * xkzhl[:-1], 0.0))
+    xkzh_ent = jnp.minimum(jnp.maximum(xkzh_ent, xkzoh[:-1]), XKZMAX)
+    in_pbl_face = kp1_face < kpbl
+    xkzh_used = jnp.where(ent_face, xkzh_ent, xkzh_face)
+
+    tem1 = dsig * xkzh_used * rdz
+    dsdzt = tem1 * (-hgamt / hpbl - hfxpbl * zfacent[:-1] / jnp.where(in_pbl_face, xkzh_used, 1.0))
+    dsdz2 = tem1 * rdz
+    upper_h = -dtodsd * dsdz2
+    lower_h_off = -dtodsu * dsdz2  # this is lower[k+1]
+
+    # WRF sets diag[0]=1 then accumulates diag[k] -= upper[k], diag[k+1] = 1 - lower[k+1].
+    # The ones() base + additive (-upper at k, -lower at k+1) reproduces this exactly:
+    # diag[0] starts at 1 and gets -upper[0]; every other diag[m] = 1 - lower[m] - upper[m]
+    # (upper[m] only contributes for m<=nz-2; lower[m] only for m>=1), matching the loop.
+    diag_h = jnp.ones(nz)
+    diag_h = diag_h.at[kk].add(-upper_h)
+    diag_h = diag_h.at[kk + 1].add(-lower_h_off)
+    upper_arr = jnp.zeros(nz).at[kk].set(upper_h)
+    lower_arr = jnp.zeros(nz).at[kk + 1].set(lower_h_off)
+
+    rhs_h = th - 300.0
+    rhs_h = rhs_h.at[0].add(hfx / cont / delp[0] * dt2)
+    # in-PBL counter-gradient contributions to rhs at k and k+1.
+    add_k = jnp.where(in_pbl_face, dtodsd * dsdzt, 0.0)
+    rhs_h = rhs_h.at[kk].add(add_k)
+    # rhs[k+1] = th[k+1]-300 - dtodsu*dsdzt where in_pbl_face; else th[k+1]-300 (already set).
+    sub_kp1 = jnp.where(in_pbl_face, -dtodsu * dsdzt, 0.0)
+    rhs_h = rhs_h.at[kk + 1].add(sub_kp1)
+
+    theta_sol = _thomas_scan(lower_arr, diag_h, upper_arr, rhs_h)
+    theta_tend = (theta_sol - th + 300.0) * rdt
+    exch_h = jnp.concatenate([jnp.zeros(1), xkzh_used])
+
+    # --- Water-vapor solve ---
+    # WRF: for (k+1)>=kpbl: xkzq[k]=xkzh[k] (the local-Ri value). Then same
+    # entrainment override on the face as the heat solve but onto xkzq.
+    xkzq_face = jnp.where(kp1_face >= kpbl, xkzh[:-1], xkzq[:-1])
+    xkzq_ent = -we * dza_kpblm1 * jnp.exp(-entfac[:-1])
+    xkzq_ent = jnp.sqrt(jnp.maximum(xkzq_ent * xkzhl[:-1], 0.0))
+    xkzq_ent = jnp.minimum(jnp.maximum(xkzq_ent, xkzoh[:-1]), XKZMAX)
+    xkzq_used = jnp.where(ent_face, xkzq_ent, xkzq_face)
+
+    tem1_q = dsig * xkzq_used * rdz
+    dsdzq = tem1_q * (-qfxpbl * zfacent[:-1] / jnp.where(in_pbl_face, xkzq_used, 1.0))
+    dsdz2_q = tem1_q * rdz
+    upper_q = -dtodsd * dsdz2_q
+    lower_q_off = -dtodsu * dsdz2_q
+    diag_q = jnp.ones(nz)
+    diag_q = diag_q.at[kk].add(-upper_q)
+    diag_q = diag_q.at[kk + 1].add(-lower_q_off)
+    upper_q_arr = jnp.zeros(nz).at[kk].set(upper_q)
+    lower_q_arr = jnp.zeros(nz).at[kk + 1].set(lower_q_off)
+    rhs_q = qv
+    rhs_q = rhs_q.at[0].add(qfx * G / delp[0] * dt2)
+    add_kq = jnp.where(in_pbl_face, dtodsd * dsdzq, 0.0)
+    rhs_q = rhs_q.at[kk].add(add_kq)
+    sub_kp1q = jnp.where(in_pbl_face, -dtodsu * dsdzq, 0.0)
+    rhs_q = rhs_q.at[kk + 1].add(sub_kp1q)
+    qv_sol = _thomas_scan(lower_q_arr, diag_q, upper_q_arr, rhs_q)
+    qv_tend = (qv_sol - qv) * rdt
+
+    # --- Momentum solve ---
+    # xkzm face values: in-PBL uses the free-convective xkzm; the entrainment
+    # override sets xkzm[k]=sqrt(prpbl*xkzh[k] * xkzml[k]) for the ent faces.
+    xkzm_face = xkzm[:-1]
+    xkzm_ent = prpbl * xkzh_used  # WRF uses the (entrainment-overwritten) xkzh here
+    xkzm_ent = jnp.sqrt(jnp.maximum(xkzm_ent * xkzml[:-1], 0.0))
+    xkzm_ent = jnp.minimum(jnp.maximum(xkzm_ent, xkzom[:-1]), XKZMAX)
+    xkzm_used = jnp.where(ent_face, xkzm_ent, xkzm_face)
+
+    fric = ust * ust / wspd1 * rhox * G / delp[0] * dt2 * (wspd1 / wspd) ** 2
+    tem1_m = dsig * xkzm_used * rdz
+    dsdzu = tem1_m * (-hgamu / hpbl - ufxpbl * zfacent[:-1] / jnp.where(in_pbl_face, xkzm_used, 1.0))
+    dsdzv = tem1_m * (-hgamv / hpbl - vfxpbl * zfacent[:-1] / jnp.where(in_pbl_face, xkzm_used, 1.0))
+    dsdz2_m = tem1_m * rdz
+    upper_m = -dtodsd * dsdz2_m
+    lower_m_off = -dtodsu * dsdz2_m
+    diag_m = jnp.ones(nz)
+    diag_m = diag_m.at[0].add(fric)
+    diag_m = diag_m.at[kk].add(-upper_m)
+    diag_m = diag_m.at[kk + 1].add(-lower_m_off)
+    upper_m_arr = jnp.zeros(nz).at[kk].set(upper_m)
+    lower_m_arr = jnp.zeros(nz).at[kk + 1].set(lower_m_off)
+
+    rhs_u = u
+    rhs_v = v
+    rhs_u = rhs_u.at[0].add(uoce * ust * ust * rhox * G / delp[0] * dt2 / wspd1 * (wspd1 / wspd) ** 2)
+    rhs_v = rhs_v.at[0].add(voce * ust * ust * rhox * G / delp[0] * dt2 / wspd1 * (wspd1 / wspd) ** 2)
+    add_ku = jnp.where(in_pbl_face, dtodsd * dsdzu, 0.0)
+    add_kv = jnp.where(in_pbl_face, dtodsd * dsdzv, 0.0)
+    rhs_u = rhs_u.at[kk].add(add_ku)
+    rhs_v = rhs_v.at[kk].add(add_kv)
+    sub_kp1u = jnp.where(in_pbl_face, -dtodsu * dsdzu, 0.0)
+    sub_kp1v = jnp.where(in_pbl_face, -dtodsu * dsdzv, 0.0)
+    rhs_u = rhs_u.at[kk + 1].add(sub_kp1u)
+    rhs_v = rhs_v.at[kk + 1].add(sub_kp1v)
+
+    u_sol = _thomas_scan(lower_m_arr, diag_m, upper_m_arr, rhs_u)
+    v_sol = _thomas_scan(lower_m_arr, diag_m, upper_m_arr, rhs_v)
+    u_tend = (u_sol - u) * rdt
+    v_tend = (v_sol - v) * rdt
+    exch_m = jnp.concatenate([jnp.zeros(1), xkzm_used])
+
+    return (
+        u_tend, v_tend, theta_tend, qv_tend,
+        exch_h, exch_m, hpbl, kpbl.astype(jnp.int32), wstar, delta,
+    )
+
+
+def ysu_columns(
+    u, v, temperature, qv, pressure, pressure_interface, exner, dz,
+    *, psfc, znt, ust, hfx, qfx, wspd, br, psim, psih, dt, xland, u10, v10, uoce=None, voce=None,
+):
+    """Batched, jit/vmap-traceable YSU over ``(ncol,)`` columns.
+
+    Profile inputs are ``(ncol, nz)`` (``pressure_interface`` is ``(ncol, nz+1)``);
+    surface inputs are ``(ncol,)``. Returns a dict of ``(ncol, nz)`` tendencies and
+    ``(ncol, nz)``/``(ncol,)`` diagnostics. This is the operational scan entry.
+    """
+
+    ncol = u.shape[0]
+    if uoce is None:
+        uoce = jnp.zeros(ncol, dtype=u.dtype)
+    if voce is None:
+        voce = jnp.zeros(ncol, dtype=u.dtype)
+    dt_b = jnp.broadcast_to(jnp.asarray(dt, jnp.float64), (ncol,))
+
+    out = jax.vmap(
+        lambda *a: _ysu_column_traceable(
+            a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7],
+            psfc=a[8], znt=a[9], ust=a[10], hfx=a[11], qfx=a[12], wspd=a[13],
+            br=a[14], psim=a[15], psih=a[16], dt=a[17], xland=a[18], u10=a[19],
+            v10=a[20], uoce=a[21], voce=a[22],
+        )
+    )(
+        u, v, temperature, qv, pressure, pressure_interface, exner, dz,
+        psfc, znt, ust, hfx, qfx, wspd, br, psim, psih, dt_b, xland, u10, v10, uoce, voce,
+    )
+    (u_t, v_t, th_t, qv_t, exch_h, exch_m, pblh, kpbl, wstar, delta) = out
+    return {
+        "u": u_t, "v": v_t, "theta": th_t, "qv": qv_t,
+        "exch_h": exch_h, "exch_m": exch_m,
+        "pblh": pblh, "kpbl": kpbl, "wstar": wstar, "delta": delta,
+    }
+
+
 def step_ysu_column(
     u,
     v,
@@ -631,35 +1129,51 @@ def step_ysu_column(
     absolute temperature, ``exner`` is ``pi3d``, ``pressure_interface`` is the
     length ``nz+1`` pressure-at-interface column, and surface fluxes are the
     already-computed surface-layer values consumed by YSU.
+
+    Backed by the ``jax.lax.scan``-traceable :func:`_ysu_column_traceable` (a 1:1
+    transcription of the host-NumPy reference; the per-case savepoint parity
+    asserts the traceable path equals WRF within the predeclared tolerances).
     """
 
-    state = YSUColumnState(u, v, temperature, qv, pressure, pressure_interface, exner, dz)
-    tendencies_np, diagnostics_np = _ysu_numpy(
-        state,
-        psfc=_scalar(psfc),
-        znt=_scalar(znt),
-        ust=_scalar(ust),
-        hfx=_scalar(hfx),
-        qfx=_scalar(qfx),
-        wspd=_scalar(wspd),
-        br=_scalar(br),
-        psim=_scalar(psim),
-        psih=_scalar(psih),
-        dt=_scalar(dt),
-        xland=_scalar(xland),
-        u10=_scalar(u10),
-        v10=_scalar(v10),
-        uoce=_scalar(uoce),
-        voce=_scalar(voce),
+    out = _ysu_column_traceable(
+        jnp.asarray(u, jnp.float64),
+        jnp.asarray(v, jnp.float64),
+        jnp.asarray(temperature, jnp.float64),
+        jnp.asarray(qv, jnp.float64),
+        jnp.asarray(pressure, jnp.float64),
+        jnp.asarray(pressure_interface, jnp.float64),
+        jnp.asarray(exner, jnp.float64),
+        jnp.asarray(dz, jnp.float64),
+        psfc=jnp.asarray(psfc, jnp.float64),
+        znt=jnp.asarray(znt, jnp.float64),
+        ust=jnp.asarray(ust, jnp.float64),
+        hfx=jnp.asarray(hfx, jnp.float64),
+        qfx=jnp.asarray(qfx, jnp.float64),
+        wspd=jnp.asarray(wspd, jnp.float64),
+        br=jnp.asarray(br, jnp.float64),
+        psim=jnp.asarray(psim, jnp.float64),
+        psih=jnp.asarray(psih, jnp.float64),
+        dt=jnp.asarray(dt, jnp.float64),
+        xland=jnp.asarray(xland, jnp.float64),
+        u10=jnp.asarray(u10, jnp.float64),
+        v10=jnp.asarray(v10, jnp.float64),
+        uoce=jnp.asarray(uoce, jnp.float64),
+        voce=jnp.asarray(voce, jnp.float64),
     )
-    tendencies = {key: jnp.asarray(value, dtype=jnp.float64) for key, value in tendencies_np.items()}
+    (u_t, v_t, th_t, qv_t, exch_h, exch_m, pblh, kpbl, wstar, delta) = out
+    tendencies = {
+        "u": u_t,
+        "v": v_t,
+        "theta": th_t,
+        "qv": qv_t,
+    }
     diagnostics = {
-        "pblh": jnp.asarray(diagnostics_np["pblh"], dtype=jnp.float64),
-        "kpbl": jnp.asarray(diagnostics_np["kpbl"], dtype=jnp.int32),
-        "exch_h": jnp.asarray(diagnostics_np["exch_h"], dtype=jnp.float64),
-        "exch_m": jnp.asarray(diagnostics_np["exch_m"], dtype=jnp.float64),
-        "wstar": jnp.asarray(diagnostics_np["wstar"], dtype=jnp.float64),
-        "delta": jnp.asarray(diagnostics_np["delta"], dtype=jnp.float64),
+        "pblh": pblh,
+        "kpbl": kpbl.astype(jnp.int32),
+        "exch_h": exch_h,
+        "exch_m": exch_m,
+        "wstar": wstar,
+        "delta": delta,
     }
     tendency = PhysicsTendency(state_tendencies=tendencies)
     tendency.validate_keys()
@@ -669,4 +1183,4 @@ def step_ysu_column(
     )
 
 
-__all__ = ["YSUColumnState", "YSUDiagnostics", "step_ysu_column"]
+__all__ = ["YSUColumnState", "YSUDiagnostics", "step_ysu_column", "ysu_columns"]
