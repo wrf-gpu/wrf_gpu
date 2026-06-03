@@ -2,6 +2,7 @@
 # Compiled Fortran oracle artifacts and intermediate column dumps are not
 # committed; the extracted savepoint JSON under proofs/v060/savepoints* is.
 build/
+build_boulac/
 *.o
 *.mod
 *.smod
@@ -10,6 +11,7 @@ fort.*
 _wrfstubs.*
 _modstubs.*
 case_*.txt
+boulac_case_*.txt
 # Per-scheme oracle driver binaries
 morrison_oracle
 kf_oracle
@@ -21,6 +23,7 @@ tiedtke_oracle
 gf_oracle
 sfclayrev_oracle
 pxsfclay_oracle
+boulac_oracle
 noahclassic_columns.in
 noahclassic_savepoints.out
 # Verbatim copies of pristine WRF physics source vendored at build time only
