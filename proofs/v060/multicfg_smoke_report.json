@@ -1,0 +1,1743 @@
+{
+  "proof": "v060-integrated-multiconfig-operational-smoke",
+  "kind": "INTEGRATION smoke: the consolidated 12-scheme physics suite runs end-to-end THROUGH THE OPERATIONAL COUPLER (physics_dispatch + scan_adapters + the operational_mode._physics_boundary_step physics block, WRF call order) across the supported namelist configs. Stable + physical + compiles(jit-traceable==GPU-runnable) + schemes-active. NOT a WRF/obs skill comparison (see reference_scoring_seam). REAL Canary grid + REAL d02 wrfinput Noah-MP warm-start + REAL WRF NOAHMP_SFLX Noah-classic savepoint bundle. No masking/clamp/self-compare/synthetic-happy-path.",
+  "jax_platform": "cpu",
+  "x64_enabled": true,
+  "steps_per_config": 8,
+  "real_data_sources": {
+    "canary_grid": "GridSpec.canary_3km_template()",
+    "noahmp_land_warm_start": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z (d02 wrfinput)",
+    "noahclassic_bundle": "/home/enric/src/wrf_gpu2/.claude/worktrees/v060-multicfg-smoke/proofs/v060/savepoints_noahclassic.json (WRF NOAHMP_SFLX savepoint column daytime_veg10)",
+    "atmospheric_profile": "validated b2 C-grid pattern (scanwire_smoke._build_state) on the Canary grid"
+  },
+  "sweep_rationale": "COVERING set (NOT full cartesian product): every supported scheme appears in >=1 RUN config plus the real operational Canary config. Supported = mp{8,6,10,16,1} x bl{5,1,7} x sfclay{1,5,7} x cu{1} x sf_surface{4,2} (GF/Tiedtke cumulus EXCLUDED = documented-TODO). HONEST coupler reality: the operational scan threads MYNN(5) as the only PBL; YSU(1)/ACM2(7) are host-NumPy (not scan-traceable) and GF(3)/Tiedtke(6,16) are CPU-NumPy reference ports -- all four are FAIL-CLOSED in the coupler and are exercised here as fail-closed integration assertions (the coupler must reject them loudly, never silently no-op).",
+  "scheme_coverage": {
+    "covered_by_run_configs": [
+      "Nc/Nn",
+      "bl5",
+      "cu0-none",
+      "cu1-KF",
+      "land-bulk",
+      "land2-NoahClassic",
+      "land4-NoahMP",
+      "mp1-Kessler",
+      "mp10-Morrison",
+      "mp16-WDM6",
+      "mp6-WSM6",
+      "mp8",
+      "no-cu",
+      "sf1-revisedMM5",
+      "sf5",
+      "sf5-MYNN-sfclay",
+      "sf7-PleimXiu"
+    ],
+    "fail_closed_schemes": [
+      "bl1-YSU",
+      "bl7-ACM2",
+      "cu3-GF",
+      "cu6-Tiedtke"
+    ],
+    "excluded_documented_todo": [
+      "cu_physics=3 Grell-Freitas",
+      "cu_physics=6/16 Tiedtke (GPU-batching TODO)"
+    ]
+  },
+  "n_configs": 16,
+  "n_run_configs": 12,
+  "n_run_pass": 12,
+  "n_run_fail": 0,
+  "n_fail_closed_configs": 4,
+  "n_fail_closed_ok": 4,
+  "configs": [
+    {
+      "cfg_id": "real_canary_v020",
+      "description": "REAL operational Canary baseline: Thompson/MYNN/MYNN-sfclay/Noah-MP, no cumulus",
+      "namelist": {
+        "mp_physics": 8,
+        "bl_pbl_physics": 5,
+        "sf_sfclay_physics": 5,
+        "cu_physics": 0,
+        "sf_surface_physics": 4,
+        "ra_sw_physics": 4,
+        "ra_lw_physics": 4
+      },
+      "covers": [
+        "mp8",
+        "bl5",
+        "sf5",
+        "land4-NoahMP",
+        "no-cu"
+      ],
+      "expect": "RUN",
+      "namelist_accepted": true,
+      "dispatch_resolved": true,
+      "dispatch_gpu_gate_ready": true,
+      "non_gpu_schemes": [],
+      "operational_coupler_accepts": true,
+      "land_init": {
+        "model": "Noah-MP (real d02 wrfinput warm-start, land-rich tile subset)",
+        "grid": [
+          8,
+          8
+        ],
+        "land_cells_in_tile": 64,
+        "full_d02_land_cells": 547,
+        "subset_tile": {
+          "y0": 24,
+          "x0": 60,
+          "h": 8,
+          "w": 8,
+          "land_cells_in_tile": 64,
+          "full_grid": [
+            66,
+            120
+          ]
+        }
+      },
+      "compiles": true,
+      "n_steps": 8,
+      "finite": true,
+      "physical": {
+        "per_field": {
+          "theta": {
+            "min": 299.01149,
+            "max": 311.1492,
+            "band": [
+              180.0,
+              400.0
+            ],
+            "ok": true
+          },
+          "qv": {
+            "min": 0.00362,
+            "max": 0.01298,
+            "band": [
+              0.0,
+              0.06
+            ],
+            "ok": true
+          },
+          "u": {
+            "min": 4.37699,
+            "max": 7.69655,
+            "band": [
+              -150.0,
+              150.0
+            ],
+            "ok": true
+          },
+          "v": {
+            "min": -3.75079,
+            "max": -0.62439,
+            "band": [
+              -150.0,
+              150.0
+            ],
+            "ok": true
+          },
+          "w": {
+            "min": -0.1397,
+            "max": 0.17589,
+            "band": [
+              -50.0,
+              50.0
+            ],
+            "ok": true
+          },
+          "p": {
+            "min": 70167.18142,
+            "max": 98343.24681,
+            "band": [
+              1.0,
+              110000.0
+            ],
+            "ok": true
+          },
+          "t_skin": {
+            "min": 290.76611,
+            "max": 299.80265,
+            "band": [
+              200.0,
+              360.0
+            ],
+            "ok": true
+          }
+        },
+        "all_in_band": true
+      },
+      "schemes_active": {
+        "expected_moved_leaves": [
+          "theta",
+          "qv",
+          "qc",
+          "qr",
+          "ustar",
+          "theta_flux",
+          "u",
+          "v",
+          "t_skin"
+        ],
+        "moved": {
+          "theta": true,
+          "qv": true,
+          "qc": true,
+          "qr": true,
+          "ustar": true,
+          "theta_flux": true,
+          "u": true,
+          "v": true,
+          "t_skin": true
+        },
+        "all_active": true
+      },
+      "pass": true,
+      "verdict": "INTEGRATION_PASS"
+    },
+    {
+      "cfg_id": "mp_thompson_kf",
+      "description": "Thompson(8) + MYNN + MYNN-sfclay + bulk land + KF cumulus",
+      "namelist": {
+        "mp_physics": 8,
+        "bl_pbl_physics": 5,
+        "sf_sfclay_physics": 5,
+        "cu_physics": 1,
+        "sf_surface_physics": 2,
+        "ra_sw_physics": 4,
+        "ra_lw_physics": 4
+      },
+      "covers": [
+        "mp8",
+        "cu1-KF"
+      ],
+      "expect": "RUN",
+      "namelist_accepted": true,
+      "dispatch_resolved": true,
+      "dispatch_gpu_gate_ready": true,
+      "non_gpu_schemes": [],
+      "operational_coupler_accepts": true,
+      "land_init": {
+        "model": "bulk prescribed (surface_adapter)",
+        "grid": [
+          8,
+          8
+        ]
+      },
+      "compiles": true,
+      "n_steps": 8,
+      "finite": true,
+      "physical": {
+        "per_field": {
+          "theta": {
+            "min": 298.9824,
+            "max": 310.84092,
+            "band": [
+              180.0,
+              400.0
+            ],
+            "ok": true
+          },
+          "qv": {
+            "min": 0.00394,
+            "max": 0.01321,
+            "band": [
+              0.0,
+              0.06
+            ],
+            "ok": true
+          },
+          "u": {
+            "min": 4.49755,
+            "max": 7.62164,
+            "band": [
+              -150.0,
+              150.0
+            ],
+            "ok": true
+          },
+          "v": {
+            "min": -3.72874,
+            "max": -0.25985,
+            "band": [
+              -150.0,
+              150.0
+            ],
+            "ok": true
+          },
+          "w": {
+            "min": -0.17062,
+            "max": 0.14646,
+            "band": [
+              -50.0,
+              50.0
+            ],
+            "ok": true
+          },
+          "p": {
+            "min": 70123.61113,
+            "max": 98369.75616,
+            "band": [
+              1.0,
+              110000.0
+            ],
+            "ok": true
+          },
+          "t_skin": {
+            "min": 299.5,
+            "max": 304.0,
+            "band": [
+              200.0,
+              360.0
+            ],
+            "ok": true
+          }
+        },
+        "all_in_band": true
+      },
+      "schemes_active": {
+        "expected_moved_leaves": [
+          "theta",
+          "qv",
+          "qc",
+          "qr",
+          "ustar",
+          "theta_flux",
+          "u",
+          "v"
+        ],
+        "moved": {
+          "theta": true,
+          "qv": true,
+          "qc": true,
+          "qr": true,
+          "ustar": true,
+          "theta_flux": true,
+          "u": true,
+          "v": true
+        },
+        "all_active": true,
+        "kf_rainc_acc_moved": false
+      },
+      "pass": true,
+      "verdict": "INTEGRATION_PASS"
+    },
+    {
+      "cfg_id": "mp_wsm6",
+      "description": "WSM6(6) single-moment + MYNN + revised-MM5 sfclay + bulk land, no cumulus",
+      "namelist": {
+        "mp_physics": 6,
+        "bl_pbl_physics": 5,
+        "sf_sfclay_physics": 1,
+        "cu_physics": 0,
+        "sf_surface_physics": 2,
+        "ra_sw_physics": 4,
+        "ra_lw_physics": 4
+      },
+      "covers": [
+        "mp6-WSM6",
+        "sf1-revisedMM5"
+      ],
+      "expect": "RUN",
+      "namelist_accepted": true,
+      "dispatch_resolved": true,
+      "dispatch_gpu_gate_ready": true,
+      "non_gpu_schemes": [],
+      "operational_coupler_accepts": true,
+      "land_init": {
+        "model": "bulk prescribed (surface_adapter)",
+        "grid": [
+          8,
+          8
+        ]
+      },
+      "compiles": true,
+      "n_steps": 8,
+      "finite": true,
+      "physical": {
+        "per_field": {
+          "theta": {
+            "min": 299.03404,
+            "max": 310.97241,
+            "band": [
+              180.0,
+              400.0
+            ],
+            "ok": true
+          },
+          "qv": {
+            "min": 0.00389,
+            "max": 0.01319,
+            "band": [
+              0.0,
+              0.06
+            ],
+            "ok": true
+          },
+          "u": {
+            "min": 4.49754,
+            "max": 7.62164,
+            "band": [
+              -150.0,
+              150.0
+            ],
+            "ok": true
+          },
+          "v": {
+            "min": -3.72874,
+            "max": -0.25985,
+            "band": [
+              -150.0,
+              150.0
+            ],
+            "ok": true
+          },
+          "w": {
+            "min": -0.17062,
+            "max": 0.14646,
+            "band": [
+              -50.0,
+              50.0
+            ],
+            "ok": true
+          },
+          "p": {
+            "min": 70123.61113,
+            "max": 98369.75616,
+            "band": [
+              1.0,
+              110000.0
+            ],
+            "ok": true
+          },
+          "t_skin": {
+            "min": 299.5,
+            "max": 304.0,
+            "band": [
+              200.0,
+              360.0
+            ],
+            "ok": true
+          }
+        },
+        "all_in_band": true
+      },
+      "schemes_active": {
+        "expected_moved_leaves": [
+          "theta",
+          "qv",
+          "qc",
+          "qr",
+          "ustar",
+          "theta_flux",
+          "u",
+          "v"
+        ],
+        "moved": {
+          "theta": true,
+          "qv": true,
+          "qc": true,
+          "qr": true,
+          "ustar": true,
+          "theta_flux": true,
+          "u": true,
+          "v": true
+        },
+        "all_active": true
+      },
+      "pass": true,
+      "verdict": "INTEGRATION_PASS"
+    },
+    {
+      "cfg_id": "mp_morrison",
+      "description": "Morrison(10) two-moment + MYNN + Pleim-Xiu sfclay + bulk land, no cumulus",
+      "namelist": {
+        "mp_physics": 10,
+        "bl_pbl_physics": 5,
+        "sf_sfclay_physics": 7,
+        "cu_physics": 0,
+        "sf_surface_physics": 2,
+        "ra_sw_physics": 4,
+        "ra_lw_physics": 4
+      },
+      "covers": [
+        "mp10-Morrison",
+        "sf7-PleimXiu"
+      ],
+      "expect": "RUN",
+      "namelist_accepted": true,
+      "dispatch_resolved": true,
+      "dispatch_gpu_gate_ready": true,
+      "non_gpu_schemes": [],
+      "operational_coupler_accepts": true,
+      "land_init": {
+        "model": "bulk prescribed (surface_adapter)",
+        "grid": [
+          8,
+          8
+        ]
+      },
+      "compiles": true,
+      "n_steps": 8,
+      "finite": true,
+      "physical": {
+        "per_field": {
+          "theta": {
+            "min": 298.99256,
+            "max": 310.83098,
+            "band": [
+              180.0,
+              400.0
+            ],
+            "ok": true
+          },
+          "qv": {
+            "min": 0.00394,
+            "max": 0.01322,
+            "band": [
+              0.0,
+              0.06
+            ],
+            "ok": true
+          },
+          "u": {
+            "min": 4.49755,
+            "max": 7.62164,
+            "band": [
+              -150.0,
+              150.0
+            ],
+            "ok": true
+          },
+          "v": {
+            "min": -3.72874,
+            "max": -0.25985,
+            "band": [
+              -150.0,
+              150.0
+            ],
+            "ok": true
+          },
+          "w": {
+            "min": -0.17062,
+            "max": 0.14646,
+            "band": [
+              -50.0,
+              50.0
+            ],
+            "ok": true
+          },
+          "p": {
+            "min": 70123.61113,
+            "max": 98369.75616,
+            "band": [
+              1.0,
+              110000.0
+            ],
+            "ok": true
+          },
+          "t_skin": {
+            "min": 299.5,
+            "max": 304.0,
+            "band": [
+              200.0,
+              360.0
+            ],
+            "ok": true
+          }
+        },
+        "all_in_band": true
+      },
+      "schemes_active": {
+        "expected_moved_leaves": [
+          "theta",
+          "qv",
+          "qc",
+          "qr",
+          "ustar",
+          "theta_flux",
+          "u",
+          "v"
+        ],
+        "moved": {
+          "theta": true,
+          "qv": true,
+          "qc": true,
+          "qr": true,
+          "ustar": true,
+          "theta_flux": true,
+          "u": true,
+          "v": true
+        },
+        "all_active": true
+      },
+      "pass": true,
+      "verdict": "INTEGRATION_PASS"
+    },
+    {
+      "cfg_id": "mp_wdm6_kf",
+      "description": "WDM6(16) double-moment (Nc/Nn additive leaves) + MYNN + MYNN-sfclay + bulk land + KF",
+      "namelist": {
+        "mp_physics": 16,
+        "bl_pbl_physics": 5,
+        "sf_sfclay_physics": 5,
+        "cu_physics": 1,
+        "sf_surface_physics": 2,
+        "ra_sw_physics": 4,
+        "ra_lw_physics": 4
+      },
+      "covers": [
+        "mp16-WDM6",
+        "Nc/Nn",
+        "cu1-KF"
+      ],
+      "expect": "RUN",
+      "namelist_accepted": true,
+      "dispatch_resolved": true,
+      "dispatch_gpu_gate_ready": true,
+      "non_gpu_schemes": [],
+      "operational_coupler_accepts": true,
+      "land_init": {
+        "model": "bulk prescribed (surface_adapter)",
+        "grid": [
+          8,
+          8
+        ]
+      },
+      "compiles": true,
+      "n_steps": 8,
+      "finite": true,
+      "physical": {
+        "per_field": {
+          "theta": {
+            "min": 298.98572,
+            "max": 310.79181,
+            "band": [
+              180.0,
+              400.0
+            ],
+            "ok": true
+          },
+          "qv": {
+            "min": 0.00396,
+            "max": 0.01322,
+            "band": [
+              0.0,
+              0.06
+            ],
+            "ok": true
+          },
+          "u": {
+            "min": 4.49756,
+            "max": 7.62164,
+            "band": [
+              -150.0,
+              150.0
+            ],
+            "ok": true
+          },
+          "v": {
+            "min": -3.72874,
+            "max": -0.25985,
+            "band": [
+              -150.0,
+              150.0
+            ],
+            "ok": true
+          },
+          "w": {
+            "min": -0.17062,
+            "max": 0.14646,
+            "band": [
+              -50.0,
+              50.0
+            ],
+            "ok": true
+          },
+          "p": {
+            "min": 70123.61113,
+            "max": 98369.75616,
+            "band": [
+              1.0,
+              110000.0
+            ],
+            "ok": true
+          },
+          "t_skin": {
+            "min": 299.5,
+            "max": 304.0,
+            "band": [
+              200.0,
+              360.0
+            ],
+            "ok": true
+          }
+        },
+        "all_in_band": true
+      },
+      "schemes_active": {
+        "expected_moved_leaves": [
+          "theta",
+          "qv",
+          "qc",
+          "qr",
+          "ustar",
+          "theta_flux",
+          "u",
+          "v"
+        ],
+        "moved": {
+          "theta": true,
+          "qv": true,
+          "qc": true,
+          "qr": true,
+          "ustar": true,
+          "theta_flux": true,
+          "u": true,
+          "v": true
+        },
+        "all_active": true,
+        "kf_rainc_acc_moved": false
+      },
+      "pass": true,
+      "verdict": "INTEGRATION_PASS"
+    },
+    {
+      "cfg_id": "mp_kessler",
+      "description": "Kessler(1) warm-rain + MYNN + revised-MM5 sfclay + bulk land, no cumulus",
+      "namelist": {
+        "mp_physics": 1,
+        "bl_pbl_physics": 5,
+        "sf_sfclay_physics": 1,
+        "cu_physics": 0,
+        "sf_surface_physics": 2,
+        "ra_sw_physics": 4,
+        "ra_lw_physics": 4
+      },
+      "covers": [
+        "mp1-Kessler"
+      ],
+      "expect": "RUN",
+      "namelist_accepted": true,
+      "dispatch_resolved": true,
+      "dispatch_gpu_gate_ready": true,
+      "non_gpu_schemes": [],
+      "operational_coupler_accepts": true,
+      "land_init": {
+        "model": "bulk prescribed (surface_adapter)",
+        "grid": [
+          8,
+          8
+        ]
+      },
+      "compiles": true,
+      "n_steps": 8,
+      "finite": true,
+      "physical": {
+        "per_field": {
+          "theta": {
+            "min": 298.98104,
+            "max": 310.8655,
+            "band": [
+              180.0,
+              400.0
+            ],
+            "ok": true
+          },
+          "qv": {
+            "min": 0.00393,
+            "max": 0.0132,
+            "band": [
+              0.0,
+              0.06
+            ],
+            "ok": true
+          },
+          "u": {
+            "min": 4.49755,
+            "max": 7.62164,
+            "band": [
+              -150.0,
+              150.0
+            ],
+            "ok": true
+          },
+          "v": {
+            "min": -3.72874,
+            "max": -0.25985,
+            "band": [
+              -150.0,
+              150.0
+            ],
+            "ok": true
+          },
+          "w": {
+            "min": -0.17062,
+            "max": 0.14646,
+            "band": [
+              -50.0,
+              50.0
+            ],
+            "ok": true
+          },
+          "p": {
+            "min": 70123.61113,
+            "max": 98369.75616,
+            "band": [
+              1.0,
+              110000.0
+            ],
+            "ok": true
+          },
+          "t_skin": {
+            "min": 299.5,
+            "max": 304.0,
+            "band": [
+              200.0,
+              360.0
+            ],
+            "ok": true
+          }
+        },
+        "all_in_band": true
+      },
+      "schemes_active": {
+        "expected_moved_leaves": [
+          "theta",
+          "qv",
+          "qc",
+          "qr",
+          "ustar",
+          "theta_flux",
+          "u",
+          "v"
+        ],
+        "moved": {
+          "theta": true,
+          "qv": true,
+          "qc": true,
+          "qr": true,
+          "ustar": true,
+          "theta_flux": true,
+          "u": true,
+          "v": true
+        },
+        "all_active": true
+      },
+      "pass": true,
+      "verdict": "INTEGRATION_PASS"
+    },
+    {
+      "cfg_id": "sfclay_mynn",
+      "description": "Thompson + MYNN + MYNN-sfclay(5) + bulk land, no cumulus",
+      "namelist": {
+        "mp_physics": 8,
+        "bl_pbl_physics": 5,
+        "sf_sfclay_physics": 5,
+        "cu_physics": 0,
+        "sf_surface_physics": 2,
+        "ra_sw_physics": 4,
+        "ra_lw_physics": 4
+      },
+      "covers": [
+        "sf5-MYNN-sfclay"
+      ],
+      "expect": "RUN",
+      "namelist_accepted": true,
+      "dispatch_resolved": true,
+      "dispatch_gpu_gate_ready": true,
+      "non_gpu_schemes": [],
+      "operational_coupler_accepts": true,
+      "land_init": {
+        "model": "bulk prescribed (surface_adapter)",
+        "grid": [
+          8,
+          8
+        ]
+      },
+      "compiles": true,
+      "n_steps": 8,
+      "finite": true,
+      "physical": {
+        "per_field": {
+          "theta": {
+            "min": 298.9824,
+            "max": 310.84092,
+            "band": [
+              180.0,
+              400.0
+            ],
+            "ok": true
+          },
+          "qv": {
+            "min": 0.00394,
+            "max": 0.01321,
+            "band": [
+              0.0,
+              0.06
+            ],
+            "ok": true
+          },
+          "u": {
+            "min": 4.49755,
+            "max": 7.62164,
+            "band": [
+              -150.0,
+              150.0
+            ],
+            "ok": true
+          },
+          "v": {
+            "min": -3.72874,
+            "max": -0.25985,
+            "band": [
+              -150.0,
+              150.0
+            ],
+            "ok": true
+          },
+          "w": {
+            "min": -0.17062,
+            "max": 0.14646,
+            "band": [
+              -50.0,
+              50.0
+            ],
+            "ok": true
+          },
+          "p": {
+            "min": 70123.61113,
+            "max": 98369.75616,
+            "band": [
+              1.0,
+              110000.0
+            ],
+            "ok": true
+          },
+          "t_skin": {
+            "min": 299.5,
+            "max": 304.0,
+            "band": [
+              200.0,
+              360.0
+            ],
+            "ok": true
+          }
+        },
+        "all_in_band": true
+      },
+      "schemes_active": {
+        "expected_moved_leaves": [
+          "theta",
+          "qv",
+          "qc",
+          "qr",
+          "ustar",
+          "theta_flux",
+          "u",
+          "v"
+        ],
+        "moved": {
+          "theta": true,
+          "qv": true,
+          "qc": true,
+          "qr": true,
+          "ustar": true,
+          "theta_flux": true,
+          "u": true,
+          "v": true
+        },
+        "all_active": true
+      },
+      "pass": true,
+      "verdict": "INTEGRATION_PASS"
+    },
+    {
+      "cfg_id": "cu_kf",
+      "description": "Thompson + MYNN + MYNN-sfclay + bulk land + KF(1) cumulus",
+      "namelist": {
+        "mp_physics": 8,
+        "bl_pbl_physics": 5,
+        "sf_sfclay_physics": 5,
+        "cu_physics": 1,
+        "sf_surface_physics": 2,
+        "ra_sw_physics": 4,
+        "ra_lw_physics": 4
+      },
+      "covers": [
+        "cu1-KF"
+      ],
+      "expect": "RUN",
+      "namelist_accepted": true,
+      "dispatch_resolved": true,
+      "dispatch_gpu_gate_ready": true,
+      "non_gpu_schemes": [],
+      "operational_coupler_accepts": true,
+      "land_init": {
+        "model": "bulk prescribed (surface_adapter)",
+        "grid": [
+          8,
+          8
+        ]
+      },
+      "compiles": true,
+      "n_steps": 8,
+      "finite": true,
+      "physical": {
+        "per_field": {
+          "theta": {
+            "min": 298.9824,
+            "max": 310.84092,
+            "band": [
+              180.0,
+              400.0
+            ],
+            "ok": true
+          },
+          "qv": {
+            "min": 0.00394,
+            "max": 0.01321,
+            "band": [
+              0.0,
+              0.06
+            ],
+            "ok": true
+          },
+          "u": {
+            "min": 4.49755,
+            "max": 7.62164,
+            "band": [
+              -150.0,
+              150.0
+            ],
+            "ok": true
+          },
+          "v": {
+            "min": -3.72874,
+            "max": -0.25985,
+            "band": [
+              -150.0,
+              150.0
+            ],
+            "ok": true
+          },
+          "w": {
+            "min": -0.17062,
+            "max": 0.14646,
+            "band": [
+              -50.0,
+              50.0
+            ],
+            "ok": true
+          },
+          "p": {
+            "min": 70123.61113,
+            "max": 98369.75616,
+            "band": [
+              1.0,
+              110000.0
+            ],
+            "ok": true
+          },
+          "t_skin": {
+            "min": 299.5,
+            "max": 304.0,
+            "band": [
+              200.0,
+              360.0
+            ],
+            "ok": true
+          }
+        },
+        "all_in_band": true
+      },
+      "schemes_active": {
+        "expected_moved_leaves": [
+          "theta",
+          "qv",
+          "qc",
+          "qr",
+          "ustar",
+          "theta_flux",
+          "u",
+          "v"
+        ],
+        "moved": {
+          "theta": true,
+          "qv": true,
+          "qc": true,
+          "qr": true,
+          "ustar": true,
+          "theta_flux": true,
+          "u": true,
+          "v": true
+        },
+        "all_active": true,
+        "kf_rainc_acc_moved": false
+      },
+      "pass": true,
+      "verdict": "INTEGRATION_PASS"
+    },
+    {
+      "cfg_id": "cu_none",
+      "description": "Thompson + MYNN + MYNN-sfclay + bulk land, cu=0 (resolved grid-scale)",
+      "namelist": {
+        "mp_physics": 8,
+        "bl_pbl_physics": 5,
+        "sf_sfclay_physics": 5,
+        "cu_physics": 0,
+        "sf_surface_physics": 2,
+        "ra_sw_physics": 4,
+        "ra_lw_physics": 4
+      },
+      "covers": [
+        "cu0-none"
+      ],
+      "expect": "RUN",
+      "namelist_accepted": true,
+      "dispatch_resolved": true,
+      "dispatch_gpu_gate_ready": true,
+      "non_gpu_schemes": [],
+      "operational_coupler_accepts": true,
+      "land_init": {
+        "model": "bulk prescribed (surface_adapter)",
+        "grid": [
+          8,
+          8
+        ]
+      },
+      "compiles": true,
+      "n_steps": 8,
+      "finite": true,
+      "physical": {
+        "per_field": {
+          "theta": {
+            "min": 298.9824,
+            "max": 310.84092,
+            "band": [
+              180.0,
+              400.0
+            ],
+            "ok": true
+          },
+          "qv": {
+            "min": 0.00394,
+            "max": 0.01321,
+            "band": [
+              0.0,
+              0.06
+            ],
+            "ok": true
+          },
+          "u": {
+            "min": 4.49755,
+            "max": 7.62164,
+            "band": [
+              -150.0,
+              150.0
+            ],
+            "ok": true
+          },
+          "v": {
+            "min": -3.72874,
+            "max": -0.25985,
+            "band": [
+              -150.0,
+              150.0
+            ],
+            "ok": true
+          },
+          "w": {
+            "min": -0.17062,
+            "max": 0.14646,
+            "band": [
+              -50.0,
+              50.0
+            ],
+            "ok": true
+          },
+          "p": {
+            "min": 70123.61113,
+            "max": 98369.75616,
+            "band": [
+              1.0,
+              110000.0
+            ],
+            "ok": true
+          },
+          "t_skin": {
+            "min": 299.5,
+            "max": 304.0,
+            "band": [
+              200.0,
+              360.0
+            ],
+            "ok": true
+          }
+        },
+        "all_in_band": true
+      },
+      "schemes_active": {
+        "expected_moved_leaves": [
+          "theta",
+          "qv",
+          "qc",
+          "qr",
+          "ustar",
+          "theta_flux",
+          "u",
+          "v"
+        ],
+        "moved": {
+          "theta": true,
+          "qv": true,
+          "qc": true,
+          "qr": true,
+          "ustar": true,
+          "theta_flux": true,
+          "u": true,
+          "v": true
+        },
+        "all_active": true
+      },
+      "pass": true,
+      "verdict": "INTEGRATION_PASS"
+    },
+    {
+      "cfg_id": "land_noahmp",
+      "description": "WSM6 + MYNN + revised-MM5 sfclay + Noah-MP(4) prognostic land + KF",
+      "namelist": {
+        "mp_physics": 6,
+        "bl_pbl_physics": 5,
+        "sf_sfclay_physics": 1,
+        "cu_physics": 1,
+        "sf_surface_physics": 4,
+        "ra_sw_physics": 4,
+        "ra_lw_physics": 4
+      },
+      "covers": [
+        "land4-NoahMP"
+      ],
+      "expect": "RUN",
+      "namelist_accepted": true,
+      "dispatch_resolved": true,
+      "dispatch_gpu_gate_ready": true,
+      "non_gpu_schemes": [],
+      "operational_coupler_accepts": true,
+      "land_init": {
+        "model": "Noah-MP (real d02 wrfinput warm-start, land-rich tile subset)",
+        "grid": [
+          8,
+          8
+        ],
+        "land_cells_in_tile": 64,
+        "full_d02_land_cells": 547,
+        "subset_tile": {
+          "y0": 24,
+          "x0": 60,
+          "h": 8,
+          "w": 8,
+          "land_cells_in_tile": 64,
+          "full_grid": [
+            66,
+            120
+          ]
+        }
+      },
+      "compiles": true,
+      "n_steps": 8,
+      "finite": true,
+      "physical": {
+        "per_field": {
+          "theta": {
+            "min": 299.00724,
+            "max": 311.29829,
+            "band": [
+              180.0,
+              400.0
+            ],
+            "ok": true
+          },
+          "qv": {
+            "min": 0.00356,
+            "max": 0.01298,
+            "band": [
+              0.0,
+              0.06
+            ],
+            "ok": true
+          },
+          "u": {
+            "min": 4.37699,
+            "max": 7.69655,
+            "band": [
+              -150.0,
+              150.0
+            ],
+            "ok": true
+          },
+          "v": {
+            "min": -3.75079,
+            "max": -0.62439,
+            "band": [
+              -150.0,
+              150.0
+            ],
+            "ok": true
+          },
+          "w": {
+            "min": -0.1397,
+            "max": 0.17589,
+            "band": [
+              -50.0,
+              50.0
+            ],
+            "ok": true
+          },
+          "p": {
+            "min": 70167.18142,
+            "max": 98343.24681,
+            "band": [
+              1.0,
+              110000.0
+            ],
+            "ok": true
+          },
+          "t_skin": {
+            "min": 290.76607,
+            "max": 299.80191,
+            "band": [
+              200.0,
+              360.0
+            ],
+            "ok": true
+          }
+        },
+        "all_in_band": true
+      },
+      "schemes_active": {
+        "expected_moved_leaves": [
+          "theta",
+          "qv",
+          "qc",
+          "qr",
+          "ustar",
+          "theta_flux",
+          "u",
+          "v",
+          "t_skin"
+        ],
+        "moved": {
+          "theta": true,
+          "qv": true,
+          "qc": true,
+          "qr": true,
+          "ustar": true,
+          "theta_flux": true,
+          "u": true,
+          "v": true,
+          "t_skin": true
+        },
+        "all_active": true,
+        "kf_rainc_acc_moved": false
+      },
+      "pass": true,
+      "verdict": "INTEGRATION_PASS"
+    },
+    {
+      "cfg_id": "land_noahclassic",
+      "description": "Kessler + MYNN + revised-MM5 sfclay + Noah-classic(2) 4-layer land, no cumulus",
+      "namelist": {
+        "mp_physics": 1,
+        "bl_pbl_physics": 5,
+        "sf_sfclay_physics": 1,
+        "cu_physics": 0,
+        "sf_surface_physics": 2,
+        "ra_sw_physics": 4,
+        "ra_lw_physics": 4
+      },
+      "covers": [
+        "land2-NoahClassic"
+      ],
+      "expect": "RUN",
+      "namelist_accepted": true,
+      "dispatch_resolved": true,
+      "dispatch_gpu_gate_ready": true,
+      "non_gpu_schemes": [],
+      "operational_coupler_accepts": true,
+      "land_init": {
+        "model": "Noah-classic (WRF NOAHMP_SFLX savepoint bundle)",
+        "grid": [
+          8,
+          8
+        ],
+        "column": "daytime_veg10"
+      },
+      "compiles": true,
+      "n_steps": 8,
+      "finite": true,
+      "physical": {
+        "per_field": {
+          "theta": {
+            "min": 298.9057,
+            "max": 310.86551,
+            "band": [
+              180.0,
+              400.0
+            ],
+            "ok": true
+          },
+          "qv": {
+            "min": 0.00393,
+            "max": 0.01321,
+            "band": [
+              0.0,
+              0.06
+            ],
+            "ok": true
+          },
+          "u": {
+            "min": 4.49754,
+            "max": 7.62164,
+            "band": [
+              -150.0,
+              150.0
+            ],
+            "ok": true
+          },
+          "v": {
+            "min": -3.72874,
+            "max": -0.25985,
+            "band": [
+              -150.0,
+              150.0
+            ],
+            "ok": true
+          },
+          "w": {
+            "min": -0.17062,
+            "max": 0.14646,
+            "band": [
+              -50.0,
+              50.0
+            ],
+            "ok": true
+          },
+          "p": {
+            "min": 70123.61113,
+            "max": 98369.75616,
+            "band": [
+              1.0,
+              110000.0
+            ],
+            "ok": true
+          },
+          "t_skin": {
+            "min": 299.5,
+            "max": 304.3529,
+            "band": [
+              200.0,
+              360.0
+            ],
+            "ok": true
+          }
+        },
+        "all_in_band": true
+      },
+      "schemes_active": {
+        "expected_moved_leaves": [
+          "theta",
+          "qv",
+          "qc",
+          "qr",
+          "ustar",
+          "theta_flux",
+          "u",
+          "v",
+          "t_skin"
+        ],
+        "moved": {
+          "theta": true,
+          "qv": true,
+          "qc": true,
+          "qr": true,
+          "ustar": true,
+          "theta_flux": true,
+          "u": true,
+          "v": true,
+          "t_skin": true
+        },
+        "all_active": true
+      },
+      "pass": true,
+      "verdict": "INTEGRATION_PASS"
+    },
+    {
+      "cfg_id": "land_bulk",
+      "description": "Thompson + MYNN + MYNN-sfclay + bulk prescribed land, no cumulus",
+      "namelist": {
+        "mp_physics": 8,
+        "bl_pbl_physics": 5,
+        "sf_sfclay_physics": 5,
+        "cu_physics": 0,
+        "sf_surface_physics": 2,
+        "ra_sw_physics": 4,
+        "ra_lw_physics": 4
+      },
+      "covers": [
+        "land-bulk"
+      ],
+      "expect": "RUN",
+      "namelist_accepted": true,
+      "dispatch_resolved": true,
+      "dispatch_gpu_gate_ready": true,
+      "non_gpu_schemes": [],
+      "operational_coupler_accepts": true,
+      "land_init": {
+        "model": "bulk prescribed (surface_adapter)",
+        "grid": [
+          8,
+          8
+        ]
+      },
+      "compiles": true,
+      "n_steps": 8,
+      "finite": true,
+      "physical": {
+        "per_field": {
+          "theta": {
+            "min": 298.9824,
+            "max": 310.84092,
+            "band": [
+              180.0,
+              400.0
+            ],
+            "ok": true
+          },
+          "qv": {
+            "min": 0.00394,
+            "max": 0.01321,
+            "band": [
+              0.0,
+              0.06
+            ],
+            "ok": true
+          },
+          "u": {
+            "min": 4.49755,
+            "max": 7.62164,
+            "band": [
+              -150.0,
+              150.0
+            ],
+            "ok": true
+          },
+          "v": {
+            "min": -3.72874,
+            "max": -0.25985,
+            "band": [
+              -150.0,
+              150.0
+            ],
+            "ok": true
+          },
+          "w": {
+            "min": -0.17062,
+            "max": 0.14646,
+            "band": [
+              -50.0,
+              50.0
+            ],
+            "ok": true
+          },
+          "p": {
+            "min": 70123.61113,
+            "max": 98369.75616,
+            "band": [
+              1.0,
+              110000.0
+            ],
+            "ok": true
+          },
+          "t_skin": {
+            "min": 299.5,
+            "max": 304.0,
+            "band": [
+              200.0,
+              360.0
+            ],
+            "ok": true
+          }
+        },
+        "all_in_band": true
+      },
+      "schemes_active": {
+        "expected_moved_leaves": [
+          "theta",
+          "qv",
+          "qc",
+          "qr",
+          "ustar",
+          "theta_flux",
+          "u",
+          "v"
+        ],
+        "moved": {
+          "theta": true,
+          "qv": true,
+          "qc": true,
+          "qr": true,
+          "ustar": true,
+          "theta_flux": true,
+          "u": true,
+          "v": true
+        },
+        "all_active": true
+      },
+      "pass": true,
+      "verdict": "INTEGRATION_PASS"
+    },
+    {
+      "cfg_id": "pbl_ysu_unwired",
+      "description": "YSU(1) PBL -- host-NumPy single-column kernel, NOT scan-traceable",
+      "namelist": {
+        "mp_physics": 8,
+        "bl_pbl_physics": 1,
+        "sf_sfclay_physics": 1,
+        "cu_physics": 0,
+        "sf_surface_physics": 4,
+        "ra_sw_physics": 4,
+        "ra_lw_physics": 4
+      },
+      "covers": [
+        "bl1-YSU"
+      ],
+      "expect": "FAIL_CLOSED",
+      "namelist_accepted": true,
+      "dispatch_resolved": true,
+      "dispatch_gpu_gate_ready": true,
+      "non_gpu_schemes": [],
+      "operational_coupler_accepts": false,
+      "operational_coupler_reject_reason": "operational scan supports the v0.2.0 suite + the v0.6.0 scan-wired schemes (mp_physics in {0,1,6,8,10,16}, bl_pbl_physics in {0,5}, sf_sfclay_physics in {0,1,5,7}, cu_physics in {0,1}, Noah-MP via use_noahmp, explicit Noah-classic via sf_surface_physics=2 plus noahclassic_static/noahclassic_land). The following selected schemes are NOT scan-wired: bl_pbl_physics=1 (YSU is a single-column HOST-NumPy kernel (not jax.lax.scan-traceable); needs a jit/vmap rewrite)",
+      "compiles": null,
+      "n_steps": 0,
+      "finite": null,
+      "physical": null,
+      "schemes_active": null,
+      "pass": true,
+      "verdict": "FAIL_CLOSED_OK (coupler loudly rejected the unwired scheme)"
+    },
+    {
+      "cfg_id": "pbl_acm2_unwired",
+      "description": "ACM2(7) PBL -- host-NumPy single-column kernel, NOT scan-traceable",
+      "namelist": {
+        "mp_physics": 8,
+        "bl_pbl_physics": 7,
+        "sf_sfclay_physics": 7,
+        "cu_physics": 0,
+        "sf_surface_physics": 4,
+        "ra_sw_physics": 4,
+        "ra_lw_physics": 4
+      },
+      "covers": [
+        "bl7-ACM2"
+      ],
+      "expect": "FAIL_CLOSED",
+      "namelist_accepted": true,
+      "dispatch_resolved": true,
+      "dispatch_gpu_gate_ready": true,
+      "non_gpu_schemes": [],
+      "operational_coupler_accepts": false,
+      "operational_coupler_reject_reason": "operational scan supports the v0.2.0 suite + the v0.6.0 scan-wired schemes (mp_physics in {0,1,6,8,10,16}, bl_pbl_physics in {0,5}, sf_sfclay_physics in {0,1,5,7}, cu_physics in {0,1}, Noah-MP via use_noahmp, explicit Noah-classic via sf_surface_physics=2 plus noahclassic_static/noahclassic_land). The following selected schemes are NOT scan-wired: bl_pbl_physics=7 (ACM2 is a single-column HOST-NumPy kernel (not jax.lax.scan-traceable); needs a jit/vmap rewrite)",
+      "compiles": null,
+      "n_steps": 0,
+      "finite": null,
+      "physical": null,
+      "schemes_active": null,
+      "pass": true,
+      "verdict": "FAIL_CLOSED_OK (coupler loudly rejected the unwired scheme)"
+    },
+    {
+      "cfg_id": "cu_grellfreitas_unwired",
+      "description": "Grell-Freitas(3) cumulus -- CPU-NumPy reference port (gpu_runnable=False)",
+      "namelist": {
+        "mp_physics": 8,
+        "bl_pbl_physics": 5,
+        "sf_sfclay_physics": 5,
+        "cu_physics": 3,
+        "sf_surface_physics": 4,
+        "ra_sw_physics": 4,
+        "ra_lw_physics": 4
+      },
+      "covers": [
+        "cu3-GF"
+      ],
+      "expect": "FAIL_CLOSED",
+      "namelist_accepted": true,
+      "dispatch_resolved": true,
+      "dispatch_gpu_gate_ready": false,
+      "non_gpu_schemes": [
+        "cu_physics=3 (Grell-Freitas)"
+      ],
+      "operational_coupler_accepts": false,
+      "operational_coupler_reject_reason": "operational scan supports the v0.2.0 suite + the v0.6.0 scan-wired schemes (mp_physics in {0,1,6,8,10,16}, bl_pbl_physics in {0,5}, sf_sfclay_physics in {0,1,5,7}, cu_physics in {0,1}, Noah-MP via use_noahmp, explicit Noah-classic via sf_surface_physics=2 plus noahclassic_static/noahclassic_land). The following selected schemes are NOT scan-wired: cu_physics=3 (Grell-Freitas is a CPU-NumPy reference port (gpu_runnable=False); GPU-batching TODO)",
+      "compiles": null,
+      "n_steps": 0,
+      "finite": null,
+      "physical": null,
+      "schemes_active": null,
+      "pass": true,
+      "verdict": "FAIL_CLOSED_OK (coupler loudly rejected the unwired scheme)"
+    },
+    {
+      "cfg_id": "cu_tiedtke_unwired",
+      "description": "Tiedtke(6) cumulus -- CPU-NumPy reference port (gpu_runnable=False)",
+      "namelist": {
+        "mp_physics": 8,
+        "bl_pbl_physics": 5,
+        "sf_sfclay_physics": 5,
+        "cu_physics": 6,
+        "sf_surface_physics": 4,
+        "ra_sw_physics": 4,
+        "ra_lw_physics": 4
+      },
+      "covers": [
+        "cu6-Tiedtke"
+      ],
+      "expect": "FAIL_CLOSED",
+      "namelist_accepted": true,
+      "dispatch_resolved": true,
+      "dispatch_gpu_gate_ready": false,
+      "non_gpu_schemes": [
+        "cu_physics=6 (Tiedtke)"
+      ],
+      "operational_coupler_accepts": false,
+      "operational_coupler_reject_reason": "operational scan supports the v0.2.0 suite + the v0.6.0 scan-wired schemes (mp_physics in {0,1,6,8,10,16}, bl_pbl_physics in {0,5}, sf_sfclay_physics in {0,1,5,7}, cu_physics in {0,1}, Noah-MP via use_noahmp, explicit Noah-classic via sf_surface_physics=2 plus noahclassic_static/noahclassic_land). The following selected schemes are NOT scan-wired: cu_physics=6 (Tiedtke is a CPU-NumPy reference port (gpu_runnable=False); GPU-batching TODO)",
+      "compiles": null,
+      "n_steps": 0,
+      "finite": null,
+      "physical": null,
+      "schemes_active": null,
+      "pass": true,
+      "verdict": "FAIL_CLOSED_OK (coupler loudly rejected the unwired scheme)"
+    }
+  ],
+  "reference_scoring_seam": {
+    "function": "proofs.v060.multicfg_operational_smoke.reference_scoring_seam",
+    "status": "DOCUMENTED CONTRACT, NOT IMPLEMENTED (raises NotImplementedError)",
+    "note": "This smoke is DECOUPLED from reference-scoring by design. The FIXED v0.4.0 forecast-gate reference-scorer plugs in at reference_scoring_seam(gpu_fields, cpu_wrf_fields) for the MANAGER-scheduled full-dycore GPU gate vs CPU-WRF. This smoke does NOT duplicate/fork the v0.4.0 reference-resolution code (known namelist-path bug being fixed separately).",
+    "core_fields": [
+      "T2",
+      "U10",
+      "V10"
+    ],
+    "diagnostic_fields": [
+      "Q2",
+      "PSFC",
+      "PBLH",
+      "SWDOWN",
+      "GLW",
+      "HFX",
+      "LH"
+    ]
+  },
+  "all_pass": true
+}
