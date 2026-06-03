@@ -67,8 +67,8 @@ NEW_SCHEME_STATUS = {
     "mp_physics=16 (WDM6)": {"scan_wired_gpu": True, "adapter": "coupling.scan_adapters.wdm6_adapter"},
     "sf_sfclay_physics=1 (revised-MM5)": {"scan_wired_gpu": True, "adapter": "coupling.scan_adapters.sfclay_revised_mm5_adapter"},
     "sf_sfclay_physics=7 (Pleim-Xiu)": {"scan_wired_gpu": True, "adapter": "coupling.scan_adapters.pleim_xiu_sfclay_adapter"},
-    "bl_pbl_physics=1 (YSU)": {"scan_wired_gpu": False, "reason": "host-NumPy single-column kernel (not jax.lax.scan-traceable); needs jit/vmap rewrite (cross-model)"},
-    "bl_pbl_physics=7 (ACM2)": {"scan_wired_gpu": False, "reason": "host-NumPy single-column kernel (not jax.lax.scan-traceable); needs jit/vmap rewrite (cross-model)"},
+    "bl_pbl_physics=1 (YSU)": {"scan_wired_gpu": True, "adapter": "coupling.scan_adapters.ysu_pbl_adapter (v0.6.0 jax.lax.scan rewrite -> pbl_ysu.ysu_columns)"},
+    "bl_pbl_physics=7 (ACM2)": {"scan_wired_gpu": True, "adapter": "coupling.scan_adapters.acm2_pbl_adapter (v0.6.0 jax.lax.scan rewrite -> pbl_acm2.acm2_columns)"},
     "cu_physics=3 (Grell-Freitas)": {"scan_wired_gpu": False, "reason": "CPU-NumPy reference port (gpu_runnable=False); GPU-batching TODO; selectable CPU-only, excluded from GPU scan"},
     "cu_physics=6/16 (Tiedtke)": {"scan_wired_gpu": False, "reason": "CPU-NumPy reference port (gpu_runnable=False); GPU-batching TODO; selectable CPU-only, excluded from GPU scan"},
     "sf_surface_physics=2 (Noah-classic)": {
@@ -109,12 +109,15 @@ def build() -> dict:
             "plus_kf_baseline_extension_scan_wired": True,
             "total_schemes_scan_wired_this_sprint": len(wired) + 1,
             "note": (
-                "7 of the 11 new schemes (4 microphysics + 2 surface-layer + Noah-classic "
-                "land with an explicit static/land bundle) are scan-wired into the GPU scan; "
-                "KF (the 12th, baseline-extension) is also newly wired "
-                "(+OperationalCarry.cumulus_carry) -> 8 adapters total. 4 of the 11 fail "
-                "closed: YSU/ACM2 (host-NumPy PBL, jit/vmap rewrite), GF/Tiedtke (CPU-ref "
-                "cumulus, GPU-batch TODO)."
+                "v0.6.0 CONSOLIDATION: 9 of the 11 new schemes (4 microphysics + 2 "
+                "surface-layer + YSU/ACM2 PBL + Noah-classic land) are scan-wired into "
+                "the GPU scan; KF (the 12th, baseline-extension) is also wired "
+                "(+OperationalCarry.cumulus_carry) -> 10 adapters total. YSU(1)/ACM2(7) "
+                "were rewritten host-NumPy -> jax.lax.scan-traceable in the PBL-GPU-op "
+                "sprint (parity re-passes; see pbl_gpuop_report.json); Noah-classic(2) "
+                "rides coupling.noahclassic_surface_hook with an explicit static/land "
+                "bundle (see noah_coupler_report.json). 2 of the 11 remain fail-closed: "
+                "GF/Tiedtke (CPU-ref cumulus, GPU-batch TODO)."
             ),
         },
         "scheme_status": {**NEW_SCHEME_STATUS, **KF_STATUS},

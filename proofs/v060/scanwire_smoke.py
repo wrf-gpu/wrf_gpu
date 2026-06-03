@@ -254,17 +254,18 @@ def _fail_closed_checks():
         _NL(mp_physics=10, sf_sfclay_physics=7),  # Morrison + Pleim-Xiu
         _NL(mp_physics=1),  # Kessler
         _NL(mp_physics=16),  # WDM6
+        _NL(bl_pbl_physics=1),  # YSU PBL (v0.6.0 jax.lax.scan rewrite -> now wired)
+        _NL(bl_pbl_physics=7),  # ACM2 PBL (v0.6.0 jax.lax.scan rewrite -> now wired)
     ]:
         try:
             _resolve_operational_suite(nl)
             accepted.append(True)
         except UnsupportedSchemeSelection:
             accepted.append(False)
-    # NOT-wired schemes, plus explicit Noah-classic without its required bundle,
-    # that MUST fail closed.
+    # NOT-wired schemes (GF/Tiedtke CPU-ref cumulus -- YSU/ACM2 are now scan-wired),
+    # plus explicit Noah-classic WITHOUT its required static/land bundle, that MUST
+    # all fail closed.
     for nl in [
-        _NL(bl_pbl_physics=1),  # YSU host-NumPy
-        _NL(bl_pbl_physics=7),  # ACM2 host-NumPy
         _NL(cu_physics=3),      # Grell-Freitas CPU-ref
         _NL(cu_physics=6),      # Tiedtke CPU-ref
         _NL(sf_surface_physics=2),  # Noah-classic missing explicit land/static bundle

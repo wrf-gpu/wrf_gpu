@@ -1,12 +1,12 @@
 {
   "schema": "gpuwrf.v060.scanwire_report.v1",
   "title": "v0.6.0 scan-wire: 11 new schemes (+ KF) into the operational forecast scan",
-  "git_head": "382070fe2d626a8563f1b042de8afb205bcda5d4",
+  "git_head": "b75d7f99417d657a384939880b0349ae137b7296",
   "kind": "CPU integration-wiring proof (NOT a WRF-parity claim, NOT a forecast run). Per-scheme WRF savepoint parity = committed lane reports; the GPU multi-config forecast vs CPU-WRF is MANAGER-scheduled.",
   "summary": {
     "new_schemes_total": 11,
-    "new_schemes_scan_wired_gpu": 7,
-    "new_schemes_not_scan_wired": 4,
+    "new_schemes_scan_wired_gpu": 9,
+    "new_schemes_not_scan_wired": 2,
     "scan_wired_list": [
       "mp_physics=1 (Kessler)",
       "mp_physics=6 (WSM6)",
@@ -14,17 +14,17 @@
       "mp_physics=16 (WDM6)",
       "sf_sfclay_physics=1 (revised-MM5)",
       "sf_sfclay_physics=7 (Pleim-Xiu)",
+      "bl_pbl_physics=1 (YSU)",
+      "bl_pbl_physics=7 (ACM2)",
       "sf_surface_physics=2 (Noah-classic)"
     ],
     "not_scan_wired_list": [
-      "bl_pbl_physics=1 (YSU)",
-      "bl_pbl_physics=7 (ACM2)",
       "cu_physics=3 (Grell-Freitas)",
       "cu_physics=6/16 (Tiedtke)"
     ],
     "plus_kf_baseline_extension_scan_wired": true,
-    "total_schemes_scan_wired_this_sprint": 8,
-    "note": "7 of the 11 new schemes (4 microphysics + 2 surface-layer + Noah-classic land with an explicit static/land bundle) are scan-wired into the GPU scan; KF (the 12th, baseline-extension) is also newly wired (+OperationalCarry.cumulus_carry) -> 8 adapters total. 4 of the 11 fail closed: YSU/ACM2 (host-NumPy PBL, jit/vmap rewrite), GF/Tiedtke (CPU-ref cumulus, GPU-batch TODO)."
+    "total_schemes_scan_wired_this_sprint": 10,
+    "note": "v0.6.0 CONSOLIDATION: 9 of the 11 new schemes (4 microphysics + 2 surface-layer + YSU/ACM2 PBL + Noah-classic land) are scan-wired into the GPU scan; KF (the 12th, baseline-extension) is also wired (+OperationalCarry.cumulus_carry) -> 10 adapters total. YSU(1)/ACM2(7) were rewritten host-NumPy -> jax.lax.scan-traceable in the PBL-GPU-op sprint (parity re-passes; see pbl_gpuop_report.json); Noah-classic(2) rides coupling.noahclassic_surface_hook with an explicit static/land bundle (see noah_coupler_report.json). 2 of the 11 remain fail-closed: GF/Tiedtke (CPU-ref cumulus, GPU-batch TODO)."
   },
   "scheme_status": {
     "mp_physics=1 (Kessler)": {
@@ -52,12 +52,12 @@
       "adapter": "coupling.scan_adapters.pleim_xiu_sfclay_adapter"
     },
     "bl_pbl_physics=1 (YSU)": {
-      "scan_wired_gpu": false,
-      "reason": "host-NumPy single-column kernel (not jax.lax.scan-traceable); needs jit/vmap rewrite (cross-model)"
+      "scan_wired_gpu": true,
+      "adapter": "coupling.scan_adapters.ysu_pbl_adapter (v0.6.0 jax.lax.scan rewrite -> pbl_ysu.ysu_columns)"
     },
     "bl_pbl_physics=7 (ACM2)": {
-      "scan_wired_gpu": false,
-      "reason": "host-NumPy single-column kernel (not jax.lax.scan-traceable); needs jit/vmap rewrite (cross-model)"
+      "scan_wired_gpu": true,
+      "adapter": "coupling.scan_adapters.acm2_pbl_adapter (v0.6.0 jax.lax.scan rewrite -> pbl_acm2.acm2_columns)"
     },
     "cu_physics=3 (Grell-Freitas)": {
       "scan_wired_gpu": false,
@@ -591,12 +591,12 @@
         true,
         true,
         true,
+        true,
+        true,
         true
       ],
       "all_wired_accepted": true,
       "unwired_schemes_rejected": [
-        true,
-        true,
         true,
         true,
         true
@@ -663,7 +663,7 @@
         "dispatch_resolved": true,
         "gpu_gate_ready": true,
         "scan_wired": false,
-        "scan_wire_error": "operational scan supports the v0.2.0 suite + the v0.6.0 scan-wired schemes (mp_physics in {0,1,6,8,10,16}, bl_pbl_physics in {0,5}, sf_sfclay_physics in {0,1,5,7}, cu_physics in {0,1}, Noah-MP via use_noahmp, explicit Noah-classic via sf_surface_physics=2 plus noahclassic_static/noahclassic_land). The following selected schemes are NOT scan-wired: bl_pbl_physics=1 (YSU is a single-column HOST-NumPy kernel (not jax.lax.scan-traceable); needs a jit/vmap rewrite); sf_surface_physics=2 (Noah-classic requires explicit noahclassic_static + noahclassic_land bundles (WRF REDPRM + 4-layer carry))",
+        "scan_wire_error": "operational scan supports the v0.2.0 suite + the v0.6.0 scan-wired schemes (mp_physics in {0,1,6,8,10,16}, bl_pbl_physics in {0,1,5,7}, sf_sfclay_physics in {0,1,5,7}, cu_physics in {0,1}, Noah-MP via use_noahmp, explicit Noah-classic via sf_surface_physics=2 plus noahclassic_static/noahclassic_land). The following selected schemes are NOT scan-wired: sf_surface_physics=2 (Noah-classic requires explicit noahclassic_static + noahclassic_land bundles (WRF REDPRM + 4-layer carry))",
         "non_gpu_schemes": [],
         "error": null
       },
@@ -682,8 +682,8 @@
         "namelist_accepted": true,
         "dispatch_resolved": true,
         "gpu_gate_ready": true,
-        "scan_wired": false,
-        "scan_wire_error": "operational scan supports the v0.2.0 suite + the v0.6.0 scan-wired schemes (mp_physics in {0,1,6,8,10,16}, bl_pbl_physics in {0,5}, sf_sfclay_physics in {0,1,5,7}, cu_physics in {0,1}, Noah-MP via use_noahmp, explicit Noah-classic via sf_surface_physics=2 plus noahclassic_static/noahclassic_land). The following selected schemes are NOT scan-wired: bl_pbl_physics=7 (ACM2 is a single-column HOST-NumPy kernel (not jax.lax.scan-traceable); needs a jit/vmap rewrite)",
+        "scan_wired": true,
+        "scan_wire_error": null,
         "non_gpu_schemes": [],
         "error": null
       }
@@ -752,6 +752,7 @@
     ],
     "gpu_runnable_now": [
       "combo_1_thompson_mynn_noahmp_kf",
+      "combo_3_morrison_acm2_pleimxiu_noahmp",
       "combo_2w_wsm6_mynn_revisedmm5_noahmp_kf",
       "combo_3w_morrison_mynn_pleimxiu_noahmp",
       "combo_4w_wdm6_mynn_kessler_check"

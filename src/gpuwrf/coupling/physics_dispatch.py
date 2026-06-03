@@ -116,8 +116,13 @@ _MP_ENTRIES: dict[int, SchemeEntry] = {
 }
 
 # --- PBL (bl_pbl_physics) ------------------------------------------------------
-# bl=5 MYNN is wired through the EXISTING coupling.physics_couplers.mynn_adapter;
-# bl=1 YSU / bl=7 ACM2 expose step_*_column -> PhysicsStepResult.
+# bl=5 MYNN is wired through the EXISTING coupling.physics_couplers.mynn_adapter.
+# bl=1 YSU / bl=7 ACM2 are the v0.6.0 jax.lax.scan-traceable / vmap-batched
+# rewrites (physics.pbl_{ysu,acm2}.{ysu,acm2}_columns) -- GPU-operational and
+# scan-wired via coupling.scan_adapters.PBL_SCAN_ADAPTERS. ``gpu_runnable=True`` is
+# now genuine (the host-NumPy single-column path was replaced; per-case savepoint
+# parity re-passes on the traceable path). The dispatcher entry point names the
+# per-column ``step_*_column`` (which now also routes through the traceable kernel).
 _PBL_ENTRIES: dict[int, SchemeEntry] = {
     0: SchemeEntry("pbl", 0, "disabled", "", "", "disabled", True),
     1: SchemeEntry("pbl", 1, PBL_SCHEMES[1].name, "gpuwrf.physics.pbl_ysu", "step_ysu_column",
