@@ -1177,6 +1177,11 @@ def _acoustic_core_state_from_prep(
         # unless the nested force_geopotential=False boundary is active).
         ph_bdy_target=ph_bdy_target_full,
         ph_save_for_spec=ph_save_for_spec,
+        # SPLIT-EXPLICIT FIX (v0.4.0 r5): WRF ``php`` is built ONCE per RK stage in
+        # rk_step_prep (calc_php) and held STAGE-CONSTANT through the acoustic loop;
+        # thread the frozen stage array so advance_uv's 4th PGF term does NOT
+        # re-diagnose it from the live, substep-updated work geopotential.
+        php_stage=prep.php,
     )
 
 

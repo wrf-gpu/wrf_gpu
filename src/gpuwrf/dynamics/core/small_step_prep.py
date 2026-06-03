@@ -88,6 +88,18 @@ class SmallStepPrepState:
     msfuy: jax.Array
     msfvx: jax.Array
     msfty: jax.Array
+    # WRF ``php`` = full geopotential at mass (pressure) points, built ONCE per RK
+    # stage by ``calc_php`` in ``rk_step_prep`` (module_em.F:181;
+    # module_big_step_utilities_em.F:1227-1266) from the STAGE-ENTRY ``grid%ph_2``
+    # (= absolute perturbation geopotential ph') and the base ``grid%phb``.  WRF
+    # holds it STAGE-CONSTANT and passes it INTENT(IN) to ``advance_uv`` every
+    # acoustic substep (solve_em.F:1282; advance_uv :861/:935 4th PGF term).  WRF
+    # does NOT recompute ``php`` from the live, substep-updated ``grid%ph_2``; the
+    # live ``ph_2`` instead drives the SEPARATE first-3-terms gradient (:828-831).
+    # Carrying this frozen array removes the split-explicit violation where the JAX
+    # acoustic core re-diagnosed php from live ``state.ph`` each substep
+    # (acoustic.py advance_uv_wrf).
+    php: jax.Array
 
     def replace(self, **updates) -> "SmallStepPrepState":
         values = {name: getattr(self, name) for name in self.__dataclass_fields__}
@@ -139,6 +151,7 @@ class SmallStepPrepState:
             self.msfuy,
             self.msfvx,
             self.msfty,
+            self.php,
         )
         return children, (int(self.rk_step), float(self.dt_rk))
 
@@ -221,6 +234,20 @@ def small_step_prep_wrf(
     c2a = CPOVCV * (pb + p_pert) / jnp.maximum(jnp.abs(alt), jnp.asarray(1.0e-12, dtype=alt.dtype))
     cqu, cqv = moisture_coupling_factors(state)
 
+    # WRF ``calc_php`` (rk_step_prep, module_em.F:181;
+    # module_big_step_utilities_em.F:1259) builds the full geopotential at mass
+    # points ONCE per RK stage from the STAGE-ENTRY geopotential ``grid%ph_2``
+    # (absolute perturbation ph') and the base ``grid%phb``:
+    #     php(k) = 0.5*(phb(k)+phb(k+1)+ph'(k)+ph'(k+1)) ,  k=1..nz .
+    # ``state`` is the stage-entry state (= WRF ``grid%ph_2`` at rk_step_prep
+    # time), so ``state.ph_perturbation`` is the WRF-faithful stage-entry ph'.
+    # This frozen array is threaded into the acoustic core and used UNCHANGED by
+    # advance_uv's 4th PGF term for every substep (replacing the per-substep
+    # re-diagnosis from the live work-geopotential).
+    phb_full = jnp.asarray(state.ph_total) - jnp.asarray(state.ph_perturbation)
+    ph_full = jnp.asarray(state.ph_perturbation)
+    php = 0.5 * (phb_full[:-1, :, :] + phb_full[1:, :, :] + ph_full[:-1, :, :] + ph_full[1:, :, :])
+
     ww_save = jnp.zeros_like(state.w) if ww is None else jnp.asarray(ww)
     return SmallStepPrepState(
         rk_step=int(rk_step),
@@ -268,6 +295,7 @@ def small_step_prep_wrf(
         msfuy=metrics.msfuy,
         msfvx=metrics.msfvx,
         msfty=metrics.msfty,
+        php=php,
     )
 
 

@@ -1,0 +1,80 @@
+{
+  "title": "v0.4.0 r5 split-explicit php-freeze advance_uv savepoint parity",
+  "timestamp": "2026-06-03T14:43:44.553159+00:00",
+  "fix": "advance_uv 4th-PGF-term php is STAGE-CONSTANT (small_step_prep.php -> AcousticCoreState.php_stage); first-3-terms gradient keeps live state.ph.",
+  "wrf_refs": {
+    "calc_php_once_per_stage": "dyn_em/module_em.F:181 (rk_step_prep) -> module_big_step_utilities_em.F:1227-1266",
+    "advance_uv_4th_term": "dyn_em/module_small_step_em.F:861 (U) / :935 (V)",
+    "advance_uv_first3_term_live_ph": "dyn_em/module_small_step_em.F:828-831",
+    "advance_uv_call": "dyn_em/solve_em.F:1280-1282 (grid%ph_2 live, grid%php frozen)"
+  },
+  "grid": {
+    "nx": 8,
+    "ny": 8,
+    "nz": 12
+  },
+  "php_freeze_discriminator": {
+    "max_abs_php_minus_php_from_live": 90767.80170873155,
+    "note": "frozen php deliberately differs from 0.5*(phb+live_ph); a JAX that recomputed php from live state.ph would FAIL this gate.",
+    "exercises_freeze": true
+  },
+  "source_fp64": {
+    "oracle": "independent fp64 re-derivation of WRF advance_uv (module_small_step_em.F:828-942) with frozen php",
+    "tol": {
+      "abs": 1e-09,
+      "rel": 1e-11
+    },
+    "results": [
+      {
+        "field": "u",
+        "max_abs_err": 1.4551915228366852e-11,
+        "max_rel_err": 1.2596621001161804e-16,
+        "abs_tol": 1e-09,
+        "rel_tol": 1e-11,
+        "pass": true
+      },
+      {
+        "field": "v",
+        "max_abs_err": 2.9103830456733704e-11,
+        "max_rel_err": 2.3125420754490694e-16,
+        "abs_tol": 1e-09,
+        "rel_tol": 1e-11,
+        "pass": true
+      }
+    ],
+    "pass": true
+  },
+  "linked_wrf_object": {
+    "oracle": "standalone driver linked to UNMODIFIED WRF module_small_step_em.o advance_uv",
+    "linked_driver": "/home/enric/src/wrf_gpu2/.claude/worktrees/v040-r5-php/proofs/v040/_r5_build/wrf_advance_uv_driver",
+    "linked_driver_source": "/home/enric/src/wrf_gpu2/.claude/worktrees/v040-r5-php/proofs/v040/wrf_advance_uv_driver.F90",
+    "wrf_object": "/home/enric/src/wrf_pristine/WRF/dyn_em/module_small_step_em.o",
+    "wrf_object_sha256": "285722ae513bba55d0cde9f7c4490282a2ca804edf2a51c619a35ca7b54cf43f",
+    "rwordsize": 4,
+    "tol": {
+      "abs": 0.005,
+      "rel": 5e-05
+    },
+    "results": [
+      {
+        "field": "u",
+        "max_abs_err": 0.020351182854938088,
+        "max_rel_err": 1.7616658984840025e-07,
+        "abs_tol": 0.005,
+        "rel_tol": 5e-05,
+        "pass": true
+      },
+      {
+        "field": "v",
+        "max_abs_err": 0.02409682111465372,
+        "max_rel_err": 1.9146937008867778e-07,
+        "abs_tol": 0.005,
+        "rel_tol": 5e-05,
+        "pass": true
+      }
+    ],
+    "pass": true,
+    "note": "RWORDSIZE=4 compiled WRF precision; protects ABI/source fidelity of the real WRF advance_uv with frozen php."
+  },
+  "overall_pass": true
+}
