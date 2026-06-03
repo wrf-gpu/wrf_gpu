@@ -45,6 +45,7 @@ from gpuwrf.coupling.scan_adapters import (  # noqa: E402
     initial_kf_carry,
     kessler_adapter,
     kf_adapter,
+    lin_adapter,
     morrison_adapter,
     pleim_xiu_sfclay_adapter,
     sfclay_revised_mm5_adapter,
@@ -253,6 +254,7 @@ def _fail_closed_checks():
         _NL(mp_physics=6, sf_sfclay_physics=1, cu_physics=1),  # WSM6 + revised-MM5 + KF
         _NL(mp_physics=10, sf_sfclay_physics=7),  # Morrison + Pleim-Xiu
         _NL(mp_physics=1),  # Kessler
+        _NL(mp_physics=2),  # Purdue-Lin
         _NL(mp_physics=16),  # WDM6
         _NL(bl_pbl_physics=1),  # YSU PBL (v0.6.0 jax.lax.scan rewrite -> now wired)
         _NL(bl_pbl_physics=7),  # ACM2 PBL (v0.6.0 jax.lax.scan rewrite -> now wired)
@@ -287,6 +289,8 @@ def _fail_closed_checks():
 def run() -> dict:
     mp_results = [
         _smoke_mp("Kessler (mp=1)", kessler_adapter, ("theta", "qv", "qc", "qr", "rain_acc")),
+        _smoke_mp("Purdue-Lin (mp=2)", lin_adapter,
+                  ("theta", "qv", "qc", "qr", "qi", "qs", "qg", "rain_acc")),
         _smoke_mp("WSM6 (mp=6)", wsm6_adapter, ("theta", "qv", "qc", "qr", "qi", "qs", "qg", "rain_acc")),
         _smoke_mp("Morrison (mp=10)", morrison_adapter,
                   ("theta", "qv", "qc", "qr", "qi", "qs", "qg", "Ni", "Ns", "Nr", "Ng", "rain_acc")),
