@@ -12,7 +12,7 @@ column-kernel inputs, call the WRF-savepoint-parity-passed kernel, then reassemb
 
 Scope (HONEST tracability, audited 2026-06-03 -- see the scan-wire handoff):
 
-* **Microphysics** -- Kessler (1), WSM6 (6), Morrison (10), WDM6 (16) are pure
+* **Microphysics** -- Kessler (1), Purdue-Lin (2), WSM6 (6), Morrison (10), WDM6 (16) are pure
   ``jnp`` column kernels batched over ``(ncol, nlev)`` returning a
   ``PhysicsTendency`` of ``state_replacements``. They are jit/vmap-traceable and
   wire into the GPU scan as drop-in microphysics-slot adapters (the same slot
@@ -75,6 +75,7 @@ from gpuwrf.coupling.physics_couplers import (
     _w_mass,
 )
 from gpuwrf.physics.microphysics_kessler import kessler_physics_tendency
+from gpuwrf.physics.microphysics_lin import lin_physics_tendency
 from gpuwrf.physics.microphysics_morrison import morrison_tendency
 from gpuwrf.physics.microphysics_wdm6 import wdm6_physics_tendency
 from gpuwrf.physics.microphysics_wsm6 import wsm6_physics_tendency
@@ -149,6 +150,33 @@ def kessler_adapter(state: State, dt: float, grid=None) -> State:
     tend = kessler_physics_tendency(
         mp(state.theta), mp(state.qv), mp(state.qc), mp(state.qr),
         mp(rho), mp(pii), mp(z_mass), mp(dz), float(dt),
+    )
+    tend.validate_keys()
+    return _apply_mp_replacements(state, tend, ny=ny, nx=nx, nz=nz)
+
+
+def lin_adapter(state: State, dt: float, grid=None) -> State:
+    """mp=2 Purdue-Lin single-moment 6-class microphysics scan adapter.
+
+    Lin's terminal-velocity sedimentation is Courant-limited on the geometric
+    LEVEL HEIGHT ``z`` (not just the thickness ``dz``), so this adapter passes
+    the mass-level height (mean of the bounding interface heights from ``ph/g``)
+    in addition to ``dz``. The scheme is theta-based (no Exner conversion of the
+    moist update) and returns the 6 moist species + surface precip.
+    """
+
+    del grid
+    nz, ny, nx = state.theta.shape
+    mp = lambda f: _mp_in(f, ny, nx, nz)  # noqa: E731
+    rho = _rho_from_state(state)
+    pii = (jnp.maximum(state.p, 1.0) / P0_PA) ** R_D_OVER_CP
+    interface_z = state.ph.astype(jnp.float64) / GRAVITY_M_S2  # (nz+1, ny, nx)
+    z_mass = 0.5 * (interface_z[:-1] + interface_z[1:])
+    dz = jnp.maximum(interface_z[1:] - interface_z[:-1], 1.0)
+    tend = lin_physics_tendency(
+        mp(state.theta), mp(state.qv), mp(state.qc), mp(state.qr),
+        mp(state.qi), mp(state.qs), mp(state.qg),
+        mp(pii), mp(rho), mp(state.p), mp(z_mass), mp(dz), float(dt),
     )
     tend.validate_keys()
     return _apply_mp_replacements(state, tend, ny=ny, nx=nx, nz=nz)
@@ -530,6 +558,7 @@ def acm2_pbl_adapter(state: State, dt: float, grid=None) -> State:
 # passive (no microphysics). The rest map to the adapters above.
 MP_SCAN_ADAPTERS = {
     1: kessler_adapter,
+    2: lin_adapter,
     6: wsm6_adapter,
     10: morrison_adapter,
     16: wdm6_adapter,
@@ -559,6 +588,7 @@ PBL_SCAN_ADAPTERS = {
 
 __all__ = [
     "kessler_adapter",
+    "lin_adapter",
     "wsm6_adapter",
     "morrison_adapter",
     "wdm6_adapter",

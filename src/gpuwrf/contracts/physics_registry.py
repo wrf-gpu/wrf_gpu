@@ -11,6 +11,8 @@ WRF Registry lines verified against
 2026-06-02:
 
 * Kessler(1): ``moist:qv,qc,qr``.
+* Purdue-Lin(2): ``moist:qv,qc,qr,qi,qs,qg`` (single-moment, no scalar number
+  species; graupel via F_QG=.true.).
 * WSM6(6): ``moist:qv,qc,qr,qi,qs,qg;state:re_cloud,re_ice,re_snow``.
 * Thompson(8): ``moist:qv,qc,qr,qi,qs,qg;scalar:qni,qnr;state:re_*``.
 * Morrison(10): ``moist:qv..qg;scalar:qni,qns,qnr,qng`` plus cuten state.
@@ -50,7 +52,7 @@ class SchemeOption:
     owner_family: str
 
 
-ACCEPTED_MP_PHYSICS: tuple[int, ...] = (0, 1, 6, 8, 10, 16)
+ACCEPTED_MP_PHYSICS: tuple[int, ...] = (0, 1, 2, 6, 8, 10, 16)
 ACCEPTED_BL_PBL_PHYSICS: tuple[int, ...] = (0, 1, 5, 7)
 ACCEPTED_SF_SFCLAY_PHYSICS: tuple[int, ...] = (0, 1, 5, 7)
 ACCEPTED_CU_PHYSICS: tuple[int, ...] = (0, 1, 3, 6, 16)
@@ -71,6 +73,7 @@ ACCEPTED_NAMELIST_OPTIONS: Mapping[str, tuple[int, ...]] = {
 MP_SCHEMES: Mapping[int, SchemeOption] = {
     0: SchemeOption("mp_physics", 0, "disabled/passive qv", "passiveqv", "accepted", "microphysics"),
     1: SchemeOption("mp_physics", 1, "Kessler warm rain", "kesslerscheme", "accepted", "microphysics"),
+    2: SchemeOption("mp_physics", 2, "Purdue-Lin", "linscheme", "accepted", "microphysics"),
     6: SchemeOption("mp_physics", 6, "WSM6", "wsm6scheme", "accepted", "microphysics"),
     8: SchemeOption("mp_physics", 8, "Thompson", "thompson", "implemented", "microphysics"),
     10: SchemeOption("mp_physics", 10, "Morrison two-moment", "morr_two_moment", "accepted", "microphysics"),
@@ -122,6 +125,7 @@ MOIST_WRFOUT_NAME: Mapping[str, str] = {
 MP_MOIST_MEMBERS: Mapping[int, tuple[str, ...]] = {
     0: ("qv",),
     1: ("qv", "qc", "qr"),
+    2: ("qv", "qc", "qr", "qi", "qs", "qg"),
     6: ("qv", "qc", "qr", "qi", "qs", "qg"),
     8: ("qv", "qc", "qr", "qi", "qs", "qg"),
     10: ("qv", "qc", "qr", "qi", "qs", "qg"),
@@ -156,6 +160,7 @@ NUMBER_WRFOUT_NAME: Mapping[str, str] = {
 MP_NUMBER_MEMBERS: Mapping[int, tuple[str, ...]] = {
     0: (),
     1: (),
+    2: (),
     6: (),
     8: ("Ni", "Nr"),
     10: ("Ni", "Ns", "Nr", "Ng"),
