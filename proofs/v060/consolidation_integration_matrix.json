@@ -1,16 +1,16 @@
 {
   "proof": "v060-consolidation-integration-matrix",
-  "git_head": "eae12063c716cd62993df089a26bd6f3c8426ff2",
-  "branch": "worker/opus/v060-consolidation",
+  "git_head": "c7f1aec92f709fd7c581dbd80eb755c77709c2dd",
+  "branch": "worker/opus/v060-consolidation2",
   "base_trunk": "e998250 (trunk-0.9.0)",
+  "wave1_base": "worker/opus/v060-consolidation (dcc9666)",
   "merged_branches": [
-    "worker/opus/v060-close (c38a3c0)",
-    "worker/opus/v060-myj (4807e28)",
-    "worker/opus/v060-wsm-sm (dec11a1)",
-    "worker/opus/v060-ysu-acm2-gpuop (44aa8df)",
-    "worker/opus/v060-gf-tiedtke-gpu (42534d8)"
+    "WAVE-1 (already in base dcc9666): v060-close (c38a3c0), v060-myj (4807e28), v060-wsm-sm (dec11a1), v060-ysu-acm2-gpuop (44aa8df), v060-gf-tiedtke-gpu (42534d8)",
+    "WAVE-2 (this branch): worker/opus/v060-lin-mp (72a41c5)",
+    "WAVE-2 (this branch): worker/opus/v060-boulac (8837e80)",
+    "WAVE-2 (this branch): worker/opus/v060-radiation (49114db)"
   ],
-  "kind": "Consolidation per-scheme operational/parity/fail-closed status matrix + integration-smoke result. Derived from the authoritative merged registries (physics_registry, scan_adapters, operational_mode._SCAN_WIRED_OPTIONS/_SCAN_UNWIRED_REASON) + the multicfg operational smoke (proofs/v060/multicfg_smoke_report.json). HONEST: every non-operational scheme is PARITY-PROVEN-FAIL-CLOSED (loud), never silently skipped.",
+  "kind": "Consolidation per-scheme operational/parity/fail-closed status matrix + integration-smoke result. Derived from the LIVE merged registries (physics_registry scheme maps, scan_adapters adapter tables, operational_mode._SCAN_WIRED_OPTIONS/_SCAN_UNWIRED_REASON, physics_dispatch) + the multicfg operational smoke (proofs/v060/multicfg_smoke_report.json). HONEST: every non-operational scheme is PARITY-PROVEN-FAIL-CLOSED (loud), never silently skipped.",
   "per_scheme_status": {
     "mp_physics=0": {
       "name": "disabled/passive qv",
@@ -21,6 +21,11 @@
       "name": "Kessler warm rain",
       "status": "GPU-OPERATIONAL-WIRED",
       "detail": "scan_adapters[1]=kessler_adapter"
+    },
+    "mp_physics=2": {
+      "name": "Purdue-Lin",
+      "status": "GPU-OPERATIONAL-WIRED",
+      "detail": "scan_adapters[2]=lin_adapter"
     },
     "mp_physics=3": {
       "name": "WSM3 simple ice",
@@ -40,7 +45,7 @@
     "mp_physics=8": {
       "name": "Thompson",
       "status": "GPU-OPERATIONAL-WIRED",
-      "detail": "physics_couplers.thompson_adapter"
+      "detail": "gpuwrf.coupling.physics_couplers.thompson_adapter"
     },
     "mp_physics=10": {
       "name": "Morrison two-moment",
@@ -70,12 +75,17 @@
     "bl_pbl_physics=5": {
       "name": "MYNN",
       "status": "GPU-OPERATIONAL-WIRED",
-      "detail": "physics_couplers.mynn_adapter"
+      "detail": "gpuwrf.coupling.physics_couplers.mynn_adapter"
     },
     "bl_pbl_physics=7": {
       "name": "ACM2",
       "status": "GPU-OPERATIONAL-WIRED",
       "detail": "scan_adapters[7]=acm2_pbl_adapter"
+    },
+    "bl_pbl_physics=8": {
+      "name": "BouLac",
+      "status": "GPU-OPERATIONAL-WIRED",
+      "detail": "scan_adapters[8]=boulac_pbl_adapter"
     },
     "sf_sfclay_physics=0": {
       "name": "disabled",
@@ -95,7 +105,7 @@
     "sf_sfclay_physics=5": {
       "name": "MYNN surface layer",
       "status": "GPU-OPERATIONAL-WIRED",
-      "detail": "physics_couplers.surface_adapter (MYNN-SL)"
+      "detail": "gpuwrf.coupling.physics_couplers.surface_adapter"
     },
     "sf_sfclay_physics=7": {
       "name": "Pleim-Xiu surface layer",
@@ -135,36 +145,46 @@
     "sf_surface_physics=2": {
       "name": "Noah classic",
       "status": "GPU-OPERATIONAL-WIRED",
-      "detail": "coupling.noahclassic_surface_hook (explicit static+land bundle)"
+      "detail": "coupling.noahclassic_surface_hook"
     },
     "sf_surface_physics=4": {
       "name": "Noah-MP",
       "status": "GPU-OPERATIONAL-WIRED",
-      "detail": "coupling.noahmp_surface_hook (use_noahmp=True)"
+      "detail": "coupling.noahmp_surface_hook"
     },
     "ra_sw_physics=0": {
-      "name": "off",
+      "name": "disabled",
       "status": "PASSIVE/OFF",
-      "detail": "n/a"
+      "detail": "n/a (no-op by design)"
+    },
+    "ra_sw_physics=1": {
+      "name": "Dudhia shortwave",
+      "status": "GPU-OPERATIONAL-WIRED",
+      "detail": "held-rate RTHRATEN column driver: physics.ra_sw_dudhia (Dudhia SW)"
     },
     "ra_sw_physics=4": {
-      "name": "RRTMG SW",
+      "name": "RRTMG shortwave",
       "status": "GPU-OPERATIONAL-WIRED",
-      "detail": "held-rate RTHRATEN, scan-wired"
+      "detail": "held-rate RTHRATEN column driver: physics.rrtmg_sw (RRTMG SW)"
     },
     "ra_lw_physics=0": {
-      "name": "off",
+      "name": "disabled",
       "status": "PASSIVE/OFF",
-      "detail": "n/a"
+      "detail": "n/a (no-op by design)"
+    },
+    "ra_lw_physics=1": {
+      "name": "RRTM longwave",
+      "status": "GPU-OPERATIONAL-WIRED",
+      "detail": "held-rate RTHRATEN column driver: physics.ra_lw_rrtm (classic RRTM LW)"
     },
     "ra_lw_physics=4": {
-      "name": "RRTMG LW",
+      "name": "RRTMG longwave",
       "status": "GPU-OPERATIONAL-WIRED",
-      "detail": "held-rate RTHRATEN, scan-wired"
+      "detail": "held-rate RTHRATEN column driver: physics.rrtmg_lw (RRTMG LW)"
     }
   },
   "counts": {
-    "gpu_operational_wired": 19,
+    "gpu_operational_wired": 23,
     "parity_proven_fail_closed": 4,
     "passive_off": 7,
     "unknown_investigate": 0
@@ -178,47 +198,56 @@
   "integration_smoke": {
     "report": "proofs/v060/multicfg_smoke_report.json",
     "all_pass": true,
-    "n_configs": 20,
-    "n_run_configs": 17,
-    "n_run_pass": 17,
+    "n_configs": 22,
+    "n_run_configs": 19,
+    "n_run_pass": 19,
     "n_fail_closed_configs": 3,
     "n_fail_closed_ok": 3,
-    "scheme_coverage_run": [
-      "Nc/Nn",
-      "bl1-YSU",
-      "bl5",
-      "bl7-ACM2",
-      "cu0-none",
-      "cu1-KF",
-      "cu6-Tiedtke",
-      "land-bulk",
-      "land2-NoahClassic",
-      "land4-NoahMP",
-      "mp1-Kessler",
-      "mp10-Morrison",
-      "mp16-WDM6",
-      "mp3-WSM3",
-      "mp4-WSM5",
-      "mp6-WSM6",
-      "mp8",
-      "no-cu",
-      "sf1-revisedMM5",
-      "sf5",
-      "sf5-MYNN-sfclay",
-      "sf7-PleimXiu"
-    ],
-    "scheme_coverage_fail_closed": [
-      "bl2-MYJ",
-      "cu16-NewTiedtke",
-      "cu3-GF",
-      "sf2-Janjic"
-    ]
+    "scheme_coverage": {
+      "covered_by_run_configs": [
+        "Nc/Nn",
+        "bl1-YSU",
+        "bl5",
+        "bl7-ACM2",
+        "bl8-BouLac",
+        "cu0-none",
+        "cu1-KF",
+        "cu6-Tiedtke",
+        "land-bulk",
+        "land2-NoahClassic",
+        "land4-NoahMP",
+        "mp1-Kessler",
+        "mp10-Morrison",
+        "mp16-WDM6",
+        "mp2-Lin",
+        "mp3-WSM3",
+        "mp4-WSM5",
+        "mp6-WSM6",
+        "mp8",
+        "no-cu",
+        "sf1-revisedMM5",
+        "sf5",
+        "sf5-MYNN-sfclay",
+        "sf7-PleimXiu"
+      ],
+      "fail_closed_schemes": [
+        "bl2-MYJ",
+        "cu16-NewTiedtke",
+        "cu3-GF",
+        "sf2-Janjic"
+      ],
+      "excluded_documented_todo": [
+        "cu_physics=3 Grell-Freitas (sequential closure ensemble; GPU-batching TODO)",
+        "cu_physics=16 New Tiedtke (not separately savepoint-gated)"
+      ]
+    }
   },
   "carry_overs_post_0_9_0": [
     "GF (cu=3): faithful GPU-batch closure-ensemble + beta-PDF gamma (~2000-LOC dedicated sprint).",
     "New-Tiedtke (cu=16): separate WRF-source savepoint gate + GPU-batch.",
     "MYJ (bl=2) + Janjic (sf=2): GPU-scan-wire the parity-proven CPU references.",
-    "Noah-classic (land=2) real-run static/land bundle assembly for canonical combo_2."
+    "Noah-classic (land=2) real-run static/land bundle assembly for canonical combo.",
+    "Radiation operational scan-coverage: ra_lw/ra_sw are folded at the registry/dispatch/step-spec layer and per-scheme savepoint-parity gated (RRTM-LW worst RTHRATEN 7.2e-14; Dudhia-SW), but the multicfg smoke harness pins ra=4 and does not yet sweep ra_lw=1/ra_sw=1 end-to-end."
   ],
   "overall_consolidation_pass": true
 }

@@ -7,7 +7,7 @@
   "real_data_sources": {
     "canary_grid": "GridSpec.canary_3km_template()",
     "noahmp_land_warm_start": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z (d02 wrfinput)",
-    "noahclassic_bundle": "/home/enric/src/wrf_gpu2/.claude/worktrees/agent-ac26938a2ead891b9/proofs/v060/savepoints_noahclassic.json (WRF NOAHMP_SFLX savepoint column daytime_veg10)",
+    "noahclassic_bundle": "/home/enric/src/wrf_gpu2/.claude/worktrees/agent-afa4019f605d1c5b8/proofs/v060/savepoints_noahclassic.json (WRF NOAHMP_SFLX savepoint column daytime_veg10)",
     "atmospheric_profile": "validated b2 C-grid pattern (scanwire_smoke._build_state) on the Canary grid"
   },
   "sweep_rationale": "COVERING set (NOT full cartesian product): every supported scheme appears in >=1 RUN config plus the real operational Canary config. Supported = mp{8,6,10,16,1} x bl{5,1,7} x sfclay{1,5,7} x cu{1,6} x sf_surface{4,2} (GF cumulus EXCLUDED = documented-TODO). v0.6.0 CONSOLIDATION coupler reality: the operational scan now threads MYNN(5) + YSU(1) + ACM2(7) PBL (YSU/ACM2 are the v0.6.0 jax.lax.scan-traceable rewrites from the PBL-GPU-op lane, scan-wired via PBL_SCAN_ADAPTERS), KF(1) + modified-Tiedtke(6) cumulus (Tiedtke is the v0.6.0 GPU-batched jit/vmap adapter, scan-wired via CU_SCAN_ADAPTERS), and Noah-MP(4) + Noah-classic(2) land -- so YSU/ACM2 and Tiedtke are now RUN configs. Only GF(3) (and New-Tiedtke 16, not separately gated) remain CPU-NumPy reference ports and stay FAIL-CLOSED in the coupler, exercised here as fail-closed integration assertions (the coupler must reject them loudly, never silently no-op).",
@@ -17,6 +17,7 @@
       "bl1-YSU",
       "bl5",
       "bl7-ACM2",
+      "bl8-BouLac",
       "cu0-none",
       "cu1-KF",
       "cu6-Tiedtke",
@@ -26,6 +27,7 @@
       "mp1-Kessler",
       "mp10-Morrison",
       "mp16-WDM6",
+      "mp2-Lin",
       "mp3-WSM3",
       "mp4-WSM5",
       "mp6-WSM6",
@@ -47,9 +49,9 @@
       "cu_physics=16 New Tiedtke (not separately savepoint-gated)"
     ]
   },
-  "n_configs": 20,
-  "n_run_configs": 17,
-  "n_run_pass": 17,
+  "n_configs": 22,
+  "n_run_configs": 19,
+  "n_run_pass": 19,
   "n_run_fail": 0,
   "n_fail_closed_configs": 3,
   "n_fail_closed_ok": 3,
@@ -1000,6 +1002,131 @@
           "qv": {
             "min": 0.00389,
             "max": 0.01321,
+            "band": [
+              0.0,
+              0.06
+            ],
+            "ok": true
+          },
+          "u": {
+            "min": 4.49753,
+            "max": 7.62164,
+            "band": [
+              -150.0,
+              150.0
+            ],
+            "ok": true
+          },
+          "v": {
+            "min": -3.72874,
+            "max": -0.25985,
+            "band": [
+              -150.0,
+              150.0
+            ],
+            "ok": true
+          },
+          "w": {
+            "min": -0.17062,
+            "max": 0.14646,
+            "band": [
+              -50.0,
+              50.0
+            ],
+            "ok": true
+          },
+          "p": {
+            "min": 70123.61113,
+            "max": 98369.75616,
+            "band": [
+              1.0,
+              110000.0
+            ],
+            "ok": true
+          },
+          "t_skin": {
+            "min": 299.5,
+            "max": 304.0,
+            "band": [
+              200.0,
+              360.0
+            ],
+            "ok": true
+          }
+        },
+        "all_in_band": true
+      },
+      "schemes_active": {
+        "expected_moved_leaves": [
+          "theta",
+          "qv",
+          "qc",
+          "qr",
+          "ustar",
+          "theta_flux",
+          "u",
+          "v"
+        ],
+        "moved": {
+          "theta": true,
+          "qv": true,
+          "qc": true,
+          "qr": true,
+          "ustar": true,
+          "theta_flux": true,
+          "u": true,
+          "v": true
+        },
+        "all_active": true
+      },
+      "pass": true,
+      "verdict": "INTEGRATION_PASS"
+    },
+    {
+      "cfg_id": "mp_lin",
+      "description": "Purdue-Lin(2) single-moment ice/graupel + MYNN + MYNN-sfclay + bulk land, no cumulus",
+      "namelist": {
+        "mp_physics": 2,
+        "bl_pbl_physics": 5,
+        "sf_sfclay_physics": 5,
+        "cu_physics": 0,
+        "sf_surface_physics": 2,
+        "ra_sw_physics": 4,
+        "ra_lw_physics": 4
+      },
+      "covers": [
+        "mp2-Lin"
+      ],
+      "expect": "RUN",
+      "namelist_accepted": true,
+      "dispatch_resolved": true,
+      "dispatch_gpu_gate_ready": true,
+      "non_gpu_schemes": [],
+      "operational_coupler_accepts": true,
+      "land_init": {
+        "model": "bulk prescribed (surface_adapter)",
+        "grid": [
+          8,
+          8
+        ]
+      },
+      "compiles": true,
+      "n_steps": 8,
+      "finite": true,
+      "physical": {
+        "per_field": {
+          "theta": {
+            "min": 298.9389,
+            "max": 310.8601,
+            "band": [
+              180.0,
+              400.0
+            ],
+            "ok": true
+          },
+          "qv": {
+            "min": 0.00393,
+            "max": 0.01322,
             "band": [
               0.0,
               0.06
@@ -2229,6 +2356,131 @@
       "verdict": "INTEGRATION_PASS"
     },
     {
+      "cfg_id": "pbl_boulac",
+      "description": "BouLac(8) PBL -- v0.6.0 jax.lax.scan rewrite (pbl_boulac.boulac_columns) + revised-MM5 sfclay + bulk land",
+      "namelist": {
+        "mp_physics": 8,
+        "bl_pbl_physics": 8,
+        "sf_sfclay_physics": 1,
+        "cu_physics": 0,
+        "sf_surface_physics": 2,
+        "ra_sw_physics": 4,
+        "ra_lw_physics": 4
+      },
+      "covers": [
+        "bl8-BouLac"
+      ],
+      "expect": "RUN",
+      "namelist_accepted": true,
+      "dispatch_resolved": true,
+      "dispatch_gpu_gate_ready": true,
+      "non_gpu_schemes": [],
+      "operational_coupler_accepts": true,
+      "land_init": {
+        "model": "bulk prescribed (surface_adapter)",
+        "grid": [
+          8,
+          8
+        ]
+      },
+      "compiles": true,
+      "n_steps": 8,
+      "finite": true,
+      "physical": {
+        "per_field": {
+          "theta": {
+            "min": 299.00669,
+            "max": 310.84092,
+            "band": [
+              180.0,
+              400.0
+            ],
+            "ok": true
+          },
+          "qv": {
+            "min": 0.00394,
+            "max": 0.01319,
+            "band": [
+              0.0,
+              0.06
+            ],
+            "ok": true
+          },
+          "u": {
+            "min": 4.51362,
+            "max": 7.62164,
+            "band": [
+              -150.0,
+              150.0
+            ],
+            "ok": true
+          },
+          "v": {
+            "min": -3.72428,
+            "max": -0.25985,
+            "band": [
+              -150.0,
+              150.0
+            ],
+            "ok": true
+          },
+          "w": {
+            "min": -0.17062,
+            "max": 0.14646,
+            "band": [
+              -50.0,
+              50.0
+            ],
+            "ok": true
+          },
+          "p": {
+            "min": 70123.61113,
+            "max": 98369.75616,
+            "band": [
+              1.0,
+              110000.0
+            ],
+            "ok": true
+          },
+          "t_skin": {
+            "min": 299.5,
+            "max": 304.0,
+            "band": [
+              200.0,
+              360.0
+            ],
+            "ok": true
+          }
+        },
+        "all_in_band": true
+      },
+      "schemes_active": {
+        "expected_moved_leaves": [
+          "theta",
+          "qv",
+          "qc",
+          "qr",
+          "ustar",
+          "theta_flux",
+          "u",
+          "v"
+        ],
+        "moved": {
+          "theta": true,
+          "qv": true,
+          "qc": true,
+          "qr": true,
+          "ustar": true,
+          "theta_flux": true,
+          "u": true,
+          "v": true
+        },
+        "all_active": true
+      },
+      "pass": true,
+      "verdict": "INTEGRATION_PASS"
+    },
+    {
       "cfg_id": "cu_grellfreitas_unwired",
       "description": "Grell-Freitas(3) cumulus -- CPU-NumPy reference port (gpu_runnable=False)",
       "namelist": {
@@ -2251,7 +2503,7 @@
         "cu_physics=3 (Grell-Freitas)"
       ],
       "operational_coupler_accepts": false,
-      "operational_coupler_reject_reason": "operational scan supports the v0.2.0 suite + the v0.6.0 scan-wired schemes (mp_physics in {0,1,3,4,6,8,10,16}, bl_pbl_physics in {0,1,5,7}, sf_sfclay_physics in {0,1,5,7}, cu_physics in {0,1,6}, Noah-MP via use_noahmp, explicit Noah-classic via sf_surface_physics=2 plus noahclassic_static/noahclassic_land). The following selected schemes are NOT scan-wired: cu_physics=3 (Grell-Freitas is a CPU-NumPy reference port (gpu_runnable=False); GPU-batching TODO (sequential 16-member closure ensemble + beta-PDF gamma))",
+      "operational_coupler_reject_reason": "operational scan supports the v0.2.0 suite + the v0.6.0 scan-wired schemes (mp_physics in {0,1,2,3,4,6,8,10,16}, bl_pbl_physics in {0,1,5,7,8}, sf_sfclay_physics in {0,1,5,7}, cu_physics in {0,1,6}, Noah-MP via use_noahmp, explicit Noah-classic via sf_surface_physics=2 plus noahclassic_static/noahclassic_land). The following selected schemes are NOT scan-wired: cu_physics=3 (Grell-Freitas is a CPU-NumPy reference port (gpu_runnable=False); GPU-batching TODO (sequential 16-member closure ensemble + beta-PDF gamma))",
       "compiles": null,
       "n_steps": 0,
       "finite": null,
@@ -2283,7 +2535,7 @@
         "cu_physics=16 (New Tiedtke)"
       ],
       "operational_coupler_accepts": false,
-      "operational_coupler_reject_reason": "operational scan supports the v0.2.0 suite + the v0.6.0 scan-wired schemes (mp_physics in {0,1,3,4,6,8,10,16}, bl_pbl_physics in {0,1,5,7}, sf_sfclay_physics in {0,1,5,7}, cu_physics in {0,1,6}, Noah-MP via use_noahmp, explicit Noah-classic via sf_surface_physics=2 plus noahclassic_static/noahclassic_land). The following selected schemes are NOT scan-wired: cu_physics=16 (New Tiedtke is interface-compatible but not separately savepoint-gated by a distinct WRF source path; GPU-batching/gating TODO)",
+      "operational_coupler_reject_reason": "operational scan supports the v0.2.0 suite + the v0.6.0 scan-wired schemes (mp_physics in {0,1,2,3,4,6,8,10,16}, bl_pbl_physics in {0,1,5,7,8}, sf_sfclay_physics in {0,1,5,7}, cu_physics in {0,1,6}, Noah-MP via use_noahmp, explicit Noah-classic via sf_surface_physics=2 plus noahclassic_static/noahclassic_land). The following selected schemes are NOT scan-wired: cu_physics=16 (New Tiedtke is interface-compatible but not separately savepoint-gated by a distinct WRF source path; GPU-batching/gating TODO)",
       "compiles": null,
       "n_steps": 0,
       "finite": null,
@@ -2314,7 +2566,7 @@
       "dispatch_gpu_gate_ready": true,
       "non_gpu_schemes": [],
       "operational_coupler_accepts": false,
-      "operational_coupler_reject_reason": "operational scan supports the v0.2.0 suite + the v0.6.0 scan-wired schemes (mp_physics in {0,1,3,4,6,8,10,16}, bl_pbl_physics in {0,1,5,7}, sf_sfclay_physics in {0,1,5,7}, cu_physics in {0,1,6}, Noah-MP via use_noahmp, explicit Noah-classic via sf_surface_physics=2 plus noahclassic_static/noahclassic_land). The following selected schemes are NOT scan-wired: bl_pbl_physics=2 (MYJ PBL has a WRF-savepoint column adapter, but no operational scan adapter/carry path yet); sf_sfclay_physics=2 (Janjic Eta surface layer has a WRF-savepoint column adapter, but no operational scan adapter/carry path yet)",
+      "operational_coupler_reject_reason": "operational scan supports the v0.2.0 suite + the v0.6.0 scan-wired schemes (mp_physics in {0,1,2,3,4,6,8,10,16}, bl_pbl_physics in {0,1,5,7,8}, sf_sfclay_physics in {0,1,5,7}, cu_physics in {0,1,6}, Noah-MP via use_noahmp, explicit Noah-classic via sf_surface_physics=2 plus noahclassic_static/noahclassic_land). The following selected schemes are NOT scan-wired: bl_pbl_physics=2 (MYJ PBL has a WRF-savepoint column adapter, but no operational scan adapter/carry path yet); sf_sfclay_physics=2 (Janjic Eta surface layer has a WRF-savepoint column adapter, but no operational scan adapter/carry path yet)",
       "compiles": null,
       "n_steps": 0,
       "finite": null,
