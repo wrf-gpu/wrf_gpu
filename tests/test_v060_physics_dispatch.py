@@ -1,7 +1,7 @@
 """v0.6.0 operational physics-suite dispatcher tests (CPU; no GPU, no forecast).
 
 Locks the integration behavior: option->scheme routing, fail-closed rejection on
-out-of-matrix options, GPU-gate readiness flagging (KF GPU-runnable; GF/Tiedtke
+out-of-matrix options, GPU-gate readiness flagging (KF/BMJ GPU-runnable; GF/Tiedtke
 CPU-reference), the v0.2.0 baseline default, and that every routed entrypoint
 actually exists on its module (no dangling reference after the 12-lane merge).
 """
@@ -58,16 +58,17 @@ def test_every_accepted_option_routes() -> None:
 
 @pytest.mark.parametrize(
     "fam,opt",
-    [("microphysics", 2), ("pbl", 2), ("surface_layer", 2), ("cumulus", 2), ("land_surface", 1)],
+    [("microphysics", 2), ("pbl", 2), ("surface_layer", 2), ("cumulus", 5), ("land_surface", 1)],
 )
 def test_fail_closed_on_out_of_matrix(fam: str, opt: int) -> None:
     with pytest.raises(UnsupportedSchemeSelection):
         scheme_entry(fam, opt)
 
 
-def test_grell_freitas_and_tiedtke_flagged_not_gpu_ready() -> None:
-    # KF (cu=1) is the operational GPU cumulus -> gate-ready.
+def test_cumulus_gpu_readiness_flags() -> None:
+    # KF (cu=1) and BMJ (cu=2) are operational GPU cumulus options -> gate-ready.
     assert resolve_physics_suite({"cu_physics": 1}).gpu_gate_ready is True
+    assert resolve_physics_suite({"cu_physics": 2}).gpu_gate_ready is True
     # Grell-Freitas (cu=3) and Tiedtke (cu=6/16) are CPU-reference -> excluded.
     for cu in (3, 6, 16):
         suite = resolve_physics_suite({"cu_physics": cu})

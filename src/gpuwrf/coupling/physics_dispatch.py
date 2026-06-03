@@ -12,7 +12,7 @@ Design contract (S0 ``V0.6.0-S0-PLAN.md``):
   (``physics_registry.ACCEPTED_*``). Anything outside it FAILS CLOSED here, in
   addition to ``io.namelist_check.validate_supported_namelist`` (defence in
   depth: the dispatcher must never silently fall through to a default scheme).
-* Each scheme records ``gpu_runnable``. KF (cu=1) and the jit/vmap'd
+* Each scheme records ``gpu_runnable``. KF (cu=1), BMJ (cu=2), and the jit/vmap'd
   microphysics / PBL / surface-layer / Noah-MP/Noah-classic kernels are
   GPU-runnable. Grell-Freitas (cu=3) and Tiedtke (cu=6/16) are faithful
   CPU-NumPy reference ports -- selectable, parity-gated, but flagged
@@ -157,9 +157,10 @@ _SFCLAY_ENTRIES: dict[int, SchemeEntry] = {
 }
 
 # --- Cumulus (cu_physics) ------------------------------------------------------
-# KF (cu=1) is the jit/vmap'd operational GPU cumulus. Grell-Freitas (cu=3) and
-# Tiedtke (cu=6/16) are FAITHFUL CPU-NumPy reference ports -- selectable + parity
-# gated but NOT yet jit/vmap'd, so gpu_runnable=False (GPU-batching TODO). All
+# KF (cu=1) and BMJ (cu=2) are jit/vmap'd operational GPU cumulus paths.
+# Grell-Freitas (cu=3) and Tiedtke (cu=6/16) are FAITHFUL CPU-NumPy reference
+# ports -- selectable + parity gated but NOT yet jit/vmap'd, so
+# gpu_runnable=False (GPU-batching TODO). All
 # route through the combined R*CUTEN tendency + RAINCV/PRATEC family (S0 cugd_*
 # correction: no inert cugd_* State carry for GF).
 _CU_ENTRIES: dict[int, SchemeEntry] = {
@@ -170,6 +171,14 @@ _CU_ENTRIES: dict[int, SchemeEntry] = {
                    writes_state=("theta", "qv", "qc", "qr", "qi", "qs"),
                    carry_members=CUMULUS_CARRY_MEMBERS[1], tendency_members=CUMULUS_TENDENCY_MEMBERS[1],
                    accumulators=("rainc_acc",)),
+    2: SchemeEntry("cumulus", 2, CU_SCHEMES[2].name, "gpuwrf.physics.cumulus_bmj", "step_bmj_column",
+                   "column_state", True,
+                   reads_state=("theta", "qv", "p", "ph", "xland"),
+                   writes_state=("theta", "qv"),
+                   carry_members=CUMULUS_CARRY_MEMBERS[2],
+                   tendency_members=CUMULUS_TENDENCY_MEMBERS[2],
+                   accumulators=("rainc_acc",),
+                   notes="Frozen-contract extension for BMJ adjustment cumulus; carries CLDEFI."),
     3: SchemeEntry("cumulus", 3, CU_SCHEMES[3].name, "gpuwrf.physics.cumulus_grell_freitas",
                    "grell_freitas_step", "column_state", False,
                    reads_state=("u", "v", "w", "theta", "qv", "qc", "qr", "qi", "qs"),
