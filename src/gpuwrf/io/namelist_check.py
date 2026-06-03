@@ -68,25 +68,34 @@ SUPPORTED_OPTIONS: dict[str, SupportedOption] = {
     "cu_physics": SupportedOption(
         key="cu_physics",
         supported_values=frozenset(ACCEPTED_CU_PHYSICS),
-        implemented="0=disabled, 1=Kain-Fritsch, 3=Grell-Freitas, 6=Tiedtke, 16=New Tiedtke",
-        action="Use one of the frozen v0.6.0 cumulus options; all other CU options remain unsupported.",
+        implemented=(
+            "0=disabled, 1=Kain-Fritsch (GPU-operational, scan-wired); "
+            "3=Grell-Freitas, 6=Tiedtke, 16=New Tiedtke "
+            "(savepoint-parity CPU-NumPy reference ports, NOT yet GPU-scan-wired -- "
+            "selectable for reference but fail-closed in the operational GPU scan, GPU-batching TODO)"
+        ),
+        action="Use cu_physics=0 or 1 for the operational GPU scan; 3/6/16 remain CPU-reference-only.",
     ),
     "bl_pbl_physics": SupportedOption(
         key="bl_pbl_physics",
         supported_values=frozenset(ACCEPTED_BL_PBL_PHYSICS),
-        implemented="0=disabled, 1=YSU, 5=MYNN, 7=ACM2",
-        action="Use one of the frozen v0.6.0 PBL options; all other PBL options remain unsupported.",
+        implemented="0=disabled, 1=YSU, 5=MYNN, 7=ACM2 (all GPU-operational, scan-wired)",
+        action="Use one of the frozen v0.6.0 PBL options; all other PBL options remain unsupported. "
+        "Pair with the matching surface layer (MYNN<->5, ACM2<->7/1, YSU<->1).",
     ),
     "sf_sfclay_physics": SupportedOption(
         key="sf_sfclay_physics",
         supported_values=frozenset(ACCEPTED_SF_SFCLAY_PHYSICS),
-        implemented="0=disabled, 1=sfclayrev, 5=MYNN surface layer, 7=Pleim-Xiu surface layer",
-        action="Use one of the frozen v0.6.0 surface-layer options; all other sfclay options remain unsupported.",
+        implemented="0=disabled, 1=revised-MM5, 5=MYNN surface layer, 7=Pleim-Xiu surface layer "
+        "(all GPU-operational, scan-wired)",
+        action="Use one of the frozen v0.6.0 surface-layer options; all other sfclay options remain unsupported. "
+        "Use the PBL-compatible partner (MYNN-SL 5<->MYNN PBL 5, Pleim-Xiu 7<->ACM2 7).",
     ),
     "sf_surface_physics": SupportedOption(
         key="sf_surface_physics",
         supported_values=frozenset(ACCEPTED_SF_SURFACE_PHYSICS),
-        implemented="0=disabled, 2=Noah classic, 4=Noah-MP",
+        implemented="0=disabled, 2=Noah classic (explicit static/land bundle), 4=Noah-MP "
+        "(set use_noahmp=True) -- both GPU-operational, scan-wired",
         action="Use one of the frozen v0.6.0 land-surface options; all other land-surface options remain unsupported.",
     ),
     "ra_sw_physics": SupportedOption(
