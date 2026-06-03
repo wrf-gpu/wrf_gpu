@@ -1,0 +1,224 @@
+{
+  "proof": "v060-consolidation-integration-matrix",
+  "git_head": "eae12063c716cd62993df089a26bd6f3c8426ff2",
+  "branch": "worker/opus/v060-consolidation",
+  "base_trunk": "e998250 (trunk-0.9.0)",
+  "merged_branches": [
+    "worker/opus/v060-close (c38a3c0)",
+    "worker/opus/v060-myj (4807e28)",
+    "worker/opus/v060-wsm-sm (dec11a1)",
+    "worker/opus/v060-ysu-acm2-gpuop (44aa8df)",
+    "worker/opus/v060-gf-tiedtke-gpu (42534d8)"
+  ],
+  "kind": "Consolidation per-scheme operational/parity/fail-closed status matrix + integration-smoke result. Derived from the authoritative merged registries (physics_registry, scan_adapters, operational_mode._SCAN_WIRED_OPTIONS/_SCAN_UNWIRED_REASON) + the multicfg operational smoke (proofs/v060/multicfg_smoke_report.json). HONEST: every non-operational scheme is PARITY-PROVEN-FAIL-CLOSED (loud), never silently skipped.",
+  "per_scheme_status": {
+    "mp_physics=0": {
+      "name": "disabled/passive qv",
+      "status": "PASSIVE/OFF",
+      "detail": "n/a (no-op by design)"
+    },
+    "mp_physics=1": {
+      "name": "Kessler warm rain",
+      "status": "GPU-OPERATIONAL-WIRED",
+      "detail": "scan_adapters[1]=kessler_adapter"
+    },
+    "mp_physics=3": {
+      "name": "WSM3 simple ice",
+      "status": "GPU-OPERATIONAL-WIRED",
+      "detail": "scan_adapters[3]=wsm3_adapter"
+    },
+    "mp_physics=4": {
+      "name": "WSM5",
+      "status": "GPU-OPERATIONAL-WIRED",
+      "detail": "scan_adapters[4]=wsm5_adapter"
+    },
+    "mp_physics=6": {
+      "name": "WSM6",
+      "status": "GPU-OPERATIONAL-WIRED",
+      "detail": "scan_adapters[6]=wsm6_adapter"
+    },
+    "mp_physics=8": {
+      "name": "Thompson",
+      "status": "GPU-OPERATIONAL-WIRED",
+      "detail": "physics_couplers.thompson_adapter"
+    },
+    "mp_physics=10": {
+      "name": "Morrison two-moment",
+      "status": "GPU-OPERATIONAL-WIRED",
+      "detail": "scan_adapters[10]=morrison_adapter"
+    },
+    "mp_physics=16": {
+      "name": "WDM6",
+      "status": "GPU-OPERATIONAL-WIRED",
+      "detail": "scan_adapters[16]=wdm6_adapter"
+    },
+    "bl_pbl_physics=0": {
+      "name": "disabled",
+      "status": "PASSIVE/OFF",
+      "detail": "n/a (no-op by design)"
+    },
+    "bl_pbl_physics=1": {
+      "name": "YSU",
+      "status": "GPU-OPERATIONAL-WIRED",
+      "detail": "scan_adapters[1]=ysu_pbl_adapter"
+    },
+    "bl_pbl_physics=2": {
+      "name": "MYJ",
+      "status": "PARITY-PROVEN-FAIL-CLOSED",
+      "detail": "MYJ PBL has a WRF-savepoint column adapter, but no operational scan adapter/carry path yet"
+    },
+    "bl_pbl_physics=5": {
+      "name": "MYNN",
+      "status": "GPU-OPERATIONAL-WIRED",
+      "detail": "physics_couplers.mynn_adapter"
+    },
+    "bl_pbl_physics=7": {
+      "name": "ACM2",
+      "status": "GPU-OPERATIONAL-WIRED",
+      "detail": "scan_adapters[7]=acm2_pbl_adapter"
+    },
+    "sf_sfclay_physics=0": {
+      "name": "disabled",
+      "status": "PASSIVE/OFF",
+      "detail": "n/a (no-op by design)"
+    },
+    "sf_sfclay_physics=1": {
+      "name": "sfclayrev",
+      "status": "GPU-OPERATIONAL-WIRED",
+      "detail": "scan_adapters[1]=sfclay_revised_mm5_adapter"
+    },
+    "sf_sfclay_physics=2": {
+      "name": "Janjic Eta surface layer",
+      "status": "PARITY-PROVEN-FAIL-CLOSED",
+      "detail": "Janjic Eta surface layer has a WRF-savepoint column adapter, but no operational scan adapter/carry path yet"
+    },
+    "sf_sfclay_physics=5": {
+      "name": "MYNN surface layer",
+      "status": "GPU-OPERATIONAL-WIRED",
+      "detail": "physics_couplers.surface_adapter (MYNN-SL)"
+    },
+    "sf_sfclay_physics=7": {
+      "name": "Pleim-Xiu surface layer",
+      "status": "GPU-OPERATIONAL-WIRED",
+      "detail": "scan_adapters[7]=pleim_xiu_sfclay_adapter"
+    },
+    "cu_physics=0": {
+      "name": "disabled",
+      "status": "PASSIVE/OFF",
+      "detail": "n/a (no-op by design)"
+    },
+    "cu_physics=1": {
+      "name": "Kain-Fritsch",
+      "status": "GPU-OPERATIONAL-WIRED",
+      "detail": "scan_adapters[1]=kf_adapter"
+    },
+    "cu_physics=3": {
+      "name": "Grell-Freitas",
+      "status": "PARITY-PROVEN-FAIL-CLOSED",
+      "detail": "Grell-Freitas is a CPU-NumPy reference port (gpu_runnable=False); GPU-batching TODO (sequential 16-member closure ensemble + beta-PDF gamma)"
+    },
+    "cu_physics=6": {
+      "name": "Tiedtke",
+      "status": "GPU-OPERATIONAL-WIRED",
+      "detail": "scan_adapters[6]=tiedtke_adapter"
+    },
+    "cu_physics=16": {
+      "name": "New Tiedtke",
+      "status": "PARITY-PROVEN-FAIL-CLOSED",
+      "detail": "New Tiedtke is interface-compatible but not separately savepoint-gated by a distinct WRF source path; GPU-batching/gating TODO"
+    },
+    "sf_surface_physics=0": {
+      "name": "disabled",
+      "status": "PASSIVE/OFF",
+      "detail": "n/a (no-op by design)"
+    },
+    "sf_surface_physics=2": {
+      "name": "Noah classic",
+      "status": "GPU-OPERATIONAL-WIRED",
+      "detail": "coupling.noahclassic_surface_hook (explicit static+land bundle)"
+    },
+    "sf_surface_physics=4": {
+      "name": "Noah-MP",
+      "status": "GPU-OPERATIONAL-WIRED",
+      "detail": "coupling.noahmp_surface_hook (use_noahmp=True)"
+    },
+    "ra_sw_physics=0": {
+      "name": "off",
+      "status": "PASSIVE/OFF",
+      "detail": "n/a"
+    },
+    "ra_sw_physics=4": {
+      "name": "RRTMG SW",
+      "status": "GPU-OPERATIONAL-WIRED",
+      "detail": "held-rate RTHRATEN, scan-wired"
+    },
+    "ra_lw_physics=0": {
+      "name": "off",
+      "status": "PASSIVE/OFF",
+      "detail": "n/a"
+    },
+    "ra_lw_physics=4": {
+      "name": "RRTMG LW",
+      "status": "GPU-OPERATIONAL-WIRED",
+      "detail": "held-rate RTHRATEN, scan-wired"
+    }
+  },
+  "counts": {
+    "gpu_operational_wired": 19,
+    "parity_proven_fail_closed": 4,
+    "passive_off": 7,
+    "unknown_investigate": 0
+  },
+  "fail_closed_schemes": [
+    "bl_pbl_physics=2",
+    "sf_sfclay_physics=2",
+    "cu_physics=3",
+    "cu_physics=16"
+  ],
+  "integration_smoke": {
+    "report": "proofs/v060/multicfg_smoke_report.json",
+    "all_pass": true,
+    "n_configs": 20,
+    "n_run_configs": 17,
+    "n_run_pass": 17,
+    "n_fail_closed_configs": 3,
+    "n_fail_closed_ok": 3,
+    "scheme_coverage_run": [
+      "Nc/Nn",
+      "bl1-YSU",
+      "bl5",
+      "bl7-ACM2",
+      "cu0-none",
+      "cu1-KF",
+      "cu6-Tiedtke",
+      "land-bulk",
+      "land2-NoahClassic",
+      "land4-NoahMP",
+      "mp1-Kessler",
+      "mp10-Morrison",
+      "mp16-WDM6",
+      "mp3-WSM3",
+      "mp4-WSM5",
+      "mp6-WSM6",
+      "mp8",
+      "no-cu",
+      "sf1-revisedMM5",
+      "sf5",
+      "sf5-MYNN-sfclay",
+      "sf7-PleimXiu"
+    ],
+    "scheme_coverage_fail_closed": [
+      "bl2-MYJ",
+      "cu16-NewTiedtke",
+      "cu3-GF",
+      "sf2-Janjic"
+    ]
+  },
+  "carry_overs_post_0_9_0": [
+    "GF (cu=3): faithful GPU-batch closure-ensemble + beta-PDF gamma (~2000-LOC dedicated sprint).",
+    "New-Tiedtke (cu=16): separate WRF-source savepoint gate + GPU-batch.",
+    "MYJ (bl=2) + Janjic (sf=2): GPU-scan-wire the parity-proven CPU references.",
+    "Noah-classic (land=2) real-run static/land bundle assembly for canonical combo_2."
+  ],
+  "overall_consolidation_pass": true
+}
