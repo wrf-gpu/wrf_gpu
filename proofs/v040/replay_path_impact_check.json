@@ -1,6 +1,6 @@
 {
   "schema": "v0.4.0-replay-path-impact-2026-06-03",
-  "created_utc": "2026-06-03T14:59:21.019326+00:00",
+  "created_utc": "2026-06-03T19:05:23.442624+00:00",
   "question": "Does the periodic-LBC dry-mass bug affect the v0.1.0/v0.2.0 replay path, or is it masked by CPU-WRF lateral-boundary forcing each replay step?",
   "bc_flag_routing": {
     "idealized_no_boundary": {
@@ -155,7 +155,7 @@
   "runtime_replay_ordering": {
     "dycore_before_end_step_boundary_apply": true,
     "rk_scan_source_index": 677,
-    "apply_lateral_boundaries_source_index": 5655,
+    "apply_lateral_boundaries_source_index": 9297,
     "boundary_config_defaults": {
       "spec_zone": 1,
       "relax_zone": 4,

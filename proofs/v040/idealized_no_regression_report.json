@@ -1,13 +1,13 @@
 {
   "schema": "v0.4.0-idealized-no-regression-2026-06-03",
-  "created_utc": "2026-06-03T15:00:25.939511+00:00",
+  "created_utc": "2026-06-03T19:04:38.459236+00:00",
   "commands_run": [
     "taskset -c 0-3 env VERIFY_RUN_GPU=1 JAX_ENABLE_X64=true XLA_PYTHON_CLIENT_PREALLOCATE=false PYTHONPATH=src:. bash scripts/verify/idealized_warmbubble.sh",
     "taskset -c 0-3 env VERIFY_RUN_GPU=1 JAX_ENABLE_X64=true XLA_PYTHON_CLIENT_PREALLOCATE=false PYTHONPATH=src:. bash scripts/verify/idealized_straka.sh",
     "taskset -c 0-3 env JAX_PLATFORM_NAME=cpu JAX_ENABLE_X64=true PYTHONPATH=src:proofs/v040:. python proofs/v040/idealized_no_regression_report.py"
   ],
   "warm_bubble": {
-    "path": "/home/enric/src/wrf_gpu2/.claude/worktrees/v040-r4-saw/proofs/verify_run/row1/skamarock_bubble_diagnostics.json",
+    "path": "/home/enric/src/wrf_gpu2/.claude/worktrees/agent-a501df260e41cdd7d/proofs/verify_run/row1/skamarock_bubble_diagnostics.json",
     "verdict": "PASS",
     "status": "RAN_TO_COMPLETION",
     "checks_passed": {
@@ -28,7 +28,7 @@
     }
   },
   "density_current": {
-    "path": "/home/enric/src/wrf_gpu2/.claude/worktrees/v040-r4-saw/proofs/verify_run/row2/straka_density_current_diagnostics.json",
+    "path": "/home/enric/src/wrf_gpu2/.claude/worktrees/agent-a501df260e41cdd7d/proofs/verify_run/row2/straka_density_current_diagnostics.json",
     "verdict": "PASS",
     "status": "RAN_TO_COMPLETION",
     "checks_passed": {
