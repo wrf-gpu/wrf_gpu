@@ -58,7 +58,7 @@ def test_every_accepted_option_routes() -> None:
 
 @pytest.mark.parametrize(
     "fam,opt",
-    [("microphysics", 2), ("pbl", 3), ("surface_layer", 3), ("cumulus", 2), ("land_surface", 1)],
+    [("microphysics", 5), ("pbl", 3), ("surface_layer", 3), ("cumulus", 2), ("land_surface", 1)],
 )
 def test_fail_closed_on_out_of_matrix(fam: str, opt: int) -> None:
     with pytest.raises(UnsupportedSchemeSelection):

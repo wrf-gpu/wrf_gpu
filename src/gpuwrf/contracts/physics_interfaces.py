@@ -204,6 +204,12 @@ SCHEME_STEP_SPECS: tuple[PhysicsStepSpec, ...] = (
         "M20 physics-oracle factory savepoint at module_microphysics_driver.F:kessler",
     ),
     _mp_spec(
+        2,
+        "Purdue-Lin",
+        "src/gpuwrf/physics/microphysics_lin.py",
+        "v0.6.0 Purdue-Lin pristine-WRF savepoint parity gate at module_microphysics_driver.F:lin",
+    ),
+    _mp_spec(
         3,
         "WSM3 simple ice",
         "src/gpuwrf/physics/microphysics_wsm3.py",

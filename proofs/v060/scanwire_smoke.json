@@ -6,6 +6,7 @@
   "scan_wired": {
     "microphysics_gpu_scan": [
       1,
+      2,
       6,
       10,
       16,
@@ -30,6 +31,18 @@
       "column_water_before": 5.532928537902862,
       "column_water_after": 5.531980610803103,
       "column_water_rel_change": 0.00017132465985509788,
+      "conservation_ok": true,
+      "pass": true
+    },
+    {
+      "scheme": "Purdue-Lin (mp=2)",
+      "kind": "microphysics",
+      "steps": 3,
+      "executed_in_scan_adapter": true,
+      "finite_no_nan": true,
+      "column_water_before": 5.532928537902862,
+      "column_water_after": 5.531920825838117,
+      "column_water_rel_change": 0.00018212996207003844,
       "conservation_ok": true,
       "pass": true
     },
@@ -110,6 +123,7 @@
   ],
   "fail_closed": {
     "wired_combos_accepted": [
+      true,
       true,
       true,
       true,

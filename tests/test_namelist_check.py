@@ -41,22 +41,22 @@ def test_unsupported_selected_option_raises_actionable_error() -> None:
         validate_supported_namelist(
             {
                 "physics": {
-                    "mp_physics": [8, 2],
+                    "mp_physics": [8, 5],
                     "cu_physics": [2, 0],
                 },
             }
         )
 
     message = str(excinfo.value)
-    assert "physics.mp_physics domain 2 selected 2" in message
-    assert "supported values: 0, 1, 3, 4, 6, 8, 10, 16" in message
+    assert "physics.mp_physics domain 2 selected 5" in message
+    assert "supported values: 0, 1, 2, 3, 4, 6, 8, 10, 16" in message
     assert "physics.cu_physics domain 1 selected 2" in message
     assert "1=Kain-Fritsch" in message
     assert "Action:" in message
 
 
 def test_registry_records_supported_active_suite() -> None:
-    assert SUPPORTED_OPTIONS["mp_physics"].supported_values == frozenset({0, 1, 3, 4, 6, 8, 10, 16})
+    assert SUPPORTED_OPTIONS["mp_physics"].supported_values == frozenset({0, 1, 2, 3, 4, 6, 8, 10, 16})
     assert SUPPORTED_OPTIONS["bl_pbl_physics"].supported_values == frozenset({0, 1, 2, 5, 7})
     assert SUPPORTED_OPTIONS["sf_sfclay_physics"].supported_values == frozenset({0, 1, 2, 5, 7})
     assert SUPPORTED_OPTIONS["sf_surface_physics"].supported_values == frozenset({0, 2, 4})

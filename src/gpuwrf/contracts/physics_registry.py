@@ -11,6 +11,8 @@ WRF Registry lines verified against
 2026-06-02:
 
 * Kessler(1): ``moist:qv,qc,qr``.
+* Purdue-Lin(2): ``moist:qv,qc,qr,qi,qs,qg`` (single-moment, no scalar number
+  species; graupel via F_QG=.true.).
 * WSM3(3): ``moist:qv,qc,qr;state:re_cloud,re_ice,re_snow``.
 * WSM5(4): ``moist:qv,qc,qr,qi,qs;state:re_cloud,re_ice,re_snow``.
 * WSM6(6): ``moist:qv,qc,qr,qi,qs,qg;state:re_cloud,re_ice,re_snow``.
@@ -53,7 +55,7 @@ class SchemeOption:
     owner_family: str
 
 
-ACCEPTED_MP_PHYSICS: tuple[int, ...] = (0, 1, 3, 4, 6, 8, 10, 16)
+ACCEPTED_MP_PHYSICS: tuple[int, ...] = (0, 1, 2, 3, 4, 6, 8, 10, 16)
 ACCEPTED_BL_PBL_PHYSICS: tuple[int, ...] = (0, 1, 2, 5, 7)
 ACCEPTED_SF_SFCLAY_PHYSICS: tuple[int, ...] = (0, 1, 2, 5, 7)
 ACCEPTED_CU_PHYSICS: tuple[int, ...] = (0, 1, 3, 6, 16)
@@ -74,6 +76,7 @@ ACCEPTED_NAMELIST_OPTIONS: Mapping[str, tuple[int, ...]] = {
 MP_SCHEMES: Mapping[int, SchemeOption] = {
     0: SchemeOption("mp_physics", 0, "disabled/passive qv", "passiveqv", "accepted", "microphysics"),
     1: SchemeOption("mp_physics", 1, "Kessler warm rain", "kesslerscheme", "accepted", "microphysics"),
+    2: SchemeOption("mp_physics", 2, "Purdue-Lin", "linscheme", "accepted", "microphysics"),
     3: SchemeOption("mp_physics", 3, "WSM3 simple ice", "wsm3scheme", "accepted", "microphysics"),
     4: SchemeOption("mp_physics", 4, "WSM5", "wsm5scheme", "accepted", "microphysics"),
     6: SchemeOption("mp_physics", 6, "WSM6", "wsm6scheme", "accepted", "microphysics"),
@@ -135,6 +138,7 @@ MOIST_WRFOUT_NAME: Mapping[str, str] = {
 MP_MOIST_MEMBERS: Mapping[int, tuple[str, ...]] = {
     0: ("qv",),
     1: ("qv", "qc", "qr"),
+    2: ("qv", "qc", "qr", "qi", "qs", "qg"),
     3: ("qv", "qc", "qr"),
     4: ("qv", "qc", "qr", "qi", "qs"),
     6: ("qv", "qc", "qr", "qi", "qs", "qg"),
@@ -171,6 +175,7 @@ NUMBER_WRFOUT_NAME: Mapping[str, str] = {
 MP_NUMBER_MEMBERS: Mapping[int, tuple[str, ...]] = {
     0: (),
     1: (),
+    2: (),
     3: (),
     4: (),
     6: (),
