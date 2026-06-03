@@ -8,10 +8,11 @@ CPU-only, fp64. Run:
 import json
 import os
 import sys
+from pathlib import Path
 
 import numpy as np
 
-ROOT = "/home/enric/src/wrf_gpu2/.claude/worktrees/agent-afd276c1c17aa32e5"
+ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, os.path.join(ROOT, "src"))
 
 import jax  # noqa: E402

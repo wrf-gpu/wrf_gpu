@@ -3,6 +3,7 @@
 # CPU-only. Requires the wrfbuild conda gfortran.
 set -e
 cd "$(dirname "$0")"
+python ../emit_flat.py
 PHYS=/home/enric/src/wrf_pristine/WRF/phys
 SHARE=/home/enric/src/wrf_pristine/WRF/share
 GF=/home/enric/miniconda3/envs/wrfbuild/bin/gfortran

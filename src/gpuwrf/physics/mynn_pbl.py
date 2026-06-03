@@ -460,13 +460,26 @@ def _mym_predict_qke(state: MynnPBLColumnState, qke, turb, dt, ustar, flux):
     return qke_new, qwt, qdiss, pdk
 
 
-def _diffusion_solve_with_surface(x, diffusivity, state, dt, bottom_rhs, bottom_drag=0.0):
+def _apply_s_aw_stability_floor(kdz, s_aw):
+    """WRF MYNN-EDMF stability floor on interface K*dz arrays."""
+
+    kdz_int = jnp.maximum(
+        jnp.maximum(kdz[..., 1:-1], 0.5 * s_aw[..., 1:-1]),
+        -0.5 * (s_aw[..., 1:-1] - s_aw[..., 2:]),
+    )
+    return jnp.concatenate((kdz[..., :1], kdz_int, kdz[..., -1:]), axis=-1)
+
+
+def _diffusion_solve_with_surface(x, diffusivity, state, dt, bottom_rhs, bottom_drag=0.0,
+                                  s_aw_floor=None):
     """WRF `mynn_tendencies` tridiagonal coefficients for one dry scalar."""
 
     dz = state.dz
     dtz = dt / dz
     rhoinv = 1.0 / jnp.maximum(state.rho, 1.0e-4)
     kdz = _rho_interfaces(state, diffusivity)
+    if s_aw_floor is not None:
+        kdz = _apply_s_aw_stability_floor(kdz, s_aw_floor)
     bottom_drag = jnp.zeros_like(bottom_rhs) + bottom_drag
     lower0 = -dtz[..., :1] * kdz[..., :1] * rhoinv[..., :1]
     diag0 = 1.0 + dtz[..., :1] * (kdz[..., 1:2] + kdz[..., :1] + bottom_drag[..., None]) * rhoinv[..., :1]
@@ -507,11 +520,7 @@ def _diffusion_solve_with_mf(x, diffusivity, state, dt, bottom_rhs, s_aw, s_awx,
     # WRF stability floor on khdz from the mass flux (lines 3990-3997), sd_aw=0:
     #   khdz(k) = max(khdz(k), 0.5*s_aw(k)); max(khdz(k), -0.5*(s_aw(k)-s_aw(k+1)))
     # for k=kts+1..kte-1. kdz here is indexed as interface k (0..nz). s_aw index k.
-    kdz_int = jnp.maximum(
-        jnp.maximum(kdz[..., 1:-1], 0.5 * s_aw[..., 1:-1]),
-        -0.5 * (s_aw[..., 1:-1] - s_aw[..., 2:]),
-    )
-    kdz = jnp.concatenate((kdz[..., :1], kdz_int, kdz[..., -1:]), axis=-1)
+    kdz = _apply_s_aw_stability_floor(kdz, s_aw)
 
     bottom_drag = jnp.zeros_like(bottom_rhs) + bottom_drag
 
@@ -551,16 +560,23 @@ def _apply_mean_tendencies(state: MynnPBLColumnState, turb, dt, flux, wind, rhos
     """Applies WRF-style U/V/theta/qv implicit tendency solves.
 
     When ``mf`` (the MYNN-EDMF solver arrays from :func:`mynn_edmf.dmp_mf_columns`)
-    is provided, the theta(thl) and qv scalar solves include the mass-flux
-    nonlocal transport (``s_aw``/``s_awthl``/``s_awqv``). Momentum keeps the pure-ED
-    solve because the operational config sets ``bl_mynn_edmf_mom=0``.
+    is provided, theta(thl) and qv include the mass-flux nonlocal transport
+    (``s_aw``/``s_awthl``/``s_awqv``). Momentum keeps ``s_awu``/``s_awv`` mass-flux
+    transport off for ``bl_mynn_edmf_mom=0``, but WRF still applies the
+    ``s_aw`` stability floor to ``kmdz`` before the U/V implicit solve
+    (``module_bl_mynnedmf.F:3990-3997``).
     """
 
     rhoinv0 = 1.0 / jnp.maximum(state.rho[..., 0], 1.0e-4)
     dtz0 = dt / state.dz[..., 0]
     bottom_drag = rhosfc * flux.ustar * flux.ustar / wind
-    u = _diffusion_solve_with_surface(state.u, turb["dfm"], state, dt, jnp.zeros_like(wind), bottom_drag)
-    v = _diffusion_solve_with_surface(state.v, turb["dfm"], state, dt, jnp.zeros_like(wind), bottom_drag)
+    s_aw_floor = None if mf is None else mf["s_aw"]
+    u = _diffusion_solve_with_surface(
+        state.u, turb["dfm"], state, dt, jnp.zeros_like(wind), bottom_drag,
+        s_aw_floor=s_aw_floor)
+    v = _diffusion_solve_with_surface(
+        state.v, turb["dfm"], state, dt, jnp.zeros_like(wind), bottom_drag,
+        s_aw_floor=s_aw_floor)
     theta_rhs = dtz0 * rhosfc * flux.theta_flux * rhoinv0
     qv_flux = jnp.maximum(flux.qv_flux, jnp.minimum(0.9 * state.qv[..., 0] - 1.0e-8, 0.0) / jnp.maximum(dtz0, 1.0e-12))
     qv_rhs = dtz0 * rhosfc * qv_flux * rhoinv0

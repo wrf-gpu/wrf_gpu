@@ -45,6 +45,7 @@ program mynn_edmf_oracle
   real(kind_phys), dimension(NZMAX+1) :: sd_awqnifa,sd_awu,sd_awv
   real(kind_phys), dimension(NZMAX) :: sub_thl,sub_sqv,sub_u,sub_v
   real(kind_phys), dimension(NZMAX) :: det_thl,det_sqv,det_sqc,det_u,det_v
+  real(kind_phys), dimension(NZMAX+1) :: kmdz_eff
 
   ! edmf updraft outputs
   real(kind_phys), dimension(NZMAX) :: edmf_a,edmf_w,edmf_qt,edmf_thl,edmf_ent,edmf_qc
@@ -219,6 +220,8 @@ contains
        bl_mynn_edmf = 0
     end if
 
+    call calc_kmdz_eff(kmdz_eff)
+
     ! REAL WRF mynn_tendencies
     call mynn_tendencies(kts,kte,1, delt,dz,zw,xland,rho, &
          u,v,th,tk,qv,qc,qi,qs,qnc,qni, psfc,p,exner, &
@@ -247,8 +250,11 @@ contains
     call wr_arr(u_out, trim(tag)//'_det_sqv',  det_sqv, kte)
     call wr_arr(u_out, trim(tag)//'_dfh',      dfh,     kte)
     call wr_arr(u_out, trim(tag)//'_dfm',      dfm,     kte)
+    call wr_arr(u_out, trim(tag)//'_kmdz_eff', kmdz_eff, kte+1)
     call wr_arr(u_out, trim(tag)//'_edmf_a',   edmf_a,  kte)
     call wr_arr(u_out, trim(tag)//'_edmf_w',   edmf_w,  kte)
+    call wr_arr(u_out, trim(tag)//'_Du',       Du,      kte)
+    call wr_arr(u_out, trim(tag)//'_Dv',       Dv,      kte)
     call wr_arr(u_out, trim(tag)//'_Dqv',      Dqv,     kte)
     call wr_arr(u_out, trim(tag)//'_Dth',      Dth,     kte)
     call wr_arr(u_out, trim(tag)//'_sqv_post', sqv,     kte)  ! sqv updated by tendencies? no -- sqv is inout but tendencies returns Dqv; sqv unchanged for mixqt=0 path except thl. dump anyway
@@ -256,6 +262,28 @@ contains
     write(u_out,'(A,ES16.8)') trim(tag)//'_maxmf=', maxmf
     write(u_out,'(A,ES16.8)') trim(tag)//'_ztop_plume=', ztop_plume
   end subroutine run_once
+
+  subroutine calc_kmdz_eff(out)
+    real(kind_phys), intent(out) :: out(:)
+    real(kind_phys), dimension(NZMAX+1) :: rhoz_local
+    integer :: kk
+
+    rhoz_local(kts) = rho(kts)
+    out(kts) = rhoz_local(kts)*dfm(kts)
+    do kk = kts+1, kte
+       rhoz_local(kk) = (rho(kk)*dz(kk-1) + rho(kk-1)*dz(kk))/(dz(kk-1)+dz(kk))
+       rhoz_local(kk) = max(rhoz_local(kk), 1.0E-4_kind_phys)
+       out(kk) = rhoz_local(kk)*dfm(kk)
+    end do
+    rhoz_local(kte+1) = rhoz_local(kte)
+    out(kte+1) = rhoz_local(kte+1)*dfm(kte)
+
+    do kk = kts+1, kte-1
+       out(kk) = max(out(kk), 0.5_kind_phys*(s_aw(kk)+sd_aw(kk)))
+       out(kk) = max(out(kk), -0.5_kind_phys*(s_aw(kk)-s_aw(kk+1)) &
+                            -0.5_kind_phys*(sd_aw(kk)-sd_aw(kk+1)))
+    end do
+  end subroutine calc_kmdz_eff
 
   subroutine kh_profile(z, pblh, ust, kh)
     real(kind_phys), intent(in) :: z, pblh, ust
