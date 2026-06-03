@@ -64,4 +64,45 @@ def test_grell_freitas_parity_report_schema_when_savepoints_exist():
         "scale_aware_coarse_15km",
         "scale_aware_fine_3km",
     }
-    assert report["verdict"] in {"PASS", "FAIL"}
+    # The faithful cup_gf / cup_gf_sh port must reproduce the WRF-module
+    # savepoints to within the predeclared tolerances across all 5 regimes.
+    assert report["verdict"] == "PASS", report["failures"]
+
+
+def test_grell_freitas_faithful_column_matches_oracle():
+    """Direct per-field check: faithful column vs WRF-module savepoints."""
+    from gpuwrf.physics.cumulus_grell_freitas import grell_freitas_column
+
+    for case_id in (1, 2, 3, 4, 5):
+        save = Path(f"proofs/v060/savepoints/gf_case_{case_id}.json")
+        if not save.exists():
+            return
+        data = json.loads(save.read_text())
+        s = data["scalars"]
+        c = data["columns"]
+        out = grell_freitas_column(
+            np.asarray(c["T"]), np.asarray(c["QV"]), np.asarray(c["P"]),
+            np.asarray(c["DZ"]), np.asarray(c["RHO"]), np.asarray(c["W"]),
+            dt=float(s["DT"]), dx=float(s["DX"]),
+            pi_exner=np.asarray(c["PI"]), u=np.asarray(c["U"]),
+            v=np.asarray(c["V"]), rthblten=np.asarray(c["RTHBLTEN"]),
+            rqvblten=np.asarray(c["RQVBLTEN"]), kpbl=int(s["KPBL"]),
+            hfx=float(s["HFX"]), qfx=float(s["QFX"]), xland=float(s["XLAND"]),
+        )
+        # RAINCV within 5% (abs floor 1e-4)
+        rc_o = float(s["RAINCV"])
+        rc_j = float(out["RAINCV"])
+        assert abs(rc_j - rc_o) <= max(1.0e-4, 0.05 * abs(rc_o)), (case_id, rc_j, rc_o)
+        # tendency fields within 5% relative (abs floor 1e-8)
+        for fld in ("RTHCUTEN", "RQVCUTEN", "RQCCUTEN", "RQICUTEN"):
+            oracle = np.asarray(c[fld], dtype=np.float64)
+            jax = np.asarray(out[fld], dtype=np.float64)
+            max_abs = float(np.max(np.abs(jax - oracle)))
+            scale = max(float(np.max(np.abs(oracle))), 1.0e-8)
+            assert (max_abs / scale <= 0.05) or (max_abs <= 1.0e-8), (
+                case_id, fld, max_abs, scale)
+        # categorical trigger match
+        deep_o = int(s["KTOP_DEEP"]) > 0 and float(s["RAINCV"]) > 0.0
+        assert bool(out["TRIGGER_DEEP"]) == deep_o, (case_id, "deep")
+        shallow_o = float(s["XMB_SHALLOW"]) > 0.0 or int(s["KTOP_SHALLOW"]) > 0
+        assert bool(out["TRIGGER_SHALLOW"]) == shallow_o, (case_id, "shallow")
