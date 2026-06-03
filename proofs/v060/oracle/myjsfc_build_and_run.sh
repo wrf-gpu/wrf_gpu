@@ -10,35 +10,51 @@ HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 WRF="/home/enric/src/wrf_pristine/WRF"
 WRF_PHYS="${WRF}/phys"
 WRF_SHARE="${WRF}/share"
-OUT_SAVE="${HERE}/../savepoints"
-BUILD_DIR="${HERE}/build_myjsfc"
 
 source /home/enric/miniconda3/etc/profile.d/conda.sh
 conda activate wrfbuild
 export OMP_NUM_THREADS=2
 set -e
 
-rm -rf "${BUILD_DIR}"
-mkdir -p "${BUILD_DIR}" "${OUT_SAVE}"
+build_one() {
+  local mode="$1"
+  local extra_flags="$2"
+  local out_save="$3"
+  local build_dir="${HERE}/build_myjsfc_${mode}"
 
-cp "${WRF_SHARE}/module_model_constants.F" "${BUILD_DIR}/module_model_constants.F"
-cp "${WRF_PHYS}/module_sf_myjsfc.F" "${BUILD_DIR}/module_sf_myjsfc.F"
-cp "${HERE}/myjsfc_oracle_driver.f90" "${BUILD_DIR}/myjsfc_oracle_driver.f90"
+  rm -rf "${build_dir}"
+  mkdir -p "${build_dir}" "${out_save}"
 
-( cd "${BUILD_DIR}" && sha256sum module_model_constants.F module_sf_myjsfc.F \
-    > "${OUT_SAVE}/myjsfc_wrf_source_checksums.txt" )
+  cp "${WRF_SHARE}/module_model_constants.F" "${build_dir}/module_model_constants.F"
+  cp "${WRF_PHYS}/module_sf_myjsfc.F" "${build_dir}/module_sf_myjsfc.F"
+  cp "${HERE}/myjsfc_oracle_driver.f90" "${build_dir}/myjsfc_oracle_driver.f90"
 
-cd "${BUILD_DIR}"
-# No DM_PARALLEL / NMM_CORE macros: serial single-column ARW-core path.
-FFLAGS="-O2 -ffree-form -ffree-line-length-none -cpp -ffpe-summary=none"
-taskset -c 0-3 gfortran ${FFLAGS} -c module_model_constants.F
-taskset -c 0-3 gfortran ${FFLAGS} -c module_sf_myjsfc.F
-taskset -c 0-3 gfortran ${FFLAGS} -c myjsfc_oracle_driver.f90
-taskset -c 0-3 gfortran ${FFLAGS} -o myjsfc_oracle \
-    module_model_constants.o module_sf_myjsfc.o myjsfc_oracle_driver.o
+  ( cd "${build_dir}" && sha256sum module_model_constants.F module_sf_myjsfc.F \
+      > "${out_save}/myjsfc_wrf_source_checksums.txt" )
 
-for c in 1 2 3 4 5 6; do
-  taskset -c 0-3 ./myjsfc_oracle "$c" > "case_${c}.txt"
-  python3 "${HERE}/myjsfc_dump_to_json.py" "case_${c}.txt" "${OUT_SAVE}/myjsfc_case_${c}.json"
-done
-echo "OK: MYJ surface-layer oracle built and 6 savepoints written to ${OUT_SAVE}"
+  cd "${build_dir}"
+  # No DM_PARALLEL / NMM_CORE macros: serial single-column ARW-core path.
+  local fflags="-O2 -ffree-form -ffree-line-length-none -cpp -ffpe-summary=none ${extra_flags}"
+  taskset -c 0-3 gfortran ${fflags} -c module_model_constants.F
+  taskset -c 0-3 gfortran ${fflags} -c module_sf_myjsfc.F
+  taskset -c 0-3 gfortran ${fflags} -c myjsfc_oracle_driver.f90
+  taskset -c 0-3 gfortran ${fflags} -o myjsfc_oracle \
+      module_model_constants.o module_sf_myjsfc.o myjsfc_oracle_driver.o
+  {
+    echo "mode=${mode}"
+    echo "full_wrf_exe=false"
+    echo "wrf_source=${WRF_SHARE}/module_model_constants.F"
+    echo "wrf_source=${WRF_PHYS}/module_sf_myjsfc.F"
+    echo "compiler=$(gfortran --version | head -n 1)"
+    echo "fflags=${fflags}"
+  } > "${out_save}/myjsfc_build_manifest.txt"
+
+  for c in 1 2 3 4 5 6; do
+    taskset -c 0-3 ./myjsfc_oracle "$c" > "case_${c}.txt"
+    python3 "${HERE}/myjsfc_dump_to_json.py" "case_${c}.txt" "${out_save}/myjsfc_case_${c}.json"
+  done
+}
+
+build_one fp32 "" "${HERE}/../savepoints"
+build_one fp64 "-fdefault-real-8 -fdefault-double-8" "${HERE}/../savepoints_fp64"
+echo "OK: MYJ surface-layer oracle built and savepoints written under ${HERE}/.."

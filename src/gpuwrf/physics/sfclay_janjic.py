@@ -19,6 +19,10 @@ operational loop calls the scheme after step 1.
 from __future__ import annotations
 
 import jax
+from jax import config
+
+config.update("jax_enable_x64", True)
+
 import jax.numpy as jnp
 import numpy as np
 
@@ -222,7 +226,10 @@ def _sfcdif_column(
         rlogu = jnp.where(is_sea, rlogu_s, rlogu_l)
         rlogt = jnp.where(is_sea, rlogt_s, rlogt_l)
         zslu = zsl + zu
-        zslt = zsl + zt
+        # WRF's land branch has u,v,t at the same nominal level for the
+        # similarity lookup: ZSLT=ZSL+ZU, even though the land thermal roughness
+        # length ZT is Zilitinkevich-adjusted.
+        zslt = jnp.where(is_sea, zsl + zt, zslt_l)
 
         rlmo = elfc * akhs * dthv / ustar ** 3
         zetalu = jnp.clip(zslu * rlmo, ztmin, ztmax)
@@ -427,6 +434,7 @@ def myjsfc_column(
     out["q10"] = q10
     out["q02"] = qshltr / (1.0 - qshltr)        # specific humidity -> mixing ratio
     out["t02"] = out["th02"] * apesfc
+    out["pblh"] = pblh
     return out
 
 
@@ -478,7 +486,7 @@ def step_janjic_sfclay_column(
         },
         diagnostics={
             "HFX": out["hfx"], "QFX": out["qfx"], "LH": out["flx_lh"],
-            "T2": out["th02"] * (f(psfc) / C.P1000MB) ** C.CAPA, "TH2": out["th02"],
+            "T2": out["t02"], "TH2": out["th02"],
             "Q2": out["q02"], "U10": out["u10"], "V10": out["v10"],
             "ZNT": out["znt"], "UST": out["ustar"],
         },
@@ -493,7 +501,7 @@ def step_janjic_sfclay_column(
             "FLHC": out["flhc"], "FLQC": out["flqc"], "QGH": out["qgh"],
             "CPM": out["cpm"], "QSFC": out["qsfc"], "THZ0": out["thz0"],
             "QZ0": out["qz0"], "UZ0": out["uz0"], "VZ0": out["vz0"],
-            "U10": out["u10"], "V10": out["v10"], "T02": out["th02"],
+            "PBLH": out["pblh"], "U10": out["u10"], "V10": out["v10"], "T02": out["t02"],
             "TH02": out["th02"], "TSHLTR": out["tshltr"], "TH10": out["th10"],
             "Q02": out["q02"], "QSHLTR": out["qshltr"], "Q10": out["q10"],
             "PSHLTR": out["pshltr"], "U10E": out["u10e"], "V10E": out["v10e"],
