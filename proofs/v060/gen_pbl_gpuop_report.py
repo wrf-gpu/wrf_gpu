@@ -36,9 +36,12 @@ def run() -> dict:
     ysu = _load("ysu_savepoint_parity_report.json")
     acm2 = _load("acm2_savepoint_parity_report.json")
     smoke = _load("pbl_gpuop_smoke.json")
+    trace = _load("pbl_trace_vs_host.json")
 
     parity_ok = ysu["verdict"] == "PASS" and acm2["verdict"] == "PASS"
     smoke_ok = bool(smoke["all_pass"])
+    trace_ok = bool(trace["all_pass"])
+    trace_worst_abs = max(trace["ysu"]["worst_abs"], trace["acm2"]["worst_abs"])
 
     return {
         "proof": "v060-pbl-gpuop",
@@ -71,12 +74,18 @@ def run() -> dict:
             "ysu_cases_pass": [c["pass"] for c in ysu["cases"]],
             "acm2_cases_pass": [c["pass"] for c in acm2["cases"]],
             "predeclared_tolerances_unchanged": True,
-            "trace_vs_host_numpy_max_abs": 1.9e-15,
+            "trace_vs_host_numpy_max_abs": trace_worst_abs,
+            "trace_vs_host_ysu_worst_abs": trace["ysu"]["worst_abs"],
+            "trace_vs_host_acm2_worst_abs": trace["acm2"]["worst_abs"],
+            "trace_vs_host_proof": "proofs/v060/pbl_trace_vs_host.json (regenerated this run)",
+            "trace_vs_host_verdict": "PASS" if trace_ok else "FAIL",
             "note": "Same predeclared tolerances as the pre-rewrite host-NumPy lane "
                     "(tests/test_v060_pbl_{ysu,acm2}.py). The traceable rewrite "
-                    "reproduces the prior host-NumPy result to ~1e-15 on all 6 cases "
-                    "each (verified separately), so traceable == prior-host == WRF.",
-            "pass": parity_ok,
+                    f"reproduces the host-NumPy reference to {trace_worst_abs:.2e} max-abs "
+                    "across all 6 cases each (proofs/v060/pbl_trace_vs_host.py runs BOTH "
+                    "paths on identical savepoint inputs; kpbl + acm2 noconv match exactly), "
+                    "so traceable == host-NumPy == WRF. No clamp/mask/loosened tol.",
+            "pass": bool(parity_ok and trace_ok),
         },
         "scan_wire": {
             "operational_slot": "runtime.operational_mode._physics_boundary_step_with_"
@@ -113,7 +122,7 @@ def run() -> dict:
             "grell_freitas_cu3": "CPU-NumPy reference port; GPU-batch TODO (separate)",
             "tiedtke_cu6_cu16": "CPU-NumPy reference port; GPU-batch TODO (separate)",
         },
-        "all_pass": bool(parity_ok and smoke_ok),
+        "all_pass": bool(parity_ok and smoke_ok and trace_ok),
     }
 
 

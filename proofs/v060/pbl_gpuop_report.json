@@ -15,10 +15,14 @@
       true
     ],
     "acm2_verdict": "PASS",
-    "note": "Same predeclared tolerances as the pre-rewrite host-NumPy lane (tests/test_v060_pbl_{ysu,acm2}.py). The traceable rewrite reproduces the prior host-NumPy result to ~1e-15 on all 6 cases each (verified separately), so traceable == prior-host == WRF.",
+    "note": "Same predeclared tolerances as the pre-rewrite host-NumPy lane (tests/test_v060_pbl_{ysu,acm2}.py). The traceable rewrite reproduces the host-NumPy reference to 1.89e-15 max-abs across all 6 cases each (proofs/v060/pbl_trace_vs_host.py runs BOTH paths on identical savepoint inputs; kpbl + acm2 noconv match exactly), so traceable == host-NumPy == WRF. No clamp/mask/loosened tol.",
     "pass": true,
     "predeclared_tolerances_unchanged": true,
-    "trace_vs_host_numpy_max_abs": 1.9e-15,
+    "trace_vs_host_acm2_worst_abs": 1.894805926744292e-15,
+    "trace_vs_host_numpy_max_abs": 1.894805926744292e-15,
+    "trace_vs_host_proof": "proofs/v060/pbl_trace_vs_host.json (regenerated this run)",
+    "trace_vs_host_verdict": "PASS",
+    "trace_vs_host_ysu_worst_abs": 1.485356976305141e-17,
     "ysu_cases_pass": [
       true,
       true,
