@@ -1,0 +1,5 @@
+mode=fp64
+full_wrf_exe=false
+wrf_source=/home/enric/src/wrf_pristine/WRF/phys/module_mp_kessler.F
+compiler=GNU Fortran (conda-forge gcc 14.3.0-19) 14.3.0
+fflags=-O2 -cpp -ffree-form -ffree-line-length-none -ffpe-summary=none -fdefault-real-8
