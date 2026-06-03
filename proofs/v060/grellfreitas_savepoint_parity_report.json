@@ -1,0 +1,466 @@
+{
+  "cases": [
+    {
+      "case": 1,
+      "categorical": {
+        "jax": {
+          "any": true,
+          "deep": true,
+          "shallow": true
+        },
+        "oracle": {
+          "any": true,
+          "deep": true,
+          "shallow": true
+        },
+        "pass": true
+      },
+      "fields": {
+        "RQCCUTEN": {
+          "max_abs": 8.914571416867758e-13,
+          "max_rel": 9.817514107910863e-06,
+          "pass": true
+        },
+        "RQICUTEN": {
+          "max_abs": 8.718386708094143e-13,
+          "max_rel": 4.556513881235435e-06,
+          "pass": true
+        },
+        "RQVCUTEN": {
+          "max_abs": 4.0510909934476975e-11,
+          "max_rel": 9.089142270135744e-05,
+          "pass": true
+        },
+        "RTHCUTEN": {
+          "max_abs": 4.458504503004196e-08,
+          "max_rel": 1.8069873501816136e-05,
+          "pass": true
+        }
+      },
+      "ktop_deep": {
+        "jax": 26,
+        "oracle": 26,
+        "pass": true
+      },
+      "qv_sink_mm": 0.054629903658794964,
+      "raincv": {
+        "jax": 0.04250855506027182,
+        "max_abs": 1.1413728753795205e-07,
+        "max_rel": 2.6850355396330605e-06,
+        "oracle": 0.04250866919755936,
+        "pass": true,
+        "tolerance_abs": 0.0001,
+        "tolerance_rel": 0.05
+      },
+      "regime": "deep_convective",
+      "scale_factor": 0.467017769579699,
+      "scale_normalized": 1.0,
+      "shallow": {
+        "levels": {
+          "K22_SHALLOW": {
+            "jax": 2,
+            "oracle": 2,
+            "pass": true
+          },
+          "KBCON_SHALLOW": {
+            "jax": 3,
+            "oracle": 3,
+            "pass": true
+          },
+          "KTOP_SHALLOW": {
+            "jax": 8,
+            "oracle": 8,
+            "pass": true
+          }
+        },
+        "xmb": {
+          "jax": 0.037721683712212024,
+          "max_abs": 4.796801599087075e-06,
+          "max_rel": 0.00012714680865422991,
+          "oracle": 0.03772648051381111,
+          "pass": true,
+          "tolerance_abs": 1e-05,
+          "tolerance_rel": 0.05
+        }
+      }
+    },
+    {
+      "case": 2,
+      "categorical": {
+        "jax": {
+          "any": true,
+          "deep": false,
+          "shallow": true
+        },
+        "oracle": {
+          "any": true,
+          "deep": false,
+          "shallow": true
+        },
+        "pass": true
+      },
+      "fields": {
+        "RQCCUTEN": {
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "pass": true
+        },
+        "RQICUTEN": {
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "pass": true
+        },
+        "RQVCUTEN": {
+          "max_abs": 1.4434213196050792e-11,
+          "max_rel": 0.0001706465516193604,
+          "pass": true
+        },
+        "RTHCUTEN": {
+          "max_abs": 2.962310911385941e-09,
+          "max_rel": 0.001515053475197743,
+          "pass": true
+        }
+      },
+      "ktop_deep": {
+        "jax": 0,
+        "oracle": 0,
+        "pass": true
+      },
+      "qv_sink_mm": -7.552684289725519e-05,
+      "raincv": {
+        "jax": 0.0,
+        "max_abs": 0.0,
+        "max_rel": 0.0,
+        "oracle": 0.0,
+        "pass": true,
+        "tolerance_abs": 0.0001,
+        "tolerance_rel": 0.05
+      },
+      "regime": "shallow_convective",
+      "scale_factor": 0.467017769579699,
+      "scale_normalized": 1.0,
+      "shallow": {
+        "levels": {
+          "K22_SHALLOW": {
+            "jax": 2,
+            "oracle": 2,
+            "pass": true
+          },
+          "KBCON_SHALLOW": {
+            "jax": 3,
+            "oracle": 3,
+            "pass": true
+          },
+          "KTOP_SHALLOW": {
+            "jax": 4,
+            "oracle": 4,
+            "pass": true
+          }
+        },
+        "xmb": {
+          "jax": 0.03683206732243156,
+          "max_abs": 6.371039451606719e-06,
+          "max_rel": 0.00017294542697550533,
+          "oracle": 0.03683843836188316,
+          "pass": true,
+          "tolerance_abs": 1e-05,
+          "tolerance_rel": 0.05
+        }
+      }
+    },
+    {
+      "case": 3,
+      "categorical": {
+        "jax": {
+          "any": false,
+          "deep": false,
+          "shallow": false
+        },
+        "oracle": {
+          "any": false,
+          "deep": false,
+          "shallow": false
+        },
+        "pass": true
+      },
+      "fields": {
+        "RQCCUTEN": {
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "pass": true
+        },
+        "RQICUTEN": {
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "pass": true
+        },
+        "RQVCUTEN": {
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "pass": true
+        },
+        "RTHCUTEN": {
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "pass": true
+        }
+      },
+      "ktop_deep": {
+        "jax": 0,
+        "oracle": 0,
+        "pass": true
+      },
+      "qv_sink_mm": -0.0,
+      "raincv": {
+        "jax": 0.0,
+        "max_abs": 0.0,
+        "max_rel": 0.0,
+        "oracle": 0.0,
+        "pass": true,
+        "tolerance_abs": 0.0001,
+        "tolerance_rel": 0.05
+      },
+      "regime": "stable_nontriggering",
+      "scale_factor": 0.467017769579699,
+      "scale_normalized": 1.0,
+      "shallow": {
+        "levels": {
+          "K22_SHALLOW": {
+            "jax": 0,
+            "oracle": 0,
+            "pass": true
+          },
+          "KBCON_SHALLOW": {
+            "jax": 0,
+            "oracle": 0,
+            "pass": true
+          },
+          "KTOP_SHALLOW": {
+            "jax": 0,
+            "oracle": 0,
+            "pass": true
+          }
+        },
+        "xmb": {
+          "jax": 0.0,
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "oracle": 0.0,
+          "pass": true,
+          "tolerance_abs": 1e-05,
+          "tolerance_rel": 0.05
+        }
+      }
+    },
+    {
+      "case": 4,
+      "categorical": {
+        "jax": {
+          "any": true,
+          "deep": true,
+          "shallow": true
+        },
+        "oracle": {
+          "any": true,
+          "deep": true,
+          "shallow": true
+        },
+        "pass": true
+      },
+      "fields": {
+        "RQCCUTEN": {
+          "max_abs": 3.5285334562676425e-12,
+          "max_rel": 3.884644710540575e-05,
+          "pass": true
+        },
+        "RQICUTEN": {
+          "max_abs": 7.144120439403913e-12,
+          "max_rel": 3.732512546263272e-05,
+          "pass": true
+        },
+        "RQVCUTEN": {
+          "max_abs": 4.4468124100200555e-11,
+          "max_rel": 9.97324688250624e-05,
+          "pass": true
+        },
+        "RTHCUTEN": {
+          "max_abs": 7.734408734175538e-08,
+          "max_rel": 3.134678620235147e-05,
+          "pass": true
+        }
+      },
+      "ktop_deep": {
+        "jax": 26,
+        "oracle": 26,
+        "pass": true
+      },
+      "qv_sink_mm": 0.09107887717805117,
+      "raincv": {
+        "jax": 0.07087031847769272,
+        "max_abs": 2.377694192048918e-06,
+        "max_rel": 3.355105518463841e-05,
+        "oracle": 0.07086794078350067,
+        "pass": true,
+        "tolerance_abs": 0.0001,
+        "tolerance_rel": 0.05
+      },
+      "regime": "scale_aware_coarse_15km",
+      "scale_factor": 0.7850302250565335,
+      "scale_normalized": 1.0,
+      "shallow": {
+        "levels": {
+          "K22_SHALLOW": {
+            "jax": 2,
+            "oracle": 2,
+            "pass": true
+          },
+          "KBCON_SHALLOW": {
+            "jax": 3,
+            "oracle": 3,
+            "pass": true
+          },
+          "KTOP_SHALLOW": {
+            "jax": 8,
+            "oracle": 8,
+            "pass": true
+          }
+        },
+        "xmb": {
+          "jax": 0.03772170169644711,
+          "max_abs": 4.778817363999821e-06,
+          "max_rel": 0.0001266701080756888,
+          "oracle": 0.03772648051381111,
+          "pass": true,
+          "tolerance_abs": 1e-05,
+          "tolerance_rel": 0.05
+        }
+      }
+    },
+    {
+      "case": 5,
+      "categorical": {
+        "jax": {
+          "any": true,
+          "deep": true,
+          "shallow": true
+        },
+        "oracle": {
+          "any": true,
+          "deep": true,
+          "shallow": true
+        },
+        "pass": true
+      },
+      "fields": {
+        "RQCCUTEN": {
+          "max_abs": 4.9943572043789085e-11,
+          "max_rel": 0.004994357204378908,
+          "pass": true
+        },
+        "RQICUTEN": {
+          "max_abs": 1.070610961993435e-10,
+          "max_rel": 0.006601448058911017,
+          "pass": true
+        },
+        "RQVCUTEN": {
+          "max_abs": 2.8470912677286237e-10,
+          "max_rel": 0.0009169055062468668,
+          "pass": true
+        },
+        "RTHCUTEN": {
+          "max_abs": 1.2132028009976105e-06,
+          "max_rel": 0.006596415308278125,
+          "pass": true
+        }
+      },
+      "ktop_deep": {
+        "jax": 25,
+        "oracle": 25,
+        "pass": true
+      },
+      "qv_sink_mm": 0.0017554208963160487,
+      "raincv": {
+        "jax": 0.0015031407212877882,
+        "max_abs": 7.539349790452879e-06,
+        "max_rel": 0.004990699178994069,
+        "oracle": 0.001510680071078241,
+        "pass": true,
+        "tolerance_abs": 0.0001,
+        "tolerance_rel": 0.05
+      },
+      "regime": "scale_aware_fine_3km",
+      "scale_factor": 0.009999999999999995,
+      "scale_normalized": 0.14632997463463268,
+      "shallow": {
+        "levels": {
+          "K22_SHALLOW": {
+            "jax": 2,
+            "oracle": 2,
+            "pass": true
+          },
+          "KBCON_SHALLOW": {
+            "jax": 3,
+            "oracle": 3,
+            "pass": true
+          },
+          "KTOP_SHALLOW": {
+            "jax": 8,
+            "oracle": 8,
+            "pass": true
+          }
+        },
+        "xmb": {
+          "jax": 0.0377216657250248,
+          "max_abs": 4.874393431088253e-06,
+          "max_rel": 0.00012920329868001046,
+          "oracle": 0.03772654011845589,
+          "pass": true,
+          "tolerance_abs": 1e-05,
+          "tolerance_rel": 0.05
+        }
+      }
+    }
+  ],
+  "commands": {
+    "oracle": "taskset -c 0-3 bash proofs/v060/oracle/build_and_run.sh",
+    "report": "JAX_PLATFORMS=cpu taskset -c 0-3 python proofs/v060/run_grellfreitas_parity.py --fail-on-parity-fail"
+  },
+  "cu_physics": 3,
+  "elapsed_seconds": 0.041536202013958246,
+  "failures": [],
+  "oracle": {
+    "full_wrf_exe_run": false,
+    "generation_command": "taskset -c 0-3 bash proofs/v060/oracle/build_and_run.sh",
+    "note": "This is a real WRF-module oracle, not a JAX self-compare. It is not a full coupled wrf.exe run. Pristine WRF GFDRV does not take cugd_* arrays; those S0 carry members are reported as adapter carry only.",
+    "source": "unmodified WRF GF modules from /home/enric/src/wrf_pristine/WRF/phys compiled into a standalone single-column driver",
+    "source_checksums_sha256": {
+      "/home/enric/src/wrf_gpu2/.claude/worktrees/v060-gf2-opus/proofs/v060/oracle/gf_oracle_driver.f90": "96e3a0ce6a04ce1ab82c9335b7427b361d555c884d28103df8bbe53e4bb2173a",
+      "/home/enric/src/wrf_gpu2/.claude/worktrees/v060-gf2-opus/src/gpuwrf/physics/cumulus_grell_freitas.py": "e2ff67e0450a22a9f1c387fe403a12a2320f94a231e73b9fce27b5a4aca09e5e",
+      "/home/enric/src/wrf_pristine/WRF/phys/module_cu_gf_deep.F": "798ad7271963757b88be36ce01e24222f7af045dc0692908d6e7c270d6b4ea11",
+      "/home/enric/src/wrf_pristine/WRF/phys/module_cu_gf_sh.F": "0dd1ed7c620b39e13f7ef77dc4ff1a269fa1f8d746492d360e203df0215b529a",
+      "/home/enric/src/wrf_pristine/WRF/phys/module_cu_gf_wrfdrv.F": "0cead99c913b6a74f3a492aea1e1c7ef6d34f95402574336022d1a6c716a4382",
+      "/home/enric/src/wrf_pristine/WRF/phys/module_gfs_machine.F": "300ee4f75663e89d34c8a9b8733cc07a5dd48c3d973da019d31cb76524babe25",
+      "/home/enric/src/wrf_pristine/WRF/phys/module_gfs_physcons.F": "2b8ef99663ba62748b57c7002f5e5b8c9338f2a825c1d32c113bd4e3bff2eb52"
+    }
+  },
+  "predeclared_tolerances": {
+    "ktop_deep_levels": 1,
+    "raincv_abs": 0.0001,
+    "raincv_max_relative": 0.05,
+    "scale_pair": "fine-grid case must produce less RAINCV than coarse-grid case; ratio tolerance 0.20",
+    "shallow_level_indices": 1,
+    "tendency_abs_floor": 1e-08,
+    "tendency_max_relative": 0.05,
+    "trigger": "exact deep/shallow/nontrigger categorical match"
+  },
+  "scale_aware_pair": {
+    "coarse_case": 4,
+    "fine_case": 5,
+    "jax_fine_to_coarse_raincv": 0.021209735663328785,
+    "oracle_fine_to_coarse_raincv": 0.02131683317416152,
+    "pass": true
+  },
+  "schema": "gpuwrf.v060.grellfreitas_savepoint_parity.v1",
+  "scheme": "Grell-Freitas scale-aware cumulus",
+  "verdict": "PASS"
+}
