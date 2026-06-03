@@ -1,0 +1,11 @@
+# build artifacts (regenerable via build_and_run.sh)
+*.o
+*.mod
+tiedtke_oracle
+fort.*
+case_*.txt
+
+# verbatim copies of pristine WRF sources; provenance/checksums are recorded in
+# the v060 Tiedtke parity report instead of vendoring WRF source into this repo.
+module_cu_tiedtke.F
+module_model_constants.F
