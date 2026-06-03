@@ -41,6 +41,8 @@ def test_nest_field_list_is_registry_driven_for_two_moment_schemes() -> None:
 
 def test_mp_registry_names_match_expected_wrfout_variables() -> None:
     assert state_leaves_for_mp(1) == ("qv", "qc", "qr")
+    assert state_leaves_for_mp(3) == ("qv", "qc", "qr")
+    assert state_leaves_for_mp(4) == ("qv", "qc", "qr", "qi", "qs")
     assert state_leaves_for_mp(10) == ("qv", "qc", "qr", "qi", "qs", "qg", "Ni", "Ns", "Nr", "Ng")
     assert state_leaves_for_mp(16) == ("qv", "qc", "qr", "qi", "qs", "qg", "Nn", "Nc", "Nr")
     assert NUMBER_WRFOUT_NAME["Nn"] == "QNCCN"
@@ -50,8 +52,8 @@ def test_mp_registry_names_match_expected_wrfout_variables() -> None:
 
 def test_interfaces_self_check_and_scheme_specs_cover_v060_options() -> None:
     assert_interfaces_consistent()
-    # 17 single-option specs + 2 radiation variants (RRTMG LW/SW under option 4).
-    assert len(SCHEME_STEP_SPECS) == 19
+    # 19 single-option specs + 2 radiation variants (RRTMG LW/SW under option 4).
+    assert len(SCHEME_STEP_SPECS) == 21
     assert scheme_step_spec("microphysics", 16).writes_state[-3:] == ("Nn", "Nc", "Nr")
     assert scheme_step_spec("cumulus", 1).returns_accumulators == ("rainc_acc",)
     assert scheme_step_spec("land_surface", 2).writes_carry == ("flx4", "fvb", "fbur", "fgsn", "smcrel", "xlaidyn")
@@ -80,7 +82,7 @@ def test_v060_namelist_accept_matrix_and_wrfout_forward_names() -> None:
     validate_supported_namelist(
         {
             "physics": {
-                "mp_physics": [1, 6, 8, 10, 16],
+                "mp_physics": [1, 3, 4, 6, 8, 10, 16],
                 "cu_physics": [0, 1, 3, 6, 16],
                 "bl_pbl_physics": [0, 1, 5, 7],
                 "sf_sfclay_physics": [0, 1, 5, 7],

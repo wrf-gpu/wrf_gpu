@@ -11,6 +11,8 @@ WRF Registry lines verified against
 2026-06-02:
 
 * Kessler(1): ``moist:qv,qc,qr``.
+* WSM3(3): ``moist:qv,qc,qr;state:re_cloud,re_ice,re_snow``.
+* WSM5(4): ``moist:qv,qc,qr,qi,qs;state:re_cloud,re_ice,re_snow``.
 * WSM6(6): ``moist:qv,qc,qr,qi,qs,qg;state:re_cloud,re_ice,re_snow``.
 * Thompson(8): ``moist:qv,qc,qr,qi,qs,qg;scalar:qni,qnr;state:re_*``.
 * Morrison(10): ``moist:qv..qg;scalar:qni,qns,qnr,qng`` plus cuten state.
@@ -35,7 +37,7 @@ from dataclasses import dataclass
 from typing import Mapping
 
 
-PHYSICS_REGISTRY_VERSION = "v0.6.0-S0-frozen-2026-06-02"
+PHYSICS_REGISTRY_VERSION = "v0.6.0-S0-frozen-2026-06-03-wsm-sm-extension"
 
 
 @dataclass(frozen=True)
@@ -50,7 +52,7 @@ class SchemeOption:
     owner_family: str
 
 
-ACCEPTED_MP_PHYSICS: tuple[int, ...] = (0, 1, 6, 8, 10, 16)
+ACCEPTED_MP_PHYSICS: tuple[int, ...] = (0, 1, 3, 4, 6, 8, 10, 16)
 ACCEPTED_BL_PBL_PHYSICS: tuple[int, ...] = (0, 1, 5, 7)
 ACCEPTED_SF_SFCLAY_PHYSICS: tuple[int, ...] = (0, 1, 5, 7)
 ACCEPTED_CU_PHYSICS: tuple[int, ...] = (0, 1, 3, 6, 16)
@@ -71,6 +73,8 @@ ACCEPTED_NAMELIST_OPTIONS: Mapping[str, tuple[int, ...]] = {
 MP_SCHEMES: Mapping[int, SchemeOption] = {
     0: SchemeOption("mp_physics", 0, "disabled/passive qv", "passiveqv", "accepted", "microphysics"),
     1: SchemeOption("mp_physics", 1, "Kessler warm rain", "kesslerscheme", "accepted", "microphysics"),
+    3: SchemeOption("mp_physics", 3, "WSM3 simple ice", "wsm3scheme", "accepted", "microphysics"),
+    4: SchemeOption("mp_physics", 4, "WSM5", "wsm5scheme", "accepted", "microphysics"),
     6: SchemeOption("mp_physics", 6, "WSM6", "wsm6scheme", "accepted", "microphysics"),
     8: SchemeOption("mp_physics", 8, "Thompson", "thompson", "implemented", "microphysics"),
     10: SchemeOption("mp_physics", 10, "Morrison two-moment", "morr_two_moment", "accepted", "microphysics"),
@@ -122,6 +126,8 @@ MOIST_WRFOUT_NAME: Mapping[str, str] = {
 MP_MOIST_MEMBERS: Mapping[int, tuple[str, ...]] = {
     0: ("qv",),
     1: ("qv", "qc", "qr"),
+    3: ("qv", "qc", "qr"),
+    4: ("qv", "qc", "qr", "qi", "qs"),
     6: ("qv", "qc", "qr", "qi", "qs", "qg"),
     8: ("qv", "qc", "qr", "qi", "qs", "qg"),
     10: ("qv", "qc", "qr", "qi", "qs", "qg"),
@@ -156,6 +162,8 @@ NUMBER_WRFOUT_NAME: Mapping[str, str] = {
 MP_NUMBER_MEMBERS: Mapping[int, tuple[str, ...]] = {
     0: (),
     1: (),
+    3: (),
+    4: (),
     6: (),
     8: ("Ni", "Nr"),
     10: ("Ni", "Ns", "Nr", "Ng"),
@@ -324,7 +332,7 @@ FIELD_SPECS: tuple[RegistryFieldSpec, ...] = (
             "microphysics_diagnostic",
             "mass_3d",
             "PhysicsDiagnostics",
-            ("mp6", "mp8", "mp16"),
+            ("mp3", "mp4", "mp6", "mp8", "mp16"),
             notes="Effective radius diagnostic/carry; not a dycore State leaf.",
         )
         for leaf in ("re_cloud", "re_ice", "re_snow")
