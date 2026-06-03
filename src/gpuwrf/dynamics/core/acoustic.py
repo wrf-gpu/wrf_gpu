@@ -88,6 +88,12 @@ class AcousticCoreConfig:
     # weight to a per-substep increment (boundary_apply.apply_normal_bdy_work).
     # Defaults to ``dt`` so bare-core/oracle callers are unaffected.
     dt_full: float | None = None
+    # WRF lateral BC flags for ``advance_mu_t`` active loop bounds
+    # (module_small_step_em.F:1048-1063). Defaults preserve the existing periodic
+    # idealized/oracle path exactly.
+    periodic_x: bool = True
+    specified: bool = False
+    nested: bool = False
 
 
 @jax.tree_util.register_pytree_node_class
@@ -271,6 +277,9 @@ def _advance_inputs(state: AcousticCoreState, cfg: AcousticCoreConfig) -> Advanc
         rdy=1.0 / float(cfg.dy),
         dts=float(cfg.dt),
         epssm=float(cfg.epssm),
+        periodic_x=bool(cfg.periodic_x),
+        specified=bool(cfg.specified),
+        nested=bool(cfg.nested),
     )
 
 

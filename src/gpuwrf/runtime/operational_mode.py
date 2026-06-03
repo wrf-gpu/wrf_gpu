@@ -505,6 +505,16 @@ def _theta_base_offset(theta: jax.Array) -> jax.Array:
     return jnp.asarray(300.0, dtype=theta.dtype)
 
 
+def _acoustic_lateral_bc_flags(namelist: OperationalNamelist) -> tuple[bool, bool, bool]:
+    """Return WRF ``advance_mu_t`` BC flags: ``periodic_x, specified, nested``."""
+
+    boundary_active = bool(namelist.run_boundary) and getattr(namelist.grid.bc, "source", "ideal") != "ideal"
+    if not boundary_active:
+        return True, False, False
+    nested = not bool(getattr(namelist.boundary_config, "force_geopotential", True))
+    return False, not nested, nested
+
+
 def _u_face_average_2d(field: jax.Array) -> jax.Array:
     west = field[:, :1]
     east = field[:, -1:]
@@ -1297,6 +1307,7 @@ def _operational_acoustic_substep_core(carry: OperationalCarry, namelist: Operat
         cqw=acoustic.cqw,
         c2a=acoustic.c2a,
     )
+    periodic_x, specified, nested = _acoustic_lateral_bc_flags(namelist)
     next_acoustic = acoustic_substep_core(
         acoustic,
         a=a,
@@ -1312,6 +1323,9 @@ def _operational_acoustic_substep_core(carry: OperationalCarry, namelist: Operat
             damp_opt=int(namelist.damp_opt),
             dampcoef=float(namelist.dampcoef),
             zdamp=float(namelist.zdamp),
+            periodic_x=periodic_x,
+            specified=specified,
+            nested=nested,
         ),
         cqw=acoustic.cqw,
     )
@@ -1350,6 +1364,7 @@ def _acoustic_scan(
             c2a=prep.c2a,
         )
 
+        periodic_x, specified, nested = _acoustic_lateral_bc_flags(namelist)
         stage_cfg = AcousticCoreConfig(
             dt=float(stage.dts_rk),
             dx=float(namelist.grid.projection.dx_m),
@@ -1363,6 +1378,9 @@ def _acoustic_scan(
             # WIND-FIX: full model dt so the in-loop normal-momentum relaxation
             # weight is scaled to a per-substep increment.
             dt_full=float(namelist.dt_s),
+            periodic_x=periodic_x,
+            specified=specified,
+            nested=nested,
         )
 
         def body(scan_acoustic: AcousticCoreState, _):
@@ -1751,6 +1769,7 @@ def _carry_from_coupled_core(snapshot: dict[str, jax.Array], template: State, th
 def _coupled_core_step(carry: OperationalCarry, namelist: OperationalNamelist, step_index) -> OperationalCarry:
     acoustic = _acoustic_core_state(carry, namelist)
     theta_offset = _theta_base_offset(carry.state.theta)
+    periodic_x, specified, nested = _acoustic_lateral_bc_flags(namelist)
     snapshot = coupled_timestep_core(
         acoustic,
         namelist.metrics,
@@ -1765,6 +1784,9 @@ def _coupled_core_step(carry: OperationalCarry, namelist: OperationalNamelist, s
             physics_enabled=True,
             boundary_enabled=True,
             boundary_config=namelist.boundary_config,
+            periodic_x=periodic_x,
+            specified=specified,
+            nested=nested,
         ),
         extras=_coupled_core_extras(carry.state),
         step_index=step_index,

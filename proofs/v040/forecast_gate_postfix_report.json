@@ -1,0 +1,3592 @@
+{
+  "schema": "v0.4.0-forecast-gate-postfix-before-after-2026-06-03",
+  "created_utc": "2026-06-03T10:50:17.770863+00:00",
+  "raw_postfix_report": "proofs/v040/forecast_gate_postfix_raw.json",
+  "baseline_prefix_report": "proofs/v040/forecast_gate_24h_report.json",
+  "forecast_gate_command": "taskset -c 0-3 env JAX_ENABLE_X64=true XLA_PYTHON_CLIENT_PREALLOCATE=false PYTHONPATH=src:proofs/v040:. python proofs/v040/run_forecast_gate_24h.py --hours 24 --case-id 20260429_18z_l2_72h_20260524T204451Z --case-id 20260521_18z_l3_24h_20260522T133443Z --out proofs/v040/forecast_gate_postfix_raw.json --output-root /tmp/v040_forecast_gate_postfix_mu_fix",
+  "gpu_resource_check": "nvidia-smi before run showed only desktop/UI processes; the gate ran as the only Python compute process.",
+  "postfix_verdict": "STABLE_BUT_CORE_FIELD_MISMATCH",
+  "postfix_foundation_confirmed": false,
+  "two_date_bias_collapsed": "no",
+  "v040_close_recommended": false,
+  "assessment": {
+    "core_margins_all_met_after": false,
+    "psfc_u10_worst_bias_improved_on_all_date_fields": false,
+    "summary": "The BC-conditional MU continuity fix is savepoint-correct, but this 24h standalone forecast gate remains STABLE_BUT_CORE_FIELD_MISMATCH. PSFC and U10 h2+ worst biases are essentially unchanged or worse versus the pre-fix baseline, so the diagnosed standalone bias did not collapse in the production forecast gate.",
+    "next_lead": "Instrument real forecast savepoints across acoustic advance_mu_t -> small_step_finish -> end-step boundary apply and compare against WRF at h1/h2; the residual is likely outside the isolated advance_mu_t loop bounds or in another production coupling path affecting PGF/surface winds."
+  },
+  "frozen_adr_029_margins": {
+    "T2": 0.2148692978020805,
+    "U10": 0.23064713972582307,
+    "V10": 0.2752320537920854,
+    "PSFC_diag_margin": 50.0
+  },
+  "case_comparison": {
+    "20260429_18z_l2_72h_20260524T204451Z": {
+      "date": "20260429",
+      "case_note": "20260429 uses the scored L2/backfill d01 case because the same-date L3 oracle does not contain the t0 CPU reference required by run_forecast_gate_24h.py.",
+      "before_core_within_margin": false,
+      "after_core_within_margin": false,
+      "after_stability": {
+        "stable_finite": true,
+        "physical_range_ok": true,
+        "blew_up_at_hour": null,
+        "per_hour": [
+          {
+            "all_finite": true,
+            "physical": true,
+            "fields": {
+              "theta": {
+                "finite": true,
+                "min": 289.1931245400222,
+                "max": 498.03936767578125,
+                "range": [
+                  150.0,
+                  600.0
+                ],
+                "in_range": true
+              },
+              "qv": {
+                "finite": true,
+                "min": 2.471598347179431e-06,
+                "max": 0.01150109644344772,
+                "range": [
+                  -1e-06,
+                  0.06
+                ],
+                "in_range": true
+              },
+              "w": {
+                "finite": true,
+                "min": -0.5025360776407592,
+                "max": 0.43463716106617156,
+                "range": [
+                  -120.0,
+                  120.0
+                ],
+                "in_range": true
+              },
+              "u": {
+                "finite": true,
+                "min": -4.608605336609877,
+                "max": 49.126227972290685,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "v": {
+                "finite": true,
+                "min": -8.814597175062715,
+                "max": 26.27118682861328,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "mu_total": {
+                "finite": true,
+                "min": 76519.91462629497,
+                "max": 96191.52079522294,
+                "range": [
+                  1.0,
+                  200000.0
+                ],
+                "in_range": true
+              }
+            },
+            "hour": 1,
+            "wall_s": 429.8573856500152
+          },
+          {
+            "all_finite": true,
+            "physical": true,
+            "fields": {
+              "theta": {
+                "finite": true,
+                "min": 289.22486633328924,
+                "max": 498.03936767578125,
+                "range": [
+                  150.0,
+                  600.0
+                ],
+                "in_range": true
+              },
+              "qv": {
+                "finite": true,
+                "min": 2.471596938577481e-06,
+                "max": 0.011789570584693678,
+                "range": [
+                  -1e-06,
+                  0.06
+                ],
+                "in_range": true
+              },
+              "w": {
+                "finite": true,
+                "min": -0.6067125989760667,
+                "max": 0.4998604396636756,
+                "range": [
+                  -120.0,
+                  120.0
+                ],
+                "in_range": true
+              },
+              "u": {
+                "finite": true,
+                "min": -4.308495472438872,
+                "max": 49.13206087506282,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "v": {
+                "finite": true,
+                "min": -8.427511559404007,
+                "max": 26.27118682861328,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "mu_total": {
+                "finite": true,
+                "min": 76552.97320451961,
+                "max": 96220.10228337234,
+                "range": [
+                  1.0,
+                  200000.0
+                ],
+                "in_range": true
+              }
+            },
+            "hour": 2,
+            "wall_s": 1.6892771769780666
+          },
+          {
+            "all_finite": true,
+            "physical": true,
+            "fields": {
+              "theta": {
+                "finite": true,
+                "min": 289.5696937427499,
+                "max": 498.03936767578125,
+                "range": [
+                  150.0,
+                  600.0
+                ],
+                "in_range": true
+              },
+              "qv": {
+                "finite": true,
+                "min": 2.4715967833404277e-06,
+                "max": 0.01198758008385881,
+                "range": [
+                  -1e-06,
+                  0.06
+                ],
+                "in_range": true
+              },
+              "w": {
+                "finite": true,
+                "min": -0.5585558184290768,
+                "max": 0.5305574205637023,
+                "range": [
+                  -120.0,
+                  120.0
+                ],
+                "in_range": true
+              },
+              "u": {
+                "finite": true,
+                "min": -4.721550180296576,
+                "max": 49.10335700697878,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "v": {
+                "finite": true,
+                "min": -8.111425220496757,
+                "max": 26.415411414965128,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "mu_total": {
+                "finite": true,
+                "min": 76530.0170785025,
+                "max": 96259.73073004314,
+                "range": [
+                  1.0,
+                  200000.0
+                ],
+                "in_range": true
+              }
+            },
+            "hour": 3,
+            "wall_s": 1.684697865974158
+          },
+          {
+            "all_finite": true,
+            "physical": true,
+            "fields": {
+              "theta": {
+                "finite": true,
+                "min": 289.6349869525863,
+                "max": 498.03936767578125,
+                "range": [
+                  150.0,
+                  600.0
+                ],
+                "in_range": true
+              },
+              "qv": {
+                "finite": true,
+                "min": 2.471596772086242e-06,
+                "max": 0.012223293186719488,
+                "range": [
+                  -1e-06,
+                  0.06
+                ],
+                "in_range": true
+              },
+              "w": {
+                "finite": true,
+                "min": -0.6572454595995663,
+                "max": 0.6309780245705148,
+                "range": [
+                  -120.0,
+                  120.0
+                ],
+                "in_range": true
+              },
+              "u": {
+                "finite": true,
+                "min": -4.716595094873785,
+                "max": 49.076883170183436,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "v": {
+                "finite": true,
+                "min": -7.586926916512706,
+                "max": 26.84887895111021,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "mu_total": {
+                "finite": true,
+                "min": 76525.09258933026,
+                "max": 96271.46030918208,
+                "range": [
+                  1.0,
+                  200000.0
+                ],
+                "in_range": true
+              }
+            },
+            "hour": 4,
+            "wall_s": 1.6743834740191232
+          },
+          {
+            "all_finite": true,
+            "physical": true,
+            "fields": {
+              "theta": {
+                "finite": true,
+                "min": 289.63487391229955,
+                "max": 498.03936767578125,
+                "range": [
+                  150.0,
+                  600.0
+                ],
+                "in_range": true
+              },
+              "qv": {
+                "finite": true,
+                "min": 2.471596771299648e-06,
+                "max": 0.012397253585522907,
+                "range": [
+                  -1e-06,
+                  0.06
+                ],
+                "in_range": true
+              },
+              "w": {
+                "finite": true,
+                "min": -0.7328079472710932,
+                "max": 0.652100402263471,
+                "range": [
+                  -120.0,
+                  120.0
+                ],
+                "in_range": true
+              },
+              "u": {
+                "finite": true,
+                "min": -5.290797462471436,
+                "max": 49.076087373084135,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "v": {
+                "finite": true,
+                "min": -7.549703281250089,
+                "max": 27.10988452735963,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "mu_total": {
+                "finite": true,
+                "min": 76544.77457305841,
+                "max": 96265.69368694135,
+                "range": [
+                  1.0,
+                  200000.0
+                ],
+                "in_range": true
+              }
+            },
+            "hour": 5,
+            "wall_s": 1.6863755879749078
+          },
+          {
+            "all_finite": true,
+            "physical": true,
+            "fields": {
+              "theta": {
+                "finite": true,
+                "min": 289.6346652967978,
+                "max": 498.03936767578125,
+                "range": [
+                  150.0,
+                  600.0
+                ],
+                "in_range": true
+              },
+              "qv": {
+                "finite": true,
+                "min": 2.4715967712352045e-06,
+                "max": 0.012396755760030754,
+                "range": [
+                  -1e-06,
+                  0.06
+                ],
+                "in_range": true
+              },
+              "w": {
+                "finite": true,
+                "min": -0.8008671239574675,
+                "max": 0.7042510053291126,
+                "range": [
+                  -120.0,
+                  120.0
+                ],
+                "in_range": true
+              },
+              "u": {
+                "finite": true,
+                "min": -5.072896698933969,
+                "max": 49.065392576562445,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "v": {
+                "finite": true,
+                "min": -7.536058284839328,
+                "max": 27.135187742588013,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "mu_total": {
+                "finite": true,
+                "min": 76544.83649068073,
+                "max": 96255.34677065923,
+                "range": [
+                  1.0,
+                  200000.0
+                ],
+                "in_range": true
+              }
+            },
+            "hour": 6,
+            "wall_s": 1.672471305995714
+          },
+          {
+            "all_finite": true,
+            "physical": true,
+            "fields": {
+              "theta": {
+                "finite": true,
+                "min": 289.6346880310516,
+                "max": 498.03936767578125,
+                "range": [
+                  150.0,
+                  600.0
+                ],
+                "in_range": true
+              },
+              "qv": {
+                "finite": true,
+                "min": 2.471596771231729e-06,
+                "max": 0.01265490795585355,
+                "range": [
+                  -1e-06,
+                  0.06
+                ],
+                "in_range": true
+              },
+              "w": {
+                "finite": true,
+                "min": -0.8142619061575725,
+                "max": 0.7786698710695302,
+                "range": [
+                  -120.0,
+                  120.0
+                ],
+                "in_range": true
+              },
+              "u": {
+                "finite": true,
+                "min": -4.7747625664090965,
+                "max": 49.05711608391563,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "v": {
+                "finite": true,
+                "min": -7.534981108709459,
+                "max": 27.25782897283173,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "mu_total": {
+                "finite": true,
+                "min": 76543.7104563197,
+                "max": 96243.58802675654,
+                "range": [
+                  1.0,
+                  200000.0
+                ],
+                "in_range": true
+              }
+            },
+            "hour": 7,
+            "wall_s": 1.685977979999734
+          },
+          {
+            "all_finite": true,
+            "physical": true,
+            "fields": {
+              "theta": {
+                "finite": true,
+                "min": 289.63474673791995,
+                "max": 498.03936767578125,
+                "range": [
+                  150.0,
+                  600.0
+                ],
+                "in_range": true
+              },
+              "qv": {
+                "finite": true,
+                "min": 2.4715967712344054e-06,
+                "max": 0.012916471158036215,
+                "range": [
+                  -1e-06,
+                  0.06
+                ],
+                "in_range": true
+              },
+              "w": {
+                "finite": true,
+                "min": -0.8222048448072552,
+                "max": 0.7893832550883305,
+                "range": [
+                  -120.0,
+                  120.0
+                ],
+                "in_range": true
+              },
+              "u": {
+                "finite": true,
+                "min": -4.4974022532762135,
+                "max": 49.05705949727897,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "v": {
+                "finite": true,
+                "min": -7.537201572491975,
+                "max": 27.331551254039372,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "mu_total": {
+                "finite": true,
+                "min": 76545.89159249686,
+                "max": 96237.87148156707,
+                "range": [
+                  1.0,
+                  200000.0
+                ],
+                "in_range": true
+              }
+            },
+            "hour": 8,
+            "wall_s": 1.6805616609926801
+          },
+          {
+            "all_finite": true,
+            "physical": true,
+            "fields": {
+              "theta": {
+                "finite": true,
+                "min": 289.63481504292895,
+                "max": 498.03936767578125,
+                "range": [
+                  150.0,
+                  600.0
+                ],
+                "in_range": true
+              },
+              "qv": {
+                "finite": true,
+                "min": 2.471596771234796e-06,
+                "max": 0.013281114700644187,
+                "range": [
+                  -1e-06,
+                  0.06
+                ],
+                "in_range": true
+              },
+              "w": {
+                "finite": true,
+                "min": -0.7897253098953159,
+                "max": 0.7825268129552561,
+                "range": [
+                  -120.0,
+                  120.0
+                ],
+                "in_range": true
+              },
+              "u": {
+                "finite": true,
+                "min": -4.539663887366384,
+                "max": 49.05157537088126,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "v": {
+                "finite": true,
+                "min": -7.536226065284636,
+                "max": 27.349351172304146,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "mu_total": {
+                "finite": true,
+                "min": 76549.29126703217,
+                "max": 96236.28127632703,
+                "range": [
+                  1.0,
+                  200000.0
+                ],
+                "in_range": true
+              }
+            },
+            "hour": 9,
+            "wall_s": 1.6828588779899292
+          },
+          {
+            "all_finite": true,
+            "physical": true,
+            "fields": {
+              "theta": {
+                "finite": true,
+                "min": 289.63478663300947,
+                "max": 498.03936767578125,
+                "range": [
+                  150.0,
+                  600.0
+                ],
+                "in_range": true
+              },
+              "qv": {
+                "finite": true,
+                "min": 2.4715967712343008e-06,
+                "max": 0.013407099077253426,
+                "range": [
+                  -1e-06,
+                  0.06
+                ],
+                "in_range": true
+              },
+              "w": {
+                "finite": true,
+                "min": -0.7740063823958676,
+                "max": 0.8050597625049285,
+                "range": [
+                  -120.0,
+                  120.0
+                ],
+                "in_range": true
+              },
+              "u": {
+                "finite": true,
+                "min": -4.36419898740492,
+                "max": 49.04145730368304,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "v": {
+                "finite": true,
+                "min": -7.533997357505019,
+                "max": 27.45375549999908,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "mu_total": {
+                "finite": true,
+                "min": 76551.28666345961,
+                "max": 96230.29310011382,
+                "range": [
+                  1.0,
+                  200000.0
+                ],
+                "in_range": true
+              }
+            },
+            "hour": 10,
+            "wall_s": 1.6851785439939704
+          },
+          {
+            "all_finite": true,
+            "physical": true,
+            "fields": {
+              "theta": {
+                "finite": true,
+                "min": 289.6347459484834,
+                "max": 498.03936767578125,
+                "range": [
+                  150.0,
+                  600.0
+                ],
+                "in_range": true
+              },
+              "qv": {
+                "finite": true,
+                "min": 2.471596771235342e-06,
+                "max": 0.013424893039147618,
+                "range": [
+                  -1e-06,
+                  0.06
+                ],
+                "in_range": true
+              },
+              "w": {
+                "finite": true,
+                "min": -0.7602760499217837,
+                "max": 0.8415866518697896,
+                "range": [
+                  -120.0,
+                  120.0
+                ],
+                "in_range": true
+              },
+              "u": {
+                "finite": true,
+                "min": -3.995483099854204,
+                "max": 49.03284323939744,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "v": {
+                "finite": true,
+                "min": -7.532641342908491,
+                "max": 27.641876082384776,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "mu_total": {
+                "finite": true,
+                "min": 76552.76791342351,
+                "max": 96224.03375171321,
+                "range": [
+                  1.0,
+                  200000.0
+                ],
+                "in_range": true
+              }
+            },
+            "hour": 11,
+            "wall_s": 1.6753648230223916
+          },
+          {
+            "all_finite": true,
+            "physical": true,
+            "fields": {
+              "theta": {
+                "finite": true,
+                "min": 289.6347840165634,
+                "max": 498.03936767578125,
+                "range": [
+                  150.0,
+                  600.0
+                ],
+                "in_range": true
+              },
+              "qv": {
+                "finite": true,
+                "min": 2.4715967712373446e-06,
+                "max": 0.013528738663244852,
+                "range": [
+                  -1e-06,
+                  0.06
+                ],
+                "in_range": true
+              },
+              "w": {
+                "finite": true,
+                "min": -0.7506952463984079,
+                "max": 0.8511631933251578,
+                "range": [
+                  -120.0,
+                  120.0
+                ],
+                "in_range": true
+              },
+              "u": {
+                "finite": true,
+                "min": -3.8275320683206577,
+                "max": 49.030981645557596,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "v": {
+                "finite": true,
+                "min": -7.53158494949154,
+                "max": 27.701845954772708,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "mu_total": {
+                "finite": true,
+                "min": 76553.54234545247,
+                "max": 96219.52732213905,
+                "range": [
+                  1.0,
+                  200000.0
+                ],
+                "in_range": true
+              }
+            },
+            "hour": 12,
+            "wall_s": 1.6837827739946079
+          },
+          {
+            "all_finite": true,
+            "physical": true,
+            "fields": {
+              "theta": {
+                "finite": true,
+                "min": 289.6348005802976,
+                "max": 498.03936767578125,
+                "range": [
+                  150.0,
+                  600.0
+                ],
+                "in_range": true
+              },
+              "qv": {
+                "finite": true,
+                "min": 2.471596771239744e-06,
+                "max": 0.013567348706411539,
+                "range": [
+                  -1e-06,
+                  0.06
+                ],
+                "in_range": true
+              },
+              "w": {
+                "finite": true,
+                "min": -0.7535563011834667,
+                "max": 0.8435850850213534,
+                "range": [
+                  -120.0,
+                  120.0
+                ],
+                "in_range": true
+              },
+              "u": {
+                "finite": true,
+                "min": -3.9097009902396778,
+                "max": 49.03218867228715,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "v": {
+                "finite": true,
+                "min": -7.530242048441025,
+                "max": 27.642380664912146,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "mu_total": {
+                "finite": true,
+                "min": 76553.77466516884,
+                "max": 96221.25251924706,
+                "range": [
+                  1.0,
+                  200000.0
+                ],
+                "in_range": true
+              }
+            },
+            "hour": 13,
+            "wall_s": 1.678507015982177
+          },
+          {
+            "all_finite": true,
+            "physical": true,
+            "fields": {
+              "theta": {
+                "finite": true,
+                "min": 289.6348208741001,
+                "max": 498.03936767578125,
+                "range": [
+                  150.0,
+                  600.0
+                ],
+                "in_range": true
+              },
+              "qv": {
+                "finite": true,
+                "min": 2.471596771241379e-06,
+                "max": 0.013539073081959133,
+                "range": [
+                  -1e-06,
+                  0.06
+                ],
+                "in_range": true
+              },
+              "w": {
+                "finite": true,
+                "min": -0.7644684095142031,
+                "max": 0.8302509826969616,
+                "range": [
+                  -120.0,
+                  120.0
+                ],
+                "in_range": true
+              },
+              "u": {
+                "finite": true,
+                "min": -3.842882537572444,
+                "max": 49.03479151764266,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "v": {
+                "finite": true,
+                "min": -7.6068189470967535,
+                "max": 27.556123839734,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "mu_total": {
+                "finite": true,
+                "min": 76554.05768301582,
+                "max": 96225.30147134425,
+                "range": [
+                  1.0,
+                  200000.0
+                ],
+                "in_range": true
+              }
+            },
+            "hour": 14,
+            "wall_s": 1.6710252819757443
+          },
+          {
+            "all_finite": true,
+            "physical": true,
+            "fields": {
+              "theta": {
+                "finite": true,
+                "min": 289.63482142800683,
+                "max": 498.03936767578125,
+                "range": [
+                  150.0,
+                  600.0
+                ],
+                "in_range": true
+              },
+              "qv": {
+                "finite": true,
+                "min": 2.4715967712430388e-06,
+                "max": 0.013666122087430583,
+                "range": [
+                  -1e-06,
+                  0.06
+                ],
+                "in_range": true
+              },
+              "w": {
+                "finite": true,
+                "min": -0.7729884078674625,
+                "max": 0.81583673805791,
+                "range": [
+                  -120.0,
+                  120.0
+                ],
+                "in_range": true
+              },
+              "u": {
+                "finite": true,
+                "min": -3.9722519018560023,
+                "max": 49.03810740703377,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "v": {
+                "finite": true,
+                "min": -7.634340029612136,
+                "max": 27.48320291306621,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "mu_total": {
+                "finite": true,
+                "min": 76554.7419602469,
+                "max": 96228.63691690077,
+                "range": [
+                  1.0,
+                  200000.0
+                ],
+                "in_range": true
+              }
+            },
+            "hour": 15,
+            "wall_s": 1.6808931629930157
+          },
+          {
+            "all_finite": true,
+            "physical": true,
+            "fields": {
+              "theta": {
+                "finite": true,
+                "min": 289.63480851661,
+                "max": 498.03936767578125,
+                "range": [
+                  150.0,
+                  600.0
+                ],
+                "in_range": true
+              },
+              "qv": {
+                "finite": true,
+                "min": 2.4715967712444885e-06,
+                "max": 0.013699419673120215,
+                "range": [
+                  -1e-06,
+                  0.06
+                ],
+                "in_range": true
+              },
+              "w": {
+                "finite": true,
+                "min": -0.7781474971746747,
+                "max": 0.8050712896082779,
+                "range": [
+                  -120.0,
+                  120.0
+                ],
+                "in_range": true
+              },
+              "u": {
+                "finite": true,
+                "min": -4.100095788379676,
+                "max": 49.0401304753038,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "v": {
+                "finite": true,
+                "min": -7.615384294101402,
+                "max": 27.448253057428946,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "mu_total": {
+                "finite": true,
+                "min": 76555.46066976273,
+                "max": 96230.07237482368,
+                "range": [
+                  1.0,
+                  200000.0
+                ],
+                "in_range": true
+              }
+            },
+            "hour": 16,
+            "wall_s": 1.6812564659921918
+          },
+          {
+            "all_finite": true,
+            "physical": true,
+            "fields": {
+              "theta": {
+                "finite": true,
+                "min": 289.63480538390456,
+                "max": 498.03936767578125,
+                "range": [
+                  150.0,
+                  600.0
+                ],
+                "in_range": true
+              },
+              "qv": {
+                "finite": true,
+                "min": 2.471596771245977e-06,
+                "max": 0.01382599751747933,
+                "range": [
+                  -1e-06,
+                  0.06
+                ],
+                "in_range": true
+              },
+              "w": {
+                "finite": true,
+                "min": -0.784943708068781,
+                "max": 0.7926455821211279,
+                "range": [
+                  -120.0,
+                  120.0
+                ],
+                "in_range": true
+              },
+              "u": {
+                "finite": true,
+                "min": -4.273917079702692,
+                "max": 49.04162806830884,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "v": {
+                "finite": true,
+                "min": -7.655496282673524,
+                "max": 27.424825610989878,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "mu_total": {
+                "finite": true,
+                "min": 76556.00715578427,
+                "max": 96229.71149609174,
+                "range": [
+                  1.0,
+                  200000.0
+                ],
+                "in_range": true
+              }
+            },
+            "hour": 17,
+            "wall_s": 1.6909842159948312
+          },
+          {
+            "all_finite": true,
+            "physical": true,
+            "fields": {
+              "theta": {
+                "finite": true,
+                "min": 289.634810676991,
+                "max": 498.03936767578125,
+                "range": [
+                  150.0,
+                  600.0
+                ],
+                "in_range": true
+              },
+              "qv": {
+                "finite": true,
+                "min": 2.4715967712473734e-06,
+                "max": 0.013857387543788227,
+                "range": [
+                  -1e-06,
+                  0.06
+                ],
+                "in_range": true
+              },
+              "w": {
+                "finite": true,
+                "min": -0.7834931701008807,
+                "max": 0.7863718883953982,
+                "range": [
+                  -120.0,
+                  120.0
+                ],
+                "in_range": true
+              },
+              "u": {
+                "finite": true,
+                "min": -4.331325774421016,
+                "max": 49.042245509136606,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "v": {
+                "finite": true,
+                "min": -7.685280427853407,
+                "max": 27.419290461242866,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "mu_total": {
+                "finite": true,
+                "min": 76556.36172893234,
+                "max": 96230.57576244048,
+                "range": [
+                  1.0,
+                  200000.0
+                ],
+                "in_range": true
+              }
+            },
+            "hour": 18,
+            "wall_s": 1.6910064459952991
+          },
+          {
+            "all_finite": true,
+            "physical": true,
+            "fields": {
+              "theta": {
+                "finite": true,
+                "min": 289.6348025291468,
+                "max": 498.03936767578125,
+                "range": [
+                  150.0,
+                  600.0
+                ],
+                "in_range": true
+              },
+              "qv": {
+                "finite": true,
+                "min": 2.4715967712483933e-06,
+                "max": 0.013865149685664527,
+                "range": [
+                  -1e-06,
+                  0.06
+                ],
+                "in_range": true
+              },
+              "w": {
+                "finite": true,
+                "min": -0.7840130260973125,
+                "max": 0.7879799819546671,
+                "range": [
+                  -120.0,
+                  120.0
+                ],
+                "in_range": true
+              },
+              "u": {
+                "finite": true,
+                "min": -4.370567178622279,
+                "max": 49.04155848961861,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "v": {
+                "finite": true,
+                "min": -7.638079345550242,
+                "max": 27.439827378958338,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "mu_total": {
+                "finite": true,
+                "min": 76556.630319291,
+                "max": 96230.6288792119,
+                "range": [
+                  1.0,
+                  200000.0
+                ],
+                "in_range": true
+              }
+            },
+            "hour": 19,
+            "wall_s": 1.6827441469940823
+          },
+          {
+            "all_finite": true,
+            "physical": true,
+            "fields": {
+              "theta": {
+                "finite": true,
+                "min": 289.63478467865957,
+                "max": 498.03936767578125,
+                "range": [
+                  150.0,
+                  600.0
+                ],
+                "in_range": true
+              },
+              "qv": {
+                "finite": true,
+                "min": 2.471596771249291e-06,
+                "max": 0.013998396461763105,
+                "range": [
+                  -1e-06,
+                  0.06
+                ],
+                "in_range": true
+              },
+              "w": {
+                "finite": true,
+                "min": -0.7855820464565093,
+                "max": 0.7913330732576084,
+                "range": [
+                  -120.0,
+                  120.0
+                ],
+                "in_range": true
+              },
+              "u": {
+                "finite": true,
+                "min": -4.445194702671367,
+                "max": 49.0399429515224,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "v": {
+                "finite": true,
+                "min": -7.541324226362121,
+                "max": 27.468900774964816,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "mu_total": {
+                "finite": true,
+                "min": 76556.69328495495,
+                "max": 96231.06438739115,
+                "range": [
+                  1.0,
+                  200000.0
+                ],
+                "in_range": true
+              }
+            },
+            "hour": 20,
+            "wall_s": 1.6815948589937761
+          },
+          {
+            "all_finite": true,
+            "physical": true,
+            "fields": {
+              "theta": {
+                "finite": true,
+                "min": 289.6347592576391,
+                "max": 498.03936767578125,
+                "range": [
+                  150.0,
+                  600.0
+                ],
+                "in_range": true
+              },
+              "qv": {
+                "finite": true,
+                "min": 2.471596771250128e-06,
+                "max": 0.014048104653990836,
+                "range": [
+                  -1e-06,
+                  0.06
+                ],
+                "in_range": true
+              },
+              "w": {
+                "finite": true,
+                "min": -0.7928720695331591,
+                "max": 0.7959681571522428,
+                "range": [
+                  -120.0,
+                  120.0
+                ],
+                "in_range": true
+              },
+              "u": {
+                "finite": true,
+                "min": -4.414041733765841,
+                "max": 49.03857159164231,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "v": {
+                "finite": true,
+                "min": -7.5359438321023395,
+                "max": 27.49789902003102,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "mu_total": {
+                "finite": true,
+                "min": 76556.47858610998,
+                "max": 96231.57548609229,
+                "range": [
+                  1.0,
+                  200000.0
+                ],
+                "in_range": true
+              }
+            },
+            "hour": 21,
+            "wall_s": 1.686685735010542
+          },
+          {
+            "all_finite": true,
+            "physical": true,
+            "fields": {
+              "theta": {
+                "finite": true,
+                "min": 289.6347459282456,
+                "max": 498.03936767578125,
+                "range": [
+                  150.0,
+                  600.0
+                ],
+                "in_range": true
+              },
+              "qv": {
+                "finite": true,
+                "min": 2.4715967712514028e-06,
+                "max": 0.014146761386012377,
+                "range": [
+                  -1e-06,
+                  0.06
+                ],
+                "in_range": true
+              },
+              "w": {
+                "finite": true,
+                "min": -0.7979997757158983,
+                "max": 0.8014361658732628,
+                "range": [
+                  -120.0,
+                  120.0
+                ],
+                "in_range": true
+              },
+              "u": {
+                "finite": true,
+                "min": -4.448898418408797,
+                "max": 49.036864498580115,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "v": {
+                "finite": true,
+                "min": -7.536147365309162,
+                "max": 27.52759716926881,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "mu_total": {
+                "finite": true,
+                "min": 76556.29977258011,
+                "max": 96231.90841276587,
+                "range": [
+                  1.0,
+                  200000.0
+                ],
+                "in_range": true
+              }
+            },
+            "hour": 22,
+            "wall_s": 1.6983899300103076
+          },
+          {
+            "all_finite": true,
+            "physical": true,
+            "fields": {
+              "theta": {
+                "finite": true,
+                "min": 289.634741903843,
+                "max": 498.03936767578125,
+                "range": [
+                  150.0,
+                  600.0
+                ],
+                "in_range": true
+              },
+              "qv": {
+                "finite": true,
+                "min": 2.471596771252665e-06,
+                "max": 0.014126760527359386,
+                "range": [
+                  -1e-06,
+                  0.06
+                ],
+                "in_range": true
+              },
+              "w": {
+                "finite": true,
+                "min": -0.8000816913276108,
+                "max": 0.8067060563041675,
+                "range": [
+                  -120.0,
+                  120.0
+                ],
+                "in_range": true
+              },
+              "u": {
+                "finite": true,
+                "min": -4.395315434794707,
+                "max": 49.03483642766859,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "v": {
+                "finite": true,
+                "min": -7.53640502328126,
+                "max": 27.55614792489967,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "mu_total": {
+                "finite": true,
+                "min": 76556.23400531005,
+                "max": 96231.78104373641,
+                "range": [
+                  1.0,
+                  200000.0
+                ],
+                "in_range": true
+              }
+            },
+            "hour": 23,
+            "wall_s": 1.683592553017661
+          },
+          {
+            "all_finite": true,
+            "physical": true,
+            "fields": {
+              "theta": {
+                "finite": true,
+                "min": 289.6347462612084,
+                "max": 498.03936767578125,
+                "range": [
+                  150.0,
+                  600.0
+                ],
+                "in_range": true
+              },
+              "qv": {
+                "finite": true,
+                "min": 2.471596771254047e-06,
+                "max": 0.014111173303681276,
+                "range": [
+                  -1e-06,
+                  0.06
+                ],
+                "in_range": true
+              },
+              "w": {
+                "finite": true,
+                "min": -0.8003890931707458,
+                "max": 0.8112829756310072,
+                "range": [
+                  -120.0,
+                  120.0
+                ],
+                "in_range": true
+              },
+              "u": {
+                "finite": true,
+                "min": -4.3424023448816955,
+                "max": 49.03342627375453,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "v": {
+                "finite": true,
+                "min": -7.536482846637174,
+                "max": 27.579764868850646,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "mu_total": {
+                "finite": true,
+                "min": 76556.36813642469,
+                "max": 96230.54454487622,
+                "range": [
+                  1.0,
+                  200000.0
+                ],
+                "in_range": true
+              }
+            },
+            "hour": 24,
+            "wall_s": 1.6823793840012513
+          }
+        ]
+      },
+      "fields": {
+        "T2": {
+          "before": {
+            "status": "scored",
+            "mean_bias_h2plus": 0.03999608311197577,
+            "worst_abs_bias_h2plus": 0.9257050867569083,
+            "worst_signed_bias_h2plus": 0.9257050867569083,
+            "worst_bias_lead_h": 12,
+            "mean_rmse_h2plus": 1.6293774817131577,
+            "worst_rmse_h2plus": 3.0111077542825893,
+            "margin": 0.2148692978020805,
+            "within_margin_h2plus": false,
+            "blocking": true,
+            "h1_spinup_bias": -0.14608826940559788,
+            "h1_spinup_abs_bias": 0.14608826940559788
+          },
+          "after": {
+            "status": "scored",
+            "mean_bias_h2plus": 0.03387990496876324,
+            "worst_abs_bias_h2plus": 0.9194826487963026,
+            "worst_signed_bias_h2plus": 0.9194826487963026,
+            "worst_bias_lead_h": 12,
+            "mean_rmse_h2plus": 1.6284794566404077,
+            "worst_rmse_h2plus": 3.0056834321642314,
+            "margin": 0.2148692978020805,
+            "within_margin_h2plus": false,
+            "blocking": true,
+            "h1_spinup_bias": -0.1498347790445029,
+            "h1_spinup_abs_bias": 0.1498347790445029
+          },
+          "delta_after_minus_before": {
+            "mean_bias_h2plus": -0.006116178143212532,
+            "worst_abs_bias_h2plus": -0.006222437960605731
+          }
+        },
+        "U10": {
+          "before": {
+            "status": "scored",
+            "mean_bias_h2plus": 1.1942956709632417,
+            "worst_abs_bias_h2plus": 2.092226468524389,
+            "worst_signed_bias_h2plus": 2.092226468524389,
+            "worst_bias_lead_h": 16,
+            "mean_rmse_h2plus": 1.815473810089888,
+            "worst_rmse_h2plus": 2.680482702808811,
+            "margin": 0.23064713972582307,
+            "within_margin_h2plus": false,
+            "blocking": true,
+            "h1_spinup_bias": -0.3697363028174333,
+            "h1_spinup_abs_bias": 0.3697363028174333
+          },
+          "after": {
+            "status": "scored",
+            "mean_bias_h2plus": 1.2074478313623203,
+            "worst_abs_bias_h2plus": 2.104827231206711,
+            "worst_signed_bias_h2plus": 2.104827231206711,
+            "worst_bias_lead_h": 16,
+            "mean_rmse_h2plus": 1.821122111032484,
+            "worst_rmse_h2plus": 2.6874319935823934,
+            "margin": 0.23064713972582307,
+            "within_margin_h2plus": false,
+            "blocking": true,
+            "h1_spinup_bias": -0.35005273961019095,
+            "h1_spinup_abs_bias": 0.35005273961019095
+          },
+          "delta_after_minus_before": {
+            "mean_bias_h2plus": 0.013152160399078516,
+            "worst_abs_bias_h2plus": 0.012600762682321687
+          }
+        },
+        "V10": {
+          "before": {
+            "status": "scored",
+            "mean_bias_h2plus": -0.10996034224718958,
+            "worst_abs_bias_h2plus": 1.3080756076913935,
+            "worst_signed_bias_h2plus": -1.3080756076913935,
+            "worst_bias_lead_h": 18,
+            "mean_rmse_h2plus": 1.7964059470831213,
+            "worst_rmse_h2plus": 2.474263649528637,
+            "margin": 0.2752320537920854,
+            "within_margin_h2plus": false,
+            "blocking": true,
+            "h1_spinup_bias": -0.03007649113001488,
+            "h1_spinup_abs_bias": 0.03007649113001488
+          },
+          "after": {
+            "status": "scored",
+            "mean_bias_h2plus": -0.08802909318382125,
+            "worst_abs_bias_h2plus": 1.2850506155578114,
+            "worst_signed_bias_h2plus": -1.2850506155578114,
+            "worst_bias_lead_h": 18,
+            "mean_rmse_h2plus": 1.7948078332130546,
+            "worst_rmse_h2plus": 2.458685239343454,
+            "margin": 0.2752320537920854,
+            "within_margin_h2plus": false,
+            "blocking": true,
+            "h1_spinup_bias": -0.03749764555573211,
+            "h1_spinup_abs_bias": 0.03749764555573211
+          },
+          "delta_after_minus_before": {
+            "mean_bias_h2plus": 0.021931249063368324,
+            "worst_abs_bias_h2plus": -0.02302499213358211
+          }
+        },
+        "PSFC": {
+          "before": {
+            "status": "scored",
+            "mean_bias_h2plus": -301.08052426040604,
+            "worst_abs_bias_h2plus": 470.67571361855295,
+            "worst_signed_bias_h2plus": -470.67571361855295,
+            "worst_bias_lead_h": 18,
+            "mean_rmse_h2plus": 304.6950813873458,
+            "worst_rmse_h2plus": 472.5922031164568,
+            "margin": 50.0,
+            "within_margin_h2plus": false,
+            "blocking": false,
+            "h1_spinup_bias": -23.91213322398396,
+            "h1_spinup_abs_bias": 23.91213322398396
+          },
+          "after": {
+            "status": "scored",
+            "mean_bias_h2plus": -310.75739730172506,
+            "worst_abs_bias_h2plus": 480.5485422931474,
+            "worst_signed_bias_h2plus": -480.5485422931474,
+            "worst_bias_lead_h": 18,
+            "mean_rmse_h2plus": 313.88906480396093,
+            "worst_rmse_h2plus": 482.3560594963189,
+            "margin": 50.0,
+            "within_margin_h2plus": false,
+            "blocking": false,
+            "h1_spinup_bias": -29.67896277565154,
+            "h1_spinup_abs_bias": 29.67896277565154
+          },
+          "delta_after_minus_before": {
+            "mean_bias_h2plus": -9.676873041319027,
+            "worst_abs_bias_h2plus": 9.872828674594473
+          }
+        }
+      }
+    },
+    "20260521_18z_l3_24h_20260522T133443Z": {
+      "date": "20260521",
+      "case_note": "Requested scored L3 d01 case.",
+      "before_core_within_margin": false,
+      "after_core_within_margin": false,
+      "after_stability": {
+        "stable_finite": true,
+        "physical_range_ok": true,
+        "blew_up_at_hour": null,
+        "per_hour": [
+          {
+            "all_finite": true,
+            "physical": true,
+            "fields": {
+              "theta": {
+                "finite": true,
+                "min": 290.360485846037,
+                "max": 494.54454642309184,
+                "range": [
+                  150.0,
+                  600.0
+                ],
+                "in_range": true
+              },
+              "qv": {
+                "finite": true,
+                "min": 2.4295448558553978e-06,
+                "max": 0.013774544842036584,
+                "range": [
+                  -1e-06,
+                  0.06
+                ],
+                "in_range": true
+              },
+              "w": {
+                "finite": true,
+                "min": -0.4186781651690761,
+                "max": 0.3260048105715648,
+                "range": [
+                  -120.0,
+                  120.0
+                ],
+                "in_range": true
+              },
+              "u": {
+                "finite": true,
+                "min": -12.478304862976074,
+                "max": 28.369226455688477,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "v": {
+                "finite": true,
+                "min": -13.619436713580159,
+                "max": 12.056388856564153,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "mu_total": {
+                "finite": true,
+                "min": 77233.99459995585,
+                "max": 96892.2626779274,
+                "range": [
+                  1.0,
+                  200000.0
+                ],
+                "in_range": true
+              }
+            },
+            "hour": 1,
+            "wall_s": 454.6100432280218
+          },
+          {
+            "all_finite": true,
+            "physical": true,
+            "fields": {
+              "theta": {
+                "finite": true,
+                "min": 290.2919041055381,
+                "max": 494.5395202636719,
+                "range": [
+                  150.0,
+                  600.0
+                ],
+                "in_range": true
+              },
+              "qv": {
+                "finite": true,
+                "min": 2.4295752610128045e-06,
+                "max": 0.01435867780542122,
+                "range": [
+                  -1e-06,
+                  0.06
+                ],
+                "in_range": true
+              },
+              "w": {
+                "finite": true,
+                "min": -0.5369703615860583,
+                "max": 0.22562157388549975,
+                "range": [
+                  -120.0,
+                  120.0
+                ],
+                "in_range": true
+              },
+              "u": {
+                "finite": true,
+                "min": -12.478304862976074,
+                "max": 28.369226455688477,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "v": {
+                "finite": true,
+                "min": -16.970609521062524,
+                "max": 12.443842754301986,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "mu_total": {
+                "finite": true,
+                "min": 77225.28637743372,
+                "max": 96893.27421198985,
+                "range": [
+                  1.0,
+                  200000.0
+                ],
+                "in_range": true
+              }
+            },
+            "hour": 2,
+            "wall_s": 1.6933319250238128
+          },
+          {
+            "all_finite": true,
+            "physical": true,
+            "fields": {
+              "theta": {
+                "finite": true,
+                "min": 290.46630890507066,
+                "max": 494.5395202636719,
+                "range": [
+                  150.0,
+                  600.0
+                ],
+                "in_range": true
+              },
+              "qv": {
+                "finite": true,
+                "min": 2.429576054825147e-06,
+                "max": 0.015137690253286694,
+                "range": [
+                  -1e-06,
+                  0.06
+                ],
+                "in_range": true
+              },
+              "w": {
+                "finite": true,
+                "min": -0.6283404497031349,
+                "max": 0.2450526374579296,
+                "range": [
+                  -120.0,
+                  120.0
+                ],
+                "in_range": true
+              },
+              "u": {
+                "finite": true,
+                "min": -12.624387432287456,
+                "max": 28.369226455688477,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "v": {
+                "finite": true,
+                "min": -17.620603660031875,
+                "max": 12.943409913538662,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "mu_total": {
+                "finite": true,
+                "min": 77217.97247308619,
+                "max": 96889.67222940532,
+                "range": [
+                  1.0,
+                  200000.0
+                ],
+                "in_range": true
+              }
+            },
+            "hour": 3,
+            "wall_s": 1.688401221006643
+          },
+          {
+            "all_finite": true,
+            "physical": true,
+            "fields": {
+              "theta": {
+                "finite": true,
+                "min": 290.1241955411812,
+                "max": 494.5467940255053,
+                "range": [
+                  150.0,
+                  600.0
+                ],
+                "in_range": true
+              },
+              "qv": {
+                "finite": true,
+                "min": 2.4295761037118383e-06,
+                "max": 0.015847490983863746,
+                "range": [
+                  -1e-06,
+                  0.06
+                ],
+                "in_range": true
+              },
+              "w": {
+                "finite": true,
+                "min": -0.5386079021011271,
+                "max": 0.23339053999928816,
+                "range": [
+                  -120.0,
+                  120.0
+                ],
+                "in_range": true
+              },
+              "u": {
+                "finite": true,
+                "min": -13.131605324240454,
+                "max": 28.369226455688477,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "v": {
+                "finite": true,
+                "min": -16.38546770922017,
+                "max": 12.616548128317392,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "mu_total": {
+                "finite": true,
+                "min": 77212.66074831152,
+                "max": 96886.81183618972,
+                "range": [
+                  1.0,
+                  200000.0
+                ],
+                "in_range": true
+              }
+            },
+            "hour": 4,
+            "wall_s": 1.677097643027082
+          },
+          {
+            "all_finite": true,
+            "physical": true,
+            "fields": {
+              "theta": {
+                "finite": true,
+                "min": 289.96488071769915,
+                "max": 494.5423633066696,
+                "range": [
+                  150.0,
+                  600.0
+                ],
+                "in_range": true
+              },
+              "qv": {
+                "finite": true,
+                "min": 2.4295761067653946e-06,
+                "max": 0.01633984853766334,
+                "range": [
+                  -1e-06,
+                  0.06
+                ],
+                "in_range": true
+              },
+              "w": {
+                "finite": true,
+                "min": -0.49619110005156647,
+                "max": 0.23118934960592227,
+                "range": [
+                  -120.0,
+                  120.0
+                ],
+                "in_range": true
+              },
+              "u": {
+                "finite": true,
+                "min": -13.596107480109396,
+                "max": 28.369226455688477,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "v": {
+                "finite": true,
+                "min": -15.865966703647839,
+                "max": 12.743832317359988,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "mu_total": {
+                "finite": true,
+                "min": 77216.59097900786,
+                "max": 96885.98258133842,
+                "range": [
+                  1.0,
+                  200000.0
+                ],
+                "in_range": true
+              }
+            },
+            "hour": 5,
+            "wall_s": 1.6808396989945322
+          },
+          {
+            "all_finite": true,
+            "physical": true,
+            "fields": {
+              "theta": {
+                "finite": true,
+                "min": 289.93719731774763,
+                "max": 494.5395202636719,
+                "range": [
+                  150.0,
+                  600.0
+                ],
+                "in_range": true
+              },
+              "qv": {
+                "finite": true,
+                "min": 2.429576107236038e-06,
+                "max": 0.016501371995511594,
+                "range": [
+                  -1e-06,
+                  0.06
+                ],
+                "in_range": true
+              },
+              "w": {
+                "finite": true,
+                "min": -0.473940835794717,
+                "max": 0.2571336089379723,
+                "range": [
+                  -120.0,
+                  120.0
+                ],
+                "in_range": true
+              },
+              "u": {
+                "finite": true,
+                "min": -13.687697578319318,
+                "max": 28.369226455688477,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "v": {
+                "finite": true,
+                "min": -15.269757905755844,
+                "max": 13.0449199308664,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "mu_total": {
+                "finite": true,
+                "min": 77218.44372100807,
+                "max": 96886.35266696506,
+                "range": [
+                  1.0,
+                  200000.0
+                ],
+                "in_range": true
+              }
+            },
+            "hour": 6,
+            "wall_s": 1.6812139620014932
+          },
+          {
+            "all_finite": true,
+            "physical": true,
+            "fields": {
+              "theta": {
+                "finite": true,
+                "min": 289.9516793562751,
+                "max": 494.5395202636719,
+                "range": [
+                  150.0,
+                  600.0
+                ],
+                "in_range": true
+              },
+              "qv": {
+                "finite": true,
+                "min": 2.429576107583279e-06,
+                "max": 0.016605122646196315,
+                "range": [
+                  -1e-06,
+                  0.06
+                ],
+                "in_range": true
+              },
+              "w": {
+                "finite": true,
+                "min": -0.4776407764014303,
+                "max": 0.26452277391481416,
+                "range": [
+                  -120.0,
+                  120.0
+                ],
+                "in_range": true
+              },
+              "u": {
+                "finite": true,
+                "min": -13.678552779809152,
+                "max": 28.369226455688477,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "v": {
+                "finite": true,
+                "min": -15.297703764627869,
+                "max": 12.939534234438188,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "mu_total": {
+                "finite": true,
+                "min": 77214.99285882857,
+                "max": 96885.85089538086,
+                "range": [
+                  1.0,
+                  200000.0
+                ],
+                "in_range": true
+              }
+            },
+            "hour": 7,
+            "wall_s": 1.682424450002145
+          },
+          {
+            "all_finite": true,
+            "physical": true,
+            "fields": {
+              "theta": {
+                "finite": true,
+                "min": 289.95874875990813,
+                "max": 494.5395202636719,
+                "range": [
+                  150.0,
+                  600.0
+                ],
+                "in_range": true
+              },
+              "qv": {
+                "finite": true,
+                "min": 2.429576107967911e-06,
+                "max": 0.016700587571225965,
+                "range": [
+                  -1e-06,
+                  0.06
+                ],
+                "in_range": true
+              },
+              "w": {
+                "finite": true,
+                "min": -0.4791005913700551,
+                "max": 0.2487905632287209,
+                "range": [
+                  -120.0,
+                  120.0
+                ],
+                "in_range": true
+              },
+              "u": {
+                "finite": true,
+                "min": -13.780915549289176,
+                "max": 28.369226455688477,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "v": {
+                "finite": true,
+                "min": -15.418976678972278,
+                "max": 12.940598645255868,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "mu_total": {
+                "finite": true,
+                "min": 77213.30427296198,
+                "max": 96885.22551954315,
+                "range": [
+                  1.0,
+                  200000.0
+                ],
+                "in_range": true
+              }
+            },
+            "hour": 8,
+            "wall_s": 1.6754743919882458
+          },
+          {
+            "all_finite": true,
+            "physical": true,
+            "fields": {
+              "theta": {
+                "finite": true,
+                "min": 289.9620689854954,
+                "max": 494.5395202636719,
+                "range": [
+                  150.0,
+                  600.0
+                ],
+                "in_range": true
+              },
+              "qv": {
+                "finite": true,
+                "min": 2.429576108137686e-06,
+                "max": 0.016754430802012277,
+                "range": [
+                  -1e-06,
+                  0.06
+                ],
+                "in_range": true
+              },
+              "w": {
+                "finite": true,
+                "min": -0.5357083627201684,
+                "max": 0.25739700480219285,
+                "range": [
+                  -120.0,
+                  120.0
+                ],
+                "in_range": true
+              },
+              "u": {
+                "finite": true,
+                "min": -13.843789484223844,
+                "max": 28.369226455688477,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "v": {
+                "finite": true,
+                "min": -15.601440070213386,
+                "max": 12.874671134845268,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "mu_total": {
+                "finite": true,
+                "min": 77211.65247531055,
+                "max": 96885.3562215548,
+                "range": [
+                  1.0,
+                  200000.0
+                ],
+                "in_range": true
+              }
+            },
+            "hour": 9,
+            "wall_s": 1.6853541400050744
+          },
+          {
+            "all_finite": true,
+            "physical": true,
+            "fields": {
+              "theta": {
+                "finite": true,
+                "min": 289.90389079676044,
+                "max": 494.5395202636719,
+                "range": [
+                  150.0,
+                  600.0
+                ],
+                "in_range": true
+              },
+              "qv": {
+                "finite": true,
+                "min": 2.4295761085425336e-06,
+                "max": 0.016708866773671262,
+                "range": [
+                  -1e-06,
+                  0.06
+                ],
+                "in_range": true
+              },
+              "w": {
+                "finite": true,
+                "min": -0.5768633420485487,
+                "max": 0.2740653081880528,
+                "range": [
+                  -120.0,
+                  120.0
+                ],
+                "in_range": true
+              },
+              "u": {
+                "finite": true,
+                "min": -13.861281596828906,
+                "max": 28.369226455688477,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "v": {
+                "finite": true,
+                "min": -15.83797411892165,
+                "max": 12.81897887146118,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "mu_total": {
+                "finite": true,
+                "min": 77211.89857895863,
+                "max": 96885.35516721966,
+                "range": [
+                  1.0,
+                  200000.0
+                ],
+                "in_range": true
+              }
+            },
+            "hour": 10,
+            "wall_s": 1.6744805249909405
+          },
+          {
+            "all_finite": true,
+            "physical": true,
+            "fields": {
+              "theta": {
+                "finite": true,
+                "min": 289.78243952904785,
+                "max": 494.539624638688,
+                "range": [
+                  150.0,
+                  600.0
+                ],
+                "in_range": true
+              },
+              "qv": {
+                "finite": true,
+                "min": 2.429576108707734e-06,
+                "max": 0.016580670816098264,
+                "range": [
+                  -1e-06,
+                  0.06
+                ],
+                "in_range": true
+              },
+              "w": {
+                "finite": true,
+                "min": -0.5310962270092414,
+                "max": 0.2618797647125424,
+                "range": [
+                  -120.0,
+                  120.0
+                ],
+                "in_range": true
+              },
+              "u": {
+                "finite": true,
+                "min": -13.821092618446619,
+                "max": 28.369226455688477,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "v": {
+                "finite": true,
+                "min": -16.03725658201633,
+                "max": 12.851993995230238,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "mu_total": {
+                "finite": true,
+                "min": 77212.86048324578,
+                "max": 96885.32551241573,
+                "range": [
+                  1.0,
+                  200000.0
+                ],
+                "in_range": true
+              }
+            },
+            "hour": 11,
+            "wall_s": 1.6834997980040498
+          },
+          {
+            "all_finite": true,
+            "physical": true,
+            "fields": {
+              "theta": {
+                "finite": true,
+                "min": 289.76600523622994,
+                "max": 494.5395202636719,
+                "range": [
+                  150.0,
+                  600.0
+                ],
+                "in_range": true
+              },
+              "qv": {
+                "finite": true,
+                "min": 2.4295761084737813e-06,
+                "max": 0.016497819610185916,
+                "range": [
+                  -1e-06,
+                  0.06
+                ],
+                "in_range": true
+              },
+              "w": {
+                "finite": true,
+                "min": -0.5294895958275521,
+                "max": 0.2695315329720229,
+                "range": [
+                  -120.0,
+                  120.0
+                ],
+                "in_range": true
+              },
+              "u": {
+                "finite": true,
+                "min": -13.762935442699753,
+                "max": 28.369226455688477,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "v": {
+                "finite": true,
+                "min": -16.115275240342193,
+                "max": 12.824872766741413,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "mu_total": {
+                "finite": true,
+                "min": 77213.52188909512,
+                "max": 96885.70798212562,
+                "range": [
+                  1.0,
+                  200000.0
+                ],
+                "in_range": true
+              }
+            },
+            "hour": 12,
+            "wall_s": 1.687062621989753
+          },
+          {
+            "all_finite": true,
+            "physical": true,
+            "fields": {
+              "theta": {
+                "finite": true,
+                "min": 289.759139829667,
+                "max": 494.5395202636719,
+                "range": [
+                  150.0,
+                  600.0
+                ],
+                "in_range": true
+              },
+              "qv": {
+                "finite": true,
+                "min": 2.4295761084714663e-06,
+                "max": 0.016519497593034796,
+                "range": [
+                  -1e-06,
+                  0.06
+                ],
+                "in_range": true
+              },
+              "w": {
+                "finite": true,
+                "min": -0.5164423820790492,
+                "max": 0.2625030866646432,
+                "range": [
+                  -120.0,
+                  120.0
+                ],
+                "in_range": true
+              },
+              "u": {
+                "finite": true,
+                "min": -13.658507845343737,
+                "max": 28.369226455688477,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "v": {
+                "finite": true,
+                "min": -16.12811061757489,
+                "max": 12.753990982878054,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "mu_total": {
+                "finite": true,
+                "min": 77213.50071691834,
+                "max": 96885.40929702936,
+                "range": [
+                  1.0,
+                  200000.0
+                ],
+                "in_range": true
+              }
+            },
+            "hour": 13,
+            "wall_s": 1.6908399579988327
+          },
+          {
+            "all_finite": true,
+            "physical": true,
+            "fields": {
+              "theta": {
+                "finite": true,
+                "min": 289.7625075821017,
+                "max": 494.5395202636719,
+                "range": [
+                  150.0,
+                  600.0
+                ],
+                "in_range": true
+              },
+              "qv": {
+                "finite": true,
+                "min": 2.429576108612626e-06,
+                "max": 0.0165945501177745,
+                "range": [
+                  -1e-06,
+                  0.06
+                ],
+                "in_range": true
+              },
+              "w": {
+                "finite": true,
+                "min": -0.5147784493418188,
+                "max": 0.2570025399387333,
+                "range": [
+                  -120.0,
+                  120.0
+                ],
+                "in_range": true
+              },
+              "u": {
+                "finite": true,
+                "min": -13.59442553853253,
+                "max": 28.369226455688477,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "v": {
+                "finite": true,
+                "min": -16.056662125167634,
+                "max": 12.70868659673372,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "mu_total": {
+                "finite": true,
+                "min": 77213.86409831536,
+                "max": 96885.82699904335,
+                "range": [
+                  1.0,
+                  200000.0
+                ],
+                "in_range": true
+              }
+            },
+            "hour": 14,
+            "wall_s": 1.6826691809983458
+          },
+          {
+            "all_finite": true,
+            "physical": true,
+            "fields": {
+              "theta": {
+                "finite": true,
+                "min": 289.77506899974986,
+                "max": 494.5395202636719,
+                "range": [
+                  150.0,
+                  600.0
+                ],
+                "in_range": true
+              },
+              "qv": {
+                "finite": true,
+                "min": 2.4295761087224223e-06,
+                "max": 0.016695476278661036,
+                "range": [
+                  -1e-06,
+                  0.06
+                ],
+                "in_range": true
+              },
+              "w": {
+                "finite": true,
+                "min": -0.5263654846760468,
+                "max": 0.2488729245066042,
+                "range": [
+                  -120.0,
+                  120.0
+                ],
+                "in_range": true
+              },
+              "u": {
+                "finite": true,
+                "min": -13.528861678273863,
+                "max": 28.369226455688477,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "v": {
+                "finite": true,
+                "min": -16.002586172212595,
+                "max": 12.727295051287612,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "mu_total": {
+                "finite": true,
+                "min": 77214.42145615576,
+                "max": 96885.74434470193,
+                "range": [
+                  1.0,
+                  200000.0
+                ],
+                "in_range": true
+              }
+            },
+            "hour": 15,
+            "wall_s": 1.6921564869990107
+          },
+          {
+            "all_finite": true,
+            "physical": true,
+            "fields": {
+              "theta": {
+                "finite": true,
+                "min": 289.7395312477152,
+                "max": 494.5395202636719,
+                "range": [
+                  150.0,
+                  600.0
+                ],
+                "in_range": true
+              },
+              "qv": {
+                "finite": true,
+                "min": 2.4295761087797126e-06,
+                "max": 0.016785434551489217,
+                "range": [
+                  -1e-06,
+                  0.06
+                ],
+                "in_range": true
+              },
+              "w": {
+                "finite": true,
+                "min": -0.5336647077251988,
+                "max": 0.2500591708396511,
+                "range": [
+                  -120.0,
+                  120.0
+                ],
+                "in_range": true
+              },
+              "u": {
+                "finite": true,
+                "min": -13.492978713861586,
+                "max": 28.369226455688477,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "v": {
+                "finite": true,
+                "min": -15.806688522393419,
+                "max": 12.818206465846409,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "mu_total": {
+                "finite": true,
+                "min": 77214.42810441757,
+                "max": 96885.84165585975,
+                "range": [
+                  1.0,
+                  200000.0
+                ],
+                "in_range": true
+              }
+            },
+            "hour": 16,
+            "wall_s": 1.6805481069895905
+          },
+          {
+            "all_finite": true,
+            "physical": true,
+            "fields": {
+              "theta": {
+                "finite": true,
+                "min": 289.69698059965015,
+                "max": 494.5395202636719,
+                "range": [
+                  150.0,
+                  600.0
+                ],
+                "in_range": true
+              },
+              "qv": {
+                "finite": true,
+                "min": 2.4295761087833324e-06,
+                "max": 0.016820217547590582,
+                "range": [
+                  -1e-06,
+                  0.06
+                ],
+                "in_range": true
+              },
+              "w": {
+                "finite": true,
+                "min": -0.5318289935193391,
+                "max": 0.2529154021920052,
+                "range": [
+                  -120.0,
+                  120.0
+                ],
+                "in_range": true
+              },
+              "u": {
+                "finite": true,
+                "min": -13.505560328852344,
+                "max": 28.369226455688477,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "v": {
+                "finite": true,
+                "min": -15.56864631181056,
+                "max": 12.865881193082075,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "mu_total": {
+                "finite": true,
+                "min": 77213.90528059573,
+                "max": 96886.01949051238,
+                "range": [
+                  1.0,
+                  200000.0
+                ],
+                "in_range": true
+              }
+            },
+            "hour": 17,
+            "wall_s": 1.6806203370215371
+          },
+          {
+            "all_finite": true,
+            "physical": true,
+            "fields": {
+              "theta": {
+                "finite": true,
+                "min": 289.6723829296053,
+                "max": 494.5395202636719,
+                "range": [
+                  150.0,
+                  600.0
+                ],
+                "in_range": true
+              },
+              "qv": {
+                "finite": true,
+                "min": 2.429576108783131e-06,
+                "max": 0.01682626514454651,
+                "range": [
+                  -1e-06,
+                  0.06
+                ],
+                "in_range": true
+              },
+              "w": {
+                "finite": true,
+                "min": -0.5244189727193088,
+                "max": 0.25464008490516354,
+                "range": [
+                  -120.0,
+                  120.0
+                ],
+                "in_range": true
+              },
+              "u": {
+                "finite": true,
+                "min": -13.527081179706261,
+                "max": 28.369226455688477,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "v": {
+                "finite": true,
+                "min": -15.544496281368653,
+                "max": 12.909142538895477,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "mu_total": {
+                "finite": true,
+                "min": 77213.22785245757,
+                "max": 96885.72199201676,
+                "range": [
+                  1.0,
+                  200000.0
+                ],
+                "in_range": true
+              }
+            },
+            "hour": 18,
+            "wall_s": 1.683794279990252
+          },
+          {
+            "all_finite": true,
+            "physical": true,
+            "fields": {
+              "theta": {
+                "finite": true,
+                "min": 289.62033614419653,
+                "max": 494.5395202636719,
+                "range": [
+                  150.0,
+                  600.0
+                ],
+                "in_range": true
+              },
+              "qv": {
+                "finite": true,
+                "min": 2.4295761088414884e-06,
+                "max": 0.01681351090020845,
+                "range": [
+                  -1e-06,
+                  0.06
+                ],
+                "in_range": true
+              },
+              "w": {
+                "finite": true,
+                "min": -0.5151700604020779,
+                "max": 0.25817896868258766,
+                "range": [
+                  -120.0,
+                  120.0
+                ],
+                "in_range": true
+              },
+              "u": {
+                "finite": true,
+                "min": -13.529787946960084,
+                "max": 28.369226455688477,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "v": {
+                "finite": true,
+                "min": -15.602820300910151,
+                "max": 13.000835423998645,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "mu_total": {
+                "finite": true,
+                "min": 77212.29259592493,
+                "max": 96886.03376013455,
+                "range": [
+                  1.0,
+                  200000.0
+                ],
+                "in_range": true
+              }
+            },
+            "hour": 19,
+            "wall_s": 1.681559403979918
+          },
+          {
+            "all_finite": true,
+            "physical": true,
+            "fields": {
+              "theta": {
+                "finite": true,
+                "min": 289.5752128448499,
+                "max": 494.5395202636719,
+                "range": [
+                  150.0,
+                  600.0
+                ],
+                "in_range": true
+              },
+              "qv": {
+                "finite": true,
+                "min": 2.4295761088972024e-06,
+                "max": 0.016777820290553257,
+                "range": [
+                  -1e-06,
+                  0.06
+                ],
+                "in_range": true
+              },
+              "w": {
+                "finite": true,
+                "min": -0.5080589542846663,
+                "max": 0.2574957718703166,
+                "range": [
+                  -120.0,
+                  120.0
+                ],
+                "in_range": true
+              },
+              "u": {
+                "finite": true,
+                "min": -13.535863861869322,
+                "max": 28.369226455688477,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "v": {
+                "finite": true,
+                "min": -15.805821317287194,
+                "max": 13.070477838568006,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "mu_total": {
+                "finite": true,
+                "min": 77212.41759530308,
+                "max": 96885.97179084865,
+                "range": [
+                  1.0,
+                  200000.0
+                ],
+                "in_range": true
+              }
+            },
+            "hour": 20,
+            "wall_s": 1.6866366490139626
+          },
+          {
+            "all_finite": true,
+            "physical": true,
+            "fields": {
+              "theta": {
+                "finite": true,
+                "min": 289.54449246983603,
+                "max": 494.5395202636719,
+                "range": [
+                  150.0,
+                  600.0
+                ],
+                "in_range": true
+              },
+              "qv": {
+                "finite": true,
+                "min": 2.4295761088263807e-06,
+                "max": 0.01673448945327024,
+                "range": [
+                  -1e-06,
+                  0.06
+                ],
+                "in_range": true
+              },
+              "w": {
+                "finite": true,
+                "min": -0.5038300538615837,
+                "max": 0.2575211960034934,
+                "range": [
+                  -120.0,
+                  120.0
+                ],
+                "in_range": true
+              },
+              "u": {
+                "finite": true,
+                "min": -13.551118416398559,
+                "max": 28.369226455688477,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "v": {
+                "finite": true,
+                "min": -15.980611467393715,
+                "max": 13.093893136770058,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "mu_total": {
+                "finite": true,
+                "min": 77212.22189292849,
+                "max": 96886.0625042692,
+                "range": [
+                  1.0,
+                  200000.0
+                ],
+                "in_range": true
+              }
+            },
+            "hour": 21,
+            "wall_s": 1.6814128929981962
+          },
+          {
+            "all_finite": true,
+            "physical": true,
+            "fields": {
+              "theta": {
+                "finite": true,
+                "min": 289.5007358431948,
+                "max": 494.5395202636719,
+                "range": [
+                  150.0,
+                  600.0
+                ],
+                "in_range": true
+              },
+              "qv": {
+                "finite": true,
+                "min": 2.4295761087291837e-06,
+                "max": 0.01669860021796601,
+                "range": [
+                  -1e-06,
+                  0.06
+                ],
+                "in_range": true
+              },
+              "w": {
+                "finite": true,
+                "min": -0.5013670914435104,
+                "max": 0.25856742175918035,
+                "range": [
+                  -120.0,
+                  120.0
+                ],
+                "in_range": true
+              },
+              "u": {
+                "finite": true,
+                "min": -13.568646296313045,
+                "max": 28.369226455688477,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "v": {
+                "finite": true,
+                "min": -16.06776123921365,
+                "max": 13.102422647312116,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "mu_total": {
+                "finite": true,
+                "min": 77212.26249545842,
+                "max": 96886.07939109355,
+                "range": [
+                  1.0,
+                  200000.0
+                ],
+                "in_range": true
+              }
+            },
+            "hour": 22,
+            "wall_s": 1.682617370999651
+          },
+          {
+            "all_finite": true,
+            "physical": true,
+            "fields": {
+              "theta": {
+                "finite": true,
+                "min": 289.452407474185,
+                "max": 494.5395202636719,
+                "range": [
+                  150.0,
+                  600.0
+                ],
+                "in_range": true
+              },
+              "qv": {
+                "finite": true,
+                "min": 2.429576108656797e-06,
+                "max": 0.01666856422419054,
+                "range": [
+                  -1e-06,
+                  0.06
+                ],
+                "in_range": true
+              },
+              "w": {
+                "finite": true,
+                "min": -0.4993614445312122,
+                "max": 0.2590958659283189,
+                "range": [
+                  -120.0,
+                  120.0
+                ],
+                "in_range": true
+              },
+              "u": {
+                "finite": true,
+                "min": -13.579228497818791,
+                "max": 28.369226455688477,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "v": {
+                "finite": true,
+                "min": -16.004290308250155,
+                "max": 13.091666267506715,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "mu_total": {
+                "finite": true,
+                "min": 77212.01223594879,
+                "max": 96885.79901235084,
+                "range": [
+                  1.0,
+                  200000.0
+                ],
+                "in_range": true
+              }
+            },
+            "hour": 23,
+            "wall_s": 1.6824489499849733
+          },
+          {
+            "all_finite": true,
+            "physical": true,
+            "fields": {
+              "theta": {
+                "finite": true,
+                "min": 289.4224451516489,
+                "max": 494.5395202636719,
+                "range": [
+                  150.0,
+                  600.0
+                ],
+                "in_range": true
+              },
+              "qv": {
+                "finite": true,
+                "min": 2.429576108648967e-06,
+                "max": 0.016608113451466257,
+                "range": [
+                  -1e-06,
+                  0.06
+                ],
+                "in_range": true
+              },
+              "w": {
+                "finite": true,
+                "min": -0.49648360983475676,
+                "max": 0.2602654411605983,
+                "range": [
+                  -120.0,
+                  120.0
+                ],
+                "in_range": true
+              },
+              "u": {
+                "finite": true,
+                "min": -13.589818671405489,
+                "max": 28.369226455688477,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "v": {
+                "finite": true,
+                "min": -15.857187285134257,
+                "max": 13.078958079222218,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "mu_total": {
+                "finite": true,
+                "min": 77211.2307131065,
+                "max": 96885.79585655953,
+                "range": [
+                  1.0,
+                  200000.0
+                ],
+                "in_range": true
+              }
+            },
+            "hour": 24,
+            "wall_s": 1.6770460529951379
+          }
+        ]
+      },
+      "fields": {
+        "T2": {
+          "before": {
+            "status": "scored",
+            "mean_bias_h2plus": 0.25337276029061223,
+            "worst_abs_bias_h2plus": 1.235561459143131,
+            "worst_signed_bias_h2plus": 1.235561459143131,
+            "worst_bias_lead_h": 12,
+            "mean_rmse_h2plus": 2.221391410308131,
+            "worst_rmse_h2plus": 3.716994671147979,
+            "margin": 0.2148692978020805,
+            "within_margin_h2plus": false,
+            "blocking": true,
+            "h1_spinup_bias": -0.04675733463043329,
+            "h1_spinup_abs_bias": 0.04675733463043329
+          },
+          "after": {
+            "status": "scored",
+            "mean_bias_h2plus": 0.24666930285187097,
+            "worst_abs_bias_h2plus": 1.2288910685199106,
+            "worst_signed_bias_h2plus": 1.2288910685199106,
+            "worst_bias_lead_h": 12,
+            "mean_rmse_h2plus": 2.2220250723301795,
+            "worst_rmse_h2plus": 3.716661530658682,
+            "margin": 0.2148692978020805,
+            "within_margin_h2plus": false,
+            "blocking": true,
+            "h1_spinup_bias": -0.054613578160951456,
+            "h1_spinup_abs_bias": 0.054613578160951456
+          },
+          "delta_after_minus_before": {
+            "mean_bias_h2plus": -0.0067034574387412615,
+            "worst_abs_bias_h2plus": -0.00667039062322039
+          }
+        },
+        "U10": {
+          "before": {
+            "status": "scored",
+            "mean_bias_h2plus": 1.2419612607533999,
+            "worst_abs_bias_h2plus": 1.5916272189116942,
+            "worst_signed_bias_h2plus": 1.5916272189116942,
+            "worst_bias_lead_h": 21,
+            "mean_rmse_h2plus": 1.6167290665483092,
+            "worst_rmse_h2plus": 2.056157035788284,
+            "margin": 0.23064713972582307,
+            "within_margin_h2plus": false,
+            "blocking": true,
+            "h1_spinup_bias": -0.10392852319398097,
+            "h1_spinup_abs_bias": 0.10392852319398097
+          },
+          "after": {
+            "status": "scored",
+            "mean_bias_h2plus": 1.2421610572476909,
+            "worst_abs_bias_h2plus": 1.592560626955392,
+            "worst_signed_bias_h2plus": 1.592560626955392,
+            "worst_bias_lead_h": 21,
+            "mean_rmse_h2plus": 1.6190410714507555,
+            "worst_rmse_h2plus": 2.057215405715481,
+            "margin": 0.23064713972582307,
+            "within_margin_h2plus": false,
+            "blocking": true,
+            "h1_spinup_bias": -0.11944491982081587,
+            "h1_spinup_abs_bias": 0.11944491982081587
+          },
+          "delta_after_minus_before": {
+            "mean_bias_h2plus": 0.00019979649429102686,
+            "worst_abs_bias_h2plus": 0.0009334080436977921
+          }
+        },
+        "V10": {
+          "before": {
+            "status": "scored",
+            "mean_bias_h2plus": 0.6865411251709403,
+            "worst_abs_bias_h2plus": 1.8729040947908588,
+            "worst_signed_bias_h2plus": 1.8729040947908588,
+            "worst_bias_lead_h": 24,
+            "mean_rmse_h2plus": 1.603788025296342,
+            "worst_rmse_h2plus": 2.550865943773165,
+            "margin": 0.2752320537920854,
+            "within_margin_h2plus": false,
+            "blocking": true,
+            "h1_spinup_bias": 0.4190888179288588,
+            "h1_spinup_abs_bias": 0.4190888179288588
+          },
+          "after": {
+            "status": "scored",
+            "mean_bias_h2plus": 0.6826755242537991,
+            "worst_abs_bias_h2plus": 1.8696151116445097,
+            "worst_signed_bias_h2plus": 1.8696151116445097,
+            "worst_bias_lead_h": 24,
+            "mean_rmse_h2plus": 1.6039978063433895,
+            "worst_rmse_h2plus": 2.5497570862139907,
+            "margin": 0.2752320537920854,
+            "within_margin_h2plus": false,
+            "blocking": true,
+            "h1_spinup_bias": 0.41896144615281566,
+            "h1_spinup_abs_bias": 0.41896144615281566
+          },
+          "delta_after_minus_before": {
+            "mean_bias_h2plus": -0.0038656009171412764,
+            "worst_abs_bias_h2plus": -0.003288983146349178
+          }
+        },
+        "PSFC": {
+          "before": {
+            "status": "scored",
+            "mean_bias_h2plus": -116.21623844353454,
+            "worst_abs_bias_h2plus": 191.29851951202843,
+            "worst_signed_bias_h2plus": -191.29851951202843,
+            "worst_bias_lead_h": 18,
+            "mean_rmse_h2plus": 124.88669599700975,
+            "worst_rmse_h2plus": 196.14362881668794,
+            "margin": 50.0,
+            "within_margin_h2plus": false,
+            "blocking": false,
+            "h1_spinup_bias": 42.17307100874795,
+            "h1_spinup_abs_bias": 42.17307100874795
+          },
+          "after": {
+            "status": "scored",
+            "mean_bias_h2plus": -135.58449467516104,
+            "worst_abs_bias_h2plus": 210.93831727264444,
+            "worst_signed_bias_h2plus": -210.93831727264444,
+            "worst_bias_lead_h": 18,
+            "mean_rmse_h2plus": 142.96289684330588,
+            "worst_rmse_h2plus": 215.6148700481846,
+            "margin": 50.0,
+            "within_margin_h2plus": false,
+            "blocking": false,
+            "h1_spinup_bias": 30.27058274102424,
+            "h1_spinup_abs_bias": 30.27058274102424
+          },
+          "delta_after_minus_before": {
+            "mean_bias_h2plus": -19.368256231626503,
+            "worst_abs_bias_h2plus": 19.639797760616005
+          }
+        }
+      }
+    }
+  }
+}

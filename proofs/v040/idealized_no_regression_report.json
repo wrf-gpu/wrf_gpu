@@ -1,0 +1,201 @@
+{
+  "schema": "v0.4.0-idealized-no-regression-2026-06-03",
+  "created_utc": "2026-06-03T10:50:40.810914+00:00",
+  "commands_run": [
+    "taskset -c 0-3 env VERIFY_RUN_GPU=1 JAX_ENABLE_X64=true XLA_PYTHON_CLIENT_PREALLOCATE=false PYTHONPATH=src:. bash scripts/verify/idealized_warmbubble.sh",
+    "taskset -c 0-3 env VERIFY_RUN_GPU=1 JAX_ENABLE_X64=true XLA_PYTHON_CLIENT_PREALLOCATE=false PYTHONPATH=src:. bash scripts/verify/idealized_straka.sh",
+    "taskset -c 0-3 env JAX_PLATFORM_NAME=cpu JAX_ENABLE_X64=true PYTHONPATH=src:proofs/v040:. python proofs/v040/idealized_no_regression_report.py"
+  ],
+  "warm_bubble": {
+    "path": "/home/enric/src/wrf_gpu2/.claude/worktrees/v040-mu-fix/proofs/verify_run/row1/skamarock_bubble_diagnostics.json",
+    "verdict": "PASS",
+    "status": "RAN_TO_COMPLETION",
+    "checks_passed": {
+      "all_snapshots_finite": true,
+      "horizontal_drift_500s": true,
+      "max_abs_w_500s": true,
+      "relative_mass_drift": true,
+      "thermal_rise_500s": true,
+      "theta_prime_max_500s": true
+    },
+    "check_values": {
+      "all_snapshots_finite": 1.0,
+      "horizontal_drift_500s": 0.0,
+      "max_abs_w_500s": 11.680187856366487,
+      "relative_mass_drift": 0.0,
+      "thermal_rise_500s": 1924.3475674060383,
+      "theta_prime_max_500s": 1.9200603163244523
+    }
+  },
+  "density_current": {
+    "path": "/home/enric/src/wrf_gpu2/.claude/worktrees/v040-mu-fix/proofs/verify_run/row2/straka_density_current_diagnostics.json",
+    "verdict": "PASS",
+    "status": "RAN_TO_COMPLETION",
+    "checks_passed": {
+      "all_snapshots_finite": true,
+      "front_position_900s": true,
+      "max_abs_w_900s": true,
+      "relative_mass_drift": true,
+      "rotor_count_proxy_900s": true,
+      "theta_prime_min_900s": true
+    },
+    "check_values": {
+      "all_snapshots_finite": 1.0,
+      "front_position_900s": 14150.0,
+      "max_abs_w_900s": 14.574919073014826,
+      "relative_mass_drift": 2.2509470252373515e-09,
+      "rotor_count_proxy_900s": 4.0,
+      "theta_prime_min_900s": -9.9709950323533
+    }
+  },
+  "periodic_advance_mu_t_bit_identity_vs_diagnosis_branch": {
+    "pass": true,
+    "base_ref": "worker/gpt/v040-nativeinit-diag",
+    "base_ref_commit": "4735e53a8ac8993295820edade3e2b0a9d530705",
+    "base_mu_t_advance_sha256": "0ef6df476f30df39dd40fe2ea6d9ad200737bd0c559a31a20550f1a4310eeef0",
+    "fields": {
+      "mu": {
+        "bit_identical": true,
+        "max_abs": 0.0,
+        "shape": [
+          5,
+          6
+        ],
+        "dtype": "float64"
+      },
+      "mudf": {
+        "bit_identical": true,
+        "max_abs": 0.0,
+        "shape": [
+          5,
+          6
+        ],
+        "dtype": "float64"
+      },
+      "muts": {
+        "bit_identical": true,
+        "max_abs": 0.0,
+        "shape": [
+          5,
+          6
+        ],
+        "dtype": "float64"
+      },
+      "muave": {
+        "bit_identical": true,
+        "max_abs": 0.0,
+        "shape": [
+          5,
+          6
+        ],
+        "dtype": "float64"
+      },
+      "ww": {
+        "bit_identical": true,
+        "max_abs": 0.0,
+        "shape": [
+          5,
+          5,
+          6
+        ],
+        "dtype": "float64"
+      },
+      "theta": {
+        "bit_identical": true,
+        "max_abs": 0.0,
+        "shape": [
+          4,
+          5,
+          6
+        ],
+        "dtype": "float64"
+      }
+    }
+  },
+  "rerun_metric_delta_vs_branch_head": {
+    "warm_bubble": {
+      "available": true,
+      "checks": {
+        "all_snapshots_finite": {
+          "current": 1.0,
+          "head": 1.0,
+          "delta": 0.0,
+          "same_pass_status": true
+        },
+        "horizontal_drift_500s": {
+          "current": 0.0,
+          "head": 1.8189894035458565e-12,
+          "delta": -1.8189894035458565e-12,
+          "same_pass_status": true
+        },
+        "max_abs_w_500s": {
+          "current": 11.680187856366487,
+          "head": 11.680187856366164,
+          "delta": 3.232969447708456e-13,
+          "same_pass_status": true
+        },
+        "relative_mass_drift": {
+          "current": 0.0,
+          "head": 0.0,
+          "delta": 0.0,
+          "same_pass_status": true
+        },
+        "thermal_rise_500s": {
+          "current": 1924.3475674060383,
+          "head": 1924.3475674059687,
+          "delta": 6.957634468562901e-11,
+          "same_pass_status": true
+        },
+        "theta_prime_max_500s": {
+          "current": 1.9200603163244523,
+          "head": 1.9200603163246228,
+          "delta": -1.7053025658242404e-13,
+          "same_pass_status": true
+        }
+      }
+    },
+    "density_current": {
+      "available": true,
+      "checks": {
+        "all_snapshots_finite": {
+          "current": 1.0,
+          "head": 1.0,
+          "delta": 0.0,
+          "same_pass_status": true
+        },
+        "front_position_900s": {
+          "current": 14150.0,
+          "head": 14150.0,
+          "delta": 0.0,
+          "same_pass_status": true
+        },
+        "max_abs_w_900s": {
+          "current": 14.574919073014826,
+          "head": 14.574919073010857,
+          "delta": 3.9683811792201595e-12,
+          "same_pass_status": true
+        },
+        "relative_mass_drift": {
+          "current": 2.2509470252373515e-09,
+          "head": 2.2509470252373515e-09,
+          "delta": 0.0,
+          "same_pass_status": true
+        },
+        "rotor_count_proxy_900s": {
+          "current": 4.0,
+          "head": 4.0,
+          "delta": 0.0,
+          "same_pass_status": true
+        },
+        "theta_prime_min_900s": {
+          "current": -9.9709950323533,
+          "head": -9.970995032353414,
+          "delta": 1.1368683772161603e-13,
+          "same_pass_status": true
+        }
+      }
+    },
+    "note": "Fresh GPU reruns can perturb last-digit diagnostics; pass/fail status remained unchanged. The periodic advance_mu_t kernel itself is compared bitwise above."
+  },
+  "verdict": "PASS"
+}

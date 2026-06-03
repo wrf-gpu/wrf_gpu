@@ -47,6 +47,9 @@ class AdvanceMuTInputs:
     rdy: float
     dts: float
     epssm: float
+    periodic_x: bool = True
+    specified: bool = False
+    nested: bool = False
 
 
 def _interior_2d(array: jnp.ndarray) -> tuple[slice, slice]:
@@ -65,7 +68,25 @@ def _update_3d(base: jnp.ndarray, values: jnp.ndarray, ys: slice, xs: slice) -> 
     return base.at[:, ys, xs].set(values)
 
 
+def _empty_diagnostics(inputs: AdvanceMuTInputs) -> dict[str, jnp.ndarray]:
+    nz = int(inputs.theta.shape[0])
+    return {
+        "dmdt": jnp.zeros_like(inputs.mu),
+        "dvdxi": jnp.zeros_like(inputs.theta[:nz]),
+        "wdtn": jnp.zeros_like(inputs.ww),
+        "theta_tendency": jnp.zeros_like(inputs.theta),
+    }
+
+
 def advance_mu_t_wrf(inputs: AdvanceMuTInputs) -> dict[str, jnp.ndarray]:
+    """Advance MU/theta through WRF ``advance_mu_t`` with BC-conditional bounds."""
+
+    if bool(inputs.specified) or bool(inputs.nested):
+        return _advance_mu_t_specified_or_nested(inputs)
+    return _advance_mu_t_periodic(inputs)
+
+
+def _advance_mu_t_periodic(inputs: AdvanceMuTInputs) -> dict[str, jnp.ndarray]:
     """Advance MU, MUTS, MUAVE, ``ww`` and theta like WRF ``advance_mu_t``.
 
     This is a comparator helper, not the production dycore path. It follows WRF
@@ -190,6 +211,7 @@ def advance_mu_t_wrf(inputs: AdvanceMuTInputs) -> dict[str, jnp.ndarray]:
     v_north_t = inputs.v[:, 1 : ny + 1, :]
 
     theta_levels = []
+    theta_tendency_levels = []
     for k in range(nz):
         th = theta_flux_source[k]  # (ny, nx)
         th_e = _xp(th)  # i+1, periodic
@@ -201,8 +223,10 @@ def advance_mu_t_wrf(inputs: AdvanceMuTInputs) -> dict[str, jnp.ndarray]:
         tendency = inputs.msftx * (0.5 * float(inputs.rdy) * v_flux + 0.5 * float(inputs.rdx) * u_flux) + inputs.rdnw[k] * (
             wdtn[k + 1] - wdtn[k]
         )
+        theta_tendency_levels.append(tendency)
         theta_levels.append(theta_i[k] - float(inputs.dts) * inputs.msfty * tendency)
     theta_new = jnp.stack(theta_levels, axis=0)
+    theta_tendency = jnp.stack(theta_tendency_levels, axis=0)
 
     return {
         "mu": mu_new,
@@ -211,4 +235,155 @@ def advance_mu_t_wrf(inputs: AdvanceMuTInputs) -> dict[str, jnp.ndarray]:
         "muave": muave_new,
         "ww": ww_new,
         "theta": theta_new,
+        "dmdt": dmdt,
+        "dvdxi": dvdxi_stack,
+        "wdtn": wdtn,
+        "theta_tendency": theta_tendency,
+    }
+
+
+def _advance_mu_t_specified_or_nested(inputs: AdvanceMuTInputs) -> dict[str, jnp.ndarray]:
+    """WRF specified/nested ``advance_mu_t`` path with non-periodic lateral bounds.
+
+    Source bounds are WRF ``module_small_step_em.F:1048-1063``.  For
+    specified/nested real domains WRF advances only interior mass cells, leaving the
+    outer lateral rows/columns to the boundary-condition machinery.  If a
+    specified/nested domain is periodic in x, WRF keeps the full x range and only
+    restricts y.
+    """
+
+    nz = int(inputs.theta.shape[0])
+    ny = int(inputs.mu.shape[0])
+    nx = int(inputs.mu.shape[1])
+
+    y0, y1 = (1, ny - 1)
+    if bool(inputs.periodic_x):
+        x0, x1 = 0, nx
+    else:
+        x0, x1 = 1, nx - 1
+    if y1 <= y0 or x1 <= x0:
+        return {
+            "mu": inputs.mu,
+            "mudf": inputs.mudf,
+            "muts": inputs.muts,
+            "muave": inputs.muave,
+            "ww": inputs.ww,
+            "theta": inputs.theta,
+        } | _empty_diagnostics(inputs)
+
+    ys = slice(y0, y1)
+    xs = slice(x0, x1)
+    xs_e = slice(x0 + 1, x1 + 1)
+    ys_n = slice(y0 + 1, y1 + 1)
+
+    dvdxi_levels = []
+    for k in range(nz):
+        c1 = inputs.c1h[k]
+        c2 = inputs.c2h[k]
+        v_north = (
+            inputs.v[k, ys_n, xs]
+            + (c1 * inputs.muv[ys_n, xs] + c2)
+            * inputs.v_1[k, ys_n, xs]
+            * inputs.msfvx_inv[ys_n, xs]
+        )
+        v_south = (
+            inputs.v[k, ys, xs]
+            + (c1 * inputs.muv[ys, xs] + c2)
+            * inputs.v_1[k, ys, xs]
+            * inputs.msfvx_inv[ys, xs]
+        )
+        u_east = (
+            inputs.u[k, ys, xs_e]
+            + (c1 * inputs.muu[ys, xs_e] + c2)
+            * inputs.u_1[k, ys, xs_e]
+            / inputs.msfuy[ys, xs_e]
+        )
+        u_west = (
+            inputs.u[k, ys, xs]
+            + (c1 * inputs.muu[ys, xs] + c2)
+            * inputs.u_1[k, ys, xs]
+            / inputs.msfuy[ys, xs]
+        )
+        dvdxi = inputs.msftx[ys, xs] * inputs.msfty[ys, xs] * (
+            float(inputs.rdy) * (v_north - v_south) + float(inputs.rdx) * (u_east - u_west)
+        )
+        dvdxi_levels.append(dvdxi)
+    dvdxi_active = jnp.stack(dvdxi_levels, axis=0)
+    dmdt_active = jnp.sum(inputs.dnw[:nz, None, None] * dvdxi_active, axis=0)
+    dvdxi_full = inputs.theta[:nz] * 0.0
+    dvdxi_full = dvdxi_full.at[:, ys, xs].set(dvdxi_active)
+    dmdt_full = jnp.zeros_like(inputs.mu).at[ys, xs].set(dmdt_active)
+
+    mu_work_old = inputs.muts[ys, xs] - inputs.mut[ys, xs]
+    mu_save = inputs.mu[ys, xs] - mu_work_old
+    mu_tendency = dmdt_active + inputs.mu_tend[ys, xs]
+    mu_work_new = mu_work_old + float(inputs.dts) * mu_tendency
+    mu_new_i = mu_save + mu_work_new
+    mudf_i = mu_tendency
+    muts_i = inputs.mut[ys, xs] + mu_work_new
+    muave_i = 0.5 * ((1.0 + float(inputs.epssm)) * mu_work_new + (1.0 - float(inputs.epssm)) * mu_work_old)
+
+    mu_new = _update_2d(inputs.mu, mu_new_i, ys, xs)
+    mudf_new = _update_2d(inputs.mudf, mudf_i, ys, xs)
+    muts_new = _update_2d(inputs.muts, muts_i, ys, xs)
+    muave_new = _update_2d(inputs.muave, muave_i, ys, xs)
+
+    ww_rows = [inputs.ww[0, ys, xs]]
+    for kk in range(1, nz):
+        k = kk - 1
+        increment = inputs.dnw[kk - 1] * (
+            inputs.c1h[k] * dmdt_active + dvdxi_active[kk - 1] + inputs.c1h[k] * inputs.mu_tend[ys, xs]
+        ) / inputs.msfty[ys, xs]
+        ww_rows.append(ww_rows[-1] - increment)
+    ww_rows.append(inputs.ww[nz, ys, xs])
+    ww_active = jnp.stack(ww_rows, axis=0)
+    ww_active = ww_active.at[:nz].set(ww_active[:nz] - inputs.ww_1[:nz, ys, xs])
+    ww_new = inputs.ww.at[:, ys, xs].set(ww_active)
+
+    theta_i = inputs.theta
+    theta_i_active = inputs.theta[:, ys, xs] + inputs.msfty[None, ys, xs] * float(inputs.dts) * inputs.theta_tend[:, ys, xs]
+    theta_i = theta_i.at[:, ys, xs].set(theta_i_active)
+    theta_flux_source = inputs.theta_1
+
+    wdtn_rows = [jnp.zeros_like(mu_tendency)]
+    for k in range(1, nz):
+        face_theta = inputs.fnm[k] * theta_flux_source[k, ys, xs] + inputs.fnp[k] * theta_flux_source[k - 1, ys, xs]
+        wdtn_rows.append(ww_active[k] * face_theta)
+    wdtn_rows.append(jnp.zeros_like(mu_tendency))
+    wdtn = jnp.stack(wdtn_rows, axis=0)
+    wdtn_full = jnp.zeros_like(inputs.ww).at[:, ys, xs].set(wdtn)
+
+    theta_new = inputs.theta
+    theta_tendency_full = jnp.zeros_like(inputs.theta)
+    for k in range(nz):
+        th = theta_flux_source[k]
+        if bool(inputs.periodic_x):
+            th_e = jnp.roll(th, -1, axis=-1)[ys, xs]
+            th_w = jnp.roll(th, 1, axis=-1)[ys, xs]
+        else:
+            th_e = th[ys, slice(x0 + 1, x1 + 1)]
+            th_w = th[ys, slice(x0 - 1, x1 - 1)]
+        th_n = th[slice(y0 + 1, y1 + 1), xs]
+        th_s = th[slice(y0 - 1, y1 - 1), xs]
+
+        v_flux = inputs.v[k, ys_n, xs] * (th_n + th[ys, xs]) - inputs.v[k, ys, xs] * (th[ys, xs] + th_s)
+        u_flux = inputs.u[k, ys, xs_e] * (th_e + th[ys, xs]) - inputs.u[k, ys, xs] * (th[ys, xs] + th_w)
+        tendency = inputs.msftx[ys, xs] * (0.5 * float(inputs.rdy) * v_flux + 0.5 * float(inputs.rdx) * u_flux) + inputs.rdnw[k] * (
+            wdtn[k + 1] - wdtn[k]
+        )
+        theta_k = theta_i[k, ys, xs] - float(inputs.dts) * inputs.msfty[ys, xs] * tendency
+        theta_new = theta_new.at[k, ys, xs].set(theta_k)
+        theta_tendency_full = theta_tendency_full.at[k, ys, xs].set(tendency)
+
+    return {
+        "mu": mu_new,
+        "mudf": mudf_new,
+        "muts": muts_new,
+        "muave": muave_new,
+        "ww": ww_new,
+        "theta": theta_new,
+        "dmdt": dmdt_full,
+        "dvdxi": dvdxi_full,
+        "wdtn": wdtn_full,
+        "theta_tendency": theta_tendency_full,
     }

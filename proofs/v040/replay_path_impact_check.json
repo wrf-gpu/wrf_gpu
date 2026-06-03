@@ -1,0 +1,171 @@
+{
+  "schema": "v0.4.0-replay-path-impact-2026-06-03",
+  "created_utc": "2026-06-03T10:19:33.175310+00:00",
+  "question": "Does the periodic-LBC dry-mass bug affect the v0.1.0/v0.2.0 replay path, or is it masked by CPU-WRF lateral-boundary forcing each replay step?",
+  "bc_flag_routing": {
+    "idealized_no_boundary": {
+      "input": {
+        "source": "ideal",
+        "run_boundary": false,
+        "force_geopotential": true
+      },
+      "advance_mu_t_flags": [
+        true,
+        false,
+        false
+      ],
+      "expected": [
+        true,
+        false,
+        false
+      ]
+    },
+    "d02_replay_specified_self_boundary": {
+      "input": {
+        "source": "history_replay",
+        "run_boundary": true,
+        "force_geopotential": true
+      },
+      "advance_mu_t_flags": [
+        false,
+        true,
+        false
+      ],
+      "expected": [
+        false,
+        true,
+        false
+      ]
+    },
+    "d03_replay_nested_parent_boundary": {
+      "input": {
+        "source": "parent_history_replay",
+        "run_boundary": true,
+        "force_geopotential": false
+      },
+      "advance_mu_t_flags": [
+        false,
+        false,
+        true
+      ],
+      "expected": [
+        false,
+        false,
+        true
+      ]
+    }
+  },
+  "bc_flag_routing_pass": true,
+  "real_field_old_vs_new_locality": {
+    "pass": true,
+    "fixture": "/mnt/data/canairy_meteo/runs/wrf_l3/20260429_18z_l3_24h_20260524T204451Z/wrfinput_d01",
+    "fixture_sha256": "449d6c3af25865c5dce93e5ec96c22cd05400d9cb3582224223984c1ae4f2028",
+    "base_ref": "worker/gpt/v040-nativeinit-diag",
+    "base_ref_commit": "4735e53a8ac8993295820edade3e2b0a9d530705",
+    "base_mu_t_advance_sha256": "0ef6df476f30df39dd40fe2ea6d9ad200737bd0c559a31a20550f1a4310eeef0",
+    "candidate_flags": {
+      "periodic_x": false,
+      "specified": true,
+      "nested": false
+    },
+    "fields": {
+      "mu": {
+        "shape": [
+          59,
+          93
+        ],
+        "dtype": "float64",
+        "strict_interior_bit_identical": true,
+        "strict_interior_max_abs": 0.0,
+        "lateral_strip_max_abs": 0.0003029510405667679,
+        "changed_cells_total": 300,
+        "changed_cells_outside_lateral_strip": 0,
+        "changed_outside_lateral_strip": false
+      },
+      "mudf": {
+        "shape": [
+          59,
+          93
+        ],
+        "dtype": "float64",
+        "strict_interior_bit_identical": true,
+        "strict_interior_max_abs": 0.0,
+        "lateral_strip_max_abs": 1.683061336591651e-05,
+        "changed_cells_total": 300,
+        "changed_cells_outside_lateral_strip": 0,
+        "changed_outside_lateral_strip": false
+      },
+      "muts": {
+        "shape": [
+          59,
+          93
+        ],
+        "dtype": "float64",
+        "strict_interior_bit_identical": true,
+        "strict_interior_max_abs": 0.0,
+        "lateral_strip_max_abs": 0.0003029510407941416,
+        "changed_cells_total": 300,
+        "changed_cells_outside_lateral_strip": 0,
+        "changed_outside_lateral_strip": false
+      },
+      "muave": {
+        "shape": [
+          59,
+          93
+        ],
+        "dtype": "float64",
+        "strict_interior_bit_identical": true,
+        "strict_interior_max_abs": 0.0,
+        "lateral_strip_max_abs": 0.00022721328036823252,
+        "changed_cells_total": 300,
+        "changed_cells_outside_lateral_strip": 0,
+        "changed_outside_lateral_strip": false
+      },
+      "ww": {
+        "shape": [
+          45,
+          59,
+          93
+        ],
+        "dtype": "float64",
+        "strict_interior_bit_identical": true,
+        "strict_interior_max_abs": 0.0,
+        "lateral_strip_max_abs": 1.332773778021054e-05,
+        "changed_cells_total": 12900,
+        "changed_cells_outside_lateral_strip": 0,
+        "changed_outside_lateral_strip": false
+      },
+      "theta": {
+        "shape": [
+          44,
+          59,
+          93
+        ],
+        "dtype": "float64",
+        "strict_interior_bit_identical": true,
+        "strict_interior_max_abs": 0.0,
+        "lateral_strip_max_abs": 0.2639211449052894,
+        "changed_cells_total": 13200,
+        "changed_cells_outside_lateral_strip": 0,
+        "changed_outside_lateral_strip": false
+      }
+    },
+    "interpretation": "On the real specified-BC fixture, the BC-conditional fix changes only the lateral strip relative to the old periodic update; strict interior mass/theta outputs are bit-identical."
+  },
+  "runtime_replay_ordering": {
+    "dycore_before_end_step_boundary_apply": true,
+    "rk_scan_source_index": 677,
+    "apply_lateral_boundaries_source_index": 5655,
+    "boundary_config_defaults": {
+      "spec_zone": 1,
+      "relax_zone": 4,
+      "force_geopotential": true,
+      "update_cadence_s": 3600.0
+    }
+  },
+  "impact": "unchanged",
+  "replay_regression_detected": false,
+  "masked_by_replay_boundary_forcing": true,
+  "answer": "The bug is masked at replay step boundaries: the changed computation is confined to the lateral strip, while replay applies CPU-WRF lateral boundary forcing after the dycore step. Strict interior mass/theta outputs are bit-identical on the real specified-BC fixture. The fix is therefore replay-neutral in the v0.1.0/v0.2.0 replay proof path, not a replay regression.",
+  "verdict": "PASS"
+}
