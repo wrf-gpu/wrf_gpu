@@ -68,7 +68,7 @@ SUPPORTED_OPTIONS: dict[str, SupportedOption] = {
     "cu_physics": SupportedOption(
         key="cu_physics",
         supported_values=frozenset(ACCEPTED_CU_PHYSICS),
-        implemented="0=disabled, 1=Kain-Fritsch, 3=Grell-Freitas, 6=Tiedtke, 16=New Tiedtke",
+        implemented="0=disabled, 1=Kain-Fritsch, 2=Betts-Miller-Janjic, 3=Grell-Freitas, 6=Tiedtke, 16=New Tiedtke",
         action="Use one of the frozen v0.6.0 cumulus options; all other CU options remain unsupported.",
     ),
     "bl_pbl_physics": SupportedOption(

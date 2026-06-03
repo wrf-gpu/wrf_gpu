@@ -60,6 +60,8 @@ from gpuwrf.coupling.scan_adapters import (
     MP_SCAN_ADAPTERS,
     PBL_SCAN_ADAPTERS,
     SFCLAY_SCAN_ADAPTERS,
+    bmj_adapter,
+    initial_bmj_carry,
     initial_kf_carry,
     kf_adapter,
 )
@@ -1858,8 +1860,8 @@ _SCAN_WIRED_OPTIONS = {
     "bl_pbl_physics": (0, 1, DEFAULT_BL_PBL_PHYSICS, 7),
     # sf_sfclay=0 off, 5 MYNN-sfclay (existing); 1 revised-MM5 / 7 Pleim-Xiu wired.
     "sf_sfclay_physics": (0, 1, 5, 7),
-    # cu=0 no cumulus, 1 KF (new scan adapter). GF(3)/Tiedtke(6,16) CPU-ref -> NOT wired.
-    "cu_physics": (0, 1),
+    # cu=0 no cumulus, 1 KF, 2 BMJ. GF(3)/Tiedtke(6,16) CPU-ref -> NOT wired.
+    "cu_physics": (0, 1, 2),
 }
 
 # Scheme-specific reasons a parity-passed option is NOT yet wired into the scan
@@ -1911,7 +1913,7 @@ def _resolve_operational_suite(namelist: OperationalNamelist):
         raise UnsupportedSchemeSelection(
             "operational scan supports the v0.2.0 suite + the v0.6.0 scan-wired "
             "schemes (mp_physics in {0,1,6,8,10,16}, bl_pbl_physics in {0,1,5,7}, "
-            "sf_sfclay_physics in {0,1,5,7}, cu_physics in {0,1}, Noah-MP via "
+            "sf_sfclay_physics in {0,1,5,7}, cu_physics in {0,1,2}, Noah-MP via "
             "use_noahmp, explicit Noah-classic via sf_surface_physics=2 plus "
             "noahclassic_static/noahclassic_land). The following selected schemes "
             "are NOT scan-wired: "
@@ -1927,15 +1929,19 @@ def _initial_carry_for_run(state: State, namelist: OperationalNamelist) -> Opera
     scan-wired scheme's persistent carry is seeded to its CONCRETE pytree shape
     BEFORE the scan (``jax.lax.scan`` requires a carry pytree that is identical on
     every iteration; a ``None``->tuple promotion inside the body would be rejected).
-    The v0.6.0 KF cumulus carry ``(w0avg, nca)`` is seeded when ``cu_physics`` is a
-    scan-wired GPU cumulus option; otherwise ``cumulus_carry`` stays ``None`` and the
-    carry is structurally identical to the pre-v0.6.0 carry.
+    The v0.6.0 cumulus carry is seeded when ``cu_physics`` selects a stateful
+    scan-wired cumulus option (KF ``(w0avg,nca)`` or BMJ ``cldefi``); otherwise
+    ``cumulus_carry`` stays ``None`` and the carry is structurally identical to
+    the pre-v0.6.0 carry.
     """
 
     enforced = _enforce_operational_precision(state, force_fp64=bool(namelist.force_fp64))
     cumulus_carry = None
-    if int(namelist.cu_physics) in CU_SCAN_ADAPTERS:
+    cu_opt = int(namelist.cu_physics)
+    if cu_opt == 1:
         cumulus_carry = initial_kf_carry(enforced)
+    elif cu_opt == 2:
+        cumulus_carry = initial_bmj_carry(enforced)
     noahclassic_land = None
     noahclassic_rad = None
     if _explicit_noahclassic(namelist):
@@ -2136,16 +2142,26 @@ def _physics_boundary_step_with_limiter_diagnostics(
             next_state = mynn_adapter(next_state, float(namelist.dt_s), namelist.grid)
         # bl_opt == 0 -> no PBL mixing.
 
-        # --- cumulus slot (KF; GF/Tiedtke are CPU-reference -> not in GPU scan) ---
+        # --- cumulus slot (KF/BMJ; GF/Tiedtke are CPU-reference -> not in GPU scan) ---
         if cu_opt in CU_SCAN_ADAPTERS:
-            w0avg, nca = (
-                carry.cumulus_carry if carry.cumulus_carry is not None
-                else initial_kf_carry(next_state)
-            )
-            next_state, w0avg_next, nca_next = kf_adapter(
-                next_state, float(namelist.dt_s), w0avg, nca, grid=namelist.grid
-            )
-            carry = carry.replace(cumulus_carry=(w0avg_next, nca_next))
+            if cu_opt == 1:
+                w0avg, nca = (
+                    carry.cumulus_carry if carry.cumulus_carry is not None
+                    else initial_kf_carry(next_state)
+                )
+                next_state, w0avg_next, nca_next = kf_adapter(
+                    next_state, float(namelist.dt_s), w0avg, nca, grid=namelist.grid
+                )
+                carry = carry.replace(cumulus_carry=(w0avg_next, nca_next))
+            elif cu_opt == 2:
+                cldefi = (
+                    carry.cumulus_carry if carry.cumulus_carry is not None
+                    else initial_bmj_carry(next_state)
+                )
+                next_state, cldefi_next = bmj_adapter(
+                    next_state, float(namelist.dt_s), cldefi, grid=namelist.grid
+                )
+                carry = carry.replace(cumulus_carry=cldefi_next)
         # B3 radiation cadence -- WRF-faithful HELD-RATE (Sprint coupler-fp64 FIX #2,
         # GPT P0-2). WRF recomputes the radiative theta tendency RTHRATEN (K/s) only
         # once per radt interval (module_radiation_driver.F run_param gate) and then
