@@ -15,6 +15,18 @@ live-nesting WRF with native WPS/real.exe initialization. That distinction is st
 and tracked in [`publish/GPU_PORT_GAPS_TODO.md`](publish/GPU_PORT_GAPS_TODO.md); the gap chain is
 the v0.2.0 roadmap.
 
+**v0.4.0 scope (native standalone init + LBC):** the model can now assemble its own
+`wrfinput`/`wrfbdy` from met_em-stage forcing instead of consuming `real.exe` output. **Native
+init is PROVEN equivalent to `real.exe` at t=0** (S5 savepoint parity; only a documented 1-cell
+categorical LSM-init residual), and the 24 h standalone forecast is stable/finite. The honest claim
+is **standalone native-init equivalence + a stable forecast, with a documented near-surface
+wind-bias limitation under investigation** (a domain-uniform near-surface westerly excess of
++0.75–1.2 m/s on a 2-date MAM sample; T2 correct). After 10 debug rounds that bias is ruled out vs
+unmodified WRF against every faithful ported operator/scheme — it is a tracked, dynamical
+forecast-skill item, **not** a fidelity bug and **not** fixed. This is **not** "full standalone
+forecast skill." See [`.agent/decisions/V0.4.0-CLOSE.md`](.agent/decisions/V0.4.0-CLOSE.md) and
+[`proofs/v040/v040_close_proof.json`](proofs/v040/v040_close_proof.json).
+
 The **binding proof contract** is [`publish/VERIFICATION.md`](publish/VERIFICATION.md) (11 rows)
 and the executed-outcome record is [`proofs/PROOF_TABLE.md`](proofs/PROOF_TABLE.md). Tally on the
 HFX-fix release HEAD: **9 PASS / 1 FAIL (comparator-harness gap, not a production defect) / 1

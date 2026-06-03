@@ -1,0 +1,149 @@
+{
+  "schema": "gpuwrf.v0.4.0.close_proof.v1",
+  "title": "v0.4.0 close + consolidation proof object",
+  "created_utc": "2026-06-03",
+  "created_by": "Opus 4.8 (1M context) release-consolidation worker",
+  "branch": "worker/opus/v040-close",
+  "integration_trunk": {
+    "commit": "350a7c6",
+    "name": "[v060] consolidate PBL-gpuop (YSU+ACM2) into the Noah trunk — unified v0.6.0 operational scan",
+    "merge_base_with_v040_chain": "96eb4e4 [v040-S6] wire native-init->24h GPU forecast gate body + foundation stability smoke",
+    "note": "trunk = the v0.6.0 12-scheme operational-scan integration; v0.4.0 dycore fixes + native-init were a separate lineage off the same 96eb4e4 base. This is the v040<->v060 consolidation the roadmap flagged."
+  },
+  "consolidated_dycore_fixes": [
+    {
+      "role": "dry-mass continuity for specified/nested LBCs (BC-conditional)",
+      "source_commit": "a1def01",
+      "consolidated_commit": "f3a0241",
+      "src_touched": [
+        "src/gpuwrf/dynamics/core/acoustic.py",
+        "src/gpuwrf/dynamics/core/coupled.py",
+        "src/gpuwrf/dynamics/core/dycore.py",
+        "src/gpuwrf/dynamics/mu_t_advance.py",
+        "src/gpuwrf/runtime/operational_mode.py"
+      ],
+      "conflict_resolution": "operational_mode.py: kept ONLY the new _acoustic_lateral_bc_flags helper; discarded the v0.4.0-base-only _runtime_base_state/_base_theta_for_state/_t0_for_state helpers (trunk v0.6.0 builds BaseState inline, those helpers are unused on trunk). proofs/v040/run_forecast_gate_24h.py restored from a1def01 (deleted on v0.6.0 line).",
+      "wrf_faithful": true,
+      "savepoint_parity": {"proof": "proofs/v040/mu_continuity_savepoint_parity.json", "verdict": "PASS"}
+    },
+    {
+      "role": "PGF al(alb/muts)+dpn(cfn/cfn1) — calc_p_rho_phi + top_lid dpn faces",
+      "source_commit": "b827469",
+      "consolidated_commit": "6fb6a51",
+      "src_touched": ["src/gpuwrf/dynamics/core/rk_addtend_dry.py"],
+      "conflict_resolution": "clean cherry-pick, no conflict",
+      "wrf_faithful": true,
+      "savepoint_parity": {"proof": "proofs/v040/boundary_transport_savepoint_parity.json", "key": "overall_savepoint_parity_pass", "verdict": true}
+    },
+    {
+      "role": "MYNN s_aw stability floor on kmdz before U/V implicit solve (module_bl_mynnedmf.F:3990-3997)",
+      "source_commit": "770287a",
+      "consolidated_commit": "adfd3a9",
+      "src_touched": ["src/gpuwrf/coupling/physics_couplers.py", "src/gpuwrf/physics/mynn_pbl.py"],
+      "conflict_resolution": "git auto-merge against the v0.6.0-diverged physics files; verified _apply_s_aw_stability_floor + s_aw_floor threading present; MYNN oracle + tier1 tests PASS on CPU",
+      "wrf_faithful": true,
+      "savepoint_parity": {"proof": "proofs/v040/r4_saw_floor_savepoint_parity.json", "verdict": "PASS"}
+    },
+    {
+      "role": "split-explicit php-freeze: stage-constant php in advance_uv 4th PGF term (calc_php in rk_step_prep is INTENT(IN))",
+      "source_commit": "a668238",
+      "consolidated_commit": "b6f610f",
+      "src_touched": ["src/gpuwrf/dynamics/core/acoustic.py", "src/gpuwrf/dynamics/core/small_step_prep.py", "src/gpuwrf/runtime/operational_mode.py"],
+      "conflict_resolution": "git auto-merge; php_stage defaults to None -> inactive unless small_step_prep supplies it",
+      "wrf_faithful": true,
+      "savepoint_parity": {"proof": "proofs/v040/r5_php_freeze_savepoint_parity.json", "key": "overall_pass", "verdict": true}
+    }
+  ],
+  "kf_cu_physics_1_capability": {
+    "decision": "ADOPT TRUNK v0.6.0 KF (cu_physics=1) — do NOT re-apply the older v0.4.0 KF-wire (828ff90/075131e)",
+    "reason": "trunk 350a7c6 ALREADY wires Kain-Fritsch-eta into the operational scan via CU_SCAN_ADAPTERS={1: kf_adapter} (scan_adapters.py:547), with initial_kf_carry/kf_adapter/step_kf_column (cumulus_kf.py) and full NCA bookkeeping. This v0.6.0 integration is more complete and more recent than the parallel v0.4.0 KF-wire built for the bias-falsification gate; re-applying the older wiring would conflict with and regress the unified 12-scheme scan.",
+    "kf_oracle_gate": {"test": "tests/test_kf_cumulus_oracle.py", "result": "6 passed", "oracle": "single-column Fortran driver linked against unmodified WRF /home/enric/src/wrf_pristine/WRF/phys/module_cu_kfeta.F"},
+    "kf_savepoint_parity": {"proof": "proofs/v060/kf_savepoint_parity_report.json", "verdict": "PASS", "n_cases": 5, "adapter_test": "tests/test_v060_cumulus_kf.py -> 2 passed"},
+    "cu_off_replay_safe": "cu_physics=0 leaves cumulus_carry=None and the scan cumulus slot is skipped (operational_mode.py: `if cu_opt in CU_SCAN_ADAPTERS`); structurally identical to the pre-v0.6.0 carry."
+  },
+  "kf_is_not_the_bias_fix": {
+    "claim": "Kain-Fritsch cumulus does NOT fix the standalone near-surface westerly bias",
+    "jax_kf_2date_gate": {
+      "proof": "proofs/v040/forecast_gate_kf2date6h_COMPARE.json",
+      "cu0_vs_cu1_U10_mean_bias_delta": {"20260429": "+0.000424 m/s", "20260521": "-0.000255 m/s"},
+      "interpretation": "KF on/off moves near-surface winds by <0.001 m/s; the +0.54/+0.65 m/s biases persist unchanged"
+    },
+    "independent_cpu_wrf_oracle": {
+      "source": "b7cf4d1 find-and-fix handoff + /tmp/wrf_gpu2_resource_lock.json (cpuwrf-cu0-confirm)",
+      "result": "unmodified CPU-WRF cu_physics=0 vs 1, 24h: U10 delta +0.012 m/s mean, frac-west 0.483 (symmetric, NO domain-uniform westerly), PSFC +1.39 Pa (wrong sign); RAINC=0 everywhere (KF never fires in the trade-wind subsidence regime)"
+    },
+    "mechanism": "KF-eta (KF_ETA_CPS, module_cumulus_driver.F:1017-1049) has NO RUCUTEN/RVCUTEN momentum tendency, so the convective-momentum-transport mechanism does not exist for this scheme"
+  },
+  "init_equivalence_reference": {
+    "proof": "proofs/v040/s5_native_init_parity_report.json",
+    "verdict": "PASS (dynamics/surface/soil-numeric/wrfbdy all within FROZEN tols)",
+    "oracle": "real.exe wrfinput_d0{1,2,3} + wrfbdy_d01 vs native driver.build_real_init (S1 dynamics + S2 surface/soil + S3 LBC)",
+    "only_residual": "single static start_em cell ISLTYP/IVGTYP at (j=22,i=86) — documented categorical LSM-init artifact; manager decision: TRACK, do not weaken the exact-categorical gate",
+    "statement": "native standalone init is PROVEN equivalent to real.exe at t=0"
+  },
+  "no_regression": {
+    "idealized_periodic_path": {
+      "proof": "proofs/v040/idealized_no_regression_report.json",
+      "key": "periodic_advance_mu_t_bit_identity_vs_diagnosis_branch",
+      "result": "BIT-IDENTICAL (max_abs=0.0) on mu, mudf, muts, muave, ww, theta vs the pre-fix diagnosis branch",
+      "regenerated_on_consolidated_branch_utc": "2026-06-03T19:04:38Z",
+      "note": "warm_bubble/density_current verdicts in the same report are cached GPU diagnostics (GPU not available to this CPU-only consolidation worker); the BC-conditional fixes default to periodic_x=True/specified=False/nested=False and php_stage=None so the idealized/periodic path is unchanged by construction and proven bit-identical"
+    },
+    "replay_path_impact": {
+      "proof": "proofs/v040/replay_path_impact_check.json",
+      "verdict": "PASS",
+      "impact": "unchanged",
+      "bc_flag_routing_pass": true,
+      "regenerated_on_consolidated_branch_utc": "2026-06-03T19:05:23Z",
+      "note": "BC-flag routing verified: idealized->(T,F,F); d02 replay specified->(F,T,F); d03 nested->(F,F,T). The v0.1.0/v0.2.0 replay path is unchanged."
+    },
+    "cu_off_replay_safe": true,
+    "compile_check": "all touched src modules py_compile OK; gpuwrf imports clean",
+    "cpu_tests_pass": [
+      "tests/test_kf_cumulus_oracle.py -> 6 passed",
+      "tests/test_v060_cumulus_kf.py -> 2 passed",
+      "tests/unit/test_mu_t_lbc_bounds.py -> 4 passed",
+      "tests/test_m6b1_advance_mu_t_parity.py -> 2 passed",
+      "tests/test_mynn_edmf_oracle.py -> 2 passed",
+      "tests/test_m5_mynn_tier1.py -> 1 passed"
+    ],
+    "gpu_gated_tests_not_run": {
+      "tests": ["tests/test_m4_acoustic.py", "tests/test_m4_dycore_step.py"],
+      "reason": "State.zeros mandates a GPU device (contracts/state.py:_gpu_device); fail identically on UNMODIFIED trunk in a CPU-only sandbox. NOT a consolidation regression. Resource policy restricted this worker to cores 0-3, no GPU."
+    }
+  },
+  "forecast_skill_limitation": {
+    "status": "DOCUMENTED, NOT FIXED — tracked as a cross-version forecast-skill item",
+    "forecast_gate": {"proof": "proofs/v040/forecast_gate_24h_report.json", "verdict": "STABLE_BUT_CORE_FIELD_MISMATCH", "n_cases_scored": 4, "all_scored_stable_finite_physical": true},
+    "the_bias": "domain-uniform near-surface WESTERLY excess in the 24h STANDALONE forecast: +1.2 m/s (20260429) / +0.75 m/s (20260521). T2 correct, column-wide, stable/finite.",
+    "is_a_fidelity_bug": false,
+    "ruled_out_table": [
+      {"round": 1, "angle": "missing KF cumulus (agy lead)", "ruled_out": "FALSIFIED — JAX cu0-vs-cu1 <0.001 m/s AND independent unmodified CPU-WRF cu0-vs-cu1 +0.012 m/s symmetric; RAINC=0; KF-eta has no momentum tendency"},
+      {"round": 2, "angle": "native-init equivalence at t=0", "ruled_out": "PROVEN EQUIVALENT — s5_native_init_parity_report.json PASS (only 1-cell categorical LSM residual); init is NOT the source"},
+      {"round": 3, "angle": "near-surface/PBL momentum mixing + surface stress", "ruled_out": "MYNN s_aw floor adjudicated WRF-faithful (savepoint PASS); not the bias source"},
+      {"round": 4, "angle": "MYNN s_aw momentum floor", "ruled_out": "REAL WRF omission found+fixed (kmdz floor with bl_mynn_edmf_mom=0), savepoint PASS, but does not collapse the bias"},
+      {"round": 5, "angle": "split-explicit php (advance_uv 4th PGF term)", "ruled_out": "php STAGE-CONSTANT fix is WRF-faithful (calc_php INTENT(IN)), savepoint PASS, does not collapse the bias"},
+      {"round": 6, "angle": "dry-mass continuity for specified/nested LBCs", "ruled_out": "BC-conditional mass-continuity fix is WRF-faithful (collapses PSFC-/U10+ DRIFT, savepoint PASS) but a residual uniform westerly excess remains"},
+      {"round": 7, "angle": "PGF al(alb/muts)+dpn(cfn/cfn1) large-step terms", "ruled_out": "WRF-faithful fix (calc_p_rho_phi + top_lid dpn faces), savepoint PASS; adjudication: bias NOT in large-step PGF/al terms"},
+      {"round": 8, "angle": "horizontal diffusion + GWD", "ruled_out": "sensitivity negligible"},
+      {"round": 9, "angle": "nest feedback", "ruled_out": "feedback=0; not a contributor"},
+      {"round": 10, "angle": "Kain-Fritsch cumulus (decisive, independent)", "ruled_out": "JAX KF-wire gate AND unmodified-CPU-WRF cu_physics=0-vs-1 both <0.01 m/s; KF never fires in this regime"}
+    ],
+    "conclusion": "the bias is DYNAMICAL, not traceable to any faithful ported operator or scheme vs unmodified WRF; possibly sample/config-specific but untestable without new met_em-preserving CPU-WRF runs",
+    "expand_dates_status": "DATA_BLOCKED — only 2 native-runnable dates; the rest have purged met_em",
+    "carried_as": ".agent/tasks/V0.4.0-WIND-BIAS-CARRYOVER.md"
+  },
+  "close_criterion": {
+    "met": true,
+    "criterion": "native-init equivalence (t=0) + 24h stability + an HONESTLY DOCUMENTED forecast-skill limitation (standalone 24h near-surface westerly bias on the 2-date sample, NOT a fidelity bug)",
+    "claim": "standalone native init equivalence + stable forecast, with a documented near-surface wind-bias limitation under investigation",
+    "do_not_claim": ["full standalone forecast skill", "the wind bias is fixed"]
+  },
+  "close_documents": {
+    "close_doc": ".agent/decisions/V0.4.0-CLOSE.md",
+    "dycore_status_updated": "proofs/f7/DYCORE_STATUS.md",
+    "readme_scope_updated": "README.md",
+    "carryover_task": ".agent/tasks/V0.4.0-WIND-BIAS-CARRYOVER.md"
+  },
+  "unresolved_risk": "the standalone 24h near-surface westerly bias (+0.75..+1.2 m/s, 2-date MAM sample) is unexplained after 10 debug rounds; ruled out vs all faithful ported operators/schemes but NOT root-caused. Expand-dates falsification is DATA_BLOCKED (purged met_em). Tracked for re-test once met_em-preserving CPU-WRF runs are available (0.9.0 backfill gate)."
+}

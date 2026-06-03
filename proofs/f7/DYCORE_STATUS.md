@@ -1,7 +1,34 @@
 # Dry Dynamical Core — Status (single source of truth for the F7 rewrite)
 
-**Last updated: 2026-06-01 (v0.1.0 release-doc refresh). Earlier body: Sprint U, 2026-05-29.**
+**Last updated: 2026-06-03 (v0.4.0 close). Earlier: 2026-06-01 v0.1.0 refresh; Sprint U 2026-05-29.**
 This file exists so future agents do NOT waste tokens re-investigating already-cleared components. Update it when the dycore status changes.
+
+## ✅ v0.4.0 CLOSE (2026-06-03) — 4 WRF-faithful dycore fixes consolidated; standalone wind bias is a DOCUMENTED forecast-skill item, NOT a fidelity bug
+
+See [`.agent/decisions/V0.4.0-CLOSE.md`](../../.agent/decisions/V0.4.0-CLOSE.md) and the proof
+object [`proofs/v040/v040_close_proof.json`](../v040/v040_close_proof.json).
+
+Four WRF-faithful dycore fixes were consolidated onto the v0.6.0 integration trunk (`350a7c6`),
+each savepoint-PASS vs the WRF oracle, each leaving the idealized/periodic path **bit-identical**
+(`max_abs=0.0`) and the v0.1.0/v0.2.0 replay path **unchanged**:
+
+1. **Dry-mass continuity for specified/nested LBCs** (BC-conditional `advance_mu_t` bounds;
+   `mu_continuity_savepoint_parity.json` PASS) — collapses the standalone PSFC−/U10+ *drift*.
+2. **PGF `al`(alb/muts) + `dpn`(cfn/cfn1)** (`calc_p_rho_phi` + top_lid `dpn` faces;
+   `boundary_transport_savepoint_parity.json` PASS) — adjudication: bias **NOT** in large-step terms.
+3. **MYNN `s_aw` stability floor on `kmdz`** even with `bl_mynn_edmf_mom=0` (a REAL WRF omission,
+   `module_bl_mynnedmf.F:3990-3997`; `r4_saw_floor_savepoint_parity.json` PASS).
+4. **Split-explicit `php`-freeze** in the advance_uv 4th PGF term (`calc_php` is `INTENT(IN)`;
+   `r5_php_freeze_savepoint_parity.json` PASS).
+
+**The single open item** is a domain-uniform near-surface **westerly excess** in the 24 h
+standalone forecast (+1.2 m/s 20260429 / +0.75 m/s 20260521; T2 correct, stable/finite). After 10
+debug rounds it is **ruled out vs unmodified WRF against every faithful ported operator and scheme**
+(incl. a decisive, independent CPU-WRF Kain-Fritsch cu0-vs-cu1 oracle) — it is **dynamical, not a
+fidelity bug**. Expand-dates falsification is DATA_BLOCKED (purged met_em). Carried as
+[`.agent/tasks/V0.4.0-WIND-BIAS-CARRYOVER.md`](../../.agent/tasks/V0.4.0-WIND-BIAS-CARRYOVER.md).
+**Do NOT** re-investigate the ruled-out angles, loosen tolerances, add a wind clamp, or claim the
+bias is fixed.
 
 ## ✅ v0.1.0 RELEASE STATUS (2026-06-01) — dycore CLOSED (idealized) + validated on real cases via the operational path
 

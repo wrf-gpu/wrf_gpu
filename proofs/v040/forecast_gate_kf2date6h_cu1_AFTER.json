@@ -1,0 +1,2469 @@
+{
+  "schema": "v0.4.0-forecast-gate-24h-2026-06-03",
+  "executed": true,
+  "gpu_bound": true,
+  "owner": "S5/manager (single-GPU serialization point)",
+  "no_replay": true,
+  "metric": "per-lead gridpoint-paired bias+rmse vs CPU-WRF wrfout",
+  "core_fields_blocking": [
+    "T2",
+    "U10",
+    "V10"
+  ],
+  "diag_fields_descriptive": [
+    "PBLH",
+    "RAINNC",
+    "RAINC",
+    "Q2",
+    "PSFC"
+  ],
+  "cu_physics": 1,
+  "stepcu": 1,
+  "cudt": 5.0,
+  "forecast_hours": 6,
+  "forecast_dt_s": 60.0,
+  "forecast_acoustic_substeps": 4,
+  "continuous_gate_module": "proofs/m20/continuous_gate.py",
+  "scoring_policy": {
+    "core_skill_first_lead": 2,
+    "h1_non_blocking_spinup": true,
+    "margins_unchanged": true,
+    "basis": "principal decision 2026-06-03 (council-proven): native-init h1 cold-start spin-up is inherent \u2014 CPU-WRF t0 wrfout QKE/TKE_PBL/PBLH are zero and UST~1e-4, so BOTH codes equilibrate over h1. Core PASS judged from h2+; h1 reported non-blocking. Frozen continuous_gate margins UNCHANGED (lead-inclusion only).",
+    "honest_claim": "native-init forecast matches CPU-WRF from h2+ after a documented first-hour cold-start transient; h1 not claimed as nowcast parity"
+  },
+  "case_lead_coverage": [
+    {
+      "case_id": "20260429_18z_l2_72h_20260524T204451Z",
+      "oracle_run_dir": "/mnt/data/canairy_meteo/runs/wrf_l2/20260429_18z_l2_72h_20260524T204451Z",
+      "metadata_run_dir": "/mnt/data/canairy_meteo/runs/wrf_l2/20260429_18z_l2_72h_20260524T204451Z",
+      "reference_dir": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260429_18z_l2_72h_20260524T204451Z",
+      "reference_source": "backfill_or_override_output_dir",
+      "scoreable_cpu_leads": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "h2plus_cpu_ref_leads": [
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "has_h2plus_cpu_ref": true,
+      "has_min_h2plus_cpu_ref": true,
+      "namelist_source": "/mnt/data/canairy_meteo/runs/wrf_l2/20260429_18z_l2_72h_20260524T204451Z/namelist.input",
+      "wrfinput_source": "/mnt/data/canairy_meteo/runs/wrf_l2/20260429_18z_l2_72h_20260524T204451Z/wrfinput_d01"
+    },
+    {
+      "case_id": "20260521_18z_l2_72h_20260522T133443Z",
+      "oracle_run_dir": "/mnt/data/canairy_meteo/runs/wrf_l2/20260521_18z_l2_72h_20260522T133443Z",
+      "metadata_run_dir": "/mnt/data/canairy_meteo/runs/wrf_l2/20260521_18z_l2_72h_20260522T133443Z",
+      "reference_dir": "/mnt/data/canairy_meteo/runs/wrf_l2/20260521_18z_l2_72h_20260522T133443Z",
+      "reference_source": "oracle_run_dir",
+      "scoreable_cpu_leads": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "h2plus_cpu_ref_leads": [
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "has_h2plus_cpu_ref": true,
+      "has_min_h2plus_cpu_ref": true,
+      "namelist_source": "/mnt/data/canairy_meteo/runs/wrf_l2/20260521_18z_l2_72h_20260522T133443Z/namelist.input",
+      "wrfinput_source": "/mnt/data/canairy_meteo/runs/wrf_l2/20260521_18z_l2_72h_20260522T133443Z/wrfinput_d01"
+    }
+  ],
+  "verdict": "STABLE_BUT_CORE_FIELD_MISMATCH",
+  "foundation_confirmed": false,
+  "complete": true,
+  "n_cases_attempted": 2,
+  "n_cases_scored": 2,
+  "n_cases_with_h2plus_core_skill": 2,
+  "all_scored_cases_stable_finite": true,
+  "all_scored_cases_physical": true,
+  "all_scored_cases_core_within_margin": false,
+  "case_class_summary": {
+    "case_class_counts": {
+      "ERROR": 0,
+      "UNSCOREABLE": 0,
+      "SCORED_PASS": 0,
+      "SCORED_FAIL": 2,
+      "BLOWUP": 0
+    },
+    "case_class_table": [
+      {
+        "case_id": "20260429_18z_l2_72h_20260524T204451Z",
+        "case_class": "SCORED_FAIL",
+        "reason": "h2+ blocking core fields outside frozen ADR-029 margins",
+        "stable_finite": true,
+        "physical_range_ok": true,
+        "blew_up_at_hour": null,
+        "core_within_margin": false,
+        "scored_h2plus_core_leads": [
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "n_scored_h2plus_core_leads": 5,
+        "reference_run_dir": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260429_18z_l2_72h_20260524T204451Z",
+        "metadata_run_dir": "/mnt/data/canairy_meteo/runs/wrf_l2/20260429_18z_l2_72h_20260524T204451Z",
+        "error": null
+      },
+      {
+        "case_id": "20260521_18z_l2_72h_20260522T133443Z",
+        "case_class": "SCORED_FAIL",
+        "reason": "h2+ blocking core fields outside frozen ADR-029 margins",
+        "stable_finite": true,
+        "physical_range_ok": true,
+        "blew_up_at_hour": null,
+        "core_within_margin": false,
+        "scored_h2plus_core_leads": [
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "n_scored_h2plus_core_leads": 5,
+        "reference_run_dir": "/mnt/data/canairy_meteo/runs/wrf_l2/20260521_18z_l2_72h_20260522T133443Z",
+        "metadata_run_dir": "/mnt/data/canairy_meteo/runs/wrf_l2/20260521_18z_l2_72h_20260522T133443Z",
+        "error": null
+      }
+    ],
+    "scored_case_ids": [
+      "20260429_18z_l2_72h_20260524T204451Z",
+      "20260521_18z_l2_72h_20260522T133443Z"
+    ],
+    "n_scored_cases": 2,
+    "final_verdict_from_scored_cases_only": "STABLE_BUT_CORE_FIELD_MISMATCH",
+    "foundation_confirmed_from_scored_cases_only": false,
+    "verdict_policy": "ERROR and UNSCOREABLE records are reported in counts/table but excluded from the final scored-case verdict; BLOWUP is reserved for genuine non-finite or gross-physical-range forecast states."
+  },
+  "case_class_counts": {
+    "ERROR": 0,
+    "UNSCOREABLE": 0,
+    "SCORED_PASS": 0,
+    "SCORED_FAIL": 2,
+    "BLOWUP": 0
+  },
+  "case_class_table": [
+    {
+      "case_id": "20260429_18z_l2_72h_20260524T204451Z",
+      "case_class": "SCORED_FAIL",
+      "reason": "h2+ blocking core fields outside frozen ADR-029 margins",
+      "stable_finite": true,
+      "physical_range_ok": true,
+      "blew_up_at_hour": null,
+      "core_within_margin": false,
+      "scored_h2plus_core_leads": [
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "n_scored_h2plus_core_leads": 5,
+      "reference_run_dir": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260429_18z_l2_72h_20260524T204451Z",
+      "metadata_run_dir": "/mnt/data/canairy_meteo/runs/wrf_l2/20260429_18z_l2_72h_20260524T204451Z",
+      "error": null
+    },
+    {
+      "case_id": "20260521_18z_l2_72h_20260522T133443Z",
+      "case_class": "SCORED_FAIL",
+      "reason": "h2+ blocking core fields outside frozen ADR-029 margins",
+      "stable_finite": true,
+      "physical_range_ok": true,
+      "blew_up_at_hour": null,
+      "core_within_margin": false,
+      "scored_h2plus_core_leads": [
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "n_scored_h2plus_core_leads": 5,
+      "reference_run_dir": "/mnt/data/canairy_meteo/runs/wrf_l2/20260521_18z_l2_72h_20260522T133443Z",
+      "metadata_run_dir": "/mnt/data/canairy_meteo/runs/wrf_l2/20260521_18z_l2_72h_20260522T133443Z",
+      "error": null
+    }
+  ],
+  "cases": [
+    {
+      "case_id": "20260429_18z_l2_72h_20260524T204451Z",
+      "domain": "d01",
+      "forecast_hours_attempted": 6,
+      "n_leads_run": 6,
+      "dt_s": 60.0,
+      "acoustic_substeps": 4,
+      "init_utc": "2026-04-29T18:00:00+00:00",
+      "reference_run_dir": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260429_18z_l2_72h_20260524T204451Z",
+      "reference_output_dir": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260429_18z_l2_72h_20260524T204451Z",
+      "metadata_run_dir": "/mnt/data/canairy_meteo/runs/wrf_l2/20260429_18z_l2_72h_20260524T204451Z",
+      "metrics_source": "/mnt/data/canairy_meteo/runs/wrf_l2/20260429_18z_l2_72h_20260524T204451Z/wrfinput_d01",
+      "scoring_policy": {
+        "core_skill_first_lead": 2,
+        "h1_non_blocking_spinup": true,
+        "margins_unchanged": true,
+        "note": "core PASS judged over leads >= core_skill_first_lead; h1 reported as non-blocking cold-start spin-up; frozen continuous_gate margins unchanged (lead-inclusion only)"
+      },
+      "stability": {
+        "stable_finite": true,
+        "physical_range_ok": true,
+        "blew_up_at_hour": null,
+        "per_hour": [
+          {
+            "all_finite": true,
+            "physical": true,
+            "fields": {
+              "theta": {
+                "finite": true,
+                "min": 289.20547332628985,
+                "max": 498.03936767578125,
+                "range": [
+                  150.0,
+                  600.0
+                ],
+                "in_range": true
+              },
+              "qv": {
+                "finite": true,
+                "min": 2.471598347179432e-06,
+                "max": 0.01150109947341909,
+                "range": [
+                  -1e-06,
+                  0.06
+                ],
+                "in_range": true
+              },
+              "w": {
+                "finite": true,
+                "min": -0.502420774049305,
+                "max": 0.4342859147592027,
+                "range": [
+                  -120.0,
+                  120.0
+                ],
+                "in_range": true
+              },
+              "u": {
+                "finite": true,
+                "min": -4.628096982997408,
+                "max": 49.1255969034892,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "v": {
+                "finite": true,
+                "min": -8.81385743517492,
+                "max": 26.27118682861328,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "mu_total": {
+                "finite": true,
+                "min": 76519.21644380772,
+                "max": 96190.15415405051,
+                "range": [
+                  1.0,
+                  200000.0
+                ],
+                "in_range": true
+              }
+            },
+            "hour": 1,
+            "wall_s": 227.9274894890259
+          },
+          {
+            "all_finite": true,
+            "physical": true,
+            "fields": {
+              "theta": {
+                "finite": true,
+                "min": 289.23736256437496,
+                "max": 498.03936767578125,
+                "range": [
+                  150.0,
+                  600.0
+                ],
+                "in_range": true
+              },
+              "qv": {
+                "finite": true,
+                "min": 2.4715969385774866e-06,
+                "max": 0.011789907615934318,
+                "range": [
+                  -1e-06,
+                  0.06
+                ],
+                "in_range": true
+              },
+              "w": {
+                "finite": true,
+                "min": -0.6067594088348326,
+                "max": 0.4998445068968855,
+                "range": [
+                  -120.0,
+                  120.0
+                ],
+                "in_range": true
+              },
+              "u": {
+                "finite": true,
+                "min": -4.353733896597153,
+                "max": 49.131852618363546,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "v": {
+                "finite": true,
+                "min": -8.429746030376304,
+                "max": 26.27118682861328,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "mu_total": {
+                "finite": true,
+                "min": 76552.69382074315,
+                "max": 96220.19722532338,
+                "range": [
+                  1.0,
+                  200000.0
+                ],
+                "in_range": true
+              }
+            },
+            "hour": 2,
+            "wall_s": 115.10447260801448
+          },
+          {
+            "all_finite": true,
+            "physical": true,
+            "fields": {
+              "theta": {
+                "finite": true,
+                "min": 289.5800229231661,
+                "max": 498.03936767578125,
+                "range": [
+                  150.0,
+                  600.0
+                ],
+                "in_range": true
+              },
+              "qv": {
+                "finite": true,
+                "min": 2.471596783340444e-06,
+                "max": 0.011987486645022994,
+                "range": [
+                  -1e-06,
+                  0.06
+                ],
+                "in_range": true
+              },
+              "w": {
+                "finite": true,
+                "min": -0.5584037234264358,
+                "max": 0.5305111073804241,
+                "range": [
+                  -120.0,
+                  120.0
+                ],
+                "in_range": true
+              },
+              "u": {
+                "finite": true,
+                "min": -4.659452487531013,
+                "max": 49.10252109790175,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "v": {
+                "finite": true,
+                "min": -8.114240699472184,
+                "max": 26.414743312684106,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "mu_total": {
+                "finite": true,
+                "min": 76529.82132160245,
+                "max": 96259.79208890119,
+                "range": [
+                  1.0,
+                  200000.0
+                ],
+                "in_range": true
+              }
+            },
+            "hour": 3,
+            "wall_s": 12.437782109016553
+          },
+          {
+            "all_finite": true,
+            "physical": true,
+            "fields": {
+              "theta": {
+                "finite": true,
+                "min": 289.63498580692533,
+                "max": 498.03936767578125,
+                "range": [
+                  150.0,
+                  600.0
+                ],
+                "in_range": true
+              },
+              "qv": {
+                "finite": true,
+                "min": 2.471596772086321e-06,
+                "max": 0.012223143300083528,
+                "range": [
+                  -1e-06,
+                  0.06
+                ],
+                "in_range": true
+              },
+              "w": {
+                "finite": true,
+                "min": -0.6572949895970304,
+                "max": 0.6310172574554367,
+                "range": [
+                  -120.0,
+                  120.0
+                ],
+                "in_range": true
+              },
+              "u": {
+                "finite": true,
+                "min": -4.838487153015094,
+                "max": 49.07682107690612,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "v": {
+                "finite": true,
+                "min": -7.586805911156906,
+                "max": 26.848112889634926,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "mu_total": {
+                "finite": true,
+                "min": 76525.01254313497,
+                "max": 96271.46459267123,
+                "range": [
+                  1.0,
+                  200000.0
+                ],
+                "in_range": true
+              }
+            },
+            "hour": 4,
+            "wall_s": 12.462847077986225
+          },
+          {
+            "all_finite": true,
+            "physical": true,
+            "fields": {
+              "theta": {
+                "finite": true,
+                "min": 289.63486920198136,
+                "max": 498.03936767578125,
+                "range": [
+                  150.0,
+                  600.0
+                ],
+                "in_range": true
+              },
+              "qv": {
+                "finite": true,
+                "min": 2.4715967712996367e-06,
+                "max": 0.012397789974496051,
+                "range": [
+                  -1e-06,
+                  0.06
+                ],
+                "in_range": true
+              },
+              "w": {
+                "finite": true,
+                "min": -0.7316695515733201,
+                "max": 0.6507208757199399,
+                "range": [
+                  -120.0,
+                  120.0
+                ],
+                "in_range": true
+              },
+              "u": {
+                "finite": true,
+                "min": -5.308668355160279,
+                "max": 49.07492794762409,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "v": {
+                "finite": true,
+                "min": -7.549419112916926,
+                "max": 27.1091145308184,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "mu_total": {
+                "finite": true,
+                "min": 76544.52482142206,
+                "max": 96265.68718548531,
+                "range": [
+                  1.0,
+                  200000.0
+                ],
+                "in_range": true
+              }
+            },
+            "hour": 5,
+            "wall_s": 12.464903292013332
+          },
+          {
+            "all_finite": true,
+            "physical": true,
+            "fields": {
+              "theta": {
+                "finite": true,
+                "min": 289.63466542231924,
+                "max": 498.03936767578125,
+                "range": [
+                  150.0,
+                  600.0
+                ],
+                "in_range": true
+              },
+              "qv": {
+                "finite": true,
+                "min": 2.471596771235282e-06,
+                "max": 0.012400178835714728,
+                "range": [
+                  -1e-06,
+                  0.06
+                ],
+                "in_range": true
+              },
+              "w": {
+                "finite": true,
+                "min": -0.7999755142867115,
+                "max": 0.704217279135674,
+                "range": [
+                  -120.0,
+                  120.0
+                ],
+                "in_range": true
+              },
+              "u": {
+                "finite": true,
+                "min": -5.072462208477803,
+                "max": 49.06489762667783,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "v": {
+                "finite": true,
+                "min": -7.535843141252311,
+                "max": 27.134971158131158,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "mu_total": {
+                "finite": true,
+                "min": 76543.92464612803,
+                "max": 96255.12926618785,
+                "range": [
+                  1.0,
+                  200000.0
+                ],
+                "in_range": true
+              }
+            },
+            "hour": 6,
+            "wall_s": 12.525621913024224
+          }
+        ]
+      },
+      "per_field_summary": {
+        "T2": {
+          "status": "scored",
+          "n_leads": 5,
+          "leads_in_envelope": [
+            2,
+            3,
+            4,
+            5,
+            6
+          ],
+          "core_skill_first_lead": 2,
+          "mean_bias": 0.16184684707533148,
+          "worst_abs_bias": 0.3013164005102259,
+          "mean_rmse": 1.5183856874388824,
+          "worst_rmse": 1.9048665810390335,
+          "regression_margin": 0.2148692978020805,
+          "within_margin": false,
+          "blocking": true,
+          "h1_spinup": {
+            "bias": -0.14994001379859498,
+            "rmse": 0.565971384418943,
+            "abs_bias": 0.14994001379859498,
+            "within_margin": true,
+            "blocking": false,
+            "note": "first-hour cold-start spin-up transient (non-blocking)"
+          }
+        },
+        "U10": {
+          "status": "scored",
+          "n_leads": 5,
+          "leads_in_envelope": [
+            2,
+            3,
+            4,
+            5,
+            6
+          ],
+          "core_skill_first_lead": 2,
+          "mean_bias": -0.024264271348609433,
+          "worst_abs_bias": 0.2959908483073287,
+          "mean_rmse": 0.6924715945901528,
+          "worst_rmse": 0.8487011053931783,
+          "regression_margin": 0.23064713972582307,
+          "within_margin": false,
+          "blocking": true,
+          "h1_spinup": {
+            "bias": -0.350155006051967,
+            "rmse": 0.5054657620009296,
+            "abs_bias": 0.350155006051967,
+            "within_margin": false,
+            "blocking": false,
+            "note": "first-hour cold-start spin-up transient (non-blocking)"
+          }
+        },
+        "V10": {
+          "status": "scored",
+          "n_leads": 5,
+          "leads_in_envelope": [
+            2,
+            3,
+            4,
+            5,
+            6
+          ],
+          "core_skill_first_lead": 2,
+          "mean_bias": 0.6554696521315444,
+          "worst_abs_bias": 0.7510803287429283,
+          "mean_rmse": 0.9826495879830339,
+          "worst_rmse": 1.2011816150518273,
+          "regression_margin": 0.2752320537920854,
+          "within_margin": false,
+          "blocking": true,
+          "h1_spinup": {
+            "bias": -0.037123252914889444,
+            "rmse": 0.46555725200450543,
+            "abs_bias": 0.037123252914889444,
+            "within_margin": true,
+            "blocking": false,
+            "note": "first-hour cold-start spin-up transient (non-blocking)"
+          }
+        },
+        "PBLH": {
+          "status": "scored",
+          "n_leads": 5,
+          "leads_in_envelope": [
+            2,
+            3,
+            4,
+            5,
+            6
+          ],
+          "core_skill_first_lead": 2,
+          "mean_bias": 1.6873529530492708,
+          "worst_abs_bias": 3.809199725818999,
+          "mean_rmse": 152.17321683331588,
+          "worst_rmse": 193.0967278633686,
+          "regression_margin": 100.0,
+          "within_margin": true,
+          "blocking": false,
+          "h1_spinup": {
+            "bias": -19.415352044262825,
+            "rmse": 39.933603417942024,
+            "abs_bias": 19.415352044262825,
+            "within_margin": true,
+            "blocking": false,
+            "note": "first-hour cold-start spin-up transient (non-blocking)"
+          }
+        },
+        "RAINNC": {
+          "status": "scored",
+          "n_leads": 5,
+          "leads_in_envelope": [
+            2,
+            3,
+            4,
+            5,
+            6
+          ],
+          "core_skill_first_lead": 2,
+          "mean_bias": 0.002887472276574729,
+          "worst_abs_bias": 0.003492564621115481,
+          "mean_rmse": 0.030097662102184997,
+          "worst_rmse": 0.04016382202136581,
+          "regression_margin": null,
+          "within_margin": null,
+          "blocking": false,
+          "h1_spinup": {
+            "bias": 0.0008652483455171487,
+            "rmse": 0.010388695090295032,
+            "abs_bias": 0.0008652483455171487,
+            "within_margin": null,
+            "blocking": false,
+            "note": "first-hour cold-start spin-up transient (non-blocking)"
+          }
+        },
+        "RAINC": {
+          "status": "scored",
+          "n_leads": 5,
+          "leads_in_envelope": [
+            2,
+            3,
+            4,
+            5,
+            6
+          ],
+          "core_skill_first_lead": 2,
+          "mean_bias": 0.0,
+          "worst_abs_bias": 0.0,
+          "mean_rmse": 0.0,
+          "worst_rmse": 0.0,
+          "regression_margin": null,
+          "within_margin": null,
+          "blocking": false,
+          "h1_spinup": {
+            "bias": 0.0,
+            "rmse": 0.0,
+            "abs_bias": 0.0,
+            "within_margin": null,
+            "blocking": false,
+            "note": "first-hour cold-start spin-up transient (non-blocking)"
+          }
+        },
+        "Q2": {
+          "status": "scored",
+          "n_leads": 5,
+          "leads_in_envelope": [
+            2,
+            3,
+            4,
+            5,
+            6
+          ],
+          "core_skill_first_lead": 2,
+          "mean_bias": 4.80661916875635e-05,
+          "worst_abs_bias": 7.286476051454903e-05,
+          "mean_rmse": 0.0005486747096893124,
+          "worst_rmse": 0.0006830467454163585,
+          "regression_margin": 0.0005,
+          "within_margin": true,
+          "blocking": false,
+          "h1_spinup": {
+            "bias": 9.987581350182236e-05,
+            "rmse": 0.00031245249942582563,
+            "abs_bias": 9.987581350182236e-05,
+            "within_margin": true,
+            "blocking": false,
+            "note": "first-hour cold-start spin-up transient (non-blocking)"
+          }
+        },
+        "PSFC": {
+          "status": "scored",
+          "n_leads": 5,
+          "leads_in_envelope": [
+            2,
+            3,
+            4,
+            5,
+            6
+          ],
+          "core_skill_first_lead": 2,
+          "mean_bias": -152.846093607618,
+          "worst_abs_bias": 242.29115409148898,
+          "mean_rmse": 157.55307265808224,
+          "worst_rmse": 244.88826218471453,
+          "regression_margin": 50.0,
+          "within_margin": false,
+          "blocking": false,
+          "h1_spinup": {
+            "bias": -29.67547726444323,
+            "rmse": 39.218525105577825,
+            "abs_bias": 29.67547726444323,
+            "within_margin": true,
+            "blocking": false,
+            "note": "first-hour cold-start spin-up transient (non-blocking)"
+          }
+        }
+      },
+      "core_within_margin": false,
+      "core_has_h2plus_evidence": true,
+      "per_lead": [
+        {
+          "hour": 1,
+          "valid_time": "2026-04-29T19:00:00+00:00",
+          "fields": {
+            "T2": {
+              "status": "OK",
+              "n": 5487,
+              "bias": -0.14994001379859498,
+              "rmse": 0.565971384418943,
+              "cpu_mean": 292.2876761498859,
+              "gpu_mean": 292.1377361360873,
+              "abs_bias_max_cell": 2.33038330078125
+            },
+            "U10": {
+              "status": "OK",
+              "n": 5487,
+              "bias": -0.350155006051967,
+              "rmse": 0.5054657620009296,
+              "cpu_mean": 1.6492339567587164,
+              "gpu_mean": 1.2990789507067495,
+              "abs_bias_max_cell": 1.7862732410430908
+            },
+            "V10": {
+              "status": "OK",
+              "n": 5487,
+              "bias": -0.037123252914889444,
+              "rmse": 0.46555725200450543,
+              "cpu_mean": -0.7557822709817787,
+              "gpu_mean": -0.7929055238966682,
+              "abs_bias_max_cell": 2.251471221446991
+            },
+            "PBLH": {
+              "status": "OK",
+              "n": 5487,
+              "bias": -19.415352044262825,
+              "rmse": 39.933603417942024,
+              "cpu_mean": 743.0425447575573,
+              "gpu_mean": 723.6271927132944,
+              "abs_bias_max_cell": 279.203369140625
+            },
+            "RAINNC": {
+              "status": "OK",
+              "n": 5487,
+              "bias": 0.0008652483455171487,
+              "rmse": 0.010388695090295032,
+              "cpu_mean": 0.0,
+              "gpu_mean": 0.0008652483455171487,
+              "abs_bias_max_cell": 0.16988898813724518
+            },
+            "RAINC": {
+              "status": "OK",
+              "n": 5487,
+              "bias": 0.0,
+              "rmse": 0.0,
+              "cpu_mean": 0.0,
+              "gpu_mean": 0.0,
+              "abs_bias_max_cell": 0.0
+            },
+            "Q2": {
+              "status": "OK",
+              "n": 5487,
+              "bias": 9.987581350182236e-05,
+              "rmse": 0.00031245249942582563,
+              "cpu_mean": 0.008993165730884873,
+              "gpu_mean": 0.009093041544386695,
+              "abs_bias_max_cell": 0.001993544865399599
+            },
+            "PSFC": {
+              "status": "OK",
+              "n": 5487,
+              "bias": -29.67547726444323,
+              "rmse": 39.218525105577825,
+              "cpu_mean": 101110.03431121286,
+              "gpu_mean": 101080.35883394843,
+              "abs_bias_max_cell": 128.765625
+            }
+          },
+          "stable": true
+        },
+        {
+          "hour": 2,
+          "valid_time": "2026-04-29T20:00:00+00:00",
+          "fields": {
+            "T2": {
+              "status": "OK",
+              "n": 5487,
+              "bias": 0.020927277640260502,
+              "rmse": 1.0908931695866846,
+              "cpu_mean": 292.13952669533353,
+              "gpu_mean": 292.16045397297376,
+              "abs_bias_max_cell": 5.28570556640625
+            },
+            "U10": {
+              "status": "OK",
+              "n": 5487,
+              "bias": -0.28520250014599297,
+              "rmse": 0.6078700103440683,
+              "cpu_mean": 1.4896188229875922,
+              "gpu_mean": 1.2044163228415992,
+              "abs_bias_max_cell": 3.358809471130371
+            },
+            "V10": {
+              "status": "OK",
+              "n": 5487,
+              "bias": 0.3854497989534774,
+              "rmse": 0.6089395712974393,
+              "cpu_mean": -1.042879764163681,
+              "gpu_mean": -0.6574299652102036,
+              "abs_bias_max_cell": 3.6976412534713745
+            },
+            "PBLH": {
+              "status": "OK",
+              "n": 5487,
+              "bias": -1.7815922284704186,
+              "rmse": 95.0412928811094,
+              "cpu_mean": 737.9238701082219,
+              "gpu_mean": 736.1422778797514,
+              "abs_bias_max_cell": 775.3526000976562
+            },
+            "RAINNC": {
+              "status": "OK",
+              "n": 5487,
+              "bias": 0.0019473881322281841,
+              "rmse": 0.019449099498518634,
+              "cpu_mean": 9.49308370426757e-05,
+              "gpu_mean": 0.0020423189692708598,
+              "abs_bias_max_cell": 0.36199429631233215
+            },
+            "RAINC": {
+              "status": "OK",
+              "n": 5487,
+              "bias": 0.0,
+              "rmse": 0.0,
+              "cpu_mean": 0.0,
+              "gpu_mean": 0.0,
+              "abs_bias_max_cell": 0.0
+            },
+            "Q2": {
+              "status": "OK",
+              "n": 5487,
+              "bias": 7.286476051454903e-05,
+              "rmse": 0.0004259074531290241,
+              "cpu_mean": 0.009059499256453385,
+              "gpu_mean": 0.009132364016967934,
+              "abs_bias_max_cell": 0.0022602658718824387
+            },
+            "PSFC": {
+              "status": "OK",
+              "n": 5487,
+              "bias": -64.99989606114453,
+              "rmse": 73.3662004265113,
+              "cpu_mean": 101152.76012051212,
+              "gpu_mean": 101087.76022445098,
+              "abs_bias_max_cell": 158.328125
+            }
+          },
+          "stable": true
+        },
+        {
+          "hour": 3,
+          "valid_time": "2026-04-29T21:00:00+00:00",
+          "fields": {
+            "T2": {
+              "status": "OK",
+              "n": 5487,
+              "bias": 0.08847010859118712,
+              "rmse": 1.3341981506600393,
+              "cpu_mean": 292.08248658316677,
+              "gpu_mean": 292.1709566917579,
+              "abs_bias_max_cell": 6.030242919921875
+            },
+            "U10": {
+              "status": "OK",
+              "n": 5487,
+              "bias": -0.16721702991844417,
+              "rmse": 0.6322017415158694,
+              "cpu_mean": 1.2550691146828274,
+              "gpu_mean": 1.0878520847643833,
+              "abs_bias_max_cell": 3.753170132637024
+            },
+            "V10": {
+              "status": "OK",
+              "n": 5487,
+              "bias": 0.6721607465856707,
+              "rmse": 0.9270645667697934,
+              "cpu_mean": -1.160289962815662,
+              "gpu_mean": -0.48812921622999134,
+              "abs_bias_max_cell": 5.148153901100159
+            },
+            "PBLH": {
+              "status": "OK",
+              "n": 5487,
+              "bias": 3.809199725818999,
+              "rmse": 135.49579462512904,
+              "cpu_mean": 739.4294947211764,
+              "gpu_mean": 743.2386944469955,
+              "abs_bias_max_cell": 983.5001525878906
+            },
+            "RAINNC": {
+              "status": "OK",
+              "n": 5487,
+              "bias": 0.0026398337897706563,
+              "rmse": 0.026447814233094873,
+              "cpu_mean": 0.0004061428081017866,
+              "gpu_mean": 0.0030459765978724427,
+              "abs_bias_max_cell": 0.5112131237983704
+            },
+            "RAINC": {
+              "status": "OK",
+              "n": 5487,
+              "bias": 0.0,
+              "rmse": 0.0,
+              "cpu_mean": 0.0,
+              "gpu_mean": 0.0,
+              "abs_bias_max_cell": 0.0
+            },
+            "Q2": {
+              "status": "OK",
+              "n": 5487,
+              "bias": 2.578021294816022e-05,
+              "rmse": 0.0004807370170023523,
+              "cpu_mean": 0.009120893866979285,
+              "gpu_mean": 0.009146674079927445,
+              "abs_bias_max_cell": 0.002379163634032011
+            },
+            "PSFC": {
+              "status": "OK",
+              "n": 5487,
+              "bias": -108.51134784490614,
+              "rmse": 114.27669481382219,
+              "cpu_mean": 101200.79750005696,
+              "gpu_mean": 101092.28615221205,
+              "abs_bias_max_cell": 202.265625
+            }
+          },
+          "stable": true
+        },
+        {
+          "hour": 4,
+          "valid_time": "2026-04-29T22:00:00+00:00",
+          "fields": {
+            "T2": {
+              "status": "OK",
+              "n": 5487,
+              "bias": 0.16688926645330726,
+              "rmse": 1.5464292197604619,
+              "cpu_mean": 292.02376583510244,
+              "gpu_mean": 292.19065510155576,
+              "abs_bias_max_cell": 7.0284423828125
+            },
+            "U10": {
+              "status": "OK",
+              "n": 5487,
+              "bias": -0.061118334961239265,
+              "rmse": 0.6630339327219629,
+              "cpu_mean": 0.9814631573044995,
+              "gpu_mean": 0.9203448223432603,
+              "abs_bias_max_cell": 3.760962128639221
+            },
+            "V10": {
+              "status": "OK",
+              "n": 5487,
+              "bias": 0.7510803287429283,
+              "rmse": 1.0626353755129072,
+              "cpu_mean": -1.1527377691147003,
+              "gpu_mean": -0.401657440371772,
+              "abs_bias_max_cell": 5.190231800079346
+            },
+            "PBLH": {
+              "status": "OK",
+              "n": 5487,
+              "bias": 3.488510810375127,
+              "rmse": 159.78596206092706,
+              "cpu_mean": 743.534618988788,
+              "gpu_mean": 747.023129799163,
+              "abs_bias_max_cell": 964.5237121582031
+            },
+            "RAINNC": {
+              "status": "OK",
+              "n": 5487,
+              "bias": 0.003003206235393223,
+              "rmse": 0.02995903987439067,
+              "cpu_mean": 0.0007319209532777615,
+              "gpu_mean": 0.0037351271886709846,
+              "abs_bias_max_cell": 0.665439784526825
+            },
+            "RAINC": {
+              "status": "OK",
+              "n": 5487,
+              "bias": 0.0,
+              "rmse": 0.0,
+              "cpu_mean": 0.0,
+              "gpu_mean": 0.0,
+              "abs_bias_max_cell": 0.0
+            },
+            "Q2": {
+              "status": "OK",
+              "n": 5487,
+              "bias": 3.370105806437372e-05,
+              "rmse": 0.0005447109798898977,
+              "cpu_mean": 0.009180617289329451,
+              "gpu_mean": 0.009214318347393825,
+              "abs_bias_max_cell": 0.00232321722432971
+            },
+            "PSFC": {
+              "status": "OK",
+              "n": 5487,
+              "bias": -151.82806947102242,
+              "rmse": 155.74594717683533,
+              "cpu_mean": 101244.3110790277,
+              "gpu_mean": 101092.48300955667,
+              "abs_bias_max_cell": 256.4609375
+            }
+          },
+          "stable": true
+        },
+        {
+          "hour": 5,
+          "valid_time": "2026-04-29T23:00:00+00:00",
+          "fields": {
+            "T2": {
+              "status": "OK",
+              "n": 5487,
+              "bias": 0.23163118218167658,
+              "rmse": 1.7155413161481918,
+              "cpu_mean": 291.97564983141973,
+              "gpu_mean": 292.2072810136014,
+              "abs_bias_max_cell": 7.911041259765625
+            },
+            "U10": {
+              "status": "OK",
+              "n": 5487,
+              "bias": 0.09622565997530057,
+              "rmse": 0.7105511829756855,
+              "cpu_mean": 0.6875471905884096,
+              "gpu_mean": 0.7837728505637102,
+              "abs_bias_max_cell": 4.0287633538246155
+            },
+            "V10": {
+              "status": "OK",
+              "n": 5487,
+              "bias": 0.7457877929159404,
+              "rmse": 1.1134268112832029,
+              "cpu_mean": -1.0842284459950695,
+              "gpu_mean": -0.33844065307912913,
+              "abs_bias_max_cell": 5.001939296722412
+            },
+            "PBLH": {
+              "status": "OK",
+              "n": 5487,
+              "bias": 2.148222884172426,
+              "rmse": 177.4463067360452,
+              "cpu_mean": 748.5472039524618,
+              "gpu_mean": 750.6954268366343,
+              "abs_bias_max_cell": 1014.4312744140625
+            },
+            "RAINNC": {
+              "status": "OK",
+              "n": 5487,
+              "bias": 0.003354368604366101,
+              "rmse": 0.034468534883555016,
+              "cpu_mean": 0.0011439548932135643,
+              "gpu_mean": 0.004498323497579665,
+              "abs_bias_max_cell": 0.8244084715843201
+            },
+            "RAINC": {
+              "status": "OK",
+              "n": 5487,
+              "bias": 0.0,
+              "rmse": 0.0,
+              "cpu_mean": 0.0,
+              "gpu_mean": 0.0,
+              "abs_bias_max_cell": 0.0
+            },
+            "Q2": {
+              "status": "OK",
+              "n": 5487,
+              "bias": 4.882135070182813e-05,
+              "rmse": 0.0006089713530089291,
+              "cpu_mean": 0.00923679484567378,
+              "gpu_mean": 0.009285616196375608,
+              "abs_bias_max_cell": 0.0021501574665308
+            },
+            "PSFC": {
+              "status": "OK",
+              "n": 5487,
+              "bias": -196.60000056952796,
+              "rmse": 199.48825868852782,
+              "cpu_mean": 101288.11462462411,
+              "gpu_mean": 101091.51462405459,
+              "abs_bias_max_cell": 314.671875
+            }
+          },
+          "stable": true
+        },
+        {
+          "hour": 6,
+          "valid_time": "2026-04-30T00:00:00+00:00",
+          "fields": {
+            "T2": {
+              "status": "OK",
+              "n": 5487,
+              "bias": 0.3013164005102259,
+              "rmse": 1.9048665810390335,
+              "cpu_mean": 291.9227038967994,
+              "gpu_mean": 292.2240202973096,
+              "abs_bias_max_cell": 8.91748046875
+            },
+            "U10": {
+              "status": "OK",
+              "n": 5487,
+              "bias": 0.2959908483073287,
+              "rmse": 0.8487011053931783,
+              "cpu_mean": 0.4149639108020514,
+              "gpu_mean": 0.7109547591093801,
+              "abs_bias_max_cell": 4.283183217048645
+            },
+            "V10": {
+              "status": "OK",
+              "n": 5487,
+              "bias": 0.7228695934597051,
+              "rmse": 1.2011816150518273,
+              "cpu_mean": -0.9944597627329487,
+              "gpu_mean": -0.27159016927324353,
+              "abs_bias_max_cell": 4.880755305290222
+            },
+            "PBLH": {
+              "status": "OK",
+              "n": 5487,
+              "bias": 0.7724235733502198,
+              "rmse": 193.0967278633686,
+              "cpu_mean": 752.5222499312785,
+              "gpu_mean": 753.2946735046287,
+              "abs_bias_max_cell": 1053.1057434082031
+            },
+            "RAINNC": {
+              "status": "OK",
+              "n": 5487,
+              "bias": 0.003492564621115481,
+              "rmse": 0.04016382202136581,
+              "cpu_mean": 0.0018417360148118087,
+              "gpu_mean": 0.00533430063592729,
+              "abs_bias_max_cell": 0.9915575385093689
+            },
+            "RAINC": {
+              "status": "OK",
+              "n": 5487,
+              "bias": 0.0,
+              "rmse": 0.0,
+              "cpu_mean": 0.0,
+              "gpu_mean": 0.0,
+              "abs_bias_max_cell": 0.0
+            },
+            "Q2": {
+              "status": "OK",
+              "n": 5487,
+              "bias": 5.91635762089064e-05,
+              "rmse": 0.0006830467454163585,
+              "cpu_mean": 0.0092974379298866,
+              "gpu_mean": 0.009356601506095507,
+              "abs_bias_max_cell": 0.0022145723924040794
+            },
+            "PSFC": {
+              "status": "OK",
+              "n": 5487,
+              "bias": -242.29115409148898,
+              "rmse": 244.88826218471453,
+              "cpu_mean": 101333.60545664754,
+              "gpu_mean": 101091.31430255604,
+              "abs_bias_max_cell": 377.6796875
+            }
+          },
+          "stable": true
+        }
+      ],
+      "gpu_output_dir": "/tmp/v040_kf_gate_cu1/20260429_18z_l2_72h_20260524T204451Z_d01"
+    },
+    {
+      "case_id": "20260521_18z_l2_72h_20260522T133443Z",
+      "domain": "d01",
+      "forecast_hours_attempted": 6,
+      "n_leads_run": 6,
+      "dt_s": 60.0,
+      "acoustic_substeps": 4,
+      "init_utc": "2026-05-21T18:00:00+00:00",
+      "reference_run_dir": "/mnt/data/canairy_meteo/runs/wrf_l2/20260521_18z_l2_72h_20260522T133443Z",
+      "reference_output_dir": "/mnt/data/canairy_meteo/runs/wrf_l2/20260521_18z_l2_72h_20260522T133443Z",
+      "metadata_run_dir": "/mnt/data/canairy_meteo/runs/wrf_l2/20260521_18z_l2_72h_20260522T133443Z",
+      "metrics_source": "/mnt/data/canairy_meteo/runs/wrf_l2/20260521_18z_l2_72h_20260522T133443Z/wrfinput_d01",
+      "scoring_policy": {
+        "core_skill_first_lead": 2,
+        "h1_non_blocking_spinup": true,
+        "margins_unchanged": true,
+        "note": "core PASS judged over leads >= core_skill_first_lead; h1 reported as non-blocking cold-start spin-up; frozen continuous_gate margins unchanged (lead-inclusion only)"
+      },
+      "stability": {
+        "stable_finite": true,
+        "physical_range_ok": true,
+        "blew_up_at_hour": null,
+        "per_hour": [
+          {
+            "all_finite": true,
+            "physical": true,
+            "fields": {
+              "theta": {
+                "finite": true,
+                "min": 290.3928091573965,
+                "max": 494.54456135584013,
+                "range": [
+                  150.0,
+                  600.0
+                ],
+                "in_range": true
+              },
+              "qv": {
+                "finite": true,
+                "min": 2.4295448558564612e-06,
+                "max": 0.01377520457161285,
+                "range": [
+                  -1e-06,
+                  0.06
+                ],
+                "in_range": true
+              },
+              "w": {
+                "finite": true,
+                "min": -0.4189823978000022,
+                "max": 0.3310338559825924,
+                "range": [
+                  -120.0,
+                  120.0
+                ],
+                "in_range": true
+              },
+              "u": {
+                "finite": true,
+                "min": -12.478304862976074,
+                "max": 28.369226455688477,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "v": {
+                "finite": true,
+                "min": -13.582059447642276,
+                "max": 12.056037206672013,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "mu_total": {
+                "finite": true,
+                "min": 77224.11785494762,
+                "max": 96892.56420610966,
+                "range": [
+                  1.0,
+                  200000.0
+                ],
+                "in_range": true
+              }
+            },
+            "hour": 1,
+            "wall_s": 222.69861617102288
+          },
+          {
+            "all_finite": true,
+            "physical": true,
+            "fields": {
+              "theta": {
+                "finite": true,
+                "min": 290.34127936430536,
+                "max": 494.5395202636719,
+                "range": [
+                  150.0,
+                  600.0
+                ],
+                "in_range": true
+              },
+              "qv": {
+                "finite": true,
+                "min": 2.4295752610132594e-06,
+                "max": 0.014359960967380242,
+                "range": [
+                  -1e-06,
+                  0.06
+                ],
+                "in_range": true
+              },
+              "w": {
+                "finite": true,
+                "min": -0.5407534998895948,
+                "max": 0.221966736108517,
+                "range": [
+                  -120.0,
+                  120.0
+                ],
+                "in_range": true
+              },
+              "u": {
+                "finite": true,
+                "min": -12.478304862976074,
+                "max": 28.369226455688477,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "v": {
+                "finite": true,
+                "min": -16.94259687447893,
+                "max": 12.44562853001883,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "mu_total": {
+                "finite": true,
+                "min": 77215.63008284543,
+                "max": 96893.60770311524,
+                "range": [
+                  1.0,
+                  200000.0
+                ],
+                "in_range": true
+              }
+            },
+            "hour": 2,
+            "wall_s": 117.9287930810242
+          },
+          {
+            "all_finite": true,
+            "physical": true,
+            "fields": {
+              "theta": {
+                "finite": true,
+                "min": 290.5209624737436,
+                "max": 494.5395202636719,
+                "range": [
+                  150.0,
+                  600.0
+                ],
+                "in_range": true
+              },
+              "qv": {
+                "finite": true,
+                "min": 2.4295760548223637e-06,
+                "max": 0.015139346261840258,
+                "range": [
+                  -1e-06,
+                  0.06
+                ],
+                "in_range": true
+              },
+              "w": {
+                "finite": true,
+                "min": -0.6325318944057301,
+                "max": 0.257844127246014,
+                "range": [
+                  -120.0,
+                  120.0
+                ],
+                "in_range": true
+              },
+              "u": {
+                "finite": true,
+                "min": -12.622927579529723,
+                "max": 28.369226455688477,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "v": {
+                "finite": true,
+                "min": -17.59372521984106,
+                "max": 12.94440438271086,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "mu_total": {
+                "finite": true,
+                "min": 77207.46718089175,
+                "max": 96889.9304432163,
+                "range": [
+                  1.0,
+                  200000.0
+                ],
+                "in_range": true
+              }
+            },
+            "hour": 3,
+            "wall_s": 12.532335939991754
+          },
+          {
+            "all_finite": true,
+            "physical": true,
+            "fields": {
+              "theta": {
+                "finite": true,
+                "min": 290.1906223395735,
+                "max": 494.5463643135496,
+                "range": [
+                  150.0,
+                  600.0
+                ],
+                "in_range": true
+              },
+              "qv": {
+                "finite": true,
+                "min": 2.4295761037122287e-06,
+                "max": 0.0158508432391885,
+                "range": [
+                  -1e-06,
+                  0.06
+                ],
+                "in_range": true
+              },
+              "w": {
+                "finite": true,
+                "min": -0.5509299258004563,
+                "max": 0.23649886248476,
+                "range": [
+                  -120.0,
+                  120.0
+                ],
+                "in_range": true
+              },
+              "u": {
+                "finite": true,
+                "min": -13.131187846609272,
+                "max": 28.369226455688477,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "v": {
+                "finite": true,
+                "min": -16.360486617598724,
+                "max": 12.615401007462935,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "mu_total": {
+                "finite": true,
+                "min": 77202.43852402442,
+                "max": 96886.80978677922,
+                "range": [
+                  1.0,
+                  200000.0
+                ],
+                "in_range": true
+              }
+            },
+            "hour": 4,
+            "wall_s": 12.548085552989505
+          },
+          {
+            "all_finite": true,
+            "physical": true,
+            "fields": {
+              "theta": {
+                "finite": true,
+                "min": 290.021183883179,
+                "max": 494.5424872446699,
+                "range": [
+                  150.0,
+                  600.0
+                ],
+                "in_range": true
+              },
+              "qv": {
+                "finite": true,
+                "min": 2.4295761067616706e-06,
+                "max": 0.016341576830853036,
+                "range": [
+                  -1e-06,
+                  0.06
+                ],
+                "in_range": true
+              },
+              "w": {
+                "finite": true,
+                "min": -0.49837615811872404,
+                "max": 0.22510077268700526,
+                "range": [
+                  -120.0,
+                  120.0
+                ],
+                "in_range": true
+              },
+              "u": {
+                "finite": true,
+                "min": -13.594572088601065,
+                "max": 28.369226455688477,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "v": {
+                "finite": true,
+                "min": -15.840193922367789,
+                "max": 12.747383585722496,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "mu_total": {
+                "finite": true,
+                "min": 77206.5333792015,
+                "max": 96885.91492039314,
+                "range": [
+                  1.0,
+                  200000.0
+                ],
+                "in_range": true
+              }
+            },
+            "hour": 5,
+            "wall_s": 12.577201278996654
+          },
+          {
+            "all_finite": true,
+            "physical": true,
+            "fields": {
+              "theta": {
+                "finite": true,
+                "min": 290.0064682143373,
+                "max": 494.5395202636719,
+                "range": [
+                  150.0,
+                  600.0
+                ],
+                "in_range": true
+              },
+              "qv": {
+                "finite": true,
+                "min": 2.429576107236788e-06,
+                "max": 0.016502049693474706,
+                "range": [
+                  -1e-06,
+                  0.06
+                ],
+                "in_range": true
+              },
+              "w": {
+                "finite": true,
+                "min": -0.4756104429395458,
+                "max": 0.2556158791969842,
+                "range": [
+                  -120.0,
+                  120.0
+                ],
+                "in_range": true
+              },
+              "u": {
+                "finite": true,
+                "min": -13.685136826417644,
+                "max": 28.369226455688477,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "v": {
+                "finite": true,
+                "min": -15.284749815686745,
+                "max": 13.047908195771791,
+                "range": [
+                  -200.0,
+                  200.0
+                ],
+                "in_range": true
+              },
+              "mu_total": {
+                "finite": true,
+                "min": 77208.507247161,
+                "max": 96886.2761064988,
+                "range": [
+                  1.0,
+                  200000.0
+                ],
+                "in_range": true
+              }
+            },
+            "hour": 6,
+            "wall_s": 12.504648904956412
+          }
+        ]
+      },
+      "per_field_summary": {
+        "T2": {
+          "status": "scored",
+          "n_leads": 5,
+          "leads_in_envelope": [
+            2,
+            3,
+            4,
+            5,
+            6
+          ],
+          "core_skill_first_lead": 2,
+          "mean_bias": 0.5949313122565268,
+          "worst_abs_bias": 0.8151960531088397,
+          "mean_rmse": 2.480086660807632,
+          "worst_rmse": 3.0644405936851284,
+          "regression_margin": 0.2148692978020805,
+          "within_margin": false,
+          "blocking": true,
+          "h1_spinup": {
+            "bias": -0.054982848086599576,
+            "rmse": 0.669919660401641,
+            "abs_bias": 0.054982848086599576,
+            "within_margin": true,
+            "blocking": false,
+            "note": "first-hour cold-start spin-up transient (non-blocking)"
+          }
+        },
+        "U10": {
+          "status": "scored",
+          "n_leads": 5,
+          "leads_in_envelope": [
+            2,
+            3,
+            4,
+            5,
+            6
+          ],
+          "core_skill_first_lead": 2,
+          "mean_bias": 0.5442158568896263,
+          "worst_abs_bias": 1.0242441403665705,
+          "mean_rmse": 0.8262600090763594,
+          "worst_rmse": 1.2623662392703037,
+          "regression_margin": 0.23064713972582307,
+          "within_margin": false,
+          "blocking": true,
+          "h1_spinup": {
+            "bias": -0.11968464138951784,
+            "rmse": 0.27916382409001883,
+            "abs_bias": 0.11968464138951784,
+            "within_margin": true,
+            "blocking": false,
+            "note": "first-hour cold-start spin-up transient (non-blocking)"
+          }
+        },
+        "V10": {
+          "status": "scored",
+          "n_leads": 5,
+          "leads_in_envelope": [
+            2,
+            3,
+            4,
+            5,
+            6
+          ],
+          "core_skill_first_lead": 2,
+          "mean_bias": 0.5062000710335681,
+          "worst_abs_bias": 0.5519445375090419,
+          "mean_rmse": 1.0153087369797051,
+          "worst_rmse": 1.3095544509547565,
+          "regression_margin": 0.2752320537920854,
+          "within_margin": false,
+          "blocking": true,
+          "h1_spinup": {
+            "bias": 0.41787100425701235,
+            "rmse": 0.5597875041992473,
+            "abs_bias": 0.41787100425701235,
+            "within_margin": false,
+            "blocking": false,
+            "note": "first-hour cold-start spin-up transient (non-blocking)"
+          }
+        },
+        "PBLH": {
+          "status": "scored",
+          "n_leads": 5,
+          "leads_in_envelope": [
+            2,
+            3,
+            4,
+            5,
+            6
+          ],
+          "core_skill_first_lead": 2,
+          "mean_bias": 41.60953139772131,
+          "worst_abs_bias": 54.00947038606366,
+          "mean_rmse": 155.77187292386418,
+          "worst_rmse": 171.6823475345951,
+          "regression_margin": 100.0,
+          "within_margin": true,
+          "blocking": false,
+          "h1_spinup": {
+            "bias": -12.93590193731615,
+            "rmse": 37.15403511752059,
+            "abs_bias": 12.93590193731615,
+            "within_margin": true,
+            "blocking": false,
+            "note": "first-hour cold-start spin-up transient (non-blocking)"
+          }
+        },
+        "RAINNC": {
+          "status": "scored",
+          "n_leads": 5,
+          "leads_in_envelope": [
+            2,
+            3,
+            4,
+            5,
+            6
+          ],
+          "core_skill_first_lead": 2,
+          "mean_bias": 0.0001482841793839164,
+          "worst_abs_bias": 0.0003308547562816146,
+          "mean_rmse": 0.003934290954032154,
+          "worst_rmse": 0.0057894822771162304,
+          "regression_margin": null,
+          "within_margin": null,
+          "blocking": false,
+          "h1_spinup": {
+            "bias": -3.7033686628816766e-06,
+            "rmse": 0.00015401212588182027,
+            "abs_bias": 3.7033686628816766e-06,
+            "within_margin": null,
+            "blocking": false,
+            "note": "first-hour cold-start spin-up transient (non-blocking)"
+          }
+        },
+        "RAINC": {
+          "status": "scored",
+          "n_leads": 5,
+          "leads_in_envelope": [
+            2,
+            3,
+            4,
+            5,
+            6
+          ],
+          "core_skill_first_lead": 2,
+          "mean_bias": 0.0,
+          "worst_abs_bias": 0.0,
+          "mean_rmse": 0.0,
+          "worst_rmse": 0.0,
+          "regression_margin": null,
+          "within_margin": null,
+          "blocking": false,
+          "h1_spinup": {
+            "bias": 0.0,
+            "rmse": 0.0,
+            "abs_bias": 0.0,
+            "within_margin": null,
+            "blocking": false,
+            "note": "first-hour cold-start spin-up transient (non-blocking)"
+          }
+        },
+        "Q2": {
+          "status": "scored",
+          "n_leads": 5,
+          "leads_in_envelope": [
+            2,
+            3,
+            4,
+            5,
+            6
+          ],
+          "core_skill_first_lead": 2,
+          "mean_bias": -0.00022443932130951821,
+          "worst_abs_bias": 0.00025552669567204857,
+          "mean_rmse": 0.0007873953963797664,
+          "worst_rmse": 0.0009398423663037478,
+          "regression_margin": 0.0005,
+          "within_margin": true,
+          "blocking": false,
+          "h1_spinup": {
+            "bias": -0.00025503951110759134,
+            "rmse": 0.0004135270550238418,
+            "abs_bias": 0.00025503951110759134,
+            "within_margin": true,
+            "blocking": false,
+            "note": "first-hour cold-start spin-up transient (non-blocking)"
+          }
+        },
+        "PSFC": {
+          "status": "scored",
+          "n_leads": 5,
+          "leads_in_envelope": [
+            2,
+            3,
+            4,
+            5,
+            6
+          ],
+          "core_skill_first_lead": 2,
+          "mean_bias": -94.20374436167305,
+          "worst_abs_bias": 166.43657736468015,
+          "mean_rmse": 101.91404434984744,
+          "worst_rmse": 172.39945065833953,
+          "regression_margin": 50.0,
+          "within_margin": false,
+          "blocking": false,
+          "h1_spinup": {
+            "bias": 30.32481889010388,
+            "rmse": 37.457022630201415,
+            "abs_bias": 30.32481889010388,
+            "within_margin": true,
+            "blocking": false,
+            "note": "first-hour cold-start spin-up transient (non-blocking)"
+          }
+        }
+      },
+      "core_within_margin": false,
+      "core_has_h2plus_evidence": true,
+      "per_lead": [
+        {
+          "hour": 1,
+          "valid_time": "2026-05-21T19:00:00+00:00",
+          "fields": {
+            "T2": {
+              "status": "OK",
+              "n": 5487,
+              "bias": -0.054982848086599576,
+              "rmse": 0.669919660401641,
+              "cpu_mean": 293.8570339953028,
+              "gpu_mean": 293.8020511472162,
+              "abs_bias_max_cell": 4.84197998046875
+            },
+            "U10": {
+              "status": "OK",
+              "n": 5487,
+              "bias": -0.11968464138951784,
+              "rmse": 0.27916382409001883,
+              "cpu_mean": 0.8568318025215375,
+              "gpu_mean": 0.7371471611320196,
+              "abs_bias_max_cell": 3.1651583909988403
+            },
+            "V10": {
+              "status": "OK",
+              "n": 5487,
+              "bias": 0.41787100425701235,
+              "rmse": 0.5597875041992473,
+              "cpu_mean": -5.966165062502102,
+              "gpu_mean": -5.54829405824509,
+              "abs_bias_max_cell": 3.262020766735077
+            },
+            "PBLH": {
+              "status": "OK",
+              "n": 5487,
+              "bias": -12.93590193731615,
+              "rmse": 37.15403511752059,
+              "cpu_mean": 436.7580686075257,
+              "gpu_mean": 423.8221666702095,
+              "abs_bias_max_cell": 333.8600769042969
+            },
+            "RAINNC": {
+              "status": "OK",
+              "n": 5487,
+              "bias": -3.7033686628816766e-06,
+              "rmse": 0.00015401212588182027,
+              "cpu_mean": 5.7447291742526915e-06,
+              "gpu_mean": 2.041360511371015e-06,
+              "abs_bias_max_cell": 0.008211611770093441
+            },
+            "RAINC": {
+              "status": "OK",
+              "n": 5487,
+              "bias": 0.0,
+              "rmse": 0.0,
+              "cpu_mean": 0.0,
+              "gpu_mean": 0.0,
+              "abs_bias_max_cell": 0.0
+            },
+            "Q2": {
+              "status": "OK",
+              "n": 5487,
+              "bias": -0.00025503951110759134,
+              "rmse": 0.0004135270550238418,
+              "cpu_mean": 0.011396868103741378,
+              "gpu_mean": 0.011141828592633785,
+              "abs_bias_max_cell": 0.0032828180119395256
+            },
+            "PSFC": {
+              "status": "OK",
+              "n": 5487,
+              "bias": 30.32481889010388,
+              "rmse": 37.457022630201415,
+              "cpu_mean": 101516.62193024422,
+              "gpu_mean": 101546.94674913432,
+              "abs_bias_max_cell": 97.4609375
+            }
+          },
+          "stable": true
+        },
+        {
+          "hour": 2,
+          "valid_time": "2026-05-21T20:00:00+00:00",
+          "fields": {
+            "T2": {
+              "status": "OK",
+              "n": 5487,
+              "bias": 0.31172184347128723,
+              "rmse": 1.7069555300178265,
+              "cpu_mean": 293.5042939072253,
+              "gpu_mean": 293.8160157506966,
+              "abs_bias_max_cell": 7.78826904296875
+            },
+            "U10": {
+              "status": "OK",
+              "n": 5487,
+              "bias": 0.0840039691168586,
+              "rmse": 0.4497046277226872,
+              "cpu_mean": 0.653633807303689,
+              "gpu_mean": 0.7376377764205476,
+              "abs_bias_max_cell": 4.957507789134979
+            },
+            "V10": {
+              "status": "OK",
+              "n": 5487,
+              "bias": 0.4581065325358642,
+              "rmse": 0.7296269498288132,
+              "cpu_mean": -6.0869988352453674,
+              "gpu_mean": -5.628892302709503,
+              "abs_bias_max_cell": 6.411820292472839
+            },
+            "PBLH": {
+              "status": "OK",
+              "n": 5487,
+              "bias": 24.254176658295272,
+              "rmse": 127.95570659844596,
+              "cpu_mean": 417.87638850322463,
+              "gpu_mean": 442.13056516151994,
+              "abs_bias_max_cell": 876.7149963378906
+            },
+            "RAINNC": {
+              "status": "OK",
+              "n": 5487,
+              "bias": 3.991783143442358e-05,
+              "rmse": 0.0015724850772417048,
+              "cpu_mean": 5.39966338772691e-05,
+              "gpu_mean": 9.391446531169267e-05,
+              "abs_bias_max_cell": 0.04633275931701064
+            },
+            "RAINC": {
+              "status": "OK",
+              "n": 5487,
+              "bias": 0.0,
+              "rmse": 0.0,
+              "cpu_mean": 0.0,
+              "gpu_mean": 0.0,
+              "abs_bias_max_cell": 0.0
+            },
+            "Q2": {
+              "status": "OK",
+              "n": 5487,
+              "bias": -0.00025552669567204857,
+              "rmse": 0.0005723020181994097,
+              "cpu_mean": 0.01156650853506421,
+              "gpu_mean": 0.011310981839392161,
+              "abs_bias_max_cell": 0.0038589686155319214
+            },
+            "PSFC": {
+              "status": "OK",
+              "n": 5487,
+              "bias": -14.386034604519773,
+              "rmse": 30.04009772830759,
+              "cpu_mean": 101546.66232971114,
+              "gpu_mean": 101532.27629510661,
+              "abs_bias_max_cell": 98.171875
+            }
+          },
+          "stable": true
+        },
+        {
+          "hour": 3,
+          "valid_time": "2026-05-21T21:00:00+00:00",
+          "fields": {
+            "T2": {
+              "status": "OK",
+              "n": 5487,
+              "bias": 0.49004692020628304,
+              "rmse": 2.1958283228307676,
+              "cpu_mean": 293.3286508345009,
+              "gpu_mean": 293.81869775470716,
+              "abs_bias_max_cell": 9.900238037109375
+            },
+            "U10": {
+              "status": "OK",
+              "n": 5487,
+              "bias": 0.308408538958299,
+              "rmse": 0.6123979050769178,
+              "cpu_mean": 0.38837470778039385,
+              "gpu_mean": 0.6967832467386929,
+              "abs_bias_max_cell": 4.517765998840332
+            },
+            "V10": {
+              "status": "OK",
+              "n": 5487,
+              "bias": 0.490200806504192,
+              "rmse": 0.859601685053921,
+              "cpu_mean": -6.1292485733356665,
+              "gpu_mean": -5.6390477668314745,
+              "abs_bias_max_cell": 7.1418696641922
+            },
+            "PBLH": {
+              "status": "OK",
+              "n": 5487,
+              "bias": 37.433541148613116,
+              "rmse": 153.53113740040845,
+              "cpu_mean": 414.943137529532,
+              "gpu_mean": 452.37667867814514,
+              "abs_bias_max_cell": 1126.9764099121094
+            },
+            "RAINNC": {
+              "status": "OK",
+              "n": 5487,
+              "bias": 0.000144289897699469,
+              "rmse": 0.0032693863870224297,
+              "cpu_mean": 0.0001913069916164285,
+              "gpu_mean": 0.0003355968893158975,
+              "abs_bias_max_cell": 0.06905722245573997
+            },
+            "RAINC": {
+              "status": "OK",
+              "n": 5487,
+              "bias": 0.0,
+              "rmse": 0.0,
+              "cpu_mean": 0.0,
+              "gpu_mean": 0.0,
+              "abs_bias_max_cell": 0.0
+            },
+            "Q2": {
+              "status": "OK",
+              "n": 5487,
+              "bias": -0.0002553921102247256,
+              "rmse": 0.0007099937782484917,
+              "cpu_mean": 0.011681940730410628,
+              "gpu_mean": 0.011426548620185903,
+              "abs_bias_max_cell": 0.004367738030850887
+            },
+            "PSFC": {
+              "status": "OK",
+              "n": 5487,
+              "bias": -57.1839062784764,
+              "rmse": 63.61658736003786,
+              "cpu_mean": 101579.599791268,
+              "gpu_mean": 101522.41588498952,
+              "abs_bias_max_cell": 153.7578125
+            }
+          },
+          "stable": true
+        },
+        {
+          "hour": 4,
+          "valid_time": "2026-05-21T22:00:00+00:00",
+          "fields": {
+            "T2": {
+              "status": "OK",
+              "n": 5487,
+              "bias": 0.6246709696729913,
+              "rmse": 2.5716565452927522,
+              "cpu_mean": 293.19265315474894,
+              "gpu_mean": 293.81732412442193,
+              "abs_bias_max_cell": 11.886016845703125
+            },
+            "U10": {
+              "status": "OK",
+              "n": 5487,
+              "bias": 0.5345398420930441,
+              "rmse": 0.8026587603332651,
+              "cpu_mean": 0.09596330356475072,
+              "gpu_mean": 0.6305031456577949,
+              "abs_bias_max_cell": 4.6217241287231445
+            },
+            "V10": {
+              "status": "OK",
+              "n": 5487,
+              "bias": 0.5300914964676671,
+              "rmse": 0.9997634247773409,
+              "cpu_mean": -6.077164718029277,
+              "gpu_mean": -5.54707322156161,
+              "abs_bias_max_cell": 7.200265049934387
+            },
+            "PBLH": {
+              "status": "OK",
+              "n": 5487,
+              "bias": 43.607597556860696,
+              "rmse": 159.8248732539435,
+              "cpu_mean": 413.7044229446614,
+              "gpu_mean": 457.3120205015221,
+              "abs_bias_max_cell": 1184.9367370605469
+            },
+            "RAINNC": {
+              "status": "OK",
+              "n": 5487,
+              "bias": 0.00011184629695596959,
+              "rmse": 0.004097031950451034,
+              "cpu_mean": 0.00041957535083862214,
+              "gpu_mean": 0.0005314216477945918,
+              "abs_bias_max_cell": 0.07862198259681463
+            },
+            "RAINC": {
+              "status": "OK",
+              "n": 5487,
+              "bias": 0.0,
+              "rmse": 0.0,
+              "cpu_mean": 0.0,
+              "gpu_mean": 0.0,
+              "abs_bias_max_cell": 0.0
+            },
+            "Q2": {
+              "status": "OK",
+              "n": 5487,
+              "bias": -0.00024148846620190376,
+              "rmse": 0.0008179207231975067,
+              "cpu_mean": 0.011764445330411962,
+              "gpu_mean": 0.011522956864210059,
+              "abs_bias_max_cell": 0.004711909219622612
+            },
+            "PSFC": {
+              "status": "OK",
+              "n": 5487,
+              "bias": -98.43592952660835,
+              "rmse": 103.56348855311042,
+              "cpu_mean": 101614.10946185302,
+              "gpu_mean": 101515.67353232641,
+              "abs_bias_max_cell": 200.2578125
+            }
+          },
+          "stable": true
+        },
+        {
+          "hour": 5,
+          "valid_time": "2026-05-21T23:00:00+00:00",
+          "fields": {
+            "T2": {
+              "status": "OK",
+              "n": 5487,
+              "bias": 0.7330207748232328,
+              "rmse": 2.861552312211687,
+              "cpu_mean": 293.07830101417807,
+              "gpu_mean": 293.8113217890013,
+              "abs_bias_max_cell": 13.718414306640625
+            },
+            "U10": {
+              "status": "OK",
+              "n": 5487,
+              "bias": 0.7698827939133588,
+              "rmse": 1.0041725129786234,
+              "cpu_mean": -0.19431403086750337,
+              "gpu_mean": 0.5755687630458555,
+              "abs_bias_max_cell": 5.035924196243286
+            },
+            "V10": {
+              "status": "OK",
+              "n": 5487,
+              "bias": 0.5519445375090419,
+              "rmse": 1.1779971742836939,
+              "cpu_mean": -5.9725324926532615,
+              "gpu_mean": -5.42058795514422,
+              "abs_bias_max_cell": 7.971862316131592
+            },
+            "PBLH": {
+              "status": "OK",
+              "n": 5487,
+              "bias": 48.742871238773844,
+              "rmse": 165.86529983192793,
+              "cpu_mean": 411.7429296244292,
+              "gpu_mean": 460.48580086320305,
+              "abs_bias_max_cell": 1195.796516418457
+            },
+            "RAINNC": {
+              "status": "OK",
+              "n": 5487,
+              "bias": 0.00011451211454810522,
+              "rmse": 0.004943069078329368,
+              "cpu_mean": 0.0005478260650885368,
+              "gpu_mean": 0.0006623381796366421,
+              "abs_bias_max_cell": 0.10631905496120453
+            },
+            "RAINC": {
+              "status": "OK",
+              "n": 5487,
+              "bias": 0.0,
+              "rmse": 0.0,
+              "cpu_mean": 0.0,
+              "gpu_mean": 0.0,
+              "abs_bias_max_cell": 0.0
+            },
+            "Q2": {
+              "status": "OK",
+              "n": 5487,
+              "bias": -0.0002071578173584325,
+              "rmse": 0.0008969180959496762,
+              "cpu_mean": 0.011837996272748723,
+              "gpu_mean": 0.01163083845539029,
+              "abs_bias_max_cell": 0.005167674273252487
+            },
+            "PSFC": {
+              "status": "OK",
+              "n": 5487,
+              "bias": -134.57627403408054,
+              "rmse": 139.95059744944183,
+              "cpu_mean": 101646.3107145298,
+              "gpu_mean": 101511.73444049571,
+              "abs_bias_max_cell": 243.46875
+            }
+          },
+          "stable": true
+        },
+        {
+          "hour": 6,
+          "valid_time": "2026-05-22T00:00:00+00:00",
+          "fields": {
+            "T2": {
+              "status": "OK",
+              "n": 5487,
+              "bias": 0.8151960531088397,
+              "rmse": 3.0644405936851284,
+              "cpu_mean": 292.98752911711773,
+              "gpu_mean": 293.80272517022655,
+              "abs_bias_max_cell": 15.03411865234375
+            },
+            "U10": {
+              "status": "OK",
+              "n": 5487,
+              "bias": 1.0242441403665705,
+              "rmse": 1.2623662392703037,
+              "cpu_mean": -0.4717281744910035,
+              "gpu_mean": 0.5525159658755671,
+              "abs_bias_max_cell": 5.747222185134888
+            },
+            "V10": {
+              "status": "OK",
+              "n": 5487,
+              "bias": 0.5006569821510756,
+              "rmse": 1.3095544509547565,
+              "cpu_mean": -5.825128975050045,
+              "gpu_mean": -5.324471992898969,
+              "abs_bias_max_cell": 8.435161113739014
+            },
+            "PBLH": {
+              "status": "OK",
+              "n": 5487,
+              "bias": 54.00947038606366,
+              "rmse": 171.6823475345951,
+              "cpu_mean": 407.89093760356064,
+              "gpu_mean": 461.9004079896243,
+              "abs_bias_max_cell": 1226.3363342285156
+            },
+            "RAINNC": {
+              "status": "OK",
+              "n": 5487,
+              "bias": 0.0003308547562816146,
+              "rmse": 0.0057894822771162304,
+              "cpu_mean": 0.0006202897133881874,
+              "gpu_mean": 0.0009511444696698019,
+              "abs_bias_max_cell": 0.12380309775471687
+            },
+            "RAINC": {
+              "status": "OK",
+              "n": 5487,
+              "bias": 0.0,
+              "rmse": 0.0,
+              "cpu_mean": 0.0,
+              "gpu_mean": 0.0,
+              "abs_bias_max_cell": 0.0
+            },
+            "Q2": {
+              "status": "OK",
+              "n": 5487,
+              "bias": -0.00016263151709048046,
+              "rmse": 0.0009398423663037478,
+              "cpu_mean": 0.011896569676784157,
+              "gpu_mean": 0.011733938159693676,
+              "abs_bias_max_cell": 0.005124123767018318
+            },
+            "PSFC": {
+              "status": "OK",
+              "n": 5487,
+              "bias": -166.43657736468015,
+              "rmse": 172.39945065833953,
+              "cpu_mean": 101675.76424247085,
+              "gpu_mean": 101509.32766510616,
+              "abs_bias_max_cell": 295.1484375
+            }
+          },
+          "stable": true
+        }
+      ],
+      "gpu_output_dir": "/tmp/v040_kf_gate_cu1/20260521_18z_l2_72h_20260522T133443Z_d01"
+    }
+  ]
+}
