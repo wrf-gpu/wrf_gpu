@@ -2,10 +2,14 @@
 # Compiled Fortran oracle artifacts and intermediate column dumps are not
 # committed; the extracted savepoint JSON under proofs/v060/savepoints* is.
 build/
+build_*/
 *.o
 *.mod
 *.smod
 *.exe
+dudhia_oracle
+rrtm_lw_oracle
+RRTM_DATA
 fort.*
 _wrfstubs.*
 _modstubs.*

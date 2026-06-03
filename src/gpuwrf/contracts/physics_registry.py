@@ -55,8 +55,8 @@ ACCEPTED_BL_PBL_PHYSICS: tuple[int, ...] = (0, 1, 5, 7)
 ACCEPTED_SF_SFCLAY_PHYSICS: tuple[int, ...] = (0, 1, 5, 7)
 ACCEPTED_CU_PHYSICS: tuple[int, ...] = (0, 1, 3, 6, 16)
 ACCEPTED_SF_SURFACE_PHYSICS: tuple[int, ...] = (0, 2, 4)
-ACCEPTED_RA_SW_PHYSICS: tuple[int, ...] = (0, 4)
-ACCEPTED_RA_LW_PHYSICS: tuple[int, ...] = (0, 4)
+ACCEPTED_RA_SW_PHYSICS: tuple[int, ...] = (0, 1, 4)
+ACCEPTED_RA_LW_PHYSICS: tuple[int, ...] = (0, 1, 4)
 
 ACCEPTED_NAMELIST_OPTIONS: Mapping[str, tuple[int, ...]] = {
     "mp_physics": ACCEPTED_MP_PHYSICS,
@@ -103,6 +103,18 @@ SURFACE_SCHEMES: Mapping[int, SchemeOption] = {
     0: SchemeOption("sf_surface_physics", 0, "disabled", "none", "accepted", "land_surface"),
     2: SchemeOption("sf_surface_physics", 2, "Noah classic", "lsmscheme", "accepted", "land_surface"),
     4: SchemeOption("sf_surface_physics", 4, "Noah-MP", "noahmpscheme", "implemented", "land_surface"),
+}
+
+RA_SW_SCHEMES: Mapping[int, SchemeOption] = {
+    0: SchemeOption("ra_sw_physics", 0, "disabled", "none", "accepted", "radiation"),
+    1: SchemeOption("ra_sw_physics", 1, "Dudhia shortwave", "swradscheme", "implemented", "radiation"),
+    4: SchemeOption("ra_sw_physics", 4, "RRTMG shortwave", "rrtmg_swscheme", "accepted", "radiation"),
+}
+
+RA_LW_SCHEMES: Mapping[int, SchemeOption] = {
+    0: SchemeOption("ra_lw_physics", 0, "disabled", "none", "accepted", "radiation"),
+    1: SchemeOption("ra_lw_physics", 1, "RRTM longwave", "rrtmscheme", "oracle-only", "radiation"),
+    4: SchemeOption("ra_lw_physics", 4, "RRTMG longwave", "rrtmg_lwscheme", "accepted", "radiation"),
 }
 
 
@@ -555,6 +567,10 @@ def assert_registry_consistent() -> None:
     for opt in ACCEPTED_SF_SURFACE_PHYSICS:
         assert opt in SURFACE_SCHEMES, f"missing surface metadata for {opt}"
         assert opt in LAND_CARRY_MEMBERS, f"missing land carry metadata for {opt}"
+    for opt in ACCEPTED_RA_SW_PHYSICS:
+        assert opt in RA_SW_SCHEMES, f"missing SW radiation metadata for {opt}"
+    for opt in ACCEPTED_RA_LW_PHYSICS:
+        assert opt in RA_LW_SCHEMES, f"missing LW radiation metadata for {opt}"
 
     for opt, members in MP_MOIST_MEMBERS.items():
         for leaf in members:
@@ -596,6 +612,8 @@ __all__ = [
     "SFCLAY_SCHEMES",
     "CU_SCHEMES",
     "SURFACE_SCHEMES",
+    "RA_SW_SCHEMES",
+    "RA_LW_SCHEMES",
     "MOIST_SPECIES",
     "MOIST_WRFOUT_NAME",
     "MP_MOIST_MEMBERS",

@@ -1,0 +1,95 @@
+{
+  "scheme": "classic RRTM longwave (ra_lw_physics=1)",
+  "jax_port_present": false,
+  "git_head": "e9982500e4a299ba0531893a080cb248283f6588",
+  "predeclared_tolerances": {
+    "rthraten_abs": 1e-08,
+    "rthraten_rel": 0.001,
+    "glw_rel": 0.001,
+    "glw_abs": 0.1,
+    "olr_rel": 0.001,
+    "olr_abs": 0.1
+  },
+  "oracle": {
+    "source": "/home/enric/src/wrf_pristine/WRF/phys/module_ra_rrtm.F",
+    "entry": "RRTMLWRAD -> RRTM (AER 16-band k-distribution LW)",
+    "lookup_asset": "RRTM_DATA / RRTM_DATA_DBL (big-endian, frecord-marker=4)",
+    "source_unmodified": true,
+    "full_wrf_exe": false,
+    "full_wrf_exe_note": "Standalone driver compiled the unmodified WRF module_ra_rrtm.F + module_ra_clWRF_support.F, loaded the RRTM_DATA tables via rrtminit(allowed_to_read=.TRUE.), and called RRTMLWRAD; not a full wrf.exe savepoint.",
+    "fp32_savepoints": "proofs/v060/savepoints (rrtm_lw_case_*.json)",
+    "fp64_savepoints": "proofs/v060/savepoints_fp64 (rrtm_lw_case_*.json)",
+    "fp32_source_checksums": "9f54e70db6258a521921d89ada864857a45c7b0cd134e25f498350f5aa49428e  module_ra_rrtm.F\nb249f472550dd2d8e594fb5d2474e280f423e5e339a9ff393d42c261098d5182  module_ra_clWRF_support.F\n45dc91514cf018e133301a1b667deeb17f5b65c49ccfaa9140761a8028bc8ae0  RRTM_DATA\n",
+    "fp64_source_checksums": "9f54e70db6258a521921d89ada864857a45c7b0cd134e25f498350f5aa49428e  module_ra_rrtm.F\nb249f472550dd2d8e594fb5d2474e280f423e5e339a9ff393d42c261098d5182  module_ra_clWRF_support.F\n4be1fa00674f947f306edde20433dc170b90ea1e71c0d25a98bcb6a0676e71ff  RRTM_DATA\n",
+    "fp32_build_manifest": "build_mode=fp32\nfflags=-O2 -ffree-form -ffree-line-length-none -cpp -ffpe-summary=none -fallow-argument-mismatch -fconvert=big-endian -frecord-marker=4 -DRWORDSIZE=4 -DIWORDSIZE=4\ngfortran=GNU Fortran (conda-forge gcc 14.3.0-19) 14.3.0\nrrtm_data=/home/enric/src/wrf_pristine/WRF/run/RRTM_DATA\nwrf_source=/home/enric/src/wrf_pristine/WRF/phys/module_ra_rrtm.F\n",
+    "fp64_build_manifest": "build_mode=fp64\nfflags=-O2 -ffree-form -ffree-line-length-none -cpp -ffpe-summary=none -fallow-argument-mismatch -fconvert=big-endian -frecord-marker=4 -fdefault-real-8 -fdefault-double-8 -DRWORDSIZE=8 -DIWORDSIZE=4\ngfortran=GNU Fortran (conda-forge gcc 14.3.0-19) 14.3.0\nrrtm_data=/home/enric/src/wrf_pristine/WRF/run/RRTM_DATA_DBL\nwrf_source=/home/enric/src/wrf_pristine/WRF/phys/module_ra_rrtm.F\n",
+    "fp64_oracle_summary": {
+      "1": {
+        "label": "clearsky_warm_land",
+        "GLW": 368.8814789315273,
+        "OLR": 279.4623076821858,
+        "TSK": 301.0,
+        "max_abs_rthraten": 3.439380841234495e-05,
+        "col_sum_rthraten": -0.0007242509917647479,
+        "full_wrf_exe": 0
+      },
+      "2": {
+        "label": "clearsky_cold_dry",
+        "GLW": 207.8350235611667,
+        "OLR": 216.6667427086348,
+        "TSK": 268.0,
+        "max_abs_rthraten": 2.211893761920052e-05,
+        "col_sum_rthraten": -0.0004287441879331552,
+        "full_wrf_exe": 0
+      },
+      "3": {
+        "label": "nocturnal_inversion",
+        "GLW": 294.1667288828444,
+        "OLR": 261.5464312482003,
+        "TSK": 285.0,
+        "max_abs_rthraten": 3.60497030424992e-05,
+        "col_sum_rthraten": -0.0006659454637744915,
+        "full_wrf_exe": 0
+      },
+      "4": {
+        "label": "thick_warm_cloud",
+        "GLW": 437.9526246648142,
+        "OLR": 234.1189906775652,
+        "TSK": 299.0,
+        "max_abs_rthraten": 0.0002667724151181386,
+        "col_sum_rthraten": -0.0008509324690939101,
+        "full_wrf_exe": 0
+      },
+      "5": {
+        "label": "ice_cloud_marine",
+        "GLW": 387.5283476453024,
+        "OLR": 156.143795701223,
+        "TSK": 296.0,
+        "max_abs_rthraten": 0.0005546676553294427,
+        "col_sum_rthraten": -0.0006886590107480138,
+        "full_wrf_exe": 0
+      },
+      "6": {
+        "label": "moist_tropical",
+        "GLW": 419.9192646192722,
+        "OLR": 253.8911608290152,
+        "TSK": 303.0,
+        "max_abs_rthraten": 5.739544535106977e-05,
+        "col_sum_rthraten": -0.000813696300929903,
+        "full_wrf_exe": 0
+      },
+      "7": {
+        "label": "snow_graupel_clouds",
+        "GLW": 427.8042739092805,
+        "OLR": 193.4794879492823,
+        "TSK": 298.0,
+        "max_abs_rthraten": 0.0004478148922325481,
+        "col_sum_rthraten": -0.0008225225220721153,
+        "full_wrf_exe": 0
+      }
+    }
+  },
+  "verdict": "ORACLE_READY_JAX_PORT_PENDING",
+  "overall_pass": false,
+  "note": "WRF gold oracle built + physically validated (GLW/OLR/RTHRATEN sane across 7 clear/cloudy/cold/tropical columns). JAX column port src/gpuwrf/physics/ra_lw_rrtm.py is the scoped follow-on; this gate will compare against the gold savepoints once it lands. No pass is fabricated in its absence."
+}
