@@ -449,8 +449,8 @@ SCHEME_STEP_SPECS: tuple[PhysicsStepSpec, ...] = (
         diagnostics=("GLW", "OLR", "RTHRATENLW"),
         variant="lw",
         notes="ra_lw_physics=1. AER classic RRTM 16-band LW; held-rate RTHRATEN. Loads the "
-        "RRTM_DATA k-distribution asset. Gold WRF savepoints built; JAX column port is a "
-        "scoped follow-on (see proofs/v060/run_rrtm_lw_parity.py gate skeleton).",
+        "RRTM_DATA k-distribution asset and passes the proofs/v060/run_rrtm_lw_parity.py "
+        "fp64 savepoint gate.",
     ),
 )
 

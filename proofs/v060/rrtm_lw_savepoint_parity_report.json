@@ -1,7 +1,9 @@
 {
   "scheme": "classic RRTM longwave (ra_lw_physics=1)",
-  "jax_port_present": false,
-  "git_head": "e9982500e4a299ba0531893a080cb248283f6588",
+  "jax_port_present": true,
+  "jax_module": "src/gpuwrf/physics/ra_lw_rrtm.py",
+  "canonical_dataset": "fp64_savepoints",
+  "git_head": "c2937819b2d1ee178b6ce473a21c7b2c82cedafb",
   "predeclared_tolerances": {
     "rthraten_abs": 1e-08,
     "rthraten_rel": 0.001,
@@ -89,7 +91,773 @@
       }
     }
   },
-  "verdict": "ORACLE_READY_JAX_PORT_PENDING",
-  "overall_pass": false,
-  "note": "WRF gold oracle built + physically validated (GLW/OLR/RTHRATEN sane across 7 clear/cloudy/cold/tropical columns). JAX column port src/gpuwrf/physics/ra_lw_rrtm.py is the scoped follow-on; this gate will compare against the gold savepoints once it lands. No pass is fabricated in its absence."
+  "verdict": "PASS",
+  "overall_pass": true,
+  "canonical_fp64_cases": {
+    "1": {
+      "label": "clearsky_warm_land",
+      "pass": true,
+      "fields": {
+        "RTHRATEN": {
+          "max_abs": 2.476724337771574e-18,
+          "max_rel": 7.201076159052527e-14,
+          "argmax_k": 30,
+          "scale": 3.439380841234495e-05,
+          "tol_abs": 1e-08,
+          "tol_rel": 0.001,
+          "pass_abs": true,
+          "pass_rel": true,
+          "pass": true,
+          "controlling_metric": "max_rel",
+          "controlling_value": 7.201076159052527e-14,
+          "controlling_limit": 0.001,
+          "normalized_ratio": 7.201076159052526e-11
+        },
+        "GLW": {
+          "value": 368.88147893152734,
+          "oracle": 368.8814789315273,
+          "abs_err": 5.684341886080802e-14,
+          "rel_err": 1.540967007220209e-16,
+          "limit_abs": 0.3688814789315273,
+          "tol_abs": 0.1,
+          "tol_rel": 0.001,
+          "pass": true,
+          "controlling_metric": "abs_err",
+          "controlling_value": 5.684341886080802e-14,
+          "controlling_limit": 0.3688814789315273,
+          "normalized_ratio": 1.540967007220209e-13
+        },
+        "OLR": {
+          "value": 279.4623076821858,
+          "oracle": 279.4623076821858,
+          "abs_err": 0.0,
+          "rel_err": 0.0,
+          "limit_abs": 0.2794623076821858,
+          "tol_abs": 0.1,
+          "tol_rel": 0.001,
+          "pass": true,
+          "controlling_metric": "abs_err",
+          "controlling_value": 0.0,
+          "controlling_limit": 0.2794623076821858,
+          "normalized_ratio": 0.0
+        }
+      },
+      "rthraten_max_abs": 2.476724337771574e-18,
+      "rthraten_rel": 7.201076159052527e-14,
+      "glw_err": 5.684341886080802e-14,
+      "olr_err": 0.0
+    },
+    "2": {
+      "label": "clearsky_cold_dry",
+      "pass": true,
+      "fields": {
+        "RTHRATEN": {
+          "max_abs": 1.538423590450623e-18,
+          "max_rel": 6.955232737376963e-14,
+          "argmax_k": 28,
+          "scale": 2.211893761920052e-05,
+          "tol_abs": 1e-08,
+          "tol_rel": 0.001,
+          "pass_abs": true,
+          "pass_rel": true,
+          "pass": true,
+          "controlling_metric": "max_rel",
+          "controlling_value": 6.955232737376963e-14,
+          "controlling_limit": 0.001,
+          "normalized_ratio": 6.955232737376963e-11
+        },
+        "GLW": {
+          "value": 207.83502356116665,
+          "oracle": 207.8350235611667,
+          "abs_err": 5.684341886080802e-14,
+          "rel_err": 2.735025978144572e-16,
+          "limit_abs": 0.2078350235611667,
+          "tol_abs": 0.1,
+          "tol_rel": 0.001,
+          "pass": true,
+          "controlling_metric": "abs_err",
+          "controlling_value": 5.684341886080802e-14,
+          "controlling_limit": 0.2078350235611667,
+          "normalized_ratio": 2.735025978144572e-13
+        },
+        "OLR": {
+          "value": 216.66674270863476,
+          "oracle": 216.6667427086348,
+          "abs_err": 5.684341886080802e-14,
+          "rel_err": 2.6235414881945625e-16,
+          "limit_abs": 0.2166667427086348,
+          "tol_abs": 0.1,
+          "tol_rel": 0.001,
+          "pass": true,
+          "controlling_metric": "abs_err",
+          "controlling_value": 5.684341886080802e-14,
+          "controlling_limit": 0.2166667427086348,
+          "normalized_ratio": 2.6235414881945626e-13
+        }
+      },
+      "rthraten_max_abs": 1.538423590450623e-18,
+      "rthraten_rel": 6.955232737376963e-14,
+      "glw_err": 5.684341886080802e-14,
+      "olr_err": 5.684341886080802e-14
+    },
+    "3": {
+      "label": "nocturnal_inversion",
+      "pass": true,
+      "fields": {
+        "RTHRATEN": {
+          "max_abs": 1.8681311651693594e-18,
+          "max_rel": 5.182098623578145e-14,
+          "argmax_k": 31,
+          "scale": 3.60497030424992e-05,
+          "tol_abs": 1e-08,
+          "tol_rel": 0.001,
+          "pass_abs": true,
+          "pass_rel": true,
+          "pass": true,
+          "controlling_metric": "max_rel",
+          "controlling_value": 5.182098623578145e-14,
+          "controlling_limit": 0.001,
+          "normalized_ratio": 5.182098623578145e-11
+        },
+        "GLW": {
+          "value": 294.16672888284427,
+          "oracle": 294.1667288828444,
+          "abs_err": 1.1368683772161603e-13,
+          "rel_err": 3.8647075470895027e-16,
+          "limit_abs": 0.2941667288828444,
+          "tol_abs": 0.1,
+          "tol_rel": 0.001,
+          "pass": true,
+          "controlling_metric": "abs_err",
+          "controlling_value": 1.1368683772161603e-13,
+          "controlling_limit": 0.2941667288828444,
+          "normalized_ratio": 3.8647075470895025e-13
+        },
+        "OLR": {
+          "value": 261.5464312482002,
+          "oracle": 261.5464312482003,
+          "abs_err": 1.1368683772161603e-13,
+          "rel_err": 4.346717222600158e-16,
+          "limit_abs": 0.2615464312482003,
+          "tol_abs": 0.1,
+          "tol_rel": 0.001,
+          "pass": true,
+          "controlling_metric": "abs_err",
+          "controlling_value": 1.1368683772161603e-13,
+          "controlling_limit": 0.2615464312482003,
+          "normalized_ratio": 4.3467172226001576e-13
+        }
+      },
+      "rthraten_max_abs": 1.8681311651693594e-18,
+      "rthraten_rel": 5.182098623578145e-14,
+      "glw_err": 1.1368683772161603e-13,
+      "olr_err": 1.1368683772161603e-13
+    },
+    "4": {
+      "label": "thick_warm_cloud",
+      "pass": true,
+      "fields": {
+        "RTHRATEN": {
+          "max_abs": 1.260385025514399e-18,
+          "max_rel": 4.724570285710555e-15,
+          "argmax_k": 31,
+          "scale": 0.0002667724151181386,
+          "tol_abs": 1e-08,
+          "tol_rel": 0.001,
+          "pass_abs": true,
+          "pass_rel": true,
+          "pass": true,
+          "controlling_metric": "max_rel",
+          "controlling_value": 4.724570285710555e-15,
+          "controlling_limit": 0.001,
+          "normalized_ratio": 4.724570285710554e-12
+        },
+        "GLW": {
+          "value": 437.9526246648141,
+          "oracle": 437.9526246648142,
+          "abs_err": 1.1368683772161603e-13,
+          "rel_err": 2.5958706791316967e-16,
+          "limit_abs": 0.4379526246648142,
+          "tol_abs": 0.1,
+          "tol_rel": 0.001,
+          "pass": true,
+          "controlling_metric": "abs_err",
+          "controlling_value": 1.1368683772161603e-13,
+          "controlling_limit": 0.4379526246648142,
+          "normalized_ratio": 2.5958706791316967e-13
+        },
+        "OLR": {
+          "value": 234.1189906775652,
+          "oracle": 234.1189906775652,
+          "abs_err": 0.0,
+          "rel_err": 0.0,
+          "limit_abs": 0.2341189906775652,
+          "tol_abs": 0.1,
+          "tol_rel": 0.001,
+          "pass": true,
+          "controlling_metric": "abs_err",
+          "controlling_value": 0.0,
+          "controlling_limit": 0.2341189906775652,
+          "normalized_ratio": 0.0
+        }
+      },
+      "rthraten_max_abs": 1.260385025514399e-18,
+      "rthraten_rel": 4.724570285710555e-15,
+      "glw_err": 1.1368683772161603e-13,
+      "olr_err": 0.0
+    },
+    "5": {
+      "label": "ice_cloud_marine",
+      "pass": true,
+      "fields": {
+        "RTHRATEN": {
+          "max_abs": 1.5178830414797062e-18,
+          "max_rel": 2.736563105663995e-15,
+          "argmax_k": 18,
+          "scale": 0.0005546676553294427,
+          "tol_abs": 1e-08,
+          "tol_rel": 0.001,
+          "pass_abs": true,
+          "pass_rel": true,
+          "pass": true,
+          "controlling_metric": "max_rel",
+          "controlling_value": 2.736563105663995e-15,
+          "controlling_limit": 0.001,
+          "normalized_ratio": 2.7365631056639952e-12
+        },
+        "GLW": {
+          "value": 387.5283476453024,
+          "oracle": 387.5283476453024,
+          "abs_err": 0.0,
+          "rel_err": 0.0,
+          "limit_abs": 0.3875283476453024,
+          "tol_abs": 0.1,
+          "tol_rel": 0.001,
+          "pass": true,
+          "controlling_metric": "abs_err",
+          "controlling_value": 0.0,
+          "controlling_limit": 0.3875283476453024,
+          "normalized_ratio": 0.0
+        },
+        "OLR": {
+          "value": 156.14379570122304,
+          "oracle": 156.143795701223,
+          "abs_err": 2.842170943040401e-14,
+          "rel_err": 1.8202266252569003e-16,
+          "limit_abs": 0.15614379570122303,
+          "tol_abs": 0.1,
+          "tol_rel": 0.001,
+          "pass": true,
+          "controlling_metric": "abs_err",
+          "controlling_value": 2.842170943040401e-14,
+          "controlling_limit": 0.15614379570122303,
+          "normalized_ratio": 1.8202266252569002e-13
+        }
+      },
+      "rthraten_max_abs": 1.5178830414797062e-18,
+      "rthraten_rel": 2.736563105663995e-15,
+      "glw_err": 0.0,
+      "olr_err": 2.842170943040401e-14
+    },
+    "6": {
+      "label": "moist_tropical",
+      "pass": true,
+      "fields": {
+        "RTHRATEN": {
+          "max_abs": 1.2163393122571753e-18,
+          "max_rel": 2.1192261943734605e-14,
+          "argmax_k": 22,
+          "scale": 5.739544535106977e-05,
+          "tol_abs": 1e-08,
+          "tol_rel": 0.001,
+          "pass_abs": true,
+          "pass_rel": true,
+          "pass": true,
+          "controlling_metric": "max_rel",
+          "controlling_value": 2.1192261943734605e-14,
+          "controlling_limit": 0.001,
+          "normalized_ratio": 2.1192261943734606e-11
+        },
+        "GLW": {
+          "value": 419.9192646192721,
+          "oracle": 419.9192646192722,
+          "abs_err": 1.1368683772161603e-13,
+          "rel_err": 2.707349895573197e-16,
+          "limit_abs": 0.4199192646192722,
+          "tol_abs": 0.1,
+          "tol_rel": 0.001,
+          "pass": true,
+          "controlling_metric": "abs_err",
+          "controlling_value": 1.1368683772161603e-13,
+          "controlling_limit": 0.4199192646192722,
+          "normalized_ratio": 2.707349895573197e-13
+        },
+        "OLR": {
+          "value": 253.8911608290151,
+          "oracle": 253.8911608290152,
+          "abs_err": 1.1368683772161603e-13,
+          "rel_err": 4.477778483914185e-16,
+          "limit_abs": 0.2538911608290152,
+          "tol_abs": 0.1,
+          "tol_rel": 0.001,
+          "pass": true,
+          "controlling_metric": "abs_err",
+          "controlling_value": 1.1368683772161603e-13,
+          "controlling_limit": 0.2538911608290152,
+          "normalized_ratio": 4.4777784839141856e-13
+        }
+      },
+      "rthraten_max_abs": 1.2163393122571753e-18,
+      "rthraten_rel": 2.1192261943734605e-14,
+      "glw_err": 1.1368683772161603e-13,
+      "olr_err": 1.1368683772161603e-13
+    },
+    "7": {
+      "label": "snow_graupel_clouds",
+      "pass": true,
+      "fields": {
+        "RTHRATEN": {
+          "max_abs": 1.0842021724855044e-18,
+          "max_rel": 2.4210944997391545e-15,
+          "argmax_k": 13,
+          "scale": 0.0004478148922325481,
+          "tol_abs": 1e-08,
+          "tol_rel": 0.001,
+          "pass_abs": true,
+          "pass_rel": true,
+          "pass": true,
+          "controlling_metric": "max_rel",
+          "controlling_value": 2.4210944997391545e-15,
+          "controlling_limit": 0.001,
+          "normalized_ratio": 2.4210944997391545e-12
+        },
+        "GLW": {
+          "value": 427.8042739092804,
+          "oracle": 427.8042739092805,
+          "abs_err": 5.684341886080802e-14,
+          "rel_err": 1.328724894245964e-16,
+          "limit_abs": 0.4278042739092805,
+          "tol_abs": 0.1,
+          "tol_rel": 0.001,
+          "pass": true,
+          "controlling_metric": "abs_err",
+          "controlling_value": 5.684341886080802e-14,
+          "controlling_limit": 0.4278042739092805,
+          "normalized_ratio": 1.328724894245964e-13
+        },
+        "OLR": {
+          "value": 193.47948794928215,
+          "oracle": 193.4794879492823,
+          "abs_err": 1.4210854715202004e-13,
+          "rel_err": 7.3448895621055e-16,
+          "limit_abs": 0.1934794879492823,
+          "tol_abs": 0.1,
+          "tol_rel": 0.001,
+          "pass": true,
+          "controlling_metric": "abs_err",
+          "controlling_value": 1.4210854715202004e-13,
+          "controlling_limit": 0.1934794879492823,
+          "normalized_ratio": 7.3448895621055e-13
+        }
+      },
+      "rthraten_max_abs": 1.0842021724855044e-18,
+      "rthraten_rel": 2.4210944997391545e-15,
+      "glw_err": 5.684341886080802e-14,
+      "olr_err": 1.4210854715202004e-13
+    }
+  },
+  "secondary_fp32_cases": {
+    "1": {
+      "label": "clearsky_warm_land",
+      "pass": true,
+      "fields": {
+        "RTHRATEN": {
+          "max_abs": 1.2361123352398512e-08,
+          "max_rel": 0.0003594087572687412,
+          "argmax_k": 9,
+          "scale": 3.439293868723325e-05,
+          "tol_abs": 1e-08,
+          "tol_rel": 0.001,
+          "pass_abs": false,
+          "pass_rel": true,
+          "pass": true,
+          "controlling_metric": "max_rel",
+          "controlling_value": 0.0003594087572687412,
+          "controlling_limit": 0.001,
+          "normalized_ratio": 0.35940875726874116
+        },
+        "GLW": {
+          "value": 368.88145781453204,
+          "oracle": 368.8821411132812,
+          "abs_err": 0.0006832987491520726,
+          "rel_err": 1.852349769739154e-06,
+          "limit_abs": 0.3688821411132812,
+          "tol_abs": 0.1,
+          "tol_rel": 0.001,
+          "pass": true,
+          "controlling_metric": "abs_err",
+          "controlling_value": 0.0006832987491520726,
+          "controlling_limit": 0.3688821411132812,
+          "normalized_ratio": 0.001852349769739154
+        },
+        "OLR": {
+          "value": 279.46230086200825,
+          "oracle": 279.4619445800781,
+          "abs_err": 0.0003562819301237141,
+          "rel_err": 1.2748853181389915e-06,
+          "limit_abs": 0.2794619445800781,
+          "tol_abs": 0.1,
+          "tol_rel": 0.001,
+          "pass": true,
+          "controlling_metric": "abs_err",
+          "controlling_value": 0.0003562819301237141,
+          "controlling_limit": 0.2794619445800781,
+          "normalized_ratio": 0.0012748853181389916
+        }
+      },
+      "rthraten_max_abs": 1.2361123352398512e-08,
+      "rthraten_rel": 0.0003594087572687412,
+      "glw_err": 0.0006832987491520726,
+      "olr_err": 0.0003562819301237141
+    },
+    "2": {
+      "label": "clearsky_cold_dry",
+      "pass": true,
+      "fields": {
+        "RTHRATEN": {
+          "max_abs": 1.0115158378917912e-09,
+          "max_rel": 4.5729803569378595e-05,
+          "argmax_k": 26,
+          "scale": 2.211940045526717e-05,
+          "tol_abs": 1e-08,
+          "tol_rel": 0.001,
+          "pass_abs": true,
+          "pass_rel": true,
+          "pass": true,
+          "controlling_metric": "max_rel",
+          "controlling_value": 4.5729803569378595e-05,
+          "controlling_limit": 0.001,
+          "normalized_ratio": 0.04572980356937859
+        },
+        "GLW": {
+          "value": 207.83503356836462,
+          "oracle": 207.8351440429688,
+          "abs_err": 0.00011047460418467381,
+          "rel_err": 5.315491982522156e-07,
+          "limit_abs": 0.20783514404296882,
+          "tol_abs": 0.1,
+          "tol_rel": 0.001,
+          "pass": true,
+          "controlling_metric": "abs_err",
+          "controlling_value": 0.00011047460418467381,
+          "controlling_limit": 0.20783514404296882,
+          "normalized_ratio": 0.0005315491982522155
+        },
+        "OLR": {
+          "value": 216.6667526062545,
+          "oracle": 216.666748046875,
+          "abs_err": 4.559379505053585e-06,
+          "rel_err": 2.104328211944724e-08,
+          "limit_abs": 0.216666748046875,
+          "tol_abs": 0.1,
+          "tol_rel": 0.001,
+          "pass": true,
+          "controlling_metric": "abs_err",
+          "controlling_value": 4.559379505053585e-06,
+          "controlling_limit": 0.216666748046875,
+          "normalized_ratio": 2.1043282119447237e-05
+        }
+      },
+      "rthraten_max_abs": 1.0115158378917912e-09,
+      "rthraten_rel": 4.5729803569378595e-05,
+      "glw_err": 0.00011047460418467381,
+      "olr_err": 4.559379505053585e-06
+    },
+    "3": {
+      "label": "nocturnal_inversion",
+      "pass": true,
+      "fields": {
+        "RTHRATEN": {
+          "max_abs": 2.6540395113747818e-09,
+          "max_rel": 7.362107232820731e-05,
+          "argmax_k": 28,
+          "scale": 3.604999801609665e-05,
+          "tol_abs": 1e-08,
+          "tol_rel": 0.001,
+          "pass_abs": true,
+          "pass_rel": true,
+          "pass": true,
+          "controlling_metric": "max_rel",
+          "controlling_value": 7.362107232820731e-05,
+          "controlling_limit": 0.001,
+          "normalized_ratio": 0.0736210723282073
+        },
+        "GLW": {
+          "value": 294.16674093491457,
+          "oracle": 294.166748046875,
+          "abs_err": 7.111960428574093e-06,
+          "rel_err": 2.4176629329433298e-08,
+          "limit_abs": 0.294166748046875,
+          "tol_abs": 0.1,
+          "tol_rel": 0.001,
+          "pass": true,
+          "controlling_metric": "abs_err",
+          "controlling_value": 7.111960428574093e-06,
+          "controlling_limit": 0.294166748046875,
+          "normalized_ratio": 2.41766293294333e-05
+        },
+        "OLR": {
+          "value": 261.5464310045854,
+          "oracle": 261.5464172363281,
+          "abs_err": 1.3768257247193105e-05,
+          "rel_err": 5.26417352326122e-08,
+          "limit_abs": 0.26154641723632815,
+          "tol_abs": 0.1,
+          "tol_rel": 0.001,
+          "pass": true,
+          "controlling_metric": "abs_err",
+          "controlling_value": 1.3768257247193105e-05,
+          "controlling_limit": 0.26154641723632815,
+          "normalized_ratio": 5.264173523261219e-05
+        }
+      },
+      "rthraten_max_abs": 2.6540395113747818e-09,
+      "rthraten_rel": 7.362107232820731e-05,
+      "glw_err": 7.111960428574093e-06,
+      "olr_err": 1.3768257247193105e-05
+    },
+    "4": {
+      "label": "thick_warm_cloud",
+      "pass": true,
+      "fields": {
+        "RTHRATEN": {
+          "max_abs": 1.3518030569539374e-09,
+          "max_rel": 5.067261622875215e-06,
+          "argmax_k": 12,
+          "scale": 0.0002667719090823084,
+          "tol_abs": 1e-08,
+          "tol_rel": 0.001,
+          "pass_abs": true,
+          "pass_rel": true,
+          "pass": true,
+          "controlling_metric": "max_rel",
+          "controlling_value": 5.067261622875215e-06,
+          "controlling_limit": 0.001,
+          "normalized_ratio": 0.005067261622875215
+        },
+        "GLW": {
+          "value": 437.95259334730895,
+          "oracle": 437.9526977539062,
+          "abs_err": 0.00010440659724508805,
+          "rel_err": 2.383969725053642e-07,
+          "limit_abs": 0.4379526977539062,
+          "tol_abs": 0.1,
+          "tol_rel": 0.001,
+          "pass": true,
+          "controlling_metric": "abs_err",
+          "controlling_value": 0.00010440659724508805,
+          "controlling_limit": 0.4379526977539062,
+          "normalized_ratio": 0.00023839697250536417
+        },
+        "OLR": {
+          "value": 234.11894737361635,
+          "oracle": 234.1190032958984,
+          "abs_err": 5.5922282058418205e-05,
+          "rel_err": 2.3886263511782994e-07,
+          "limit_abs": 0.2341190032958984,
+          "tol_abs": 0.1,
+          "tol_rel": 0.001,
+          "pass": true,
+          "controlling_metric": "abs_err",
+          "controlling_value": 5.5922282058418205e-05,
+          "controlling_limit": 0.2341190032958984,
+          "normalized_ratio": 0.00023886263511782994
+        }
+      },
+      "rthraten_max_abs": 1.3518030569539374e-09,
+      "rthraten_rel": 5.067261622875215e-06,
+      "glw_err": 0.00010440659724508805,
+      "olr_err": 5.5922282058418205e-05
+    },
+    "5": {
+      "label": "ice_cloud_marine",
+      "pass": true,
+      "fields": {
+        "RTHRATEN": {
+          "max_abs": 1.5072592419813002e-09,
+          "max_rel": 2.717408730943152e-06,
+          "argmax_k": 31,
+          "scale": 0.0005546678439714015,
+          "tol_abs": 1e-08,
+          "tol_rel": 0.001,
+          "pass_abs": true,
+          "pass_rel": true,
+          "pass": true,
+          "controlling_metric": "max_rel",
+          "controlling_value": 2.717408730943152e-06,
+          "controlling_limit": 0.001,
+          "normalized_ratio": 0.0027174087309431516
+        },
+        "GLW": {
+          "value": 387.52833783353503,
+          "oracle": 387.5283813476562,
+          "abs_err": 4.3514121159660135e-05,
+          "rel_err": 1.1228628212554867e-07,
+          "limit_abs": 0.3875283813476562,
+          "tol_abs": 0.1,
+          "tol_rel": 0.001,
+          "pass": true,
+          "controlling_metric": "abs_err",
+          "controlling_value": 4.3514121159660135e-05,
+          "controlling_limit": 0.3875283813476562,
+          "normalized_ratio": 0.00011228628212554866
+        },
+        "OLR": {
+          "value": 156.14381791307784,
+          "oracle": 156.1438598632812,
+          "abs_err": 4.195020335373556e-05,
+          "rel_err": 2.686638039463541e-07,
+          "limit_abs": 0.1561438598632812,
+          "tol_abs": 0.1,
+          "tol_rel": 0.001,
+          "pass": true,
+          "controlling_metric": "abs_err",
+          "controlling_value": 4.195020335373556e-05,
+          "controlling_limit": 0.1561438598632812,
+          "normalized_ratio": 0.00026866380394635403
+        }
+      },
+      "rthraten_max_abs": 1.5072592419813002e-09,
+      "rthraten_rel": 2.717408730943152e-06,
+      "glw_err": 4.3514121159660135e-05,
+      "olr_err": 4.195020335373556e-05
+    },
+    "6": {
+      "label": "moist_tropical",
+      "pass": true,
+      "fields": {
+        "RTHRATEN": {
+          "max_abs": 7.933437332072933e-09,
+          "max_rel": 0.0001382248793573138,
+          "argmax_k": 12,
+          "scale": 5.739514745073393e-05,
+          "tol_abs": 1e-08,
+          "tol_rel": 0.001,
+          "pass_abs": true,
+          "pass_rel": true,
+          "pass": true,
+          "controlling_metric": "max_rel",
+          "controlling_value": 0.0001382248793573138,
+          "controlling_limit": 0.001,
+          "normalized_ratio": 0.13822487935731378
+        },
+        "GLW": {
+          "value": 419.9193893925225,
+          "oracle": 419.91943359375,
+          "abs_err": 4.420122752435418e-05,
+          "rel_err": 1.0526120962316916e-07,
+          "limit_abs": 0.41991943359375,
+          "tol_abs": 0.1,
+          "tol_rel": 0.001,
+          "pass": true,
+          "controlling_metric": "abs_err",
+          "controlling_value": 4.420122752435418e-05,
+          "controlling_limit": 0.41991943359375,
+          "normalized_ratio": 0.00010526120962316916
+        },
+        "OLR": {
+          "value": 253.8914766578724,
+          "oracle": 253.8912506103516,
+          "abs_err": 0.00022604752081178958,
+          "rel_err": 8.903320625203665e-07,
+          "limit_abs": 0.2538912506103516,
+          "tol_abs": 0.1,
+          "tol_rel": 0.001,
+          "pass": true,
+          "controlling_metric": "abs_err",
+          "controlling_value": 0.00022604752081178958,
+          "controlling_limit": 0.2538912506103516,
+          "normalized_ratio": 0.0008903320625203664
+        }
+      },
+      "rthraten_max_abs": 7.933437332072933e-09,
+      "rthraten_rel": 0.0001382248793573138,
+      "glw_err": 4.420122752435418e-05,
+      "olr_err": 0.00022604752081178958
+    },
+    "7": {
+      "label": "snow_graupel_clouds",
+      "pass": true,
+      "fields": {
+        "RTHRATEN": {
+          "max_abs": 1.4017293334374028e-09,
+          "max_rel": 3.1301537700825657e-06,
+          "argmax_k": 0,
+          "scale": 0.0004478148475755006,
+          "tol_abs": 1e-08,
+          "tol_rel": 0.001,
+          "pass_abs": true,
+          "pass_rel": true,
+          "pass": true,
+          "controlling_metric": "max_rel",
+          "controlling_value": 3.1301537700825657e-06,
+          "controlling_limit": 0.001,
+          "normalized_ratio": 0.0031301537700825655
+        },
+        "GLW": {
+          "value": 427.80426654820997,
+          "oracle": 427.8040771484375,
+          "abs_err": 0.00018939977246645867,
+          "rel_err": 4.427254965144748e-07,
+          "limit_abs": 0.4278040771484375,
+          "tol_abs": 0.1,
+          "tol_rel": 0.001,
+          "pass": true,
+          "controlling_metric": "abs_err",
+          "controlling_value": 0.00018939977246645867,
+          "controlling_limit": 0.4278040771484375,
+          "normalized_ratio": 0.0004427254965144748
+        },
+        "OLR": {
+          "value": 193.47948497958112,
+          "oracle": 193.4795837402344,
+          "abs_err": 9.876065328739969e-05,
+          "rel_err": 5.104448302927697e-07,
+          "limit_abs": 0.1934795837402344,
+          "tol_abs": 0.1,
+          "tol_rel": 0.001,
+          "pass": true,
+          "controlling_metric": "abs_err",
+          "controlling_value": 9.876065328739969e-05,
+          "controlling_limit": 0.1934795837402344,
+          "normalized_ratio": 0.0005104448302927697
+        }
+      },
+      "rthraten_max_abs": 1.4017293334374028e-09,
+      "rthraten_rel": 3.1301537700825657e-06,
+      "glw_err": 0.00018939977246645867,
+      "olr_err": 9.876065328739969e-05
+    }
+  },
+  "secondary_fp32_pass": true,
+  "worst_residual": {
+    "dataset": "savepoints_fp64",
+    "case_id": "1",
+    "case_label": "clearsky_warm_land",
+    "field": "RTHRATEN",
+    "metric": "max_rel",
+    "value": 7.201076159052527e-14,
+    "limit": 0.001,
+    "normalized_ratio": 7.201076159052526e-11
+  },
+  "secondary_fp32_worst_residual": {
+    "dataset": "savepoints",
+    "case_id": "1",
+    "case_label": "clearsky_warm_land",
+    "field": "RTHRATEN",
+    "metric": "max_rel",
+    "value": 0.0003594087572687412,
+    "limit": 0.001,
+    "normalized_ratio": 0.35940875726874116
+  }
 }
