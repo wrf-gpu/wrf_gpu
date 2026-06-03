@@ -203,6 +203,20 @@ class AcousticCoreState:
     # -> the spec update is skipped, so those paths are byte-for-byte unchanged.
     ph_bdy_target: jax.Array | None = None
     ph_save_for_spec: jax.Array | None = None
+    # SPLIT-EXPLICIT FIX (v0.4.0 r5, agy cadence audit
+    # .agent/reviews/2026-06-03-agy-v040-acoustic-cadence.md): WRF builds the
+    # mass-point geopotential ``php`` ONCE per RK stage in ``rk_step_prep``
+    # (calc_php; module_em.F:181) from the STAGE-ENTRY ``grid%ph_2`` and holds it
+    # STAGE-CONSTANT, passing it INTENT(IN) to ``advance_uv`` every acoustic
+    # substep (solve_em.F:1282; advance_uv 4th PGF term :861/:935).  When this
+    # stage-constant array is supplied (operational prep path), advance_uv_wrf uses
+    # it for the 4th-term geopotential gradient INSTEAD of re-diagnosing ``php``
+    # from the live, substep-updated ``state.ph`` (the split-explicit violation
+    # that rectified into a slow column-wide westerly force).  None for
+    # bare-core/oracle callers that never stage it; those keep the legacy
+    # per-substep recompute (single-substep / analytic-oracle usage only, where
+    # there is no multi-substep rectification to expose).
+    php_stage: jax.Array | None = None
 
     @classmethod
     def from_mapping(cls, values: dict[str, object]) -> "AcousticCoreState":
@@ -410,7 +424,19 @@ def advance_uv_wrf(
     pb_term_x = (al_left_x + al_right_x) * (pb_right_x - pb_left_x)
     dpx = (msfux / state.msfuy)[None, :, :] * 0.5 * rdx * mass_x * (ph_term_x + p_term_x + pb_term_x)
 
-    php = 0.5 * (ph_base[:-1, :, :] + ph_base[1:, :, :] + state.ph[:-1, :, :] + state.ph[1:, :, :])
+    # SPLIT-EXPLICIT FIX (v0.4.0 r5): the 4th PGF term's mass-point geopotential
+    # ``php`` is STAGE-CONSTANT in WRF (calc_php in rk_step_prep, passed INTENT(IN)
+    # to advance_uv every substep -- module_em.F:181, advance_uv :861/:935).  Use
+    # the frozen stage ``php_stage`` from small_step_prep when supplied; otherwise
+    # (bare-core / analytic-oracle single-substep callers) fall back to the legacy
+    # diagnosis from the live geopotential, which is harmless there because no
+    # multi-substep rectification exists.  The FIRST-3-terms gradient above still
+    # uses the LIVE ``state.ph`` (WRF :828-831 uses live ``ph``), so only the
+    # 4th-term geopotential gradient is frozen -- exactly matching WRF's split.
+    if state.php_stage is not None:
+        php = state.php_stage
+    else:
+        php = 0.5 * (ph_base[:-1, :, :] + ph_base[1:, :, :] + state.ph[:-1, :, :] + state.ph[1:, :, :])
     php_left_x, php_right_x = _x_face_pair_3d(php)
     dpn_x = _x_face_pressure_dpn(state, top_lid=top_lid)
     mu_work = state.muts - state.mut
