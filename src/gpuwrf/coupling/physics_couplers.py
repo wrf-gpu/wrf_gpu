@@ -944,16 +944,13 @@ def _unflatten_batch_to_columns(tree, ny: int, nx: int):
     )
 
 
-# MYNN-EDMF mass-flux nonlocal scalar transport (WRF ``bl_mynn_edmf``).
-# HELD OFF after the full-run remeasure (proofs/equiv_t2/VERDICT_edmf_on.md): with
-# edmf=True the d03 daytime run is STABLE (worst max|W| 6.4 m/s, no surface-w
-# blow-up) but the surface QFX/LH/T2 are a near-no-op vs edmf=False (LH delta
-# ~-0.03 W/m2 on a ~7 W/m2 deficit; the expected +7-11% rise did NOT materialize
-# because the operational coupler sets surface QFX/LH UPSTREAM in the surface
-# layer + Noah-MP, while MYNN-EDMF only redistributes existing PBL moisture).
-# Single-source flip point: a future land-vapor lane can set this True. The
-# flatten/unflatten round-trips exactly when False, so this is a lossless toggle.
-_MYNN_EDMF = False
+# MYNN-EDMF mass-flux nonlocal transport (WRF ``bl_mynn_edmf=1``).
+# WRF uses the EDMF ``s_aw`` array not only for scalar nonlocal transport but also
+# as an unconditional stability floor on momentum ``kmdz`` before the U/V implicit
+# solve, even when ``bl_mynn_edmf_mom=0`` (then only ``s_awu``/``s_awv`` are off).
+# The operational Canary MYNN configuration has EDMF enabled, so this must stay on
+# for WRF-faithful standalone forecasts.
+_MYNN_EDMF = True
 
 
 def mynn_adapter(state: State, dt: float, grid: GridSpec | None = None) -> State:
@@ -963,11 +960,10 @@ def mynn_adapter(state: State, dt: float, grid: GridSpec | None = None) -> State
     contract to the kernel (which applies it as the implicit bottom BC), and
     reassembles State with non-periodic C-grid wind reconstruction.
 
-    The MYNN-EDMF mass-flux nonlocal scalar transport (``s_awqv``/``s_awthl``;
-    verified <0.5% vs pristine WRF ``DMP_mf`` in ``proofs/mynn_edmf``) is gated by
-    :data:`_MYNN_EDMF` — HELD OFF per the full-run remeasure. The column view is
-    flattened to the kernel's single-batch-axis contract for the EDMF vmap (see
-    :func:`_flatten_columns_to_batch`); the round trip is lossless when off.
+    The MYNN-EDMF mass-flux arrays (``s_aw``/``s_awqv``/``s_awthl``; verified
+    <0.5% vs pristine WRF ``DMP_mf`` in ``proofs/mynn_edmf``) are gated by
+    :data:`_MYNN_EDMF`. The column view is flattened to the kernel's single-batch
+    contract for the EDMF vmap (see :func:`_flatten_columns_to_batch`).
     """
 
     column = _mynn_column_from_state(state, grid)

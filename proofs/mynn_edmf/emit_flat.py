@@ -1,8 +1,10 @@
 """Convert column_d03_12z.json into the flat key=value file the Fortran oracle reads."""
 import json
+from pathlib import Path
 
-SRC = "/home/enric/src/wrf_gpu2/.claude/worktrees/agent-afd276c1c17aa32e5/proofs/mynn_edmf/column_d03_12z.json"
-DST = "/home/enric/src/wrf_gpu2/.claude/worktrees/agent-afd276c1c17aa32e5/proofs/mynn_edmf/fortran_oracle/column_d03_12z.flat"
+HERE = Path(__file__).resolve().parent
+SRC = HERE / "column_d03_12z.json"
+DST = HERE / "fortran_oracle" / "column_d03_12z.flat"
 
 with open(SRC) as f:
     c = json.load(f)

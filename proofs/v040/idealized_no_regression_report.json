@@ -1,13 +1,13 @@
 {
   "schema": "v0.4.0-idealized-no-regression-2026-06-03",
-  "created_utc": "2026-06-03T10:50:40.810914+00:00",
+  "created_utc": "2026-06-03T15:00:25.939511+00:00",
   "commands_run": [
     "taskset -c 0-3 env VERIFY_RUN_GPU=1 JAX_ENABLE_X64=true XLA_PYTHON_CLIENT_PREALLOCATE=false PYTHONPATH=src:. bash scripts/verify/idealized_warmbubble.sh",
     "taskset -c 0-3 env VERIFY_RUN_GPU=1 JAX_ENABLE_X64=true XLA_PYTHON_CLIENT_PREALLOCATE=false PYTHONPATH=src:. bash scripts/verify/idealized_straka.sh",
     "taskset -c 0-3 env JAX_PLATFORM_NAME=cpu JAX_ENABLE_X64=true PYTHONPATH=src:proofs/v040:. python proofs/v040/idealized_no_regression_report.py"
   ],
   "warm_bubble": {
-    "path": "/home/enric/src/wrf_gpu2/.claude/worktrees/v040-mu-fix/proofs/verify_run/row1/skamarock_bubble_diagnostics.json",
+    "path": "/home/enric/src/wrf_gpu2/.claude/worktrees/v040-r4-saw/proofs/verify_run/row1/skamarock_bubble_diagnostics.json",
     "verdict": "PASS",
     "status": "RAN_TO_COMPLETION",
     "checks_passed": {
@@ -28,7 +28,7 @@
     }
   },
   "density_current": {
-    "path": "/home/enric/src/wrf_gpu2/.claude/worktrees/v040-mu-fix/proofs/verify_run/row2/straka_density_current_diagnostics.json",
+    "path": "/home/enric/src/wrf_gpu2/.claude/worktrees/v040-r4-saw/proofs/verify_run/row2/straka_density_current_diagnostics.json",
     "verdict": "PASS",
     "status": "RAN_TO_COMPLETION",
     "checks_passed": {
@@ -124,14 +124,14 @@
         },
         "horizontal_drift_500s": {
           "current": 0.0,
-          "head": 1.8189894035458565e-12,
-          "delta": -1.8189894035458565e-12,
+          "head": 0.0,
+          "delta": 0.0,
           "same_pass_status": true
         },
         "max_abs_w_500s": {
           "current": 11.680187856366487,
-          "head": 11.680187856366164,
-          "delta": 3.232969447708456e-13,
+          "head": 11.680187856366487,
+          "delta": 0.0,
           "same_pass_status": true
         },
         "relative_mass_drift": {
@@ -142,14 +142,14 @@
         },
         "thermal_rise_500s": {
           "current": 1924.3475674060383,
-          "head": 1924.3475674059687,
-          "delta": 6.957634468562901e-11,
+          "head": 1924.3475674060383,
+          "delta": 0.0,
           "same_pass_status": true
         },
         "theta_prime_max_500s": {
           "current": 1.9200603163244523,
-          "head": 1.9200603163246228,
-          "delta": -1.7053025658242404e-13,
+          "head": 1.9200603163244523,
+          "delta": 0.0,
           "same_pass_status": true
         }
       }
@@ -171,8 +171,8 @@
         },
         "max_abs_w_900s": {
           "current": 14.574919073014826,
-          "head": 14.574919073010857,
-          "delta": 3.9683811792201595e-12,
+          "head": 14.574919073014826,
+          "delta": 0.0,
           "same_pass_status": true
         },
         "relative_mass_drift": {
@@ -189,8 +189,8 @@
         },
         "theta_prime_min_900s": {
           "current": -9.9709950323533,
-          "head": -9.970995032353414,
-          "delta": 1.1368683772161603e-13,
+          "head": -9.9709950323533,
+          "delta": 0.0,
           "same_pass_status": true
         }
       }

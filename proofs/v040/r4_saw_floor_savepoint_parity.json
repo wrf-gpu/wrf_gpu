@@ -1,0 +1,152 @@
+{
+  "checks": {
+    "kmdz_eff_fixed_vs_wrf": {
+      "max_abs": 6.96424308499477e-09,
+      "pass": true,
+      "rmse": 1.4097628601387945e-09,
+      "tolerance_abs": 5e-07
+    },
+    "rubvblten_fixed_vs_wrf": {
+      "Du_max_abs": 3.3595657213894014e-07,
+      "Du_rmse": 8.27346798212075e-08,
+      "Dv_max_abs": 2.604314096662582e-07,
+      "Dv_rmse": 8.123365644173453e-08,
+      "pass": true,
+      "tolerance_abs": 5e-07
+    },
+    "s_aw_verified_against_wrf": {
+      "max_rel_error": 0.004834738628076368,
+      "pass": true,
+      "tolerance": 0.05
+    }
+  },
+  "column": {
+    "HFX_land_mean_in_case": 459.15435791015625,
+    "LH_land_mean_in_case": 22.248109817504883,
+    "QFX_land_mean_in_case": 8.862375580065418e-06,
+    "i": 53,
+    "j": 26,
+    "lead_h": 18,
+    "nz": 44,
+    "selected_HFX": 438.5185546875,
+    "selected_LH": 33.43241882324219,
+    "selected_PBLH": 464.2323303222656,
+    "selected_QFX": 1.3317567209014669e-05,
+    "valid_time": "2026-05-22_12:00:00",
+    "wrfout": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d03_2026-05-22_12:00:00"
+  },
+  "floor_effect": {
+    "active_interface_indices_0based": [],
+    "du_fixed_first6": [
+      0.0052093817206489606,
+      0.0012202238512655967,
+      3.0020802553580122e-05,
+      0.0003200106149169324,
+      -0.0011268263936055067,
+      -2.9629836885517826e-06
+    ],
+    "du_nofloor_first6": [
+      0.0052093817206489606,
+      0.0012202238512655967,
+      3.0020802553580122e-05,
+      0.0003200106149169324,
+      -0.0011268263936055067,
+      -2.9629836885517826e-06
+    ],
+    "du_wrf_first6": [
+      0.0052093663,
+      0.0012202263,
+      3.0040741e-05,
+      0.00032001734,
+      -0.0011268059,
+      -3.0199687e-06
+    ],
+    "dv_fixed_first6": [
+      -0.004541079848186709,
+      -0.0003113764481944929,
+      -0.0001295151130018546,
+      -0.00038478686044992233,
+      0.00046829222663850406,
+      1.323753787807469e-06
+    ],
+    "dv_nofloor_first6": [
+      -0.004541079848186709,
+      -0.0003113764481944929,
+      -0.0001295151130018546,
+      -0.00038478686044992233,
+      0.00046829222663850406,
+      1.323753787807469e-06
+    ],
+    "dv_wrf_first6": [
+      -0.004541079,
+      -0.00031137466,
+      -0.00012954076,
+      -0.00038488707,
+      0.00046829382,
+      1.3113022e-06
+    ],
+    "kmdz_fixed_first6": [
+      0.0,
+      0.18727145769267725,
+      0.2354315434222563,
+      0.1821777548866984,
+      0.07836504996424308,
+      0.0022219366708412297
+    ],
+    "kmdz_nofloor_first6": [
+      0.0,
+      0.18727145769267725,
+      0.2354315434222563,
+      0.1821777548866984,
+      0.07836504996424308,
+      0.0022219366708412297
+    ],
+    "max_kmdz_lift": 0.0,
+    "wrf_s_aw_first6": [
+      0.0,
+      0.032271665,
+      0.048607681,
+      0.062288783,
+      0.035277672,
+      0.0
+    ]
+  },
+  "interpretation": "REAL omission from source reading: WRF applies the s_aw stability floor to kmdz even with bl_mynn_edmf_mom=0. This proof gates the fixed JAX formula against the WRF oracle; the paired no-floor diagnostic records whether this particular real column activates the floor.",
+  "nofloor_diagnostic": {
+    "Du_fixed_improvement_factor": 1.0,
+    "Du_nofloor_max_abs": 3.3595657213894014e-07,
+    "Dv_fixed_improvement_factor": 1.0,
+    "Dv_nofloor_max_abs": 2.604314096662582e-07,
+    "floor_active_on_this_savepoint": false,
+    "interpretation": "On this real d03 column, local WRF/JAX kmdz is already above 0.5*s_aw on all interfaces, so the no-floor and fixed U/V tendencies are indistinguishable at WRF-r4 precision. This savepoint gates parity; the 2-date forecast gate measures operational impact."
+  },
+  "oracle": {
+    "source": "/home/enric/src/wrf_gpu2/.claude/worktrees/v040-r4-saw/proofs/mynn_edmf/fortran_oracle/oracle_out.txt",
+    "type": "unmodified WRF module_bl_mynnedmf object-linked Fortran oracle",
+    "wrf_source_lines": {
+      "du_dv_outputs": "/home/enric/src/wrf_pristine/WRF/phys/module_bl_mynnedmf.F:4055-4062,4116-4123",
+      "kmdz_floor": "/home/enric/src/wrf_pristine/WRF/phys/module_bl_mynnedmf.F:3990-3997",
+      "uv_onoff_mf_terms": "/home/enric/src/wrf_pristine/WRF/phys/module_bl_mynnedmf.F:3949-3956,4009-4034,4070-4095"
+    }
+  },
+  "predeclared_tolerances": {
+    "kmdz_abs": 5e-07,
+    "rubvblten_abs": 5e-07,
+    "s_aw_rel_max": 0.05
+  },
+  "required_checks": [
+    "s_aw_verified_against_wrf",
+    "kmdz_eff_fixed_vs_wrf",
+    "rubvblten_fixed_vs_wrf"
+  ],
+  "schema": "v0.4.0-r4-saw-floor-savepoint-parity-2026-06-03",
+  "surface": {
+    "dx": 1000.0,
+    "fltv": 0.37644643189211985,
+    "pblh": 464.2323303222656,
+    "ust": 0.5844663381576538,
+    "wspd": 2.8208248615264893,
+    "xland": 1.0
+  },
+  "verdict": "PASS"
+}
