@@ -1,0 +1,10 @@
+*.o
+*.mod
+*.exe
+_wrfstubs.*
+_modstubs.*
+noahclassic_columns.in
+noahclassic_savepoints.out
+VEGPARM.TBL
+SOILPARM.TBL
+GENPARM.TBL
