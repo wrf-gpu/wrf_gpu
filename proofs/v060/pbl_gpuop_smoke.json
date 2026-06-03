@@ -1,0 +1,50 @@
+{
+  "proof": "v060-pbl-gpuop-smoke",
+  "kind": "CPU JAX integration smoke (JIT-compiled adapter, few steps); NOT a WRF parity claim; per-scheme WRF savepoint parity in the lane reports; GPU multi-config forecast gate vs CPU-WRF is MANAGER-scheduled",
+  "x64_enabled": true,
+  "jax_platform": "cpu",
+  "per_scheme_smoke": [
+    {
+      "scheme": "YSU PBL (bl_pbl=1)",
+      "kind": "pbl",
+      "steps": 3,
+      "dt_s": 60.0,
+      "jit_traceable": true,
+      "executed_in_scan_adapter": true,
+      "finite_no_nan": true,
+      "column_water_before": 5.532928537902862,
+      "column_water_after": 5.538867896213813,
+      "column_water_rel_change": 0.0010734565375757513,
+      "theta_band_K": [
+        299.7633469720762,
+        328.7934122098502
+      ],
+      "conservation_ok": true,
+      "pass": true
+    },
+    {
+      "scheme": "ACM2 PBL (bl_pbl=7)",
+      "kind": "pbl",
+      "steps": 3,
+      "dt_s": 60.0,
+      "jit_traceable": true,
+      "executed_in_scan_adapter": true,
+      "finite_no_nan": true,
+      "column_water_before": 5.532928537902862,
+      "column_water_after": 5.537100806142997,
+      "column_water_rel_change": 0.0007540795460403525,
+      "theta_band_K": [
+        299.77311149446774,
+        328.7933425861426
+      ],
+      "conservation_ok": true,
+      "pass": true
+    }
+  ],
+  "fail_open_now_accepts_ysu_acm2": {
+    "ysu_accepted": true,
+    "acm2_accepted": true,
+    "pass": true
+  },
+  "all_pass": true
+}

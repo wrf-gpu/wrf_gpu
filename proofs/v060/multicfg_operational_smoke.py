@@ -96,6 +96,7 @@ from gpuwrf.coupling.physics_couplers import (  # noqa: E402
     thompson_adapter,
 )
 from gpuwrf.coupling.physics_dispatch import (  # noqa: E402
+    DEFAULT_BL_PBL_PHYSICS,
     DEFAULT_MP_PHYSICS,
     UnsupportedSchemeSelection,
     resolve_physics_suite,
@@ -103,6 +104,7 @@ from gpuwrf.coupling.physics_dispatch import (  # noqa: E402
 from gpuwrf.coupling.scan_adapters import (  # noqa: E402
     CU_SCAN_ADAPTERS,
     MP_SCAN_ADAPTERS,
+    PBL_SCAN_ADAPTERS,
     SFCLAY_SCAN_ADAPTERS,
     initial_kf_carry,
     kf_adapter,
@@ -246,11 +248,14 @@ SWEEP: tuple[Config, ...] = (
            1, 5, 1, 0, 2, "RUN", covers=("land2-NoahClassic",)),
     Config("land_bulk", "Thompson + MYNN + MYNN-sfclay + bulk prescribed land, no cumulus",
            8, 5, 5, 0, None, "RUN", covers=("land-bulk",)),
+    # --- PBL coverage (YSU/ACM2 are the v0.6.0 jax.lax.scan-traceable rewrites,
+    #     scan-wired in the PBL-GPU-op lane; consolidated here -> now RUN configs).
+    #     Routed through fast bulk land (the PBL slot is the axis under test). ---
+    Config("pbl_ysu", "YSU(1) PBL -- v0.6.0 jax.lax.scan rewrite (pbl_ysu.ysu_columns) + revised-MM5 sfclay + bulk land",
+           8, 1, 1, 0, None, "RUN", covers=("bl1-YSU",)),
+    Config("pbl_acm2", "ACM2(7) PBL -- v0.6.0 jax.lax.scan rewrite (pbl_acm2.acm2_columns) + Pleim-Xiu sfclay + bulk land",
+           8, 7, 7, 0, None, "RUN", covers=("bl7-ACM2",)),
     # --- FAIL-CLOSED configs (coupler must REJECT loudly; honest integration finding) ---
-    Config("pbl_ysu_unwired", "YSU(1) PBL -- host-NumPy single-column kernel, NOT scan-traceable",
-           8, 1, 1, 0, 4, "FAIL_CLOSED", covers=("bl1-YSU",)),
-    Config("pbl_acm2_unwired", "ACM2(7) PBL -- host-NumPy single-column kernel, NOT scan-traceable",
-           8, 7, 7, 0, 4, "FAIL_CLOSED", covers=("bl7-ACM2",)),
     Config("cu_grellfreitas_unwired", "Grell-Freitas(3) cumulus -- CPU-NumPy reference port (gpu_runnable=False)",
            8, 5, 5, 3, 4, "FAIL_CLOSED", covers=("cu3-GF",)),
     Config("cu_tiedtke_unwired", "Tiedtke(6) cumulus -- CPU-NumPy reference port (gpu_runnable=False)",
@@ -473,8 +478,9 @@ def _expected_changed_leaves(cfg: Config) -> tuple[str, ...]:
         leaves += ["theta", "qv", "qc", "qr"]
     # surface layer writes the flux handles
     leaves += ["ustar", "theta_flux"]
-    # MYNN PBL always runs -> u/v move
-    leaves += ["u", "v"]
+    # the PBL slot runs (MYNN=5 / YSU=1 / ACM2=7) -> momentum mixing moves u/v
+    if cfg.bl_pbl_physics != 0:
+        leaves += ["u", "v"]
     # prognostic land model advances the skin temperature (bulk path holds it)
     if cfg.sf_surface_physics in (4, 2):
         leaves += ["t_skin"]
@@ -611,8 +617,15 @@ def _run_config(cfg: Config, *, steps: int) -> dict[str, Any]:
                 state, nc_land = noahclassic_surface_step(
                     state, nc_land, _NOAHCLASSIC_BUNDLE[0], dt, radiation=_NOAHCLASSIC_BUNDLE[2],
                 )
-        # --- PBL slot (MYNN; the only scan-wired PBL) ---
-        state = mynn_adapter(state, dt, grid_for_adapters)
+        # --- PBL slot (MYNN default; YSU(1)/ACM2(7) are the v0.6.0 jax.lax.scan-
+        # traceable rewrites, dispatcher-routed by the STATIC bl_pbl option -- EXACT
+        # mirror of operational_mode._physics_boundary_step's PBL slot) ---
+        bl_opt = cfg.bl_pbl_physics
+        if bl_opt in PBL_SCAN_ADAPTERS:
+            state = PBL_SCAN_ADAPTERS[bl_opt](state, dt, grid_for_adapters)
+        elif bl_opt == DEFAULT_BL_PBL_PHYSICS:
+            state = mynn_adapter(state, dt, grid_for_adapters)
+        # bl_opt == 0 -> no PBL mixing.
         # --- cumulus slot (KF; GF/Tiedtke fail-closed upstream) ---
         if cu_opt in CU_SCAN_ADAPTERS:
             state, w0avg, nca = kf_adapter(state, dt, w0avg, nca, grid=grid_for_adapters)
@@ -756,11 +769,13 @@ def run(*, steps: int = 8) -> dict[str, Any]:
             "COVERING set (NOT full cartesian product): every supported scheme appears in "
             ">=1 RUN config plus the real operational Canary config. Supported = mp{8,6,10,16,1} "
             "x bl{5,1,7} x sfclay{1,5,7} x cu{1} x sf_surface{4,2} (GF/Tiedtke cumulus EXCLUDED "
-            "= documented-TODO). HONEST coupler reality: the operational scan threads MYNN(5) as "
-            "the only PBL; YSU(1)/ACM2(7) are host-NumPy (not scan-traceable) and GF(3)/Tiedtke(6,16) "
-            "are CPU-NumPy reference ports -- all four are FAIL-CLOSED in the coupler and are "
-            "exercised here as fail-closed integration assertions (the coupler must reject them "
-            "loudly, never silently no-op)."
+            "= documented-TODO). v0.6.0 CONSOLIDATION coupler reality: the operational scan now "
+            "threads MYNN(5) + YSU(1) + ACM2(7) PBL (YSU/ACM2 are the v0.6.0 jax.lax.scan-traceable "
+            "rewrites from the PBL-GPU-op lane, scan-wired via PBL_SCAN_ADAPTERS) and Noah-MP(4) + "
+            "Noah-classic(2) land -- so YSU/ACM2 are now RUN configs, not fail-closed. Only "
+            "GF(3)/Tiedtke(6,16) remain CPU-NumPy reference ports and stay FAIL-CLOSED in the "
+            "coupler, exercised here as fail-closed integration assertions (the coupler must reject "
+            "them loudly, never silently no-op)."
         ),
         "scheme_coverage": {
             "covered_by_run_configs": sorted(covered),
