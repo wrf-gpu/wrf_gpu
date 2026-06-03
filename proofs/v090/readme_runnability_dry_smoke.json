@@ -1,0 +1,106 @@
+{
+  "checks": [
+    {
+      "check": "create_venv",
+      "detail": {
+        "cmd": "/home/enric/miniconda3/bin/python3 -m venv --system-site-packages /tmp/claude-1000/gpuwrf_dry_smoke_fbf6q2vg/venv",
+        "returncode": 0,
+        "stderr_tail": "",
+        "stdout_tail": ""
+      },
+      "ok": true
+    },
+    {
+      "check": "pip_install_editable",
+      "detail": {
+        "cmd": "/tmp/claude-1000/gpuwrf_dry_smoke_fbf6q2vg/venv/bin/python -m pip install --no-build-isolation -e /home/enric/src/wrf_gpu2/.claude/worktrees/agent-ab12b41c1fa8a3415",
+        "returncode": 0,
+        "stderr_tail": "\n[notice] A new release of pip is available: 25.3 -> 26.1.2\n[notice] To update, run: /tmp/claude-1000/gpuwrf_dry_smoke_fbf6q2vg/venv/bin/python -m pip install --upgrade pip\n",
+        "stdout_tail": "rement already satisfied: packaging>=22.0 in /home/enric/miniconda3/lib/python3.13/site-packages (from zarr<4,>=3.0->gpuwrf==0.0.0) (25.0)\nRequirement already satisfied: typing-extensions>=4.12 in /home/enric/miniconda3/lib/python3.13/site-packages (from zarr<4,>=3.0->gpuwrf==0.0.0) (4.15.0)\nRequirement already satisfied: jaxlib<=0.10.0,>=0.10.0 in /home/enric/miniconda3/lib/python3.13/site-packages (from jax>=0.4->gpuwrf==0.0.0) (0.10.0)\nRequirement already satisfied: ml_dtypes>=0.5.0 in /home/enric/miniconda3/lib/python3.13/site-packages (from jax>=0.4->gpuwrf==0.0.0) (0.5.4)\nRequirement already satisfied: opt_einsum in /home/enric/miniconda3/lib/python3.13/site-packages (from jax>=0.4->gpuwrf==0.0.0) (3.4.0)\nRequirement already satisfied: scipy>=1.14 in /home/enric/.local/lib/python3.13/site-packages (from jax>=0.4->gpuwrf==0.0.0) (1.17.1)\nRequirement already satisfied: cftime in /home/enric/.local/lib/python3.13/site-packages (from netCDF4>=1.6->gpuwrf==0.0.0) (1.6.5)\nRequirement already satisfied: certifi in /home/enric/miniconda3/lib/python3.13/site-packages (from netCDF4>=1.6->gpuwrf==0.0.0) (2026.4.22)\nBuilding wheels for collected packages: gpuwrf\n  Building editable for gpuwrf (pyproject.toml): started\n  Building editable for gpuwrf (pyproject.toml): finished with status 'done'\n  Created wheel for gpuwrf: filename=gpuwrf-0.0.0-0.editable-py3-none-any.whl size=2190 sha256=74c06a3fad4653de11caf79cde716095a9c0d63d68da0c2fdae0e1e0404a82b7\n  Stored in directory: /tmp/claude-1000/pip-ephem-wheel-cache-6qms258j/wheels/35/6c/ba/755b98458fcc7c18b2c7366f50c2743922718525c9bbf00ec5\nSuccessfully built gpuwrf\nInstalling collected packages: gpuwrf\n  Attempting uninstall: gpuwrf\n    Found existing installation: gpuwrf 0.0.0\n    Not uninstalling gpuwrf at /home/enric/miniconda3/lib/python3.13/site-packages, outside environment /tmp/claude-1000/gpuwrf_dry_smoke_fbf6q2vg/venv\n    Can't uninstall 'gpuwrf'. No files were found to uninstall.\nSuccessfully installed gpuwrf-0.0.0\n"
+      },
+      "ok": true
+    },
+    {
+      "check": "import_gpuwrf",
+      "detail": {
+        "cmd": "/tmp/claude-1000/gpuwrf_dry_smoke_fbf6q2vg/venv/bin/python -c import gpuwrf; print('gpuwrf', gpuwrf.__file__)",
+        "returncode": 0,
+        "stderr_tail": "",
+        "stdout_tail": "gpuwrf /home/enric/src/wrf_gpu2/.claude/worktrees/agent-ab12b41c1fa8a3415/src/gpuwrf/__init__.py\n"
+      },
+      "ok": true
+    },
+    {
+      "check": "console_script_present",
+      "detail": "/tmp/claude-1000/gpuwrf_dry_smoke_fbf6q2vg/venv/bin/gpuwrf",
+      "ok": true
+    },
+    {
+      "check": "gpuwrf_help",
+      "detail": {
+        "cmd": "/tmp/claude-1000/gpuwrf_dry_smoke_fbf6q2vg/venv/bin/gpuwrf --help",
+        "returncode": 0,
+        "stderr_tail": "",
+        "stdout_tail": "usage: gpuwrf [-h] <command> ...\n\nGPU-native WRF-compatible regional NWP. Run a forecast through the JAX GPU\nport over a CPU-WRF/Gen2 backfill case.\n\npositional arguments:\n  <command>\n    run       run a forecast through the GPU port and (optionally) dimension-\n              compare vs CPU-WRF\n\noptions:\n  -h, --help  show this help message and exit\n"
+      },
+      "ok": true
+    },
+    {
+      "check": "gpuwrf_run_help",
+      "detail": {
+        "cmd": "/tmp/claude-1000/gpuwrf_dry_smoke_fbf6q2vg/venv/bin/gpuwrf run --help",
+        "returncode": 0,
+        "stderr_tail": "",
+        "stdout_tail": "usage: gpuwrf run [-h] --namelist NAMELIST --input-dir INPUT_DIR\n                  --output-dir OUTPUT_DIR [--domain DOMAIN] [--hours HOURS]\n                  [--proof-dir PROOF_DIR] [--compare-cpu-dir COMPARE_CPU_DIR]\n                  [--score]\n\nRun a forecast through the JAX GPU port. Reads a CPU-WRF/Gen2 run directory\n(--input-dir), advances --hours hours, and writes wrfout history files plus\nproof JSON under --output-dir. Optionally compares the generated wrfout\ndimensions against a CPU-WRF reference directory.\n\noptions:\n  -h, --help            show this help message and exit\n  --namelist NAMELIST   WRF namelist.input to validate fail-closed before the\n                        run (must be the <input-dir>/namelist.input).\n                        (default: None)\n  --input-dir INPUT_DIR\n                        CPU-WRF/Gen2 run directory: source of IC, boundaries,\n                        land/SST, and (by default) the CPU reference wrfouts.\n                        (default: None)\n  --output-dir OUTPUT_DIR\n                        Directory for generated wrfout files and the run\n                        payload. (default: None)\n  --domain DOMAIN       Domain id to run (e.g. d02). (default: d02)\n  --hours HOURS         Number of forecast hours to advance. (default: 1)\n  --proof-dir PROOF_DIR\n                        Directory for proof JSON. Defaults to <output-\n                        dir>/proofs. (default: None)\n  --compare-cpu-dir COMPARE_CPU_DIR\n                        CPU-WRF reference directory for the dimension compare.\n                        If omitted, no dimension compare is run; pass --input-\n                        dir to compare against the case's own CPU wrfouts.\n                        (default: None)\n  --score               Also score against AEMET station observations (needs\n                        GPUWRF_AEMET_ROOT; not part of the README runnability\n                        gate). (default: False)\n"
+      },
+      "ok": true
+    },
+    {
+      "check": "run_missing_args_clean",
+      "detail": {
+        "cmd": "/tmp/claude-1000/gpuwrf_dry_smoke_fbf6q2vg/venv/bin/gpuwrf run",
+        "returncode": 2,
+        "stderr_tail": "usage: gpuwrf run [-h] --namelist NAMELIST --input-dir INPUT_DIR\n                  --output-dir OUTPUT_DIR [--domain DOMAIN] [--hours HOURS]\n                  [--proof-dir PROOF_DIR] [--compare-cpu-dir COMPARE_CPU_DIR]\n                  [--score]\ngpuwrf run: error: the following arguments are required: --namelist, --input-dir, --output-dir\n",
+        "stdout_tail": ""
+      },
+      "ok": true
+    },
+    {
+      "check": "run_bad_input_dir_clean",
+      "detail": {
+        "cmd": "/tmp/claude-1000/gpuwrf_dry_smoke_fbf6q2vg/venv/bin/gpuwrf run --namelist /no/such/nl --input-dir /no/such/dir --output-dir /tmp/claude-1000/gpuwrf_dry_smoke_fbf6q2vg/out",
+        "returncode": 2,
+        "stderr_tail": "gpuwrf: error: --input-dir does not exist or is not a directory: /no/such/dir\n",
+        "stdout_tail": ""
+      },
+      "ok": true
+    },
+    {
+      "check": "run_namelist_mismatch_clean",
+      "detail": {
+        "cmd": "/tmp/claude-1000/gpuwrf_dry_smoke_fbf6q2vg/venv/bin/gpuwrf run --namelist /tmp/claude-1000/gpuwrf_dry_smoke_fbf6q2vg/other.input --input-dir /tmp/claude-1000/gpuwrf_dry_smoke_fbf6q2vg/case --output-dir /tmp/claude-1000/gpuwrf_dry_smoke_fbf6q2vg/out",
+        "returncode": 2,
+        "stderr_tail": "gpuwrf: error: --namelist must be <input-dir>/namelist.input (expected /tmp/claude-1000/gpuwrf_dry_smoke_fbf6q2vg/case/namelist.input, got /tmp/claude-1000/gpuwrf_dry_smoke_fbf6q2vg/other.input)\n",
+        "stdout_tail": ""
+      },
+      "ok": true
+    },
+    {
+      "check": "run_unsupported_namelist_failclosed",
+      "detail": {
+        "cmd": "/tmp/claude-1000/gpuwrf_dry_smoke_fbf6q2vg/venv/bin/gpuwrf run --namelist /tmp/claude-1000/gpuwrf_dry_smoke_fbf6q2vg/case/namelist.input --input-dir /tmp/claude-1000/gpuwrf_dry_smoke_fbf6q2vg/case --output-dir /tmp/claude-1000/gpuwrf_dry_smoke_fbf6q2vg/out",
+        "returncode": 2,
+        "stderr_tail": "gpuwrf: error: Unsupported namelist/config option(s) for the GPU-WRF faithful path:\n- physics.mp_physics selected 99; supported values: 0, 1, 6, 8, 10, 16. Implemented: 0=disabled/passive qv, 1=Kessler, 6=WSM6, 8=Thompson, 10=Morrison, 16=WDM6. Action: Use one of the frozen v0.6.0 microphysics options; all other MP options remain unsupported.\n",
+        "stdout_tail": ""
+      },
+      "ok": true
+    }
+  ],
+  "generated_utc": "2026-06-03T22:32:56.105911+00:00",
+  "python": "3.13.11",
+  "repo": "/home/enric/src/wrf_gpu2/.claude/worktrees/agent-ab12b41c1fa8a3415",
+  "schema": "GpuwrfReadmeRunnabilityDrySmoke",
+  "schema_version": 1,
+  "scope": "install + entrypoint surface only; no GPU, no real forecast case",
+  "status": "PASS"
+}
