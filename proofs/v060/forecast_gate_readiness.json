@@ -1,0 +1,85 @@
+{
+  "status": "READY_NOT_RUN",
+  "note": "Integrated multi-config forecast gate is WIRED. The single-GPU end-to-end run vs CPU-WRF is MANAGER-scheduled. CPU validation below confirms each combo is namelist-accepted, dispatch-resolvable, and GPU-gate-admissible (all schemes GPU-runnable). GF (cu=3) and Tiedtke (cu=6/16) are intentionally NOT in any canonical combo (CPU-reference).",
+  "gate_fields": {
+    "core": [
+      "T2",
+      "U10",
+      "V10"
+    ],
+    "diagnostics": [
+      "Q2",
+      "PSFC",
+      "PBLH",
+      "SWDOWN",
+      "GLW",
+      "HFX",
+      "LH"
+    ]
+  },
+  "scoring": "per-lead gridpoint-paired bias/RMSE vs corpus CPU-WRF d02 reference, mirroring proofs/m20/continuous_gate.py (reference = CPU-WRF, pairing = every grid cell, resolution = every lead hour).",
+  "combos": [
+    {
+      "combo_id": "combo_1_thompson_mynn_noahmp_kf",
+      "description": "v0.2.0 baseline (Thompson/MYNN/MYNN-sfclay/Noah-MP) + KF cumulus + RRTMG",
+      "namelist": {
+        "mp_physics": 8,
+        "bl_pbl_physics": 5,
+        "sf_sfclay_physics": 5,
+        "sf_surface_physics": 4,
+        "cu_physics": 1,
+        "ra_sw_physics": 4,
+        "ra_lw_physics": 4
+      },
+      "namelist_accepted": true,
+      "dispatch_resolved": true,
+      "gpu_gate_ready": true,
+      "non_gpu_schemes": [],
+      "error": null
+    },
+    {
+      "combo_id": "combo_2_wsm6_ysu_revisedmm5_noahclassic_kf",
+      "description": "WSM6/YSU/revised-MM5 sfclay/Noah-classic + KF cumulus + RRTMG",
+      "namelist": {
+        "mp_physics": 6,
+        "bl_pbl_physics": 1,
+        "sf_sfclay_physics": 1,
+        "sf_surface_physics": 2,
+        "cu_physics": 1,
+        "ra_sw_physics": 4,
+        "ra_lw_physics": 4
+      },
+      "namelist_accepted": true,
+      "dispatch_resolved": true,
+      "gpu_gate_ready": true,
+      "non_gpu_schemes": [],
+      "error": null
+    },
+    {
+      "combo_id": "combo_3_morrison_acm2_pleimxiu_noahmp",
+      "description": "Morrison/ACM2/Pleim-Xiu sfclay/Noah-MP, no cumulus + RRTMG",
+      "namelist": {
+        "mp_physics": 10,
+        "bl_pbl_physics": 7,
+        "sf_sfclay_physics": 7,
+        "sf_surface_physics": 4,
+        "cu_physics": 0,
+        "ra_sw_physics": 4,
+        "ra_lw_physics": 4
+      },
+      "namelist_accepted": true,
+      "dispatch_resolved": true,
+      "gpu_gate_ready": true,
+      "non_gpu_schemes": [],
+      "error": null
+    }
+  ],
+  "all_combos_gpu_gate_ready": true,
+  "manager_run_steps": [
+    "1. Free the GPU (one GPU job at a time); verify CUDA context sanity.",
+    "2. For each combo: build the OperationalNamelist with the combo's mp/bl/cu/sf options; thread each non-default scheme's State adapter into the operational scan (the per-scheme kernels passed savepoint parity; their scan adapters are this gate's remaining wiring).",
+    "3. Run the GPU forecast over a corpus CPU-WRF d02 case (e.g. the v0.2.0 TOST run dates); emit wrfout with the new QNCLOUD/QNCCN/RAINC leaves.",
+    "4. Score per-lead gridpoint-paired bias/RMSE vs the CPU-WRF reference (continuous_gate pattern) on the core + diagnostic fields.",
+    "5. Record one proof JSON per combo under proofs/v060/forecast_gate/."
+  ]
+}

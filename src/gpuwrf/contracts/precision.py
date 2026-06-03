@@ -71,6 +71,13 @@ STATE_FIELD_ORDER = (
     "pb_bdy",
     "phb_bdy",
     "mub_bdy",
+    # --- v0.6.0 S0 additive physics leaves (append-only; manager patch) ---
+    # Appended at the END to preserve the pytree/byte order of every existing
+    # leaf. Nc/Nn are WDM6 number concentrations; rainc_acc is the cumulus
+    # precipitation accumulator (RAINC).
+    "Nc",
+    "Nn",
+    "rainc_acc",
 )
 
 
@@ -135,6 +142,13 @@ PRECISION_MATRIX = {
     "phb_bdy": (FP64, False),
     "mu_bdy": (FP64, False),
     "mub_bdy": (FP64, False),
+    # --- v0.6.0 S0 additive physics leaves ---
+    # WDM6 number concentrations follow the existing Thompson/Morrison number
+    # species precision (FP32 gated). The cumulus precipitation accumulator is
+    # FP64-locked like the grid-scale precip accumulators.
+    "Nc": (FP32_GATED, True),
+    "Nn": (FP32_GATED, True),
+    "rainc_acc": (FP64, False),
 }
 
 

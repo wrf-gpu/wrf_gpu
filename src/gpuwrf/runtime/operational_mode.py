@@ -42,6 +42,14 @@ from gpuwrf.coupling.noahmp_surface_hook import (
     noahmp_surface_step,
     overlay_noahmp_land_diagnostics,
 )
+from gpuwrf.coupling.physics_dispatch import (
+    DEFAULT_BL_PBL_PHYSICS,
+    DEFAULT_CU_PHYSICS,
+    DEFAULT_MP_PHYSICS,
+    DEFAULT_SF_SFCLAY_PHYSICS,
+    UnsupportedSchemeSelection,
+    resolve_physics_suite,
+)
 from gpuwrf.dynamics.advection import compute_advection_tendencies, halo_spec
 from gpuwrf.dynamics.explicit_diffusion import (
     constant_k_diffusion_tendency,
@@ -189,6 +197,20 @@ class OperationalNamelist:
     # seasonal greenness term; default to WRF's day-1 / 365 when unset.
     noahmp_julian: float = 1.0
     noahmp_yearlen: float = 365.0
+    # --- v0.6.0 physics-suite selection (static aux) ------------------------
+    # Frozen S0 accept-matrix options dispatched by coupling.physics_dispatch.
+    # Defaults are the v0.2.0 validated baseline (Thompson / MYNN / MYNN-sfclay /
+    # Noah-MP, no cumulus) so an existing namelist resolves byte-for-byte to the
+    # current operational path. ``sf_surface_physics`` defaults to None so the
+    # legacy ``use_noahmp`` toggle still drives Noah-MP vs the bulk surface path
+    # (the dispatcher maps use_noahmp True->4 / False->2); set it explicitly to
+    # pin a land scheme. Selecting any non-default scheme that is not yet threaded
+    # into the operational scan adapter FAILS CLOSED in _resolve_operational_suite.
+    mp_physics: int = 8
+    bl_pbl_physics: int = 5
+    sf_sfclay_physics: int = 5
+    cu_physics: int = 0
+    sf_surface_physics: object = None
 
     @classmethod
     def from_grid(
@@ -307,6 +329,11 @@ class OperationalNamelist:
             _StaticHolder(self.noahmp_static),
             _StaticHolder(self.noahmp_energy_params),
             _StaticHolder(self.noahmp_rad_params),
+            int(self.mp_physics),
+            int(self.bl_pbl_physics),
+            int(self.sf_sfclay_physics),
+            int(self.cu_physics),
+            self.sf_surface_physics,
         )
         return children, aux
 
@@ -348,6 +375,11 @@ class OperationalNamelist:
             noahmp_static_holder,
             noahmp_energy_holder,
             noahmp_rad_holder,
+            mp_physics,
+            bl_pbl_physics,
+            sf_sfclay_physics,
+            cu_physics,
+            sf_surface_physics,
         ) = aux
         noahmp_static = noahmp_static_holder.value
         noahmp_energy_params = noahmp_energy_holder.value
@@ -389,6 +421,11 @@ class OperationalNamelist:
             noahmp_nroot=noahmp_nroot,
             noahmp_julian=noahmp_julian,
             noahmp_yearlen=noahmp_yearlen,
+            mp_physics=mp_physics,
+            bl_pbl_physics=bl_pbl_physics,
+            sf_sfclay_physics=sf_sfclay_physics,
+            cu_physics=cu_physics,
+            sf_surface_physics=sf_surface_physics,
         )
 
 
@@ -1745,6 +1782,55 @@ def _noahmp_params(namelist: OperationalNamelist):
     return namelist.noahmp_energy_params, namelist.noahmp_rad_params
 
 
+# v0.6.0 dispatch: the operational scan adapter currently threads the v0.2.0
+# validated suite (Thompson mp=8 + MYNN bl=5 + MYNN-sfclay sf_sfclay=5 +
+# Noah-MP/bulk surface + no cumulus). The remaining 11 schemes passed per-scheme
+# WRF-savepoint parity at the kernel level; their State<->scheme scan adapters are
+# the MANAGER-scheduled integrated-forecast-gate work. Until a scheme's scan
+# adapter is threaded here, selecting it in the production scan FAILS CLOSED
+# (loud) rather than silently running the default scheme. The dispatcher
+# (coupling.physics_dispatch) is the single fail-closed authority for which
+# option maps to which scheme + GPU-runnability.
+_SCAN_WIRED_OPTIONS = {
+    "mp_physics": (0, DEFAULT_MP_PHYSICS),         # 0=passive, 8=Thompson
+    "bl_pbl_physics": (0, DEFAULT_BL_PBL_PHYSICS),  # 0=off, 5=MYNN
+    "sf_sfclay_physics": (0, DEFAULT_SF_SFCLAY_PHYSICS),  # 0=off, 5=MYNN sfclay
+    "cu_physics": (DEFAULT_CU_PHYSICS,),            # 0=no cumulus
+}
+
+
+def _resolve_operational_suite(namelist: OperationalNamelist):
+    """Fail-closed resolve + validate the selected physics suite for the scan.
+
+    Resolves the namelist's physics options through the dispatcher (which rejects
+    anything outside the frozen S0 accept-matrix), then asserts the selection is
+    one whose State adapter is threaded into THIS operational scan. Non-default
+    schemes that passed per-scheme parity but whose integrated scan adapter is
+    manager-gate work raise loudly here rather than being silently ignored.
+    """
+
+    suite = resolve_physics_suite(namelist)  # fail-closed on out-of-matrix options
+    not_wired: list[str] = []
+    for key, wired in _SCAN_WIRED_OPTIONS.items():
+        selected = int(getattr(namelist, key))
+        if selected not in wired:
+            not_wired.append(f"{key}={selected}")
+    # Land surface: the scan threads Noah-MP (use_noahmp=True) or the bulk surface
+    # path (Noah classic / disabled both map to the bulk path in this scan).
+    land_opt = suite.land_surface.option
+    if land_opt == 4 and not bool(namelist.use_noahmp):
+        not_wired.append("sf_surface_physics=4 (set use_noahmp=True to thread Noah-MP)")
+    if not_wired:
+        raise UnsupportedSchemeSelection(
+            "operational scan supports only the v0.2.0 wired suite "
+            "(mp_physics in {0,8}, bl_pbl_physics in {0,5}, sf_sfclay_physics in {0,5}, "
+            "cu_physics=0, Noah-MP via use_noahmp); the integrated forecast gate for "
+            "the other parity-passed schemes is manager-scheduled. Not wired: "
+            f"{', '.join(not_wired)}"
+        )
+    return suite
+
+
 class _NoahMPRadiation(NamedTuple):
     """Held surface-radiation forcing into Noah-MP (the coupler reads soldn/lwdn/cosz)."""
 
@@ -2189,6 +2275,7 @@ def run_forecast_operational_with_m9_diagnostics(
     """
     if int(namelist.rk_order) != 3:
         raise ValueError("operational mode currently supports RK3 only")
+    _resolve_operational_suite(namelist)  # fail-closed physics-suite validation
     if int(output_cadence_steps) <= 0:
         raise ValueError("output_cadence_steps must be positive")
     cadence = int(namelist.radiation_cadence_steps)
@@ -2245,6 +2332,7 @@ def run_forecast_operational(state: State, namelist: OperationalNamelist, hours:
 
     if int(namelist.rk_order) != 3:
         raise ValueError("operational mode currently supports RK3 only")
+    _resolve_operational_suite(namelist)  # fail-closed physics-suite validation
     # Honour namelist.force_fp64 at the PUBLIC entry: the in-scan enforcement
     # (line ~1471) upcasts each step's output to fp64 when force_fp64, so the
     # INITIAL carry must also be fp64 or jax.lax.scan rejects the carry dtype
@@ -2335,6 +2423,7 @@ def run_forecast_operational_segmented(
 
     if int(namelist.rk_order) != 3:
         raise ValueError("operational mode currently supports RK3 only")
+    _resolve_operational_suite(namelist)  # fail-closed physics-suite validation
     cadence = int(namelist.radiation_cadence_steps)
     if cadence <= 0:
         raise ValueError("radiation_cadence_steps must be positive")
@@ -2390,6 +2479,7 @@ def run_forecast_operational_single_scan(state: State, namelist: OperationalName
 
     if int(namelist.rk_order) != 3:
         raise ValueError("operational mode currently supports RK3 only")
+    _resolve_operational_suite(namelist)  # fail-closed physics-suite validation
     initial = initial_operational_carry(
         _enforce_operational_precision(state, force_fp64=bool(namelist.force_fp64))
     )
@@ -2425,6 +2515,7 @@ def run_forecast_operational_with_limiter_diagnostics(
 
     if int(namelist.rk_order) != 3:
         raise ValueError("operational mode currently supports RK3 only")
+    _resolve_operational_suite(namelist)  # fail-closed physics-suite validation
     # Honour namelist.force_fp64 at the PUBLIC entry: the in-scan enforcement
     # (line ~1471) upcasts each step's output to fp64 when force_fp64, so the
     # INITIAL carry must also be fp64 or jax.lax.scan rejects the carry dtype
@@ -2485,6 +2576,7 @@ def run_forecast_operational_debug(state: State, namelist: OperationalNamelist, 
 
     if int(namelist.rk_order) != 3:
         raise ValueError("operational mode currently supports RK3 only")
+    _resolve_operational_suite(namelist)  # fail-closed physics-suite validation
     # Honour namelist.force_fp64 at the PUBLIC entry: the in-scan enforcement
     # (line ~1471) upcasts each step's output to fp64 when force_fp64, so the
     # INITIAL carry must also be fp64 or jax.lax.scan rejects the carry dtype
