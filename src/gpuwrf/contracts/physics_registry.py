@@ -15,6 +15,7 @@ WRF Registry lines verified against
 * Thompson(8): ``moist:qv,qc,qr,qi,qs,qg;scalar:qni,qnr;state:re_*``.
 * Morrison(10): ``moist:qv..qg;scalar:qni,qns,qnr,qng`` plus cuten state.
 * WDM6(16): ``moist:qv..qg;scalar:qnn,qnc,qnr;state:re_*``.
+* MYJ(2): ``state:tke_pbl,el_pbl``; requires Janjic Eta sfclay(2).
 * MYNN(5): ``scalar:qke_adv;state:qke,tke_pbl,sh3d,sm3d,tsq,qsq,cov,el_pbl``.
 * Noah classic(2): ``state:flx4,fvb,fbur,fgsn,smcrel,xlaidyn``.
 * Cumulus options KF(1), Grell-Freitas(3), Tiedtke(6/16) use the common
@@ -51,8 +52,8 @@ class SchemeOption:
 
 
 ACCEPTED_MP_PHYSICS: tuple[int, ...] = (0, 1, 6, 8, 10, 16)
-ACCEPTED_BL_PBL_PHYSICS: tuple[int, ...] = (0, 1, 5, 7)
-ACCEPTED_SF_SFCLAY_PHYSICS: tuple[int, ...] = (0, 1, 5, 7)
+ACCEPTED_BL_PBL_PHYSICS: tuple[int, ...] = (0, 1, 2, 5, 7)
+ACCEPTED_SF_SFCLAY_PHYSICS: tuple[int, ...] = (0, 1, 2, 5, 7)
 ACCEPTED_CU_PHYSICS: tuple[int, ...] = (0, 1, 3, 6, 16)
 ACCEPTED_SF_SURFACE_PHYSICS: tuple[int, ...] = (0, 2, 4)
 ACCEPTED_RA_SW_PHYSICS: tuple[int, ...] = (0, 4)
@@ -80,6 +81,7 @@ MP_SCHEMES: Mapping[int, SchemeOption] = {
 PBL_SCHEMES: Mapping[int, SchemeOption] = {
     0: SchemeOption("bl_pbl_physics", 0, "disabled", "none", "accepted", "pbl"),
     1: SchemeOption("bl_pbl_physics", 1, "YSU", "ysuscheme", "accepted", "pbl"),
+    2: SchemeOption("bl_pbl_physics", 2, "MYJ", "myjpblscheme", "accepted", "pbl"),
     5: SchemeOption("bl_pbl_physics", 5, "MYNN", "mynnpblscheme", "implemented", "pbl"),
     7: SchemeOption("bl_pbl_physics", 7, "ACM2", "acmpblscheme", "accepted", "pbl"),
 }
@@ -87,6 +89,7 @@ PBL_SCHEMES: Mapping[int, SchemeOption] = {
 SFCLAY_SCHEMES: Mapping[int, SchemeOption] = {
     0: SchemeOption("sf_sfclay_physics", 0, "disabled", "none", "accepted", "surface_layer"),
     1: SchemeOption("sf_sfclay_physics", 1, "sfclayrev", "sfclayscheme", "accepted", "surface_layer"),
+    2: SchemeOption("sf_sfclay_physics", 2, "Janjic Eta surface layer", "myjsfcscheme", "accepted", "surface_layer"),
     5: SchemeOption("sf_sfclay_physics", 5, "MYNN surface layer", "mynnsfclayscheme", "implemented", "surface_layer"),
     7: SchemeOption("sf_sfclay_physics", 7, "Pleim-Xiu surface layer", "pxsfclayscheme", "accepted", "surface_layer"),
 }
@@ -365,9 +368,11 @@ FIELD_SPECS: tuple[RegistryFieldSpec, ...] = (
         _field(leaf, leaf.upper(), leaf, "cumulus_carry", "surface_2d", "PhysicsCarry", ("cu3",))
         for leaf in ("xmb_shallow", "k22_shallow", "kbcon_shallow", "ktop_shallow")
     ),
+    _field("tke_pbl", "TKE_PBL", "tke_pbl", "pbl_diagnostic", "mass_3d", "PhysicsDiagnostics", ("pbl2", "pbl5")),
+    _field("el_pbl", "EL_PBL", "el_pbl", "pbl_diagnostic", "mass_3d", "PhysicsDiagnostics", ("pbl2", "pbl5")),
     *(
         _field(leaf, leaf.upper(), leaf, "pbl_diagnostic", "mass_3d", "PhysicsDiagnostics", ("pbl5",))
-        for leaf in ("tke_pbl", "sh3d", "sm3d", "tsq", "qsq", "cov", "el_pbl")
+        for leaf in ("sh3d", "sm3d", "tsq", "qsq", "cov")
     ),
     *(
         _field(leaf, leaf.upper(), leaf, "land_carry", "surface_2d", "PhysicsCarry", ("surface2",))
@@ -407,6 +412,7 @@ CUMULUS_CARRY_MEMBERS: Mapping[int, tuple[str, ...]] = {
 PBL_CARRY_MEMBERS: Mapping[int, tuple[str, ...]] = {
     0: (),
     1: (),
+    2: ("tke_pbl", "el_pbl"),
     5: ("qke",),
     7: (),
 }
@@ -414,6 +420,7 @@ PBL_CARRY_MEMBERS: Mapping[int, tuple[str, ...]] = {
 PBL_DIAGNOSTIC_MEMBERS: Mapping[int, tuple[str, ...]] = {
     0: (),
     1: ("pblh",),
+    2: ("pblh", "kpbl", "mixht", "tke_pbl", "exch_h", "exch_m", "el_pbl"),
     5: ("pblh", "tke_pbl", "sh3d", "sm3d", "tsq", "qsq", "cov", "el_pbl"),
     7: ("pblh",),
 }
