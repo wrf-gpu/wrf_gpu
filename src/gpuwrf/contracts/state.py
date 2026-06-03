@@ -97,6 +97,11 @@ def _state_field_shapes(grid: GridSpec) -> dict[str, tuple[int, ...]]:
         "pb_bdy": boundary_mass,
         "phb_bdy": boundary_face,
         "mub_bdy": boundary_surface,
+        # v0.6.0 S0 additive physics leaves (append-only): WDM6 Nc/Nn number
+        # concentrations on mass points; cumulus rainc_acc on surface points.
+        "Nc": mass_3d,
+        "Nn": mass_3d,
+        "rainc_acc": surface_2d,
     }
 
 
@@ -433,6 +438,15 @@ class State:
         "phb_bdy",
         "mub_bdy",
         "lu_index",
+        # --- v0.6.0 S0 additive physics leaves (append-only; manager patch) ---
+        # WDM6 cloud-droplet (Nc) + CCN (Nn) number concentrations (m^-3) and the
+        # cumulus precipitation accumulator (rainc_acc, mm -> RAINC). Appended AT
+        # THE END so the prefix of every existing leaf keeps its pytree position;
+        # ``__init__`` gives them ``None`` defaults (-> zeros) so a pre-v0.6.0
+        # ``cls(*children)`` flatten with the old leaf count still reconstructs.
+        "Nc",
+        "Nn",
+        "rainc_acc",
     )
 
     def __init__(
@@ -490,6 +504,10 @@ class State:
         phb_bdy: jax.Array | None = None,
         mub_bdy: jax.Array | None = None,
         lu_index: jax.Array | None = None,
+        # --- v0.6.0 S0 additive physics leaves (append-only; manager patch) ---
+        Nc: jax.Array | None = None,
+        Nn: jax.Array | None = None,
+        rainc_acc: jax.Array | None = None,
     ) -> None:
         self.u = u
         self.v = v
@@ -547,6 +565,26 @@ class State:
             jnp.zeros_like(xland, dtype=jnp.int32)
             if lu_index is None
             else jnp.asarray(lu_index, dtype=jnp.int32)
+        )
+        # v0.6.0 additive physics leaves. ``None`` -> zeros so existing call sites
+        # and pre-v0.6.0 pytree flattens (old leaf count) still construct: Nc/Nn are
+        # 3-D mass-point number concentrations (templated on Ni); rainc_acc is the
+        # 2-D cumulus precip accumulator (templated on rain_acc). The cast keeps the
+        # ADR-007 precision matrix (Nc/Nn FP32-gated, rainc_acc FP64) consistent.
+        self.Nc = (
+            jnp.zeros_like(qc, dtype=DEFAULT_DTYPES.dtype_for("Nc"))
+            if Nc is None
+            else jnp.asarray(Nc, dtype=DEFAULT_DTYPES.dtype_for("Nc"))
+        )
+        self.Nn = (
+            jnp.zeros_like(qc, dtype=DEFAULT_DTYPES.dtype_for("Nn"))
+            if Nn is None
+            else jnp.asarray(Nn, dtype=DEFAULT_DTYPES.dtype_for("Nn"))
+        )
+        self.rainc_acc = (
+            jnp.zeros_like(rain_acc, dtype=DEFAULT_DTYPES.dtype_for("rainc_acc"))
+            if rainc_acc is None
+            else jnp.asarray(rainc_acc, dtype=DEFAULT_DTYPES.dtype_for("rainc_acc"))
         )
 
     @classmethod

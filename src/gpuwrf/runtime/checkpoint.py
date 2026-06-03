@@ -25,8 +25,19 @@ config.update("jax_enable_x64", True)
 # v2 (ADR-NOAHMP-INTERFACES.md §5): adds the optional prognostic Noah-MP land
 # carry + a scope-options guard. v1 checkpoints (no land state) stay READABLE and
 # load with ``noahmp_land_state = None`` -> driver cold-inits land from wrfinput.
-FORMAT_VERSION = 2
-SUPPORTED_FORMAT_VERSIONS = (1, 2)
+# v3 (v0.6.0 S0 State-leaf materialization): appends the additive physics State
+# leaves Nc/Nn/rainc_acc. A v1/v2 checkpoint recorded the pre-v0.6.0 leaf order
+# (no Nc/Nn/rainc_acc); it stays READABLE because the new leaves are APPEND-ONLY
+# -- the reader backfills any missing additive leaf with zeros (cold-start), and
+# requires the recorded order to be a prefix of the current schema (fail-closed
+# on any non-prefix divergence). A v3 writer always records the full order.
+FORMAT_VERSION = 3
+SUPPORTED_FORMAT_VERSIONS = (1, 2, 3)
+
+# State leaves added after the original (v1/v2) checkpoint schema. The reader
+# backfills any of these absent from an older checkpoint with zeros, so old
+# restarts cold-start the new physics fields rather than failing closed.
+ADDITIVE_STATE_LEAVES_SINCE_V2 = ("Nc", "Nn", "rainc_acc")
 
 # The frozen Noah-MP scope-options the land carry is valid under (tables.py mirror).
 NOAHMP_SCOPE_OPTIONS = {
@@ -147,11 +158,22 @@ def _read_payload(path: str | Path) -> dict[str, Any]:
 
     expected = tuple(State.__slots__)
     recorded = tuple(payload.get("state_field_order", ()))
+    # Append-only schema rule (v0.6.0 S0): the recorded order must be either the
+    # current full order, or a PREFIX of it whose only missing tail leaves are the
+    # append-only additive leaves (Nc/Nn/rainc_acc). Any other divergence (a
+    # reordered or unknown leaf, or a missing non-additive leaf) still fails closed.
     if recorded != expected:
-        raise ValueError("checkpoint State field order does not match current State schema")
+        if recorded != expected[: len(recorded)]:
+            raise ValueError("checkpoint State field order does not match current State schema")
+        missing_tail = expected[len(recorded):]
+        if any(leaf not in ADDITIVE_STATE_LEAVES_SINCE_V2 for leaf in missing_tail):
+            raise ValueError(
+                "checkpoint State field order is missing non-additive leaves: "
+                f"{[leaf for leaf in missing_tail if leaf not in ADDITIVE_STATE_LEAVES_SINCE_V2]}"
+            )
     fields = payload.get("state_fields")
-    if not isinstance(fields, dict) or set(fields) != set(expected):
-        raise ValueError("checkpoint State fields do not match current State schema")
+    if not isinstance(fields, dict) or set(fields) != set(recorded):
+        raise ValueError("checkpoint State fields do not match the recorded field order")
 
     # v2 land carry: exact-match the field order (fail-closed, like State). A v1
     # checkpoint or a v2 with no land carry simply has noahmp_land_state == None.
@@ -175,9 +197,12 @@ def read_checkpoint(path: str | Path) -> tuple[State, Any, Any, int]:
 
 
 def _restore_checkpoint_payload(payload: dict[str, Any]) -> tuple[State, Any, Any, int]:
-    expected = tuple(State.__slots__)
+    # Construct from the RECORDED leaves only. Append-only additive leaves absent
+    # from an older (v1/v2) checkpoint default to None in ``State.__init__``, which
+    # backfills them with zeros at the matrix dtype (cold-start the new physics
+    # fields). A v3 checkpoint records all leaves, so nothing is defaulted.
     fields = payload["state_fields"]
-    state = State(**{field: jax.device_put(fields[field]) for field in expected})
+    state = State(**{field: jax.device_put(value) for field, value in fields.items()})
     grid = _device_tree(payload["grid"])
     namelist = _restore_namelist(payload["namelist"], grid)
     return state, namelist, grid, int(payload["step_index"])

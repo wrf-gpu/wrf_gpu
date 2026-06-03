@@ -59,7 +59,10 @@ def test_checkpoint_roundtrip_preserves_all_state_fields_bitwise(tmp_path: Path)
     restored_state, restored_namelist, restored_grid, restored_step = read_checkpoint(checkpoint_path)
 
     assert restored_step == 17
-    assert len(State.__slots__) == 53
+    # v0.6.0 S0 appended 3 additive physics leaves (Nc, Nn, rainc_acc) to the
+    # original 53-leaf schema. The guard tracks the authoritative count.
+    assert len(State.__slots__) == 56
+    assert State.__slots__[-3:] == ("Nc", "Nn", "rainc_acc")
     assert restored_grid == grid
     assert restored_namelist.grid == restored_grid
     assert restored_namelist.dt_s == namelist.dt_s

@@ -1,0 +1,836 @@
+{
+  "milestone": "v0.6.0 integration: 12 common-menu physics schemes",
+  "branch": "worker/opus/v060-integration",
+  "head": "7a8895e3ac3239c679384ec4569612110d56a35f",
+  "s0_base": "0ab2c7b",
+  "generated_by": "proofs/v060/gen_integration_report.py (CPU; no GPU, no forecast)",
+  "step1_merge": {
+    "lanes_merged": 12,
+    "all_file_disjoint": true,
+    "frozen_interfaces_untouched_by_lanes": {
+      "files": [
+        "src/gpuwrf/contracts/physics_registry.py",
+        "src/gpuwrf/contracts/physics_interfaces.py",
+        "src/gpuwrf/io/namelist_check.py",
+        "src/gpuwrf/io/wrfout_writer.py"
+      ],
+      "any_modified_S0_to_HEAD": {
+        "src/gpuwrf/contracts/physics_registry.py": false,
+        "src/gpuwrf/contracts/physics_interfaces.py": false,
+        "src/gpuwrf/io/namelist_check.py": false,
+        "src/gpuwrf/io/wrfout_writer.py": false
+      },
+      "clean": true
+    },
+    "merge_conflict_resolution": "Only shared per-scheme oracle BUILD-SCRATCH conflicted (proofs/v060/oracle/{.gitignore,build_and_run.sh,dump_to_json.py} + proofs/v060/savepoints*/wrf_source_checksums.txt). Resolved WRF-faithfully: .gitignore unioned to a superset; generic build_and_run.sh/dump_to_json.py renamed per-scheme (<scheme>_*) so every lane's oracle reproduction script is preserved; checksums unioned (sorted-unique). No scheme code, test, or savepoint JSON conflicted.",
+    "all_modules_present": true,
+    "all_tests_present": true
+  },
+  "step2_state_materialization": {
+    "state_leaf_count": 56,
+    "append_only_tail": [
+      "Nc",
+      "Nn",
+      "rainc_acc"
+    ],
+    "additive_leaves": {
+      "Nc": {
+        "shape": [
+          10,
+          8,
+          8
+        ],
+        "dtype": "float32",
+        "fp32_gated": true,
+        "wrfout": "QNCLOUD"
+      },
+      "Nn": {
+        "shape": [
+          10,
+          8,
+          8
+        ],
+        "dtype": "float32",
+        "fp32_gated": true,
+        "wrfout": "QNCCN"
+      },
+      "rainc_acc": {
+        "shape": [
+          8,
+          8
+        ],
+        "dtype": "float64",
+        "fp32_gated": false,
+        "wrfout": "RAINC"
+      }
+    },
+    "state_field_order_consistent": true,
+    "restart_format_version": 3,
+    "restart_supported_versions": [
+      1,
+      2,
+      3
+    ],
+    "restart_backward_compat": "v1/v2 checkpoints (pre-v0.6.0 leaf order) read by prefix-match; additive leaves zero-backfilled (cold-start). Fail-closed on any non-prefix / non-additive divergence.",
+    "wrfout_forward_compatible": "QNCLOUD/QNCCN sourced from Nc/Nn and RAINC from rainc_acc were already wired forward-compatible in the S0 wrfout_writer (self-gating on State leaf presence); no writer change required."
+  },
+  "step2_cugd_correction": "S0 cugd_* correction applied: NO inert cugd_* State carry is threaded for cu_physics=3 (Grell-Freitas). GF + Tiedtke route via the combined RTHCUTEN/RQVCUTEN/RQCCUTEN/RQICUTEN + RAINCV/PRATEC tendency family + shallow diagnostics (registry CUMULUS_TENDENCY_MEMBERS). State byte-compatibility kept: Nc/Nn/rainc_acc appended at the END of __slots__ (existing-leaf prefix unchanged).",
+  "step3_dispatcher": {
+    "module": "src/gpuwrf/coupling/physics_dispatch.py",
+    "accept_matrix": {
+      "mp_physics": [
+        0,
+        1,
+        6,
+        8,
+        10,
+        16
+      ],
+      "bl_pbl_physics": [
+        0,
+        1,
+        5,
+        7
+      ],
+      "cu_physics": [
+        0,
+        1,
+        3,
+        6,
+        16
+      ],
+      "sf_sfclay_physics": [
+        0,
+        1,
+        5,
+        7
+      ],
+      "sf_surface_physics": [
+        0,
+        2,
+        4
+      ],
+      "ra_sw_physics": [
+        0,
+        4
+      ],
+      "ra_lw_physics": [
+        0,
+        4
+      ]
+    },
+    "fail_closed": "Two layers: io.namelist_check.validate_supported_namelist rejects out-of-matrix options; coupling.physics_dispatch.scheme_entry + operational_mode._resolve_operational_suite reject both out-of-matrix AND parity-passed-but-not-yet-scan-wired schemes (loud UnsupportedSchemeSelection).",
+    "default_suite_v020_baseline": {
+      "mp_physics": {
+        "option": 8,
+        "name": "Thompson",
+        "module": "gpuwrf.coupling.physics_couplers",
+        "entrypoint": "thompson_adapter",
+        "convention": "state_adapter",
+        "gpu_runnable": true
+      },
+      "bl_pbl_physics": {
+        "option": 5,
+        "name": "MYNN",
+        "module": "gpuwrf.coupling.physics_couplers",
+        "entrypoint": "mynn_adapter",
+        "convention": "state_adapter",
+        "gpu_runnable": true
+      },
+      "sf_sfclay_physics": {
+        "option": 5,
+        "name": "MYNN surface layer",
+        "module": "gpuwrf.coupling.physics_couplers",
+        "entrypoint": "surface_adapter",
+        "convention": "state_adapter",
+        "gpu_runnable": true
+      },
+      "cu_physics": {
+        "option": 0,
+        "name": "disabled",
+        "module": "",
+        "entrypoint": "",
+        "convention": "disabled",
+        "gpu_runnable": true
+      },
+      "sf_surface_physics": {
+        "option": 4,
+        "name": "Noah-MP",
+        "module": "gpuwrf.coupling.noahmp_surface_hook",
+        "entrypoint": "noahmp_surface_step",
+        "convention": "state_adapter",
+        "gpu_runnable": true
+      }
+    },
+    "gf_tiedtke_gpu_batching_status": "Grell-Freitas (cu=3) and Tiedtke (cu=6/16) are faithful CPU-NumPy reference ports (not jit/vmap'd). Selectable + savepoint-parity-gated, flagged gpu_runnable=False (GPU-batching TODO). KF (cu=1) is the jit/vmap'd operational GPU cumulus. Any combo containing GF/Tiedtke is excluded from the integrated GPU forecast gate.",
+    "matrix": {
+      "default_suite": {
+        "mp_physics": 8,
+        "bl_pbl_physics": 5,
+        "sf_sfclay_physics": 5,
+        "cu_physics": 0,
+        "sf_surface_physics": 4,
+        "note": "v0.2.0 validated baseline = Thompson/MYNN/MYNN-sfclay/Noah-MP, no cumulus."
+      },
+      "rows": [
+        {
+          "namelist_key": "mp_physics",
+          "family": "microphysics",
+          "option": 0,
+          "name": "disabled/passive qv",
+          "module": "",
+          "entrypoint": "",
+          "convention": "disabled",
+          "gpu_runnable": true,
+          "carry_members": [],
+          "tendency_members": [],
+          "accumulators": [],
+          "notes": ""
+        },
+        {
+          "namelist_key": "mp_physics",
+          "family": "microphysics",
+          "option": 1,
+          "name": "Kessler warm rain",
+          "module": "gpuwrf.physics.microphysics_kessler",
+          "entrypoint": "kessler_physics_tendency",
+          "convention": "mp_flat",
+          "gpu_runnable": true,
+          "carry_members": [],
+          "tendency_members": [],
+          "accumulators": [
+            "rain_acc",
+            "snow_acc",
+            "graupel_acc",
+            "ice_acc"
+          ],
+          "notes": ""
+        },
+        {
+          "namelist_key": "mp_physics",
+          "family": "microphysics",
+          "option": 6,
+          "name": "WSM6",
+          "module": "gpuwrf.physics.microphysics_wsm6",
+          "entrypoint": "wsm6_physics_tendency",
+          "convention": "mp_flat",
+          "gpu_runnable": true,
+          "carry_members": [],
+          "tendency_members": [],
+          "accumulators": [
+            "rain_acc",
+            "snow_acc",
+            "graupel_acc",
+            "ice_acc"
+          ],
+          "notes": ""
+        },
+        {
+          "namelist_key": "mp_physics",
+          "family": "microphysics",
+          "option": 8,
+          "name": "Thompson",
+          "module": "gpuwrf.coupling.physics_couplers",
+          "entrypoint": "thompson_adapter",
+          "convention": "state_adapter",
+          "gpu_runnable": true,
+          "carry_members": [],
+          "tendency_members": [],
+          "accumulators": [
+            "rain_acc",
+            "snow_acc",
+            "graupel_acc",
+            "ice_acc"
+          ],
+          "notes": ""
+        },
+        {
+          "namelist_key": "mp_physics",
+          "family": "microphysics",
+          "option": 10,
+          "name": "Morrison two-moment",
+          "module": "gpuwrf.physics.microphysics_morrison",
+          "entrypoint": "morrison_tendency",
+          "convention": "mp_flat",
+          "gpu_runnable": true,
+          "carry_members": [],
+          "tendency_members": [],
+          "accumulators": [
+            "rain_acc",
+            "snow_acc",
+            "graupel_acc",
+            "ice_acc"
+          ],
+          "notes": ""
+        },
+        {
+          "namelist_key": "mp_physics",
+          "family": "microphysics",
+          "option": 16,
+          "name": "WDM6",
+          "module": "gpuwrf.physics.microphysics_wdm6",
+          "entrypoint": "wdm6_physics_tendency",
+          "convention": "mp_flat",
+          "gpu_runnable": true,
+          "carry_members": [],
+          "tendency_members": [],
+          "accumulators": [
+            "rain_acc",
+            "snow_acc",
+            "graupel_acc",
+            "ice_acc"
+          ],
+          "notes": ""
+        },
+        {
+          "namelist_key": "bl_pbl_physics",
+          "family": "pbl",
+          "option": 0,
+          "name": "disabled",
+          "module": "",
+          "entrypoint": "",
+          "convention": "disabled",
+          "gpu_runnable": true,
+          "carry_members": [],
+          "tendency_members": [],
+          "accumulators": [],
+          "notes": ""
+        },
+        {
+          "namelist_key": "bl_pbl_physics",
+          "family": "pbl",
+          "option": 1,
+          "name": "YSU",
+          "module": "gpuwrf.physics.pbl_ysu",
+          "entrypoint": "step_ysu_column",
+          "convention": "column_state",
+          "gpu_runnable": true,
+          "carry_members": [],
+          "tendency_members": [],
+          "accumulators": [],
+          "notes": ""
+        },
+        {
+          "namelist_key": "bl_pbl_physics",
+          "family": "pbl",
+          "option": 5,
+          "name": "MYNN",
+          "module": "gpuwrf.coupling.physics_couplers",
+          "entrypoint": "mynn_adapter",
+          "convention": "state_adapter",
+          "gpu_runnable": true,
+          "carry_members": [
+            "qke"
+          ],
+          "tendency_members": [],
+          "accumulators": [],
+          "notes": ""
+        },
+        {
+          "namelist_key": "bl_pbl_physics",
+          "family": "pbl",
+          "option": 7,
+          "name": "ACM2",
+          "module": "gpuwrf.physics.pbl_acm2",
+          "entrypoint": "step_acm2_column",
+          "convention": "column_state",
+          "gpu_runnable": true,
+          "carry_members": [],
+          "tendency_members": [],
+          "accumulators": [],
+          "notes": ""
+        },
+        {
+          "namelist_key": "sf_sfclay_physics",
+          "family": "surface_layer",
+          "option": 0,
+          "name": "disabled",
+          "module": "",
+          "entrypoint": "",
+          "convention": "disabled",
+          "gpu_runnable": true,
+          "carry_members": [],
+          "tendency_members": [],
+          "accumulators": [],
+          "notes": ""
+        },
+        {
+          "namelist_key": "sf_sfclay_physics",
+          "family": "surface_layer",
+          "option": 1,
+          "name": "sfclayrev",
+          "module": "gpuwrf.physics.sfclay_revised_mm5",
+          "entrypoint": "step_sfclay_revised_mm5_column",
+          "convention": "column_state",
+          "gpu_runnable": true,
+          "carry_members": [],
+          "tendency_members": [],
+          "accumulators": [],
+          "notes": ""
+        },
+        {
+          "namelist_key": "sf_sfclay_physics",
+          "family": "surface_layer",
+          "option": 5,
+          "name": "MYNN surface layer",
+          "module": "gpuwrf.coupling.physics_couplers",
+          "entrypoint": "surface_adapter",
+          "convention": "state_adapter",
+          "gpu_runnable": true,
+          "carry_members": [],
+          "tendency_members": [],
+          "accumulators": [],
+          "notes": ""
+        },
+        {
+          "namelist_key": "sf_sfclay_physics",
+          "family": "surface_layer",
+          "option": 7,
+          "name": "Pleim-Xiu surface layer",
+          "module": "gpuwrf.physics.sfclay_pleim_xiu",
+          "entrypoint": "step_pxsfclay_column",
+          "convention": "column_state",
+          "gpu_runnable": true,
+          "carry_members": [],
+          "tendency_members": [],
+          "accumulators": [],
+          "notes": ""
+        },
+        {
+          "namelist_key": "cu_physics",
+          "family": "cumulus",
+          "option": 0,
+          "name": "disabled",
+          "module": "",
+          "entrypoint": "",
+          "convention": "disabled",
+          "gpu_runnable": true,
+          "carry_members": [],
+          "tendency_members": [],
+          "accumulators": [],
+          "notes": ""
+        },
+        {
+          "namelist_key": "cu_physics",
+          "family": "cumulus",
+          "option": 1,
+          "name": "Kain-Fritsch",
+          "module": "gpuwrf.physics.cumulus_kf",
+          "entrypoint": "step_kf_column",
+          "convention": "column_state",
+          "gpu_runnable": true,
+          "carry_members": [
+            "w0avg",
+            "nca"
+          ],
+          "tendency_members": [
+            "rucuten",
+            "rvcuten",
+            "rthcuten",
+            "rqvcuten",
+            "rqrcuten",
+            "rqccuten",
+            "rqscuten",
+            "rqicuten"
+          ],
+          "accumulators": [
+            "rainc_acc"
+          ],
+          "notes": ""
+        },
+        {
+          "namelist_key": "cu_physics",
+          "family": "cumulus",
+          "option": 3,
+          "name": "Grell-Freitas",
+          "module": "gpuwrf.physics.cumulus_grell_freitas",
+          "entrypoint": "grell_freitas_step",
+          "convention": "column_state",
+          "gpu_runnable": false,
+          "carry_members": [],
+          "tendency_members": [
+            "rthcuten",
+            "rqvcuten",
+            "rqrcuten",
+            "rqccuten",
+            "rqscuten",
+            "rqicuten"
+          ],
+          "accumulators": [
+            "rainc_acc"
+          ],
+          "notes": "CPU-NumPy reference port; GPU-batching (jit/vmap) TODO. cugd_* carry DROPPED per S0 correction -- routed via R*CUTEN + RAINCV/PRATEC + shallow diags."
+        },
+        {
+          "namelist_key": "cu_physics",
+          "family": "cumulus",
+          "option": 6,
+          "name": "Tiedtke",
+          "module": "gpuwrf.physics.cumulus_tiedtke",
+          "entrypoint": "step_tiedtke_column",
+          "convention": "column_state",
+          "gpu_runnable": false,
+          "carry_members": [],
+          "tendency_members": [
+            "rthcuten",
+            "rqvcuten",
+            "rqrcuten",
+            "rqccuten",
+            "rqscuten",
+            "rqicuten"
+          ],
+          "accumulators": [
+            "rainc_acc"
+          ],
+          "notes": "CPU-NumPy reference port; GPU-batching (jit/vmap) TODO; tendency-only carry."
+        },
+        {
+          "namelist_key": "cu_physics",
+          "family": "cumulus",
+          "option": 16,
+          "name": "New Tiedtke",
+          "module": "gpuwrf.physics.cumulus_tiedtke",
+          "entrypoint": "step_tiedtke_column",
+          "convention": "column_state",
+          "gpu_runnable": false,
+          "carry_members": [],
+          "tendency_members": [
+            "rthcuten",
+            "rqvcuten",
+            "rqrcuten",
+            "rqccuten",
+            "rqscuten",
+            "rqicuten"
+          ],
+          "accumulators": [
+            "rainc_acc"
+          ],
+          "notes": "New Tiedtke option spec; same module as cu=6, CPU-NumPy reference port; GPU-batching TODO."
+        },
+        {
+          "namelist_key": "sf_surface_physics",
+          "family": "land_surface",
+          "option": 0,
+          "name": "disabled",
+          "module": "",
+          "entrypoint": "",
+          "convention": "disabled",
+          "gpu_runnable": true,
+          "carry_members": [],
+          "tendency_members": [],
+          "accumulators": [],
+          "notes": ""
+        },
+        {
+          "namelist_key": "sf_surface_physics",
+          "family": "land_surface",
+          "option": 2,
+          "name": "Noah classic",
+          "module": "gpuwrf.physics.lsm_noah_classic",
+          "entrypoint": "sflx_step",
+          "convention": "land_step",
+          "gpu_runnable": true,
+          "carry_members": [
+            "flx4",
+            "fvb",
+            "fbur",
+            "fgsn",
+            "smcrel",
+            "xlaidyn"
+          ],
+          "tendency_members": [],
+          "accumulators": [],
+          "notes": "Owns a 4-layer (num_soil_layers=4) land carry; does NOT reinterpret the 2-D State.soil_moisture as a 4-layer field (S0 land carry rule)."
+        },
+        {
+          "namelist_key": "sf_surface_physics",
+          "family": "land_surface",
+          "option": 4,
+          "name": "Noah-MP",
+          "module": "gpuwrf.coupling.noahmp_surface_hook",
+          "entrypoint": "noahmp_surface_step",
+          "convention": "state_adapter",
+          "gpu_runnable": true,
+          "carry_members": [
+            "NoahMPLandState"
+          ],
+          "tendency_members": [],
+          "accumulators": [],
+          "notes": ""
+        }
+      ]
+    }
+  },
+  "step4_regression": {
+    "per_scheme_savepoint_parity": {
+      "all_present": true,
+      "all_passed": true,
+      "schemes": [
+        {
+          "scheme": "kessler (mp=1)",
+          "branch": "worker/gpt/v060-kessler",
+          "module": "gpuwrf/physics/microphysics_kessler.py",
+          "module_present": true,
+          "test_file": "tests/test_kessler_microphysics.py",
+          "test_present": true,
+          "savepoint_parity": {
+            "present": true,
+            "verdict": "PASS",
+            "overall_pass": true,
+            "passed": true
+          }
+        },
+        {
+          "scheme": "wsm6 (mp=6)",
+          "branch": "worker/opus/v060-wsm6",
+          "module": "gpuwrf/physics/microphysics_wsm6.py",
+          "module_present": true,
+          "test_file": "tests/test_wsm6_savepoint_parity.py",
+          "test_present": true,
+          "savepoint_parity": {
+            "present": true,
+            "verdict": null,
+            "overall_pass": true,
+            "passed": true
+          }
+        },
+        {
+          "scheme": "morrison (mp=10)",
+          "branch": "worker/opus/v060-morrison",
+          "module": "gpuwrf/physics/microphysics_morrison.py",
+          "module_present": true,
+          "test_file": "tests/savepoint/test_morrison_parity.py",
+          "test_present": true,
+          "savepoint_parity": {
+            "present": true,
+            "verdict": null,
+            "overall_pass": true,
+            "passed": true
+          }
+        },
+        {
+          "scheme": "wdm6 (mp=16)",
+          "branch": "worker/opus/v060-wdm6",
+          "module": "gpuwrf/physics/microphysics_wdm6.py",
+          "module_present": true,
+          "test_file": "tests/test_wdm6_savepoint_parity.py",
+          "test_present": true,
+          "savepoint_parity": {
+            "present": true,
+            "verdict": null,
+            "overall_pass": true,
+            "passed": true
+          }
+        },
+        {
+          "scheme": "ysu (bl=1)",
+          "branch": "worker/gpt/v060-ysu",
+          "module": "gpuwrf/physics/pbl_ysu.py",
+          "module_present": true,
+          "test_file": "tests/test_v060_pbl_ysu.py",
+          "test_present": true,
+          "savepoint_parity": {
+            "present": true,
+            "verdict": "PASS",
+            "overall_pass": null,
+            "passed": true
+          }
+        },
+        {
+          "scheme": "acm2 (bl=7)",
+          "branch": "worker/gpt/v060-acm2",
+          "module": "gpuwrf/physics/pbl_acm2.py",
+          "module_present": true,
+          "test_file": "tests/test_v060_pbl_acm2.py",
+          "test_present": true,
+          "savepoint_parity": {
+            "present": true,
+            "verdict": "PASS",
+            "overall_pass": null,
+            "passed": true
+          }
+        },
+        {
+          "scheme": "sfclayrev1 (sfclay=1)",
+          "branch": "worker/gpt/v060-sfclayrev1",
+          "module": "gpuwrf/physics/sfclay_revised_mm5.py",
+          "module_present": true,
+          "test_file": "tests/test_v060_sfclay_revised_mm5.py",
+          "test_present": true,
+          "savepoint_parity": {
+            "present": true,
+            "verdict": "PASS",
+            "overall_pass": null,
+            "passed": true
+          }
+        },
+        {
+          "scheme": "pxsfclay (sfclay=7)",
+          "branch": "worker/gpt/v060-pxsfclay",
+          "module": "gpuwrf/physics/sfclay_pleim_xiu.py",
+          "module_present": true,
+          "test_file": "tests/test_v060_sfclay_pleim_xiu.py",
+          "test_present": true,
+          "savepoint_parity": {
+            "present": true,
+            "verdict": "PASS",
+            "overall_pass": true,
+            "passed": true
+          }
+        },
+        {
+          "scheme": "kf (cu=1)",
+          "branch": "worker/gpt/v060-kf",
+          "module": "gpuwrf/physics/cumulus_kf.py",
+          "module_present": true,
+          "test_file": "tests/test_v060_cumulus_kf.py",
+          "test_present": true,
+          "savepoint_parity": {
+            "present": true,
+            "verdict": "PASS",
+            "overall_pass": null,
+            "passed": true
+          }
+        },
+        {
+          "scheme": "grell_freitas (cu=3)",
+          "branch": "worker/opus/v060-gf2",
+          "module": "gpuwrf/physics/cumulus_grell_freitas.py",
+          "module_present": true,
+          "test_file": "tests/test_grell_freitas_cumulus.py",
+          "test_present": true,
+          "savepoint_parity": {
+            "present": true,
+            "verdict": "PASS",
+            "overall_pass": null,
+            "passed": true
+          }
+        },
+        {
+          "scheme": "tiedtke (cu=6/16)",
+          "branch": "worker/gpt/v060-tiedtke",
+          "module": "gpuwrf/physics/cumulus_tiedtke.py",
+          "module_present": true,
+          "test_file": "tests/test_tiedtke_cumulus_oracle.py",
+          "test_present": true,
+          "savepoint_parity": {
+            "present": true,
+            "verdict": "PASS",
+            "overall_pass": null,
+            "passed": true
+          }
+        },
+        {
+          "scheme": "noah_classic (sf_surface=2)",
+          "branch": "worker/opus/v060-noahclassic",
+          "module": "gpuwrf/physics/lsm_noah_classic.py",
+          "module_present": true,
+          "test_file": "tests/v060/test_noahclassic_parity.py",
+          "test_present": true,
+          "savepoint_parity": {
+            "present": true,
+            "verdict": "PASS",
+            "overall_pass": null,
+            "passed": true
+          }
+        }
+      ]
+    },
+    "harnesses_run_cpu": {
+      "12_per_scheme_parity_tests": "135 assertions PASS (post-merge + post-materialization)",
+      "conservation_budget": "tests/test_conservation_budget.py PASS",
+      "restart_full_carry": "tests/test_p0_5_restart_full_carry.py PASS",
+      "checkpoint_roundtrip": "tests/test_m7_restart_checkpoint_roundtrip.py PASS (leaf count 53->56 guard updated)",
+      "restart_backward_compat": "v2->v3 checkpoint read backfills Nc/Nn/rainc_acc zero (verified)",
+      "dispatch_tests": "tests/test_v060_physics_dispatch.py 11 PASS",
+      "namelist_check": "tests/test_namelist_check.py 3 PASS",
+      "contracts": "tests/contracts/ 6 PASS"
+    },
+    "note": "GPU-requiring source-introspection tests (test_m6*_no_h2d, test_m6b_operational_theta_fix) fail identically on the S0 base on CPU (State.zeros requires a GPU device); they are NOT integration regressions."
+  },
+  "step5_forecast_gate": {
+    "status": "READY_NOT_RUN",
+    "note": "Integrated multi-config forecast gate is WIRED. The single-GPU end-to-end run vs CPU-WRF is MANAGER-scheduled. CPU validation below confirms each combo is namelist-accepted, dispatch-resolvable, and GPU-gate-admissible (all schemes GPU-runnable). GF (cu=3) and Tiedtke (cu=6/16) are intentionally NOT in any canonical combo (CPU-reference).",
+    "gate_fields": {
+      "core": [
+        "T2",
+        "U10",
+        "V10"
+      ],
+      "diagnostics": [
+        "Q2",
+        "PSFC",
+        "PBLH",
+        "SWDOWN",
+        "GLW",
+        "HFX",
+        "LH"
+      ]
+    },
+    "scoring": "per-lead gridpoint-paired bias/RMSE vs corpus CPU-WRF d02 reference, mirroring proofs/m20/continuous_gate.py (reference = CPU-WRF, pairing = every grid cell, resolution = every lead hour).",
+    "combos": [
+      {
+        "combo_id": "combo_1_thompson_mynn_noahmp_kf",
+        "description": "v0.2.0 baseline (Thompson/MYNN/MYNN-sfclay/Noah-MP) + KF cumulus + RRTMG",
+        "namelist": {
+          "mp_physics": 8,
+          "bl_pbl_physics": 5,
+          "sf_sfclay_physics": 5,
+          "sf_surface_physics": 4,
+          "cu_physics": 1,
+          "ra_sw_physics": 4,
+          "ra_lw_physics": 4
+        },
+        "namelist_accepted": true,
+        "dispatch_resolved": true,
+        "gpu_gate_ready": true,
+        "non_gpu_schemes": [],
+        "error": null
+      },
+      {
+        "combo_id": "combo_2_wsm6_ysu_revisedmm5_noahclassic_kf",
+        "description": "WSM6/YSU/revised-MM5 sfclay/Noah-classic + KF cumulus + RRTMG",
+        "namelist": {
+          "mp_physics": 6,
+          "bl_pbl_physics": 1,
+          "sf_sfclay_physics": 1,
+          "sf_surface_physics": 2,
+          "cu_physics": 1,
+          "ra_sw_physics": 4,
+          "ra_lw_physics": 4
+        },
+        "namelist_accepted": true,
+        "dispatch_resolved": true,
+        "gpu_gate_ready": true,
+        "non_gpu_schemes": [],
+        "error": null
+      },
+      {
+        "combo_id": "combo_3_morrison_acm2_pleimxiu_noahmp",
+        "description": "Morrison/ACM2/Pleim-Xiu sfclay/Noah-MP, no cumulus + RRTMG",
+        "namelist": {
+          "mp_physics": 10,
+          "bl_pbl_physics": 7,
+          "sf_sfclay_physics": 7,
+          "sf_surface_physics": 4,
+          "cu_physics": 0,
+          "ra_sw_physics": 4,
+          "ra_lw_physics": 4
+        },
+        "namelist_accepted": true,
+        "dispatch_resolved": true,
+        "gpu_gate_ready": true,
+        "non_gpu_schemes": [],
+        "error": null
+      }
+    ],
+    "all_combos_gpu_gate_ready": true,
+    "manager_run_steps": [
+      "1. Free the GPU (one GPU job at a time); verify CUDA context sanity.",
+      "2. For each combo: build the OperationalNamelist with the combo's mp/bl/cu/sf options; thread each non-default scheme's State adapter into the operational scan (the per-scheme kernels passed savepoint parity; their scan adapters are this gate's remaining wiring).",
+      "3. Run the GPU forecast over a corpus CPU-WRF d02 case (e.g. the v0.2.0 TOST run dates); emit wrfout with the new QNCLOUD/QNCCN/RAINC leaves.",
+      "4. Score per-lead gridpoint-paired bias/RMSE vs the CPU-WRF reference (continuous_gate pattern) on the core + diagnostic fields.",
+      "5. Record one proof JSON per combo under proofs/v060/forecast_gate/."
+    ]
+  }
+}
