@@ -1,0 +1,102 @@
+{
+  "dispatcher": {
+    "gpu_runnable": true,
+    "requires_explicit_noahclassic_bundle": true,
+    "sf_surface_physics=2": {
+      "convention": "land_step",
+      "entrypoint": "sflx_step",
+      "gpu_runnable": true,
+      "module": "gpuwrf.physics.lsm_noah_classic",
+      "name": "Noah classic",
+      "option": 2
+    }
+  },
+  "fail_closed_boundary": {
+    "missing_noahclassic_bundle_rejected": true,
+    "note": "Operational scan accepts explicit sf_surface_physics=2 only when noahclassic_static and noahclassic_land are present; legacy use_noahmp=False without explicit sf_surface_physics keeps the bulk path."
+  },
+  "git_head": "382070fe2d626a8563f1b042de8afb205bcda5d4",
+  "objective": "Noah-classic sf_surface_physics=2 operational land coupler",
+  "overall_pass": true,
+  "parity": {
+    "oracle": {
+      "driver": "proofs/v060/oracle/noahclassic_offline_driver.F90",
+      "kind": "external WRF oracle (NOT self-compare): compiled pristine WRF module_sf_noahlsm.o SFLX over real Canary d03 land columns",
+      "ncolumns": 12,
+      "precision_note": "WRF SFLX is single precision; JAX port is fp64. Residual is fp32-vs-fp64 oracle dust for the flux/temperature fields, plus a localized top-layer soil-water distribution residual (see honest_residuals).",
+      "regimes": [
+        "daytime",
+        "nighttime",
+        "snow",
+        "wetprecip"
+      ],
+      "savepoints": "proofs/v060/savepoints_noahclassic.json",
+      "scope_options": {
+        "fasdas": 0,
+        "ice": 0,
+        "local": false,
+        "opt_thcnd": 1,
+        "rdlai2d": false,
+        "slopetyp": 1,
+        "ua_phys": false,
+        "usemonalb": false
+      },
+      "wrf_source": "/home/enric/src/wrf_pristine/WRF/phys/module_sf_noahlsm.F"
+    },
+    "pass": true,
+    "report": "proofs/v060/noahclassic_savepoint_parity_report.json",
+    "verdict": "PASS"
+  },
+  "scan_smoke": {
+    "dispatcher_gpu_gate_ready": true,
+    "finite_land": true,
+    "finite_state": true,
+    "flux_feedback": {
+      "grdflx_minmax_w_m2": [
+        0.0,
+        33.312475521367396
+      ],
+      "hfx_minmax_w_m2": [
+        0.0,
+        190.00428291871245
+      ],
+      "nonzero_land_fluxes": true,
+      "qfx_minmax_kg_m2_s": [
+        0.0,
+        0.00021984593131620092
+      ],
+      "state_theta_flux_written": true
+    },
+    "jax_platform": "cpu",
+    "kind": "CPU JAX operational physics-slot scan smoke; explicit WRF savepoint-derived NoahClassicStatic/LandState",
+    "land_updates": {
+      "smc_max_abs_delta_m3_m3": 0.003287092305666206,
+      "stc_max_abs_delta_K": 0.002406267164133169,
+      "t1_max_abs_delta_K": 14.44451174510209
+    },
+    "operational_resolver_accepts": true,
+    "pass": true,
+    "proof": "v060-noahclassic-operational-coupler-smoke",
+    "selected_physics": {
+      "bl_pbl_physics": 5,
+      "cu_physics": 0,
+      "mp_physics": 0,
+      "sf_sfclay_physics": 1,
+      "sf_surface_physics": 2
+    },
+    "soil_water": {
+      "bounded": true,
+      "relative_change": 0.0005391933283350839,
+      "total_after": 19.70450871852546,
+      "total_before": 19.69388990448
+    },
+    "steps": 3,
+    "water_tile_land_carry_unchanged": {
+      "pass": true,
+      "smc_max_abs_delta_m3_m3": 0.0,
+      "stc_max_abs_delta_K": 0.0
+    },
+    "x64_enabled": true
+  },
+  "schema": "gpuwrf.v060.noah_coupler_report.v1"
+}

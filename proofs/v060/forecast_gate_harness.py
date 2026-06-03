@@ -177,19 +177,20 @@ def validate_combo(combo: ForecastCombo) -> ComboReadiness:
 
 # Fully-scan-wired alternate combos (v0.6.0 scan-wire 2026-06-03). Each canonical
 # combo's PBL/land slot decides scan-runnability: YSU (bl=1) and ACM2 (bl=7) are
-# host-NumPy single-column kernels (NOT scan-traceable), and Noah-classic
-# (sf_surface=2) has no coupler yet -- so canonical combos 2 and 3 are NOT yet
-# GPU-scan-runnable. These alternates swap the unwired PBL/land for the wired
+# host-NumPy single-column kernels (NOT scan-traceable), and the canonical combo_2
+# readiness stub does not build the explicit Noah-classic land/static bundle -- so
+# canonical combos 2 and 3 are NOT yet GPU-scan-runnable. These alternates swap the
+# unwired PBL/land for the wired
 # MYNN(5)/Noah-MP(4) so the NEWLY-WIRED microphysics (WSM6/Morrison/WDM6/Kessler),
 # surface-layer (revised-MM5/Pleim-Xiu) and cumulus (KF) schemes can still be
 # exercised end-to-end on the GPU scan. They are the manager's runnable GPU gate
-# until the YSU/ACM2 jit/vmap rewrite + the Noah-classic coupler land.
+# until the YSU/ACM2 jit/vmap rewrite + real-run Noah-classic bundle plumbing.
 SCAN_WIRED_COMBOS: tuple[ForecastCombo, ...] = (
     ForecastCombo(
         combo_id="combo_2w_wsm6_mynn_revisedmm5_noahmp_kf",
         description="WSM6/MYNN/revised-MM5 sfclay/Noah-MP + KF cumulus + RRTMG "
                     "(scan-wired variant of combo_2: MYNN instead of host-NumPy YSU, "
-                    "Noah-MP instead of un-coupled Noah-classic)",
+                    "Noah-MP instead of the canonical Noah-classic bundle path)",
         mp_physics=6, bl_pbl_physics=5, sf_sfclay_physics=1, sf_surface_physics=4, cu_physics=1,
     ),
     ForecastCombo(
@@ -219,9 +220,9 @@ def readiness_report() -> dict[str, Any]:
             "Integrated multi-config forecast gate. The single-GPU end-to-end run vs "
             "CPU-WRF is MANAGER-scheduled (--run). v0.6.0 scan-wire status (HONEST): "
             "combo_1 (v0.2.0 + KF) is fully scan-wired. Canonical combo_2 contains YSU "
-            "(host-NumPy PBL) + Noah-classic (no coupler) and combo_3 contains ACM2 "
-            "(host-NumPy PBL); those schemes are NOT yet threaded into the GPU scan, so "
-            "combos 2/3 are NOT GPU-scan-runnable as defined. The SCAN_WIRED_COMBOS "
+            "(host-NumPy PBL) + Noah-classic without an explicit land/static bundle, "
+            "and combo_3 contains ACM2 (host-NumPy PBL); those selections are NOT yet "
+            "GPU-scan-runnable as defined. The SCAN_WIRED_COMBOS "
             "below swap the unwired PBL/land for MYNN/Noah-MP so the newly-wired "
             "microphysics/surface-layer/cumulus schemes run end-to-end now. GF (cu=3) "
             "and Tiedtke (cu=6/16) are CPU-reference, excluded by design."
@@ -248,8 +249,8 @@ def readiness_report() -> dict[str, Any]:
             "4. Score per-lead gridpoint-paired bias/RMSE vs the CPU-WRF reference "
             "(continuous_gate pattern) on the core + diagnostic fields.",
             "5. Record one proof JSON per combo under proofs/v060/forecast_gate/.",
-            "6. CARRY-OVER (cross-model): jit/vmap rewrite of YSU(1)/ACM2(7) PBL + the "
-            "Noah-classic(2) surface coupler to make canonical combos 2/3 GPU-runnable; "
+            "6. CARRY-OVER (cross-model): jit/vmap rewrite of YSU(1)/ACM2(7) PBL + "
+            "real-run Noah-classic(2) land/static bundle assembly for canonical combo_2; "
             "GPU-batch GF(3)/Tiedtke(6,16) cumulus.",
         ],
     }

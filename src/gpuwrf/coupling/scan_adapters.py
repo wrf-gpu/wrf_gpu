@@ -36,10 +36,10 @@ rejects them loudly):
   Python ``range`` loops over levels); NOT ``jax.lax.scan``-traceable on a device
   State. They passed per-column savepoint parity but need a jit/vmap rewrite
   before they can ride the GPU scan (cross-model follow-up).
-* **Noah-classic (2) land** -- needs a full WRF-faithful surface forcing assembler
-  + 4-layer soil prognostic coupler (the analogue of the dedicated
-  ``coupling.noahmp_surface_hook``); building it inside this sprint would ship an
-  unvalidated land coupling. Tracked as the manager/cross-model land-coupler task.
+* **Noah-classic (2) land** -- wired in ``coupling.noahclassic_surface_hook`` as
+  the land-surface slot analogue of ``coupling.noahmp_surface_hook``. It is not a
+  table entry here because it threads a land carry rather than a plain
+  ``State -> State`` adapter.
 * **Grell-Freitas (3) / Tiedtke (6,16) cumulus** -- faithful CPU-NumPy reference
   ports (``gpu_runnable=False``); excluded from the GPU scan by design
   (GPU-batching TODO).

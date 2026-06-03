@@ -13,7 +13,10 @@ For each GPU-runnable NEW scheme that is scan-wired
 then drives the integrated dispatch the way the scan body selects schemes
 (``MP_SCAN_ADAPTERS`` / ``SFCLAY_SCAN_ADAPTERS`` / ``CU_SCAN_ADAPTERS``) and
 verifies ``_resolve_operational_suite`` ACCEPTS the scan-wired combos and REJECTS
-the not-wired ones (YSU/ACM2/Noah-classic/GF/Tiedtke) loudly.
+the not-wired ones (YSU/ACM2/GF/Tiedtke) loudly. Noah-classic has a dedicated
+coupler smoke because explicit ``noahclassic_static``/``noahclassic_land`` bundles
+are required; this legacy smoke only checks that selecting sf_surface_physics=2
+without that bundle still fails closed.
 
 This is a CPU JAX integration smoke (a few steps each), NOT a full forecast and
 NOT a WRF-parity claim -- the GPU multi-config forecast gate vs CPU-WRF is
@@ -257,13 +260,14 @@ def _fail_closed_checks():
             accepted.append(True)
         except UnsupportedSchemeSelection:
             accepted.append(False)
-    # NOT-wired schemes that MUST fail closed
+    # NOT-wired schemes, plus explicit Noah-classic without its required bundle,
+    # that MUST fail closed.
     for nl in [
         _NL(bl_pbl_physics=1),  # YSU host-NumPy
         _NL(bl_pbl_physics=7),  # ACM2 host-NumPy
         _NL(cu_physics=3),      # Grell-Freitas CPU-ref
         _NL(cu_physics=6),      # Tiedtke CPU-ref
-        _NL(sf_surface_physics=2),  # Noah-classic (no coupler)
+        _NL(sf_surface_physics=2),  # Noah-classic missing explicit land/static bundle
     ]:
         try:
             _resolve_operational_suite(nl)
