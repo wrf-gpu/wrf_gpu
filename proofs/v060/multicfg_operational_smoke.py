@@ -161,16 +161,17 @@ _Clk = namedtuple("_Clk", "julian yearlen")
 # the covering set exercises each scheme at least once while pairing it with a
 # realistic partner suite, ~16 configs total.
 #
-# HONEST OPERATIONAL-COUPLER REALITY (audited 2026-06-03 against the scan-wire
-# tables): the operational scan (``run_forecast_operational`` / ``_advance_chunk``)
-# threads MYNN (bl=5) as the only PBL, and ``_resolve_operational_suite`` FAIL-
-# CLOSES bl_pbl in {1,7} -- YSU and ACM2 are single-column HOST-NumPy kernels, NOT
-# jax.lax.scan-traceable on a device State. GF (cu=3) / Tiedtke (cu=6/16) are
-# CPU-NumPy reference ports (gpu_runnable=False). So YSU/ACM2/GF/Tiedtke are
-# exercised at the per-scheme savepoint-parity level (lane reports) but are NOT yet
-# integrable into the GPU operational scan. This smoke includes them as FAIL-CLOSED
-# integration assertions (the coupler must REJECT them loudly, not silently no-op)
-# -- a genuine integration finding, recorded honestly, not masked.
+# HONEST OPERATIONAL-COUPLER REALITY (re-audited 2026-06-03 at v0.6.0 CLOSE against
+# the scan-wire tables): the operational scan (``run_forecast_operational`` /
+# ``_physics_boundary_step``) threads MYNN(5) + YSU(1) + ACM2(7) PBL -- YSU and ACM2
+# are the v0.6.0 jax.lax.scan-traceable rewrites (pbl_ysu.ysu_columns /
+# pbl_acm2.acm2_columns) wired via coupling.scan_adapters.PBL_SCAN_ADAPTERS, so they
+# are now full RUN configs (gpu_runnable=True), not fail-closed. The ONLY schemes that
+# remain fail-closed in the GPU operational scan are GF (cu=3) and Tiedtke (cu=6/16):
+# faithful CPU-NumPy reference ports (gpu_runnable=False) that are still
+# savepoint-parity gated but need a jit/vmap GPU-batching rewrite. This smoke includes
+# THOSE as FAIL-CLOSED integration assertions (the coupler must REJECT them loudly,
+# not silently no-op) -- a genuine integration finding, recorded honestly, not masked.
 
 
 @dataclass(frozen=True)

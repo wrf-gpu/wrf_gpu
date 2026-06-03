@@ -27,6 +27,52 @@ forecast-skill item, **not** a fidelity bug and **not** fixed. This is **not** "
 forecast skill." See [`.agent/decisions/V0.4.0-CLOSE.md`](.agent/decisions/V0.4.0-CLOSE.md) and
 [`proofs/v040/v040_close_proof.json`](proofs/v040/v040_close_proof.json).
 
+## Supported physics schemes (v0.6.0 menu)
+
+The operational namelist dispatcher (`coupling.physics_dispatch` + `coupling.scan_adapters` +
+`runtime.operational_mode`) is fail-closed: anything outside this matrix raises loudly in
+`io/namelist_check.py`. Each row passed a WRF-savepoint parity gate in isolation and runs
+end-to-end through the operational coupler (integration smoke:
+[`proofs/v060/multicfg_smoke_report.json`](proofs/v060/multicfg_smoke_report.json) — 14/14 RUN
+configs PASS, schemes active/non-trivial, 2/2 CPU-reference cumulus correctly fail-closed).
+
+| Family | namelist key | Supported options | GPU operational scan |
+|---|---|---|---|
+| Microphysics | `mp_physics` | 0 (passive qv), 1 (Kessler), 6 (WSM6), 8 (Thompson, default), 10 (Morrison 2-moment), 16 (WDM6) | all scan-wired |
+| PBL | `bl_pbl_physics` | 0 (off), 1 (YSU), 5 (MYNN, default), 7 (ACM2) | all scan-wired |
+| Surface layer | `sf_sfclay_physics` | 0 (off), 1 (revised-MM5), 5 (MYNN-SL, default), 7 (Pleim-Xiu) | all scan-wired |
+| Cumulus | `cu_physics` | 0 (none, default), 1 (Kain-Fritsch); **3 (Grell-Freitas), 6/16 (Tiedtke) accepted but CPU-reference only** | KF scan-wired; GF/Tiedtke fail-closed in the GPU scan (savepoint-parity reference ports, GPU-batching TODO) |
+| Land surface | `sf_surface_physics` | 0 (off), 2 (Noah classic, needs explicit static/land bundle), 4 (Noah-MP, `use_noahmp=True`) | all scan-wired |
+| Radiation | `ra_sw_physics`, `ra_lw_physics` | 0 (off), 4 (RRTMG SW / LW) | held-rate `RTHRATEN`, scan-wired |
+
+Valid PBL↔surface-layer pairings (WRF rule): MYNN(5)↔MYNN-SL(5), ACM2(7)↔Pleim-Xiu(7), YSU(1)↔revised-MM5(1).
+Scheme/option-number provenance: [`.agent/decisions/V0.6.0-S0-FROZEN-CONTRACT.md`](.agent/decisions/V0.6.0-S0-FROZEN-CONTRACT.md).
+Wiring/integration close record: [`.agent/decisions/V0.6.0-CLOSE.md`](.agent/decisions/V0.6.0-CLOSE.md),
+[`proofs/v060/v060_close_proof.json`](proofs/v060/v060_close_proof.json).
+
+## Not yet supported (post-0.9.0 TODO)
+
+These WRF v4 schemes/capabilities are **not ported** and fail-close in `io/namelist_check.py`
+(or are simply absent). Named explicitly so the supported menu is not over-read. Portability
+assessment: [`.agent/decisions/V0.6.0-SCHEME-INVENTORY.md`](.agent/decisions/V0.6.0-SCHEME-INVENTORY.md).
+
+- **Spectral-bin microphysics** — Fast-SBM / Full-SBM (HUJI; `mp_physics=30/32`): 33+ prognostic
+  mass bins per hydrometeor; hostile to fixed-shape JAX + fp32.
+- **P3** (predicted particle properties; `mp_physics=50–53`): rime mass/volume + ice-density
+  prognostics + lookup tables.
+- **NSSL 2-moment** (`mp_physics=18`): density/volume prognostics, largest single MP source.
+- **Aerosol-aware microphysics** — Thompson-aerosol (`mp_physics=28/38`) and Morrison-aerosol
+  (`mp_physics=40`): `qnwfa/qnifa/qnbca` / CCN prognostic species (new State leaves).
+- **Radiation** — CAM (`ra_*=3`), Goddard (`ra_*=2/5`), FLG/Fu-Liou-Gu (`ra_*=7`), RRTMG-K:
+  non-default builds + external aerosol/ozone data.
+- **Land surface** — CLM4 (`sf_surface_physics=5`), CTSM (`=6`), SSiB (`=8`): PFT mosaics /
+  external library coupling.
+- **Urban canopy** — SLUCM (`sf_urban_physics=1`), BEP (`=2`), BEM (`=3`).
+- **Lake model** (`sf_lake_physics`).
+- **WRF-Chem** (chemistry/aerosol-feedback coupling).
+- **DFI** (digital filter initialization).
+- **Nudging** — spectral and observation FDDA (`grid_fdda`, `obs_nudge`).
+
 The **binding proof contract** is [`publish/VERIFICATION.md`](publish/VERIFICATION.md) (11 rows)
 and the executed-outcome record is [`proofs/PROOF_TABLE.md`](proofs/PROOF_TABLE.md). Tally on the
 HFX-fix release HEAD: **9 PASS / 1 FAIL (comparator-harness gap, not a production defect) / 1
