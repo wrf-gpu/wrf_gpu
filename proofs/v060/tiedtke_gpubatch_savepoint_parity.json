@@ -1,0 +1,307 @@
+{
+  "batched_vs_single_max_abs": 1.1522900689175941e-15,
+  "cases": [
+    {
+      "case": 1,
+      "fields": {
+        "RQCCUTEN": {
+          "max_abs": 2.4742217242277883e-11,
+          "max_rel": 0.0006598507616639651,
+          "pass": true
+        },
+        "RQICUTEN": {
+          "max_abs": 1.7235627415095252e-10,
+          "max_rel": 0.0004586092034192104,
+          "pass": true
+        },
+        "RQVCUTEN": {
+          "max_abs": 1.5518801407449543e-09,
+          "max_rel": 0.0008180258286464722,
+          "pass": true
+        },
+        "RTHCUTEN": {
+          "max_abs": 8.159249180443844e-06,
+          "max_rel": 0.0013045384120191675,
+          "pass": true
+        },
+        "RUCUTEN": {
+          "max_abs": 1.3585661237042537e-06,
+          "max_rel": 0.0002901306633192446,
+          "pass": true
+        },
+        "RVCUTEN": {
+          "max_abs": 1.031414664197372e-06,
+          "max_rel": 0.0002804932553561607,
+          "pass": true
+        }
+      },
+      "ktype": {
+        "jax_batched": 1,
+        "jax_single": 1,
+        "oracle": 1,
+        "pass": true
+      },
+      "pass": true,
+      "rainc_acc": {
+        "jax": 0.377260659864437,
+        "max_abs": 0.00015982515524676222,
+        "oracle": 0.3774204850196838,
+        "pass": true,
+        "tolerance": 0.0002
+      },
+      "regime": "deep"
+    },
+    {
+      "case": 2,
+      "fields": {
+        "RQCCUTEN": {
+          "max_abs": 2.6990872552121515e-15,
+          "max_rel": 1.170018100497903e-05,
+          "pass": true
+        },
+        "RQICUTEN": {
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "pass": true
+        },
+        "RQVCUTEN": {
+          "max_abs": 5.018206053888294e-12,
+          "max_rel": 0.00038507929116960495,
+          "pass": true
+        },
+        "RTHCUTEN": {
+          "max_abs": 4.709168521111127e-08,
+          "max_rel": 0.004233579947631926,
+          "pass": true
+        },
+        "RUCUTEN": {
+          "max_abs": 3.360949502246227e-11,
+          "max_rel": 0.00011264958365334646,
+          "pass": true
+        },
+        "RVCUTEN": {
+          "max_abs": 1.7911495003284956e-10,
+          "max_rel": 0.00015242598950209103,
+          "pass": true
+        }
+      },
+      "ktype": {
+        "jax_batched": 2,
+        "jax_single": 2,
+        "oracle": 2,
+        "pass": true
+      },
+      "pass": true,
+      "rainc_acc": {
+        "jax": 0.0,
+        "max_abs": 0.0,
+        "oracle": 0.0,
+        "pass": true,
+        "tolerance": 0.0002
+      },
+      "regime": "shallow"
+    },
+    {
+      "case": 3,
+      "fields": {
+        "RQCCUTEN": {
+          "max_abs": 4.089741532701872e-11,
+          "max_rel": 0.0005482337764487777,
+          "pass": true
+        },
+        "RQICUTEN": {
+          "max_abs": 7.214588068140932e-11,
+          "max_rel": 0.0004037963024481959,
+          "pass": true
+        },
+        "RQVCUTEN": {
+          "max_abs": 1.9287610142127597e-09,
+          "max_rel": 0.0006714349821773324,
+          "pass": true
+        },
+        "RTHCUTEN": {
+          "max_abs": 1.9619290116647953e-05,
+          "max_rel": 0.0011873750742845805,
+          "pass": true
+        },
+        "RUCUTEN": {
+          "max_abs": 4.624301887848597e-07,
+          "max_rel": 5.053630154077047e-05,
+          "pass": true
+        },
+        "RVCUTEN": {
+          "max_abs": 1.7015173269159002e-07,
+          "max_rel": 4.8521080341263636e-05,
+          "pass": true
+        }
+      },
+      "ktype": {
+        "jax_batched": 1,
+        "jax_single": 1,
+        "oracle": 1,
+        "pass": true
+      },
+      "pass": true,
+      "rainc_acc": {
+        "jax": 0.5476412914667835,
+        "max_abs": 0.00017689243214225048,
+        "oracle": 0.5478181838989258,
+        "pass": true,
+        "tolerance": 0.0002739090919494629
+      },
+      "regime": "deep"
+    },
+    {
+      "case": 4,
+      "fields": {
+        "RQCCUTEN": {
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "pass": true
+        },
+        "RQICUTEN": {
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "pass": true
+        },
+        "RQVCUTEN": {
+          "max_abs": 3.44934280790965e-12,
+          "max_rel": 0.0344934280790965,
+          "pass": true
+        },
+        "RTHCUTEN": {
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "pass": true
+        },
+        "RUCUTEN": {
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "pass": true
+        },
+        "RVCUTEN": {
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "pass": true
+        }
+      },
+      "ktype": {
+        "jax_batched": 0,
+        "jax_single": 0,
+        "oracle": 0,
+        "pass": true
+      },
+      "pass": true,
+      "rainc_acc": {
+        "jax": 0.0,
+        "max_abs": 0.0,
+        "oracle": 0.0,
+        "pass": true,
+        "tolerance": 0.0002
+      },
+      "regime": "non_triggering"
+    },
+    {
+      "case": 5,
+      "fields": {
+        "RQCCUTEN": {
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "pass": true
+        },
+        "RQICUTEN": {
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "pass": true
+        },
+        "RQVCUTEN": {
+          "max_abs": 8.623357035836379e-13,
+          "max_rel": 0.008623357035836379,
+          "pass": true
+        },
+        "RTHCUTEN": {
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "pass": true
+        },
+        "RUCUTEN": {
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "pass": true
+        },
+        "RVCUTEN": {
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "pass": true
+        }
+      },
+      "ktype": {
+        "jax_batched": 0,
+        "jax_single": 0,
+        "oracle": 0,
+        "pass": true
+      },
+      "pass": true,
+      "rainc_acc": {
+        "jax": 0.0,
+        "max_abs": 0.0,
+        "oracle": 0.0,
+        "pass": true,
+        "tolerance": 0.0002
+      },
+      "regime": "non_triggering"
+    }
+  ],
+  "created_utc": "2026-06-03T22:35:41.488445+00:00",
+  "elapsed_seconds": 9.1672063349979,
+  "failures": [],
+  "files": {
+    "proofs/v060/savepoints/tiedtke_case_1.json": "fcf0c8562b3c0306b8a53b3df51f5cd9f459057fdf8ab1e63186afe7e96057ac",
+    "proofs/v060/savepoints/tiedtke_case_2.json": "5bd61d474c37878a3f1d0a79f105e60b7d766055b700a959c716e10cc3752ffc",
+    "proofs/v060/savepoints/tiedtke_case_3.json": "3fb639f542410fc88ba2aa87a010809fe699fdb8df07d4cdf806412d1e97e41f",
+    "proofs/v060/savepoints/tiedtke_case_4.json": "69351450ca8629402460790ce33453847d159a99e8970dfb28e2cc15a28be751",
+    "proofs/v060/savepoints/tiedtke_case_5.json": "3e613818ce1a7b52043d6db5043fa01dc3f070bcb9242e30e269a943d410cea9"
+  },
+  "implementation": {
+    "gpu_performance_claim": false,
+    "gpu_runnable": true,
+    "jit_vmap_native_kernel": true,
+    "kernel_sha256": "4c42f9b8b0fe715fdb3b91cd5d234c0c6302089922ec61df315d52f62a798999",
+    "module": "src/gpuwrf/physics/cumulus_tiedtke_jax.py",
+    "path": "GPU-batched jit/vmap-traceable single-column kernel (lax.fori_loop + jnp.where)",
+    "scan_wired": true
+  },
+  "known_limitations": [
+    "The oracle is the real WRF module (module_cu_tiedtke.F), not a full wrf.exe run.",
+    "cu_physics=16 New Tiedtke shares this interface but is a distinct WRF source path not separately gated here.",
+    "No GPU profiler artifact is attached; gpu_performance_claim is False (the claim here is GPU-RUNNABILITY: jit/vmap-traceable, zero host transfer in the column)."
+  ],
+  "oracle": {
+    "full_wrf_exe": false,
+    "full_wrf_exe_note": "module-level WRF oracle, not a full real.exe/wrf.exe integration run",
+    "generation_command": "taskset -c 0-3 proofs/v060/oracle/tiedtke_build_and_run.sh",
+    "savepoint_reused_from": "the CPU-reference Tiedtke lane (bit-identical gold; not regenerated)",
+    "source": "single-column Fortran driver linked against pristine WRF module_cu_tiedtke.F",
+    "unmodified_wrf_module": true,
+    "wrf_constants_sha256": "5b80377fecdc18a5f0ad38d3b6c15cfc86ad5d76701adbbbb08a08698d0f7062",
+    "wrf_constants_source": "/home/enric/src/wrf_pristine/WRF/share/module_model_constants.F",
+    "wrf_tiedtke_sha256": "3514aaaaf6084edc0f6a6b2097e34607562f0b6f12934cc3c675a9e651566999",
+    "wrf_tiedtke_source": "/home/enric/src/wrf_pristine/WRF/phys/module_cu_tiedtke.F"
+  },
+  "platform": "cpu",
+  "predeclared_tolerances": {
+    "batched_vs_single_abs": 1e-12,
+    "categorical": "exact KTYPE (oracle == jax_single == jax_batched)",
+    "momentum_abs_floor": 1e-10,
+    "momentum_max_relative": 0.005,
+    "note": "tendency gate held at the WRF-faithful REAL*4-vs-fp64 floor (5e-3; shallow RTHCUTEN floor ~4.2e-3 at ~5e-8 abs); RAINCV gate TIGHTENED 2x (1e-3 -> 5e-4); NEW bit-level batched-vs-single invariant (1e-12) proves the vmap device-batch path is the same computation. Kernel reproduces the validated CPU reference to machine precision (~1e-15).",
+    "raincv_abs": 0.0002,
+    "raincv_max_relative": 0.0005,
+    "tendency_abs_floor": 1e-10,
+    "tendency_max_relative": 0.005
+  },
+  "schema": "wrf-v060-tiedtke-gpubatch-savepoint-parity-report-v1",
+  "scheme": "modified Tiedtke cumulus (cu_physics=6), GPU-batched jit/vmap kernel",
+  "verdict": "PASS",
+  "worst_field_relative_residual_vs_oracle": 0.004233579947631926
+}
