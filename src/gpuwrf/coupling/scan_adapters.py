@@ -79,6 +79,7 @@ from gpuwrf.physics.microphysics_morrison import morrison_tendency
 from gpuwrf.physics.microphysics_wdm6 import wdm6_physics_tendency
 from gpuwrf.physics.microphysics_wsm6 import wsm6_physics_tendency
 from gpuwrf.physics.cumulus_kf import step_kf_column
+from gpuwrf.physics.cumulus_tiedtke_jax import tiedtke_column_jax
 from gpuwrf.physics.pbl_acm2 import acm2_columns
 from gpuwrf.physics.pbl_ysu import ysu_columns
 from gpuwrf.physics.sfclay_pleim_xiu import step_pxsfclay_column
@@ -385,6 +386,123 @@ def initial_kf_carry(state: State):
     return (w0avg, nca)
 
 
+def tiedtke_adapter(state: State, dt: float, grid=None, *, stepcu: int = 1) -> State:
+    """cu=6 modified-Tiedtke cumulus ``State -> State`` scan adapter.
+
+    Tiedtke is a per-column kernel (``cumulus_tiedtke_jax.tiedtke_column_jax``); the
+    adapter vmaps it over the ``(ny*nx)`` grid columns. Unlike KF, modified-Tiedtke
+    carries NO persistent cumulus state, so this is a plain ``State -> State``
+    adapter (like the microphysics adapters).
+
+    Tendencies are applied ``state += dt*tend`` (WRF ``RTHCUTEN``/``RQ*CUTEN`` are
+    rates over the cumulus step); ``RAINCV`` (mm/step) accumulates into
+    ``rainc_acc``. The cumulus call cadence ``stepcu`` defaults to 1 in the
+    operational scan (the cumulus slot is invoked every dynamics step here; the
+    savepoint oracle uses WRF's STEPCU=5 -- the kernel multiplies dt by stepcu
+    internally, so ``stepcu=1, dt=dt`` is the every-step coupling).
+
+    The Tiedtke-specific inputs not in the frozen B2 contract are assembled here,
+    pure-``jnp``, no host transfer:
+      * ``P8W`` interface pressure (nz+1): interior faces = mean of adjacent
+        levels, edges by zero-gradient (same assembler the YSU/ACM2 adapter uses).
+      * ``ZNU`` eta at mass levels: WRF eta relation ``(p - p_top)/(p_sfc - p_top)``
+        per column (used only by the below-cloud rain-evaporation coefficient).
+      * ``QVFTEN`` / ``QVPBLTEN`` advective / PBL moisture forcing: zero in the
+        per-slot scan (no separate forcing tracked into the cumulus slot here;
+        WRF folds them into the moisture budget -- documented carry-over).
+      * ``QFX`` surface moisture flux from the B2 kinematic ``qv_flux`` handle.
+    """
+
+    nz, ny, nx = state.theta.shape
+    rho = _rho_from_state(state)
+    T = _temperature_from_theta(state.theta, state.p)
+    pii = _exner_columns(state.p)
+    interface_z = state.ph.astype(jnp.float64) / GRAVITY_M_S2
+    dz_full = jnp.maximum(interface_z[1:] - interface_z[:-1], 1.0)  # (nz, ny, nx)
+    w_mass = _w_mass(state)
+
+    p = state.p.astype(jnp.float64)
+    p_int_interior = 0.5 * (p[:-1] + p[1:])  # (nz-1, ny, nx)
+    p8w = jnp.concatenate([p[:1], p_int_interior, p[-1:]], axis=0)  # (nz+1, ny, nx)
+    # eta-coordinate proxy (mass levels): (p - p_top)/(p_sfc - p_top), clipped [0,1].
+    p_top = jnp.maximum(p8w[-1], 1.0)
+    p_sfc = jnp.maximum(p8w[0], p_top + 1.0)
+    znu = jnp.clip((p - p_top) / (p_sfc - p_top), 0.0, 1.0)  # (nz, ny, nx)
+
+    # W on (nz+1) interfaces: vertical velocity at faces (state.w is C-grid w).
+    w_int = jnp.asarray(state.w, jnp.float64)
+    if w_int.shape[0] == nz:  # mass-level w fallback: pad a top face
+        w_int = jnp.concatenate([w_int, w_int[-1:]], axis=0)
+
+    qv_flux = jnp.asarray(state.qv_flux, jnp.float64)  # kg kg^-1 m s^-1 (kinematic)
+    rhosfc = jnp.asarray(state.rhosfc, jnp.float64)
+    qfx_2d = qv_flux * rhosfc  # kg m^-2 s^-1
+    xland_2d = jnp.asarray(state.xland, jnp.float64)
+
+    def _cols(field3d):  # (nz, ny, nx) -> (ncol, nz)
+        return jnp.moveaxis(field3d, 0, -1).reshape(ny * nx, nz)
+
+    def _cols1(field3d):  # (nz+1, ny, nx) -> (ncol, nz+1)
+        return jnp.moveaxis(field3d, 0, -1).reshape(ny * nx, nz + 1)
+
+    T_c = _cols(T)
+    qv_c = _cols(jnp.maximum(state.qv, 0.0))
+    qc_c = _cols(jnp.maximum(state.qc, 0.0))
+    qi_c = _cols(jnp.maximum(state.qi, 0.0))
+    p_c = _cols(p)
+    p8w_c = _cols1(p8w)
+    dz_c = _cols(dz_full)
+    rho_c = _cols(rho)
+    pii_c = _cols(pii)
+    u_c = _cols(_u_mass(state))
+    v_c = _cols(_v_mass(state))
+    w_c = _cols1(w_int)
+    zero_c = jnp.zeros_like(T_c)
+    znu_c = _cols(znu)
+    qfx_c = qfx_2d.reshape(ny * nx)
+    xland_c = xland_2d.reshape(ny * nx)
+    dt_f = float(dt)
+
+    def _one(T0, QV0, QC0, QI0, P0, P8W0, DZ0, RHO0, PI0, U0, V0, W0,
+             QVF0, QVB0, QFX0, XL0, ZNU0):
+        out = tiedtke_column_jax(
+            T0, QV0, QC0, QI0, P0, P8W0, DZ0, RHO0, PI0, U0, V0, W0,
+            QVF0, QVB0, QFX0, XL0, ZNU0, dt_f, stepcu=int(stepcu),
+        )
+        return (out["RTHCUTEN"], out["RQVCUTEN"], out["RQCCUTEN"], out["RQRCUTEN"],
+                out["RQICUTEN"], out["RQSCUTEN"], out["RUCUTEN"], out["RVCUTEN"],
+                out["RAINCV"])
+
+    (rth, rqv, rqc, rqr, rqi, rqs, ru, rv, raincv) = jax.vmap(_one)(
+        T_c, qv_c, qc_c, qi_c, p_c, p8w_c, dz_c, rho_c, pii_c, u_c, v_c, w_c,
+        zero_c, zero_c, qfx_c, xland_c, znu_c,
+    )
+
+    def _back(field2d):  # (ncol, nz) -> (nz, ny, nx)
+        return jnp.moveaxis(field2d.reshape(ny, nx, nz), -1, 0)
+
+    # Momentum increment from RUCUTEN/RVCUTEN onto C-grid faces (A2C, like PBL).
+    du_mass = dt_f * _back(ru)
+    dv_mass = dt_f * _back(rv)
+    u_new = _add_a2c_u_increment(state.u, du_mass).astype(_output_dtype(state, "u"))
+    v_new = _add_a2c_v_increment(state.v, dv_mass).astype(_output_dtype(state, "v"))
+
+    next_state = state.replace(
+        u=u_new,
+        v=v_new,
+        theta=(state.theta + dt_f * _back(rth)).astype(_output_dtype(state, "theta")),
+        qv=(state.qv + dt_f * _back(rqv)).astype(_output_dtype(state, "qv")),
+        qc=(state.qc + dt_f * _back(rqc)).astype(_output_dtype(state, "qc")),
+        qr=(state.qr + dt_f * _back(rqr)).astype(_output_dtype(state, "qr")),
+        qi=(state.qi + dt_f * _back(rqi)).astype(_output_dtype(state, "qi")),
+        qs=(state.qs + dt_f * _back(rqs)).astype(_output_dtype(state, "qs")),
+        rainc_acc=(
+            jnp.asarray(state.rainc_acc, jnp.float64) + raincv.reshape(ny, nx)
+        ).astype(_output_dtype(state, "rainc_acc")),
+    )
+    return next_state
+
+
 # --- PBL adapters (bl_pbl_physics) --------------------------------------------
 #
 # YSU (1) / ACM2 (7) are the v0.6.0 ``jax.lax.scan``-traceable / vmap-batched PBL
@@ -542,10 +660,20 @@ SFCLAY_SCAN_ADAPTERS = {
     7: pleim_xiu_sfclay_adapter,
 }
 
-# Cumulus options whose adapter is threaded (cu=0 = no cumulus; GF/Tiedtke are
-# CPU-reference, not in the GPU scan).
+# Cumulus options whose adapter is threaded (cu=0 = no cumulus). KF (1) is the
+# carry-threaded ``(State, carry) -> (State, carry)`` adapter; Tiedtke (6) is the
+# v0.6.0 GPU-batched (jit/vmap) ``State -> State`` adapter (no persistent carry).
+# Grell-Freitas (3) remains a CPU-NumPy reference (gpu_runnable=False; see
+# _SCAN_UNWIRED_REASON) -- its faithful closure ensemble is not yet vmap-rewritten.
 CU_SCAN_ADAPTERS = {
     1: kf_adapter,
+    6: tiedtke_adapter,
+}
+
+# Cumulus options that carry NO persistent cumulus state (plain State->State, like
+# the microphysics adapters). KF (1) is excluded -- it threads (w0avg, nca).
+CU_STATELESS_SCAN_ADAPTERS = {
+    6: tiedtke_adapter,
 }
 
 # PBL options whose scan adapter is threaded (bl=5 MYNN is the existing
@@ -565,11 +693,13 @@ __all__ = [
     "sfclay_revised_mm5_adapter",
     "pleim_xiu_sfclay_adapter",
     "kf_adapter",
+    "tiedtke_adapter",
     "ysu_pbl_adapter",
     "acm2_pbl_adapter",
     "initial_kf_carry",
     "MP_SCAN_ADAPTERS",
     "SFCLAY_SCAN_ADAPTERS",
     "CU_SCAN_ADAPTERS",
+    "CU_STATELESS_SCAN_ADAPTERS",
     "PBL_SCAN_ADAPTERS",
 ]

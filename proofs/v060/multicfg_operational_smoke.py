@@ -236,9 +236,11 @@ SWEEP: tuple[Config, ...] = (
     # --- surface-layer coverage (sfclay 1/5/7 each >=1 config; fast bulk land) ---
     Config("sfclay_mynn", "Thompson + MYNN + MYNN-sfclay(5) + bulk land, no cumulus",
            8, 5, 5, 0, None, "RUN", covers=("sf5-MYNN-sfclay",)),
-    # --- cumulus coverage (KF + no-cumulus; fast bulk land) ---
+    # --- cumulus coverage (KF + Tiedtke + no-cumulus; fast bulk land) ---
     Config("cu_kf", "Thompson + MYNN + MYNN-sfclay + bulk land + KF(1) cumulus",
            8, 5, 5, 1, None, "RUN", covers=("cu1-KF",)),
+    Config("cu_tiedtke", "Thompson + MYNN + MYNN-sfclay + bulk land + Tiedtke(6) cumulus -- v0.6.0 GPU-batched jit/vmap adapter",
+           8, 5, 5, 6, None, "RUN", covers=("cu6-Tiedtke",)),
     Config("cu_none", "Thompson + MYNN + MYNN-sfclay + bulk land, cu=0 (resolved grid-scale)",
            8, 5, 5, 0, None, "RUN", covers=("cu0-none",)),
     # --- land-surface coverage (Noah-MP, Noah-classic, bulk) ---
@@ -256,10 +258,11 @@ SWEEP: tuple[Config, ...] = (
     Config("pbl_acm2", "ACM2(7) PBL -- v0.6.0 jax.lax.scan rewrite (pbl_acm2.acm2_columns) + Pleim-Xiu sfclay + bulk land",
            8, 7, 7, 0, None, "RUN", covers=("bl7-ACM2",)),
     # --- FAIL-CLOSED configs (coupler must REJECT loudly; honest integration finding) ---
+    # Tiedtke(6) is now GPU-batched + scan-wired -> moved to a RUN config above.
+    # Grell-Freitas(3) remains a CPU-NumPy reference (sequential 16-member closure
+    # ensemble + beta-PDF gamma; not vmap-rewritten) -> still fail-closed.
     Config("cu_grellfreitas_unwired", "Grell-Freitas(3) cumulus -- CPU-NumPy reference port (gpu_runnable=False)",
            8, 5, 5, 3, 4, "FAIL_CLOSED", covers=("cu3-GF",)),
-    Config("cu_tiedtke_unwired", "Tiedtke(6) cumulus -- CPU-NumPy reference port (gpu_runnable=False)",
-           8, 5, 5, 6, 4, "FAIL_CLOSED", covers=("cu6-Tiedtke",)),
 )
 
 
@@ -768,21 +771,23 @@ def run(*, steps: int = 8) -> dict[str, Any]:
         "sweep_rationale": (
             "COVERING set (NOT full cartesian product): every supported scheme appears in "
             ">=1 RUN config plus the real operational Canary config. Supported = mp{8,6,10,16,1} "
-            "x bl{5,1,7} x sfclay{1,5,7} x cu{1} x sf_surface{4,2} (GF/Tiedtke cumulus EXCLUDED "
+            "x bl{5,1,7} x sfclay{1,5,7} x cu{1,6} x sf_surface{4,2} (GF cumulus EXCLUDED "
             "= documented-TODO). v0.6.0 CONSOLIDATION coupler reality: the operational scan now "
             "threads MYNN(5) + YSU(1) + ACM2(7) PBL (YSU/ACM2 are the v0.6.0 jax.lax.scan-traceable "
-            "rewrites from the PBL-GPU-op lane, scan-wired via PBL_SCAN_ADAPTERS) and Noah-MP(4) + "
-            "Noah-classic(2) land -- so YSU/ACM2 are now RUN configs, not fail-closed. Only "
-            "GF(3)/Tiedtke(6,16) remain CPU-NumPy reference ports and stay FAIL-CLOSED in the "
-            "coupler, exercised here as fail-closed integration assertions (the coupler must reject "
-            "them loudly, never silently no-op)."
+            "rewrites from the PBL-GPU-op lane, scan-wired via PBL_SCAN_ADAPTERS), KF(1) + "
+            "modified-Tiedtke(6) cumulus (Tiedtke is the v0.6.0 GPU-batched jit/vmap adapter, "
+            "scan-wired via CU_SCAN_ADAPTERS), and Noah-MP(4) + Noah-classic(2) land -- so YSU/ACM2 "
+            "and Tiedtke are now RUN configs. Only GF(3) (and New-Tiedtke 16, not separately gated) "
+            "remain CPU-NumPy reference ports and stay FAIL-CLOSED in the coupler, exercised here as "
+            "fail-closed integration assertions (the coupler must reject them loudly, never silently "
+            "no-op)."
         ),
         "scheme_coverage": {
             "covered_by_run_configs": sorted(covered),
             "fail_closed_schemes": sorted(
                 s for r in fc_rows for s in r["covers"]
             ),
-            "excluded_documented_todo": ["cu_physics=3 Grell-Freitas", "cu_physics=6/16 Tiedtke (GPU-batching TODO)"],
+            "excluded_documented_todo": ["cu_physics=3 Grell-Freitas (sequential closure ensemble; GPU-batching TODO)", "cu_physics=16 New Tiedtke (not separately savepoint-gated)"],
         },
         "n_configs": len(rows),
         "n_run_configs": len(run_rows),
