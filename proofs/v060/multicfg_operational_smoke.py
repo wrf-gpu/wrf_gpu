@@ -239,6 +239,8 @@ SWEEP: tuple[Config, ...] = (
            3, 5, 5, 0, None, "RUN", covers=("mp3-WSM3",)),
     Config("mp_wsm5", "WSM5(4) + MYNN + MYNN-sfclay + bulk land, no cumulus",
            4, 5, 5, 0, None, "RUN", covers=("mp4-WSM5",)),
+    Config("mp_lin", "Purdue-Lin(2) single-moment ice/graupel + MYNN + MYNN-sfclay + bulk land, no cumulus",
+           2, 5, 5, 0, None, "RUN", covers=("mp2-Lin",)),
     # --- surface-layer coverage (sfclay 1/5/7 each >=1 config; fast bulk land) ---
     Config("sfclay_mynn", "Thompson + MYNN + MYNN-sfclay(5) + bulk land, no cumulus",
            8, 5, 5, 0, None, "RUN", covers=("sf5-MYNN-sfclay",)),
@@ -263,6 +265,8 @@ SWEEP: tuple[Config, ...] = (
            8, 1, 1, 0, None, "RUN", covers=("bl1-YSU",)),
     Config("pbl_acm2", "ACM2(7) PBL -- v0.6.0 jax.lax.scan rewrite (pbl_acm2.acm2_columns) + Pleim-Xiu sfclay + bulk land",
            8, 7, 7, 0, None, "RUN", covers=("bl7-ACM2",)),
+    Config("pbl_boulac", "BouLac(8) PBL -- v0.6.0 jax.lax.scan rewrite (pbl_boulac.boulac_columns) + revised-MM5 sfclay + bulk land",
+           8, 8, 1, 0, None, "RUN", covers=("bl8-BouLac",)),
     # --- FAIL-CLOSED configs (coupler must REJECT loudly; honest integration finding) ---
     # Tiedtke(6) is now GPU-batched + scan-wired -> moved to a RUN config above.
     # Grell-Freitas(3) remains a CPU-NumPy reference (sequential 16-member closure
