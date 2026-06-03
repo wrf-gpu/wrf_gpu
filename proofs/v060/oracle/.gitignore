@@ -1,11 +1,12 @@
-# v0.6.0 per-scheme WRF savepoint oracle build scratch (union across lanes).
+# v0.6.0 per-scheme WRF savepoint oracle build scratch (union across all lanes).
 # Compiled Fortran oracle artifacts and intermediate column dumps are not
 # committed; the extracted savepoint JSON under proofs/v060/savepoints* is.
 build/
 *.o
 *.mod
-*.exe
 *.smod
+*.exe
+fort.*
 _wrfstubs.*
 _modstubs.*
 case_*.txt
@@ -22,6 +23,10 @@ sfclayrev_oracle
 pxsfclay_oracle
 noahclassic_columns.in
 noahclassic_savepoints.out
+# Verbatim copies of pristine WRF physics source vendored at build time only
+# (provenance recorded in the per-scheme v060 reports; not committed here).
+module_cu_kfeta.F
+module_*.F
 # Land/soil parameter tables copied next to the offline driver at build time
 VEGPARM.TBL
 SOILPARM.TBL

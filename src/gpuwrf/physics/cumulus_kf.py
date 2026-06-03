@@ -36,9 +36,13 @@ from __future__ import annotations
 from functools import partial
 
 import jax
+from jax import config
 import jax.numpy as jnp
 
+from gpuwrf.contracts.physics_interfaces import PhysicsCarry, PhysicsDiagnostics, PhysicsStepResult, PhysicsTendency
 from gpuwrf.physics import cumulus_kf_tables as _T
+
+config.update("jax_enable_x64", True)
 
 # ----------------------------------------------------------------------------
 # Constants (DATA statements + WRF model constants used by KF_eta_PARA).
@@ -63,6 +67,13 @@ _MAX_NSTEP = 200      # advection-substep cap (NSTEP=NINT(TIMEC/DTT+1); bounded)
 
 def _safe(x, eps=1e-30):
     return jnp.where(jnp.abs(x) < eps, jnp.sign(x) * eps + (x == 0) * eps, x)
+
+
+def _collapse_w_to_mass_levels(w, kx):
+    """Return WRF's mass-level W0 = 0.5 * (w(k) + w(k+1))."""
+
+    w = jnp.asarray(w, jnp.float64)
+    return 0.5 * (w[:kx] + w[1 : kx + 1])
 
 
 # ----------------------------------------------------------------------------
@@ -686,6 +697,114 @@ def kf_eta_para(T0, QV0, P0, DZQ, RHOE, W0A, U0, V0, dt, dx,
     return out
 
 
+def update_w0avg(w0avg, w, dt, *, stepcu=5, cudt=0.0, adapt_step_flag=False):
+    """WRF ``KF_eta_CPS`` running-mean vertical velocity recurrence.
+
+    ``w`` may be a full-level column of length ``KX+1`` or an already collapsed
+    mass-level ``W0`` column of length ``KX``. ``cudt`` is WRF namelist minutes.
+    """
+
+    w0avg = jnp.asarray(w0avg, jnp.float64)
+    kx = int(w0avg.shape[0])
+    w_arr = jnp.asarray(w, jnp.float64)
+    if w_arr.shape[0] == kx + 1:
+        w0 = _collapse_w_to_mass_levels(w_arr, kx)
+    elif w_arr.shape[0] == kx:
+        w0 = w_arr
+    else:
+        raise ValueError(f"w must have length KX or KX+1, got {w_arr.shape[0]} for KX={kx}")
+
+    if adapt_step_flag:
+        window = 2.0 * max(float(cudt) * 60.0, float(dt))
+        return (w0avg * (window - float(dt)) + w0 * float(dt)) / window
+
+    tst = float(int(stepcu) * 2)
+    return (w0avg * (tst - 1.0) + w0) / tst
+
+
+def step_kf_column(
+    T0,
+    QV0,
+    P0,
+    DZQ,
+    RHOE,
+    w0avg,
+    U0,
+    V0,
+    dt,
+    dx,
+    *,
+    w=None,
+    nca=-100.0,
+    stepcu=5,
+    cudt=0.0,
+    adapt_step_flag=False,
+    warm_rain=False,
+    f_qi=True,
+    f_qs=True,
+):
+    """Run one v0.6.0 KF column and return the frozen physics interface object.
+
+    The savepoint replay path passes ``w=None`` because the oracle stores the
+    ``W0AVG`` column after WRF's CPS recurrence. Production coupling should pass
+    full-level ``w`` so this function updates the carry before the trigger gate.
+    """
+
+    w0avg_in = jnp.asarray(w0avg, jnp.float64)
+    kx = int(w0avg_in.shape[0])
+    w0avg_call = (
+        w0avg_in
+        if w is None
+        else update_w0avg(w0avg_in, w, dt, stepcu=stepcu, cudt=cudt, adapt_step_flag=adapt_step_flag)
+    )
+    nca_in = jnp.asarray(nca, jnp.float64)
+
+    def run(_):
+        return kf_eta_para(T0, QV0, P0, DZQ, RHOE, w0avg_call, U0, V0, dt, dx, kx, warm_rain, f_qi, f_qs)
+
+    def skip(_):
+        return _empty_col(kx, nca_in)
+
+    out = jax.lax.cond(nca_in < 0.5 * float(dt), run, skip, operand=None)
+    zeros = jnp.zeros_like(out["RTHCUTEN"])
+    state_tendencies = {
+        "u": zeros,
+        "v": zeros,
+        "theta": out["RTHCUTEN"],
+        "qv": out["RQVCUTEN"],
+        "qc": out["RQCCUTEN"],
+        "qr": out["RQRCUTEN"],
+        "qi": out["RQICUTEN"],
+        "qs": out["RQSCUTEN"],
+    }
+    cumulus_diagnostics = {
+        "rucuten": zeros,
+        "rvcuten": zeros,
+        "rthcuten": out["RTHCUTEN"],
+        "rqvcuten": out["RQVCUTEN"],
+        "rqccuten": out["RQCCUTEN"],
+        "rqrcuten": out["RQRCUTEN"],
+        "rqicuten": out["RQICUTEN"],
+        "rqscuten": out["RQSCUTEN"],
+        "raincv": out["RAINCV"],
+        "pratec": out["PRATEC"],
+        "cutop": out["CUTOP"],
+        "cubot": out["CUBOT"],
+        "ishall": out["ISHALL"],
+        "timec": out["TIMEC"],
+    }
+    tendency = PhysicsTendency(
+        state_tendencies=state_tendencies,
+        accumulator_increments={"rainc_acc": out["RAINCV"]},
+    )
+    tendency.validate_keys()
+    return PhysicsStepResult(
+        tendency=tendency,
+        carry=PhysicsCarry(cumulus={"w0avg": w0avg_call, "nca": out["NCA"]}),
+        diagnostics=PhysicsDiagnostics(cumulus=cumulus_diagnostics),
+    )
+
+
 def _closure_feedback(S, ISHALL, lev, idx, Z0, DZA, DP, T0p, Q0, TV0, P0p,
                       QES, RH, U0p, V0p, dt, dx, DXSQ, KX, KL, L5,
                       aliq, bliq, cliq, dliq, alu, warm_rain, f_qi, f_qs):
@@ -1133,6 +1252,34 @@ def _kf_closure_iter(UMF, UER, UDR, DMF, DER, DDR, DETLQ, DETIC, PPTLIQ, PPTICE,
         THPA, QPA = jax.lax.fori_loop(0, _MAX_NSTEP, substep, (THPA0, QPA0))
         THTAG = jnp.where(inLT, THPA, 0.0)
         QG = jnp.where(inLT, QPA, 0.0)
+        KLCL_borrow = c["KLCL"]
+
+        def borrow_body(nk, qg):
+            needs_borrow = (nk <= LTOP) & (qg[nk] < 0.0)
+
+            def borrow(qg_in):
+                def surface_fatal(qg_surface):
+                    return qg_surface.at[nk].set(jnp.nan)
+
+                def adjacent_borrow(qg_adj):
+                    nk1 = jnp.where(nk == LTOP, KLCL_borrow, nk + 1)
+                    tma = qg_adj[nk1] * EMS[nk1]
+                    tmb = qg_adj[nk - 1] * EMS[nk - 1]
+                    tmm = (qg_adj[nk] - 1.0e-9) * EMS[nk]
+                    bcoeff = -tmm / ((tma * tma) / tmb + tmb)
+                    acoeff = bcoeff * tma / tmb
+                    tmb = tmb * (1.0 - bcoeff)
+                    tma = tma * (1.0 - acoeff)
+                    qg_adj = qg_adj.at[nk].set(1.0e-9)
+                    qg_adj = qg_adj.at[nk1].set(tma * EMSD[nk1])
+                    qg_adj = qg_adj.at[nk - 1].set(tmb * EMSD[nk - 1])
+                    return qg_adj
+
+                return jax.lax.cond(nk == 1, surface_fatal, adjacent_borrow, qg_in)
+
+            return jax.lax.cond(needs_borrow, borrow, lambda qg_in: qg_in, qg)
+
+        QG = jax.lax.fori_loop(1, KX + 1, borrow_body, QG)
         EXN = (_P00 / P0p) ** (0.2854 * (1.0 - 0.28 * QG))
         TG = jnp.where(inLT, THTAG / jnp.where(EXN != 0, EXN, 1.0), 0.0)
         TVG = jnp.where(inLT, TG * (1.0 + 0.608 * QG), 0.0)
@@ -1140,9 +1287,6 @@ def _kf_closure_iter(UMF, UER, UDR, DMF, DER, DDR, DETLQ, DETIC, PPTLIQ, PPTICE,
 
     def body(c):
         DOMGDP, OMG, FXM, NSTEP, DTIME, THTAG, QG, TG, TVG = adv_and_cape(c)
-        # (the moisture-borrow fixup is omitted for the supported soundings where
-        #  QG stays positive; reference asserts QG>=0; we keep QG as advected. The
-        #  fixup would only engage on a negative-QG column.)
         # new mixed-layer / CAPE
         msk = lev & (idx >= LC) & (idx <= KPBL)
         TMIX = jnp.sum(jnp.where(msk, DP * TG, 0.0)) / DPTHMX
