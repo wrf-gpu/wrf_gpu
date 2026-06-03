@@ -1413,4 +1413,46 @@ def tiedtke_column_jax(T, QV, QC, QI, P, P8W, DZ, RHO, PI, U, V, W,
     }
 
 
-__all__ = ["tiedtke_column_jax"]
+def step_tiedtke_column_jax(T, QV, QC, QI, P, P8W, DZ, RHO, PI, U, V, W,
+                            QVFTEN, QVPBLTEN, QFX, XLAND, ZNU, dt, *, stepcu=5):
+    """Return the frozen v0.6.0 ``PhysicsStepResult`` for one column (JAX kernel).
+
+    Mirrors ``cumulus_tiedtke.step_tiedtke_column`` but uses the jit/vmap-traceable
+    :func:`tiedtke_column_jax`. Imported lazily by the contract so that
+    ``physics_interfaces`` need not pull JAX.
+    """
+
+    from gpuwrf.contracts.physics_interfaces import (
+        PhysicsCarry, PhysicsDiagnostics, PhysicsStepResult, PhysicsTendency,
+    )
+
+    out = tiedtke_column_jax(T, QV, QC, QI, P, P8W, DZ, RHO, PI, U, V, W,
+                             QVFTEN, QVPBLTEN, QFX, XLAND, ZNU, dt, stepcu=stepcu)
+    state_tendencies = {
+        "theta": out["RTHCUTEN"],
+        "qv": out["RQVCUTEN"],
+        "qc": out["RQCCUTEN"],
+        "qr": out["RQRCUTEN"],
+        "qi": out["RQICUTEN"],
+        "qs": out["RQSCUTEN"],
+    }
+    diagnostics = {
+        "rthcuten": out["RTHCUTEN"], "rqvcuten": out["RQVCUTEN"],
+        "rqccuten": out["RQCCUTEN"], "rqrcuten": out["RQRCUTEN"],
+        "rqicuten": out["RQICUTEN"], "rqscuten": out["RQSCUTEN"],
+        "rucuten": out["RUCUTEN"], "rvcuten": out["RVCUTEN"],
+        "raincv": out["RAINCV"], "pratec": out["PRATEC"], "ktype": out["KTYPE"],
+    }
+    tendency = PhysicsTendency(
+        state_tendencies=state_tendencies,
+        accumulator_increments={"rainc_acc": out["RAINCV"]},
+    )
+    tendency.validate_keys()
+    return PhysicsStepResult(
+        tendency=tendency,
+        carry=PhysicsCarry(cumulus={}),
+        diagnostics=PhysicsDiagnostics(cumulus=diagnostics),
+    )
+
+
+__all__ = ["tiedtke_column_jax", "step_tiedtke_column_jax"]
