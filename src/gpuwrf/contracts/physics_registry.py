@@ -113,7 +113,7 @@ RA_SW_SCHEMES: Mapping[int, SchemeOption] = {
 
 RA_LW_SCHEMES: Mapping[int, SchemeOption] = {
     0: SchemeOption("ra_lw_physics", 0, "disabled", "none", "accepted", "radiation"),
-    1: SchemeOption("ra_lw_physics", 1, "RRTM longwave", "rrtmscheme", "oracle-only", "radiation"),
+    1: SchemeOption("ra_lw_physics", 1, "RRTM longwave", "rrtmscheme", "implemented", "radiation"),
     4: SchemeOption("ra_lw_physics", 4, "RRTMG longwave", "rrtmg_lwscheme", "accepted", "radiation"),
 }
 

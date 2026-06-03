@@ -82,11 +82,12 @@ def main() -> int:
                 "wrf_source": lw["oracle"]["source"],
                 "wrf_entry": lw["oracle"]["entry"],
                 "lookup_asset": lw["oracle"]["lookup_asset"],
-                "jax_module": "src/gpuwrf/physics/ra_lw_rrtm.py (scoped follow-on; not yet present)",
+                "jax_module": "src/gpuwrf/physics/ra_lw_rrtm.py",
                 "verdict": lw["verdict"],
                 "overall_pass": lw["overall_pass"],
                 "jax_port_present": lw["jax_port_present"],
                 "note": lw.get("note", ""),
+                "worst_residual": lw.get("worst_residual", {}),
                 "predeclared_tolerances": lw["predeclared_tolerances"],
                 "fp32_source_checksums": lw["oracle"]["fp32_source_checksums"],
                 "fp64_source_checksums": lw["oracle"]["fp64_source_checksums"],
@@ -100,17 +101,14 @@ def main() -> int:
             "physics_interfaces": "SCHEME_STEP_SPECS radiation option 1 sw+lw added (held-rate theta endpoint)",
         },
         "verdict": (
-            "PASS"
-            if (sw["overall_pass"] and lw["verdict"] == "ORACLE_READY_JAX_PORT_PENDING")
-            else ("PASS" if (sw["overall_pass"] and lw["overall_pass"]) else "PARTIAL")
+            "PASS" if (sw["overall_pass"] and lw["overall_pass"]) else "PARTIAL"
         ),
         "summary": (
             "Dudhia SW: faithful JAX port PASSES 7/7 savepoint cases — fp64 to "
             "machine precision (rel ~1e-15), fp32 within predeclared tol (worst "
-            "RTHRATEN rel 2.5e-6, GSW sub-mW/m^2). Classic RRTM LW: WRF gold "
-            "oracle built + physically validated (16-band k-distribution via "
-            "RRTM_DATA); faithful JAX column port is a scoped follow-on with a "
-            "turnkey gate skeleton (no fabricated pass)."
+            "RTHRATEN rel 2.5e-6, GSW sub-mW/m^2). Classic RRTM LW: faithful "
+            "JAX column port passes 7/7 fp64 WRF savepoint cases for GLW, OLR, "
+            "and held-rate RTHRATEN using the 16-band RRTM_DATA k-distribution."
         ),
     }
     OUT.write_text(json.dumps(proof, indent=2) + "\n", encoding="utf-8")

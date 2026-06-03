@@ -1,7 +1,7 @@
 {
   "title": "v0.6.0 classic radiation pair savepoint parity (Dudhia SW + RRTM LW)",
   "sprint": "worker/opus/v060-radiation",
-  "git_head": "e9982500e4a299ba0531893a080cb248283f6588",
+  "git_head": "c2937819b2d1ee178b6ce473a21c7b2c82cedafb",
   "oracle_rule": "Oracle = UNMODIFIED pristine WRF (/home/enric/src/wrf_pristine/WRF), conda env wrfbuild, standalone single-column drivers. No JAX self-compare. No mask/tolerance loosening. Tolerances predeclared before comparison.",
   "schemes": {
     "ra_sw_physics=1": {
@@ -207,11 +207,21 @@
       "wrf_source": "/home/enric/src/wrf_pristine/WRF/phys/module_ra_rrtm.F",
       "wrf_entry": "RRTMLWRAD -> RRTM (AER 16-band k-distribution LW)",
       "lookup_asset": "RRTM_DATA / RRTM_DATA_DBL (big-endian, frecord-marker=4)",
-      "jax_module": "src/gpuwrf/physics/ra_lw_rrtm.py (scoped follow-on; not yet present)",
-      "verdict": "ORACLE_READY_JAX_PORT_PENDING",
-      "overall_pass": false,
-      "jax_port_present": false,
-      "note": "WRF gold oracle built + physically validated (GLW/OLR/RTHRATEN sane across 7 clear/cloudy/cold/tropical columns). JAX column port src/gpuwrf/physics/ra_lw_rrtm.py is the scoped follow-on; this gate will compare against the gold savepoints once it lands. No pass is fabricated in its absence.",
+      "jax_module": "src/gpuwrf/physics/ra_lw_rrtm.py",
+      "verdict": "PASS",
+      "overall_pass": true,
+      "jax_port_present": true,
+      "note": "",
+      "worst_residual": {
+        "dataset": "savepoints_fp64",
+        "case_id": "1",
+        "case_label": "clearsky_warm_land",
+        "field": "RTHRATEN",
+        "metric": "max_rel",
+        "value": 7.201076159052527e-14,
+        "limit": 0.001,
+        "normalized_ratio": 7.201076159052526e-11
+      },
       "predeclared_tolerances": {
         "rthraten_abs": 1e-08,
         "rthraten_rel": 0.001,
@@ -304,5 +314,5 @@
     "physics_interfaces": "SCHEME_STEP_SPECS radiation option 1 sw+lw added (held-rate theta endpoint)"
   },
   "verdict": "PASS",
-  "summary": "Dudhia SW: faithful JAX port PASSES 7/7 savepoint cases \u2014 fp64 to machine precision (rel ~1e-15), fp32 within predeclared tol (worst RTHRATEN rel 2.5e-6, GSW sub-mW/m^2). Classic RRTM LW: WRF gold oracle built + physically validated (16-band k-distribution via RRTM_DATA); faithful JAX column port is a scoped follow-on with a turnkey gate skeleton (no fabricated pass)."
+  "summary": "Dudhia SW: faithful JAX port PASSES 7/7 savepoint cases \u2014 fp64 to machine precision (rel ~1e-15), fp32 within predeclared tol (worst RTHRATEN rel 2.5e-6, GSW sub-mW/m^2). Classic RRTM LW: faithful JAX column port passes 7/7 fp64 WRF savepoint cases for GLW, OLR, and held-rate RTHRATEN using the 16-band RRTM_DATA k-distribution."
 }
