@@ -1854,8 +1854,9 @@ def _noahmp_params(namelist: OperationalNamelist):
 _SCAN_WIRED_OPTIONS = {
     # mp=0 passive, 8 Thompson (existing couplers); 1/6/10/16 new scan adapters.
     "mp_physics": (0, 1, 6, 8, 10, 16),
-    # bl=0 off, 5 MYNN (existing); 1 YSU / 7 ACM2 wired (v0.6.0 jax.lax.scan rewrite).
-    "bl_pbl_physics": (0, 1, DEFAULT_BL_PBL_PHYSICS, 7),
+    # bl=0 off, 5 MYNN (existing); 1 YSU / 7 ACM2 / 8 BouLac wired
+    # (v0.6.0 jax.lax.scan rewrites).
+    "bl_pbl_physics": (0, 1, DEFAULT_BL_PBL_PHYSICS, 7, 8),
     # sf_sfclay=0 off, 5 MYNN-sfclay (existing); 1 revised-MM5 / 7 Pleim-Xiu wired.
     "sf_sfclay_physics": (0, 1, 5, 7),
     # cu=0 no cumulus, 1 KF (new scan adapter). GF(3)/Tiedtke(6,16) CPU-ref -> NOT wired.
@@ -1910,7 +1911,7 @@ def _resolve_operational_suite(namelist: OperationalNamelist):
     if not_wired:
         raise UnsupportedSchemeSelection(
             "operational scan supports the v0.2.0 suite + the v0.6.0 scan-wired "
-            "schemes (mp_physics in {0,1,6,8,10,16}, bl_pbl_physics in {0,1,5,7}, "
+            "schemes (mp_physics in {0,1,6,8,10,16}, bl_pbl_physics in {0,1,5,7,8}, "
             "sf_sfclay_physics in {0,1,5,7}, cu_physics in {0,1}, Noah-MP via "
             "use_noahmp, explicit Noah-classic via sf_surface_physics=2 plus "
             "noahclassic_static/noahclassic_land). The following selected schemes "

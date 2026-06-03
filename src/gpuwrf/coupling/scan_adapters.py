@@ -80,6 +80,7 @@ from gpuwrf.physics.microphysics_wdm6 import wdm6_physics_tendency
 from gpuwrf.physics.microphysics_wsm6 import wsm6_physics_tendency
 from gpuwrf.physics.cumulus_kf import step_kf_column
 from gpuwrf.physics.pbl_acm2 import acm2_columns
+from gpuwrf.physics.pbl_boulac import TEMIN as BOULAC_TKE_MIN, boulac_columns
 from gpuwrf.physics.pbl_ysu import ysu_columns
 from gpuwrf.physics.sfclay_pleim_xiu import step_pxsfclay_column
 from gpuwrf.physics.sfclay_revised_mm5 import step_sfclay_revised_mm5_column
@@ -523,6 +524,41 @@ def acm2_pbl_adapter(state: State, dt: float, grid=None) -> State:
     return _apply_pbl_increment(state, dt, out, ny=f["ny"], nx=f["nx"], nz=f["nz"])
 
 
+def boulac_pbl_adapter(state: State, dt: float, grid=None) -> State:
+    """bl_pbl=8 BouLac PBL ``State -> State`` scan adapter (jit/vmap-traceable kernel)."""
+
+    del grid
+    f = _pbl_surface_forcing(state, None)
+
+    def _cols(field3d):  # (nz, ny, nx) -> (ncol, nz)
+        return jnp.moveaxis(field3d, 0, -1).reshape(f["ncol"], f["nz"])
+
+    out = boulac_columns(
+        f["u_cols"],
+        f["v_cols"],
+        f["theta_cols"],
+        f["qv_cols"],
+        _cols(state.qc),
+        f["rho_cols"],
+        f["dz_cols"],
+        jnp.maximum(_cols(state.qke), BOULAC_TKE_MIN),
+        hfx=f["hfx"],
+        qfx=f["qfx"],
+        ust=f["ust"],
+        dt=float(dt),
+    )
+    next_state = _apply_pbl_increment(state, dt, out, ny=f["ny"], nx=f["nx"], nz=f["nz"])
+
+    def _back3d(field2d):  # (ncol, nz) -> (nz, ny, nx)
+        return jnp.moveaxis(field2d.reshape(f["ny"], f["nx"], f["nz"]), -1, 0)
+
+    dt_f = float(dt)
+    return next_state.replace(
+        qc=(state.qc + dt_f * _back3d(out["qc"])).astype(_output_dtype(state, "qc")),
+        qke=_back3d(out["tke"]).astype(_output_dtype(state, "qke")),
+    )
+
+
 # --- dispatch tables ----------------------------------------------------------
 
 # Microphysics options whose State->State scan adapter is threaded into the GPU
@@ -549,11 +585,12 @@ CU_SCAN_ADAPTERS = {
 }
 
 # PBL options whose scan adapter is threaded (bl=5 MYNN is the existing
-# physics_couplers.mynn_adapter; bl=0 disables). YSU(1)/ACM2(7) are the v0.6.0
-# jax.lax.scan-traceable rewrites -- GPU-operational.
+# physics_couplers.mynn_adapter; bl=0 disables). YSU(1)/ACM2(7)/BouLac(8) are
+# v0.6.0 jax.lax.scan-traceable rewrites -- GPU-operational.
 PBL_SCAN_ADAPTERS = {
     1: ysu_pbl_adapter,
     7: acm2_pbl_adapter,
+    8: boulac_pbl_adapter,
 }
 
 
@@ -567,6 +604,7 @@ __all__ = [
     "kf_adapter",
     "ysu_pbl_adapter",
     "acm2_pbl_adapter",
+    "boulac_pbl_adapter",
     "initial_kf_carry",
     "MP_SCAN_ADAPTERS",
     "SFCLAY_SCAN_ADAPTERS",

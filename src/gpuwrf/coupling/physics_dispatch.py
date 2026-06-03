@@ -117,8 +117,8 @@ _MP_ENTRIES: dict[int, SchemeEntry] = {
 
 # --- PBL (bl_pbl_physics) ------------------------------------------------------
 # bl=5 MYNN is wired through the EXISTING coupling.physics_couplers.mynn_adapter.
-# bl=1 YSU / bl=7 ACM2 are the v0.6.0 jax.lax.scan-traceable / vmap-batched
-# rewrites (physics.pbl_{ysu,acm2}.{ysu,acm2}_columns) -- GPU-operational and
+# bl=1 YSU / bl=7 ACM2 / bl=8 BouLac are the v0.6.0 jax.lax.scan-traceable /
+# vmap-batched rewrites (physics.pbl_{ysu,acm2,boulac}.*_columns) -- GPU-operational and
 # scan-wired via coupling.scan_adapters.PBL_SCAN_ADAPTERS. ``gpu_runnable=True`` is
 # now genuine (the host-NumPy single-column path was replaced; per-case savepoint
 # parity re-passes on the traceable path). The dispatcher entry point names the
@@ -135,6 +135,10 @@ _PBL_ENTRIES: dict[int, SchemeEntry] = {
     7: SchemeEntry("pbl", 7, PBL_SCHEMES[7].name, "gpuwrf.physics.pbl_acm2", "step_acm2_column",
                    "column_state", True,
                    reads_state=("u", "v", "theta", "qv"), writes_state=("u", "v", "theta", "qv")),
+    8: SchemeEntry("pbl", 8, PBL_SCHEMES[8].name, "gpuwrf.physics.pbl_boulac", "step_boulac_column",
+                   "column_state", True,
+                   reads_state=("u", "v", "theta", "qv", "qc", "qke"),
+                   writes_state=("u", "v", "theta", "qv", "qc", "qke"), carry_members=("qke",)),
 }
 
 # --- Surface layer (sf_sfclay_physics) -----------------------------------------
