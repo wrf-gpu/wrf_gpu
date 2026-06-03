@@ -1,0 +1,373 @@
+{
+  "cases": [
+    {
+      "case": 1,
+      "cubot": {
+        "jax": 3.0,
+        "oracle": 3.0,
+        "pass": true
+      },
+      "cutop": {
+        "jax": 32.0,
+        "oracle": 32.0,
+        "pass": true
+      },
+      "fields": {
+        "RQCCUTEN": {
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "pass": true
+        },
+        "RQICUTEN": {
+          "max_abs": 1.663366869210398e-12,
+          "max_rel": 4.0990585725639884e-05,
+          "pass": true
+        },
+        "RQRCUTEN": {
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "pass": true
+        },
+        "RQSCUTEN": {
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "pass": true
+        },
+        "RQVCUTEN": {
+          "max_abs": 1.8668696224298006e-11,
+          "max_rel": 2.784128983768309e-05,
+          "pass": true
+        },
+        "RTHCUTEN": {
+          "max_abs": 4.484752623760101e-08,
+          "max_rel": 2.6892221849809935e-05,
+          "pass": true
+        }
+      },
+      "nca": {
+        "jax": 3618.0,
+        "max_abs": 0.0,
+        "oracle": 3618.0,
+        "pass": true
+      },
+      "pass": true,
+      "rainc_acc": {
+        "max_abs": 1.8635959332657936e-06,
+        "pass": true,
+        "tolerance": 0.00028060837090015413
+      },
+      "regime": "deep",
+      "trigger": {
+        "jax_ishall": 0,
+        "oracle_ishall": 0,
+        "pass": true
+      },
+      "w0avg": {
+        "max_abs": 0.0,
+        "pass": true,
+        "tolerance": 1e-06
+      }
+    },
+    {
+      "case": 2,
+      "cubot": {
+        "jax": 4.0,
+        "oracle": 4.0,
+        "pass": true
+      },
+      "cutop": {
+        "jax": 11.0,
+        "oracle": 11.0,
+        "pass": true
+      },
+      "fields": {
+        "RQCCUTEN": {
+          "max_abs": 4.853283300831737e-13,
+          "max_rel": 5.502138971933253e-05,
+          "pass": true
+        },
+        "RQICUTEN": {
+          "max_abs": 2.7276722622556488e-14,
+          "max_rel": 2.7276722622556486e-05,
+          "pass": true
+        },
+        "RQRCUTEN": {
+          "max_abs": 2.361450356156703e-12,
+          "max_rel": 2.7243722611460005e-05,
+          "pass": true
+        },
+        "RQSCUTEN": {
+          "max_abs": 8.909688778864475e-15,
+          "max_rel": 6.905357919922617e-06,
+          "pass": true
+        },
+        "RQVCUTEN": {
+          "max_abs": 8.391883466360233e-13,
+          "max_rel": 3.0495611967931894e-06,
+          "pass": true
+        },
+        "RTHCUTEN": {
+          "max_abs": 1.817778880143419e-08,
+          "max_rel": 7.111410237117258e-05,
+          "pass": true
+        }
+      },
+      "nca": {
+        "jax": 0.0,
+        "max_abs": 0.0,
+        "oracle": 0.0,
+        "pass": true
+      },
+      "pass": true,
+      "rainc_acc": {
+        "max_abs": 0.0,
+        "pass": true,
+        "tolerance": 0.0001
+      },
+      "regime": "shallow",
+      "trigger": {
+        "jax_ishall": 1,
+        "oracle_ishall": 1,
+        "pass": true
+      },
+      "w0avg": {
+        "max_abs": 0.0,
+        "pass": true,
+        "tolerance": 1e-06
+      }
+    },
+    {
+      "case": 3,
+      "cubot": {
+        "jax": 3.0,
+        "oracle": 3.0,
+        "pass": true
+      },
+      "cutop": {
+        "jax": 33.0,
+        "oracle": 33.0,
+        "pass": true
+      },
+      "fields": {
+        "RQCCUTEN": {
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "pass": true
+        },
+        "RQICUTEN": {
+          "max_abs": 9.482720965802818e-13,
+          "max_rel": 1.1034655997545133e-05,
+          "pass": true
+        },
+        "RQRCUTEN": {
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "pass": true
+        },
+        "RQSCUTEN": {
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "pass": true
+        },
+        "RQVCUTEN": {
+          "max_abs": 9.038610404091805e-12,
+          "max_rel": 7.286564695236453e-06,
+          "pass": true
+        },
+        "RTHCUTEN": {
+          "max_abs": 7.988815768525219e-08,
+          "max_rel": 2.667135844191721e-05,
+          "pass": true
+        }
+      },
+      "nca": {
+        "jax": 2376.0,
+        "max_abs": 0.0,
+        "oracle": 2376.0,
+        "pass": true
+      },
+      "pass": true,
+      "rainc_acc": {
+        "max_abs": 1.6709634059752787e-06,
+        "pass": true,
+        "tolerance": 0.0005097443461418151
+      },
+      "regime": "deep",
+      "trigger": {
+        "jax_ishall": 0,
+        "oracle_ishall": 0,
+        "pass": true
+      },
+      "w0avg": {
+        "max_abs": 0.0,
+        "pass": true,
+        "tolerance": 1e-06
+      }
+    },
+    {
+      "case": 4,
+      "cubot": {
+        "jax": 4.0,
+        "oracle": 4.0,
+        "pass": true
+      },
+      "cutop": {
+        "jax": 11.0,
+        "oracle": 11.0,
+        "pass": true
+      },
+      "fields": {
+        "RQCCUTEN": {
+          "max_abs": 2.646748022719855e-13,
+          "max_rel": 2.0951395577319e-05,
+          "pass": true
+        },
+        "RQICUTEN": {
+          "max_abs": 3.480620294000271e-16,
+          "max_rel": 3.480620294000271e-07,
+          "pass": true
+        },
+        "RQRCUTEN": {
+          "max_abs": 8.369533098155993e-13,
+          "max_rel": 7.042922326708686e-06,
+          "pass": true
+        },
+        "RQSCUTEN": {
+          "max_abs": 9.021804818620423e-15,
+          "max_rel": 9.021804818620423e-06,
+          "pass": true
+        },
+        "RQVCUTEN": {
+          "max_abs": 6.291709221352094e-13,
+          "max_rel": 1.464600489145213e-06,
+          "pass": true
+        },
+        "RTHCUTEN": {
+          "max_abs": 1.5016999533039744e-08,
+          "max_rel": 4.1373838623611396e-05,
+          "pass": true
+        }
+      },
+      "nca": {
+        "jax": 0.0,
+        "max_abs": 0.0,
+        "oracle": 0.0,
+        "pass": true
+      },
+      "pass": true,
+      "rainc_acc": {
+        "max_abs": 0.0,
+        "pass": true,
+        "tolerance": 0.0001
+      },
+      "regime": "shallow",
+      "trigger": {
+        "jax_ishall": 1,
+        "oracle_ishall": 1,
+        "pass": true
+      },
+      "w0avg": {
+        "max_abs": 0.0,
+        "pass": true,
+        "tolerance": 1e-06
+      }
+    },
+    {
+      "case": 5,
+      "cubot": {
+        "jax": 41.0,
+        "oracle": 41.0,
+        "pass": true
+      },
+      "cutop": {
+        "jax": 1.0,
+        "oracle": 1.0,
+        "pass": true
+      },
+      "fields": {
+        "RQCCUTEN": {
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "pass": true
+        },
+        "RQICUTEN": {
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "pass": true
+        },
+        "RQRCUTEN": {
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "pass": true
+        },
+        "RQSCUTEN": {
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "pass": true
+        },
+        "RQVCUTEN": {
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "pass": true
+        },
+        "RTHCUTEN": {
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "pass": true
+        }
+      },
+      "nca": {
+        "jax": -100.0,
+        "max_abs": 0.0,
+        "oracle": -100.0,
+        "pass": true
+      },
+      "nontrigger_zero_outputs": {
+        "pass": true,
+        "tolerance": 1e-12
+      },
+      "pass": true,
+      "rainc_acc": {
+        "max_abs": 0.0,
+        "pass": true,
+        "tolerance": 0.0001
+      },
+      "regime": "none",
+      "trigger": {
+        "jax_ishall": 2,
+        "oracle_ishall": 2,
+        "pass": true
+      },
+      "w0avg": {
+        "max_abs": 0.0,
+        "pass": true,
+        "tolerance": 1e-06
+      }
+    }
+  ],
+  "oracle": {
+    "full_wrf_exe_run": false,
+    "generation_command": "taskset -c 0-3 bash proofs/v060/oracle/build_and_run.sh",
+    "note": "M20/current repo search did not expose a cumulus savepoint factory. This is a real WRF-module oracle, not a JAX self-compare, but not a full coupled wrf.exe case.",
+    "type": "single-column Fortran driver linked against unmodified WRF module_cu_kfeta.F",
+    "wrf_source": "/home/enric/src/wrf_pristine/WRF/phys/module_cu_kfeta.F"
+  },
+  "predeclared_tolerances": {
+    "cutop_cubot": "abs < 0.5 model level",
+    "nca_seconds_abs": 1e-06,
+    "nontrigger_zero_abs": 1e-12,
+    "rainc_acc_or_raincv_mm": {
+      "abs": 0.0001,
+      "rel": 0.003
+    },
+    "trigger": "exact ISHALL",
+    "triggered_tendencies": {
+      "abs": 1e-07,
+      "rel": 0.002,
+      "relative_floor": 1e-09
+    },
+    "w0avg_m_s_abs": 1e-06
+  },
+  "schema": "gpuwrf.v060.kf_savepoint_parity.v1",
+  "verdict": "PASS"
+}
