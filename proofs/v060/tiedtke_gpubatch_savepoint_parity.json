@@ -252,8 +252,8 @@
       "regime": "non_triggering"
     }
   ],
-  "created_utc": "2026-06-03T22:35:41.488445+00:00",
-  "elapsed_seconds": 9.1672063349979,
+  "created_utc": "2026-06-03T22:47:58.137660+00:00",
+  "elapsed_seconds": 8.685928229999263,
   "failures": [],
   "files": {
     "proofs/v060/savepoints/tiedtke_case_1.json": "fcf0c8562b3c0306b8a53b3df51f5cd9f459057fdf8ab1e63186afe7e96057ac",
