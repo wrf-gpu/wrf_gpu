@@ -19,6 +19,7 @@ from gpuwrf.physics.mynn_constants import (
     C2,
     C5,
     CKMOD,
+    CPHM_UNST,
     CTAU,
     E1C,
     E2C,
@@ -48,6 +49,7 @@ from gpuwrf.physics.mynn_constants import (
     NL_BOULAC_LMAX,
     NL_CNS,
     NL_ELT_MAX,
+    NL_ELT_MAX_WATER,
     NL_ELT_MIN,
     NL_QKW_ELB_MIN,
     NL_UONSET,
@@ -407,7 +409,7 @@ def _boulac_length(zw, dz, qtke, theta):
     return lb1, lb2
 
 
-def _mym_length_option1(state: MynnPBLColumnState, qke, dtv, fltv, ustar, dx):
+def _mym_length_option1(state: MynnPBLColumnState, qke, dtv, fltv, ustar, dx, xland=1.0):
     """WRF NONLOCAL master length scale (``bl_mynn_mixlength==1``).
 
     Faithful transcription of the ``CASE (1)`` branch of WRF
@@ -454,11 +456,16 @@ def _mym_length_option1(state: MynnPBLColumnState, qke, dtv, fltv, ustar, dx):
     pblh = _get_pblh(state, qke)
 
     # hurricane-shear tapers (wt_u1/wt_u2); =1.0/=1.0 below the 20 m/s onset.
+    # WRF lines 1758-1759: wt_u2 always scales alp3 (buoyancy enhancement) on
+    # land AND water; wt_u1 only tapers el(k) over water (lines 1859-1861).
     ugrid = jnp.sqrt(state.u[..., 0] ** 2 + state.v[..., 0] ** 2)
     over_onset = jnp.minimum(1.0, jnp.maximum(0.0, ugrid - NL_UONSET) / 50.0)
     wt_u1 = 1.0 - 0.2 * over_onset
     wt_u2 = 1.0 - 0.4 * over_onset
     alp3 = NL_ALP3 * wt_u2
+    # WRF land/sea branch (xland 1=land, 2=water). is_water = (xland-1.5)>=0.
+    xland_col = jnp.broadcast_to(jnp.asarray(xland, dtype=qke.dtype), ugrid.shape)
+    is_water = (xland_col - 1.5) >= 0.0
 
     pblh2 = jnp.maximum(pblh, MIN_PBLH)
     h1 = jnp.minimum(jnp.maximum(0.3 * pblh2, 300.0), MAX_PBLH_TRANSITION)
@@ -469,8 +476,16 @@ def _mym_length_option1(state: MynnPBLColumnState, qke, dtv, fltv, ustar, dx):
     qdz = jnp.minimum(jnp.maximum(qkw - QMIN, 0.01), 30.0) * dzk
     elt_num = 1.0e-5 + jnp.sum(jnp.where(integrate_mask, qdz * zw, 0.0), axis=-1)
     elt_den = 1.0e-5 + jnp.sum(jnp.where(integrate_mask, qdz, 0.0), axis=-1)
-    # elt_max=400 over land; hurricane water tuning omitted (xland=land here).
-    elt = jnp.minimum(jnp.maximum(NL_ALP1 * elt_num / elt_den, NL_ELT_MIN), NL_ELT_MAX)
+    # WRF lines 1801-1805: elt_max is land/water-dependent. Over WATER (the
+    # dominant Canary/marine surface) WRF caps the PBL-depth length integral at
+    # 350 m (+ a hurricane ugrid>50 m/s enhancement to <=450 m); over LAND at
+    # 400 m. The previous land-only 400 m cap left el ~14% too long over water,
+    # the dominant clear-sky entrainment-zone exch_h miss.
+    elt_max_water = NL_ELT_MAX_WATER + 100.0 * jnp.minimum(
+        1.0, jnp.maximum(0.0, ugrid - 50.0) / 25.0
+    )
+    elt_max = jnp.where(is_water, elt_max_water, NL_ELT_MAX)
+    elt = jnp.minimum(jnp.maximum(NL_ALP1 * elt_num / elt_den, NL_ELT_MIN), elt_max)
     vsc = (GTR * elt * jnp.maximum(fltv, 0.0)) ** (1.0 / 3.0)
 
     # BouLac free-atmosphere length (elBLavg = lb2).
@@ -500,7 +515,10 @@ def _mym_length_option1(state: MynnPBLColumnState, qke, dtv, fltv, ustar, dx):
     el = jnp.sqrt((els * els) / (1.0 + (els * els) / (elt[..., None] * elt[..., None])))
     el = jnp.minimum(el, elb)
     el = jnp.minimum(el, elf)
-    el = el * wt_u1[..., None]   # hurricane taper: =1 over land / U<=20
+    # WRF lines 1859-1861: the wt_u1 hurricane taper on el(k) is applied OVER
+    # WATER ONLY. Over land WRF leaves el untouched here. (For U<=20 m/s wt_u1=1
+    # so this is a no-op at the validation step, but the branch is now faithful.)
+    el = jnp.where(is_water[..., None], el * wt_u1[..., None], el)
     el = el * (1.0 - wt) + NL_ALP5 * elblavg * wt
 
     # scale-aware Psig_bl taper (WRF lines 2008-2011; ~1 on coarse grids).
@@ -602,16 +620,17 @@ def _mym_length_option2(state: MynnPBLColumnState, qke, dtv, fltv, ustar, dx):
     return qkw, el, pblh
 
 
-def _mym_turbulence(state: MynnPBLColumnState, qke, fltv, ustar, dx):
+def _mym_turbulence(state: MynnPBLColumnState, qke, fltv, ustar, dx, xland=1.0):
     """WRF MYNN `mym_turbulence` dry level-2.5 path.
 
     Uses the WRF-default NONLOCAL mixing length (``bl_mynn_mixlength=1``,
     :func:`_mym_length_option1`) — the option the validation oracle ran. The
     local option-2 form (:func:`_mym_length_option2`) is retained for reference
-    but is NOT the operational/validated path."""
+    but is NOT the operational/validated path. ``xland`` (1=land, 2=water) feeds
+    the WRF land/water branch of the mixing length."""
 
     dtv, gm, gh, sm20_raw, sh20_raw = _mym_level2(state)
-    qkw, el, pblh = _mym_length_option1(state, qke, dtv, fltv, ustar, dx)
+    qkw, el, pblh = _mym_length_option1(state, qke, dtv, fltv, ustar, dx, xland)
     dzk = _interface_dz(state.dz)
     elsq = el * el
     q3sq_initial = qkw * qkw
@@ -711,10 +730,67 @@ def _solve_tridiagonal(a, b, c, d):
     return solve_tridiagonal(a, b, c, d)
 
 
+def _phim_puhales(zet):
+    """WRF Puhales-2020 momentum stability function ``phim(zet)`` (default
+    ``bl_mynn_stfunc=1``, ``module_bl_mynnedmf.F:7701-7750``).
+
+    Stable (``zet>=0``): Cheng & Brutsaert (2005) form valid to very stable z/L.
+    Unstable (``zet<0``): Grachev-et-al-2000 convective blend. ``phim`` returns
+    ``phi_m`` (the ``-zet`` subtraction is applied by the caller as ``pmz``)."""
+
+    am_st = 6.1
+    bm_st = 2.5
+    rbm_st = 1.0 / bm_st
+    am_unst = 10.0
+    # ---- stable branch (zet>=0) ----
+    zet_s = jnp.maximum(zet, 0.0)
+    d0_s = 1.0 + zet_s ** bm_st
+    d1_s = zet_s + d0_s ** rbm_st
+    d11_s = 1.0 + d0_s ** (rbm_st - 1.0) * zet_s ** (bm_st - 1.0)
+    d2_s = (-am_st / d1_s) * d11_s
+    phi_m_st = 1.0 - zet_s * d2_s
+    # ---- unstable branch (zet<0) ----
+    zet_u = jnp.minimum(zet, -1.0e-12)  # keep strictly negative for the 1/zet terms
+    dum0 = (1.0 - CPHM_UNST * zet_u) ** 0.25
+    phi_m0 = 1.0 / dum0
+    dpsi = (2.0 * jnp.log(0.5 * (1.0 + dum0)) + jnp.log(0.5 * (1.0 + dum0 * dum0))
+            - 2.0 * jnp.arctan(dum0) + 1.570796)
+    a0 = 1.0 - am_unst * zet_u
+    y = a0 ** 0.333333
+    dydz = -0.33333 * am_unst * a0 ** (-0.6666667)
+    f = 0.33333 * (y * y + y + 1.0)
+    dfdz = 0.3333 * dydz * (2.0 * y + 1.0)
+    g = 0.57735 * (2.0 * y + 1.0)
+    dgdz = 1.1547 * dydz
+    psic = 1.5 * jnp.log(f) - 1.73205 * jnp.arctan(g) + 1.813799364
+    dpsic = (1.5 / f) * dfdz - 1.73205 * dgdz / (1.0 + g * g)
+    z2 = zet_u * zet_u
+    denon = 1.0 / (1.0 + z2)
+    ddenon = 2.0 * zet_u
+    term1 = ((1.0 - phi_m0) / zet_u + ddenon * psic + z2 * dpsic) * denon
+    term2 = -ddenon * (dpsi + z2 * psic) * denon * denon
+    phi_m_unst = 1.0 - zet_u * (term1 + term2)
+    return jnp.where(zet >= 0.0, phi_m_st, phi_m_unst)
+
+
+def _pmz_surface(fltv, ustar, dz0):
+    """WRF surface non-dimensional shear ``pmz`` for the TKE surface production
+    (``module_bl_mynnedmf.F:879-897``, ``bl_mynn_stfunc=1`` default).
+
+    ``rmol = -karman*gtr*fltv/max(ust**3,1e-6)`` (line 879); ``zet=0.5*dz1*rmol``
+    clamped to [-20,20]; ``pmz = phim(zet) - zet``. In stable surface layers
+    (``fltv<0`` -> ``zet>0``) ``pmz>1`` enhances the surface TKE source — the
+    factor the previous kernel dropped (it assumed ``pmz=1``), which collapsed the
+    surface qke over the stable nighttime/evening land columns."""
+
+    rmol = -KARMAN * GTR * fltv / jnp.maximum(ustar ** 3, 1.0e-6)
+    zet = jnp.clip(0.5 * dz0 * rmol, -20.0, 20.0)
+    return _phim_puhales(zet) - zet
+
+
 def _mym_predict_qke(state: MynnPBLColumnState, qke, turb, dt, ustar, flux):
     """WRF `mym_predict` dry level-2.5 qke equation."""
 
-    del flux
     dz = state.dz
     rho = state.rho
     dtz = dt / dz
@@ -723,7 +799,10 @@ def _mym_predict_qke(state: MynnPBLColumnState, qke, turb, dt, ustar, flux):
     df3q = SQFAC * turb["dfq"]
     kqdz = _rho_interfaces(state, df3q)
     vkz = KARMAN * 0.5 * dz[..., 0]
-    pdk1 = 2.0 * ustar * ustar * ustar / jnp.maximum(vkz, 1.0e-6)
+    # WRF line 3072: pdk1 = 2*ust**3*pmz/vkz. pmz is the surface non-dimensional
+    # shear from the (Puhales-2020) stability function; pmz>1 in stable layers.
+    pmz = _pmz_surface(flux.fltv, ustar, dz[..., 0])
+    pdk1 = 2.0 * ustar * ustar * ustar * pmz / jnp.maximum(vkz, 1.0e-6)
     pdk = jnp.concatenate(((pdk1 - turb["pdk"][..., 1])[..., None], turb["pdk"][..., 1:]), axis=-1)
 
     el_pair = 0.5 * (turb["el"][..., 1:] + turb["el"][..., :-1])
@@ -958,7 +1037,7 @@ def _step_mynn_pbl_impl_with_pblh(state: MynnPBLColumnState, dt: float, debug: b
     state = _clip_state(state)
     flux, wind, fltv, rhosfc = _surface_terms(state, surface)
     qke = 2.0 * state.tke
-    turb = _mym_turbulence(state, qke, fltv, flux.ustar, dx)
+    turb = _mym_turbulence(state, qke, fltv, flux.ustar, dx, flux.xland)
     qke_new, _qwt, qdiss, _pdk = _mym_predict_qke(state, qke, turb, dt, flux.ustar, flux)
     mf = _edmf_arrays_from_state(state, flux, fltv, turb["pblh"], dt, dx) if edmf else None
     u, v, theta, qv = _apply_mean_tendencies(state, turb, dt, flux, wind, rhosfc, mf=mf)
@@ -992,7 +1071,7 @@ def _mynn_budget_diagnostics(state: MynnPBLColumnState, dt: float, surface=None,
     state = _clip_state(state)
     flux, wind, fltv, rhosfc = _surface_terms(state, surface)
     qke = 2.0 * state.tke
-    turb = _mym_turbulence(state, qke, fltv, flux.ustar, dx)
+    turb = _mym_turbulence(state, qke, fltv, flux.ustar, dx, flux.xland)
     qke_new, qwt, qdiss, pdk = _mym_predict_qke(state, qke, turb, dt, flux.ustar, flux)
     u, v, theta, qv = _apply_mean_tendencies(state, turb, dt, flux, wind, rhosfc)
     km, kh = _retrieve_exchange_coeffs(state, turb)

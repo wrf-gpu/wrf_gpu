@@ -138,6 +138,7 @@ def run(out_path: Path, edmf: bool = False, oracle_dir: Path = ORACLE_DIR) -> di
     hfx = _to_cols_2d(IN("hfx"))
     qfx = _to_cols_2d(IN("qfx"))
     wspd = _to_cols_2d(IN("wspd"))
+    xland = _to_cols_2d(IN("xland"))  # WRF land/sea mask (1=land, 2=water)
 
     ncol, nk = th.shape
     rho_sfc = rho[:, 0]
@@ -163,6 +164,7 @@ def run(out_path: Path, edmf: bool = False, oracle_dir: Path = ORACLE_DIR) -> di
     surface = SurfaceFluxes(
         ustar=J(ust), theta_flux=J(flt), qv_flux=J(flq),
         tau_u=J(tau_u), tau_v=J(tau_v), rhosfc=J(rho_sfc), fltv=J(fltv),
+        xland=J(xland),
     )
 
     # dt = domain-1 model timestep (namelist time_step=18 s; PBL fires every step,

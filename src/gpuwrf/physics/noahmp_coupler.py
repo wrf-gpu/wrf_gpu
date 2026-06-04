@@ -215,6 +215,7 @@ def noahmp_surface_adapter(
         tau_v=sf.tau_v,
         rhosfc=rhosfc,
         fltv=fltv,
+        xland=sf.xland,            # carry land/sea mask through to MYNN mixing length
     )
 
     # ---- 5. state write-back (blended t_skin / roughness_m). State.__slots__
