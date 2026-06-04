@@ -13,16 +13,33 @@
   "oracle_scheme_tag": "mynnedmf",
   "pass": false,
   "per_field": {
+    "el_pbl": {
+      "abs_tol": 0.5,
+      "enforced_cells": 34575,
+      "jax_range": [
+        0.0,
+        119.5900119627079
+      ],
+      "max_abs_err": 16.89777999423856,
+      "max_rel_err": 1.2770348202593358,
+      "n_violations": 31,
+      "pass": false,
+      "rel_tol": 0.05,
+      "wrf_range": [
+        0.0,
+        119.55958557128906
+      ]
+    },
     "exch_h": {
       "abs_tol": 0.001,
       "enforced_cells": 34575,
       "jax_range": [
         0.0,
-        56.51516865780544
+        137.1015774309926
       ],
-      "max_abs_err": 112.22813914238236,
-      "max_rel_err": 29.48388958434154,
-      "n_violations": 26057,
+      "max_abs_err": 93.368062949833,
+      "max_rel_err": 2.179656246330818,
+      "n_violations": 721,
       "pass": false,
       "rel_tol": 0.05,
       "wrf_range": [
@@ -35,11 +52,11 @@
       "enforced_cells": 34575,
       "jax_range": [
         0.0,
-        45.9014389863939
+        86.56019495691552
       ],
-      "max_abs_err": 61.93384423328142,
-      "max_rel_err": 0.9803414575644626,
-      "n_violations": 26765,
+      "max_abs_err": 20.86218500628791,
+      "max_rel_err": 0.7060335712729756,
+      "n_violations": 340,
       "pass": false,
       "rel_tol": 0.05,
       "wrf_range": [
@@ -51,11 +68,11 @@
       "abs_tol": 50.0,
       "enforced_cells": 5487,
       "jax_range": [
-        85.21538113097994,
-        856.9333106379977
+        85.14742048087277,
+        856.5900080243542
       ],
-      "max_abs_err": 120.15278731009079,
-      "max_rel_err": 0.2645963865306612,
+      "max_abs_err": 121.9752775137506,
+      "max_rel_err": 0.26699101549028675,
       "n_violations": 18,
       "pass": false,
       "rel_tol": 0.1,
@@ -69,12 +86,12 @@
       "enforced_cells": 34575,
       "jax_range": [
         1e-05,
-        1.2952157766165413
+        1.3043596470767413
       ],
-      "max_abs_err": 0.09720697113127497,
-      "max_rel_err": 262.90551546669997,
-      "n_violations": 156,
-      "pass": false,
+      "max_abs_err": 0.004714858724034543,
+      "max_rel_err": 0.14340712641572648,
+      "n_violations": 0,
+      "pass": true,
       "rel_tol": 0.1,
       "wrf_range": [
         9.999999747378752e-06,
@@ -85,12 +102,12 @@
       "abs_tol": 1e-08,
       "enforced_cells": 34575,
       "jax_range": [
-        -9.354480166945747e-07,
-        8.122490816302406e-07
+        -6.661361906004213e-07,
+        9.067260483281112e-07
       ],
-      "max_abs_err": 9.230303826624278e-07,
-      "max_rel_err": 2.8696633480364735e+23,
-      "n_violations": 19567,
+      "max_abs_err": 6.219859128838688e-07,
+      "max_rel_err": 4.211626160293089e+22,
+      "n_violations": 2384,
       "pass": false,
       "rel_tol": 0.1,
       "wrf_range": [
@@ -102,12 +119,12 @@
       "abs_tol": 1e-05,
       "enforced_cells": 34575,
       "jax_range": [
-        -0.0003901739768726505,
-        0.0012593123705231493
+        -0.00039751317157134106,
+        0.0011819332465026694
       ],
-      "max_abs_err": 0.00024430152466455485,
-      "max_rel_err": 1.187778125534401e+26,
-      "n_violations": 13003,
+      "max_abs_err": 0.00021050034026694043,
+      "max_rel_err": 1.814457052596986e+25,
+      "n_violations": 679,
       "pass": false,
       "rel_tol": 0.1,
       "wrf_range": [
@@ -119,12 +136,12 @@
       "abs_tol": 1e-05,
       "enforced_cells": 34575,
       "jax_range": [
-        -0.000660743946967246,
-        0.0006443056532566703
+        -0.0006443355218384264,
+        0.0007266581392256407
       ],
-      "max_abs_err": 0.0002977604444658826,
-      "max_rel_err": 2.531816891976963e+24,
-      "n_violations": 17034,
+      "max_abs_err": 6.346264167272291e-05,
+      "max_rel_err": 2.145257272702218e+25,
+      "n_violations": 203,
       "pass": false,
       "rel_tol": 0.1,
       "wrf_range": [
@@ -136,12 +153,12 @@
       "abs_tol": 1e-05,
       "enforced_cells": 34575,
       "jax_range": [
-        -0.0007726122551239278,
-        0.0009373993586252954
+        -0.0007150675404458499,
+        0.0009965302526460601
       ],
-      "max_abs_err": 0.0003980458227514916,
-      "max_rel_err": 6.175333293158126e+25,
-      "n_violations": 22256,
+      "max_abs_err": 9.417784163960145e-05,
+      "max_rel_err": 7.746725594189503e+24,
+      "n_violations": 776,
       "pass": false,
       "rel_tol": 0.1,
       "wrf_range": [
@@ -159,6 +176,10 @@
     "sf_surface_physics": 4
   },
   "predeclared_tolerances": {
+    "el_pbl": {
+      "abs": 0.5,
+      "rel": 0.05
+    },
     "exch_h": {
       "abs": 0.001,
       "rel": 0.05
