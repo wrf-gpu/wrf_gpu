@@ -91,6 +91,7 @@ from gpuwrf.physics.microphysics_wsm6 import wsm6_physics_tendency
 from gpuwrf.physics.cumulus_bmj import initial_bmj_cldefi, step_bmj_column
 from gpuwrf.physics.cumulus_kf import step_kf_column
 from gpuwrf.physics.cumulus_tiedtke_jax import tiedtke_column_jax
+from gpuwrf.physics._gf_jax import gfdrv_batched
 from gpuwrf.physics.pbl_acm2 import acm2_columns
 from gpuwrf.physics.pbl_boulac import TEMIN as BOULAC_TKE_MIN, boulac_columns
 from gpuwrf.physics.pbl_ysu import ysu_columns
@@ -578,6 +579,164 @@ def tiedtke_adapter(state: State, dt: float, grid=None, *, stepcu: int = 1) -> S
     return next_state
 
 
+def _kpbl_bulk_richardson(thv_c: jax.Array, z_mass_c: jax.Array) -> jax.Array:
+    """Diagnose the PBL-top mass level (1-based, GF convention) per column.
+
+    GF's driver (``module_cu_gf_wrfdrv.F``) receives ``KPBL`` from the active PBL
+    scheme. The operational scan does not thread a PBL-height leaf, so the cumulus
+    slot reconstructs it the way every WRF PBL driver does: the lowest mass level
+    whose bulk Richardson number relative to the surface level exceeds a critical
+    value ``Ricr=0.25`` (YSU/ACM2 ``BRCR``). ``thv`` is virtual potential
+    temperature; ``z_mass`` mass-level heights above ground. Returns a 1-based
+    level index in ``[2, nz]`` (GF arrays are 1-based, surface = level 1), so the
+    PDF/inversion logic sees a physically-located PBL top, not a fabricated const.
+
+    Inputs are 0-based ``(ncol, nz)``; the +1 shift to GF's 1-based indexing is
+    applied by the caller (which prepends the dummy level-0).
+    """
+
+    ricr = 0.25
+    ncol, nz = thv_c.shape
+    thv_sfc = thv_c[:, :1]  # (ncol, 1)
+    dz = jnp.maximum(z_mass_c - z_mass_c[:, :1], 1.0)  # height above surface
+    # Bulk Richardson vs surface (no shear term -> thermal-only BRN, WRF's
+    # convective limit; the PBL-top estimate GF needs is robust to this).
+    rib = (9.81 / jnp.maximum(thv_sfc, 1.0)) * (thv_c - thv_sfc) * dz / jnp.maximum(dz, 1.0)
+    above = (rib > ricr) & (jnp.arange(nz)[None, :] >= 1)  # exclude surface level
+    any_above = jnp.any(above, axis=1)
+    first0 = jnp.argmax(above.astype(jnp.int32), axis=1)  # 0-based first crossing
+    # 0-based -> GF 1-based (+1); default to level 2 when no crossing (shallow PBL).
+    kpbl1 = jnp.where(any_above, first0 + 1, 1) + 1
+    kpbl1 = jnp.clip(kpbl1, 2, nz).astype(jnp.int32)
+    return kpbl1
+
+
+def gf_adapter(state: State, dt: float, grid=None, *, ishallow_g3: int = 1,
+               ichoice: int = 0) -> State:
+    """cu=3 Grell-Freitas scale-aware cumulus ``State -> State`` scan adapter.
+
+    Grell-Freitas is a per-column kernel (``physics._gf_jax.gfdrv_column``, the
+    GPU-batched jit/vmap port of WRF ``GFDRV -> cup_gf (deep) + cup_gf_sh
+    (shallow)``); this adapter ``jax.vmap``s it over the ``(ny*nx)`` grid columns
+    via ``gfdrv_batched`` -- the whole deep+shallow column physics (16-member
+    closure ensemble + beta-PDF gamma + scale-aware ``sig``) runs inside ONE
+    vmapped jit, no host transfer inside the column loop. Like modified-Tiedtke,
+    GF carries NO persistent cumulus state, so this is a plain ``State -> State``
+    adapter (no carry, threaded via ``CU_STATELESS_SCAN_ADAPTERS``).
+
+    Tendencies are applied ``state += dt*tend``: ``RTHCUTEN`` is the THETA tendency
+    (K s^-1; the kernel already divides the temperature tendency by Exner), and
+    ``RQVCUTEN/RQCCUTEN/RQICUTEN`` are mixing-ratio tendencies (kg kg^-1 s^-1).
+    ``RAINCV`` is the per-step convective precip (mm; the kernel returns
+    ``pratec*dt``) and accumulates into ``rainc_acc`` (exactly the KF/Tiedtke
+    accumulation convention). GF momentum tendencies are diagnostic in the WRF
+    GFDRV path (not added to U/V there), so this adapter writes none -- matching
+    the kernel's ``gfdrv_column`` output set (no RUCUTEN/RVCUTEN).
+
+    The GF kernel uses 1-based length-(nz+1) column arrays (index 0 unused,
+    level 1 = surface) -- the operational State is bottom-up ``(nz, ny, nx)``
+    (index 0 = surface), so each column is mapped by prepending a dummy level-0.
+
+    GF-specific inputs not in the frozen B2 contract are assembled here, pure
+    ``jnp``, no host transfer:
+      * ``HFX`` surface sensible-heat flux (W m^-2) = ``rho_sfc*cp*theta_flux``;
+        ``QFX`` surface moisture flux (kg m^-2 s^-1) = ``rho_sfc*qv_flux`` (the
+        kinematic B2 ``theta_flux``/``qv_flux`` handles -> GF flux units).
+      * ``HT`` terrain height (m) = surface geopotential ``ph[0]/g``.
+      * ``DX`` grid spacing (m) for the scale-aware factor (from the grid, like KF;
+        defaults to 3 km when no grid is supplied).
+      * ``KPBL`` PBL-top mass level, bulk-Richardson-diagnosed per column
+        (``_kpbl_bulk_richardson``) -- the value the active PBL scheme would hand
+        GF in WRF (no PBL-height leaf is threaded in this scan).
+      * ``RTHBLTEN``/``RQVBLTEN`` PBL theta/qv forcing tendencies: zero in the
+        per-slot scan (no separate PBL forcing tracked into the cumulus slot here;
+        the PBL slot already applied its tendency to State the same step -- WRF
+        folds this forcing via the "forced sounding", documented carry-over,
+        IDENTICAL to the Tiedtke adapter's zero QVFTEN/QVPBLTEN treatment). With
+        zero forcing the forced sounding collapses to the current sounding and GF
+        triggers on the actual column state.
+    """
+
+    dx = float(grid.projection.dx_m) if grid is not None else 3000.0
+    nz, ny, nx = state.theta.shape
+    rho = _rho_from_state(state)
+    T = _temperature_from_theta(state.theta, state.p)
+    pii = _exner_columns(state.p)
+    interface_z = state.ph.astype(jnp.float64) / GRAVITY_M_S2  # (nz+1, ny, nx)
+    z_mass = 0.5 * (interface_z[:-1] + interface_z[1:])  # (nz, ny, nx)
+    dz_full = jnp.maximum(interface_z[1:] - interface_z[:-1], 1.0)
+    ht_2d = interface_z[0]  # surface geopotential height (m), (ny, nx)
+    w_mass = _w_mass(state)
+
+    # Surface fluxes in GF units (W m^-2 / kg m^-2 s^-1) from kinematic handles.
+    rhosfc = jnp.asarray(state.rhosfc, jnp.float64)
+    theta_flux = jnp.asarray(state.theta_flux, jnp.float64)  # K m s^-1
+    qv_flux = jnp.asarray(state.qv_flux, jnp.float64)        # kg kg^-1 m s^-1
+    hfx_2d = rhosfc * CP_DRY * theta_flux                    # W m^-2
+    qfx_2d = rhosfc * qv_flux                                # kg m^-2 s^-1
+    xland_2d = jnp.asarray(state.xland, jnp.float64)
+
+    def _cols(field3d):  # (nz, ny, nx) -> (ncol, nz)
+        return jnp.moveaxis(field3d, 0, -1).reshape(ny * nx, nz)
+
+    # Virtual potential temperature for the bulk-Richardson PBL-top diagnosis.
+    qv_pos = jnp.maximum(state.qv, 0.0)
+    thv = state.theta.astype(jnp.float64) * (1.0 + 0.608 * qv_pos)
+    kpbl_c = _kpbl_bulk_richardson(_cols(thv), _cols(z_mass))  # (ncol,), 1-based
+
+    # 0-based (ncol, nz) -> GF 1-based (ncol, nz+1): prepend a dummy level-0.
+    def _cols1(field3d):
+        c = _cols(field3d)  # (ncol, nz)
+        return jnp.concatenate([jnp.zeros((ny * nx, 1), jnp.float64), c], axis=1)
+
+    T_c = _cols1(T)
+    qv_c = _cols1(jnp.maximum(state.qv, 0.0))
+    p_c = _cols1(state.p)
+    pii_c = _cols1(pii)
+    dz_c = _cols1(dz_full)
+    rho_c = _cols1(rho)
+    u_c = _cols1(_u_mass(state))
+    v_c = _cols1(_v_mass(state))
+    w_c = _cols1(w_mass)
+    zero_c = jnp.zeros((ny * nx, nz + 1), jnp.float64)  # RTHBLTEN/RQVBLTEN forcing
+    dt_f = float(dt)
+    kx = nz
+
+    dt_b = jnp.full((ny * nx,), dt_f, jnp.float64)
+    dx_b = jnp.full((ny * nx,), dx, jnp.float64)
+    hfx_b = hfx_2d.reshape(ny * nx)
+    qfx_b = qfx_2d.reshape(ny * nx)
+    xland_b = xland_2d.reshape(ny * nx)
+    ht_b = ht_2d.reshape(ny * nx)
+
+    out = gfdrv_batched(
+        T_c, qv_c, p_c, pii_c, dz_c, rho_c, u_c, v_c, w_c, zero_c, zero_c,
+        kx, dt_b, dx_b, hfx_b, qfx_b, kpbl_c, xland_b, ht_b,
+        ishallow_g3=int(ishallow_g3), ichoice=int(ichoice),
+    )
+
+    def _back(field2d_1based):  # (ncol, nz+1) -> (nz, ny, nx); drop GF level-0
+        c0 = field2d_1based[:, 1:]  # (ncol, nz)
+        return jnp.moveaxis(c0.reshape(ny, nx, nz), -1, 0)
+
+    rth = _back(out['RTHCUTEN'])   # K s^-1 (theta tendency)
+    rqv = _back(out['RQVCUTEN'])   # kg kg^-1 s^-1
+    rqc = _back(out['RQCCUTEN'])
+    rqi = _back(out['RQICUTEN'])
+    raincv = jnp.asarray(out['RAINCV'], jnp.float64).reshape(ny, nx)  # mm/step
+
+    next_state = state.replace(
+        theta=(state.theta + dt_f * rth).astype(_output_dtype(state, "theta")),
+        qv=(state.qv + dt_f * rqv).astype(_output_dtype(state, "qv")),
+        qc=(state.qc + dt_f * rqc).astype(_output_dtype(state, "qc")),
+        qi=(state.qi + dt_f * rqi).astype(_output_dtype(state, "qi")),
+        rainc_acc=(
+            jnp.asarray(state.rainc_acc, jnp.float64) + raincv
+        ).astype(_output_dtype(state, "rainc_acc")),
+    )
+    return next_state
+
+
 def bmj_adapter(state: State, dt: float, cldefi, *, grid=None):
     """cu=2 Betts-Miller-Janjic cumulus scan adapter.
 
@@ -847,20 +1006,24 @@ SFCLAY_SCAN_ADAPTERS = {
 }
 
 # Cumulus options whose adapter is threaded (cu=0 = no cumulus). KF (1) is the
-# carry-threaded ``(State, carry) -> (State, carry)`` adapter; Tiedtke (6) is the
-# v0.6.0 GPU-batched (jit/vmap) ``State -> State`` adapter (no persistent carry).
-# Grell-Freitas (3) remains a CPU-NumPy reference (gpu_runnable=False; see
-# _SCAN_UNWIRED_REASON) -- its faithful closure ensemble is not yet vmap-rewritten.
+# carry-threaded ``(State, carry) -> (State, carry)`` adapter; Tiedtke (6) and
+# Grell-Freitas (3) are GPU-batched (jit/vmap) ``State -> State`` adapters (no
+# persistent carry). GF (3) is the v0.9.0 GPU-batched port of the scale-aware
+# closure-ensemble kernel (physics._gf_jax.gfdrv_batched), savepoint-parity gated
+# (proofs/v060/gf_gpubatch_savepoint_parity.json) and scan-wired here.
 CU_SCAN_ADAPTERS = {
     1: kf_adapter,
     2: bmj_adapter,
+    3: gf_adapter,
     6: tiedtke_adapter,
 }
 
 # Cumulus options that carry NO persistent cumulus state (plain State->State, like
 # the microphysics adapters). KF (1) and BMJ (2) are excluded -- KF threads
-# (w0avg, nca) and BMJ threads CLDEFI.
+# (w0avg, nca) and BMJ threads CLDEFI. Tiedtke (6) and Grell-Freitas (3) are the
+# GPU-batched stateless adapters.
 CU_STATELESS_SCAN_ADAPTERS = {
+    3: gf_adapter,
     6: tiedtke_adapter,
 }
 
@@ -886,6 +1049,7 @@ __all__ = [
     "pleim_xiu_sfclay_adapter",
     "kf_adapter",
     "tiedtke_adapter",
+    "gf_adapter",
     "bmj_adapter",
     "ysu_pbl_adapter",
     "acm2_pbl_adapter",
