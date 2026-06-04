@@ -234,7 +234,7 @@ SCHEME_STEP_SPECS: tuple[PhysicsStepSpec, ...] = (
         8,
         "Thompson",
         "src/gpuwrf/physics/thompson_column.py",
-        "existing Thompson WRF savepoint parity gate; rerun before mixed-suite integration",
+        "operational / Tier-4 RMSE validated vs CPU-WRF corpus, NOT isolated-unmodified-WRF-savepoint-proven",
         diagnostics=("re_cloud", "re_ice", "re_snow", "ThompsonTendencySideChannel"),
     ),
     _mp_spec(
@@ -281,7 +281,7 @@ SCHEME_STEP_SPECS: tuple[PhysicsStepSpec, ...] = (
         name="MYNN",
         wrf_slot="first_rk_pbl_driver",
         owner_module="src/gpuwrf/physics/mynn_pbl.py",
-        oracle="existing MYNN WRF savepoint parity gate; rerun before mixed-suite integration",
+        oracle="operational / Tier-4 RMSE validated vs CPU-WRF corpus, NOT isolated-unmodified-WRF-savepoint-proven",
         reads_state=("u", "v", "theta", "qv", "qke", "p", "pb", "ph", "mu", "ustar", "theta_flux", "qv_flux"),
         writes_state=("u", "v", "theta", "qv", "qke"),
         reads_carry=PBL_CARRY_MEMBERS[5],
@@ -341,7 +341,7 @@ SCHEME_STEP_SPECS: tuple[PhysicsStepSpec, ...] = (
         name="MYNN surface layer",
         wrf_slot="first_rk_surface_driver",
         owner_module="src/gpuwrf/physics/surface_layer.py",
-        oracle="existing surface-layer WRF savepoint parity gate; rerun before mixed-suite integration",
+        oracle="operational / Tier-4 RMSE validated vs CPU-WRF corpus, NOT isolated-unmodified-WRF-savepoint-proven",
         reads_state=("u", "v", "theta", "qv", "t_skin", "soil_moisture", "xland", "roughness_m"),
         writes_state=("ustar", "theta_flux", "qv_flux", "tau_u", "tau_v", "rhosfc", "fltv"),
         diagnostics=("T2", "Q2", "U10", "V10", "PSFC", "HFX", "LH", "UST"),
@@ -505,7 +505,11 @@ SCHEME_STEP_SPECS: tuple[PhysicsStepSpec, ...] = (
         diagnostics=("SWDOWN", "GSW", "COSZEN", "RTHRATENSW"),
         variant="sw",
         notes="ra_sw_physics=1. Stephens-1984 broadband Dudhia SW; held-rate RTHRATEN theta "
-        "tendency. No external lookup-table asset. Solar geometry via coszen + surface albedo.",
+        "tendency. No external lookup-table asset. Solar geometry via coszen + surface albedo. "
+        "STATUS: isolated-WRF-savepoint parity-proven + accepted, but NOT operational-scan-wired: "
+        "OperationalNamelist has no ra_sw_physics field and the radiation slot in "
+        "runtime.operational_mode hardcodes the RRTMG (ra=4) held-rate RTHRATEN. Scan-wiring is a "
+        "post-0.9.0 carry-over (would require a radiation-family dispatch + the combined LW/SW slot).",
     ),
     # Classic RRTM longwave (ra_lw_physics=1) -- 16-band k-distribution from
     # AER, loaded from the RRTM_DATA asset. Reads cloud hydrometeors + qv +
@@ -524,7 +528,12 @@ SCHEME_STEP_SPECS: tuple[PhysicsStepSpec, ...] = (
         variant="lw",
         notes="ra_lw_physics=1. AER classic RRTM 16-band LW; held-rate RTHRATEN. Loads the "
         "RRTM_DATA k-distribution asset and passes the proofs/v060/run_rrtm_lw_parity.py "
-        "fp64 savepoint gate.",
+        "fp64 savepoint gate. STATUS: isolated-WRF-savepoint parity-proven + accepted, but NOT "
+        "operational-scan-wired: the classic RRTM-LW column kernel (physics.ra_lw_rrtm) is a "
+        "host-NumPy single-column driver (Python per-column/per-band loops, lru_cache table load) "
+        "that is not jit/vmap-traceable, so it cannot ride the device jax.lax.scan as-is -- same "
+        "fail-closed posture as MYJ/Janjic/Grell-Freitas. A jit/vmap rewrite is a post-0.9.0 "
+        "carry-over; the operational radiation slot hardcodes RRTMG (ra=4).",
     ),
 )
 
