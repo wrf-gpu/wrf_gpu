@@ -236,15 +236,14 @@ def test_reference_failclosed_schemes_keep_specific_messages() -> None:
 
 
 def test_recognized_but_unimplemented_dynamics_option() -> None:
-    """diff_opt=1 / km_opt=4 are real-data WRF defaults the port does not yet wire."""
+    """diff_opt=1 / km_opt=4 (real-data WRF defaults) are now the wired 2-D
+    Smagorinsky horizontal-diffusion path, so they validate cleanly. An
+    unrecognized km_opt value still fails closed."""
 
-    with pytest.raises(UnsupportedNamelistOption) as excinfo:
-        validate_supported_namelist({"dynamics": {"diff_opt": 1, "km_opt": 4}})
-    message = str(excinfo.value)
-    assert "diff_opt=1" in message
-    assert "km_opt=4" in message
-    assert "NOT YET IMPLEMENTED" in message
-    # And km_opt=99 is not a recognized WRF option.
+    # diff_opt=1/km_opt=4 is the v0.9.0 2-D Smagorinsky path (dynamics/explicit_diffusion.py,
+    # parity proofs/v090/diffopt1_smagorinsky_parity.json) -- accepted, no raise.
+    validate_supported_namelist({"dynamics": {"diff_opt": 1, "km_opt": 4}})
+    # km_opt=99 is not a recognized WRF option.
     with pytest.raises(UnsupportedNamelistOption) as excinfo2:
         validate_supported_namelist({"dynamics": {"km_opt": 99}})
     assert "km_opt=99 is not a recognized WRF v4" in str(excinfo2.value)
@@ -283,11 +282,10 @@ def test_real_wrf_namelist_input_is_consumable() -> None:
         # All standard WRF groups present.
         for group in ("time_control", "domains", "physics", "dynamics", "bdy_control"):
             assert group in parsed, f"missing &{group} in parsed namelist"
-        # The oracle's diff_opt=1/km_opt=4 real-data defaults fail closed with the
-        # specific not-yet-implemented message (honest: those are not yet wired).
-        with pytest.raises(UnsupportedNamelistOption) as excinfo:
-            validate_supported_namelist(oracle)
-        assert "NOT YET IMPLEMENTED" in str(excinfo.value)
+        # The oracle's diff_opt=1/km_opt=4 real-data defaults are now the wired
+        # 2-D Smagorinsky path (v0.9.0), so a standard em_real namelist with an
+        # implemented Thompson/KF/MYNN/Noah-MP/RRTMG suite validates cleanly.
+        validate_supported_namelist(oracle)
     else:  # pragma: no cover - pristine tree not on this host
         text = (
             "&time_control\n run_hours = 24,\n/\n"
