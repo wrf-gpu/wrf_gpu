@@ -75,17 +75,17 @@ def test_myj_pairing_enforced_by_dispatcher_resolution() -> None:
 
 
 def test_cumulus_gpu_readiness_flags() -> None:
-    # KF (cu=1), BMJ (cu=2), and Tiedtke (cu=6) are operational GPU cumulus
-    # options (scan-wired) -> gate-ready.
-    assert resolve_physics_suite({"cu_physics": 1}).gpu_gate_ready is True
-    assert resolve_physics_suite({"cu_physics": 2}).gpu_gate_ready is True
-    assert resolve_physics_suite({"cu_physics": 6}).gpu_gate_ready is True
-    # Grell-Freitas (cu=3, GPU closure-ensemble batch TODO) and New Tiedtke
-    # (cu=16, not separately source-gated) are fail-closed -> excluded.
-    for cu in (3, 16):
+    # KF (cu=1), BMJ (cu=2), Grell-Freitas (cu=3), and Tiedtke (cu=6) are
+    # operational GPU cumulus options (scan-wired) -> gate-ready. GF (cu=3) is the
+    # v0.9.0 GPU-batched jit/vmap scale-aware adapter (CU_SCAN_ADAPTERS[3]).
+    for cu in (1, 2, 3, 6):
         suite = resolve_physics_suite({"cu_physics": cu})
-        assert suite.gpu_gate_ready is False
-        assert suite.cumulus.gpu_runnable is False
+        assert suite.gpu_gate_ready is True
+        assert suite.cumulus.gpu_runnable is True
+    # New Tiedtke (cu=16, not separately source-gated) is fail-closed -> excluded.
+    suite16 = resolve_physics_suite({"cu_physics": 16})
+    assert suite16.gpu_gate_ready is False
+    assert suite16.cumulus.gpu_runnable is False
 
 
 def test_use_noahmp_toggle_maps_land_surface() -> None:
@@ -109,4 +109,6 @@ def test_nested_wrf_style_mapping_resolves() -> None:
     assert suite.microphysics.option == 6
     assert suite.pbl.option == 1
     assert suite.cumulus.option == 3
-    assert suite.gpu_gate_ready is False  # GF cu=3 excludes the GPU gate
+    # GF cu=3 is now the v0.9.0 GPU-batched scan-wired adapter -> gate-ready
+    # (WSM6 + YSU + GF are all GPU-runnable).
+    assert suite.gpu_gate_ready is True
