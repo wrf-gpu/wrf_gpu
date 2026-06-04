@@ -1,0 +1,5 @@
+mynn_oracle
+mynn_oracle_r8
+*.o
+*.mod
+__pycache__/
