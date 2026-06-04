@@ -794,6 +794,7 @@ def surface_layer_with_diagnostics(state) -> SurfaceLayerDiagnostics:
         tau_v=tau_v,
         rhosfc=rhox,
         fltv=fltv,
+        xland=xland,
     )
     return SurfaceLayerDiagnostics(
         fluxes=fluxes,

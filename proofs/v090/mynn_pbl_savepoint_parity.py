@@ -40,7 +40,7 @@ from typing import Any
 import numpy as np
 
 ROOT = Path(__file__).resolve().parents[2]
-ORACLE_DIR = Path("/mnt/data/wrf_gpu2/physics_oracle/surface_mynn")
+ORACLE_DIR = Path("/mnt/data/wrf_gpu2/physics_oracle_v090/surface_mynn")
 SCHEME = "mynnedmf"
 PRISTINE_SRC = Path("/home/enric/src/wrf_pristine/WRF/phys/module_bl_mynnedmf.F")
 
@@ -51,6 +51,8 @@ P608 = 0.608
 # cells; abs floor for near-zero fields). These are NOT loosened to pass — they
 # are set from the kernel's documented physics scope (MYNN2.5 ED column).
 TOL = {
+    # master mixing length el_pbl: the direct target of the length-scale port.
+    "el_pbl": {"rel": 0.05, "abs": 0.5},      # m
     # eddy-diffusion exchange coefficients: the core MYNN2.5 output. Tight band.
     "exch_m": {"rel": 0.05, "abs": 1.0e-3},   # m2/s
     "exch_h": {"rel": 0.05, "abs": 1.0e-3},   # m2/s
@@ -136,6 +138,7 @@ def run(out_path: Path, edmf: bool = False, oracle_dir: Path = ORACLE_DIR) -> di
     hfx = _to_cols_2d(IN("hfx"))
     qfx = _to_cols_2d(IN("qfx"))
     wspd = _to_cols_2d(IN("wspd"))
+    xland = _to_cols_2d(IN("xland"))  # WRF land/sea mask (1=land, 2=water)
 
     ncol, nk = th.shape
     rho_sfc = rho[:, 0]
@@ -161,6 +164,7 @@ def run(out_path: Path, edmf: bool = False, oracle_dir: Path = ORACLE_DIR) -> di
     surface = SurfaceFluxes(
         ustar=J(ust), theta_flux=J(flt), qv_flux=J(flq),
         tau_u=J(tau_u), tau_v=J(tau_v), rhosfc=J(rho_sfc), fltv=J(fltv),
+        xland=J(xland),
     )
 
     # dt = domain-1 model timestep (namelist time_step=18 s; PBL fires every step,
@@ -173,6 +177,7 @@ def run(out_path: Path, edmf: bool = False, oracle_dir: Path = ORACLE_DIR) -> di
 
     # --- JAX-derived comparison quantities ---
     jax_vals = {
+        "el_pbl": np.asarray(out_state.el),
         "exch_m": np.asarray(out_state.km),
         "exch_h": np.asarray(out_state.kh),
         "qke": 2.0 * np.asarray(out_state.tke),
@@ -183,6 +188,7 @@ def run(out_path: Path, edmf: bool = False, oracle_dir: Path = ORACLE_DIR) -> di
         "pblh": np.asarray(pblh),
     }
     wrf_vals = {
+        "el_pbl": _to_cols(OUT("el_pbl")),
         "exch_m": _to_cols(OUT("exch_m")),
         "exch_h": _to_cols(OUT("exch_h")),
         "qke": _to_cols(OUT("qke")),
