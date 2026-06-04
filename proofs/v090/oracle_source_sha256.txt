@@ -1,0 +1,2 @@
+86395534a6c9bfc79dcad50094bce290eff05756777a95794b2673795f9761c3  /home/enric/src/wrf_pristine/WRF/phys/module_sf_mynn.F
+86395534a6c9bfc79dcad50094bce290eff05756777a95794b2673795f9761c3  proofs/v090/module_sf_mynn_pristine.f90
