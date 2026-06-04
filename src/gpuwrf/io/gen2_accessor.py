@@ -20,12 +20,17 @@ except Exception:  # pragma: no cover - exercised only in non-JAX utility contex
     jax = None
     jnp = None
 
+from gpuwrf.config import paths
 from gpuwrf.contracts.grid import BCMetadata, GridSpec, Projection, TerrainProvenance, VerticalCoord
 
 
-GEN2_READ_ONLY_ROOT = Path("/mnt/data/canairy_meteo")
-DEFAULT_M6_GEN2_RUN_DIR = Path(
-    "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z"
+# Path indirection (see gpuwrf.config.paths): the read-only Gen2 corpus root and
+# its default L3 run dir are environment-overridable so a clean clone is runnable
+# without /mnt/data. On Enric's workstation set GPUWRF_CANAIRY_ROOT=/mnt/data/canairy_meteo
+# to keep the original layout (and write-protection) working unchanged.
+GEN2_READ_ONLY_ROOT = paths.canairy_root()
+DEFAULT_M6_GEN2_RUN_DIR = (
+    paths.wrf_l3_root() / "20260521_18z_l3_24h_20260522T133443Z"
 )
 DEFAULT_M6_BOUNDARY_REPLAY = Path("data/fixtures/m6/d02_boundary_replay_v2.zarr")
 MAP_PROJ_NAMES = {1: "lambert", 2: "polar", 3: "mercator"}
