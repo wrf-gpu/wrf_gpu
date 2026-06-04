@@ -1,0 +1,18 @@
+{
+  "detail": {
+    "failure_mode": "ValueError"
+  },
+  "hours": 4,
+  "orchestration_cpu_affinity": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "output_dir": "/tmp/m7_pipeline_runs/l2_d02_20260509_18z_l2_72h_20260511T190519Z",
+  "reason": "ValueError: L2 d02 mass grid must be (66, 159) for drop-in M7 d02 replay; got (66, 120) from /mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z",
+  "run_id": "20260509_18z_l2_72h_20260511T190519Z",
+  "schema": "M7DailyPipelineRun",
+  "schema_version": 1,
+  "verdict": "PIPELINE_BLOCKED"
+}

@@ -109,7 +109,30 @@ PRECISION_MATRIX = {
     "Ns": (FP32_GATED, True),
     "Ng": (FP32_GATED, True),
     # MYNN turbulent kinetic energy.
-    "qke": (FP32_GATED, True),
+    #
+    # PRECISION-CONTRACT CHANGE (2026-06-04, qke-fp64-fix sprint, REVIEWED):
+    # qke is promoted FP32_GATED -> FP64. At 1km (d03, steep Tenerife terrain,
+    # dt=3s) the MYNN level-2.5 TKE budget (large production/dissipation
+    # gradients) loses too much precision in fp32 and goes NON-FINITE after
+    # forecast hour 1 (proofs/v090/d03_1km_validation.json: qke the SOLE
+    # offending field, 3036 nonfinite cells; every other prognostic stayed
+    # finite). qke is a diagnostic-style turbulence field OUTSIDE the conserved
+    # mass / pressure / acoustic path (it never enters the fp64-locked mu/p/ph
+    # accumulators), so promoting it to fp64 does NOT alter the gated-fp32
+    # invariants and the d02 speedup is unchanged (qke is one small 3D field).
+    # This is a precision-matrix promotion, NOT a clamp/fudge -- no physics
+    # change, the existing WRF-faithful mym_predict qke cap (<=150) is untouched.
+    #
+    # The MYNN length-scale + TKE-budget INTERMEDIATES (el/elt/els/elf in
+    # _mym_length_option1, the qke-weighted height integral, the _mym_predict_qke
+    # tridiagonal budget) are promoted to fp64 IMPLICITLY: they are all functions
+    # of qke (the column kernel carries tke = qke/2), so once qke is fp64 JAX
+    # type-promotion widens every qke-touching intermediate to fp64. mynn_pbl.py
+    # contains NO explicit float32 narrowing on this path (only int32 index
+    # casts), and the column rho/dz are already fp64; the only remaining fp32
+    # inputs are u/v/w/theta/qv (the bulk fields, deliberately kept FP32_GATED to
+    # preserve the speedup). No source edit to mynn_pbl.py is needed.
+    "qke": (FP64, False),
     # Surface-layer stability and flux handles.
     "ustar": (FP64, False),
     "theta_flux": (FP64, False),
