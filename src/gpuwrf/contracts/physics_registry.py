@@ -114,7 +114,12 @@ CU_SCHEMES: Mapping[int, SchemeOption] = {
     0: SchemeOption("cu_physics", 0, "disabled", "no_cumulus", "accepted", "cumulus"),
     1: SchemeOption("cu_physics", 1, "Kain-Fritsch", "kfetascheme", "accepted", "cumulus"),
     2: SchemeOption("cu_physics", 2, "Betts-Miller-Janjic", "bmjscheme", "accepted", "cumulus"),
-    3: SchemeOption("cu_physics", 3, "Grell-Freitas", "gfscheme", "accepted", "cumulus"),
+    # GF(3) status bumped to "implemented" (v0.9.0 GPU-op): the scale-aware
+    # closure-ensemble kernel was rewritten as a jit/vmap-batched JAX path
+    # (physics._gf_jax.gfdrv_batched) and scan-wired into the operational cumulus
+    # slot (CU_SCAN_ADAPTERS[3], stateless State->State), savepoint-parity-gated
+    # against unmodified module_cu_gf_*.F (proofs/v060/gf_gpubatch_savepoint_parity.json).
+    3: SchemeOption("cu_physics", 3, "Grell-Freitas", "gfscheme", "implemented", "cumulus"),
     6: SchemeOption("cu_physics", 6, "Tiedtke", "tiedtkescheme", "accepted", "cumulus"),
     16: SchemeOption("cu_physics", 16, "New Tiedtke", "ntiedtkescheme", "accepted", "cumulus"),
 }

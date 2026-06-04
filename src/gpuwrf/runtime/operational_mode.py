@@ -1863,9 +1863,10 @@ _SCAN_WIRED_OPTIONS = {
     # sf_sfclay=0 off, 5 MYNN-sfclay (existing); 1 revised-MM5 / 7 Pleim-Xiu wired.
     "sf_sfclay_physics": (0, 1, 5, 7),
     # cu=0 no cumulus, 1 KF, 2 BMJ (fp64 savepoint-parity carry-threaded adapter),
-    # 6 modified-Tiedtke (v0.6.0 GPU-batched jit/vmap adapter). GF(3) stays CPU-ref
-    # (not vmap-rewritten); New-Tiedtke(16) not separately gated -> NOT wired.
-    "cu_physics": (0, 1, 2, 6),
+    # 3 Grell-Freitas (v0.9.0 GPU-batched jit/vmap stateless adapter), 6 modified-
+    # Tiedtke (v0.6.0 GPU-batched jit/vmap adapter). New-Tiedtke(16) not separately
+    # gated -> NOT wired.
+    "cu_physics": (0, 1, 2, 3, 6),
 }
 
 # Scheme-specific reasons a parity-passed option is NOT yet wired into the scan
@@ -1874,9 +1875,8 @@ _SCAN_UNWIRED_REASON = {
     # YSU(1)/ACM2(7) are now jax.lax.scan-traceable + scan-wired (v0.6.0 GPU-op).
     "bl_pbl_physics=2": "MYJ PBL has a WRF-savepoint column adapter, but no operational scan adapter/carry path yet",
     "sf_sfclay_physics=2": "Janjic Eta surface layer has a WRF-savepoint column adapter, but no operational scan adapter/carry path yet",
-    # cu=6 (modified Tiedtke) is now GPU-batched + scan-wired (in _SCAN_WIRED_OPTIONS),
-    # so it is intentionally absent here. GF(3) stays CPU-reference fail-closed.
-    "cu_physics=3": "Grell-Freitas is a CPU-NumPy reference port (gpu_runnable=False); GPU-batching TODO (sequential 16-member closure ensemble + beta-PDF gamma)",
+    # cu=3 (Grell-Freitas) and cu=6 (modified Tiedtke) are now GPU-batched +
+    # scan-wired (in _SCAN_WIRED_OPTIONS), so they are intentionally absent here.
     "cu_physics=16": "New Tiedtke is interface-compatible but not separately savepoint-gated by a distinct WRF source path; GPU-batching/gating TODO",
     "sf_surface_physics=2": "Noah-classic requires explicit noahclassic_static + noahclassic_land bundles (WRF REDPRM + 4-layer carry)",
 }
@@ -1920,7 +1920,7 @@ def _resolve_operational_suite(namelist: OperationalNamelist):
         raise UnsupportedSchemeSelection(
             "operational scan supports the v0.2.0 suite + the v0.6.0 scan-wired "
             "schemes (mp_physics in {0,1,2,3,4,6,8,10,16}, bl_pbl_physics in {0,1,5,7,8}, "
-            "sf_sfclay_physics in {0,1,5,7}, cu_physics in {0,1,2,6}, Noah-MP via "
+            "sf_sfclay_physics in {0,1,5,7}, cu_physics in {0,1,2,3,6}, Noah-MP via "
             "use_noahmp, explicit Noah-classic via sf_surface_physics=2 plus "
             "noahclassic_static/noahclassic_land). The following selected schemes "
             "are NOT scan-wired: "
