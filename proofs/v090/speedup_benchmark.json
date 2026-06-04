@@ -257,14 +257,18 @@
         "gpu_wallclock_total_s": null,
         "gpu_wallclock_per_fc_hr_s": null,
         "compile_overhead_s": null,
-        "steady_state_s_per_fc_hr": null
+        "steady_state_s_per_fc_hr": null,
+        "precision_mode": "gated_fp32 attempted (ship mode); full fp64 is the documented-finite-but-throttled fallback",
+        "MEASUREMENT_STATUS": "BLOCKED",
+        "blocked_reason": "d03 1km gated-fp32 went NONFINITE after forecast hour 1 (qke fp32 overflow; see proofs/v090/d03_1km_validation.json). No complete GPU wall-clock could be measured at ship precision. Full-fp64 d03 is finite but ~1:64-throttled (~16 min/0.3h) so a 24h fp64 timing also could not complete inside the burst. The 1km speedup is therefore UNMEASURED in this burst and remains a placeholder."
       },
       "results": {
         "PLACEHOLDER": true,
         "real_user_speedup_compile_inclusive": null,
         "steady_state_speedup_compile_excluded": null,
         "dt_matched_floor_speedup": null,
-        "note": "Filled by the piggyback. real_user_speedup = cpu_24h_wall / gpu_wallclock_total_s. HONESTY: this 1km speedup is GPU-one-1km-domain vs CPU-one-1km-domain (d03 isolated, slightly different grid extent), 24h, INDICATIVE. Headline lower bound uses conservative cpu denominator 151.6 s/fc-hr (3638 s/24h). dt_matched_floor divides per-fc-hr speedup by 1.5 (GPU dt 3s vs CPU 2s)."
+        "note": "NOT FILLED: gated-fp32 d03 NaN (qke) before completion; fp64 d03 too throttled to time a 24h run. Fill this after the qke->fp64 promotion makes a ship-speed 1km run complete.",
+        "MEASUREMENT_STATUS": "BLOCKED"
       }
     }
   },
