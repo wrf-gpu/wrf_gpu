@@ -1,6 +1,6 @@
 {
   "proof": "v060-consolidation-integration-matrix",
-  "git_head": "e54e2ac96f3166899ade8465426b66f314b05c95",
+  "git_head": "568a5a09cabe17e8933a7f66f341c7743f73d121",
   "branch": "worker/opus/v060-consolidation3",
   "base_trunk": "e998250 (trunk-0.9.0)",
   "wave1_base": "worker/opus/v060-consolidation (dcc9666)",
