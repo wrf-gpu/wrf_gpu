@@ -94,6 +94,14 @@ class NoahMPEnergyFluxes(NamedTuple):
     ``DTV*FVEG*HCV/DT`` (module_sf_noahmplsm.F:4062), required by the WRF energy
     closure check ``ERRENG`` (:1662). The coupler does not map it; it is returned
     for the closure proof and budget accounting.
+
+    ``t2mv``/``t2mb``/``t2`` (ADDITIVE, default None) are the Noah-MP LSM 2-m
+    air temperature diagnostics: ``t2mv`` over the vegetated tile (T2MV,
+    :4148-4163), ``t2mb`` over the bare tile (T2MB, :4461-4474), and ``t2`` the
+    FVEG-combined land 2-m temperature ``FVEG*T2MV + (1-FVEG)*T2MB`` (vegetated)
+    or ``T2MB`` (bare/urban) — the value real WRF writes back as the land T2,
+    OVERWRITING the surface-layer MYNN 2-m diagnostic (module_surface_driver.F
+    :3469-3473). Routed through the coupler so land T2 is the LSM value.
     """
 
     fsh: jax.Array        # total sensible heat [W/m2] -> HFX
@@ -108,6 +116,9 @@ class NoahMPEnergyFluxes(NamedTuple):
     chv: jax.Array        # canopy heat exchange coeff
     chb: jax.Array        # bare heat exchange coeff
     canhs: "jax.Array | None" = None  # canopy heat-storage change [W/m2] (closure)
+    t2mv: "jax.Array | None" = None   # 2-m air temp over vegetated tile [K]
+    t2mb: "jax.Array | None" = None   # 2-m air temp over bare tile [K]
+    t2: "jax.Array | None" = None     # FVEG-combined land 2-m air temp [K] -> T2
 
 
 class NoahMPEtFluxes(NamedTuple):
