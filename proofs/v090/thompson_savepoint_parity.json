@@ -125,9 +125,9 @@
     "nr": {
       "abs_tol": 0.001,
       "enforced_cells": 228228,
-      "max_abs_err": 0.40471570323165507,
-      "max_rel_err": 6.856012326952339e+25,
-      "pass": false,
+      "max_abs_err": 0.0007151156639982029,
+      "max_rel_err": 1.0413300337574647e+25,
+      "pass": true,
       "rel_tol": 0.0001
     },
     "qc": {
@@ -157,9 +157,9 @@
     "qr": {
       "abs_tol": 1e-09,
       "enforced_cells": 228228,
-      "max_abs_err": 7.531210103609303e-08,
-      "max_rel_err": 6.797253560764773e+19,
-      "pass": false,
+      "max_abs_err": 4.117064733397287e-11,
+      "max_rel_err": 1.4045933572791063e+18,
+      "pass": true,
       "rel_tol": 1e-06
     },
     "qs": {
@@ -173,15 +173,15 @@
     "qv": {
       "abs_tol": 1e-09,
       "enforced_cells": 228228,
-      "max_abs_err": 7.084625073226769e-09,
-      "max_rel_err": 1.0803342816517476e-06,
+      "max_abs_err": 5.308806763984486e-09,
+      "max_rel_err": 5.789069933138424e-07,
       "pass": true,
       "rel_tol": 1e-06
     },
     "th": {
       "abs_tol": 1e-06,
       "enforced_cells": 228228,
-      "frac_within_1_float32_ulp": 0.9996669996669997,
+      "frac_within_1_float32_ulp": 0.9996582365003418,
       "frac_within_2_float32_ulp": 1.0,
       "max_abs_err": 4.27760056140869e-05,
       "max_err_float32_ulp": 1.4016841519623995,
