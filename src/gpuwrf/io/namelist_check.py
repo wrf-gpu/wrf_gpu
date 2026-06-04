@@ -69,12 +69,16 @@ SUPPORTED_OPTIONS: dict[str, SupportedOption] = {
         key="cu_physics",
         supported_values=frozenset(ACCEPTED_CU_PHYSICS),
         implemented=(
-            "0=disabled, 1=Kain-Fritsch (GPU-operational, scan-wired); "
-            "3=Grell-Freitas, 6=Tiedtke, 16=New Tiedtke "
-            "(savepoint-parity CPU-NumPy reference ports, NOT yet GPU-scan-wired -- "
-            "selectable for reference but fail-closed in the operational GPU scan, GPU-batching TODO)"
+            "0=disabled, 1=Kain-Fritsch, 2=Betts-Miller-Janjic (fp64 savepoint-parity), "
+            "6=Tiedtke (all GPU-operational, scan-wired); "
+            "3=Grell-Freitas (savepoint-parity CPU reference; GPU closure-ensemble batch TODO), "
+            "16=New Tiedtke (accepted, NOT separately source-gated; fail-closed in the GPU scan) "
+            "-- 3/16 are selectable for reference but fail-closed in the operational GPU scan"
         ),
-        action="Use cu_physics=0 or 1 for the operational GPU scan; 3/6/16 remain CPU-reference-only.",
+        action=(
+            "Use cu_physics=0/1/2/6 for the operational GPU scan; "
+            "3=Grell-Freitas and 16=New Tiedtke remain fail-closed (not scan-wired)."
+        ),
     ),
     "bl_pbl_physics": SupportedOption(
         key="bl_pbl_physics",

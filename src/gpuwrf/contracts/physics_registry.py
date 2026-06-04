@@ -24,7 +24,7 @@ WRF Registry lines verified against
 * BouLac(8): ``state:qke`` reused as the prognostic TKE storage plus PBLH/K
   diagnostics (frozen-contract extension, 2026-06-04).
 * Noah classic(2): ``state:flx4,fvb,fbur,fgsn,smcrel,xlaidyn``.
-* Cumulus options KF(1), Grell-Freitas(3), Tiedtke(6/16) use the common
+* Cumulus options KF(1), BMJ(2), Grell-Freitas(3), Tiedtke(6/16) use the common
   ``R*CUTEN`` tendency family and scheme-specific carry listed below.
 
 Append-only State rule:
@@ -42,7 +42,7 @@ from dataclasses import dataclass
 from typing import Mapping
 
 
-PHYSICS_REGISTRY_VERSION = "v0.6.0-S0-frozen-2026-06-03-wsm-sm-extension"
+PHYSICS_REGISTRY_VERSION = "v0.6.0-S0-frozen-2026-06-04-consolidation3-bmj2-extension"
 
 
 @dataclass(frozen=True)
@@ -60,7 +60,7 @@ class SchemeOption:
 ACCEPTED_MP_PHYSICS: tuple[int, ...] = (0, 1, 2, 3, 4, 6, 8, 10, 16)
 ACCEPTED_BL_PBL_PHYSICS: tuple[int, ...] = (0, 1, 2, 5, 7, 8)
 ACCEPTED_SF_SFCLAY_PHYSICS: tuple[int, ...] = (0, 1, 2, 5, 7)
-ACCEPTED_CU_PHYSICS: tuple[int, ...] = (0, 1, 3, 6, 16)
+ACCEPTED_CU_PHYSICS: tuple[int, ...] = (0, 1, 2, 3, 6, 16)
 ACCEPTED_SF_SURFACE_PHYSICS: tuple[int, ...] = (0, 2, 4)
 ACCEPTED_RA_SW_PHYSICS: tuple[int, ...] = (0, 1, 4)
 ACCEPTED_RA_LW_PHYSICS: tuple[int, ...] = (0, 1, 4)
@@ -113,6 +113,7 @@ SFCLAY_SCHEMES: Mapping[int, SchemeOption] = {
 CU_SCHEMES: Mapping[int, SchemeOption] = {
     0: SchemeOption("cu_physics", 0, "disabled", "no_cumulus", "accepted", "cumulus"),
     1: SchemeOption("cu_physics", 1, "Kain-Fritsch", "kfetascheme", "accepted", "cumulus"),
+    2: SchemeOption("cu_physics", 2, "Betts-Miller-Janjic", "bmjscheme", "accepted", "cumulus"),
     3: SchemeOption("cu_physics", 3, "Grell-Freitas", "gfscheme", "accepted", "cumulus"),
     6: SchemeOption("cu_physics", 6, "Tiedtke", "tiedtkescheme", "accepted", "cumulus"),
     16: SchemeOption("cu_physics", 16, "New Tiedtke", "ntiedtkescheme", "accepted", "cumulus"),
@@ -374,7 +375,7 @@ FIELD_SPECS: tuple[RegistryFieldSpec, ...] = (
             "cumulus_tendency",
             "mass_3d",
             "PhysicsCarry",
-            ("cu1", "cu3", "cu6", "cu16", "mp10"),
+            ("cu1", "cu2", "cu3", "cu6", "cu16", "mp10"),
             notes="WRF R*CUTEN state/tendency family carried between physics driver calls.",
         )
         for leaf in (
@@ -390,8 +391,9 @@ FIELD_SPECS: tuple[RegistryFieldSpec, ...] = (
             "RQINCUTEN",
         )
     ),
-    _field("raincv", "RAINCV", "RAINCV", "cumulus_diagnostic", "surface_2d", "PhysicsDiagnostics", ("cu1", "cu3", "cu6", "cu16")),
-    _field("rainshv", "RAINSHV", "RAINSHV", "cumulus_diagnostic", "surface_2d", "PhysicsDiagnostics", ("cu1", "cu3", "cu6", "cu16")),
+    _field("raincv", "RAINCV", "RAINCV", "cumulus_diagnostic", "surface_2d", "PhysicsDiagnostics", ("cu1", "cu2", "cu3", "cu6", "cu16")),
+    _field("rainshv", "RAINSHV", "RAINSHV", "cumulus_diagnostic", "surface_2d", "PhysicsDiagnostics", ("cu1", "cu2", "cu3", "cu6", "cu16")),
+    _field("cldefi", "CLDEFI", "CLDEFI", "cumulus_carry", "surface_2d", "PhysicsCarry", ("cu2",), notes="BMJ precipitation efficiency/cloud efficiency state."),
     _field("nca", "NCA", "NCA", "cumulus_carry", "surface_2d", "PhysicsCarry", ("cu1",), notes="KF relaxation counter."),
     _field("w0avg", "W0AVG", "w0avg", "cumulus_carry", "mass_3d", "PhysicsCarry", ("cu1",), notes="KF average vertical velocity."),
     *(
@@ -420,6 +422,7 @@ FIELD_SPECS_BY_LEAF: Mapping[str, RegistryFieldSpec] = {spec.leaf: spec for spec
 CUMULUS_TENDENCY_MEMBERS: Mapping[int, tuple[str, ...]] = {
     0: (),
     1: ("rucuten", "rvcuten", "rthcuten", "rqvcuten", "rqrcuten", "rqccuten", "rqscuten", "rqicuten"),
+    2: ("rthcuten", "rqvcuten"),
     3: ("rthcuten", "rqvcuten", "rqrcuten", "rqccuten", "rqscuten", "rqicuten"),
     6: ("rthcuten", "rqvcuten", "rqrcuten", "rqccuten", "rqscuten", "rqicuten"),
     16: ("rthcuten", "rqvcuten", "rqrcuten", "rqccuten", "rqscuten", "rqicuten"),
@@ -428,6 +431,7 @@ CUMULUS_TENDENCY_MEMBERS: Mapping[int, tuple[str, ...]] = {
 CUMULUS_CARRY_MEMBERS: Mapping[int, tuple[str, ...]] = {
     0: (),
     1: ("w0avg", "nca"),
+    2: ("cldefi",),
     3: (
         "cugd_qvten",
         "cugd_tten",

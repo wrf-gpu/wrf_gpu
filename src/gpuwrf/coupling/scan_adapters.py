@@ -23,8 +23,8 @@ Scope (HONEST tracability, audited 2026-06-03 -- see the scan-wire handoff):
   (``ustar``/``theta_flux``/``qv_flux``/``tau_u``/``tau_v``/``rhosfc``/``fltv``)
   that ``surface_adapter`` writes for sf_sfclay=5, so they drop into the
   surface-layer slot.
-* **Cumulus** -- KF (1) is a jit-able (``jax.lax.cond``) per-column kernel; its
-  adapter vmaps the column step over the grid and threads its ``w0avg``/``nca``
+* **Cumulus** -- KF (1) and BMJ (2) are jit/vmap-traceable per-column kernels;
+  their adapters vmap the column step over the grid and thread scheme-specific
   persistent carry through the operational carry's additive ``cumulus_carry``
   leaf. Tendencies (``RTHCUTEN``/``RQ*CUTEN``) are applied as ``state += dt*tend``
   and ``RAINCV`` accumulates into ``rainc_acc`` (mm).
@@ -82,6 +82,7 @@ from gpuwrf.physics.microphysics_wdm6 import wdm6_physics_tendency
 from gpuwrf.physics.microphysics_wsm3 import wsm3_physics_tendency
 from gpuwrf.physics.microphysics_wsm5 import wsm5_physics_tendency
 from gpuwrf.physics.microphysics_wsm6 import wsm6_physics_tendency
+from gpuwrf.physics.cumulus_bmj import initial_bmj_cldefi, step_bmj_column
 from gpuwrf.physics.cumulus_kf import step_kf_column
 from gpuwrf.physics.cumulus_tiedtke_jax import tiedtke_column_jax
 from gpuwrf.physics.pbl_acm2 import acm2_columns
@@ -571,6 +572,79 @@ def tiedtke_adapter(state: State, dt: float, grid=None, *, stepcu: int = 1) -> S
     return next_state
 
 
+def bmj_adapter(state: State, dt: float, cldefi, *, grid=None):
+    """cu=2 Betts-Miller-Janjic cumulus scan adapter.
+
+    BMJ writes WRF ``RTHCUTEN``/``RQVCUTEN`` tendencies and deep-convective
+    ``RAINCV``.  Its persistent WRF state member is ``CLDEFI`` (cloud
+    efficiency), carried as a cumulus sibling tree rather than a dycore leaf.
+    """
+
+    del grid
+    nz, ny, nx = state.theta.shape
+    rho = _rho_from_state(state)
+    T = _temperature_from_theta(state.theta, state.p)
+    interface_z = state.ph.astype(jnp.float64) / GRAVITY_M_S2
+    dz_full = jnp.maximum(interface_z[1:] - interface_z[:-1], 1.0)
+    pii = _exner_columns(_mp_in(state.p, ny, nx, nz))
+
+    def _cols(field3d):
+        return jnp.moveaxis(field3d, 0, -1).reshape(ny * nx, nz)
+
+    T_c = _cols(T)
+    qv_c = _cols(state.qv)
+    p_c = _cols(state.p)
+    dz_c = _cols(dz_full)
+    rho_c = _cols(rho)
+    cldefi_c = jnp.asarray(cldefi, jnp.float64).reshape(ny * nx)
+    xland_c = jnp.asarray(state.xland, jnp.float64).reshape(ny * nx)
+
+    def _one(T0, QV0, P0, DZQ, RHOE, PII, XLAND, CLDEFI):
+        res = step_bmj_column(
+            T0,
+            QV0,
+            P0,
+            DZQ,
+            RHOE,
+            PII,
+            float(dt),
+            stepcu=1,
+            xland=XLAND,
+            cldefi=CLDEFI,
+        )
+        st = res.tendency.state_tendencies
+        cc = res.carry.cumulus
+        return (
+            st["theta"],
+            st["qv"],
+            res.tendency.accumulator_increments["rainc_acc"],
+            cc["cldefi"],
+        )
+
+    rth, rqv, raincv, cldefi_next_c = jax.vmap(_one)(
+        T_c, qv_c, p_c, dz_c, rho_c, pii, xland_c, cldefi_c
+    )
+
+    def _back(field2d):
+        return jnp.moveaxis(field2d.reshape(ny, nx, nz), -1, 0)
+
+    dt_f = float(dt)
+    next_state = state.replace(
+        theta=(state.theta + dt_f * _back(rth)).astype(_output_dtype(state, "theta")),
+        qv=(state.qv + dt_f * _back(rqv)).astype(_output_dtype(state, "qv")),
+        rainc_acc=(
+            jnp.asarray(state.rainc_acc, jnp.float64) + raincv.reshape(ny, nx)
+        ).astype(_output_dtype(state, "rainc_acc")),
+    )
+    return next_state, cldefi_next_c.reshape(ny, nx)
+
+
+def initial_bmj_carry(state: State):
+    """Seed BMJ ``CLDEFI`` carry with BMJINIT's default value."""
+
+    return initial_bmj_cldefi(state.theta.shape[1:])
+
+
 # --- PBL adapters (bl_pbl_physics) --------------------------------------------
 #
 # YSU (1) / ACM2 (7) are the v0.6.0 ``jax.lax.scan``-traceable / vmap-batched PBL
@@ -773,11 +847,13 @@ SFCLAY_SCAN_ADAPTERS = {
 # _SCAN_UNWIRED_REASON) -- its faithful closure ensemble is not yet vmap-rewritten.
 CU_SCAN_ADAPTERS = {
     1: kf_adapter,
+    2: bmj_adapter,
     6: tiedtke_adapter,
 }
 
 # Cumulus options that carry NO persistent cumulus state (plain State->State, like
-# the microphysics adapters). KF (1) is excluded -- it threads (w0avg, nca).
+# the microphysics adapters). KF (1) and BMJ (2) are excluded -- KF threads
+# (w0avg, nca) and BMJ threads CLDEFI.
 CU_STATELESS_SCAN_ADAPTERS = {
     6: tiedtke_adapter,
 }
@@ -804,10 +880,12 @@ __all__ = [
     "pleim_xiu_sfclay_adapter",
     "kf_adapter",
     "tiedtke_adapter",
+    "bmj_adapter",
     "ysu_pbl_adapter",
     "acm2_pbl_adapter",
     "boulac_pbl_adapter",
     "initial_kf_carry",
+    "initial_bmj_carry",
     "MP_SCAN_ADAPTERS",
     "SFCLAY_SCAN_ADAPTERS",
     "CU_SCAN_ADAPTERS",
