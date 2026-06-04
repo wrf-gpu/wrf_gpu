@@ -1,0 +1,21 @@
+{
+  "output_dir": "/tmp/m7_pipeline_runs/l2_d02_20260509_18z_l2_72h_20260511T190519Z",
+  "proofs": {
+    "bounds": "proofs/v090/d02_recheck_qkefp64/bounds_check_l2_d02.json",
+    "inventory": "proofs/v090/d02_recheck_qkefp64/l2_inventory.json",
+    "tier4_rmse": "proofs/v090/d02_recheck_qkefp64/tier4_rmse_l2_d02.json",
+    "wall_clock": "proofs/v090/d02_recheck_qkefp64/wall_clock_l2_d02.json"
+  },
+  "publish_readiness": "nested-grid backfills are not publish-ready from this sprint evidence",
+  "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z",
+  "run_id": "20260509_18z_l2_72h_20260511T190519Z",
+  "schema": "M7L2D02ReplayValidationSummary",
+  "schema_version": 1,
+  "statuses": {
+    "bounds": "BLOCKED",
+    "pipeline": "PIPELINE_BLOCKED",
+    "rmse": "BLOCKED",
+    "wall_clock": "BLOCKED"
+  },
+  "verdict": "L2_D02_BLOCKED"
+}

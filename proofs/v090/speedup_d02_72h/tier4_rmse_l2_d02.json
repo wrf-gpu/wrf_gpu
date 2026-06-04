@@ -1,0 +1,53 @@
+{
+  "failures": [],
+  "fields": {
+    "T2": {
+      "gen2_source_file": "/tmp/vburst_runs/20260507_18z_l2_72h_20260513T124307Z/wrfout_d02_2026-05-10_18:00:00",
+      "max_abs_error": 4.86724853515625,
+      "mean_error": -0.6587165234905437,
+      "pass": true,
+      "rmse": 0.8128759860992432,
+      "shape": [
+        66,
+        159
+      ],
+      "threshold": 3.0,
+      "units": "K",
+      "valid_time_utc": "2026-05-10T18:00:00+00:00"
+    },
+    "U10": {
+      "gen2_source_file": "/tmp/vburst_runs/20260507_18z_l2_72h_20260513T124307Z/wrfout_d02_2026-05-10_18:00:00",
+      "max_abs_error": 10.5654296875,
+      "mean_error": -3.267252797790174,
+      "pass": true,
+      "rmse": 3.9998576641082764,
+      "shape": [
+        66,
+        159
+      ],
+      "threshold": 7.5,
+      "units": "m s-1",
+      "valid_time_utc": "2026-05-10T18:00:00+00:00"
+    },
+    "V10": {
+      "gen2_source_file": "/tmp/vburst_runs/20260507_18z_l2_72h_20260513T124307Z/wrfout_d02_2026-05-10_18:00:00",
+      "max_abs_error": 9.604020118713379,
+      "mean_error": -1.6682694648245708,
+      "pass": true,
+      "rmse": 2.9739277362823486,
+      "shape": [
+        66,
+        159
+      ],
+      "threshold": 7.5,
+      "units": "m s-1",
+      "valid_time_utc": "2026-05-10T18:00:00+00:00"
+    }
+  },
+  "final_wrfout": "/tmp/vburst_d02_72h/l2_d02_20260507_18z_l2_72h_20260513T124307Z/wrfout_d02_2026-05-10_18:00:00",
+  "reference_run_dir": "/tmp/vburst_runs/20260507_18z_l2_72h_20260513T124307Z",
+  "schema": "M7L2D02Tier4RMSE",
+  "schema_version": 1,
+  "status": "PASS",
+  "valid_time_utc": "2026-05-10T18:00:00+00:00"
+}

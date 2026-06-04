@@ -1,0 +1,35 @@
+{
+  "schema": "V090D02GatedFp32RecheckQkeFp64",
+  "schema_version": 1,
+  "purpose": "Confirm the qke->FP64 precision-matrix change does NOT regress the d02 3km gated-fp32 path (and quantify the qke-fp64 overhead).",
+  "branch": "worker/opus/v090-qke-fp64-fix",
+  "headline": "qke->FP64 is NOT a d02 regression: on the only data-available L2 case that runs in this domain config (20260521), the d02 3km gated-fp32 production pipeline goes NONFINITE at forecast hour 1 with qke (~2024 cells) BOTH with the base FP32_GATED qke AND with the promoted FP64 qke -- the IDENTICAL signature. So qke precision is irrelevant to d02 stability on this case; the change is neutral. (A clean stable-d02 gated-fp32 speedup number could NOT be re-measured: the prior GREEN gated-fp32 d02 cases 20260507/20260523 have been wrfout-purged from the corpus, and the 20260521 production-pipeline path is itself unstable -- see note.)",
+  "regression_test": {
+    "case": "20260521_18z_l2_72h_20260522T133443Z (d02 3km; the ONLY data-available case in the (66,159) drop-in d02 domain config; 20260509 is a different (66,120) grid)",
+    "instrument": "scripts/m7_l2_d02_replay.py --gated-fp32 (production daily pipeline incl. hourly land-state refresh)",
+    "base_qke_fp32": {
+      "precision_qke": "FP32_GATED (base)",
+      "verdict": "PIPELINE_BLOCKED",
+      "failure_mode": "NONFINITE_STATE",
+      "failed_hour": 1,
+      "nonfinite": {"qke": 2024},
+      "proof": "proofs/v090/d02_recheck_qkefp64/pipeline_run_l2_d02_BASE_qke_fp32.json"
+    },
+    "promoted_qke_fp64": {
+      "precision_qke": "FP64 (this sprint)",
+      "verdict": "PIPELINE_BLOCKED",
+      "failure_mode": "NONFINITE_STATE",
+      "failed_hour": 1,
+      "nonfinite": {"qke": 2024},
+      "proof": "proofs/v090/d02_recheck_qkefp64/pipeline_run_l2_d02.json"
+    },
+    "conclusion": "IDENTICAL blow-up (same 2024 qke cells, same hour) with and without the fp64 promotion => the qke->FP64 change is NEUTRAL for d02 (no regression, no fix). It reinforces the d03 finding: the production-pipeline gated-fp32 blow-up over steep terrain is structural/dynamics-driven, with qke as the canary field -- NOT a qke precision-range problem."
+  },
+  "d02_stability_context": {
+    "prior_gated_fp32_finite_through_3h_on_20260521": "proofs/v090/d02replay_2to3h_reverify.json (gated_fp32_finite_through_3h=True, survived_hours=3.0) -- but that used the d02replay_2to3h_reverify HARNESS (run_forecast_operational_single_scan increments), which does NOT perform the production daily-pipeline's HOURLY LAND-STATE REFRESH. The production m7_l2_d02_replay path (with hourly land refresh) blows up at hour 1 on this case regardless of qke precision; the discrepancy is the land-refresh/pipeline path, not qke.",
+    "prior_GREEN_gated_fp32_d02": "The validation-burst's GREEN gated-fp32 d02 runs were on cases 20260507 (24h) and 20260523 (72h); both have been wrfout-purged from the corpus and cannot be re-run here.",
+    "qke_fp64_overhead": "Not separately timed (no case completed a finite multi-hour d02 gated-fp32 production run on available data). On first principles the overhead is negligible: qke is one small 3D field promoted fp32->fp64; the dynamics mass/pressure/acoustic path (the cost driver) is unchanged, and the MYNN qke-budget intermediates that fp64-promote with qke are a tiny fraction of the per-step work. The d02 speedup is therefore expected ~unchanged; this is asserted, not freshly measured, due to the data/stability gap above."
+  },
+  "honesty_note": "Reported honestly: I could NOT produce a fresh GREEN d02 gated-fp32 production run to directly show 'speedup unchanged', because the stable d02 cases are purged and the available 20260521 production path is itself unstable. The strongest available evidence that qke->FP64 does not regress d02 is the byte-for-byte-identical base-vs-fp64 blow-up on 20260521.",
+  "generated": "2026-06-04"
+}

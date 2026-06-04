@@ -1,0 +1,982 @@
+{
+  "all_finite_check": {
+    "all_finite": true,
+    "field_count": 56,
+    "fields": {
+      "Nc": {
+        "dtype": "float32",
+        "finite": true,
+        "max": 0.0,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "Ng": {
+        "dtype": "float32",
+        "finite": true,
+        "max": 0.0,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "Ni": {
+        "dtype": "float32",
+        "finite": true,
+        "max": 0.0,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "Nn": {
+        "dtype": "float32",
+        "finite": true,
+        "max": 0.0,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "Nr": {
+        "dtype": "float32",
+        "finite": true,
+        "max": 16985.880859375,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "Ns": {
+        "dtype": "float32",
+        "finite": true,
+        "max": 0.0,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "fltv": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 0.40507524924433697,
+        "min": -0.0025895751533380274,
+        "nonfinite_count": 0,
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "graupel_acc": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 0.0,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "ice_acc": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 0.0,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "lakemask": {
+        "dtype": "float32",
+        "finite": true,
+        "max": 0.0,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "lu_index": {
+        "dtype": "int32",
+        "finite": true,
+        "max": 17.0,
+        "min": 5.0,
+        "nonfinite_count": 0,
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "mavail": {
+        "dtype": "float32",
+        "finite": true,
+        "max": 1.0,
+        "min": 0.02182006649672985,
+        "nonfinite_count": 0,
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "mu": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 96259.60298665364,
+        "min": 65575.23321787972,
+        "nonfinite_count": 0,
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "mu_bdy": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 1693.0970865885415,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          73,
+          4,
+          5,
+          1,
+          160
+        ]
+      },
+      "mu_perturbation": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 1259.602986653641,
+        "min": 838.4310214844154,
+        "nonfinite_count": 0,
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "mu_total": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 96259.60298665364,
+        "min": 65575.23321787972,
+        "nonfinite_count": 0,
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "mub_bdy": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 95000.0,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          1,
+          4,
+          5,
+          1,
+          160
+        ]
+      },
+      "p": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 101119.4609375,
+        "min": 5183.843798649869,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "p_bdy": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 1843.7890625,
+        "min": -12.228515625,
+        "nonfinite_count": 0,
+        "shape": [
+          73,
+          4,
+          5,
+          44,
+          160
+        ]
+      },
+      "p_perturbation": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 1413.2578125,
+        "min": -61.254618739440495,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "p_total": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 101119.4609375,
+        "min": 5183.843798649869,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "pb_bdy": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 99706.203125,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          1,
+          4,
+          5,
+          44,
+          160
+        ]
+      },
+      "ph": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 202938.22200520834,
+        "min": -74.55286527518308,
+        "nonfinite_count": 0,
+        "shape": [
+          45,
+          66,
+          159
+        ]
+      },
+      "ph_bdy": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 8724.713216145832,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          73,
+          4,
+          5,
+          45,
+          160
+        ]
+      },
+      "ph_perturbation": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 7717.737630208334,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          45,
+          66,
+          159
+        ]
+      },
+      "ph_total": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 202938.22200520834,
+        "min": -74.55286527518308,
+        "nonfinite_count": 0,
+        "shape": [
+          45,
+          66,
+          159
+        ]
+      },
+      "phb_bdy": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 195220.5,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          1,
+          4,
+          5,
+          45,
+          160
+        ]
+      },
+      "qc": {
+        "dtype": "float32",
+        "finite": true,
+        "max": 0.0018471849616616964,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "qg": {
+        "dtype": "float32",
+        "finite": true,
+        "max": 0.0,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "qi": {
+        "dtype": "float32",
+        "finite": true,
+        "max": 0.0,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "qke": {
+        "dtype": "float32",
+        "finite": true,
+        "max": 7.6283278465271,
+        "min": 9.999999747378752e-06,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "qr": {
+        "dtype": "float32",
+        "finite": true,
+        "max": 0.001359253190457821,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "qs": {
+        "dtype": "float32",
+        "finite": true,
+        "max": 0.0,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "qv": {
+        "dtype": "float32",
+        "finite": true,
+        "max": 0.014359619468450546,
+        "min": 2.527996912249364e-06,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "qv_bdy": {
+        "dtype": "float32",
+        "finite": true,
+        "max": 0.01205545011907816,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          73,
+          4,
+          5,
+          44,
+          160
+        ]
+      },
+      "qv_flux": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 6.914194993253612e-05,
+        "min": 1.358747066639761e-07,
+        "nonfinite_count": 0,
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "rain_acc": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 795.8776210637574,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "rainc_acc": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 0.0,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "rhosfc": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 1.2008246081461806,
+        "min": 0.8901151247486736,
+        "nonfinite_count": 0,
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "roughness_m": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 0.13511454010009766,
+        "min": 0.00285,
+        "nonfinite_count": 0,
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "snow_acc": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 0.0,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "soil_moisture": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 1.0,
+        "min": 0.02182006649672985,
+        "nonfinite_count": 0,
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "t_skin": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 303.24822998046875,
+        "min": 277.98638916015625,
+        "nonfinite_count": 0,
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "tau_u": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 0.18409198425728363,
+        "min": -0.5982678680090117,
+        "nonfinite_count": 0,
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "tau_v": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 0.5255909171587473,
+        "min": -0.10375425044809232,
+        "nonfinite_count": 0,
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "theta": {
+        "dtype": "float32",
+        "finite": true,
+        "max": 498.24554443359375,
+        "min": 290.11724853515625,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "theta_bdy": {
+        "dtype": "float32",
+        "finite": true,
+        "max": 503.4005126953125,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          73,
+          4,
+          5,
+          44,
+          160
+        ]
+      },
+      "theta_flux": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 0.4004264329244462,
+        "min": -0.003107206345099559,
+        "nonfinite_count": 0,
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "u": {
+        "dtype": "float32",
+        "finite": true,
+        "max": 49.034996032714844,
+        "min": -7.867804527282715,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          66,
+          160
+        ]
+      },
+      "u_bdy": {
+        "dtype": "float32",
+        "finite": true,
+        "max": 57.246971130371094,
+        "min": -6.354913234710693,
+        "nonfinite_count": 0,
+        "shape": [
+          73,
+          4,
+          5,
+          44,
+          160
+        ]
+      },
+      "ustar": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 0.8261877298454694,
+        "min": 0.003867112962185228,
+        "nonfinite_count": 0,
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "v": {
+        "dtype": "float32",
+        "finite": true,
+        "max": 14.956442832946777,
+        "min": -12.440064430236816,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          67,
+          159
+        ]
+      },
+      "v_bdy": {
+        "dtype": "float32",
+        "finite": true,
+        "max": 34.880859375,
+        "min": -12.26510238647461,
+        "nonfinite_count": 0,
+        "shape": [
+          73,
+          4,
+          5,
+          44,
+          160
+        ]
+      },
+      "w": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 1.9037660192716206,
+        "min": -2.3472741617243913,
+        "nonfinite_count": 0,
+        "shape": [
+          45,
+          66,
+          159
+        ]
+      },
+      "w_bdy": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 0.44315358996391296,
+        "min": -0.26531562209129333,
+        "nonfinite_count": 0,
+        "shape": [
+          73,
+          4,
+          5,
+          45,
+          160
+        ]
+      },
+      "xland": {
+        "dtype": "float32",
+        "finite": true,
+        "max": 2.0,
+        "min": 1.0,
+        "nonfinite_count": 0,
+        "shape": [
+          66,
+          159
+        ]
+      }
+    }
+  },
+  "cpu_affinity": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "device": "cuda:0",
+  "domain": "d02",
+  "hours": 72,
+  "metadata": {
+    "boundary": {
+      "bdy_width": 5,
+      "child_domain": "d02",
+      "child_grid": {
+        "dx_m": 3000.0,
+        "dy_m": 3000.0,
+        "mass_shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "child_history_file_count": 73,
+      "nesting": {
+        "horizontal_interpolation": "bilinear on native WRF parent index coordinates",
+        "i_parent_start": 24,
+        "j_parent_start": 20,
+        "parent_grid_ratio": 3
+      },
+      "padded_side_length": 160,
+      "parent_domain": "d01",
+      "parent_grid": {
+        "dx_m": 9000.0,
+        "dy_m": 9000.0,
+        "mass_shape": [
+          44,
+          59,
+          93
+        ]
+      },
+      "parent_history_file_count": 73,
+      "schema": "nested-parent-strip-pack-v2",
+      "side_order": [
+        "W",
+        "E",
+        "S",
+        "N"
+      ],
+      "source": "Gen2 L2 parent-domain hourly wrfout nested interpolation",
+      "source_run_dir": "/tmp/vburst_runs/20260507_18z_l2_72h_20260513T124307Z",
+      "strip_order": "WRF wrfbdy order: outer-to-inner bdy_width, vertical, side_index",
+      "times": 73,
+      "variables": [
+        "U",
+        "V",
+        "W",
+        "T",
+        "QVAPOR",
+        "P",
+        "PB",
+        "PH",
+        "PHB",
+        "MU",
+        "MUB"
+      ],
+      "wrfbdy_path": "/tmp/vburst_runs/20260507_18z_l2_72h_20260513T124307Z/wrfbdy_d01",
+      "wrfbdy_width_source": "decode_wrfbdy"
+    },
+    "domain": "d02",
+    "grid": {
+      "dx_m": 3000.0,
+      "dy_m": 3000.0,
+      "mass_shape": [
+        44,
+        66,
+        159
+      ],
+      "wrf_staggered_extent": [
+        45,
+        67,
+        160
+      ]
+    },
+    "l2_replay_adapter": {
+      "actual_mass_shape_yx": [
+        66,
+        159
+      ],
+      "boundary_source": "parent d01 hourly wrfout interpolated to child d02 side strips",
+      "domain": "d02",
+      "expected_mass_shape_yx": [
+        66,
+        159
+      ],
+      "ic_source": "wrfout snapshot at t=0 plus wrfinput metrics/land state",
+      "parent_domain": "d01"
+    },
+    "land_state_refresh": {
+      "cadence": "hourly forecast output boundary",
+      "enabled": true,
+      "records": []
+    },
+    "namelist": {
+      "acoustic_substeps": 10,
+      "damp_opt": 3,
+      "dampcoef": 0.2,
+      "diff_6th_factor": 0.12,
+      "diff_6th_opt": 2,
+      "dt_s": 10.0,
+      "epssm": 0.5,
+      "force_fp64": false,
+      "radiation_cadence_steps": 180,
+      "rk_order": 3,
+      "run_boundary": true,
+      "run_physics": true,
+      "top_lid": true,
+      "use_flux_advection": true,
+      "use_vertical_solver": true,
+      "w_damping": 1,
+      "zdamp": 5000.0
+    },
+    "qke_coldstart": {
+      "note": "parent wrfout carried no real QKE (MAXVAL<0.0002); seeded WRF cold-start background TKE profile",
+      "qke_max": 4.992201138520613e-05,
+      "seeded": true,
+      "wrf_ref": "phys/module_bl_mynnedmf.F:618-691 (mym_initialize INITIALIZE_QKE)"
+    },
+    "run_dir": "/tmp/vburst_runs/20260507_18z_l2_72h_20260513T124307Z",
+    "run_id": "20260507_18z_l2_72h_20260513T124307Z",
+    "source": "gpuwrf.integration.d02_replay.build_l2_d02_replay_case"
+  },
+  "output_dir": "/tmp/vburst_d02_72h/l2_d02_20260507_18z_l2_72h_20260513T124307Z",
+  "repeatability_status": "NOT_RUN",
+  "restart_probe_status": "NOT_RUN",
+  "run_dir": "/tmp/vburst_runs/20260507_18z_l2_72h_20260513T124307Z",
+  "run_id": "20260507_18z_l2_72h_20260513T124307Z",
+  "run_start_utc": "2026-05-07T18:00:00+00:00",
+  "schema": "M7DailyPipelineRun",
+  "schema_version": 1,
+  "speedup_status": "BELOW_TARGET",
+  "station_score_summary": {
+    "acceptance": {
+      "finite_scores": false,
+      "joined_rows_at_least_100": false
+    },
+    "joined_rows": 0,
+    "scores": {},
+    "status": "NOT_RUN"
+  },
+  "verdict": "PIPELINE_PARTIAL",
+  "wall_clock_forecast_only_s": 2065.003390177153,
+  "wall_clock_per_forecast_hour_s": 29.859530008680142,
+  "wall_clock_per_hour_s": [
+    66.84479295497295,
+    57.31580824102275,
+    27.69024459103821,
+    27.72297838999657,
+    27.704786857008003,
+    27.69893548398977,
+    27.712373142014258,
+    27.745242632983718,
+    27.695329758978914,
+    27.728424729953986,
+    27.70377289003227,
+    27.727391232037917,
+    27.736295696988236,
+    27.733761296025477,
+    27.744851442985237,
+    27.71937293402152,
+    27.726998928992543,
+    27.73951435100753,
+    27.755084945005365,
+    27.75836504000472,
+    27.711919000023045,
+    27.75627859699307,
+    27.728090062038973,
+    27.74424413498491,
+    27.760748471016996,
+    27.723447847005446,
+    27.723081335017923,
+    27.752640830003656,
+    27.706352968001738,
+    27.753077711968217,
+    27.70416739099892,
+    27.720772357017267,
+    27.709753843024373,
+    27.74538797501009,
+    27.70904474501731,
+    27.71228609298123,
+    27.736242404964287,
+    27.754664534993935,
+    27.728515665978193,
+    27.687998388020787,
+    27.711511237022933,
+    27.73099563497817,
+    27.73221080499934,
+    27.718449159990996,
+    27.705978424986824,
+    27.723554379015695,
+    27.692754013987724,
+    27.738920905045234,
+    27.697456940019038,
+    27.721902985998895,
+    27.712735506007448,
+    27.737164092017338,
+    27.730011587031186,
+    27.712831495970022,
+    27.7484652280109,
+    27.703562706010416,
+    27.777417424018495,
+    27.759203327994328,
+    27.69115176599007,
+    27.736492926022038,
+    27.707163256010972,
+    27.7517078309902,
+    27.717240870988462,
+    27.707679929968435,
+    27.70466893701814,
+    27.748576866986696,
+    27.73057285201503,
+    27.724681698018685,
+    27.70902492996538,
+    27.752598667982966,
+    27.769050730974413,
+    27.724613166996278
+  ],
+  "wall_clock_total_s": 2149.88616062497,
+  "wrfout_files": [
+    "/tmp/vburst_d02_72h/l2_d02_20260507_18z_l2_72h_20260513T124307Z/wrfout_d02_2026-05-07_19:00:00",
+    "/tmp/vburst_d02_72h/l2_d02_20260507_18z_l2_72h_20260513T124307Z/wrfout_d02_2026-05-07_20:00:00",
+    "/tmp/vburst_d02_72h/l2_d02_20260507_18z_l2_72h_20260513T124307Z/wrfout_d02_2026-05-07_21:00:00",
+    "/tmp/vburst_d02_72h/l2_d02_20260507_18z_l2_72h_20260513T124307Z/wrfout_d02_2026-05-07_22:00:00",
+    "/tmp/vburst_d02_72h/l2_d02_20260507_18z_l2_72h_20260513T124307Z/wrfout_d02_2026-05-07_23:00:00",
+    "/tmp/vburst_d02_72h/l2_d02_20260507_18z_l2_72h_20260513T124307Z/wrfout_d02_2026-05-08_00:00:00",
+    "/tmp/vburst_d02_72h/l2_d02_20260507_18z_l2_72h_20260513T124307Z/wrfout_d02_2026-05-08_01:00:00",
+    "/tmp/vburst_d02_72h/l2_d02_20260507_18z_l2_72h_20260513T124307Z/wrfout_d02_2026-05-08_02:00:00",
+    "/tmp/vburst_d02_72h/l2_d02_20260507_18z_l2_72h_20260513T124307Z/wrfout_d02_2026-05-08_03:00:00",
+    "/tmp/vburst_d02_72h/l2_d02_20260507_18z_l2_72h_20260513T124307Z/wrfout_d02_2026-05-08_04:00:00",
+    "/tmp/vburst_d02_72h/l2_d02_20260507_18z_l2_72h_20260513T124307Z/wrfout_d02_2026-05-08_05:00:00",
+    "/tmp/vburst_d02_72h/l2_d02_20260507_18z_l2_72h_20260513T124307Z/wrfout_d02_2026-05-08_06:00:00",
+    "/tmp/vburst_d02_72h/l2_d02_20260507_18z_l2_72h_20260513T124307Z/wrfout_d02_2026-05-08_07:00:00",
+    "/tmp/vburst_d02_72h/l2_d02_20260507_18z_l2_72h_20260513T124307Z/wrfout_d02_2026-05-08_08:00:00",
+    "/tmp/vburst_d02_72h/l2_d02_20260507_18z_l2_72h_20260513T124307Z/wrfout_d02_2026-05-08_09:00:00",
+    "/tmp/vburst_d02_72h/l2_d02_20260507_18z_l2_72h_20260513T124307Z/wrfout_d02_2026-05-08_10:00:00",
+    "/tmp/vburst_d02_72h/l2_d02_20260507_18z_l2_72h_20260513T124307Z/wrfout_d02_2026-05-08_11:00:00",
+    "/tmp/vburst_d02_72h/l2_d02_20260507_18z_l2_72h_20260513T124307Z/wrfout_d02_2026-05-08_12:00:00",
+    "/tmp/vburst_d02_72h/l2_d02_20260507_18z_l2_72h_20260513T124307Z/wrfout_d02_2026-05-08_13:00:00",
+    "/tmp/vburst_d02_72h/l2_d02_20260507_18z_l2_72h_20260513T124307Z/wrfout_d02_2026-05-08_14:00:00",
+    "/tmp/vburst_d02_72h/l2_d02_20260507_18z_l2_72h_20260513T124307Z/wrfout_d02_2026-05-08_15:00:00",
+    "/tmp/vburst_d02_72h/l2_d02_20260507_18z_l2_72h_20260513T124307Z/wrfout_d02_2026-05-08_16:00:00",
+    "/tmp/vburst_d02_72h/l2_d02_20260507_18z_l2_72h_20260513T124307Z/wrfout_d02_2026-05-08_17:00:00",
+    "/tmp/vburst_d02_72h/l2_d02_20260507_18z_l2_72h_20260513T124307Z/wrfout_d02_2026-05-08_18:00:00",
+    "/tmp/vburst_d02_72h/l2_d02_20260507_18z_l2_72h_20260513T124307Z/wrfout_d02_2026-05-08_19:00:00",
+    "/tmp/vburst_d02_72h/l2_d02_20260507_18z_l2_72h_20260513T124307Z/wrfout_d02_2026-05-08_20:00:00",
+    "/tmp/vburst_d02_72h/l2_d02_20260507_18z_l2_72h_20260513T124307Z/wrfout_d02_2026-05-08_21:00:00",
+    "/tmp/vburst_d02_72h/l2_d02_20260507_18z_l2_72h_20260513T124307Z/wrfout_d02_2026-05-08_22:00:00",
+    "/tmp/vburst_d02_72h/l2_d02_20260507_18z_l2_72h_20260513T124307Z/wrfout_d02_2026-05-08_23:00:00",
+    "/tmp/vburst_d02_72h/l2_d02_20260507_18z_l2_72h_20260513T124307Z/wrfout_d02_2026-05-09_00:00:00",
+    "/tmp/vburst_d02_72h/l2_d02_20260507_18z_l2_72h_20260513T124307Z/wrfout_d02_2026-05-09_01:00:00",
+    "/tmp/vburst_d02_72h/l2_d02_20260507_18z_l2_72h_20260513T124307Z/wrfout_d02_2026-05-09_02:00:00",
+    "/tmp/vburst_d02_72h/l2_d02_20260507_18z_l2_72h_20260513T124307Z/wrfout_d02_2026-05-09_03:00:00",
+    "/tmp/vburst_d02_72h/l2_d02_20260507_18z_l2_72h_20260513T124307Z/wrfout_d02_2026-05-09_04:00:00",
+    "/tmp/vburst_d02_72h/l2_d02_20260507_18z_l2_72h_20260513T124307Z/wrfout_d02_2026-05-09_05:00:00",
+    "/tmp/vburst_d02_72h/l2_d02_20260507_18z_l2_72h_20260513T124307Z/wrfout_d02_2026-05-09_06:00:00",
+    "/tmp/vburst_d02_72h/l2_d02_20260507_18z_l2_72h_20260513T124307Z/wrfout_d02_2026-05-09_07:00:00",
+    "/tmp/vburst_d02_72h/l2_d02_20260507_18z_l2_72h_20260513T124307Z/wrfout_d02_2026-05-09_08:00:00",
+    "/tmp/vburst_d02_72h/l2_d02_20260507_18z_l2_72h_20260513T124307Z/wrfout_d02_2026-05-09_09:00:00",
+    "/tmp/vburst_d02_72h/l2_d02_20260507_18z_l2_72h_20260513T124307Z/wrfout_d02_2026-05-09_10:00:00",
+    "/tmp/vburst_d02_72h/l2_d02_20260507_18z_l2_72h_20260513T124307Z/wrfout_d02_2026-05-09_11:00:00",
+    "/tmp/vburst_d02_72h/l2_d02_20260507_18z_l2_72h_20260513T124307Z/wrfout_d02_2026-05-09_12:00:00",
+    "/tmp/vburst_d02_72h/l2_d02_20260507_18z_l2_72h_20260513T124307Z/wrfout_d02_2026-05-09_13:00:00",
+    "/tmp/vburst_d02_72h/l2_d02_20260507_18z_l2_72h_20260513T124307Z/wrfout_d02_2026-05-09_14:00:00",
+    "/tmp/vburst_d02_72h/l2_d02_20260507_18z_l2_72h_20260513T124307Z/wrfout_d02_2026-05-09_15:00:00",
+    "/tmp/vburst_d02_72h/l2_d02_20260507_18z_l2_72h_20260513T124307Z/wrfout_d02_2026-05-09_16:00:00",
+    "/tmp/vburst_d02_72h/l2_d02_20260507_18z_l2_72h_20260513T124307Z/wrfout_d02_2026-05-09_17:00:00",
+    "/tmp/vburst_d02_72h/l2_d02_20260507_18z_l2_72h_20260513T124307Z/wrfout_d02_2026-05-09_18:00:00",
+    "/tmp/vburst_d02_72h/l2_d02_20260507_18z_l2_72h_20260513T124307Z/wrfout_d02_2026-05-09_19:00:00",
+    "/tmp/vburst_d02_72h/l2_d02_20260507_18z_l2_72h_20260513T124307Z/wrfout_d02_2026-05-09_20:00:00",
+    "/tmp/vburst_d02_72h/l2_d02_20260507_18z_l2_72h_20260513T124307Z/wrfout_d02_2026-05-09_21:00:00",
+    "/tmp/vburst_d02_72h/l2_d02_20260507_18z_l2_72h_20260513T124307Z/wrfout_d02_2026-05-09_22:00:00",
+    "/tmp/vburst_d02_72h/l2_d02_20260507_18z_l2_72h_20260513T124307Z/wrfout_d02_2026-05-09_23:00:00",
+    "/tmp/vburst_d02_72h/l2_d02_20260507_18z_l2_72h_20260513T124307Z/wrfout_d02_2026-05-10_00:00:00",
+    "/tmp/vburst_d02_72h/l2_d02_20260507_18z_l2_72h_20260513T124307Z/wrfout_d02_2026-05-10_01:00:00",
+    "/tmp/vburst_d02_72h/l2_d02_20260507_18z_l2_72h_20260513T124307Z/wrfout_d02_2026-05-10_02:00:00",
+    "/tmp/vburst_d02_72h/l2_d02_20260507_18z_l2_72h_20260513T124307Z/wrfout_d02_2026-05-10_03:00:00",
+    "/tmp/vburst_d02_72h/l2_d02_20260507_18z_l2_72h_20260513T124307Z/wrfout_d02_2026-05-10_04:00:00",
+    "/tmp/vburst_d02_72h/l2_d02_20260507_18z_l2_72h_20260513T124307Z/wrfout_d02_2026-05-10_05:00:00",
+    "/tmp/vburst_d02_72h/l2_d02_20260507_18z_l2_72h_20260513T124307Z/wrfout_d02_2026-05-10_06:00:00",
+    "/tmp/vburst_d02_72h/l2_d02_20260507_18z_l2_72h_20260513T124307Z/wrfout_d02_2026-05-10_07:00:00",
+    "/tmp/vburst_d02_72h/l2_d02_20260507_18z_l2_72h_20260513T124307Z/wrfout_d02_2026-05-10_08:00:00",
+    "/tmp/vburst_d02_72h/l2_d02_20260507_18z_l2_72h_20260513T124307Z/wrfout_d02_2026-05-10_09:00:00",
+    "/tmp/vburst_d02_72h/l2_d02_20260507_18z_l2_72h_20260513T124307Z/wrfout_d02_2026-05-10_10:00:00",
+    "/tmp/vburst_d02_72h/l2_d02_20260507_18z_l2_72h_20260513T124307Z/wrfout_d02_2026-05-10_11:00:00",
+    "/tmp/vburst_d02_72h/l2_d02_20260507_18z_l2_72h_20260513T124307Z/wrfout_d02_2026-05-10_12:00:00",
+    "/tmp/vburst_d02_72h/l2_d02_20260507_18z_l2_72h_20260513T124307Z/wrfout_d02_2026-05-10_13:00:00",
+    "/tmp/vburst_d02_72h/l2_d02_20260507_18z_l2_72h_20260513T124307Z/wrfout_d02_2026-05-10_14:00:00",
+    "/tmp/vburst_d02_72h/l2_d02_20260507_18z_l2_72h_20260513T124307Z/wrfout_d02_2026-05-10_15:00:00",
+    "/tmp/vburst_d02_72h/l2_d02_20260507_18z_l2_72h_20260513T124307Z/wrfout_d02_2026-05-10_16:00:00",
+    "/tmp/vburst_d02_72h/l2_d02_20260507_18z_l2_72h_20260513T124307Z/wrfout_d02_2026-05-10_17:00:00",
+    "/tmp/vburst_d02_72h/l2_d02_20260507_18z_l2_72h_20260513T124307Z/wrfout_d02_2026-05-10_18:00:00"
+  ],
+  "wrfout_inventory_status": "PASS"
+}

@@ -1,0 +1,22 @@
+{
+  "all_finite": null,
+  "device": null,
+  "dt_s": 3.0,
+  "final_lead_fields": null,
+  "hours": 24,
+  "output_dir": "/tmp/vburst_d03_24h/d03_20260521_18z_l3_24h_20260522T133443Z_vburst",
+  "persistence_beat_all_leads": null,
+  "pipeline_verdict": "PIPELINE_BLOCKED",
+  "proofs": {
+    "pipeline": "proofs/v090/speedup_d03/pipeline_run_d03_vburst.json",
+    "validation": "proofs/v090/speedup_d03/d03_validation_vburst.json"
+  },
+  "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
+  "run_id": "20260521_18z_l3_24h_20260522T133443Z",
+  "schema": "V010D03ReplayValidationSummary",
+  "schema_version": 1,
+  "validation_status": "BLOCKED",
+  "verdict": "D03_1KM_BLOCKED",
+  "wall_clock_per_forecast_hour_s": null,
+  "wall_clock_total_s": null
+}

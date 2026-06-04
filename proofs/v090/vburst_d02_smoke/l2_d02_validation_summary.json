@@ -1,0 +1,21 @@
+{
+  "output_dir": "/tmp/vburst_d02_smoke/l2_d02_20260507_18z_l2_72h_20260513T124307Z",
+  "proofs": {
+    "bounds": "proofs/v090/vburst_d02_smoke/bounds_check_l2_d02.json",
+    "inventory": "proofs/v090/vburst_d02_smoke/l2_inventory.json",
+    "tier4_rmse": "proofs/v090/vburst_d02_smoke/tier4_rmse_l2_d02.json",
+    "wall_clock": "proofs/v090/vburst_d02_smoke/wall_clock_l2_d02.json"
+  },
+  "publish_readiness": "nested-grid backfills are publish-ready for this L2 d02 path",
+  "run_dir": "/tmp/vburst_runs/20260507_18z_l2_72h_20260513T124307Z",
+  "run_id": "20260507_18z_l2_72h_20260513T124307Z",
+  "schema": "M7L2D02ReplayValidationSummary",
+  "schema_version": 1,
+  "statuses": {
+    "bounds": "PASS",
+    "pipeline": "PIPELINE_PARTIAL",
+    "rmse": "PASS",
+    "wall_clock": "PASS"
+  },
+  "verdict": "L2_D02_GREEN"
+}
