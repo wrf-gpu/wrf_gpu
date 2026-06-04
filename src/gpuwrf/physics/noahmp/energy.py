@@ -671,11 +671,27 @@ def _vege_flux(land_state, forcing, radd, phen, p, df_top, stc_top, dz_top,
     evg = jnp.where(snow_clamp, evg_c, evg)
     gh = jnp.where(snow_clamp, gh_c, gh)
 
+    # 2-m air temperature over the VEGETATED tile (T2MV), opt_sfc=1 (:4148-4163).
+    # Uses the SFCDIF1-converged FH2/FV/Z0H (carried through loop1, frozen at each
+    # column's last sweep) and the FINAL canopy-air temperature TAH plus the final
+    # under-canopy ground SHG and canopy SHC. SHC carries the FVEG weight (it is the
+    # tile-summed canopy flux), so WRF divides it back out (SHC/FVEG); SHG is the raw
+    # under-canopy ground flux. CAH2 = FV*VKC/(LOG((2+Z0H)/Z0H)-FH2). The CAH2<1e-5
+    # branch falls back to T2MV=TAH (degenerate near-zero conductance).
+    cah2 = fv * VKC / (jnp.log((2.0 + z0h) / z0h) - fh2)
+    fveg_safe = jnp.maximum(fveg, MPE)
+    t2mv = jnp.where(
+        cah2 < 1.0e-5,
+        tah,
+        tah - (shg + shc / fveg_safe) / (rhoair * CPAIR) * (1.0 / cah2),
+    )
+
     return {
         "irc": irc, "shc": shc, "evc": evc, "tr": tr,
         "irg": irg, "shg": shg, "evg": evg, "ghv": gh,
         "tv": tv, "tg": tg, "tah": tah, "eah": eah,
         "cm": cm, "chv": cah, "qsfc": qsfc, "canhs": canhs,
+        "t2mv": t2mv,
     }
 
 
@@ -765,8 +781,19 @@ def _bare_flux(land_state, forcing, radd, p, df_top, stc_top, dz_top, zlvl,
     evb = jnp.where(snow_clamp, evb_c, evb)
     ghb = jnp.where(snow_clamp, ghb_c, ghb)
 
+    # 2-m air temperature over the BARE tile (T2MB), opt_sfc=1 (:4461-4474). Uses
+    # the SFCDIF1-converged FH2/FV/Z0H (Z0H=Z0MG over bare ground; CZIL commented
+    # out at WRF :4354-4356) and the final bare-ground SHB / skin TGB. EHB2 =
+    # FV*VKC/(LOG((2+Z0H)/Z0H)-FH2); EHB2<1e-5 falls back to T2MB=TGB.
+    ehb2 = fv * VKC / (jnp.log((2.0 + z0h) / z0h) - fh2)
+    t2mb = jnp.where(
+        ehb2 < 1.0e-5,
+        tgb,
+        tgb - shb / (rhoair * CPAIR) * (1.0 / ehb2),
+    )
+
     return {"irb": irb, "shb": shb, "evb": evb, "ghb": ghb, "tgb": tgb,
-            "cm": cm, "ch": ehb, "qsfc": qsfc}
+            "cm": cm, "ch": ehb, "qsfc": qsfc, "t2mb": t2mb}
 
 
 # ==================================================================================
@@ -921,6 +948,14 @@ def noahmp_energy_canopy(
     # PAH tile sum (ENERGY :2294/2314): veg = FVEG*PAHG+(1-FVEG)*PAHB+PAHV; bare=PAHB
     pah = jnp.where(use_veg, fveg * pahg + (1.0 - fveg) * pahb + pahv, pahb)
     tg = jnp.where(use_veg, fveg * vf["tg"] + (1.0 - fveg) * bf["tgb"], bf["tgb"])
+    # 2-m air temperature tile-combine (ENERGY :2296 vegetated / :2311 bare).
+    # T2M = FVEG*T2MV + (1-FVEG)*T2MB over the vegetated tile; T2M = T2MB over
+    # bare/FVEG=0 (the ELSE branch). This is the LSM 2-m temperature the WRF
+    # surface driver writes back as the land T2 (module_surface_driver.F:3470/3467),
+    # OVERWRITING the surface-layer MYNN diagnostic over land.
+    t2mv = vf["t2mv"]
+    t2mb = bf["t2mb"]
+    t2 = jnp.where(use_veg, fveg * t2mv + (1.0 - fveg) * t2mb, t2mb)
     tv = jnp.where(use_veg, vf["tv"], land_state.tv)
     tah = jnp.where(use_veg, vf["tah"], land_state.tah)
     eah = jnp.where(use_veg, vf["eah"], land_state.eah)
@@ -982,6 +1017,7 @@ def noahmp_energy_canopy(
     ef = NoahMPEnergyFluxes(
         fsh=fsh, fcev=fcev, fgev=fgev, fctr=fctr, ssoil=ssoil, fira=fira,
         trad=trad, emissi=emissi, z0wrf=z0wrf, chv=chv, chb=chb, canhs=canhs,
+        t2mv=t2mv, t2mb=t2mb, t2=t2,
     )
     et = NoahMPEtFluxes(
         ecan=ecan, etran=etran, edir=edir, qseva=qvap, btrani=btrani,

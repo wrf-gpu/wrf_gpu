@@ -62,7 +62,7 @@ program noahmp_offline_driver
 
   ! --- outputs ---
   real :: z0wrf, fsa, fsr, fira, fsh, ssoil, fcev, fgev, fctr
-  real :: ecan, etran, edir, trad, tgb, tgv, t2mv, t2mb, q2v, q2b
+  real :: ecan, etran, edir, trad, tgb, tgv, t2mv, t2mb, q2v, q2b, t2m_combined
   real :: runsrf, runsub, apar, psn, sav, sag, fsno, nee, gpp, npp, fveg, albedo
   real :: qsnbot, ponding, ponding1, ponding2, rssun, rssha
   real :: albsnd(2), albsni(2), bgap, wgap, chv, chb, emissi
@@ -219,6 +219,19 @@ program noahmp_offline_driver
          fsh, fcev, fgev, fctr, ssoil, fira, trad, emissi, z0wrf, chv, chb, sav, sag
     write(IOUT,'(A,7ES16.8)') 'ENERGY_STATE tv tg tah eah albedo fsno fsa ', &
          tv, tg, tah, eah, albedo, fsno, fsa
+    ! --- 2-m AIR TEMPERATURE LSM DIAGNOSTICS (T2MV/T2MB + FVEG-combined T2M) ---
+    ! T2MV (:4148-4163) / T2MB (:4461-4474) are NOAHMP_SFLX OUT args; the combine
+    ! mirrors module_surface_driver.F:3470 (vegetated FVEG>0) / :3467 (bare FVEG=0,
+    ! T2=T2MB). NOAHMP_SFLX flags bare/urban internally via VEG.AND.FVEG>0; here we
+    ! reproduce the driver-level combine so the oracle carries the land T2 the WRF
+    ! surface driver writes back. Q2V/Q2B emitted for the companion Q2 combine.
+    if (fveg > 0.0) then
+       t2m_combined = fveg*t2mv + (1.0 - fveg)*t2mb
+    else
+       t2m_combined = t2mb
+    end if
+    write(IOUT,'(A,5ES16.8)') 'T2DIAG t2mv t2mb t2m q2v q2b ', &
+         t2mv, t2mb, t2m_combined, q2v, q2b
     write(IOUT,'(A,5ES16.8)') 'ET ecan etran edir qsnow qmelt ', ecan, etran, edir, qsnow, qmelt
     ! --- SOIL THERMO (S2) — STC over snow+soil column ---
     write(IOUT,'(A,7ES16.8)') 'STC_IN ', (stc_in(k), k=-NSNOW+1,NSOIL)
