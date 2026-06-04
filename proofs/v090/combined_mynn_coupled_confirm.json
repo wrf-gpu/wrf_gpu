@@ -1,0 +1,152 @@
+{
+  "attribution": "PRE-EXISTING replay-path instability at the trunk-0.9.0 BASE on this (66,159) case \u2014 the UNMERGED base blows up at the same hour with the same dynamics-first signature. The consolidation is physics-only (ZERO dynamics/boundary/driver delta vs base) and is therefore EXONERATED: it did not introduce the blow-up. Coupled-confirmation via this harness on this case is INFEASIBLE; savepoint-level evidence is the fallback.",
+  "base_control_run_trunk_7b7c26e": {
+    "dynamics_magnitude": {
+      "mu": {
+        "max": 4.584523775010116e+178,
+        "min": 17164.85984304425
+      },
+      "p": {
+        "max": 9.11441458695419e+62,
+        "min": -22648.87890625
+      },
+      "ph": {
+        "max": 4.12177653878894e+180,
+        "min": -7.054565944222789e+179
+      },
+      "theta": {
+        "max": 3.6361147840079307e+37,
+        "min": -1.8795868627788104e+27
+      },
+      "u": {
+        "max": 8.078023418584236e+18,
+        "min": -6.619121846740582e+17
+      },
+      "v": {
+        "max": 1.3280330078014669e+17,
+        "min": -1.537563382473818e+18
+      },
+      "w": {
+        "max": 3.569934335004325e+180,
+        "min": -6.184143218702269e+179
+      }
+    },
+    "failed_hour": 1,
+    "failure_mode": "NONFINITE_STATE",
+    "nonfinite_fields": {
+      "Ng": 200,
+      "Ni": 1144,
+      "Nr": 200,
+      "Ns": 200,
+      "fltv": 10494,
+      "qc": 742,
+      "qg": 200,
+      "qi": 1169,
+      "qke": 461736,
+      "qr": 200,
+      "qs": 200,
+      "qv_flux": 10494,
+      "rhosfc": 10494,
+      "tau_u": 10494,
+      "tau_v": 10494,
+      "theta_flux": 10494,
+      "ustar": 10494
+    },
+    "reason": "nonfinite model state after forecast hour 1",
+    "status": "BLOCKED",
+    "verdict": "L2_D02_BLOCKED"
+  },
+  "branch": "worker/opus/v090-physics-consolidation",
+  "case": "20260521_18z_l2_72h_20260522T133443Z (d02 3km, 66x159x44)",
+  "consolidation_dynamics_boundary_delta_vs_base": "ZERO (git diff --stat 7b7c26e..HEAD over src/gpuwrf/dynamics/, boundary_apply.py, driver.py, boundary_replay.py is empty) \u2014 the consolidation is a physics-only merge.",
+  "consolidation_regression": false,
+  "consolidation_run": {
+    "dynamics_magnitude": {
+      "mu": {
+        "max": 1.0835639565239097e+181,
+        "min": 5440.743610949241
+      },
+      "p": {
+        "max": 1.153229082364998e+63,
+        "min": -22648.87890625
+      },
+      "ph": {
+        "max": 5.477704428163272e+181,
+        "min": -1.2360629200698894e+182
+      },
+      "theta": {
+        "max": 1.1082222407194457e+37,
+        "min": -1.4059491473859595e+27
+      },
+      "u": {
+        "max": 975764783104.0,
+        "min": -2036072316928.0
+      },
+      "v": {
+        "max": 120589729660928.0,
+        "min": -49149076570112.0
+      },
+      "w": {
+        "max": 7.727423977505089e+180,
+        "min": -6.1883000065040654e+181
+      }
+    },
+    "failed_hour": 1,
+    "failure_mode": "NONFINITE_STATE",
+    "nonfinite_fields": {
+      "Ng": 315,
+      "Ni": 2156,
+      "Nr": 315,
+      "Ns": 315,
+      "fltv": 10494,
+      "qc": 1364,
+      "qg": 315,
+      "qi": 2170,
+      "qke": 461736,
+      "qr": 315,
+      "qs": 315,
+      "qv_flux": 10494,
+      "rhosfc": 10494,
+      "tau_u": 10494,
+      "tau_v": 10494,
+      "theta_flux": 10494,
+      "ustar": 10494
+    },
+    "reason": "nonfinite model state after forecast hour 1",
+    "status": "BLOCKED",
+    "verdict": "L2_D02_BLOCKED"
+  },
+  "coupled_confirmation_infeasible": true,
+  "generated": "2026-06-04T09:06:04.357990+00:00",
+  "method": "d02 CPU-WRF boundary-replay GPU coupled forecast (init from CPU-WRF wrfout t0, CPU-WRF hourly side-history as LBC), scored vs CPU-WRF wrfout. Exercises the consolidated MYNN-SL + MYNN-PBL(xland water-path active) + Thompson in one coupled GPU run. Noah-MP T2MB overwrite is savepoint-proven but NOT exercised here (replay runs use_noahmp=False; land T2 from the now-faithful MYNN-SL 2-m diagnostic).",
+  "operational_config": {
+    "bl_pbl_physics": 5,
+    "cu_physics": 0,
+    "mp_physics": 8,
+    "ra_lw_physics": 4,
+    "ra_sw_physics": 4,
+    "radiation": "ON",
+    "sf_sfclay_physics": 5,
+    "sf_surface_physics": 4
+  },
+  "predeclared_pass": {
+    "daytime_t2": "report daytime-lead T2 RMSE/bias vs CPU-WRF; compare to pre-fix",
+    "finite_stable": "no NaN/Inf, no blow-up over the forecast window",
+    "operational_bars": "final-lead RMSE vs CPU-WRF: T2<=3.0 K, U10<=7.5, V10<=7.5 m/s"
+  },
+  "proof": "v090-combined-mynn-coupled-confirm",
+  "savepoint_fallback": {
+    "fixes": {
+      "mynn_pbl": true,
+      "mynn_sl": true,
+      "namelist_compat_tests": true,
+      "noahmp_t2mb": true,
+      "thompson": true,
+      "v060_consolidation_matrix": true,
+      "v060_multicfg_smoke": true
+    },
+    "note": "With the coupled forecast blocked by a base-level replay instability, the binding evidence that the consolidated physics is WRF-faithful and regression-free is the savepoint re-verify (CPU fp64, pristine-WRF oracles).",
+    "overall_reverify_pass": true,
+    "v060_multicfg_smoke": "20/20 RUN PASS + 3/3 FAIL-CLOSED OK (coupled multi-step integration of all merged schemes incl. sfclay_mynn/bl5, land_noahmp, mp8)"
+  }
+}
