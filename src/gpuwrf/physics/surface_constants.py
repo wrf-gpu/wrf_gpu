@@ -39,6 +39,11 @@ SVPT0_K = 273.15
 
 # --- sfclayrev module parameters (sf_sfclayrev.F90:12-14, 175-177) ---
 VCONVC = 1.0
+# MYNN surface layer (module_sf_mynn.F:83) uses a LARGER convective velocity-scale
+# coefficient than sfclayrev. The MYNN-SL JAX path (surface_layer.py, the operational
+# sf_sfclay_physics=5 scheme) MUST use this value; the sfclayrev-family schemes
+# (sfclay_revised_mm5, sfclay_pleim_xiu) keep VCONVC=1.0.
+VCONVC_MYNN = 1.25
 CZO = 0.0185
 OZO = 1.59e-5
 XKA = 2.4e-5           # molecular thermal diffusivity for psiq (parameter xka)
@@ -95,6 +100,7 @@ __all__ = [
     "SVP3_K",
     "SVPT0_K",
     "VCONVC",
+    "VCONVC_MYNN",
     "XKA",
     "XLV",
     "ZOLRI_BR_CAP",

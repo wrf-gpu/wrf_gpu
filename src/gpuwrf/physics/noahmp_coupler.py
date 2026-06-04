@@ -181,10 +181,11 @@ def noahmp_surface_adapter(
     )
 
     # ---- 3. masked blend (land vs water). Water path = sfclay diagnostics. ----
-    # rho*cpm with the WRF moist heat capacity (surface_layer.py:481): cpm =
-    # CP_D*(1+0.8*qx). theta_flux = hfx/(rho*cpm) inverts the sfclay mapping.
+    # rho*cpm with the WRF MYNN moist heat capacity (surface_layer.py): cpm =
+    # CP_D*(1+0.84*qx) (module_sf_mynn.F:552). theta_flux = hfx/(rho*cpm) inverts the
+    # MYNN-SL flux mapping, so the coefficient MUST match surface_layer.py (0.84).
     qx = jnp.maximum(_surface(_get(state, "qv", jnp.zeros_like(rhosfc))), 0.0)
-    rho_cpm = rhosfc * (CP_D * (1.0 + 0.8 * qx))
+    rho_cpm = rhosfc * (CP_D * (1.0 + 0.84 * qx))
 
     # blended physical fluxes (W/m2 and kg/m2/s)
     hfx_water = jnp.asarray(diag.hfx, dtype=jnp.float64)

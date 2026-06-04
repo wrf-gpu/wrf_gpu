@@ -2355,16 +2355,19 @@ def compute_m9_diagnostics(
     """Recompute the M9 surface map from a post-step State (side-channel only).
 
     When Noah-MP is activated (``namelist.use_noahmp`` and ``noahmp_land`` given),
-    the LAND HFX/LH/TSK are read back from the prognostic Noah-MP coupler and
-    overlaid (the standalone-replacement contract); ocean/water keeps the bulk
-    surface-layer diagnostic. T2/U10/V10 come from the bulk surface layer, which
-    already uses the Noah-MP skin temperature (in ``state.t_skin``) as its BC.
+    the LAND HFX/LH/TSK and the 2-m T2 are read back from the prognostic Noah-MP
+    coupler and overlaid (the standalone-replacement contract); ocean/water keeps
+    the bulk surface-layer diagnostic. The land T2 is the Noah-MP LSM diagnostic
+    ``T2 = FVEG*T2MV + (1-FVEG)*T2MB`` (the faithful overwrite WRF performs over
+    land — module_surface_driver.F:3469-3473), NOT the surface-layer MYNN 2-m value.
+    U10/V10 come from the bulk surface layer, which already uses the Noah-MP skin
+    temperature (in ``state.t_skin``) as its BC.
     """
     surf = surface_layer_diagnostics(state, namelist.grid)
     rad = rrtmg_radiation_diagnostics(
         state, namelist.grid, time_utc=namelist.time_utc, lead_seconds=lead_seconds
     )
-    hfx, lh, tsk = surf.hfx, surf.lh, state.t_skin
+    hfx, lh, tsk, t2 = surf.hfx, surf.lh, state.t_skin, surf.t2
     if bool(namelist.use_noahmp) and noahmp_land is not None:
         clock = _NoahMPClock(
             julian=float(namelist.noahmp_julian), yearlen=float(namelist.noahmp_yearlen)
@@ -2374,9 +2377,12 @@ def compute_m9_diagnostics(
             else _NoahMPRadiation(rad.swdown, rad.glw, rad.coszen)
         )
         ep, rp = _noahmp_params(namelist)
-        hfx, lh, tsk = overlay_noahmp_land_diagnostics(
+        # v0.9.0: route the Noah-MP LSM 2-m T2 over land (the faithful land-T2
+        # overwrite WRF performs — module_surface_driver.F:3469-3473), replacing
+        # the surface-layer MYNN 2-m value over land. Water keeps surf.t2.
+        hfx, lh, tsk, t2 = overlay_noahmp_land_diagnostics(
             state, noahmp_land, namelist.noahmp_static, surf.hfx, surf.lh, state.t_skin,
-            float(namelist.dt_s), radiation=radiation, clock=clock,
+            float(namelist.dt_s), bulk_t2=surf.t2, radiation=radiation, clock=clock,
             energy_params=ep, rad_params=rp,
         )
     elif _explicit_noahclassic(namelist) and noahclassic_land is not None:
@@ -2408,7 +2414,7 @@ def compute_m9_diagnostics(
         lh=lh,
         pblh=surf.pblh,
         tsk=tsk,
-        t2=surf.t2,
+        t2=t2,
         u10=surf.u10,
         v10=surf.v10,
         psfc=_psfc_from_state(state),
