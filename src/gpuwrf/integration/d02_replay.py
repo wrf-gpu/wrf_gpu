@@ -786,6 +786,67 @@ def _wrf_base_theta_from_loaded_state(
     return theta_base
 
 
+# WRF MYNN cold-start TKE constants (phys/module_bl_mynnedmf.F).
+_MYNN_B1 = 24.0          # module_bl_mynnedmf.F:282  b1 = 24.0
+_MYNN_PMZ = 1.0          # phi_m-zeta at z1, =1 on cold start (mym_initialize)
+_MYNN_QKEMIN = 1.0e-5    # module_bl_mynnedmf.F:309  qkemin = 1.e-5
+_MYNN_QKE_INIT_THRESHOLD = 0.0002  # module_bl_mynnedmf.F:623 MAXVAL(qke)<0.0002 => INITIALIZE_QKE
+_GRAVITY_M_S2 = 9.80665
+
+
+def _wrf_mynn_coldstart_qke(
+    qke: jax.Array,
+    *,
+    ph_total: jax.Array,
+    ustar: jax.Array,
+) -> tuple[jax.Array, bool]:
+    """Seed the WRF MYNN ``mym_initialize`` cold-start TKE profile.
+
+    The Gen2 parent ``wrfout`` carries no real QKE at the replay analysis time
+    (its t=0 history slice is the pre-physics IC: ``QKE`` is identically zero and
+    ``UST`` is the 1e-4 namelist initial floor).  Real WRF NEVER advances MYNN
+    from ``qke=0``: when ``MAXVAL(qke) < 0.0002`` (cold start, no carried TKE) the
+    MYNN driver sets ``INITIALIZE_QKE=.TRUE.`` (module_bl_mynnedmf.F:618-632) and
+    ``mym_initialize`` builds a physical background TKE profile from the surface
+    friction velocity, tapered toward the PBL top (module_bl_mynnedmf.F:691 in the
+    driver / :1331 in ``mym_initialize``)::
+
+        qke(kts) = 1.5 * MAX(ust,0.02)**2 * (b1*pmz)**(2/3)
+        qke(k)   = qke(kts) * MAX((ust*700 - zw(k)) / (MAX(ust,0.01)*700), 0.01)
+
+    Replaying with ``qke`` identically zero skips this init, so the JAX MYNN
+    length-scale / level-2.5 closure runs away from the degenerate ``qke=0`` column
+    (qke first field non-finite ~step 10; surface fluxes then dynamics follow).
+
+    This mirrors WRF exactly — a faithful cold-start INITIALIZATION, not a
+    runtime clamp/mask.  The ``MAX(ust,0.02)`` / ``MAX(ust,0.01)`` floors are
+    WRF's own; with the replay's near-zero ``ustar`` they yield a small physical
+    background TKE (~5e-3 m^2/s^2 at the surface) that breaks the degenerate
+    ``qke=0`` singularity on step 1, exactly as WRF's first MYNN call does.
+
+    Returns ``(qke_seeded, did_seed)``.  When the parent already carries TKE above
+    the threshold the array is returned unchanged (matching WRF's
+    ``INITIALIZE_QKE=.FALSE.`` branch).
+    """
+
+    qke_arr = jnp.asarray(qke)
+    if float(jnp.max(qke_arr)) >= _MYNN_QKE_INIT_THRESHOLD:
+        return qke_arr, False
+
+    dtype = qke_arr.dtype
+    # Height above local surface at the w-levels, zw(kts)=0 (terrain following).
+    zstag = jnp.asarray(ph_total, dtype=jnp.float64) / _GRAVITY_M_S2  # (nz+1, ny, nx)
+    zw = zstag - zstag[:1]                                            # (nz+1, ny, nx)
+    nz = qke_arr.shape[0]
+    zw_mass = zw[:nz]                                                 # qke taper uses zw(k)
+
+    ust = jnp.asarray(ustar, dtype=jnp.float64)[None]                 # (1, ny, nx)
+    qke_kts = 1.5 * jnp.maximum(ust, 0.02) ** 2 * (_MYNN_B1 * _MYNN_PMZ) ** (2.0 / 3.0)
+    taper = jnp.maximum((ust * 700.0 - zw_mass) / (jnp.maximum(ust, 0.01) * 700.0), 0.01)
+    qke_seed = jnp.maximum(qke_kts * taper, _MYNN_QKEMIN)
+    return qke_seed.astype(dtype), True
+
+
 def build_replay_case(
     run_dir: str | Path = DEFAULT_REPLAY_RUN_DIR,
     *,
@@ -882,6 +943,17 @@ def build_replay_case(
         **boundary_leaves,
     )
     _debug("state.replace with initial fields complete")
+    # WRF MYNN cold-start TKE init (module_bl_mynnedmf.F mym_initialize): the
+    # parent wrfout carries no real QKE at the analysis time, so seed the WRF
+    # background TKE profile rather than feeding the MYNN closure a degenerate
+    # qke=0 column (which runs away; see proofs/v090/d02replay_qke_*).  No-op when
+    # the parent already carries TKE (INITIALIZE_QKE=.FALSE.).
+    qke_seeded, did_seed_qke = _wrf_mynn_coldstart_qke(
+        state.qke, ph_total=state.ph_total, ustar=state.ustar
+    )
+    if did_seed_qke:
+        state = state.replace(qke=qke_seeded.astype(state.qke.dtype))
+        _debug(f"WRF MYNN cold-start qke seeded: max={float(jnp.max(qke_seeded)):.4g}")
     base = BaseState(
         pb=pb.astype(state.p_total.dtype),
         phb=phb.astype(state.ph_total.dtype),
@@ -916,6 +988,16 @@ def build_replay_case(
             "pressure_split": "p_total=PB+P, p_perturbation=P",
             "geopotential_split": "ph_total=PHB+PH, ph_perturbation=PH",
             "mu_split": "mu_total=MUB+MU, mu_perturbation=MU",
+        },
+        "qke_coldstart": {
+            "seeded": bool(did_seed_qke),
+            "wrf_ref": "phys/module_bl_mynnedmf.F:618-691 (mym_initialize INITIALIZE_QKE)",
+            "qke_max": float(jnp.max(state.qke)),
+            "note": (
+                "parent wrfout carried no real QKE (MAXVAL<0.0002); seeded WRF "
+                "cold-start background TKE profile" if did_seed_qke
+                else "parent carried TKE; INITIALIZE_QKE=.FALSE., qke unchanged"
+            ),
         },
     }
     _debug("build_replay_case done")
