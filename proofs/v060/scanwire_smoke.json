@@ -7,6 +7,8 @@
     "microphysics_gpu_scan": [
       1,
       2,
+      3,
+      4,
       6,
       10,
       16,
@@ -18,7 +20,8 @@
       5
     ],
     "cumulus_gpu_scan": [
-      1
+      1,
+      6
     ]
   },
   "per_scheme_smoke": [
@@ -130,10 +133,14 @@
       true,
       true,
       true,
+      true,
+      true,
+      true,
       true
     ],
     "all_wired_accepted": true,
     "unwired_schemes_rejected": [
+      true,
       true,
       true,
       true
