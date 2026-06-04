@@ -1,0 +1,270 @@
+{
+  "schema": "V0100Phase0Baseline",
+  "schema_version": 1,
+  "status": "PARTIAL_BLOCKED_GPU_DRIVER_AND_NSYS_PERMISSION",
+  "generated_at": "2026-06-05T00:00:11+01:00",
+  "branch": "worker/perf/v0100-kernel",
+  "commit": "af77d71b42fad8e555b999dc9c12fbd3a51fb995",
+  "scope": "Phase 0 measure-before-optimize baseline and audit only; no src/ kernel logic changes.",
+  "gpu_blocker": {
+    "fresh_gpu_measurements_available": false,
+    "nvidia_smi": {
+      "exit_code": 9,
+      "output": "NVIDIA-SMI has failed because it couldn't communicate with the NVIDIA driver. Make sure that the latest NVIDIA driver is installed and running."
+    },
+    "dev_nodes": {
+      "command": "ls -l /dev/nvidia*",
+      "exit_code": 2,
+      "output": "ls: cannot access '/dev/nvidia*': No such file or directory"
+    },
+    "jax_devices": {
+      "command": "JAX_PLATFORMS=cuda,cpu PYTHONPATH=src taskset -c 0-3 python -c 'import jax; print(jax.devices()); print(jax.default_backend())'",
+      "exit_code": 0,
+      "output_summary": "CUDA init failed with CUDA_ERROR_NO_DEVICE; visible backend is [CpuDevice(id=0)], default_backend=cpu."
+    },
+    "nsys_smoke": {
+      "command": "/usr/local/cuda/bin/nsys profile -o /tmp/v0100_nsys_smoke --force-overwrite=true --stats=false taskset -c 0-3 python -c 'print(\"nsys smoke\")'",
+      "exit_code": 1,
+      "output_summary": "nsys profile failed before workload execution: open: Operation not permitted [system:1]."
+    }
+  },
+  "open_questions": {
+    "1_unroll_hook": {
+      "status": "RESOLVED",
+      "unroll_hook": "absent",
+      "search": {
+        "command": "rg -n \"GPUWRF_ACOUSTIC_UNROLL|ACOUSTIC_UNROLL\" src/gpuwrf/runtime/operational_mode.py src/gpuwrf",
+        "matches": 0
+      },
+      "source_lines": [
+        {
+          "path": "src/gpuwrf/runtime/operational_mode.py",
+          "line": 1328,
+          "text": "acoustic, _ = jax.lax.scan(body, acoustic, xs=None, length=int(stage.number_of_small_timesteps))"
+        },
+        {
+          "path": "src/gpuwrf/physics/thompson_column.py",
+          "line": 971,
+          "text": "return max(1, int(os.environ.get(\"GPUWRF_THOMPSON_SED_UNROLL\", \"2\")))"
+        },
+        {
+          "path": "src/gpuwrf/physics/thompson_column.py",
+          "line": 1209,
+          "text": "(q_out, num_out, ppt), _ = jax.lax.scan("
+        },
+        {
+          "path": "src/gpuwrf/physics/thompson_column.py",
+          "line": 1211,
+          "text": "unroll=_sed_unroll(),"
+        }
+      ],
+      "phase2_required_change": "Add a static acoustic unroll hook in operational_mode.py, preferably a small _acoustic_unroll() helper reading GPUWRF_ACOUSTIC_UNROLL with default 1, and pass unroll=_acoustic_unroll() at the _acoustic_scan lax.scan call. Reprofile unroll=1,2,4 before changing any default."
+    },
+    "2_fresh_nsys_200_warm_steps": {
+      "status": "BLOCKED",
+      "reason": "No visible CUDA device and nsys profiling is denied by the host environment.",
+      "requested_matrix": [
+        "coupled d02 guards on/off",
+        "dycore-only guards on/off",
+        ">=200 warm steps",
+        "autotuning artifacts settled to ~0"
+      ],
+      "fresh_result": null,
+      "stale_reference_not_phase0_clean": {
+        "source": "existing proofs/perf artifacts present in the branch, not rerun in Phase 0",
+        "warmed_coupled_per_step_ms": 43.556198392353615,
+        "warmed_coupled_range_ms": "43-46",
+        "dycore_warmed_per_step_ms": 16.898,
+        "dycore_hbm_floor_ms": 3.159312,
+        "dycore_wall_to_hbm_floor": 5.348632866902667,
+        "loop_elementwise_instances_per_step": 6890.694,
+        "d2d_memcpy_instances_per_step": 3601.139,
+        "autotune_artifact_kernel_instances_per_step": 226.694,
+        "verdict": "The stale artifacts match the ~6890 elementwise and ~3600 D2D figures, but they are not a clean >=200-step Phase 0 baseline because autotuning/debug artifacts are nonzero and the run was not freshly reproduced."
+      },
+      "stale_phase_breakdown_ms": {
+        "physics_thompson_min": 19.959199998993427,
+        "physics_thompson_median": 21.0018579964526,
+        "physics_surface_min": 3.993697988335043,
+        "physics_mynn_min": 2.8973210137337446,
+        "boundary_apply_min": 0.9998370078392327,
+        "advection_tendencies_min": 0.9908570209518075,
+        "small_step_prep_min": 0.9980770119000226,
+        "calc_p_rho_eos_min": 0.9998479799833149,
+        "calc_coef_w_coeffs_min": 0.3366020100656897
+      }
+    },
+    "3_thompson_nstep_histogram": {
+      "status": "PASS_WITH_GRAUPEL_GAP",
+      "proof": "proofs/v0100/thompson_nstep_histogram.json",
+      "dt_s": 10.0,
+      "files": {
+        "count": 7,
+        "domains": [
+          "d02",
+          "d03"
+        ]
+      },
+      "merged_by_species": {
+        "rain": {
+          "wet_columns": 4395,
+          "max": 2.0,
+          "p99": 2.0,
+          "p99_9": 2.0,
+          "clip_count_by_cap": {
+            "16": 0,
+            "32": 0,
+            "64": 0
+          }
+        },
+        "ice": {
+          "wet_columns": 1338,
+          "max": 3.0,
+          "p99": 1.0,
+          "p99_9": 2.0,
+          "clip_count_by_cap": {
+            "16": 0,
+            "32": 0,
+            "64": 0
+          }
+        },
+        "snow": {
+          "wet_columns": 1932,
+          "max": 1.0,
+          "p99": 1.0,
+          "p99_9": 1.0,
+          "clip_count_by_cap": {
+            "16": 0,
+            "32": 0,
+            "64": 0
+          }
+        },
+        "graupel": {
+          "wet_columns": 0,
+          "max": null,
+          "p99": null,
+          "p99_9": null,
+          "clip_count_by_cap": {
+            "16": 0,
+            "32": 0,
+            "64": 0
+          }
+        }
+      },
+      "zero_clip_safe_caps_by_species": {
+        "rain": [
+          16,
+          32,
+          64
+        ],
+        "ice": [
+          16,
+          32,
+          64
+        ],
+        "snow": [
+          16,
+          32,
+          64
+        ],
+        "graupel": []
+      },
+      "recommended_nsed_safe_cap": null,
+      "verdict": "Observed active rain/ice/snow are zero-clip-safe at 16 in this sample, but graupel has no wet-column evidence. Do not lower global NSED_MAX yet."
+    },
+    "4_daily_wrapper_timing": {
+      "status": "BLOCKED",
+      "reason": "Production daily-wrapper timing requires a live JAX CUDA backend; this environment exposes CPU only.",
+      "requested_breakdown": [
+        "forecast",
+        "finite-summary full-State D2H",
+        "M9 diagnostics",
+        "output-pack D2H",
+        "NetCDF write",
+        "land-refresh"
+      ],
+      "fresh_result": null,
+      "daily_host_share": null,
+      "stale_reference_not_phase0_clean": {
+        "source": "proofs/v090/speedup_d02/pipeline_run_20260521.json",
+        "d02_24h_total_wall_s": 1166.519,
+        "d02_24h_forecast_only_s": 1113.168,
+        "aggregate_non_forecast_share_pct": 4.6,
+        "verdict": "This is only an old aggregate pipeline split, not the requested per-hour host breakdown."
+      }
+    },
+    "5_hlo_stablehlo_audit": {
+      "status": "PASS_CPU_LOWERING_AND_STATIC_SOURCE",
+      "proof": "proofs/v0100/hlo_audit.json",
+      "precision_enforcement_force_fp64": {
+        "stablehlo_convert": 26,
+        "input_fields_not_fp64_count": 23,
+        "source_lines": [
+          {
+            "path": "src/gpuwrf/runtime/operational_mode.py",
+            "line": 503,
+            "text": "updates = {"
+          },
+          {
+            "path": "src/gpuwrf/runtime/operational_mode.py",
+            "line": 504,
+            "text": "field: getattr(state, field).astype(jnp.float64) for field in STATE_FIELD_ORDER"
+          },
+          {
+            "path": "src/gpuwrf/runtime/operational_mode.py",
+            "line": 510,
+            "text": "return state.replace(_cast=False, **updates)"
+          }
+        ]
+      },
+      "layout_transforms": {
+        "_to_columns": "1 stablehlo.transpose; real_transpose",
+        "_from_columns": "1 stablehlo.transpose; real_transpose",
+        "_flatten_columns_to_batch": "1 stablehlo.reshape; reshape_bitcast_only",
+        "_unflatten_batch_to_columns": "1 stablehlo.reshape; reshape_bitcast_only",
+        "thompson._fill_down": "3 stablehlo.transpose, 3 stablehlo.reshape, 2 stablehlo.convert; real_transpose",
+        "_thompson_column_from_state": "15 stablehlo.transpose, 2 stablehlo.convert; real_transpose"
+      },
+      "donation_aliasing_static_audit": {
+        "_advance_chunk": "plain helper, not decorated with jax.jit and no donate_argnums at function definition",
+        "run_forecast_operational": "donate_argnums=(0,)",
+        "run_forecast_operational_single_scan": "donate_argnums=(0,)",
+        "run_forecast_operational_with_limiter_diagnostics": "donate_argnums=(0,)",
+        "run_forecast_operational_debug": "donate_argnums=(0,)",
+        "run_forecast_operational_segmented": "host loop over _advance_chunk; no public jit donation decorator"
+      },
+      "caveat": "StableHLO audit was run on CPU dummy shapes. GPU buffer-assignment alias reports and codegen-level copy/fusion require a visible CUDA backend."
+    }
+  },
+  "clean_baseline_ceiling_read": {
+    "status": "NOT_FINAL_NO_FRESH_GPU_BASELINE",
+    "stale_evidence_read": "Lean to GPT's conservative 1.35-1.75x warmed estimate for now; Opus's 1.8-2.6x requires the absent acoustic unroll hook plus a proven Thompson lower-cap/bucketing path and fresh clean nsys confirmation.",
+    "sentinel_value": "1.35-1.75x_stale_not_clean"
+  },
+  "commands_run_summary": [
+    "rg/nl source audit for acoustic unroll, Thompson sediment unroll, precision enforcement, and donation decorators",
+    "nvidia-smi; ls -l /dev/nvidia*; JAX_PLATFORMS=cuda,cpu jax.devices()",
+    "/usr/local/cuda/bin/nsys profile smoke test",
+    "JAX_PLATFORMS=cpu PYTHONPATH=src taskset -c 0-3 python proofs/v0100/hlo_audit.py",
+    "JAX_PLATFORMS=cpu PYTHONPATH=src taskset -c 0-3 python proofs/v0100/thompson_nstep_histogram.py --dt-s 10 ...",
+    "python -m py_compile proofs/v0100/*.py; bash -n proofs/v0100/run_phase0_nsys.sh; python -m json.tool proofs/v0100/*.json"
+  ],
+  "commit_status": {
+    "attempted": true,
+    "status": "BLOCKED_BY_READ_ONLY_GIT_METADATA",
+    "command": "git add proofs/v0100/... && git diff --cached --stat && git diff --cached --check",
+    "error": "fatal: Unable to create '/home/enric/src/wrf_gpu2/.git/worktrees/perf-v0100/index.lock': Read-only file system"
+  },
+  "proof_objects": [
+    "proofs/v0100/phase0_baseline.md",
+    "proofs/v0100/phase0_baseline.json",
+    "proofs/v0100/hlo_audit.json",
+    "proofs/v0100/thompson_nstep_histogram.json",
+    "proofs/v0100/hlo_audit.py",
+    "proofs/v0100/thompson_nstep_histogram.py",
+    "proofs/v0100/phase0_nsys_driver.py",
+    "proofs/v0100/run_phase0_nsys.sh",
+    "proofs/v0100/parse_nsys_stats.py",
+    "proofs/v0100/daily_wrapper_timing.py"
+  ]
+}

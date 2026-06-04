@@ -1,0 +1,84 @@
+{
+  "donation_static_source_audit": {
+    "_advance_chunk": "plain helper, not decorated with jax.jit and no donate_argnums at function definition",
+    "run_forecast_operational": "decorated with donate_argnums=(0,)",
+    "run_forecast_operational_debug": "decorated with donate_argnums=(0,)",
+    "run_forecast_operational_segmented": "host loop over _advance_chunk; donation depends on inner helper call/lowering, not on a public jit decorator",
+    "run_forecast_operational_single_scan": "decorated with donate_argnums=(0,)",
+    "run_forecast_operational_with_limiter_diagnostics": "decorated with donate_argnums=(0,)"
+  },
+  "physics_layout_ops": {
+    "_flatten_columns_to_batch": {
+      "classification": "reshape_bitcast_only",
+      "stablehlo_convert": 0,
+      "stablehlo_reshape": 1,
+      "stablehlo_transpose": 0
+    },
+    "_from_columns": {
+      "classification": "real_transpose",
+      "stablehlo_convert": 0,
+      "stablehlo_reshape": 0,
+      "stablehlo_transpose": 1
+    },
+    "_thompson_column_from_state": {
+      "classification": "real_transpose",
+      "stablehlo_convert": 2,
+      "stablehlo_reshape": 0,
+      "stablehlo_transpose": 15
+    },
+    "_to_columns": {
+      "classification": "real_transpose",
+      "stablehlo_convert": 0,
+      "stablehlo_reshape": 0,
+      "stablehlo_transpose": 1
+    },
+    "_unflatten_batch_to_columns": {
+      "classification": "reshape_bitcast_only",
+      "stablehlo_convert": 0,
+      "stablehlo_reshape": 1,
+      "stablehlo_transpose": 0
+    },
+    "thompson._fill_down": {
+      "classification": "real_transpose",
+      "stablehlo_convert": 2,
+      "stablehlo_reshape": 3,
+      "stablehlo_transpose": 3
+    }
+  },
+  "platform": "cpu:0",
+  "precision_enforcement_force_fp64": {
+    "input_fields_not_fp64_by_default": [
+      "u",
+      "v",
+      "theta",
+      "qv",
+      "qc",
+      "qr",
+      "qi",
+      "qs",
+      "qg",
+      "Ni",
+      "Nr",
+      "Ns",
+      "Ng",
+      "xland",
+      "lakemask",
+      "mavail",
+      "lu_index",
+      "u_bdy",
+      "v_bdy",
+      "theta_bdy",
+      "qv_bdy",
+      "Nc",
+      "Nn"
+    ],
+    "input_fields_not_fp64_count": 23,
+    "note": "StableHLO was generated on the CPU backend with dummy shapes. Convert counts are source/lowering evidence for _enforce_operational_precision; GPU codegen-level copy/fusion still requires a visible CUDA backend.",
+    "stablehlo_convert": 26,
+    "stablehlo_reshape": 0,
+    "stablehlo_transpose": 0
+  },
+  "schema": "V0100Phase0HloAudit",
+  "schema_version": 1,
+  "status": "PASS"
+}
