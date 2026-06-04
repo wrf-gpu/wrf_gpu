@@ -175,9 +175,22 @@ def _interface_dz(dz):
 
 
 def _virtual_potential(theta, qv):
-    """Computes the dry virtual potential temperature used by MYNN gradients."""
+    """WRF virtual potential temperature ``thv = theta*(1+p608*sqv)``.
 
-    return theta * (1.0 + P608 * qv)
+    WRF MYNN forms the buoyancy variable from the SPECIFIC humidity
+    ``sqv = qv/(1+qv)`` (``module_bl_mynnedmf.F:673`` ``thv1(k)=th1(k)*(1+p608*sqv1(k))``
+    and the ``thlv1`` build at :1006-1008), NOT the mixing ratio. The kernel
+    previously used the mixing ratio ``qv`` directly; at the well-mixed-layer top
+    the buoyancy gradient ``dthv/dz`` is a knife-edge near zero, and the ~1%
+    ``qv`` vs ``qv/(1+qv)`` difference is enough to flip its sign — which decides
+    whether the level-2.5 Sh treats the entrainment cell as (un)stable. Using the
+    faithful specific humidity suppresses the spurious entrainment-zone over-mixing
+    (the dominant clear-sky exch_h miss). qc/qi liquid-water (thl) and the SGS
+    cloud-PDF condensate that WRF also folds into ``thlv1`` are zero in the dry
+    unsaturated column and remain out of scope (see report)."""
+
+    sqv = qv / (1.0 + jnp.maximum(qv, 0.0))
+    return theta * (1.0 + P608 * sqv)
 
 
 def _surface_terms(state: MynnPBLColumnState, surface=None):
