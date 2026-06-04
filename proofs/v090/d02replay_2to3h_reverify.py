@@ -65,7 +65,7 @@ from gpuwrf.integration.daily_pipeline import (  # noqa: E402
     finite_summary,
     resolve_run_dir,
 )
-from gpuwrf.runtime.operational_mode import run_forecast_operational  # noqa: E402
+from gpuwrf.runtime.operational_mode import run_forecast_operational_single_scan  # noqa: E402
 
 L2_RUN_ROOT = Path("/mnt/data/canairy_meteo/runs/wrf_l2")
 DT_S = 12.0
@@ -134,7 +134,11 @@ def _run_config(name, *, force_fp64, run_dir, hours, step_h, checkpoint_hours):
     while done_h < hours - 1e-9:
         adv = min(step_h, hours - done_h)
         try:
-            state = run_forecast_operational(state, nl, float(adv))
+            # single_scan is @jax.jit(static hours, donate state): the FIRST
+            # adv=step_h call compiles ONE program; every subsequent same-adv call
+            # HITS the jit cache (no recompile) and donates the input buffer (peak
+            # memory = one scan).  A final shorter tail compiles once.
+            state = run_forecast_operational_single_scan(state, nl, float(adv))
             jax.block_until_ready(state)
         except Exception as exc:  # noqa: BLE001
             import traceback
