@@ -1,5 +1,5 @@
 {
-  "generated": "2026-06-04T07:09:58.769143+00:00",
+  "generated": "2026-06-04T08:24:06.161701+00:00",
   "oracle": "module_sf_mynn.F (byte-identical pristine WRF, fp32 build)",
   "oracle_sha256": "86395534a6c9bfc79dcad50094bce290eff05756777a95794b2673795f9761c3",
   "config": "ISFFLX=1 isftcflx=0 iz0tlnd=0 spp_pbl=0 COARE_OPT=3.0 psi_opt=0(CB05) itimestep=2 dx=3000",
