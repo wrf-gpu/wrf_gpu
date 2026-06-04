@@ -1,0 +1,131 @@
+{
+  "artifact": "v090_deadcode_cleanup_report",
+  "date": "2026-06-04",
+  "branch": "worker/opus/v090-deadcode-cleanup",
+  "base_commit": "7b7c26e",
+  "objective": "Delete orphaned legacy non-prep acoustic helper and its dead tests without touching the operational PREP-based forecast path.",
+  "orphan_confirmed": true,
+  "production_caller_found": false,
+  "pre_delete_reference_scan": {
+    "command": "taskset -c 0-3 rg -n \"_operational_acoustic_substep_core\" src scripts tests",
+    "src_references": [
+      "src/gpuwrf/runtime/operational_mode.py:1301 definition only"
+    ],
+    "test_references_deleted": [
+      "tests/test_m6b_operational_theta_fix.py",
+      "tests/test_m6_acoustic_theta_fix.py",
+      "tests/test_m6_rk_save_family_fix.py",
+      "tests/unit/test_mu_persistence_two_substeps.py"
+    ],
+    "non_production_script_references_adjusted": [
+      "scripts/m6_guard_disabled_debug.py",
+      "scripts/m6b_real_ic_operational_compare.py"
+    ],
+    "classification": "No caller/import in src other than the helper definition. Script references are historical M6 diagnostic paths, not the daily-pipeline or operational release path."
+  },
+  "post_delete_reference_scan": {
+    "command": "taskset -c 0-3 rg -n \"_operational_acoustic_substep_core|_carry_from_acoustic_core\" src scripts tests",
+    "exit_code": 1,
+    "result": "No references remain under src, scripts, or tests."
+  },
+  "deleted": {
+    "src_functions": [
+      "gpuwrf.runtime.operational_mode._operational_acoustic_substep_core",
+      "gpuwrf.runtime.operational_mode._carry_from_acoustic_core"
+    ],
+    "tests": [
+      {
+        "path": "tests/test_m6b_operational_theta_fix.py",
+        "justification": "Dead test imported the orphaned legacy non-prep helper and exercised a single-substep path not used by the operational PREP-based RK step."
+      },
+      {
+        "path": "tests/test_m6_acoustic_theta_fix.py",
+        "justification": "Dead/stale one-off fixture test imported the orphaned legacy helper; its own skip reason identified the helper as test-only and not on the operational path."
+      },
+      {
+        "path": "tests/test_m6_rk_save_family_fix.py",
+        "justification": "Dead fixture test imported the orphaned legacy helper superseded by the PREP-based acoustic scan."
+      },
+      {
+        "path": "tests/unit/test_mu_persistence_two_substeps.py",
+        "justification": "Strict xfail targeted the orphaned helper's theta_coupled_work=None bug; its tracking text explicitly called for deleting the helper and tests or wiring the old path."
+      }
+    ]
+  },
+  "script_handling": {
+    "scripts/m6_guard_disabled_debug.py": "Removed stale helper import and replaced the obsolete drilldown call with an explicit RuntimeError for the removed legacy non-prep diagnostic path.",
+    "scripts/m6b_real_ic_operational_compare.py": "Removed stale helper import and replaced obsolete comparator call sites with an explicit RuntimeError for the removed legacy non-prep comparator path.",
+    "scripts/f6_transaction_audit.py": "Removed unused import of the deleted legacy carry constructor."
+  },
+  "operational_path_unaffected": {
+    "confirmed": true,
+    "daily_pipeline_entry": "src/gpuwrf/integration/daily_pipeline.py:312-315 _default_forecast_fn calls run_forecast_operational.",
+    "runtime_entry": "src/gpuwrf/runtime/operational_mode.py:2461 run_forecast_operational.",
+    "step_chain": [
+      "src/gpuwrf/runtime/operational_mode.py:1965 _physics_boundary_step calls _rk_scan_step.",
+      "src/gpuwrf/runtime/operational_mode.py:1571 _rk_scan_step builds small_step_prep_wrf.",
+      "src/gpuwrf/runtime/operational_mode.py:1580 _rk_scan_step calls _acoustic_scan with prep and calc_p_rho_wrf output.",
+      "src/gpuwrf/runtime/operational_mode.py:1264 _acoustic_scan builds AcousticCoreState from prep.",
+      "src/gpuwrf/runtime/operational_mode.py:1276 _acoustic_scan computes calc_coef_w_wrf_coefficients using prep.mut and prep.c2a.",
+      "src/gpuwrf/runtime/operational_mode.py:1306 _acoustic_scan calls acoustic_substep_core inside jax.lax.scan.",
+      "src/gpuwrf/runtime/operational_mode.py:1316 _acoustic_scan returns through _carry_from_finished_stage."
+    ]
+  },
+  "validation": [
+    {
+      "command": "taskset -c 0-3 env PYTHONPATH=src JAX_PLATFORMS=cpu JAX_PLATFORM_NAME=cpu XLA_PYTHON_CLIENT_PREALLOCATE=false OMP_NUM_THREADS=4 python -m py_compile src/gpuwrf/runtime/operational_mode.py scripts/m6_guard_disabled_debug.py scripts/m6b_real_ic_operational_compare.py scripts/f6_transaction_audit.py",
+      "result": "PASS"
+    },
+    {
+      "command": "taskset -c 0-3 env PYTHONPATH=src JAX_PLATFORMS=cpu JAX_PLATFORM_NAME=cpu XLA_PYTHON_CLIENT_PREALLOCATE=false OMP_NUM_THREADS=4 python - <<'PY' ... import gpuwrf.runtime.operational_mode ... PY",
+      "result": "PASS: import_ok gpuwrf.runtime.operational_mode cpu; has_removed_helper False; has_prep_path True"
+    },
+    {
+      "command": "taskset -c 0-3 env PYTHONPATH=src JAX_PLATFORMS=cpu JAX_PLATFORM_NAME=cpu XLA_PYTHON_CLIENT_PREALLOCATE=false OMP_NUM_THREADS=4 python - <<'PY' ... small hydrostatic _rk_scan_step smoke ... PY",
+      "result": "PASS: backend=cpu, finite=True, theta_min=300.00000020881356, theta_max=300.0299997524647",
+      "notes": "JAX emitted CPU AOT feature mismatch warnings but completed without crash."
+    },
+    {
+      "command": "taskset -c 0-3 env PYTHONPATH=src JAX_PLATFORMS=cpu JAX_PLATFORM_NAME=cpu XLA_PYTHON_CLIENT_PREALLOCATE=false OMP_NUM_THREADS=4 python -m pytest tests/test_m6_guard_disabled_debug.py tests/test_m6b_shared_core_contract.py tests/test_m6b_fix_rk1_acoustic_loop.py -q",
+      "result": "PASS: 17 passed in 4.74s"
+    },
+    {
+      "command": "taskset -c 0-3 env PYTHONPATH=src JAX_PLATFORMS=cpu JAX_PLATFORM_NAME=cpu XLA_PYTHON_CLIENT_PREALLOCATE=false OMP_NUM_THREADS=4 python -m pytest tests/test_m6_guard_disabled_debug.py tests/test_m6b_shared_core_contract.py tests/test_m6b_fix_rk1_acoustic_loop.py tests/test_m6b_fix_advance_mu_t_commit.py -q",
+      "result": "KNOWN PRE-EXISTING STATIC TEST FAILURES: 19 passed, 2 failed in tests/test_m6b_fix_advance_mu_t_commit.py",
+      "pre_existing_evidence": "Base HEAD already lacks the asserted core strings mu=advanced[\"mu\"] and acoustic.coef_mut if acoustic.coef_mut is not None else acoustic.muts."
+    },
+    {
+      "command": "taskset -c 0-3 env PYTHONPATH=src JAX_PLATFORMS=cpu JAX_PLATFORM_NAME=cpu XLA_PYTHON_CLIENT_PREALLOCATE=false OMP_NUM_THREADS=4 python -m pytest tests/ -q -k \"operational\" 2>&1 | tail -15",
+      "result": "KNOWN PRE-EXISTING STATIC SOURCE FAILURES: 4 failed, 28 passed, 4 skipped, 1167 deselected in 9.78s",
+      "failed_tests": [
+        "tests/test_m6_operational_mode_no_h2d.py::test_operational_source_has_no_host_transfer_or_sanitizer_calls",
+        "tests/test_m6b_d2h_warmed_zero.py::test_warmed_recapture_does_not_touch_operational_sources",
+        "tests/test_m6b_operational_no_h2d.py::test_operational_mode_source_still_has_no_host_callbacks_or_sanitizer",
+        "tests/test_m6b_rk1_d2h_acceptance.py::test_operational_mode_lifts_localized_dynamic_d2h_emitters"
+      ],
+      "pre_existing_evidence": "Base HEAD already contains the forbidden static tokens jax.lax.cond and _m9_snapshot in operational_mode.py."
+    },
+    {
+      "command": "taskset -c 0-3 env PYTHONPATH=src JAX_PLATFORMS=cpu JAX_PLATFORM_NAME=cpu XLA_PYTHON_CLIENT_PREALLOCATE=false OMP_NUM_THREADS=4 timeout 90 python -m pytest tests/savepoint/test_dycore_100_steps.py -q",
+      "result": "KNOWN ENV ARTIFACT: rc=139, Segmentation fault (core dumped) under CPU-only JAX/Py3.13 environment",
+      "action": "Documented only; no attempt made to debug or fix JAX internals."
+    },
+    {
+      "command": "taskset -c 0-3 git diff --check",
+      "result": "PASS"
+    }
+  ],
+  "known_environment_artifacts": [
+    {
+      "name": "JAX-native CPU savepoint segfault",
+      "test": "tests/savepoint/test_dycore_100_steps.py",
+      "exit_code": 139,
+      "classification": "JAX-internal environment crash in CPU-only JAX 0.10.0/Python 3.13 path; previously passed; unrelated to this dead-code deletion."
+    }
+  ],
+  "residual_risks": [
+    "Historical M6 diagnostic scripts that depended on the removed non-prep path now fail explicitly if that obsolete drilldown is invoked. Current production diagnostics should use the PREP-based operational path.",
+    "The requested -k operational sweep remains blocked by pre-existing static-source expectations around jax.lax.cond/_m9_snapshot, not by this deletion."
+  ],
+  "next_decision_needed": "Manager can decide whether to separately retire or update stale M6 static tests and historical diagnostic scripts beyond this task's helper/test deletion scope."
+}

@@ -45,7 +45,6 @@ from gpuwrf.runtime.operational_mode import (
     OperationalNamelist,
     _enforce_operational_precision,
     _m6b_acoustic_tendencies,
-    _operational_acoustic_substep_core,
     _physics_boundary_step,
     _with_save_family,
 )
@@ -86,6 +85,13 @@ ENVELOPE_1X = {
 }
 
 LEGACY_TEST_PROOF_DIR = ROOT / ".agent" / "sprints" / "2026-05-26-m6-guard-disabled-debug"
+
+
+def _removed_legacy_acoustic_substep(*_args: Any, **_kwargs: Any) -> None:
+    raise RuntimeError(
+        "This M6 diagnostic drills into a removed legacy non-prep acoustic path. "
+        "Use the production PREP-based operational step for current diagnostics."
+    )
 
 
 def _jsonable(value: Any) -> Any:
@@ -478,7 +484,7 @@ def _instrument_first_step(
         block_until_ready(carry)
         trace.append(_trace_record("horizontal_pressure_gradient", carry.state, step, rk_stage=rk_stage))
         for acoustic_substep in range(1, int(substeps) + 1):
-            carry = _operational_acoustic_substep_core(carry, namelist, dt_sub)
+            carry = _removed_legacy_acoustic_substep(carry, namelist, dt_sub)
             block_until_ready(carry)
             trace.append(_trace_record("acoustic", carry.state, step, rk_stage=rk_stage, acoustic_substep=acoustic_substep))
         carry = carry.replace(state=apply_halo(carry.state, halo_spec(namelist.grid)))
