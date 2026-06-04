@@ -1,0 +1,12 @@
+# Large binary release assets are NOT committed to git. They are staged here on
+# the build workstation, pinned by sha256 in proofs/v090/readme_case_manifest.json,
+# and uploaded as GitHub release assets at tag time by the manager.
+#
+# Tracked (small, human-reviewable): the sample namelists + README + this file.
+# Ignored (large binaries): the tarball and the NetCDF wrfout/wrfinput/wrfbdy.
+
+*.tgz
+*.tar.gz
+staging/**/wrfout_*
+staging/**/wrfinput_*
+staging/**/wrfbdy_*
