@@ -13,16 +13,33 @@
   "oracle_scheme_tag": "mynnedmf",
   "pass": false,
   "per_field": {
+    "el_pbl": {
+      "abs_tol": 0.5,
+      "enforced_cells": 34575,
+      "jax_range": [
+        0.0,
+        119.59040216180526
+      ],
+      "max_abs_err": 17.20706831923268,
+      "max_rel_err": 1.300409012647439,
+      "n_violations": 70,
+      "pass": false,
+      "rel_tol": 0.05,
+      "wrf_range": [
+        0.0,
+        119.55958557128906
+      ]
+    },
     "exch_h": {
       "abs_tol": 0.001,
       "enforced_cells": 34575,
       "jax_range": [
         0.0,
-        56.51516865780544
+        136.312679168962
       ],
-      "max_abs_err": 112.22813914238236,
-      "max_rel_err": 29.48388958434154,
-      "n_violations": 26057,
+      "max_abs_err": 93.17894523049537,
+      "max_rel_err": 102.93912606444775,
+      "n_violations": 1570,
       "pass": false,
       "rel_tol": 0.05,
       "wrf_range": [
@@ -35,11 +52,11 @@
       "enforced_cells": 34575,
       "jax_range": [
         0.0,
-        45.9014389863939
+        86.05134235856734
       ],
-      "max_abs_err": 61.93384423328142,
-      "max_rel_err": 0.9803414575644626,
-      "n_violations": 26765,
+      "max_abs_err": 21.12120127688818,
+      "max_rel_err": 0.68663516878092,
+      "n_violations": 353,
       "pass": false,
       "rel_tol": 0.05,
       "wrf_range": [
@@ -68,12 +85,12 @@
       "abs_tol": 0.005,
       "enforced_cells": 34575,
       "jax_range": [
-        1e-05,
-        1.2952157766165413
+        1.1483792689793422e-05,
+        1.3044066713623608
       ],
-      "max_abs_err": 0.09720697113127497,
-      "max_rel_err": 262.90551546669997,
-      "n_violations": 156,
+      "max_abs_err": 0.07483008840902688,
+      "max_rel_err": 263.2374096296992,
+      "n_violations": 253,
       "pass": false,
       "rel_tol": 0.1,
       "wrf_range": [
@@ -85,12 +102,12 @@
       "abs_tol": 1e-08,
       "enforced_cells": 34575,
       "jax_range": [
-        -9.354480166945747e-07,
-        8.122490816302406e-07
+        -1.9396218122723816e-06,
+        1.9719494477561544e-06
       ],
-      "max_abs_err": 9.230303826624278e-07,
-      "max_rel_err": 2.8696633480364735e+23,
-      "n_violations": 19567,
+      "max_abs_err": 1.1865440556734406e-06,
+      "max_rel_err": 4.0913047079834305e+22,
+      "n_violations": 2498,
       "pass": false,
       "rel_tol": 0.1,
       "wrf_range": [
@@ -102,12 +119,12 @@
       "abs_tol": 1e-05,
       "enforced_cells": 34575,
       "jax_range": [
-        -0.0003901739768726505,
-        0.0012593123705231493
+        -0.0003974589466098324,
+        0.0011828729232661317
       ],
-      "max_abs_err": 0.00024430152466455485,
-      "max_rel_err": 1.187778125534401e+26,
-      "n_violations": 13003,
+      "max_abs_err": 0.0002105240278922338,
+      "max_rel_err": 1.930188643781447e+25,
+      "n_violations": 864,
       "pass": false,
       "rel_tol": 0.1,
       "wrf_range": [
@@ -119,12 +136,12 @@
       "abs_tol": 1e-05,
       "enforced_cells": 34575,
       "jax_range": [
-        -0.000660743946967246,
-        0.0006443056532566703
+        -0.0006443354947116811,
+        0.000728062650991395
       ],
-      "max_abs_err": 0.0002977604444658826,
-      "max_rel_err": 2.531816891976963e+24,
-      "n_violations": 17034,
+      "max_abs_err": 6.317673045914191e-05,
+      "max_rel_err": 2.1190061492926124e+25,
+      "n_violations": 200,
       "pass": false,
       "rel_tol": 0.1,
       "wrf_range": [
@@ -136,12 +153,12 @@
       "abs_tol": 1e-05,
       "enforced_cells": 34575,
       "jax_range": [
-        -0.0007726122551239278,
-        0.0009373993586252954
+        -0.0007152656907668407,
+        0.0009965310347238947
       ],
-      "max_abs_err": 0.0003980458227514916,
-      "max_rel_err": 6.175333293158126e+25,
-      "n_violations": 22256,
+      "max_abs_err": 9.207566490918338e-05,
+      "max_rel_err": 7.758172034059521e+24,
+      "n_violations": 723,
       "pass": false,
       "rel_tol": 0.1,
       "wrf_range": [
@@ -159,6 +176,10 @@
     "sf_surface_physics": 4
   },
   "predeclared_tolerances": {
+    "el_pbl": {
+      "abs": 0.5,
+      "rel": 0.05
+    },
     "exch_h": {
       "abs": 0.001,
       "rel": 0.05
