@@ -42,6 +42,14 @@ L2_RUN_ROOT = Path("/mnt/data/canairy_meteo/runs/wrf_l2")
 OUTPUT_ROOT = Path("/tmp/m7_pipeline_runs")
 RMSE_THRESHOLDS = {"T2": 3.0, "U10": 7.5, "V10": 7.5}
 
+# v0.9.0 validation-burst: precision mode for the forecast namelist.
+# True  -> full fp64 (the prior gate mode).
+# False -> ADR-007 gated-fp32 (theta/u/v/qv fp32; mu/p/ph/w + acoustic/pressure
+#          accumulators fp64) -- the OPERATIONAL SHIP mode.  Selected via
+#          --gated-fp32 on the CLI; read by build_l2_daily_case (whose signature
+#          is fixed by execute_daily_pipeline's case_builder contract).
+_FORCE_FP64 = True
+
 
 def _pin_orchestration_cpus() -> list[int] | None:
     if not hasattr(os, "sched_setaffinity"):
@@ -264,7 +272,7 @@ def build_l2_daily_case(config: DailyPipelineConfig) -> tuple[DailyCase, Path]:
         radiation_cadence_steps=int(config.radiation_cadence_steps),
         use_vertical_solver=True,
         use_flux_advection=True,
-        force_fp64=True,
+        force_fp64=bool(_FORCE_FP64),
         diff_6th_opt=2,
         diff_6th_factor=0.12,
         w_damping=1,
@@ -533,11 +541,20 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--output-root", type=Path, default=OUTPUT_ROOT)
     parser.add_argument("--proof-dir", type=Path, default=SPRINT_DIR)
     parser.add_argument("--inventory-only", action="store_true")
+    parser.add_argument(
+        "--gated-fp32",
+        action="store_true",
+        help="Run the forecast in ADR-007 gated-fp32 (theta/u/v/qv fp32; mu/p/ph/w + "
+        "acoustic/pressure accumulators fp64) -- the OPERATIONAL SHIP mode. Default is full fp64.",
+    )
     return parser.parse_args(argv)
 
 
 def main(argv: list[str] | None = None) -> int:
+    global _FORCE_FP64
     args = parse_args(argv)
+    if getattr(args, "gated_fp32", False):
+        _FORCE_FP64 = False
     affinity = _pin_orchestration_cpus()
     proof_dir = Path(args.proof_dir)
     proof_dir.mkdir(parents=True, exist_ok=True)
