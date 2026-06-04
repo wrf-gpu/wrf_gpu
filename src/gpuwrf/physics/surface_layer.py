@@ -744,24 +744,29 @@ def surface_layer_with_diagnostics(state) -> SurfaceLayerDiagnostics:
     psiq2 = jnp.maximum(jnp.log((2.0 + znt) / z_q) - psih2, 1.0)  # 976
     psiq10 = jnp.maximum(jnp.log((10.0 + znt) / z_q) - psih10, 1.0)  # 977
 
-    # --- LAND nocturnal-stable 2 m thermal diagnostic: Noah-MP bare-ground form ---
-    # Over a Noah-MP land point WRF discards the MYNN ``THGB + DTG*PSIT2/PSIT`` 2 m
-    # value (module_sf_mynn.F:1135 "OVERWRITTEN FOR LAND POINTS IN THE LSM") and uses
-    # the LSM diagnostic ``T2 = FVEG*T2MV + (1-FVEG)*T2MB``
-    # (module_surface_driver.F:3470). For sparse Canary land (FVEG~0.04-0.06) the
-    # bare-ground ``T2MB`` dominates. Its skin->2 m interpolation weight comes from
-    # SFCDIF1's Paulson stability with the ``MOZ2<=1`` 2 m cap, which is BOUNDED
-    # where MYNN's CB05 ``psih2`` over-suppresses the 2 m exchange in the deep-stable
-    # regime (z/L pinned at 20). Using the MYNN ``psit2/psit`` ratio over stable land
-    # places T2 at weight ~0.42 toward the lowest-level air; the consistent
-    # bare-ground ratio recovers ~0.76 (WRF truth ~0.56-0.65), collapsing the
-    # overnight land T2 cold bias (T2 RMSE vs WRF T2B 1.64K -> 0.72K at 06z) with NO
-    # daytime change. Applied ONLY to the th2/q2 diagnostic ratio below (the flux
-    # ``psit``/``psit2`` and MOL are left on the MYNN path; land HFX/QFX come from
-    # Noah-MP in the coupler). Gated to land & stable.
-    land_stable = is_land & stable
-    w2m_bare = _noahmp_bare_2m_weight_stable(zol, za, znt)  # PSIT2/PSIT (bare SFCDIF1)
-    w2m = jnp.where(land_stable, w2m_bare, psit2 / psit)    # MYNN ratio elsewhere
+    # --- 2 m thermal/moisture weight: FAITHFUL MYNN-SL ``psit2/psit`` by default ---
+    # WRF's MYNN-SL 2-m diagnostic is ``TH2 = THGB + DTG*PSIT2/PSIT`` (module_sf_mynn.F
+    # :1138); the faithful port uses that ratio everywhere (this is the savepoint-
+    # faithful default, ``lsm_t2_diag=False``).
+    #
+    # OPERATIONAL LSM STAND-IN (opt-in, ``lsm_t2_diag=True``): over a Noah-MP land
+    # point real WRF OVERWRITES this MYNN 2-m value with the LSM diagnostic
+    # ``T2 = FVEG*T2MV + (1-FVEG)*T2MB`` (module_sf_mynn.F:1135 "OVERWRITTEN FOR LAND
+    # POINTS IN THE LSM"; module_surface_driver.F:3470). This GPU port's Noah-MP does
+    # NOT yet compute T2MB/T2MV, so when the flag is on we substitute the consistent
+    # SFCDIF1 bare-ground skin->2 m weight over stable land as a STAND-IN for that
+    # missing LSM step (it reduced overnight land-T2 RMSE vs WRF wrfout T2 1.64K->0.72K
+    # at v0.1.0). This is NOT a faithful module_sf_mynn.F term -- it models a coupling
+    # step the LSM owns. It touches ONLY th2/t2/q2 (NOT flux/MOL/PBL coupling). Default
+    # OFF so the surface-layer module stays WRF-faithful; the real fix is to implement
+    # Noah-MP T2MB and route it through the coupler (tracked, out of MYNN-SL scope).
+    lsm_t2_diag = bool(_field(state, "lsm_t2_diag", False))
+    mynn_w2m = psit2 / psit                                 # faithful MYNN-SL ratio
+    if lsm_t2_diag:
+        land_stable = is_land & stable
+        w2m = jnp.where(land_stable, _noahmp_bare_2m_weight_stable(zol, za, znt), mynn_w2m)
+    else:
+        w2m = mynn_w2m                                      # faithful MYNN-SL default
 
     # u10/v10 diagnostics (module_sf_mynn.F:1109-1131).
     # WRF MYNN 10 m wind branches on the lowest mass-level height za
@@ -800,8 +805,11 @@ def surface_layer_with_diagnostics(state) -> SurfaceLayerDiagnostics:
     th2_out_warm = warm_lo & ((th2 < thgb) | (th2 > thx))
     th2_out_cold = (~warm_lo) & ((th2 > thgb) | (th2 < thx))
     th2 = jnp.where(th2_out_warm | th2_out_cold, th2_lin, th2)
-    # Q2 uses the surface MIXING RATIO anchor (module_sf_mynn.F:1147).
-    q2 = qsfcmr + (qx - qsfcmr) * jnp.where(land_stable, w2m_bare, psiq2 / psiq)
+    # Q2 uses the surface MIXING RATIO anchor (module_sf_mynn.F:1147). Faithful MYNN
+    # uses psiq2/psiq; the opt-in LSM stand-in reuses the same stable-land bare weight.
+    mynn_q2w = psiq2 / psiq
+    q2w = jnp.where(is_land & stable, w2m, mynn_q2w) if lsm_t2_diag else mynn_q2w
+    q2 = qsfcmr + (qx - qsfcmr) * q2w
     # MYNN 2-m mixing-ratio brackets (module_sf_mynn.F:1148-1149):
     # Q2 = MAX(Q2, MIN(QSFCMR, QV1D)) then Q2 = MIN(Q2, 1.05*QV1D). WRF reference
     # code (bracket floor + ceiling), not a masking clamp.

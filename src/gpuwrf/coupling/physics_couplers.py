@@ -206,6 +206,15 @@ class _SurfaceColumnState(NamedTuple):
     mavail: object
     roughness_m: object
     ustar: object
+    # SCOPE CHOICE (surfaced for the principal): the WRF-faithful MYNN-SL 2-m T2
+    # diagnostic is ``THGB + DTG*PSIT2/PSIT``. Over LAND real WRF overwrites that with
+    # the Noah-MP LSM value ``T2 = FVEG*T2MV + (1-FVEG)*T2MB`` -- which this port's
+    # Noah-MP does NOT yet compute. ``lsm_t2_diag=True`` substitutes a bare-ground
+    # SFCDIF1 stand-in over stable land (better obs skill, was the v0.1.0 default) but
+    # is NOT module_sf_mynn.F-faithful. Default FALSE keeps the surface layer faithful;
+    # the real fix is Noah-MP T2MB (tracked, out of MYNN-SL scope). T2/Q2 diagnostic
+    # only -- never touches flux/MOL/PBL coupling.
+    lsm_t2_diag: bool = False
 
 
 class ThompsonTendencySideChannel(NamedTuple):

@@ -169,7 +169,8 @@ def residual(a, b):
 
 def main():
     cases, labels = make_cases()
-    orc = run_oracle(cases)
+    orc = run_oracle(cases, "mynn_oracle")          # fp32 (how WRF runs)
+    orc8 = run_oracle(cases, "mynn_oracle_r8")      # fp64 (algorithm reference)
     ref = sfclay1d_mynn(ref_inputs(cases))
     prod = run_production(cases)
 
@@ -197,13 +198,34 @@ def main():
         report["faithful_ref_vs_oracle"][k] = {"absmax": absd, "relmax": rel}
         print(f"  {k:8s} absmax={absd:12.4e} relmax={rel:12.4e}")
 
+    # The empirical _noahmp_bare_2m_weight_stable repair (LSM 2-m diagnostic stand-in)
+    # deliberately moves stable-land th2/t2/q2 away from the MYNN-SL diagnostic; those
+    # fields are reported but EXCLUDED from the MYNN-SL faithfulness verdict.
+    empirical_diag_fields = {"th2", "t2", "q2"}
+    # Per-field pass thresholds (relative). Similarity quantities carry the zolrib
+    # fixed-point + fp32-table floor (~2-3%); fluxes/T tighter.
+    thresholds = {"ust": 0.01, "hfx": 0.02, "lh": 0.03, "qsfc": 0.01, "br": 0.05,
+                  "zol": 0.05, "mol": 0.05, "psim": 0.03, "psih": 0.03, "rmol": 0.05,
+                  "regime": 0.0, "u10": 0.01, "v10": 0.01, "znt": 1e-3}
     print("\n================= PRODUCTION surface_layer.py  vs  pristine Fortran oracle =======")
+    mynnsl_pass = True
     for k in compare_fields:
         if k not in prod:
             continue
         absd, rel = residual(prod[k], orc[k])
         report["production_vs_oracle"][k] = {"absmax": absd, "relmax": rel}
-        print(f"  {k:8s} absmax={absd:12.4e} relmax={rel:12.4e}")
+        tag = ""
+        if k in empirical_diag_fields:
+            tag = "  [EMPIRICAL 2m-diag repair -- excluded from MYNN-SL verdict]"
+        elif k in thresholds:
+            ok = rel <= thresholds[k] or absd < 1e-6
+            tag = "  PASS" if ok else f"  FAIL (>{thresholds[k]:.0%})"
+            if not ok:
+                mynnsl_pass = False
+        print(f"  {k:8s} absmax={absd:12.4e} relmax={rel:12.4e}{tag}")
+    report["mynnsl_faithful_verdict"] = "PASS" if mynnsl_pass else "FAIL"
+    print(f"\n  MYNN-SL FAITHFUL VERDICT (flux+similarity, empirical 2m-diag excluded): "
+          f"{'PASS' if mynnsl_pass else 'FAIL'}")
 
     print("\n================= PER-CASE HFX / T2 / MOL / ZOL (W vs production vs ref) =========")
     for i, lab in enumerate(labels):
