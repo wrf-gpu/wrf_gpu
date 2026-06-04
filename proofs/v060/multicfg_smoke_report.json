@@ -7,7 +7,7 @@
   "real_data_sources": {
     "canary_grid": "GridSpec.canary_3km_template()",
     "noahmp_land_warm_start": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z (d02 wrfinput)",
-    "noahclassic_bundle": "/home/enric/src/wrf_gpu2/.claude/worktrees/agent-a5714871e467d16fd/proofs/v060/savepoints_noahclassic.json (WRF NOAHMP_SFLX savepoint column daytime_veg10)",
+    "noahclassic_bundle": "/home/enric/src/wrf_gpu2/.claude/worktrees/v090-consolidation/proofs/v060/savepoints_noahclassic.json (WRF NOAHMP_SFLX savepoint column daytime_veg10)",
     "atmospheric_profile": "validated b2 C-grid pattern (scanwire_smoke._build_state) on the Canary grid"
   },
   "sweep_rationale": "COVERING set (NOT full cartesian product): every supported scheme appears in >=1 RUN config plus the real operational Canary config. Supported = mp{8,6,10,16,1} x bl{5,1,7} x sfclay{1,5,7} x cu{1,2,6} x sf_surface{4,2} (GF cumulus EXCLUDED = documented-TODO). v0.6.0 CONSOLIDATION coupler reality: the operational scan now threads MYNN(5) + YSU(1) + ACM2(7) PBL (YSU/ACM2 are the v0.6.0 jax.lax.scan-traceable rewrites from the PBL-GPU-op lane, scan-wired via PBL_SCAN_ADAPTERS), KF(1) + modified-Tiedtke(6) cumulus (Tiedtke is the v0.6.0 GPU-batched jit/vmap adapter, scan-wired via CU_SCAN_ADAPTERS), and Noah-MP(4) + Noah-classic(2) land -- so YSU/ACM2 and Tiedtke are now RUN configs. Only GF(3) (and New-Tiedtke 16, not separately gated) remain CPU-NumPy reference ports and stay FAIL-CLOSED in the coupler, exercised here as fail-closed integration assertions (the coupler must reject them loudly, never silently no-op).",
@@ -109,8 +109,8 @@
       "physical": {
         "per_field": {
           "theta": {
-            "min": 299.01149,
-            "max": 311.1492,
+            "min": 299.01147,
+            "max": 311.14947,
             "band": [
               180.0,
               400.0
@@ -127,8 +127,8 @@
             "ok": true
           },
           "u": {
-            "min": 4.37699,
-            "max": 7.69655,
+            "min": 4.37368,
+            "max": 7.69824,
             "band": [
               -150.0,
               150.0
@@ -136,8 +136,8 @@
             "ok": true
           },
           "v": {
-            "min": -3.75079,
-            "max": -0.62439,
+            "min": -3.75344,
+            "max": -0.62074,
             "band": [
               -150.0,
               150.0
@@ -163,8 +163,8 @@
             "ok": true
           },
           "t_skin": {
-            "min": 290.76611,
-            "max": 299.80265,
+            "min": 290.7661,
+            "max": 299.80261,
             "band": [
               200.0,
               360.0
@@ -237,8 +237,8 @@
       "physical": {
         "per_field": {
           "theta": {
-            "min": 298.9824,
-            "max": 310.84092,
+            "min": 298.98255,
+            "max": 310.84121,
             "band": [
               180.0,
               400.0
@@ -255,7 +255,7 @@
             "ok": true
           },
           "u": {
-            "min": 4.49755,
+            "min": 4.49564,
             "max": 7.62164,
             "band": [
               -150.0,
@@ -264,7 +264,7 @@
             "ok": true
           },
           "v": {
-            "min": -3.72874,
+            "min": -3.72989,
             "max": -0.25985,
             "band": [
               -150.0,
@@ -364,7 +364,7 @@
       "physical": {
         "per_field": {
           "theta": {
-            "min": 299.03404,
+            "min": 299.03466,
             "max": 310.97241,
             "band": [
               180.0,
@@ -382,7 +382,7 @@
             "ok": true
           },
           "u": {
-            "min": 4.49754,
+            "min": 4.49562,
             "max": 7.62164,
             "band": [
               -150.0,
@@ -391,7 +391,7 @@
             "ok": true
           },
           "v": {
-            "min": -3.72874,
+            "min": -3.72993,
             "max": -0.25985,
             "band": [
               -150.0,
@@ -490,7 +490,7 @@
       "physical": {
         "per_field": {
           "theta": {
-            "min": 298.99256,
+            "min": 298.99299,
             "max": 310.83098,
             "band": [
               180.0,
@@ -508,7 +508,7 @@
             "ok": true
           },
           "u": {
-            "min": 4.49755,
+            "min": 4.49564,
             "max": 7.62164,
             "band": [
               -150.0,
@@ -517,7 +517,7 @@
             "ok": true
           },
           "v": {
-            "min": -3.72874,
+            "min": -3.72988,
             "max": -0.25985,
             "band": [
               -150.0,
@@ -617,7 +617,7 @@
       "physical": {
         "per_field": {
           "theta": {
-            "min": 298.98572,
+            "min": 298.98596,
             "max": 310.79181,
             "band": [
               180.0,
@@ -635,7 +635,7 @@
             "ok": true
           },
           "u": {
-            "min": 4.49756,
+            "min": 4.49565,
             "max": 7.62164,
             "band": [
               -150.0,
@@ -644,7 +644,7 @@
             "ok": true
           },
           "v": {
-            "min": -3.72874,
+            "min": -3.72989,
             "max": -0.25985,
             "band": [
               -150.0,
@@ -743,7 +743,7 @@
       "physical": {
         "per_field": {
           "theta": {
-            "min": 298.98104,
+            "min": 298.98109,
             "max": 310.8655,
             "band": [
               180.0,
@@ -761,7 +761,7 @@
             "ok": true
           },
           "u": {
-            "min": 4.49755,
+            "min": 4.49563,
             "max": 7.62164,
             "band": [
               -150.0,
@@ -770,7 +770,7 @@
             "ok": true
           },
           "v": {
-            "min": -3.72874,
+            "min": -3.7299,
             "max": -0.25985,
             "band": [
               -150.0,
@@ -868,7 +868,7 @@
       "physical": {
         "per_field": {
           "theta": {
-            "min": 298.97915,
+            "min": 298.97939,
             "max": 311.98723,
             "band": [
               180.0,
@@ -886,7 +886,7 @@
             "ok": true
           },
           "u": {
-            "min": 4.49753,
+            "min": 4.49561,
             "max": 7.62164,
             "band": [
               -150.0,
@@ -895,7 +895,7 @@
             "ok": true
           },
           "v": {
-            "min": -3.72874,
+            "min": -3.73032,
             "max": -0.25985,
             "band": [
               -150.0,
@@ -993,7 +993,7 @@
       "physical": {
         "per_field": {
           "theta": {
-            "min": 298.97871,
+            "min": 298.97895,
             "max": 310.97241,
             "band": [
               180.0,
@@ -1011,7 +1011,7 @@
             "ok": true
           },
           "u": {
-            "min": 4.49753,
+            "min": 4.49561,
             "max": 7.62164,
             "band": [
               -150.0,
@@ -1020,7 +1020,7 @@
             "ok": true
           },
           "v": {
-            "min": -3.72874,
+            "min": -3.72993,
             "max": -0.25985,
             "band": [
               -150.0,
@@ -1118,7 +1118,7 @@
       "physical": {
         "per_field": {
           "theta": {
-            "min": 298.9389,
+            "min": 298.93914,
             "max": 310.8601,
             "band": [
               180.0,
@@ -1136,7 +1136,7 @@
             "ok": true
           },
           "u": {
-            "min": 4.49753,
+            "min": 4.4956,
             "max": 7.62164,
             "band": [
               -150.0,
@@ -1145,7 +1145,7 @@
             "ok": true
           },
           "v": {
-            "min": -3.72874,
+            "min": -3.72988,
             "max": -0.25985,
             "band": [
               -150.0,
@@ -1243,8 +1243,8 @@
       "physical": {
         "per_field": {
           "theta": {
-            "min": 298.9824,
-            "max": 310.84092,
+            "min": 298.98255,
+            "max": 310.84121,
             "band": [
               180.0,
               400.0
@@ -1261,7 +1261,7 @@
             "ok": true
           },
           "u": {
-            "min": 4.49755,
+            "min": 4.49564,
             "max": 7.62164,
             "band": [
               -150.0,
@@ -1270,7 +1270,7 @@
             "ok": true
           },
           "v": {
-            "min": -3.72874,
+            "min": -3.72989,
             "max": -0.25985,
             "band": [
               -150.0,
@@ -1368,8 +1368,8 @@
       "physical": {
         "per_field": {
           "theta": {
-            "min": 298.9824,
-            "max": 310.84092,
+            "min": 298.98255,
+            "max": 310.84121,
             "band": [
               180.0,
               400.0
@@ -1386,7 +1386,7 @@
             "ok": true
           },
           "u": {
-            "min": 4.49755,
+            "min": 4.49564,
             "max": 7.62164,
             "band": [
               -150.0,
@@ -1395,7 +1395,7 @@
             "ok": true
           },
           "v": {
-            "min": -3.72874,
+            "min": -3.72989,
             "max": -0.25985,
             "band": [
               -150.0,
@@ -1494,8 +1494,8 @@
       "physical": {
         "per_field": {
           "theta": {
-            "min": 298.9824,
-            "max": 310.84092,
+            "min": 298.98255,
+            "max": 310.84121,
             "band": [
               180.0,
               400.0
@@ -1512,7 +1512,7 @@
             "ok": true
           },
           "u": {
-            "min": 4.49755,
+            "min": 4.49564,
             "max": 7.62164,
             "band": [
               -150.0,
@@ -1521,7 +1521,7 @@
             "ok": true
           },
           "v": {
-            "min": -3.72874,
+            "min": -3.72989,
             "max": -0.25985,
             "band": [
               -150.0,
@@ -1620,8 +1620,8 @@
       "physical": {
         "per_field": {
           "theta": {
-            "min": 298.9824,
-            "max": 310.84092,
+            "min": 298.98255,
+            "max": 310.84121,
             "band": [
               180.0,
               400.0
@@ -1638,7 +1638,7 @@
             "ok": true
           },
           "u": {
-            "min": 4.49755,
+            "min": 4.49564,
             "max": 7.62164,
             "band": [
               -150.0,
@@ -1647,7 +1647,7 @@
             "ok": true
           },
           "v": {
-            "min": -3.72874,
+            "min": -3.72989,
             "max": -0.25985,
             "band": [
               -150.0,
@@ -1746,8 +1746,8 @@
       "physical": {
         "per_field": {
           "theta": {
-            "min": 298.9824,
-            "max": 310.84092,
+            "min": 298.98255,
+            "max": 310.84121,
             "band": [
               180.0,
               400.0
@@ -1764,7 +1764,7 @@
             "ok": true
           },
           "u": {
-            "min": 4.49755,
+            "min": 4.49564,
             "max": 7.62164,
             "band": [
               -150.0,
@@ -1773,7 +1773,7 @@
             "ok": true
           },
           "v": {
-            "min": -3.72874,
+            "min": -3.72989,
             "max": -0.25985,
             "band": [
               -150.0,
@@ -1884,7 +1884,7 @@
       "physical": {
         "per_field": {
           "theta": {
-            "min": 299.00724,
+            "min": 299.00727,
             "max": 311.29829,
             "band": [
               180.0,
@@ -1902,8 +1902,8 @@
             "ok": true
           },
           "u": {
-            "min": 4.37699,
-            "max": 7.69655,
+            "min": 4.37365,
+            "max": 7.69828,
             "band": [
               -150.0,
               150.0
@@ -1911,8 +1911,8 @@
             "ok": true
           },
           "v": {
-            "min": -3.75079,
-            "max": -0.62439,
+            "min": -3.75345,
+            "max": -0.62075,
             "band": [
               -150.0,
               150.0
@@ -1938,8 +1938,8 @@
             "ok": true
           },
           "t_skin": {
-            "min": 290.76607,
-            "max": 299.80191,
+            "min": 290.76606,
+            "max": 299.8019,
             "band": [
               200.0,
               360.0
@@ -2013,7 +2013,7 @@
       "physical": {
         "per_field": {
           "theta": {
-            "min": 298.9057,
+            "min": 298.90589,
             "max": 310.86551,
             "band": [
               180.0,
@@ -2031,7 +2031,7 @@
             "ok": true
           },
           "u": {
-            "min": 4.49754,
+            "min": 4.49563,
             "max": 7.62164,
             "band": [
               -150.0,
@@ -2040,7 +2040,7 @@
             "ok": true
           },
           "v": {
-            "min": -3.72874,
+            "min": -3.7299,
             "max": -0.25985,
             "band": [
               -150.0,
@@ -2068,7 +2068,7 @@
           },
           "t_skin": {
             "min": 299.5,
-            "max": 304.35321,
+            "max": 304.35318,
             "band": [
               200.0,
               360.0
@@ -2140,8 +2140,8 @@
       "physical": {
         "per_field": {
           "theta": {
-            "min": 298.9824,
-            "max": 310.84092,
+            "min": 298.98255,
+            "max": 310.84121,
             "band": [
               180.0,
               400.0
@@ -2158,7 +2158,7 @@
             "ok": true
           },
           "u": {
-            "min": 4.49755,
+            "min": 4.49564,
             "max": 7.62164,
             "band": [
               -150.0,
@@ -2167,7 +2167,7 @@
             "ok": true
           },
           "v": {
-            "min": -3.72874,
+            "min": -3.72989,
             "max": -0.25985,
             "band": [
               -150.0,
@@ -2265,8 +2265,8 @@
       "physical": {
         "per_field": {
           "theta": {
-            "min": 299.05101,
-            "max": 310.84089,
+            "min": 299.0518,
+            "max": 310.84117,
             "band": [
               180.0,
               400.0
@@ -2390,8 +2390,8 @@
       "physical": {
         "per_field": {
           "theta": {
-            "min": 299.07242,
-            "max": 310.84087,
+            "min": 299.07423,
+            "max": 310.84115,
             "band": [
               180.0,
               400.0
@@ -2515,8 +2515,8 @@
       "physical": {
         "per_field": {
           "theta": {
-            "min": 299.00669,
-            "max": 310.84092,
+            "min": 299.00649,
+            "max": 310.84121,
             "band": [
               180.0,
               400.0
