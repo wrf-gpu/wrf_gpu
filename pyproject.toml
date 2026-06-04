@@ -18,6 +18,9 @@ dependencies = [
 [project.optional-dependencies]
 dev = ["pytest>=7"]
 
+[project.scripts]
+gpuwrf = "gpuwrf.cli:main"
+
 [tool.setuptools.packages.find]
 where = ["src"]
 
