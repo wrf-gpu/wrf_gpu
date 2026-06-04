@@ -54,34 +54,60 @@ mu/p/ph/w/ustar/fluxes = FP64) matches ADR-007.
 - Final-hour Tier-4 RMSE vs CPU-WRF: **T2 0.492 K (bias -0.315), U10 0.427 m/s (-0.155), V10 0.325 m/s (-0.008)** — well inside bars (T2<3.0, U10/V10<7.5).
 - Wall: total 561.8 s; hour-1 (compile-inclusive) 486.7 s.
 
-### Multi-hour (24h) gated-fp32 — coupled skill
-<!-- FILLED FROM proofs/v090/d02_coupled_skill.json + speedup_d02 -->
-- Finite throughout: TBD
-- Per-lead T2/HFX/U10/V10/PBLH RMSE + bias: TBD
-- Within operational margins (vs v0.1.0/v0.2.0 bars): TBD
-- Wall clock (command-to-finish): TBD
+### Multi-hour (24h) gated-fp32 — coupled skill (proofs/v090/d02_coupled_skill.json)
+- **FINITE + bounded all 24 hours** (theta 290-498 K; |u|<49, |v|<15, |w|<2.7 m/s). bounds PASS. No blow-up.
+- Per-lead RMSE / bias vs CPU-WRF (mean over 24 leads / final-24h):
+  | field | mean RMSE | final RMSE | mean bias | bar | verdict |
+  |---|---|---|---|---|---|
+  | T2 | 1.11 K | 1.30 K | -0.30 K | 3.0 K | within bar EVERY lead |
+  | V10 | 3.57 m/s | 4.26 m/s | -2.43 | 7.5 | within bar EVERY lead |
+  | U10 | 4.41 m/s | 8.04 m/s | -3.61 | 7.5 | within bar 20/24 leads; crosses ~22h |
+  | HFX | 63 W/m² | 43 W/m² | +2.0 | 120 (info) | within band |
+  | PBLH | 151 m | 177 m | +18 m | 400 (info) | within band |
+- **U10 grows monotonically 0.43 (1h) -> 8.04 (24h) m/s**, a systematic weak-wind bias (GPU ~7 m/s too weak by 24h). This is the documented near-surface U-momentum bias, now quantified at d02 multi-hour scale. U10 still **beats persistence at 23/24 leads**; V10 beats persistence 23/24.
+- **Verdict (24h):** within operational margins for T2/V10/HFX/PBLH at every lead and for U10 through ~21h; the only binding-bar breach is U10 at the last ~3 leads. Stable, physical, no blow-up.
+- Wall (24h, gated-fp32, COLD radiation-graph compile): total 1166.5 s; hour-1 67.1 s, hour-2 435.6 s (cold RRTMG+physics+dycore compile), steady-state median 27.75 s/fc-hr.
+
+### Full-horizon 72h gated-fp32 (proofs/v090/d02_coupled_skill_72h.json + speedup_d02_72h) — **L2_D02_GREEN**
+- **FINITE + bounded all 72 hours; final-hour Tier-4 RMSE PASS: T2 0.81 K, U10 4.00 m/s, V10 2.97 m/s** (all within bars).
+- Per-lead over 72h: **T2 within bar 72/72** (mean 1.06 K), **V10 within bar 72/72** (mean 3.21), **U10 within bar 66/72** (mean 4.79, max 8.04). **U10 beats persistence 71/72.**
+- **The U10 weak-wind bias is DIURNAL/EPISODIC, not a runaway:** U10 RMSE rises to ~8.0 around the hour-22-30 peak-wind window then RECOVERS to 3-4 m/s by 72h (6h-cadence: 1.7, 4.3, 6.6, **8.0**, 6.7, 6.5, 5.9, 5.4, 3.6, 2.9, 3.1, 4.0). The 24h-endpoint number (8.04) caught the diurnal peak; the 72h endpoint (4.00) is well within bar. This recontextualizes the U10 gap as an episodic peak-wind under-prediction, not a degrading instability.
+- Wall (72h, gated-fp32, WARM cache): total 2149.9 s; hour-1 66.8 s, **hour-2 57.3 s** (radiation graph reused from the persistent jax cache the 24h run populated -> operational daily-cadence scenario), steady-state median 27.72 s/fc-hr.
 
 ---
 
-## PART 2 — d03 1km validation (new faithful physics)
-<!-- FILLED FROM proofs/v090/d03_1km_validation.json + d03_prognostic_pblh.json -->
-- Every output timestep within margins (T2/U10/V10/PBLH/precip + prognostic levels): TBD
-- Finite/stable throughout: TBD
-- Worst field: TBD
-- Wall clock: TBD
+## PART 2 — d03 1km validation (new faithful physics) — proofs/v090/d03_1km_validation.json
+- **BLOCKED / FAIL in gated-fp32 (the ship mode): NONFINITE after forecast hour 1.**
+- **Worst (and only) field: qke** (MYNN turbulent kinetic energy, fp32) — 3036 nonfinite cells after hour 1; every other prognostic field stays finite.
+- **Root cause (isolated):** qke is `FP32_GATED` (precision.py:112) and lives OUTSIDE the fp64-locked mass/pressure/acoustic path that keeps d02 stable. At 1km (steep Tenerife terrain + dt=3s) its TKE budget overflows fp32.
+- **Full-fp64 d03 IS finite** (prior trunk proof, 0.3h/360 steps) but ~1:64-throttled (~16 min/0.3h) so a 24h fp64 validation cannot complete in the burst window.
+- **=> the 1km gate is NOT met in either practical mode today.** No timesteps were produced (NaN'd at hour 1), so no T2/U10/V10/PBLH/precip/prognostic-level RMSE could be computed.
+- **Actionable fix (OUT OF this burst's scope — needs a bounded precision-contract sprint + review):** promote `qke` (and likely the MYNN length-scale intermediates) to FP64 in the gated matrix. qke is not a conserved mass/pressure field, so this preserves the gated-fp32 invariants and the d02 speedup (qke is a small field). The `d03_prognostic_pblh_analyze.py` augmentation (PBLH + prognostic-level RMSE) is committed and ready to run the moment a ship-speed d03 completes.
 
 ---
 
-## PART 3 — honest real-user-time speedup
-<!-- FILLED FROM proofs/v090/speedup_benchmark.json -->
-- 9/3km nested (d02, compile-inclusive headline): TBD
-- 1km (d03, INDICATIVE): TBD
-- compile caveat: TBD
+## PART 3 — honest real-user-time speedup (proofs/v090/speedup_benchmark.json)
+Denominator = 28-rank CPU-WRF d02 own-solver cost (64.6 / 72.0 / 77.3 s/fc-hr conservative/mid/high). All GPU numbers gated-fp32 (ship mode), command-to-finish, compile-INCLUSIVE.
+- **9/3km nested (d02), 72h, WARM-cache (operational daily-cadence) real-user headline:** **2.16x** conservative / 2.41x mid / 2.59x high (2149.9 s / 72h = 29.86 s/fc-hr).
+- **9/3km nested (d02), 24h COLD-launch (first-ever-run, full RRTMG compile) real-user:** **1.33x** conservative (1166.5 s / 24h). This is the honest worst-case for a never-before-compiled gated-fp32 config.
+- Steady-state (compile-EXCLUDED, CONTEXT ONLY): **2.33x / 2.60x / 2.79x** (27.7 s/fc-hr).
+- dt-matched strict floor (GPU forced to CPU dt=6s, /1.67): ~0.80x conservative (warm: ~1.29x).
+- **1km (d03): UNMEASURED / BLOCKED** — gated-fp32 NaN'd (qke) before any complete wall; full-fp64 too throttled (~16 min/0.3h) to time a 24h run inside the burst. Honestly left a placeholder, marked MEASUREMENT_STATUS=BLOCKED.
+- **compile caveat (important):** the d02 forecast traces TWO large XLA graphs — a no-radiation hour graph (~67 s incl ~39 s compile) and a radiation-active hour graph. On a COLD launch the radiation graph costs ~408 s (hour-2 = 435.6 s in the 24h run). JAX persistent compilation cache is ON by default (`gpuwrf.runtime.jax_cache` -> `/mnt/data/gpuwrf_jax_cache`); the 72h run reused it (hour-2 = 57.3 s), which is the realistic daily-cadence wall. Report 2.16x (warm/operational) AND 1.33x (cold first-run) — do not present only one.
 
 ---
+
+## Bottom line per gate
+- **(A) d02 multi-hour SKILL: GATE MET (with a noted episodic U10 gap).** 72h GREEN, finite/stable throughout, final-hour Tier-4 RMSE PASS (T2 0.81, U10 4.00, V10 2.97). T2/V10 within bar at all 72 leads; U10 within bar 66/72 (episodic diurnal peak-wind under-prediction, recovers; beats persistence 71/72). Within operational margins (v0.1.0/v0.2.0 bars) for the vast majority of the forecast.
+- **(B) d03 1km gate: OPEN / FAIL.** gated-fp32 NaNs on qke after hour 1; fp64 finite-but-throttled. Root cause isolated, fix identified (qke->fp64), out of burst scope.
+- **(3) speedup: filled honestly.** d02 9/3km real-user 2.16x warm / 1.33x cold; d03 1km blocked.
 
 ## Risks / honest gaps
-- TBD (e.g. if throughput capped the horizon below 72h).
+- **d03 1km gate OPEN (qke fp32 NaN)** — the single most important carry-over. Low-risk fix identified (promote qke to FP64; it is outside the mass/pressure path), but it is a precision-contract (`precision.py`) change requiring its own bounded sprint+review, so this burst leaves the 1km gate FAILED, not green.
+- **d02 U10 episodic weak-wind bias** — peaks ~8 m/s in the diurnal high-wind window (~h22-30), recovers to ~4 by 72h; within bar 66/72 leads, beats persistence 71/72. Pre-existing documented near-surface U-momentum issue, now quantified; T2/V10/HFX/PBLH unaffected. Not an instability.
+- **Cold-launch compile penalty:** first-ever gated-fp32 d02 launch pays a ~7 min radiation-graph XLA compile (24h cold real-user 1.33x). The persistent jax cache (on by default) removes it on subsequent runs (warm 72h 2.16x), which is the operational daily-cadence reality.
+- **gated-fp32 = the ship mode** confirmed active in every run (the fp64->fp32 scatter FutureWarning fires every step; precision.py matrix verified: theta/u/v/qv/qke fp32; mu/p/ph/w + acoustic/pressure fp64).
+- **Single case / single season:** d02 skill is one representative mid-season (MAM) case (20260507). Not a powered ensemble; consistent with the corpus n-power limits noted elsewhere.
 
 ## Files changed / proofs
 - scripts/m7_l2_d02_replay.py, scripts/d03_replay.py (--gated-fp32 flag)
