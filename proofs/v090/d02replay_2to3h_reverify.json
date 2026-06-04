@@ -1,0 +1,301 @@
+{
+  "acoustic_substeps": 10,
+  "any_config_finite_through_3h": true,
+  "branch": "worker/opus/v090-qkefix-followup",
+  "checkpoints_hours": [
+    0.6,
+    1.2,
+    1.8,
+    2.4,
+    3.0,
+    3.0
+  ],
+  "commit": "203a3c8593c3734c1be795b2117d083435fcc8f7",
+  "devices": [
+    "cuda:0"
+  ],
+  "dt_s": 12.0,
+  "fix_under_test": "shipped build_l2_daily_case = validated stability namelist + WRF-faithful MYNN qke cold-start seed (no clamps)",
+  "fp64_crosscheck_note": "fp64 cross-check NOT run to completion in this leaner harness: FP64 is 1:64-throttled on the RTX 5090 (a single 0.6h/180-step fp64 increment did not finish in ~18 min), making a multi-hour fp64 run impractical. The qke-fix verify (proofs/v090/d02replay_qke_fix_verify.json) already established the AUTHORITATIVE fp64 reference: the shipped stable namelist is FINITE through 1.0h (300 steps) with qke 2.50/5.63/14.79 and mu ~96757 Pa at 0.1/0.5/1.0h. The gated_fp32 trace here matches that fp64 reference to 3-4 sig figs at every shared checkpoint, so the operational gated-fp32 path introduces no precision-driven divergence. NOTE: the gated_fp32 ADR-007 matrix KEEPS mu/p/ph/pgeop/w in FP64 (stability floor), so the stability-critical mass/pressure/geopotential/vertical paths are fp64 even in the gated config.",
+  "fp64_hours": 1.2,
+  "gated_fp32_finite_through_3h": true,
+  "generated": "2026-06-04T13:47:14.385866+00:00",
+  "max_finite_hours": 3.0,
+  "max_hours_requested": 3.0,
+  "platform": "cuda",
+  "radiation_cadence_steps": 180,
+  "results": {
+    "gated_fp32": {
+      "aborted_oom": false,
+      "elapsed_s": 117.01781890296843,
+      "first_nonfinite_hours": null,
+      "flags": {
+        "damp_opt": 3,
+        "dampcoef": 0.2,
+        "diff_6th_factor": 0.12,
+        "diff_6th_opt": 2,
+        "epssm": 0.5,
+        "force_fp64": false,
+        "top_lid": true,
+        "use_flux_advection": true,
+        "w_damping": 1,
+        "zdamp": 5000.0
+      },
+      "force_fp64": false,
+      "qke_t0_max": 4.992201138520613e-05,
+      "stable_through_3h": true,
+      "step_h": 0.6,
+      "survived_hours": 3.0,
+      "survived_steps": 900,
+      "trace": [
+        {
+          "all_finite": true,
+          "dyn": {
+            "mu": {
+              "fin": true,
+              "max": 96757.89135912931,
+              "min": 66400.35070106415
+            },
+            "p": {
+              "fin": true,
+              "max": 101649.884375,
+              "min": 5177.881331295312
+            },
+            "ph": {
+              "fin": true,
+              "max": 204077.453125,
+              "min": -74.53799355766087
+            },
+            "qke": {
+              "fin": true,
+              "max": 5.989440441131592,
+              "min": 9.999999747378752e-06
+            },
+            "theta": {
+              "fin": true,
+              "max": 492.4031677246094,
+              "min": 290.0248718261719
+            },
+            "u": {
+              "fin": true,
+              "max": 25.87274169921875,
+              "min": -11.020318031311035
+            },
+            "v": {
+              "fin": true,
+              "max": 10.356066703796387,
+              "min": -15.133285522460938
+            },
+            "w": {
+              "fin": true,
+              "max": 2.494718390140732,
+              "min": -2.410549381752797
+            }
+          },
+          "hours": 0.6,
+          "nonfinite_fields": {},
+          "step": 180
+        },
+        {
+          "all_finite": true,
+          "dyn": {
+            "mu": {
+              "fin": true,
+              "max": 96746.83592026868,
+              "min": 66400.62430625827
+            },
+            "p": {
+              "fin": true,
+              "max": 101649.884375,
+              "min": 5175.129791263752
+            },
+            "ph": {
+              "fin": true,
+              "max": 204077.453125,
+              "min": -74.55286183485882
+            },
+            "qke": {
+              "fin": true,
+              "max": 15.984562873840332,
+              "min": 9.999999747378752e-06
+            },
+            "theta": {
+              "fin": true,
+              "max": 492.27490234375,
+              "min": 290.6819152832031
+            },
+            "u": {
+              "fin": true,
+              "max": 25.847549438476562,
+              "min": -12.546926498413086
+            },
+            "v": {
+              "fin": true,
+              "max": 10.351642608642578,
+              "min": -17.284542083740234
+            },
+            "w": {
+              "fin": true,
+              "max": 2.415430208828528,
+              "min": -2.2681993870849833
+            }
+          },
+          "hours": 1.2,
+          "nonfinite_fields": {},
+          "step": 360
+        },
+        {
+          "all_finite": true,
+          "dyn": {
+            "mu": {
+              "fin": true,
+              "max": 96742.72995605468,
+              "min": 66408.70785085436
+            },
+            "p": {
+              "fin": true,
+              "max": 101649.884375,
+              "min": 5172.5837553618485
+            },
+            "ph": {
+              "fin": true,
+              "max": 204077.453125,
+              "min": -74.55286527435882
+            },
+            "qke": {
+              "fin": true,
+              "max": 14.756560325622559,
+              "min": 9.999999747378752e-06
+            },
+            "theta": {
+              "fin": true,
+              "max": 492.27490234375,
+              "min": 290.7230224609375
+            },
+            "u": {
+              "fin": true,
+              "max": 25.80629539489746,
+              "min": -12.473092079162598
+            },
+            "v": {
+              "fin": true,
+              "max": 10.333152770996094,
+              "min": -17.966812133789062
+            },
+            "w": {
+              "fin": true,
+              "max": 2.1506662308958973,
+              "min": -2.2831846699223037
+            }
+          },
+          "hours": 1.8,
+          "nonfinite_fields": {},
+          "step": 540
+        },
+        {
+          "all_finite": true,
+          "dyn": {
+            "mu": {
+              "fin": true,
+              "max": 96742.72995605468,
+              "min": 66410.89931173272
+            },
+            "p": {
+              "fin": true,
+              "max": 101649.884375,
+              "min": 5172.872587421819
+            },
+            "ph": {
+              "fin": true,
+              "max": 204077.453125,
+              "min": -74.55286527518294
+            },
+            "qke": {
+              "fin": true,
+              "max": 14.845123291015625,
+              "min": 9.999999747378752e-06
+            },
+            "theta": {
+              "fin": true,
+              "max": 492.27490234375,
+              "min": 290.6348876953125
+            },
+            "u": {
+              "fin": true,
+              "max": 25.794628143310547,
+              "min": -12.195379257202148
+            },
+            "v": {
+              "fin": true,
+              "max": 10.333048820495605,
+              "min": -17.365720748901367
+            },
+            "w": {
+              "fin": true,
+              "max": 1.907003642830344,
+              "min": -2.2899468550881084
+            }
+          },
+          "hours": 2.4,
+          "nonfinite_fields": {},
+          "step": 720
+        },
+        {
+          "all_finite": true,
+          "dyn": {
+            "mu": {
+              "fin": true,
+              "max": 96742.72995605468,
+              "min": 66411.07128366324
+            },
+            "p": {
+              "fin": true,
+              "max": 101649.884375,
+              "min": 5173.043428968501
+            },
+            "ph": {
+              "fin": true,
+              "max": 204077.453125,
+              "min": -74.55286527518305
+            },
+            "qke": {
+              "fin": true,
+              "max": 14.871367454528809,
+              "min": 9.999999747378752e-06
+            },
+            "theta": {
+              "fin": true,
+              "max": 492.27490234375,
+              "min": 290.5287780761719
+            },
+            "u": {
+              "fin": true,
+              "max": 25.776456832885742,
+              "min": -11.41110897064209
+            },
+            "v": {
+              "fin": true,
+              "max": 10.330102920532227,
+              "min": -16.88037872314453
+            },
+            "w": {
+              "fin": true,
+              "max": 1.8685148737754544,
+              "min": -2.2954704807516064
+            }
+          },
+          "hours": 3.0,
+          "nonfinite_fields": {},
+          "step": 900
+        }
+      ]
+    }
+  },
+  "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l2/20260521_18z_l2_72h_20260522T133443Z",
+  "run_id": "20260521_18z_l2_72h_20260522T133443Z",
+  "runner": "run_forecast_operational_single_scan in fixed step_h increments (jit-cached on hours, one compiled program reused per increment; donates state; memory-bounded; no 600-step single advance / no incremental fp64 probe)",
+  "schema": "V090D02Replay2to3hReverify",
+  "step_h": 0.6,
+  "verdict": "FINITE_THROUGH_3H_PLUS",
+  "wrf_seed_ref": "phys/module_bl_mynnedmf.F:618-691 (mym_initialize INITIALIZE_QKE)"
+}
