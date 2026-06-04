@@ -68,9 +68,14 @@ from gpuwrf.coupling.scan_adapters import (
 )
 from gpuwrf.dynamics.advection import compute_advection_tendencies, halo_spec
 from gpuwrf.dynamics.explicit_diffusion import (
+    C_S_DEFAULT,
     constant_k_diffusion_tendency,
     conservative_constant_k_diffusion_tendency,
+    horizontal_deformation_2d,
+    horizontal_diffusion_coord_momentum_tendency,
+    horizontal_diffusion_coord_scalar_tendency,
     sixth_order_diffusion_tendency,
+    smag2d_horizontal_km,
     wrf_deformation_momentum_tendency,
 )
 from gpuwrf.dynamics.flux_advection import (
@@ -170,6 +175,9 @@ class OperationalNamelist:
     km_opt: int = 0
     khdif: float = 0.0
     kvdif: float = 0.0
+    # Smagorinsky coefficient c_s (Registry default 0.25), used by the
+    # diff_opt=1/km_opt=4 2-D Smagorinsky horizontal-diffusion path (WRF smag2d_km).
+    c_s: float = C_S_DEFAULT
     diff_6th_opt: int = 0
     diff_6th_factor: float = 0.12
     # Constant eddy viscosity (Straka ν=75) on u, v, theta when > 0.
@@ -258,6 +266,7 @@ class OperationalNamelist:
         km_opt: int = 0,
         khdif: float = 0.0,
         kvdif: float = 0.0,
+        c_s: float = C_S_DEFAULT,
         diff_6th_opt: int = 0,
         diff_6th_factor: float = 0.12,
         const_nu_m2_s: float = 0.0,
@@ -299,6 +308,7 @@ class OperationalNamelist:
             km_opt=km_opt,
             khdif=khdif,
             kvdif=kvdif,
+            c_s=c_s,
             diff_6th_opt=diff_6th_opt,
             diff_6th_factor=diff_6th_factor,
             const_nu_m2_s=const_nu_m2_s,
@@ -338,6 +348,7 @@ class OperationalNamelist:
             int(self.km_opt),
             float(self.khdif),
             float(self.kvdif),
+            float(self.c_s),
             int(self.diff_6th_opt),
             float(self.diff_6th_factor),
             float(self.const_nu_m2_s),
@@ -387,6 +398,7 @@ class OperationalNamelist:
             km_opt,
             khdif,
             kvdif,
+            c_s,
             diff_6th_opt,
             diff_6th_factor,
             const_nu_m2_s,
@@ -439,6 +451,7 @@ class OperationalNamelist:
             km_opt=km_opt,
             khdif=khdif,
             kvdif=kvdif,
+            c_s=c_s,
             diff_6th_opt=diff_6th_opt,
             diff_6th_factor=diff_6th_factor,
             const_nu_m2_s=const_nu_m2_s,
@@ -1573,6 +1586,40 @@ def _augment_large_step_tendencies(
             u_t = u_t + conservative_constant_k_diffusion_tendency(haloed.u, mass=mass_u, k_m2_s=nu, dx_m=dx, dy_m=dy, dz_m=dz)
             v_t = v_t + conservative_constant_k_diffusion_tendency(haloed.v, mass=mass_v, k_m2_s=nu, dx_m=dx, dy_m=dy, dz_m=dz)
             w_t = w_t + conservative_constant_k_diffusion_tendency(haloed.w, mass=mass_f, k_m2_s=nu, dx_m=dx, dy_m=dy, dz_m=dz)
+
+    # WRF diff_opt=1 / km_opt=4: 2-D Smagorinsky HORIZONTAL diffusion on coordinate
+    # (eta) surfaces -- the recommended real-data default.  km_opt=4 computes the
+    # horizontal eddy viscosity xkmh (and xkhh=xkmh/prandtl) from the horizontal
+    # deformation (smag2d_km, module_diffusion_em.F:1934-2044) of the current
+    # velocity field; diff_opt=1 applies the variable-K mass-weighted flux
+    # divergence along eta surfaces (horizontal_diffusion / horizontal_diffusion_3dmp,
+    # module_big_step_utilities_em.F:2715-3060).  This is a SEPARATE branch from the
+    # const-K (diff_opt=2/km_opt=1) path above; the two never run together (the
+    # idealized Straka/warm-bubble cases use const_nu_m2_s and leave diff_opt/km_opt
+    # at their defaults, so they are bit-unchanged by this block).
+    #
+    # WRF applies ONLY horizontal Smagorinsky mixing here; the VERTICAL mixing comes
+    # from the PBL scheme (module_em.F:842 vertical_diffusion is gated on
+    # bl_pbl_physics==0), so this path adds no vertical diffusion -- the operational
+    # MYNN PBL provides vertical mixing in the coupled runs.
+    if int(namelist.diff_opt) == 1 and int(namelist.km_opt) == 4:
+        # Smagorinsky eddy viscosity from the horizontal deformation of (u, v).
+        d11, d22, d12 = horizontal_deformation_2d(haloed.u, haloed.v, dx_m=dx, dy_m=dy)
+        xkmh, xkhh = smag2d_horizontal_km(
+            d11, d22, d12, dx_m=dx, dy_m=dy, c_s=float(namelist.c_s),
+        )
+        # theta (perturbation vs the WRF 300 K reference base) -- horizontal_diffusion_3dmp.
+        theta_base = _theta_base_offset(haloed.theta) * jnp.ones_like(haloed.theta)
+        th_t = th_t + horizontal_diffusion_coord_scalar_tendency(
+            haloed.theta, xkhh, mass_h, dx_m=dx, dy_m=dy, base_3d=theta_base,
+        )
+        # momentum (u, v, w) -- horizontal_diffusion 'u'/'v'/'w' branches with xkmh.
+        du_s, dv_s, dw_s = horizontal_diffusion_coord_momentum_tendency(
+            haloed.u, haloed.v, haloed.w, xkmh, mass_u, mass_v, mass_f, dx_m=dx, dy_m=dy,
+        )
+        u_t = u_t + du_s
+        v_t = v_t + dv_s
+        w_t = w_t + dw_s
 
     # WRF rk_tendency adds the large-step horizontal pressure-gradient force to
     # the *coupled* large-step ru/rv_tend (module_em.F:1325 ->
