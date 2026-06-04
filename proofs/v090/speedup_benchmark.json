@@ -354,14 +354,14 @@
         "steady_state_s_per_fc_hr": null,
         "precision_mode": "gated_fp32 attempted (ship mode); full fp64 is the documented-finite-but-throttled fallback",
         "MEASUREMENT_STATUS": "BLOCKED",
-        "blocked_reason": "d03 1km gated-fp32 went NONFINITE after forecast hour 1 (qke fp32 overflow; see proofs/v090/d03_1km_validation.json). No complete GPU wall-clock could be measured at ship precision. Full-fp64 d03 is finite but ~1:64-throttled (~16 min/0.3h) so a 24h fp64 timing also could not complete inside the burst. The 1km speedup is therefore UNMEASURED in this burst and remains a placeholder."
+        "blocked_reason": "STILL UNMEASURED after the qke->FP64 promotion (worker/opus/v090-qke-fp64-fix, 2026-06-04). The qke->fp64 change was implemented + verified active, but the original root-cause hypothesis ('qke fp32 OVERFLOW') was FALSIFIED: qke in genuine fp64 still goes NONFINITE at forecast hour 1 with the IDENTICAL ~3036-cell signature (see proofs/v090/d03_1km_validation_qkefix.json). The d03 1km hour-1 blow-up is a DYNAMICS-driven structural instability over steep Tenerife terrain (qke is the canary field), not a precision-range overflow, so fp64 does not make a complete ship-speed 1km run possible. No complete GPU wall-clock exists at ship precision. The 1km speedup remains UNMEASURED -- to be filled only after a real numerics/stability fix lands a finite 24h gated-fp32 d03 run."
       },
       "results": {
         "PLACEHOLDER": true,
         "real_user_speedup_compile_inclusive": null,
         "steady_state_speedup_compile_excluded": null,
         "dt_matched_floor_speedup": null,
-        "note": "NOT FILLED: gated-fp32 d03 NaN (qke) before completion; fp64 d03 too throttled to time a 24h run. Fill this after the qke->fp64 promotion makes a ship-speed 1km run complete.",
+        "note": "STILL NOT FILLED after qke->FP64: the fp32-overflow premise was falsified; d03 gated-fp32 still NaNs at hour 1 (dynamics-driven, qke the canary). Fill only after a stability/numerics fix produces a finite 24h gated-fp32 d03 run. See proofs/v090/d03_1km_validation_qkefix.json + .agent/reviews/2026-06-04-opus-qke-fp64-fix.md.",
         "MEASUREMENT_STATUS": "BLOCKED"
       }
     }
