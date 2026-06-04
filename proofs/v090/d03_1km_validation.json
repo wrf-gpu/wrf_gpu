@@ -1,0 +1,43 @@
+{
+  "schema": "V090D031kmValidation",
+  "schema_version": 1,
+  "status": "FAIL",
+  "verdict": "D03_1KM_GATED_FP32_NONFINITE",
+  "precision_mode": "gated_fp32",
+  "precision_policy": "ADR-007 gated-fp32 ship mode: theta/u/v/qv/qke fp32; mu/p/ph/w + acoustic/pressure accumulators fp64.",
+  "run_id": "20260521_18z_l3_24h_20260522T133443Z",
+  "cpu_reference_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
+  "grid_mass_shape_zyx": [44, 75, 93],
+  "dt_s": 3.0,
+  "acoustic_substeps": 10,
+  "hours_requested": 24,
+  "headline": "d03 1km in gated-fp32 (the operational ship mode) goes NONFINITE after forecast hour 1. The single offending field is qke (MYNN turbulent kinetic energy), fp32, 3036 nonfinite cells; every other prognostic field stays finite. The 24h all-timesteps-in-margins gate is therefore NOT met in gated-fp32.",
+  "nonfinite_after_hour": 1,
+  "nonfinite_fields": {
+    "qke": {
+      "dtype": "float32",
+      "nonfinite_count": 3036,
+      "finite_min_before_blowup": 2.33e-05,
+      "finite_max_before_blowup": 27.36,
+      "note": "MYNN TKE. fp32 overflow at 1km (steep Tenerife terrain + dt=3s -> large TKE production/dissipation gradients exceed fp32 dynamic range/precision)."
+    }
+  },
+  "all_other_fields_finite_at_hour1": true,
+  "root_cause": "qke is FP32_GATED in src/gpuwrf/contracts/precision.py:112. At 1km the MYNN TKE budget loses too much precision / overflows in fp32. qke is NOT in the dycore mass/pressure/acoustic path, so it is not protected by the fp64-locked accumulators that keep d02 stable.",
+  "actionable_fix_OUT_OF_BURST_SCOPE": "Promote qke (and likely the MYNN length-scale intermediates) to FP64 in the gated precision matrix for the 1km path. qke is a diagnostic-style turbulence field outside the conserved mass/pressure path, so promoting it preserves the gated-fp32 invariants and the d02 speedup (qke is a small field). This is a precision-contract change to precision.py and therefore needs its own bounded sprint + review per the operating rules; it was NOT done in this validation burst.",
+  "fp64_reference_state": {
+    "verdict": "D03_FINITE (full fp64) confirmed previously on trunk",
+    "source_proof": "proofs/v090/d03_replay_finite_check.json",
+    "confirmed_window": "0.3h / 360 steps finite in force_fp64=True",
+    "fp64_throughput_caveat": "FP64 is ~1:64-throttled on the RTX 5090; the d03 fp64 increment is ~16 min per 0.3h, so a full 24h fp64 d03 validation cannot complete inside this burst window. A 24h fp64 d03 run would take many hours and is the slow path the gated-fp32 mode exists to replace.",
+    "implication": "d03 1km is finite in fp64 but impractically slow; gated-fp32 is fast but NaNs on qke. Neither practical mode closes the 24h 1km gate today -> the qke-fp64 promotion is the path that makes the 1km gate achievable at ship speed."
+  },
+  "wall_clock": {
+    "gated_fp32_blocked_after_hour": 1,
+    "observed_compile_phases": "two ~4-min XLA compiles (no-radiation hour graph + radiation-active hour graph) before the blow-up surfaced; the hour-1 no-radiation graph compiled in ~4m20s (XLA slow-compile alarm logged)."
+  },
+  "validation_fields_intended": ["T2", "U10", "V10", "PBLH", "RAINNC", "U", "V", "W", "T(theta-pert)", "QVAPOR"],
+  "validation_fields_obtained": "NONE (forecast NaN'd at hour 1 before any wrfout was written)",
+  "honesty_note": "This is a genuine OPEN gate, reported as FAIL not green. The d03-1km gate with the new faithful physics is NOT validated in the ship (gated-fp32) precision. The blocker is precisely isolated (qke fp32) and the fix is identified and low-risk, but implementing/validating it is a follow-up sprint, not this burst.",
+  "generated": "2026-06-04"
+}
