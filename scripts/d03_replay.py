@@ -199,12 +199,28 @@ def build_l3_d03_daily_case(config: DailyPipelineConfig) -> tuple[DailyCase, Pat
         top_lid=True,
     )
     run_start = _coerce_run_start(str(replay.metadata["run_start_label"]))
+    # v0.9.0 d02-replay stability fix carries to d03 (qke-fix follow-up):
+    #   (1) STABILITY NAMELIST -- the OperationalNamelist above already routes the
+    #       d03 forecast through the SAME validated operational Gen2 stability set
+    #       as daily_pipeline._build_real_case / m7_l2_d02_replay.build_l2_daily_case
+    #       (top_lid=True, epssm=0.5, w_damping=1, damp_opt=3, zdamp=5000,
+    #       dampcoef=0.2, diff_6th_opt=2/0.12, use_flux_advection, force_fp64).  This
+    #       builder has NEVER used the weak dataclass defaults; the d02-replay
+    #       hour-1 blow-up cure (proofs/v090/d02replay_qke_fix_verify.json) is that
+    #       same set, so d03 cannot hit the weak-namelist blow-up.
+    #   (2) MYNN qke COLD-START SEED -- ``build_replay_case`` (called above) applies
+    #       ``_wrf_mynn_coldstart_qke`` to the loaded d03 IC: when the parent carries
+    #       no TKE (MAXVAL(qke)<0.0002, the corpus d03 t=0 case) it seeds WRF's
+    #       ``mym_initialize`` background TKE profile, exactly as for d02.  The seed
+    #       result is surfaced in ``qke_coldstart`` below so d03 proofs record it.
+    qke_coldstart = replay.metadata.get("qke_coldstart", {})
     metadata = {
         "run_id": replay.metadata.get("run_id"),
         "run_dir": str(run_dir),
         "domain": config.domain,
         "grid": replay.metadata.get("grid", {}),
         "boundary": replay.metadata.get("boundary", {}),
+        "qke_coldstart": qke_coldstart,
         "namelist": {
             "dt_s": float(namelist.dt_s),
             "acoustic_substeps": int(namelist.acoustic_substeps),
