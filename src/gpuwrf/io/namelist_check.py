@@ -153,15 +153,19 @@ SUPPORTED_OPTIONS: dict[str, SupportedOption] = {
     ),
     "diff_opt": SupportedOption(
         key="diff_opt",
-        supported_values=frozenset({0, 2}),
-        implemented="0=off, 2=constant-K diffusion path when configured",
-        action="Use diff_opt=2/km_opt=1 only with the implemented constant-K path, or 0.",
+        supported_values=frozenset({0, 1, 2}),
+        implemented="0=off, 1=coordinate-surface (eta) horizontal diffusion, "
+        "2=physical-level constant-K diffusion path",
+        action="Use diff_opt=1/km_opt=4 for the real-data default 2-D Smagorinsky, "
+        "diff_opt=2/km_opt=1 for the constant-K path, or 0.",
     ),
     "km_opt": SupportedOption(
         key="km_opt",
-        supported_values=frozenset({0, 1}),
-        implemented="0=off, 1=constant-K coefficient path",
-        action="Use km_opt=1 with diff_opt=2 for constant-K diffusion, or 0.",
+        supported_values=frozenset({0, 1, 4}),
+        implemented="0=off, 1=constant-K coefficient, 4=2-D Smagorinsky horizontal "
+        "eddy viscosity (vertical mixing from the PBL scheme)",
+        action="Use km_opt=4 with diff_opt=1 for the real-data default 2-D "
+        "Smagorinsky, km_opt=1 with diff_opt=2 for constant-K, or 0.",
     ),
     "w_damping": SupportedOption(
         key="w_damping",
