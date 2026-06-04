@@ -1,0 +1,251 @@
+{
+  "root_cause": "4a localized port deviations (NOT 4b faithful-vs-skill)",
+  "evidence": {
+    "WRF_own_daytime_HFX_W_m2": [
+      270.19,
+      457.23,
+      664.05,
+      186.32
+    ],
+    "faithful_ref_reproduces_WRF_HFX": "yes, to 1.4e-4 rel -> the high daytime HFX is WRF behaviour",
+    "production_daytime_HFX_W_m2": [
+      266.97,
+      453.33,
+      660.52,
+      184.32
+    ],
+    "production_HFX_is_LOWER_not_higher": "production VCONVC=1.0 bug makes br too negative; HFX 266.97 vs WRF 270.19"
+  },
+  "localized_bugs": [
+    {
+      "id": "B1",
+      "field": "VCONVC",
+      "production": 1.0,
+      "wrf_mynn": 1.25,
+      "file": "surface_constants.py:41",
+      "effect": "unstable-land wstar/wspd too small -> br ~40% too negative -> zol/psih/HFX off; reconstructed br=-0.8619 matches production exactly vs WRF -0.6163"
+    },
+    {
+      "id": "B2",
+      "field": "land convective height scale",
+      "production": "pblh",
+      "wrf_mynn": "min(1.5*pblh,4000)",
+      "file": "surface_layer.py:555",
+      "effect": "land vconv too small (compounds B1)"
+    },
+    {
+      "id": "B3",
+      "field": "water z0 charnock update",
+      "production": "keeps seeded znt=2.85e-3",
+      "wrf_mynn": "charnock_1955 -> znt~8e-5",
+      "file": "surface_layer.py:_roughness_from_state",
+      "effect": "water gz1oz0/z_t wrong -> zol -0.188 vs prod -0.081, psih 0.81 vs 0.46"
+    },
+    {
+      "id": "B4",
+      "field": "cpm/thvgb constants",
+      "production": "cpm=cp*(1+0.8q), EP1=0.608, thvx uses qv",
+      "wrf_mynn": "cpm=cp*(1+0.84q), EP1=0.60836; thvgb=THGB*(1+EP1*QSFC)",
+      "file": "surface_layer.py:533,547",
+      "effect": "minor (<0.1%) but real fidelity deltas"
+    },
+    {
+      "id": "B5",
+      "field": "regime split",
+      "production": "BR>0->regime1 (no regime2)",
+      "wrf_mynn": "BR>0.2->1, 0<BR<0.2->2",
+      "file": "surface_layer.py:668",
+      "effect": "diagnostic only (regime not consumed downstream)"
+    },
+    {
+      "id": "B6-empirical",
+      "field": "_noahmp_bare_2m_weight_stable",
+      "production": "overrides stable-land th2/q2 weight",
+      "wrf_mynn": "THGB+DTG*PSIT2/PSIT (MYNN diagnostic)",
+      "file": "surface_layer.py:351,712",
+      "effect": "stable-land T2 +1.4..+2.8K WARMER than WRF MYNN; this is the ONLY empirical repair left and it touches ONLY the 2m diagnostic, not flux/MOL"
+    }
+  ],
+  "per_case": {
+    "unstable-land dT=+8 U=2.5": {
+      "br": [
+        -0.6163,
+        -0.8619
+      ],
+      "zol": [
+        -2.1519,
+        -2.8792
+      ],
+      "t2": [
+        299.538,
+        299.455
+      ],
+      "hfx": [
+        270.19,
+        266.97
+      ]
+    },
+    "unstable-land dT=+12 U=3.5": {
+      "br": [
+        -0.6255,
+        -0.7844
+      ],
+      "zol": [
+        -2.18,
+        -2.6544
+      ],
+      "t2": [
+        300.227,
+        300.14
+      ],
+      "hfx": [
+        457.23,
+        453.33
+      ]
+    },
+    "unstable-land dT=+16 U=4.0": {
+      "br": [
+        -0.7037,
+        -0.853
+      ],
+      "zol": [
+        -2.4156,
+        -2.8535
+      ],
+      "t2": [
+        300.86,
+        300.764
+      ],
+      "hfx": [
+        664.05,
+        660.52
+      ]
+    },
+    "unstable-land dT=+6 U=1.5": {
+      "br": [
+        -0.6813,
+        -1.1346
+      ],
+      "zol": [
+        -2.3486,
+        -3.6444
+      ],
+      "t2": [
+        299.171,
+        299.081
+      ],
+      "hfx": [
+        186.32,
+        184.32
+      ]
+    },
+    "stable-land dT=-4 U=1.5": {
+      "br": [
+        1.2727,
+        1.2721
+      ],
+      "zol": [
+        20.0,
+        20.0
+      ],
+      "t2": [
+        285.756,
+        287.182
+      ],
+      "hfx": [
+        -6.58,
+        -6.55
+      ]
+    },
+    "stable-land dT=-8 U=2.0": {
+      "br": [
+        1.4798,
+        1.4804
+      ],
+      "zol": [
+        20.0,
+        20.0
+      ],
+      "t2": [
+        283.439,
+        286.233
+      ],
+      "hfx": [
+        -13.48,
+        -13.42
+      ]
+    },
+    "stable-land dT=-2 U=3.0": {
+      "br": [
+        0.1455,
+        0.145
+      ],
+      "zol": [
+        1.8992,
+        1.8832
+      ],
+      "t2": [
+        286.787,
+        286.786
+      ],
+      "hfx": [
+        -8.56,
+        -8.55
+      ]
+    },
+    "neutral-land": {
+      "br": [
+        -0.0236,
+        -0.0243
+      ],
+      "zol": [
+        -0.1024,
+        -0.1054
+      ],
+      "t2": [
+        295.137,
+        295.137
+      ],
+      "hfx": [
+        -3.61,
+        -3.61
+      ]
+    },
+    "water dT=+1 U=7.0": {
+      "br": [
+        -0.0157,
+        -0.0153
+      ],
+      "zol": [
+        -0.1879,
+        -0.0807
+      ],
+      "t2": [
+        293.219,
+        293.214
+      ],
+      "hfx": [
+        9.56,
+        9.61
+      ]
+    },
+    "water dT=+2 U=10.0": {
+      "br": [
+        -0.0145,
+        -0.0142
+      ],
+      "zol": [
+        -0.1708,
+        -0.0753
+      ],
+      "t2": [
+        293.371,
+        293.36
+      ],
+      "hfx": [
+        24.23,
+        25.16
+      ]
+    }
+  }
+}
