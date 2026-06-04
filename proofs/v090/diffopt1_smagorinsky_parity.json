@@ -1,0 +1,43 @@
+{
+  "proof_id": "v090-diffopt1-smagorinsky-parity",
+  "generated_utc": "2026-06-04T08:54:55.365916+00:00",
+  "branch": "worker/opus/v090-diffopt1-smagorinsky",
+  "objective": "WRF-faithful diff_opt=1 (coordinate-surface horizontal diffusion) + km_opt=4 (2-D Smagorinsky horizontal eddy viscosity Kh from horizontal deformation).",
+  "wrf_reference": {
+    "smag2d_km": "dyn_em/module_diffusion_em.F:1934-2044",
+    "cal_deform_and_div": "dyn_em/module_diffusion_em.F:17-1190 (D11/D22/D12, eqns 13a/13b/13d)",
+    "horizontal_diffusion": "dyn_em/module_big_step_utilities_em.F:2715-2950",
+    "horizontal_diffusion_3dmp": "dyn_em/module_big_step_utilities_em.F:2954-3060",
+    "diff_opt1_dispatch": "dyn_em/module_em.F:802-878 (forward_step, rk_step==1)",
+    "constants": "prandtl=1/3 (share/module_model_constants.F:86); c_s default 0.25 (Registry.EM_COMMON:2866)"
+  },
+  "method": "analytic-oracle: each JAX operator compared to a literal NumPy transcription of the WRF formula on smooth periodic analytic fields (CPU fp64). Config scope: unit map factors (msf=1), flat eta surfaces (zx=zy=0), periodic x/y -- the documented idealized-slab reduction matching the existing const-K path scope. diff_opt=1 carries NO slope reduction (smag2d_km slope branch is gated on diff_opt==2).",
+  "checks": {
+    "deformation_tensor_vs_analytic": {
+      "d11_max_abs_residual": 4.87890977618477e-19,
+      "d22_max_abs_residual": 2.168404344971009e-18,
+      "d12_max_abs_residual": 0.0
+    },
+    "smag2d_km_kh_vs_wrf_formula": {
+      "c_s": 0.25,
+      "prandtl": 0.3333333333333333,
+      "mlen_h_m": 750.0,
+      "xkmh_max_abs_residual": 0.0,
+      "xkhh_max_abs_residual": 0.0,
+      "xkhh_is_3x_xkmh_max_residual": 3.552713678800501e-15
+    },
+    "coordinate_surface_flux_divergence_vs_wrf": {
+      "flux_divergence_max_abs_residual": 0.0,
+      "mass_weighted_integral_max_abs_level_sum": 4.218847493575595e-15
+    }
+  },
+  "no_regression": "diff_opt=1/km_opt=4 is a SEPARATE dispatch branch (operational_mode.py _augment_large_step_tendencies) gated on diff_opt==1 and km_opt==4. The existing diff_opt=2/km_opt=1 const-K path (const_nu_m2_s>0) is byte-unchanged; the idealized Straka/warm-bubble cases use const_nu_m2_s and leave diff_opt/km_opt at 0, so the new branch is inert for them (proven bit-identical in tests/dynamics/test_diffopt1_smagorinsky_integration.py::test_baseline_unchanged_when_smag_not_selected).",
+  "wrf_faithful_no_clamps": "No tuning clamps. The only ceiling is the literal WRF smag2d_km min(xkmh, 10*mlen_h) (module_diffusion_em.F:2019), a faithful transcription of the WRF stability ceiling, not a masking clamp.",
+  "tolerances": {
+    "deformation": 1e-09,
+    "smag_kh": 1e-12,
+    "flux_divergence": 1e-09,
+    "conservation": 1e-05
+  },
+  "verdict": "PASS"
+}
