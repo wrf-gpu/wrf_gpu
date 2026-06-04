@@ -70,11 +70,11 @@ def test_score_field_missing_native_fails():
 
 
 def test_forecast_gate_is_scaffold_only():
-    # The plan dict must be returned without touching the GPU; execute=True
-    # must raise (S5/manager owns the GPU serialization point).
+    # v040-S6 (96eb4e4) wired execute=True behind an explicit product_factory;
+    # without that factory this remains a no-GPU validation failure.
     plan = C.run_forecast_gate(execute=False, cases=[])
     assert plan["executed"] is False and plan["gpu_bound"] is True
-    with pytest.raises(NotImplementedError):
+    with pytest.raises(ValueError, match="requires the integrated product_factory"):
         C.run_forecast_gate(execute=True, cases=[])
 
 

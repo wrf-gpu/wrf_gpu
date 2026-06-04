@@ -1,0 +1,149 @@
+{
+  "schema": "v090_testsweep_report_v1",
+  "generated_utc": "2026-06-04T14:35:00Z",
+  "branch": "worker/opus/v090-testsweep",
+  "base": {
+    "branch": "worker/opus/trunk-0.9.0",
+    "commit": "7b7c26e"
+  },
+  "result": {
+    "suite_status": "RESIDUAL_NOT_GREEN",
+    "green": false,
+    "before_summary": {
+      "full_suite_exit_code": 139,
+      "collected_tests": 1207,
+      "ordinary_failures_before_first_crash": 1,
+      "ordinary_failures_before_first_crash_tests": [
+        "tests/init/real_init/test_s4_comparator.py::test_forecast_gate_is_scaffold_only"
+      ],
+      "first_crash": {
+        "test_context": "tests/savepoint/test_dycore_100_steps.py::test_dycore_column_coupled_step_parity_100_steps",
+        "signal": "SIGSEGV",
+        "coredump_stack_module": "libjax_common.so",
+        "classification": "FLAKY_ENV_NATIVE_JAX_CRASH"
+      },
+      "known_target_baseline_failures": [
+        "tests/test_m6_operational_mode_no_h2d.py::test_operational_source_has_no_host_transfer_or_sanitizer_calls",
+        "tests/test_m6b_operational_no_h2d.py::test_operational_mode_source_still_has_no_host_callbacks_or_sanitizer",
+        "tests/test_m6b_operational_theta_fix.py::test_step2_operational_theta_stays_finite_after_acoustic_substep"
+      ]
+    },
+    "after_summary": {
+      "full_suite_exit_code": 139,
+      "ordinary_failures_before_first_crash": 0,
+      "first_crash": {
+        "signal": "SIGSEGV",
+        "coredump_pid": 3490924,
+        "coredump_stack_module": "libjax_common.so",
+        "classification": "FLAKY_ENV_NATIVE_JAX_CRASH"
+      },
+      "targeted_fixed_tests": {
+        "tests/init/real_init/test_s4_comparator.py::test_forecast_gate_is_scaffold_only": "PASS",
+        "tests/test_m6_operational_mode_no_h2d.py": "PASS",
+        "tests/test_m6b_operational_no_h2d.py": "PASS"
+      }
+    },
+    "counts": {
+      "stale_obsolete_tests_fixed": 3,
+      "real_bugs_unfixed": 1,
+      "env_residual_groups": 4,
+      "setup_only_repairs": 2
+    }
+  },
+  "fixes": [
+    {
+      "test": "tests/init/real_init/test_s4_comparator.py::test_forecast_gate_is_scaffold_only",
+      "classification": "STALE_OBSOLETE_TEST",
+      "resolution": "Updated expected exception from NotImplementedError to ValueError requiring product_factory.",
+      "why": "Commit 96eb4e4 [v040-S6] wired execute=True behind an explicit integrated product_factory; missing factory is now a validation failure, not an unimplemented scaffold.",
+      "commit": "dc7a1ca"
+    },
+    {
+      "test": "tests/test_m6_operational_mode_no_h2d.py::test_operational_source_has_no_host_transfer_or_sanitizer_calls",
+      "classification": "STALE_OBSOLETE_TEST",
+      "resolution": "Allowed only the current _m9_snapshot token while preserving the ban on any other snapshot( path.",
+      "why": "Commit d47fe0f moved M9 diagnostics into an output-cadence-only separate JIT helper to avoid OOM; this is not the old per-step snapshot path.",
+      "commit": "3a83b78"
+    },
+    {
+      "test": "tests/test_m6b_operational_no_h2d.py::test_operational_mode_source_still_has_no_host_callbacks_or_sanitizer",
+      "classification": "STALE_OBSOLETE_TEST",
+      "resolution": "Allowed only the current _m9_snapshot token while preserving the ban on any other snapshot( path.",
+      "why": "Commit d47fe0f moved M9 diagnostics into an output-cadence-only separate JIT helper to avoid OOM; this is not the old per-step snapshot path.",
+      "commit": "3a83b78"
+    }
+  ],
+  "residuals": [
+    {
+      "test_or_group": "tests/savepoint/test_dycore_100_steps.py::test_dycore_column_coupled_step_parity_100_steps",
+      "classification": "FLAKY_ENV_NATIVE_JAX_CRASH",
+      "evidence": [
+        "proofs/v090/testsweep_baseline_verbose_crash.log",
+        "proofs/v090/fail_dycore_100_steps.log",
+        "proofs/v090/testsweep_final_full.log",
+        "coredumpctl info 3490924"
+      ],
+      "details": "Reproducible SIGSEGV under CPU-only JAX 0.10.0/Python 3.13. Coredump stack lands in libjax_common.so weakref/pjit internals. Older checked-in proofs show this test passed previously in about 7 minutes; this run cannot honestly convert the native crash into a pass."
+    },
+    {
+      "test_or_group": "tests/test_m6b_operational_theta_fix.py::test_step2_operational_theta_stays_finite_after_acoustic_substep",
+      "classification": "REAL_REGRESSION_UNFIXED_AND_CPU_ENV_MISMATCH",
+      "evidence": [
+        "proofs/v090/fail_known_m6_targets.log",
+        "proofs/v090/diag_theta_cpu_monkeypatch.log"
+      ],
+      "details": "Under required CPU-only env the setup fails at State.zeros because the State contract requires a visible GPU. A diagnostic-only CPU device monkeypatch gets past setup and exposes a real dycore defect: legacy non-prep _operational_acoustic_substep_core reaches advance_mu_t_wrf with inputs.theta is None. Fixing this touches release dycore/acoustic construction and was not forced in this sweep."
+    },
+    {
+      "test_or_group": "M2 GPU executable backend tests: tests/test_m2_cupy.py::test_cupy_pipeline_artifacts_are_valid, tests/test_m2_cupy_edge_cases.py GPU-exec tail, tests/test_m2_jax.py::test_jax_pipeline_artifacts_are_valid, tests/test_m2_triton.py::test_triton_pipeline_artifacts_are_valid",
+      "classification": "FLAKY_ENV_GPU_REQUIRED_IN_CPU_ONLY_LANE",
+      "evidence": [
+        "proofs/v090/fail_m2_cupy.log",
+        "proofs/v090/fail_m2_jax.log",
+        "proofs/v090/first_failure_after_cupy_static_setup.log",
+        "proofs/v090/first_failure_after_m2_gpu_families_excluded.log"
+      ],
+      "details": "These tests shell into CUDA/CuPy/JAX-GPU/Triton pipelines or assert gpu backend/profiler behavior. They are incompatible with the explicit CPU-only/no-GPU resource constraint. Static artifact checks were left intact and passed after restoring ignored external scratch artifacts."
+    },
+    {
+      "test_or_group": "tests/test_m3_dummy_loop.py::test_1000_step_dummy_loop_preserves_shape_dtype and similar State.zeros CPU-only callers",
+      "classification": "FLAKY_ENV_GPU_RESIDENCY_CONTRACT_IN_CPU_ONLY_LANE",
+      "evidence": [
+        "proofs/v090/first_failure_after_m2_gpu_exec_excluded.log"
+      ],
+      "details": "The test calls State.zeros, whose project contract intentionally requires a visible GPU device. Changing State.zeros to allocate on CPU would violate the device-residency contract and was not done."
+    },
+    {
+      "test_or_group": "Second broad-suite native abort after excluding dycore_100_steps",
+      "classification": "FLAKY_ENV_NATIVE_JAX_CRASH",
+      "evidence": [
+        "proofs/v090/testsweep_after_stale_fixes_ignore_dycore100.log",
+        "coredumpctl list entry pid 3438304"
+      ],
+      "details": "A broad diagnostic run excluding the first crash still segfaulted around 59 percent, so the suite has at least one additional native abort point not exhaustively localized after earlier residuals blocked green."
+    }
+  ],
+  "setup_only_repairs": [
+    {
+      "item": "data/fixtures/canary-wrf-d01-20260518T18-tslice-v1",
+      "action": "Created ignored worktree-local symlink to /mnt/data/wrf_gpu2/fixtures/canary-wrf-d01-20260518T18-tslice-v1.",
+      "verification": "proofs/v090/fix_canary_external_fixture_setup.log"
+    },
+    {
+      "item": "data/scratch/m2-cupy and data/profiler_artifacts/cupy_or_numba static referenced files",
+      "action": "Restored ignored static artifacts from /mnt/data/wrf_gpu2 for static profile path checks.",
+      "verification": "proofs/v090/fix_m2_cupy_static_setup2.log"
+    }
+  ],
+  "commands": [
+    "git worktree add -B worker/opus/v090-testsweep /home/enric/src/wrf_gpu2/.claude/worktrees/gpt-testsweep worker/opus/trunk-0.9.0",
+    "JAX_PLATFORM_NAME=cpu JAX_PLATFORMS=cpu JAX_ENABLE_X64=true PYTHONPATH=src:. taskset -c 0-3 python -m pytest tests/ -q > proofs/v090/testsweep_baseline_full.log 2>&1",
+    "PYTHONFAULTHANDLER=1 JAX_PLATFORM_NAME=cpu JAX_PLATFORMS=cpu JAX_ENABLE_X64=true PYTHONPATH=src:. taskset -c 0-3 python -m pytest tests/ -vv --tb=short > proofs/v090/testsweep_baseline_verbose_crash.log 2>&1",
+    "JAX_PLATFORM_NAME=cpu JAX_PLATFORMS=cpu JAX_ENABLE_X64=true PYTHONPATH=src:. taskset -c 0-3 python -m pytest tests/init/real_init/test_s4_comparator.py::test_forecast_gate_is_scaffold_only -q --tb=short",
+    "JAX_PLATFORM_NAME=cpu JAX_PLATFORMS=cpu JAX_ENABLE_X64=true PYTHONPATH=src:. taskset -c 0-3 python -m pytest tests/test_m6_operational_mode_no_h2d.py tests/test_m6b_operational_no_h2d.py -q --tb=short",
+    "JAX_PLATFORM_NAME=cpu JAX_PLATFORMS=cpu JAX_ENABLE_X64=true PYTHONPATH=src:. taskset -c 0-3 python -m pytest tests/test_m6_operational_mode_no_h2d.py tests/test_m6b_operational_no_h2d.py tests/test_m6b_operational_theta_fix.py -q --tb=short",
+    "PYTHONFAULTHANDLER=1 JAX_PLATFORM_NAME=cpu JAX_PLATFORMS=cpu JAX_ENABLE_X64=true PYTHONPATH=src:. taskset -c 0-3 python -m pytest tests/savepoint/test_dycore_100_steps.py::test_dycore_column_coupled_step_parity_100_steps -q --tb=short",
+    "JAX_PLATFORM_NAME=cpu JAX_PLATFORMS=cpu JAX_ENABLE_X64=true PYTHONPATH=src:. taskset -c 0-3 python -m pytest tests/ -q --ignore=tests/savepoint/test_dycore_100_steps.py",
+    "JAX_PLATFORM_NAME=cpu JAX_PLATFORMS=cpu JAX_ENABLE_X64=true PYTHONPATH=src:. taskset -c 0-3 python -m pytest tests/ -q > proofs/v090/testsweep_final_full.log 2>&1"
+  ]
+}
