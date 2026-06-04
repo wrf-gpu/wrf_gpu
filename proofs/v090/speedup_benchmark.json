@@ -10,7 +10,6 @@
     "qke_fix_commit": "90fa7eb68ab65f959d2d008eae32c3235396ca87",
     "note": "The GPU forecast path (gpuwrf.integration.daily_pipeline.execute_daily_pipeline) is on trunk-0.9.0; the d02-replay harness scripts/m7_l2_d02_replay.py + the d02_replay qke cold-start seed are on the qke-fix branch. The d03 1km replay scripts/d03_replay.py is on trunk."
   },
-
   "metric_definition": {
     "headline_metric": "real_user_time_speedup",
     "formula": "real_user_time_speedup = cpu_wallclock_s / gpu_wallclock_s",
@@ -21,7 +20,6 @@
     "same_model_time_note": "CPU-WRF runs dt=6s on d02 and dt=2s on d03; the GPU runs dt=10s (d02) / dt=3s (d03). The comparison is per identical FORECAST LENGTH (same model time, same number of output hours), which credits the GPU's larger stable timestep as a legitimate efficiency of the port. A strict dt-matched floor is reported separately.",
     "conservatism_policy": "Speedup is overclaim-prone. For the HEADLINE we use the most CONSERVATIVE (lowest) speedup: the FASTEST observed (least-contended) complete CPU run as the numerator-bound, and the compile-INCLUSIVE GPU wall as the denominator. We never cherry-pick the slowest CPU run or the steady-state GPU number for the headline."
   },
-
   "honesty_apples_to_oranges_flags": [
     "GPU port runs ONE single domain (a 3 km d02 OR a 1 km d03) with PRESCRIBED lateral boundaries replayed from the corpus parent. It does NOT integrate the d01 9 km parent, and (for the 1 km case) it runs only ONE 1 km domain (d03 Tenerife 70x61), whereas CPU-WRF L3 runs THREE 1 km children (d03/d04/d05) plus d01+d02.",
     "Therefore the ONLY honest CPU denominator is the STANDALONE per-domain cost (that domain's own solver time isolated from the nest), NOT the full multi-domain nest wall. We report the full-nest wall ONLY as labelled context, never as the speedup denominator. This avoids the retracted ~50-85x / 24x error (dividing one GPU d02 by the whole CPU nest).",
@@ -30,7 +28,6 @@
     "single GPU vs 28 CPU ranks on the same box: per-socket-vs-per-GPU, NOT per-watt or per-dollar.",
     "CONTENTION: the CPU runs in the corpus were produced on a contended workstation (concurrent GPU + backfill jobs). Per-run wall-clock spans range ~2x across days. We use the FASTEST complete (least-contended) run for the CONSERVATIVE headline so contention overhead does not inflate the CPU denominator (which would inflate the speedup). The contended-day walls are reported as the upper band only."
   ],
-
   "cpu_provenance": {
     "wrf_version": "V4.7.1 (banner in rsl.out.0000)",
     "ranks": 28,
@@ -40,14 +37,17 @@
     "completeness_filter": "Only runs with 'SUCCESS COMPLETE WRF' and the full expected per-domain step count are used. Incomplete/crashed runs (e.g. the 31 s/fc-hr L2 outlier, SUCCESS=False, 15694/57600 lines) are excluded.",
     "live_backfill_avoided": "The live 28-rank CPU-WRF backfill is writing /mnt/data/canairy_meteo/runs/wrf_l2_backfill_staging/20260513_..._20260604T062130Z (verified via /proc/<pid>/cwd). This lane read ONLY finished runs under wrf_l2/ and wrf_l3/ and did not touch the staging dir."
   },
-
   "cases": {
     "nested_9_3km": {
       "case_id": "gpuwrf-canary-d02 (3 km nest)",
       "description": "Canary Islands operational L2 nest: d01 9 km (94x60) + d02 3 km (160x67x45). GPU port runs the d02 3 km domain only (replay boundaries from d01). 72 h forecast.",
       "forecast_length_h": 72,
       "cpu": {
-        "config": {"max_dom": 2, "domains": "d01 9km 94x60 dt=18s; d02 3km 160x67x45 dt=6s", "history_interval_min": 60},
+        "config": {
+          "max_dom": 2,
+          "domains": "d01 9km 94x60 dt=18s; d02 3km 160x67x45 dt=6s",
+          "history_interval_min": 60
+        },
         "best_complete_run_least_contended": {
           "run_id": "20260523_18z_l2_72h_20260524T004313Z",
           "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l2/20260523_18z_l2_72h_20260524T004313Z",
@@ -56,13 +56,32 @@
           "full_nest_wall_human": "1h52m",
           "full_nest_s_per_fc_hr_CONTEXT_ONLY": 93.5,
           "per_domain_clean_compute": {
-            "d01_9km": {"dt_s": 18, "median_s_per_step": 0.4578, "s_per_fc_hr_median": 91.6, "total_compute_s_per_fc_hr": 93.5},
-            "d02_3km": {"dt_s": 6, "median_s_per_step": 0.11413, "s_per_fc_hr_median": 68.5, "total_compute_s_per_fc_hr": 69.7}
+            "d01_9km": {
+              "dt_s": 18,
+              "median_s_per_step": 0.4578,
+              "s_per_fc_hr_median": 91.6,
+              "total_compute_s_per_fc_hr": 93.5
+            },
+            "d02_3km": {
+              "dt_s": 6,
+              "median_s_per_step": 0.11413,
+              "s_per_fc_hr_median": 68.5,
+              "total_compute_s_per_fc_hr": 69.7
+            }
           }
         },
         "cross_check_runs": {
-          "20260527_18z_l2_72h": {"d02_median_s_per_step": 0.13381, "d02_s_per_fc_hr": 80.3, "full_nest_wall_s": 8170.6},
-          "20260528_18z_l2_72h": {"d02_median_s_per_step": 0.14313, "d02_s_per_fc_hr": 85.9, "full_nest_wall_s": 15603.3, "note": "heavily contended day; full-nest wall ~2x the best run"}
+          "20260527_18z_l2_72h": {
+            "d02_median_s_per_step": 0.13381,
+            "d02_s_per_fc_hr": 80.3,
+            "full_nest_wall_s": 8170.6
+          },
+          "20260528_18z_l2_72h": {
+            "d02_median_s_per_step": 0.14313,
+            "d02_s_per_fc_hr": 85.9,
+            "full_nest_wall_s": 15603.3,
+            "note": "heavily contended day; full-nest wall ~2x the best run"
+          }
         },
         "ADOPTED_CPU_DENOMINATOR_d02_standalone": {
           "source": "proofs/v090/cpu_wall_recover.py over the 4 least-contended complete L2 runs (reproducible). conservative=min, midpoint=median, realistic=max of the per-run d02 own-solver median s/fc-hr.",
@@ -77,33 +96,88 @@
         }
       },
       "gpu": {
-        "config": {"domain": "d02 3km 159x66x44 (mass)", "dt_s": 10.0, "acoustic_substeps": 10, "force_fp64": true, "device": "RTX 5090", "radiation_cadence_steps": 180},
-        "PLACEHOLDER": true,
+        "config": {
+          "domain": "d02 3km 159x66x44 (mass)",
+          "dt_s": 10.0,
+          "acoustic_substeps": 10,
+          "force_fp64": true,
+          "device": "RTX 5090",
+          "radiation_cadence_steps": 180
+        },
+        "PLACEHOLDER": false,
         "fill_via": "PART-3 piggyback on the post-qke-fix d02-replay validation run (scripts/m7_l2_d02_replay.py --hours 72). See manager_steps_to_fill_gpu_numbers.",
-        "gpu_wallclock_total_s": null,
-        "gpu_wallclock_per_fc_hr_s": null,
-        "compile_overhead_s": null,
-        "steady_state_s_per_fc_hr": null,
+        "gpu_wallclock_total_s": 1166.51901271299,
+        "gpu_wallclock_per_fc_hr_s": 48.605,
+        "compile_overhead_s": 39.309,
+        "steady_state_s_per_fc_hr": 27.745,
         "steady_state_reference_compile_excluded": {
           "value_s_per_fc_hr": "15.35 - 16.39 (PRIOR published warmed kernel number, NOT this benchmark's measurement)",
           "source": "proofs/perf/segscan_24h.json + proofs/perf/warmed_timing.json (commit 177c734); publish/runtime_optimization_analysis.md headline 5.3x/7.84x is built on this compile-EXCLUDED number and is NOT the real-user-time headline."
-        }
+        },
+        "measured_hours": 24,
+        "source_pipeline_json": "proofs/v090/speedup_d02/pipeline_run_l2_d02.json",
+        "measured_device": "cuda:0",
+        "precision_mode": "gated_fp32 (ADR-007 ship: theta/u/v/qv fp32; mu/p/ph/w + acoustic/pressure fp64)",
+        "per_hour_wall_s_observed": [
+          67.05397459398955,
+          435.6160623889882,
+          27.767222061986104,
+          27.801601790008135,
+          27.762119785009418,
+          27.788250532990787,
+          27.768878474016674,
+          27.827562047052197,
+          27.80841593898367,
+          27.717144140973687,
+          27.735841055982746,
+          27.71930091601098,
+          27.718115267984103,
+          27.708889250992797,
+          27.76377349696122,
+          27.71670137695037,
+          27.73843751399545,
+          27.719617459049914,
+          27.76572504005162,
+          27.758624819049146,
+          27.745432174007874,
+          27.738243962987326,
+          27.70534955599578,
+          27.72318400401855
+        ],
+        "compile_honesty_note": "TWO-PHASE COMPILE: the d02 forecast traces TWO large XLA graphs -- the no-radiation hour graph (hour 1, ~67s incl ~39s compile) AND the radiation-active hour graph (first hit in hour 2 = 435.6s, ~408s of which is the one-time RRTMG+physics+dycore compile). compile_overhead_s below (=hour1 - median(hour2..N)) only captures the hour-1 portion; the hour-2 radiation-graph compile (~408s) is the larger compile and is correctly EXCLUDED from steady_state (median is robust to the single hour-2 outlier) but is INCLUDED in gpu_wallclock_total_s (the honest command-to-finish). Total one-time compile across the run is ~447s of the 1166.5s wall. The compile-INCLUSIVE headline (1.33-1.59x) therefore already pays for both compiles; it amortizes much better over a 72h run or a warm jax_cache."
       },
       "results": {
-        "PLACEHOLDER": true,
-        "real_user_speedup_compile_inclusive": null,
-        "steady_state_speedup_compile_excluded": null,
-        "dt_matched_floor_speedup": null,
+        "PLACEHOLDER": false,
+        "real_user_speedup_compile_inclusive": {
+          "headline_conservative": 1.33,
+          "midpoint": 1.48,
+          "realistic_high": 1.59,
+          "definition": "cpu_s_per_fc_hr / gpu_total_s_per_fc_hr (compile-inclusive). HEADLINE = headline_conservative."
+        },
+        "steady_state_speedup_compile_excluded": {
+          "conservative": 2.33,
+          "midpoint": 2.6,
+          "realistic_high": 2.79,
+          "definition": "CONTEXT ONLY (NOT the headline): cpu_s_per_fc_hr / gpu_steady_state_s_per_fc_hr (compile excluded)."
+        },
+        "dt_matched_floor_speedup": {
+          "conservative": 0.8,
+          "factor": 1.67,
+          "definition": "strict dt-matched floor: real_user headline / dt_floor_factor (GPU forced to CPU dt)."
+        },
         "note": "Filled by the piggyback. real_user_speedup = cpu_72h_wall / gpu_wallclock_total_s (compile-inclusive). Use the CONSERVATIVE cpu denominator (68.5 s/fc-hr -> 4932 s/72h) for the headline lower bound; report the band to 85.9 s/fc-hr (6185 s/72h) as the realistic upper bound. dt_matched_floor divides the per-fc-hr speedup by 1.67 (GPU dt 10s vs CPU 6s)."
       }
     },
-
     "single_1km": {
       "case_id": "gpuwrf-canary-d03 (1 km Tenerife)",
       "description": "1 km Tenerife domain. GPU port runs ONE 1 km d03 (94x76 staggered -> 93x75 mass, matches the corpus L3 d03 grid) replay forecast from d02 boundaries. CPU-WRF L3 runs d01+d02+d03+d04+d05 (THREE 1 km children). 24 h forecast. The honest CPU denominator is the d03 1 km domain's OWN-solver cost isolated from the L3 nest. GPU d03 grid == CPU d03 grid (94x76), so there is NO grid-extent mismatch for this case.",
       "forecast_length_h": 24,
       "cpu": {
-        "config": {"max_dom": 5, "domains": "d01 9km; d02 3km; d03 1km 94x76; d04 1km 70x61; d05 1km 70x58; dt=18/6/2/2/2 s", "history_interval_min": 60},
+        "config": {
+          "max_dom": 5,
+          "domains": "d01 9km; d02 3km; d03 1km 94x76; d04 1km 70x61; d05 1km 70x58; dt=18/6/2/2/2 s",
+          "history_interval_min": 60
+        },
         "best_complete_run_least_contended": {
           "run_id": "20260510_18z_l3_24h_20260511T124717Z",
           "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260510_18z_l3_24h_20260511T124717Z",
@@ -112,18 +186,51 @@
           "full_nest_wall_human": "4h11m",
           "full_5dom_nest_s_per_fc_hr_CONTEXT_ONLY": 629.4,
           "per_domain_clean_compute": {
-            "d01_9km": {"dt_s": 18, "median_s_per_step": 2.56711, "s_per_fc_hr_median": 513.4},
-            "d02_3km": {"dt_s": 6, "median_s_per_step": 0.8104, "s_per_fc_hr_median": 486.2},
-            "d03_1km": {"dt_s": 2, "median_s_per_step": 0.08424, "s_per_fc_hr_median": 151.6, "total_compute_s_per_fc_hr": 187.5},
-            "d04_1km": {"dt_s": 2, "median_s_per_step": 0.05804, "s_per_fc_hr_median": 104.5},
-            "d05_1km": {"dt_s": 2, "median_s_per_step": 0.03988, "s_per_fc_hr_median": 71.8}
+            "d01_9km": {
+              "dt_s": 18,
+              "median_s_per_step": 2.56711,
+              "s_per_fc_hr_median": 513.4
+            },
+            "d02_3km": {
+              "dt_s": 6,
+              "median_s_per_step": 0.8104,
+              "s_per_fc_hr_median": 486.2
+            },
+            "d03_1km": {
+              "dt_s": 2,
+              "median_s_per_step": 0.08424,
+              "s_per_fc_hr_median": 151.6,
+              "total_compute_s_per_fc_hr": 187.5
+            },
+            "d04_1km": {
+              "dt_s": 2,
+              "median_s_per_step": 0.05804,
+              "s_per_fc_hr_median": 104.5
+            },
+            "d05_1km": {
+              "dt_s": 2,
+              "median_s_per_step": 0.03988,
+              "s_per_fc_hr_median": 71.8
+            }
           },
           "note": "d01/d02 within the L3 nest are ~7x slower per step than in the L2 nest because the 5-domain nest is far more contended and the parents share the 28 cores with three 1km children. This is WHY the full-L3-nest wall is not a fair denominator. The d03 own-solver median (151.6 s/fc-hr) is the least-contention-sensitive per-domain figure (median over 43200 steps)."
         },
         "cross_check_runs": {
-          "20260506_18z_l3_24h": {"d03_median_s_per_step": 0.085, "full_nest_wall_s": 15107.7},
-          "20260527_18z_l3_24h": {"d03_median_s_per_step": 0.1092, "d03_s_per_fc_hr": 196.6, "full_nest_wall_s": 17379.4},
-          "20260528_18z_l3_24h": {"d03_median_s_per_step": 0.11089, "d03_s_per_fc_hr": 199.6, "full_nest_wall_s": 26650.0, "note": "heavily contended day"}
+          "20260506_18z_l3_24h": {
+            "d03_median_s_per_step": 0.085,
+            "full_nest_wall_s": 15107.7
+          },
+          "20260527_18z_l3_24h": {
+            "d03_median_s_per_step": 0.1092,
+            "d03_s_per_fc_hr": 196.6,
+            "full_nest_wall_s": 17379.4
+          },
+          "20260528_18z_l3_24h": {
+            "d03_median_s_per_step": 0.11089,
+            "d03_s_per_fc_hr": 199.6,
+            "full_nest_wall_s": 26650.0,
+            "note": "heavily contended day"
+          }
         },
         "ADOPTED_CPU_DENOMINATOR_d03_standalone": {
           "source": "proofs/v090/cpu_wall_recover.py over the 4 least-contended complete L3 runs (reproducible). conservative=min, midpoint=median, realistic=max of the per-run d03 own-solver median s/fc-hr.",
@@ -138,7 +245,13 @@
         }
       },
       "gpu": {
-        "config": {"domain": "d03 1km Tenerife 93x75 mass (94x76 staggered)", "dt_s": 3.0, "acoustic_substeps": 10, "force_fp64": true, "device": "RTX 5090"},
+        "config": {
+          "domain": "d03 1km Tenerife 93x75 mass (94x76 staggered)",
+          "dt_s": 3.0,
+          "acoustic_substeps": 10,
+          "force_fp64": true,
+          "device": "RTX 5090"
+        },
         "PLACEHOLDER": true,
         "fill_via": "PART-3 piggyback on the post-qke-fix d03 1km validation run (scripts/d03_replay.py --hours 24). See manager_steps_to_fill_gpu_numbers.",
         "gpu_wallclock_total_s": null,
@@ -155,15 +268,12 @@
       }
     }
   },
-
   "dt_matched_floor_note": "Each case also reports a strict dt-matched floor: if the GPU were forced to the CPU timestep (d02: 6s vs 10s -> GPU x1.67 slower; d03: 2s vs 3s -> GPU x1.5 slower), the per-forecast-hour speedup divides by that factor. This is the hard floor that does NOT credit the GPU's larger stable timestep.",
-
   "hardware": {
     "gpu": "1x NVIDIA RTX 5090 (GB202, compute capability 12.0), GDDR7 1.792 TB/s, fp64 = fp32/64",
     "cpu": "28-rank WRF v4.7.1 on the same workstation, cores 4-31",
     "precision": "fp64 both sides"
   },
-
   "manager_steps_to_fill_gpu_numbers": [
     "PRECONDITION: the qke-fix (worker/opus/v090-d02replay-qke-fix, 90fa7eb) is merged/landed and the d02-replay hour-1 stability is GREEN.",
     "CASE nested_9_3km GPU number: run the d02 validation forecast that the manager already runs for the qke-confirm, but for the full forecast length matching the CPU denominator: `taskset -c 0-3 python3 scripts/m7_l2_d02_replay.py --run-id 20260523_18z_l2_72h_20260524T004313Z --hours 72 --proof-dir proofs/v090/speedup_d02`. (--hours 24 is acceptable as a faster proxy; the per-forecast-hour number is what feeds the speedup. The longer run amortizes compile better and is the more honest real-user number.) GPU on the free GPU; orchestration pinned to cores 0-3.",
@@ -172,9 +282,7 @@
     "Then run the fill script: `taskset -c 0-3 python3 proofs/v090/fill_speedup_benchmark.py --d02-pipeline proofs/v090/speedup_d02/pipeline_run_l2_d02.json --d03-pipeline proofs/v090/speedup_d03/pipeline_run_*.json` which populates the gpu.* and results.* placeholders here (compile-inclusive total wall, compile_overhead = hour1_wall - median(hour2..N), steady_state from median(hour2..N)) and recomputes the speedups against the adopted CPU denominators.",
     "OPTIONAL (tightens the band, NOT required for 0.9.0): a clean max_dom=1 standalone d02 and standalone d03 CPU-WRF run (cores 4-31, uncontended) would remove the within-nest contention residual from the CPU denominator. NOT launched by this lane."
   ],
-
   "new_cpu_runs_required": "NO. All CPU wall-clocks were recovered from existing finished run artifacts (rsl.out.0000 per-step timing + file mtimes). A clean max_dom=1 standalone CPU run is OPTIONAL (would only tighten the band) and was NOT launched.",
-
   "provenance_manifest": [
     "publish/runtime_optimization_analysis.md (5.3x/7.84x compile-EXCLUDED kernel ceiling + roofline)",
     "proofs/perf/speedup_denominator.md (d02 CPU denominator 83 clean / 123 realistic s/fc-hr, retraction of 50-85x)",
@@ -183,5 +291,6 @@
     "scripts/m7_l2_d02_replay.py @ worker/opus/v090-d02replay-qke-fix (d02 GPU replay harness, emits wall_clock_*.json)",
     "scripts/d03_replay.py @ trunk-0.9.0 (d03 1km GPU replay harness)",
     "src/gpuwrf/integration/daily_pipeline.py (execute_daily_pipeline; wall_clock_total_s, per_hour_wall_s, speedup_vs_cpu_24h)"
-  ]
+  ],
+  "filled_on": "see git history"
 }
