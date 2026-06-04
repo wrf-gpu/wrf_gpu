@@ -245,6 +245,16 @@ def build_l2_daily_case(config: DailyPipelineConfig) -> tuple[DailyCase, Path]:
     run_dir = resolve_run_dir(config.run_id, config.run_root)
     replay = build_l2_d02_replay_case(run_dir, domain=config.domain, parent_domain="d01")
     state = replay.state.replace(p=replay.state.p_total, ph=replay.state.ph_total, mu=replay.state.mu_total)
+    # v0.9.0 d02-replay hour-1 stability hardening (fix-B): route this harness to
+    # the SAME validated operational Gen2-d02 stability namelist that the
+    # v0.1.0-validated path daily_pipeline._build_real_case carries.  This harness
+    # previously built the forecast namelist with EVERY stability flag at its
+    # dataclass default -- top_lid=False (OPEN TOP), epssm=0.1, no w/Rayleigh
+    # damping, no 6th-order filter, legacy primitive advection, fp32 -- i.e.
+    # STRICTLY WEAKER than the documented-unstable open-top real-init case
+    # (proofs/dycore_realinit/step5_opentop_bndy.json).  See _build_real_case for
+    # the per-flag root-cause annotations.  Independent of (and complementary to)
+    # the MYNN qke cold-start seed in d02_replay.build_replay_case.
     namelist = OperationalNamelist.from_grid(
         replay.grid,
         tendencies=replay.tendencies,
@@ -253,6 +263,16 @@ def build_l2_daily_case(config: DailyPipelineConfig) -> tuple[DailyCase, Path]:
         acoustic_substeps=int(config.acoustic_substeps),
         radiation_cadence_steps=int(config.radiation_cadence_steps),
         use_vertical_solver=True,
+        use_flux_advection=True,
+        force_fp64=True,
+        diff_6th_opt=2,
+        diff_6th_factor=0.12,
+        w_damping=1,
+        damp_opt=3,
+        zdamp=5000.0,
+        dampcoef=0.2,
+        epssm=0.5,
+        top_lid=True,
     )
     metadata = {
         "run_id": replay.metadata.get("run_id"),
@@ -261,6 +281,7 @@ def build_l2_daily_case(config: DailyPipelineConfig) -> tuple[DailyCase, Path]:
         "grid": replay.metadata.get("grid", {}),
         "boundary": replay.metadata.get("boundary", {}),
         "l2_replay_adapter": replay.metadata.get("l2_replay_adapter", {}),
+        "qke_coldstart": replay.metadata.get("qke_coldstart", {}),
         "namelist": {
             "dt_s": float(namelist.dt_s),
             "acoustic_substeps": int(namelist.acoustic_substeps),
@@ -269,6 +290,17 @@ def build_l2_daily_case(config: DailyPipelineConfig) -> tuple[DailyCase, Path]:
             "run_boundary": bool(namelist.run_boundary),
             "radiation_cadence_steps": int(namelist.radiation_cadence_steps),
             "use_vertical_solver": bool(namelist.use_vertical_solver),
+            # v0.9.0 stability-namelist hardening (matches _build_real_case):
+            "use_flux_advection": bool(namelist.use_flux_advection),
+            "force_fp64": bool(namelist.force_fp64),
+            "diff_6th_opt": int(namelist.diff_6th_opt),
+            "diff_6th_factor": float(namelist.diff_6th_factor),
+            "w_damping": int(namelist.w_damping),
+            "damp_opt": int(namelist.damp_opt),
+            "zdamp": float(namelist.zdamp),
+            "dampcoef": float(namelist.dampcoef),
+            "epssm": float(namelist.epssm),
+            "top_lid": bool(namelist.top_lid),
         },
         "source": "gpuwrf.integration.d02_replay.build_l2_d02_replay_case",
     }
