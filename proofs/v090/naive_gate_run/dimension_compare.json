@@ -1,0 +1,57 @@
+{
+  "compare_dir": "/tmp/v090_naive_gate/extract/gpuwrf-canary-d02-sample",
+  "file_count": 1,
+  "files": [
+    {
+      "generated": "/tmp/v090_naive_gate/runs/canary_d02_sample/wrfout_d02_2026-04-29_19:00:00",
+      "generated_dims": {
+        "DateStrLen": 19,
+        "Time": 1,
+        "bottom_top": 44,
+        "bottom_top_stag": 45,
+        "soil_layers_stag": 4,
+        "south_north": 66,
+        "south_north_stag": 67,
+        "west_east": 159,
+        "west_east_stag": 160
+      },
+      "mismatches": [
+        {
+          "dim": "seed_dim_stag",
+          "generated": null,
+          "reference": 8
+        },
+        {
+          "dim": "snow_layers_stag",
+          "generated": null,
+          "reference": 3
+        },
+        {
+          "dim": "snso_layers_stag",
+          "generated": null,
+          "reference": 7
+        }
+      ],
+      "pass": false,
+      "reference": "/tmp/v090_naive_gate/extract/gpuwrf-canary-d02-sample/wrfout_d02_2026-04-29_19:00:00",
+      "reference_dims": {
+        "DateStrLen": 19,
+        "Time": 1,
+        "bottom_top": 44,
+        "bottom_top_stag": 45,
+        "seed_dim_stag": 8,
+        "snow_layers_stag": 3,
+        "snso_layers_stag": 7,
+        "soil_layers_stag": 4,
+        "south_north": 66,
+        "south_north_stag": 67,
+        "west_east": 159,
+        "west_east_stag": 160
+      },
+      "status": "FAIL"
+    }
+  ],
+  "schema": "GpuwrfDimensionCompare",
+  "schema_version": 1,
+  "status": "FAIL"
+}
