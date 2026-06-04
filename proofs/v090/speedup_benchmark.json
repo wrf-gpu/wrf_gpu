@@ -1,7 +1,7 @@
 {
   "schema": "GpuwrfV090SpeedupBenchmark",
   "schema_version": 1,
-  "purpose": "Honest REAL-USER-TIME wall-clock speedup benchmark for the v0.9.0 release: one RTX 5090 (single domain, fp64) vs 28-rank CPU-WRF v4.7.1 on the SAME workstation, same case / solution / forecast-length. Adds the speedup number to the v0.9.0 naive-agent README runnability gate and the README. CPU numbers are recovered from EXISTING run artifacts (NO new CPU runs). GPU numbers are PLACEHOLDERS to be filled by the PART-3 piggyback on the post-qke-fix validation runs.",
+  "purpose": "Honest REAL-USER-TIME wall-clock speedup benchmark for the v0.9.0 release: one RTX 5090 single-domain forecast vs 28-rank CPU-WRF v4.7.1 on the SAME workstation, same case / solution / forecast-length. v0.9.0 ships fp64 operationally; the recorded d02 wall-clock was measured by the replay harness in gated-fp32 (metadata.namelist.force_fp64=false), and is used for the fp64 ship-mode headline because the committed roofline/precision analysis shows fp32-vs-fp64 is ~1.00x on this launch/bandwidth-bound workload. CPU numbers are recovered from EXISTING run artifacts (NO new CPU runs).",
   "prepared_by": "worker/opus/v090-speedup-benchmark",
   "prepared_on": "2026-06-04",
   "branch_base": {
@@ -16,7 +16,7 @@
     "wallclock_means": "command-execution-to-finish: the real time a user waits from launching the forecast command to the last wrfout being written. NOT per-step compute, NOT a kernel microbenchmark.",
     "gpu_wallclock_is_compile_INCLUSIVE": true,
     "why_compile_inclusive": "The one-time JAX trace+XLA compile is part of what a user actually waits for on a cold launch, so the HONEST headline includes it. It amortizes over the forecast length (and over a daily operational cadence with a warm jax_cache). The steady-state (compile-excluded) number is reported SEPARATELY for context and is NEVER the headline.",
-    "comparison_basis": "single RTX 5090 GPU (fp64, single domain) vs 28-rank CPU-WRF v4.7.1, SAME workstation (CPU on cores 4-31), same model time (per-forecast-hour), same case/date.",
+    "comparison_basis": "single RTX 5090 GPU, single d02 domain, v0.9.0 fp64 operational ship mode represented by the precision-invariant measured replay wall-clock, vs 28-rank CPU-WRF v4.7.1 on the SAME workstation (CPU on cores 4-31), same model time (per-forecast-hour), same case/date.",
     "same_model_time_note": "CPU-WRF runs dt=6s on d02 and dt=2s on d03; the GPU runs dt=10s (d02) / dt=3s (d03). The comparison is per identical FORECAST LENGTH (same model time, same number of output hours), which credits the GPU's larger stable timestep as a legitimate efficiency of the port. A strict dt-matched floor is reported separately.",
     "conservatism_policy": "Speedup is overclaim-prone. For the HEADLINE we use the most CONSERVATIVE (lowest) speedup: the FASTEST observed (least-contended) complete CPU run as the numerator-bound, and the compile-INCLUSIVE GPU wall as the denominator. We never cherry-pick the slowest CPU run or the steady-state GPU number for the headline."
   },
@@ -24,7 +24,7 @@
     "GPU port runs ONE single domain (a 3 km d02 OR a 1 km d03) with PRESCRIBED lateral boundaries replayed from the corpus parent. It does NOT integrate the d01 9 km parent, and (for the 1 km case) it runs only ONE 1 km domain (d03 Tenerife 70x61), whereas CPU-WRF L3 runs THREE 1 km children (d03/d04/d05) plus d01+d02.",
     "Therefore the ONLY honest CPU denominator is the STANDALONE per-domain cost (that domain's own solver time isolated from the nest), NOT the full multi-domain nest wall. We report the full-nest wall ONLY as labelled context, never as the speedup denominator. This avoids the retracted ~50-85x / 24x error (dividing one GPU d02 by the whole CPU nest).",
     "The per-domain CPU cost is the domain's own 'Timing for main' solver time WITHIN the operational nest, isolated by domain id. It is NOT a clean max_dom=1 standalone CPU run (none exists). A true max_dom=1 standalone d02/d03 CPU run would TIGHTEN the band; it is flagged below as 'new run NOT launched, optional'.",
-    "fp64 on BOTH sides. The GPU number is fp64; fp32 gives ~0x on this launch/bandwidth-bound workload (see publish/runtime_optimization_analysis.md).",
+    "v0.9.0 ships fp64. Recorded d02 GPU wall-clock provenance is NOT ambiguous: proofs/v090/speedup_d02_72h/pipeline_run_l2_d02.json has metadata.namelist.force_fp64=false, i.e. the replay harness measured gated-fp32. The number stands for the fp64 ship mode because fp32 gives ~0x / ~1.00x speed change on this launch/bandwidth-bound workload (see proofs/perf/compute_cycle_analysis.md and publish/runtime_optimization_analysis.md).",
     "single GPU vs 28 CPU ranks on the same box: per-socket-vs-per-GPU, NOT per-watt or per-dollar.",
     "CONTENTION: the CPU runs in the corpus were produced on a contended workstation (concurrent GPU + backfill jobs). Per-run wall-clock spans range ~2x across days. We use the FASTEST complete (least-contended) run for the CONSERVATIVE headline so contention overhead does not inflate the CPU denominator (which would inflate the speedup). The contended-day walls are reported as the upper band only."
   ],
@@ -100,7 +100,8 @@
           "domain": "d02 3km 159x66x44 (mass)",
           "dt_s": 10.0,
           "acoustic_substeps": 10,
-          "force_fp64": true,
+          "force_fp64": false,
+          "ship_mode_force_fp64": true,
           "device": "RTX 5090",
           "radiation_cadence_steps": 180
         },
@@ -117,7 +118,8 @@
         "measured_hours": 72,
         "source_pipeline_json": "proofs/v090/speedup_d02_72h/pipeline_run_l2_d02.json",
         "measured_device": "cuda:0",
-        "precision_mode": "gated_fp32 (ADR-007 ship: theta/u/v/qv/qke fp32; mu/p/ph/w + acoustic/pressure fp64)",
+        "precision_mode": "measured_replay_gated_fp32; v0.9.0 ship mode is fp64. Performance provenance is known and precision_provenance_uncertain=false because source_pipeline_json metadata.namelist.force_fp64=false. The measured wall-clock is used for fp64 because fp32-vs-fp64 is ~1.00x on the current launch/bandwidth-bound workload.",
+        "precision_provenance_uncertain": false,
         "per_hour_wall_s_observed": [
           67.05397459398955,
           435.6160623889882,
@@ -145,7 +147,7 @@
           27.72318400401855
         ],
         "compile_honesty_note": "TWO-PHASE COMPILE: the d02 forecast traces TWO large XLA graphs -- the no-radiation hour graph (hour 1, ~67s incl ~39s compile) AND the radiation-active hour graph (first hit in hour 2 = 435.6s, ~408s of which is the one-time RRTMG+physics+dycore compile). compile_overhead_s below (=hour1 - median(hour2..N)) only captures the hour-1 portion; the hour-2 radiation-graph compile (~408s) is the larger compile and is correctly EXCLUDED from steady_state (median is robust to the single hour-2 outlier) but is INCLUDED in gpu_wallclock_total_s (the honest command-to-finish). Total one-time compile across the run is ~447s of the 1166.5s wall. The compile-INCLUSIVE headline (1.33-1.59x) therefore already pays for both compiles; it amortizes much better over a 72h run or a warm jax_cache.",
-        "MEASURED_basis": "72h forecast (the benchmark forecast_length_h), case 20260507_18z_l2_72h, gated-fp32",
+        "MEASURED_basis": "72h forecast (the benchmark forecast_length_h), case 20260507_18z_l2_72h, measured replay force_fp64=false (gated-fp32); applied to fp64 ship mode because precision performance is ~1.00x pre-fusion",
         "per_hour_wall_s_observed_72h": [
           66.84479295497295,
           57.31580824102275,
@@ -227,7 +229,7 @@
             "total_s": 1166.5,
             "hour1_s": 67.1,
             "hour2_s": 435.6,
-            "note": "hour-2 = 435.6s: this run paid the FULL COLD radiation-graph compile (it was not yet in the shared persistent jax cache /mnt/data/gpuwrf_jax_cache for this gated-fp32 config). real-user conservative speedup at 24h cold = 1.33x."
+            "note": "hour-2 = 435.6s: this run paid the FULL COLD radiation-graph compile (it was not yet in the shared persistent jax cache /mnt/data/gpuwrf_jax_cache for the recorded gated-fp32 replay config). Because fp32-vs-fp64 is ~1.00x here, the conservative real-user cold-launch speedup used for the fp64 ship mode is 1.33x."
           },
           "warm_cache_72h_run": {
             "source": "proofs/v090/speedup_d02_72h (72h, THIS fill)",
@@ -236,7 +238,7 @@
             "hour2_s": 57.3,
             "note": "hour-2 = 57.3s: the radiation graph was REUSED from the persistent jax cache the 24h run populated. This is the realistic OPERATIONAL daily-cadence scenario (warm cache). steady-state 27.72 s/fc-hr."
           },
-          "headline_choice": "The filled headline below uses the 72h warm-cache total (2149.9s/72h = 29.86 s/fc-hr -> 2.16x conservative). This is honest for the operational daily cadence (warm jax_cache). The 24h COLD-launch first-ever-run conservative number is 1.33x; report BOTH. JAX persistent compilation cache is on by default (gpuwrf.runtime.jax_cache -> /mnt/data/gpuwrf_jax_cache)."
+          "headline_choice": "The filled headline below uses the 72h warm-cache total (2149.9s/72h = 29.86 s/fc-hr -> 2.16x conservative). This is honest for the operational daily cadence (warm jax_cache) and stands for the fp64 ship mode because the workload is launch/bandwidth-bound and fp32-vs-fp64 is ~1.00x. The 24h COLD-launch first-ever-run conservative number is 1.33x; report BOTH. JAX persistent compilation cache is on by default (gpuwrf.runtime.jax_cache -> /mnt/data/gpuwrf_jax_cache)."
         }
       },
       "results": {
@@ -245,7 +247,7 @@
           "headline_conservative": 2.16,
           "midpoint": 2.41,
           "realistic_high": 2.59,
-          "definition": "cpu_s_per_fc_hr / gpu_total_s_per_fc_hr (compile-inclusive). HEADLINE = headline_conservative."
+          "definition": "cpu_s_per_fc_hr / gpu_total_s_per_fc_hr (compile-inclusive). HEADLINE = headline_conservative. Recorded GPU wall was gated-fp32 replay but is precision-independent for the fp64 ship mode on the current launch/bandwidth-bound workload."
         },
         "steady_state_speedup_compile_excluded": {
           "conservative": 2.33,
@@ -352,16 +354,16 @@
         "gpu_wallclock_per_fc_hr_s": null,
         "compile_overhead_s": null,
         "steady_state_s_per_fc_hr": null,
-        "precision_mode": "gated_fp32 attempted (ship mode); full fp64 is the documented-finite-but-throttled fallback",
+        "precision_mode": "gated-fp32 experimental preview attempted and blocked; v0.9.0 ship mode is fp64. Full fp64 has only a short finite d03 window, not a complete 24h wall-clock.",
         "MEASUREMENT_STATUS": "BLOCKED",
-        "blocked_reason": "STILL UNMEASURED after the qke->FP64 promotion (worker/opus/v090-qke-fp64-fix, 2026-06-04). The qke->fp64 change was implemented + verified active, but the original root-cause hypothesis ('qke fp32 OVERFLOW') was FALSIFIED: qke in genuine fp64 still goes NONFINITE at forecast hour 1 with the IDENTICAL ~3036-cell signature (see proofs/v090/d03_1km_validation_qkefix.json). The d03 1km hour-1 blow-up is a DYNAMICS-driven structural instability over steep Tenerife terrain (qke is the canary field), not a precision-range overflow, so fp64 does not make a complete ship-speed 1km run possible. No complete GPU wall-clock exists at ship precision. The 1km speedup remains UNMEASURED -- to be filled only after a real numerics/stability fix lands a finite 24h gated-fp32 d03 run."
+        "blocked_reason": "STILL UNMEASURED after the qke->FP64 promotion (worker/opus/v090-qke-fp64-fix, 2026-06-04). The qke->fp64 change was implemented + verified active inside the gated path, but the original root-cause hypothesis ('qke fp32 OVERFLOW') was FALSIFIED: qke still goes NONFINITE at forecast hour 1 with the IDENTICAL ~3036-cell signature (see proofs/v090/d03_1km_validation_qkefix.json). The d03 1km hour-1 blow-up is a dynamics-driven structural instability over steep Tenerife terrain (qke is the canary field), not a precision-range overflow. Full fp64 is finite only over the committed 0.3h / 360-step short window, so no complete 24h d03 GPU wall-clock exists. The 1km speedup remains UNMEASURED -- to be filled only after a real v0.10.0 numerics/stability fix lands a finite 24h d03 run."
       },
       "results": {
         "PLACEHOLDER": true,
         "real_user_speedup_compile_inclusive": null,
         "steady_state_speedup_compile_excluded": null,
         "dt_matched_floor_speedup": null,
-        "note": "STILL NOT FILLED after qke->FP64: the fp32-overflow premise was falsified; d03 gated-fp32 still NaNs at hour 1 (dynamics-driven, qke the canary). Fill only after a stability/numerics fix produces a finite 24h gated-fp32 d03 run. See proofs/v090/d03_1km_validation_qkefix.json + .agent/reviews/2026-06-04-opus-qke-fp64-fix.md.",
+        "note": "STILL NOT FILLED after qke->FP64: the fp32-overflow premise was falsified; d03 gated-fp32 still NaNs at hour 1 (dynamics-driven, qke the canary), and full-fp64 has only a short finite window. Fill only after a stability/numerics fix produces a finite 24h d03 run. See proofs/v090/d03_1km_validation_qkefix.json + .agent/reviews/2026-06-04-opus-qke-fp64-fix.md.",
         "MEASUREMENT_STATUS": "BLOCKED"
       }
     }
@@ -370,7 +372,7 @@
   "hardware": {
     "gpu": "1x NVIDIA RTX 5090 (GB202, compute capability 12.0), GDDR7 1.792 TB/s, fp64 = fp32/64",
     "cpu": "28-rank WRF v4.7.1 on the same workstation, cores 4-31",
-    "precision": "fp64 both sides"
+    "precision": "v0.9.0 GPU ship mode is fp64. The recorded d02 GPU wall-clock was gated-fp32 replay, explicitly treated as fp64-applicable because fp32-vs-fp64 is ~1.00x on this launch/bandwidth-bound workload."
   },
   "manager_steps_to_fill_gpu_numbers": [
     "PRECONDITION: the qke-fix (worker/opus/v090-d02replay-qke-fix, 90fa7eb) is merged/landed and the d02-replay hour-1 stability is GREEN.",
