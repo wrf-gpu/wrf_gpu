@@ -58,7 +58,29 @@ _AXES = [
 # Map the wired land/radiation options explicitly to the authoritative hook so
 # the matrix stays honest rather than guessing.
 _LAND_WIRED = {0, 2, 4}  # 0 off, 2 Noah-classic hook, 4 Noah-MP hook
-_RAD_WIRED = {0, 1, 4}   # column held-rate drivers (per-scheme savepoint-parity gated)
+# HONESTY (close-critic FIX-NOW #1/#2, 2026-06-04): only RRTMG (ra=4) is actually
+# selected by the operational radiation slot. runtime.operational_mode hardcodes the
+# RRTMG held-rate RTHRATEN (rrtmg_theta_tendency = combined LW+SW); OperationalNamelist
+# has NO ra_lw_physics/ra_sw_physics field and there is NO radiation-family dispatch.
+# So ra_lw=1 (classic RRTM-LW) / ra_sw=1 (Dudhia-SW) are isolated-savepoint parity-proven
+# + accepted but NOT operational-scan-wired -- the same fail-closed posture as MYJ/Janjic.
+# (Classic RRTM-LW is moreover a host-NumPy single-column kernel that is not jit/vmap-
+# traceable, so it cannot ride the device scan as-is.) They are therefore NOT counted as
+# GPU-OPERATIONAL-WIRED; they read PARITY-PROVEN-FAIL-CLOSED via _RAD_NOT_SCAN_WIRED below.
+_RAD_WIRED = {0, 4}      # only RRTMG (4) is the operational radiation; 0 = off/passive
+_RAD_NOT_SCAN_WIRED = {  # parity-proven + accepted but NOT operational-scan-selectable
+    ("ra_lw_physics", 1): (
+        "classic RRTM-LW is isolated-WRF-savepoint parity-proven + accepted, but NOT "
+        "operational-scan-wired: OperationalNamelist has no ra_lw_physics field, the radiation "
+        "slot hardcodes RRTMG (ra=4), and the host-NumPy single-column RRTM-LW kernel is not "
+        "jit/vmap-traceable for the device scan (post-0.9.0 carry-over)"
+    ),
+    ("ra_sw_physics", 1): (
+        "Dudhia-SW is isolated-WRF-savepoint parity-proven + accepted, but NOT operational-scan-"
+        "wired: OperationalNamelist has no ra_sw_physics field and the radiation slot hardcodes "
+        "RRTMG (ra=4) (no radiation-family dispatch yet; post-0.9.0 carry-over)"
+    ),
+}
 
 
 def _detail_for(key: str, opt: int, adapters, family: str) -> tuple[str, str]:
@@ -80,26 +102,30 @@ def _detail_for(key: str, opt: int, adapters, family: str) -> tuple[str, str]:
             hook = {2: "coupling.noahclassic_surface_hook", 4: "coupling.noahmp_surface_hook"}[opt]
             return "GPU-OPERATIONAL-WIRED", hook
         if key in ("ra_sw_physics", "ra_lw_physics"):
+            # Only RRTMG (opt 4) is operational (the radiation slot hardcodes it).
             owner = {
-                ("ra_lw_physics", 1): "physics.ra_lw_rrtm (classic RRTM LW)",
                 ("ra_lw_physics", 4): "physics.rrtmg_lw (RRTMG LW)",
-                ("ra_sw_physics", 1): "physics.ra_sw_dudhia (Dudhia SW)",
                 ("ra_sw_physics", 4): "physics.rrtmg_sw (RRTMG SW)",
             }[(key, opt)]
             # RRTMG (opt 4): the real WRF-oracle evidence is the B3 proofs, NOT the
             # stale M5 artifacts (artifacts/m5/tier1_rrtmg_sw_parity.json pass=false
             # is superseded; see artifacts/m5/SUPERSEDED_rrtmg_see_proofs_b3.json).
-            proof_ptr = ""
-            if opt == 4:
-                proof_ptr = (
-                    " | proof: proofs/b3/real_wrf_fixture_parity.json (pass, NOT self-compare; "
-                    "SW surface-down max_abs 0.0238 W/m2, LW 4.97e-5 W/m2) "
-                    "[M5 RRTMG artifacts SUPERSEDED]"
-                )
+            proof_ptr = (
+                " | proof: proofs/b3/real_wrf_fixture_parity.json (pass, NOT self-compare; "
+                "SW surface-down max_abs 0.0238 W/m2, LW 4.97e-5 W/m2) "
+                "[M5 RRTMG artifacts SUPERSEDED]"
+            )
             return "GPU-OPERATIONAL-WIRED", f"held-rate RTHRATEN column driver: {owner}{proof_ptr}"
         # mp=8 Thompson is wired through the existing coupler (not the table).
         entry = scheme_entry(family, opt)
         return "GPU-OPERATIONAL-WIRED", f"{entry.owner_module}.{entry.entrypoint}"
+
+    # Radiation: ra_lw=1 / ra_sw=1 are parity-proven + accepted but NOT operational-
+    # scan-wired (the slot hardcodes RRTMG ra=4). Honest fail-closed posture (close-
+    # critic FIX-NOW #1/#2). Their isolated savepoint parity IS real, so they read
+    # PARITY-PROVEN-FAIL-CLOSED (same bucket as MYJ/Janjic), not ACCEPTED-NOT-GATED.
+    if (key, opt) in _RAD_NOT_SCAN_WIRED:
+        return "PARITY-PROVEN-FAIL-CLOSED", _RAD_NOT_SCAN_WIRED[(key, opt)]
 
     reason = _SCAN_UNWIRED_REASON.get(f"{key}={opt}", "scan-unwired (see operational_mode)")
     # HONESTY (audit overclaim #4): a few accepted options are fail-closed but are
@@ -177,7 +203,7 @@ def build() -> dict:
     return {
         "proof": "v060-consolidation-integration-matrix",
         "git_head": _git_head(),
-        "branch": "worker/opus/v060-consolidation3",
+        "branch": "worker/opus/v060-consolidation4",
         "base_trunk": "e998250 (trunk-0.9.0)",
         "wave1_base": "worker/opus/v060-consolidation (dcc9666)",
         "merged_branches": [
@@ -210,10 +236,15 @@ def build() -> dict:
             "New-Tiedtke (cu=16): separate WRF-source savepoint gate + GPU-batch.",
             "MYJ (bl=2) + Janjic (sf=2): GPU-scan-wire the parity-proven CPU references.",
             "Noah-classic (land=2) real-run static/land bundle assembly for canonical combo.",
-            "Radiation operational scan-coverage: ra_lw/ra_sw are folded at the "
-            "registry/dispatch/step-spec layer and per-scheme savepoint-parity gated "
-            "(RRTM-LW worst RTHRATEN 7.2e-14; Dudhia-SW), but the multicfg smoke "
-            "harness pins ra=4 and does not yet sweep ra_lw=1/ra_sw=1 end-to-end.",
+            "Radiation operational scan-wiring: ra_lw=1 (classic RRTM-LW) and ra_sw=1 "
+            "(Dudhia-SW) are isolated-WRF-savepoint parity-proven + accepted, but NOT "
+            "operational-scan-wired (close-critic FIX #1/#2). The operational radiation slot "
+            "hardcodes the RRTMG (ra=4) held-rate RTHRATEN; OperationalNamelist has no "
+            "ra_lw_physics/ra_sw_physics field and there is no radiation-family dispatch. "
+            "Classic RRTM-LW is additionally a host-NumPy single-column kernel not yet jit/vmap-"
+            "traceable for the device scan. A radiation-family dispatch + a jit/vmap RRTM-LW "
+            "rewrite is the post-0.9.0 carry-over; until then ra=1 is fail-closed (same posture "
+            "as MYJ/Janjic).",
         ],
         "overall_consolidation_pass": overall,
     }
