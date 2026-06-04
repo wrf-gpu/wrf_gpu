@@ -76,7 +76,6 @@ from gpuwrf.runtime.operational_mode import (
     _acoustic_core_state,
     _acoustic_core_state_from_prep,
     _augment_large_step_tendencies,
-    _carry_from_acoustic_core,
     _carry_from_finished_stage,
     _enforce_operational_precision,
     _finite_or_origin,
