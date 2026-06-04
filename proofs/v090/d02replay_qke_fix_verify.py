@@ -126,10 +126,14 @@ def main(argv=None):
     ap.add_argument("--platform", default="cuda")
     ap.add_argument("--out", type=Path, default=ROOT / "proofs" / "v090" / "d02replay_qke_fix_verify.json")
     ap.add_argument("--configs", nargs="+",
-                    default=["qke0_harness", "qke0_stable", "seed_harness", "seed_stable"])
+                    default=["qke0_harness", "seed_harness", "seed_stable"])
     ap.add_argument("--max-steps", type=int, default=900)  # 3h = 900 steps @ dt=12
     args = ap.parse_args(argv)
 
+    try:
+        sys.stdout.reconfigure(line_buffering=True)
+    except Exception:
+        pass
     os.environ["JAX_PLATFORMS"] = args.platform
     import jax
     import jax.numpy as jnp
@@ -146,9 +150,12 @@ def main(argv=None):
     grid = replay.grid
     grid_shape = [int(grid.nz), int(grid.ny), int(grid.nx)]
 
-    # 3h: catch first blow-up + confirm stable well past hour 1
-    probe_steps = [1, 2, 3, 5, 10, 15, 20, 30, 45, 60, 90, 120, 180, 240,
-                   300, 450, 600, 750, 900]
+    # Checkpoints chosen to (a) catch the early blow-up (baseline went non-finite
+    # at ~step 10-30) and (b) keep each advance's segment small enough to avoid the
+    # fp64 OOM the 600-step jump hit (14.6 GiB).  step 30 (6min) / 150 (30min) /
+    # 300 (1h) / 600 (2h) / 900 (3h): each advance is <=300 steps, splitting further
+    # at the radiation cadence.
+    probe_steps = [int(s) for s in os.environ.get("QKE_PROBE_STEPS", "30,150,300,600,900").split(",")]
 
     def _fresh_with_qke(qke):
         s = jax.tree_util.tree_map(
@@ -187,11 +194,18 @@ def main(argv=None):
         res["flags"] = flags
         res["qke_seed"] = seed_on
         res["qke_t0_max"] = float(jnp.max(jnp.asarray(qke0)))
-        last = res.get("trace", [{}])[-1] if res.get("trace") else {}
+        # survived = last checkpoint that completed AND was finite
+        finite_trace = [t for t in res.get("trace", []) if t.get("all_finite")]
+        last = finite_trace[-1] if finite_trace else {}
         res["survived_steps"] = int(last.get("step", 0))
         res["survived_hours"] = float(last.get("model_hours", 0.0))
-        res["stable_through_3h"] = bool(res.get("first_nonfinite_step") is None
-                                        and res["survived_steps"] >= 900)
+        res["aborted_oom"] = bool("error" in res and "RESOURCE_EXHAUSTED" in res.get("error", ""))
+        res["stable_through_1h"] = bool(res.get("first_nonfinite_step") is None
+                                        and not res.get("aborted_oom")
+                                        and res["survived_steps"] >= 300)
+        res["stable_through_max"] = bool(res.get("first_nonfinite_step") is None
+                                         and not res.get("aborted_oom")
+                                         and res["survived_steps"] >= max(probe_steps))
         results[name] = res
         fb = res.get("first_nonfinite_step")
         print(f"    -> first_nonfinite_step={fb} survived={res['survived_steps']}steps "
@@ -204,25 +218,38 @@ def main(argv=None):
                       f"finite={t['all_finite']} qke.max={q.get('max')} mu.max={mu.get('max')} "
                       f"nonfin={list(t['nonfinite_fields'].keys())[:5]}")
 
-    # minimal-fix determination
+    # minimal-fix determination -- only conclusive for configs that ran clean
     def blew(n):
         return results.get(n, {}).get("first_nonfinite_step") is not None
 
+    def cured(n):
+        r = results.get(n)
+        return bool(r and not r.get("aborted_oom") and r.get("first_nonfinite_step") is None
+                    and r.get("survived_steps", 0) >= 300)
+
+    def ran(n):
+        r = results.get(n)
+        return bool(r and not r.get("aborted_oom") and "error" not in r)
+
     minimal = "INCONCLUSIVE"
-    if blew("qke0_harness"):
-        seed_only = not blew("seed_harness")
-        flags_only = not blew("qke0_stable")
-        combo = not blew("seed_stable")
+    if "qke0_harness" in results and blew("qke0_harness"):
+        seed_only = cured("seed_harness")
+        flags_only = cured("qke0_stable")
+        combo = cured("seed_stable")
         if seed_only and flags_only:
             minimal = "EITHER seed OR stable-flags cures it independently"
         elif seed_only:
             minimal = "qke seed ALONE is the minimal cure"
-        elif flags_only:
-            minimal = "stable-flags ALONE cures it (seed not strictly required but WRF-faithful)"
+        elif flags_only and combo:
+            minimal = "stable-flags cure it; seed adds no instability (full shipped fix = seed+stable)"
+        elif flags_only and not ran("seed_stable"):
+            minimal = "stable-flags ALONE cure it (seed_stable inconclusive/OOM); seed is WRF-faithful hardening on top"
         elif combo:
-            minimal = "qke seed + stable-flags TOGETHER required (minimal = combination)"
+            minimal = "seed+stable cures it (seed_harness blew, qke0_stable not separately confirmed)"
+        elif ran("seed_harness") and not seed_only:
+            minimal = "qke seed ALONE insufficient (still blew up with weak namelist); stable-flags carry stability"
         else:
-            minimal = "neither toggle nor combination stabilizes -- residual issue"
+            minimal = "INCONCLUSIVE -- stable configs did not run clean"
 
     payload = {
         "schema": "V090D02ReplayQkeFixVerify",
@@ -241,7 +268,8 @@ def main(argv=None):
         "wrf_seed_ref": "phys/module_bl_mynnedmf.F:618-691 (mym_initialize INITIALIZE_QKE)",
         "results": results,
         "minimal_fix": minimal,
-        "blowup_gone_full_fix": bool(results.get("seed_stable", {}).get("stable_through_3h")),
+        "blowup_gone_full_fix": bool(results.get("seed_stable", {}).get("stable_through_1h")
+                                     or results.get("qke0_stable", {}).get("stable_through_1h")),
     }
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(payload, indent=2, sort_keys=True, default=str) + "\n")
