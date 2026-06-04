@@ -32,7 +32,10 @@ def test_precision_matrix_gate_flags_match_adr007_boundary_classes():
         "Nr",
         "Ns",
         "Ng",
-        "qke",
+        # qke moved gated->FP64-locked (qke-fp64-fix sprint 2026-06-04): the
+        # MYNN TKE budget overflows fp32 at 1km (d03 NONFINITE after hour 1).
+        # qke is OUTSIDE the conserved mass/pressure path, so it joins the
+        # FP64-locked class. See contracts/precision.py for the rationale.
         "xland",
         "lakemask",
         "mavail",
@@ -40,6 +43,12 @@ def test_precision_matrix_gate_flags_match_adr007_boundary_classes():
         "v_bdy",
         "theta_bdy",
         "qv_bdy",
+        # v0.6.0 S0 additive WDM6 number concentrations (FP32_GATED like the
+        # other hydrometeor number species). Added here to keep this contract
+        # test in sync with the matrix (they were appended to PRECISION_MATRIX
+        # but never to this set).
+        "Nc",
+        "Nn",
     }
     integer_static = {"lu_index"}
     locked = set(State.__slots__) - gated - integer_static
