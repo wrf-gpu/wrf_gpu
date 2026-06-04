@@ -10,9 +10,13 @@ ROOT = Path(__file__).resolve().parents[1]
 def test_operational_source_has_no_host_transfer_or_sanitizer_calls():
     source = (ROOT / "src" / "gpuwrf" / "runtime" / "operational_mode.py").read_text(encoding="utf-8")
 
-    forbidden = ("device_get", "host_callback", "pure_callback", "io_callback", "sanitize_state", "snapshot(")
+    # d47fe0f moved M9 diagnostics into the output-cadence-only `_m9_snapshot`
+    # helper. Keep rejecting any other old snapshot path.
+    source_without_m9_snapshot = source.replace("_m9_snapshot(", "")
+    forbidden = ("device_get", "host_callback", "pure_callback", "io_callback", "sanitize_state")
     for token in forbidden:
         assert token not in source
+    assert "snapshot(" not in source_without_m9_snapshot
 
 
 def test_nsight_solver_loop_has_zero_h2d_d2h_memcopies():
