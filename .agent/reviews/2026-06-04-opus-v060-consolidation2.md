@@ -175,6 +175,21 @@ NOT yet exercised through the operational scan in this smoke. I did not fabricat
 coverage for them. Recorded as a post-0.9.0 carry-over in the matrix
 (`carry_overs_post_0_9_0`). Lin(mp=2) and BouLac(bl=8) ARE swept end-to-end (RUN-PASS).
 
+## Test result (cache disabled, taskset -c 0-3, CPU-only)
+
+Broad consolidation-relevant physics/scheme set — contracts interfaces, dispatch, namelist,
+Dudhia-SW, MYJ, Janjic, YSU, ACM2, KF, Pleim-Xiu, revised-MM5, WSM-SM, WSM6, WDM6, Kessler,
+Noah-classic parity, Grell-Freitas, Tiedtke savepoint parity:
+**180 passed, 0 failed** (11m32s; savepoint-parity tests are compute-heavy on 4 cores).
+Plus the earlier targeted runs (38 + 61 passed) and `scanwire_smoke.py` all_pass=True,
+`assert_registry_consistent()` / `assert_interfaces_consistent()` PASS.
+
+The full `tests/` directory cannot produce a single summary in this sandbox: a test in the
+`tests/init/` (native-init/GRIB/metgrid) or M2/M4 GPU-backend area **SIGSEGVs the interpreter**
+(exit 139) partway through — with the cache on AND off. Those areas are GPU-required /
+backend-subprocess / native-init tests outside the consolidation domain (`git diff dcc9666 HEAD`
+touches none of them). Every test file the consolidation changed passes.
+
 ## Pre-existing failure (NOT caused by this work)
 
 `tests/init/real_init/test_s4_comparator.py::test_forecast_gate_is_scaffold_only` fails with
