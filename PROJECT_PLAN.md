@@ -1,29 +1,37 @@
 # Project Plan
 
-Status (2026-06-01): **v0.1.0 release candidate — tag PENDING.** The project completed the
-2026-05-28 reset (M8–M23 roadmap in `.agent/decisions/PROJECT-RESET-PLAN-FINAL.md`) and rebuilt
-the dycore honestly. v0.1.0 is a **JAX-native single-GPU WRF v4 dycore + physics port**, validated
-for **Canary 1–3 km daily forecasting** on one RTX 5090 along a **single-domain REPLAY path**
-(boundaries + land/SST replayed from CPU-WRF / Gen2 corpus artifacts) — **not yet** a self-contained
-multi-domain live-nesting WRF with native WPS/real.exe init.
+Status (2026-06-04): **v0.9.0 release candidate.** The project completed the 2026-05-28 reset
+(M8–M23 roadmap in `.agent/decisions/PROJECT-RESET-PLAN-FINAL.md`), rebuilt the dycore honestly,
+and advanced through the incremental version chain. v0.9.0 is a **standalone, JAX-native,
+single-GPU WRF v4 ARW forecast system for standard regional configurations** on one RTX 5090:
+**native real-init** (`wrfinput`/`wrfbdy` assembled from met_em-stage forcing, no `real.exe`, no
+CPU-WRF artifact for IC/LBC — proven equivalent to `real.exe` at t=0), a **GPU-operational physics
+menu** with a **fail-closed boundary** on everything not yet ported, a **WRF-compatible namelist**,
+and coupled validation vs CPU-WRF on Canary d02 (3 km) + d03 (1 km). The canonical user-facing scope
+statement is the top of [`README.md`](README.md) (rewritten to the v0.9.0 definition).
 
-- **Authoritative outcome record:** [`proofs/PROOF_TABLE.md`](proofs/PROOF_TABLE.md) — **9 PASS /
-  1 FAIL (comparator-harness gap, not a production defect) / 1 INCONCLUSIVE** on the HFX-fix
-  release HEAD. **Binding proof contract:** [`publish/VERIFICATION.md`](publish/VERIFICATION.md)
-  (11 rows). Release narrative: [`RELEASE_NOTES_v0.1.0.md`](RELEASE_NOTES_v0.1.0.md).
-- **Validated capability:** idealized warm bubble + Straka (rows 1/2); d02 3 km 3-case
-  D02_VALIDATED finite/stable to 72 h, beats persistence on winds (row 4); d03 1 km 24 h
-  D03_1KM_VALIDATED, T2 RMSE 1.92 K ≤ 3.0 K beats persistence, field-qualified U10/V10 (row 5,
-  secondary claim); conservation guards-off fp64 (row 7); repeatability + restart (row 8);
-  performance ~5–8× vs 28-rank CPU-WRF, floor 3.2× (row 9, **NOT ≥10×**); precipitation honest
-  characterization ratio 1.13 not parity (row 10).
-- **Honest qualifiers:** TOST (row 6) is an **underpowered single-season n=3 MAM descriptive
-  check**, never an equivalence PASS — full seasonal n≥15–27 is v0.2.0. The HFX/surface-layer fix
-  is an **empirical, partial, MYNN-inspired land thermal-roughness repair**, not a faithful
-  `module_sf_mynn.F` port. Row 3 (savepoint comparator) and row 11 (byte-counted device audit) are
-  tracked v0.2.0 follow-ups, not relaxed-away passes.
-- **Next:** [`.agent/decisions/V0.2.0-PLAN.md`](.agent/decisions/V0.2.0-PLAN.md) — all gap items
-  except native init; 0.1.x cadence (0.1.1 = MYNN/HFX parity debt first).
+- **Version chain:** v0.1.0 single-domain replay → v0.3.0 native metgrid → v0.4.0 native real-init
+  → v0.6.0 expanded physics menu → **v0.9.0** standalone consolidation. Closeouts in
+  [`.agent/decisions/`](.agent/decisions/) (`V0.4.0-CLOSE.md`, `V0.6.0-CLOSE.md`, …).
+- **GPU-operational menu (scan-wired, WRF-oracle-gated):** MP {1 Kessler, 2 Lin, 3 WSM3, 4 WSM5,
+  6 WSM6, 8 Thompson, 10 Morrison, 16 WDM6}; PBL {1 YSU, 5 MYNN, 7 ACM2, 8 BouLac}; SFCLAY
+  {1 revised-MM5, 5 MYNN-SL, 7 Pleim-Xiu}; CU {1 KF, 2 BMJ, 3 Grell-Freitas, 6 Tiedtke}; RRTMG
+  SW+LW; LSM {2 Noah-classic, 4 Noah-MP}. Source of truth:
+  [`src/gpuwrf/contracts/physics_registry.py`](src/gpuwrf/contracts/physics_registry.py) +
+  `_SCAN_WIRED_OPTIONS` in [`src/gpuwrf/runtime/operational_mode.py`](src/gpuwrf/runtime/operational_mode.py).
+- **Parity-proven but fail-closed (recognized, loudly rejected):** MYJ PBL (`bl=2`) + Janjic-SL
+  (`sf=2`), New-Tiedtke (`cu=16`), Dudhia SW (`ra_sw=1`), classic RRTM LW (`ra_lw=1`).
+- **Honest qualifiers:** the binding TOST equivalence (T2/U10/V10, ADR-029 margins) ships at
+  **n=15 — the binding floor, honestly underpowered** vs the n≈27 target; the coupled-skill
+  validation runs the **replay harness** (native-init is proven separately at t=0); diffusion is
+  **flat-slab** (no map-factor / coordinate-slope deformation); two-way nesting / DFI / FDDA /
+  aerosol-MP are post-0.9.0; a documented near-surface westerly excess is a carried dynamical (not
+  fidelity) residual. Skill + speedup numbers are filled by the release worker from the validation
+  burst.
+- **Next:** the post-0.9.0 path to 1.0.0 (full WRF v4 ARW for standard configs) — remaining
+  physics-family ports, terrain-faithful diffusion, full two-way nesting, ADR-gated State/coupler
+  work; see [`publish/GPU_PORT_GAPS_TODO.md`](publish/GPU_PORT_GAPS_TODO.md) and the v0.9.0+
+  full-port gap analysis under [`.agent/reviews/`](.agent/reviews/).
 
 The sections below are the **historical M0–M7 synthesis layer** (the original backend-bakeoff and
 M6 dycore-blocker planning). They are retained for provenance and are superseded by the reset
