@@ -45,9 +45,15 @@ rejects them loudly):
   the land-surface slot analogue of ``coupling.noahmp_surface_hook``. It is not a
   table entry here because it threads a land carry rather than a plain
   ``State -> State`` adapter.
-* **Grell-Freitas (3) / Tiedtke (6,16) cumulus** -- faithful CPU-NumPy reference
-  ports (``gpu_runnable=False``); excluded from the GPU scan by design
-  (GPU-batching TODO).
+* **Grell-Freitas (3) cumulus** -- faithful CPU-NumPy reference port
+  (``gpu_runnable=False``); excluded from the GPU scan by design (GPU-batching of
+  the sequential 16-member closure ensemble + beta-PDF gamma is a post-0.9.0 TODO).
+* **New-Tiedtke (16) cumulus** -- interface-compatible but NOT separately
+  savepoint-gated by a distinct WRF source path, so it stays fail-closed.
+
+  (NOTE: modified-Tiedtke ``cu=6`` IS wired -- it is the v0.6.0 GPU-batched jit/vmap
+  ``tiedtke_adapter`` below, a stateless ``State -> State`` scan adapter in
+  ``CU_STATELESS_SCAN_ADAPTERS``; only GF(3) and New-Tiedtke(16) remain unwired.)
 
 Every adapter is a pure ``State -> State`` (or ``(State, carry) -> (State, carry)``
 for KF) function, allocates nothing at import, and writes at the live State dtype

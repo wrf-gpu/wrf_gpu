@@ -1,11 +1,11 @@
 {
   "milestone": "v0.6.0 integration: 12 common-menu physics schemes",
   "branch": "worker/opus/v060-integration",
-  "head": "7a8895e3ac3239c679384ec4569612110d56a35f",
+  "head": "1a69bb0b89ca0965712d2bb722ec875bc2f21bf5",
   "s0_base": "0ab2c7b",
   "generated_by": "proofs/v060/gen_integration_report.py (CPU; no GPU, no forecast)",
   "step1_merge": {
-    "lanes_merged": 12,
+    "lanes_merged": 14,
     "all_file_disjoint": true,
     "frozen_interfaces_untouched_by_lanes": {
       "files": [
@@ -15,12 +15,20 @@
         "src/gpuwrf/io/wrfout_writer.py"
       ],
       "any_modified_S0_to_HEAD": {
-        "src/gpuwrf/contracts/physics_registry.py": false,
-        "src/gpuwrf/contracts/physics_interfaces.py": false,
-        "src/gpuwrf/io/namelist_check.py": false,
+        "src/gpuwrf/contracts/physics_registry.py": true,
+        "src/gpuwrf/contracts/physics_interfaces.py": true,
+        "src/gpuwrf/io/namelist_check.py": true,
         "src/gpuwrf/io/wrfout_writer.py": false
       },
-      "clean": true
+      "clean_no_edits": false,
+      "unauthorized_lane_edits": [],
+      "authorized_remediation_edits": [
+        "src/gpuwrf/contracts/physics_interfaces.py",
+        "src/gpuwrf/contracts/physics_registry.py",
+        "src/gpuwrf/io/namelist_check.py"
+      ],
+      "clean": true,
+      "remediation_note": "physics_registry.py/physics_interfaces.py/namelist_check.py were edited by the AUTHORIZED v0.6.0 consolidation lanes (registering accepted new schemes IS the consolidation) and, for physics_interfaces.py/namelist_check.py, by the authorized close-critic remediation (consolidation4: FIX #3/4/5 oracle strings + ra=1 not-scan-wired honesty). These are authorized edits, NOT rogue lane edits; 'clean' tracks the absence of UNAUTHORIZED lane edits."
     },
     "merge_conflict_resolution": "Only shared per-scheme oracle BUILD-SCRATCH conflicted (proofs/v060/oracle/{.gitignore,build_and_run.sh,dump_to_json.py} + proofs/v060/savepoints*/wrf_source_checksums.txt). Resolved WRF-faithfully: .gitignore unioned to a superset; generic build_and_run.sh/dump_to_json.py renamed per-scheme (<scheme>_*) so every lane's oracle reproduction script is preserved; checksums unioned (sorted-unique). No scheme code, test, or savepoint JSON conflicted.",
     "all_modules_present": true,
@@ -81,6 +89,9 @@
       "mp_physics": [
         0,
         1,
+        2,
+        3,
+        4,
         6,
         8,
         10,
@@ -89,12 +100,15 @@
       "bl_pbl_physics": [
         0,
         1,
+        2,
         5,
-        7
+        7,
+        8
       ],
       "cu_physics": [
         0,
         1,
+        2,
         3,
         6,
         16
@@ -102,6 +116,7 @@
       "sf_sfclay_physics": [
         0,
         1,
+        2,
         5,
         7
       ],
@@ -112,10 +127,12 @@
       ],
       "ra_sw_physics": [
         0,
+        1,
         4
       ],
       "ra_lw_physics": [
         0,
+        1,
         4
       ]
     },
@@ -162,7 +179,7 @@
         "gpu_runnable": true
       }
     },
-    "gf_tiedtke_gpu_batching_status": "Grell-Freitas (cu=3) and Tiedtke (cu=6/16) are faithful CPU-NumPy reference ports (not jit/vmap'd). Selectable + savepoint-parity-gated, flagged gpu_runnable=False (GPU-batching TODO). KF (cu=1) is the jit/vmap'd operational GPU cumulus. Any combo containing GF/Tiedtke is excluded from the integrated GPU forecast gate.",
+    "gf_tiedtke_gpu_batching_status": "modified-Tiedtke (cu=6) IS the v0.6.0 GPU-batched jit/vmap operational adapter (coupling.scan_adapters.tiedtke_adapter / cumulus_tiedtke_jax; gpu_runnable=True; savepoint-gated vs unmodified module_cu_tiedtke.F -- proofs/v060/tiedtke_gpubatch_savepoint_parity.json) and is scan-wired. KF (cu=1) and BMJ (cu=2) are the other operational GPU cumulus adapters. Grell-Freitas (cu=3) remains a faithful CPU-NumPy reference port (gpu_runnable=False; sequential 16-member closure ensemble + beta-PDF gamma, GPU-batching TODO) and New-Tiedtke (cu=16) is interface-compatible but NOT separately savepoint-gated by a distinct WRF source path -- both stay FAIL-CLOSED (loud) in the GPU scan; combos containing GF/New-Tiedtke are excluded from the integrated GPU forecast gate.",
     "matrix": {
       "default_suite": {
         "mp_physics": 8,
@@ -194,6 +211,63 @@
           "name": "Kessler warm rain",
           "module": "gpuwrf.physics.microphysics_kessler",
           "entrypoint": "kessler_physics_tendency",
+          "convention": "mp_flat",
+          "gpu_runnable": true,
+          "carry_members": [],
+          "tendency_members": [],
+          "accumulators": [
+            "rain_acc",
+            "snow_acc",
+            "graupel_acc",
+            "ice_acc"
+          ],
+          "notes": ""
+        },
+        {
+          "namelist_key": "mp_physics",
+          "family": "microphysics",
+          "option": 2,
+          "name": "Purdue-Lin",
+          "module": "gpuwrf.physics.microphysics_lin",
+          "entrypoint": "lin_physics_tendency",
+          "convention": "mp_flat",
+          "gpu_runnable": true,
+          "carry_members": [],
+          "tendency_members": [],
+          "accumulators": [
+            "rain_acc",
+            "snow_acc",
+            "graupel_acc",
+            "ice_acc"
+          ],
+          "notes": ""
+        },
+        {
+          "namelist_key": "mp_physics",
+          "family": "microphysics",
+          "option": 3,
+          "name": "WSM3 simple ice",
+          "module": "gpuwrf.physics.microphysics_wsm3",
+          "entrypoint": "wsm3_physics_tendency",
+          "convention": "mp_flat",
+          "gpu_runnable": true,
+          "carry_members": [],
+          "tendency_members": [],
+          "accumulators": [
+            "rain_acc",
+            "snow_acc",
+            "graupel_acc",
+            "ice_acc"
+          ],
+          "notes": ""
+        },
+        {
+          "namelist_key": "mp_physics",
+          "family": "microphysics",
+          "option": 4,
+          "name": "WSM5",
+          "module": "gpuwrf.physics.microphysics_wsm5",
+          "entrypoint": "wsm5_physics_tendency",
           "convention": "mp_flat",
           "gpu_runnable": true,
           "carry_members": [],
@@ -313,6 +387,23 @@
         {
           "namelist_key": "bl_pbl_physics",
           "family": "pbl",
+          "option": 2,
+          "name": "MYJ",
+          "module": "gpuwrf.physics.pbl_myj",
+          "entrypoint": "step_myj_pbl_column",
+          "convention": "column_state",
+          "gpu_runnable": true,
+          "carry_members": [
+            "tke_pbl",
+            "el_pbl"
+          ],
+          "tendency_members": [],
+          "accumulators": [],
+          "notes": "MUST pair with sf_sfclay_physics=2 (Janjic Eta surface layer)."
+        },
+        {
+          "namelist_key": "bl_pbl_physics",
+          "family": "pbl",
           "option": 5,
           "name": "MYNN",
           "module": "gpuwrf.coupling.physics_couplers",
@@ -336,6 +427,22 @@
           "convention": "column_state",
           "gpu_runnable": true,
           "carry_members": [],
+          "tendency_members": [],
+          "accumulators": [],
+          "notes": ""
+        },
+        {
+          "namelist_key": "bl_pbl_physics",
+          "family": "pbl",
+          "option": 8,
+          "name": "BouLac",
+          "module": "gpuwrf.physics.pbl_boulac",
+          "entrypoint": "step_boulac_column",
+          "convention": "column_state",
+          "gpu_runnable": true,
+          "carry_members": [
+            "qke"
+          ],
           "tendency_members": [],
           "accumulators": [],
           "notes": ""
@@ -367,6 +474,22 @@
           "tendency_members": [],
           "accumulators": [],
           "notes": ""
+        },
+        {
+          "namelist_key": "sf_sfclay_physics",
+          "family": "surface_layer",
+          "option": 2,
+          "name": "Janjic Eta surface layer",
+          "module": "gpuwrf.physics.sfclay_janjic",
+          "entrypoint": "step_janjic_sfclay_column",
+          "convention": "column_state",
+          "gpu_runnable": true,
+          "carry_members": [
+            "tke_pbl"
+          ],
+          "tendency_members": [],
+          "accumulators": [],
+          "notes": "MUST pair with bl_pbl_physics=2 (MYJ PBL)."
         },
         {
           "namelist_key": "sf_sfclay_physics",
@@ -441,6 +564,27 @@
         {
           "namelist_key": "cu_physics",
           "family": "cumulus",
+          "option": 2,
+          "name": "Betts-Miller-Janjic",
+          "module": "gpuwrf.physics.cumulus_bmj",
+          "entrypoint": "step_bmj_column",
+          "convention": "column_state",
+          "gpu_runnable": true,
+          "carry_members": [
+            "cldefi"
+          ],
+          "tendency_members": [
+            "rthcuten",
+            "rqvcuten"
+          ],
+          "accumulators": [
+            "rainc_acc"
+          ],
+          "notes": "Frozen-contract extension for BMJ adjustment cumulus; carries CLDEFI."
+        },
+        {
+          "namelist_key": "cu_physics",
+          "family": "cumulus",
           "option": 3,
           "name": "Grell-Freitas",
           "module": "gpuwrf.physics.cumulus_grell_freitas",
@@ -466,10 +610,10 @@
           "family": "cumulus",
           "option": 6,
           "name": "Tiedtke",
-          "module": "gpuwrf.physics.cumulus_tiedtke",
-          "entrypoint": "step_tiedtke_column",
+          "module": "gpuwrf.physics.cumulus_tiedtke_jax",
+          "entrypoint": "tiedtke_column_jax",
           "convention": "column_state",
-          "gpu_runnable": false,
+          "gpu_runnable": true,
           "carry_members": [],
           "tendency_members": [
             "rthcuten",
@@ -482,7 +626,7 @@
           "accumulators": [
             "rainc_acc"
           ],
-          "notes": "CPU-NumPy reference port; GPU-batching (jit/vmap) TODO; tendency-only carry."
+          "notes": "GPU-batched (jit/vmap) Tiedtke; scan-wired via CU_SCAN_ADAPTERS[6]; savepoint-gated vs unmodified module_cu_tiedtke.F (proofs/v060/tiedtke_gpubatch_savepoint_parity.json); tendency-only carry."
         },
         {
           "namelist_key": "cu_physics",
@@ -505,7 +649,7 @@
           "accumulators": [
             "rainc_acc"
           ],
-          "notes": "New Tiedtke option spec; same module as cu=6, CPU-NumPy reference port; GPU-batching TODO."
+          "notes": "New Tiedtke option spec; shares the Tiedtke kernel but is NOT separately savepoint-gated by a distinct WRF source path -- accepted/fail-closed in the operational GPU scan, NOT parity-proven for cu=16 specifically."
         },
         {
           "namelist_key": "sf_surface_physics",
@@ -586,6 +730,34 @@
           "module": "gpuwrf/physics/microphysics_wsm6.py",
           "module_present": true,
           "test_file": "tests/test_wsm6_savepoint_parity.py",
+          "test_present": true,
+          "savepoint_parity": {
+            "present": true,
+            "verdict": null,
+            "overall_pass": true,
+            "passed": true
+          }
+        },
+        {
+          "scheme": "wsm3 (mp=3)",
+          "branch": "worker/opus/v060-wsm-sm",
+          "module": "gpuwrf/physics/microphysics_wsm3.py",
+          "module_present": true,
+          "test_file": "tests/test_wsm_sm_savepoint_parity.py",
+          "test_present": true,
+          "savepoint_parity": {
+            "present": true,
+            "verdict": null,
+            "overall_pass": true,
+            "passed": true
+          }
+        },
+        {
+          "scheme": "wsm5 (mp=4)",
+          "branch": "worker/opus/v060-wsm-sm",
+          "module": "gpuwrf/physics/microphysics_wsm5.py",
+          "module_present": true,
+          "test_file": "tests/test_wsm_sm_savepoint_parity.py",
           "test_present": true,
           "savepoint_parity": {
             "present": true,
@@ -750,7 +922,7 @@
   },
   "step5_forecast_gate": {
     "status": "READY_NOT_RUN",
-    "note": "Integrated multi-config forecast gate is WIRED. The single-GPU end-to-end run vs CPU-WRF is MANAGER-scheduled. CPU validation below confirms each combo is namelist-accepted, dispatch-resolvable, and GPU-gate-admissible (all schemes GPU-runnable). GF (cu=3) and Tiedtke (cu=6/16) are intentionally NOT in any canonical combo (CPU-reference).",
+    "note": "Integrated multi-config forecast gate. The single-GPU end-to-end run vs CPU-WRF is MANAGER-scheduled (--run). v0.6.0 CONSOLIDATION scan-wire status (HONEST, post-consolidation 2026-06-04): combo_1 (v0.2.0 + KF) is fully scan-wired. YSU (bl=1) and ACM2 (bl=7) are now the v0.6.0 jax.lax.scan/vmap GPU-op rewrites and ARE scan-wired -- so canonical combo_3 (Morrison/ACM2/Pleim-Xiu/Noah-MP) is now GPU-scan-runnable. Canonical combo_2 still fails ONLY because its Noah-classic land (sf_surface=2) needs the explicit noahclassic_static/noahclassic_land bundle that the readiness stub does not attach (YSU itself is wired); the SCAN_WIRED_COMBOS swap Noah-classic for Noah-MP so the WSM/Morrison/WDM6 + revised-MM5/Pleim-Xiu + KF/Tiedtke schemes run end-to-end now. Tiedtke (cu=6) is the GPU-batched jit/vmap adapter and IS scan-wired. GF (cu=3) and New-Tiedtke (cu=16) remain CPU-reference, FAIL-CLOSED (loud) by design; MYJ (bl=2)/Janjic (sfclay=2) are savepoint-parity-proven CPU references, also FAIL-CLOSED in the scan.",
     "gate_fields": {
       "core": [
         "T2",
@@ -768,7 +940,7 @@
       ]
     },
     "scoring": "per-lead gridpoint-paired bias/RMSE vs corpus CPU-WRF d02 reference, mirroring proofs/m20/continuous_gate.py (reference = CPU-WRF, pairing = every grid cell, resolution = every lead hour).",
-    "combos": [
+    "canonical_combos": [
       {
         "combo_id": "combo_1_thompson_mynn_noahmp_kf",
         "description": "v0.2.0 baseline (Thompson/MYNN/MYNN-sfclay/Noah-MP) + KF cumulus + RRTMG",
@@ -784,6 +956,8 @@
         "namelist_accepted": true,
         "dispatch_resolved": true,
         "gpu_gate_ready": true,
+        "scan_wired": true,
+        "scan_wire_error": null,
         "non_gpu_schemes": [],
         "error": null
       },
@@ -802,6 +976,8 @@
         "namelist_accepted": true,
         "dispatch_resolved": true,
         "gpu_gate_ready": true,
+        "scan_wired": false,
+        "scan_wire_error": "operational scan supports the v0.2.0 suite + the v0.6.0 scan-wired schemes (mp_physics in {0,1,2,3,4,6,8,10,16}, bl_pbl_physics in {0,1,5,7,8}, sf_sfclay_physics in {0,1,5,7}, cu_physics in {0,1,2,6}, Noah-MP via use_noahmp, explicit Noah-classic via sf_surface_physics=2 plus noahclassic_static/noahclassic_land). The following selected schemes are NOT scan-wired: sf_surface_physics=2 (Noah-classic requires explicit noahclassic_static + noahclassic_land bundles (WRF REDPRM + 4-layer carry))",
         "non_gpu_schemes": [],
         "error": null
       },
@@ -820,17 +996,90 @@
         "namelist_accepted": true,
         "dispatch_resolved": true,
         "gpu_gate_ready": true,
+        "scan_wired": true,
+        "scan_wire_error": null,
         "non_gpu_schemes": [],
         "error": null
       }
     ],
-    "all_combos_gpu_gate_ready": true,
+    "scan_wired_combos": [
+      {
+        "combo_id": "combo_2w_wsm6_mynn_revisedmm5_noahmp_kf",
+        "description": "WSM6/MYNN/revised-MM5 sfclay/Noah-MP + KF cumulus + RRTMG (scan-wired variant of combo_2: MYNN instead of host-NumPy YSU, Noah-MP instead of the canonical Noah-classic bundle path)",
+        "namelist": {
+          "mp_physics": 6,
+          "bl_pbl_physics": 5,
+          "sf_sfclay_physics": 1,
+          "sf_surface_physics": 4,
+          "cu_physics": 1,
+          "ra_sw_physics": 4,
+          "ra_lw_physics": 4
+        },
+        "namelist_accepted": true,
+        "dispatch_resolved": true,
+        "gpu_gate_ready": true,
+        "scan_wired": true,
+        "scan_wire_error": null,
+        "non_gpu_schemes": [],
+        "error": null
+      },
+      {
+        "combo_id": "combo_3w_morrison_mynn_pleimxiu_noahmp",
+        "description": "Morrison/MYNN/Pleim-Xiu sfclay/Noah-MP, no cumulus + RRTMG (scan-wired variant of combo_3: MYNN instead of host-NumPy ACM2)",
+        "namelist": {
+          "mp_physics": 10,
+          "bl_pbl_physics": 5,
+          "sf_sfclay_physics": 7,
+          "sf_surface_physics": 4,
+          "cu_physics": 0,
+          "ra_sw_physics": 4,
+          "ra_lw_physics": 4
+        },
+        "namelist_accepted": true,
+        "dispatch_resolved": true,
+        "gpu_gate_ready": true,
+        "scan_wired": true,
+        "scan_wire_error": null,
+        "non_gpu_schemes": [],
+        "error": null
+      },
+      {
+        "combo_id": "combo_4w_wdm6_mynn_kessler_check",
+        "description": "WDM6/MYNN/MYNN-sfclay/Noah-MP + KF cumulus + RRTMG (exercises the WDM6 Nc/Nn additive leaves + KF carry end-to-end)",
+        "namelist": {
+          "mp_physics": 16,
+          "bl_pbl_physics": 5,
+          "sf_sfclay_physics": 5,
+          "sf_surface_physics": 4,
+          "cu_physics": 1,
+          "ra_sw_physics": 4,
+          "ra_lw_physics": 4
+        },
+        "namelist_accepted": true,
+        "dispatch_resolved": true,
+        "gpu_gate_ready": true,
+        "scan_wired": true,
+        "scan_wire_error": null,
+        "non_gpu_schemes": [],
+        "error": null
+      }
+    ],
+    "gpu_runnable_now": [
+      "combo_1_thompson_mynn_noahmp_kf",
+      "combo_3_morrison_acm2_pleimxiu_noahmp",
+      "combo_2w_wsm6_mynn_revisedmm5_noahmp_kf",
+      "combo_3w_morrison_mynn_pleimxiu_noahmp",
+      "combo_4w_wdm6_mynn_kessler_check"
+    ],
+    "all_canonical_gpu_gate_ready": true,
+    "all_canonical_scan_wired": false,
     "manager_run_steps": [
       "1. Free the GPU (one GPU job at a time); verify CUDA context sanity.",
-      "2. For each combo: build the OperationalNamelist with the combo's mp/bl/cu/sf options; thread each non-default scheme's State adapter into the operational scan (the per-scheme kernels passed savepoint parity; their scan adapters are this gate's remaining wiring).",
-      "3. Run the GPU forecast over a corpus CPU-WRF d02 case (e.g. the v0.2.0 TOST run dates); emit wrfout with the new QNCLOUD/QNCCN/RAINC leaves.",
+      "2. For each GPU-runnable combo (gpu_runnable_now): build the OperationalNamelist with the combo's mp/bl/cu/sf options (the scan adapters in coupling.scan_adapters are threaded; _resolve_operational_suite accepts the combo).",
+      "3. Run run_forecast_operational over a corpus CPU-WRF d02 case (e.g. the v0.2.0 TOST run dates); emit wrfout with the new QNCLOUD/QNCCN/RAINC leaves.",
       "4. Score per-lead gridpoint-paired bias/RMSE vs the CPU-WRF reference (continuous_gate pattern) on the core + diagnostic fields.",
-      "5. Record one proof JSON per combo under proofs/v060/forecast_gate/."
+      "5. Record one proof JSON per combo under proofs/v060/forecast_gate/.",
+      "6. CARRY-OVER (post-consolidation, cross-model): real-run Noah-classic(2) land/static bundle assembly for canonical combo_2 (YSU(1)/ACM2(7) PBL and Tiedtke(6) cumulus are now GPU-scan-wired -- DONE); GPU-batch GF(3) cumulus (~2000-LOC closure-ensemble + beta-PDF vmap rewrite) and gate New-Tiedtke(16); GPU-scan-wire MYJ(2)/Janjic(2) (parity-proven CPU references today)."
     ]
   }
 }
