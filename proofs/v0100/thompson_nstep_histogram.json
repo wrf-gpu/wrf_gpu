@@ -1,0 +1,523 @@
+{
+  "caps": [
+    16,
+    32,
+    64
+  ],
+  "common_zero_clip_safe_caps": [],
+  "dt_s": 10.0,
+  "files": [
+    {
+      "path": "/mnt/data/canairy_meteo/runs/surface_geo_v2_1/20260513_18z_l3_v21/wrf_l3_24h/wrfout_d02_2026-05-14_01:00:00",
+      "species": {
+        "graupel": {
+          "all_column_max": 1.0,
+          "clip_count_by_cap": {
+            "16": 0,
+            "32": 0,
+            "64": 0
+          },
+          "columns": 10494,
+          "max": null,
+          "p99": null,
+          "p99_9": null,
+          "wet_columns": 0,
+          "wet_fraction": 0.0
+        },
+        "ice": {
+          "all_column_max": 1.0,
+          "clip_count_by_cap": {
+            "16": 0,
+            "32": 0,
+            "64": 0
+          },
+          "columns": 10494,
+          "max": 1.0,
+          "p99": 1.0,
+          "p99_9": 1.0,
+          "wet_columns": 562,
+          "wet_fraction": 0.05355441204497808
+        },
+        "rain": {
+          "all_column_max": 2.0,
+          "clip_count_by_cap": {
+            "16": 0,
+            "32": 0,
+            "64": 0
+          },
+          "columns": 10494,
+          "max": 2.0,
+          "p99": 2.0,
+          "p99_9": 2.0,
+          "wet_columns": 321,
+          "wet_fraction": 0.030588907947398512
+        },
+        "snow": {
+          "all_column_max": 1.0,
+          "clip_count_by_cap": {
+            "16": 0,
+            "32": 0,
+            "64": 0
+          },
+          "columns": 10494,
+          "max": 1.0,
+          "p99": 1.0,
+          "p99_9": 1.0,
+          "wet_columns": 705,
+          "wet_fraction": 0.06718124642652945
+        }
+      }
+    },
+    {
+      "path": "/mnt/data/canairy_meteo/runs/surface_geo_v2_1/20260513_18z_l3_v21/wrf_l3_24h/wrfout_d02_2026-05-14_02:00:00",
+      "species": {
+        "graupel": {
+          "all_column_max": 1.0,
+          "clip_count_by_cap": {
+            "16": 0,
+            "32": 0,
+            "64": 0
+          },
+          "columns": 10494,
+          "max": null,
+          "p99": null,
+          "p99_9": null,
+          "wet_columns": 0,
+          "wet_fraction": 0.0
+        },
+        "ice": {
+          "all_column_max": 3.0,
+          "clip_count_by_cap": {
+            "16": 0,
+            "32": 0,
+            "64": 0
+          },
+          "columns": 10494,
+          "max": 3.0,
+          "p99": 1.0,
+          "p99_9": 2.2900000000000773,
+          "wet_columns": 711,
+          "wet_fraction": 0.06775300171526587
+        },
+        "rain": {
+          "all_column_max": 2.0,
+          "clip_count_by_cap": {
+            "16": 0,
+            "32": 0,
+            "64": 0
+          },
+          "columns": 10494,
+          "max": 2.0,
+          "p99": 2.0,
+          "p99_9": 2.0,
+          "wet_columns": 532,
+          "wet_fraction": 0.05069563560129598
+        },
+        "snow": {
+          "all_column_max": 1.0,
+          "clip_count_by_cap": {
+            "16": 0,
+            "32": 0,
+            "64": 0
+          },
+          "columns": 10494,
+          "max": 1.0,
+          "p99": 1.0,
+          "p99_9": 1.0,
+          "wet_columns": 1047,
+          "wet_fraction": 0.09977129788450544
+        }
+      }
+    },
+    {
+      "path": "/mnt/data/canairy_meteo/runs/surface_geo_v2_1/20260513_18z_l3_v21/wrf_l3_24h/wrfout_d02_2026-05-14_03:00:00",
+      "species": {
+        "graupel": {
+          "all_column_max": 1.0,
+          "clip_count_by_cap": {
+            "16": 0,
+            "32": 0,
+            "64": 0
+          },
+          "columns": 10494,
+          "max": null,
+          "p99": null,
+          "p99_9": null,
+          "wet_columns": 0,
+          "wet_fraction": 0.0
+        },
+        "ice": {
+          "all_column_max": 2.0,
+          "clip_count_by_cap": {
+            "16": 0,
+            "32": 0,
+            "64": 0
+          },
+          "columns": 10494,
+          "max": 2.0,
+          "p99": 2.0,
+          "p99_9": 2.0,
+          "wet_columns": 65,
+          "wet_fraction": 0.0061940156279778925
+        },
+        "rain": {
+          "all_column_max": 2.0,
+          "clip_count_by_cap": {
+            "16": 0,
+            "32": 0,
+            "64": 0
+          },
+          "columns": 10494,
+          "max": 2.0,
+          "p99": 2.0,
+          "p99_9": 2.0,
+          "wet_columns": 517,
+          "wet_fraction": 0.049266247379454925
+        },
+        "snow": {
+          "all_column_max": 1.0,
+          "clip_count_by_cap": {
+            "16": 0,
+            "32": 0,
+            "64": 0
+          },
+          "columns": 10494,
+          "max": 1.0,
+          "p99": 1.0,
+          "p99_9": 1.0,
+          "wet_columns": 174,
+          "wet_fraction": 0.016580903373356205
+        }
+      }
+    },
+    {
+      "path": "/mnt/data/canairy_meteo/runs/surface_geo_v2_1/20260513_18z_l3_v21/wrf_l3_24h/wrfout_d02_2026-05-14_07:00:00",
+      "species": {
+        "graupel": {
+          "all_column_max": 1.0,
+          "clip_count_by_cap": {
+            "16": 0,
+            "32": 0,
+            "64": 0
+          },
+          "columns": 10494,
+          "max": null,
+          "p99": null,
+          "p99_9": null,
+          "wet_columns": 0,
+          "wet_fraction": 0.0
+        },
+        "ice": {
+          "all_column_max": 1.0,
+          "clip_count_by_cap": {
+            "16": 0,
+            "32": 0,
+            "64": 0
+          },
+          "columns": 10494,
+          "max": null,
+          "p99": null,
+          "p99_9": null,
+          "wet_columns": 0,
+          "wet_fraction": 0.0
+        },
+        "rain": {
+          "all_column_max": 2.0,
+          "clip_count_by_cap": {
+            "16": 0,
+            "32": 0,
+            "64": 0
+          },
+          "columns": 10494,
+          "max": 2.0,
+          "p99": 2.0,
+          "p99_9": 2.0,
+          "wet_columns": 876,
+          "wet_fraction": 0.08347627215551744
+        },
+        "snow": {
+          "all_column_max": 1.0,
+          "clip_count_by_cap": {
+            "16": 0,
+            "32": 0,
+            "64": 0
+          },
+          "columns": 10494,
+          "max": 1.0,
+          "p99": 1.0,
+          "p99_9": 1.0,
+          "wet_columns": 6,
+          "wet_fraction": 0.0005717552887364208
+        }
+      }
+    },
+    {
+      "path": "/mnt/data/canairy_meteo/runs/surface_geo_v2_1/20260513_18z_l3_v21/wrf_l3_24h/wrfout_d03_2026-05-14_07:00:00",
+      "species": {
+        "graupel": {
+          "all_column_max": 1.0,
+          "clip_count_by_cap": {
+            "16": 0,
+            "32": 0,
+            "64": 0
+          },
+          "columns": 6975,
+          "max": null,
+          "p99": null,
+          "p99_9": null,
+          "wet_columns": 0,
+          "wet_fraction": 0.0
+        },
+        "ice": {
+          "all_column_max": 1.0,
+          "clip_count_by_cap": {
+            "16": 0,
+            "32": 0,
+            "64": 0
+          },
+          "columns": 6975,
+          "max": null,
+          "p99": null,
+          "p99_9": null,
+          "wet_columns": 0,
+          "wet_fraction": 0.0
+        },
+        "rain": {
+          "all_column_max": 2.0,
+          "clip_count_by_cap": {
+            "16": 0,
+            "32": 0,
+            "64": 0
+          },
+          "columns": 6975,
+          "max": 2.0,
+          "p99": 2.0,
+          "p99_9": 2.0,
+          "wet_columns": 1034,
+          "wet_fraction": 0.1482437275985663
+        },
+        "snow": {
+          "all_column_max": 1.0,
+          "clip_count_by_cap": {
+            "16": 0,
+            "32": 0,
+            "64": 0
+          },
+          "columns": 6975,
+          "max": null,
+          "p99": null,
+          "p99_9": null,
+          "wet_columns": 0,
+          "wet_fraction": 0.0
+        }
+      }
+    },
+    {
+      "path": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d02_2026-05-22_14:00:00",
+      "species": {
+        "graupel": {
+          "all_column_max": 1.0,
+          "clip_count_by_cap": {
+            "16": 0,
+            "32": 0,
+            "64": 0
+          },
+          "columns": 10494,
+          "max": null,
+          "p99": null,
+          "p99_9": null,
+          "wet_columns": 0,
+          "wet_fraction": 0.0
+        },
+        "ice": {
+          "all_column_max": 1.0,
+          "clip_count_by_cap": {
+            "16": 0,
+            "32": 0,
+            "64": 0
+          },
+          "columns": 10494,
+          "max": null,
+          "p99": null,
+          "p99_9": null,
+          "wet_columns": 0,
+          "wet_fraction": 0.0
+        },
+        "rain": {
+          "all_column_max": 2.0,
+          "clip_count_by_cap": {
+            "16": 0,
+            "32": 0,
+            "64": 0
+          },
+          "columns": 10494,
+          "max": 2.0,
+          "p99": 1.0,
+          "p99_9": 2.0,
+          "wet_columns": 1104,
+          "wet_fraction": 0.10520297312750143
+        },
+        "snow": {
+          "all_column_max": 1.0,
+          "clip_count_by_cap": {
+            "16": 0,
+            "32": 0,
+            "64": 0
+          },
+          "columns": 10494,
+          "max": null,
+          "p99": null,
+          "p99_9": null,
+          "wet_columns": 0,
+          "wet_fraction": 0.0
+        }
+      }
+    },
+    {
+      "path": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d03_2026-05-22_14:00:00",
+      "species": {
+        "graupel": {
+          "all_column_max": 1.0,
+          "clip_count_by_cap": {
+            "16": 0,
+            "32": 0,
+            "64": 0
+          },
+          "columns": 6975,
+          "max": null,
+          "p99": null,
+          "p99_9": null,
+          "wet_columns": 0,
+          "wet_fraction": 0.0
+        },
+        "ice": {
+          "all_column_max": 1.0,
+          "clip_count_by_cap": {
+            "16": 0,
+            "32": 0,
+            "64": 0
+          },
+          "columns": 6975,
+          "max": null,
+          "p99": null,
+          "p99_9": null,
+          "wet_columns": 0,
+          "wet_fraction": 0.0
+        },
+        "rain": {
+          "all_column_max": 1.0,
+          "clip_count_by_cap": {
+            "16": 0,
+            "32": 0,
+            "64": 0
+          },
+          "columns": 6975,
+          "max": 1.0,
+          "p99": 1.0,
+          "p99_9": 1.0,
+          "wet_columns": 11,
+          "wet_fraction": 0.0015770609318996416
+        },
+        "snow": {
+          "all_column_max": 1.0,
+          "clip_count_by_cap": {
+            "16": 0,
+            "32": 0,
+            "64": 0
+          },
+          "columns": 6975,
+          "max": null,
+          "p99": null,
+          "p99_9": null,
+          "wet_columns": 0,
+          "wet_fraction": 0.0
+        }
+      }
+    }
+  ],
+  "merged": {
+    "graupel": {
+      "clip_count_by_cap": {
+        "16": 0,
+        "32": 0,
+        "64": 0
+      },
+      "columns": 66420,
+      "max": null,
+      "max_file_p99": null,
+      "max_file_p99_9": null,
+      "p99": null,
+      "p99_9": null,
+      "wet_columns": 0,
+      "wet_fraction": 0.0
+    },
+    "ice": {
+      "clip_count_by_cap": {
+        "16": 0,
+        "32": 0,
+        "64": 0
+      },
+      "columns": 66420,
+      "max": 3.0,
+      "max_file_p99": 2.0,
+      "max_file_p99_9": 2.2900000000000773,
+      "p99": 1.0,
+      "p99_9": 2.0,
+      "wet_columns": 1338,
+      "wet_fraction": 0.02014453477868112
+    },
+    "rain": {
+      "clip_count_by_cap": {
+        "16": 0,
+        "32": 0,
+        "64": 0
+      },
+      "columns": 66420,
+      "max": 2.0,
+      "max_file_p99": 2.0,
+      "max_file_p99_9": 2.0,
+      "p99": 2.0,
+      "p99_9": 2.0,
+      "wet_columns": 4395,
+      "wet_fraction": 0.06616982836495032
+    },
+    "snow": {
+      "clip_count_by_cap": {
+        "16": 0,
+        "32": 0,
+        "64": 0
+      },
+      "columns": 66420,
+      "max": 1.0,
+      "max_file_p99": 1.0,
+      "max_file_p99_9": 1.0,
+      "p99": 1.0,
+      "p99_9": 1.0,
+      "wet_columns": 1932,
+      "wet_fraction": 0.02908762420957543
+    }
+  },
+  "note": "Histogram uses existing wrfout hydrometeor columns and current JAX Thompson fall-speed/nstep formulas. It does not run the GPU forecast.",
+  "recommended_nsed_safe_cap": null,
+  "schema": "V0100Phase0ThompsonNstepHistogram",
+  "schema_version": 1,
+  "status": "PASS",
+  "zero_clip_safe_caps_by_species": {
+    "graupel": [],
+    "ice": [
+      16,
+      32,
+      64
+    ],
+    "rain": [
+      16,
+      32,
+      64
+    ],
+    "snow": [
+      16,
+      32,
+      64
+    ]
+  }
+}
