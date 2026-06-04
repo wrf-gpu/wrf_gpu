@@ -1,0 +1,51 @@
+{
+  "schema": "wrf_gpu2.proofs.v060.bmj_fp64_oracle_crosscheck.v1",
+  "purpose": "Per-field abs error of the fp64 JAX BMJ port against BOTH the committed fp32 savepoints AND a precision-matched fp64 WRF oracle, to isolate the fp32-gate residual as oracle precision (not a port defect).",
+  "cases": [
+    {
+      "case": "bmj_case_1",
+      "regime": "deep",
+      "RTHCUTEN_maxabs_vs_fp32_savepoint": 8.562640930803375e-08,
+      "RTHCUTEN_maxabs_vs_fp64_oracle": 2.1004123132613295e-08,
+      "RTHCUTEN_tol_abs": 5e-08,
+      "RAINCV_relerr_vs_fp32_savepoint": 5.540881303903232e-06,
+      "RAINCV_relerr_vs_fp64_oracle": 2.824250323614718e-06
+    },
+    {
+      "case": "bmj_case_2",
+      "regime": "shallow",
+      "RTHCUTEN_maxabs_vs_fp32_savepoint": 1.8657803806500575e-08,
+      "RTHCUTEN_maxabs_vs_fp64_oracle": 5.4589255063454585e-09,
+      "RTHCUTEN_tol_abs": 5e-08,
+      "RAINCV_relerr_vs_fp32_savepoint": 0.0,
+      "RAINCV_relerr_vs_fp64_oracle": 0.0
+    },
+    {
+      "case": "bmj_case_3",
+      "regime": "deep",
+      "RTHCUTEN_maxabs_vs_fp32_savepoint": 3.2632148039670253e-07,
+      "RTHCUTEN_maxabs_vs_fp64_oracle": 2.774279601099744e-08,
+      "RTHCUTEN_tol_abs": 5e-08,
+      "RAINCV_relerr_vs_fp32_savepoint": 1.2925982239225852e-05,
+      "RAINCV_relerr_vs_fp64_oracle": 5.892711691635723e-07
+    },
+    {
+      "case": "bmj_case_4",
+      "regime": "nonconvective",
+      "RTHCUTEN_maxabs_vs_fp32_savepoint": 0.0,
+      "RTHCUTEN_maxabs_vs_fp64_oracle": 0.0,
+      "RTHCUTEN_tol_abs": 5e-08,
+      "RAINCV_relerr_vs_fp32_savepoint": 0.0,
+      "RAINCV_relerr_vs_fp64_oracle": 0.0
+    },
+    {
+      "case": "bmj_case_5",
+      "regime": "nonconvective",
+      "RTHCUTEN_maxabs_vs_fp32_savepoint": 0.0,
+      "RTHCUTEN_maxabs_vs_fp64_oracle": 0.0,
+      "RTHCUTEN_tol_abs": 5e-08,
+      "RAINCV_relerr_vs_fp32_savepoint": 0.0,
+      "RAINCV_relerr_vs_fp64_oracle": 0.0
+    }
+  ]
+}

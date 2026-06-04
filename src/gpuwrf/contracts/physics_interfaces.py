@@ -44,7 +44,7 @@ from .physics_registry import (
 )
 
 
-PHYSICS_INTERFACE_VERSION = "v0.6.0-S0-frozen-2026-06-03-wsm-sm-extension"
+PHYSICS_INTERFACE_VERSION = "v0.6.0-S0-frozen-2026-06-04-consolidation3-bmj2-extension"
 
 ArrayLike = Any
 _EMPTY: Mapping[str, Any] = MappingProxyType({})
@@ -370,6 +370,21 @@ SCHEME_STEP_SPECS: tuple[PhysicsStepSpec, ...] = (
         writes_carry=CUMULUS_CARRY_MEMBERS[1],
         returns_accumulators=("rainc_acc",),
         diagnostics=("raincv", *CUMULUS_TENDENCY_MEMBERS[1]),
+    ),
+    PhysicsStepSpec(
+        family="cumulus",
+        option=2,
+        name="Betts-Miller-Janjic",
+        wrf_slot="first_rk_cumulus_driver",
+        owner_module="src/gpuwrf/physics/cumulus_bmj.py",
+        oracle="M20 physics-oracle factory savepoint at module_cumulus_driver.F:BMJ",
+        reads_state=("theta", "qv", "p", "pb", "ph", "mu", "xland"),
+        writes_state=("theta", "qv"),
+        reads_carry=CUMULUS_CARRY_MEMBERS[2],
+        writes_carry=CUMULUS_CARRY_MEMBERS[2],
+        returns_accumulators=("rainc_acc",),
+        diagnostics=("raincv", "pratec", "cutop", "cubot", *CUMULUS_TENDENCY_MEMBERS[2]),
+        notes="Frozen-contract extension for WRF cu_physics=2. BMJ is an adjustment scheme and returns only RTHCUTEN/RQVCUTEN plus cumulus precipitation.",
     ),
     PhysicsStepSpec(
         family="cumulus",

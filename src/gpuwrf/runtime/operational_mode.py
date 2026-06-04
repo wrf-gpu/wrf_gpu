@@ -61,6 +61,8 @@ from gpuwrf.coupling.scan_adapters import (
     MP_SCAN_ADAPTERS,
     PBL_SCAN_ADAPTERS,
     SFCLAY_SCAN_ADAPTERS,
+    bmj_adapter,
+    initial_bmj_carry,
     initial_kf_carry,
     kf_adapter,
 )
@@ -1860,10 +1862,10 @@ _SCAN_WIRED_OPTIONS = {
     "bl_pbl_physics": (0, 1, DEFAULT_BL_PBL_PHYSICS, 7, 8),
     # sf_sfclay=0 off, 5 MYNN-sfclay (existing); 1 revised-MM5 / 7 Pleim-Xiu wired.
     "sf_sfclay_physics": (0, 1, 5, 7),
-    # cu=0 no cumulus, 1 KF, 6 modified-Tiedtke (v0.6.0 GPU-batched jit/vmap
-    # adapter). GF(3) stays CPU-ref (not vmap-rewritten); New-Tiedtke(16) not
-    # separately gated -> NOT wired.
-    "cu_physics": (0, 1, 6),
+    # cu=0 no cumulus, 1 KF, 2 BMJ (fp64 savepoint-parity carry-threaded adapter),
+    # 6 modified-Tiedtke (v0.6.0 GPU-batched jit/vmap adapter). GF(3) stays CPU-ref
+    # (not vmap-rewritten); New-Tiedtke(16) not separately gated -> NOT wired.
+    "cu_physics": (0, 1, 2, 6),
 }
 
 # Scheme-specific reasons a parity-passed option is NOT yet wired into the scan
@@ -1918,7 +1920,7 @@ def _resolve_operational_suite(namelist: OperationalNamelist):
         raise UnsupportedSchemeSelection(
             "operational scan supports the v0.2.0 suite + the v0.6.0 scan-wired "
             "schemes (mp_physics in {0,1,2,3,4,6,8,10,16}, bl_pbl_physics in {0,1,5,7,8}, "
-            "sf_sfclay_physics in {0,1,5,7}, cu_physics in {0,1,6}, Noah-MP via "
+            "sf_sfclay_physics in {0,1,5,7}, cu_physics in {0,1,2,6}, Noah-MP via "
             "use_noahmp, explicit Noah-classic via sf_surface_physics=2 plus "
             "noahclassic_static/noahclassic_land). The following selected schemes "
             "are NOT scan-wired: "
@@ -1934,18 +1936,22 @@ def _initial_carry_for_run(state: State, namelist: OperationalNamelist) -> Opera
     scan-wired scheme's persistent carry is seeded to its CONCRETE pytree shape
     BEFORE the scan (``jax.lax.scan`` requires a carry pytree that is identical on
     every iteration; a ``None``->tuple promotion inside the body would be rejected).
-    The v0.6.0 KF cumulus carry ``(w0avg, nca)`` is seeded when ``cu_physics`` is a
-    scan-wired GPU cumulus option; otherwise ``cumulus_carry`` stays ``None`` and the
-    carry is structurally identical to the pre-v0.6.0 carry.
+    The v0.6.0 cumulus carry is seeded when ``cu_physics`` selects a stateful
+    scan-wired cumulus option (KF ``(w0avg,nca)`` or BMJ ``cldefi``); otherwise
+    ``cumulus_carry`` stays ``None`` and the carry is structurally identical to
+    the pre-v0.6.0 carry.
     """
 
     enforced = _enforce_operational_precision(state, force_fp64=bool(namelist.force_fp64))
     cumulus_carry = None
-    # Only the STATEFUL cumulus adapter (KF) needs a persistent (w0avg, nca) carry;
-    # the stateless GPU-batched adapter (Tiedtke) keeps cumulus_carry None.
-    if (int(namelist.cu_physics) in CU_SCAN_ADAPTERS
-            and int(namelist.cu_physics) not in CU_STATELESS_SCAN_ADAPTERS):
+    # Only the STATEFUL cumulus adapters need a persistent carry: KF (1) threads
+    # (w0avg, nca); BMJ (2) threads CLDEFI. The stateless GPU-batched adapter
+    # (Tiedtke, 6) keeps cumulus_carry None.
+    cu_opt = int(namelist.cu_physics)
+    if cu_opt == 1:
         cumulus_carry = initial_kf_carry(enforced)
+    elif cu_opt == 2:
+        cumulus_carry = initial_bmj_carry(enforced)
     noahclassic_land = None
     noahclassic_rad = None
     if _explicit_noahclassic(namelist):
@@ -2147,14 +2153,15 @@ def _physics_boundary_step_with_limiter_diagnostics(
         # bl_opt == 0 -> no PBL mixing.
 
         # --- cumulus slot ---
-        # KF (1) threads a (w0avg, nca) carry; modified-Tiedtke (6) is the v0.6.0
-        # GPU-batched stateless State->State adapter. GF (3) stays CPU-reference
-        # (not vmap-rewritten) -> rejected by _resolve_operational_suite.
+        # KF (1) threads a (w0avg, nca) carry; BMJ (2) threads a CLDEFI carry;
+        # modified-Tiedtke (6) is the v0.6.0 GPU-batched stateless State->State
+        # adapter. GF (3) stays CPU-reference (not vmap-rewritten) -> rejected by
+        # _resolve_operational_suite; New-Tiedtke (16) fail-closed (not gated).
         if cu_opt in CU_STATELESS_SCAN_ADAPTERS:
             next_state = CU_STATELESS_SCAN_ADAPTERS[cu_opt](
                 next_state, float(namelist.dt_s), namelist.grid
             )
-        elif cu_opt in CU_SCAN_ADAPTERS:
+        elif cu_opt == 1:
             w0avg, nca = (
                 carry.cumulus_carry if carry.cumulus_carry is not None
                 else initial_kf_carry(next_state)
@@ -2163,6 +2170,15 @@ def _physics_boundary_step_with_limiter_diagnostics(
                 next_state, float(namelist.dt_s), w0avg, nca, grid=namelist.grid
             )
             carry = carry.replace(cumulus_carry=(w0avg_next, nca_next))
+        elif cu_opt == 2:
+            cldefi = (
+                carry.cumulus_carry if carry.cumulus_carry is not None
+                else initial_bmj_carry(next_state)
+            )
+            next_state, cldefi_next = bmj_adapter(
+                next_state, float(namelist.dt_s), cldefi, grid=namelist.grid
+            )
+            carry = carry.replace(cumulus_carry=cldefi_next)
         # B3 radiation cadence -- WRF-faithful HELD-RATE (Sprint coupler-fp64 FIX #2,
         # GPT P0-2). WRF recomputes the radiative theta tendency RTHRATEN (K/s) only
         # once per radt interval (module_radiation_driver.F run_param gate) and then

@@ -15,6 +15,7 @@ _wrfstubs.*
 _modstubs.*
 case_*.txt
 boulac_case_*.txt
+bmj_case_*.txt
 # Per-scheme oracle driver binaries
 morrison_oracle
 kf_oracle
@@ -24,6 +25,7 @@ ysu_oracle
 acm2_oracle
 tiedtke_oracle
 gf_oracle
+bmj_oracle
 sfclayrev_oracle
 pxsfclay_oracle
 boulac_oracle
