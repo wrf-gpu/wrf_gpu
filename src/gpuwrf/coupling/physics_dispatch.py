@@ -12,14 +12,16 @@ Design contract (S0 ``V0.6.0-S0-PLAN.md``):
   (``physics_registry.ACCEPTED_*``). Anything outside it FAILS CLOSED here, in
   addition to ``io.namelist_check.validate_supported_namelist`` (defence in
   depth: the dispatcher must never silently fall through to a default scheme).
-* Each scheme records ``gpu_runnable``. KF (cu=1), BMJ (cu=2), Tiedtke (cu=6),
-  and the jit/vmap'd microphysics / PBL / surface-layer / Noah-MP/Noah-classic
-  kernels are GPU-runnable. Tiedtke (cu=6) is GPU-batched via
+* Each scheme records ``gpu_runnable``. KF (cu=1), BMJ (cu=2), Grell-Freitas
+  (cu=3), Tiedtke (cu=6), and the jit/vmap'd microphysics / PBL / surface-layer /
+  Noah-MP/Noah-classic kernels are GPU-runnable. Tiedtke (cu=6) is GPU-batched via
   ``cumulus_tiedtke_jax`` and scan-wired (``CU_SCAN_ADAPTERS[6]``), savepoint-
   gated against unmodified ``module_cu_tiedtke.F``
-  (proofs/v060/tiedtke_gpubatch_savepoint_parity.json). Grell-Freitas (cu=3) is a
-  faithful CPU-NumPy reference port -- selectable, parity-gated, but flagged
-  ``gpu_runnable=False`` (GPU closure-ensemble batch TODO). New Tiedtke (cu=16)
+  (proofs/v060/tiedtke_gpubatch_savepoint_parity.json). Grell-Freitas (cu=3) is
+  the v0.9.0 GPU-batched jit/vmap port (``physics._gf_jax.gfdrv_batched``,
+  stateless State->State, scan-wired ``CU_SCAN_ADAPTERS[3]``), savepoint-gated
+  against unmodified ``module_cu_gf_*.F``
+  (proofs/v060/gf_gpubatch_savepoint_parity.json). New Tiedtke (cu=16)
   shares the Tiedtke kernel but is NOT separately savepoint-gated by a distinct
   WRF source path, so it is flagged ``gpu_runnable=False`` and fail-closed in the
   operational scan. The integrated GPU forecast gate excludes any combo
@@ -181,11 +183,11 @@ _SFCLAY_ENTRIES: dict[int, SchemeEntry] = {
 }
 
 # --- Cumulus (cu_physics) ------------------------------------------------------
-# KF (cu=1), BMJ (cu=2), and Tiedtke (cu=6) are jit/vmap'd operational GPU cumulus
-# paths (scan-wired via CU_SCAN_ADAPTERS). Grell-Freitas (cu=3) is a FAITHFUL
-# CPU-NumPy reference port -- selectable + parity gated but NOT yet jit/vmap'd, so
-# gpu_runnable=False (GPU closure-ensemble batch TODO). New Tiedtke (cu=16) shares
-# the Tiedtke kernel but is NOT separately savepoint-gated, so it stays
+# KF (cu=1), BMJ (cu=2), Grell-Freitas (cu=3), and Tiedtke (cu=6) are jit/vmap'd
+# operational GPU cumulus paths (scan-wired via CU_SCAN_ADAPTERS). Grell-Freitas
+# (cu=3) is the v0.9.0 GPU-batched jit/vmap port of the scale-aware closure-ensemble
+# kernel (physics._gf_jax.gfdrv_batched), savepoint-parity gated. New Tiedtke (cu=16)
+# shares the Tiedtke kernel but is NOT separately savepoint-gated, so it stays
 # gpu_runnable=False / fail-closed. All route through the combined R*CUTEN
 # tendency + RAINCV/PRATEC family (S0 cugd_* correction: no inert cugd_* State
 # carry for GF).
@@ -205,13 +207,16 @@ _CU_ENTRIES: dict[int, SchemeEntry] = {
                    tendency_members=CUMULUS_TENDENCY_MEMBERS[2],
                    accumulators=("rainc_acc",),
                    notes="Frozen-contract extension for BMJ adjustment cumulus; carries CLDEFI."),
-    3: SchemeEntry("cumulus", 3, CU_SCHEMES[3].name, "gpuwrf.physics.cumulus_grell_freitas",
-                   "grell_freitas_step", "column_state", False,
+    3: SchemeEntry("cumulus", 3, CU_SCHEMES[3].name, "gpuwrf.physics._gf_jax",
+                   "gfdrv_batched", "column_state", True,
                    reads_state=("u", "v", "w", "theta", "qv", "qc", "qr", "qi", "qs"),
-                   writes_state=("theta", "qv", "qc", "qr", "qi", "qs"),
+                   writes_state=("theta", "qv", "qc", "qi"),
                    tendency_members=CUMULUS_TENDENCY_MEMBERS[3], accumulators=("rainc_acc",),
-                   notes="CPU-NumPy reference port; GPU-batching (jit/vmap) TODO. cugd_* carry "
-                   "DROPPED per S0 correction -- routed via R*CUTEN + RAINCV/PRATEC + shallow diags."),
+                   notes="GPU-batched (jit/vmap) scale-aware Grell-Freitas; scan-wired via "
+                   "CU_SCAN_ADAPTERS[3] (stateless State->State); savepoint-gated vs unmodified "
+                   "module_cu_gf_deep.F/module_cu_gf_sh.F/module_cu_gf_wrfdrv.F "
+                   "(proofs/v060/gf_gpubatch_savepoint_parity.json). cugd_* carry DROPPED per S0 "
+                   "correction -- routed via R*CUTEN + RAINCV/PRATEC + shallow diags."),
     6: SchemeEntry("cumulus", 6, CU_SCHEMES[6].name, "gpuwrf.physics.cumulus_tiedtke_jax", "tiedtke_column_jax",
                    "column_state", True,
                    reads_state=("u", "v", "w", "theta", "qv", "qc", "qr", "qi", "qs"),

@@ -152,29 +152,32 @@ _Clk = namedtuple("_Clk", "julian yearlen")
 # CONFIG SWEEP -- the COVERING set (NOT the full cartesian product).
 # ============================================================================
 #
-# Supported (V0.6.0-S0 ACCEPT matrix; GF/Tiedtke cumulus EXCLUDED = documented-TODO):
+# Supported (ACCEPT matrix; New-Tiedtke cu=16 EXCLUDED = documented-TODO):
 #   mp_physics      {8 Thompson, 6 WSM6, 10 Morrison, 16 WDM6, 1 Kessler}
 #   bl_pbl_physics  {5 MYNN, 1 YSU, 7 ACM2}
 #   sf_sfclay       {1 revised-MM5, 5 MYNN-sfclay, 7 Pleim-Xiu}
-#   cu_physics      {1 KF, 2 BMJ, 6 Tiedtke}       (+ 0 = no cumulus)
+#   cu_physics      {1 KF, 2 BMJ, 3 Grell-Freitas, 6 Tiedtke}   (+ 0 = no cumulus)
 #   sf_surface      {4 Noah-MP, 2 Noah classic}    (+ bulk prescribed land)
 #
 # COVERING RATIONALE: every supported scheme appears in >=1 config, plus the real
 # operational Canary config. A full product (5*3*3*2*2) = 180 combos is wasteful;
 # the covering set exercises each scheme at least once while pairing it with a
-# realistic partner suite, ~16 configs total.
+# realistic partner suite, ~17 configs total.
 #
-# HONEST OPERATIONAL-COUPLER REALITY (re-audited 2026-06-03 at v0.6.0 CLOSE against
-# the scan-wire tables): the operational scan (``run_forecast_operational`` /
+# HONEST OPERATIONAL-COUPLER REALITY (re-audited 2026-06-04 at the v0.9.0 GF scan-wire
+# against the scan-wire tables): the operational scan (``run_forecast_operational`` /
 # ``_physics_boundary_step``) threads MYNN(5) + YSU(1) + ACM2(7) PBL -- YSU and ACM2
 # are the v0.6.0 jax.lax.scan-traceable rewrites (pbl_ysu.ysu_columns /
-# pbl_acm2.acm2_columns) wired via coupling.scan_adapters.PBL_SCAN_ADAPTERS, so they
-# are now full RUN configs (gpu_runnable=True), not fail-closed. The ONLY schemes that
-# remain fail-closed in the GPU operational scan are GF (cu=3) and Tiedtke (cu=6/16):
-# faithful CPU-NumPy reference ports (gpu_runnable=False) that are still
-# savepoint-parity gated but need a jit/vmap GPU-batching rewrite. This smoke includes
-# THOSE as FAIL-CLOSED integration assertions (the coupler must REJECT them loudly,
-# not silently no-op) -- a genuine integration finding, recorded honestly, not masked.
+# pbl_acm2.acm2_columns) wired via coupling.scan_adapters.PBL_SCAN_ADAPTERS, full RUN
+# configs (gpu_runnable=True). The cumulus slot now threads KF(1) + BMJ(2) +
+# Grell-Freitas(3) + modified-Tiedtke(6) -- GF(3) is the v0.9.0 GPU-batched jit/vmap
+# scale-aware closure-ensemble port (physics._gf_jax.gfdrv_batched, stateless
+# State->State, savepoint-parity gated), so it is now a RUN config. The ONLY scheme
+# that remains fail-closed in the GPU operational scan is New-Tiedtke (cu=16, not
+# separately source-gated) plus MYJ(2) PBL + Janjic Eta(2) sfclay (no scan adapter
+# yet). This smoke includes THOSE as FAIL-CLOSED integration assertions (the coupler
+# must REJECT them loudly, not silently no-op) -- a genuine integration finding,
+# recorded honestly, not masked.
 
 
 @dataclass(frozen=True)
@@ -246,11 +249,13 @@ SWEEP: tuple[Config, ...] = (
     # --- surface-layer coverage (sfclay 1/5/7 each >=1 config; fast bulk land) ---
     Config("sfclay_mynn", "Thompson + MYNN + MYNN-sfclay(5) + bulk land, no cumulus",
            8, 5, 5, 0, None, "RUN", covers=("sf5-MYNN-sfclay",)),
-    # --- cumulus coverage (KF + BMJ + Tiedtke + no-cumulus; fast bulk land) ---
+    # --- cumulus coverage (KF + BMJ + GF + Tiedtke + no-cumulus; fast bulk land) ---
     Config("cu_kf", "Thompson + MYNN + MYNN-sfclay + bulk land + KF(1) cumulus",
            8, 5, 5, 1, None, "RUN", covers=("cu1-KF",)),
     Config("cu_bmj", "Thompson + MYNN + MYNN-sfclay + bulk land + BMJ(2) cumulus -- fp64 savepoint-proven, CLDEFI carry-threaded adapter",
            8, 5, 5, 2, None, "RUN", covers=("cu2-BMJ",)),
+    Config("cu_gf", "Thompson + MYNN + MYNN-sfclay + bulk land + Grell-Freitas(3) cumulus -- v0.9.0 GPU-batched jit/vmap scale-aware stateless adapter",
+           8, 5, 5, 3, None, "RUN", covers=("cu3-GF",)),
     Config("cu_tiedtke", "Thompson + MYNN + MYNN-sfclay + bulk land + Tiedtke(6) cumulus -- v0.6.0 GPU-batched jit/vmap adapter",
            8, 5, 5, 6, None, "RUN", covers=("cu6-Tiedtke",)),
     Config("cu_none", "Thompson + MYNN + MYNN-sfclay + bulk land, cu=0 (resolved grid-scale)",
@@ -272,11 +277,8 @@ SWEEP: tuple[Config, ...] = (
     Config("pbl_boulac", "BouLac(8) PBL -- v0.6.0 jax.lax.scan rewrite (pbl_boulac.boulac_columns) + revised-MM5 sfclay + bulk land",
            8, 8, 1, 0, None, "RUN", covers=("bl8-BouLac",)),
     # --- FAIL-CLOSED configs (coupler must REJECT loudly; honest integration finding) ---
-    # Tiedtke(6) is now GPU-batched + scan-wired -> moved to a RUN config above.
-    # Grell-Freitas(3) remains a CPU-NumPy reference (sequential 16-member closure
-    # ensemble + beta-PDF gamma; not vmap-rewritten) -> still fail-closed.
-    Config("cu_grellfreitas_unwired", "Grell-Freitas(3) cumulus -- CPU-NumPy reference port (gpu_runnable=False)",
-           8, 5, 5, 3, 4, "FAIL_CLOSED", covers=("cu3-GF",)),
+    # Tiedtke(6) and Grell-Freitas(3) are now GPU-batched + scan-wired -> moved to
+    # RUN configs above (GF(3) is the v0.9.0 jit/vmap scale-aware closure-ensemble port).
     # New-Tiedtke(16): interface-compatible but not separately savepoint-gated by a
     # distinct WRF source path -> not scan-wired, must fail closed.
     Config("cu_newtiedtke_unwired", "New-Tiedtke(16) cumulus -- not separately gated (no distinct WRF source path)",
@@ -653,10 +655,10 @@ def _run_config(cfg: Config, *, steps: int) -> dict[str, Any]:
             state = mynn_adapter(state, dt, grid_for_adapters)
         # bl_opt == 0 -> no PBL mixing.
         # --- cumulus slot (EXACT mirror of operational_mode._physics_boundary_step):
-        # modified-Tiedtke(6) is the v0.6.0 stateless GPU-batched State->State adapter
-        # (checked FIRST); KF(1) threads the (w0avg, nca) carry; BMJ(2) threads the
-        # CLDEFI carry. GF(3)/New-Tiedtke(16) are fail-closed upstream and never reach
-        # a RUN config. ---
+        # modified-Tiedtke(6) and Grell-Freitas(3) are the stateless GPU-batched
+        # State->State adapters (CU_STATELESS_SCAN_ADAPTERS, checked FIRST); KF(1)
+        # threads the (w0avg, nca) carry; BMJ(2) threads the CLDEFI carry.
+        # New-Tiedtke(16) is fail-closed upstream and never reaches a RUN config. ---
         if cu_opt in CU_STATELESS_SCAN_ADAPTERS:
             state = CU_STATELESS_SCAN_ADAPTERS[cu_opt](state, dt, grid_for_adapters)
         elif cu_opt == 1:
@@ -766,8 +768,99 @@ def reference_scoring_seam(
     )
 
 
+_GF_DEEP_SAVEPOINT = ROOT / "proofs" / "v060" / "savepoints" / "gf_case_1.json"
+
+
+def _gf_adapter_triggering_probe() -> dict[str, Any]:
+    """Prove the cu=3 gf_adapter PATH (not just the bare kernel) FIRES convection
+    on a deep convectively-unstable sounding.
+
+    The idealized Canary smoke column (nz=10, ~3 km top) is too shallow for GF deep
+    convection, so the ``cu_gf`` config legitimately does not trigger (IERR_DEEP=2 --
+    same family as KF/Tiedtke on this idealized state). To show the wiring genuinely
+    carries GF convective tendencies through the adapter (no dead path), this probe
+    builds a single-column operational ``State`` from the WRF-savepoint DEEP regime
+    (``gf_case_1.json``: KX=45, oracle KTOP_DEEP=26, RAINCV=0.0425 mm) and runs ONE
+    ``gf_adapter`` step. With the adapter's documented zero PBL forcing the sounding
+    is still convectively unstable, so GF must produce a nonzero theta tendency +
+    convective rain. This is the SAME ``gfdrv_batched`` entry the savepoint-parity
+    gate proves faithful (proofs/v060/gf_gpubatch_savepoint_parity.json); the probe
+    asserts the operational STATE->kernel mapping preserves that triggering."""
+
+    from gpuwrf.coupling.scan_adapters import gf_adapter
+
+    sp = json.loads(_GF_DEEP_SAVEPOINT.read_text())
+    cols, sc = sp["columns"], sp["scalars"]
+    kx = int(sc["KX"])
+    # Build a 1-column state skeleton at the savepoint depth, then overwrite the
+    # prognostic + geometry leaves with the deep savepoint sounding (surface-first,
+    # State convention). Heights from the savepoint DZ (terrain-following thicknesses).
+    state0 = _build_state(nz=kx, ny=1, nx=1, seed=11)[0]
+    T = np.asarray(cols["T"], np.float64)
+    p = np.asarray(cols["P"], np.float64)
+    qv = np.asarray(cols["QV"], np.float64)
+    dz = np.asarray(cols["DZ"], np.float64)
+    pii = (np.maximum(p, 1.0) / 1.0e5) ** (287.0 / 1004.0)
+    theta = T / pii
+    z_iface = np.concatenate([[0.0], np.cumsum(dz)])  # m, surface=0
+    ph = (9.81 * z_iface).reshape(kx + 1, 1, 1)
+    u = np.asarray(cols["U"], np.float64)
+    v = np.asarray(cols["V"], np.float64)
+    w = np.asarray(cols["W"], np.float64)
+    state = state0.replace(
+        theta=jnp.asarray(theta.reshape(kx, 1, 1)),
+        p=jnp.asarray(p.reshape(kx, 1, 1)),
+        p_total=jnp.asarray(p.reshape(kx, 1, 1)),
+        qv=jnp.asarray(np.maximum(qv, 1.0e-8).reshape(kx, 1, 1)),
+        qc=jnp.zeros((kx, 1, 1)), qr=jnp.zeros((kx, 1, 1)),
+        qi=jnp.zeros((kx, 1, 1)), qs=jnp.zeros((kx, 1, 1)),
+        ph=jnp.asarray(ph), ph_total=jnp.asarray(ph),
+        u=jnp.asarray(np.repeat(u.reshape(kx, 1, 1), 2, axis=2)),
+        v=jnp.asarray(np.repeat(v.reshape(kx, 1, 1), 2, axis=1)),
+        w=jnp.asarray(np.concatenate([w, w[-1:]]).reshape(kx + 1, 1, 1)),
+        xland=jnp.asarray([[float(sc["XLAND"])]]),
+        rhosfc=jnp.asarray([[float(np.asarray(cols["RHO"])[0])]]),
+        # GF surface fluxes (HFX W m^-2, QFX kg m^-2 s^-1) -> kinematic B2 handles
+        # the adapter reads (theta_flux = HFX/(rho*cp); qv_flux = QFX/rho).
+        theta_flux=jnp.asarray([[float(sc["HFX"]) / (float(np.asarray(cols["RHO"])[0]) * 1004.0)]]),
+        qv_flux=jnp.asarray([[float(sc["QFX"]) / float(np.asarray(cols["RHO"])[0])]]),
+        rainc_acc=jnp.zeros((1, 1)),
+    )
+
+    class _Proj:
+        dx_m = float(sc["DX"])
+
+    class _Grid:
+        projection = _Proj()
+
+    out = jax.jit(lambda s: gf_adapter(s, float(sc["DT"]), _Grid()))(state)
+    jax.block_until_ready(out.theta)
+    d_theta = float(jnp.max(jnp.abs(out.theta - state.theta)))
+    d_qv = float(jnp.max(jnp.abs(out.qv - state.qv)))
+    rainc = float(jnp.max(out.rainc_acc))
+    finite = bool(
+        jnp.all(jnp.isfinite(out.theta)) and jnp.all(jnp.isfinite(out.qv))
+        and jnp.all(jnp.isfinite(out.rainc_acc))
+    )
+    triggered = bool(finite and (d_theta > 1.0e-6 or rainc > 1.0e-4))
+    return {
+        "purpose": "gf_adapter PATH fires deep convection on the WRF deep savepoint sounding",
+        "savepoint": str(_GF_DEEP_SAVEPOINT.name),
+        "savepoint_oracle": {"KTOP_DEEP": int(sc["KTOP_DEEP"]), "RAINCV_mm": float(sc["RAINCV"]),
+                             "DX_m": float(sc["DX"]), "KX": kx},
+        "adapter_zero_pbl_forcing": True,
+        "max_abs_dtheta_K": d_theta,
+        "max_abs_dqv_kgkg": d_qv,
+        "rainc_acc_mm": rainc,
+        "finite": finite,
+        "triggered": triggered,
+        "verdict": "GF_ADAPTER_TRIGGERS" if triggered else "GF_ADAPTER_NO_TRIGGER",
+    }
+
+
 def run(*, steps: int = 8) -> dict[str, Any]:
     rows = [_run_config(cfg, steps=steps) for cfg in SWEEP]
+    gf_trigger = _gf_adapter_triggering_probe()
 
     run_rows = [r for r in rows if r["expect"] == "RUN"]
     fc_rows = [r for r in rows if r["expect"] == "FAIL_CLOSED"]
@@ -803,16 +896,17 @@ def run(*, steps: int = 8) -> dict[str, Any]:
         "sweep_rationale": (
             "COVERING set (NOT full cartesian product): every supported scheme appears in "
             ">=1 RUN config plus the real operational Canary config. Supported = mp{8,6,10,16,1} "
-            "x bl{5,1,7} x sfclay{1,5,7} x cu{1,2,6} x sf_surface{4,2} (GF cumulus EXCLUDED "
-            "= documented-TODO). v0.6.0 CONSOLIDATION coupler reality: the operational scan now "
+            "x bl{5,1,7} x sfclay{1,5,7} x cu{1,2,3,6} x sf_surface{4,2} (New-Tiedtke cu=16 "
+            "EXCLUDED = documented-TODO). v0.9.0 coupler reality: the operational scan now "
             "threads MYNN(5) + YSU(1) + ACM2(7) PBL (YSU/ACM2 are the v0.6.0 jax.lax.scan-traceable "
-            "rewrites from the PBL-GPU-op lane, scan-wired via PBL_SCAN_ADAPTERS), KF(1) + "
-            "modified-Tiedtke(6) cumulus (Tiedtke is the v0.6.0 GPU-batched jit/vmap adapter, "
-            "scan-wired via CU_SCAN_ADAPTERS), and Noah-MP(4) + Noah-classic(2) land -- so YSU/ACM2 "
-            "and Tiedtke are now RUN configs. Only GF(3) (and New-Tiedtke 16, not separately gated) "
-            "remain CPU-NumPy reference ports and stay FAIL-CLOSED in the coupler, exercised here as "
-            "fail-closed integration assertions (the coupler must reject them loudly, never silently "
-            "no-op)."
+            "rewrites from the PBL-GPU-op lane, scan-wired via PBL_SCAN_ADAPTERS), KF(1) + BMJ(2) + "
+            "Grell-Freitas(3) + modified-Tiedtke(6) cumulus (GF is the v0.9.0 GPU-batched jit/vmap "
+            "scale-aware closure-ensemble adapter, Tiedtke the v0.6.0 GPU-batched adapter, both "
+            "scan-wired via CU_SCAN_ADAPTERS), and Noah-MP(4) + Noah-classic(2) land -- so YSU/ACM2, "
+            "GF and Tiedtke are now RUN configs. Only New-Tiedtke(16, not separately gated) and the "
+            "MYJ(2)+Janjic(2) PBL/sfclay pair (no scan adapter yet) stay FAIL-CLOSED in the coupler, "
+            "exercised here as fail-closed integration assertions (the coupler must reject them "
+            "loudly, never silently no-op)."
         ),
         "scheme_coverage": {
             "covered_by_run_configs": sorted(covered),
@@ -839,6 +933,7 @@ def run(*, steps: int = 8) -> dict[str, Any]:
         "n_fail_closed_configs": len(fc_rows),
         "n_fail_closed_ok": fc_pass,
         "configs": rows,
+        "gf_adapter_triggering_probe": gf_trigger,
         "reference_scoring_seam": {
             "function": "proofs.v060.multicfg_operational_smoke.reference_scoring_seam",
             "status": "DOCUMENTED CONTRACT, NOT IMPLEMENTED (raises NotImplementedError)",
@@ -852,7 +947,11 @@ def run(*, steps: int = 8) -> dict[str, Any]:
             "core_fields": ["T2", "U10", "V10"],
             "diagnostic_fields": ["Q2", "PSFC", "PBLH", "SWDOWN", "GLW", "HFX", "LH"],
         },
-        "all_pass": bool(run_pass == len(run_rows) and fc_pass == len(fc_rows)),
+        "all_pass": bool(
+            run_pass == len(run_rows)
+            and fc_pass == len(fc_rows)
+            and gf_trigger["triggered"]
+        ),
     }
     return report
 
@@ -882,6 +981,10 @@ def main(argv=None) -> int:
     print(f"RUN configs:         {report['n_run_pass']}/{report['n_run_configs']} PASS")
     print(f"FAIL-CLOSED configs: {report['n_fail_closed_ok']}/{report['n_fail_closed_configs']} OK (coupler rejected as required)")
     print(f"Scheme coverage:     {report['scheme_coverage']['covered_by_run_configs']}")
+    gfp = report["gf_adapter_triggering_probe"]
+    print(f"GF adapter trigger:  [{ 'PASS' if gfp['triggered'] else 'FAIL'}] {gfp['verdict']} "
+          f"(dtheta={gfp['max_abs_dtheta_K']:.3e}K, rainc={gfp['rainc_acc_mm']:.4f}mm, "
+          f"deep savepoint KTOP={gfp['savepoint_oracle']['KTOP_DEEP']})")
     print(f"ALL PASS: {report['all_pass']}")
     print(f"proof -> {args.out}")
     return 0 if report["all_pass"] else 1
