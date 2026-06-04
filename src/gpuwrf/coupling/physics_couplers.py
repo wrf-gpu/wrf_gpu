@@ -850,8 +850,15 @@ def _add_a2c_u_increment(u_face: jax.Array, du_mass: jax.Array) -> jax.Array:
     ``u_face`` is C-grid ``(nz, ny, nx+1)``; ``du_mass`` is ``(nz, ny, nx)``.
     """
 
-    # interior faces 1..nx-1 = avg of the two adjacent mass-cell increments
-    interior = 0.5 * (du_mass[:, :, :-1] + du_mass[:, :, 1:])  # (nz, ny, nx-1)
+    # interior faces 1..nx-1 = avg of the two adjacent mass-cell increments.
+    # Cast to the (gated) u-face dtype before the scatter: with qke promoted to
+    # fp64 (qke-fp64-fix), the MYNN length-scale/diffusivity and hence the column
+    # u output promote to fp64, so ``du_mass`` arrives fp64 while the C-grid
+    # u-face stays fp32-gated. The increment is intentionally STORED at the
+    # face's gated precision (u is FP32_GATED); the explicit cast keeps that
+    # contract crisp and avoids the implicit-scatter-downcast warning (a future
+    # JAX hard error). No numerical change vs the prior implicit downcast.
+    interior = (0.5 * (du_mass[:, :, :-1] + du_mass[:, :, 1:])).astype(u_face.dtype)
     du_face = jnp.zeros_like(u_face)
     du_face = du_face.at[:, :, 1:-1].set(interior)  # edges (0, nx) stay 0
     return u_face + du_face
@@ -866,7 +873,10 @@ def _add_a2c_v_increment(v_face: jax.Array, dv_mass: jax.Array) -> jax.Array:
     ``(nz, ny, nx)``.
     """
 
-    interior = 0.5 * (dv_mass[:, :-1, :] + dv_mass[:, 1:, :])  # (nz, ny-1, nx)
+    # Cast to the gated v-face dtype before the scatter (see _add_a2c_u_increment:
+    # qke-fp64 promotes the column v output to fp64; v stays FP32_GATED on the
+    # C-grid). No numerical change vs the prior implicit downcast.
+    interior = (0.5 * (dv_mass[:, :-1, :] + dv_mass[:, 1:, :])).astype(v_face.dtype)  # (nz, ny-1, nx)
     dv_face = jnp.zeros_like(v_face)
     dv_face = dv_face.at[:, 1:-1, :].set(interior)
     return v_face + dv_face
