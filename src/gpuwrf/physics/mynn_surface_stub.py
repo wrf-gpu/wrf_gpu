@@ -42,6 +42,12 @@ class SurfaceFluxes(NamedTuple):
     tau_v: jax.Array
     rhosfc: jax.Array
     fltv: jax.Array
+    # WRF land/sea mask (xland: 1=land, 2=water). MYNN ``mym_length`` CASE(1)
+    # branches the hurricane elt_max / el(k) taper on ``(xland-1.5)>=0`` (water).
+    # Defaults to land (1.0) so the analytic Tier-1/Tier-2 fixtures and any caller
+    # that omits it keep the previous land behaviour; the operational coupler and
+    # the savepoint harness pass the real per-column mask.
+    xland: jax.Array = 1.0
 
 
 def bulk_surface_fluxes(

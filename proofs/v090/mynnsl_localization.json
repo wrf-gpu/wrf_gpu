@@ -1,0 +1,142 @@
+{
+  "root_cause_verdict": "4a (real localized port deviations) for FLUX+SIMILARITY; 4b/4c (faithful-vs-skill + missing-LSM-coupling) for the 2m T2 diagnostic ONLY",
+  "over_flux_is_WRFs_own": "YES. Faithful fp64 ref reproduces WRF MYNN-SL daytime-unstable HFX (270/457/664 W/m2) to 1.4e-4 rel. The high daytime land HFX is WRF MYNN-SL behaviour, not a port bug. (Operationally land HFX comes from Noah-MP, not MYNN-SL; MYNN-SL owns water flux + all similarity/diagnostics.)",
+  "fix_outcome": "FIXED -- 8 faithful deviations corrected; MYNN-SL flux+similarity now PASS vs pristine oracle; 2m T2 repair isolated behind opt-in lsm_t2_diag (default OFF=faithful).",
+  "deviations_fixed": {
+    "B1_VCONVC": "1.0 -> 1.25",
+    "B2_land_wstar_height": "pblh -> min(1.5*pblh,4000)",
+    "B3_water_z0": "keep-seed 2.85e-3 -> charnock_1955 COARE3.0 (~1e-4)",
+    "B4_CPM": "0.8 -> 0.84 (coupler inverse mapping synced)",
+    "B5_regime": "added regime 2 (0<BR<=0.2)",
+    "B6_BR_clamp": "[-250,250]+MOL-gate -> [-4,4]; removed commented-out MOL gate",
+    "B7_viscosity": "sfclayrev linear -> MYNN Andreas(1989) cubic",
+    "B8_humidity": "QSFC(spec hum,ep_3,ice) vs QSFCMR(mixing ratio) split; QFX/Q2 use MR; +Q2<=1.05qv; dropped salinity",
+    "zolrib_seed": "Li-only -> warm-step MOL-based first guess",
+    "B_empirical_2m": "_noahmp_bare_2m_weight_stable now opt-in (lsm_t2_diag, default False) -- was hardwired"
+  },
+  "parity_before_after": {
+    "zol": {
+      "before_relmax": 0.571,
+      "after_relmax": 0.0206
+    },
+    "br": {
+      "before_relmax": 0.665,
+      "after_relmax": 0.02074
+    },
+    "psih": {
+      "before_relmax": 0.438,
+      "after_relmax": 0.01288
+    },
+    "ust": {
+      "before_relmax": 0.224,
+      "after_relmax": 0.00173
+    },
+    "hfx": {
+      "before_relmax": 0.0383,
+      "after_relmax": 0.00976
+    }
+  },
+  "t2_after_abs_K": 0.0007,
+  "per_case_after": {
+    "unstable-land dT=+8 U=2.5": {
+      "hfx": [
+        270.19,
+        271.51
+      ],
+      "t2": [
+        299.538,
+        299.538
+      ]
+    },
+    "unstable-land dT=+12 U=3.5": {
+      "hfx": [
+        457.23,
+        459.53
+      ],
+      "t2": [
+        300.227,
+        300.227
+      ]
+    },
+    "unstable-land dT=+16 U=4.0": {
+      "hfx": [
+        664.05,
+        667.43
+      ],
+      "t2": [
+        300.86,
+        300.859
+      ]
+    },
+    "unstable-land dT=+6 U=1.5": {
+      "hfx": [
+        186.32,
+        187.22
+      ],
+      "t2": [
+        299.171,
+        299.171
+      ]
+    },
+    "stable-land dT=-4 U=1.5": {
+      "hfx": [
+        -6.58,
+        -6.55
+      ],
+      "t2": [
+        285.756,
+        285.756
+      ]
+    },
+    "stable-land dT=-8 U=2.0": {
+      "hfx": [
+        -13.48,
+        -13.43
+      ],
+      "t2": [
+        283.439,
+        283.439
+      ]
+    },
+    "stable-land dT=-2 U=3.0": {
+      "hfx": [
+        -8.56,
+        -8.48
+      ],
+      "t2": [
+        286.787,
+        286.786
+      ]
+    },
+    "neutral-land": {
+      "hfx": [
+        -3.61,
+        -3.6
+      ],
+      "t2": [
+        295.137,
+        295.137
+      ]
+    },
+    "water dT=+1 U=7.0": {
+      "hfx": [
+        9.56,
+        9.65
+      ],
+      "t2": [
+        293.219,
+        293.219
+      ]
+    },
+    "water dT=+2 U=10.0": {
+      "hfx": [
+        24.23,
+        24.47
+      ],
+      "t2": [
+        293.371,
+        293.371
+      ]
+    }
+  }
+}

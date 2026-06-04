@@ -203,6 +203,9 @@ def _parse_savepoints() -> list[dict]:
             v = nums(ln)
             cur["energy_state"] = dict(zip(
                 ["tv", "tg", "tah", "eah", "albedo", "fsno", "fsa"], v))
+        elif ln.startswith("T2DIAG"):
+            v = nums(ln)
+            cur["t2diag"] = dict(zip(["t2mv", "t2mb", "t2m", "q2v", "q2b"], v))
         elif ln.startswith("ET "):
             v = nums(ln)
             cur["et"] = dict(zip(["ecan", "etran", "edir", "qsnow", "qmelt"], v))
@@ -323,7 +326,8 @@ def main() -> None:
           "columns": [_slice(c, ["phen_in", "phen_out"]) for c in _proj(columns)]})
     _dump("savepoints_energy.json", {**header, "component": "S1 energy (HFX fix)",
           "columns": [_slice(c, ["energy_in", "energy_out", "energy_state",
-                                 "et", "phen_out", "driver"]) for c in _proj(columns)]})
+                                 "t2diag", "et", "phen_out", "driver"])
+                      for c in _proj(columns)]})
     _dump("savepoints_soil_thermo.json", {**header, "component": "S2 soil_thermo",
           "columns": [_slice(c, ["stc_in", "stc_out", "hcpct"]) for c in _proj(columns)]})
     _dump("savepoints_snow.json", {**header, "component": "S3 snow",

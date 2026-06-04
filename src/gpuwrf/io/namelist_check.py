@@ -24,6 +24,7 @@ from gpuwrf.contracts.physics_registry import (
     ACCEPTED_SF_SFCLAY_PHYSICS,
     ACCEPTED_SF_SURFACE_PHYSICS,
 )
+from gpuwrf.io.wrf_scheme_catalog import WRF_PARAM_LABEL, wrf_scheme_name
 
 
 @dataclass(frozen=True)
@@ -38,7 +39,18 @@ class SupportedOption:
 
 @dataclass(frozen=True)
 class UnsupportedSelection:
-    """A selected namelist/config value outside the faithful registry."""
+    """A selected namelist/config value outside the faithful registry.
+
+    ``outcome`` records *why* the value was rejected, so the caller (and the
+    formatted message) can distinguish a recognized WRF v4 scheme that is not
+    yet implemented in the GPU port from a value that is not a valid WRF option:
+
+    * ``"not_yet_implemented"`` -- a recognized WRF v4 scheme that the port does
+      not yet wire (``wrf_scheme`` names it);
+    * ``"invalid_wrf_option"`` -- not a recognized WRF v4 option at all;
+    * ``"unsupported"`` -- generic rejection for keys without a WRF v4 catalog
+      (e.g. a structural pairing constraint).
+    """
 
     key: str
     location: str
@@ -47,6 +59,8 @@ class UnsupportedSelection:
     implemented: str
     action: str
     domain_index: int | None = None
+    outcome: str = "unsupported"
+    wrf_scheme: str | None = None
 
 
 class UnsupportedNamelistOption(ValueError):
@@ -205,6 +219,7 @@ def validate_supported_namelist(config: Any) -> None:
             normalized = _normalize_value(value)
             if normalized in spec.supported_values:
                 continue
+            outcome, wrf_scheme = _classify_rejection(key, normalized)
             failures.append(
                 UnsupportedSelection(
                     key=key,
@@ -214,11 +229,42 @@ def validate_supported_namelist(config: Any) -> None:
                     implemented=spec.implemented,
                     action=spec.action,
                     domain_index=idx + 1 if len(values) > 1 else None,
+                    outcome=outcome,
+                    wrf_scheme=wrf_scheme,
                 )
             )
     failures.extend(_myj_pairing_failures(config_obj))
     if failures:
         raise UnsupportedNamelistOption(failures)
+
+
+def _classify_rejection(key: str, value: Any) -> tuple[str, str | None]:
+    """Classify a rejected ``key=value`` against the full WRF v4 catalog.
+
+    Returns ``(outcome, wrf_scheme_name)``:
+
+    * ``("not_yet_implemented", "<scheme name>")`` -- ``value`` is a recognized
+      WRF v4 option for ``key`` that the GPU port does not yet implement /
+      operationally wire;
+    * ``("invalid_wrf_option", None)`` -- ``value`` is not a recognized WRF v4
+      option for ``key`` (and ``key`` has a WRF v4 catalog);
+    * ``("unsupported", None)`` -- ``key`` has no WRF v4 catalog (no enumeration
+      to check against, e.g. a structural-only control).
+    """
+
+    if not isinstance(value, int):
+        # Non-integer selections (e.g. a stray string) cannot be a WRF code.
+        scheme = wrf_scheme_name(key, value) if isinstance(value, (int, float)) else None
+        if scheme is not None:
+            return "not_yet_implemented", scheme.name
+        return "invalid_wrf_option", None
+
+    scheme = wrf_scheme_name(key, value)
+    if scheme is not None:
+        return "not_yet_implemented", scheme.name
+    if key in WRF_PARAM_LABEL:
+        return "invalid_wrf_option", None
+    return "unsupported", None
 
 
 def _myj_pairing_failures(config: Any) -> list[UnsupportedSelection]:
@@ -350,20 +396,65 @@ def _split_values(rhs: str) -> list[Any]:
         token = token.strip()
         if not token:
             continue
-        values.append(_normalize_value(token))
+        values.extend(_expand_repeat(token))
     return values
+
+
+def _expand_repeat(token: str) -> list[Any]:
+    """Expand a Fortran namelist repeat-count token ``N*value`` -> N copies.
+
+    WRF namelists very commonly use ``3*8`` to mean ``8, 8, 8`` across max_dom
+    domains. The ``*`` is the Fortran repeat operator, not multiplication.
+    Tokens without a valid ``N*`` prefix are returned as a single normalized
+    value unchanged (a bare ``*`` Fortran "no value" marker is dropped).
+    """
+
+    if "*" not in token:
+        return [_normalize_value(token)]
+    count_str, _, value_str = token.partition("*")
+    count_str = count_str.strip()
+    value_str = value_str.strip()
+    if not count_str.isdigit():
+        # Not a repeat count (e.g. an unexpected expression); keep verbatim.
+        return [_normalize_value(token)]
+    count = int(count_str)
+    if not value_str:
+        # Fortran ``N*`` with no value = "keep N defaults": nothing to validate.
+        return []
+    return [_normalize_value(value_str)] * count
 
 
 def _format_error(selections: list[UnsupportedSelection]) -> str:
     lines = ["Unsupported namelist/config option(s) for the GPU-WRF faithful path:"]
     for item in selections:
-        domain = f" domain {item.domain_index}" if item.domain_index is not None else ""
-        supported = ", ".join(repr(v) for v in item.supported_values)
-        lines.append(
-            f"- {item.location}{domain} selected {item.value!r}; supported values: "
-            f"{supported}. Implemented: {item.implemented}. Action: {item.action}"
-        )
+        lines.append(_format_selection(item))
     return "\n".join(lines)
+
+
+def _format_selection(item: UnsupportedSelection) -> str:
+    domain = f" domain {item.domain_index}" if item.domain_index is not None else ""
+    supported = ", ".join(repr(v) for v in item.supported_values)
+
+    if item.outcome == "not_yet_implemented":
+        label = WRF_PARAM_LABEL.get(item.key, item.key)
+        return (
+            f"- {item.location}{domain}={item.value} ({item.wrf_scheme}): recognized WRF v4 "
+            f"{label} scheme, NOT YET IMPLEMENTED in the GPU port. "
+            f"Supported {item.key} values: {supported}. "
+            f"Implemented: {item.implemented}. Action: {item.action}"
+        )
+    if item.outcome == "invalid_wrf_option":
+        label = WRF_PARAM_LABEL.get(item.key, item.key)
+        return (
+            f"- {item.location}{domain}={item.value} is not a recognized WRF v4 {label} option. "
+            f"Supported {item.key} values: {supported}. "
+            f"Implemented: {item.implemented}. Action: {item.action}"
+        )
+    # Generic / structural rejection (no WRF v4 catalog for this key).
+    return (
+        f"- {item.location}{domain} selected {item.value!r}; supported values: "
+        f"{supported}. Implemented: {item.implemented}. Action: {item.action}"
+    )
 
 
 __all__ = [

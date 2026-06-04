@@ -206,6 +206,16 @@ class _SurfaceColumnState(NamedTuple):
     mavail: object
     roughness_m: object
     ustar: object
+    # RETIRED (v0.9.0): the WRF-faithful MYNN-SL 2-m T2 diagnostic is
+    # ``THGB + DTG*PSIT2/PSIT``; over LAND real WRF overwrites it with the Noah-MP LSM
+    # value ``T2 = FVEG*T2MV + (1-FVEG)*T2MB``. That overwrite is now done FAITHFULLY
+    # from the genuine Noah-MP T2MV/T2MB diagnostics in the coupler
+    # (noahmp_surface_hook.overlay_noahmp_land_diagnostics; proofs/v090/noahmp_t2mb_parity.json),
+    # so the earlier opt-in empirical bare-ground stand-in has been removed and this
+    # surface-layer module is the pure module_sf_mynn.F 2-m diagnostic. ``lsm_t2_diag``
+    # is now INERT (kept only so legacy constructors do not break) — surface_layer.py no
+    # longer reads it.
+    lsm_t2_diag: bool = False
 
 
 class ThompsonTendencySideChannel(NamedTuple):
@@ -796,6 +806,10 @@ def _surface_fluxes_from_state(state: State) -> SurfaceFluxes:
         tau_v=jnp.asarray(state.tau_v, dtype=jnp.float64),
         rhosfc=jnp.asarray(state.rhosfc, dtype=jnp.float64),
         fltv=jnp.asarray(state.fltv, dtype=jnp.float64),
+        # WRF land/sea mask drives the mym_length CASE(1) land/water branch
+        # (elt_max + el(k) hurricane taper). Marine columns (xland=2) use the
+        # faithful elt_max=350 vs 400 over land.
+        xland=jnp.asarray(state.xland, dtype=jnp.float64),
     )
 
 

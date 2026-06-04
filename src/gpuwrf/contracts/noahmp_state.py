@@ -250,6 +250,15 @@ class NoahMPFluxes(NamedTuple):
     emiss: jax.Array     # EMISSI surface emissivity
     albedo: jax.Array    # SALB   surface albedo
     chs: jax.Array       # CHV/CHB blend, diagnostic heat exchange coeff
+    # --- ADDITIVE (v0.9.0 Noah-MP 2-m LSM diagnostic; default None) ---
+    # The land 2-m air temperature WRF writes back to T2 (module_surface_driver.F
+    # :3469-3473), OVERWRITING the surface-layer MYNN/sfclay 2-m value over land:
+    # t2 = FVEG*T2MV + (1-FVEG)*T2MB (veg) / T2MB (bare). The coupler routes ``t2``
+    # over land. ``t2mv``/``t2mb`` carried for diagnostics/proofs. Default None so
+    # pre-v0.9.0 callers construct NoahMPFluxes unchanged.
+    t2: "jax.Array | None" = None     # land 2-m air temperature [K] -> T2
+    t2mv: "jax.Array | None" = None   # 2-m air temp over vegetated tile [K]
+    t2mb: "jax.Array | None" = None   # 2-m air temp over bare tile [K]
 
 
 __all__ = [
