@@ -57,7 +57,7 @@ from gpuwrf.integration.daily_pipeline import (  # noqa: E402
     finite_summary,
     resolve_run_dir,
 )
-from gpuwrf.runtime.operational_mode import run_forecast_operational  # noqa: E402
+from gpuwrf.runtime.operational_mode import run_forecast_operational_single_scan  # noqa: E402
 
 
 def _signature(state):
@@ -141,7 +141,9 @@ def main(argv=None):
     while done_h < args.hours - 1e-9:
         adv = min(args.step_h, args.hours - done_h)
         try:
-            state = run_forecast_operational(state, nl, float(adv))
+            # single_scan is @jax.jit(static hours, donate state): first adv call
+            # compiles once, subsequent same-adv calls hit the jit cache.
+            state = run_forecast_operational_single_scan(state, nl, float(adv))
             jax.block_until_ready(state)
         except Exception as exc:  # noqa: BLE001
             import traceback
