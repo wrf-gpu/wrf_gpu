@@ -1,0 +1,79 @@
+{
+  "schema": "v090_release_trunk_greensuite_v1",
+  "proof": "v090-release-trunk: merge 7 validated feature branches into a single release trunk + classify a full GPU-visible pytest suite. Honesty over green.",
+  "generated_utc": "2026-06-04T18:05:00Z",
+  "author": "Opus 4.8 (1M context) release-integration lane",
+  "branch": "worker/opus/v090-release-trunk",
+  "base": {
+    "branch": "worker/opus/trunk-0.9.0",
+    "commit": "7b7c26e079014b810f3341c87809798b23a67c74",
+    "note": "v0.6.0-closed base"
+  },
+  "merged_trunk_sha": "5670a0e46d06eeb7500bd2455a01108ad0895547",
+  "merge_order_and_status": [
+    {"n": 1, "branch": "worker/opus/v090-physics-consolidation", "head": "bd1e3cf", "merge_commit": "8187fab", "result": "clean (first merge; no conflicts)", "intent": "MYNN-SL/PBL + Thompson + T2MB + namelist-compat"},
+    {"n": 2, "branch": "worker/opus/v090-diffopt1-smagorinsky", "head": "6e90d03", "merge_commit": "637adc6", "result": "clean (ort auto-merged operational_mode.py + namelist_check.py; both intents combined, verified)", "intent": "diff_opt=1/km_opt=4 2-D Smagorinsky dynamics + namelist accept"},
+    {"n": 3, "branch": "worker/opus/v090-gf-scanwire", "head": "c580df1", "merge_commit": "d46b622", "result": "1 conflict resolved: proofs/v060/multicfg_smoke_report.json (savepoint-gen worktree-path string; took gf-scanwire side; sweep_rationale auto-resolved to v0.9.0 text). operational_mode.py + namelist_check.py auto-merged. GF cu=3 (gf_adapter) wired in CU_SCAN_ADAPTERS, verified.", "intent": "GF cu=3 _gf_jax.py kernel + operational scan-wiring"},
+    {"n": 4, "branch": "worker/opus/v090-qkefix-followup", "head": "6215014", "merge_commit": "6b08146", "result": "clean (ort auto-merged; no conflicts). WRF MYNN qke cold-start seed present (module_bl_mynnedmf.F faithful) + d02/d03 replay hardening.", "intent": "validated stability namelist + qke cold-start seed + d03_replay hardening"},
+    {"n": 5, "branch": "worker/opus/v090-deadcode-cleanup", "head": "c2cd5c1", "merge_commit": "a2a686d", "result": "clean (ort auto-merged operational_mode.py: dead _operational_acoustic_substep_core + _carry_from_acoustic_core removed AND diffopt1 explicit_diffusion intent preserved, verified). 4 dead tests deleted.", "intent": "remove orphaned acoustic helpers + 4 dead tests"},
+    {"n": 6, "branch": "worker/opus/v090-testsweep", "head": "6b4d898", "merge_commit": "c74e078", "result": "clean (ort auto-merged; no conflict with deadcode test deletions). _m9_snapshot allowance present.", "intent": "3 stale-test fixes incl _m9_snapshot allowance"},
+    {"n": 7, "branch": "worker/opus/readme-runnability", "head": "bf280f9", "merge_commit": "81fbc79", "result": "clean (ort auto-merged README.md despite branch diverging from e998250; no conflicts). gpuwrf run CLI works.", "intent": "gpuwrf run CLI + paths"}
+  ],
+  "all_seven_merged_cleanly": true,
+  "conflicts_resolved": 1,
+  "conflict_detail": "Only proofs/v060/multicfg_smoke_report.json (a proof-artifact JSON, not source) conflicted during merge 3 (gf-scanwire). Resolved WRF-faithfully: took the gf-scanwire savepoint-generation worktree-path string; the sweep_rationale field auto-resolved to the newer v0.9.0 text that includes GF cu=3 as a RUN config. JSON re-validated.",
+  "no_conflict_markers_remaining": true,
+  "diff_vs_base": {"files_changed": 117, "insertions": 18992, "deletions": 1215},
+  "imports": {
+    "gpuwrf": "OK (PYTHONPATH=src; the pip editable install points at a stale /tmp path, so PYTHONPATH=src is used to validate THIS worktree)",
+    "after_each_merge": "OK (verified import gpuwrf + touched submodules after every one of the 7 merges)",
+    "gpuwrf_run_cli": "OK (python -m gpuwrf run --help works)"
+  },
+  "green_suite": {
+    "command": "PYTHONPATH=src taskset -c 0-3 python -m pytest tests/ -q  (GPU VISIBLE, NOT forced CPU-only)",
+    "env": {"jax_default_backend": "gpu", "device": "NVIDIA GeForce RTX 5090 (cuda:0)", "jax_enable_x64": true, "cpu_affinity": "0-3", "cores_4_31": "untouched (live cpu-wrf-backfill preserved)"},
+    "collected": 1256,
+    "duration_s": 2281.42,
+    "result_on_merged_trunk_at_81fbc79": {"failed": 89, "passed": 1132, "skipped": 33, "xfailed": 2, "exit_code": 1},
+    "note_no_segv": "The full GPU-visible suite ran to completion across all 1256 tests with NO SIGSEGV abort. tests/savepoint/test_dycore_100_steps.py produced an ordinary KeyError (missing WRF reference data), not the CPU-only native crash. This satisfies the contract expectation that the libjax_common.so SEGV should NOT occur in the GPU env."
+  },
+  "failure_classification": {
+    "total_failures": 89,
+    "real_merge_regressions": 0,
+    "fixed_in_this_lane": 2,
+    "known_acceptable_environment_residuals": 87,
+    "method": "Ran the EXACT 39 failing test files (minus the 2 fixed namelist tests, minus the SEGV-on-CPU savepoint test) on the BASE 7b7c26e with GPU visible. Base produced 86 failures; merged-trunk (same scope) produced 86 failures; the failure SETS are byte-identical (diff empty). Therefore the 86 are pre-existing on the base, NOT merge-induced. The 1 savepoint test + the 2 namelist tests are accounted for separately below.",
+    "categories": [
+      {"category": "FIXED merge-surfaced stale test", "count": 2, "files": ["tests/test_namelist_check.py::test_recognized_but_unimplemented_dynamics_option", "tests/test_namelist_check.py::test_real_wrf_namelist_input_is_consumable"], "root_cause": "physics-consolidation (namelist-compat) added tests asserting diff_opt=1/km_opt=4 must raise UnsupportedNamelistOption; diffopt1-smagorinsky then WIRED diff_opt=1/km_opt=4 (real 2-D Smagorinsky, parity proofs/v090/diffopt1_smagorinsky_parity.json). Two parallel branches against same base; merge surfaced the stale assertions. PRODUCTION CODE CORRECT.", "fix": "Updated both tests to assert diff_opt=1/km_opt=4 validates cleanly (and the full pristine em_real oracle namelist is now consumable); km_opt=99 still correctly fails closed. Commit 5670a0e. test_namelist_check.py now 26/26 PASS."},
+      {"category": "scratch_venv_missing_optional_deps", "count": 8, "files": ["tests/test_m2_cupy_edge_cases.py", "tests/test_m2_cupy.py", "tests/test_m2_jax_edge_cases.py", "tests/test_m2_jax.py", "tests/test_m2_triton_edge_cases.py", "tests/test_m2_triton.py", "tests/test_m3_dummy_loop.py", "tests/test_m3_edge_cases.py"], "root_cause": "M2 backend-bakeoff edge tests spawn subprocesses inside scratch venvs (data/scratch/m2-*-venv) lacking jax/zarr/cupy/triton; ArgInfo TypeErrors are CuPy/Triton kernel-introspection (ADR-001-superseded backends not provisioned here). Identical on base.", "merge_regression": false},
+      {"category": "missing_data_oracle_corpus_fixtures", "count": 18, "files": ["tests/test_canary_wrf_fixture.py", "tests/test_m4_advection.py", "tests/test_m4_debug_hooks.py", "tests/test_m4_tester_adversarial_attempt2.py", "tests/test_m4_tester_adversarial.py", "tests/test_m4_tier3_convergence.py", "tests/test_m5_rrtmg_intermediate_oracles.py", "tests/test_m5_thompson_fortran_harness.py", "tests/test_m6_boundary_replay.py", "tests/test_m6_gen2_accessor.py", "tests/test_m6_precision_matrix.py", "tests/test_m6_validation_io.py", "tests/test_m7_default_gen2_run_dir.py", "tests/test_m7_gen2_corpus_scout_inventory.py", "tests/test_m7_s0a_schemas.py", "tests/test_m7_skill_fix_algorithmic.py", "tests/test_m7_skill_fix_iter2.py", "tests/test_paper_control_edge_cases.py"], "root_cause": "FileNotFoundError / CalledProcessError / KeyError downstream of absent fixtures: data/profiler_artifacts/*, data/canairy_meteo/runs/wrf_l3/*, Fortran oracle binaries, wrf_pristine reference trees, publication-audit citation files -- none provisioned in this worktree. Identical on base.", "merge_regression": false},
+      {"category": "preexisting_dycore_comparator_helper_bug", "count": 13, "files": ["tests/test_m6b4_acoustic_recurrence_parity.py", "tests/test_m6b5_dycore_step_parity.py", "tests/test_m6b6_coupled_step_parity.py", "tests/test_m6b_d2h_warmed_zero.py", "tests/test_m6b_d2h_warmed_zero_v2.py", "tests/test_m6b_dycore_rk_acoustic_fix.py", "tests/test_m6b_fix_advance_mu_t_commit.py", "tests/test_m6b_rk1_d2h_acceptance.py", "tests/test_m6x_adr023_production_grade.py", "tests/test_m6x_c2_acoustic.py", "tests/test_m6x_c2_metrics.py", "tests/test_m6x_pressure_diagnose_wiring.py", "tests/test_m6x_s3narrow_stabilizer_audit.py"], "root_cause": "m6b*/m6x* comparator scripts hit 'AttributeError: NoneType has no attribute shape' (theta=None) and assert/KeyError in the comparator-helper / synthetic-dryrun path. These are validation-mode COMPARATOR HELPERS, explicitly 'not the production dycore path'. The production dycore files (dynamics/mu_t_advance.py, core/acoustic.py, core/dycore.py) and the comparator scripts (scripts/m6b5_*, scripts/m6b6_*) are UNCHANGED by all 7 merges (git diff 7b7c26e..HEAD confirms). Identical failure set on base.", "merge_regression": false},
+      {"category": "known_native_jax_crash_or_missing_wrf_reference", "count": 1, "files": ["tests/savepoint/test_dycore_100_steps.py::test_dycore_column_coupled_step_parity_100_steps"], "root_cause": "Documented FLAKY_ENV_NATIVE_JAX_CRASH (libjax_common.so) plus missing real WRF reference savepoints. In the full GPU-visible suite it produced an ordinary KeyError ('results'), NOT a SEGV, and did NOT abort the suite. In isolation it SEGVs on both base and merged. Listed as KNOWN-ACCEPTABLE in the sprint contract.", "merge_regression": false}
+    ]
+  },
+  "baseline_comparison": {
+    "scope": "the 39 failing test files minus test_namelist_check.py (fixed) and test_dycore_100_steps.py (SEGVs on CPU base in isolation)",
+    "base_7b7c26e_gpu_failures": 86,
+    "merged_trunk_gpu_failures": 86,
+    "failure_sets_identical": true,
+    "diff": "empty (diff of sorted FAILED lists shows no difference)",
+    "conclusion": "Zero merge regression. Every failure in this scope is pre-existing on the v0.6.0-closed base."
+  },
+  "operational_scheme_matrix": {
+    "authoritative_source": "src/gpuwrf/coupling/scan_adapters.py (scan-wired = GPU-operational through the operational coupler) + proofs/v060/multicfg_smoke_report.json scheme_coverage",
+    "scan_wired_adapters": {"MP": [1, 2, 3, 4, 6, 10, 16], "CU": [1, 2, 3, 6], "PBL": [1, 7, 8], "SFCLAY": [1, 7]},
+    "radiation": "RRTMG ra=4 hardcoded in operational_mode (only operational radiation path)",
+    "land": "Noah-MP (4) + Noah-classic (2)",
+    "gf_cu3_wired": true,
+    "gf_cu3_detail": "cu=3 -> gf_adapter in CU_SCAN_ADAPTERS; gfdrv_batched imported from physics/_gf_jax; registry GF(3)='implemented'; ACCEPTED_CU_PHYSICS includes 3; physics_dispatch no longer fail-closes GF. (Note: the multicfg_smoke_report.json 'excluded_documented_todo' list still carries a STALE pre-gf-scanwire line calling GF a GPU-batching TODO; the authoritative covered_by_run_configs list and the live code both include cu3-GF. Stale proof-artifact line, not a code issue; left unrewritten to avoid fabricating a proof run.)",
+    "fail_closed_set": ["bl2-MYJ", "cu16-NewTiedtke", "sf2-Janjic"],
+    "run_config_covered_count": 26,
+    "covered_by_run_configs": ["Nc/Nn", "bl1-YSU", "bl5", "bl7-ACM2", "bl8-BouLac", "cu0-none", "cu1-KF", "cu2-BMJ", "cu3-GF", "cu6-Tiedtke", "land-bulk", "land2-NoahClassic", "land4-NoahMP", "mp1-Kessler", "mp10-Morrison", "mp16-WDM6", "mp2-Lin", "mp3-WSM3", "mp4-WSM5", "mp6-WSM6", "mp8", "no-cu", "sf1-revisedMM5", "sf5", "sf5-MYNN-sfclay", "sf7-PleimXiu"]
+  },
+  "wrf_faithful": "yes -- no slop: no tolerance loosened, no fix weakened, no synthetic happy-path. The only test change updated 2 stale assertions to match a genuinely-implemented feature (diff_opt=1 Smagorinsky, parity-proven). All 86 environment residuals proven identical to the base.",
+  "risks": [
+    "87 of 89 suite failures are environment/fixture-dependent (missing optional deps + missing data/oracle/corpus fixtures + a pre-existing m6b*/m6x* comparator-helper theta=None bug). They are NOT merge regressions (base-identical) but they DO mean this deployment cannot run the full historical M2-M7 milestone test suite green. The validation+benchmark burst should run on the provisioned corpus host (or the M2/M5/M6 oracle/venv fixtures must be re-provisioned) for those rows.",
+    "The pre-existing m6b*/m6x* comparator-helper bug (theta=None) is in VALIDATION-MODE comparator scripts, not the production dycore; it pre-dates this lane and is a separate carry-over to triage.",
+    "test_dycore_100_steps.py SEGVs under CPU-only / in isolation (libjax_common.so native crash) -- run that savepoint tier GPU-visible within the warm full suite, where it degrades to a benign KeyError rather than aborting."
+  ]
+}
