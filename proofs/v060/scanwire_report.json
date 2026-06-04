@@ -1,7 +1,7 @@
 {
   "schema": "gpuwrf.v060.scanwire_report.v1",
   "title": "v0.6.0 CONSOLIDATION scan-wire: new physics schemes (+ KF) into the operational forecast scan (12 GPU-scan-wired + 4 FAIL-CLOSED)",
-  "git_head": "9d355bbfd95532b92755d109e236f449ef87ce9e",
+  "git_head": "1a69bb0b89ca0965712d2bb722ec875bc2f21bf5",
   "kind": "CPU integration-wiring proof (NOT a WRF-parity claim, NOT a forecast run). Per-scheme WRF savepoint parity = committed lane reports; the GPU multi-config forecast vs CPU-WRF is MANAGER-scheduled.",
   "summary": {
     "new_schemes_total": 16,
@@ -134,6 +134,25 @@
         "name": "Kessler warm rain",
         "module": "gpuwrf.physics.microphysics_kessler",
         "entrypoint": "kessler_physics_tendency",
+        "convention": "mp_flat",
+        "gpu_runnable": true,
+        "carry_members": [],
+        "tendency_members": [],
+        "accumulators": [
+          "rain_acc",
+          "snow_acc",
+          "graupel_acc",
+          "ice_acc"
+        ],
+        "notes": ""
+      },
+      {
+        "namelist_key": "mp_physics",
+        "family": "microphysics",
+        "option": 2,
+        "name": "Purdue-Lin",
+        "module": "gpuwrf.physics.microphysics_lin",
+        "entrypoint": "lin_physics_tendency",
         "convention": "mp_flat",
         "gpu_runnable": true,
         "carry_members": [],
@@ -336,6 +355,22 @@
         "notes": ""
       },
       {
+        "namelist_key": "bl_pbl_physics",
+        "family": "pbl",
+        "option": 8,
+        "name": "BouLac",
+        "module": "gpuwrf.physics.pbl_boulac",
+        "entrypoint": "step_boulac_column",
+        "convention": "column_state",
+        "gpu_runnable": true,
+        "carry_members": [
+          "qke"
+        ],
+        "tendency_members": [],
+        "accumulators": [],
+        "notes": ""
+      },
+      {
         "namelist_key": "sf_sfclay_physics",
         "family": "surface_layer",
         "option": 0,
@@ -452,6 +487,27 @@
       {
         "namelist_key": "cu_physics",
         "family": "cumulus",
+        "option": 2,
+        "name": "Betts-Miller-Janjic",
+        "module": "gpuwrf.physics.cumulus_bmj",
+        "entrypoint": "step_bmj_column",
+        "convention": "column_state",
+        "gpu_runnable": true,
+        "carry_members": [
+          "cldefi"
+        ],
+        "tendency_members": [
+          "rthcuten",
+          "rqvcuten"
+        ],
+        "accumulators": [
+          "rainc_acc"
+        ],
+        "notes": "Frozen-contract extension for BMJ adjustment cumulus; carries CLDEFI."
+      },
+      {
+        "namelist_key": "cu_physics",
+        "family": "cumulus",
         "option": 3,
         "name": "Grell-Freitas",
         "module": "gpuwrf.physics.cumulus_grell_freitas",
@@ -477,10 +533,10 @@
         "family": "cumulus",
         "option": 6,
         "name": "Tiedtke",
-        "module": "gpuwrf.physics.cumulus_tiedtke",
-        "entrypoint": "step_tiedtke_column",
+        "module": "gpuwrf.physics.cumulus_tiedtke_jax",
+        "entrypoint": "tiedtke_column_jax",
         "convention": "column_state",
-        "gpu_runnable": false,
+        "gpu_runnable": true,
         "carry_members": [],
         "tendency_members": [
           "rthcuten",
@@ -493,7 +549,7 @@
         "accumulators": [
           "rainc_acc"
         ],
-        "notes": "CPU-NumPy reference port; GPU-batching (jit/vmap) TODO; tendency-only carry."
+        "notes": "GPU-batched (jit/vmap) Tiedtke; scan-wired via CU_SCAN_ADAPTERS[6]; savepoint-gated vs unmodified module_cu_tiedtke.F (proofs/v060/tiedtke_gpubatch_savepoint_parity.json); tendency-only carry."
       },
       {
         "namelist_key": "cu_physics",
@@ -516,7 +572,7 @@
         "accumulators": [
           "rainc_acc"
         ],
-        "notes": "New Tiedtke option spec; same module as cu=6, CPU-NumPy reference port; GPU-batching TODO."
+        "notes": "New Tiedtke option spec; shares the Tiedtke kernel but is NOT separately savepoint-gated by a distinct WRF source path -- accepted/fail-closed in the operational GPU scan, NOT parity-proven for cu=16 specifically."
       },
       {
         "namelist_key": "sf_surface_physics",
@@ -579,6 +635,7 @@
     "scan_wired": {
       "microphysics_gpu_scan": [
         1,
+        2,
         3,
         4,
         6,
@@ -593,6 +650,7 @@
       ],
       "cumulus_gpu_scan": [
         1,
+        2,
         6
       ]
     },
@@ -606,6 +664,18 @@
         "column_water_before": 5.532928537902862,
         "column_water_after": 5.531980610803103,
         "column_water_rel_change": 0.00017132465985509788,
+        "conservation_ok": true,
+        "pass": true
+      },
+      {
+        "scheme": "Purdue-Lin (mp=2)",
+        "kind": "microphysics",
+        "steps": 3,
+        "executed_in_scan_adapter": true,
+        "finite_no_nan": true,
+        "column_water_before": 5.532928537902862,
+        "column_water_after": 5.531920825838117,
+        "column_water_rel_change": 0.00018212996207003844,
         "conservation_ok": true,
         "pass": true
       },
@@ -695,6 +765,7 @@
         true,
         true,
         true,
+        true,
         true
       ],
       "all_wired_accepted": true,
@@ -766,7 +837,7 @@
         "dispatch_resolved": true,
         "gpu_gate_ready": true,
         "scan_wired": false,
-        "scan_wire_error": "operational scan supports the v0.2.0 suite + the v0.6.0 scan-wired schemes (mp_physics in {0,1,3,4,6,8,10,16}, bl_pbl_physics in {0,1,5,7}, sf_sfclay_physics in {0,1,5,7}, cu_physics in {0,1,6}, Noah-MP via use_noahmp, explicit Noah-classic via sf_surface_physics=2 plus noahclassic_static/noahclassic_land). The following selected schemes are NOT scan-wired: sf_surface_physics=2 (Noah-classic requires explicit noahclassic_static + noahclassic_land bundles (WRF REDPRM + 4-layer carry))",
+        "scan_wire_error": "operational scan supports the v0.2.0 suite + the v0.6.0 scan-wired schemes (mp_physics in {0,1,2,3,4,6,8,10,16}, bl_pbl_physics in {0,1,5,7,8}, sf_sfclay_physics in {0,1,5,7}, cu_physics in {0,1,2,6}, Noah-MP via use_noahmp, explicit Noah-classic via sf_surface_physics=2 plus noahclassic_static/noahclassic_land). The following selected schemes are NOT scan-wired: sf_surface_physics=2 (Noah-classic requires explicit noahclassic_static + noahclassic_land bundles (WRF REDPRM + 4-layer carry))",
         "non_gpu_schemes": [],
         "error": null
       },
