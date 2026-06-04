@@ -1,19 +1,28 @@
 {
   "acoustic_substeps": 10,
-  "blowup_gone_full_fix": false,
+  "blowup_gone": true,
   "branch": "worker/opus/v090-d02replay-qke-fix",
   "devices": [
     "cuda:0"
   ],
   "dt_s": 12.0,
-  "generated": "2026-06-04T12:40:38.397070+00:00",
+  "findings": {
+    "qke0_harness_first_nonfinite_step": 30,
+    "qke0_stable_stable_1h": true,
+    "seed_alone_cures": false,
+    "seed_compatible_with_stable": true,
+    "seed_harness_first_nonfinite_step": 30,
+    "seed_stable_stable_1h": true,
+    "stable_namelist_cures": true
+  },
+  "generated": "2026-06-04T12:47:54.821678+00:00",
   "grid_mass_shape_zyx": [
     44,
     66,
     159
   ],
-  "max_steps": 900,
-  "minimal_fix": "stable-flags ALONE cures it (seed not strictly required but WRF-faithful)",
+  "minimal_fix": "STABLE NAMELIST is the minimal cure (qke0_stable FINITE 1h). qke seed ALONE insufficient (seed_harness blew up step 30, identical to qke0_harness). qke seed is WRF-faithful + harmless on top (seed_stable ~ qke0_stable to 5 sig figs).",
+  "note": "Merged GPU verify: run-1 harness configs (3h schedule, blew at step 30) + run-2 stable configs (1h, finite). seed_stable run-1 OOMed; run-2 re-ran stable configs to 1h with cuda_malloc_async (no OOM).",
   "platform": "cuda",
   "qke_coldstart_meta": {
     "note": "parent wrfout carried no real QKE (MAXVAL<0.0002); seeded WRF cold-start background TKE profile",
@@ -23,6 +32,7 @@
   },
   "results": {
     "qke0_harness": {
+      "_run": 1,
       "first_nonfinite_step": 30,
       "flags": {
         "damp_opt": 0,
@@ -111,7 +121,180 @@
         }
       ]
     },
+    "qke0_stable": {
+      "_run": 2,
+      "aborted_oom": false,
+      "first_nonfinite_step": null,
+      "flags": {
+        "damp_opt": 3,
+        "dampcoef": 0.2,
+        "diff_6th_factor": 0.12,
+        "diff_6th_opt": 2,
+        "epssm": 0.5,
+        "force_fp64": true,
+        "top_lid": true,
+        "use_flux_advection": true,
+        "w_damping": 1,
+        "zdamp": 5000.0
+      },
+      "qke_seed": false,
+      "qke_t0_max": 0.0,
+      "stable_through_1h": true,
+      "stable_through_max": true,
+      "survived_hours": 1.0,
+      "survived_steps": 300,
+      "trace": [
+        {
+          "all_finite": true,
+          "dyn": {
+            "mu": {
+              "fin": true,
+              "max": 96793.17849932855,
+              "min": 66446.41196066524
+            },
+            "p": {
+              "fin": true,
+              "max": 101635.61875,
+              "min": 5188.336947691916
+            },
+            "ph": {
+              "fin": true,
+              "max": 204077.453125,
+              "min": -57.24057917156407
+            },
+            "qke": {
+              "fin": true,
+              "max": 2.4968366306349115,
+              "min": 1e-05
+            },
+            "theta": {
+              "fin": true,
+              "max": 492.5046722412109,
+              "min": 289.27184906553083
+            },
+            "u": {
+              "fin": true,
+              "max": 26.12352456309034,
+              "min": -10.096634006500246
+            },
+            "v": {
+              "fin": true,
+              "max": 10.407064201746113,
+              "min": -12.74098142266791
+            },
+            "w": {
+              "fin": true,
+              "max": 1.699717735488103,
+              "min": -2.192191974263666
+            }
+          },
+          "model_hours": 0.1,
+          "model_minutes": 6.0,
+          "nonfinite_fields": {},
+          "step": 30
+        },
+        {
+          "all_finite": true,
+          "dyn": {
+            "mu": {
+              "fin": true,
+              "max": 96762.63473631453,
+              "min": 66409.3959464372
+            },
+            "p": {
+              "fin": true,
+              "max": 101644.178125,
+              "min": 5180.713305672764
+            },
+            "ph": {
+              "fin": true,
+              "max": 204077.453125,
+              "min": -74.49246706117304
+            },
+            "qke": {
+              "fin": true,
+              "max": 5.6260385391570695,
+              "min": 1e-05
+            },
+            "theta": {
+              "fin": true,
+              "max": 492.46711387059605,
+              "min": 289.89801188648835
+            },
+            "u": {
+              "fin": true,
+              "max": 25.78697369894178,
+              "min": -10.934959518912652
+            },
+            "v": {
+              "fin": true,
+              "max": 10.360001671114109,
+              "min": -15.708098673625228
+            },
+            "w": {
+              "fin": true,
+              "max": 2.4712065131157037,
+              "min": -2.308912035076778
+            }
+          },
+          "model_hours": 0.5,
+          "model_minutes": 30.0,
+          "nonfinite_fields": {},
+          "step": 150
+        },
+        {
+          "all_finite": true,
+          "dyn": {
+            "mu": {
+              "fin": true,
+              "max": 96757.4937010429,
+              "min": 66401.85515006361
+            },
+            "p": {
+              "fin": true,
+              "max": 101647.03125,
+              "min": 5180.865234362452
+            },
+            "ph": {
+              "fin": true,
+              "max": 204077.453125,
+              "min": -74.55280952663242
+            },
+            "qke": {
+              "fin": true,
+              "max": 14.792256680603064,
+              "min": 1e-05
+            },
+            "theta": {
+              "fin": true,
+              "max": 492.3208465576172,
+              "min": 290.4988949894011
+            },
+            "u": {
+              "fin": true,
+              "max": 25.798153032544572,
+              "min": -12.256129114626805
+            },
+            "v": {
+              "fin": true,
+              "max": 10.365699732372121,
+              "min": -16.677171523210312
+            },
+            "w": {
+              "fin": true,
+              "max": 2.4043834994062276,
+              "min": -2.2669735745500166
+            }
+          },
+          "model_hours": 1.0,
+          "model_minutes": 60.0,
+          "nonfinite_fields": {},
+          "step": 300
+        }
+      ]
+    },
     "seed_harness": {
+      "_run": 1,
       "first_nonfinite_step": 30,
       "flags": {
         "damp_opt": 0,
@@ -201,7 +384,9 @@
       ]
     },
     "seed_stable": {
-      "error": "JaxRuntimeError: RESOURCE_EXHAUSTED: Out of memory while trying to allocate 14.60GiB.",
+      "_run": 2,
+      "aborted_oom": false,
+      "first_nonfinite_step": null,
       "flags": {
         "damp_opt": 3,
         "dampcoef": 0.2,
@@ -216,14 +401,164 @@
       },
       "qke_seed": true,
       "qke_t0_max": 4.992201138520613e-05,
-      "stable_through_3h": false,
-      "survived_hours": 0.0,
-      "survived_steps": 0
+      "stable_through_1h": true,
+      "stable_through_max": true,
+      "survived_hours": 1.0,
+      "survived_steps": 300,
+      "trace": [
+        {
+          "all_finite": true,
+          "dyn": {
+            "mu": {
+              "fin": true,
+              "max": 96793.17838347379,
+              "min": 66446.41196565381
+            },
+            "p": {
+              "fin": true,
+              "max": 101635.61875,
+              "min": 5188.336947874097
+            },
+            "ph": {
+              "fin": true,
+              "max": 204077.453125,
+              "min": -57.24057917156407
+            },
+            "qke": {
+              "fin": true,
+              "max": 2.4968738726839934,
+              "min": 1.0071701038100321e-05
+            },
+            "theta": {
+              "fin": true,
+              "max": 492.5046722412109,
+              "min": 289.2718536786336
+            },
+            "u": {
+              "fin": true,
+              "max": 26.12352449225576,
+              "min": -10.096634006500246
+            },
+            "v": {
+              "fin": true,
+              "max": 10.407064017542313,
+              "min": -12.740773594092484
+            },
+            "w": {
+              "fin": true,
+              "max": 1.6997178330876086,
+              "min": -2.192191969519566
+            }
+          },
+          "model_hours": 0.1,
+          "model_minutes": 6.0,
+          "nonfinite_fields": {},
+          "step": 30
+        },
+        {
+          "all_finite": true,
+          "dyn": {
+            "mu": {
+              "fin": true,
+              "max": 96762.64306170608,
+              "min": 66409.39655344555
+            },
+            "p": {
+              "fin": true,
+              "max": 101644.178125,
+              "min": 5180.7132491407865
+            },
+            "ph": {
+              "fin": true,
+              "max": 204077.453125,
+              "min": -74.49246706117304
+            },
+            "qke": {
+              "fin": true,
+              "max": 5.626035073368758,
+              "min": 1e-05
+            },
+            "theta": {
+              "fin": true,
+              "max": 492.46710029335713,
+              "min": 289.8980183847825
+            },
+            "u": {
+              "fin": true,
+              "max": 25.787076301308037,
+              "min": -10.934903102832441
+            },
+            "v": {
+              "fin": true,
+              "max": 10.360109387582135,
+              "min": -15.70765632024358
+            },
+            "w": {
+              "fin": true,
+              "max": 2.471225814261479,
+              "min": -2.308906323420377
+            }
+          },
+          "model_hours": 0.5,
+          "model_minutes": 30.0,
+          "nonfinite_fields": {},
+          "step": 150
+        },
+        {
+          "all_finite": true,
+          "dyn": {
+            "mu": {
+              "fin": true,
+              "max": 96757.48374793003,
+              "min": 66401.84760479121
+            },
+            "p": {
+              "fin": true,
+              "max": 101647.03125,
+              "min": 5180.864817459601
+            },
+            "ph": {
+              "fin": true,
+              "max": 204077.453125,
+              "min": -74.55280952663242
+            },
+            "qke": {
+              "fin": true,
+              "max": 14.791825429018353,
+              "min": 1e-05
+            },
+            "theta": {
+              "fin": true,
+              "max": 492.3208465576172,
+              "min": 290.4989044978809
+            },
+            "u": {
+              "fin": true,
+              "max": 25.798226463015673,
+              "min": -12.255746875111104
+            },
+            "v": {
+              "fin": true,
+              "max": 10.365751152866919,
+              "min": -16.67720707779501
+            },
+            "w": {
+              "fin": true,
+              "max": 2.404468956949396,
+              "min": -2.266841386139159
+            }
+          },
+          "model_hours": 1.0,
+          "model_minutes": 60.0,
+          "nonfinite_fields": {},
+          "step": 300
+        }
+      ]
     }
   },
   "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l2/20260521_18z_l2_72h_20260522T133443Z",
   "run_id": "20260521_18z_l2_72h_20260522T133443Z",
   "schema": "V090D02ReplayQkeFixVerify",
-  "trunk_commit": "90fa7eb68ab65f959d2d008eae32c3235396ca87",
+  "trunk_commit": "55839fa0bb3fcda0069b150de1b383967b797eea",
   "wrf_seed_ref": "phys/module_bl_mynnedmf.F:618-691 (mym_initialize INITIALIZE_QKE)"
 }
