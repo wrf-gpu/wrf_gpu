@@ -33,16 +33,30 @@ from gpuwrf.physics.mynn_constants import (
     LOCAL_ALP1,
     LOCAL_ALP2,
     LOCAL_ALP3,
+    LOCAL_ALP4,
+    LOCAL_CNS,
     LOCAL_ELF_SOFT_MAX,
     LOCAL_ELT_MAX,
     LOCAL_ELT_MIN,
     MAX_PBLH_TRANSITION,
     MIN_PBLH,
+    NL_ALP1,
+    NL_ALP2,
+    NL_ALP3,
+    NL_ALP4,
+    NL_ALP5,
+    NL_BOULAC_LMAX,
+    NL_CNS,
+    NL_ELT_MAX,
+    NL_ELT_MIN,
+    NL_QKW_ELB_MIN,
+    NL_UONSET,
     P608,
     QKEMIN,
     QMIN,
     SQFAC,
     TKE_EPS,
+    ZMAX,
 )
 from gpuwrf.physics.mynn_surface_stub import surface_layer
 from gpuwrf.physics.tridiagonal_solver import solve_tridiagonal
@@ -261,8 +275,267 @@ def _get_pblh(state: MynnPBLColumnState, qke):
     return jnp.where(maxqke <= tke_eps, theta_pblh, tke_pblh * (1.0 - wt) + theta_pblh * wt)
 
 
-def _mym_length_option2(state: MynnPBLColumnState, qke, dtv, fltv):
-    """WRF option-2 MYNN master length scale with EDMF/cloud terms disabled."""
+def _scale_aware_psig_bl(dx, pblh):
+    """WRF ``SCALE_AWARE`` Psig_bl (``module_bl_mynnedmf.F:7487-7512``).
+
+    Honnert-et-al taper that keeps parameterized PBL mixing on coarse grids
+    (Psig_bl~1 when dx >> PBLH) and reduces it as the grid begins to resolve the
+    boundary-layer eddies. ``dx`` is the grid spacing (m); ``pblh`` per column."""
+
+    dxdh = jnp.maximum(2.5 * dx, 10.0) / jnp.minimum(pblh, 3000.0)
+    dxdh2 = dxdh * dxdh
+    dxdh23 = dxdh ** 0.667
+    return (dxdh2 + 0.106 * dxdh23) / (dxdh2 + 0.066 * dxdh23 + 0.071)
+
+
+def _boulac_length(zw, dz, qtke, theta):
+    """Vectorized WRF ``boulac_length`` (``module_bl_mynnedmf.F:2192-2338``).
+
+    For each level ``iz`` it integrates the buoyant displacement a parcel with
+    TKE ``qtke(iz)`` can travel up (``dlu``) and down (``dld``) before its TKE is
+    consumed by potential energy, then returns ``lb1=min(dlu,dld)`` and
+    ``lb2=sqrt(dlu*dld)``. The Fortran does this with two nested data-dependent
+    while loops per ``iz``; here the inner search is unrolled into the dense
+    (nz x nz) PE-accumulation matrices and the first TKE-crossing is selected
+    with a cumulative-OR mask. ``beta = gtr`` is the buoyancy coefficient.
+
+    Arrays are last-axis (``..., nz``); ``zw`` is the WRF ``zw(kts:kte)`` subset
+    (length nz). WRF references ``zw(kte+1)`` (the top interface) and
+    ``zw(iz+1)``; we reconstruct those from the cumulative layer depths so no
+    extra interface array is threaded through.
+    """
+
+    beta = GTR
+    nz = dz.shape[-1]
+    # Full interface heights zwf(kts:kte+1), length nz+1: zwf[k]=sum(dz[:k]).
+    zwf = _edge_heights(dz)                 # (..., nz+1); zwf[...,0]=0
+    zw_top = zwf[..., -1:]                   # zw(kte+1)
+    zw_kp1 = zwf[..., 1:]                     # zw(k+1) for k=0..nz-1, length nz
+
+    i_idx = jnp.arange(nz)                    # source level iz
+    j_idx = jnp.arange(nz)                    # target level izz
+    src = i_idx[:, None]                      # (nz_src, 1)
+    tgt = j_idx[None, :]                      # (1, nz_tgt)
+
+    theta_i = theta[..., :, None]             # theta(iz) broadcast over izz
+    theta_j = theta[..., None, :]             # theta(izz)
+    dz_j = dz[..., None, :]                   # dz(izz)
+    # theta(izz+1): shift; top level uses theta(nz-1) (only used where j<=nz-2).
+    theta_jp1 = jnp.concatenate((theta[..., 1:], theta[..., -1:]), axis=-1)[..., None, :]
+    theta_jm1 = jnp.concatenate((theta[..., :1], theta[..., :-1]), axis=-1)[..., None, :]
+    dz_jm1 = jnp.concatenate((dz[..., :1], dz[..., :-1]), axis=-1)[..., None, :]
+
+    # ---------------- UPWARD search (dlu) ----------------
+    # zup increment at level izz (valid for iz<=izz<=nz-2):
+    #   d_zup = beta*(theta(izz+1)+theta(izz))*dz(izz)*0.5 - beta*theta(iz)*dz(izz)
+    up_incr = (beta * (theta_jp1 + theta_j) * dz_j * 0.5
+               - beta * theta_i * dz_j)
+    up_valid = (tgt >= src) & (tgt <= nz - 2)
+    up_incr = jnp.where(up_valid, up_incr, 0.0)
+    zup = jnp.cumsum(up_incr, axis=-1)        # zup after processing level izz
+    zup_inf = jnp.concatenate((jnp.zeros_like(zup[..., :1]), zup[..., :-1]), axis=-1)
+    zzz_up = jnp.cumsum(jnp.where(up_valid, dz_j, 0.0), axis=-1)  # depth iz..izz
+
+    qtke_i = qtke[..., :, None]
+    bbb_up = jnp.where(jnp.abs(theta_jp1 - theta_j) > 0.0,
+                       (theta_jp1 - theta_j) / dz_j, 0.0)
+    rad_up = jnp.maximum((beta * (theta_j - theta_i)) ** 2
+                         + 2.0 * bbb_up * beta * (qtke_i - zup_inf), 0.0)
+    tl_up_b = jnp.where(bbb_up != 0.0,
+                        (-beta * (theta_j - theta_i) + jnp.sqrt(rad_up))
+                        / jnp.where(bbb_up != 0.0, bbb_up * beta, 1.0),
+                        0.0)
+    tl_up_lin = jnp.where(theta_j != theta_i,
+                          (qtke_i - zup_inf) / (beta * jnp.where(theta_j != theta_i, theta_j - theta_i, 1.0)),
+                          0.0)
+    tl_up = jnp.where(bbb_up != 0.0, tl_up_b, tl_up_lin)
+    dlu_cand = zzz_up - dz_j + tl_up
+    # WRF crossing: qtke(iz) < zup .and. qtke(iz) >= zup_inf, scanning izz upward.
+    up_cross = up_valid & (qtke_i < zup) & (qtke_i >= zup_inf)
+    up_first = up_cross & (jnp.cumsum(up_cross.astype(jnp.int32), axis=-1) == 1)
+    dlu_default = zw_top[..., None] - zw[..., :, None] - dz[..., :, None] * 0.5
+    dlu = jnp.where(jnp.any(up_first, axis=-1, keepdims=True),
+                    jnp.sum(jnp.where(up_first, dlu_cand, 0.0), axis=-1, keepdims=True),
+                    dlu_default)[..., 0]
+    # iz==kte (top) cannot integrate upward -> keeps default (handled by mask).
+    dlu = jnp.where(i_idx < nz - 1, dlu, dlu_default[..., 0])
+
+    # ---------------- DOWNWARD search (dld) ----------------
+    # at level izz (valid for kts+1<=izz<=iz, scanning izz downward from iz):
+    #   d_zdo = beta*theta(iz)*dz(izz-1) - beta*(theta(izz-1)+theta(izz))*dz(izz-1)*0.5
+    do_incr = (beta * theta_i * dz_jm1
+               - beta * (theta_jm1 + theta_j) * dz_jm1 * 0.5)
+    do_valid = (tgt <= src) & (tgt >= 1)
+    do_incr = jnp.where(do_valid, do_incr, 0.0)
+    # cumulative scanning DOWNWARD (decreasing izz) -> reverse-cumsum from izz=iz.
+    zdo = jnp.cumsum(do_incr[..., ::-1], axis=-1)[..., ::-1]
+    zdo_sup = jnp.concatenate((zdo[..., 1:], jnp.zeros_like(zdo[..., :1])), axis=-1)
+    zzz_do = jnp.cumsum(jnp.where(do_valid, dz_jm1, 0.0)[..., ::-1], axis=-1)[..., ::-1]
+
+    bbb_do = jnp.where(jnp.abs(theta_j - theta_jm1) > 0.0,
+                       (theta_j - theta_jm1) / dz_jm1, 0.0)
+    rad_do = jnp.maximum((beta * (theta_j - theta_i)) ** 2
+                         + 2.0 * bbb_do * beta * (qtke_i - zdo_sup), 0.0)
+    tl_do_b = jnp.where(bbb_do != 0.0,
+                        (beta * (theta_j - theta_i) + jnp.sqrt(rad_do))
+                        / jnp.where(bbb_do != 0.0, bbb_do * beta, 1.0),
+                        0.0)
+    tl_do_lin = jnp.where(theta_j != theta_i,
+                          (qtke_i - zdo_sup) / (beta * jnp.where(theta_j != theta_i, theta_j - theta_i, 1.0)),
+                          0.0)
+    tl_do = jnp.where(bbb_do != 0.0, tl_do_b, tl_do_lin)
+    dld_cand = zzz_do - dz_jm1 + tl_do
+    do_cross = do_valid & (qtke_i < zdo) & (qtke_i >= zdo_sup)
+    # first crossing scanning DOWNWARD: rank by reversed cumulative count.
+    do_first = do_cross & (jnp.cumsum(do_cross[..., ::-1].astype(jnp.int32), axis=-1)[..., ::-1] == 1)
+    dld_default = zw[..., :, None]
+    dld = jnp.where(jnp.any(do_first, axis=-1, keepdims=True),
+                    jnp.sum(jnp.where(do_first, dld_cand, 0.0), axis=-1, keepdims=True),
+                    dld_default)[..., 0]
+    dld = jnp.where(i_idx > 0, dld, dld_default[..., 0])
+
+    # dld(iz) = min(dld(iz), zw(iz+1)); soft Lmax limit on both.
+    dld = jnp.minimum(dld, zw_kp1)
+    dlu = jnp.maximum(0.1, dlu / (1.0 + dlu / NL_BOULAC_LMAX))
+    dld = jnp.maximum(0.1, dld / (1.0 + dld / NL_BOULAC_LMAX))
+
+    lb1 = jnp.minimum(dlu, dld)
+    lb2 = jnp.sqrt(dlu * dld)
+    # WRF copies the top level from kte-1.
+    lb1 = jnp.concatenate((lb1[..., :-1], lb1[..., -2:-1]), axis=-1)
+    lb2 = jnp.concatenate((lb2[..., :-1], lb2[..., -2:-1]), axis=-1)
+    return lb1, lb2
+
+
+def _mym_length_option1(state: MynnPBLColumnState, qke, dtv, fltv, ustar, dx):
+    """WRF NONLOCAL master length scale (``bl_mynn_mixlength==1``).
+
+    Faithful transcription of the ``CASE (1)`` branch of WRF
+    ``module_bl_mynnedmf.F:mym_length`` (lines 1753-1870). This is the WRF v4.7.1
+    default and the option the v0.9.0 oracle run used (namelist.output
+    ``BL_MYNN_MIXLENGTH=1``). EDMF/downdraft terms are off in the operational
+    config so ``qkw_mf=0`` and the ``alp6*qkw_mf`` terms drop out.
+
+    The blend differs from option 2 in two load-bearing ways that drove the
+    ~0.37x el_pbl / ~0.33x Kh under-mixing when option 2 was used by mistake:
+
+    * the in-PBL master length is ``el = min( sqrt(els^2/(1+els^2/elt^2)),
+      elb, elf )`` (buoyancy-limited via ``elb``/``elf``, not the option-2
+      ``els^2/(1+els^2/elt^2+els^2/elb_mf^2)`` harmonic form), and
+    * the free atmosphere uses the **BouLac** length:
+      ``el = el*(1-wt) + alp5*elBLavg*wt`` — so el stays finite (~2 m) aloft
+      instead of collapsing toward zero.
+
+    ``els`` uses the same stability-dependent (rmol) surface-layer form as
+    option 2, with ``rmol`` recomputed exactly as the MYNN driver does (line 879)
+    from ``fltv``/``ust``. ``dx`` feeds the scale-aware ``Psig_bl`` taper.
+    """
+
+    dz = state.dz
+    zw = _wrf_zw(dz)
+    dzk = _interface_dz(dz)
+    nz = dz.shape[-1]
+    idx = jnp.arange(nz)
+
+    afk_i = dz[..., 1:] / (dz[..., 1:] + dz[..., :-1])
+    abk_i = 1.0 - afk_i
+    qkw_i = jnp.sqrt(jnp.maximum(qke[..., 1:] * abk_i + qke[..., :-1] * afk_i, QKEMIN))
+    qkw = jnp.concatenate((jnp.sqrt(jnp.maximum(qke[..., :1], QKEMIN)), qkw_i), axis=-1)
+    # CASE(1) qtke: max(0.5*qkw^2, 0.005) for k>=1; surface = max(0.5*qke, 0.5*qkemin)
+    qtke = jnp.concatenate(
+        (jnp.maximum(0.5 * qke[..., :1], 0.5 * QKEMIN),
+         jnp.maximum(0.5 * qkw_i * qkw_i, 0.005)),
+        axis=-1,
+    )
+    # thetaw: theta at full-sigma levels (theta(k)*abk + theta(k-1)*afk).
+    thetaw_i = state.theta[..., 1:] * abk_i + state.theta[..., :-1] * afk_i
+    thetaw = jnp.concatenate((state.theta[..., :1], thetaw_i), axis=-1)
+
+    pblh = _get_pblh(state, qke)
+
+    # hurricane-shear tapers (wt_u1/wt_u2); =1.0/=1.0 below the 20 m/s onset.
+    ugrid = jnp.sqrt(state.u[..., 0] ** 2 + state.v[..., 0] ** 2)
+    over_onset = jnp.minimum(1.0, jnp.maximum(0.0, ugrid - NL_UONSET) / 50.0)
+    wt_u1 = 1.0 - 0.2 * over_onset
+    wt_u2 = 1.0 - 0.4 * over_onset
+    alp3 = NL_ALP3 * wt_u2
+
+    pblh2 = jnp.maximum(pblh, MIN_PBLH)
+    h1 = jnp.minimum(jnp.maximum(0.3 * pblh2, 300.0), MAX_PBLH_TRANSITION)
+    h2 = 0.5 * h1
+
+    # elt: qkw-weighted PBL-depth length integral (note alp1=0.23, floor qdz=0.01).
+    integrate_mask = (idx >= 1) & (zw <= (pblh2 + h1)[..., None])
+    qdz = jnp.minimum(jnp.maximum(qkw - QMIN, 0.01), 30.0) * dzk
+    elt_num = 1.0e-5 + jnp.sum(jnp.where(integrate_mask, qdz * zw, 0.0), axis=-1)
+    elt_den = 1.0e-5 + jnp.sum(jnp.where(integrate_mask, qdz, 0.0), axis=-1)
+    # elt_max=400 over land; hurricane water tuning omitted (xland=land here).
+    elt = jnp.minimum(jnp.maximum(NL_ALP1 * elt_num / elt_den, NL_ELT_MIN), NL_ELT_MAX)
+    vsc = (GTR * elt * jnp.maximum(fltv, 0.0)) ** (1.0 / 3.0)
+
+    # BouLac free-atmosphere length (elBLavg = lb2).
+    _lb1, elblavg = _boulac_length(zw, dz, qtke, thetaw)
+
+    bv = jnp.sqrt(jnp.maximum(GTR * dtv, 0.0))
+    bv = jnp.maximum(bv, 0.001)
+    stable = dtv > 0.0
+    qkw_elb = jnp.maximum(qkw, NL_QKW_ELB_MIN)
+    elb_stable = jnp.minimum(
+        (NL_ALP2 * qkw_elb / bv) * (1.0 + alp3[..., None] * jnp.sqrt(vsc[..., None] / jnp.maximum(bv * elt[..., None], 1.0e-12))),
+        zw,
+    )
+    elf_stable = qkw_elb / bv  # one*max(qkw,qkw_elb_min)/bv ; elb_mf=0
+    # unstable -> elb=elf=1e10 so the min() picks els-based length.
+    elb = jnp.where(stable, elb_stable, 1.0e10)
+    elf = jnp.where(stable, elf_stable, 1.0e10)
+
+    # surface-layer length els (rmol-dependent, WRF lines 1842-1846).
+    rmol = -KARMAN * GTR * fltv / jnp.maximum(ustar ** 3, 1.0e-6)
+    zwrmol = zw * rmol[..., None]
+    els_stable = KARMAN * zw / (1.0 + NL_CNS * jnp.minimum(zwrmol, ZMAX))
+    els_unstable = KARMAN * zw * jnp.maximum(1.0 - NL_ALP4 * zwrmol, 0.0) ** 0.2
+    els = jnp.where(rmol[..., None] > 0.0, els_stable, els_unstable)
+
+    wt = 0.5 * jnp.tanh((zw - (pblh2 + h1)[..., None]) / h2[..., None]) + 0.5
+    el = jnp.sqrt((els * els) / (1.0 + (els * els) / (elt[..., None] * elt[..., None])))
+    el = jnp.minimum(el, elb)
+    el = jnp.minimum(el, elf)
+    el = el * wt_u1[..., None]   # hurricane taper: =1 over land / U<=20
+    el = el * (1.0 - wt) + NL_ALP5 * elblavg * wt
+
+    # scale-aware Psig_bl taper (WRF lines 2008-2011; ~1 on coarse grids).
+    psig_bl = _scale_aware_psig_bl(dx, pblh)
+    el_les = 0.25 * dzk
+    el = el * psig_bl[..., None] + (1.0 - psig_bl[..., None]) * jnp.minimum(el_les, el)
+
+    el = jnp.where(idx == 0, 0.0, el)
+    return qkw, el, pblh
+
+
+def _mym_length_option2(state: MynnPBLColumnState, qke, dtv, fltv, ustar, dx):
+    """WRF option-2 MYNN master length scale (``bl_mynn_mixlength==2``).
+
+    Faithful transcription of the ``CASE (2)`` branch of WRF
+    ``module_bl_mynnedmf.F:mym_length`` (lines 1872-2011), EDMF/cloud terms off
+    (``qkw_mf=0`` -> ``alp6*qkw_mf`` drops out of every ``max``/``min``). The
+    master length blends three scales:
+
+    * ``els`` - surface-layer length, **stability-dependent via the inverse
+      Monin-Obukhov length** ``rmol`` (WRF lines 1990-1994). WRF recomputes
+      ``rmol = -karman*gtr*fltv/max(ust**3,1e-6)`` (line 879) inside the driver
+      from the same ``fltv``/``ust`` the surface layer hands MYNN, so we do too.
+      In an unstable (daytime) PBL ``rmol<0`` and ``els`` is *larger* than the
+      neutral ``karman*z`` — the previously-missing enhancement that drove the
+      ~0.37x mixing-length / ~0.33x Kh under-mixing.
+    * ``elt`` - PBL-depth length from the qke-weighted height integral.
+    * ``elb_mf`` - buoyancy-limited length.
+
+    The squared harmonic blend ``el = sqrt(els^2/(1 + els^2/elt^2 +
+    els^2/elb_mf^2))`` then transitions to the free-atmosphere ``elf`` via the
+    ``wt`` tanh weight, and finally the scale-aware ``Psig_bl`` taper (WRF
+    lines 2008-2011, SCALE_AWARE line 7512) limits ``el`` toward ``0.25*dzk`` on
+    grids fine enough to resolve the eddies. ``dx`` is the grid spacing (m).
+    """
 
     dz = state.dz
     zw = _wrf_zw(dz)
@@ -306,18 +579,39 @@ def _mym_length_option2(state: MynnPBLColumnState, qke, dtv, fltv):
     elb_mf = jnp.maximum(jnp.where(stable, elb_mf_stable, elb_unstable), 0.01)
     elf = jnp.where(stable, elf_stable, elf_unstable)
     elf = elf / (1.0 + elf / LOCAL_ELF_SOFT_MAX)
-    els = KARMAN * zw
+
+    # Surface-layer length (WRF lines 1990-1994). rmol is recomputed exactly as
+    # the MYNN driver does (line 879) from the surface buoyancy flux + ustar.
+    rmol = -KARMAN * GTR * fltv / jnp.maximum(ustar ** 3, 1.0e-6)
+    zwrmol = zw * rmol[..., None]
+    els_stable = KARMAN * zw / (1.0 + LOCAL_CNS * jnp.minimum(zwrmol, ZMAX))
+    # unstable: karman*z*(1 - alp4*z*rmol)**0.2 ; rmol<0 -> base>1 -> els grows
+    els_unstable = KARMAN * zw * jnp.maximum(1.0 - LOCAL_ALP4 * zwrmol, 0.0) ** 0.2
+    els = jnp.where(rmol[..., None] > 0.0, els_stable, els_unstable)
+
     el = jnp.sqrt((els * els) / (1.0 + (els * els) / (elt[..., None] * elt[..., None]) + (els * els) / (elb_mf * elb_mf)))
     el = el * (1.0 - wt) + elf * wt
+
+    # Scale-aware taper (WRF SCALE_AWARE + lines 2008-2011). Psig_bl~1 on coarse
+    # grids; on fine grids it limits el toward the LES sub-grid scale 0.25*dzk.
+    psig_bl = _scale_aware_psig_bl(dx, pblh)
+    el_les = 0.25 * dzk
+    el = el * psig_bl[..., None] + (1.0 - psig_bl[..., None]) * jnp.minimum(el_les, el)
+
     el = jnp.where(idx == 0, 0.0, el)
     return qkw, el, pblh
 
 
-def _mym_turbulence(state: MynnPBLColumnState, qke, fltv):
-    """WRF MYNN `mym_turbulence` dry level-2.5 path."""
+def _mym_turbulence(state: MynnPBLColumnState, qke, fltv, ustar, dx):
+    """WRF MYNN `mym_turbulence` dry level-2.5 path.
+
+    Uses the WRF-default NONLOCAL mixing length (``bl_mynn_mixlength=1``,
+    :func:`_mym_length_option1`) — the option the validation oracle ran. The
+    local option-2 form (:func:`_mym_length_option2`) is retained for reference
+    but is NOT the operational/validated path."""
 
     dtv, gm, gh, sm20_raw, sh20_raw = _mym_level2(state)
-    qkw, el, pblh = _mym_length_option2(state, qke, dtv, fltv)
+    qkw, el, pblh = _mym_length_option1(state, qke, dtv, fltv, ustar, dx)
     dzk = _interface_dz(state.dz)
     elsq = el * el
     q3sq_initial = qkw * qkw
@@ -664,7 +958,7 @@ def _step_mynn_pbl_impl_with_pblh(state: MynnPBLColumnState, dt: float, debug: b
     state = _clip_state(state)
     flux, wind, fltv, rhosfc = _surface_terms(state, surface)
     qke = 2.0 * state.tke
-    turb = _mym_turbulence(state, qke, fltv)
+    turb = _mym_turbulence(state, qke, fltv, flux.ustar, dx)
     qke_new, _qwt, qdiss, _pdk = _mym_predict_qke(state, qke, turb, dt, flux.ustar, flux)
     mf = _edmf_arrays_from_state(state, flux, fltv, turb["pblh"], dt, dx) if edmf else None
     u, v, theta, qv = _apply_mean_tendencies(state, turb, dt, flux, wind, rhosfc, mf=mf)
@@ -691,13 +985,14 @@ def _step_mynn_pbl_impl(state: MynnPBLColumnState, dt: float, debug: bool, surfa
     return next_state
 
 
-def _mynn_budget_diagnostics(state: MynnPBLColumnState, dt: float, surface=None):
+def _mynn_budget_diagnostics(state: MynnPBLColumnState, dt: float, surface=None,
+                             dx: float = 1000.0):
     """Returns one-step budget diagnostics for Tier-2 validation."""
 
     state = _clip_state(state)
     flux, wind, fltv, rhosfc = _surface_terms(state, surface)
     qke = 2.0 * state.tke
-    turb = _mym_turbulence(state, qke, fltv)
+    turb = _mym_turbulence(state, qke, fltv, flux.ustar, dx)
     qke_new, qwt, qdiss, pdk = _mym_predict_qke(state, qke, turb, dt, flux.ustar, flux)
     u, v, theta, qv = _apply_mean_tendencies(state, turb, dt, flux, wind, rhosfc)
     km, kh = _retrieve_exchange_coeffs(state, turb)
