@@ -44,18 +44,27 @@ def stats(a):
                 nan=int(np.sum(~np.isfinite(a))), shape=list(a.shape))
 
 
-def build(subdir: Path, scheme: str, source_run: str) -> dict:
+def build(subdir: Path, scheme: str, source_run: str, dims=None, itimestep=None) -> dict:
+    """``dims`` = (ni, nk, nj) fallback when the Fortran sidecar header is empty
+    (FORMATTED-unit buffering can leave the sidecar 0 bytes if read before WRF
+    exits). The .f64 files are STREAM (unbuffered) so they are always complete."""
     man = dict(subdir=subdir.name, source_run=source_run, physics_options=PHYS,
                byte_order="big-endian", dtype="float64",
                reshape_order="C: 3D->(nj,nk,ni), 2D->(nj,ni)",
-               grid_id=None, itimestep=None, fields=[])
+               grid_id=1, itimestep=itimestep, fields=[])
     for tag in ("in", "out"):
         sidecar = subdir / f"{scheme}_{tag}.sidecar.txt"
-        if not sidecar.exists():
+        files = sorted(subdir.glob(f"{scheme}_{tag}__*.f64"))
+        if not files:
             continue
-        sc = parse_sidecar(sidecar)
-        man["grid_id"], man["itimestep"] = sc["grid_id"], sc["itimestep"]
-        ni, nk, nj = sc["ni"], sc["nk"], sc["nj"]
+        if sidecar.exists() and sidecar.stat().st_size > 0:
+            sc = parse_sidecar(sidecar)
+            man["grid_id"], man["itimestep"] = sc["grid_id"], sc.get("itimestep", itimestep)
+            ni, nk, nj = sc["ni"], sc["nk"], sc["nj"]
+        elif dims is not None:
+            ni, nk, nj = dims
+        else:
+            raise ValueError(f"{sidecar}: empty/missing and no --dims fallback given")
         for fpath in sorted(subdir.glob(f"{scheme}_{tag}__*.f64")):
             name = fpath.name.split("__", 1)[1][:-4]
             raw = np.fromfile(fpath, dtype=">f8")

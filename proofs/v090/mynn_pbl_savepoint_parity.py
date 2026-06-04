@@ -98,15 +98,15 @@ def _to_cols_2d(arr2d: np.ndarray) -> np.ndarray:
     return np.ascontiguousarray(arr2d.reshape(-1))
 
 
-def run(out_path: Path, edmf: bool = False) -> dict[str, Any]:
+def run(out_path: Path, edmf: bool = False, oracle_dir: Path = ORACLE_DIR) -> dict[str, Any]:
     out_path.parent.mkdir(parents=True, exist_ok=True)
-    if not (ORACLE_DIR / "manifest.json").exists():
+    if not (oracle_dir / "manifest.json").exists():
         rec = {"proof": "v090-mynn-pbl-savepoint-parity", "status": "PENDING-ORACLE",
-               "oracle_dir": str(ORACLE_DIR)}
+               "oracle_dir": str(oracle_dir)}
         out_path.write_text(json.dumps(rec, indent=2, sort_keys=True) + "\n")
         return rec
 
-    manifest = _load_manifest(ORACLE_DIR)
+    manifest = _load_manifest(oracle_dir)
     meta = _field_index(manifest)
 
     import jax.numpy as jnp  # noqa: WPS433
@@ -115,10 +115,10 @@ def run(out_path: Path, edmf: bool = False) -> dict[str, Any]:
     from gpuwrf.physics.mynn_surface_stub import SurfaceFluxes
 
     def IN(name):
-        return _load(ORACLE_DIR, meta, SCHEME, "in", name)
+        return _load(oracle_dir, meta, SCHEME, "in", name)
 
     def OUT(name):
-        return _load(ORACLE_DIR, meta, SCHEME, "out", name)
+        return _load(oracle_dir, meta, SCHEME, "out", name)
 
     # --- IN column state ---
     u = _to_cols(IN("u_phy"))
@@ -238,7 +238,7 @@ def run(out_path: Path, edmf: bool = False) -> dict[str, Any]:
         "status": "COMPARED",
         "kind": "REAL WRF MYNN-EDMF PBL (bl_pbl_physics=5) operator-boundary savepoint parity",
         "comparison": "JAX-vs-WRF (NOT self-compare)",
-        "oracle_dir": str(ORACLE_DIR),
+        "oracle_dir": str(oracle_dir),
         "oracle_scheme_tag": SCHEME,
         "oracle_itimestep": manifest.get("itimestep"),
         "source_run": manifest.get("source_run"),
@@ -268,7 +268,8 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", default=str(Path(__file__).resolve().parent / "mynn_pbl_savepoint_parity.json"))
     ap.add_argument("--edmf", action="store_true", help="enable MYNN-EDMF mass-flux transport")
+    ap.add_argument("--oracle-dir", default=str(ORACLE_DIR))
     args = ap.parse_args()
-    r = run(Path(args.out), edmf=args.edmf)
+    r = run(Path(args.out), edmf=args.edmf, oracle_dir=Path(args.oracle_dir))
     print(json.dumps(r, indent=2, sort_keys=True))
     raise SystemExit(0 if r.get("status") != "COMPARED" or r["pass"] else 2)

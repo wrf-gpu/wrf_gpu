@@ -64,6 +64,8 @@ def run(out_path: Path, oracle_dir: Path = ORACLE_DIR, dt: float | None = None) 
     # inactive-physical moist mask + theta float32-ULP analysis + water closure).
     record = run_oracle_parity_f64(oracle_dir=oracle_dir, out=out_path, dt=dt)
     record["proof"] = "v090-thompson-savepoint-parity"
+    record["oracle_dir"] = str(oracle_dir)
+    record["comparison"] = "JAX-vs-WRF (NOT self-compare)"
     record["wrf_source"] = str(PRISTINE_SRC)
     record["wrf_source_sha256"] = _sha256(PRISTINE_SRC)
     record["hydrometeor_activity"] = _hydrometeor_activity(oracle_dir)
