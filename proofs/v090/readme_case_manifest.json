@@ -1,0 +1,97 @@
+{
+  "schema": "GpuwrfReadmeCaseManifest",
+  "schema_version": 1,
+  "purpose": "Public SAMPLE asset for the binding v0.9.0 naive-agent README runnability gate. A clean-room agent clones the public tag, follows the README only, downloads this asset, runs ONE forecast hour through the JAX GPU port, and dimension-compares the generated wrfout against the packaged CPU-WRF reference.",
+  "prepared_by": "worker/opus/v090-naive-gate-prep",
+  "prepared_on": "2026-06-04",
+  "branch_base": {
+    "trunk_0_9_0_commit": "7b7c26e079014b810f3341c87809798b23a67c74",
+    "validator_source": "src/gpuwrf/io/namelist_check.py @ trunk-0.9.0 (7b7c26e)",
+    "cli_source": "src/gpuwrf/cli.py @ worker/opus/readme-runnability (bf280f94d20bc4894bd09e1c68cab3d5505b152b)",
+    "note": "The gpuwrf CLI is owned by the worker/opus/readme-runnability lane and is NOT on trunk-0.9.0 yet; it must be merged to the tagged commit at release time. The dry-check below ran the readme-runnability cli.py against the trunk-0.9.0 gpuwrf package."
+  },
+  "case": {
+    "id": "gpuwrf-canary-d02-sample",
+    "provenance_run": "20260429_18z_l2_72h_20260524T204451Z",
+    "provenance_path": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260429_18z_l2_72h_20260524T204451Z (wrfout) + /mnt/data/canairy_meteo/runs/wrf_l2/20260429_18z_l2_72h_20260524T204451Z (namelist/wrfinput/wrfbdy)",
+    "description": "Canary Islands d02 (3 km nest) CPU-WRF / Gen2 operational backfill case. Complete 72 h hourly run; sample packages the first 3 hourly d02 frames (init + 2 h) so a 1 h replay forecast can run and dimension-compare.",
+    "domain": "d02",
+    "initial_valid_time_utc": "2026-04-29_18:00:00",
+    "dims_d02": {
+      "Time": 1,
+      "DateStrLen": 19,
+      "west_east": 159,
+      "west_east_stag": 160,
+      "south_north": 66,
+      "south_north_stag": 67,
+      "bottom_top": 44,
+      "bottom_top_stag": 45,
+      "soil_layers_stag": 4,
+      "snow_layers_stag": 3,
+      "snso_layers_stag": 7,
+      "seed_dim_stag": 8
+    },
+    "grid_namelist_d02": { "e_we": 160, "e_sn": 67, "e_vert": 45, "dx": 3000, "dy": 3000 }
+  },
+  "asset": {
+    "filename": "gpuwrf-canary-d02-sample.tgz",
+    "staged_path": "release-assets/gpuwrf-canary-d02-sample.tgz",
+    "sha256": "1260f182e47d84788f67a21aa1eb5426aacfe0e91d8ee684120b8e8052aad17a",
+    "size_bytes": 69750989,
+    "size_human": "66.5 MiB",
+    "committed_to_git": false,
+    "commit_note": "Asset is 66.5 MiB; staged under release-assets/ but NOT committed to git (too large; .gitignored). At tag time the manager uploads it as a GitHub release asset and pins the URL + this sha256 in the README.",
+    "download_url": "TODO-TAG-TIME-PLACEHOLDER: https://github.com/wrf-gpu/wrf_gpu/releases/download/<TAG>/gpuwrf-canary-d02-sample.tgz",
+    "contents": [
+      { "name": "namelist.input", "size_bytes": 6257, "sha256": "03a2e341b0b8e7e8f768b216c5d2aa22fa4b6e41119b27418e1cb14b4f9c5da6", "role": "GPU-port namelist (validated fail-closed by the CLI; the file the CLI consumes as <input-dir>/namelist.input)" },
+      { "name": "namelist.input.cpu-wrf-original", "size_bytes": 4155, "sha256": "2a22835b469fb3945bd7b6af8f0c7d2b2eaa6a5c06bc7bb3c2bea1f576a0953c", "role": "Verbatim CPU-WRF namelist that produced the reference wrfout (provenance only)" },
+      { "name": "README.txt", "size_bytes": 3163, "sha256": "78b173679473e5c6e05083ee8263c621c83faba111506f4cb067b2e85b612807", "role": "In-asset run instructions" },
+      { "name": "wrfout_d02_2026-04-29_18:00:00", "size_bytes": 10952298, "sha256": "bc8a33ca688ee506952987d028ae406d207e5aa182da4fff04ff8dfaeb394013", "role": "CPU-WRF d02 history t=0 (initial conditions)" },
+      { "name": "wrfout_d02_2026-04-29_19:00:00", "size_bytes": 15772613, "sha256": "d65d2194730419e5d211b30bd497fa8fd5e16c8c601e9be836aafcb438421ed6", "role": "CPU-WRF d02 history t=1h (replay boundary + the 1h dimension-compare reference)" },
+      { "name": "wrfout_d02_2026-04-29_20:00:00", "size_bytes": 15673182, "sha256": "d988ec7b92b023a30a4200e9442393a3b2c6800efeb6458f4e1b6eb4bded48a3", "role": "CPU-WRF d02 history t=2h (replay boundary margin)" },
+      { "name": "wrfinput_d02", "size_bytes": 11049617, "sha256": "6017a18f1dfa738cb5905cdc0754a544dcb736d732e0e1f9b30ac91673787a17", "role": "d02 wrfinput (Gen2Run inventory / metrics fallback)" },
+      { "name": "wrfbdy_d01", "size_bytes": 25159308, "sha256": "0a296dc1fb457d76149540e72ec86542422056c83a020bda74349b5a2de1ca57", "role": "d01 lateral boundary file (bdy-width decode)" }
+    ]
+  },
+  "gate_command": {
+    "exact": "gpuwrf run --namelist <DIR>/namelist.input --input-dir <DIR> --output-dir runs/canary_d02_sample --domain d02 --hours 1 --compare-cpu-dir <DIR>",
+    "where": "<DIR> = the extracted gpuwrf-canary-d02-sample directory",
+    "requires_gpu": true,
+    "expected_output": {
+      "generated_wrfout": "runs/canary_d02_sample/wrfout_d02_2026-04-29_19:00:00",
+      "proof": "runs/canary_d02_sample/proofs/dimension_compare.json with status PASS",
+      "stdout": "one JSON pipeline payload; dimension_compare_status=PASS; process exit code 0",
+      "pass_criterion": "every NetCDF dimension of the generated d02 wrfout matches the packaged CPU-WRF reference of the same basename exactly (dims listed in case.dims_d02)"
+    }
+  },
+  "supported_namelist_confirmation": {
+    "validator": "gpuwrf.io.namelist_check.validate_supported_namelist",
+    "sample_namelist_validates": true,
+    "schemes": {
+      "mp_physics": "8,8 (Thompson) - supported",
+      "bl_pbl_physics": "5,5 (MYNN) - supported",
+      "sf_sfclay_physics": "5,5 (MYNN surface layer) - supported",
+      "sf_surface_physics": "4,4 (Noah-MP) - supported",
+      "ra_lw_physics": "4,4 (RRTMG LW) - supported",
+      "ra_sw_physics": "4,4 (RRTMG SW) - supported",
+      "cu_physics": "1,0 (Kain-Fritsch d01, none d02) - supported",
+      "sf_urban_physics": "0,0 - supported",
+      "diff_6th_opt": "2,2 - supported",
+      "w_damping": "1 - supported",
+      "damp_opt": "3 - supported"
+    },
+    "deviation_from_cpu_wrf_namelist": {
+      "diff_opt": "1 -> 0",
+      "km_opt": "4 -> 0",
+      "why": "The raw CPU-WRF namelist sets diff_opt=1/km_opt=4, which the GPU port's fail-closed registry rejects (diff_opt in {0,2}, km_opt in {0,1}). The GPU operational pipeline (daily_pipeline._build_real_case) does NOT read these options from the namelist: it runs OperationalNamelist with diff_opt=0/km_opt=0 and applies horizontal filtering via diff_6th_opt=2/diff_6th_factor=0.12 (kept identical). Setting them to 0 in the sample therefore reflects exactly what the GPU port runs and is the honest, faithful value. This does not affect the dimension compare (dims are fixed by e_we/e_sn/e_vert, unchanged). The original is preserved as namelist.input.cpu-wrf-original.",
+      "honesty_note": "The CPU-WRF reference wrfout WAS produced with diff_opt=1/km_opt=4. The dimension gate is unaffected; a future VALUE/RMSE comparison must account for this scheme difference (the GPU port does not implement km_opt=4 3D-TKE diffusion)."
+    }
+  },
+  "tag_time_manager_steps": [
+    "Merge worker/opus/readme-runnability (gpuwrf CLI + README) into the tagged commit so `gpuwrf run` exists at the tag.",
+    "Upload release-assets/gpuwrf-canary-d02-sample.tgz as a GitHub release asset on the v0.9.0 tag at github.com/wrf-gpu/wrf_gpu.",
+    "Pin the resolved download URL AND sha256 1260f182e47d84788f67a21aa1eb5426aacfe0e91d8ee684120b8e8052aad17a in the README (replace asset.download_url TODO placeholder).",
+    "Run the ACTUAL gate on a GPU: extract the asset, `pip install -e .`, run the gate_command.exact above, and confirm runs/canary_d02_sample/proofs/dimension_compare.json status=PASS and CLI exit code 0. THIS GPU run is the binding gate; this lane only did CPU/IO selection + packaging + a no-GPU structural dry-check.",
+    "(Optional, post-0.9.0) Extend the gate from dimension-compare to a value/RMSE comparison, accounting for the diff_opt/km_opt scheme difference."
+  ]
+}

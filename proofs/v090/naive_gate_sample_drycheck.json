@@ -1,0 +1,76 @@
+{
+  "schema": "GpuwrfNaiveGateSampleDryCheck",
+  "schema_version": 1,
+  "purpose": "No-GPU structural dry-check that the gpuwrf-canary-d02-sample asset is ready for the binding v0.9.0 naive-agent README gate. Confirms: (1) the sample namelist validates fail-closed (all schemes supported); (2) the gpuwrf CLI accepts the sample paths and passes all cheap validation + the registry check up to the heavy GPU pipeline boundary; (3) the packaged input is internally dim-consistent and consistent with the CPU-WRF reference. NO GPU and NO timestep was run (the GPU is held by another lane); the actual GPU forecast-vs-CPU comparison is the tag-time manager step.",
+  "prepared_by": "worker/opus/v090-naive-gate-prep",
+  "prepared_on": "2026-06-04",
+  "environment": {
+    "gpu_used": false,
+    "cpu_affinity": "taskset -c 0-3",
+    "gpuwrf_package": "trunk-0.9.0 worktree src (7b7c26e)",
+    "cli_module": "worker/opus/readme-runnability:src/gpuwrf/cli.py (bf280f9), 318 lines, exercised via PYTHONPATH",
+    "python_validator": "gpuwrf.io.namelist_check (trunk-0.9.0 worktree)"
+  },
+  "asset_under_test": {
+    "tarball": "release-assets/gpuwrf-canary-d02-sample.tgz",
+    "sha256": "1260f182e47d84788f67a21aa1eb5426aacfe0e91d8ee684120b8e8052aad17a",
+    "size_bytes": 69750989
+  },
+  "checks": [
+    {
+      "id": "C1_namelist_validates",
+      "name": "Sample namelist passes validate_supported_namelist (all schemes supported)",
+      "result": "PASS",
+      "detail": "validate_supported_namelist(<sample>/namelist.input) returned without raising. mp=8, bl=5, sfclay=5, land=4, ra_lw=4, ra_sw=4, cu=1/0, sf_urban=0, diff_6th_opt=2, w_damping=1, damp_opt=3 all in the trunk-0.9.0 accepted registry; diff_opt=0/km_opt=0 (swapped from CPU-WRF 1/4) are in {0,2}/{0,1}."
+    },
+    {
+      "id": "C2_cli_accepts_sample",
+      "name": "gpuwrf run accepts the sample paths and passes cheap validation + registry up to the heavy GPU import",
+      "result": "PASS",
+      "detail": "cli.main(['run','--namelist',<sample>/namelist.input,'--input-dir',<sample>,'--output-dir',...,'--domain','d02','--hours','1','--compare-cpu-dir',<sample>]) passed input-dir-exists, namelist==<input-dir>/namelist.input, hours>0, compare-dir-exists, and the fail-closed namelist registry check, then reached DailyPipelineConfig(...) construction (cli.py line 275). The heavy gpuwrf.integration.daily_pipeline import was stubbed to raise so NO JAX/GPU ran; reaching that line proves all pre-GPU validation accepted the sample."
+    },
+    {
+      "id": "C2b_cli_help",
+      "name": "gpuwrf run --help builds and exposes the gate args",
+      "result": "PASS",
+      "detail": "build_parser().parse_args(['run','--help']) emitted help containing --namelist, --input-dir, --compare-cpu-dir."
+    },
+    {
+      "id": "C3a_namelist_wrfout_dims_consistent",
+      "name": "Namelist d02 grid consistent with packaged wrfout d02 dims",
+      "result": "PASS",
+      "detail": "namelist d02 e_we=160/e_sn=67/e_vert=45 maps to wrfout west_east_stag=160, south_north_stag=67, bottom_top_stag=45 and west_east=159/south_north=66/bottom_top=44 (staggered = e_*, unstaggered = e_*-1). Consistent."
+    },
+    {
+      "id": "C3b_internal_dim_consistency",
+      "name": "All packaged d02 wrfout frames share identical dims; CLI compare helper returns PASS",
+      "result": "PASS",
+      "detail": "The three packaged wrfout_d02 frames (t=0,1h,2h) have byte-identical dimension dictionaries. cli.compare_wrfout_dimensions on the t=1h file against the sample dir returned status=PASS (self-reference)."
+    },
+    {
+      "id": "N1_negative_control_original_namelist_rejected",
+      "name": "Raw CPU-WRF namelist (diff_opt=1/km_opt=4) is REJECTED by the CLI",
+      "result": "PASS",
+      "detail": "Running the CLI with namelist.input.cpu-wrf-original content returned exit code 2 with the two expected UnsupportedNamelistOption failures (diff_opt=1, km_opt=4). Confirms the gate is genuinely fail-closed and the diff_opt/km_opt swap was necessary, not cosmetic."
+    },
+    {
+      "id": "N2_negative_control_namelist_path_rule",
+      "name": "--namelist not equal to <input-dir>/namelist.input is REJECTED",
+      "result": "PASS",
+      "detail": "Pointing --namelist at namelist.input.cpu-wrf-original (not <input-dir>/namelist.input) returned exit code 2 with the path-mismatch error. Confirms the CLI's P0 namelist-path rule."
+    },
+    {
+      "id": "RT_roundtrip_extracted_asset",
+      "name": "Extracted tarball is self-contained: namelist validates and CLI accepts it",
+      "result": "PASS",
+      "detail": "Extracting gpuwrf-canary-d02-sample.tgz to a fresh temp dir and re-running C1 (namelist validates) and C2 (CLI reaches heavy import) both passed against the extracted copy. The asset is self-contained as a clean-room agent would experience it."
+    }
+  ],
+  "overall_status": "DRY_CHECK_PASS",
+  "explicitly_not_done": [
+    "No GPU forecast was run (no timestep advanced); the GPU is held by another lane.",
+    "No value/RMSE comparison; only the structural dimension-compare path was exercised (self-reference) and the namelist + CLI acceptance.",
+    "The asset was NOT uploaded to GitHub; download_url is a tag-time placeholder."
+  ],
+  "binding_gate_remaining": "On a GPU: extract asset, pip install -e . (with worker/opus/readme-runnability CLI merged), run `gpuwrf run --namelist <DIR>/namelist.input --input-dir <DIR> --output-dir runs/canary_d02_sample --domain d02 --hours 1 --compare-cpu-dir <DIR>` and confirm proofs/dimension_compare.json status=PASS with exit code 0."
+}
