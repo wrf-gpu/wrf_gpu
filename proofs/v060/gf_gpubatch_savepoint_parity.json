@@ -1,47 +1,495 @@
 {
-  "schema": "wrf-v060-gf-gpubatch-savepoint-parity-report-v1",
-  "scheme": "Grell-Freitas scale-aware cumulus (cu_physics=3)",
-  "verdict": "NOT_DELIVERED",
-  "verdict_scope": "the GPU-BATCHED (jit/vmap) GF kernel was NOT delivered in this lane; the faithful CPU-NumPy reference REMAINS WRF-oracle-PASSING (see grellfreitas_savepoint_parity_report.json, unchanged).",
-  "honest_summary": "A WRF-faithful jit/vmap GPU batching of Grell-Freitas was attempted-and-scoped but deliberately NOT shipped, because a faithful pure-JAX rewrite of the GF closure is a multi-thousand-LOC re-derivation that this single lane could not complete without high risk of silently breaking the (already-passing) WRF parity. Per the WRF-FAITHFUL-ONLY / no-fudge rule, GF is reported honestly as carried-over rather than shipped half-working. The CPU-reference GF gate (predeclared tol, real unmodified-WRF oracle, all 5 regimes PASS) is intact and authoritative.",
-  "cpu_reference_status": {
-    "module": "src/gpuwrf/physics/_gf_reference.py (+ cumulus_grell_freitas.py wrapper)",
-    "gate_report": "proofs/v060/grellfreitas_savepoint_parity_report.json",
-    "gate_verdict": "PASS",
-    "jit_vmap_native_kernel": false,
-    "gpu_runnable": false,
-    "note": "faithful single-column NumPy port; PASSES the unmodified-WRF GF module oracle across deep/shallow/non-triggering/scale-aware(coarse,fine) -- worst per-case rel residual 6.6e-3 vs 5e-2 tol."
+  "cases": [
+    {
+      "case": 1,
+      "categorical": {
+        "jax": {
+          "any": true,
+          "deep": true,
+          "shallow": true
+        },
+        "oracle": {
+          "any": true,
+          "deep": true,
+          "shallow": true
+        },
+        "pass": true
+      },
+      "fields": {
+        "RQCCUTEN": {
+          "max_abs": 8.914571415999218e-13,
+          "max_rel": 9.817514106954351e-06,
+          "pass": true
+        },
+        "RQICUTEN": {
+          "max_abs": 8.718386881735897e-13,
+          "max_rel": 4.556513971986291e-06,
+          "pass": true
+        },
+        "RQVCUTEN": {
+          "max_abs": 4.051090992452434e-11,
+          "max_rel": 9.089142267902742e-05,
+          "pass": true
+        },
+        "RTHCUTEN": {
+          "max_abs": 4.4585045233438286e-08,
+          "max_rel": 1.8069873584250636e-05,
+          "pass": true
+        }
+      },
+      "ktop_deep": {
+        "jax": 26,
+        "oracle": 26,
+        "pass": true
+      },
+      "raincv": {
+        "jax": 0.04250855506026792,
+        "max_abs": 1.1413729143761042e-07,
+        "max_rel": 2.6850356313710156e-06,
+        "oracle": 0.04250866919755936,
+        "pass": true,
+        "tolerance_abs": 0.0001,
+        "tolerance_rel": 0.05
+      },
+      "regime": "deep_convective",
+      "shallow": {
+        "levels": {
+          "K22_SHALLOW": {
+            "jax": 2,
+            "oracle": 2,
+            "pass": true
+          },
+          "KBCON_SHALLOW": {
+            "jax": 3,
+            "oracle": 3,
+            "pass": true
+          },
+          "KTOP_SHALLOW": {
+            "jax": 8,
+            "oracle": 8,
+            "pass": true
+          }
+        },
+        "xmb": {
+          "jax": 0.037721683712211906,
+          "max_abs": 4.796801599205036e-06,
+          "max_rel": 0.00012714680865735667,
+          "oracle": 0.03772648051381111,
+          "pass": true,
+          "tolerance_abs": 1e-05,
+          "tolerance_rel": 0.05
+        }
+      },
+      "vmap_vs_single": {
+        "pass": true,
+        "raincv_abs": 1.1102230246251565e-16,
+        "rthcuten_abs": 5.0523821237824507e-17
+      }
+    },
+    {
+      "case": 2,
+      "categorical": {
+        "jax": {
+          "any": true,
+          "deep": false,
+          "shallow": true
+        },
+        "oracle": {
+          "any": true,
+          "deep": false,
+          "shallow": true
+        },
+        "pass": true
+      },
+      "fields": {
+        "RQCCUTEN": {
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "pass": true
+        },
+        "RQICUTEN": {
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "pass": true
+        },
+        "RQVCUTEN": {
+          "max_abs": 1.4434213196024322e-11,
+          "max_rel": 0.00017064655161904747,
+          "pass": true
+        },
+        "RTHCUTEN": {
+          "max_abs": 2.9623109114056346e-09,
+          "max_rel": 0.001515053475207815,
+          "pass": true
+        }
+      },
+      "ktop_deep": {
+        "jax": 0,
+        "oracle": 0,
+        "pass": true
+      },
+      "raincv": {
+        "jax": 0.0,
+        "max_abs": 0.0,
+        "max_rel": 0.0,
+        "oracle": 0.0,
+        "pass": true,
+        "tolerance_abs": 0.0001,
+        "tolerance_rel": 0.05
+      },
+      "regime": "shallow_convective",
+      "shallow": {
+        "levels": {
+          "K22_SHALLOW": {
+            "jax": 2,
+            "oracle": 2,
+            "pass": true
+          },
+          "KBCON_SHALLOW": {
+            "jax": 3,
+            "oracle": 3,
+            "pass": true
+          },
+          "KTOP_SHALLOW": {
+            "jax": 4,
+            "oracle": 4,
+            "pass": true
+          }
+        },
+        "xmb": {
+          "jax": 0.03683206732243156,
+          "max_abs": 6.371039451606719e-06,
+          "max_rel": 0.00017294542697550533,
+          "oracle": 0.03683843836188316,
+          "pass": true,
+          "tolerance_abs": 1e-05,
+          "tolerance_rel": 0.05
+        }
+      },
+      "vmap_vs_single": {
+        "pass": true,
+        "raincv_abs": 0.0,
+        "rthcuten_abs": 2.0794658855093073e-19
+      }
+    },
+    {
+      "case": 3,
+      "categorical": {
+        "jax": {
+          "any": false,
+          "deep": false,
+          "shallow": false
+        },
+        "oracle": {
+          "any": false,
+          "deep": false,
+          "shallow": false
+        },
+        "pass": true
+      },
+      "fields": {
+        "RQCCUTEN": {
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "pass": true
+        },
+        "RQICUTEN": {
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "pass": true
+        },
+        "RQVCUTEN": {
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "pass": true
+        },
+        "RTHCUTEN": {
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "pass": true
+        }
+      },
+      "ktop_deep": {
+        "jax": 0,
+        "oracle": 0,
+        "pass": true
+      },
+      "raincv": {
+        "jax": 0.0,
+        "max_abs": 0.0,
+        "max_rel": 0.0,
+        "oracle": 0.0,
+        "pass": true,
+        "tolerance_abs": 0.0001,
+        "tolerance_rel": 0.05
+      },
+      "regime": "stable_nontriggering",
+      "shallow": {
+        "levels": {
+          "K22_SHALLOW": {
+            "jax": 0,
+            "oracle": 0,
+            "pass": true
+          },
+          "KBCON_SHALLOW": {
+            "jax": 0,
+            "oracle": 0,
+            "pass": true
+          },
+          "KTOP_SHALLOW": {
+            "jax": 0,
+            "oracle": 0,
+            "pass": true
+          }
+        },
+        "xmb": {
+          "jax": 0.0,
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "oracle": 0.0,
+          "pass": true,
+          "tolerance_abs": 1e-05,
+          "tolerance_rel": 0.05
+        }
+      },
+      "vmap_vs_single": {
+        "pass": true,
+        "raincv_abs": 0.0,
+        "rthcuten_abs": 0.0
+      }
+    },
+    {
+      "case": 4,
+      "categorical": {
+        "jax": {
+          "any": true,
+          "deep": true,
+          "shallow": true
+        },
+        "oracle": {
+          "any": true,
+          "deep": true,
+          "shallow": true
+        },
+        "pass": true
+      },
+      "fields": {
+        "RQCCUTEN": {
+          "max_abs": 3.5285334548118046e-12,
+          "max_rel": 3.884644708937809e-05,
+          "pass": true
+        },
+        "RQICUTEN": {
+          "max_abs": 7.1441204335540915e-12,
+          "max_rel": 3.732512543206978e-05,
+          "pass": true
+        },
+        "RQVCUTEN": {
+          "max_abs": 4.4468124095541873e-11,
+          "max_rel": 9.973246881461399e-05,
+          "pass": true
+        },
+        "RTHCUTEN": {
+          "max_abs": 7.734408725827181e-08,
+          "max_rel": 3.1346786168516417e-05,
+          "pass": true
+        }
+      },
+      "ktop_deep": {
+        "jax": 26,
+        "oracle": 26,
+        "pass": true
+      },
+      "raincv": {
+        "jax": 0.07087031847769082,
+        "max_abs": 2.377694190147661e-06,
+        "max_rel": 3.355105515781024e-05,
+        "oracle": 0.07086794078350067,
+        "pass": true,
+        "tolerance_abs": 0.0001,
+        "tolerance_rel": 0.05
+      },
+      "regime": "scale_aware_coarse_15km",
+      "shallow": {
+        "levels": {
+          "K22_SHALLOW": {
+            "jax": 2,
+            "oracle": 2,
+            "pass": true
+          },
+          "KBCON_SHALLOW": {
+            "jax": 3,
+            "oracle": 3,
+            "pass": true
+          },
+          "KTOP_SHALLOW": {
+            "jax": 8,
+            "oracle": 8,
+            "pass": true
+          }
+        },
+        "xmb": {
+          "jax": 0.037721701696446994,
+          "max_abs": 4.778817364117782e-06,
+          "max_rel": 0.00012667010807881554,
+          "oracle": 0.03772648051381111,
+          "pass": true,
+          "tolerance_abs": 1e-05,
+          "tolerance_rel": 0.05
+        }
+      },
+      "vmap_vs_single": {
+        "pass": true,
+        "raincv_abs": 2.7755575615628914e-16,
+        "rthcuten_abs": 1.2576745200831851e-17
+      }
+    },
+    {
+      "case": 5,
+      "categorical": {
+        "jax": {
+          "any": true,
+          "deep": true,
+          "shallow": true
+        },
+        "oracle": {
+          "any": true,
+          "deep": true,
+          "shallow": true
+        },
+        "pass": true
+      },
+      "fields": {
+        "RQCCUTEN": {
+          "max_abs": 4.994357206978241e-11,
+          "max_rel": 0.004994357206978241,
+          "pass": true
+        },
+        "RQICUTEN": {
+          "max_abs": 1.0706109625502599e-10,
+          "max_rel": 0.006601448062344431,
+          "pass": true
+        },
+        "RQVCUTEN": {
+          "max_abs": 2.8470912692086814e-10,
+          "max_rel": 0.0009169055067235192,
+          "pass": true
+        },
+        "RTHCUTEN": {
+          "max_abs": 1.2132028016282367e-06,
+          "max_rel": 0.006596415311706959,
+          "pass": true
+        }
+      },
+      "ktop_deep": {
+        "jax": 25,
+        "oracle": 25,
+        "pass": true
+      },
+      "raincv": {
+        "jax": 0.0015031407212838955,
+        "max_abs": 7.539349794345599e-06,
+        "max_rel": 0.004990699181570868,
+        "oracle": 0.001510680071078241,
+        "pass": true,
+        "tolerance_abs": 0.0001,
+        "tolerance_rel": 0.05
+      },
+      "regime": "scale_aware_fine_3km",
+      "shallow": {
+        "levels": {
+          "K22_SHALLOW": {
+            "jax": 2,
+            "oracle": 2,
+            "pass": true
+          },
+          "KBCON_SHALLOW": {
+            "jax": 3,
+            "oracle": 3,
+            "pass": true
+          },
+          "KTOP_SHALLOW": {
+            "jax": 8,
+            "oracle": 8,
+            "pass": true
+          }
+        },
+        "xmb": {
+          "jax": 0.0377216657250249,
+          "max_abs": 4.87439343098417e-06,
+          "max_rel": 0.00012920329867725157,
+          "oracle": 0.03772654011845589,
+          "pass": true,
+          "tolerance_abs": 1e-05,
+          "tolerance_rel": 0.05
+        }
+      },
+      "vmap_vs_single": {
+        "pass": true,
+        "raincv_abs": 5.140636180622771e-15,
+        "rthcuten_abs": 8.322877977084975e-16
+      }
+    }
+  ],
+  "commands": {
+    "oracle": "taskset -c 0-3 bash proofs/v060/oracle/build_and_run.sh",
+    "report": "JAX_PLATFORMS=cpu JAX_ENABLE_X64=true taskset -c 0-3 python proofs/v060/run_grellfreitas_gpubatch_parity.py --fail-on-parity-fail"
   },
+  "elapsed_seconds": 3.547761196969077,
+  "failures": [],
+  "gpu_batched": true,
+  "jit_vmap_native_kernel": true,
+  "method": {
+    "batching": "jax.vmap over the leading column axis inside a single jax.jit",
+    "beta_pdf_gamma": "jnp.exp(gammaln(.)) for math.gamma",
+    "closure_ensemble": "16-member MAXENS3 ensemble as a vectorized jnp array (no per-member python branch)",
+    "first_crossing_searches": "jnp.argmax over boolean crossing masks",
+    "ierr_shortcircuit": "jnp.where masking (compute-all, select-on-ierr)",
+    "jmini_search": "jax.lax.while_loop bounded over jmini decrements",
+    "kbcon_search": "jax.lax.while_loop bounded over k22-raises (data-dependent cap-increment search)",
+    "level_recurrences": "jax.lax.scan (hydrostatic z, hcot, hc/uc/vc/hco, moisture, downdraft)"
+  },
+  "no_host_transfer_in_column_loop": true,
   "oracle": {
-    "source": "unmodified WRF GF modules from /home/enric/src/wrf_pristine/WRF/phys compiled into a standalone single-column driver (module_cu_gf_deep.F, module_cu_gf_sh.F, module_cu_gf_wrfdrv.F + GFS support)",
+    "full_wrf_exe_run": false,
+    "note": "Same WRF-module oracle gold as the CPU-reference gate. Not a coupled wrf.exe run.",
+    "savepoints": "proofs/v060/savepoints/gf_case_{1..5}.json (unmodified-WRF GF module gold; not a JAX self-compare)",
+    "source": "unmodified WRF GF modules from /home/enric/src/wrf_pristine/WRF/phys compiled into a standalone single-column driver",
+    "source_checksums_sha256": {
+      "/home/enric/src/wrf_gpu2/.claude/worktrees/wf_5a3ae99e-e72-1/proofs/v060/oracle/gf_oracle_driver.f90": "96e3a0ce6a04ce1ab82c9335b7427b361d555c884d28103df8bbe53e4bb2173a",
+      "/home/enric/src/wrf_gpu2/.claude/worktrees/wf_5a3ae99e-e72-1/src/gpuwrf/physics/_gf_jax.py": "87ac8eebdf9bac992d92390aad47d7c1a0b7e317fba463edab55b13fa976e0f0",
+      "/home/enric/src/wrf_gpu2/.claude/worktrees/wf_5a3ae99e-e72-1/src/gpuwrf/physics/_gf_reference.py": "7ba90b7d37e1df17f68c3de1c815541df3827227362f07a03de2e20f8e99feb3",
+      "/home/enric/src/wrf_pristine/WRF/phys/module_cu_gf_deep.F": "798ad7271963757b88be36ce01e24222f7af045dc0692908d6e7c270d6b4ea11",
+      "/home/enric/src/wrf_pristine/WRF/phys/module_cu_gf_sh.F": "0dd1ed7c620b39e13f7ef77dc4ff1a269fa1f8d746492d360e203df0215b529a",
+      "/home/enric/src/wrf_pristine/WRF/phys/module_cu_gf_wrfdrv.F": "0cead99c913b6a74f3a492aea1e1c7ef6d34f95402574336022d1a6c716a4382",
+      "/home/enric/src/wrf_pristine/WRF/phys/module_gfs_machine.F": "300ee4f75663e89d34c8a9b8733cc07a5dd48c3d973da019d31cb76524babe25",
+      "/home/enric/src/wrf_pristine/WRF/phys/module_gfs_physcons.F": "2b8ef99663ba62748b57c7002f5e5b8c9338f2a825c1d32c113bd4e3bff2eb52"
+    },
     "wrf_gf_deep_source": "/home/enric/src/wrf_pristine/WRF/phys/module_cu_gf_deep.F",
-    "wrf_gf_deep_sha256": "798ad7271963757b88be36ce01e24222f7af045dc0692908d6e7c270d6b4ea11",
     "wrf_gf_sh_source": "/home/enric/src/wrf_pristine/WRF/phys/module_cu_gf_sh.F",
-    "wrf_gf_sh_sha256": "0dd1ed7c620b39e13f7ef77dc4ff1a269fa1f8d746492d360e203df0215b529a",
-    "wrf_gf_wrfdrv_source": "/home/enric/src/wrf_pristine/WRF/phys/module_cu_gf_wrfdrv.F",
-    "wrf_gf_wrfdrv_sha256": "0cead99c913b6a74f3a492aea1e1c7ef6d34f95402574336022d1a6c716a4382",
-    "savepoints": "proofs/v060/savepoints/gf_case_{1..5}.json (reused from the CPU-reference lane, bit-identical gold)",
-    "full_wrf_exe_run": false
+    "wrf_gf_wrfdrv_source": "/home/enric/src/wrf_pristine/WRF/phys/module_cu_gf_wrfdrv.F"
   },
-  "predeclared_gpu_batch_tolerance": {
-    "intended_tendency_max_relative": 0.02,
-    "intended_categorical": "exact deep/shallow/nontrigger match",
-    "status": "NOT EXERCISED -- no GPU-batched kernel was produced to gate against this tolerance.",
-    "note": "the tolerance was predeclared (tighter than the 5e-2 CPU-reference gate) so that any future GF vmap kernel is gated honestly, not loosened to pass."
+  "predeclared_tolerances": {
+    "ktop_deep_levels": 1,
+    "raincv_abs": 0.0001,
+    "raincv_max_relative": 0.05,
+    "scale_pair": "fine-grid case must produce less RAINCV than coarse-grid case; ratio tol 0.20",
+    "shallow_level_indices": 1,
+    "tendency_abs_floor": 1e-08,
+    "tendency_max_relative": 0.02,
+    "trigger": "exact deep/shallow/nontrigger categorical match",
+    "vmap_vs_single_max_abs": 1e-12,
+    "xmb_shallow_abs": 1e-05,
+    "xmb_shallow_max_relative": 0.05
   },
-  "why_not_delivered": {
-    "control_flow_sites": 170,
-    "explicit_python_loops": 118,
-    "while_loops": 3,
-    "while_true_unbounded": "cup_kbcon cap_inc search (module_cu_gf_deep.F: iterate cap-increment until KBCON found or KTF reached) -- a data-dependent, a-priori-unbounded iteration",
-    "break_statements": 20,
-    "data_dependent_gamma": "get_zu_zd_pdf_fim computes math.gamma(alpha) where alpha is derived from per-level pressure ratios (data-dependent), for 4 draft types (UP/SH2/MID/DOWN)",
-    "closure_ensemble": "cup_forcing_ens_3d: 16-member dynamic-control closure ensemble (MAXENS3) with diurnal cycle + per-member control flow",
-    "iterative_downdraft": "cup_dd_moisture / cup_dd_edt iterative downdraft with ierr short-circuiting",
-    "ierr_shortcircuit": "pervasive ierr-based block-skipping (cup_env/cup_kbcon/etc. return early when ierr!=0) -- every block must be re-expressed as jnp.where masking on a traced ierr",
-    "subroutines_to_translate": ["cup_env", "cup_env_clev", "cup_kbcon", "cup_minimi", "cup_maximi", "get_cloud_bc", "cup_up_aa0", "cup_up_aa1bl", "get_zu_zd_pdf_fim", "get_lateral_massflux", "rates_up_pdf", "cup_dd_moisture", "cup_up_moisture", "cup_dd_edt", "cup_forcing_ens_3d", "cup_output_ens_3d", "neg_check", "get_inversion_layers", "cup_gf", "cup_gf_sh", "gfdrv"],
-    "assessment": "Each obstacle is individually convertible (math.gamma -> jax.scipy.special.gamma; break-searches -> jnp.argmax over masks; while-true -> bounded fori_loop + mask; ierr -> jnp.where), but the aggregate is a ~1500-2000 LOC faithful re-derivation across ~21 subroutines. Doing it safely (without silently breaking the passing WRF parity) is a dedicated sprint, not a lane sub-task. The prior Opus GF handoff (.agent/reviews/2026-06-03-opus-v060-gf2.md) independently reached the same conclusion: 'a batched/JAX vectorization is a separate optimization sprint (GF is NOT load-bearing for v1.0.0 -- KF done, Tiedtke covers the menu).'"
+  "scale_aware_pair": {
+    "coarse_case": 4,
+    "fine_case": 5,
+    "jax_fine_to_coarse_raincv": 0.021209735663274425,
+    "oracle_fine_to_coarse_raincv": 0.02131683317416152,
+    "pass": true
   },
-  "scan_wiring_status": "cu_physics=3 remains FAIL-CLOSED in the operational scan (_resolve_operational_suite rejects it loudly with the documented reason). It is ACCEPTED in physics_registry + namelist_check (frozen S0 contract) but NOT scan-wired -- this is the honest, fail-closed state, never a silent no-op.",
-  "recommended_next_step": "Dedicated GF-vmap sprint: faithfully translate the ~21 subroutines above to lax-traceable JAX, gate against these same gf_case_{1..5} savepoints at the predeclared 2e-2 tolerance. NOT a v1.0.0 blocker: KF(1) + Tiedtke(6) already cover the operational cumulus menu."
+  "schema": "wrf-v090-gf-gpubatch-savepoint-parity-report-v2",
+  "scheme": "Grell-Freitas scale-aware cumulus (cu_physics=3)",
+  "verdict": "PASS"
 }
