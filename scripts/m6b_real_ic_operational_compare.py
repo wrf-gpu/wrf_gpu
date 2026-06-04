@@ -54,7 +54,6 @@ from gpuwrf.runtime.operational_mode import (
     _theta_base_offset,
     _u_face_average_2d,
     _v_face_average_2d,
-    _operational_acoustic_substep_core,
     _with_save_family,
     run_forecast_operational,
     run_forecast_operational_debug,
@@ -74,6 +73,13 @@ THRESHOLD = 1.0e-10
 WRF_SOLVE = "/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/WRF/dyn_em/solve_em.F"
 WRF_SMALL = "/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/WRF/dyn_em/module_small_step_em.F"
 MARKER = "GPUWRF_M6B_RK1_ACOUSTIC_LOOP_ENTER substeps=1"
+
+
+def _removed_legacy_acoustic_substep(*_args: Any, **_kwargs: Any) -> None:
+    raise RuntimeError(
+        "This M6 comparator drills into a removed legacy non-prep acoustic path. "
+        "Use the production PREP-based operational step for current comparisons."
+    )
 
 
 def _rk_stages(namelist: OperationalNamelist) -> tuple[tuple[int, float, int], ...]:
@@ -338,7 +344,7 @@ def _controlled_trace(state: State, namelist: OperationalNamelist) -> tuple[list
         dt_sub = float(namelist.dt_s) / float(namelist.acoustic_substeps)
         for substep in range(1, substeps + 1):
             pre_op = op
-            op = _operational_acoustic_substep_core(op, namelist, dt_sub)
+            op = _removed_legacy_acoustic_substep(op, namelist, dt_sub)
             val_acoustic = _validation_substep(val, namelist, dt_sub)
             val = _carry_from_acoustic(val_acoustic, template)
             substep_entry = _trace_entry(f"rk{rk_stage}_acoustic_substep_{substep}", rk_stage, substep, op, val)
@@ -477,7 +483,7 @@ def _operator_drilldown(pre_carry: OperationalCarry, namelist: OperationalNameli
     val_advanced = advance_mu_t_wrf(_advance_inputs(acoustic, cfg))
     op_tri_fwd, op_w = thomas_solve_scan(op_a, op_alpha, op_gamma, acoustic.w)
     val_tri_fwd, val_w = thomas_solve_scan(val_a, val_alpha, val_gamma, acoustic.w)
-    op_post = _operational_acoustic_substep_core(pre_carry, namelist, dt_sub)
+    op_post = _removed_legacy_acoustic_substep(pre_carry, namelist, dt_sub)
     val_post = _carry_from_acoustic(_validation_substep(pre_carry, namelist, dt_sub), pre_carry.state)
     op_snapshot = _snapshot_to_numpy(_carry_to_validation_snapshot(op_post))
     val_snapshot = _snapshot_to_numpy(_carry_to_validation_snapshot(val_post))
@@ -657,7 +663,7 @@ def _controlled_timestep_pair(op: OperationalCarry, val: OperationalCarry, namel
         op = _stage_candidate(op, op_origin, namelist, factor)
         val = _stage_candidate(val, val_origin, namelist, factor)
         for _substep in range(1, substeps + 1):
-            op = _operational_acoustic_substep_core(op, namelist, dt_sub)
+            op = _removed_legacy_acoustic_substep(op, namelist, dt_sub)
             val_acoustic = _validation_substep(val, namelist, dt_sub)
             val = _carry_from_acoustic(val_acoustic, val.state)
         op = op.replace(state=apply_halo(op.state, halo_spec(namelist.grid)))

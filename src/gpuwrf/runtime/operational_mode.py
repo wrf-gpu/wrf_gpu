@@ -1188,53 +1188,6 @@ def _acoustic_core_state_from_prep(
     )
 
 
-def _carry_from_acoustic_core(acoustic: AcousticCoreState, template: State, theta_offset: jax.Array) -> OperationalCarry:
-    theta = acoustic.theta + theta_offset
-    p_total = template.p_total - template.p_perturbation + acoustic.p
-    ph_total = template.ph_total - template.ph_perturbation + acoustic.ph
-    mu_base = template.mu_total - template.mu_perturbation
-    # ``acoustic_substep_core`` returns ``advanced["mu"]``: the total physical
-    # perturbation needed by ``advance_mu_t`` to preserve ``mu_save`` on the next
-    # small step.  ``muts`` remains the WRF work array ``mut + mu_work``.
-    mu_perturbation = acoustic.mu
-    mu_total = mu_base + mu_perturbation
-    next_state = template.replace(
-        u=acoustic.u,
-        v=acoustic.v,
-        w=acoustic.w,
-        theta=theta,
-        p=p_total,
-        p_total=p_total,
-        p_perturbation=acoustic.p,
-        ph=ph_total,
-        ph_total=ph_total,
-        ph_perturbation=acoustic.ph,
-        mu=mu_total,
-        mu_total=mu_total,
-        mu_perturbation=mu_perturbation,
-    )
-    return OperationalCarry(
-        state=next_state,
-        t_2ave=acoustic.t_2ave + theta_offset,
-        ww=acoustic.ww,
-        mudf=acoustic.mudf,
-        muave=acoustic.muave,
-        muts=acoustic.muts,
-        ph_tend=acoustic.ph_tend,
-        u_save=next_state.u,
-        v_save=next_state.v,
-        w_save=next_state.w,
-        t_save=next_state.theta,
-        ph_save=next_state.ph,
-        mu_save=acoustic.mu,
-        ww_save=acoustic.ww,
-        # rthraten is a physics-layer held tendency refreshed in the physics
-        # chain (rrtmg cadence), not the dycore acoustic core; this legacy
-        # single-substep constructor (test-only path) carries no radiation.
-        rthraten=jnp.zeros_like(next_state.theta),
-    )
-
-
 def _refresh_grid_p_from_finished(next_state: State, prep: SmallStepPrepState, namelist: OperationalNamelist) -> State:
     """Recompute WRF ``grid%p`` from the finished physical ``ph'`` and ``theta``.
 
@@ -1296,48 +1249,6 @@ def _carry_from_finished_stage(
         mu_save=prep.mu_save,
         ww_save=prep.ww_save,
     )
-
-
-def _operational_acoustic_substep_core(carry: OperationalCarry, namelist: OperationalNamelist, dt_sub: float) -> OperationalCarry:
-    """Run one operational acoustic substep through the shared core."""
-
-    state = apply_halo(carry.state, halo_spec(namelist.grid))
-    theta_offset = _theta_base_offset(state.theta)
-    acoustic = _acoustic_core_state(carry.replace(state=state), namelist)
-    # WRF solve_em.F:2409-2717 builds the vertical-solve coefficients for the
-    # acoustic small step before solve_em.F:3065 enters the recurrence.
-    a, alpha, gamma = calc_coef_w_wrf_coefficients(
-        acoustic.mut,
-        namelist.metrics,
-        dt=float(dt_sub),
-        epssm=float(namelist.epssm),
-        top_lid=bool(namelist.top_lid),
-        cqw=acoustic.cqw,
-        c2a=acoustic.c2a,
-    )
-    periodic_x, specified, nested = _acoustic_lateral_bc_flags(namelist)
-    next_acoustic = acoustic_substep_core(
-        acoustic,
-        a=a,
-        alpha=alpha,
-        gamma=gamma,
-        cfg=AcousticCoreConfig(
-            dt=float(dt_sub),
-            dx=float(namelist.grid.projection.dx_m),
-            dy=float(namelist.grid.projection.dy_m),
-            epssm=float(namelist.epssm),
-            top_lid=bool(namelist.top_lid),
-            w_damping=int(namelist.w_damping),
-            damp_opt=int(namelist.damp_opt),
-            dampcoef=float(namelist.dampcoef),
-            zdamp=float(namelist.zdamp),
-            periodic_x=periodic_x,
-            specified=specified,
-            nested=nested,
-        ),
-        cqw=acoustic.cqw,
-    )
-    return _carry_from_acoustic_core(next_acoustic, state, theta_offset)
 
 
 def _acoustic_scan(
