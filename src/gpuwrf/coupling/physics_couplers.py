@@ -796,6 +796,10 @@ def _surface_fluxes_from_state(state: State) -> SurfaceFluxes:
         tau_v=jnp.asarray(state.tau_v, dtype=jnp.float64),
         rhosfc=jnp.asarray(state.rhosfc, dtype=jnp.float64),
         fltv=jnp.asarray(state.fltv, dtype=jnp.float64),
+        # WRF land/sea mask drives the mym_length CASE(1) land/water branch
+        # (elt_max + el(k) hurricane taper). Marine columns (xland=2) use the
+        # faithful elt_max=350 vs 400 over land.
+        xland=jnp.asarray(state.xland, dtype=jnp.float64),
     )
 
 
