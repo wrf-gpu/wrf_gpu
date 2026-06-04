@@ -164,6 +164,16 @@ def main(argv=None):
         print(f"  {done_h:>5.2f}h (step {step:>5d}) finite={sig['all_finite']} "
               f"qke.max={q.get('max')} w.max={w.get('max')} theta.max={th.get('max')} "
               f"mu.max={mu.get('max')} nonfin={list(sig['nonfinite_fields'].keys())[:6]}")
+        # incremental write each checkpoint so the launch-bound run's progress is
+        # never lost on interruption
+        args.out.parent.mkdir(parents=True, exist_ok=True)
+        args.out.write_text(json.dumps({
+            "schema": "V090D03ReplayFiniteCheck", "status": "IN_PROGRESS",
+            "run_id": args.run_id, "grid_mass_shape_zyx": grid_shape,
+            "dt_s": float(args.dt_s), "step_h": args.step_h, "qke_coldstart": qke_coldstart,
+            "qke_t0_max": qke_t0, "namelist_flags": flags, "trace": trace,
+            "survived_hours": round(done_h, 3),
+        }, indent=2, sort_keys=True, default=str) + "\n")
         if not sig["all_finite"] and first_blow is None:
             first_blow = done_h
             break

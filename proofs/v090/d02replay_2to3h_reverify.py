@@ -206,6 +206,9 @@ def main(argv=None):
                     help="fixed forecast increment in hours (one compiled program, reused; "
                          "0.5h=150 steps @ dt=12, well under the 600-step OOM)")
     ap.add_argument("--configs", nargs="+", default=["gated_fp32", "fp64"])
+    ap.add_argument("--fp64-hours", type=float, default=1.2,
+                    help="fp64 cross-check horizon (FP64 is 1:64-throttled on the RTX; "
+                         "gated_fp32 carries the operational 3h gate, fp64 confirms the floor)")
     ap.add_argument("--out", type=Path,
                     default=ROOT / "proofs" / "v090" / "d02replay_2to3h_reverify.json")
     args = ap.parse_args(argv)
@@ -237,42 +240,56 @@ def main(argv=None):
         "gated_fp32": dict(force_fp64=False),
         "fp64": dict(force_fp64=True),
     }
+    # fp64 is FP64-throttled on the RTX (1:64 FP64:FP32) so 3h is impractical; it
+    # is the stability-floor cross-check and a shorter horizon suffices (the qke-fix
+    # already proved fp64 stable to 1h).  gated_fp32 carries the operational 3h gate.
+    args.out.parent.mkdir(parents=True, exist_ok=True)
+
+    def _build_payload(results):
+        any_3h = any(r.get("stable_through_3h") for r in results.values())
+        max_finite_h = max((r.get("survived_hours", 0.0) for r in results.values()), default=0.0)
+        return {
+            "schema": "V090D02Replay2to3hReverify",
+            "generated": datetime.now(timezone.utc).isoformat(),
+            "branch": "worker/opus/v090-qkefix-followup",
+            "commit": os.popen("git rev-parse HEAD").read().strip(),
+            "platform": args.platform,
+            "devices": devices,
+            "run_id": args.run_id,
+            "run_dir": str(run_dir),
+            "dt_s": DT_S,
+            "acoustic_substeps": SUBSTEPS,
+            "radiation_cadence_steps": RAD_CADENCE,
+            "max_hours_requested": args.hours,
+            "fp64_hours": args.fp64_hours,
+            "step_h": args.step_h,
+            "runner": "run_forecast_operational_single_scan in fixed step_h increments (jit-cached on hours, one compiled program reused per increment; donates state; memory-bounded; no 600-step single advance / no incremental fp64 probe)",
+            "fix_under_test": "shipped build_l2_daily_case = validated stability namelist + WRF-faithful MYNN qke cold-start seed (no clamps)",
+            "wrf_seed_ref": "phys/module_bl_mynnedmf.F:618-691 (mym_initialize INITIALIZE_QKE)",
+            "checkpoints_hours": checkpoints,
+            "results": results,
+            "gated_fp32_finite_through_3h": bool(results.get("gated_fp32", {}).get("stable_through_3h")),
+            "any_config_finite_through_3h": bool(any_3h),
+            "max_finite_hours": float(max_finite_h),
+            "verdict": ("FINITE_THROUGH_3H_PLUS" if any_3h else "DID_NOT_REACH_3H"),
+        }
+
     results = {}
     for name in args.configs:
         opt = config_defs[name]
+        cfg_hours = args.fp64_hours if name == "fp64" else args.hours
+        cfg_checkpoints = [c for c in checkpoints if c <= cfg_hours + 1e-9]
         results[name] = _run_config(
-            name, run_dir=run_dir, hours=args.hours,
-            step_h=args.step_h, checkpoint_hours=checkpoints, **opt
+            name, run_dir=run_dir, hours=cfg_hours,
+            step_h=args.step_h, checkpoint_hours=cfg_checkpoints, **opt
         )
+        # incremental write so a slow/interrupted later config never loses earlier ones
+        args.out.write_text(json.dumps(_build_payload(results), indent=2, sort_keys=True, default=str) + "\n")
+        print(f"  [{name}] wrote partial {args.out}")
 
-    any_3h = any(r.get("stable_through_3h") for r in results.values())
-    max_finite_h = max((r.get("survived_hours", 0.0) for r in results.values()), default=0.0)
-    payload = {
-        "schema": "V090D02Replay2to3hReverify",
-        "generated": datetime.now(timezone.utc).isoformat(),
-        "branch": "worker/opus/v090-qkefix-followup",
-        "commit": os.popen("git rev-parse HEAD").read().strip(),
-        "platform": args.platform,
-        "devices": devices,
-        "run_id": args.run_id,
-        "run_dir": str(run_dir),
-        "dt_s": DT_S,
-        "acoustic_substeps": SUBSTEPS,
-        "radiation_cadence_steps": RAD_CADENCE,
-        "max_hours_requested": args.hours,
-        "step_h": args.step_h,
-        "runner": "run_forecast_operational in fixed step_h increments (one compiled program reused per increment; memory-bounded; no 600-step single advance / no incremental fp64 probe)",
-        "fix_under_test": "shipped build_l2_daily_case = validated stability namelist + WRF-faithful MYNN qke cold-start seed (no clamps)",
-        "wrf_seed_ref": "phys/module_bl_mynnedmf.F:618-691 (mym_initialize INITIALIZE_QKE)",
-        "checkpoints_hours": checkpoints,
-        "results": results,
-        "any_config_finite_through_3h": bool(any_3h),
-        "max_finite_hours": float(max_finite_h),
-        "verdict": ("FINITE_THROUGH_3H_PLUS" if any_3h else "DID_NOT_REACH_3H"),
-    }
-    args.out.parent.mkdir(parents=True, exist_ok=True)
+    payload = _build_payload(results)
     args.out.write_text(json.dumps(payload, indent=2, sort_keys=True, default=str) + "\n")
-    print(f"\nverdict: {payload['verdict']}  max_finite_hours={max_finite_h}")
+    print(f"\nverdict: {payload['verdict']}  max_finite_hours={payload['max_finite_hours']}")
     print(f"wrote {args.out}")
     return 0
 
