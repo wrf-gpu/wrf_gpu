@@ -286,9 +286,47 @@ def _air_properties(state: ThompsonColumnState):
     return tempc, diffu, visco, tcond, lvap, ocp, rhof, rhof2, vsc2
 
 
-def _rain_distribution(qr, Nr, rho):
-    """Encapsulates WRF rain slope/intercept equations from lines 2210-2215."""
+def _clamp_rain_number(qr, Nr, rho):
+    """WRF working-rain-number mvd clamp (module_mp_thompson.F:1888-1898, 3240-3250).
 
+    WRF rebuilds the DIAGNOSTIC rain number ``nr(k)`` used for slope/intercept,
+    fall speed and rate calculations so the median-volume diameter stays inside
+    [D0r*0.75, 2.5 mm].  When the (qr, Nr) pair implies an mvd outside that band,
+    the number is recomputed from the mass at the clamped mvd:
+    ``nr = crg(2)*org3*rr*lamr**bm_r / am_r`` with ``lamr = (3+mu_r+0.672)/mvd``.
+    This is a WORKING-number clamp (it never changes the rain MASS); the prognostic
+    rain number is re-derived from the same band in ``_finish`` (WRF 4046-4055).
+
+    Returns the clamped rain number ``Nr_c`` (per-kg), unchanged where qr<=R1.
+    Faithful transcription: ``crg(2)=1`` (CRG2), ``org3=1/6`` (ORG3),
+    ``bm_r=3``, so ``nr*rho = rr*lamr**3 / (6*am_r)`` -- the exact inverse of the
+    forward ``lamr = (am_r*crg(3)*org2*nr/rr)**obmr`` used everywhere else.
+    """
+
+    active = qr > R1
+    rr = jnp.maximum(qr * rho, R1)
+    nr = jnp.maximum(Nr * rho, R2)
+    lamr = (AM_R * CRG3 * ORG2 * nr / rr) ** OBMR
+    mvd_r = (3.0 + 0.672) / lamr
+    mvd_clamped = jnp.minimum(2.5e-3, jnp.maximum(D0R * 0.75, mvd_r))
+    out_of_band = mvd_clamped != mvd_r
+    lamr_c = (3.0 + 0.672) / mvd_clamped
+    nr_c = CRG2 * ORG3 * rr * lamr_c**3.0 / AM_R
+    # Only the diagnostic number is rebuilt, and only when out of the band; the
+    # per-kg clamped number is nr_c/rho.  qr<=R1 columns keep their Nr untouched.
+    return jnp.where(active & out_of_band, nr_c / rho, Nr)
+
+
+def _rain_distribution(qr, Nr, rho):
+    """Encapsulates WRF rain slope/intercept equations from lines 2210-2215.
+
+    ``Nr`` is the WRF working rain number, mvd-clamped to [D0r*0.75, 2.5 mm] so the
+    slope/intercept diagnostics match WRF's ``nr(k)`` (module_mp_thompson.F:1888-
+    1898).  Every warm-rain rate and fall-speed term reads its rain slope through
+    this helper, so the clamp is applied consistently with WRF.
+    """
+
+    Nr = _clamp_rain_number(qr, Nr, rho)
     rr = jnp.maximum(qr * rho, R1)
     nr = jnp.maximum(Nr * rho, R2)
     lamr = (AM_R * CRG3 * ORG2 * nr / rr) ** OBMR
@@ -554,7 +592,12 @@ def _warm_rain_collection(state: ThompsonColumnState, dt: float, tables: Thompso
     taud = 0.5 * (taud_raw + jnp.abs(taud_raw)) + R1
     tau = 3.72 / jnp.maximum(rc * taud, R1)
     prr_wau = jnp.where((rc > 0.01e-3) & active_cloud, jnp.minimum(rc / float(dt), zeta / tau), 0.0)
-    pnr_wau = prr_wau / jnp.maximum(AM_R * NU_C_MP8 * 10.0 * D0R**3, R2)
+    # WRF: pnr_wau = prr_wau / (am_r*nu_c*10.*D0r**3) (module_mp_thompson.F:2191).
+    # The divisor is a strictly-positive constant (~7.85e-9), so it needs NO floor;
+    # a prior ``jnp.maximum(..., R2=1e-6)`` clamp here silently REPLACED the true
+    # 7.85e-9 divisor with 1e-6, shrinking the autoconversion rain-number source by
+    # ~127x and starving Nr in cloud-base / autoconversion-dominated columns.
+    pnr_wau = prr_wau / (AM_R * NU_C_MP8 * 10.0 * D0R**3)
 
     # WRF rain-collecting-cloud-water shape from t_Efrw, initialized at
     # module_mp_thompson.F.pre:4921-4977 and consumed at lines 2260-2268.
@@ -569,11 +612,24 @@ def _warm_rain_collection(state: ThompsonColumnState, dt: float, tables: Thompso
     prr_rcw = jnp.where(active_rain & (mvd_r > D0R) & (mvd_c > D0C), prr_rcw_raw, 0.0)
     prr_rcw = jnp.minimum(jnp.maximum(rc - prr_wau * float(dt), 0.0) / float(dt), prr_rcw)
 
+    # Rain self-collection (Seifert 1994) + drop break-up (Verlinde & Cotton 1993),
+    # WRF module_mp_thompson.F:2159-2167.  This is a rain-NUMBER-only process (no
+    # mass change): Ef_rr>0 (mvd_r<1950um) -> self-collection SINK; Ef_rr<0
+    # (mvd_r>1950um) -> break-up SOURCE.  ``nr``/``rr``/``mvd_r`` are the working
+    # mvd-clamped slope values from ``_rain_distribution``.  The Nr tendency adds
+    # ``-pnr_rcr`` (WRF line 3066), i.e. dNr = -pnr_rcr*dt/rho.
+    ef_rr = 1.0 - jnp.exp(2300.0 * (mvd_r - 1950.0e-6))
+    pnr_rcr = jnp.where(active_rain & (mvd_r > D0R), ef_rr * 2.0 * nr * rr, 0.0)
+
     autoconv = prr_wau * float(dt) / state.rho
     accretion = prr_rcw * float(dt) / state.rho
     transfer = jnp.minimum(state.qc, autoconv + accretion)
     nr_gain = pnr_wau * float(dt) / state.rho
-    return state.replace(qc=state.qc - transfer, qr=state.qr + transfer, Nr=state.Nr + nr_gain)
+    nr_rcr = pnr_rcr * float(dt) / state.rho
+    # Floor the post-process rain number at 0 (WRF carries nrten then re-floors at
+    # MAX(R2/rho, ...) in _finish; a self-collection sink must not drive Nr<0).
+    Nr_new = jnp.maximum(0.0, state.Nr + nr_gain - nr_rcr)
+    return state.replace(qc=state.qc - transfer, qr=state.qr + transfer, Nr=Nr_new)
 
 
 def _rain_evaporation(
@@ -1044,7 +1100,10 @@ def _fall_speeds(state: ThompsonColumnState):
 
     act_r = state.qr > R1
     rr = jnp.maximum(state.qr * rho, R1)
-    nr = jnp.maximum(state.Nr * rho, R2)
+    # WRF computes the rain fall speeds from the mvd-clamped working number
+    # ``nr(k)`` rebuilt at module_mp_thompson.F:3240-3250, NOT from the raw
+    # prognostic Nr; the same clamp the rate-stage slopes use (_rain_distribution).
+    nr = jnp.maximum(_clamp_rain_number(state.qr, state.Nr, rho) * rho, R2)
     lamr = (AM_R * CRG3 * ORG2 * nr / rr) ** OBMR
     vt_r_mass = rhof * AV_R * CRG6 * ORG3 * lamr ** CRE3 * ((lamr + FV_R) ** (-CRE6))
     vt_r_num = rhof * AV_R * CRG7 / CRG12 * lamr ** CRE12 * ((lamr + FV_R) ** (-CRE7))
@@ -1268,7 +1327,12 @@ def _sedimentation(state: ThompsonColumnState, dt: float):
     # adjacent substeps to cut the launch count. (A single 4-species batched scan
     # was measured SLOWER — it serialises what XLA otherwise parallelises — so we
     # keep the per-species structure; see proofs/thompson_perf.)
-    qr, Nr, ppt_rain = _sed_one_species(state.qr, state.Nr, vt_r_mass, vt_r_num, dz, rho, dt, nstep_r)
+    # WRF sediments the mvd-clamped working rain number (module_mp_thompson.F:
+    # 3240-3250 rebuilds ``nr(k)`` before the rain fall loop at 3790-3819); the
+    # clamped field is what the upwind flux advects and what becomes the new
+    # prognostic (re-balanced to the same band in ``_finish``, WRF 4046-4055).
+    Nr_sed = _clamp_rain_number(state.qr, state.Nr, rho)
+    qr, Nr, ppt_rain = _sed_one_species(state.qr, Nr_sed, vt_r_mass, vt_r_num, dz, rho, dt, nstep_r)
     qi, Ni, ppt_ice = _sed_one_species(state.qi, state.Ni, vt_i_mass, vt_i_num, dz, rho, dt, nstep_i)
     # Snow: number tracks mass (diagnostic Ns).  Use the mass speed for both.
     qs, Ns, ppt_snow = _sed_one_species(state.qs, state.Ns, vt_s_mass, vt_s_mass, dz, rho, dt, nstep_s)

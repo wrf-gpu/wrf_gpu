@@ -1,0 +1,283 @@
+{
+  "proof": "Noah-MP 2-m LSM diagnostic (T2MV/T2MB/combined T2) REAL-WRF parity (v0.9.0)",
+  "kind": "external oracle: compiled pristine WRF module_sf_noahmplsm.o NOAHMP_SFLX T2MV/T2MB on real Canary d03 land columns vs JAX port; field-wise, predeclared fp64 tol; NOT a self-compare",
+  "oracle": "proofs/noahmp/savepoints_energy.json",
+  "wrf_source": "/home/enric/src/wrf_pristine/WRF/phys/module_sf_noahmplsm.F",
+  "wrf_source_sha256": "74b475600ad1c999fe43299bcaf4d3e5eaf59b9f861c47fdbff4d69739e3a45b",
+  "wrf_refs": {
+    "T2MV": "module_sf_noahmplsm.F:4148-4163 (VEGE_FLUX)",
+    "T2MB": "module_sf_noahmplsm.F:4461-4474 (BARE_FLUX)",
+    "combine": "module_sf_noahmplsm.F:2296/2311 + module_surface_driver.F:3469-3473"
+  },
+  "tol_K": 0.05,
+  "ncolumns": 11,
+  "npass": 11,
+  "nfail": 0,
+  "worst_abs_residual_K": 0.0010803964744923178,
+  "columns": [
+    {
+      "name": "daytime_veg5",
+      "case": "daytime",
+      "fveg": 0.346469223,
+      "pass": true,
+      "fields": {
+        "t2mv": {
+          "wrf_K": 291.31662,
+          "jax_K": 291.31666665030747,
+          "abs_d_K": 4.665030746764387e-05,
+          "pass": true
+        },
+        "t2mb": {
+          "wrf_K": 291.244995,
+          "jax_K": 291.24498226296237,
+          "abs_d_K": 1.273703765036771e-05,
+          "pass": true
+        },
+        "t2": {
+          "wrf_K": 291.269806,
+          "jax_K": 291.2698186969471,
+          "abs_d_K": 1.2696947067070141e-05,
+          "pass": true
+        }
+      }
+    },
+    {
+      "name": "daytime_veg9",
+      "case": "daytime",
+      "fveg": 0.259317577,
+      "pass": true,
+      "fields": {
+        "t2mv": {
+          "wrf_K": 295.40625,
+          "jax_K": 295.4063046909351,
+          "abs_d_K": 5.469093508736478e-05,
+          "pass": true
+        },
+        "t2mb": {
+          "wrf_K": 295.544128,
+          "jax_K": 295.5441169403789,
+          "abs_d_K": 1.105962110159453e-05,
+          "pass": true
+        },
+        "t2": {
+          "wrf_K": 295.508362,
+          "jax_K": 295.5083798017722,
+          "abs_d_K": 1.7801772230541246e-05,
+          "pass": true
+        }
+      }
+    },
+    {
+      "name": "daytime_veg10",
+      "case": "daytime",
+      "fveg": 0.292573452,
+      "pass": true,
+      "fields": {
+        "t2mv": {
+          "wrf_K": 292.929596,
+          "jax_K": 292.9295622117728,
+          "abs_d_K": 3.378822719923846e-05,
+          "pass": true
+        },
+        "t2mb": {
+          "wrf_K": 293.630188,
+          "jax_K": 293.6302203603678,
+          "abs_d_K": 3.236036781117946e-05,
+          "pass": true
+        },
+        "t2": {
+          "wrf_K": 293.425201,
+          "jax_K": 293.4252263871614,
+          "abs_d_K": 2.5387161372236733e-05,
+          "pass": true
+        }
+      }
+    },
+    {
+      "name": "daytime_veg13",
+      "case": "daytime",
+      "fveg": 0.0,
+      "pass": true,
+      "fields": {
+        "t2mb": {
+          "wrf_K": 294.360779,
+          "jax_K": 294.3607615519364,
+          "abs_d_K": 1.7448063601932517e-05,
+          "pass": true
+        },
+        "t2": {
+          "wrf_K": 294.360779,
+          "jax_K": 294.3607615519364,
+          "abs_d_K": 1.7448063601932517e-05,
+          "pass": true
+        }
+      }
+    },
+    {
+      "name": "daytime_veg16",
+      "case": "daytime",
+      "fveg": 0.0,
+      "pass": true,
+      "fields": {
+        "t2mb": {
+          "wrf_K": 293.028748,
+          "jax_K": 293.0287580723512,
+          "abs_d_K": 1.0072351187773165e-05,
+          "pass": true
+        },
+        "t2": {
+          "wrf_K": 293.028748,
+          "jax_K": 293.0287580723512,
+          "abs_d_K": 1.0072351187773165e-05,
+          "pass": true
+        }
+      }
+    },
+    {
+      "name": "nighttime_veg5",
+      "case": "nighttime",
+      "fveg": 0.346469223,
+      "pass": true,
+      "fields": {
+        "t2mv": {
+          "wrf_K": 287.535522,
+          "jax_K": 287.53530356654505,
+          "abs_d_K": 0.00021843345496108668,
+          "pass": true
+        },
+        "t2mb": {
+          "wrf_K": 288.055084,
+          "jax_K": 288.05507228933993,
+          "abs_d_K": 1.1710660089647718e-05,
+          "pass": true
+        },
+        "t2": {
+          "wrf_K": 287.875061,
+          "jax_K": 287.8749884238135,
+          "abs_d_K": 7.257618653966347e-05,
+          "pass": true
+        }
+      }
+    },
+    {
+      "name": "nighttime_veg9",
+      "case": "nighttime",
+      "fveg": 0.259317577,
+      "pass": true,
+      "fields": {
+        "t2mv": {
+          "wrf_K": 290.779877,
+          "jax_K": 290.78063415186875,
+          "abs_d_K": 0.0007571518687541356,
+          "pass": true
+        },
+        "t2mb": {
+          "wrf_K": 290.667023,
+          "jax_K": 290.66701249346966,
+          "abs_d_K": 1.0506530315979035e-05,
+          "pass": true
+        },
+        "t2": {
+          "wrf_K": 290.696289,
+          "jax_K": 290.6964765866204,
+          "abs_d_K": 0.00018758662042728247,
+          "pass": true
+        }
+      }
+    },
+    {
+      "name": "nighttime_veg10",
+      "case": "nighttime",
+      "fveg": 0.292573452,
+      "pass": true,
+      "fields": {
+        "t2mv": {
+          "wrf_K": 290.111938,
+          "jax_K": 290.1130183964745,
+          "abs_d_K": 0.0010803964744923178,
+          "pass": true
+        },
+        "t2mb": {
+          "wrf_K": 290.357452,
+          "jax_K": 290.3574445935915,
+          "abs_d_K": 7.406408542465215e-06,
+          "pass": true
+        },
+        "t2": {
+          "wrf_K": 290.285614,
+          "jax_K": 290.2859319773417,
+          "abs_d_K": 0.00031797734169458636,
+          "pass": true
+        }
+      }
+    },
+    {
+      "name": "nighttime_veg13",
+      "case": "nighttime",
+      "fveg": 0.0,
+      "pass": true,
+      "fields": {
+        "t2mb": {
+          "wrf_K": 290.432892,
+          "jax_K": 290.43287452944224,
+          "abs_d_K": 1.7470557736487535e-05,
+          "pass": true
+        },
+        "t2": {
+          "wrf_K": 290.432892,
+          "jax_K": 290.43287452944224,
+          "abs_d_K": 1.7470557736487535e-05,
+          "pass": true
+        }
+      }
+    },
+    {
+      "name": "nighttime_veg16",
+      "case": "nighttime",
+      "fveg": 0.0,
+      "pass": true,
+      "fields": {
+        "t2mb": {
+          "wrf_K": 285.345764,
+          "jax_K": 285.345773786372,
+          "abs_d_K": 9.786372004327859e-06,
+          "pass": true
+        },
+        "t2": {
+          "wrf_K": 285.345764,
+          "jax_K": 285.345773786372,
+          "abs_d_K": 9.786372004327859e-06,
+          "pass": true
+        }
+      }
+    },
+    {
+      "name": "teide_snow",
+      "case": "snow",
+      "fveg": 0.0,
+      "pass": true,
+      "fields": {
+        "t2mb": {
+          "wrf_K": 280.279724,
+          "jax_K": 280.2797274616712,
+          "abs_d_K": 3.461671212789952e-06,
+          "pass": true
+        },
+        "t2": {
+          "wrf_K": 280.279724,
+          "jax_K": 280.2797274616712,
+          "abs_d_K": 3.461671212789952e-06,
+          "pass": true
+        }
+      }
+    }
+  ],
+  "stable_nocturnal_T2_residual_K": {
+    "nighttime_veg5": -7.257618653966347e-05,
+    "nighttime_veg9": 0.00018758662042728247,
+    "nighttime_veg10": 0.00031797734169458636,
+    "nighttime_veg13": -1.7470557736487535e-05,
+    "nighttime_veg16": 9.786372004327859e-06
+  },
+  "verdict": "NOAHMP_T2MB_WRF_PARITY_PASS"
+}

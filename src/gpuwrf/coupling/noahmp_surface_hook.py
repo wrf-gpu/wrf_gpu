@@ -165,12 +165,13 @@ def overlay_noahmp_land_diagnostics(
     bulk_tsk,
     dt: float,
     *,
+    bulk_t2=None,
     radiation: Any = None,
     clock: Any = None,
     energy_params: Any = None,
     rad_params: Any = None,
 ):
-    """Overlay prognostic Noah-MP land HFX/LH/TSK onto the bulk diagnostics.
+    """Overlay prognostic Noah-MP land HFX/LH/TSK (+ the LSM 2-m T2) onto the bulk.
 
     The M9 surface map (gates / TOST) is recomputed post-step from ``State`` via
     the bulk surface layer; over LAND it must instead report the prognostic
@@ -178,9 +179,12 @@ def overlay_noahmp_land_diagnostics(
     column step on the CURRENT (post-step) land carry to read back HFX/LH/TSK and
     selects them where ``is_land``; ocean/water keeps the bulk diagnostic value.
 
-    Returns ``(hfx, lh, tsk)`` 2-D (ny, nx). T2/Q2/U10/V10 are left to the bulk
-    surface-layer diagnostic, which already uses the Noah-MP skin temperature
-    (written into ``state.t_skin`` by ``noahmp_surface_step``) as its surface BC.
+    LAND T2 (v0.9.0): real WRF OVERWRITES the surface-layer (MYNN/sfclay) 2-m
+    temperature with the Noah-MP LSM diagnostic ``T2 = FVEG*T2MV + (1-FVEG)*T2MB``
+    over every land point (module_surface_driver.F:3469-3473). When ``bulk_t2`` is
+    supplied this routes the faithful ``nm.t2`` over land (water keeps ``bulk_t2``)
+    and returns a 4-tuple ``(hfx, lh, tsk, t2)``; with ``bulk_t2=None`` it returns
+    the legacy ``(hfx, lh, tsk)`` (callers that have not yet wired the T2 overwrite).
     """
     view = _build_column_view(state)
     forcing: NoahMPForcing = assemble_noahmp_forcing(view, static, radiation, clock, float(dt))
@@ -195,7 +199,12 @@ def overlay_noahmp_land_diagnostics(
     hfx = jnp.where(is_land, jnp.asarray(nm.hfx, dtype=jnp.float64), jnp.asarray(bulk_hfx, dtype=jnp.float64))
     lh = jnp.where(is_land, jnp.asarray(nm.lh, dtype=jnp.float64), jnp.asarray(bulk_lh, dtype=jnp.float64))
     tsk = jnp.where(is_land, jnp.asarray(nm.tsk, dtype=jnp.float64), jnp.asarray(bulk_tsk, dtype=jnp.float64))
-    return hfx, lh, tsk
+    if bulk_t2 is None:
+        return hfx, lh, tsk
+    # LSM 2-m air temperature overwrite over land (the faithful resolution of the
+    # operational land-T2 the MYNN-SL empirical stand-in was patching).
+    t2 = jnp.where(is_land, jnp.asarray(nm.t2, dtype=jnp.float64), jnp.asarray(bulk_t2, dtype=jnp.float64))
+    return hfx, lh, tsk, t2
 
 
 __all__ = ["noahmp_surface_step", "overlay_noahmp_land_diagnostics"]

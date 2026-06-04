@@ -48,14 +48,13 @@ from gpuwrf.physics.surface_constants import (
     PRT,
     R_D,
     R_D_OVER_CP,
-    SALINITY_FACTOR,
     SFCLAYREV_TABLE_DZOL,
     SFCLAYREV_TABLE_N,
     SVP1_KPA,
     SVP2,
     SVP3_K,
     SVPT0_K,
-    VCONVC,
+    VCONVC_MYNN,
     XKA,
     XLV,
     ZOLRI_BR_CAP,
@@ -240,7 +239,7 @@ def _zolri(ri, z, z0):
 # ==================================================================================
 
 
-def _zolrib(ri, za, z0, zt, logz0, logzt):
+def _zolrib(ri, za, z0, zt, logz0, logzt, zol1_seed=None):
     """MYNN ``zolrib`` brute-force z/L solve, module_sf_mynn.F:1984-2048.
 
     Unlike sfclayrev's secant ``_zolri`` (which builds BOTH residual terms from the
@@ -278,11 +277,15 @@ def _zolrib(ri, za, z0, zt, logz0, logzt):
         psix2 = jnp.where(unstable, psix2_u, psix2_s)
         return ri * psix2 * psix2 / psit2
 
-    # n==1: zolold = zol1 (the first guess). We seed zol1 from Li_etal_2010, the
-    # itimestep<=1 WRF path (module_sf_mynn.F:794,879); for warm steps WRF uses a
-    # MOL-based guess, but the brute-force zolrib converges to the same root from
-    # either seed (the residual, not the seed, sets the root -- spec Mismatch 1).
-    zol1 = _li_etal_2010(ri, za / z0, z0 / zt)
+    # n==1: zolold = zol1 (the first guess). For a WARM step (itimestep>1) WRF seeds
+    # the MOL-based guess (module_sf_mynn.F:796/881); for the very first step it seeds
+    # Li_etal_2010 (lines 794/879). zolrib is a fixed-point that is NOT globally
+    # contractive, so the seed can select between roots -- pass the operational
+    # warm-step seed (``zol1_seed``) to stay WRF-faithful; fall back to Li for the
+    # cold start / when no seed is provided.
+    zol1 = _li_etal_2010(ri, za / z0, z0 / zt) if zol1_seed is None else zol1_seed
+    # WRF wrong-quadrant guard (module_sf_mynn.F:1998): zol1*ri<0 -> zol1=0.
+    zol1 = jnp.where(zol1 * ri < 0.0, 0.0, zol1)
 
     def body(_, carry):
         zol_old, frozen = carry
@@ -341,58 +344,6 @@ def _li_etal_2010(rib, zaz0, z0zt):
         zl_uns,
         jnp.where(rib <= 0.2, zl_wsta, zl_ssta),
     )
-
-
-# ==================================================================================
-# Noah-MP bare-ground 2 m heat resistance (module_sf_noahmplsm.F SFCDIF1 / BARE_FLUX)
-# ==================================================================================
-
-
-def _noahmp_bare_2m_weight_stable(zol, za, znt):
-    """Noah-MP bare-ground stable skin->2 m interpolation weight ``PSIT2/PSIT``.
-
-    WRF's land T2 is NOT the MYNN ``THGB + DTG*PSIT2/PSIT`` interpolation: when an
-    LSM is active that value is *overwritten* per surface point
-    (``module_sf_mynn.F:1135`` "THESE WILL BE OVERWRITTEN FOR LAND POINTS IN THE
-    LSM"; ``module_surface_driver.F:3470`` sets land
-    ``T2 = FVEG*T2MV + (1-FVEG)*T2MB``). For this fixture FVEG ~= 0.04-0.06 (sparse
-    Canary), so the land T2 is dominated by the BARE-ground diagnostic
-    ``T2MB = TGB - SHB/(rho*cp*EHB2)`` (``module_sf_noahmplsm.F:4470``). In
-    temperature space that is ``T2 = skin + (air - skin) * (CH2FH2 / CHFH)``, i.e. a
-    skin->air interpolation with weight ``PSIT2/PSIT`` formed from the SFCDIF1
-    bare-ground heat resistances (NOT MYNN's). Crucially BOTH the lowest-level and
-    2 m resistances come from the SAME SFCDIF1 framework, so the weight must use a
-    consistent pair -- mixing a bare numerator with MYNN's thermal-baseline
-    denominator (z_t, CB05) gives the wrong ratio.
-
-    BARE_FLUX runs SFCDIF1 with ``Z0H = Z0M`` (the CZIL exponential is commented out
-    at :4354/4356), and SFCDIF1 uses the Paulson-1970 stability forms with the z/L
-    hard-capped at 2 m:
-
-      * ``MOZ = MIN((ZLVL-ZPD)/MOL, 1.0)``, ``MOZ2 = MIN((2+Z0H)/MOL, 1.0)``  (:4667-4668)
-      * stable ``FH = -5*MOZ``, ``FH2 = -5*MOZ2``                              (:4698,4700)
-      * ``FH = MIN(FH, 0.9*LOG(ZLVL/Z0H))``, ``FH2 = MIN(FH2, 0.9*LOG((2+Z0H)/Z0H))`` (:4721,4723)
-      * ``PSIT = LOG(ZLVL/Z0H) - FH``, ``PSIT2 = LOG((2+Z0H)/Z0H) - FH2``      (:4727,4729)
-
-    The ``MOZ2 <= 1`` cap BOUNDS the 2 m stability suppression (``FH2 >= -5``),
-    keeping the 2 m exchange large so T2 stays close to the lowest-level air. MYNN's
-    unbounded CB05 ``psih2`` at the stable z/L cap (=20) over-suppresses the 2 m
-    exchange and pulls T2 toward the cold radiative skin (the observed overnight land
-    cold bias: weight ~0.42 vs WRF-bare ~0.56-0.65). ``MOL = ZA/zol`` (ZPD=0 here);
-    stable-regime only -- the unstable/daytime path keeps the validated MYNN form.
-    """
-
-    z0h = znt  # BARE_FLUX: Z0H = Z0M (module_sf_noahmplsm.F:4354/4356)
-    tmpch = jnp.log(za / z0h)             # LOG(ZLVL/Z0H), ZPD=0   (:4653)
-    tmpch2 = jnp.log((2.0 + z0h) / z0h)   # LOG((2+Z0H)/Z0H)       (:4655)
-    mol = za / jnp.maximum(zol, 1.0e-6)   # MOL = ZA/zol (stable zol>0)
-    moz = jnp.minimum(za / mol, 1.0)              # :4667
-    moz2 = jnp.minimum((2.0 + z0h) / mol, 1.0)    # :4668 -- the 2 m z/L cap
-    fh = jnp.minimum(-5.0 * moz, 0.9 * tmpch)     # :4698, :4721
-    fh2 = jnp.minimum(-5.0 * moz2, 0.9 * tmpch2)  # :4700, :4723
-    psit = jnp.maximum(tmpch - fh, 1.0)           # PSIT  (:4727 / floor)
-    psit2 = jnp.maximum(tmpch2 - fh2, 1.0)        # PSIT2 (:4729 / floor)
-    return psit2 / psit                           # skin->2 m weight toward air
 
 
 # ==================================================================================
@@ -523,14 +474,28 @@ def surface_layer_with_diagnostics(state) -> SurfaceLayerDiagnostics:
     thvx = thx * tvcon                               # virtual potential temperature
     scr4 = t1d * tvcon                               # virtual temperature
 
-    # --- saturation surface mixing ratio qsfc (sf_sfclayrev.F90:280-291) ---
-    e1_g = SVP1_KPA * jnp.exp(SVP2 * (tgdsa - SVPT0_K) / (tgdsa - SVP3_K))
-    e1_g = jnp.where(is_water & (lakemask == 0.0), e1_g * SALINITY_FACTOR, e1_g)
+    # --- surface saturation humidity QSFC / QSFCMR (module_sf_mynn.F:522-537) ---
+    # MYNN uses the Bolton(1980) SVP over water and an explicit ice formula when
+    # TSK<273.15 (NO salinity factor -- that is a sfclayrev feature). It carries TWO
+    # surface humidities: QSFC = specific humidity = EP2*E1/(PSFC-ep_3*E1) (used in
+    # THVGB and the q2 anchor) and QSFCMR = mixing ratio = EP2*E1/(PSFC-E1) (used in
+    # the QFX flux). Over land both come from the carried-over QSFC when QSFC>0.
+    ep_3 = 1.0 - EP2
+    e1_g = jnp.where(
+        tgdsa < 273.15,
+        SVP1_KPA * jnp.exp(4648.0 * (1.0 / 273.15 - 1.0 / tgdsa) - 11.64 * jnp.log(273.15 / tgdsa) + 0.02265 * (273.15 - tgdsa)),
+        SVP1_KPA * jnp.exp(SVP2 * (tgdsa - SVPT0_K) / (tgdsa - SVP3_K)),
+    )
     qsfc_in = _as_surface(_field(state, "qsfc", -1.0), shape)
-    # land qsfc may carry over from previous step; here (no carry) recompute when <=0.
-    qsfc = jnp.where(is_water | (qsfc_in <= 0.0), EP2 * e1_g / (psfc_cb - e1_g), qsfc_in)
-    # qgh from lowest-level air temp (diagnostic; not needed downstream here).
-    cpm = CP_D * (1.0 + 0.8 * qx)
+    recompute_q = is_water | (qsfc_in <= 0.0)
+    # QSFC (specific humidity): recompute over water/<=0 land, else carried value.
+    qsfc = jnp.where(recompute_q, EP2 * e1_g / (psfc_cb - ep_3 * e1_g), qsfc_in)
+    # QSFCMR (mixing ratio): from the recompute, else qsfc/(1-qsfc) (spec hum -> mr).
+    qsfcmr = jnp.where(recompute_q, EP2 * e1_g / (psfc_cb - e1_g), qsfc_in / (1.0 - qsfc_in))
+    # MYNN moist heat capacity (module_sf_mynn.F:552): CPM = CP*(1+0.84*QV1D), where
+    # QV1D is the lowest-level MIXING ratio. (sfclayrev uses 0.8; this is the MYNN-SL
+    # path -> 0.84.)
+    cpm = CP_D * (1.0 + 0.84 * qx)
 
     # --- heights and density (sf_sfclayrev.F90:298-313) ---
     zqklp1 = jnp.zeros(shape, dtype=jnp.float64)
@@ -540,27 +505,32 @@ def surface_layer_with_diagnostics(state) -> SurfaceLayerDiagnostics:
     govrth = G / thx
 
     # --- bulk Richardson number (sf_sfclayrev.F90:317-358) ---
-    gz1oz0 = jnp.log((za + znt) / znt)
-    gz2oz0 = jnp.log((2.0 + znt) / znt)
-    gz10oz0 = jnp.log((10.0 + znt) / znt)
+    # (gz?oz0 momentum logs are deferred until AFTER the water-z0 Charnock update,
+    # because WRF computes them on the UPDATED znt -- module_sf_mynn.F:755-760.)
     wspd_raw = jnp.sqrt(u0 * u0 + v0 * v0)
     tskv = thgb * (1.0 + EP1 * qsfc)
     dthvdz = thvx - tskv
 
-    # convective velocity scale: Beljaars over land, MM5/Wyngaard over water.
-    # Land branch needs hfx/qfx; on first call (no carryover) hfx=qfx=0 -> fluxc=0.
+    # Convective velocity scale WSTAR + subgrid VSGD (module_sf_mynn.F:564-586).
+    # MYNN uses the Beljaars (1995) convective form over BOTH land and water (NOT the
+    # MM5/Wyngaard sqrt(-dthv) form), with VCONVC=1.25 and -- over land -- an
+    # increased mixing height min(1.5*pblh,4000) to represent non-local mass-flux
+    # transport above the PBL top. fluxc uses THVGB (=tskv) and g/TSK (=g/tgdsa).
+    # On a cold start (no hfx/qfx carryover) fluxc=0 so WSTAR=0.
     hfx_prev = _as_surface(_field(state, "hfx", 0.0), shape)
     qfx_prev = _as_surface(_field(state, "qfx", 0.0), shape)
     fluxc = jnp.maximum(hfx_prev / rhox / CP_D + EP1 * tskv * qfx_prev / rhox, 0.0)
-    vconv_land = VCONVC * (G / tgdsa * pblh * fluxc) ** 0.33
-    dthvm = jnp.maximum(-dthvdz, 0.0)
-    vconv_water = jnp.sqrt(dthvm)
+    height_land = jnp.minimum(1.5 * pblh, 4000.0)            # module_sf_mynn.F:578
+    vconv_land = VCONVC_MYNN * (G / tgdsa * height_land * fluxc) ** 0.33  # :578
+    vconv_water = VCONVC_MYNN * (G / tgdsa * pblh * fluxc) ** 0.33        # :574
     vconv = jnp.where(is_land, vconv_land, vconv_water)
     vsgd = 0.32 * (jnp.maximum(dx_m / 5000.0 - 1.0, 0.0)) ** 0.33
     wspd = jnp.sqrt(wspd_raw * wspd_raw + vconv * vconv + vsgd * vsgd)
     wspd = jnp.maximum(wspd, MIN_WIND_M_S)
     br = govrth * za * dthvdz / (wspd * wspd)
-    br = jnp.where(mol_in < 0.0, jnp.minimum(br, 0.0), br)  # previously unstable
+    # itimestep>1 bulk-Ri clamp (module_sf_mynn.F:597-600). The "if previously
+    # unstable -> BR<=0" block (lines 603-605) is COMMENTED OUT in WRF; do not apply.
+    br = jnp.clip(br, -4.0, 4.0)
 
     # ==============================================================================
     # MYNN thermal/moisture roughness z_t/z_q, computed BEFORE the z/L solve
@@ -570,8 +540,25 @@ def surface_layer_with_diagnostics(state) -> SurfaceLayerDiagnostics:
     # line 675/725) -- NOT a blended/look-ahead value; the in-step ust update happens
     # later (line 949), after the z/L solve (spec Mismatch 2).
     # ==============================================================================
-    visc = (1.32 + 0.009 * (t1d - 273.15)) * 1.0e-5  # module_sf_mynn.F:~440 kin. visc
-    restar = jnp.maximum(ust_in * znt / visc, 0.1)   # module_sf_mynn.F:675/725
+    # MYNN kinematic viscosity, Andreas (1989) cubic in T_celsius (module_sf_mynn.F:
+    # 622-623) -- NOT the sfclayrev linear form.
+    tc1d = t1d - 273.15
+    visc = 1.326e-5 * (1.0 + 6.542e-3 * tc1d + 8.301e-6 * tc1d ** 2 - 4.84e-9 * tc1d ** 3)
+
+    # WATER aerodynamic z0: WRF re-derives ZNT from the COARE 3.0 Charnock relation
+    # (module_sf_mynn.F:635 -> charnock_1955) every step using the current UST/WSPD,
+    # then computes restar with the NEW znt (line 675). The seeded land/water z0 only
+    # set the FIRST GZ1OZ0; faithfully updating water z0 here is required (otherwise
+    # z0 stays at the ~2.85e-3 seed instead of the physical ~1e-4 open-ocean value).
+    wsp10m = wspd * jnp.log(10.0 / 1.0e-4) / jnp.log(za / 1.0e-4)
+    czc = 0.011 + 0.007 * jnp.clip((wsp10m - 10.0) / 8.0, 0.0, 1.0)   # variable Charnock
+    znt_water = jnp.clip(
+        czc * ust_in * ust_in / G + 0.11 * visc / jnp.maximum(ust_in, 0.05),
+        1.27e-7, 2.85e-3,
+    )
+    znt = jnp.where(is_water, znt_water, znt)
+
+    restar = jnp.maximum(ust_in * znt / visc, 0.1)   # module_sf_mynn.F:675/725 (NEW znt)
 
     # LAND: zilitinkevich_1995 default (IZ0TLND<=1, CZIL=0.085), z_q == z_t, NO lower
     # floor -- only MIN(z_t, 0.75*z0) (module_sf_mynn.F:1252-1265). Snow/ice
@@ -585,17 +572,25 @@ def surface_layer_with_diagnostics(state) -> SurfaceLayerDiagnostics:
     z_t = jnp.where(is_land, z_t_land, z_t_water)
     z_q = z_t  # zilitinkevich land + fairall water both set z_q = z_t
 
-    # thermal logs (module_sf_mynn.F:756-760): numerator is (height + ZNTstoch).
+    # momentum + thermal logs (module_sf_mynn.F:755-760), on the UPDATED znt; the
+    # numerator is (height + ZNTstoch) for both z0 and z_t.
+    gz1oz0 = jnp.log((za + znt) / znt)
+    gz2oz0 = jnp.log((2.0 + znt) / znt)
+    gz10oz0 = jnp.log((10.0 + znt) / znt)
     gz1ozt = jnp.log((za + znt) / z_t)
     gz2ozt = jnp.log((2.0 + znt) / z_t)
     gz10ozt = jnp.log((10.0 + znt) / z_t)
 
     # --- z/L via MYNN zolrib brute-force solve (module_sf_mynn.F:804/889) ---
-    # zolrib's heat residual uses the THERMAL roughness z_t (spec Mismatch 1).
-    # WRF caps the bulk-Ri implicitly via the Li_etal_2010 fallback; we still guard
-    # the |br| that feeds the seed/fallback against pathological tiny-wind columns.
+    # zolrib's heat residual uses the THERMAL roughness z_t. The WARM-step first guess
+    # (itimestep>1) is the MOL-based estimate ZA*k*g*MOL/(TH1D*max(ust^2,eps)) clamped
+    # per sign (module_sf_mynn.F:796-798 stable / 881-883 unstable). BR is already
+    # clamped to [-4,4] above; the extra ZOLRI_BR_CAP guard is now inert but harmless.
     br_capped = jnp.clip(br, -ZOLRI_BR_CAP, ZOLRI_BR_CAP)
-    zol = _zolrib(br_capped, za, znt, z_t, gz1oz0, gz1ozt)
+    zol_guess_s = jnp.clip(za * KARMAN * G * mol_in / (thx * jnp.maximum(ust_in ** 2, 1.0e-4)), 0.0, 20.0)
+    zol_guess_u = jnp.clip(za * KARMAN * G * mol_in / (thx * jnp.maximum(ust_in ** 2, 1.0e-3)), -20.0, 0.0)
+    zol1_seed = jnp.where(br > 0.0, zol_guess_s, jnp.where(br < 0.0, zol_guess_u, 0.0))
+    zol = _zolrib(br_capped, za, znt, z_t, gz1oz0, gz1ozt, zol1_seed=zol1_seed)
     # per-sign clamp (module_sf_mynn.F:805-806 stable -> [0,20]; 890-891 unstable ->
     # [-20,0]); neutral (br==0) -> zol=0 (module_sf_mynn.F:863).
     zol = jnp.where(
@@ -665,7 +660,11 @@ def surface_layer_with_diagnostics(state) -> SurfaceLayerDiagnostics:
     psim10 = jnp.where(unstable, psim10_capped, psim10)
     psih10 = jnp.where(unstable, psih10_capped, psih10)
 
-    regime = jnp.where(stable, 1.0, jnp.where(neutral, 3.0, 4.0))
+    # Regime class (module_sf_mynn.F:783-790, 855, 875): BR>0.2 -> 1 (nighttime
+    # stable), 0<BR<=0.2 -> 2 (damped mechanical turbulence), BR==0 -> 3 (neutral),
+    # BR<0 -> 4 (free convection). Diagnostic only; the PSI path is identical for
+    # regimes 1 and 2 (both use the stable branch).
+    regime = jnp.where(br > 0.2, 1.0, jnp.where(stable, 2.0, jnp.where(neutral, 3.0, 4.0)))
     zol = jnp.where(neutral, 0.0, zol)
     rmol = zol / za
 
@@ -693,24 +692,21 @@ def surface_layer_with_diagnostics(state) -> SurfaceLayerDiagnostics:
     psiq2 = jnp.maximum(jnp.log((2.0 + znt) / z_q) - psih2, 1.0)  # 976
     psiq10 = jnp.maximum(jnp.log((10.0 + znt) / z_q) - psih10, 1.0)  # 977
 
-    # --- LAND nocturnal-stable 2 m thermal diagnostic: Noah-MP bare-ground form ---
-    # Over a Noah-MP land point WRF discards the MYNN ``THGB + DTG*PSIT2/PSIT`` 2 m
-    # value (module_sf_mynn.F:1135 "OVERWRITTEN FOR LAND POINTS IN THE LSM") and uses
-    # the LSM diagnostic ``T2 = FVEG*T2MV + (1-FVEG)*T2MB``
-    # (module_surface_driver.F:3470). For sparse Canary land (FVEG~0.04-0.06) the
-    # bare-ground ``T2MB`` dominates. Its skin->2 m interpolation weight comes from
-    # SFCDIF1's Paulson stability with the ``MOZ2<=1`` 2 m cap, which is BOUNDED
-    # where MYNN's CB05 ``psih2`` over-suppresses the 2 m exchange in the deep-stable
-    # regime (z/L pinned at 20). Using the MYNN ``psit2/psit`` ratio over stable land
-    # places T2 at weight ~0.42 toward the lowest-level air; the consistent
-    # bare-ground ratio recovers ~0.76 (WRF truth ~0.56-0.65), collapsing the
-    # overnight land T2 cold bias (T2 RMSE vs WRF T2B 1.64K -> 0.72K at 06z) with NO
-    # daytime change. Applied ONLY to the th2/q2 diagnostic ratio below (the flux
-    # ``psit``/``psit2`` and MOL are left on the MYNN path; land HFX/QFX come from
-    # Noah-MP in the coupler). Gated to land & stable.
-    land_stable = is_land & stable
-    w2m_bare = _noahmp_bare_2m_weight_stable(zol, za, znt)  # PSIT2/PSIT (bare SFCDIF1)
-    w2m = jnp.where(land_stable, w2m_bare, psit2 / psit)    # MYNN ratio elsewhere
+    # --- 2 m thermal/moisture weight: FAITHFUL MYNN-SL ``psit2/psit`` ---
+    # WRF's MYNN-SL 2-m diagnostic is ``TH2 = THGB + DTG*PSIT2/PSIT`` (module_sf_mynn.F
+    # :1138); the port uses that ratio everywhere — this is exactly module_sf_mynn.F.
+    #
+    # Over a Noah-MP LAND point real WRF then OVERWRITES this MYNN 2-m value with the
+    # LSM diagnostic ``T2 = FVEG*T2MV + (1-FVEG)*T2MB`` (module_sf_mynn.F:1135
+    # "OVERWRITTEN FOR LAND POINTS IN THE LSM"; module_surface_driver.F:3469-3473).
+    # That overwrite is now done FAITHFULLY in the Noah-MP coupler from the genuine
+    # Noah-MP T2MV/T2MB diagnostics (noahmp_surface_hook.overlay_noahmp_land_diagnostics
+    # / proofs/v090/noahmp_t2mb_parity.json), so this surface-layer module is left as
+    # the pure, savepoint-faithful module_sf_mynn.F 2-m diagnostic (the value WRF uses
+    # over water and as the pre-overwrite seed over land). The earlier opt-in empirical
+    # ``lsm_t2_diag`` bare-ground stand-in for the missing LSM step has been RETIRED —
+    # the real T2MB/T2MV path supersedes it.
+    w2m = psit2 / psit                                      # faithful MYNN-SL ratio
 
     # u10/v10 diagnostics (module_sf_mynn.F:1109-1131).
     # WRF MYNN 10 m wind branches on the lowest mass-level height za
@@ -749,11 +745,16 @@ def surface_layer_with_diagnostics(state) -> SurfaceLayerDiagnostics:
     th2_out_warm = warm_lo & ((th2 < thgb) | (th2 > thx))
     th2_out_cold = (~warm_lo) & ((th2 > thgb) | (th2 < thx))
     th2 = jnp.where(th2_out_warm | th2_out_cold, th2_lin, th2)
-    q2 = qsfc + (qx - qsfc) * jnp.where(land_stable, w2m_bare, psiq2 / psiq)
-    # MYNN 2-m mixing-ratio bracket floor (module_sf_mynn.F:1148):
-    # Q2 = MAX(Q2, MIN(qsfc, qv)). Prevents an unbracketed psiq2/psiq ratio from
-    # driving Q2 below both anchors. WRF reference code, not a masking clamp.
-    q2 = jnp.maximum(q2, jnp.minimum(qsfc, qx))
+    # Q2 uses the surface MIXING RATIO anchor (module_sf_mynn.F:1147), faithful MYNN
+    # ``psiq2/psiq`` (the land Q2 overwrite to the Noah-MP LSM Q2 is owned by the
+    # coupler, mirroring the T2 overwrite, when wired).
+    q2w = psiq2 / psiq
+    q2 = qsfcmr + (qx - qsfcmr) * q2w
+    # MYNN 2-m mixing-ratio brackets (module_sf_mynn.F:1148-1149):
+    # Q2 = MAX(Q2, MIN(QSFCMR, QV1D)) then Q2 = MIN(Q2, 1.05*QV1D). WRF reference
+    # code (bracket floor + ceiling), not a masking clamp.
+    q2 = jnp.maximum(q2, jnp.minimum(qsfcmr, qx))
+    q2 = jnp.minimum(q2, 1.05 * qx)
     t2 = th2 * (psfcpa / P0_PA) ** R_D_OVER_CP
     # T* (theta scale) -- module_sf_mynn.F:981-983: WRF uses the VIRTUAL dtheta
     # (THV1D-THVGB) and the heat resistance PSIT. (The HFX flux below uses the
@@ -768,9 +769,9 @@ def surface_layer_with_diagnostics(state) -> SurfaceLayerDiagnostics:
     # WRF-faithful MYNN flux and is numerically robust at thx==thgb (no divide).
     flqc = rhox * mavail * ustar * KARMAN / psiq
     flhc = cpm * rhox * ustar * KARMAN / psit
-    # QFX/LH (1057-1060): QFX uses the surface MIXING RATIO (qsfc here is already
-    # the mixing ratio EP2*e1/(psfc-e1)); small negative QFX allowed, floored -0.02.
-    qfx = flqc * (qsfc - qx)
+    # QFX/LH (1057-1060): QFX uses the surface MIXING RATIO QSFCMR (NOT the specific
+    # humidity QSFC); small negative QFX allowed, floored -0.02.
+    qfx = flqc * (qsfcmr - qx)
     qfx = jnp.maximum(qfx, -0.02)
     lh = XLV * qfx
     # HFX (1066/1074): same FLHC*(THGB-TH1D) on land and water; land floored -250.
@@ -793,6 +794,7 @@ def surface_layer_with_diagnostics(state) -> SurfaceLayerDiagnostics:
         tau_v=tau_v,
         rhosfc=rhox,
         fltv=fltv,
+        xland=xland,
     )
     return SurfaceLayerDiagnostics(
         fluxes=fluxes,

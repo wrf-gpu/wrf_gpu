@@ -1,0 +1,100 @@
+{
+  "base_trunk": "7b7c26e (worker/opus/trunk-0.9.0, closed-v0.6.0 base)",
+  "branch": "worker/opus/v090-physics-consolidation",
+  "conflict_cluster_resolution": "surface_layer.py / noahmp_coupler.py / physics_couplers.py were modified by BOTH #1 (MYNN-SL faithful + retired stand-in + T2MB routing) and #3 (xland mask threading). The 'ort' merge auto-combined non-overlapping regions; verified BOTH fixes co-present (VCONVC_MYNN/qsfcmr/0.84-cpm/faithful-w2m + retired stand-in AND xland=xland / xland=sf.xland / state.xland), no conflict markers, all modules import.",
+  "fixes": {
+    "mynn_pbl": {
+      "branch": "worker/opus/v090-mynn-pbl-finish",
+      "gate": "per_field.qke.n_violations == 0",
+      "honest_scope": "mynn_pbl.py is the MYNN2.5 eddy-diffusion column (u/v/theta/qv mixing + TKE prognosis + km/kh/pblh diagnosis). qc/qi prognostic mixing and EDMF mass-flux are scope-limited; see per-field residuals + report.",
+      "observed": {
+        "qke_abs_tol": 0.005,
+        "qke_max_abs_err": 0.004714858724034543,
+        "qke_n_violations": 0,
+        "qke_pass": true
+      },
+      "overall_strict_matrix_pass": false,
+      "pass": true
+    },
+    "mynn_sl": {
+      "branch": "worker/opus/v090-noahmp-t2mb (carries MYNN-SL faithful + retired stand-in)",
+      "gate": "mynnsl_faithful_verdict == PASS",
+      "observed": {
+        "mynnsl_faithful_verdict": "PASS",
+        "n_cases": 10,
+        "oracle": "module_sf_mynn.F (byte-identical pristine WRF, fp32 build)"
+      },
+      "pass": true
+    },
+    "namelist_compat_tests": {
+      "branch": "worker/opus/v090-namelist-compat",
+      "gate": "pytest tests/test_namelist_check.py + tests/test_v090_* all pass",
+      "observed": {
+        "command": "pytest tests/test_namelist_check.py tests/test_v090_mynnsl_oracle_parity.py tests/test_v090_noahmp_t2_overwrite.py",
+        "result": "30 passed"
+      },
+      "pass": true
+    },
+    "noahmp_t2mb": {
+      "branch": "worker/opus/v090-noahmp-t2mb",
+      "gate": "npass == ncolumns and nfail == 0 (11/11)",
+      "observed": {
+        "ncolumns": 11,
+        "nfail": 0,
+        "npass": 11,
+        "tol_K": 0.05,
+        "verdict": "NOAHMP_T2MB_WRF_PARITY_PASS",
+        "worst_abs_residual_K": 0.0010803964744923178
+      },
+      "pass": true
+    },
+    "thompson": {
+      "branch": "worker/opus/v090-thompson-warmrain-fix",
+      "gate": "per_field.qr.pass and per_field.nr.pass",
+      "observed": {
+        "nr_max_abs_err": 0.0007151156639982029,
+        "nr_pass": true,
+        "qr_max_abs_err": 4.117064733397287e-11,
+        "qr_pass": true
+      },
+      "overall_strict_matrix_pass": false,
+      "overall_strict_note": "overall strict matrix carries the predeclared honest qc-autoconversion residual (max_abs 5.4e-9 vs 1e-9) + theta fp32-storage band; NOT this gate's criterion.",
+      "pass": true
+    },
+    "v060_consolidation_matrix": {
+      "gate": "overall_consolidation_pass == True",
+      "observed": {
+        "counts": {
+          "accepted_fail_closed_not_separately_gated": 1,
+          "gpu_operational_wired": 22,
+          "parity_proven_fail_closed": 5,
+          "passive_off": 7,
+          "unknown_investigate": 0
+        },
+        "git_head_when_generated": "f1f720d2e0f101208525075f054ee45dd2560e67",
+        "overall_consolidation_pass": true
+      },
+      "pass": true
+    },
+    "v060_multicfg_smoke": {
+      "gate": "n_run_fail == 0 and n_run_pass == n_run_configs",
+      "observed": {
+        "n_run_configs": 20,
+        "n_run_fail": 0,
+        "n_run_pass": 20
+      },
+      "pass": true
+    }
+  },
+  "generated": "2026-06-04T08:31:34.533965+00:00",
+  "git_head": "f1f720d2e0f101208525075f054ee45dd2560e67",
+  "merged_branches_in_order": [
+    "worker/opus/v090-noahmp-t2mb (2268fe6)",
+    "worker/opus/v090-thompson-warmrain-fix (5a1ee35)",
+    "worker/opus/v090-mynn-pbl-finish (1305ec7)",
+    "worker/opus/v090-namelist-compat (f459bcd)"
+  ],
+  "method": "CPU fp64 (JAX_PLATFORMS=cpu, JAX_ENABLE_X64=true), taskset -c 0-3. Each savepoint parity driver was RE-RUN on the merged tree against its UNMODIFIED pristine-WRF oracle; no tolerance loosened.",
+  "overall_reverify_pass": true,
+  "proof": "v090-physics-consolidation-reverify"
+}
