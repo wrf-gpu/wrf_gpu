@@ -1,0 +1,22 @@
+{
+  "annotation": "SUPERSEDED — M5 RRTMG artifacts are NOT the current RRTMG verdict",
+  "purpose": "Provenance fix B5 (audit overclaim #12). The M5 RRTMG tier-1/tier-2 artifacts in this directory are HISTORICAL development artifacts from the M5 sprint and DO NOT represent the v0.6.0 RRTMG verdict. In particular, artifacts/m5/tier1_rrtmg_sw_parity.json reads pass=false; that is a stale M5-era SW result, NOT the current state. History is retained (not deleted); this file makes clear they are superseded.",
+  "superseded_artifacts": [
+    "artifacts/m5/tier1_rrtmg_sw_parity.json (pass=false — STALE M5 SW result)",
+    "artifacts/m5/tier1_rrtmg_lw_parity.json",
+    "artifacts/m5/tier2_rrtmg_invariants.json",
+    "artifacts/m5/tier1_rrtmg_per_band.json",
+    "artifacts/m5/rrtmg_gate_result.json",
+    "artifacts/m5/rrtmg_per_band_status.json"
+  ],
+  "current_rrtmg_verdict": {
+    "real_wrf_fixture_parity": "proofs/b3/real_wrf_fixture_parity.json",
+    "verdict": "pass=true (sw_pass=true, lw_pass=true), is_self_compare=false",
+    "fixture_source": "wrf-derived RRTMG_SWRAD/RRTMG_LWRAD Fortran harness (real WRF objects, big-endian RRTMG_*_DATA)",
+    "sw_surface_down_max_abs_w_m2": 0.0238494873046875,
+    "lw_surface_down_max_abs_w_m2": 4.966107121617824e-05,
+    "also": "proofs/b3/real_oracle_parity.json",
+    "known_pending": "proofs/b3/tier2_rrtmg_oracle_parity.json is status=PENDING-ORACLE and is NOT claimed as proof; do not cite it as parity-proven."
+  },
+  "scope": "ra_sw_physics=4 (RRTMG SW) and ra_lw_physics=4 (RRTMG LW)."
+}

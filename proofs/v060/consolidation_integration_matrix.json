@@ -1,16 +1,17 @@
 {
   "proof": "v060-consolidation-integration-matrix",
-  "git_head": "c7f1aec92f709fd7c581dbd80eb755c77709c2dd",
-  "branch": "worker/opus/v060-consolidation2",
+  "git_head": "e54e2ac96f3166899ade8465426b66f314b05c95",
+  "branch": "worker/opus/v060-consolidation3",
   "base_trunk": "e998250 (trunk-0.9.0)",
   "wave1_base": "worker/opus/v060-consolidation (dcc9666)",
   "merged_branches": [
     "WAVE-1 (already in base dcc9666): v060-close (c38a3c0), v060-myj (4807e28), v060-wsm-sm (dec11a1), v060-ysu-acm2-gpuop (44aa8df), v060-gf-tiedtke-gpu (42534d8)",
-    "WAVE-2 (this branch): worker/opus/v060-lin-mp (72a41c5)",
-    "WAVE-2 (this branch): worker/opus/v060-boulac (8837e80)",
-    "WAVE-2 (this branch): worker/opus/v060-radiation (49114db)"
+    "WAVE-2 (consolidation2): worker/opus/v060-lin-mp (72a41c5)",
+    "WAVE-2 (consolidation2): worker/opus/v060-boulac (8837e80)",
+    "WAVE-2 (consolidation2): worker/opus/v060-radiation (49114db)",
+    "WAVE-3 (consolidation3): worker/opus/v060-bmj-fix2 (fcf4346) -- BMJ cu=2 fp64-proven"
   ],
-  "kind": "Consolidation per-scheme operational/parity/fail-closed status matrix + integration-smoke result. Derived from the LIVE merged registries (physics_registry scheme maps, scan_adapters adapter tables, operational_mode._SCAN_WIRED_OPTIONS/_SCAN_UNWIRED_REASON, physics_dispatch) + the multicfg operational smoke (proofs/v060/multicfg_smoke_report.json). HONEST: every non-operational scheme is PARITY-PROVEN-FAIL-CLOSED (loud), never silently skipped.",
+  "kind": "Consolidation per-scheme operational/parity/fail-closed status matrix + integration-smoke result. Derived from the LIVE merged registries (physics_registry scheme maps, scan_adapters adapter tables, operational_mode._SCAN_WIRED_OPTIONS/_SCAN_UNWIRED_REASON, physics_dispatch) + the multicfg operational smoke (proofs/v060/multicfg_smoke_report.json). HONEST: every non-operational scheme is fail-closed (loud), never silently skipped. Fail-closed schemes that ARE individually WRF-savepoint-proven read PARITY-PROVEN-FAIL-CLOSED; New Tiedtke (cu=16), which shares the cu=6 kernel and has no distinct source-path savepoint gate, reads ACCEPTED-FAIL-CLOSED (NOT separately source-gated) so it is never mislabeled parity-proven.",
   "per_scheme_status": {
     "mp_physics=0": {
       "name": "disabled/passive qv",
@@ -122,6 +123,11 @@
       "status": "GPU-OPERATIONAL-WIRED",
       "detail": "scan_adapters[1]=kf_adapter"
     },
+    "cu_physics=2": {
+      "name": "Betts-Miller-Janjic",
+      "status": "GPU-OPERATIONAL-WIRED",
+      "detail": "scan_adapters[2]=bmj_adapter"
+    },
     "cu_physics=3": {
       "name": "Grell-Freitas",
       "status": "PARITY-PROVEN-FAIL-CLOSED",
@@ -134,7 +140,7 @@
     },
     "cu_physics=16": {
       "name": "New Tiedtke",
-      "status": "PARITY-PROVEN-FAIL-CLOSED",
+      "status": "ACCEPTED-FAIL-CLOSED (NOT separately source-gated)",
       "detail": "New Tiedtke is interface-compatible but not separately savepoint-gated by a distinct WRF source path; GPU-batching/gating TODO"
     },
     "sf_surface_physics=0": {
@@ -165,7 +171,7 @@
     "ra_sw_physics=4": {
       "name": "RRTMG shortwave",
       "status": "GPU-OPERATIONAL-WIRED",
-      "detail": "held-rate RTHRATEN column driver: physics.rrtmg_sw (RRTMG SW)"
+      "detail": "held-rate RTHRATEN column driver: physics.rrtmg_sw (RRTMG SW) | proof: proofs/b3/real_wrf_fixture_parity.json (pass, NOT self-compare; SW surface-down max_abs 0.0238 W/m2, LW 4.97e-5 W/m2) [M5 RRTMG artifacts SUPERSEDED]"
     },
     "ra_lw_physics=0": {
       "name": "disabled",
@@ -180,12 +186,13 @@
     "ra_lw_physics=4": {
       "name": "RRTMG longwave",
       "status": "GPU-OPERATIONAL-WIRED",
-      "detail": "held-rate RTHRATEN column driver: physics.rrtmg_lw (RRTMG LW)"
+      "detail": "held-rate RTHRATEN column driver: physics.rrtmg_lw (RRTMG LW) | proof: proofs/b3/real_wrf_fixture_parity.json (pass, NOT self-compare; SW surface-down max_abs 0.0238 W/m2, LW 4.97e-5 W/m2) [M5 RRTMG artifacts SUPERSEDED]"
     }
   },
   "counts": {
-    "gpu_operational_wired": 23,
-    "parity_proven_fail_closed": 4,
+    "gpu_operational_wired": 24,
+    "parity_proven_fail_closed": 3,
+    "accepted_fail_closed_not_separately_gated": 1,
     "passive_off": 7,
     "unknown_investigate": 0
   },
@@ -198,9 +205,9 @@
   "integration_smoke": {
     "report": "proofs/v060/multicfg_smoke_report.json",
     "all_pass": true,
-    "n_configs": 22,
-    "n_run_configs": 19,
-    "n_run_pass": 19,
+    "n_configs": 23,
+    "n_run_configs": 20,
+    "n_run_pass": 20,
     "n_fail_closed_configs": 3,
     "n_fail_closed_ok": 3,
     "scheme_coverage": {
@@ -212,6 +219,7 @@
         "bl8-BouLac",
         "cu0-none",
         "cu1-KF",
+        "cu2-BMJ",
         "cu6-Tiedtke",
         "land-bulk",
         "land2-NoahClassic",

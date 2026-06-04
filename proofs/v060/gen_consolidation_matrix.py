@@ -86,13 +86,35 @@ def _detail_for(key: str, opt: int, adapters, family: str) -> tuple[str, str]:
                 ("ra_sw_physics", 1): "physics.ra_sw_dudhia (Dudhia SW)",
                 ("ra_sw_physics", 4): "physics.rrtmg_sw (RRTMG SW)",
             }[(key, opt)]
-            return "GPU-OPERATIONAL-WIRED", f"held-rate RTHRATEN column driver: {owner}"
+            # RRTMG (opt 4): the real WRF-oracle evidence is the B3 proofs, NOT the
+            # stale M5 artifacts (artifacts/m5/tier1_rrtmg_sw_parity.json pass=false
+            # is superseded; see artifacts/m5/SUPERSEDED_rrtmg_see_proofs_b3.json).
+            proof_ptr = ""
+            if opt == 4:
+                proof_ptr = (
+                    " | proof: proofs/b3/real_wrf_fixture_parity.json (pass, NOT self-compare; "
+                    "SW surface-down max_abs 0.0238 W/m2, LW 4.97e-5 W/m2) "
+                    "[M5 RRTMG artifacts SUPERSEDED]"
+                )
+            return "GPU-OPERATIONAL-WIRED", f"held-rate RTHRATEN column driver: {owner}{proof_ptr}"
         # mp=8 Thompson is wired through the existing coupler (not the table).
         entry = scheme_entry(family, opt)
         return "GPU-OPERATIONAL-WIRED", f"{entry.owner_module}.{entry.entrypoint}"
 
     reason = _SCAN_UNWIRED_REASON.get(f"{key}={opt}", "scan-unwired (see operational_mode)")
+    # HONESTY (audit overclaim #4): a few accepted options are fail-closed but are
+    # NOT individually WRF-savepoint-proven. New Tiedtke (cu=16) shares the cu=6
+    # kernel but has no distinct source-path savepoint gate, so it must NOT be
+    # labeled "PARITY-PROVEN". Label it as accepted/fail-closed/not-separately-gated.
+    if f"{key}={opt}" in _ACCEPTED_NOT_SEPARATELY_GATED:
+        return "ACCEPTED-FAIL-CLOSED (NOT separately source-gated)", reason
     return "PARITY-PROVEN-FAIL-CLOSED", reason
+
+
+# Accepted options that are fail-closed but NOT individually WRF-savepoint-proven
+# (they share another option's kernel / lack a distinct source-path gate). These
+# must never read as "parity-proven".
+_ACCEPTED_NOT_SEPARATELY_GATED = frozenset({"cu_physics=16"})
 
 
 def _git_head() -> str:
@@ -107,6 +129,7 @@ def build() -> dict:
     counts = {
         "gpu_operational_wired": 0,
         "parity_proven_fail_closed": 0,
+        "accepted_fail_closed_not_separately_gated": 0,
         "passive_off": 0,
         "unknown_investigate": 0,
     }
@@ -123,6 +146,9 @@ def build() -> dict:
                 counts["gpu_operational_wired"] += 1
             elif status == "PARITY-PROVEN-FAIL-CLOSED":
                 counts["parity_proven_fail_closed"] += 1
+                fail_closed.append(f"{key}={opt}")
+            elif status.startswith("ACCEPTED-FAIL-CLOSED"):
+                counts["accepted_fail_closed_not_separately_gated"] += 1
                 fail_closed.append(f"{key}={opt}")
             elif status == "PASSIVE/OFF":
                 counts["passive_off"] += 1
@@ -151,15 +177,16 @@ def build() -> dict:
     return {
         "proof": "v060-consolidation-integration-matrix",
         "git_head": _git_head(),
-        "branch": "worker/opus/v060-consolidation2",
+        "branch": "worker/opus/v060-consolidation3",
         "base_trunk": "e998250 (trunk-0.9.0)",
         "wave1_base": "worker/opus/v060-consolidation (dcc9666)",
         "merged_branches": [
             "WAVE-1 (already in base dcc9666): v060-close (c38a3c0), v060-myj (4807e28), "
             "v060-wsm-sm (dec11a1), v060-ysu-acm2-gpuop (44aa8df), v060-gf-tiedtke-gpu (42534d8)",
-            "WAVE-2 (this branch): worker/opus/v060-lin-mp (72a41c5)",
-            "WAVE-2 (this branch): worker/opus/v060-boulac (8837e80)",
-            "WAVE-2 (this branch): worker/opus/v060-radiation (49114db)",
+            "WAVE-2 (consolidation2): worker/opus/v060-lin-mp (72a41c5)",
+            "WAVE-2 (consolidation2): worker/opus/v060-boulac (8837e80)",
+            "WAVE-2 (consolidation2): worker/opus/v060-radiation (49114db)",
+            "WAVE-3 (consolidation3): worker/opus/v060-bmj-fix2 (fcf4346) -- BMJ cu=2 fp64-proven",
         ],
         "kind": (
             "Consolidation per-scheme operational/parity/fail-closed status matrix + "
@@ -168,7 +195,11 @@ def build() -> dict:
             "operational_mode._SCAN_WIRED_OPTIONS/_SCAN_UNWIRED_REASON, "
             "physics_dispatch) + the multicfg operational smoke "
             "(proofs/v060/multicfg_smoke_report.json). HONEST: every non-operational "
-            "scheme is PARITY-PROVEN-FAIL-CLOSED (loud), never silently skipped."
+            "scheme is fail-closed (loud), never silently skipped. Fail-closed schemes "
+            "that ARE individually WRF-savepoint-proven read PARITY-PROVEN-FAIL-CLOSED; "
+            "New Tiedtke (cu=16), which shares the cu=6 kernel and has no distinct "
+            "source-path savepoint gate, reads ACCEPTED-FAIL-CLOSED (NOT separately "
+            "source-gated) so it is never mislabeled parity-proven."
         ),
         "per_scheme_status": per_scheme,
         "counts": counts,
@@ -193,10 +224,12 @@ def main() -> None:
     OUT.write_text(json.dumps(matrix, indent=2) + "\n")
     c = matrix["counts"]
     print(f"per_scheme_status: {len(matrix['per_scheme_status'])} options")
-    print(f"  GPU-OPERATIONAL-WIRED      = {c['gpu_operational_wired']}")
-    print(f"  PARITY-PROVEN-FAIL-CLOSED  = {c['parity_proven_fail_closed']}  {matrix['fail_closed_schemes']}")
-    print(f"  PASSIVE/OFF                = {c['passive_off']}")
-    print(f"  UNKNOWN/INVESTIGATE        = {c['unknown_investigate']}")
+    print(f"  GPU-OPERATIONAL-WIRED                 = {c['gpu_operational_wired']}")
+    print(f"  PARITY-PROVEN-FAIL-CLOSED             = {c['parity_proven_fail_closed']}")
+    print(f"  ACCEPTED-FAIL-CLOSED (not src-gated)  = {c['accepted_fail_closed_not_separately_gated']}")
+    print(f"  PASSIVE/OFF                           = {c['passive_off']}")
+    print(f"  UNKNOWN/INVESTIGATE                   = {c['unknown_investigate']}")
+    print(f"  all fail-closed schemes               = {matrix['fail_closed_schemes']}")
     s = matrix["integration_smoke"]
     print(f"smoke: RUN {s['n_run_pass']}/{s['n_run_configs']} PASS; "
           f"FAIL-CLOSED {s['n_fail_closed_ok']}/{s['n_fail_closed_configs']} OK; all_pass={s['all_pass']}")
