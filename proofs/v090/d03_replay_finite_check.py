@@ -8,8 +8,9 @@ w_damping, damp_opt=3, zdamp, dampcoef, diff_6th, use_flux_advection, force_fp64
 AND inherits the WRF-faithful MYNN qke cold-start seed from
 ``d02_replay.build_replay_case`` (``_wrf_mynn_coldstart_qke``).
 
-This harness drives that exact case in the MEMORY-BOUNDED segmented runner
-(``run_forecast_operational_segmented``) for a few hours and records qke + the
+This harness drives that exact case in fixed ``step_h``-hour increments via the
+production ``run_forecast_operational`` (one compiled program reused per increment;
+peak memory bounded to one increment) for a few hours and records qke + the
 dynamics maxima staying bounded + physical.  If any OTHER instability beyond the
 qke/namelist issue appears (e.g. the historical d03 nested-ph geopotential pump),
 the first-non-finite field + step is recorded precisely.
@@ -56,7 +57,7 @@ from gpuwrf.integration.daily_pipeline import (  # noqa: E402
     finite_summary,
     resolve_run_dir,
 )
-from gpuwrf.runtime.operational_mode import run_forecast_operational_segmented  # noqa: E402
+from gpuwrf.runtime.operational_mode import run_forecast_operational  # noqa: E402
 
 
 def _signature(state):
@@ -78,8 +79,9 @@ def main(argv=None):
     ap.add_argument("--hours", type=float, default=3.0,
                     help="forecast hours for the finite check (a few hours)")
     ap.add_argument("--dt-s", type=float, default=D03_DT_S)
-    ap.add_argument("--segment-steps", type=int, default=120,
-                    help="segmented-runner segment length (bounded peak memory)")
+    ap.add_argument("--step-h", type=float, default=0.25,
+                    help="fixed forecast increment in hours (one compiled program reused; "
+                         "0.25h @ dt=3s = 300 steps, memory-bounded)")
     ap.add_argument("--out", type=Path,
                     default=ROOT / "proofs" / "v090" / "d03_replay_finite_check.json")
     args = ap.parse_args(argv)
@@ -118,15 +120,17 @@ def main(argv=None):
     print(f"d03 grid(zyx)={grid_shape} dt={args.dt_s} qke_t0_max={qke_t0:.4g} "
           f"qke_seeded={qke_coldstart.get('seeded')} flags={flags}")
 
-    # checkpoints: 6 min (early catch), 30 min, then every 30 min to --hours
-    checkpoints = [0.1, 0.5]
-    h = 1.0
+    # Advance in FIXED step_h-hour increments via the production
+    # run_forecast_operational (same entry daily_pipeline drives).  Every advance
+    # has the SAME static hours=step_h so it compiles ONCE and is reused for all
+    # subsequent increments (no per-checkpoint recompile, bounded peak memory).
+    checkpoints = []
+    h = args.step_h
     while h <= args.hours + 1e-9:
-        checkpoints.append(round(h, 3))
-        h += 0.5
-    if args.hours not in checkpoints and args.hours > 0:
-        checkpoints.append(float(args.hours))
-    checkpoints = sorted(set(c for c in checkpoints if c <= args.hours + 1e-9))
+        checkpoints.append(round(h, 6))
+        h += args.step_h
+    if not checkpoints or abs(checkpoints[-1] - args.hours) > 1e-9:
+        checkpoints.append(round(args.hours, 6))
 
     trace = []
     first_blow = None
@@ -134,14 +138,10 @@ def main(argv=None):
     t_start = time.perf_counter()
     err = None
     aborted_oom = False
-    for target_h in checkpoints:
-        seg_h = target_h - done_h
-        if seg_h <= 0:
-            continue
+    while done_h < args.hours - 1e-9:
+        adv = min(args.step_h, args.hours - done_h)
         try:
-            state = run_forecast_operational_segmented(
-                state, nl, float(seg_h), segment_steps=int(args.segment_steps)
-            )
+            state = run_forecast_operational(state, nl, float(adv))
             jax.block_until_ready(state)
         except Exception as exc:  # noqa: BLE001
             import traceback
@@ -149,7 +149,7 @@ def main(argv=None):
             err = f"{type(exc).__name__}: {exc}"
             aborted_oom = "RESOURCE_EXHAUSTED" in str(exc)
             break
-        done_h = target_h
+        done_h = round(done_h + adv, 6)
         sig = _signature(state)
         step = int(round(done_h * 3600.0 / args.dt_s))
         row = {"hours": round(done_h, 3), "step": step, "all_finite": sig["all_finite"],
@@ -209,8 +209,8 @@ def main(argv=None):
         "dt_s": float(args.dt_s),
         "acoustic_substeps": D03_ACOUSTIC_SUBSTEPS,
         "radiation_cadence_steps": D03_RADIATION_CADENCE_STEPS,
-        "segment_steps": args.segment_steps,
-        "runner": "run_forecast_operational_segmented (memory-bounded)",
+        "step_h": args.step_h,
+        "runner": "run_forecast_operational in fixed step_h increments (one compiled program reused; memory-bounded)",
         "fix_under_test": "shipped build_l3_d03_daily_case = validated stability namelist (already present) + WRF-faithful MYNN qke cold-start seed (inherited from build_replay_case)",
         "wrf_seed_ref": "phys/module_bl_mynnedmf.F:618-691 (mym_initialize INITIALIZE_QKE)",
         "qke_coldstart": qke_coldstart,
