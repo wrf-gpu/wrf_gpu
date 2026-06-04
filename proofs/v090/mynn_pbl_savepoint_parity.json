@@ -1,0 +1,200 @@
+{
+  "active_columns": 5487,
+  "comparison": "JAX-vs-WRF (NOT self-compare)",
+  "dt_s": 18.0,
+  "edmf_massflux": false,
+  "fp64": true,
+  "honest_scope": "mynn_pbl.py is the MYNN2.5 eddy-diffusion column (u/v/theta/qv mixing + TKE prognosis + km/kh/pblh diagnosis). qc/qi prognostic mixing and EDMF mass-flux are scope-limited; see per-field residuals + report.",
+  "kind": "REAL WRF MYNN-EDMF PBL (bl_pbl_physics=5) operator-boundary savepoint parity",
+  "n_columns": 5487,
+  "n_levels": 44,
+  "oracle_dir": "/mnt/data/wrf_gpu2/physics_oracle_v090/surface_mynn",
+  "oracle_itimestep": 1000,
+  "oracle_scheme_tag": "mynnedmf",
+  "pass": false,
+  "per_field": {
+    "exch_h": {
+      "abs_tol": 0.001,
+      "enforced_cells": 34575,
+      "jax_range": [
+        0.0,
+        56.51516865780544
+      ],
+      "max_abs_err": 112.22813914238236,
+      "max_rel_err": 29.48388958434154,
+      "n_violations": 26057,
+      "pass": false,
+      "rel_tol": 0.05,
+      "wrf_range": [
+        0.0,
+        137.0010986328125
+      ]
+    },
+    "exch_m": {
+      "abs_tol": 0.001,
+      "enforced_cells": 34575,
+      "jax_range": [
+        0.0,
+        45.9014389863939
+      ],
+      "max_abs_err": 61.93384423328142,
+      "max_rel_err": 0.9803414575644626,
+      "n_violations": 26765,
+      "pass": false,
+      "rel_tol": 0.05,
+      "wrf_range": [
+        0.0,
+        86.49540710449219
+      ]
+    },
+    "pblh": {
+      "abs_tol": 50.0,
+      "enforced_cells": 5487,
+      "jax_range": [
+        85.21538113097994,
+        856.9333106379977
+      ],
+      "max_abs_err": 120.15278731009079,
+      "max_rel_err": 0.2645963865306612,
+      "n_violations": 18,
+      "pass": false,
+      "rel_tol": 0.1,
+      "wrf_range": [
+        101.987548828125,
+        856.60107421875
+      ]
+    },
+    "qke": {
+      "abs_tol": 0.005,
+      "enforced_cells": 34575,
+      "jax_range": [
+        1e-05,
+        1.2952157766165413
+      ],
+      "max_abs_err": 0.09720697113127497,
+      "max_rel_err": 262.90551546669997,
+      "n_violations": 156,
+      "pass": false,
+      "rel_tol": 0.1,
+      "wrf_range": [
+        9.999999747378752e-06,
+        1.3043562173843384
+      ]
+    },
+    "rqvblten": {
+      "abs_tol": 1e-08,
+      "enforced_cells": 34575,
+      "jax_range": [
+        -9.354480166945747e-07,
+        8.122490816302406e-07
+      ],
+      "max_abs_err": 9.230303826624278e-07,
+      "max_rel_err": 2.8696633480364735e+23,
+      "n_violations": 19567,
+      "pass": false,
+      "rel_tol": 0.1,
+      "wrf_range": [
+        -7.708246698712173e-07,
+        9.574513342158752e-07
+      ]
+    },
+    "rthblten": {
+      "abs_tol": 1e-05,
+      "enforced_cells": 34575,
+      "jax_range": [
+        -0.0003901739768726505,
+        0.0012593123705231493
+      ],
+      "max_abs_err": 0.00024430152466455485,
+      "max_rel_err": 1.187778125534401e+26,
+      "n_violations": 13003,
+      "pass": false,
+      "rel_tol": 0.1,
+      "wrf_range": [
+        -0.00039842393016442657,
+        0.0011918810196220875
+      ]
+    },
+    "rublten": {
+      "abs_tol": 1e-05,
+      "enforced_cells": 34575,
+      "jax_range": [
+        -0.000660743946967246,
+        0.0006443056532566703
+      ],
+      "max_abs_err": 0.0002977604444658826,
+      "max_rel_err": 2.531816891976963e+24,
+      "n_violations": 17034,
+      "pass": false,
+      "rel_tol": 0.1,
+      "wrf_range": [
+        -0.0006482733879238367,
+        0.0007280111312866211
+      ]
+    },
+    "rvblten": {
+      "abs_tol": 1e-05,
+      "enforced_cells": 34575,
+      "jax_range": [
+        -0.0007726122551239278,
+        0.0009373993586252954
+      ],
+      "max_abs_err": 0.0003980458227514916,
+      "max_rel_err": 6.175333293158126e+25,
+      "n_violations": 22256,
+      "pass": false,
+      "rel_tol": 0.1,
+      "wrf_range": [
+        -0.000730964879039675,
+        0.0010023382492363453
+      ]
+    }
+  },
+  "physics_options": {
+    "bl_pbl_physics": 5,
+    "mp_physics": 8,
+    "ra_lw_physics": 4,
+    "ra_sw_physics": 4,
+    "sf_sfclay_physics": 5,
+    "sf_surface_physics": 4
+  },
+  "predeclared_tolerances": {
+    "exch_h": {
+      "abs": 0.001,
+      "rel": 0.05
+    },
+    "exch_m": {
+      "abs": 0.001,
+      "rel": 0.05
+    },
+    "pblh": {
+      "abs": 50.0,
+      "rel": 0.1
+    },
+    "qke": {
+      "abs": 0.005,
+      "rel": 0.1
+    },
+    "rqvblten": {
+      "abs": 1e-08,
+      "rel": 0.1
+    },
+    "rthblten": {
+      "abs": 1e-05,
+      "rel": 0.1
+    },
+    "rublten": {
+      "abs": 1e-05,
+      "rel": 0.1
+    },
+    "rvblten": {
+      "abs": 1e-05,
+      "rel": 0.1
+    }
+  },
+  "proof": "v090-mynn-pbl-savepoint-parity",
+  "source_run": "/mnt/data/canairy_meteo/runs/wrf_l3/20260428_18z_l3_24h_20260525T221139Z",
+  "status": "COMPARED",
+  "wrf_source": "/home/enric/src/wrf_pristine/WRF/phys/module_bl_mynnedmf.F",
+  "wrf_source_sha256": "6e4a7d5b35ce46f01591f2c1d58e545380d546e654b4a59ee1bcf99cfbce2d72"
+}
