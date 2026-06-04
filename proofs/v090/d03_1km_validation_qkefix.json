@@ -1,0 +1,53 @@
+{
+  "schema": "V090D031kmValidationQkeFix",
+  "schema_version": 1,
+  "status": "FAIL",
+  "verdict": "D03_1KM_GATED_FP32_STILL_NONFINITE_QKE_FP64_PREMISE_FALSIFIED",
+  "headline": "The qke->FP64 precision-matrix promotion was implemented, verified to take effect (qke is genuinely float64 end-to-end through MYNN), and re-run on the d03 1km gated-fp32 case. It does NOT close the gate: d03 still goes NONFINITE at forecast hour 1 with qke the sole offending field and the SAME ~3036 cells (=~69 columns x 44 levels). The burst's root-cause hypothesis ('qke fp32 OVERFLOW at 1km') is FALSIFIED -- qke in fp64 diverges identically, at tiny qke magnitudes (~0.04-0.13, nowhere near any fp32/fp64 range limit). This is a STRUCTURAL/dynamics-driven NaN over the steep Tenerife terrain, not a precision-range problem. Reported FAIL, not green.",
+  "precision_mode": "gated_fp32 (qke promoted FP64; theta/u/v/qv + bulk fields FP32_GATED; mu/p/ph/w + acoustic/pressure accumulators FP64)",
+  "run_id": "20260521_18z_l3_24h_20260522T133443Z",
+  "cpu_reference_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
+  "grid_mass_shape_zyx": [44, 75, 93],
+  "dt_s": 3.0,
+  "acoustic_substeps": 10,
+  "branch": "worker/opus/v090-qke-fp64-fix",
+  "change_applied": {
+    "file": "src/gpuwrf/contracts/precision.py",
+    "change": "PRECISION_MATRIX['qke'] : (FP32_GATED, True) -> (FP64, False)",
+    "also": "tests/test_m6_precision_matrix.py updated (qke moved gated->FP64-locked; Nc/Nn added to gated set, fixing a PRE-EXISTING test breakage); src/gpuwrf/coupling/physics_couplers.py A2C wind-increment scatter made dtype-safe (silences the now-fp64 du/dv downcast FutureWarning; no numerical change).",
+    "fp64_take_effect_verified": true,
+    "fp64_take_effect_evidence": "Direct GPU probe of the real d03 gated-fp32 case: PRECISION_MATRIX[qke]=(float64,False); namelist.force_fp64=False; t0 state.qke.dtype=float64; the MYNN column kernel output out.tke/out.qke is float64 (standalone + via the operational mynn_adapter). So the promotion is genuinely active on the d03 ship path."
+  },
+  "full_24h_gated_fp32_run": {
+    "instrument": "scripts/d03_replay.py --gated-fp32 --hours 24 (the operational ship pipeline; NO clamp/mask -- execute_daily_pipeline raises PipelineBlocked on the first nonfinite hour)",
+    "pipeline_proof": "proofs/v090/pipeline_run_d03_qkefix_gated_fp32.json",
+    "verdict": "PIPELINE_BLOCKED",
+    "failure_mode": "NONFINITE_STATE",
+    "failed_hour": 1,
+    "nonfinite_fields": {"qke": {"dtype": "float64", "nonfinite_count": 3036, "finite_min_before_blowup": 2.330710837569365e-05, "finite_max_before_blowup": 27.360868568649096}},
+    "all_other_fields_finite": true,
+    "wrfout_files_written": 0,
+    "note": "IDENTICAL nonfinite signature (3036 cells, same finite min/max) to the pre-fix proofs/v090/d03_1km_validation.json -- the strongest evidence that fp64 changed nothing about the blow-up: the same cells diverge."
+  },
+  "root_cause_localization": {
+    "method": "GPU micro-step probes on the real d03 gated-fp32 case (run_forecast_operational single-dt steps + MYNN-internals + real-mynn_adapter decomposition).",
+    "findings": [
+      "qke is genuinely float64 at every checkpoint (state + MYNN kernel).",
+      "qke goes NONFINITE within ~2 coupled dt steps (=6 s model time) over ~67-69 specific columns (2948-3036 nonfinite cells = ~67-69 cols x 44 levels), i.e. column-localized to the steep Tenerife terrain.",
+      "At blow-up qke magnitudes are TINY (~0.04 -> 0.13, capped by the WRF-faithful mym_predict cap <=150); there is NO precision-range overflow.",
+      "On the LAST finite state (qke max 0.036, theta/u/v/ph all finite) the REAL operational mynn_adapter produces a FULLY FINITE qke (max 0.071) and finite diffusivities/tendencies (dfm/dfh/km/kh/el/qkw all finite). => the MYNN physics is NOT the NaN source on a finite input.",
+      "Yet a single coupled forecast step (dynamics acoustic/RK + boundary + MYNN-in-core) on that SAME finite state yields NONFINITE qke. The MYNN-in-core runs on the DYNAMICALLY-EVOLVED intermediate state, so the dynamics produces an unstable intermediate (extreme near-surface shear/theta over the 67-69 steep columns) that drives the in-core qke budget to NaN.",
+      "_mym_level2 gm/gh (shear/buoyancy), ustar, and dz0 stay FINITE through the blow-up, so the NaN is NOT a divide-by-tiny-dz in the level-2 gradients."
+    ],
+    "conclusion": "The d03 1km hour-1 blow-up is a DYNAMICS-driven structural instability on the steep Tenerife terrain that surfaces in qke (the most sensitive field, an in-core MYNN diagnostic of the evolving wind/theta). It is NOT an fp32 precision-range overflow. Promoting qke (and its MYNN length-scale/TKE-budget intermediates, which fp64-promote with it via JAX type-promotion) to fp64 therefore cannot and does not close the gate.",
+    "fp64_reference": "d03 1km is FINITE through 0.3h/360 steps in FULL fp64 (proofs/v090/d03_replay_finite_check.json) -- but that is full-fp64 on EVERY field including the dynamics mass/pressure path, AND only a 0.3h window. The gated-fp32 ship mode keeps the bulk wind/theta fp32; the dynamics-intermediate instability at 1km is not cured by qke fp64 alone. A genuinely-stable 1km gated-fp32 path needs a dynamics/numerics fix (1km CFL / steep-terrain stability), not a precision-matrix edit."
+  },
+  "gate_status": "OPEN -- d03 1km gated-fp32 24h all-timesteps-in-margins gate is NOT met. This remains a genuine open 0.9.0 validation gate.",
+  "all_timesteps_in_margins_vs_cpu_1km": "NOT EVALUATED -- the forecast NaN'd at hour 1 before any wrfout was written, so no RMSE vs the corpus 1km wrfout could be computed.",
+  "carry_over": {
+    "next_sprint": "A real numerics/stability debugging sprint for the d03 1km gated-fp32 dynamics over steep terrain (NOT a precision-contract sprint). Concrete leads: (1) the in-core MYNN runs on the dynamically-evolved intermediate -- audit whether the gated-fp32 dynamics (fp32 u/v/theta with fp64 mu/p/ph) produces an unstable near-surface intermediate over the 67-69 steep columns at dt=3s/10 acoustic substeps; (2) try a 1km-appropriate dt / more acoustic substeps / stronger near-surface vertical-implicit treatment; (3) compare the gated-fp32 vs full-fp64 dynamics intermediate at the SAME step to isolate which fp32 dynamics field first diverges over those columns; (4) the column localization (~69 cols) should be cross-referenced to the steepest d03 terrain gradients.",
+    "what_to_KEEP": "The qke->FP64 promotion is harmless and arguably more correct for a turbulence budget outside the conserved path (qke is small; the d02 speedup is unaffected -- see proofs/v090/d02_recheck_qkefp64). It is retained as a defensible precision-contract improvement, but it MUST NOT be claimed to close the d03 gate."
+  },
+  "honesty_note": "This sprint's premise (fp32 qke overflow at 1km) was FALSIFIED by direct fp64 verification. Honesty over green: the gate is reported OPEN. The qke-fp64 change is committed because it is correct and harmless, but the real blocker is a dynamics-driven 1km steep-terrain instability that a precision-matrix change cannot fix.",
+  "generated": "2026-06-04"
+}
