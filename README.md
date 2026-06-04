@@ -27,29 +27,87 @@ forecast-skill item, **not** a fidelity bug and **not** fixed. This is **not** "
 forecast skill." See [`.agent/decisions/V0.4.0-CLOSE.md`](.agent/decisions/V0.4.0-CLOSE.md) and
 [`proofs/v040/v040_close_proof.json`](proofs/v040/v040_close_proof.json).
 
-## Supported physics schemes (v0.6.0 menu)
+## Physics scheme scope (v0.6.0)
 
 The operational namelist dispatcher (`coupling.physics_dispatch` + `coupling.scan_adapters` +
-`runtime.operational_mode`) is fail-closed: anything outside this matrix raises loudly in
-`io/namelist_check.py`. Each row passed a WRF-savepoint parity gate in isolation and runs
-end-to-end through the operational coupler (integration smoke:
-[`proofs/v060/multicfg_smoke_report.json`](proofs/v060/multicfg_smoke_report.json) — every RUN
-config PASS, schemes active/non-trivial, and every CPU-reference / parity-only scheme correctly
-fail-closed, loud, never silently skipped).
+`runtime.operational_mode`) is fail-closed: anything outside the accepted matrix raises loudly in
+`io/namelist_check.py`, and any accepted-but-not-scan-wired scheme is rejected loudly (never
+silently skipped). The consolidated suite runs end-to-end through the operational coupler
+(integration smoke [`proofs/v060/multicfg_smoke_report.json`](proofs/v060/multicfg_smoke_report.json):
+**20/20 RUN configs PASS + 3/3 FAIL-CLOSED OK**) and the live status matrix is
+[`proofs/v060/consolidation_integration_matrix.json`](proofs/v060/consolidation_integration_matrix.json).
 
-| Family | namelist key | Supported options | GPU operational scan |
-|---|---|---|---|
-| Microphysics | `mp_physics` | 0 (passive qv), 1 (Kessler), 3 (WSM3), 4 (WSM5), 6 (WSM6), 8 (Thompson, default), 10 (Morrison 2-moment), 16 (WDM6) | all scan-wired |
-| PBL | `bl_pbl_physics` | 0 (off), 1 (YSU), 5 (MYNN, default), 7 (ACM2); **2 (MYJ) accepted but parity-only** | YSU/MYNN/ACM2 scan-wired; MYJ(2) savepoint-parity-proven CPU reference, **fail-closed** in the GPU scan (no scan adapter yet, GPU-scan-wire TODO) |
-| Surface layer | `sf_sfclay_physics` | 0 (off), 1 (revised-MM5), 5 (MYNN-SL, default), 7 (Pleim-Xiu); **2 (Janjic Eta) accepted but parity-only** | revised-MM5/MYNN-SL/Pleim-Xiu scan-wired; Janjic(2) savepoint-parity-proven CPU reference, **fail-closed** in the GPU scan (pairs with MYJ, GPU-scan-wire TODO) |
-| Cumulus | `cu_physics` | 0 (none, default), 1 (Kain-Fritsch), 6 (Tiedtke); **3 (Grell-Freitas), 16 (New Tiedtke) accepted but CPU-reference only** | KF + Tiedtke(6) scan-wired; GF(3) + New-Tiedtke(16) **fail-closed** in the GPU scan (savepoint/reference ports; faithful GF GPU-batch ≈ 2000-LOC closure-ensemble sprint, carry-over) |
-| Land surface | `sf_surface_physics` | 0 (off), 2 (Noah classic, needs explicit static/land bundle), 4 (Noah-MP, `use_noahmp=True`) | all scan-wired |
-| Radiation | `ra_sw_physics`, `ra_lw_physics` | 0 (off), 4 (RRTMG SW / LW) | held-rate `RTHRATEN`, scan-wired |
+This section is split deliberately into **(1)** the consolidated GPU-operational menu that is
+*genuinely WRF-oracle-proven and scan-wired*, and **(2)** the requested rows-1-9 coverage, which
+is **NOT complete**. Do not read section (2) as a complete rows-1-9 implementation.
 
-Valid PBL↔surface-layer pairings (WRF rule): MYNN(5)↔MYNN-SL(5), ACM2(7)↔Pleim-Xiu(7), YSU(1)↔revised-MM5(1), MYJ(2)↔Janjic Eta(2) (the MYJ/Janjic pair is mandatory; both are parity-only/fail-closed today).
+### (1) Consolidated v0.6.0 GPU-operational menu (WRF-oracle-proven + scan-wired)
+
+Each scheme below has an isolated savepoint/fixture parity gate against an **unmodified pristine
+WRF source oracle** (not a JAX-vs-JAX self-compare) **and** is scan-wired into the operational GPU
+scan. "Worst resid" is the worst meaningful residual in the cited proof (near-zero-denominator raw
+relative artifacts excluded).
+
+| Family | Option(s) | Scheme | Proof pointer | Worst meaningful residual |
+|---|---|---|---|---|
+| Microphysics | `mp=1` | Kessler | `proofs/v060/kessler_savepoint_parity_report.json` | max_abs 2.09e-5 |
+| Microphysics | `mp=2` | Purdue-Lin | `proofs/v060/lin_mp_savepoint_parity.json` | max_rel 2.74e-4 |
+| Microphysics | `mp=3` | WSM3 | `proofs/v060/wsm3_savepoint_parity_report.json` | max_rel 1.41e-8 |
+| Microphysics | `mp=4` | WSM5 | `proofs/v060/wsm5_savepoint_parity_report.json` | max_rel ~1.49e-8 |
+| Microphysics | `mp=6` | WSM6 | `proofs/v060/wsm6_savepoint_parity_report.json` | max_abs 3.15e-5 (fp32 primary + fp64 ref) |
+| Microphysics | `mp=10` | Morrison 2-moment | `proofs/v060/morrison_savepoint_parity_report.json` | fp64 max_rel 1.96e-13 |
+| Microphysics | `mp=16` | WDM6 | `proofs/v060_wdm6/wdm6_savepoint_parity_report.json` (pointer: `proofs/v060/wdm6_proof_location_pointer.json`) | max_abs 3.43e-7 |
+| PBL | `bl=1` | YSU | `proofs/v060/ysu_gpuop_savepoint_parity.json` | max_abs 1.20e-2; trace-vs-host 1.49e-17 |
+| PBL | `bl=7` | ACM2 | `proofs/v060/acm2_gpuop_savepoint_parity.json` | max_abs 9.49e-3; trace-vs-host 1.89e-15 |
+| PBL | `bl=8` | BouLac | `proofs/v060/boulac_pbl_savepoint_parity.json` | max_rel 1.89e-3 |
+| Surface layer | `sf=1` | revised-MM5 | `proofs/v060/sfclayrev1_savepoint_parity_report.json` | max_rel 7.42e-5 |
+| Surface layer | `sf=7` | Pleim-Xiu | `proofs/v060/pxsfclay_savepoint_parity_report.json` | predeclared-abs gated (discrete/diagnostic) |
+| Cumulus | `cu=1` | Kain-Fritsch | `proofs/v060/kf_savepoint_parity_report.json` (+ `savepoints/kf_wrf_source_checksums.txt`) | max_abs 1.86e-6 |
+| Cumulus | `cu=2` | Betts-Miller-Janjic | `proofs/v060/bmj_savepoint_parity_fp64.json` (fp64 gate, 5/5) | max_abs **9.71e-16** (fp32 gate fails only on fp32 round-off) |
+| Cumulus | `cu=6` | Tiedtke | `proofs/v060/tiedtke_gpubatch_savepoint_parity.json` | worst field rel 4.23e-3 |
+| Radiation | `ra_sw=4 / ra_lw=4` | RRTMG SW/LW | `proofs/b3/real_wrf_fixture_parity.json` (M5 artifacts SUPERSEDED — see `artifacts/m5/SUPERSEDED_rrtmg_see_proofs_b3.json`) | SW surface-down 0.024 W/m², LW 5e-5 W/m² |
+| Radiation | `ra_lw=1` | RRTM-LW | `proofs/v060/rrtm_lw_savepoint_parity_report.json` | max_rel 3.59e-4 |
+| Radiation | `ra_sw=1` | Dudhia-SW | `proofs/v060/dudhia_sw_savepoint_parity_report.json` | max_rel 2.51e-6 |
+| Land surface | `sf_surface=4` | Noah-MP | `proofs/noahmp/{energy,water,snow,phenology,integration_step}_savepoint_parity.json` | componentized; snow worst_abs 2.84e-14 |
+| Land surface | `sf_surface=2` | Noah classic | `proofs/v060/noahclassic_savepoint_parity_report.json` | max_abs 1.35e-3 (real Canary d03 land columns) |
+
+Notes: BMJ `cu=2` is gated **fp64-primary** (precision-matched unmodified `module_cu_bmj.F`),
+consistent with the WSM6/Morrison fp64-primary pattern — the fp32 gate fails purely on fp32
+round-off, proven three ways. Tiedtke `cu=6` is GPU-batched (`cumulus_tiedtke_jax`) and scan-wired.
+RRTMG `ra=4`: the **real** evidence is the B3 WRF-sidecar fixture proof; the older M5 SW artifacts
+(`artifacts/m5/tier1_rrtmg_sw_parity.json`, `pass=false`) are **stale/superseded** and do not
+represent the current verdict (the B3 tier-2 oracle file is `PENDING-ORACLE` and is **not** claimed
+as proof).
+
+### (2) Requested rows-1-9 coverage — NOT complete
+
+The principal's requested rows-1-9 menu is **not** feature-complete or fully isolated-WRF-savepoint
+proven. The following schemes are accepted/runnable but carry honest caveats, and several requested
+schemes are **not ported at all**. This list exists so the menu in (1) is never over-read as
+"rows 1-9 done."
+
+- **Thompson `mp=8` (default), MYNN PBL `bl=5` (default), MYNN-SL `sf=5` (default)** —
+  **operational-RMSE-validated (Tier-4 vs the CPU-WRF corpus, the v0.2.0 paper basis), NOT isolated
+  WRF-savepoint-proven.** Their cited isolated parity is analytic / near-zero-oracle, not an
+  unmodified-WRF savepoint. In particular, **MYNN-SL carries the known +0.8–0.95 K daytime-T2 HFX
+  bias**: the surface-layer/HFX path is an empirical, partial, MYNN-*inspired* repair, **not** a
+  faithful `module_sf_mynn.F` port. MYNN `bl=6` is **not accepted**.
+- **MYJ PBL `bl=2` + Janjic Eta SL `sf=2`** — **parity-proven (unmodified-WRF savepoint) but
+  fail-closed**: no operational scan adapter / carry path yet. The MYJ↔Janjic pair is mandatory;
+  both are fail-closed today.
+- **Grell-Freitas `cu=3`** — **WRF-faithful CPU-reference, fail-closed.** The GPU batch is the known
+  ≈2000-LOC closure-ensemble + beta-PDF-gamma rewrite (post-0.9.0 carry-over).
+- **New Tiedtke `cu=16`** — accepted but **NOT separately source-gated; fail-closed.** It shares the
+  `cu=6` kernel and has no distinct WRF source-path savepoint gate, so it is **not** parity-proven
+  for `cu=16` specifically.
+- **Goddard microphysics `mp=7` and RUC LSM `sf_surface=3`** — **NOT ported** (post-0.9.0).
+
+Valid PBL↔surface-layer pairings (WRF rule): MYNN(5)↔MYNN-SL(5), ACM2(7)↔Pleim-Xiu(7),
+YSU(1)↔revised-MM5(1), MYJ(2)↔Janjic Eta(2) (the MYJ/Janjic pair is mandatory; both fail-closed today).
 Scheme/option-number provenance: [`.agent/decisions/V0.6.0-S0-FROZEN-CONTRACT.md`](.agent/decisions/V0.6.0-S0-FROZEN-CONTRACT.md).
 Wiring/integration close record: [`.agent/decisions/V0.6.0-CLOSE.md`](.agent/decisions/V0.6.0-CLOSE.md),
 [`proofs/v060/v060_close_proof.json`](proofs/v060/v060_close_proof.json).
+Cross-model completeness audit: [`.agent/reviews/2026-06-04-gpt-rows1-9-completeness-audit.md`](.agent/reviews/2026-06-04-gpt-rows1-9-completeness-audit.md).
 
 ## Not yet supported (post-0.9.0 TODO)
 
