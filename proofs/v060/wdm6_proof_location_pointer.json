@@ -1,0 +1,10 @@
+{
+  "proof": "v060-wdm6-proof-location-pointer",
+  "purpose": "Provenance pointer (audit overclaim/provenance fix B4). The WDM6 (mp_physics=16) savepoint-parity proof lives OUTSIDE the standard proofs/v060/ tree, at proofs/v060_wdm6/. An audit scanning only proofs/v060/ would otherwise miss it. This pointer makes the WDM6 proof discoverable from the standard path.",
+  "scheme": "mp_physics=16 (WDM6)",
+  "canonical_proof": "proofs/v060_wdm6/wdm6_savepoint_parity_report.json",
+  "savepoints": "proofs/v060_wdm6/savepoints/ (fp32) and proofs/v060_wdm6/savepoints_fp64/ (fp64 diagnostic reference)",
+  "source_checksum_sidecar": "proofs/v060_wdm6/savepoints/wrf_source_checksums.txt",
+  "regeneration_command": "taskset -c 0-3 JAX_PLATFORMS=cpu JAX_ENABLE_X64=true PYTHONPATH=src python proofs/v060_wdm6/run_wdm6_parity.py",
+  "verdict": "overall_pass=true (unmodified WRF mp_wdm6 oracle; fp32 primary + fp64 diagnostic; not a JAX self-compare)"
+}

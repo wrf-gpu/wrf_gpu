@@ -107,6 +107,8 @@ from gpuwrf.coupling.scan_adapters import (  # noqa: E402
     MP_SCAN_ADAPTERS,
     PBL_SCAN_ADAPTERS,
     SFCLAY_SCAN_ADAPTERS,
+    bmj_adapter,
+    initial_bmj_carry,
     initial_kf_carry,
     kf_adapter,
 )
@@ -154,7 +156,7 @@ _Clk = namedtuple("_Clk", "julian yearlen")
 #   mp_physics      {8 Thompson, 6 WSM6, 10 Morrison, 16 WDM6, 1 Kessler}
 #   bl_pbl_physics  {5 MYNN, 1 YSU, 7 ACM2}
 #   sf_sfclay       {1 revised-MM5, 5 MYNN-sfclay, 7 Pleim-Xiu}
-#   cu_physics      {1 KF}                         (+ 0 = no cumulus)
+#   cu_physics      {1 KF, 2 BMJ, 6 Tiedtke}       (+ 0 = no cumulus)
 #   sf_surface      {4 Noah-MP, 2 Noah classic}    (+ bulk prescribed land)
 #
 # COVERING RATIONALE: every supported scheme appears in >=1 config, plus the real
@@ -244,9 +246,11 @@ SWEEP: tuple[Config, ...] = (
     # --- surface-layer coverage (sfclay 1/5/7 each >=1 config; fast bulk land) ---
     Config("sfclay_mynn", "Thompson + MYNN + MYNN-sfclay(5) + bulk land, no cumulus",
            8, 5, 5, 0, None, "RUN", covers=("sf5-MYNN-sfclay",)),
-    # --- cumulus coverage (KF + Tiedtke + no-cumulus; fast bulk land) ---
+    # --- cumulus coverage (KF + BMJ + Tiedtke + no-cumulus; fast bulk land) ---
     Config("cu_kf", "Thompson + MYNN + MYNN-sfclay + bulk land + KF(1) cumulus",
            8, 5, 5, 1, None, "RUN", covers=("cu1-KF",)),
+    Config("cu_bmj", "Thompson + MYNN + MYNN-sfclay + bulk land + BMJ(2) cumulus -- fp64 savepoint-proven, CLDEFI carry-threaded adapter",
+           8, 5, 5, 2, None, "RUN", covers=("cu2-BMJ",)),
     Config("cu_tiedtke", "Thompson + MYNN + MYNN-sfclay + bulk land + Tiedtke(6) cumulus -- v0.6.0 GPU-batched jit/vmap adapter",
            8, 5, 5, 6, None, "RUN", covers=("cu6-Tiedtke",)),
     Config("cu_none", "Thompson + MYNN + MYNN-sfclay + bulk land, cu=0 (resolved grid-scale)",
@@ -614,7 +618,7 @@ def _run_config(cfg: Config, *, steps: int) -> dict[str, Any]:
     mp_opt, sf_opt, cu_opt = cfg.mp_physics, cfg.sf_sfclay_physics, cfg.cu_physics
 
     # The integrated physics body: EXACT operational_mode._physics_boundary_step order.
-    def physics_body(state, w0avg, nca, nc_land):
+    def physics_body(state, w0avg, nca, cldefi, nc_land):
         # --- microphysics slot (dispatcher-selected) ---
         if mp_opt == DEFAULT_MP_PHYSICS:
             state = thompson_adapter(state, dt)
@@ -650,15 +654,19 @@ def _run_config(cfg: Config, *, steps: int) -> dict[str, Any]:
         # bl_opt == 0 -> no PBL mixing.
         # --- cumulus slot (EXACT mirror of operational_mode._physics_boundary_step):
         # modified-Tiedtke(6) is the v0.6.0 stateless GPU-batched State->State adapter
-        # (checked FIRST); KF(1) threads the (w0avg, nca) carry. GF(3)/New-Tiedtke(16)
-        # are fail-closed upstream and never reach a RUN config. ---
+        # (checked FIRST); KF(1) threads the (w0avg, nca) carry; BMJ(2) threads the
+        # CLDEFI carry. GF(3)/New-Tiedtke(16) are fail-closed upstream and never reach
+        # a RUN config. ---
         if cu_opt in CU_STATELESS_SCAN_ADAPTERS:
             state = CU_STATELESS_SCAN_ADAPTERS[cu_opt](state, dt, grid_for_adapters)
-        elif cu_opt in CU_SCAN_ADAPTERS:
+        elif cu_opt == 1:
             state, w0avg, nca = kf_adapter(state, dt, w0avg, nca, grid=grid_for_adapters)
-        return state, w0avg, nca, nc_land
+        elif cu_opt == 2:
+            state, cldefi = bmj_adapter(state, dt, cldefi, grid=grid_for_adapters)
+        return state, w0avg, nca, cldefi, nc_land
 
     w0avg0, nca0 = initial_kf_carry(state0)
+    cldefi0 = initial_bmj_carry(state0)
     if cfg.sf_surface_physics == 2:
         nc_land_init = _NOAHCLASSIC_BUNDLE[1]
     elif cfg.use_noahmp:
@@ -667,13 +675,13 @@ def _run_config(cfg: Config, *, steps: int) -> dict[str, Any]:
         nc_land_init = None
 
     def scan_body(carry, _i):
-        st, w0, nc, ncl = carry
-        st, w0, nc, ncl = physics_body(st, w0, nc, ncl)
-        return (st, w0, nc, ncl), None
+        st, w0, nc, cd, ncl = carry
+        st, w0, nc, cd, ncl = physics_body(st, w0, nc, cd, ncl)
+        return (st, w0, nc, cd, ncl), None
 
     def run_scan(s):
-        init = (s, w0avg0, nca0, nc_land_init)
-        (final, _w0, _nc, _ncl), _ = jax.lax.scan(scan_body, init, jnp.arange(int(steps)))
+        init = (s, w0avg0, nca0, cldefi0, nc_land_init)
+        (final, _w0, _nc, _cd, _ncl), _ = jax.lax.scan(scan_body, init, jnp.arange(int(steps)))
         return final
 
     # --- compile (jit) -> traceable == GPU-runnable ---
@@ -795,7 +803,7 @@ def run(*, steps: int = 8) -> dict[str, Any]:
         "sweep_rationale": (
             "COVERING set (NOT full cartesian product): every supported scheme appears in "
             ">=1 RUN config plus the real operational Canary config. Supported = mp{8,6,10,16,1} "
-            "x bl{5,1,7} x sfclay{1,5,7} x cu{1,6} x sf_surface{4,2} (GF cumulus EXCLUDED "
+            "x bl{5,1,7} x sfclay{1,5,7} x cu{1,2,6} x sf_surface{4,2} (GF cumulus EXCLUDED "
             "= documented-TODO). v0.6.0 CONSOLIDATION coupler reality: the operational scan now "
             "threads MYNN(5) + YSU(1) + ACM2(7) PBL (YSU/ACM2 are the v0.6.0 jax.lax.scan-traceable "
             "rewrites from the PBL-GPU-op lane, scan-wired via PBL_SCAN_ADAPTERS), KF(1) + "
