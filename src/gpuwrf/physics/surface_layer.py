@@ -347,58 +347,6 @@ def _li_etal_2010(rib, zaz0, z0zt):
 
 
 # ==================================================================================
-# Noah-MP bare-ground 2 m heat resistance (module_sf_noahmplsm.F SFCDIF1 / BARE_FLUX)
-# ==================================================================================
-
-
-def _noahmp_bare_2m_weight_stable(zol, za, znt):
-    """Noah-MP bare-ground stable skin->2 m interpolation weight ``PSIT2/PSIT``.
-
-    WRF's land T2 is NOT the MYNN ``THGB + DTG*PSIT2/PSIT`` interpolation: when an
-    LSM is active that value is *overwritten* per surface point
-    (``module_sf_mynn.F:1135`` "THESE WILL BE OVERWRITTEN FOR LAND POINTS IN THE
-    LSM"; ``module_surface_driver.F:3470`` sets land
-    ``T2 = FVEG*T2MV + (1-FVEG)*T2MB``). For this fixture FVEG ~= 0.04-0.06 (sparse
-    Canary), so the land T2 is dominated by the BARE-ground diagnostic
-    ``T2MB = TGB - SHB/(rho*cp*EHB2)`` (``module_sf_noahmplsm.F:4470``). In
-    temperature space that is ``T2 = skin + (air - skin) * (CH2FH2 / CHFH)``, i.e. a
-    skin->air interpolation with weight ``PSIT2/PSIT`` formed from the SFCDIF1
-    bare-ground heat resistances (NOT MYNN's). Crucially BOTH the lowest-level and
-    2 m resistances come from the SAME SFCDIF1 framework, so the weight must use a
-    consistent pair -- mixing a bare numerator with MYNN's thermal-baseline
-    denominator (z_t, CB05) gives the wrong ratio.
-
-    BARE_FLUX runs SFCDIF1 with ``Z0H = Z0M`` (the CZIL exponential is commented out
-    at :4354/4356), and SFCDIF1 uses the Paulson-1970 stability forms with the z/L
-    hard-capped at 2 m:
-
-      * ``MOZ = MIN((ZLVL-ZPD)/MOL, 1.0)``, ``MOZ2 = MIN((2+Z0H)/MOL, 1.0)``  (:4667-4668)
-      * stable ``FH = -5*MOZ``, ``FH2 = -5*MOZ2``                              (:4698,4700)
-      * ``FH = MIN(FH, 0.9*LOG(ZLVL/Z0H))``, ``FH2 = MIN(FH2, 0.9*LOG((2+Z0H)/Z0H))`` (:4721,4723)
-      * ``PSIT = LOG(ZLVL/Z0H) - FH``, ``PSIT2 = LOG((2+Z0H)/Z0H) - FH2``      (:4727,4729)
-
-    The ``MOZ2 <= 1`` cap BOUNDS the 2 m stability suppression (``FH2 >= -5``),
-    keeping the 2 m exchange large so T2 stays close to the lowest-level air. MYNN's
-    unbounded CB05 ``psih2`` at the stable z/L cap (=20) over-suppresses the 2 m
-    exchange and pulls T2 toward the cold radiative skin (the observed overnight land
-    cold bias: weight ~0.42 vs WRF-bare ~0.56-0.65). ``MOL = ZA/zol`` (ZPD=0 here);
-    stable-regime only -- the unstable/daytime path keeps the validated MYNN form.
-    """
-
-    z0h = znt  # BARE_FLUX: Z0H = Z0M (module_sf_noahmplsm.F:4354/4356)
-    tmpch = jnp.log(za / z0h)             # LOG(ZLVL/Z0H), ZPD=0   (:4653)
-    tmpch2 = jnp.log((2.0 + z0h) / z0h)   # LOG((2+Z0H)/Z0H)       (:4655)
-    mol = za / jnp.maximum(zol, 1.0e-6)   # MOL = ZA/zol (stable zol>0)
-    moz = jnp.minimum(za / mol, 1.0)              # :4667
-    moz2 = jnp.minimum((2.0 + z0h) / mol, 1.0)    # :4668 -- the 2 m z/L cap
-    fh = jnp.minimum(-5.0 * moz, 0.9 * tmpch)     # :4698, :4721
-    fh2 = jnp.minimum(-5.0 * moz2, 0.9 * tmpch2)  # :4700, :4723
-    psit = jnp.maximum(tmpch - fh, 1.0)           # PSIT  (:4727 / floor)
-    psit2 = jnp.maximum(tmpch2 - fh2, 1.0)        # PSIT2 (:4729 / floor)
-    return psit2 / psit                           # skin->2 m weight toward air
-
-
-# ==================================================================================
 # Helpers for State <-> column extraction
 # ==================================================================================
 
@@ -744,29 +692,21 @@ def surface_layer_with_diagnostics(state) -> SurfaceLayerDiagnostics:
     psiq2 = jnp.maximum(jnp.log((2.0 + znt) / z_q) - psih2, 1.0)  # 976
     psiq10 = jnp.maximum(jnp.log((10.0 + znt) / z_q) - psih10, 1.0)  # 977
 
-    # --- 2 m thermal/moisture weight: FAITHFUL MYNN-SL ``psit2/psit`` by default ---
+    # --- 2 m thermal/moisture weight: FAITHFUL MYNN-SL ``psit2/psit`` ---
     # WRF's MYNN-SL 2-m diagnostic is ``TH2 = THGB + DTG*PSIT2/PSIT`` (module_sf_mynn.F
-    # :1138); the faithful port uses that ratio everywhere (this is the savepoint-
-    # faithful default, ``lsm_t2_diag=False``).
+    # :1138); the port uses that ratio everywhere — this is exactly module_sf_mynn.F.
     #
-    # OPERATIONAL LSM STAND-IN (opt-in, ``lsm_t2_diag=True``): over a Noah-MP land
-    # point real WRF OVERWRITES this MYNN 2-m value with the LSM diagnostic
-    # ``T2 = FVEG*T2MV + (1-FVEG)*T2MB`` (module_sf_mynn.F:1135 "OVERWRITTEN FOR LAND
-    # POINTS IN THE LSM"; module_surface_driver.F:3470). This GPU port's Noah-MP does
-    # NOT yet compute T2MB/T2MV, so when the flag is on we substitute the consistent
-    # SFCDIF1 bare-ground skin->2 m weight over stable land as a STAND-IN for that
-    # missing LSM step (it reduced overnight land-T2 RMSE vs WRF wrfout T2 1.64K->0.72K
-    # at v0.1.0). This is NOT a faithful module_sf_mynn.F term -- it models a coupling
-    # step the LSM owns. It touches ONLY th2/t2/q2 (NOT flux/MOL/PBL coupling). Default
-    # OFF so the surface-layer module stays WRF-faithful; the real fix is to implement
-    # Noah-MP T2MB and route it through the coupler (tracked, out of MYNN-SL scope).
-    lsm_t2_diag = bool(_field(state, "lsm_t2_diag", False))
-    mynn_w2m = psit2 / psit                                 # faithful MYNN-SL ratio
-    if lsm_t2_diag:
-        land_stable = is_land & stable
-        w2m = jnp.where(land_stable, _noahmp_bare_2m_weight_stable(zol, za, znt), mynn_w2m)
-    else:
-        w2m = mynn_w2m                                      # faithful MYNN-SL default
+    # Over a Noah-MP LAND point real WRF then OVERWRITES this MYNN 2-m value with the
+    # LSM diagnostic ``T2 = FVEG*T2MV + (1-FVEG)*T2MB`` (module_sf_mynn.F:1135
+    # "OVERWRITTEN FOR LAND POINTS IN THE LSM"; module_surface_driver.F:3469-3473).
+    # That overwrite is now done FAITHFULLY in the Noah-MP coupler from the genuine
+    # Noah-MP T2MV/T2MB diagnostics (noahmp_surface_hook.overlay_noahmp_land_diagnostics
+    # / proofs/v090/noahmp_t2mb_parity.json), so this surface-layer module is left as
+    # the pure, savepoint-faithful module_sf_mynn.F 2-m diagnostic (the value WRF uses
+    # over water and as the pre-overwrite seed over land). The earlier opt-in empirical
+    # ``lsm_t2_diag`` bare-ground stand-in for the missing LSM step has been RETIRED —
+    # the real T2MB/T2MV path supersedes it.
+    w2m = psit2 / psit                                      # faithful MYNN-SL ratio
 
     # u10/v10 diagnostics (module_sf_mynn.F:1109-1131).
     # WRF MYNN 10 m wind branches on the lowest mass-level height za
@@ -805,10 +745,10 @@ def surface_layer_with_diagnostics(state) -> SurfaceLayerDiagnostics:
     th2_out_warm = warm_lo & ((th2 < thgb) | (th2 > thx))
     th2_out_cold = (~warm_lo) & ((th2 > thgb) | (th2 < thx))
     th2 = jnp.where(th2_out_warm | th2_out_cold, th2_lin, th2)
-    # Q2 uses the surface MIXING RATIO anchor (module_sf_mynn.F:1147). Faithful MYNN
-    # uses psiq2/psiq; the opt-in LSM stand-in reuses the same stable-land bare weight.
-    mynn_q2w = psiq2 / psiq
-    q2w = jnp.where(is_land & stable, w2m, mynn_q2w) if lsm_t2_diag else mynn_q2w
+    # Q2 uses the surface MIXING RATIO anchor (module_sf_mynn.F:1147), faithful MYNN
+    # ``psiq2/psiq`` (the land Q2 overwrite to the Noah-MP LSM Q2 is owned by the
+    # coupler, mirroring the T2 overwrite, when wired).
+    q2w = psiq2 / psiq
     q2 = qsfcmr + (qx - qsfcmr) * q2w
     # MYNN 2-m mixing-ratio brackets (module_sf_mynn.F:1148-1149):
     # Q2 = MAX(Q2, MIN(QSFCMR, QV1D)) then Q2 = MIN(Q2, 1.05*QV1D). WRF reference

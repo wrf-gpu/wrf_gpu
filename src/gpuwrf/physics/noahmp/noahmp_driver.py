@@ -254,6 +254,7 @@ def noah_mp_step(
         hfx=ef.fsh, lh=lh, qfx=qfx, grdflx=ef.ssoil, tsk=ef.trad,
         qsfc=land_state.qsfc, znt=ef.z0wrf, emiss=ef.emissi,
         albedo=land_state.albedo, chs=0.5 * (ef.chv + ef.chb),
+        t2=ef.t2, t2mv=ef.t2mv, t2mb=ef.t2mb,
     )
 
     if not return_diag:
