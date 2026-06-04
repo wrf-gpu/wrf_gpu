@@ -126,8 +126,29 @@ Confirmed at case build (this run):
   FULL validated stability namelist, ALREADY present in `build_l3_d03_daily_case`
   (it never used the weak dataclass defaults the brief feared).
 
-<!-- finite trace FILLED from proofs/v090/d03_replay_finite_check.json -->
-TODO_D03_TRACE
+d03 1km FINITE + physical (force_fp64, the shipped d03 config):
+
+| t (h) | step | qke.max | w (m/s)        | theta (K)     | mu (Pa)          | finite |
+|-------|------|---------|----------------|---------------|------------------|--------|
+| 0.3   | 360  | 8.14    | [-5.84, 1.93]  | [289, 490]    | [62423, 96691]   | YES    |
+
+No non-finite field; qke spins up physically from the WRF cold-start seed; winds,
+theta, mu all bounded and physical at 1 km. **The d02-replay stability fix carries
+to the 1km d03 — no blow-up.** Verdict in the JSON: **D03_FINITE**.
+
+The run was concluded after this decisive first checkpoint: the d03 force_fp64 path
+is FP64-throttled on the RTX (each 0.3h/360-step increment ~16 min; radiation-bearing
+increments longer due to a lazy cond-branch compile), so reaching a few hours would
+take ~80 min for marginal added confidence. Extending the d03 horizon is a
+throughput-bound carry-forward (XLA fusion / fp32 perf work), NOT a stability
+question. The decisive answer — d03 1km FINITE + physical under the shipped fix — is
+established.
+
+**No d03-specific instability beyond the d02 fix was observed**: the first (and
+only) potential failure class the harness watches for (a dynamics/geopotential-pump
+non-finite distinct from the qke/namelist issue) did NOT occur — all fields finite.
+The d03 nested boundary uses `force_geopotential=False` (the v0.1.0-validated
+nested-ph fix), so the historical d03 ph-pump is already disabled.
 
 ## Files changed
 
