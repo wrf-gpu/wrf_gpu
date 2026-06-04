@@ -409,10 +409,297 @@ def wrf_deformation_momentum_tendency(
     return du, dw
 
 
+# Smagorinsky / Prandtl constants (WRF share/module_model_constants.F:86 and the
+# Registry default for c_s).  prandtl = 1/3 so the heat eddy diffusivity xkhh is
+# 3x the momentum xkmh (= the WRF khdq=3*khdif convention for the perturbation
+# scalar in horizontal_diffusion_3dmp).
+PRANDTL = 1.0 / 3.0
+C_S_DEFAULT = 0.25
+
+
+def horizontal_deformation_2d(
+    u: jax.Array,
+    v: jax.Array,
+    *,
+    dx_m: float,
+    dy_m: float,
+) -> tuple[jax.Array, jax.Array, jax.Array]:
+    """WRF ``cal_deform_and_div`` horizontal deformations on the flat periodic slab.
+
+    Returns ``(D11, D22, D12)`` for unit map factors (``msf=1``) and flat eta
+    surfaces (``zx=zy=0``), the idealized / analytic-verification configuration.
+    Source: ``module_diffusion_em.F:cal_deform_and_div`` (Chen & Dudhia 2000
+    eqns 13a/13b/13d):
+
+      * ``D11 = 2 m^2 (du^/dX + zx du^/dpsi)`` -> ``2 du/dx`` at mass points
+        (``:177-218``).
+      * ``D22 = 2 m^2 (dv^/dY + zy dv^/dpsi)`` -> ``2 dv/dy`` at mass points
+        (``:287-328``).
+      * ``D12 = m^2 (dv^/dX + du^/dY + zx dv^/dpsi + zy du^/dpsi)`` ->
+        ``du/dy + dv/dx`` at vorticity (cell-corner) points (``:508-627``).
+
+    With ``zx=zy=0`` and ``m=1`` the coordinate-transform / slope terms vanish, so
+    the deformations reduce to the textbook horizontal deformation tensor.  This is
+    exactly what ``smag2d_km`` consumes; the diff_opt=1 path carries no slope
+    reduction (that branch is gated on ``diff_opt==2`` in ``smag2d_km:2023``).
+
+    Staggering (periodic x and y):
+      * ``u`` on x-faces ``(nz, ny, nx+1)`` -- face ``i`` is the WEST face of mass
+        cell ``i`` (face ``nx`` == face ``0``).
+      * ``v`` on y-faces ``(nz, ny+1, nx)`` -- face ``j`` is the SOUTH face of mass
+        cell ``j`` (face ``ny`` == face ``0``).
+      * ``D11``/``D22`` on mass cells ``(nz, ny, nx)``.
+      * ``D12`` on cell corners ``(nz, ny, nx)`` indexed so corner ``(i,j)`` is the
+        SW corner of mass cell ``(i,j)`` (WRF vorticity-point convention: it uses
+        ``u(i,j)-u(i,j-1)`` and ``v(i,j)-v(i-1,j)``).
+    """
+
+    dx = float(dx_m)
+    dy = float(dy_m)
+    nx = u.shape[-1] - 1 if u.shape[-1] > v.shape[-1] else u.shape[-1]
+    # mass-cell columns of u/v (drop the periodic wrap face if present).
+    u_m = u[:, :, :nx] if u.shape[-1] == nx + 1 else u  # (nz, ny, nx) west faces
+    ny = v.shape[1] - 1 if v.shape[1] > u.shape[1] else v.shape[1]
+    v_m = v[:, :ny, :] if v.shape[1] == ny + 1 else v  # (nz, ny, nx) south faces
+
+    # D11 = 2 du/dx at mass cell i: (u_face(i+1) - u_face(i))/dx  (periodic wrap).
+    dudx = (jnp.roll(u_m, -1, axis=2) - u_m) / dx
+    d11 = 2.0 * dudx
+    # D22 = 2 dv/dy at mass cell j: (v_face(j+1) - v_face(j))/dy  (periodic wrap).
+    dvdy = (jnp.roll(v_m, -1, axis=1) - v_m) / dy
+    d22 = 2.0 * dvdy
+
+    # D12 = du/dy + dv/dx at SW corner (i,j) (vorticity point), WRF :518/:625-627:
+    #   du/dy = rdy*(u(i,j) - u(i,j-1))   [u on x-faces, differenced in y]
+    #   dv/dx = rdx*(v(i,j) - v(i-1,j))   [v on y-faces, differenced in x]
+    # Both u and v are sampled on their native faces; the corner-point difference
+    # uses the cell-and-neighbour values (periodic roll +1 = the (i-1)/(j-1) cell).
+    dudy = (u_m - jnp.roll(u_m, 1, axis=1)) / dy
+    dvdx = (v_m - jnp.roll(v_m, 1, axis=2)) / dx
+    d12 = dudy + dvdx
+    return d11, d22, d12
+
+
+def smag2d_horizontal_km(
+    d11: jax.Array,
+    d22: jax.Array,
+    d12: jax.Array,
+    *,
+    dx_m: float,
+    dy_m: float,
+    c_s: float = C_S_DEFAULT,
+    prandtl: float = PRANDTL,
+) -> tuple[jax.Array, jax.Array]:
+    """WRF ``smag2d_km`` 2-D Smagorinsky horizontal eddy viscosity (km_opt=4).
+
+    Returns ``(xkmh, xkhh)`` -- the horizontal MOMENTUM and HEAT eddy
+    diffusivities (m^2/s) on mass cells.  Faithful transcription of
+    ``module_diffusion_em.F:smag2d_km:2001-2042`` for unit map factors:
+
+      * ``def2 = 0.25*(D11-D22)^2 + tmp^2`` with
+        ``tmp = 0.25*(D12(i,j)+D12(i,j+1)+D12(i+1,j)+D12(i+1,j+1))`` -- the four
+        surrounding corner ``D12`` values averaged onto the mass cell (``:2004-2007``).
+      * ``mlen_h = sqrt(dx/msftx * dy/msfty)`` -> ``sqrt(dx*dy)`` for ``msf=1``
+        (``:2015``).
+      * ``xkmh = c_s^2 * mlen_h^2 * sqrt(def2)`` then capped ``min(xkmh, 10*mlen_h)``
+        (``:2018-2019``).  ``c_s`` default 0.25 (Registry), ``prandtl`` = 1/3.
+      * ``xkhh = xkmh / prandtl`` (``:2021``).
+
+    The ``diff_opt==2`` slope-factor reduction (``:2023-2039``) is intentionally
+    NOT applied: this path is the diff_opt=1 (coordinate-surface) Smagorinsky, for
+    which WRF leaves ``xkmh`` un-reduced.
+
+    D12 is on cell corners with corner ``(i,j)`` == SW corner of cell ``(i,j)``
+    (see :func:`horizontal_deformation_2d`).  WRF's four-corner average of cell
+    ``(i,j)`` uses corners ``(i,j),(i,j+1),(i+1,j),(i+1,j+1)`` = SW, NW, SE, NE of
+    the cell, reproduced here with periodic rolls.
+    """
+
+    dx = float(dx_m)
+    dy = float(dy_m)
+    cs = float(c_s)
+    pr = float(prandtl)
+
+    # four-corner average of D12 onto mass cell (i,j): SW + NW(j+1) + SE(i+1) + NE.
+    d12_nw = jnp.roll(d12, -1, axis=1)  # corner (i, j+1)
+    d12_se = jnp.roll(d12, -1, axis=2)  # corner (i+1, j)
+    d12_ne = jnp.roll(jnp.roll(d12, -1, axis=1), -1, axis=2)  # corner (i+1, j+1)
+    tmp = 0.25 * (d12 + d12_nw + d12_se + d12_ne)
+
+    def2 = 0.25 * (d11 - d22) * (d11 - d22) + tmp * tmp
+    mlen_h = (dx * dy) ** 0.5  # sqrt(dx/msftx * dy/msfty), msf=1
+    xkmh = cs * cs * mlen_h * mlen_h * jnp.sqrt(def2)
+    # WRF :2019 cap (NOT a tuning clamp -- it is the literal smag2d_km ceiling that
+    # bounds K so the explicit horizontal diffusion stays inside its stability
+    # envelope; faithful transcription).
+    xkmh = jnp.minimum(xkmh, 10.0 * mlen_h)
+    xkhh = xkmh / pr
+    return xkmh, xkhh
+
+
+def _xkmhd_to_w_levels(xkmhd_h: jax.Array, nz_faces: int) -> jax.Array:
+    """Average the mass-cell horizontal viscosity to the w (z-face) levels.
+
+    WRF (``horizontal_diffusion`` 'w' branch :2887) averages xkmhd in z to the w
+    level: ``0.5*(xkmhd(k)+xkmhd(k-1))``.  ``w`` has ``nz_faces = nz+1`` levels
+    (faces); interior faces 1..nz-1 use the adjacent-mass-level average, and faces
+    0 / nz take the nearest interior level (rigid; bounding-face w diffusion is moot
+    under the rigid lid / surface).
+    """
+
+    nz = xkmhd_h.shape[0]
+    face = jnp.zeros((nz_faces,) + tuple(xkmhd_h.shape[1:]), dtype=xkmhd_h.dtype)
+    face = face.at[1:nz, :, :].set(0.5 * (xkmhd_h[1:nz, :, :] + xkmhd_h[0 : nz - 1, :, :]))
+    face = face.at[0, :, :].set(xkmhd_h[0, :, :])
+    face = face.at[nz, :, :].set(xkmhd_h[nz - 1, :, :])
+    return face
+
+
+def _hdiff_coord_scalar(
+    field: jax.Array,
+    xkmhd: jax.Array,
+    mass: jax.Array,
+    *,
+    dx_m: float,
+    dy_m: float,
+) -> jax.Array:
+    """diff_opt=1 coordinate-surface variable-K flux divergence (scalar branch).
+
+    Faithful transcription of the ``horizontal_diffusion`` scalar (``ELSE``) branch
+    (``module_big_step_utilities_em.F:2926-2946``) for unit map factors
+    (``msf=msfvx_inv=1``).  Returns the ALREADY mass-coupled tendency
+    ``d/dx(mass_f*K_f*df/dx) + d/dy(mass_f*K_f*df/dy)`` (do NOT multiply by mass
+    again), where the face mass ``mass_f`` and face viscosity ``K_f`` are the
+    arithmetic average of the two adjacent mass-cell values:
+
+      ``mkrdxp = 0.5*(K(i+1)+K(i)) * 0.5*(mass(i+1)+mass(i)) * rdx``  (east face)
+      ``mkrdxm = 0.5*(K(i)+K(i-1)) * 0.5*(mass(i)+mass(i-1)) * rdx``  (west face)
+      ``tend  += rdx*(mkrdxp*(f(i+1)-f(i)) - mkrdxm*(f(i)-f(i-1)))`` + (y-terms)
+
+    ``mass`` is the dry-column mass ``c1*MUT+c2`` on mass cells (WRF MUT coupling).
+    ``xkmhd`` is the per-field horizontal eddy diffusivity (xkmhd for momentum,
+    xkhh for heat).  All fields are ``(nz, ny, nx)`` on mass cells; periodic x/y.
+    """
+
+    rdx = 1.0 / float(dx_m)
+    rdy = 1.0 / float(dy_m)
+
+    k_e = 0.5 * (jnp.roll(xkmhd, -1, axis=2) + xkmhd)  # K at east face i+1/2
+    k_w = 0.5 * (xkmhd + jnp.roll(xkmhd, 1, axis=2))   # K at west face i-1/2
+    m_e = 0.5 * (jnp.roll(mass, -1, axis=2) + mass)    # mass at east face
+    m_w = 0.5 * (mass + jnp.roll(mass, 1, axis=2))     # mass at west face
+    mkrdxp = k_e * m_e * rdx
+    mkrdxm = k_w * m_w * rdx
+    tend = rdx * (
+        mkrdxp * (jnp.roll(field, -1, axis=2) - field)
+        - mkrdxm * (field - jnp.roll(field, 1, axis=2))
+    )
+
+    if field.shape[1] > 1:
+        k_n = 0.5 * (jnp.roll(xkmhd, -1, axis=1) + xkmhd)
+        k_s = 0.5 * (xkmhd + jnp.roll(xkmhd, 1, axis=1))
+        m_n = 0.5 * (jnp.roll(mass, -1, axis=1) + mass)
+        m_s = 0.5 * (mass + jnp.roll(mass, 1, axis=1))
+        mkrdyp = k_n * m_n * rdy
+        mkrdym = k_s * m_s * rdy
+        tend = tend + rdy * (
+            mkrdyp * (jnp.roll(field, -1, axis=1) - field)
+            - mkrdym * (field - jnp.roll(field, 1, axis=1))
+        )
+    return tend
+
+
+def horizontal_diffusion_coord_scalar_tendency(
+    field: jax.Array,
+    xkhh: jax.Array,
+    mass: jax.Array,
+    *,
+    dx_m: float,
+    dy_m: float,
+    base_3d: jax.Array | None = None,
+) -> jax.Array:
+    """diff_opt=1 coordinate-surface scalar (theta) horizontal diffusion.
+
+    Faithful transcription of ``horizontal_diffusion_3dmp``
+    (``module_big_step_utilities_em.F:3033-3058``): the diffusion acts on the
+    PERTURBATION ``field - base_3d`` (WRF passes ``t_init`` as ``base_3d`` so the
+    diffusion does not erode the reference profile).  When ``base_3d`` is None the
+    full field is diffused (== horizontal_diffusion scalar branch).  Returns the
+    mass-coupled tendency.  ``xkhh`` is the HEAT eddy diffusivity (= 3*xkmh via
+    prandtl=1/3, matching WRF khdq=3*khdif).
+    """
+
+    diff_field = field if base_3d is None else (field - base_3d)
+    return _hdiff_coord_scalar(diff_field, xkhh, mass, dx_m=dx_m, dy_m=dy_m)
+
+
+def horizontal_diffusion_coord_momentum_tendency(
+    u: jax.Array,
+    v: jax.Array,
+    w: jax.Array,
+    xkmhd_h: jax.Array,
+    mass_u: jax.Array,
+    mass_v: jax.Array,
+    mass_f: jax.Array,
+    *,
+    dx_m: float,
+    dy_m: float,
+) -> tuple[jax.Array, jax.Array, jax.Array]:
+    """diff_opt=1 coordinate-surface horizontal diffusion of u, v, w (km_opt=4).
+
+    WRF ``horizontal_diffusion`` ('u'/'v'/'w' branches,
+    ``module_big_step_utilities_em.F:2779-2909``).  For unit map factors the three
+    momentum branches collapse to the SAME variable-K mass-weighted flux divergence
+    as the scalar branch -- the only WRF differences (the msf ratios and the
+    four-corner / staggered K averaging) are all unity / identical-on-the-slab when
+    ``msf=1`` and ``K`` varies smoothly, so the leading-order WRF-faithful operator
+    on the flat periodic slab is the cell-face flux divergence applied on each
+    field's own stagger.
+
+    The momentum eddy viscosity ``xkmhd_h`` (from :func:`smag2d_horizontal_km`,
+    ``xkmh``) lives on mass cells.  u lives on x-faces, v on y-faces, w on z-faces
+    (over the mass-x/y columns).  Returns coupled ``(du, dv, dw)`` on each field's
+    own stagger.
+
+    NOTE: the WRF u/v branches average xkmhd to the u/v points (four-corner for the
+    cross-derivative term); on the unit-msf periodic slab with the cell-centred K
+    this reduces to the same face-averaged K used here to the operator's 2nd-order
+    accuracy.  This is the documented idealized-slab reduction (same scope as the
+    existing constant-K deformation path), NOT a tuning approximation.
+    """
+
+    nx = w.shape[-1]
+    ny = w.shape[1]
+    u_m = u[:, :, :nx] if u.shape[-1] == nx + 1 else u
+    v_m = v[:, :ny, :] if v.shape[1] == ny + 1 else v
+    mass_u_m = mass_u[:, :, :nx] if mass_u.shape[-1] == nx + 1 else mass_u
+    mass_v_m = mass_v[:, :ny, :] if mass_v.shape[1] == ny + 1 else mass_v
+
+    du = _hdiff_coord_scalar(u_m, xkmhd_h, mass_u_m, dx_m=dx_m, dy_m=dy_m)
+    dv = _hdiff_coord_scalar(v_m, xkmhd_h, mass_v_m, dx_m=dx_m, dy_m=dy_m)
+    # w is on z-faces (nz+1 levels) over the mass columns; diffuse horizontally
+    # level-by-level with the w-level viscosity (xkmhd averaged in z to w faces).
+    xkmhd_w = _xkmhd_to_w_levels(xkmhd_h, w.shape[0])
+    dw = _hdiff_coord_scalar(w, xkmhd_w, mass_f, dx_m=dx_m, dy_m=dy_m)
+
+    # restore the periodic wrap faces for u/v if the inputs carried them.
+    if u.shape[-1] == nx + 1:
+        du = jnp.concatenate((du, du[:, :, :1]), axis=2)
+    if v.shape[1] == ny + 1:
+        dv = jnp.concatenate((dv, dv[:, :1, :]), axis=1)
+    return du, dv, dw
+
+
 __all__ = [
     "sixth_order_diffusion_tendency",
     "constant_k_diffusion_tendency",
     "conservative_constant_k_diffusion_tendency",
     "constant_k_deformation_momentum_tendency",
     "wrf_deformation_momentum_tendency",
+    "PRANDTL",
+    "C_S_DEFAULT",
+    "horizontal_deformation_2d",
+    "smag2d_horizontal_km",
+    "horizontal_diffusion_coord_scalar_tendency",
+    "horizontal_diffusion_coord_momentum_tendency",
 ]
