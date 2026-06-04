@@ -820,6 +820,17 @@ def run(*, steps: int = 8) -> dict[str, Any]:
                 s for r in fc_rows for s in r["covers"]
             ),
             "excluded_documented_todo": ["cu_physics=3 Grell-Freitas (sequential closure ensemble; GPU-batching TODO)", "cu_physics=16 New Tiedtke (not separately savepoint-gated)"],
+            "radiation_note": (
+                "Every RUN config pins ra_sw=ra_lw=4 (RRTMG): the operational radiation slot in "
+                "runtime.operational_mode hardcodes the RRTMG held-rate RTHRATEN and "
+                "OperationalNamelist has no ra_lw_physics/ra_sw_physics field, so RRTMG (ra=4) is "
+                "the ONLY operational-scan radiation path. ra_lw=1 (classic RRTM-LW) and ra_sw=1 "
+                "(Dudhia-SW) are isolated-WRF-savepoint parity-proven + accepted but NOT "
+                "operational-scan-wired (close-critic FIX #1/#2 DOWNGRADE), so they are "
+                "intentionally NOT swept end-to-end here -- there is no operational selection to "
+                "exercise. A radiation-family dispatch (+ a jit/vmap rewrite of the host-NumPy "
+                "RRTM-LW kernel) is a post-0.9.0 carry-over."
+            ),
         },
         "n_configs": len(rows),
         "n_run_configs": len(run_rows),

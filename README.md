@@ -66,8 +66,6 @@ relative artifacts excluded).
 | Cumulus | `cu=2` | Betts-Miller-Janjic | `proofs/v060/bmj_savepoint_parity_fp64.json` (fp64 gate, 5/5) | max_abs **9.71e-16** (fp32 gate fails only on fp32 round-off) |
 | Cumulus | `cu=6` | Tiedtke | `proofs/v060/tiedtke_gpubatch_savepoint_parity.json` | worst field rel 4.23e-3 |
 | Radiation | `ra_sw=4 / ra_lw=4` | RRTMG SW/LW | `proofs/b3/real_wrf_fixture_parity.json` (M5 artifacts SUPERSEDED — see `artifacts/m5/SUPERSEDED_rrtmg_see_proofs_b3.json`) | SW surface-down 0.024 W/m², LW 5e-5 W/m² |
-| Radiation | `ra_lw=1` | RRTM-LW | `proofs/v060/rrtm_lw_savepoint_parity_report.json` | max_rel 3.59e-4 |
-| Radiation | `ra_sw=1` | Dudhia-SW | `proofs/v060/dudhia_sw_savepoint_parity_report.json` | max_rel 2.51e-6 |
 | Land surface | `sf_surface=4` | Noah-MP | `proofs/noahmp/{energy,water,snow,phenology,integration_step}_savepoint_parity.json` | componentized; snow worst_abs 2.84e-14 |
 | Land surface | `sf_surface=2` | Noah classic | `proofs/v060/noahclassic_savepoint_parity_report.json` | max_abs 1.35e-3 (real Canary d03 land columns) |
 
@@ -95,6 +93,15 @@ schemes are **not ported at all**. This list exists so the menu in (1) is never 
 - **MYJ PBL `bl=2` + Janjic Eta SL `sf=2`** — **parity-proven (unmodified-WRF savepoint) but
   fail-closed**: no operational scan adapter / carry path yet. The MYJ↔Janjic pair is mandatory;
   both are fail-closed today.
+- **RRTM-LW `ra_lw=1` + Dudhia-SW `ra_sw=1`** — **isolated-WRF-savepoint parity-proven + accepted,
+  but NOT operational-scan-wired** (proofs: `proofs/v060/rrtm_lw_savepoint_parity_report.json`
+  max_rel 3.59e-4; `proofs/v060/dudhia_sw_savepoint_parity_report.json` max_rel 2.51e-6). The
+  operational radiation slot in `runtime/operational_mode.py` hardcodes the RRTMG (`ra=4`) held-rate
+  `RTHRATEN`; `OperationalNamelist` has no `ra_lw_physics`/`ra_sw_physics` field and there is no
+  radiation-family dispatch. Classic RRTM-LW (`physics/ra_lw_rrtm.py`) is additionally a host-NumPy
+  single-column kernel (Python per-column/per-band loops, cached table load) that is not
+  jit/vmap-traceable for the device scan as-is. Same honest fail-closed posture as MYJ/Janjic; a
+  radiation-family dispatch + a jit/vmap RRTM-LW rewrite is a post-0.9.0 carry-over.
 - **Grell-Freitas `cu=3`** — **WRF-faithful CPU-reference, fail-closed.** The GPU batch is the known
   ≈2000-LOC closure-ensemble + beta-PDF-gamma rewrite (post-0.9.0 carry-over).
 - **New Tiedtke `cu=16`** — accepted but **NOT separately source-gated; fail-closed.** It shares the

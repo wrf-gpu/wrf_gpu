@@ -121,14 +121,22 @@ SUPPORTED_OPTIONS: dict[str, SupportedOption] = {
     "ra_sw_physics": SupportedOption(
         key="ra_sw_physics",
         supported_values=frozenset(ACCEPTED_RA_SW_PHYSICS),
-        implemented="0=disabled, 1=Dudhia shortwave, 4=RRTMG shortwave",
-        action="Use ra_sw_physics=1 for Dudhia SW, 4 for RRTMG SW, or 0 when radiation is disabled.",
+        implemented="0=disabled, 1=Dudhia shortwave (isolated-savepoint parity-proven + accepted, "
+        "NOT operational-scan-wired), 4=RRTMG shortwave (GPU-operational; the operational radiation "
+        "slot runs RRTMG)",
+        action="Use ra_sw_physics=4 for the operational RRTMG SW path, or 0 when radiation is "
+        "disabled. ra_sw_physics=1 (Dudhia) passes its isolated WRF-savepoint gate but is not yet "
+        "selectable by the operational scan (post-0.9.0 radiation-family dispatch).",
     ),
     "ra_lw_physics": SupportedOption(
         key="ra_lw_physics",
         supported_values=frozenset(ACCEPTED_RA_LW_PHYSICS),
-        implemented="0=disabled, 1=RRTM longwave, 4=RRTMG longwave",
-        action="Use ra_lw_physics=1 for classic RRTM LW, 4 for RRTMG LW, or 0 when radiation is disabled.",
+        implemented="0=disabled, 1=RRTM longwave (isolated-savepoint parity-proven + accepted, "
+        "NOT operational-scan-wired; host-NumPy single-column kernel), 4=RRTMG longwave "
+        "(GPU-operational; the operational radiation slot runs RRTMG)",
+        action="Use ra_lw_physics=4 for the operational RRTMG LW path, or 0 when radiation is "
+        "disabled. ra_lw_physics=1 (classic RRTM) passes its isolated WRF-savepoint gate but is not "
+        "yet selectable by the operational scan (post-0.9.0 jit/vmap rewrite + radiation dispatch).",
     ),
     # Runtime/dynamics controls exposed by OperationalNamelist.
     "rk_order": SupportedOption(
