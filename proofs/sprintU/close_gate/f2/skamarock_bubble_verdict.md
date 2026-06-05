@@ -8,9 +8,9 @@ Status: RAN_TO_COMPLETION
 | Check | Value | Threshold | Passed |
 | --- | ---: | --- | --- |
 | all_snapshots_finite | 1.0 | all snapshot arrays finite | True |
-| theta_prime_max_500s | 1.9200603163244523 | 0.5 <= max(theta prime) <= 2.5 K | True |
-| max_abs_w_500s | 11.680187856366487 | 1 <= max(|w|) <= 30 m/s | True |
-| thermal_rise_500s | 1924.3475674060383 | positive-theta centroid rises by at least 500 m | True |
+| theta_prime_max_500s | 1.9200603177468452 | 0.5 <= max(theta prime) <= 2.5 K | True |
+| max_abs_w_500s | 11.680188113242943 | 1 <= max(|w|) <= 30 m/s | True |
+| thermal_rise_500s | 1924.347589651457 | positive-theta centroid rises by at least 500 m | True |
 | horizontal_drift_500s | 0.0 | positive-theta centroid drift <= 250 m | True |
 | relative_mass_drift | 0.0 | max relative dry-column mass drift <= 1e-8 | True |
 
