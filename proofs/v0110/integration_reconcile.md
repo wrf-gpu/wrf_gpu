@@ -124,7 +124,8 @@ pre-merge `KEEP_RRTMG_FEATURE_DO_NOT_MASK_QKE_KI2` directive.
 
 ## Final trunk HEAD
 
-`worker/opus/v0110-integration` @ `1bce44e` (before this proof + gate commit).
+`worker/opus/v0110-integration` @ `225e0fc` (this proof + gate commit;
+the 4 merge commits are e302627, 2fe7c65, bbc771a, 1bce44e).
 
 ## Summary
 
