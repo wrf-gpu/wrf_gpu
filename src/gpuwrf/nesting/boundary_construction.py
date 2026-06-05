@@ -108,6 +108,8 @@ def build_nest_force_weights(
     convention (kept for the proof cross-check).
     """
 
+    if registration not in ("sint", "bilinear"):
+        raise ValueError(f"unknown nest interpolation registration {registration!r}")
     pny, pnx = int(parent_grid.ny), int(parent_grid.nx)
     cny, cnx = int(child_grid.ny), int(child_grid.nx)
     builder = build_sint_weights if registration == "sint" else build_bilinear_weights
@@ -235,6 +237,8 @@ def build_child_boundary_package(
     filled.  Returns a new ``child_state``.
     """
 
+    if int(bdy_width) <= 0:
+        raise ValueError(f"bdy_width must be positive, got {bdy_width}")
     reg = weights.registration
     side_len = int(max(child_state.u_bdy.shape[-1], child_state.v_bdy.shape[-1]))
     w = int(bdy_width)

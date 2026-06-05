@@ -127,16 +127,17 @@ class DomainTree:
                 child_grid=child.grid,
                 registration=registration,
             )
-            feedback_weights = None
-            if bool(feedback_enabled or edge.feedback):
-                feedback_weights = build_state_feedback_weights(
-                    parent_grid_ratio=edge.parent_grid_ratio,
-                    i_parent_start=edge.i_parent_start,
-                    j_parent_start=edge.j_parent_start,
-                    parent_grid=parent.grid,
-                    child_grid=child.grid,
-                    spec_zone=int(feedback_spec_zone),
-                )
+            # Precompute feedback weights unconditionally: the device op remains
+            # behind the runtime gate, but a manager can enable two-way feedback
+            # after construction without silently getting a no-op edge.
+            feedback_weights = build_state_feedback_weights(
+                parent_grid_ratio=edge.parent_grid_ratio,
+                i_parent_start=edge.i_parent_start,
+                j_parent_start=edge.j_parent_start,
+                parent_grid=parent.grid,
+                child_grid=child.grid,
+                spec_zone=int(feedback_spec_zone),
+            )
             edges_by_parent.setdefault(edge.parent, []).append(
                 DomainEdge(spec=edge, weights=weights, feedback_weights=feedback_weights)
             )
@@ -257,9 +258,10 @@ def run_domain_tree_callbacks(
         events.append(("output", name, own_steps[name]))
 
     def integrate(name: str, n_steps: int, *, reset_clock: bool) -> None:
+        del reset_clock  # step clocks are per-domain global clocks, not subcycle-local
         children = hierarchy.children(name)
         if not children:
-            start_step = 1 if reset_clock else own_steps[name] + 1
+            start_step = own_steps[name] + 1
             out[name] = advance(name, out[name], int(start_step), int(n_steps))
             own_steps[name] += int(n_steps)
             events.append(("advance", name, start_step, int(n_steps), own_steps[name]))
@@ -269,7 +271,7 @@ def run_domain_tree_callbacks(
             return
 
         for local in range(1, int(n_steps) + 1):
-            start_step = local if reset_clock else own_steps[name] + 1
+            start_step = own_steps[name] + 1
             out[name] = advance(name, out[name], int(start_step), 1)
             own_steps[name] += 1
             events.append(("advance", name, start_step, 1, own_steps[name]))
@@ -281,7 +283,7 @@ def run_domain_tree_callbacks(
                     out[spec.child] = force(runtime_edge, out[spec.parent], out[spec.child])
                 events.append(("force", spec.parent, spec.child, own_steps[spec.parent]))
             for spec in children:
-                integrate(spec.child, int(spec.parent_grid_ratio), reset_clock=True)
+                integrate(spec.child, int(spec.parent_grid_ratio), reset_clock=False)
                 if bool(feedback_enabled or spec.feedback) and feedback is not None:
                     runtime_edge = edge_lookup(spec) if edge_lookup is not None else DomainEdge(spec, weights=None)  # type: ignore[arg-type]
                     out[spec.parent] = feedback(runtime_edge, out[spec.parent], out[spec.child])
