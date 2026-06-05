@@ -1,0 +1,103 @@
+{
+  "b3_daily_hour_s": 24.127690726018045,
+  "b3_m9_diagnostics_s": {
+    "label": "b3_m9_diagnostics_reuse_q2",
+    "median_s": 0.34759199095424265,
+    "min_s": 0.34059493703534827,
+    "samples_s": [
+      0.34059493703534827,
+      0.38307614502264187,
+      0.34759199095424265
+    ]
+  },
+  "b3_netcdf_write_s": 0.024785991990938783,
+  "b3_prepare_wrfout_payload_s": {
+    "label": "b3_prepare_wrfout_payload_static_cache",
+    "median_s": 0.004613175988197327,
+    "min_s": 0.004352713993284851,
+    "samples_s": [
+      0.004613175988197327,
+      0.008534355962183326,
+      0.004352713993284851
+    ]
+  },
+  "daily_wall_gain_pct": 0.8480290876880079,
+  "daily_wall_saved_s_per_hour": 0.20635982690146193,
+  "device": "cuda:0",
+  "disposition": {
+    "full_device_side_single_device_get_packer": "<1%-SKIPPED; warmed output payload path is below 1% of daily wall after low-risk removals",
+    "m9_q2_duplicate_recompute": "REMOVED",
+    "static_grid_cache": "REMOVED",
+    "writer_surface_fallback_for_hfx_lh_when_m9_supplies_fluxes": "REMOVED_WITH_TOLERANCE_GATE"
+  },
+  "field_tolerances": {
+    "HFX": {
+      "atol": 0.002,
+      "rtol": 0.0,
+      "units": "W m-2"
+    },
+    "LH": {
+      "atol": 0.002,
+      "rtol": 0.0,
+      "units": "W m-2"
+    }
+  },
+  "finite_summary_all_finite": false,
+  "finite_summary_s": 0.05175305996090174,
+  "forecast_s": 23.70620402303757,
+  "grid": {
+    "nx": 159,
+    "ny": 66,
+    "nz": 44
+  },
+  "m9_reuse_gain_pct_daily_wall": 0.43719779708731776,
+  "m9_reuse_saved_s_per_output": 0.10638793295947835,
+  "old_daily_hour_s": 24.334050552919507,
+  "old_m9_diagnostics_s": {
+    "label": "old_m9_diagnostics_plus_q2_recompute",
+    "median_s": 0.4738455079495907,
+    "min_s": 0.4469828699948266,
+    "samples_s": [
+      0.4469828699948266,
+      0.4803156779962592,
+      0.4738455079495907
+    ]
+  },
+  "old_netcdf_write_s": 0.025695428950712085,
+  "old_prepare_wrfout_payload_s": {
+    "label": "old_prepare_wrfout_payload",
+    "median_s": 0.1175156999961473,
+    "min_s": 0.10341517097549513,
+    "samples_s": [
+      0.1175156999961473,
+      0.10341517097549513,
+      0.11773424100829288
+    ]
+  },
+  "output_packer_gain_pct_daily_wall": 0.40709398859338336,
+  "output_packer_static_cache_saved_s_per_output": 0.09906245698221028,
+  "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l2/20260521_18z_l2_72h_20260522T133443Z",
+  "schema": "V0100WaveB3DailyWrapperGains",
+  "schema_version": 1,
+  "static_cache_fields": [
+    "COSALPHA",
+    "E",
+    "F",
+    "HGT",
+    "MAPFAC_M",
+    "MAPFAC_U",
+    "MAPFAC_V",
+    "P_TOP",
+    "SINALPHA",
+    "XLAT",
+    "XLAT_U",
+    "XLAT_V",
+    "XLONG",
+    "XLONG_U",
+    "XLONG_V",
+    "ZNU",
+    "ZNW"
+  ],
+  "status": "PASS",
+  "timing_protocol": "segmented 1h L2 d02; one compile/warm forecast, then timed equal forecast; diagnostics/pack min over warmed reps"
+}

@@ -529,6 +529,7 @@ def write_wrfout_netcdf(
     run_start: datetime | date | str,
     diagnostics: Mapping[str, Any] | None = None,
     land_state: Any | None = None,
+    static_cache: WrfoutStaticFieldCache | None = None,
 ) -> Path:
     """Write one WRF-style ``wrfout`` NetCDF file for the M7 minimum variable set.
 
@@ -563,6 +564,7 @@ def write_wrfout_netcdf(
         run_start=run_start,
         diagnostics=diagnostics,
         land_state=land_state,
+        static_cache=static_cache,
     )
     return write_prepared_wrfout(prepared)
 
@@ -591,6 +593,55 @@ class PreparedWrfout:
     namelist: Any
 
 
+@dataclass(frozen=True)
+class WrfoutStaticFieldCache:
+    """Host-materialized wrfout fields that are grid-static for one run."""
+
+    fields: Mapping[str, np.ndarray]
+
+
+def build_wrfout_static_field_cache(
+    state: Any,
+    grid: Any,
+    namelist: Mapping[str, Any] | Any | None,
+) -> WrfoutStaticFieldCache:
+    """Build the per-run host cache for grid-static wrfout fields.
+
+    This intentionally excludes state-derived land masks and land-use fields:
+    hourly land refreshes may rewrite those leaves, while the coordinate,
+    vertical-eta, map-factor and Coriolis fields are invariant for the run.
+    """
+
+    nx, ny, nz = _grid_extent(grid)
+    dimensions = _dimension_sizes(nx=nx, ny=ny, nz=nz, namelist=namelist)
+    shape_xy = _shape_for_dimensions(XY, dimensions)
+    shape_u_xy = _shape_for_dimensions(U_XY, dimensions)
+    shape_v_xy = _shape_for_dimensions(V_XY, dimensions)
+    shape_mapu = _shape_for_dimensions(MAPFAC_U_XY, dimensions)
+    shape_mapv = _shape_for_dimensions(MAPFAC_V_XY, dimensions)
+
+    fields: dict[str, np.ndarray] = {}
+    fields["XLAT"], fields["XLONG"] = _latlon_fields(state, grid, namelist, shape_xy)
+    fields["XLAT_U"], fields["XLONG_U"] = _latlon_fields(state, grid, namelist, shape_u_xy, suffix="_u")
+    fields["XLAT_V"], fields["XLONG_V"] = _latlon_fields(state, grid, namelist, shape_v_xy, suffix="_v")
+    fields["HGT"] = _grid_or_state_array(state, grid, ("HGT", "hgt", "terrain_height"), shape_xy)
+
+    # Populate grid-only coordinate fields. XLAND is derived from the current State
+    # landmask, so remove it from this grid-static cache after using the shared helper.
+    landmask = _landmask(state, shape_xy)
+    _add_grid_coordinate_fields(
+        fields,
+        grid,
+        dimensions,
+        shape_xy=shape_xy,
+        shape_mapu=shape_mapu,
+        shape_mapv=shape_mapv,
+        landmask=landmask,
+    )
+    fields.pop("XLAND", None)
+    return WrfoutStaticFieldCache({name: np.asarray(value, dtype=np.float32) for name, value in fields.items()})
+
+
 def prepare_wrfout_payload(
     state: Any,
     grid: Any,
@@ -602,6 +653,7 @@ def prepare_wrfout_payload(
     run_start: datetime | date | str,
     diagnostics: Mapping[str, Any] | None = None,
     land_state: Any | None = None,
+    static_cache: WrfoutStaticFieldCache | None = None,
 ) -> PreparedWrfout:
     """Materialize all wrfout fields to host numpy (the device->host boundary).
 
@@ -621,7 +673,13 @@ def prepare_wrfout_payload(
     # The single device->host boundary: _build_output_fields returns host
     # np.float32 arrays, so PreparedWrfout holds no device references.
     fields = _build_output_fields(
-        state, grid, namelist, dimensions, diagnostics=diagnostics, land_state=land_state
+        state,
+        grid,
+        namelist,
+        dimensions,
+        diagnostics=diagnostics,
+        land_state=land_state,
+        static_cache=static_cache,
     )
     return PreparedWrfout(
         target=target,
@@ -791,6 +849,7 @@ def _build_output_fields(
     *,
     diagnostics: Mapping[str, Any] | None = None,
     land_state: Any | None = None,
+    static_cache: WrfoutStaticFieldCache | None = None,
 ) -> dict[str, np.ndarray]:
     shape_xy = _shape_for_dimensions(XY, dimensions)
     shape_xyz = _shape_for_dimensions(XYZ, dimensions)
@@ -835,15 +894,31 @@ def _build_output_fields(
         shape=shape_xy,
     )
 
-    xlat, xlong = _latlon_fields(state, grid, namelist, shape_xy)
-    xlat_u, xlong_u = _latlon_fields(state, grid, namelist, shape_u_xy, suffix="_u")
-    xlat_v, xlong_v = _latlon_fields(state, grid, namelist, shape_v_xy, suffix="_v")
+    static_fields = static_cache.fields if static_cache is not None else {}
+    xlat = _cached_static_field(static_fields, "XLAT", shape_xy)
+    xlong = _cached_static_field(static_fields, "XLONG", shape_xy)
+    if xlat is None or xlong is None:
+        xlat, xlong = _latlon_fields(state, grid, namelist, shape_xy)
+    xlat_u = _cached_static_field(static_fields, "XLAT_U", shape_u_xy)
+    xlong_u = _cached_static_field(static_fields, "XLONG_U", shape_u_xy)
+    if xlat_u is None or xlong_u is None:
+        xlat_u, xlong_u = _latlon_fields(state, grid, namelist, shape_u_xy, suffix="_u")
+    xlat_v = _cached_static_field(static_fields, "XLAT_V", shape_v_xy)
+    xlong_v = _cached_static_field(static_fields, "XLONG_V", shape_v_xy)
+    if xlat_v is None or xlong_v is None:
+        xlat_v, xlong_v = _latlon_fields(state, grid, namelist, shape_v_xy, suffix="_v")
 
-    terrain = _grid_or_state_array(state, grid, ("HGT", "hgt", "terrain_height"), shape_xy)
+    terrain = _cached_static_field(static_fields, "HGT", shape_xy)
+    if terrain is None:
+        terrain = _grid_or_state_array(state, grid, ("HGT", "hgt", "terrain_height"), shape_xy)
     landmask = _landmask(state, shape_xy)
     lu_index = _field_array(state, ("LU_INDEX", "lu_index", "ivgtyp"), shape_xy, default=np.where(landmask > 0.5, 2.0, 17.0))
-    hfx = _optional_field_array(state, ("HFX", "hfx"), shape_xy)
-    lh = _optional_field_array(state, ("LH", "lh"), shape_xy)
+    hfx = _diagnostic_field_array(diagnostics, "HFX", shape_xy)
+    if hfx is None:
+        hfx = _optional_field_array(state, ("HFX", "hfx"), shape_xy)
+    lh = _diagnostic_field_array(diagnostics, "LH", shape_xy)
+    if lh is None:
+        lh = _optional_field_array(state, ("LH", "lh"), shape_xy)
     if hfx is None or lh is None:
         surface_fluxes = _surface_flux_fallbacks(
             state=state,
@@ -953,6 +1028,17 @@ def _build_output_fields(
     # --- P0-5a (b) grid-static coordinate / map-factor / Coriolis fields. Source
     # = GridSpec.metrics + GridSpec.vertical (always present on a real GridSpec).
     # Skipped wholesale when the grid carries no metrics (dict/synthetic grid). ---
+    for name in GRID_COORDINATE_VARIABLES:
+        if name == "XLAND":
+            continue
+        spec = WRFOUT_VARIABLE_SPECS[name]
+        cached = _cached_static_field(
+            static_fields,
+            name,
+            _shape_for_dimensions(spec.dimensions, dimensions),
+        )
+        if cached is not None:
+            fields[name] = cached
     _add_grid_coordinate_fields(
         fields, grid, dimensions,
         shape_xy=shape_xy, shape_mapu=shape_mapu, shape_mapv=shape_mapv,
@@ -1024,8 +1110,10 @@ def _add_grid_coordinate_fields(
     if eta is not None:
         eta_host = np.asarray(eta, dtype=np.float64)
         if eta_host.shape == (nz + 1,):
-            fields["ZNW"] = _coerce_array("ZNW", eta_host, (nz + 1,))
-            fields["ZNU"] = _coerce_array("ZNU", 0.5 * (eta_host[:-1] + eta_host[1:]), (nz,))
+            if "ZNW" not in fields:
+                fields["ZNW"] = _coerce_array("ZNW", eta_host, (nz + 1,))
+            if "ZNU" not in fields:
+                fields["ZNU"] = _coerce_array("ZNU", 0.5 * (eta_host[:-1] + eta_host[1:]), (nz,))
 
     metrics = _lookup(grid, "metrics")
     if metrics is not None:
@@ -1043,10 +1131,10 @@ def _add_grid_coordinate_fields(
             ("COSALPHA", "cosa", shape_xy),
         ):
             value = _lookup(metrics, attr)
-            if value is not None:
+            if value is not None and wrf_name not in fields:
                 fields[wrf_name] = _coerce_array(wrf_name, np.asarray(value), shape)
         p_top = _lookup(metrics, "p_top")
-        if p_top is not None:
+        if p_top is not None and "P_TOP" not in fields:
             fields["P_TOP"] = _coerce_array("P_TOP", float(np.asarray(p_top).reshape(-1)[0]), ())
 
     # XLAND (1 land / 2 water) = WRF land/water flag. Derive from the landmask the
@@ -1203,6 +1291,22 @@ def _optional_field_array(obj: Any, names: tuple[str, ...], shape: tuple[int, ..
         if value is not None:
             return _coerce_array(name, value, shape)
     return None
+
+
+def _diagnostic_field_array(diagnostics: Mapping[str, Any] | None, name: str, shape: tuple[int, ...]) -> np.ndarray | None:
+    if diagnostics is None:
+        return None
+    value = diagnostics.get(name) if isinstance(diagnostics, Mapping) else getattr(diagnostics, name, None)
+    if value is None:
+        return None
+    return _coerce_array(name, value, shape)
+
+
+def _cached_static_field(static_fields: Mapping[str, np.ndarray], name: str, shape: tuple[int, ...]) -> np.ndarray | None:
+    value = static_fields.get(name)
+    if value is None:
+        return None
+    return _coerce_array(name, value, shape)
 
 
 def _grid_or_state_array(
