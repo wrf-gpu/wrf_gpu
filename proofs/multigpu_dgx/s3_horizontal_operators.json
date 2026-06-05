@@ -1,0 +1,72 @@
+{
+  "check": "sharded_horizontal_operators",
+  "device_count": 4,
+  "grid": {
+    "nx": 32,
+    "ny": 4,
+    "nz": 6
+  },
+  "local_device_count": 4,
+  "passed": true,
+  "platform": "cpu",
+  "records": {
+    "acoustic_x_divergence": {
+      "atol": 0.0,
+      "max_abs": 0.0,
+      "passed": true,
+      "rtol": 0.0,
+      "shape": [
+        4,
+        6,
+        4,
+        8
+      ]
+    },
+    "acoustic_x_face_pressure_dpn": {
+      "atol": 1e-12,
+      "max_abs": 2.220446049250313e-16,
+      "passed": true,
+      "rtol": 1e-12,
+      "shape": [
+        4,
+        7,
+        4,
+        9
+      ]
+    },
+    "flux5_x": {
+      "atol": 2e-07,
+      "max_abs": 1.7881393432617188e-07,
+      "passed": true,
+      "rtol": 2e-06,
+      "shape": [
+        4,
+        6,
+        4,
+        8
+      ]
+    },
+    "sixth_order_diffusion": {
+      "atol": 2e-09,
+      "max_abs": 2.3283064365386963e-10,
+      "passed": true,
+      "rtol": 2e-06,
+      "shape": [
+        4,
+        6,
+        4,
+        8
+      ]
+    }
+  },
+  "simulation_can_prove": [
+    "halo-fed local x operators reproduce owned columns/faces of current global formulas",
+    "flux-advection and sixth-order diffusion x stencils have sufficient halo width",
+    "acoustic x divergence and x-face pressure-dpn seam handling match global edge/pair semantics"
+  ],
+  "simulation_cannot_prove": [
+    "real H200 kernel occupancy",
+    "NVLink collective overlap with operator kernels",
+    "full dycore timestep scaling on DGX"
+  ]
+}

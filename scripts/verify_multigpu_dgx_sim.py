@@ -23,6 +23,14 @@ from gpuwrf.contracts.grid import BCMetadata, GridSpec, Projection, TerrainProve
 from gpuwrf.contracts.halo import HaloSpec, apply_halo
 from gpuwrf.contracts.precision import DEFAULT_DTYPES
 from gpuwrf.contracts.state import State, Tendencies, _state_field_shapes
+from gpuwrf.dynamics.explicit_diffusion import sixth_order_diffusion_tendency
+from gpuwrf.dynamics.flux_advection import flux5_face_periodic
+from gpuwrf.dynamics.sharded_horizontal import (
+    sharded_flux5_face_periodic_x,
+    sharded_sixth_order_diffusion_tendency,
+    sharded_x_face_pressure_dpn,
+    sharded_x_staggered_divergence,
+)
 from gpuwrf.profiling.budget import compiled_text
 from gpuwrf.runtime.operational_mode import OperationalNamelist, run_forecast_operational
 from gpuwrf.runtime.sharding import (
@@ -31,6 +39,7 @@ from gpuwrf.runtime.sharding import (
     hlo_graph_stats,
     partition_state_x,
     select_forecast_runner,
+    x_partition_bounds,
 )
 
 
@@ -100,6 +109,15 @@ def _deterministic_state(grid: GridSpec) -> State:
         values = jnp.arange(size, dtype=jnp.float64).reshape(shape) + float(index * 1000)
         fields[name] = values.astype(jnp.int32 if dtype == jnp.int32 else dtype)
     return State(**fields)
+
+
+def _bounded_operator_state(state: State) -> State:
+    return state.replace(
+        theta=jnp.sin(state.theta.astype(jnp.float64) * 0.017).astype(state.theta.dtype),
+        qv=jnp.cos(state.qv.astype(jnp.float64) * 0.013).astype(state.qv.dtype),
+        u=jnp.sin(state.u.astype(jnp.float64) * 0.011).astype(state.u.dtype),
+        p=jnp.sin(state.p.astype(jnp.float64) * 0.007).astype(state.p.dtype),
+    )
 
 
 def _compile_hlo(fn, state: State, namelist: OperationalNamelist, hours: float) -> str:
@@ -206,10 +224,152 @@ def run_halo_exchange_check() -> dict[str, Any]:
     }
 
 
+def _stack_mass_slices(field: jax.Array, bounds: tuple[tuple[int, int], ...]) -> jax.Array:
+    return jnp.stack([field[..., start:end] for start, end in bounds], axis=0)
+
+
+def _stack_face_slices(field: jax.Array, bounds: tuple[tuple[int, int], ...]) -> jax.Array:
+    return jnp.stack([field[..., start : end + 1] for start, end in bounds], axis=0)
+
+
+def _global_x_face_pressure_dpn(
+    p: jax.Array,
+    *,
+    fnm: jax.Array,
+    fnp: jax.Array,
+    cf1: jax.Array,
+    cf2: jax.Array,
+    cf3: jax.Array,
+) -> jax.Array:
+    left = jnp.concatenate([p[:, :, :1], p], axis=2)
+    right = jnp.concatenate([p, p[:, :, -1:]], axis=2)
+    pair_sum = left + right
+    _, ny, nx_face = pair_sum.shape
+    bottom = 0.5 * (cf1 * pair_sum[0] + cf2 * pair_sum[1] + cf3 * pair_sum[2])
+    interior = 0.5 * (
+        fnm[1:, None, None] * pair_sum[1:, :, :]
+        + fnp[1:, None, None] * pair_sum[:-1, :, :]
+    )
+    top = jnp.zeros((ny, nx_face), dtype=p.dtype)
+    return jnp.concatenate([bottom[None, :, :], interior, top[None, :, :]], axis=0)
+
+
+def _comparison_record(got: jax.Array, want: jax.Array, *, rtol: float, atol: float) -> dict[str, Any]:
+    diff = got.astype(jnp.float64) - want.astype(jnp.float64)
+    max_abs = float(jnp.max(jnp.abs(diff)))
+    return {
+        "shape": list(got.shape),
+        "rtol": float(rtol),
+        "atol": float(atol),
+        "max_abs": max_abs,
+        "passed": bool(jnp.allclose(got, want, rtol=rtol, atol=atol)),
+    }
+
+
+def run_operator_check() -> dict[str, Any]:
+    devices = len(jax.local_devices())
+    if devices < 2:
+        raise RuntimeError("operator simulation requires at least two fake/real local devices")
+    nx = max(32, devices * 8)
+    grid = _test_grid(nx=nx, ny=4, nz=6)
+    state = _bounded_operator_state(_deterministic_state(grid))
+    bounds = x_partition_bounds(grid.nx, devices)
+    records: dict[str, Any] = {}
+
+    halo3 = partition_state_x(state, grid, num_partitions=devices, halo_width=3, fill_halos=True)
+    flux_global = flux5_face_periodic(state.theta, state.qv + 0.25, axis=2)
+    flux_got = jax.pmap(
+        lambda field, vel: sharded_flux5_face_periodic_x(field, vel + 0.25, halo_width=3),
+        axis_name="shard",
+    )(halo3.theta, halo3.qv)
+    records["flux5_x"] = _comparison_record(
+        flux_got,
+        _stack_mass_slices(flux_global, bounds),
+        rtol=2.0e-6,
+        atol=2.0e-7,
+    )
+
+    diffusion_kwargs = {"dt": 10.0, "diff_6th_factor": 0.12, "horizontal_only": True, "monotonic": True}
+    diffusion_global = sixth_order_diffusion_tendency(state.theta, **diffusion_kwargs)
+    diffusion_got = jax.pmap(
+        lambda field: sharded_sixth_order_diffusion_tendency(field, halo_width=3, **diffusion_kwargs),
+        axis_name="shard",
+    )(halo3.theta)
+    records["sixth_order_diffusion"] = _comparison_record(
+        diffusion_got,
+        _stack_mass_slices(diffusion_global, bounds),
+        rtol=2.0e-6,
+        atol=2.0e-9,
+    )
+
+    halo1 = partition_state_x(state, grid, num_partitions=devices, halo_width=1, fill_halos=True)
+    div_global = 0.1 * (state.u[:, :, 1 : grid.nx + 1] - state.u[:, :, : grid.nx])
+    div_got = jax.pmap(
+        lambda u: sharded_x_staggered_divergence(u, rdx=0.1, halo_width=1),
+        axis_name="shard",
+    )(halo1.u)
+    records["acoustic_x_divergence"] = _comparison_record(
+        div_got,
+        _stack_mass_slices(div_global, bounds),
+        rtol=0.0,
+        atol=0.0,
+    )
+
+    fnm = jnp.linspace(0.2, 0.8, grid.nz, dtype=state.p.dtype)
+    fnp = 1.0 - fnm
+    cf1 = jnp.asarray(0.55, dtype=state.p.dtype)
+    cf2 = jnp.asarray(0.30, dtype=state.p.dtype)
+    cf3 = jnp.asarray(0.15, dtype=state.p.dtype)
+    dpn_global = _global_x_face_pressure_dpn(state.p, fnm=fnm, fnp=fnp, cf1=cf1, cf2=cf2, cf3=cf3)
+    owned_width = grid.nx // devices
+
+    def local_dpn(p):
+        rank = jax.lax.axis_index("shard")
+        return sharded_x_face_pressure_dpn(
+            p,
+            fnm=fnm,
+            fnp=fnp,
+            cf1=cf1,
+            cf2=cf2,
+            cf3=cf3,
+            halo_width=1,
+            global_start=rank * owned_width,
+            global_nx=grid.nx,
+        )
+
+    dpn_got = jax.pmap(local_dpn, axis_name="shard")(halo1.p)
+    records["acoustic_x_face_pressure_dpn"] = _comparison_record(
+        dpn_got,
+        _stack_face_slices(dpn_global, bounds),
+        rtol=1.0e-12,
+        atol=1.0e-12,
+    )
+
+    return {
+        "check": "sharded_horizontal_operators",
+        "platform": jax.default_backend(),
+        "device_count": len(jax.devices()),
+        "local_device_count": devices,
+        "grid": {"nx": int(grid.nx), "ny": int(grid.ny), "nz": int(grid.nz)},
+        "records": records,
+        "passed": all(bool(record["passed"]) for record in records.values()),
+        "simulation_can_prove": [
+            "halo-fed local x operators reproduce owned columns/faces of current global formulas",
+            "flux-advection and sixth-order diffusion x stencils have sufficient halo width",
+            "acoustic x divergence and x-face pressure-dpn seam handling match global edge/pair semantics",
+        ],
+        "simulation_cannot_prove": [
+            "real H200 kernel occupancy",
+            "NVLink collective overlap with operator kernels",
+            "full dycore timestep scaling on DGX",
+        ],
+    }
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--devices", type=int, default=None, help="expected visible fake CPU device count")
-    parser.add_argument("--check", choices=("flag-off", "halo", "all"), default="flag-off")
+    parser.add_argument("--check", choices=("flag-off", "halo", "operators", "all"), default="flag-off")
     parser.add_argument(
         "--output",
         type=Path,
@@ -223,8 +383,16 @@ def main(argv: list[str] | None = None) -> int:
         payload = run_flag_off_graph_check()
     elif args.check == "halo":
         payload = run_halo_exchange_check()
+    elif args.check == "operators":
+        payload = run_operator_check()
     else:
-        payload = {"checks": [run_flag_off_graph_check(), run_halo_exchange_check()]}
+        payload = {
+            "checks": [
+                run_flag_off_graph_check(),
+                run_halo_exchange_check(),
+                run_operator_check(),
+            ]
+        }
         payload["passed"] = all(bool(check["passed"]) for check in payload["checks"])
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
