@@ -117,7 +117,7 @@ def run_gpu_case_level_noahmp(level_spec: dict, out_dir: Path, *, dt_s: float,
 
     st0 = _enforce_operational_precision(case.state, force_fp64=bool(nl.force_fp64))
     carry = _commit_to_operational_device(initial_operational_carry(
-        st0, noahmp_land=land, noahmp_rad=noahmp_initial_rad(st0, nl),
+        st0, noahmp_land=land, noahmp_rad=noahmp_initial_rad(st0, nl, land_state=land),
     ))
     timings = {}
     t0 = time.time()
