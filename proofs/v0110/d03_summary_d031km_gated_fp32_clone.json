@@ -1,0 +1,72 @@
+{
+  "all_finite": true,
+  "device": "cuda:0",
+  "dt_s": 3.0,
+  "final_lead_fields": {
+    "RAINNC": {
+      "beats_persistence": false,
+      "max_abs_error": 4.913621425628662,
+      "mean_error": 0.22165716578860145,
+      "persistence_rmse": 1.4421910101943408e-05,
+      "rmse": 0.6845181727585644,
+      "skill_score": -47462.76644424673,
+      "threshold": null,
+      "units": "mm",
+      "within_threshold": true
+    },
+    "T2": {
+      "beats_persistence": true,
+      "max_abs_error": 7.85101318359375,
+      "mean_error": 0.2585505616109431,
+      "persistence_rmse": 2.297936325392803,
+      "rmse": 1.6145591434561046,
+      "skill_score": 0.29738734462970107,
+      "threshold": 3.0,
+      "units": "K",
+      "within_threshold": true
+    },
+    "U10": {
+      "beats_persistence": false,
+      "max_abs_error": 20.520272254943848,
+      "mean_error": 1.56716404212026,
+      "persistence_rmse": 2.98079500303829,
+      "rmse": 5.132819673624478,
+      "skill_score": -0.7219633246810513,
+      "threshold": 7.5,
+      "units": "m s-1",
+      "within_threshold": true
+    },
+    "V10": {
+      "beats_persistence": false,
+      "max_abs_error": 22.269188404083252,
+      "mean_error": -1.3536739375042366,
+      "persistence_rmse": 4.678583125846212,
+      "rmse": 6.6252032071323095,
+      "skill_score": -0.41607042750448375,
+      "threshold": 7.5,
+      "units": "m s-1",
+      "within_threshold": true
+    }
+  },
+  "hours": 24,
+  "output_dir": "/tmp/v0110_d031km_runs/d03_20260521_18z_l3_24h_20260522T133443Z_d031km_gated_fp32_clone",
+  "persistence_beat_all_leads": {
+    "RAINNC": false,
+    "T2": true,
+    "U10": false,
+    "V10": false
+  },
+  "pipeline_verdict": "PIPELINE_PARTIAL",
+  "proofs": {
+    "pipeline": "proofs/v0110/pipeline_run_d03_d031km_gated_fp32_clone.json",
+    "validation": "proofs/v0110/d03_validation_d031km_gated_fp32_clone.json"
+  },
+  "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
+  "run_id": "20260521_18z_l3_24h_20260522T133443Z",
+  "schema": "V010D03ReplayValidationSummary",
+  "schema_version": 1,
+  "validation_status": "PASS",
+  "verdict": "D03_1KM_VALIDATED",
+  "wall_clock_per_forecast_hour_s": 68.91916146125004,
+  "wall_clock_total_s": 1654.059875070001
+}

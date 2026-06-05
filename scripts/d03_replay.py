@@ -65,7 +65,12 @@ from gpuwrf.integration.daily_pipeline import (  # noqa: E402
     write_json,
 )
 from gpuwrf.io.data_inventory import parse_run_id, parse_wrfout_valid_time  # noqa: E402
-from gpuwrf.runtime.operational_mode import OperationalNamelist  # noqa: E402
+from gpuwrf.profiling.transfer_audit import block_until_ready  # noqa: E402
+from gpuwrf.runtime.operational_mode import (  # noqa: E402
+    OperationalNamelist,
+    _commit_to_operational_device,
+    run_forecast_operational,
+)
 from gpuwrf.validation.data_quality import compute_rmse_against_gen2  # noqa: E402
 
 
@@ -274,6 +279,21 @@ def build_l3_d03_daily_case(config: DailyPipelineConfig) -> tuple[DailyCase, Pat
     )
 
 
+def _donation_safe_forecast_fn(state: Any, namelist: Any, hours: float) -> Any:
+    """Run the forecast with independent donated buffers for aliased State leaves."""
+
+    import jax
+    import jax.numpy as jnp
+
+    device_state = _commit_to_operational_device(state)
+    donation_safe_state = jax.tree_util.tree_map(
+        lambda leaf: jnp.array(leaf, copy=True), device_state
+    )
+    result = run_forecast_operational(donation_safe_state, namelist, float(hours))
+    block_until_ready(result)
+    return result
+
+
 def _read_surface(path: str | Path, fields: Iterable[str]) -> dict[str, np.ndarray]:
     out: dict[str, np.ndarray] = {}
     with Dataset(path, "r") as dataset:
@@ -443,7 +463,11 @@ def main(argv: list[str] | None = None) -> int:
         radiation_cadence_steps=int(args.radiation_cadence_steps),
     )
 
-    pipeline_payload = execute_daily_pipeline(config, case_builder=build_l3_d03_daily_case)
+    pipeline_payload = execute_daily_pipeline(
+        config,
+        forecast_fn=_donation_safe_forecast_fn,
+        case_builder=build_l3_d03_daily_case,
+    )
     if affinity is not None:
         pipeline_payload["orchestration_cpu_affinity"] = affinity
     write_json(proof_dir / f"pipeline_run_d03{tag}.json", pipeline_payload)
