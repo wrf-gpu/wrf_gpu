@@ -1,0 +1,62 @@
+{
+  "schema": "V0100WaveB2MynnProfile",
+  "schema_version": 1,
+  "scope": "Wave-B2 STEP 1: MYNN/PBL internal profile (GREEN d02 L2, 66x159x44, fp64, EDMF on)",
+  "device": "cuda:0",
+  "grid": {
+    "ny": 66,
+    "nx": 159,
+    "nz": 44
+  },
+  "block_decomposition_ms": {
+    "surface_adapter": 1.9388949731364846,
+    "mynn_adapter": 32.54232695326209,
+    "mynn_adapter_with_diagnostics": 32.5858470168896,
+    "mynn_column_build": 0.3080719616264105,
+    "surface_column_view_build": 0.2587519702501595,
+    "surface_fluxes_from_state": 0.09434099774807692,
+    "mynn_closure_kernel_only": 32.20971499104053,
+    "state_from_mynn_output": 0.4775240086019039,
+    "surface_plus_mynn_combined": 33.893508021719754
+  },
+  "closure_internal_phases_incremental_ms": {
+    "clip+surface_terms": 0.0313,
+    "mym_turbulence": 7.3398,
+    "mym_predict_qke": 0.5089,
+    "edmf_massflux": 15.6605,
+    "apply_mean_tendencies (4 tridiag solves)": 7.8756,
+    "residual (reassemble in-impl)": 0.7215
+  },
+  "closure_hlo_op_counts": {
+    "transpose": 1,
+    "reshape": 0,
+    "convert": 7,
+    "fusion": 96
+  },
+  "fusion_ab": {
+    "shipped_min_ms": 33.90599798876792,
+    "fused_min_ms": 33.87391800060868,
+    "block_gain_pct": 0.09461449319340627,
+    "bit_identical": false
+  },
+  "edmf_unroll_ab": {
+    "default_min_ms": 32.44280704529956,
+    "unroll_min_ms": 32.46564598521218,
+    "block_gain_pct": -0.07039754568933393,
+    "bit_identical": false,
+    "verdict": "REJECT"
+  },
+  "findings": {
+    "surface_plus_mynn_block_ms": 33.893508021719754,
+    "irreducible_closure_kernel_ms": 32.20971499104053,
+    "closure_share_of_block_pct": 95.03,
+    "mechanical_wrappers_ms": 1.1387,
+    "surface_layer_compute_ms": 1.9388949731364846,
+    "removable_mechanical_envelope_ms": -0.2551,
+    "largest_internal_phase": "edmf_massflux",
+    "edmf_massflux_ms": 15.6605,
+    "tridiag_solver": "jax.lax.linalg.tridiagonal_solve (XLA primitive, already optimal)",
+    "edmf_structure": "vmap(columns) o vmap(plumes=8) o lax.scan(levels~42): dependent vertical recurrence"
+  },
+  "disposition": "IRREDUCIBLE: the 45.5% MYNN/PBL share is 94.6% genuine closure compute. The only mechanical levers (surface+MYNN State round-trip fusion; EDMF scan unroll) measured <0.1% AND broke bit-identity -> REJECTED (not-worth-the-risk, fidelity-paramount)."
+}

@@ -1,0 +1,115 @@
+{
+  "scope": "Wave-B2 STEP 1b: MYNN closure kernel internal decomposition (GREEN d02 L2)",
+  "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l2/20260521_18z_l2_72h_20260522T133443Z",
+  "device": "cuda:0",
+  "batch_cols": 10494,
+  "nz": 44,
+  "edmf": true,
+  "dx": 3000.0,
+  "dt_s": 10.0,
+  "components_ms": {
+    "clip_plus_surface_terms": {
+      "label": "clip_plus_surface_terms",
+      "min_ms": 0.03130000550299883,
+      "median_ms": 0.19639200763776898,
+      "samples_ms": [
+        0.0801,
+        0.2771,
+        0.2288,
+        0.2636,
+        0.041,
+        0.2712,
+        0.0313,
+        0.164,
+        0.2826,
+        0.0936
+      ]
+    },
+    "mym_turbulence": {
+      "label": "mym_turbulence",
+      "min_ms": 7.37107900204137,
+      "median_ms": 7.437433494487777,
+      "samples_ms": [
+        7.4686,
+        7.4063,
+        7.3711,
+        7.38,
+        7.386,
+        7.3835,
+        9.1325,
+        8.4387,
+        7.7705,
+        8.0177
+      ]
+    },
+    "turb_plus_predict_qke": {
+      "label": "turb_plus_predict_qke",
+      "min_ms": 7.880002027377486,
+      "median_ms": 7.972987979883328,
+      "samples_ms": [
+        8.0153,
+        7.9809,
+        7.9556,
+        7.9809,
+        7.9651,
+        7.9923,
+        7.88,
+        7.9828,
+        7.8828,
+        7.8895
+      ]
+    },
+    "turb_plus_edmf": {
+      "label": "turb_plus_edmf",
+      "min_ms": 23.540475987829268,
+      "median_ms": 23.857348511228338,
+      "samples_ms": [
+        23.5405,
+        24.1449,
+        23.9512,
+        23.7216,
+        23.723,
+        24.7072,
+        24.759,
+        23.7635,
+        23.9976,
+        23.7621
+      ]
+    },
+    "turb_edmf_plus_apply": {
+      "label": "turb_edmf_plus_apply",
+      "min_ms": 31.416088982950896,
+      "median_ms": 31.671789998654276,
+      "samples_ms": [
+        31.8731,
+        31.7142,
+        31.4161,
+        32.5526,
+        32.2344,
+        31.9771,
+        31.6294,
+        31.5719,
+        31.5461,
+        31.5058
+      ]
+    },
+    "full_impl": {
+      "label": "full_impl",
+      "min_ms": 32.13760402286425,
+      "median_ms": 32.228864496573806,
+      "samples_ms": [
+        32.2756,
+        32.168,
+        32.2447,
+        32.1834,
+        32.1912,
+        32.2833,
+        32.1376,
+        32.4016,
+        32.2817,
+        32.2131
+      ]
+    }
+  },
+  "interpretation": "cumulative chained timings: each row includes its predecessors. Subtract consecutive rows for the incremental phase cost. The full impl is a straight-line dependent sequence (no tunable iteration count); the per-phase delta is irreducible closure compute over the 461736-cell domain."
+}
