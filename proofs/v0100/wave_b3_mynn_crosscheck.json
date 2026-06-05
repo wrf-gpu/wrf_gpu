@@ -1,0 +1,108 @@
+{
+  "audited_evidence": [
+    "proofs/v0100/wave_b2_mynn_profile.json",
+    "proofs/v0100/wave_b2_mynn_internal.json",
+    "proofs/v0100/wave_b2_fusion_ab.json",
+    "proofs/v0100/wave_b2_edmf_unroll_ab.json",
+    "src/gpuwrf/physics/mynn_edmf.py",
+    "src/gpuwrf/physics/mynn_pbl.py",
+    "src/gpuwrf/physics/tridiagonal_solver.py",
+    "src/gpuwrf/coupling/physics_couplers.py"
+  ],
+  "commands_run_for_crosscheck": [
+    "rg -n \"lax.scan|tridiagonal_solve|_apply_mean_tendencies\" src/gpuwrf/physics/mynn_edmf.py src/gpuwrf/physics/mynn_pbl.py src/gpuwrf/physics/tridiagonal_solver.py",
+    "sed source inspections of mynn_edmf.py, mynn_pbl.py, tridiagonal_solver.py, physics_couplers.py",
+    "jq/read of proofs/v0100/wave_b2_mynn_profile.json and wave_b2_mynn_internal.json"
+  ],
+  "conclusion": "Wave-B2 MYNN/PBL irreducible disposition is confirmed: the 45.5% wall is dominated by dependent MYNN closure compute; no WRF-faithful, bit-safe mechanical MYNN warmed-step lever above 1% was found.",
+  "implemented_mynn_forecast_change": false,
+  "missed_faithful_gt_1pct_mynn_lever_found": false,
+  "profile_numbers": {
+    "apply_mean_tendencies_4_tridiag_ms": 7.8756,
+    "closure_share_of_block_pct": 95.03,
+    "column_build_ms": 0.3080719616264105,
+    "edmf_massflux_ms": 15.6605,
+    "mynn_closure_kernel_ms": 32.20971499104053,
+    "state_reassemble_ms": 0.4775240086019039,
+    "surface_column_view_build_ms": 0.2587519702501595,
+    "surface_plus_mynn_block_ms": 33.893508021719754,
+    "surface_plus_mynn_combined_ms": 33.893508021719754
+  },
+  "schema": "V0100WaveB3MynnCrosscheck",
+  "schema_version": 1,
+  "spot_checks": {
+    "edmf_mass_flux": {
+      "code_refs": [
+        "src/gpuwrf/physics/mynn_edmf.py:193 active mask gates output after recurrence, not before per-column work",
+        "src/gpuwrf/physics/mynn_edmf.py:263-318 plume_scan carries w/thl/qt/qc/u/v/area/alive through lax.scan over levels",
+        "src/gpuwrf/physics/mynn_edmf.py:326-353 vmap over 8 plumes then sums interface fluxes"
+      ],
+      "evidence": {
+        "edmf_unroll_ab": {
+          "bit_identical": false,
+          "block_gain_pct": -0.07039754568933393,
+          "default_min_ms": 32.44280704529956,
+          "unroll_min_ms": 32.46564598521218,
+          "verdict": "REJECT"
+        },
+        "measured_ms": 15.6605
+      },
+      "reason": "Each updraft level depends on the prior plume state (entrainment, condensation, buoyancy, alive/area). Masking inactive columns still leaves SIMT/JAX batched recurrence work; B2 unroll A/B regressed and was not bit-identical.",
+      "verdict": "DEPENDENT_VERTICAL_RECURRENCE_NO_FAITHFUL_BATCHING_LEVER"
+    },
+    "layout_transpose": {
+      "code_refs": [
+        "src/gpuwrf/coupling/physics_couplers.py:_to_columns/_from_columns move the vertical axis for column kernels",
+        "proofs/v0100/wave_b2_mynn_profile.py HLO op count and component timers"
+      ],
+      "evidence": {
+        "closure_hlo_op_counts": {
+          "convert": 7,
+          "fusion": 96,
+          "reshape": 0,
+          "transpose": 1
+        },
+        "column_build_ms": 0.3080719616264105,
+        "hlo_counts": {},
+        "state_reassemble_ms": 0.4775240086019039,
+        "surface_column_view_build_ms": 0.2587519702501595
+      },
+      "reason": "The measured build/reassemble envelope is small and included in the rejected surface+MYNN fusion A/B. The closure HLO has one transpose and 96 fusions, so there is no independent layout-removal win above the 1% gate.",
+      "verdict": "NO_SEPARABLE_GT_1PCT_LEVER"
+    },
+    "redundant_output_recompute": {
+      "code_refs": [
+        "src/gpuwrf/integration/daily_pipeline.py:_surface_diagnostics_for_output old path recomputed surface_layer_diagnostics for Q2 after compute_m9_diagnostics",
+        "src/gpuwrf/runtime/operational_mode.py:compute_m9_diagnostics now carries q2 in M9Diagnostics",
+        "src/gpuwrf/io/wrfout_writer.py now uses supplied HFX/LH diagnostics before fallback surface solve"
+      ],
+      "reason": "This is not a warmed MYNN/PBL forecast-kernel lever. It is an output-cadence wrapper duplicate and is covered by wave_b3_daily_wrapper_gains/output_parity.",
+      "verdict": "DAILY_WRAPPER_ONLY_LEVER_FOUND_AND_IMPLEMENTED_IN_PART_B"
+    },
+    "surface_mynn_materialization": {
+      "evidence": {
+        "bit_identical": false,
+        "block_gain_pct": 0.09461449319340627,
+        "fused_min_ms": 33.87391800060868,
+        "shipped_min_ms": 33.90599798876792
+      },
+      "reason": "Surface+MYNN State round-trip fusion measured 0.09% block gain and was not bit-identical. That does not clear either the >1% or fidelity gate.",
+      "verdict": "FORECAST_PATH_FUSION_REJECTED"
+    },
+    "vertical_tridiagonal_solves": {
+      "code_refs": [
+        "src/gpuwrf/physics/mynn_pbl.py:944-1013 _apply_mean_tendencies calls u/v/theta/qv implicit solves",
+        "src/gpuwrf/physics/mynn_pbl.py:740 _solve_tridiagonal delegates to solve_tridiagonal",
+        "src/gpuwrf/physics/tridiagonal_solver.py:27 uses jax.lax.linalg.tridiagonal_solve"
+      ],
+      "evidence": {
+        "apply_mean_tendencies_4_tridiag_ms": 7.8756,
+        "solver": "jax.lax.linalg.tridiagonal_solve (XLA primitive, already optimal)"
+      },
+      "reason": "The faithful primitive is already XLA/lax tridiagonal_solve. Replacing it would be an algorithmic/implementation-risk rewrite, not a mechanical output-equivalent removal.",
+      "verdict": "USES_XLA_TRIDIAGONAL_PRIMITIVE_ALREADY"
+    }
+  },
+  "status": "CONFIRMED_IRREDUCIBLE",
+  "workload": "Wave-B2 STEP 1: MYNN/PBL internal profile (GREEN d02 L2, 66x159x44, fp64, EDMF on)"
+}
