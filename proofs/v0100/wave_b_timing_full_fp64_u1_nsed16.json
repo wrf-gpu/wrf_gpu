@@ -1,0 +1,100 @@
+{
+  "all_finite": true,
+  "cadence": 1000000,
+  "compile_s": 126.06663802399999,
+  "config": {
+    "GPUWRF_THOMPSON_FP32": null,
+    "GPUWRF_THOMPSON_NSED": "16",
+    "GPUWRF_THOMPSON_SED_UNROLL": null,
+    "acoustic_substeps": 10,
+    "acoustic_unroll": 1,
+    "bl_pbl_physics": 5,
+    "disable_guards": false,
+    "dt_s": 10.0,
+    "force_fp64": true,
+    "mp_physics": 8,
+    "run_boundary": true,
+    "run_physics": true,
+    "sf_sfclay_physics": 5,
+    "use_noahmp": false
+  },
+  "cpu_affinity": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "device": "cuda:0",
+  "discard_first_sample": true,
+  "final_state_ranges": {
+    "mu_total": {
+      "finite": true,
+      "max": 96803.69213867188,
+      "min": 66421.88899146536
+    },
+    "p_total": {
+      "finite": true,
+      "max": 101696.0234375,
+      "min": 5176.782906051552
+    },
+    "ph_total": {
+      "finite": true,
+      "max": 204077.453125,
+      "min": -7.796288059580547e-07
+    },
+    "qv": {
+      "finite": true,
+      "max": 0.015452657426002117,
+      "min": 2.4403267193409437e-06
+    },
+    "theta": {
+      "finite": true,
+      "max": 491.6383158365885,
+      "min": 290.854656771734
+    },
+    "u": {
+      "finite": true,
+      "max": 25.572223423477006,
+      "min": -13.017241710011639
+    },
+    "v": {
+      "finite": true,
+      "max": 11.285174640092812,
+      "min": -18.759822478559162
+    },
+    "w": {
+      "finite": true,
+      "max": 1.5981855175596043,
+      "min": -2.7043845482347284
+    }
+  },
+  "grid": {
+    "nx": 159,
+    "ny": 66,
+    "nz": 44
+  },
+  "methodology_note": "Fresh process; compile/warm call outside samples; warmed_per_step_ms is the min of cache-hit repeat calls. Default cadence is deliberately larger than the segment so the measured step is the non-radiation coupled step used by the Wave-A ~75 ms gate, with Thompson/MYNN/surface/boundary active.",
+  "peak_gpu_mem_mb_after_compile": 9025.659423828125,
+  "peak_gpu_mem_mb_final": 9283.79541015625,
+  "physically_plausible_short_run": true,
+  "repeats": 4,
+  "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l2/20260521_18z_l2_72h_20260522T133443Z",
+  "run_id": "20260521_18z_l2_72h_20260522T133443Z",
+  "schema": "V0100WaveBTimingProbe",
+  "schema_version": 1,
+  "status": "PASS",
+  "steps": 240,
+  "variant": "full",
+  "warmed_per_step_ms": 64.73083782911999,
+  "warmed_per_step_ms_samples": [
+    523.3039123166236,
+    64.88559230419924,
+    64.73083782911999,
+    64.90428441247786
+  ],
+  "warmed_per_step_ms_samples_used": [
+    64.88559230419924,
+    64.73083782911999,
+    64.90428441247786
+  ]
+}
