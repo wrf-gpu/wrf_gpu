@@ -24,7 +24,11 @@ from gpuwrf.physics.mynn_pbl import (
 from gpuwrf.physics.mynn_surface_stub import SurfaceFluxes
 from gpuwrf.physics.surface_layer import surface_layer, surface_layer_with_diagnostics
 from gpuwrf.physics.rrtmg_lw import RRTMGLWColumnState, solve_rrtmg_lw_column
-from gpuwrf.physics.rrtmg_sw import RRTMGSWColumnState, solve_rrtmg_sw_column
+from gpuwrf.physics.rrtmg_sw import (
+    RRTMGSWColumnState,
+    RRTMGSWTopographyState,
+    solve_rrtmg_sw_column,
+)
 from gpuwrf.physics.thompson_column import (
     ThompsonColumnState,
     density_from_pressure_temperature,
@@ -261,9 +265,33 @@ class RRTMGRadiationDiagnostics(NamedTuple):
     surface_emissivity: object
     coszen: object
     swdown: object
+    swnorm: object
     swup: object
+    swup_topographic: object
     glw: object
     glw_up: object
+    topographic_correction_factor: object
+    shadow_mask: object
+
+
+class SolarGeometry(NamedTuple):
+    """WRF radiation-driver solar geometry shared by RRTMG and topo shading."""
+
+    coszen: object
+    declination_rad: object
+    hour_angle_rad: object
+
+
+class RRTMGRadiationStatic(NamedTuple):
+    """Per-run WRF radiation grid fields on mass points ``(ny, nx)``."""
+
+    xlat_deg: object
+    xlong_deg: object
+    terrain_height_m: object
+    slope_rad: object
+    slope_azimuth_rad: object
+    sina: object
+    cosa: object
 
 
 def _to_columns(field):
@@ -478,6 +506,304 @@ def _compute_coszen(lat, lon, time_utc, lead_seconds=0.0):
     return jnp.clip(coszen, -1.0, 1.0)
 
 
+def _compute_solar_geometry(lat, lon, time_utc, lead_seconds=0.0) -> SolarGeometry:
+    """Return the same WRF solar geometry as :func:`_compute_coszen`.
+
+    `declination_rad` and `hour_angle_rad` are also required by WRF's
+    topographic-shadow and slope-radiation paths.
+    """
+
+    julian, utc_minute = _time_utc_parts(time_utc)
+    lat_rad = jnp.asarray(lat, dtype=jnp.float64) * DEG_TO_RAD
+    lon_deg = jnp.asarray(lon, dtype=jnp.float64)
+    lead_minutes = jnp.asarray(lead_seconds, dtype=jnp.float64) / 60.0
+    abs_minute = utc_minute + lead_minutes
+    day_advance = jnp.floor(abs_minute / MINUTES_PER_DAY)
+    julian_now = julian + day_advance
+
+    obecl = 23.5 * DEG_TO_RAD
+    sxlong_day = jnp.where(julian_now >= 80.0, julian_now - 80.0, julian_now + 285.0)
+    sxlong = sxlong_day * (360.0 / 365.0) * DEG_TO_RAD
+    declin = jnp.arcsin(jnp.sin(obecl) * jnp.sin(sxlong))
+
+    da = 2.0 * jnp.pi * (julian_now - 1.0) / 365.0
+    eot = (
+        0.000075
+        + 0.001868 * jnp.cos(da)
+        - 0.032077 * jnp.sin(da)
+        - 0.014615 * jnp.cos(2.0 * da)
+        - 0.04089 * jnp.sin(2.0 * da)
+    ) * 229.18
+    xt24 = jnp.mod(abs_minute, MINUTES_PER_DAY) + eot
+    local_time_h = xt24 / 60.0 + lon_deg / 15.0
+    hour_angle = 15.0 * (local_time_h - 12.0) * DEG_TO_RAD
+    coszen = (
+        jnp.sin(lat_rad) * jnp.sin(declin)
+        + jnp.cos(lat_rad) * jnp.cos(declin) * jnp.cos(hour_angle)
+    )
+    return SolarGeometry(
+        coszen=jnp.clip(coszen, -1.0, 1.0),
+        declination_rad=declin,
+        hour_angle_rad=hour_angle,
+    )
+
+
+def _fortran_int(value):
+    """WRF/Fortran `INT(real)` truncates toward zero."""
+
+    return jnp.trunc(value).astype(jnp.int32)
+
+
+def wrf_radiation_slope_aspect_from_terrain(
+    terrain_height_m,
+    *,
+    dx_m: float,
+    dy_m: float,
+    msftx=None,
+    msfty=None,
+    sina=None,
+    cosa=None,
+) -> tuple[jax.Array, jax.Array]:
+    """Compute WRF `start_em.F` slope and slope azimuth for slope radiation."""
+
+    terrain = jnp.asarray(terrain_height_m, dtype=jnp.float64)
+    ny, nx = terrain.shape
+    shape = terrain.shape
+    dtype = terrain.dtype
+    msftx_arr = jnp.ones(shape, dtype=dtype) if msftx is None else jnp.asarray(msftx, dtype=dtype)
+    msfty_arr = jnp.ones(shape, dtype=dtype) if msfty is None else jnp.asarray(msfty, dtype=dtype)
+    sina_arr = jnp.zeros(shape, dtype=dtype) if sina is None else jnp.asarray(sina, dtype=dtype)
+    cosa_arr = jnp.ones(shape, dtype=dtype) if cosa is None else jnp.asarray(cosa, dtype=dtype)
+
+    west = jnp.concatenate((terrain[:, :1], terrain[:, :-1]), axis=1)
+    east = jnp.concatenate((terrain[:, 1:], terrain[:, -1:]), axis=1)
+    south = jnp.concatenate((terrain[:1, :], terrain[:-1, :]), axis=0)
+    north = jnp.concatenate((terrain[1:, :], terrain[-1:, :]), axis=0)
+    denom_x = jnp.full((nx,), 2.0, dtype=dtype)
+    denom_y = jnp.full((ny,), 2.0, dtype=dtype)
+    denom_x = denom_x.at[0].set(1.0).at[-1].set(1.0)
+    denom_y = denom_y.at[0].set(1.0).at[-1].set(1.0)
+
+    hx = (east - west) * msftx_arr / (float(dx_m) * denom_x[None, :])
+    hy = (north - south) * msfty_arr / (float(dy_m) * denom_y[:, None])
+    slope = jnp.arctan(jnp.sqrt(hx * hx + hy * hy))
+    flat = slope < 1.0e-4
+    raw_azi = jnp.arctan2(hx, hy) + jnp.pi
+    rotation = jnp.where(cosa_arr >= 0.0, jnp.arcsin(sina_arr), jnp.pi - jnp.arcsin(sina_arr))
+    slope_azimuth = raw_azi - rotation
+    return jnp.where(flat, 0.0, slope), jnp.where(flat, 0.0, slope_azimuth)
+
+
+def build_radiation_static_from_wrf_fields(
+    xlat_deg,
+    xlong_deg,
+    terrain_height_m,
+    *,
+    dx_m: float,
+    dy_m: float,
+    msftx=None,
+    msfty=None,
+    sina=None,
+    cosa=None,
+) -> RRTMGRadiationStatic:
+    """Build the per-run RRTMG terrain-radiation static bundle from WRF fields."""
+
+    terrain = jnp.asarray(terrain_height_m, dtype=jnp.float64)
+    shape = terrain.shape
+    dtype = terrain.dtype
+    slope, slope_azimuth = wrf_radiation_slope_aspect_from_terrain(
+        terrain,
+        dx_m=float(dx_m),
+        dy_m=float(dy_m),
+        msftx=msftx,
+        msfty=msfty,
+        sina=sina,
+        cosa=cosa,
+    )
+    return RRTMGRadiationStatic(
+        xlat_deg=jnp.asarray(xlat_deg, dtype=dtype),
+        xlong_deg=jnp.asarray(xlong_deg, dtype=dtype),
+        terrain_height_m=terrain,
+        slope_rad=slope,
+        slope_azimuth_rad=slope_azimuth,
+        sina=jnp.zeros(shape, dtype=dtype) if sina is None else jnp.asarray(sina, dtype=dtype),
+        cosa=jnp.ones(shape, dtype=dtype) if cosa is None else jnp.asarray(cosa, dtype=dtype),
+    )
+
+
+def _cast_radiation_static(static: RRTMGRadiationStatic, dtype) -> RRTMGRadiationStatic:
+    return RRTMGRadiationStatic(
+        xlat_deg=jnp.asarray(static.xlat_deg, dtype=dtype),
+        xlong_deg=jnp.asarray(static.xlong_deg, dtype=dtype),
+        terrain_height_m=jnp.asarray(static.terrain_height_m, dtype=dtype),
+        slope_rad=jnp.asarray(static.slope_rad, dtype=dtype),
+        slope_azimuth_rad=jnp.asarray(static.slope_azimuth_rad, dtype=dtype),
+        sina=jnp.asarray(static.sina, dtype=dtype),
+        cosa=jnp.asarray(static.cosa, dtype=dtype),
+    )
+
+
+def _radiation_static_for_grid(
+    surface_shape: tuple[int, int],
+    grid: GridSpec | None,
+    radiation_static: RRTMGRadiationStatic | None,
+    dtype,
+) -> RRTMGRadiationStatic | None:
+    if radiation_static is not None:
+        return _cast_radiation_static(radiation_static, dtype)
+    if grid is None:
+        return None
+    lat, lon = _grid_lat_lon(surface_shape, grid, dtype)
+    return _cast_radiation_static(
+        build_radiation_static_from_wrf_fields(
+            lat,
+            lon,
+            grid.terrain_height,
+            dx_m=float(grid.projection.dx_m),
+            dy_m=float(grid.projection.dy_m),
+        ),
+        dtype,
+    )
+
+
+def _wrf_topographic_shadow_mask(
+    terrain_height_m,
+    *,
+    latitude_deg,
+    coszen,
+    declination_rad,
+    hour_angle_rad,
+    sina,
+    cosa,
+    dx_m: float,
+    dy_m: float,
+    shadow_length_m: float,
+):
+    """WRF `module_radiation_driver.F:toposhad` local terrain ray scan."""
+
+    terrain = jnp.asarray(terrain_height_m, dtype=jnp.float64)
+    ny, nx = terrain.shape
+    if ny == 0 or nx == 0:
+        return jnp.zeros_like(terrain, dtype=jnp.int32)
+    max_steps = int(float(shadow_length_m) / float(dx_m) + 1.0)
+    if max_steps <= 0:
+        return jnp.zeros_like(terrain, dtype=jnp.int32)
+
+    lat = jnp.asarray(latitude_deg, dtype=jnp.float64) * DEG_TO_RAD
+    csza = jnp.asarray(coszen, dtype=jnp.float64)
+    declin = jnp.asarray(declination_rad, dtype=jnp.float64)
+    hrang = jnp.asarray(hour_angle_rad, dtype=jnp.float64)
+    sina_arr = jnp.asarray(sina, dtype=jnp.float64)
+    cosa_arr = jnp.asarray(cosa, dtype=jnp.float64)
+    daylight = csza >= 1.0e-2
+
+    denom = jnp.maximum(jnp.sin(jnp.arccos(jnp.clip(csza, -1.0, 1.0))) * jnp.cos(lat), 1.0e-12)
+    argu = jnp.clip((csza * jnp.sin(lat) - jnp.sin(declin)) / denom, -1.0, 1.0)
+    acos_argu = jnp.arccos(argu)
+    sol_azi = jnp.where(jnp.sin(hrang) >= 0.0, acos_argu, -acos_argu) + jnp.pi
+    sol_azi = jnp.where(cosa_arr >= 0.0, sol_azi + jnp.arcsin(sina_arr), sol_azi + jnp.pi - jnp.arcsin(sina_arr))
+
+    yy = jnp.arange(ny, dtype=jnp.int32)[:, None]
+    xx = jnp.arange(nx, dtype=jnp.int32)[None, :]
+    y_float = yy.astype(jnp.float64)
+    x_float = xx.astype(jnp.float64)
+    h0 = terrain
+    shadowed = jnp.zeros((ny, nx), dtype=bool)
+
+    branch_n = (sol_azi > 1.75 * jnp.pi) | (sol_azi < 0.25 * jnp.pi)
+    branch_e = (~branch_n) & (sol_azi < 0.75 * jnp.pi)
+    branch_s = (~branch_n) & (~branch_e) & (sol_azi < 1.25 * jnp.pi)
+    branch_w = (~branch_n) & (~branch_e) & (~branch_s)
+
+    def x_interp_shadow(row, x_real, dxabs, branch):
+        i1 = _fortran_int(x_real)
+        i2 = i1 + 1
+        wgt = x_real - i1.astype(jnp.float64)
+        valid = daylight & branch & (row >= 0) & (row < ny) & (i1 >= 0) & (i2 < nx)
+        row_c = jnp.clip(row, 0, ny - 1)
+        i1_c = jnp.clip(i1, 0, nx - 1)
+        i2_c = jnp.clip(i2, 0, nx - 1)
+        h = wgt * terrain[row_c, i2_c] + (1.0 - wgt) * terrain[row_c, i1_c]
+        topoelev = jnp.arctan((h - h0) / jnp.maximum(dxabs, 1.0e-6))
+        return valid & (jnp.sin(topoelev) >= csza)
+
+    def y_interp_shadow(col, y_real, dxabs, branch):
+        j1 = _fortran_int(y_real)
+        j2 = j1 + 1
+        wgt = y_real - j1.astype(jnp.float64)
+        valid = daylight & branch & (col >= 0) & (col < nx) & (j1 >= 0) & (j2 < ny)
+        col_c = jnp.clip(col, 0, nx - 1)
+        j1_c = jnp.clip(j1, 0, ny - 1)
+        j2_c = jnp.clip(j2, 0, ny - 1)
+        h = wgt * terrain[j2_c, col_c] + (1.0 - wgt) * terrain[j1_c, col_c]
+        topoelev = jnp.arctan((h - h0) / jnp.maximum(dxabs, 1.0e-6))
+        return valid & (jnp.sin(topoelev) >= csza)
+
+    for step in range(1, max_steps + 1):
+        step_f = float(step)
+        tan_azi = jnp.tan(sol_azi)
+        tan_east_west = jnp.tan(0.5 * jnp.pi + sol_azi)
+
+        row_n = yy + step
+        x_n = x_float + step_f * tan_azi
+        dxabs_n = jnp.sqrt((float(dy_m) * step_f) ** 2 + (float(dx_m) * (x_n - x_float)) ** 2)
+        shadowed = shadowed | x_interp_shadow(row_n, x_n, dxabs_n, branch_n)
+
+        col_e = xx + step
+        y_e = y_float - step_f * tan_east_west
+        dxabs_e = jnp.sqrt((float(dx_m) * step_f) ** 2 + (float(dy_m) * (y_e - y_float)) ** 2)
+        shadowed = shadowed | y_interp_shadow(col_e, y_e, dxabs_e, branch_e)
+
+        row_s = yy - step
+        x_s = x_float - step_f * tan_azi
+        dxabs_s = jnp.sqrt((float(dy_m) * step_f) ** 2 + (float(dx_m) * (x_s - x_float)) ** 2)
+        shadowed = shadowed | x_interp_shadow(row_s, x_s, dxabs_s, branch_s)
+
+        col_w = xx - step
+        y_w = y_float + step_f * tan_east_west
+        dxabs_w = jnp.sqrt((float(dx_m) * step_f) ** 2 + (float(dy_m) * (y_w - y_float)) ** 2)
+        shadowed = shadowed | y_interp_shadow(col_w, y_w, dxabs_w, branch_w)
+
+    return jnp.where(daylight & shadowed, 1, 0).astype(jnp.int32)
+
+
+def _rrtmg_topography_state(
+    static: RRTMGRadiationStatic | None,
+    grid: GridSpec | None,
+    geometry: SolarGeometry,
+    *,
+    slope_rad: int = 0,
+    topo_shading: int = 0,
+    shadow_length_m: float = 25000.0,
+) -> RRTMGSWTopographyState | None:
+    if static is None or int(slope_rad) != 1:
+        return None
+    dtype = jnp.asarray(static.xlat_deg).dtype
+    if int(topo_shading) == 1 and grid is not None:
+        shadow_mask = _wrf_topographic_shadow_mask(
+            static.terrain_height_m,
+            latitude_deg=static.xlat_deg,
+            coszen=geometry.coszen,
+            declination_rad=geometry.declination_rad,
+            hour_angle_rad=geometry.hour_angle_rad,
+            sina=static.sina,
+            cosa=static.cosa,
+            dx_m=float(grid.projection.dx_m),
+            dy_m=float(grid.projection.dy_m),
+            shadow_length_m=float(shadow_length_m),
+        )
+    else:
+        shadow_mask = jnp.zeros_like(static.slope_rad, dtype=jnp.int32)
+    return RRTMGSWTopographyState(
+        latitude_deg=static.xlat_deg.astype(dtype),
+        declination_rad=jnp.asarray(geometry.declination_rad, dtype=dtype),
+        hour_angle_rad=jnp.asarray(geometry.hour_angle_rad, dtype=dtype),
+        slope_rad=static.slope_rad.astype(dtype),
+        slope_azimuth_rad=static.slope_azimuth_rad.astype(dtype),
+        shadow_mask=shadow_mask,
+    )
+
+
 def _solar_source_scale_for_time(time_utc=None, lead_seconds=0.0):
     """WRF `solvar(ib) = scon / rrsw_scon` per-band SW source multiplier.
 
@@ -549,12 +875,21 @@ def _grid_lat_lon(surface_shape: tuple[int, int], grid: GridSpec | None, dtype):
     )
 
 
-def _surface_radiation_properties(state: State):
-    """Lookup MODIS land-use albedo/emissivity using `state.lu_index`."""
+def _surface_radiation_properties(state: State, land_state=None):
+    """Return RRTMG surface albedo/emissivity, using prognostic land values when present."""
 
     lu = jnp.clip(jnp.asarray(state.lu_index, dtype=jnp.int32), 0, _MODIS_NOAH_ALBEDO.shape[0] - 1)
-    albedo = jnp.take(_MODIS_NOAH_ALBEDO, lu).astype(state.t_skin.dtype)
-    emissivity = jnp.take(_MODIS_NOAH_EMISSIVITY, lu).astype(state.t_skin.dtype)
+    fallback_albedo = jnp.take(_MODIS_NOAH_ALBEDO, lu).astype(state.t_skin.dtype)
+    fallback_emissivity = jnp.take(_MODIS_NOAH_EMISSIVITY, lu).astype(state.t_skin.dtype)
+    if land_state is None or not hasattr(land_state, "albedo") or not hasattr(land_state, "emiss"):
+        return fallback_albedo, fallback_emissivity
+    is_land = jnp.asarray(state.xland) < 1.5
+    land_albedo = jnp.asarray(land_state.albedo, dtype=state.t_skin.dtype)
+    land_emissivity = jnp.asarray(land_state.emiss, dtype=state.t_skin.dtype)
+    valid_albedo = (land_albedo >= 0.0) & (land_albedo <= 1.0)
+    valid_emissivity = (land_emissivity > 0.0) & (land_emissivity <= 1.0)
+    albedo = jnp.where(is_land & valid_albedo, land_albedo, fallback_albedo)
+    emissivity = jnp.where(is_land & valid_emissivity, land_emissivity, fallback_emissivity)
     return albedo, emissivity
 
 
@@ -564,7 +899,12 @@ def _rrtmg_column_inputs(
     *,
     time_utc=None,
     lead_seconds=0.0,
-) -> tuple[RRTMGSWColumnState, RRTMGLWColumnState, object, object, object]:
+    radiation_static: RRTMGRadiationStatic | None = None,
+    topo_shading: int = 0,
+    slope_rad: int = 0,
+    shadow_length_m: float = 25000.0,
+    land_state=None,
+) -> tuple[RRTMGSWColumnState, RRTMGLWColumnState, object, object, SolarGeometry, RRTMGSWTopographyState | None]:
     """Build SW/LW RRTMG column states and expose shared surface fields."""
 
     T = _temperature_from_theta(state.theta, state.p)
@@ -578,9 +918,26 @@ def _rrtmg_column_inputs(
     dz = _column_dz_from_state(state, grid)
     rho = _to_columns(_rho_from_state(state))
     surface_shape = state.t_skin.shape
-    surface_albedo, surface_emissivity = _surface_radiation_properties(state)
-    lat, lon = _grid_lat_lon(surface_shape, grid, state.t_skin.dtype)
-    coszen = _compute_coszen(lat, lon, time_utc, lead_seconds).astype(state.t_skin.dtype)
+    surface_albedo, surface_emissivity = _surface_radiation_properties(state, land_state=land_state)
+    static = _radiation_static_for_grid(surface_shape, grid, radiation_static, state.t_skin.dtype)
+    if static is None:
+        lat, lon = _grid_lat_lon(surface_shape, grid, state.t_skin.dtype)
+    else:
+        lat, lon = static.xlat_deg, static.xlong_deg
+    geometry = _compute_solar_geometry(lat, lon, time_utc, lead_seconds)
+    geometry = SolarGeometry(
+        coszen=geometry.coszen.astype(state.t_skin.dtype),
+        declination_rad=geometry.declination_rad,
+        hour_angle_rad=geometry.hour_angle_rad.astype(state.t_skin.dtype),
+    )
+    topography = _rrtmg_topography_state(
+        static,
+        grid,
+        geometry,
+        slope_rad=slope_rad,
+        topo_shading=topo_shading,
+        shadow_length_m=shadow_length_m,
+    )
     # WRF `solvar = scon/rrsw_scon` per-band SW source normalization, computed
     # from the run date (function-of-JULIAN, not replay output). Closes the GPU
     # per-band source sum to WRF's date-adjusted solar constant.
@@ -598,7 +955,7 @@ def _rrtmg_column_inputs(
         qg_columns,
         cloud_fraction,
         surface_albedo,
-        coszen,
+        geometry.coszen,
         dz,
         rho,
         solar_source_scale=solar_source_scale,
@@ -617,7 +974,7 @@ def _rrtmg_column_inputs(
         dz,
         rho,
     )
-    return sw_state, lw_state, surface_albedo, surface_emissivity, coszen
+    return sw_state, lw_state, surface_albedo, surface_emissivity, geometry, topography
 
 
 def _bottom_column(surface_field, template_columns):
@@ -1095,6 +1452,11 @@ def rrtmg_radiation_diagnostics(
     *,
     time_utc=None,
     lead_seconds=0.0,
+    radiation_static: RRTMGRadiationStatic | None = None,
+    topo_shading: int = 0,
+    slope_rad: int = 0,
+    shadow_length_m: float = 25000.0,
+    land_state=None,
 ) -> RRTMGRadiationDiagnostics:
     """Return surface RRTMG radiation diagnostics without changing State.
 
@@ -1103,22 +1465,36 @@ def rrtmg_radiation_diagnostics(
     clock (diurnal cycle) at the M9 I/O cadence.
     """
 
-    sw_state, lw_state, surface_albedo, surface_emissivity, coszen = _rrtmg_column_inputs(
+    sw_state, lw_state, surface_albedo, surface_emissivity, geometry, topography = _rrtmg_column_inputs(
         state,
         grid,
         time_utc=time_utc,
         lead_seconds=lead_seconds,
+        radiation_static=radiation_static,
+        topo_shading=topo_shading,
+        slope_rad=slope_rad,
+        shadow_length_m=shadow_length_m,
+        land_state=land_state,
     )
-    sw = solve_rrtmg_sw_column(sw_state, debug=False)
+    sw = solve_rrtmg_sw_column(sw_state, debug=False, topography=topography)
     lw = solve_rrtmg_lw_column(lw_state, debug=False)
+    shadow_mask = (
+        jnp.zeros_like(surface_albedo, dtype=jnp.int32)
+        if topography is None
+        else topography.shadow_mask
+    )
     return RRTMGRadiationDiagnostics(
         surface_albedo=surface_albedo,
         surface_emissivity=surface_emissivity,
-        coszen=coszen,
+        coszen=geometry.coszen,
         swdown=sw.surface_down,
+        swnorm=sw.surface_down_topographic,
         swup=sw.surface_up,
+        swup_topographic=sw.surface_up_topographic,
         glw=lw.surface_down,
         glw_up=lw.surface_up,
+        topographic_correction_factor=sw.topographic_correction_factor,
+        shadow_mask=shadow_mask,
     )
 
 
@@ -1130,6 +1506,11 @@ def rrtmg_adapter(
     time_utc=None,
     lead_seconds=0.0,
     apply_seconds: float | None = None,
+    radiation_static: RRTMGRadiationStatic | None = None,
+    topo_shading: int = 0,
+    slope_rad: int = 0,
+    shadow_length_m: float = 25000.0,
+    land_state=None,
 ) -> State:
     """Run SW and LW RRTMG column kernels and apply their temperature tendency.
 
@@ -1155,10 +1536,18 @@ def rrtmg_adapter(
 
     seconds = float(dt) if apply_seconds is None else float(apply_seconds)
     T = _temperature_from_theta(state.theta, state.p)
-    sw_state, lw_state, _, _, _ = _rrtmg_column_inputs(
-        state, grid, time_utc=time_utc, lead_seconds=lead_seconds
+    sw_state, lw_state, _, _, _, topography = _rrtmg_column_inputs(
+        state,
+        grid,
+        time_utc=time_utc,
+        lead_seconds=lead_seconds,
+        radiation_static=radiation_static,
+        topo_shading=topo_shading,
+        slope_rad=slope_rad,
+        shadow_length_m=shadow_length_m,
+        land_state=land_state,
     )
-    sw = solve_rrtmg_sw_column(sw_state, debug=False)
+    sw = solve_rrtmg_sw_column(sw_state, debug=False, topography=topography)
     lw = solve_rrtmg_lw_column(lw_state, debug=False)
     T_next = T + seconds * _from_columns(sw.heating_rate + lw.heating_rate)
     # LIVE-dtype write keeps force_fp64 fp64 through radiation (fp32-defeat fix;
@@ -1174,6 +1563,11 @@ def rrtmg_theta_tendency(
     *,
     time_utc=None,
     lead_seconds=0.0,
+    radiation_static: RRTMGRadiationStatic | None = None,
+    topo_shading: int = 0,
+    slope_rad: int = 0,
+    shadow_length_m: float = 25000.0,
+    land_state=None,
 ) -> "jnp.ndarray":
     """Return the WRF ``RTHRATEN`` radiative potential-temperature tendency (K/s).
 
@@ -1194,10 +1588,18 @@ def rrtmg_theta_tendency(
     """
 
     T = _temperature_from_theta(state.theta, state.p)
-    sw_state, lw_state, _, _, _ = _rrtmg_column_inputs(
-        state, grid, time_utc=time_utc, lead_seconds=lead_seconds
+    sw_state, lw_state, _, _, _, topography = _rrtmg_column_inputs(
+        state,
+        grid,
+        time_utc=time_utc,
+        lead_seconds=lead_seconds,
+        radiation_static=radiation_static,
+        topo_shading=topo_shading,
+        slope_rad=slope_rad,
+        shadow_length_m=shadow_length_m,
+        land_state=land_state,
     )
-    sw = solve_rrtmg_sw_column(sw_state, debug=False)
+    sw = solve_rrtmg_sw_column(sw_state, debug=False, topography=topography)
     lw = solve_rrtmg_lw_column(lw_state, debug=False)
     heating_rate_T = _from_columns(sw.heating_rate + lw.heating_rate)  # dT/dt (K/s)
     # Convert the temperature heating rate to a theta tendency via the exner
@@ -1209,9 +1611,13 @@ def rrtmg_theta_tendency(
 
 __all__ = [
     "RRTMGRadiationDiagnostics",
+    "RRTMGRadiationStatic",
     "SurfaceMynnDiagnostics",
     "ThompsonTendencySideChannel",
     "_compute_coszen",
+    "_compute_solar_geometry",
+    "build_radiation_static_from_wrf_fields",
+    "wrf_radiation_slope_aspect_from_terrain",
     "mynn_adapter",
     "mynn_adapter_with_diagnostics",
     "rrtmg_radiation_diagnostics",
