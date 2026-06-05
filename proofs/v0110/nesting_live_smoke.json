@@ -1,0 +1,543 @@
+{
+  "carry_overs": [
+    "This is a short smoke, not 24 h equivalence.",
+    "Two-way feedback is implemented behind a gate but not enabled here.",
+    "In-loop nested w relaxation is off for this smoke pending the longer stability gate.",
+    "No CPU-WRF/RMSE scoring is claimed from this sub-minute window."
+  ],
+  "event_count": 14,
+  "feedback": "off",
+  "finite": {
+    "d01": {
+      "all_finite": false,
+      "mu_perturbation": {
+        "dtype": "float64",
+        "finite": true,
+        "finite_fraction": 1.0,
+        "max": 1862.3006939332408,
+        "min": 1198.8496874999983,
+        "shape": [
+          59,
+          93
+        ]
+      },
+      "p_perturbation": {
+        "dtype": "float64",
+        "finite": true,
+        "finite_fraction": 1.0,
+        "max": 2022.251015625,
+        "min": -96.31672624122439,
+        "shape": [
+          44,
+          59,
+          93
+        ]
+      },
+      "ph_perturbation": {
+        "dtype": "float64",
+        "finite": true,
+        "finite_fraction": 1.0,
+        "max": 8807.140625,
+        "min": 0.0,
+        "shape": [
+          45,
+          59,
+          93
+        ]
+      },
+      "qke": {
+        "dtype": "float64",
+        "finite": false,
+        "finite_fraction": 0.9994532531437944,
+        "max": 0.33767451377481805,
+        "min": 1e-05,
+        "shape": [
+          44,
+          59,
+          93
+        ]
+      },
+      "qv": {
+        "dtype": "float64",
+        "finite": true,
+        "finite_fraction": 1.0,
+        "max": 0.013032455106564039,
+        "min": 2.4251885870911334e-06,
+        "shape": [
+          44,
+          59,
+          93
+        ]
+      },
+      "theta": {
+        "dtype": "float64",
+        "finite": true,
+        "finite_fraction": 1.0,
+        "max": 494.8213987731934,
+        "min": 289.8241942475833,
+        "shape": [
+          44,
+          59,
+          93
+        ]
+      },
+      "u": {
+        "dtype": "float64",
+        "finite": true,
+        "finite_fraction": 1.0,
+        "max": 29.752887620925904,
+        "min": -12.966779060363768,
+        "shape": [
+          44,
+          59,
+          94
+        ]
+      },
+      "v": {
+        "dtype": "float64",
+        "finite": true,
+        "finite_fraction": 1.0,
+        "max": 12.518210849761964,
+        "min": -11.469388601049047,
+        "shape": [
+          44,
+          60,
+          93
+        ]
+      },
+      "w": {
+        "dtype": "float64",
+        "finite": true,
+        "finite_fraction": 1.0,
+        "max": 0.29090421747264295,
+        "min": -1.6837698829945134,
+        "shape": [
+          45,
+          59,
+          93
+        ]
+      }
+    },
+    "d02": {
+      "all_finite": false,
+      "mu_perturbation": {
+        "dtype": "float64",
+        "finite": true,
+        "finite_fraction": 1.0,
+        "max": 1843.2486266151973,
+        "min": 1155.0168216967431,
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "p_perturbation": {
+        "dtype": "float64",
+        "finite": true,
+        "finite_fraction": 1.0,
+        "max": 1893.473706093515,
+        "min": -177.94445810519392,
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "ph_perturbation": {
+        "dtype": "float64",
+        "finite": true,
+        "finite_fraction": 1.0,
+        "max": 8856.96875,
+        "min": 0.0,
+        "shape": [
+          45,
+          66,
+          159
+        ]
+      },
+      "qke": {
+        "dtype": "float64",
+        "finite": false,
+        "finite_fraction": 0.9959024204307223,
+        "max": 0.48206708815160015,
+        "min": 1e-05,
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "qv": {
+        "dtype": "float64",
+        "finite": true,
+        "finite_fraction": 1.0,
+        "max": 0.012768937422086749,
+        "min": 2.4374269369984147e-06,
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "theta": {
+        "dtype": "float64",
+        "finite": true,
+        "finite_fraction": 1.0,
+        "max": 492.5280440365565,
+        "min": 288.8948305539507,
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "u": {
+        "dtype": "float64",
+        "finite": true,
+        "finite_fraction": 1.0,
+        "max": 25.638308258674726,
+        "min": -9.926508355486892,
+        "shape": [
+          44,
+          66,
+          160
+        ]
+      },
+      "v": {
+        "dtype": "float64",
+        "finite": true,
+        "finite_fraction": 1.0,
+        "max": 9.937866613912458,
+        "min": -11.497792740745837,
+        "shape": [
+          44,
+          67,
+          159
+        ]
+      },
+      "w": {
+        "dtype": "float64",
+        "finite": true,
+        "finite_fraction": 1.0,
+        "max": 1.1615107319347273,
+        "min": -2.2270513156195273,
+        "shape": [
+          45,
+          66,
+          159
+        ]
+      }
+    },
+    "d03": {
+      "all_finite": false,
+      "mu_perturbation": {
+        "dtype": "float64",
+        "finite": true,
+        "finite_fraction": 1.0,
+        "max": 1935.9340272150075,
+        "min": 1433.3766653406492,
+        "shape": [
+          75,
+          93
+        ]
+      },
+      "p_perturbation": {
+        "dtype": "float64",
+        "finite": true,
+        "finite_fraction": 1.0,
+        "max": 1855.8599411205942,
+        "min": -213.0876119540044,
+        "shape": [
+          44,
+          75,
+          93
+        ]
+      },
+      "ph_perturbation": {
+        "dtype": "float64",
+        "finite": true,
+        "finite_fraction": 1.0,
+        "max": 8878.0,
+        "min": 0.0,
+        "shape": [
+          45,
+          75,
+          93
+        ]
+      },
+      "qke": {
+        "dtype": "float64",
+        "finite": false,
+        "finite_fraction": 0.9902508960573476,
+        "max": 0.3881048146655451,
+        "min": 1e-05,
+        "shape": [
+          44,
+          75,
+          93
+        ]
+      },
+      "qv": {
+        "dtype": "float64",
+        "finite": true,
+        "finite_fraction": 1.0,
+        "max": 0.01153349777448201,
+        "min": 2.4812580365265768e-06,
+        "shape": [
+          44,
+          75,
+          93
+        ]
+      },
+      "theta": {
+        "dtype": "float64",
+        "finite": true,
+        "finite_fraction": 1.0,
+        "max": 490.2979923754856,
+        "min": 288.8669056762847,
+        "shape": [
+          44,
+          75,
+          93
+        ]
+      },
+      "u": {
+        "dtype": "float64",
+        "finite": true,
+        "finite_fraction": 1.0,
+        "max": 23.993472415925634,
+        "min": -4.562985365452639,
+        "shape": [
+          44,
+          75,
+          94
+        ]
+      },
+      "v": {
+        "dtype": "float64",
+        "finite": true,
+        "finite_fraction": 1.0,
+        "max": 7.230838143273813,
+        "min": -8.83915774316294,
+        "shape": [
+          44,
+          76,
+          93
+        ]
+      },
+      "w": {
+        "dtype": "float64",
+        "finite": true,
+        "finite_fraction": 1.0,
+        "max": 1.5059160908029348,
+        "min": -2.448353035357062,
+        "shape": [
+          45,
+          75,
+          93
+        ]
+      }
+    }
+  },
+  "hierarchy": {
+    "edges": [
+      {
+        "child": "d02",
+        "feedback": false,
+        "i_parent_start": 24,
+        "j_parent_start": 20,
+        "parent": "d01",
+        "parent_grid_ratio": 3
+      },
+      {
+        "child": "d03",
+        "feedback": false,
+        "i_parent_start": 52,
+        "j_parent_start": 20,
+        "parent": "d02",
+        "parent_grid_ratio": 3
+      }
+    ],
+    "expected_own_steps": {
+      "d01": 1,
+      "d02": 3,
+      "d03": 9
+    },
+    "observed_own_steps": {
+      "d01": 1,
+      "d02": 3,
+      "d03": 9
+    },
+    "order": [
+      "d01",
+      "d02",
+      "d03"
+    ],
+    "persistent_state_bytes": {
+      "d01": 116218928,
+      "d02": 204333712,
+      "d03": 124625968
+    }
+  },
+  "max_dom": 3,
+  "metadata": {
+    "domains": {
+      "d01": {
+        "boundary_source": "Gen2 d02 hourly wrfout side-history replay",
+        "grid": {
+          "dx_m": 9000.0,
+          "dy_m": 9000.0,
+          "mass_shape": [
+            44,
+            59,
+            93
+          ],
+          "wrf_staggered_extent": [
+            45,
+            60,
+            94
+          ]
+        },
+        "namelist": {
+          "acoustic_substeps": 10,
+          "boundary_update_cadence_s": 3600.0,
+          "cu_physics": 1,
+          "dt_s": 18.0,
+          "force_geopotential": true,
+          "nested_ph_relax": false,
+          "nested_ph_spec": false,
+          "nested_w_relax": false,
+          "radiation_cadence_steps": 100
+        },
+        "qke_coldstart": {
+          "note": "parent wrfout carried no real QKE (MAXVAL<0.0002); seeded WRF cold-start background TKE profile",
+          "qke_max": 4.99220117532457e-05,
+          "seeded": true,
+          "wrf_ref": "phys/module_bl_mynnedmf.F:618-691 (mym_initialize INITIALIZE_QKE)"
+        }
+      },
+      "d02": {
+        "boundary_source": "Gen2 L2 parent-domain hourly wrfout nested interpolation",
+        "grid": {
+          "dx_m": 3000.0,
+          "dy_m": 3000.0,
+          "mass_shape": [
+            44,
+            66,
+            159
+          ],
+          "wrf_staggered_extent": [
+            45,
+            67,
+            160
+          ]
+        },
+        "namelist": {
+          "acoustic_substeps": 10,
+          "boundary_update_cadence_s": 18.0,
+          "cu_physics": 0,
+          "dt_s": 6.0,
+          "force_geopotential": false,
+          "nested_ph_relax": true,
+          "nested_ph_spec": true,
+          "nested_w_relax": false,
+          "radiation_cadence_steps": 300
+        },
+        "qke_coldstart": {
+          "note": "parent wrfout carried no real QKE (MAXVAL<0.0002); seeded WRF cold-start background TKE profile",
+          "qke_max": 4.99220117532457e-05,
+          "seeded": true,
+          "wrf_ref": "phys/module_bl_mynnedmf.F:618-691 (mym_initialize INITIALIZE_QKE)"
+        }
+      },
+      "d03": {
+        "boundary_source": "Gen2 L2 parent-domain hourly wrfout nested interpolation",
+        "grid": {
+          "dx_m": 1000.0,
+          "dy_m": 1000.0,
+          "mass_shape": [
+            44,
+            75,
+            93
+          ],
+          "wrf_staggered_extent": [
+            45,
+            76,
+            94
+          ]
+        },
+        "namelist": {
+          "acoustic_substeps": 10,
+          "boundary_update_cadence_s": 6.0,
+          "cu_physics": 0,
+          "dt_s": 2.0,
+          "force_geopotential": false,
+          "nested_ph_relax": true,
+          "nested_ph_spec": true,
+          "nested_w_relax": false,
+          "radiation_cadence_steps": 900
+        },
+        "qke_coldstart": {
+          "note": "parent wrfout carried no real QKE (MAXVAL<0.0002); seeded WRF cold-start background TKE profile",
+          "qke_max": 4.99220117532457e-05,
+          "seeded": true,
+          "wrf_ref": "phys/module_bl_mynnedmf.F:618-691 (mym_initialize INITIALIZE_QKE)"
+        }
+      }
+    },
+    "edges": [
+      {
+        "child": "d02",
+        "feedback": false,
+        "i_parent_start": 24,
+        "j_parent_start": 20,
+        "parent": "d01",
+        "parent_grid_ratio": 3
+      },
+      {
+        "child": "d03",
+        "feedback": false,
+        "i_parent_start": 52,
+        "j_parent_start": 20,
+        "parent": "d02",
+        "parent_grid_ratio": 3
+      }
+    ]
+  },
+  "outputs": [
+    {
+      "boundary_time_levels": 2,
+      "domain": "d03",
+      "own_step": 9,
+      "theta_shape": [
+        44,
+        75,
+        93
+      ]
+    },
+    {
+      "boundary_time_levels": 2,
+      "domain": "d02",
+      "own_step": 3,
+      "theta_shape": [
+        44,
+        66,
+        159
+      ]
+    },
+    {
+      "boundary_time_levels": 25,
+      "domain": "d01",
+      "own_step": 1,
+      "theta_shape": [
+        44,
+        59,
+        93
+      ]
+    }
+  ],
+  "proof": "v0110 live nested real-data smoke",
+  "root_steps": 1,
+  "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
+  "status": "FAIL"
+}
