@@ -1,0 +1,19 @@
+{
+  "scope": "v0.10.0 Wave-A AFTER state (shipped levers, unroll default=1)",
+  "workload": "L2 d02 66x159x44 GREEN init, guards ON, fp64, dt=10s, cadence 180",
+  "shipped": {
+    "cast_skip_Opus4": "REMOVED 26->0 no-op converts under force_fp64 (all-fp64 carried State)",
+    "cqw_reuse_Opus5": "dry_cqw built once/stage (was twice)",
+    "concatenate_face_pairs_Opus6": "pad(edge)+slice -> concatenate (bit-identical)",
+    "concatenate_dpn_Opus7": ".at[].set scatters -> concatenate (bit-identical)",
+    "acoustic_unroll_hook_Opus1": "GPUWRF_ACOUSTIC_UNROLL hook added, default=1"
+  },
+  "warmed_per_step_ms": 74.12,
+  "warmed_per_step_ms_baseline_pristine": 75.44,
+  "warmed_delta_pct": 1.7,
+  "warmed_gain_x": 1.018,
+  "theta_finite_after": true,
+  "peak_mb_after": 9027,
+  "idealized_bit_identical": true,
+  "note": "Warmed gain ~1.0x (within noise) -- the bit-identical launch-count reductions are real (fewer converts/copies/scatters) but do not move the coupled warmed wall, which is bound by Thompson sedimentation (~46%) + the HBM/tridiag floors, not the acoustic launch count. The substantive warmed speedup is sequenced to Phase 3 (physics fusion) / Phase 4 (Thompson) / Phase 5 (precision). Wave-A's deliverable is the bit-identical, no-fidelity-loss, no-regression cleanup + the unroll hook, with a full evidence ledger of what does/doesn't pay."
+}
