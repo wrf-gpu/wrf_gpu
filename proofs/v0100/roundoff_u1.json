@@ -1,0 +1,22 @@
+{
+  "rtol": 1e-12,
+  "cases": {
+    "warm_bubble": {
+      "base_verdict": "PASS",
+      "new_verdict": "PASS",
+      "worst_reldiff": 0.0,
+      "exceedances": [],
+      "n_snapshots": 3,
+      "round_off_neutral_within_rtol": true
+    },
+    "density_current": {
+      "base_verdict": "PASS",
+      "new_verdict": "PASS",
+      "worst_reldiff": 0.0,
+      "exceedances": [],
+      "n_snapshots": 1,
+      "round_off_neutral_within_rtol": true
+    }
+  },
+  "overall_round_off_neutral": true
+}
