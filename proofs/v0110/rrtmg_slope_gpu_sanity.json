@@ -1,0 +1,215 @@
+{
+  "carry": "Full one-step d02 physics+radiation stability remains unresolved/orthogonal; manager should hand to Opus second-line debug if this smoke is required as a close gate.",
+  "checks": {
+    "one_step_state_interior_finite": false,
+    "radiation_full_grid_finite": false,
+    "radiation_land_day_finite": true,
+    "terrain_swdown_signal_visible": true,
+    "topo_off_control_same_failure": "observed"
+  },
+  "control_topo_off_one_step": {
+    "all_finite": false,
+    "interpretation": "The same one-step full-physics non-finite counts occur with topo_shading=0 and slope_rad=0, so the short d02 physics-step failure is not specific to the v0.11.0 topo/slope radiation wiring.",
+    "one_step_seconds": 94.804,
+    "slope_rad": 0,
+    "state_nonfinite_counts": {
+      "mu": 0,
+      "p": 0,
+      "ph": 0,
+      "theta": 2112,
+      "u": 3300,
+      "v": 2992,
+      "w": 0
+    },
+    "topo_shading": 0
+  },
+  "device": "cuda:0",
+  "domain": "d02",
+  "initial_summary": {
+    "theta": {
+      "full_finite": true,
+      "full_nonfinite_count": 0,
+      "interior_finite": true,
+      "interior_nonfinite_count": 0,
+      "max": 492.4866027832031,
+      "min": 288.8055419921875,
+      "shape": [
+        44,
+        66,
+        159
+      ]
+    },
+    "u": {
+      "full_finite": true,
+      "full_nonfinite_count": 0,
+      "interior_finite": true,
+      "interior_nonfinite_count": 0,
+      "max": 25.59778594970703,
+      "min": -10.116180419921875,
+      "shape": [
+        44,
+        66,
+        160
+      ]
+    },
+    "v": {
+      "full_finite": true,
+      "full_nonfinite_count": 0,
+      "interior_finite": true,
+      "interior_nonfinite_count": 0,
+      "max": 9.789865493774414,
+      "min": -11.46570873260498,
+      "shape": [
+        44,
+        67,
+        159
+      ]
+    }
+  },
+  "namelist": {
+    "lead_seconds_for_diag": 64800.0,
+    "radiation_static_present": true,
+    "slope_rad": 1,
+    "topo_shading": 1
+  },
+  "notes": [
+    "One real d02 physics step was run with radiation enabled and real boundary updates enabled.",
+    "Finiteness is checked on the physical interior; initial d02 staggered boundary/halo rows already contain non-finite values in this loader path.",
+    "The post-step radiation diagnostic uses a daytime lead on the same d02 state to expose the terrain slope-radiation pattern."
+  ],
+  "radiation_summary": {
+    "coszen_minmax": [
+      0.9498544294170737,
+      0.9718850295114386
+    ],
+    "glw_full_nonfinite_count": 48,
+    "glw_land_day_minmax": [
+      232.26173471812578,
+      349.47625486753054
+    ],
+    "land_day_cells": 768,
+    "shadow_mask_count": 0,
+    "slope_rad_minmax": [
+      0.0,
+      0.2666288775369135
+    ],
+    "swdown_full_nonfinite_count": 48,
+    "swdown_land_day_minmax": [
+      1004.7665405273438,
+      1112.79541015625
+    ],
+    "swnorm_full_nonfinite_count": 48,
+    "swnorm_land_day_minmax": [
+      951.4905156241869,
+      1121.8694331086112
+    ],
+    "topographic_correction_land_day_minmax": [
+      0.9186389679135999,
+      1.0405723212946147
+    ],
+    "topographic_delta_land_day_minmax": [
+      -84.70793641350679,
+      42.48920994283117
+    ]
+  },
+  "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
+  "schema": "v0110_rrtmg_slope_gpu_sanity",
+  "state_summary": {
+    "mu": {
+      "full_finite": true,
+      "full_nonfinite_count": 0,
+      "interior_finite": true,
+      "interior_nonfinite_count": 0,
+      "max": 96729.56132547015,
+      "min": 66360.41174491859,
+      "shape": [
+        66,
+        159
+      ]
+    },
+    "p": {
+      "full_finite": true,
+      "full_nonfinite_count": 0,
+      "interior_finite": true,
+      "interior_nonfinite_count": 0,
+      "max": 101337.65087294955,
+      "min": 5208.7367403110975,
+      "shape": [
+        44,
+        66,
+        159
+      ]
+    },
+    "ph": {
+      "full_finite": true,
+      "full_nonfinite_count": 0,
+      "interior_finite": true,
+      "interior_nonfinite_count": 0,
+      "max": 204077.453125,
+      "min": -7.796288059580547e-07,
+      "shape": [
+        45,
+        66,
+        159
+      ]
+    },
+    "theta": {
+      "full_finite": false,
+      "full_nonfinite_count": 2112,
+      "interior_finite": false,
+      "interior_nonfinite_count": 2112,
+      "max": 492.50225320054864,
+      "min": 288.85454400539066,
+      "shape": [
+        44,
+        66,
+        159
+      ]
+    },
+    "u": {
+      "full_finite": false,
+      "full_nonfinite_count": 3300,
+      "interior_finite": false,
+      "interior_nonfinite_count": 3300,
+      "max": 25.595970520775275,
+      "min": -10.02204692339607,
+      "shape": [
+        44,
+        66,
+        160
+      ]
+    },
+    "v": {
+      "full_finite": false,
+      "full_nonfinite_count": 2992,
+      "interior_finite": false,
+      "interior_nonfinite_count": 2992,
+      "max": 10.029579076767922,
+      "min": -11.471788881417673,
+      "shape": [
+        44,
+        67,
+        159
+      ]
+    },
+    "w": {
+      "full_finite": true,
+      "full_nonfinite_count": 0,
+      "interior_finite": true,
+      "interior_nonfinite_count": 0,
+      "max": 1.0396772809735122,
+      "min": -1.9276998992756433,
+      "shape": [
+        45,
+        66,
+        159
+      ]
+    }
+  },
+  "status": "PARTIAL",
+  "timing_seconds": {
+    "build": 13.307,
+    "one_step": 99.906,
+    "radiation_diag": 2.677
+  }
+}

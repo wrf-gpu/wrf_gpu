@@ -1,0 +1,431 @@
+{
+  "cold_one_step_context": {
+    "one_step_topo_off_counts": {
+      "mu": 0,
+      "p": 0,
+      "ph": 0,
+      "theta": 2112,
+      "u": 3300,
+      "v": 2992,
+      "w": 0
+    },
+    "one_step_topo_on_counts": {
+      "mu": 0,
+      "p": 0,
+      "ph": 0,
+      "theta": 2112,
+      "u": 3300,
+      "v": 2992,
+      "w": 0
+    },
+    "topo_off_control_same_failure": "observed"
+  },
+  "commands": [
+    "proofs/v0110/rrtmg_finite_recheck.py --mode on --hours 1 --segment-steps 180 --radiation-cadence-steps 180 --diagnostic-exit-zero",
+    "proofs/v0110/rrtmg_finite_recheck.py --mode topo_off --hours 1 --segment-steps 180 --radiation-cadence-steps 180 --out-json proofs/v0110/rrtmg_finite_recheck_topo_off.json --out-md /tmp/v0110_rrtmg_finite_recheck_topo_off.md --diagnostic-exit-zero",
+    "proofs/v0110/rrtmg_finite_recheck.py --mode rrtmg_off --hours 1 --segment-steps 180 --radiation-cadence-steps 180 --out-json proofs/v0110/rrtmg_finite_recheck_rrtmg_off.json --out-md /tmp/v0110_rrtmg_finite_recheck_rrtmg_off.md --diagnostic-exit-zero",
+    "python proofs/v0110/rrtmg_finite_recheck_aggregate.py"
+  ],
+  "domain": "d02",
+  "forecast_fn": "run_forecast_operational_segmented(segment_steps=180) via execute_daily_pipeline",
+  "generated_utc": "2026-06-05T14:11:07.690738+00:00",
+  "hours": 1,
+  "interpretation": "The proper segmented cadence does not reproduce the RRTMG lane's cold one-step theta/u/v nonfinite: theta/u/v are finite with zero nonfinite values. The only nonfinite field is qke (2024 cells), and the exact qke signature persists with topo_shading=0/slope_rad=0 and with RRTMG suppressed entirely. This matches the documented KI-2 20260521 d02 production-path qke edge, so the RRTMG slope/shading feature is not the offending term. No masking was applied.",
+  "known_issue_context": {
+    "document": "docs/KNOWN_ISSUES.md#KI-2",
+    "matching_signature": "20260521 d02 production-path qke nonfinite after forecast hour 1 with 2024 qke cells"
+  },
+  "mode_results": {
+    "on": {
+      "key_fields": {
+        "mu": {
+          "dtype": "float64",
+          "finite": true,
+          "max": 96758.76513671875,
+          "min": 66396.72614175241,
+          "nonfinite_count": 0,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "p": {
+          "dtype": "float64",
+          "finite": true,
+          "max": 101661.1796875,
+          "min": 5170.646616236223,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "ph": {
+          "dtype": "float64",
+          "finite": true,
+          "max": 204077.453125,
+          "min": -7.796288059580547e-07,
+          "nonfinite_count": 0,
+          "shape": [
+            45,
+            66,
+            159
+          ]
+        },
+        "qke": {
+          "dtype": "float64",
+          "finite": false,
+          "max": 16.74263558794948,
+          "min": 1e-05,
+          "nonfinite_count": 2024,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "qv": {
+          "dtype": "float64",
+          "finite": true,
+          "max": 0.014628779681712894,
+          "min": 2.4403219656087542e-06,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "theta": {
+          "dtype": "float64",
+          "finite": true,
+          "max": 492.0712585449219,
+          "min": 290.5858720238219,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "u": {
+          "dtype": "float64",
+          "finite": true,
+          "max": 25.72613464613291,
+          "min": -12.148755327796863,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            160
+          ]
+        },
+        "v": {
+          "dtype": "float64",
+          "finite": true,
+          "max": 10.824384468027649,
+          "min": -16.76102201738106,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            67,
+            159
+          ]
+        },
+        "w": {
+          "dtype": "float64",
+          "finite": true,
+          "max": 1.0667541495558108,
+          "min": -2.7319304085112126,
+          "nonfinite_count": 0,
+          "shape": [
+            45,
+            66,
+            159
+          ]
+        }
+      },
+      "mode": "on",
+      "mode_note": "RRTMG slope/shading on",
+      "nonfinite_signature": {
+        "qke": 2024
+      },
+      "path": "/home/enric/src/wrf_gpu2/.claude/worktrees/v0110-rrtmg-recheck/proofs/v0110/rrtmg_finite_recheck.json",
+      "pipeline_verdict": "PIPELINE_BLOCKED",
+      "proper_cadence_finite": false,
+      "radiation_cadence_steps": 180,
+      "reason": "nonfinite model state after forecast hour 1",
+      "slope_rad": 1,
+      "status": "FAIL",
+      "topo_shading": 1,
+      "wrfout_files": []
+    },
+    "rrtmg_off": {
+      "key_fields": {
+        "mu": {
+          "dtype": "float64",
+          "finite": true,
+          "max": 96758.76513671875,
+          "min": 66396.01938731616,
+          "nonfinite_count": 0,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "p": {
+          "dtype": "float64",
+          "finite": true,
+          "max": 101661.1796875,
+          "min": 5170.855195837562,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "ph": {
+          "dtype": "float64",
+          "finite": true,
+          "max": 204077.453125,
+          "min": -7.796288059580547e-07,
+          "nonfinite_count": 0,
+          "shape": [
+            45,
+            66,
+            159
+          ]
+        },
+        "qke": {
+          "dtype": "float64",
+          "finite": false,
+          "max": 16.855536872864878,
+          "min": 1e-05,
+          "nonfinite_count": 2024,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "qv": {
+          "dtype": "float64",
+          "finite": true,
+          "max": 0.014767151840823313,
+          "min": 2.4403219654011918e-06,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "theta": {
+          "dtype": "float64",
+          "finite": true,
+          "max": 492.0712585449219,
+          "min": 290.5291133051567,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "u": {
+          "dtype": "float64",
+          "finite": true,
+          "max": 25.71304815935674,
+          "min": -12.175094426489384,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            160
+          ]
+        },
+        "v": {
+          "dtype": "float64",
+          "finite": true,
+          "max": 10.82644795612433,
+          "min": -16.758085857583893,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            67,
+            159
+          ]
+        },
+        "w": {
+          "dtype": "float64",
+          "finite": true,
+          "max": 1.0665063306429934,
+          "min": -2.739477374526229,
+          "nonfinite_count": 0,
+          "shape": [
+            45,
+            66,
+            159
+          ]
+        }
+      },
+      "mode": "rrtmg_off",
+      "mode_note": "RRTMG suppressed by cadence beyond forecast length",
+      "nonfinite_signature": {
+        "qke": 2024
+      },
+      "path": "/home/enric/src/wrf_gpu2/.claude/worktrees/v0110-rrtmg-recheck/proofs/v0110/rrtmg_finite_recheck_rrtmg_off.json",
+      "pipeline_verdict": "PIPELINE_BLOCKED",
+      "proper_cadence_finite": false,
+      "radiation_cadence_steps": 10000000,
+      "reason": "nonfinite model state after forecast hour 1",
+      "slope_rad": 0,
+      "status": "FAIL",
+      "topo_shading": 0,
+      "wrfout_files": []
+    },
+    "topo_off": {
+      "key_fields": {
+        "mu": {
+          "dtype": "float64",
+          "finite": true,
+          "max": 96758.76513671875,
+          "min": 66396.72614175241,
+          "nonfinite_count": 0,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "p": {
+          "dtype": "float64",
+          "finite": true,
+          "max": 101661.1796875,
+          "min": 5170.646616236223,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "ph": {
+          "dtype": "float64",
+          "finite": true,
+          "max": 204077.453125,
+          "min": -7.796288059580547e-07,
+          "nonfinite_count": 0,
+          "shape": [
+            45,
+            66,
+            159
+          ]
+        },
+        "qke": {
+          "dtype": "float64",
+          "finite": false,
+          "max": 16.74263558794948,
+          "min": 1e-05,
+          "nonfinite_count": 2024,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "qv": {
+          "dtype": "float64",
+          "finite": true,
+          "max": 0.014628779681712894,
+          "min": 2.4403219656087542e-06,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "theta": {
+          "dtype": "float64",
+          "finite": true,
+          "max": 492.0712585449219,
+          "min": 290.5858720238219,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "u": {
+          "dtype": "float64",
+          "finite": true,
+          "max": 25.72613464613291,
+          "min": -12.148755327796863,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            66,
+            160
+          ]
+        },
+        "v": {
+          "dtype": "float64",
+          "finite": true,
+          "max": 10.824384468027649,
+          "min": -16.76102201738106,
+          "nonfinite_count": 0,
+          "shape": [
+            44,
+            67,
+            159
+          ]
+        },
+        "w": {
+          "dtype": "float64",
+          "finite": true,
+          "max": 1.0667541495558108,
+          "min": -2.7319304085112126,
+          "nonfinite_count": 0,
+          "shape": [
+            45,
+            66,
+            159
+          ]
+        }
+      },
+      "mode": "topo_off",
+      "mode_note": "RRTMG active, topo_shading=0, slope_rad=0",
+      "nonfinite_signature": {
+        "qke": 2024
+      },
+      "path": "/home/enric/src/wrf_gpu2/.claude/worktrees/v0110-rrtmg-recheck/proofs/v0110/rrtmg_finite_recheck_topo_off.json",
+      "pipeline_verdict": "PIPELINE_BLOCKED",
+      "proper_cadence_finite": false,
+      "radiation_cadence_steps": 180,
+      "reason": "nonfinite model state after forecast hour 1",
+      "slope_rad": 0,
+      "status": "FAIL",
+      "topo_shading": 0,
+      "wrfout_files": []
+    }
+  },
+  "nonfinite_signature_on": {
+    "qke": 2024
+  },
+  "proper_cadence_all_state_finite": false,
+  "proper_cadence_theta_u_v_finite": true,
+  "radiation_cadence_steps_on": 180,
+  "rrtmg_feature_offending_term": null,
+  "rrtmg_off_same_signature": true,
+  "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
+  "run_id": "20260521_18z_l3_24h_20260522T133443Z",
+  "schema": "V0110RRTMGFiniteRecheckAggregate",
+  "schema_version": 1,
+  "segment_steps": 180,
+  "status": "DIAGNOSED_KNOWN_QKE_EDGE",
+  "topo_off_same_signature": true,
+  "verdict": "KEEP_RRTMG_FEATURE_DO_NOT_MASK_QKE_KI2"
+}

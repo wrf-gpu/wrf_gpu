@@ -27,6 +27,7 @@ from gpuwrf.integration.d02_replay import build_replay_case
 from gpuwrf.io.data_inventory import parse_wrfout_valid_time
 from gpuwrf.io.gen2_accessor import Gen2Run
 from gpuwrf.io.land_state import load_hourly_land_state
+from gpuwrf.io.radiation_static import load_radiation_static
 from gpuwrf.io.async_wrfout import AsyncWrfoutWriter
 from gpuwrf.io.wrfout_writer import (
     MINIMUM_WRFOUT_VARIABLES,
@@ -184,12 +185,30 @@ def _coerce_run_start(value: str) -> datetime:
     return datetime.fromisoformat(text).replace(tzinfo=timezone.utc)
 
 
+def _domain_namelist_value(run: Gen2Run, group: str, key: str, domain: str, default: Any) -> Any:
+    value = run.namelist.get(group, {}).get(key, default)
+    if isinstance(value, list):
+        index = max(int(domain[1:]) - 1, 0)
+        if index < len(value):
+            return value[index]
+        return value[-1] if value else default
+    return value
+
+
 def _build_real_case(config: DailyPipelineConfig) -> tuple[DailyCase, Path]:
     run_dir = resolve_run_dir(config.run_id, config.run_root)
     if not run_dir.is_dir():
         raise FileNotFoundError(f"missing run directory: {run_dir}")
     replay = build_replay_case(run_dir, domain=config.domain)
     state = replay.state.replace(p=replay.state.p_total, ph=replay.state.ph_total, mu=replay.state.mu_total)
+    radiation_static, radiation_static_meta = load_radiation_static(
+        replay.run,
+        config.domain,
+        grid=replay.grid,
+        metrics=replay.metrics,
+    )
+    topo_shading = int(_domain_namelist_value(replay.run, "physics", "topo_shading", config.domain, 0))
+    slope_rad = int(_domain_namelist_value(replay.run, "physics", "slope_rad", config.domain, 0))
     # Sprint U (P0-1): the real-case operational path MUST use the same F7-closed
     # dycore operators that the idealized gates use, not the pre-F7 primitive
     # advection path.  Concretely:
@@ -241,6 +260,12 @@ def _build_real_case(config: DailyPipelineConfig) -> tuple[DailyCase, Path]:
         dampcoef=0.2,
         epssm=0.5,
         top_lid=True,
+        radiation_static=radiation_static,
+        topo_shading=topo_shading,
+        slope_rad=slope_rad,
+        topo_shadow_length_m=float(
+            _domain_namelist_value(replay.run, "physics", "shadlen", config.domain, 25000.0)
+        ),
     )
     run_start = _coerce_run_start(str(replay.metadata["run_start_label"]))
     metadata = {
@@ -268,7 +293,11 @@ def _build_real_case(config: DailyPipelineConfig) -> tuple[DailyCase, Path]:
             "dampcoef": float(namelist.dampcoef),
             "top_lid": bool(namelist.top_lid),
             "disable_guards": bool(namelist.disable_guards),
+            "topo_shading": int(namelist.topo_shading),
+            "slope_rad": int(namelist.slope_rad),
+            "topo_shadow_length_m": float(namelist.topo_shadow_length_m),
         },
+        "radiation_static": radiation_static_meta,
         "source": "gpuwrf.integration.d02_replay.build_replay_case",
     }
     return DailyCase(state=state, grid=replay.grid, namelist=namelist, run_start=run_start, metadata=metadata), run_dir
