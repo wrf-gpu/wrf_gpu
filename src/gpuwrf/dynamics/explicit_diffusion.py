@@ -15,9 +15,9 @@ also produces uncoupled tendencies):
    density-current reference solution is *defined* with constant ν = 75 m²/s on
    u, v, θ, so this is part of the test definition, not a masking clamp.
 
-Periodic-x/-y only (the idealized + audit configuration); map factors are unity
-for the idealized slab and treated as unity here.  These act as a documented
-scoped restriction matching the F7-B gate configuration.
+Periodic-x/-y only (the idealized + audit configuration).  The original slab
+helpers keep unit-map-factor defaults; the WRF terrain-following deformation
+helpers below accept real map factors and ``zx``/``zy`` slope metrics.
 """
 
 from __future__ import annotations
@@ -28,6 +28,131 @@ import jax.numpy as jnp
 
 
 config.update("jax_enable_x64", True)
+
+
+GRAVITY_M_S2 = 9.81
+
+
+def _core_x(field: jax.Array, nx: int) -> jax.Array:
+    """Drop a periodic x-wrap point when present."""
+
+    return field[..., :nx] if field.shape[-1] == nx + 1 else field
+
+
+def _core_y(field: jax.Array, ny: int) -> jax.Array:
+    """Drop a periodic y-wrap point when present."""
+
+    return field[..., :ny, :] if field.shape[-2] == ny + 1 else field
+
+
+def _mass_metric_or_one(metric: jax.Array | None, reference: jax.Array) -> jax.Array:
+    """Return a mass-grid metric, defaulting to one on ``reference``'s y/x shape."""
+
+    if metric is None:
+        return jnp.ones(reference.shape[-2:], dtype=reference.dtype)
+    return jnp.asarray(metric, dtype=reference.dtype)
+
+
+def _x_metric_or_one(metric: jax.Array | None, *, nx: int, reference: jax.Array) -> jax.Array:
+    """Return an x-face metric without the periodic wrap point."""
+
+    if metric is None:
+        return jnp.ones(reference.shape[-2:-1] + (nx,), dtype=reference.dtype)
+    return _core_x(jnp.asarray(metric, dtype=reference.dtype), nx)
+
+
+def _y_metric_or_one(metric: jax.Array | None, *, ny: int, reference: jax.Array) -> jax.Array:
+    """Return a y-face metric without the periodic wrap point."""
+
+    if metric is None:
+        return jnp.ones((ny,) + reference.shape[-1:], dtype=reference.dtype)
+    return _core_y(jnp.asarray(metric, dtype=reference.dtype), ny)
+
+
+def _zface_or_zero(metric: jax.Array | None, *, nz: int, ny: int, nx: int, reference: jax.Array) -> jax.Array:
+    """Return a ``(nz+1, ny, nx)`` z-face metric, defaulting to zero."""
+
+    if metric is None:
+        return jnp.zeros((nz + 1, ny, nx), dtype=reference.dtype)
+    arr = jnp.asarray(metric, dtype=reference.dtype)
+    if arr.shape[0] == nz:
+        arr = jnp.concatenate((arr, arr[-1:, :, :]), axis=0)
+    return arr
+
+
+def _mass3_or_one(metric: jax.Array | None, reference: jax.Array) -> jax.Array:
+    """Return a 3-D mass-level metric, defaulting to one."""
+
+    if metric is None:
+        return jnp.ones_like(reference)
+    return jnp.asarray(metric, dtype=reference.dtype)
+
+
+def _wface3_or_one(metric: jax.Array | None, *, nz: int, ny: int, nx: int, reference: jax.Array) -> jax.Array:
+    """Return a ``(nz+1, ny, nx)`` w-face metric, defaulting to one."""
+
+    if metric is None:
+        return jnp.ones((nz + 1, ny, nx), dtype=reference.dtype)
+    arr = jnp.asarray(metric, dtype=reference.dtype)
+    if arr.shape[0] == nz:
+        arr = jnp.concatenate((arr[:1, :, :], arr), axis=0)
+    return arr
+
+
+def _vertical_face_average_pair(
+    left: jax.Array,
+    right: jax.Array,
+    *,
+    fnm: jax.Array | None = None,
+    fnp: jax.Array | None = None,
+    cf1: jax.Array | float | None = None,
+    cf2: jax.Array | float | None = None,
+    cf3: jax.Array | float | None = None,
+    dn: jax.Array | None = None,
+    dnw: jax.Array | None = None,
+) -> jax.Array:
+    """WRF z-face average/extrapolation of two mass-level columns.
+
+    Used by ``cal_deform_and_div`` before multiplying by ``zx``/``zy``.  Interior
+    faces use ``fnm/fnp``; bottom uses ``cf1/cf2/cf3``; top uses WRF's linear
+    extrapolation coefficient ``cft2=-0.5*dnw(kte-1)/dn(kte-1)``.
+    """
+
+    nz = int(left.shape[0])
+    dtype = left.dtype
+    pair = 0.5 * (left + right)
+    face = jnp.zeros((nz + 1,) + tuple(left.shape[1:]), dtype=dtype)
+    if nz > 1:
+        if fnm is None:
+            fnm_v = jnp.ones((nz,), dtype=dtype)
+            fnp_v = jnp.zeros((nz,), dtype=dtype)
+        else:
+            fnm_v = jnp.asarray(fnm, dtype=dtype)
+            fnp_v = jnp.asarray(fnp, dtype=dtype) if fnp is not None else jnp.zeros((nz,), dtype=dtype)
+        interior = 0.5 * (
+            fnm_v[1:nz, None, None] * (left[1:] + right[1:])
+            + fnp_v[1:nz, None, None] * (left[:-1] + right[:-1])
+        )
+        face = face.at[1:nz, :, :].set(interior)
+    if nz >= 3 and cf1 is not None and cf2 is not None and cf3 is not None:
+        bottom = 0.5 * (
+            jnp.asarray(cf1, dtype=dtype) * (left[0] + right[0])
+            + jnp.asarray(cf2, dtype=dtype) * (left[1] + right[1])
+            + jnp.asarray(cf3, dtype=dtype) * (left[2] + right[2])
+        )
+    else:
+        bottom = pair[0]
+    face = face.at[0, :, :].set(bottom)
+    if nz >= 2 and dn is not None and dnw is not None:
+        dn_v = jnp.asarray(dn, dtype=dtype)
+        dnw_v = jnp.asarray(dnw, dtype=dtype)
+        cft2 = -0.5 * dnw_v[nz - 1] / dn_v[nz - 1]
+        cft1 = 1.0 - cft2
+        top = 0.5 * (cft1 * (left[nz - 1] + right[nz - 1]) + cft2 * (left[nz - 2] + right[nz - 2]))
+    else:
+        top = pair[nz - 1]
+    face = face.at[nz, :, :].set(top)
+    return face
 
 
 def _dflux6(field: jax.Array, axis: int) -> tuple[jax.Array, jax.Array]:
@@ -409,6 +534,419 @@ def wrf_deformation_momentum_tendency(
     return du, dw
 
 
+def deformation_components_3d(
+    u: jax.Array,
+    v: jax.Array,
+    w: jax.Array,
+    *,
+    dx_m: float,
+    dy_m: float,
+    msftx: jax.Array | None = None,
+    msfty: jax.Array | None = None,
+    msfux: jax.Array | None = None,
+    msfuy: jax.Array | None = None,
+    msfvx: jax.Array | None = None,
+    msfvy: jax.Array | None = None,
+    zx: jax.Array | None = None,
+    zy: jax.Array | None = None,
+    rdz: jax.Array | None = None,
+    rdzw: jax.Array | None = None,
+    fnm: jax.Array | None = None,
+    fnp: jax.Array | None = None,
+    cf1: jax.Array | float | None = None,
+    cf2: jax.Array | float | None = None,
+    cf3: jax.Array | float | None = None,
+    dn: jax.Array | None = None,
+    dnw: jax.Array | None = None,
+) -> tuple[jax.Array, jax.Array, jax.Array, jax.Array, jax.Array, jax.Array]:
+    """WRF ``cal_deform_and_div`` D11/D22/D33/D12/D13/D23 components.
+
+    This is the periodic-x/y real-terrain form used by WRF diffusion over
+    orography.  It intentionally models the interior periodic stencil only; open,
+    specified, and nested boundary degradation remains outside this helper.
+    """
+
+    d11, d22, d12 = horizontal_deformation_2d(
+        u,
+        v,
+        dx_m=dx_m,
+        dy_m=dy_m,
+        msftx=msftx,
+        msfty=msfty,
+        msfux=msfux,
+        msfuy=msfuy,
+        msfvx=msfvx,
+        msfvy=msfvy,
+        zx=zx,
+        zy=zy,
+        rdzw=rdzw,
+        fnm=fnm,
+        fnp=fnp,
+        cf1=cf1,
+        cf2=cf2,
+        cf3=cf3,
+        dn=dn,
+        dnw=dnw,
+    )
+
+    nx = w.shape[-1]
+    ny = w.shape[1]
+    nz = w.shape[0] - 1
+    dx = float(dx_m)
+    dy = float(dy_m)
+    u_m = _core_x(u, nx)
+    v_m = _core_y(v, ny)
+    msftx_m = _mass_metric_or_one(msftx, u_m)
+    msfty_m = _mass_metric_or_one(msfty, u_m)
+    msfux_u = _x_metric_or_one(msfux, nx=nx, reference=u_m)
+    msfuy_u = _x_metric_or_one(msfuy, nx=nx, reference=u_m)
+    msfvx_v = _y_metric_or_one(msfvx, ny=ny, reference=v_m)
+    msfvy_v = _y_metric_or_one(msfvy, ny=ny, reference=v_m)
+    zx_f = _zface_or_zero(zx, nz=nz, ny=ny, nx=nx, reference=u_m)
+    zy_f = _zface_or_zero(zy, nz=nz, ny=ny, nx=nx, reference=u_m)
+    rdz_f = _wface3_or_one(rdz, nz=nz, ny=ny, nx=nx, reference=w)
+    rdzw_m = _mass3_or_one(rdzw, u_m)
+
+    d33 = 2.0 * (w[1 : nz + 1, :, :] - w[0:nz, :, :]) * rdzw_m
+
+    # D13 = m_u^2*(d(w/msfty)/dx - zx*d(w/msfty)/dpsi) + du/dz.
+    w_yhat = w / msfty_m[None, :, :]
+    w_yhat_w = jnp.roll(w_yhat, 1, axis=2)
+    w_yhat_avg_m = 0.25 * (
+        w_yhat[0:nz] + w_yhat[1 : nz + 1] + w_yhat_w[0:nz] + w_yhat_w[1 : nz + 1]
+    )
+    rdz_u = 0.5 * (rdz_f[1:nz, :, :] + jnp.roll(rdz_f[1:nz, :, :], 1, axis=2))
+    d13_int = (
+        (msfux_u * msfuy_u)[None, :, :]
+        * (
+            (w_yhat[1:nz, :, :] - w_yhat_w[1:nz, :, :]) / dx
+            - (w_yhat_avg_m[1:nz, :, :] - w_yhat_avg_m[0 : nz - 1, :, :])
+            * zx_f[1:nz, :, :]
+            * rdz_u
+        )
+        + (u_m[1:nz, :, :] - u_m[0 : nz - 1, :, :]) * rdz_u
+    )
+    d13 = jnp.zeros_like(w)
+    if nz >= 2:
+        d13 = d13.at[1:nz, :, :].set(d13_int)
+
+    # D23 = m_v^2*(d(w/msftx)/dy - zy*d(w/msftx)/dpsi) + dv/dz.
+    w_xhat = w / msftx_m[None, :, :]
+    w_xhat_s = jnp.roll(w_xhat, 1, axis=1)
+    w_xhat_avg_m = 0.25 * (
+        w_xhat[0:nz] + w_xhat[1 : nz + 1] + w_xhat_s[0:nz] + w_xhat_s[1 : nz + 1]
+    )
+    rdz_v = 0.5 * (rdz_f[1:nz, :, :] + jnp.roll(rdz_f[1:nz, :, :], 1, axis=1))
+    d23_int = (
+        (msfvx_v * msfvy_v)[None, :, :]
+        * (
+            (w_xhat[1:nz, :, :] - w_xhat_s[1:nz, :, :]) / dy
+            - (w_xhat_avg_m[1:nz, :, :] - w_xhat_avg_m[0 : nz - 1, :, :])
+            * zy_f[1:nz, :, :]
+            * rdz_v
+        )
+        + (v_m[1:nz, :, :] - v_m[0 : nz - 1, :, :]) * rdz_v
+    )
+    d23 = jnp.zeros_like(w)
+    if nz >= 2:
+        d23 = d23.at[1:nz, :, :].set(d23_int)
+
+    return d11, d22, d33, d12, d13, d23
+
+
+def wrf_terrain_deformation_momentum_tendency(
+    u: jax.Array,
+    v: jax.Array,
+    w: jax.Array,
+    *,
+    rho: jax.Array,
+    xkmh: jax.Array | float,
+    xkmv: jax.Array | float | None = None,
+    dx_m: float,
+    dy_m: float,
+    msftx: jax.Array | None = None,
+    msfty: jax.Array | None = None,
+    msfux: jax.Array | None = None,
+    msfuy: jax.Array | None = None,
+    msfvx: jax.Array | None = None,
+    msfvy: jax.Array | None = None,
+    zx: jax.Array | None = None,
+    zy: jax.Array | None = None,
+    rdz: jax.Array | None = None,
+    rdzw: jax.Array | None = None,
+    dn: jax.Array | None = None,
+    dnw: jax.Array | None = None,
+    fnm: jax.Array | None = None,
+    fnp: jax.Array | None = None,
+    cf1: jax.Array | float | None = None,
+    cf2: jax.Array | float | None = None,
+    cf3: jax.Array | float | None = None,
+    gravity: float = GRAVITY_M_S2,
+) -> tuple[jax.Array, jax.Array, jax.Array]:
+    """WRF terrain-following deformation-tensor momentum diffusion.
+
+    Implements the periodic interior of WRF ``horizontal_diffusion_{u,v,w}_2`` and
+    ``vertical_diffusion_{u,v,w}_2`` for real map factors and nonzero
+    ``zx``/``zy`` cross-coordinate metric terms.  The returned tendencies are
+    WRF's mass/density-coupled ``ru_tendf``, ``rv_tendf``, and ``rw_tendf`` on the
+    native u/v/w staggers.  Constant-K diffusion passes scalar ``xkmh``/``xkmv``;
+    Smagorinsky/deformation paths can pass spatially varying arrays.
+    """
+
+    nx = w.shape[-1]
+    ny = w.shape[1]
+    nz = w.shape[0] - 1
+    dx = float(dx_m)
+    dy = float(dy_m)
+    dtype = rho.dtype
+    u_m = _core_x(u, nx)
+    v_m = _core_y(v, ny)
+    rho_m = jnp.asarray(rho, dtype=dtype)
+    if jnp.ndim(jnp.asarray(xkmh)) == 0:
+        xkmh_m = jnp.full_like(rho_m, jnp.asarray(xkmh, dtype=dtype))
+    else:
+        xkmh_m = jnp.asarray(xkmh, dtype=dtype)
+    if xkmv is None:
+        xkmv_m = xkmh_m
+    elif jnp.ndim(jnp.asarray(xkmv)) == 0:
+        xkmv_m = jnp.full_like(rho_m, jnp.asarray(xkmv, dtype=dtype))
+    else:
+        xkmv_m = jnp.asarray(xkmv, dtype=dtype)
+
+    msftx_m = _mass_metric_or_one(msftx, rho_m)
+    msfty_m = _mass_metric_or_one(msfty, rho_m)
+    msfux_u = _x_metric_or_one(msfux, nx=nx, reference=u_m)
+    msfuy_u = _x_metric_or_one(msfuy, nx=nx, reference=u_m)
+    msfvx_v = _y_metric_or_one(msfvx, ny=ny, reference=v_m)
+    msfvy_v = _y_metric_or_one(msfvy, ny=ny, reference=v_m)
+    zx_f = _zface_or_zero(zx, nz=nz, ny=ny, nx=nx, reference=rho_m)
+    zy_f = _zface_or_zero(zy, nz=nz, ny=ny, nx=nx, reference=rho_m)
+    rdz_f = _wface3_or_one(rdz, nz=nz, ny=ny, nx=nx, reference=w)
+    rdzw_m = _mass3_or_one(rdzw, rho_m)
+    if dn is None:
+        dn_v = -jnp.ones((nz,), dtype=dtype)
+    else:
+        dn_v = jnp.asarray(dn, dtype=dtype)
+    if dnw is None:
+        dnw_v = -jnp.ones((nz,), dtype=dtype)
+    else:
+        dnw_v = jnp.asarray(dnw, dtype=dtype)
+    if fnm is None:
+        fnm_v = jnp.ones((nz,), dtype=dtype)
+        fnp_v = jnp.zeros((nz,), dtype=dtype)
+    else:
+        fnm_v = jnp.asarray(fnm, dtype=dtype)
+        fnp_v = jnp.asarray(fnp, dtype=dtype) if fnp is not None else jnp.zeros((nz,), dtype=dtype)
+
+    d11, d22, d33, d12, d13, d23 = deformation_components_3d(
+        u,
+        v,
+        w,
+        dx_m=dx,
+        dy_m=dy,
+        msftx=msftx,
+        msfty=msfty,
+        msfux=msfux,
+        msfuy=msfuy,
+        msfvx=msfvx,
+        msfvy=msfvy,
+        zx=zx,
+        zy=zy,
+        rdz=rdz,
+        rdzw=rdzw,
+        fnm=fnm,
+        fnp=fnp,
+        cf1=cf1,
+        cf2=cf2,
+        cf3=cf3,
+        dn=dn,
+        dnw=dnw,
+    )
+
+    tau11 = -rho_m * xkmh_m * d11
+    tau22 = -rho_m * xkmh_m * d22
+    tau33 = -rho_m * xkmh_m * d33
+
+    rho_c = 0.25 * (
+        rho_m
+        + jnp.roll(rho_m, 1, axis=2)
+        + jnp.roll(rho_m, 1, axis=1)
+        + jnp.roll(jnp.roll(rho_m, 1, axis=1), 1, axis=2)
+    )
+    k_c = 0.25 * (
+        xkmh_m
+        + jnp.roll(xkmh_m, 1, axis=2)
+        + jnp.roll(xkmh_m, 1, axis=1)
+        + jnp.roll(jnp.roll(xkmh_m, 1, axis=1), 1, axis=2)
+    )
+    tau12 = -rho_c * k_c * d12
+
+    tau13 = jnp.zeros_like(w)
+    tau23 = jnp.zeros_like(w)
+    if nz >= 2:
+        rho_w = jnp.roll(rho_m, 1, axis=2)
+        k_w = jnp.roll(xkmv_m, 1, axis=2)
+        rho13 = 0.5 * (
+            fnm_v[1:nz, None, None] * (rho_m[1:nz] + rho_w[1:nz])
+            + fnp_v[1:nz, None, None] * (rho_m[0 : nz - 1] + rho_w[0 : nz - 1])
+        )
+        k13 = 0.5 * (
+            fnm_v[1:nz, None, None] * (xkmv_m[1:nz] + k_w[1:nz])
+            + fnp_v[1:nz, None, None] * (xkmv_m[0 : nz - 1] + k_w[0 : nz - 1])
+        )
+        tau13 = tau13.at[1:nz, :, :].set(-rho13 * k13 * d13[1:nz, :, :])
+
+        rho_s = jnp.roll(rho_m, 1, axis=1)
+        k_s = jnp.roll(xkmv_m, 1, axis=1)
+        rho23 = 0.5 * (
+            fnm_v[1:nz, None, None] * (rho_m[1:nz] + rho_s[1:nz])
+            + fnp_v[1:nz, None, None] * (rho_m[0 : nz - 1] + rho_s[0 : nz - 1])
+        )
+        k23 = 0.5 * (
+            fnm_v[1:nz, None, None] * (xkmv_m[1:nz] + k_s[1:nz])
+            + fnp_v[1:nz, None, None] * (xkmv_m[0 : nz - 1] + k_s[0 : nz - 1])
+        )
+        tau23 = tau23.at[1:nz, :, :].set(-rho23 * k23 * d23[1:nz, :, :])
+
+    # u horizontal stress divergence plus terrain-slope metric terms.
+    tau11avg = jnp.zeros((nz + 1, ny, nx), dtype=dtype)
+    tau12avg = jnp.zeros((nz + 1, ny, nx), dtype=dtype)
+    if nz >= 2:
+        tau11avg = tau11avg.at[1:nz, :, :].set(
+            0.5
+            * (
+                fnm_v[1:nz, None, None] * (tau11[1:nz] + jnp.roll(tau11[1:nz], 1, axis=2))
+                + fnp_v[1:nz, None, None]
+                * (tau11[0 : nz - 1] + jnp.roll(tau11[0 : nz - 1], 1, axis=2))
+            )
+        )
+        tau12avg = tau12avg.at[1:nz, :, :].set(
+            0.5
+            * (
+                fnm_v[1:nz, None, None] * (jnp.roll(tau12[1:nz], -1, axis=1) + tau12[1:nz])
+                + fnp_v[1:nz, None, None]
+                * (jnp.roll(tau12[0 : nz - 1], -1, axis=1) + tau12[0 : nz - 1])
+            )
+        )
+    tmpdz_u = 0.5 * (1.0 / rdzw_m + 1.0 / jnp.roll(rdzw_m, 1, axis=2))
+    zx_at_u = 0.5 * (zx_f[:-1] + zx_f[1:])
+    zy_at_u = 0.125 * (
+        jnp.roll(zy_f[:-1], 1, axis=2)
+        + zy_f[:-1]
+        + jnp.roll(jnp.roll(zy_f[:-1], 1, axis=2), -1, axis=1)
+        + jnp.roll(zy_f[:-1], -1, axis=1)
+        + jnp.roll(zy_f[1:], 1, axis=2)
+        + zy_f[1:]
+        + jnp.roll(jnp.roll(zy_f[1:], 1, axis=2), -1, axis=1)
+        + jnp.roll(zy_f[1:], -1, axis=1)
+    )
+    du = (
+        float(gravity)
+        * tmpdz_u
+        / dnw_v[:, None, None]
+        * (
+            msfux_u[None, :, :] * (1.0 / dx) * (tau11 - jnp.roll(tau11, 1, axis=2))
+            + msfuy_u[None, :, :] * (1.0 / dy) * (jnp.roll(tau12, -1, axis=1) - tau12)
+            - msfux_u[None, :, :] * zx_at_u * (tau11avg[1:] - tau11avg[:-1]) / tmpdz_u
+            - msfuy_u[None, :, :] * zy_at_u * (tau12avg[1:] - tau12avg[:-1]) / tmpdz_u
+        )
+    )
+    if nz >= 2:
+        du = du.at[1:nz, :, :].add(
+            float(gravity) / dnw_v[1:nz, None, None] * (tau13[2 : nz + 1] - tau13[1:nz])
+        )
+    du = du.at[0, :, :].add(float(gravity) / dnw_v[0] * tau13[1, :, :])
+
+    # v horizontal + vertical stress divergence.
+    tau21avg = jnp.zeros((nz + 1, ny, nx), dtype=dtype)
+    tau22avg = jnp.zeros((nz + 1, ny, nx), dtype=dtype)
+    if nz >= 2:
+        tau21avg = tau21avg.at[1:nz, :, :].set(
+            0.5
+            * (
+                fnm_v[1:nz, None, None] * (jnp.roll(tau12[1:nz], -1, axis=2) + tau12[1:nz])
+                + fnp_v[1:nz, None, None]
+                * (jnp.roll(tau12[0 : nz - 1], -1, axis=2) + tau12[0 : nz - 1])
+            )
+        )
+        tau22avg = tau22avg.at[1:nz, :, :].set(
+            0.5
+            * (
+                fnm_v[1:nz, None, None] * (jnp.roll(tau22[1:nz], 1, axis=1) + tau22[1:nz])
+                + fnp_v[1:nz, None, None]
+                * (jnp.roll(tau22[0 : nz - 1], 1, axis=1) + tau22[0 : nz - 1])
+            )
+        )
+    tmpdz_v = 0.5 * (1.0 / rdzw_m + 1.0 / jnp.roll(rdzw_m, 1, axis=1))
+    zx_at_v = 0.125 * (
+        zx_f[:-1]
+        + jnp.roll(zx_f[:-1], -1, axis=2)
+        + jnp.roll(zx_f[:-1], 1, axis=1)
+        + jnp.roll(jnp.roll(zx_f[:-1], -1, axis=2), 1, axis=1)
+        + zx_f[1:]
+        + jnp.roll(zx_f[1:], -1, axis=2)
+        + jnp.roll(zx_f[1:], 1, axis=1)
+        + jnp.roll(jnp.roll(zx_f[1:], -1, axis=2), 1, axis=1)
+    )
+    zy_at_v = 0.5 * (zy_f[:-1] + zy_f[1:])
+    dv = (
+        float(gravity)
+        * tmpdz_v
+        / dnw_v[:, None, None]
+        * (
+            msfvy_v[None, :, :] * (1.0 / dy) * (tau22 - jnp.roll(tau22, 1, axis=1))
+            + msfvx_v[None, :, :] * (1.0 / dx) * (jnp.roll(tau12, -1, axis=2) - tau12)
+            - msfvx_v[None, :, :] * zx_at_v * (tau21avg[1:] - tau21avg[:-1]) / tmpdz_v
+            - msfvy_v[None, :, :] * zy_at_v * (tau22avg[1:] - tau22avg[:-1]) / tmpdz_v
+        )
+    )
+    if nz >= 2:
+        dv = dv.at[1:nz, :, :].add(
+            float(gravity) / dnw_v[1:nz, None, None] * (tau23[2 : nz + 1] - tau23[1:nz])
+        )
+    dv = dv.at[0, :, :].add(float(gravity) / dnw_v[0] * tau23[1, :, :])
+
+    # w horizontal + vertical stress divergence on interior w faces.
+    dw = jnp.zeros_like(w)
+    if nz >= 2:
+        tau13avg_m = 0.25 * (
+            jnp.roll(tau13[1 : nz + 1], -1, axis=2)
+            + tau13[1 : nz + 1]
+            + jnp.roll(tau13[0:nz], -1, axis=2)
+            + tau13[0:nz]
+        )
+        tau23avg_m = 0.25 * (
+            jnp.roll(tau23[1 : nz + 1], -1, axis=1)
+            + tau23[1 : nz + 1]
+            + jnp.roll(tau23[0:nz], -1, axis=1)
+            + tau23[0:nz]
+        )
+        zx_at_w = 0.5 * (zx_f[1:nz] + jnp.roll(zx_f[1:nz], -1, axis=2))
+        zy_at_w = 0.5 * (zy_f[1:nz] + jnp.roll(zy_f[1:nz], -1, axis=1))
+        dw_h = (
+            float(gravity)
+            / (dn_v[1:nz, None, None] * rdz_f[1:nz])
+            * (
+                msftx_m[None, :, :] * (1.0 / dx) * (jnp.roll(tau13[1:nz], -1, axis=2) - tau13[1:nz])
+                + msfty_m[None, :, :] * (1.0 / dy) * (jnp.roll(tau23[1:nz], -1, axis=1) - tau23[1:nz])
+                - msfty_m[None, :, :]
+                * rdz_f[1:nz]
+                * (
+                    zx_at_w * (tau13avg_m[1:nz] - tau13avg_m[0 : nz - 1])
+                    + zy_at_w * (tau23avg_m[1:nz] - tau23avg_m[0 : nz - 1])
+                )
+            )
+        )
+        dw_v = float(gravity) * (tau33[1:nz] - tau33[0 : nz - 1]) / dn_v[1:nz, None, None]
+        dw = dw.at[1:nz, :, :].set(dw_h + dw_v)
+
+    if u.shape[-1] == nx + 1:
+        du = jnp.concatenate((du, du[:, :, :1]), axis=2)
+    if v.shape[1] == ny + 1:
+        dv = jnp.concatenate((dv, dv[:, :1, :]), axis=1)
+    return du, dv, dw
+
+
 # Smagorinsky / Prandtl constants (WRF share/module_model_constants.F:86 and the
 # Registry default for c_s).  prandtl = 1/3 so the heat eddy diffusivity xkhh is
 # 3x the momentum xkmh (= the WRF khdq=3*khdif convention for the perturbation
@@ -423,11 +961,40 @@ def horizontal_deformation_2d(
     *,
     dx_m: float,
     dy_m: float,
+    msftx: jax.Array | None = None,
+    msfty: jax.Array | None = None,
+    msfux: jax.Array | None = None,
+    msfuy: jax.Array | None = None,
+    msfvx: jax.Array | None = None,
+    msfvy: jax.Array | None = None,
+    zx: jax.Array | None = None,
+    zy: jax.Array | None = None,
+    rdzw: jax.Array | None = None,
+    fnm: jax.Array | None = None,
+    fnp: jax.Array | None = None,
+    cf1: jax.Array | float | None = None,
+    cf2: jax.Array | float | None = None,
+    cf3: jax.Array | float | None = None,
+    dn: jax.Array | None = None,
+    dnw: jax.Array | None = None,
 ) -> tuple[jax.Array, jax.Array, jax.Array]:
-    """WRF ``cal_deform_and_div`` horizontal deformations on the flat periodic slab.
+    """WRF ``cal_deform_and_div`` horizontal deformations.
 
-    Returns ``(D11, D22, D12)`` for unit map factors (``msf=1``) and flat eta
-    surfaces (``zx=zy=0``), the idealized / analytic-verification configuration.
+    Returns ``(D11, D22, D12)`` on mass/corner points.  With all optional metric
+    inputs omitted this is the historical flat periodic slab reduction.  When
+    map factors and ``zx``/``zy`` are supplied it follows WRF
+    ``module_diffusion_em.F:139-681``:
+
+      * ``D11 = 2*m^2*(d(u/msfuy)/dx - zx*d(u/msfuy)/dpsi)`` at mass points.
+      * ``D22 = 2*m^2*(d(v/msfvx)/dy - zy*d(v/msfvx)/dpsi)`` at mass points.
+      * ``D12 = m^2*(d(u/msfux)/dy - zy*d(u/msfux)/dpsi
+                   + d(v/msfvy)/dx - zx*d(v/msfvy)/dpsi)`` at vorticity points.
+
+    ``zx``/``zy`` are WRF z-face slope metrics with shape ``(nz+1, ny, nx)``;
+    ``rdzw`` is the mass-level inverse vertical spacing ``(nz, ny, nx)``.  The
+    ``fnm/fnp/cf*/dn/dnw`` arguments are WRF vertical interpolation/extrapolation
+    coefficients.  Flat defaults are ``msf=1`` and ``zx=zy=0``.
+
     Source: ``module_diffusion_em.F:cal_deform_and_div`` (Chen & Dudhia 2000
     eqns 13a/13b/13d):
 
@@ -437,11 +1004,6 @@ def horizontal_deformation_2d(
         (``:287-328``).
       * ``D12 = m^2 (dv^/dX + du^/dY + zx dv^/dpsi + zy du^/dpsi)`` ->
         ``du/dy + dv/dx`` at vorticity (cell-corner) points (``:508-627``).
-
-    With ``zx=zy=0`` and ``m=1`` the coordinate-transform / slope terms vanish, so
-    the deformations reduce to the textbook horizontal deformation tensor.  This is
-    exactly what ``smag2d_km`` consumes; the diff_opt=1 path carries no slope
-    reduction (that branch is gated on ``diff_opt==2`` in ``smag2d_km:2023``).
 
     Staggering (periodic x and y):
       * ``u`` on x-faces ``(nz, ny, nx+1)`` -- face ``i`` is the WEST face of mass
@@ -457,26 +1019,95 @@ def horizontal_deformation_2d(
     dx = float(dx_m)
     dy = float(dy_m)
     nx = u.shape[-1] - 1 if u.shape[-1] > v.shape[-1] else u.shape[-1]
-    # mass-cell columns of u/v (drop the periodic wrap face if present).
-    u_m = u[:, :, :nx] if u.shape[-1] == nx + 1 else u  # (nz, ny, nx) west faces
     ny = v.shape[1] - 1 if v.shape[1] > u.shape[1] else v.shape[1]
-    v_m = v[:, :ny, :] if v.shape[1] == ny + 1 else v  # (nz, ny, nx) south faces
+    nz = u.shape[0]
 
-    # D11 = 2 du/dx at mass cell i: (u_face(i+1) - u_face(i))/dx  (periodic wrap).
-    dudx = (jnp.roll(u_m, -1, axis=2) - u_m) / dx
-    d11 = 2.0 * dudx
-    # D22 = 2 dv/dy at mass cell j: (v_face(j+1) - v_face(j))/dy  (periodic wrap).
-    dvdy = (jnp.roll(v_m, -1, axis=1) - v_m) / dy
-    d22 = 2.0 * dvdy
+    u_m = _core_x(u, nx)
+    v_m = _core_y(v, ny)
+    msftx_m = _mass_metric_or_one(msftx, u_m)
+    msfty_m = _mass_metric_or_one(msfty, u_m)
+    msfux_u = _x_metric_or_one(msfux, nx=nx, reference=u_m)
+    msfuy_u = _x_metric_or_one(msfuy, nx=nx, reference=u_m)
+    msfvx_v = _y_metric_or_one(msfvx, ny=ny, reference=v_m)
+    msfvy_v = _y_metric_or_one(msfvy, ny=ny, reference=v_m)
+    zx_f = _zface_or_zero(zx, nz=nz, ny=ny, nx=nx, reference=u_m)
+    zy_f = _zface_or_zero(zy, nz=nz, ny=ny, nx=nx, reference=u_m)
+    rdzw_m = _mass3_or_one(rdzw, u_m)
 
-    # D12 = du/dy + dv/dx at SW corner (i,j) (vorticity point), WRF :518/:625-627:
-    #   du/dy = rdy*(u(i,j) - u(i,j-1))   [u on x-faces, differenced in y]
-    #   dv/dx = rdx*(v(i,j) - v(i-1,j))   [v on y-faces, differenced in x]
-    # Both u and v are sampled on their native faces; the corner-point difference
-    # uses the cell-and-neighbour values (periodic roll +1 = the (i-1)/(j-1) cell).
-    dudy = (u_m - jnp.roll(u_m, 1, axis=1)) / dy
-    dvdx = (v_m - jnp.roll(v_m, 1, axis=2)) / dx
-    d12 = dudy + dvdx
+    # D11 = 2*m^2*(d(u/msfuy)/dx - zx*d(u/msfuy)/dpsi).  WRF averages the
+    # transformed u to z-faces before the slope derivative.
+    u_yhat = u_m / msfuy_u[None, :, :]
+    u_yhat_e = jnp.roll(u_yhat, -1, axis=2)
+    u_yhat_zf = _vertical_face_average_pair(
+        u_yhat, u_yhat_e, fnm=fnm, fnp=fnp, cf1=cf1, cf2=cf2, cf3=cf3, dn=dn, dnw=dnw
+    )
+    zx_d11 = 0.25 * (zx_f[:-1] + jnp.roll(zx_f[:-1], -1, axis=2) + zx_f[1:] + jnp.roll(zx_f[1:], -1, axis=2))
+    d11_core = msftx_m[None, :, :] * msfty_m[None, :, :] * (
+        (u_yhat_e - u_yhat) / dx
+        - (u_yhat_zf[1:] - u_yhat_zf[:-1]) * zx_d11 * rdzw_m
+    )
+    d11 = 2.0 * d11_core
+
+    # D22 = 2*m^2*(d(v/msfvx)/dy - zy*d(v/msfvx)/dpsi).
+    v_xhat = v_m / msfvx_v[None, :, :]
+    v_xhat_n = jnp.roll(v_xhat, -1, axis=1)
+    v_xhat_zf = _vertical_face_average_pair(
+        v_xhat, v_xhat_n, fnm=fnm, fnp=fnp, cf1=cf1, cf2=cf2, cf3=cf3, dn=dn, dnw=dnw
+    )
+    zy_d22 = 0.25 * (zy_f[:-1] + jnp.roll(zy_f[:-1], -1, axis=1) + zy_f[1:] + jnp.roll(zy_f[1:], -1, axis=1))
+    d22_core = msftx_m[None, :, :] * msfty_m[None, :, :] * (
+        (v_xhat_n - v_xhat) / dy
+        - (v_xhat_zf[1:] - v_xhat_zf[:-1]) * zy_d22 * rdzw_m
+    )
+    d22 = 2.0 * d22_core
+
+    # D12 corner metric: 0.25*(msfux(i,j-1)+msfux(i,j))*(msfvy(i-1,j)+msfvy(i,j)).
+    mm_corner = 0.25 * (
+        jnp.roll(msfux_u, 1, axis=0) + msfux_u
+    ) * (
+        jnp.roll(msfvy_v, 1, axis=1) + msfvy_v
+    )
+    rdzw_corner = 0.25 * (
+        rdzw_m
+        + jnp.roll(rdzw_m, 1, axis=1)
+        + jnp.roll(rdzw_m, 1, axis=2)
+        + jnp.roll(jnp.roll(rdzw_m, 1, axis=1), 1, axis=2)
+    )
+
+    # First D12 half: d(u/msfux)/dy - zy*d(u/msfux)/dpsi at vorticity points.
+    u_xhat = u_m / msfux_u[None, :, :]
+    u_xhat_s = jnp.roll(u_xhat, 1, axis=1)
+    u_xhat_zf = _vertical_face_average_pair(
+        u_xhat_s, u_xhat, fnm=fnm, fnp=fnp, cf1=cf1, cf2=cf2, cf3=cf3, dn=dn, dnw=dnw
+    )
+    zy_d12 = 0.25 * (
+        jnp.roll(zy_f[:-1], 1, axis=2)
+        + zy_f[:-1]
+        + jnp.roll(zy_f[1:], 1, axis=2)
+        + zy_f[1:]
+    )
+    dudy = (u_xhat - u_xhat_s) / dy
+    d12_u = mm_corner[None, :, :] * (
+        dudy - (u_xhat_zf[1:] - u_xhat_zf[:-1]) * zy_d12 * rdzw_corner
+    )
+
+    # Second D12 half: d(v/msfvy)/dx - zx*d(v/msfvy)/dpsi.
+    v_yhat = v_m / msfvy_v[None, :, :]
+    v_yhat_w = jnp.roll(v_yhat, 1, axis=2)
+    v_yhat_zf = _vertical_face_average_pair(
+        v_yhat_w, v_yhat, fnm=fnm, fnp=fnp, cf1=cf1, cf2=cf2, cf3=cf3, dn=dn, dnw=dnw
+    )
+    zx_d12 = 0.25 * (
+        jnp.roll(zx_f[:-1], 1, axis=1)
+        + zx_f[:-1]
+        + jnp.roll(zx_f[1:], 1, axis=1)
+        + zx_f[1:]
+    )
+    dvdx = (v_yhat - v_yhat_w) / dx
+    d12_v = mm_corner[None, :, :] * (
+        dvdx - (v_yhat_zf[1:] - v_yhat_zf[:-1]) * zx_d12 * rdzw_corner
+    )
+    d12 = d12_u + d12_v
     return d11, d22, d12
 
 
@@ -489,25 +1120,31 @@ def smag2d_horizontal_km(
     dy_m: float,
     c_s: float = C_S_DEFAULT,
     prandtl: float = PRANDTL,
+    msftx: jax.Array | None = None,
+    msfty: jax.Array | None = None,
+    zx: jax.Array | None = None,
+    zy: jax.Array | None = None,
+    rdzw: jax.Array | None = None,
+    diff_opt_for_slope: int = 1,
 ) -> tuple[jax.Array, jax.Array]:
     """WRF ``smag2d_km`` 2-D Smagorinsky horizontal eddy viscosity (km_opt=4).
 
     Returns ``(xkmh, xkhh)`` -- the horizontal MOMENTUM and HEAT eddy
     diffusivities (m^2/s) on mass cells.  Faithful transcription of
-    ``module_diffusion_em.F:smag2d_km:2001-2042`` for unit map factors:
+    ``module_diffusion_em.F:smag2d_km:2001-2042``:
 
       * ``def2 = 0.25*(D11-D22)^2 + tmp^2`` with
         ``tmp = 0.25*(D12(i,j)+D12(i,j+1)+D12(i+1,j)+D12(i+1,j+1))`` -- the four
         surrounding corner ``D12`` values averaged onto the mass cell (``:2004-2007``).
-      * ``mlen_h = sqrt(dx/msftx * dy/msfty)`` -> ``sqrt(dx*dy)`` for ``msf=1``
-        (``:2015``).
+      * ``mlen_h = sqrt(dx/msftx * dy/msfty)`` (``:2015``).
       * ``xkmh = c_s^2 * mlen_h^2 * sqrt(def2)`` then capped ``min(xkmh, 10*mlen_h)``
         (``:2018-2019``).  ``c_s`` default 0.25 (Registry), ``prandtl`` = 1/3.
       * ``xkhh = xkmh / prandtl`` (``:2021``).
 
-    The ``diff_opt==2`` slope-factor reduction (``:2023-2039``) is intentionally
-    NOT applied: this path is the diff_opt=1 (coordinate-surface) Smagorinsky, for
-    which WRF leaves ``xkmh`` un-reduced.
+    When ``diff_opt_for_slope == 2`` and ``zx``/``zy``/``rdzw`` are supplied, WRF's
+    terrain-slope reduction (``:2023-2039``) is applied.  The operational
+    ``diff_opt=1`` Smagorinsky path should leave ``diff_opt_for_slope`` at the
+    default 1, exactly as WRF does.
 
     D12 is on cell corners with corner ``(i,j)`` == SW corner of cell ``(i,j)``
     (see :func:`horizontal_deformation_2d`).  WRF's four-corner average of cell
@@ -527,12 +1164,48 @@ def smag2d_horizontal_km(
     tmp = 0.25 * (d12 + d12_nw + d12_se + d12_ne)
 
     def2 = 0.25 * (d11 - d22) * (d11 - d22) + tmp * tmp
-    mlen_h = (dx * dy) ** 0.5  # sqrt(dx/msftx * dy/msfty), msf=1
+    msftx_m = _mass_metric_or_one(msftx, d11)
+    msfty_m = _mass_metric_or_one(msfty, d11)
+    mlen_h = jnp.sqrt((dx / msftx_m[None, :, :]) * (dy / msfty_m[None, :, :]))
     xkmh = cs * cs * mlen_h * mlen_h * jnp.sqrt(def2)
     # WRF :2019 cap (NOT a tuning clamp -- it is the literal smag2d_km ceiling that
     # bounds K so the explicit horizontal diffusion stays inside its stability
     # envelope; faithful transcription).
     xkmh = jnp.minimum(xkmh, 10.0 * mlen_h)
+
+    if int(diff_opt_for_slope) == 2 and zx is not None and zy is not None and rdzw is not None:
+        nz, ny, nx = d11.shape
+        zx_f = _zface_or_zero(zx, nz=nz, ny=ny, nx=nx, reference=d11)
+        zy_f = _zface_or_zero(zy, nz=nz, ny=ny, nx=nx, reference=d11)
+        rdzw_m = _mass3_or_one(rdzw, d11)
+        dxm = dx / msftx_m[None, :, :]
+        dym = dy / msfty_m[None, :, :]
+        tmpzx = (
+            0.25
+            * (
+                jnp.abs(zx_f[:-1])
+                + jnp.abs(jnp.roll(zx_f[:-1], -1, axis=2))
+                + jnp.abs(zx_f[1:])
+                + jnp.abs(jnp.roll(zx_f[1:], -1, axis=2))
+            )
+            * rdzw_m
+            * dxm
+        )
+        tmpzy = (
+            0.25
+            * (
+                jnp.abs(zy_f[:-1])
+                + jnp.abs(jnp.roll(zy_f[:-1], -1, axis=1))
+                + jnp.abs(zy_f[1:])
+                + jnp.abs(jnp.roll(zy_f[1:], -1, axis=1))
+            )
+            * rdzw_m
+            * dym
+        )
+        alpha = jnp.maximum(jnp.sqrt(tmpzx * tmpzx + tmpzy * tmpzy), 1.0)
+        def_limit = jnp.maximum(10.0 / mlen_h, 1.0e-3)
+        slope_divisor = jnp.where(jnp.sqrt(def2) > def_limit, alpha * alpha, alpha)
+        xkmh = xkmh / slope_divisor
     xkhh = xkmh / pr
     return xkmh, xkhh
 
@@ -696,6 +1369,8 @@ __all__ = [
     "conservative_constant_k_diffusion_tendency",
     "constant_k_deformation_momentum_tendency",
     "wrf_deformation_momentum_tendency",
+    "deformation_components_3d",
+    "wrf_terrain_deformation_momentum_tendency",
     "PRANDTL",
     "C_S_DEFAULT",
     "horizontal_deformation_2d",
