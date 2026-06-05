@@ -35,10 +35,48 @@ workload via `proofs/v0100/wave_a_gate.py`.
 | Opus#6 | `jnp.pad(edge)` face-pairs in advance_uv (10/substep) | **REMOVED** | edge-pad+slice -> concatenate; verified BIT-IDENTICAL to the pad form at the helper level (x/y 2d+3d, jnp.array_equal True) and end-to-end on idealized (worst_reldiff=0.0). |
 | Opus#7 | `.at[].set()` dpn scatters in advance_uv | **REMOVED** | zeros+`.at[].set` scatters -> single concatenate([bottom,interior,top]); verified BIT-IDENTICAL (top_lid True+False, jnp.array_equal True) and idealized worst_reldiff=0.0. |
 | Opus#10 | `diagnose_pressure_al_alt` "called twice on overlapping inputs" | DEFERRED / not-redundant | the two calls use DIFFERENT `base` args (None vs stage_base) in different functions on different inputs -> NOT the same computation; merging would change values. Analysis over-stated the overlap. <1% claimed; left as-is. |
-| GPT#3 | Hourly full-State D2H finite checks | <TBD> | daily-wrapper host breakdown sizes it; device-side scalar reduction if material |
-| GPT#7 | redundant stage-entry/exit halos | <TBD> | single-GPU `apply_halo` is identity no-op (halo.py); DCE; verify HLO |
+| GPT#3 | Hourly full-State D2H finite checks | **NOT WORTH IT (sized: 0.22%)** | wave_a_host_breakdown.json (L2 d02, 1 forecast hour): finite_summary full-State D2H = **0.067 s = 0.22% of the hour**. Negligible -> NOT worth a device-side reduction. The non-forecast host share is 10.95%, dominated by M9 RRTMG surface-diagnostic RECOMPUTE (2.99 s, ~9%) -> that is GPT#14 (reuse held diagnostics), deferred to Phase 3, not GPT#3. |
+| GPT#7 | redundant stage-entry/exit halos | NOT-AN-ISSUE (single-GPU no-op) | `apply_halo` returns the state unchanged on single-GPU (halo.py); the per-stage calls are identity and DCE'd. Confirmed by Opus phase-1 analysis §5.6. No action (would become real on multi-GPU; out of scope for v0.10.0). |
 | Opus#13 / GPT | command-buffer flag | OUT OF SCOPE (negative lever) | net loss on coupled (-15..-21%); explicitly OFF |
 | Opus#3 / GPT#2 | Thompson NSED_MAX lower | DEFERRED to Phase 4 | graupel wet-column evidence absent (phase0 histogram); not zero-clip-safe globally |
 | Opus#9 / GPT#16 | gated-fp32 | DEFERRED to Phase 5 (Wave B) | precision sequenced after fusion; 0% while launch-bound |
 
-(Filled in with measured gains after the AFTER profiles land.)
+## Wave-A summary (what shipped, what didn't, evidence)
+
+**SHIPPED (bit-identical, no fidelity loss, non-regressing):**
+- Opus#4/GPT#20 cast-skip — REMOVED (26->0 no-op converts under force_fp64)
+- Opus#5 cqw-reuse — REMOVED (dry_cqw once/stage)
+- Opus#6 face-pairs concatenate — REMOVED (pad materialise gone)
+- Opus#7 dpn concatenate — REMOVED (scatter gone)
+- Opus#1 acoustic unroll hook — ADDED, default=1
+
+All verified BIT-IDENTICAL on idealized warm-bubble + Straka (worst_reldiff=0.0),
+so d02 skill + conservation + the 24h trajectory are IDENTICAL to v0.9.0.
+
+**MEASURED-NOT-WORTH-IT (kept out, evidence):**
+- Opus#1 unroll>1: unroll=2 = +0.9% warmed (noise) at +60% compile on the coupled
+  path -> default kept at 1 (wave_a_unroll_ab_verdict.json).
+- Opus#2 carry-split: reverted (idealized bit-identical, but warmed A/B confounded
+  by a recompile artifact and not cleanly re-validated; the simple carry is the
+  proven path). RE-TEST deferred.
+
+**DEFERRED to later phases (with reason):**
+- Opus#3/GPT#2 Thompson NSED_MAX -> Phase 4 (graupel zero-clip-safety unproven).
+- Opus#9/GPT#16 gated-fp32 -> Phase 5 (precision sequenced after fusion; 0% while
+  launch-bound — and Wave-A confirms the coupled step is bandwidth/dependent-chain
+  bound, not acoustic-launch bound, which is exactly why fp32 on the bw-bound
+  fields is the next real lever).
+- GPT#3 finite-summary D2H -> sized by wave_a_host_breakdown.json (Phase-1 host).
+- GPT#5 physics surface+MYNN fusion, GPT#19 physics moveaxis -> Phase 3.
+
+**NOT-AN-ISSUE / OUT-OF-SCOPE:** Opus#10 (not redundant), GPT#7 halos (single-GPU
+no-op), command-buffer flag (negative lever, OFF).
+
+**KEY WAVE-A FINDING (sizes the rest of v0.10.0):** the coupled warmed step
+(~74 ms) did NOT move under the acoustic launch-count reductions because it is
+bound by Thompson sedimentation (~46%) + the HBM/tridiag floors, NOT by the
+acoustic substep launch count. The substantive warmed speedup therefore lives in
+Phase 3 (physics fusion), Phase 4 (Thompson), and Phase 5 (precision on the
+bandwidth-bound fields), exactly as the super-plan sequenced. Wave-A's contribution
+is the bit-identical, no-fidelity-loss cleanup + the unroll hook + the empirical
+proof of where the time actually is.
