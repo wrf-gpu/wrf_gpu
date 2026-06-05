@@ -1,0 +1,70 @@
+{
+  "scope": "Wave-B2 STEP 2: surface+MYNN fusion A/B (default MYNN-sfclay+MYNN path)",
+  "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l2/20260521_18z_l2_72h_20260522T133443Z",
+  "device": "cuda:0",
+  "grid": {
+    "ny": 66,
+    "nx": 159,
+    "nz": 44
+  },
+  "shipped_min_ms": 33.90599798876792,
+  "fused_min_ms": 33.87391800060868,
+  "shipped_samples_ms": [
+    34.671,
+    34.4318,
+    34.4325,
+    34.555,
+    35.1116,
+    35.1541,
+    34.0868,
+    34.0058,
+    33.9711,
+    33.906
+  ],
+  "fused_samples_ms": [
+    35.2651,
+    34.5593,
+    34.1459,
+    34.0987,
+    34.0479,
+    33.8739,
+    33.9586,
+    34.3682,
+    34.4349,
+    33.9306
+  ],
+  "block_gain_ms": 0.03207998815923929,
+  "block_gain_pct": 0.09461449319340627,
+  "bit_identical": false,
+  "field_diffs": {
+    "u": {
+      "array_equal": false,
+      "max_reldiff": 0.0
+    },
+    "v": {
+      "array_equal": false,
+      "max_reldiff": 0.0
+    },
+    "theta": {
+      "array_equal": false,
+      "max_reldiff": 0.0
+    },
+    "qv": {
+      "array_equal": false,
+      "max_reldiff": 0.0
+    },
+    "qke": {
+      "array_equal": false,
+      "max_reldiff": 0.0
+    },
+    "ustar": {
+      "array_equal": true,
+      "max_reldiff": 0.0
+    },
+    "theta_flux": {
+      "array_equal": true,
+      "max_reldiff": 0.0
+    }
+  },
+  "note": "the fused path runs the SAME surface_layer + SAME MYNN kernel; it only avoids the State .replace+asarray round-trip of the 7 flux handles and the duplicate column-view build. block_gain is the removable-mechanical envelope on the surface+MYNN block."
+}

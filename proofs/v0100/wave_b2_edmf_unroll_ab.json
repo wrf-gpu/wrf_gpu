@@ -1,0 +1,62 @@
+{
+  "scope": "Wave-B2 EDMF level-scan unroll=4 A/B (round-off-neutral codegen)",
+  "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l2/20260521_18z_l2_72h_20260522T133443Z",
+  "device": "cuda:0",
+  "unroll": 4,
+  "mynn_default_min_ms": 32.44280704529956,
+  "mynn_unroll_min_ms": 32.46564598521218,
+  "default_samples_ms": [
+    32.6869,
+    32.6795,
+    32.589,
+    32.4748,
+    32.5152,
+    32.4428,
+    32.4605,
+    32.4903,
+    32.6328,
+    32.4838,
+    32.6621,
+    32.6268
+  ],
+  "unroll_samples_ms": [
+    32.6649,
+    32.5062,
+    32.5734,
+    32.4656,
+    32.6769,
+    32.5371,
+    32.5557,
+    33.0123,
+    34.2212,
+    33.3215,
+    33.0897,
+    32.775
+  ],
+  "block_gain_ms": -0.022838939912617207,
+  "block_gain_pct": -0.07039754568933393,
+  "bit_identical": false,
+  "field_diffs": {
+    "u": {
+      "array_equal": false,
+      "max_reldiff": 0.0
+    },
+    "v": {
+      "array_equal": false,
+      "max_reldiff": 0.0
+    },
+    "theta": {
+      "array_equal": false,
+      "max_reldiff": 0.0
+    },
+    "qv": {
+      "array_equal": false,
+      "max_reldiff": 0.0
+    },
+    "qke": {
+      "array_equal": false,
+      "max_reldiff": 0.0
+    }
+  },
+  "verdict": "REJECT"
+}
