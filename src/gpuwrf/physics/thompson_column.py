@@ -444,6 +444,52 @@ def _snow_moments(qs, rho, tempc, tables: ThompsonTableBundle = THOMPSON_TABLES)
     return rs, xds, smo0, smo1, smof, c_snow, qs > R1
 
 
+# WRF Field et al. snow distribution constants used by the sedimentation fall
+# speed formula in module_mp_thompson.F:3711-3721.  Kept local to this file to
+# respect the v0.11.0 Thompson lane ownership boundary.
+_SNOW_KAP0 = 490.6
+_SNOW_KAP1 = 17.46
+_SNOW_LAM0 = 20.78
+_SNOW_LAM1 = 3.29
+_SNOW_CSE1 = 3.0
+_SNOW_CSE4 = 3.54999995
+_SNOW_CSE7 = 3.63569999
+_SNOW_CSE10 = 4.18569994
+_SNOW_CSG1 = 2.0
+_SNOW_CSG4 = 3.51325202
+_SNOW_CSG7 = 3.87160635
+_SNOW_CSG10 = 7.61279917
+_SNOW_MU_S = 0.6357
+
+
+def _snow_terminal_velocity_wrf(rhof, xds, active_snow):
+    """WRF snow mass terminal velocity before melt/riming adjustments.
+
+    This is the Field two-gamma moment-ratio formula from WRF
+    ``module_mp_thompson.F:3711-3721``:
+    ``rhof*av_s*(t1_vts+t2_vts)/(t3_vts+t4_vts)``.  The previous kernel used
+    the simpler ``av_s*xDs**bv_s`` single-slope closure, which is only a rough
+    approximation of the mp=8 snow distribution even when the riming boost is
+    inactive.  The current port does not carry WRF's pre-sedimentation
+    ``prr_sml`` or ``vts_boost`` process flags, so this helper closes the
+    load-bearing inactive-boost formulation and leaves those flags at their
+    inactive WRF values.
+    """
+
+    mrat = 1.0 / jnp.maximum(xds, R1)
+    ils1_fall = 1.0 / (mrat * _SNOW_LAM0 + 100.0)
+    ils2_fall = 1.0 / (mrat * _SNOW_LAM1 + 100.0)
+    t1_vts = _SNOW_KAP0 * _SNOW_CSG4 * ils1_fall**_SNOW_CSE4
+    t2_vts = _SNOW_KAP1 * mrat**_SNOW_MU_S * _SNOW_CSG10 * ils2_fall**_SNOW_CSE10
+
+    ils1_mass = 1.0 / (mrat * _SNOW_LAM0)
+    ils2_mass = 1.0 / (mrat * _SNOW_LAM1)
+    t3_vts = _SNOW_KAP0 * _SNOW_CSG1 * ils1_mass**_SNOW_CSE1
+    t4_vts = _SNOW_KAP1 * mrat**_SNOW_MU_S * _SNOW_CSG7 * ils2_mass**_SNOW_CSE7
+    vts = rhof * AV_S * (t1_vts + t2_vts) / jnp.maximum(t3_vts + t4_vts, R1)
+    return jnp.where(active_snow, vts, 0.0)
+
+
 def _graupel_distribution(qg, rho):
     """Provides the mp=8 graupel slope/intercept terms used by WRF formulas."""
 
@@ -1088,10 +1134,9 @@ def _fall_speeds(state: ThompsonColumnState):
 
     Rain:    module_mp_thompson.F:3616-3628 (vtrk mass, vtnrk number).
     Ice:     module_mp_thompson.F:3678-3691 (vtik mass, vtnik number).
-    Snow:    bulk mass-weighted speed from the snow slope (WRF uses the Field
-             two-gamma moments; here the single-slope WRF av_s/bv_s closure on
-             the snow characteristic diameter — faithful for the mp=8 default
-             snow when the racs/sacr boost is inactive).
+    Snow:    module_mp_thompson.F:3711-3721 Field two-gamma moment-ratio mass
+             speed, with the currently inactive WRF melt/riming adjustments left
+             at their neutral values.
     Graupel: module_mp_thompson.F:3758-3766 mass speed with av_g/bv_g (idx_bg1).
     """
 
@@ -1121,14 +1166,10 @@ def _fall_speeds(state: ThompsonColumnState):
     vt_i_mass = _fill_down(jnp.where(act_i, vt_i_mass, 0.0), act_i)
     vt_i_num = _fill_down(jnp.where(act_i, vt_i_num, 0.0), act_i)
 
-    # Snow bulk fall speed via the Field-moment slope: xDs = smoc/smob is the
-    # mass-weighted mean diameter; WRF combines av_s with the two-gamma fit.
-    # We use the WRF single-mode closure vts = rhof*av_s*Ds^bv_s as a faithful
-    # mp=8 approximation when riming-boost (racs) is inactive.
     act_s = state.qs > R1
     tempc = state.T - 273.15
     _rs2, xds, _smo0, _smo1, _smof, _csnow, _act_s = _snow_moments(state.qs, rho, tempc)
-    vt_s_mass = _fill_down(jnp.where(act_s, rhof * AV_S * jnp.maximum(xds, D0S) ** BV_S, 0.0), act_s)
+    vt_s_mass = _fill_down(_snow_terminal_velocity_wrf(rhof, xds, act_s), act_s)
 
     act_g = state.qg > R1
     rg = jnp.maximum(state.qg * rho, R1)
