@@ -1,0 +1,1 @@
+V0100 WAVE-A DONE: unroll_default=1 before_ms=75.44 after_ms=74.12 warmed_gain=1.02x idealized=PASS coupled24h=finite skill=no-regress

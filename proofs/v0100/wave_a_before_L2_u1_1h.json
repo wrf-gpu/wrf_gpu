@@ -1,0 +1,72 @@
+{
+  "scope": "Wave-A gate: warmed per-step + coupled stability, GREEN d02 L2 init",
+  "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l2/20260521_18z_l2_72h_20260522T133443Z",
+  "run_id": "20260521_18z_l2_72h_20260522T133443Z",
+  "device": "cuda:0",
+  "grid": {
+    "ny": 66,
+    "nx": 159,
+    "nz": 44
+  },
+  "config": {
+    "force_fp64": true,
+    "use_flux_advection": true,
+    "epssm": 0.5,
+    "top_lid": true,
+    "radiation_cadence_steps": 180,
+    "acoustic_unroll": 1
+  },
+  "hours": 1.0,
+  "steps": 360,
+  "segment_steps": 180,
+  "inner_segment_cold_compile_s": 140.26394291897304,
+  "warmed_per_step_ms": 417.4219350721816,
+  "full_wall_s_measured": 150.2718966259854,
+  "peak_gpu_mem_mb_after_compile": 8942.0283203125,
+  "peak_gpu_mem_mb_after_full_run": 9713.184326171875,
+  "final_state_ranges": {
+    "u": {
+      "finite": false,
+      "min": -10.233725547790527,
+      "max": 23.920743942260742
+    },
+    "v": {
+      "finite": false,
+      "min": -11.428298950195312,
+      "max": 10.065285682678223
+    },
+    "w": {
+      "finite": false,
+      "min": -0.09959018975496292,
+      "max": 0.08331286907196045
+    },
+    "theta": {
+      "finite": false,
+      "min": 291.2662048339844,
+      "max": 492.0712585449219
+    },
+    "qv": {
+      "finite": false,
+      "min": 2.4746229883021442e-06,
+      "max": 0.013282030820846558
+    },
+    "p_total": {
+      "finite": false,
+      "min": 5224.58203125,
+      "max": 101661.1796875
+    },
+    "ph_total": {
+      "finite": false,
+      "min": -7.796288059580547e-07,
+      "max": 203916.1943359375
+    },
+    "mu_total": {
+      "finite": false,
+      "min": 94190.50817871094,
+      "max": 96758.76513671875
+    }
+  },
+  "all_finite": false,
+  "physically_plausible": false,
+  "status": "FAIL"
+}

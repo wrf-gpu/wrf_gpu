@@ -1,0 +1,80 @@
+{
+  "scope": "Wave-A gate: warmed per-step + coupled stability, GREEN d02 L2 init",
+  "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l2/20260521_18z_l2_72h_20260522T133443Z",
+  "run_id": "20260521_18z_l2_72h_20260522T133443Z",
+  "device": "cuda:0",
+  "grid": {
+    "ny": 66,
+    "nx": 159,
+    "nz": 44
+  },
+  "config": {
+    "force_fp64": true,
+    "use_flux_advection": true,
+    "epssm": 0.5,
+    "top_lid": true,
+    "radiation_cadence_steps": 180,
+    "acoustic_unroll": 1
+  },
+  "disable_guards": false,
+  "hours": 3.0,
+  "steps": 1080,
+  "segment_steps": 180,
+  "nonrad_segment_len": 179,
+  "inner_segment_cold_compile_s": 24.879180428979453,
+  "warmed_per_step_ms": 75.58090147508995,
+  "warmed_per_step_ms_samples": [
+    121.15262393279043,
+    75.58090147508995,
+    75.59823630151323
+  ],
+  "warmed_per_step_ms_amortized_incl_radiation": 93.41877450367772,
+  "full_wall_s_measured": 100.89227646397194,
+  "peak_gpu_mem_mb_after_compile": 9027.420654296875,
+  "peak_gpu_mem_mb_after_full_run": 10044.4716796875,
+  "final_state_ranges": {
+    "u": {
+      "finite": true,
+      "min": -12.359315503511326,
+      "max": 25.458069922430344
+    },
+    "v": {
+      "finite": true,
+      "min": -18.685491338329165,
+      "max": 10.814862990342368
+    },
+    "w": {
+      "finite": true,
+      "min": -2.7042111325512206,
+      "max": 1.3690382595378474
+    },
+    "theta": {
+      "finite": true,
+      "min": 290.7692028916273,
+      "max": 491.6540832519531
+    },
+    "qv": {
+      "finite": true,
+      "min": 2.440325975634581e-06,
+      "max": 0.015044652797413379
+    },
+    "p_total": {
+      "finite": true,
+      "min": 5174.586018319616,
+      "max": 101686.3359375
+    },
+    "ph_total": {
+      "finite": true,
+      "min": -7.796288059580547e-07,
+      "max": 204077.453125
+    },
+    "mu_total": {
+      "finite": true,
+      "min": 66419.25442630077,
+      "max": 96793.07312011719
+    }
+  },
+  "all_finite": true,
+  "physically_plausible": true,
+  "status": "PASS"
+}
