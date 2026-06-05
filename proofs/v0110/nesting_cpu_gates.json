@@ -1,0 +1,291 @@
+{
+  "feedback": {
+    "abs_residual": 0.0,
+    "child_overlap_integral": 1492344.0,
+    "conserved": true,
+    "leaf": "theta",
+    "n_cells": 36,
+    "parent_overlap_integral": 1492344.0,
+    "rel_residual": 0.0,
+    "stagger": ""
+  },
+  "feedback_runtime_gate": {
+    "off": 0,
+    "on": 1
+  },
+  "hierarchy": {
+    "edges": [
+      {
+        "child": "d02",
+        "feedback": false,
+        "i_parent_start": 30,
+        "j_parent_start": 20,
+        "parent": "d01",
+        "parent_grid_ratio": 3
+      },
+      {
+        "child": "d03",
+        "feedback": false,
+        "i_parent_start": 52,
+        "j_parent_start": 20,
+        "parent": "d02",
+        "parent_grid_ratio": 3
+      },
+      {
+        "child": "d04",
+        "feedback": false,
+        "i_parent_start": 42,
+        "j_parent_start": 32,
+        "parent": "d02",
+        "parent_grid_ratio": 3
+      },
+      {
+        "child": "d05",
+        "feedback": false,
+        "i_parent_start": 64,
+        "j_parent_start": 34,
+        "parent": "d02",
+        "parent_grid_ratio": 3
+      }
+    ],
+    "expected_counts_root_steps_2": {
+      "d01": 2,
+      "d02": 6,
+      "d03": 18,
+      "d04": 18,
+      "d05": 18
+    },
+    "first_advance_events": [
+      [
+        "d01",
+        1,
+        1
+      ],
+      [
+        "d02",
+        1,
+        1
+      ],
+      [
+        "d03",
+        1,
+        3
+      ],
+      [
+        "d04",
+        1,
+        3
+      ],
+      [
+        "d05",
+        1,
+        3
+      ],
+      [
+        "d02",
+        2,
+        1
+      ],
+      [
+        "d03",
+        4,
+        3
+      ],
+      [
+        "d04",
+        4,
+        3
+      ],
+      [
+        "d05",
+        4,
+        3
+      ],
+      [
+        "d02",
+        3,
+        1
+      ],
+      [
+        "d03",
+        7,
+        3
+      ],
+      [
+        "d04",
+        7,
+        3
+      ]
+    ],
+    "first_force_events": [
+      [
+        "d01",
+        "d02",
+        1,
+        0
+      ],
+      [
+        "d02",
+        "d03",
+        1,
+        0
+      ],
+      [
+        "d02",
+        "d04",
+        1,
+        0
+      ],
+      [
+        "d02",
+        "d05",
+        1,
+        0
+      ],
+      [
+        "d02",
+        "d03",
+        2,
+        3
+      ],
+      [
+        "d02",
+        "d04",
+        2,
+        3
+      ],
+      [
+        "d02",
+        "d05",
+        2,
+        3
+      ],
+      [
+        "d02",
+        "d03",
+        3,
+        6
+      ]
+    ],
+    "force_event_count": 20,
+    "observed_counts_root_steps_2": {
+      "d01": 2,
+      "d02": 6,
+      "d03": 18,
+      "d04": 18,
+      "d05": 18
+    },
+    "order": [
+      "d01",
+      "d02",
+      "d03",
+      "d04",
+      "d05"
+    ]
+  },
+  "live_child_boundary_config": {
+    "force_geopotential": false,
+    "nested_ph_relax": true,
+    "nested_ph_spec": true,
+    "nested_w_relax": true,
+    "update_cadence_s": 18.0
+  },
+  "notes": [
+    "CPU-only proof; no GPU performance or full forecast equivalence claim.",
+    "Full runtime validation is recorded separately in nesting_live_smoke.json."
+  ],
+  "output": {
+    "cadence": {
+      "d01": 1,
+      "d02": 3,
+      "d03": 9,
+      "d04": 9,
+      "d05": 9
+    },
+    "events": [
+      {
+        "domain": "d03",
+        "own_step": 9,
+        "state": 9
+      },
+      {
+        "domain": "d04",
+        "own_step": 9,
+        "state": 9
+      },
+      {
+        "domain": "d05",
+        "own_step": 9,
+        "state": 9
+      },
+      {
+        "domain": "d02",
+        "own_step": 3,
+        "state": 3
+      },
+      {
+        "domain": "d01",
+        "own_step": 1,
+        "state": 1
+      },
+      {
+        "domain": "d03",
+        "own_step": 18,
+        "state": 18
+      },
+      {
+        "domain": "d04",
+        "own_step": 18,
+        "state": 18
+      },
+      {
+        "domain": "d05",
+        "own_step": 18,
+        "state": 18
+      },
+      {
+        "domain": "d02",
+        "own_step": 6,
+        "state": 6
+      },
+      {
+        "domain": "d01",
+        "own_step": 2,
+        "state": 2
+      }
+    ],
+    "fine_to_coarse_synchronized": true
+  },
+  "proof": "v0110 live nesting CPU structural gates",
+  "qke_finiteness": {
+    "all_finite": true,
+    "pass": true,
+    "probe_input": [
+      "nan",
+      -1.0,
+      1.0000000000000002e-06,
+      0.25,
+      200.0
+    ],
+    "probe_output": [
+      1e-05,
+      1e-05,
+      1e-05,
+      0.25,
+      150.0
+    ],
+    "wrf_source": "phys/module_bl_mynnedmf.F:3106-3107 qke=max(x,qkemin); qke=min(qke,150.)"
+  },
+  "status": "PASS",
+  "subcycling": {
+    "d03_chunk_start_steps": [
+      1,
+      4,
+      7,
+      10,
+      13,
+      16
+    ],
+    "domain_global_step_clock": true
+  }
+}

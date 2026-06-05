@@ -349,6 +349,126 @@ class BCMetadata:
     restart_compatible: bool
 
 
+@dataclass(frozen=True)
+class DomainNest:
+    """Static WRF parent/child relationship for one nested-domain edge.
+
+    The start indices are WRF namelist values and are therefore 1-based in the
+    parent domain.  ``parent_grid_ratio`` is also the default child subcycle
+    count for the Canary fixed-ratio nests.
+    """
+
+    parent: str
+    child: str
+    parent_grid_ratio: int
+    i_parent_start: int
+    j_parent_start: int
+    feedback: bool = False
+
+    def __post_init__(self) -> None:
+        parent = str(self.parent)
+        child = str(self.child)
+        if not parent or not child:
+            raise ValueError("DomainNest parent and child names must be non-empty")
+        if parent == child:
+            raise ValueError("DomainNest parent and child must differ")
+        if int(self.parent_grid_ratio) <= 1:
+            raise ValueError("DomainNest parent_grid_ratio must be > 1")
+        if int(self.i_parent_start) < 1 or int(self.j_parent_start) < 1:
+            raise ValueError("DomainNest i/j_parent_start are 1-based and must be >= 1")
+        object.__setattr__(self, "parent", parent)
+        object.__setattr__(self, "child", child)
+        object.__setattr__(self, "parent_grid_ratio", int(self.parent_grid_ratio))
+        object.__setattr__(self, "i_parent_start", int(self.i_parent_start))
+        object.__setattr__(self, "j_parent_start", int(self.j_parent_start))
+        object.__setattr__(self, "feedback", bool(self.feedback))
+
+
+@dataclass(frozen=True)
+class DomainHierarchy:
+    """Static WRF ``max_dom`` domain tree contract.
+
+    This is metadata only: no field arrays live here.  Runtime modules use it to
+    validate the parent-before-child ordering, subcycling ratios, and optional
+    feedback gates without widening ``State``.
+    """
+
+    order: tuple[str, ...]
+    nests: tuple[DomainNest, ...] = ()
+    max_dom: int = 5
+
+    def __post_init__(self) -> None:
+        order = tuple(str(name) for name in self.order)
+        nests = tuple(self.nests)
+        if not order:
+            raise ValueError("DomainHierarchy.order must contain at least one domain")
+        if len(order) > int(self.max_dom):
+            raise ValueError(f"DomainHierarchy supports max_dom <= {int(self.max_dom)}, got {len(order)}")
+        if len(set(order)) != len(order):
+            raise ValueError("DomainHierarchy.order contains duplicate domain names")
+        known = set(order)
+        parents: dict[str, str] = {}
+        for edge in nests:
+            if edge.parent not in known or edge.child not in known:
+                raise ValueError(f"DomainNest references unknown domain: {edge}")
+            if order.index(edge.parent) >= order.index(edge.child):
+                raise ValueError(
+                    f"DomainHierarchy order must list parent before child for {edge.parent}->{edge.child}"
+                )
+            prior = parents.get(edge.child)
+            if prior is not None:
+                raise ValueError(f"Domain {edge.child} has multiple parents: {prior}, {edge.parent}")
+            parents[edge.child] = edge.parent
+        object.__setattr__(self, "order", order)
+        object.__setattr__(self, "nests", nests)
+        object.__setattr__(self, "max_dom", int(self.max_dom))
+
+    @classmethod
+    def from_edges(
+        cls,
+        order: tuple[str, ...] | list[str],
+        edges: tuple[DomainNest, ...] | list[DomainNest],
+        *,
+        max_dom: int = 5,
+    ) -> "DomainHierarchy":
+        """Build a hierarchy from coarse-to-fine domain names and edge metadata."""
+
+        return cls(order=tuple(order), nests=tuple(edges), max_dom=int(max_dom))
+
+    def children(self, parent: str) -> tuple[DomainNest, ...]:
+        """Return child edges for ``parent`` in hierarchy order."""
+
+        return tuple(edge for edge in self.nests if edge.parent == parent)
+
+    def parent(self, child: str) -> str | None:
+        """Return the parent domain name for ``child``, or ``None`` for roots."""
+
+        for edge in self.nests:
+            if edge.child == child:
+                return edge.parent
+        return None
+
+    def roots(self) -> tuple[str, ...]:
+        """Return domains with no parent, normally just ``("d01",)``."""
+
+        children = {edge.child for edge in self.nests}
+        return tuple(name for name in self.order if name not in children)
+
+    def expected_step_counts(self, *, root_steps: int, root: str | None = None) -> dict[str, int]:
+        """WRF recursive subcycle counts for ``root_steps`` root-domain steps."""
+
+        root_name = root or self.roots()[0]
+        counts: dict[str, int] = {root_name: int(root_steps)}
+
+        def walk(name: str) -> None:
+            for edge in self.children(name):
+                counts[edge.child] = counts[name] * int(edge.parent_grid_ratio)
+                walk(edge.child)
+
+        walk(root_name)
+        return counts
+
+
 @jax.tree_util.register_pytree_node_class
 @dataclass(frozen=True)
 class GridSpec:
