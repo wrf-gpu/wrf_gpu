@@ -37,6 +37,7 @@ from gpuwrf.profiling.transfer_audit import block_until_ready, visible_gpu_name
 from gpuwrf.runtime.checkpoint import read_checkpoint, write_checkpoint
 from gpuwrf.runtime.operational_mode import (
     OperationalNamelist,
+    _commit_to_operational_device,
     compute_m9_diagnostics,
     run_forecast_operational,
 )
@@ -314,7 +315,9 @@ def _wrfout_name(valid_time: datetime, domain: str) -> str:
 
 
 def _default_forecast_fn(state: Any, namelist: Any, hours: float) -> Any:
-    result = run_forecast_operational(state, namelist, float(hours))
+    result = run_forecast_operational(
+        _commit_to_operational_device(state), namelist, float(hours)
+    )
     block_until_ready(result)
     return result
 
