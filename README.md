@@ -73,6 +73,45 @@ The validation lane keeps the v0.9.0 forecast/wrfout numerics bit-identical and 
 
 A code-grounded, prioritized inventory of the remaining gap to a complete WRF v4 replacement lives in [`publish/GPU_PORT_GAPS_TODO.md`](publish/GPU_PORT_GAPS_TODO.md) and the v0.10.0+ full-port gap analysis under [`.agent/reviews/`](.agent/reviews/).
 
+## Roadmap — delta to a complete WRF v4 port (post-v0.10.0)
+
+Consolidated, honestly-prioritized ledger of everything still deferred / simplified / not-yet-faithful relative to official WRF v4, sorted by importance for an *optimal complete* port. Complexity: **S** ≈ 1–2 focused sprints · **M** ≈ 3–5 · **L** ≈ 5–10 · **XL** ≈ 10+. (v0.2.0→v0.10.0 already closed native real-init, prognostic Noah-MP, the terrain/map-factor core, and the GPU-operational scheme set — Thompson, MYNN/YSU/ACM2 PBL, MYNN-sfclay, Grell-Freitas cumulus, Noah-MP, Dudhia SW / RRTM LW.)
+
+| # | Item — delta vs official WRF v4 | Cmplx | Detail |
+|---|---|---|---|
+| **Tier 1 — blocks a complete standalone WRF v4 replacement** | | | |
+| 1 | **Full multi-domain nested equivalence** — 5-domain 9/3/1 km nest. v0.5.0 one-way nesting is operator-proven over a short window; full equivalence (24 h one-way + two-way feedback + radiation-in-loop + multi-domain output) is the carry-over. | XL | GPU_PORT_GAPS P0-1 |
+| 2 | **WRF restart (`wrfrst`) + full `wrfout` completeness** — no true restart files; 64-var focused writer vs WRF's 375. Blocks cycling / restart-after-failure / downstream tools. | L–XL | GPU_PORT_GAPS P0-5; KNOWN_ISSUES KI-3 |
+| 3 | **d01 parent cumulus = Kain–Fritsch (`cu_physics=1`)** — Grell-Freitas is wired, not KF; needed for a faithful live d01 parent feeding the nests. | L | GPU_PORT_GAPS P0-4; `physics_registry.py` |
+| 4 | **Coupled conservation budgets + de-mask safety policy** — guards revert invalid moisture/theta to origin; `rk_addtend_dry` gets empty tendencies; no full 24–72 h dry-mass/water/energy/precip budget gates. | L | GPU_PORT_GAPS P0-7 |
+| **Tier 2 — physics fidelity (faithful to the pinned Canary suite)** | | | |
+| 5 | **MYNN PBL completeness** — EDMF / cloud / full mixing-length disabled (dry level-2.5). Tied to the residual near-surface wind-skill gap. | L | GPU_PORT_GAPS P1-4 |
+| 6 | **RRTMG topo-shading + slope-radiation** (`topo_shading=1, slope_rad=1`) + real XLAT/XLONG + land-coupled albedo/emissivity + cloud-fraction. | M–L | GPU_PORT_GAPS P1-3 |
+| 7 | **d03 1 km steep-terrain dynamics instability** — gated-fp32 NaN ~h1 (qke canary), full-fp64 finite only ~0.3 h. A 1 km numerics/dynamics edge (not precision). | M–L | KNOWN_ISSUES KI-1; `proofs/v090/d03_1km_validation*.json` |
+| 8 | **Thompson microphysics parity debts** — snow fall-speed approx, neglected cloud-water sedimentation, invalid-column fallback (NSED cap now validated 16). | M | GPU_PORT_GAPS P1-5 |
+| 9 | **Terrain-slope / map-factor diffusion deformation terms** — diffusion is flat-slab (P0-6 residual). | M | KNOWN_ISSUES KI-5; `proofs/f7/DYCORE_STATUS.md` |
+| 10 | **Positive-definite / monotonic scalar advection + WRF boundary-order degradation** — flux-adv frozen h5/v3 + periodic assumptions; moisture safety via guards. | M | GPU_PORT_GAPS P1-6 |
+| 11 | **Gravity-wave drag (`gwd_opt=1`)** — not implemented; verify load-bearing on the 9 km parent first. | M | GPU_PORT_GAPS P1-7 |
+| **Tier 3 — correctness / robustness debts** | | | |
+| 12 | **qke step-loop numerics robustness** — long single-jit-call advance hits the qke edge on some inits; segmented cadence is fine. | M | KNOWN_ISSUES KI-2 |
+| 13 | **U10 episodic under-prediction** — within bar 66/72 leads; evening high-wind breach (tied to item 5). | S–M | KNOWN_ISSUES KI-4; `d02_coupled_skill_72h.json` |
+| **Tier 4 — statistical / release closure** | | | |
+| 14 | **Powered n=15 TOST scoring** — corpus prepared, not yet scored (the paper's equivalence claim). | S–M | KNOWN_ISSUES KI-5; ADR-029 |
+| 15 | **v0.2.0 stable paper-release tag** — intended stable baseline never formally tagged. | S | `V0.2.0-PLAN.md` |
+| **Tier 5 — performance (optional)** | | | |
+| 16 | **Hand-fused-kernel rewrite for 1.4–1.8×** — optional Pallas/Triton branch (~30% of project; de-riskable via a 2-sprint MYNN-EDMF spike). | XL | [`.agent/reviews/2026-06-05-gpt-hand-fused-kernel-feasibility.md`](.agent/reviews/2026-06-05-gpt-hand-fused-kernel-feasibility.md) |
+| 17 | **Acoustic carry-split clean re-test** — bit-identical but warmed A/B was measurement-confounded; deferred. | S | `proofs/v0100/inefficiency_ledger.md` |
+| **Tier 6 — breadth / general WRF coverage (beyond the Canary suite)** | | | |
+| 18 | **Full physics scheme matrix** — alternate MP/PBL/CU/RA/LSM families beyond the wired set (recognized-but-fail-closed). | XL | GPU_PORT_GAPS P1-2 |
+| 19 | **FDDA / grid+obs nudging / spectral nudging** — none (only lateral-BC relaxation); not in the baseline namelist. | M–XL | GPU_PORT_GAPS P1-1 |
+| 20 | **Multi-GPU domain decomposition** — single-GPU only; halo interface is a no-op stub. | XL | `contracts/halo.py` |
+| 21 | **Map-projection / grid generality** — Lambert/Mercator/Polar + hybrid-eta C-grid only; no moving/global nests. | M | GPU_PORT_GAPS P2-1 |
+| 22 | **Full WRF namelist parsing + loud rejection** of unsupported options. | S–M | GPU_PORT_GAPS P2-2; `io/namelist_check.py` |
+| 23 | **Additional wrfout diagnostics / auxhist streams** (downstream-driven). | S–L | GPU_PORT_GAPS P2-3 |
+| 24 | **Dead-code cleanup** — orphaned `_operational_acoustic_substep_core` + dead tests. | S | — |
+
+**Critical path to a *complete* port:** items **1 → 2 → 3 → 4** are the standalone-replacement chain; **5 / 6 / 7** are the highest-value fidelity levers (where the remaining wind/T2 skill lives). The perf rewrite (16) and breadth (18–23) are real but lower-leverage than finishing the nest + the fidelity tier.
+
 ## Core goals (immutable)
 
 1. **GPU-native architecture.** Whole-state device residency after init. No host/device transfers inside the timestep loop without an ADR. Fused timestep-scale kernels, not micro-kernel launch storms.
