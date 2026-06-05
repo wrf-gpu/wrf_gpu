@@ -1,0 +1,167 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-06-05T14:29:51+01:00",
+  "objective": "v0.11.0 Tier-2 item 11: decide whether WRF gwd_opt=1 gravity-wave drag is load-bearing for the current Canary d02/nest GPU forecast path.",
+  "branch": "worker/gpt/v0110-gwd",
+  "head": "0cd101cfbf480ae41507ff76e904c6933e899b87",
+  "base_trunk": "worker/opus/v0110-integration",
+  "verdict": "DOCUMENTED_NAMELIST_DEVIATION_PASS",
+  "load_bearing": {
+    "cpu_wrf_d01_9km_parent": true,
+    "current_gpu_d02_or_nested_replay_path": false,
+    "future_live_parent_or_two_way_multi_domain_path": true
+  },
+  "implemented": false,
+  "parity": {
+    "status": "not_applicable",
+    "reason": "No GPU GWD implementation was added because the active supported GPU path integrates d02/nests from CPU-WRF replay inputs and boundaries, while the CPU-WRF nest wrfinput files carry GWD_OPT=0."
+  },
+  "corpus_case": {
+    "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l2rerun_l3_24h_20260522T231647Z",
+    "namelist": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l2rerun_l3_24h_20260522T231647Z/namelist.input",
+    "namelist_sha256": "69cf9e267aafa69febb129b1c965fefe8abd9a70b7c5a41763a8688397f13784",
+    "namelist_excerpt": {
+      "max_dom": 5,
+      "dx_m": [9000, 3000, 1000, 1000, 1000],
+      "dy_m": [9000, 3000, 1000, 1000, 1000],
+      "gwd_opt_line": "gwd_opt                             = 1,"
+    },
+    "wrfinput_domains": {
+      "d01": {
+        "sha256": "f8a76b6526e65d5e79703ac856d277f530582c6baa1d70505d6585081363df16",
+        "dx_m": 9000.0,
+        "dy_m": 9000.0,
+        "gwd_opt_attr": 1,
+        "gwd_descriptor_summary": {
+          "VAR_max_m": 390.3587341308594,
+          "VAR_nonzero_cells": 522,
+          "CON_max": 2.812983751296997,
+          "CON_nonzero_cells": 401,
+          "OA_nonzero_cells_each": 401,
+          "OL_nonzero_cells_each": 0,
+          "GOT_VAR_SSO": 0
+        }
+      },
+      "d02": {
+        "sha256": "08b17dfade02eb56c44c7aabaf1f6baf24bdadce2b543aefb920f931cdf45f0f",
+        "dx_m": 3000.0,
+        "dy_m": 3000.0,
+        "gwd_opt_attr": 0,
+        "gwd_descriptor_summary": {
+          "VAR_max_m": 404.5393371582031,
+          "VAR_nonzero_cells": 768,
+          "CON_nonzero_cells": 0,
+          "OA_nonzero_cells_each": 0,
+          "OL_nonzero_cells_each": 0,
+          "GOT_VAR_SSO": 0
+        }
+      },
+      "d03": {
+        "sha256": "a0fca53a77bd7fbd953c33a07d514295e8c67d00b8b309c52b760acc85351590",
+        "dx_m": 1000.0,
+        "dy_m": 1000.0,
+        "gwd_opt_attr": 0,
+        "gwd_descriptor_summary": {
+          "VAR_max_m": 406.4061584472656,
+          "VAR_nonzero_cells": 2035,
+          "CON_nonzero_cells": 0,
+          "OA_nonzero_cells_each": 0,
+          "OL_nonzero_cells_each": 0,
+          "GOT_VAR_SSO": 0
+        }
+      },
+      "d04": {
+        "dx_m": 1000.0,
+        "dy_m": 1000.0,
+        "gwd_opt_attr": 0,
+        "gwd_descriptor_summary": {
+          "VAR_max_m": 233.83216857910156,
+          "VAR_nonzero_cells": 1562,
+          "CON_nonzero_cells": 0,
+          "OA_nonzero_cells_each": 0,
+          "OL_nonzero_cells_each": 0,
+          "GOT_VAR_SSO": 0
+        }
+      },
+      "d05": {
+        "dx_m": 1000.0,
+        "dy_m": 1000.0,
+        "gwd_opt_attr": 0,
+        "gwd_descriptor_summary": {
+          "VAR_max_m": 178.353759765625,
+          "VAR_nonzero_cells": 702,
+          "CON_nonzero_cells": 0,
+          "OA_nonzero_cells_each": 0,
+          "OL_nonzero_cells_each": 0,
+          "GOT_VAR_SSO": 0
+        }
+      }
+    }
+  },
+  "wrf_source_evidence": [
+    {
+      "path": "/home/enric/src/wrf_pristine/WRF/phys/module_pbl_driver.F",
+      "lines": "2225-2248",
+      "finding": "WRF calls gwdo only when PRESENT(GWD_opt) and GWD_opt == 1."
+    },
+    {
+      "path": "/home/enric/src/wrf_pristine/WRF/dyn_em/module_first_rk_step_part1.F",
+      "lines": "1244-1252",
+      "finding": "The ARW first RK step passes config_flags%gwd_opt and VAR/CON/OA/OL fields into the PBL driver."
+    },
+    {
+      "path": "/home/enric/src/wrf_pristine/WRF/share/input_wrf.F",
+      "lines": "751-768",
+      "finding": "If a domain namelist config has nonzero gwd_opt, WRF checks it against the domain wrfinput GWD_OPT global attribute."
+    },
+    {
+      "path": "/home/enric/src/wrf_pristine/WRF/share/module_check_a_mundo.F",
+      "lines": "912-924",
+      "finding": "WRF requires child gwd_opt values to match d01 or be zero; zero-child domains are valid."
+    }
+  ],
+  "gpu_path_evidence": [
+    {
+      "path": "src/gpuwrf/integration/daily_pipeline.py",
+      "lines": "187-232",
+      "finding": "The operational real-case path builds a replay case for a selected domain, defaulting to d02, from existing CPU-WRF artifacts."
+    },
+    {
+      "path": "src/gpuwrf/runtime/operational_mode.py",
+      "lines": "198-230",
+      "finding": "OperationalNamelist has damping/diffusion controls but no gwd_opt control."
+    },
+    {
+      "path": "src/gpuwrf/runtime/operational_mode.py",
+      "lines": "2284-2295",
+      "finding": "The runtime applies replay lateral boundaries for the supported real-case d02 path."
+    }
+  ],
+  "reasoning": [
+    "The CPU-WRF 9 km parent has GWD active and nonzero sub-grid-orography descriptors, so GWD remains load-bearing for any future live d01 parent equivalence claim.",
+    "The generated CPU-WRF wrfinput files for d02-d05 carry GWD_OPT=0, so WRF itself does not call the module_bl_gwdo path on the current nests.",
+    "The GPU v0.11 operational path is a d02/nest replay path: parent effects are already baked into CPU-WRF initial and boundary artifacts, and no live d01 parent is integrated by the GPU runtime.",
+    "Therefore adding a GPU GWD tendency now would not improve WRF faithfulness for current d02/nest forecast quality; it would create an unvalidated extra tendency relative to the CPU-WRF nest baseline."
+  ],
+  "commands_run": [
+    "pwd && git status --short --branch && git log -1 --oneline --decorate --show-signature",
+    "sed -n '1,220p' PROJECT_CONSTITUTION.md",
+    "sed -n '1,220p' AGENTS.md",
+    "sed -n '1,220p' .agent/skills/validating-physics/SKILL.md",
+    "sed -n '1,220p' .agent/skills/building-wrf-oracles/SKILL.md",
+    "rg -n \"gwd_opt|GWDO|gwdo|module_bl_gwdo|gravity wave drag|GWD\" /home/enric/src/wrf_pristine/WRF/dyn_em /home/enric/src/wrf_pristine/WRF/phys /home/enric/src/wrf_pristine/WRF/share /home/enric/src/wrf_pristine/WRF/Registry -S",
+    "sed -n '2200,2290p' /home/enric/src/wrf_pristine/WRF/phys/module_pbl_driver.F",
+    "sed -n '1228,1275p' /home/enric/src/wrf_pristine/WRF/dyn_em/module_first_rk_step_part1.F",
+    "sed -n '70,105p' /mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l2rerun_l3_24h_20260522T231647Z/namelist.input",
+    "ncdump -h /mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l2rerun_l3_24h_20260522T231647Z/wrfinput_d01 | rg -n \":GWD_OPT|:DX|:DY|WEST-EAST_GRID_DIMENSION|SOUTH-NORTH_GRID_DIMENSION\"",
+    "ncdump -h /mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l2rerun_l3_24h_20260522T231647Z/wrfinput_d02 | rg -n \":GWD_OPT|:DX|:DY|WEST-EAST_GRID_DIMENSION|SOUTH-NORTH_GRID_DIMENSION\"",
+    "PYTHONPATH=src taskset -c 0-27 python - <<'PY' ... NetCDF4 GWD descriptor stats ... PY",
+    "sha256sum /mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l2rerun_l3_24h_20260522T231647Z/namelist.input /mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l2rerun_l3_24h_20260522T231647Z/wrfinput_d01 /mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l2rerun_l3_24h_20260522T231647Z/wrfinput_d02 /mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l2rerun_l3_24h_20260522T231647Z/wrfinput_d03"
+  ],
+  "unresolved_risks": [
+    "This is not a proof that GWD is meteorologically negligible for a future live 9 km d01 parent; it is active there and should be reopened for live multi-domain equivalence.",
+    "No GWD parity fixture was built because no implementation was added under this documented-deviation endpoint.",
+    "The result relies on the current supported GPU path being d02/nest replay from CPU-WRF artifacts, not a standalone d01-to-d02 nested forecast."
+  ],
+  "next_decision_needed": "For a future live d01 parent release, decide whether to port module_bl_gwdo-style GWD or require a manager-approved explicit namelist deviation for d01."
+}
