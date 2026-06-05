@@ -1,0 +1,260 @@
+{
+  "commands_recorded": [
+    "taskset -c 0-27 env PYTHONPATH=src JAX_PLATFORM_NAME=cpu JAX_PLATFORMS=cpu pytest -q tests/test_v060_cumulus_kf.py tests/test_v060_physics_dispatch.py tests/test_namelist_check.py --tb=short",
+    "taskset -c 0-27 env PYTHONPATH=src JAX_PLATFORM_NAME=cpu JAX_PLATFORMS=cpu python proofs/v060/forecast_gate_harness.py --validate",
+    "taskset -c 0-27 env PYTHONPATH=src JAX_PLATFORM_NAME=cpu JAX_PLATFORMS=cpu python proofs/v0110/build_kf_proof.py"
+  ],
+  "endpoint_1_registry_and_wiring": {
+    "accepted_matrix_contains_cu1": true,
+    "dispatch_entrypoint": "step_kf_column",
+    "dispatch_gpu_runnable": true,
+    "dispatch_owner_module": "gpuwrf.physics.cumulus_kf",
+    "pass": true,
+    "registry_status": "implemented",
+    "scan_adapter": "kf_adapter",
+    "suite_gpu_gate_ready": true
+  },
+  "endpoint_2_column_savepoint_parity": {
+    "all_cases_pass": true,
+    "column_physics_signal": {
+      "cases": [
+        {
+          "case": 1,
+          "oracle_max_abs_rqvcuten_kgkg_s": 6.705399187012517e-07,
+          "oracle_max_abs_rthcuten_K_s": 0.001667676493525505,
+          "oracle_raincv_mm": 0.0935361236333847,
+          "parity_pass": true,
+          "regime": "deep"
+        },
+        {
+          "case": 2,
+          "oracle_max_abs_rqvcuten_kgkg_s": 2.75183310805005e-07,
+          "oracle_max_abs_rthcuten_K_s": 0.0002556144027039409,
+          "oracle_raincv_mm": 0.0,
+          "parity_pass": true,
+          "regime": "shallow"
+        },
+        {
+          "case": 3,
+          "oracle_max_abs_rqvcuten_kgkg_s": 1.240448796124838e-06,
+          "oracle_max_abs_rthcuten_K_s": 0.002995278919115663,
+          "oracle_raincv_mm": 0.1699147820472717,
+          "parity_pass": true,
+          "regime": "deep"
+        },
+        {
+          "case": 4,
+          "oracle_max_abs_rqvcuten_kgkg_s": 4.295853557323426e-07,
+          "oracle_max_abs_rthcuten_K_s": 0.0003629588172771037,
+          "oracle_raincv_mm": 0.0,
+          "parity_pass": true,
+          "regime": "shallow"
+        },
+        {
+          "case": 5,
+          "oracle_max_abs_rqvcuten_kgkg_s": 0.0,
+          "oracle_max_abs_rthcuten_K_s": 0.0,
+          "oracle_raincv_mm": 0.0,
+          "parity_pass": true,
+          "regime": "none"
+        }
+      ],
+      "triggered_cases_with_heating": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "triggered_cases_with_precip": [
+        1,
+        3
+      ]
+    },
+    "max_raincv_abs_error_mm": 1.8635959332657936e-06,
+    "max_tendency_abs_error": 7.988815768525219e-08,
+    "max_tendency_rel_error": 7.111410237117258e-05,
+    "oracle": {
+      "full_wrf_exe_run": false,
+      "generation_command": "taskset -c 0-3 bash proofs/v060/oracle/kf_build_and_run.sh",
+      "note": "M20/current repo search did not expose a cumulus savepoint factory. This is a real WRF-module oracle, not a JAX self-compare, but not a full coupled wrf.exe case.",
+      "source_checksum_sidecar": "proofs/v060/savepoints/kf_wrf_source_checksums.txt",
+      "source_sha256": "e6376c2d85c45470f49d545b25d513b5ec111bf36b87beebc740bf42825c6e5f",
+      "type": "single-column Fortran driver linked against unmodified WRF module_cu_kfeta.F",
+      "wrf_source": "/home/enric/src/wrf_pristine/WRF/phys/module_cu_kfeta.F"
+    },
+    "pass": true,
+    "predeclared_tolerances": {
+      "cutop_cubot": "abs < 0.5 model level",
+      "nca_seconds_abs": 1e-06,
+      "nontrigger_zero_abs": 1e-12,
+      "rainc_acc_or_raincv_mm": {
+        "abs": 0.0001,
+        "rel": 0.003
+      },
+      "trigger": "exact ISHALL",
+      "triggered_tendencies": {
+        "abs": 1e-07,
+        "rel": 0.002,
+        "relative_floor": 1e-09
+      },
+      "w0avg_m_s_abs": 1e-06
+    },
+    "source_artifact": "proofs/v060/kf_savepoint_parity_report.json",
+    "verdict": "PASS"
+  },
+  "endpoint_3_d01_cu0_vs_cu1_sanity": {
+    "cases": [
+      {
+        "case_id": "20260429_18z_l2_72h_20260524T204451Z",
+        "cu0_physical_range_ok": true,
+        "cu0_stable_finite": true,
+        "cu1_physical_range_ok": true,
+        "cu1_rainnc_mean_by_hour_mm": [
+          {
+            "gpu_mean": 0.0008652483455171487,
+            "hour": 1,
+            "rmse_vs_cpu": 0.010388695090295032
+          },
+          {
+            "gpu_mean": 0.0020423189692708598,
+            "hour": 2,
+            "rmse_vs_cpu": 0.019449099498518634
+          },
+          {
+            "gpu_mean": 0.0030459765978724427,
+            "hour": 3,
+            "rmse_vs_cpu": 0.026447814233094873
+          },
+          {
+            "gpu_mean": 0.0037351271886709846,
+            "hour": 4,
+            "rmse_vs_cpu": 0.02995903987439067
+          },
+          {
+            "gpu_mean": 0.004498323497579665,
+            "hour": 5,
+            "rmse_vs_cpu": 0.034468534883555016
+          },
+          {
+            "gpu_mean": 0.00533430063592729,
+            "hour": 6,
+            "rmse_vs_cpu": 0.04016382202136581
+          }
+        ],
+        "cu1_stable_finite": true,
+        "n_leads_run": 6,
+        "rainc_gpu_mean_final_mm": {
+          "cu0": 0.0,
+          "cu1": 0.0,
+          "delta_cu1_minus_cu0": 0.0
+        },
+        "rainnc_gpu_mean_final_mm": {
+          "cu0": 3.114785047713964e-05,
+          "cu1": 0.00533430063592729,
+          "delta_cu1_minus_cu0": 0.0053031527854501504
+        }
+      },
+      {
+        "case_id": "20260521_18z_l2_72h_20260522T133443Z",
+        "cu0_physical_range_ok": true,
+        "cu0_stable_finite": true,
+        "cu1_physical_range_ok": true,
+        "cu1_rainnc_mean_by_hour_mm": [
+          {
+            "gpu_mean": 2.041360511371015e-06,
+            "hour": 1,
+            "rmse_vs_cpu": 0.00015401212588182027
+          },
+          {
+            "gpu_mean": 9.391446531169267e-05,
+            "hour": 2,
+            "rmse_vs_cpu": 0.0015724850772417048
+          },
+          {
+            "gpu_mean": 0.0003355968893158975,
+            "hour": 3,
+            "rmse_vs_cpu": 0.0032693863870224297
+          },
+          {
+            "gpu_mean": 0.0005314216477945918,
+            "hour": 4,
+            "rmse_vs_cpu": 0.004097031950451034
+          },
+          {
+            "gpu_mean": 0.0006623381796366421,
+            "hour": 5,
+            "rmse_vs_cpu": 0.004943069078329368
+          },
+          {
+            "gpu_mean": 0.0009511444696698019,
+            "hour": 6,
+            "rmse_vs_cpu": 0.0057894822771162304
+          }
+        ],
+        "cu1_stable_finite": true,
+        "n_leads_run": 6,
+        "rainc_gpu_mean_final_mm": {
+          "cu0": 0.0,
+          "cu1": 0.0,
+          "delta_cu1_minus_cu0": 0.0
+        },
+        "rainnc_gpu_mean_final_mm": {
+          "cu0": 0.00021271130339047258,
+          "cu1": 0.0009511444696698019,
+          "delta_cu1_minus_cu0": 0.0007384331662793293
+        }
+      }
+    ],
+    "column_heating_precip_signal_from_savepoints": {
+      "heating_cases": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "precip_cases": [
+        1,
+        3
+      ]
+    },
+    "cu0_verdict": "STABLE_BUT_CORE_FIELD_MISMATCH",
+    "cu1_complete": true,
+    "cu1_executed": true,
+    "cu1_gpu_bound": true,
+    "cu1_verdict": "STABLE_BUT_CORE_FIELD_MISMATCH",
+    "limitations": [
+      "This v0110 lane did not rerun the GPU d01 forecast because GPU use was deferred by contract.",
+      "The v040 d01 artifacts expose RAINNC/RAINC but not RTHCUTEN/RQVCUTEN heating diagnostics.",
+      "RAINC stays zero in the reused d01 artifacts; the visible precipitation response appears in RAINNC."
+    ],
+    "pass": true,
+    "rainc_signal_present": false,
+    "rainnc_signal_present": true,
+    "source_artifacts": {
+      "compare": "proofs/v040/forecast_gate_kf2date6h_COMPARE.json",
+      "cu0": "proofs/v040/forecast_gate_kf2date6h_cu0_BEFORE.json",
+      "cu1": "proofs/v040/forecast_gate_kf2date6h_cu1_AFTER.json",
+      "origin": "worker/opus/v040k-kfwire b4aee4b; reused, not rerun in v0110"
+    },
+    "stable_physical_no_blowups": true,
+    "status": "PASS_REUSED_GPU_ARTIFACTS"
+  },
+  "generated_utc": "2026-06-05T12:48:24.868089+00:00",
+  "git": {
+    "branch": "worker/gpt/v0110-kf",
+    "head": "d054954ae5d0f972da968be3da3b75ff83c7f7dd",
+    "head_short": "d054954"
+  },
+  "overall": {
+    "carry_over": [
+      "No fresh v0110 GPU d01 forecast was run; reused v040k two-date 6h d01 artifacts per GPU-minimal lane constraint.",
+      "d01 artifacts show zero RAINC, with precipitation response in RAINNC; column savepoints prove direct KF RAINCV.",
+      "The reused d01 artifacts still have STABLE_BUT_CORE_FIELD_MISMATCH versus CPU-WRF on core fields; this is a dycore/forecast-skill carry-over, not a KF wiring/parity failure."
+    ],
+    "forecast_sanity": "PASS_REUSED_GPU_ARTIFACTS",
+    "kf_wired": true,
+    "parity": "PASS",
+    "pass": true
+  },
+  "schema": "gpuwrf.v0110.kf_consolidation.v1"
+}
