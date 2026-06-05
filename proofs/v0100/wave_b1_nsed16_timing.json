@@ -1,0 +1,55 @@
+{
+  "candidate_default16": {
+    "compile_s": 26.909481166047044,
+    "proof": "proofs/v0100/wave_b1_nsed16_timing_default16.json",
+    "samples_ms": [
+      98.67493293738032,
+      64.96545163317933,
+      64.76218705817398,
+      64.78783029160695,
+      64.92742867485504
+    ],
+    "status": "PASS",
+    "used_samples_ms": [
+      64.96545163317933,
+      64.76218705817398,
+      64.78783029160695,
+      64.92742867485504
+    ],
+    "warmed_per_step_ms": 64.76218705817398
+  },
+  "config": {
+    "acoustic_unroll": 1,
+    "candidate_GPUWRF_THOMPSON_NSED": null,
+    "control_GPUWRF_THOMPSON_NSED": "64",
+    "force_fp64": true
+  },
+  "control_cap64": {
+    "compile_s": 28.97462298796745,
+    "proof": "proofs/v0100/wave_b1_nsed16_timing_control64.json",
+    "samples_ms": [
+      107.87129548746937,
+      74.52710397507569,
+      74.26902661657853,
+      74.2487474999507,
+      74.34099123735602
+    ],
+    "status": "PASS",
+    "used_samples_ms": [
+      74.52710397507569,
+      74.26902661657853,
+      74.2487474999507,
+      74.34099123735602
+    ],
+    "warmed_per_step_ms": 74.2487474999507
+  },
+  "gain": {
+    "coupled_gain_percent": 12.776727906128002,
+    "delta_ms_per_step": 9.486560441776717,
+    "speedup_x": 1.1464830153628878
+  },
+  "method": "fresh process per cap; 240-step non-radiation coupled L2 d02 segment; compile/warm call outside samples; --discard-first-sample; warmed_per_step_ms = min(cache-hit samples after sample 0)",
+  "schema": "V0100WaveB1NSED16Timing",
+  "schema_version": 1,
+  "status": "PASS"
+}

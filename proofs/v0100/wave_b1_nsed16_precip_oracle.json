@@ -1,0 +1,335 @@
+{
+  "cap64_control": {
+    "NSED_MAX": 64,
+    "all_pass": true,
+    "gates": {
+      "accumulator_additivity_residual_mm": {
+        "pass": true,
+        "tol": 1e-09,
+        "value": 0.0
+      },
+      "per_column_max_rel": {
+        "pass": true,
+        "tol": 0.03,
+        "value": 0.0014834061486997487
+      },
+      "qr_field_parity": {
+        "max_rel": 0.0019001189622313275,
+        "mean_rel": 0.00024326128636656234,
+        "pass": true,
+        "tol_max": 0.02,
+        "tol_mean": 0.01
+      },
+      "sed_clip_fallback": {
+        "pass": true,
+        "per_species": {
+          "graupel": {
+            "clipped_at_NSED_MAX": 0,
+            "n_columns": 8,
+            "nstep_max": 1,
+            "nstep_min": 1
+          },
+          "ice": {
+            "clipped_at_NSED_MAX": 0,
+            "n_columns": 8,
+            "nstep_max": 1,
+            "nstep_min": 1
+          },
+          "rain": {
+            "clipped_at_NSED_MAX": 0,
+            "n_columns": 8,
+            "nstep_max": 4,
+            "nstep_min": 3
+          },
+          "snow": {
+            "clipped_at_NSED_MAX": 0,
+            "n_columns": 8,
+            "nstep_max": 2,
+            "nstep_min": 2
+          }
+        },
+        "total_clipped": 0
+      },
+      "surface_precip_ratio": {
+        "pass": true,
+        "tol": [
+          0.97,
+          1.03
+        ],
+        "value": 0.9985990860792245
+      },
+      "water_closure_rel": {
+        "pass": true,
+        "tol": 1e-05,
+        "value": 2.334320018145269e-06
+      }
+    },
+    "scheme": {
+      "label": "faithful_explicit_nsed64",
+      "n_columns": 8,
+      "n_levels": 44,
+      "per_field": {
+        "ni": {
+          "active_cells": 104,
+          "max_abs": 8959.616654157071,
+          "max_rel": 0.07224232878923441,
+          "mean_rel": 0.01772284020228799
+        },
+        "nr": {
+          "active_cells": 176,
+          "max_abs": 9.909991653459656,
+          "max_rel": 0.0015001436828522197,
+          "mean_rel": 0.0001915972818484637
+        },
+        "qc": {
+          "active_cells": 189,
+          "max_abs": 2.230520917991777e-08,
+          "max_rel": 9.933667872584393e-05,
+          "mean_rel": 7.533631778423106e-06
+        },
+        "qg": {
+          "active_cells": 102,
+          "max_abs": 0.0008622994001407885,
+          "max_rel": 1.0,
+          "mean_rel": 0.6130569422857403
+        },
+        "qi": {
+          "active_cells": 104,
+          "max_abs": 8.730310112152598e-06,
+          "max_rel": 0.07883061190261328,
+          "mean_rel": 0.037582089333422046
+        },
+        "qr": {
+          "active_cells": 176,
+          "max_abs": 2.1833698722155404e-06,
+          "max_rel": 0.0019001189622313275,
+          "mean_rel": 0.00024326128636656234
+        },
+        "qs": {
+          "active_cells": 176,
+          "max_abs": 2.565240791907431e-05,
+          "max_rel": 0.5890136822094644,
+          "mean_rel": 0.08875921588640971
+        },
+        "qv": {
+          "active_cells": 352,
+          "max_abs": 1.449897435485412e-05,
+          "max_rel": 0.020481847433572897,
+          "mean_rel": 0.004609150462570367
+        }
+      },
+      "precip_by_species_mm": {
+        "cloudw": 0.0003937857065151604,
+        "graupel": 0.0,
+        "ice": 0.0,
+        "rain": 0.34618531971255784,
+        "snow": 0.0
+      },
+      "precip_mass": {
+        "cloudw_surface_sink_mm": 0.0003937857065151604,
+        "surface_precip_mm_per_col": [
+          0.018858223183979055,
+          0.02657373482446534,
+          0.03273810861863143,
+          0.039276541821193355,
+          0.046150607168192206,
+          0.05332722128766061,
+          0.060780983955129285,
+          0.06847989885330656
+        ],
+        "total_surface_precip_mm": 0.34618531971255784,
+        "water_closure_max_abs_residual_kg_m2": 9.60819271935559e-05,
+        "water_closure_max_rel_residual": 2.334320018145269e-06
+      }
+    },
+    "surface_precip_rate_mm_h": 69.23706394251157,
+    "wrf_reference": {
+      "wrf_rainncv_mm_per_col": [
+        0.018857767805457115,
+        0.026613179594278336,
+        0.03278670832514763,
+        0.03933486342430115,
+        0.04621913284063339,
+        0.05340641736984253,
+        0.060871273279190063,
+        0.06858163326978683
+      ],
+      "wrf_total_rainncv_mm": 0.34667097590863705
+    }
+  },
+  "default_candidate": {
+    "NSED_MAX": 16,
+    "all_pass": true,
+    "gates": {
+      "accumulator_additivity_residual_mm": {
+        "pass": true,
+        "tol": 1e-09,
+        "value": 0.0
+      },
+      "per_column_max_rel": {
+        "pass": true,
+        "tol": 0.03,
+        "value": 0.0014834061486997487
+      },
+      "qr_field_parity": {
+        "max_rel": 0.0019001189622313275,
+        "mean_rel": 0.00024326128636656234,
+        "pass": true,
+        "tol_max": 0.02,
+        "tol_mean": 0.01
+      },
+      "sed_clip_fallback": {
+        "pass": true,
+        "per_species": {
+          "graupel": {
+            "clipped_at_NSED_MAX": 0,
+            "n_columns": 8,
+            "nstep_max": 1,
+            "nstep_min": 1
+          },
+          "ice": {
+            "clipped_at_NSED_MAX": 0,
+            "n_columns": 8,
+            "nstep_max": 1,
+            "nstep_min": 1
+          },
+          "rain": {
+            "clipped_at_NSED_MAX": 0,
+            "n_columns": 8,
+            "nstep_max": 4,
+            "nstep_min": 3
+          },
+          "snow": {
+            "clipped_at_NSED_MAX": 0,
+            "n_columns": 8,
+            "nstep_max": 2,
+            "nstep_min": 2
+          }
+        },
+        "total_clipped": 0
+      },
+      "surface_precip_ratio": {
+        "pass": true,
+        "tol": [
+          0.97,
+          1.03
+        ],
+        "value": 0.9985990860792245
+      },
+      "water_closure_rel": {
+        "pass": true,
+        "tol": 1e-05,
+        "value": 2.334320018145269e-06
+      }
+    },
+    "scheme": {
+      "label": "faithful_explicit_nsed16",
+      "n_columns": 8,
+      "n_levels": 44,
+      "per_field": {
+        "ni": {
+          "active_cells": 104,
+          "max_abs": 8959.616654157071,
+          "max_rel": 0.07224232878923441,
+          "mean_rel": 0.01772284020228799
+        },
+        "nr": {
+          "active_cells": 176,
+          "max_abs": 9.909991653459656,
+          "max_rel": 0.0015001436828522197,
+          "mean_rel": 0.0001915972818484637
+        },
+        "qc": {
+          "active_cells": 189,
+          "max_abs": 2.230520917991777e-08,
+          "max_rel": 9.933667872584393e-05,
+          "mean_rel": 7.533631778423106e-06
+        },
+        "qg": {
+          "active_cells": 102,
+          "max_abs": 0.0008622994001407885,
+          "max_rel": 1.0,
+          "mean_rel": 0.6130569422857403
+        },
+        "qi": {
+          "active_cells": 104,
+          "max_abs": 8.730310112152598e-06,
+          "max_rel": 0.07883061190261328,
+          "mean_rel": 0.037582089333422046
+        },
+        "qr": {
+          "active_cells": 176,
+          "max_abs": 2.1833698722155404e-06,
+          "max_rel": 0.0019001189622313275,
+          "mean_rel": 0.00024326128636656234
+        },
+        "qs": {
+          "active_cells": 176,
+          "max_abs": 2.565240791907431e-05,
+          "max_rel": 0.5890136822094644,
+          "mean_rel": 0.08875921588640971
+        },
+        "qv": {
+          "active_cells": 352,
+          "max_abs": 1.449897435485412e-05,
+          "max_rel": 0.020481847433572897,
+          "mean_rel": 0.004609150462570367
+        }
+      },
+      "precip_by_species_mm": {
+        "cloudw": 0.0003937857065151604,
+        "graupel": 0.0,
+        "ice": 0.0,
+        "rain": 0.34618531971255784,
+        "snow": 0.0
+      },
+      "precip_mass": {
+        "cloudw_surface_sink_mm": 0.0003937857065151604,
+        "surface_precip_mm_per_col": [
+          0.018858223183979055,
+          0.02657373482446534,
+          0.03273810861863143,
+          0.039276541821193355,
+          0.046150607168192206,
+          0.05332722128766061,
+          0.060780983955129285,
+          0.06847989885330656
+        ],
+        "total_surface_precip_mm": 0.34618531971255784,
+        "water_closure_max_abs_residual_kg_m2": 9.60819271935559e-05,
+        "water_closure_max_rel_residual": 2.334320018145269e-06
+      }
+    },
+    "surface_precip_rate_mm_h": 69.23706394251157,
+    "wrf_reference": {
+      "wrf_rainncv_mm_per_col": [
+        0.018857767805457115,
+        0.026613179594278336,
+        0.03278670832514763,
+        0.03933486342430115,
+        0.04621913284063339,
+        0.05340641736984253,
+        0.060871273279190063,
+        0.06858163326978683
+      ],
+      "wrf_total_rainncv_mm": 0.34667097590863705
+    }
+  },
+  "dt_s": 18.0,
+  "nsed16_vs_64": {
+    "pass": true,
+    "predeclared_tolerances": {
+      "nsed16_vs_64_surface_precip_max_abs_delta_mm": 0.0,
+      "nsed16_vs_64_surface_precip_rate_delta_mm_h": 0.0
+    },
+    "surface_precip_bit_identical": true,
+    "surface_precip_max_abs_delta_mm": 0.0,
+    "surface_precip_rate_delta_mm_h": 0.0,
+    "surface_precip_total_delta_mm": 0.0,
+    "water_closure_rel_delta": 0.0
+  },
+  "oracle": "WRF mp_gt_driver single-column precipitating Thompson oracle",
+  "schema": "V0100WaveB1NSED16PrecipOracle",
+  "schema_version": 1,
+  "status": "PASS"
+}

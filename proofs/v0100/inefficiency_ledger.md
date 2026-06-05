@@ -1,4 +1,4 @@
-# v0.10.0 Wave-A Inefficiency Ledger
+# v0.10.0 Wave-A / Wave-B1 Inefficiency Ledger
 
 Exit-gate evidence: every Wave-A item with its final disposition (REMOVED /
 measured-gain / DEFERRED-to-PhaseN / not-worth-risk), each backed by evidence.
@@ -38,7 +38,7 @@ workload via `proofs/v0100/wave_a_gate.py`.
 | GPT#3 | Hourly full-State D2H finite checks | **NOT WORTH IT (sized: 0.22%)** | wave_a_host_breakdown.json (L2 d02, 1 forecast hour): finite_summary full-State D2H = **0.067 s = 0.22% of the hour**. Negligible -> NOT worth a device-side reduction. The non-forecast host share is 10.95%, dominated by M9 RRTMG surface-diagnostic RECOMPUTE (2.99 s, ~9%) -> that is GPT#14 (reuse held diagnostics), deferred to Phase 3, not GPT#3. |
 | GPT#7 | redundant stage-entry/exit halos | NOT-AN-ISSUE (single-GPU no-op) | `apply_halo` returns the state unchanged on single-GPU (halo.py); the per-stage calls are identity and DCE'd. Confirmed by Opus phase-1 analysis §5.6. No action (would become real on multi-GPU; out of scope for v0.10.0). |
 | Opus#13 / GPT | command-buffer flag | OUT OF SCOPE (negative lever) | net loss on coupled (-15..-21%); explicitly OFF |
-| Opus#3 / GPT#2 | Thompson NSED_MAX lower | DEFERRED to Phase 4 | graupel wet-column evidence absent (phase0 histogram); not zero-clip-safe globally |
+| Opus#3 / GPT#2 | Thompson NSED_MAX lower | **REMOVED / SHIPPED in Wave-B1 (default cap=16)** | `NSED_MAX` default changed 64 -> 16, env override retained. Wet-column histogram (`proofs/v0100/thompson_nstep_histogram_graupel_wet.json`) had max/P99/P99.9 nstep <=2 and zero clips at cap 16. Precip oracle cap16 vs cap64 is bit-identical for surface precip and precip rate with zero clips (`proofs/v0100/wave_b1_nsed16_precip_oracle.json`). 24h Wave-A L2 d02 cap16 vs cap64 final T2/U10/V10, water fields, and precip accumulators are bit-identical (`proofs/v0100/wave_b1_nsed16_skill_24h.json`, `proofs/v0100/wave_b1_nsed16_conservation.json`). Fresh warmed timing: 74.25 -> 64.76 ms/step, **12.78% coupled gain / 1.146x** (`proofs/v0100/wave_b1_nsed16_timing.json`). |
 | Opus#9 / GPT#16 | gated-fp32 | DEFERRED to Phase 5 (Wave B) | precision sequenced after fusion; 0% while launch-bound |
 
 ## Wave-A summary (what shipped, what didn't, evidence)
@@ -61,7 +61,6 @@ so d02 skill + conservation + the 24h trajectory are IDENTICAL to v0.9.0.
   proven path). RE-TEST deferred.
 
 **DEFERRED to later phases (with reason):**
-- Opus#3/GPT#2 Thompson NSED_MAX -> Phase 4 (graupel zero-clip-safety unproven).
 - Opus#9/GPT#16 gated-fp32 -> Phase 5 (precision sequenced after fusion; 0% while
   launch-bound — and Wave-A confirms the coupled step is bandwidth/dependent-chain
   bound, not acoustic-launch bound, which is exactly why fp32 on the bw-bound
@@ -80,3 +79,23 @@ Phase 3 (physics fusion), Phase 4 (Thompson), and Phase 5 (precision on the
 bandwidth-bound fields), exactly as the super-plan sequenced. Wave-A's contribution
 is the bit-identical, no-fidelity-loss cleanup + the unroll hook + the empirical
 proof of where the time actually is.
+
+## Wave-B1 Thompson NSED16 closeout
+
+**SHIPPED:** Thompson faithful sedimentation now defaults to `NSED_MAX=16`
+(`GPUWRF_THOMPSON_NSED` still overrides it). This removes the static 64-iteration
+masked sedimentation scan overhead while keeping the same clip behavior for any
+future pathological column that needs more than the cap.
+
+**Gate evidence:** precip oracle cap16 vs cap64 is bit-identical for RAINNCV /
+surface precip rate and zero-clip (`wave_b1_nsed16_precip_oracle.json`). The 24h
+Wave-A L2 d02 fidelity comparison is cap16-vs-cap64 bit-identical for T2/U10/V10,
+qv/qc/qr/qi/qs/qg, RAINNC, and RAINC (`wave_b1_nsed16_skill_24h.json`,
+`wave_b1_nsed16_conservation.json`). The local CPU-WRF corpus for the Wave-A run
+does not contain the +24h `wrfout_d02` truth file (it stops at +19h), so the 24h
+skill proof records no-regression by direct cap identity rather than an absolute
++24h CPU-RMSE value.
+
+**Measured gain:** fresh cache-hit timing, first sample discarded, gives cap64
+`74.25 ms/step` and default cap16 `64.76 ms/step`: **12.78% coupled gain** /
+`1.146x` (`wave_b1_nsed16_timing.json`).

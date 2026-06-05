@@ -1,0 +1,63 @@
+{
+  "NSED16_run": "proofs/v0100/_wave_b1_nsed16_run24h.json",
+  "NSED64_run": "proofs/v0100/_wave_b1_nsed64_run24h.json",
+  "fields": {
+    "qc": {
+      "bit_identical": true,
+      "max_abs": 0.0,
+      "rmse": 0.0,
+      "sum_delta": 0.0
+    },
+    "qg": {
+      "bit_identical": true,
+      "max_abs": 0.0,
+      "rmse": 0.0,
+      "sum_delta": 0.0
+    },
+    "qi": {
+      "bit_identical": true,
+      "max_abs": 0.0,
+      "rmse": 0.0,
+      "sum_delta": 0.0
+    },
+    "qr": {
+      "bit_identical": true,
+      "max_abs": 0.0,
+      "rmse": 0.0,
+      "sum_delta": 0.0
+    },
+    "qs": {
+      "bit_identical": true,
+      "max_abs": 0.0,
+      "rmse": 0.0,
+      "sum_delta": 0.0
+    },
+    "qv": {
+      "bit_identical": true,
+      "max_abs": 0.0,
+      "rmse": 0.0,
+      "sum_delta": 0.0
+    },
+    "rainc": {
+      "bit_identical": true,
+      "max_abs": 0.0,
+      "rmse": 0.0,
+      "sum_delta": 0.0
+    },
+    "rainnc": {
+      "bit_identical": true,
+      "max_abs": 0.0,
+      "rmse": 0.0,
+      "sum_delta": 0.0
+    }
+  },
+  "hours": 24.0,
+  "interpretation": "Water budget unchanged if vapor/condensate fields and precip accumulators are bit-identical between cap=16 and cap=64.",
+  "pass": true,
+  "run_id": "20260521_18z_l2_72h_20260522T133443Z",
+  "schema": "V0100WaveB1NSED16Conservation",
+  "schema_version": 1,
+  "status": "PASS",
+  "total_cumulus_precip_delta_mm_sum": 0.0,
+  "total_precip_delta_mm_sum": 0.0
+}

@@ -1,0 +1,34 @@
+{
+  "NSED16_run": "proofs/v0100/_wave_b1_nsed16_run24h.json",
+  "NSED64_run": "proofs/v0100/_wave_b1_nsed64_run24h.json",
+  "all_saved_arrays_bit_identical": true,
+  "cpu_reference_available": false,
+  "cpu_reference_note": "No CPU-WRF wrfout exists locally for the Wave-A run's +24h valid time; no-regression is proven by cap16-vs-cap64 bit identity of T2/U10/V10.",
+  "fields": {
+    "T2": {
+      "max_abs_delta": 0.0,
+      "nsed16_vs_64_bit_identical": true,
+      "pass": true
+    },
+    "U10": {
+      "max_abs_delta": 0.0,
+      "nsed16_vs_64_bit_identical": true,
+      "pass": true
+    },
+    "V10": {
+      "max_abs_delta": 0.0,
+      "nsed16_vs_64_bit_identical": true,
+      "pass": true
+    }
+  },
+  "hours": 24.0,
+  "predeclared_rmse_delta_tolerances": {
+    "T2": 0.01,
+    "U10": 0.01,
+    "V10": 0.01
+  },
+  "run_id": "20260521_18z_l2_72h_20260522T133443Z",
+  "schema": "V0100WaveB1NSED16Skill24H",
+  "schema_version": 1,
+  "status": "PASS"
+}
