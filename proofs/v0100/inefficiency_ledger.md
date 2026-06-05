@@ -2,8 +2,8 @@
 
 Exit-gate evidence: every v0.10.0 Phase-1/Wave-scope item with its final
 disposition (REMOVED / measured-gain / IRREDUCIBLE / NO-GO /
-`<1%-skipped` / daily-only), each backed by evidence. This ledger is complete
-through Wave-B3.
+`<1%-skipped` / daily-only / REVERTED), each backed by evidence. This ledger is
+complete through Wave-B3, including the final B3 daily-wrapper revert.
 
 ## Workload + baseline note (IMPORTANT)
 
@@ -190,27 +190,34 @@ specific checks:
   (`0.09%` block gain, not bit-identical). No separable `>1%` warmed MYNN lever
   was found.
 
-**Daily-wrapper changes shipped:** B3 removed only output-wrapper duplicate work,
-not forecast numerics.
-- M9/Q2 duplicate recompute removed: `M9Diagnostics` now carries `q2`, so
-  `_surface_diagnostics_for_output` no longer reruns `surface_layer_diagnostics`
-  solely for Q2.
-- Writer HFX/LH fallback solve skipped when M9 diagnostics supply HFX/LH/UST.
+**Daily-wrapper changes REVERTED:** B3 removed only output-wrapper duplicate work,
+not forecast numerics, but it did **not** ship in v0.10.0. Treat the B3 proof
+files below as historical rejected evidence.
+- Historical M9/Q2 duplicate recompute removal made `M9Diagnostics` carry `q2`
+  so `_surface_diagnostics_for_output` no longer reran
+  `surface_layer_diagnostics` solely for Q2.
+- Historical writer HFX/LH fallback skip used M9 diagnostics for HFX/LH/UST.
   Gate tolerance was declared before final comparison: `HFX/LH atol=2e-3 W m-2`;
   measured max abs diffs were `HFX=9.46e-4`, `LH=1.06e-3`, all other fields
   bit-identical.
-- Static wrfout grid fields cached once per run:
+- Historical static wrfout grid-field cache covered
   `XLAT/XLONG/XLAT_U/XLONG_U/XLAT_V/XLONG_V/HGT/ZNU/ZNW/MAPFAC_M/MAPFAC_U/
-  MAPFAC_V/F/E/SINALPHA/COSALPHA/P_TOP`. State-derived land fields are not cached.
+  MAPFAC_V/F/E/SINALPHA/COSALPHA/P_TOP`. State-derived land fields were not
+  cached.
 
 Gate evidence:
-- `proofs/v0100/wave_b3_daily_wrapper_gains.json`: PASS. Warmed L2 d02 daily-hour
+- `proofs/v0100/wave_b3_daily_wrapper_gains.json`: historical PASS. Warmed L2 d02 daily-hour
   denominator `24.334s -> 24.128s`, saving `0.206s/hour = 0.848%`.
   M9/Q2 reuse saved `0.106s/output = 0.437%` of daily wall; output pack/static
   cache path saved `0.099s/output = 0.407%` of daily wall.
-- `proofs/v0100/wave_b3_output_parity.json`: PASS on prepared payload and NetCDF
+- `proofs/v0100/wave_b3_output_parity.json`: historical PASS on prepared payload and NetCDF
   variables. All fields are bit-identical except HFX/LH within the declared
   tolerance above.
+
+Final disposition: **REVERTED / not shipped**. The gain was below the 1% exit
+gate and the branch changed Q2 output semantics. The release writer is therefore
+the v0.9.0-equivalent writer restored by the final B3 revert commits, and the
+B3 Q2/output proof should not be cited as shipped v0.10.0 evidence.
 
 Important no-go: the forecast carry holds `rthraten`, which is a radiative
 theta-tendency, **not** the SWDOWN/GLW diagnostic value. B3 therefore did not
@@ -237,7 +244,7 @@ low-risk wrapper-only bar.
 | Opus#13 / GPT#15 command-buffer flag | **NO-GO / negative lever** | Coupled path measured `-15..-21%`; left off. |
 | Opus#14 small-step prep/calc_p_rho launch floor | **No separate action; folded into acoustic work and then `<1%-skipped`** | Wave-A/B showed coupled path not acoustic-launch-bound after Thompson/MYNN sizing. |
 | GPT#3 finite-summary full-State D2H | **`<1%-skipped`** | `wave_a_host_breakdown.json`: `0.067s = 0.22%` of forecast hour. |
-| GPT#4 output packer | **Daily-only partial REMOVED; full device-side single-get packer `<1%-skipped`** | `wave_b3_daily_wrapper_gains.json`: output prepare `0.103s -> 0.004s`, but only `0.407%` daily-wall gain after low-risk removals. |
+| GPT#4 output packer | **REVERTED / `<1%-skipped`** | Historical `wave_b3_daily_wrapper_gains.json`: output prepare `0.103s -> 0.004s`, but only `0.407%` daily-wall gain and part of the reverted B3 writer-wrapper branch. |
 | GPT#5 surface+MYNN fusion / PBL side-channel | **IRREDUCIBLE / rejected** | `wave_b2_fusion_ab.json`: `0.09%` block gain and not bit-identical; `wave_b3_mynn_crosscheck.json`. |
 | GPT#6 resident daily carry-threaded driver | **NO-GO for v0.10.0** | High semantic/radiation/land-refresh risk; not a low-risk wrapper lever. Existing segmented carry path remains. |
 | GPT#7 redundant halos | **NOT-AN-ISSUE single-GPU** | `apply_halo` single-GPU identity; DCE'd. |
@@ -245,21 +252,23 @@ low-risk wrapper-only bar.
 | GPT#9 `_advance_chunk` donation | **NO-GO / already constrained by async snapshots and aliasing** | Public donating entry exists; B3 direct full-hour probe hit duplicate-buffer donation on aliased State, confirming this is not a casual wrapper change. |
 | GPT#10 / GPT#25 boundary apply/interpolation specialization | **NO-GO** | Boundary/nested `ph/w` sensitivities are high risk and outside low-risk v0.10 final lane. |
 | GPT#11 production guards/limiters | **NO-GO / keep safety net** | Guards are operational safety; no evidence of >1% safe removable cost. |
-| GPT#14 M9/RRTMG diagnostics | **Daily-only partial REMOVED; full RRTMG reuse NO-GO** | `wave_b3_daily_wrapper_gains.json`: Q2 duplicate recompute removed. `rthraten` is not SWDOWN/GLW, so radiation diagnostic reuse fails closed. |
+| GPT#14 M9/RRTMG diagnostics | **REVERTED; full RRTMG reuse NO-GO** | Historical `wave_b3_daily_wrapper_gains.json`: Q2 duplicate recompute removed, but the branch changed Q2 output semantics and was reverted. `rthraten` is not SWDOWN/GLW, so radiation diagnostic reuse fails closed. |
 | GPT#17 `time_utc` compile-cache normalization | **NO-GO / cold-only** | Super-plan notes prior dynamic-clock path failed bit-identical by `4.46 Pa p_pert`; requires RMSE-equivalence decision outside v0.10 final lane. |
 | GPT#22 RRTMG g-point/transient layout | **NO-GO** | High-risk radiation rewrite; B3 only removed safe output-wrapper duplicate work. |
-| GPT#23 duplicate host sync/blocking | **`<1%-skipped` after B3** | Output wrapper total after B3 below 1% daily-wall threshold for the remaining full packer/sync path. |
-| GPT#24 static-grid cache | **REMOVED / daily-only** | `build_wrfout_static_field_cache` caches 17 grid-static fields; parity PASS in `wave_b3_output_parity.json`. |
+| GPT#23 duplicate host sync/blocking | **`<1%-skipped`; B3 reverted** | Historical output-wrapper total after B3 was below the 1% daily-wall threshold, and the B3 branch was reverted. |
+| GPT#24 static-grid cache | **REVERTED / daily-only historical evidence** | Historical `build_wrfout_static_field_cache` cached 17 grid-static fields; parity proof belongs to the reverted B3 branch. |
 | GPT#27 acoustic boundary target specialization | **NO-GO** | Nested/specified boundary correctness risk; no low-risk final-lane change. |
 | GPT#28 restart/scoring/repeat probes | **Production-disabled / no kernel action** | Daily config defaults `score=False`, `repeat=False`, `restart_at_hour=None`; validation probes remain opt-in. |
 | GPT#29 zero/save-family buffer reuse | **`<1%-skipped`** | Small zero/save-family fields; no >1% proof, no safe final-lane action. |
-| GPT#30 profiling artifact risk | **CLOSED by v0.10 proof sequence** | Phase-0/Wave-A/B timings used cache-hit/min-of-warmed methodology; B3 proof states timing protocol. |
+| GPT#30 profiling artifact risk | **CLOSED by v0.10 proof sequence** | Phase-0/Wave-A/B timings used cache-hit/min-of-warmed methodology; B3 timing remains historical rejected evidence after the revert. |
 
 ## Final v0.10.0 exit disposition
 
 The inefficiency ledger is complete. The warmed-kernel shipped gain is Wave-B1
 Thompson NSED16 (`12.78%`, `1.146x`). Wave-B2/B3 found no additional faithful
-`>1%` warmed-kernel lever. B3 ships daily-wrapper-only cleanup with a measured
-`0.848%` warmed daily-hour gain and output parity PASS; the remaining full device
-packer and host-wrapper work is below the 1% exit threshold and is explicitly
-skipped. The MYNN/PBL frontier is confirmed irreducible for v0.10.0.
+`>1%` warmed-kernel lever. B3 daily-wrapper cleanup is **REVERTED**: the measured
+`0.848%` warmed daily-hour gain was below the 1% exit gate and changed Q2 output
+semantics, so it is historical rejected evidence, not shipped release evidence.
+The remaining full device packer and host-wrapper work is below the 1% exit
+threshold and is explicitly skipped. The MYNN/PBL frontier is confirmed
+irreducible for v0.10.0.

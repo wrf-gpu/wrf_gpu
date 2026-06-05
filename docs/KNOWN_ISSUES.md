@@ -1,15 +1,20 @@
-# Known Issues — v0.9.0
+# Known Issues — v0.10.0
 
-Honest, code-grounded list of the open issues shipped with v0.9.0. Each entry states
-the symptom, what was ruled out, the current best understanding, the workaround, and
+Honest, code-grounded list of the open issues shipped with v0.10.0. v0.10.0 is
+the optimized-kernel release: relative to v0.9.0 it keeps the validated forecast
+trajectory and wrfout numerics bit-identical, while changing Thompson
+sedimentation's faithful static substep cap from 64 to 16. Therefore the v0.9.0
+open issues below remain current unless explicitly noted. Each entry states the
+symptom, what was ruled out, the current best understanding, the workaround, and
 the tracked follow-up. No spin.
 
 ---
 
-## KI-1 (OPEN, targeted for v0.10.0 kernel/numerics sprint) — d03 1 km gated-fp32 qke goes non-finite after forecast hour 1
+## KI-1 (OPEN, carried past v0.10.0) — d03 1 km gated-fp32 qke goes non-finite after forecast hour 1
 
-**Severity:** the 1 km gated-fp32 preview is **NOT validated** for v0.9.0. v0.9.0
-ships fp64 operationally; gated-fp32 is deferred to v0.10.0.
+**Severity:** the 1 km gated-fp32 preview is **NOT validated** for v0.10.0.
+v0.10.0 ships fp64 operationally; gated-fp32 remains an experimental preview and
+did not clear the v0.10.0 optimized-kernel gates.
 
 **Symptom.** Running the 1 km Tenerife domain (`d03`, mass grid 75×93, `dt = 3 s`,
 10 acoustic substeps) in gated-fp32 goes **non-finite after forecast hour 1**.
@@ -46,19 +51,19 @@ show:
 **Full fp64 status.** The d03 1 km path is finite in full fp64 over the confirmed
 short window (`0.3 h / 360 steps`, `proofs/v090/d03_replay_finite_check.json`),
 with all tracked dynamics finite. Full-fp64 24 h d03 remains impractically slow
-on the RTX 5090 (`fp64 = fp32/64`) and was not completed for v0.9.0.
+on the RTX 5090 (`fp64 = fp32/64`) and was not completed for v0.9.0 or v0.10.0.
 
 **Workaround / what to use instead.** Use the validated 3 km d02 path. Treat d03
-gated-fp32 as an experimental preview only until v0.10.0 closes this numerics
-edge.
+gated-fp32 as an experimental preview only until a later numerics/stability
+release closes this edge.
 
 ---
 
-## KI-2 (OPEN, targeted for v0.10.0 kernel/numerics sprint) — long single-call daily-pipeline advances can hit the same qke edge on case-sensitive initial states
+## KI-2 (OPEN, carried past v0.10.0) — long single-call daily-pipeline advances can hit the same qke edge on case-sensitive initial states
 
 **Severity:** documented robustness edge, not a blanket pipeline failure.
 
-The supported v0.9.0 operational cadence advances in output-interval segments
+The supported v0.9.0/v0.10.0 operational cadence advances in output-interval segments
 and re-enters the public forecast boundary at each output interval, where the
 precision contract and MYNN qke floor are re-enforced in a WRF-faithful way. That
 cadence is finite and skillful for the 72 h d02 coupled proof
@@ -72,8 +77,8 @@ forecast hour 1 with `qke` as the canary: `2024` qke cells in the base
 FP32_GATED qke run, and the top-level recheck records the identical result after
 the qke promotion (`proofs/v090/d02_gated_fp32_recheck.json`). That supports the
 important conclusion: this edge is **not rescued by qke precision alone** and is
-best handled as qke step-loop numerics robustness work, not as a v0.9.0 precision
-default change.
+best handled as qke step-loop numerics robustness work, not as a v0.10.0
+precision default change.
 
 **Provenance caveat.** The manager closeout request describes this as verified in
 both full fp64 and gated-fp32. In this checkout, the clean committed evidence I
@@ -90,12 +95,13 @@ long single-call path on susceptible initial states.
 
 ---
 
-## KI-3 (scope, by design, targeted for v0.10.0 writer/gate hygiene) — operational wrfout writer emits a focused 64-variable subset
+## KI-3 (OPEN scope boundary, carried past v0.10.0) — operational wrfout writer emits a focused 64-variable subset
 
 **Severity:** scope boundary, not a forecast-correctness defect.
 
-The v0.9.0 operational writer emits a focused **64-variable** wrfout, while the
-bundled CPU-WRF reference in the naive gate contains **375 variables**
+The v0.10.0 operational writer emits the same focused **64-variable** wrfout as
+v0.9.0, while the bundled CPU-WRF reference in the naive gate contains
+**375 variables**
 (`proofs/v090/naive_agent_gate.json`). The missing dimensions in the generated
 file are only:
 
@@ -110,8 +116,11 @@ reference exactly: `Time=1`, `DateStrLen=19`, `west_east=159`,
 `bottom_top=44`, `bottom_top_stag=45`, and `soil_layers_stag=4`
 (`proofs/v090/naive_gate_run/dimension_compare.json`). The old strict
 375-variable criterion conflated diagnostic writer coverage with
-forecast-correctness. The correct v0.9.0 contract is the focused operational
+forecast-correctness. The correct v0.10.0 contract is the focused operational
 writer plus finite, physically plausible fields and matching core dimensions.
+The v0.10.0 Wave-B3 writer-wrapper experiment was reverted after a <1% daily-wall
+gain and a Q2 output semantic change, so it is historical rejected evidence, not
+the release writer contract.
 
 ---
 
@@ -126,7 +135,8 @@ T2 and V10 are within bar at every one of the 72 leads. **U10 is within bar at
 66/72 leads**: it transiently breaches the `7.5 m/s` bar over lead hours 21-26
 and then recovers. This is an episodic near-surface westerly under-prediction
 during high-wind periods, not a runaway/degrading instability. This is why the
-machine `status` in `proofs/v090/d02_coupled_skill_72h.json` is `FAIL`.
+machine `status` in `proofs/v090/d02_coupled_skill_72h.json` is `FAIL`. v0.10.0
+keeps this forecast trajectory bit-identical to v0.9.0.
 
 ---
 
@@ -137,11 +147,12 @@ These are **scope boundaries**, not defects (see the README "Honest boundaries")
 - Both the constant-K and the new 2-D Smagorinsky diffusion paths are **flat-slab**
   (map-factor / coordinate-slope deformation terms dropped) — within tolerance
   for the Canary cases, not fully terrain-faithful. Terrain-slope diffusion is
-  post-0.9.0.
+  post-v0.10.0.
 - Schemes outside the GPU-operational subset **fail closed** with a named reason
-  (they are recognized but not wired); v0.9.0 is not the full WRF v4 physics
+  (they are recognized but not wired); v0.10.0 is not the full WRF v4 physics
   catalog.
-- The **formal n=15 TOST equivalence has not been scored for v0.9.0**. The MAM
+- The **formal n=15 TOST equivalence has not been scored for v0.10.0**. The MAM
   corpus is prepared (forcing retained, CPU-WRF references assembled); the
-  powered TOST is the paper's analysis. The v0.9.0 operational equivalence
-  evidence is the d02 coupled-skill result. No "TOST PASS" is claimed.
+  powered TOST is the paper's analysis. The v0.10.0 operational equivalence
+  evidence is the d02 coupled-skill result plus bit-identity to v0.9.0. No
+  "TOST PASS" is claimed.
