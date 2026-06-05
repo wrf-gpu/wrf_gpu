@@ -1,0 +1,29 @@
+{
+  "baseline_source": "016d993",
+  "candidate_source": "HEAD",
+  "cases": {
+    "density_current": {
+      "bit_identical_within_rtol": true,
+      "exceedances": [],
+      "head_verdict": "PASS",
+      "n_scalars_compared": 30,
+      "n_snapshots": 1,
+      "v090_verdict": "PASS",
+      "worst_reldiff": 0.0
+    },
+    "warm_bubble": {
+      "bit_identical_within_rtol": true,
+      "exceedances": [],
+      "head_verdict": "PASS",
+      "n_scalars_compared": 54,
+      "n_snapshots": 3,
+      "v090_verdict": "PASS",
+      "worst_reldiff": 0.0
+    }
+  },
+  "overall_bit_identical_within_rtol": true,
+  "rtol": 1e-12,
+  "schema": "V0100ReleaseIdealizedVsV090",
+  "schema_version": 1,
+  "status": "PASS"
+}
