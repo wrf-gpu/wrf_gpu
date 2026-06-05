@@ -5,17 +5,17 @@ Faithful transcription of `phys/module_bl_mynnedmf.F90:DMP_mf` (WRF v4 pristine,
 operational d03 configuration:
 
   bl_mynn_edmf      = 1   (mass-flux ON)
-  bl_mynn_edmf_mom  = 0   (no momentum MF -> s_awu/s_awv unused)
+  bl_mynn_edmf_mom  = 1   (WRF default; momentum MF -> s_awu/s_awv)
   bl_mynn_edmf_tke  = 0   (no TKE MF)
   bl_mynn_mixscalars= 1   (scalar MF on; but qnc/qni/aerosols not carried here)
   bl_mynn_mixqt     = 0   (mix qv/qc separately -> the "MIX WATER VAPOR ONLY" path)
   env_subs          = .false. (-> sub_sqv = det_sqv = 0; only s_awqv matters)
   bl_mynn_edmf_dd   = 0   (no downdraft -> all sd_* = 0)
 
-Under this config the ONLY mass-flux moisture term entering `mynn_tendencies` is
-`s_awqv1` (the updraft total-water minus updraft-condensate flux). This module
-produces the interface-staggered solver arrays `s_aw`, `s_awqv`, `s_awqt`,
-`s_awqc`, `s_awthl` consumed by the augmented implicit qv/thl solve in
+Under this config the mass-flux terms entering `mynn_tendencies` are `s_awqv1`
+(the updraft total-water minus updraft-condensate flux), `s_awthl1`, and the
+momentum fluxes `s_awu1`/`s_awv1`. This module produces the interface-staggered
+solver arrays consumed by the augmented implicit solves in
 `mynn_pbl._apply_mean_tendencies`.
 
 Inputs/outputs use specific-content moisture (sqv/sqc/sqw), matching WRF: the
@@ -68,8 +68,10 @@ PWMAX = 0.4
 Z0_PLUME = 50.0
 CSIGMA = 1.34
 FLUXPORTION = 0.75
-# env_subs=.false. -> exc_fac land = 0.58 (line 6055)
+# env_subs=.false. -> exc_fac land = 0.58, water = 0.58*4.0
+# (module_bl_mynnedmf.F90:6052-6063).
 EXC_FAC_LAND = 0.58
+EXC_FAC_WATER = 0.58 * 4.0
 
 
 def _qsat_blend(t, p):
@@ -130,18 +132,20 @@ def _single_column_dmp_mf(sqw, sqv, sqc, u, v, w, th, thl, thv, tk, qke,
     """Port of DMP_mf for ONE column. All inputs are 1-D arrays length nz
     (interfaces zw length nz+1). Returns dict of solver arrays.
 
-    Mirrors module_bl_mynnedmf.F:5603-6790 for the operational config
-    (momentum_opt=0, tke_opt=0, env_subs=.false., no chem). Carries qt1=sqw,
+    Mirrors module_bl_mynnedmf.F:DMP_mf for the operational config
+    (momentum_opt=1, tke_opt=0, env_subs=.false., no chem). Carries qt1=sqw,
     qv1=sqv, qc1=sqc (specific contents).
 
     The full WRF `DMP_mf` argument list is preserved so the JAX call mirrors the
     Fortran interface; under this config several args are intentionally unused:
     ``tk``/``exner`` (only WRF diagnostics), ``qke``/``ust`` (TKE-MF path off),
-    ``flqv``/``xland`` (land branch hardcoded), ``dt`` (only env_subs subsidence,
-    which is off). They are accepted-and-ignored rather than dropped.
+    ``flqv`` (only separate vapor bookkeeping; ``flq`` drives the plume excess),
+    and ``dt`` (only env_subs subsidence, which is off). They are
+    accepted-and-ignored rather than dropped.
     """
-    del tk, qke, exner, ust, flqv, xland, dt  # WRF-interface args unused in this config
+    del tk, qke, exner, ust, flqv, dt  # WRF-interface args unused in this config
     nz = th.shape[-1]
+    is_water = (xland - 1.5) >= 0.0
     qv1 = sqv  # WRF names: qv1==sqv, qt1==sqw, qc1==sqc inside DMP_mf
     qt1 = sqw
     del sqc  # qc1 unused: surface updraft UPQC(1,ip)=0, plume qc from condensation_edmf
@@ -158,8 +162,9 @@ def _single_column_dmp_mf(sqw, sqv, sqc, u, v, w, th, thl, thv, tk, qke,
     fltv2 = jnp.where((psig_w == 0.0) & (fltv > 0.0), -fltv, fltv)
 
     # ---- superadiabatic check up through ~50 m (lines 5892-5918) ----
-    # WRF superadiabatic test (lines 5899-5918): over LAND the k=0 criterion
-    #   dthvdz = (thv0 - tvs)/(0.5*dz0) < hux  with hux=-0.003 (dT/dz<-0.3K/100m),
+    # WRF superadiabatic test (lines 5899-5918): the k=0 criterion is
+    #   dthvdz = (thv0 - tvs)/(0.5*dz0) < hux, with hux=-0.003 over land
+    #   and -0.001 over water,
     #   tvs = ts*(1+p608*qv0)  -- requires the skin temperature ts.
     # This is the governing check (the k=1..k50 ladder uses hux=-0.0005 and only
     # adds levels while contiguous; for 1km d03 the first mass level is ~25 m so
@@ -175,16 +180,20 @@ def _single_column_dmp_mf(sqw, sqv, sqc, u, v, w, th, thl, thv, tk, qke,
     # ch we don't carry in the standalone column).
     tvs = ts * (1.0 + P608 * qv1[0])
     dthvdz0 = (thv[0] - tvs) / (0.5 * dz[0])
-    superad = jnp.where(ts > 0.0, dthvdz0 < -0.003, fltv2 > 0.0)
+    hux0 = jnp.where(is_water, -0.001, -0.003)
+    superad = jnp.where(ts > 0.0, dthvdz0 < hux0, fltv2 > 0.0)
 
     # ---- plume widths (lines 5933-5975) ----
     maxwidth_dx = jnp.minimum(dx * DCUT, LMAX)
     maxwidth_pbl = jnp.minimum(1.1 * pblh, LMAX)
-    cloud_base = 9000.0  # no SGS cloud carried -> default
-    maxwidth_cld = jnp.minimum(LMAX, jnp.maximum(0.5 * cloud_base, 400.0))
+    cloud_base = 9000.0  # no SGS cloud deck height carried -> default
+    cloud_factor = jnp.where(is_water, 0.9, 0.5)
+    maxwidth_cld = jnp.minimum(LMAX, jnp.maximum(cloud_factor * cloud_base, 400.0))
     wspd_pbl = jnp.sqrt(jnp.maximum(u[0] ** 2 + v[0] ** 2, 0.01))
+    maxwidth_flx_land = 1000.0 * (0.6 * jnp.tanh((fltv - 0.040) / 0.04) + 0.5)
+    maxwidth_flx_water = 1000.0 * (0.6 * jnp.tanh((fltv - 0.007) / 0.02) + 0.5)
     maxwidth_flx = jnp.maximum(
-        jnp.minimum(1000.0 * (0.6 * jnp.tanh((fltv - 0.040) / 0.04) + 0.5), 1000.0),
+        jnp.minimum(jnp.where(is_water, maxwidth_flx_water, maxwidth_flx_land), 1000.0),
         0.0)
     maxwidth = jnp.minimum(jnp.minimum(maxwidth_dx, maxwidth_pbl),
                            jnp.minimum(maxwidth_cld, maxwidth_flx))
@@ -200,7 +209,9 @@ def _single_column_dmp_mf(sqw, sqv, sqc, u, v, w, th, thl, thv, tk, qke,
     C = ATOT / jnp.maximum(cn, 1e-30)
 
     # ---- area fraction acfac (lines 5992-6008, land) ----
-    acfac = 0.5 * jnp.tanh((fltv2 - 0.02) / 0.05) + 0.5
+    acfac_land = 0.5 * jnp.tanh((fltv2 - 0.020) / 0.05) + 0.5
+    acfac_water = 0.5 * jnp.tanh((fltv2 - 0.012) / 0.03) + 0.5
+    acfac = jnp.where(is_water, acfac_water, acfac_land)
     ac_wsp = jnp.where(wspd_pbl <= 10.0, 1.0,
                        1.0 - jnp.minimum(jnp.maximum(wspd_pbl - 13.0, 0.0) / 10.0, 1.0))
     acfac = jnp.minimum(acfac, ac_wsp)
@@ -213,7 +224,7 @@ def _single_column_dmp_mf(sqw, sqv, sqc, u, v, w, th, thl, thv, tk, qke,
     wstar = jnp.maximum(1e-2, (GTR * fltv2 * pblh) ** ONETHIRD)
     qstar = jnp.maximum(flq, 1e-5) / wstar
     thstar = flt / wstar
-    exc_fac = EXC_FAC_LAND * ac_wsp
+    exc_fac = jnp.where(is_water, EXC_FAC_WATER, EXC_FAC_LAND) * ac_wsp
     sigmaw = CSIGMA * wstar * (Z0_PLUME / pblh) ** ONETHIRD * (1.0 - 0.8 * Z0_PLUME / pblh)
     sigmaqt = CSIGMA * qstar * (Z0_PLUME / pblh) ** ONETHIRD
     sigmath = CSIGMA * thstar * (Z0_PLUME / pblh) ** ONETHIRD
@@ -312,19 +323,21 @@ def _single_column_dmp_mf(sqw, sqv, sqc, u, v, w, th, thl, thv, tk, qke,
                          jnp.where(still, un, u_p),
                          jnp.where(still, vn, v_p),
                          area_n, still)
-            return new_carry, (emit_a, emit_w, emit_qt, emit_qc, emit_thl)
+            emit_u = jnp.where(still, un, 0.0)
+            emit_v = jnp.where(still, vn, 0.0)
+            return new_carry, (emit_a, emit_w, emit_qt, emit_qc, emit_thl, emit_u, emit_v)
 
         ks = jnp.arange(1, nz - 1)
-        _, (ea, ew, eqt, eqc, ethl) = lax.scan(step, carry0, ks)
+        _, (ea, ew, eqt, eqc, ethl, eu, ev) = lax.scan(step, carry0, ks)
         # ea[i] corresponds to WRF level K = i+1 (Fortran kts+1..kte-1), i.e. the
         # scanned levels 1..nz-2 (0-based). Build full UP arrays of length nz with:
         #   UP[0] = surface updraft (upw0 etc., WRF UPW(1,ip))
         #   UP[1..nz-2] = scan results
         #   UP[nz-1] = 0 (not integrated)
-        return ea, ew, eqt, eqc, ethl
+        return ea, ew, eqt, eqc, ethl, eu, ev
 
     # vmap over plumes (all per-plume surface arrays are length NUP)
-    EA_s, EW_s, EQT_s, EQC_s, ETHL_s = jax.vmap(plume_scan)(
+    EA_s, EW_s, EQT_s, EQC_s, ETHL_s, EU_s, EV_s = jax.vmap(plume_scan)(
         l_per_plume, upa0, upw0, upthl0, upqt0, upqc0, upu0, upv0)
     # *_s shape (NUP, nz-2) for levels K=1..nz-2 (0-based).
 
@@ -340,6 +353,8 @@ def _single_column_dmp_mf(sqw, sqv, sqc, u, v, w, th, thl, thv, tk, qke,
     UPQT = full_up(upqt0, EQT_s)
     UPQC = full_up(upqc0, EQC_s)
     UPTHL = full_up(upthl0, ETHL_s)
+    UPU = full_up(upu0, EU_s)
+    UPV = full_up(upv0, EV_s)
 
     # ---- assemble s_aw* (lines 6363-6382): s_aw1(k+1) += rhoz(k)*UPA(K)*UPW(K)*Psig_w
     # for K=kts..kte-1 (0-based 0..nz-2). rhoz_dmp(K) is the interface ABOVE level K.
@@ -351,6 +366,8 @@ def _single_column_dmp_mf(sqw, sqv, sqc, u, v, w, th, thl, thv, tk, qke,
     s_awqt_inner = jnp.sum(wgt * UPQT, axis=0) * psig_w
     s_awqc_inner = jnp.sum(wgt * UPQC, axis=0) * psig_w
     s_awthl_inner = jnp.sum(wgt * UPTHL, axis=0) * psig_w
+    s_awu_inner = jnp.sum(wgt * UPU, axis=0) * psig_w
+    s_awv_inner = jnp.sum(wgt * UPV, axis=0) * psig_w
     # WRF writes these to s_aw1(K+1): shift up by one -> length nz+1, [0]=0
     def to_iface(inner):
         return jnp.concatenate([jnp.zeros((1,)), inner])  # length nz+1, drops last
@@ -358,6 +375,8 @@ def _single_column_dmp_mf(sqw, sqv, sqc, u, v, w, th, thl, thv, tk, qke,
     s_awqt = to_iface(s_awqt_inner)[: nz + 1]
     s_awqc = to_iface(s_awqc_inner)[: nz + 1]
     s_awthl = to_iface(s_awthl_inner)[: nz + 1]
+    s_awu = to_iface(s_awu_inner)[: nz + 1]
+    s_awv = to_iface(s_awv_inner)[: nz + 1]
     s_awqv = s_awqt - s_awqc  # line 6380
 
     # ---- flux limiter (lines 6423-6461) ----
@@ -375,6 +394,8 @@ def _single_column_dmp_mf(sqw, sqv, sqc, u, v, w, th, thl, thv, tk, qke,
     s_awqc = s_awqc * adjustment
     s_awqv = s_awqv * adjustment
     s_awthl = s_awthl * adjustment
+    s_awu = s_awu * adjustment
+    s_awv = s_awv * adjustment
 
     # zero everything if not active
     zero1 = jnp.zeros((nz + 1,))
@@ -383,6 +404,8 @@ def _single_column_dmp_mf(sqw, sqv, sqc, u, v, w, th, thl, thv, tk, qke,
     s_awqt = jnp.where(active, s_awqt, zero1)
     s_awqc = jnp.where(active, s_awqc, zero1)
     s_awthl = jnp.where(active, s_awthl, zero1)
+    s_awu = jnp.where(active, s_awu, zero1)
+    s_awv = jnp.where(active, s_awv, zero1)
 
     # edmf_a / maxmf diagnostics (mean over plumes; lines 6470-6491)
     edmf_a_inner = jnp.sum(UPA, axis=0) * psig_w        # length nz
@@ -396,6 +419,8 @@ def _single_column_dmp_mf(sqw, sqv, sqc, u, v, w, th, thl, thv, tk, qke,
         "s_awqt": s_awqt,
         "s_awqc": s_awqc,
         "s_awthl": s_awthl,
+        "s_awu": s_awu,
+        "s_awv": s_awv,
         "edmf_a": edmf_a_inner,
         "maxmf": maxmf,
         "active": active.astype(jnp.float64),
