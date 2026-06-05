@@ -112,7 +112,7 @@ SFCLAY_SCHEMES: Mapping[int, SchemeOption] = {
 
 CU_SCHEMES: Mapping[int, SchemeOption] = {
     0: SchemeOption("cu_physics", 0, "disabled", "no_cumulus", "accepted", "cumulus"),
-    1: SchemeOption("cu_physics", 1, "Kain-Fritsch", "kfetascheme", "accepted", "cumulus"),
+    1: SchemeOption("cu_physics", 1, "Kain-Fritsch", "kfetascheme", "implemented", "cumulus"),
     2: SchemeOption("cu_physics", 2, "Betts-Miller-Janjic", "bmjscheme", "accepted", "cumulus"),
     # GF(3) status bumped to "implemented" (v0.9.0 GPU-op): the scale-aware
     # closure-ensemble kernel was rewritten as a jit/vmap-batched JAX path

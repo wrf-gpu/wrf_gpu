@@ -18,7 +18,9 @@ from gpuwrf.contracts.physics_registry import (
     ACCEPTED_MP_PHYSICS,
     ACCEPTED_SF_SFCLAY_PHYSICS,
     ACCEPTED_SF_SURFACE_PHYSICS,
+    CU_SCHEMES,
 )
+from gpuwrf.coupling.scan_adapters import CU_SCAN_ADAPTERS
 from gpuwrf.coupling.physics_dispatch import (
     DEFAULT_BL_PBL_PHYSICS,
     DEFAULT_CU_PHYSICS,
@@ -86,6 +88,17 @@ def test_cumulus_gpu_readiness_flags() -> None:
     suite16 = resolve_physics_suite({"cu_physics": 16})
     assert suite16.gpu_gate_ready is False
     assert suite16.cumulus.gpu_runnable is False
+
+
+def test_kf_is_implemented_and_scan_wired() -> None:
+    assert CU_SCHEMES[1].status == "implemented"
+    assert CU_SCAN_ADAPTERS[1].__name__ == "kf_adapter"
+
+    suite = resolve_physics_suite({"cu_physics": 1})
+    assert suite.cumulus.owner_module == "gpuwrf.physics.cumulus_kf"
+    assert suite.cumulus.entrypoint == "step_kf_column"
+    assert suite.cumulus.gpu_runnable is True
+    assert suite.gpu_gate_ready is True
 
 
 def test_use_noahmp_toggle_maps_land_surface() -> None:
