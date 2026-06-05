@@ -371,7 +371,8 @@ def _scale_aware_psig_bl(dx, pblh):
     (Psig_bl~1 when dx >> PBLH) and reduces it as the grid begins to resolve the
     boundary-layer eddies. ``dx`` is the grid spacing (m); ``pblh`` per column."""
 
-    dxdh = jnp.maximum(2.5 * dx, 10.0) / jnp.minimum(pblh, 3000.0)
+    pblh_pos = jnp.maximum(pblh, MIN_PBLH)
+    dxdh = jnp.maximum(2.5 * dx, 10.0) / jnp.minimum(pblh_pos, 3000.0)
     dxdh2 = dxdh * dxdh
     dxdh23 = dxdh ** 0.667
     return (dxdh2 + 0.106 * dxdh23) / (dxdh2 + 0.066 * dxdh23 + 0.071)

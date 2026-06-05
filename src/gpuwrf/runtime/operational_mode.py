@@ -184,6 +184,55 @@ class _StaticHolder:
         return isinstance(other, _StaticHolder) and self.value is other.value
 
 
+_PHYSICS_NON_DRY_INCREMENT_FIELDS: tuple[str, ...] = (
+    "qv",
+    "qc",
+    "qr",
+    "qi",
+    "qs",
+    "qg",
+    "Ni",
+    "Nr",
+    "Ns",
+    "Ng",
+    "Nc",
+    "Nn",
+    "qke",
+)
+
+
+_PHYSICS_NON_DRY_REPLACE_FIELDS: tuple[str, ...] = (
+    "ustar",
+    "theta_flux",
+    "qv_flux",
+    "tau_u",
+    "tau_v",
+    "rhosfc",
+    "fltv",
+    "t_skin",
+    "soil_moisture",
+    "xland",
+    "lakemask",
+    "mavail",
+    "roughness_m",
+    "lu_index",
+    "rain_acc",
+    "rainc_acc",
+    "snow_acc",
+    "graupel_acc",
+    "ice_acc",
+)
+
+
+class _PhysicsStepForcing(NamedTuple):
+    """Physics output split into WRF RK dry tendencies and non-dry state writes."""
+
+    state: State
+    carry: OperationalCarry
+    dry_tendencies: DryPhysicsTendencies
+    enabled: bool
+
+
 @jax.tree_util.register_pytree_node_class
 @dataclass(frozen=True)
 class OperationalNamelist:
@@ -779,13 +828,15 @@ def _positive_definite_theta_increment_limiter(
 def _limit_guarded_mass_state(candidate: State, origin: State) -> State:
     """Keep finite positive dry mass without changing theta after physics/boundary."""
 
-    mu_base = jnp.asarray(origin.mu_total) - jnp.asarray(origin.mu_perturbation)
-    mu_perturbation = _finite_or_origin(candidate.mu_perturbation, origin.mu_perturbation)
-    candidate_mu_total = mu_base + mu_perturbation
-    valid_mu = jnp.isfinite(candidate_mu_total) & (candidate_mu_total >= 1.0)
-    mu_perturbation = jnp.where(valid_mu, mu_perturbation, origin.mu_perturbation)
-    mu_total = jnp.maximum(mu_base + mu_perturbation, jnp.asarray(1.0, dtype=mu_perturbation.dtype))
-    mu_perturbation = mu_total - mu_base
+    candidate_mu_total = jnp.asarray(candidate.mu_total)
+    candidate_mu_perturbation = jnp.asarray(candidate.mu_perturbation)
+    valid_mu = (
+        jnp.isfinite(candidate_mu_total)
+        & jnp.isfinite(candidate_mu_perturbation)
+        & (candidate_mu_total >= 1.0)
+    )
+    mu_total = jnp.where(valid_mu, candidate_mu_total, origin.mu_total)
+    mu_perturbation = jnp.where(valid_mu, candidate_mu_perturbation, origin.mu_perturbation)
     return candidate.replace(mu=mu_total, mu_total=mu_total, mu_perturbation=mu_perturbation)
 
 
@@ -1439,7 +1490,12 @@ def _acoustic_scan(
 
 
 def _augment_large_step_tendencies(
-    haloed: State, tendencies: Tendencies, namelist: OperationalNamelist, *, rk_step: int = 3
+    haloed: State,
+    tendencies: Tendencies,
+    namelist: OperationalNamelist,
+    *,
+    rk_step: int = 3,
+    physics_tendencies: DryPhysicsTendencies | None = None,
 ) -> Tendencies:
     """Add WRF explicit diffusion + flux-form scalar advection to the large step.
 
@@ -1680,12 +1736,11 @@ def _augment_large_step_tendencies(
     tendencies = tendencies.replace(u=u_t, v=v_t, w=w_t, theta=th_t)
 
     # WRF rk_addtend_dry per-stage merge (module_em.F:1711-1786): field-specific
-    # map/mass coupling of RK1-fixed physics tendencies.  Physics-off + periodic
-    # dry gate => all *_tendf == 0, so this is numerically identity but keeps the
-    # cadence WRF-faithful for the coupled physics path.
+    # map/mass coupling of RK1-fixed non-timesplit physics tendencies.  Physics-off
+    # and dry idealized gates pass an empty bundle, so this remains identity there.
     return rk_addtend_dry(
         tendencies,
-        DryPhysicsTendencies(),
+        DryPhysicsTendencies() if physics_tendencies is None else physics_tendencies,
         rk_step=int(rk_step),
         metrics=metrics,
         mut=_base_mu(haloed),
@@ -1698,6 +1753,7 @@ def _rk_scan_step(
     *,
     debug: bool = False,
     lead_seconds=None,
+    physics_tendencies: DryPhysicsTendencies | None = None,
 ) -> OperationalCarry:
     origin = apply_halo(carry.state, halo_spec(namelist.grid))
     rk1_reference = origin
@@ -1717,7 +1773,11 @@ def _rk_scan_step(
         # prognostic ``u_2``; ``rk1_reference`` is the RK reference ``u_1``.
         tendencies = compute_advection_tendencies(haloed, namelist.tendencies, namelist.grid)
         tendencies = _augment_large_step_tendencies(
-            haloed, tendencies, namelist, rk_step=int(stage.rk_step)
+            haloed,
+            tendencies,
+            namelist,
+            rk_step=int(stage.rk_step),
+            physics_tendencies=physics_tendencies,
         )
         candidate = apply_halo(stage_carry.state, halo_spec(namelist.grid))
         prep = small_step_prep_wrf(
@@ -2149,6 +2209,187 @@ def _refresh_noahmp_rad(state, namelist, lead_seconds, run_radiation, held_rad, 
     return jax.lax.cond(run_radiation, _recompute, lambda _u: held_rad, None)
 
 
+def _dry_physics_tendencies_from_state_delta(
+    before: State,
+    after: State,
+    namelist: OperationalNamelist,
+    dt_s: float,
+) -> DryPhysicsTendencies:
+    """Build WRF ``*_tendf`` leaves from one non-timesplit physics pass.
+
+    The physics adapters return a post-physics State because that is their frozen
+    public contract. Operational RK needs the dry deltas as RK1-fixed WRF
+    ``*_tendf`` terms, so convert only dry prognostic deltas here and let
+    ``rk_addtend_dry`` apply the field-specific map/mass factors per RK stage.
+    """
+
+    inv_dt = 1.0 / float(dt_s)
+    msfuy = namelist.metrics.msfuy[None, :, :]
+    msfvx = namelist.metrics.msfvx[None, :, :]
+    msfty = namelist.metrics.msfty[None, :, :]
+
+    du_dt = (jnp.asarray(after.u, dtype=jnp.float64) - jnp.asarray(before.u, dtype=jnp.float64)) * inv_dt
+    dv_dt = (jnp.asarray(after.v, dtype=jnp.float64) - jnp.asarray(before.v, dtype=jnp.float64)) * inv_dt
+    dw_dt = (jnp.asarray(after.w, dtype=jnp.float64) - jnp.asarray(before.w, dtype=jnp.float64)) * inv_dt
+    dtheta_dt = (
+        jnp.asarray(after.theta, dtype=jnp.float64) - jnp.asarray(before.theta, dtype=jnp.float64)
+    ) * inv_dt
+
+    return DryPhysicsTendencies(
+        ru_tendf=du_dt * msfuy,
+        rv_tendf=dv_dt * msfvx,
+        rw_tendf=dw_dt * msfty,
+        h_diabatic=dtheta_dt,
+    )
+
+
+def _apply_physics_non_dry_updates(
+    dynamics_state: State,
+    physics_reference: State,
+    physics_state: State,
+) -> State:
+    """Apply physics prognostics that are not consumed by ``rk_addtend_dry``."""
+
+    updates = {
+        name: getattr(dynamics_state, name) + (getattr(physics_state, name) - getattr(physics_reference, name))
+        for name in _PHYSICS_NON_DRY_INCREMENT_FIELDS
+    }
+    updates.update({name: getattr(physics_state, name) for name in _PHYSICS_NON_DRY_REPLACE_FIELDS})
+    return dynamics_state.replace(**updates)
+
+
+def _physics_step_forcing(
+    carry: OperationalCarry,
+    namelist: OperationalNamelist,
+    lead_seconds,
+    *,
+    run_radiation: bool,
+) -> _PhysicsStepForcing:
+    """Run non-timesplit physics at step entry and expose RK-fixed tendencies."""
+
+    if not bool(namelist.run_physics):
+        return _PhysicsStepForcing(carry.state, carry, DryPhysicsTendencies(), False)
+
+    before = carry.state
+    next_state = before
+    next_carry = carry
+
+    mp_opt = int(namelist.mp_physics)
+    sf_opt = int(namelist.sf_sfclay_physics)
+    cu_opt = int(namelist.cu_physics)
+
+    # --- microphysics slot ---
+    if mp_opt == DEFAULT_MP_PHYSICS:
+        next_state = thompson_adapter(next_state, float(namelist.dt_s))
+    elif mp_opt in MP_SCAN_ADAPTERS:
+        next_state = MP_SCAN_ADAPTERS[mp_opt](next_state, float(namelist.dt_s), namelist.grid)
+    # mp_opt == 0 -> passive (no microphysics).
+
+    # --- surface-layer / land slot ---
+    if bool(namelist.use_noahmp):
+        if sf_opt in SFCLAY_SCAN_ADAPTERS:
+            next_state = SFCLAY_SCAN_ADAPTERS[sf_opt](next_state, float(namelist.dt_s), namelist.grid)
+        next_carry_rad = _refresh_noahmp_rad(
+            next_state,
+            namelist,
+            lead_seconds,
+            run_radiation,
+            carry.noahmp_rad,
+            land_state=carry.noahmp_land,
+        )
+        clock = _NoahMPClock(
+            julian=float(namelist.noahmp_julian),
+            yearlen=float(namelist.noahmp_yearlen),
+        )
+        radiation = _NoahMPRadiation(*next_carry_rad)
+        ep, rp = _noahmp_params(namelist)
+        next_state, next_land = noahmp_surface_step(
+            next_state, carry.noahmp_land, namelist.noahmp_static,
+            float(namelist.dt_s), radiation=radiation, clock=clock,
+            energy_params=ep, rad_params=rp,
+        )
+        next_carry = next_carry.replace(noahmp_land=next_land, noahmp_rad=next_carry_rad)
+    else:
+        if sf_opt in SFCLAY_SCAN_ADAPTERS:
+            next_state = SFCLAY_SCAN_ADAPTERS[sf_opt](next_state, float(namelist.dt_s), namelist.grid)
+        else:
+            next_state = surface_adapter(next_state, float(namelist.dt_s))
+        if _explicit_noahclassic(namelist):
+            next_noahclassic_rad = _refresh_noahmp_rad(
+                next_state, namelist, lead_seconds, run_radiation, carry.noahclassic_rad
+            )
+            next_state, next_noahclassic_land = noahclassic_surface_step(
+                next_state,
+                carry.noahclassic_land,
+                namelist.noahclassic_static,
+                float(namelist.dt_s),
+                radiation=NoahClassicRadiation(*next_noahclassic_rad),
+            )
+            next_carry = next_carry.replace(
+                noahclassic_land=next_noahclassic_land,
+                noahclassic_rad=next_noahclassic_rad,
+            )
+
+    # --- PBL slot ---
+    bl_opt = int(namelist.bl_pbl_physics)
+    if bl_opt in PBL_SCAN_ADAPTERS:
+        next_state = PBL_SCAN_ADAPTERS[bl_opt](next_state, float(namelist.dt_s), namelist.grid)
+    elif bl_opt == DEFAULT_BL_PBL_PHYSICS:
+        next_state = mynn_adapter(next_state, float(namelist.dt_s), namelist.grid)
+    # bl_opt == 0 -> no PBL mixing.
+
+    # --- cumulus slot ---
+    if cu_opt in CU_STATELESS_SCAN_ADAPTERS:
+        next_state = CU_STATELESS_SCAN_ADAPTERS[cu_opt](
+            next_state, float(namelist.dt_s), namelist.grid
+        )
+    elif cu_opt == 1:
+        w0avg, nca = (
+            carry.cumulus_carry if carry.cumulus_carry is not None
+            else initial_kf_carry(next_state)
+        )
+        next_state, w0avg_next, nca_next = kf_adapter(
+            next_state, float(namelist.dt_s), w0avg, nca, grid=namelist.grid
+        )
+        next_carry = next_carry.replace(cumulus_carry=(w0avg_next, nca_next))
+    elif cu_opt == 2:
+        cldefi = (
+            carry.cumulus_carry if carry.cumulus_carry is not None
+            else initial_bmj_carry(next_state)
+        )
+        next_state, cldefi_next = bmj_adapter(
+            next_state, float(namelist.dt_s), cldefi, grid=namelist.grid
+        )
+        next_carry = next_carry.replace(cumulus_carry=cldefi_next)
+
+    def _refresh_rthraten(_unused) -> jnp.ndarray:
+        return rrtmg_theta_tendency(
+            next_state,
+            namelist.grid,
+            time_utc=namelist.time_utc,
+            lead_seconds=lead_seconds,
+            radiation_static=namelist.radiation_static,
+            topo_shading=int(namelist.topo_shading),
+            slope_rad=int(namelist.slope_rad),
+            shadow_length_m=float(namelist.topo_shadow_length_m),
+            land_state=carry.noahmp_land if bool(namelist.use_noahmp) else None,
+        )
+
+    if isinstance(run_radiation, bool):
+        held_rthraten = _refresh_rthraten(None) if run_radiation else carry.rthraten
+    else:
+        held_rthraten = jax.lax.cond(
+            run_radiation, _refresh_rthraten, lambda _u: carry.rthraten, None
+        )
+    next_state = next_state.replace(
+        theta=next_state.theta + float(namelist.dt_s) * held_rthraten
+    )
+    next_carry = next_carry.replace(rthraten=held_rthraten)
+
+    dry = _dry_physics_tendencies_from_state_delta(before, next_state, namelist, float(namelist.dt_s))
+    return _PhysicsStepForcing(next_state, next_carry, dry, True)
+
+
 def _physics_boundary_step_with_limiter_diagnostics(
     carry: OperationalCarry,
     namelist: OperationalNamelist,
@@ -2163,8 +2404,21 @@ def _physics_boundary_step_with_limiter_diagnostics(
     # step-start lead (matching WRF, which fixes ru_tend/rv_tend at the step start);
     # also reused below by rrtmg + the end-of-step lateral boundary nudge.
     lead_seconds = step_index.astype(jnp.float64) * float(namelist.dt_s)
-    carry = _rk_scan_step(carry, namelist, debug=debug, lead_seconds=lead_seconds)
+    physics_forcing = _physics_step_forcing(
+        carry, namelist, lead_seconds, run_radiation=run_radiation
+    )
+    carry = physics_forcing.carry
+    carry = _rk_scan_step(
+        carry,
+        namelist,
+        debug=debug,
+        lead_seconds=lead_seconds,
+        physics_tendencies=physics_forcing.dry_tendencies,
+    )
     next_state = carry.state
+    if bool(physics_forcing.enabled):
+        next_state = _apply_physics_non_dry_updates(next_state, physical_origin, physics_forcing.state)
+        carry = carry.replace(state=next_state)
     limiter_diagnostics = _empty_theta_limiter_diagnostics(next_state.theta)
     if not bool(namelist.disable_guards):
         next_state, limiter_diagnostics = _limit_guarded_dynamics_state_with_diagnostics(next_state, physical_origin)
@@ -2176,167 +2430,6 @@ def _physics_boundary_step_with_limiter_diagnostics(
             qs=_valid_mixing_ratio(next_state.qs, physical_origin.qs),
             qg=_valid_mixing_ratio(next_state.qg, physical_origin.qg),
         )
-    if bool(namelist.run_physics):
-        # Physics call order: microphysics -> surface layer -> PBL -> cumulus ->
-        # rrtmg(cadence). Microphysics is gated ONLY by run_physics, NOT by
-        # disable_guards. (Coupling fix 2026-05-30: previously Thompson was wired
-        # behind `if not disable_guards`, which silently dropped the validated B1
-        # microphysics whenever guards were turned off -- making the operational
-        # safety net load-bearing for moisture physics, in violation of the
-        # guards-must-not-be-load-bearing rule. surface/pbl/rrtmg always ran; only
-        # Thompson was mistakenly tied to the guard flag.)
-        #
-        # v0.6.0 scan-wire (2026-06-03): the microphysics / surface-layer / cumulus
-        # slots are dispatcher-routed. The physics options are STATIC aux (compile
-        # constants), so the per-slot scheme is selected at trace time (a Python
-        # branch, no lax.cond / no per-step dispatch overhead). Selecting the
-        # v0.2.0 defaults (mp=8 / sf_sfclay=5 / cu=0) is byte-for-byte the validated
-        # path. _resolve_operational_suite (called at every public entry) already
-        # fail-closed on any non-scan-wired option, so the maps below only ever see
-        # wired options.
-        mp_opt = int(namelist.mp_physics)
-        sf_opt = int(namelist.sf_sfclay_physics)
-        cu_opt = int(namelist.cu_physics)
-
-        # --- microphysics slot ---
-        if mp_opt == DEFAULT_MP_PHYSICS:
-            next_state = thompson_adapter(next_state, float(namelist.dt_s))
-        elif mp_opt in MP_SCAN_ADAPTERS:
-            next_state = MP_SCAN_ADAPTERS[mp_opt](next_state, float(namelist.dt_s), namelist.grid)
-        # mp_opt == 0 -> passive (no microphysics).
-
-        # --- surface-layer slot ---
-        if bool(namelist.use_noahmp):
-            # v0.2.0 S6b: prognostic Noah-MP over LAND (ocean keeps bulk path).
-            # Noah-MP supplies the land surface fluxes; the surface-LAYER scheme
-            # (MYNN-sfclay default, or a new sfclay adapter) still runs for the
-            # ocean/atmosphere surface-layer fluxes the PBL consumes.
-            # A new scan-wired sfclay (revised-MM5/Pleim-Xiu) supplies the surface-
-            # layer fluxes the PBL consumes; the default MYNN-sfclay (5) keeps the
-            # v0.2.0 validated path (which, under Noah-MP, did NOT call surface_adapter
-            # -- Noah-MP owns the land fluxes). sf_opt=0 (disabled) also skips.
-            if sf_opt in SFCLAY_SCAN_ADAPTERS:
-                next_state = SFCLAY_SCAN_ADAPTERS[sf_opt](next_state, float(namelist.dt_s), namelist.grid)
-            # Held surface radiation (SOLDN/LWDN/COSZ) is refreshed at the radiation
-            # cadence and reused between calls (WRF-faithful), resident in the carry.
-            next_carry_rad = _refresh_noahmp_rad(
-                next_state,
-                namelist,
-                lead_seconds,
-                run_radiation,
-                carry.noahmp_rad,
-                land_state=carry.noahmp_land,
-            )
-            clock = _NoahMPClock(
-                julian=float(namelist.noahmp_julian),
-                yearlen=float(namelist.noahmp_yearlen),
-            )
-            radiation = _NoahMPRadiation(*next_carry_rad)
-            ep, rp = _noahmp_params(namelist)
-            next_state, next_land = noahmp_surface_step(
-                next_state, carry.noahmp_land, namelist.noahmp_static,
-                float(namelist.dt_s), radiation=radiation, clock=clock,
-                energy_params=ep, rad_params=rp,
-            )
-            carry = carry.replace(noahmp_land=next_land, noahmp_rad=next_carry_rad)
-        else:
-            if sf_opt in SFCLAY_SCAN_ADAPTERS:
-                next_state = SFCLAY_SCAN_ADAPTERS[sf_opt](next_state, float(namelist.dt_s), namelist.grid)
-            else:
-                next_state = surface_adapter(next_state, float(namelist.dt_s))
-            if _explicit_noahclassic(namelist):
-                next_noahclassic_rad = _refresh_noahmp_rad(
-                    next_state, namelist, lead_seconds, run_radiation, carry.noahclassic_rad
-                )
-                next_state, next_noahclassic_land = noahclassic_surface_step(
-                    next_state,
-                    carry.noahclassic_land,
-                    namelist.noahclassic_static,
-                    float(namelist.dt_s),
-                    radiation=NoahClassicRadiation(*next_noahclassic_rad),
-                )
-                carry = carry.replace(
-                    noahclassic_land=next_noahclassic_land,
-                    noahclassic_rad=next_noahclassic_rad,
-                )
-
-        # --- PBL slot (MYNN default; YSU(1)/ACM2(7) are the v0.6.0 jax.lax.scan-
-        # traceable rewrites, dispatcher-routed by the STATIC bl_pbl option) ---
-        bl_opt = int(namelist.bl_pbl_physics)
-        if bl_opt in PBL_SCAN_ADAPTERS:
-            next_state = PBL_SCAN_ADAPTERS[bl_opt](next_state, float(namelist.dt_s), namelist.grid)
-        elif bl_opt == DEFAULT_BL_PBL_PHYSICS:
-            next_state = mynn_adapter(next_state, float(namelist.dt_s), namelist.grid)
-        # bl_opt == 0 -> no PBL mixing.
-
-        # --- cumulus slot ---
-        # KF (1) threads a (w0avg, nca) carry; BMJ (2) threads a CLDEFI carry;
-        # modified-Tiedtke (6) is the v0.6.0 GPU-batched stateless State->State
-        # adapter. GF (3) stays CPU-reference (not vmap-rewritten) -> rejected by
-        # _resolve_operational_suite; New-Tiedtke (16) fail-closed (not gated).
-        if cu_opt in CU_STATELESS_SCAN_ADAPTERS:
-            next_state = CU_STATELESS_SCAN_ADAPTERS[cu_opt](
-                next_state, float(namelist.dt_s), namelist.grid
-            )
-        elif cu_opt == 1:
-            w0avg, nca = (
-                carry.cumulus_carry if carry.cumulus_carry is not None
-                else initial_kf_carry(next_state)
-            )
-            next_state, w0avg_next, nca_next = kf_adapter(
-                next_state, float(namelist.dt_s), w0avg, nca, grid=namelist.grid
-            )
-            carry = carry.replace(cumulus_carry=(w0avg_next, nca_next))
-        elif cu_opt == 2:
-            cldefi = (
-                carry.cumulus_carry if carry.cumulus_carry is not None
-                else initial_bmj_carry(next_state)
-            )
-            next_state, cldefi_next = bmj_adapter(
-                next_state, float(namelist.dt_s), cldefi, grid=namelist.grid
-            )
-            carry = carry.replace(cumulus_carry=cldefi_next)
-        # B3 radiation cadence -- WRF-faithful HELD-RATE (Sprint coupler-fp64 FIX #2,
-        # GPT P0-2). WRF recomputes the radiative theta tendency RTHRATEN (K/s) only
-        # once per radt interval (module_radiation_driver.F run_param gate) and then
-        # ADDS dt*RTHRATEN into theta at EVERY dynamics step over that interval
-        # (phy_ra_ten, module_physics_addtendc.F). The previous code lumped the whole
-        # interval (dt*cadence*rate) at one step, so the intervening dynamics/micro/PBL
-        # saw a wrong temperature trajectory. Here the held rate lives in the carry
-        # (resident on device, no host transfer): refreshed at the cadence step,
-        # applied every step.
-        def _refresh_rthraten(_unused) -> jnp.ndarray:
-            return rrtmg_theta_tendency(
-                next_state,
-                namelist.grid,
-                time_utc=namelist.time_utc,
-                lead_seconds=lead_seconds,
-                radiation_static=namelist.radiation_static,
-                topo_shading=int(namelist.topo_shading),
-                slope_rad=int(namelist.slope_rad),
-                shadow_length_m=float(namelist.topo_shadow_length_m),
-                land_state=carry.noahmp_land if bool(namelist.use_noahmp) else None,
-            )
-
-        if isinstance(run_radiation, bool):
-            # STATIC gate (production segmented path): the rrtmg recompute is either
-            # traced or absent -- the radiation branch is fully resolved at trace
-            # time, so each radiation interval is its own compiled scan.
-            held_rthraten = _refresh_rthraten(None) if run_radiation else carry.rthraten
-        else:
-            # TRACED gate (single-scan path): run_radiation is a traced bool
-            # (step_index %% cadence == 0). jax.lax.cond keeps the WHOLE forecast in
-            # ONE scan (one compile regardless of length) while still recomputing
-            # RRTMG only at the cadence; the held rate is reused on the other steps.
-            held_rthraten = jax.lax.cond(
-                run_radiation, _refresh_rthraten, lambda _u: carry.rthraten, None
-            )
-        # Apply the HELD radiative theta tendency every dynamics step (theta += dt*rate),
-        # matching WRF's phy_ra_ten. fp64-safe: held_rthraten and theta share dtype.
-        next_state = next_state.replace(
-            theta=next_state.theta + float(namelist.dt_s) * held_rthraten
-        )
-        carry = carry.replace(rthraten=held_rthraten)
     if bool(namelist.run_boundary):
         bounded = apply_lateral_boundaries(
             next_state, lead_seconds, float(namelist.dt_s), namelist.boundary_config, namelist.metrics
