@@ -50,13 +50,14 @@ def _build_state(c):
     sfc = SurfaceFluxes(
         ustar=s1(su["ust"]), theta_flux=s1(su["flt"]), qv_flux=s1(su["flqv"]),
         tau_u=s1(0.0), tau_v=s1(0.0),
-        rhosfc=s1(su["psfc"] / (287.0 * su["tsk"])), fltv=s1(su["fltv"]))
+        rhosfc=s1(su["psfc"] / (287.0 * su["tsk"])), fltv=s1(su["fltv"]),
+        xland=s1(su.get("xland", 1.0)))
     return st, sfc, su
 
 
-def test_dmp_mf_matches_wrf_oracle(column):
-    """JAX DMP_mf s_aw/s_awqv match the WRF Fortran oracle within tol."""
+def _dmp_result(column, *, xland=None):
     from gpuwrf.physics.mynn_edmf import dmp_mf_columns, XLVCP
+
     c = column
     pr = c["profiles"]
     su = c["surface"]
@@ -70,13 +71,19 @@ def test_dmp_mf_matches_wrf_oracle(column):
     thv = th * (1.0 + 0.608 * sqv)
     zw = jnp.concatenate([jnp.zeros((1, 1)), jnp.cumsum(A("dz"), axis=-1)], axis=-1)
     s1 = lambda x: jnp.array([x], dtype=jnp.float64)
-    res = dmp_mf_columns(
+    return dmp_mf_columns(
         sqw, sqv, sqc, A("u"), A("v"), A("w"), th, thl, thv, A("tk"), A("qke"),
         A("p"), A("exner"), A("rho"), A("dz"), zw,
         ust=s1(su["ust"]), flt=s1(su["flt"]), fltv=s1(su["fltv"]),
         flq=s1(su["flq"]), flqv=s1(su["flqv"]),
-        pblh=s1(su["pblh"]), ts=s1(su["tsk"]),  # ts>0 -> exact WRF criterion
-        dx=su["dx"], xland=s1(su["xland"]), dt=c["config"]["delt"])
+        pblh=s1(su["pblh"]), ts=s1(su["tsk"]),
+        dx=su["dx"], xland=s1(su["xland"] if xland is None else xland),
+        dt=c["config"]["delt"])
+
+
+def test_dmp_mf_matches_wrf_oracle(column):
+    """JAX DMP_mf s_aw/s_awqv match the WRF Fortran oracle within tol."""
+    res = _dmp_result(column)
 
     with open(CMP) as f:
         ref = json.load(f)
@@ -92,6 +99,26 @@ def test_dmp_mf_matches_wrf_oracle(column):
 
     assert relerr(jax_saw, wrf_saw) <= TOL_REL
     assert relerr(jax_sawqv, wrf_sawqv) <= TOL_REL
+
+
+def test_dmp_mf_uses_wrf_land_water_branch(column):
+    """The WRF water branch changes plume excess/width relative to land."""
+    land = _dmp_result(column, xland=1.0)
+    water = _dmp_result(column, xland=2.0)
+    assert float(land["active"][0]) == 1.0
+    assert float(water["active"][0]) == 1.0
+    assert not np.allclose(np.asarray(land["s_awqv"][0]), np.asarray(water["s_awqv"][0]))
+
+
+def test_dmp_mf_returns_momentum_fluxes_for_wrf_default(column):
+    """WRF default bl_mynn_edmf_mom=1 needs active s_awu/s_awv arrays."""
+    res = _dmp_result(column)
+
+    assert "s_awu" in res
+    assert "s_awv" in res
+    assert float(res["active"][0]) == 1.0
+    assert np.max(np.abs(np.asarray(res["s_awu"][0]))) > 0.0
+    assert np.max(np.abs(np.asarray(res["s_awv"][0]))) > 0.0
 
 
 def test_edmf_changes_qv_solve_and_no_regression_when_off(column):
@@ -115,3 +142,26 @@ def test_edmf_changes_qv_solve_and_no_regression_when_off(column):
     # Regression guard: edmf default is OFF, so the default entry equals edmf=False.
     out_default = step_mynn_pbl_column(st, dt, surface=sfc)
     assert np.allclose(np.asarray(out_default.qv[0]), qv_off)
+
+
+def test_column_cloud_condensate_enters_mynn_thermodynamics(column):
+    """Cloud condensate must feed thl/thlv closure instead of being ignored."""
+    from gpuwrf.physics.mynn_pbl import step_mynn_pbl_column
+
+    st, sfc, _ = _build_state(column)
+    dt = column["config"]["delt"]
+    qc = np.zeros_like(np.asarray(st.qv))
+    qc[:, 2:7] = 2.0e-4
+    cloudy = st.replace(qc=jnp.asarray(qc, dtype=jnp.float64))
+
+    out_clear = step_mynn_pbl_column(st, dt, surface=sfc, edmf=True, dx=1000.0)
+    out_cloudy = step_mynn_pbl_column(cloudy, dt, surface=sfc, edmf=True, dx=1000.0)
+    assert np.all(np.isfinite(np.asarray(out_cloudy.theta)))
+    assert not np.allclose(np.asarray(out_clear.theta), np.asarray(out_cloudy.theta))
+
+
+def test_operational_mynn_edmf_is_enabled():
+    """The operational MYNN coupler follows WRF default bl_mynn_edmf=1."""
+    from gpuwrf.coupling.physics_couplers import _MYNN_EDMF
+
+    assert _MYNN_EDMF is True
