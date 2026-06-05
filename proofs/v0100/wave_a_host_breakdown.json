@@ -1,0 +1,20 @@
+{
+  "scope": "daily-wrapper host breakdown for one production forecast hour",
+  "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l2/20260521_18z_l2_72h_20260522T133443Z",
+  "device": "cuda:0",
+  "config": {
+    "force_fp64": true,
+    "acoustic_unroll": 1,
+    "radiation_cadence_steps": 180
+  },
+  "forecast_1h_s": 27.035006874997634,
+  "finite_summary_full_state_d2h_s": 0.06677952798781916,
+  "finite_summary_all_finite": false,
+  "finite_summary_field_count": 56,
+  "m9_diagnostics_s": 2.9868552070111036,
+  "output_pack_and_netcdf_s": 0.2697265630122274,
+  "total_hour_wall_s": 30.358368173008785,
+  "non_forecast_host_s": 3.32336129801115,
+  "non_forecast_host_pct_of_hour": 10.947101237694014,
+  "finite_summary_pct_of_hour": 0.21997074285169235
+}
