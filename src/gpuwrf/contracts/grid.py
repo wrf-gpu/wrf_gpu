@@ -281,11 +281,24 @@ class DycoreMetrics:
 
     @classmethod
     def tree_unflatten(cls, aux, children):
-        """Rebuilds DycoreMetrics after JAX pytree transforms."""
+        """Rebuilds DycoreMetrics after JAX pytree transforms.
 
-        values = dict(zip(cls._array_names(), children, strict=True))
-        values["provenance"] = aux
-        return cls(**values)
+        EXACT structural inverse of ``tree_flatten``: assign the flattened metric
+        leaves straight back WITHOUT re-running ``__post_init__``'s fp64
+        canonicalisation. The leaves are already fp64 (they were canonicalised on
+        first construction), so this preserves values bit-for-bit, and -- crucially
+        -- it tolerates the non-array ``Leaf`` placeholders JAX passes when it
+        FORMATS a treedef-mismatch message (``equality_errors_pytreedef`` builds
+        ``tree_unflatten(td, [Leaf]*n)``). Routing those through
+        ``jnp.asarray(<Leaf>, dtype=float64)`` raised
+        ``TypeError: float() ... not 'Leaf'`` and aborted scan tracing before any
+        compute ran. See the matching note on ``State.tree_unflatten``."""
+
+        obj = object.__new__(cls)
+        for name, value in zip(cls._array_names(), children, strict=True):
+            object.__setattr__(obj, name, value)
+        object.__setattr__(obj, "provenance", aux)
+        return obj
 
     @staticmethod
     def _array_equal(left: jax.Array, right: jax.Array) -> bool:

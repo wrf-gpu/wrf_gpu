@@ -1,0 +1,910 @@
+Finished tracing log for jit in 0.000771046 sec
+Compiling jit(log) with global shapes and types (ShapedArray(float64[1001]),). Argument mapping: (UnspecifiedValue,).
+Finished jaxpr to MLIR module conversion jit(log) in 0.007164717 sec
+Finished XLA compilation of jit(log) in 0.027349710 sec
+Finished tracing multiply for jit in 0.000327587 sec
+Compiling jit(multiply) with global shapes and types (ShapedArray(float64[], weak_type=True), ShapedArray(float64[1001])). Argument mapping: (UnspecifiedValue, UnspecifiedValue).
+Finished jaxpr to MLIR module conversion jit(multiply) in 0.002449274 sec
+Finished XLA compilation of jit(multiply) in 0.017666817 sec
+Finished tracing add for jit in 0.000220299 sec
+Compiling jit(add) with global shapes and types (ShapedArray(float64[1001]), ShapedArray(float64[1001])). Argument mapping: (UnspecifiedValue, UnspecifiedValue).
+Finished jaxpr to MLIR module conversion jit(add) in 0.002056837 sec
+Finished XLA compilation of jit(add) in 0.016678333 sec
+Finished tracing arctan for jit in 0.000193357 sec
+Compiling jit(arctan) with global shapes and types (ShapedArray(float64[1001]),). Argument mapping: (UnspecifiedValue,).
+Finished jaxpr to MLIR module conversion jit(arctan) in 0.001990557 sec
+Finished XLA compilation of jit(arctan) in 0.024232864 sec
+Finished tracing subtract for jit in 0.000238657 sec
+Compiling jit(subtract) with global shapes and types (ShapedArray(float64[1001]), ShapedArray(float64[1001])). Argument mapping: (UnspecifiedValue, UnspecifiedValue).
+Finished jaxpr to MLIR module conversion jit(subtract) in 0.002097845 sec
+Finished XLA compilation of jit(subtract) in 0.017493963 sec
+Finished tracing arctan for jit in 0.000201941 sec
+Compiling jit(arctan) with global shapes and types (ShapedArray(float64[], weak_type=True),). Argument mapping: (UnspecifiedValue,).
+Finished jaxpr to MLIR module conversion jit(arctan) in 0.002484798 sec
+Finished XLA compilation of jit(arctan) in 0.022751331 sec
+Finished tracing multiply for jit in 0.002315998 sec
+Compiling jit(multiply) with global shapes and types (ShapedArray(float64[], weak_type=True), ShapedArray(float64[], weak_type=True)). Argument mapping: (UnspecifiedValue, UnspecifiedValue).
+Finished jaxpr to MLIR module conversion jit(multiply) in 0.002050161 sec
+Finished XLA compilation of jit(multiply) in 0.015509129 sec
+Finished tracing add for jit in 0.000241995 sec
+Compiling jit(add) with global shapes and types (ShapedArray(float64[1001]), ShapedArray(float64[], weak_type=True)). Argument mapping: (UnspecifiedValue, UnspecifiedValue).
+Finished jaxpr to MLIR module conversion jit(add) in 0.002166271 sec
+Finished XLA compilation of jit(add) in 0.016602993 sec
+Finished tracing sqrt for jit in 0.000199318 sec
+Compiling jit(sqrt) with global shapes and types (ShapedArray(float64[], weak_type=True),). Argument mapping: (UnspecifiedValue,).
+Finished jaxpr to MLIR module conversion jit(sqrt) in 0.001989365 sec
+Finished XLA compilation of jit(sqrt) in 0.018066883 sec
+Finished tracing true_divide for jit in 0.000239849 sec
+Compiling jit(true_divide) with global shapes and types (ShapedArray(float64[1001]), ShapedArray(float64[], weak_type=True)). Argument mapping: (UnspecifiedValue, UnspecifiedValue).
+Finished jaxpr to MLIR module conversion jit(true_divide) in 0.002197742 sec
+Finished XLA compilation of jit(true_divide) in 0.020420551 sec
+Finished tracing true_divide for jit in 0.000222921 sec
+Compiling jit(true_divide) with global shapes and types (ShapedArray(float64[], weak_type=True), ShapedArray(float64[], weak_type=True)). Argument mapping: (UnspecifiedValue, UnspecifiedValue).
+Finished jaxpr to MLIR module conversion jit(true_divide) in 0.002009869 sec
+Finished XLA compilation of jit(true_divide) in 0.018866539 sec
+Finished tracing multiply for jit in 0.000225544 sec
+Compiling jit(multiply) with global shapes and types (ShapedArray(float64[1001]), ShapedArray(float64[1001])). Argument mapping: (UnspecifiedValue, UnspecifiedValue).
+Finished jaxpr to MLIR module conversion jit(multiply) in 0.002087355 sec
+Finished XLA compilation of jit(multiply) in 0.016441107 sec
+Finished tracing true_divide for jit in 0.000212669 sec
+Compiling jit(true_divide) with global shapes and types (ShapedArray(float64[1001]), ShapedArray(float64[1001])). Argument mapping: (UnspecifiedValue, UnspecifiedValue).
+Finished jaxpr to MLIR module conversion jit(true_divide) in 0.002035618 sec
+Finished XLA compilation of jit(true_divide) in 0.020291567 sec
+Finished tracing convert_element_type for jit in 0.000190735 sec
+Compiling jit(convert_element_type) with global shapes and types (ShapedArray(int32[14]),). Argument mapping: (UnspecifiedValue,).
+Finished jaxpr to MLIR module conversion jit(convert_element_type) in 0.001780748 sec
+Finished XLA compilation of jit(convert_element_type) in 0.003614664 sec
+Finished tracing convert_element_type for jit in 0.000148535 sec
+Compiling jit(convert_element_type) with global shapes and types (ShapedArray(int32[14,12]),). Argument mapping: (UnspecifiedValue,).
+Finished jaxpr to MLIR module conversion jit(convert_element_type) in 0.001822710 sec
+Finished XLA compilation of jit(convert_element_type) in 0.003610849 sec
+Finished tracing convert_element_type for jit in 0.000131130 sec
+Compiling jit(convert_element_type) with global shapes and types (ShapedArray(float64[31]),). Argument mapping: (UnspecifiedValue,).
+Finished jaxpr to MLIR module conversion jit(convert_element_type) in 0.001740217 sec
+Finished XLA compilation of jit(convert_element_type) in 0.003305912 sec
+Finished tracing convert_element_type for jit in 0.000125647 sec
+Compiling jit(convert_element_type) with global shapes and types (ShapedArray(float64[62]),). Argument mapping: (UnspecifiedValue,).
+Finished jaxpr to MLIR module conversion jit(convert_element_type) in 0.001819134 sec
+Finished XLA compilation of jit(convert_element_type) in 0.003342390 sec
+Finished tracing convert_element_type for jit in 0.000168085 sec
+Compiling jit(convert_element_type) with global shapes and types (ShapedArray(float64[32]),). Argument mapping: (UnspecifiedValue,).
+Finished jaxpr to MLIR module conversion jit(convert_element_type) in 0.001971245 sec
+Finished XLA compilation of jit(convert_element_type) in 0.003760338 sec
+Finished tracing convert_element_type for jit in 0.000192881 sec
+Compiling jit(convert_element_type) with global shapes and types (ShapedArray(float64[45]),). Argument mapping: (UnspecifiedValue,).
+Finished jaxpr to MLIR module conversion jit(convert_element_type) in 0.002015114 sec
+Finished XLA compilation of jit(convert_element_type) in 0.004042864 sec
+Finished tracing dynamic_slice for jit in 0.000210285 sec
+Compiling jit(dynamic_slice) with global shapes and types (ShapedArray(float64[45]), ShapedArray(int64[], weak_type=True)). Argument mapping: (UnspecifiedValue, UnspecifiedValue).
+Finished jaxpr to MLIR module conversion jit(dynamic_slice) in 0.002448559 sec
+Finished XLA compilation of jit(dynamic_slice) in 0.018213511 sec
+Finished tracing add for jit in 0.000216722 sec
+Compiling jit(add) with global shapes and types (ShapedArray(float64[44]), ShapedArray(float64[44])). Argument mapping: (UnspecifiedValue, UnspecifiedValue).
+Finished jaxpr to MLIR module conversion jit(add) in 0.002359390 sec
+Finished XLA compilation of jit(add) in 0.016313314 sec
+Finished tracing multiply for jit in 0.000266075 sec
+Compiling jit(multiply) with global shapes and types (ShapedArray(float64[], weak_type=True), ShapedArray(float64[44])). Argument mapping: (UnspecifiedValue, UnspecifiedValue).
+Finished jaxpr to MLIR module conversion jit(multiply) in 0.002409458 sec
+Finished XLA compilation of jit(multiply) in 0.016759157 sec
+Finished tracing subtract for jit in 0.000415325 sec
+Compiling jit(subtract) with global shapes and types (ShapedArray(float64[44]), ShapedArray(float64[44])). Argument mapping: (UnspecifiedValue, UnspecifiedValue).
+Finished jaxpr to MLIR module conversion jit(subtract) in 0.002166271 sec
+Finished XLA compilation of jit(subtract) in 0.016401052 sec
+Finished tracing true_divide for jit in 0.000263691 sec
+Compiling jit(true_divide) with global shapes and types (ShapedArray(float64[], weak_type=True), ShapedArray(float64[44])). Argument mapping: (UnspecifiedValue, UnspecifiedValue).
+Finished jaxpr to MLIR module conversion jit(true_divide) in 0.002290010 sec
+Finished XLA compilation of jit(true_divide) in 0.021889448 sec
+Finished tracing convert_element_type for jit in 0.000185251 sec
+Compiling jit(convert_element_type) with global shapes and types (ShapedArray(float64[]),). Argument mapping: (UnspecifiedValue,).
+Finished jaxpr to MLIR module conversion jit(convert_element_type) in 0.001974821 sec
+Finished XLA compilation of jit(convert_element_type) in 0.003751040 sec
+Finished tracing broadcast_in_dim for jit in 0.000167608 sec
+Compiling jit(broadcast_in_dim) with global shapes and types (ShapedArray(float64[]),). Argument mapping: (UnspecifiedValue,).
+Finished jaxpr to MLIR module conversion jit(broadcast_in_dim) in 0.002021551 sec
+Finished XLA compilation of jit(broadcast_in_dim) in 0.016613960 sec
+Finished tracing dynamic_slice for jit in 0.000199318 sec
+Compiling jit(dynamic_slice) with global shapes and types (ShapedArray(float64[44]), ShapedArray(int64[], weak_type=True)). Argument mapping: (UnspecifiedValue, UnspecifiedValue).
+Finished jaxpr to MLIR module conversion jit(dynamic_slice) in 0.002298117 sec
+Finished XLA compilation of jit(dynamic_slice) in 0.018331766 sec
+Finished tracing add for jit in 0.000310421 sec
+Compiling jit(add) with global shapes and types (ShapedArray(float64[43]), ShapedArray(float64[43])). Argument mapping: (UnspecifiedValue, UnspecifiedValue).
+Finished jaxpr to MLIR module conversion jit(add) in 0.002156973 sec
+Finished XLA compilation of jit(add) in 0.017817974 sec
+Finished tracing multiply for jit in 0.000256777 sec
+Compiling jit(multiply) with global shapes and types (ShapedArray(float64[], weak_type=True), ShapedArray(float64[43])). Argument mapping: (UnspecifiedValue, UnspecifiedValue).
+Finished jaxpr to MLIR module conversion jit(multiply) in 0.002504587 sec
+Finished XLA compilation of jit(multiply) in 0.018585205 sec
+Finished tracing convert_element_type for jit in 0.000177860 sec
+Compiling jit(convert_element_type) with global shapes and types (ShapedArray(int32[]),). Argument mapping: (UnspecifiedValue,).
+Finished jaxpr to MLIR module conversion jit(convert_element_type) in 0.003608227 sec
+Finished XLA compilation of jit(convert_element_type) in 0.003894091 sec
+Finished tracing broadcast_in_dim for jit in 0.000193834 sec
+Compiling jit(broadcast_in_dim) with global shapes and types (ShapedArray(int32[]),). Argument mapping: (UnspecifiedValue,).
+Finished jaxpr to MLIR module conversion jit(broadcast_in_dim) in 0.002053738 sec
+Finished XLA compilation of jit(broadcast_in_dim) in 0.003943443 sec
+Finished tracing _squeeze for jit in 0.000117302 sec
+Compiling jit(_squeeze) with global shapes and types (ShapedArray(float64[43]),). Argument mapping: (UnspecifiedValue,).
+Finished jaxpr to MLIR module conversion jit(_squeeze) in 0.002028227 sec
+Finished XLA compilation of jit(_squeeze) in 0.003615141 sec
+Finished tracing scatter for jit in 0.000185728 sec
+Compiling jit(scatter) with global shapes and types (ShapedArray(float64[44]), ShapedArray(int32[1]), ShapedArray(float64[43])). Argument mapping: (UnspecifiedValue, UnspecifiedValue, UnspecifiedValue).
+Finished jaxpr to MLIR module conversion jit(scatter) in 0.002422094 sec
+Finished XLA compilation of jit(scatter) in 0.022022247 sec
+Finished tracing dynamic_slice for jit in 0.000191212 sec
+Compiling jit(dynamic_slice) with global shapes and types (ShapedArray(float64[44]), ShapedArray(int64[], weak_type=True)). Argument mapping: (UnspecifiedValue, UnspecifiedValue).
+Finished jaxpr to MLIR module conversion jit(dynamic_slice) in 0.002389431 sec
+Finished XLA compilation of jit(dynamic_slice) in 0.016339064 sec
+Finished tracing squeeze for jit in 0.000166893 sec
+Compiling jit(squeeze) with global shapes and types (ShapedArray(float64[1]),). Argument mapping: (UnspecifiedValue,).
+Finished jaxpr to MLIR module conversion jit(squeeze) in 0.002050638 sec
+Finished XLA compilation of jit(squeeze) in 0.004017591 sec
+Finished tracing _squeeze for jit in 0.000095606 sec
+Compiling jit(_squeeze) with global shapes and types (ShapedArray(float64[]),). Argument mapping: (UnspecifiedValue,).
+Finished jaxpr to MLIR module conversion jit(_squeeze) in 0.001819849 sec
+Finished XLA compilation of jit(_squeeze) in 0.003620625 sec
+Finished tracing scatter for jit in 0.000179768 sec
+Compiling jit(scatter) with global shapes and types (ShapedArray(float64[44]), ShapedArray(int32[1]), ShapedArray(float64[])). Argument mapping: (UnspecifiedValue, UnspecifiedValue, UnspecifiedValue).
+Finished jaxpr to MLIR module conversion jit(scatter) in 0.002178431 sec
+Finished XLA compilation of jit(scatter) in 0.021958351 sec
+Finished tracing true_divide for jit in 0.000200272 sec
+Compiling jit(true_divide) with global shapes and types (ShapedArray(float64[43]), ShapedArray(float64[43])). Argument mapping: (UnspecifiedValue, UnspecifiedValue).
+Finished jaxpr to MLIR module conversion jit(true_divide) in 0.002065659 sec
+Finished XLA compilation of jit(true_divide) in 0.021085978 sec
+Finished tracing multiply for jit in 0.000220060 sec
+Compiling jit(multiply) with global shapes and types (ShapedArray(float64[], weak_type=True), ShapedArray(float64[])). Argument mapping: (UnspecifiedValue, UnspecifiedValue).
+Finished jaxpr to MLIR module conversion jit(multiply) in 0.002194405 sec
+Finished XLA compilation of jit(multiply) in 0.016102552 sec
+Finished tracing add for jit in 0.000221491 sec
+Compiling jit(add) with global shapes and types (ShapedArray(float64[]), ShapedArray(float64[])). Argument mapping: (UnspecifiedValue, UnspecifiedValue).
+Finished jaxpr to MLIR module conversion jit(add) in 0.002125978 sec
+Finished XLA compilation of jit(add) in 0.016620398 sec
+Finished tracing true_divide for jit in 0.000242233 sec
+Compiling jit(true_divide) with global shapes and types (ShapedArray(float64[]), ShapedArray(float64[])). Argument mapping: (UnspecifiedValue, UnspecifiedValue).
+Finished jaxpr to MLIR module conversion jit(true_divide) in 0.002155781 sec
+Finished XLA compilation of jit(true_divide) in 0.019979477 sec
+Finished tracing multiply for jit in 0.000172377 sec
+Compiling jit(multiply) with global shapes and types (ShapedArray(float64[]), ShapedArray(float64[])). Argument mapping: (UnspecifiedValue, UnspecifiedValue).
+Finished jaxpr to MLIR module conversion jit(multiply) in 0.002130270 sec
+Finished XLA compilation of jit(multiply) in 0.016417742 sec
+Finished tracing broadcast_in_dim for jit in 0.000180244 sec
+Compiling jit(broadcast_in_dim) with global shapes and types (ShapedArray(float64[]),). Argument mapping: (UnspecifiedValue,).
+Finished jaxpr to MLIR module conversion jit(broadcast_in_dim) in 0.002216816 sec
+Finished XLA compilation of jit(broadcast_in_dim) in 0.016942501 sec
+Finished tracing broadcast_in_dim for jit in 0.000197649 sec
+Compiling jit(broadcast_in_dim) with global shapes and types (ShapedArray(float64[]),). Argument mapping: (UnspecifiedValue,).
+Finished jaxpr to MLIR module conversion jit(broadcast_in_dim) in 0.002354622 sec
+Finished XLA compilation of jit(broadcast_in_dim) in 0.017258644 sec
+Finished tracing broadcast_in_dim for jit in 0.000193357 sec
+Compiling jit(broadcast_in_dim) with global shapes and types (ShapedArray(float64[]),). Argument mapping: (UnspecifiedValue,).
+Finished jaxpr to MLIR module conversion jit(broadcast_in_dim) in 0.002180815 sec
+Finished XLA compilation of jit(broadcast_in_dim) in 0.016917229 sec
+Finished tracing broadcast_in_dim for jit in 0.000177622 sec
+Compiling jit(broadcast_in_dim) with global shapes and types (ShapedArray(float64[]),). Argument mapping: (UnspecifiedValue,).
+Finished jaxpr to MLIR module conversion jit(broadcast_in_dim) in 0.002075195 sec
+Finished XLA compilation of jit(broadcast_in_dim) in 0.016982794 sec
+Finished tracing subtract for jit in 0.000218391 sec
+Compiling jit(subtract) with global shapes and types (ShapedArray(float64[]), ShapedArray(float64[])). Argument mapping: (UnspecifiedValue, UnspecifiedValue).
+Finished jaxpr to MLIR module conversion jit(subtract) in 0.002125263 sec
+Finished XLA compilation of jit(subtract) in 0.014918089 sec
+Finished tracing convert_element_type for jit in 0.000157356 sec
+Compiling jit(convert_element_type) with global shapes and types (ShapedArray(float32[]),). Argument mapping: (UnspecifiedValue,).
+Finished jaxpr to MLIR module conversion jit(convert_element_type) in 0.001814127 sec
+Finished XLA compilation of jit(convert_element_type) in 0.003592491 sec
+Finished tracing broadcast_in_dim for jit in 0.000168562 sec
+Compiling jit(broadcast_in_dim) with global shapes and types (ShapedArray(float32[]),). Argument mapping: (UnspecifiedValue,).
+Finished jaxpr to MLIR module conversion jit(broadcast_in_dim) in 0.001993895 sec
+Finished XLA compilation of jit(broadcast_in_dim) in 0.017252445 sec
+Finished tracing broadcast_in_dim for jit in 0.000186205 sec
+Compiling jit(broadcast_in_dim) with global shapes and types (ShapedArray(float32[]),). Argument mapping: (UnspecifiedValue,).
+Finished jaxpr to MLIR module conversion jit(broadcast_in_dim) in 0.002073765 sec
+Finished XLA compilation of jit(broadcast_in_dim) in 0.019798756 sec
+Finished tracing broadcast_in_dim for jit in 0.000197887 sec
+Compiling jit(broadcast_in_dim) with global shapes and types (ShapedArray(float64[]),). Argument mapping: (UnspecifiedValue,).
+Finished jaxpr to MLIR module conversion jit(broadcast_in_dim) in 0.002055645 sec
+Finished XLA compilation of jit(broadcast_in_dim) in 0.016714096 sec
+Finished tracing broadcast_in_dim for jit in 0.000185490 sec
+Compiling jit(broadcast_in_dim) with global shapes and types (ShapedArray(float32[]),). Argument mapping: (UnspecifiedValue,).
+Finished jaxpr to MLIR module conversion jit(broadcast_in_dim) in 0.002073050 sec
+Finished XLA compilation of jit(broadcast_in_dim) in 0.020673513 sec
+Finished tracing broadcast_in_dim for jit in 0.000411749 sec
+Compiling jit(broadcast_in_dim) with global shapes and types (ShapedArray(float64[]),). Argument mapping: (UnspecifiedValue,).
+Finished jaxpr to MLIR module conversion jit(broadcast_in_dim) in 0.002018690 sec
+Finished XLA compilation of jit(broadcast_in_dim) in 0.020885706 sec
+Finished tracing broadcast_in_dim for jit in 0.000189066 sec
+Compiling jit(broadcast_in_dim) with global shapes and types (ShapedArray(float32[]),). Argument mapping: (UnspecifiedValue,).
+Finished jaxpr to MLIR module conversion jit(broadcast_in_dim) in 0.002030134 sec
+Finished XLA compilation of jit(broadcast_in_dim) in 0.016618490 sec
+Finished tracing broadcast_in_dim for jit in 0.000186920 sec
+Compiling jit(broadcast_in_dim) with global shapes and types (ShapedArray(int32[]),). Argument mapping: (UnspecifiedValue,).
+Finished jaxpr to MLIR module conversion jit(broadcast_in_dim) in 0.002048492 sec
+Finished XLA compilation of jit(broadcast_in_dim) in 0.016602993 sec
+Finished tracing broadcast_in_dim for jit in 0.000188589 sec
+Compiling jit(broadcast_in_dim) with global shapes and types (ShapedArray(float32[]),). Argument mapping: (UnspecifiedValue,).
+Finished jaxpr to MLIR module conversion jit(broadcast_in_dim) in 0.002026796 sec
+Finished XLA compilation of jit(broadcast_in_dim) in 0.015965700 sec
+Finished tracing broadcast_in_dim for jit in 0.000202417 sec
+Compiling jit(broadcast_in_dim) with global shapes and types (ShapedArray(float64[]),). Argument mapping: (UnspecifiedValue,).
+Finished jaxpr to MLIR module conversion jit(broadcast_in_dim) in 0.002167940 sec
+Finished XLA compilation of jit(broadcast_in_dim) in 0.016815901 sec
+Finished tracing broadcast_in_dim for jit in 0.000208378 sec
+Compiling jit(broadcast_in_dim) with global shapes and types (ShapedArray(float64[]),). Argument mapping: (UnspecifiedValue,).
+Finished jaxpr to MLIR module conversion jit(broadcast_in_dim) in 0.002208710 sec
+Finished XLA compilation of jit(broadcast_in_dim) in 0.018289089 sec
+Finished tracing broadcast_in_dim for jit in 0.000233412 sec
+Compiling jit(broadcast_in_dim) with global shapes and types (ShapedArray(float64[]),). Argument mapping: (UnspecifiedValue,).
+Finished jaxpr to MLIR module conversion jit(broadcast_in_dim) in 0.002223253 sec
+Finished XLA compilation of jit(broadcast_in_dim) in 0.018311739 sec
+Finished tracing _pad for jit in 0.000754118 sec
+Compiling jit(_pad) with global shapes and types (ShapedArray(float64[66,159]),). Argument mapping: (UnspecifiedValue,).
+Finished jaxpr to MLIR module conversion jit(_pad) in 0.003007412 sec
+Finished XLA compilation of jit(_pad) in 0.021897078 sec
+Finished tracing _pad for jit in 0.000882864 sec
+Compiling jit(_pad) with global shapes and types (ShapedArray(float64[66,159]),). Argument mapping: (UnspecifiedValue,).
+Finished jaxpr to MLIR module conversion jit(_pad) in 0.002742052 sec
+Finished XLA compilation of jit(_pad) in 0.018396139 sec
+Finished tracing dynamic_slice for jit in 0.000210285 sec
+Compiling jit(dynamic_slice) with global shapes and types (ShapedArray(float64[66,161]), ShapedArray(int64[], weak_type=True), ShapedArray(int64[], weak_type=True)). Argument mapping: (UnspecifiedValue, UnspecifiedValue, UnspecifiedValue).
+Finished jaxpr to MLIR module conversion jit(dynamic_slice) in 0.002125263 sec
+Finished XLA compilation of jit(dynamic_slice) in 0.017995119 sec
+Finished tracing subtract for jit in 0.000225544 sec
+Compiling jit(subtract) with global shapes and types (ShapedArray(float64[66,160]), ShapedArray(float64[66,160])). Argument mapping: (UnspecifiedValue, UnspecifiedValue).
+Finished jaxpr to MLIR module conversion jit(subtract) in 0.002104282 sec
+Finished XLA compilation of jit(subtract) in 0.016710520 sec
+Finished tracing true_divide for jit in 0.000306606 sec
+Compiling jit(true_divide) with global shapes and types (ShapedArray(float64[66,160]), ShapedArray(float64[])). Argument mapping: (UnspecifiedValue, UnspecifiedValue).
+Finished jaxpr to MLIR module conversion jit(true_divide) in 0.002258301 sec
+Finished XLA compilation of jit(true_divide) in 0.021444082 sec
+Finished tracing dynamic_slice for jit in 0.000438213 sec
+Compiling jit(dynamic_slice) with global shapes and types (ShapedArray(float64[68,159]), ShapedArray(int64[], weak_type=True), ShapedArray(int64[], weak_type=True)). Argument mapping: (UnspecifiedValue, UnspecifiedValue, UnspecifiedValue).
+Finished jaxpr to MLIR module conversion jit(dynamic_slice) in 0.002147436 sec
+Finished XLA compilation of jit(dynamic_slice) in 0.018446922 sec
+Finished tracing subtract for jit in 0.000237942 sec
+Compiling jit(subtract) with global shapes and types (ShapedArray(float64[67,159]), ShapedArray(float64[67,159])). Argument mapping: (UnspecifiedValue, UnspecifiedValue).
+Finished jaxpr to MLIR module conversion jit(subtract) in 0.002150774 sec
+Finished XLA compilation of jit(subtract) in 0.017034531 sec
+Finished tracing true_divide for jit in 0.000259161 sec
+Compiling jit(true_divide) with global shapes and types (ShapedArray(float64[67,159]), ShapedArray(float64[])). Argument mapping: (UnspecifiedValue, UnspecifiedValue).
+Finished jaxpr to MLIR module conversion jit(true_divide) in 0.002150059 sec
+Finished XLA compilation of jit(true_divide) in 0.021064281 sec
+Finished tracing dynamic_slice for jit in 0.000191689 sec
+Compiling jit(dynamic_slice) with global shapes and types (ShapedArray(float64[66,160]), ShapedArray(int64[], weak_type=True), ShapedArray(int64[], weak_type=True)). Argument mapping: (UnspecifiedValue, UnspecifiedValue, UnspecifiedValue).
+Finished jaxpr to MLIR module conversion jit(dynamic_slice) in 0.002150059 sec
+Finished XLA compilation of jit(dynamic_slice) in 0.018410444 sec
+Finished tracing add for jit in 0.000243902 sec
+Compiling jit(add) with global shapes and types (ShapedArray(float64[66,159]), ShapedArray(float64[66,159])). Argument mapping: (UnspecifiedValue, UnspecifiedValue).
+Finished jaxpr to MLIR module conversion jit(add) in 0.002100468 sec
+Finished XLA compilation of jit(add) in 0.016925812 sec
+Finished tracing multiply for jit in 0.000281334 sec
+Compiling jit(multiply) with global shapes and types (ShapedArray(float64[], weak_type=True), ShapedArray(float64[66,159])). Argument mapping: (UnspecifiedValue, UnspecifiedValue).
+Finished jaxpr to MLIR module conversion jit(multiply) in 0.002188921 sec
+Finished XLA compilation of jit(multiply) in 0.017231464 sec
+Finished tracing dynamic_slice for jit in 0.000190496 sec
+Compiling jit(dynamic_slice) with global shapes and types (ShapedArray(float64[67,159]), ShapedArray(int64[], weak_type=True), ShapedArray(int64[], weak_type=True)). Argument mapping: (UnspecifiedValue, UnspecifiedValue, UnspecifiedValue).
+Finished jaxpr to MLIR module conversion jit(dynamic_slice) in 0.002120256 sec
+Finished XLA compilation of jit(dynamic_slice) in 0.018414259 sec
+Finished tracing convert_element_type for jit in 0.000239611 sec
+Compiling jit(convert_element_type) with global shapes and types (ShapedArray(float32[66,159]),). Argument mapping: (UnspecifiedValue,).
+Finished jaxpr to MLIR module conversion jit(convert_element_type) in 0.002289057 sec
+Finished XLA compilation of jit(convert_element_type) in 0.017319679 sec
+Finished tracing clip for jit in 0.000698090 sec
+Compiling jit(clip) with global shapes and types (ShapedArray(float64[66,159]), ShapedArray(float64[], weak_type=True), ShapedArray(float64[], weak_type=True)). Argument mapping: (UnspecifiedValue, UnspecifiedValue, UnspecifiedValue).
+Finished jaxpr to MLIR module conversion jit(clip) in 0.002391577 sec
+Finished XLA compilation of jit(clip) in 0.019287825 sec
+Finished tracing convert_element_type for jit in 0.000200748 sec
+Compiling jit(convert_element_type) with global shapes and types (ShapedArray(float32[4,66,159]),). Argument mapping: (UnspecifiedValue,).
+Finished jaxpr to MLIR module conversion jit(convert_element_type) in 0.002176762 sec
+Finished XLA compilation of jit(convert_element_type) in 0.016944885 sec
+Finished tracing clip for jit in 0.000712156 sec
+Compiling jit(clip) with global shapes and types (ShapedArray(float64[4,66,159]), ShapedArray(float64[], weak_type=True), ShapedArray(float64[], weak_type=True)). Argument mapping: (UnspecifiedValue, UnspecifiedValue, UnspecifiedValue).
+Finished jaxpr to MLIR module conversion jit(clip) in 0.002491474 sec
+Finished XLA compilation of jit(clip) in 0.019126892 sec
+Finished tracing greater for jit in 0.000286579 sec
+Compiling jit(greater) with global shapes and types (ShapedArray(float64[66,159]), ShapedArray(float64[], weak_type=True)). Argument mapping: (UnspecifiedValue, UnspecifiedValue).
+Finished jaxpr to MLIR module conversion jit(greater) in 0.002274513 sec
+Finished XLA compilation of jit(greater) in 0.018176794 sec
+Finished tracing maximum for jit in 0.000267267 sec
+Compiling jit(maximum) with global shapes and types (ShapedArray(float64[66,159]), ShapedArray(float64[], weak_type=True)). Argument mapping: (UnspecifiedValue, UnspecifiedValue).
+Finished jaxpr to MLIR module conversion jit(maximum) in 0.002342463 sec
+Finished XLA compilation of jit(maximum) in 0.018134832 sec
+Finished tracing sqrt for jit in 0.000217676 sec
+Compiling jit(sqrt) with global shapes and types (ShapedArray(float64[66,159]),). Argument mapping: (UnspecifiedValue,).
+Finished jaxpr to MLIR module conversion jit(sqrt) in 0.002131462 sec
+Finished XLA compilation of jit(sqrt) in 0.020570517 sec
+Finished tracing true_divide for jit in 0.000274897 sec
+Compiling jit(true_divide) with global shapes and types (ShapedArray(float64[], weak_type=True), ShapedArray(float64[66,159])). Argument mapping: (UnspecifiedValue, UnspecifiedValue).
+Finished jaxpr to MLIR module conversion jit(true_divide) in 0.002291679 sec
+Finished XLA compilation of jit(true_divide) in 0.021703482 sec
+Finished tracing exp for jit in 0.000443935 sec
+Compiling jit(exp) with global shapes and types (ShapedArray(float64[66,159]),). Argument mapping: (UnspecifiedValue,).
+Finished jaxpr to MLIR module conversion jit(exp) in 0.002460957 sec
+Finished XLA compilation of jit(exp) in 0.020053625 sec
+Finished tracing true_divide for jit in 0.000259638 sec
+Compiling jit(true_divide) with global shapes and types (ShapedArray(float64[66,159]), ShapedArray(float64[], weak_type=True)). Argument mapping: (UnspecifiedValue, UnspecifiedValue).
+Finished jaxpr to MLIR module conversion jit(true_divide) in 0.002291679 sec
+Finished XLA compilation of jit(true_divide) in 0.021301746 sec
+Finished tracing add for jit in 0.000287771 sec
+Compiling jit(add) with global shapes and types (ShapedArray(float64[], weak_type=True), ShapedArray(float64[66,159])). Argument mapping: (UnspecifiedValue, UnspecifiedValue).
+Finished jaxpr to MLIR module conversion jit(add) in 0.002222776 sec
+Finished XLA compilation of jit(add) in 0.017236710 sec
+Finished tracing multiply for jit in 0.000257492 sec
+Compiling jit(multiply) with global shapes and types (ShapedArray(float64[66,159]), ShapedArray(float64[], weak_type=True)). Argument mapping: (UnspecifiedValue, UnspecifiedValue).
+Finished jaxpr to MLIR module conversion jit(multiply) in 0.002264500 sec
+Finished XLA compilation of jit(multiply) in 0.018014908 sec
+Finished tracing less for jit in 0.000278473 sec
+Compiling jit(less) with global shapes and types (ShapedArray(float64[66,159]), ShapedArray(float64[], weak_type=True)). Argument mapping: (UnspecifiedValue, UnspecifiedValue).
+Finished jaxpr to MLIR module conversion jit(less) in 0.002202034 sec
+Finished XLA compilation of jit(less) in 0.017616510 sec
+Finished tracing bitwise_or for jit in 0.000250816 sec
+Compiling jit(bitwise_or) with global shapes and types (ShapedArray(bool[66,159]), ShapedArray(bool[66,159])). Argument mapping: (UnspecifiedValue, UnspecifiedValue).
+Finished jaxpr to MLIR module conversion jit(bitwise_or) in 0.002088070 sec
+Finished XLA compilation of jit(bitwise_or) in 0.016897917 sec
+Finished tracing _where for jit in 0.000412464 sec
+Compiling jit(_where) with global shapes and types (ShapedArray(bool[66,159]), ShapedArray(float64[66,159]), ShapedArray(float64[66,159])). Argument mapping: (UnspecifiedValue, UnspecifiedValue, UnspecifiedValue).
+Finished jaxpr to MLIR module conversion jit(_where) in 0.002734184 sec
+Finished XLA compilation of jit(_where) in 0.017662525 sec
+Finished tracing dynamic_slice for jit in 0.000219345 sec
+Compiling jit(dynamic_slice) with global shapes and types (ShapedArray(float64[4,66,159]), ShapedArray(int64[], weak_type=True), ShapedArray(int64[], weak_type=True), ShapedArray(int64[], weak_type=True)). Argument mapping: (UnspecifiedValue, UnspecifiedValue, UnspecifiedValue, UnspecifiedValue).
+Finished jaxpr to MLIR module conversion jit(dynamic_slice) in 0.002132654 sec
+Finished XLA compilation of jit(dynamic_slice) in 0.017633677 sec
+Finished tracing squeeze for jit in 0.000208378 sec
+Compiling jit(squeeze) with global shapes and types (ShapedArray(float64[1,66,159]),). Argument mapping: (UnspecifiedValue,).
+Finished jaxpr to MLIR module conversion jit(squeeze) in 0.002091169 sec
+Finished XLA compilation of jit(squeeze) in 0.003934383 sec
+Finished tracing _where for jit in 0.000424147 sec
+Compiling jit(_where) with global shapes and types (ShapedArray(bool[66,159]), ShapedArray(float64[], weak_type=True), ShapedArray(float64[66,159])). Argument mapping: (UnspecifiedValue, UnspecifiedValue, UnspecifiedValue).
+Finished jaxpr to MLIR module conversion jit(_where) in 0.002254486 sec
+Finished XLA compilation of jit(_where) in 0.017375469 sec
+Finished tracing add for jit in 0.000376463 sec
+Compiling jit(add) with global shapes and types (ShapedArray(float32[44,66,159]), ShapedArray(float64[], weak_type=True)). Argument mapping: (UnspecifiedValue, UnspecifiedValue).
+Finished jaxpr to MLIR module conversion jit(add) in 0.002255201 sec
+Finished XLA compilation of jit(add) in 0.021739244 sec
+Finished tracing broadcast_in_dim for jit in 0.000197887 sec
+Compiling jit(broadcast_in_dim) with global shapes and types (ShapedArray(float64[44]),). Argument mapping: (UnspecifiedValue,).
+Finished jaxpr to MLIR module conversion jit(broadcast_in_dim) in 0.002125263 sec
+Finished XLA compilation of jit(broadcast_in_dim) in 0.003705502 sec
+Finished tracing broadcast_in_dim for jit in 0.000138044 sec
+Compiling jit(broadcast_in_dim) with global shapes and types (ShapedArray(float32[66,159]),). Argument mapping: (UnspecifiedValue,).
+Finished jaxpr to MLIR module conversion jit(broadcast_in_dim) in 0.001793623 sec
+Finished XLA compilation of jit(broadcast_in_dim) in 0.003448486 sec
+Finished tracing multiply for jit in 0.000234604 sec
+Compiling jit(multiply) with global shapes and types (ShapedArray(float64[44,1,1]), ShapedArray(float32[1,66,159])). Argument mapping: (UnspecifiedValue, UnspecifiedValue).
+Finished jaxpr to MLIR module conversion jit(multiply) in 0.001919508 sec
+Finished XLA compilation of jit(multiply) in 0.021930218 sec
+Finished tracing add for jit in 0.000210285 sec
+Compiling jit(add) with global shapes and types (ShapedArray(float64[44,66,159]), ShapedArray(float64[44,1,1])). Argument mapping: (UnspecifiedValue, UnspecifiedValue).
+Finished jaxpr to MLIR module conversion jit(add) in 0.002344847 sec
+Finished XLA compilation of jit(add) in 0.021419525 sec
+Finished tracing dynamic_slice for jit in 0.000194550 sec
+Compiling jit(dynamic_slice) with global shapes and types (ShapedArray(float32[45,66,159]), ShapedArray(int64[], weak_type=True), ShapedArray(int64[], weak_type=True), ShapedArray(int64[], weak_type=True)). Argument mapping: (UnspecifiedValue, UnspecifiedValue, UnspecifiedValue, UnspecifiedValue).
+Finished jaxpr to MLIR module conversion jit(dynamic_slice) in 0.002062082 sec
+Finished XLA compilation of jit(dynamic_slice) in 0.022660255 sec
+Finished tracing subtract for jit in 0.000255346 sec
+Compiling jit(subtract) with global shapes and types (ShapedArray(float32[44,66,159]), ShapedArray(float32[44,66,159])). Argument mapping: (UnspecifiedValue, UnspecifiedValue).
+Finished jaxpr to MLIR module conversion jit(subtract) in 0.002084017 sec
+Finished XLA compilation of jit(subtract) in 0.021155119 sec
+Finished tracing multiply for jit in 0.000244379 sec
+Compiling jit(multiply) with global shapes and types (ShapedArray(float64[44,1,1]), ShapedArray(float64[44,66,159])). Argument mapping: (UnspecifiedValue, UnspecifiedValue).
+Finished jaxpr to MLIR module conversion jit(multiply) in 0.002094269 sec
+Finished XLA compilation of jit(multiply) in 0.020773649 sec
+Finished tracing abs for jit in 0.000381231 sec
+Compiling jit(abs) with global shapes and types (ShapedArray(float64[44,66,159]),). Argument mapping: (UnspecifiedValue,).
+Finished jaxpr to MLIR module conversion jit(abs) in 0.002067566 sec
+Finished XLA compilation of jit(abs) in 0.021401167 sec
+Finished tracing greater for jit in 0.000286102 sec
+Compiling jit(greater) with global shapes and types (ShapedArray(float64[44,66,159]), ShapedArray(float64[], weak_type=True)). Argument mapping: (UnspecifiedValue, UnspecifiedValue).
+Finished jaxpr to MLIR module conversion jit(greater) in 0.002348185 sec
+Finished XLA compilation of jit(greater) in 0.022135019 sec
+Finished tracing _where for jit in 0.000471592 sec
+Compiling jit(_where) with global shapes and types (ShapedArray(bool[44,66,159]), ShapedArray(float64[44,66,159]), ShapedArray(float64[])). Argument mapping: (UnspecifiedValue, UnspecifiedValue, UnspecifiedValue).
+Finished jaxpr to MLIR module conversion jit(_where) in 0.002210140 sec
+Finished XLA compilation of jit(_where) in 0.021841764 sec
+Finished tracing negative for jit in 0.000218391 sec
+Compiling jit(negative) with global shapes and types (ShapedArray(float32[44,66,159]),). Argument mapping: (UnspecifiedValue,).
+Finished jaxpr to MLIR module conversion jit(negative) in 0.002183199 sec
+Finished XLA compilation of jit(negative) in 0.020346165 sec
+Finished tracing true_divide for jit in 0.000288963 sec
+Compiling jit(true_divide) with global shapes and types (ShapedArray(float32[44,66,159]), ShapedArray(float64[44,66,159])). Argument mapping: (UnspecifiedValue, UnspecifiedValue).
+Finished jaxpr to MLIR module conversion jit(true_divide) in 0.002151966 sec
+Finished XLA compilation of jit(true_divide) in 0.026463747 sec
+Finished tracing maximum for jit in 0.000281096 sec
+Compiling jit(maximum) with global shapes and types (ShapedArray(float32[44,66,159]), ShapedArray(float32[])). Argument mapping: (UnspecifiedValue, UnspecifiedValue).
+Finished jaxpr to MLIR module conversion jit(maximum) in 0.002742052 sec
+Finished XLA compilation of jit(maximum) in 0.020445108 sec
+Finished tracing true_divide for jit in 0.000288725 sec
+Compiling jit(true_divide) with global shapes and types (ShapedArray(float32[44,66,159]), ShapedArray(float64[], weak_type=True)). Argument mapping: (UnspecifiedValue, UnspecifiedValue).
+Finished jaxpr to MLIR module conversion jit(true_divide) in 0.002173424 sec
+Finished XLA compilation of jit(true_divide) in 0.022441149 sec
+Finished tracing _power for jit in 0.000554800 sec
+Compiling jit(_power) with global shapes and types (ShapedArray(float32[44,66,159]), ShapedArray(float64[], weak_type=True)). Argument mapping: (UnspecifiedValue, UnspecifiedValue).
+Finished jaxpr to MLIR module conversion jit(_power) in 0.002228498 sec
+Finished XLA compilation of jit(_power) in 0.033149004 sec
+Finished tracing multiply for jit in 0.000271082 sec
+Compiling jit(multiply) with global shapes and types (ShapedArray(float64[44,66,159]), ShapedArray(float64[], weak_type=True)). Argument mapping: (UnspecifiedValue, UnspecifiedValue).
+Finished jaxpr to MLIR module conversion jit(multiply) in 0.002252579 sec
+Finished XLA compilation of jit(multiply) in 0.020299196 sec
+Finished tracing true_divide for jit in 0.000229120 sec
+Compiling jit(true_divide) with global shapes and types (ShapedArray(float64[44,66,159]), ShapedArray(float32[44,66,159])). Argument mapping: (UnspecifiedValue, UnspecifiedValue).
+Finished jaxpr to MLIR module conversion jit(true_divide) in 0.002129793 sec
+Finished XLA compilation of jit(true_divide) in 0.025919199 sec
+Finished tracing add for jit in 0.000267744 sec
+Compiling jit(add) with global shapes and types (ShapedArray(float32[44,66,159]), ShapedArray(float32[44,66,159])). Argument mapping: (UnspecifiedValue, UnspecifiedValue).
+Finished jaxpr to MLIR module conversion jit(add) in 0.002188206 sec
+Finished XLA compilation of jit(add) in 0.021044016 sec
+Finished tracing add for jit in 0.000251770 sec
+Compiling jit(add) with global shapes and types (ShapedArray(float32[45,66,159]), ShapedArray(float32[45,66,159])). Argument mapping: (UnspecifiedValue, UnspecifiedValue).
+Finished jaxpr to MLIR module conversion jit(add) in 0.002114534 sec
+Finished XLA compilation of jit(add) in 0.016710997 sec
+Finished tracing add for jit in 0.000237226 sec
+Compiling jit(add) with global shapes and types (ShapedArray(float32[66,159]), ShapedArray(float32[66,159])). Argument mapping: (UnspecifiedValue, UnspecifiedValue).
+Finished jaxpr to MLIR module conversion jit(add) in 0.002076864 sec
+Finished XLA compilation of jit(add) in 0.015665770 sec
+Finished tracing convert_element_type for jit in 0.000189304 sec
+Compiling jit(convert_element_type) with global shapes and types (ShapedArray(float32[45,66,159]),). Argument mapping: (UnspecifiedValue,).
+Finished jaxpr to MLIR module conversion jit(convert_element_type) in 0.002200365 sec
+Finished XLA compilation of jit(convert_element_type) in 0.017450571 sec
+Finished tracing convert_element_type for jit in 0.000147820 sec
+Compiling jit(convert_element_type) with global shapes and types (ShapedArray(float32[44,66,159]),). Argument mapping: (UnspecifiedValue,).
+Finished jaxpr to MLIR module conversion jit(convert_element_type) in 0.002137423 sec
+Finished XLA compilation of jit(convert_element_type) in 0.021349430 sec
+Finished tracing convert_element_type for jit in 0.000240803 sec
+Compiling jit(convert_element_type) with global shapes and types (ShapedArray(float64[66,159]),). Argument mapping: (UnspecifiedValue,).
+Finished jaxpr to MLIR module conversion jit(convert_element_type) in 0.002223015 sec
+Finished XLA compilation of jit(convert_element_type) in 0.016899586 sec
+Finished tracing convert_element_type for jit in 0.000180721 sec
+Compiling jit(convert_element_type) with global shapes and types (ShapedArray(float32[66,159]),). Argument mapping: (UnspecifiedValue,).
+Finished jaxpr to MLIR module conversion jit(convert_element_type) in 0.002042770 sec
+Finished XLA compilation of jit(convert_element_type) in 0.016491175 sec
+Finished tracing _reduce_max for jit in 0.000343323 sec
+Compiling jit(_reduce_max) with global shapes and types (ShapedArray(float64[44,66,159]),). Argument mapping: (UnspecifiedValue,).
+Finished jaxpr to MLIR module conversion jit(_reduce_max) in 0.002271652 sec
+Finished XLA compilation of jit(_reduce_max) in 0.078363419 sec
+Finished tracing true_divide for jit in 0.000264168 sec
+Compiling jit(true_divide) with global shapes and types (ShapedArray(float64[45,66,159]), ShapedArray(float64[], weak_type=True)). Argument mapping: (UnspecifiedValue, UnspecifiedValue).
+Finished jaxpr to MLIR module conversion jit(true_divide) in 0.002285480 sec
+Finished XLA compilation of jit(true_divide) in 0.021958113 sec
+Finished tracing dynamic_slice for jit in 0.000481606 sec
+Compiling jit(dynamic_slice) with global shapes and types (ShapedArray(float64[45,66,159]), ShapedArray(int64[], weak_type=True), ShapedArray(int64[], weak_type=True), ShapedArray(int64[], weak_type=True)). Argument mapping: (UnspecifiedValue, UnspecifiedValue, UnspecifiedValue, UnspecifiedValue).
+Finished jaxpr to MLIR module conversion jit(dynamic_slice) in 0.002130508 sec
+Finished XLA compilation of jit(dynamic_slice) in 0.017432928 sec
+Finished tracing subtract for jit in 0.000324488 sec
+Compiling jit(subtract) with global shapes and types (ShapedArray(float64[45,66,159]), ShapedArray(float64[1,66,159])). Argument mapping: (UnspecifiedValue, UnspecifiedValue).
+Finished jaxpr to MLIR module conversion jit(subtract) in 0.002586365 sec
+Finished XLA compilation of jit(subtract) in 0.019772053 sec
+Finished tracing dynamic_slice for jit in 0.000245571 sec
+Compiling jit(dynamic_slice) with global shapes and types (ShapedArray(float64[45,66,159]), ShapedArray(int64[], weak_type=True), ShapedArray(int64[], weak_type=True), ShapedArray(int64[], weak_type=True)). Argument mapping: (UnspecifiedValue, UnspecifiedValue, UnspecifiedValue, UnspecifiedValue).
+Finished jaxpr to MLIR module conversion jit(dynamic_slice) in 0.002183437 sec
+Finished XLA compilation of jit(dynamic_slice) in 0.024671078 sec
+Finished tracing broadcast_in_dim for jit in 0.000211239 sec
+Compiling jit(broadcast_in_dim) with global shapes and types (ShapedArray(float64[66,159]),). Argument mapping: (SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device),).
+Finished jaxpr to MLIR module conversion jit(broadcast_in_dim) in 0.002163172 sec
+Finished XLA compilation of jit(broadcast_in_dim) in 0.003925323 sec
+Finished tracing maximum for jit in 0.000220299 sec
+Compiling jit(maximum) with global shapes and types (ShapedArray(float64[1,66,159]), ShapedArray(float64[], weak_type=True)). Argument mapping: (SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), UnspecifiedValue).
+Finished jaxpr to MLIR module conversion jit(maximum) in 0.001996756 sec
+Finished XLA compilation of jit(maximum) in 0.017903566 sec
+Finished tracing integer_pow for jit in 0.000191927 sec
+Compiling jit(integer_pow) with global shapes and types (ShapedArray(float64[1,66,159]),). Argument mapping: (SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device),).
+Finished jaxpr to MLIR module conversion jit(integer_pow) in 0.002198696 sec
+Finished XLA compilation of jit(integer_pow) in 0.016870737 sec
+Finished tracing multiply for jit in 0.000272751 sec
+Compiling jit(multiply) with global shapes and types (ShapedArray(float64[], weak_type=True), ShapedArray(float64[1,66,159])). Argument mapping: (UnspecifiedValue, SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device)).
+Finished jaxpr to MLIR module conversion jit(multiply) in 0.002297163 sec
+Finished XLA compilation of jit(multiply) in 0.016849756 sec
+Finished tracing multiply for jit in 0.000287294 sec
+Compiling jit(multiply) with global shapes and types (ShapedArray(float64[1,66,159]), ShapedArray(float64[], weak_type=True)). Argument mapping: (SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), UnspecifiedValue).
+Finished jaxpr to MLIR module conversion jit(multiply) in 0.002393007 sec
+Finished XLA compilation of jit(multiply) in 0.017817020 sec
+Finished tracing subtract for jit in 0.000259399 sec
+Compiling jit(subtract) with global shapes and types (ShapedArray(float64[1,66,159]), ShapedArray(float64[44,66,159])). Argument mapping: (SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), UnspecifiedValue).
+Finished jaxpr to MLIR module conversion jit(subtract) in 0.002152205 sec
+Finished XLA compilation of jit(subtract) in 0.022417545 sec
+Finished tracing true_divide for jit in 0.000273705 sec
+Compiling jit(true_divide) with global shapes and types (ShapedArray(float64[44,66,159]), ShapedArray(float64[1,66,159])). Argument mapping: (SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device)).
+Finished jaxpr to MLIR module conversion jit(true_divide) in 0.002223253 sec
+Finished XLA compilation of jit(true_divide) in 0.029103279 sec
+Finished tracing maximum for jit in 0.000308990 sec
+Compiling jit(maximum) with global shapes and types (ShapedArray(float64[44,66,159]), ShapedArray(float64[], weak_type=True)). Argument mapping: (SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), UnspecifiedValue).
+Finished jaxpr to MLIR module conversion jit(maximum) in 0.002299547 sec
+Finished XLA compilation of jit(maximum) in 0.022472858 sec
+Finished tracing multiply for jit in 0.000260353 sec
+Compiling jit(multiply) with global shapes and types (ShapedArray(float64[1,66,159]), ShapedArray(float64[44,66,159])). Argument mapping: (SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device)).
+Finished jaxpr to MLIR module conversion jit(multiply) in 0.002435923 sec
+Finished XLA compilation of jit(multiply) in 0.022231102 sec
+Compiling jit(_reduce_max) with global shapes and types (ShapedArray(float64[44,66,159]),). Argument mapping: (SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device),).
+Finished jaxpr to MLIR module conversion jit(_reduce_max) in 0.002344608 sec
+Finished XLA compilation of jit(_reduce_max) in 0.049188137 sec
+Finished tracing convert_element_type for jit in 0.000161171 sec
+Compiling jit(convert_element_type) with global shapes and types (ShapedArray(float64[], weak_type=True),). Argument mapping: (UnspecifiedValue,).
+Finished jaxpr to MLIR module conversion jit(convert_element_type) in 0.002122879 sec
+Finished XLA compilation of jit(convert_element_type) in 0.003598928 sec
+Finished tracing convert_element_type for jit in 0.000150919 sec
+Compiling jit(convert_element_type) with global shapes and types (ShapedArray(float64[44,66,159]),). Argument mapping: (UnspecifiedValue,).
+Finished jaxpr to MLIR module conversion jit(convert_element_type) in 0.001793623 sec
+Finished XLA compilation of jit(convert_element_type) in 0.020372868 sec
+Finished tracing subtract for jit in 0.000249147 sec
+Compiling jit(subtract) with global shapes and types (ShapedArray(float64[44,66,159]), ShapedArray(float64[44,66,159])). Argument mapping: (UnspecifiedValue, UnspecifiedValue).
+Finished jaxpr to MLIR module conversion jit(subtract) in 0.002084732 sec
+Finished XLA compilation of jit(subtract) in 0.021312475 sec
+Finished tracing add for jit in 0.000252962 sec
+Compiling jit(add) with global shapes and types (ShapedArray(float64[44,66,159]), ShapedArray(float64[44,66,159])). Argument mapping: (UnspecifiedValue, UnspecifiedValue).
+Finished jaxpr to MLIR module conversion jit(add) in 0.002104759 sec
+Finished XLA compilation of jit(add) in 0.021859169 sec
+Finished tracing subtract for jit in 0.000267267 sec
+Compiling jit(subtract) with global shapes and types (ShapedArray(float64[45,66,159]), ShapedArray(float64[45,66,159])). Argument mapping: (UnspecifiedValue, UnspecifiedValue).
+Finished jaxpr to MLIR module conversion jit(subtract) in 0.002100706 sec
+Finished XLA compilation of jit(subtract) in 0.016845942 sec
+Finished tracing add for jit in 0.000254393 sec
+Compiling jit(add) with global shapes and types (ShapedArray(float64[45,66,159]), ShapedArray(float64[45,66,159])). Argument mapping: (UnspecifiedValue, UnspecifiedValue).
+Finished jaxpr to MLIR module conversion jit(add) in 0.002162695 sec
+Finished XLA compilation of jit(add) in 0.017624855 sec
+Finished tracing subtract for jit in 0.000250101 sec
+Compiling jit(subtract) with global shapes and types (ShapedArray(float64[66,159]), ShapedArray(float64[66,159])). Argument mapping: (UnspecifiedValue, UnspecifiedValue).
+Finished jaxpr to MLIR module conversion jit(subtract) in 0.002019882 sec
+Finished XLA compilation of jit(subtract) in 0.015871763 sec
+Finished tracing convert_element_type for jit in 0.000198603 sec
+Compiling jit(convert_element_type) with global shapes and types (ShapedArray(float32[44,66,160]),). Argument mapping: (UnspecifiedValue,).
+Finished jaxpr to MLIR module conversion jit(convert_element_type) in 0.002196074 sec
+Finished XLA compilation of jit(convert_element_type) in 0.017386198 sec
+Finished tracing convert_element_type for jit in 0.000206470 sec
+Compiling jit(convert_element_type) with global shapes and types (ShapedArray(float32[44,67,159]),). Argument mapping: (UnspecifiedValue,).
+Finished jaxpr to MLIR module conversion jit(convert_element_type) in 0.002108335 sec
+Finished XLA compilation of jit(convert_element_type) in 0.020347357 sec
+Compiling jit(convert_element_type) with global shapes and types (ShapedArray(float32[44,66,159]),). Argument mapping: (SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device),).
+Finished jaxpr to MLIR module conversion jit(convert_element_type) in 0.002220631 sec
+Finished XLA compilation of jit(convert_element_type) in 0.020553827 sec
+Finished tracing convert_element_type for jit in 0.000200748 sec
+Compiling jit(convert_element_type) with global shapes and types (ShapedArray(int32[66,159]),). Argument mapping: (UnspecifiedValue,).
+Finished jaxpr to MLIR module conversion jit(convert_element_type) in 0.002116442 sec
+Finished XLA compilation of jit(convert_element_type) in 0.016844511 sec
+Finished tracing convert_element_type for jit in 0.000240564 sec
+Compiling jit(convert_element_type) with global shapes and types (ShapedArray(float32[20,4,5,44,160]),). Argument mapping: (UnspecifiedValue,).
+Finished jaxpr to MLIR module conversion jit(convert_element_type) in 0.002119303 sec
+Finished XLA compilation of jit(convert_element_type) in 0.017163515 sec
+Finished tracing convert_element_type for jit in 0.000234604 sec
+Compiling jit(convert_element_type) with global shapes and types (ShapedArray(float64[66,159]),). Argument mapping: (UnspecifiedValue,).
+Finished jaxpr to MLIR module conversion jit(convert_element_type) in 0.002157211 sec
+Finished XLA compilation of jit(convert_element_type) in 0.017374039 sec
+Compiling jit(convert_element_type) with global shapes and types (ShapedArray(float64[44,66,159]),). Argument mapping: (SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device),).
+Finished jaxpr to MLIR module conversion jit(convert_element_type) in 0.002243280 sec
+Finished XLA compilation of jit(convert_element_type) in 0.021280766 sec
+recompile_diag device=cuda:0 run_id=20260521_18z_l2_72h_20260522T133443Z domain=d02 chunks=3 steps=180 cadence=180
+BEGIN_CHUNK 1 start_step=1
+TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/proofs/v0110/recompile_diag.py:195:16 (main):
+  never seen function:
+    _advance_chunk id=134729774402272 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/runtime/operational_mode.py:2490
+TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/runtime/operational_mode.py:2523:15 (_advance_chunk):
+  never seen function:
+    body id=134722186969952 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/runtime/operational_mode.py:2513
+TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/dynamics/core/rk_addtend_dry.py:193:15 (large_step_horizontal_pgf):
+  never seen function:
+    moisture_coupling_factors id=134729904650208 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/dynamics/acoustic_wrf.py:214
+TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/dynamics/core/small_step_prep.py:232:22 (small_step_prep_wrf):
+  never seen function:
+    diagnose_pressure_al_alt id=134729904650688 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/dynamics/acoustic_wrf.py:231
+TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/runtime/operational_mode.py:1009:51 (_acoustic_core_state_from_prep):
+  for diagnose_pressure_al_alt defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/dynamics/acoustic_wrf.py:231
+  all previously seen cache keys differ. For the closest previous key:
+  different input pytree:
+  * at input path [0][1], now <class 'gpuwrf.contracts.state.BaseState'> and before <class 'NoneType'>, so their Python types differ
+TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/runtime/operational_mode.py:1402:22 (_acoustic_scan):
+  never seen function:
+    body id=134721196546048 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/runtime/operational_mode.py:1392
+TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/dynamics/core/advance_w.py:378:18 (advance_w_wrf):
+  never seen function:
+    _fwd id=134721184913408 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/dynamics/core/advance_w.py:373
+TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/dynamics/core/advance_w.py:393:26 (advance_w_wrf):
+  never seen function:
+    _back id=134721184915808 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/dynamics/core/advance_w.py:385
+TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/runtime/operational_mode.py:1402:22 (_acoustic_scan):
+  never seen function:
+    body id=134720842717024 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/runtime/operational_mode.py:1392
+  but seen another function defined on the same line; maybe the function is
+  being re-defined repeatedly, preventing caching?
+TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/dynamics/core/advance_w.py:378:18 (advance_w_wrf):
+  never seen function:
+    _fwd id=134720832325568 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/dynamics/core/advance_w.py:373
+  but seen another function defined on the same line; maybe the function is
+  being re-defined repeatedly, preventing caching?
+TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/dynamics/core/advance_w.py:393:26 (advance_w_wrf):
+  never seen function:
+    _back id=134720832327808 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/dynamics/core/advance_w.py:385
+  but seen another function defined on the same line; maybe the function is
+  being re-defined repeatedly, preventing caching?
+TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/runtime/operational_mode.py:1402:22 (_acoustic_scan):
+  never seen function:
+    body id=134720824508480 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/runtime/operational_mode.py:1392
+  but seen another function defined on the same line; maybe the function is
+  being re-defined repeatedly, preventing caching?
+TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/dynamics/core/advance_w.py:378:18 (advance_w_wrf):
+  never seen function:
+    _fwd id=134720813871040 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/dynamics/core/advance_w.py:373
+  but seen another function defined on the same line; maybe the function is
+  being re-defined repeatedly, preventing caching?
+TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/dynamics/core/advance_w.py:393:26 (advance_w_wrf):
+  never seen function:
+    _back id=134720813873280 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/dynamics/core/advance_w.py:385
+  but seen another function defined on the same line; maybe the function is
+  being re-defined repeatedly, preventing caching?
+TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/coupling/physics_couplers.py:779:18 (thompson_adapter):
+  never seen function:
+    step_thompson_column_with_precip id=134743598696064 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/thompson_column.py:1444
+TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/thompson_column.py:1080:20 (_fill_down):
+  never seen function:
+    body id=134720818596096 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/thompson_column.py:1073
+TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/thompson_column.py:1080:20 (_fill_down):
+  never seen function:
+    body id=134720818602976 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/thompson_column.py:1073
+  but seen another function defined on the same line; maybe the function is
+  being re-defined repeatedly, preventing caching?
+TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/thompson_column.py:1080:20 (_fill_down):
+  never seen function:
+    body id=134720818603296 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/thompson_column.py:1073
+  but seen another function defined on the same line; maybe the function is
+  being re-defined repeatedly, preventing caching?
+TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/thompson_column.py:1080:20 (_fill_down):
+  never seen function:
+    body id=134720818608416 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/thompson_column.py:1073
+  but seen another function defined on the same line; maybe the function is
+  being re-defined repeatedly, preventing caching?
+TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/thompson_column.py:1080:20 (_fill_down):
+  never seen function:
+    body id=134720812246304 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/thompson_column.py:1073
+  but seen another function defined on the same line; maybe the function is
+  being re-defined repeatedly, preventing caching?
+TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/thompson_column.py:1080:20 (_fill_down):
+  never seen function:
+    body id=134720812249984 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/thompson_column.py:1073
+  but seen another function defined on the same line; maybe the function is
+  being re-defined repeatedly, preventing caching?
+TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/thompson_column.py:1080:20 (_fill_down):
+  never seen function:
+    body id=134720812304960 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/thompson_column.py:1073
+  but seen another function defined on the same line; maybe the function is
+  being re-defined repeatedly, preventing caching?
+TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/thompson_column.py:1209:31 (_sed_one_species):
+  never seen function:
+    body id=134720812315680 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/thompson_column.py:1176
+TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/thompson_column.py:1209:31 (_sed_one_species):
+  never seen function:
+    body id=134720812317440 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/thompson_column.py:1176
+  but seen another function defined on the same line; maybe the function is
+  being re-defined repeatedly, preventing caching?
+TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/thompson_column.py:1209:31 (_sed_one_species):
+  never seen function:
+    body id=134720812316800 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/thompson_column.py:1176
+  but seen another function defined on the same line; maybe the function is
+  being re-defined repeatedly, preventing caching?
+TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/thompson_column.py:1209:31 (_sed_one_species):
+  never seen function:
+    body id=134720812515392 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/thompson_column.py:1176
+  but seen another function defined on the same line; maybe the function is
+  being re-defined repeatedly, preventing caching?
+TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/surface_layer.py:300:26 (_zolrib):
+  never seen function:
+    body id=134720823797984 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/surface_layer.py:290
+TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/coupling/physics_couplers.py:998:12 (mynn_adapter):
+  never seen function:
+    step_mynn_pbl_column id=134743598705504 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/mynn_pbl.py:1111
+TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/mynn_edmf.py:318:38 (_single_column_dmp_mf.<locals>.plume_scan):
+  never seen function:
+    step id=134720807493664 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/mynn_edmf.py:259
+TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/mynn_edmf.py:118:9 (_condensation_edmf):
+  never seen function:
+    body id=134720805713088 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/mynn_edmf.py:113
+TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/runtime/operational_mode.py:2275:28 (_physics_boundary_step_with_limiter_diagnostics):
+  never seen function:
+    _refresh_rthraten id=134720810138208 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/runtime/operational_mode.py:2257
+TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/coupling/physics_couplers.py:1200:9 (rrtmg_theta_tendency):
+  never seen function:
+    solve_rrtmg_sw_column id=134741650385120 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_sw.py:1656
+TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_sw.py:916:32 (_sw_taumol_fused):
+  never seen function:
+    keep_band id=134720799218784 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_sw.py:913
+TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_sw.py:1081:18 (_mcica_random_overlap_mask):
+  never seen function:
+    advance id=134720798304800 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_sw.py:1076
+TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/coupling/physics_couplers.py:1201:9 (rrtmg_theta_tendency):
+  never seen function:
+    solve_rrtmg_lw_column id=134741650524256 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:2020
+TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1525:33 (_lw_taumol_fused):
+  never seen function:
+    keep_band id=134720807230400 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1522
+TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1634:15 (_lw_mcica_random_cloud_mask):
+  never seen function:
+    scan_step id=134720785142848 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1630
+TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1872:38 (_lw_rtrnmc_outputs):
+  never seen function:
+    down_body id=134720784118176 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1845
+TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1907:22 (_lw_rtrnmc_outputs):
+  never seen function:
+    up_body id=134720784352416 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1893
+TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1872:38 (_lw_rtrnmc_outputs):
+  never seen function:
+    down_body id=134720784366336 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1845
+  but seen another function defined on the same line; maybe the function is
+  being re-defined repeatedly, preventing caching?
+TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1907:22 (_lw_rtrnmc_outputs):
+  never seen function:
+    up_body id=134720782649600 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1893
+  but seen another function defined on the same line; maybe the function is
+  being re-defined repeatedly, preventing caching?
+TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1872:38 (_lw_rtrnmc_outputs):
+  never seen function:
+    down_body id=134720782663200 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1845
+  but seen another function defined on the same line; maybe the function is
+  being re-defined repeatedly, preventing caching?
+TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1907:22 (_lw_rtrnmc_outputs):
+  never seen function:
+    up_body id=134720782815360 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1893
+  but seen another function defined on the same line; maybe the function is
+  being re-defined repeatedly, preventing caching?
+TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1872:38 (_lw_rtrnmc_outputs):
+  never seen function:
+    down_body id=134720782826240 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1845
+  but seen another function defined on the same line; maybe the function is
+  being re-defined repeatedly, preventing caching?
+TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1907:22 (_lw_rtrnmc_outputs):
+  never seen function:
+    up_body id=134720781521184 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1893
+  but seen another function defined on the same line; maybe the function is
+  being re-defined repeatedly, preventing caching?
+TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1872:38 (_lw_rtrnmc_outputs):
+  never seen function:
+    down_body id=134720781828160 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1845
+  but seen another function defined on the same line; maybe the function is
+  being re-defined repeatedly, preventing caching?
+TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1907:22 (_lw_rtrnmc_outputs):
+  never seen function:
+    up_body id=134720781832800 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1893
+  but seen another function defined on the same line; maybe the function is
+  being re-defined repeatedly, preventing caching?
+TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1872:38 (_lw_rtrnmc_outputs):
+  never seen function:
+    down_body id=134720781992320 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1845
+  but seen another function defined on the same line; maybe the function is
+  being re-defined repeatedly, preventing caching?
+TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1907:22 (_lw_rtrnmc_outputs):
+  never seen function:
+    up_body id=134720781996960 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1893
+  but seen another function defined on the same line; maybe the function is
+  being re-defined repeatedly, preventing caching?
+TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1872:38 (_lw_rtrnmc_outputs):
+  never seen function:
+    down_body id=134720782304096 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1845
+  but seen another function defined on the same line; maybe the function is
+  being re-defined repeatedly, preventing caching?
+TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1907:22 (_lw_rtrnmc_outputs):
+  never seen function:
+    up_body id=134720782308896 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1893
+  but seen another function defined on the same line; maybe the function is
+  being re-defined repeatedly, preventing caching?
+TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1872:38 (_lw_rtrnmc_outputs):
+  never seen function:
+    down_body id=134720780616704 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1845
+  but seen another function defined on the same line; maybe the function is
+  being re-defined repeatedly, preventing caching?
+TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1907:22 (_lw_rtrnmc_outputs):
+  never seen function:
+    up_body id=134720780621344 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1893
+  but seen another function defined on the same line; maybe the function is
+  being re-defined repeatedly, preventing caching?
+TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1872:38 (_lw_rtrnmc_outputs):
+  never seen function:
+    down_body id=134720781157696 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1845
+  but seen another function defined on the same line; maybe the function is
+  being re-defined repeatedly, preventing caching?
+TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1907:22 (_lw_rtrnmc_outputs):
+  never seen function:
+    up_body id=134720781162656 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1893
+  but seen another function defined on the same line; maybe the function is
+  being re-defined repeatedly, preventing caching?
+TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1872:38 (_lw_rtrnmc_outputs):
+  never seen function:
+    down_body id=134720779388544 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1845
+  but seen another function defined on the same line; maybe the function is
+  being re-defined repeatedly, preventing caching?
+TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1907:22 (_lw_rtrnmc_outputs):
+  never seen function:
+    up_body id=134720779393184 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1893
+  but seen another function defined on the same line; maybe the function is
+  being re-defined repeatedly, preventing caching?
+TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1872:38 (_lw_rtrnmc_outputs):
+  never seen function:
+    down_body id=134720780060608 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1845
+  but seen another function defined on the same line; maybe the function is
+  being re-defined repeatedly, preventing caching?
+TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1907:22 (_lw_rtrnmc_outputs):
+  never seen function:
+    up_body id=134720780065248 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1893
+  but seen another function defined on the same line; maybe the function is
+  being re-defined repeatedly, preventing caching?
+TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1872:38 (_lw_rtrnmc_outputs):
+  never seen function:
+    down_body id=134720778340608 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1845
+  but seen another function defined on the same line; maybe the function is
+  being re-defined repeatedly, preventing caching?
+TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1907:22 (_lw_rtrnmc_outputs):
+  never seen function:
+    up_body id=134720778345248 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1893
+  but seen another function defined on the same line; maybe the function is
+  being re-defined repeatedly, preventing caching?
+TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1872:38 (_lw_rtrnmc_outputs):
+  never seen function:
+    down_body id=134720778537536 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1845
+  but seen another function defined on the same line; maybe the function is
+  being re-defined repeatedly, preventing caching?
+TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1907:22 (_lw_rtrnmc_outputs):
+  never seen function:
+    up_body id=134720778542496 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1893
+  but seen another function defined on the same line; maybe the function is
+  being re-defined repeatedly, preventing caching?
+TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1872:38 (_lw_rtrnmc_outputs):
+  never seen function:
+    down_body id=134720778816704 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1845
+  but seen another function defined on the same line; maybe the function is
+  being re-defined repeatedly, preventing caching?
+TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1907:22 (_lw_rtrnmc_outputs):
+  never seen function:
+    up_body id=134720778821344 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1893
+  but seen another function defined on the same line; maybe the function is
+  being re-defined repeatedly, preventing caching?
+TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1872:38 (_lw_rtrnmc_outputs):
+  never seen function:
+    down_body id=134720777243840 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1845
+  but seen another function defined on the same line; maybe the function is
+  being re-defined repeatedly, preventing caching?
+TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1907:22 (_lw_rtrnmc_outputs):
+  never seen function:
+    up_body id=134720777248480 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1893
+  but seen another function defined on the same line; maybe the function is
+  being re-defined repeatedly, preventing caching?
+TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1872:38 (_lw_rtrnmc_outputs):
+  never seen function:
+    down_body id=134720777866752 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1845
+  but seen another function defined on the same line; maybe the function is
+  being re-defined repeatedly, preventing caching?
+TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1907:22 (_lw_rtrnmc_outputs):
+  never seen function:
+    up_body id=134720777871392 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1893
+  but seen another function defined on the same line; maybe the function is
+  being re-defined repeatedly, preventing caching?
+TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/runtime/operational_mode.py:2275:28 (_physics_boundary_step_with_limiter_diagnostics):
+  never seen function:
+    <lambda> id=134720810137728 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/runtime/operational_mode.py:2276
+  but seen another function defined on the same line; maybe the function is
+  being re-defined repeatedly, preventing caching?
+Finished tracing _advance_chunk for jit in 3.243666410 sec
+Compiling jit(_advance_chunk) with global shapes and types (ShapedArray(float64[44,66,160]), ShapedArray(float64[44,67,159]), ShapedArray(float64[45,66,159]), ShapedArray(float64[44,66,159]), ShapedArray(float64[44,66,159]), ShapedArray(float64[44,66,159]), ShapedArray(float64[45,66,159]), ShapedArray(float64[66,159]), ShapedArray(float64[44,66,159]), ShapedArray(float64[44,66,159]), ShapedArray(float64[45,66,159]), ShapedArray(float64[45,66,159]), ShapedArray(float64[66,159]), ShapedArray(float64[66,159]), ShapedArray(float64[44,66,159]), ShapedArray(float64[44,66,159]), ShapedArray(float64[44,66,159]), ShapedArray(float64[44,66,159]), ShapedArray(float64[44,66,159]), ShapedArray(float64[44,66,159]), ShapedArray(float64[44,66,159]), ShapedArray(float64[44,66,159]), ShapedArray(float64[44,66,159]), ShapedArray(float64[44,66,159]), ShapedArray(float64[66,159]), ShapedArray(float64[66,159]), ShapedArray(float64[66,159]), ShapedArray(float64[66,159]), ShapedArray(float64[66,159]), ShapedArray(float64[66,159]), ShapedArray(float64[66,159]), ShapedArray(float64[66,159]), ShapedArray(float64[66,159]), ShapedArray(float64[66,159]), ShapedArray(float64[66,159]), ShapedArray(float64[66,159]), ShapedArray(float64[66,159]), ShapedArray(float64[66,159]), ShapedArray(float64[66,159]), ShapedArray(float64[66,159]), ShapedArray(float64[66,159]), ShapedArray(float64[20,4,5,44,160]), ShapedArray(float64[20,4,5,44,160]), ShapedArray(float64[20,4,5,44,160]), ShapedArray(float64[20,4,5,44,160]), ShapedArray(float64[20,4,5,45,160]), ShapedArray(float64[20,4,5,1,160]), ShapedArray(float64[20,4,5,45,160]), ShapedArray(float64[20,4,5,44,160]), ShapedArray(float64[1,4,5,44,160]), ShapedArray(float64[1,4,5,45,160]), ShapedArray(float64[1,4,5,1,160]), ShapedArray(int32[66,159]), ShapedArray(float32[44,66,159]), ShapedArray(float32[44,66,159]), ShapedArray(float64[66,159]), ShapedArray(float64[44,66,159]), ShapedArray(float64[45,66,159]), ShapedArray(float64[66,159]), ShapedArray(float64[66,159]), ShapedArray(float64[66,159]), ShapedArray(float64[45,66,159]), ShapedArray(float64[44,66,160]), ShapedArray(float64[44,67,159]), ShapedArray(float64[45,66,159]), ShapedArray(float64[44,66,159]), ShapedArray(float64[45,66,159]), ShapedArray(float64[66,159]), ShapedArray(float64[45,66,159]), ShapedArray(float64[44,66,159]), ShapedArray(float32[44,66,160]), ShapedArray(float32[44,67,159]), ShapedArray(float64[45,66,159]), ShapedArray(float32[44,66,159]), ShapedArray(float64[66,159]), ShapedArray(float64[66,159]), ShapedArray(float64[66,159]), ShapedArray(float64[66,160]), ShapedArray(float64[66,160]), ShapedArray(float64[67,159]), ShapedArray(float64[67,159]), ShapedArray(float64[44]), ShapedArray(float64[44]), ShapedArray(float64[45]), ShapedArray(float64[45]), ShapedArray(float64[44]), ShapedArray(float64[44]), ShapedArray(float64[44]), ShapedArray(float64[44]), ShapedArray(float64[]), ShapedArray(float64[]), ShapedArray(float64[]), ShapedArray(float64[44]), ShapedArray(float64[44]), ShapedArray(float64[66,159]), ShapedArray(float64[66,159]), ShapedArray(float64[66,159]), ShapedArray(float64[66,159]), ShapedArray(int32[])). Argument mapping: (SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), UnspecifiedValue, UnspecifiedValue, UnspecifiedValue, UnspecifiedValue, UnspecifiedValue, UnspecifiedValue, UnspecifiedValue, UnspecifiedValue, UnspecifiedValue, UnspecifiedValue, UnspecifiedValue, UnspecifiedValue, UnspecifiedValue, UnspecifiedValue, UnspecifiedValue, UnspecifiedValue, UnspecifiedValue, UnspecifiedValue, UnspecifiedValue, UnspecifiedValue, UnspecifiedValue, UnspecifiedValue, UnspecifiedValue, UnspecifiedValue).
+Finished jaxpr to MLIR module conversion jit(_advance_chunk) in 1.457615614 sec
+Finished XLA compilation of jit(_advance_chunk) in 114.234056950 sec
+END_CHUNK 1 wall_s=131.286958 per_step_ms=729.372
+BEGIN_CHUNK 2 start_step=181
+END_CHUNK 2 wall_s=11.822971 per_step_ms=65.683
+BEGIN_CHUNK 3 start_step=361
+END_CHUNK 3 wall_s=11.845452 per_step_ms=65.808
+TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/proofs/v0110/recompile_diag.py:220:11 (main):
+  never seen function:
+    _m9_snapshot id=134729774402912 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/runtime/operational_mode.py:2527
+TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/surface_layer.py:300:26 (_zolrib):
+  never seen function:
+    body id=134721518323008 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/surface_layer.py:290
+  but seen another function defined on the same line; maybe the function is
+  being re-defined repeatedly, preventing caching?
+TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/coupling/physics_couplers.py:1080:17 (surface_layer_diagnostics):
+  never seen function:
+    step_mynn_pbl_column_with_pblh id=134743598706144 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/mynn_pbl.py:1127
+Finished tracing _m9_snapshot for jit in 0.145311117 sec
+Compiling jit(_m9_snapshot) with global shapes and types (ShapedArray(float64[44,66,160]), ShapedArray(float64[44,67,159]), ShapedArray(float64[44,66,159]), ShapedArray(float64[44,66,159]), ShapedArray(float64[44,66,159]), ShapedArray(float64[45,66,159]), ShapedArray(float64[44,66,159]), ShapedArray(float64[44,66,159]), ShapedArray(float64[44,66,159]), ShapedArray(float64[44,66,159]), ShapedArray(float64[44,66,159]), ShapedArray(float64[66,159]), ShapedArray(float64[66,159]), ShapedArray(float64[66,159]), ShapedArray(float64[66,159]), ShapedArray(float64[66,159]), ShapedArray(int32[66,159]), ShapedArray(float64[])). Argument mapping: (SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), UnspecifiedValue).
+Finished jaxpr to MLIR module conversion jit(_m9_snapshot) in 0.588012218 sec
+Finished XLA compilation of jit(_m9_snapshot) in 34.648792744 sec
+{
+  "status": "PASS",
+  "chunk_wall_s": [
+    131.286958,
+    11.822971,
+    11.845452
+  ],
+  "diagnostic_wall_s": 35.680889,
+  "bit_identical": null,
+  "out": "proofs/v0110/recompile_fix2_3chunks.json"
+}

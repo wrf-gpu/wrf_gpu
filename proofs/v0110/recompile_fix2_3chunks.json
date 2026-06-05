@@ -1,0 +1,960 @@
+{
+  "chunk_records": [
+    {
+      "chunk_index": 1,
+      "per_step_ms": 729.3719903278138,
+      "start_step": 1,
+      "steps": 180,
+      "wall_s": 131.2869582590065
+    },
+    {
+      "chunk_index": 2,
+      "per_step_ms": 65.683172944571,
+      "start_step": 181,
+      "steps": 180,
+      "wall_s": 11.822971130022779
+    },
+    {
+      "chunk_index": 3,
+      "per_step_ms": 65.80806925550051,
+      "start_step": 361,
+      "steps": 180,
+      "wall_s": 11.845452465990093
+    }
+  ],
+  "chunks": 3,
+  "cpu_affinity": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27
+  ],
+  "device": "cuda:0",
+  "diagnostic_hashes": {
+    "glw": {
+      "dtype": "float64",
+      "finite": true,
+      "max": 370.83212673736193,
+      "min": 232.2880262957611,
+      "sha256": "bae9f006586ffaffc71d53be17038dcc8e051cabb8e4f7dcf09dbfa9afb0b5b5",
+      "shape": [
+        66,
+        159
+      ]
+    },
+    "hfx": {
+      "dtype": "float64",
+      "finite": true,
+      "max": 529.5062308836759,
+      "min": -29.536336930111528,
+      "sha256": "b8ecc8f3474ac52a528e1ae508ea14c0f9195e72190ece9cb7a3a7da572829f2",
+      "shape": [
+        66,
+        159
+      ]
+    },
+    "lh": {
+      "dtype": "float64",
+      "finite": true,
+      "max": 490.2276834347432,
+      "min": 0.1883771922756173,
+      "sha256": "4a4eda28d17b5db6efa5499e5bb51a1d4eb8bc11af58246873e8ad3c6bc684e1",
+      "shape": [
+        66,
+        159
+      ]
+    },
+    "pblh": {
+      "dtype": "float64",
+      "finite": true,
+      "max": 886.591106040812,
+      "min": 37.306633903916044,
+      "sha256": "550121fc25f06b656717d0fd9e3f893a8da83e8b7355e07245bc34048ece0797",
+      "shape": [
+        66,
+        159
+      ]
+    },
+    "psfc": {
+      "dtype": "float64",
+      "finite": true,
+      "max": 101657.8359375,
+      "min": 71161.60173321966,
+      "sha256": "cf1bdc2a98968f8cea94a1f198d0a7a8ee5372fac7d9d6d33aeeb40c5b04f927",
+      "shape": [
+        66,
+        159
+      ]
+    },
+    "swdown": {
+      "dtype": "float64",
+      "finite": true,
+      "max": 64.8430404663086,
+      "min": 7.291736125946045,
+      "sha256": "07b92d5b0d01f62fddabd48e8986c933fac04c911cc9d3a8e9b3231d099dc819",
+      "shape": [
+        66,
+        159
+      ]
+    },
+    "t2": {
+      "dtype": "float64",
+      "finite": true,
+      "max": 301.10647781518594,
+      "min": 283.69562240159553,
+      "sha256": "705d06be93a497ed005c75d3107a5d3d5448b1e4a57d07ca940454c86bad00d3",
+      "shape": [
+        66,
+        159
+      ]
+    },
+    "tsk": {
+      "dtype": "float64",
+      "finite": true,
+      "max": 306.7973327636719,
+      "min": 282.8561706542969,
+      "sha256": "244cb47c4153ee3faeccda5a1031d27b258b97073bf48814307cbc1b480bb1d2",
+      "shape": [
+        66,
+        159
+      ]
+    },
+    "u10": {
+      "dtype": "float64",
+      "finite": true,
+      "max": 10.516395627901778,
+      "min": -9.345934236254129,
+      "sha256": "4c4d238878deb300e5e6748fd9160cdd724a4d60c3ed2d6059cdea1fb2998745",
+      "shape": [
+        66,
+        159
+      ]
+    },
+    "v10": {
+      "dtype": "float64",
+      "finite": true,
+      "max": 4.87101053502627,
+      "min": -15.330204878472717,
+      "sha256": "d8b90fb0df691f717572989f3f61f726c01c919706520bd608bd68c46190fa9d",
+      "shape": [
+        66,
+        159
+      ]
+    }
+  },
+  "diagnostic_wall_s": 35.68088948901277,
+  "domain": "d02",
+  "env": {
+    "GPUWRF_JAX_CACHE": "0",
+    "GPUWRF_THOMPSON_NSED": null,
+    "JAX_COMPILATION_CACHE_DIR": null,
+    "JAX_EXPLAIN_CACHE_MISSES": "1",
+    "JAX_LOG_COMPILES": "1"
+  },
+  "grid": {
+    "nx": 159,
+    "ny": 66,
+    "nz": 44
+  },
+  "radiation_cadence_steps": 180,
+  "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l2/20260521_18z_l2_72h_20260522T133443Z",
+  "run_id": "20260521_18z_l2_72h_20260522T133443Z",
+  "schema": "V0110RecompileDiagnostic",
+  "schema_version": 1,
+  "state_hashes": {
+    "Nc": {
+      "dtype": "float32",
+      "finite": true,
+      "max": 0.0,
+      "min": 0.0,
+      "sha256": "722412f57d04f4d80550e5d722a2c05e03981d72fa009bf79a57de6478534c98",
+      "shape": [
+        44,
+        66,
+        159
+      ]
+    },
+    "Ng": {
+      "dtype": "float64",
+      "finite": true,
+      "max": 0.0,
+      "min": 0.0,
+      "sha256": "56822720b066d07db27aeb78444598dbcaf27ccfb2ed068a6d6ee38091942a36",
+      "shape": [
+        44,
+        66,
+        159
+      ]
+    },
+    "Ni": {
+      "dtype": "float64",
+      "finite": true,
+      "max": 0.0,
+      "min": 0.0,
+      "sha256": "56822720b066d07db27aeb78444598dbcaf27ccfb2ed068a6d6ee38091942a36",
+      "shape": [
+        44,
+        66,
+        159
+      ]
+    },
+    "Nn": {
+      "dtype": "float32",
+      "finite": true,
+      "max": 0.0,
+      "min": 0.0,
+      "sha256": "722412f57d04f4d80550e5d722a2c05e03981d72fa009bf79a57de6478534c98",
+      "shape": [
+        44,
+        66,
+        159
+      ]
+    },
+    "Nr": {
+      "dtype": "float64",
+      "finite": true,
+      "max": 0.0,
+      "min": 0.0,
+      "sha256": "56822720b066d07db27aeb78444598dbcaf27ccfb2ed068a6d6ee38091942a36",
+      "shape": [
+        44,
+        66,
+        159
+      ]
+    },
+    "Ns": {
+      "dtype": "float64",
+      "finite": true,
+      "max": 0.0,
+      "min": 0.0,
+      "sha256": "56822720b066d07db27aeb78444598dbcaf27ccfb2ed068a6d6ee38091942a36",
+      "shape": [
+        44,
+        66,
+        159
+      ]
+    },
+    "fltv": {
+      "dtype": "float64",
+      "finite": true,
+      "max": 0.45315907407110156,
+      "min": -0.0231345628858411,
+      "sha256": "b8e348a9cbfae853081c26a2b41b5702df08efd6d14be8da78d07c5cc0e02747",
+      "shape": [
+        66,
+        159
+      ]
+    },
+    "graupel_acc": {
+      "dtype": "float64",
+      "finite": true,
+      "max": 0.0,
+      "min": 0.0,
+      "sha256": "e0abb2a316eedd503011b31df9eafadae2649e00e96011b88f358d59b91f931f",
+      "shape": [
+        66,
+        159
+      ]
+    },
+    "ice_acc": {
+      "dtype": "float64",
+      "finite": true,
+      "max": 0.0,
+      "min": 0.0,
+      "sha256": "e0abb2a316eedd503011b31df9eafadae2649e00e96011b88f358d59b91f931f",
+      "shape": [
+        66,
+        159
+      ]
+    },
+    "lakemask": {
+      "dtype": "float64",
+      "finite": true,
+      "max": 0.0,
+      "min": 0.0,
+      "sha256": "e0abb2a316eedd503011b31df9eafadae2649e00e96011b88f358d59b91f931f",
+      "shape": [
+        66,
+        159
+      ]
+    },
+    "lu_index": {
+      "dtype": "int32",
+      "finite": true,
+      "max": 17.0,
+      "min": 5.0,
+      "sha256": "e740635aaefac1d9c130395e03b804b01eaa7a18bf4047f7bcb0f095f179017b",
+      "shape": [
+        66,
+        159
+      ]
+    },
+    "mavail": {
+      "dtype": "float64",
+      "finite": true,
+      "max": 1.0,
+      "min": 0.01736450009047985,
+      "sha256": "8e7020aed98a2821f9119f433e5ee87c4fe6e40ee2f0b85b6de76657eda5c894",
+      "shape": [
+        66,
+        159
+      ]
+    },
+    "mu": {
+      "dtype": "float64",
+      "finite": true,
+      "max": 96757.99041748047,
+      "min": 66401.71562591867,
+      "sha256": "7fe63369e3f976e870fd5aad2e62a4d29e763bdcbe817da7d8ff42a58ac16f46",
+      "shape": [
+        66,
+        159
+      ]
+    },
+    "mu_bdy": {
+      "dtype": "float64",
+      "finite": true,
+      "max": 1966.482666015625,
+      "min": 0.0,
+      "sha256": "ff4424e75faf127f145bb168e7f9a5845877b1219bdab440aacc7758f7a88480",
+      "shape": [
+        20,
+        4,
+        5,
+        1,
+        160
+      ]
+    },
+    "mu_perturbation": {
+      "dtype": "float64",
+      "finite": true,
+      "max": 1875.660938418674,
+      "min": 1288.8554682948597,
+      "sha256": "3b1f35a5653280959d778d016e95415be3e42e13fcb0c10bf74d820784ec084d",
+      "shape": [
+        66,
+        159
+      ]
+    },
+    "mu_total": {
+      "dtype": "float64",
+      "finite": true,
+      "max": 96757.99041748047,
+      "min": 66401.71562591867,
+      "sha256": "7fe63369e3f976e870fd5aad2e62a4d29e763bdcbe817da7d8ff42a58ac16f46",
+      "shape": [
+        66,
+        159
+      ]
+    },
+    "mub_bdy": {
+      "dtype": "float64",
+      "finite": true,
+      "max": 95000.0,
+      "min": 0.0,
+      "sha256": "7dc9aa0fae983c194660b0b13e8cfe304271ec09e6eb1861cee0e6e66136f9ff",
+      "shape": [
+        1,
+        4,
+        5,
+        1,
+        160
+      ]
+    },
+    "p": {
+      "dtype": "float64",
+      "finite": true,
+      "max": 101657.8359375,
+      "min": 5162.84307213675,
+      "sha256": "4604faa716f6e254b95873862142a1b2ff0dd0afb1e70247b48223c406ae005a",
+      "shape": [
+        44,
+        66,
+        159
+      ]
+    },
+    "p_bdy": {
+      "dtype": "float64",
+      "finite": true,
+      "max": 2106.3828125,
+      "min": -6.33984375,
+      "sha256": "a3a2f5a57f11ec3ab5b557cb0a5f58b8b99e9f2eb1228d02bf14df27286cfba4",
+      "shape": [
+        20,
+        4,
+        5,
+        44,
+        160
+      ]
+    },
+    "p_perturbation": {
+      "dtype": "float64",
+      "finite": true,
+      "max": 1951.6328125,
+      "min": -62.790338517900636,
+      "sha256": "d99e9575ea6f6cc1c0400df945b7cdf43eecf35f9c2dde80324cf35bb479c5b7",
+      "shape": [
+        44,
+        66,
+        159
+      ]
+    },
+    "p_total": {
+      "dtype": "float64",
+      "finite": true,
+      "max": 101657.8359375,
+      "min": 5162.84307213675,
+      "sha256": "4604faa716f6e254b95873862142a1b2ff0dd0afb1e70247b48223c406ae005a",
+      "shape": [
+        44,
+        66,
+        159
+      ]
+    },
+    "pb_bdy": {
+      "dtype": "float64",
+      "finite": true,
+      "max": 99706.203125,
+      "min": 0.0,
+      "sha256": "c5392e6db0b38d66021abc50b6e0eb4f75d157d2e4ca603194461b93ac8dc5cd",
+      "shape": [
+        1,
+        4,
+        5,
+        44,
+        160
+      ]
+    },
+    "ph": {
+      "dtype": "float64",
+      "finite": true,
+      "max": 204077.453125,
+      "min": -7.796288059580547e-07,
+      "sha256": "6cea72be04908679a43a4d71bcb7cc2582f55f649c79a8801ac37b29b71a0245",
+      "shape": [
+        45,
+        66,
+        159
+      ]
+    },
+    "ph_bdy": {
+      "dtype": "float64",
+      "finite": true,
+      "max": 8907.8564453125,
+      "min": 0.0,
+      "sha256": "8e8b608e5d6a594fe767796a4990b89047e5af2a77aff8c2ad027fa616bf52b7",
+      "shape": [
+        20,
+        4,
+        5,
+        45,
+        160
+      ]
+    },
+    "ph_perturbation": {
+      "dtype": "float64",
+      "finite": true,
+      "max": 8856.96875,
+      "min": 0.0,
+      "sha256": "aa46b7e64ea888bc2d80cad152693317e95746fb39b25ca23c44052a0883a84a",
+      "shape": [
+        45,
+        66,
+        159
+      ]
+    },
+    "ph_total": {
+      "dtype": "float64",
+      "finite": true,
+      "max": 204077.453125,
+      "min": -7.796288059580547e-07,
+      "sha256": "6cea72be04908679a43a4d71bcb7cc2582f55f649c79a8801ac37b29b71a0245",
+      "shape": [
+        45,
+        66,
+        159
+      ]
+    },
+    "phb_bdy": {
+      "dtype": "float64",
+      "finite": true,
+      "max": 195220.515625,
+      "min": -4.5681374238881745e-09,
+      "sha256": "48eb3c260d6ceaf49288afffdab8c8b870fc3a4cadde7193e79db65842b4bb70",
+      "shape": [
+        1,
+        4,
+        5,
+        45,
+        160
+      ]
+    },
+    "qc": {
+      "dtype": "float64",
+      "finite": true,
+      "max": 7.78282488851243e-05,
+      "min": 0.0,
+      "sha256": "221b2b279c2ed857290a7fca9eff27148dccc93d1113764cb7311dd999a2084a",
+      "shape": [
+        44,
+        66,
+        159
+      ]
+    },
+    "qg": {
+      "dtype": "float64",
+      "finite": true,
+      "max": 0.0,
+      "min": 0.0,
+      "sha256": "56822720b066d07db27aeb78444598dbcaf27ccfb2ed068a6d6ee38091942a36",
+      "shape": [
+        44,
+        66,
+        159
+      ]
+    },
+    "qi": {
+      "dtype": "float64",
+      "finite": true,
+      "max": 0.0,
+      "min": 0.0,
+      "sha256": "56822720b066d07db27aeb78444598dbcaf27ccfb2ed068a6d6ee38091942a36",
+      "shape": [
+        44,
+        66,
+        159
+      ]
+    },
+    "qke": {
+      "dtype": "float64",
+      "finite": false,
+      "max": 16.688215082339497,
+      "min": 1e-05,
+      "sha256": "6e6bc4244e4b56f56d79403b437c36e214fbd7510e9c04580fd8fce8c7236b74",
+      "shape": [
+        44,
+        66,
+        159
+      ]
+    },
+    "qr": {
+      "dtype": "float64",
+      "finite": true,
+      "max": 0.0,
+      "min": 0.0,
+      "sha256": "56822720b066d07db27aeb78444598dbcaf27ccfb2ed068a6d6ee38091942a36",
+      "shape": [
+        44,
+        66,
+        159
+      ]
+    },
+    "qs": {
+      "dtype": "float64",
+      "finite": true,
+      "max": 0.0,
+      "min": 0.0,
+      "sha256": "56822720b066d07db27aeb78444598dbcaf27ccfb2ed068a6d6ee38091942a36",
+      "shape": [
+        44,
+        66,
+        159
+      ]
+    },
+    "qv": {
+      "dtype": "float64",
+      "finite": true,
+      "max": 0.015404392365186035,
+      "min": 2.4403228664652975e-06,
+      "sha256": "ba6092a86bb96bd10d4ce20c36639618bce7ef18bdda856f34051714d7958b64",
+      "shape": [
+        44,
+        66,
+        159
+      ]
+    },
+    "qv_bdy": {
+      "dtype": "float64",
+      "finite": true,
+      "max": 0.014284498989582062,
+      "min": 0.0,
+      "sha256": "1b221f3e0e3bd34582714c44c2cb0b62929de7eb067295440369fd8ccdcb4729",
+      "shape": [
+        20,
+        4,
+        5,
+        44,
+        160
+      ]
+    },
+    "qv_flux": {
+      "dtype": "float64",
+      "finite": true,
+      "max": 0.00017062210301153305,
+      "min": 7.346738443492797e-08,
+      "sha256": "c41127d720b03d1254616431d99b4c5ed512c5db6bcaaa29a62b1ab1b6aed996",
+      "shape": [
+        66,
+        159
+      ]
+    },
+    "rain_acc": {
+      "dtype": "float64",
+      "finite": true,
+      "max": 0.0,
+      "min": 0.0,
+      "sha256": "e0abb2a316eedd503011b31df9eafadae2649e00e96011b88f358d59b91f931f",
+      "shape": [
+        66,
+        159
+      ]
+    },
+    "rainc_acc": {
+      "dtype": "float64",
+      "finite": true,
+      "max": 0.0,
+      "min": 0.0,
+      "sha256": "e0abb2a316eedd503011b31df9eafadae2649e00e96011b88f358d59b91f931f",
+      "shape": [
+        66,
+        159
+      ]
+    },
+    "rhosfc": {
+      "dtype": "float64",
+      "finite": true,
+      "max": 1.199958648095602,
+      "min": 0.8728219139828061,
+      "sha256": "d31c25b3489f569c00f1623a781b8b2e43c5f962a684f9530167a264a8538865",
+      "shape": [
+        66,
+        159
+      ]
+    },
+    "roughness_m": {
+      "dtype": "float64",
+      "finite": true,
+      "max": 0.13520078277587888,
+      "min": 0.00285,
+      "sha256": "28903bac2a51baf0fa30f845bea1e21d0b618f7a6e4736afc3c61cd3603f22e7",
+      "shape": [
+        66,
+        159
+      ]
+    },
+    "snow_acc": {
+      "dtype": "float64",
+      "finite": true,
+      "max": 0.0,
+      "min": 0.0,
+      "sha256": "e0abb2a316eedd503011b31df9eafadae2649e00e96011b88f358d59b91f931f",
+      "shape": [
+        66,
+        159
+      ]
+    },
+    "soil_moisture": {
+      "dtype": "float64",
+      "finite": true,
+      "max": 1.0,
+      "min": 0.01736450009047985,
+      "sha256": "8e7020aed98a2821f9119f433e5ee87c4fe6e40ee2f0b85b6de76657eda5c894",
+      "shape": [
+        66,
+        159
+      ]
+    },
+    "t_skin": {
+      "dtype": "float64",
+      "finite": true,
+      "max": 306.7973327636719,
+      "min": 282.8561706542969,
+      "sha256": "244cb47c4153ee3faeccda5a1031d27b258b97073bf48814307cbc1b480bb1d2",
+      "shape": [
+        66,
+        159
+      ]
+    },
+    "tau_u": {
+      "dtype": "float64",
+      "finite": true,
+      "max": 0.71719719533049,
+      "min": -0.8311473679405895,
+      "sha256": "befa5a6379219a15e09511393d6e3f116b7b93c80a64741fdac32c8782390e6e",
+      "shape": [
+        66,
+        159
+      ]
+    },
+    "tau_v": {
+      "dtype": "float64",
+      "finite": true,
+      "max": 1.1955232524085455,
+      "min": -0.08267148999367109,
+      "sha256": "de961c9d4709f9424767806aae0c23fa0bc84125bbf7cb473e1f9eb31a810332",
+      "shape": [
+        66,
+        159
+      ]
+    },
+    "theta": {
+      "dtype": "float64",
+      "finite": true,
+      "max": 491.9741516113281,
+      "min": 290.8974609375,
+      "sha256": "be5ebef9aed83cf601f8f597dea31aba4214a0958bb6a69953f681f83cb610ea",
+      "shape": [
+        44,
+        66,
+        159
+      ]
+    },
+    "theta_bdy": {
+      "dtype": "float64",
+      "finite": true,
+      "max": 492.52838134765625,
+      "min": 0.0,
+      "sha256": "8d9d37d75efaac9375ec4622bde7d648543c2d26cc8464ae240d123fa12b2323",
+      "shape": [
+        20,
+        4,
+        5,
+        44,
+        160
+      ]
+    },
+    "theta_flux": {
+      "dtype": "float64",
+      "finite": true,
+      "max": 0.44783187556769605,
+      "min": -0.024919170141642005,
+      "sha256": "6c0ad7fe45958a2381c63dc53f64d57d5aeb846a0990787fffcc58002c6b73ba",
+      "shape": [
+        66,
+        159
+      ]
+    },
+    "u": {
+      "dtype": "float64",
+      "finite": true,
+      "max": 25.115879148213974,
+      "min": -12.658230704844039,
+      "sha256": "7f0e57239d8fd4970d217f50b4982255990c68bf96e8bdfcc2381e781b2b99c6",
+      "shape": [
+        44,
+        66,
+        160
+      ]
+    },
+    "u_bdy": {
+      "dtype": "float64",
+      "finite": true,
+      "max": 25.663454055786133,
+      "min": -10.843504905700684,
+      "sha256": "6c32ac072b5150eb010067f3efc1f58cf89c7e86158d43971e137d8149e79a60",
+      "shape": [
+        20,
+        4,
+        5,
+        44,
+        160
+      ]
+    },
+    "ustar": {
+      "dtype": "float64",
+      "finite": true,
+      "max": 1.1157426836309647,
+      "min": 0.0036342402458764776,
+      "sha256": "b8b358b2c2c1b9f2fc1d2570d4a51371d6ff718c2454360b916d8dc7441a5ed9",
+      "shape": [
+        66,
+        159
+      ]
+    },
+    "v": {
+      "dtype": "float64",
+      "finite": true,
+      "max": 10.61979172257295,
+      "min": -18.25744986952661,
+      "sha256": "f539761b6bd280d22c5e914145668ae0c2a75a671ccda8be2674da10b3f53f4e",
+      "shape": [
+        44,
+        67,
+        159
+      ]
+    },
+    "v_bdy": {
+      "dtype": "float64",
+      "finite": true,
+      "max": 11.606193542480469,
+      "min": -14.229079246520996,
+      "sha256": "0a1e32c5d53a78db7c44e6a09bd5e02b92f5592e77b5613e0b3a0e9732c152cc",
+      "shape": [
+        20,
+        4,
+        5,
+        44,
+        160
+      ]
+    },
+    "w": {
+      "dtype": "float64",
+      "finite": true,
+      "max": 1.0517345727746235,
+      "min": -2.7395520559048734,
+      "sha256": "107a55d7c7cfe9c4c10c88341ca5824ce88010723c81867b4a9fc321d7e35d83",
+      "shape": [
+        45,
+        66,
+        159
+      ]
+    },
+    "w_bdy": {
+      "dtype": "float64",
+      "finite": true,
+      "max": 0.4328494369983673,
+      "min": -0.5076193809509277,
+      "sha256": "dd9480313229b207de2a386ca13387da5ae6be8c9adca33547017e7a7d2b48d7",
+      "shape": [
+        20,
+        4,
+        5,
+        45,
+        160
+      ]
+    },
+    "xland": {
+      "dtype": "float64",
+      "finite": true,
+      "max": 2.0,
+      "min": 1.0,
+      "sha256": "c36377fabf57fa958c3ad3a472715fb971381d9b3d1d3e9be9a3ac415455953c",
+      "shape": [
+        66,
+        159
+      ]
+    }
+  },
+  "static_holder_fingerprint": [
+    {
+      "holders": [
+        {
+          "aux_index": 32,
+          "holder_hash": 4238894112,
+          "value_id": null,
+          "value_is_none": true,
+          "value_type": "NoneType"
+        },
+        {
+          "aux_index": 33,
+          "holder_hash": 4238894112,
+          "value_id": null,
+          "value_is_none": true,
+          "value_type": "NoneType"
+        },
+        {
+          "aux_index": 34,
+          "holder_hash": 4238894112,
+          "value_id": null,
+          "value_is_none": true,
+          "value_type": "NoneType"
+        },
+        {
+          "aux_index": 40,
+          "holder_hash": 4238894112,
+          "value_id": null,
+          "value_is_none": true,
+          "value_type": "NoneType"
+        },
+        {
+          "aux_index": 41,
+          "holder_hash": 4238894112,
+          "value_id": null,
+          "value_is_none": true,
+          "value_type": "NoneType"
+        },
+        {
+          "aux_index": 42,
+          "holder_hash": 4238894112,
+          "value_id": null,
+          "value_is_none": true,
+          "value_type": "NoneType"
+        }
+      ],
+      "repeat": 0
+    },
+    {
+      "holders": [
+        {
+          "aux_index": 32,
+          "holder_hash": 4238894112,
+          "value_id": null,
+          "value_is_none": true,
+          "value_type": "NoneType"
+        },
+        {
+          "aux_index": 33,
+          "holder_hash": 4238894112,
+          "value_id": null,
+          "value_is_none": true,
+          "value_type": "NoneType"
+        },
+        {
+          "aux_index": 34,
+          "holder_hash": 4238894112,
+          "value_id": null,
+          "value_is_none": true,
+          "value_type": "NoneType"
+        },
+        {
+          "aux_index": 40,
+          "holder_hash": 4238894112,
+          "value_id": null,
+          "value_is_none": true,
+          "value_type": "NoneType"
+        },
+        {
+          "aux_index": 41,
+          "holder_hash": 4238894112,
+          "value_id": null,
+          "value_is_none": true,
+          "value_type": "NoneType"
+        },
+        {
+          "aux_index": 42,
+          "holder_hash": 4238894112,
+          "value_id": null,
+          "value_is_none": true,
+          "value_type": "NoneType"
+        }
+      ],
+      "repeat": 1
+    }
+  ],
+  "status": "PASS",
+  "steps_per_chunk": 180
+}
