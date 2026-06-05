@@ -7,6 +7,7 @@ snapshots/sanitizers out of the compiled path.
 
 from __future__ import annotations
 
+import os
 from dataclasses import dataclass
 from functools import partial
 from typing import NamedTuple
@@ -114,6 +115,48 @@ config.update("jax_enable_x64", True)
 
 _THETA_LIMITER_MIN_K = 0.0
 _THETA_LIMITER_MAX_K = 500.0
+
+
+def _acoustic_unroll() -> int:
+    """Acoustic-substep ``lax.scan`` unroll factor (v0.10.0 Wave-A, Opus#1).
+
+    Mirrors the Thompson ``GPUWRF_THOMPSON_SED_UNROLL`` pattern.  Default ``1``
+    (no unroll) preserves the shipped v0.9.0 lowering exactly; the operational
+    default is bumped to ``2`` after the Wave-A A/B + 24h-stability gate (NOT 4:
+    avoids the coupled-OOM + harsher compile observed at unroll=4).  Unrolling is
+    round-off-neutral (the substep arithmetic is unchanged; only the loop body is
+    replicated in the program), so it does not perturb the fp64 acoustic island.
+    """
+
+    return max(1, int(os.environ.get("GPUWRF_ACOUSTIC_UNROLL", "1")))
+
+
+# The acoustic substep MUTATES only these AcousticCoreState leaves
+# (``acoustic_substep_core`` final ``replace`` + ``advance_uv_wrf`` u/v); every
+# other leaf is STAGE-CONSTANT.  Threading only these through the substep
+# ``lax.scan`` carry (closing over the constants) removes the per-substep
+# carry-copy of the ~50 stage-constant leaves -- round-off-neutral (Opus#2).
+_ACOUSTIC_EVOLVING_FIELDS: tuple[str, ...] = (
+    "u",
+    "v",
+    "w",
+    "mu",
+    "mudf",
+    "muts",
+    "muave",
+    "ww",
+    "theta",
+    "theta_coupled_work",
+    "theta_ave",
+    "ph",
+    "p",
+    "al",
+    "pm1",
+    "t_2ave",
+    "ru_m",
+    "rv_m",
+    "ww_m",
+)
 
 
 class _StaticHolder:
@@ -500,18 +543,31 @@ def _enforce_operational_precision(state: State, *, force_fp64: bool = False) ->
         # Sprint F7-B is fp64-correctness-only: idealized cases and any caller
         # that sets force_fp64 keep every prognostic in float64.  The fp32-gated
         # operational matrix (ADR-007) is a perf decision deferred to F7-perf.
-        updates = {
-            field: getattr(state, field).astype(jnp.float64) for field in STATE_FIELD_ORDER
-        }
+        # v0.10.0 Wave-A (Opus#4/GPT#20): SKIP the .astype when the field is
+        # already fp64 -- a no-op convert that XLA may still materialise (the HLO
+        # audit counted 26 stablehlo.convert here, ~23 from non-fp64-default
+        # leaves; the all-fp64 carried-State case has zero non-no-op casts).
+        # Emitting .astype only on the genuinely-mismatched leaves removes the
+        # whole per-step convert family for the warmed carried fp64 State.
+        # Bit-identical: fp64->fp64 .astype is the identity.
+        updates = {}
+        for field in STATE_FIELD_ORDER:
+            value = getattr(state, field)
+            if value.dtype != jnp.float64:
+                updates[field] = value.astype(jnp.float64)
+        if not updates:
+            return state.replace(_cast=False)
         # _cast=False so the fp64 upcast is NOT canonicalised back to each
         # field's loaded dtype.  Real-case states arrive mixed-precision
         # (DEFAULT_DTYPES perf matrix: theta/u/v fp32, w/mu/ph fp64); without
         # this the force_fp64 path is a silent no-op (Sprint U P0-1).
         return state.replace(_cast=False, **updates)
-    updates = {
-        field: getattr(state, field).astype(DEFAULT_DTYPES.dtype_for(field))
-        for field in STATE_FIELD_ORDER
-    }
+    updates = {}
+    for field in STATE_FIELD_ORDER:
+        value = getattr(state, field)
+        target = DEFAULT_DTYPES.dtype_for(field)
+        if value.dtype != target:
+            updates[field] = value.astype(target)
     return state.replace(**updates)
 
 
@@ -1280,12 +1336,19 @@ def _acoustic_scan(
     if bool(namelist.use_vertical_solver):
         # WRF calc_coef_w uses the FULL dry mass ``mut`` (solve_em.F:2676-2681),
         # real ``c2a`` from small_step_prep, and the real dry ``cqw``.
-        cqw_field = dry_cqw(
-            int(prep.theta_work.shape[0]),
-            int(prep.theta_work.shape[1]),
-            int(prep.theta_work.shape[2]),
-            dtype=prep.theta_work.dtype,
-        )
+        # v0.10.0 Wave-A (Opus#5): ``_acoustic_core_state_from_prep`` already
+        # built the identical ``dry_cqw`` array into ``acoustic.cqw`` (:1176), so
+        # reuse it here instead of rebuilding a second identical array per RK
+        # stage (the build was happening twice: once for the carried state, once
+        # for ``calc_coef_w`` + the scan body).  Bit-identical (same dry_cqw).
+        cqw_field = acoustic.cqw
+        if cqw_field is None:  # defensive: bare-core callers may not stage it
+            cqw_field = dry_cqw(
+                int(prep.theta_work.shape[0]),
+                int(prep.theta_work.shape[1]),
+                int(prep.theta_work.shape[2]),
+                dtype=prep.theta_work.dtype,
+            )
         a, alpha, gamma = calc_coef_w_wrf_coefficients(
             prep.mut,
             namelist.metrics,
@@ -1315,17 +1378,43 @@ def _acoustic_scan(
             nested=nested,
         )
 
-        def body(scan_acoustic: AcousticCoreState, _):
-            return acoustic_substep_core(
+        # v0.10.0 Wave-A (Opus#2 carry-split + Opus#1 unroll):
+        # ``acoustic_substep_core`` MUTATES only ~19 prognostic leaves
+        # (_ACOUSTIC_EVOLVING_FIELDS); the other ~50 leaves of AcousticCoreState
+        # are STAGE-CONSTANT (metric inverses, base columns, msf*, cf*, tendency
+        # leaves, ...).  Threading the full ~69-field pytree through ``lax.scan``
+        # forces XLA to carry-copy every constant leaf each substep (the D2D
+        # memcpy family the profile attributed to the scan boundary).  Instead we
+        # thread ONLY the evolving leaves through the scan carry and close over the
+        # constant leaves -- round-off-neutral (identical math, the core sees the
+        # exact same fully-reconstituted AcousticCoreState each substep).
+        const_leaves = {
+            name: getattr(acoustic, name)
+            for name in acoustic.__dataclass_fields__  # type: ignore[attr-defined]
+            if name not in _ACOUSTIC_EVOLVING_FIELDS
+        }
+
+        def body(carry_evolving: dict, _):
+            scan_acoustic = acoustic.replace(**carry_evolving, **const_leaves)
+            stepped = acoustic_substep_core(
                 scan_acoustic,
                 a=a,
                 alpha=alpha,
                 gamma=gamma,
                 cfg=stage_cfg,
                 cqw=cqw_field,
-            ), None
+            )
+            return {name: getattr(stepped, name) for name in _ACOUSTIC_EVOLVING_FIELDS}, None
 
-        acoustic, _ = jax.lax.scan(body, acoustic, xs=None, length=int(stage.number_of_small_timesteps))
+        evolving0 = {name: getattr(acoustic, name) for name in _ACOUSTIC_EVOLVING_FIELDS}
+        evolving_final, _ = jax.lax.scan(
+            body,
+            evolving0,
+            xs=None,
+            length=int(stage.number_of_small_timesteps),
+            unroll=_acoustic_unroll(),
+        )
+        acoustic = acoustic.replace(**evolving_final, **const_leaves)
         next_carry = _carry_from_finished_stage(carry, prep, acoustic, namelist)
         return next_carry.replace(state=apply_halo(next_carry.state, halo_spec(namelist.grid)))
 

@@ -307,26 +307,42 @@ def _optional_or(value: jax.Array | None, default: jax.Array) -> jax.Array:
     return default if value is None else jnp.asarray(value, dtype=default.dtype)
 
 
+# v0.10.0 Wave-A (Opus#6): the edge-pad-then-slice face pairs materialised a full
+# padded copy of every large 3D field every substep (a memory-op kernel + extra
+# HBM each).  ``jnp.pad(field, ((0,0),(0,0),(1,1)), mode="edge")`` followed by
+# ``padded[...,:-1] , padded[...,1:]`` is exactly:
+#   left  = [f[0], f[0], f[1], ..., f[-1]]  = concat(f[...,:1], f)
+#   right = [f[0], f[1], ..., f[-1], f[-1]] = concat(f, f[...,-1:])
+# so the concatenate form is BIT-IDENTICAL (same values, no full padded array).
 def _x_face_pair_3d(field: jax.Array) -> tuple[jax.Array, jax.Array]:
-    padded = jnp.pad(field, ((0, 0), (0, 0), (1, 1)), mode="edge")
-    return padded[:, :, :-1], padded[:, :, 1:]
+    left = jnp.concatenate([field[:, :, :1], field], axis=2)
+    right = jnp.concatenate([field, field[:, :, -1:]], axis=2)
+    return left, right
 
 
 def _y_face_pair_3d(field: jax.Array) -> tuple[jax.Array, jax.Array]:
-    padded = jnp.pad(field, ((0, 0), (1, 1), (0, 0)), mode="edge")
-    return padded[:, :-1, :], padded[:, 1:, :]
+    south = jnp.concatenate([field[:, :1, :], field], axis=1)
+    north = jnp.concatenate([field, field[:, -1:, :]], axis=1)
+    return south, north
 
 
 def _x_face_pair_2d(field: jax.Array) -> tuple[jax.Array, jax.Array]:
-    padded = jnp.pad(field, ((0, 0), (1, 1)), mode="edge")
-    return padded[:, :-1], padded[:, 1:]
+    left = jnp.concatenate([field[:, :1], field], axis=1)
+    right = jnp.concatenate([field, field[:, -1:]], axis=1)
+    return left, right
 
 
 def _y_face_pair_2d(field: jax.Array) -> tuple[jax.Array, jax.Array]:
-    padded = jnp.pad(field, ((1, 1), (0, 0)), mode="edge")
-    return padded[:-1, :], padded[1:, :]
+    south = jnp.concatenate([field[:1, :], field], axis=0)
+    north = jnp.concatenate([field, field[-1:, :]], axis=0)
+    return south, north
 
 
+# v0.10.0 Wave-A (Opus#7): build dpn with a single concatenate of
+# [bottom, interior, top] instead of allocating zeros + 2-3 dynamic-update-slice
+# scatters per substep.  The interior block spans WRF k=2..kde-1 (Python 1..nz-1),
+# the bottom face is k=1, the top face is k=kde (= zeros when not top_lid, exactly
+# as the zeros-init left index nz untouched).  BIT-IDENTICAL (same values).
 def _x_face_pressure_dpn(state: AcousticCoreState, top_lid: bool) -> jax.Array:
     left, right = _x_face_pair_3d(state.p)
     pair_sum = left + right
@@ -339,13 +355,11 @@ def _x_face_pressure_dpn(state: AcousticCoreState, top_lid: bool) -> jax.Array:
         state.fnm[1:, None, None] * pair_sum[1:, :, :]
         + state.fnp[1:, None, None] * pair_sum[:-1, :, :]
     )
-    dpn = jnp.zeros((nz + 1, ny, nx_face), dtype=state.p.dtype)
-    dpn = dpn.at[0, :, :].set(bottom)
-    dpn = dpn.at[1:nz, :, :].set(interior)
     if bool(top_lid):
         top = 0.5 * (cf1 * pair_sum[-1, :, :] + cf2 * pair_sum[-2, :, :] + cf3 * pair_sum[-3, :, :])
-        dpn = dpn.at[nz, :, :].set(top)
-    return dpn
+    else:
+        top = jnp.zeros((ny, nx_face), dtype=state.p.dtype)
+    return jnp.concatenate([bottom[None, :, :], interior, top[None, :, :]], axis=0)
 
 
 def _y_face_pressure_dpn(state: AcousticCoreState, top_lid: bool) -> jax.Array:
@@ -360,13 +374,11 @@ def _y_face_pressure_dpn(state: AcousticCoreState, top_lid: bool) -> jax.Array:
         state.fnm[1:, None, None] * pair_sum[1:, :, :]
         + state.fnp[1:, None, None] * pair_sum[:-1, :, :]
     )
-    dpn = jnp.zeros((nz + 1, ny_face, nx), dtype=state.p.dtype)
-    dpn = dpn.at[0, :, :].set(bottom)
-    dpn = dpn.at[1:nz, :, :].set(interior)
     if bool(top_lid):
         top = 0.5 * (cf1 * pair_sum[-1, :, :] + cf2 * pair_sum[-2, :, :] + cf3 * pair_sum[-3, :, :])
-        dpn = dpn.at[nz, :, :].set(top)
-    return dpn
+    else:
+        top = jnp.zeros((ny_face, nx), dtype=state.p.dtype)
+    return jnp.concatenate([bottom[None, :, :], interior, top[None, :, :]], axis=0)
 
 
 def advance_uv_wrf(
