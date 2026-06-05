@@ -8,6 +8,8 @@ os.environ.setdefault("JAX_COMPILATION_CACHE_DIR", "")
 
 from gpuwrf.contracts.grid import DomainHierarchy, DomainNest
 from gpuwrf.runtime.domain_tree import (
+    DomainBundle,
+    DomainTree,
     build_live_nested_boundary_config,
     run_domain_tree_callbacks,
 )
@@ -125,6 +127,61 @@ def test_feedback_callback_is_behind_gate():
         block_between=False,
     )
     assert calls["feedback"] == 1
+
+
+def test_child_start_steps_are_domain_global_not_subcycle_local():
+    hierarchy = DomainHierarchy.from_edges(
+        ("d01", "d02"),
+        (DomainNest("d01", "d02", 3, 2, 2),),
+    )
+    calls: list[tuple[str, int, int]] = []
+
+    def advance(name, carry, start_step, n_steps):
+        calls.append((name, int(start_step), int(n_steps)))
+        return _Carry(carry.value + int(n_steps))
+
+    run_domain_tree_callbacks(
+        hierarchy,
+        {"d01": _Carry(0), "d02": _Carry(0)},
+        root_steps=2,
+        advance=advance,
+        block_between=False,
+    )
+
+    assert calls == [
+        ("d01", 1, 1),
+        ("d02", 1, 3),
+        ("d01", 2, 1),
+        ("d02", 4, 3),
+    ]
+
+
+class _Grid:
+    def __init__(self, ny: int, nx: int) -> None:
+        self.ny = ny
+        self.nx = nx
+
+
+class _State:
+    def bytes(self) -> int:
+        return 0
+
+
+def test_feedback_weights_are_available_when_runtime_gate_flips_on():
+    hierarchy = DomainHierarchy.from_edges(
+        ("d01", "d02"),
+        (DomainNest("d01", "d02", 3, 2, 2),),
+    )
+    domains = {
+        "d01": DomainBundle("d01", _State(), None, grid=_Grid(12, 12), metrics=object()),
+        "d02": DomainBundle("d02", _State(), None, grid=_Grid(24, 24), metrics=object()),
+    }
+
+    tree = DomainTree.from_domains(hierarchy, domains, feedback_enabled=False)
+    edge = tree.children("d01")[0]
+
+    assert tree.feedback_enabled is False
+    assert edge.feedback_weights is not None
 
 
 def test_live_nested_boundary_config_sets_parent_dt_and_wrf_toggles():

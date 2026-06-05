@@ -179,6 +179,28 @@ def test_boundary_package_two_time_leaf_shape_and_cadence():
     assert abs(th[1, SIDE_INDEX["W"], 0, 0, 0] - 7.0) < 1e-9   # new = parent target
 
 
+def test_boundary_package_rejects_unknown_registration_and_width():
+    ratio, ips, jps = 3, 5, 4
+    nz = 6
+    pny, pnx = 40, 40
+    cny, cnx = 12, 12
+    width = 5
+    side_len = max(cny, cnx) + 1
+    with pytest.raises(ValueError, match="unknown nest interpolation registration"):
+        BC.build_nest_force_weights(
+            parent_grid_ratio=ratio, i_parent_start=ips, j_parent_start=jps,
+            parent_grid=_Grid(pny, pnx), child_grid=_Grid(cny, cnx), registration="nearest",
+        )
+    weights = BC.build_nest_force_weights(
+        parent_grid_ratio=ratio, i_parent_start=ips, j_parent_start=jps,
+        parent_grid=_Grid(pny, pnx), child_grid=_Grid(cny, cnx), registration="sint",
+    )
+    parent = _make_state(nz, pny, pnx, width, side_len, fill=7.0)
+    child = _make_state(nz, cny, cnx, width, side_len, fill=1.0)
+    with pytest.raises(ValueError, match="bdy_width must be positive"):
+        BC.build_child_boundary_package(child, parent, weights, bdy_width=0)
+
+
 def test_boundary_leaf_time_interp_matches_wrf_bdy_plus_dtbc_tend():
     # feed the two-time leaf through the EXISTING consumer; at lead=0 -> old,
     # at lead=parent_dt -> new, at lead=parent_dt/2 -> midpoint (WRF linear cadence).
