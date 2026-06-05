@@ -366,10 +366,147 @@ def run_operator_check() -> dict[str, Any]:
     }
 
 
+def run_end_to_end_check() -> dict[str, Any]:
+    devices = len(jax.local_devices())
+    if devices < 2:
+        raise RuntimeError("end-to-end simulation requires at least two fake/real local devices")
+    nx = max(64, devices * 8)
+    grid = _test_grid(nx=nx, ny=4, nz=6)
+    state = _bounded_operator_state(_deterministic_state(grid))
+    bounds = x_partition_bounds(grid.nx, devices)
+    records: dict[str, Any] = {}
+
+    halo3_unfilled = partition_state_x(
+        state,
+        grid,
+        num_partitions=devices,
+        halo_width=3,
+        fill_halos=False,
+    )
+    cfg3 = ShardingConfig(enabled=True, num_partitions=devices, halo_width=3)
+    spec3 = HaloSpec(
+        width=3,
+        fields_to_exchange=("theta", "qv"),
+        edge_type="periodic",
+        sharding=cfg3,
+    )
+
+    def exchange3(local_state):
+        return apply_halo(local_state, spec3)
+
+    halo3 = jax.pmap(exchange3, axis_name=cfg3.axis_name)(halo3_unfilled)
+    flux_global = flux5_face_periodic(state.theta, state.qv + 0.25, axis=2)
+    flux_got = jax.pmap(
+        lambda field, vel: sharded_flux5_face_periodic_x(field, vel + 0.25, halo_width=3),
+        axis_name=cfg3.axis_name,
+    )(halo3.theta, halo3.qv)
+    records["ppermute_flux5_x"] = _comparison_record(
+        flux_got,
+        _stack_mass_slices(flux_global, bounds),
+        rtol=2.0e-6,
+        atol=2.0e-7,
+    )
+
+    diffusion_kwargs = {"dt": 10.0, "diff_6th_factor": 0.12, "horizontal_only": True, "monotonic": True}
+    diffusion_global = sixth_order_diffusion_tendency(state.theta, **diffusion_kwargs)
+    diffusion_got = jax.pmap(
+        lambda field: sharded_sixth_order_diffusion_tendency(field, halo_width=3, **diffusion_kwargs),
+        axis_name=cfg3.axis_name,
+    )(halo3.theta)
+    records["ppermute_sixth_order_diffusion"] = _comparison_record(
+        diffusion_got,
+        _stack_mass_slices(diffusion_global, bounds),
+        rtol=2.0e-6,
+        atol=2.0e-9,
+    )
+
+    halo1_unfilled = partition_state_x(
+        state,
+        grid,
+        num_partitions=devices,
+        halo_width=1,
+        fill_halos=False,
+    )
+    cfg1 = ShardingConfig(enabled=True, num_partitions=devices, halo_width=1)
+    spec1 = HaloSpec(
+        width=1,
+        fields_to_exchange=("u", "p"),
+        edge_type="periodic",
+        sharding=cfg1,
+    )
+
+    def exchange1(local_state):
+        return apply_halo(local_state, spec1)
+
+    halo1 = jax.pmap(exchange1, axis_name=cfg1.axis_name)(halo1_unfilled)
+    div_global = 0.1 * (state.u[:, :, 1 : grid.nx + 1] - state.u[:, :, : grid.nx])
+    div_got = jax.pmap(
+        lambda u: sharded_x_staggered_divergence(u, rdx=0.1, halo_width=1),
+        axis_name=cfg1.axis_name,
+    )(halo1.u)
+    records["ppermute_acoustic_x_divergence"] = _comparison_record(
+        div_got,
+        _stack_mass_slices(div_global, bounds),
+        rtol=0.0,
+        atol=0.0,
+    )
+
+    fnm = jnp.linspace(0.2, 0.8, grid.nz, dtype=state.p.dtype)
+    fnp = 1.0 - fnm
+    cf1 = jnp.asarray(0.55, dtype=state.p.dtype)
+    cf2 = jnp.asarray(0.30, dtype=state.p.dtype)
+    cf3 = jnp.asarray(0.15, dtype=state.p.dtype)
+    dpn_global = _global_x_face_pressure_dpn(state.p, fnm=fnm, fnp=fnp, cf1=cf1, cf2=cf2, cf3=cf3)
+    owned_width = grid.nx // devices
+
+    def local_dpn(p):
+        rank = jax.lax.axis_index("shard")
+        return sharded_x_face_pressure_dpn(
+            p,
+            fnm=fnm,
+            fnp=fnp,
+            cf1=cf1,
+            cf2=cf2,
+            cf3=cf3,
+            halo_width=1,
+            global_start=rank * owned_width,
+            global_nx=grid.nx,
+        )
+
+    dpn_got = jax.pmap(local_dpn, axis_name=cfg1.axis_name)(halo1.p)
+    records["ppermute_acoustic_x_face_pressure_dpn"] = _comparison_record(
+        dpn_got,
+        _stack_face_slices(dpn_global, bounds),
+        rtol=1.0e-12,
+        atol=1.0e-12,
+    )
+
+    return {
+        "check": "ppermute_halo_then_sharded_operators",
+        "platform": jax.default_backend(),
+        "device_count": len(jax.devices()),
+        "local_device_count": devices,
+        "grid": {"nx": int(grid.nx), "ny": int(grid.ny), "nz": int(grid.nz)},
+        "records": records,
+        "passed": all(bool(record["passed"]) for record in records.values()),
+        "simulation_can_prove": [
+            "unfilled x shards can refresh halos with lax.ppermute and reproduce selected single-domain operator outputs",
+            "single-node 8-way CPU fake mesh exercises the same pmap axis/rank/permute structure intended for 8xH200",
+            "mass-grid, x-face staggered, and acoustic edge-face seams are correct for these local operators",
+        ],
+        "simulation_cannot_prove": [
+            "real H200/NVLink bandwidth or latency",
+            "NCCL collective implementation details",
+            "whole-dycore wall-clock strong scaling",
+            "multi-node launcher and fabric behavior",
+        ],
+    }
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--devices", type=int, default=None, help="expected visible fake CPU device count")
-    parser.add_argument("--check", choices=("flag-off", "halo", "operators", "all"), default="flag-off")
+    parser.add_argument("--check", choices=("flag-off", "halo", "operators", "e2e", "all"), default="flag-off")
     parser.add_argument(
         "--output",
         type=Path,
@@ -385,12 +522,15 @@ def main(argv: list[str] | None = None) -> int:
         payload = run_halo_exchange_check()
     elif args.check == "operators":
         payload = run_operator_check()
+    elif args.check == "e2e":
+        payload = run_end_to_end_check()
     else:
         payload = {
             "checks": [
                 run_flag_off_graph_check(),
                 run_halo_exchange_check(),
                 run_operator_check(),
+                run_end_to_end_check(),
             ]
         }
         payload["passed"] = all(bool(check["passed"]) for check in payload["checks"])
