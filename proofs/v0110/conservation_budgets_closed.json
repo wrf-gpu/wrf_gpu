@@ -1,0 +1,789 @@
+{
+  "budgets_closed": true,
+  "cases": {
+    "open_boundary_coupled": {
+      "boundary_guard_total_changed_count": 0,
+      "boundary_guard_total_nonfinite_replacement_count": 0,
+      "budgets_closed": true,
+      "closure": {
+        "dry_mass_pass": true,
+        "dry_mass_relative_residual": 0.0,
+        "dry_mass_residual_kg": 0.0,
+        "moist_static_energy_pass": true,
+        "moist_static_energy_relative_residual": 0.0,
+        "moist_static_energy_residual_j": 0.0,
+        "water_pass": true,
+        "water_relative_residual": 0.0,
+        "water_residual_kg": 0.0
+      },
+      "corrections_positive_into_domain": {
+        "dry_mass_lbc_flux_kg": -82375197.75,
+        "dry_mass_rk_dycore_operator_flux_kg": 13537696087.0,
+        "moist_static_energy_lbc_flux_j": 1.2467892713947136e+16,
+        "moist_static_energy_physics_operator_source_j": 43840634814464.0,
+        "moist_static_energy_rk_dycore_operator_flux_j": -2.3846661283243622e+17,
+        "surface_evap_qfx_accumulated_kg": 17537162.796356037,
+        "water_lbc_flux_kg": 184438.32470703125,
+        "water_physics_operator_source_kg": -908.888671875,
+        "water_rk_dycore_operator_flux_kg": 22954217.60498047
+      },
+      "final_budget": {
+        "dry_mass_kg": 925050441704969.2,
+        "moist_static_energy_j": 3.0477016209209387e+20,
+        "precip_accumulated_kg": 0.0,
+        "surface_evap_accumulated_kg": 17537162.796356037,
+        "total_water_air_kg": 1783418713496.545,
+        "water_storage_plus_sinks_kg": 1783401176333.7485
+      },
+      "final_finite": {
+        "all_finite": true,
+        "fields": {
+          "mu_total": {
+            "finite": true,
+            "max": 96729.56083882341,
+            "min": 66360.42080208228,
+            "nonfinite_count": 0
+          },
+          "p_total": {
+            "finite": true,
+            "max": 101632.75885416666,
+            "min": 5208.736740275548,
+            "nonfinite_count": 0
+          },
+          "ph_total": {
+            "finite": true,
+            "max": 204077.453125,
+            "min": -7.796288059580547e-07,
+            "nonfinite_count": 0
+          },
+          "qc": {
+            "finite": true,
+            "max": 0.0,
+            "min": 0.0,
+            "nonfinite_count": 0
+          },
+          "qg": {
+            "finite": true,
+            "max": 0.0,
+            "min": 0.0,
+            "nonfinite_count": 0
+          },
+          "qi": {
+            "finite": true,
+            "max": 0.0,
+            "min": 0.0,
+            "nonfinite_count": 0
+          },
+          "qr": {
+            "finite": true,
+            "max": 0.0,
+            "min": 0.0,
+            "nonfinite_count": 0
+          },
+          "qs": {
+            "finite": true,
+            "max": 0.0,
+            "min": 0.0,
+            "nonfinite_count": 0
+          },
+          "qv": {
+            "finite": true,
+            "max": 0.01277779504760272,
+            "min": 2.4373459186537932e-06,
+            "nonfinite_count": 0
+          },
+          "theta": {
+            "finite": true,
+            "max": 492.52711156209307,
+            "min": 288.8530310995628,
+            "nonfinite_count": 0
+          },
+          "u": {
+            "finite": true,
+            "max": 25.658235131369697,
+            "min": -10.299141709009806,
+            "nonfinite_count": 0
+          },
+          "v": {
+            "finite": true,
+            "max": 10.029557931542428,
+            "min": -11.480101988050672,
+            "nonfinite_count": 0
+          },
+          "w": {
+            "finite": true,
+            "max": 1.0397380185278495,
+            "min": -1.9276994761592854,
+            "nonfinite_count": 0
+          }
+        }
+      },
+      "initial_budget": {
+        "dry_mass_kg": 925036986384080.0,
+        "moist_static_energy_j": 3.0499611697157754e+20,
+        "precip_accumulated_kg": 0.0,
+        "surface_evap_accumulated_kg": 0.0,
+        "total_water_air_kg": 1783378038586.7075,
+        "water_storage_plus_sinks_kg": 1783378038586.7075
+      },
+      "phase_records": [
+        {
+          "applied_non_dry_physics_delta": {
+            "dry_mass_kg": 0.0,
+            "moist_static_energy_j": 43840634814464.0,
+            "water_storage_plus_sinks_kg": -908.888671875
+          },
+          "boundary_guard": {
+            "fields": {
+              "mu": {
+                "changed_count": 0,
+                "nonfinite_replacement_count": 0
+              },
+              "mu_perturbation": {
+                "changed_count": 0,
+                "nonfinite_replacement_count": 0
+              },
+              "mu_total": {
+                "changed_count": 0,
+                "nonfinite_replacement_count": 0
+              },
+              "p": {
+                "changed_count": 0,
+                "nonfinite_replacement_count": 0
+              },
+              "p_perturbation": {
+                "changed_count": 0,
+                "nonfinite_replacement_count": 0
+              },
+              "p_total": {
+                "changed_count": 0,
+                "nonfinite_replacement_count": 0
+              },
+              "ph": {
+                "changed_count": 0,
+                "nonfinite_replacement_count": 0
+              },
+              "ph_perturbation": {
+                "changed_count": 0,
+                "nonfinite_replacement_count": 0
+              },
+              "ph_total": {
+                "changed_count": 0,
+                "nonfinite_replacement_count": 0
+              },
+              "qv": {
+                "changed_count": 0,
+                "nonfinite_replacement_count": 0
+              },
+              "theta": {
+                "changed_count": 0,
+                "nonfinite_replacement_count": 0
+              },
+              "u": {
+                "changed_count": 0,
+                "nonfinite_replacement_count": 0
+              },
+              "v": {
+                "changed_count": 0,
+                "nonfinite_replacement_count": 0
+              },
+              "w": {
+                "changed_count": 0,
+                "nonfinite_replacement_count": 0
+              }
+            },
+            "total_changed_count": 0,
+            "total_nonfinite_replacement_count": 0
+          },
+          "boundary_operator_delta": {
+            "dry_mass_kg": -82375197.75,
+            "moist_static_energy_j": 1.2467892713947136e+16,
+            "water_storage_plus_sinks_kg": 184438.32470703125
+          },
+          "finite": {
+            "final": {
+              "all_finite": true,
+              "fields": {
+                "mu_total": {
+                  "finite": true,
+                  "max": 96729.56083882341,
+                  "min": 66360.42080208228,
+                  "nonfinite_count": 0
+                },
+                "p_total": {
+                  "finite": true,
+                  "max": 101632.75885416666,
+                  "min": 5208.736740275548,
+                  "nonfinite_count": 0
+                },
+                "ph_total": {
+                  "finite": true,
+                  "max": 204077.453125,
+                  "min": -7.796288059580547e-07,
+                  "nonfinite_count": 0
+                },
+                "qc": {
+                  "finite": true,
+                  "max": 0.0,
+                  "min": 0.0,
+                  "nonfinite_count": 0
+                },
+                "qg": {
+                  "finite": true,
+                  "max": 0.0,
+                  "min": 0.0,
+                  "nonfinite_count": 0
+                },
+                "qi": {
+                  "finite": true,
+                  "max": 0.0,
+                  "min": 0.0,
+                  "nonfinite_count": 0
+                },
+                "qr": {
+                  "finite": true,
+                  "max": 0.0,
+                  "min": 0.0,
+                  "nonfinite_count": 0
+                },
+                "qs": {
+                  "finite": true,
+                  "max": 0.0,
+                  "min": 0.0,
+                  "nonfinite_count": 0
+                },
+                "qv": {
+                  "finite": true,
+                  "max": 0.01277779504760272,
+                  "min": 2.4373459186537932e-06,
+                  "nonfinite_count": 0
+                },
+                "theta": {
+                  "finite": true,
+                  "max": 492.52711156209307,
+                  "min": 288.8530310995628,
+                  "nonfinite_count": 0
+                },
+                "u": {
+                  "finite": true,
+                  "max": 25.658235131369697,
+                  "min": -10.299141709009806,
+                  "nonfinite_count": 0
+                },
+                "v": {
+                  "finite": true,
+                  "max": 10.029557931542428,
+                  "min": -11.480101988050672,
+                  "nonfinite_count": 0
+                },
+                "w": {
+                  "finite": true,
+                  "max": 1.0397380185278495,
+                  "min": -1.9276994761592854,
+                  "nonfinite_count": 0
+                }
+              }
+            },
+            "physics_state": {
+              "all_finite": true,
+              "fields": {
+                "mu_total": {
+                  "finite": true,
+                  "max": 96738.5546875,
+                  "min": 66364.8515625,
+                  "nonfinite_count": 0
+                },
+                "p_total": {
+                  "finite": true,
+                  "max": 101898.5390625,
+                  "min": 5225.23876953125,
+                  "nonfinite_count": 0
+                },
+                "ph_total": {
+                  "finite": true,
+                  "max": 204077.453125,
+                  "min": -7.796288059580547e-07,
+                  "nonfinite_count": 0
+                },
+                "qc": {
+                  "finite": true,
+                  "max": 0.0,
+                  "min": 0.0,
+                  "nonfinite_count": 0
+                },
+                "qg": {
+                  "finite": true,
+                  "max": 0.0,
+                  "min": 0.0,
+                  "nonfinite_count": 0
+                },
+                "qi": {
+                  "finite": true,
+                  "max": 0.0,
+                  "min": 0.0,
+                  "nonfinite_count": 0
+                },
+                "qr": {
+                  "finite": true,
+                  "max": 0.0,
+                  "min": 0.0,
+                  "nonfinite_count": 0
+                },
+                "qs": {
+                  "finite": true,
+                  "max": 0.0,
+                  "min": 0.0,
+                  "nonfinite_count": 0
+                },
+                "qv": {
+                  "finite": true,
+                  "max": 0.012776953139982946,
+                  "min": 2.4372081998423335e-06,
+                  "nonfinite_count": 0
+                },
+                "theta": {
+                  "finite": true,
+                  "max": 492.52838134765625,
+                  "min": 288.8063481703145,
+                  "nonfinite_count": 0
+                },
+                "u": {
+                  "finite": true,
+                  "max": 25.66345348055485,
+                  "min": -10.300077438354492,
+                  "nonfinite_count": 0
+                },
+                "v": {
+                  "finite": true,
+                  "max": 9.910498218027607,
+                  "min": -11.481924184007376,
+                  "nonfinite_count": 0
+                },
+                "w": {
+                  "finite": true,
+                  "max": 0.9269569516181946,
+                  "min": -0.7523292899131775,
+                  "nonfinite_count": 0
+                }
+              }
+            },
+            "post_boundary_raw": {
+              "all_finite": true,
+              "fields": {
+                "mu_total": {
+                  "finite": true,
+                  "max": 96729.56083882341,
+                  "min": 66360.42080208228,
+                  "nonfinite_count": 0
+                },
+                "p_total": {
+                  "finite": true,
+                  "max": 101632.75885416666,
+                  "min": 5208.736740275548,
+                  "nonfinite_count": 0
+                },
+                "ph_total": {
+                  "finite": true,
+                  "max": 204077.453125,
+                  "min": -7.796288059580547e-07,
+                  "nonfinite_count": 0
+                },
+                "qc": {
+                  "finite": true,
+                  "max": 0.0,
+                  "min": 0.0,
+                  "nonfinite_count": 0
+                },
+                "qg": {
+                  "finite": true,
+                  "max": 0.0,
+                  "min": 0.0,
+                  "nonfinite_count": 0
+                },
+                "qi": {
+                  "finite": true,
+                  "max": 0.0,
+                  "min": 0.0,
+                  "nonfinite_count": 0
+                },
+                "qr": {
+                  "finite": true,
+                  "max": 0.0,
+                  "min": 0.0,
+                  "nonfinite_count": 0
+                },
+                "qs": {
+                  "finite": true,
+                  "max": 0.0,
+                  "min": 0.0,
+                  "nonfinite_count": 0
+                },
+                "qv": {
+                  "finite": true,
+                  "max": 0.01277779504760272,
+                  "min": 2.4373459186537932e-06,
+                  "nonfinite_count": 0
+                },
+                "theta": {
+                  "finite": true,
+                  "max": 492.52711156209307,
+                  "min": 288.8530310995628,
+                  "nonfinite_count": 0
+                },
+                "u": {
+                  "finite": true,
+                  "max": 25.658235131369697,
+                  "min": -10.299141709009806,
+                  "nonfinite_count": 0
+                },
+                "v": {
+                  "finite": true,
+                  "max": 10.029557931542428,
+                  "min": -11.480101988050672,
+                  "nonfinite_count": 0
+                },
+                "w": {
+                  "finite": true,
+                  "max": 1.0397380185278495,
+                  "min": -1.9276994761592854,
+                  "nonfinite_count": 0
+                }
+              }
+            },
+            "post_dynamics_guard": {
+              "all_finite": true,
+              "fields": {
+                "mu_total": {
+                  "finite": true,
+                  "max": 96729.56083882341,
+                  "min": 66360.42080208228,
+                  "nonfinite_count": 0
+                },
+                "p_total": {
+                  "finite": true,
+                  "max": 101337.66009988167,
+                  "min": 5208.736740275548,
+                  "nonfinite_count": 0
+                },
+                "ph_total": {
+                  "finite": true,
+                  "max": 204077.453125,
+                  "min": -7.796288059580547e-07,
+                  "nonfinite_count": 0
+                },
+                "qc": {
+                  "finite": true,
+                  "max": 0.0,
+                  "min": 0.0,
+                  "nonfinite_count": 0
+                },
+                "qg": {
+                  "finite": true,
+                  "max": 0.0,
+                  "min": 0.0,
+                  "nonfinite_count": 0
+                },
+                "qi": {
+                  "finite": true,
+                  "max": 0.0,
+                  "min": 0.0,
+                  "nonfinite_count": 0
+                },
+                "qr": {
+                  "finite": true,
+                  "max": 0.0,
+                  "min": 0.0,
+                  "nonfinite_count": 0
+                },
+                "qs": {
+                  "finite": true,
+                  "max": 0.0,
+                  "min": 0.0,
+                  "nonfinite_count": 0
+                },
+                "qv": {
+                  "finite": true,
+                  "max": 0.012776953139982946,
+                  "min": 2.4372081998423335e-06,
+                  "nonfinite_count": 0
+                },
+                "theta": {
+                  "finite": true,
+                  "max": 492.52838134765625,
+                  "min": 288.8530310995628,
+                  "nonfinite_count": 0
+                },
+                "u": {
+                  "finite": true,
+                  "max": 25.643555457400016,
+                  "min": -10.299141709009806,
+                  "nonfinite_count": 0
+                },
+                "v": {
+                  "finite": true,
+                  "max": 10.087289388507289,
+                  "min": -11.476421619718872,
+                  "nonfinite_count": 0
+                },
+                "w": {
+                  "finite": true,
+                  "max": 1.0397380185278495,
+                  "min": -1.9276994761592854,
+                  "nonfinite_count": 0
+                }
+              }
+            },
+            "post_physics_delta": {
+              "all_finite": true,
+              "fields": {
+                "mu_total": {
+                  "finite": true,
+                  "max": 96729.56083882341,
+                  "min": 66360.42080208228,
+                  "nonfinite_count": 0
+                },
+                "p_total": {
+                  "finite": true,
+                  "max": 101337.66009988167,
+                  "min": 5208.736740275548,
+                  "nonfinite_count": 0
+                },
+                "ph_total": {
+                  "finite": true,
+                  "max": 204077.453125,
+                  "min": -7.796288059580547e-07,
+                  "nonfinite_count": 0
+                },
+                "qc": {
+                  "finite": true,
+                  "max": 0.0,
+                  "min": 0.0,
+                  "nonfinite_count": 0
+                },
+                "qg": {
+                  "finite": true,
+                  "max": 0.0,
+                  "min": 0.0,
+                  "nonfinite_count": 0
+                },
+                "qi": {
+                  "finite": true,
+                  "max": 0.0,
+                  "min": 0.0,
+                  "nonfinite_count": 0
+                },
+                "qr": {
+                  "finite": true,
+                  "max": 0.0,
+                  "min": 0.0,
+                  "nonfinite_count": 0
+                },
+                "qs": {
+                  "finite": true,
+                  "max": 0.0,
+                  "min": 0.0,
+                  "nonfinite_count": 0
+                },
+                "qv": {
+                  "finite": true,
+                  "max": 0.012776953139982946,
+                  "min": 2.4372081998423335e-06,
+                  "nonfinite_count": 0
+                },
+                "theta": {
+                  "finite": true,
+                  "max": 492.52838134765625,
+                  "min": 288.8530310995628,
+                  "nonfinite_count": 0
+                },
+                "u": {
+                  "finite": true,
+                  "max": 25.643555457400016,
+                  "min": -10.299141709009806,
+                  "nonfinite_count": 0
+                },
+                "v": {
+                  "finite": true,
+                  "max": 10.087289388507289,
+                  "min": -11.476421619718872,
+                  "nonfinite_count": 0
+                },
+                "w": {
+                  "finite": true,
+                  "max": 1.0397380185278495,
+                  "min": -1.9276994761592854,
+                  "nonfinite_count": 0
+                }
+              }
+            },
+            "post_rk": {
+              "all_finite": true,
+              "fields": {
+                "mu_total": {
+                  "finite": true,
+                  "max": 96729.56083882341,
+                  "min": 66360.42080208228,
+                  "nonfinite_count": 0
+                },
+                "p_total": {
+                  "finite": true,
+                  "max": 101337.66009988167,
+                  "min": 5208.736740275548,
+                  "nonfinite_count": 0
+                },
+                "ph_total": {
+                  "finite": true,
+                  "max": 204077.453125,
+                  "min": -7.796288059580547e-07,
+                  "nonfinite_count": 0
+                },
+                "qc": {
+                  "finite": true,
+                  "max": 0.0,
+                  "min": 0.0,
+                  "nonfinite_count": 0
+                },
+                "qg": {
+                  "finite": true,
+                  "max": 0.0,
+                  "min": 0.0,
+                  "nonfinite_count": 0
+                },
+                "qi": {
+                  "finite": true,
+                  "max": 0.0,
+                  "min": 0.0,
+                  "nonfinite_count": 0
+                },
+                "qr": {
+                  "finite": true,
+                  "max": 0.0,
+                  "min": 0.0,
+                  "nonfinite_count": 0
+                },
+                "qs": {
+                  "finite": true,
+                  "max": 0.0,
+                  "min": 0.0,
+                  "nonfinite_count": 0
+                },
+                "qv": {
+                  "finite": true,
+                  "max": 0.012776953168213367,
+                  "min": 2.4372081952606095e-06,
+                  "nonfinite_count": 0
+                },
+                "theta": {
+                  "finite": true,
+                  "max": 492.52838134765625,
+                  "min": 288.8530310995628,
+                  "nonfinite_count": 0
+                },
+                "u": {
+                  "finite": true,
+                  "max": 25.643555457400016,
+                  "min": -10.299141709009806,
+                  "nonfinite_count": 0
+                },
+                "v": {
+                  "finite": true,
+                  "max": 10.087289388507289,
+                  "min": -11.476421619718872,
+                  "nonfinite_count": 0
+                },
+                "w": {
+                  "finite": true,
+                  "max": 1.0397380185278495,
+                  "min": -1.9276994761592854,
+                  "nonfinite_count": 0
+                }
+              }
+            }
+          },
+          "physics_operator_delta_from_origin": {
+            "dry_mass_kg": 0.0,
+            "moist_static_energy_j": 54123975999488.0,
+            "water_storage_plus_sinks_kg": -1169.392578125
+          },
+          "qfx_step_kg": 17537162.796356037,
+          "rk_dycore_operator_delta": {
+            "dry_mass_kg": 13537696087.0,
+            "moist_static_energy_j": -2.3846661283243622e+17,
+            "water_storage_plus_sinks_kg": 22954217.60498047
+          },
+          "run_radiation": false,
+          "step": 1,
+          "theta_limiter": {
+            "theta_first_limited_cell_xyz": [
+              -1,
+              -1,
+              -1
+            ],
+            "theta_limited_cell_count": 0,
+            "theta_mass_after": 15447190801350.922,
+            "theta_mass_before": 15447190801350.922,
+            "theta_mass_residual": 0.0
+          }
+        }
+      ],
+      "run_boundary": true,
+      "steps": 1
+    }
+  },
+  "cpu_affinity": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27
+  ],
+  "device": "cuda:0",
+  "domain": "d02",
+  "dt_s": 10.0,
+  "grid": {
+    "dx_m": 3000.0,
+    "dy_m": 3000.0,
+    "mass_shape": [
+      44,
+      66,
+      159
+    ],
+    "wrf_staggered_extent": [
+      45,
+      67,
+      160
+    ]
+  },
+  "platform": "gpu",
+  "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
+  "run_id": "20260521_18z_l3_24h_20260522T133443Z",
+  "schema": "v0110_conservation_budgets_closed_v1",
+  "thresholds": {
+    "dry_mass_relative_residual": 1e-08,
+    "moist_static_energy_relative_residual": 1e-06,
+    "water_relative_residual": 1e-06
+  }
+}
