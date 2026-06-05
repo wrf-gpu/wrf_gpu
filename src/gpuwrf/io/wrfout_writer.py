@@ -20,6 +20,9 @@ CP_AIR_J_KG_K = CP_D
 LV_J_KG = XLV
 DATE_STR_LEN = 19
 DEFAULT_SOIL_LAYERS = 4
+DEFAULT_SNOW_LAYERS = 3
+DEFAULT_SNSO_LAYERS = 7
+DEFAULT_SEED_DIM = 8
 
 
 DOWNSTREAM_CRITICAL_VARIABLES: tuple[str, ...] = (
@@ -149,6 +152,26 @@ LAND_SOIL_VARIABLES: tuple[str, ...] = (
     "EMISS",
 )
 
+# (f) Noah-MP internal snow-layer diagnostics. Source = the optional
+# ``NoahMPLandState`` handed to the writer; absent when no land carry exists.
+LAND_SNOW_DIAGNOSTIC_VARIABLES: tuple[str, ...] = (
+    "TSNO",
+    "SNICE",
+    "SNLIQ",
+    "ZSNSO",
+)
+
+# (g) Restart seed arrays for WRF stochastic perturbation options. The Canary
+# supported namelist has stochastic physics disabled, so these are emitted only
+# when an explicit caller-provided source is present (for example diagnostics).
+STOCHASTIC_SEED_VARIABLES: tuple[str, ...] = (
+    "ISEEDARR_SPPT",
+    "ISEEDARR_SKEBS",
+    "ISEEDARRAY_SPP_CONV",
+    "ISEEDARRAY_SPP_PBL",
+    "ISEEDARRAY_SPP_LSM",
+)
+
 # The full operational field set the writer KNOWS how to emit. Each frame writes
 # the subset for which a real source is present (grid metrics + state are always
 # present; diagnostics / land carry are optional), so a missing optional source
@@ -161,6 +184,8 @@ OPERATIONAL_WRFOUT_VARIABLES: tuple[str, ...] = (
     *PRECIP_PARTITION_VARIABLES,
     *SURFACE_FLUX_EXTRA_VARIABLES,
     *LAND_SOIL_VARIABLES,
+    *LAND_SNOW_DIAGNOSTIC_VARIABLES,
+    *STOCHASTIC_SEED_VARIABLES,
 )
 
 
@@ -212,6 +237,9 @@ V_XY = ("Time", "south_north_stag", "west_east")
 # P0-5a additions: soil column (4-layer, Z-staggered) + 1-D eta level columns
 # + scalar Time-only fields, matching WRF wrfout dimension layout exactly.
 SOIL = ("Time", "soil_layers_stag", "south_north", "west_east")
+SNOW = ("Time", "snow_layers_stag", "south_north", "west_east")
+SNSO = ("Time", "snso_layers_stag", "south_north", "west_east")
+SEED = ("Time", "seed_dim_stag")
 Z_HALF = ("Time", "bottom_top")
 Z_FULL = ("Time", "bottom_top_stag")
 SOIL_1D = ("Time", "soil_layers_stag")
@@ -515,6 +543,63 @@ WRFOUT_VARIABLE_SPECS: dict[str, WrfoutVariableSpec] = {
     "UDROFF": _spec("UDROFF", XY, "XY ", "UNDERGROUND RUNOFF", "mm", coordinates="XLONG XLAT XTIME"),
     "ALBEDO": _spec("ALBEDO", XY, "XY ", "ALBEDO", "-", coordinates="XLONG XLAT XTIME"),
     "EMISS": _spec("EMISS", XY, "XY ", "SURFACE EMISSIVITY", "", coordinates="XLONG XLAT XTIME"),
+    "TSNO": _spec("TSNO", SNOW, "XYZ", "snow temperature", "K", stagger="Z", coordinates="XLONG XLAT XTIME"),
+    "SNICE": _spec("SNICE", SNOW, "XYZ", "snow layer ice", "mm", stagger="Z", coordinates="XLONG XLAT XTIME"),
+    "SNLIQ": _spec("SNLIQ", SNOW, "XYZ", "snow layer liquid", "mm", stagger="Z", coordinates="XLONG XLAT XTIME"),
+    "ZSNSO": _spec(
+        "ZSNSO",
+        SNSO,
+        "XYZ",
+        "layer-bottom depth from snow surf",
+        "m",
+        stagger="Z",
+        coordinates="XLONG XLAT XTIME",
+    ),
+    "ISEEDARR_SPPT": _spec(
+        "ISEEDARR_SPPT",
+        SEED,
+        "Z  ",
+        "Array to hold seed for restart, SPPT",
+        "",
+        stagger="Z",
+        dtype="i4",
+    ),
+    "ISEEDARR_SKEBS": _spec(
+        "ISEEDARR_SKEBS",
+        SEED,
+        "Z  ",
+        "Array to hold seed for restart, SKEBS",
+        "",
+        stagger="Z",
+        dtype="i4",
+    ),
+    "ISEEDARRAY_SPP_CONV": _spec(
+        "ISEEDARRAY_SPP_CONV",
+        SEED,
+        "Z  ",
+        "Array to hold seed for restart, RAND_PERT2",
+        "",
+        stagger="Z",
+        dtype="i4",
+    ),
+    "ISEEDARRAY_SPP_PBL": _spec(
+        "ISEEDARRAY_SPP_PBL",
+        SEED,
+        "Z  ",
+        "Array to hold seed for restart, RAND_PERT3",
+        "",
+        stagger="Z",
+        dtype="i4",
+    ),
+    "ISEEDARRAY_SPP_LSM": _spec(
+        "ISEEDARRAY_SPP_LSM",
+        SEED,
+        "Z  ",
+        "Array to hold seed for restart, RAND_PERT4",
+        "",
+        stagger="Z",
+        dtype="i4",
+    ),
 }
 
 
@@ -668,6 +753,9 @@ def write_prepared_wrfout(prepared: PreparedWrfout) -> Path:
 
 def _dimension_sizes(*, nx: int, ny: int, nz: int, namelist: Mapping[str, Any] | Any | None) -> dict[str, int | None]:
     soil_layers = int(_lookup(namelist, "soil_layers_stag", DEFAULT_SOIL_LAYERS))
+    snow_layers = int(_lookup(namelist, "snow_layers_stag", DEFAULT_SNOW_LAYERS))
+    snso_layers = int(_lookup(namelist, "snso_layers_stag", DEFAULT_SNSO_LAYERS))
+    seed_dim = int(_lookup(namelist, "seed_dim_stag", DEFAULT_SEED_DIM))
     return {
         "Time": None,
         "DateStrLen": DATE_STR_LEN,
@@ -678,6 +766,9 @@ def _dimension_sizes(*, nx: int, ny: int, nz: int, namelist: Mapping[str, Any] |
         "bottom_top": int(nz),
         "bottom_top_stag": int(nz) + 1,
         "soil_layers_stag": soil_layers,
+        "snow_layers_stag": snow_layers,
+        "snso_layers_stag": snso_layers,
+        "seed_dim_stag": seed_dim,
     }
 
 
@@ -692,6 +783,9 @@ def _create_dimensions(dataset: Dataset, dimensions: Mapping[str, int | None]) -
         "bottom_top",
         "bottom_top_stag",
         "soil_layers_stag",
+        "snow_layers_stag",
+        "snso_layers_stag",
+        "seed_dim_stag",
     ):
         dataset.createDimension(name, dimensions[name])
 
@@ -719,7 +813,7 @@ def _write_float_variable(
     dimensions: Mapping[str, int | None],
 ) -> None:
     expected_shape = _shape_for_dimensions(spec.dimensions, dimensions)
-    array = _coerce_array(spec.name, data, expected_shape)
+    array = _coerce_array(spec.name, data, expected_shape, dtype=_numpy_dtype_for_spec(spec))
     variable = dataset.createVariable(spec.name, spec.dtype, spec.dimensions)
     _set_variable_attrs(variable, spec)
     variable[0, ...] = array
@@ -801,6 +895,9 @@ def _build_output_fields(
     shape_v_xy = _shape_for_dimensions(V_XY, dimensions)
     shape_z = _shape_for_dimensions(Z_XYZ, dimensions)
     shape_soil = _shape_for_dimensions(SOIL, dimensions)
+    shape_snow = _shape_for_dimensions(SNOW, dimensions)
+    shape_snso = _shape_for_dimensions(SNSO, dimensions)
+    shape_seed = _shape_for_dimensions(SEED, dimensions)
     shape_mapu = _shape_for_dimensions(MAPFAC_U_XY, dimensions)
     shape_mapv = _shape_for_dimensions(MAPFAC_V_XY, dimensions)
 
@@ -966,7 +1063,14 @@ def _build_output_fields(
     # --- P0-5a (e) prognostic Noah-MP soil/snow land columns + land diagnostics.
     # Source = the optional NoahMPLandState carry. Never fabricated. ---
     if land_state is not None:
-        _add_land_soil_fields(fields, land_state, shape_soil=shape_soil, shape_xy=shape_xy)
+        _add_land_soil_fields(
+            fields,
+            land_state,
+            shape_soil=shape_soil,
+            shape_snow=shape_snow,
+            shape_snso=shape_snso,
+            shape_xy=shape_xy,
+        )
 
     # The set of surface-map names the diagnostics dict is allowed to write. Most
     # OVERRIDE a raw lowest-level fallback already in ``fields``; QFX/GRDFLX are
@@ -978,6 +1082,15 @@ def _build_output_fields(
         "HFX", "LH", "TSK", "QFX", "GRDFLX",
     }
     if diagnostics is not None:
+        # WRF stochastic-perturbation restart seed arrays are 1-D integer state.
+        # They are not active in the supported Canary suite, but if a caller carries
+        # real seed state, write it faithfully instead of leaving the KI-3 dimension
+        # unsupported.
+        for name in STOCHASTIC_SEED_VARIABLES:
+            value = diagnostics.get(name) if isinstance(diagnostics, Mapping) else None
+            if value is not None:
+                fields[name] = _coerce_array(name, value, shape_seed, dtype=np.int32)
+
         # Operational surface-layer diagnostics OVERRIDE the raw lowest-level
         # fallbacks for the surface map. These are physically diagnosed 2-m / 10-m /
         # skin / surface fields (mass-point ``(ny, nx)``), not raw level-1 values.
@@ -994,7 +1107,7 @@ def _build_output_fields(
         t2 = np.asarray(fields["T2"], dtype=np.float64)
         fields["TH2"] = _coerce_array("TH2", t2 * (P0_PA / psfc) ** R_D_OVER_CP, shape_xy)
 
-    return {name: np.asarray(value, dtype=np.float32) for name, value in fields.items()}
+    return {name: _materialized_dtype(name, value) for name, value in fields.items()}
 
 
 def _add_grid_coordinate_fields(
@@ -1059,6 +1172,8 @@ def _add_land_soil_fields(
     land_state: Any,
     *,
     shape_soil: tuple[int, int, int],
+    shape_snow: tuple[int, int, int],
+    shape_snso: tuple[int, int, int],
     shape_xy: tuple[int, int],
 ) -> None:
     """Populate the prognostic Noah-MP soil/snow land + diagnostic fields.
@@ -1075,6 +1190,16 @@ def _add_land_soil_fields(
         value = _lookup(land_state, attr)
         if value is not None:
             fields[wrf_name] = _coerce_array(wrf_name, np.asarray(value), shape_soil)
+
+    for wrf_name, attr, shape in (
+        ("TSNO", "tsno", shape_snow),
+        ("SNICE", "snice", shape_snow),
+        ("SNLIQ", "snliq", shape_snow),
+        ("ZSNSO", "zsnso", shape_snso),
+    ):
+        value = _lookup(land_state, attr)
+        if value is not None:
+            fields[wrf_name] = _coerce_array(wrf_name, np.asarray(value), shape)
 
     sneqv = _lookup(land_state, "sneqv")
     if sneqv is not None:
@@ -1275,16 +1400,31 @@ def _shape_for_dimensions(dimensions: tuple[str, ...], sizes: Mapping[str, int |
     return tuple(int(sizes[name]) for name in dimensions if name != "Time")
 
 
-def _coerce_array(name: str, value: Any, shape: tuple[int, ...]) -> np.ndarray:
-    array = np.asarray(value, dtype=np.float32)
+def _materialized_dtype(name: str, value: Any) -> np.ndarray:
+    spec = WRFOUT_VARIABLE_SPECS.get(name)
+    if spec is not None and str(spec.dtype).startswith("i"):
+        return np.asarray(value, dtype=np.int32)
+    return np.asarray(value, dtype=np.float32)
+
+
+def _numpy_dtype_for_spec(spec: WrfoutVariableSpec) -> Any:
+    if str(spec.dtype).startswith("i"):
+        return np.int32
+    if spec.dtype == "f8":
+        return np.float64
+    return np.float32
+
+
+def _coerce_array(name: str, value: Any, shape: tuple[int, ...], *, dtype: Any = np.float32) -> np.ndarray:
+    array = np.asarray(value, dtype=dtype)
     if array.shape == (1, *shape):
         array = array[0]
     if array.shape == shape:
-        return array.astype(np.float32, copy=False)
+        return array.astype(dtype, copy=False)
     if array.shape == ():
-        return np.full(shape, float(array), dtype=np.float32)
+        return np.full(shape, array.item(), dtype=dtype)
     try:
-        return np.broadcast_to(array, shape).astype(np.float32)
+        return np.broadcast_to(array, shape).astype(dtype)
     except ValueError as exc:
         raise ValueError(f"{name} shape {array.shape} cannot be written to WRF shape {shape}") from exc
 
