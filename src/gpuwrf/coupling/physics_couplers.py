@@ -249,6 +249,7 @@ class SurfaceMynnDiagnostics(NamedTuple):
     lh: object
     pblh: object
     t2: object
+    q2: object
     u10: object
     v10: object
     ustar: object
@@ -1083,6 +1084,7 @@ def surface_layer_diagnostics(state: State, grid: GridSpec | None = None) -> Sur
         lh=diag.lh,
         pblh=pblh,
         t2=diag.t2,
+        q2=diag.q2,
         u10=diag.u10,
         v10=diag.v10,
         ustar=diag.fluxes.ustar,

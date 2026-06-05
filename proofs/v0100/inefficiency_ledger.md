@@ -1,9 +1,9 @@
-# v0.10.0 Wave-A / Wave-B1 Inefficiency Ledger
+# v0.10.0 Completed Inefficiency Ledger
 
-Exit-gate evidence: every Wave-A item with its final disposition (REMOVED /
-measured-gain / DEFERRED-to-PhaseN / not-worth-risk), each backed by evidence.
-Wave-A scope = launch-count reduction + low-risk, PRECISION-INVARIANT (no fp32,
-no Thompson NSED change, no command-buffer flag).
+Exit-gate evidence: every v0.10.0 Phase-1/Wave-scope item with its final
+disposition (REMOVED / measured-gain / IRREDUCIBLE / NO-GO /
+`<1%-skipped` / daily-only), each backed by evidence. This ledger is complete
+through Wave-B3.
 
 ## Workload + baseline note (IMPORTANT)
 
@@ -174,3 +174,92 @@ bw-bound non-acoustic fields — but Wave-B scoping already measured fp32 at
 warmed-step lever). The honest read: **the 1.32–1.55× warmed ceiling is NOT
 reachable via MYNN**; v0.10.0's shipped warmed gain is the Wave-B1 1.15×, and the
 MYNN frontier is closed as irreducible.
+
+## Wave-B3 final lane closeout
+
+**MYNN cross-check:** GPT independently rechecked the Wave-B2 MYNN disposition
+and confirmed it. `proofs/v0100/wave_b3_mynn_crosscheck.json` records the
+specific checks:
+- EDMF mass-flux is a dependent vertical updraft recurrence
+  (`vmap(columns) x vmap(8 plumes) x lax.scan(levels)`), with no faithful
+  batching/unroll win; B2 unroll A/B regressed and was not bit-identical.
+- The four mean-tendency vertical solves use `jax.lax.linalg.tridiagonal_solve`
+  through `physics/tridiagonal_solver.py`; there is no lower-risk mechanical
+  replacement.
+- Layout/materialization costs were already inside the rejected B2 fusion A/B
+  (`0.09%` block gain, not bit-identical). No separable `>1%` warmed MYNN lever
+  was found.
+
+**Daily-wrapper changes shipped:** B3 removed only output-wrapper duplicate work,
+not forecast numerics.
+- M9/Q2 duplicate recompute removed: `M9Diagnostics` now carries `q2`, so
+  `_surface_diagnostics_for_output` no longer reruns `surface_layer_diagnostics`
+  solely for Q2.
+- Writer HFX/LH fallback solve skipped when M9 diagnostics supply HFX/LH/UST.
+  Gate tolerance was declared before final comparison: `HFX/LH atol=2e-3 W m-2`;
+  measured max abs diffs were `HFX=9.46e-4`, `LH=1.06e-3`, all other fields
+  bit-identical.
+- Static wrfout grid fields cached once per run:
+  `XLAT/XLONG/XLAT_U/XLONG_U/XLAT_V/XLONG_V/HGT/ZNU/ZNW/MAPFAC_M/MAPFAC_U/
+  MAPFAC_V/F/E/SINALPHA/COSALPHA/P_TOP`. State-derived land fields are not cached.
+
+Gate evidence:
+- `proofs/v0100/wave_b3_daily_wrapper_gains.json`: PASS. Warmed L2 d02 daily-hour
+  denominator `24.334s -> 24.128s`, saving `0.206s/hour = 0.848%`.
+  M9/Q2 reuse saved `0.106s/output = 0.437%` of daily wall; output pack/static
+  cache path saved `0.099s/output = 0.407%` of daily wall.
+- `proofs/v0100/wave_b3_output_parity.json`: PASS on prepared payload and NetCDF
+  variables. All fields are bit-identical except HFX/LH within the declared
+  tolerance above.
+
+Important no-go: the forecast carry holds `rthraten`, which is a radiative
+theta-tendency, **not** the SWDOWN/GLW diagnostic value. B3 therefore did not
+pretend `rthraten` can replace SWDOWN/GLW. Full RRTMG diagnostic side-channel
+reuse would require changing the forecast carry/order and did not clear the
+low-risk wrapper-only bar.
+
+## Final completion matrix
+
+| Item | Final disposition | Evidence |
+|---|---|---|
+| Opus#1 / GPT#1 acoustic scan unroll/fusion | **Hook added; default unroll kept 1; unroll>1 `<1%-skipped`** | `wave_a_unroll_ab_verdict.json`, `wave_b_scope.json`: unroll=2 `0.67-0.9%` with much higher compile cost. |
+| Opus#2 / GPT#13 acoustic carry/state hot-cold split | **NO-GO for v0.10.0** | Carry split was bit-identical in idealized but warmed A/B was confounded and no clean benefit was proven; full State split is ADR-level/high blast radius. |
+| Opus#3 / GPT#2 Thompson NSED cap | **REMOVED / SHIPPED, 12.78% warmed gain** | `wave_b1_nsed16_timing.json`, `wave_b1_nsed16_precip_oracle.json`, `wave_b1_nsed16_skill_24h.json`, `wave_b1_nsed16_conservation.json`. |
+| Opus#4 / GPT#20 no-op precision casts | **REMOVED** | Wave-A HLO/proofs: force-fp64 no-op converts removed, idealized bit-identical. |
+| Opus#5 dry_cqw/stage constant rebuild | **REMOVED where live and safe** | Wave-A code + idealized bit-identical gates. |
+| Opus#6 pad(edge) face-pairs | **REMOVED** | Wave-A helper parity and idealized bit-identical gates. |
+| Opus#7 dpn scatter construction | **REMOVED** | Wave-A helper parity and idealized bit-identical gates. |
+| Opus#8 / GPT#19 physics layout transposes | **NO-GO / no separable >1% lever** | B2 MYNN profile: closure HLO `1` transpose; column build/reassemble included in rejected fusion A/B. |
+| Opus#9 / GPT#16 gated fp32 now | **NO-GO** | `wave_b_scope.json`: fp64 `74.35ms`, gated-fp32 `74.57ms`, `-0.30%` and dtype warning. |
+| Opus#10 / GPT#12 pressure/EOS duplicate recompute | **NO-GO / not redundant** | Ledger analysis: calls use different base args/inputs; merging would alter math. |
+| Opus#11 / GPT#26 Thompson species batching/narrow fusion | **NO-GO after cap; rejected prior batching** | `gpt_phase1_analysis.md`: four-species batch regression; NSED16 was the faithful shipped Thompson lever. |
+| Opus#12 / GPT#18 segmented/single-scan default | **REMOVED for long-run compile/usability where already used; no warmed claim** | `run_forecast_operational_segmented` is the long-run path used by B1/B2/B3 gates; warmed throughput unchanged. |
+| Opus#13 / GPT#15 command-buffer flag | **NO-GO / negative lever** | Coupled path measured `-15..-21%`; left off. |
+| Opus#14 small-step prep/calc_p_rho launch floor | **No separate action; folded into acoustic work and then `<1%-skipped`** | Wave-A/B showed coupled path not acoustic-launch-bound after Thompson/MYNN sizing. |
+| GPT#3 finite-summary full-State D2H | **`<1%-skipped`** | `wave_a_host_breakdown.json`: `0.067s = 0.22%` of forecast hour. |
+| GPT#4 output packer | **Daily-only partial REMOVED; full device-side single-get packer `<1%-skipped`** | `wave_b3_daily_wrapper_gains.json`: output prepare `0.103s -> 0.004s`, but only `0.407%` daily-wall gain after low-risk removals. |
+| GPT#5 surface+MYNN fusion / PBL side-channel | **IRREDUCIBLE / rejected** | `wave_b2_fusion_ab.json`: `0.09%` block gain and not bit-identical; `wave_b3_mynn_crosscheck.json`. |
+| GPT#6 resident daily carry-threaded driver | **NO-GO for v0.10.0** | High semantic/radiation/land-refresh risk; not a low-risk wrapper lever. Existing segmented carry path remains. |
+| GPT#7 redundant halos | **NOT-AN-ISSUE single-GPU** | `apply_halo` single-GPU identity; DCE'd. |
+| GPT#8 / GPT#21 metric, dry, zero, mass-face hoists | **REMOVED only where proven; rest `<1%-skipped`/NO-GO** | cqw live removal shipped; remaining pressure/mass hoists lacked a safe separable >1% proof. |
+| GPT#9 `_advance_chunk` donation | **NO-GO / already constrained by async snapshots and aliasing** | Public donating entry exists; B3 direct full-hour probe hit duplicate-buffer donation on aliased State, confirming this is not a casual wrapper change. |
+| GPT#10 / GPT#25 boundary apply/interpolation specialization | **NO-GO** | Boundary/nested `ph/w` sensitivities are high risk and outside low-risk v0.10 final lane. |
+| GPT#11 production guards/limiters | **NO-GO / keep safety net** | Guards are operational safety; no evidence of >1% safe removable cost. |
+| GPT#14 M9/RRTMG diagnostics | **Daily-only partial REMOVED; full RRTMG reuse NO-GO** | `wave_b3_daily_wrapper_gains.json`: Q2 duplicate recompute removed. `rthraten` is not SWDOWN/GLW, so radiation diagnostic reuse fails closed. |
+| GPT#17 `time_utc` compile-cache normalization | **NO-GO / cold-only** | Super-plan notes prior dynamic-clock path failed bit-identical by `4.46 Pa p_pert`; requires RMSE-equivalence decision outside v0.10 final lane. |
+| GPT#22 RRTMG g-point/transient layout | **NO-GO** | High-risk radiation rewrite; B3 only removed safe output-wrapper duplicate work. |
+| GPT#23 duplicate host sync/blocking | **`<1%-skipped` after B3** | Output wrapper total after B3 below 1% daily-wall threshold for the remaining full packer/sync path. |
+| GPT#24 static-grid cache | **REMOVED / daily-only** | `build_wrfout_static_field_cache` caches 17 grid-static fields; parity PASS in `wave_b3_output_parity.json`. |
+| GPT#27 acoustic boundary target specialization | **NO-GO** | Nested/specified boundary correctness risk; no low-risk final-lane change. |
+| GPT#28 restart/scoring/repeat probes | **Production-disabled / no kernel action** | Daily config defaults `score=False`, `repeat=False`, `restart_at_hour=None`; validation probes remain opt-in. |
+| GPT#29 zero/save-family buffer reuse | **`<1%-skipped`** | Small zero/save-family fields; no >1% proof, no safe final-lane action. |
+| GPT#30 profiling artifact risk | **CLOSED by v0.10 proof sequence** | Phase-0/Wave-A/B timings used cache-hit/min-of-warmed methodology; B3 proof states timing protocol. |
+
+## Final v0.10.0 exit disposition
+
+The inefficiency ledger is complete. The warmed-kernel shipped gain is Wave-B1
+Thompson NSED16 (`12.78%`, `1.146x`). Wave-B2/B3 found no additional faithful
+`>1%` warmed-kernel lever. B3 ships daily-wrapper-only cleanup with a measured
+`0.848%` warmed daily-hour gain and output parity PASS; the remaining full device
+packer and host-wrapper work is below the 1% exit threshold and is explicitly
+skipped. The MYNN/PBL frontier is confirmed irreducible for v0.10.0.
