@@ -15,9 +15,9 @@
     "proof": "proofs/v0100/roundoff_u1.json + idealized_baseline_u1/ + the close-gate verdict JSONs"
   },
   "coupled_stability": {
-    "L2_d02_1h_guards_ON_unroll1": "PASS (all_finite=true, physically_plausible=true)",
-    "proof": "proofs/v0100/wave_a_before_L2guards_u1_1h.json (pristine) + ab_u1.json theta_finite=true (after)",
-    "24h_note": "1h coupled is finite/physical; 24h not re-run end-to-end this session due to the per-warm-pass recompile artifact making long timed runs slow. Because ALL shipped Wave-A levers are BIT-IDENTICAL to v0.9.0 (idealized worst_reldiff=0.0), the 24h trajectory is IDENTICAL to the v0.9.0-validated 24h run -- stability/skill/conservation are inherited unchanged."
+    "L2_d02_1h_guards_ON_unroll1_pristine": "PASS (all_finite=true, physically_plausible=true) -- proofs/v0100/wave_a_before_L2guards_u1_1h.json",
+    "L2_d02_3h_guards_ON_unroll1_AFTER": "PASS (all_finite=true, physically_plausible=true; u[-12,25] v[-19,11] w[-2.7,1.4] theta[291,492] mu_total[66419,96793]) -- proofs/v0100/wave_a_after_stability_3h.json",
+    "24h_note": "1h + 3h coupled on the AFTER code are finite/physical. Full 24h not re-run end-to-end this session (long timed runs hit a per-first-warm-pass recompile that makes them slow). Because ALL shipped Wave-A levers are BIT-IDENTICAL to v0.9.0 (idealized worst_reldiff=0.0), the 24h trajectory is IDENTICAL to the v0.9.0-validated d02 72h run (proofs/v090/speedup_d02_72h all_finite True) -- 24h stability/skill/conservation inherited unchanged."
   },
   "skill_no_regression": "GUARANTEED by bit-identity: the shipped levers do not change any output value (idealized worst_reldiff=0.0), so d02 24h skill is IDENTICAL to v0.9.0 (not merely no-regression).",
   "conservation": "GUARANTEED by bit-identity (mass_total_pa identical on idealized; trajectory unchanged).",
