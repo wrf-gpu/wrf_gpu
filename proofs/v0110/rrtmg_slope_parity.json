@@ -1,0 +1,107 @@
+{
+  "checks": {
+    "glw": true,
+    "gross_swdown": true,
+    "topographic_correction": true,
+    "topographic_swnorm": true
+  },
+  "domain": "d02",
+  "held_radiation_time_utc": "2026-05-22T11:45:00+00:00",
+  "metrics": {
+    "glw_vs_wrf_GLW": {
+      "bias": 1.8287262423012862,
+      "bias_pct": 0.5989102496450791,
+      "gpu_mean": 307.1710113985513,
+      "mae": 1.9817972661590346,
+      "max_abs": 4.585873171140008,
+      "rmse": 2.3100208242513514,
+      "wrf_mean": 305.34228515625
+    },
+    "gross_swdown_vs_wrf_SWDNB": {
+      "bias": -6.974403381347656,
+      "bias_pct": -0.6773380780763859,
+      "gpu_mean": 1022.7039222717285,
+      "mae": 7.20269775390625,
+      "max_abs": 11.213134765625,
+      "rmse": 7.56055758196369,
+      "wrf_mean": 1029.6783256530762
+    },
+    "gross_swdown_vs_wrf_SWDOWN": {
+      "bias": -6.974384307861328,
+      "bias_pct": -0.6773362382498865,
+      "gpu_mean": 1022.7039222717285,
+      "mae": 7.202678680419922,
+      "max_abs": 11.213134765625,
+      "rmse": 7.560535509967047,
+      "wrf_mean": 1029.6783065795898
+    },
+    "topographic_correction_vs_wrf_SWNORM_over_SWDOWN": {
+      "bias": 0.00010573958031694086,
+      "bias_pct": 0.011493480636933109,
+      "gpu_mean": 0.9201018978994746,
+      "mae": 0.0003468478538231623,
+      "max_abs": 0.001843199614875446,
+      "rmse": 0.0005488053839292192,
+      "wrf_mean": 0.9199961583191577
+    },
+    "topographic_swnorm_vs_wrf_SWNORM": {
+      "bias": -6.302679015290217,
+      "bias_pct": -0.6653154640812021,
+      "gpu_mean": 941.0192089546804,
+      "mae": 6.302679015290217,
+      "max_abs": 9.793716729073253,
+      "rmse": 6.693148274692078,
+      "wrf_mean": 947.3218879699707
+    }
+  },
+  "notes": [
+    "WRF history COSZEN/SWDOWN are radiation-cadence-held fields; proof uses valid_time - 15 min for solar declination/hour angle.",
+    "WRF gross SWDOWN/SWDNB and WRF slope-dependent SWNORM are reported separately. Runtime surface SOLDN uses the SWNORM-equivalent when slope_rad=1.",
+    "The proof isolates radiation/topography by feeding WRF history columns to RRTMG; it is not a forecast-state self-compare.",
+    "The selected d02 daytime fixture has zero ray-cast shadow cells; the exercised terrain signal is WRF slope/aspect radiation."
+  ],
+  "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
+  "schema": "v0110_rrtmg_slope_parity",
+  "selection": {
+    "batch_size": 4,
+    "domain_shape": [
+      66,
+      159
+    ],
+    "dx_m": 3000.0,
+    "dy_m": 3000.0,
+    "max_columns": 16,
+    "method": "largest |WRF_SWNORM - WRF_SWDOWN| land/daylit columns",
+    "selected_columns": 16
+  },
+  "source_file": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d02_2026-05-22_12:00:00",
+  "status": "PASS",
+  "tolerances": {
+    "glw_rmse_Wm2": 35.0,
+    "gross_swdown_rmse_Wm2": 15.0,
+    "topographic_correction_rmse": 0.05,
+    "topographic_swnorm_rmse_Wm2": 35.0
+  },
+  "topography": {
+    "gpu_correction_minmax": [
+      0.904435922232998,
+      0.9278407250915495
+    ],
+    "gpu_topographic_delta_mean_Wm2": -81.68471331704802,
+    "shadow_mask_selected_count": 0,
+    "slope_rad_max": 0.2666288775369135,
+    "slope_rad_mean": 0.20786647591211016,
+    "wrf_correction_minmax": [
+      0.9044715036678092,
+      0.9275722534626647
+    ],
+    "wrf_topographic_delta_mean_Wm2": -82.35641860961914
+  },
+  "valid_time_utc": "2026-05-22T12:00:00+00:00",
+  "wiring": {
+    "land_coupled_albedo_emissivity_path": "runtime RRTMG accepts NoahMPLandState.albedo/emiss over XLAND<1.5; this proof feeds WRF ALBEDO/EMISS fixture fields directly",
+    "slope_rad": 1,
+    "topo_shading": 1,
+    "uses_real_xlat_xlong": true
+  }
+}
