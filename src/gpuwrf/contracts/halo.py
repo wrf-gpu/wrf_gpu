@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Literal
+from typing import Any, Literal
 
 from .state import State
 
@@ -15,6 +15,7 @@ class HaloSpec:
     width: int
     fields_to_exchange: tuple[str, ...]
     edge_type: Literal["periodic", "open", "nest_boundary"]
+    sharding: Any = None
 
     def __post_init__(self) -> None:
         """Validates halo metadata once before timestep call sites use it."""
@@ -28,5 +29,8 @@ class HaloSpec:
 def apply_halo(state: State, halo: HaloSpec) -> State:
     """Keeps future multi-GPU exchange call sites stable; M3 single-GPU returns state."""
 
-    del halo
+    if halo.sharding is not None and bool(getattr(halo.sharding, "enabled", False)):
+        from gpuwrf.runtime.sharding import exchange_state_halos
+
+        return exchange_state_halos(state, halo)
     return state
