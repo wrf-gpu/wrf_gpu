@@ -15,6 +15,7 @@ WRF ordering anchors:
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Any
 
 import jax
 from jax import config
@@ -41,6 +42,8 @@ from gpuwrf.dynamics.tridiag_solve import thomas_solve_scan
 
 
 config.update("jax_enable_x64", True)
+
+_SHARDED_HALO_CONTEXT: tuple[Any, int] | None = None
 
 
 FULL_STATE_FIELDS = (
@@ -257,6 +260,44 @@ class AcousticCoreState:
         return cls(**values)
 
 
+def _maybe_exchange_sharded_acoustic_halos(state: AcousticCoreState) -> AcousticCoreState:
+    """Refresh x halos for acoustic scratch fields when an opt-in pmap context is active."""
+
+    context = _SHARDED_HALO_CONTEXT
+    if context is None:
+        return state
+    sharding, width = context
+    if not bool(getattr(sharding, "enabled", False)):
+        return state
+    if getattr(sharding, "axis", "x") != "x":
+        raise NotImplementedError("acoustic sharded halo exchange currently supports x-axis decomposition only")
+
+    from gpuwrf.runtime.sharding import exchange_periodic_halo_x, exchange_periodic_halo_x_face
+
+    local_nx = int(state.theta.shape[-1])
+    updates: dict[str, jax.Array] = {}
+    for name in state.__dataclass_fields__:  # type: ignore[attr-defined]
+        value = getattr(state, name)
+        if value is None or not hasattr(value, "shape") or getattr(value, "ndim", 0) == 0:
+            continue
+        last_dim = int(value.shape[-1])
+        if last_dim == local_nx + 1:
+            updates[name] = exchange_periodic_halo_x_face(
+                value,
+                width=int(width),
+                num_partitions=int(sharding.resolved_partitions()),
+                axis_name=str(sharding.axis_name),
+            )
+        elif last_dim == local_nx:
+            updates[name] = exchange_periodic_halo_x(
+                value,
+                width=int(width),
+                num_partitions=int(sharding.resolved_partitions()),
+                axis_name=str(sharding.axis_name),
+            )
+    return state.replace(**updates) if updates else state
+
+
 def _advance_inputs(state: AcousticCoreState, cfg: AcousticCoreConfig) -> AdvanceMuTInputs:
     return AdvanceMuTInputs(
         ww=state.ww,
@@ -307,6 +348,37 @@ def _optional_or(value: jax.Array | None, default: jax.Array) -> jax.Array:
     return default if value is None else jnp.asarray(value, dtype=default.dtype)
 
 
+def _maybe_sharded_x_edge_pair(
+    field: jax.Array,
+    left: jax.Array,
+    right: jax.Array,
+) -> tuple[jax.Array, jax.Array]:
+    """Make x-face pairs match global-domain edge padding under opt-in x sharding."""
+
+    context = _SHARDED_HALO_CONTEXT
+    if context is None:
+        return left, right
+    sharding, width = context
+    if not bool(getattr(sharding, "enabled", False)):
+        return left, right
+    if getattr(sharding, "axis", "x") != "x":
+        raise NotImplementedError("acoustic sharded edge-pair correction supports x-axis decomposition only")
+    h = int(width)
+    owned = int(field.shape[-1]) - 2 * h
+    if owned < 1:
+        raise ValueError("haloed x field has no owned cells")
+    rank = jax.lax.axis_index(str(sharding.axis_name))
+    start = rank * owned
+    global_nx = owned * int(sharding.resolved_partitions())
+    west_face = h
+    east_face = h + owned
+    is_first = start == 0
+    is_last = start + owned == global_nx
+    left = left.at[..., west_face].set(jnp.where(is_first, right[..., west_face], left[..., west_face]))
+    right = right.at[..., east_face].set(jnp.where(is_last, left[..., east_face], right[..., east_face]))
+    return left, right
+
+
 # v0.10.0 Wave-A (Opus#6): the edge-pad-then-slice face pairs materialised a full
 # padded copy of every large 3D field every substep (a memory-op kernel + extra
 # HBM each).  ``jnp.pad(field, ((0,0),(0,0),(1,1)), mode="edge")`` followed by
@@ -317,7 +389,7 @@ def _optional_or(value: jax.Array | None, default: jax.Array) -> jax.Array:
 def _x_face_pair_3d(field: jax.Array) -> tuple[jax.Array, jax.Array]:
     left = jnp.concatenate([field[:, :, :1], field], axis=2)
     right = jnp.concatenate([field, field[:, :, -1:]], axis=2)
-    return left, right
+    return _maybe_sharded_x_edge_pair(field, left, right)
 
 
 def _y_face_pair_3d(field: jax.Array) -> tuple[jax.Array, jax.Array]:
@@ -329,7 +401,7 @@ def _y_face_pair_3d(field: jax.Array) -> tuple[jax.Array, jax.Array]:
 def _x_face_pair_2d(field: jax.Array) -> tuple[jax.Array, jax.Array]:
     left = jnp.concatenate([field[:, :1], field], axis=1)
     right = jnp.concatenate([field, field[:, -1:]], axis=1)
-    return left, right
+    return _maybe_sharded_x_edge_pair(field, left, right)
 
 
 def _y_face_pair_2d(field: jax.Array) -> tuple[jax.Array, jax.Array]:
@@ -579,6 +651,8 @@ def acoustic_substep_core(
     ``c2a``/``cqw``.
     """
 
+    state = _maybe_exchange_sharded_acoustic_halos(state)
+
     # --- 1. advance_uv (with external-mode divergence damping) ---
     uv_state = advance_uv_wrf(
         state,
@@ -589,6 +663,7 @@ def acoustic_substep_core(
         emdiv=float(emdiv),
         dt_full=(float(cfg.dt_full) if cfg.dt_full is not None else float(cfg.dt)),
     )
+    uv_state = _maybe_exchange_sharded_acoustic_halos(uv_state)
 
     # --- 2. advance_mu_t (coupled theta + mu/muts/muave/mudf/ww) ---
     # WRF couples the work theta ``t_2`` ONCE per RK stage in small_step_prep
@@ -617,27 +692,34 @@ def acoustic_substep_core(
     state_for_w = uv_state.replace(
         mu=mu_new, muts=muts_new, muave=muave_new, ww=ww_new, mudf=mudf_new, theta=theta_coupled
     )
+    state_for_w = _maybe_exchange_sharded_acoustic_halos(state_for_w)
+    theta_coupled = state_for_w.theta
+    ww_new = state_for_w.ww
+    muave_new = state_for_w.muave
+    muts_new = state_for_w.muts
+    mu_new = state_for_w.mu
+    mudf_new = state_for_w.mudf
 
     # --- 3. advance_w (implicit w + geopotential), real RHS ---
-    nz = int(uv_state.theta.shape[0])
-    ny = int(uv_state.theta.shape[1])
-    nx = int(uv_state.theta.shape[2])
-    cqw_field = cqw if cqw is not None else (uv_state.cqw if uv_state.cqw is not None else dry_cqw(nz, ny, nx, dtype=uv_state.theta.dtype))
-    c2a_field = uv_state.c2a if uv_state.c2a is not None else jnp.ones_like(uv_state.theta)
-    alt_field = uv_state.alt if uv_state.alt is not None else jnp.ones_like(uv_state.theta)
-    phb_field = uv_state.phb if uv_state.phb is not None else jnp.zeros_like(uv_state.ph)
-    ph_1_field = uv_state.ph_1 if uv_state.ph_1 is not None else jnp.zeros_like(uv_state.ph)
-    ht_field = uv_state.ht if uv_state.ht is not None else jnp.zeros((ny, nx), dtype=uv_state.theta.dtype)
-    c1f_field = uv_state.c1f if uv_state.c1f is not None else jnp.zeros((nz + 1,), dtype=uv_state.theta.dtype)
-    c2f_field = uv_state.c2f if uv_state.c2f is not None else jnp.zeros((nz + 1,), dtype=uv_state.theta.dtype)
-    rdn_field = uv_state.rdn if uv_state.rdn is not None else uv_state.rdnw
-    cf1 = _optional_or(uv_state.cf1, jnp.asarray(0.0, dtype=uv_state.theta.dtype))
-    cf2 = _optional_or(uv_state.cf2, jnp.asarray(0.0, dtype=uv_state.theta.dtype))
-    cf3 = _optional_or(uv_state.cf3, jnp.asarray(0.0, dtype=uv_state.theta.dtype))
-    msfux = _optional_or(uv_state.msfux, jnp.ones_like(uv_state.msfuy))
-    msfvx = _optional_or(uv_state.msfvx, 1.0 / uv_state.msfvx_inv)
+    nz = int(state_for_w.theta.shape[0])
+    ny = int(state_for_w.theta.shape[1])
+    nx = int(state_for_w.theta.shape[2])
+    cqw_field = cqw if cqw is not None else (state_for_w.cqw if state_for_w.cqw is not None else dry_cqw(nz, ny, nx, dtype=state_for_w.theta.dtype))
+    c2a_field = state_for_w.c2a if state_for_w.c2a is not None else jnp.ones_like(state_for_w.theta)
+    alt_field = state_for_w.alt if state_for_w.alt is not None else jnp.ones_like(state_for_w.theta)
+    phb_field = state_for_w.phb if state_for_w.phb is not None else jnp.zeros_like(state_for_w.ph)
+    ph_1_field = state_for_w.ph_1 if state_for_w.ph_1 is not None else jnp.zeros_like(state_for_w.ph)
+    ht_field = state_for_w.ht if state_for_w.ht is not None else jnp.zeros((ny, nx), dtype=state_for_w.theta.dtype)
+    c1f_field = state_for_w.c1f if state_for_w.c1f is not None else jnp.zeros((nz + 1,), dtype=state_for_w.theta.dtype)
+    c2f_field = state_for_w.c2f if state_for_w.c2f is not None else jnp.zeros((nz + 1,), dtype=state_for_w.theta.dtype)
+    rdn_field = state_for_w.rdn if state_for_w.rdn is not None else state_for_w.rdnw
+    cf1 = _optional_or(state_for_w.cf1, jnp.asarray(0.0, dtype=state_for_w.theta.dtype))
+    cf2 = _optional_or(state_for_w.cf2, jnp.asarray(0.0, dtype=state_for_w.theta.dtype))
+    cf3 = _optional_or(state_for_w.cf3, jnp.asarray(0.0, dtype=state_for_w.theta.dtype))
+    msfux = _optional_or(state_for_w.msfux, jnp.ones_like(state_for_w.msfuy))
+    msfvx = _optional_or(state_for_w.msfvx, 1.0 / state_for_w.msfvx_inv)
 
-    mu_work = muts_new - uv_state.mut  # WRF perturbation dry-mass work array
+    mu_work = muts_new - state_for_w.mut  # WRF perturbation dry-mass work array
     # F7G: WRF builds the large-step vertical PGF/buoyancy ``rw_tend`` via
     # pg_buoy_w ONCE per RK stage from the stage ``grid%p``/``mu`` in rk_tendency
     # (module_em.F:1361-1368) and carries it UNCHANGED through all acoustic
@@ -646,22 +728,22 @@ def acoustic_substep_core(
     # work pressure each substep (that was the refuted F7F workaround;
     # gpt-council-findings.md §2/§3.3).  The legacy per-substep recompute is kept
     # only for bare-core/oracle callers that do not stage rw_tend.
-    if uv_state.rw_tend_pg_buoy is not None:
-        rw_tend = uv_state.rw_tend_pg_buoy
+    if state_for_w.rw_tend_pg_buoy is not None:
+        rw_tend = state_for_w.rw_tend_pg_buoy
     else:
-        p_for_buoy = uv_state.p_buoy if uv_state.p_buoy is not None else uv_state.p
+        p_for_buoy = state_for_w.p_buoy if state_for_w.p_buoy is not None else state_for_w.p
         rw_tend = pg_buoy_w_dry(
             p_for_buoy,
             mu_work,
             c1f=c1f_field,
-            rdnw=uv_state.rdnw,
+            rdnw=state_for_w.rdnw,
             rdn=rdn_field,
-            msfty=uv_state.msfty,
+            msfty=state_for_w.msfty,
             gravity=GRAVITY_M_S2,
         )
 
     w_solved, ph_next, t_2ave_next = advance_w_wrf(
-        w=uv_state.w,
+        w=state_for_w.w,
         rw_tend=rw_tend,
         ww=ww_new,
         # advance_w uses u/v ONLY for the kinematic terrain-following surface w BC
@@ -689,19 +771,19 @@ def acoustic_substep_core(
         # weak vs CPU-WRF; see proofs/m19 terrain-w resolution). This is a KNOWN
         # MINOR ACCURACY ITEM to tighten in M20 (e.g. correct mass-factor handling
         # of the coupled surface BC so the coupled feed is stable), NOT a WRF match.
-        u=uv_state.u_1,
-        v=uv_state.v_1,
+        u=state_for_w.u_1,
+        v=state_for_w.v_1,
         mu_work=mu_work,
-        mut=uv_state.mut,
+        mut=state_for_w.mut,
         muave=muave_new,
         muts=muts_new,
-        t_2ave=uv_state.t_2ave,
+        t_2ave=state_for_w.t_2ave,
         t_2=theta_coupled,
-        t_1=uv_state.theta_1,
-        ph=uv_state.ph,
+        t_1=state_for_w.theta_1,
+        ph=state_for_w.ph,
         ph_1=ph_1_field,
         phb=phb_field,
-        ph_tend=uv_state.ph_tend,
+        ph_tend=state_for_w.ph_tend,
         ht=ht_field,
         c2a=c2a_field,
         cqw=cqw_field,
@@ -709,26 +791,26 @@ def acoustic_substep_core(
         a=a,
         alpha=alpha,
         gamma=gamma,
-        c1h=uv_state.c1h,
-        c2h=uv_state.c2h,
+        c1h=state_for_w.c1h,
+        c2h=state_for_w.c2h,
         c1f=c1f_field,
         c2f=c2f_field,
-        rdnw=uv_state.rdnw,
+        rdnw=state_for_w.rdnw,
         rdn=rdn_field,
-        fnm=uv_state.fnm,
-        fnp=uv_state.fnp,
+        fnm=state_for_w.fnm,
+        fnp=state_for_w.fnp,
         cf1=cf1,
         cf2=cf2,
         cf3=cf3,
-        msftx=uv_state.msftx,
-        msfty=uv_state.msfty,
+        msftx=state_for_w.msftx,
+        msfty=state_for_w.msfty,
         rdx=1.0 / float(cfg.dx),
         rdy=1.0 / float(cfg.dy),
         dts=float(cfg.dt),
         epssm=float(cfg.epssm),
         top_lid=bool(cfg.top_lid),
         gravity=GRAVITY_M_S2,
-        w_save=uv_state.w_save,
+        w_save=state_for_w.w_save,
         damp_opt=int(cfg.damp_opt),
         dampcoef=float(cfg.dampcoef),
         zdamp=float(cfg.zdamp),
@@ -747,11 +829,11 @@ def acoustic_substep_core(
     # been folded into the carried tendency once per RK stage).  Skipped (None
     # targets) for idealized / d02 self-replay / bare-core callers, leaving those
     # paths byte-for-byte unchanged.
-    if uv_state.ph_bdy_target is not None and uv_state.ph_save_for_spec is not None:
+    if state_for_w.ph_bdy_target is not None and state_for_w.ph_save_for_spec is not None:
         ph_next = spec_bdyupdate_ph_inloop(
             ph_next,
-            uv_state.ph_bdy_target,
-            uv_state.ph_save_for_spec,
+            state_for_w.ph_bdy_target,
+            state_for_w.ph_save_for_spec,
             mu_tend=None,
             muts=muts_new,
             c1f=c1f_field,
@@ -761,11 +843,17 @@ def acoustic_substep_core(
         )
 
     # --- 4. sumflux accumulators (Sprint B consumer); WRF solve_em.F:4048-4093 ---
-    ru_m = uv_state.ru_m if uv_state.ru_m is not None else jnp.zeros_like(uv_state.u)
-    rv_m = uv_state.rv_m if uv_state.rv_m is not None else jnp.zeros_like(uv_state.v)
-    ww_m = uv_state.ww_m if uv_state.ww_m is not None else jnp.zeros_like(uv_state.ww)
-    ru_m = ru_m + uv_state.u
-    rv_m = rv_m + uv_state.v
+    state_for_pressure = state_for_w.replace(w=w_solved, ph=ph_next, t_2ave=t_2ave_next)
+    state_for_pressure = _maybe_exchange_sharded_acoustic_halos(state_for_pressure)
+    w_solved = state_for_pressure.w
+    ph_next = state_for_pressure.ph
+    t_2ave_next = state_for_pressure.t_2ave
+
+    ru_m = state_for_pressure.ru_m if state_for_pressure.ru_m is not None else jnp.zeros_like(state_for_pressure.u)
+    rv_m = state_for_pressure.rv_m if state_for_pressure.rv_m is not None else jnp.zeros_like(state_for_pressure.v)
+    ww_m = state_for_pressure.ww_m if state_for_pressure.ww_m is not None else jnp.zeros_like(state_for_pressure.ww)
+    ru_m = ru_m + state_for_pressure.u
+    rv_m = rv_m + state_for_pressure.v
     ww_m = ww_m + ww_new
 
     # --- 5. calc_p_rho(step=iteration): smdiv pressure memory ---
@@ -773,27 +861,27 @@ def acoustic_substep_core(
     # advance_mu_t this substep) as the ``Mut`` denominator -- NOT the
     # stage-entry ``grid%mut`` (=uv_state.mut).  Feeding the base/stage mass here
     # was the broken-restoring-loop bug (gpt-findings.md §3.2).
-    pm1 = uv_state.pm1 if uv_state.pm1 is not None else uv_state.p
+    pm1 = state_for_pressure.pm1 if state_for_pressure.pm1 is not None else state_for_pressure.p
     p_rho = calc_p_rho_step(
         mu_work=mu_work,
         muts_total=muts_new,
         ph_work=ph_next,
         theta_work=theta_coupled,
-        theta_1=uv_state.theta_1,
+        theta_1=state_for_pressure.theta_1,
         c2a=c2a_field,
         alt=alt_field,
-        c1h=uv_state.c1h,
-        c2h=uv_state.c2h,
-        rdnw=uv_state.rdnw,
+        c1h=state_for_pressure.c1h,
+        c2h=state_for_pressure.c2h,
+        rdnw=state_for_pressure.rdnw,
         pm1=pm1,
         smdiv=float(smdiv),
         t0=300.0,
     )
 
     # Physical-theta diagnostic view for the operational carry / audit budget.
-    theta_phys = _decouple_theta_for_finish(uv_state, theta_coupled, muts_new)
+    theta_phys = _decouple_theta_for_finish(state_for_pressure, theta_coupled, muts_new)
 
-    return uv_state.replace(
+    result = state_for_pressure.replace(
         mu=mu_new,
         mudf=mudf_new,
         muts=muts_new,
@@ -812,6 +900,7 @@ def acoustic_substep_core(
         rv_m=rv_m,
         ww_m=ww_m,
     )
+    return _maybe_exchange_sharded_acoustic_halos(result)
 
 
 def snapshot_full_state(state: AcousticCoreState) -> dict[str, jax.Array]:

@@ -1,0 +1,1403 @@
+{
+  "checks": [
+    {
+      "check": "flag_off_graph_unchanged",
+      "device_count": 3,
+      "disabled": {
+        "collective_counts": {
+          "all-gather": 0,
+          "all-reduce": 0,
+          "all-to-all": 0,
+          "collective-permute": 0,
+          "partition-id": 0,
+          "replica-id": 0
+        },
+        "collectives_present": false,
+        "hlo_sha256": "a299b8e5495ef703250401fd1a085ad2bc0134c8da5e55b25f7e89817f80ef63",
+        "hlo_size_bytes": 26408,
+        "op_count": 145
+      },
+      "local_device_count": 3,
+      "passed": true,
+      "platform": "cpu",
+      "reference": {
+        "collective_counts": {
+          "all-gather": 0,
+          "all-reduce": 0,
+          "all-to-all": 0,
+          "collective-permute": 0,
+          "partition-id": 0,
+          "replica-id": 0
+        },
+        "collectives_present": false,
+        "hlo_sha256": "a299b8e5495ef703250401fd1a085ad2bc0134c8da5e55b25f7e89817f80ef63",
+        "hlo_size_bytes": 26408,
+        "op_count": 145
+      },
+      "selection_identity": true,
+      "simulation_can_prove": [
+        "disabled sharding selects the exact existing default forecast function",
+        "compiled flag-off HLO op count is unchanged",
+        "compiled flag-off HLO has no collective/SPMD tokens"
+      ],
+      "simulation_cannot_prove": [
+        "real H200/NVLink performance",
+        "NCCL transport behavior",
+        "multi-node strong scaling"
+      ]
+    },
+    {
+      "case_metadata": {
+        "cpu_replay_loader_shim": true,
+        "domain": "d02",
+        "grid": {
+          "dx_m": 3000.0,
+          "dy_m": 3000.0,
+          "mass_shape": [
+            44,
+            66,
+            159
+          ],
+          "wrf_staggered_extent": [
+            45,
+            67,
+            160
+          ]
+        },
+        "qke_coldstart": {
+          "note": "parent wrfout carried no real QKE (MAXVAL<0.0002); seeded WRF cold-start background TKE profile",
+          "qke_max": 4.99220117532457e-05,
+          "seeded": true,
+          "wrf_ref": "phys/module_bl_mynnedmf.F:618-691 (mym_initialize INITIALIZE_QKE)"
+        },
+        "run_id": "20260521_18z_l3_24h_20260522T133443Z"
+      },
+      "check": "real_d02_operational_forecast_fake_mesh",
+      "comparison": {
+        "all_fields": {
+          "Nc": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": "float32",
+            "dtype_want": "float32",
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [
+              0,
+              0,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "Ng": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [
+              0,
+              0,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "Ni": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [
+              0,
+              0,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "Nn": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": "float32",
+            "dtype_want": "float32",
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [
+              0,
+              0,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "Nr": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [
+              0,
+              0,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "Ns": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [
+              0,
+              0,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "fltv": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [
+              0,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              66,
+              159
+            ]
+          },
+          "graupel_acc": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [
+              0,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              66,
+              159
+            ]
+          },
+          "ice_acc": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [
+              0,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              66,
+              159
+            ]
+          },
+          "lakemask": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [
+              0,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              66,
+              159
+            ]
+          },
+          "lu_index": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": "int32",
+            "dtype_want": "int32",
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [
+              0,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              66,
+              159
+            ]
+          },
+          "mavail": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [
+              0,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              66,
+              159
+            ]
+          },
+          "mu": {
+            "allclose": true,
+            "atol": 1.2,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": false,
+            "max_abs": 1.1188932126242435,
+            "max_abs_index": [
+              56,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              66,
+              159
+            ]
+          },
+          "mu_bdy": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              25,
+              4,
+              5,
+              1,
+              160
+            ]
+          },
+          "mu_perturbation": {
+            "allclose": true,
+            "atol": 1.2,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": false,
+            "max_abs": 1.1188932126297004,
+            "max_abs_index": [
+              56,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              66,
+              159
+            ]
+          },
+          "mu_total": {
+            "allclose": true,
+            "atol": 1.2,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": false,
+            "max_abs": 1.1188932126242435,
+            "max_abs_index": [
+              56,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              66,
+              159
+            ]
+          },
+          "mub_bdy": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              1,
+              4,
+              5,
+              1,
+              160
+            ]
+          },
+          "p": {
+            "allclose": true,
+            "atol": 3.5,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": false,
+            "max_abs": 3.25187722199189,
+            "max_abs_index": [
+              0,
+              56,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "p_bdy": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              25,
+              4,
+              5,
+              44,
+              160
+            ]
+          },
+          "p_perturbation": {
+            "allclose": true,
+            "atol": 3.5,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": false,
+            "max_abs": 3.2518772219880248,
+            "max_abs_index": [
+              0,
+              56,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "p_total": {
+            "allclose": true,
+            "atol": 3.5,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": false,
+            "max_abs": 3.25187722199189,
+            "max_abs_index": [
+              0,
+              56,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "pb_bdy": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              1,
+              4,
+              5,
+              44,
+              160
+            ]
+          },
+          "ph": {
+            "allclose": true,
+            "atol": 0.25,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": false,
+            "max_abs": 0.20959438425779808,
+            "max_abs_index": [
+              21,
+              61,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              45,
+              66,
+              159
+            ]
+          },
+          "ph_bdy": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              25,
+              4,
+              5,
+              45,
+              160
+            ]
+          },
+          "ph_perturbation": {
+            "allclose": true,
+            "atol": 0.25,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": false,
+            "max_abs": 0.2095943842618908,
+            "max_abs_index": [
+              21,
+              61,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              45,
+              66,
+              159
+            ]
+          },
+          "ph_total": {
+            "allclose": true,
+            "atol": 0.25,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": false,
+            "max_abs": 0.20959438425779808,
+            "max_abs_index": [
+              21,
+              61,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              45,
+              66,
+              159
+            ]
+          },
+          "phb_bdy": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              1,
+              4,
+              5,
+              45,
+              160
+            ]
+          },
+          "qc": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [
+              0,
+              0,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "qg": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [
+              0,
+              0,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "qi": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [
+              0,
+              0,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "qke": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [
+              0,
+              0,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "qr": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [
+              0,
+              0,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "qs": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [
+              0,
+              0,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "qv": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [
+              0,
+              0,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "qv_bdy": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              25,
+              4,
+              5,
+              44,
+              160
+            ]
+          },
+          "qv_flux": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [
+              0,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              66,
+              159
+            ]
+          },
+          "rain_acc": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [
+              0,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              66,
+              159
+            ]
+          },
+          "rainc_acc": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [
+              0,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              66,
+              159
+            ]
+          },
+          "rhosfc": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [
+              0,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              66,
+              159
+            ]
+          },
+          "roughness_m": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [
+              0,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              66,
+              159
+            ]
+          },
+          "snow_acc": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [
+              0,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              66,
+              159
+            ]
+          },
+          "soil_moisture": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [
+              0,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              66,
+              159
+            ]
+          },
+          "t_skin": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [
+              0,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              66,
+              159
+            ]
+          },
+          "tau_u": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [
+              0,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              66,
+              159
+            ]
+          },
+          "tau_v": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [
+              0,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              66,
+              159
+            ]
+          },
+          "theta": {
+            "allclose": true,
+            "atol": 0.01,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": false,
+            "max_abs": 0.00902884994542319,
+            "max_abs_index": [
+              11,
+              61,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "theta_bdy": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              25,
+              4,
+              5,
+              44,
+              160
+            ]
+          },
+          "theta_flux": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [
+              0,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              66,
+              159
+            ]
+          },
+          "u": {
+            "allclose": true,
+            "atol": 0.02,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": false,
+            "max_abs": 0.016005361576425958,
+            "max_abs_index": [
+              1,
+              6,
+              1
+            ],
+            "rtol": 0.0,
+            "shape": [
+              44,
+              66,
+              160
+            ]
+          },
+          "u_bdy": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              25,
+              4,
+              5,
+              44,
+              160
+            ]
+          },
+          "ustar": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [
+              0,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              66,
+              159
+            ]
+          },
+          "v": {
+            "allclose": true,
+            "atol": 0.0001,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": false,
+            "max_abs": 7.735405308473275e-05,
+            "max_abs_index": [
+              14,
+              55,
+              158
+            ],
+            "rtol": 0.0,
+            "shape": [
+              44,
+              67,
+              159
+            ]
+          },
+          "v_bdy": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              25,
+              4,
+              5,
+              44,
+              160
+            ]
+          },
+          "w": {
+            "allclose": true,
+            "atol": 0.004,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": false,
+            "max_abs": 0.003366667443927329,
+            "max_abs_index": [
+              14,
+              56,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              45,
+              66,
+              159
+            ]
+          },
+          "w_bdy": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              25,
+              4,
+              5,
+              45,
+              160
+            ]
+          },
+          "xland": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [
+              0,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              66,
+              159
+            ]
+          }
+        },
+        "atol": "field-specific",
+        "bit_identical": false,
+        "field_atol": {
+          "mu": 1.2,
+          "mu_perturbation": 1.2,
+          "mu_total": 1.2,
+          "p": 3.5,
+          "p_perturbation": 3.5,
+          "p_total": 3.5,
+          "ph": 0.25,
+          "ph_perturbation": 0.25,
+          "ph_total": 0.25,
+          "theta": 0.01,
+          "u": 0.02,
+          "v": 0.0001,
+          "w": 0.004
+        },
+        "key_fields": {
+          "mu": {
+            "allclose": true,
+            "atol": 1.2,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": false,
+            "max_abs": 1.1188932126242435,
+            "max_abs_index": [
+              56,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              66,
+              159
+            ]
+          },
+          "p": {
+            "allclose": true,
+            "atol": 3.5,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": false,
+            "max_abs": 3.25187722199189,
+            "max_abs_index": [
+              0,
+              56,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "ph": {
+            "allclose": true,
+            "atol": 0.25,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": false,
+            "max_abs": 0.20959438425779808,
+            "max_abs_index": [
+              21,
+              61,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              45,
+              66,
+              159
+            ]
+          },
+          "qke": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [
+              0,
+              0,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "qv": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [
+              0,
+              0,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "rain_acc": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [
+              0,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              66,
+              159
+            ]
+          },
+          "theta": {
+            "allclose": true,
+            "atol": 0.01,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": false,
+            "max_abs": 0.00902884994542319,
+            "max_abs_index": [
+              11,
+              61,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "u": {
+            "allclose": true,
+            "atol": 0.02,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": false,
+            "max_abs": 0.016005361576425958,
+            "max_abs_index": [
+              1,
+              6,
+              1
+            ],
+            "rtol": 0.0,
+            "shape": [
+              44,
+              66,
+              160
+            ]
+          },
+          "v": {
+            "allclose": true,
+            "atol": 0.0001,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": false,
+            "max_abs": 7.735405308473275e-05,
+            "max_abs_index": [
+              14,
+              55,
+              158
+            ],
+            "rtol": 0.0,
+            "shape": [
+              44,
+              67,
+              159
+            ]
+          },
+          "w": {
+            "allclose": true,
+            "atol": 0.004,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": false,
+            "max_abs": 0.003366667443927329,
+            "max_abs_index": [
+              14,
+              56,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              45,
+              66,
+              159
+            ]
+          }
+        },
+        "rtol": 0.0,
+        "tolerance_policy": "bit-identical required for fields not listed; listed dry-dynamic fields use absolute tolerances",
+        "within_tolerance": true
+      },
+      "device_count": 3,
+      "local_device_count": 3,
+      "namelist": {
+        "acoustic_substeps": 1,
+        "damp_opt": 3,
+        "diff_6th_opt": 2,
+        "dt_s": 10.0,
+        "epssm": 0.5,
+        "force_fp64": true,
+        "forecast_steps": 1,
+        "hours": 0.002777777777777778,
+        "radiation_cadence_steps": 999999,
+        "rk_order": 3,
+        "run_boundary": false,
+        "run_physics": true,
+        "run_radiation_on_step_1": false,
+        "top_lid": true,
+        "use_flux_advection": true,
+        "use_vertical_solver": true,
+        "w_damping": 1
+      },
+      "passed": true,
+      "platform": "cpu",
+      "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
+      "sharding": {
+        "axis": "x",
+        "execution_model": "pmapped local-device x shards with ppermute halo exchange",
+        "forecast_halo_width": 8,
+        "halo_width": 2,
+        "num_partitions": 3,
+        "runner": "run_forecast_operational_optional_sharding -> run_forecast_operational_sharded"
+      },
+      "simulation_can_prove": [
+        "real d02 State/metrics/tendencies can be partitioned into x shards and run through run_forecast_operational under pmap",
+        "the default single-device operational entrypoint remains the reference",
+        "fake local CPU devices exercise the full-forecast ppermute halo exchange path"
+      ],
+      "simulation_cannot_prove": [
+        "real H200/NVLink/NCCL performance",
+        "specified/nested lateral boundary decomposition, because run_boundary=True is intentionally rejected",
+        "host/device transfer absence on real GPUs inside the full timestep loop"
+      ],
+      "timing_wall_s": {
+        "sharded_fake_mesh": 16.526601938996464,
+        "single_device_reference": 6.358235192019492,
+        "timing_note": "CPU fake-device wall time includes compile and is not a DGX performance measurement"
+      },
+      "used_devices": 3
+    }
+  ],
+  "passed": true
+}
