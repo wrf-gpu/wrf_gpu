@@ -15,7 +15,7 @@
     "max_abs_w_500s": {
       "passed": true,
       "threshold": "1 <= max(|w|) <= 30 m/s",
-      "value": 11.680187856366487
+      "value": 11.680188113242943
     },
     "relative_mass_drift": {
       "passed": true,
@@ -25,12 +25,12 @@
     "thermal_rise_500s": {
       "passed": true,
       "threshold": "positive-theta centroid rises by at least 500 m",
-      "value": 1924.3475674060383
+      "value": 1924.347589651457
     },
     "theta_prime_max_500s": {
       "passed": true,
       "threshold": "0.5 <= max(theta prime) <= 2.5 K",
-      "value": 1.9200603163244523
+      "value": 1.9200603177468452
     }
   },
   "cpu_affinity": [
@@ -101,49 +101,49 @@
   "snapshots": [
     {
       "cold_theta_center_x_m": 10000.0,
-      "cold_theta_center_z_m": 2555.7134280821483,
+      "cold_theta_center_z_m": 2555.7134330144786,
       "finite": true,
       "front_position_m": null,
       "mass_total_pa": 5984191.922416771,
-      "max_abs_u_m_s": 1.3061278338150322,
-      "max_abs_w_m_s": 2.992267337517224,
-      "positive_theta_center_x_m": 10000.000000000002,
-      "positive_theta_center_z_m": 2085.5351814349474,
+      "max_abs_u_m_s": 1.3061277381481031,
+      "max_abs_w_m_s": 2.9922674813787573,
+      "positive_theta_center_x_m": 10000.0,
+      "positive_theta_center_z_m": 2085.535179509295,
       "second": 100.0,
-      "theta_prime_max_k": 2.0177735162168915,
-      "theta_prime_min_k": -0.0020017416052269255,
+      "theta_prime_max_k": 2.0177735169134507,
+      "theta_prime_min_k": -0.0020017415516235815,
       "theta_symmetry_linf_k": 0.0,
       "w_symmetry_linf_m_s": 0.0
     },
     {
       "cold_theta_center_x_m": 10000.0,
-      "cold_theta_center_z_m": 2589.4574269690124,
+      "cold_theta_center_z_m": 2589.457386037979,
       "finite": true,
       "front_position_m": null,
       "mass_total_pa": 5984191.922416771,
-      "max_abs_u_m_s": 3.1788592156467548,
-      "max_abs_w_m_s": 7.265915416666733,
-      "positive_theta_center_x_m": 10000.0,
-      "positive_theta_center_z_m": 2534.8030370598954,
+      "max_abs_u_m_s": 3.1788595465731047,
+      "max_abs_w_m_s": 7.26591529585465,
+      "positive_theta_center_x_m": 10000.000000000002,
+      "positive_theta_center_z_m": 2534.803041078454,
       "second": 250.0,
-      "theta_prime_max_k": 2.0176932721922753,
-      "theta_prime_min_k": -0.008795661316526093,
+      "theta_prime_max_k": 2.0176932727399617,
+      "theta_prime_min_k": -0.008795661423164347,
       "theta_symmetry_linf_k": 0.0,
       "w_symmetry_linf_m_s": 0.0
     },
     {
       "cold_theta_center_x_m": 10000.0,
-      "cold_theta_center_z_m": 3971.7808947027506,
+      "cold_theta_center_z_m": 3971.780888794978,
       "finite": true,
       "front_position_m": null,
       "mass_total_pa": 5984191.922416771,
-      "max_abs_u_m_s": 6.000849702991853,
-      "max_abs_w_m_s": 11.680187856366487,
+      "max_abs_u_m_s": 6.000850020738586,
+      "max_abs_w_m_s": 11.680188113242943,
       "positive_theta_center_x_m": 10000.0,
-      "positive_theta_center_z_m": 3924.3475674060383,
+      "positive_theta_center_z_m": 3924.347589651457,
       "second": 500.0,
-      "theta_prime_max_k": 1.9200603163244523,
-      "theta_prime_min_k": -0.03534085523637032,
+      "theta_prime_max_k": 1.9200603177468452,
+      "theta_prime_min_k": -0.035340854865580695,
       "theta_symmetry_linf_k": 0.0,
       "w_symmetry_linf_m_s": 0.0
     }
