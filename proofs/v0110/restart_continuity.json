@@ -1,0 +1,8482 @@
+{
+  "artifact": "proofs/v0110/restart_continuity.json",
+  "field_set": {
+    "carry_fields_covered": 14,
+    "deferred_registry_restart_fields": [
+      "Native WRF wrfrst ingestion without GPUWRF exact extensions is not accepted",
+      "Inactive WRF stochastic-perturbation seed arrays are written only when explicit seed state is provided",
+      "WRF options outside the scan-wired Canary suite remain intentionally absent"
+    ],
+    "optional_carry_groups": [
+      "noahmp_land",
+      "noahmp_rad",
+      "cumulus_carry",
+      "noahclassic_land",
+      "noahclassic_rad"
+    ],
+    "state_fields_covered": 56,
+    "state_fields_total": 56,
+    "wrf_standard_restart_variables": [
+      "XTIME",
+      "ITIMESTEP",
+      "XLAT",
+      "XLONG",
+      "XLAT_U",
+      "XLONG_U",
+      "XLAT_V",
+      "XLONG_V",
+      "HGT",
+      "LANDMASK",
+      "ZNU",
+      "ZNW",
+      "P_TOP",
+      "MAPFAC_M",
+      "MAPFAC_U",
+      "MAPFAC_V",
+      "F",
+      "E",
+      "SINALPHA",
+      "COSALPHA",
+      "U",
+      "V",
+      "W",
+      "T",
+      "P",
+      "PB",
+      "PH",
+      "PHB",
+      "MU",
+      "MUB",
+      "QVAPOR",
+      "QCLOUD",
+      "QRAIN",
+      "QICE",
+      "QSNOW",
+      "QGRAUP",
+      "QNICE",
+      "QNRAIN",
+      "QNSNOW",
+      "QNGRAUPEL",
+      "QNCLOUD",
+      "QNCCN",
+      "QKE",
+      "UST",
+      "TSK",
+      "XLAND",
+      "MAVAIL",
+      "ZNT",
+      "LU_INDEX",
+      "RAINC",
+      "RAINNC",
+      "SNOWNC",
+      "GRAUPELNC"
+    ]
+  },
+  "generated_at": "2026-06-05T08:18:40Z",
+  "jax_backend": "gpu",
+  "pass": true,
+  "real_forecast_continuity": {
+    "acceptance_whole_vs_restarted": {
+      "bit_identical": true,
+      "failed_count": 0,
+      "failed_fields": [],
+      "field_count": 75,
+      "pass": true,
+      "per_field": {
+        "carry.mu_save": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "carry.muave": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "carry.mudf": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "carry.muts": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "carry.ph_save": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            45,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            45,
+            66,
+            159
+          ]
+        },
+        "carry.ph_tend": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            45,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            45,
+            66,
+            159
+          ]
+        },
+        "carry.rthraten": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": NaN,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            44,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "carry.t_2ave": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            44,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "carry.t_save": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            44,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "carry.u_save": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            44,
+            66,
+            160
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            44,
+            66,
+            160
+          ]
+        },
+        "carry.v_save": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            44,
+            67,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            44,
+            67,
+            159
+          ]
+        },
+        "carry.w_save": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            45,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            45,
+            66,
+            159
+          ]
+        },
+        "carry.ww": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            45,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            45,
+            66,
+            159
+          ]
+        },
+        "carry.ww_save": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            45,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            45,
+            66,
+            159
+          ]
+        },
+        "cumulus_carry": {
+          "bit_identical": true,
+          "left_present": false,
+          "pass": true,
+          "right_present": false
+        },
+        "noahclassic_land": {
+          "bit_identical": true,
+          "left_present": false,
+          "pass": true,
+          "right_present": false
+        },
+        "noahclassic_rad": {
+          "bit_identical": true,
+          "left_present": false,
+          "pass": true,
+          "right_present": false
+        },
+        "noahmp_land": {
+          "bit_identical": true,
+          "left_present": false,
+          "pass": true,
+          "right_present": false
+        },
+        "noahmp_rad": {
+          "bit_identical": true,
+          "left_present": false,
+          "pass": true,
+          "right_present": false
+        },
+        "state.Nc": {
+          "bit_identical": true,
+          "dtype": "float32",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float32",
+          "right_shape": [
+            44,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "state.Ng": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            44,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "state.Ni": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            44,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "state.Nn": {
+          "bit_identical": true,
+          "dtype": "float32",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float32",
+          "right_shape": [
+            44,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "state.Nr": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            44,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "state.Ns": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            44,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "state.fltv": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "state.graupel_acc": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "state.ice_acc": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "state.lakemask": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "state.lu_index": {
+          "bit_identical": true,
+          "dtype": "int32",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "int32",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "state.mavail": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "state.mu": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "state.mu_bdy": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            25,
+            4,
+            5,
+            1,
+            160
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            25,
+            4,
+            5,
+            1,
+            160
+          ]
+        },
+        "state.mu_perturbation": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "state.mu_total": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "state.mub_bdy": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            1,
+            4,
+            5,
+            1,
+            160
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            1,
+            4,
+            5,
+            1,
+            160
+          ]
+        },
+        "state.p": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            44,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "state.p_bdy": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            25,
+            4,
+            5,
+            44,
+            160
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            25,
+            4,
+            5,
+            44,
+            160
+          ]
+        },
+        "state.p_perturbation": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            44,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "state.p_total": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            44,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "state.pb_bdy": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            1,
+            4,
+            5,
+            44,
+            160
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            1,
+            4,
+            5,
+            44,
+            160
+          ]
+        },
+        "state.ph": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            45,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            45,
+            66,
+            159
+          ]
+        },
+        "state.ph_bdy": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            25,
+            4,
+            5,
+            45,
+            160
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            25,
+            4,
+            5,
+            45,
+            160
+          ]
+        },
+        "state.ph_perturbation": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            45,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            45,
+            66,
+            159
+          ]
+        },
+        "state.ph_total": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            45,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            45,
+            66,
+            159
+          ]
+        },
+        "state.phb_bdy": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            1,
+            4,
+            5,
+            45,
+            160
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            1,
+            4,
+            5,
+            45,
+            160
+          ]
+        },
+        "state.qc": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            44,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "state.qg": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            44,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "state.qi": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            44,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "state.qke": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": NaN,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            44,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "state.qr": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            44,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "state.qs": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            44,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "state.qv": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            44,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "state.qv_bdy": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            25,
+            4,
+            5,
+            44,
+            160
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            25,
+            4,
+            5,
+            44,
+            160
+          ]
+        },
+        "state.qv_flux": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "state.rain_acc": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "state.rainc_acc": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "state.rhosfc": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "state.roughness_m": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "state.snow_acc": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "state.soil_moisture": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "state.t_skin": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "state.tau_u": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "state.tau_v": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "state.theta": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            44,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "state.theta_bdy": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            25,
+            4,
+            5,
+            44,
+            160
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            25,
+            4,
+            5,
+            44,
+            160
+          ]
+        },
+        "state.theta_flux": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "state.u": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            44,
+            66,
+            160
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            44,
+            66,
+            160
+          ]
+        },
+        "state.u_bdy": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            25,
+            4,
+            5,
+            44,
+            160
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            25,
+            4,
+            5,
+            44,
+            160
+          ]
+        },
+        "state.ustar": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "state.v": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            44,
+            67,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            44,
+            67,
+            159
+          ]
+        },
+        "state.v_bdy": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            25,
+            4,
+            5,
+            44,
+            160
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            25,
+            4,
+            5,
+            44,
+            160
+          ]
+        },
+        "state.w": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            45,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            45,
+            66,
+            159
+          ]
+        },
+        "state.w_bdy": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            25,
+            4,
+            5,
+            45,
+            160
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            25,
+            4,
+            5,
+            45,
+            160
+          ]
+        },
+        "state.xland": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        }
+      }
+    },
+    "case": {
+      "domain": "d02",
+      "dt_s": 10.0,
+      "final_hour": 2,
+      "final_steps": 720,
+      "physics": {
+        "acoustic_substeps": 10,
+        "damp_opt": 3,
+        "dampcoef": 0.2,
+        "diff_6th_factor": 0.12,
+        "diff_6th_opt": 2,
+        "disable_guards": false,
+        "dt_s": 10.0,
+        "force_fp64": true,
+        "radiation_cadence_steps": 180,
+        "rk_order": 3,
+        "run_boundary": true,
+        "run_physics": true,
+        "top_lid": true,
+        "use_flux_advection": true,
+        "use_vertical_solver": true,
+        "w_damping": 1,
+        "zdamp": 5000.0
+      },
+      "radiation_cadence_steps": 180,
+      "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
+      "run_id": "20260521_18z_l3_24h_20260522T133443Z",
+      "source": "gpuwrf.integration.d02_replay.build_replay_case",
+      "split_hour": 1,
+      "split_steps": 360,
+      "steps_per_hour": 360
+    },
+    "checkpoint_roundtrip": {
+      "bit_identical": true,
+      "failed_count": 0,
+      "failed_fields": [],
+      "field_count": 75,
+      "pass": true,
+      "per_field": {
+        "carry.mu_save": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "carry.muave": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "carry.mudf": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "carry.muts": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "carry.ph_save": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            45,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            45,
+            66,
+            159
+          ]
+        },
+        "carry.ph_tend": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            45,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            45,
+            66,
+            159
+          ]
+        },
+        "carry.rthraten": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": NaN,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            44,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "carry.t_2ave": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            44,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "carry.t_save": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            44,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "carry.u_save": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            44,
+            66,
+            160
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            44,
+            66,
+            160
+          ]
+        },
+        "carry.v_save": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            44,
+            67,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            44,
+            67,
+            159
+          ]
+        },
+        "carry.w_save": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            45,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            45,
+            66,
+            159
+          ]
+        },
+        "carry.ww": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            45,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            45,
+            66,
+            159
+          ]
+        },
+        "carry.ww_save": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            45,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            45,
+            66,
+            159
+          ]
+        },
+        "cumulus_carry": {
+          "bit_identical": true,
+          "left_present": false,
+          "pass": true,
+          "right_present": false
+        },
+        "noahclassic_land": {
+          "bit_identical": true,
+          "left_present": false,
+          "pass": true,
+          "right_present": false
+        },
+        "noahclassic_rad": {
+          "bit_identical": true,
+          "left_present": false,
+          "pass": true,
+          "right_present": false
+        },
+        "noahmp_land": {
+          "bit_identical": true,
+          "left_present": false,
+          "pass": true,
+          "right_present": false
+        },
+        "noahmp_rad": {
+          "bit_identical": true,
+          "left_present": false,
+          "pass": true,
+          "right_present": false
+        },
+        "state.Nc": {
+          "bit_identical": true,
+          "dtype": "float32",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float32",
+          "right_shape": [
+            44,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "state.Ng": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            44,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "state.Ni": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            44,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "state.Nn": {
+          "bit_identical": true,
+          "dtype": "float32",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float32",
+          "right_shape": [
+            44,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "state.Nr": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            44,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "state.Ns": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            44,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "state.fltv": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "state.graupel_acc": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "state.ice_acc": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "state.lakemask": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "state.lu_index": {
+          "bit_identical": true,
+          "dtype": "int32",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "int32",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "state.mavail": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "state.mu": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "state.mu_bdy": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            25,
+            4,
+            5,
+            1,
+            160
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            25,
+            4,
+            5,
+            1,
+            160
+          ]
+        },
+        "state.mu_perturbation": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "state.mu_total": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "state.mub_bdy": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            1,
+            4,
+            5,
+            1,
+            160
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            1,
+            4,
+            5,
+            1,
+            160
+          ]
+        },
+        "state.p": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            44,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "state.p_bdy": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            25,
+            4,
+            5,
+            44,
+            160
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            25,
+            4,
+            5,
+            44,
+            160
+          ]
+        },
+        "state.p_perturbation": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            44,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "state.p_total": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            44,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "state.pb_bdy": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            1,
+            4,
+            5,
+            44,
+            160
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            1,
+            4,
+            5,
+            44,
+            160
+          ]
+        },
+        "state.ph": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            45,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            45,
+            66,
+            159
+          ]
+        },
+        "state.ph_bdy": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            25,
+            4,
+            5,
+            45,
+            160
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            25,
+            4,
+            5,
+            45,
+            160
+          ]
+        },
+        "state.ph_perturbation": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            45,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            45,
+            66,
+            159
+          ]
+        },
+        "state.ph_total": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            45,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            45,
+            66,
+            159
+          ]
+        },
+        "state.phb_bdy": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            1,
+            4,
+            5,
+            45,
+            160
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            1,
+            4,
+            5,
+            45,
+            160
+          ]
+        },
+        "state.qc": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            44,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "state.qg": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            44,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "state.qi": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            44,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "state.qke": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": NaN,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            44,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "state.qr": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            44,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "state.qs": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            44,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "state.qv": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            44,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "state.qv_bdy": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            25,
+            4,
+            5,
+            44,
+            160
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            25,
+            4,
+            5,
+            44,
+            160
+          ]
+        },
+        "state.qv_flux": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "state.rain_acc": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "state.rainc_acc": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "state.rhosfc": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "state.roughness_m": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "state.snow_acc": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "state.soil_moisture": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "state.t_skin": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "state.tau_u": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "state.tau_v": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "state.theta": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            44,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "state.theta_bdy": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            25,
+            4,
+            5,
+            44,
+            160
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            25,
+            4,
+            5,
+            44,
+            160
+          ]
+        },
+        "state.theta_flux": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "state.u": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            44,
+            66,
+            160
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            44,
+            66,
+            160
+          ]
+        },
+        "state.u_bdy": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            25,
+            4,
+            5,
+            44,
+            160
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            25,
+            4,
+            5,
+            44,
+            160
+          ]
+        },
+        "state.ustar": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "state.v": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            44,
+            67,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            44,
+            67,
+            159
+          ]
+        },
+        "state.v_bdy": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            25,
+            4,
+            5,
+            44,
+            160
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            25,
+            4,
+            5,
+            44,
+            160
+          ]
+        },
+        "state.w": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            45,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            45,
+            66,
+            159
+          ]
+        },
+        "state.w_bdy": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            25,
+            4,
+            5,
+            45,
+            160
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            25,
+            4,
+            5,
+            45,
+            160
+          ]
+        },
+        "state.xland": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        }
+      }
+    },
+    "pass": true,
+    "restart_isolation_split_no_io_vs_restarted": {
+      "bit_identical": true,
+      "failed_count": 0,
+      "failed_fields": [],
+      "field_count": 75,
+      "pass": true,
+      "per_field": {
+        "carry.mu_save": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "carry.muave": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "carry.mudf": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "carry.muts": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "carry.ph_save": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            45,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            45,
+            66,
+            159
+          ]
+        },
+        "carry.ph_tend": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            45,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            45,
+            66,
+            159
+          ]
+        },
+        "carry.rthraten": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": NaN,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            44,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "carry.t_2ave": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            44,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "carry.t_save": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            44,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "carry.u_save": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            44,
+            66,
+            160
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            44,
+            66,
+            160
+          ]
+        },
+        "carry.v_save": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            44,
+            67,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            44,
+            67,
+            159
+          ]
+        },
+        "carry.w_save": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            45,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            45,
+            66,
+            159
+          ]
+        },
+        "carry.ww": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            45,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            45,
+            66,
+            159
+          ]
+        },
+        "carry.ww_save": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            45,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            45,
+            66,
+            159
+          ]
+        },
+        "cumulus_carry": {
+          "bit_identical": true,
+          "left_present": false,
+          "pass": true,
+          "right_present": false
+        },
+        "noahclassic_land": {
+          "bit_identical": true,
+          "left_present": false,
+          "pass": true,
+          "right_present": false
+        },
+        "noahclassic_rad": {
+          "bit_identical": true,
+          "left_present": false,
+          "pass": true,
+          "right_present": false
+        },
+        "noahmp_land": {
+          "bit_identical": true,
+          "left_present": false,
+          "pass": true,
+          "right_present": false
+        },
+        "noahmp_rad": {
+          "bit_identical": true,
+          "left_present": false,
+          "pass": true,
+          "right_present": false
+        },
+        "state.Nc": {
+          "bit_identical": true,
+          "dtype": "float32",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float32",
+          "right_shape": [
+            44,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "state.Ng": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            44,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "state.Ni": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            44,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "state.Nn": {
+          "bit_identical": true,
+          "dtype": "float32",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float32",
+          "right_shape": [
+            44,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "state.Nr": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            44,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "state.Ns": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            44,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "state.fltv": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "state.graupel_acc": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "state.ice_acc": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "state.lakemask": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "state.lu_index": {
+          "bit_identical": true,
+          "dtype": "int32",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "int32",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "state.mavail": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "state.mu": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "state.mu_bdy": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            25,
+            4,
+            5,
+            1,
+            160
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            25,
+            4,
+            5,
+            1,
+            160
+          ]
+        },
+        "state.mu_perturbation": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "state.mu_total": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "state.mub_bdy": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            1,
+            4,
+            5,
+            1,
+            160
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            1,
+            4,
+            5,
+            1,
+            160
+          ]
+        },
+        "state.p": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            44,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "state.p_bdy": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            25,
+            4,
+            5,
+            44,
+            160
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            25,
+            4,
+            5,
+            44,
+            160
+          ]
+        },
+        "state.p_perturbation": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            44,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "state.p_total": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            44,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "state.pb_bdy": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            1,
+            4,
+            5,
+            44,
+            160
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            1,
+            4,
+            5,
+            44,
+            160
+          ]
+        },
+        "state.ph": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            45,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            45,
+            66,
+            159
+          ]
+        },
+        "state.ph_bdy": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            25,
+            4,
+            5,
+            45,
+            160
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            25,
+            4,
+            5,
+            45,
+            160
+          ]
+        },
+        "state.ph_perturbation": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            45,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            45,
+            66,
+            159
+          ]
+        },
+        "state.ph_total": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            45,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            45,
+            66,
+            159
+          ]
+        },
+        "state.phb_bdy": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            1,
+            4,
+            5,
+            45,
+            160
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            1,
+            4,
+            5,
+            45,
+            160
+          ]
+        },
+        "state.qc": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            44,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "state.qg": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            44,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "state.qi": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            44,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "state.qke": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": NaN,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            44,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "state.qr": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            44,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "state.qs": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            44,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "state.qv": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            44,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "state.qv_bdy": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            25,
+            4,
+            5,
+            44,
+            160
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            25,
+            4,
+            5,
+            44,
+            160
+          ]
+        },
+        "state.qv_flux": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "state.rain_acc": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "state.rainc_acc": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "state.rhosfc": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "state.roughness_m": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "state.snow_acc": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "state.soil_moisture": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "state.t_skin": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "state.tau_u": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "state.tau_v": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "state.theta": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            44,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "state.theta_bdy": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            25,
+            4,
+            5,
+            44,
+            160
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            25,
+            4,
+            5,
+            44,
+            160
+          ]
+        },
+        "state.theta_flux": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "state.u": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            44,
+            66,
+            160
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            44,
+            66,
+            160
+          ]
+        },
+        "state.u_bdy": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            25,
+            4,
+            5,
+            44,
+            160
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            25,
+            4,
+            5,
+            44,
+            160
+          ]
+        },
+        "state.ustar": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "state.v": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            44,
+            67,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            44,
+            67,
+            159
+          ]
+        },
+        "state.v_bdy": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            25,
+            4,
+            5,
+            44,
+            160
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            25,
+            4,
+            5,
+            44,
+            160
+          ]
+        },
+        "state.w": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            45,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            45,
+            66,
+            159
+          ]
+        },
+        "state.w_bdy": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            25,
+            4,
+            5,
+            45,
+            160
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            25,
+            4,
+            5,
+            45,
+            160
+          ]
+        },
+        "state.xland": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        }
+      }
+    },
+    "restart_metadata": {
+      "carry_present": true,
+      "deferred_registry_restart_fields": [
+        "Native WRF wrfrst ingestion without GPUWRF exact extensions is not accepted",
+        "Inactive WRF stochastic-perturbation seed arrays are written only when explicit seed state is provided",
+        "WRF options outside the scan-wired Canary suite remain intentionally absent"
+      ],
+      "optional_carry_field_order": {
+        "cumulus_carry": [],
+        "noahclassic_land": [],
+        "noahclassic_rad": [],
+        "noahmp_land": [],
+        "noahmp_rad": []
+      },
+      "optional_carry_kind": {
+        "cumulus_carry": "none",
+        "noahclassic_land": "none",
+        "noahclassic_rad": "none",
+        "noahmp_land": "none",
+        "noahmp_rad": "none"
+      },
+      "optional_wrf_restart_variables": [
+        "TSLB",
+        "SMOIS",
+        "SH2O",
+        "TSNO",
+        "SNICE",
+        "SNLIQ",
+        "ZSNSO",
+        "SNOW",
+        "SNOWH",
+        "CANWAT",
+        "SFROFF",
+        "UDROFF",
+        "ALBEDO",
+        "EMISS"
+      ],
+      "schema_version": "v0.11.0-wrfrst-netcdf-2",
+      "standard_restart_variables": [
+        "XTIME",
+        "ITIMESTEP",
+        "XLAT",
+        "XLONG",
+        "XLAT_U",
+        "XLONG_U",
+        "XLAT_V",
+        "XLONG_V",
+        "HGT",
+        "LANDMASK",
+        "ZNU",
+        "ZNW",
+        "P_TOP",
+        "MAPFAC_M",
+        "MAPFAC_U",
+        "MAPFAC_V",
+        "F",
+        "E",
+        "SINALPHA",
+        "COSALPHA",
+        "U",
+        "V",
+        "W",
+        "T",
+        "P",
+        "PB",
+        "PH",
+        "PHB",
+        "MU",
+        "MUB",
+        "QVAPOR",
+        "QCLOUD",
+        "QRAIN",
+        "QICE",
+        "QSNOW",
+        "QGRAUP",
+        "QNICE",
+        "QNRAIN",
+        "QNSNOW",
+        "QNGRAUPEL",
+        "QNCLOUD",
+        "QNCCN",
+        "QKE",
+        "UST",
+        "TSK",
+        "XLAND",
+        "MAVAIL",
+        "ZNT",
+        "LU_INDEX",
+        "RAINC",
+        "RAINNC",
+        "SNOWNC",
+        "GRAUPELNC"
+      ],
+      "state_field_order": [
+        "u",
+        "v",
+        "w",
+        "theta",
+        "qv",
+        "p",
+        "ph",
+        "mu",
+        "p_total",
+        "p_perturbation",
+        "ph_total",
+        "ph_perturbation",
+        "mu_total",
+        "mu_perturbation",
+        "qc",
+        "qr",
+        "qi",
+        "qs",
+        "qg",
+        "Ni",
+        "Nr",
+        "Ns",
+        "Ng",
+        "qke",
+        "ustar",
+        "theta_flux",
+        "qv_flux",
+        "tau_u",
+        "tau_v",
+        "rhosfc",
+        "fltv",
+        "t_skin",
+        "soil_moisture",
+        "xland",
+        "lakemask",
+        "mavail",
+        "roughness_m",
+        "rain_acc",
+        "snow_acc",
+        "graupel_acc",
+        "ice_acc",
+        "u_bdy",
+        "v_bdy",
+        "theta_bdy",
+        "qv_bdy",
+        "ph_bdy",
+        "mu_bdy",
+        "w_bdy",
+        "p_bdy",
+        "pb_bdy",
+        "phb_bdy",
+        "mub_bdy",
+        "lu_index",
+        "Nc",
+        "Nn",
+        "rainc_acc"
+      ],
+      "step_index": 360,
+      "valid_time": "2026-05-21_19:00:00",
+      "xtime_minutes": 60.0
+    },
+    "restart_path": "proofs/v0110/wrfrst_d02_hour01.nc",
+    "schema": {
+      "dimensions": {
+        "DateStrLen": 19,
+        "Time": 1,
+        "bottom_top": 44,
+        "bottom_top_stag": 45,
+        "gpuwrf_bdy_side": 4,
+        "gpuwrf_bdy_side_index": 160,
+        "gpuwrf_bdy_surface": 1,
+        "gpuwrf_bdy_time": 25,
+        "gpuwrf_bdy_width": 5,
+        "gpuwrf_mu_bdy_time": 25,
+        "gpuwrf_mub_bdy_time": 1,
+        "gpuwrf_p_bdy_time": 25,
+        "gpuwrf_pb_bdy_time": 1,
+        "gpuwrf_ph_bdy_time": 25,
+        "gpuwrf_phb_bdy_time": 1,
+        "gpuwrf_qv_bdy_time": 25,
+        "gpuwrf_theta_bdy_time": 25,
+        "gpuwrf_u_bdy_time": 25,
+        "gpuwrf_v_bdy_time": 25,
+        "gpuwrf_w_bdy_time": 25,
+        "seed_dim_stag": 8,
+        "snow_layers_stag": 3,
+        "snso_layers_stag": 7,
+        "soil_layers_stag": 4,
+        "south_north": 66,
+        "south_north_stag": 67,
+        "west_east": 159,
+        "west_east_stag": 160
+      },
+      "schema_version": "v0.11.0-wrfrst-netcdf-2",
+      "variable_count": 124
+    },
+    "segmentation_control_whole_vs_split_no_io": {
+      "bit_identical": true,
+      "failed_count": 0,
+      "failed_fields": [],
+      "field_count": 75,
+      "pass": true,
+      "per_field": {
+        "carry.mu_save": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "carry.muave": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "carry.mudf": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "carry.muts": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "carry.ph_save": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            45,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            45,
+            66,
+            159
+          ]
+        },
+        "carry.ph_tend": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            45,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            45,
+            66,
+            159
+          ]
+        },
+        "carry.rthraten": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": NaN,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            44,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "carry.t_2ave": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            44,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "carry.t_save": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            44,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "carry.u_save": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            44,
+            66,
+            160
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            44,
+            66,
+            160
+          ]
+        },
+        "carry.v_save": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            44,
+            67,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            44,
+            67,
+            159
+          ]
+        },
+        "carry.w_save": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            45,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            45,
+            66,
+            159
+          ]
+        },
+        "carry.ww": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            45,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            45,
+            66,
+            159
+          ]
+        },
+        "carry.ww_save": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            45,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            45,
+            66,
+            159
+          ]
+        },
+        "cumulus_carry": {
+          "bit_identical": true,
+          "left_present": false,
+          "pass": true,
+          "right_present": false
+        },
+        "noahclassic_land": {
+          "bit_identical": true,
+          "left_present": false,
+          "pass": true,
+          "right_present": false
+        },
+        "noahclassic_rad": {
+          "bit_identical": true,
+          "left_present": false,
+          "pass": true,
+          "right_present": false
+        },
+        "noahmp_land": {
+          "bit_identical": true,
+          "left_present": false,
+          "pass": true,
+          "right_present": false
+        },
+        "noahmp_rad": {
+          "bit_identical": true,
+          "left_present": false,
+          "pass": true,
+          "right_present": false
+        },
+        "state.Nc": {
+          "bit_identical": true,
+          "dtype": "float32",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float32",
+          "right_shape": [
+            44,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "state.Ng": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            44,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "state.Ni": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            44,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "state.Nn": {
+          "bit_identical": true,
+          "dtype": "float32",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float32",
+          "right_shape": [
+            44,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "state.Nr": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            44,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "state.Ns": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            44,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "state.fltv": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "state.graupel_acc": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "state.ice_acc": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "state.lakemask": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "state.lu_index": {
+          "bit_identical": true,
+          "dtype": "int32",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "int32",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "state.mavail": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "state.mu": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "state.mu_bdy": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            25,
+            4,
+            5,
+            1,
+            160
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            25,
+            4,
+            5,
+            1,
+            160
+          ]
+        },
+        "state.mu_perturbation": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "state.mu_total": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "state.mub_bdy": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            1,
+            4,
+            5,
+            1,
+            160
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            1,
+            4,
+            5,
+            1,
+            160
+          ]
+        },
+        "state.p": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            44,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "state.p_bdy": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            25,
+            4,
+            5,
+            44,
+            160
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            25,
+            4,
+            5,
+            44,
+            160
+          ]
+        },
+        "state.p_perturbation": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            44,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "state.p_total": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            44,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "state.pb_bdy": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            1,
+            4,
+            5,
+            44,
+            160
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            1,
+            4,
+            5,
+            44,
+            160
+          ]
+        },
+        "state.ph": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            45,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            45,
+            66,
+            159
+          ]
+        },
+        "state.ph_bdy": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            25,
+            4,
+            5,
+            45,
+            160
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            25,
+            4,
+            5,
+            45,
+            160
+          ]
+        },
+        "state.ph_perturbation": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            45,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            45,
+            66,
+            159
+          ]
+        },
+        "state.ph_total": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            45,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            45,
+            66,
+            159
+          ]
+        },
+        "state.phb_bdy": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            1,
+            4,
+            5,
+            45,
+            160
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            1,
+            4,
+            5,
+            45,
+            160
+          ]
+        },
+        "state.qc": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            44,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "state.qg": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            44,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "state.qi": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            44,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "state.qke": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": NaN,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            44,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "state.qr": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            44,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "state.qs": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            44,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "state.qv": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            44,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "state.qv_bdy": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            25,
+            4,
+            5,
+            44,
+            160
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            25,
+            4,
+            5,
+            44,
+            160
+          ]
+        },
+        "state.qv_flux": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "state.rain_acc": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "state.rainc_acc": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "state.rhosfc": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "state.roughness_m": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "state.snow_acc": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "state.soil_moisture": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "state.t_skin": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "state.tau_u": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "state.tau_v": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "state.theta": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            44,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "state.theta_bdy": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            25,
+            4,
+            5,
+            44,
+            160
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            25,
+            4,
+            5,
+            44,
+            160
+          ]
+        },
+        "state.theta_flux": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "state.u": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            44,
+            66,
+            160
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            44,
+            66,
+            160
+          ]
+        },
+        "state.u_bdy": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            25,
+            4,
+            5,
+            44,
+            160
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            25,
+            4,
+            5,
+            44,
+            160
+          ]
+        },
+        "state.ustar": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "state.v": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            44,
+            67,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            44,
+            67,
+            159
+          ]
+        },
+        "state.v_bdy": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            25,
+            4,
+            5,
+            44,
+            160
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            25,
+            4,
+            5,
+            44,
+            160
+          ]
+        },
+        "state.w": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            45,
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            45,
+            66,
+            159
+          ]
+        },
+        "state.w_bdy": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            25,
+            4,
+            5,
+            45,
+            160
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            25,
+            4,
+            5,
+            45,
+            160
+          ]
+        },
+        "state.xland": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            66,
+            159
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            66,
+            159
+          ]
+        }
+      }
+    },
+    "timings": [
+      {
+        "n_steps": 720,
+        "name": "uninterrupted_0_to_m",
+        "start_step": 1,
+        "wall_s": 59.45884052099427
+      },
+      {
+        "n_steps": 360,
+        "name": "split_prefix_0_to_n",
+        "start_step": 1,
+        "wall_s": 34.529494416026864
+      },
+      {
+        "n_steps": 360,
+        "name": "split_no_io_n_to_m",
+        "start_step": 361,
+        "wall_s": 32.73675366200041
+      },
+      {
+        "n_steps": 360,
+        "name": "restart_n_to_m",
+        "start_step": 361,
+        "wall_s": 130.7603409140138
+      }
+    ]
+  },
+  "resource_policy": {
+    "pythonpath": "src",
+    "required_prefix_for_gpu_commands": "/tmp/wrf_gpu_run.sh",
+    "taskset": "taskset -c 0-27"
+  },
+  "schema_version": "v0.11.0-wrfrst-netcdf-2",
+  "structural_full_carry_roundtrip": {
+    "comparison": {
+      "bit_identical": true,
+      "failed_count": 0,
+      "failed_fields": [],
+      "field_count": 130,
+      "pass": true,
+      "per_field": {
+        "carry.mu_save": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            8,
+            8
+          ]
+        },
+        "carry.muave": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            8,
+            8
+          ]
+        },
+        "carry.mudf": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            8,
+            8
+          ]
+        },
+        "carry.muts": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            8,
+            8
+          ]
+        },
+        "carry.ph_save": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            11,
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            11,
+            8,
+            8
+          ]
+        },
+        "carry.ph_tend": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            11,
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            11,
+            8,
+            8
+          ]
+        },
+        "carry.rthraten": {
+          "bit_identical": true,
+          "dtype": "float32",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float32",
+          "right_shape": [
+            10,
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            10,
+            8,
+            8
+          ]
+        },
+        "carry.t_2ave": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            10,
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            10,
+            8,
+            8
+          ]
+        },
+        "carry.t_save": {
+          "bit_identical": true,
+          "dtype": "float32",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float32",
+          "right_shape": [
+            10,
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            10,
+            8,
+            8
+          ]
+        },
+        "carry.u_save": {
+          "bit_identical": true,
+          "dtype": "float32",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float32",
+          "right_shape": [
+            10,
+            8,
+            9
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            10,
+            8,
+            9
+          ]
+        },
+        "carry.v_save": {
+          "bit_identical": true,
+          "dtype": "float32",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float32",
+          "right_shape": [
+            10,
+            9,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            10,
+            9,
+            8
+          ]
+        },
+        "carry.w_save": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            11,
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            11,
+            8,
+            8
+          ]
+        },
+        "carry.ww": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            11,
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            11,
+            8,
+            8
+          ]
+        },
+        "carry.ww_save": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            11,
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            11,
+            8,
+            8
+          ]
+        },
+        "cumulus_carry[0]": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            10,
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            10,
+            8,
+            8
+          ]
+        },
+        "cumulus_carry[1]": {
+          "bit_identical": true,
+          "dtype": "int32",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "int32",
+          "right_shape": [
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            8,
+            8
+          ]
+        },
+        "noahclassic_land[0]": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            8,
+            8
+          ]
+        },
+        "noahclassic_land[10]": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            8,
+            8
+          ]
+        },
+        "noahclassic_land[11]": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            8,
+            8
+          ]
+        },
+        "noahclassic_land[12]": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            8,
+            8
+          ]
+        },
+        "noahclassic_land[13]": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            8,
+            8
+          ]
+        },
+        "noahclassic_land[14]": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            8,
+            8,
+            4
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            8,
+            8,
+            4
+          ]
+        },
+        "noahclassic_land[15]": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            8,
+            8
+          ]
+        },
+        "noahclassic_land[16]": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            8,
+            8
+          ]
+        },
+        "noahclassic_land[17]": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            8,
+            8
+          ]
+        },
+        "noahclassic_land[18]": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            8,
+            8
+          ]
+        },
+        "noahclassic_land[19]": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            8,
+            8
+          ]
+        },
+        "noahclassic_land[1]": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            8,
+            8,
+            4
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            8,
+            8,
+            4
+          ]
+        },
+        "noahclassic_land[2]": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            8,
+            8,
+            4
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            8,
+            8,
+            4
+          ]
+        },
+        "noahclassic_land[3]": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            8,
+            8,
+            4
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            8,
+            8,
+            4
+          ]
+        },
+        "noahclassic_land[4]": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            8,
+            8
+          ]
+        },
+        "noahclassic_land[5]": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            8,
+            8
+          ]
+        },
+        "noahclassic_land[6]": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            8,
+            8
+          ]
+        },
+        "noahclassic_land[7]": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            8,
+            8
+          ]
+        },
+        "noahclassic_land[8]": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            8,
+            8
+          ]
+        },
+        "noahclassic_land[9]": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            8,
+            8
+          ]
+        },
+        "noahclassic_rad[0]": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            8,
+            8
+          ]
+        },
+        "noahclassic_rad[1]": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            8,
+            8
+          ]
+        },
+        "noahclassic_rad[2]": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            8,
+            8
+          ]
+        },
+        "noahmp_land.albedo": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            8,
+            8
+          ]
+        },
+        "noahmp_land.albold": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            8,
+            8
+          ]
+        },
+        "noahmp_land.canice": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            8,
+            8
+          ]
+        },
+        "noahmp_land.canliq": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            8,
+            8
+          ]
+        },
+        "noahmp_land.ch": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            8,
+            8
+          ]
+        },
+        "noahmp_land.cm": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            8,
+            8
+          ]
+        },
+        "noahmp_land.eah": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            8,
+            8
+          ]
+        },
+        "noahmp_land.emiss": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            8,
+            8
+          ]
+        },
+        "noahmp_land.fwet": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            8,
+            8
+          ]
+        },
+        "noahmp_land.isnow": {
+          "bit_identical": true,
+          "dtype": "int32",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "int32",
+          "right_shape": [
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            8,
+            8
+          ]
+        },
+        "noahmp_land.lai": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            8,
+            8
+          ]
+        },
+        "noahmp_land.qsfc": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            8,
+            8
+          ]
+        },
+        "noahmp_land.sai": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            8,
+            8
+          ]
+        },
+        "noahmp_land.sfcrunoff": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            8,
+            8
+          ]
+        },
+        "noahmp_land.sh2o": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            4,
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            4,
+            8,
+            8
+          ]
+        },
+        "noahmp_land.smcwtd": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            8,
+            8
+          ]
+        },
+        "noahmp_land.smois": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            4,
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            4,
+            8,
+            8
+          ]
+        },
+        "noahmp_land.sneqv": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            8,
+            8
+          ]
+        },
+        "noahmp_land.sneqvo": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            8,
+            8
+          ]
+        },
+        "noahmp_land.snice": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            3,
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            3,
+            8,
+            8
+          ]
+        },
+        "noahmp_land.snliq": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            3,
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            3,
+            8,
+            8
+          ]
+        },
+        "noahmp_land.snowh": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            8,
+            8
+          ]
+        },
+        "noahmp_land.t_skin": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            8,
+            8
+          ]
+        },
+        "noahmp_land.tah": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            8,
+            8
+          ]
+        },
+        "noahmp_land.tauss": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            8,
+            8
+          ]
+        },
+        "noahmp_land.tg": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            8,
+            8
+          ]
+        },
+        "noahmp_land.tslb": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            4,
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            4,
+            8,
+            8
+          ]
+        },
+        "noahmp_land.tsno": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            3,
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            3,
+            8,
+            8
+          ]
+        },
+        "noahmp_land.tv": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            8,
+            8
+          ]
+        },
+        "noahmp_land.udrunoff": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            8,
+            8
+          ]
+        },
+        "noahmp_land.znt": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            8,
+            8
+          ]
+        },
+        "noahmp_land.zsnso": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            7,
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            7,
+            8,
+            8
+          ]
+        },
+        "noahmp_rad[0]": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            8,
+            8
+          ]
+        },
+        "noahmp_rad[1]": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            8,
+            8
+          ]
+        },
+        "noahmp_rad[2]": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            8,
+            8
+          ]
+        },
+        "state.Nc": {
+          "bit_identical": true,
+          "dtype": "float32",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float32",
+          "right_shape": [
+            10,
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            10,
+            8,
+            8
+          ]
+        },
+        "state.Ng": {
+          "bit_identical": true,
+          "dtype": "float32",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float32",
+          "right_shape": [
+            10,
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            10,
+            8,
+            8
+          ]
+        },
+        "state.Ni": {
+          "bit_identical": true,
+          "dtype": "float32",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float32",
+          "right_shape": [
+            10,
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            10,
+            8,
+            8
+          ]
+        },
+        "state.Nn": {
+          "bit_identical": true,
+          "dtype": "float32",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float32",
+          "right_shape": [
+            10,
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            10,
+            8,
+            8
+          ]
+        },
+        "state.Nr": {
+          "bit_identical": true,
+          "dtype": "float32",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float32",
+          "right_shape": [
+            10,
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            10,
+            8,
+            8
+          ]
+        },
+        "state.Ns": {
+          "bit_identical": true,
+          "dtype": "float32",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float32",
+          "right_shape": [
+            10,
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            10,
+            8,
+            8
+          ]
+        },
+        "state.fltv": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            8,
+            8
+          ]
+        },
+        "state.graupel_acc": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            8,
+            8
+          ]
+        },
+        "state.ice_acc": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            8,
+            8
+          ]
+        },
+        "state.lakemask": {
+          "bit_identical": true,
+          "dtype": "float32",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float32",
+          "right_shape": [
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            8,
+            8
+          ]
+        },
+        "state.lu_index": {
+          "bit_identical": true,
+          "dtype": "int32",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "int32",
+          "right_shape": [
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            8,
+            8
+          ]
+        },
+        "state.mavail": {
+          "bit_identical": true,
+          "dtype": "float32",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float32",
+          "right_shape": [
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            8,
+            8
+          ]
+        },
+        "state.mu": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            8,
+            8
+          ]
+        },
+        "state.mu_bdy": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            1,
+            4,
+            5,
+            1,
+            9
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            1,
+            4,
+            5,
+            1,
+            9
+          ]
+        },
+        "state.mu_perturbation": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            8,
+            8
+          ]
+        },
+        "state.mu_total": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            8,
+            8
+          ]
+        },
+        "state.mub_bdy": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            1,
+            4,
+            5,
+            1,
+            9
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            1,
+            4,
+            5,
+            1,
+            9
+          ]
+        },
+        "state.p": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            10,
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            10,
+            8,
+            8
+          ]
+        },
+        "state.p_bdy": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            1,
+            4,
+            5,
+            10,
+            9
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            1,
+            4,
+            5,
+            10,
+            9
+          ]
+        },
+        "state.p_perturbation": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            10,
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            10,
+            8,
+            8
+          ]
+        },
+        "state.p_total": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            10,
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            10,
+            8,
+            8
+          ]
+        },
+        "state.pb_bdy": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            1,
+            4,
+            5,
+            10,
+            9
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            1,
+            4,
+            5,
+            10,
+            9
+          ]
+        },
+        "state.ph": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            11,
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            11,
+            8,
+            8
+          ]
+        },
+        "state.ph_bdy": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            1,
+            4,
+            5,
+            11,
+            9
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            1,
+            4,
+            5,
+            11,
+            9
+          ]
+        },
+        "state.ph_perturbation": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            11,
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            11,
+            8,
+            8
+          ]
+        },
+        "state.ph_total": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            11,
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            11,
+            8,
+            8
+          ]
+        },
+        "state.phb_bdy": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            1,
+            4,
+            5,
+            11,
+            9
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            1,
+            4,
+            5,
+            11,
+            9
+          ]
+        },
+        "state.qc": {
+          "bit_identical": true,
+          "dtype": "float32",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float32",
+          "right_shape": [
+            10,
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            10,
+            8,
+            8
+          ]
+        },
+        "state.qg": {
+          "bit_identical": true,
+          "dtype": "float32",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float32",
+          "right_shape": [
+            10,
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            10,
+            8,
+            8
+          ]
+        },
+        "state.qi": {
+          "bit_identical": true,
+          "dtype": "float32",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float32",
+          "right_shape": [
+            10,
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            10,
+            8,
+            8
+          ]
+        },
+        "state.qke": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            10,
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            10,
+            8,
+            8
+          ]
+        },
+        "state.qr": {
+          "bit_identical": true,
+          "dtype": "float32",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float32",
+          "right_shape": [
+            10,
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            10,
+            8,
+            8
+          ]
+        },
+        "state.qs": {
+          "bit_identical": true,
+          "dtype": "float32",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float32",
+          "right_shape": [
+            10,
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            10,
+            8,
+            8
+          ]
+        },
+        "state.qv": {
+          "bit_identical": true,
+          "dtype": "float32",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float32",
+          "right_shape": [
+            10,
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            10,
+            8,
+            8
+          ]
+        },
+        "state.qv_bdy": {
+          "bit_identical": true,
+          "dtype": "float32",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float32",
+          "right_shape": [
+            1,
+            4,
+            5,
+            10,
+            9
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            1,
+            4,
+            5,
+            10,
+            9
+          ]
+        },
+        "state.qv_flux": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            8,
+            8
+          ]
+        },
+        "state.rain_acc": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            8,
+            8
+          ]
+        },
+        "state.rainc_acc": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            8,
+            8
+          ]
+        },
+        "state.rhosfc": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            8,
+            8
+          ]
+        },
+        "state.roughness_m": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            8,
+            8
+          ]
+        },
+        "state.snow_acc": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            8,
+            8
+          ]
+        },
+        "state.soil_moisture": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            8,
+            8
+          ]
+        },
+        "state.t_skin": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            8,
+            8
+          ]
+        },
+        "state.tau_u": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            8,
+            8
+          ]
+        },
+        "state.tau_v": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            8,
+            8
+          ]
+        },
+        "state.theta": {
+          "bit_identical": true,
+          "dtype": "float32",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float32",
+          "right_shape": [
+            10,
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            10,
+            8,
+            8
+          ]
+        },
+        "state.theta_bdy": {
+          "bit_identical": true,
+          "dtype": "float32",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float32",
+          "right_shape": [
+            1,
+            4,
+            5,
+            10,
+            9
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            1,
+            4,
+            5,
+            10,
+            9
+          ]
+        },
+        "state.theta_flux": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            8,
+            8
+          ]
+        },
+        "state.u": {
+          "bit_identical": true,
+          "dtype": "float32",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float32",
+          "right_shape": [
+            10,
+            8,
+            9
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            10,
+            8,
+            9
+          ]
+        },
+        "state.u_bdy": {
+          "bit_identical": true,
+          "dtype": "float32",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float32",
+          "right_shape": [
+            1,
+            4,
+            5,
+            10,
+            9
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            1,
+            4,
+            5,
+            10,
+            9
+          ]
+        },
+        "state.ustar": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            8,
+            8
+          ]
+        },
+        "state.v": {
+          "bit_identical": true,
+          "dtype": "float32",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float32",
+          "right_shape": [
+            10,
+            9,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            10,
+            9,
+            8
+          ]
+        },
+        "state.v_bdy": {
+          "bit_identical": true,
+          "dtype": "float32",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float32",
+          "right_shape": [
+            1,
+            4,
+            5,
+            10,
+            9
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            1,
+            4,
+            5,
+            10,
+            9
+          ]
+        },
+        "state.w": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            11,
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            11,
+            8,
+            8
+          ]
+        },
+        "state.w_bdy": {
+          "bit_identical": true,
+          "dtype": "float64",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float64",
+          "right_shape": [
+            1,
+            4,
+            5,
+            11,
+            9
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            1,
+            4,
+            5,
+            11,
+            9
+          ]
+        },
+        "state.xland": {
+          "bit_identical": true,
+          "dtype": "float32",
+          "max_abs": 0.0,
+          "pass": true,
+          "right_dtype": "float32",
+          "right_shape": [
+            8,
+            8
+          ],
+          "same_dtype": true,
+          "same_shape": true,
+          "shape": [
+            8,
+            8
+          ]
+        }
+      }
+    },
+    "metadata": {
+      "carry_present": true,
+      "deferred_registry_restart_fields": [
+        "Native WRF wrfrst ingestion without GPUWRF exact extensions is not accepted",
+        "Inactive WRF stochastic-perturbation seed arrays are written only when explicit seed state is provided",
+        "WRF options outside the scan-wired Canary suite remain intentionally absent"
+      ],
+      "optional_carry_field_order": {
+        "cumulus_carry": [
+          "w0avg",
+          "nca"
+        ],
+        "noahclassic_land": [
+          "t1",
+          "stc",
+          "smc",
+          "sh2o",
+          "cmc",
+          "sneqv",
+          "snowh",
+          "sncovr",
+          "snotime1",
+          "ribb",
+          "flx4",
+          "fvb",
+          "fbur",
+          "fgsn",
+          "smcrel",
+          "xlaidyn",
+          "hfx",
+          "qfx",
+          "lh",
+          "grdflx"
+        ],
+        "noahclassic_rad": [
+          "soldn",
+          "lwdn",
+          "cosz"
+        ],
+        "noahmp_land": [
+          "tslb",
+          "smois",
+          "sh2o",
+          "smcwtd",
+          "isnow",
+          "tsno",
+          "snice",
+          "snliq",
+          "zsnso",
+          "snowh",
+          "sneqv",
+          "sneqvo",
+          "tauss",
+          "albold",
+          "tv",
+          "tg",
+          "tah",
+          "eah",
+          "canliq",
+          "canice",
+          "fwet",
+          "lai",
+          "sai",
+          "cm",
+          "ch",
+          "t_skin",
+          "qsfc",
+          "znt",
+          "emiss",
+          "albedo",
+          "sfcrunoff",
+          "udrunoff"
+        ],
+        "noahmp_rad": [
+          "soldn",
+          "lwdn",
+          "cosz"
+        ]
+      },
+      "optional_carry_kind": {
+        "cumulus_carry": "tuple",
+        "noahclassic_land": "object",
+        "noahclassic_rad": "tuple",
+        "noahmp_land": "object",
+        "noahmp_rad": "tuple"
+      },
+      "optional_wrf_restart_variables": [
+        "TSLB",
+        "SMOIS",
+        "SH2O",
+        "TSNO",
+        "SNICE",
+        "SNLIQ",
+        "ZSNSO",
+        "SNOW",
+        "SNOWH",
+        "CANWAT",
+        "SFROFF",
+        "UDROFF",
+        "ALBEDO",
+        "EMISS"
+      ],
+      "schema_version": "v0.11.0-wrfrst-netcdf-2",
+      "standard_restart_variables": [
+        "XTIME",
+        "ITIMESTEP",
+        "XLAT",
+        "XLONG",
+        "XLAT_U",
+        "XLONG_U",
+        "XLAT_V",
+        "XLONG_V",
+        "HGT",
+        "LANDMASK",
+        "ZNU",
+        "ZNW",
+        "P_TOP",
+        "MAPFAC_M",
+        "MAPFAC_U",
+        "MAPFAC_V",
+        "F",
+        "E",
+        "SINALPHA",
+        "COSALPHA",
+        "U",
+        "V",
+        "W",
+        "T",
+        "P",
+        "PB",
+        "PH",
+        "PHB",
+        "MU",
+        "MUB",
+        "QVAPOR",
+        "QCLOUD",
+        "QRAIN",
+        "QICE",
+        "QSNOW",
+        "QGRAUP",
+        "QNICE",
+        "QNRAIN",
+        "QNSNOW",
+        "QNGRAUPEL",
+        "QNCLOUD",
+        "QNCCN",
+        "QKE",
+        "UST",
+        "TSK",
+        "XLAND",
+        "MAVAIL",
+        "ZNT",
+        "LU_INDEX",
+        "RAINC",
+        "RAINNC",
+        "SNOWNC",
+        "GRAUPELNC"
+      ],
+      "state_field_order": [
+        "u",
+        "v",
+        "w",
+        "theta",
+        "qv",
+        "p",
+        "ph",
+        "mu",
+        "p_total",
+        "p_perturbation",
+        "ph_total",
+        "ph_perturbation",
+        "mu_total",
+        "mu_perturbation",
+        "qc",
+        "qr",
+        "qi",
+        "qs",
+        "qg",
+        "Ni",
+        "Nr",
+        "Ns",
+        "Ng",
+        "qke",
+        "ustar",
+        "theta_flux",
+        "qv_flux",
+        "tau_u",
+        "tau_v",
+        "rhosfc",
+        "fltv",
+        "t_skin",
+        "soil_moisture",
+        "xland",
+        "lakemask",
+        "mavail",
+        "roughness_m",
+        "rain_acc",
+        "snow_acc",
+        "graupel_acc",
+        "ice_acc",
+        "u_bdy",
+        "v_bdy",
+        "theta_bdy",
+        "qv_bdy",
+        "ph_bdy",
+        "mu_bdy",
+        "w_bdy",
+        "p_bdy",
+        "pb_bdy",
+        "phb_bdy",
+        "mub_bdy",
+        "lu_index",
+        "Nc",
+        "Nn",
+        "rainc_acc"
+      ],
+      "step_index": 3,
+      "valid_time": "2026-06-03_00:30:00",
+      "xtime_minutes": 30.0
+    },
+    "pass": true,
+    "purpose": "structural full-carry NetCDF wrfrst round-trip; not the forecast-continuity acceptance gate",
+    "restart_path": "proofs/v0110/wrfrst_full_carry_roundtrip.nc",
+    "schema": {
+      "dimension_count": 28,
+      "dimensions": {
+        "DateStrLen": 19,
+        "Time": 1,
+        "bottom_top": 10,
+        "bottom_top_stag": 11,
+        "gpuwrf_bdy_side": 4,
+        "gpuwrf_bdy_side_index": 9,
+        "gpuwrf_bdy_surface": 1,
+        "gpuwrf_bdy_time": 1,
+        "gpuwrf_bdy_width": 5,
+        "gpuwrf_mu_bdy_time": 1,
+        "gpuwrf_mub_bdy_time": 1,
+        "gpuwrf_p_bdy_time": 1,
+        "gpuwrf_pb_bdy_time": 1,
+        "gpuwrf_ph_bdy_time": 1,
+        "gpuwrf_phb_bdy_time": 1,
+        "gpuwrf_qv_bdy_time": 1,
+        "gpuwrf_theta_bdy_time": 1,
+        "gpuwrf_u_bdy_time": 1,
+        "gpuwrf_v_bdy_time": 1,
+        "gpuwrf_w_bdy_time": 1,
+        "seed_dim_stag": 8,
+        "snow_layers_stag": 3,
+        "snso_layers_stag": 7,
+        "soil_layers_stag": 4,
+        "south_north": 8,
+        "south_north_stag": 9,
+        "west_east": 8,
+        "west_east_stag": 9
+      },
+      "exact_carry_variable_count": 14,
+      "exact_optional_variable_count": 60,
+      "exact_state_variable_count": 56,
+      "noahmp_wrf_variables_present": [
+        "TSLB",
+        "SMOIS",
+        "SH2O",
+        "TSNO",
+        "SNICE",
+        "SNLIQ",
+        "ZSNSO"
+      ],
+      "schema_version": "v0.11.0-wrfrst-netcdf-2",
+      "variable_count": 198,
+      "wrf_standard_variables_present": [
+        "XTIME",
+        "ITIMESTEP",
+        "XLAT",
+        "XLONG",
+        "XLAT_U",
+        "XLONG_U",
+        "XLAT_V",
+        "XLONG_V",
+        "HGT",
+        "LANDMASK",
+        "ZNU",
+        "ZNW",
+        "P_TOP",
+        "MAPFAC_M",
+        "MAPFAC_U",
+        "MAPFAC_V",
+        "F",
+        "E",
+        "SINALPHA",
+        "COSALPHA",
+        "U",
+        "V",
+        "W",
+        "T",
+        "P",
+        "PB",
+        "PH",
+        "PHB",
+        "MU",
+        "MUB",
+        "QVAPOR",
+        "QCLOUD",
+        "QRAIN",
+        "QICE",
+        "QSNOW",
+        "QGRAUP",
+        "QNICE",
+        "QNRAIN",
+        "QNSNOW",
+        "QNGRAUPEL",
+        "QNCLOUD",
+        "QNCCN",
+        "QKE",
+        "UST",
+        "TSK",
+        "XLAND",
+        "MAVAIL",
+        "ZNT",
+        "LU_INDEX",
+        "RAINC",
+        "RAINNC",
+        "SNOWNC",
+        "GRAUPELNC"
+      ]
+    }
+  },
+  "visible_gpu": "cuda:0"
+}

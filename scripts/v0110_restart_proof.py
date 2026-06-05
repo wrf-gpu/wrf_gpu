@@ -172,7 +172,7 @@ def _compare_array(left: Any, right: Any) -> dict[str, Any]:
     b = np.asarray(jax.device_get(right))
     same_shape = a.shape == b.shape
     same_dtype = a.dtype == b.dtype
-    bit_identical = bool(same_shape and same_dtype and np.array_equal(a, b))
+    bit_identical = bool(same_shape and same_dtype and _same_bytes(a, b))
     max_abs = None
     if same_shape and np.issubdtype(a.dtype, np.number) and np.issubdtype(b.dtype, np.number):
         if a.size:
@@ -190,6 +190,12 @@ def _compare_array(left: Any, right: Any) -> dict[str, Any]:
         "max_abs": max_abs,
         "pass": bit_identical,
     }
+
+
+def _same_bytes(left: np.ndarray, right: np.ndarray) -> bool:
+    left_bytes = np.ascontiguousarray(left).view(np.uint8)
+    right_bytes = np.ascontiguousarray(right).view(np.uint8)
+    return bool(np.array_equal(left_bytes, right_bytes))
 
 
 def _compare_optional(left: Any, right: Any, prefix: str) -> dict[str, dict[str, Any]]:

@@ -14,14 +14,13 @@ from dataclasses import dataclass
 from datetime import date, datetime
 import json
 from pathlib import Path
-from types import SimpleNamespace
 from typing import Any, Callable, Mapping
 
 import jax.numpy as jnp
 import numpy as np
 from netCDF4 import Dataset
 
-from gpuwrf.contracts.state import State, _state_field_shapes
+from gpuwrf.contracts.state import State
 from gpuwrf.io.wrfout_writer import (
     DATE_STR_LEN,
     MAPFAC_U_XY,
@@ -73,7 +72,7 @@ except Exception:  # pragma: no cover - optional package surface
     NoahClassicRadiation = None  # type: ignore
 
 
-SCHEMA_VERSION = "v0.11.0-wrfrst-netcdf-1"
+SCHEMA_VERSION = "v0.11.0-wrfrst-netcdf-2"
 THETA_BASE_OFFSET_K = 300.0
 STATE_EXTENSION_PREFIX = "GPUWRF_STATE_"
 CARRY_EXTENSION_PREFIX = "GPUWRF_CARRY_"
@@ -385,17 +384,17 @@ STATE_EXACT_DIMENSIONS: dict[str, tuple[str, ...]] = {
     "Nc": XYZ,
     "Nn": XYZ,
     "rainc_acc": XY,
-    "u_bdy": ("Time", BDY_TIME, BDY_SIDE, BDY_WIDTH, "bottom_top", BDY_SIDE_INDEX),
-    "v_bdy": ("Time", BDY_TIME, BDY_SIDE, BDY_WIDTH, "bottom_top", BDY_SIDE_INDEX),
-    "theta_bdy": ("Time", BDY_TIME, BDY_SIDE, BDY_WIDTH, "bottom_top", BDY_SIDE_INDEX),
-    "qv_bdy": ("Time", BDY_TIME, BDY_SIDE, BDY_WIDTH, "bottom_top", BDY_SIDE_INDEX),
-    "p_bdy": ("Time", BDY_TIME, BDY_SIDE, BDY_WIDTH, "bottom_top", BDY_SIDE_INDEX),
-    "pb_bdy": ("Time", BDY_TIME, BDY_SIDE, BDY_WIDTH, "bottom_top", BDY_SIDE_INDEX),
-    "ph_bdy": ("Time", BDY_TIME, BDY_SIDE, BDY_WIDTH, "bottom_top_stag", BDY_SIDE_INDEX),
-    "w_bdy": ("Time", BDY_TIME, BDY_SIDE, BDY_WIDTH, "bottom_top_stag", BDY_SIDE_INDEX),
-    "phb_bdy": ("Time", BDY_TIME, BDY_SIDE, BDY_WIDTH, "bottom_top_stag", BDY_SIDE_INDEX),
-    "mu_bdy": ("Time", BDY_TIME, BDY_SIDE, BDY_WIDTH, BDY_SURFACE, BDY_SIDE_INDEX),
-    "mub_bdy": ("Time", BDY_TIME, BDY_SIDE, BDY_WIDTH, BDY_SURFACE, BDY_SIDE_INDEX),
+    "u_bdy": ("Time", "gpuwrf_u_bdy_time", BDY_SIDE, BDY_WIDTH, "bottom_top", BDY_SIDE_INDEX),
+    "v_bdy": ("Time", "gpuwrf_v_bdy_time", BDY_SIDE, BDY_WIDTH, "bottom_top", BDY_SIDE_INDEX),
+    "theta_bdy": ("Time", "gpuwrf_theta_bdy_time", BDY_SIDE, BDY_WIDTH, "bottom_top", BDY_SIDE_INDEX),
+    "qv_bdy": ("Time", "gpuwrf_qv_bdy_time", BDY_SIDE, BDY_WIDTH, "bottom_top", BDY_SIDE_INDEX),
+    "p_bdy": ("Time", "gpuwrf_p_bdy_time", BDY_SIDE, BDY_WIDTH, "bottom_top", BDY_SIDE_INDEX),
+    "pb_bdy": ("Time", "gpuwrf_pb_bdy_time", BDY_SIDE, BDY_WIDTH, "bottom_top", BDY_SIDE_INDEX),
+    "ph_bdy": ("Time", "gpuwrf_ph_bdy_time", BDY_SIDE, BDY_WIDTH, "bottom_top_stag", BDY_SIDE_INDEX),
+    "w_bdy": ("Time", "gpuwrf_w_bdy_time", BDY_SIDE, BDY_WIDTH, "bottom_top_stag", BDY_SIDE_INDEX),
+    "phb_bdy": ("Time", "gpuwrf_phb_bdy_time", BDY_SIDE, BDY_WIDTH, "bottom_top_stag", BDY_SIDE_INDEX),
+    "mu_bdy": ("Time", "gpuwrf_mu_bdy_time", BDY_SIDE, BDY_WIDTH, BDY_SURFACE, BDY_SIDE_INDEX),
+    "mub_bdy": ("Time", "gpuwrf_mub_bdy_time", BDY_SIDE, BDY_WIDTH, BDY_SURFACE, BDY_SIDE_INDEX),
 }
 
 CARRY_EXACT_DIMENSIONS: dict[str, tuple[str, ...]] = {
@@ -690,6 +689,9 @@ def _restart_dimension_sizes(
             BDY_SURFACE: 1,
         }
     )
+    for leaf in STATE_FIELD_ORDER:
+        if leaf.endswith("_bdy"):
+            dimensions[_bdy_time_dimension(leaf)] = int(np.asarray(getattr(state, leaf)).shape[0])
     return dimensions
 
 
@@ -697,6 +699,15 @@ def _create_restart_dimensions(dataset: Dataset, dimensions: Mapping[str, int | 
     _create_dimensions(dataset, dimensions)
     for name in (BDY_TIME, BDY_SIDE, BDY_WIDTH, BDY_SIDE_INDEX, BDY_SURFACE):
         dataset.createDimension(name, dimensions[name])
+    for leaf in STATE_FIELD_ORDER:
+        if leaf.endswith("_bdy"):
+            name = _bdy_time_dimension(leaf)
+            if name not in dataset.dimensions:
+                dataset.createDimension(name, dimensions[name])
+
+
+def _bdy_time_dimension(leaf: str) -> str:
+    return f"gpuwrf_{leaf}_time"
 
 
 def _write_restart_global_attrs(
@@ -1384,26 +1395,11 @@ def _validate_common_schema(dataset: Dataset, *, require_carry: bool) -> None:
 
 
 def _expected_state_shapes_from_dataset(dataset: Dataset) -> dict[str, tuple[int, ...]]:
-    nx = len(dataset.dimensions["west_east"])
-    ny = len(dataset.dimensions["south_north"])
-    nz = len(dataset.dimensions["bottom_top"])
-    grid_like = SimpleNamespace(nx=int(nx), ny=int(ny), nz=int(nz))
-    expected = dict(_state_field_shapes(grid_like))
-    expected_bdy = {
-        "u_bdy": (len(dataset.dimensions[BDY_TIME]), len(dataset.dimensions[BDY_SIDE]), len(dataset.dimensions[BDY_WIDTH]), nz, len(dataset.dimensions[BDY_SIDE_INDEX])),
-        "v_bdy": (len(dataset.dimensions[BDY_TIME]), len(dataset.dimensions[BDY_SIDE]), len(dataset.dimensions[BDY_WIDTH]), nz, len(dataset.dimensions[BDY_SIDE_INDEX])),
-        "theta_bdy": (len(dataset.dimensions[BDY_TIME]), len(dataset.dimensions[BDY_SIDE]), len(dataset.dimensions[BDY_WIDTH]), nz, len(dataset.dimensions[BDY_SIDE_INDEX])),
-        "qv_bdy": (len(dataset.dimensions[BDY_TIME]), len(dataset.dimensions[BDY_SIDE]), len(dataset.dimensions[BDY_WIDTH]), nz, len(dataset.dimensions[BDY_SIDE_INDEX])),
-        "p_bdy": (len(dataset.dimensions[BDY_TIME]), len(dataset.dimensions[BDY_SIDE]), len(dataset.dimensions[BDY_WIDTH]), nz, len(dataset.dimensions[BDY_SIDE_INDEX])),
-        "pb_bdy": (len(dataset.dimensions[BDY_TIME]), len(dataset.dimensions[BDY_SIDE]), len(dataset.dimensions[BDY_WIDTH]), nz, len(dataset.dimensions[BDY_SIDE_INDEX])),
-        "ph_bdy": (len(dataset.dimensions[BDY_TIME]), len(dataset.dimensions[BDY_SIDE]), len(dataset.dimensions[BDY_WIDTH]), nz + 1, len(dataset.dimensions[BDY_SIDE_INDEX])),
-        "w_bdy": (len(dataset.dimensions[BDY_TIME]), len(dataset.dimensions[BDY_SIDE]), len(dataset.dimensions[BDY_WIDTH]), nz + 1, len(dataset.dimensions[BDY_SIDE_INDEX])),
-        "phb_bdy": (len(dataset.dimensions[BDY_TIME]), len(dataset.dimensions[BDY_SIDE]), len(dataset.dimensions[BDY_WIDTH]), nz + 1, len(dataset.dimensions[BDY_SIDE_INDEX])),
-        "mu_bdy": (len(dataset.dimensions[BDY_TIME]), len(dataset.dimensions[BDY_SIDE]), len(dataset.dimensions[BDY_WIDTH]), 1, len(dataset.dimensions[BDY_SIDE_INDEX])),
-        "mub_bdy": (len(dataset.dimensions[BDY_TIME]), len(dataset.dimensions[BDY_SIDE]), len(dataset.dimensions[BDY_WIDTH]), 1, len(dataset.dimensions[BDY_SIDE_INDEX])),
+    dimensions = _dataset_dimension_sizes(dataset)
+    return {
+        leaf: _shape_for_dimensions(STATE_EXACT_DIMENSIONS[leaf], dimensions)
+        for leaf in STATE_FIELD_ORDER
     }
-    expected.update(expected_bdy)
-    return expected
 
 
 def _dataset_dimension_sizes(dataset: Dataset) -> dict[str, int | None]:
