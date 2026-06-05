@@ -657,10 +657,37 @@ class State:
 
     @classmethod
     def tree_unflatten(cls, aux, children):
-        """Rebuilds State after JAX transformations."""
+        """Rebuilds State after JAX transformations.
+
+        This is the EXACT structural inverse of ``tree_flatten`` and must NOT
+        re-run ``__init__``'s value canonicalisation (``jnp.asarray(..., int32)``
+        dtype casts, ``None`` -> ``zeros_like`` defaults). Two reasons:
+
+        1. **Correctness contract.** ``tree_flatten`` already emitted exactly one
+           leaf per ``__slots__`` field, each already in its canonical dtype.
+           Reconstruction must write those same leaves straight back so the
+           round-trip is the identity. Routing them through ``cls(*children)``
+           re-canonicalises (e.g. re-casts ``lu_index``), which can perturb a
+           leaf's abstract value and make a JAX scan's carry-in / carry-out
+           treedefs (or shardings) compare unequal -- the bug that surfaced as a
+           per-chunk recompile and, once the carry was device-committed, as a
+           hard ``TypeError`` (see point 2).
+        2. **Sentinel tolerance.** JAX legitimately calls ``tree_unflatten`` with
+           placeholder leaves that are NOT arrays -- notably
+           ``equality_errors_pytreedef`` builds ``tree_unflatten(td, [Leaf]*n)``
+           to FORMAT a treedef-mismatch message. ``cls(*children)`` then runs
+           ``jnp.asarray(<Leaf>, dtype=int32)`` -> ``int(<Leaf>)`` ->
+           ``TypeError: ... not 'Leaf'``, masking the real mismatch and aborting
+           tracing before any work runs. Assigning children verbatim accepts any
+           leaf object, so JAX can report the underlying structure diff instead
+           of crashing in our ``__init__``.
+        """
 
         del aux
-        return cls(*children)
+        obj = object.__new__(cls)
+        for name, value in zip(cls.__slots__, children):
+            object.__setattr__(obj, name, value)
+        return obj
 
 
 def _self_test() -> None:

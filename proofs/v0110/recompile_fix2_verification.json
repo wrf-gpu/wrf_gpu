@@ -1,0 +1,55 @@
+{
+  "schema": "V0110RecompileFix2Verification",
+  "schema_version": 1,
+  "overall_status": "PASS",
+  "branch": "worker/gpt/recompile-diag",
+  "base_v0_10_0": "d054954",
+  "prior_failed_fix": "77700d9",
+  "root_cause": {
+    "summary": "The committed-carry path exposed a latent JAX-pytree-contract violation: State.tree_unflatten and DycoreMetrics.tree_unflatten re-ran their constructors (cls(*children) / cls(**values)), which CANONICALISE array children (State.__init__ does jnp.asarray(lu_index, dtype=int32) and None->zeros_like defaults; DycoreMetrics.__post_init__ casts every metric to fp64). JAX legitimately calls tree_unflatten with a non-array placeholder of type 'Leaf' when it FORMATS a treedef-mismatch message (jax._src.tree_util.equality_errors_pytreedef builds tree_unflatten(td, [Leaf]*n)). Routing that Leaf through jnp.asarray(..., dtype=...) raised 'TypeError: int()/float() argument ... not Leaf' and aborted lax.scan tracing in _advance_chunk before any compute. The committed initial carry (jax.device_put of the whole OperationalCarry) changed leaf shardings/avals enough that JAX took the mismatch-reporting branch, where the un-tolerant tree_unflatten crashed; the uncommitted path happened not to take that branch.",
+    "failure_site_prior_fix": "src/gpuwrf/contracts/state.py:567 jnp.asarray(lu_index, dtype=int32) via State.tree_unflatten",
+    "second_site_after_state_fix": "src/gpuwrf/contracts/grid.py:110 jnp.asarray(metric, dtype=float64) via DycoreMetrics.__post_init__/tree_unflatten",
+    "leaf_sentinel_source": "jax/_src/tree_util.py:762 equality_errors_pytreedef builds a metaclass instance named 'Leaf'"
+  },
+  "fix": {
+    "files_changed": [
+      "src/gpuwrf/contracts/state.py (State.tree_unflatten)",
+      "src/gpuwrf/contracts/grid.py (DycoreMetrics.tree_unflatten)"
+    ],
+    "change": "Made both tree_unflatten methods the EXACT structural inverse of tree_flatten: object.__new__(cls) + object.__setattr__ to assign the flattened leaves verbatim, bypassing constructor canonicalisation. The stored leaves are already canonical (dtype-correct), so this is value-preserving, and it tolerates arbitrary placeholder leaves (Leaf sentinels) so JAX can format mismatch messages without crashing. Also resolves the separately-tracked PROOF_TABLE row-11 '.lower()-safe State.tree_unflatten' blocker.",
+    "note": "The recompile prevention itself (explicit-device-commit of the initial carry + stable _StaticHolder(None) hash) from 77700d9 is retained unchanged; this commit only fixes the tracing crash it introduced."
+  },
+  "gates": {
+    "1_no_recompile_per_chunk": {
+      "status": "PASS",
+      "evidence": "JAX_LOG_COMPILES=1 3x180-step d02 run: exactly ONE 'Compiling jit(_advance_chunk)' and ONE _advance_chunk TRACING CACHE MISS, both during chunk 1; chunks 2 and 3 reuse the cached executable (only the one-time _m9_snapshot diagnostic compiles after the chunks).",
+      "advance_chunk_compile_count": 1,
+      "log": "proofs/v0110/recompile_fix2_3chunks.log",
+      "json": "proofs/v0110/recompile_fix2_3chunks.json"
+    },
+    "2_hot_chunk_time": {
+      "status": "PASS",
+      "chunk_wall_s": [131.286958, 11.822971, 11.845452],
+      "interpretation": "chunk1 cold (3.24s trace + 114.2s XLA compile); chunks 2-3 HOT ~11.83s each (no recompile), at/below the ~12s target.",
+      "per_step_ms_hot": 65.7
+    },
+    "3_bit_identity_vs_baseline": {
+      "status": "PASS",
+      "method": "1h d02 forecast via run_forecast_operational_with_m9_diagnostics on the fixed branch vs the SAME harness on a clean d054954 worktree (baseline canonicalising tree_unflatten). sha256 over all 56 State leaves + 10 M9 diagnostics.",
+      "leaves_compared": 66,
+      "leaves_matching": 66,
+      "bit_identical": true,
+      "theta_sha256": "0a51eb73ab24b2dae1e907837487f0214e391712cfe464422f7f1d5598264a32",
+      "t2_sha256": "1b1085dd38fa39a3c2519b5e799f8c72f21d4723f2bd7467d2969331616dafab",
+      "fixed_json": "proofs/v0110/recompile_fix2_bitident_fixed.json",
+      "baseline_json": "proofs/v0110/recompile_fix2_bitident_baseline_d054954.json"
+    }
+  },
+  "environment_contract": {
+    "PYTHONPATH": "src",
+    "cpu_affinity_command": "taskset -c 0-27",
+    "gpu_wrapper": "/tmp/wrf_gpu_run.sh",
+    "fixture": "20260521_18z_l2_72h_20260522T133443Z (d02 L2, GPUWRF_CANAIRY_ROOT=/mnt/data/canairy_meteo)",
+    "device": "cuda:0"
+  }
+}
