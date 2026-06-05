@@ -1,0 +1,292 @@
+{
+  "schema": "V0100WaveBScope",
+  "schema_version": 1,
+  "status": "PASS_WITH_RESCOPING",
+  "objective": "Validate v0.10.0 Wave-A and independently re-scope Wave-B from fresh coupled measurements on the L2 d02 GREEN workload.",
+  "workload": {
+    "run_id": "20260521_18z_l2_72h_20260522T133443Z",
+    "domain": "d02",
+    "grid": {
+      "ny": 66,
+      "nx": 159,
+      "nz": 44
+    },
+    "dt_s": 10.0,
+    "guards": "ON",
+    "timing_protocol": "fresh process per variant; 240-step non-radiation coupled segment; first repeat discarded; warmed_per_step_ms = min(cache-hit repeats)",
+    "device": "NVIDIA GeForce RTX 5090 via JAX cuda:0",
+    "cpu_affinity": "taskset -c 0-3"
+  },
+  "wave_a_validation": {
+    "verdict": "PASS",
+    "code_review": {
+      "files_reviewed": [
+        "src/gpuwrf/runtime/operational_mode.py",
+        "src/gpuwrf/dynamics/core/acoustic.py",
+        "src/gpuwrf/dynamics/acoustic.py"
+      ],
+      "range": "016d993..HEAD",
+      "behavioral_findings": [
+        {
+          "change": "precision cast-skip",
+          "source": "src/gpuwrf/runtime/operational_mode.py:541",
+          "verdict": "correct_bit_identical",
+          "reason": "Only skips astype when dtype already equals target; fp64 force path still uses _cast=False."
+        },
+        {
+          "change": "dry_cqw reuse",
+          "source": "src/gpuwrf/runtime/operational_mode.py:1336",
+          "verdict": "correct_bit_identical",
+          "reason": "Reuses the same dry_cqw staged into AcousticCoreState; defensive fallback preserves bare-core callers."
+        },
+        {
+          "change": "advance_uv face-pairs pad to concatenate",
+          "source": "src/gpuwrf/dynamics/core/acoustic.py:310",
+          "verdict": "correct_bit_identical",
+          "reason": "Concatenating edge slices constructs the same left/right edge-padded face pairs without materializing a padded full field."
+        },
+        {
+          "change": "dpn scatter to concatenate",
+          "source": "src/gpuwrf/dynamics/core/acoustic.py:341",
+          "verdict": "correct_bit_identical",
+          "reason": "The bottom, interior, and top planes match the old zero-init plus dynamic-update-slice construction, including top_lid false zero top."
+        },
+        {
+          "change": "acoustic unroll hook",
+          "source": "src/gpuwrf/runtime/operational_mode.py:120 and src/gpuwrf/runtime/operational_mode.py:1403",
+          "verdict": "correct_default_preserving",
+          "reason": "Default is still 1, so v0.9.0 lowering is preserved unless GPUWRF_ACOUSTIC_UNROLL is explicitly set."
+        },
+        {
+          "change": "carry-split revert",
+          "source": "src/gpuwrf/runtime/operational_mode.py:1393",
+          "verdict": "cleanly_reverted_behavior",
+          "reason": "The active scan carries the full AcousticCoreState; no split/reconstruct path remains. _ACOUSTIC_EVOLVING_FIELDS is documentation-only dead data."
+        }
+      ],
+      "non_blocking_documentation_concerns": [
+        "operational_mode.py:123-126 says the operational default is bumped to 2 after Wave-A, but code and proof keep default 1.",
+        "operational_mode.py:1381-1392 describes carry-split as a hard warmed-step regression, while the later ledger says the original timing was confounded by a one-off compile artifact. Behavior is reverted either way."
+      ],
+      "hidden_fidelity_issue_found": false
+    },
+    "spot_correctness": {
+      "idealized": {
+        "proof": "proofs/v0100/wave_b_idealized_roundoff.json",
+        "warm_bubble_verdict": "PASS",
+        "density_current_verdict": "PASS",
+        "overall_round_off_neutral": true,
+        "worst_reldiff": 0.0
+      },
+      "coupled_finite": {
+        "proof": "proofs/v0100/wave_b_coupled_spot_fp64.json",
+        "hours": 0.25,
+        "warmed_per_step_ms": 75.90702153071138,
+        "all_finite": true,
+        "physically_plausible": true,
+        "status": "PASS"
+      }
+    }
+  },
+  "fresh_bottleneck": {
+    "verdict": "NOT_ACOUSTIC_LAUNCH_BOUND; RESCOPE_TO_MYNN_PBL_PLUS_THOMPSON_PLUS_DYCORE_FLOOR",
+    "baseline_fp64_u1_ms": 74.34922900429228,
+    "baseline_proof": "proofs/v0100/wave_b_timing_full_fp64_u1.json",
+    "cache_artifact": {
+      "first_sample_ms_per_step": 551.2932053291782,
+      "cache_hit_samples_ms_per_step": [
+        74.64883131688111,
+        74.42772900855441,
+        74.34922900429228,
+        74.52411444173777
+      ],
+      "note": "First repeat is a one-off XLA/cache miss and is excluded."
+    },
+    "acoustic_unroll_ab": {
+      "unroll1_ms": 74.34922900429228,
+      "unroll2_ms": 73.84760116668379,
+      "gain_pct": 0.6746913778749957,
+      "compile_s_unroll1": 136.01941067900043,
+      "compile_s_unroll2": 175.99763723596698,
+      "proof": "proofs/v0100/wave_b_timing_full_fp64_u2.json",
+      "verdict": "not_worth_default_change"
+    },
+    "phase_toggle_breakdown": {
+      "method": "in-context namelist toggles; deltas are approximate attribution, not valid forecast configurations",
+      "full_ms": 74.34922900429228,
+      "no_pbl_ms": 40.51128513747244,
+      "mynn_pbl_delta_ms": 33.83794386681984,
+      "mynn_pbl_delta_pct": 45.51216511588349,
+      "no_thompson_ms": 53.64108980841896,
+      "thompson_delta_ms": 20.708139195873322,
+      "thompson_delta_pct": 27.85252715220196,
+      "dycore_only_ms": 16.591081516768707,
+      "dycore_only_pct": 22.315068681897,
+      "other_physics_boundary_residual_ms": 3.212064424830409,
+      "other_physics_boundary_residual_pct": 4.320239050017549,
+      "proofs": {
+        "no_pbl": "proofs/v0100/wave_b_timing_no_pbl_fp64_u1.json",
+        "no_thompson": "proofs/v0100/wave_b_timing_no_thompson_fp64_u1.json",
+        "dycore_only": "proofs/v0100/wave_b_timing_dycore_only_fp64_u1.json"
+      },
+      "caveat": "dycore_only was finite but failed the physical-range heuristic after the longer no-physics/no-boundary timing run; use only as a timing floor."
+    }
+  },
+  "gated_fp32_now": {
+    "fp64_ms": 74.34922900429228,
+    "gated_fp32_ms": 74.57245270828328,
+    "gain_pct": -0.3002367435149988,
+    "proof": "proofs/v0100/wave_b_timing_full_gatedfp32_u1.json",
+    "finite": true,
+    "physically_plausible_short_run": true,
+    "verdict": "NO_GO_NO_MATERIAL_GAIN",
+    "note": "The gated-fp32 tracing emitted a JAX scatter dtype warning (float64 value into float32); runtime was slightly slower, not faster."
+  },
+  "thompson_phase4": {
+    "candidate_search": "proofs/v0100/graupel_wet_candidates.json",
+    "histogram": "proofs/v0100/thompson_nstep_histogram_graupel_wet.json",
+    "wet_sample": {
+      "files": 8,
+      "graupel_wet_columns": 2493,
+      "graupel_wet_fraction": 0.04665219506718066,
+      "rain_wet_columns": 9122,
+      "rain_wet_fraction": 0.17070249635091134
+    },
+    "nstep_summary": {
+      "graupel": {
+        "max": 1.0,
+        "p99": 1.0,
+        "p99_9": 1.0,
+        "clip_count_by_cap": {
+          "16": 0,
+          "32": 0,
+          "48": 0,
+          "64": 0
+        }
+      },
+      "rain": {
+        "max": 2.0,
+        "p99": 2.0,
+        "p99_9": 2.0,
+        "clip_count_by_cap": {
+          "16": 0,
+          "32": 0,
+          "48": 0,
+          "64": 0
+        }
+      },
+      "ice": {
+        "max": 1.0,
+        "p99": 1.0,
+        "p99_9": 1.0,
+        "clip_count_by_cap": {
+          "16": 0,
+          "32": 0,
+          "48": 0,
+          "64": 0
+        }
+      },
+      "snow": {
+        "max": 1.0,
+        "p99": 1.0,
+        "p99_9": 1.0,
+        "clip_count_by_cap": {
+          "16": 0,
+          "32": 0,
+          "48": 0,
+          "64": 0
+        }
+      }
+    },
+    "zero_clip_safe_lowest_tested_cap": 16,
+    "measured_nsed16": {
+      "baseline_ms": 74.34922900429228,
+      "nsed16_ms": 64.73083782911999,
+      "saved_ms": 9.618391175172294,
+      "gain_pct": 12.936781438989159,
+      "speedup_x": 1.1485967576407557,
+      "finite": true,
+      "physically_plausible_short_run": true,
+      "proof": "proofs/v0100/wave_b_timing_full_fp64_u1_nsed16.json"
+    },
+    "verdict": "GO_AFTER_PRECIP_ORACLE_AND_24H_GATE"
+  },
+  "ranked_wave_b_levers": [
+    {
+      "rank": 1,
+      "lever": "MYNN/PBL restructuring or fusion",
+      "coupled_gain_basis": "Measured share: no_pbl delta 33.84 ms = 45.5% of full step.",
+      "estimated_coupled_gain": "11-23% if 25-50% of the PBL/MYNN wall is removed; not yet implementation-measured.",
+      "effort": "L",
+      "kernel_stability_risk": "HIGH",
+      "fidelity_risk": "HIGH",
+      "gate": "First profile MYNN/PBL internals; then WRF MYNN/surface savepoint or diagnostic parity, 24h d02 skill/conservation, finite guard accounting, and no in-loop transfers.",
+      "disposition": "PLAN_OR_SPIKE_FIRST; do not blind-implement a rewrite without an internal profile."
+    },
+    {
+      "rank": 2,
+      "lever": "Thompson NSED cap 64 -> 16",
+      "coupled_gain_basis": "Measured with GPUWRF_THOMPSON_NSED=16 after wet-graupel zero-clip histogram.",
+      "estimated_coupled_gain": "Measured 9.62 ms saved = 12.94% coupled, 1.149x.",
+      "effort": "S/M",
+      "kernel_stability_risk": "LOW/MEDIUM",
+      "fidelity_risk": "MEDIUM",
+      "gate": "Precipitating Thompson oracle with no clip, 24h d02 skill, conservation/water budget, and wet-case cap histogram kept in proof.",
+      "disposition": "TOP_IMMEDIATE_IMPLEMENTATION_LEVER"
+    },
+    {
+      "rank": 3,
+      "lever": "M9/RRTMG diagnostic recompute and output-side reuse",
+      "coupled_gain_basis": "Existing Wave-A host proof: M9 diagnostics 2.99 s in a 30.36 s forecast hour; non-forecast host share 10.95%.",
+      "estimated_coupled_gain": "~9-10% daily wall, not warmed timestep wall.",
+      "effort": "M",
+      "kernel_stability_risk": "MEDIUM",
+      "fidelity_risk": "MEDIUM",
+      "gate": "Output diagnostics equivalence against held radiation/surface/PBL fields, hourly wrfout diff, and no extra D2H inside timestep loops.",
+      "disposition": "GOOD_DAILY_THROUGHPUT_LEVER; do not count as warmed-kernel gain."
+    },
+    {
+      "rank": 4,
+      "lever": "Acoustic unroll >1",
+      "coupled_gain_basis": "Fresh unroll=2 A/B: 0.67% faster, compile 136.0s -> 176.0s.",
+      "estimated_coupled_gain": "<1%",
+      "effort": "S",
+      "kernel_stability_risk": "LOW",
+      "fidelity_risk": "LOW",
+      "gate": "Already finite/physical; not worth default change.",
+      "disposition": "KEEP_HOOK_DEFAULT_1"
+    },
+    {
+      "rank": 5,
+      "lever": "Gated-fp32 now",
+      "coupled_gain_basis": "Fresh force_fp64=False A/B: 74.57 ms vs fp64 74.35 ms.",
+      "estimated_coupled_gain": "none; measured -0.30%",
+      "effort": "M",
+      "kernel_stability_risk": "MEDIUM/HIGH",
+      "fidelity_risk": "HIGH",
+      "gate": "Only revisit after MYNN/Thompson restructuring moves dtype boundaries out of dominant kernels.",
+      "disposition": "NO_GO_FOR_WAVE_B"
+    }
+  ],
+  "faithful_ceiling": {
+    "current_ms": 74.34922900429228,
+    "measured_immediate_nsed16_ms": 64.73083782911999,
+    "conservative_wave_b_ceiling": "53-56 ms/step (about 1.32-1.40x) if NSED16 ships and a modest 25-33% of MYNN/PBL wall is removed.",
+    "aggressive_wave_b_ceiling": "48-50 ms/step (about 1.49-1.55x) if NSED16 ships and roughly half of MYNN/PBL wall is removed.",
+    "not_supported": "2x warmed coupled speedup is not supported by current evidence without a high-risk MYNN/PBL rewrite and further dycore/physics architecture work.",
+    "exit_gate_disposition": "Meaningful WRF-faithful speedup is achievable, but the corrected kernel is much closer to dependent-chain/memory floors than the old acoustic-launch plan assumed."
+  },
+  "proof_objects": [
+    "proofs/v0100/wave_b_idealized_roundoff.json",
+    "proofs/v0100/wave_b_coupled_spot_fp64.json",
+    "proofs/v0100/wave_b_timing_full_fp64_u1.json",
+    "proofs/v0100/wave_b_timing_full_gatedfp32_u1.json",
+    "proofs/v0100/wave_b_timing_full_fp64_u2.json",
+    "proofs/v0100/wave_b_timing_no_thompson_fp64_u1.json",
+    "proofs/v0100/wave_b_timing_no_pbl_fp64_u1.json",
+    "proofs/v0100/wave_b_timing_dycore_only_fp64_u1.json",
+    "proofs/v0100/graupel_wet_candidates.json",
+    "proofs/v0100/thompson_nstep_histogram_graupel_wet.json",
+    "proofs/v0100/wave_b_timing_full_fp64_u1_nsed16.json"
+  ]
+}

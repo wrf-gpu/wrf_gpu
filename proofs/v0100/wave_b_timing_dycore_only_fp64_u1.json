@@ -1,0 +1,97 @@
+{
+  "all_finite": true,
+  "cadence": 1000000,
+  "compile_s": 36.32092624303186,
+  "config": {
+    "acoustic_substeps": 10,
+    "acoustic_unroll": 1,
+    "bl_pbl_physics": 5,
+    "disable_guards": false,
+    "dt_s": 10.0,
+    "force_fp64": true,
+    "mp_physics": 8,
+    "run_boundary": false,
+    "run_physics": false,
+    "sf_sfclay_physics": 5,
+    "use_noahmp": false
+  },
+  "cpu_affinity": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "device": "cuda:0",
+  "discard_first_sample": true,
+  "final_state_ranges": {
+    "mu_total": {
+      "finite": true,
+      "max": 105833.842203725,
+      "min": 67029.86194152855
+    },
+    "p_total": {
+      "finite": true,
+      "max": 108655.26282241174,
+      "min": 3726.9393787660574
+    },
+    "ph_total": {
+      "finite": true,
+      "max": 204077.453125,
+      "min": -7.796288059580547e-07
+    },
+    "qv": {
+      "finite": true,
+      "max": 0.012776953168213367,
+      "min": 2.4372081952606095e-06
+    },
+    "theta": {
+      "finite": true,
+      "max": 499.5828520330746,
+      "min": 290.2584637828812
+    },
+    "u": {
+      "finite": true,
+      "max": 184.1939685693711,
+      "min": -77.29841207941745
+    },
+    "v": {
+      "finite": true,
+      "max": 24.757000659443896,
+      "min": -198.84687322717275
+    },
+    "w": {
+      "finite": true,
+      "max": 58.16292443019799,
+      "min": -74.57879871992195
+    }
+  },
+  "grid": {
+    "nx": 159,
+    "ny": 66,
+    "nz": 44
+  },
+  "methodology_note": "Fresh process; compile/warm call outside samples; warmed_per_step_ms is the min of cache-hit repeat calls. Default cadence is deliberately larger than the segment so the measured step is the non-radiation coupled step used by the Wave-A ~75 ms gate, with Thompson/MYNN/surface/boundary active.",
+  "peak_gpu_mem_mb_after_compile": 703.30615234375,
+  "peak_gpu_mem_mb_final": 961.01416015625,
+  "physically_plausible_short_run": false,
+  "repeats": 4,
+  "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l2/20260521_18z_l2_72h_20260522T133443Z",
+  "run_id": "20260521_18z_l2_72h_20260522T133443Z",
+  "schema": "V0100WaveBTimingProbe",
+  "schema_version": 1,
+  "status": "FAIL",
+  "steps": 240,
+  "variant": "dycore_only",
+  "warmed_per_step_ms": 16.591081516768707,
+  "warmed_per_step_ms_samples": [
+    145.08834697917337,
+    16.591081516768707,
+    16.617931337532355,
+    16.627267545845825
+  ],
+  "warmed_per_step_ms_samples_used": [
+    16.591081516768707,
+    16.617931337532355,
+    16.627267545845825
+  ]
+}
