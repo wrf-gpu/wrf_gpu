@@ -1,0 +1,139 @@
+{
+  "acceptance": {
+    "finite_stable": true,
+    "no_invalid_fallback_activation": true,
+    "water_budget_closed_le_1e_minus_10_rel": true
+  },
+  "all_output_leaves_finite": true,
+  "column_array_shape_y_x_z": [
+    66,
+    159,
+    44
+  ],
+  "created_utc": "2026-06-05T13:18:52.033433+00:00",
+  "domain": "d02",
+  "dt_s": 10.0,
+  "grid_levels": 44,
+  "horizontal_columns": 10494,
+  "invalid_fallback_activation_post_cells": 0,
+  "invalid_fallback_activation_pre_cells": 0,
+  "jax_devices": [
+    "cuda:0"
+  ],
+  "n_cells": 461736,
+  "note": "The 20260521 d02 initial condition is cloud-free and subsaturated, so zero precip and identity hydrometeor deltas are expected; this is a short stability/water-budget sanity, not the WRF column parity oracle.",
+  "precip_totals_mm": {
+    "cloudw": 0.0,
+    "graupel": 0.0,
+    "ice": 0.0,
+    "rain": 0.0,
+    "snow": 0.0
+  },
+  "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
+  "schema": "V0110ThompsonD02Sanity",
+  "schema_version": 1,
+  "scope": "one real d02 Thompson microphysics step over full initial-condition columns; GPU used only because State loader requires GPU; not a coupled forecast",
+  "species": {
+    "Ng": {
+      "delta_max_abs": 0.0,
+      "delta_mean_abs": 0.0,
+      "delta_nonzero_count": 0,
+      "finite_after": true,
+      "initial_count_gt_1e-12": 0,
+      "initial_max": 0.0,
+      "initial_min": 0.0
+    },
+    "Ni": {
+      "delta_max_abs": 0.0,
+      "delta_mean_abs": 0.0,
+      "delta_nonzero_count": 0,
+      "finite_after": true,
+      "initial_count_gt_1e-12": 0,
+      "initial_max": 0.0,
+      "initial_min": 0.0
+    },
+    "Nr": {
+      "delta_max_abs": 0.0,
+      "delta_mean_abs": 0.0,
+      "delta_nonzero_count": 0,
+      "finite_after": true,
+      "initial_count_gt_1e-12": 0,
+      "initial_max": 0.0,
+      "initial_min": 0.0
+    },
+    "Ns": {
+      "delta_max_abs": 0.0,
+      "delta_mean_abs": 0.0,
+      "delta_nonzero_count": 0,
+      "finite_after": true,
+      "initial_count_gt_1e-12": 0,
+      "initial_max": 0.0,
+      "initial_min": 0.0
+    },
+    "qc": {
+      "delta_max_abs": 0.0,
+      "delta_mean_abs": 0.0,
+      "delta_nonzero_count": 0,
+      "finite_after": true,
+      "initial_count_gt_1e-12": 0,
+      "initial_max": 0.0,
+      "initial_min": 0.0
+    },
+    "qg": {
+      "delta_max_abs": 0.0,
+      "delta_mean_abs": 0.0,
+      "delta_nonzero_count": 0,
+      "finite_after": true,
+      "initial_count_gt_1e-12": 0,
+      "initial_max": 0.0,
+      "initial_min": 0.0
+    },
+    "qi": {
+      "delta_max_abs": 0.0,
+      "delta_mean_abs": 0.0,
+      "delta_nonzero_count": 0,
+      "finite_after": true,
+      "initial_count_gt_1e-12": 0,
+      "initial_max": 0.0,
+      "initial_min": 0.0
+    },
+    "qr": {
+      "delta_max_abs": 0.0,
+      "delta_mean_abs": 0.0,
+      "delta_nonzero_count": 0,
+      "finite_after": true,
+      "initial_count_gt_1e-12": 0,
+      "initial_max": 0.0,
+      "initial_min": 0.0
+    },
+    "qs": {
+      "delta_max_abs": 0.0,
+      "delta_mean_abs": 0.0,
+      "delta_nonzero_count": 0,
+      "finite_after": true,
+      "initial_count_gt_1e-12": 0,
+      "initial_max": 0.0,
+      "initial_min": 0.0
+    },
+    "qv": {
+      "delta_max_abs": 0.0,
+      "delta_mean_abs": 0.0,
+      "delta_nonzero_count": 0,
+      "finite_after": true,
+      "initial_count_gt_1e-12": 461736,
+      "initial_max": 0.012776953168213367,
+      "initial_min": 2.4372081952606095e-06
+    }
+  },
+  "status": "PASS",
+  "thermodynamically_admissible_fraction_post": 1.0,
+  "thermodynamically_admissible_fraction_pre": 1.0,
+  "total_precip_and_cloudw_sink_mm": 0.0,
+  "water_budget": {
+    "max_abs_residual_kg_m2": 0.0,
+    "max_rel_residual": 0.0,
+    "total_column_water_in_kg_m2": 199020.5566737037,
+    "total_column_water_out_kg_m2": 199020.5566737037,
+    "total_sink_mm": 0.0
+  }
+}

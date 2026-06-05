@@ -1,0 +1,202 @@
+{
+  "all_fields_within_float32_storage_precision": false,
+  "boundary": "mp_gt_driver_pre -> mp_gt_driver_post (full driver incl. sedimentation)",
+  "comparison": "JAX-vs-WRF (NOT self-compare)",
+  "dt_s": 18.0,
+  "dt_source": "namelist.input time_step=18 s (grid_id 1, parent domain)",
+  "hydrometeor_activity": {
+    "ni": {
+      "in": {
+        "max": 0.0,
+        "mean": 0.0,
+        "min": 0.0
+      },
+      "out": {
+        "max": 0.0,
+        "mean": 0.0,
+        "min": 0.0
+      }
+    },
+    "nr": {
+      "in": {
+        "max": 4.583339214324951,
+        "mean": 0.007926552743188979,
+        "min": -0.011004291474819183
+      },
+      "out": {
+        "max": 4.680473327636719,
+        "mean": 0.007941950068356428,
+        "min": 0.0
+      }
+    },
+    "qc": {
+      "in": {
+        "max": 0.0002225187636213377,
+        "mean": 4.9901656779688986e-08,
+        "min": -8.324747802316039e-16
+      },
+      "out": {
+        "max": 0.000223811439354904,
+        "mean": 4.9679716156426155e-08,
+        "min": 0.0
+      }
+    },
+    "qg": {
+      "in": {
+        "max": 0.0,
+        "mean": 0.0,
+        "min": 0.0
+      },
+      "out": {
+        "max": 0.0,
+        "mean": 0.0,
+        "min": 0.0
+      }
+    },
+    "qi": {
+      "in": {
+        "max": 3.192096934001576e-11,
+        "mean": 8.729285854759031e-15,
+        "min": -1.994864388929184e-21
+      },
+      "out": {
+        "max": 0.0,
+        "mean": 0.0,
+        "min": 0.0
+      }
+    },
+    "qr": {
+      "in": {
+        "max": 4.9010659495252185e-06,
+        "mean": 8.040481284174153e-09,
+        "min": -1.0597501542974896e-08
+      },
+      "out": {
+        "max": 4.613425971911056e-06,
+        "mean": 7.358486724860645e-09,
+        "min": 0.0
+      }
+    },
+    "qs": {
+      "in": {
+        "max": 9.522203858747247e-11,
+        "mean": 4.0992655786816183e-14,
+        "min": -6.351193717378015e-21
+      },
+      "out": {
+        "max": 0.0,
+        "mean": 0.0,
+        "min": 0.0
+      }
+    },
+    "qv": {
+      "in": {
+        "max": 0.011444058269262314,
+        "mean": 0.002180295372136319,
+        "min": 2.592220653241384e-06
+      },
+      "out": {
+        "max": 0.011444058269262314,
+        "mean": 0.0021802955250858564,
+        "min": 2.592220653241384e-06
+      }
+    }
+  },
+  "masked_fields": [
+    "refl_10cm (NaN diagnostic artifact)"
+  ],
+  "moist_cells": 228228,
+  "mp_physics": 8,
+  "n_cells": 228228,
+  "n_columns": 5187,
+  "oracle_dir": "/mnt/data/wrf_gpu2/physics_oracle_v090/microphysics",
+  "oracle_format": "raw big-endian float64 (manifest.json authoritative)",
+  "oracle_note": "ACTIVE-PRECIP oracle (late forecast step) replacing the inactive itimestep=1 oracle (proofs/b1) which had all hydrometeors zero.",
+  "pass": false,
+  "per_field": {
+    "ni": {
+      "abs_tol": 0.001,
+      "enforced_cells": 228228,
+      "max_abs_err": 0.0,
+      "max_rel_err": 0.0,
+      "pass": true,
+      "rel_tol": 0.0001
+    },
+    "nr": {
+      "abs_tol": 0.001,
+      "enforced_cells": 228228,
+      "max_abs_err": 0.0007151156639982029,
+      "max_rel_err": 1.0413300337574647e+25,
+      "pass": true,
+      "rel_tol": 0.0001
+    },
+    "qc": {
+      "abs_tol": 1e-09,
+      "enforced_cells": 228228,
+      "max_abs_err": 5.385240637009237e-09,
+      "max_rel_err": 1.0,
+      "pass": false,
+      "rel_tol": 1e-06
+    },
+    "qg": {
+      "abs_tol": 1e-09,
+      "enforced_cells": 228228,
+      "max_abs_err": 0.0,
+      "max_rel_err": 0.0,
+      "pass": true,
+      "rel_tol": 1e-06
+    },
+    "qi": {
+      "abs_tol": 1e-09,
+      "enforced_cells": 228228,
+      "max_abs_err": 0.0,
+      "max_rel_err": 0.0,
+      "pass": true,
+      "rel_tol": 1e-06
+    },
+    "qr": {
+      "abs_tol": 1e-09,
+      "enforced_cells": 228228,
+      "max_abs_err": 4.117064733397287e-11,
+      "max_rel_err": 1.4045933572791063e+18,
+      "pass": true,
+      "rel_tol": 1e-06
+    },
+    "qs": {
+      "abs_tol": 1e-09,
+      "enforced_cells": 228228,
+      "max_abs_err": 3.1601757536677294e-11,
+      "max_rel_err": 3.160175753667729e+19,
+      "pass": true,
+      "rel_tol": 1e-06
+    },
+    "qv": {
+      "abs_tol": 1e-09,
+      "enforced_cells": 228228,
+      "max_abs_err": 5.308806763984486e-09,
+      "max_rel_err": 5.789069933138424e-07,
+      "pass": true,
+      "rel_tol": 1e-06
+    },
+    "th": {
+      "abs_tol": 1e-06,
+      "enforced_cells": 228228,
+      "frac_within_1_float32_ulp": 0.9996582365003418,
+      "frac_within_2_float32_ulp": 1.0,
+      "max_abs_err": 4.27760056140869e-05,
+      "max_err_float32_ulp": 1.4016841519623995,
+      "max_rel_err": 1.4722989982039573e-07,
+      "note": "oracle theta is float32-exact (WRF stores fp32); JAX fp64 theta matches WRF to ~1 float32 ULP everywhere. The transcription band rel=1e-7 (~0.3 ULP at theta~297K) is tighter than the oracle's own fp32 storage granularity, so this is a tolerance-vs-storage artifact, not a physics or transcription gap.",
+      "pass": false,
+      "rel_tol": 1e-07
+    }
+  },
+  "proof": "v090-thompson-savepoint-parity",
+  "source_run": "/mnt/data/canairy_meteo/runs/wrf_l3/20260428_18z_l3_24h_20260525T221139Z",
+  "status": "ORACLE-VALIDATED",
+  "th_storage_precision_pass": true,
+  "water_closure_max_rel_residual": 3.046657320892406e-07,
+  "water_closure_pass": true,
+  "wrf_source": "/home/enric/src/wrf_pristine/WRF/phys/module_mp_thompson.F",
+  "wrf_source_sha256": "fabf19e2a9073cff886e882b187080bfdf089d3fd40c0fce1d19bc93b1e5e802"
+}

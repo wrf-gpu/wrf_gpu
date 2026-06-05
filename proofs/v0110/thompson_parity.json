@@ -1,0 +1,194 @@
+{
+  "column_parity": {
+    "all_pass": true,
+    "gates": {
+      "G1_surface_precip_ratio": {
+        "pass": true,
+        "tol": [
+          0.97,
+          1.03
+        ],
+        "value": 0.9985990860792249
+      },
+      "G2_per_column_max_rel": {
+        "pass": true,
+        "tol": 0.03,
+        "value": 0.0014834061486995462
+      },
+      "G3_qr_parity": {
+        "max_rel": 0.0019001189622313275,
+        "mean_rel": 0.0002432612863665796,
+        "pass": true,
+        "tol_max": 0.02,
+        "tol_mean": 0.01
+      },
+      "G4_qv_parity": {
+        "mean_rel": 0.004609150462570367,
+        "pass": true,
+        "tol_mean": 0.01
+      },
+      "G5_qc_parity": {
+        "max_rel": 9.933667872572322e-05,
+        "mean_rel": 7.533631778533897e-06,
+        "pass": true,
+        "tol_max": 0.01,
+        "tol_mean": 0.001
+      },
+      "G6_qs_parity": {
+        "mean_rel": 0.054308734078313554,
+        "pass": true,
+        "tol_mean": 0.15
+      },
+      "G7_qi_parity": {
+        "mean_rel": 0.03758208933342204,
+        "pass": true,
+        "tol_mean": 0.05
+      },
+      "G8_water_closure": {
+        "pass": true,
+        "tol": 1e-05,
+        "value": 2.370207011902978e-06
+      }
+    },
+    "hydrometeor_mean_rel": {
+      "qc": 7.533631778533897e-06,
+      "qg": 0.6130569422857403,
+      "qi": 0.03758208933342204,
+      "qr": 0.0002432612863665796,
+      "qs": 0.054308734078313554,
+      "qv": 0.004609150462570367
+    },
+    "oracle": "WRF mp_gt_driver single-column PRECIPITATING (8 cols x 44 lev, DT=18 s)",
+    "precip_by_species_mm": {
+      "cloudw": 0.0003937857065151604,
+      "graupel": 0.0,
+      "ice": 0.0,
+      "rain": 0.34618531971255795,
+      "snow": 0.0
+    },
+    "source": "proofs/p1_5/precip_water_parity.json",
+    "surface_precip_ratio": 0.9985990860792249,
+    "water_closure_rel": 2.370207011902978e-06
+  },
+  "created_utc": "2026-06-05T13:20:12.630580+00:00",
+  "d02_sanity": {
+    "acceptance": {
+      "finite_stable": true,
+      "no_invalid_fallback_activation": true,
+      "water_budget_closed_le_1e_minus_10_rel": true
+    },
+    "horizontal_columns": 10494,
+    "n_cells": 461736,
+    "precip_totals_mm": {
+      "cloudw": 0.0,
+      "graupel": 0.0,
+      "ice": 0.0,
+      "rain": 0.0,
+      "snow": 0.0
+    },
+    "scope": "one real d02 Thompson microphysics step over full initial-condition columns; GPU used only because State loader requires GPU; not a coupled forecast",
+    "shape_y_x_z": [
+      66,
+      159,
+      44
+    ],
+    "source": "proofs/v0110/thompson_d02_sanity.json",
+    "status": "PASS",
+    "water_budget": {
+      "max_abs_residual_kg_m2": 0.0,
+      "max_rel_residual": 0.0,
+      "total_column_water_in_kg_m2": 199020.5566737037,
+      "total_column_water_out_kg_m2": 199020.5566737037,
+      "total_sink_mm": 0.0
+    }
+  },
+  "debts": {
+    "cloud_water_sedimentation": {
+      "cloudw_surface_sink_mm_after": 0.0003937857065151604,
+      "formulation": "WRF vtc cloud-water terminal speed plus single full-DT explicit-upwind pass below 500 m AGL; not counted as WRF surface precip",
+      "qc_max_rel_after_cloudw_on": 9.933667872572322e-05,
+      "qc_max_rel_before_cloudw_off": 1.0,
+      "qc_mean_rel_after_cloudw_on": 7.533631778533897e-06,
+      "qc_mean_rel_before_cloudw_off": 0.00712012462600741,
+      "status": "closed_in_current_base_and_revalidated"
+    },
+    "invalid_column_fallback": {
+      "activation_counts": {
+        "p1_5_precipitating_oracle": {
+          "admissible_fraction": 1.0,
+          "cells": 352,
+          "invalid_cells": 0,
+          "shape": [
+            8,
+            44
+          ]
+        },
+        "v090_active_precip_oracle": {
+          "admissible_fraction": 1.0,
+          "cells": 228228,
+          "invalid_cells": 0,
+          "shape": [
+            5187,
+            44
+          ]
+        }
+      },
+      "bad_pressure_regression": "tests/test_m6b_20260509_microphysics_fix.py::test_20260509_bad_cell_invalid_pressure_does_not_create_cloud_feedback passes with fallback retained",
+      "reason": "Removing the fallback makes the existing invalid-pressure regression create large cloud feedback; checked WRF-column inputs do not exercise the fallback.",
+      "status": "carried_not_closed"
+    },
+    "nsed_cap": {
+      "NSED_MAX": 16,
+      "status": "unchanged_validated_NSED_16"
+    },
+    "snow_fall_speed": {
+      "formulation": "WRF Field two-gamma moment-ratio vts = rhof*av_s*(t1+t2)/(t3+t4), inactive melt/riming flags neutral",
+      "pass": true,
+      "qs_mean_rel_after_wrf_field_moments": 0.054308734078313554,
+      "qs_mean_rel_before_single_slope": 0.08875921588640973,
+      "relative_reduction": 0.3881341386812659,
+      "status": "closed_this_sprint",
+      "tolerance_mean_rel": 0.15
+    }
+  },
+  "git": {
+    "base_v0_10_0": "d054954",
+    "branch": "worker/gpt/v0110-thompson",
+    "head": "52f4e23cc0814e7957543bc2dbb34709e1664780",
+    "validated_code_commit": "52f4e23cc0814e7957543bc2dbb34709e1664780"
+  },
+  "overall": {
+    "carried_debts": [
+      "invalid_column_fallback"
+    ],
+    "closed_debts": [
+      "cloud_water_sedimentation",
+      "snow_fall_speed"
+    ],
+    "pass": true
+  },
+  "schema": "V0110ThompsonParityDebts",
+  "schema_version": 1,
+  "secondary_savepoint": {
+    "note": "Not used as the closure gate for this debt: qs is inactive/zero in this savepoint; remaining false fields are the pre-existing warm-rain qc strict-band miss and theta fp32-storage tolerance artifact.",
+    "pass": false,
+    "per_field_pass": {
+      "ni": true,
+      "nr": true,
+      "qc": false,
+      "qg": true,
+      "qi": true,
+      "qr": true,
+      "qs": true,
+      "qv": true,
+      "th": false
+    },
+    "source": "proofs/v0110/thompson_v090_savepoint.json",
+    "status": "ORACLE-VALIDATED"
+  },
+  "wrf_source": {
+    "cloud_water_sedimentation_lines": "3646-3667, 3824-3837",
+    "path": "/home/enric/src/wrf_pristine/WRF/phys/module_mp_thompson.F",
+    "snow_fall_speed_lines": "3711-3721"
+  }
+}
