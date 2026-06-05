@@ -1,0 +1,114 @@
+{
+  "proof_id": "v0110-mynn-edmf-parity",
+  "date": "2026-06-05",
+  "branch": "worker/gpt/v0110-mynn-edmf",
+  "base_commit": "d054954",
+  "environment": {
+    "pythonpath": "src",
+    "platform": "cpu",
+    "jax_platforms": "cpu",
+    "cpu_affinity": "taskset -c 0-27"
+  },
+  "operational_options_resolved": {
+    "corpus_namelist_examples": [
+      {
+        "path": "/mnt/data/canairy_meteo/gen2_archive/provenance/namelists/namelist_20240315_00z_A.input",
+        "bl_pbl_physics": "5, 5",
+        "sf_sfclay_physics": "5, 5"
+      }
+    ],
+    "wrf_registry_defaults": {
+      "bl_mynn_cloudpdf": 2,
+      "bl_mynn_mixlength": 1,
+      "bl_mynn_edmf": 1,
+      "bl_mynn_edmf_mom": 1,
+      "bl_mynn_edmf_tke": 0,
+      "bl_mynn_mixscalars": 1,
+      "bl_mynn_cloudmix": 1,
+      "bl_mynn_mixqt": 0,
+      "icloud_bl": 1,
+      "bl_mynn_closure": 2.6
+    }
+  },
+  "wired_status": {
+    "operational_mynn_edmf_enabled": true,
+    "mass_flux_scalar_transport": true,
+    "mass_flux_momentum_transport": true,
+    "wrf_land_water_branch": true,
+    "cloud_aware_thl_thlv_and_scalar_variance_terms": true,
+    "qc_qi_inputs_read": true,
+    "qc_qi_writeback": false,
+    "full_icloud_bl_cloud_pdf_cloudmix": false,
+    "closure_2_6_prognostic_tsq_qsq_cov": false,
+    "status": "partial_wrf_faithful_wiring_with_cloud_pdf_carry"
+  },
+  "wrf_savepoint_parity": {
+    "source": "proofs/mynn_edmf/mf_oracle_compare.json",
+    "tolerance_rel": 0.05,
+    "s_aw_rel_max_err": 0.004834738628076368,
+    "s_aw_rmse": 0.000052613115380665464,
+    "s_awqv_rel_max_err": 0.004834274556065201,
+    "s_awqv_rmse": 5.777998496624751e-7,
+    "s_awqt_rel_max_err": 0.004834274556065201,
+    "s_awqc_rel_max_err": 0.0,
+    "pass_s_aw": true,
+    "pass_s_awqv": true,
+    "pass": true,
+    "note": "WRF savepoint parity is for DMP scalar mass-flux arrays. Momentum arrays follow the same WRF source branch and have unit coverage, but no WRF s_awu/s_awv savepoint was available in this lane."
+  },
+  "focused_tests": {
+    "test_mynn_edmf_oracle": {
+      "command": "taskset -c 0-27 env PYTHONPATH=src JAX_PLATFORMS=cpu OMP_NUM_THREADS=4 python -m pytest tests/test_mynn_edmf_oracle.py -q",
+      "result": "6 passed in 5.24s"
+    },
+    "m5_mynn_regression": {
+      "command": "taskset -c 0-27 env PYTHONPATH=src JAX_PLATFORMS=cpu OMP_NUM_THREADS=4 python -m pytest tests/test_m5_mynn_tier1.py tests/test_m5_mynn_tier2.py tests/test_m5_mynn_radicand.py -q",
+      "result": "4 passed in 4.09s"
+    },
+    "py_compile": {
+      "command": "taskset -c 0-27 env PYTHONPATH=src JAX_PLATFORMS=cpu OMP_NUM_THREADS=4 python -m py_compile src/gpuwrf/physics/mynn_pbl.py src/gpuwrf/physics/mynn_edmf.py src/gpuwrf/coupling/physics_couplers.py",
+      "result": "pass"
+    }
+  },
+  "integration_proxy": {
+    "source": "proofs/mynn_edmf/integration_mf_vs_ed.json",
+    "window_min": 120.0,
+    "nsteps": 2400,
+    "dt_s": 3.0,
+    "lev0_mf_minus_ed_qv_kgkg": -0.0004770383053888695,
+    "lev1_mf_minus_ed_qv_kgkg": -0.00048546546572407825,
+    "pass_finite": true,
+    "skill_claim": "none",
+    "note": "Frozen-forcing single-column proxy only; negative MF-minus-ED means this proxy does not support a Q2/T2 skill improvement claim."
+  },
+  "dry_path_regression": {
+    "source": "artifacts/m5/tier1_mynn_parity.json",
+    "pass": true,
+    "scenarios_tested": 3,
+    "tolerances_met": true,
+    "max_abs_err": {
+      "el": 19.475817149220106,
+      "kh": 0.1921010696951453,
+      "km": 10.407959799384692,
+      "qv": 2.1452974625219e-7,
+      "theta": 0.0002337156127509843,
+      "tke": 0.01723391592916143,
+      "u": 0.002731071963350651,
+      "v": 0.001581277272939552,
+      "w": 0.0
+    },
+    "note": "Scalar variance terms change the old analytic tier-1 fixture but remain inside the existing acceptance tolerances."
+  },
+  "short_d02_sanity": {
+    "status": "not_run",
+    "finite_stable": null,
+    "skill_vs_dry_2_5_baseline": null,
+    "reason": "GPU run was deferred per lane constraint and no current paired dry-2.5 baseline artifact exists for this branch. Historical artifacts are not substituted for the requested A/B proof."
+  },
+  "endpoint_assessment": {
+    "endpoint_1_wired_on": "partial_pass",
+    "endpoint_2_column_parity": "pass_for_available_wrf_dmp_scalar_savepoint",
+    "endpoint_3_short_d02_skill": "not_run",
+    "overall": "partial_carry"
+  }
+}
