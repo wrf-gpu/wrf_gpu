@@ -15,6 +15,16 @@ BcSource = Literal["AIFS", "GFS", "ERA5", "ideal"]
 Interpolation = Literal["linear", "cubic"]
 
 
+def _as_fp64(value):
+    """Cast concrete/traced arrays while leaving abstract lowering args intact."""
+
+    if getattr(value, "dtype", None) == jnp.float64:
+        return value
+    if hasattr(value, "astype"):
+        return value.astype(jnp.float64)
+    return jnp.asarray(value, dtype=jnp.float64)
+
+
 @dataclass(frozen=True)
 class Projection:
     """Groups projection scalars so GridSpec metadata stays hashable and readable."""
@@ -107,9 +117,9 @@ class DycoreMetrics:
         """Normalizes scalar metadata and enforces fp64 metric storage."""
 
         for name in self._array_names():
-            array = jnp.asarray(getattr(self, name), dtype=jnp.float64)
+            array = _as_fp64(getattr(self, name))
             object.__setattr__(self, name, array)
-            if array.dtype != jnp.float64:
+            if getattr(array, "dtype", None) != jnp.float64:
                 raise TypeError(f"DycoreMetrics.{name} must be fp64")
         if tuple(self.p_top.shape) not in ((), (1,)):
             raise ValueError("DycoreMetrics.p_top must be scalar or shape (1,)")
