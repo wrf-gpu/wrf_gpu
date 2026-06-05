@@ -26,6 +26,7 @@
 
 - The bad-pressure invalid-cell regression passes with the fallback retained.
 - `tests/test_m5_thompson_column_shapes.py::test_debug_false_hlo_has_no_debug_assert_ops` still fails: production HLO has one extra fusion versus the hand-stripped sibling because the production source retains the invalid-column fallback and the stripped sibling does not. Fixing that cleanly requires either updating the stripped sibling or redesigning the invalid-input guard, both outside this lane's `thompson_column.py`-only ownership.
+- The P1-5 proof reports a graupel `qg` residual (`mean_rel=0.6130569422857403`, `max_rel=1.0`) but does not gate it. That residual is not one of the scoped P1-5 debts in this lane and is now called out explicitly in `thompson_parity.json`.
 
 ## Next Decision
 
