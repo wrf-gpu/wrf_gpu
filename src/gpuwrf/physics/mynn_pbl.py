@@ -818,6 +818,20 @@ def _solve_tridiagonal(a, b, c, d):
     return solve_tridiagonal(a, b, c, d)
 
 
+def _wrf_qke_minmax(value):
+    """WRF ``qke=max(x,qkemin); qke=min(qke,150)`` post-solve bounds.
+
+    WRF applies Fortran ``MAX``/``MIN`` immediately after the MYNN ``tridiag2``
+    solve (``module_bl_mynnedmf.F:3106-3107`` in the local pristine v4 source).
+    Under the common Fortran comparison semantics used by WRF builds, a NaN
+    solver element compares false and the finite qkemin/upper bound is selected.
+    ``jnp.maximum`` propagates NaN, so use IEEE fmax/fmin to match the WRF
+    intrinsic behavior while leaving every finite value's bounds unchanged.
+    """
+
+    return jnp.fmin(jnp.fmax(value, QKEMIN), 150.0)
+
+
 def _phim_puhales(zet):
     """WRF Puhales-2020 momentum stability function ``phim(zet)`` (default
     ``bl_mynn_stfunc=1``, ``module_bl_mynnedmf.F:7701-7750``).
@@ -906,7 +920,7 @@ def _mym_predict_qke(state: MynnPBLColumnState, qke, turb, dt, ustar, flux):
     b = jnp.concatenate((diag, jnp.ones_like(qke[..., -1:])), axis=-1)
     c = jnp.concatenate((upper, _zero_edge_like(qke)), axis=-1)
     d = jnp.concatenate((rhs, qke[..., -1:]), axis=-1)
-    qke_new = jnp.minimum(jnp.maximum(_solve_tridiagonal(a, b, c, d), QKEMIN), 150.0)
+    qke_new = _wrf_qke_minmax(_solve_tridiagonal(a, b, c, d))
 
     tke_up = 0.5 * qke_new
     qwt_bottom = (kqdz[..., 1] * (tke_up[..., 1] - tke_up[..., 0]) - kqdz[..., 0] * tke_up[..., 0]) / dz[..., 0]
