@@ -1378,43 +1378,35 @@ def _acoustic_scan(
             nested=nested,
         )
 
-        # v0.10.0 Wave-A (Opus#2 carry-split + Opus#1 unroll):
-        # ``acoustic_substep_core`` MUTATES only ~19 prognostic leaves
-        # (_ACOUSTIC_EVOLVING_FIELDS); the other ~50 leaves of AcousticCoreState
-        # are STAGE-CONSTANT (metric inverses, base columns, msf*, cf*, tendency
-        # leaves, ...).  Threading the full ~69-field pytree through ``lax.scan``
-        # forces XLA to carry-copy every constant leaf each substep (the D2D
-        # memcpy family the profile attributed to the scan boundary).  Instead we
-        # thread ONLY the evolving leaves through the scan carry and close over the
-        # constant leaves -- round-off-neutral (identical math, the core sees the
-        # exact same fully-reconstituted AcousticCoreState each substep).
-        const_leaves = {
-            name: getattr(acoustic, name)
-            for name in acoustic.__dataclass_fields__  # type: ignore[attr-defined]
-            if name not in _ACOUSTIC_EVOLVING_FIELDS
-        }
-
-        def body(carry_evolving: dict, _):
-            scan_acoustic = acoustic.replace(**carry_evolving, **const_leaves)
-            stepped = acoustic_substep_core(
+        # v0.10.0 Wave-A (Opus#1 unroll):
+        # NOTE on the rejected carry-split (Opus#2): threading only the ~19
+        # evolving leaves through the scan and closing over the ~50 stage-constant
+        # leaves (reconstructing the full AcousticCoreState inside the body) was
+        # measured to be a NET REGRESSION on this stack (JAX 0.10.0 / RTX 5090):
+        # it ~2x'd the segment compile time (a 90-step coupled fp64 compile went
+        # ~70s -> 132s) AND severely slowed the warmed step (the warm-timing loop
+        # never completed in >5 min vs ~34s baseline) -- XLA materialised/threaded
+        # the closed-over constants per substep rather than hoisting them. The
+        # simple full-pytree carry below lets XLA's own constant-hoisting handle
+        # the stage-invariant leaves; it is bit-identical and the faster path.
+        # See proofs/v0100/inefficiency_ledger.md (Opus#2 = REVERTED).
+        def body(scan_acoustic: AcousticCoreState, _):
+            return acoustic_substep_core(
                 scan_acoustic,
                 a=a,
                 alpha=alpha,
                 gamma=gamma,
                 cfg=stage_cfg,
                 cqw=cqw_field,
-            )
-            return {name: getattr(stepped, name) for name in _ACOUSTIC_EVOLVING_FIELDS}, None
+            ), None
 
-        evolving0 = {name: getattr(acoustic, name) for name in _ACOUSTIC_EVOLVING_FIELDS}
-        evolving_final, _ = jax.lax.scan(
+        acoustic, _ = jax.lax.scan(
             body,
-            evolving0,
+            acoustic,
             xs=None,
             length=int(stage.number_of_small_timesteps),
             unroll=_acoustic_unroll(),
         )
-        acoustic = acoustic.replace(**evolving_final, **const_leaves)
         next_carry = _carry_from_finished_stage(carry, prep, acoustic, namelist)
         return next_carry.replace(state=apply_halo(next_carry.state, halo_spec(namelist.grid)))
 

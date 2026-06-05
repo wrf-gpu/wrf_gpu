@@ -29,7 +29,7 @@ workload via `proofs/v0100/wave_a_gate.py`.
 | # | Item | Disposition | Evidence |
 |---|---|---|---|
 | Opus#1 | Acoustic substep `lax.scan` no `unroll` hook | <TBD> | `_acoustic_unroll()` added; A/B unroll {1,2,4} |
-| Opus#2 | AcousticCoreState carry bloat (~50 stage-const leaves threaded through substep scan) | <TBD> | carry-split: thread only 19 evolving leaves, close over constants |
+| Opus#2 | AcousticCoreState carry bloat (~50 stage-const leaves threaded through substep scan) | **REVERTED (net regression, not-worth-it)** | Implemented the carry-split (thread only the 19 evolving leaves, close over the ~50 constants, reconstruct the full state in-body). MEASURED on JAX 0.10.0 / RTX 5090: ~2x compile blowup (90-step coupled fp64 compile ~70s->132.4s) AND a severe warmed-step slowdown (5x90-step warm-timing loop did not finish in >5 min vs ~34s for the simple carry). XLA materialised/threaded the closed-over constants per substep instead of hoisting them. Bit-identical but a clear net loss -> reverted; the simple full-pytree carry lets XLA's own constant-hoisting handle the stage-invariant leaves. The _ACOUSTIC_EVOLVING_FIELDS set is retained (documents the analysis). |
 | Opus#4 / GPT#20 | Per-step whole-State precision cast emits no-op converts under force_fp64 | <TBD> | skip `.astype` when dtype already matches |
 | Opus#5 | `dry_cqw` rebuilt twice per RK stage | REMOVED | reuse `acoustic.cqw` at `_finish_rk_stage_acoustic`; bit-identical (dry_cqw is a pure shape+dtype constant) |
 | Opus#6 | `jnp.pad(edge)` face-pairs in advance_uv (10/substep) | <TBD> | replace edge-pad+slice with concatenate |
