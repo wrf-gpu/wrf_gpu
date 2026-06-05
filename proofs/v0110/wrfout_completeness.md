@@ -10,7 +10,7 @@ This patch extends the v0.10.0 writer registry from 76 known operational wrfout 
 - Noah-MP snow+soil interface diagnostic: `ZSNSO`
 - stochastic restart seed arrays: `ISEEDARR_SPPT`, `ISEEDARR_SKEBS`, `ISEEDARRAY_SPP_CONV`, `ISEEDARRAY_SPP_PBL`, `ISEEDARRAY_SPP_LSM`
 
-The writer still emits only fields with real sources. It does not fabricate inactive stochastic seed state or land diagnostics when the matching `land_state` / diagnostic source is absent.
+The writer and restart writer still emit only fields with real sources. They do not fabricate inactive stochastic seed state or land diagnostics when the matching `land_state` / diagnostic/seed source is absent.
 
 ## Reference Inventory
 
@@ -54,11 +54,16 @@ Optional exact carry groups are manifest-driven and fail-closed:
 
 `noahmp_land`, `noahmp_rad`, `cumulus_carry`, `noahclassic_land`, `noahclassic_rad`.
 
+WRF stochastic seed arrays are now WRF-named optional `wrfrst` variables, guarded by `GPUWRF_STOCHASTIC_SEED_VARIABLE_ORDER`, and read back through `read_wrfrst_stochastic_seeds()`. A CPU structural proof wrote all five seed arrays into `wrfrst`, read them back, and confirmed exact integer equality for:
+
+`ISEEDARR_SPPT`, `ISEEDARR_SKEBS`, `ISEEDARRAY_SPP_CONV`, `ISEEDARRAY_SPP_PBL`, `ISEEDARRAY_SPP_LSM`.
+
 ## Commands
 
-- `taskset -c 0-27 env PYTHONPATH=src JAX_PLATFORM_NAME=cpu XLA_FLAGS=--xla_force_host_platform_device_count=1 pytest -q tests/test_v0110_wrfrst_netcdf.py`
+- `taskset -c 0-27 env PYTHONPATH=src JAX_PLATFORMS=cpu XLA_FLAGS=--xla_force_host_platform_device_count=1 pytest -q tests/test_v0110_wrfrst_netcdf.py`
+- `taskset -c 0-27 env PYTHONPATH=src JAX_PLATFORMS=cpu XLA_FLAGS=--xla_force_host_platform_device_count=1 python scripts/v0110_restart_proof.py --output /tmp/v0110_restart_seed_structural.json --skip-forecast`
 - `taskset -c 0-27 python - <<'PY' ... netCDF4 reference inventory ...`
-- `taskset -c 0-27 env PYTHONPATH=src JAX_PLATFORM_NAME=cpu XLA_FLAGS=--xla_force_host_platform_device_count=1 python - <<'PY' ... writer registry inventory ...`
+- `taskset -c 0-27 env PYTHONPATH=src JAX_PLATFORMS=cpu XLA_FLAGS=--xla_force_host_platform_device_count=1 python - <<'PY' ... writer registry inventory ...`
 
 ## Remaining Gaps
 

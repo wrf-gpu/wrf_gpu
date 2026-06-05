@@ -17,6 +17,7 @@ from gpuwrf.io.wrfrst_netcdf import (
     CARRY_ARRAY_FIELDS,
     SCHEMA_VERSION,
     STATE_FIELD_ORDER,
+    STOCHASTIC_SEED_RESTART_VARIABLES,
     WRF_STANDARD_RESTART_VARIABLES,
     carry_extension_name,
     cumulus_extension_name,
@@ -27,6 +28,7 @@ from gpuwrf.io.wrfrst_netcdf import (
     noahmp_rad_extension_name,
     read_wrfrst_carry,
     read_wrfrst_state,
+    read_wrfrst_stochastic_seeds,
     state_extension_name,
     write_wrfrst_carry,
     write_wrfrst_state,
@@ -124,6 +126,13 @@ def _noahclassic_land(grid: GridSpec) -> NoahClassicLandState:
     )
 
 
+def _seed_arrays() -> dict[str, np.ndarray]:
+    return {
+        name: np.arange(8, dtype=np.int32) + offset * 100
+        for offset, name in enumerate(STOCHASTIC_SEED_RESTART_VARIABLES, start=1)
+    }
+
+
 def _equal(left, right) -> bool:
     a = np.asarray(left)
     b = np.asarray(right)
@@ -210,6 +219,7 @@ def test_wrfrst_optional_nested_carry_roundtrip_and_wrf_land_schema(tmp_path: Pa
         noahclassic_rad=NoahClassicRadiation(_array(xy, 306), _array(xy, 307), _array(xy, 308)),
     )
     path = tmp_path / "wrfrst_full_carry"
+    seeds = _seed_arrays()
 
     write_wrfrst_carry(
         carry,
@@ -219,8 +229,10 @@ def test_wrfrst_optional_nested_carry_roundtrip_and_wrf_land_schema(tmp_path: Pa
         valid_time="2026-06-03_00:30:00",
         run_start="2026-06-03_00:00:00",
         step_index=3,
+        stochastic_seed_arrays=seeds,
     )
     restored, metadata = read_wrfrst_carry(path)
+    restored_seeds = read_wrfrst_stochastic_seeds(path)
 
     assert metadata["optional_carry_kind"] == {
         "noahmp_land": "object",
@@ -229,6 +241,7 @@ def test_wrfrst_optional_nested_carry_roundtrip_and_wrf_land_schema(tmp_path: Pa
         "noahclassic_land": "object",
         "noahclassic_rad": "tuple",
     }
+    assert metadata["stochastic_seed_variables"] == list(STOCHASTIC_SEED_RESTART_VARIABLES)
     _assert_object_equal(carry.noahmp_land, restored.noahmp_land, tuple(NoahMPLandState.__slots__))
     for left, right in zip(carry.noahmp_rad, restored.noahmp_rad, strict=True):
         assert _equal(left, right)
@@ -246,6 +259,11 @@ def test_wrfrst_optional_nested_carry_roundtrip_and_wrf_land_schema(tmp_path: Pa
         assert schema["dimensions"][name] == dimension
     for name in ("TSLB", "SMOIS", "SH2O", "TSNO", "SNICE", "SNLIQ", "ZSNSO"):
         assert name in schema["variables"], name
+    for name in STOCHASTIC_SEED_RESTART_VARIABLES:
+        assert name in schema["variables"], name
+        assert schema["variables"][name]["dimensions"] == ["Time", "seed_dim_stag"]
+        assert schema["variables"][name]["dtype"] == "int32"
+        np.testing.assert_array_equal(np.asarray(restored_seeds[name]), seeds[name])
     assert noahmp_land_extension_name("tsno") in schema["variables"]
     assert noahmp_rad_extension_name("soldn") in schema["variables"]
     assert cumulus_extension_name("w0avg") in schema["variables"]
