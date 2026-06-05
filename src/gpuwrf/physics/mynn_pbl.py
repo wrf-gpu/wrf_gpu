@@ -66,14 +66,34 @@ from gpuwrf.physics.tridiagonal_solver import solve_tridiagonal
 
 config.update("jax_enable_x64", True)
 
+CP_MYNN = 7.0 * 287.0 / 2.0
+RCP_MYNN = 287.0 / CP_MYNN
+XLVCP_MYNN = 2.5e6 / CP_MYNN
+XLSCP_MYNN = 2.85e6 / CP_MYNN
+
 
 @jax.tree_util.register_pytree_node_class
 class MynnPBLColumnState:
     """Pytree for a batch of independent MYNN PBL columns on mass levels."""
 
-    __slots__ = ("u", "v", "w", "theta", "qv", "tke", "p", "rho", "dz", "km", "kh", "el")
+    __slots__ = (
+        "u",
+        "v",
+        "w",
+        "theta",
+        "qv",
+        "tke",
+        "p",
+        "rho",
+        "dz",
+        "km",
+        "kh",
+        "el",
+        "qc",
+        "qi",
+    )
 
-    def __init__(self, u, v, w, theta, qv, tke, p, rho, dz, km, kh, el) -> None:
+    def __init__(self, u, v, w, theta, qv, tke, p, rho, dz, km, kh, el, qc=None, qi=None) -> None:
         self.u = u
         self.v = v
         self.w = w
@@ -86,6 +106,8 @@ class MynnPBLColumnState:
         self.km = km
         self.kh = kh
         self.el = el
+        self.qc = jnp.zeros_like(qv) if qc is None else qc
+        self.qi = jnp.zeros_like(qv) if qi is None else qi
 
     def replace(self, **updates) -> "MynnPBLColumnState":
         """Returns a same-layout pytree with named fields replaced."""
@@ -139,6 +161,8 @@ def _clip_state(state: MynnPBLColumnState) -> MynnPBLColumnState:
 
     return state.replace(
         qv=jnp.maximum(state.qv, 0.0),
+        qc=jnp.maximum(state.qc, 0.0),
+        qi=jnp.maximum(state.qi, 0.0),
         tke=jnp.maximum(state.tke, TKE_EPS),
         rho=jnp.maximum(state.rho, 1.0e-4),
         dz=jnp.maximum(state.dz, 1.0),
@@ -193,6 +217,50 @@ def _virtual_potential(theta, qv):
     return theta * (1.0 + P608 * sqv)
 
 
+def _exner_from_pressure(p):
+    return (p / 100000.0) ** RCP_MYNN
+
+
+def _specific_moisture_components(state: MynnPBLColumnState):
+    """Return WRF MYNN specific contents from WRF-style mixing ratios.
+
+    WRF ``mynnedmf_pre_run`` converts vapor and cloud mixing ratios to specific
+    contents before MYNN (`sqv=qv/(1+qv)`, and the cloud species use the same
+    denominator).  The column state stores the prognostic WRF mixing ratios, so
+    the cloud-aware thermodynamic closure has to do that conversion explicitly.
+    """
+
+    qv = jnp.maximum(state.qv, 0.0)
+    denom = 1.0 + qv
+    sqv = qv / denom
+    sqc = jnp.maximum(state.qc, 0.0) / denom
+    sqi = jnp.maximum(state.qi, 0.0) / denom
+    sqw = sqv + sqc + sqi
+    return sqv, sqc, sqi, sqw
+
+
+def _liquid_potential_temperature(state: MynnPBLColumnState):
+    """WRF ``thl`` from theta plus cloud liquid/ice specific contents."""
+
+    _sqv, sqc, sqi, _sqw = _specific_moisture_components(state)
+    exner = _exner_from_pressure(state.p)
+    return state.theta - XLVCP_MYNN / exner * sqc - XLSCP_MYNN / exner * sqi
+
+
+def _moist_virtual_potential(state: MynnPBLColumnState):
+    """WRF ``thv`` and cloud-aware ``thlv`` used by MYNN level-2 closure."""
+
+    sqv, sqc, sqi, _sqw = _specific_moisture_components(state)
+    exner = _exner_from_pressure(state.p)
+    thv = state.theta * (1.0 + P608 * sqv)
+    thlv = (
+        state.theta
+        - XLVCP_MYNN / exner * sqc
+        - XLSCP_MYNN / exner * sqi
+    ) * (1.0 + P608 * sqv)
+    return thv, thlv
+
+
 def _surface_terms(state: MynnPBLColumnState, surface=None):
     """Builds the surface fluxes used by the column kernel.
 
@@ -219,9 +287,13 @@ def _flux_richardson(ri, ri1, ri2, ri3, ri4, rfc):
 def _mym_level2(state: MynnPBLColumnState):
     """WRF MYNN `mym_level2`: level-2 gradients and stability functions."""
 
-    thlv = _virtual_potential(state.theta, state.qv)
+    _thv, thlv = _moist_virtual_potential(state)
+    thl = _liquid_potential_temperature(state)
+    _sqv, _sqc, _sqi, sqw = _specific_moisture_components(state)
     dzk = _interface_dz(state.dz)[..., 1:]
     duz = ((state.u[..., 1:] - state.u[..., :-1]) ** 2 + (state.v[..., 1:] - state.v[..., :-1]) ** 2) / (dzk * dzk)
+    dtl_i = (thl[..., 1:] - thl[..., :-1]) / dzk
+    dqw_i = (sqw[..., 1:] - sqw[..., :-1]) / dzk
     dtv_i = (thlv[..., 1:] - thlv[..., :-1]) / dzk
     gm_i = duz
     gh_i = -dtv_i * GTR
@@ -246,11 +318,13 @@ def _mym_level2(state: MynnPBLColumnState):
 
     z = _zero_edge_like(state.theta)
     dtv = jnp.concatenate((z, dtv_i), axis=-1)
+    dtl = jnp.concatenate((z, dtl_i), axis=-1)
+    dqw = jnp.concatenate((z, dqw_i), axis=-1)
     gm = jnp.concatenate((z, gm_i), axis=-1)
     gh = jnp.concatenate((z, gh_i), axis=-1)
     sm = jnp.concatenate((z, sm_i), axis=-1)
     sh = jnp.concatenate((z, sh_i), axis=-1)
-    return dtv, gm, gh, sm, sh
+    return dtl, dqw, dtv, gm, gh, sm, sh
 
 
 def _first_or_fallback(candidates, fallback):
@@ -263,7 +337,7 @@ def _first_or_fallback(candidates, fallback):
 def _get_pblh(state: MynnPBLColumnState, qke):
     """Dry JAX transcription of WRF `GET_PBLH` for MYNN length-scale input."""
 
-    thv = _virtual_potential(state.theta, state.qv)
+    thv, _thlv = _moist_virtual_potential(state)
     zw = _wrf_zw(state.dz)
     nz = state.dz.shape[-1]
     idx = jnp.arange(nz)
@@ -642,7 +716,7 @@ def _mym_turbulence(state: MynnPBLColumnState, qke, fltv, ustar, dx, xland=1.0):
     but is NOT the operational/validated path. ``xland`` (1=land, 2=water) feeds
     the WRF land/water branch of the mixing length."""
 
-    dtv, gm, gh, sm20_raw, sh20_raw = _mym_level2(state)
+    dtl, dqw, dtv, gm, gh, sm20_raw, sh20_raw = _mym_level2(state)
     qkw, el, pblh = _mym_length_option1(state, qke, dtv, fltv, ustar, dx, xland)
     dzk = _interface_dz(state.dz)
     elsq = el * el
@@ -690,9 +764,9 @@ def _mym_turbulence(state: MynnPBLColumnState, qke, fltv, ustar, dx, xland=1.0):
 
     elq = el * qkw
     pdk = elq * (sm * gm + sh * gh)
-    pdt = elq * sh * 0.0
-    pdq = elq * sh * 0.0
-    pdc = elq * sh * 0.0
+    pdt = elq * sh * dtl * dtl
+    pdq = elq * sh * dqw * dqw
+    pdc = elq * sh * dtl * dqw
     tcd = _zero_like(pdk)
     qcd = _zero_like(pdk)
     dfm = jnp.where(dzk > 0.0, elq * sm / dzk, 0.0)
@@ -946,38 +1020,46 @@ def _apply_mean_tendencies(state: MynnPBLColumnState, turb, dt, flux, wind, rhos
     """Applies WRF-style U/V/theta/qv implicit tendency solves.
 
     When ``mf`` (the MYNN-EDMF solver arrays from :func:`mynn_edmf.dmp_mf_columns`)
-    is provided, theta(thl) and qv include the mass-flux nonlocal transport
-    (``s_aw``/``s_awthl``/``s_awqv``). Momentum keeps ``s_awu``/``s_awv`` mass-flux
-    transport off for ``bl_mynn_edmf_mom=0``, but WRF still applies the
-    ``s_aw`` stability floor to ``kmdz`` before the U/V implicit solve
-    (``module_bl_mynnedmf.F:3990-3997``).
+    is provided, U/V, theta(thl), and qv include the mass-flux nonlocal transport
+    (``s_aw`` plus ``s_awu``/``s_awv``/``s_awthl``/``s_awqv``). WRF also applies
+    the ``s_aw`` stability floor to ``kmdz``/``khdz`` before the implicit solves.
     """
 
     rhoinv0 = 1.0 / jnp.maximum(state.rho[..., 0], 1.0e-4)
     dtz0 = dt / state.dz[..., 0]
     bottom_drag = rhosfc * flux.ustar * flux.ustar / wind
-    s_aw_floor = None if mf is None else mf["s_aw"]
-    u = _diffusion_solve_with_surface(
-        state.u, turb["dfm"], state, dt, jnp.zeros_like(wind), bottom_drag,
-        s_aw_floor=s_aw_floor)
-    v = _diffusion_solve_with_surface(
-        state.v, turb["dfm"], state, dt, jnp.zeros_like(wind), bottom_drag,
-        s_aw_floor=s_aw_floor)
     theta_rhs = dtz0 * rhosfc * flux.theta_flux * rhoinv0
     qv_flux = jnp.maximum(flux.qv_flux, jnp.minimum(0.9 * state.qv[..., 0] - 1.0e-8, 0.0) / jnp.maximum(dtz0, 1.0e-12))
     qv_rhs = dtz0 * rhosfc * qv_flux * rhoinv0
+    thl0 = _liquid_potential_temperature(state)
+    exner = _exner_from_pressure(state.p)
+    _sqv, sqc, sqi, _sqw = _specific_moisture_components(state)
     if mf is None:
-        theta = _diffusion_solve_with_surface(state.theta, turb["dfh"], state, dt, theta_rhs)
+        u = _diffusion_solve_with_surface(
+            state.u, turb["dfm"], state, dt, jnp.zeros_like(wind), bottom_drag)
+        v = _diffusion_solve_with_surface(
+            state.v, turb["dfm"], state, dt, jnp.zeros_like(wind), bottom_drag)
+        thl = _diffusion_solve_with_surface(thl0, turb["dfh"], state, dt, theta_rhs)
         qv = _diffusion_solve_with_surface(state.qv, turb["dfh"], state, dt, qv_rhs)
     else:
-        # theta solve uses s_awthl; the column carries theta as thl (qc=0 in the
-        # PBL column -> thl == theta). qv solve uses s_awqv.
-        theta = _diffusion_solve_with_mf(
-            state.theta, turb["dfh"], state, dt, theta_rhs,
+        zero_wind_rhs = jnp.zeros_like(wind)
+        u = _diffusion_solve_with_mf(
+            state.u, turb["dfm"], state, dt, zero_wind_rhs,
+            mf["s_aw"], mf["s_awu"], bottom_drag=bottom_drag)
+        v = _diffusion_solve_with_mf(
+            state.v, turb["dfm"], state, dt, zero_wind_rhs,
+            mf["s_aw"], mf["s_awv"], bottom_drag=bottom_drag)
+        # WRF solves liquid-water potential temperature (thl) with s_awthl, then
+        # converts back to theta after the moisture/cloud solve. This port keeps
+        # qc/qi read-only under the frozen B2 write contract, so the conversion
+        # uses the input condensate specific contents.
+        thl = _diffusion_solve_with_mf(
+            thl0, turb["dfh"], state, dt, theta_rhs,
             mf["s_aw"], mf["s_awthl"])
         qv = _diffusion_solve_with_mf(
             state.qv, turb["dfh"], state, dt, qv_rhs,
             mf["s_aw"], mf["s_awqv"])
+    theta = thl + XLVCP_MYNN / exner * sqc + XLSCP_MYNN / exner * sqi
     return u, v, theta, jnp.maximum(qv, 0.0)
 
 
@@ -986,9 +1068,10 @@ def _edmf_arrays_from_state(state, flux, fltv, pblh, dt, dx):
 
     Calls the WRF-faithful :func:`mynn_edmf.dmp_mf_columns` (verified against the
     pristine WRF ``DMP_mf`` to <0.5% rel error, see ``proofs/mynn_edmf``). The
-    standalone MYNN column carries only ``qv``/``theta``; the daytime convective
-    PBL is unsaturated (qc=qi=0) so ``sqw==sqv`` and ``thl==theta`` hold. The
-    surface flux struct supplies the kinematic fluxes WRF's main MYNN derives as
+    standalone MYNN column can carry ``qv``/``qc``/``qi``/``theta``; the liquid
+    potential temperature and total water arrays passed here mirror WRF's
+    moisture-aware MYNN path. The surface flux struct supplies the kinematic
+    fluxes WRF's main MYNN derives as
     ``flqv=qfx/rho`` (=qv_flux), ``flt=hfx/(rho*cpm)`` (=theta_flux), ``flq=flqv``.
 
     ``ts`` (skin temperature) feeds only the superadiabatic activation guard. The
@@ -999,12 +1082,9 @@ def _edmf_arrays_from_state(state, flux, fltv, pblh, dt, dx):
     """
     from gpuwrf.physics import mynn_edmf as _edmf
 
-    qv = jnp.maximum(state.qv, 0.0)
-    sqv = qv / (1.0 + qv)
-    sqc = jnp.zeros_like(sqv)
-    sqw = sqv  # qc=qi=0 in the unsaturated PBL column
+    sqv, sqc, sqi, sqw = _specific_moisture_components(state)
     theta = state.theta
-    thl = theta  # thl == theta when qc=0
+    thl = _liquid_potential_temperature(state)
     thv = theta * (1.0 + P608 * sqv)
     exner = (state.p / 100000.0) ** (287.0 / (3.5 * 287.0))
 
@@ -1017,7 +1097,9 @@ def _edmf_arrays_from_state(state, flux, fltv, pblh, dt, dx):
     zw = jnp.concatenate(
         (_zero_edge_like(state.dz), jnp.cumsum(state.dz, axis=-1)), axis=-1
     )
-    xland = jnp.ones_like(fltv)  # land path (d03 land columns); see note above
+    xland = jnp.broadcast_to(
+        jnp.asarray(flux.xland, dtype=state.theta.dtype), fltv.shape
+    )
 
     return _edmf.dmp_mf_columns(
         sqw, sqv, sqc, state.u, state.v, state.w, theta, thl, thv, state.theta * 0.0,

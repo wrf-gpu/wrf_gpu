@@ -832,6 +832,8 @@ def _mynn_column_from_state(state: State, grid: GridSpec | None) -> MynnPBLColum
         zeros,  # km (kernel output)
         zeros,  # kh (kernel output)
         zeros,  # el (kernel output)
+        qc=_to_columns(state.qc),
+        qi=_to_columns(state.qi),
     )
 
 
@@ -969,11 +971,9 @@ def _unflatten_batch_to_columns(tree, ny: int, nx: int):
 
 
 # MYNN-EDMF mass-flux nonlocal transport (WRF ``bl_mynn_edmf=1``).
-# WRF uses the EDMF ``s_aw`` array not only for scalar nonlocal transport but also
-# as an unconditional stability floor on momentum ``kmdz`` before the U/V implicit
-# solve, even when ``bl_mynn_edmf_mom=0`` (then only ``s_awu``/``s_awv`` are off).
-# The operational Canary MYNN configuration has EDMF enabled, so this must stay on
-# for WRF-faithful standalone forecasts.
+# The Canary namelist selects MYNN (``bl_pbl_physics=5``) and relies on WRF's
+# Registry defaults: ``bl_mynn_edmf=1`` and ``bl_mynn_edmf_mom=1``. The
+# operational path therefore keeps scalar and momentum mass-flux transport on.
 _MYNN_EDMF = True
 
 
@@ -984,10 +984,11 @@ def mynn_adapter(state: State, dt: float, grid: GridSpec | None = None) -> State
     contract to the kernel (which applies it as the implicit bottom BC), and
     reassembles State with non-periodic C-grid wind reconstruction.
 
-    The MYNN-EDMF mass-flux arrays (``s_aw``/``s_awqv``/``s_awthl``; verified
-    <0.5% vs pristine WRF ``DMP_mf`` in ``proofs/mynn_edmf``) are gated by
-    :data:`_MYNN_EDMF`. The column view is flattened to the kernel's single-batch
-    contract for the EDMF vmap (see :func:`_flatten_columns_to_batch`).
+    The MYNN-EDMF mass-flux arrays (``s_aw``/``s_awu``/``s_awv``/``s_awqv``/
+    ``s_awthl``; scalar arrays verified <0.5% vs pristine WRF ``DMP_mf`` in
+    ``proofs/mynn_edmf``) are gated by :data:`_MYNN_EDMF`. The column view is
+    flattened to the kernel's single-batch contract for the EDMF vmap (see
+    :func:`_flatten_columns_to_batch`).
     """
 
     column = _mynn_column_from_state(state, grid)
