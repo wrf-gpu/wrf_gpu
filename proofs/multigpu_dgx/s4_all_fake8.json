@@ -1,0 +1,436 @@
+{
+  "checks": [
+    {
+      "check": "flag_off_graph_unchanged",
+      "device_count": 8,
+      "disabled": {
+        "collective_counts": {
+          "all-gather": 0,
+          "all-reduce": 0,
+          "all-to-all": 0,
+          "collective-permute": 0,
+          "partition-id": 0,
+          "replica-id": 0
+        },
+        "collectives_present": false,
+        "hlo_sha256": "65ecb9188503e76b4754d2f99678ab49ee6f5ef7610f9c0fd113bbc5fb55f5cc",
+        "hlo_size_bytes": 26408,
+        "op_count": 145
+      },
+      "local_device_count": 8,
+      "passed": true,
+      "platform": "cpu",
+      "reference": {
+        "collective_counts": {
+          "all-gather": 0,
+          "all-reduce": 0,
+          "all-to-all": 0,
+          "collective-permute": 0,
+          "partition-id": 0,
+          "replica-id": 0
+        },
+        "collectives_present": false,
+        "hlo_sha256": "65ecb9188503e76b4754d2f99678ab49ee6f5ef7610f9c0fd113bbc5fb55f5cc",
+        "hlo_size_bytes": 26408,
+        "op_count": 145
+      },
+      "selection_identity": true,
+      "simulation_can_prove": [
+        "disabled sharding selects the exact existing default forecast function",
+        "compiled flag-off HLO op count is unchanged",
+        "compiled flag-off HLO has no collective/SPMD tokens"
+      ],
+      "simulation_cannot_prove": [
+        "real H200/NVLink performance",
+        "NCCL transport behavior",
+        "multi-node strong scaling"
+      ]
+    },
+    {
+      "check": "periodic_ppermute_halo_exchange",
+      "device_count": 8,
+      "grid": {
+        "nx": 32,
+        "ny": 8,
+        "nz": 10
+      },
+      "local_device_count": 8,
+      "passed": true,
+      "platform": "cpu",
+      "records": [
+        {
+          "fields": {
+            "mu": {
+              "equal": true,
+              "max_abs": 0.0,
+              "shape": [
+                8,
+                8,
+                6
+              ]
+            },
+            "theta": {
+              "equal": true,
+              "max_abs": 0.0,
+              "shape": [
+                8,
+                10,
+                8,
+                6
+              ]
+            },
+            "u": {
+              "equal": true,
+              "max_abs": 0.0,
+              "shape": [
+                8,
+                10,
+                8,
+                7
+              ]
+            },
+            "v": {
+              "equal": true,
+              "max_abs": 0.0,
+              "shape": [
+                8,
+                10,
+                9,
+                6
+              ]
+            },
+            "w": {
+              "equal": true,
+              "max_abs": 0.0,
+              "shape": [
+                8,
+                11,
+                8,
+                6
+              ]
+            }
+          },
+          "width": 1
+        },
+        {
+          "fields": {
+            "mu": {
+              "equal": true,
+              "max_abs": 0.0,
+              "shape": [
+                8,
+                8,
+                8
+              ]
+            },
+            "theta": {
+              "equal": true,
+              "max_abs": 0.0,
+              "shape": [
+                8,
+                10,
+                8,
+                8
+              ]
+            },
+            "u": {
+              "equal": true,
+              "max_abs": 0.0,
+              "shape": [
+                8,
+                10,
+                8,
+                9
+              ]
+            },
+            "v": {
+              "equal": true,
+              "max_abs": 0.0,
+              "shape": [
+                8,
+                10,
+                9,
+                8
+              ]
+            },
+            "w": {
+              "equal": true,
+              "max_abs": 0.0,
+              "shape": [
+                8,
+                11,
+                8,
+                8
+              ]
+            }
+          },
+          "width": 2
+        },
+        {
+          "fields": {
+            "mu": {
+              "equal": true,
+              "max_abs": 0.0,
+              "shape": [
+                8,
+                8,
+                10
+              ]
+            },
+            "theta": {
+              "equal": true,
+              "max_abs": 0.0,
+              "shape": [
+                8,
+                10,
+                8,
+                10
+              ]
+            },
+            "u": {
+              "equal": true,
+              "max_abs": 0.0,
+              "shape": [
+                8,
+                10,
+                8,
+                11
+              ]
+            },
+            "v": {
+              "equal": true,
+              "max_abs": 0.0,
+              "shape": [
+                8,
+                10,
+                9,
+                10
+              ]
+            },
+            "w": {
+              "equal": true,
+              "max_abs": 0.0,
+              "shape": [
+                8,
+                11,
+                8,
+                10
+              ]
+            }
+          },
+          "width": 3
+        },
+        {
+          "fields": {
+            "mu": {
+              "equal": true,
+              "max_abs": 0.0,
+              "shape": [
+                8,
+                8,
+                12
+              ]
+            },
+            "theta": {
+              "equal": true,
+              "max_abs": 0.0,
+              "shape": [
+                8,
+                10,
+                8,
+                12
+              ]
+            },
+            "u": {
+              "equal": true,
+              "max_abs": 0.0,
+              "shape": [
+                8,
+                10,
+                8,
+                13
+              ]
+            },
+            "v": {
+              "equal": true,
+              "max_abs": 0.0,
+              "shape": [
+                8,
+                10,
+                9,
+                12
+              ]
+            },
+            "w": {
+              "equal": true,
+              "max_abs": 0.0,
+              "shape": [
+                8,
+                11,
+                8,
+                12
+              ]
+            }
+          },
+          "width": 4
+        }
+      ],
+      "simulation_can_prove": [
+        "periodic x-halo send and receive direction under ppermute",
+        "halo widths 1 through 4 on fake local devices",
+        "mass-grid and x-face staggered State leaves match global periodic slices"
+      ],
+      "simulation_cannot_prove": [
+        "real NVLink or InfiniBand latency",
+        "GPU collective overlap with dycore kernels",
+        "multi-node process launch correctness"
+      ]
+    },
+    {
+      "check": "sharded_horizontal_operators",
+      "device_count": 8,
+      "grid": {
+        "nx": 64,
+        "ny": 4,
+        "nz": 6
+      },
+      "local_device_count": 8,
+      "passed": true,
+      "platform": "cpu",
+      "records": {
+        "acoustic_x_divergence": {
+          "atol": 0.0,
+          "max_abs": 0.0,
+          "passed": true,
+          "rtol": 0.0,
+          "shape": [
+            8,
+            6,
+            4,
+            8
+          ]
+        },
+        "acoustic_x_face_pressure_dpn": {
+          "atol": 1e-12,
+          "max_abs": 1.6653345369377348e-16,
+          "passed": true,
+          "rtol": 1e-12,
+          "shape": [
+            8,
+            7,
+            4,
+            9
+          ]
+        },
+        "flux5_x": {
+          "atol": 2e-07,
+          "max_abs": 2.384185791015625e-07,
+          "passed": true,
+          "rtol": 2e-06,
+          "shape": [
+            8,
+            6,
+            4,
+            8
+          ]
+        },
+        "sixth_order_diffusion": {
+          "atol": 2e-09,
+          "max_abs": 4.656612873077393e-10,
+          "passed": true,
+          "rtol": 2e-06,
+          "shape": [
+            8,
+            6,
+            4,
+            8
+          ]
+        }
+      },
+      "simulation_can_prove": [
+        "halo-fed local x operators reproduce owned columns/faces of current global formulas",
+        "flux-advection and sixth-order diffusion x stencils have sufficient halo width",
+        "acoustic x divergence and x-face pressure-dpn seam handling match global edge/pair semantics"
+      ],
+      "simulation_cannot_prove": [
+        "real H200 kernel occupancy",
+        "NVLink collective overlap with operator kernels",
+        "full dycore timestep scaling on DGX"
+      ]
+    },
+    {
+      "check": "ppermute_halo_then_sharded_operators",
+      "device_count": 8,
+      "grid": {
+        "nx": 64,
+        "ny": 4,
+        "nz": 6
+      },
+      "local_device_count": 8,
+      "passed": true,
+      "platform": "cpu",
+      "records": {
+        "ppermute_acoustic_x_divergence": {
+          "atol": 0.0,
+          "max_abs": 0.0,
+          "passed": true,
+          "rtol": 0.0,
+          "shape": [
+            8,
+            6,
+            4,
+            8
+          ]
+        },
+        "ppermute_acoustic_x_face_pressure_dpn": {
+          "atol": 1e-12,
+          "max_abs": 1.6653345369377348e-16,
+          "passed": true,
+          "rtol": 1e-12,
+          "shape": [
+            8,
+            7,
+            4,
+            9
+          ]
+        },
+        "ppermute_flux5_x": {
+          "atol": 2e-07,
+          "max_abs": 2.384185791015625e-07,
+          "passed": true,
+          "rtol": 2e-06,
+          "shape": [
+            8,
+            6,
+            4,
+            8
+          ]
+        },
+        "ppermute_sixth_order_diffusion": {
+          "atol": 2e-09,
+          "max_abs": 4.656612873077393e-10,
+          "passed": true,
+          "rtol": 2e-06,
+          "shape": [
+            8,
+            6,
+            4,
+            8
+          ]
+        }
+      },
+      "simulation_can_prove": [
+        "unfilled x shards can refresh halos with lax.ppermute and reproduce selected single-domain operator outputs",
+        "single-node 8-way CPU fake mesh exercises the same pmap axis/rank/permute structure intended for 8xH200",
+        "mass-grid, x-face staggered, and acoustic edge-face seams are correct for these local operators"
+      ],
+      "simulation_cannot_prove": [
+        "real H200/NVLink bandwidth or latency",
+        "NCCL collective implementation details",
+        "whole-dycore wall-clock strong scaling",
+        "multi-node launcher and fabric behavior"
+      ]
+    }
+  ],
+  "passed": true
+}

@@ -1,0 +1,62 @@
+{
+  "projection_type": "analytical_not_measured",
+  "date": "2026-06-05",
+  "scope": "x-domain decomposition with periodic halo exchange",
+  "hardware_target": "single-node 8xH200 DGX-class system; multi-node requires separate fabric proof",
+  "assumptions": {
+    "num_partitions": 8,
+    "dominant_halo_width": 3,
+    "dtype_bytes_fp32": 4,
+    "local_compute_domain": "nx / num_partitions owned x columns",
+    "no_real_dgx_available": true
+  },
+  "halo_memory_overhead_fraction_mass_grid": [
+    {
+      "global_nx": 512,
+      "local_owned_x": 64,
+      "halo_width": 3,
+      "extra_x_cells_fraction": 0.09375
+    },
+    {
+      "global_nx": 1024,
+      "local_owned_x": 128,
+      "halo_width": 3,
+      "extra_x_cells_fraction": 0.046875
+    },
+    {
+      "global_nx": 2048,
+      "local_owned_x": 256,
+      "halo_width": 3,
+      "extra_x_cells_fraction": 0.0234375
+    },
+    {
+      "global_nx": 4096,
+      "local_owned_x": 512,
+      "halo_width": 3,
+      "extra_x_cells_fraction": 0.01171875
+    }
+  ],
+  "communication_volume_formula": {
+    "mass_3d_field_bytes_per_rank_per_refresh": "2 * halo_width * ny * nz * dtype_bytes",
+    "mass_2d_field_bytes_per_rank_per_refresh": "2 * halo_width * ny * dtype_bytes",
+    "x_face_3d_field_bytes_per_rank_per_refresh": "approximately 2 * halo_width * ny * nz * dtype_bytes; interior boundary duplicate is excluded from sends"
+  },
+  "example_3d_field_bytes_per_rank_per_refresh": {
+    "ny": 1024,
+    "nz": 60,
+    "halo_width": 3,
+    "dtype_bytes": 4,
+    "bytes": 1474560,
+    "mib": 1.40625
+  },
+  "projection": {
+    "weak_scaling": "Expected to be favorable when each rank keeps local_owned_x much larger than 2 * halo_width; halo memory overhead falls below 2.5% once local_owned_x >= 256 for width 3.",
+    "strong_scaling": "Upper bound is num_partitions before halo and collective costs. No speedup number is claimed without real DGX profiler artifacts.",
+    "multi_node": "Correctness path should extend through JAX distributed pmap semantics, but InfiniBand/NCCL behavior is unproven until real multi-node smoke runs."
+  },
+  "not_a_measurement": [
+    "No H200 runtime was available.",
+    "No NVLink, NVSwitch, NCCL, or InfiniBand measurements were taken.",
+    "No full sharded operational forecast wall-clock measurement is claimed."
+  ]
+}

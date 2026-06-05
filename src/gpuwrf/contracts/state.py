@@ -111,6 +111,16 @@ def _leaf_nbytes(leaves: Iterable[jax.Array]) -> int:
     return int(sum(int(leaf.size) * int(leaf.dtype.itemsize) for leaf in leaves))
 
 
+def _as_dtype(value, dtype):
+    """Cast concrete/traced arrays while leaving abstract lowering args intact."""
+
+    if getattr(value, "dtype", None) == dtype:
+        return value
+    if hasattr(value, "astype"):
+        return value.astype(dtype)
+    return jnp.asarray(value, dtype=dtype)
+
+
 @jax.tree_util.register_pytree_node_class
 class BaseState:
     """Read-only WRF base-state fields separated from prognostic State.
@@ -564,7 +574,7 @@ class State:
         self.lu_index = (
             jnp.zeros_like(xland, dtype=jnp.int32)
             if lu_index is None
-            else jnp.asarray(lu_index, dtype=jnp.int32)
+            else _as_dtype(lu_index, jnp.int32)
         )
         # v0.6.0 additive physics leaves. ``None`` -> zeros so existing call sites
         # and pre-v0.6.0 pytree flattens (old leaf count) still construct: Nc/Nn are
@@ -574,17 +584,17 @@ class State:
         self.Nc = (
             jnp.zeros_like(qc, dtype=DEFAULT_DTYPES.dtype_for("Nc"))
             if Nc is None
-            else jnp.asarray(Nc, dtype=DEFAULT_DTYPES.dtype_for("Nc"))
+            else _as_dtype(Nc, DEFAULT_DTYPES.dtype_for("Nc"))
         )
         self.Nn = (
             jnp.zeros_like(qc, dtype=DEFAULT_DTYPES.dtype_for("Nn"))
             if Nn is None
-            else jnp.asarray(Nn, dtype=DEFAULT_DTYPES.dtype_for("Nn"))
+            else _as_dtype(Nn, DEFAULT_DTYPES.dtype_for("Nn"))
         )
         self.rainc_acc = (
             jnp.zeros_like(rain_acc, dtype=DEFAULT_DTYPES.dtype_for("rainc_acc"))
             if rainc_acc is None
-            else jnp.asarray(rainc_acc, dtype=DEFAULT_DTYPES.dtype_for("rainc_acc"))
+            else _as_dtype(rainc_acc, DEFAULT_DTYPES.dtype_for("rainc_acc"))
         )
 
     @classmethod
