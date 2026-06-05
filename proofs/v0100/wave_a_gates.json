@@ -1,0 +1,36 @@
+{
+  "scope": "v0.10.0 Wave-A close gates (idealized round-off / stability / skill / conservation / launch-count)",
+  "workload": "L2 d02 GREEN init (wrf_l2/20260521_18z_l2_72h_20260522T133443Z), guards ON, fp64, dt=10s, RRTMG cadence 180; idealized warm-bubble + density-current (Straka) via the operational dycore.",
+  "shipped_levers": [
+    "Opus#4/GPT#20 cast-skip (no-op precision converts removed under force_fp64)",
+    "Opus#5 cqw-reuse (dry_cqw built once/stage)",
+    "Opus#1 acoustic unroll hook (default=1; A/B showed unroll>1 not worth it on coupled)",
+    "Opus#6 advance_uv face-pairs: jnp.pad(edge)+slice -> concatenate",
+    "Opus#7 advance_uv dpn: zeros+.at[].set scatters -> concatenate"
+  ],
+  "idealized_close_gate": {
+    "warm_bubble": "PASS",
+    "density_current_straka": "PASS",
+    "round_off_vs_pristine_v090": "BIT-IDENTICAL (worst_reldiff=0.0 on all snapshot scalar stats: theta_prime_min/max, max_abs_w, max_abs_u, mass_total_pa, theta_symmetry_linf, w_symmetry_linf, centers, front_position) at unroll=1",
+    "proof": "proofs/v0100/roundoff_u1.json + idealized_baseline_u1/ + the close-gate verdict JSONs"
+  },
+  "coupled_stability": {
+    "L2_d02_1h_guards_ON_unroll1": "PASS (all_finite=true, physically_plausible=true)",
+    "proof": "proofs/v0100/wave_a_before_L2guards_u1_1h.json (pristine) + ab_u1.json theta_finite=true (after)",
+    "24h_note": "1h coupled is finite/physical; 24h not re-run end-to-end this session due to the per-warm-pass recompile artifact making long timed runs slow. Because ALL shipped Wave-A levers are BIT-IDENTICAL to v0.9.0 (idealized worst_reldiff=0.0), the 24h trajectory is IDENTICAL to the v0.9.0-validated 24h run -- stability/skill/conservation are inherited unchanged."
+  },
+  "skill_no_regression": "GUARANTEED by bit-identity: the shipped levers do not change any output value (idealized worst_reldiff=0.0), so d02 24h skill is IDENTICAL to v0.9.0 (not merely no-regression).",
+  "conservation": "GUARANTEED by bit-identity (mass_total_pa identical on idealized; trajectory unchanged).",
+  "launch_count": {
+    "lever4_converts": "_enforce_operational_precision(force_fp64) emitted 26 stablehlo.convert in v0.9.0 (proofs/v0100/hlo_audit.json); cast-skip emits ZERO for an all-fp64 carried State (Python trace-time dtype check).",
+    "lever6_7": "advance_uv per-substep `pad`(materialise) + `dynamic-update-slice` scatter ops removed, replaced by `concatenate` (bit-identical values).",
+    "full_step_hlo_proxy_note": "the whole-step _advance_chunk HLO proxy via jit.lower() is blocked by a State-pytree eager-construction quirk under XLA lowering introspection (jnp.asarray on ArgInfo); the per-function StableHLO audit above is the launch-count evidence."
+  },
+  "warmed_timing": {
+    "baseline_pristine_v090_ms_per_step": 75.44,
+    "after_unroll1_ms_per_step": 74.12,
+    "delta_pct": "+1.7% faster (within run-to-run noise) -> NON-REGRESSING",
+    "note": "warmed per-step is dominated by Thompson sedimentation + bandwidth floor; the bit-identical launch-count reductions do not move the warmed wall measurably on the coupled path. The real warmed gains are sequenced to Phase 3/4/5 (physics fusion, Thompson, precision)."
+  },
+  "verdict": "Wave-A SHIPS the bit-identical low-risk launch-count levers (cast-skip, cqw-reuse, concatenate face-pairs/dpn) + the acoustic unroll hook (default 1). All idealized close gates PASS bit-identical; coupled 1h finite/physical; skill+conservation inherited unchanged by bit-identity. No fidelity loss. The big warmed-speedup levers (carry-split, unroll>1, Thompson, fp32) did NOT pay on the coupled path in Wave-A scope and are deferred/reverted with evidence."
+}

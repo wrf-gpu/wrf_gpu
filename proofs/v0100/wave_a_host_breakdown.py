@@ -54,10 +54,16 @@ def main() -> int:
     cadence = int(args.cadence)
     acoustic_unroll = int(os.environ.get("GPUWRF_ACOUSTIC_UNROLL", "1"))
 
-    cfg = DailyPipelineConfig(hours=1, dt_s=10.0, acoustic_substeps=10)
+    from gpuwrf.config import paths
+    cfg = DailyPipelineConfig(
+        hours=1, dt_s=10.0, acoustic_substeps=10,
+        run_id="20260521_18z_l2_72h_20260522T133443Z",
+        run_root=paths.wrf_l2_root(), domain="d02",
+        radiation_cadence_steps=cadence,
+    )
     case, run_dir = _build_real_case(cfg)
     nl = dataclasses.replace(
-        case.namelist, run_physics=True, run_boundary=True, disable_guards=True,
+        case.namelist, run_physics=True, run_boundary=True, disable_guards=False,
         radiation_cadence_steps=cadence, time_utc=case.run_start,
     )
     state0 = _enforce_operational_precision(case.state, force_fp64=bool(nl.force_fp64))
