@@ -9,6 +9,10 @@
     "rel_residual": 0.0,
     "stagger": ""
   },
+  "feedback_runtime_gate": {
+    "off": 0,
+    "on": 1
+  },
   "hierarchy": {
     "edges": [
       {
@@ -51,6 +55,68 @@
       "d04": 18,
       "d05": 18
     },
+    "first_advance_events": [
+      [
+        "d01",
+        1,
+        1
+      ],
+      [
+        "d02",
+        1,
+        1
+      ],
+      [
+        "d03",
+        1,
+        3
+      ],
+      [
+        "d04",
+        1,
+        3
+      ],
+      [
+        "d05",
+        1,
+        3
+      ],
+      [
+        "d02",
+        2,
+        1
+      ],
+      [
+        "d03",
+        4,
+        3
+      ],
+      [
+        "d04",
+        4,
+        3
+      ],
+      [
+        "d05",
+        4,
+        3
+      ],
+      [
+        "d02",
+        3,
+        1
+      ],
+      [
+        "d03",
+        7,
+        3
+      ],
+      [
+        "d04",
+        7,
+        3
+      ]
+    ],
     "first_force_events": [
       [
         "d01",
@@ -191,5 +257,35 @@
     "fine_to_coarse_synchronized": true
   },
   "proof": "v0110 live nesting CPU structural gates",
-  "status": "PASS"
+  "qke_finiteness": {
+    "all_finite": true,
+    "pass": true,
+    "probe_input": [
+      "nan",
+      -1.0,
+      1.0000000000000002e-06,
+      0.25,
+      200.0
+    ],
+    "probe_output": [
+      1e-05,
+      1e-05,
+      1e-05,
+      0.25,
+      150.0
+    ],
+    "wrf_source": "phys/module_bl_mynnedmf.F:3106-3107 qke=max(x,qkemin); qke=min(qke,150.)"
+  },
+  "status": "PASS",
+  "subcycling": {
+    "d03_chunk_start_steps": [
+      1,
+      4,
+      7,
+      10,
+      13,
+      16
+    ],
+    "domain_global_step_clock": true
+  }
 }
