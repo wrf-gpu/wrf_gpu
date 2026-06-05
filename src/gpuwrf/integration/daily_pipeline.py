@@ -30,7 +30,6 @@ from gpuwrf.io.land_state import load_hourly_land_state
 from gpuwrf.io.async_wrfout import AsyncWrfoutWriter
 from gpuwrf.io.wrfout_writer import (
     MINIMUM_WRFOUT_VARIABLES,
-    build_wrfout_static_field_cache,
     prepare_wrfout_payload,
     write_wrfout_netcdf,
 )
@@ -327,14 +326,11 @@ _M9_OUTPUT_FIELDS: tuple[tuple[str, str], ...] = (
     ("T2", "t2"),
     ("U10", "u10"),
     ("V10", "v10"),
-    ("Q2", "q2"),
+    ("Q2", None),  # M9Diagnostics carries no q2; resolved from surf below.
     ("PSFC", "psfc"),
     ("SWDOWN", "swdown"),
     ("GLW", "glw"),
     ("PBLH", "pblh"),
-    ("UST", "ustar"),
-    ("HFX", "hfx"),
-    ("LH", "lh"),
     ("TSK", "tsk"),
 )
 
@@ -368,9 +364,19 @@ def _surface_diagnostics_for_output(
     except Exception:  # noqa: BLE001 -- diagnostics are best-effort; never block output.
         return None
 
+    # Q2 (2-m mixing ratio) is a surface-layer field; M9Diagnostics does not
+    # expose it, so source it directly from surface_layer_diagnostics.
+    q2 = None
+    try:
+        from gpuwrf.runtime.operational_mode import surface_layer_diagnostics
+
+        q2 = getattr(surface_layer_diagnostics(state, clock_namelist.grid), "q2", None)
+    except Exception:  # noqa: BLE001
+        q2 = None
+
     out: dict[str, np.ndarray] = {}
     for wrf_name, attr in _M9_OUTPUT_FIELDS:
-        value = getattr(m9, attr, None) if attr else None
+        value = q2 if wrf_name == "Q2" else (getattr(m9, attr, None) if attr else None)
         if value is None:
             continue
         out[wrf_name] = np.asarray(jax.device_get(value))
@@ -449,7 +455,6 @@ def _run_forecast_sequence(
     output_dir.mkdir(parents=True, exist_ok=True)
     case, run_dir = case_builder(config)
     state = case.state
-    static_wrfout_cache = build_wrfout_static_field_cache(state, case.grid, case.namelist)
     files: list[Path] = []
     per_hour_wall_s: list[float] = []
     checkpoint_payload: dict[str, Any] | None = None
@@ -529,7 +534,6 @@ def _run_forecast_sequence(
                 lead_hours=float(hour),
                 run_start=case.run_start,
                 diagnostics=diagnostics,
-                static_cache=static_wrfout_cache,
             )
             writer.submit(prepared)
         else:
@@ -542,7 +546,6 @@ def _run_forecast_sequence(
                 lead_hours=float(hour),
                 run_start=case.run_start,
                 diagnostics=diagnostics,
-                static_cache=static_wrfout_cache,
             )
         files.append(wrfout)
 
