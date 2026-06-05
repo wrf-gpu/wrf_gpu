@@ -155,9 +155,11 @@ def test_v060_kf_savepoint_parity_report() -> None:
         "oracle": {
             "type": "single-column Fortran driver linked against unmodified WRF module_cu_kfeta.F",
             "wrf_source": "/home/enric/src/wrf_pristine/WRF/phys/module_cu_kfeta.F",
-            "generation_command": "taskset -c 0-3 bash proofs/v060/oracle/build_and_run.sh",
+            "generation_command": "taskset -c 0-3 bash proofs/v060/oracle/kf_build_and_run.sh",
             "full_wrf_exe_run": False,
             "note": "M20/current repo search did not expose a cumulus savepoint factory. This is a real WRF-module oracle, not a JAX self-compare, but not a full coupled wrf.exe case.",
+            "source_sha256": "e6376c2d85c45470f49d545b25d513b5ec111bf36b87beebc740bf42825c6e5f",
+            "source_checksum_sidecar": "proofs/v060/savepoints/kf_wrf_source_checksums.txt",
         },
         "predeclared_tolerances": {
             "trigger": "exact ISHALL",
