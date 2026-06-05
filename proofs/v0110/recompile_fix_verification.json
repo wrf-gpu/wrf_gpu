@@ -1,0 +1,87 @@
+{
+  "base_v0_10_0": "d054954",
+  "branch": "worker/gpt/recompile-diag",
+  "commands_run": [
+    "git log -1 --oneline --decorate",
+    "/tmp/wrf_gpu_run.sh ... python proofs/v0110/recompile_diag.py --chunks 3 --steps 180 --cadence 180 --out proofs/v0110/recompile_fix_fixed_3chunks.json",
+    "/tmp/wrf_gpu_run.sh ... one-step _advance_chunk control with _initial_carry_for_run",
+    "PYTHONPATH=src taskset -c 0-27 python -m pytest -q tests/test_operational_namelist_cache_key.py"
+  ],
+  "controls": {
+    "same_head_uncommitted_carry_one_step": {
+      "command": "/tmp/wrf_gpu_run.sh bash -lc 'PYTHONPATH=src GPUWRF_CANAIRY_ROOT=/mnt/data/canairy_meteo OMP_NUM_THREADS=4 XLA_PYTHON_CLIENT_MEM_FRACTION=0.7 XLA_PYTHON_CLIENT_PREALLOCATE=false TF_GPU_ALLOCATOR=cuda_malloc_async GPUWRF_JAX_CACHE=0 taskset -c 0-27 python - <<PY ...'",
+      "log_path": "proofs/v0110/recompile_fix_uncommitted_control.log",
+      "purpose": "Control showing the same HEAD, same d02 L2 fixture, and old uncommitted initial carry can trace and execute _advance_chunk; isolates failure to the new committed-carry path.",
+      "status": "PASS",
+      "wall_s": 114.80266707303235
+    },
+    "static_holder_unit_test": {
+      "command": "PYTHONPATH=src taskset -c 0-27 python -m pytest -q tests/test_operational_namelist_cache_key.py",
+      "result": "2 passed in 2.55s",
+      "status": "PASS"
+    }
+  },
+  "dirty_status_after_proofs": [],
+  "environment_contract": {
+    "PYTHONPATH": "src",
+    "cpu_affinity_command": "taskset -c 0-27",
+    "gpu_wrapper": "/tmp/wrf_gpu_run.sh",
+    "gpu_wrapper_used_for_gpu_commands": true
+  },
+  "gates": {
+    "1_speedup_no_recompile": {
+      "begin_chunk_markers": [
+        {
+          "chunk": 1,
+          "start_step": 1
+        }
+      ],
+      "chunk_wall_s": [],
+      "command": "/tmp/wrf_gpu_run.sh bash -lc 'PYTHONPATH=src GPUWRF_CANAIRY_ROOT=/mnt/data/canairy_meteo OMP_NUM_THREADS=4 XLA_PYTHON_CLIENT_MEM_FRACTION=0.7 XLA_PYTHON_CLIENT_PREALLOCATE=false TF_GPU_ALLOCATOR=cuda_malloc_async GPUWRF_JAX_CACHE=0 JAX_LOG_COMPILES=1 JAX_EXPLAIN_CACHE_MISSES=1 taskset -c 0-27 python proofs/v0110/recompile_diag.py --chunks 3 --steps 180 --cadence 180 --out proofs/v0110/recompile_fix_fixed_3chunks.json > proofs/v0110/recompile_fix_fixed_3chunks.log 2>&1'",
+      "end_chunk_markers": [],
+      "exception": "TypeError: int() argument must be a string, a bytes-like object or a real number, not 'Leaf'",
+      "failure_stack_summary": [
+        "proofs/v0110/recompile_diag.py:195 calls _advance_chunk on _committed_initial_carry_for_run output",
+        "src/gpuwrf/runtime/operational_mode.py:2523 traces jax.lax.scan(body, carry, indices)",
+        "src/gpuwrf/contracts/state.py:663 tree_unflatten -> State.__init__",
+        "src/gpuwrf/contracts/state.py:567 jnp.asarray(lu_index, dtype=jnp.int32)",
+        "TypeError: int() argument must be a string, a bytes-like object or a real number, not 'Leaf'"
+      ],
+      "hot_chunks_verified": false,
+      "log_path": "proofs/v0110/recompile_fix_fixed_3chunks.log",
+      "no_recompile_verified": false,
+      "output_json_exists": false,
+      "output_json_path": "proofs/v0110/recompile_fix_fixed_3chunks.json",
+      "requested_chunks": 3,
+      "requested_steps_per_chunk": 180,
+      "status": "FAIL"
+    },
+    "2_bit_identity_fixed_vs_baseline": {
+      "bit_identical": false,
+      "reason": "fixed committed segmented/chunked path cannot complete its first chunk, so no fixed output exists to compare to baseline",
+      "required": "short d02 fixed 77700d9 vs baseline d054954 output fields bit-identical",
+      "status": "NOT_RUN_BLOCKED_BY_GATE1_FAIL"
+    },
+    "3_default_flag_off_unchanged": {
+      "reason": "verification stopped after hard Gate 1 failure; no pass claim made for default/flag-off",
+      "required": "normal single-GPU default warmed path unchanged when new committed-carry path is not exercised",
+      "status": "NOT_RUN_BLOCKED_BY_GATE1_FAIL",
+      "unchanged": false
+    }
+  },
+  "head": "77700d924b72dcb2abcd02a0c8023d2a91b6b813",
+  "head_log": "77700d9 (HEAD -> worker/gpt/recompile-diag) Fix operational chunk JIT cache reuse",
+  "overall_status": "FAIL",
+  "proof_objects": [
+    "proofs/v0110/recompile_fix_fixed_3chunks.log",
+    "proofs/v0110/recompile_fix_uncommitted_control.log",
+    "proofs/v0110/recompile_fix_verification.json",
+    "proofs/v0110/recompile_fix_verification.md",
+    "/tmp/v0110_recompile_verify.gate"
+  ],
+  "schema": "V0110RecompileFixVerification",
+  "schema_version": 1,
+  "verdict": "Gate 1 fails before any hot chunk can be measured: the fixed committed-carry path raises a trace-time TypeError in State.tree_unflatten/State.__init__ for lu_index. Because the fixed path cannot produce forecast output, bit-identity and default/flag-off pass claims are not established.",
+  "verified_at_utc": "2026-06-05T12:41:21.753584+00:00",
+  "worktree": "/home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag"
+}
