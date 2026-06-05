@@ -99,3 +99,78 @@ skill proof records no-regression by direct cap identity rather than an absolute
 **Measured gain:** fresh cache-hit timing, first sample discarded, gives cap64
 `74.25 ms/step` and default cap16 `64.76 ms/step`: **12.78% coupled gain** /
 `1.146x` (`wave_b1_nsed16_timing.json`).
+
+## Wave-B2 MYNN/PBL frontier closeout (the 45.5% / 33.8 ms lever)
+
+**OUTCOME: IRREDUCIBLE. No source change ships — and that is the correct,
+honest result.** The largest measured coupled phase (MYNN/PBL = 45.5% / 33.8 ms)
+is, on profiling, **95% genuine dependent closure compute** with no safe,
+beneficial mechanical inefficiency to remove. Both candidate mechanical levers
+were measured and REJECTED on the fidelity-paramount bar.
+
+**STEP 1 — profile (`wave_b2_mynn_profile.json`, `wave_b2_mynn_internal.json`):**
+block decomposition on the GREEN d02 L2 init (66×159×44, fp64, EDMF on):
+
+| Component | min ms | share |
+|---|---:|---:|
+| surface+MYNN block (matches the wave_b_scope 45.5% toggle) | 33.9 | 100% |
+| MYNN closure kernel only (`step_mynn_pbl_column`) | **32.2** | **95.0%** |
+| surface_layer compute (`surface_adapter`) | 1.94 | genuine surface physics |
+| mechanical wrappers (column build + reassemble + flux read) | 1.14 | the only "mechanical" cost |
+| removable-mechanical envelope (block − closure − surface) | **~0** | within measurement noise |
+
+Closure-kernel internal phases (incremental, all straight-line vectorized — no
+tunable iteration): `mym_turbulence` 7.34 ms, `mym_predict_qke` 0.51 ms,
+**EDMF mass-flux 15.66 ms** (the single largest; `vmap(cols) ∘ vmap(8 plumes) ∘
+lax.scan(~42 levels)` — a dependent vertical updraft recurrence),
+`apply_mean_tendencies` 7.88 ms (the 4 implicit u/v/θ/qv solves). All vertical
+solves use `jax.lax.linalg.tridiagonal_solve` (the XLA primitive, already optimal
+— same class as the dycore PCR solve). The closure-kernel HLO is 96 fusions / 1
+internal transpose: XLA already fuses the elementwise work; layout cost is
+negligible.
+
+**STEP 2 — the two candidate mechanical removals, both REJECTED (fidelity-paramount):**
+
+| GPT#5 / Opus#8 lever | Disposition | Evidence |
+|---|---|---|
+| **Surface+MYNN State round-trip fusion** (run `surface_layer→SurfaceFluxes` in memory, feed MYNN directly, skip the `.replace`+`asarray` of the 7 flux handles + the duplicate column-view build) | **REJECTED — not-worth-the-risk** | `wave_b2_fusion_ab.json`: block gain **0.09%** (0.032 ms) AND **NOT bit-identical** (the prognostics differ at `max_reldiff=0.0` — i.e. signed-zero / op-reorder, exactly the round-off-level perturbation the strict MYNN gate forbids). Surface flux scalars stay exactly equal; only the float-op ordering shifts. A <0.1% gain that breaks bit-identity in a PBL scheme that drives T2/winds/PBLH is a clear fidelity-over-speed reject. Also it would require a special-case code path valid ONLY for the default (MYNN-sfclay + MYNN, no-Noah-MP) suite — adding maintenance/fidelity risk for ~0 gain. |
+| **EDMF level-scan `unroll=4`** (round-off-NEUTRAL XLA codegen on the 15.66 ms largest phase — the same lever class Wave-A proved bit-identical for the acoustic substep) | **REJECTED — regression** | `wave_b2_edmf_unroll_ab.json`: block gain **−0.07%** (a slight REGRESSION) AND not bit-identical. The scan is nested inside a double `vmap` (columns × plumes); XLA already schedules it well and the unroll only perturbs the reduction order. No launch-count win exists here. |
+
+`_to_columns`/`_from_columns` real transposes (Opus#8 / GPT#19 / Phase-0 HLO):
+confirmed 1 transpose each, but the column-build + reassemble cost (1.14 ms total
+for the whole MYNN block) is <1.7% of the block and is consumed inside the
+fused-or-not measurement above — there is no separable transpose-removal win on
+the warmed step.
+
+**STEP 3 — gates (strict; MYNN drives T2/winds/PBLH; `wave_b2_mynn_gates.json`):**
+- **Idealized warm-bubble + Straka density-current: BIT-IDENTICAL** to the
+  Wave-A `u1` baseline (worst_reldiff=0.0 across 12 dynamical scalars,
+  `wave_b2_idealized_roundoff.json`) — the dycore is untouched, by construction.
+- **24h coupled stability (L2 d02 GREEN, guards ON, segmented):
+  PASS / all-finite / physically-plausible** through the full 8640 steps
+  (`wave_b2_gate_24h.json`: u/v ±30 m/s, w ±7 m/s, θ 291–493 K, qv 0–0.018,
+  μ/p positive). Since Wave-B2 ships ZERO source change, T2/U10/V10/PBLH/Q2/HFX,
+  conservation and the water budget are **bit-identical** to the pre-Wave-B2
+  (= Wave-B1 NSED16) trajectory by construction.
+
+**STEP 4 — disposition of the 45.5% lever:** **IRREDUCIBLE / not-worth-the-risk.**
+The MYNN/PBL share is faithful WRF MYNN2.5 + MYNN-EDMF + 4 implicit (already-optimal
+XLA-tridiag) vertical solves, evaluated over 461,736 columns. It is a dependent,
+bandwidth/compute-bound closure with no removable mechanical inefficiency that is
+both safe (bit-identical) and beneficial (>1%). The only paths to cut it further
+are algorithmic fidelity tradeoffs (a cheaper closure, fewer plumes, a coarser
+mixing-length, dropping EDMF) — all REJECTED by the fidelity-paramount exit-gate.
+The EDMF being inactive on stable/marine columns (`active` mask) cannot be skipped
+under GPU SIMT vmap without divergent-branch overhead that costs more than it
+saves. **Warmed coupled step: before = after = 64.76 ms** (`wave_b2_mynn_timing.json`).
+
+**Ceiling impact:** the super-plan's conservative ceiling (`53–56 ms/step`,
+`1.32–1.40×`) assumed MYNN/PBL would give back 25–33% of its wall; the profile
+shows that assumption is **false** — the MYNN wall is ~95% irreducible closure.
+With Wave-B1 (NSED16, 1.15×) shipped and Wave-B2 yielding 0 warmed gain, the
+remaining realistic warmed levers are Phase-5 precision (gated-fp32 on the
+bw-bound non-acoustic fields — but Wave-B scoping already measured fp32 at
+−0.30% / NO-GO now) and the daily-wall M9/RRTMG diagnostic reuse (GPT#14, NOT a
+warmed-step lever). The honest read: **the 1.32–1.55× warmed ceiling is NOT
+reachable via MYNN**; v0.10.0's shipped warmed gain is the Wave-B1 1.15×, and the
+MYNN frontier is closed as irreducible.

@@ -1,0 +1,80 @@
+{
+  "scope": "Wave-A gate: warmed per-step + coupled stability, GREEN d02 L2 init",
+  "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l2/20260521_18z_l2_72h_20260522T133443Z",
+  "run_id": "20260521_18z_l2_72h_20260522T133443Z",
+  "device": "cuda:0",
+  "grid": {
+    "ny": 66,
+    "nx": 159,
+    "nz": 44
+  },
+  "config": {
+    "force_fp64": true,
+    "use_flux_advection": true,
+    "epssm": 0.5,
+    "top_lid": true,
+    "radiation_cadence_steps": 180,
+    "acoustic_unroll": 1
+  },
+  "disable_guards": false,
+  "hours": 24.0,
+  "steps": 8640,
+  "segment_steps": 180,
+  "nonrad_segment_len": 179,
+  "inner_segment_cold_compile_s": 121.97201980196405,
+  "warmed_per_step_ms": 65.88852651938848,
+  "warmed_per_step_ms_samples": [
+    686.8178301172815,
+    65.88852651938848,
+    65.93941802233093
+  ],
+  "warmed_per_step_ms_amortized_incl_radiation": 67.92456990786847,
+  "full_wall_s_measured": 586.8682840039837,
+  "peak_gpu_mem_mb_after_compile": 9027.420654296875,
+  "peak_gpu_mem_mb_after_full_run": 10044.4716796875,
+  "final_state_ranges": {
+    "u": {
+      "finite": true,
+      "min": -15.735667737275623,
+      "max": 30.300312746956717
+    },
+    "v": {
+      "finite": true,
+      "min": -18.385936873643764,
+      "max": 29.956761058229844
+    },
+    "w": {
+      "finite": true,
+      "min": -3.4412369378126284,
+      "max": 7.172541528112722
+    },
+    "theta": {
+      "finite": true,
+      "min": 290.7504960716648,
+      "max": 493.0780831815634
+    },
+    "qv": {
+      "finite": true,
+      "min": 2.4403450850289958e-06,
+      "max": 0.01838368553990171
+    },
+    "p_total": {
+      "finite": true,
+      "min": 5181.926544324998,
+      "max": 101805.734375
+    },
+    "ph_total": {
+      "finite": true,
+      "min": -7.796288059580547e-07,
+      "max": 204077.453125
+    },
+    "mu_total": {
+      "finite": true,
+      "min": 66551.33599199234,
+      "max": 97043.24438433335
+    }
+  },
+  "all_finite": true,
+  "physically_plausible": true,
+  "status": "PASS"
+}

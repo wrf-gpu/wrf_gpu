@@ -1,0 +1,81 @@
+{
+  "schema": "V0100WaveB2Gates",
+  "schema_version": 1,
+  "scope": "Wave-B2 exit gates: NO closure change ships -> the gate confirms the committed baseline is finite/stable and that the two candidate mechanical fusions are correctly REJECTED.",
+  "idealized_close_gate": {
+    "warm_bubble_bit_identical": true,
+    "straka_bit_identical": true,
+    "overall_bit_identical": true,
+    "proof": "proofs/v0100/wave_b2_idealized_roundoff.json"
+  },
+  "coupled_24h_stability_gate": {
+    "workload": "L2 d02 GREEN init, guards ON, run_forecast_operational_segmented, 24h=8640 steps",
+    "all_finite": true,
+    "physically_plausible": true,
+    "status": "PASS",
+    "warmed_per_step_ms": 65.88852651938848,
+    "warmed_per_step_ms_amortized_incl_radiation": 67.92456990786847,
+    "final_state_ranges": {
+      "u": {
+        "finite": true,
+        "min": -15.735667737275623,
+        "max": 30.300312746956717
+      },
+      "v": {
+        "finite": true,
+        "min": -18.385936873643764,
+        "max": 29.956761058229844
+      },
+      "w": {
+        "finite": true,
+        "min": -3.4412369378126284,
+        "max": 7.172541528112722
+      },
+      "theta": {
+        "finite": true,
+        "min": 290.7504960716648,
+        "max": 493.0780831815634
+      },
+      "qv": {
+        "finite": true,
+        "min": 2.4403450850289958e-06,
+        "max": 0.01838368553990171
+      },
+      "p_total": {
+        "finite": true,
+        "min": 5181.926544324998,
+        "max": 101805.734375
+      },
+      "ph_total": {
+        "finite": true,
+        "min": -7.796288059580547e-07,
+        "max": 204077.453125
+      },
+      "mu_total": {
+        "finite": true,
+        "min": 66551.33599199234,
+        "max": 97043.24438433335
+      }
+    },
+    "proof": "proofs/v0100/wave_b2_gate_24h.json"
+  },
+  "skill_fidelity": {
+    "method": "Wave-B2 makes NO change to MYNN/surface/closure -> T2/U10/V10/PBLH/Q2/HFX are BIT-IDENTICAL to the pre-Wave-B2 (=Wave-B1 NSED16) trajectory by construction (zero source change). The 24h coupled run is finite + physical, confirming the committed trajectory is stable.",
+    "verdict": "bit-identical (no change shipped)"
+  },
+  "rejected_mechanical_levers": {
+    "surface_mynn_state_roundtrip_fusion": {
+      "block_gain_pct": 0.09461449319340627,
+      "bit_identical": false,
+      "verdict": "REJECTED (<0.1% gain AND non-bit-identical -> not-worth-the-risk, fidelity-paramount)",
+      "proof": "proofs/v0100/wave_b2_fusion_ab.json"
+    },
+    "edmf_level_scan_unroll4": {
+      "block_gain_pct": -0.07039754568933393,
+      "bit_identical": false,
+      "verdict": "REJECTED (-0.07% regression AND non-bit-identical)",
+      "proof": "proofs/v0100/wave_b2_edmf_unroll_ab.json"
+    }
+  },
+  "overall_status": "PASS (baseline stable + bit-identical idealized; no fidelity regression; no change shipped because none was safely beneficial)"
+}

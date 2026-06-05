@@ -1,0 +1,19 @@
+{
+  "schema": "V0100WaveB2Timing",
+  "schema_version": 1,
+  "scope": "Wave-B2 timing: no closure change ships -> warmed coupled step unchanged from Wave-B1 baseline",
+  "device": "cuda:0",
+  "coupled_warmed_step_ms_before": 64.76218705817398,
+  "coupled_warmed_step_ms_after": 64.76218705817398,
+  "coupled_warmed_step_gain_ms": 0.0,
+  "coupled_warmed_step_gain_pct": 0.0,
+  "before_after_note": "Wave-B2 ships NO source change (both candidate mechanical fusions REJECTED: <0.1% gain AND non-bit-identical). before==after==the Wave-B1 NSED16 baseline.",
+  "mynn_block_ms": 33.893508021719754,
+  "mynn_block_irreducible_closure_ms": 32.20971499104053,
+  "mynn_block_removable_mechanical_ms": "~0 (within measurement noise; both fusion attempts <0.1% and non-bit-identical)",
+  "fusion_ab_gain_pct": 0.09461449319340627,
+  "fusion_ab_bit_identical": false,
+  "edmf_unroll_ab_gain_pct": -0.07039754568933393,
+  "edmf_unroll_ab_bit_identical": false,
+  "baseline_source": "proofs/v0100/wave_b1_nsed16_timing.json (candidate_default16.warmed_per_step_ms)"
+}

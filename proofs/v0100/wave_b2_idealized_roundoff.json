@@ -1,0 +1,18 @@
+{
+  "rtol": 0.0,
+  "method": "direct scalar diagnostic comparison (current HEAD vs Wave-A u1 baseline); generator filename changed but content compared by check key",
+  "cases": {
+    "warm_bubble": {
+      "bit_identical": true,
+      "worst_reldiff": 0.0,
+      "n_scalars": 6
+    },
+    "density_current": {
+      "bit_identical": true,
+      "worst_reldiff": 0.0,
+      "n_scalars": 6
+    }
+  },
+  "overall_bit_identical": true,
+  "note": "Wave-B2 ships ZERO source change; the dycore is bit-identical to the Wave-A/B1 baseline by construction. This run confirms it empirically."
+}
