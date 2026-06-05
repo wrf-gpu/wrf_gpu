@@ -62,7 +62,7 @@
       "max_abs_delta": 0.0,
       "passed": true,
       "rel_threshold": 1e-12,
-      "tolerance": 9.669011450195312e-08,
+      "tolerance": 9.669024780592964e-08,
       "ulp_threshold": 16,
       "units": "Pa"
     },
@@ -137,7 +137,7 @@
       "max_abs_delta": 0.0,
       "passed": true,
       "rel_threshold": 1e-12,
-      "tolerance": 1.1329968946937317e-09,
+      "tolerance": 1.2670542282183273e-09,
       "ulp_threshold": 8,
       "units": "K"
     },
@@ -162,7 +162,7 @@
       "max_abs_delta": 0.0,
       "passed": true,
       "rel_threshold": 1e-12,
-      "tolerance": 2.4082680203444945e-09,
+      "tolerance": 2.676422268692514e-09,
       "ulp_threshold": 8,
       "units": "K"
     },
@@ -358,7 +358,7 @@
       "max_abs_delta": 1.933804014697671e-06,
       "passed": false,
       "rel_threshold": 1e-12,
-      "tolerance": 9.669011450195312e-08,
+      "tolerance": 9.669024780592964e-08,
       "ulp_threshold": 16,
       "units": "Pa"
     },
@@ -405,7 +405,7 @@
         0,
         0
       ],
-      "max_abs_delta": 2e-09,
+      "max_abs_delta": 2.000000165480742e-09,
       "passed": false,
       "rel_threshold": 1e-12,
       "tolerance": 1e-10,
@@ -430,10 +430,10 @@
         0,
         0
       ],
-      "max_abs_delta": 2.265993792605059e-08,
+      "max_abs_delta": 2.5341137188661378e-08,
       "passed": false,
       "rel_threshold": 1e-12,
-      "tolerance": 1.1329968946937317e-09,
+      "tolerance": 1.2670542282183273e-09,
       "ulp_threshold": 8,
       "units": "K"
     },
@@ -455,10 +455,10 @@
         0,
         0
       ],
-      "max_abs_delta": 4.816536058882548e-08,
+      "max_abs_delta": 5.3528538046521135e-08,
       "passed": false,
       "rel_threshold": 1e-12,
-      "tolerance": 2.4082680203444945e-09,
+      "tolerance": 2.676422268692514e-09,
       "ulp_threshold": 8,
       "units": "K"
     },
