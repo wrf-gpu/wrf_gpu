@@ -167,8 +167,10 @@ class _StaticHolder:
     bundles (``isurban``, ``nroot``, table scalars) inside the jitted scan, so they
     must be COMPILE CONSTANTS, not tracers. Carrying them as static aux makes JAX
     bake their (per-run-constant) arrays into the program. ``None`` is held as-is.
-    Hash/eq are by object identity: one run builds one static bundle -> one compile;
-    a different run's bundle is a distinct object -> a fresh compile (correct)."""
+    Hash/eq are by object identity for real bundles: one run builds one static
+    bundle -> one compile; a different run's bundle is a distinct object -> a
+    fresh compile (correct). ``None`` uses its own stable hash so repeated
+    namelist flattening does not fragment the JIT cache for disabled bundles."""
 
     __slots__ = ("value",)
 
@@ -176,7 +178,7 @@ class _StaticHolder:
         self.value = value
 
     def __hash__(self):
-        return object.__hash__(self) if self.value is None else id(self.value)
+        return hash(None) if self.value is None else id(self.value)
 
     def __eq__(self, other):
         return isinstance(other, _StaticHolder) and self.value is other.value
@@ -2005,6 +2007,34 @@ def _initial_carry_for_run(state: State, namelist: OperationalNamelist) -> Opera
     )
 
 
+def _operational_device():
+    """Return the device used to commit operational host-loop carries."""
+
+    devices = jax.devices()
+    for device in devices:
+        if device.platform == "gpu":
+            return device
+    return devices[0]
+
+
+def _commit_to_operational_device(value):
+    """Commit all array leaves to one explicit device for stable JIT cache keys."""
+
+    return jax.device_put(value, _operational_device())
+
+
+def _committed_initial_carry_for_run(state: State, namelist: OperationalNamelist) -> OperationalCarry:
+    """Build the first chunk carry with the same device commitment as chunk outputs.
+
+    ``_advance_chunk`` returns device-committed leaves. If the first call receives
+    host/uncommitted leaves and the second call receives the prior chunk's committed
+    output, JAX treats their shardings as different cache keys and recompiles an
+    otherwise identical segment. Commit once before entering chunked host loops.
+    """
+
+    return _commit_to_operational_device(_initial_carry_for_run(state, namelist))
+
+
 class _NoahMPRadiation(NamedTuple):
     """Held surface-radiation forcing into Noah-MP (the coupler reads soldn/lwdn/cosz)."""
 
@@ -2551,7 +2581,7 @@ def run_forecast_operational_with_m9_diagnostics(
     if cadence <= 0:
         raise ValueError("radiation_cadence_steps must be positive")
 
-    carry = _initial_carry_for_run(state, namelist)
+    carry = _committed_initial_carry_for_run(state, namelist)
     steps = _steps_for_hours(hours, float(namelist.dt_s))
     out_cad = int(output_cadence_steps)
 
@@ -2696,7 +2726,7 @@ def run_forecast_operational_segmented(
     if seg <= 0:
         raise ValueError("segment_steps must be positive")
 
-    carry = _initial_carry_for_run(state, namelist)
+    carry = _committed_initial_carry_for_run(state, namelist)
     steps = _steps_for_hours(hours, float(namelist.dt_s))
 
     # Host loop over contiguous fixed-length segments covering global steps 1..steps.

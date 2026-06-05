@@ -112,7 +112,8 @@ def run_gpu_case_level(level_spec: dict, out_dir: Path, *, dt_s: float,
     import jax.numpy as jnp
     from gpuwrf.integration.daily_pipeline import _build_real_case, DailyPipelineConfig
     from gpuwrf.runtime.operational_mode import (
-        _advance_chunk, _enforce_operational_precision, compute_m9_diagnostics,
+        _advance_chunk, _commit_to_operational_device,
+        _enforce_operational_precision, compute_m9_diagnostics,
     )
     from gpuwrf.runtime.operational_state import initial_operational_carry
 
@@ -154,8 +155,8 @@ def run_gpu_case_level(level_spec: dict, out_dir: Path, *, dt_s: float,
     seg = int(segment_steps) if segment_steps else cadence
     lead_steps = {h: int(round(h * 3600.0 / dt)) for h in leads}
 
-    carry = initial_operational_carry(
-        _enforce_operational_precision(case.state, force_fp64=bool(nl.force_fp64)))
+    carry = _commit_to_operational_device(initial_operational_carry(
+        _enforce_operational_precision(case.state, force_fp64=bool(nl.force_fp64))))
     timings: dict[int, float] = {}
     t0 = time.time()
     start = 1

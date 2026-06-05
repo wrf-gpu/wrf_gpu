@@ -65,8 +65,8 @@ def run_gpu_case_level_noahmp(level_spec: dict, out_dir: Path, *, dt_s: float,
     import jax.numpy as jnp
     from gpuwrf.integration.daily_pipeline import _build_real_case, DailyPipelineConfig
     from gpuwrf.runtime.operational_mode import (
-        _advance_chunk, _enforce_operational_precision, compute_m9_diagnostics,
-        noahmp_initial_rad,
+        _advance_chunk, _commit_to_operational_device,
+        _enforce_operational_precision, compute_m9_diagnostics, noahmp_initial_rad,
     )
     from gpuwrf.runtime.operational_state import initial_operational_carry
     from gpuwrf.io.noahmp_land_init import build_noahmp_land_state, build_noahmp_params
@@ -116,9 +116,9 @@ def run_gpu_case_level_noahmp(level_spec: dict, out_dir: Path, *, dt_s: float,
     lead_steps = {h: int(round(h * 3600.0 / dt)) for h in leads}
 
     st0 = _enforce_operational_precision(case.state, force_fp64=bool(nl.force_fp64))
-    carry = initial_operational_carry(
+    carry = _commit_to_operational_device(initial_operational_carry(
         st0, noahmp_land=land, noahmp_rad=noahmp_initial_rad(st0, nl),
-    )
+    ))
     timings = {}
     t0 = time.time()
     start = 1
