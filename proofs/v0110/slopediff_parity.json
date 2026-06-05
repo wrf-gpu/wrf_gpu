@@ -1,0 +1,98 @@
+{
+  "proof_id": "v0110-slopediff-parity",
+  "generated_utc": "2026-06-05T13:30:18.951782+00:00",
+  "branch": "worker/gpt/v0110-slopediff",
+  "objective": "WRF terrain-slope and map-factor diffusion deformation terms for constant-K and Smagorinsky paths.",
+  "wrf_reference": {
+    "cal_deform_and_div": "WRF dyn_em/module_diffusion_em.F:139-681, 736-1133",
+    "smag2d_km": "WRF dyn_em/module_diffusion_em.F:1934-2044",
+    "momentum_diffusion": "WRF dyn_em/module_diffusion_em.F:3118-4784, 5331-5744"
+  },
+  "method": "CPU fp64 JAX candidate compared to independent NumPy WRF-formula transcription on a periodic sloped-terrain fixture with non-unit map factors and nonzero zx/zy.",
+  "terms_exercised": {
+    "map_factors": [
+      "msftx/msfty",
+      "msfux/msfuy",
+      "msfvx/msfvy"
+    ],
+    "terrain_slope": [
+      "zx*d/dpsi",
+      "zy*d/dpsi",
+      "horizontal stress-divergence slope corrections",
+      "smag diff_opt=2 alpha reduction"
+    ],
+    "constant_k_path": [
+      "D11/D22/D33/D12/D13/D23",
+      "horizontal_diffusion_u/v/w_2",
+      "vertical_diffusion_u/v/w_2"
+    ],
+    "smagorinsky_path": [
+      "D11/D22/D12 feed smag2d_km",
+      "mlen_h=dx/msftx,dy/msfty"
+    ]
+  },
+  "checks": {
+    "deformation_d11": {
+      "max_abs": 0.0,
+      "tol": 2e-12,
+      "passed": true
+    },
+    "deformation_d22": {
+      "max_abs": 0.0,
+      "tol": 2e-12,
+      "passed": true
+    },
+    "deformation_d12": {
+      "max_abs": 0.0,
+      "tol": 2e-12,
+      "passed": true
+    },
+    "deformation_d33": {
+      "max_abs": 0.0,
+      "tol": 2e-12,
+      "passed": true
+    },
+    "deformation_d13": {
+      "max_abs": 0.0,
+      "tol": 2e-12,
+      "passed": true
+    },
+    "deformation_d23": {
+      "max_abs": 0.0,
+      "tol": 2e-12,
+      "passed": true
+    },
+    "smag_diffopt1_xkmh": {
+      "max_abs": 0.0,
+      "tol": 2e-10,
+      "passed": true
+    },
+    "smag_diffopt1_xkhh": {
+      "max_abs": 0.0,
+      "tol": 2e-10,
+      "passed": true
+    },
+    "smag_diffopt2_slope_reduction": {
+      "max_abs": 0.0,
+      "tol": 2e-10,
+      "passed": true
+    },
+    "constant_k_ru_tendf": {
+      "max_abs": 3.774758283725532e-15,
+      "tol": 2e-10,
+      "passed": true
+    },
+    "constant_k_rv_tendf": {
+      "max_abs": 3.608224830031759e-15,
+      "tol": 2e-10,
+      "passed": true
+    },
+    "constant_k_rw_tendf": {
+      "max_abs": 6.106226635438361e-16,
+      "tol": 2e-10,
+      "passed": true
+    }
+  },
+  "tolerance_rationale": "All comparisons are same-stencil fp64 formula parity. 2e-12 for deformation and 2e-10 for stress tendencies covers NumPy/JAX operation-order differences without admitting physical mismatch.",
+  "verdict": "PASS"
+}
