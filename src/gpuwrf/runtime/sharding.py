@@ -8,7 +8,7 @@ for users who do not opt in to sharding.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from typing import Any, Callable, Literal
 import hashlib
 import re
@@ -16,7 +16,9 @@ import re
 import jax
 import jax.numpy as jnp
 
+from gpuwrf.contracts.grid import DycoreMetrics, GridSpec, Projection, TerrainProvenance, VerticalCoord
 from gpuwrf.contracts.state import State
+from gpuwrf.contracts.state import Tendencies
 
 
 ShardAxis = Literal["x", "y"]
@@ -40,6 +42,7 @@ class ShardingConfig:
     axis: ShardAxis = "x"
     num_partitions: int | None = None
     halo_width: int = 2
+    forecast_halo_width: int | None = None
     backend: ShardBackend = "pmap"
     axis_name: str = "shard"
     multi_node: bool = False
@@ -56,6 +59,8 @@ class ShardingConfig:
             raise ValueError("axis_name must be nonempty")
         if not 1 <= int(self.halo_width) <= 4:
             raise ValueError("halo_width must be in [1, 4]")
+        if self.forecast_halo_width is not None and int(self.forecast_halo_width) < 1:
+            raise ValueError("forecast_halo_width must be positive when supplied")
         if self.num_partitions is not None and int(self.num_partitions) < 1:
             raise ValueError("num_partitions must be positive when supplied")
         if int(self.process_count) < 1:
@@ -78,6 +83,11 @@ class ShardingConfig:
             return int(self.num_partitions)
         devices = jax.devices(platform) if platform is not None else jax.local_devices()
         return max(1, len(devices))
+
+    def operational_halo_width(self) -> int:
+        """Return the halo depth used by the host-level sharded forecast runner."""
+
+        return int(self.halo_width if self.forecast_halo_width is None else self.forecast_halo_width)
 
 
 def select_forecast_runner(config: ShardingConfig | None = None) -> Callable[..., Any]:
@@ -107,18 +117,166 @@ def run_forecast_operational_optional_sharding(
     With the default config this calls the exact existing compiled entry point.
     """
 
-    return select_forecast_runner(sharding)(state, namelist, hours)
+    cfg = ShardingConfig.disabled() if sharding is None else sharding
+    if not bool(cfg.enabled):
+        return select_forecast_runner(cfg)(state, namelist, hours)
+    return run_forecast_operational_sharded(state, namelist, hours, sharding=cfg)
 
 
-def run_forecast_operational_sharded(state, namelist, hours: float):
+def run_forecast_operational_sharded(
+    state: State,
+    namelist,
+    hours: float,
+    *,
+    sharding: ShardingConfig | None = None,
+) -> State:
     """Opt-in sharded runtime entry point.
 
-    S2/S3/S4 fill this in behind explicit sharding gates. It is intentionally not
-    reachable from the default path.
+    This is an opt-in ``pmap`` runner for the DGX-D2 proof. It partitions a real
+    operational ``State`` into x slabs with periodic halos, traces the existing
+    ``run_forecast_operational`` entry point under a fake/real device mesh, routes
+    operational ``apply_halo`` calls through the D1 ``ppermute`` halo substrate,
+    strips halos, and merges the owned output. The default public forecast path
+    never calls this function.
+
+    Current fidelity boundary: lateral boundary replay is rejected. The D1
+    substrate implements periodic x halos, not the real WRF specified-boundary
+    decomposition. Running each shard with ``run_boundary=True`` would incorrectly
+    apply global lateral forcing at internal shard seams.
     """
 
-    del state, namelist, hours
-    raise NotImplementedError("sharded runtime execution is opt-in and implemented after halo/operator gates")
+    from gpuwrf.runtime.operational_mode import run_forecast_operational
+
+    cfg = ShardingConfig(enabled=True) if sharding is None else sharding
+    if not bool(cfg.enabled):
+        return run_forecast_operational(state, namelist, hours)
+    if cfg.axis != "x":
+        raise NotImplementedError("operational sharded forecast currently supports x-axis decomposition only")
+    if bool(getattr(namelist, "run_boundary", False)):
+        raise NotImplementedError(
+            "operational sharded forecast currently rejects run_boundary=True; "
+            "specified/nested boundary decomposition is not implemented"
+        )
+    if getattr(namelist, "radiation_static", None) is not None:
+        raise NotImplementedError("partitioning radiation_static for sharded operational forecast is not implemented")
+
+    num_partitions = int(cfg.resolved_partitions())
+    devices = tuple(jax.local_devices())
+    if num_partitions > len(devices):
+        raise ValueError(f"requested {num_partitions} partitions but only {len(devices)} local devices are visible")
+    halo_width = int(cfg.operational_halo_width())
+    if halo_width < int(getattr(namelist.grid, "halo_width", 1)):
+        raise ValueError("forecast_halo_width must cover the grid halo width")
+    if halo_width > 8:
+        raise ValueError("forecast_halo_width must be <= 8 for operational ppermute halos")
+
+    sharded_state = partition_state_x(
+        state,
+        namelist.grid,
+        num_partitions=num_partitions,
+        halo_width=halo_width,
+        fill_halos=True,
+    )
+    sharded_tendencies = partition_tendencies_x(
+        namelist.tendencies,
+        namelist.grid,
+        num_partitions=num_partitions,
+        halo_width=halo_width,
+        fill_halos=True,
+    )
+    sharded_metrics = partition_metrics_x(
+        namelist.metrics,
+        namelist.grid,
+        num_partitions=num_partitions,
+        halo_width=halo_width,
+        fill_halos=True,
+    )
+    sharded_terrain = partition_terrain_height_x(
+        namelist.grid,
+        num_partitions=num_partitions,
+        halo_width=halo_width,
+        fill_halos=True,
+    )
+    def host_leaf(value: jax.Array) -> jax.Array:
+        return jax.device_get(value)
+
+    sharded_state = jax.tree_util.tree_map(host_leaf, sharded_state)
+    sharded_tendencies = jax.tree_util.tree_map(host_leaf, sharded_tendencies)
+    sharded_metrics = jax.tree_util.tree_map(host_leaf, sharded_metrics)
+    sharded_terrain = host_leaf(sharded_terrain)
+
+    def local_forecast(
+        local_state: State,
+        local_tendencies: Tendencies,
+        local_metrics: DycoreMetrics,
+        local_terrain: jax.Array,
+    ) -> State:
+        local_grid = local_grid_for_x_shard(
+            namelist.grid,
+            local_nx=int(local_state.theta.shape[-1]),
+            terrain_height=local_terrain,
+            metrics=local_metrics,
+            halo_width=min(4, halo_width),
+        )
+        local_namelist = replace(
+            namelist,
+            grid=local_grid,
+            tendencies=local_tendencies,
+            metrics=local_metrics,
+            run_boundary=False,
+        )
+        return run_forecast_operational(local_state, local_namelist, hours)
+
+    from gpuwrf.contracts.halo import HaloSpec
+    from gpuwrf.dynamics.advection import DYCORE_HALO_FIELDS
+    import gpuwrf.dynamics.acoustic_wrf as acoustic_wrf
+    import gpuwrf.dynamics.flux_advection as flux_advection
+    import gpuwrf.dynamics.core.acoustic as acoustic_core
+    import gpuwrf.dynamics.core.rk_addtend_dry as rk_addtend_dry
+    import gpuwrf.dynamics.core.small_step_prep as small_step_prep
+    import gpuwrf.runtime.operational_mode as operational_mode
+
+    def sharded_halo_spec(grid: GridSpec) -> HaloSpec:
+        del grid
+        return HaloSpec(
+            width=halo_width,
+            fields_to_exchange=DYCORE_HALO_FIELDS,
+            edge_type="periodic",
+            sharding=cfg,
+        )
+
+    original_halo_spec = operational_mode.halo_spec
+    original_acoustic_wrf_context = acoustic_wrf._SHARDED_HALO_CONTEXT
+    original_flux_advection_context = flux_advection._SHARDED_HALO_CONTEXT
+    original_acoustic_context = acoustic_core._SHARDED_HALO_CONTEXT
+    original_rk_dry_context = rk_addtend_dry._SHARDED_HALO_CONTEXT
+    original_small_step_prep_context = small_step_prep._SHARDED_HALO_CONTEXT
+    original_carry_context = operational_mode._SHARDED_CARRY_HALO_CONTEXT
+    operational_mode.halo_spec = sharded_halo_spec
+    acoustic_wrf._SHARDED_HALO_CONTEXT = (cfg, halo_width)
+    flux_advection._SHARDED_HALO_CONTEXT = (cfg, halo_width)
+    acoustic_core._SHARDED_HALO_CONTEXT = (cfg, halo_width)
+    rk_addtend_dry._SHARDED_HALO_CONTEXT = (cfg, halo_width)
+    small_step_prep._SHARDED_HALO_CONTEXT = (cfg, halo_width)
+    operational_mode._SHARDED_CARRY_HALO_CONTEXT = (cfg, halo_width)
+    try:
+        outputs = jax.pmap(local_forecast, axis_name=cfg.axis_name)(
+            sharded_state,
+            sharded_tendencies,
+            sharded_metrics,
+            sharded_terrain,
+        )
+        jax.block_until_ready(outputs.theta)
+    finally:
+        operational_mode._SHARDED_CARRY_HALO_CONTEXT = original_carry_context
+        small_step_prep._SHARDED_HALO_CONTEXT = original_small_step_prep_context
+        rk_addtend_dry._SHARDED_HALO_CONTEXT = original_rk_dry_context
+        acoustic_core._SHARDED_HALO_CONTEXT = original_acoustic_context
+        flux_advection._SHARDED_HALO_CONTEXT = original_flux_advection_context
+        acoustic_wrf._SHARDED_HALO_CONTEXT = original_acoustic_wrf_context
+        operational_mode.halo_spec = original_halo_spec
+    merged = merge_state_x(outputs, namelist.grid, halo_width=halo_width)
+    return jax.tree_util.tree_map(lambda value: jnp.asarray(jax.device_get(value)), merged)
 
 
 def hlo_operation_count(hlo_text: str) -> int:
@@ -237,7 +395,10 @@ def _partition_leaf_x(
             if h:
                 if fill_halos:
                     left = _take_x_face_periodic(array, start - h, start, nx=int(grid.nx))
-                    right = _take_x_face_periodic(array, end + 1, end + 1 + h, nx=int(grid.nx))
+                    if int(end) == int(grid.nx):
+                        right = array[..., :h]
+                    else:
+                        right = _take_x_face_periodic(array, end + 1, end + 1 + h, nx=int(grid.nx))
                 else:
                     left = jnp.zeros(array.shape[:-1] + (h,), dtype=array.dtype)
                     right = jnp.zeros(array.shape[:-1] + (h,), dtype=array.dtype)
@@ -280,6 +441,176 @@ def partition_state_x(
         for name in State.__slots__
     }
     return State(**values)
+
+
+def partition_tendencies_x(
+    tendencies: Tendencies,
+    grid,
+    *,
+    num_partitions: int,
+    halo_width: int = 0,
+    fill_halos: bool = True,
+) -> Tendencies:
+    """Split operational tendency buffers into leading-device x slabs."""
+
+    bounds = x_partition_bounds(int(grid.nx), int(num_partitions))
+    values = {
+        name: _partition_leaf_x(
+            name,
+            getattr(tendencies, name),
+            grid=grid,
+            bounds=bounds,
+            halo_width=int(halo_width),
+            fill_halos=bool(fill_halos),
+        )
+        for name in Tendencies.__slots__
+    }
+    return Tendencies(**values)
+
+
+def _partition_metric_leaf_x(
+    name: str,
+    array: jax.Array,
+    *,
+    grid,
+    bounds: tuple[tuple[int, int], ...],
+    halo_width: int,
+    fill_halos: bool,
+) -> jax.Array:
+    """Partition a DycoreMetrics leaf along x, preserving WRF staggering."""
+
+    del name
+    if array.ndim == 0 or int(array.shape[-1]) not in (int(grid.nx), int(grid.nx) + 1):
+        return jnp.stack([array for _ in bounds], axis=0)
+
+    h = int(halo_width)
+    chunks = []
+    is_x_face = int(array.shape[-1]) == int(grid.nx) + 1
+    for start, end in bounds:
+        if is_x_face:
+            interior = _take_x_face_periodic(array, start, end + 1, nx=int(grid.nx))
+            if h:
+                if fill_halos:
+                    left = _take_x_face_periodic(array, start - h, start, nx=int(grid.nx))
+                    if int(end) == int(grid.nx):
+                        right = array[..., :h]
+                    else:
+                        right = _take_x_face_periodic(array, end + 1, end + 1 + h, nx=int(grid.nx))
+                else:
+                    left = jnp.zeros(array.shape[:-1] + (h,), dtype=array.dtype)
+                    right = jnp.zeros(array.shape[:-1] + (h,), dtype=array.dtype)
+                interior = jnp.concatenate((left, interior, right), axis=-1)
+        else:
+            interior = array[..., start:end]
+            if h:
+                if fill_halos:
+                    left = _take_x_periodic(array, start - h, start, period=int(grid.nx))
+                    right = _take_x_periodic(array, end, end + h, period=int(grid.nx))
+                else:
+                    left = jnp.zeros(array.shape[:-1] + (h,), dtype=array.dtype)
+                    right = jnp.zeros(array.shape[:-1] + (h,), dtype=array.dtype)
+                interior = jnp.concatenate((left, interior, right), axis=-1)
+        chunks.append(interior)
+    return jnp.stack(chunks, axis=0)
+
+
+def partition_metrics_x(
+    metrics: DycoreMetrics,
+    grid,
+    *,
+    num_partitions: int,
+    halo_width: int = 0,
+    fill_halos: bool = True,
+) -> DycoreMetrics:
+    """Split DycoreMetrics into leading-device x slabs."""
+
+    bounds = x_partition_bounds(int(grid.nx), int(num_partitions))
+    values = {
+        name: _partition_metric_leaf_x(
+            name,
+            getattr(metrics, name),
+            grid=grid,
+            bounds=bounds,
+            halo_width=int(halo_width),
+            fill_halos=bool(fill_halos),
+        )
+        for name in DycoreMetrics._array_names()
+    }
+    # The stacked p_top leaf has shape (num_partitions,), which is not a valid
+    # single-domain DycoreMetrics scalar until a rank slice is taken. Rebuild via
+    # the pytree inverse so the host-level runner can slice first and then validate
+    # the per-rank GridSpec normally.
+    return DycoreMetrics.tree_unflatten(
+        f"{metrics.provenance}:x-sharded",
+        tuple(values[name] for name in DycoreMetrics._array_names()),
+    )
+
+
+def partition_terrain_height_x(
+    grid,
+    *,
+    num_partitions: int,
+    halo_width: int = 0,
+    fill_halos: bool = True,
+) -> jax.Array:
+    """Split GridSpec terrain height into leading-device x slabs."""
+
+    bounds = x_partition_bounds(int(grid.nx), int(num_partitions))
+    return _partition_metric_leaf_x(
+        "terrain_height",
+        grid.terrain_height,
+        grid=grid,
+        bounds=bounds,
+        halo_width=int(halo_width),
+        fill_halos=bool(fill_halos),
+    )
+
+
+def local_grid_for_x_shard(
+    global_grid: GridSpec,
+    *,
+    local_nx: int,
+    terrain_height: jax.Array,
+    metrics: DycoreMetrics,
+    halo_width: int | None = None,
+) -> GridSpec:
+    """Build a local-shard GridSpec whose static shape matches haloed shard leaves."""
+
+    projection = Projection(
+        global_grid.projection.kind,
+        global_grid.projection.lat_0,
+        global_grid.projection.lon_0,
+        global_grid.projection.dx_m,
+        global_grid.projection.dy_m,
+        int(local_nx),
+        global_grid.projection.ny,
+    )
+    terrain = TerrainProvenance(
+        source_path=f"{global_grid.terrain.source_path}:x-shard",
+        sha256=global_grid.terrain.sha256,
+        shape=(projection.ny, projection.nx),
+        units=global_grid.terrain.units,
+        projection_transform=global_grid.terrain.projection_transform,
+        max_elevation_m=global_grid.terrain.max_elevation_m,
+        coastline_sanity_check_passed=global_grid.terrain.coastline_sanity_check_passed,
+    )
+    vertical = VerticalCoord(
+        global_grid.vertical.kind,
+        global_grid.vertical.nz,
+        global_grid.vertical.top_pressure_pa,
+        global_grid.eta_levels,
+    )
+    return GridSpec(
+        projection,
+        terrain,
+        vertical,
+        global_grid.bc,
+        global_grid.eta_levels,
+        terrain_height,
+        metrics=metrics,
+        halo_width=int(global_grid.halo_width if halo_width is None else halo_width),
+        staggering=global_grid.staggering,
+    )
 
 
 def _strip_x_halo(array: jax.Array, halo_width: int) -> jax.Array:
@@ -372,7 +703,10 @@ def exchange_periodic_halo_x_face(
     if int(interior.shape[-1]) <= h:
         raise ValueError("local x-face interior must exceed halo width")
     send_to_right = interior[..., -(h + 1) : -1]
-    send_to_left = interior[..., 1 : h + 1]
+    rank = jax.lax.axis_index(axis_name)
+    send_to_left_default = interior[..., 1 : h + 1]
+    send_to_left_wrap = interior[..., :h]
+    send_to_left = jnp.where(rank == 0, send_to_left_wrap, send_to_left_default)
     n = int(num_partitions)
     right_perm = tuple((rank, (rank + 1) % n) for rank in range(n))
     left_perm = tuple((rank, (rank - 1) % n) for rank in range(n))
@@ -427,8 +761,12 @@ __all__ = [
     "exchange_periodic_halo_x",
     "exchange_periodic_halo_x_face",
     "exchange_state_halos",
+    "local_grid_for_x_shard",
     "merge_state_x",
+    "partition_metrics_x",
     "partition_state_x",
+    "partition_tendencies_x",
+    "partition_terrain_height_x",
     "run_forecast_operational_optional_sharding",
     "run_forecast_operational_sharded",
     "select_forecast_runner",

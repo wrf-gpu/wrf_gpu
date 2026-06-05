@@ -42,6 +42,7 @@ from gpuwrf.contracts.state import State, Tendencies
 
 
 config.update("jax_enable_x64", True)
+_SHARDED_HALO_CONTEXT: tuple[object, int] | None = None
 
 
 # --- WRF flux operators (module_advect_em.F:3105-3119); time_step>0 -> sign=+1 ---
@@ -127,7 +128,35 @@ def _x_face_factor_or_one(factor: jax.Array | None, *, nx: int, reference: jax.A
     if factor is None:
         return jnp.ones((int(reference.shape[-2]), nx), dtype=reference.dtype)
     arr = jnp.asarray(factor, dtype=reference.dtype)
-    return arr[:, :nx] if arr.shape[-1] == nx + 1 else arr
+    return _collapse_x_face_periodic(arr, nx=nx) if arr.shape[-1] == nx + 1 else arr
+
+
+def _collapse_x_face_periodic(face: jax.Array, *, nx: int) -> jax.Array:
+    """Collapse an ``nx+1`` x-face field to the periodic ``nx`` faces."""
+
+    if int(face.shape[-1]) != int(nx) + 1:
+        return face
+    collapsed = face[..., :nx]
+    context = _SHARDED_HALO_CONTEXT
+    if context is None:
+        return collapsed
+    sharding, width = context
+    if not bool(getattr(sharding, "enabled", False)):
+        return collapsed
+    if getattr(sharding, "axis", "x") != "x":
+        raise NotImplementedError("flux-form sharded x-face collapse supports x-axis decomposition only")
+    h = int(width)
+    owned = int(nx) - 2 * h
+    if owned < 1:
+        raise ValueError("haloed x-face field has no owned cells")
+    rank = jax.lax.axis_index(str(sharding.axis_name))
+    start = rank * owned
+    global_nx = owned * int(sharding.resolved_partitions())
+    is_last = start + owned == global_nx
+    right_start = h + owned
+    replacement = face[..., right_start + 1 : right_start + 1 + h]
+    corrected = collapsed.at[..., right_start:].set(replacement)
+    return jnp.where(is_last, corrected, collapsed)
 
 
 def _y_face_factor_or_one(factor: jax.Array | None, *, ny: int, reference: jax.Array) -> jax.Array:
@@ -171,7 +200,7 @@ def couple_velocities_periodic(
     nx = int(mu_total.shape[-1])
     # u has nx+1 faces; in the periodic project layout face nx == face 0.  Use the
     # first nx faces as the staggered u at x-faces 0..nx-1 (WRF u(i) at face i).
-    u_faces = u[:, :, :-1] if u.shape[-1] == nx + 1 else u
+    u_faces = _collapse_x_face_periodic(u, nx=nx) if u.shape[-1] == nx + 1 else u
     v_faces = v[:, :-1, :] if v.shape[-2] == ny + 1 else v
     msfuy_u = _x_face_factor_or_one(msfuy, nx=nx, reference=mu_total)
     msfvx_v = _y_face_factor_or_one(msfvx, ny=ny, reference=mu_total)
@@ -354,7 +383,7 @@ def advect_u_flux(
     """
 
     nx = vel.ru.shape[-1]
-    u_f = u[:, :, :nx] if u.shape[-1] == nx + 1 else u  # collapse to nx periodic faces
+    u_f = _collapse_x_face_periodic(u, nx=nx) if u.shape[-1] == nx + 1 else u  # collapse to nx periodic faces
     msfux = _x_face_factor_or_one(vel.msfux, nx=nx, reference=u_f)
     # x-flux: at u-face i the velocity is 0.5*(ru(i)+ru(i-1)); flux5 stencil on u_f.
     velx = _avg_to_u_face_x(vel.ru)

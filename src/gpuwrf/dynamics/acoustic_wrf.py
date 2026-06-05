@@ -49,6 +49,7 @@ POST_SOLVE_REPLACEMENT_ORDER = (
     "al",
     "alt",
 )
+_SHARDED_HALO_CONTEXT: tuple[object, int] | None = None
 
 
 @dataclass(frozen=True)
@@ -151,11 +152,42 @@ def _pressure_from_theta_alt(theta: jax.Array, alt: jax.Array, qv: jax.Array | N
     return P0_PA * (jnp.maximum(argument, 1.0e-12) ** CPOVCV)
 
 
+def _maybe_sharded_x_edge_pair(
+    field: jax.Array,
+    left: jax.Array,
+    right: jax.Array,
+) -> tuple[jax.Array, jax.Array]:
+    """Make x-face pairs match global-domain edge padding under opt-in x sharding."""
+
+    context = _SHARDED_HALO_CONTEXT
+    if context is None:
+        return left, right
+    sharding, width = context
+    if not bool(getattr(sharding, "enabled", False)):
+        return left, right
+    if getattr(sharding, "axis", "x") != "x":
+        raise NotImplementedError("acoustic_wrf sharded edge-pair correction supports x-axis decomposition only")
+    h = int(width)
+    owned = int(field.shape[-1]) - 2 * h
+    if owned < 1:
+        raise ValueError("haloed x field has no owned cells")
+    rank = jax.lax.axis_index(str(sharding.axis_name))
+    start = rank * owned
+    global_nx = owned * int(sharding.resolved_partitions())
+    west_face = h
+    east_face = h + owned
+    is_first = start == 0
+    is_last = start + owned == global_nx
+    left = left.at[..., west_face].set(jnp.where(is_first, right[..., west_face], left[..., west_face]))
+    right = right.at[..., east_face].set(jnp.where(is_last, left[..., east_face], right[..., east_face]))
+    return left, right
+
+
 def _x_face_pair_3d(field: jax.Array) -> tuple[jax.Array, jax.Array]:
     """Returns left/right mass values at x-staggered faces with edge BCs."""
 
     padded = jnp.pad(field, ((0, 0), (0, 0), (1, 1)), mode="edge")
-    return padded[:, :, :-1], padded[:, :, 1:]
+    return _maybe_sharded_x_edge_pair(field, padded[:, :, :-1], padded[:, :, 1:])
 
 
 def _y_face_pair_3d(field: jax.Array) -> tuple[jax.Array, jax.Array]:
@@ -169,7 +201,7 @@ def _x_face_pair_2d(field: jax.Array) -> tuple[jax.Array, jax.Array]:
     """Returns left/right 2-D mass values at x-staggered faces."""
 
     padded = jnp.pad(field, ((0, 0), (1, 1)), mode="edge")
-    return padded[:, :-1], padded[:, 1:]
+    return _maybe_sharded_x_edge_pair(field, padded[:, :-1], padded[:, 1:])
 
 
 def _y_face_pair_2d(field: jax.Array) -> tuple[jax.Array, jax.Array]:
