@@ -165,7 +165,8 @@
       "cloud_water_sedimentation",
       "snow_fall_speed"
     ],
-    "pass": true
+    "pass": true,
+    "scope": "scoped closure of listed P1-5 debts, not exhaustive all-species Thompson closure"
   },
   "schema": "V0110ThompsonParityDebts",
   "schema_version": 1,
@@ -185,6 +186,16 @@
     },
     "source": "proofs/v0110/thompson_v090_savepoint.json",
     "status": "ORACLE-VALIDATED"
+  },
+  "unscoped_reported_residuals": {
+    "qg_graupel": {
+      "active_cells": 102,
+      "max_abs": 0.0008622994001407885,
+      "max_rel": 1.0,
+      "mean_rel": 0.6130569422857403,
+      "reason": "Graupel residual is present in the P1-5 report but was not one of the listed Thompson parity debts for this lane and has no predeclared P1-5 gate in precip_water_parity.py.",
+      "status": "reported_not_gated"
+    }
   },
   "wrf_source": {
     "cloud_water_sedimentation_lines": "3646-3667, 3824-3837",
