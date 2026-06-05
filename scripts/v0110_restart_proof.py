@@ -33,9 +33,11 @@ from gpuwrf.io.wrfrst_netcdf import (
     OPTIONAL_CARRY_FIELDS,
     SCHEMA_VERSION,
     STATE_FIELD_ORDER,
+    STOCHASTIC_SEED_RESTART_VARIABLES,
     WRF_STANDARD_RESTART_VARIABLES,
     inspect_wrfrst_schema,
     read_wrfrst_carry,
+    read_wrfrst_stochastic_seeds,
     write_wrfrst_carry,
 )
 from gpuwrf.profiling.transfer_audit import block_until_ready, visible_gpu_name
@@ -147,6 +149,13 @@ def _full_synthetic_carry(grid: GridSpec) -> OperationalCarry:
         noahclassic_land=_noahclassic_land(grid),
         noahclassic_rad=NoahClassicRadiation(_array(xy, 306), _array(xy, 307), _array(xy, 308)),
     )
+
+
+def _seed_arrays() -> dict[str, np.ndarray]:
+    return {
+        name: np.arange(8, dtype=np.int32) + offset * 1000
+        for offset, name in enumerate(STOCHASTIC_SEED_RESTART_VARIABLES, start=1)
+    }
 
 
 def _field_names(obj: Any) -> tuple[str, ...]:
@@ -276,6 +285,7 @@ def _timed_advance(name: str, carry: OperationalCarry, namelist: Any, start_step
 def _cpu_full_carry_roundtrip(proof_dir: Path) -> dict[str, Any]:
     grid = GridSpec.canary_3km_template()
     carry = _full_synthetic_carry(grid)
+    seed_arrays = _seed_arrays()
     path = proof_dir / "wrfrst_full_carry_roundtrip.nc"
     write_wrfrst_carry(
         carry,
@@ -285,16 +295,27 @@ def _cpu_full_carry_roundtrip(proof_dir: Path) -> dict[str, Any]:
         valid_time=RUN_START + timedelta(minutes=30),
         run_start=RUN_START,
         step_index=3,
+        stochastic_seed_arrays=seed_arrays,
     )
     restored, metadata = read_wrfrst_carry(path)
+    restored_seeds = read_wrfrst_stochastic_seeds(path)
     comparison = _compare_carry(carry, restored)
+    seed_comparison = {
+        name: _compare_array(seed_arrays[name], restored_seeds[name])
+        for name in STOCHASTIC_SEED_RESTART_VARIABLES
+    }
     schema = inspect_wrfrst_schema(path)
     return {
-        "pass": bool(comparison["pass"]),
+        "pass": bool(comparison["pass"] and all(record["pass"] for record in seed_comparison.values())),
         "purpose": "structural full-carry NetCDF wrfrst round-trip; not the forecast-continuity acceptance gate",
         "restart_path": str(path),
         "metadata": metadata,
         "comparison": comparison,
+        "stochastic_seed_roundtrip": {
+            "pass": bool(all(record["pass"] for record in seed_comparison.values())),
+            "variables": list(STOCHASTIC_SEED_RESTART_VARIABLES),
+            "per_variable": seed_comparison,
+        },
         "schema": {
             "schema_version": schema["global_attrs"].get("GPUWRF_WRFRST_SCHEMA_VERSION"),
             "dimension_count": int(len(schema["dimensions"])),
@@ -305,6 +326,10 @@ def _cpu_full_carry_roundtrip(proof_dir: Path) -> dict[str, Any]:
             ],
             "noahmp_wrf_variables_present": [
                 name for name in ("TSLB", "SMOIS", "SH2O", "TSNO", "SNICE", "SNLIQ", "ZSNSO")
+                if name in schema["variables"]
+            ],
+            "stochastic_seed_variables_present": [
+                name for name in STOCHASTIC_SEED_RESTART_VARIABLES
                 if name in schema["variables"]
             ],
             "exact_state_variable_count": int(sum(1 for name in schema["variables"] if name.startswith("GPUWRF_STATE_"))),

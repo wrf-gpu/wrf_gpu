@@ -14,6 +14,7 @@ from gpuwrf.io.wrfrst_netcdf import (
     inspect_wrfrst_schema,
     read_wrfrst_carry,
     read_wrfrst_state,
+    read_wrfrst_stochastic_seeds,
     write_wrfrst_carry,
     write_wrfrst_state,
 )
@@ -33,6 +34,7 @@ __all__ = [
     "load_gen2_var",
     "read_wrfrst_carry",
     "read_wrfrst_state",
+    "read_wrfrst_stochastic_seeds",
     "regrid",
     "unit_convert",
     "write_wrfout_netcdf",

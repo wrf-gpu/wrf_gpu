@@ -29,6 +29,7 @@ from gpuwrf.io.wrfout_writer import (
     SNOW,
     SNSO,
     SOIL,
+    STOCHASTIC_SEED_VARIABLES,
     TIME_ONLY,
     U_XY,
     U_XYZ,
@@ -165,6 +166,12 @@ NOAHMP_WRF_RESTART_VARIABLES: tuple[str, ...] = (
     "EMISS",
 )
 
+STOCHASTIC_SEED_RESTART_VARIABLES: tuple[str, ...] = tuple(STOCHASTIC_SEED_VARIABLES)
+OPTIONAL_WRF_RESTART_VARIABLES: tuple[str, ...] = (
+    *NOAHMP_WRF_RESTART_VARIABLES,
+    *STOCHASTIC_SEED_RESTART_VARIABLES,
+)
+
 # Registry restart fields that are still outside the supported Canary runtime
 # options or cannot be represented without a native WRF reader.
 DEFERRED_REGISTRY_RESTART_FIELDS: tuple[str, ...] = (
@@ -294,6 +301,11 @@ STANDARD_FIELD_SPECS: dict[str, RestartVariableSpec] = {
 NOAHMP_WRF_FIELD_SPECS: dict[str, RestartVariableSpec] = {
     name: _from_wrfout(name)
     for name in NOAHMP_WRF_RESTART_VARIABLES
+}
+
+STOCHASTIC_SEED_FIELD_SPECS: dict[str, RestartVariableSpec] = {
+    name: _from_wrfout(name, dtype="i4")
+    for name in STOCHASTIC_SEED_RESTART_VARIABLES
 }
 
 
@@ -485,6 +497,7 @@ def write_wrfrst_state(
     run_start: datetime | date | str,
     step_index: int,
     lead_hours: float | None = None,
+    stochastic_seed_arrays: Mapping[str, Any] | None = None,
 ) -> Path:
     """Write one WRF-style NetCDF restart containing an exact gpuwrf State."""
 
@@ -498,6 +511,7 @@ def write_wrfrst_state(
         run_start=run_start,
         step_index=int(step_index),
         lead_hours=lead_hours,
+        stochastic_seed_arrays=stochastic_seed_arrays,
     )
 
 
@@ -511,6 +525,7 @@ def write_wrfrst_carry(
     run_start: datetime | date | str,
     step_index: int,
     lead_hours: float | None = None,
+    stochastic_seed_arrays: Mapping[str, Any] | None = None,
 ) -> Path:
     """Write a restart with exact State plus promoted operational scan carry."""
 
@@ -524,6 +539,7 @@ def write_wrfrst_carry(
         run_start=run_start,
         step_index=int(step_index),
         lead_hours=lead_hours,
+        stochastic_seed_arrays=stochastic_seed_arrays,
     )
 
 
@@ -560,6 +576,15 @@ def read_wrfrst_carry(path: str | Path) -> tuple[OperationalCarry, dict[str, Any
         carry_fields.update(_read_optional_carry_groups(dataset))
         metadata = _read_metadata(dataset)
     return OperationalCarry(**carry_fields), metadata
+
+
+def read_wrfrst_stochastic_seeds(path: str | Path) -> dict[str, jnp.ndarray]:
+    """Read WRF stochastic-physics restart seed arrays from a gpuwrf wrfrst."""
+
+    target = Path(path)
+    with Dataset(target, "r") as dataset:
+        _validate_common_schema(dataset, require_carry=False)
+        return _read_stochastic_seed_arrays(dataset)
 
 
 def inspect_wrfrst_schema(path: str | Path) -> dict[str, Any]:
@@ -627,6 +652,7 @@ def _write_wrfrst(
     run_start: datetime | date | str,
     step_index: int,
     lead_hours: float | None,
+    stochastic_seed_arrays: Mapping[str, Any] | None,
 ) -> Path:
     target = Path(path)
     target.parent.mkdir(parents=True, exist_ok=True)
@@ -637,11 +663,12 @@ def _write_wrfrst(
     nx, ny, nz = _grid_extent(grid)
     dimensions = _restart_dimension_sizes(state=state, nx=nx, ny=ny, nz=nz, namelist=namelist)
     coordinate_fields = _grid_coordinate_payload(state, grid, namelist, dimensions)
+    seed_arrays = _normalize_stochastic_seed_arrays(stochastic_seed_arrays)
 
     with Dataset(target, "w", format="NETCDF4") as dataset:
         _create_restart_dimensions(dataset, dimensions)
         _write_global_attrs(dataset, grid, namelist, dimensions, run_start_dt, valid_dt)
-        _write_restart_global_attrs(dataset, state, carry, step_index)
+        _write_restart_global_attrs(dataset, state, carry, step_index, seed_arrays)
         _write_times(dataset, valid_dt)
         _write_xtime_restart(dataset, run_start_dt, lead_hours)
         _write_itimestep(dataset, step_index)
@@ -657,6 +684,7 @@ def _write_wrfrst(
 
         if carry is not None and carry.noahmp_land is not None:
             _write_noahmp_wrf_restart_variables(dataset, carry.noahmp_land, dimensions)
+        _write_stochastic_seed_variables(dataset, seed_arrays, dimensions)
 
         for leaf in STATE_FIELD_ORDER:
             _write_exact_state_variable(dataset, leaf, getattr(state, leaf), dimensions)
@@ -715,6 +743,7 @@ def _write_restart_global_attrs(
     state: State,
     carry: OperationalCarry | None,
     step_index: int,
+    stochastic_seed_arrays: Mapping[str, np.ndarray],
 ) -> None:
     dataset.TITLE = "OUTPUT FROM GPUWRF WRF-COMPATIBLE NETCDF RESTART"
     dataset.RESTART_STATUS = "RESTART"
@@ -722,7 +751,11 @@ def _write_restart_global_attrs(
     dataset.GPUWRF_STATE_FIELD_ORDER = json.dumps(list(STATE_FIELD_ORDER), separators=(",", ":"))
     dataset.GPUWRF_STATE_FIELD_COUNT = np.int32(len(STATE_FIELD_ORDER))
     dataset.GPUWRF_STANDARD_RESTART_VARIABLES = json.dumps(list(WRF_STANDARD_RESTART_VARIABLES), separators=(",", ":"))
-    dataset.GPUWRF_OPTIONAL_WRF_RESTART_VARIABLES = json.dumps(list(NOAHMP_WRF_RESTART_VARIABLES), separators=(",", ":"))
+    dataset.GPUWRF_OPTIONAL_WRF_RESTART_VARIABLES = json.dumps(list(OPTIONAL_WRF_RESTART_VARIABLES), separators=(",", ":"))
+    dataset.GPUWRF_STOCHASTIC_SEED_VARIABLE_ORDER = json.dumps(
+        list(stochastic_seed_arrays),
+        separators=(",", ":"),
+    )
     dataset.GPUWRF_EXACT_STATE_VARIABLE_PREFIX = STATE_EXTENSION_PREFIX
     dataset.GPUWRF_CARRY_FIELD_ORDER = json.dumps(list(CARRY_ARRAY_FIELDS), separators=(",", ":"))
     dataset.GPUWRF_CARRY_PRESENT = np.int32(1 if carry is not None else 0)
@@ -896,6 +929,29 @@ def _write_noahmp_wrf_restart_variables(
     }
     for name in NOAHMP_WRF_RESTART_VARIABLES:
         _write_restart_variable(dataset, NOAHMP_WRF_FIELD_SPECS[name], values[name], dimensions)
+
+
+def _normalize_stochastic_seed_arrays(seed_arrays: Mapping[str, Any] | None) -> dict[str, np.ndarray]:
+    if seed_arrays is None:
+        return {}
+    unknown = sorted(set(seed_arrays) - set(STOCHASTIC_SEED_RESTART_VARIABLES))
+    if unknown:
+        raise ValueError(f"unsupported stochastic seed restart variables: {unknown}")
+    return {
+        name: np.asarray(seed_arrays[name], dtype=np.int32)
+        for name in STOCHASTIC_SEED_RESTART_VARIABLES
+        if name in seed_arrays and seed_arrays[name] is not None
+    }
+
+
+def _write_stochastic_seed_variables(
+    dataset: Dataset,
+    seed_arrays: Mapping[str, np.ndarray],
+    dimensions: Mapping[str, int | None],
+) -> None:
+    for name in seed_arrays:
+        _write_restart_variable(dataset, STOCHASTIC_SEED_FIELD_SPECS[name], seed_arrays[name], dimensions)
+        dataset.variables[name].gpuwrf_stochastic_seed_variable = name
 
 
 def _write_optional_carry_variables(
@@ -1121,6 +1177,28 @@ def _read_optional_variable(dataset: Dataset, name: str) -> np.ndarray:
         raise ValueError(f"wrfrst missing optional carry variable {name}")
     variable = dataset.variables[name]
     return np.asarray(variable[0, ...] if variable.dimensions and variable.dimensions[0] == "Time" else variable[...])
+
+
+def _read_stochastic_seed_arrays(dataset: Dataset) -> dict[str, jnp.ndarray]:
+    seeds: dict[str, jnp.ndarray] = {}
+    for name in _stochastic_seed_manifest(dataset):
+        variable = dataset.variables[name]
+        seeds[name] = jnp.asarray(variable[0, ...], dtype=jnp.int32)
+    return seeds
+
+
+def _stochastic_seed_manifest(dataset: Dataset) -> list[str]:
+    raw = getattr(dataset, "GPUWRF_STOCHASTIC_SEED_VARIABLE_ORDER", "[]")
+    payload = json.loads(str(raw))
+    if not isinstance(payload, list) or not all(isinstance(name, str) for name in payload):
+        raise ValueError("wrfrst stochastic seed manifest must be a string list")
+    unsupported = sorted(set(payload) - set(STOCHASTIC_SEED_RESTART_VARIABLES))
+    if unsupported:
+        raise ValueError(f"wrfrst stochastic seed manifest has unsupported variables: {unsupported}")
+    duplicates = sorted({name for name in payload if payload.count(name) > 1})
+    if duplicates:
+        raise ValueError(f"wrfrst stochastic seed manifest has duplicate variables: {duplicates}")
+    return list(payload)
 
 
 def _optional_carry_manifest(dataset: Dataset) -> dict[str, list[str]]:
@@ -1378,6 +1456,14 @@ def _validate_common_schema(dataset: Dataset, *, require_carry: bool) -> None:
         missing_carry = [carry_extension_name(name) for name in CARRY_ARRAY_FIELDS if carry_extension_name(name) not in dataset.variables]
         if missing_carry:
             raise ValueError(f"wrfrst missing exact gpuwrf carry variables: {missing_carry}")
+    for name in _stochastic_seed_manifest(dataset):
+        if name not in dataset.variables:
+            raise ValueError(f"wrfrst missing stochastic seed variable {name}")
+        variable = dataset.variables[name]
+        if tuple(variable.dimensions) != SEED:
+            raise ValueError(f"wrfrst stochastic seed variable {name} dimensions {variable.dimensions} != {SEED}")
+        if np.dtype(variable.dtype) != np.dtype("int32"):
+            raise ValueError(f"wrfrst stochastic seed variable {name} dtype {np.dtype(variable.dtype)} != int32")
     optional_order = _optional_carry_manifest(dataset)
     optional_kind = _optional_carry_kind_manifest(dataset)
     for group, fields in optional_order.items():
@@ -1423,6 +1509,7 @@ def _read_metadata(dataset: Dataset) -> dict[str, Any]:
         "state_field_order": json.loads(str(getattr(dataset, "GPUWRF_STATE_FIELD_ORDER"))),
         "standard_restart_variables": json.loads(str(getattr(dataset, "GPUWRF_STANDARD_RESTART_VARIABLES"))),
         "optional_wrf_restart_variables": json.loads(str(getattr(dataset, "GPUWRF_OPTIONAL_WRF_RESTART_VARIABLES", "[]"))),
+        "stochastic_seed_variables": _stochastic_seed_manifest(dataset),
         "optional_carry_field_order": _optional_carry_manifest(dataset),
         "optional_carry_kind": _optional_carry_kind_manifest(dataset),
         "deferred_registry_restart_fields": json.loads(str(getattr(dataset, "GPUWRF_UNSUPPORTED_REGISTRY_RESTART_FIELDS"))),
@@ -1456,7 +1543,9 @@ __all__ = [
     "noahmp_rad_extension_name",
     "read_wrfrst_carry",
     "read_wrfrst_state",
+    "read_wrfrst_stochastic_seeds",
     "state_extension_name",
+    "STOCHASTIC_SEED_RESTART_VARIABLES",
     "write_wrfrst_carry",
     "write_wrfrst_state",
 ]
