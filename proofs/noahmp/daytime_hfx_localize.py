@@ -42,7 +42,7 @@ nl = dataclasses.replace(nl, use_noahmp=True, noahmp_static=static,
         noahmp_energy_params=ep, noahmp_rad_params=rp, noahmp_nroot=nroot,
         noahmp_julian=julian, noahmp_yearlen=365.0)
 state0 = _enforce_operational_precision(case.state, force_fp64=bool(nl.force_fp64))
-noahmp_rad = noahmp_initial_rad(state0, nl)
+noahmp_rad = noahmp_initial_rad(state0, nl, land_state=noahmp_land)
 carry = initial_operational_carry(state0, noahmp_land=noahmp_land, noahmp_rad=noahmp_rad)
 
 xl = np.squeeze(np.asarray(read_wrfout_file(RDIR+'/wrfinput_'+DOM, fields=('XLAND',))['fields']['XLAND']))

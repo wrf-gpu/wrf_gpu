@@ -101,7 +101,10 @@ def run_forecast(run_dir, domain, *, use_noahmp, leads, segment_steps, dt_s,
         # especially) so an evening init does not starve the land of downward
         # longwave for the first radt interval (nocturnal cold-start mitigation).
         noahmp_rad = noahmp_initial_rad(
-            _enforce_operational_precision(case.state, force_fp64=bool(nl.force_fp64)), nl)
+            _enforce_operational_precision(case.state, force_fp64=bool(nl.force_fp64)),
+            nl,
+            land_state=noahmp_land,
+        )
 
     cadence = int(nl.radiation_cadence_steps)
     seg = int(segment_steps) if segment_steps else cadence

@@ -239,6 +239,13 @@ class OperationalNamelist:
     # clock (time_utc + lead_seconds) inside the scan, so the diurnal SW cycle
     # evolves over the run; None keeps the adapter's legacy fixed-time behaviour.
     time_utc: object = None
+    # RRTMG terrain-radiation static fields (real XLAT/XLONG, terrain-derived
+    # slope/aspect, map rotation). Kept as a pytree child so large arrays remain
+    # device leaves rather than static cache-key payload.
+    radiation_static: object = None
+    topo_shading: int = 0
+    slope_rad: int = 0
+    topo_shadow_length_m: float = 25000.0
     # --- v0.2.0 S6b: prognostic Noah-MP land activation ---------------------
     # ``use_noahmp`` (static aux) flips the LAND surface tile from the prescribed
     # bulk path (coupling.physics_couplers.surface_adapter) to the prognostic
@@ -317,6 +324,10 @@ class OperationalNamelist:
         force_fp64: bool = False,
         use_deformation_momentum_diffusion: bool = False,
         time_utc: object = None,
+        radiation_static: object = None,
+        topo_shading: int = 0,
+        slope_rad: int = 0,
+        topo_shadow_length_m: float = 25000.0,
     ) -> "OperationalNamelist":
         """Build a namelist using resident zero tendencies and flat metrics."""
 
@@ -359,6 +370,10 @@ class OperationalNamelist:
             force_fp64=force_fp64,
             use_deformation_momentum_diffusion=use_deformation_momentum_diffusion,
             time_utc=time_utc,
+            radiation_static=radiation_static,
+            topo_shading=topo_shading,
+            slope_rad=slope_rad,
+            topo_shadow_length_m=topo_shadow_length_m,
         )
 
     def tree_flatten(self):
@@ -369,7 +384,7 @@ class OperationalNamelist:
         # not tracers. They are wrapped in an identity-hashable holder so the jit
         # cache keys on per-run object identity (one run -> one compile). use_noahmp
         # + clock scalars are also static aux.
-        children = (self.tendencies, self.metrics)
+        children = (self.tendencies, self.metrics, self.radiation_static)
         aux = (
             self.grid,
             float(self.dt_s),
@@ -399,6 +414,9 @@ class OperationalNamelist:
             bool(self.force_fp64),
             bool(self.use_deformation_momentum_diffusion),
             self.time_utc,
+            int(self.topo_shading),
+            int(self.slope_rad),
+            float(self.topo_shadow_length_m),
             bool(self.use_noahmp),
             int(self.noahmp_nroot),
             float(self.noahmp_julian),
@@ -419,7 +437,7 @@ class OperationalNamelist:
 
     @classmethod
     def tree_unflatten(cls, aux, children):
-        tendencies, metrics = children
+        tendencies, metrics, radiation_static = children
         (
             grid,
             dt_s,
@@ -449,6 +467,9 @@ class OperationalNamelist:
             force_fp64,
             use_deformation_momentum_diffusion,
             time_utc,
+            topo_shading,
+            slope_rad,
+            topo_shadow_length_m,
             use_noahmp,
             noahmp_nroot,
             noahmp_julian,
@@ -502,6 +523,10 @@ class OperationalNamelist:
             force_fp64=force_fp64,
             use_deformation_momentum_diffusion=use_deformation_momentum_diffusion,
             time_utc=time_utc,
+            radiation_static=radiation_static,
+            topo_shading=topo_shading,
+            slope_rad=slope_rad,
+            topo_shadow_length_m=topo_shadow_length_m,
             use_noahmp=use_noahmp,
             noahmp_static=noahmp_static,
             noahmp_energy_params=noahmp_energy_params,
@@ -1845,7 +1870,12 @@ class _NoahMPClock(NamedTuple):
     yearlen: float
 
 
-def noahmp_initial_rad(state: State, namelist: "OperationalNamelist | None" = None) -> tuple:
+def noahmp_initial_rad(
+    state: State,
+    namelist: "OperationalNamelist | None" = None,
+    *,
+    land_state=None,
+) -> tuple:
     """Seed the held Noah-MP surface-radiation forcing as a CONCRETE 3-tuple.
 
     The held forcing rides in the OperationalCarry; inside ``jax.lax.scan`` the
@@ -1864,9 +1894,17 @@ def noahmp_initial_rad(state: State, namelist: "OperationalNamelist | None" = No
         zero = jnp.zeros(state.t_skin.shape, dtype=jnp.float64)
         return (zero, zero, zero)
     rad = rrtmg_radiation_diagnostics(
-        state, namelist.grid, time_utc=namelist.time_utc, lead_seconds=0.0
+        state,
+        namelist.grid,
+        time_utc=namelist.time_utc,
+        lead_seconds=0.0,
+        radiation_static=namelist.radiation_static,
+        topo_shading=int(namelist.topo_shading),
+        slope_rad=int(namelist.slope_rad),
+        shadow_length_m=float(namelist.topo_shadow_length_m),
+        land_state=land_state,
     )
-    soldn = jnp.maximum(jnp.asarray(rad.swdown, dtype=jnp.float64), 0.0)
+    soldn = jnp.maximum(jnp.asarray(rad.swnorm, dtype=jnp.float64), 0.0)
     lwdn = jnp.asarray(rad.glw, dtype=jnp.float64)
     cosz = jnp.asarray(rad.coszen, dtype=jnp.float64)
     return (soldn, lwdn, cosz)
@@ -2013,7 +2051,7 @@ class _NoahMPRadiation(NamedTuple):
     cosz: jax.Array
 
 
-def _refresh_noahmp_rad(state, namelist, lead_seconds, run_radiation, held_rad):
+def _refresh_noahmp_rad(state, namelist, lead_seconds, run_radiation, held_rad, *, land_state=None):
     """Refresh the HELD Noah-MP surface radiation (SOLDN/LWDN/COSZ) at the radiation
     cadence; reuse the held value between calls (WRF holds the radiative forcing
     between radt intervals). Resident on device -- no host transfer.
@@ -2058,9 +2096,17 @@ def _refresh_noahmp_rad(state, namelist, lead_seconds, run_radiation, held_rad):
 
     def _recompute(_unused):
         rad = rrtmg_radiation_diagnostics(
-            state, namelist.grid, time_utc=namelist.time_utc, lead_seconds=rad_lead_seconds
+            state,
+            namelist.grid,
+            time_utc=namelist.time_utc,
+            lead_seconds=rad_lead_seconds,
+            radiation_static=namelist.radiation_static,
+            topo_shading=int(namelist.topo_shading),
+            slope_rad=int(namelist.slope_rad),
+            shadow_length_m=float(namelist.topo_shadow_length_m),
+            land_state=land_state,
         )
-        soldn = jnp.maximum(jnp.asarray(rad.swdown, dtype=jnp.float64), 0.0)
+        soldn = jnp.maximum(jnp.asarray(rad.swnorm, dtype=jnp.float64), 0.0)
         lwdn = jnp.asarray(rad.glw, dtype=jnp.float64)
         cosz = jnp.asarray(rad.coszen, dtype=jnp.float64)
         return (soldn, lwdn, cosz)
@@ -2144,7 +2190,12 @@ def _physics_boundary_step_with_limiter_diagnostics(
             # Held surface radiation (SOLDN/LWDN/COSZ) is refreshed at the radiation
             # cadence and reused between calls (WRF-faithful), resident in the carry.
             next_carry_rad = _refresh_noahmp_rad(
-                next_state, namelist, lead_seconds, run_radiation, carry.noahmp_rad
+                next_state,
+                namelist,
+                lead_seconds,
+                run_radiation,
+                carry.noahmp_rad,
+                land_state=carry.noahmp_land,
             )
             clock = _NoahMPClock(
                 julian=float(namelist.noahmp_julian),
@@ -2230,6 +2281,11 @@ def _physics_boundary_step_with_limiter_diagnostics(
                 namelist.grid,
                 time_utc=namelist.time_utc,
                 lead_seconds=lead_seconds,
+                radiation_static=namelist.radiation_static,
+                topo_shading=int(namelist.topo_shading),
+                slope_rad=int(namelist.slope_rad),
+                shadow_length_m=float(namelist.topo_shadow_length_m),
+                land_state=carry.noahmp_land if bool(namelist.use_noahmp) else None,
             )
 
         if isinstance(run_radiation, bool):
@@ -2400,8 +2456,17 @@ def compute_m9_diagnostics(
     temperature (in ``state.t_skin``) as its BC.
     """
     surf = surface_layer_diagnostics(state, namelist.grid)
+    radiation_land = noahmp_land if bool(namelist.use_noahmp) else None
     rad = rrtmg_radiation_diagnostics(
-        state, namelist.grid, time_utc=namelist.time_utc, lead_seconds=lead_seconds
+        state,
+        namelist.grid,
+        time_utc=namelist.time_utc,
+        lead_seconds=lead_seconds,
+        radiation_static=namelist.radiation_static,
+        topo_shading=int(namelist.topo_shading),
+        slope_rad=int(namelist.slope_rad),
+        shadow_length_m=float(namelist.topo_shadow_length_m),
+        land_state=radiation_land,
     )
     hfx, lh, tsk, t2 = surf.hfx, surf.lh, state.t_skin, surf.t2
     if bool(namelist.use_noahmp) and noahmp_land is not None:
@@ -2410,7 +2475,7 @@ def compute_m9_diagnostics(
         )
         radiation = (
             _NoahMPRadiation(*noahmp_rad) if noahmp_rad is not None
-            else _NoahMPRadiation(rad.swdown, rad.glw, rad.coszen)
+            else _NoahMPRadiation(rad.swnorm, rad.glw, rad.coszen)
         )
         ep, rp = _noahmp_params(namelist)
         # v0.9.0: route the Noah-MP LSM 2-m T2 over land (the faithful land-T2
@@ -2438,7 +2503,7 @@ def compute_m9_diagnostics(
     # WRF's end-of-step history output carries). Reporting it makes the diagnostic
     # equal the held WRF-cadence field. The non-Noah-MP / noahmp_rad=None path is
     # unchanged (still the output-time recompute).
-    swdown_out = rad.swdown
+    swdown_out = rad.swnorm if int(namelist.slope_rad) == 1 else rad.swdown
     glw_out = rad.glw
     if noahmp_rad is not None:
         swdown_out = jnp.asarray(noahmp_rad[0], dtype=jnp.float64)
