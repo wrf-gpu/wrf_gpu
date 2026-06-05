@@ -1,0 +1,11 @@
+{
+  "scope": "Wave-A acoustic unroll A/B on the coupled L2 d02 path (warmed per-step, min of cache-hit passes)",
+  "workload": "L2 d02 66x159x44, guards ON, fp64, dt=10s, 10 acoustic substeps, 60-step non-radiation segment",
+  "methodology_note": "warmed_per_step_ms = min over warm passes; the FIRST warm pass (new traced start_step) triggers a one-off XLA recompile (~2000-2800 ms/step) and is excluded; passes 2-3 are stable cache hits.",
+  "results": {
+    "unroll_1": {"warmed_per_step_ms": 74.12, "compile_s": 116.2, "peak_mb": 9027, "samples_ms": [2064.03, 77.38, 74.12, 74.14]},
+    "unroll_2": {"warmed_per_step_ms": 73.44, "compile_s": 186.4, "peak_mb": 8956, "samples_ms": [2799.97, 76.90, 73.44, 73.50]}
+  },
+  "verdict": "unroll=2 gives only ~0.9% warmed speedup (74.12 -> 73.44, within run-to-run noise) at +60% compile cost (116s -> 186s). On the COUPLED path the acoustic substep unroll buys essentially nothing because the step is NOT purely launch-bound on the acoustic fraction (Thompson sedimentation ~46% of the coupled step dominates; the v0.9.0 dycore-only 1.22x at unroll=4 does NOT translate to coupled). DEFAULT KEPT AT unroll=1; the hook remains for future dycore-only / Phase-2+ use.",
+  "default_unroll": 1
+}
