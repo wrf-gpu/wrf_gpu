@@ -2364,7 +2364,6 @@ class M9Diagnostics(NamedTuple):
     pblh: jax.Array
     tsk: jax.Array
     t2: jax.Array
-    q2: jax.Array
     u10: jax.Array
     v10: jax.Array
     psfc: jax.Array
@@ -2452,7 +2451,6 @@ def compute_m9_diagnostics(
         pblh=surf.pblh,
         tsk=tsk,
         t2=t2,
-        q2=surf.q2,
         u10=surf.u10,
         v10=surf.v10,
         psfc=_psfc_from_state(state),

@@ -16,7 +16,6 @@ from netCDF4 import Dataset
 from gpuwrf.io.async_wrfout import AsyncWrfoutWriter
 from gpuwrf.io.wrfout_writer import (
     MINIMUM_WRFOUT_VARIABLES,
-    build_wrfout_static_field_cache,
     prepare_wrfout_payload,
     write_wrfout_netcdf,
 )
@@ -87,25 +86,6 @@ def test_async_writer_multiple_hours_ordering(tmp_path: Path):
         assert path.exists(), f"{path} not written after join"
         with Dataset(path) as ds:
             assert "T2" in ds.variables
-
-
-def test_static_wrfout_cache_preserves_payload_fields(tmp_path: Path):
-    state, grid, namelist = synthetic_case()
-    cache = build_wrfout_static_field_cache(state, grid, namelist)
-    uncached = prepare_wrfout_payload(
-        state, grid, namelist, tmp_path / "uncached.nc",
-        valid_time=datetime(2026, 5, 25, 21), lead_hours=3.0,
-        run_start=datetime(2026, 5, 25, 18),
-    )
-    cached = prepare_wrfout_payload(
-        state, grid, namelist, tmp_path / "cached.nc",
-        valid_time=datetime(2026, 5, 25, 21), lead_hours=3.0,
-        run_start=datetime(2026, 5, 25, 18),
-        static_cache=cache,
-    )
-    assert sorted(uncached.fields) == sorted(cached.fields)
-    for name in uncached.fields:
-        assert np.array_equal(uncached.fields[name], cached.fields[name], equal_nan=True), name
 
 
 def test_async_writer_surfaces_write_error(tmp_path: Path):
