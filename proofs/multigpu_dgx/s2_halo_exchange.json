@@ -1,0 +1,240 @@
+{
+  "check": "periodic_ppermute_halo_exchange",
+  "device_count": 4,
+  "grid": {
+    "nx": 16,
+    "ny": 8,
+    "nz": 10
+  },
+  "local_device_count": 4,
+  "passed": true,
+  "platform": "cpu",
+  "records": [
+    {
+      "fields": {
+        "mu": {
+          "equal": true,
+          "max_abs": 0.0,
+          "shape": [
+            4,
+            8,
+            6
+          ]
+        },
+        "theta": {
+          "equal": true,
+          "max_abs": 0.0,
+          "shape": [
+            4,
+            10,
+            8,
+            6
+          ]
+        },
+        "u": {
+          "equal": true,
+          "max_abs": 0.0,
+          "shape": [
+            4,
+            10,
+            8,
+            7
+          ]
+        },
+        "v": {
+          "equal": true,
+          "max_abs": 0.0,
+          "shape": [
+            4,
+            10,
+            9,
+            6
+          ]
+        },
+        "w": {
+          "equal": true,
+          "max_abs": 0.0,
+          "shape": [
+            4,
+            11,
+            8,
+            6
+          ]
+        }
+      },
+      "width": 1
+    },
+    {
+      "fields": {
+        "mu": {
+          "equal": true,
+          "max_abs": 0.0,
+          "shape": [
+            4,
+            8,
+            8
+          ]
+        },
+        "theta": {
+          "equal": true,
+          "max_abs": 0.0,
+          "shape": [
+            4,
+            10,
+            8,
+            8
+          ]
+        },
+        "u": {
+          "equal": true,
+          "max_abs": 0.0,
+          "shape": [
+            4,
+            10,
+            8,
+            9
+          ]
+        },
+        "v": {
+          "equal": true,
+          "max_abs": 0.0,
+          "shape": [
+            4,
+            10,
+            9,
+            8
+          ]
+        },
+        "w": {
+          "equal": true,
+          "max_abs": 0.0,
+          "shape": [
+            4,
+            11,
+            8,
+            8
+          ]
+        }
+      },
+      "width": 2
+    },
+    {
+      "fields": {
+        "mu": {
+          "equal": true,
+          "max_abs": 0.0,
+          "shape": [
+            4,
+            8,
+            10
+          ]
+        },
+        "theta": {
+          "equal": true,
+          "max_abs": 0.0,
+          "shape": [
+            4,
+            10,
+            8,
+            10
+          ]
+        },
+        "u": {
+          "equal": true,
+          "max_abs": 0.0,
+          "shape": [
+            4,
+            10,
+            8,
+            11
+          ]
+        },
+        "v": {
+          "equal": true,
+          "max_abs": 0.0,
+          "shape": [
+            4,
+            10,
+            9,
+            10
+          ]
+        },
+        "w": {
+          "equal": true,
+          "max_abs": 0.0,
+          "shape": [
+            4,
+            11,
+            8,
+            10
+          ]
+        }
+      },
+      "width": 3
+    },
+    {
+      "fields": {
+        "mu": {
+          "equal": true,
+          "max_abs": 0.0,
+          "shape": [
+            4,
+            8,
+            12
+          ]
+        },
+        "theta": {
+          "equal": true,
+          "max_abs": 0.0,
+          "shape": [
+            4,
+            10,
+            8,
+            12
+          ]
+        },
+        "u": {
+          "equal": true,
+          "max_abs": 0.0,
+          "shape": [
+            4,
+            10,
+            8,
+            13
+          ]
+        },
+        "v": {
+          "equal": true,
+          "max_abs": 0.0,
+          "shape": [
+            4,
+            10,
+            9,
+            12
+          ]
+        },
+        "w": {
+          "equal": true,
+          "max_abs": 0.0,
+          "shape": [
+            4,
+            11,
+            8,
+            12
+          ]
+        }
+      },
+      "width": 4
+    }
+  ],
+  "simulation_can_prove": [
+    "periodic x-halo send and receive direction under ppermute",
+    "halo widths 1 through 4 on fake local devices",
+    "mass-grid and x-face staggered State leaves match global periodic slices"
+  ],
+  "simulation_cannot_prove": [
+    "real NVLink or InfiniBand latency",
+    "GPU collective overlap with dycore kernels",
+    "multi-node process launch correctness"
+  ]
+}

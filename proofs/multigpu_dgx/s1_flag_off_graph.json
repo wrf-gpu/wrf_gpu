@@ -11,8 +11,8 @@
       "replica-id": 0
     },
     "collectives_present": false,
-    "hlo_sha256": "f8d5dc557aca2353ecfb63b2decbadd94d65daa8ffe67215abbf15c062708eaa",
-    "hlo_size_bytes": 29329,
+    "hlo_sha256": "6794c270e40f576f056ccded91e2af87142648f67f78d9325a8dad89cf1c7ef9",
+    "hlo_size_bytes": 26404,
     "op_count": 145
   },
   "local_device_count": 4,
@@ -28,8 +28,8 @@
       "replica-id": 0
     },
     "collectives_present": false,
-    "hlo_sha256": "f8d5dc557aca2353ecfb63b2decbadd94d65daa8ffe67215abbf15c062708eaa",
-    "hlo_size_bytes": 29329,
+    "hlo_sha256": "6794c270e40f576f056ccded91e2af87142648f67f78d9325a8dad89cf1c7ef9",
+    "hlo_size_bytes": 26404,
     "op_count": 145
   },
   "selection_identity": true,
