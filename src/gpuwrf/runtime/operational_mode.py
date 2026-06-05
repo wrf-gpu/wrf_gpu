@@ -121,11 +121,11 @@ def _acoustic_unroll() -> int:
     """Acoustic-substep ``lax.scan`` unroll factor (v0.10.0 Wave-A, Opus#1).
 
     Mirrors the Thompson ``GPUWRF_THOMPSON_SED_UNROLL`` pattern.  Default ``1``
-    (no unroll) preserves the shipped v0.9.0 lowering exactly; the operational
-    default is bumped to ``2`` after the Wave-A A/B + 24h-stability gate (NOT 4:
-    avoids the coupled-OOM + harsher compile observed at unroll=4).  Unrolling is
-    round-off-neutral (the substep arithmetic is unchanged; only the loop body is
-    replicated in the program), so it does not perturb the fp64 acoustic island.
+    remains the operational default: Wave-A/B A/B found unroll=2 only moved the
+    coupled L2 path by noise-scale <1% while increasing compile cost.  Unrolling
+    is round-off-neutral (the substep arithmetic is unchanged; only the loop body
+    is replicated in the program), so the hook remains available for future
+    dycore-only or architecture-specific measurements.
     """
 
     return max(1, int(os.environ.get("GPUWRF_ACOUSTIC_UNROLL", "1")))
@@ -1379,16 +1379,13 @@ def _acoustic_scan(
         )
 
         # v0.10.0 Wave-A (Opus#1 unroll):
-        # NOTE on the rejected carry-split (Opus#2): threading only the ~19
+        # NOTE on the reverted carry-split (Opus#2): threading only the ~19
         # evolving leaves through the scan and closing over the ~50 stage-constant
-        # leaves (reconstructing the full AcousticCoreState inside the body) was
-        # measured to be a NET REGRESSION on this stack (JAX 0.10.0 / RTX 5090):
-        # it ~2x'd the segment compile time (a 90-step coupled fp64 compile went
-        # ~70s -> 132s) AND severely slowed the warmed step (the warm-timing loop
-        # never completed in >5 min vs ~34s baseline) -- XLA materialised/threaded
-        # the closed-over constants per substep rather than hoisting them. The
-        # simple full-pytree carry below lets XLA's own constant-hoisting handle
-        # the stage-invariant leaves; it is bit-identical and the faster path.
+        # leaves was bit-identical, but the warmed A/B was confounded by a one-off
+        # cache-miss/recompile artifact and was not cleanly revalidated. The
+        # simple full-pytree carry below is the proven non-regressing path; retest
+        # any carry split with the corrected cache-hit timing protocol before
+        # changing it.
         # See proofs/v0100/inefficiency_ledger.md (Opus#2 = REVERTED).
         def body(scan_acoustic: AcousticCoreState, _):
             return acoustic_substep_core(

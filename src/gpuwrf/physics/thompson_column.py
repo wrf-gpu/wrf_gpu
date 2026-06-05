@@ -902,18 +902,18 @@ def _ice_sources(state: ThompsonColumnState, dt: float, tables: ThompsonTableBun
 # WRF's coarser nstep does, biasing surface precip HIGH (+13% vs the WRF
 # precipitating oracle).  Matching WRF's adaptive nstep collapses that bias.
 #
-# Cap sizing: explicit-upwind stability needs nstep >= vt*DT/dz.  For the fastest
-# realistic graupel (~20 m/s) at the thinnest layer (dz ~ 30-48 m) and DT = 18 s,
-# WRF's nstep ~ 8-12; NSED_MAX = 64 leaves >5x headroom so the per-column nstep is
-# never clipped on operational d02/d03 columns.  If a pathological column ever
-# needs nstep > NSED_MAX the substep is silently capped at NSED_MAX (still
-# stable, slightly under-resolved) and counted as a sed-clip fallback by the
+# Cap sizing: explicit-upwind stability needs nstep >= vt*DT/dz.  The v0.10.0
+# d02/d03 wet-column scan found max nstep=2 and zero clips at cap=16, so 16 is an
+# 8x margin over the observed active corpus while still covering severe-column
+# estimates (~8-12).  If a pathological column ever needs nstep > NSED_MAX the
+# substep is silently capped at NSED_MAX (same behavior as the old cap=64 path,
+# stable but slightly under-resolved) and counted as a sed-clip fallback by the
 # validation harness.  ``GPUWRF_THOMPSON_NSED`` overrides the cap.
 def _nsed_substeps() -> int:
     try:
-        return max(1, int(os.environ.get("GPUWRF_THOMPSON_NSED", "64")))
+        return max(1, int(os.environ.get("GPUWRF_THOMPSON_NSED", "16")))
     except ValueError:
-        return 64
+        return 16
 
 
 # Static upper bound on per-column substeps (loop length); the EFFECTIVE substep
