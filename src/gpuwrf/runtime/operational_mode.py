@@ -185,6 +185,10 @@ class _StaticHolder:
 
 
 _PHYSICS_NON_DRY_INCREMENT_FIELDS: tuple[str, ...] = (
+    "u",
+    "v",
+    "w",
+    "theta",
     "qv",
     "qc",
     "qr",
@@ -2217,30 +2221,17 @@ def _dry_physics_tendencies_from_state_delta(
 ) -> DryPhysicsTendencies:
     """Build WRF ``*_tendf`` leaves from one non-timesplit physics pass.
 
-    The physics adapters return a post-physics State because that is their frozen
-    public contract. Operational RK needs the dry deltas as RK1-fixed WRF
-    ``*_tendf`` terms, so convert only dry prognostic deltas here and let
-    ``rk_addtend_dry`` apply the field-specific map/mass factors per RK stage.
+    The current physics adapters return already-integrated ``State`` deltas, not
+    the raw WRF ``R*TEN`` source tendencies that ``calculate_phy_tend`` mass-couples
+    before ``rk_addtend_dry``.  Treating aggregate state deltas as RK-fixed dry
+    tendencies changes the thermal forcing cadence and regresses the d02 wind
+    skill.  Keep this bridge empty until a scheme exposes true WRF ``*_tendf``
+    leaves; the dry state deltas are applied after the dycore by
+    ``_apply_physics_non_dry_updates``.
     """
 
-    inv_dt = 1.0 / float(dt_s)
-    msfuy = namelist.metrics.msfuy[None, :, :]
-    msfvx = namelist.metrics.msfvx[None, :, :]
-    msfty = namelist.metrics.msfty[None, :, :]
-
-    du_dt = (jnp.asarray(after.u, dtype=jnp.float64) - jnp.asarray(before.u, dtype=jnp.float64)) * inv_dt
-    dv_dt = (jnp.asarray(after.v, dtype=jnp.float64) - jnp.asarray(before.v, dtype=jnp.float64)) * inv_dt
-    dw_dt = (jnp.asarray(after.w, dtype=jnp.float64) - jnp.asarray(before.w, dtype=jnp.float64)) * inv_dt
-    dtheta_dt = (
-        jnp.asarray(after.theta, dtype=jnp.float64) - jnp.asarray(before.theta, dtype=jnp.float64)
-    ) * inv_dt
-
-    return DryPhysicsTendencies(
-        ru_tendf=du_dt * msfuy,
-        rv_tendf=dv_dt * msfvx,
-        rw_tendf=dw_dt * msfty,
-        h_diabatic=dtheta_dt,
-    )
+    del before, after, namelist, dt_s
+    return DryPhysicsTendencies()
 
 
 def _apply_physics_non_dry_updates(
