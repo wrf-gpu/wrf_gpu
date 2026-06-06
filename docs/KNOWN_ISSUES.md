@@ -159,6 +159,25 @@ blew up at hour 14; case `20260511_18z` (nx=120, `run_boundary=False`) ran 24 h 
 ## Conservation budgets — CLOSED in v0.11.0
 
 Dry-mass, total-water, and moist-static-energy relative budget residuals are **0.0** (fp64)
-in v0.11.0. The conserving physics coupling path applies dry tendencies through `rk_addtend_dry`
-at each RK stage; non-dry physics deltas are applied post-dycore. Post-boundary finite/origin
+in v0.11.0. Physics state deltas are applied **post-dycore** (the v0.9.0 cadence). A v0.11.0
+attempt to route the aggregate dry-physics delta through `rk_addtend_dry` as RK-stage tendencies
+was found to degrade d02 surface winds (commit `5e8aabe`) and is **disabled**; a proper WRF
+`*_tendf` source-tendency adapter is deferred to v0.12.0. Budget closure is **path-independent**
+and was re-confirmed 0.0 on the fixed code (commit `b20abb5`). Post-boundary finite/origin
 guard replacements: 0. Proof: `proofs/v0110/conservation_budgets_closed.json`.
+
+---
+
+## KI-8 (cosmetic, carried) — outdated source-pattern test guards
+
+**Severity:** test-hygiene only; not a forecast-correctness or operational defect.
+
+A handful of brittle tests assert exact *source-text* patterns in `operational_mode.py` and
+others (`test_m6b_rk1_d2h_acceptance`, `test_m6b_d2h_warmed_zero`, the m6x_c2 / s3narrow /
+rrtmg-gate / thompson-HLO-fusion expectations). They predate the conservation / Noah-MP /
+radiation-cadence refactors that legitimately changed the source (e.g. `advance_stage` now takes
+a `stages[]` array; the radiation cadence uses a `jax.lax.cond` that has a **static-bool fast
+path** so the operational default never executes it; `_m9_snapshot` is the diagnostics
+computation, not a host callback). The operational path is validated functionally (conservation
+0.0, winds recovered, idealized faithful, import OK). Scheduled for a v0.11.x cleanup; they do
+not affect the shipped forecast.
