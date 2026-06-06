@@ -1,0 +1,21 @@
+{
+  "cpu_baseline": {
+    "cpu_wall_24h_s": 3292.9732405344644,
+    "method": "fallback wrfout file mtime extrapolated to 24h",
+    "observed_simulated_hours": 72.0,
+    "observed_wall_s": 9878.919721603394,
+    "observed_wrfout_count": 73,
+    "run_dir": "/tmp/vburst_runs/20260507_18z_l2_72h_20260513T124307Z",
+    "status": "PASS"
+  },
+  "note": "CPU denominator is derived from existing Gen2 WRF logs for the contracted run. Pipeline wall includes IC load, hourly GPU forecast calls, wrfout writes, inventory, and scoring.",
+  "pipeline_wall_24h_s": 639.5804443759844,
+  "schema": "M7DailyPipelineSpeedupVsCpu24h",
+  "schema_version": 1,
+  "speedup": 5.148645912317253,
+  "status": "PASS",
+  "target_speedup_band": [
+    4.0,
+    8.0
+  ]
+}
