@@ -1,0 +1,161 @@
+{
+  "branch": "worker/gpt/v0110-val-d031km",
+  "commands": [
+    "PYTHONPATH=src taskset -c 0-27 python -m py_compile scripts/d03_replay.py",
+    "PYTHONPATH=src taskset -c 0-27 /tmp/wrf_gpu_run_lowprio.sh python scripts/d03_replay.py --run-id 20260521_18z_l3_24h_20260522T133443Z --hours 24 --output-root /tmp/v0110_d031km_runs --proof-dir proofs/v0110 --tag d031km_gated_fp32 --gated-fp32 2>&1 | tee proofs/v0110/d031km_gated_fp32.log",
+    "PYTHONPATH=src taskset -c 0-27 /tmp/wrf_gpu_run_lowprio.sh python scripts/d03_replay.py --run-id 20260521_18z_l3_24h_20260522T133443Z --hours 24 --output-root /tmp/v0110_d031km_runs --proof-dir proofs/v0110 --tag d031km_gated_fp32_clone --gated-fp32 2>&1 | tee proofs/v0110/d031km_gated_fp32_clone.log"
+  ],
+  "domain": "d03",
+  "full_fp64": {
+    "reason": "Fallback only required if gated-fp32 goes non-finite; gated-fp32 reached 24 h finite/stable.",
+    "status": "NOT_RUN"
+  },
+  "gated_fp32": {
+    "all_finite": true,
+    "final_valid_time_utc": "2026-05-22T18:00:00+00:00",
+    "lead_reached_h": 24,
+    "namelist": {
+      "acoustic_substeps": 10,
+      "damp_opt": 3,
+      "dampcoef": 0.2,
+      "diff_6th_factor": 0.12,
+      "diff_6th_opt": 2,
+      "disable_guards": false,
+      "dt_s": 3.0,
+      "epssm": 0.5,
+      "force_fp64": false,
+      "radiation_cadence_steps": 600,
+      "rk_order": 3,
+      "run_boundary": true,
+      "run_physics": true,
+      "top_lid": true,
+      "use_flux_advection": true,
+      "use_vertical_solver": true,
+      "w_damping": 1,
+      "zdamp": 5000.0
+    },
+    "pipeline_verdict": "PIPELINE_PARTIAL",
+    "qke_coldstart": {
+      "note": "parent wrfout carried no real QKE (MAXVAL<0.0002); seeded WRF cold-start background TKE profile",
+      "qke_max": 4.99220117532457e-05,
+      "seeded": true,
+      "wrf_ref": "phys/module_bl_mynnedmf.F:618-691 (mym_initialize INITIALIZE_QKE)"
+    },
+    "qke_final": {
+      "dtype": "float64",
+      "finite": true,
+      "max": 124.52927886424234,
+      "min": 1e-05,
+      "nonfinite_count": 0,
+      "shape": [
+        44,
+        75,
+        93
+      ]
+    },
+    "status": "PASS",
+    "validation_status": "PASS",
+    "wall_clock_per_forecast_hour_s": 68.91916146125004,
+    "wall_clock_total_s": 1654.059875070001,
+    "wrfout_count": 24
+  },
+  "grid": {
+    "mass_shape_yx": [
+      75,
+      93
+    ],
+    "terrain": "Tenerife 1 km steep terrain"
+  },
+  "head": "3d5c6ae (HEAD -> worker/gpt/v0110-val-d031km, worker/opus/v0110-integration) v0.12.0 plan FINAL: Scope A locked (common+fail-closed) + GPT-review gaps folded + difficulty-rated sprint table",
+  "initial_attempt": {
+    "fix": "scripts/d03_replay.py now clones State leaves before the donated JIT forecast call to avoid aliased buffer donation.",
+    "reason": "JaxRuntimeError: INVALID_ARGUMENT: Attempt to donate the same buffer twice in Execute() (flattened argument 8, replica 0, partition 0, first use: 5). Toy example for this bug: `f(donate(a), donate(a))`.",
+    "status": "BLOCKED_BEFORE_FORECAST",
+    "tag": "d031km_gated_fp32"
+  },
+  "notes": [
+    "The raw daily pipeline verdict is PIPELINE_PARTIAL because station scoring was not requested; gridded corpus validation status is PASS and finite check is true.",
+    "QKE final finite count is the key KI-1 canary: nonfinite_count=0 at 24 h.",
+    "U10/V10 are within final RMSE thresholds but do not beat persistence at all leads; T2 beats persistence at all leads."
+  ],
+  "output_dir": "/tmp/v0110_d031km_runs/d03_20260521_18z_l3_24h_20260522T133443Z_d031km_gated_fp32_clone",
+  "proofs": {
+    "donation_blocked_pipeline": "proofs/v0110/pipeline_run_d03_d031km_gated_fp32.json",
+    "log": "proofs/v0110/d031km_gated_fp32_clone.log",
+    "pipeline": "proofs/v0110/pipeline_run_d03_d031km_gated_fp32_clone.json",
+    "summary": "proofs/v0110/d03_summary_d031km_gated_fp32_clone.json",
+    "validation": "proofs/v0110/d03_validation_d031km_gated_fp32_clone.json"
+  },
+  "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
+  "run_id": "20260521_18z_l3_24h_20260522T133443Z",
+  "schema": "V0110D031kmValidation",
+  "schema_version": 1,
+  "skill_vs_corpus_1km_truth": {
+    "RAINNC": {
+      "beats_persistence_all_leads": false,
+      "beats_persistence_final": false,
+      "lead_count": 24,
+      "max_abs_error_final": 4.913621425628662,
+      "mean_error_final": 0.22165716578860145,
+      "persistence_rmse_final": 1.4421910101943408e-05,
+      "persistence_rmse_mean": 1.3789792195313085e-05,
+      "rmse_final": 0.6845181727585644,
+      "rmse_max": 0.6845181727585644,
+      "rmse_mean": 0.12600034451178616,
+      "threshold": null,
+      "units": "mm",
+      "within_threshold_all_leads": true,
+      "within_threshold_final": true
+    },
+    "T2": {
+      "beats_persistence_all_leads": true,
+      "beats_persistence_final": true,
+      "lead_count": 24,
+      "max_abs_error_final": 7.85101318359375,
+      "mean_error_final": 0.2585505616109431,
+      "persistence_rmse_final": 2.297936325392803,
+      "persistence_rmse_mean": 2.3735007926992897,
+      "rmse_final": 1.6145591434561046,
+      "rmse_max": 1.9798180986656477,
+      "rmse_mean": 1.3203407484007033,
+      "threshold": 3.0,
+      "units": "K",
+      "within_threshold_all_leads": true,
+      "within_threshold_final": true
+    },
+    "U10": {
+      "beats_persistence_all_leads": false,
+      "beats_persistence_final": false,
+      "lead_count": 24,
+      "max_abs_error_final": 20.520272254943848,
+      "mean_error_final": 1.56716404212026,
+      "persistence_rmse_final": 2.98079500303829,
+      "persistence_rmse_mean": 2.3458741279673387,
+      "rmse_final": 5.132819673624478,
+      "rmse_max": 5.371189532396685,
+      "rmse_mean": 4.001677408625804,
+      "threshold": 7.5,
+      "units": "m s-1",
+      "within_threshold_all_leads": true,
+      "within_threshold_final": true
+    },
+    "V10": {
+      "beats_persistence_all_leads": false,
+      "beats_persistence_final": false,
+      "lead_count": 24,
+      "max_abs_error_final": 22.269188404083252,
+      "mean_error_final": -1.3536739375042366,
+      "persistence_rmse_final": 4.678583125846212,
+      "persistence_rmse_mean": 3.5789602234594606,
+      "rmse_final": 6.6252032071323095,
+      "rmse_max": 6.810201955268011,
+      "rmse_mean": 4.85051233038999,
+      "threshold": 7.5,
+      "units": "m s-1",
+      "within_threshold_all_leads": true,
+      "within_threshold_final": true
+    }
+  },
+  "target_hours": 24,
+  "verdict": "D03_1KM_STABLE"
+}

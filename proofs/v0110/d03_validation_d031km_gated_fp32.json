@@ -1,0 +1,24 @@
+{
+  "detail": {
+    "detail": {
+      "failure_mode": "JaxRuntimeError"
+    },
+    "hours": 24,
+    "orchestration_cpu_affinity": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "output_dir": "/tmp/v0110_d031km_runs/d03_20260521_18z_l3_24h_20260522T133443Z_d031km_gated_fp32",
+    "reason": "JaxRuntimeError: INVALID_ARGUMENT: Attempt to donate the same buffer twice in Execute() (flattened argument 8, replica 0, partition 0, first use: 5). Toy example for this bug: `f(donate(a), donate(a))`.",
+    "run_id": "20260521_18z_l3_24h_20260522T133443Z",
+    "schema": "M7DailyPipelineRun",
+    "schema_version": 1,
+    "verdict": "PIPELINE_BLOCKED"
+  },
+  "reason": "JaxRuntimeError: INVALID_ARGUMENT: Attempt to donate the same buffer twice in Execute() (flattened argument 8, replica 0, partition 0, first use: 5). Toy example for this bug: `f(donate(a), donate(a))`.",
+  "schema": "V010D03ReplayValidation",
+  "schema_version": 1,
+  "status": "BLOCKED"
+}

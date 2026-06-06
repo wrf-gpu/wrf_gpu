@@ -1,0 +1,1423 @@
+{
+  "all_finite_check": {
+    "all_finite": true,
+    "field_count": 56,
+    "fields": {
+      "Nc": {
+        "dtype": "float32",
+        "finite": true,
+        "max": 0.0,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          75,
+          93
+        ]
+      },
+      "Ng": {
+        "dtype": "float32",
+        "finite": true,
+        "max": 0.0,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          75,
+          93
+        ]
+      },
+      "Ni": {
+        "dtype": "float32",
+        "finite": true,
+        "max": 0.0,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          75,
+          93
+        ]
+      },
+      "Nn": {
+        "dtype": "float32",
+        "finite": true,
+        "max": 0.0,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          75,
+          93
+        ]
+      },
+      "Nr": {
+        "dtype": "float32",
+        "finite": true,
+        "max": 8047.65869140625,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          75,
+          93
+        ]
+      },
+      "Ns": {
+        "dtype": "float32",
+        "finite": true,
+        "max": 0.0,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          75,
+          93
+        ]
+      },
+      "fltv": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 1.6759319673475859,
+        "min": -0.1543683475348337,
+        "nonfinite_count": 0,
+        "shape": [
+          75,
+          93
+        ]
+      },
+      "graupel_acc": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 0.0,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          75,
+          93
+        ]
+      },
+      "ice_acc": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 0.0,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          75,
+          93
+        ]
+      },
+      "lakemask": {
+        "dtype": "float32",
+        "finite": true,
+        "max": 0.0,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          75,
+          93
+        ]
+      },
+      "lu_index": {
+        "dtype": "int32",
+        "finite": true,
+        "max": 17.0,
+        "min": 5.0,
+        "nonfinite_count": 0,
+        "shape": [
+          75,
+          93
+        ]
+      },
+      "mavail": {
+        "dtype": "float32",
+        "finite": true,
+        "max": 1.0,
+        "min": 0.06392905116081238,
+        "nonfinite_count": 0,
+        "shape": [
+          75,
+          93
+        ]
+      },
+      "mu": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 96703.21952428723,
+        "min": 62445.47855999634,
+        "nonfinite_count": 0,
+        "shape": [
+          75,
+          93
+        ]
+      },
+      "mu_bdy": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 1862.4022623697917,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          25,
+          4,
+          5,
+          1,
+          94
+        ]
+      },
+      "mu_perturbation": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 1975.0137162463448,
+        "min": 1257.7617270620253,
+        "nonfinite_count": 0,
+        "shape": [
+          75,
+          93
+        ]
+      },
+      "mu_total": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 96703.21952428723,
+        "min": 62445.47855999634,
+        "nonfinite_count": 0,
+        "shape": [
+          75,
+          93
+        ]
+      },
+      "mub_bdy": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 95000.0,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          1,
+          4,
+          5,
+          1,
+          94
+        ]
+      },
+      "p": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 101582.88541666667,
+        "min": 5141.97013736118,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          75,
+          93
+        ]
+      },
+      "p_bdy": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 2056.390625,
+        "min": -4.96484375,
+        "nonfinite_count": 0,
+        "shape": [
+          25,
+          4,
+          5,
+          44,
+          94
+        ]
+      },
+      "p_perturbation": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 1915.8653480084467,
+        "min": -83.28035092007,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          75,
+          93
+        ]
+      },
+      "p_total": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 101582.88541666667,
+        "min": 5141.97013736118,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          75,
+          93
+        ]
+      },
+      "pb_bdy": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 99706.203125,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          1,
+          4,
+          5,
+          44,
+          94
+        ]
+      },
+      "ph": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 204304.3777489101,
+        "min": -1.1694431805153727e-06,
+        "nonfinite_count": 0,
+        "shape": [
+          45,
+          75,
+          93
+        ]
+      },
+      "ph_bdy": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 8814.015950520832,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          25,
+          4,
+          5,
+          45,
+          94
+        ]
+      },
+      "ph_perturbation": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 9083.924623910114,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          45,
+          75,
+          93
+        ]
+      },
+      "ph_total": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 204304.3777489101,
+        "min": -1.1694431805153727e-06,
+        "nonfinite_count": 0,
+        "shape": [
+          45,
+          75,
+          93
+        ]
+      },
+      "phb_bdy": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 195220.5,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          1,
+          4,
+          5,
+          45,
+          94
+        ]
+      },
+      "qc": {
+        "dtype": "float32",
+        "finite": true,
+        "max": 0.001752979471348226,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          75,
+          93
+        ]
+      },
+      "qg": {
+        "dtype": "float32",
+        "finite": true,
+        "max": 0.0,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          75,
+          93
+        ]
+      },
+      "qi": {
+        "dtype": "float32",
+        "finite": true,
+        "max": 0.0,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          75,
+          93
+        ]
+      },
+      "qke": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 124.52927886424234,
+        "min": 1e-05,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          75,
+          93
+        ]
+      },
+      "qr": {
+        "dtype": "float32",
+        "finite": true,
+        "max": 0.00017897206998895854,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          75,
+          93
+        ]
+      },
+      "qs": {
+        "dtype": "float32",
+        "finite": true,
+        "max": 0.0,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          75,
+          93
+        ]
+      },
+      "qv": {
+        "dtype": "float32",
+        "finite": true,
+        "max": 0.017483295872807503,
+        "min": 2.4879341253836174e-06,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          75,
+          93
+        ]
+      },
+      "qv_bdy": {
+        "dtype": "float32",
+        "finite": true,
+        "max": 0.013220940716564655,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          25,
+          4,
+          5,
+          44,
+          94
+        ]
+      },
+      "qv_flux": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 0.00033214416455115117,
+        "min": 3.527500911788075e-07,
+        "nonfinite_count": 0,
+        "shape": [
+          75,
+          93
+        ]
+      },
+      "rain_acc": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 4.913621471122854,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          75,
+          93
+        ]
+      },
+      "rainc_acc": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 0.0,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          75,
+          93
+        ]
+      },
+      "rhosfc": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 1.2025221830947719,
+        "min": 0.8338579994562215,
+        "nonfinite_count": 0,
+        "shape": [
+          75,
+          93
+        ]
+      },
+      "roughness_m": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 2.1522570097149867,
+        "min": 0.001433039006115542,
+        "nonfinite_count": 0,
+        "shape": [
+          75,
+          93
+        ]
+      },
+      "snow_acc": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 0.0,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          75,
+          93
+        ]
+      },
+      "soil_moisture": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 1.0,
+        "min": 0.06392905116081238,
+        "nonfinite_count": 0,
+        "shape": [
+          75,
+          93
+        ]
+      },
+      "t_skin": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 313.4402160644531,
+        "min": 288.4657287597656,
+        "nonfinite_count": 0,
+        "shape": [
+          75,
+          93
+        ]
+      },
+      "tau_u": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 1.9898862067035088,
+        "min": -6.405452490978836,
+        "nonfinite_count": 0,
+        "shape": [
+          75,
+          93
+        ]
+      },
+      "tau_v": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 8.545259126947881,
+        "min": -4.173800670348246,
+        "nonfinite_count": 0,
+        "shape": [
+          75,
+          93
+        ]
+      },
+      "theta": {
+        "dtype": "float32",
+        "finite": true,
+        "max": 489.71746826171875,
+        "min": 290.07098388671875,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          75,
+          93
+        ]
+      },
+      "theta_bdy": {
+        "dtype": "float32",
+        "finite": true,
+        "max": 490.4209289550781,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          25,
+          4,
+          5,
+          44,
+          94
+        ]
+      },
+      "theta_flux": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 1.6157679596291454,
+        "min": -0.15898875911867205,
+        "nonfinite_count": 0,
+        "shape": [
+          75,
+          93
+        ]
+      },
+      "u": {
+        "dtype": "float32",
+        "finite": true,
+        "max": 22.965965270996094,
+        "min": -14.691439628601074,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          75,
+          94
+        ]
+      },
+      "u_bdy": {
+        "dtype": "float32",
+        "finite": true,
+        "max": 24.0210018157959,
+        "min": -9.180825233459473,
+        "nonfinite_count": 0,
+        "shape": [
+          25,
+          4,
+          5,
+          44,
+          94
+        ]
+      },
+      "ustar": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 3.2679472397053995,
+        "min": 0.008073482550477504,
+        "nonfinite_count": 0,
+        "shape": [
+          75,
+          93
+        ]
+      },
+      "v": {
+        "dtype": "float32",
+        "finite": true,
+        "max": 16.852890014648438,
+        "min": -20.82144546508789,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          76,
+          93
+        ]
+      },
+      "v_bdy": {
+        "dtype": "float32",
+        "finite": true,
+        "max": 9.231002807617188,
+        "min": -17.60966682434082,
+        "nonfinite_count": 0,
+        "shape": [
+          25,
+          4,
+          5,
+          44,
+          94
+        ]
+      },
+      "w": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 4.488244673275012,
+        "min": -8.293105659253323,
+        "nonfinite_count": 0,
+        "shape": [
+          45,
+          75,
+          93
+        ]
+      },
+      "w_bdy": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 0.25302168726921165,
+        "min": -0.2487770020961772,
+        "nonfinite_count": 0,
+        "shape": [
+          25,
+          4,
+          5,
+          45,
+          94
+        ]
+      },
+      "xland": {
+        "dtype": "float32",
+        "finite": true,
+        "max": 2.0,
+        "min": 1.0,
+        "nonfinite_count": 0,
+        "shape": [
+          75,
+          93
+        ]
+      }
+    }
+  },
+  "cpu_affinity": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "device": "cuda:0",
+  "domain": "d03",
+  "hours": 24,
+  "metadata": {
+    "boundary": {
+      "bdy_width": 5,
+      "child_domain": "d03",
+      "child_grid": {
+        "dx_m": 1000.0,
+        "dy_m": 1000.0,
+        "mass_shape": [
+          44,
+          75,
+          93
+        ]
+      },
+      "child_history_file_count": 25,
+      "nesting": {
+        "horizontal_interpolation": "bilinear on native WRF parent index coordinates",
+        "i_parent_start": 52,
+        "j_parent_start": 20,
+        "parent_grid_ratio": 3
+      },
+      "padded_side_length": 94,
+      "parent_domain": "d02",
+      "parent_grid": {
+        "dx_m": 3000.0,
+        "dy_m": 3000.0,
+        "mass_shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "parent_history_file_count": 25,
+      "schema": "nested-parent-strip-pack-v2",
+      "side_order": [
+        "W",
+        "E",
+        "S",
+        "N"
+      ],
+      "source": "Gen2 L2 parent-domain hourly wrfout nested interpolation",
+      "source_run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
+      "strip_order": "WRF wrfbdy order: outer-to-inner bdy_width, vertical, side_index",
+      "times": 25,
+      "variables": [
+        "U",
+        "V",
+        "W",
+        "T",
+        "QVAPOR",
+        "P",
+        "PB",
+        "PH",
+        "PHB",
+        "MU",
+        "MUB"
+      ],
+      "wrfbdy_path": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfbdy_d01",
+      "wrfbdy_width_source": "decode_wrfbdy"
+    },
+    "d03_replay_adapter": {
+      "actual_mass_shape_yx": [
+        75,
+        93
+      ],
+      "boundary_source": "parent d02 hourly wrfout interpolated to child d03 side strips",
+      "domain": "d03",
+      "expected_mass_shape_yx": [
+        75,
+        93
+      ],
+      "ic_source": "corpus L3 wrfout_d03 snapshot at t=0 plus wrfinput metrics/land state",
+      "operational_numerics": "Sprint-U _build_real_case namelist (1km CFL dt)",
+      "parent_domain": "d02"
+    },
+    "domain": "d03",
+    "grid": {
+      "dx_m": 1000.0,
+      "dy_m": 1000.0,
+      "mass_shape": [
+        44,
+        75,
+        93
+      ],
+      "wrf_staggered_extent": [
+        45,
+        76,
+        94
+      ]
+    },
+    "land_state_refresh": {
+      "cadence": "hourly forecast output boundary",
+      "enabled": true,
+      "records": [
+        {
+          "fields_refreshed": [
+            "lakemask",
+            "mavail",
+            "roughness_m",
+            "soil_moisture",
+            "t_skin",
+            "xland"
+          ],
+          "full_hourly_payload": [
+            "TSK",
+            "SST",
+            "SMOIS",
+            "SH2O",
+            "TSLB"
+          ],
+          "hour": 1,
+          "requested_time_index": 1,
+          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d03_2026-05-21_19:00:00",
+          "status": "PASS",
+          "time_index": 1
+        },
+        {
+          "fields_refreshed": [
+            "lakemask",
+            "mavail",
+            "roughness_m",
+            "soil_moisture",
+            "t_skin",
+            "xland"
+          ],
+          "full_hourly_payload": [
+            "TSK",
+            "SST",
+            "SMOIS",
+            "SH2O",
+            "TSLB"
+          ],
+          "hour": 2,
+          "requested_time_index": 2,
+          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d03_2026-05-21_20:00:00",
+          "status": "PASS",
+          "time_index": 2
+        },
+        {
+          "fields_refreshed": [
+            "lakemask",
+            "mavail",
+            "roughness_m",
+            "soil_moisture",
+            "t_skin",
+            "xland"
+          ],
+          "full_hourly_payload": [
+            "TSK",
+            "SST",
+            "SMOIS",
+            "SH2O",
+            "TSLB"
+          ],
+          "hour": 3,
+          "requested_time_index": 3,
+          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d03_2026-05-21_21:00:00",
+          "status": "PASS",
+          "time_index": 3
+        },
+        {
+          "fields_refreshed": [
+            "lakemask",
+            "mavail",
+            "roughness_m",
+            "soil_moisture",
+            "t_skin",
+            "xland"
+          ],
+          "full_hourly_payload": [
+            "TSK",
+            "SST",
+            "SMOIS",
+            "SH2O",
+            "TSLB"
+          ],
+          "hour": 4,
+          "requested_time_index": 4,
+          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d03_2026-05-21_22:00:00",
+          "status": "PASS",
+          "time_index": 4
+        },
+        {
+          "fields_refreshed": [
+            "lakemask",
+            "mavail",
+            "roughness_m",
+            "soil_moisture",
+            "t_skin",
+            "xland"
+          ],
+          "full_hourly_payload": [
+            "TSK",
+            "SST",
+            "SMOIS",
+            "SH2O",
+            "TSLB"
+          ],
+          "hour": 5,
+          "requested_time_index": 5,
+          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d03_2026-05-21_23:00:00",
+          "status": "PASS",
+          "time_index": 5
+        },
+        {
+          "fields_refreshed": [
+            "lakemask",
+            "mavail",
+            "roughness_m",
+            "soil_moisture",
+            "t_skin",
+            "xland"
+          ],
+          "full_hourly_payload": [
+            "TSK",
+            "SST",
+            "SMOIS",
+            "SH2O",
+            "TSLB"
+          ],
+          "hour": 6,
+          "requested_time_index": 6,
+          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d03_2026-05-22_00:00:00",
+          "status": "PASS",
+          "time_index": 6
+        },
+        {
+          "fields_refreshed": [
+            "lakemask",
+            "mavail",
+            "roughness_m",
+            "soil_moisture",
+            "t_skin",
+            "xland"
+          ],
+          "full_hourly_payload": [
+            "TSK",
+            "SST",
+            "SMOIS",
+            "SH2O",
+            "TSLB"
+          ],
+          "hour": 7,
+          "requested_time_index": 7,
+          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d03_2026-05-22_01:00:00",
+          "status": "PASS",
+          "time_index": 7
+        },
+        {
+          "fields_refreshed": [
+            "lakemask",
+            "mavail",
+            "roughness_m",
+            "soil_moisture",
+            "t_skin",
+            "xland"
+          ],
+          "full_hourly_payload": [
+            "TSK",
+            "SST",
+            "SMOIS",
+            "SH2O",
+            "TSLB"
+          ],
+          "hour": 8,
+          "requested_time_index": 8,
+          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d03_2026-05-22_02:00:00",
+          "status": "PASS",
+          "time_index": 8
+        },
+        {
+          "fields_refreshed": [
+            "lakemask",
+            "mavail",
+            "roughness_m",
+            "soil_moisture",
+            "t_skin",
+            "xland"
+          ],
+          "full_hourly_payload": [
+            "TSK",
+            "SST",
+            "SMOIS",
+            "SH2O",
+            "TSLB"
+          ],
+          "hour": 9,
+          "requested_time_index": 9,
+          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d03_2026-05-22_03:00:00",
+          "status": "PASS",
+          "time_index": 9
+        },
+        {
+          "fields_refreshed": [
+            "lakemask",
+            "mavail",
+            "roughness_m",
+            "soil_moisture",
+            "t_skin",
+            "xland"
+          ],
+          "full_hourly_payload": [
+            "TSK",
+            "SST",
+            "SMOIS",
+            "SH2O",
+            "TSLB"
+          ],
+          "hour": 10,
+          "requested_time_index": 10,
+          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d03_2026-05-22_04:00:00",
+          "status": "PASS",
+          "time_index": 10
+        },
+        {
+          "fields_refreshed": [
+            "lakemask",
+            "mavail",
+            "roughness_m",
+            "soil_moisture",
+            "t_skin",
+            "xland"
+          ],
+          "full_hourly_payload": [
+            "TSK",
+            "SST",
+            "SMOIS",
+            "SH2O",
+            "TSLB"
+          ],
+          "hour": 11,
+          "requested_time_index": 11,
+          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d03_2026-05-22_05:00:00",
+          "status": "PASS",
+          "time_index": 11
+        },
+        {
+          "fields_refreshed": [
+            "lakemask",
+            "mavail",
+            "roughness_m",
+            "soil_moisture",
+            "t_skin",
+            "xland"
+          ],
+          "full_hourly_payload": [
+            "TSK",
+            "SST",
+            "SMOIS",
+            "SH2O",
+            "TSLB"
+          ],
+          "hour": 12,
+          "requested_time_index": 12,
+          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d03_2026-05-22_06:00:00",
+          "status": "PASS",
+          "time_index": 12
+        },
+        {
+          "fields_refreshed": [
+            "lakemask",
+            "mavail",
+            "roughness_m",
+            "soil_moisture",
+            "t_skin",
+            "xland"
+          ],
+          "full_hourly_payload": [
+            "TSK",
+            "SST",
+            "SMOIS",
+            "SH2O",
+            "TSLB"
+          ],
+          "hour": 13,
+          "requested_time_index": 13,
+          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d03_2026-05-22_07:00:00",
+          "status": "PASS",
+          "time_index": 13
+        },
+        {
+          "fields_refreshed": [
+            "lakemask",
+            "mavail",
+            "roughness_m",
+            "soil_moisture",
+            "t_skin",
+            "xland"
+          ],
+          "full_hourly_payload": [
+            "TSK",
+            "SST",
+            "SMOIS",
+            "SH2O",
+            "TSLB"
+          ],
+          "hour": 14,
+          "requested_time_index": 14,
+          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d03_2026-05-22_08:00:00",
+          "status": "PASS",
+          "time_index": 14
+        },
+        {
+          "fields_refreshed": [
+            "lakemask",
+            "mavail",
+            "roughness_m",
+            "soil_moisture",
+            "t_skin",
+            "xland"
+          ],
+          "full_hourly_payload": [
+            "TSK",
+            "SST",
+            "SMOIS",
+            "SH2O",
+            "TSLB"
+          ],
+          "hour": 15,
+          "requested_time_index": 15,
+          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d03_2026-05-22_09:00:00",
+          "status": "PASS",
+          "time_index": 15
+        },
+        {
+          "fields_refreshed": [
+            "lakemask",
+            "mavail",
+            "roughness_m",
+            "soil_moisture",
+            "t_skin",
+            "xland"
+          ],
+          "full_hourly_payload": [
+            "TSK",
+            "SST",
+            "SMOIS",
+            "SH2O",
+            "TSLB"
+          ],
+          "hour": 16,
+          "requested_time_index": 16,
+          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d03_2026-05-22_10:00:00",
+          "status": "PASS",
+          "time_index": 16
+        },
+        {
+          "fields_refreshed": [
+            "lakemask",
+            "mavail",
+            "roughness_m",
+            "soil_moisture",
+            "t_skin",
+            "xland"
+          ],
+          "full_hourly_payload": [
+            "TSK",
+            "SST",
+            "SMOIS",
+            "SH2O",
+            "TSLB"
+          ],
+          "hour": 17,
+          "requested_time_index": 17,
+          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d03_2026-05-22_11:00:00",
+          "status": "PASS",
+          "time_index": 17
+        },
+        {
+          "fields_refreshed": [
+            "lakemask",
+            "mavail",
+            "roughness_m",
+            "soil_moisture",
+            "t_skin",
+            "xland"
+          ],
+          "full_hourly_payload": [
+            "TSK",
+            "SST",
+            "SMOIS",
+            "SH2O",
+            "TSLB"
+          ],
+          "hour": 18,
+          "requested_time_index": 18,
+          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d03_2026-05-22_12:00:00",
+          "status": "PASS",
+          "time_index": 18
+        },
+        {
+          "fields_refreshed": [
+            "lakemask",
+            "mavail",
+            "roughness_m",
+            "soil_moisture",
+            "t_skin",
+            "xland"
+          ],
+          "full_hourly_payload": [
+            "TSK",
+            "SST",
+            "SMOIS",
+            "SH2O",
+            "TSLB"
+          ],
+          "hour": 19,
+          "requested_time_index": 19,
+          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d03_2026-05-22_13:00:00",
+          "status": "PASS",
+          "time_index": 19
+        },
+        {
+          "fields_refreshed": [
+            "lakemask",
+            "mavail",
+            "roughness_m",
+            "soil_moisture",
+            "t_skin",
+            "xland"
+          ],
+          "full_hourly_payload": [
+            "TSK",
+            "SST",
+            "SMOIS",
+            "SH2O",
+            "TSLB"
+          ],
+          "hour": 20,
+          "requested_time_index": 20,
+          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d03_2026-05-22_14:00:00",
+          "status": "PASS",
+          "time_index": 20
+        },
+        {
+          "fields_refreshed": [
+            "lakemask",
+            "mavail",
+            "roughness_m",
+            "soil_moisture",
+            "t_skin",
+            "xland"
+          ],
+          "full_hourly_payload": [
+            "TSK",
+            "SST",
+            "SMOIS",
+            "SH2O",
+            "TSLB"
+          ],
+          "hour": 21,
+          "requested_time_index": 21,
+          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d03_2026-05-22_15:00:00",
+          "status": "PASS",
+          "time_index": 21
+        },
+        {
+          "fields_refreshed": [
+            "lakemask",
+            "mavail",
+            "roughness_m",
+            "soil_moisture",
+            "t_skin",
+            "xland"
+          ],
+          "full_hourly_payload": [
+            "TSK",
+            "SST",
+            "SMOIS",
+            "SH2O",
+            "TSLB"
+          ],
+          "hour": 22,
+          "requested_time_index": 22,
+          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d03_2026-05-22_16:00:00",
+          "status": "PASS",
+          "time_index": 22
+        },
+        {
+          "fields_refreshed": [
+            "lakemask",
+            "mavail",
+            "roughness_m",
+            "soil_moisture",
+            "t_skin",
+            "xland"
+          ],
+          "full_hourly_payload": [
+            "TSK",
+            "SST",
+            "SMOIS",
+            "SH2O",
+            "TSLB"
+          ],
+          "hour": 23,
+          "requested_time_index": 23,
+          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d03_2026-05-22_17:00:00",
+          "status": "PASS",
+          "time_index": 23
+        },
+        {
+          "fields_refreshed": [
+            "lakemask",
+            "mavail",
+            "roughness_m",
+            "soil_moisture",
+            "t_skin",
+            "xland"
+          ],
+          "full_hourly_payload": [
+            "TSK",
+            "SST",
+            "SMOIS",
+            "SH2O",
+            "TSLB"
+          ],
+          "hour": 24,
+          "requested_time_index": 24,
+          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d03_2026-05-22_18:00:00",
+          "status": "PASS",
+          "time_index": 24
+        }
+      ]
+    },
+    "namelist": {
+      "acoustic_substeps": 10,
+      "damp_opt": 3,
+      "dampcoef": 0.2,
+      "diff_6th_factor": 0.12,
+      "diff_6th_opt": 2,
+      "disable_guards": false,
+      "dt_s": 3.0,
+      "epssm": 0.5,
+      "force_fp64": false,
+      "radiation_cadence_steps": 600,
+      "rk_order": 3,
+      "run_boundary": true,
+      "run_physics": true,
+      "top_lid": true,
+      "use_flux_advection": true,
+      "use_vertical_solver": true,
+      "w_damping": 1,
+      "zdamp": 5000.0
+    },
+    "qke_coldstart": {
+      "note": "parent wrfout carried no real QKE (MAXVAL<0.0002); seeded WRF cold-start background TKE profile",
+      "qke_max": 4.99220117532457e-05,
+      "seeded": true,
+      "wrf_ref": "phys/module_bl_mynnedmf.F:618-691 (mym_initialize INITIALIZE_QKE)"
+    },
+    "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
+    "run_id": "20260521_18z_l3_24h_20260522T133443Z",
+    "source": "gpuwrf.integration.d02_replay.build_replay_case"
+  },
+  "orchestration_cpu_affinity": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "output_dir": "/tmp/v0110_d031km_runs/d03_20260521_18z_l3_24h_20260522T133443Z_d031km_gated_fp32_clone",
+  "repeatability_status": "NOT_RUN",
+  "restart_probe_status": "NOT_RUN",
+  "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
+  "run_id": "20260521_18z_l3_24h_20260522T133443Z",
+  "run_start_utc": "2026-05-21T18:00:00+00:00",
+  "schema": "M7DailyPipelineRun",
+  "schema_version": 1,
+  "speedup_status": "PASS",
+  "station_score_summary": {
+    "acceptance": {
+      "finite_scores": false,
+      "joined_rows_at_least_100": false
+    },
+    "joined_rows": 0,
+    "scores": {},
+    "status": "NOT_RUN"
+  },
+  "verdict": "PIPELINE_PARTIAL",
+  "wall_clock_forecast_only_s": 1576.6204829048947,
+  "wall_clock_per_forecast_hour_s": 68.91916146125004,
+  "wall_clock_per_hour_s": [
+    98.77302070596488,
+    61.54418355197413,
+    63.226940873020794,
+    63.66052706196206,
+    63.691669137973804,
+    63.64515866100555,
+    63.70925591595005,
+    63.658816815994214,
+    62.92747304699151,
+    63.55606486502802,
+    65.99196877802024,
+    66.8835597819998,
+    66.88762957800645,
+    66.99755040300079,
+    65.59559624799294,
+    65.39350427000318,
+    65.59361495601479,
+    65.82825459196465,
+    65.8008277300396,
+    65.1396235129796,
+    62.22967420099303,
+    61.966008518997114,
+    62.00832155899843,
+    61.91123814001912
+  ],
+  "wall_clock_total_s": 1654.059875070001,
+  "wrfout_files": [
+    "/tmp/v0110_d031km_runs/d03_20260521_18z_l3_24h_20260522T133443Z_d031km_gated_fp32_clone/wrfout_d03_2026-05-21_19:00:00",
+    "/tmp/v0110_d031km_runs/d03_20260521_18z_l3_24h_20260522T133443Z_d031km_gated_fp32_clone/wrfout_d03_2026-05-21_20:00:00",
+    "/tmp/v0110_d031km_runs/d03_20260521_18z_l3_24h_20260522T133443Z_d031km_gated_fp32_clone/wrfout_d03_2026-05-21_21:00:00",
+    "/tmp/v0110_d031km_runs/d03_20260521_18z_l3_24h_20260522T133443Z_d031km_gated_fp32_clone/wrfout_d03_2026-05-21_22:00:00",
+    "/tmp/v0110_d031km_runs/d03_20260521_18z_l3_24h_20260522T133443Z_d031km_gated_fp32_clone/wrfout_d03_2026-05-21_23:00:00",
+    "/tmp/v0110_d031km_runs/d03_20260521_18z_l3_24h_20260522T133443Z_d031km_gated_fp32_clone/wrfout_d03_2026-05-22_00:00:00",
+    "/tmp/v0110_d031km_runs/d03_20260521_18z_l3_24h_20260522T133443Z_d031km_gated_fp32_clone/wrfout_d03_2026-05-22_01:00:00",
+    "/tmp/v0110_d031km_runs/d03_20260521_18z_l3_24h_20260522T133443Z_d031km_gated_fp32_clone/wrfout_d03_2026-05-22_02:00:00",
+    "/tmp/v0110_d031km_runs/d03_20260521_18z_l3_24h_20260522T133443Z_d031km_gated_fp32_clone/wrfout_d03_2026-05-22_03:00:00",
+    "/tmp/v0110_d031km_runs/d03_20260521_18z_l3_24h_20260522T133443Z_d031km_gated_fp32_clone/wrfout_d03_2026-05-22_04:00:00",
+    "/tmp/v0110_d031km_runs/d03_20260521_18z_l3_24h_20260522T133443Z_d031km_gated_fp32_clone/wrfout_d03_2026-05-22_05:00:00",
+    "/tmp/v0110_d031km_runs/d03_20260521_18z_l3_24h_20260522T133443Z_d031km_gated_fp32_clone/wrfout_d03_2026-05-22_06:00:00",
+    "/tmp/v0110_d031km_runs/d03_20260521_18z_l3_24h_20260522T133443Z_d031km_gated_fp32_clone/wrfout_d03_2026-05-22_07:00:00",
+    "/tmp/v0110_d031km_runs/d03_20260521_18z_l3_24h_20260522T133443Z_d031km_gated_fp32_clone/wrfout_d03_2026-05-22_08:00:00",
+    "/tmp/v0110_d031km_runs/d03_20260521_18z_l3_24h_20260522T133443Z_d031km_gated_fp32_clone/wrfout_d03_2026-05-22_09:00:00",
+    "/tmp/v0110_d031km_runs/d03_20260521_18z_l3_24h_20260522T133443Z_d031km_gated_fp32_clone/wrfout_d03_2026-05-22_10:00:00",
+    "/tmp/v0110_d031km_runs/d03_20260521_18z_l3_24h_20260522T133443Z_d031km_gated_fp32_clone/wrfout_d03_2026-05-22_11:00:00",
+    "/tmp/v0110_d031km_runs/d03_20260521_18z_l3_24h_20260522T133443Z_d031km_gated_fp32_clone/wrfout_d03_2026-05-22_12:00:00",
+    "/tmp/v0110_d031km_runs/d03_20260521_18z_l3_24h_20260522T133443Z_d031km_gated_fp32_clone/wrfout_d03_2026-05-22_13:00:00",
+    "/tmp/v0110_d031km_runs/d03_20260521_18z_l3_24h_20260522T133443Z_d031km_gated_fp32_clone/wrfout_d03_2026-05-22_14:00:00",
+    "/tmp/v0110_d031km_runs/d03_20260521_18z_l3_24h_20260522T133443Z_d031km_gated_fp32_clone/wrfout_d03_2026-05-22_15:00:00",
+    "/tmp/v0110_d031km_runs/d03_20260521_18z_l3_24h_20260522T133443Z_d031km_gated_fp32_clone/wrfout_d03_2026-05-22_16:00:00",
+    "/tmp/v0110_d031km_runs/d03_20260521_18z_l3_24h_20260522T133443Z_d031km_gated_fp32_clone/wrfout_d03_2026-05-22_17:00:00",
+    "/tmp/v0110_d031km_runs/d03_20260521_18z_l3_24h_20260522T133443Z_d031km_gated_fp32_clone/wrfout_d03_2026-05-22_18:00:00"
+  ],
+  "wrfout_inventory_status": "PASS"
+}
