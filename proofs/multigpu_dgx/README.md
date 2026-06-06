@@ -1,7 +1,7 @@
 # Multi-GPU / DGX Simulation Proofs
 
 Date: 2026-06-05
-Branch: `worker/gpt/multigpu-dgx`
+Branch: `worker/gpt/v0110-dgx-d2`
 
 ## Status
 
@@ -10,15 +10,18 @@ verification for DGX-style execution. The default operational forecast path
 remains the default and is selected as the exact existing function object when
 `ShardingConfig.enabled=False`.
 
-This lane does not claim a complete full-forecast sharded dycore integration.
-The committed evidence covers:
+The D2 follow-up wires that substrate into the real operational forecast path
+for fake/local pmap devices. The committed evidence covers:
 
 - default-off graph invariance;
 - opt-in `lax.ppermute` periodic x-halo exchange;
 - State x partition/merge for mass and staggered x-face leaves;
 - representative horizontal dynamics operators run on x shards;
 - ppermute halo refresh followed by sharded operator execution on an 8-device
-  fake CPU mesh.
+  fake CPU mesh;
+- a real d02 operational forecast step (`run_forecast_operational`, full
+  physics enabled, radiation held off by cadence, `run_boundary=False`) on a
+  3-device fake CPU mesh, compared against the default single-device path.
 
 ## Reproduction Commands
 
@@ -63,6 +66,10 @@ Any real-GPU command must be wrapped:
   halo, operator, and ppermute-plus-operator checks.
 - `s5_scaling_projection.json`: analytical projection only, not a hardware
   measurement.
+- `../v0110/dgx_d2_sharded_forecast.json`: real d02 operational forecast fake
+  mesh proof; flag-off graph unchanged and sharded output within documented
+  dry-dynamic tolerances, with non-dry physics fields bit-identical.
+- `../v0110/dgx_d2_status.md`: concise D2 status and real-DGX smoke checklist.
 
 ## What Simulation Proves
 
@@ -73,16 +80,21 @@ Any real-GPU command must be wrapped:
 - Periodic x halos are correct for widths 1-4.
 - The selected sharded horizontal operators reproduce owned outputs from the
   current single-domain formulas within recorded tolerances.
-- Column-local physics remains structurally shard-friendly because no tested
-  physics coupler needs cross-column communication in these sharding helpers.
+- Column-local physics remains structurally shard-friendly in the D2
+  operational proof: qv/qke/rain and related non-dry fields are bit-identical
+  after the sharded step.
+- The real d02 operational path can run under local-device `pmap` with ppermute
+  x-halo exchange and match the single-device reference within the recorded
+  dry-dynamic tolerances.
 
 ## What Simulation Cannot Prove
 
 - Real H200/NVLink bandwidth, latency, or collective overlap.
 - NCCL transport behavior.
-- Host/device transfer absence inside the full real timestep loop.
-- Full operational sharded forecast parity, because this lane stops at
-  representative horizontal operators plus halo plumbing.
+- Host/device transfer absence inside the full real timestep loop on actual
+  GPUs; CPU fake devices cannot prove that.
+- Bit-identical dry-dynamic operational parity; D2 records a bounded tolerance
+  pass for the physical x-edge residual after one 10 s d02 step.
 - Multi-node launcher behavior, InfiniBand fabric behavior, or strong scaling.
 
 ## Real-DGX Smoke Checklist
@@ -97,14 +109,20 @@ Any real-GPU command must be wrapped:
 3. Halo and operator smoke:
    - run the parallel pytest suite through `/tmp/wrf_gpu_run.sh`;
    - run `--check all` on 8 GPUs and compare max diffs to committed fake proof.
-4. Transfer and collective audit:
+4. Operational D2 smoke:
+   - run `--check d2 --devices 8 --forecast-steps 1 --forecast-halo-width 8`;
+   - require flag-off HLO unchanged and operational fields within the committed
+     D2 tolerance table;
+   - keep `run_boundary=False` until specified/nested boundary decomposition has
+     its own proof.
+5. Transfer and collective audit:
    - capture Nsight Systems trace;
    - verify collectives correspond only to documented halo exchanges;
    - verify no host/device transfers occur inside timestep loops.
-5. Scaling measurement:
+6. Scaling measurement:
    - run 1, 2, 4, 8 GPU weak and strong scaling fixtures;
    - save profiler artifacts before reporting any measured speedup.
-6. Multi-node extension:
+7. Multi-node extension:
    - configure `jax.distributed.initialize` with stable coordinator/process ids;
    - repeat halo/operator parity across at least two nodes;
    - do not report multi-node scaling until InfiniBand/NCCL traces are saved.

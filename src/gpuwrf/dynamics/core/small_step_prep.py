@@ -18,17 +18,43 @@ from gpuwrf.dynamics.acoustic_wrf import CPOVCV, diagnose_pressure_al_alt, moist
 
 
 THETA_BASE_OFFSET_K = 300.0
+_SHARDED_HALO_CONTEXT: tuple[object, int] | None = None
 
 
 def _base_mu(state: State) -> jax.Array:
     return jnp.asarray(state.mu_total) - jnp.asarray(state.mu_perturbation)
 
 
+def _maybe_sharded_u_face_average(field: jax.Array, face: jax.Array) -> jax.Array:
+    context = _SHARDED_HALO_CONTEXT
+    if context is None:
+        return face
+    sharding, width = context
+    if not bool(getattr(sharding, "enabled", False)):
+        return face
+    if getattr(sharding, "axis", "x") != "x":
+        raise NotImplementedError("small-step prep sharded face average supports x-axis decomposition only")
+    h = int(width)
+    owned = int(field.shape[-1]) - 2 * h
+    if owned < 1:
+        raise ValueError("haloed x field has no owned cells")
+    rank = jax.lax.axis_index(str(sharding.axis_name))
+    start = rank * owned
+    global_nx = owned * int(sharding.resolved_partitions())
+    west_face = h
+    east_face = h + owned
+    is_first = start == 0
+    is_last = start + owned == global_nx
+    face = face.at[:, west_face].set(jnp.where(is_first, field[:, h], face[:, west_face]))
+    face = face.at[:, east_face].set(jnp.where(is_last, field[:, h + owned - 1], face[:, east_face]))
+    return face
+
+
 def _u_face_average_2d(field: jax.Array) -> jax.Array:
     west = field[:, :1]
     east = field[:, -1:]
     interior = 0.5 * (field[:, :-1] + field[:, 1:])
-    return jnp.concatenate((west, interior, east), axis=1)
+    return _maybe_sharded_u_face_average(field, jnp.concatenate((west, interior, east), axis=1))
 
 
 def _v_face_average_2d(field: jax.Array) -> jax.Array:

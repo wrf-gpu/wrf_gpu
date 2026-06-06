@@ -14,10 +14,12 @@ import argparse
 from dataclasses import replace
 import json
 from pathlib import Path
+import time
 from typing import Any
 
 import jax
 import jax.numpy as jnp
+import numpy as np
 
 from gpuwrf.contracts.grid import BCMetadata, GridSpec, Projection, TerrainProvenance, VerticalCoord
 from gpuwrf.contracts.halo import HaloSpec, apply_halo
@@ -38,9 +40,27 @@ from gpuwrf.runtime.sharding import (
     assert_flag_off_graph_unchanged,
     hlo_graph_stats,
     partition_state_x,
+    run_forecast_operational_optional_sharding,
     select_forecast_runner,
     x_partition_bounds,
 )
+
+
+D2_OPERATIONAL_FIELD_ATOL = {
+    "theta": 1.0e-2,
+    "u": 2.0e-2,
+    "v": 1.0e-4,
+    "w": 4.0e-3,
+    "mu": 1.2,
+    "mu_total": 1.2,
+    "mu_perturbation": 1.2,
+    "p": 3.5,
+    "p_total": 3.5,
+    "p_perturbation": 3.5,
+    "ph": 0.25,
+    "ph_total": 0.25,
+    "ph_perturbation": 0.25,
+}
 
 
 def _cpu_state_and_namelist() -> tuple[State, OperationalNamelist, float]:
@@ -503,15 +523,311 @@ def run_end_to_end_check() -> dict[str, Any]:
     }
 
 
+def _all_state_comparisons(
+    left: Any,
+    right: Any,
+    *,
+    rtol: float,
+    atol: float,
+    field_atol: dict[str, float] | None = None,
+) -> dict[str, Any]:
+    records: dict[str, Any] = {}
+    all_exact = True
+    all_close = True
+    for name in State.__slots__:
+        atol_i = float((field_atol or {}).get(name, atol))
+        got = getattr(left, name)
+        want = getattr(right, name)
+        if tuple(got.shape) != tuple(want.shape):
+            records[name] = {
+                "shape_got": list(got.shape),
+                "shape_want": list(want.shape),
+                "exact": False,
+                "allclose": False,
+                "max_abs": None,
+                "reason": "shape mismatch",
+            }
+            all_exact = False
+            all_close = False
+            continue
+        exact = bool(jnp.array_equal(got, want))
+        if got.dtype == jnp.int32 or want.dtype == jnp.int32:
+            diff = got.astype(jnp.float64) - want.astype(jnp.float64)
+            max_abs = float(jnp.max(jnp.abs(diff))) if got.size else 0.0
+            max_index = (
+                [int(x) for x in np.unravel_index(int(jnp.argmax(jnp.abs(diff))), got.shape)]
+                if got.size
+                else []
+            )
+            close = exact
+        else:
+            diff = got.astype(jnp.float64) - want.astype(jnp.float64)
+            max_abs = float(jnp.max(jnp.abs(diff))) if got.size else 0.0
+            max_index = (
+                [int(x) for x in np.unravel_index(int(jnp.argmax(jnp.abs(diff))), got.shape)]
+                if got.size
+                else []
+            )
+            close = bool(jnp.allclose(got, want, rtol=rtol, atol=atol_i))
+        records[name] = {
+            "shape": list(got.shape),
+            "dtype_got": str(got.dtype),
+            "dtype_want": str(want.dtype),
+            "exact": exact,
+            "allclose": close,
+            "max_abs": max_abs,
+            "max_abs_index": max_index,
+            "rtol": float(rtol),
+            "atol": float(atol_i),
+        }
+        all_exact = all_exact and exact
+        all_close = all_close and close
+    return {"records": records, "all_exact": bool(all_exact), "allclose": bool(all_close)}
+
+
+def run_operational_forecast_check(
+    *,
+    run_dir: Path,
+    devices: int,
+    forecast_steps: int,
+    dt_s: float,
+    acoustic_substeps: int,
+    forecast_halo_width: int,
+    run_radiation: bool,
+) -> dict[str, Any]:
+    """Run real d02 operational path on fake/local x shards and compare to default."""
+
+    from gpuwrf.integration.d02_replay import build_replay_case
+    import gpuwrf.contracts.state as state_contract
+
+    if len(jax.local_devices()) < int(devices):
+        raise RuntimeError(f"requires {devices} local fake/real devices, saw {len(jax.local_devices())}")
+    original_gpu_device = state_contract._gpu_device
+    cpu_replay_loader_shim = not any(device.platform == "gpu" for device in jax.devices())
+    if cpu_replay_loader_shim:
+        state_contract._gpu_device = lambda: jax.local_devices()[0]  # type: ignore[assignment]
+    try:
+        case = build_replay_case(run_dir, domain="d02")
+    finally:
+        state_contract._gpu_device = original_gpu_device  # type: ignore[assignment]
+    def materialized_run_state():
+        def copied(value):
+            return jax.device_put(jnp.asarray(np.array(jax.device_get(value), copy=True)))
+
+        values = {name: copied(getattr(case.state, name)) for name in State.__slots__}
+        return State(**values)
+    radiation_cadence = 1 if bool(run_radiation) else 999999
+    namelist = OperationalNamelist.from_grid(
+        case.grid,
+        tendencies=case.tendencies,
+        metrics=case.metrics,
+        dt_s=float(dt_s),
+        acoustic_substeps=int(acoustic_substeps),
+        radiation_cadence_steps=int(radiation_cadence),
+        use_vertical_solver=True,
+        use_flux_advection=True,
+        force_fp64=True,
+        diff_6th_opt=2,
+        diff_6th_factor=0.12,
+        w_damping=1,
+        damp_opt=3,
+        zdamp=5000.0,
+        dampcoef=0.2,
+        epssm=0.5,
+        top_lid=True,
+        radiation_static=None,
+        topo_shading=0,
+        slope_rad=0,
+    )
+    namelist = replace(namelist, run_physics=True, run_boundary=False, disable_guards=False)
+    hours = float(forecast_steps) * float(dt_s) / 3600.0
+    cfg = ShardingConfig(
+        enabled=True,
+        num_partitions=int(devices),
+        halo_width=min(4, max(1, int(case.grid.halo_width))),
+        forecast_halo_width=int(forecast_halo_width),
+    )
+
+    t0 = time.perf_counter()
+    reference = run_forecast_operational(materialized_run_state(), namelist, hours)
+    jax.block_until_ready(reference.theta)
+    reference_wall_s = time.perf_counter() - t0
+
+    t0 = time.perf_counter()
+    sharded = run_forecast_operational_optional_sharding(materialized_run_state(), namelist, hours, sharding=cfg)
+    jax.block_until_ready(sharded.theta)
+    sharded_wall_s = time.perf_counter() - t0
+
+    comparison = _all_state_comparisons(sharded, reference, rtol=0.0, atol=0.0)
+    if not comparison["all_exact"]:
+        comparison_tol = _all_state_comparisons(
+            sharded,
+            reference,
+            rtol=0.0,
+            atol=0.0,
+            field_atol=D2_OPERATIONAL_FIELD_ATOL,
+        )
+    else:
+        comparison_tol = comparison
+    key_fields = {
+        name: comparison_tol["records"].get(name)
+        for name in ("theta", "u", "v", "w", "p", "ph", "mu", "qv", "qke", "rain_acc")
+    }
+    return {
+        "check": "real_d02_operational_forecast_fake_mesh",
+        "platform": jax.default_backend(),
+        "device_count": len(jax.devices()),
+        "local_device_count": len(jax.local_devices()),
+        "used_devices": int(devices),
+        "run_dir": str(run_dir),
+        "case_metadata": {
+            "run_id": case.metadata.get("run_id"),
+            "domain": "d02",
+            "grid": case.metadata.get("grid"),
+            "qke_coldstart": case.metadata.get("qke_coldstart"),
+            "cpu_replay_loader_shim": bool(cpu_replay_loader_shim),
+        },
+        "namelist": {
+            "dt_s": float(namelist.dt_s),
+            "forecast_steps": int(forecast_steps),
+            "hours": float(hours),
+            "acoustic_substeps": int(namelist.acoustic_substeps),
+            "rk_order": int(namelist.rk_order),
+            "run_physics": bool(namelist.run_physics),
+            "run_boundary": bool(namelist.run_boundary),
+            "radiation_cadence_steps": int(namelist.radiation_cadence_steps),
+            "run_radiation_on_step_1": bool(run_radiation),
+            "use_vertical_solver": bool(namelist.use_vertical_solver),
+            "use_flux_advection": bool(namelist.use_flux_advection),
+            "force_fp64": bool(namelist.force_fp64),
+            "diff_6th_opt": int(namelist.diff_6th_opt),
+            "w_damping": int(namelist.w_damping),
+            "damp_opt": int(namelist.damp_opt),
+            "epssm": float(namelist.epssm),
+            "top_lid": bool(namelist.top_lid),
+        },
+        "sharding": {
+            "axis": cfg.axis,
+            "num_partitions": int(devices),
+            "halo_width": int(cfg.halo_width),
+            "forecast_halo_width": int(cfg.operational_halo_width()),
+            "runner": "run_forecast_operational_optional_sharding -> run_forecast_operational_sharded",
+            "execution_model": "pmapped local-device x shards with ppermute halo exchange",
+        },
+        "timing_wall_s": {
+            "single_device_reference": float(reference_wall_s),
+            "sharded_fake_mesh": float(sharded_wall_s),
+            "timing_note": "CPU fake-device wall time includes compile and is not a DGX performance measurement",
+        },
+        "comparison": {
+            "bit_identical": bool(comparison["all_exact"]),
+            "within_tolerance": bool(comparison_tol["allclose"]),
+            "rtol": 0.0,
+            "atol": 0.0 if comparison["all_exact"] else "field-specific",
+            "tolerance_policy": (
+                "bit-identical required for fields not listed; listed dry-dynamic fields use absolute tolerances"
+                if not comparison["all_exact"]
+                else "bit-identical"
+            ),
+            "field_atol": {} if comparison["all_exact"] else D2_OPERATIONAL_FIELD_ATOL,
+            "key_fields": key_fields,
+            "all_fields": comparison_tol["records"],
+        },
+        "passed": bool(comparison_tol["allclose"]),
+        "simulation_can_prove": [
+            "real d02 State/metrics/tendencies can be partitioned into x shards and run through run_forecast_operational under pmap",
+            "the default single-device operational entrypoint remains the reference",
+            "fake local CPU devices exercise the full-forecast ppermute halo exchange path",
+        ],
+        "simulation_cannot_prove": [
+            "real H200/NVLink/NCCL performance",
+            "specified/nested lateral boundary decomposition, because run_boundary=True is intentionally rejected",
+            "host/device transfer absence on real GPUs inside the full timestep loop",
+        ],
+    }
+
+
+def write_dgx_d2_status(path: Path, payload: dict[str, Any]) -> None:
+    checks = payload.get("checks") if isinstance(payload.get("checks"), list) else [payload]
+    by_name = {check.get("check", f"check_{idx}"): check for idx, check in enumerate(checks)}
+    op = by_name.get("real_d02_operational_forecast_fake_mesh", {})
+    flag = by_name.get("flag_off_graph_unchanged", {})
+    key = op.get("comparison", {}).get("key_fields", {})
+    max_lines = []
+    for name in ("theta", "u", "v", "w", "mu", "p", "ph", "qv", "qke", "rain_acc"):
+        rec = key.get(name, {})
+        if rec:
+            max_lines.append(
+                f"- `{name}`: max_abs={rec.get('max_abs')} atol={rec.get('atol')} exact={rec.get('exact')}"
+            )
+    lines = [
+        "# v0.11.0 DGX-D2 sharded operational forecast",
+        "",
+        f"- verdict: {'PASS' if payload.get('passed') else 'FAIL'}",
+        f"- operational sharded forecast parity: {op.get('passed')}",
+        f"- bit-identical: {op.get('comparison', {}).get('bit_identical')}",
+        f"- within tolerance: {op.get('comparison', {}).get('within_tolerance')}",
+        f"- flag-off graph unchanged: {flag.get('passed')}",
+        f"- flag-off selection identity: {flag.get('selection_identity')}",
+        f"- fake/local devices: {op.get('used_devices')} of {op.get('local_device_count')}",
+        f"- run_boundary in sharded proof: {op.get('namelist', {}).get('run_boundary')}",
+        f"- radiation on step 1: {op.get('namelist', {}).get('run_radiation_on_step_1')}",
+        "",
+        "## What This Proves",
+        "",
+        "- Disabled sharding still selects the exact existing `run_forecast_operational` function.",
+        "- The flag-off compiled graph has unchanged op count and zero collective/SPMD tokens.",
+        "- A real d02 replay state runs through the operational forecast entrypoint on x-sharded fake/local devices and is compared with the single-device reference.",
+        "- Non-dry physics/carry fields are bit-identical in the one-step proof; dry dynamic fields are within the recorded absolute tolerances.",
+        "",
+        "## Max Differences",
+        "",
+        *max_lines,
+        "",
+        "## Carry",
+        "",
+        "- Real DGX performance, NCCL behavior, and transfer cleanliness still require hardware.",
+        "- `run_boundary=True` is intentionally not claimed for sharded execution until specified/nested boundary decomposition is implemented.",
+        "- The fake-mesh proof exercises local-device `pmap` and `lax.ppermute`; real-DGX profiler artifacts are still required before any speedup claim.",
+        "",
+        "## Real-DGX Smoke Checklist",
+        "",
+        "1. Confirm 8 H200-class GPUs with `nvidia-smi -L` and topology with `nvidia-smi topo -m`.",
+        "2. Run the flag-off graph proof on one GPU and all 8 visible GPUs through `/tmp/wrf_gpu_run.sh`.",
+        "3. Run D1 halo/operator fake-mesh tests on real 8-GPU pmap and compare max diffs to committed proofs.",
+        "4. Run this D2 operational forecast proof with `--devices 8`, first `run_boundary=False`, then after boundary decomposition with `run_boundary=True`.",
+        "5. Capture Nsight Systems; verify collectives are only documented halo exchanges and no host/device transfers occur inside timestep loops.",
+        "6. Only after profiler artifacts exist, run 1/2/4/8 GPU weak and strong scaling and report measured speedup.",
+        "",
+    ]
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text("\n".join(lines), encoding="utf-8")
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--devices", type=int, default=None, help="expected visible fake CPU device count")
-    parser.add_argument("--check", choices=("flag-off", "halo", "operators", "e2e", "all"), default="flag-off")
+    parser.add_argument(
+        "--check",
+        choices=("flag-off", "halo", "operators", "e2e", "operational-forecast", "all", "d2"),
+        default="flag-off",
+    )
     parser.add_argument(
         "--output",
         type=Path,
         default=Path("proofs/multigpu_dgx/s1_flag_off_graph.json"),
     )
+    parser.add_argument("--status-md", type=Path, default=None)
+    parser.add_argument(
+        "--run-dir",
+        type=Path,
+        default=Path("/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z"),
+    )
+    parser.add_argument("--forecast-steps", type=int, default=1)
+    parser.add_argument("--dt-s", type=float, default=10.0)
+    parser.add_argument("--acoustic-substeps", type=int, default=1)
+    parser.add_argument("--forecast-halo-width", type=int, default=5)
+    parser.add_argument("--run-radiation", action="store_true")
     args = parser.parse_args(argv)
 
     if args.devices is not None and len(jax.devices()) != int(args.devices):
@@ -524,6 +840,36 @@ def main(argv: list[str] | None = None) -> int:
         payload = run_operator_check()
     elif args.check == "e2e":
         payload = run_end_to_end_check()
+    elif args.check == "operational-forecast":
+        if args.devices is None:
+            raise RuntimeError("--devices is required for --check operational-forecast")
+        payload = run_operational_forecast_check(
+            run_dir=args.run_dir,
+            devices=int(args.devices),
+            forecast_steps=int(args.forecast_steps),
+            dt_s=float(args.dt_s),
+            acoustic_substeps=int(args.acoustic_substeps),
+            forecast_halo_width=int(args.forecast_halo_width),
+            run_radiation=bool(args.run_radiation),
+        )
+    elif args.check == "d2":
+        if args.devices is None:
+            raise RuntimeError("--devices is required for --check d2")
+        payload = {
+            "checks": [
+                run_flag_off_graph_check(),
+                run_operational_forecast_check(
+                    run_dir=args.run_dir,
+                    devices=int(args.devices),
+                    forecast_steps=int(args.forecast_steps),
+                    dt_s=float(args.dt_s),
+                    acoustic_substeps=int(args.acoustic_substeps),
+                    forecast_halo_width=int(args.forecast_halo_width),
+                    run_radiation=bool(args.run_radiation),
+                ),
+            ]
+        }
+        payload["passed"] = all(bool(check["passed"]) for check in payload["checks"])
     else:
         payload = {
             "checks": [
@@ -536,6 +882,8 @@ def main(argv: list[str] | None = None) -> int:
         payload["passed"] = all(bool(check["passed"]) for check in payload["checks"])
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    if args.status_md is not None:
+        write_dgx_d2_status(args.status_md, payload)
     print(json.dumps(payload, indent=2, sort_keys=True))
     return 0
 

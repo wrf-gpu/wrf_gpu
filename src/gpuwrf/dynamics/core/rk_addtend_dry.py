@@ -40,6 +40,40 @@ from gpuwrf.dynamics.acoustic_wrf import (
 )
 
 
+_SHARDED_HALO_CONTEXT: tuple[object, int] | None = None
+
+
+def _maybe_sharded_x_edge_pair(
+    field: jax.Array,
+    left: jax.Array,
+    right: jax.Array,
+) -> tuple[jax.Array, jax.Array]:
+    """Make x-face pairs match global-domain edge padding under opt-in x sharding."""
+
+    context = _SHARDED_HALO_CONTEXT
+    if context is None:
+        return left, right
+    sharding, width = context
+    if not bool(getattr(sharding, "enabled", False)):
+        return left, right
+    if getattr(sharding, "axis", "x") != "x":
+        raise NotImplementedError("large-step dry sharded edge-pair correction supports x-axis decomposition only")
+    h = int(width)
+    owned = int(field.shape[-1]) - 2 * h
+    if owned < 1:
+        raise ValueError("haloed x field has no owned cells")
+    rank = jax.lax.axis_index(str(sharding.axis_name))
+    start = rank * owned
+    global_nx = owned * int(sharding.resolved_partitions())
+    west_face = h
+    east_face = h + owned
+    is_first = start == 0
+    is_last = start + owned == global_nx
+    left = left.at[..., west_face].set(jnp.where(is_first, right[..., west_face], left[..., west_face]))
+    right = right.at[..., east_face].set(jnp.where(is_last, left[..., east_face], right[..., east_face]))
+    return left, right
+
+
 def _x_face_pair_3d(field: jax.Array) -> tuple[jax.Array, jax.Array]:
     """Return (left=west mass cell, right=east mass cell) on u-faces (nx+1).
 
@@ -47,7 +81,7 @@ def _x_face_pair_3d(field: jax.Array) -> tuple[jax.Array, jax.Array]:
     ``i-1`` (left) and ``i`` (right); boundary faces repeat the edge mass cell.
     """
     padded = jnp.pad(field, ((0, 0), (0, 0), (1, 1)), mode="edge")
-    return padded[:, :, :-1], padded[:, :, 1:]
+    return _maybe_sharded_x_edge_pair(field, padded[:, :, :-1], padded[:, :, 1:])
 
 
 def _y_face_pair_3d(field: jax.Array) -> tuple[jax.Array, jax.Array]:
@@ -57,7 +91,7 @@ def _y_face_pair_3d(field: jax.Array) -> tuple[jax.Array, jax.Array]:
 
 def _x_face_pair_2d(field: jax.Array) -> tuple[jax.Array, jax.Array]:
     padded = jnp.pad(field, ((0, 0), (1, 1)), mode="edge")
-    return padded[:, :-1], padded[:, 1:]
+    return _maybe_sharded_x_edge_pair(field, padded[:, :-1], padded[:, 1:])
 
 
 def _y_face_pair_2d(field: jax.Array) -> tuple[jax.Array, jax.Array]:
@@ -356,6 +390,7 @@ def large_step_coriolis(
     rv_xpad = jnp.pad(rv, ((0, 0), (0, 0), (1, 1)), mode="edge")  # (nz, ny+1, nx+2)
     rv_im1 = rv_xpad[:, :, :-1]  # west neighbour for each u-face (nz, ny+1, nx+1)
     rv_i = rv_xpad[:, :, 1:]  # east neighbour for each u-face (nz, ny+1, nx+1)
+    rv_im1, rv_i = _maybe_sharded_x_edge_pair(rv, rv_im1, rv_i)
     rv_quad = 0.25 * (rv_im1[:, :-1, :] + rv_i[:, :-1, :] + rv_im1[:, 1:, :] + rv_i[:, 1:, :])
     ru_cor = msf_u * f_u[None, :, :] * rv_quad
 
@@ -363,6 +398,7 @@ def large_step_coriolis(
     rw_xpad = jnp.pad(rw, ((0, 0), (0, 0), (1, 1)), mode="edge")  # (nz+1, ny, nx+2)
     rw_im1 = rw_xpad[:, :, :-1]  # (nz+1, ny, nx+1)
     rw_i = rw_xpad[:, :, 1:]
+    rw_im1, rw_i = _maybe_sharded_x_edge_pair(rw, rw_im1, rw_i)
     rw_u_quad = 0.25 * (rw_im1[:-1] + rw_im1[1:] + rw_i[:-1] + rw_i[1:])  # (nz, ny, nx+1)
     ru_cor = ru_cor - e_u[None, :, :] * cosa_u[None, :, :] * rw_u_quad
 
