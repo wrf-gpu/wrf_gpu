@@ -227,6 +227,8 @@ _PHYSICS_NON_DRY_REPLACE_FIELDS: tuple[str, ...] = (
     "ice_acc",
 )
 
+_SHARDED_CARRY_HALO_CONTEXT: tuple[object, int] | None = None
+
 
 class _PhysicsStepForcing(NamedTuple):
     """Physics output split into WRF RK dry tendencies and non-dry state writes."""
@@ -667,11 +669,36 @@ def _acoustic_lateral_bc_flags(namelist: OperationalNamelist) -> tuple[bool, boo
     return False, not nested, nested
 
 
+def _maybe_sharded_u_face_average(field: jax.Array, face: jax.Array) -> jax.Array:
+    context = _SHARDED_CARRY_HALO_CONTEXT
+    if context is None:
+        return face
+    sharding, width = context
+    if not bool(getattr(sharding, "enabled", False)):
+        return face
+    if getattr(sharding, "axis", "x") != "x":
+        raise NotImplementedError("operational sharded face average supports x-axis decomposition only")
+    h = int(width)
+    owned = int(field.shape[-1]) - 2 * h
+    if owned < 1:
+        raise ValueError("haloed x field has no owned cells")
+    rank = jax.lax.axis_index(str(sharding.axis_name))
+    start = rank * owned
+    global_nx = owned * int(sharding.resolved_partitions())
+    west_face = h
+    east_face = h + owned
+    is_first = start == 0
+    is_last = start + owned == global_nx
+    face = face.at[:, west_face].set(jnp.where(is_first, field[:, h], face[:, west_face]))
+    face = face.at[:, east_face].set(jnp.where(is_last, field[:, h + owned - 1], face[:, east_face]))
+    return face
+
+
 def _u_face_average_2d(field: jax.Array) -> jax.Array:
     west = field[:, :1]
     east = field[:, -1:]
     interior = 0.5 * (field[:, :-1] + field[:, 1:])
-    return jnp.concatenate((west, interior, east), axis=1)
+    return _maybe_sharded_u_face_average(field, jnp.concatenate((west, interior, east), axis=1))
 
 
 def _v_face_average_2d(field: jax.Array) -> jax.Array:
@@ -1402,6 +1429,52 @@ def _carry_from_finished_stage(
     )
 
 
+def _maybe_exchange_sharded_carry_halos(carry: OperationalCarry) -> OperationalCarry:
+    """Refresh x halos for non-State operational carry leaves under opt-in pmap sharding."""
+
+    context = _SHARDED_CARRY_HALO_CONTEXT
+    if context is None:
+        return carry
+    sharding, width = context
+    if not bool(getattr(sharding, "enabled", False)):
+        return carry
+    if getattr(sharding, "axis", "x") != "x":
+        raise NotImplementedError("operational carry sharded halo exchange supports x-axis decomposition only")
+
+    from gpuwrf.runtime.sharding import exchange_periodic_halo_x, exchange_periodic_halo_x_face
+
+    local_nx = int(carry.state.theta.shape[-1])
+    num_partitions = int(sharding.resolved_partitions())
+    axis_name = str(sharding.axis_name)
+
+    def exchange_leaf(value):
+        if value is None or not hasattr(value, "shape") or getattr(value, "ndim", 0) == 0:
+            return value
+        last_dim = int(value.shape[-1])
+        if last_dim == local_nx + 1:
+            return exchange_periodic_halo_x_face(
+                value,
+                width=int(width),
+                num_partitions=num_partitions,
+                axis_name=axis_name,
+            )
+        if last_dim == local_nx:
+            return exchange_periodic_halo_x(
+                value,
+                width=int(width),
+                num_partitions=num_partitions,
+                axis_name=axis_name,
+            )
+        return value
+
+    updates = {}
+    for name in carry.__dataclass_fields__:  # type: ignore[attr-defined]
+        if name == "state":
+            continue
+        updates[name] = jax.tree_util.tree_map(exchange_leaf, getattr(carry, name))
+    return carry.replace(**updates) if updates else carry
+
+
 def _acoustic_scan(
     carry: OperationalCarry,
     namelist: OperationalNamelist,
@@ -1487,10 +1560,11 @@ def _acoustic_scan(
             unroll=_acoustic_unroll(),
         )
         next_carry = _carry_from_finished_stage(carry, prep, acoustic, namelist)
+        next_carry = _maybe_exchange_sharded_carry_halos(next_carry)
         return next_carry.replace(state=apply_halo(next_carry.state, halo_spec(namelist.grid)))
 
     del tendencies
-    return _with_save_family(carry, carry.state)
+    return _maybe_exchange_sharded_carry_halos(_with_save_family(carry, carry.state))
 
 
 def _augment_large_step_tendencies(
@@ -2443,7 +2517,7 @@ def _physics_boundary_step_with_limiter_diagnostics(
             )
             next_state = _limit_guarded_mass_state(next_state, physical_origin)
     next_state = _enforce_operational_precision(next_state, force_fp64=bool(namelist.force_fp64))
-    return carry.replace(state=next_state), limiter_diagnostics
+    return _maybe_exchange_sharded_carry_halos(carry.replace(state=next_state)), limiter_diagnostics
 
 
 def _physics_boundary_step(

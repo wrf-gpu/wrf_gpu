@@ -20,8 +20,8 @@ class HaloSpec:
     def __post_init__(self) -> None:
         """Validates halo metadata once before timestep call sites use it."""
 
-        if not 1 <= int(self.width) <= 4:
-            raise ValueError("halo width must be in [1, 4]")
+        if not 1 <= int(self.width) <= 8:
+            raise ValueError("halo width must be in [1, 8]")
         if self.edge_type not in ("periodic", "open", "nest_boundary"):
             raise ValueError(f"unsupported halo edge_type {self.edge_type!r}")
 
