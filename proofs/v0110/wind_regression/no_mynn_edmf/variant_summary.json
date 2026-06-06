@@ -1,0 +1,99 @@
+{
+  "analyzer": {
+    "returncode": 2,
+    "stderr": "/home/enric/src/wrf_gpu2/.claude/worktrees/v0110-wind-regr/proofs/v090/d02_coupled_skill_analyze.py:209: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).\n  \"generated\": datetime.utcnow().isoformat() + \"Z\",\n",
+    "stdout": "{\n  \"status\": \"FAIL\",\n  \"lead_count\": 24,\n  \"all_leads_finite\": true,\n  \"binding_all_leads_within_bar\": false,\n  \"field_summary\": {\n    \"T2\": {\n      \"mean_rmse\": 1.2155748979653505,\n      \"final_rmse\": 1.542020748433428,\n      \"mean_bias\": -0.2550240575975675\n    },\n    \"HFX\": {\n      \"mean_rmse\": 69.57213680948306,\n      \"final_rmse\": 49.967419818230084,\n      \"mean_bias\": 7.562369018826689\n    },\n    \"U10\": {\n      \"mean_rmse\": 5.503781944502563,\n      \"final_rmse\": 9.153970149144095,\n      \"mean_bias\": -4.828151759576163\n    },\n    \"V10\": {\n      \"mean_rmse\": 4.470681993940004,\n      \"final_rmse\": 5.015787346611379,\n      \"mean_bias\": -3.1468031066523863\n    },\n    \"PBLH\": {\n      \"mean_rmse\": 176.9210127934443,\n      \"final_rmse\": 255.0418959675206,\n      \"mean_bias\": -27.5907024596866\n    }\n  }\n}\n"
+  },
+  "effective_run_root": "/tmp/vburst_runs",
+  "generated_utc": "2026-06-06T01:10:00.062035Z",
+  "hours": 24,
+  "output_dir": "/tmp/v0110_wind_regression/no_mynn_edmf/l2_d02_20260507_18z_l2_72h_20260513T124307Z",
+  "pipeline_verdict": "PIPELINE_PARTIAL",
+  "process_variant": {
+    "process_notes": [
+      "Set gpuwrf.coupling.physics_couplers._MYNN_EDMF=False before tracing."
+    ]
+  },
+  "proof_dir": "proofs/v0110/wind_regression/no_mynn_edmf",
+  "run_id": "20260507_18z_l2_72h_20260513T124307Z",
+  "run_root": "/mnt/data/canairy_meteo/runs/wrf_l2",
+  "run_root_resolution": {
+    "effective_run_root": "/tmp/vburst_runs",
+    "fallback_reason": "requested run_root lacks d01/d02 wrfout history required by build_l2_d02_replay_case; using same-run complete vburst fixture",
+    "fallback_run_dir": "/tmp/vburst_runs/20260507_18z_l2_72h_20260513T124307Z",
+    "fallback_run_root": "/tmp/vburst_runs",
+    "fallback_used": true,
+    "fallback_wrfout_counts": {
+      "d01": 73,
+      "d02": 73
+    },
+    "requested_run_dir": "/mnt/data/canairy_meteo/runs/wrf_l2/20260507_18z_l2_72h_20260513T124307Z",
+    "requested_run_root": "/mnt/data/canairy_meteo/runs/wrf_l2",
+    "requested_wrfout_counts": {
+      "d01": 0,
+      "d02": 0
+    }
+  },
+  "schema": "V0110WindRegressionVariant",
+  "schema_version": 1,
+  "skill_path": "proofs/v0110/wind_regression/no_mynn_edmf/d02_coupled_skill.json",
+  "skill_summary": {
+    "field_summary": {
+      "HFX": {
+        "final_lead_rmse": 49.967419818230084,
+        "max_rmse_over_leads": 96.62181362690248,
+        "mean_bias_over_leads": 7.562369018826689,
+        "mean_rmse_over_leads": 69.57213680948306
+      },
+      "PBLH": {
+        "final_lead_rmse": 255.0418959675206,
+        "max_rmse_over_leads": 263.8667958565338,
+        "mean_bias_over_leads": -27.5907024596866,
+        "mean_rmse_over_leads": 176.9210127934443
+      },
+      "T2": {
+        "final_lead_rmse": 1.542020748433428,
+        "max_rmse_over_leads": 1.5718950797379159,
+        "mean_bias_over_leads": -0.2550240575975675,
+        "mean_rmse_over_leads": 1.2155748979653505
+      },
+      "U10": {
+        "final_lead_rmse": 9.153970149144095,
+        "max_rmse_over_leads": 9.153970149144095,
+        "mean_bias_over_leads": -4.828151759576163,
+        "mean_rmse_over_leads": 5.503781944502563
+      },
+      "V10": {
+        "final_lead_rmse": 5.015787346611379,
+        "max_rmse_over_leads": 6.34316319790431,
+        "mean_bias_over_leads": -3.1468031066523863,
+        "mean_rmse_over_leads": 4.470681993940004
+      }
+    },
+    "lead_count": 24,
+    "persistence_wins": {
+      "HFX": {
+        "lead_count": 24,
+        "wins": 8
+      },
+      "PBLH": {
+        "lead_count": 24,
+        "wins": 9
+      },
+      "T2": {
+        "lead_count": 24,
+        "wins": 0
+      },
+      "U10": {
+        "lead_count": 24,
+        "wins": 0
+      },
+      "V10": {
+        "lead_count": 24,
+        "wins": 0
+      }
+    },
+    "status": "FAIL"
+  },
+  "variant": "no_mynn_edmf"
+}
