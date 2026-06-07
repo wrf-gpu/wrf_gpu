@@ -22,6 +22,7 @@ from gpuwrf.physics.mynn_pbl import (
     step_mynn_pbl_column_with_pblh,
 )
 from gpuwrf.physics.mynn_surface_stub import SurfaceFluxes
+from gpuwrf.physics.gwd_gwdo import GWDOColumnState, GWDOStatics, gwdo_columns
 from gpuwrf.physics.surface_layer import surface_layer, surface_layer_with_diagnostics
 from gpuwrf.physics.rrtmg_lw import RRTMGLWColumnState, solve_rrtmg_lw_column
 from gpuwrf.physics.rrtmg_sw import (
@@ -1610,7 +1611,147 @@ def rrtmg_theta_tendency(
     return rthraten.astype(_output_dtype(state, "theta"))
 
 
+# --------------------------------------------------------------------------- #
+# Orographic gravity-wave drag (GWDO, ``gwd_opt=1``) adapter.
+# --------------------------------------------------------------------------- #
+def build_gwdo_statics_from_wrf_fields(
+    var2d,
+    con,
+    oa1,
+    oa2,
+    oa3,
+    oa4,
+    ol1,
+    ol2,
+    ol3,
+    ol4,
+    *,
+    dx_m: float,
+    sina=None,
+    cosa=None,
+    dtype=jnp.float64,
+) -> GWDOStatics:
+    """Assemble the per-run GWDO sub-grid orography statics from WRF fields.
+
+    The ten 2-D statics are the geo_em / ``wrfinput`` fields carried by the
+    port's ``init/metgrid_schema.py`` (Registry package ``gwd_used_1``):
+
+        var2d <- ``VAR`` (std dev of subgrid orography, m)
+        con   <- ``CON`` (orographic convexity -> WRF ``oc1``)
+        oa1..4 <- ``OA1..4``;  ol1..4 <- ``OL1..4``
+
+    Inputs are mass-point 2-D ``(ny, nx)``; the bundle is flattened to the
+    kernel's ``(B=ny*nx,)`` batch contract. ``sina``/``cosa`` default to the
+    unrotated grid (0/1). ``dx_m`` is the (uniform) grid spacing in metres.
+    """
+
+    def flat(field, default=None):
+        if field is None:
+            arr = jnp.full(shape, float(default), dtype=dtype)
+        else:
+            arr = jnp.asarray(field, dtype=dtype)
+        return arr.reshape((-1,))
+
+    var2d = jnp.asarray(var2d, dtype=dtype)
+    shape = var2d.shape
+    return GWDOStatics(
+        var=var2d.reshape((-1,)),
+        oc1=flat(con),
+        oa1=flat(oa1),
+        oa2=flat(oa2),
+        oa3=flat(oa3),
+        oa4=flat(oa4),
+        ol1=flat(ol1),
+        ol2=flat(ol2),
+        ol3=flat(ol3),
+        ol4=flat(ol4),
+        sina=flat(sina, 0.0),
+        cosa=flat(cosa, 1.0),
+        dxmeter=jnp.full((var2d.size,), float(dx_m), dtype=dtype),
+    )
+
+
+def _interface_pressure_from_state(state: State):
+    """WRF ``p8w`` (full pressure at w-levels) reconstructed from mass-point ``p``.
+
+    GWDO consumes interface pressure only through the layer mass
+    ``del(k)=prsi(k)-prsi(k+1)`` and the column-fraction normaliser ``delks``;
+    it never differences a single interface against a level. The interface
+    pressures are the standard log-linear midpoints of the mass-point pressures,
+    with the surface (k=0) and model-top (k=K) faces extrapolated log-linearly
+    from the two nearest mass levels (matching WRF ``p8w`` at the boundaries to
+    within hydrostatic round-off). Pressure decreases monotonically with height,
+    so the reconstruction preserves ``del(k) > 0``.
+
+    ``state.p`` is mass-point ``(nz, ny, nx)``; returns interface columns
+    ``(ny, nx, nz+1)``.
+    """
+
+    p = state.p.astype(jnp.float64)  # (nz, ny, nx)
+    logp = jnp.log(jnp.maximum(p, 1.0))
+    # interior interfaces: geometric mean of adjacent mass levels
+    interior = jnp.exp(0.5 * (logp[:-1] + logp[1:]))  # (nz-1, ny, nx)
+    # surface face: log-linear extrapolation below level 0 using levels 0,1
+    bottom = jnp.exp(1.5 * logp[0] - 0.5 * logp[1])[None]  # (1, ny, nx)
+    # top face: log-linear extrapolation above the top level using K-2,K-1
+    top = jnp.exp(1.5 * logp[-1] - 0.5 * logp[-2])[None]
+    prsi = jnp.concatenate([bottom, interior, top], axis=0)  # (nz+1, ny, nx)
+    # guard strict monotone decrease so del(k) stays positive.
+    prsi = jnp.maximum(prsi, 1.0)
+    return _to_columns(prsi)
+
+
+def gwdo_adapter(
+    state: State,
+    dt: float,
+    statics: GWDOStatics,
+    grid: GridSpec | None = None,
+) -> State:
+    """Apply orographic gravity-wave drag + flow-blocking (``gwd_opt=1``).
+
+    Thin adapter: builds the GWDO column view from State (mass-point winds, T,
+    qv, mid/interface pressure, exner, geopotential height), runs the faithful
+    :func:`gpuwrf.physics.gwd_gwdo.gwdo_columns` kernel, and adds the resulting
+    A-grid wind tendency increment onto the C-grid faces using the same WRF
+    ``add_a2c_u/v`` averaging as the MYNN coupler (:func:`_add_a2c_u_increment`).
+    Momentum-only: theta/qv/qke/w are untouched (GWDO produces no heating).
+
+    ``statics`` is the per-run :class:`GWDOStatics` bundle
+    (:func:`build_gwdo_statics_from_wrf_fields`).
+    """
+
+    T = _temperature_from_theta(state.theta, state.p)
+    exner = (jnp.maximum(state.p, 1.0) / P0_PA) ** R_D_OVER_CP
+    # geopotential height of mass-points (m): average of the two bounding faces.
+    z_face = state.ph.astype(jnp.float64) / GRAVITY_M_S2  # (nz+1, ny, nx)
+    z_mass = 0.5 * (z_face[:-1] + z_face[1:])
+
+    u_mass = _u_mass(state)
+    v_mass = _v_mass(state)
+    ny, nx = state.theta.shape[1], state.theta.shape[2]
+
+    column = GWDOColumnState(
+        uproj=_to_columns(u_mass).reshape((ny * nx, -1)),
+        vproj=_to_columns(v_mass).reshape((ny * nx, -1)),
+        t1=_to_columns(T).reshape((ny * nx, -1)),
+        q1=_to_columns(state.qv).reshape((ny * nx, -1)),
+        prsl=_to_columns(state.p).reshape((ny * nx, -1)),
+        prsi=_interface_pressure_from_state(state).reshape((ny * nx, -1)),
+        prslk=_to_columns(exner).reshape((ny * nx, -1)),
+        zl=_to_columns(z_mass).reshape((ny * nx, -1)),
+    )
+    out = gwdo_columns(column, statics, dt)
+
+    # column tendency (m/s^2) -> wind increment over the step on mass points.
+    du_mass = _from_columns(out.rublten.reshape((ny, nx, -1))) * dt  # (nz, ny, nx)
+    dv_mass = _from_columns(out.rvblten.reshape((ny, nx, -1))) * dt
+    u_new = _add_a2c_u_increment(state.u, du_mass).astype(_output_dtype(state, "u"))
+    v_new = _add_a2c_v_increment(state.v, dv_mass).astype(_output_dtype(state, "v"))
+    return state.replace(u=u_new, v=v_new)
+
+
 __all__ = [
+    "GWDOStatics",
     "RRTMGRadiationDiagnostics",
     "RRTMGRadiationStatic",
     "SurfaceMynnDiagnostics",
@@ -1618,7 +1759,9 @@ __all__ = [
     "_compute_coszen",
     "_compute_solar_geometry",
     "build_radiation_static_from_wrf_fields",
+    "build_gwdo_statics_from_wrf_fields",
     "wrf_radiation_slope_aspect_from_terrain",
+    "gwdo_adapter",
     "mynn_adapter",
     "mynn_adapter_with_diagnostics",
     "rrtmg_radiation_diagnostics",
