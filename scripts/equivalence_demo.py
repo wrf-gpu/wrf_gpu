@@ -62,16 +62,22 @@ tolerance with one honest exceedance is worth more than a hidden pass).
 USAGE
 =====
     python scripts/equivalence_demo.py \
-        --case-dir /mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_<...> \
+        --case-dir /path/to/your/cpu_wrf_run \
         --domain   d02 \
         --hours    24 \
-        --out      proofs/v0120/equivalence_demo_20260509_d02.json
+        --out      proofs/v0120/equivalence_demo.json
 
-``--case-dir`` is a retained CPU-WRF run directory holding both the
-``namelist.input`` and the hourly ``wrfout_<domain>_*`` history (the default
-reference is the retained ``20260509_18z`` d02 case). The script runs the GPU
-forecast into a temporary output dir, then compares against the CPU history in
-the SAME case dir.
+``--case-dir`` is REQUIRED: bring your own retained CPU-WRF run directory holding
+both the ``namelist.input`` and the hourly ``wrfout_<domain>_*`` history (any
+standard WRF v4 WPS + real.exe + wrf.exe run for the case you want to check).
+The script runs the GPU forecast into a temporary output dir, then compares
+against the CPU history in the SAME case dir.
+
+NO internal scheduler / GPU mutex is needed: the GPU forecast is launched via the
+public ``python -m gpuwrf.cli run`` entrypoint directly. On a single-GPU machine
+just run the command above. (The project's *shared* workstation has an internal
+``/tmp/wrf_gpu_run.sh`` multi-job serializer; prefix it only if it exists on your
+machine — a normal tester neither has it nor needs it.)
 
 Field ownership: this file + ``docs/equivalence-demo.md`` only. It shells out to
 the public CLI and reads NetCDF; it does not import or modify the pipeline,
@@ -500,16 +506,17 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     p.add_argument(
         "--case-dir",
         type=Path,
-        default=Path("/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z"),
-        help="Retained CPU-WRF run dir (namelist + hourly wrfout history). "
-        "Default = the retained 20260509_18z d02 reference case.",
+        required=True,
+        help="REQUIRED. A retained CPU-WRF run dir you provide (its namelist.input "
+        "+ hourly wrfout_<domain>_* history). Bring your own from any standard WRF "
+        "v4 WPS + real.exe + wrf.exe run; no canairy-internal path is assumed.",
     )
     p.add_argument("--domain", default="d02", help="Domain id to run/compare (e.g. d02).")
     p.add_argument("--hours", type=int, default=24, help="Forecast lead hours to run and compare.")
     p.add_argument(
         "--out",
         type=Path,
-        default=Path("proofs/v0120/equivalence_demo_20260509_d02.json"),
+        default=Path("proofs/v0120/equivalence_demo.json"),
         help="Path for the verdict + stats proof JSON.",
     )
     p.add_argument(

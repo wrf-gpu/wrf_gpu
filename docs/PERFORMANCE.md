@@ -22,15 +22,22 @@ projected or pending, it says so.
 
 ### Reproduce
 
+No internal scheduler or GPU mutex is needed — on a single-GPU machine just run
+`python -m gpuwrf.cli run` directly:
+
 ```bash
 # WARM throughput (cache on) + cold-vs-cache compile, fp64, d01 standalone:
-/tmp/wrf_gpu_run.sh taskset -c 0-3 \
-  env PYTHONPATH=src JAX_ENABLE_X64=true XLA_PYTHON_CLIENT_PREALLOCATE=false \
-      GPUWRF_JAX_CACHE_DIR=/mnt/data/gpuwrf_jax_cache \
+env PYTHONPATH=src JAX_ENABLE_X64=true XLA_PYTHON_CLIENT_PREALLOCATE=false \
+    GPUWRF_JAX_CACHE_DIR=/path/to/local/nvme/gpuwrf_jax_cache \
   python -m gpuwrf.cli run \
     --input-dir <case> --output-dir <scratch> --domain d01 --hours 3
 # Cold compile (cache disabled): set GPUWRF_JAX_CACHE=0 instead of GPUWRF_JAX_CACHE_DIR.
 ```
+
+> On the project's *shared* workstation the maintainers prefix this with their
+> internal multi-job GPU serializer (`/tmp/wrf_gpu_run.sh taskset -c 0-3 ...`).
+> That wrapper is **not** required to reproduce these numbers; prefix it only if
+> it already exists on your machine.
 
 The pipeline reports `wall_clock_per_hour_s`: element `[0]` carries the XLA compile
 (cold or cache-read) + the first hour's execution + JAX warmup; elements `[1:]` are the

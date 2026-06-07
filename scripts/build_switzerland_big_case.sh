@@ -28,17 +28,22 @@
 set -uo pipefail
 
 # ── Configuration (override via env) ──────────────────────────────────────
-RUNROOT="${RUNROOT:-/mnt/data/wrf_gpu_switzerland_big}"
-# Reuse F's 43x43 case assets (cached GFS) by default.
-SRC_CASE="${SRC_CASE:-/mnt/data/wrf_gpu_switzerland}"
+# Maintainer/benchmark step (28-rank big grid). Output roots default to a
+# repo-relative writable dir (no /mnt required); the WPS/geog/WRF tool paths are
+# this workstation's documented defaults — override them for your machine.
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO="$(cd "${SCRIPT_DIR}/.." && pwd)"
+RUNROOT="${RUNROOT:-${REPO}/runs/switzerland_big}"
+# Reuse the 43x43 case assets (cached GFS) by default.
+SRC_CASE="${SRC_CASE:-${REPO}/runs/switzerland}"
 
-WPS_SRC="${WPS_SRC:-/mnt/data/canairy_meteo/artifacts/wrf_src/WPS}"
+WPS_SRC="${WPS_SRC:-/path/to/your/WPS}"
 WPS_BIN="${WPS_BIN:-${WPS_SRC}/install_gen2_dmpar/bin}"
-GEOG="${GEOG:-/mnt/data/canairy_meteo/artifacts/wps_geog/WPS_GEOG_LOW_RES}"
+GEOG="${GEOG:-/path/to/your/WPS_GEOG}"
 
 # dmpar MPI WRF build (28-rank reference build family) — used for real.exe here.
-WRF_DMPAR="${WRF_DMPAR:-/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_src/WRF/install_gen2_dmpar/run}"
-WRF_BUILD_ENV="${WRF_BUILD_ENV:-/home/enric/src/canairy_meteo/Gen2/artifacts/envs/wrf-build}"
+WRF_DMPAR="${WRF_DMPAR:-/path/to/your/WRF/install_dmpar/run}"
+WRF_BUILD_ENV="${WRF_BUILD_ENV:-/path/to/your/wrf-build-env}"
 MPIRUN="${MPIRUN:-${WRF_BUILD_ENV}/bin/mpirun}"
 # real.exe ranks: keep modest; real is cheap and oversubscribe-safe.
 REAL_NP="${REAL_NP:-4}"
