@@ -402,8 +402,10 @@ _OUT_OF_SCOPE_FEATURE_BY_KEY: Mapping[str, OutOfScopeFeature] = {
 #   * no positive-definite/monotonic scalar transport variants                 #
 #     (moist_adv_opt/scalar_adv_opt 2/3/4 unimplemented -- differential        #
 #     analysis P1-6);                                                          #
-#   * gwd_opt orographic gravity-wave drag NOT implemented (only w-Rayleigh    #
-#     damping exists);                                                         #
+#   * gwd_opt=1 orographic gravity-wave drag + flow blocking IS implemented    #
+#     (physics/gwd_gwdo.py; coupling.physics_couplers.gwdo_adapter; faithful   #
+#     bl_gwdo_run port, oracle-validated vs pristine WRF). gwd_opt=3 (GSL) is  #
+#     NOT wired;                                                               #
 #   * MYNN-EDMF wired sub-config bl_mynn_edmf=1 / edmf_mom=1 / edmf_tke=0 /     #
 #     mixscalars=1 / mixqt=0 / edmf_dd=0 (physics/mynn_edmf.py:7-13),          #
 #     mixlength 1|2 (physics/mynn_constants.py);                               #
@@ -453,11 +455,14 @@ _RECOGNIZED_CONTROLS: tuple[RecognizedControl, ...] = (
     # --- Dynamics / advection --------------------------------------------- #
     RecognizedControl(
         "gwd_opt", "gravity-wave-drag",
-        frozenset({0}),
-        "recognized; orographic gravity-wave drag / flow blocking "
-        "(module_bl_gwdo) is NOT implemented in v0.12.0 (the port has only "
-        "upper-level w-Rayleigh damping, damp_opt=3).",
-        "Set gwd_opt=0 (orographic GWD off).",
+        frozenset({0, 1}),
+        "recognized; the port wires gwd_opt=1 (orographic gravity-wave drag + "
+        "flow blocking, the Kim-GWDO of Choi & Hong 2015 -- a faithful port of "
+        "module_bl_gwdo/bl_gwdo_run, physics/gwd_gwdo.py + coupling.gwdo_adapter, "
+        "oracle-validated vs pristine WRF). gwd_opt=3 (GSL drag suite) is not "
+        "wired. Requires the sub-grid orography statics (VAR/CON/OA1-4/OL1-4) "
+        "carried in wrfinput.",
+        "Use gwd_opt=0 (off) or 1 (orographic GWD on); gwd_opt=3 is not wired.",
     ),
     RecognizedControl(
         "moist_adv_opt", "moisture-advection",
