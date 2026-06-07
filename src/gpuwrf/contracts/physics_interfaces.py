@@ -506,10 +506,12 @@ SCHEME_STEP_SPECS: tuple[PhysicsStepSpec, ...] = (
         variant="sw",
         notes="ra_sw_physics=1. Stephens-1984 broadband Dudhia SW; held-rate RTHRATEN theta "
         "tendency. No external lookup-table asset. Solar geometry via coszen + surface albedo. "
-        "STATUS: isolated-WRF-savepoint parity-proven + accepted, but NOT operational-scan-wired: "
-        "OperationalNamelist has no ra_sw_physics field and the radiation slot in "
-        "runtime.operational_mode hardcodes the RRTMG (ra=4) held-rate RTHRATEN. Scan-wiring is a "
-        "post-0.9.0 carry-over (would require a radiation-family dispatch + the combined LW/SW slot).",
+        "STATUS: isolated-WRF-savepoint parity-proven AND operational-scan-wired: "
+        "OperationalNamelist.ra_sw_physics=1 routes the radiation slot in runtime.operational_mode "
+        "to coupling.physics_couplers.dudhia_sw_theta_tendency (Dudhia SW) + rrtmg_lw_theta_tendency "
+        "(RRTMG LW), composed as the held-rate RTHRATEN (WRF runs SW/LW drivers independently). "
+        "Wired-coupler oracle proof: proofs/radiation/cdudhia_sw_oracle.py. The surface SWDOWN/flux "
+        "history diagnostics remain RRTMG-derived (rrtmg_radiation_diagnostics).",
     ),
     # Classic RRTM longwave (ra_lw_physics=1) -- 16-band k-distribution from
     # AER, loaded from the RRTM_DATA asset. Reads cloud hydrometeors + qv +

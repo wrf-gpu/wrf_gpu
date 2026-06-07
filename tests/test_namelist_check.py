@@ -298,16 +298,18 @@ def test_operational_validator_passes_implemented_suite() -> None:
     "key, value, scheme_substring, alt_substring",
     [
         ("ra_lw_physics", 1, "RRTM", "ra_lw_physics=4"),
-        ("ra_sw_physics", 1, "Dudhia", "ra_sw_physics=4"),
+        # ra_sw_physics=1 (Dudhia) is NOW operationally scan-wired (see
+        # test_operational_validator_accepts_wired_dudhia_sw below); it is no
+        # longer a reference-only rejection.
         ("cu_physics", 16, "New Tiedtke", "cu_physics=6"),
     ],
 )
 def test_operational_validator_rejects_reference_only_scheme(
     key: str, value: int, scheme_substring: str, alt_substring: str
 ) -> None:
-    """ra_lw=1 (RRTM), ra_sw=1 (Dudhia), cu=16 (New-Tiedtke) are parity-proven
-    but NOT operationally wired -> the operational run path fails closed,
-    naming the scheme it would silently run instead and the alternative."""
+    """ra_lw=1 (RRTM) and cu=16 (New-Tiedtke) are parity-proven but NOT
+    operationally wired -> the operational run path fails closed, naming the
+    scheme it would silently run instead and the alternative."""
 
     with pytest.raises(NotOperationallyWiredError) as excinfo:
         validate_operational_namelist({"physics": {key: [value]}})
@@ -326,15 +328,31 @@ def test_operational_validator_rejects_reference_only_scheme(
     assert f"Operationally-wired {key} values:" in message
 
 
-def test_operational_validator_rejects_reference_only_radiation_pair() -> None:
-    """A namelist that selects BOTH reference-only radiation schemes reports both."""
+def test_operational_validator_accepts_wired_dudhia_sw() -> None:
+    """ra_sw_physics=1 (Dudhia) is now operationally scan-wired, so the operational
+    validator ACCEPTS it (paired with the operational RRTMG longwave). This is the
+    contract flip from REFERENCE_ONLY -> IMPLEMENTED."""
+
+    from gpuwrf.io.scheme_catalog import SupportStatus, classify_scheme
+
+    assert classify_scheme("ra_sw_physics", 1).status is SupportStatus.IMPLEMENTED
+    # Accepted on its own and alongside the operational RRTMG longwave.
+    validate_operational_namelist({"physics": {"ra_sw_physics": [1]}})
+    validate_operational_namelist(
+        {"physics": {"ra_sw_physics": [1], "ra_lw_physics": [4]}}
+    )
+
+
+def test_operational_validator_rejects_reference_only_lw_with_wired_dudhia_sw() -> None:
+    """ra_lw=1 (RRTM, still reference-only) is rejected even when paired with the
+    now-wired Dudhia ra_sw=1: only the longwave selection fails closed."""
 
     with pytest.raises(NotOperationallyWiredError) as excinfo:
         validate_operational_namelist(
             {"physics": {"ra_lw_physics": [1], "ra_sw_physics": [1]}}
         )
     keys = {s.key for s in excinfo.value.selections}
-    assert keys == {"ra_lw_physics", "ra_sw_physics"}
+    assert keys == {"ra_lw_physics"}
 
 
 def test_operational_validator_rejects_myj_janjic_reference_pair() -> None:
@@ -358,11 +376,12 @@ def test_operational_validator_rejects_myj_janjic_reference_pair() -> None:
 
 def test_operational_validator_rejects_reference_only_per_domain() -> None:
     """A multi-domain namelist with a reference-only radiation scheme on one
-    domain is rejected for that domain."""
+    domain is rejected for that domain. ra_lw=1 (RRTM) stays reference-only
+    (ra_sw=1 Dudhia is now wired), so the longwave drives the per-domain reject."""
 
     with pytest.raises(NotOperationallyWiredError) as excinfo:
-        validate_operational_namelist({"physics": {"ra_sw_physics": [4, 1]}})
-    sel = _selection_for(excinfo, "ra_sw_physics")
+        validate_operational_namelist({"physics": {"ra_lw_physics": [4, 1]}})
+    sel = _selection_for(excinfo, "ra_lw_physics")
     assert sel.domain_index == 2
     assert sel.value == 1
 

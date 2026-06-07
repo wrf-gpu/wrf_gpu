@@ -193,12 +193,12 @@ SUPPORTED_OPTIONS: dict[str, SupportedOption] = {
     "ra_sw_physics": SupportedOption(
         key="ra_sw_physics",
         supported_values=frozenset(ACCEPTED_RA_SW_PHYSICS),
-        implemented="0=disabled, 1=Dudhia shortwave (isolated-savepoint parity-proven + accepted, "
-        "NOT operational-scan-wired), 4=RRTMG shortwave (GPU-operational; the operational radiation "
-        "slot runs RRTMG)",
-        action="Use ra_sw_physics=4 for the operational RRTMG SW path, or 0 when radiation is "
-        "disabled. ra_sw_physics=1 (Dudhia) passes its isolated WRF-savepoint gate but is not yet "
-        "selectable by the operational scan (post-0.9.0 radiation-family dispatch).",
+        implemented="0=disabled, 1=Dudhia shortwave (Stephens-1984 broadband; GPU-operational, "
+        "scan-wired held-rate RTHRATEN with RRTMG longwave), 4=RRTMG shortwave (GPU-operational; "
+        "the operational radiation slot runs RRTMG SW+LW)",
+        action="Use ra_sw_physics=4 (RRTMG SW+LW) or 1 (Dudhia SW + RRTMG LW) for the operational "
+        "SW path, or 0 when radiation is disabled. Both are scan-wired; the surface SWDOWN/flux "
+        "history diagnostics remain RRTMG-derived.",
     ),
     "ra_lw_physics": SupportedOption(
         key="ra_lw_physics",
