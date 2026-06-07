@@ -3,7 +3,20 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Callable
 
+import jax
+import pytest
 
+
+@pytest.mark.skipif(
+    jax.default_backend() == "cpu",
+    reason=(
+        "100-step coupled-dycore savepoint parity builds a very large XLA graph "
+        "that segfaults the CPU backend (memory). This is a GPU-targeted parity "
+        "test (dycore parity is also covered by the idealized Straka/Skamarock "
+        "gates); run it on the GPU backend. Skipping on CPU avoids a SIGSEGV that "
+        "would crash the whole single-process pytest run."
+    ),
+)
 def test_dycore_column_coupled_step_parity_100_steps(
     wrf_fortran_reference_paths: dict[str, Path],
     wrf_reference_root: Path,
