@@ -1,0 +1,36 @@
+{
+  "acoustic_substeps": 10,
+  "all_finite": true,
+  "case_build_s": 2.4352674349211156,
+  "device": "cuda:0",
+  "domain": "d01",
+  "dt_s": 10.0,
+  "force_fp64": true,
+  "grid_mass_shape": [
+    44,
+    59,
+    93
+  ],
+  "hlo_convert_counts": {},
+  "hlo_op_histogram_top40": {},
+  "hour1_compile_plus_first_s": 29.258226208970882,
+  "hours": 2,
+  "jax_cache_status": {
+    "dir": "/mnt/data/wrf_perf_scratch/cache_iso2",
+    "enabled": true,
+    "error": null,
+    "min_compile_time_secs": 0,
+    "source": "env:JAX_COMPILATION_CACHE_DIR"
+  },
+  "peak_gpu_mem_mb": 4726.77685546875,
+  "peak_gpu_mem_mb_after_each_hour": [
+    4608.657958984375,
+    4726.77685546875
+  ],
+  "schema": "GpuwrfV0120ProfileRun",
+  "wall_clock_per_hour_s": [
+    29.258226208970882,
+    16.70536698703654
+  ],
+  "warm_s_per_forecast_hour": 16.70536698703654
+}
