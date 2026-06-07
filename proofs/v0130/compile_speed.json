@@ -1,0 +1,55 @@
+{
+  "title": "v0.13 compile-speed proof (cold vs warm, CPU)",
+  "backend": "cpu",
+  "representative_graph": {
+    "kind": "fp64 lax.scan(stencil + GEMM)",
+    "substeps": 40,
+    "field_edge": 96,
+    "note": "Representative of WRF timestep XLA compile cost drivers; NOT a forecast-accuracy artifact."
+  },
+  "cold": {
+    "phase": "cold",
+    "compile_seconds": 0.05975842196494341,
+    "cache_enabled": true,
+    "cache_dir": "/tmp/claude-1000/gpuwrf_v0130_compile_6btshueg",
+    "entries_before": 2,
+    "entries_after": 3,
+    "new_entries": 1,
+    "warm_hit": false,
+    "result_hash": "0a8dabd574dd592e33397acbc4308d0a77dfe688d46b8557bb4a8f18045e9a68",
+    "result_sum": -325485.89332630526,
+    "result_shape": [
+      96,
+      96
+    ],
+    "backend": "cpu",
+    "precompile_error": null
+  },
+  "warm": {
+    "phase": "warm",
+    "compile_seconds": 0.01573572400957346,
+    "cache_enabled": true,
+    "cache_dir": "/tmp/claude-1000/gpuwrf_v0130_compile_6btshueg",
+    "entries_before": 3,
+    "entries_after": 3,
+    "new_entries": 0,
+    "warm_hit": true,
+    "result_hash": "0a8dabd574dd592e33397acbc4308d0a77dfe688d46b8557bb4a8f18045e9a68",
+    "result_sum": -325485.89332630526,
+    "result_shape": [
+      96,
+      96
+    ],
+    "backend": "cpu",
+    "precompile_error": null
+  },
+  "cold_compile_seconds": 0.05975842196494341,
+  "warm_compile_seconds": 0.01573572400957346,
+  "warm_speedup_x": 3.7976277372802785,
+  "warm_is_cache_hit": true,
+  "cold_wrote_entries": 1,
+  "identical_results": true,
+  "orchestrator_wall_seconds": 4.928930418100208,
+  "gpu_followup": "GPU cold-compile (multi-minute fp64 + autotuning) and the persistent autotune-cache numbers are a v0.13-GPU-followup; not claimed here. CPU backend used because the GPU is reserved for the validation gate.",
+  "passed": true
+}
