@@ -25,6 +25,7 @@ from gpuwrf.contracts.physics_registry import (
     ACCEPTED_SF_SURFACE_PHYSICS,
 )
 from gpuwrf.io.scheme_catalog import (
+    APPROXIMATED_CONTROL_KEYS,
     IMPLEMENTED_CONTROL_KEYS,
     OUT_OF_SCOPE_FEATURE_KEYS,
     RECOGNIZED_CONTROL_KEYS,
@@ -316,6 +317,13 @@ def validate_namelist(config: Any) -> None:
     that names every offending option, the reason it will not run, and the
     supported alternative / transition recipe. Implemented (and accepted
     reference-only) selections pass silently.
+
+    The cumulus/PBL CADENCE keys (``cudt``/``bldt``) are deliberately NOT
+    fail-closed when positive: the GPU port runs those physics every dynamics
+    step (a conservative approximation of the requested sub-stepping cadence, not
+    a wrong-scheme substitution), so the namelist PASSES. The approximation is
+    surfaced as a non-fatal warning via :func:`collect_namelist_warnings`, which
+    the CLI prints before launching the forecast.
     """
 
     config_obj = _coerce_config(config)
@@ -374,6 +382,49 @@ def validate_operational_namelist(config: Any) -> None:
     ref_only = _reference_only_failures(config_obj)
     if ref_only:
         raise NotOperationallyWiredError(ref_only)
+
+
+def collect_namelist_warnings(config: Any) -> list[str]:
+    """Return non-fatal approximation warnings for a namelist (never raises).
+
+    A naive user pointing the standalone ``gpuwrf run`` at a real WRF
+    ``namelist.input`` must not be REJECTED for the cumulus/PBL cadence keys.
+    ``cudt``/``bldt`` ask the port to sub-step those physics every N minutes, but
+    the GPU port runs them EVERY dynamics step -- more frequent than requested, a
+    conservative approximation that can never silently substitute a different
+    scheme. So a positive ``cudt``/``bldt`` is NOT a fail-closed rejection
+    (handled by :func:`validate_namelist`); instead it surfaces here as a
+    WARNING string naming the approximation, while the run proceeds. The CLI
+    prints these to stderr before launching the forecast.
+
+    Each warning is a single human-readable line. ``config`` accepts the same
+    forms as :func:`validate_namelist` (flat/nested mapping, dataclass, or a
+    namelist path/text). Returns ``[]`` when nothing is approximated. This
+    function NEVER raises -- it is purely advisory; the fail-closed rejections
+    remain the validators' job.
+    """
+
+    try:
+        config_obj = _coerce_config(config)
+    except Exception:  # noqa: BLE001 - advisory only; let validators report IO/parse errors
+        return []
+
+    warnings: list[str] = []
+    for key in sorted(APPROXIMATED_CONTROL_KEYS):
+        found = _lookup(config_obj, key)
+        if found is None:
+            continue
+        location, raw = found
+        values = _domain_values(raw)
+        multi = len(values) > 1
+        for idx, value in enumerate(values):
+            support = classify_control(key, value)
+            if support is None or support.status is not SupportStatus.RECOGNIZED_APPROXIMATED:
+                continue
+            domain = f" (domain {idx + 1})" if multi else ""
+            # ``support.reason`` carries the catalog's approximation note.
+            warnings.append(f"{location}{domain}: {support.reason}")
+    return warnings
 
 
 def _reference_only_failures(config: Any) -> list[UnsupportedSelection]:
@@ -779,6 +830,7 @@ __all__ = [
     "UnsupportedNamelistOption",
     "UnsupportedSchemeError",
     "UnsupportedSelection",
+    "collect_namelist_warnings",
     "validate_namelist",
     "validate_operational_namelist",
     "validate_supported_namelist",
