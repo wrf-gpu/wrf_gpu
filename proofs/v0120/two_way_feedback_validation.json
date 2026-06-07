@@ -1,0 +1,63 @@
+{
+  "schema": "V0120TwoWayFeedbackValidation",
+  "verdict": "TWO_WAY_FEEDBACK_VALIDATED",
+  "operator": "WRF copy_fcn odd-ratio area-average + sm121 1-2-1 feedback-zone smoother",
+  "runtime_path": "run_domain_tree_callbacks + _operational_feedback (genuine operational callback)",
+  "geometry": {
+    "parent_grid_ratio": 3,
+    "i_parent_start": 4,
+    "j_parent_start": 4,
+    "parent_nx_ny": [
+      20,
+      18
+    ],
+    "child_nx_ny": [
+      24,
+      24
+    ],
+    "nz": 8,
+    "overlap_parent_mass_cells": 36
+  },
+  "a_parent_interior_changed_by_child": true,
+  "a_changed_only_in_overlap": true,
+  "b_two_way_state_finite": true,
+  "c_theta_matches_copyfcn_then_sm121": true,
+  "c_smoother_actually_changed_copyfcn_result": true,
+  "c_raw_feedback_overlap_conserved": true,
+  "c_overlap_conservation_rel_residual": 2.9722014870838985e-16,
+  "one_way_vs_two_way_diff": {
+    "theta": {
+      "max_abs_diff": 10.259991071982824,
+      "mean_abs_diff_overlap": 2.851987555723988
+    },
+    "qv": {
+      "max_abs_diff": 0.0038612120361710797,
+      "mean_abs_diff_overlap": 0.0016788960576317319
+    },
+    "w": {
+      "max_abs_diff": 14.753188274902092,
+      "mean_abs_diff_overlap": 4.813637897472399
+    },
+    "p_perturbation": {
+      "max_abs_diff": 9.468742879110298,
+      "mean_abs_diff_overlap": 3.7039847868227613
+    },
+    "ph_perturbation": {
+      "max_abs_diff": 10.167749288302202,
+      "mean_abs_diff_overlap": 3.113169656282312
+    },
+    "mu_perturbation": {
+      "max_abs_diff": 6.182963943153121,
+      "mean_abs_diff_overlap": 2.8950407118001467
+    },
+    "u": {
+      "max_abs_diff": 12.24402120450644,
+      "mean_abs_diff_overlap": 3.7193567474079026
+    },
+    "v": {
+      "max_abs_diff": 12.96938675775945,
+      "mean_abs_diff_overlap": 4.185306178232498
+    }
+  },
+  "note": "CPU runtime validation of the feedback OPERATOR + SMOOTHER on the genuine operational callback path. Full 24h real-data 2-way nested equivalence (GPU, real.exe init) is deferred to v0.13."
+}
