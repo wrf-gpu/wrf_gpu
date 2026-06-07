@@ -8,12 +8,18 @@ MERGED + committed: standalone native-init CLI + nested-OOM fix (A) · release-d
 ## ✅ THE RELEASE-CRITICAL GATE — DONE/GREEN (commit 9204598)
 24h **standalone live-nested d01→d02→d03 (1km)** on the exact prod-failing AIFS case `20260531_18z_l3_24h_...`: PIPELINE_GREEN, 24/24 wrfout per domain, all finite (T2 279-301K, PSFC 68-102 kPa), **peak 20.7 GB / 32**. Proof: `proofs/v0120/nested_24h_1km_gate.json`. The yesterday-failing AIFS-pull→1km scenario now runs out-of-box. **This is the v0.12.0 correctness item — closed.**
 
-## RUNNING NOW (survive compact — auto-notify on completion):
-1. ✅ **Coverage agent DONE + MERGED** (trunk `fd41246`): wrfout 74→**105/375** vars. The "64-var" claim was wrong (real baseline 74) → fix to 105/375 in doc-fill.
-2. ✅ **Switzerland benchmark RESOLVED** (see ceiling section below): CPU 128² 28-rank = 43.28 s/fc-hr (clean); GPU 128² AND 150² both **OOM** at fp64 → ship d02 operational speedup + honest fp64 grid-ceiling note. Proof: `proofs/v0120/switzerland_128_gpu_result.json`. swiss128 branch `ef4cfdd` = reproducible harness (merge optional). NO more grid-chasing.
-3. **B5 sprint — namelist recognition breadth** (in-proc agent, bg, branch `worker/opus/v0120-namelist-recognition`): honest per-key fail-closed verdicts for gwd_opt/adv_opt/cadence/out-of-scope keys. CPU-only, validator-only. NON-BLOCKING: merge into v0.12.0 only if clean+green before release-critic, else bank v0.13.
-4. **B3 sprint — Noah-MP snow-layer diags** (in-proc agent, bg, branch `worker/opus/v0120-noahmp-snow`): verify-first route TSNO/SNICE/SNLIQ/ZSNSO if carry holds them, else bank v0.13. CPU-only. NON-BLOCKING.
-5. **15-min heartbeat** (ScheduleWakeup, re-arm each tick) — anti-stall; drive to release.
+## RELEASE TRUNK = `e602122` (post B5+B3 merge). DONE this push:
+1. ✅ Coverage 74→**105/375** merged. 2. ✅ Switzerland resolved (fp64 ceiling <128²; ship d02 + ceiling note; proofs/v0120/switzerland_128_gpu_result.json). 3. ✅ **B5 merged** (namelist recognition, 71 passed — honest per-key verdicts; naive-user-test fix). 4. ✅ **B3 merged** (Noah-MP snow/canopy diags, KI-3 CLOSED, +4 vars).
+
+## RUNNING NOW — 4 ARCHITECTURE LANES (in-proc Opus-max agents, bg, auto-notify, ALL off `e602122`, ALL isolated worktrees, ALL NON-BLOCKING / midnight merge-or-defer gate):
+- **B1 radiation flux diags** `worker/opus/v0120-radflux` (agent a60f4abf) — SWDNB/LWUPB/OLR/… ~16-18 TOA+sfc flux vars from existing RRTMG profiles. M, likely v0.12.0. Owns: radiation diag extract + wrfout_writer.py (append-only block) + tests.
+- **GWD orographic gravity-wave drag** `worker/opus/gwd-gwdo` (agent a643fda8, Opus-max) — port module_bl_gwdo.F. L, likely v0.13. Owns: new physics/gwd_gwdo.py + dispatch + physics_registry + scheme_catalog(gwd_opt flip LAST). KEY DEP: sub-grid orography stats (VAR_SSO/OA/OL) — agent to find/flag.
+- **2-way nesting feedback (feedback=1)** `worker/opus/nesting-2way-feedback` (agent ae03a326, Opus-max) — child→parent feedback avg + smooth_2d. L-XL, likely v0.13. Owns: nested_pipeline.py/domain_tree.py + tests.
+- **PD/monotonic scalar advection (moist_adv_opt 2/3)** `worker/opus/pd-monotonic-advection` (agent a8f65c34, Opus-max) — Skamarock PD+monotonic limiters, OPT-IN only, default path bit-unchanged. L, likely v0.13. Owns: dycore advection module + idealized tests. HIGHEST validation care (core dycore).
+- GPU = ONE job, serialized via `/tmp/wrf_gpu_run.sh` single-wrap; agents do CPU-jax dev+validation first; long 24h GPU validations = v0.13 merge-prep. GPT-codex = reserve debugger if a lane flags stuck.
+- **15-min heartbeat** (ScheduleWakeup) — anti-stall fallback; agents auto-notify.
+
+## v0.12.0 RELEASE proceeds IN PARALLEL on `e602122` (NOT blocked by the 4 lanes): doc-fill → gap re-check → release-critic (Opus) → release-worker (Opus-MAX) → tag → push. At ~midnight: assess each lane → merge clean+validated ones into v0.12.0, else they become v0.13's head start.
 
 ## DEFERRED to POST-RELEASE (principal explicitly approved — Sonnet finishes + nachreichen in 0.12.x):
 - **TOST n=15 (KI-5):** the powered-equivalence campaign. GPU path is BROKEN on v0.12.0 — `run_one_case_v0120.py`/`execute_daily_pipeline` fails **rc=2 per case** (`L2_D02_BLOCKED`, 0/15 → ABORT). Also hit a flock-double-wrap deadlock earlier (4.6h, my mistake — fixed by running the orchestrator DIRECTLY, no outer `/tmp/wrf_gpu_run.sh` wrap). NOT a release blocker (the gate proves correctness). Document KI-5 honestly: harness ready (`worker/sonnet/v0120-tostprep`), GPU daily_pipeline path needs the rc=2 fix, deferred to post-release Sonnet. The TOST runner still needs its internal `/tmp/wrf_gpu_run_lowprio.sh` wrapper made only-if-present (tester-safety) — on the tostprep branch, not trunk.
