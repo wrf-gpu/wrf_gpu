@@ -32,6 +32,7 @@ from gpuwrf.coupling.boundary_apply import (
     _full_ring_target_from_leaf,
 )
 from gpuwrf.coupling.physics_couplers import (
+    gwdo_adapter,
     mynn_adapter,
     rrtmg_radiation_diagnostics,
     rrtmg_theta_tendency,
@@ -349,6 +350,17 @@ class OperationalNamelist:
     noahclassic_static: object = None
     noahclassic_land: object = None
     noahclassic_rad: object = None
+    # --- orographic gravity-wave drag (gwd_opt=1) ---------------------------
+    # ``gwd_opt`` (static aux) selects the WRF GWDO scheme: 0 = off (default,
+    # byte-unchanged), 1 = orographic GWD + flow blocking (faithful bl_gwdo_run
+    # port, physics/gwd_gwdo.py + coupling.physics_couplers.gwdo_adapter).
+    # ``gwdo_statics`` is the per-run :class:`GWDOStatics` sub-grid orography
+    # bundle (VAR/CON/OA1-4/OL1-4 from wrfinput; built by
+    # ``build_gwdo_statics_from_wrf_fields``). It rides as a pytree CHILD so its
+    # device arrays stay leaves, mirroring ``radiation_static``. The dispatch is
+    # a no-op when ``gwd_opt != 1`` OR ``gwdo_statics`` is None.
+    gwd_opt: int = 0
+    gwdo_statics: object = None
 
     @classmethod
     def from_grid(
@@ -441,7 +453,7 @@ class OperationalNamelist:
         # not tracers. They are wrapped in an identity-hashable holder so the jit
         # cache keys on per-run object identity (one run -> one compile). use_noahmp
         # + clock scalars are also static aux.
-        children = (self.tendencies, self.metrics, self.radiation_static)
+        children = (self.tendencies, self.metrics, self.radiation_static, self.gwdo_statics)
         aux = (
             self.grid,
             float(self.dt_s),
@@ -489,12 +501,13 @@ class OperationalNamelist:
             _StaticHolder(self.noahclassic_static),
             _StaticHolder(self.noahclassic_land),
             _StaticHolder(self.noahclassic_rad),
+            int(self.gwd_opt),
         )
         return children, aux
 
     @classmethod
     def tree_unflatten(cls, aux, children):
-        tendencies, metrics, radiation_static = children
+        tendencies, metrics, radiation_static, gwdo_statics = children
         (
             grid,
             dt_s,
@@ -542,6 +555,7 @@ class OperationalNamelist:
             noahclassic_static_holder,
             noahclassic_land_holder,
             noahclassic_rad_holder,
+            gwd_opt,
         ) = aux
         noahmp_static = noahmp_static_holder.value
         noahmp_energy_params = noahmp_energy_holder.value
@@ -599,6 +613,8 @@ class OperationalNamelist:
             noahclassic_static=noahclassic_static,
             noahclassic_land=noahclassic_land,
             noahclassic_rad=noahclassic_rad,
+            gwd_opt=gwd_opt,
+            gwdo_statics=gwdo_statics,
         )
 
 
@@ -2446,6 +2462,15 @@ def _physics_step_forcing(
     elif bl_opt == DEFAULT_BL_PBL_PHYSICS:
         next_state = mynn_adapter(next_state, float(namelist.dt_s), namelist.grid)
     # bl_opt == 0 -> no PBL mixing.
+
+    # --- orographic gravity-wave drag slot (gwd_opt=1) ---
+    # WRF applies GWDO inside the PBL driver, right after the PBL momentum
+    # tendency (phys/module_pbl_driver.F). gwd_opt=1 + a per-run GWDOStatics
+    # bundle activates the faithful bl_gwdo_run port; otherwise it is a no-op.
+    if int(namelist.gwd_opt) == 1 and namelist.gwdo_statics is not None:
+        next_state = gwdo_adapter(
+            next_state, float(namelist.dt_s), namelist.gwdo_statics, namelist.grid
+        )
 
     # --- cumulus slot ---
     if cu_opt in CU_STATELESS_SCAN_ADAPTERS:
