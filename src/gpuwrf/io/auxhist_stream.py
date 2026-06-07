@@ -30,6 +30,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
+from math import gcd
+from typing import Iterable, Sequence
 
 # WRF io_form codes (share_io_module / module_io.F). Only NetCDF is supported by
 # this port's writer; auxhist accepts the same codes for namelist faithfulness.
@@ -176,6 +178,76 @@ def auxhist_output_boundaries(
     return boundaries
 
 
+# --------------------------------------------------------------------------- #
+# Multi-stream support: WRF drives auxhist1..auxhist24 INDEPENDENTLY, each with #
+# its own interval / outname / frames / variable subset. The pipeline accepts a #
+# LIST of configs and fires each at its own cadence; the empty list is the      #
+# OFF-by-default case (no second stream, main wrfout byte-unchanged). A single  #
+# config (or None) is accepted for back-compat and coerced to the list form.    #
+# --------------------------------------------------------------------------- #
+
+
+def coerce_auxhist_streams(
+    auxhist: AuxhistStreamConfig | Iterable[AuxhistStreamConfig] | None,
+) -> tuple[AuxhistStreamConfig, ...]:
+    """Normalize the pipeline ``auxhist`` setting to a tuple of stream configs.
+
+    Accepts the back-compatible forms and the new multi-stream form:
+
+    * ``None``                         -> ``()`` (OFF; no second stream).
+    * a single :class:`AuxhistStreamConfig` -> ``(config,)`` (legacy single-stream).
+    * any iterable of configs          -> a tuple of those configs (multi-stream).
+
+    Enforces WRF's constraint that each auxhist stream number is configured at
+    most once (``stream_id`` unique across the list) so two configs never collide
+    on the same ``auxhist{N}_*`` group / filename prefix. Preserves declared order.
+    """
+
+    if auxhist is None:
+        return ()
+    if isinstance(auxhist, AuxhistStreamConfig):
+        streams: tuple[AuxhistStreamConfig, ...] = (auxhist,)
+    else:
+        streams = tuple(auxhist)
+    seen_ids: dict[int, None] = {}
+    for stream in streams:
+        if not isinstance(stream, AuxhistStreamConfig):
+            raise TypeError(
+                f"auxhist streams must be AuxhistStreamConfig, got {type(stream).__name__}"
+            )
+        sid = int(stream.stream_id)
+        if sid in seen_ids:
+            raise ValueError(f"duplicate auxhist stream_id {sid}; each stream number is unique")
+        seen_ids[sid] = None
+    return streams
+
+
+def auxhist_substeps_per_hour(
+    streams: Sequence[AuxhistStreamConfig] | AuxhistStreamConfig | None,
+) -> int:
+    """Number of equal sub-hour forecast segments needed to serve all streams.
+
+    The forecast hour is advanced in equal segments fine enough that BOTH the
+    hourly main-wrfout boundary AND every stream's ``interval``-minute boundary
+    land on a genuine model-state snapshot. With no streams this is ``1`` (a
+    single full-hour advance, byte-for-byte the legacy hourly path). With one or
+    more streams the segment length is ``gcd(60, i1, i2, ...)`` minutes, so each
+    stream's frames are real GPU output at the requested lead, never interpolated.
+
+    The gcd is taken with 60 so the hourly main boundary is always a segment
+    boundary too (the main wrfout cadence is unchanged regardless of substeps).
+    """
+
+    configs = coerce_auxhist_streams(streams)
+    if not configs:
+        return 1
+    step_minutes = 60
+    for stream in configs:
+        step_minutes = gcd(step_minutes, int(stream.interval_minutes))
+    # gcd(60, ...) divides 60, so 60 // step_minutes is always a positive integer.
+    return max(1, 60 // step_minutes)
+
+
 def _domain_digits(domain: str) -> str:
     """Normalize a domain identifier (``"d02"`` / ``"02"`` / ``2``) to 2 digits."""
 
@@ -193,4 +265,6 @@ __all__ = [
     "DEFAULT_SURFACE_AUXHIST_VARIABLES",
     "IO_FORM_NETCDF",
     "auxhist_output_boundaries",
+    "auxhist_substeps_per_hour",
+    "coerce_auxhist_streams",
 ]

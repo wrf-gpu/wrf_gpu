@@ -1,0 +1,232 @@
+{
+  "schema": "AuxhistMultiStreamProof",
+  "schema_version": 1,
+  "status": "PASS",
+  "description": "WRF multi-stream auxhist (auxhist1..N): N independent secondary history streams, each at its own interval/outname/subset; main wrfout byte-unchanged; off by default. CPU synthetic state, no GPU.",
+  "platform": "cpu (JAX_PLATFORMS=cpu); synthetic state + writer; no GPU forecast",
+  "forecast_hours": 2,
+  "substeps_per_hour": 4,
+  "streams": [
+    {
+      "stream_id": 1,
+      "interval_minutes": 15,
+      "outname_pattern": "auxhist1_d<domain>_<date>",
+      "variables": [
+        "U10",
+        "V10",
+        "T2",
+        "Q2",
+        "PSFC",
+        "RAINNC",
+        "SWDOWN"
+      ],
+      "frame_count": 8,
+      "frames": [
+        {
+          "file": "auxhist1_d02_2026-05-21_18:15:00",
+          "timestamp": "2026-05-21_18:15:00",
+          "vars": [
+            "PSFC",
+            "Q2",
+            "RAINNC",
+            "SWDOWN",
+            "T2",
+            "U10",
+            "V10"
+          ],
+          "t2_mean": 291.5,
+          "file_format": "NETCDF4"
+        },
+        {
+          "file": "auxhist1_d02_2026-05-21_18:30:00",
+          "timestamp": "2026-05-21_18:30:00",
+          "vars": [
+            "PSFC",
+            "Q2",
+            "RAINNC",
+            "SWDOWN",
+            "T2",
+            "U10",
+            "V10"
+          ],
+          "t2_mean": 294.0,
+          "file_format": "NETCDF4"
+        },
+        {
+          "file": "auxhist1_d02_2026-05-21_18:45:00",
+          "timestamp": "2026-05-21_18:45:00",
+          "vars": [
+            "PSFC",
+            "Q2",
+            "RAINNC",
+            "SWDOWN",
+            "T2",
+            "U10",
+            "V10"
+          ],
+          "t2_mean": 296.5,
+          "file_format": "NETCDF4"
+        },
+        {
+          "file": "auxhist1_d02_2026-05-21_19:00:00",
+          "timestamp": "2026-05-21_19:00:00",
+          "vars": [
+            "PSFC",
+            "Q2",
+            "RAINNC",
+            "SWDOWN",
+            "T2",
+            "U10",
+            "V10"
+          ],
+          "t2_mean": 299.0,
+          "file_format": "NETCDF4"
+        },
+        {
+          "file": "auxhist1_d02_2026-05-21_19:15:00",
+          "timestamp": "2026-05-21_19:15:00",
+          "vars": [
+            "PSFC",
+            "Q2",
+            "RAINNC",
+            "SWDOWN",
+            "T2",
+            "U10",
+            "V10"
+          ],
+          "t2_mean": 301.5,
+          "file_format": "NETCDF4"
+        },
+        {
+          "file": "auxhist1_d02_2026-05-21_19:30:00",
+          "timestamp": "2026-05-21_19:30:00",
+          "vars": [
+            "PSFC",
+            "Q2",
+            "RAINNC",
+            "SWDOWN",
+            "T2",
+            "U10",
+            "V10"
+          ],
+          "t2_mean": 304.0,
+          "file_format": "NETCDF4"
+        },
+        {
+          "file": "auxhist1_d02_2026-05-21_19:45:00",
+          "timestamp": "2026-05-21_19:45:00",
+          "vars": [
+            "PSFC",
+            "Q2",
+            "RAINNC",
+            "SWDOWN",
+            "T2",
+            "U10",
+            "V10"
+          ],
+          "t2_mean": 306.5,
+          "file_format": "NETCDF4"
+        },
+        {
+          "file": "auxhist1_d02_2026-05-21_20:00:00",
+          "timestamp": "2026-05-21_20:00:00",
+          "vars": [
+            "PSFC",
+            "Q2",
+            "RAINNC",
+            "SWDOWN",
+            "T2",
+            "U10",
+            "V10"
+          ],
+          "t2_mean": 309.0,
+          "file_format": "NETCDF4"
+        }
+      ]
+    },
+    {
+      "stream_id": 3,
+      "interval_minutes": 60,
+      "outname_pattern": "auxhist3_d<domain>_<date>",
+      "variables": [
+        "T2",
+        "PSFC",
+        "U10",
+        "V10",
+        "Q2",
+        "PBLH",
+        "HFX",
+        "LH",
+        "TSK",
+        "SWDOWN",
+        "GLW"
+      ],
+      "frame_count": 2,
+      "frames": [
+        {
+          "file": "auxhist3_d02_2026-05-21_19:00:00",
+          "timestamp": "2026-05-21_19:00:00",
+          "vars": [
+            "GLW",
+            "HFX",
+            "LH",
+            "PBLH",
+            "PSFC",
+            "Q2",
+            "SWDOWN",
+            "T2",
+            "TSK",
+            "U10",
+            "V10"
+          ],
+          "t2_mean": 299.0,
+          "file_format": "NETCDF4"
+        },
+        {
+          "file": "auxhist3_d02_2026-05-21_20:00:00",
+          "timestamp": "2026-05-21_20:00:00",
+          "vars": [
+            "GLW",
+            "HFX",
+            "LH",
+            "PBLH",
+            "PSFC",
+            "Q2",
+            "SWDOWN",
+            "T2",
+            "TSK",
+            "U10",
+            "V10"
+          ],
+          "t2_mean": 309.0,
+          "file_format": "NETCDF4"
+        }
+      ]
+    }
+  ],
+  "main_stream": {
+    "off_files": [
+      "wrfout_d02_2026-05-21_19:00:00",
+      "wrfout_d02_2026-05-21_20:00:00"
+    ],
+    "on_files": [
+      "wrfout_d02_2026-05-21_19:00:00",
+      "wrfout_d02_2026-05-21_20:00:00"
+    ],
+    "main_field_values_identical_off_vs_on": true
+  },
+  "checks": {
+    "off_none_no_second_stream": true,
+    "off_emptylist_no_second_stream": true,
+    "stream1_8_frames_15min_over_2h": true,
+    "stream3_2_frames_60min_over_2h": true,
+    "two_streams_distinct_subsets": true,
+    "stream1_only_requested_subset": true,
+    "stream3_only_requested_subset": true,
+    "stream1_genuine_sub_hour_state": true,
+    "shared_00_boundary_same_state_both_streams": true,
+    "main_stream_byte_unchanged": true,
+    "single_config_back_compat": true
+  },
+  "back_compat_note": "A single AuxhistStreamConfig (not in a list) still works and still emits the legacy metadata['auxhist_stream'] singular key; DailyPipelineConfig.auxhist_streams normalizes single/list/None; duplicate stream_id is rejected. Verified by tests/test_auxhist_multistream.py + tests/test_auxhist_stream.py (13 pass)."
+}

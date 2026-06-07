@@ -4,6 +4,8 @@ from gpuwrf.io.auxhist_stream import (
     DEFAULT_SURFACE_AUXHIST_VARIABLES,
     AuxhistStreamConfig,
     auxhist_output_boundaries,
+    auxhist_substeps_per_hour,
+    coerce_auxhist_streams,
 )
 from gpuwrf.io.gen2_accessor import Gen2GridSpec, Gen2Run, LazyNetCDFArray
 from gpuwrf.io.validation import domain_mask, lead_time_slice, load_gen2_var, regrid, unit_convert
@@ -37,6 +39,8 @@ __all__ = [
     "WRFOUT_VARIABLE_SPECS",
     "WRF_STANDARD_RESTART_VARIABLES",
     "auxhist_output_boundaries",
+    "auxhist_substeps_per_hour",
+    "coerce_auxhist_streams",
     "domain_mask",
     "inspect_wrfrst_schema",
     "lead_time_slice",
