@@ -2658,13 +2658,40 @@ class M9Diagnostics(NamedTuple):
 
 
 def _psfc_from_state(state: State) -> jax.Array:
-    """Surface pressure (Pa) = column-bottom total pressure (mass point, ny,nx).
+    """Surface pressure (Pa) = total pressure extrapolated to the ground (ny,nx).
 
-    coupler_interface.md §4 sources PSFC from mu_total+pb at the column bottom;
-    ``state.p`` already carries the total pressure (pb + p'), so its bottom level
-    is the diagnosed surface pressure for the M9 map.
+    WRF-faithful surface pressure. WRF reports ``PSFC(i,j) = p8w(i,kts,j)``
+    (module_surface_driver.F:1988), where ``p8w`` (the full/w-level pressure at
+    the bottom face = the terrain surface) is built in ``phy_prep`` by a linear
+    extrapolation IN HEIGHT from the first two MASS levels
+    (module_big_step_utilities_em.F:4917-4922; identical formula in
+    dyn_em/start_em.F:2526-2531 and share/dfi.F)::
+
+        z0 = z_at_w(1)              # bottom face (terrain surface)
+        z1 = z(1)                   # 1st mass level (layer center)
+        z2 = z(2)                   # 2nd mass level
+        w1 = (z0 - z2)/(z1 - z2);  w2 = 1 - w1
+        p8w(1) = w1*p(1) + w2*p(2)
+
+    The previous diagnostic returned ``state.p[0]`` (the level-1 MASS-CENTER
+    pressure), which omits the half-layer hydrostatic increment between the
+    layer center (~25 m AGL here) and the ground -> a systematic NEGATIVE,
+    terrain-correlated PSFC offset of ~ rho*g*dz_half (~300 Pa at sea level,
+    rho~1.19 kg/m^3). This restores the WRF extrapolation.
+
+    Heights enter only through the ratio ``(z0-z2)/(z1-z2)``, so the factor of
+    ``g`` cancels and we use the total geopotential ``ph_total`` (faces)
+    directly; the mass-level geopotential is the half-sum of adjacent faces, as
+    in WRF's ``z(k) = 0.5*(z_at_w(k)+z_at_w(k+1))``.
     """
-    return state.p[0, :, :]
+    p = state.p_total
+    phi = state.ph_total  # total geopotential on faces (nz+1, ny, nx)
+    phi0 = phi[0]                       # bottom face == terrain surface
+    phi1 = 0.5 * (phi[0] + phi[1])      # mass level 1 (layer center)
+    phi2 = 0.5 * (phi[1] + phi[2])      # mass level 2
+    w1 = (phi0 - phi2) / (phi1 - phi2)
+    w2 = 1.0 - w1
+    return w1 * p[0, :, :] + w2 * p[1, :, :]
 
 
 def compute_m9_diagnostics(

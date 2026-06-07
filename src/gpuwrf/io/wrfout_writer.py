@@ -931,6 +931,22 @@ def _build_output_fields(
         base_names=("mub", "mu_base", "MUB"),
         shape=shape_xy,
     )
+    # WRF-faithful surface-pressure fallback (used only when the operational M9
+    # PSFC diagnostic is absent from ``state``). WRF reports PSFC = p8w(kts) =
+    # the total pressure extrapolated IN HEIGHT to the terrain surface from the
+    # first two MASS levels (module_big_step_utilities_em.F:4917-4922,
+    # module_surface_driver.F:1988). Using the bare level-1 pressure
+    # ``p_pert[0]+p_base[0]`` omits the half-layer hydrostatic increment and
+    # under-reports PSFC by ~rho*g*dz_half (~300 Pa at sea level). Heights enter
+    # only via the ratio (z0-z2)/(z1-z2) so the factor g cancels and we use the
+    # total geopotential (faces) directly.
+    _p_total = p_pert + p_base
+    _phi = ph_pert + ph_base
+    _phi0 = _phi[0]
+    _phi1 = 0.5 * (_phi[0] + _phi[1])
+    _phi2 = 0.5 * (_phi[1] + _phi[2])
+    _w1 = (_phi0 - _phi2) / (_phi1 - _phi2)
+    _psfc_default = _w1 * _p_total[0] + (1.0 - _w1) * _p_total[1]
 
     xlat, xlong = _latlon_fields(state, grid, namelist, shape_xy)
     xlat_u, xlong_u = _latlon_fields(state, grid, namelist, shape_u_xy, suffix="_u")
@@ -999,7 +1015,7 @@ def _build_output_fields(
         # surface-layer T2/U10/V10 diagnostics into the writer state; see task.)
         "T2": _field_array(state, ("T2", "t2"), shape_xy, default=theta[0] * (np.maximum(p_pert[0] + p_base[0], 1.0) / P0_PA) ** R_D_OVER_CP),
         "Q2": _field_array(state, ("Q2", "q2"), shape_xy, default=qv[0]),
-        "PSFC": _field_array(state, ("PSFC", "psfc"), shape_xy, default=p_pert[0] + p_base[0]),
+        "PSFC": _field_array(state, ("PSFC", "psfc"), shape_xy, default=_psfc_default),
         "RAINC": _field_array(state, ("RAINC", "rainc", "rainc_acc"), shape_xy),
         "RAINNC": _field_array(state, ("RAINNC", "rainnc", "rain_acc"), shape_xy),
         "RAINSH": _field_array(state, ("RAINSH", "rainsh"), shape_xy),
