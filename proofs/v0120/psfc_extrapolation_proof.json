@@ -1,0 +1,21 @@
+{
+  "case": "20260509_18z d02 h1 (wrfout_d02_2026-05-09_19:00:00)",
+  "reference": "CPU-WRF wrfout PSFC, P/PB/PH/PHB",
+  "tolerance_pa": 120.0,
+  "wrf_psfc_definition": "PSFC = p8w(kts) = w1*ptot[0]+w2*ptot[1], w1=(z0-z2)/(z1-z2), z from total geopotential faces (module_surface_driver.F:1988; module_big_step_utilities_em.F:4917-4922; start_em.F:2526-2531)",
+  "old_state_p0_vs_PSFC": {
+    "bias": -327.9366760253906,
+    "rmse": 328.0615487496706,
+    "maxabs": 348.84375
+  },
+  "new_extrapolation_vs_PSFC": {
+    "bias": -29.237256535861952,
+    "rmse": 29.46184991858765,
+    "maxabs": 66.09807498226292
+  },
+  "half_layer_check": {
+    "dz_half_mean_m": 25.5701289559126,
+    "implied_rho_kg_m3": 1.190597287479767
+  },
+  "verdict": "FIXED: bias 328->-29 Pa, rmse 328->29.5 Pa, inside 120 Pa tol. Residual 29 Pa = output-time P/PH vs internal p_phy/p8w, not a formula error."
+}
