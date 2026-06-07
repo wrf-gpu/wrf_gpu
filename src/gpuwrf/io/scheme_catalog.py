@@ -142,7 +142,10 @@ _IMPLEMENTED: Mapping[str, frozenset[int]] = {
     "sf_sfclay_physics": frozenset({0, 1, 5, 7}),
     "sf_surface_physics": frozenset({0, 2, 4}),
     "ra_lw_physics": frozenset({0, 4}),
-    "ra_sw_physics": frozenset({0, 4}),
+    # ra_sw=1 (Dudhia, Stephens-1984 broadband SW) is now operationally scan-wired
+    # (coupling.physics_couplers.dudhia_sw_theta_tendency, dispatched in
+    # runtime.operational_mode by OperationalNamelist.ra_sw_physics; LW stays RRTMG).
+    "ra_sw_physics": frozenset({0, 1, 4}),
 }
 
 # Recognized WRF schemes with a parity-proven adapter that the operational scan
@@ -182,14 +185,8 @@ _REFERENCE_ONLY: Mapping[str, dict[int, tuple[str, str]]] = {
             "Use ra_lw_physics=4 (RRTMG, GPU-operational) for the operational LW path.",
         ),
     },
-    "ra_sw_physics": {
-        1: (
-            "Dudhia shortwave passes its isolated WRF-savepoint gate but is not "
-            "yet selectable by the operational GPU scan (post-0.9.0 radiation-"
-            "family dispatch).",
-            "Use ra_sw_physics=4 (RRTMG, GPU-operational) for the operational SW path.",
-        ),
-    },
+    # ra_sw_physics=1 (Dudhia) was REFERENCE_ONLY; it is now operationally
+    # scan-wired (IMPLEMENTED above), so it is no longer listed here.
 }
 
 
@@ -209,7 +206,7 @@ _DEFAULT_ALTERNATIVE: Mapping[str, str] = {
     "1=revised-MM5, 7=Pleim-Xiu).",
     "sf_surface_physics": "Use sf_surface_physics=4 (Noah-MP) or 2 (Noah classic).",
     "ra_lw_physics": "Use ra_lw_physics=4 (RRTMG).",
-    "ra_sw_physics": "Use ra_sw_physics=4 (RRTMG).",
+    "ra_sw_physics": "Use ra_sw_physics=4 (RRTMG) or 1 (Dudhia); both GPU-operational.",
     "diff_opt": "Use diff_opt=0/1/2 (1+km_opt=4 = 2-D Smagorinsky real-data "
     "default; 2+km_opt=1 = constant-K).",
     "km_opt": "Use km_opt=0/1/4 (4 with diff_opt=1 = 2-D Smagorinsky; 1 with "

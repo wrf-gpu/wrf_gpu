@@ -32,8 +32,10 @@ from gpuwrf.coupling.boundary_apply import (
     _full_ring_target_from_leaf,
 )
 from gpuwrf.coupling.physics_couplers import (
+    dudhia_sw_theta_tendency,
     gwdo_adapter,
     mynn_adapter,
+    rrtmg_lw_theta_tendency,
     rrtmg_radiation_diagnostics,
     rrtmg_theta_tendency,
     surface_adapter,
@@ -343,6 +345,18 @@ class OperationalNamelist:
     sf_sfclay_physics: int = 5
     cu_physics: int = 0
     sf_surface_physics: object = None
+    # --- radiation-family selection (static aux) ----------------------------
+    # ``ra_sw_physics`` selects the SHORTWAVE radiation scheme on the operational
+    # scan: 4 = RRTMG SW (default, byte-unchanged), 1 = Dudhia (Stephens-1984
+    # broadband) SW. ra_sw=1 runs the Dudhia SW theta tendency
+    # (coupling.physics_couplers.dudhia_sw_theta_tendency) PLUS the RRTMG LW
+    # tendency -- WRF runs the SW and LW radiation drivers independently. ra_lw is
+    # always RRTMG-LW here (ra_lw_physics=4); ra_lw=1 stays REFERENCE_ONLY. The
+    # held-rate cadence + topo-shading/slope-rad statics are shared with RRTMG.
+    # NOTE: the surface SWDOWN/flux history diagnostics remain RRTMG-derived
+    # (rrtmg_radiation_diagnostics); ra_sw=1 changes the PROGNOSTIC SW heating
+    # (RTHRATEN added to theta), not the diagnostic surface-flux output fields.
+    ra_sw_physics: int = 4
     # Explicit Noah-classic (sf_surface_physics=2) operational inputs. The JAX SFLX
     # kernel consumes WRF-derived REDPRM/static fields and a 4-layer land carry; if
     # either is absent, the scan rejects sf_surface_physics=2 rather than deriving
@@ -506,6 +520,7 @@ class OperationalNamelist:
             _StaticHolder(self.noahclassic_land),
             _StaticHolder(self.noahclassic_rad),
             int(self.gwd_opt),
+            int(self.ra_sw_physics),
         )
         return children, aux
 
@@ -560,6 +575,7 @@ class OperationalNamelist:
             noahclassic_land_holder,
             noahclassic_rad_holder,
             gwd_opt,
+            ra_sw_physics,
         ) = aux
         noahmp_static = noahmp_static_holder.value
         noahmp_energy_params = noahmp_energy_holder.value
@@ -619,6 +635,7 @@ class OperationalNamelist:
             noahclassic_rad=noahclassic_rad,
             gwd_opt=gwd_opt,
             gwdo_statics=gwdo_statics,
+            ra_sw_physics=ra_sw_physics,
         )
 
 
@@ -2101,6 +2118,10 @@ _SCAN_WIRED_OPTIONS = {
     # Tiedtke (v0.6.0 GPU-batched jit/vmap adapter). New-Tiedtke(16) not separately
     # gated -> NOT wired.
     "cu_physics": (0, 1, 2, 3, 6),
+    # ra_sw=4 RRTMG SW (default), 1 Dudhia SW (Stephens-1984, scan-wired held-rate
+    # theta tendency via dudhia_sw_theta_tendency; LW stays RRTMG). Any other
+    # recognized SW scheme is fail-closed (no GPU scan adapter).
+    "ra_sw_physics": (1, 4),
 }
 
 # Scheme-specific reasons a parity-passed option is NOT yet wired into the scan
@@ -2113,6 +2134,9 @@ _SCAN_UNWIRED_REASON = {
     # scan-wired (in _SCAN_WIRED_OPTIONS), so they are intentionally absent here.
     "cu_physics=16": "New Tiedtke is interface-compatible but not separately savepoint-gated by a distinct WRF source path; GPU-batching/gating TODO",
     "sf_surface_physics=2": "Noah-classic requires explicit noahclassic_static + noahclassic_land bundles (WRF REDPRM + 4-layer carry)",
+    # ra_sw=1 (Dudhia) and ra_sw=4 (RRTMG) are scan-wired; any other recognized SW
+    # scheme has no operational GPU scan adapter in the radiation slot.
+    "ra_sw_physics=2": "Goddard SW has no operational GPU scan adapter in the radiation slot (only Dudhia=1 and RRTMG=4 are wired)",
 }
 
 
@@ -2500,7 +2524,35 @@ def _physics_step_forcing(
         )
         next_carry = next_carry.replace(cumulus_carry=cldefi_next)
 
+    # --- radiation slot: shortwave-family dispatch -------------------------
+    # ra_sw_physics selects the SW scheme. The default (4 = RRTMG) runs the
+    # combined RRTMG SW+LW theta tendency (byte-unchanged). ra_sw_physics=1
+    # (Dudhia) runs the Dudhia SW theta tendency PLUS the RRTMG LW tendency --
+    # WRF runs the SW and LW radiation drivers independently. The LW scheme is
+    # always RRTMG-LW here. Both branches return the HELD-RATE RTHRATEN applied
+    # at every dynamics step over the radt interval (shared cadence machinery).
+    ra_sw = int(namelist.ra_sw_physics)
+    land_for_rad = carry.noahmp_land if bool(namelist.use_noahmp) else None
+
     def _refresh_rthraten(_unused) -> jnp.ndarray:
+        if ra_sw == 1:
+            sw = dudhia_sw_theta_tendency(
+                next_state,
+                namelist.grid,
+                time_utc=namelist.time_utc,
+                lead_seconds=lead_seconds,
+                radiation_static=namelist.radiation_static,
+                land_state=land_for_rad,
+            )
+            lw = rrtmg_lw_theta_tendency(
+                next_state,
+                namelist.grid,
+                time_utc=namelist.time_utc,
+                lead_seconds=lead_seconds,
+                radiation_static=namelist.radiation_static,
+                land_state=land_for_rad,
+            )
+            return sw + lw
         return rrtmg_theta_tendency(
             next_state,
             namelist.grid,
@@ -2510,7 +2562,7 @@ def _physics_step_forcing(
             topo_shading=int(namelist.topo_shading),
             slope_rad=int(namelist.slope_rad),
             shadow_length_m=float(namelist.topo_shadow_length_m),
-            land_state=carry.noahmp_land if bool(namelist.use_noahmp) else None,
+            land_state=land_for_rad,
         )
 
     if isinstance(run_radiation, bool):
