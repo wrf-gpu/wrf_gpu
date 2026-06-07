@@ -16,6 +16,26 @@ LW_OBJ="${WRF_BUILD}/CMakeFiles/WRF_Core.dir/phys/module_ra_rrtmg_lw.F.o"
 SW_DATA="${WRF_ROOT}/install_gen2_dmpar/run/RRTMG_SW_DATA"
 LW_DATA="${WRF_ROOT}/install_gen2_dmpar/run/RRTMG_LW_DATA"
 
+# Fallback to the independent pristine WRFv4 build (gfortran serial, em_quarter_ss
+# arbiter, see project memory) when the Gen2 NVHPC objects are unavailable. The
+# pristine build ships the same module_ra_rrtmg_sw/lw objects + RRTMG data files
+# and is a genuine (non-JAX) WRF Fortran oracle. It only lacks the WRF framework
+# error handler wrf_error_fatal3, which we satisfy with a tiny local stub.
+PRISTINE_PHYS="/home/enric/src/wrf_pristine/WRF/phys"
+PRISTINE_RUN="/home/enric/src/wrf_pristine/WRF/run"
+PRISTINE_FC="/home/enric/miniconda3/envs/wrfbuild/bin/gfortran"
+USE_PRISTINE=0
+if [[ ! -f "${SW_OBJ}" || ! -f "${LW_OBJ}" ]] \
+   && [[ -f "${PRISTINE_PHYS}/module_ra_rrtmg_sw.o" && -f "${PRISTINE_PHYS}/module_ra_rrtmg_lw.o" ]]; then
+  USE_PRISTINE=1
+  MOD_DIR="${PRISTINE_PHYS}"
+  SW_OBJ="${PRISTINE_PHYS}/module_ra_rrtmg_sw.o"
+  LW_OBJ="${PRISTINE_PHYS}/module_ra_rrtmg_lw.o"
+  SW_DATA="${PRISTINE_RUN}/RRTMG_SW_DATA"
+  LW_DATA="${PRISTINE_RUN}/RRTMG_LW_DATA"
+  [[ -x "${PRISTINE_FC}" ]] && FC="${PRISTINE_FC}"
+fi
+
 mkdir -p "${SCRATCH}" "${RUNTIME}"
 ln -sf "${SW_DATA}" "${RUNTIME}/RRTMG_SW_DATA"
 ln -sf "${LW_DATA}" "${RUNTIME}/RRTMG_LW_DATA"
@@ -51,7 +71,24 @@ fi
 
 "${FC}" -I"${MOD_DIR}" -ffree-line-length-none -c -o "${OBJ}" "${ROOT}/scripts/wrf_rrtmg_harness.f90" >>"${LOG}" 2>&1
 
-"${FC}" -o "${OUT}" "${OBJ}" "${SW_OBJ}" "${LW_OBJ}" -lmvec -lm >>"${LOG}" 2>&1
+STUB_OBJ=""
+LINK_LIBS="-lmvec -lm"
+if [[ "${USE_PRISTINE}" == "1" ]]; then
+  STUB_SRC="${SCRATCH}/wrf_error_fatal3_stub.f90"
+  STUB_OBJ="${SCRATCH}/wrf_error_fatal3_stub.o"
+  cat >"${STUB_SRC}" <<'STUBEOF'
+subroutine wrf_error_fatal3(file, line, str)
+  character(len=*), intent(in) :: file, str
+  integer, intent(in) :: line
+  write(0,*) 'WRF_ERROR_FATAL3 at ', trim(file), ' line ', line, ': ', trim(str)
+  stop 1
+end subroutine wrf_error_fatal3
+STUBEOF
+  "${FC}" -ffree-line-length-none -c -o "${STUB_OBJ}" "${STUB_SRC}" >>"${LOG}" 2>&1
+  LINK_LIBS="-lm"
+fi
+
+"${FC}" -o "${OUT}" "${OBJ}" ${STUB_OBJ} "${SW_OBJ}" "${LW_OBJ}" ${LINK_LIBS} >>"${LOG}" 2>&1
 
 chmod 0755 "${OUT}"
 sha256sum "${OUT}" | tee -a "${LOG}"

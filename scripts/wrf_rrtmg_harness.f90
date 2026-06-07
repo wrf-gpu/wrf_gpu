@@ -231,7 +231,13 @@ contains
     do k = 1, nlay
        wkl(1,k) = coldry(k) * h2ovmr(k)
        wkl(2,k) = coldry(k) * co2_vmr_default
-       wkl(3,k) = coldry(k) * o3_vmr_default
+       ! KI-6: the SW intermediate oracle must use the SAME WRF O3DATA climatology
+       ! ozone (o3input=0 path in RRTMG_SWRAD: o3vmr = o3mmr*amdo) that the real WRF
+       ! shortwave driver and the JAX SW kernel both use. The previous constant
+       ! o3_vmr_default (8e-8) was a harness simplification that left the O3-dependent
+       ! UV bands (9,10,12,13) disagreeing with the climatology JAX taug — most at the
+       ! extra model-top layer where the climatology ozone column is ~28x the constant.
+       wkl(3,k) = coldry(k) * o3vmr_lw(k)
        wkl(4,k) = coldry(k) * n2o_vmr_default
        wkl(6,k) = coldry(k) * ch4_vmr_default
        wkl(7,k) = coldry(k) * o2_vmr_default
