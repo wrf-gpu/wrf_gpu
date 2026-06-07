@@ -1,0 +1,69 @@
+{
+  "schema": "v0.12.0-standalone-live-nested-smoke-2026-06-07",
+  "objective": "CLI runs a STANDALONE LIVE-NESTED forecast (d01->d02) out-of-the-box from real.exe outputs (wrfinput_d0N + wrfbdy_d01), with NO CPU-WRF wrfout dependency: parent advances, builds each child lateral boundary LIVE, recurses to child; both domains produce finite wrfout; no FileNotFoundError; no wrfbdy_d02 required",
+  "cli_command": "python -m gpuwrf.cli run --input-dir /mnt/data/canairy_meteo/runs/wrf_l2/20260514_18z_l2_72h_20260517T145509Z --output-dir <out> --scratch-dir <disk-scratch-off-/tmp> --max-dom 2 --hours 2",
+  "case": "/mnt/data/canairy_meteo/runs/wrf_l2/20260514_18z_l2_72h_20260517T145509Z (wrfinput_d01 + wrfinput_d02 + wrfbdy_d01, NO wrfout, NO wrfbdy_d02; namelist max_dom=2)",
+  "init_mode": "standalone_native_init_nested",
+  "path_chosen": "max_dom > 1 -> integration.nested_pipeline.execute_nested_pipeline (logged at runtime)",
+  "verdict": "PIPELINE_GREEN",
+  "all_domains_finite": true,
+  "all_outputs_present": true,
+  "no_cpu_wrfout_used": true,
+  "runtime": "gpuwrf.runtime.domain_tree.run_operational_domain_tree (the VALIDATED v0.11.0 live-nesting device runtime)",
+  "hierarchy": {
+    "order": ["d01", "d02"],
+    "edge": {"parent": "d01", "child": "d02", "parent_grid_ratio": 3, "i_parent_start": 24, "j_parent_start": 20, "feedback": false},
+    "observed_own_steps": {"d01": 400, "d02": 1200},
+    "event_counts": {"advance": 800, "force": 400, "output": 4},
+    "force_counts": {"d01->d02": 400}
+  },
+  "per_domain": {
+    "d01": {
+      "ic_source": "wrfinput_d01",
+      "lbc_source": "wrfbdy_d01 native lateral forcing (standalone; no CPU wrfout replay)",
+      "dt_s": 18.0,
+      "mass_shape": [44, 59, 93],
+      "dx_m": 9000.0,
+      "cu_physics": 1,
+      "final_state_finite": true,
+      "wrfout_count": 2,
+      "wrfout_files": [
+        "wrfout_d01_2026-05-14_19:00:00",
+        "wrfout_d01_2026-05-14_20:00:00"
+      ],
+      "wrfout_physical_ranges": {"T2_K": [279.4, 295.8], "U10_ms": [-7.6, 6.6], "PSFC_finite": true}
+    },
+    "d02": {
+      "ic_source": "wrfinput_d02",
+      "lbc_source": "live parent boundary package (build_child_boundary_package); NO wrfbdy_d02, NO wrfout_d02",
+      "wrfbdy_d02_required": false,
+      "dt_s": 6.0,
+      "mass_shape": [44, 66, 159],
+      "dx_m": 3000.0,
+      "cu_physics": 0,
+      "final_state_finite": true,
+      "wrfout_count": 2,
+      "wrfout_files": [
+        "wrfout_d02_2026-05-14_19:00:00",
+        "wrfout_d02_2026-05-14_20:00:00"
+      ],
+      "wrfout_physical_ranges": {"T2_K": [273.9, 295.5], "U10_ms": [-12.7, 16.4], "PSFC_finite": true}
+    }
+  },
+  "wall_clock_total_s": 788.801289272029,
+  "wall_clock_forecast_only_s": 782.3165474159177,
+  "wall_clock_note": "2 h lead, both domains (d01 9km + d02 3km) compiled cold; includes both-domain XLA compile. Warm per-hour and speedup not claimed by this smoke.",
+  "scratch_dir": "/home/enric/.gpuwrf_scratch_v0120nest",
+  "scratch_off_tmp": true,
+  "precision": "fp64 (force_fp64=True operational namelist, per domain)",
+  "qke_coldstart_seeded": true,
+  "device": "cuda:0",
+  "cpu_affinity": [0, 1, 2, 3],
+  "independent_verification": "netCDF4 re-read of all 4 wrfout: T2/U10/PSFC finite and physical on both domains (manager-side check, separate from the run payload)",
+  "carry_overs": [
+    "Two-way feedback is OFF (one-way nesting); matches the v0.11.0 validated wiring.",
+    "In-loop nested w relaxation is OFF (deferred to a longer stability gate).",
+    "No TOST/ensemble equivalence or CPU-speedup baseline is claimed by a standalone smoke.",
+    "Smoke is a 2 h finite/runnability gate; longer-horizon nested stability is the v0.11.0 24 h proof's scope."
+  ]
+}
