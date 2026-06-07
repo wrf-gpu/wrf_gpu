@@ -194,13 +194,15 @@ def test_recognized_unimplemented_scheme_fails_closed_by_name() -> None:
 
 
 def test_reference_only_scheme_passes_namelist_layer() -> None:
-    """Reference-only schemes (MYJ/Janjic, classic RRTM, Dudhia, New-Tiedtke)
-    are accepted at the namelist layer (the operational scan fail-closes them
-    downstream with a named reason)."""
+    """Reference-only schemes (MYJ/Janjic, New-Tiedtke) are accepted at the
+    namelist layer (the operational scan fail-closes them downstream with a named
+    reason). NOTE: classic RRTM LW (ra_lw=1) and Dudhia SW (ra_sw=1) are now
+    operationally scan-wired (IMPLEMENTED), no longer reference-only."""
 
     assert classify_scheme("bl_pbl_physics", 2).status is SupportStatus.REFERENCE_ONLY
     assert classify_scheme("cu_physics", 16).status is SupportStatus.REFERENCE_ONLY
-    assert classify_scheme("ra_lw_physics", 1).status is SupportStatus.REFERENCE_ONLY
+    assert classify_scheme("ra_lw_physics", 1).status is SupportStatus.IMPLEMENTED
+    assert classify_scheme("ra_sw_physics", 1).status is SupportStatus.IMPLEMENTED
     validate_namelist({"physics": {"cu_physics": [16]}})
     validate_namelist({"physics": {"bl_pbl_physics": [2], "sf_sfclay_physics": [2]}})
 

@@ -203,12 +203,13 @@ SUPPORTED_OPTIONS: dict[str, SupportedOption] = {
     "ra_lw_physics": SupportedOption(
         key="ra_lw_physics",
         supported_values=frozenset(ACCEPTED_RA_LW_PHYSICS),
-        implemented="0=disabled, 1=RRTM longwave (isolated-savepoint parity-proven + accepted, "
-        "NOT operational-scan-wired; host-NumPy single-column kernel), 4=RRTMG longwave "
-        "(GPU-operational; the operational radiation slot runs RRTMG)",
-        action="Use ra_lw_physics=4 for the operational RRTMG LW path, or 0 when radiation is "
-        "disabled. ra_lw_physics=1 (classic RRTM) passes its isolated WRF-savepoint gate but is not "
-        "yet selectable by the operational scan (post-0.9.0 jit/vmap rewrite + radiation dispatch).",
+        implemented="0=disabled, 1=classic AER RRTM longwave (16-band k-distribution; "
+        "GPU-operational, scan-wired held-rate RTHRATEN via the JAX-traceable "
+        "physics.ra_lw_rrtm_jax port of phys/module_ra_rrtm.F), 4=RRTMG longwave "
+        "(GPU-operational, default)",
+        action="Use ra_lw_physics=4 (RRTMG) or 1 (classic RRTM) for the operational LW path, "
+        "or 0 when radiation is disabled. Both are scan-wired; SW and LW are selected "
+        "independently. The surface GLW history diagnostic remains RRTMG-derived.",
     ),
     # Runtime/dynamics controls exposed by OperationalNamelist.
     "rk_order": SupportedOption(
