@@ -60,17 +60,20 @@ small. No transfer-elimination opportunity in the hot loop.
 
 ## Ranked opportunities
 
-### 1. CUDA-graph capture of short fusion chains — `--xla_gpu_graph_min_graph_size=1`  *(SAFE; landing this sprint)*
-- **Lever:** lower XLA's graph-capture threshold from the default 5 to 1, so the dycore's
-  many short (<5-op) dependent fusion chains are captured into CUDA graphs, batching the
-  ~250 k tiny launches and removing per-launch host overhead + idle gaps.
-- **Evidence:** prior dynamics-only A/B = **1.71×** (45.94 → 26.84 ms/step), peak memory
-  bit-identical, perturbation ~1e-14 (fp64 reassociation only). `fusion_results.md`.
-- **Why it is the top pick:** directly attacks the 38%-of-API launch tax; memory-neutral;
-  a launch-env flag (no source change → zero merge risk to committed defaults); the
-  perturbation is the benign machine-epsilon class the idealized close gates already vet.
-- **This sprint:** validated on the **full coupled standalone path** (the leg the prior
-  sprint deferred under shared-GPU OOM). See §"flag A/B result" below / `v0120_standalone_bench.json`.
+### 1. CUDA-graph capture of short fusion chains — `--xla_gpu_graph_min_graph_size=1`  *(MEASURED on the coupled path — REGRESSION, NOT landed)*
+- **Lever:** lower XLA's graph-capture threshold from the default 5 to 1, so short (<5-op)
+  dependent fusion chains are captured into CUDA graphs, batching the ~250 k tiny launches.
+- **Prior evidence (dynamics-only):** 1.71× (45.94 → 26.84 ms/step), `fusion_results.md`.
+- **THIS SPRINT — coupled full-physics standalone d01 A/B (the leg the prior sprint deferred):**
+  **baseline 16.71 vs gms1 19.81 s/forecast-hour = 0.84× (~19 % SLOWER)**, final state
+  **bit-identical** (Δmax = Δmean = 0 on u/v/θ/w/φ/μ/qv), both `all_finite`. Cold compile also
+  rose 29 s → 137 s (the flag changes the cache key + captures more segments). Provenance:
+  `proofs/perf/flag_baseline.json` vs `flag_gms1.json`.
+- **Verdict:** the dynamics-only win does NOT carry to the coupled step — the physics
+  couplers don't benefit and the extra capture overhead dominates. **Do NOT set this flag.**
+  The launch-tax reduction must instead target the *coupled* graph (coupled-aware command-buffer
+  config / per-coupler fusion), which is future work, not a quick safe win. This is a
+  clean falsification of the carry-over assumption, exactly what the coupled A/B was for.
 
 ### 2. Reduce XLA autotuning / redzone-check overhead  *(MEDIUM; profile-only, NOT landed)*
 - **Observation:** `RedzoneAllocatorKernelImpl` is **26% of GPU-kernel time** in the warmed
@@ -110,11 +113,14 @@ small. No transfer-elimination opportunity in the hot loop.
 
 ## Honest ceiling
 
-The launch-tax cut (#1) is real and safe but does not by itself reach ≥10×: the dycore
-still has irreducible dependent stencils (each acoustic substep depends on the previous)
-and a fp64 cuSPARSE PCR solve. After graph capture the step is roughly bandwidth-bound, so
-further gains need bandwidth reduction (#3, a precision change out of scope here). The
-honest near-term picture is: **command buffers ≈ 1.7× on the launch-bound dycore on top of
-the established ~5× (band 5–8×) apples-to-apples d02 speedup** (`speedup_denominator.md`),
-with #2/#3 as the next investigations. No ≥10× claim is made without the coupled
-re-measurement against a freshly-timed CPU-WRF wall.
+The biggest near-term lever everyone assumed (graph-capture #1) was **measured this sprint
+and rejected on the coupled path** — the 1.71× was a dynamics-only result that does not
+survive contact with the physics couplers (0.84× coupled). So the honest picture is:
+**no quick launch-env speedup is available for the COUPLED operational step today.** The
+remaining real levers are (a) cutting the *coupled* launch tax with a coupled-aware
+command-buffer / per-coupler fusion config (a real engineering investigation, not a flag),
+(b) reducing XLA autotuning/redzone overhead (#2, needs a safe-A/B), and (c) bandwidth
+reduction via gated fp32 storage (#3, a precision change needing full re-validation, out of
+scope here). The established speedup stands unchanged at **~5× (band 5–8×) apples-to-apples
+d02** (`speedup_denominator.md`); this sprint adds no speedup but removes a false assumption
+and pins the real bottlenecks. No ≥10× claim is made.
