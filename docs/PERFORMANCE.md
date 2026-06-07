@@ -43,8 +43,8 @@ The pipeline reports `wall_clock_per_hour_s`: element `[0]` carries the XLA comp
 | **Warm throughput** | **16.69 s / forecast-hour** (≈ 46 ms/step) | fp64, d01 9 km | 3 independent warm hours: 16.69, 16.69, 16.68 s |
 | Cold compile + 1st hour (cache **disabled**) | 147.6 s (hour-1) | `GPUWRF_JAX_CACHE=0` | `cold_run.json` |
 | Cold compile + 1st hour (empty cache, populating) | 150.3 s (hour-1) | empty `JAX_COMPILATION_CACHE_DIR` | `cachepop_run.json` |
-| 1st hour with **warm cache** (cache hit) | _pending — see note_ | warm `JAX_COMPILATION_CACHE_DIR` | `driver_warm.json` |
-| Peak VRAM | _pending_ (d01 9 km ≪ the documented d02 ~24.6 GiB) | fp64 | `v0120_profile_run.json` |
+| 1st hour with **warm cache** (cache hit) | _deferred¹_ | warm `JAX_COMPILATION_CACHE_DIR` | `driver_warm.json` |
+| Peak VRAM | _deferred¹_ (d01 9 km ≪ the documented d02 ~24.6 GiB) | fp64 | `v0120_profile_run.json` |
 | Forecast verdict / finiteness | `PIPELINE_GREEN`, `all_finite=true` (56 fields) | — | `warm_run.json` |
 
 > **Persistent JIT cache — what it buys.** The v0.12.0 release ships a persistent XLA
@@ -58,6 +58,14 @@ The pipeline reports `wall_clock_per_hour_s`: element `[0]` carries the XLA comp
 > `proofs/perf/v0120_standalone_bench.json`. The headline cache caveat: after a `jax`/`jaxlib`
 > upgrade the key changes and the first run pays one cold compile again (stale entries are
 > ignored, never wrong).
+
+> ¹ **Deferred, not abandoned.** The clean compile-only cache delta, peak VRAM, and the
+> coupled graph-capture A/B all need a free GPU; they were queued
+> (`/mnt/data/wrf_perf_scratch/run_suite.sh`) but blocked on the one-GPU-at-a-time lock
+> behind a concurrent agent's long-running 24 h job. The discipline was respected (no
+> contended measurement). The directional cache evidence (147.6 s cache-off vs 140.8 s
+> cache-on hour-1, plus the documented d02 ~4 min 55 s cold compile) and the bit-identical
+> cache mechanism stand; the clean isolated numbers fill in when the GPU frees.
 
 ### Honest note on the cold/cache hour-1 numbers
 
