@@ -389,6 +389,7 @@ def _cmd_run(args: argparse.Namespace) -> int:
     try:
         from gpuwrf.io.namelist_check import (
             UnsupportedSchemeError,
+            collect_namelist_warnings,
             validate_operational_namelist,
         )
 
@@ -397,6 +398,14 @@ def _cmd_run(args: argparse.Namespace) -> int:
         return _fail(str(exc))
     except Exception as exc:  # parsing / IO problems should also fail cleanly
         return _fail(f"could not validate namelist {namelist}: {type(exc).__name__}: {exc}")
+
+    # Non-fatal approximation warnings (the run PROCEEDS). The cumulus/PBL
+    # cadence keys (cudt/bldt > 0) are not honored verbatim -- the GPU port runs
+    # those physics every dynamics step, a conservative approximation -- so a real
+    # WRF namelist (e.g. cudt=5) is accepted with a named warning rather than
+    # rejected, mirroring what the operational pipeline already does.
+    for _warning in collect_namelist_warnings(namelist):
+        print(f"gpuwrf: warning: {_warning}", file=sys.stderr)
 
     # --- Resolve the domain count. Nested is OPT-IN via --max-dom > 1; the
     # default is SINGLE-domain (--domain). This keeps CPU-wrfout REPLAY and

@@ -23,6 +23,22 @@ Every option resolves to exactly one :class:`SupportStatus`:
                                implement at all. Selecting it fails closed with a
                                message naming the WRF scheme, the reason, and the
                                supported alternative.
+* ``RECOGNIZED_APPROXIMATED``-- a recognized WRF v4 *cadence* control whose
+                               requested value the port does not honor exactly,
+                               but whose effect is a documented CONSERVATIVE
+                               approximation rather than a wrong-scheme
+                               substitution: the cumulus/PBL cadence keys
+                               (``cudt``/``bldt``) ask the port to sub-step those
+                               physics every N minutes, but the GPU port calls
+                               them EVERY dynamics step (more frequent than
+                               requested). Selecting a positive cadence does NOT
+                               fail closed -- the run PROCEEDS and a WARNING names
+                               the approximation. This mirrors the operational
+                               pipeline, which already runs cumulus/PBL every
+                               step regardless of ``cudt``/``bldt``. It is NEVER
+                               used for a genuine wrong-substitution (a different
+                               scheme / unimplemented advection variant): those
+                               stay ``RECOGNIZED_FAIL_CLOSED``.
 * ``OUT_OF_SCOPE``          -- a documented design decision NOT to port this
                                capability (coupled chemistry, wildfire, hydrology,
                                multi-layer urban canopy, moving/vortex-following
@@ -70,6 +86,7 @@ class SupportStatus(str, Enum):
 
     IMPLEMENTED = "implemented"
     REFERENCE_ONLY = "reference_only"
+    RECOGNIZED_APPROXIMATED = "recognized_approximated"
     RECOGNIZED_FAIL_CLOSED = "recognized_fail_closed"
     OUT_OF_SCOPE = "out_of_scope"
 
@@ -79,11 +96,18 @@ class SupportStatus(str, Enum):
 
         ``IMPLEMENTED`` and ``REFERENCE_ONLY`` pass the namelist validator
         (REFERENCE_ONLY then fail-closes in the operational scan with a named
-        reason). ``RECOGNIZED_FAIL_CLOSED`` and ``OUT_OF_SCOPE`` are rejected at
-        the namelist layer so the user fails fast with a helpful message.
+        reason). ``RECOGNIZED_APPROXIMATED`` also passes -- the run PROCEEDS,
+        with a warning naming the conservative approximation (cumulus/PBL
+        cadence run every step). ``RECOGNIZED_FAIL_CLOSED`` and ``OUT_OF_SCOPE``
+        are rejected at the namelist layer so the user fails fast with a helpful
+        message.
         """
 
-        return self in (SupportStatus.IMPLEMENTED, SupportStatus.REFERENCE_ONLY)
+        return self in (
+            SupportStatus.IMPLEMENTED,
+            SupportStatus.REFERENCE_ONLY,
+            SupportStatus.RECOGNIZED_APPROXIMATED,
+        )
 
 
 @dataclass(frozen=True)
@@ -425,6 +449,15 @@ class RecognizedControl:
     with ``unwired_reason`` (a ``str`` or a ``value -> str`` callable) naming why
     the port does not run it, plus ``alternative`` (the wired recipe).
     ``integer`` is False for cadence intervals that may be fractional minutes.
+
+    ``approximated`` marks a control whose unwired values are a documented
+    CONSERVATIVE approximation rather than a wrong-substitution: an unwired value
+    is classified ``RECOGNIZED_APPROXIMATED`` (a non-raising warning) instead of
+    ``RECOGNIZED_FAIL_CLOSED``. This is reserved for the cumulus/PBL cadence keys
+    (``cudt``/``bldt``): a positive interval asks the port to sub-step the scheme
+    every N minutes, but the GPU port runs it EVERY dynamics step -- more
+    frequent than requested, which cannot silently produce a wrong scheme, only a
+    slightly more-expensive, more-up-to-date tendency. The run proceeds.
     """
 
     key: str
@@ -433,6 +466,16 @@ class RecognizedControl:
     unwired_reason: object  # str | Callable[[int|float], str]
     alternative: str
     integer: bool = True
+    approximated: bool = False
+    # Warning text surfaced when an ``approximated`` control is set to an unwired
+    # value (the run proceeds). ``None`` for non-approximated controls.
+    approximation_note: object = None  # str | Callable[[int|float], str] | None
+
+    def approximation_for(self, value: object) -> str:
+        note = self.approximation_note
+        if note is None:
+            return ""
+        return note(value) if callable(note) else str(note)
 
     def reason_for(self, value: object) -> str:
         reason = self.unwired_reason
@@ -587,8 +630,18 @@ _RECOGNIZED_CONTROLS: tuple[RecognizedControl, ...] = (
         "recognized; the port calls the PBL scheme EVERY dynamics step "
         "(bldt=0 semantics). A nonzero PBL sub-stepping interval (bldt>0) is "
         "not implemented.",
-        "Set bldt=0 (call PBL every step).",
+        "Set bldt=0 (call PBL every step), or accept the every-step approximation.",
         integer=False,
+        approximated=True,
+        approximation_note=(
+            lambda v: (
+                f"bldt={v} cadence not honored; the GPU port runs the PBL scheme "
+                f"EVERY dynamics step -- more frequently than the requested "
+                f"{v}-minute sub-stepping interval, a conservative approximation "
+                f"(more up-to-date boundary-layer tendencies, never a different "
+                f"scheme). The run proceeds. Set bldt=0 to request this exactly."
+            )
+        ),
     ),
     RecognizedControl(
         "cudt", "cumulus-cadence",
@@ -596,13 +649,30 @@ _RECOGNIZED_CONTROLS: tuple[RecognizedControl, ...] = (
         "recognized; the port calls the cumulus scheme EVERY dynamics step "
         "(cudt=0 semantics). A nonzero cumulus sub-stepping interval (cudt>0) "
         "is not implemented.",
-        "Set cudt=0 (call cumulus every step).",
+        "Set cudt=0 (call cumulus every step), or accept the every-step approximation.",
         integer=False,
+        approximated=True,
+        approximation_note=(
+            lambda v: (
+                f"cudt={v} cadence not honored; the GPU port runs the cumulus "
+                f"scheme EVERY dynamics step -- more frequently than the requested "
+                f"{v}-minute sub-stepping interval, a conservative approximation "
+                f"(more up-to-date convective tendencies, never a different "
+                f"scheme). The run proceeds. Set cudt=0 to request this exactly."
+            )
+        ),
     ),
 )
 
 RECOGNIZED_CONTROL_KEYS: frozenset[str] = frozenset(
     c.key.lower() for c in _RECOGNIZED_CONTROLS
+)
+# Cadence controls whose unwired (positive) values are a non-raising,
+# conservative approximation (run-every-step) rather than a fail-closed
+# rejection: cudt / bldt. A naive user pointing the standalone CLI at a real
+# WRF namelist (cudt=5, bldt=0) must RUN, not be rejected.
+APPROXIMATED_CONTROL_KEYS: frozenset[str] = frozenset(
+    c.key.lower() for c in _RECOGNIZED_CONTROLS if c.approximated
 )
 _RECOGNIZED_CONTROL_BY_KEY: Mapping[str, RecognizedControl] = {
     c.key.lower(): c for c in _RECOGNIZED_CONTROLS
@@ -724,6 +794,19 @@ def classify_control(key: str, value: object) -> SchemeSupport | None:
             status=SupportStatus.IMPLEMENTED,
             reason="Operationally wired into the GPU scan.",
             alternative="",
+            wrf_name=control.label,
+        )
+    # An unwired value of an APPROXIMATED cadence control is a non-raising
+    # WARNING (the run proceeds), not a fail-closed rejection: the GPU port runs
+    # the scheme every step, a conservative approximation of the requested
+    # sub-stepping cadence -- it can never become a wrong scheme.
+    if control.approximated:
+        return SchemeSupport(
+            key=lkey,
+            code=code,
+            status=SupportStatus.RECOGNIZED_APPROXIMATED,
+            reason=control.approximation_for(value),
+            alternative=control.alternative,
             wrf_name=control.label,
         )
     return SchemeSupport(
@@ -983,6 +1066,12 @@ def assert_catalog_consistent() -> None:
     for control in _RECOGNIZED_CONTROLS:
         assert control.alternative.strip(), f"{control.key} missing alternative"
         assert control.reason_for(0).strip(), f"{control.key} missing reason"
+        if control.approximated:
+            # An approximated control must supply a non-empty warning note for a
+            # representative unwired value, so the surfaced warning is never blank.
+            assert control.approximation_for(5).strip(), (
+                f"{control.key} marked approximated but has no approximation note"
+            )
 
 
 __all__ = [
@@ -993,6 +1082,7 @@ __all__ = [
     "OUT_OF_SCOPE_FEATURE_KEYS",
     "RecognizedControl",
     "RECOGNIZED_CONTROL_KEYS",
+    "APPROXIMATED_CONTROL_KEYS",
     "IMPLEMENTED_CONTROL_KEYS",
     "classify_control",
     "CATALOGED_SCHEME_KEYS",

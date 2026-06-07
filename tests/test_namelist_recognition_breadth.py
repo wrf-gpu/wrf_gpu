@@ -22,10 +22,12 @@ import pytest
 
 from gpuwrf.io.namelist_check import (
     UnsupportedSchemeError,
+    collect_namelist_warnings,
     validate_namelist,
     validate_operational_namelist,
 )
 from gpuwrf.io.scheme_catalog import (
+    APPROXIMATED_CONTROL_KEYS,
     IMPLEMENTED_CONTROL_KEYS,
     RECOGNIZED_CONTROL_KEYS,
     SupportStatus,
@@ -127,16 +129,16 @@ def test_real_wrf_namelist_yields_honest_per_key_verdicts() -> None:
     assert all(s.value == 2 for s in by_key["moist_adv_opt"])
     assert "positive-definite" in message
 
-    # cudt=5 (cumulus sub-stepping cadence) on BOTH domains; the port runs
-    # cumulus every step (cudt=0).
-    assert len(by_key["cudt"]) == 2
-    assert "every dynamics step" in message.lower() or "every step" in message.lower()
+    # cudt=5 (cumulus sub-stepping cadence): NO LONGER fail-closed. It is a
+    # conservative approximation (the port runs cumulus every step), so it must
+    # NOT appear as a failure -- a naive user with a real WRF namelist must RUN.
+    assert "cudt" not in by_key
 
     # icloud_bl=1 and the MYNN TKE-advection logical -- recognized, not wired.
     assert "icloud_bl" in by_key
     assert "bl_mynn_tkeadvect" in by_key
     # Each named reason + the "NOT silently ignored" honesty phrase is present.
-    for key in ("moist_adv_opt", "cudt", "icloud_bl", "bl_mynn_tkeadvect"):
+    for key in ("moist_adv_opt", "icloud_bl", "bl_mynn_tkeadvect"):
         for sel in by_key[key]:
             assert sel.outcome == "recognized_control_not_wired"
             assert sel.action.strip(), f"{key} fail-closed without an alternative"
@@ -159,6 +161,7 @@ def test_real_wrf_namelist_yields_honest_per_key_verdicts() -> None:
         "topo_shading",
         "radt",
         "bldt",
+        "cudt",  # cudt>0 is an approximation WARNING now, never a failure
         "scalar_adv_opt",
         "h_sca_adv_order",
         "v_sca_adv_order",
@@ -171,6 +174,11 @@ def test_real_wrf_namelist_yields_honest_per_key_verdicts() -> None:
         "bl_pbl_physics",
     ):
         assert wired not in by_key, f"{wired} was wrongly fail-closed (it is implemented/wired/off)"
+
+    # And the cudt=5 approximation surfaces as a non-fatal WARNING (run proceeds).
+    cudt_warnings = [w for w in collect_namelist_warnings(REAL_WRF_NAMELIST) if "cudt" in w]
+    assert cudt_warnings, "cudt=5 must surface a non-fatal approximation warning"
+    assert any("every dynamics step" in w.lower() for w in cudt_warnings)
 
 
 def test_implemented_slope_topo_radiation_is_not_failed() -> None:
@@ -202,6 +210,10 @@ def test_unsupported_recognized_key_is_rejected_not_silently_accepted() -> None:
     SILENTLY IGNORED. Each must now fail closed with its own named reason.
     """
 
+    # NOTE: cudt/bldt are deliberately EXCLUDED here -- a positive cadence is a
+    # conservative approximation (run-every-step), surfaced as a non-fatal
+    # warning rather than a fail-closed rejection. See
+    # test_cadence_keys_are_approximation_warnings_not_rejections.
     unwired_examples = {
         "gwd_opt": 3,  # GSL drag suite -- not wired (gwd_opt=1 IS implemented)
         "moist_adv_opt": 3,
@@ -211,8 +223,6 @@ def test_unsupported_recognized_key_is_rejected_not_silently_accepted() -> None:
         "icloud_bl": 1,
         "bl_mynn_edmf": 0,
         "bl_mynn_mixqt": 1,
-        "cudt": 10,
-        "bldt": 5,
         "radt": 0,
         "slope_rad": 2,
     }
@@ -254,6 +264,139 @@ def test_recognized_control_keyspace_is_covered() -> None:
     assert promised_recognized <= RECOGNIZED_CONTROL_KEYS
     # slope_rad/topo_shading are recognized AND implemented (not fail-closed).
     assert {"slope_rad", "topo_shading"} <= IMPLEMENTED_CONTROL_KEYS
+    # cudt/bldt are the APPROXIMATED cadence controls (warn, do not reject).
+    assert {"cudt", "bldt"} == APPROXIMATED_CONTROL_KEYS
+    assert APPROXIMATED_CONTROL_KEYS <= RECOGNIZED_CONTROL_KEYS
+
+
+# --------------------------------------------------------------------------- #
+# PROOF OBJECT -- naive-user cadence-key usability.                            #
+# A real Canary/WRF production namelist (cudt=5, gwd_opt=1, radt=30,           #
+# cu_physics=1, bldt=0) must RUN out-of-box via the standalone CLI validator   #
+# -- the cumulus/PBL cadence keys WARN (conservative every-step approximation) #
+# rather than REJECT. Genuine wrong-substitutions still fail closed.           #
+# --------------------------------------------------------------------------- #
+
+# Modeled on the real production namelist
+# /mnt/data/canairy_meteo/runs/wrf_l3/20260503_18z_l3_24h_*/namelist.input
+# (cudt=5,5,..., gwd_opt=1, radt=30, cu_physics=1,0,..., bldt=0, slope_rad=1,
+# topo_shading=1, mp=8 Thompson, bl=5 MYNN, sfclay=5, sf_surface=4 Noah-MP,
+# ra_lw=4/ra_sw=4 RRTMG, diff_opt=1/km_opt=4, damp_opt=3, moist/scalar_adv=1).
+REAL_CANARY_NAMELIST = """\
+&time_control
+ run_hours = 24,
+ input_from_file = .true., .true., .true.,
+/
+&domains
+ time_step = 18,
+ max_dom = 3,
+ e_we = 94, 160, 94,
+ e_sn = 60, 67, 76,
+/
+&physics
+ mp_physics = 8, 8, 8,
+ bl_pbl_physics = 5, 5, 5,
+ sf_sfclay_physics = 5, 5, 5,
+ sf_surface_physics = 4, 4, 4,
+ ra_lw_physics = 4, 4, 4,
+ ra_sw_physics = 4, 4, 4,
+ cu_physics = 1, 0, 0,
+ cudt = 5, 5, 5,
+ radt = 30, 30, 30,
+ bldt = 0, 0, 0,
+ topo_shading = 1, 1, 1,
+ slope_rad = 1, 1, 1,
+ sf_urban_physics = 0, 0, 0,
+ sst_update = 0,
+/
+&dynamics
+ w_damping = 1,
+ diff_opt = 1,
+ km_opt = 4,
+ diff_6th_opt = 2, 2, 2,
+ damp_opt = 3,
+ non_hydrostatic = .true., .true., .true.,
+ moist_adv_opt = 1, 1, 1,
+ scalar_adv_opt = 1, 1, 1,
+ gwd_opt = 1,
+/
+&bdy_control
+ spec_bdy_width = 5,
+/
+"""
+
+
+def test_real_canary_namelist_proceeds_with_cudt_warning() -> None:
+    """(a) The real Canary production namelist must PROCEED (no raise) and emit a
+    cudt cadence WARNING -- the naive-user out-of-box fix.
+
+    cudt=5 (and a positive bldt, were it set) is a conservative approximation
+    (the GPU port runs cumulus/PBL every step), so the operational validator does
+    NOT reject it. gwd_opt=1 is implemented; radt=30 is the radiation cadence;
+    everything else in this namelist is implemented/wired."""
+
+    # Neither the validation layer nor the strict OPERATIONAL run path may raise.
+    validate_namelist(REAL_CANARY_NAMELIST)
+    validate_operational_namelist(REAL_CANARY_NAMELIST)
+
+    # The cudt approximation is surfaced as a non-fatal warning naming it.
+    warnings = collect_namelist_warnings(REAL_CANARY_NAMELIST)
+    cudt_warnings = [w for w in warnings if "cudt" in w]
+    assert cudt_warnings, "real Canary cudt=5 must emit a cadence warning"
+    text = " ".join(cudt_warnings).lower()
+    assert "every dynamics step" in text or "every step" in text
+    assert "approximation" in text
+
+
+def test_cadence_keys_are_approximation_warnings_not_rejections() -> None:
+    """cudt>0 and bldt>0 are RECOGNIZED_APPROXIMATED (warn, proceed) -- never a
+    fail-closed rejection."""
+
+    for key, value in (("cudt", 5), ("bldt", 5), ("cudt", 10.5)):
+        support = classify_control(key, value)
+        assert support is not None
+        assert support.status is SupportStatus.RECOGNIZED_APPROXIMATED, (
+            f"{key}={value} should be RECOGNIZED_APPROXIMATED, got {support.status}"
+        )
+        assert support.reason.strip()
+        # A positive cadence does NOT raise from either validator.
+        validate_namelist({"physics": {key: [value]}})
+        validate_operational_namelist({"physics": {key: [value]}})
+        # And it surfaces a warning.
+        warnings = collect_namelist_warnings({"physics": {key: [value]}})
+        assert any(key in w for w in warnings)
+
+    # cudt=0 / bldt=0 (the exactly-wired every-step request) pass with NO warning.
+    assert classify_control("cudt", 0).status is SupportStatus.IMPLEMENTED
+    assert classify_control("bldt", 0).status is SupportStatus.IMPLEMENTED
+    assert collect_namelist_warnings({"physics": {"cudt": [0], "bldt": [0]}}) == []
+
+
+def test_genuine_wrong_substitutions_still_fail_closed() -> None:
+    """(b/c/d) The naive-user fix must NOT weaken fail-closed for genuine
+    wrong-substitutions:
+
+    * (b) moist_adv_opt=2 (a different, unimplemented advection scheme) RAISES;
+    * (c) ra_lw_physics=1 (classic RRTM, reference-only -> would silently become
+      RRTMG on the operational scan) RAISES on the operational path;
+    * (d) grid_fdda=1 (out-of-scope feature) RAISES.
+    """
+
+    # (b) different advection scheme -> still fail closed.
+    with pytest.raises(UnsupportedSchemeError) as exc_b:
+        validate_namelist({"dynamics": {"moist_adv_opt": [2]}})
+    assert any(s.key == "moist_adv_opt" for s in exc_b.value.selections)
+    assert "positive-definite" in str(exc_b.value)
+
+    # (c) reference-only radiation scheme -> operational run still fail closed.
+    with pytest.raises(UnsupportedSchemeError) as exc_c:
+        validate_operational_namelist({"physics": {"ra_lw_physics": [1]}})
+    assert any(s.key == "ra_lw_physics" for s in exc_c.value.selections)
+
+    # (d) out-of-scope feature -> still fail closed.
+    with pytest.raises(UnsupportedSchemeError) as exc_d:
+        validate_namelist({"fdda": {"grid_fdda": 1}})
+    assert any(s.key == "grid_fdda" for s in exc_d.value.selections)
 
 
 def test_operational_validator_also_rejects_unwired_controls() -> None:
