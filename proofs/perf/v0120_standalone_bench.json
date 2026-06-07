@@ -43,11 +43,22 @@
     "cold_disabled_hour1_s": 147.56,
     "cache_populate_empty_hour1_s": 150.29,
     "cache_warm_default_hour1_s": 140.77,
-    "cache_hit_isolated_hour1_s": "PENDING (driver_warm.json)",
-    "note": "hour-1 conflates compile + ~16.7s first-execute + JAX warmup, so it is an UPPER-BOUND wrapper around compile. The CLEAN compile-only delta is measured by proofs/perf/v0120_profile_driver.py cold-vs-warm (driver_cold.json / driver_warm.json), which has NO restart/repeatability probe overhead. See v0120_profile.md."
+    "cache_hit_isolated_hour1_s": "DEFERRED (driver_warm.json) - see deferred_gpu_measurements below",
+    "note": "hour-1 conflates compile + ~16.7s first-execute + JAX warmup, so it is an UPPER-BOUND wrapper around compile. The CLEAN compile-only delta is measured by proofs/perf/v0120_profile_driver.py cold-vs-warm (driver_cold.json / driver_warm.json), which has NO restart/repeatability probe overhead. See v0120_profile.md. Directional evidence from the full-pipeline runs: cache-disabled hour-1 = 147.6s vs cache-warmed-default hour-1 = 140.8s; the persistent-cache mechanism (one big _advance_chunk executable, keyed by HLO+backend+flags, read from disk on a hit, bit-identical) is verified by the existing docs/resource-profile.md ~4m55s cold-compile documentation for the larger d02 program."
   },
 
-  "peak_vram_mb": "PENDING (v0120_profile_driver.py memory_stats peak_bytes_in_use; d01 9km is far smaller than the documented d02 ~24.6 GiB)",
+  "peak_vram_mb": "DEFERRED (v0120_profile_driver.py memory_stats peak_bytes_in_use; d01 9km is far smaller than the documented d02 ~24.6 GiB; see deferred_gpu_measurements)",
+
+  "deferred_gpu_measurements": {
+    "reason": "These three items need a free GPU and were queued (proofs/perf via /mnt/data/wrf_perf_scratch/run_suite.sh) but BLOCKED on the one-GPU-at-a-time lock behind a concurrent agent's long-running 24h equivalence_demo (d02) + a nest_smoke job. The one-GPU discipline was respected (no contended measurement). The suite + monitors remain armed to capture these automatically when the GPU frees.",
+    "items": [
+      "clean compile-only cold-vs-cache delta (driver_cold.json vs driver_warm.json, isolated cache_iso2, no pipeline probes)",
+      "peak VRAM (memory_stats peak_bytes_in_use, d01)",
+      "live HLO op histogram (driver_cold.json --hlo)",
+      "coupled full-physics graph-capture A/B: warm s/fc-hr + finiteness + final-state fingerprint, baseline vs --xla_gpu_graph_min_graph_size=1 (flag_baseline.json vs flag_gms1.json)"
+    ],
+    "what_is_already_solid": "warm throughput (16.69 s/fc-hr, 3 reps), cold-vs-cache hour-1 (full-pipeline), fp64-not-fp32 finding, sane wrfout, profiling opportunity ranking (from the existing nsys artifacts), and the prior validated 1.71x dynamics-only graph-capture result."
+  },
 
   "fp32_fast_path": {
     "status": "NOT on the standalone CLI path",
@@ -65,6 +76,6 @@
   "safe_speedup_graph_capture": {
     "lever": "XLA_FLAGS=--xla_gpu_graph_min_graph_size=1",
     "rationale": "Lowers the CUDA-graph capture threshold from XLA default 5 to 1, capturing the dycore's many short (<5-op) dependent fusion chains into CUDA graphs and batching the thousands of tiny launches (cuLaunchKernelEx = 38% of CUDA API time; cuGraphLaunch only 5.5% today). Prior dynamics-only probe: 1.71x (fusion_results.md). Numerics-neutral (arithmetic unchanged; perturbation ~1e-14 fp64 reassociation). Launch-env flag, NOT a source change.",
-    "coupled_full_physics_standalone_ab": "PENDING (flag_baseline.json vs flag_gms1.json on the free GPU - the leg the prior sprint deferred under shared-GPU OOM)"
+    "coupled_full_physics_standalone_ab": "DEFERRED (flag_baseline.json vs flag_gms1.json) - blocked on the GPU lock behind a concurrent agent's 24h job; queued via run_suite.sh + monitored. Recommended action: set XLA_FLAGS=--xla_gpu_graph_min_graph_size=1 in the operational launch env after this coupled A/B confirms finiteness + machine-epsilon numerics-neutrality (the dynamics-only leg + idealized close gates already vet it)."
   }
 }
