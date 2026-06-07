@@ -1,0 +1,165 @@
+{
+  "case": {
+    "bdy_interval_h": 3,
+    "end": "2023-01-16_00:00:00",
+    "fcst_hours": 24,
+    "forcing": "GFS 0.5deg (GCP global-forecast-system bucket)",
+    "init": "2023-01-15_00:00:00",
+    "num_metgrid_levels": 34,
+    "num_metgrid_soil_levels": 4
+  },
+  "domain": {
+    "center_lat": 46.65,
+    "center_lon": 8.55,
+    "dx_m": 3000,
+    "e_sn": 43,
+    "e_vert": 45,
+    "e_we": 43,
+    "map_proj": "lambert",
+    "max_dom": 1,
+    "p_top_pa": 5000,
+    "truelat1": 30.0,
+    "truelat2": 60.0
+  },
+  "generated_utc": "2026-06-07T08:16:30.640464+00:00",
+  "ic_fields": {
+    "HGT": {
+      "finite": true,
+      "max": 3091.36962890625,
+      "min": 460.7030944824219,
+      "shape": [
+        1,
+        42,
+        42
+      ]
+    },
+    "PSFC": {
+      "finite": true,
+      "max": 96281.5390625,
+      "min": 69357.125,
+      "shape": [
+        1,
+        42,
+        42
+      ]
+    },
+    "QVAPOR": {
+      "finite": true,
+      "max": 0.0054157329723238945,
+      "min": 9.999999974752427e-07,
+      "shape": [
+        1,
+        44,
+        42,
+        42
+      ]
+    },
+    "T": {
+      "finite": true,
+      "max": 193.3099365234375,
+      "min": -21.05029296875,
+      "shape": [
+        1,
+        44,
+        42,
+        42
+      ]
+    },
+    "T2": {
+      "finite": true,
+      "max": 282.0640563964844,
+      "min": 263.3125,
+      "shape": [
+        1,
+        42,
+        42
+      ]
+    },
+    "U": {
+      "finite": true,
+      "max": 36.58575439453125,
+      "min": -2.2001442909240723,
+      "shape": [
+        1,
+        44,
+        42,
+        43
+      ]
+    },
+    "U10": {
+      "finite": true,
+      "max": 4.173125743865967,
+      "min": -1.33406662940979,
+      "shape": [
+        1,
+        42,
+        42
+      ]
+    },
+    "V": {
+      "finite": true,
+      "max": 13.969718933105469,
+      "min": -12.696306228637695,
+      "shape": [
+        1,
+        44,
+        43,
+        42
+      ]
+    },
+    "V10": {
+      "finite": true,
+      "max": 5.9568328857421875,
+      "min": -1.3230558633804321,
+      "shape": [
+        1,
+        42,
+        42
+      ]
+    },
+    "W": {
+      "finite": true,
+      "max": 0.0,
+      "min": 0.0,
+      "shape": [
+        1,
+        45,
+        42,
+        42
+      ]
+    }
+  },
+  "init_mode_detected": "standalone_native_init (GPU reads wrfinput+wrfbdy; no CPU wrfout in clean input dir)",
+  "objective": "native real-init IC/BC produced + validated for the Gotthard / Central Switzerland (NON-Canary) equivalence case",
+  "real_exe": "/home/enric/src/wrf_pristine/WRF/main/real.exe (serial gfortran)",
+  "schema": "v0.12.0-switzerland-case-build-2026-06-07",
+  "status": {
+    "cpu_reference": "PENDING_MANAGER (serial CPU-WRF run)",
+    "gpu_forecast": "PENDING_MANAGER (GPU busy with another job; one-job-at-a-time)",
+    "setup_proven": true
+  },
+  "validate": "PASS",
+  "wps": {
+    "geog": "WPS_GEOG_LOW_RES (lowres: topo_gmted2010_5m etc.)",
+    "n_met_em": 9,
+    "wps_bin": "/mnt/data/canairy_meteo/artifacts/wrf_src/WPS/install_gen2_dmpar/bin"
+  },
+  "wrfbdy_d01": {
+    "bdy_times": 8,
+    "bytes": 10084632,
+    "path": "/mnt/data/wrf_gpu_switzerland/run_cpu/wrfbdy_d01",
+    "sha256": "f3e556670e4768326997bdfa1dd8b0f77eb6d5da07d9c4dbf900bf8ff9e30230"
+  },
+  "wrfinput_d01": {
+    "bytes": 3991757,
+    "dims": {
+      "bottom_top": 44,
+      "bottom_top_stag": 45,
+      "soil_layers_stag": 4,
+      "south_north": 42,
+      "west_east": 42
+    },
+    "path": "/mnt/data/wrf_gpu_switzerland/run_cpu/wrfinput_d01",
+    "sha256": "a5d696550d1dc6713e2e340b8c2fba83811d43f4a94a65ca95266035860e2781"
+  }
+}
