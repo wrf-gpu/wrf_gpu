@@ -38,7 +38,11 @@ export JAX_ENABLE_X64="${JAX_ENABLE_X64:-true}"
 export XLA_PYTHON_CLIENT_PREALLOCATE="${XLA_PYTHON_CLIENT_PREALLOCATE:-false}"
 
 # ── Configuration (override via env) ───────────────────────────────────────
-CASE_ROOT="${CASE_ROOT:-/mnt/data/wrf_gpu_switzerland}"
+# CASE_ROOT defaults to a writable dir under the repo so a fresh clone works
+# out of the box (NO canairy-internal /mnt path is required). The maintainers'
+# own runs live under /mnt/data/wrf_gpu_switzerland; set CASE_ROOT to point
+# there (or anywhere writable) if you already have the case built.
+CASE_ROOT="${CASE_ROOT:-${REPO}/runs/switzerland}"
 CASE_INPUTS="${CASE_INPUTS:-${CASE_ROOT}/run_cpu}"          # holds wrfinput/wrfbdy/namelist
 GPU_OUT="${GPU_OUT:-${CASE_ROOT}/run_gpu}"                  # GPU wrfout (this run)
 GPU_INPUT="${GPU_INPUT:-${CASE_ROOT}/run_gpu_input}"        # clean standalone input dir

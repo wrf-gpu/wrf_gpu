@@ -23,8 +23,8 @@ externally-measured wall clocks) differs.
 USAGE
 =====
     python scripts/equivalence_switzerland_compare.py \
-        --gpu-dir   /mnt/data/wrf_gpu_switzerland/run_gpu \
-        --cpu-dir   /mnt/data/wrf_gpu_switzerland/run_cpu \
+        --gpu-dir   runs/switzerland/run_gpu \
+        --cpu-dir   runs/switzerland/run_cpu \
         --gpu-wall-s 600 --cpu-wall-s 2520 \
         --out       proofs/v0120/equivalence_switzerland.json
 
