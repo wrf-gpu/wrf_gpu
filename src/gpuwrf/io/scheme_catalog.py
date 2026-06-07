@@ -259,6 +259,18 @@ class OutOfScopeFeature:
 
 OUT_OF_SCOPE_FEATURES: tuple[OutOfScopeFeature, ...] = (
     OutOfScopeFeature(
+        "windfarm_opt", "Wind-farm / wind-turbine drag parameterization",
+        "The wind-farm turbine-drag parameterization (windfarm_opt) is out of "
+        "scope for this port.",
+        "Set windfarm_opt=0.",
+    ),
+    OutOfScopeFeature(
+        "grid_sfdda", "FDDA surface-analysis nudging",
+        "Surface-analysis FDDA nudging (grid_sfdda) is out of scope; this is a "
+        "pure forecast-integration port.",
+        "Set grid_sfdda=0; assimilate offline and start from the analysis.",
+    ),
+    OutOfScopeFeature(
         "chem_opt", "WRF-Chem coupled chemistry/aerosols",
         "Coupled gas-phase chemistry + aerosols (WRF-Chem) is out of scope for "
         "this meteorology-focused GPU port.",
@@ -371,6 +383,372 @@ OUT_OF_SCOPE_FEATURE_KEYS: frozenset[str] = frozenset(
 _OUT_OF_SCOPE_FEATURE_BY_KEY: Mapping[str, OutOfScopeFeature] = {
     f.key.lower(): f for f in OUT_OF_SCOPE_FEATURES
 }
+
+
+# --------------------------------------------------------------------------- #
+# Recognized non-enumerated CONTROLS (no full WRF code->name catalog).         #
+#                                                                              #
+# These are real WRF namelist keys -- dynamics/advection switches, the         #
+# MYNN-EDMF sub-option family, and physics-cadence intervals -- that the port  #
+# RECOGNIZES but only wires for a SPECIFIC operational value (or value set).   #
+# A recognized key set to a value the operational scan does NOT wire fails     #
+# CLOSED with a named reason (RECOGNIZED_FAIL_CLOSED) -- never silently        #
+# ignored.  A value the scan DOES wire is IMPLEMENTED.                         #
+#                                                                              #
+# This is recognition, NOT new implementation: the wired-value sets below are  #
+# the ALREADY-existing operational behaviour, read from the code authorities   #
+# on 2026-06-07:                                                               #
+#   * advection orders frozen to h=5 / v=3 (dynamics/flux_advection.py:9-15);  #
+#   * no positive-definite/monotonic scalar transport variants                 #
+#     (moist_adv_opt/scalar_adv_opt 2/3/4 unimplemented -- differential        #
+#     analysis P1-6);                                                          #
+#   * gwd_opt orographic gravity-wave drag NOT implemented (only w-Rayleigh    #
+#     damping exists);                                                         #
+#   * MYNN-EDMF wired sub-config bl_mynn_edmf=1 / edmf_mom=1 / edmf_tke=0 /     #
+#     mixscalars=1 / mixqt=0 / edmf_dd=0 (physics/mynn_edmf.py:7-13),          #
+#     mixlength 1|2 (physics/mynn_constants.py);                               #
+#   * radt honoured as the radiation cadence (radiation_cadence_steps;         #
+#     nested_pipeline.py:61); bldt/cudt unread -> PBL/cumulus run every step,  #
+#     so only the every-step value 0 is faithful.                             #
+# Slope/topo radiation (slope_rad=1 / topo_shading=1) ARE implemented (RRTMG   #
+# SW slope-radiation + topographic-shadow path, coupling.physics_couplers.     #
+# _rrtmg_topography_state) and are classified IMPLEMENTED here, NOT failed.    #
+# --------------------------------------------------------------------------- #
+@dataclass(frozen=True)
+class RecognizedControl:
+    """A recognized non-enumerated WRF control key with a wired-value set.
+
+    ``wired`` is the set of values the operational scan actually runs (each is
+    classified ``IMPLEMENTED``).  Any other value is ``RECOGNIZED_FAIL_CLOSED``
+    with ``unwired_reason`` (a ``str`` or a ``value -> str`` callable) naming why
+    the port does not run it, plus ``alternative`` (the wired recipe).
+    ``integer`` is False for cadence intervals that may be fractional minutes.
+    """
+
+    key: str
+    label: str
+    wired: frozenset[int]
+    unwired_reason: object  # str | Callable[[int|float], str]
+    alternative: str
+    integer: bool = True
+
+    def reason_for(self, value: object) -> str:
+        reason = self.unwired_reason
+        return reason(value) if callable(reason) else str(reason)
+
+
+_ADV_ORDER_REASON = (
+    "the port freezes the WRF advection orders to h=5 / v=3 (5th-order "
+    "horizontal, 3rd-order vertical -- the WRF real-data default); other "
+    "advection orders are not wired (dynamics/flux_advection.py)."
+)
+_ADV_OPT_REASON = (
+    "recognized; the port runs only the standard (non-positive-definite, "
+    "non-monotonic) scalar transport. The WRF positive-definite (2), monotonic "
+    "(3) and WENO (4) scalar/moisture transport variants are NOT yet scan-wired "
+    "in v0.12.0."
+)
+
+_RECOGNIZED_CONTROLS: tuple[RecognizedControl, ...] = (
+    # --- Dynamics / advection --------------------------------------------- #
+    RecognizedControl(
+        "gwd_opt", "gravity-wave-drag",
+        frozenset({0}),
+        "recognized; orographic gravity-wave drag / flow blocking "
+        "(module_bl_gwdo) is NOT implemented in v0.12.0 (the port has only "
+        "upper-level w-Rayleigh damping, damp_opt=3).",
+        "Set gwd_opt=0 (orographic GWD off).",
+    ),
+    RecognizedControl(
+        "moist_adv_opt", "moisture-advection",
+        frozenset({0, 1}),
+        _ADV_OPT_REASON,
+        "Use moist_adv_opt=0/1 (standard transport); the PD/monotonic/WENO "
+        "variants (2/3/4) are not wired.",
+    ),
+    RecognizedControl(
+        "scalar_adv_opt", "scalar-advection",
+        frozenset({0, 1}),
+        _ADV_OPT_REASON,
+        "Use scalar_adv_opt=0/1 (standard transport); the PD/monotonic/WENO "
+        "variants (2/3/4) are not wired.",
+    ),
+    RecognizedControl(
+        "h_sca_adv_order", "horizontal-scalar-advection-order",
+        frozenset({5}),
+        _ADV_ORDER_REASON,
+        "Use h_sca_adv_order=5.",
+    ),
+    RecognizedControl(
+        "v_sca_adv_order", "vertical-scalar-advection-order",
+        frozenset({3}),
+        _ADV_ORDER_REASON,
+        "Use v_sca_adv_order=3.",
+    ),
+    RecognizedControl(
+        "h_mom_adv_order", "horizontal-momentum-advection-order",
+        frozenset({5}),
+        _ADV_ORDER_REASON,
+        "Use h_mom_adv_order=5.",
+    ),
+    RecognizedControl(
+        "v_mom_adv_order", "vertical-momentum-advection-order",
+        frozenset({3}),
+        _ADV_ORDER_REASON,
+        "Use v_mom_adv_order=3.",
+    ),
+    # --- PBL / cloud sub-options ------------------------------------------ #
+    RecognizedControl(
+        "icloud_bl", "PBL-cloud-coupling",
+        frozenset({0}),
+        "recognized; the bl_pbl=MYNN <-> radiation sub-grid cloud-fraction "
+        "coupling (icloud_bl=1) is NOT scan-wired in v0.12.0 (the MYNN cloud "
+        "fraction is computed but not fed to the radiation cloud overlap).",
+        "Set icloud_bl=0.",
+    ),
+    RecognizedControl(
+        "bl_mynn_tkeadvect", "MYNN-TKE-advection",
+        frozenset({0}),
+        "recognized; MYNN prognostic-TKE horizontal advection "
+        "(bl_mynn_tkeadvect=.true., the qke_adv scalar) is NOT scan-wired in "
+        "v0.12.0 (qke is carried but not advected as a transported scalar).",
+        "Set bl_mynn_tkeadvect=.false. (0).",
+    ),
+    RecognizedControl(
+        "bl_mynn_edmf", "MYNN-EDMF-massflux",
+        frozenset({1}),
+        "recognized; the port wires the WRF-default MYNN-EDMF mass-flux ON "
+        "(bl_mynn_edmf=1, physics/mynn_edmf.py). The EDMF-off path is not "
+        "separately wired.",
+        "Use bl_mynn_edmf=1 (WRF default).",
+    ),
+    RecognizedControl(
+        "bl_mynn_edmf_mom", "MYNN-EDMF-momentum-massflux",
+        frozenset({1}),
+        "recognized; the port wires the WRF-default EDMF momentum mass-flux ON "
+        "(bl_mynn_edmf_mom=1).",
+        "Use bl_mynn_edmf_mom=1 (WRF default).",
+    ),
+    RecognizedControl(
+        "bl_mynn_edmf_tke", "MYNN-EDMF-TKE-massflux",
+        frozenset({0}),
+        "recognized; the port wires the WRF-default EDMF TKE mass-flux OFF "
+        "(bl_mynn_edmf_tke=0). The TKE mass-flux path is not wired.",
+        "Use bl_mynn_edmf_tke=0 (WRF default).",
+    ),
+    RecognizedControl(
+        "bl_mynn_edmf_dd", "MYNN-EDMF-downdraft",
+        frozenset({0}),
+        "recognized; the MYNN-EDMF stochastic downdraft (bl_mynn_edmf_dd=1) is "
+        "not wired (the port runs the no-downdraft default).",
+        "Use bl_mynn_edmf_dd=0 (WRF default).",
+    ),
+    RecognizedControl(
+        "bl_mynn_mixscalars", "MYNN-EDMF-scalar-mixing",
+        frozenset({1}),
+        "recognized; the port wires the WRF-default EDMF scalar mixing ON "
+        "(bl_mynn_mixscalars=1).",
+        "Use bl_mynn_mixscalars=1 (WRF default).",
+    ),
+    RecognizedControl(
+        "bl_mynn_mixqt", "MYNN-EDMF-total-water-mixing",
+        frozenset({0}),
+        "recognized; the port mixes qv/qc separately (bl_mynn_mixqt=0, the WRF "
+        "'mix water vapor only' path); the total-water (qt) mixing variant "
+        "(bl_mynn_mixqt=1) is not wired.",
+        "Use bl_mynn_mixqt=0 (WRF default).",
+    ),
+    RecognizedControl(
+        "bl_mynn_mixlength", "MYNN-mixing-length",
+        frozenset({1, 2}),
+        "recognized; the port wires the WRF MYNN mixing-length options 1 "
+        "(nonlocal/BouLac-blend) and 2 (local); other mixing-length options "
+        "are not wired.",
+        "Use bl_mynn_mixlength=1 or 2.",
+    ),
+    # --- Physics cadence intervals (minutes) ------------------------------ #
+    RecognizedControl(
+        "radt", "radiation-cadence",
+        frozenset(),  # any positive value honoured; see classify_control()
+        "radt is honoured as the radiation call cadence "
+        "(radiation_cadence_steps = round(radt*60/dt_s)); a positive interval "
+        "is recognized and implemented.",
+        "Set radt to the desired radiation interval in minutes (e.g. 30).",
+        integer=False,
+    ),
+    RecognizedControl(
+        "bldt", "PBL-cadence",
+        frozenset({0}),
+        "recognized; the port calls the PBL scheme EVERY dynamics step "
+        "(bldt=0 semantics). A nonzero PBL sub-stepping interval (bldt>0) is "
+        "not implemented.",
+        "Set bldt=0 (call PBL every step).",
+        integer=False,
+    ),
+    RecognizedControl(
+        "cudt", "cumulus-cadence",
+        frozenset({0}),
+        "recognized; the port calls the cumulus scheme EVERY dynamics step "
+        "(cudt=0 semantics). A nonzero cumulus sub-stepping interval (cudt>0) "
+        "is not implemented.",
+        "Set cudt=0 (call cumulus every step).",
+        integer=False,
+    ),
+)
+
+RECOGNIZED_CONTROL_KEYS: frozenset[str] = frozenset(
+    c.key.lower() for c in _RECOGNIZED_CONTROLS
+)
+_RECOGNIZED_CONTROL_BY_KEY: Mapping[str, RecognizedControl] = {
+    c.key.lower(): c for c in _RECOGNIZED_CONTROLS
+}
+
+# Implemented non-enumerated controls (radiation slope/topo path). slope_rad=1
+# and topo_shading=1 ARE wired (RRTMG SW slope-radiation + topographic-shadow);
+# slope_rad=2 (the WRF "slope + shadow" combined flag) is NOT separately wired.
+_IMPLEMENTED_CONTROLS: Mapping[str, frozenset[int]] = {
+    "slope_rad": frozenset({0, 1}),
+    "topo_shading": frozenset({0, 1}),
+}
+_IMPLEMENTED_CONTROL_REASON: Mapping[str, tuple[str, str, str]] = {
+    # key: (label, unwired-reason, alternative)
+    "slope_rad": (
+        "slope-radiation",
+        "recognized; the port wires slope_rad=1 (RRTMG SW slope-radiation). "
+        "slope_rad=2 (WRF combined slope+shadow flag) is not separately wired.",
+        "Use slope_rad=0 (off) or 1 (slope radiation on).",
+    ),
+    "topo_shading": (
+        "topographic-shading",
+        "recognized; the port wires topo_shading=1 (RRTMG SW topographic "
+        "shadowing). Other topo_shading values are not wired.",
+        "Use topo_shading=0 (off) or 1 (topographic shadowing on).",
+    ),
+}
+IMPLEMENTED_CONTROL_KEYS: frozenset[str] = frozenset(_IMPLEMENTED_CONTROLS)
+
+
+def classify_control(key: str, value: object) -> SchemeSupport | None:
+    """Classify a recognized non-enumerated WRF control key, or return ``None``.
+
+    Returns ``None`` when ``key`` is not a recognized control (so the caller can
+    fall through to silent-pass for keys the port deliberately does not gate).
+    Otherwise returns a :class:`SchemeSupport`:
+
+    * ``IMPLEMENTED`` when ``value`` is in the operationally-wired set;
+    * ``RECOGNIZED_FAIL_CLOSED`` (with a named reason + alternative) otherwise.
+
+    Booleans/strings (``.true.``/``.false.``) are coerced to ``1``/``0`` so a
+    Fortran-style ``bl_mynn_tkeadvect = .false.`` reads as the wired value ``0``.
+    """
+
+    lkey = key.lower()
+
+    impl = _IMPLEMENTED_CONTROLS.get(lkey)
+    if impl is not None:
+        code = _coerce_int_or_bool(value)
+        label, reason, alternative = _IMPLEMENTED_CONTROL_REASON[lkey]
+        if isinstance(code, bool):
+            code = int(code)
+        if code in impl:
+            return SchemeSupport(
+                key=lkey,
+                code=code,
+                status=SupportStatus.IMPLEMENTED,
+                reason="Operationally wired into the GPU scan.",
+                alternative="",
+                wrf_name=label,
+            )
+        return SchemeSupport(
+            key=lkey,
+            code=code,
+            status=SupportStatus.RECOGNIZED_FAIL_CLOSED,
+            reason=reason,
+            alternative=alternative,
+            wrf_name=label,
+        )
+
+    control = _RECOGNIZED_CONTROL_BY_KEY.get(lkey)
+    if control is None:
+        return None
+
+    # radt: any positive interval is honoured as the radiation cadence.
+    if lkey == "radt":
+        numeric = _coerce_number(value)
+        wired = numeric is not None and numeric > 0
+        status = SupportStatus.IMPLEMENTED if wired else SupportStatus.RECOGNIZED_FAIL_CLOSED
+        return SchemeSupport(
+            key=lkey,
+            code=_coerce_int_or_bool(value),
+            status=status,
+            reason=(
+                control.reason_for(value)
+                if wired
+                else "recognized; radt must be a positive radiation interval "
+                "(minutes) to set the radiation call cadence."
+            ),
+            alternative=control.alternative,
+            wrf_name=control.label,
+        )
+
+    # ``_coerce_number`` understands Fortran logicals (``.false.`` -> 0.0) and
+    # numeric strings; it is the reliable read for set membership. Fall back to
+    # ``_coerce_int_or_bool`` only when the value is genuinely non-numeric.
+    numeric = _coerce_number(value)
+    if control.integer:
+        if numeric is not None and float(numeric).is_integer():
+            compare: object = int(numeric)
+            code: object = compare
+        else:
+            code = _coerce_int_or_bool(value)
+            compare = int(code) if isinstance(code, bool) else code
+    else:
+        # Treat an exact integer (e.g. 0.0 minutes) as its int for set membership.
+        if numeric is not None and float(numeric).is_integer():
+            compare = int(numeric)
+        elif numeric is not None:
+            compare = numeric
+        else:
+            compare = _coerce_int_or_bool(value)
+        code = compare
+
+    if isinstance(compare, int) and compare in control.wired:
+        return SchemeSupport(
+            key=lkey,
+            code=code,
+            status=SupportStatus.IMPLEMENTED,
+            reason="Operationally wired into the GPU scan.",
+            alternative="",
+            wrf_name=control.label,
+        )
+    return SchemeSupport(
+        key=lkey,
+        code=code,
+        status=SupportStatus.RECOGNIZED_FAIL_CLOSED,
+        reason=control.reason_for(value),
+        alternative=control.alternative,
+        wrf_name=control.label,
+    )
+
+
+def _coerce_number(value: object) -> float | None:
+    """Best-effort numeric read of a namelist value (``None`` if non-numeric)."""
+
+    if isinstance(value, bool):
+        return float(value)
+    if isinstance(value, (int, float)):
+        return float(value)
+    if isinstance(value, str):
+        text = value.strip().strip("'\"").lower()
+        if text in {".true.", "true", "t", "yes"}:
+            return 1.0
+        if text in {".false.", "false", "f", "no", ""}:
+            return 0.0
+        try:
+            return float(text.replace("d", "e").replace("D", "e"))
+        except ValueError:
+            return None
+    return None
 
 
 def classify_scheme(key: str, code: int) -> SchemeSupport:
@@ -583,6 +961,24 @@ def assert_catalog_consistent() -> None:
         impl = _IMPLEMENTED.get(key, frozenset()) | _DYNAMICS_IMPLEMENTED.get(key, frozenset())
         assert not (impl & set(codes)), f"{key}: an option is both implemented and out_of_scope"
 
+    # The recognized-control key namespaces must be disjoint from each other,
+    # from the out-of-scope feature switches, and from the enumerated catalog
+    # keys -- so a key has exactly one classification authority and a value can
+    # never be silently double-classified.
+    assert not (RECOGNIZED_CONTROL_KEYS & IMPLEMENTED_CONTROL_KEYS), (
+        "a control key is both a recognized-control and an implemented-control"
+    )
+    control_keys = RECOGNIZED_CONTROL_KEYS | IMPLEMENTED_CONTROL_KEYS
+    assert not (control_keys & OUT_OF_SCOPE_FEATURE_KEYS), (
+        "a control key is also an out-of-scope feature switch"
+    )
+    assert not (control_keys & {k.lower() for k in WRF_SCHEME_CATALOG}), (
+        "a control key collides with an enumerated WRF scheme key"
+    )
+    for control in _RECOGNIZED_CONTROLS:
+        assert control.alternative.strip(), f"{control.key} missing alternative"
+        assert control.reason_for(0).strip(), f"{control.key} missing reason"
+
 
 __all__ = [
     "SupportStatus",
@@ -590,6 +986,10 @@ __all__ = [
     "OutOfScopeFeature",
     "OUT_OF_SCOPE_FEATURES",
     "OUT_OF_SCOPE_FEATURE_KEYS",
+    "RecognizedControl",
+    "RECOGNIZED_CONTROL_KEYS",
+    "IMPLEMENTED_CONTROL_KEYS",
+    "classify_control",
     "CATALOGED_SCHEME_KEYS",
     "classify_scheme",
     "classify_feature_switch",
