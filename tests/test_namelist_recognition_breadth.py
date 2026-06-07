@@ -40,8 +40,9 @@ from gpuwrf.io.scheme_catalog import (
 # mixes: an implemented physics suite, operationally-wired control values, a
 # batch of recognized-but-unwired controls, an implemented slope/topo radiation
 # pair, and out-of-scope feature switches. Modeled on the pristine em_real
-# oracle namelist (cudt=5, gwd_opt=1, radt=30, bldt=0, topo_shading/slope_rad=1,
-# moist_adv_opt/scalar_adv_opt=1).
+# oracle namelist (cudt=5, gwd_opt=1, radt=30, bldt=0, topo_shading/slope_rad=1).
+# moist_adv_opt=3 (WENO) exercises a still-unwired advection variant; the PD (1)
+# and monotonic (2, here scalar_adv_opt=2) limiters are now wired.
 REAL_WRF_NAMELIST = """\
 &time_control
  run_hours = 24,
@@ -74,8 +75,8 @@ REAL_WRF_NAMELIST = """\
  diff_opt = 1,
  km_opt = 4,
  gwd_opt = 1, 0,
- moist_adv_opt = 2, 2,
- scalar_adv_opt = 1, 1,
+ moist_adv_opt = 3, 3,
+ scalar_adv_opt = 2, 2,
  h_sca_adv_order = 5,
  v_sca_adv_order = 3,
  h_mom_adv_order = 5,
@@ -124,10 +125,15 @@ def test_real_wrf_namelist_yields_honest_per_key_verdicts() -> None:
     # be flagged as failures -- it is no longer an unsupported control.
     assert "gwd_opt" not in by_key
 
-    # moist_adv_opt=2 (positive-definite transport variant) on BOTH domains.
+    # moist_adv_opt=3 (WENO transport variant -- NOT wired) on BOTH domains.
+    # NOTE: the positive-definite (1) and monotonic (2) limiters ARE now wired
+    # (advect_scalar_flux_limited, final-RK3-stage); only WENO (3) / WENO-PD (4)
+    # remain fail-closed.  scalar_adv_opt=2 (monotonic) below is therefore wired
+    # and must NOT appear as a failure.
     assert len(by_key["moist_adv_opt"]) == 2
-    assert all(s.value == 2 for s in by_key["moist_adv_opt"])
-    assert "positive-definite" in message
+    assert all(s.value == 3 for s in by_key["moist_adv_opt"])
+    assert "WENO" in message
+    assert "scalar_adv_opt" not in by_key
 
     # cudt=5 (cumulus sub-stepping cadence): NO LONGER fail-closed. It is a
     # conservative approximation (the port runs cumulus every step), so it must
@@ -376,17 +382,22 @@ def test_genuine_wrong_substitutions_still_fail_closed() -> None:
     """(b/c/d) The naive-user fix must NOT weaken fail-closed for genuine
     wrong-substitutions:
 
-    * (b) moist_adv_opt=2 (a different, unimplemented advection scheme) RAISES;
+    * (b) moist_adv_opt=3 (WENO -- a still-unimplemented advection scheme) RAISES
+      (the positive-definite=1 / monotonic=2 limiters ARE now wired, so the
+      genuine-wrong-substitution example must use an UNWIRED value, WENO);
     * (c) ra_lw_physics=1 (classic RRTM, reference-only -> would silently become
       RRTMG on the operational scan) RAISES on the operational path;
     * (d) grid_fdda=1 (out-of-scope feature) RAISES.
     """
 
-    # (b) different advection scheme -> still fail closed.
+    # (b) UNWIRED advection scheme (WENO) -> still fail closed.  (PD=1 / mono=2
+    # are now operationally wired and would NOT raise.)
     with pytest.raises(UnsupportedSchemeError) as exc_b:
-        validate_namelist({"dynamics": {"moist_adv_opt": [2]}})
+        validate_namelist({"dynamics": {"moist_adv_opt": [3]}})
     assert any(s.key == "moist_adv_opt" for s in exc_b.value.selections)
-    assert "positive-definite" in str(exc_b.value)
+    assert "WENO" in str(exc_b.value)
+    # And the now-wired limiters must NOT raise.
+    validate_namelist({"dynamics": {"moist_adv_opt": [1], "scalar_adv_opt": [2]}})
 
     # (c) reference-only radiation scheme -> operational run still fail closed.
     with pytest.raises(UnsupportedSchemeError) as exc_c:

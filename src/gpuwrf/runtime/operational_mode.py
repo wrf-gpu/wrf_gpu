@@ -84,6 +84,7 @@ from gpuwrf.dynamics.explicit_diffusion import (
 )
 from gpuwrf.dynamics.flux_advection import (
     advect_scalar_flux,
+    advect_scalar_flux_limited,
     advect_u_flux,
     advect_v_flux,
     advect_w_flux,
@@ -287,6 +288,15 @@ class OperationalNamelist:
     const_nu_m2_s: float = 0.0
     # Use WRF flux-form mass-coupled scalar advection (Block 2) for theta.
     use_flux_advection: bool = False
+    # WRF scalar advection limiter option for the flux-form theta path (canonical
+    # ``moist_adv_opt``/``scalar_adv_opt``): 0 = plain h5/v3 (the bit-for-bit
+    # DEFAULT), 1 = positive-definite, 2 = monotonic (module_advect_em.F
+    # advect_scalar_pd :6069 / advect_scalar_mono :9495).  WRF applies the limiter
+    # ONLY on the final RK3 stage (module_em.F:1265 ``rk_step == rk_order``) using
+    # the start-of-step scalar/mass; for 0 (or while ``use_flux_advection`` is off)
+    # the plain ``advect_scalar_flux`` path is byte-unchanged.  3/4 (WENO/WENO-PD)
+    # are out of scope and fail-closed in the scheme catalog.
+    scalar_adv_opt: int = 0
     # Force pure fp64 (Sprint F7-B is fp64-correctness-only; idealized cases set it).
     force_fp64: bool = False
     # Use the WRF deformation-tensor momentum diffusion (diff_opt=2/km_opt=1) for
@@ -404,6 +414,7 @@ class OperationalNamelist:
         diff_6th_factor: float = 0.12,
         const_nu_m2_s: float = 0.0,
         use_flux_advection: bool = False,
+        scalar_adv_opt: int = 0,
         force_fp64: bool = False,
         use_deformation_momentum_diffusion: bool = False,
         time_utc: object = None,
@@ -452,6 +463,7 @@ class OperationalNamelist:
             diff_6th_factor=diff_6th_factor,
             const_nu_m2_s=const_nu_m2_s,
             use_flux_advection=use_flux_advection,
+            scalar_adv_opt=scalar_adv_opt,
             force_fp64=force_fp64,
             use_deformation_momentum_diffusion=use_deformation_momentum_diffusion,
             time_utc=time_utc,
@@ -498,6 +510,7 @@ class OperationalNamelist:
             float(self.diff_6th_factor),
             float(self.const_nu_m2_s),
             bool(self.use_flux_advection),
+            int(self.scalar_adv_opt),
             bool(self.force_fp64),
             bool(self.use_deformation_momentum_diffusion),
             self.time_utc,
@@ -553,6 +566,7 @@ class OperationalNamelist:
             diff_6th_factor,
             const_nu_m2_s,
             use_flux_advection,
+            scalar_adv_opt,
             force_fp64,
             use_deformation_momentum_diffusion,
             time_utc,
@@ -611,6 +625,7 @@ class OperationalNamelist:
             diff_6th_factor=diff_6th_factor,
             const_nu_m2_s=const_nu_m2_s,
             use_flux_advection=use_flux_advection,
+            scalar_adv_opt=scalar_adv_opt,
             force_fp64=force_fp64,
             use_deformation_momentum_diffusion=use_deformation_momentum_diffusion,
             time_utc=time_utc,
@@ -1611,6 +1626,7 @@ def _augment_large_step_tendencies(
     *,
     rk_step: int = 3,
     physics_tendencies: DryPhysicsTendencies | None = None,
+    step_origin: State | None = None,
 ) -> Tendencies:
     """Add WRF explicit diffusion + flux-form scalar advection to the large step.
 
@@ -1620,6 +1636,14 @@ def _augment_large_step_tendencies(
     * 6th-order monotonic filter -- ``module_big_step_utilities_em.F:6504-6920``.
     * constant-K diffusion (Straka ν) -- ``:2999-3234``.
     * flux-form theta advection -- ``module_advect_em.F:3029-4359`` (h=5/v=3).
+
+    ``step_origin`` is the START-OF-STEP haloed state (the WRF ``_1`` reference /
+    ``scalar_old`` / ``mu_old``).  It is consumed ONLY by the positive-definite /
+    monotonic scalar-advection limiter (``scalar_adv_opt`` 1/2), which WRF applies
+    on the final RK3 stage alone (module_em.F:1265 ``rk_step == rk_order``).  When
+    ``scalar_adv_opt == 0`` (the default) or it is not the final stage, the plain
+    ``advect_scalar_flux`` path runs and ``step_origin`` is ignored, so the
+    default dynamics path is byte-for-byte unchanged.
     """
 
     metrics = namelist.metrics
@@ -1698,17 +1722,51 @@ def _augment_large_step_tendencies(
         )
         # --- scalar theta: WRF advect_scalar (h=5/v=3) ---
         theta_offset = _theta_base_offset(haloed.theta)
-        coupled_tend = advect_scalar_flux(
-            haloed.theta - theta_offset,
-            vel,
-            mut=mu_total,
-            c1=metrics.c1h,
-            rdx=1.0 / dx,
-            rdy=1.0 / dy,
-            rdzw=metrics.rdnw,
-            fzm=metrics.fnm,
-            fzp=metrics.fnp,
+        # WRF selects the positive-definite (scalar_adv_opt=1) / monotonic (=2)
+        # flux limiter ONLY on the final RK3 stage (module_em.F:1265
+        # ``rk_step == rk_order``), using the start-of-step scalar/mass; every
+        # other stage and ``scalar_adv_opt == 0`` use the plain h5/v3 path.  The
+        # branch is a STATIC Python condition (rk_step and scalar_adv_opt are
+        # compile-time constants), so the default path emits the identical XLA
+        # program and stays bit-for-bit unchanged.
+        use_limiter = (
+            int(namelist.scalar_adv_opt) in (1, 2)
+            and int(rk_step) == int(namelist.rk_order)
+            and step_origin is not None
         )
+        if use_limiter:
+            # field_old / mu_old = the WRF start-of-step ``scalar_old`` / ``mu_old``
+            # (grid%mu_1); mut = the current stage total dry mass.  dt = the full
+            # model step (on the final RK3 stage WRF's ``dt_step`` recovers the
+            # full dt: dt_step*(rk_order-rk_step+1) with rk_step==rk_order == dt).
+            coupled_tend = advect_scalar_flux_limited(
+                haloed.theta - theta_offset,
+                step_origin.theta - theta_offset,
+                vel,
+                scalar_adv_opt=int(namelist.scalar_adv_opt),
+                mut=mu_total,
+                mu_old=step_origin.mu_total,
+                c1=metrics.c1h,
+                c2=metrics.c2h,
+                rdx=1.0 / dx,
+                rdy=1.0 / dy,
+                rdzw=metrics.rdnw,
+                fzm=metrics.fnm,
+                fzp=metrics.fnp,
+                dt=float(namelist.dt_s),
+            )
+        else:
+            coupled_tend = advect_scalar_flux(
+                haloed.theta - theta_offset,
+                vel,
+                mut=mu_total,
+                c1=metrics.c1h,
+                rdx=1.0 / dx,
+                rdy=1.0 / dy,
+                rdzw=metrics.rdnw,
+                fzm=metrics.fnm,
+                fzp=metrics.fnp,
+            )
         # tendencies.theta carries the base zero; replace the advective theta part
         # with the flux-form coupled tendency.
         th_t = namelist.tendencies.theta * mass_h + coupled_tend
@@ -1893,6 +1951,7 @@ def _rk_scan_step(
             namelist,
             rk_step=int(stage.rk_step),
             physics_tendencies=physics_tendencies,
+            step_origin=rk1_reference,
         )
         candidate = apply_halo(stage_carry.state, halo_spec(namelist.grid))
         prep = small_step_prep_wrf(
