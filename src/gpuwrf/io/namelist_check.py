@@ -24,6 +24,12 @@ from gpuwrf.contracts.physics_registry import (
     ACCEPTED_SF_SFCLAY_PHYSICS,
     ACCEPTED_SF_SURFACE_PHYSICS,
 )
+from gpuwrf.io.scheme_catalog import (
+    OUT_OF_SCOPE_FEATURE_KEYS,
+    SchemeSupport,
+    SupportStatus,
+    classify_feature_switch,
+)
 from gpuwrf.io.wrf_scheme_catalog import WRF_PARAM_LABEL, wrf_scheme_name
 
 
@@ -63,12 +69,29 @@ class UnsupportedSelection:
     wrf_scheme: str | None = None
 
 
-class UnsupportedNamelistOption(ValueError):
-    """Raised when a namelist/config selects an unsupported option."""
+class UnsupportedSchemeError(ValueError):
+    """Raised when a namelist selects a scheme/feature the port will not run.
+
+    This is the public ``validate_namelist`` failure type. It covers every
+    fail-closed outcome -- a recognized-but-unimplemented WRF scheme, an invalid
+    WRF option, a mandatory-pairing violation, and an out-of-scope feature
+    (WRF-Chem, WRF-Fire, FDDA, stochastic physics, moving nests, urban BEP/BEM).
+    """
 
     def __init__(self, selections: list[UnsupportedSelection]) -> None:
         self.selections = tuple(selections)
         super().__init__(_format_error(selections))
+
+
+class UnsupportedNamelistOption(UnsupportedSchemeError):
+    """Backward-compatible alias for the physics/dynamics scheme rejection.
+
+    ``cli.py`` (and the existing test suite) catch ``UnsupportedNamelistOption``;
+    keeping it a subclass of :class:`UnsupportedSchemeError` means the broader
+    ``validate_namelist`` (which also rejects out-of-scope features) raises a
+    type those callers still catch, while new callers can catch the umbrella
+    ``UnsupportedSchemeError``.
+    """
 
 
 SUPPORTED_OPTIONS: dict[str, SupportedOption] = {
@@ -240,6 +263,70 @@ def validate_supported_namelist(config: Any) -> None:
     failures.extend(_myj_pairing_failures(config_obj))
     if failures:
         raise UnsupportedNamelistOption(failures)
+
+
+def validate_namelist(config: Any) -> None:
+    """Validate a WRF namelist against the full support catalog; raise or pass.
+
+    This is the public entrypoint. It runs the scheme/dynamics support check
+    (recognized-but-unimplemented, invalid WRF options, mandatory pairings) AND
+    the out-of-scope feature-switch check (WRF-Chem, WRF-Fire, WRF-Hydro, FDDA,
+    stochastic physics, moving nests, urban BEP/BEM, coupled ocean, SST update).
+
+    ``config`` may be a flat mapping, a nested WRF-style mapping
+    (``{"physics": {"mp_physics": [8, 8]}}``), an object/dataclass with matching
+    attributes, or a path / text of a Fortran ``namelist.input``.
+
+    Raises :class:`UnsupportedSchemeError` (whose subclass
+    :class:`UnsupportedNamelistOption` is what the CLI catches) with a message
+    that names every offending option, the reason it will not run, and the
+    supported alternative / transition recipe. Implemented (and accepted
+    reference-only) selections pass silently.
+    """
+
+    config_obj = _coerce_config(config)
+    oos_failures = _out_of_scope_failures(config_obj)
+    try:
+        validate_supported_namelist(config_obj)
+    except UnsupportedNamelistOption as exc:
+        # Merge scheme failures with out-of-scope feature failures into one
+        # actionable report rather than failing on only the first category.
+        raise UnsupportedSchemeError(list(exc.selections) + oos_failures) from None
+    if oos_failures:
+        raise UnsupportedSchemeError(oos_failures)
+
+
+def _out_of_scope_failures(config: Any) -> list[UnsupportedSelection]:
+    """Scan every namelist section for truthy out-of-scope feature switches."""
+
+    failures: list[UnsupportedSelection] = []
+    for key in OUT_OF_SCOPE_FEATURE_KEYS:
+        found = _lookup(config, key)
+        if found is None:
+            continue
+        location, raw = found
+        # A feature is "on" if ANY per-domain value is truthy.
+        values = _domain_values(raw)
+        support: SchemeSupport | None = None
+        for value in values:
+            support = classify_feature_switch(key, value)
+            if support is not None:
+                break
+        if support is None:
+            continue
+        failures.append(
+            UnsupportedSelection(
+                key=support.key,
+                location=location,
+                value=support.code,
+                supported_values=(),
+                implemented=f"OUT OF SCOPE: {support.wrf_name}",
+                action=support.alternative,
+                outcome="out_of_scope",
+                wrf_scheme=support.wrf_name,
+            )
+        )
+    return failures
 
 
 def _classify_rejection(key: str, value: Any) -> tuple[str, str | None]:
@@ -439,6 +526,13 @@ def _format_selection(item: UnsupportedSelection) -> str:
     domain = f" domain {item.domain_index}" if item.domain_index is not None else ""
     supported = ", ".join(repr(v) for v in item.supported_values)
 
+    if item.outcome == "out_of_scope":
+        # ``implemented`` carries "OUT OF SCOPE: <feature>"; ``action`` the alt.
+        return (
+            f"- {item.location}{domain}={item.value} ({item.wrf_scheme}): "
+            f"{item.implemented} -- a documented out-of-scope decision for this "
+            f"GPU port, NOT silently ignored. Action: {item.action}"
+        )
     if item.outcome == "not_yet_implemented":
         label = WRF_PARAM_LABEL.get(item.key, item.key)
         return (
@@ -465,6 +559,8 @@ __all__ = [
     "SUPPORTED_OPTIONS",
     "SupportedOption",
     "UnsupportedNamelistOption",
+    "UnsupportedSchemeError",
     "UnsupportedSelection",
+    "validate_namelist",
     "validate_supported_namelist",
 ]
