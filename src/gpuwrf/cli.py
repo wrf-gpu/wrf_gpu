@@ -300,12 +300,12 @@ def _cmd_run(args: argparse.Namespace) -> int:
     # --- Namelist registry check (fail-closed, still pre-JAX). ----------------
     try:
         from gpuwrf.io.namelist_check import (
-            UnsupportedNamelistOption,
-            validate_supported_namelist,
+            UnsupportedSchemeError,
+            validate_namelist,
         )
 
-        validate_supported_namelist(namelist)
-    except UnsupportedNamelistOption as exc:
+        validate_namelist(namelist)
+    except UnsupportedSchemeError as exc:
         return _fail(str(exc))
     except Exception as exc:  # parsing / IO problems should also fail cleanly
         return _fail(f"could not validate namelist {namelist}: {type(exc).__name__}: {exc}")
