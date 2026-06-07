@@ -7,7 +7,7 @@ station-score algorithms.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, replace
+from dataclasses import dataclass, field, replace
 from datetime import datetime, timedelta, timezone
 import json
 import math
@@ -29,9 +29,11 @@ from gpuwrf.io.gen2_accessor import Gen2Run
 from gpuwrf.io.land_state import load_hourly_land_state
 from gpuwrf.io.radiation_static import load_radiation_static
 from gpuwrf.io.async_wrfout import AsyncWrfoutWriter
+from gpuwrf.io.auxhist_stream import AuxhistStreamConfig
 from gpuwrf.io.wrfout_writer import (
     MINIMUM_WRFOUT_VARIABLES,
     prepare_wrfout_payload,
+    write_prepared_wrfout,
     write_wrfout_netcdf,
 )
 from gpuwrf.profiling.transfer_audit import block_until_ready, visible_gpu_name
@@ -111,6 +113,13 @@ class DailyPipelineConfig:
     # write is overlapped, so output bytes/ordering are unchanged. Set False to
     # restore the fully-synchronous writer (e.g. for an A/B wall-clock baseline).
     async_output: bool = True
+    # Optional WRF auxiliary-history (``auxhist``) secondary output stream. When
+    # set, the run writes a SECOND NetCDF stream (the configured variable subset)
+    # at the stream's own interval, independent of the hourly main wrfout cadence
+    # (e.g. a 15-min surface-diagnostic stream). When ``None`` (the default) NO
+    # second stream is written and the forecast/output path is byte-for-byte the
+    # existing hourly-wrfout-only behaviour. See gpuwrf.io.auxhist_stream.
+    auxhist: AuxhistStreamConfig | None = None
 
 
 @dataclass(frozen=True)
@@ -136,6 +145,8 @@ class ForecastSequenceResult:
     metadata: dict[str, Any]
     finite_summary: dict[str, Any]
     checkpoint: dict[str, Any] | None = None
+    # Secondary WRF auxhist stream files (empty when no auxhist stream is configured).
+    auxhist_files: list[Path] = field(default_factory=list)
 
     @property
     def final_wrfout(self) -> Path | None:
@@ -360,6 +371,67 @@ def _wrfout_name(valid_time: datetime, domain: str) -> str:
     return f"wrfout_{domain}_{valid_time:%Y-%m-%d_%H:%M:%S}"
 
 
+def _auxhist_substeps_per_hour(config: DailyPipelineConfig) -> int:
+    """Number of equal sub-hour forecast segments needed per forecast hour.
+
+    With no auxhist stream the loop steps a full hour at a time (1 segment), so the
+    main-wrfout path is byte-for-byte the existing hourly behaviour. When an
+    auxhist stream is configured at an interval ``m`` (minutes), the loop steps at
+    ``gcd(60, m)``-minute granularity so BOTH the hourly main-wrfout boundary and
+    every ``m``-minute auxhist boundary land on a real model-state snapshot -- the
+    auxhist frames are genuine GPU output, never interpolated/fabricated.
+    """
+
+    if config.auxhist is None:
+        return 1
+    interval = int(config.auxhist.interval_minutes)
+    step_minutes = math.gcd(60, interval) if interval <= 60 else math.gcd(interval, 60)
+    # gcd(60, m) divides 60 for any positive m, so this is always an integer count.
+    return max(1, 60 // step_minutes)
+
+
+def _emit_auxhist_frame(
+    *,
+    config: DailyPipelineConfig,
+    state: Any,
+    case: DailyCase,
+    output_dir: Path,
+    lead_minutes: float,
+    diagnostics: Mapping[str, Any] | None,
+    writer: AsyncWrfoutWriter | None,
+) -> Path | None:
+    """Write one auxhist frame if ``lead_minutes`` is an auxhist output boundary.
+
+    Reuses the main wrfout writer in stream-generic mode: it materializes the
+    payload once (host numpy) and writes ONLY the configured variable subset to the
+    WRF-named auxhist file. Returns the written path, or ``None`` when this lead is
+    not an auxhist boundary or no stream is configured.
+    """
+
+    aux = config.auxhist
+    if aux is None or not aux.fires_at(lead_minutes):
+        return None
+    valid_time = case.run_start + timedelta(minutes=float(lead_minutes))
+    aux_path = output_dir / aux.filename(valid_time, config.domain)
+    lead_hours = float(lead_minutes) / 60.0
+    prepared = prepare_wrfout_payload(
+        state,
+        case.grid,
+        case.namelist,
+        aux_path,
+        valid_time=valid_time,
+        lead_hours=lead_hours,
+        run_start=case.run_start,
+        diagnostics=diagnostics,
+    )
+    subset = aux.variable_subset
+    if writer is not None:
+        writer.submit_subset(prepared, variable_subset=subset, target=aux_path)
+    else:
+        write_prepared_wrfout(prepared, variable_subset=subset, target_override=aux_path)
+    return aux_path
+
+
 def _default_forecast_fn(state: Any, namelist: Any, hours: float) -> Any:
     # Donate-safe by construction: run_forecast_operational de-aliases the State's
     # shared buffers before the donate JIT boundary.
@@ -538,9 +610,17 @@ def _run_forecast_sequence(
     case, run_dir = case_builder(config)
     state = case.state
     files: list[Path] = []
+    auxhist_files: list[Path] = []
     per_hour_wall_s: list[float] = []
     checkpoint_payload: dict[str, Any] | None = None
     land_refresh_records: list[dict[str, Any]] = []
+    # Sub-hour stepping granularity. 1 segment/hour (a full-hour advance) unless an
+    # auxhist stream needs finer cadence, in which case the hour is advanced in
+    # equal gcd(60, interval)-minute segments so each auxhist frame is GENUINE
+    # GPU output at that lead time (never interpolated). With no auxhist this is 1,
+    # so the advance/output path is byte-for-byte the existing hourly behaviour.
+    substeps = _auxhist_substeps_per_hour(config)
+    segment_minutes = 60.0 / substeps
     # win #3: double-buffered output -- write hour N's wrfout on a background
     # thread while the GPU advances hour N+1. The device->host pull stays on the
     # main thread (prepare_wrfout_payload) so no device buffer is read off-thread;
@@ -557,7 +637,38 @@ def _run_forecast_sequence(
 
     for hour in range(1, int(config.hours) + 1):
         start = time.perf_counter()
-        state = forecast_fn(state, case.namelist, 1.0)
+        # Advance the forecast across this hour in ``substeps`` equal segments. The
+        # common case (no auxhist) is a single full-hour advance, identical to the
+        # legacy path. When an auxhist stream is configured, each intermediate
+        # segment boundary produces a genuine sub-hour model state at which the
+        # auxhist frame (a variable subset) can be written.
+        for seg in range(1, substeps + 1):
+            state = forecast_fn(state, case.namelist, segment_minutes / 60.0)
+            if seg == substeps:
+                break  # the hour boundary is handled by the main path below
+            lead_minutes = (hour - 1) * 60.0 + seg * segment_minutes
+            if config.auxhist is not None and config.auxhist.fires_at(lead_minutes):
+                seg_summary = finite_summary(state)
+                if not seg_summary["all_finite"]:
+                    _flush_writer()
+                    raise PipelineBlocked(
+                        f"nonfinite model state at auxhist lead {lead_minutes:g} min",
+                        {
+                            "failure_mode": "NONFINITE_STATE",
+                            "failed_lead_minutes": float(lead_minutes),
+                            "finite_summary": seg_summary,
+                            "output_files_before_failure": [str(path) for path in files],
+                        },
+                    )
+                aux_diag = _surface_diagnostics_for_output(
+                    state, case.namelist, case.run_start, lead_seconds=lead_minutes * 60.0
+                )
+                aux_path = _emit_auxhist_frame(
+                    config=config, state=state, case=case, output_dir=output_dir,
+                    lead_minutes=lead_minutes, diagnostics=aux_diag, writer=writer,
+                )
+                if aux_path is not None:
+                    auxhist_files.append(aux_path)
         elapsed = time.perf_counter() - start
         per_hour_wall_s.append(float(elapsed))
 
@@ -611,6 +722,7 @@ def _run_forecast_sequence(
         diagnostics = _surface_diagnostics_for_output(
             state, case.namelist, case.run_start, lead_seconds=float(hour) * 3600.0
         )
+        prepared = None
         if writer is not None:
             # Pull this hour to host now (synchronous device->host), then write on
             # the background thread while the GPU starts the next hour.
@@ -637,6 +749,24 @@ def _run_forecast_sequence(
                 diagnostics=diagnostics,
             )
         files.append(wrfout)
+
+        # Auxhist frame at this hourly boundary (when the hour lead is a multiple of
+        # the auxhist interval, e.g. every hour for a 15-min stream). Reuses the
+        # same diagnostics/state the main wrfout used; when the async writer already
+        # materialized the hour to host, reuse that payload to avoid a 2nd pull.
+        hour_lead_minutes = float(hour) * 60.0
+        if config.auxhist is not None and config.auxhist.fires_at(hour_lead_minutes):
+            aux = config.auxhist
+            aux_path = output_dir / aux.filename(valid_time, config.domain)
+            if writer is not None and prepared is not None:
+                writer.submit_subset(prepared, variable_subset=aux.variable_subset, target=aux_path)
+            else:
+                emitted = _emit_auxhist_frame(
+                    config=config, state=state, case=case, output_dir=output_dir,
+                    lead_minutes=hour_lead_minutes, diagnostics=diagnostics, writer=writer,
+                )
+                aux_path = emitted if emitted is not None else aux_path
+            auxhist_files.append(aux_path)
 
         if checkpoint_at_hour is not None and hour == int(checkpoint_at_hour):
             checkpoint_path = output_dir / "checkpoints" / f"{config.run_id}_hour{hour:02d}.pkl"
@@ -666,6 +796,18 @@ def _run_forecast_sequence(
         "cadence": "hourly forecast output boundary",
         "records": land_refresh_records,
     }
+    if config.auxhist is not None:
+        aux = config.auxhist
+        metadata["auxhist_stream"] = {
+            "stream_id": int(aux.stream_id),
+            "interval_minutes": int(aux.interval_minutes),
+            "frames_per_file": int(aux.frames_per_file),
+            "io_form": int(aux.io_form),
+            "outname_pattern": aux.outname_pattern,
+            "variables": list(aux.variables),
+            "frame_count": int(len(auxhist_files)),
+            "files": [str(path) for path in auxhist_files],
+        }
     return ForecastSequenceResult(
         status="PASS",
         run_id=config.run_id,
@@ -679,6 +821,7 @@ def _run_forecast_sequence(
         metadata=metadata,
         finite_summary=finite_summary(state),
         checkpoint=checkpoint_payload,
+        auxhist_files=auxhist_files,
     )
 
 

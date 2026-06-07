@@ -1,5 +1,10 @@
 """Shared Gen2 and validation I/O for M6 infrastructure."""
 
+from gpuwrf.io.auxhist_stream import (
+    DEFAULT_SURFACE_AUXHIST_VARIABLES,
+    AuxhistStreamConfig,
+    auxhist_output_boundaries,
+)
 from gpuwrf.io.gen2_accessor import Gen2GridSpec, Gen2Run, LazyNetCDFArray
 from gpuwrf.io.validation import domain_mask, lead_time_slice, load_gen2_var, regrid, unit_convert
 from gpuwrf.io.wrfout_writer import (
@@ -7,6 +12,7 @@ from gpuwrf.io.wrfout_writer import (
     MINIMUM_WRFOUT_VARIABLES,
     OPERATIONAL_WRFOUT_VARIABLES,
     WRFOUT_VARIABLE_SPECS,
+    write_prepared_wrfout,
     write_wrfout_netcdf,
 )
 from gpuwrf.io.wrfrst_netcdf import (
@@ -20,7 +26,9 @@ from gpuwrf.io.wrfrst_netcdf import (
 )
 
 __all__ = [
+    "DEFAULT_SURFACE_AUXHIST_VARIABLES",
     "DOWNSTREAM_CRITICAL_VARIABLES",
+    "AuxhistStreamConfig",
     "Gen2GridSpec",
     "Gen2Run",
     "LazyNetCDFArray",
@@ -28,6 +36,7 @@ __all__ = [
     "OPERATIONAL_WRFOUT_VARIABLES",
     "WRFOUT_VARIABLE_SPECS",
     "WRF_STANDARD_RESTART_VARIABLES",
+    "auxhist_output_boundaries",
     "domain_mask",
     "inspect_wrfrst_schema",
     "lead_time_slice",
@@ -37,6 +46,7 @@ __all__ = [
     "read_wrfrst_stochastic_seeds",
     "regrid",
     "unit_convert",
+    "write_prepared_wrfout",
     "write_wrfout_netcdf",
     "write_wrfrst_carry",
     "write_wrfrst_state",
