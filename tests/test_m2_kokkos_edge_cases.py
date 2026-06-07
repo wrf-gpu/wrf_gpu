@@ -31,7 +31,18 @@ import shutil
 import subprocess
 from pathlib import Path
 
+import jax
 import pytest
+
+
+# These two checks need GPU-build outputs: the committed kokkos profile json
+# references un-vendored Nsight Compute (ncu) profiler dumps, and the build-log
+# check needs the cmake/CUDA build to have run (CPU run here has no cmake). Both
+# are GPU/CUDA-toolchain artifacts of a legacy bakeoff subsystem.
+requires_gpu_toolchain = pytest.mark.skipif(
+    jax.default_backend() != "gpu",
+    reason="needs GPU + CUDA toolchain build outputs (cmake build log / Nsight ncu artifacts)",
+)
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -177,6 +188,7 @@ def test_achieved_bandwidth_is_consistent_with_transfer_and_wall() -> None:
         )
 
 
+@requires_gpu_toolchain
 def test_profile_artifact_paths_are_relative_and_exist() -> None:
     _require_artifacts()
     for name in ("stencil_profile.json", "column_profile.json"):
@@ -642,6 +654,7 @@ def test_kokkos_install_present_and_recognized() -> None:
     assert wrapper.exists() and (wrapper.stat().st_mode & 0o111), "nvcc_wrapper missing or not executable"
 
 
+@requires_gpu_toolchain
 def test_build_log_recorded() -> None:
     """scripts/m2_run_kokkos.sh tees the build log; absence implies the
     pipeline was not run end-to-end."""

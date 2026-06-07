@@ -1,12 +1,22 @@
 from __future__ import annotations
 
 import numpy as np
+import pytest
 
 from gpuwrf.io.gen2_accessor import DEFAULT_M6_GEN2_RUN_DIR, Gen2Run
 from gpuwrf.io.validation import domain_mask, lead_time_slice, load_gen2_var, regrid, unit_convert
 
 
 RUN_PATH = DEFAULT_M6_GEN2_RUN_DIR
+
+# Both tests below read the un-vendored Gen2 corpus run directory (large
+# operational WRF output kept on the workstation /mnt corpus, purged from most
+# checkouts). Skip the module when it is absent instead of raising
+# FileNotFoundError.
+pytestmark = pytest.mark.skipif(
+    not RUN_PATH.exists(),
+    reason=f"Gen2 corpus run directory unavailable (not vendored): {RUN_PATH}",
+)
 
 
 class _Grid:

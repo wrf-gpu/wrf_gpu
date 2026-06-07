@@ -4,15 +4,28 @@ import json
 import subprocess
 from pathlib import Path
 
+import jax
+import pytest
+
 
 ROOT = Path(__file__).resolve().parents[1]
 ARTIFACT_DIR = ROOT / "artifacts" / "m2" / "cupy_or_numba"
+
+# The M2 cupy/numba bakeoff builds + runs CUDA kernels via the optional cupy
+# backend on the RTX 5090. The pipeline test cannot pass on a CPU-only checkout
+# without cupy + a GPU; it is a GPU-benchmark test of a legacy subsystem untouched
+# by the operational pipeline. (The committed static-artifact check still runs.)
+requires_gpu_toolchain = pytest.mark.skipif(
+    jax.default_backend() != "gpu",
+    reason="M2 cupy/numba bakeoff requires a GPU + cupy CUDA backend",
+)
 
 
 def run(cmd: list[str]) -> subprocess.CompletedProcess[str]:
     return subprocess.run(cmd, cwd=ROOT, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
 
 
+@requires_gpu_toolchain
 def test_cupy_pipeline_artifacts_are_valid() -> None:
     run(["bash", "scripts/m2_run_cupy.sh"])
     correctness = json.loads((ARTIFACT_DIR / "correctness.json").read_text())
