@@ -1,0 +1,65 @@
+{
+  "catalog": {
+    "moist_adv_opt=0": "implemented",
+    "moist_adv_opt=1": "implemented",
+    "moist_adv_opt=2": "implemented",
+    "moist_adv_opt=3": "recognized_fail_closed",
+    "moist_adv_opt=4": "recognized_fail_closed",
+    "scalar_adv_opt=0": "implemented",
+    "scalar_adv_opt=1": "implemented",
+    "scalar_adv_opt=2": "implemented",
+    "scalar_adv_opt=3": "recognized_fail_closed",
+    "scalar_adv_opt=4": "recognized_fail_closed"
+  },
+  "conservation": {
+    "opt0": {
+      "passed": true,
+      "rel_total_tend": 1.6793348867302664e-18
+    },
+    "opt1": {
+      "passed": true,
+      "rel_total_tend": 3.4237963341647515e-18
+    },
+    "opt2": {
+      "passed": true,
+      "rel_total_tend": 0.0
+    }
+  },
+  "default_guardrail": {
+    "limiter_inactive_on_rk1_rk2": true,
+    "opt0_byte_identical_to_plain": true,
+    "passed": true
+  },
+  "full_rk3_scan_finite": {
+    "opt0": {
+      "finite": true,
+      "max": 302.0000004219352,
+      "min": 299.9999999521857
+    },
+    "opt1": {
+      "finite": true,
+      "max": 302.0000004219352,
+      "min": 299.99999999943
+    },
+    "opt2": {
+      "finite": true,
+      "max": 302.0000004219352,
+      "min": 299.9999999995371
+    }
+  },
+  "monotonicity_opt2": {
+    "init_max": 1.0,
+    "init_min": 0.0,
+    "mono_max": 0.9992986712701096,
+    "mono_min": 0.0,
+    "passed": true,
+    "plain_max": 1.2111498203110298,
+    "plain_min": -0.21585731239860267
+  },
+  "positivity_opt1": {
+    "passed": true,
+    "pd_min": -1.592423762297734e-14,
+    "plain_min": -0.21585731239860267
+  },
+  "verdict": "PASS"
+}

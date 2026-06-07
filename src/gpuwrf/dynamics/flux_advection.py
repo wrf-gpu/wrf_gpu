@@ -336,6 +336,392 @@ def advect_scalar_flux(
     return tend
 
 
+# --- positive-definite / monotonic scalar transport (advect_scalar_pd/mono) ---
+#
+# WRF ``module_advect_em.F`` offers a flux-renormalization limiter on TOP of the
+# high-order flux-form scalar advection above, selected by the namelist option
+# ``moist_adv_opt`` / ``scalar_adv_opt`` (WRF canonical values, NOT the order in
+# which the sprint brief listed them):
+#
+#   * 0 -> none (plain h5/v3 -- the bit-for-bit DEFAULT path above).
+#   * 1 -> positive-definite (``advect_scalar_pd``, :6069).  Smolarkiewicz
+#          MWR-1989 FCT: blend the high-order flux toward a first-order monotone
+#          (donor-cell) flux just enough that the low-order-updated value stays
+#          NON-NEGATIVE.
+#   * 2 -> monotonic (``advect_scalar_mono``, :9495).  Same renormalization but
+#          the bound is the local field_old min/max of the cell + its 6
+#          neighbours (no new extrema), enforced with separate inflow/outflow
+#          scale factors.
+#   * 3 -> WENO; 4 -> WENO-PD.  OUT OF SCOPE for this sprint (noted in the
+#          handoff -- WENO is a separate ~1000-LOC reconstruction).
+#
+# This module implements 1 (PD) and 2 (monotonic) for the project's PERIODIC,
+# unit-map, h=5/v=3 configuration -- the same scope restriction the plain path
+# documents.  Both return the COUPLED tendency ``d(mu*phi)/dt`` so they are a
+# drop-in replacement for ``advect_scalar_flux`` (selected by the option value).
+#
+# The limiter is a Flux-Corrected-Transport (FCT) construction and therefore
+# needs three things the plain tendency does NOT:
+#   * ``field_old`` -- the scalar value at the START of the RK3 timestep (WRF
+#     applies the limiter only on the final, full-``dt`` RK3 stage; the low-order
+#     monotone update and the qmin/qmax bounds are built from ``field_old``).
+#   * ``mu_old`` and ``mut`` -- the start-of-step and current total dry-air mass
+#     (the low-order update is on the coupled scalar ``(c1*mu+c2)*phi``).
+#   * ``dt`` -- the full RK3 step (the antidiffusive flux is scaled so the
+#     positivity/monotonicity bound holds after the EXPLICIT update by ``dt``).
+#
+# The high-order flux ``fqx`` here is the SAME as the plain path: in the periodic
+# unit-map h5 case WRF's ``vel*flux6 - sign*corr`` with ``vel = ru`` is exactly
+# ``ru * flux5_face_periodic(field, ru)``.  The antidiffusive flux is
+# ``A = high_order - low_order``; the limiter scales only ``A``.
+
+
+_PD_EPS = 1.0e-20
+
+
+def _flux_upwind_face(
+    field_old: jax.Array, vel: jax.Array, mu_face: jax.Array, dxy: float, dt: float, axis: int
+) -> jax.Array:
+    """WRF first-order monotone (donor-cell) flux at the left face of cell ``i``.
+
+    Source: ``advect_scalar_pd`` ``flux_upwind`` statement-function
+    (``module_advect_em.F:6190``) and its use at each face.  WRF defines
+
+        cr   = vel*dt/dx/mu                      (cell Courant number)
+        fqxl = mu*(dx/dt)*flux_upwind(q_im1, q_i, cr)
+        flux_upwind(q_im1,q_i,cr) = 0.5*min(1, cr+|cr|)*q_im1
+                                  + 0.5*max(-1, cr-|cr|)*q_i
+
+    For ``0 <= cr <= 1`` this reduces to ``vel*q_im1`` (pure donor cell); the
+    ``min/max`` clamps bound the scheme at CFL>=1.  ``vel`` is the mass-coupled
+    face velocity (project ``ru``/``rv``/``rom``) and ``mu_face`` the face dry-air
+    mass, so ``vel/mu_face`` is the physical face velocity and ``cr`` the true
+    Courant number on the unit-map periodic grid (``dx = 1/rdx``).
+    """
+
+    q_im1 = jnp.roll(field_old, 1, axis=axis)
+    q_i = field_old
+    cr = vel * dt / dxy / mu_face
+    abs_cr = jnp.abs(cr)
+    w_im1 = 0.5 * jnp.minimum(1.0, cr + abs_cr)
+    w_i = 0.5 * jnp.maximum(-1.0, cr - abs_cr)
+    return mu_face * (dxy / dt) * (w_im1 * q_im1 + w_i * q_i)
+
+
+def _flux_upwind_face_z(
+    field_old: jax.Array, rom: jax.Array, mu_h: jax.Array, rdzw: jax.Array, dt: float
+) -> jax.Array:
+    """WRF first-order monotone vertical flux at w-faces ``k`` (donor cell).
+
+    Source: ``advect_scalar_pd`` vertical block (``module_advect_em.F:7478-7541``).
+    WRF builds ``dz = 2/(rdzw(k)+rdzw(k-1))``, ``mu = c1*mut+c2`` (mass level),
+    ``cr = rom*dt/dz/mu`` and ``fqzl(k) = mu*(dz/dt)*flux_upwind(q(k-1), q(k), cr)``.
+    Returns the (nz+1) low-order flux at every w face; faces 0 and nz carry no
+    flux (rigid boundaries) consistent with the high-order path.
+    """
+
+    nz = int(field_old.shape[0])
+    out_dtype = jnp.result_type(field_old.dtype, rom.dtype, rdzw.dtype)
+    fqzl = jnp.zeros((nz + 1,) + tuple(field_old.shape[1:]), dtype=out_dtype)
+    if nz < 2:
+        return fqzl
+    # interior faces k = 1..nz-1 (WRF kts+1..ktf): donor cell between k-1 and k.
+    q_km1 = field_old[: nz - 1, :, :]  # field at mass level k-1, for faces 1..nz-1
+    q_k = field_old[1:nz, :, :]
+    rom_f = rom[1:nz, :, :]
+    # dz at face k = 2/(rdzw(k)+rdzw(k-1)); mu at the face uses the mass-level mu.
+    rdzw_k = rdzw[1:nz, None, None]
+    rdzw_km1 = rdzw[: nz - 1, None, None]
+    dz = 2.0 / (rdzw_k + rdzw_km1)
+    mu_face = 0.5 * (mu_h[1:nz, :, :] + mu_h[: nz - 1, :, :])
+    cr = rom_f * dt / dz / mu_face
+    abs_cr = jnp.abs(cr)
+    w_km1 = 0.5 * jnp.minimum(1.0, cr + abs_cr)
+    w_k = 0.5 * jnp.maximum(-1.0, cr - abs_cr)
+    flux = mu_face * (dz / dt) * (w_km1 * q_km1 + w_k * q_k)
+    fqzl = fqzl.at[1:nz, :, :].set(flux)
+    return fqzl
+
+
+def _high_order_flux_x(field: jax.Array, ru: jax.Array) -> jax.Array:
+    """High-order x flux at the left face of cell i (= plain-path fqx). h5."""
+
+    return ru * flux5_face_periodic(field, ru, axis=2)
+
+
+def _high_order_flux_y(field: jax.Array, rv: jax.Array) -> jax.Array:
+    return rv * flux5_face_periodic(field, rv, axis=1)
+
+
+def _high_order_flux_z(field: jax.Array, rom: jax.Array, fzm: jax.Array, fzp: jax.Array) -> jax.Array:
+    """High-order vertical flux at w-faces (= the plain-path vflux). v3."""
+
+    nz = int(field.shape[0])
+    out_dtype = jnp.result_type(field.dtype, rom.dtype)
+    vflux = jnp.zeros((nz + 1,) + tuple(field.shape[1:]), dtype=out_dtype)
+    if nz >= 4:
+        q_km2 = field[: nz - 3, :, :]
+        q_km1 = field[1 : nz - 2, :, :]
+        q_k = field[2 : nz - 1, :, :]
+        q_kp1 = field[3:nz, :, :]
+        velz = -rom[2 : nz - 1, :, :]
+        flux4 = (7.0 * (q_k + q_km1) - (q_kp1 + q_km2)) / 12.0
+        corr = ((q_kp1 - q_km2) - 3.0 * (q_k - q_km1)) / 12.0
+        flux3 = flux4 + jnp.sign(velz) * corr
+        vflux = vflux.at[2 : nz - 1, :, :].set(rom[2 : nz - 1, :, :] * flux3)
+    if nz >= 2:
+        vflux = vflux.at[1, :, :].set(
+            rom[1, :, :] * (fzm[1] * field[1, :, :] + fzp[1] * field[0, :, :])
+        )
+        vflux = vflux.at[nz - 1, :, :].set(
+            rom[nz - 1, :, :] * (fzm[nz - 1] * field[nz - 1, :, :] + fzp[nz - 1] * field[nz - 2, :, :])
+        )
+    return vflux
+
+
+def _neighbour_min_max(field_old: jax.Array) -> tuple[jax.Array, jax.Array]:
+    """Local max/min of ``field_old`` over the cell and its 6 face neighbours.
+
+    Source: ``advect_scalar_mono`` qmax/qmin accumulation
+    (``module_advect_em.F:9625-10001``), periodic in x/y and clamped (no wrap) in
+    z.  Returns ``(qmax, qmin)`` with the same shape as ``field_old``.
+    """
+
+    qmax = field_old
+    qmin = field_old
+    for axis in (2, 1):  # x, y: periodic neighbours
+        qmax = jnp.maximum(qmax, jnp.maximum(jnp.roll(field_old, 1, axis=axis), jnp.roll(field_old, -1, axis=axis)))
+        qmin = jnp.minimum(qmin, jnp.minimum(jnp.roll(field_old, 1, axis=axis), jnp.roll(field_old, -1, axis=axis)))
+    # z: clamp at top/bottom (no vertical periodicity); neighbour-less faces keep
+    # the cell value.
+    up = jnp.concatenate((field_old[:1, :, :], field_old[:-1, :, :]), axis=0)  # field_old(k-1)
+    dn = jnp.concatenate((field_old[1:, :, :], field_old[-1:, :, :]), axis=0)  # field_old(k+1)
+    qmax = jnp.maximum(qmax, jnp.maximum(up, dn))
+    qmin = jnp.minimum(qmin, jnp.minimum(up, dn))
+    return qmax, qmin
+
+
+def advect_scalar_flux_limited(
+    field: jax.Array,
+    field_old: jax.Array,
+    vel: CoupledVelocities,
+    *,
+    scalar_adv_opt: int,
+    mut: jax.Array,
+    mu_old: jax.Array,
+    c1: jax.Array,
+    c2: jax.Array,
+    rdx: float,
+    rdy: float,
+    rdzw: jax.Array,
+    fzm: jax.Array,
+    fzp: jax.Array,
+    dt: float,
+) -> jax.Array:
+    """WRF positive-definite (opt=1) / monotonic (opt=2) limited scalar advection.
+
+    Source: ``advect_scalar_pd`` (``module_advect_em.F:6069-7885``) and
+    ``advect_scalar_mono`` (``:9495-10560``), periodic / unit-map / h5-v3 scope.
+
+    Returns the COUPLED tendency ``d(mu*phi)/dt`` (identical return contract to
+    ``advect_scalar_flux``), so callers select the limiter purely by the option
+    value and add the result to the coupled prognostic exactly as before.
+
+    ``scalar_adv_opt``:
+      * 1 -> positive-definite (PD) -- the limited field stays >= 0 after a full
+        explicit step by ``dt``.
+      * 2 -> monotonic -- no new extrema beyond the local ``field_old`` min/max.
+
+    For ``scalar_adv_opt`` 0 (or anything else) the caller must use the plain
+    ``advect_scalar_flux``; this function is the OPT-IN limiter only and never
+    touches the default path.
+
+    Mass contract: ``mut`` is the CURRENT total dry-air mass column ``(ny, nx)`` and
+    ``mu_old`` is the TOTAL dry-air mass at the START of the RK3 step.  WRF builds
+    the limiter's start-of-step coupled mass as ``(c1*mub+c2)+(c1*mu_old)`` from a
+    base/perturbation split; this project folds the base into the total, so a
+    caller must pass the FULL old total mass as ``mu_old`` (NOT a perturbation) and
+    the FULL current total as ``mut`` -- the function then forms ``c1*mu_old+c2``,
+    which equals WRF's start mass when ``mub`` is folded in.
+
+    The FCT construction (Smolarkiewicz / Zalesak):
+      1. low-order monotone (donor-cell) fluxes ``fqxl/fqyl/fqzl``;
+      2. antidiffusive fluxes ``A = high_order - low_order``;
+      3. the low-order updated coupled value ``ph_low`` (PD) / ``ph_upwind``
+         (mono) built from ``field_old`` and ``mu_old``;
+      4. a per-cell scale (PD: one factor on the OUTGOING antidiffusive flux so
+         the cell cannot go negative; mono: separate inflow/outflow factors so
+         the cell stays within its neighbour min/max), combined at each FACE as
+         the WRF ``min(scale_in, scale_out)`` of the two adjacent cells;
+      5. tendency ``-div(A_limited + low_order)``.
+
+    Mass conservation: every flux is a face quantity differenced as
+    ``flux(i+1)-flux(i)``; scaling a face value scales the SAME number that enters
+    both adjacent cells with opposite sign, so the global sum of the tendency is a
+    telescoping (periodic) sum that is zero to round-off -> the limiter only
+    REDISTRIBUTES mass, never creates or destroys it.
+    """
+
+    nz = int(field.shape[0])
+    msftx = _mass_factor_or_one(vel.msftx, field)  # (ny, nx); unity on the unit map
+    # Coupled face / mass dry-air masses (c1*mu + c2).  WRF ``mu`` at an x-face is
+    # 0.5*(c1*mut(i)+c2 + c1*mut(i-1)+c2); the y-face and mass-level analogues
+    # follow.  These match couple_velocities_periodic's mass_u/mass_v exactly.
+    mu_h = c1[:, None, None] * mut[None, :, :] + c2[:, None, None]  # (nz, ny, nx)
+    muu = _muu_face(mut)  # (ny, nx)
+    muv = _muv_face(mut)
+    mu_u = c1[:, None, None] * muu[None, :, :] + c2[:, None, None]  # x-face mass
+    mu_v = c1[:, None, None] * muv[None, :, :] + c2[:, None, None]  # y-face mass
+
+    dx = 1.0 / rdx
+    dy = 1.0 / rdy
+
+    # ---- low-order (first-order upwind / donor-cell) fluxes from field_old ----
+    fqxl = _flux_upwind_face(field_old, vel.ru, mu_u, dx, dt, axis=2)  # face i
+    fqyl = _flux_upwind_face(field_old, vel.rv, mu_v, dy, dt, axis=1)  # face j
+    fqzl = _flux_upwind_face_z(field_old, vel.rom, mu_h, rdzw, dt)  # face k (nz+1)
+
+    # ---- high-order fluxes (= plain path), then antidiffusive A = hi - lo ----
+    fqx = _high_order_flux_x(field, vel.ru) - fqxl  # face i
+    fqy = _high_order_flux_y(field, vel.rv) - fqyl  # face j
+    fqz = _high_order_flux_z(field, vel.rom, fzm, fzp) - fqzl  # face k (nz+1)
+
+    # ---- low-order updated coupled value (WRF ph_low / ph_upwind) ----
+    # WRF builds the start-of-step coupled mass from mu_old/mub:
+    # ``(c1*mub+c2)+(c1*mu_old)``.  On the project's dry single-domain idealized
+    # path mub is folded into mut (no separate base/perturbation split), so the
+    # start-of-step coupled mass is ``c1*mu_old+c2``.  Use that for the monotone
+    # low-order update exactly as WRF builds it.
+    mass_old = c1[:, None, None] * mu_old[None, :, :] + c2[:, None, None]  # (nz, ny, nx)
+    fqxl_ip1 = jnp.roll(fqxl, -1, axis=2)
+    fqyl_jp1 = jnp.roll(fqyl, -1, axis=1)
+    fqzl_kp1 = fqzl[1:, :, :]
+    fqzl_k = fqzl[:nz, :, :]
+    div_low = (
+        msftx[None, :, :] * msftx[None, :, :] * (rdx * (fqxl_ip1 - fqxl) + rdy * (fqyl_jp1 - fqyl))
+        + msftx[None, :, :] * rdzw[:, None, None] * (fqzl_kp1 - fqzl_k)
+    )
+    ph_low = mass_old * field_old - dt * div_low
+
+    # Antidiffusive face values offset to the i+1 / j+1 / k+1 face for divergence.
+    fqx_ip1 = jnp.roll(fqx, -1, axis=2)
+    fqy_jp1 = jnp.roll(fqy, -1, axis=1)
+    fqz_kp1 = fqz[1:, :, :]
+    fqz_k = fqz[:nz, :, :]
+
+    pos = lambda a: jnp.maximum(0.0, a)
+    neg = lambda a: jnp.minimum(0.0, a)
+
+    if int(scalar_adv_opt) == 1:
+        # ----- positive-definite (WRF advect_scalar_pd :7744-7779) -----
+        # flux_out: mass the antidiffusive fluxes would REMOVE from cell (i,k,j).
+        # Note the z-flux opposite sign (mass coordinate decreases with k).
+        flux_out = dt * (
+            msftx[None, :, :] * msftx[None, :, :]
+            * (rdx * (pos(fqx_ip1) - neg(fqx)) + rdy * (pos(fqy_jp1) - neg(fqy)))
+            + msftx[None, :, :] * rdzw[:, None, None] * (neg(fqz_kp1) - pos(fqz_k))
+        )
+        # scale only when the outgoing antidiffusive flux would empty the cell.
+        scale = jnp.where(
+            flux_out > ph_low,
+            jnp.maximum(0.0, ph_low / (flux_out + _PD_EPS)),
+            jnp.ones_like(ph_low),
+        )
+        # WRF scales the OUTGOING component of each antidiffusive face flux by the
+        # donor cell's scale (:7765-7773).  At x face i the cell on the -x side is
+        # i-1 and on the +x side is i; fqx(i)>0 drains cell i-1 -> scale(i-1);
+        # fqx(i)<0 drains cell i -> scale(i).
+        scale_im1_x = jnp.roll(scale, 1, axis=2)
+        scale_im1_y = jnp.roll(scale, 1, axis=1)
+        fqx_lim = jnp.where(fqx > 0.0, scale_im1_x * fqx, jnp.where(fqx < 0.0, scale * fqx, fqx))
+        fqy_lim = jnp.where(fqy > 0.0, scale_im1_y * fqy, jnp.where(fqy < 0.0, scale * fqy, fqy))
+        # z: at w face m the cell BELOW is m-1, ABOVE is m.  WRF advect_scalar_pd
+        # (:7771-7772) scales each face by the DONOR cell's scale -- and in the
+        # mass coordinate the flux sign is inverted (the vertical coordinate
+        # decreases with increasing k), so a NEGATIVE fqz(m) drains the cell BELOW
+        # (m-1) and a POSITIVE fqz(m) drains the cell ABOVE (m):
+        #   IF fqz(k+1)<0 -> fqz(k+1)*=scale(k)   [face m=k+1 scaled by cell m-1]
+        #   IF fqz(k)  >0 -> fqz(k)  *=scale(k)   [face m=k   scaled by cell m  ]
+        scale_pad = jnp.concatenate((scale[:1, :, :], scale, scale[-1:, :, :]), axis=0)  # (nz+2)
+        scale_above_face = scale_pad[1 : nz + 2, :, :]  # cell m   at faces 0..nz
+        scale_below_face = scale_pad[0 : nz + 1, :, :]  # cell m-1 at faces 0..nz
+        fqz_lim = jnp.where(
+            fqz < 0.0, scale_below_face * fqz, jnp.where(fqz > 0.0, scale_above_face * fqz, fqz)
+        )
+    elif int(scalar_adv_opt) == 2:
+        # ----- monotonic (WRF advect_scalar_mono :10363-10448) -----
+        qmax, qmin = _neighbour_min_max(field_old)
+        ph_upwind = ph_low  # same low-order monotone update (no IEVA on this path)
+        flux_in = -dt * (
+            msftx[None, :, :] * msftx[None, :, :]
+            * (rdx * (neg(fqx_ip1) - pos(fqx)) + rdy * (neg(fqy_jp1) - pos(fqy)))
+            + msftx[None, :, :] * rdzw[:, None, None] * (pos(fqz_kp1) - neg(fqz_k))
+        )
+        flux_out = dt * (
+            msftx[None, :, :] * msftx[None, :, :]
+            * (rdx * (pos(fqx_ip1) - neg(fqx)) + rdy * (pos(fqy_jp1) - neg(fqy)))
+            + msftx[None, :, :] * rdzw[:, None, None] * (neg(fqz_kp1) - pos(fqz_k))
+        )
+        # ieva_corr == mass_old on this (no implicit vertical advection) path.
+        ph_hi = qmax * mass_old - ph_upwind
+        ph_low_m = ph_upwind - qmin * mass_old
+        scale_in = jnp.where(
+            flux_in > ph_hi, jnp.maximum(0.0, ph_hi / (flux_in + _PD_EPS)), jnp.ones_like(ph_hi)
+        )
+        scale_out = jnp.where(
+            flux_out > ph_low_m, jnp.maximum(0.0, ph_low_m / (flux_out + _PD_EPS)), jnp.ones_like(ph_low_m)
+        )
+        # WRF combines at each face (:10363-10444): inflow to a cell uses
+        # min(scale_in(target), scale_out(source)); outflow the reverse.
+        sin_i = scale_in
+        sout_i = scale_out
+        sin_im1_x = jnp.roll(scale_in, 1, axis=2)
+        sout_im1_x = jnp.roll(scale_out, 1, axis=2)
+        fqx_lim = jnp.where(
+            fqx > 0.0,
+            jnp.minimum(sin_i, sout_im1_x) * fqx,
+            jnp.minimum(sout_i, sin_im1_x) * fqx,
+        )
+        sin_jm1_y = jnp.roll(scale_in, 1, axis=1)
+        sout_jm1_y = jnp.roll(scale_out, 1, axis=1)
+        fqy_lim = jnp.where(
+            fqy > 0.0,
+            jnp.minimum(sin_i, sout_jm1_y) * fqy,
+            jnp.minimum(sout_i, sin_jm1_y) * fqy,
+        )
+        # z face k: cell above = k, below = k-1.  WRF (:10437-10444): fqz<0 ->
+        # min(scale_in(k), scale_out(k-1)); else min(scale_out(k), scale_in(k-1)).
+        sin_pad = jnp.concatenate((scale_in[:1, :, :], scale_in, scale_in[-1:, :, :]), axis=0)
+        sout_pad = jnp.concatenate((scale_out[:1, :, :], scale_out, scale_out[-1:, :, :]), axis=0)
+        sin_above = sin_pad[1 : nz + 2, :, :]
+        sout_above = sout_pad[1 : nz + 2, :, :]
+        sin_below = sin_pad[0 : nz + 1, :, :]
+        sout_below = sout_pad[0 : nz + 1, :, :]
+        fqz_lim = jnp.where(
+            fqz < 0.0,
+            jnp.minimum(sin_above, sout_below) * fqz,
+            jnp.minimum(sout_above, sin_below) * fqz,
+        )
+    else:
+        raise ValueError(
+            f"advect_scalar_flux_limited only implements scalar_adv_opt 1 (PD) and 2 "
+            f"(monotonic); got {scalar_adv_opt}.  Use advect_scalar_flux for the plain path."
+        )
+
+    # ---- tendency = -div(limited antidiffusive + low-order), WRF :7780-7885 ----
+    fqx_total = fqx_lim + fqxl
+    fqy_total = fqy_lim + fqyl
+    fqz_total = fqz_lim + fqzl
+    fqx_total_ip1 = jnp.roll(fqx_total, -1, axis=2)
+    fqy_total_jp1 = jnp.roll(fqy_total, -1, axis=1)
+    fqz_total_kp1 = fqz_total[1:, :, :]
+    fqz_total_k = fqz_total[:nz, :, :]
+    tend = -msftx[None, :, :] * rdx * (fqx_total_ip1 - fqx_total)
+    tend = tend - msftx[None, :, :] * rdy * (fqy_total_jp1 - fqy_total)
+    tend = tend - rdzw[:, None, None] * (fqz_total_kp1 - fqz_total_k)
+    return tend
+
+
 # --- flux-form momentum advection (advect_u / advect_v / advect_w, h=5/v=3) ---
 #
 # WRF advances momentum with the *conservative* flux-divergence form
@@ -644,6 +1030,7 @@ __all__ = [
     "couple_velocities_periodic",
     "flux5_face_periodic",
     "advect_scalar_flux",
+    "advect_scalar_flux_limited",
     "advect_u_flux",
     "advect_v_flux",
     "advect_w_flux",
