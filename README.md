@@ -107,7 +107,7 @@ open issues are in **[docs/KNOWN_ISSUES.md](docs/KNOWN_ISSUES.md)**.
 | Area | Implemented (runs) | Fail-closed (recognized, refused with a named reason) | Out-of-scope / roadmap boundary |
 |---|---|---|---|
 | **Init** | Native real-init (`wrfinput`/`wrfbdy` from met_em, no `real.exe`); WRF restart | — | — |
-| **Dynamics** | Nonhydrostatic ARW, RK3 + split-explicit acoustic, flux-form advection, constant-K diffusion (`diff_opt=2`/`km_opt=1`) | Smagorinsky horizontal diffusion (`diff_opt=1`/`km_opt=4`) → use constant-K | Moving/global nests; adaptive Δt |
+| **Dynamics** | Nonhydrostatic ARW, RK3 + split-explicit acoustic, flux-form advection, constant-K (`diff_opt=2`/`km_opt=1`) + 2-D Smagorinsky (`diff_opt=1`/`km_opt=4`) horizontal diffusion | 3-D TKE / full Smagorinsky closures (`km_opt=2/3/5`) → use `km_opt=1` or `4` | Moving/global nests; adaptive Δt |
 | **Microphysics** | Kessler, Lin, WSM3/5/6, Thompson, Morrison, WDM6 | Aerosol-coupled (Thompson-aerosol mp=28, Morrison-aerosol mp=40), NSSL | WRF-Chem |
 | **PBL / sfc** | YSU, MYNN-EDMF, ACM2, BouLac; MYNN-SL, revised-MM5, Pleim-Xiu sfclay | MYJ + Janjic-Eta (parity-proven, not scan-wired) | — |
 | **Cumulus** | Kain-Fritsch, BMJ, Tiedtke; Grell-Freitas (ref) | New-Tiedtke | — |
