@@ -192,8 +192,8 @@ def build_parser() -> argparse.ArgumentParser:
         "--max-dom",
         type=int,
         default=None,
-        help="Number of nested domains to run (d01..dN). Defaults to the "
-        "namelist's max_dom. >1 runs the STANDALONE LIVE-NESTED driver "
+        help="Number of nested domains to run (d01..dN). Defaults to 1 "
+        "(SINGLE domain = --domain). Set >1 to run the STANDALONE LIVE-NESTED driver "
         "(parent feeds each child's lateral boundary live; no CPU-WRF wrfout). "
         "1 runs the single-domain path on --domain.",
     )
@@ -334,14 +334,24 @@ def _cmd_run(args: argparse.Namespace) -> int:
     except Exception as exc:  # parsing / IO problems should also fail cleanly
         return _fail(f"could not validate namelist {namelist}: {type(exc).__name__}: {exc}")
 
-    # --- Resolve the domain count: --max-dom overrides the namelist's max_dom. -
+    # --- Resolve the domain count. Nested is OPT-IN via --max-dom > 1; the
+    # default is SINGLE-domain (--domain). This keeps CPU-wrfout REPLAY and
+    # single-domain standalone runs on a multi-domain (max_dom>1) namelist from
+    # being silently turned into a live-nested run. ----------------------------
     try:
         namelist_max_dom = _namelist_max_dom(namelist)
     except Exception:  # noqa: BLE001 - default to single-domain if max_dom unreadable
         namelist_max_dom = 1
-    max_dom = int(args.max_dom) if args.max_dom is not None else namelist_max_dom
+    max_dom = int(args.max_dom) if args.max_dom is not None else 1
     if max_dom < 1:
         return _fail(f"--max-dom must be >= 1, got {max_dom}")
+    if args.max_dom is None and namelist_max_dom > 1:
+        print(
+            f"gpuwrf: note: namelist max_dom={namelist_max_dom} but running a SINGLE "
+            f"domain ({args.domain}) by default; pass --max-dom {namelist_max_dom} to "
+            f"run the standalone live-nested forecast (d01..d{namelist_max_dom:02d}).",
+            file=sys.stderr,
+        )
 
     # --- Nested (max_dom > 1): STANDALONE LIVE-NESTED driver. -----------------
     # The parent advances, builds each child's lateral boundary LIVE, and recurses
