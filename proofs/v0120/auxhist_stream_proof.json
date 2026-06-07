@@ -1,0 +1,115 @@
+{
+  "schema": "AuxhistSecondaryStreamProof",
+  "schema_version": 1,
+  "status": "PASS",
+  "description": "WRF auxhist secondary history stream: distinct subset stream at 15-min cadence; main wrfout byte-unchanged; off by default.",
+  "auxhist_config": {
+    "stream_id": 1,
+    "interval_minutes": 15,
+    "frames_per_file": 1,
+    "io_form": 2,
+    "outname_pattern": "auxhist1_d<domain>_<date>",
+    "variables": [
+      "U10",
+      "V10",
+      "T2",
+      "Q2",
+      "PSFC",
+      "RAINNC",
+      "SWDOWN"
+    ]
+  },
+  "main_stream": {
+    "off_files": [
+      "wrfout_d02_2026-05-21_19:00:00"
+    ],
+    "on_files": [
+      "wrfout_d02_2026-05-21_19:00:00"
+    ],
+    "on_main_var_count": 48,
+    "main_field_values_identical_off_vs_on": true
+  },
+  "auxhist_stream": {
+    "frame_count": 4,
+    "frames": [
+      {
+        "file": "auxhist1_d02_2026-05-21_18:15:00",
+        "timestamp": "2026-05-21_18:15:00",
+        "vars": [
+          "PSFC",
+          "Q2",
+          "RAINNC",
+          "SWDOWN",
+          "T2",
+          "U10",
+          "V10"
+        ],
+        "extra_beyond_request": [],
+        "t2_mean": 291.5,
+        "file_format": "NETCDF4"
+      },
+      {
+        "file": "auxhist1_d02_2026-05-21_18:30:00",
+        "timestamp": "2026-05-21_18:30:00",
+        "vars": [
+          "PSFC",
+          "Q2",
+          "RAINNC",
+          "SWDOWN",
+          "T2",
+          "U10",
+          "V10"
+        ],
+        "extra_beyond_request": [],
+        "t2_mean": 294.0,
+        "file_format": "NETCDF4"
+      },
+      {
+        "file": "auxhist1_d02_2026-05-21_18:45:00",
+        "timestamp": "2026-05-21_18:45:00",
+        "vars": [
+          "PSFC",
+          "Q2",
+          "RAINNC",
+          "SWDOWN",
+          "T2",
+          "U10",
+          "V10"
+        ],
+        "extra_beyond_request": [],
+        "t2_mean": 296.5,
+        "file_format": "NETCDF4"
+      },
+      {
+        "file": "auxhist1_d02_2026-05-21_19:00:00",
+        "timestamp": "2026-05-21_19:00:00",
+        "vars": [
+          "PSFC",
+          "Q2",
+          "RAINNC",
+          "SWDOWN",
+          "T2",
+          "U10",
+          "V10"
+        ],
+        "extra_beyond_request": [],
+        "t2_mean": 299.0,
+        "file_format": "NETCDF4"
+      }
+    ]
+  },
+  "checks": {
+    "off_by_default_no_second_stream": true,
+    "main_stream_unchanged_when_auxhist_on": true,
+    "second_stream_distinct_files": true,
+    "four_frames_15min_over_1h": true,
+    "each_frame_only_requested_subset": true,
+    "frames_distinct_sub_hour_state": true,
+    "wrf_named_timestamps": [
+      "auxhist1_d02_2026-05-21_18:15:00",
+      "auxhist1_d02_2026-05-21_18:30:00",
+      "auxhist1_d02_2026-05-21_18:45:00",
+      "auxhist1_d02_2026-05-21_19:00:00"
+    ]
+  }
+}
