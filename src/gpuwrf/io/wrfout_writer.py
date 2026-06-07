@@ -116,12 +116,71 @@ GRID_COORDINATE_VARIABLES: tuple[str, ...] = (
     "P_TOP",
 )
 
+# (b2) Extended grid-static vertical-coordinate + map-factor metric arrays.
+#     v0.12.0 A1: PURE PAYLOAD of arrays ALREADY resident on ``DycoreMetrics`` /
+#     the eta column -- no recompute, no physics. Vertical eta-spacing metrics
+#     (DN/DNW/RDN/RDNW/FNM/FNP), the hybrid-eta C-coefficients (C1H..C4H,
+#     C1F..C4F), the scalar extrapolation constants (CF1/CF2/CF3 already +
+#     CFN/CFN1), the directional map factors (MAPFAC_MX/MY/UX/UY/VX/VY ==
+#     msftx/msfty/msfux/msfuy/msfvx/msfvy), and the inverse grid lengths
+#     (RDX/RDY) from the projection. Each is emitted ONLY when its source array
+#     is present on the grid (dict/synthetic grids carry no metrics -> none are
+#     written), so no field is ever fabricated. Names/dims/units/descriptions are
+#     copied from the reference wrfout_d02 (375-var operational WRF file).
+GRID_METRIC_EXTRA_VARIABLES: tuple[str, ...] = (
+    "DN",
+    "DNW",
+    "RDN",
+    "RDNW",
+    "FNM",
+    "FNP",
+    "CFN",
+    "CFN1",
+    "CF1",
+    "CF2",
+    "CF3",
+    "C1H",
+    "C2H",
+    "C3H",
+    "C4H",
+    "C1F",
+    "C2F",
+    "C3F",
+    "C4F",
+    "MAPFAC_MX",
+    "MAPFAC_MY",
+    "MAPFAC_UX",
+    "MAPFAC_UY",
+    "MAPFAC_VX",
+    "MAPFAC_VY",
+    "RDX",
+    "RDY",
+)
+
 # (c) Accumulated precipitation partition (grid-scale snow/ice + graupel). Source
 #     = State precip accumulators (coupling.physics_couplers writes snow_acc /
 #     graupel_acc / ice_acc each microphysics step). WRF SNOWNC carries snow+ice.
 PRECIP_PARTITION_VARIABLES: tuple[str, ...] = (
     "SNOWNC",
     "GRAUPELNC",
+)
+
+# (h) Trivially-derived diagnostics (v0.12.0 A2). WRF-FAITHFUL closed forms from
+#     fields the writer already has -- NO physics, NO GPU. Each self-gates on the
+#     availability of its inputs:
+#       CLAT   = XLAT (computational-grid latitude; identical to XLAT for the
+#                operational lat/lon grid).
+#       COSZEN = WRF radconst/calc_coszen cosine solar zenith from XLAT/XLONG +
+#                the forecast clock (run_start + lead) -- the exact transcription
+#                already in coupling.physics_couplers._compute_coszen.
+#       SR     = frozen-precipitation fraction = solid_acc/(solid_acc + rain_acc),
+#                from the State precip accumulators (snow+graupel+ice vs rain).
+#       SNOWC  = snow-cover flag (1 where SWE > 0) from the land carry's bulk SWE.
+DERIVED_DIAGNOSTIC_VARIABLES: tuple[str, ...] = (
+    "CLAT",
+    "COSZEN",
+    "SR",
+    "SNOWC",
 )
 
 # (d) Surface energy/moisture-budget fluxes routed from the operational
@@ -181,8 +240,10 @@ OPERATIONAL_WRFOUT_VARIABLES: tuple[str, ...] = (
     *MINIMUM_WRFOUT_VARIABLES,
     *MICROPHYSICS_EXTRA_VARIABLES,
     *GRID_COORDINATE_VARIABLES,
+    *GRID_METRIC_EXTRA_VARIABLES,
     *PRECIP_PARTITION_VARIABLES,
     *SURFACE_FLUX_EXTRA_VARIABLES,
+    *DERIVED_DIAGNOSTIC_VARIABLES,
     *LAND_SOIL_VARIABLES,
     *LAND_SNOW_DIAGNOSTIC_VARIABLES,
     *STOCHASTIC_SEED_VARIABLES,
@@ -516,6 +577,75 @@ WRFOUT_VARIABLE_SPECS: dict[str, WrfoutVariableSpec] = {
         coordinates="XLONG XLAT XTIME",
     ),
     "P_TOP": _spec("P_TOP", TIME_ONLY, "0  ", "PRESSURE TOP OF THE MODEL", "Pa"),
+    # --- v0.12.0 A1 (b2) extended grid-static vertical/map-factor metrics ---
+    # Vertical eta-spacing metrics (DycoreMetrics.dn/dnw/rdn/rdnw/fnm/fnp).
+    "DN": _spec("DN", Z_HALF, "Z  ", "d(eta) values between half (mass) levels", ""),
+    "DNW": _spec("DNW", Z_HALF, "Z  ", "d(eta) values between full (w) levels", ""),
+    "RDN": _spec("RDN", Z_HALF, "Z  ", "inverse d(eta) values between half (mass) levels", ""),
+    "RDNW": _spec("RDNW", Z_HALF, "Z  ", "inverse d(eta) values between full (w) levels", ""),
+    "FNM": _spec("FNM", Z_HALF, "Z  ", "upper weight for vertical stretching", ""),
+    "FNP": _spec("FNP", Z_HALF, "Z  ", "lower weight for vertical stretching", ""),
+    # Scalar vertical extrapolation constants (DycoreMetrics.cf1/cf2/cf3 + the
+    # WRF top-level cfn/cfn1 derived from dnw/dn).
+    "CFN": _spec("CFN", TIME_ONLY, "0  ", "extrapolation constant", ""),
+    "CFN1": _spec("CFN1", TIME_ONLY, "0  ", "extrapolation constant", ""),
+    "CF1": _spec("CF1", TIME_ONLY, "0  ", "2nd order extrapolation constant", ""),
+    "CF2": _spec("CF2", TIME_ONLY, "0  ", "2nd order extrapolation constant", ""),
+    "CF3": _spec("CF3", TIME_ONLY, "0  ", "2nd order extrapolation constant", ""),
+    # Hybrid-eta C-coefficients (DycoreMetrics.c1h..c4h / c1f..c4f).
+    "C1H": _spec("C1H", Z_HALF, "Z  ", "half levels, c1h = d bf / d eta, using znw", "Dimensionless"),
+    "C2H": _spec("C2H", Z_HALF, "Z  ", "half levels, c2h = (1-c1h)*(p0-pt)", "Pa"),
+    "C3H": _spec("C3H", Z_HALF, "Z  ", "half levels, c3h = bh", "Dimensionless"),
+    "C4H": _spec("C4H", Z_HALF, "Z  ", "half levels, c4h = (eta-bh)*(p0-pt), using znu", "Pa"),
+    "C1F": _spec("C1F", Z_FULL, "Z  ", "full levels, c1f = d bf / d eta, using znu", "Dimensionless", stagger="Z"),
+    "C2F": _spec("C2F", Z_FULL, "Z  ", "full levels, c2f = (1-c1f)*(p0-pt)", "Pa", stagger="Z"),
+    "C3F": _spec("C3F", Z_FULL, "Z  ", "full levels, c3f = bf", "Dimensionless", stagger="Z"),
+    "C4F": _spec("C4F", Z_FULL, "Z  ", "full levels, c4f = (eta-bf)*(p0-pt), using znw", "Pa", stagger="Z"),
+    # Directional map-scale factors (DycoreMetrics.msftx/msfty/msfux/msfuy/msfvx/msfvy).
+    "MAPFAC_MX": _spec(
+        "MAPFAC_MX", XY, "XY ", "Map scale factor on mass grid, x direction", "",
+        coordinates="XLONG XLAT XTIME",
+    ),
+    "MAPFAC_MY": _spec(
+        "MAPFAC_MY", XY, "XY ", "Map scale factor on mass grid, y direction", "",
+        coordinates="XLONG XLAT XTIME",
+    ),
+    "MAPFAC_UX": _spec(
+        "MAPFAC_UX", MAPFAC_U_XY, "XY ", "Map scale factor on u-grid, x direction", "",
+        stagger="X", coordinates="XLONG_U XLAT_U XTIME",
+    ),
+    "MAPFAC_UY": _spec(
+        "MAPFAC_UY", MAPFAC_U_XY, "XY ", "Map scale factor on u-grid, y direction", "",
+        stagger="X", coordinates="XLONG_U XLAT_U XTIME",
+    ),
+    "MAPFAC_VX": _spec(
+        "MAPFAC_VX", MAPFAC_V_XY, "XY ", "Map scale factor on v-grid, x direction", "",
+        stagger="Y", coordinates="XLONG_V XLAT_V XTIME",
+    ),
+    "MAPFAC_VY": _spec(
+        "MAPFAC_VY", MAPFAC_V_XY, "XY ", "Map scale factor on v-grid, y direction", "",
+        stagger="Y", coordinates="XLONG_V XLAT_V XTIME",
+    ),
+    # Inverse grid lengths (1/dx, 1/dy) from the projection.
+    "RDX": _spec("RDX", TIME_ONLY, "0  ", "INVERSE X GRID LENGTH", "m-1"),
+    "RDY": _spec("RDY", TIME_ONLY, "0  ", "INVERSE Y GRID LENGTH", "m-1"),
+    # --- v0.12.0 A2 (h) trivially-derived diagnostics ---
+    "CLAT": _spec(
+        "CLAT", XY, "XY ", "COMPUTATIONAL GRID LATITUDE, SOUTH IS NEGATIVE", "degree_north",
+        coordinates="XLONG XLAT XTIME",
+    ),
+    "COSZEN": _spec(
+        "COSZEN", XY, "XY ", "COS of SOLAR ZENITH ANGLE", "dimensionless",
+        coordinates="XLONG XLAT XTIME",
+    ),
+    "SR": _spec(
+        "SR", XY, "XY ", "fraction of frozen precipitation", "-",
+        coordinates="XLONG XLAT XTIME",
+    ),
+    "SNOWC": _spec(
+        "SNOWC", XY, "XY ", "FLAG INDICATING SNOW COVERAGE (1 FOR SNOW COVER)", "",
+        coordinates="XLONG XLAT XTIME",
+    ),
     # --- P0-5a (c) accumulated precipitation partition ---
     "SNOWNC": _spec(
         "SNOWNC", XY, "XY ", "ACCUMULATED TOTAL GRID SCALE SNOW AND ICE", "mm",
@@ -706,7 +836,9 @@ def prepare_wrfout_payload(
     # The single device->host boundary: _build_output_fields returns host
     # np.float32 arrays, so PreparedWrfout holds no device references.
     fields = _build_output_fields(
-        state, grid, namelist, dimensions, diagnostics=diagnostics, land_state=land_state
+        state, grid, namelist, dimensions,
+        diagnostics=diagnostics, land_state=land_state,
+        run_start=run_start_dt, lead_hours=float(lead_hours),
     )
     return PreparedWrfout(
         target=target,
@@ -885,6 +1017,8 @@ def _build_output_fields(
     *,
     diagnostics: Mapping[str, Any] | None = None,
     land_state: Any | None = None,
+    run_start: datetime | None = None,
+    lead_hours: float = 0.0,
 ) -> dict[str, np.ndarray]:
     shape_xy = _shape_for_dimensions(XY, dimensions)
     shape_xyz = _shape_for_dimensions(XYZ, dimensions)
@@ -1123,7 +1257,92 @@ def _build_output_fields(
         t2 = np.asarray(fields["T2"], dtype=np.float64)
         fields["TH2"] = _coerce_array("TH2", t2 * (P0_PA / psfc) ** R_D_OVER_CP, shape_xy)
 
+    # --- v0.12.0 A2 trivially-derived diagnostics (no physics, no GPU). ---
+    _add_derived_diagnostic_fields(
+        fields,
+        state=state,
+        land_state=land_state,
+        xlat=xlat,
+        xlong=xlong,
+        shape_xy=shape_xy,
+        run_start=run_start,
+        lead_hours=lead_hours,
+    )
+
     return {name: _materialized_dtype(name, value) for name, value in fields.items()}
+
+
+def _add_derived_diagnostic_fields(
+    fields: dict[str, np.ndarray],
+    *,
+    state: Any,
+    land_state: Any | None,
+    xlat: np.ndarray,
+    xlong: np.ndarray,
+    shape_xy: tuple[int, int],
+    run_start: datetime | None,
+    lead_hours: float,
+) -> None:
+    """Populate the cheap WRF-faithful derived diagnostics (v0.12.0 A2).
+
+    Each field self-gates on the availability of its inputs and uses a closed
+    WRF-faithful form -- never a fabricated quantity:
+
+    - ``CLAT`` (computational-grid latitude) == ``XLAT`` for the operational
+      lat/lon grid; always present because the writer always resolves XLAT.
+    - ``COSZEN`` is WRF's ``radconst``/``calc_coszen`` cosine solar zenith angle
+      (module_radiation_driver.F:3594-3666) evaluated from XLAT/XLONG and the
+      forecast clock (``run_start`` + ``lead_hours``). Routed through the exact
+      transcription in ``coupling.physics_couplers._compute_coszen``. Skipped
+      (not fabricated) if the clock is absent.
+    - ``SR`` is the WRF surface frozen-precipitation fraction
+      = solid_acc / (solid_acc + liquid_acc), built from the State precip
+      accumulators (snow+graupel+ice vs rain). Zero where no precip has fallen;
+      skipped entirely when the State carries no accumulators (dry/synthetic).
+    - ``SNOWC`` is WRF's snow-cover flag (1 where bulk SWE > 0) from the land
+      carry's ``sneqv``; skipped when there is no land carry (never fabricated).
+    """
+
+    # CLAT == XLAT (computational == geographic latitude on the operational grid).
+    fields["CLAT"] = _coerce_array("CLAT", np.asarray(xlat), shape_xy)
+
+    # COSZEN from the WRF solar-geometry transcription + the forecast clock.
+    if run_start is not None:
+        try:
+            from gpuwrf.coupling.physics_couplers import _compute_coszen
+
+            coszen = _compute_coszen(
+                np.asarray(xlat, dtype=np.float64),
+                np.asarray(xlong, dtype=np.float64),
+                run_start,
+                lead_seconds=float(lead_hours) * 3600.0,
+            )
+            fields["COSZEN"] = _coerce_array("COSZEN", np.asarray(coszen), shape_xy)
+        except Exception:  # noqa: BLE001 -- best-effort diagnostic; never blocks output.
+            pass
+
+    # SR = frozen-precip fraction from the State accumulators (mm). solid = snow +
+    # graupel + ice; total = solid + rain. WRF SR is in [0,1]; zero where dry.
+    rain_acc = _optional_field_array(state, ("rain_acc", "RAINNC"), shape_xy)
+    snow_acc = _optional_field_array(state, ("snow_acc", "SNOWNC"), shape_xy)
+    graupel_acc = _optional_field_array(state, ("graupel_acc", "GRAUPELNC"), shape_xy)
+    ice_acc = _optional_field_array(state, ("ice_acc",), shape_xy)
+    if any(a is not None for a in (rain_acc, snow_acc, graupel_acc, ice_acc)):
+        def _z(a: np.ndarray | None) -> np.ndarray:
+            return np.asarray(a, dtype=np.float64) if a is not None else np.zeros(shape_xy, dtype=np.float64)
+
+        solid = _z(snow_acc) + _z(graupel_acc) + _z(ice_acc)
+        total = solid + _z(rain_acc)
+        sr = np.where(total > 0.0, solid / np.maximum(total, 1.0e-12), 0.0)
+        fields["SR"] = _coerce_array("SR", sr, shape_xy)
+
+    # SNOWC = snow-cover flag (1 where bulk SWE > 0) from the land carry SWE.
+    sneqv = _lookup(land_state, "sneqv") if land_state is not None else None
+    if sneqv is None and land_state is not None:
+        sneqv = _lookup(land_state, "snow")
+    if sneqv is not None:
+        swe = np.asarray(sneqv, dtype=np.float64)
+        fields["SNOWC"] = _coerce_array("SNOWC", np.where(swe > 0.0, 1.0, 0.0), shape_xy)
 
 
 def _add_grid_coordinate_fields(
@@ -1158,14 +1377,21 @@ def _add_grid_coordinate_fields(
 
     metrics = _lookup(grid, "metrics")
     if metrics is not None:
-        # Map-scale factors (WRF MAPFAC_M/U/V == msftx/msfux/msfvx). The X/Y
-        # variants (msfuy/msfvy) are emitted by WRF too but the operational
-        # product needs only the primary U/V/M factors; keep the gap closed to the
-        # fields the dycore/PGF actually consume.
+        # Map-scale factors. WRF emits both the primary MAPFAC_M/U/V (the x-direction
+        # factors the dycore/PGF consume) and the directional MAPFAC_{M,U,V}{X,Y}.
+        # All map onto DycoreMetrics.msf{t,u,v}{x,y}; the primary M/U/V alias the
+        # x-direction factors (msftx/msfux/msfvx), matching WRF for the conformal
+        # Canary projection.
         for wrf_name, attr, shape in (
             ("MAPFAC_M", "msftx", shape_xy),
             ("MAPFAC_U", "msfux", shape_mapu),
             ("MAPFAC_V", "msfvx", shape_mapv),
+            ("MAPFAC_MX", "msftx", shape_xy),
+            ("MAPFAC_MY", "msfty", shape_xy),
+            ("MAPFAC_UX", "msfux", shape_mapu),
+            ("MAPFAC_UY", "msfuy", shape_mapu),
+            ("MAPFAC_VX", "msfvx", shape_mapv),
+            ("MAPFAC_VY", "msfvy", shape_mapv),
             ("F", "f", shape_xy),
             ("E", "e", shape_xy),
             ("SINALPHA", "sina", shape_xy),
@@ -1174,9 +1400,64 @@ def _add_grid_coordinate_fields(
             value = _lookup(metrics, attr)
             if value is not None:
                 fields[wrf_name] = _coerce_array(wrf_name, np.asarray(value), shape)
+
+        # v0.12.0 A1: vertical eta-spacing + hybrid-eta C-coefficient column metrics.
+        # PURE PAYLOAD of arrays already resident on DycoreMetrics -- no recompute.
+        for wrf_name, attr in (
+            ("DN", "dn"),
+            ("DNW", "dnw"),
+            ("RDN", "rdn"),
+            ("RDNW", "rdnw"),
+            ("FNM", "fnm"),
+            ("FNP", "fnp"),
+            ("C1H", "c1h"),
+            ("C2H", "c2h"),
+            ("C3H", "c3h"),
+            ("C4H", "c4h"),
+        ):
+            value = _lookup(metrics, attr)
+            if value is not None and np.asarray(value).shape == (nz,):
+                fields[wrf_name] = _coerce_array(wrf_name, np.asarray(value), (nz,))
+        for wrf_name, attr in (
+            ("C1F", "c1f"),
+            ("C2F", "c2f"),
+            ("C3F", "c3f"),
+            ("C4F", "c4f"),
+        ):
+            value = _lookup(metrics, attr)
+            if value is not None and np.asarray(value).shape == (nz + 1,):
+                fields[wrf_name] = _coerce_array(wrf_name, np.asarray(value), (nz + 1,))
+
+        # Scalar extrapolation constants. cf1/cf2/cf3 are stored directly; the WRF
+        # top-of-model constants cfn/cfn1 are the standard dnw/dn ratios at the top
+        # mass level (module_initialize_real.F:3757-3758, 0-indexed nz-1):
+        #   cfn  = (0.5*dnw[nz-1] + dn[nz-1]) / dn[nz-1]
+        #   cfn1 = -0.5*dnw[nz-1] / dn[nz-1]
+        for wrf_name, attr in (("CF1", "cf1"), ("CF2", "cf2"), ("CF3", "cf3")):
+            value = _lookup(metrics, attr)
+            if value is not None:
+                fields[wrf_name] = _coerce_array(wrf_name, float(np.asarray(value).reshape(-1)[0]), ())
+        dn = _lookup(metrics, "dn")
+        dnw = _lookup(metrics, "dnw")
+        if dn is not None and dnw is not None:
+            dn_top = float(np.asarray(dn).reshape(-1)[-1])
+            dnw_top = float(np.asarray(dnw).reshape(-1)[-1])
+            if dn_top != 0.0:
+                fields["CFN"] = _coerce_array("CFN", (0.5 * dnw_top + dn_top) / dn_top, ())
+                fields["CFN1"] = _coerce_array("CFN1", -0.5 * dnw_top / dn_top, ())
+
         p_top = _lookup(metrics, "p_top")
         if p_top is not None:
             fields["P_TOP"] = _coerce_array("P_TOP", float(np.asarray(p_top).reshape(-1)[0]), ())
+
+    # Inverse grid lengths RDX = 1/dx, RDY = 1/dy from the projection (WRF scalars).
+    projection = _lookup(grid, "projection")
+    dx_m = _lookup(projection, "dx_m", _lookup(grid, "dx", None))
+    dy_m = _lookup(projection, "dy_m", _lookup(grid, "dy", dx_m))
+    if dx_m is not None and float(dx_m) != 0.0:
+        fields["RDX"] = _coerce_array("RDX", 1.0 / float(dx_m), ())
+    if dy_m is not None and float(dy_m) != 0.0:
+        fields["RDY"] = _coerce_array("RDY", 1.0 / float(dy_m), ())
 
     # XLAND (1 land / 2 water) = WRF land/water flag. Derive from the landmask the
     # writer already resolved (1 land / 0 water) so it is always consistent.
