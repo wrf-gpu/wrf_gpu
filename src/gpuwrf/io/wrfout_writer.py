@@ -211,13 +211,21 @@ LAND_SOIL_VARIABLES: tuple[str, ...] = (
     "EMISS",
 )
 
-# (f) Noah-MP internal snow-layer diagnostics. Source = the optional
+# (f) Noah-MP internal snow-layer + canopy diagnostics. Source = the optional
 # ``NoahMPLandState`` handed to the writer; absent when no land carry exists.
+# The four 3-D snow-column fields (TSNO/SNICE/SNLIQ/ZSNSO) plus the scalar
+# snow/canopy prognostics ISNOW/SNEQVO/CANLIQ/CANICE are all genuine device-
+# resident slots of the carry (contracts/noahmp_state.py) — each self-gates on a
+# present source so a partial carry never fabricates a profile.
 LAND_SNOW_DIAGNOSTIC_VARIABLES: tuple[str, ...] = (
     "TSNO",
     "SNICE",
     "SNLIQ",
     "ZSNSO",
+    "ISNOW",
+    "SNEQVO",
+    "CANLIQ",
+    "CANICE",
 )
 
 # (g) Restart seed arrays for WRF stochastic perturbation options. The Canary
@@ -685,6 +693,42 @@ WRFOUT_VARIABLE_SPECS: dict[str, WrfoutVariableSpec] = {
         stagger="Z",
         coordinates="XLONG XLAT XTIME",
     ),
+    # WRF integer field (FieldType 106): active snow-layer count in {-2,-1,0}.
+    # The reference wrfout labels its units "m3 m-3" (a known upstream WRF
+    # Registry typo); we reproduce it byte-for-byte for schema conformance.
+    "ISNOW": _spec(
+        "ISNOW",
+        XY,
+        "XY ",
+        "no. of snow layer",
+        "m3 m-3",
+        coordinates="XLONG XLAT XTIME",
+        dtype="i4",
+    ),
+    "SNEQVO": _spec(
+        "SNEQVO",
+        XY,
+        "XY ",
+        "snow mass at last time step",
+        "mm",
+        coordinates="XLONG XLAT XTIME",
+    ),
+    "CANLIQ": _spec(
+        "CANLIQ",
+        XY,
+        "XY ",
+        "intercepted liquid water",
+        "mm",
+        coordinates="XLONG XLAT XTIME",
+    ),
+    "CANICE": _spec(
+        "CANICE",
+        XY,
+        "XY ",
+        "intercepted ice mass",
+        "mm",
+        coordinates="XLONG XLAT XTIME",
+    ),
     "ISEEDARR_SPPT": _spec(
         "ISEEDARR_SPPT",
         SEED,
@@ -952,7 +996,10 @@ def _write_float_variable(
 
 
 def _set_variable_attrs(variable: Any, spec: WrfoutVariableSpec) -> None:
-    variable.FieldType = np.int32(104)
+    # WRF tags real fields FieldType=104 and integer fields FieldType=106
+    # (module_io_int / Registry). Derive it from the spec dtype so integer
+    # diagnostics (ISNOW, the stochastic seed arrays) carry the correct code.
+    variable.FieldType = np.int32(106 if str(spec.dtype).startswith("i") else 104)
     variable.MemoryOrder = spec.memory_order
     variable.description = spec.description
     variable.units = spec.units
@@ -1498,6 +1545,16 @@ def _add_land_soil_fields(
         if value is not None:
             fields[wrf_name] = _coerce_array(wrf_name, np.asarray(value), shape)
 
+    # Scalar (ny, nx) snow/canopy prognostics. ISNOW is the int32 active-layer
+    # count (-2..0); SNEQVO is the prior-step SWE; CANLIQ/CANICE are the canopy
+    # interception reservoirs (their sum is the CANWAT bulk written below).
+    isnow = _lookup(land_state, "isnow")
+    if isnow is not None:
+        fields["ISNOW"] = _coerce_array("ISNOW", np.asarray(isnow), shape_xy, dtype=np.int32)
+    sneqvo = _lookup(land_state, "sneqvo")
+    if sneqvo is not None:
+        fields["SNEQVO"] = _coerce_array("SNEQVO", np.asarray(sneqvo), shape_xy)
+
     sneqv = _lookup(land_state, "sneqv")
     if sneqv is not None:
         fields["SNOW"] = _coerce_array("SNOW", np.asarray(sneqv), shape_xy)
@@ -1506,6 +1563,10 @@ def _add_land_soil_fields(
         fields["SNOWH"] = _coerce_array("SNOWH", np.asarray(snowh), shape_xy)
     canliq = _lookup(land_state, "canliq")
     canice = _lookup(land_state, "canice")
+    if canliq is not None:
+        fields["CANLIQ"] = _coerce_array("CANLIQ", np.asarray(canliq), shape_xy)
+    if canice is not None:
+        fields["CANICE"] = _coerce_array("CANICE", np.asarray(canice), shape_xy)
     if canliq is not None or canice is not None:
         canwat = (np.asarray(canliq) if canliq is not None else 0.0) + (
             np.asarray(canice) if canice is not None else 0.0
