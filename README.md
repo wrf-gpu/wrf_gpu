@@ -1,8 +1,85 @@
 # wrf_gpu
 
-A GPU-native, WRF-compatible regional NWP system designed and built almost entirely by an AI agent swarm. The operational target is **Canary Islands daily forecasting** (3 km then 1 km) on a single-workstation RTX 5090.
+A GPU-native, WRF-compatible regional NWP system. It runs a standalone WRF v4
+ARW forecast end-to-end on a single GPU, reads a standard WRF `namelist.input`,
+and writes a WRF-compatible `wrfout` history file.
 
-This is not a port of legacy WRF source. It is a clean JAX rewrite that targets the GPU memory hierarchy from day one and validates against WRF as an oracle rather than inheriting WRF's architecture.
+This is not a port of legacy WRF source. It is a clean JAX rewrite that targets
+the GPU memory hierarchy from day one and validates against WRF as an oracle
+rather than inheriting WRF's architecture. The operational target is **Canary
+Islands daily forecasting** (3 km then 1 km) on a single-workstation RTX 5090.
+
+### Built for the GPU era — measured, and built to scale to the planet
+
+**~4× more forecast per kilowatt-hour than CPU-WRF.** On the measured 3 km
+Canary Islands (d02) fixture, a single consumer RTX 5090 produces the same 24 h
+WRF forecast using **~4× less energy** than 28-rank CPU-WRF on an AMD Ryzen 9
+9950X — GPU 267 W × 15.4 s/forecast-hour ≈ 4.1 kJ vs CPU ~200 W × 83 s ≈ 16.6 kJ
+(~5× faster, measured warmed, fp64).¹ On large, GPU-saturating grids the
+energy-to-solution advantage is projected to widen to **4–8×**.
+
+**The whole Earth at 1 km fits in a single rack.** The global 1 km, 50-level
+atmospheric state — ~25 billion cells, ~4.3 TB (≈13 TB with solver working
+memory) — fits in the HBM of one **NVIDIA GB300 NVL72**; ~**2–3 such racks**
+project to sub-day wall-clock per 24 h global forecast — a resolution
+effectively out of reach for CPU-WRF.²
+
+<sub>¹ **Measured** on the d02 fixture, warmed, fp64; card power vs CPU-package
+power. Speedup band 5–8×, strict dt-parity floor ~3.2×
+(`proofs/perf/speedup_denominator.md`).</sub>
+<sub>² **Projected, not measured:** assumes the planned single-node multi-GPU
+domain-decomposition path (not yet implemented as of v0.11.0). The memory
+figures are exact arithmetic (168 B/cell × 50 levels × 510 M km² ≈ 4.3 TB; ×3.09
+XLA peak ≈ 13 TB); the wall-clock is a roofline projection, not a benchmark.</sub>
+
+## Quickstart
+
+A fresh clone → install → **standalone GPU forecast** → `wrfout` in four steps.
+Full walk-through (prerequisites, troubleshooting, output): **[docs/quickstart.md](docs/quickstart.md)**.
+
+```bash
+# 1. Clone + install (CUDA 13 GPU build of JAX, then the package)
+git clone https://github.com/wrf-gpu/wrf_gpu.git && cd wrf_gpu
+python -m venv .venv && . .venv/bin/activate     # or: conda create -n wrfgpu python=3.11
+pip install --upgrade "jax[cuda13]"              # nightly CUDA wheel is the fallback
+pip install -e .
+python -c "import jax; print(jax.devices())"     # should list a cuda device
+
+# 2. Run a standalone forecast from a real-data case (wrfinput_* + wrfbdy_d01 + met_em, no CPU wrfout)
+python -m gpuwrf.cli run \
+    --input-dir   my_case \
+    --output-dir  runs/my_forecast \
+    --domain      d02 \
+    --hours       24 \
+    --scratch-dir /fast/nvme/gpuwrf_scratch
+
+# 3. Read the WRF-compatible history file
+ncdump -h runs/my_forecast/wrfout_d02_*
+```
+
+`run` **auto-detects** the input directory: a case with CPU-WRF `wrfout` history
+→ replay mode; a case with only `real.exe` outputs → **standalone native-init
+mode** (assembles `wrfinput`/`wrfbdy` and integrates on the GPU, **no CPU-WRF
+dependency**). Bring your existing WRF `namelist.input` — the supported matrix
+runs as-is; unsupported options fail closed with a named reason
+([docs/namelist-compatibility.md](docs/namelist-compatibility.md)).
+
+> **First run is slow on purpose.** JAX/XLA does a **~5-minute cold compile with
+> no output before integration starts** — it is compiling, not hung. Every later
+> run reads the cached executable and skips it.
+
+## System requirements & resource profile
+
+Measured on the reference RTX 5090 workstation. Full detail (sizing, energy,
+cache override): **[docs/resource-profile.md](docs/resource-profile.md)**.
+
+| Resource | What to expect |
+|---|---|
+| GPU / VRAM | NVIDIA GPU with **≥ 26 GiB free VRAM** for 3 km d02 at fp64 (RTX 5090 / 32 GiB reference). Peak **≈ 24.6 GiB** during integration. |
+| Cold JIT compile | **≈ 4 min 55 s** on the **first** run before integration begins (no output during compile). Subsequent runs read the persistent on-disk compile cache and skip it. |
+| Scratch | A **real (non-tmpfs) NVMe scratch dir**, a few GiB free. Set via `--scratch-dir` / `$GPUWRF_SCRATCH`. Do **not** use a RAM disk. |
+| Warm throughput | **≈ 15 s wall-clock per forecast-hour** (d02, fp64); **≈ 2.47× warm real-user** vs 28-rank CPU-WRF, same workstation. |
+| Toolchain | CUDA 13 + a JAX CUDA build that sees the GPU. |
 
 ## Current status — v0.11.0
 
@@ -19,6 +96,33 @@ This is a deliberate step beyond v0.1.0, which was a single-domain **replay** pa
 > 2. The **coupled skill validation** vs CPU-WRF on d02 and on the nested d01→d02→d03 hierarchy is run through the **replay harness** (parent-history replay, which consumes a CPU-WRF `wrfout` for the boundary/skill comparison). The validated coupled-skill runs are *not* from-scratch native-init runs. The standalone AIFS e2e (native real-init → forecast, no CPU-WRF) is proven stable for a 6 h smoke window on a distinct case.
 
 > **Statistical honesty.** Operational equivalence to CPU-WRF is characterised as mean RMSE within operational bars on a single representative MAM case and a single season. Formal TOST equivalence at the ADR-029 predeclared tight margins (T2 ±0.215 K, U10 ±0.231 m/s, V10 ±0.275 m/s) is **underpowered** at the corpus size available (only n≈2-3 pairable cases). **No "TOST PASS" / "statistically-proven equivalence" is claimed.**
+
+### Scope at a glance — implemented / fail-closed / out-of-scope
+
+A high-level summary of what runs, what is recognized-but-refused (loudly,
+before any compute), and what is a deliberate boundary. The full per-scheme
+support table is **[docs/namelist-compatibility.md](docs/namelist-compatibility.md)**;
+open issues are in **[docs/KNOWN_ISSUES.md](docs/KNOWN_ISSUES.md)**.
+
+| Area | Implemented (runs) | Fail-closed (recognized, refused with a named reason) | Out-of-scope / roadmap boundary |
+|---|---|---|---|
+| **Init** | Native real-init (`wrfinput`/`wrfbdy` from met_em, no `real.exe`); WRF restart | — | — |
+| **Dynamics** | Nonhydrostatic ARW, RK3 + split-explicit acoustic, flux-form advection, constant-K diffusion (`diff_opt=2`/`km_opt=1`) | Smagorinsky horizontal diffusion (`diff_opt=1`/`km_opt=4`) → use constant-K | Moving/global nests; adaptive Δt |
+| **Microphysics** | Kessler, Lin, WSM3/5/6, Thompson, Morrison, WDM6 | Aerosol-coupled (Thompson-aerosol mp=28, Morrison-aerosol mp=40), NSSL | WRF-Chem |
+| **PBL / sfc** | YSU, MYNN-EDMF, ACM2, BouLac; MYNN-SL, revised-MM5, Pleim-Xiu sfclay | MYJ + Janjic-Eta (parity-proven, not scan-wired) | — |
+| **Cumulus** | Kain-Fritsch, BMJ, Tiedtke; Grell-Freitas (ref) | New-Tiedtke | — |
+| **Radiation** | RRTMG SW + LW with topographic shading + slope correction | Dudhia SW, classic RRTM LW (parity-proven, not operationally wired) | — |
+| **Land** | Noah classic, Noah-MP (prognostic) | — | Full Noah-MP snow-layer diagnostics in wrfout (KI-3) |
+| **Nesting** | One-way live d01→d02→d03, per-domain subcycling, restart | — | Full two-way feedback + radiation/​w-relax in loop (implemented behind a gate, not long-run-proven) |
+| **Output** | Focused 64-variable `wrfout` (core met/spatial/vertical/soil) | — | Full 375-variable wrfout; auxhist streams (KI-3) |
+| **Multi-GPU** | Sharding code, single-GPU default = zero overhead | — | Real multi-GPU throughput (needs DGX/NVLink; not yet throughput-validated) |
+| **Data assim.** | Lateral-BC relaxation | — | DFI, FDDA, grid/obs/spectral nudging |
+| **Other** | — | — | Urban (BEP/BEM), lake, aerosol-coupled MP, WRF-Chem (rejected, not roadmap) |
+
+These are **boundaries and a roadmap, not hidden gaps**: every unsupported
+namelist selection is rejected before any compute with a specific named reason —
+the port never silently substitutes or skips a scheme. The honestly-prioritized
+delta-to-complete-WRF ledger is in the [Roadmap](#roadmap--delta-to-a-complete-wrf-v4-port-post-v0110) below.
 
 ### What v0.11.0 is — GPU-operational capability
 
@@ -42,7 +146,7 @@ This is a deliberate step beyond v0.1.0, which was a single-domain **replay** pa
 - **New-Tiedtke cumulus** (`cu_physics=16`) — interface-compatible/accepted but not separately source-gated by a distinct WRF path.
 - **Dudhia shortwave** (`ra_sw_physics=1`) and **classic RRTM longwave** (`ra_lw_physics=1`) — isolated-savepoint parity-proven; the operational radiation slot runs RRTMG only, so these are not yet operationally selectable (post-v0.11.0 jit/vmap rewrite + radiation-family dispatch).
 
-**WRF-compatible namelist + fail-closed behavior.** The port reads WRF-exact namelist names and integer codes (`mp_physics`, `cu_physics`, `bl_pbl_physics`, `sf_sfclay_physics`, `sf_surface_physics`, `ra_lw`, `ra_sw`, `diff_opt`, `km_opt`, `dyn_opt`, …) via `gpuwrf run --namelist namelist.input`. Option validation is **fail-closed before any compute** and reports one of three honest outcomes ([`src/gpuwrf/io/namelist_check.py`](src/gpuwrf/io/namelist_check.py)):
+**WRF-compatible namelist + fail-closed behavior.** The port reads WRF-exact namelist names and integer codes (`mp_physics`, `cu_physics`, `bl_pbl_physics`, `sf_sfclay_physics`, `sf_surface_physics`, `ra_lw`, `ra_sw`, `diff_opt`, `km_opt`, `dyn_opt`, …) from the case's `namelist.input` on the `python -m gpuwrf.cli run` path. Option validation is **fail-closed before any compute** and reports one of three honest outcomes ([`src/gpuwrf/io/namelist_check.py`](src/gpuwrf/io/namelist_check.py)):
 
 - **implemented** — accepted and operationally wired;
 - **recognized-WRF-not-yet-implemented** — a real WRF v4 scheme the port names but does not yet wire (fail-closed, names the scheme);
@@ -137,9 +241,12 @@ Consolidated, honestly-prioritized ledger of everything still deferred / simplif
 
 | When you want to… | Read |
 |---|---|
+| Install and run your first forecast | [`docs/quickstart.md`](docs/quickstart.md) |
+| Size a machine (VRAM / compile / scratch / energy) | [`docs/resource-profile.md`](docs/resource-profile.md) |
+| Know which namelist options run vs fail-closed | [`docs/namelist-compatibility.md`](docs/namelist-compatibility.md) |
 | Understand the project scope | [`PROJECT_CONSTITUTION.md`](PROJECT_CONSTITUTION.md), [`PROJECT_SCOPE.md`](PROJECT_SCOPE.md), [`PROJECT_SPEC.md`](PROJECT_SPEC.md) |
 | See the GPU-operational vs fail-closed physics matrix | [`src/gpuwrf/contracts/physics_registry.py`](src/gpuwrf/contracts/physics_registry.py), [`src/gpuwrf/runtime/operational_mode.py`](src/gpuwrf/runtime/operational_mode.py) (`_SCAN_WIRED_OPTIONS`) |
-| Run a forecast | [`src/gpuwrf/cli.py`](src/gpuwrf/cli.py) — `gpuwrf run --namelist namelist.input …` |
+| Run a forecast | [`docs/quickstart.md`](docs/quickstart.md) — `python -m gpuwrf.cli run …` |
 | Check current known issues | [`docs/KNOWN_ISSUES.md`](docs/KNOWN_ISSUES.md) |
 | See v0.11.0 proof objects | [`proofs/v0110/`](proofs/v0110/) |
 | See prior release proofs | [`proofs/v090/`](proofs/v090/), [`proofs/v0100/`](proofs/v0100/) |
@@ -148,14 +255,41 @@ Consolidated, honestly-prioritized ledger of everything still deferred / simplif
 
 ## Run
 
+The full out-of-box walk-through is **[docs/quickstart.md](docs/quickstart.md)**.
+Short version:
+
 ```bash
+# Standalone forecast (auto-detects native-init when there is no CPU wrfout):
+python -m gpuwrf.cli run \
+    --input-dir   my_case \
+    --output-dir  runs/my_forecast \
+    --domain      d02 \
+    --hours       24 \
+    --scratch-dir /fast/nvme/gpuwrf_scratch
+
 # Validate a WRF namelist fail-closed (no GPU / no compile needed):
-gpuwrf run --namelist <input-dir>/namelist.input --input-dir <case-dir> \
-    --output-dir runs/my_forecast --domain d02 --hours 1
+python -m gpuwrf.cli run --help
 
 # Development check:
 pytest -q
 ```
+
+The first invocation pays a **~5-minute cold JIT compile** before integration
+(cached for later runs) and uses **≈ 24.6 GiB VRAM** at fp64 — see
+[docs/resource-profile.md](docs/resource-profile.md).
+
+## Known issues (v0.11.0 → carried into v0.12.0)
+
+Full detail with symptom / ruled-out / workaround / follow-up in
+**[docs/KNOWN_ISSUES.md](docs/KNOWN_ISSUES.md)**.
+
+| ID | Summary | Severity |
+|---|---|---|
+| **KI-3** | Operational `wrfout` is a focused **64-variable** subset (vs WRF's 375); missing only stochastic-seed + Noah-MP snow-layer diagnostics. | Scope boundary |
+| **KI-4** | d02 **U10** episodic final-lead (h+24) under-prediction (8.06 m/s vs 7.5 m/s bar); within bar at all other leads, beats persistence 23/24. | Documented residual |
+| **KI-5** | Powered **n=15 TOST** equivalence not yet scored (corpus prepared); **no TOST PASS / statistical-equivalence is claimed**. n=15 is underpowered. | Scope boundary |
+| **KI-6** | RRTMG SW intermediate `taug` top-layer convention differs in 4 UV bands; integrated fluxes pass tier-1 (< 0.05% rel). Pre-existing. | Isolated, fix → v0.12.0 |
+| **KI-7** | Free-running (`run_boundary=False`) on **wide domains** (nx≈160+) can go unstable beyond ~14 h. Validated operational path uses boundary forcing. | Robustness edge |
 
 ## Layout
 
