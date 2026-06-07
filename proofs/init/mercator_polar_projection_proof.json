@@ -1,0 +1,92 @@
+{
+  "sprint": "worker/opus/mercator-polar-proj",
+  "base_trunk": "58ceb29",
+  "objective": "Add WRF Mercator (map_proj=3) + polar-stereographic (map_proj=2) projections to init/projection.py, WRF-faithful (module_llxy.F port).",
+  "added": {
+    "functions": [
+      "mercator_forward",
+      "mercator_inverse",
+      "mercator_map_factor",
+      "polar_forward",
+      "polar_inverse",
+      "polar_map_factor",
+      "rotation_from_lon_ps",
+      "_merc_dlon",
+      "_merc_rsw",
+      "_ps_constants",
+      "_stagger_index_grids"
+    ],
+    "dataclasses": [
+      "MercatorGrid",
+      "PolarGrid"
+    ]
+  },
+  "earth_radius_m": 6370000.0,
+  "proofs": {
+    "mercator_round_trip": {
+      "n": 200000,
+      "lat_band_deg": [
+        -70,
+        70
+      ],
+      "max_abs_dlat_deg": 4.263256414560601e-14,
+      "max_abs_dlon_deg": 2.842170943040401e-14,
+      "msf_at_truelat1_eq_1": 1.0,
+      "msf_equator_eq_cos_truelat1": [
+        0.9396926207859084,
+        0.9396926207859084
+      ]
+    },
+    "polar_nh_round_trip": {
+      "n": 200000,
+      "truelat1": 60.0,
+      "lat_band_deg": [
+        10,
+        89
+      ],
+      "max_abs_dlat_deg": 5.542233338928781e-13,
+      "max_abs_dlon_deg": 1.1996803550573532e-10,
+      "pole_forward_ij": [
+        99.47166801948326,
+        171.55793211580044
+      ],
+      "computed_pole_point": [
+        99.47166801948325,
+        171.55793211580044
+      ],
+      "pole_forward_err": [
+        1.4210854715202004e-14,
+        0.0
+      ],
+      "msf_at_truelat1_eq_1": 1.0,
+      "msf_at_pole": [
+        0.9330127018922193,
+        0.9330127018922193
+      ]
+    },
+    "polar_sh_round_trip": {
+      "n": 200000,
+      "truelat1": -71.0,
+      "lat_band_deg": [
+        -89,
+        -10
+      ],
+      "max_abs_dlat_deg": 6.679101716144942e-13,
+      "max_abs_dlon_deg": 7.750600161671173e-11,
+      "msf_at_truelat1_eq_1": 1.0
+    }
+  },
+  "independent_oracle": {
+    "tool": "standalone gfortran copy of WRF share/module_llxy.F set_merc/llij_merc/ijll_merc + set_ps/llij_ps/ijll_ps (single precision REAL, EARTH_RADIUS_M=6370000)",
+    "note": "NOT a JAX/Python self-compare; reference is the WRF Fortran arithmetic.",
+    "mercator_max_abs_fwd_ij_diff": 6.179e-05,
+    "mercator_max_abs_inv_latlon_diff_deg": 1.526e-05,
+    "polar_nh_max_abs_fwd_ij_diff": 0.0002434,
+    "polar_nh_max_abs_inv_latlon_diff_deg": 2.67e-05,
+    "polar_pole_point_diff": [
+      1.167e-05,
+      9.753e-06
+    ],
+    "interpretation": "Differences are at the single-precision Fortran round-off floor (grid-index magnitude up to ~1600 -> fp32 ulp ~1e-4); fp64 Python port agrees to fp32 ref precision. WRF-faithful."
+  }
+}
