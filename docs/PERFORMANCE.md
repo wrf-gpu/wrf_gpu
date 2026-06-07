@@ -102,6 +102,49 @@ rather than the cell count. **This d01 run confirms the warm-throughput family; 
 establish a new headline** — there is no clean uncontended CPU-WRF standalone-d01
 denominator, so no new ratio is claimed.
 
+### Speedup reconciliation — why there are three different numbers (and none is dishonest)
+
+Readers see three speedup numbers in this project. They differ because they measure
+**different things**; this is the one place that reconciles them so a skeptic cannot claim
+one contradicts another. All are one RTX 5090 vs 28-rank CPU-WRF on the same workstation,
+both fp64, same d02 3 km grid.
+
+| Number | Value | What it measures | Source |
+|---|---|---|---|
+| **Warm kernel (apples-to-apples)** | **~5×** (band **5–8×**, strict **dt-parity floor ~3.2×**) | **Compute-only** per-forecast-hour: warmed GPU step (compile excluded, IO excluded), GPU dt=10 s vs CPU dt=6 s, normalized to the same model time. The defensible engineering speedup. | [`../proofs/perf/speedup_denominator.md`](../proofs/perf/speedup_denominator.md) |
+| **Warm real-user wall** | **~2.5×** | Full command-to-finish wall after the JIT cache is warm: includes IO + case build + JAX dispatch overhead, not just the kernel. | warm real-user d02, inherited |
+| **Equivalence-demo real-user** | **~4.26× warm-cached**, **~1.70× cold** | The `equivalence_demo.py` 24 h d02 run: end-to-end GPU wall vs the retained CPU-WRF d02 solver wall (CPU dt=6 s × 14 400 steps from the RSL logs). | `proofs/v0120/equivalence_demo_20260509_d02_FINAL.json` (4.26×) and `…_d02.json` (1.70×) |
+
+**How they relate, precisely:**
+
+- **Cold vs warm in the equivalence demo (1.70× → 4.26×).** The *same* demo run took **1408.6 s**
+  the first time (cold ~5-minute XLA compile included → **1.70×** vs CPU 2393.2 s) and
+  **561.3 s** with a warm persistent JIT cache (cold compile replaced by a ~10 s cache read →
+  **4.26×**). The difference is **entirely the persistent JIT cache plus IO/case-build**, not a
+  numerics change — the cached executable is bit-identical to the cold one. So the cold number
+  is the honest *first-run* experience; the warm number is the honest *every-subsequent-run*
+  experience.
+- **Equivalence-demo warm-cached (4.26×) vs warm real-user (~2.5×).** The equivalence demo's GPU
+  wall is the **forecast-only** integration (561.3 s) divided by the CPU **d02-solver-only** wall
+  (the RSL per-step timing for d02, excluding the CPU's own IO and the d01 parent). The ~2.5×
+  warm real-user headline is a stricter, fuller-overhead command-to-finish ratio. They bound the
+  real-user experience from both sides; the demo's solver-vs-solver framing is more favourable
+  because it strips matched overhead from both numerator and denominator.
+- **Warm real-user (~2.5×) vs warm kernel (~5×).** The kernel number is compute-only per model
+  time; the real-user number adds IO, case build, and dispatch tax that the kernel number
+  excludes. The gap between them is overhead, **not** a precision or correctness difference.
+- **The dt trap.** CPU-WRF runs d02 at **dt=6 s** (parent_time_step_ratio=3); the warm-kernel
+  numerator runs the GPU at **dt=10 s**. All speedup numbers are computed **per forecast-hour
+  (same model time)**, never per-step — a per-step comparison would be meaningless and is
+  reported only to expose the trap. The **dt-parity floor ~3.2×** is what remains if the GPU is
+  forced to the CPU's 6 s step.
+
+**Bottom line:** the honest, defensible engineering number is **~5× warm kernel (5–8× band, ~3.2×
+dt-parity floor)**; the honest real-user experience is **~2.5× warm wall** (first run slower by the
+cold compile, which the persistent JIT cache removes thereafter). The 4.26× / 1.70× equivalence-demo
+numbers are the same physics measured solver-to-solver, warm and cold respectively. None contradicts
+another.
+
 ### Precision: there is no faster fp32 standalone path today
 
 The precision matrix (`src/gpuwrf/contracts/precision.py`) authorizes fp32 *storage* for

@@ -28,9 +28,11 @@ effectively out of reach for CPU-WRF.²
 power. Speedup band 5–8×, strict dt-parity floor ~3.2×
 (`proofs/perf/speedup_denominator.md`).</sub>
 <sub>² **Projected, not measured:** assumes the planned single-node multi-GPU
-domain-decomposition path (not yet implemented as of v0.11.0). The memory
-figures are exact arithmetic (168 B/cell × 50 levels × 510 M km² ≈ 4.3 TB; ×3.09
-XLA peak ≈ 13 TB); the wall-clock is a roofline projection, not a benchmark.</sub>
+domain-decomposition path (sharding code present and bit-identity-proven on a
+fake mesh, but real multi-GPU throughput is not yet shipped as of v0.12.0). The
+memory figures are exact arithmetic (168 B/cell × 50 levels × 510 M km² ≈ 4.3 TB;
+×3.09 XLA peak ≈ 13 TB); the wall-clock is a roofline projection, not a
+benchmark.</sub>
 
 ## Quickstart
 
@@ -75,25 +77,29 @@ cache override): **[docs/resource-profile.md](docs/resource-profile.md)**.
 
 | Resource | What to expect |
 |---|---|
-| GPU / VRAM | NVIDIA GPU with **≥ 26 GiB free VRAM** for 3 km d02 at fp64 (RTX 5090 / 32 GiB reference). Peak **≈ 24.6 GiB** during integration. |
-| Cold JIT compile | **≈ 4 min 55 s** on the **first** run before integration begins (no output during compile). Subsequent runs read the persistent on-disk compile cache and skip it. |
+| GPU / VRAM | NVIDIA GPU with **≥ 26 GiB free VRAM** for 3 km d02 at fp64 (RTX 5090 / 32 GiB reference). Peak **≈ 24.6 GiB** during d02 integration; the smaller d01 9 km standalone case peaks **≈ 4.7 GiB**. |
+| Cold JIT compile | **≈ 4 min 55 s** on the **first** d02 run before integration begins (no output during compile). The **persistent on-disk JIT cache (on by default in v0.12.0)** turns later runs into a **~10 s cache read** — measured **cold ~147 s → cache-hit ~29 s** for the d01 hour-1 wrapper (compile + first execute). The cached executable is **bit-identical** to the cold one (zero numerics change). |
 | Scratch | A **real (non-tmpfs) NVMe scratch dir**, a few GiB free. Set via `--scratch-dir` / `$GPUWRF_SCRATCH`. Do **not** use a RAM disk. |
-| Warm throughput | **≈ 15 s wall-clock per forecast-hour** (d02, fp64); **≈ 2.47× warm real-user** vs 28-rank CPU-WRF, same workstation. |
+| Warm throughput | **≈ 15–17 s wall-clock per forecast-hour** (fp64; d02 3 km 15.35–16.39 s, d01 9 km 16.69 s — launch-bound, so similar across these grid sizes). Apples-to-apples warm-kernel speedup ≈ **5× (band 5–8×)** vs 28-rank CPU-WRF on the same workstation; **warm real-user wall ≈ 2.5×**. See [docs/PERFORMANCE.md](docs/PERFORMANCE.md) for the full cold/warm/kernel reconciliation. |
 | Toolchain | CUDA 13 + a JAX CUDA build that sees the GPU. |
 
-## Current status — v0.11.0
+## Current status — v0.12.0
 
-**v0.11.0 is the feature-complete release of wrf_gpu: live multi-domain nesting, full restart continuity, conservation-closed budgets, MYNN-EDMF, topographic/slope radiation, terrain-slope diffusion, Kain-Fritsch cumulus, gravity-wave drag, and optional multi-GPU/DGX sharding on a standalone, JAX-native, single-GPU WRF v4 ARW forecast system.** It also ships the recompile fix (no per-chunk XLA recompile in production), and resolves the prior d03 1 km steep-terrain instability (KI-1, now closed with WRF-faithful qke cold-start seeding) and the long single-call qke edge (KI-2, closed by a WRF-faithful IEEE fmax/fmin fix in MYNN).
+**v0.12.0 makes wrf_gpu a true out-of-the-box standalone GPU forecast system.** The headline is a standalone native-init CLI that runs a real-data case **with no CPU-WRF `wrfout` dependency** (auto-detecting native-init vs replay), including a standalone **live-nested** run (`--max-dom N`: d01→d02→d03, down to the 1 km nest) driven by the v0.11.0 live-nesting device runtime. It adds a **persistent on-disk JIT cache** (cold ~147 s → cache-hit ~29 s, bit-identical executable), a **fail-closed scheme catalog + validator** that rejects unsupported namelist options before any compute, a **WRF-faithful surface-pressure (PSFC) extrapolation fix**, and a **runnable, self-serve GPU-vs-CPU equivalence demo**. It also fixes the production AIFS-pull crash (a JAX `donate` aliasing bug + a disk-scratch fix) that previously broke the standalone pipeline.
 
-The system performs **native real-init** (assembles `wrfinput`/`wrfbdy` from met_em-stage forcing, no `real.exe` and no CPU-WRF artifact for the initial/boundary state), runs a **nonhydrostatic split-explicit ARW dycore** on the GPU, exposes a **WRF-compatible namelist** with a **GPU-operational physics menu** and a **fail-closed boundary** on everything not yet ported.
+The standalone path is **fp64-only** (no fp32 standalone path is reachable through the CLI; gated-fp32 is no faster on this memory-bound workload and remains an experimental ADR-007 preview).
 
-v0.11.0 also corrects a dry-physics RK-cadence regression in the MYNN-EDMF/conservation integration that had degraded d02 wind skill; after the fix, winds recover to the v0.9.0 level: U10 mean RMSE 4.43 m/s / V10 3.59 m/s, beats persistence 23/24 leads.
+The system performs **native real-init** (assembles `wrfinput`/`wrfbdy` from met_em-stage forcing, no `real.exe` and no CPU-WRF artifact for the initial/boundary state), runs a **nonhydrostatic split-explicit ARW dycore** on the GPU, exposes a **WRF-compatible namelist** with a **GPU-operational physics menu** and a **fail-closed boundary** on everything not yet ported. All of the v0.11.0 capability — live multi-domain nesting, full restart continuity, conservation-closed budgets, MYNN-EDMF, topographic/slope radiation, terrain-slope diffusion, Kain-Fritsch/BMJ/Tiedtke/Grell-Freitas cumulus, gravity-wave drag, and the recompile fix — carries forward unchanged.
 
-This is a deliberate step beyond v0.1.0, which was a single-domain **replay** path that consumed CPU-WRF/Gen2 artifacts for initialization. v0.3.0 added native metgrid; v0.4.0 added native real-init (proven equivalent to `real.exe` at t=0); v0.6.0 expanded the operational physics menu; v0.9.0 consolidated these into a standalone forecast system; v0.10.0 kept those numerics unchanged and removed one faithful Thompson sedimentation inefficiency; **v0.11.0 adds live nesting, restart, conservation, MYNN-EDMF, topographic radiation, and slope diffusion**.
+This is a deliberate step beyond v0.1.0, which was a single-domain **replay** path that consumed CPU-WRF/Gen2 artifacts for initialization. v0.3.0 added native metgrid; v0.4.0 added native real-init (proven equivalent to `real.exe` at t=0); v0.6.0 expanded the operational physics menu; v0.9.0 consolidated these into a standalone forecast system; v0.10.0 removed one faithful Thompson sedimentation inefficiency; v0.11.0 added live nesting, restart, conservation, MYNN-EDMF, topographic radiation, and slope diffusion; **v0.12.0 turns the standalone native-init + live-nested path into a working out-of-box CLI, with a persistent JIT cache, a fail-closed scheme catalog, the PSFC fix, and a runnable equivalence demo.**
+
+> **Scope boundary for v0.12.0.** This release ships the standalone port and the AIFS / 1 km-nest path. The **Gotthard / Switzerland operational suite is deferred to v0.13.0** — it is a deliberate scope boundary, not a hidden gap. The full deferred-to-v0.13.0 list is in the [Honest boundaries](#honest-boundaries--what-v0120-does-not-claim) section and [docs/KNOWN_ISSUES.md](docs/KNOWN_ISSUES.md).
 
 > **Honesty note.** Two distinct claims are kept separate throughout this README and must not be conflated:
 > 1. **Native init** is proven equivalent to `real.exe` at t=0 (savepoint parity) and produces a stable forecast.
 > 2. The **coupled skill validation** vs CPU-WRF on d02 and on the nested d01→d02→d03 hierarchy is run through the **replay harness** (parent-history replay, which consumes a CPU-WRF `wrfout` for the boundary/skill comparison). The validated coupled-skill runs are *not* from-scratch native-init runs. The standalone AIFS e2e (native real-init → forecast, no CPU-WRF) is proven stable for a 6 h smoke window on a distinct case.
+
+> **Equivalence-demo honesty.** v0.12.0 ships a runnable, self-serve GPU-vs-CPU-WRF equivalence demo (`scripts/equivalence_demo.py`). On the default 24 h d02 case its verdict is **`NOT_EQUIVALENT`**: short-lead fields track CPU-WRF within tolerance, but by 24 h the run diverges, **dominated by the wind field** (3D V pooled RMSE 8.13 m s⁻¹ vs a 1.8 m s⁻¹ bar). The WRF-faithful PSFC fix dropped PSFC pooled RMSE from 707.8 → 415.3 Pa (closing the systematic diagnostic offset); the **residual PSFC excess is driven by that same wind/mass divergence**, not a diagnostic bug — **neither PSFC nor the winds are equivalent at 24 h**. This is the honest current state, reported as-is; full numbers and framing in [docs/equivalence-demo.md](docs/equivalence-demo.md), tracked as KI-9.
 
 > **Statistical honesty.** Operational equivalence to CPU-WRF is characterised as mean RMSE within operational bars on a single representative MAM case and a single season. Formal TOST equivalence at the ADR-029 predeclared tight margins (T2 ±0.215 K, U10 ±0.231 m/s, V10 ±0.275 m/s) is **underpowered** at the corpus size available (only n≈2-3 pairable cases). **No "TOST PASS" / "statistically-proven equivalence" is claimed.**
 
@@ -110,7 +116,7 @@ open issues are in **[docs/KNOWN_ISSUES.md](docs/KNOWN_ISSUES.md)**.
 | **Dynamics** | Nonhydrostatic ARW, RK3 + split-explicit acoustic, flux-form advection, constant-K (`diff_opt=2`/`km_opt=1`) + 2-D Smagorinsky (`diff_opt=1`/`km_opt=4`) horizontal diffusion | 3-D TKE / full Smagorinsky closures (`km_opt=2/3/5`) → use `km_opt=1` or `4` | Moving/global nests; adaptive Δt |
 | **Microphysics** | Kessler, Lin, WSM3/5/6, Thompson, Morrison, WDM6 | Aerosol-coupled (Thompson-aerosol mp=28, Morrison-aerosol mp=40), NSSL | WRF-Chem |
 | **PBL / sfc** | YSU, MYNN-EDMF, ACM2, BouLac; MYNN-SL, revised-MM5, Pleim-Xiu sfclay | MYJ + Janjic-Eta (parity-proven, not scan-wired) | — |
-| **Cumulus** | Kain-Fritsch, BMJ, Tiedtke; Grell-Freitas (ref) | New-Tiedtke | — |
+| **Cumulus** | Kain-Fritsch, BMJ, Tiedtke, Grell-Freitas (scale-aware) | New-Tiedtke | — |
 | **Radiation** | RRTMG SW + LW with topographic shading + slope correction | Dudhia SW, classic RRTM LW (parity-proven, not operationally wired) | — |
 | **Land** | Noah classic, Noah-MP (prognostic) | — | Full Noah-MP snow-layer diagnostics in wrfout (KI-3) |
 | **Nesting** | One-way live d01→d02→d03, per-domain subcycling, restart | — | Full two-way feedback + radiation/​w-relax in loop (implemented behind a gate, not long-run-proven) |
@@ -124,7 +130,7 @@ namelist selection is rejected before any compute with a specific named reason �
 the port never silently substitutes or skips a scheme. The honestly-prioritized
 delta-to-complete-WRF ledger is in the [Roadmap](#roadmap--delta-to-a-complete-wrf-v4-port-post-v0110) below.
 
-### What v0.11.0 is — GPU-operational capability
+### What v0.12.0 is — GPU-operational capability
 
 **GPU-operational physics menu (scan-wired into the operational forecast loop, WRF-oracle-gated).** These are the schemes the operational scan actually dispatches; the exact wiring is in [`src/gpuwrf/runtime/operational_mode.py`](src/gpuwrf/runtime/operational_mode.py) (`_SCAN_WIRED_OPTIONS`) and [`src/gpuwrf/coupling/scan_adapters.py`](src/gpuwrf/coupling/scan_adapters.py); the namelist-accepted matrix is in [`src/gpuwrf/contracts/physics_registry.py`](src/gpuwrf/contracts/physics_registry.py).
 
@@ -154,52 +160,77 @@ delta-to-complete-WRF ledger is in the [Roadmap](#roadmap--delta-to-a-complete-w
 
 **Dynamics.** Nonhydrostatic ARW mass core, RK3 + split-explicit acoustic substepping, flux-form advection (h=5 / v=3), WRF `w_damping` + Rayleigh upper damping (`damp_opt=3`), monotonic 6th-order filter (`diff_6th_opt=2`), constant-K diffusion (`diff_opt=2`/`km_opt=1`), and the WRF real-data-default 2-D Smagorinsky path (`diff_opt=1`/`km_opt=4`) — **v0.11.0: terrain-slope and map-factor deformation terms added to all diffusion paths**. Idealized gates (Skamarock warm bubble, Straka density current) pass 6/6 against published references + pristine WRF v4.7.1 ground truth; the operational dycore is finite/stable over full d02/d03 forecasts. Full dycore record: [`proofs/f7/DYCORE_STATUS.md`](proofs/f7/DYCORE_STATUS.md).
 
-**Live multi-domain nesting (v0.11.0 new).** The `domain_tree` runtime (`src/gpuwrf/runtime/domain_tree.py`) drives d01→d02→d03 one-way live nesting with per-domain subcycling, WRF-faithful boundary update cadence, multi-domain synchronized output, and an optional two-way feedback gate (`src/gpuwrf/coupling/boundary_feedback.py`, disabled by default). A full nested d01→d02→d03 24 h one-way forecast over the Canary 9/3/1 km hierarchy ran finite and stable with final-lead T2 RMSE vs CPU-WRF of 1.03 K (d02) and 1.10 K (d03) — single case (20260521), one season; the RMSE numbers are from the final lead (h=24), not averages over all leads. Mean T2 RMSE over all 24 leads was 1.31 K (d02) and 1.67 K (d03). These numbers characterize the nesting fidelity on a representative case; no ensemble or TOST equivalence is claimed. Two-way feedback is implemented and unit-proven but has not been enabled in a long live forecast proof.
+**Standalone out-of-box CLI (v0.12.0 new).** `python -m gpuwrf.cli run` now runs a real-data case end-to-end **with no CPU-WRF `wrfout` dependency**. It **auto-detects** the input directory: a case with CPU-WRF history → replay mode; a case with only `real.exe` outputs (`wrfinput_<domain>` + `wrfbdy_d01` + met_em) → **standalone native-init mode**, which assembles `wrfinput`/`wrfbdy` and integrates on the GPU. A standalone d01 9 km 2 h run is proven `PIPELINE_GREEN` / all-finite (`proofs/v0120/standalone_native_init_smoke.json`). This release also fixes the production AIFS-pull crash that previously broke the standalone pipeline: a JAX `donate` input-aliasing bug (closed at two layers) plus a disk-scratch fix so scratch is never placed on `/tmp` tmpfs.
 
-**WRF restart (v0.11.0 new).** `io/wrfrst_netcdf.py` writes and reads WRF-compatible `wrfrst` files covering all 75 prognostic/carry fields. Restart continuity is bit-identical: a-path (1..2N) vs b1-path (1..N) + b2-path restart (N..2N) produce identical final states on all 75 fields (`proofs/v0110/restart_continuity.json`).
+**Standalone live-nested `--max-dom` (v0.12.0 new).** `--max-dom N` runs a standalone **live-nested** forecast (d01→d02→d03, down to the 1 km nest) from `real.exe` outputs alone — the parent advances, builds each child's lateral boundary **live**, and recurses, with **no CPU-WRF `wrfout` and no pre-supplied `wrfbdy_d02`**. It runs on the validated v0.11.0 live-nesting device runtime (`runtime/domain_tree.run_operational_domain_tree`). A standalone d01→d02 2 h run is proven `PIPELINE_GREEN` with both domains finite (`proofs/v0120/standalone_nest_smoke.json`). `--max-dom` defaults to 1 (single-domain replay/standalone); nested is explicit opt-in.
 
-**Conservation budgets closed (v0.11.0 new).** Dry-mass, total-water, and moist-static-energy relative residuals are 0.0 (fp64) on the validated d02 case (`proofs/v0110/conservation_budgets_closed.json`). Physics state deltas (u, v, w, theta + non-dry) are applied **post-dycore** via the v0.9.0-cadence post-dynamics update. (A v0.11.0 attempt to route the aggregate dry-physics delta through `rk_addtend_dry` as RK-stage tendencies was found to degrade d02 surface winds and is **disabled**; a proper WRF `*_tendf` source-tendency adapter is deferred to v0.12.0.) Budget closure is **path-independent** — re-confirmed 0.0 on the fixed code.
+**Persistent JIT cache (v0.12.0 new).** A persistent on-disk XLA compilation cache (`src/gpuwrf/runtime/compile_cache.py`) is **on by default**. It turns the multi-minute cold compile into a ~10 s disk read on every later run: measured **cold ~147 s → cache-hit ~29 s** for the d01 hour-1 wrapper. The cached executable is keyed by HLO + backend + flags and is **bit-for-bit identical** to the cold one — **zero numerics change**. After a `jax`/`jaxlib` upgrade the key changes and the first run pays one cold compile again (stale entries are ignored, never wrong). Provenance: [docs/PERFORMANCE.md](docs/PERFORMANCE.md), `proofs/perf/v0120_standalone_bench.json`.
 
-**Optional multi-GPU/DGX sharding (v0.11.0 new, single-GPU default = zero overhead).** `runtime/sharding.py` + `dynamics/sharded_horizontal.py` implement domain decomposition over a mesh of GPU devices. With `ShardingConfig.disabled()` (the production default), all sharding code is behind early-return guards — the committed proof shows 56/56 State field SHA-256 hashes bit-identical between the reference (single-GPU) and the sharding-disabled DGX-d2 path (`proofs/v0110/dgx_default_bitident_s3.md`, `proofs/v0110/dgx_d2_status.md`). The sharding path itself is verified on a fake-mesh (CPU-multi-device) and requires a DGX or NVLink cluster for real multi-GPU throughput.
+**Fail-closed scheme catalog + validator (v0.12.0 new).** A scheme catalog + namelist validator rejects every unsupported namelist option **before any compute** with a specific named reason — the port never silently substitutes or skips a scheme. The three honest outcomes are *implemented* / *recognized-WRF-not-yet-implemented* / *invalid* (see below).
 
-**Recompile fix (v0.11.0 new).** `jit(_advance_chunk)` now compiles once and is reused on every subsequent chunk: chunks 2-3 run at 65.7 ms/step (18s/chunk), no per-chunk recompile (`proofs/v0110/recompile_fix2_3chunks.json`). The root cause was a non-JAX-contract-compliant `tree_unflatten` in `State` and `DycoreMetrics`.
+**WRF-faithful PSFC fix (v0.12.0 new).** The surface-pressure diagnostic now uses the WRF-faithful `PSFC = p8w(kts)` extrapolation from the total-geopotential faces (per `module_surface_driver.F` / `module_big_step_utilities_em.F`) rather than the old `p0`-based value. This closes a systematic ~29 Pa diagnostic offset in the internal surface-pressure definition (proof: `proofs/v0120/psfc_extrapolation_proof.json`, bias 328 → −29 Pa). On the equivalence demo it dropped PSFC pooled RMSE from 707.8 → 415.3 Pa; the residual is now driven by the lead-time wind/mass divergence, not a diagnostic offset (see [docs/equivalence-demo.md](docs/equivalence-demo.md)).
 
-**Operational precision.** v0.10.0 ships **fp64 as the operational mode**: the production daily-pipeline case builder hardcodes `force_fp64=True` in [`src/gpuwrf/integration/daily_pipeline.py`](src/gpuwrf/integration/daily_pipeline.py). ADR-007 gated-fp32 is retained only as an **experimental performance preview** and is **not** a v0.10.0 release path. It remains negative / no-go on the committed kernel evidence because the current workload is launch-tax / memory-bandwidth bound, not arithmetic-throughput-bound: the committed roofline and v0.10.0 Wave-B scoping measured fp32 at ~1.00x over fp64.
+**Live multi-domain nesting (v0.11.0).** The `domain_tree` runtime (`src/gpuwrf/runtime/domain_tree.py`) drives d01→d02→d03 one-way live nesting with per-domain subcycling, WRF-faithful boundary update cadence, multi-domain synchronized output, and an optional two-way feedback gate (`src/gpuwrf/coupling/boundary_feedback.py`, disabled by default). A full nested d01→d02→d03 24 h one-way forecast over the Canary 9/3/1 km hierarchy ran finite and stable with final-lead T2 RMSE vs CPU-WRF of 1.03 K (d02) and 1.10 K (d03) — single case (20260521), one season; the RMSE numbers are from the final lead (h=24), not averages over all leads. Mean T2 RMSE over all 24 leads was 1.31 K (d02) and 1.67 K (d03). These numbers characterize the nesting fidelity on a representative case; no ensemble or TOST equivalence is claimed. Two-way feedback is implemented and unit-proven but has not been enabled in a long live forecast proof.
 
-### Validation (v0.11.0)
+**WRF restart (v0.11.0).** `io/wrfrst_netcdf.py` writes and reads WRF-compatible `wrfrst` files covering all 75 prognostic/carry fields. Restart continuity is bit-identical: a-path (1..2N) vs b1-path (1..N) + b2-path restart (N..2N) produce identical final states on all 75 fields (`proofs/v0110/restart_continuity.json`).
 
-Proof objects live under [`proofs/v0110/`](proofs/v0110/) (v0.11.0-specific) and the previous baseline proofs under [`proofs/v090/`](proofs/v090/) and [`proofs/v0100/`](proofs/v0100/).
+**Conservation budgets closed (v0.11.0).** Dry-mass, total-water, and moist-static-energy relative residuals are 0.0 (fp64) on the validated d02 case (`proofs/v0110/conservation_budgets_closed.json`). Physics state deltas (u, v, w, theta + non-dry) are applied **post-dycore** via the v0.9.0-cadence post-dynamics update. (A v0.11.0 attempt to route the aggregate dry-physics delta through `rk_addtend_dry` as RK-stage tendencies was found to degrade d02 surface winds and is **disabled**; a proper WRF `*_tendf` source-tendency adapter is deferred to v0.13.0.) Budget closure is **path-independent** — re-confirmed 0.0 on the fixed code.
 
+**Optional multi-GPU/DGX sharding (v0.11.0, single-GPU default = zero overhead).** `runtime/sharding.py` + `dynamics/sharded_horizontal.py` implement domain decomposition over a mesh of GPU devices. With `ShardingConfig.disabled()` (the production default), all sharding code is behind early-return guards — the committed proof shows 56/56 State field SHA-256 hashes bit-identical between the reference (single-GPU) and the sharding-disabled DGX-d2 path (`proofs/v0110/dgx_default_bitident_s3.md`, `proofs/v0110/dgx_d2_status.md`). The sharding path itself is verified on a fake-mesh (CPU-multi-device) and requires a DGX or NVLink cluster for real multi-GPU throughput.
+
+**Recompile fix (v0.11.0).** `jit(_advance_chunk)` now compiles once and is reused on every subsequent chunk: chunks 2-3 run at 65.7 ms/step (18s/chunk), no per-chunk recompile (`proofs/v0110/recompile_fix2_3chunks.json`). The root cause was a non-JAX-contract-compliant `tree_unflatten` in `State` and `DycoreMetrics`.
+
+**Operational precision.** v0.12.0 ships **fp64 as the operational mode**, and the standalone CLI path is **fp64-only**: the production daily-pipeline case builder and the standalone operational namelist both force `force_fp64=True` ([`src/gpuwrf/integration/daily_pipeline.py`](src/gpuwrf/integration/daily_pipeline.py)). ADR-007 gated-fp32 is retained only as an **experimental performance preview** and is **not** a v0.12.0 release path — no fp32 standalone speed number is reported because none is reachable through the CLI. It remains negative / no-go on the committed kernel evidence because the current workload is launch-tax / memory-bandwidth bound, not arithmetic-throughput-bound: the committed roofline measured fp32 at ~1.00x over fp64.
+
+### Validation (v0.12.0)
+
+Proof objects live under [`proofs/v0120/`](proofs/v0120/) (v0.12.0-specific), [`proofs/v0110/`](proofs/v0110/) (carried v0.11.0 evidence), and the previous baseline proofs under [`proofs/v090/`](proofs/v090/) and [`proofs/v0100/`](proofs/v0100/).
+
+- **Standalone native-init CLI (v0.12.0).** `python -m gpuwrf.cli run --input-dir <case>` runs a standalone d01 9 km forecast from `wrfinput`+`wrfbdy` (no CPU-WRF `wrfout`): `PIPELINE_GREEN`, all 56 fields finite, scratch off `/tmp`, no donate crash (`proofs/v0120/standalone_native_init_smoke.json`). This is a 2 h smoke confirming the out-of-box path works; it is not a 24 h skill claim.
+- **Standalone live-nested CLI (v0.12.0).** `--max-dom 2` runs a standalone d01→d02 live-nested forecast from `real.exe` outputs alone (no CPU-WRF `wrfout`, no pre-supplied `wrfbdy_d02`): `PIPELINE_GREEN`, both domains finite, child boundaries built live (`proofs/v0120/standalone_nest_smoke.json`). 2 h smoke. <<MANAGER-FILL: standalone nested **24 h 1 km** proof result — Lane A in flight (case / final-lead T2-U10-V10 RMSE / verdict).>>
+- **Runnable GPU-vs-CPU equivalence demo (v0.12.0).** `scripts/equivalence_demo.py` runs the GPU port and compares it field-by-field, grid-point-by-grid-point, hour-by-hour against a retained CPU-WRF `wrfout` under the **same** ICs/LBCs (validated replay path), emitting a verdict against predeclared per-field pooled-RMSE tolerances. On the default 24 h d02 case the verdict is **`NOT_EQUIVALENT`** (6 of 10 fields exceed tolerance): T2, RAINNC, W, QVAPOR PASS; U10/V10/PSFC/T/U/V exceed, **dominated by lead-time wind divergence** (3D V pooled RMSE 8.13 m s⁻¹). The WRF-faithful PSFC fix dropped PSFC pooled RMSE 707.8 → 415.3 Pa; the residual is dynamical, not diagnostic. Full numbers and honest framing: [docs/equivalence-demo.md](docs/equivalence-demo.md), proof `proofs/v0120/equivalence_demo_20260509_d02_FINAL.json`. This is honest cross-implementation evidence with a documented exceedance, not an equivalence claim.
+- **Persistent JIT cache (v0.12.0).** Cold ~147 s → cache-hit ~29 s hour-1 wrapper on d01; the cached executable is bit-identical to the cold one. Provenance: [docs/PERFORMANCE.md](docs/PERFORMANCE.md), `proofs/perf/v0120_standalone_bench.json`.
 - **Native real-init equivalence.** Native `wrfinput`/`wrfbdy` assembly is savepoint-parity-proven equivalent to `real.exe` at t=0 (v0.4.0; one-cell categorical-LSM residual documented). Native metgrid passed its gate at v0.3.0. This removes the CPU-WRF dependency for the initial/boundary state.
 - **Per-scheme savepoint parity.** Each GPU-operational scheme (including v0.11.0 additions: KF cumulus, MYNN-EDMF mass flux, RRTMG topographic/slope radiation, terrain-slope diffusion) passes an fp64 math-faithfulness gate vs an unmodified-WRF oracle, under `proofs/`.
 - **Coupled vs CPU-WRF, d02 (3 km).** Combined-physics GPU forecast (replay harness, radiation-ON) vs 28-rank CPU-WRF v4.7.1 `wrfout`, 24 h, one representative MAM case (`20260507_18z`). **Finite and stable all 24 h, no blow-up** (proof [`proofs/v0110/wind_regression_recovery/baseline/d02_coupled_skill.json`](proofs/v0110/wind_regression_recovery/baseline/d02_coupled_skill.json)). Per-lead RMSE vs CPU-WRF truth: **T2 within bar (3.0 K) at 24/24 leads** (mean 1.11 K, final 1.25 K); **V10 within bar (7.5 m/s) at 24/24 leads** (mean 3.59 m/s, final 4.33 m/s); **U10 within bar at 23/24 leads** (mean 4.43 m/s, final 8.06 m/s) — the final lead (h+24) transiently exceeds the 7.5 m/s bar (8.06 m/s), the same pre-existing episodic westerly under-prediction pattern as v0.9.0. **Beats persistence on 23/24 leads.** This is the **operational equivalence evidence** (single case, single season); no TOST or ensemble equivalence is claimed. The machine proof `status` is `FAIL` solely because the all-leads-within-bar predicate trips on that one final lead.
 - **Coupled vs CPU-WRF, nested d01→d02→d03 (9/3/1 km), 24 h one-way.** Full nested hierarchy ran finite and stable on case `20260521_18z` with live parent-produced boundary packages. Final-lead (h=24) T2 RMSE vs CPU-WRF: d02 1.03 K / d03 1.10 K. Mean T2 RMSE over 24 leads: d02 1.31 K / d03 1.67 K. All fields finite on all domains at all leads. Single case, single season; no ensemble or TOST equivalence is claimed. Two-way feedback disabled in this proof. Proof: [`proofs/v0110/nesting_24h_v0110.json`](proofs/v0110/nesting_24h_v0110.json), [`proofs/v0110/val_nest24h.md`](proofs/v0110/val_nest24h.md) (merged to trunk).
 - **d03 1 km steep-terrain stability (KI-1 RESOLVED).** The prior open issue (gated-fp32 qke non-finite at h+1 over Tenerife steep terrain) is **closed** in v0.11.0 by the WRF-faithful qke cold-start seed (background TKE profile per `module_bl_mynnedmf.F:618-691 mym_initialize`) and the MYNN qke IEEE fmax/fmin fix. The d03 Tenerife replay ran **24 h finite in gated-fp32** with final-lead T2 RMSE 1.61 K (within 3.0 K bar), U10 5.13 m/s, V10 6.63 m/s (both within 7.5 m/s bar). **Requirement:** initial state must carry a WRF-faithful qke cold-start seed; a wrfinput with zero or near-zero qke may still trigger the edge. Proof: [`proofs/v0110/d031km_v0110.json`](proofs/v0110/d031km_v0110.json), [`proofs/v0110/val_d031km.md`](proofs/v0110/val_d031km.md) (merged to trunk).
-- **Conservation budgets closed (KI-conservation CLOSED).** Dry-mass, total-water, and moist-static-energy relative budget residuals are **0.0** (fp64) on the validated d02 case (`proofs/v0110/conservation_budgets_closed.json`). Physics state deltas are applied post-dycore (the v0.9.0 cadence); the v0.11.0 `rk_addtend_dry` dry-tendency bridge was found to degrade surface winds and is disabled (proper WRF `*_tendf` adapter → v0.12.0). Conservation unit tests (2/2 PASS) and analytical argument confirm budget closure is **path-independent** — it holds (0.0) on the fixed code (re-proven, commit `b20abb5`).
+- **Conservation budgets closed (KI-conservation CLOSED).** Dry-mass, total-water, and moist-static-energy relative budget residuals are **0.0** (fp64) on the validated d02 case (`proofs/v0110/conservation_budgets_closed.json`). Physics state deltas are applied post-dycore (the v0.9.0 cadence); the v0.11.0 `rk_addtend_dry` dry-tendency bridge was found to degrade surface winds and is disabled (proper WRF `*_tendf` adapter → v0.13.0). Conservation unit tests (2/2 PASS) and analytical argument confirm budget closure is **path-independent** — it holds (0.0) on the fixed code (re-proven, commit `b20abb5`).
 - **Restart bit-identity.** A-path vs B1+B2 (restart at midpoint): 75/75 fields bit-identical (`proofs/v0110/restart_continuity.json`).
 - **DGX single-GPU-default bit-identity.** With `ShardingConfig.disabled()` (the production default): 56/56 State field SHA-256 hashes bit-identical between the reference trunk and the DGX-d2 sharding-disabled path.
-- **Powered TOST equivalence (n=15).** The MAM corpus is prepared (forcing retained, CPU-WRF references assembled); the formal n=15 TOST has **not been scored for v0.11.0** — it is the powered analysis carried by the paper. **n=15 is honestly underpowered** (n≈27 needed to detect a 10% RMSE difference at α=0.05, β=0.20). The **operational equivalence evidence for v0.11.0 is the d02 coupled-skill result above**. **No "TOST PASS" / "statistical equivalence" is claimed** — doing so on an unscored underpowered corpus would be an over-claim. Margins + power analysis: [`.agent/decisions/ADR-029-STATISTICS-DESIGN-TOST.md`](.agent/decisions/ADR-029-STATISTICS-DESIGN-TOST.md).
-- **End-to-end wall-clock speedup.** The v0.11.0 warm real-user d02 speedup inherits from v0.10.0 (≈ 2.47x warm vs 28-rank CPU-WRF, same workstation), as v0.11.0 does not change the per-step compute profile relative to v0.10.0 for the d02 single-domain path. The recompile fix removes the previous chunk-1 cost for chunks 2+ in long runs. The d03 1 km speedup is **not remeasured** for v0.11.0 (the d031km validation ran with a low-priority GPU wrapper; no clean timing was extracted). Kernel / compute-only ceiling (≈ 5.3×–7.84×) is a per-step number, not real-user wall-clock — do not conflate it with the 2.47x warm real-user headline.
+- **Powered TOST equivalence (n=15).** The MAM corpus is prepared (forcing retained, CPU-WRF references assembled); the formal n=15 TOST has **not been scored for v0.12.0** — it is the powered analysis carried by the paper. **n=15 is honestly underpowered** (n≈27 needed to detect a 10% RMSE difference at α=0.05, β=0.20). The **operational equivalence evidence is the d02 coupled-skill result above** plus the runnable equivalence demo (whose 24 h verdict is `NOT_EQUIVALENT`). **No "TOST PASS" / "statistical equivalence" is claimed** — doing so on an unscored underpowered corpus would be an over-claim. Margins + power analysis: [`.agent/decisions/ADR-029-STATISTICS-DESIGN-TOST.md`](.agent/decisions/ADR-029-STATISTICS-DESIGN-TOST.md). <<MANAGER-FILL: powered TOST n=15 scored result, if the GPU campaign completes before tag — otherwise leave as "not scored". Do NOT claim a TOST PASS.>>
+- **End-to-end wall-clock speedup.** Three honest numbers, kept distinct (full reconciliation in [docs/PERFORMANCE.md](docs/PERFORMANCE.md)): (1) **warm-kernel apples-to-apples ≈ 5× (band 5–8×, dt-parity floor ~3.2×)** — compute-only per-forecast-hour, one RTX 5090 vs 28-rank CPU-WRF on the same d02 grid, both fp64 ([`proofs/perf/speedup_denominator.md`](proofs/perf/speedup_denominator.md)); (2) **warm real-user wall ≈ 2.5×** (includes IO + case build, persistent cache warm); (3) the **equivalence-demo real-user** number on the 24 h d02 case — **~4.26× warm-cached** (GPU 561.3 s vs CPU 2393.2 s) and **~1.70× cold** (GPU 1408.6 s, cold ~5-min compile). The cold-vs-warm gap is entirely the persistent JIT cache + IO/case-build, not a numerics change. The compute-only kernel ceiling is a per-step number, never the real-user headline.
 
 **Standalone AIFS end-to-end (native init, no CPU-WRF dependency).** The full native pipeline (AIFS met_em → `build_real_init` → native LBC → `run_forecast_operational_segmented` → wrfout) ran stable and finite for 6 h on case `20260428_18z` (`proofs/v0110/standalone_e2e`). This confirms the native-init path is operational. No 24 h or RMSE claim is made from this 6 h smoke.
 
-### Honest boundaries — what v0.11.0 does NOT claim
+### Honest boundaries — what v0.12.0 does NOT claim
 
 - **Not a universal WRF v4.** Standard regional ARW configs only. Exotic/rare features are README-TODO and fail-closed.
-- **Not the full physics catalog.** WRF v4 has roughly 24 microphysics, 12 PBL, many surface-layer/LSM/cumulus/radiation options; v0.11.0 covers the common operational subset above. Everything else fails closed with a named reason.
-- **Not full two-way nesting.** One-way live nesting is proven over a 24 h window. Two-way feedback is implemented behind a runtime gate but has not been enabled in a long live forecast proof. Nested in-loop `w` relaxation is off.
+- **Not the full physics catalog.** WRF v4 has roughly 24 microphysics, 12 PBL, many surface-layer/LSM/cumulus/radiation options; v0.12.0 covers the common operational subset above. Everything else fails closed with a named reason.
+- **24 h d02 equivalence is NOT_EQUIVALENT — wind divergence.** On the runnable equivalence demo (24 h d02), 6 of 10 fields exceed the predeclared tolerance, **dominated by lead-time wind divergence** (3D V pooled RMSE 8.13 m s⁻¹ vs a 1.8 m s⁻¹ bar). Short-lead fields track CPU-WRF within tolerance; PSFC is improved (707.8 → 415.3 Pa) but still out of bar, with its residual now driven by that same dynamical divergence, not a diagnostic offset. **Neither the winds nor PSFC are equivalent at 24 h.** See [docs/equivalence-demo.md](docs/equivalence-demo.md) (KI-9).
+- **Standalone smokes are short.** The standalone native-init and standalone live-nested CLI proofs are **2 h smokes** (`PIPELINE_GREEN`, all-finite); the standalone AIFS e2e is a **6 h smoke**. The standalone nested **24 h 1 km** proof is in flight (Lane A). No 24 h RMSE claim is made from these smokes.
+- **Not full two-way nesting.** One-way live nesting is proven over a 24 h window (v0.11.0 replay-boundary proof). Two-way feedback is implemented behind a runtime gate but has not been enabled in a long live forecast proof. Nested in-loop `w` relaxation is off.
+- **fp64-only standalone.** The standalone CLI path forces pure fp64; there is no fp32 standalone path (gated-fp32 is an experimental ADR-007 preview and is no faster on this memory-bound workload).
 - **Not DFI / FDDA / spectral-nudging / adaptive-Δt** (fixed Δt only), **not aerosol-coupled microphysics** (Thompson-aerosol `mp=28`/Morrison-aerosol `mp=40`/NSSL fail closed), and **not urban (BEP/BEM) / lake / WRF-Chem** (these are rejected, not roadmap).
 - **Free-running limited-area (run_boundary=False) on wide domains.** Free-running without lateral-boundary relaxation on wide domains (nx≈160+) can go unstable beyond ~14 h. The validated operational path uses boundary forcing. See [`docs/KNOWN_ISSUES.md`](docs/KNOWN_ISSUES.md).
-- **RRTMG intermediate gas optical depth (`taug`) in 4 UV bands.** The top-layer convention differs from the WRF oracle fixture in 4 UV bands (bands 9, 10, 12, 13). Integrated flux outputs pass tier-1 (< 0.05% rel); this is a pre-existing, isolated oracle-fixture discrepancy. Fix→v0.12.0. See [`docs/KNOWN_ISSUES.md`](docs/KNOWN_ISSUES.md).
-- **Known bounded residual (U10).** U10 final-lead RMSE (h+24) is 8.06 m/s vs the 7.5 m/s operational bar on the validated d02 case — the same pre-existing episodic evening-peak westerly under-prediction as v0.9.0. T2 and V10 are within bar at all leads; U10 beats persistence on 23/24 leads.
-- **No powered n=15 TOST PASS.** The corpus is prepared but the formal equivalence analysis is the paper's deliverable, not a v0.11.0 release gate.
+- **RRTMG intermediate gas optical depth (`taug`) in 4 UV bands.** The top-layer convention differs from the WRF oracle fixture in 4 UV bands (bands 9, 10, 12, 13). Integrated flux outputs pass tier-1 (< 0.05% rel); this is a pre-existing, isolated oracle-fixture discrepancy. Carried to v0.13.0. See [`docs/KNOWN_ISSUES.md`](docs/KNOWN_ISSUES.md).
+- **Known bounded residual (U10).** U10 final-lead RMSE (h+24) is 8.06 m/s vs the 7.5 m/s operational bar on the validated d02 coupled-skill case — the same pre-existing episodic evening-peak westerly under-prediction as v0.9.0. T2 and V10 are within bar at all leads; U10 beats persistence on 23/24 leads.
+- **No powered n=15 TOST PASS.** The corpus is prepared but the formal equivalence analysis is the paper's deliverable, not a v0.12.0 release gate.
 - **v0.2.0 paper tag not yet released.** The stable paper-baseline intended at v0.2.0 was never formally tagged. All prior releases (v0.1.0 and up) remain accessible in the git history and in the org repo; v0.2.0 stays accessible for paper claims.
 
-A code-grounded, prioritized inventory of the remaining gap to a complete WRF v4 replacement lives in [`publish/GPU_PORT_GAPS_TODO.md`](publish/GPU_PORT_GAPS_TODO.md) and the v0.11.0+ full-port gap analysis under [`.agent/reviews/`](.agent/reviews/).
+**Deliberately deferred to v0.13.0 (deliberate scope boundaries, not silent gaps):**
 
-## Roadmap — delta to a complete WRF v4 port (post-v0.11.0)
+- **Gotthard / Switzerland operational suite** — out of scope for v0.12.0; v0.12.0 ships the standalone port + the AIFS / 1 km-nest path only.
+- **Scheme scan-wiring of the reference-only families** — MYJ PBL + Janjic-Eta sfclay, Dudhia SW, classic RRTM LW, and New-Tiedtke cumulus are recognized and parity-proven but **fail closed** if selected operationally (not scan-wired into the GPU loop).
+- **Full two-way nesting** — feedback + radiation-in-loop + in-loop `w` relaxation + 5-domain long-run equivalence.
+- **fp32 standalone path** — gated-fp32 operational mode (ADR-007), pending evidence it helps on this workload.
+- **Full 375-variable `wrfout`** (KI-3), **RRTMG SW `taug` UV-band fix** (KI-6), and the **`*_tendf` source-tendency adapter** for RK-stage physics.
 
-Consolidated, honestly-prioritized ledger of everything still deferred / simplified / not-yet-faithful relative to official WRF v4, sorted by importance for an *optimal complete* port. Complexity: **S** ≈ 1–2 focused sprints · **M** ≈ 3–5 · **L** ≈ 5–10 · **XL** ≈ 10+. (v0.2.0→v0.11.0 already closed native real-init, prognostic Noah-MP, the terrain/map-factor core, the GPU-operational scheme set — Thompson, MYNN-EDMF/YSU/ACM2 PBL, MYNN-sfclay, Grell-Freitas + Kain-Fritsch cumulus, Noah-MP, RRTMG topo/slope, terrain-slope diffusion, live nesting, restart, and conservation budgets.)
+A code-grounded, prioritized inventory of the remaining gap to a complete WRF v4 replacement lives in [`publish/GPU_PORT_GAPS_TODO.md`](publish/GPU_PORT_GAPS_TODO.md) and the full-port gap analysis under [`.agent/reviews/`](.agent/reviews/).
+
+## Roadmap — delta to a complete WRF v4 port (post-v0.12.0)
+
+Consolidated, honestly-prioritized ledger of everything still deferred / simplified / not-yet-faithful relative to official WRF v4, sorted by importance for an *optimal complete* port. Complexity: **S** ≈ 1–2 focused sprints · **M** ≈ 3–5 · **L** ≈ 5–10 · **XL** ≈ 10+. (v0.2.0→v0.12.0 already closed native real-init, prognostic Noah-MP, the terrain/map-factor core, the GPU-operational scheme set — Thompson, MYNN-EDMF/YSU/ACM2 PBL, MYNN-sfclay, Grell-Freitas + Kain-Fritsch cumulus, Noah-MP, RRTMG topo/slope, terrain-slope diffusion, live nesting, restart, conservation budgets, and the standalone out-of-box CLI + live-nested `--max-dom` + persistent JIT cache + fail-closed scheme catalog + PSFC fix + runnable equivalence demo.)
 
 | # | Item — delta vs official WRF v4 | Cmplx | Detail |
 |---|---|---|---|
@@ -214,6 +245,7 @@ Consolidated, honestly-prioritized ledger of everything still deferred / simplif
 | **Tier 3 — correctness / robustness debts** | | | |
 | 7 | **Free-running open-lateral-boundary stability** — wide domains (nx≈160+) can blow up without boundary relaxation beyond ~14 h. Operational path is stable with forcing. | M | KNOWN_ISSUES KI-7 |
 | 8 | **U10 episodic under-prediction** — final-lead breach on the validated d02 case (tied to MYNN cloud PDF). | S–M | KNOWN_ISSUES KI-4 |
+| 8b | **Lead-time wind divergence (equivalence demo)** — 24 h d02 `NOT_EQUIVALENT`, dominated by 3D V (pooled RMSE 8.13 m s⁻¹); residual PSFC excess driven by the same divergence. The dominant fidelity gap to true 24 h equivalence. | M | KNOWN_ISSUES KI-9; docs/equivalence-demo.md |
 | **Tier 4 — statistical / release closure** | | | |
 | 9 | **Powered n=15 TOST scoring** — corpus prepared, not yet scored (the paper's equivalence claim). | S–M | KNOWN_ISSUES KI-5; ADR-029 |
 | 10 | **v0.2.0 stable paper-release tag** — intended stable baseline never formally tagged. | S | `V0.2.0-PLAN.md` |
@@ -247,11 +279,13 @@ Consolidated, honestly-prioritized ledger of everything still deferred / simplif
 | Understand the project scope | [`PROJECT_CONSTITUTION.md`](PROJECT_CONSTITUTION.md), [`PROJECT_SCOPE.md`](PROJECT_SCOPE.md), [`PROJECT_SPEC.md`](PROJECT_SPEC.md) |
 | See the GPU-operational vs fail-closed physics matrix | [`src/gpuwrf/contracts/physics_registry.py`](src/gpuwrf/contracts/physics_registry.py), [`src/gpuwrf/runtime/operational_mode.py`](src/gpuwrf/runtime/operational_mode.py) (`_SCAN_WIRED_OPTIONS`) |
 | Run a forecast | [`docs/quickstart.md`](docs/quickstart.md) — `python -m gpuwrf.cli run …` |
+| Run & verify the GPU-vs-CPU equivalence demo | [`docs/equivalence-demo.md`](docs/equivalence-demo.md) — `scripts/equivalence_demo.py` |
+| Understand the cold/warm/kernel speedup numbers | [`docs/PERFORMANCE.md`](docs/PERFORMANCE.md), [`proofs/perf/speedup_denominator.md`](proofs/perf/speedup_denominator.md) |
 | Check current known issues | [`docs/KNOWN_ISSUES.md`](docs/KNOWN_ISSUES.md) |
-| See v0.11.0 proof objects | [`proofs/v0110/`](proofs/v0110/) |
-| See prior release proofs | [`proofs/v090/`](proofs/v090/), [`proofs/v0100/`](proofs/v0100/) |
+| See v0.12.0 proof objects | [`proofs/v0120/`](proofs/v0120/) |
+| See prior release proofs | [`proofs/v0110/`](proofs/v0110/), [`proofs/v090/`](proofs/v090/), [`proofs/v0100/`](proofs/v0100/) |
 | See the full WRF v4 gap inventory | [`publish/GPU_PORT_GAPS_TODO.md`](publish/GPU_PORT_GAPS_TODO.md) |
-| See prior versions (v0.2.0, v0.9.0, v0.10.0) | Accessible via git tags `v0.2.0`, `v0.9.0`, `v0.10.0` on the org repo; v0.2.0 is the stable paper-claims baseline |
+| See prior versions (v0.2.0, v0.9.0, v0.10.0, v0.11.0) | Accessible via git tags `v0.2.0`, `v0.9.0`, `v0.10.0`, `v0.11.0` on the org repo; v0.2.0 is the stable paper-claims baseline |
 
 ## Run
 
@@ -259,11 +293,21 @@ The full out-of-box walk-through is **[docs/quickstart.md](docs/quickstart.md)**
 Short version:
 
 ```bash
-# Standalone forecast (auto-detects native-init when there is no CPU wrfout):
+# Standalone single-domain forecast (auto-detects native-init when there is no CPU wrfout):
 python -m gpuwrf.cli run \
     --input-dir   my_case \
     --output-dir  runs/my_forecast \
     --domain      d02 \
+    --hours       24 \
+    --scratch-dir /fast/nvme/gpuwrf_scratch
+
+# Standalone LIVE-NESTED forecast (d01->d02->d03, down to the 1 km nest):
+#   --max-dom N is explicit opt-in; defaults to 1 (single-domain). The parent
+#   builds each child's lateral boundary LIVE — no pre-supplied wrfbdy_d02.
+python -m gpuwrf.cli run \
+    --input-dir   my_case \
+    --output-dir  runs/my_nested_forecast \
+    --max-dom     3 \
     --hours       24 \
     --scratch-dir /fast/nvme/gpuwrf_scratch
 
@@ -274,11 +318,13 @@ python -m gpuwrf.cli run --help
 pytest -q
 ```
 
-The first invocation pays a **~5-minute cold JIT compile** before integration
-(cached for later runs) and uses **≈ 24.6 GiB VRAM** at fp64 — see
-[docs/resource-profile.md](docs/resource-profile.md).
+The first invocation pays a **~5-minute cold JIT compile** (d02) before
+integration and uses **≈ 24.6 GiB VRAM** at fp64; the **persistent JIT cache
+turns every later run into a ~10 s cache read** (bit-identical executable) — see
+[docs/resource-profile.md](docs/resource-profile.md) and
+[docs/PERFORMANCE.md](docs/PERFORMANCE.md).
 
-## Known issues (v0.11.0 → carried into v0.12.0)
+## Known issues (v0.12.0)
 
 Full detail with symptom / ruled-out / workaround / follow-up in
 **[docs/KNOWN_ISSUES.md](docs/KNOWN_ISSUES.md)**.
@@ -288,8 +334,9 @@ Full detail with symptom / ruled-out / workaround / follow-up in
 | **KI-3** | Operational `wrfout` is a focused **64-variable** subset (vs WRF's 375); missing only stochastic-seed + Noah-MP snow-layer diagnostics. | Scope boundary |
 | **KI-4** | d02 **U10** episodic final-lead (h+24) under-prediction (8.06 m/s vs 7.5 m/s bar); within bar at all other leads, beats persistence 23/24. | Documented residual |
 | **KI-5** | Powered **n=15 TOST** equivalence not yet scored (corpus prepared); **no TOST PASS / statistical-equivalence is claimed**. n=15 is underpowered. | Scope boundary |
-| **KI-6** | RRTMG SW intermediate `taug` top-layer convention differs in 4 UV bands; integrated fluxes pass tier-1 (< 0.05% rel). Pre-existing. | Isolated, fix → v0.12.0 |
+| **KI-6** | RRTMG SW intermediate `taug` top-layer convention differs in 4 UV bands; integrated fluxes pass tier-1 (< 0.05% rel). Pre-existing; carried to v0.13.0. | Isolated |
 | **KI-7** | Free-running (`run_boundary=False`) on **wide domains** (nx≈160+) can go unstable beyond ~14 h. Validated operational path uses boundary forcing. | Robustness edge |
+| **KI-9** | Equivalence demo: **24 h d02 `NOT_EQUIVALENT`**, dominated by **lead-time wind divergence** (3D V pooled RMSE 8.13 m/s); residual PSFC excess driven by the same divergence (PSFC improved 707.8 → 415.3 Pa by the WRF-faithful fix). | Documented gap |
 
 ## Layout
 

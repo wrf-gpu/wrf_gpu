@@ -1,18 +1,20 @@
-# Known Issues — v0.11.0
+# Known Issues — v0.12.0
 
-Honest, code-grounded list of the open issues shipped with v0.11.0. Each entry states the
+Honest, code-grounded list of the open issues shipped with v0.12.0. Each entry states the
 symptom, what was ruled out, the current best understanding, the workaround, and the tracked
 follow-up. No spin.
 
-**Changes from v0.10.0:**
+**Changes from v0.11.0:**
 
-- **KI-1 RESOLVED** — d03 1 km gated-fp32 instability fixed by WRF-faithful qke cold-start seed + MYNN IEEE fmax/fmin fix.
-- **KI-2 RESOLVED** — long single-call qke edge fixed by WRF-faithful IEEE fmax/fmin semantics in `_wrf_qke_minmax` (matching `module_bl_mynnedmf.F:3106-3107`).
-- **Conservation CLOSED** — dry-mass, total-water, and moist-static-energy budget residuals are 0.0 in v0.11.0 (proof: `proofs/v0110/conservation_budgets_closed.json`).
-- **New KI-6** — RRTMG SW intermediate taug (pre-existing, first formally documented here).
-- **New KI-7** — free-running wide-domain instability without boundary relaxation.
+- **PSFC diagnostic offset CLOSED** — the WRF-faithful surface-pressure extrapolation (`PSFC = p8w(kts)` from total-geopotential faces) replaced the old `p0`-based value, closing a systematic ~29 Pa diagnostic offset in the internal surface-pressure definition (proof: `proofs/v0120/psfc_extrapolation_proof.json`, bias 328 → −29 Pa). On the equivalence demo PSFC pooled RMSE dropped 707.8 → 415.3 Pa.
+- **New KI-9** — the runnable equivalence demo's 24 h d02 verdict is `NOT_EQUIVALENT`, dominated by lead-time wind divergence; the residual PSFC excess is now driven by that divergence, not a diagnostic offset.
+- KI-1 / KI-2 remain **RESOLVED** (qke cold-start seed + MYNN IEEE fmax/fmin, v0.11.0); conservation remains **CLOSED**.
 
-KI-3 (focused wrfout writer), KI-4 (U10 episodic), and KI-5 (underpowered TOST) carry forward unchanged.
+KI-3 (focused wrfout writer), KI-4 (U10 episodic), KI-5 (underpowered TOST), KI-6 (RRTMG taug),
+and KI-7 (free-running wide-domain) carry forward unchanged.
+
+The **v0.11.0 resolutions** (KI-1, KI-2) and the conservation closure are retained verbatim
+below for the record.
 
 ---
 
@@ -75,7 +77,7 @@ while CPU-WRF emits **375 variables**. The missing variables are only:
 
 All core meteorological, spatial, vertical, and soil dimensions match the CPU-WRF reference.
 The operational forecast-correctness contract is the focused 64-variable writer. Full
-wrfout coverage is a v0.12.0 item.
+wrfout coverage is deferred to v0.13.0.
 
 ---
 
@@ -89,7 +91,7 @@ the 7.5 m/s operational bar (the same pre-existing pattern as v0.9.0 and v0.10.0
 V10 are within bar at all 24 leads. U10 beats persistence on **23/24 leads** — the breach is
 only the final lead. This is an episodic near-surface westerly under-prediction during
 high-wind periods, not a runaway instability. The MYNN-EDMF cloud PDF (`icloud_bl=1`) is
-the most likely improvement path (v0.12.0). Proof: `proofs/v0110/wind_regression_recovery/baseline/d02_coupled_skill.json`.
+the most likely improvement path (v0.13.0). Proof: `proofs/v0110/wind_regression_recovery/baseline/d02_coupled_skill.json`.
 
 ---
 
@@ -131,7 +133,7 @@ version.
 **Root cause and fix:** `_extend_with_wrf_top_layer` (line ~589 in `rrtmg_sw.py`) should
 add a model-top layer at low pressure (~100 Pa) rather than duplicating the topmost input
 layer. Fix: either regenerate the oracle at the current convention (Fix A, preferred) or
-implement the correct top-layer pressure (Fix B). Target: v0.12.0.
+implement the correct top-layer pressure (Fix B). Target: v0.13.0.
 
 **Proof:** `proofs/v0110/rrtmg_finite_recheck.json`, `proofs/v0110/rrtmg_slope_parity.json`; analysis in `.agent/reviews/2026-06-06-gpt-rrtmg-taug-characterization.md` (s6 report).
 
@@ -156,15 +158,97 @@ blew up at hour 14; case `20260511_18z` (nx=120, `run_boundary=False`) ran 24 h 
 
 ---
 
-## Conservation budgets — CLOSED in v0.11.0
+## KI-9 (OPEN, new in v0.12.0) — 24 h d02 equivalence-demo wind divergence (and the residual PSFC excess it drives)
 
-Dry-mass, total-water, and moist-static-energy relative budget residuals are **0.0** (fp64)
-in v0.11.0. Physics state deltas are applied **post-dycore** (the v0.9.0 cadence). A v0.11.0
+**Severity:** documented fidelity gap; short-lead fields track CPU-WRF within tolerance, so
+the validated short-range operational path is usable, but the run is **not** equivalent at
+24 h. This is the dominant remaining fidelity gap to true 24 h equivalence.
+
+The runnable, self-serve equivalence demo (`scripts/equivalence_demo.py`) compares the GPU
+port against a retained CPU-WRF `wrfout` under the **same** ICs/LBCs (validated replay path)
+field-by-field, grid-point-by-grid-point, hour-by-hour, against predeclared per-field
+pooled-RMSE tolerances. On the default 24 h d02 case (`20260509_18z`) the verdict is
+**`NOT_EQUIVALENT`**: 6 of 10 fields exceed tolerance.
+
+**Pooled RMSE over all 24 hourly steps and all grid points** (proof:
+`proofs/v0120/equivalence_demo_20260509_d02_FINAL.json`, post-PSFC-fix re-run, warm cache):
+
+| Field | pooled RMSE | tol | verdict |
+|---|---|---|---|
+| T2 | 0.484 K | 1.5 K | PASS |
+| U10 | 2.237 m/s | 1.5 | EXCEEDS |
+| V10 | 2.441 m/s | 1.5 | EXCEEDS |
+| PSFC | 415.3 Pa | 120 | EXCEEDS |
+| RAINNC | 0.501 mm | 1.0 | PASS |
+| T (θ′) | 2.040 K | 1.5 | EXCEEDS |
+| U | 3.167 m/s | 1.8 | EXCEEDS |
+| V | 8.130 m/s | 1.8 | EXCEEDS |
+| W | 0.126 m/s | 0.30 | PASS |
+| QVAPOR | 5.67×10⁻⁴ kg/kg | 1.0×10⁻³ | PASS |
+
+**What is happening (two distinct, both honest):**
+
+1. **Lead-time wind divergence dominates the verdict.** U10/V10/T/U/V start within (or near)
+   tolerance at short lead and grow **monotonically**. The 3D meridional wind **V** is
+   essentially identical at h1 (RMSE 0.17 m/s) and grows to ~11 m/s by h19 — drifting ~3×
+   faster than U. This is genuine error growth between two independent integrators,
+   concentrated in the wind field, strongest in V. T2, W, QVAPOR and RAINNC stay inside
+   tolerance for the full 24 h.
+2. **PSFC is improved but still out of bar, and the residual is now dynamical.** The
+   WRF-faithful PSFC surface-extrapolation fix (`PSFC = p8w(kts)`, KI-tracked under the
+   v0.12.0 changes; proof `proofs/v0120/psfc_extrapolation_proof.json`) closed the systematic
+   ~29 Pa **diagnostic** offset and dropped PSFC pooled RMSE from **707.8 → 415.3 Pa**. The
+   **residual PSFC excess is no longer a constant diagnostic offset**: its per-lead bias is
+   −295 Pa at h1, swings to −485 Pa near h6, relaxes, and re-grows — it **tracks the
+   developing wind/mass divergence**, not a fixed reference difference. The surface
+   extrapolation is now WRF-faithful; the remaining PSFC gap is driven by the dynamical
+   divergence.
+
+**Do not read this as "PSFC fixed" or "winds equivalent."** Neither PSFC nor the winds are
+equivalent at 24 h. The honest summary: short-lead fields track within tolerance; by 24 h the
+run is `NOT_EQUIVALENT`, driven by wind divergence.
+
+**Workaround / what to use instead.** The validated short-range, boundary-forced operational
+path is usable; the demo documents the lead-time divergence as the tracked gap.
+
+**Follow-up.** The MYNN-EDMF cloud PDF completeness (KI-4 / GPU_PORT_GAPS P1-4) and the wind
+fidelity tier are the most likely improvement path; deferred to v0.13.0.
+
+**Proof:** `proofs/v0120/equivalence_demo_20260509_d02_FINAL.json`,
+`proofs/v0120/psfc_extrapolation_proof.json`; user-facing writeup in
+`docs/equivalence-demo.md`.
+
+---
+
+## Conservation budgets — CLOSED (v0.11.0)
+
+Dry-mass, total-water, and moist-static-energy relative budget residuals are **0.0** (fp64).
+Physics state deltas are applied **post-dycore** (the v0.9.0 cadence). A v0.11.0
 attempt to route the aggregate dry-physics delta through `rk_addtend_dry` as RK-stage tendencies
 was found to degrade d02 surface winds (commit `5e8aabe`) and is **disabled**; a proper WRF
-`*_tendf` source-tendency adapter is deferred to v0.12.0. Budget closure is **path-independent**
+`*_tendf` source-tendency adapter is deferred to v0.13.0. Budget closure is **path-independent**
 and was re-confirmed 0.0 on the fixed code (commit `b20abb5`). Post-boundary finite/origin
 guard replacements: 0. Proof: `proofs/v0110/conservation_budgets_closed.json`.
+
+---
+
+## Deferred to v0.13.0 (deliberate scope boundaries, not silent gaps)
+
+These are intentional boundaries of the v0.12.0 release, carried forward by design:
+
+- **Gotthard / Switzerland operational suite** — v0.12.0 ships the standalone port + the
+  AIFS / 1 km-nest path only.
+- **Scheme scan-wiring of the reference-only families** — MYJ PBL + Janjic-Eta sfclay,
+  Dudhia SW, classic RRTM LW, and New-Tiedtke cumulus are recognized and parity-proven but
+  **fail closed** if selected operationally (not scan-wired into the GPU loop).
+- **Full two-way nesting** — feedback + radiation-in-loop + in-loop `w` relaxation +
+  5-domain long-run equivalence (one-way 24 h is proven via the v0.11.0 replay-boundary proof).
+- **fp32 standalone path** — gated-fp32 operational mode (ADR-007), pending evidence it helps
+  on this memory-bound workload.
+- **Full 375-variable `wrfout`** (KI-3), **RRTMG SW `taug` UV-band fix** (KI-6), and the
+  **`*_tendf` source-tendency adapter** for RK-stage physics.
+- **Standalone nested 24 h 1 km skill proof** — <<MANAGER-FILL: Lane A in flight; replace with the proof result/verdict if it lands before the v0.12.0 tag, else state it remains a smoke-only (2 h) demonstration carried to v0.13.0.>>
+- **Powered n=15 TOST scoring** (KI-5) — <<MANAGER-FILL: pending GPU campaign; do NOT claim a TOST PASS.>>
 
 ---
 
