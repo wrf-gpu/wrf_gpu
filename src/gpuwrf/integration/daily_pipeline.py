@@ -30,7 +30,11 @@ from gpuwrf.io.land_state import load_hourly_land_state
 from gpuwrf.io.radiation_static import load_radiation_static
 from gpuwrf.io.gwdo_static import load_gwdo_statics
 from gpuwrf.io.async_wrfout import AsyncWrfoutWriter
-from gpuwrf.io.auxhist_stream import AuxhistStreamConfig
+from gpuwrf.io.auxhist_stream import (
+    AuxhistStreamConfig,
+    auxhist_substeps_per_hour,
+    coerce_auxhist_streams,
+)
 from gpuwrf.io.wrfout_writer import (
     MINIMUM_WRFOUT_VARIABLES,
     prepare_wrfout_payload,
@@ -114,13 +118,31 @@ class DailyPipelineConfig:
     # write is overlapped, so output bytes/ordering are unchanged. Set False to
     # restore the fully-synchronous writer (e.g. for an A/B wall-clock baseline).
     async_output: bool = True
-    # Optional WRF auxiliary-history (``auxhist``) secondary output stream. When
-    # set, the run writes a SECOND NetCDF stream (the configured variable subset)
-    # at the stream's own interval, independent of the hourly main wrfout cadence
-    # (e.g. a 15-min surface-diagnostic stream). When ``None`` (the default) NO
-    # second stream is written and the forecast/output path is byte-for-byte the
-    # existing hourly-wrfout-only behaviour. See gpuwrf.io.auxhist_stream.
-    auxhist: AuxhistStreamConfig | None = None
+    # Optional WRF auxiliary-history (``auxhist``) secondary output streams. WRF
+    # drives up to 24 INDEPENDENT auxhist streams (auxhist1..auxhist24), each with
+    # its own interval / outname / frames / variable subset. This field accepts:
+    #   * ``None`` (the default)      -> NO second stream; the forecast/output path
+    #                                    is byte-for-byte the hourly-wrfout-only
+    #                                    behaviour (OFF by default).
+    #   * a single AuxhistStreamConfig -> one secondary stream (legacy form).
+    #   * a list/tuple of configs      -> N secondary streams, each fired at its OWN
+    #                                    interval (e.g. a 15-min surface subset AND a
+    #                                    60-min full stream). The forecast hour is
+    #                                    advanced at gcd(60, intervals)-minute
+    #                                    granularity so every stream frame is genuine
+    #                                    GPU output at its lead, never interpolated.
+    # Use ``auxhist_streams`` for the normalized tuple. See gpuwrf.io.auxhist_stream.
+    auxhist: AuxhistStreamConfig | Sequence[AuxhistStreamConfig] | None = None
+
+    @property
+    def auxhist_streams(self) -> tuple[AuxhistStreamConfig, ...]:
+        """The configured auxhist streams as a normalized tuple (``()`` when OFF).
+
+        Accepts the back-compatible single-config form and the multi-stream
+        list form; enforces unique ``stream_id`` across the list.
+        """
+
+        return coerce_auxhist_streams(self.auxhist)
 
 
 @dataclass(frozen=True)
@@ -405,23 +427,20 @@ def _auxhist_substeps_per_hour(config: DailyPipelineConfig) -> int:
     """Number of equal sub-hour forecast segments needed per forecast hour.
 
     With no auxhist stream the loop steps a full hour at a time (1 segment), so the
-    main-wrfout path is byte-for-byte the existing hourly behaviour. When an
-    auxhist stream is configured at an interval ``m`` (minutes), the loop steps at
-    ``gcd(60, m)``-minute granularity so BOTH the hourly main-wrfout boundary and
-    every ``m``-minute auxhist boundary land on a real model-state snapshot -- the
-    auxhist frames are genuine GPU output, never interpolated/fabricated.
+    main-wrfout path is byte-for-byte the existing hourly behaviour. With one OR
+    MORE auxhist streams the loop steps at ``gcd(60, i1, i2, ...)``-minute
+    granularity so BOTH the hourly main-wrfout boundary and every stream's
+    interval boundary land on a real model-state snapshot -- the auxhist frames are
+    genuine GPU output, never interpolated/fabricated. Delegates to the shared
+    multi-stream cadence helper in :mod:`gpuwrf.io.auxhist_stream`.
     """
 
-    if config.auxhist is None:
-        return 1
-    interval = int(config.auxhist.interval_minutes)
-    step_minutes = math.gcd(60, interval) if interval <= 60 else math.gcd(interval, 60)
-    # gcd(60, m) divides 60 for any positive m, so this is always an integer count.
-    return max(1, 60 // step_minutes)
+    return auxhist_substeps_per_hour(config.auxhist_streams)
 
 
 def _emit_auxhist_frame(
     *,
+    stream: AuxhistStreamConfig,
     config: DailyPipelineConfig,
     state: Any,
     case: DailyCase,
@@ -429,32 +448,35 @@ def _emit_auxhist_frame(
     lead_minutes: float,
     diagnostics: Mapping[str, Any] | None,
     writer: AsyncWrfoutWriter | None,
+    prepared: Any | None = None,
 ) -> Path | None:
-    """Write one auxhist frame if ``lead_minutes`` is an auxhist output boundary.
+    """Write one frame for ``stream`` if ``lead_minutes`` is its output boundary.
 
     Reuses the main wrfout writer in stream-generic mode: it materializes the
-    payload once (host numpy) and writes ONLY the configured variable subset to the
-    WRF-named auxhist file. Returns the written path, or ``None`` when this lead is
-    not an auxhist boundary or no stream is configured.
+    payload once (host numpy) -- or REUSES the supplied ``prepared`` payload when
+    the caller already pulled this state to host for another stream / the main
+    wrfout (so concurrent streams at the same boundary share ONE device->host
+    pull) -- and writes ONLY ``stream``'s variable subset to its WRF-named file.
+    Returns the written path, or ``None`` when this lead is not ``stream``'s
+    boundary.
     """
 
-    aux = config.auxhist
-    if aux is None or not aux.fires_at(lead_minutes):
+    if not stream.fires_at(lead_minutes):
         return None
     valid_time = case.run_start + timedelta(minutes=float(lead_minutes))
-    aux_path = output_dir / aux.filename(valid_time, config.domain)
-    lead_hours = float(lead_minutes) / 60.0
-    prepared = prepare_wrfout_payload(
-        state,
-        case.grid,
-        case.namelist,
-        aux_path,
-        valid_time=valid_time,
-        lead_hours=lead_hours,
-        run_start=case.run_start,
-        diagnostics=diagnostics,
-    )
-    subset = aux.variable_subset
+    aux_path = output_dir / stream.filename(valid_time, config.domain)
+    if prepared is None:
+        prepared = prepare_wrfout_payload(
+            state,
+            case.grid,
+            case.namelist,
+            aux_path,
+            valid_time=valid_time,
+            lead_hours=float(lead_minutes) / 60.0,
+            run_start=case.run_start,
+            diagnostics=diagnostics,
+        )
+    subset = stream.variable_subset
     if writer is not None:
         writer.submit_subset(prepared, variable_subset=subset, target=aux_path)
     else:
@@ -644,13 +666,20 @@ def _run_forecast_sequence(
     per_hour_wall_s: list[float] = []
     checkpoint_payload: dict[str, Any] | None = None
     land_refresh_records: list[dict[str, Any]] = []
+    # Configured auxhist streams (empty tuple == OFF). Each stream fires at its OWN
+    # interval; multiple streams may fire at the same boundary (e.g. a 15-min and a
+    # 60-min stream both fire at :00) and then share ONE device->host pull.
+    streams = config.auxhist_streams
     # Sub-hour stepping granularity. 1 segment/hour (a full-hour advance) unless an
     # auxhist stream needs finer cadence, in which case the hour is advanced in
-    # equal gcd(60, interval)-minute segments so each auxhist frame is GENUINE
+    # equal gcd(60, intervals)-minute segments so each auxhist frame is GENUINE
     # GPU output at that lead time (never interpolated). With no auxhist this is 1,
     # so the advance/output path is byte-for-byte the existing hourly behaviour.
     substeps = _auxhist_substeps_per_hour(config)
     segment_minutes = 60.0 / substeps
+    # Per-stream emitted-file lists for the run metadata (the flat ``auxhist_files``
+    # combines all streams for back-compat / the result object).
+    auxhist_files_by_stream: dict[int, list[Path]] = {int(s.stream_id): [] for s in streams}
     # win #3: double-buffered output -- write hour N's wrfout on a background
     # thread while the GPU advances hour N+1. The device->host pull stays on the
     # main thread (prepare_wrfout_payload) so no device buffer is read off-thread;
@@ -665,6 +694,44 @@ def _run_forecast_sequence(
         if writer is not None:
             writer.join()
 
+    def _emit_streams_at(
+        lead_minutes: float,
+        *,
+        cur_state: Any,
+        diagnostics: Mapping[str, Any] | None,
+        prepared: Any | None = None,
+    ) -> None:
+        # Emit one frame for EVERY configured stream whose interval boundary falls
+        # on ``lead_minutes``. All firing streams share the single ``prepared``
+        # host payload (materialized once below) so concurrent streams cost no
+        # extra device->host pull. Appends each written path to the flat list and
+        # the per-stream metadata list.
+        firing = [s for s in streams if s.fires_at(lead_minutes)]
+        if not firing:
+            return
+        shared = prepared
+        if shared is None:
+            valid_time = case.run_start + timedelta(minutes=float(lead_minutes))
+            shared = prepare_wrfout_payload(
+                cur_state,
+                case.grid,
+                case.namelist,
+                output_dir / firing[0].filename(valid_time, config.domain),
+                valid_time=valid_time,
+                lead_hours=float(lead_minutes) / 60.0,
+                run_start=case.run_start,
+                diagnostics=diagnostics,
+            )
+        for stream in firing:
+            aux_path = _emit_auxhist_frame(
+                stream=stream, config=config, state=cur_state, case=case,
+                output_dir=output_dir, lead_minutes=lead_minutes,
+                diagnostics=diagnostics, writer=writer, prepared=shared,
+            )
+            if aux_path is not None:
+                auxhist_files.append(aux_path)
+                auxhist_files_by_stream[int(stream.stream_id)].append(aux_path)
+
     for hour in range(1, int(config.hours) + 1):
         start = time.perf_counter()
         # Advance the forecast across this hour in ``substeps`` equal segments. The
@@ -677,7 +744,7 @@ def _run_forecast_sequence(
             if seg == substeps:
                 break  # the hour boundary is handled by the main path below
             lead_minutes = (hour - 1) * 60.0 + seg * segment_minutes
-            if config.auxhist is not None and config.auxhist.fires_at(lead_minutes):
+            if any(s.fires_at(lead_minutes) for s in streams):
                 seg_summary = finite_summary(state)
                 if not seg_summary["all_finite"]:
                     _flush_writer()
@@ -693,12 +760,7 @@ def _run_forecast_sequence(
                 aux_diag = _surface_diagnostics_for_output(
                     state, case.namelist, case.run_start, lead_seconds=lead_minutes * 60.0
                 )
-                aux_path = _emit_auxhist_frame(
-                    config=config, state=state, case=case, output_dir=output_dir,
-                    lead_minutes=lead_minutes, diagnostics=aux_diag, writer=writer,
-                )
-                if aux_path is not None:
-                    auxhist_files.append(aux_path)
+                _emit_streams_at(lead_minutes, cur_state=state, diagnostics=aux_diag)
         elapsed = time.perf_counter() - start
         per_hour_wall_s.append(float(elapsed))
 
@@ -780,23 +842,15 @@ def _run_forecast_sequence(
             )
         files.append(wrfout)
 
-        # Auxhist frame at this hourly boundary (when the hour lead is a multiple of
-        # the auxhist interval, e.g. every hour for a 15-min stream). Reuses the
-        # same diagnostics/state the main wrfout used; when the async writer already
-        # materialized the hour to host, reuse that payload to avoid a 2nd pull.
+        # Auxhist frames at this hourly boundary: every stream whose interval
+        # divides the hour fires here (e.g. a 60-min stream every hour, a 15-min
+        # stream's :00 frame). Reuses the same diagnostics/state the main wrfout
+        # used; when the async writer already materialized the hour to host
+        # (``prepared``), ALL firing streams reuse that payload (no 2nd pull).
         hour_lead_minutes = float(hour) * 60.0
-        if config.auxhist is not None and config.auxhist.fires_at(hour_lead_minutes):
-            aux = config.auxhist
-            aux_path = output_dir / aux.filename(valid_time, config.domain)
-            if writer is not None and prepared is not None:
-                writer.submit_subset(prepared, variable_subset=aux.variable_subset, target=aux_path)
-            else:
-                emitted = _emit_auxhist_frame(
-                    config=config, state=state, case=case, output_dir=output_dir,
-                    lead_minutes=hour_lead_minutes, diagnostics=diagnostics, writer=writer,
-                )
-                aux_path = emitted if emitted is not None else aux_path
-            auxhist_files.append(aux_path)
+        _emit_streams_at(
+            hour_lead_minutes, cur_state=state, diagnostics=diagnostics, prepared=prepared
+        )
 
         if checkpoint_at_hour is not None and hour == int(checkpoint_at_hour):
             checkpoint_path = output_dir / "checkpoints" / f"{config.run_id}_hour{hour:02d}.pkl"
@@ -826,18 +880,25 @@ def _run_forecast_sequence(
         "cadence": "hourly forecast output boundary",
         "records": land_refresh_records,
     }
-    if config.auxhist is not None:
-        aux = config.auxhist
-        metadata["auxhist_stream"] = {
-            "stream_id": int(aux.stream_id),
-            "interval_minutes": int(aux.interval_minutes),
-            "frames_per_file": int(aux.frames_per_file),
-            "io_form": int(aux.io_form),
-            "outname_pattern": aux.outname_pattern,
-            "variables": list(aux.variables),
-            "frame_count": int(len(auxhist_files)),
-            "files": [str(path) for path in auxhist_files],
-        }
+    if streams:
+        stream_meta = [
+            {
+                "stream_id": int(s.stream_id),
+                "interval_minutes": int(s.interval_minutes),
+                "frames_per_file": int(s.frames_per_file),
+                "io_form": int(s.io_form),
+                "outname_pattern": s.outname_pattern,
+                "variables": list(s.variables),
+                "frame_count": int(len(auxhist_files_by_stream[int(s.stream_id)])),
+                "files": [str(path) for path in auxhist_files_by_stream[int(s.stream_id)]],
+            }
+            for s in streams
+        ]
+        # Multi-stream metadata (one entry per configured auxhist stream).
+        metadata["auxhist_streams"] = stream_meta
+        # Back-compat: a single-stream run keeps the legacy ``auxhist_stream`` key.
+        if len(stream_meta) == 1:
+            metadata["auxhist_stream"] = stream_meta[0]
     return ForecastSequenceResult(
         status="PASS",
         run_id=config.run_id,
