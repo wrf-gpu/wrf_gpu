@@ -196,7 +196,11 @@ def _swpara_columns(
     beta = 0.4 * (1.0 - xmu) + 0.1
 
     # Per-layer scattering optical contribution (aerosols zero on default path).
-    xsca_layer = (cssca * xatp) / xmu              # (ncol, nz)
+    # ``xatp`` is (ncol, nz) and ``xmu`` is the per-column (ncol,) cosine-zenith,
+    # so broadcast xmu over the vertical axis. (Multi-column fix: the savepoint
+    # parity cases only ever ran ncol=1, where this broadcast was implicit; the
+    # operational coupler is the first ncol>1 caller.)
+    xsca_layer = (cssca * xatp) / xmu[:, None]     # (ncol, nz)
 
     zero = jnp.zeros((ncol,), dtype=dtype)
     init = _ScanCarry(

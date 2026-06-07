@@ -19,7 +19,7 @@
   },
   "jax_precision": "fp64",
   "jax_platform": "cpu",
-  "git_head": "e9982500e4a299ba0531893a080cb248283f6588",
+  "git_head": "115cb0c925735d4a89d0de285de01c57764961d4",
   "predeclared_tolerances": {
     "rthraten_abs": 5e-09,
     "rthraten_rel": 0.0005,
