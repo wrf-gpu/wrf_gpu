@@ -2655,6 +2655,23 @@ class M9Diagnostics(NamedTuple):
     u10: jax.Array
     v10: jax.Array
     psfc: jax.Array
+    # B1 (v0.12.0) RRTMG up/down all-sky flux slices for the wrfout radiation
+    # diagnostics, all mass-point (ny, nx), W m^-2 (except coszen, dimensionless).
+    # Surface (bottom-of-atmosphere): swdnb/swupb (SW), lwdnb/lwupb (LW);
+    # top-of-atmosphere: swdnt/swupt (SW), lwdnt/lwupt (LW). swnorm = slope-normal
+    # surface SW flux; coszen = cosine solar zenith. OLR (== lwupt) is derived in
+    # the writer. All-sky only -- the clear-sky ``...C`` vars are NOT produced (the
+    # RRTMG port runs no separate clear-sky pass; see RRTMGRadiationDiagnostics).
+    swdnb: jax.Array
+    swupb: jax.Array
+    lwdnb: jax.Array
+    lwupb: jax.Array
+    swdnt: jax.Array
+    swupt: jax.Array
+    lwdnt: jax.Array
+    lwupt: jax.Array
+    swnorm: jax.Array
+    coszen: jax.Array
 
 
 def _psfc_from_state(state: State) -> jax.Array:
@@ -2778,6 +2795,21 @@ def compute_m9_diagnostics(
         u10=surf.u10,
         v10=surf.v10,
         psfc=_psfc_from_state(state),
+        # B1: RRTMG all-sky up/down flux slices, straight from the radiation
+        # diagnostics (no held-radiation override -- these are the instantaneous
+        # output-cadence fluxes, consistent with the SWDOWN/GLW recompute path).
+        # SWDNB == bottom-of-atmosphere downwelling SW (== SWDOWN in the no-slope
+        # config); SWNORM == slope-normal surface SW.
+        swdnb=rad.swdown,
+        swupb=rad.swup,
+        lwdnb=rad.glw,
+        lwupb=rad.glw_up,
+        swdnt=rad.sw_toa_down,
+        swupt=rad.sw_toa_up,
+        lwdnt=rad.lw_toa_down,
+        lwupt=rad.lw_toa_up,
+        swnorm=rad.swnorm,
+        coszen=rad.coszen,
     )
 
 
