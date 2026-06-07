@@ -7,11 +7,10 @@ met_em-stage forcing produced by `real.exe`/metgrid) and `wrf_gpu` builds the
 initial/boundary state and integrates entirely on the GPU. **No CPU-WRF
 `wrfout` is required** for a standalone run.
 
-> **CLI-flag reconciliation note (v0.12.0):** the standalone auto-detect entry
-> is being finalized in parallel with this guide. The commands below use the
-> intended standalone invocation; if a flag name differs in your build, run
-> `python -m gpuwrf.cli run --help` to see the exact names. The
-> auto-detect/standalone behaviour and the resource expectations are stable.
+> **CLI note (v0.12.0):** the standalone auto-detect entry ships in v0.12.0. The
+> commands below are the standalone invocation; if a flag name differs in your
+> build, run `python -m gpuwrf.cli run --help` for the exact names. `--max-dom N`
+> (default 1) is the explicit opt-in for a live-nested run; see step 3b.
 
 ## 0. Prerequisites
 
@@ -89,13 +88,40 @@ What to expect on the **first** run:
 
 1. A fail-closed namelist check (instant, no GPU).
 2. **A ~5-minute cold JIT compile with no output** — this is XLA compiling, not a
-   hang. Subsequent runs read the cached executable and skip this.
-3. Integration: ≈ 15 s of wall-clock per forecast-hour on the reference GPU; peak
-   **VRAM ≈ 24.6 GiB**.
+   hang. The **persistent on-disk JIT cache (on by default)** turns every later
+   run into a **~10 s cache read** of the bit-identical executable.
+3. Integration: ≈ 15–17 s of wall-clock per forecast-hour on the reference GPU
+   (d02 peak **VRAM ≈ 24.6 GiB**; the smaller d01 9 km case ≈ 4.7 GiB).
 4. A `wrfout` history file (and a run payload JSON) under `--output-dir`.
 
 See [resource-profile.md](resource-profile.md) for the compile-cache override
-(`GPUWRF_JAX_CACHE_DIR`) and memory sizing.
+(`GPUWRF_JAX_CACHE_DIR`) and memory sizing, and [PERFORMANCE.md](PERFORMANCE.md)
+for the cold/warm/kernel speedup reconciliation.
+
+## 3b. (Optional) Run a live-nested forecast down to 1 km
+
+For a multi-domain run (d01→d02→d03, including the 1 km nest), use `--max-dom N`
+instead of `--domain`. `--max-dom` is **explicit opt-in** and defaults to 1
+(single-domain). The parent advances, builds **each child's lateral boundary
+live**, and recurses — so you only need `wrfinput_d0N` for each domain and
+`wrfbdy_d01` for the outer domain (**no CPU-WRF `wrfout`, no pre-supplied
+`wrfbdy_d02`**):
+
+```bash
+python -m gpuwrf.cli run \
+    --input-dir   my_case \
+    --output-dir  runs/my_nested_forecast \
+    --max-dom     3 \
+    --hours       24 \
+    --scratch-dir /fast/nvme/gpuwrf_scratch
+```
+
+This writes a synchronized `wrfout_d01_*`, `wrfout_d02_*`, and `wrfout_d03_*`
+set. The 1 km inner nest requires a WRF-faithful qke cold-start seed in the
+initial state (carried by the native init and the WRF-restart path); see KI-1 in
+[KNOWN_ISSUES.md](KNOWN_ISSUES.md). The standalone live-nested path is proven on
+a 2 h `PIPELINE_GREEN` smoke (`proofs/v0120/standalone_nest_smoke.json`); the
+standalone nested 24 h 1 km skill proof is in flight.
 
 ## 4. Read the output
 
