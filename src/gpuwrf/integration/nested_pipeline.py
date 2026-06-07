@@ -41,6 +41,7 @@ import numpy as np
 from gpuwrf.contracts.grid import DomainHierarchy, DomainNest
 from gpuwrf.integration.d02_replay import build_replay_case
 from gpuwrf.io.radiation_static import load_radiation_static
+from gpuwrf.io.gwdo_static import load_gwdo_statics
 from gpuwrf.io.wrfout_writer import write_wrfout_netcdf
 from gpuwrf.runtime.domain_tree import (
     DomainBundle,
@@ -136,6 +137,8 @@ def _make_namelist(
     run_start: datetime,
     radiation_static: Any | None,
     cu_physics: int,
+    gwd_opt: int = 0,
+    gwdo_statics: Any | None = None,
 ) -> OperationalNamelist:
     """Per-domain operational namelist (mirrors the v0.11.0 nesting proof config).
 
@@ -166,6 +169,8 @@ def _make_namelist(
         top_lid=True,
         radiation_static=radiation_static,
         time_utc=run_start,
+        gwd_opt=int(gwd_opt),
+        gwdo_statics=gwdo_statics,
     )
     if parent_dt_s is not None:
         namelist = with_live_child_boundary_config(
@@ -181,16 +186,37 @@ def _make_namelist(
     return namelist
 
 
-def _domain_cu_physics(run, domain: str) -> int:
-    """Per-domain ``cu_physics`` from the namelist (cumulus normally off on fine nests)."""
+def _domain_int(run, group: str, key: str, domain: str, default: int = 0) -> int:
+    """Per-domain integer namelist value from ``group`` (max-dom list or scalar)."""
 
-    raw = run.namelist.get("physics", {}).get("cu_physics", 0)
+    raw = run.namelist.get(group, {}).get(key, default)
     if isinstance(raw, (list, tuple)):
         index = max(int(domain[1:]) - 1, 0)
         if index < len(raw):
             return int(raw[index])
-        return int(raw[-1]) if raw else 0
+        return int(raw[-1]) if raw else int(default)
     return int(raw)
+
+
+def _domain_physics_int(run, key: str, domain: str, default: int = 0) -> int:
+    """Per-domain integer ``&physics`` namelist value (max-dom list or scalar)."""
+
+    return _domain_int(run, "physics", key, domain, default)
+
+
+def _domain_gwd_opt(run, domain: str) -> int:
+    """Per-domain ``gwd_opt`` (WRF &dynamics control; &physics fallback)."""
+
+    value = _domain_int(run, "dynamics", "gwd_opt", domain, 0)
+    if value == 0:
+        value = _domain_int(run, "physics", "gwd_opt", domain, 0)
+    return value
+
+
+def _domain_cu_physics(run, domain: str) -> int:
+    """Per-domain ``cu_physics`` from the namelist (cumulus normally off on fine nests)."""
+
+    return _domain_physics_int(run, "cu_physics", domain, 0)
 
 
 def _nest_edge(run, child: str, parent: str) -> DomainNest:
@@ -248,6 +274,22 @@ def _load_domains(
         except Exception:  # noqa: BLE001 -- radiation static is best-effort; never block init.
             radiation_static = None
 
+        # Orographic gravity-wave drag per nested domain: read this domain's
+        # &physics gwd_opt and, when on, build its GWDOStatics from the geo_em
+        # sub-grid orography.  Fails closed to gwd_opt=0 if the statics are
+        # absent (no fabricated drag), mirroring the single-domain path.
+        gwd_opt = _domain_gwd_opt(run, name)
+        gwdo_statics = None
+        if gwd_opt == 1:
+            try:
+                gwdo_statics, _ = load_gwdo_statics(
+                    case.run, name, grid=case.grid, metrics=case.metrics
+                )
+            except Exception:  # noqa: BLE001 -- GWD is opt-in; never block init.
+                gwdo_statics = None
+            if gwdo_statics is None:
+                gwd_opt = 0
+
         # Seed the transitional legacy aliases (p/ph/mu) from the authoritative totals,
         # matching the single-domain operational path.
         state = case.state.replace(
@@ -262,6 +304,8 @@ def _load_domains(
             run_start=run_start,
             radiation_static=radiation_static,
             cu_physics=_domain_cu_physics(run, name),
+            gwd_opt=gwd_opt,
+            gwdo_statics=gwdo_statics,
         )
         bundles[name] = DomainBundle(
             name=name, state=state, namelist=namelist, grid=case.grid, metrics=case.metrics
@@ -283,6 +327,8 @@ def _load_domains(
                 "boundary_update_cadence_s": float(namelist.boundary_config.update_cadence_s),
                 "cu_physics": int(namelist.cu_physics),
                 "radiation_static_loaded": radiation_static is not None,
+                "gwd_opt": int(namelist.gwd_opt),
+                "gwdo_statics_loaded": namelist.gwdo_statics is not None,
             },
         }
     return hierarchy, bundles, meta, run_start, dt_by_domain

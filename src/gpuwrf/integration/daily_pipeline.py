@@ -28,6 +28,7 @@ from gpuwrf.io.data_inventory import parse_wrfout_valid_time
 from gpuwrf.io.gen2_accessor import Gen2Run
 from gpuwrf.io.land_state import load_hourly_land_state
 from gpuwrf.io.radiation_static import load_radiation_static
+from gpuwrf.io.gwdo_static import load_gwdo_statics
 from gpuwrf.io.async_wrfout import AsyncWrfoutWriter
 from gpuwrf.io.auxhist_stream import AuxhistStreamConfig
 from gpuwrf.io.wrfout_writer import (
@@ -231,6 +232,31 @@ def _build_real_case(config: DailyPipelineConfig) -> tuple[DailyCase, Path]:
     )
     topo_shading = int(_domain_namelist_value(replay.run, "physics", "topo_shading", config.domain, 0))
     slope_rad = int(_domain_namelist_value(replay.run, "physics", "slope_rad", config.domain, 0))
+    # Orographic gravity-wave drag (gwd_opt=1): read the case's own gwd_opt;
+    # when on, build the per-run GWDOStatics from the geo_em sub-grid orography
+    # (VAR/CON/OA1-4/OL1-4 in wrfinput) so the operational dispatch
+    # (operational_mode, ``gwd_opt==1 AND gwdo_statics is not None``) actually
+    # runs the drag.  gwd_opt=0 (default) or absent statics keep GWD a no-op.
+    # ``gwd_opt`` is a WRF &dynamics control (module_check_a_mundo / Registry);
+    # fall back to &physics for namelists that place it there.
+    gwd_opt = int(_domain_namelist_value(replay.run, "dynamics", "gwd_opt", config.domain, 0))
+    if gwd_opt == 0:
+        gwd_opt = int(_domain_namelist_value(replay.run, "physics", "gwd_opt", config.domain, 0))
+    gwdo_statics = None
+    gwdo_static_meta: dict[str, Any] = {"requested": bool(gwd_opt == 1)}
+    if gwd_opt == 1:
+        try:
+            gwdo_statics, gwdo_static_meta = load_gwdo_statics(
+                replay.run, config.domain, grid=replay.grid, metrics=replay.metrics
+            )
+            gwdo_static_meta["requested"] = True
+        except Exception as exc:  # noqa: BLE001 -- GWD is opt-in; never block init.
+            gwdo_statics = None
+            gwdo_static_meta = {"requested": True, "status": "error", "reason": str(exc)}
+        # Fail closed: if the statics could not be built, demote to a no-op so the
+        # run does not silently claim GWD that the kernel cannot apply.
+        if gwdo_statics is None:
+            gwd_opt = 0
     # Sprint U (P0-1): the real-case operational path MUST use the same F7-closed
     # dycore operators that the idealized gates use, not the pre-F7 primitive
     # advection path.  Concretely:
@@ -288,6 +314,8 @@ def _build_real_case(config: DailyPipelineConfig) -> tuple[DailyCase, Path]:
         topo_shadow_length_m=float(
             _domain_namelist_value(replay.run, "physics", "shadlen", config.domain, 25000.0)
         ),
+        gwd_opt=gwd_opt,
+        gwdo_statics=gwdo_statics,
     )
     run_start = _coerce_run_start(str(replay.metadata["run_start_label"]))
     metadata = {
@@ -318,8 +346,10 @@ def _build_real_case(config: DailyPipelineConfig) -> tuple[DailyCase, Path]:
             "topo_shading": int(namelist.topo_shading),
             "slope_rad": int(namelist.slope_rad),
             "topo_shadow_length_m": float(namelist.topo_shadow_length_m),
+            "gwd_opt": int(namelist.gwd_opt),
         },
         "radiation_static": radiation_static_meta,
+        "gwdo_static": gwdo_static_meta,
         "source": "gpuwrf.integration.d02_replay.build_replay_case",
         # Propagate the auto-detected init mode (replay vs standalone native-init)
         # so the forecast driver and the hourly land-refresh gate can branch on it.
