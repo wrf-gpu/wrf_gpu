@@ -1,0 +1,44 @@
+{
+  "schema": "v0.12.0-standalone-native-init-smoke-2026-06-07",
+  "objective": "CLI standalone native-init forecast runs out-of-the-box from wrfinput+wrfbdy (no CPU wrfout), no FileNotFoundError, no donate crash, finite wrfout, scratch off /tmp",
+  "cli_command": "python -m gpuwrf.cli run --input-dir /mnt/data/canairy_meteo/runs/wrf_l2/20260514_18z_l2_72h_20260517T145509Z --output-dir <out> --domain d01 --hours 2",
+  "case": "/mnt/data/canairy_meteo/runs/wrf_l2/20260514_18z_l2_72h_20260517T145509Z (wrfinput_d01+wrfbdy_d01+met_em[broken symlinks], NO wrfout)",
+  "init_mode": "standalone_native_init",
+  "verdict": "PIPELINE_GREEN",
+  "all_finite": true,
+  "wrfout_inventory_status": "PASS",
+  "wrfout_files": [
+    "/home/enric/.gpuwrf_smoke_v0120/out/wrfout_d01_2026-05-14_19:00:00",
+    "/home/enric/.gpuwrf_smoke_v0120/out/wrfout_d01_2026-05-14_20:00:00"
+  ],
+  "boundary_source": "wrfbdy native lateral forcing (standalone; no CPU wrfout replay)",
+  "scratch_dir": "/home/enric/.gpuwrf_smoke_v0120/scratch",
+  "scratch_off_tmp": true,
+  "wall_clock_total_s": 215.6208465959644,
+  "wall_clock_per_hour_s": [
+    147.57443031098228,
+    16.78083203593269
+  ],
+  "cold_jit_plus_hour1_s": 147.57443031098228,
+  "warm_forecast_hour_s": 16.78083203593269,
+  "peak_vram_observed_mib": 17852,
+  "max_rss_kib": 6257472,
+  "precision": "fp64 (force_fp64=True operational namelist)",
+  "forecast_entry": "run_forecast_operational_segmented (no outer donate; long-run-safe)",
+  "wrfout_physical_ranges": {
+    "T2_K": [
+      279.5,
+      295.7
+    ],
+    "U10_ms": [
+      -7.5,
+      6.3
+    ],
+    "PSFC_Pa": [
+      81672,
+      101977
+    ]
+  },
+  "donate_bug": "CLOSED at 2 layers: dealias at _build_real_case construction + dedup guard at run_forecast_operational donate JIT entry (unit-verified: 2 aliased buffers -> 3 distinct)",
+  "device": "cuda:0"
+}

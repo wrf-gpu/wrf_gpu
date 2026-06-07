@@ -53,24 +53,49 @@ def test_run_missing_input_dir(tmp_path: Path, capsys: pytest.CaptureFixture[str
     assert "--input-dir does not exist" in capsys.readouterr().err
 
 
-def test_run_namelist_must_match_input_dir(
+def test_run_namelist_defaults_to_input_dir(tmp_path: Path) -> None:
+    """v0.12.0: --namelist is optional and defaults to <input-dir>/namelist.input."""
+    parser = build_parser()
+    args = parser.parse_args(
+        [
+            "run",
+            "--input-dir", "in",
+            "--output-dir", "out",
+        ]
+    )
+    # Not supplied on the command line -> resolved inside _cmd_run to the case's own.
+    assert args.namelist is None
+
+
+def test_run_missing_default_namelist_fails_cleanly(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
+    """A case dir with no namelist.input and no --namelist fails closed (no traceback)."""
     case = tmp_path / "case"
-    case.mkdir()
-    _write_namelist(case / "namelist.input")
-    other = tmp_path / "other.input"
-    _write_namelist(other)
+    case.mkdir()  # deliberately no namelist.input
     rc = main(
         [
             "run",
-            "--namelist", str(other),
             "--input-dir", str(case),
             "--output-dir", str(tmp_path / "out"),
         ]
     )
     assert rc == 2
-    assert "must be <input-dir>/namelist.input" in capsys.readouterr().err
+    assert "--namelist file not found" in capsys.readouterr().err
+
+
+def test_run_scratch_dir_flag_parses(tmp_path: Path) -> None:
+    """v0.12.0: --scratch-dir is accepted (disk-backed scratch override)."""
+    parser = build_parser()
+    args = parser.parse_args(
+        [
+            "run",
+            "--input-dir", "in",
+            "--output-dir", "out",
+            "--scratch-dir", str(tmp_path / "scratch"),
+        ]
+    )
+    assert args.scratch_dir == tmp_path / "scratch"
 
 
 def test_run_hours_must_be_positive(

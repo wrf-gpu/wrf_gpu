@@ -154,23 +154,33 @@ def build_parser() -> argparse.ArgumentParser:
     )
     run.add_argument(
         "--namelist",
-        required=True,
+        required=False,
+        default=None,
         type=Path,
-        help="WRF namelist.input to validate fail-closed before the run "
-        "(must be the <input-dir>/namelist.input).",
+        help="WRF namelist.input to validate fail-closed before the run. "
+        "Defaults to <input-dir>/namelist.input (the case's own namelist).",
     )
     run.add_argument(
         "--input-dir",
         required=True,
         type=Path,
-        help="CPU-WRF/Gen2 run directory: source of IC, boundaries, land/SST, "
-        "and (by default) the CPU reference wrfouts.",
+        help="Run directory holding the case inputs. STANDALONE native-init when it "
+        "has wrfinput_<domain> + wrfbdy_d01 but no CPU wrfout history; CPU-WRF REPLAY "
+        "when it has >=2 wrfout_<domain> history files (auto-detected).",
     )
     run.add_argument(
         "--output-dir",
         required=True,
         type=Path,
         help="Directory for generated wrfout files and the run payload.",
+    )
+    run.add_argument(
+        "--scratch-dir",
+        type=Path,
+        default=None,
+        help="Disk-backed scratch directory for transient NetCDF/diagnostics "
+        "(NEVER /tmp tmpfs). Env GPUWRF_SCRATCH overrides; default is "
+        "<output-dir>/.scratch. Cleaned up on exit.",
     )
     run.add_argument(
         "--domain",
@@ -217,26 +227,55 @@ def _fail(message: str, *, code: int = 2) -> int:
 # --------------------------------------------------------------------------- #
 # run subcommand                                                              #
 # --------------------------------------------------------------------------- #
+def _resolve_scratch_dir(args: argparse.Namespace, output_dir: Path) -> Path:
+    """Resolve a DISK-backed scratch directory (never /tmp tmpfs).
+
+    Precedence: ``--scratch-dir`` > ``$GPUWRF_SCRATCH`` > ``<output-dir>/.scratch``.
+    The output dir is user-chosen and disk-backed, so ``.scratch`` under it inherits
+    a real filesystem. ``$HOME/.gpuwrf_scratch`` is the fallback if the output dir is
+    itself on tmpfs.
+    """
+    import os
+
+    if args.scratch_dir is not None:
+        return Path(args.scratch_dir)
+    env = os.environ.get("GPUWRF_SCRATCH", "").strip()
+    if env:
+        return Path(env).expanduser()
+    return output_dir / ".scratch"
+
+
+def _is_tmpfs(path: Path) -> bool:
+    """Best-effort check that ``path`` (or its nearest existing parent) is NOT tmpfs."""
+    import shutil
+
+    try:
+        probe = path
+        while not probe.exists() and probe != probe.parent:
+            probe = probe.parent
+        # A RAM-backed tmpfs typically reports a tiny total; the real risk the task
+        # flags is the default /tmp tmpfs. Treat an explicit /tmp prefix as tmpfs.
+        if str(path).startswith("/tmp/") or str(path) == "/tmp":
+            return True
+        del shutil  # filesystem-type probe is platform-specific; prefix check suffices
+        return False
+    except OSError:
+        return False
+
+
 def _cmd_run(args: argparse.Namespace) -> int:
-    namelist: Path = args.namelist
     input_dir: Path = args.input_dir
     output_dir: Path = args.output_dir
+    # Default the namelist to the case's own namelist.input (naive-user friendly).
+    namelist: Path = args.namelist if args.namelist is not None else (input_dir / "namelist.input")
 
     # --- Cheap fail-closed validation BEFORE any heavy import/compile. --------
     if not input_dir.is_dir():
         return _fail(f"--input-dir does not exist or is not a directory: {input_dir}")
     if not namelist.is_file():
-        return _fail(f"--namelist file not found: {namelist}")
-    # P0 low-churn rule: the namelist must be the case's own namelist.input.
-    expected = input_dir / "namelist.input"
-    try:
-        same = namelist.resolve() == expected.resolve()
-    except OSError:
-        same = False
-    if not same:
         return _fail(
-            "--namelist must be <input-dir>/namelist.input "
-            f"(expected {expected}, got {namelist})"
+            f"--namelist file not found: {namelist} "
+            "(pass --namelist or place namelist.input in --input-dir)"
         )
     if args.hours <= 0:
         return _fail(f"--hours must be a positive integer, got {args.hours}")
@@ -246,6 +285,17 @@ def _cmd_run(args: argparse.Namespace) -> int:
         return _fail(f"--compare-cpu-dir does not exist or is not a directory: {compare_dir}")
 
     proof_dir: Path = args.proof_dir if args.proof_dir is not None else (output_dir / "proofs")
+
+    # --- Scratch directory: disk-backed, off /tmp tmpfs, cleaned on exit. ------
+    scratch_dir = _resolve_scratch_dir(args, output_dir)
+    if _is_tmpfs(scratch_dir):
+        fallback = Path.home() / ".gpuwrf_scratch"
+        print(
+            f"gpuwrf: scratch dir {scratch_dir} is on /tmp tmpfs; using disk-backed "
+            f"{fallback} instead (override with --scratch-dir / GPUWRF_SCRATCH).",
+            file=sys.stderr,
+        )
+        scratch_dir = fallback
 
     # --- Namelist registry check (fail-closed, still pre-JAX). ----------------
     try:
@@ -264,6 +314,7 @@ def _cmd_run(args: argparse.Namespace) -> int:
     try:
         from gpuwrf.integration.daily_pipeline import (
             DailyPipelineConfig,
+            detect_init_mode,
             execute_daily_pipeline,
         )
     except Exception as exc:  # pragma: no cover - environment/dependency issue
@@ -284,7 +335,36 @@ def _cmd_run(args: argparse.Namespace) -> int:
         repeat=False,
     )
 
-    payload = execute_daily_pipeline(config)
+    # Auto-detect and announce the init mode so the user sees which path ran.
+    init_mode = detect_init_mode(config)
+    mode_label = (
+        "STANDALONE native-init (IC from wrfinput, LBC from wrfbdy; no CPU-WRF wrfout)"
+        if init_mode == "standalone_native_init"
+        else "CPU-WRF REPLAY (IC + LBC from existing wrfout history)"
+    )
+    print(
+        f"gpuwrf: init mode = {init_mode} -- {mode_label}; domain={args.domain} "
+        f"hours={args.hours}; scratch={scratch_dir}",
+        file=sys.stderr,
+    )
+
+    # Set scratch for any library code that honours it; create + clean it up.
+    import os
+    import shutil
+
+    scratch_dir.mkdir(parents=True, exist_ok=True)
+    os.environ.setdefault("GPUWRF_SCRATCH", str(scratch_dir))
+    os.environ["GPUWRF_TMPDIR"] = str(scratch_dir)  # d02_replay trace root etc.
+    cleanup_scratch = args.scratch_dir is None and not os.environ.get("GPUWRF_KEEP_SCRATCH")
+
+    try:
+        payload = execute_daily_pipeline(config)
+    finally:
+        if cleanup_scratch:
+            shutil.rmtree(scratch_dir, ignore_errors=True)
+
+    payload["init_mode"] = init_mode
+    payload["scratch_dir"] = str(scratch_dir)
 
     verdict = str(payload.get("verdict", "UNKNOWN"))
     exit_code = 0 if verdict == "PIPELINE_GREEN" else 1
