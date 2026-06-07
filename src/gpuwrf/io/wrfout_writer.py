@@ -970,16 +970,37 @@ def prepare_wrfout_payload(
     )
 
 
-def write_prepared_wrfout(prepared: PreparedWrfout) -> Path:
+def write_prepared_wrfout(
+    prepared: PreparedWrfout,
+    *,
+    variable_subset: tuple[str, ...] | frozenset[str] | None = None,
+    target_override: Path | None = None,
+) -> Path:
     """Write a :class:`PreparedWrfout` to NetCDF. Pure host work; thread-safe.
 
     Contains NO device-array access, so it is safe to run on a background writer
     thread while the GPU advances. The bytes are identical to the synchronous
     :func:`write_wrfout_netcdf` path.
+
+    ``variable_subset`` optionally restricts the emitted variables to the named
+    subset -- a stream-generic hook for a secondary WRF ``auxhist`` history stream
+    (e.g. a surface-only set). When ``None`` (the default) EVERY prepared field is
+    written exactly as before, so the main wrfout stream is byte-for-byte
+    unchanged. The ``Times``/``XTIME`` time coordinates and the global attributes
+    are ALWAYS written regardless of the subset (a stream-valid WRF history frame
+    always carries its time stamp -- matching how WRF stamps every auxhist frame).
+    A name in ``variable_subset`` that is absent from the prepared payload is
+    simply skipped (the file never fabricates a field), and the canonical
+    operational write order is preserved.
+
+    ``target_override`` writes the same host payload to a different path without a
+    second device->host pull -- used by the auxhist stream, which reuses the main
+    stream's already-materialized :class:`PreparedWrfout`.
     """
 
-    target = prepared.target
+    target = Path(target_override) if target_override is not None else prepared.target
     target.parent.mkdir(parents=True, exist_ok=True)
+    subset = None if variable_subset is None else frozenset(variable_subset)
     dimensions = prepared.dimensions
     with Dataset(target, "w", format="NETCDF4") as dataset:
         _create_dimensions(dataset, dimensions)
@@ -993,8 +1014,11 @@ def write_prepared_wrfout(prepared: PreparedWrfout) -> Path:
         # were actually prepared. Optional sources (operational diagnostics, the
         # Noah-MP land carry) self-gate: an absent source leaves its fields out of
         # ``prepared.fields`` so the file never carries a fabricated quantity.
+        # ``subset`` (when set) further restricts to a stream's requested vars.
         for name in OPERATIONAL_WRFOUT_VARIABLES:
             if name in {"Times", "XTIME"} or name not in prepared.fields:
+                continue
+            if subset is not None and name not in subset:
                 continue
             spec = WRFOUT_VARIABLE_SPECS[name]
             _write_float_variable(dataset, spec, prepared.fields[name], dimensions)
