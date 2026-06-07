@@ -225,6 +225,14 @@ def build_parser() -> argparse.ArgumentParser:
         help="Also score against AEMET station observations (needs GPUWRF_AEMET_ROOT; "
         "not part of the README runnability gate).",
     )
+    run.add_argument(
+        "--feedback",
+        action="store_true",
+        help="Enable TWO-WAY nesting (nested runs only): after each child finishes "
+        "its subcycle, feed its interior back onto the overlapping parent cells "
+        "(WRF copy_fcn area-average + sm121 feedback-zone smoother). Default off "
+        "(one-way nesting, the v0.11.0/v0.12.0-validated wiring).",
+    )
     run.set_defaults(func=_cmd_run)
 
     return parser
@@ -460,7 +468,14 @@ def _cmd_run(args: argparse.Namespace) -> int:
             hours=int(args.hours),
             max_dom=int(max_dom),
             scratch_dir=scratch_dir,
+            feedback=bool(getattr(args, "feedback", False)),
         )
+        if nested_config.feedback:
+            print(
+                "gpuwrf: TWO-WAY nesting ENABLED (child->parent copy_fcn + sm121 "
+                "feedback-zone smoother).",
+                file=sys.stderr,
+            )
         try:
             payload = execute_nested_pipeline(nested_config)
         except Exception as exc:  # noqa: BLE001 - report cleanly, no traceback
