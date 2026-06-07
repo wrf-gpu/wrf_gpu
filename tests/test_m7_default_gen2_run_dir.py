@@ -7,9 +7,13 @@ import pytest
 from gpuwrf.io.gen2_accessor import DEFAULT_M6_GEN2_RUN_DIR
 
 
+# NOTE: this test reads DEFAULT_M6_GEN2_RUN_DIR (a specific Gen2 corpus run dir),
+# so the skip must gate on THAT path, not just on the /mnt corpus root being
+# mounted -- otherwise the run dir can be absent/relocated while /mnt exists and
+# the test fails with "no wrfout_d02 history" instead of skipping.
 pytestmark = pytest.mark.skipif(
-    not Path("/mnt/data/canairy_meteo").exists(),
-    reason="Gen2 read-only tree /mnt/data/canairy_meteo not mounted",
+    not DEFAULT_M6_GEN2_RUN_DIR.exists(),
+    reason=f"Gen2 corpus run directory unavailable (not vendored): {DEFAULT_M6_GEN2_RUN_DIR}",
 )
 
 

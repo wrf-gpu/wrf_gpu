@@ -46,7 +46,19 @@ import re
 import subprocess
 from pathlib import Path
 
+import jax
 import pytest
+
+
+# The tests decorated below run the bench inside the torch+triton CUDA venv and
+# launch Triton kernels on the RTX 5090, or cross-check un-vendored GPU profiler
+# artifacts (.cubin). They cannot pass on a CPU-only checkout without torch/triton
+# + a GPU; they are GPU-benchmark tests of a legacy bakeoff subsystem untouched by
+# the operational pipeline.
+requires_gpu_toolchain = pytest.mark.skipif(
+    jax.default_backend() != "gpu",
+    reason="M2 triton bakeoff edge cases require a GPU + torch/triton CUDA backend",
+)
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -245,6 +257,7 @@ def test_achieved_bandwidth_is_consistent_with_transfer_and_wall() -> None:
         )
 
 
+@requires_gpu_toolchain
 def test_profile_artifact_paths_are_relative_and_exist() -> None:
     """Profile artifact_paths must be repo-relative and resolve on disk."""
 
@@ -603,6 +616,7 @@ def _run_bench(args: list[str]) -> subprocess.CompletedProcess:
     return subprocess.run(cmd, cwd=ROOT, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env)
 
 
+@requires_gpu_toolchain
 def test_bench_rejects_unknown_problem(tmp_path: Path) -> None:
     _require_venv()
     res = _run_bench(["--problem", "not_a_problem"])
@@ -611,6 +625,7 @@ def test_bench_rejects_unknown_problem(tmp_path: Path) -> None:
     assert "invalid choice" in blob or "not_a_problem" in blob
 
 
+@requires_gpu_toolchain
 def test_bench_rejects_missing_stencil_input(tmp_path: Path) -> None:
     _require_venv()
     missing = tmp_path / "does_not_exist.npz"
@@ -667,6 +682,7 @@ def test_bench_rejects_truncated_zip(tmp_path: Path) -> None:
     assert res.returncode != 0
 
 
+@requires_gpu_toolchain
 def test_bench_detects_wrong_fixture_for_problem(tmp_path: Path) -> None:
     """Passing the column fixture as the stencil input must fail loudly
     (missing required array) rather than silently produce garbage."""
@@ -693,6 +709,7 @@ def test_bench_detects_wrong_fixture_for_problem(tmp_path: Path) -> None:
     )
 
 
+@requires_gpu_toolchain
 def test_bench_end_to_end_stencil_reproduces_reference(tmp_path: Path) -> None:
     """End-to-end: invoke the bench on a fresh temp scratch and confirm
     its candidate matches the reference fixture. Catches a worker
@@ -727,6 +744,7 @@ def test_bench_end_to_end_stencil_reproduces_reference(tmp_path: Path) -> None:
     assert json.loads(cmp.stdout)["pass"] is True
 
 
+@requires_gpu_toolchain
 def test_bench_end_to_end_column_reproduces_reference(tmp_path: Path) -> None:
     _require_venv()
     if not COLUMN_FIXTURE.exists():
@@ -757,6 +775,7 @@ def test_bench_end_to_end_column_reproduces_reference(tmp_path: Path) -> None:
     assert json.loads(cmp.stdout)["pass"] is True
 
 
+@requires_gpu_toolchain
 def test_bench_stencil_is_bitwise_reproducible(tmp_path: Path) -> None:
     """Two back-to-back stencil runs on the same input must produce
     byte-identical output. Catches the silent introduction of
@@ -782,6 +801,7 @@ def test_bench_stencil_is_bitwise_reproducible(tmp_path: Path) -> None:
     assert digests[0] == digests[1], "stencil bench output differs between back-to-back runs"
 
 
+@requires_gpu_toolchain
 def test_bench_column_is_bitwise_reproducible(tmp_path: Path) -> None:
     _require_venv()
     if not COLUMN_FIXTURE.exists():
