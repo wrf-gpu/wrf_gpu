@@ -1,8 +1,16 @@
 fixture_id: rrtmg-intermediate-oracle-v1
 source: wrf-derived
-source_commit: wrf-rrtmg-intermediate-harness sha256=a05460d80e6f06e5c35932e37d985d25c4ac96fc6104ea4bed0bdb41217cea6e;
+source_commit: |
+  wrf-rrtmg-intermediate-harness sha256=faa472719fd7a476c1387cb0f0706d36ed9c5ea8d00360c50043cdba4c7a3a90;
   module_ra_rrtmg_sw.F.o=present; module_ra_rrtmg_lw.F.o=present; low_level_calls=setcoef_sw+taumol_sw+spcvmc_sw+setcoef+taumol+rtrnmc;
-  rrtmg_data_convert=big_endian
+  rrtmg_data_convert=big_endian; build=wrf_pristine-WRFv4-gfortran-serial (independent
+  arbiter; Gen2 NVHPC objects unavailable). KI-6 fix 2026-06-07 - the SW intermediate
+  oracle now uses the WRF O3DATA climatology ozone (o3input=0 path; o3vmr=o3mmr*amdo),
+  matching the real RRTMG_SWRAD driver and the JAX SW kernel. The prior constant
+  o3_vmr_default=8e-8 harness simplification left the O3-dependent SW UV bands
+  (9,10,12,13) disagreeing with the climatology JAX taug (worst at the extra model-top
+  layer, ~28x). Only sw_colmol/sw_taug/sw_sfluxzen/sw_per_band_flux changed; all LW
+  arrays + sw_taur/sw_fac*/jp/jt bit-identical to the prior Gen2 oracle.
 wrf_version: v4.7.1-derived-RRTMG-real-driver-column-harness
 scenario: three RRTMG columns with per-band SW/LW fluxes and solver-entry intermediate
   state
@@ -184,12 +192,12 @@ variables:
   tier_overrides: null
 files:
 - path: data/fixtures/rrtmg-intermediate-oracle-v1.npz
-  checksum_sha256: 008f7a00e7835557ce101a8f83b36896de63e6f30d66646cdd6869a0c07133ab
-  bytes: 256933
+  checksum_sha256: 1ba5287b810c3fd1cf2179408d21060650db694f7fcff27838ccd63628284afc
+  bytes: 256893
   external: false
 - path: data/scratch/wrf_rrtmg_harness
-  checksum_sha256: a05460d80e6f06e5c35932e37d985d25c4ac96fc6104ea4bed0bdb41217cea6e
-  bytes: 1085984
+  checksum_sha256: faa472719fd7a476c1387cb0f0706d36ed9c5ea8d00360c50043cdba4c7a3a90
+  bytes: 1073920
   external: true
 - path: data/fixtures/rrtmg-tables-v1.npz
   checksum_sha256: 5cc63950c81795b02f7bf47147afc4a9d667ae00f14510f7325816fb4f3a06e2

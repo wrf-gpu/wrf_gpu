@@ -2648,30 +2648,30 @@
         "colmol": {
           "abs_tol": 0.0001,
           "band": null,
-          "candidate_at_max": 4224.583804840276,
-          "max_abs": 0.005191559025661263,
+          "candidate_at_max": 3090.01416015625,
+          "max_abs": 0.0029296875,
           "max_cell": [
             2,
-            1,
+            4,
             5
           ],
-          "max_rel": 1.5620997223598538e-06,
+          "max_rel": 4.4774620658328716e-05,
           "pass": true,
           "quantity": "sw_setcoef.colmol",
-          "reference_at_max": 4224.57861328125,
+          "reference_at_max": 3090.01123046875,
           "rel_tol": 0.001,
           "shape_mismatch": false
         },
         "fac00": {
           "abs_tol": 0.0001,
           "band": null,
-          "candidate_at_max": 0.7026237944862868,
-          "max_abs": 1.4017035725233384e-05,
+          "candidate_at_max": 0.702624499797821,
+          "max_abs": 1.4722347259521484e-05,
           "max_cell": [
             2,
             0
           ],
-          "max_rel": 0.00021528480863616424,
+          "max_rel": 0.00046878745316647724,
           "pass": true,
           "quantity": "sw_setcoef.fac00",
           "reference_at_max": 0.7026097774505615,
@@ -2681,29 +2681,29 @@
         "fac01": {
           "abs_tol": 0.0001,
           "band": null,
-          "candidate_at_max": 0.7527987724726504,
-          "max_abs": 1.611648151222944e-05,
+          "candidate_at_max": 0.3856607973575592,
+          "max_abs": 1.5556812286376953e-05,
           "max_cell": [
-            0,
-            1
+            1,
+            0
           ],
-          "max_rel": 0.0003919633553173448,
+          "max_rel": 0.00042480166223759667,
           "pass": true,
           "quantity": "sw_setcoef.fac01",
-          "reference_at_max": 0.7528148889541626,
+          "reference_at_max": 0.3856763541698456,
           "rel_tol": 0.001,
           "shape_mismatch": false
         },
         "fac10": {
           "abs_tol": 0.0001,
           "band": null,
-          "candidate_at_max": 0.25340592638973325,
-          "max_abs": 1.597182277768283e-05,
+          "candidate_at_max": 0.25340551137924194,
+          "max_abs": 1.5556812286376953e-05,
           "max_cell": [
             2,
             1
           ],
-          "max_rel": 0.0002156917327223975,
+          "max_rel": 0.00046874769294082754,
           "pass": true,
           "quantity": "sw_setcoef.fac10",
           "reference_at_max": 0.25338995456695557,
@@ -2713,13 +2713,13 @@
         "fac11": {
           "abs_tol": 0.0001,
           "band": null,
-          "candidate_at_max": 0.10763510652763913,
-          "max_abs": 9.019291567102794e-06,
+          "candidate_at_max": 0.10763521492481232,
+          "max_abs": 8.910894393920898e-06,
           "max_cell": [
             2,
             0
           ],
-          "max_rel": 0.00039415392670090975,
+          "max_rel": 0.0004248279230240081,
           "pass": true,
           "quantity": "sw_setcoef.fac11",
           "reference_at_max": 0.10764412581920624,
@@ -2729,16 +2729,16 @@
         "forfac": {
           "abs_tol": 0.0001,
           "band": null,
-          "candidate_at_max": 0.9864139476855136,
-          "max_abs": 1.1120632659178398e-07,
+          "candidate_at_max": 0.10468482226133347,
+          "max_abs": 7.450580596923828e-09,
           "max_cell": [
             0,
-            0
+            16
           ],
-          "max_rel": 1.6493183752433484e-07,
+          "max_rel": 7.117155062453733e-08,
           "pass": true,
           "quantity": "sw_setcoef.forfac",
-          "reference_at_max": 0.986413836479187,
+          "reference_at_max": 0.10468481481075287,
           "rel_tol": 0.001,
           "shape_mismatch": false
         },
@@ -2825,16 +2825,16 @@
         "selffac": {
           "abs_tol": 0.0001,
           "band": null,
-          "candidate_at_max": 0.014273544961720215,
-          "max_abs": 2.9822285040753682e-09,
+          "candidate_at_max": 0.012172609567642212,
+          "max_abs": 9.313225746154785e-10,
           "max_cell": [
-            0,
-            0
+            2,
+            2
           ],
-          "max_rel": 2.8916636038606234e-07,
+          "max_rel": 1.0798829363701101e-07,
           "pass": true,
           "quantity": "sw_setcoef.selffac",
-          "reference_at_max": 0.01427354197949171,
+          "reference_at_max": 0.012172608636319637,
           "rel_tol": 0.001,
           "shape_mismatch": false
         }
@@ -2852,7 +2852,7 @@
         1,
         7
       ],
-      "max_rel": 3.735901459402517e-07,
+      "max_rel": 1.2308566646143602e-07,
       "pass": true,
       "quantity": "sw_sfluxzen",
       "reference_at_max": 94.79600524902344,
@@ -2863,14 +2863,14 @@
       {
         "abs_tol": 1e-08,
         "band": 1,
-        "candidate_at_max": 136.73270490535234,
-        "max_abs": 0.000495167889852155,
+        "candidate_at_max": 136.73284912109375,
+        "max_abs": 0.0003509521484375,
         "max_cell": [
           2,
           0,
           5
         ],
-        "max_rel": 3.621416668277452e-06,
+        "max_rel": 2.6275106041357016e-06,
         "pass": true,
         "quantity": "sw_taug",
         "reference_at_max": 136.7332000732422,
@@ -2880,14 +2880,14 @@
       {
         "abs_tol": 1e-08,
         "band": 2,
-        "candidate_at_max": 28056.194501670896,
-        "max_abs": 0.11799832910401165,
+        "candidate_at_max": 28056.220703125,
+        "max_abs": 0.091796875,
         "max_cell": [
           2,
           0,
           11
         ],
-        "max_rel": 4.205767564928985e-06,
+        "max_rel": 3.271879545824135e-06,
         "pass": true,
         "quantity": "sw_taug",
         "reference_at_max": 28056.3125,
@@ -2897,14 +2897,14 @@
       {
         "abs_tol": 1e-08,
         "band": 3,
-        "candidate_at_max": 116.09933426129068,
-        "max_abs": 0.0002903724983838174,
+        "candidate_at_max": 116.09944152832031,
+        "max_abs": 0.00018310546875,
         "max_cell": [
           2,
           0,
           7
         ],
-        "max_rel": 5.278550971255024e-06,
+        "max_rel": 2.4752904134178406e-06,
         "pass": true,
         "quantity": "sw_taug",
         "reference_at_max": 116.09962463378906,
@@ -2914,31 +2914,31 @@
       {
         "abs_tol": 1e-08,
         "band": 4,
-        "candidate_at_max": 85.79313588521255,
-        "max_abs": 0.00013804056870014847,
+        "candidate_at_max": 71.56654357910156,
+        "max_abs": 7.62939453125e-05,
         "max_cell": [
           2,
-          0,
+          1,
           7
         ],
-        "max_rel": 3.1890055407376425e-06,
+        "max_rel": 2.112337543090019e-06,
         "pass": true,
         "quantity": "sw_taug",
-        "reference_at_max": 85.79327392578125,
+        "reference_at_max": 71.56661987304688,
         "rel_tol": 0.0001,
         "shape_mismatch": false
       },
       {
         "abs_tol": 1e-08,
         "band": 5,
-        "candidate_at_max": 1353.0194605829086,
-        "max_abs": 0.00361070615394965,
+        "candidate_at_max": 1353.020751953125,
+        "max_abs": 0.0023193359375,
         "max_cell": [
           2,
           0,
           9
         ],
-        "max_rel": 3.6328983453637712e-06,
+        "max_rel": 2.69366779309369e-06,
         "pass": true,
         "quantity": "sw_taug",
         "reference_at_max": 1353.0230712890625,
@@ -2948,14 +2948,14 @@
       {
         "abs_tol": 1e-08,
         "band": 6,
-        "candidate_at_max": 770.2447883725412,
-        "max_abs": 0.0017936587088343003,
+        "candidate_at_max": 770.2454223632812,
+        "max_abs": 0.00115966796875,
         "max_cell": [
           2,
           0,
           9
         ],
-        "max_rel": 8.172446674906763e-06,
+        "max_rel": 2.4980480876754835e-06,
         "pass": true,
         "quantity": "sw_taug",
         "reference_at_max": 770.24658203125,
@@ -2965,14 +2965,14 @@
       {
         "abs_tol": 1e-08,
         "band": 7,
-        "candidate_at_max": 0.13962418448658515,
-        "max_abs": 2.472427315658443e-07,
+        "candidate_at_max": 0.13962429761886597,
+        "max_abs": 1.341104507446289e-07,
         "max_cell": [
           2,
           0,
           1
         ],
-        "max_rel": 2.157637472211678e-06,
+        "max_rel": 1.5540549036295169e-06,
         "pass": true,
         "quantity": "sw_taug",
         "reference_at_max": 0.1396244317293167,
@@ -2982,14 +2982,14 @@
       {
         "abs_tol": 1e-08,
         "band": 8,
-        "candidate_at_max": 49.68461505436464,
-        "max_abs": 0.00012310481504584914,
+        "candidate_at_max": 49.684661865234375,
+        "max_abs": 7.62939453125e-05,
         "max_cell": [
           2,
           0,
           9
         ],
-        "max_rel": 8.941069766420717e-06,
+        "max_rel": 8.649388288227351e-06,
         "pass": true,
         "quantity": "sw_taug",
         "reference_at_max": 49.68473815917969,
@@ -2999,34 +2999,34 @@
       {
         "abs_tol": 1e-08,
         "band": 9,
-        "candidate_at_max": 13.58042425844363,
-        "max_abs": 4.67803747294937e-05,
+        "candidate_at_max": 13.580408096313477,
+        "max_abs": 3.528594970703125e-05,
         "max_cell": [
           2,
           0,
           7
         ],
-        "max_rel": 3.4446798344311386e-06,
+        "max_rel": 3.2819892178836464e-05,
         "pass": true,
         "quantity": "sw_taug",
-        "reference_at_max": 13.58047103881836,
+        "reference_at_max": 13.580443382263184,
         "rel_tol": 0.0001,
         "shape_mismatch": false
       },
       {
         "abs_tol": 1e-08,
         "band": 10,
-        "candidate_at_max": 0.0664465994996776,
-        "max_abs": 1.2205412489030287e-07,
+        "candidate_at_max": 0.0659838393330574,
+        "max_abs": 6.705522537231445e-08,
         "max_cell": [
           2,
           0,
           5
         ],
-        "max_rel": 4.613024919110164e-06,
+        "max_rel": 4.14459735636526e-05,
         "pass": true,
         "quantity": "sw_taug",
-        "reference_at_max": 0.06644672155380249,
+        "reference_at_max": 0.06598390638828278,
         "rel_tol": 0.0001,
         "shape_mismatch": false
       },
@@ -3050,48 +3050,48 @@
       {
         "abs_tol": 1e-08,
         "band": 12,
-        "candidate_at_max": 13210.99747579829,
-        "max_abs": 0.3881007982909068,
+        "candidate_at_max": 4946.0029296875,
+        "max_abs": 0.14013671875,
         "max_cell": [
           1,
           0,
           7
         ],
-        "max_rel": 9.188861713235044e-05,
+        "max_rel": 8.817964522852503e-05,
         "pass": true,
         "quantity": "sw_taug",
-        "reference_at_max": 13210.609375,
+        "reference_at_max": 4945.86279296875,
         "rel_tol": 0.0001,
         "shape_mismatch": false
       },
       {
         "abs_tol": 1e-08,
         "band": 13,
-        "candidate_at_max": 5.010077687254235,
-        "max_abs": 1.308535604138683e-05,
+        "candidate_at_max": 0.7208207845687866,
+        "max_abs": 2.8908252716064453e-05,
         "max_cell": [
           2,
-          1,
-          5
+          4,
+          0
         ],
-        "max_rel": 2.6285735135299416e-06,
+        "max_rel": 4.0106241018992896e-05,
         "pass": true,
         "quantity": "sw_taug",
-        "reference_at_max": 5.010064601898193,
+        "reference_at_max": 0.7207918763160706,
         "rel_tol": 0.0001,
         "shape_mismatch": false
       },
       {
         "abs_tol": 1e-08,
         "band": 14,
-        "candidate_at_max": 150700.05153767217,
-        "max_abs": 0.26096232782583684,
+        "candidate_at_max": 150700.1875,
+        "max_abs": 0.125,
         "max_cell": [
           2,
           0,
           11
         ],
-        "max_rel": 7.861435229411621e-06,
+        "max_rel": 6.1500431293738884e-06,
         "pass": true,
         "quantity": "sw_taug",
         "reference_at_max": 150700.3125,
@@ -3102,18 +3102,18 @@
     "taur": {
       "abs_tol": 1e-08,
       "band": null,
-      "candidate_at_max": 0.4142822050624215,
-      "max_abs": 5.08981260027852e-07,
+      "candidate_at_max": 0.24392250180244446,
+      "max_abs": 2.980232238769531e-07,
       "max_cell": [
         2,
-        1,
+        6,
         0,
         12
       ],
-      "max_rel": 1.5661223633238288e-06,
+      "max_rel": 1.3368885656589317e-06,
       "pass": true,
       "quantity": "sw_taur",
-      "reference_at_max": 0.4142816960811615,
+      "reference_at_max": 0.24392279982566833,
       "rel_tol": 0.0001,
       "shape_mismatch": false
     }
