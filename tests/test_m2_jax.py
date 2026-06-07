@@ -4,16 +4,29 @@ import json
 import subprocess
 from pathlib import Path
 
+import jax
+import pytest
+
 
 ROOT = Path(__file__).resolve().parents[1]
 ARTIFACT_DIR = ROOT / "artifacts" / "m2" / "jax"
 SCRATCH = ROOT / "data" / "scratch" / "m2-jax"
+
+# The M2 JAX bakeoff runs the pipeline in a venv and asserts default_backend=="gpu"
+# with a CudaDevice (RTX 5090). It cannot pass on a CPU-only checkout; it is a
+# GPU-benchmark test of a legacy subsystem untouched by the operational pipeline.
+# (The committed static-artifact check still runs.)
+requires_gpu_toolchain = pytest.mark.skipif(
+    jax.default_backend() != "gpu",
+    reason="M2 JAX bakeoff requires a JAX GPU (CUDA) backend on the RTX 5090",
+)
 
 
 def run(cmd: list[str]) -> subprocess.CompletedProcess[str]:
     return subprocess.run(cmd, cwd=ROOT, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
 
 
+@requires_gpu_toolchain
 def test_jax_pipeline_artifacts_are_valid() -> None:
     run(["bash", "scripts/m2_run_jax.sh"])
     backend = json.loads((SCRATCH / "jax_backend.json").read_text())

@@ -4,16 +4,30 @@ import json
 import subprocess
 from pathlib import Path
 
+import jax
+import pytest
+
 
 ROOT = Path(__file__).resolve().parents[1]
 ARTIFACT_DIR = ROOT / "artifacts" / "m2" / "triton"
 SCRATCH = ROOT / "data" / "scratch" / "m2-triton"
+
+# The M2 Triton bakeoff builds a torch+triton venv and runs Triton kernels on the
+# RTX 5090, asserting torch CUDA + a specific triton version. It cannot pass on a
+# CPU-only checkout without torch/triton + a GPU; it is a GPU-benchmark test of a
+# legacy subsystem untouched by the operational pipeline. (The committed
+# static-artifact check still runs.)
+requires_gpu_toolchain = pytest.mark.skipif(
+    jax.default_backend() != "gpu",
+    reason="M2 Triton bakeoff requires a GPU + torch/triton CUDA backend",
+)
 
 
 def run(cmd: list[str]) -> subprocess.CompletedProcess[str]:
     return subprocess.run(cmd, cwd=ROOT, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
 
 
+@requires_gpu_toolchain
 def test_triton_pipeline_artifacts_are_valid() -> None:
     run(["bash", "scripts/m2_run_triton.sh"])
     backend = json.loads((SCRATCH / "triton_backend.json").read_text())
