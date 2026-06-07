@@ -185,7 +185,17 @@ def build_parser() -> argparse.ArgumentParser:
     run.add_argument(
         "--domain",
         default="d02",
-        help="Domain id to run (e.g. d02).",
+        help="Domain id to run for a SINGLE-domain run (e.g. d02). Ignored when "
+        "the run is nested (max_dom > 1): all domains d01..dN are run together.",
+    )
+    run.add_argument(
+        "--max-dom",
+        type=int,
+        default=None,
+        help="Number of nested domains to run (d01..dN). Defaults to the "
+        "namelist's max_dom. >1 runs the STANDALONE LIVE-NESTED driver "
+        "(parent feeds each child's lateral boundary live; no CPU-WRF wrfout). "
+        "1 runs the single-domain path on --domain.",
     )
     run.add_argument(
         "--hours",
@@ -222,6 +232,20 @@ def _fail(message: str, *, code: int = 2) -> int:
     """Print a clean error to stderr and return an exit code (no traceback)."""
     print(f"gpuwrf: error: {message}", file=sys.stderr)
     return code
+
+
+def _namelist_max_dom(namelist: Path) -> int:
+    """Read ``&domains max_dom`` from a WRF namelist (cheap; pre-JAX). Defaults to 1."""
+    from gpuwrf.io.gen2_accessor import parse_namelist
+
+    parsed = parse_namelist(namelist)
+    raw = parsed.get("domains", {}).get("max_dom", 1)
+    if isinstance(raw, (list, tuple)):
+        raw = raw[0] if raw else 1
+    try:
+        return max(1, int(raw))
+    except (TypeError, ValueError):
+        return 1
 
 
 # --------------------------------------------------------------------------- #
@@ -309,6 +333,76 @@ def _cmd_run(args: argparse.Namespace) -> int:
         return _fail(str(exc))
     except Exception as exc:  # parsing / IO problems should also fail cleanly
         return _fail(f"could not validate namelist {namelist}: {type(exc).__name__}: {exc}")
+
+    # --- Resolve the domain count: --max-dom overrides the namelist's max_dom. -
+    try:
+        namelist_max_dom = _namelist_max_dom(namelist)
+    except Exception:  # noqa: BLE001 - default to single-domain if max_dom unreadable
+        namelist_max_dom = 1
+    max_dom = int(args.max_dom) if args.max_dom is not None else namelist_max_dom
+    if max_dom < 1:
+        return _fail(f"--max-dom must be >= 1, got {max_dom}")
+
+    # --- Nested (max_dom > 1): STANDALONE LIVE-NESTED driver. -----------------
+    # The parent advances, builds each child's lateral boundary LIVE, and recurses
+    # to the child; the child IC comes from wrfinput_d0N and only wrfbdy_d01 forces
+    # the root -- NO CPU-WRF wrfout dependency. max_dom == 1 keeps the single-domain
+    # standalone/replay path below.
+    if max_dom > 1:
+        import os
+        import shutil
+
+        scratch_dir.mkdir(parents=True, exist_ok=True)
+        os.environ.setdefault("GPUWRF_SCRATCH", str(scratch_dir))
+        os.environ["GPUWRF_TMPDIR"] = str(scratch_dir)
+        cleanup_scratch = args.scratch_dir is None and not os.environ.get("GPUWRF_KEEP_SCRATCH")
+        print(
+            f"gpuwrf: init mode = standalone_native_init_nested -- STANDALONE "
+            f"LIVE-NESTED (d01..d{max_dom:02d}; parent feeds each child LBC live; "
+            f"no CPU-WRF wrfout); hours={args.hours}; scratch={scratch_dir}",
+            file=sys.stderr,
+        )
+        try:
+            from gpuwrf.integration.nested_pipeline import (
+                NestedPipelineConfig,
+                execute_nested_pipeline,
+            )
+        except Exception as exc:  # pragma: no cover - environment/dependency issue
+            return _fail(
+                f"failed to import the nested forecast driver "
+                f"({type(exc).__name__}: {exc}). Is the package installed and is JAX available?"
+            )
+
+        nested_config = NestedPipelineConfig(
+            input_dir=input_dir,
+            output_dir=output_dir,
+            proof_dir=proof_dir,
+            hours=int(args.hours),
+            max_dom=int(max_dom),
+            scratch_dir=scratch_dir,
+        )
+        try:
+            payload = execute_nested_pipeline(nested_config)
+        except Exception as exc:  # noqa: BLE001 - report cleanly, no traceback
+            if cleanup_scratch:
+                shutil.rmtree(scratch_dir, ignore_errors=True)
+            return _fail(
+                f"nested forecast failed ({type(exc).__name__}: {exc})", code=1
+            )
+        finally:
+            if cleanup_scratch:
+                shutil.rmtree(scratch_dir, ignore_errors=True)
+
+        payload["scratch_dir"] = str(scratch_dir)
+        # Persist the run payload alongside the single-domain pipeline artifact name.
+        proof_dir.mkdir(parents=True, exist_ok=True)
+        (proof_dir / "nested_pipeline_run.json").write_text(
+            json.dumps(payload, indent=2, sort_keys=True, default=str)
+        )
+        verdict = str(payload.get("verdict", "UNKNOWN"))
+        exit_code = 0 if verdict == "PIPELINE_GREEN" else 1
+        print(json.dumps(payload, indent=2, sort_keys=True, default=str))
+        return exit_code
 
     # --- Heavy path: import the pipeline and run. -----------------------------
     try:

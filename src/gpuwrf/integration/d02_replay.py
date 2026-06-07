@@ -1088,6 +1088,7 @@ def build_replay_case(
     domain: str = "d02",
     boundary_domain: str | None = None,
     standalone: bool | None = None,
+    load_lateral_boundaries: bool = True,
 ) -> ReplayCase:
     """Load a Gen2 d02 initial state with WRF perturbation/base splits preserved.
 
@@ -1096,6 +1097,16 @@ def build_replay_case(
     ``wrfinput_<domain>`` and the lateral forcing from ``wrfbdy_<domain>`` -- the
     genuine out-of-the-box path with NO CPU-WRF wrfout dependency. Otherwise the
     classic REPLAY path (IC from wrfout t=0, LBC from wrfout history) is used.
+
+    ``load_lateral_boundaries=False`` loads ONLY the initial state from
+    ``wrfinput_<domain>`` and leaves the ``*_bdy`` leaves at their zero-shaped
+    ``State.zeros`` defaults -- the standalone LIVE-NESTED child path. A nested
+    child reads NO lateral forcing from disk (no ``wrfbdy_<child>``, no
+    ``wrfout_<child>``): the live parent constructs its boundary package each
+    parent step (``build_child_boundary_package``), so the child only needs
+    correctly-shaped (and unread) boundary leaves. ``wrfbdy_d01`` still forces the
+    root. ``standalone`` is auto-forced True under this flag so the IC reads come
+    from ``wrfinput`` and the wrfinput analysis-time label is used for run-start.
     """
 
     _debug(f"build_replay_case start run_dir={run_dir} domain={domain} boundary_domain={boundary_domain}")
@@ -1131,10 +1142,25 @@ def build_replay_case(
     # wrfout exists, so the IC reads below still resolve to wrfinput.
     wrfout_history_count = len(sorted(run.path.glob(f"wrfout_{domain}_*")))
     is_standalone = bool(standalone) if standalone is not None else (wrfout_history_count < 2)
+    # A live-nested child reads NO lateral forcing from disk: force the standalone
+    # IC path (wrfinput) and keep the zero-shaped State.zeros *_bdy leaves; the live
+    # parent overwrites them each parent step via build_child_boundary_package.
+    if not load_lateral_boundaries:
+        is_standalone = True
     source_domain = boundary_domain or domain
     boundary_leaves: dict[str, Any] | None = None
     boundary_meta: dict[str, Any] | None = None
-    if is_standalone:
+    if not load_lateral_boundaries:
+        boundary_leaves = {}
+        boundary_meta = {
+            "source": "live parent (standalone nested child; no wrfbdy/wrfout read)",
+            "note": (
+                "child *_bdy leaves stay at State.zeros shapes; the parent supplies "
+                "the boundary package each parent step (build_child_boundary_package)"
+            ),
+        }
+        _debug(f"standalone live-nested child: {domain} reads IC only (no LBC from disk)")
+    elif is_standalone:
         # Standalone boundary leaves are decoded from wrfbdy below, after the IC
         # base/perturbation split (mu_total) is known (needed to decouple).
         _debug(f"standalone native-init: wrfout_{domain} history={wrfout_history_count} (<2) -> wrfbdy LBC")
@@ -1167,7 +1193,7 @@ def build_replay_case(
     # .agent/reviews/2026-06-01-opus-pressure-drift-rootcause.md).
     theta_base = _wrf_base_theta_from_loaded_state(pb=pb, phb=phb, mub=mub, metrics=metrics)
 
-    if is_standalone:
+    if is_standalone and load_lateral_boundaries:
         mub_np = np.asarray(jax.device_get(mub))
         phb_np = np.asarray(jax.device_get(phb))
         pb_np = np.asarray(jax.device_get(pb))
