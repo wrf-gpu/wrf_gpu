@@ -15,17 +15,19 @@ from jax import config as _jax_config
 
 _jax_config.update("jax_enable_x64", True)
 
-# v0.2.0 wall-clock win #1: enable JAX's persistent on-disk compilation cache so
-# repeat runs (daily forecasts AND our own re-validation) read the compiled XLA
-# executable from disk instead of recompiling cold (~40%% of d02 24h wall, ~80-90%%
-# of short jobs per .agent/reviews/2026-06-01-gpt-wallclock-optimization.md). This
-# is NUMERICS-NEUTRAL: the cache returns the identical executable; no float op
-# changes. Best-effort and silently no-op if /mnt/data is unavailable or
-# GPUWRF_JAX_CACHE=0 is set. Must run before the first compile (i.e. at import).
-from gpuwrf.runtime.jax_cache import configure_jax_compilation_cache as _configure_jax_cache
+# Persistent JIT/XLA compilation cache (v0.12.0 first-run usability win): the
+# v0.12.0 critique measured a ~4 min 55 s cold JIT compile on EVERY fresh
+# process. JAX's persistent on-disk compilation cache turns that cold compile
+# into a disk read on every subsequent run/process so a fresh user pays it once,
+# not on every invocation. This is NUMERICS-NEUTRAL: the cache returns the
+# identical XLA executable; no float op changes. Portable per-user default dir
+# (``$HOME/.cache/gpuwrf/jit``), best-effort, silently no-op on GPUWRF_JAX_CACHE=0
+# or if the dir can't be created. MUST run before the first compile (i.e. here at
+# import, before any submodule builds a jitted fn).
+from gpuwrf.runtime.compile_cache import configure_compilation_cache as _configure_jax_cache
 
 _JAX_CACHE_STATUS = _configure_jax_cache()
 
 __all__ = ["__version__"]
 
-__version__ = "0.0.0"
+__version__ = "0.12.0"
