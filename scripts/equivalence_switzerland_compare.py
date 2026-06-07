@@ -121,12 +121,20 @@ def compare_dirs(gpu_dir: Path, cpu_dir: Path, domain: str) -> dict[str, Any]:
     }
 
 
-def build_speedup(gpu_wall_s: float | None, cpu_wall_s: float | None) -> dict[str, Any]:
+def build_speedup(
+    gpu_wall_s: float | None,
+    cpu_wall_s: float | None,
+    cpu_build_label: str | None = None,
+    cpu_ranks: int | None = None,
+    hours: int | None = None,
+) -> dict[str, Any]:
     """Honest speedup from externally-measured forecast wall clocks.
 
-    The CPU reference is a SERIAL (single-core) gfortran WRF build, so there is
-    no RSL per-rank timing log to parse; the orchestrator measures the real
-    wall-clock of each run directly. We label this plainly.
+    The CPU build is whatever the orchestrator labels (``--cpu-build-label`` /
+    ``--cpu-ranks``). For the v0.12.0 BIG-grid benchmark this is a **28-rank
+    dmpar MPI** CPU-WRF (the project's honest denominator), NOT 1-core serial.
+    The orchestrator measures the real wall-clock of each run directly and
+    passes both; we label the basis plainly and never fabricate a ratio.
     """
     if gpu_wall_s is None or cpu_wall_s is None or gpu_wall_s <= 0:
         return {
@@ -135,14 +143,23 @@ def build_speedup(gpu_wall_s: float | None, cpu_wall_s: float | None) -> dict[st
             "gpu_wall_s": gpu_wall_s,
             "cpu_wall_s": cpu_wall_s,
         }
-    return {
+    label = cpu_build_label or (
+        f"{cpu_ranks}-rank dmpar MPI gfortran" if cpu_ranks
+        else "serial gfortran (single core)"
+    )
+    out: dict[str, Any] = {
         "status": "OK",
-        "method": "measured end-to-end forecast wall clock (GPU JAX vs SERIAL gfortran CPU-WRF)",
-        "cpu_build": "serial gfortran (single core) — NOT 28-rank MPI",
+        "method": "measured end-to-end forecast wall clock (GPU JAX vs CPU-WRF)",
+        "cpu_build": label,
+        "cpu_ranks": cpu_ranks,
         "gpu_wall_s": float(gpu_wall_s),
         "cpu_wall_s": float(cpu_wall_s),
         "speedup": float(cpu_wall_s) / float(gpu_wall_s),
     }
+    if hours:
+        out["gpu_wall_per_fcst_hour_s"] = round(float(gpu_wall_s) / hours, 2)
+        out["cpu_wall_per_fcst_hour_s"] = round(float(cpu_wall_s) / hours, 2)
+    return out
 
 
 def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
@@ -157,6 +174,17 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     p.add_argument("--hours", type=int, default=24, help="Forecast lead hours (for the report header).")
     p.add_argument("--gpu-wall-s", type=float, default=None, help="Measured GPU forecast wall (s).")
     p.add_argument("--cpu-wall-s", type=float, default=None, help="Measured CPU-WRF forecast wall (s).")
+    p.add_argument(
+        "--cpu-build-label",
+        default=None,
+        help="Honest label for the CPU build (e.g. '28-rank dmpar MPI gfortran').",
+    )
+    p.add_argument(
+        "--cpu-ranks",
+        type=int,
+        default=None,
+        help="MPI rank count of the CPU reference (28 for the big-grid benchmark).",
+    )
     p.add_argument(
         "--out",
         type=Path,
@@ -176,7 +204,13 @@ def main(argv: Sequence[str] | None = None) -> int:
         return 2
 
     comparison = compare_dirs(args.gpu_dir, args.cpu_dir, args.domain)
-    speedup = build_speedup(args.gpu_wall_s, args.cpu_wall_s)
+    speedup = build_speedup(
+        args.gpu_wall_s,
+        args.cpu_wall_s,
+        cpu_build_label=args.cpu_build_label,
+        cpu_ranks=args.cpu_ranks,
+        hours=args.hours,
+    )
 
     # Reuse the demo's table renderer (same look as the Canary demo).
     print_table(comparison, speedup, args.hours)
@@ -188,8 +222,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         "hours": args.hours,
         "framing": (
             "Numerical/operational equivalence within predeclared per-field tolerances. "
-            "GPU (JAX) and CPU-WRF (serial gfortran) both integrate the SAME real.exe "
-            "wrfinput_d01 + wrfbdy_d01 (GFS-forced). NOT bitwise-vs-Fortran; NOT a self-compare. "
+            "GPU (JAX) and CPU-WRF both integrate the SAME real.exe wrfinput_d01 + wrfbdy_d01 "
+            "(GFS-forced). NOT bitwise-vs-Fortran; NOT a self-compare. The speedup denominator "
+            "is whatever build the orchestrator labels (for the v0.12.0 big-grid benchmark: "
+            "28-rank dmpar MPI CPU-WRF, the HONEST denominator, same grid, per forecast hour). "
             "Like the Canary case, late-lead winds may exceed tol (chaotic divergence) -> "
             "NOT_EQUIVALENT is an honest, expected possibility; the value is a real, "
             "reproducible cross-code comparison on a new region."

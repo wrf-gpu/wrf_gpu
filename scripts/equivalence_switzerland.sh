@@ -141,15 +141,35 @@ N_GPU=$(compgen -G "${GPU_OUT}/wrfout_${DOMAIN}_*" | wc -l)
 log "  GPU wrfout files: ${N_GPU}  wall=${GPU_WALL}s"
 [[ $N_GPU -ge 2 ]] || die "GPU produced <2 wrfout files"
 
-# ── A CPU forecast wall, if a sibling timing file exists, else leave to JSON ─
+# ── CPU forecast wall + honest build label, if a sibling timing file exists ──
+# CPU_WALL_BASIS=total (default, end-to-end) or mainloop (pure integration; uses
+# cpu_mainloop_seconds.txt produced by run_switzerland_cpu_reference_mpi.sh).
+# CPU_RANKS (e.g. 28) and CPU_BUILD_LABEL are forwarded so the proof records the
+# HONEST denominator (28-rank dmpar MPI), not 1-core serial.
+CPU_WALL_BASIS="${CPU_WALL_BASIS:-total}"
+CPU_RANKS="${CPU_RANKS:-}"
+CPU_BUILD_LABEL="${CPU_BUILD_LABEL:-}"
 CPU_WALL_ARG=()
-if [[ -f "${CPU_REF_DIR}/cpu_wall_seconds.txt" ]]; then
-  CPU_WALL=$(cat "${CPU_REF_DIR}/cpu_wall_seconds.txt")
+_cpu_dir_with_timing=""
+for _d in "${CPU_REF_DIR}" "${CASE_ROOT}/run_cpu"; do
+  [[ -f "${_d}/cpu_wall_seconds.txt" ]] && { _cpu_dir_with_timing="$_d"; break; }
+done
+if [[ -n "$_cpu_dir_with_timing" ]]; then
+  if [[ "$CPU_WALL_BASIS" == "mainloop" && -f "${_cpu_dir_with_timing}/cpu_mainloop_seconds.txt" ]]; then
+    CPU_WALL=$(cat "${_cpu_dir_with_timing}/cpu_mainloop_seconds.txt")
+    log "  CPU wall basis: mainloop (pure integration) = ${CPU_WALL}s"
+  else
+    CPU_WALL=$(cat "${_cpu_dir_with_timing}/cpu_wall_seconds.txt")
+    log "  CPU wall basis: total end-to-end = ${CPU_WALL}s"
+  fi
   CPU_WALL_ARG=(--cpu-wall-s "$CPU_WALL")
-elif [[ -f "${CASE_ROOT}/run_cpu/cpu_wall_seconds.txt" ]]; then
-  CPU_WALL=$(cat "${CASE_ROOT}/run_cpu/cpu_wall_seconds.txt")
-  CPU_WALL_ARG=(--cpu-wall-s "$CPU_WALL")
+  # If the MPI reference left a cpu_timing.json, auto-pick up ranks.
+  if [[ -z "$CPU_RANKS" && -f "${_cpu_dir_with_timing}/cpu_timing.json" ]]; then
+    CPU_RANKS=$(python3 -c "import json;print(json.load(open('${_cpu_dir_with_timing}/cpu_timing.json')).get('ranks',''))" 2>/dev/null || echo "")
+  fi
 fi
+[[ -n "$CPU_RANKS" ]] && CPU_WALL_ARG+=(--cpu-ranks "$CPU_RANKS")
+[[ -n "$CPU_BUILD_LABEL" ]] && CPU_WALL_ARG+=(--cpu-build-label "$CPU_BUILD_LABEL")
 
 # ── Compare GPU vs CPU reference ───────────────────────────────────────────
 log "── Comparison (GPU vs CPU-WRF, predeclared tolerances) ──"
