@@ -35,8 +35,10 @@ from gpuwrf.coupling.physics_couplers import (
     dudhia_sw_theta_tendency,
     gwdo_adapter,
     mynn_adapter,
+    rrtm_lw_theta_tendency,
     rrtmg_lw_theta_tendency,
     rrtmg_radiation_diagnostics,
+    rrtmg_sw_theta_tendency,
     rrtmg_theta_tendency,
     surface_adapter,
     surface_layer_diagnostics,
@@ -367,6 +369,14 @@ class OperationalNamelist:
     # (rrtmg_radiation_diagnostics); ra_sw=1 changes the PROGNOSTIC SW heating
     # (RTHRATEN added to theta), not the diagnostic surface-flux output fields.
     ra_sw_physics: int = 4
+    # ``ra_lw_physics`` selects the LONGWAVE radiation scheme: 4 = RRTMG LW
+    # (default, byte-unchanged), 1 = classic AER RRTM LW (16-band k-distribution,
+    # coupling.physics_couplers.rrtm_lw_theta_tendency, JAX-traceable port of
+    # phys/module_ra_rrtm.F). ra_lw=1 changes the PROGNOSTIC LW heating only; the
+    # surface GLW history diagnostic remains RRTMG-derived. SW and LW are selected
+    # independently (WRF runs the two drivers separately), so any (ra_sw, ra_lw)
+    # combination in {1,4}x{1,4} is valid.
+    ra_lw_physics: int = 4
     # Explicit Noah-classic (sf_surface_physics=2) operational inputs. The JAX SFLX
     # kernel consumes WRF-derived REDPRM/static fields and a 4-layer land carry; if
     # either is absent, the scan rejects sf_surface_physics=2 rather than deriving
@@ -534,6 +544,7 @@ class OperationalNamelist:
             _StaticHolder(self.noahclassic_rad),
             int(self.gwd_opt),
             int(self.ra_sw_physics),
+            int(self.ra_lw_physics),
         )
         return children, aux
 
@@ -590,6 +601,7 @@ class OperationalNamelist:
             noahclassic_rad_holder,
             gwd_opt,
             ra_sw_physics,
+            ra_lw_physics,
         ) = aux
         noahmp_static = noahmp_static_holder.value
         noahmp_energy_params = noahmp_energy_holder.value
@@ -651,6 +663,7 @@ class OperationalNamelist:
             gwd_opt=gwd_opt,
             gwdo_statics=gwdo_statics,
             ra_sw_physics=ra_sw_physics,
+            ra_lw_physics=ra_lw_physics,
         )
 
 
@@ -2178,9 +2191,13 @@ _SCAN_WIRED_OPTIONS = {
     # gated -> NOT wired.
     "cu_physics": (0, 1, 2, 3, 6),
     # ra_sw=4 RRTMG SW (default), 1 Dudhia SW (Stephens-1984, scan-wired held-rate
-    # theta tendency via dudhia_sw_theta_tendency; LW stays RRTMG). Any other
-    # recognized SW scheme is fail-closed (no GPU scan adapter).
+    # theta tendency via dudhia_sw_theta_tendency). Any other recognized SW scheme
+    # is fail-closed (no GPU scan adapter).
     "ra_sw_physics": (1, 4),
+    # ra_lw=4 RRTMG LW (default), 1 classic AER RRTM LW (16-band k-distribution,
+    # scan-wired held-rate theta tendency via rrtm_lw_theta_tendency, JAX-traceable
+    # port of phys/module_ra_rrtm.F). SW/LW are selected independently.
+    "ra_lw_physics": (1, 4),
 }
 
 # Scheme-specific reasons a parity-passed option is NOT yet wired into the scan
@@ -2583,19 +2600,21 @@ def _physics_step_forcing(
         )
         next_carry = next_carry.replace(cumulus_carry=cldefi_next)
 
-    # --- radiation slot: shortwave-family dispatch -------------------------
-    # ra_sw_physics selects the SW scheme. The default (4 = RRTMG) runs the
-    # combined RRTMG SW+LW theta tendency (byte-unchanged). ra_sw_physics=1
-    # (Dudhia) runs the Dudhia SW theta tendency PLUS the RRTMG LW tendency --
-    # WRF runs the SW and LW radiation drivers independently. The LW scheme is
-    # always RRTMG-LW here. Both branches return the HELD-RATE RTHRATEN applied
-    # at every dynamics step over the radt interval (shared cadence machinery).
+    # --- radiation slot: SW/LW family dispatch -----------------------------
+    # ra_sw_physics selects the SW scheme (4=RRTMG, 1=Dudhia) and ra_lw_physics
+    # the LW scheme (4=RRTMG, 1=classic AER RRTM). WRF runs the SW and LW drivers
+    # independently, so the HELD-RATE RTHRATEN is the SUM of the two chosen
+    # tendencies. The default (ra_sw=4, ra_lw=4) is dispatched through the COMBINED
+    # rrtmg_theta_tendency (single column-input build, byte-unchanged). Any other
+    # combination composes the SW-only and LW-only couplers. The held rate is added
+    # into theta at every dynamics step over the radt interval (shared cadence).
     ra_sw = int(namelist.ra_sw_physics)
+    ra_lw = int(namelist.ra_lw_physics)
     land_for_rad = carry.noahmp_land if bool(namelist.use_noahmp) else None
 
-    def _refresh_rthraten(_unused) -> jnp.ndarray:
+    def _sw_tendency() -> jnp.ndarray:
         if ra_sw == 1:
-            sw = dudhia_sw_theta_tendency(
+            return dudhia_sw_theta_tendency(
                 next_state,
                 namelist.grid,
                 time_utc=namelist.time_utc,
@@ -2603,16 +2622,7 @@ def _physics_step_forcing(
                 radiation_static=namelist.radiation_static,
                 land_state=land_for_rad,
             )
-            lw = rrtmg_lw_theta_tendency(
-                next_state,
-                namelist.grid,
-                time_utc=namelist.time_utc,
-                lead_seconds=lead_seconds,
-                radiation_static=namelist.radiation_static,
-                land_state=land_for_rad,
-            )
-            return sw + lw
-        return rrtmg_theta_tendency(
+        return rrtmg_sw_theta_tendency(
             next_state,
             namelist.grid,
             time_utc=namelist.time_utc,
@@ -2623,6 +2633,41 @@ def _physics_step_forcing(
             shadow_length_m=float(namelist.topo_shadow_length_m),
             land_state=land_for_rad,
         )
+
+    def _lw_tendency() -> jnp.ndarray:
+        if ra_lw == 1:
+            return rrtm_lw_theta_tendency(
+                next_state,
+                namelist.grid,
+                time_utc=namelist.time_utc,
+                lead_seconds=lead_seconds,
+                radiation_static=namelist.radiation_static,
+                land_state=land_for_rad,
+            )
+        return rrtmg_lw_theta_tendency(
+            next_state,
+            namelist.grid,
+            time_utc=namelist.time_utc,
+            lead_seconds=lead_seconds,
+            radiation_static=namelist.radiation_static,
+            land_state=land_for_rad,
+        )
+
+    def _refresh_rthraten(_unused) -> jnp.ndarray:
+        # Default RRTMG SW+LW: keep the combined single-build path byte-unchanged.
+        if ra_sw == 4 and ra_lw == 4:
+            return rrtmg_theta_tendency(
+                next_state,
+                namelist.grid,
+                time_utc=namelist.time_utc,
+                lead_seconds=lead_seconds,
+                radiation_static=namelist.radiation_static,
+                topo_shading=int(namelist.topo_shading),
+                slope_rad=int(namelist.slope_rad),
+                shadow_length_m=float(namelist.topo_shadow_length_m),
+                land_state=land_for_rad,
+            )
+        return _sw_tendency() + _lw_tendency()
 
     if isinstance(run_radiation, bool):
         held_rthraten = _refresh_rthraten(None) if run_radiation else carry.rthraten

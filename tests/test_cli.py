@@ -140,9 +140,10 @@ def test_run_unsupported_namelist_fails_closed(
 @pytest.mark.parametrize(
     "section, alt_substring",
     [
-        ("&physics\n ra_lw_physics = 1,\n/\n", "ra_lw_physics=4"),
-        # ra_sw_physics=1 (Dudhia) is NOW operationally scan-wired, so it is no
-        # longer rejected (see test_run_accepts_wired_dudhia_sw_at_validation).
+        # Both radiation options ra_sw=1 (Dudhia) and ra_lw=1 (classic RRTM) are now
+        # operationally scan-wired; cu=16 (New-Tiedtke) is the remaining parity-
+        # proven-but-not-wired scheme exercising the pre-JAX fail-closed path.
+        ("&physics\n cu_physics = 16,\n/\n", "cu_physics=6"),
     ],
 )
 def test_run_rejects_reference_only_radiation_pre_jax(
@@ -151,9 +152,9 @@ def test_run_rejects_reference_only_radiation_pre_jax(
     section: str,
     alt_substring: str,
 ) -> None:
-    """``gpuwrf run`` with a parity-proven-but-not-wired radiation scheme
-    (RRTM longwave) fails closed BEFORE any JAX import, naming RRTMG (=4) -- so the
-    operational run never silently substitutes RRTMG for the requested scheme."""
+    """``gpuwrf run`` with a parity-proven-but-not-wired scheme (New-Tiedtke
+    cumulus) fails closed BEFORE any JAX import, naming the operational alternative
+    -- so the operational run never silently substitutes a different scheme."""
 
     case = tmp_path / "case"
     case.mkdir()

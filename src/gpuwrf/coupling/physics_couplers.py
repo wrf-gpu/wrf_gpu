@@ -29,6 +29,8 @@ from gpuwrf.physics.ra_sw_dudhia import (
     solve_dudhia_sw_column,
 )
 from gpuwrf.physics.rrtmg_lw import RRTMGLWColumnState, solve_rrtmg_lw_column
+from gpuwrf.physics.ra_lw_rrtm import RRTMLWColumnState
+from gpuwrf.physics.ra_lw_rrtm_jax import solve_rrtm_lw_column_jax
 from gpuwrf.physics.rrtmg_sw import (
     RRTMGSWColumnState,
     RRTMGSWTopographyState,
@@ -1654,6 +1656,45 @@ def rrtmg_theta_tendency(
     return rthraten.astype(_output_dtype(state, "theta"))
 
 
+def rrtmg_sw_theta_tendency(
+    state: State,
+    grid: GridSpec | None = None,
+    *,
+    time_utc=None,
+    lead_seconds=0.0,
+    radiation_static: RRTMGRadiationStatic | None = None,
+    topo_shading: int = 0,
+    slope_rad: int = 0,
+    shadow_length_m: float = 25000.0,
+    land_state=None,
+) -> "jnp.ndarray":
+    """Return the RRTMG shortwave-ONLY ``RTHRATEN`` (K/s).
+
+    The SW half of :func:`rrtmg_theta_tendency`, used by the dispatch when the LW
+    scheme is selected independently (e.g. ``ra_sw=4`` paired with the classic
+    RRTM LW ``ra_lw=1``). Reuses the shared RRTMG column-input assembler + SW
+    kernel (including topo-shading / slope-rad); only the SW heating rate is
+    converted to a theta tendency.
+    """
+
+    sw_state, _, _, _, _, topography = _rrtmg_column_inputs(
+        state,
+        grid,
+        time_utc=time_utc,
+        lead_seconds=lead_seconds,
+        radiation_static=radiation_static,
+        topo_shading=topo_shading,
+        slope_rad=slope_rad,
+        shadow_length_m=shadow_length_m,
+        land_state=land_state,
+    )
+    sw = solve_rrtmg_sw_column(sw_state, debug=False, topography=topography)
+    heating_rate_T = _from_columns(sw.heating_rate)  # dT/dt (K/s)
+    exner = (jnp.maximum(state.p, 1.0) / P0_PA) ** R_D_OVER_CP
+    rthraten = heating_rate_T / jnp.maximum(exner, 1.0e-12)
+    return rthraten.astype(_output_dtype(state, "theta"))
+
+
 # --------------------------------------------------------------------------- #
 # Dudhia shortwave (``ra_sw_physics=1``) HELD-RATE theta-tendency coupler.
 # --------------------------------------------------------------------------- #
@@ -1798,6 +1839,123 @@ def rrtmg_lw_theta_tendency(
     )
     lw = solve_rrtmg_lw_column(lw_state, debug=False)
     heating_rate_T = _from_columns(lw.heating_rate)  # dT/dt (K/s)
+    exner = (jnp.maximum(state.p, 1.0) / P0_PA) ** R_D_OVER_CP
+    rthraten = heating_rate_T / jnp.maximum(exner, 1.0e-12)
+    return rthraten.astype(_output_dtype(state, "theta"))
+
+
+# --------------------------------------------------------------------------- #
+# Classic RRTM longwave (``ra_lw_physics=1``) HELD-RATE theta-tendency coupler.
+# --------------------------------------------------------------------------- #
+def _interface_temperature_from_state(state: State, T):
+    """WRF ``t8w`` (temperature at w-levels) reconstructed from mass-point ``T``.
+
+    Mirrors the WRF model convention (and the pristine-WRF RRTM oracle driver):
+    the surface interface is the skin temperature ``t_skin``, interior interfaces
+    are the arithmetic mean of the two bounding mass-layer temperatures, and the
+    model-top interface is linearly extrapolated from the two topmost mass layers.
+    ``T`` is mass-point ``(nz, ny, nx)``; returns interface columns ``(ny, nx, nz+1)``.
+    """
+
+    nz = T.shape[0]
+    interior = 0.5 * (T[:-1] + T[1:])                      # (nz-1, ny, nx)
+    surface = jnp.asarray(state.t_skin).astype(T.dtype)[None]  # (1, ny, nx)
+    top = (T[-1] + 0.5 * (T[-1] - T[-2]))[None]            # (1, ny, nx)
+    t8w = jnp.concatenate([surface, interior, top], axis=0)  # (nz+1, ny, nx)
+    return _to_columns(t8w)
+
+
+def _rrtm_lw_column_inputs(
+    state: State,
+    grid: GridSpec | None,
+    *,
+    land_state=None,
+) -> RRTMLWColumnState:
+    """Build the classic-RRTM LW column-kernel input view from operational ``State``.
+
+    The traceable RRTM LW kernel (:func:`gpuwrf.physics.ra_lw_rrtm_jax.solve_rrtm_lw_column_jax`)
+    consumes layer ``T``/``p`` plus the six moisture species, a diagnostic cloud
+    fraction, layer thickness ``dz`` and density ``rho``, AND the interface
+    temperature ``t8w`` / interface pressure ``p8w`` (``nz+1`` entries), with the
+    LSM surface emissivity ``emiss`` and skin temperature ``tsk``. ``t8w``/``p8w``
+    are reconstructed WRF-faithfully from the State here (the State does not carry
+    the w-level fields explicitly), exactly as the SW coupler reconstructs ``dz`` /
+    ``solcon``. The kernel works on flat ``(ncol=ny*nx, nz)`` columns.
+    """
+
+    T = _temperature_from_theta(state.theta, state.p)
+    nz, ny, nx = state.theta.shape
+    ncol = ny * nx
+
+    def _cols(field3d):  # (nz, ny, nx) -> (ncol, nz)
+        return jnp.moveaxis(field3d, 0, -1).reshape(ncol, nz)
+
+    dz_cols = _column_dz_from_state(state, grid).reshape(ncol, nz)
+    rho_cols = _to_columns(_rho_from_state(state)).reshape(ncol, nz)
+    cloud_fraction = _cloud_fraction_columns(state).reshape(ncol, nz)
+    # ``_interface_pressure_from_state`` / ``_interface_temperature_from_state``
+    # already return COLUMN-form ``(ny, nx, nz+1)`` (the vertical axis is trailing),
+    # so flatten the leading 2-D grid directly to ``(ncol, nz+1)``.
+    p8w_cols = _interface_pressure_from_state(state).reshape(ncol, nz + 1)
+    t8w_cols = _interface_temperature_from_state(state, T).reshape(ncol, nz + 1)
+
+    _, surface_emissivity = _surface_radiation_properties(state, land_state=land_state)
+
+    return RRTMLWColumnState(
+        T=_cols(T),
+        t8w=t8w_cols,
+        p=_cols(state.p),
+        p8w=p8w_cols,
+        qv=_cols(state.qv),
+        qc=_cols(state.qc),
+        qr=_cols(state.qr),
+        qi=_cols(state.qi),
+        qs=_cols(state.qs),
+        qg=_cols(state.qg),
+        cloud_fraction=cloud_fraction,
+        dz=dz_cols,
+        rho=rho_cols,
+        emiss=jnp.asarray(surface_emissivity).reshape(ncol),
+        tsk=jnp.asarray(state.t_skin).reshape(ncol),
+    )
+
+
+def rrtm_lw_theta_tendency(
+    state: State,
+    grid: GridSpec | None = None,
+    *,
+    time_utc=None,
+    lead_seconds=0.0,
+    radiation_static: RRTMGRadiationStatic | None = None,
+    land_state=None,
+) -> "jnp.ndarray":
+    """Return the classic-RRTM (``ra_lw_physics=1``) longwave ``RTHRATEN`` (K/s).
+
+    Longwave-only HELD-RATE primitive, the classic-RRTM analogue of
+    :func:`rrtmg_lw_theta_tendency`. The AER 16-band k-distribution kernel returns
+    the per-layer TEMPERATURE heating rate ``dT/dt`` (K/s) and the theta tendency
+    is that rate divided by the Exner factor (WRF ``RRTMLWRAD``:
+    ``RTHRATEN += TTEN/pi``). The operational scan holds this rate over the
+    ``radt`` interval and ADDS it into theta at every dynamics step (shared cadence
+    machinery, identical to the RRTMG-LW path).
+
+    This coupler is LONGWAVE-ONLY; the shortwave heating comes from the chosen SW
+    scheme (Dudhia or RRTMG), exactly as WRF runs the SW and LW drivers
+    independently. The kernel is JIT/vmap-traceable, so this coupler rides the
+    device ``jax.lax.scan`` radiation slot with no host callbacks.
+
+    The returned 3-D field is on the ``(nz, ny, nx)`` mass grid and matches the
+    state's theta dtype (fp64 under ``force_fp64``).
+    """
+
+    del radiation_static  # classic RRTM LW geometry is date-independent (no zenith)
+    nz, ny, nx = state.theta.shape
+    column = _rrtm_lw_column_inputs(state, grid, land_state=land_state)
+    out = solve_rrtm_lw_column_jax(column)
+    # (ncol, nz) heating rate -> (nz, ny, nx) dT/dt (K/s).
+    heating_rate_T = jnp.moveaxis(out.heating_rate.reshape(ny, nx, nz), -1, 0)
+    # T-space heating rate -> theta tendency via the Exner factor
+    # (theta = T/exner; for fixed pressure d(theta)/dt = (dT/dt)/exner).
     exner = (jnp.maximum(state.p, 1.0) / P0_PA) ** R_D_OVER_CP
     rthraten = heating_rate_T / jnp.maximum(exner, 1.0e-12)
     return rthraten.astype(_output_dtype(state, "theta"))
@@ -1960,6 +2118,8 @@ __all__ = [
     "rrtmg_adapter",
     "rrtmg_theta_tendency",
     "rrtmg_lw_theta_tendency",
+    "rrtmg_sw_theta_tendency",
+    "rrtm_lw_theta_tendency",
     "dudhia_sw_theta_tendency",
     "surface_adapter",
     "surface_layer_diagnostics",

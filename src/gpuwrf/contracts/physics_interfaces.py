@@ -530,12 +530,15 @@ SCHEME_STEP_SPECS: tuple[PhysicsStepSpec, ...] = (
         variant="lw",
         notes="ra_lw_physics=1. AER classic RRTM 16-band LW; held-rate RTHRATEN. Loads the "
         "RRTM_DATA k-distribution asset and passes the proofs/v060/run_rrtm_lw_parity.py "
-        "fp64 savepoint gate. STATUS: isolated-WRF-savepoint parity-proven + accepted, but NOT "
-        "operational-scan-wired: the classic RRTM-LW column kernel (physics.ra_lw_rrtm) is a "
-        "host-NumPy single-column driver (Python per-column/per-band loops, lru_cache table load) "
-        "that is not jit/vmap-traceable, so it cannot ride the device jax.lax.scan as-is -- same "
-        "fail-closed posture as MYJ/Janjic/Grell-Freitas. A jit/vmap rewrite is a post-0.9.0 "
-        "carry-over; the operational radiation slot hardcodes RRTMG (ra=4).",
+        "fp64 savepoint gate. STATUS: isolated-WRF-savepoint parity-proven AND "
+        "operational-scan-wired: the host-NumPy reference kernel (physics.ra_lw_rrtm) was "
+        "re-expressed as a JIT/vmap-traceable JAX column kernel (physics.ra_lw_rrtm_jax, "
+        "reproducing the reference to fp64 round-off), and OperationalNamelist.ra_lw_physics=1 "
+        "routes the radiation slot in runtime.operational_mode to "
+        "coupling.physics_couplers.rrtm_lw_theta_tendency (classic RRTM LW) summed with the "
+        "selected SW tendency (WRF runs SW/LW drivers independently). Wired-coupler oracle proof: "
+        "proofs/radiation/rrtm_lw_oracle.py (pristine-WRF, NOT a self-compare). The surface GLW "
+        "history diagnostic remains RRTMG-derived.",
     ),
 )
 

@@ -385,8 +385,9 @@ def test_genuine_wrong_substitutions_still_fail_closed() -> None:
     * (b) moist_adv_opt=3 (WENO -- a still-unimplemented advection scheme) RAISES
       (the positive-definite=1 / monotonic=2 limiters ARE now wired, so the
       genuine-wrong-substitution example must use an UNWIRED value, WENO);
-    * (c) ra_lw_physics=1 (classic RRTM, reference-only -> would silently become
-      RRTMG on the operational scan) RAISES on the operational path;
+    * (c) cu_physics=16 (New-Tiedtke, reference-only -> would silently become a
+      different cumulus scheme on the operational scan) RAISES on the operational
+      path (ra_lw=1/ra_sw=1 are now wired, so cumulus drives this check);
     * (d) grid_fdda=1 (out-of-scope feature) RAISES.
     """
 
@@ -399,10 +400,10 @@ def test_genuine_wrong_substitutions_still_fail_closed() -> None:
     # And the now-wired limiters must NOT raise.
     validate_namelist({"dynamics": {"moist_adv_opt": [1], "scalar_adv_opt": [2]}})
 
-    # (c) reference-only radiation scheme -> operational run still fail closed.
+    # (c) reference-only scheme -> operational run still fail closed.
     with pytest.raises(UnsupportedSchemeError) as exc_c:
-        validate_operational_namelist({"physics": {"ra_lw_physics": [1]}})
-    assert any(s.key == "ra_lw_physics" for s in exc_c.value.selections)
+        validate_operational_namelist({"physics": {"cu_physics": [16]}})
+    assert any(s.key == "cu_physics" for s in exc_c.value.selections)
 
     # (d) out-of-scope feature -> still fail closed.
     with pytest.raises(UnsupportedSchemeError) as exc_d:
