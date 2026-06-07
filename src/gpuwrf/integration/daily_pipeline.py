@@ -244,6 +244,27 @@ def _build_real_case(config: DailyPipelineConfig) -> tuple[DailyCase, Path]:
         gwd_opt = int(_domain_namelist_value(replay.run, "physics", "gwd_opt", config.domain, 0))
     gwdo_statics = None
     gwdo_static_meta: dict[str, Any] = {"requested": bool(gwd_opt == 1)}
+    # v0.12.0: GWD operational coupling is GATED OFF BY DEFAULT on the operational
+    # path.  The full 24h nested-1km run WITH GWD exceeds the single-GPU fp64 VRAM
+    # ceiling (~28 GB usable) at ~sim-hr 7 -- the RRTMG g-point radiation temporary
+    # confluence (the gwd7 re-validation ran physically clean for 7 sim-hours, all
+    # fields finite, then OOM'd on MEMORY, not physics).  The GWD kernel is itself
+    # oracle-validated (pristine-WRF, fp64 ~1e-13) and runs finite; the 24h-nested
+    # 1km + GWD memory footprint is a v0.13 item (g-point-chunked RRTMG temp).  So
+    # gwd_opt=1 in a real namelist is honoured as a no-op by default (preserving the
+    # GREEN nested-1km gate); opt in for coarser/shorter configs via the env flag.
+    _gwd_enabled = os.environ.get("GPUWRF_GWD_NESTED", "0") == "1"
+    if gwd_opt == 1 and not _gwd_enabled:
+        gwdo_static_meta = {
+            "requested": True,
+            "status": "gated_off_default",
+            "reason": (
+                "GWD operational coupling is default-off in v0.12.0 (24h nested-1km "
+                "+ GWD exceeds the fp64 VRAM ceiling at ~hr7); kernel is oracle-"
+                "validated, full nested-GWD = v0.13. Set GPUWRF_GWD_NESTED=1 to enable."
+            ),
+        }
+        gwd_opt = 0
     if gwd_opt == 1:
         try:
             gwdo_statics, gwdo_static_meta = load_gwdo_statics(
