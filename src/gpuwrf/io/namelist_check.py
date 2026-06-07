@@ -25,9 +25,12 @@ from gpuwrf.contracts.physics_registry import (
     ACCEPTED_SF_SURFACE_PHYSICS,
 )
 from gpuwrf.io.scheme_catalog import (
+    IMPLEMENTED_CONTROL_KEYS,
     OUT_OF_SCOPE_FEATURE_KEYS,
+    RECOGNIZED_CONTROL_KEYS,
     SchemeSupport,
     SupportStatus,
+    classify_control,
     classify_feature_switch,
     classify_scheme,
     iter_full_catalog,
@@ -61,6 +64,10 @@ class UnsupportedSelection:
       (``validate_operational_namelist``) rejects it to avoid a silent
       wrong-scheme run (``wrf_scheme`` names it);
     * ``"invalid_wrf_option"`` -- not a recognized WRF v4 option at all;
+    * ``"recognized_control_not_wired"`` -- a recognized non-enumerated WRF
+      control key (advection order, gwd_opt, a MYNN-EDMF sub-option, a
+      physics-cadence interval) set to a value the operational scan does not
+      wire (``wrf_scheme`` carries the control label);
     * ``"unsupported"`` -- generic rejection for keys without a WRF v4 catalog
       (e.g. a structural pairing constraint).
     """
@@ -313,14 +320,17 @@ def validate_namelist(config: Any) -> None:
 
     config_obj = _coerce_config(config)
     oos_failures = _out_of_scope_failures(config_obj)
+    control_failures = _recognized_control_failures(config_obj)
+    extra_failures = oos_failures + control_failures
     try:
         validate_supported_namelist(config_obj)
     except UnsupportedNamelistOption as exc:
-        # Merge scheme failures with out-of-scope feature failures into one
-        # actionable report rather than failing on only the first category.
-        raise UnsupportedSchemeError(list(exc.selections) + oos_failures) from None
-    if oos_failures:
-        raise UnsupportedSchemeError(oos_failures)
+        # Merge scheme failures with out-of-scope feature + recognized-control
+        # failures into one actionable report rather than failing on only the
+        # first category.
+        raise UnsupportedSchemeError(list(exc.selections) + extra_failures) from None
+    if extra_failures:
+        raise UnsupportedSchemeError(extra_failures)
 
 
 def validate_operational_namelist(config: Any) -> None:
@@ -473,6 +483,48 @@ def _out_of_scope_failures(config: Any) -> list[UnsupportedSelection]:
                 wrf_scheme=support.wrf_name,
             )
         )
+    return failures
+
+
+def _recognized_control_failures(config: Any) -> list[UnsupportedSelection]:
+    """Scan recognized non-enumerated control keys for unwired values.
+
+    Covers the dynamics/advection switches (``gwd_opt``, ``moist_adv_opt``,
+    ``scalar_adv_opt``, the ``*_adv_order`` family), the implemented radiation
+    slope/topo controls (``slope_rad``, ``topo_shading``), the MYNN-EDMF
+    sub-option family (``bl_mynn_*``) and the physics-cadence intervals
+    (``radt``/``bldt``/``cudt``). A recognized key set to a value the operational
+    scan does NOT wire fails closed with the catalog's named reason; an
+    operationally-wired value passes silently. Keys not in the recognized-control
+    namespace are left to the rest of the validator (and silent-pass otherwise).
+    """
+
+    failures: list[UnsupportedSelection] = []
+    for key in sorted(RECOGNIZED_CONTROL_KEYS | IMPLEMENTED_CONTROL_KEYS):
+        found = _lookup(config, key)
+        if found is None:
+            continue
+        location, raw = found
+        values = _domain_values(raw)
+        for idx, value in enumerate(values):
+            support = classify_control(key, value)
+            if support is None or support.status is not SupportStatus.RECOGNIZED_FAIL_CLOSED:
+                continue
+            failures.append(
+                UnsupportedSelection(
+                    key=key,
+                    location=location,
+                    value=support.code,
+                    supported_values=(),
+                    # Carry the catalog's named reason so the user sees *why* the
+                    # value is not wired (not just the control label).
+                    implemented=support.reason,
+                    action=support.alternative,
+                    domain_index=idx + 1 if len(values) > 1 else None,
+                    outcome="recognized_control_not_wired",
+                    wrf_scheme=support.wrf_name,
+                )
+            )
     return failures
 
 
@@ -698,6 +750,13 @@ def _format_selection(item: UnsupportedSelection) -> str:
             f"(the operational {label} path runs the implemented scheme instead) -- "
             f"refusing rather than producing a silent wrong-scheme run. "
             f"Operationally-wired {item.key} values: {supported}. Action: {item.action}"
+        )
+    if item.outcome == "recognized_control_not_wired":
+        return (
+            f"- {item.location}{domain}={item.value} ({item.wrf_scheme}): "
+            f"recognized WRF namelist control, but the selected value is NOT "
+            f"operationally wired in this GPU port -- {item.implemented}. "
+            f"Fail-closed (NOT silently ignored). Action: {item.action}"
         )
     if item.outcome == "invalid_wrf_option":
         label = WRF_PARAM_LABEL.get(item.key, item.key)
