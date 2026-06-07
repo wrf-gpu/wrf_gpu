@@ -117,13 +117,10 @@ def test_real_wrf_namelist_yields_honest_per_key_verdicts() -> None:
     message = str(exc)
 
     # --- (a) Recognized-but-NOT-operationally-wired controls -> named fail. -- #
-    # gwd_opt=1 (orographic GWD not implemented) -- domain 1 only (domain 2 = 0
-    # is the wired value and must NOT be flagged).
-    assert "gwd_opt" in by_key
-    gwd = by_key["gwd_opt"]
-    assert {s.value for s in gwd} == {1}
-    assert all(s.outcome == "recognized_control_not_wired" for s in gwd)
-    assert "gravity-wave drag" in message or "gravity wave drag" in message.lower()
+    # gwd_opt=1 IS now implemented (orographic GWD + flow blocking, the faithful
+    # bl_gwdo_run port). Both wired values (1 = on, 0 = off) must therefore NOT
+    # be flagged as failures -- it is no longer an unsupported control.
+    assert "gwd_opt" not in by_key
 
     # moist_adv_opt=2 (positive-definite transport variant) on BOTH domains.
     assert len(by_key["moist_adv_opt"]) == 2
@@ -139,7 +136,7 @@ def test_real_wrf_namelist_yields_honest_per_key_verdicts() -> None:
     assert "icloud_bl" in by_key
     assert "bl_mynn_tkeadvect" in by_key
     # Each named reason + the "NOT silently ignored" honesty phrase is present.
-    for key in ("gwd_opt", "moist_adv_opt", "cudt", "icloud_bl", "bl_mynn_tkeadvect"):
+    for key in ("moist_adv_opt", "cudt", "icloud_bl", "bl_mynn_tkeadvect"):
         for sel in by_key[key]:
             assert sel.outcome == "recognized_control_not_wired"
             assert sel.action.strip(), f"{key} fail-closed without an alternative"
@@ -157,6 +154,7 @@ def test_real_wrf_namelist_yields_honest_per_key_verdicts() -> None:
     # must NOT appear as failures -- do not falsely fail-close an implemented
     # feature.
     for wired in (
+        "gwd_opt",
         "slope_rad",
         "topo_shading",
         "radt",
@@ -205,7 +203,7 @@ def test_unsupported_recognized_key_is_rejected_not_silently_accepted() -> None:
     """
 
     unwired_examples = {
-        "gwd_opt": 1,
+        "gwd_opt": 3,  # GSL drag suite -- not wired (gwd_opt=1 IS implemented)
         "moist_adv_opt": 3,
         "scalar_adv_opt": 4,
         "h_sca_adv_order": 6,
@@ -262,7 +260,7 @@ def test_operational_validator_also_rejects_unwired_controls() -> None:
     """The strict operational entrypoint inherits the recognized-control checks."""
 
     with pytest.raises(UnsupportedSchemeError) as excinfo:
-        validate_operational_namelist({"dynamics": {"gwd_opt": 1}})
+        validate_operational_namelist({"dynamics": {"gwd_opt": 3}})
     assert any(s.key == "gwd_opt" for s in excinfo.value.selections)
 
 
@@ -287,7 +285,7 @@ def test_wired_control_values_pass_silently() -> None:
                 "cudt": [0],
             },
             "dynamics": {
-                "gwd_opt": [0],
+                "gwd_opt": [1],  # orographic GWD ON -- now implemented
                 "moist_adv_opt": [1],
                 "scalar_adv_opt": [1],
                 "h_sca_adv_order": [5],
