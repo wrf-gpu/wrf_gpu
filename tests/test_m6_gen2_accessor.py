@@ -1,11 +1,21 @@
 from __future__ import annotations
 
 import numpy as np
+import pytest
 
 from gpuwrf.io.gen2_accessor import DEFAULT_M6_GEN2_RUN_DIR, Gen2Run, LazyNetCDFArray
 
 
 RUN_PATH = DEFAULT_M6_GEN2_RUN_DIR
+
+# The Gen2 corpus run directory is large operational WRF output that is not
+# vendored in the repo (it lives on the workstation's /mnt corpus and is purged
+# from most checkouts). Every test in this file loads it, so skip the whole
+# module when the run directory is absent rather than raising FileNotFoundError.
+pytestmark = pytest.mark.skipif(
+    not RUN_PATH.exists(),
+    reason=f"Gen2 corpus run directory unavailable (not vendored): {RUN_PATH}",
+)
 
 
 def test_gen2_run_discovers_domains_grid_and_missing_d02_bdy():
