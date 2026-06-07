@@ -62,6 +62,9 @@ __all__ = [
     "configure_compilation_cache",
     "resolve_cache_dir",
     "cache_env_help",
+    "cache_entry_count",
+    "warm_hit_for",
+    "cache_report",
 ]
 
 # Falsey values that disable the cache entirely.
@@ -74,6 +77,7 @@ CACHE_STATUS: dict[str, object] = {
     "min_compile_time_secs": None,
     "source": None,
     "error": None,
+    "autotune": None,
 }
 
 
@@ -153,7 +157,87 @@ def configure_compilation_cache() -> dict[str, object]:
     CACHE_STATUS["enabled"] = True
     CACHE_STATUS["dir"] = str(cache_dir)
     CACHE_STATUS["min_compile_time_secs"] = 0
+
+    # v0.13 #2: also wire the persistent GPU autotune cache + parallel-compile
+    # flags from the same central hook (best-effort; GPU-only, CPU no-op). Done
+    # here so the single import-time call configures BOTH the executable cache
+    # and the autotune cache before the first compile. Numerically inert.
+    try:
+        from gpuwrf.runtime.xla_autotune import (
+            AUTOTUNE_STATUS,
+            configure_autotune_cache,
+        )
+
+        configure_autotune_cache()
+        CACHE_STATUS["autotune"] = dict(AUTOTUNE_STATUS)
+    except Exception as exc:  # pragma: no cover - never fail the compile cache
+        CACHE_STATUS["autotune"] = {"error": f"{type(exc).__name__}: {exc}"}
+
     return CACHE_STATUS
+
+
+def cache_entry_count(cache_dir: Path | str | None = None) -> int:
+    """Number of compiled-executable entries currently in the cache.
+
+    JAX writes one ``*-cache`` directory (or file, depending on jaxlib version)
+    per distinct compiled program. Counting them lets a caller detect a *warm
+    hit* robustly without knowing JAX's opaque HLO cache key: if compiling a
+    program adds no new entry, it was served from the cache.
+
+    Returns 0 if caching is disabled or the dir does not exist.
+    """
+    if cache_dir is None:
+        cache_dir = CACHE_STATUS.get("dir")  # type: ignore[assignment]
+    if not cache_dir:
+        return 0
+    p = Path(cache_dir)
+    if not p.is_dir():
+        return 0
+    try:
+        # Each cached executable is a child whose name contains "-cache".
+        # Fall back to counting all immediate children if the naming changes.
+        named = [c for c in p.iterdir() if "-cache" in c.name]
+        return len(named) if named else len(list(p.iterdir()))
+    except OSError:
+        return 0
+
+
+def warm_hit_for(compile_callable, cache_dir: Path | str | None = None) -> dict[str, object]:
+    """Detect whether ``compile_callable()`` was a warm cache hit.
+
+    ``compile_callable`` is a zero-arg callable that performs a
+    ``jax.jit(fn).lower(*args).compile()`` for the program under test. This
+    helper counts cache entries before and after; **no new entry written =>
+    warm hit** (the executable was served from disk). This is the config-keyed
+    warm-hit assertion the v0.13 roadmap (#3) calls for, robust to JAX's opaque
+    cache key.
+
+    Returns a dict with ``before``, ``after``, ``warm`` (bool), and
+    ``compile_seconds``.
+    """
+    import time as _time
+
+    if cache_dir is None:
+        cache_dir = CACHE_STATUS.get("dir")  # type: ignore[assignment]
+    before = cache_entry_count(cache_dir)
+    t0 = _time.perf_counter()
+    compile_callable()
+    dt = _time.perf_counter() - t0
+    after = cache_entry_count(cache_dir)
+    return {
+        "before": before,
+        "after": after,
+        "warm": after == before and before > 0,
+        "compile_seconds": dt,
+    }
+
+
+def cache_report() -> dict[str, object]:
+    """Human/JSON-friendly snapshot of the compile + autotune cache state."""
+    return {
+        "compile_cache": dict(CACHE_STATUS),
+        "compile_cache_entries": cache_entry_count(),
+    }
 
 
 def cache_env_help() -> str:
