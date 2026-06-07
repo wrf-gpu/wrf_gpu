@@ -11,7 +11,12 @@ MERGED + committed: standalone native-init CLI + nested-OOM fix (A) · release-d
 ## RELEASE TRUNK = `e602122` (post B5+B3 merge). DONE this push:
 1. ✅ Coverage 74→**105/375** merged. 2. ✅ Switzerland resolved (fp64 ceiling <128²; ship d02 + ceiling note; proofs/v0120/switzerland_128_gpu_result.json). 3. ✅ **B5 merged** (namelist recognition, 71 passed — honest per-key verdicts; naive-user-test fix). 4. ✅ **B3 merged** (Noah-MP snow/canopy diags, KI-3 CLOSED, +4 vars).
 
-## LANES — outcomes (all off e602122, isolated, proof-verified by manager before merge):
+## TRUNK NOW = `9c3065c`. MERGED in v0.12.0: coverage 130 · B5 · B3 · B1 · GWD-kernel · auxhist · **GWD operational coupling** (gwd_opt=1 IMPLEMENTED + auto-active on d01 from geo_em VAR/CON/OA/OL, fails-closed if absent; coupled-validated PASS: finite, drag-opposes-wind 100%, terrain-localized 189×). gwd modest on Canary (WPS filled stats only on d01; d02/d03 ~zero → d03-1km path UNTOUCHED by GWD).
+## RUNNING (2 lanes, base-guarded, off 9c3065c): (a) **24h nested-gate RE-VALIDATION with GWD active** (a9c3338c, GPU, maxcode) — re-confirms the release-critical gate is still GREEN now that gwd_opt=1 auto-activates on the gate case → writes proofs/v0120/nested_24h_1km_gate_gwd.json; if FAILS → demote GWD auto-activation (force off, keep kernel, bank v0.13). (b) **naive-user cadence fix** (abf5f955, CPU, maxcode) — cudt/bldt>0 → WARN+run (not hard-reject) so real Canary namelists run out-of-box; gwd_opt=1 already passes (IMPLEMENTED); keep hard-fail for reference-only/moist_adv_opt/oos.
+## BANKED v0.13: 2-way-nesting (dfab32c), PD/mono advection (017e6c1), C-Dudhia SW (1605600 WIP rescued, agent API-died unproven). auxhist shipped in v0.12.0.
+## ⚠️ NEW isolated worktrees can land on a STALE base (C-Dudhia hit 2fe3a28, 1270 behind) → every new lane gets base-guard step 0 (verify HEAD descendant of trunk + reset --hard else broken).
+
+## LANES — outcomes (all off e602122/d617029, isolated, proof-verified by manager before merge):
 - ✅ **B1 radiation flux** MERGED (wrfout 120→130 vars; schema-exact, consistency-verified).
 - ✅ **GWD kernel** MERGED `076b5aa` (bl_gwdo_run port, pristine-WRF Fortran ORACLE pass, 10 tests, **default-OFF** = no-op unless gwd_opt==1 AND gwdo_statics present → validated-path byte-unchanged; gwd_opt {0}→{0,1}).
 - ⏳ **GWD coupling-validation RUNNING** `worker/opus/gwd-coupling-validation` (agent a5334e1b, maxcode) — wires GWDOStatics from real geo_em + short real-case GPU run → proves gwd_opt=1 runs finite+physical. **DECIDES: keep gwd_opt IMPLEMENTED in v0.12.0 (if validated) ELSE manager DEMOTES gwd_opt→warn + banks operational GWD to v0.13.** Critical path.
