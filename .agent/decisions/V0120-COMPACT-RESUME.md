@@ -11,13 +11,18 @@ MERGED + committed: standalone native-init CLI + nested-OOM fix (A) · release-d
 ## RELEASE TRUNK = `e602122` (post B5+B3 merge). DONE this push:
 1. ✅ Coverage 74→**105/375** merged. 2. ✅ Switzerland resolved (fp64 ceiling <128²; ship d02 + ceiling note; proofs/v0120/switzerland_128_gpu_result.json). 3. ✅ **B5 merged** (namelist recognition, 71 passed — honest per-key verdicts; naive-user-test fix). 4. ✅ **B3 merged** (Noah-MP snow/canopy diags, KI-3 CLOSED, +4 vars).
 
-## RUNNING NOW — 4 ARCHITECTURE LANES (in-proc Opus-max agents, bg, auto-notify, ALL off `e602122`, ALL isolated worktrees, ALL NON-BLOCKING / midnight merge-or-defer gate):
-- **B1 radiation flux diags** `worker/opus/v0120-radflux` (agent a60f4abf) — SWDNB/LWUPB/OLR/… ~16-18 TOA+sfc flux vars from existing RRTMG profiles. M, likely v0.12.0. Owns: radiation diag extract + wrfout_writer.py (append-only block) + tests.
-- **GWD orographic gravity-wave drag** `worker/opus/gwd-gwdo` (agent a643fda8, Opus-max) — port module_bl_gwdo.F. L, likely v0.13. Owns: new physics/gwd_gwdo.py + dispatch + physics_registry + scheme_catalog(gwd_opt flip LAST). KEY DEP: sub-grid orography stats (VAR_SSO/OA/OL) — agent to find/flag.
-- **2-way nesting feedback (feedback=1)** `worker/opus/nesting-2way-feedback` (agent ae03a326, Opus-max) — child→parent feedback avg + smooth_2d. L-XL, likely v0.13. Owns: nested_pipeline.py/domain_tree.py + tests.
-- **PD/monotonic scalar advection (moist_adv_opt 2/3)** `worker/opus/pd-monotonic-advection` (agent a8f65c34, Opus-max) — Skamarock PD+monotonic limiters, OPT-IN only, default path bit-unchanged. L, likely v0.13. Owns: dycore advection module + idealized tests. HIGHEST validation care (core dycore).
-- GPU = ONE job, serialized via `/tmp/wrf_gpu_run.sh` single-wrap; agents do CPU-jax dev+validation first; long 24h GPU validations = v0.13 merge-prep. GPT-codex = reserve debugger if a lane flags stuck.
-- **15-min heartbeat** (ScheduleWakeup) — anti-stall fallback; agents auto-notify.
+## LANES — outcomes (all off e602122, isolated, proof-verified by manager before merge):
+- ✅ **B1 radiation flux** MERGED (wrfout 120→130 vars; schema-exact, consistency-verified).
+- ✅ **GWD kernel** MERGED `076b5aa` (bl_gwdo_run port, pristine-WRF Fortran ORACLE pass, 10 tests, **default-OFF** = no-op unless gwd_opt==1 AND gwdo_statics present → validated-path byte-unchanged; gwd_opt {0}→{0,1}).
+- ⏳ **GWD coupling-validation RUNNING** `worker/opus/gwd-coupling-validation` (agent a5334e1b, maxcode) — wires GWDOStatics from real geo_em + short real-case GPU run → proves gwd_opt=1 runs finite+physical. **DECIDES: keep gwd_opt IMPLEMENTED in v0.12.0 (if validated) ELSE manager DEMOTES gwd_opt→warn + banks operational GWD to v0.13.** Critical path.
+- → **2-way nesting** BANKED v0.13 `dfab32c` (~85%, WRF sm121 smoother + --feedback + CPU-validated TWO_WAY_FEEDBACK_VALIDATED; remaining = 24h real-GPU equivalence).
+- → **PD/mono advection** BANKED v0.13 `017e6c1` (~90%, WRF advect_scalar_pd/_mono FCT port, 14 tests + WRF-Fortran-parity <1e-12, default-path byte-identical Straka/Skamarock 6/6; remaining = operational RK3 wiring + real-GPU). NOTE: WRF canonical scalar_adv_opt 1=PD/2=mono (brief had it swapped).
+- GPU = ONE job, flock single-wrap. GPT-codex = reserve debugger. 15-min heartbeat = anti-stall + active liveness check.
+
+## REMAINING TO RELEASE (after GWD coupling settles):
+1. 🔴 Naive-user namelist fix (cudt/bldt → WARN+run; gwd_opt per coupling outcome; keep hard-fail for reference-only/moist_adv_opt/out-of-scope; mirror pipeline case-prep; WITH proof test) — maxcode.
+2. Doc-fill: gate-GREEN proof, **64→130/375** var fix, correct false "missing-only stochastic+snow" claim, Switzerland honest fp64-ceiling, TOST-DEFERRED, v0.13-banked list (nesting/PD/+ GWD-operational if demoted).
+3. Gap re-check (full test suite green on trunk, fail-closed honest, docs accurate). 4. Release-critic (Opus). 5. Release-worker (Opus-MAX: README+cleanup+tag v0.12.0). 6. Push github.com/wrf-gpu/wrf_gpu (home=latest). 7. Final report.
 
 ## v0.12.0 RELEASE proceeds IN PARALLEL on `e602122` (NOT blocked by the 4 lanes): doc-fill → gap re-check → release-critic (Opus) → release-worker (Opus-MAX) → tag → push. At ~midnight: assess each lane → merge clean+validated ones into v0.12.0, else they become v0.13's head start.
 
@@ -32,7 +37,8 @@ MERGED + committed: standalone native-init CLI + nested-OOM fix (A) · release-d
 2. ✅ DONE — Switzerland benchmark resolved (fp64 ceiling <128²; ship d02 + ceiling note). proofs/v0120/switzerland_128_gpu_result.json.
 2b. Collect B5 (namelist-recognition) + B3 (noahmp-snow) bg sprints → merge IF clean+green before release-critic, else bank v0.13. NON-BLOCKING.
 3. **Fill doc placeholders + fixes** in README/KNOWN_ISSUES/RELEASE_NOTES: gate ✅GREEN proof (proofs/v0120/nested_24h_1km_gate.json); **FIX "64-variable" → 105/375**; correct the FALSE "missing only stochastic+snow" claim (294 of 375 absent — see differential review); Switzerland = **honest fp64 grid-ceiling note** (150²+128² OOM, d02 operational speedup ~2.5×/~5×); TOST = DEFERRED note (KI-5); fill the 2 remaining `<<MANAGER-FILL>>` in KNOWN_ISSUES (~lines 250-251).
-4. Re-check ALL gaps closed (smoke gate, tests, fail-closed, docs accurate).
+4. Re-check ALL gaps + **🔴 CONFIRMED RELEASE-CRITICAL NAIVE-USER FIX (do AFTER GWD lane settles, ONE pass):** real Canary prod namelists (wrf_l3 + wrf_l2) ALL have `cudt=5,5,5` + `gwd_opt=1`. Standalone CLI calls `validate_operational_namelist` (cli.py:395) → post-B5 RAISES on cudt=5 AND gwd_opt=1 → **a naive user pointing `gpuwrf run` at a real namelist is now REJECTED**. (24h gate ran green only because the operational pipeline has a case-prep that rewrites these; the standalone CLI lacks it.) FIX: downgrade `cudt`/`bldt` cadence + `gwd_opt=1`(if GWD not implemented tonight) from hard-raise → **WARN+run** (cumulus/PBL every-step, run-without-GWD — exactly what the pipeline case-prep already does). KEEP hard fail-closed for genuine wrong-substitution: reference-only schemes (RRTM/Dudhia/MYJ/New-Tiedtke), `moist_adv_opt`/`scalar_adv_opt` 2/3/4, out-of-scope features. Mirror the pipeline case-prep so standalone CLI == pipeline. Proof test: feed a REAL Canary namelist (cudt=5,gwd_opt=1) → PROCEEDS with warnings; moist_adv_opt=2 / a reference-only scheme → STILL raises. Sequence AFTER GWD (both touch scheme_catalog gwd_opt — avoid merge conflict). This is the SAME rc=2 (L2_D02_BLOCKED) seen in TOST + nesting GPU smoke.
+NESTING lane DONE ~85% (`worker/opus/nesting-2way-feedback` @ dfab32c): WRF sm121 smoother + --feedback wiring + CPU-validated (TWO_WAY_FEEDBACK_VALIDATED, 31 tests); defaults OFF; rec v0.13 (24h real-GPU equivalence remaining). Zero trunk risk.
 5. **Final release-critic** (Opus) → **release-worker** (Opus MAX — README polish + cleanup + tag, per principal "core gatekeeper = opus maxcode"). 
 6. Tag `v0.12.0` → push github.com/wrf-gpu/wrf_gpu (home=latest). → **Final short report to principal** (key changes + positive results).
 
