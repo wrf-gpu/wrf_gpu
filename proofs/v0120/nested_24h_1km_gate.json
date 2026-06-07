@@ -1,0 +1,7 @@
+{ "schema":"V0120NestedGate","case":"20260531_18z_l3_24h_20260601T125256Z",
+  "config":"standalone_native_init_nested, --max-dom 3 (d01 9km -> d02 3km -> d03 1km), 24h, no CPU-wrfout dependency",
+  "verdict":"PIPELINE_GREEN","exit":0,"peak_vram_mib":20666,"gpu_fits_32gb":true,
+  "wrfout_files":{"d01":24,"d02":24,"d03":24},"all_domains_finite":true,
+  "d03_final_ranges":{"T2_K":[279.62,300.95],"U10":[-12.51,8.59],"V10":[-14.31,4.08],"PSFC_Pa":[67677,101925]},
+  "oom_fix":"platform allocator (XLA_PYTHON_CLIENT_ALLOCATOR=platform re-exec) + output-interval segmentation; commit 078ac81",
+  "note":"the exact production AIFS-pull failure scenario, now GREEN out-of-box. AIFS-1km-path CLOSED for v0.12.0." }
