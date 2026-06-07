@@ -217,9 +217,16 @@ def _full_operational_case():
     land = SimpleNamespace(
         tslb=f3(4, ny, nx, val=285.0), smois=f3(4, ny, nx, val=0.3), sh2o=f3(4, ny, nx, val=0.28),
         sneqv=f3(ny, nx, val=10.0), snowh=f3(ny, nx, val=0.05),
-        canliq=f3(ny, nx, val=0.0), canice=f3(ny, nx, val=0.0),
+        canliq=f3(ny, nx, val=0.1), canice=f3(ny, nx, val=0.02),
         sfcrunoff=f3(ny, nx, val=0.0), udrunoff=f3(ny, nx, val=0.0),
         albedo=f3(ny, nx, val=0.2), emiss=f3(ny, nx, val=0.98),
+        # B3: Noah-MP snow-layer (NSNOW=3) + snow+soil (NSNOW+NSOIL=7) columns
+        # plus the scalar snow/canopy diagnostics (KI-3). ISNOW is the int32
+        # active-layer count; here a single active layer (-1).
+        tsno=f3(3, ny, nx, val=270.0), snice=f3(3, ny, nx, val=3.0),
+        snliq=f3(3, ny, nx, val=0.5), zsnso=f3(7, ny, nx, val=-0.1),
+        isnow=np.full((ny, nx), -1, dtype=np.int32),
+        sneqvo=f3(ny, nx, val=9.5),
     )
     namelist = {"cen_lat": 28.3, "cen_lon": -15.6, "soil_layers_stag": 4}
     return state, grid, namelist, land
@@ -279,3 +286,125 @@ def test_existing_variables_unchanged_when_metrics_added(tmp_path: Path):
         np.testing.assert_allclose(dataset["T2"][0], state.t2)
         # MAPFAC_M (primary) still aliases the x-direction mass map factor.
         np.testing.assert_allclose(dataset["MAPFAC_M"][0], dataset["MAPFAC_MX"][0])
+
+
+# B3 (KI-3): Noah-MP snow-layer + canopy diagnostics. The expected schema is the
+# authoritative reference wrfout (ncdump -h). Each tuple is
+# (name, dimensions, MemoryOrder, stagger, units, description, dtype).
+SNOW_CANOPY_REFERENCE_SCHEMA = (
+    ("TSNO", ("Time", "snow_layers_stag", "south_north", "west_east"),
+     "XYZ", "Z", "K", "snow temperature", "f4"),
+    ("SNICE", ("Time", "snow_layers_stag", "south_north", "west_east"),
+     "XYZ", "Z", "mm", "snow layer ice", "f4"),
+    ("SNLIQ", ("Time", "snow_layers_stag", "south_north", "west_east"),
+     "XYZ", "Z", "mm", "snow layer liquid", "f4"),
+    ("ZSNSO", ("Time", "snso_layers_stag", "south_north", "west_east"),
+     "XYZ", "Z", "m", "layer-bottom depth from snow surf", "f4"),
+    ("ISNOW", ("Time", "south_north", "west_east"),
+     "XY ", "", "m3 m-3", "no. of snow layer", "i4"),
+    ("SNEQVO", ("Time", "south_north", "west_east"),
+     "XY ", "", "mm", "snow mass at last time step", "f4"),
+    ("CANLIQ", ("Time", "south_north", "west_east"),
+     "XY ", "", "mm", "intercepted liquid water", "f4"),
+    ("CANICE", ("Time", "south_north", "west_east"),
+     "XY ", "", "mm", "intercepted ice mass", "f4"),
+)
+
+_B3_REFERENCE = Path(
+    "/mnt/data/canairy_meteo/runs/wrf_l3/"
+    "20260428_18z_l3_24h_20260525T221139Z/"
+    "wrfout_d02_2026-04-28_19:00:00"
+)
+
+
+def test_noahmp_snow_canopy_diagnostics_match_reference_schema(tmp_path: Path):
+    """B3/KI-3: TSNO/SNICE/SNLIQ/ZSNSO + ISNOW/SNEQVO/CANLIQ/CANICE are emitted
+    with the EXACT shape/staggering/dtype/attrs of the reference WRF wrfout, are
+    finite, and round-trip the values handed in by the Noah-MP land carry."""
+
+    state, grid, namelist, land = _full_operational_case()
+    nx, ny = grid.nx, grid.ny
+    path = tmp_path / "wrfout_d02_2026-05-25_21:00:00"
+    write_wrfout_netcdf(
+        state, grid, namelist, path,
+        valid_time=datetime(2026, 5, 25, 21), lead_hours=3.0,
+        run_start=datetime(2026, 5, 25, 18), land_state=land,
+    )
+
+    # Cross-check the hardcoded expected schema against the live reference wrfout
+    # when it is present on disk (defensive: skip the cross-check if purged).
+    ref_attrs = {}
+    if _B3_REFERENCE.exists():
+        with Dataset(_B3_REFERENCE) as ref:
+            for name, *_ in SNOW_CANOPY_REFERENCE_SCHEMA:
+                assert name in ref.variables, f"{name} missing from reference"
+                rv = ref.variables[name]
+                ref_attrs[name] = {
+                    "dimensions": tuple(rv.dimensions),
+                    "MemoryOrder": str(rv.getncattr("MemoryOrder")),
+                    "stagger": str(rv.getncattr("stagger")),
+                    "units": str(rv.getncattr("units")),
+                    "description": str(rv.getncattr("description")),
+                    "kind": np.dtype(rv.dtype).kind,
+                }
+
+    with Dataset(path) as dataset:
+        assert int(dataset.dimensions["snow_layers_stag"].size) == 3
+        assert int(dataset.dimensions["snso_layers_stag"].size) == 7
+
+        for name, dims, mem, stag, units, desc, dtype in SNOW_CANOPY_REFERENCE_SCHEMA:
+            assert name in dataset.variables, f"missing snow/canopy var {name}"
+            var = dataset.variables[name]
+            assert tuple(var.dimensions) == dims, f"{name} dims {var.dimensions} != {dims}"
+            assert str(var.getncattr("MemoryOrder")) == mem
+            assert str(var.getncattr("stagger")) == stag
+            assert str(var.getncattr("units")) == units
+            assert str(var.getncattr("description")) == desc
+            expected_kind = "i" if dtype.startswith("i") else "f"
+            assert np.dtype(var.dtype).kind == expected_kind, f"{name} dtype kind"
+            arr = np.asarray(var[:])
+            assert np.isfinite(arr).all(), f"{name} non-finite"
+
+            # Hardcoded schema must equal the live reference when available.
+            if name in ref_attrs:
+                r = ref_attrs[name]
+                assert r["dimensions"] == dims, f"{name} ref dims drift"
+                assert r["MemoryOrder"] == mem, f"{name} ref MemoryOrder drift"
+                assert r["stagger"] == stag, f"{name} ref stagger drift"
+                assert r["units"] == units, f"{name} ref units drift"
+                assert r["description"] == desc, f"{name} ref description drift"
+                assert r["kind"] == expected_kind, f"{name} ref dtype-kind drift"
+
+        # FieldType: WRF tags integer fields 106, real fields 104.
+        assert int(dataset.variables["ISNOW"].getncattr("FieldType")) == 106
+        assert int(dataset.variables["TSNO"].getncattr("FieldType")) == 104
+
+        # Values round-trip from the carry (no fabrication / no rescale).
+        np.testing.assert_allclose(dataset["TSNO"][0], land.tsno)
+        np.testing.assert_allclose(dataset["SNICE"][0], land.snice)
+        np.testing.assert_allclose(dataset["SNLIQ"][0], land.snliq)
+        np.testing.assert_allclose(dataset["ZSNSO"][0], land.zsnso)
+        np.testing.assert_array_equal(np.asarray(dataset["ISNOW"][0]), land.isnow)
+        np.testing.assert_allclose(dataset["SNEQVO"][0], land.sneqvo)
+        np.testing.assert_allclose(dataset["CANLIQ"][0], land.canliq)
+        np.testing.assert_allclose(dataset["CANICE"][0], land.canice)
+        # CANWAT is still the canliq+canice bulk (unchanged behaviour).
+        np.testing.assert_allclose(dataset["CANWAT"][0], land.canliq + land.canice)
+        assert dataset["TSNO"][0].shape == (3, ny, nx)
+        assert dataset["ZSNSO"][0].shape == (7, ny, nx)
+
+
+def test_snow_canopy_diagnostics_self_gate_without_carry(tmp_path: Path):
+    """When NO land carry is supplied the snow/canopy diagnostics are simply
+    absent — the writer never fabricates a snow profile (honesty rule)."""
+
+    state, grid, namelist, _land = _full_operational_case()
+    path = tmp_path / "wrfout_d02_2026-05-25_21:00:00"
+    write_wrfout_netcdf(
+        state, grid, namelist, path,
+        valid_time=datetime(2026, 5, 25, 21), lead_hours=3.0,
+        run_start=datetime(2026, 5, 25, 18), land_state=None,
+    )
+    with Dataset(path) as dataset:
+        for name, *_ in SNOW_CANOPY_REFERENCE_SCHEMA:
+            assert name not in dataset.variables, f"{name} fabricated without carry"
