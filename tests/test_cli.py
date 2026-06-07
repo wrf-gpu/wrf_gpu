@@ -228,6 +228,69 @@ def test_run_accepts_implemented_radiation_at_validation(
     assert "Unsupported namelist" not in err
 
 
+def test_run_real_canary_cudt_namelist_proceeds_with_warning(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A real Canary/WRF namelist with cudt=5 (and gwd_opt=1, radt=30, cu=1,
+    bldt=0) must PROCEED through the pre-JAX validation gate -- NOT be rejected --
+    and emit a non-fatal cudt cadence WARNING. The naive-user out-of-box fix.
+
+    Uses the same fake-pipeline injection as the implemented-radiation test so the
+    run reaches the pipeline (proving validation accepted the namelist) without
+    importing JAX.
+    """
+
+    import sys
+    import types
+
+    sentinel = "PIPELINE_REACHED"
+    fake = types.ModuleType("gpuwrf.integration.daily_pipeline")
+
+    class _Config:
+        def __init__(self, **kwargs: object) -> None:
+            self.__dict__.update(kwargs)
+
+    fake.DailyPipelineConfig = _Config
+    fake.detect_init_mode = lambda config: "standalone_native_init"
+
+    def _execute(config: object) -> dict:
+        raise RuntimeError(sentinel)
+
+    fake.execute_daily_pipeline = _execute
+    monkeypatch.setitem(sys.modules, "gpuwrf.integration.daily_pipeline", fake)
+
+    case = tmp_path / "case"
+    case.mkdir()
+    (case / "namelist.input").write_text(
+        "&physics\n"
+        " mp_physics = 8,\n cu_physics = 1,\n bl_pbl_physics = 5,\n"
+        " sf_sfclay_physics = 5,\n sf_surface_physics = 4,\n"
+        " ra_lw_physics = 4,\n ra_sw_physics = 4,\n"
+        " cudt = 5,\n radt = 30,\n bldt = 0,\n slope_rad = 1,\n topo_shading = 1,\n/\n"
+        "&dynamics\n diff_opt = 1,\n km_opt = 4,\n gwd_opt = 1,\n"
+        " moist_adv_opt = 1,\n scalar_adv_opt = 1,\n/\n"
+    )
+    with pytest.raises(RuntimeError) as excinfo:
+        main(
+            [
+                "run",
+                "--namelist", str(case / "namelist.input"),
+                "--input-dir", str(case),
+                "--output-dir", str(tmp_path / "out"),
+            ]
+        )
+    # Reached the pipeline => validation did NOT reject the real cudt=5 namelist.
+    assert str(excinfo.value) == sentinel
+    err = capsys.readouterr().err
+    assert "Unsupported namelist" not in err
+    # The cudt approximation surfaces as a non-fatal warning (run proceeds).
+    assert "gpuwrf: warning:" in err
+    assert "cudt" in err
+    assert "every dynamics step" in err.lower()
+
+
 # --------------------------------------------------------------------------- #
 # Dimension comparator                                                        #
 # --------------------------------------------------------------------------- #
