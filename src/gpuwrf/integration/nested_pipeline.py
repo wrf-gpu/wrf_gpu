@@ -286,6 +286,14 @@ def _load_domains(
         # absent (no fabricated drag), mirroring the single-domain path.
         gwd_opt = _domain_gwd_opt(run, name)
         gwdo_statics = None
+        # v0.12.0: GWD operational coupling is GATED OFF BY DEFAULT on the nested
+        # path -- the 24h nested-1km + GWD run exceeds the single-GPU fp64 VRAM
+        # ceiling at ~sim-hr 7 (RRTMG g-point temp confluence; gwd7 gate ran clean
+        # for 7 sim-hours then OOM'd on MEMORY, not physics).  Kernel is oracle-
+        # validated; full nested-1km-GWD = v0.13.  Honour gwd_opt=1 as a no-op by
+        # default (preserves the GREEN nested-1km gate); opt in via GPUWRF_GWD_NESTED=1.
+        if gwd_opt == 1 and os.environ.get("GPUWRF_GWD_NESTED", "0") != "1":
+            gwd_opt = 0
         if gwd_opt == 1:
             try:
                 gwdo_statics, _ = load_gwdo_statics(
