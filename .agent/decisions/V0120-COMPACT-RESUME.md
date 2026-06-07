@@ -50,3 +50,10 @@ NESTING lane DONE ~85% (`worker/opus/nesting-2way-feedback` @ dfab32c): WRF sm12
 ## v0.13 PREP (saved): `.agent/reviews/2026-06-07-opus-v0120-differential-to-100pct.md` (committed) — the differential-to-100% feature map + cheap-wins (A1/A2 being done now; B1/B2/B3/B5 + scheme-wiring = v0.13). Architectural gaps: 2-way nesting feedback, 3D-LES km_opt=2/3/5, GWD, PD/monotonic advection, auxhist, lat-lon proj; ~58 unported scheme kernels = bulk of v1.0.0. Out-of-scope (keep): Chem/Fire/Hydro/ocean/urban/moving-nests/FDDA/stochastic.
 
 ## CONSTRAINTS: GPU one job at a time; nightly scheduler pid NEVER touch; cores 0-3 ours; window 0:3 = principal's separate codex (NEVER touch); honesty (no faked numbers / no tolerance loosening). Lessons in memory `feedback_agent_launch_tmux.md` (flock-double-wrap, anti-stall, pkill -f self-match).
+
+---
+## ⚡ LIVE WAVE 2 — 2026-06-07 ~21:50 WEST (post-hibernation, principal: vollgas/merge-all-proven)
+TRUNK = `115cb0c` (+ v0.13 SPEED roadmap committed: .agent/decisions/V0130-SPEED-ROADMAP.md).
+GATE: fresh 24h nested-1km-WITH-GWD re-run = bg cmd `b0pxg3ndl` (flock; /mnt/data/canairy_meteo/gate_revalidate_gwd3/run.rc + out/payload.json). OK if it finishes post-midnight. Prior agent a99d926c HUNG on hibernation→killed+stopped. ⚠️ HIBERNATION killed the GPU run once (CUDA ctx); if GPU busy but out/ wrfout stale >15min → hung → kill gpuwrf.cli PID + relaunch `/tmp/wrf_gpu_run.sh bash /tmp/gate_gwd3_run.sh`.
+WAVE 2 (5 maxcode lanes, off 115cb0c, base-guarded, CPU-proof, GPU-validation-deferred, no-ask-hermes, auto-notify): ad835191=2way-nesting-rebase(resolve nested_pipeline conflict, →merge 0.12 defaults-off) · a6339843=PD-RK3-operational-wiring(moist_adv_opt 1/2, default byte-identical guardrail) · ae66a7a3=C-Dudhia-resume(ra_sw operational + savepoint oracle) · a2fe15c8=compile-speed(AOT+autotune-cache, infra) · a0af66eb=latlon-proj.
+MERGE RULE: independently re-run each proof; clean+green→merge 0.12, else bank v0.13. After wave: doc-fill→release-critic(Opus)→release-worker(Opus-MAX: tag)→push→report. NEXT WAVE if time: WSM7 mp, RRTM-LW wire, MYJ+Janjic wire, B2 taug, clear-sky radiation.
