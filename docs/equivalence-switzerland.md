@@ -45,6 +45,16 @@ cd <repo>
 PYTHONPATH=src bash scripts/equivalence_switzerland.sh
 ```
 
+**Running on your own machine — no internal scheduler needed.** This script
+calls the public `python -m gpuwrf.cli run` entrypoint directly. It requires
+**no** GPU mutex, lock wrapper, or canairy-internal infrastructure: on a
+single-GPU machine you just run the command above. Everything it writes goes
+under `CASE_ROOT` (default: `<repo>/runs/switzerland`, a writable repo-relative
+dir — no `/mnt` path is assumed); set `CASE_ROOT` to anywhere writable if you
+prefer. The script only needs the case inputs (`wrfinput_d01`/`wrfbdy_d01`/
+`namelist.input`) and a CPU reference present under `CASE_ROOT` (or pointed at by
+`CPU_REF`) — see *CPU reference* below.
+
 That single command:
 
 1. Builds a **clean standalone input dir** (`wrfinput_d01` + `wrfbdy_d01` +
@@ -120,20 +130,26 @@ or dropped into `tests/fixtures/switzerland/cpu_reference_compact/`. Because the
 
 ### How the CPU reference was produced (maintainer note)
 
+These maintainer steps need external tools you supply via env (`WPS_SRC`,
+`GEOG`, `WRF` — your own WPS + geog + WRF builds). Outputs default to a
+repo-relative `runs/switzerland/` dir (override with `CASE_ROOT`/`RUNROOT`); no
+`/mnt` path is assumed.
+
 ```bash
 # 1. Mint the case from GFS (WPS geogrid/ungrib/metgrid + real.exe).  Run once.
-#    Produces /mnt/data/wrf_gpu_switzerland/run_cpu/{wrfinput_d01,wrfbdy_d01,namelist.input}.
-taskset -c 0-3 bash scripts/build_switzerland_case.sh
+#    Produces <repo>/runs/switzerland/run_cpu/{wrfinput_d01,wrfbdy_d01,namelist.input}.
+WPS_SRC=/your/WPS GEOG=/your/WPS_GEOG WRF=/your/WRF \
+  taskset -c 0-3 bash scripts/build_switzerland_case.sh
 
 # 2. Run the SERIAL pristine gfortran CPU-WRF on those same inputs.  Times wall.
-taskset -c 0-3 bash scripts/run_switzerland_cpu_reference.sh
+WRF=/your/WRF taskset -c 0-3 bash scripts/run_switzerland_cpu_reference.sh
 
 # 3. (optional) distil to a compact, shippable reference + tarball.
 python scripts/make_compact_reference.py \
-    --src /mnt/data/wrf_gpu_switzerland/run_cpu \
-    --dst /mnt/data/wrf_gpu_switzerland/cpu_reference_compact
+    --src runs/switzerland/run_cpu \
+    --dst runs/switzerland/cpu_reference_compact
 tar -czf cpu_reference_switzerland_compact.tar.gz \
-    -C /mnt/data/wrf_gpu_switzerland/cpu_reference_compact .
+    -C runs/switzerland/cpu_reference_compact .
 sha256sum cpu_reference_switzerland_compact.tar.gz
 ```
 
