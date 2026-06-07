@@ -23,15 +23,36 @@ one status:
 1. **`implemented` -> runs.** Operationally GPU-scan-wired and consumed
    normally.
 
-2. **`reference_only` -> accepted at the namelist layer, fail-closed in the
-   operational scan.** A recognized WRF scheme with a parity-proven (savepoint /
-   isolated / analytic-oracle) adapter that is *not yet* threaded into the
-   operational GPU scan. The namelist validator accepts it (so you can run a
-   single-column / reference comparison), and the operational forecast scan
-   refuses it loudly with a named reason — never a silent wrong result. Today:
-   MYJ PBL (`bl_pbl_physics=2`) + Janjic Eta surface (`sf_sfclay_physics=2`),
-   New Tiedtke (`cu_physics=16`), classic RRTM LW (`ra_lw_physics=1`), Dudhia SW
-   (`ra_sw_physics=1`).
+2. **`reference_only` -> accepted at the validation layer, REFUSED by the
+   operational `gpuwrf run` path.** A recognized WRF scheme with a parity-proven
+   (savepoint / isolated / analytic-oracle) adapter that is *not yet* threaded
+   into the operational GPU scan. The base namelist validator
+   (`validate_namelist`) accepts it so you can run a single-column / reference
+   comparison against it. But the **operational forecast** (`gpuwrf run`, via
+   `validate_operational_namelist`) **refuses it loudly, before any JAX import**,
+   with a named reason — because the operational scan cannot actually select it
+   and would otherwise *silently run a different scheme* than you requested
+   (e.g. the radiation slot runs RRTMG regardless). Refusing is the honest
+   behavior: never a silent wrong-scheme result. Today the `reference_only`
+   schemes are MYJ PBL (`bl_pbl_physics=2`) + Janjic Eta surface
+   (`sf_sfclay_physics=2`), New Tiedtke (`cu_physics=16`), classic RRTM LW
+   (`ra_lw_physics=1`), and Dudhia SW (`ra_sw_physics=1`). Example
+   (`gpuwrf run` with `ra_lw_physics=1`):
+
+   ```
+   physics.ra_lw_physics=1 (RRTM): parity-proven WRF v4 longwave-radiation
+   scheme, but NOT operationally wired into the GPU forecast scan. Running it
+   would SILENTLY use a DIFFERENT scheme than requested (the operational
+   longwave-radiation path runs the implemented scheme instead) -- refusing
+   rather than producing a silent wrong-scheme run. Operationally-wired
+   ra_lw_physics values: 0, 4. Action: Use ra_lw_physics=4 (RRTMG,
+   GPU-operational) for the operational LW path.
+   ```
+
+   The operational alternative is always named: `ra_lw_physics=4` /
+   `ra_sw_physics=4` (RRTMG) for radiation, `cu_physics=6` (Tiedtke) / `1`
+   (Kain-Fritsch) / `3` (Grell-Freitas) for New-Tiedtke, and `bl_pbl_physics=5`
+   (MYNN) / `1` (YSU) / `7` (ACM2) for MYJ.
 
 3. **`recognized_fail_closed` -> fail closed, specific message.** A valid WRF v4
    option the port does not implement. Example:
@@ -61,12 +82,14 @@ handled.
 
 ## Implemented-scheme matrix
 
-`[impl]` = operationally wired in the GPU scan; `[ref]` = `reference_only`:
-accepted at the namelist layer as a savepoint-parity / isolated / analytic-
-oracle reference path, but the operational GPU scan fail-closes it — see the
-per-option `Action:` text in the error for the exact pairing/wiring caveat.
-(Codes not listed for a parameter are `recognized_fail_closed`: valid WRF
-options the port does not implement.)
+`[impl]` = operationally wired in the GPU scan (runs under `gpuwrf run`);
+`[ref]` = `reference_only`: accepted by `validate_namelist` as a
+savepoint-parity / isolated / analytic-oracle reference path, but **refused by
+the operational `gpuwrf run` path** (it would otherwise silently run a different
+scheme) — see the per-option `Action:` text in the error for the exact
+pairing/wiring caveat and the operational alternative. (Codes not listed for a
+parameter are `recognized_fail_closed`: valid WRF options the port does not
+implement.)
 
 | Parameter            | Selectable values                                                                 |
 |----------------------|-----------------------------------------------------------------------------------|
@@ -107,10 +130,13 @@ ignored:
 
 To run an existing real-data WRF `namelist.input` on the port today:
 
-* Physics suite: pick from the implemented matrix above (the operational default
-  is `mp_physics=8` Thompson, `cu_physics=1` KF, `bl_pbl_physics=5` MYNN,
-  `sf_sfclay_physics=5` MYNN-SL, `sf_surface_physics=4` Noah-MP + `use_noahmp`,
-  `ra_lw_physics=4` / `ra_sw_physics=4` RRTMG).
+* Physics suite: pick from the **`[impl]`** entries in the matrix above (the
+  operational default is `mp_physics=8` Thompson, `cu_physics=1` KF,
+  `bl_pbl_physics=5` MYNN, `sf_sfclay_physics=5` MYNN-SL, `sf_surface_physics=4`
+  Noah-MP + `use_noahmp`, `ra_lw_physics=4` / `ra_sw_physics=4` RRTMG). A
+  `[ref]` scheme (RRTM/Dudhia radiation, MYJ/Janjic, New-Tiedtke) is **rejected
+  by `gpuwrf run`** — it is for reference comparisons only; the error names the
+  operational swap.
 * Turbulence/diffusion: WRF's recommended real-data defaults `diff_opt=1`,
   `km_opt=4` (2-D Smagorinsky) **run as-is** (see the honesty note below). If you
   use a 3-D closure (`km_opt=2/3/5`), switch to **constant-K: `diff_opt=2`,
@@ -148,10 +174,16 @@ To run an existing real-data WRF `namelist.input` on the port today:
   `classify_feature_switch()`, `iter_full_catalog()`, `status_counts()`, and
   `assert_catalog_consistent()` (the anti-over-claim invariants vs the frozen
   accept-matrix and the operational scan-wired set).
-* `src/gpuwrf/io/namelist_check.py` — `validate_namelist()`, the public
-  fail-closed entrypoint (scheme support + out-of-scope features), called by the
-  `gpuwrf run` CLI before any heavy import. `validate_supported_namelist()`
-  remains the scheme-only checker it composes.
+* `src/gpuwrf/io/namelist_check.py` — two fail-closed entrypoints:
+  `validate_namelist()` (the validation layer: scheme support + out-of-scope
+  features; **accepts** `reference_only` schemes so reference comparisons can run)
+  and `validate_operational_namelist()` (the **operational** layer: runs
+  `validate_namelist()` then *additionally* rejects `reference_only` selections
+  via `classify_scheme`/`SupportStatus` — raising `NotOperationallyWiredError`).
+  The `gpuwrf run` CLI calls `validate_operational_namelist()` before any heavy
+  import, so an operational forecast can never silently substitute a different
+  scheme. `validate_supported_namelist()` remains the scheme-only checker they
+  compose.
 * `src/gpuwrf/contracts/physics_registry.py` — the authoritative
   implemented/accepted matrix (`ACCEPTED_*`).
 * `tests/test_namelist_check.py`, `tests/test_scheme_catalog_fail_closed.py` —
