@@ -29,6 +29,8 @@ from gpuwrf.io.scheme_catalog import (
     SchemeSupport,
     SupportStatus,
     classify_feature_switch,
+    classify_scheme,
+    iter_full_catalog,
 )
 from gpuwrf.io.wrf_scheme_catalog import WRF_PARAM_LABEL, wrf_scheme_name
 
@@ -53,6 +55,11 @@ class UnsupportedSelection:
 
     * ``"not_yet_implemented"`` -- a recognized WRF v4 scheme that the port does
       not yet wire (``wrf_scheme`` names it);
+    * ``"reference_only_not_operational"`` -- a parity-proven WRF v4 scheme that
+      is accepted by ``validate_namelist`` for a reference comparison but is NOT
+      wired into the operational scan; the OPERATIONAL run path
+      (``validate_operational_namelist``) rejects it to avoid a silent
+      wrong-scheme run (``wrf_scheme`` names it);
     * ``"invalid_wrf_option"`` -- not a recognized WRF v4 option at all;
     * ``"unsupported"`` -- generic rejection for keys without a WRF v4 catalog
       (e.g. a structural pairing constraint).
@@ -91,6 +98,26 @@ class UnsupportedNamelistOption(UnsupportedSchemeError):
     ``validate_namelist`` (which also rejects out-of-scope features) raises a
     type those callers still catch, while new callers can catch the umbrella
     ``UnsupportedSchemeError``.
+    """
+
+
+class NotOperationallyWiredError(UnsupportedSchemeError):
+    """Raised by the OPERATIONAL run path for a parity-proven-but-not-wired scheme.
+
+    The validation layer (:func:`validate_namelist`) intentionally *accepts*
+    ``REFERENCE_ONLY`` schemes (classic RRTM/Dudhia radiation, MYJ/Janjic,
+    New-Tiedtke) so a single-column / reference comparison can be run against
+    them. The OPERATIONAL forecast scan, however, cannot actually select those
+    schemes -- the radiation slot hardcodes RRTMG, and the MYJ/Janjic/New-Tiedtke
+    column adapters have no operational GPU scan carry-path. Running them through
+    ``gpuwrf run`` would therefore *silently substitute a different scheme*, which
+    violates the "no silent wrong path" contract. The operational entrypoint
+    (:func:`validate_operational_namelist`) fail-closes them loudly, naming the
+    scheme the scan would have run instead and the operational alternative.
+
+    It subclasses :class:`UnsupportedSchemeError` -- the exact type the CLI
+    ``run`` path catches -- so the operational rejection reaches the user as a
+    clean fail-closed error with no traceback.
     """
 
 
@@ -294,6 +321,126 @@ def validate_namelist(config: Any) -> None:
         raise UnsupportedSchemeError(list(exc.selections) + oos_failures) from None
     if oos_failures:
         raise UnsupportedSchemeError(oos_failures)
+
+
+def validate_operational_namelist(config: Any) -> None:
+    """Validate a namelist for an OPERATIONAL ``gpuwrf run``; raise or pass.
+
+    This is the strict entrypoint the forecast CLI uses. It runs the full
+    :func:`validate_namelist` check first (so recognized-but-unimplemented
+    schemes, invalid WRF options, mandatory pairings and out-of-scope features
+    fail closed exactly as before) AND THEN additionally rejects any selected
+    scheme classified ``REFERENCE_ONLY`` by :func:`scheme_catalog.classify_scheme`.
+
+    Why the extra rejection: ``REFERENCE_ONLY`` schemes (classic RRTM longwave /
+    Dudhia shortwave radiation, MYJ PBL, Janjic Eta surface layer, New-Tiedtke
+    cumulus) are *parity-proven* and so are accepted by :func:`validate_namelist`
+    for a reference / single-column comparison -- but they are NOT wired into the
+    operational GPU scan. The operational radiation slot hardcodes RRTMG; the
+    MYJ/Janjic/New-Tiedtke adapters have no operational scan carry-path. Running
+    one of them through ``gpuwrf run`` would therefore *silently substitute a
+    different scheme* (e.g. RRTMG for the requested RRTM/Dudhia), which violates
+    the v0.12.0 "no silent wrong path" Scope-A contract. So the operational path
+    refuses them loudly, naming the operational scheme the scan would actually run
+    and the supported alternative.
+
+    The authoritative IMPLEMENTED-vs-not decision comes from
+    :class:`scheme_catalog.SupportStatus`: only ``IMPLEMENTED`` selections run on
+    the operational scan; ``REFERENCE_ONLY`` (handled here) and
+    ``RECOGNIZED_FAIL_CLOSED`` / ``OUT_OF_SCOPE`` (already rejected by
+    :func:`validate_namelist`) all fail closed for an operational run.
+
+    Raises :class:`NotOperationallyWiredError` (a subclass of
+    :class:`UnsupportedSchemeError`) when a reference-only scheme is selected;
+    re-raises :class:`UnsupportedSchemeError` from the base validation otherwise.
+    Does NOT change :func:`validate_namelist`'s acceptance of reference-only
+    schemes -- other (validation-layer) callers rely on that.
+    """
+
+    config_obj = _coerce_config(config)
+    # First: the existing full support + out-of-scope check (unchanged behavior).
+    validate_namelist(config_obj)
+    # Then: the operational-only strictness -- reject reference-only selections.
+    ref_only = _reference_only_failures(config_obj)
+    if ref_only:
+        raise NotOperationallyWiredError(ref_only)
+
+
+def _reference_only_failures(config: Any) -> list[UnsupportedSelection]:
+    """Find selected physics schemes that are REFERENCE_ONLY (operational reject).
+
+    Scans every gated physics key for a per-domain value that
+    :func:`scheme_catalog.classify_scheme` classifies as ``REFERENCE_ONLY`` and
+    builds a fail-closed selection whose message names the scheme, why it is not
+    operationally wired, and the operational alternative (e.g. RRTMG=4). Only
+    physics keys can be reference-only; dynamics keys never are, so scanning the
+    physics keys is sufficient (and harmless if a dynamics key were scanned).
+    """
+
+    failures: list[UnsupportedSelection] = []
+    for key in _REFERENCE_ONLY_CANDIDATE_KEYS:
+        found = _lookup(config, key)
+        if found is None:
+            continue
+        location, raw = found
+        values = _domain_values(raw)
+        for idx, value in enumerate(values):
+            normalized = _normalize_value(value)
+            if not isinstance(normalized, int):
+                continue
+            support = classify_scheme(key, normalized)
+            if support.status is not SupportStatus.REFERENCE_ONLY:
+                continue
+            failures.append(
+                UnsupportedSelection(
+                    key=key,
+                    location=location,
+                    value=normalized,
+                    # List only the truly operationally-wired (IMPLEMENTED) codes
+                    # -- NOT the full accepted matrix (which includes this very
+                    # reference-only code) -- so the message is honest about what
+                    # the operational scan can actually run.
+                    supported_values=_operationally_wired_values(key),
+                    implemented=(
+                        f"REFERENCE-ONLY (parity-proven, NOT operationally wired): "
+                        f"{support.wrf_name or key}"
+                    ),
+                    action=support.alternative,
+                    domain_index=idx + 1 if len(values) > 1 else None,
+                    outcome="reference_only_not_operational",
+                    wrf_scheme=support.wrf_name,
+                )
+            )
+    return failures
+
+
+def _operationally_wired_values(key: str) -> tuple[Any, ...]:
+    """Sorted IMPLEMENTED (operationally scan-wired) codes for ``key``.
+
+    Derived from the authoritative catalog so a reference-only code is never
+    listed as operationally available.
+    """
+
+    impl = {
+        support.code
+        for support in iter_full_catalog()
+        if support.key == key and support.status is SupportStatus.IMPLEMENTED
+    }
+    return _sorted_supported_values(frozenset(impl))
+
+
+# Physics keys whose catalog classifies at least one code REFERENCE_ONLY.
+# Derived from scheme_catalog.iter_full_catalog() so this stays in lockstep with
+# the authoritative catalog classifications -- never hard-coded here. If a future
+# scheme becomes reference-only (or graduates to implemented), this set tracks it
+# automatically.
+_REFERENCE_ONLY_CANDIDATE_KEYS: tuple[str, ...] = tuple(
+    dict.fromkeys(
+        support.key
+        for support in iter_full_catalog()
+        if support.status is SupportStatus.REFERENCE_ONLY
+    )
+)
 
 
 def _out_of_scope_failures(config: Any) -> list[UnsupportedSelection]:
@@ -541,6 +688,17 @@ def _format_selection(item: UnsupportedSelection) -> str:
             f"Supported {item.key} values: {supported}. "
             f"Implemented: {item.implemented}. Action: {item.action}"
         )
+    if item.outcome == "reference_only_not_operational":
+        label = WRF_PARAM_LABEL.get(item.key, item.key)
+        scheme = item.wrf_scheme or f"{item.key}={item.value}"
+        return (
+            f"- {item.location}{domain}={item.value} ({scheme}): parity-proven WRF v4 "
+            f"{label} scheme, but NOT operationally wired into the GPU forecast scan. "
+            f"Running it would SILENTLY use a DIFFERENT scheme than requested "
+            f"(the operational {label} path runs the implemented scheme instead) -- "
+            f"refusing rather than producing a silent wrong-scheme run. "
+            f"Operationally-wired {item.key} values: {supported}. Action: {item.action}"
+        )
     if item.outcome == "invalid_wrf_option":
         label = WRF_PARAM_LABEL.get(item.key, item.key)
         return (
@@ -558,9 +716,11 @@ def _format_selection(item: UnsupportedSelection) -> str:
 __all__ = [
     "SUPPORTED_OPTIONS",
     "SupportedOption",
+    "NotOperationallyWiredError",
     "UnsupportedNamelistOption",
     "UnsupportedSchemeError",
     "UnsupportedSelection",
     "validate_namelist",
+    "validate_operational_namelist",
     "validate_supported_namelist",
 ]

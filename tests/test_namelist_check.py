@@ -7,7 +7,11 @@ import pytest
 from gpuwrf.contracts.physics_registry import ACCEPTED_NAMELIST_OPTIONS
 from gpuwrf.io.namelist_check import (
     SUPPORTED_OPTIONS,
+    NotOperationallyWiredError,
     UnsupportedNamelistOption,
+    UnsupportedSchemeError,
+    validate_namelist,
+    validate_operational_namelist,
     validate_supported_namelist,
 )
 from gpuwrf.io.wrf_scheme_catalog import (
@@ -261,6 +265,136 @@ def test_fortran_repeat_count_syntax_is_expanded() -> None:
     assert len(sels) == 2
     assert all(s.outcome == "not_yet_implemented" for s in sels)
     assert all(s.value == 28 for s in sels)
+
+
+# --------------------------------------------------------------------------- #
+# Operational-strict validation (validate_operational_namelist).              #
+# The OPERATIONAL run path must additionally REJECT reference-only schemes     #
+# (parity-proven but not wired into the operational GPU scan) so that          #
+# ``gpuwrf run`` can never silently substitute a different scheme.             #
+# --------------------------------------------------------------------------- #
+
+
+def test_operational_validator_passes_implemented_suite() -> None:
+    """An operationally-wired Thompson/KF/MYNN/Noah-MP/RRTMG suite passes."""
+
+    validate_operational_namelist(
+        {
+            "physics": {
+                "mp_physics": [8],
+                "cu_physics": [1],
+                "bl_pbl_physics": [5],
+                "sf_sfclay_physics": [5],
+                "sf_surface_physics": [4],
+                "ra_lw_physics": [4],
+                "ra_sw_physics": [4],
+            },
+            "dynamics": {"rk_order": 3, "diff_opt": 1, "km_opt": 4},
+        }
+    )
+
+
+@pytest.mark.parametrize(
+    "key, value, scheme_substring, alt_substring",
+    [
+        ("ra_lw_physics", 1, "RRTM", "ra_lw_physics=4"),
+        ("ra_sw_physics", 1, "Dudhia", "ra_sw_physics=4"),
+        ("cu_physics", 16, "New Tiedtke", "cu_physics=6"),
+    ],
+)
+def test_operational_validator_rejects_reference_only_scheme(
+    key: str, value: int, scheme_substring: str, alt_substring: str
+) -> None:
+    """ra_lw=1 (RRTM), ra_sw=1 (Dudhia), cu=16 (New-Tiedtke) are parity-proven
+    but NOT operationally wired -> the operational run path fails closed,
+    naming the scheme it would silently run instead and the alternative."""
+
+    with pytest.raises(NotOperationallyWiredError) as excinfo:
+        validate_operational_namelist({"physics": {key: [value]}})
+
+    sel = _selection_for(excinfo, key)
+    assert sel.outcome == "reference_only_not_operational"
+    assert sel.value == value
+    assert scheme_substring in (sel.wrf_scheme or "")
+
+    message = str(excinfo.value)
+    assert f"{key}={value}" in message
+    assert "SILENTLY" in message
+    assert "NOT operationally wired" in message
+    assert alt_substring in message
+    # The rejected reference-only code must NOT be advertised as operational.
+    assert f"Operationally-wired {key} values:" in message
+
+
+def test_operational_validator_rejects_reference_only_radiation_pair() -> None:
+    """A namelist that selects BOTH reference-only radiation schemes reports both."""
+
+    with pytest.raises(NotOperationallyWiredError) as excinfo:
+        validate_operational_namelist(
+            {"physics": {"ra_lw_physics": [1], "ra_sw_physics": [1]}}
+        )
+    keys = {s.key for s in excinfo.value.selections}
+    assert keys == {"ra_lw_physics", "ra_sw_physics"}
+
+
+def test_operational_validator_rejects_myj_janjic_reference_pair() -> None:
+    """MYJ PBL (bl=2) + Janjic Eta surface layer (sf=2) is a valid reference pair
+    that ``validate_namelist`` accepts, but the OPERATIONAL run rejects both
+    (no operational GPU scan carry-path)."""
+
+    # Reference (validation) layer accepts the pair.
+    validate_namelist({"physics": {"bl_pbl_physics": [2], "sf_sfclay_physics": [2]}})
+
+    with pytest.raises(NotOperationallyWiredError) as excinfo:
+        validate_operational_namelist(
+            {"physics": {"bl_pbl_physics": [2], "sf_sfclay_physics": [2]}}
+        )
+    keys = {s.key for s in excinfo.value.selections}
+    assert keys == {"bl_pbl_physics", "sf_sfclay_physics"}
+    message = str(excinfo.value)
+    assert "MYJ" in message  # bl=2 scheme name
+    assert "Janjic" in message  # sf=2 scheme name
+
+
+def test_operational_validator_rejects_reference_only_per_domain() -> None:
+    """A multi-domain namelist with a reference-only radiation scheme on one
+    domain is rejected for that domain."""
+
+    with pytest.raises(NotOperationallyWiredError) as excinfo:
+        validate_operational_namelist({"physics": {"ra_sw_physics": [4, 1]}})
+    sel = _selection_for(excinfo, "ra_sw_physics")
+    assert sel.domain_index == 2
+    assert sel.value == 1
+
+
+def test_operational_validator_still_rejects_unimplemented_and_out_of_scope() -> None:
+    """The operational validator subsumes the full validate_namelist checks:
+    recognized-but-unimplemented schemes and out-of-scope features still fail."""
+
+    with pytest.raises(UnsupportedSchemeError) as excinfo:
+        validate_operational_namelist({"physics": {"mp_physics": [28]}})
+    assert "NOT YET IMPLEMENTED" in str(excinfo.value)
+
+    with pytest.raises(UnsupportedSchemeError) as excinfo2:
+        validate_operational_namelist({"chem": {"chem_opt": 401}})
+    assert "out-of-scope" in str(excinfo2.value)
+
+
+def test_validate_namelist_still_accepts_reference_only_schemes() -> None:
+    """REGRESSION GUARD: the validation layer must KEEP accepting reference-only
+    schemes (other callers run reference comparisons against them). Only the
+    OPERATIONAL validator rejects them."""
+
+    validate_namelist(
+        {"physics": {"ra_lw_physics": [1], "ra_sw_physics": [1], "cu_physics": [16]}}
+    )
+    validate_namelist({"physics": {"bl_pbl_physics": [2], "sf_sfclay_physics": [2]}})
+
+
+def test_not_operationally_wired_is_an_unsupported_scheme_error() -> None:
+    """The CLI catches UnsupportedSchemeError; the operational rejection must be it."""
+
+    assert issubclass(NotOperationallyWiredError, UnsupportedSchemeError)
 
 
 def test_real_wrf_namelist_input_is_consumable() -> None:

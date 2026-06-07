@@ -18,7 +18,9 @@ Usage::
 The ``run`` subcommand:
 
 1. Validates the namelist *fail-closed* (before any expensive JAX import/compile)
-   via :func:`gpuwrf.io.namelist_check.validate_supported_namelist`.
+   via :func:`gpuwrf.io.namelist_check.validate_operational_namelist` -- which
+   additionally refuses parity-proven-but-not-operationally-wired schemes so the
+   operational run never silently substitutes a different scheme.
 2. Loads the CPU-WRF/Gen2 case from ``--input-dir``, advances ``--hours`` hours
    through the GPU port, and writes ``wrfout`` history files + proof JSON.
 3. Optionally compares generated ``wrfout`` *dimensions* against a CPU-WRF
@@ -322,13 +324,21 @@ def _cmd_run(args: argparse.Namespace) -> int:
         scratch_dir = fallback
 
     # --- Namelist registry check (fail-closed, still pre-JAX). ----------------
+    # The OPERATIONAL run path uses the *strict* operational validator: in
+    # addition to the full validate_namelist support/out-of-scope checks, it also
+    # refuses parity-proven-but-not-operationally-wired (REFERENCE_ONLY) schemes
+    # -- classic RRTM/Dudhia radiation, MYJ/Janjic, New-Tiedtke -- because the
+    # operational GPU scan cannot select them and would otherwise SILENTLY run a
+    # different scheme (e.g. RRTMG for a requested RRTM/Dudhia). validate_namelist
+    # alone accepts those for reference comparisons; the operational forecast must
+    # not (v0.12.0 "no silent wrong path" contract).
     try:
         from gpuwrf.io.namelist_check import (
             UnsupportedSchemeError,
-            validate_namelist,
+            validate_operational_namelist,
         )
 
-        validate_namelist(namelist)
+        validate_operational_namelist(namelist)
     except UnsupportedSchemeError as exc:
         return _fail(str(exc))
     except Exception as exc:  # parsing / IO problems should also fail cleanly
