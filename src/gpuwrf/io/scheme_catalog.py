@@ -485,10 +485,12 @@ _ADV_ORDER_REASON = (
     "advection orders are not wired (dynamics/flux_advection.py)."
 )
 _ADV_OPT_REASON = (
-    "recognized; the port runs only the standard (non-positive-definite, "
-    "non-monotonic) scalar transport. The WRF positive-definite (2), monotonic "
-    "(3) and WENO (4) scalar/moisture transport variants are NOT yet scan-wired "
-    "in v0.12.0."
+    "recognized; the port wires the standard h5/v3 transport (0) and the "
+    "WRF-canonical positive-definite (1) and monotonic (2) flux limiters "
+    "(dynamics/flux_advection.advect_scalar_flux_limited, selected on the final "
+    "RK3 stage; module_advect_em.F advect_scalar_pd/advect_scalar_mono). The WENO "
+    "(3) and WENO-positive-definite (4) reconstruction variants are NOT yet "
+    "scan-wired."
 )
 
 _RECOGNIZED_CONTROLS: tuple[RecognizedControl, ...] = (
@@ -506,17 +508,17 @@ _RECOGNIZED_CONTROLS: tuple[RecognizedControl, ...] = (
     ),
     RecognizedControl(
         "moist_adv_opt", "moisture-advection",
-        frozenset({0, 1}),
+        frozenset({0, 1, 2}),
         _ADV_OPT_REASON,
-        "Use moist_adv_opt=0/1 (standard transport); the PD/monotonic/WENO "
-        "variants (2/3/4) are not wired.",
+        "Use moist_adv_opt=0 (standard h5/v3), 1 (positive-definite) or 2 "
+        "(monotonic); the WENO variants (3/4) are not wired.",
     ),
     RecognizedControl(
         "scalar_adv_opt", "scalar-advection",
-        frozenset({0, 1}),
+        frozenset({0, 1, 2}),
         _ADV_OPT_REASON,
-        "Use scalar_adv_opt=0/1 (standard transport); the PD/monotonic/WENO "
-        "variants (2/3/4) are not wired.",
+        "Use scalar_adv_opt=0 (standard h5/v3), 1 (positive-definite) or 2 "
+        "(monotonic); the WENO variants (3/4) are not wired.",
     ),
     RecognizedControl(
         "h_sca_adv_order", "horizontal-scalar-advection-order",
