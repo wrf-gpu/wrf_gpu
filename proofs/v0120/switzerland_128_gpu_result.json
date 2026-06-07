@@ -1,0 +1,29 @@
+{
+  "benchmark": "Switzerland Gotthard 3km — single-GPU fp64 grid-ceiling characterization",
+  "date": "2026-06-07",
+  "purpose": "Honest large-grid speedup attempt; result = fp64 single-GPU grid ceiling, not a speedup number.",
+  "domain": {
+    "center": "46.65N / 8.55E (Gotthard)",
+    "proj": "Lambert",
+    "dx_m": 3000,
+    "e_vert": 45,
+    "time_step_s": 18,
+    "init": "GFS-forced, 2023-01-15 00Z, 24h",
+    "grid_attempted": ["150x150 mass", "128x128 mass"]
+  },
+  "cpu_reference": {
+    "build": "dmpar MPI gfortran, 28 ranks (HONEST denominator, NOT 1-core serial)",
+    "grid": "128x128 mass (e_we=e_sn=129)",
+    "forecast_hours": 24,
+    "mainloop_steps": 4800,
+    "mainloop_per_fcst_hour_s": 43.28,
+    "total_wall_per_fcst_hour_s": 44.04,
+    "status": "COMPLETED clean"
+  },
+  "gpu_result": {
+    "grid_150x150": {"status": "OOM", "note": "RRTMG g-point radiation temporary = 25.58 GiB single alloc"},
+    "grid_128x128": {"status": "OOM", "peak_vram_mib": 31193, "error": "CUDA_ERROR_OUT_OF_MEMORY (failed to allocate 21.62MiB at full arena)", "dominant_temp": "f64[45,128,128,16] RRTMG g-point families (loop_add_gather_multiply_select_fusion)"}
+  },
+  "conclusion": "Single-GPU fp64 grid ceiling on this 32GB RTX 5090 (with ~4GB desktop overhead) is BELOW 128x128. The RRTMG g-point shortwave/longwave radiation temporary dominates VRAM at fp64. Both 150^2 and 128^2 OOM. The production Canary d02 grid fits and runs; the operational speedup is reported on that grid. This is a characterized, honest hardware limit, not a forecast-correctness issue. fp32 would lift the ceiling but detonates the acoustic solver (documented elsewhere); a g-point-batched / chunked RRTMG temp is the v0.13+ lever to raise the fp64 ceiling.",
+  "ship_decision": "Report operational speedup on the production grid (Canary d02). Document this fp64 grid ceiling in KNOWN_ISSUES / PERFORMANCE. Do NOT chase 112^2 (marginal, not headline-bearing, release clock)."
+}
