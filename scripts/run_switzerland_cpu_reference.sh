@@ -20,9 +20,14 @@
 # ═══════════════════════════════════════════════════════════════════════════
 set -uo pipefail
 
-CASE_ROOT="${CASE_ROOT:-/mnt/data/wrf_gpu_switzerland}"
+# Maintainer step. CASE_ROOT/WRF default to overridable paths; set them for your
+# machine. CASE_ROOT defaults to a repo-relative writable dir (no /mnt required);
+# WRF must point at YOUR serial gfortran WRF build (real.exe/wrf.exe).
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO="$(cd "${SCRIPT_DIR}/.." && pwd)"
+CASE_ROOT="${CASE_ROOT:-${REPO}/runs/switzerland}"
 CPU_DIR="${CPU_DIR:-${CASE_ROOT}/run_cpu}"
-WRF="${WRF:-/home/enric/src/wrf_pristine/WRF}"
+WRF="${WRF:-${WRF_ROOT:-/path/to/your/WRF}}"
 
 ts(){ date '+%H:%M:%S'; }
 log(){ echo "[$(ts)] $*"; }

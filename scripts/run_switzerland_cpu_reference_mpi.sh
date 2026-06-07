@@ -24,12 +24,17 @@
 # ═══════════════════════════════════════════════════════════════════════════
 set -uo pipefail
 
-RUNROOT="${RUNROOT:-/mnt/data/wrf_gpu_switzerland_big}"
+# Maintainer step. RUNROOT defaults to a repo-relative writable dir (no /mnt
+# required); WRF_DMPAR/WRF_BUILD_ENV must point at YOUR dmpar MPI WRF build —
+# override them via env.
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO="$(cd "${SCRIPT_DIR}/.." && pwd)"
+RUNROOT="${RUNROOT:-${REPO}/runs/switzerland_big}"
 CPU_DIR="${CPU_DIR:-${RUNROOT}/run_cpu}"
 NRANKS="${NRANKS:-28}"
 
-WRF_DMPAR="${WRF_DMPAR:-/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_src/WRF/install_gen2_dmpar/run}"
-WRF_BUILD_ENV="${WRF_BUILD_ENV:-/home/enric/src/canairy_meteo/Gen2/artifacts/envs/wrf-build}"
+WRF_DMPAR="${WRF_DMPAR:-/path/to/your/WRF/install_dmpar/run}"
+WRF_BUILD_ENV="${WRF_BUILD_ENV:-/path/to/your/wrf-build-env}"
 MPIRUN="${MPIRUN:-${WRF_BUILD_ENV}/bin/mpirun}"
 # OpenMPI flags. We pin the whole job to cores 0-27 with `taskset -c 0-27` at
 # launch; under that cgroup mask OpenMPI's own `--bind-to core` policy conflicts

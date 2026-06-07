@@ -18,21 +18,27 @@
 #   center 46.65N 8.55E (Gotthard), Lambert, dx=dy=3 km, 43x43 (~126 km sq),
 #   45 levels, p_top=5000 Pa, single domain forced by GFS lateral boundaries.
 #
-# Env assumptions (all confirmed present on this workstation):
-#   WPS  : /mnt/data/canairy_meteo/artifacts/wrf_src/WPS/install_gen2_dmpar/bin
-#   geog : /mnt/data/canairy_meteo/artifacts/wps_geog/WPS_GEOG_LOW_RES (global)
-#   WRF  : /home/enric/src/wrf_pristine/WRF (serial gfortran build; real.exe)
-#   conda: env that holds the WPS runtime libs (wrf-build) is sourced via
-#          LD_LIBRARY_PATH already baked into the WPS exes' RPATH.
+# Env you must supply (point these at YOUR own installs via env vars):
+#   WPS_SRC : your WPS source/install tree (geogrid/ungrib/metgrid)
+#   GEOG    : your WPS_GEOG static-data directory
+#   WRF     : your serial gfortran WRF build (provides real.exe)
+#   conda   : an env that holds the WPS/WRF runtime libs on LD_LIBRARY_PATH
+#             (or RPATH-baked into the exes).
+# Defaults below are /path/to/your/... placeholders that fail loudly if unset.
 # ═══════════════════════════════════════════════════════════════════════════
 set -uo pipefail
 
 # ── Configuration (override via env) ──────────────────────────────────────
-RUNROOT="${RUNROOT:-/mnt/data/wrf_gpu_switzerland}"
-WPS_SRC="${WPS_SRC:-/mnt/data/canairy_meteo/artifacts/wrf_src/WPS}"
+# Maintainer/offline step. RUNROOT defaults to a repo-relative writable dir (no
+# /mnt required). WPS_SRC/GEOG/WRF must point at YOUR own WPS + geog + WRF
+# installs — set them via env; the placeholders below just fail loudly if unset.
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO="$(cd "${SCRIPT_DIR}/.." && pwd)"
+RUNROOT="${RUNROOT:-${REPO}/runs/switzerland}"
+WPS_SRC="${WPS_SRC:-/path/to/your/WPS}"
 WPS_BIN="${WPS_BIN:-${WPS_SRC}/install_gen2_dmpar/bin}"
-GEOG="${GEOG:-/mnt/data/canairy_meteo/artifacts/wps_geog/WPS_GEOG_LOW_RES}"
-WRF="${WRF:-/home/enric/src/wrf_pristine/WRF}"
+GEOG="${GEOG:-/path/to/your/WPS_GEOG}"
+WRF="${WRF:-/path/to/your/WRF}"
 VTABLE="${VTABLE:-${WPS_SRC}/ungrib/Variable_Tables/Vtable.GFS}"
 
 # Case definition
