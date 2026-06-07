@@ -847,13 +847,256 @@ def _wrf_mynn_coldstart_qke(
     return qke_seed.astype(dtype), True
 
 
+# --------------------------------------------------------------------------- #
+# v0.12.0 standalone native-init lateral boundary: decode wrfbdy_<domain> into
+# the operational ``*_bdy`` leaves WITHOUT any CPU-WRF wrfout history. This is the
+# genuine out-of-the-box path: real.exe already produced wrfinput + wrfbdy, so we
+# read the lateral forcing straight from wrfbdy instead of reconstructing it from
+# pre-existing CPU wrfout history (the REPLAY path).
+# --------------------------------------------------------------------------- #
+# WRF couples the wrfbdy specified values by the hybrid mass term (the same term
+# the dycore couples by). Decoupling to the raw fields the operational
+# ``apply_lateral_boundaries`` adapter consumes (it interpolates raw decoupled
+# leaves and re-couples internally) is the exact inverse:
+#   u  = U_BXS  / (c1h*mass_u + c2h) * msfuy        (mass_u = staggered-x dry mass)
+#   v  = V_BXS  / (c1h*mass_v + c2h) * msfvx
+#   t  = T_BXS  / (c1h*total_mass + c2h)  (-> THM perturbation; +t0/(1+rv/rd qv) below)
+#   qv = QVAPOR_BXS / (c1h*total_mass + c2h)
+#   ph = PH_BXS / (c1f*total_mass + c2f)
+#   mu = MU_BXS                                     (uncoupled MU_2)
+# wrfbdy already stores E/N strips inner-to-outer flipped (module_bc.F stuff_bdy),
+# which is the SAME orientation ``_field_sides_3d`` / the operational leaf packer
+# use, so the decoded side strips map straight onto W/E/S/N with no extra flip.
+_T0_K = P0_THETA_OFFSET_K
+_RVOVRD = 461.6 / 287.0
+_WRFBDY_SIDE_KEYS = {"W": "bxs", "E": "bxe", "S": "bys", "N": "bye"}
+
+
+def _wrfbdy_total_mass_strips(
+    *,
+    mu_total: np.ndarray,
+    metrics: DycoreMetrics,
+    msfuy: np.ndarray,
+    msfvx: np.ndarray,
+    width: int,
+) -> dict[str, dict[str, np.ndarray]]:
+    """Pre-slice the IC dry-mass coupling term onto every wrfbdy side strip.
+
+    Returns ``{coupling_name: {side: strip}}`` where ``coupling_name`` selects the
+    stagger (``mass_h`` for theta/qv, ``mass_f`` for ph, ``mass_u``/``mass_v`` for
+    the C-grid winds) and each strip is in the WRF wrfbdy ``(bdy_width, z, tan)``
+    order (2D mass uses ``(bdy_width, 1, tan)``).
+    """
+
+    total = np.asarray(mu_total, dtype=np.float64)
+    ny, nx = total.shape
+    c1h = np.asarray(metrics.c1h, dtype=np.float64)
+    c2h = np.asarray(metrics.c2h, dtype=np.float64)
+    c1f = np.asarray(metrics.c1f, dtype=np.float64)
+    c2f = np.asarray(metrics.c2f, dtype=np.float64)
+    mass_h = c1h[:, None, None] * total[None, :, :] + c2h[:, None, None]            # (nz, ny, nx)
+    mass_f = c1f[:, None, None] * total[None, :, :] + c2f[:, None, None]            # (nz+1, ny, nx)
+    # Staggered C-grid dry mass on U/V faces (lateral_bc._staggered_total_mass).
+    mass_u_2d = np.empty((ny, nx + 1), dtype=np.float64)
+    mass_u_2d[:, 0] = total[:, 0]
+    mass_u_2d[:, 1:nx] = 0.5 * (total[:, 1:] + total[:, :-1])
+    mass_u_2d[:, nx] = total[:, nx - 1]
+    mass_v_2d = np.empty((ny + 1, nx), dtype=np.float64)
+    mass_v_2d[0, :] = total[0, :]
+    mass_v_2d[1:ny, :] = 0.5 * (total[1:, :] + total[:-1, :])
+    mass_v_2d[ny, :] = total[ny - 1, :]
+    msfuy = np.asarray(msfuy, dtype=np.float64)
+    msfvx = np.asarray(msfvx, dtype=np.float64)
+    mass_u = (c1h[:, None, None] * mass_u_2d[None, :, :] + c2h[:, None, None]) / msfuy[None, :, :]
+    mass_v = (c1h[:, None, None] * mass_v_2d[None, :, :] + c2h[:, None, None]) / msfvx[None, :, :]
+
+    fields = {"mass_h": mass_h, "mass_f": mass_f, "mass_u": mass_u, "mass_v": mass_v}
+    strips: dict[str, dict[str, np.ndarray]] = {}
+    for name, field in fields.items():
+        per_side = _field_sides_3d(field, width)  # (bdy_width, z, tan) per W/E/S/N
+        strips[name] = per_side
+    return strips
+
+
+def _broadcast_base_leaf_3d(field: np.ndarray, *, width: int, max_side: int, ntimes: int) -> np.ndarray:
+    """Broadcast a static (z, ny, nx) base field onto a (time, 4, bw, z, side_len) leaf."""
+    per_side = _field_sides_3d(np.asarray(field, dtype=np.float64), width)
+    z_len = int(per_side["W"].shape[1])
+    leaf = np.zeros((ntimes, 4, width, z_len, max_side), dtype=np.float64)
+    for side in SIDES:
+        s = per_side[side]
+        leaf[:, SIDE_INDEX[side], : s.shape[0], : s.shape[1], : s.shape[2]] = s[None]
+    return leaf
+
+
+def _broadcast_base_leaf_2d(field: np.ndarray, *, width: int, max_side: int, ntimes: int) -> np.ndarray:
+    """Broadcast a static (ny, nx) base field onto a (time, 4, bw, 1, side_len) leaf."""
+    per_side = _field_sides_2d(np.asarray(field, dtype=np.float64), width)
+    leaf = np.zeros((ntimes, 4, width, 1, max_side), dtype=np.float64)
+    for side in SIDES:
+        s = per_side[side]
+        leaf[:, SIDE_INDEX[side], : s.shape[0], 0, : s.shape[1]] = s
+    return leaf
+
+
+def load_wrfbdy_boundary_leaves(
+    run: Gen2Run,
+    grid: GridSpec,
+    *,
+    domain: str,
+    mu_total: np.ndarray,
+    metrics: DycoreMetrics,
+    pb: np.ndarray | None = None,
+    phb: np.ndarray | None = None,
+    mub: np.ndarray | None = None,
+    p_perturbation: np.ndarray | None = None,
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    """Build operational ``*_bdy`` leaves by decoding ``wrfbdy_<domain>`` directly.
+
+    The native standalone LBC source: NO CPU-WRF wrfout history. Decodes every
+    wrfbdy forcing interval into the decoupled ``(time, side, bdy_width, z,
+    side_len)`` leaves the operational boundary adapter consumes.
+    """
+
+    try:
+        bdy_path = wrfbdy_path_for_run(run, domain)
+    except FileNotFoundError as exc:
+        raise FileNotFoundError(
+            f"standalone native-init requires wrfbdy_{domain} for lateral forcing "
+            f"(no CPU-WRF wrfout history present in {run.path}): {exc}"
+        ) from exc
+
+    # interval (bdyfrq) seconds: prefer the namelist, fall back to 6 h.
+    interval_s = float(
+        run.namelist.get("time_control", {}).get("interval_seconds", 21600) or 21600
+    )
+    probe = decode_wrfbdy(bdy_path, variables=("MU",), time_index=0)
+    ntimes = int(len(probe.get("times", [])) or 1)
+    width = int(probe.get("bdy_width", 5))
+    max_side = int(max(grid.nx + 1, grid.ny + 1))
+
+    mass_strips = _wrfbdy_total_mass_strips(
+        mu_total=mu_total, metrics=metrics, msfuy=metrics.msfuy, msfvx=metrics.msfvx, width=width
+    )
+
+    def _decoupled_strip(decoded_var: dict[str, Any], side: str, mass_name: str) -> np.ndarray:
+        coupled = np.asarray(decoded_var["sides"][side]["boundary"], dtype=np.float64)  # (bw, z, tan)
+        mstrip = mass_strips[mass_name][side]  # (bw, z, tan)
+        z_use = min(coupled.shape[1], mstrip.shape[1])
+        safe = np.where(np.abs(mstrip[:, :z_use]) > 1.0e-12, mstrip[:, :z_use], 1.0e-12)
+        out = np.array(coupled)
+        out[:, :z_use] = coupled[:, :z_use] / safe
+        return out
+
+    # Per-interval decode: read the boundary VALUE at each wrfbdy time level (the
+    # _BX* base term IS the specified value at that interval start; WRF advances it
+    # with the _BT* tendency, but reading the per-interval base value is exact at
+    # each interval boundary and the operational adapter interpolates between them).
+    u_t, v_t, th_t, qv_t, ph_t, w_t, mu_t = ([] for _ in range(7))
+    for k in range(ntimes):
+        dv = decode_wrfbdy(bdy_path, variables=("U", "V", "W", "T", "QVAPOR", "PH", "MU"), time_index=k)
+        vars_k = dv["variables"]
+        per_u = np.zeros((4, width, grid.nz, max_side), dtype=np.float64)
+        per_v = np.zeros((4, width, grid.nz, max_side), dtype=np.float64)
+        per_th = np.zeros((4, width, grid.nz, max_side), dtype=np.float64)
+        per_qv = np.zeros((4, width, grid.nz, max_side), dtype=np.float64)
+        per_ph = np.zeros((4, width, grid.nz + 1, max_side), dtype=np.float64)
+        per_w = np.zeros((4, width, grid.nz + 1, max_side), dtype=np.float64)
+        per_mu = np.zeros((4, width, 1, max_side), dtype=np.float64)
+        for side in SIDES:
+            si = SIDE_INDEX[side]
+            u_s = _decoupled_strip(vars_k["U"], side, "mass_u")
+            v_s = _decoupled_strip(vars_k["V"], side, "mass_v")
+            qv_s = np.maximum(_decoupled_strip(vars_k["QVAPOR"], side, "mass_h"), 0.0)
+            thm_s = _decoupled_strip(vars_k["T"], side, "mass_h")
+            # THM perturbation -> full dry theta (operational State.theta = T+300):
+            #   theta_full = (thm + t0) / (1 + (Rv/Rd) qv)
+            th_s = (thm_s + _T0_K) / (1.0 + _RVOVRD * qv_s)
+            ph_s = _decoupled_strip(vars_k["PH"], side, "mass_f")
+            w_s = np.asarray(vars_k["W"]["sides"][side]["boundary"], dtype=np.float64)  # W uncoupled (0)
+            mu_s = np.asarray(vars_k["MU"]["sides"][side]["boundary"], dtype=np.float64)  # uncoupled
+            for dst, src in ((per_u, u_s), (per_v, v_s), (per_th, th_s), (per_qv, qv_s)):
+                dst[si, : src.shape[0], : src.shape[1], : src.shape[2]] = src[:, :, :]
+            per_ph[si, : ph_s.shape[0], : ph_s.shape[1], : ph_s.shape[2]] = ph_s
+            per_w[si, : w_s.shape[0], : w_s.shape[1], : w_s.shape[2]] = w_s
+            per_mu[si, : mu_s.shape[0], 0, : mu_s.shape[1]] = mu_s
+        u_t.append(per_u); v_t.append(per_v); th_t.append(per_th)
+        qv_t.append(per_qv); ph_t.append(per_ph); w_t.append(per_w); mu_t.append(per_mu)
+
+    leaves_np = {
+        "u_bdy": np.stack(u_t, axis=0),
+        "v_bdy": np.stack(v_t, axis=0),
+        "theta_bdy": np.stack(th_t, axis=0),
+        "qv_bdy": np.stack(qv_t, axis=0),
+        "ph_bdy": np.stack(ph_t, axis=0),
+        "w_bdy": np.stack(w_t, axis=0),
+        "mu_bdy": np.stack(mu_t, axis=0),
+    }
+    # Base-state lateral leaves: pb/phb/mub are STATIC (they never evolve), so the
+    # operational ``apply_lateral_boundaries`` re-forces the boundary ring to the IC
+    # base strips. p_bdy carries the perturbation-pressure forcing; wrfbdy has no
+    # specified perturbation-pressure boundary, so hold it at the IC perturbation
+    # strip (a steady ring, consistent with the static base state). Broadcasting
+    # across the same ``ntimes`` keeps interpolate_boundary_leaf shape-stable.
+    if pb is not None:
+        leaves_np["pb_bdy"] = _broadcast_base_leaf_3d(pb, width=width, max_side=max_side, ntimes=ntimes)
+    if phb is not None:
+        leaves_np["phb_bdy"] = _broadcast_base_leaf_3d(phb, width=width, max_side=max_side, ntimes=ntimes)
+    if mub is not None:
+        leaves_np["mub_bdy"] = _broadcast_base_leaf_2d(mub, width=width, max_side=max_side, ntimes=ntimes)
+    if p_perturbation is not None:
+        leaves_np["p_bdy"] = _broadcast_base_leaf_3d(p_perturbation, width=width, max_side=max_side, ntimes=ntimes)
+    leaves = {name: jax.device_put(jnp.asarray(value)) for name, value in leaves_np.items()}
+    meta = {
+        "source": "wrfbdy native lateral forcing (standalone; no CPU wrfout replay)",
+        "wrfbdy_path": str(bdy_path),
+        "times": int(ntimes),
+        "bdy_width": int(width),
+        "interval_seconds": float(interval_s),
+        "side_order": list(SIDES),
+        "padded_side_length": max_side,
+        "schema": "wrfbdy-decoupled-leaf-v1",
+        "coupling": "decoupled by IC hybrid dry-mass term (c1h*muT+c2h etc.)",
+        "variables": ["U", "V", "W", "T", "QVAPOR", "PH", "MU"],
+    }
+    return leaves, meta
+
+
+def _wrfinput_start_label(run: Gen2Run, domain: str) -> str | None:
+    """Read the analysis-time label (``YYYY-MM-DD_HH:MM:SS``) from wrfinput ``Times``.
+
+    The standalone path has no wrfout time axis, so the forecast run-start is the
+    wrfinput initial time. Returns ``None`` if the record cannot be read.
+    """
+
+    try:
+        from netCDF4 import Dataset
+
+        with Dataset(run.wrfinput_file(domain), "r") as ds:
+            if "Times" not in ds.variables:
+                return None
+            raw = ds.variables["Times"][:]
+            label = b"".join(np.asarray(raw[0]).tolist()).decode("ascii", errors="replace").strip()
+            return label or None
+    except Exception:  # noqa: BLE001 - best-effort; caller falls back to run_id
+        return None
+
+
 def build_replay_case(
     run_dir: str | Path = DEFAULT_REPLAY_RUN_DIR,
     *,
     domain: str = "d02",
     boundary_domain: str | None = None,
+    standalone: bool | None = None,
 ) -> ReplayCase:
-    """Load a Gen2 d02 initial state with WRF perturbation/base splits preserved."""
+    """Load a Gen2 d02 initial state with WRF perturbation/base splits preserved.
+
+    When ``standalone`` is True (or auto-detected because the run dir has < 2
+    ``wrfout_<domain>`` history files), the initial state is read from
+    ``wrfinput_<domain>`` and the lateral forcing from ``wrfbdy_<domain>`` -- the
+    genuine out-of-the-box path with NO CPU-WRF wrfout dependency. Otherwise the
+    classic REPLAY path (IC from wrfout t=0, LBC from wrfout history) is used.
+    """
 
     _debug(f"build_replay_case start run_dir={run_dir} domain={domain} boundary_domain={boundary_domain}")
     run = Gen2Run(run_dir)
@@ -881,8 +1124,21 @@ def build_replay_case(
     _debug(f"load_wrfinput_metrics complete (source={metrics_source})")
     land = load_prescribed_land_state(run, domain=domain, time=0)
     _debug("load_prescribed_land_state complete")
+    # Auto-detect the standalone native-init path: fewer than two CPU-WRF
+    # ``wrfout_<domain>`` history files means there is no replay history, so the
+    # lateral forcing must come from ``wrfbdy_<domain>`` (the genuine fresh-case
+    # path). ``history_files`` falls back to ``[wrfinput_<domain>]`` when no
+    # wrfout exists, so the IC reads below still resolve to wrfinput.
+    wrfout_history_count = len(sorted(run.path.glob(f"wrfout_{domain}_*")))
+    is_standalone = bool(standalone) if standalone is not None else (wrfout_history_count < 2)
     source_domain = boundary_domain or domain
-    if source_domain == domain:
+    boundary_leaves: dict[str, Any] | None = None
+    boundary_meta: dict[str, Any] | None = None
+    if is_standalone:
+        # Standalone boundary leaves are decoded from wrfbdy below, after the IC
+        # base/perturbation split (mu_total) is known (needed to decouple).
+        _debug(f"standalone native-init: wrfout_{domain} history={wrfout_history_count} (<2) -> wrfbdy LBC")
+    elif source_domain == domain:
         boundary_leaves, boundary_meta = load_history_boundary_leaves(run, grid, domain=domain)
         _debug("load_history_boundary_leaves complete")
     else:
@@ -910,6 +1166,18 @@ def build_replay_case(
     # pressure / Exner-T2 offset on both d02 and d03 (root cause documented in
     # .agent/reviews/2026-06-01-opus-pressure-drift-rootcause.md).
     theta_base = _wrf_base_theta_from_loaded_state(pb=pb, phb=phb, mub=mub, metrics=metrics)
+
+    if is_standalone:
+        mub_np = np.asarray(jax.device_get(mub))
+        phb_np = np.asarray(jax.device_get(phb))
+        pb_np = np.asarray(jax.device_get(pb))
+        mu_total_np = mub_np + np.asarray(jax.device_get(mu_perturbation))
+        boundary_leaves, boundary_meta = load_wrfbdy_boundary_leaves(
+            run, grid, domain=domain, mu_total=mu_total_np, metrics=metrics,
+            pb=pb_np, phb=phb_np, mub=mub_np,
+            p_perturbation=np.asarray(jax.device_get(p_perturbation)),
+        )
+        _debug("load_wrfbdy_boundary_leaves complete (standalone)")
 
     state = state.replace(
         u=_load(run, domain, "U", 0),
@@ -964,11 +1232,17 @@ def build_replay_case(
         t0=jnp.full_like(theta_base, P0_THETA_OFFSET_K).astype(state.theta.dtype),
         theta_base=theta_base.astype(state.theta.dtype),
     )
+    # Run-start label: replay reads it from the wrfout time axis; standalone has no
+    # wrfout, so read the analysis time straight from the wrfinput ``Times`` record.
+    start_label = run_start_label(run, domain)
+    if is_standalone or start_label == run.run_id:
+        start_label = _wrfinput_start_label(run, domain) or start_label
     metadata = {
         "run_id": run.run_id,
         "run_dir": str(run.path),
         "domain": domain,
-        "run_start_label": run_start_label(run, domain),
+        "run_start_label": start_label,
+        "standalone_native_init": bool(is_standalone),
         "grid": {
             "mass_shape": [int(grid.nz), int(grid.ny), int(grid.nx)],
             "wrf_staggered_extent": [int(grid.nz + 1), int(grid.ny + 1), int(grid.nx + 1)],
