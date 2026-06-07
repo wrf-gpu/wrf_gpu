@@ -10,10 +10,13 @@ It is **not** a validation gate.
 
 Provenance of the profiler artifacts re-used here (all tracked in `proofs/perf/`):
 `nsys_warmed_step_stats_cuda_gpu_kern_sum.csv`, `nsys_warmed_step_stats_cuda_api_sum.csv`,
-`nsys_warmed_step_stats_cuda_gpu_sum.csv` (warmed coupled step, RTX 5090),
-`fusion_results.md` + `fusion_flag_probe_*` (XLA flag A/B), `fusion_transfer_audit.json`
-(host/device transfer audit), and the live `v0120_profile_run.json` from
-`v0120_profile_driver.py`.
+`nsys_warmed_step_stats_cuda_gpu_sum.csv` (warmed coupled step, RTX 5090 — the
+**authoritative** op/kernel breakdown used below), `fusion_results.md` + `fusion_flag_probe_*`
+(XLA flag A/B), and `fusion_transfer_audit.json` (host/device transfer audit). The
+operational standalone entry is a *host-loop* driver (`run_forecast_operational_segmented`
+wraps a jitted inner `_advance_chunk`), so a single-program `jax.jit(...).lower()` of the
+whole forecast is not meaningful; the warmed-step kernel histogram from Nsight Systems is
+the correct artifact and is what is ranked here.
 
 ---
 

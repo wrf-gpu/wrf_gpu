@@ -105,36 +105,13 @@ def main() -> int:
 
     summary = finite_summary(state)
 
-    # Optional: HLO op histogram of the compiled 1-h segment (cheap static probe).
-    hlo_hist: dict[str, int] = {}
+    # NOTE: the --hlo lowering of run_forecast_operational_segmented is NOT supported
+    # (it is a host-loop driver wrapping a jitted inner _advance_chunk; jit-lowering the
+    # wrapper hangs). The authoritative warmed-step op breakdown is the Nsight Systems
+    # profile already in proofs/perf/nsys_warmed_step_stats_*.csv; see v0120_profile.md.
+    # The flag retained as a no-op for back-compat; it records that it was skipped.
+    hlo_hist: dict[str, int] = {"skipped": "segmented host-loop entry is not jit-lowerable; see nsys CSVs"} if args.hlo else {}
     convert_counts: dict[str, int] = {}
-    if args.hlo:
-        try:
-            lowered = jax.jit(
-                lambda s: run_forecast_operational_segmented(s, namelist, 1.0)
-            ).lower(state)
-            compiled = lowered.compile()
-            text = compiled.as_text()
-            counter: collections.Counter[str] = collections.Counter()
-            for line in text.splitlines():
-                line = line.strip()
-                # match "%foo = f64[...] op-name(" patterns
-                if "= " in line and "(" in line:
-                    rhs = line.split("= ", 1)[1]
-                    # op name is the token right before the first "("
-                    head = rhs.split("(", 1)[0].strip()
-                    toks = head.split()
-                    if toks:
-                        opname = toks[-1]
-                        counter[opname] += 1
-                if "convert(" in line:
-                    if "f64" in line:
-                        convert_counts["to_or_from_f64"] = convert_counts.get("to_or_from_f64", 0) + 1
-                    if "f32" in line:
-                        convert_counts["to_or_from_f32"] = convert_counts.get("to_or_from_f32", 0) + 1
-            hlo_hist = dict(counter.most_common(40))
-        except Exception as exc:  # pragma: no cover - profiling best-effort
-            hlo_hist = {"error": str(exc)}  # type: ignore[dict-item]
 
     result = {
         "schema": "GpuwrfV0120ProfileRun",
