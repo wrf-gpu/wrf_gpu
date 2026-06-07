@@ -1,0 +1,81 @@
+{
+  "schema": "GpuwrfV0120StandaloneBench",
+  "schema_version": 1,
+  "date": "2026-06-07",
+  "author": "opus perf engineer (worker/opus/v0120-perf)",
+  "summary": "Honest, reproducible benchmark of the v0.12.0 standalone CLI path (gpuwrf.cli run). All numbers measured on one RTX 5090, fp64 (force_fp64=True on the operational standalone path), dt=10s. Profiling, not validation: short runs only.",
+
+  "device": {
+    "gpu": "NVIDIA GeForce RTX 5090 (Blackwell, 32607 MiB)",
+    "jax": "0.10.0",
+    "cpu_affinity": "taskset -c 0-3"
+  },
+
+  "case": {
+    "input_dir": "/mnt/data/canairy_meteo/runs/wrf_l2/20260514_18z_l2_72h_20260517T145509Z",
+    "init_mode": "standalone_native_init (IC from wrfinput_d01, LBC from wrfbdy_d01; NO CPU-WRF wrfout dependency)",
+    "domain": "d01",
+    "grid_mass_points": "93 x 59 x 44 (e_we=94, e_sn=60, e_vert=45)",
+    "dx_m": 9000.0,
+    "dt_s": 10.0,
+    "acoustic_substeps": 10,
+    "radiation_cadence_steps": 180,
+    "precision": "fp64 (force_fp64=True; the operational standalone path forces pure fp64 for the acoustic solve per daily_pipeline.py:265 / ADR F7)"
+  },
+
+  "reproduce": {
+    "warm_and_cold": "/tmp/wrf_gpu_run.sh taskset -c 0-3 env PYTHONPATH=src JAX_ENABLE_X64=true XLA_PYTHON_CLIENT_PREALLOCATE=false [GPUWRF_JAX_CACHE_DIR=<dir> | GPUWRF_JAX_CACHE=0] python -m gpuwrf.cli run --input-dir <case> --output-dir <scratch> --domain d01 --hours 3",
+    "note_per_hour": "wall_clock_per_hour_s[0] = XLA compile (cold or cache-read) + first-hour execute + JAX warmup; wall_clock_per_hour_s[1:] = WARM steady-state. Case-build is separate (wall_clock_total_s - sum(per_hour))."
+  },
+
+  "warm_throughput": {
+    "warm_s_per_forecast_hour": 16.69,
+    "ms_per_step": 46.4,
+    "provenance": "3 independent warm hours: warm run hours 2,3 = 16.69, 16.69 s; cold run hour 2 = 16.68 s. Reproducible to <0.1 s.",
+    "raw": {
+      "warm_run_per_hour_s": [140.77, 16.69, 16.69],
+      "cold_run_per_hour_s": [147.56, 16.68]
+    }
+  },
+
+  "cold_compile_vs_cache": {
+    "method": "Same case/process, --hours metric isolates hour-1 (compile-bearing) from warm hours. Cold = GPUWRF_JAX_CACHE=0 (cache fully disabled). Cache-populate = empty isolated JAX_COMPILATION_CACHE_DIR. Cache-hit = fresh process on the now-warm isolated cache (PENDING, queued behind concurrent GPU jobs).",
+    "cold_disabled_hour1_s": 147.56,
+    "cache_populate_empty_hour1_s": 150.29,
+    "cache_warm_default_hour1_s": 140.77,
+    "cache_hit_isolated_hour1_s": "DEFERRED (driver_warm.json) - see deferred_gpu_measurements below",
+    "note": "hour-1 conflates compile + ~16.7s first-execute + JAX warmup, so it is an UPPER-BOUND wrapper around compile. The CLEAN compile-only delta is measured by proofs/perf/v0120_profile_driver.py cold-vs-warm (driver_cold.json / driver_warm.json), which has NO restart/repeatability probe overhead. See v0120_profile.md. Directional evidence from the full-pipeline runs: cache-disabled hour-1 = 147.6s vs cache-warmed-default hour-1 = 140.8s; the persistent-cache mechanism (one big _advance_chunk executable, keyed by HLO+backend+flags, read from disk on a hit, bit-identical) is verified by the existing docs/resource-profile.md ~4m55s cold-compile documentation for the larger d02 program."
+  },
+
+  "peak_vram_mb": "DEFERRED (v0120_profile_driver.py memory_stats peak_bytes_in_use; d01 9km is far smaller than the documented d02 ~24.6 GiB; see deferred_gpu_measurements)",
+
+  "deferred_gpu_measurements": {
+    "reason": "These three items need a free GPU and were queued (proofs/perf via /mnt/data/wrf_perf_scratch/run_suite.sh) but BLOCKED on the one-GPU-at-a-time lock behind a concurrent agent's long-running 24h equivalence_demo (d02) + a nest_smoke job. The one-GPU discipline was respected (no contended measurement). The suite + monitors remain armed to capture these automatically when the GPU frees.",
+    "items": [
+      "clean compile-only cold-vs-cache delta (driver_cold.json vs driver_warm.json, isolated cache_iso2, no pipeline probes)",
+      "peak VRAM (memory_stats peak_bytes_in_use, d01)",
+      "live HLO op histogram (driver_cold.json --hlo)",
+      "coupled full-physics graph-capture A/B: warm s/fc-hr + finiteness + final-state fingerprint, baseline vs --xla_gpu_graph_min_graph_size=1 (flag_baseline.json vs flag_gms1.json)"
+    ],
+    "what_is_already_solid": "warm throughput (16.69 s/fc-hr, 3 reps), cold-vs-cache hour-1 (full-pipeline), fp64-not-fp32 finding, sane wrfout, profiling opportunity ranking (from the existing nsys artifacts), and the prior validated 1.71x dynamics-only graph-capture result."
+  },
+
+  "fp32_fast_path": {
+    "status": "NOT on the standalone CLI path",
+    "finding": "The precision matrix (src/gpuwrf/contracts/precision.py) stores u/v/theta/qv/hydrometeors as FP32_GATED and mu/p/ph/w/qke/surface-stability as FP64, BUT the operational standalone path sets force_fp64=True (daily_pipeline.py:265), which upcasts every prognostic to fp64 for the acoustic solve (fp32 detonates the perturbation per the F7 gates). So the CLI standalone forecast runs PURE fp64. A gated-fp32 operational path is a future ADR-007 decision and is documented as 'currently no faster on this memory-bound workload' (docs/resource-profile.md). No fp32 standalone number is reported because none is reachable via the CLI."
+  },
+
+  "reconciliation_with_denominator": {
+    "established_denominator_doc": "proofs/perf/speedup_denominator.md",
+    "established_gpu_d02_warm_s_per_fc_hr": "15.35 (segscan_24h.json) - 16.39 (warmed_timing.json)",
+    "this_d01_warm_s_per_fc_hr": 16.69,
+    "interpretation": "d01 (9km, 93x59) warm = 16.69 s/fc-hr is IN-FAMILY with the established d02 (3km, 159x66) numerator 15.35-16.39 s/fc-hr. Same dt=10s / 10-substep / 180-step-radiation structure; per-step cost is dominated by the launch-bound step structure, not grid size, at these GPU-underutilized sizes. No NEW speedup ratio is claimed for d01: there is no clean uncontended CPU-WRF standalone d01 denominator. The honest published speedup remains the d02 number: ~5x apples-to-apples (band 5-8x), dt-parity floor ~3.2x, real-user warm ~2.5x.",
+    "do_not_inflate": "This d01 measurement CONFIRMS the warm-throughput family; it does NOT establish a new headline. Cite speedup_denominator.md for the speedup factor."
+  },
+
+  "safe_speedup_graph_capture": {
+    "lever": "XLA_FLAGS=--xla_gpu_graph_min_graph_size=1",
+    "rationale": "Lowers the CUDA-graph capture threshold from XLA default 5 to 1, capturing the dycore's many short (<5-op) dependent fusion chains into CUDA graphs and batching the thousands of tiny launches (cuLaunchKernelEx = 38% of CUDA API time; cuGraphLaunch only 5.5% today). Prior dynamics-only probe: 1.71x (fusion_results.md). Numerics-neutral (arithmetic unchanged; perturbation ~1e-14 fp64 reassociation). Launch-env flag, NOT a source change.",
+    "coupled_full_physics_standalone_ab": "DEFERRED (flag_baseline.json vs flag_gms1.json) - blocked on the GPU lock behind a concurrent agent's 24h job; queued via run_suite.sh + monitored. Recommended action: set XLA_FLAGS=--xla_gpu_graph_min_graph_size=1 in the operational launch env after this coupled A/B confirms finiteness + machine-epsilon numerics-neutrality (the dynamics-only leg + idealized close gates already vet it)."
+  }
+}
