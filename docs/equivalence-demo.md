@@ -78,13 +78,62 @@ passes.
 | `W` | 0.30 m s⁻¹ | 3D vertical velocity (small magnitude, noisy) |
 | `QVAPOR` | 1.0×10⁻³ kg kg⁻¹ | 3D water-vapour mixing ratio |
 
+## Observed result on the default case (24 h, d02, 20260509_18z)
+
+Run on 2026-06-07 (proof:
+[`proofs/v0120/equivalence_demo_20260509_d02.json`](../proofs/v0120/equivalence_demo_20260509_d02.json),
+GPU `cuda:0`, replay path). Pooled RMSE over all 24 hourly timesteps and all
+grid points:
+
+| Field | pooled RMSE | tol | pooled bias | verdict |
+|---|---|---|---|---|
+| T2 | 0.484 K | 1.5 K | +0.195 K | **PASS** |
+| U10 | 2.237 m s⁻¹ | 1.5 | +1.491 | EXCEEDS |
+| V10 | 2.441 m s⁻¹ | 1.5 | −1.521 | EXCEEDS |
+| PSFC | 707.8 Pa | 120 | −703.0 | EXCEEDS |
+| RAINNC | 0.501 mm | 1.0 | −0.034 | **PASS** |
+| T (θ′) | 2.040 K | 1.5 | +0.119 | EXCEEDS |
+| U | 3.167 m s⁻¹ | 1.8 | +1.660 | EXCEEDS |
+| V | 8.130 m s⁻¹ | 1.8 | −5.417 | EXCEEDS |
+| W | 0.126 m s⁻¹ | 0.30 | −0.028 | **PASS** |
+| QVAPOR | 5.67×10⁻⁴ kg kg⁻¹ | 1.0×10⁻³ | +4.5×10⁻⁵ | **PASS** |
+
+**Overall verdict: NOT_EQUIVALENT** (6 of 10 fields exceed tolerance). This is
+the honest current state, reported as-is. Two distinct things are happening:
+
+1. **PSFC** carries a near-constant **~590 Pa offset already at forecast hour 1**
+   (GPU mean 100534 Pa vs CPU 101125 Pa) that grows to ~700 Pa — present before
+   any dynamical divergence (hour-1 U/V/T RMSE are 0.32 / 0.17 / 0.19, i.e.
+   essentially identical). That signature is a **systematic surface-pressure
+   reference/diagnostic difference**, not chaotic drift. It is the prime
+   follow-up.
+2. **U10/V10/T/U/V** are **within tolerance at short lead and grow with lead
+   time** (e.g. V RMSE 0.17 m s⁻¹ at h1 → ~11 m s⁻¹ by h19, monotonic; the 3D
+   meridional wind V drifts ~3× faster than U). That is genuine lead-time error
+   growth between two independent integrators, concentrated in the wind field,
+   strongest in V. T2, W, QVAPOR and RAINNC stay inside tolerance for the full
+   24 h.
+
+**Speedup:** the GPU integrated the 24 h d02 forecast in **1408.6 s** vs an
+estimated **2393.2 s** for the CPU-WRF d02 solver (from the retained RSL
+per-step timing) — **~1.70×**. (This is a same-card, fp64, single-forecast
+wall-clock comparison of the d02 main solver only; it is not the warm/fused
+kernel speedup quoted elsewhere.)
+
+A documented exceedance with its numbers is exactly the point of a self-serve
+demo. Re-running after a PSFC-reference fix and/or a wind-divergence
+investigation is the natural next step.
+
 ## What it proves — and what it does not
 
-**Proves:** Given the *same* initial and lateral-boundary conditions, the
-independent JAX GPU integrator reproduces the retained CPU-WRF (Fortran WRF v4)
-forecast field-by-field, grid-point-by-grid-point, hour-by-hour, within the
-predeclared operational tolerance, while running substantially faster on the
-GPU. This is an honest cross-implementation check.
+**Designed to test:** whether, given the *same* initial and lateral-boundary
+conditions, the independent JAX GPU integrator reproduces the retained CPU-WRF
+(Fortran WRF v4) forecast field-by-field, grid-point-by-grid-point,
+hour-by-hour, within the predeclared operational tolerance, while running faster
+on the GPU. It is an honest cross-implementation check that emits an
+`EQUIVALENT` / `NOT_EQUIVALENT` verdict from the data (see the observed result
+above — the current default-case verdict is `NOT_EQUIVALENT`, with the
+exceedances and likely causes documented).
 
 **Does NOT prove / important caveats:**
 
