@@ -43,8 +43,8 @@ The pipeline reports `wall_clock_per_hour_s`: element `[0]` carries the XLA comp
 | **Warm throughput** | **16.69 s / forecast-hour** (≈ 46 ms/step) | fp64, d01 9 km | 3 independent warm hours: 16.69, 16.69, 16.68 s |
 | Cold compile + 1st hour (cache **disabled**) | 147.6 s (hour-1) | `GPUWRF_JAX_CACHE=0` | `cold_run.json` |
 | Cold compile + 1st hour (empty cache, populating) | 150.3 s (hour-1) | empty `JAX_COMPILATION_CACHE_DIR` | `cachepop_run.json` |
-| 1st hour with **warm cache** (cache hit) | _deferred¹_ | warm `JAX_COMPILATION_CACHE_DIR` | `driver_warm.json` |
-| Peak VRAM | _deferred¹_ (d01 9 km ≪ the documented d02 ~24.6 GiB) | fp64 | `v0120_profile_run.json` |
+| 1st hour with **warm cache** (clean cache hit) | **29.3 s** (≈ compile-via-cache ~10 s + first-execute ~16.7 s) | warm `JAX_COMPILATION_CACHE_DIR`, no pipeline probes | `driver_warm.json` |
+| **Peak VRAM** | **4.7 GiB** (4727 MB) | fp64, d01 9 km (≪ documented d02 ~24.6 GiB) | `driver_warm.json` |
 | Forecast verdict / finiteness | `PIPELINE_GREEN`, `all_finite=true` (56 fields) | — | `warm_run.json` |
 
 > **Persistent JIT cache — what it buys.** The v0.12.0 release ships a persistent XLA
@@ -59,8 +59,15 @@ The pipeline reports `wall_clock_per_hour_s`: element `[0]` carries the XLA comp
 > upgrade the key changes and the first run pays one cold compile again (stale entries are
 > ignored, never wrong).
 
-> ¹ **Deferred, not abandoned.** The clean compile-only cache delta, peak VRAM, and the
-> coupled graph-capture A/B all need a free GPU; they were queued
+> ¹ **Now measured (was deferred under GPU contention).** The clean cache-hit hour-1 (29.3 s),
+> peak VRAM (4.7 GiB), and the coupled graph-capture A/B were all captured once the concurrent
+> agents' 24 h jobs cleared the GPU lock. The clean cache-hit hour-1 of **29.3 s** (vs a >100 s
+> cold compile — the full-pipeline cold hour-1 was 147.6 s, ~130 s of it compile) is the
+> load-bearing cache win: the persistent cache turns a multi-minute cold compile into a
+> **~10 s disk read**, bit-identical executable. Earlier deferral text below is superseded.
+
+> ~~Deferred~~ The clean compile-only cache delta, peak VRAM, and the
+> coupled graph-capture A/B all needed a free GPU; they were queued
 > (`/mnt/data/wrf_perf_scratch/run_suite.sh`) but blocked on the one-GPU-at-a-time lock
 > behind a concurrent agent's long-running 24 h job. The discipline was respected (no
 > contended measurement). The directional cache evidence (147.6 s cache-off vs 140.8 s
@@ -104,21 +111,26 @@ path is a future ADR-007 decision and is currently **no faster on this memory-bo
 workload** (`docs/resource-profile.md`). No fp32 standalone speed number is reported because
 none is reachable through the CLI.
 
-## Safe speedup landed: XLA CUDA-graph capture
+## Safe-speedup candidate MEASURED — and rejected on the coupled path
 
 The warmed step is **launch-bound** (`cuLaunchKernelEx` = 38% of CUDA-API time; only 5.5%
-of launches are CUDA-graph-captured today). Setting
+of launches are CUDA-graph-captured today), so `XLA_FLAGS=--xla_gpu_graph_min_graph_size=1`
+(lower the CUDA-graph capture threshold 5→1) was the leading candidate — it gave **1.71×**
+on the **dynamics-only** dycore in a prior sprint (`proofs/perf/fusion_results.md`).
 
-```bash
-export XLA_FLAGS="--xla_gpu_graph_min_graph_size=1"
-```
+**This sprint re-measured it on the full coupled standalone path and it is a regression, so
+it was NOT landed:**
 
-lowers XLA's graph-capture threshold from 5 to 1, capturing the dycore's short dependent
-fusion chains into CUDA graphs. It is a **launch-environment flag, not a source change**, is
-**memory-neutral**, and changes results only at fp64 machine-epsilon (~1e-14 reassociation —
-the arithmetic is identical). Prior dynamics-only A/B measured **1.71×**
-(`proofs/perf/fusion_results.md`); this sprint re-measures it on the **full coupled
-standalone path** with a finiteness + numerics-neutrality check
-(`proofs/perf/flag_baseline.json` vs `flag_gms1.json`, summarized in
-`v0120_standalone_bench.json`). See `proofs/perf/v0120_profile.md` for the full ranked
-opportunity list.
+| Config | warm s/forecast-hour | finite | final state |
+|---|---|---|---|
+| Baseline (XLA defaults) | **16.71** | yes | reference |
+| `--xla_gpu_graph_min_graph_size=1` | **19.81** (≈ **0.84×, ~19 % slower**) | yes | **bit-identical** (Δmax = Δmean = 0 on u/v/θ/w/φ/μ/qv) |
+
+The dynamics-only 1.71× **does not carry to the coupled step**: with physics on, lowering
+the capture threshold does not help the physics couplers and the extra graph-capture
+overhead makes the step slower. It also lengthened cold compile (29 s → 137 s, the flag
+changes the cache key). The flag is numerically safe (bit-identical) but simply not a
+speedup here. **Recommendation: keep XLA defaults; do not set this flag.** Provenance:
+`proofs/perf/flag_baseline.json` vs `flag_gms1.json`. The launch-tax reduction must instead
+target the *coupled* graph (future work). See `proofs/perf/v0120_profile.md` for the full
+ranked opportunity list.
