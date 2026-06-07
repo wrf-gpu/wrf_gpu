@@ -289,7 +289,61 @@ def _is_tmpfs(path: Path) -> bool:
         return False
 
 
+def _maybe_reexec_for_nested_allocator(args: argparse.Namespace) -> None:
+    """NESTED-OOM FIX: re-exec the process with the platform GPU allocator set.
+
+    The live-nested path allocates a recurring ~8-9 GiB RRTMG g-point radiation
+    transient every radiation step.  Under the default XLA BFC arena (especially
+    with ``XLA_PYTHON_CLIENT_PREALLOCATE=false``) a 24 h run fragments the pool so
+    that transient can no longer find a contiguous block -- the production
+    "allocate 9.24 GiB" OOM -- even though peak in-use stays ~9 GiB.  The
+    synchronous *platform* (cudaMalloc/cudaFree) allocator has no arena and so
+    cannot fragment; it also keeps the resident set ~2x smaller (measured ~15 GiB
+    vs ~29 GiB on this case), giving large headroom on a 32 GiB card.
+
+    JAX reads ``XLA_PYTHON_CLIENT_ALLOCATOR`` from the OS environment when the GPU
+    backend first initializes, and importing ``gpuwrf`` already imports ``jax``;
+    setting the variable from Python at this point is not reliably honoured.  The
+    robust, version-independent fix is to set it in the *environment* and re-exec
+    the same interpreter command (``sys.orig_argv``) ONCE so the fresh process
+    initializes the backend with the platform allocator from the start.  This is
+    gated on the nested opt-in (``--max-dom > 1``) so the single-domain
+    operational path keeps the faster default BFC arena, and on a one-shot guard
+    env so we never loop.  An explicit operator ``XLA_PYTHON_CLIENT_ALLOCATOR``
+    is always honoured (no re-exec).
+    """
+    import os
+    import sys
+
+    if not (args.max_dom is not None and int(args.max_dom) > 1):
+        return
+    if os.environ.get("XLA_PYTHON_CLIENT_ALLOCATOR"):
+        return  # operator already chose an allocator -- honour it, do not re-exec.
+    if os.environ.get("_GPUWRF_NESTED_ALLOC_REEXEC") == "1":
+        return  # already re-exec'd once; avoid an exec loop.
+    orig = list(getattr(sys, "orig_argv", []) or [])
+    if not orig:
+        # No faithful argv to re-exec; fall back to a best-effort in-process set.
+        os.environ.setdefault("XLA_PYTHON_CLIENT_ALLOCATOR", "platform")
+        return
+    new_env = dict(os.environ)
+    new_env["XLA_PYTHON_CLIENT_ALLOCATOR"] = "platform"
+    new_env["_GPUWRF_NESTED_ALLOC_REEXEC"] = "1"
+    print(
+        "gpuwrf: nested run -- re-exec with XLA_PYTHON_CLIENT_ALLOCATOR=platform "
+        "(no-fragment cudaMalloc allocator; nested-OOM fix)",
+        file=sys.stderr,
+    )
+    sys.stderr.flush()
+    os.execvpe(orig[0], orig, new_env)
+
+
 def _cmd_run(args: argparse.Namespace) -> int:
+    # NESTED-OOM FIX: ensure the platform GPU allocator for live-nested runs by
+    # re-exec'ing with it set in the environment (see the helper docstring). MUST
+    # run before any jax device op; the nested pipeline also setdefaults it.
+    _maybe_reexec_for_nested_allocator(args)
+
     input_dir: Path = args.input_dir
     output_dir: Path = args.output_dir
     # Default the namelist to the case's own namelist.input (naive-user friendly).
@@ -375,6 +429,12 @@ def _cmd_run(args: argparse.Namespace) -> int:
         scratch_dir.mkdir(parents=True, exist_ok=True)
         os.environ.setdefault("GPUWRF_SCRATCH", str(scratch_dir))
         os.environ["GPUWRF_TMPDIR"] = str(scratch_dir)
+        # NESTED-OOM FIX: use the synchronous platform (cudaMalloc) allocator for
+        # the live-nested path so the recurring ~9 GiB RRTMG radiation transient
+        # cannot fragment a BFC arena over a 24 h run (the production
+        # "allocate 9.24 GiB" OOM). Set BEFORE the JAX backend initializes; the
+        # nested pipeline also setdefaults it. An explicit operator value wins.
+        os.environ.setdefault("XLA_PYTHON_CLIENT_ALLOCATOR", "platform")
         cleanup_scratch = args.scratch_dir is None and not os.environ.get("GPUWRF_KEEP_SCRATCH")
         print(
             f"gpuwrf: init mode = standalone_native_init_nested -- STANDALONE "
