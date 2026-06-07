@@ -74,6 +74,12 @@ class NestedPipelineConfig:
     hours: int
     max_dom: int
     scratch_dir: Path | None = None
+    # Two-way nesting: when True, after each child completes its parent_grid_ratio
+    # subcycle its interior is fed back onto the overlapping parent cells (WRF
+    # copy_fcn area-average) followed by the WRF sm121 feedback-zone smoother.
+    # Defaults to False to preserve the v0.11.0/v0.12.0-validated one-way wiring;
+    # opt in for the two-way path.
+    feedback: bool = False
 
 
 def domain_names_for(max_dom: int) -> tuple[str, ...]:
@@ -219,7 +225,7 @@ def _domain_cu_physics(run, domain: str) -> int:
     return _domain_physics_int(run, "cu_physics", domain, 0)
 
 
-def _nest_edge(run, child: str, parent: str) -> DomainNest:
+def _nest_edge(run, child: str, parent: str, *, feedback: bool = False) -> DomainNest:
     grid = run.grid(child)
     return DomainNest(
         parent=parent,
@@ -227,7 +233,7 @@ def _nest_edge(run, child: str, parent: str) -> DomainNest:
         parent_grid_ratio=int(grid.parent_grid_ratio),
         i_parent_start=int(grid.i_parent_start),
         j_parent_start=int(grid.j_parent_start),
-        feedback=False,
+        feedback=bool(feedback),
     )
 
 
@@ -248,7 +254,7 @@ def _load_domains(
     for name in names[1:]:
         grid = run.grid(name)
         parent = f"d{int(grid.parent_id):02d}"
-        edges.append(_nest_edge(run, name, parent))
+        edges.append(_nest_edge(run, name, parent, feedback=bool(config.feedback)))
     hierarchy = DomainHierarchy.from_edges(names, tuple(edges), max_dom=max(5, len(names)))
 
     bundles: dict[str, DomainBundle] = {}
@@ -445,7 +451,8 @@ def execute_nested_pipeline(config: NestedPipelineConfig) -> dict[str, Any]:
         )
     output_cadence = {name: int(round(3600.0 / dt_by_domain[name])) for name in names}
 
-    tree = DomainTree.from_domains(hierarchy, bundles, feedback_enabled=False)
+    feedback_enabled = bool(config.feedback)
+    tree = DomainTree.from_domains(hierarchy, bundles, feedback_enabled=feedback_enabled)
     writer = _PerDomainWrfoutWriter(
         output_dir=config.output_dir,
         run_start=run_start,
@@ -481,7 +488,7 @@ def execute_nested_pipeline(config: NestedPipelineConfig) -> dict[str, Any]:
         result = run_operational_domain_tree(
             tree,
             root_steps=seg,
-            feedback_enabled=False,
+            feedback_enabled=feedback_enabled,
             output=writer,
             output_cadence_steps=output_cadence,
             block_between=True,
@@ -545,6 +552,8 @@ def execute_nested_pipeline(config: NestedPipelineConfig) -> dict[str, Any]:
         "output_dir": str(config.output_dir),
         "max_dom": int(config.max_dom),
         "domains": list(names),
+        "feedback": bool(feedback_enabled),
+        "nesting_mode": "two_way" if feedback_enabled else "one_way",
         "hours": int(config.hours),
         "root_steps": int(root_steps),
         "device": visible_gpu_name(),
@@ -567,7 +576,13 @@ def execute_nested_pipeline(config: NestedPipelineConfig) -> dict[str, Any]:
         },
         "metadata": meta,
         "carry_overs": [
-            "Two-way feedback is OFF (one-way nesting); matches the v0.11.0 validated wiring.",
+            (
+                "Two-way feedback (child->parent copy_fcn area-average + WRF sm121 "
+                "feedback-zone smoother) is ENABLED."
+                if feedback_enabled
+                else "Two-way feedback is OFF (one-way nesting); matches the "
+                "v0.11.0 validated wiring."
+            ),
             "In-loop nested w relaxation is OFF (deferred to a longer stability gate).",
             "No TOST/ensemble equivalence or CPU-speedup baseline is claimed by a standalone smoke.",
         ],

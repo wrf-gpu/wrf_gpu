@@ -66,21 +66,73 @@ jax.tree_util.register_pytree_node_class(FeedbackWeights)
 
 
 @dataclass(frozen=True)
+class FeedbackSmoother:
+    """Static WRF ``sm121`` 1-2-1 feedback-zone smoother plan for one staggering.
+
+    The smoother runs on the PARENT (coarse) grid AFTER the child overlap has been
+    fed back, over exactly the WRF ``sm121`` interior of the nest-overlap region.
+    The interior bounds are 0-based half-open ``[lo, hi)`` slices into the parent
+    field; ``stagger`` controls the WRF ``istag``/``jstag`` end trim.
+    """
+
+    # 0-based inclusive..exclusive interior bounds on the parent grid (the cells
+    # that WRF's sm121 actually overwrites).
+    i_lo: int
+    i_hi: int
+    j_lo: int
+    j_hi: int
+    stagger: str
+
+    def tree_flatten(self):
+        return (), (self.i_lo, self.i_hi, self.j_lo, self.j_hi, self.stagger)
+
+    @classmethod
+    def tree_unflatten(cls, aux, children):
+        del children
+        i_lo, i_hi, j_lo, j_hi, stagger = aux
+        return cls(i_lo, i_hi, j_lo, j_hi, stagger)
+
+
+jax.tree_util.register_pytree_node_class(FeedbackSmoother)
+
+
+@dataclass(frozen=True)
 class StateFeedbackWeights:
-    """Feedback plans for mass, U-face, and V-face leaves of one nest edge."""
+    """Feedback plans for mass, U-face, and V-face leaves of one nest edge.
+
+    Each ``*_smooth`` member is the matching WRF ``sm121`` feedback-zone smoother
+    for that staggering; ``smooth_option`` selects the WRF ``smooth_option``
+    (0 = no smoother, 1 = the default 1-2-1 ``sm121``).  These default to ``None``
+    only for legacy/hand-built weights; :func:`build_state_feedback_weights`
+    always populates them.
+    """
 
     mass: FeedbackWeights
     u: FeedbackWeights
     v: FeedbackWeights
+    mass_smooth: FeedbackSmoother | None = None
+    u_smooth: FeedbackSmoother | None = None
+    v_smooth: FeedbackSmoother | None = None
+    smooth_option: int = 1
 
     def tree_flatten(self):
-        return (self.mass, self.u, self.v), None
+        children = (self.mass, self.u, self.v)
+        aux = (self.mass_smooth, self.u_smooth, self.v_smooth, int(self.smooth_option))
+        return children, aux
 
     @classmethod
     def tree_unflatten(cls, aux, children):
-        del aux
         mass, u, v = children
-        return cls(mass=mass, u=u, v=v)
+        mass_smooth, u_smooth, v_smooth, smooth_option = aux
+        return cls(
+            mass=mass,
+            u=u,
+            v=v,
+            mass_smooth=mass_smooth,
+            u_smooth=u_smooth,
+            v_smooth=v_smooth,
+            smooth_option=smooth_option,
+        )
 
 
 jax.tree_util.register_pytree_node_class(StateFeedbackWeights)
@@ -215,6 +267,58 @@ def build_feedback_weights(
     )
 
 
+def build_feedback_smoother(
+    *,
+    parent_grid_ratio: int,
+    i_parent_start: int,
+    j_parent_start: int,
+    child_we: int,
+    child_sn: int,
+    stagger: str = "",
+) -> FeedbackSmoother:
+    """Precompute the WRF ``sm121`` feedback-zone smoother interior for one stagger.
+
+    WRF (``share/interp_fcn.F::sm121``, serial single-tile) smooths the PARENT
+    grid over the nest-overlap interior::
+
+        i in [ipos+2 .. ipos+(child_we)/nri-2-istag]  (1-based, inclusive)
+        j in [jpos+2 .. jpos+(child_sn)/nrj-2-jstag]   (1-based, inclusive)
+
+    with ``istag = 0`` for an x-staggered (U) field, ``1`` otherwise; ``jstag = 0``
+    for a y-staggered (V) field, ``1`` otherwise.  We return those bounds converted
+    to 0-based half-open Python slices into the parent field.
+    """
+
+    if stagger not in ("", "U", "V"):
+        raise ValueError(f"unknown feedback stagger {stagger!r}")
+    ratio = int(parent_grid_ratio)
+    ipos = int(i_parent_start)
+    jpos = int(j_parent_start)
+    n_parent_i = int(child_we) // ratio
+    n_parent_j = int(child_sn) // ratio
+    istag = 0 if stagger == "U" else 1
+    jstag = 0 if stagger == "V" else 1
+
+    # WRF 1-based inclusive bounds.
+    i_lo_1 = ipos + 2
+    i_hi_1 = ipos + n_parent_i - 2 - istag
+    j_lo_1 = jpos + 2
+    j_hi_1 = jpos + n_parent_j - 2 - jstag
+
+    # 0-based half-open slices ([lo, hi) over the cells WRF overwrites).
+    i_lo = i_lo_1 - 1
+    i_hi = i_hi_1  # inclusive 1-based -> exclusive 0-based == (i_hi_1-1)+1
+    j_lo = j_lo_1 - 1
+    j_hi = j_hi_1
+    return FeedbackSmoother(
+        i_lo=int(max(i_lo, 0)),
+        i_hi=int(max(i_hi, i_lo)),
+        j_lo=int(max(j_lo, 0)),
+        j_hi=int(max(j_hi, j_lo)),
+        stagger=str(stagger),
+    )
+
+
 def build_state_feedback_weights(
     *,
     parent_grid_ratio: int,
@@ -223,8 +327,9 @@ def build_state_feedback_weights(
     parent_grid: GridSpec,
     child_grid: GridSpec,
     spec_zone: int = 1,
+    smooth_option: int = 1,
 ) -> StateFeedbackWeights:
-    """Build mass/U/V feedback weights for a full ``State`` edge."""
+    """Build mass/U/V feedback weights + ``sm121`` smoothers for a ``State`` edge."""
 
     common = dict(
         parent_grid_ratio=int(parent_grid_ratio),
@@ -236,10 +341,21 @@ def build_state_feedback_weights(
         child_sn=int(child_grid.ny),
         spec_zone=int(spec_zone),
     )
+    smooth_common = dict(
+        parent_grid_ratio=int(parent_grid_ratio),
+        i_parent_start=int(i_parent_start),
+        j_parent_start=int(j_parent_start),
+        child_we=int(child_grid.nx),
+        child_sn=int(child_grid.ny),
+    )
     return StateFeedbackWeights(
         mass=build_feedback_weights(stagger="", **common),
         u=build_feedback_weights(stagger="U", **common),
         v=build_feedback_weights(stagger="V", **common),
+        mass_smooth=build_feedback_smoother(stagger="", **smooth_common),
+        u_smooth=build_feedback_smoother(stagger="U", **smooth_common),
+        v_smooth=build_feedback_smoother(stagger="V", **smooth_common),
+        smooth_option=int(smooth_option),
     )
 
 
@@ -309,6 +425,68 @@ def apply_feedback(
     raise ValueError(f"apply_feedback expects a 2D or 3D parent field, got {parent.shape}")
 
 
+def sm121_smooth(field: jax.Array, smoother: FeedbackSmoother) -> jax.Array:
+    """WRF ``sm121`` 1-2-1 feedback-zone smoother on a parent field.
+
+    Faithful port of ``share/interp_fcn.F::sm121`` (serial single-tile,
+    ``smooth_passes = 1``).  ``field`` is the PARENT-grid leaf, 2D ``(ny, nx)`` or
+    3D ``(nz, ny, nx)``; axis ``-1`` is the WRF ``i`` (west-east) and axis ``-2``
+    is the WRF ``j`` (south-north).  Only the nest-overlap interior is mutated; the
+    intermediate ``cfldnew`` is the raw field with the j-pass applied over the
+    interior (so the interior i-pass reads raw values just outside the j-region,
+    exactly as WRF does with its 3-cell ``cfldnew`` halo).
+    """
+
+    i_lo, i_hi = int(smoother.i_lo), int(smoother.i_hi)
+    j_lo, j_hi = int(smoother.j_lo), int(smoother.j_hi)
+    if i_hi <= i_lo or j_hi <= j_lo:
+        return field  # degenerate overlap (no interior cells to smooth)
+
+    arr = field
+    ndim = arr.ndim
+    if ndim == 2:
+        arr = arr[jnp.newaxis, ...]
+    elif ndim != 3:
+        raise ValueError(f"sm121_smooth expects a 2D or 3D field, got {field.shape}")
+
+    ny = arr.shape[-2]
+    nx = arr.shape[-1]
+    # WRF interior must have a one-cell stencil halo available on every side.
+    if i_lo < 1 or i_hi > nx - 1 or j_lo < 1 or j_hi > ny - 1:
+        # Region touches the array border with no halo: clamp the smoothing region
+        # one cell inward so the 1-2-1 stencil never reads out of bounds.  This
+        # never triggers for real Canary nests (the overlap sits inside the parent
+        # with ample margin) but keeps the op total.
+        i_lo = max(i_lo, 1)
+        i_hi = min(i_hi, nx - 1)
+        j_lo = max(j_lo, 1)
+        j_hi = min(j_hi, ny - 1)
+        if i_hi <= i_lo or j_hi <= j_lo:
+            out = arr[0] if ndim == 2 else arr
+            return out
+
+    # j-pass: cfldnew = raw field, then overwrite the interior with the j 1-2-1.
+    cfldnew = arr
+    j_blend = 0.25 * (
+        arr[:, j_lo + 1 : j_hi + 1, i_lo:i_hi]
+        + 2.0 * arr[:, j_lo:j_hi, i_lo:i_hi]
+        + arr[:, j_lo - 1 : j_hi - 1, i_lo:i_hi]
+    )
+    cfldnew = cfldnew.at[:, j_lo:j_hi, i_lo:i_hi].set(j_blend.astype(arr.dtype))
+
+    # i-pass: overwrite the interior of the field with the i 1-2-1 of cfldnew.
+    i_blend = 0.25 * (
+        cfldnew[:, j_lo:j_hi, i_lo + 1 : i_hi + 1]
+        + 2.0 * cfldnew[:, j_lo:j_hi, i_lo:i_hi]
+        + cfldnew[:, j_lo:j_hi, i_lo - 1 : i_hi - 1]
+    )
+    out = arr.at[:, j_lo:j_hi, i_lo:i_hi].set(i_blend.astype(arr.dtype))
+
+    if ndim == 2:
+        return out[0]
+    return out
+
+
 def _base_pressure(state: State) -> jax.Array:
     return state.p_total - state.p_perturbation
 
@@ -340,14 +518,26 @@ def apply_state_feedback(
         return parent
 
     mass = weights.mass
-    u = apply_feedback(parent.u, child.u, weights.u, feedback=True)
-    v = apply_feedback(parent.v, child.v, weights.v, feedback=True)
-    w = apply_feedback(parent.w, child.w, mass, feedback=True)
-    theta = apply_feedback(parent.theta, child.theta, mass, feedback=True)
-    qv = apply_feedback(parent.qv, child.qv, mass, feedback=True)
-    p_pert = apply_feedback(parent.p_perturbation, child.p_perturbation, mass, feedback=True)
-    ph_pert = apply_feedback(parent.ph_perturbation, child.ph_perturbation, mass, feedback=True)
-    mu_pert = apply_feedback(parent.mu_perturbation, child.mu_perturbation, mass, feedback=True)
+    smooth = int(getattr(weights, "smooth_option", 1)) != 0
+    mass_sm = getattr(weights, "mass_smooth", None)
+    u_sm = getattr(weights, "u_smooth", None)
+    v_sm = getattr(weights, "v_smooth", None)
+
+    def _fb(parent_leaf, child_leaf, fb_weights, smoother):
+        """copy_fcn feedback then the matching sm121 feedback-zone smoother."""
+        fed = apply_feedback(parent_leaf, child_leaf, fb_weights, feedback=True)
+        if smooth and smoother is not None:
+            fed = sm121_smooth(fed, smoother)
+        return fed
+
+    u = _fb(parent.u, child.u, weights.u, u_sm)
+    v = _fb(parent.v, child.v, weights.v, v_sm)
+    w = _fb(parent.w, child.w, mass, mass_sm)
+    theta = _fb(parent.theta, child.theta, mass, mass_sm)
+    qv = _fb(parent.qv, child.qv, mass, mass_sm)
+    p_pert = _fb(parent.p_perturbation, child.p_perturbation, mass, mass_sm)
+    ph_pert = _fb(parent.ph_perturbation, child.ph_perturbation, mass, mass_sm)
+    mu_pert = _fb(parent.mu_perturbation, child.mu_perturbation, mass, mass_sm)
 
     updates = {
         "u": u,
@@ -367,7 +557,7 @@ def apply_state_feedback(
     }
     for name in ("qc", "qr", "qi", "qs", "qg", "Ni", "Nr", "Ns", "Ng", "qke", "Nc", "Nn"):
         if hasattr(parent, name) and hasattr(child, name):
-            updates[name] = apply_feedback(getattr(parent, name), getattr(child, name), mass, feedback=True)
+            updates[name] = _fb(getattr(parent, name), getattr(child, name), mass, mass_sm)
     return parent.replace(_cast=False, **updates)
 
 
@@ -416,13 +606,16 @@ def feedback_overlap_conservation(
 
 __all__ = [
     "ConservationResult",
+    "FeedbackSmoother",
     "FeedbackWeights",
     "StateFeedbackWeights",
     "apply_feedback",
     "apply_state_feedback",
+    "build_feedback_smoother",
     "build_feedback_weights",
     "build_state_feedback_weights",
     "feedback_mask",
     "feedback_overlap_conservation",
     "feedback_to_parent_grid",
+    "sm121_smooth",
 ]
