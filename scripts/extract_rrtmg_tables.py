@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import re
 import struct
 from pathlib import Path
@@ -14,7 +15,42 @@ import numpy as np
 
 
 ROOT = Path(__file__).resolve().parents[1]
-WRF_ROOT = Path("/mnt/data/canairy_meteo/artifacts/wrf_gpu_src/WRF")
+
+
+def _resolve_wrf_root() -> Path:
+    """Resolve the WRF source tree that carries the RRTMG ``.F`` + DATA tables.
+
+    The RRTMG coefficient tables are parsed from real WRF Fortran source. A private
+    workstation path was hardcoded, which makes a clean clone (or a corpus with the
+    artifacts tree purged) un-runnable -- the exact standalone out-of-the-box
+    failure mode this guards. Precedence:
+      1. ``$GPUWRF_WRF_SRC`` (explicit override),
+      2. the historical workstation artifacts path (kept for the original layout),
+      3. the pristine WRF build (``/home/enric/src/wrf_pristine/WRF``; project memory
+         "WRF ground truth BUILT 2026-05-29"),
+      4. a checkout-relative ``external/WRF``.
+    Returns the first that has ``phys/module_ra_rrtmg_lw.F``; falls back to the
+    historical path (so the error message still names a concrete location).
+    """
+
+    candidates = []
+    env = os.environ.get("GPUWRF_WRF_SRC", "").strip()
+    if env:
+        candidates.append(Path(env).expanduser())
+    candidates.extend(
+        [
+            Path("/mnt/data/canairy_meteo/artifacts/wrf_gpu_src/WRF"),
+            Path("/home/enric/src/wrf_pristine/WRF"),
+            ROOT / "external" / "WRF",
+        ]
+    )
+    for cand in candidates:
+        if (cand / "phys" / "module_ra_rrtmg_lw.F").is_file():
+            return cand
+    return candidates[1] if len(candidates) > 1 else candidates[0]
+
+
+WRF_ROOT = _resolve_wrf_root()
 DEFAULT_OUTPUT = ROOT / "data" / "fixtures" / "rrtmg-tables-v1.npz"
 SW_SOURCE = WRF_ROOT / "phys" / "module_ra_rrtmg_sw.F"
 LW_SOURCE = WRF_ROOT / "phys" / "module_ra_rrtmg_lw.F"

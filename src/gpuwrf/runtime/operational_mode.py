@@ -2199,6 +2199,50 @@ def _commit_to_operational_device(value):
     return jax.device_put(value, _operational_device())
 
 
+def _dealias_pytree_buffers(tree):
+    """Return ``tree`` with every leaf that shares a buffer made a distinct copy.
+
+    JAX ``donate_argnums`` flattens the donated pytree and requires every leaf to
+    back a UNIQUE device buffer; if two leaves alias the same buffer (e.g. the
+    transitional ``p``/``p_total`` legacy aliases that ``State.replace`` keeps in
+    lockstep), the donate path raises "Attempt to donate the same buffer twice".
+    This walks the leaves, keys them by their concrete buffer identity, and rebinds
+    any duplicate to ``leaf + 0`` (a fresh buffer; numerically identical, no dtype
+    change). Tracers (under jit) have no stable identity, so this is a no-op there
+    -- it only matters for the concrete host/device arrays passed at call time.
+    """
+
+    leaves, treedef = jax.tree_util.tree_flatten(tree)
+    seen: set[int] = set()
+    out = []
+    for leaf in leaves:
+        buf = getattr(leaf, "unsafe_buffer_pointer", None)
+        key = None
+        if callable(buf):
+            try:
+                key = int(buf())
+            except Exception:  # noqa: BLE001 - not a concrete single-device array
+                key = None
+        if key is None:
+            key = id(leaf)
+        if key in seen:
+            out.append(leaf + 0)  # distinct buffer; identical value/dtype
+        else:
+            seen.add(key)
+            out.append(leaf)
+    return jax.tree_util.tree_unflatten(treedef, out)
+
+
+def dealias_state_buffers(state: State) -> State:
+    """Public donate-safety helper: de-alias a State's shared device buffers.
+
+    Call this on any State built with ``State.replace`` legacy-alias updates
+    (``p=p_total`` etc.) before handing it to a ``donate_argnums`` forecast entry.
+    """
+
+    return _dealias_pytree_buffers(state)
+
+
 def _committed_initial_carry_for_run(state: State, namelist: OperationalNamelist) -> OperationalCarry:
     """Build the first chunk carry with the same device commitment as chunk outputs.
 
@@ -2841,8 +2885,24 @@ def run_forecast_operational_with_m9_diagnostics(
     return carry.state, all_diags
 
 
-@partial(jax.jit, static_argnames=("hours",), donate_argnums=(0,))
 def run_forecast_operational(state: State, namelist: OperationalNamelist, hours: float) -> State:
+    """Run an operational forecast as one compiled, device-resident scan.
+
+    Thin donate-safety wrapper over the jitted body. The jitted body donates
+    ``state`` (``donate_argnums=(0,)``) for peak-memory reuse, which requires every
+    State leaf to back a UNIQUE device buffer. Real cases built with the
+    transitional legacy aliases (``State.replace(p=p_total, ...)``) carry
+    buffer-aliased leaves; ``_dealias_pytree_buffers`` rebinds any duplicate to a
+    distinct buffer here -- BEFORE the donate boundary -- so the donate path can
+    never raise "Attempt to donate the same buffer twice". Numerically identical:
+    de-aliasing only copies a shared buffer, it changes no value or dtype.
+    """
+
+    return _run_forecast_operational_jit(_dealias_pytree_buffers(state), namelist, hours)
+
+
+@partial(jax.jit, static_argnames=("hours",), donate_argnums=(0,))
+def _run_forecast_operational_jit(state: State, namelist: OperationalNamelist, hours: float) -> State:
     """Run an operational forecast as one compiled, device-resident scan.
 
     No diagnostics, host-read callbacks, host array pulls, or sanitizers are
@@ -3141,6 +3201,7 @@ __all__ = [
     "OperationalNamelist",
     "M9Diagnostics",
     "compute_m9_diagnostics",
+    "dealias_state_buffers",
     "run_forecast_operational",
     "run_forecast_operational_segmented",
     "run_forecast_operational_single_scan",
