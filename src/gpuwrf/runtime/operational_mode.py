@@ -397,6 +397,8 @@ class OperationalNamelist:
         topo_shading: int = 0,
         slope_rad: int = 0,
         topo_shadow_length_m: float = 25000.0,
+        gwd_opt: int = 0,
+        gwdo_statics: object = None,
     ) -> "OperationalNamelist":
         """Build a namelist using resident zero tendencies and flat metrics."""
 
@@ -443,6 +445,8 @@ class OperationalNamelist:
             topo_shading=topo_shading,
             slope_rad=slope_rad,
             topo_shadow_length_m=topo_shadow_length_m,
+            gwd_opt=gwd_opt,
+            gwdo_statics=gwdo_statics,
         )
 
     def tree_flatten(self):
