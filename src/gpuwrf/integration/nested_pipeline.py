@@ -45,6 +45,7 @@ from gpuwrf.io.wrfout_writer import write_wrfout_netcdf
 from gpuwrf.runtime.domain_tree import (
     DomainBundle,
     DomainTree,
+    DomainTreeResult,
     run_operational_domain_tree,
     with_live_child_boundary_config,
 )
@@ -357,6 +358,22 @@ def execute_nested_pipeline(config: NestedPipelineConfig) -> dict[str, Any]:
     ``standalone_native_init_nested`` and a per-domain finite/output summary.
     """
 
+    # NESTED-OOM FIX (allocator).  The live nest allocates a recurring ~8-9 GiB
+    # RRTMG g-point radiation transient every radiation step.  Under the default
+    # XLA BFC arena (esp. with XLA_PYTHON_CLIENT_PREALLOCATE=false) a long 24 h
+    # run fragments the pool so that single transient can no longer find a
+    # contiguous block -- the production "allocate 9.24 GiB" OOM -- even though
+    # peak in-use stays ~9 GiB.  The synchronous platform (cudaMalloc/cudaFree)
+    # allocator has NO arena and so cannot fragment: every transient gets a fresh
+    # contiguous device allocation and is returned to the driver immediately on
+    # free.  Combined with the output-interval segmentation below this keeps peak
+    # VRAM flat (one segment working set + ONE transient) across any forecast
+    # length.  It MUST be set before JAX initializes its GPU backend; the nested
+    # path's first device op is inside this function, and the only earlier jax
+    # touch (CLI namelist parsing) does no device op, so setting it here is in
+    # time.  ``setdefault`` keeps an explicit operator override authoritative.
+    os.environ.setdefault("XLA_PYTHON_CLIENT_ALLOCATOR", "platform")
+
     import jax  # local import keeps module import light for --help / arg parsing.
 
     from gpuwrf.profiling.transfer_audit import visible_gpu_name
@@ -390,17 +407,59 @@ def execute_nested_pipeline(config: NestedPipelineConfig) -> dict[str, Any]:
         output_cadence_steps=output_cadence,
     )
 
+    # MEMORY-BOUNDED segmented host loop (v0.12.0 nested-OOM fix).  The whole
+    # forecast was previously ONE run_operational_domain_tree call: a single host
+    # recursion over all root_steps.  The recurring RRTMG g-point radiation
+    # transient (~8-9 GiB on the d02 grid) is allocated whenever radiation fires;
+    # across a 24 h run the BFC allocator fragments and can no longer find a
+    # contiguous block for it (the production "allocate 9.24 GiB" OOM), even
+    # though peak in-use stays ~9 GiB.  We now drive the SAME validated recursion
+    # one OUTPUT INTERVAL at a time, carrying the device carries + the global step
+    # clock (own_steps) across segments and block_until_ready-ing + dropping the
+    # prior segment's result between segments so each segment's scratch is freed
+    # before the next allocates -- the nested analogue of
+    # run_forecast_operational_segmented.  The recursion cadence + radiation
+    # schedule are byte-identical to the single full-length call (the in-chunk
+    # radiation gate keys off the threaded global step index); only the
+    # memory/segmentation orchestration changes, NOT the physics/dynamics or the
+    # live parent->child boundary coupling.
     forecast_start = time.perf_counter()
-    result = run_operational_domain_tree(
-        tree,
-        root_steps=root_steps,
-        feedback_enabled=False,
-        output=writer,
-        output_cadence_steps=output_cadence,
-        block_between=True,
-    )
-    jax.block_until_ready(tuple(state.theta for state in result.states.values()))
+    root_seg_steps = int(output_cadence[root])  # one wrfout hour of root steps
+    carries: dict[str, Any] | None = None
+    own_steps: dict[str, int] = {name: 0 for name in names}
+    events: list[Any] = []
+    final_states: dict[str, Any] = {}
+    start = 0
+    while start < root_steps:
+        seg = min(root_seg_steps, root_steps - start)
+        result = run_operational_domain_tree(
+            tree,
+            root_steps=seg,
+            feedback_enabled=False,
+            output=writer,
+            output_cadence_steps=output_cadence,
+            block_between=True,
+            carries=carries,
+            initial_own_steps=own_steps,
+        )
+        # Block so this segment's device scratch (incl. the RRTMG transient) is
+        # freed before the next segment allocates -- bounds peak VRAM to one
+        # segment's working set regardless of forecast length.
+        jax.block_until_ready(tuple(state.theta for state in result.states.values()))
+        carries = result.carries
+        own_steps = dict(result.own_steps)
+        events.extend(result.events)
+        final_states = result.states
+        start += seg
+    jax.block_until_ready(tuple(state.theta for state in final_states.values()))
     forecast_wall_s = time.perf_counter() - forecast_start
+    result = DomainTreeResult(
+        carries=carries or {},
+        states=final_states,
+        own_steps=own_steps,
+        events=tuple(events),
+        outputs=(),
+    )
 
     final_finite = {name: _finite_stats_host(state) for name, state in result.states.items()}
     event_counts = Counter(event[0] for event in result.events)

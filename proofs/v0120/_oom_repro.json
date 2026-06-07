@@ -1,0 +1,53 @@
+{
+  "A_after_load": {
+    "inuse_gib": 0.19892287254333496,
+    "peak_gib": 0.2964043617248535,
+    "state_bytes_gib": {
+      "d01": 0.0464240163564682,
+      "d02": 0.06269897520542145,
+      "d03": 0.04110102355480194
+    }
+  },
+  "B_advance_lightoutput": {
+    "all_finite": {
+      "d01": true,
+      "d02": true,
+      "d03": true
+    },
+    "inuse_gib": 0.5449838638305664,
+    "largest_alloc_gib": 8.21061086654663,
+    "n_outputs": 3,
+    "peak_gib": 9.10889983177185,
+    "wall_s": 995.4508027540287
+  },
+  "C_full_m9_diagnostics": {
+    "peak_after_gib": 9.10889983177185,
+    "peak_before_gib": 9.10889983177185,
+    "per_domain": {
+      "d01": {
+        "largest_alloc_gib": 8.21061086654663,
+        "peak_gib_after": 9.10889983177185,
+        "t2_finite": true
+      },
+      "d02": {
+        "largest_alloc_gib": 8.21061086654663,
+        "peak_gib_after": 9.10889983177185,
+        "t2_finite": true
+      },
+      "d03": {
+        "largest_alloc_gib": 8.424137353897095,
+        "peak_gib_after": 9.10889983177185,
+        "t2_finite": true
+      }
+    }
+  },
+  "case": "/mnt/data/canairy_meteo/runs/wrf_l3/20260531_18z_l3_24h_20260601T125256Z",
+  "hours": 1.0,
+  "load_wall_s": 8.860246674972586,
+  "max_dom": 3,
+  "names": [
+    "d01",
+    "d02",
+    "d03"
+  ]
+}
