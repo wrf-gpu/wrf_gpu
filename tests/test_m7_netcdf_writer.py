@@ -9,6 +9,8 @@ import pytest
 from netCDF4 import Dataset, chartostring
 
 from gpuwrf.io.wrfout_writer import (
+    DERIVED_DIAGNOSTIC_VARIABLES,
+    GRID_METRIC_EXTRA_VARIABLES,
     MINIMUM_WRFOUT_VARIABLES,
     WRFOUT_VARIABLE_SPECS,
     write_wrfout_netcdf,
@@ -164,3 +166,116 @@ def test_variable_specs_cover_minimum_set():
     # have a spec. P0-5a ADDS operational fields, so the spec dict is a SUPERSET
     # of the minimum set rather than exactly equal.
     assert set(MINIMUM_WRFOUT_VARIABLES) - {"Times"} <= set(WRFOUT_VARIABLE_SPECS)
+
+
+def _full_operational_case():
+    """A real ``GridSpec`` (with resident ``DycoreMetrics``) + a State surrogate
+    carrying every leaf the writer reads, plus a minimal Noah-MP land carry.
+
+    Exercises the v0.12.0 A1 grid-metric routing + A2 derived diagnostics on
+    CPU without a GPU ``State.zeros`` allocation. The State surrogate uses the
+    exact operational leaf names so the writer routing path is identical.
+    """
+
+    from gpuwrf.contracts.grid import GridSpec
+
+    grid = GridSpec.canary_3km_template()
+    nx, ny, nz = grid.nx, grid.ny, grid.nz
+
+    def f3(*shape, val=0.0):
+        return val + np.zeros(shape, dtype=np.float32)
+
+    z3 = np.arange(nz, dtype=np.float32)[:, None, None]
+    zf = np.arange(nz + 1, dtype=np.float32)[:, None, None]
+    _, x2 = np.indices((ny, nx), dtype=np.float32)
+    terrain = np.asarray(grid.terrain_height)
+    pb = (90_000.0 - 800.0 * z3 + terrain[None]).astype(np.float32)
+    p_pert = (100.0 + 0.5 * z3).astype(np.float32)
+    phb = (9.81 * (terrain[None] + 600.0 * zf)).astype(np.float32)
+    ph_pert = (3.0 + 0.2 * zf).astype(np.float32)
+    mub = (85_000.0 + terrain).astype(np.float32)
+    mu_pert = (40.0 + 0.2 * x2).astype(np.float32)
+    state = SimpleNamespace(
+        u=f3(nz, ny, nx + 1, val=4.0), v=f3(nz, ny + 1, nx, val=1.5), w=f3(nz + 1, ny, nx),
+        theta=(300.0 + z3).astype(np.float32), qv=f3(nz, ny, nx, val=0.009),
+        qc=f3(nz, ny, nx, val=1e-5), qi=f3(nz, ny, nx, val=2e-6), qr=f3(nz, ny, nx, val=3e-6),
+        qs=f3(nz, ny, nx, val=1e-6), qg=f3(nz, ny, nx, val=5e-7),
+        Ni=f3(nz, ny, nx, val=1e3), Nr=f3(nz, ny, nx, val=1e2),
+        Ns=f3(nz, ny, nx, val=50.0), Ng=f3(nz, ny, nx, val=10.0),
+        Nc=f3(nz, ny, nx, val=1e8), Nn=f3(nz, ny, nx, val=1e8), qke=f3(nz, ny, nx, val=0.5),
+        p_total=pb + p_pert, p_perturbation=p_pert,
+        ph_total=phb + ph_pert, ph_perturbation=ph_pert,
+        mu_total=mub + mu_pert, mu_perturbation=mu_pert,
+        u10=f3(ny, nx, val=4.2), v10=f3(ny, nx, val=1.1), t2=f3(ny, nx, val=289.0),
+        q2=f3(ny, nx, val=0.008), psfc=(pb[0] + p_pert[0]).astype(np.float32),
+        rain_acc=f3(ny, nx, val=2.0), snow_acc=f3(ny, nx, val=0.5),
+        graupel_acc=f3(ny, nx, val=0.1), ice_acc=f3(ny, nx, val=0.05),
+        swdown=f3(ny, nx, val=500.0), glw=f3(ny, nx, val=300.0), pblh=f3(ny, nx, val=800.0),
+        ustar=f3(ny, nx, val=0.3), hfx=f3(ny, nx, val=20.0), lh=f3(ny, nx, val=70.0),
+        t_skin=f3(ny, nx, val=290.0), cldfra=f3(nz, ny, nx, val=0.25), landmask=f3(ny, nx, val=1.0),
+    )
+    land = SimpleNamespace(
+        tslb=f3(4, ny, nx, val=285.0), smois=f3(4, ny, nx, val=0.3), sh2o=f3(4, ny, nx, val=0.28),
+        sneqv=f3(ny, nx, val=10.0), snowh=f3(ny, nx, val=0.05),
+        canliq=f3(ny, nx, val=0.0), canice=f3(ny, nx, val=0.0),
+        sfcrunoff=f3(ny, nx, val=0.0), udrunoff=f3(ny, nx, val=0.0),
+        albedo=f3(ny, nx, val=0.2), emiss=f3(ny, nx, val=0.98),
+    )
+    namelist = {"cen_lat": 28.3, "cen_lon": -15.6, "soil_layers_stag": 4}
+    return state, grid, namelist, land
+
+
+def test_grid_metric_and_derived_diagnostics_present_and_finite(tmp_path: Path):
+    state, grid, namelist, land = _full_operational_case()
+    path = tmp_path / "wrfout_d02_2026-05-25_21:00:00"
+    write_wrfout_netcdf(
+        state, grid, namelist, path,
+        valid_time=datetime(2026, 5, 25, 21), lead_hours=3.0,
+        run_start=datetime(2026, 5, 25, 18), land_state=land,
+    )
+
+    with Dataset(path) as dataset:
+        # v0.12.0 raised the coverage well past the old ~74-variable operational
+        # subset; the full state must now emit 100+ variables.
+        assert len(dataset.variables) >= 100
+
+        # Every A1 grid-metric extra + A2 diagnostic is present and finite.
+        for name in (*GRID_METRIC_EXTRA_VARIABLES, *DERIVED_DIAGNOSTIC_VARIABLES):
+            assert name in dataset.variables, f"missing new variable {name}"
+            arr = np.asarray(dataset.variables[name][:])
+            assert np.isfinite(arr).all(), f"{name} has non-finite values"
+
+        # Physical sanity on the cheap derived diagnostics.
+        sr = np.asarray(dataset["SR"][:])
+        assert np.all((sr >= 0.0) & (sr <= 1.0))
+        coszen = np.asarray(dataset["COSZEN"][:])
+        assert np.all((coszen >= -1.0) & (coszen <= 1.0))
+        snowc = np.asarray(dataset["SNOWC"][:])
+        assert set(np.unique(snowc)).issubset({0.0, 1.0})
+        # SNOWC == 1 here because the land carry has SWE > 0 everywhere.
+        assert np.all(snowc == 1.0)
+        # CLAT mirrors XLAT exactly.
+        np.testing.assert_allclose(np.asarray(dataset["CLAT"][:]), np.asarray(dataset["XLAT"][:]))
+        # RDX/RDY are the inverse grid lengths.
+        np.testing.assert_allclose(float(dataset["RDX"][0]), 1.0 / 3000.0, rtol=1e-5)
+        np.testing.assert_allclose(float(dataset["RDY"][0]), 1.0 / 3000.0, rtol=1e-5)
+
+
+def test_existing_variables_unchanged_when_metrics_added(tmp_path: Path):
+    """The A1/A2 additions must not perturb any pre-existing variable's values."""
+
+    state, grid, namelist, land = _full_operational_case()
+    path = tmp_path / "wrfout_d02_2026-05-25_21:00:00"
+    write_wrfout_netcdf(
+        state, grid, namelist, path,
+        valid_time=datetime(2026, 5, 25, 21), lead_hours=3.0,
+        run_start=datetime(2026, 5, 25, 18), land_state=land,
+    )
+    with Dataset(path) as dataset:
+        # The state/perturbation split and surface fields are untouched.
+        np.testing.assert_allclose(dataset["P"][0] + dataset["PB"][0], state.p_total)
+        np.testing.assert_allclose(dataset["MU"][0] + dataset["MUB"][0], state.mu_total)
+        np.testing.assert_allclose(dataset["U10"][0], state.u10)
+        np.testing.assert_allclose(dataset["T2"][0], state.t2)
+        # MAPFAC_M (primary) still aliases the x-direction mass map factor.
+        np.testing.assert_allclose(dataset["MAPFAC_M"][0], dataset["MAPFAC_MX"][0])
