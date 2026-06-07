@@ -19,3 +19,8 @@ XLA AOT-compiles the whole jitted timestep graph (acoustic substeps + RK3 + micr
 - Production (long runs, fixed grids): compile amortizes → AOT + warm autotune-cache make it ~zero. Mostly "solved" by #1+#2.
 - Dev/validation (short, many-config — tonight's pattern): compile dominates → #2+#3+#5 + parallel-compile slash iteration time.
 - A focused v0.13 "compile-speed" sprint should land #1 (AOT) + #2 (autotune-cache) + #3 (cache hardening) first; #4-#7 as follow-ups; #8 throughout.
+
+## Addendum (principal Q 2026-06-07, "use all cores?"): core-count levers
+- **Reality:** XLA compile is single-threaded-dominated; fp64 autotuning runs candidate kernels on the GPU (GPU-serial), so host core count gives only a modest host-codegen win. Core count is NOT a big lever; cache+AOT (#1-3) dwarf it (10-50× on repeat vs ~1.5-2× from parallelism).
+- **#4 sharpened — host compile parallelism:** `--xla_gpu_force_compilation_parallelism=N` + enough free host cores → faster host-side LLVM/PTX codegen. Add WITH GPU validation (ad-hoc XLA flag injection broke the GPU path once — the compile-speed revert; never inject XLA flags untested on GPU).
+- **#9 NEW — "CPU-flock" for idle nightly cores (structural, careful):** cores 4-31 are reserved for the nightly 28-rank CPU-WRF (speedup baseline + validation corpus) but are IDLE most of the time (scheduler polls, fires periodically). Build a CPU-flock analogous to the GPU flock (`/tmp/wrf_gpu_run.sh`): opportunistically borrow idle nightly cores for our parallel CPU work, yield INSTANTLY when the nightly fires. Real throughput win for CPU testing/compile. RISK: contention would corrupt the nightly's speedup-baseline + corpus → needs the same hiprio/lowprio token discipline as the GPU flock. v0.13+ infra, not a quick win.
