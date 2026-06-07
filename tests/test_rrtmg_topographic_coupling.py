@@ -143,3 +143,15 @@ def test_rrtmg_diagnostics_use_land_albedo_and_topographic_swnorm():
     assert np.all(np.isfinite(np.asarray(diag.swnorm)))
     assert not np.allclose(np.asarray(diag.swnorm), np.asarray(diag.swdown))
     assert np.all(np.asarray(diag.shadow_mask) == 0)
+
+    # B1 (v0.12.0): the top-of-atmosphere all-sky flux slices the RRTMG SW/LW
+    # column solvers produce are surfaced on the diagnostics struct and are
+    # genuine model interface fluxes (finite, non-negative, daytime SW TOA-down
+    # bounded by the solar constant). These feed the wrfout SWDNT/SWUPT/LWDNT/
+    # LWUPT/OLR vars (OLR == LW TOA-up).
+    for name in ("sw_toa_down", "sw_toa_up", "lw_toa_down", "lw_toa_up"):
+        val = np.asarray(getattr(diag, name))
+        assert np.all(np.isfinite(val)), f"{name} non-finite"
+        assert np.all(val >= 0.0), f"{name} negative flux"
+    assert np.all(np.asarray(diag.sw_toa_down) <= 1400.0)   # < solar constant
+    assert np.all(np.asarray(diag.sw_toa_up) <= np.asarray(diag.sw_toa_down) + 1e-6)

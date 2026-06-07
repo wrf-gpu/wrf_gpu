@@ -272,6 +272,16 @@ class RRTMGRadiationDiagnostics(NamedTuple):
     glw_up: object
     topographic_correction_factor: object
     shadow_mask: object
+    # B1 (v0.12.0) top-of-atmosphere all-sky flux slices, mass-point (ny, nx).
+    # These are the ``[..., -1]`` (model top) interface fluxes the RRTMG SW/LW
+    # column solvers already compute; surfaced here for the wrfout TOA flux vars
+    # (SWDNT/SWUPT/LWDNT/LWUPT/OLR). All-sky only -- the RRTMG port does NOT run a
+    # separate clear-sky radiative-transfer pass, so the WRF ``...C`` clear-sky
+    # flux vars are deliberately NOT produced here (no fabrication).
+    sw_toa_down: object
+    sw_toa_up: object
+    lw_toa_down: object
+    lw_toa_up: object
 
 
 class SolarGeometry(NamedTuple):
@@ -1496,6 +1506,12 @@ def rrtmg_radiation_diagnostics(
         glw_up=lw.surface_up,
         topographic_correction_factor=sw.topographic_correction_factor,
         shadow_mask=shadow_mask,
+        # B1: top-of-atmosphere all-sky flux slices (model-top interface). WRF
+        # SWDNT/SWUPT == SW top down/up; LWDNT/LWUPT == LW top down/up; OLR == LWUPT.
+        sw_toa_down=sw.toa_down,
+        sw_toa_up=sw.toa_up,
+        lw_toa_down=lw.toa_down,
+        lw_toa_up=lw.toa_up,
     )
 
 

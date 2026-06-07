@@ -239,6 +239,28 @@ STOCHASTIC_SEED_VARIABLES: tuple[str, ...] = (
     "ISEEDARRAY_SPP_LSM",
 )
 
+# (h) B1 (v0.12.0) RRTMG up/down all-sky radiation flux diagnostics. Source =
+# the operational radiation diagnostics map (``M9Diagnostics`` -> wrfout via
+# ``diagnostics``): the SW/LW surface (bottom-of-atmosphere) and TOA up/down
+# flux slices the RRTMG column solvers already compute, plus the slope-normal
+# surface SW flux (SWNORM) and the derived OLR (== LWUPT). All ADD-only (no
+# physical fallback) so they appear only when the radiation diagnostics supply
+# them, never fabricated. The WRF clear-sky ``...C`` flux vars are deliberately
+# absent: this port runs no separate clear-sky radiative-transfer pass, so a
+# clear-sky flux value cannot be produced without fabrication.
+RADIATION_FLUX_DIAGNOSTIC_VARIABLES: tuple[str, ...] = (
+    "SWDNB",
+    "SWUPB",
+    "LWDNB",
+    "LWUPB",
+    "SWDNT",
+    "SWUPT",
+    "LWDNT",
+    "LWUPT",
+    "OLR",
+    "SWNORM",
+)
+
 # The full operational field set the writer KNOWS how to emit. Each frame writes
 # the subset for which a real source is present (grid metrics + state are always
 # present; diagnostics / land carry are optional), so a missing optional source
@@ -255,6 +277,7 @@ OPERATIONAL_WRFOUT_VARIABLES: tuple[str, ...] = (
     *LAND_SOIL_VARIABLES,
     *LAND_SNOW_DIAGNOSTIC_VARIABLES,
     *STOCHASTIC_SEED_VARIABLES,
+    *RADIATION_FLUX_DIAGNOSTIC_VARIABLES,
 )
 
 
@@ -774,6 +797,57 @@ WRFOUT_VARIABLE_SPECS: dict[str, WrfoutVariableSpec] = {
         stagger="Z",
         dtype="i4",
     ),
+    # --- B1 (v0.12.0) RRTMG up/down all-sky radiation flux diagnostics --------
+    # Instantaneous surface (bottom-of-atmosphere) and top-of-atmosphere up/down
+    # SW/LW fluxes + the slope-normal surface SW flux (SWNORM) + outgoing LW (OLR).
+    # Schemas (dims/MemoryOrder/stagger/units/description/dtype) are copied verbatim
+    # from the reference Gen2 wrfout_d02; every field maps to a flux slice the RRTMG
+    # SW/LW column solvers already compute (surface == bottom interface, TOA == top
+    # interface). The WRF clear-sky ``...C`` flux vars (SWDNBC/SWUPBC/LWDNBC/LWUPBC
+    # /SWDNTC/SWUPTC/LWDNTC/LWUPTC) are deliberately NOT specced/emitted: this port
+    # runs no separate clear-sky radiative-transfer pass, so a clear-sky flux would
+    # be fabricated. OLR == LWUPT (WRF's TOA outgoing LW) and is derived in
+    # ``prepare_wrfout_payload`` from the diagnostic LWUPT.
+    "SWDNB": _spec(
+        "SWDNB", XY, "XY ", "INSTANTANEOUS DOWNWELLING SHORTWAVE FLUX AT BOTTOM", "W m-2",
+        coordinates="XLONG XLAT XTIME",
+    ),
+    "SWUPB": _spec(
+        "SWUPB", XY, "XY ", "INSTANTANEOUS UPWELLING SHORTWAVE FLUX AT BOTTOM", "W m-2",
+        coordinates="XLONG XLAT XTIME",
+    ),
+    "LWDNB": _spec(
+        "LWDNB", XY, "XY ", "INSTANTANEOUS DOWNWELLING LONGWAVE FLUX AT BOTTOM", "W m-2",
+        coordinates="XLONG XLAT XTIME",
+    ),
+    "LWUPB": _spec(
+        "LWUPB", XY, "XY ", "INSTANTANEOUS UPWELLING LONGWAVE FLUX AT BOTTOM", "W m-2",
+        coordinates="XLONG XLAT XTIME",
+    ),
+    "SWDNT": _spec(
+        "SWDNT", XY, "XY ", "INSTANTANEOUS DOWNWELLING SHORTWAVE FLUX AT TOP", "W m-2",
+        coordinates="XLONG XLAT XTIME",
+    ),
+    "SWUPT": _spec(
+        "SWUPT", XY, "XY ", "INSTANTANEOUS UPWELLING SHORTWAVE FLUX AT TOP", "W m-2",
+        coordinates="XLONG XLAT XTIME",
+    ),
+    "LWDNT": _spec(
+        "LWDNT", XY, "XY ", "INSTANTANEOUS DOWNWELLING LONGWAVE FLUX AT TOP", "W m-2",
+        coordinates="XLONG XLAT XTIME",
+    ),
+    "LWUPT": _spec(
+        "LWUPT", XY, "XY ", "INSTANTANEOUS UPWELLING LONGWAVE FLUX AT TOP", "W m-2",
+        coordinates="XLONG XLAT XTIME",
+    ),
+    "OLR": _spec(
+        "OLR", XY, "XY ", "TOA OUTGOING LONG WAVE", "W m-2",
+        coordinates="XLONG XLAT XTIME",
+    ),
+    "SWNORM": _spec(
+        "SWNORM", XY, "XY ", "NORMAL SHORT WAVE FLUX AT GROUND SURFACE (SLOPE-DEPENDENT)", "W m-2",
+        coordinates="XLONG XLAT XTIME",
+    ),
 }
 
 
@@ -1277,6 +1351,14 @@ def _build_output_fields(
     _DIAGNOSTIC_SURFACE_FIELDS = {
         "T2", "U10", "V10", "Q2", "PSFC", "SWDOWN", "GLW", "PBLH", "UST",
         "HFX", "LH", "TSK", "QFX", "GRDFLX",
+        # --- B1 (v0.12.0) RRTMG up/down all-sky surface + TOA flux diagnostics ---
+        # ADD-only (no physical fallback): appear only when the operational
+        # radiation diagnostics supply them, never fabricated. SWDNB == SWDOWN in
+        # the no-slope config; SWNORM is the slope-normal surface SW flux. The
+        # clear-sky ``...C`` vars are absent by design (no clear-sky pass). OLR is
+        # derived below from LWUPT (== WRF's TOA outgoing LW).
+        "SWDNB", "SWUPB", "LWDNB", "LWUPB",
+        "SWDNT", "SWUPT", "LWDNT", "LWUPT", "SWNORM",
     }
     if diagnostics is not None:
         # WRF stochastic-perturbation restart seed arrays are 1-D integer state.
@@ -1295,6 +1377,14 @@ def _build_output_fields(
             if value is None or name not in _DIAGNOSTIC_SURFACE_FIELDS:
                 continue
             fields[name] = _coerce_array(name, value, shape_xy)
+
+        # --- B1 (v0.12.0) OLR = WRF's TOA outgoing longwave == LWUPT (the
+        # top-of-atmosphere upwelling LW flux). WRF carries OLR as a separate
+        # history var but its value is identically the upward LW flux at the model
+        # top; derived here from the diagnostic LWUPT so it is always consistent
+        # and never an independent fabricated quantity. Emitted only when LWUPT is. ---
+        if "LWUPT" in fields:
+            fields["OLR"] = _coerce_array("OLR", np.asarray(fields["LWUPT"]), shape_xy)
 
     # --- P0-5a (d) TH2: 2-m potential temperature = T2 * (P0/PSFC)^(Rd/cp). Built
     # from the final (diagnostic-overridden when present) T2 + PSFC so it is the
