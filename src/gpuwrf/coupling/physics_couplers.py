@@ -24,6 +24,10 @@ from gpuwrf.physics.mynn_pbl import (
 from gpuwrf.physics.mynn_surface_stub import SurfaceFluxes
 from gpuwrf.physics.gwd_gwdo import GWDOColumnState, GWDOStatics, gwdo_columns
 from gpuwrf.physics.surface_layer import surface_layer, surface_layer_with_diagnostics
+from gpuwrf.physics.ra_sw_dudhia import (
+    DudhiaSWColumnState,
+    solve_dudhia_sw_column,
+)
 from gpuwrf.physics.rrtmg_lw import RRTMGLWColumnState, solve_rrtmg_lw_column
 from gpuwrf.physics.rrtmg_sw import (
     RRTMGSWColumnState,
@@ -843,6 +847,30 @@ def _solar_source_scale_for_time(time_utc=None, lead_seconds=0.0):
     scale advances correctly across a multi-day forecast.
     """
 
+    return _solcon_for_time(time_utc, lead_seconds) / RRSW_SCON
+
+
+def _solcon_for_time(time_utc=None, lead_seconds=0.0):
+    """WRF ``radconst`` date-adjusted total solar constant ``solcon`` (W m^-2).
+
+    Faithful transcription of ``module_radiation_driver.F`` ``radconst``
+    (``:3629-3634``)::
+
+        solcon = 1370. * ECCFAC                       (radconst :3634)
+        ECCFAC = 1.000110 + 0.034221*cos(RJUL)        (Paltridge & Platt 1976
+               + 0.001280*sin(RJUL)                    earth-sun eccentricity)
+               + 0.000719*cos(2*RJUL) + 0.000077*sin(2*RJUL)
+        RJUL   = JULIAN * (360/365) * DEGRAD          (radconst :3630-3631)
+
+    This is the SAME ``solcon`` the WRF radiation driver passes into BOTH the
+    RRTMG SW source normalisation (where it appears as ``solcon/rrsw_scon``,
+    :func:`_solar_source_scale_for_time`) and the Dudhia ``SWRAD`` call
+    (``SOLCON`` argument). Both radiation families therefore share the identical
+    date-of-year eccentricity factor; the Dudhia kernel multiplies it by
+    ``coszen`` to form the TOA-down flux (``SOLTOP=SOLCON``, ``SDOWN(1)=SOLTOP*XMU``).
+    Pure function of the run date; no replay output.
+    """
+
     julian, utc_minute = _time_utc_parts(time_utc)
     lead_minutes = jnp.asarray(lead_seconds, dtype=jnp.float64) / 60.0
     # WRF grid%julian is 0-based (Jan 1 00z -> 0.0); _time_utc_parts returns the
@@ -859,8 +887,7 @@ def _solar_source_scale_for_time(time_utc=None, lead_seconds=0.0):
         + 0.000719 * jnp.cos(2.0 * rjul)
         + 0.000077 * jnp.sin(2.0 * rjul)
     )
-    solcon = 1370.0 * eccfac
-    return solcon / RRSW_SCON
+    return 1370.0 * eccfac
 
 
 def _grid_lat_lon(surface_shape: tuple[int, int], grid: GridSpec | None, dtype):
@@ -1628,6 +1655,155 @@ def rrtmg_theta_tendency(
 
 
 # --------------------------------------------------------------------------- #
+# Dudhia shortwave (``ra_sw_physics=1``) HELD-RATE theta-tendency coupler.
+# --------------------------------------------------------------------------- #
+def _dudhia_sw_column_inputs(
+    state: State,
+    grid: GridSpec | None,
+    *,
+    time_utc=None,
+    lead_seconds=0.0,
+    radiation_static: RRTMGRadiationStatic | None = None,
+    land_state=None,
+) -> tuple[DudhiaSWColumnState, SolarGeometry]:
+    """Build the Dudhia SW column-kernel input view from operational ``State``.
+
+    Mirrors :func:`_rrtmg_column_inputs` but assembles the inputs the Stephens-1984
+    broadband shortwave kernel (``module_ra_sw.F:SWPARA``) consumes: layer
+    temperature ``T`` (K), pressure ``p`` (Pa), the six moisture species, layer
+    thickness ``dz`` (m), per-column cosine-zenith ``coszen``, surface ``albedo``
+    and the date-adjusted total solar constant ``solcon`` (W m^-2). The hydrometeor
+    species are passed through unchanged (the kernel forms its own cloud
+    liquid-water path); cloud fraction is NOT consumed by Dudhia. The kernel works
+    on flat ``(ncol=ny*nx, nz)`` columns, so the ``(nz, ny, nx)`` mass fields are
+    reshaped to the kernel's batch contract here.
+
+    ``solcon`` is the SAME WRF ``radconst`` date-of-year eccentricity-scaled solar
+    constant the RRTMG path uses (:func:`_solcon_for_time`); the Dudhia driver
+    passes ``SOLCON`` straight into ``SWRAD`` and the kernel multiplies it by
+    ``coszen`` (``SOLTOP=SOLCON``) to form the TOA-down flux.
+    """
+
+    T = _temperature_from_theta(state.theta, state.p)
+    nz, ny, nx = state.theta.shape
+    ncol = ny * nx
+
+    def _cols(field3d):  # (nz, ny, nx) -> (ncol, nz)
+        return jnp.moveaxis(field3d, 0, -1).reshape(ncol, nz)
+
+    dz_cols = _column_dz_from_state(state, grid).reshape(ncol, nz)
+    surface_shape = state.t_skin.shape
+    surface_albedo, _ = _surface_radiation_properties(state, land_state=land_state)
+    static = _radiation_static_for_grid(surface_shape, grid, radiation_static, state.t_skin.dtype)
+    if static is None:
+        lat, lon = _grid_lat_lon(surface_shape, grid, state.t_skin.dtype)
+    else:
+        lat, lon = static.xlat_deg, static.xlong_deg
+    geometry = _compute_solar_geometry(lat, lon, time_utc, lead_seconds)
+    geometry = SolarGeometry(
+        coszen=geometry.coszen.astype(state.t_skin.dtype),
+        declination_rad=geometry.declination_rad,
+        hour_angle_rad=geometry.hour_angle_rad.astype(state.t_skin.dtype),
+    )
+    solcon = _solcon_for_time(time_utc, lead_seconds).astype(state.t_skin.dtype)
+    solcon = jnp.broadcast_to(solcon, surface_shape).reshape(ncol)
+
+    column = DudhiaSWColumnState(
+        T=_cols(T),
+        p=_cols(state.p),
+        qv=_cols(state.qv),
+        qc=_cols(state.qc),
+        qr=_cols(state.qr),
+        qi=_cols(state.qi),
+        qs=_cols(state.qs),
+        qg=_cols(state.qg),
+        dz=dz_cols,
+        coszen=geometry.coszen.reshape(ncol),
+        albedo=jnp.asarray(surface_albedo).reshape(ncol),
+        solcon=solcon,
+    )
+    return column, geometry
+
+
+def dudhia_sw_theta_tendency(
+    state: State,
+    grid: GridSpec | None = None,
+    *,
+    time_utc=None,
+    lead_seconds=0.0,
+    radiation_static: RRTMGRadiationStatic | None = None,
+    land_state=None,
+) -> "jnp.ndarray":
+    """Return the Dudhia (``ra_sw_physics=1``) shortwave ``RTHRATEN`` (K/s).
+
+    Shortwave-only HELD-RATE primitive, the Dudhia analogue of
+    :func:`rrtmg_theta_tendency`. WRF's ``SWRAD`` accumulates the SW heating into
+    ``RTHRATEN`` as ``RTHRATEN += TTEN1D/pi3D`` (``module_ra_sw.F``): the
+    kernel returns the per-layer TEMPERATURE heating rate ``dT/dt`` (K/s) and the
+    theta tendency is that rate divided by the Exner factor. The operational scan
+    holds this rate over the ``radt`` interval (the same cadence machinery the
+    RRTMG path uses) and ADDS it into theta at every dynamics step.
+
+    This coupler is SHORTWAVE-ONLY; the longwave heating still comes from the
+    operational RRTMG-LW path (the dispatch adds the two RTHRATEN contributions),
+    exactly as WRF runs the SW and LW radiation drivers independently.
+
+    The returned 3-D field is on the ``(nz, ny, nx)`` mass grid and matches the
+    state's theta dtype (fp64 under ``force_fp64``).
+    """
+
+    nz, ny, nx = state.theta.shape
+    column, _ = _dudhia_sw_column_inputs(
+        state,
+        grid,
+        time_utc=time_utc,
+        lead_seconds=lead_seconds,
+        radiation_static=radiation_static,
+        land_state=land_state,
+    )
+    out = solve_dudhia_sw_column(column)
+    # (ncol, nz) heating rate -> (nz, ny, nx) dT/dt (K/s).
+    heating_rate_T = jnp.moveaxis(out.heating_rate.reshape(ny, nx, nz), -1, 0)
+    # T-space heating rate -> theta tendency via the Exner factor
+    # (theta = T/exner; for fixed pressure d(theta)/dt = (dT/dt)/exner).
+    exner = (jnp.maximum(state.p, 1.0) / P0_PA) ** R_D_OVER_CP
+    rthraten = heating_rate_T / jnp.maximum(exner, 1.0e-12)
+    return rthraten.astype(_output_dtype(state, "theta"))
+
+
+def rrtmg_lw_theta_tendency(
+    state: State,
+    grid: GridSpec | None = None,
+    *,
+    time_utc=None,
+    lead_seconds=0.0,
+    radiation_static: RRTMGRadiationStatic | None = None,
+    land_state=None,
+) -> "jnp.ndarray":
+    """Return the RRTMG longwave-ONLY ``RTHRATEN`` (K/s).
+
+    The LW half of :func:`rrtmg_theta_tendency`, used by the Dudhia-SW dispatch so
+    that ``ra_sw_physics=1`` runs Dudhia shortwave + RRTMG longwave (WRF runs the
+    SW and LW drivers independently). Reuses the RRTMG column-input assembler and
+    LW kernel; only the LW heating rate is converted to a theta tendency.
+    """
+
+    _, lw_state, _, _, _, _ = _rrtmg_column_inputs(
+        state,
+        grid,
+        time_utc=time_utc,
+        lead_seconds=lead_seconds,
+        radiation_static=radiation_static,
+        land_state=land_state,
+    )
+    lw = solve_rrtmg_lw_column(lw_state, debug=False)
+    heating_rate_T = _from_columns(lw.heating_rate)  # dT/dt (K/s)
+    exner = (jnp.maximum(state.p, 1.0) / P0_PA) ** R_D_OVER_CP
+    rthraten = heating_rate_T / jnp.maximum(exner, 1.0e-12)
+    return rthraten.astype(_output_dtype(state, "theta"))
+
+
+# --------------------------------------------------------------------------- #
 # Orographic gravity-wave drag (GWDO, ``gwd_opt=1``) adapter.
 # --------------------------------------------------------------------------- #
 def build_gwdo_statics_from_wrf_fields(
@@ -1783,6 +1959,8 @@ __all__ = [
     "rrtmg_radiation_diagnostics",
     "rrtmg_adapter",
     "rrtmg_theta_tendency",
+    "rrtmg_lw_theta_tendency",
+    "dudhia_sw_theta_tendency",
     "surface_adapter",
     "surface_layer_diagnostics",
     "thompson_adapter",

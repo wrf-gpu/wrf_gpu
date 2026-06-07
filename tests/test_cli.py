@@ -141,7 +141,8 @@ def test_run_unsupported_namelist_fails_closed(
     "section, alt_substring",
     [
         ("&physics\n ra_lw_physics = 1,\n/\n", "ra_lw_physics=4"),
-        ("&physics\n ra_sw_physics = 1,\n/\n", "ra_sw_physics=4"),
+        # ra_sw_physics=1 (Dudhia) is NOW operationally scan-wired, so it is no
+        # longer rejected (see test_run_accepts_wired_dudhia_sw_at_validation).
     ],
 )
 def test_run_rejects_reference_only_radiation_pre_jax(
@@ -151,7 +152,7 @@ def test_run_rejects_reference_only_radiation_pre_jax(
     alt_substring: str,
 ) -> None:
     """``gpuwrf run`` with a parity-proven-but-not-wired radiation scheme
-    (RRTM/Dudhia) fails closed BEFORE any JAX import, naming RRTMG (=4) -- so the
+    (RRTM longwave) fails closed BEFORE any JAX import, naming RRTMG (=4) -- so the
     operational run never silently substitutes RRTMG for the requested scheme."""
 
     case = tmp_path / "case"
@@ -226,6 +227,55 @@ def test_run_accepts_implemented_radiation_at_validation(
     assert "SILENTLY" not in err
     assert "NOT operationally wired" not in err
     assert "Unsupported namelist" not in err
+
+
+def test_run_accepts_wired_dudhia_sw_at_validation(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """``gpuwrf run`` with ra_sw_physics=1 (Dudhia, now scan-wired) passes the
+    pre-JAX validation gate instead of failing closed. Mirrors the RRTMG-accept
+    test with a fake pipeline so no JAX is imported."""
+
+    import sys
+    import types
+
+    sentinel = "PIPELINE_REACHED_DUDHIA"
+    fake = types.ModuleType("gpuwrf.integration.daily_pipeline")
+
+    class _Config:
+        def __init__(self, **kwargs: object) -> None:
+            self.__dict__.update(kwargs)
+
+    fake.DailyPipelineConfig = _Config
+    fake.detect_init_mode = lambda config: "standalone_native_init"
+
+    def _execute(config: object) -> dict:
+        raise RuntimeError(sentinel)
+
+    fake.execute_daily_pipeline = _execute
+    monkeypatch.setitem(sys.modules, "gpuwrf.integration.daily_pipeline", fake)
+
+    case = tmp_path / "case"
+    case.mkdir()
+    (case / "namelist.input").write_text(
+        "&physics\n mp_physics = 8,\n ra_lw_physics = 4,\n ra_sw_physics = 1,\n/\n"
+    )
+    with pytest.raises(RuntimeError) as excinfo:
+        main(
+            [
+                "run",
+                "--namelist", str(case / "namelist.input"),
+                "--input-dir", str(case),
+                "--output-dir", str(tmp_path / "out"),
+            ]
+        )
+    # Reached the pipeline => validation accepted the wired Dudhia-SW suite.
+    assert str(excinfo.value) == sentinel
+    err = capsys.readouterr().err
+    assert "SILENTLY" not in err
+    assert "NOT operationally wired" not in err
 
 
 def test_run_real_canary_cudt_namelist_proceeds_with_warning(
