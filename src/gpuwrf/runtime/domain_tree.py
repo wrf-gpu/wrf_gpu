@@ -233,6 +233,7 @@ def run_domain_tree_callbacks(
     output_cadence_steps: dict[str, int] | None = None,
     block_between: bool = True,
     edge_lookup: Callable[[DomainNest], DomainEdge] | None = None,
+    initial_own_steps: dict[str, int] | None = None,
 ) -> DomainTreeResult:
     """Generic WRF-recursive domain-tree runner.
 
@@ -240,6 +241,15 @@ def run_domain_tree_callbacks(
     the cadence without constructing real ``State`` objects.  The operational
     wrapper below binds these callbacks to ``_advance_chunk`` and
     ``build_child_boundary_package``.
+
+    ``initial_own_steps`` seeds each domain's GLOBAL step clock so the runner can
+    be driven in contiguous output-interval segments from a host loop (each
+    segment carries the prior segment's carries + own_steps).  The in-chunk
+    radiation gate keys off the global ``start_step`` index, so threading the
+    clock across segments makes the segmented run fire radiation on exactly the
+    same global steps as a single full-length call -- the memory-bounded nested
+    analogue of ``run_forecast_operational_segmented`` (peak VRAM independent of
+    forecast length).  Defaults to ``0`` for every domain (a fresh full run).
     """
 
     root_name = root or hierarchy.roots()[0]
@@ -247,6 +257,10 @@ def run_domain_tree_callbacks(
     events: list[tuple[Any, ...]] = []
     outputs: list[Any] = []
     own_steps = {name: 0 for name in hierarchy.order}
+    if initial_own_steps:
+        for name, value in initial_own_steps.items():
+            if name in own_steps:
+                own_steps[name] = int(value)
     output_cadence_steps = dict(output_cadence_steps or {})
 
     def maybe_output(name: str) -> None:
@@ -346,17 +360,32 @@ def run_operational_domain_tree(
     output: OutputFn | None = None,
     output_cadence_steps: dict[str, int] | None = None,
     block_between: bool = True,
+    carries: dict[str, Any] | None = None,
+    initial_own_steps: dict[str, int] | None = None,
 ) -> DomainTreeResult:
-    """Run a live nested operational tree for ``root_steps`` root timesteps."""
+    """Run a live nested operational tree for ``root_steps`` root timesteps.
+
+    Pass ``carries`` (a prior :class:`DomainTreeResult`'s ``carries``) and
+    ``initial_own_steps`` (its ``own_steps``) to RESUME from a previous segment.
+    This lets a host loop drive the live nest in contiguous output-interval
+    segments, ``block_until_ready``-ing + freeing each segment's device scratch
+    before the next allocates -- bounding peak VRAM independent of forecast
+    length while keeping the recursion cadence + radiation schedule byte-identical
+    to a single full-length call.  When ``carries`` is ``None`` the initial
+    carries are built fresh from each domain's bundle state (a cold start).
+    """
 
     for name, bundle in tree.domains.items():
         _resolve_operational_suite(bundle.namelist)
         if int(bundle.namelist.rk_order) != 3:
             raise ValueError(f"{name}: operational nesting currently supports RK3 only")
-    carries = {
-        name: _initial_carry_for_run(bundle.state, bundle.namelist)
-        for name, bundle in tree.domains.items()
-    }
+    if carries is None:
+        carries = {
+            name: _initial_carry_for_run(bundle.state, bundle.namelist)
+            for name, bundle in tree.domains.items()
+        }
+    else:
+        carries = dict(carries)
     edge_by_pair = {
         (edge.parent, edge.child): edge
         for edges in tree.edges.values()
@@ -379,6 +408,7 @@ def run_operational_domain_tree(
         output_cadence_steps=output_cadence_steps,
         block_between=block_between,
         edge_lookup=lookup,
+        initial_own_steps=initial_own_steps,
     )
 
 
