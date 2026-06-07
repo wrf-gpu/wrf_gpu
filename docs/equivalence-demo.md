@@ -5,8 +5,11 @@ reproduces a retained CPU-WRF forecast — converting "equivalence is asserted"
 into "equivalence you can run and verify yourself."
 
 - Script: [`scripts/equivalence_demo.py`](../scripts/equivalence_demo.py)
-- Default proof object:
-  [`proofs/v0120/equivalence_demo_20260509_d02.json`](../proofs/v0120/equivalence_demo_20260509_d02.json)
+- Authoritative proof object (post-PSFC-fix re-run, warm cache):
+  [`proofs/v0120/equivalence_demo_20260509_d02_FINAL.json`](../proofs/v0120/equivalence_demo_20260509_d02_FINAL.json)
+  (the script's `--out` default writes `equivalence_demo_20260509_d02.json`; the
+  `_FINAL` object is the re-run after the WRF-faithful PSFC surface-extrapolation
+  fix landed, and is the one this page reports.)
 
 ## What it does
 
@@ -80,17 +83,18 @@ passes.
 
 ## Observed result on the default case (24 h, d02, 20260509_18z)
 
-Run on 2026-06-07 (proof:
-[`proofs/v0120/equivalence_demo_20260509_d02.json`](../proofs/v0120/equivalence_demo_20260509_d02.json),
-GPU `cuda:0`, replay path). Pooled RMSE over all 24 hourly timesteps and all
-grid points:
+Run on 2026-06-07 after the WRF-faithful PSFC surface-extrapolation fix landed
+(proof:
+[`proofs/v0120/equivalence_demo_20260509_d02_FINAL.json`](../proofs/v0120/equivalence_demo_20260509_d02_FINAL.json),
+GPU `cuda:0`, replay path, warm JIT cache). Pooled RMSE over all 24 hourly
+timesteps and all grid points:
 
 | Field | pooled RMSE | tol | pooled bias | verdict |
 |---|---|---|---|---|
 | T2 | 0.484 K | 1.5 K | +0.195 K | **PASS** |
 | U10 | 2.237 m s⁻¹ | 1.5 | +1.491 | EXCEEDS |
 | V10 | 2.441 m s⁻¹ | 1.5 | −1.521 | EXCEEDS |
-| PSFC | 707.8 Pa | 120 | −703.0 | EXCEEDS |
+| PSFC | 415.3 Pa | 120 | −407.2 | EXCEEDS |
 | RAINNC | 0.501 mm | 1.0 | −0.034 | **PASS** |
 | T (θ′) | 2.040 K | 1.5 | +0.119 | EXCEEDS |
 | U | 3.167 m s⁻¹ | 1.8 | +1.660 | EXCEEDS |
@@ -99,30 +103,57 @@ grid points:
 | QVAPOR | 5.67×10⁻⁴ kg kg⁻¹ | 1.0×10⁻³ | +4.5×10⁻⁵ | **PASS** |
 
 **Overall verdict: NOT_EQUIVALENT** (6 of 10 fields exceed tolerance). This is
-the honest current state, reported as-is. Two distinct things are happening:
+the honest current state, reported as-is — and it is the post-fix re-run, not
+a pre-fix snapshot. Read it precisely:
 
-1. **PSFC** carries a near-constant **~590 Pa offset already at forecast hour 1**
-   (GPU mean 100534 Pa vs CPU 101125 Pa) that grows to ~700 Pa — present before
-   any dynamical divergence (hour-1 U/V/T RMSE are 0.32 / 0.17 / 0.19, i.e.
-   essentially identical). That signature is a **systematic surface-pressure
-   reference/diagnostic difference**, not chaotic drift. It is the prime
-   follow-up.
-2. **U10/V10/T/U/V** are **within tolerance at short lead and grow with lead
-   time** (e.g. V RMSE 0.17 m s⁻¹ at h1 → ~11 m s⁻¹ by h19, monotonic; the 3D
-   meridional wind V drifts ~3× faster than U). That is genuine lead-time error
-   growth between two independent integrators, concentrated in the wind field,
-   strongest in V. T2, W, QVAPOR and RAINNC stay inside tolerance for the full
-   24 h.
+1. **PSFC is improved but still out of bar, and the residual is now dynamical,
+   not diagnostic.** The pooled PSFC RMSE dropped from **707.8 Pa → 415.3 Pa**
+   once the WRF-faithful surface-pressure extrapolation
+   ([`proofs/v0120/psfc_extrapolation_proof.json`](../proofs/v0120/psfc_extrapolation_proof.json),
+   `PSFC = p8w(kts)` from the total-geopotential faces, per
+   `module_surface_driver.F` / `module_big_step_utilities_em.F`) replaced the
+   old `p0`-based surface value. That fix closed the **systematic ~29 Pa
+   diagnostic offset** in the internal surface-pressure definition (the
+   extrapolation proof shows the internal PSFC bias going 328 Pa → −29 Pa). The
+   **residual PSFC excess still seen here is no longer a constant diagnostic
+   offset**: the per-lead PSFC bias is −295 Pa at h1, swings to −485 Pa around
+   h6, relaxes, and re-grows — it **tracks the developing wind/mass divergence
+   over the run**, not a fixed reference difference. In short: the surface
+   extrapolation is now WRF-faithful; the remaining PSFC gap is **driven by the
+   dynamical divergence**, dominated by the wind field, and is **not** an
+   independent diagnostic bug. PSFC is **not** equivalent at 24 h.
+2. **Winds dominate the verdict and diverge with lead time.** U10/V10/T/U/V
+   start **within (or near) tolerance at short lead and grow monotonically** —
+   the 3D meridional wind V is essentially identical at h1 (RMSE 0.17 m s⁻¹) and
+   grows to ~11 m s⁻¹ by h19, drifting roughly **3× faster than U**. This is
+   genuine lead-time error growth between two independent integrators,
+   concentrated in the wind field, strongest in V. **Winds are not equivalent at
+   24 h.** T2, W, QVAPOR and RAINNC stay inside tolerance for the full 24 h.
 
-**Speedup:** the GPU integrated the 24 h d02 forecast in **1408.6 s** vs an
-estimated **2393.2 s** for the CPU-WRF d02 solver (from the retained RSL
-per-step timing) — **~1.70×**. (This is a same-card, fp64, single-forecast
-wall-clock comparison of the d02 main solver only; it is not the warm/fused
-kernel speedup quoted elsewhere.)
+Do not read this page as "PSFC fixed" or "winds equivalent." The honest summary
+is: **short-lead fields track CPU-WRF within tolerance; by 24 h the run is
+`NOT_EQUIVALENT`, driven by wind divergence, and PSFC remains out of bar because
+its residual is dominated by that same dynamical divergence** (after the
+diagnostic offset was removed).
+
+**Speedup (this demo):** the warm-cache GPU run integrated the 24 h d02 forecast
+in **561.3 s** (forecast-only) vs an estimated **2393.2 s** for the CPU-WRF d02
+solver (from the retained RSL per-step timing, d02 model step 6 s × 14 400
+steps) — **~4.26×**. The earlier **cold-compile** run of the same demo took
+**1408.6 s → ~1.70×**; the difference is entirely the persistent JIT cache (a
+cold ~5-minute XLA compile vs a ~10 s cache read) plus IO/case-build overhead,
+not a numerics change. This is a same-card, fp64, single-forecast **real-user
+wall-clock** comparison of the d02 main solver only; it is **not** the
+warm/compute-only kernel speedup (~5×, band 5–8×, dt-parity floor ~3.2×) quoted
+in [`PERFORMANCE.md`](PERFORMANCE.md) and
+[`../proofs/perf/speedup_denominator.md`](../proofs/perf/speedup_denominator.md).
+See the speedup-reconciliation paragraph in [`PERFORMANCE.md`](PERFORMANCE.md)
+for how the cold-real-user, warm-real-user, and warm-kernel numbers relate.
 
 A documented exceedance with its numbers is exactly the point of a self-serve
-demo. Re-running after a PSFC-reference fix and/or a wind-divergence
-investigation is the natural next step.
+demo. The PSFC diagnostic offset is now closed; the remaining gap is the
+lead-time wind divergence, which is the tracked follow-up (KI-9 in
+[KNOWN_ISSUES.md](KNOWN_ISSUES.md)).
 
 ## What it proves — and what it does not
 
