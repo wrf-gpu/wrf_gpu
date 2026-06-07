@@ -399,6 +399,21 @@ _M9_OUTPUT_FIELDS: tuple[tuple[str, str], ...] = (
     ("GLW", "glw"),
     ("PBLH", "pblh"),
     ("TSK", "tsk"),
+    # --- B1 (v0.12.0) RRTMG up/down all-sky surface + TOA flux diagnostics. ---
+    # All-sky only: the RRTMG port runs no separate clear-sky pass, so the WRF
+    # clear-sky ``...C`` flux vars are deliberately absent (no fabrication). OLR
+    # (== LWUPT) is derived in the writer from LWUPT. COSZEN is NOT routed here --
+    # the writer already emits it from its own ``_compute_coszen`` solar-geometry
+    # path; the M9Diagnostics.coszen leaf carries the same value for internal use.
+    ("SWDNB", "swdnb"),
+    ("SWUPB", "swupb"),
+    ("LWDNB", "lwdnb"),
+    ("LWUPB", "lwupb"),
+    ("SWDNT", "swdnt"),
+    ("SWUPT", "swupt"),
+    ("LWDNT", "lwdnt"),
+    ("LWUPT", "lwupt"),
+    ("SWNORM", "swnorm"),
 )
 
 

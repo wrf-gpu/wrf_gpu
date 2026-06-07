@@ -12,6 +12,7 @@ from gpuwrf.io.wrfout_writer import (
     DERIVED_DIAGNOSTIC_VARIABLES,
     GRID_METRIC_EXTRA_VARIABLES,
     MINIMUM_WRFOUT_VARIABLES,
+    RADIATION_FLUX_DIAGNOSTIC_VARIABLES,
     WRFOUT_VARIABLE_SPECS,
     write_wrfout_netcdf,
 )
@@ -408,3 +409,171 @@ def test_snow_canopy_diagnostics_self_gate_without_carry(tmp_path: Path):
     with Dataset(path) as dataset:
         for name, *_ in SNOW_CANOPY_REFERENCE_SCHEMA:
             assert name not in dataset.variables, f"{name} fabricated without carry"
+
+
+# --------------------------------------------------------------------------
+# B1 (v0.12.0): RRTMG up/down all-sky radiation flux diagnostics into wrfout.
+# --------------------------------------------------------------------------
+
+# Expected reference schema (dims/MemoryOrder/stagger/units/description/dtype),
+# copied verbatim from the Gen2 reference wrfout_d02 (ncdump -h). All-sky only;
+# the clear-sky ``...C`` vars are intentionally NOT emitted (see SKIPPED below).
+RADIATION_FLUX_REFERENCE_SCHEMA = (
+    ("SWDNB", ("Time", "south_north", "west_east"), "XY ", "",
+     "W m-2", "INSTANTANEOUS DOWNWELLING SHORTWAVE FLUX AT BOTTOM", "f4"),
+    ("SWUPB", ("Time", "south_north", "west_east"), "XY ", "",
+     "W m-2", "INSTANTANEOUS UPWELLING SHORTWAVE FLUX AT BOTTOM", "f4"),
+    ("LWDNB", ("Time", "south_north", "west_east"), "XY ", "",
+     "W m-2", "INSTANTANEOUS DOWNWELLING LONGWAVE FLUX AT BOTTOM", "f4"),
+    ("LWUPB", ("Time", "south_north", "west_east"), "XY ", "",
+     "W m-2", "INSTANTANEOUS UPWELLING LONGWAVE FLUX AT BOTTOM", "f4"),
+    ("SWDNT", ("Time", "south_north", "west_east"), "XY ", "",
+     "W m-2", "INSTANTANEOUS DOWNWELLING SHORTWAVE FLUX AT TOP", "f4"),
+    ("SWUPT", ("Time", "south_north", "west_east"), "XY ", "",
+     "W m-2", "INSTANTANEOUS UPWELLING SHORTWAVE FLUX AT TOP", "f4"),
+    ("LWDNT", ("Time", "south_north", "west_east"), "XY ", "",
+     "W m-2", "INSTANTANEOUS DOWNWELLING LONGWAVE FLUX AT TOP", "f4"),
+    ("LWUPT", ("Time", "south_north", "west_east"), "XY ", "",
+     "W m-2", "INSTANTANEOUS UPWELLING LONGWAVE FLUX AT TOP", "f4"),
+    ("OLR", ("Time", "south_north", "west_east"), "XY ", "",
+     "W m-2", "TOA OUTGOING LONG WAVE", "f4"),
+    ("SWNORM", ("Time", "south_north", "west_east"), "XY ", "",
+     "W m-2", "NORMAL SHORT WAVE FLUX AT GROUND SURFACE (SLOPE-DEPENDENT)", "f4"),
+)
+
+# Clear-sky flux vars the RRTMG port does NOT produce (no separate clear-sky
+# radiative-transfer pass) and therefore deliberately does not emit (no
+# fabrication). The B1 self-gate test asserts none of these ever appear.
+RADIATION_FLUX_SKIPPED_CLEARSKY = (
+    "SWDNBC", "SWUPBC", "LWDNBC", "LWUPBC",
+    "SWDNTC", "SWUPTC", "LWDNTC", "LWUPTC",
+)
+
+_B1_REFERENCE = Path(
+    "/mnt/data/canairy_meteo/runs/wrf_l3/"
+    "20260428_18z_l3_24h_20260525T221139Z/"
+    "wrfout_d02_2026-04-28_19:00:00"
+)
+
+
+def _radiation_flux_diagnostics(ny: int, nx: int) -> dict[str, np.ndarray]:
+    """A synthetic operational radiation-diagnostics map (mass-point, W m-2).
+
+    Mirrors the ``M9Diagnostics -> _surface_diagnostics_for_output`` mapping that
+    the live pipeline hands the writer: physically plausible all-sky up/down
+    surface + TOA SW/LW fluxes plus SWNORM, and the SWDOWN/GLW the consistency
+    asserts pin against. Values chosen distinct per field so a mis-wire is caught.
+    """
+    y, x = np.indices((ny, nx), dtype=np.float64)
+    swdown = 500.0 + 3.0 * x + y          # bottom-of-atmosphere downwelling SW
+    glw = 320.0 + 2.0 * y                 # bottom-of-atmosphere downwelling LW
+    lwupt = 240.0 + 1.5 * x               # TOA upwelling LW (== OLR)
+    return {
+        "SWDOWN": swdown,
+        "GLW": glw,
+        "SWDNB": swdown,                  # WRF SWDNB == SWDOWN (no-slope config)
+        "SWUPB": 0.18 * swdown,           # surface reflected SW
+        "LWDNB": glw,                     # WRF LWDNB == GLW
+        "LWUPB": 410.0 + 1.0 * y,         # surface emitted LW
+        "SWDNT": 800.0 + 2.0 * x,         # TOA incoming SW
+        "SWUPT": 120.0 + 0.5 * x,         # TOA reflected SW
+        "LWDNT": np.zeros((ny, nx)),      # TOA downwelling LW ~ 0 (no source above)
+        "LWUPT": lwupt,
+        "SWNORM": swdown / 0.92,          # slope-normal SW (> swdown for tilt)
+    }
+
+
+def test_radiation_flux_diagnostics_match_reference_schema(tmp_path: Path):
+    """B1: SWDNB/SWUPB/LWDNB/LWUPB (surface) + SWDNT/SWUPT/LWDNT/LWUPT (TOA) +
+    OLR + SWNORM are emitted with the EXACT reference WRF schema, are finite,
+    round-trip the diagnostics handed in, satisfy the radiative consistency
+    relations (SWDNB==SWDOWN, LWDNB==GLW, OLR==LWUPT), and the clear-sky ``...C``
+    vars are never fabricated."""
+
+    state, grid, namelist = synthetic_case()
+    nx, ny = grid.nx, grid.ny
+    diagnostics = _radiation_flux_diagnostics(ny, nx)
+    path = tmp_path / "wrfout_d02_2026-04-28_19:00:00"
+    write_wrfout_netcdf(
+        state, grid, namelist, path,
+        valid_time=datetime(2026, 4, 28, 19), lead_hours=1.0,
+        run_start=datetime(2026, 4, 28, 18), diagnostics=diagnostics,
+    )
+
+    # Defensive cross-check against the live reference wrfout when present.
+    ref_attrs: dict[str, dict] = {}
+    if _B1_REFERENCE.exists():
+        with Dataset(_B1_REFERENCE) as ref:
+            for name, *_ in RADIATION_FLUX_REFERENCE_SCHEMA:
+                assert name in ref.variables, f"{name} missing from reference"
+                rv = ref.variables[name]
+                ref_attrs[name] = {
+                    "dimensions": tuple(rv.dimensions),
+                    "MemoryOrder": str(rv.getncattr("MemoryOrder")),
+                    "stagger": str(rv.getncattr("stagger")),
+                    "units": str(rv.getncattr("units")),
+                    "description": str(rv.getncattr("description")),
+                    "kind": np.dtype(rv.dtype).kind,
+                }
+
+    with Dataset(path) as dataset:
+        for name, dims, mem, stag, units, desc, dtype in RADIATION_FLUX_REFERENCE_SCHEMA:
+            assert name in dataset.variables, f"missing radiation flux var {name}"
+            var = dataset.variables[name]
+            assert tuple(var.dimensions) == dims, f"{name} dims {var.dimensions} != {dims}"
+            assert str(var.getncattr("MemoryOrder")) == mem, f"{name} MemoryOrder"
+            assert str(var.getncattr("stagger")) == stag, f"{name} stagger"
+            assert str(var.getncattr("units")) == units, f"{name} units"
+            assert str(var.getncattr("description")) == desc, f"{name} description"
+            assert np.dtype(var.dtype).kind == "f", f"{name} dtype kind"
+            assert int(var.getncattr("FieldType")) == 104, f"{name} FieldType"
+            arr = np.asarray(var[:])
+            assert np.isfinite(arr).all(), f"{name} non-finite"
+
+            if name in ref_attrs:
+                r = ref_attrs[name]
+                assert r["dimensions"] == dims, f"{name} ref dims drift"
+                assert r["MemoryOrder"] == mem, f"{name} ref MemoryOrder drift"
+                assert r["stagger"] == stag, f"{name} ref stagger drift"
+                assert r["units"] == units, f"{name} ref units drift"
+                assert r["description"] == desc, f"{name} ref description drift"
+                assert r["kind"] == "f", f"{name} ref dtype-kind drift"
+
+        # Values round-trip from the diagnostics map (no rescale / no fabrication).
+        np.testing.assert_allclose(dataset["SWDNB"][0], diagnostics["SWDNB"], rtol=1e-6)
+        np.testing.assert_allclose(dataset["SWUPB"][0], diagnostics["SWUPB"], rtol=1e-6)
+        np.testing.assert_allclose(dataset["LWDNB"][0], diagnostics["LWDNB"], rtol=1e-6)
+        np.testing.assert_allclose(dataset["LWUPB"][0], diagnostics["LWUPB"], rtol=1e-6)
+        np.testing.assert_allclose(dataset["SWDNT"][0], diagnostics["SWDNT"], rtol=1e-6)
+        np.testing.assert_allclose(dataset["SWUPT"][0], diagnostics["SWUPT"], rtol=1e-6)
+        np.testing.assert_allclose(dataset["LWDNT"][0], diagnostics["LWDNT"], atol=1e-6)
+        np.testing.assert_allclose(dataset["LWUPT"][0], diagnostics["LWUPT"], rtol=1e-6)
+        np.testing.assert_allclose(dataset["SWNORM"][0], diagnostics["SWNORM"], rtol=1e-6)
+
+        # Radiative consistency relations (the B1 acceptance asserts):
+        #   surface SWDNB == SWDOWN, surface LWDNB == GLW, OLR == LWUPT.
+        np.testing.assert_allclose(dataset["SWDNB"][0], dataset["SWDOWN"][0], rtol=1e-6)
+        np.testing.assert_allclose(dataset["LWDNB"][0], dataset["GLW"][0], rtol=1e-6)
+        np.testing.assert_allclose(dataset["OLR"][0], dataset["LWUPT"][0], rtol=1e-6)
+
+        # No clear-sky flux var is ever fabricated (no clear-sky pass exists).
+        for name in RADIATION_FLUX_SKIPPED_CLEARSKY:
+            assert name not in dataset.variables, f"{name} clear-sky fabricated"
+
+
+def test_radiation_flux_diagnostics_self_gate_without_diagnostics(tmp_path: Path):
+    """When NO radiation diagnostics are supplied the B1 flux vars are simply
+    absent — the writer never fabricates a radiation flux (honesty rule)."""
+
+    state, grid, namelist = synthetic_case()
+    path = tmp_path / "wrfout_d02_2026-04-28_19:00:00"
+    write_wrfout_netcdf(
+        state, grid, namelist, path,
+        valid_time=datetime(2026, 4, 28, 19), lead_hours=1.0,
+        run_start=datetime(2026, 4, 28, 18), diagnostics=None,
+    )
+    with Dataset(path) as dataset:
+        for name in RADIATION_FLUX_DIAGNOSTIC_VARIABLES:
+            assert name not in dataset.variables, f"{name} fabricated without diagnostics"
+        for name in RADIATION_FLUX_SKIPPED_CLEARSKY:
+            assert name not in dataset.variables, f"{name} clear-sky fabricated"
