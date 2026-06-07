@@ -141,10 +141,14 @@ _IMPLEMENTED: Mapping[str, frozenset[int]] = {
     "bl_pbl_physics": frozenset({0, 1, 5, 7, 8}),
     "sf_sfclay_physics": frozenset({0, 1, 5, 7}),
     "sf_surface_physics": frozenset({0, 2, 4}),
-    "ra_lw_physics": frozenset({0, 4}),
+    # ra_lw=1 (classic AER RRTM 16-band LW) is now operationally scan-wired
+    # (coupling.physics_couplers.rrtm_lw_theta_tendency over the JAX-traceable
+    # physics.ra_lw_rrtm_jax kernel, dispatched in runtime.operational_mode by
+    # OperationalNamelist.ra_lw_physics; SW selected independently).
+    "ra_lw_physics": frozenset({0, 1, 4}),
     # ra_sw=1 (Dudhia, Stephens-1984 broadband SW) is now operationally scan-wired
     # (coupling.physics_couplers.dudhia_sw_theta_tendency, dispatched in
-    # runtime.operational_mode by OperationalNamelist.ra_sw_physics; LW stays RRTMG).
+    # runtime.operational_mode by OperationalNamelist.ra_sw_physics).
     "ra_sw_physics": frozenset({0, 1, 4}),
 }
 
@@ -176,15 +180,9 @@ _REFERENCE_ONLY: Mapping[str, dict[int, tuple[str, str]]] = {
             "Janjic Eta must pair with bl_pbl_physics=2.",
         ),
     },
-    "ra_lw_physics": {
-        1: (
-            "Classic RRTM longwave passes its isolated WRF-savepoint gate "
-            "(host-NumPy single-column kernel) but is not selectable by the "
-            "operational GPU scan (post-0.9.0 jit/vmap rewrite + radiation "
-            "dispatch).",
-            "Use ra_lw_physics=4 (RRTMG, GPU-operational) for the operational LW path.",
-        ),
-    },
+    # ra_lw_physics=1 (classic RRTM LW) was REFERENCE_ONLY (host-NumPy kernel); it
+    # is now operationally scan-wired via the JAX-traceable physics.ra_lw_rrtm_jax
+    # rewrite (IMPLEMENTED above), so it is no longer listed here.
     # ra_sw_physics=1 (Dudhia) was REFERENCE_ONLY; it is now operationally
     # scan-wired (IMPLEMENTED above), so it is no longer listed here.
 }
