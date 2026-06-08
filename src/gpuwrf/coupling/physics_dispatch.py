@@ -123,6 +123,7 @@ _MP_ENTRIES: dict[int, SchemeEntry] = {
     6: _mp_entry(6, "gpuwrf.physics.microphysics_wsm6", "wsm6_physics_tendency", gpu=True),
     8: _mp_entry(8, "gpuwrf.coupling.physics_couplers", "thompson_adapter", gpu=True, adapter=True),
     10: _mp_entry(10, "gpuwrf.physics.microphysics_morrison", "morrison_tendency", gpu=True),
+    14: _mp_entry(14, "gpuwrf.physics.microphysics_wdm5", "wdm5_physics_tendency", gpu=True),
     16: _mp_entry(16, "gpuwrf.physics.microphysics_wdm6", "wdm6_physics_tendency", gpu=True),
 }
 

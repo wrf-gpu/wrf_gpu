@@ -282,12 +282,12 @@ def test_operational_set_is_consistent_with_adapter_tables() -> None:
 #    moisture (qv changes). mp neighbours (PBL/cumulus/radiation) disabled so the
 #    qv change is attributable to microphysics.
 # ============================================================================
-# mp=14 (WDM5) is scan-wired (MP_SCAN_ADAPTERS[14], _SCAN_WIRED_OPTIONS) and was
-# merged at the v0.13 trunk tip, but is MISSING from the physics-dispatch routable
-# table (coupling.physics_dispatch._MP_ENTRIES has no key 14), so the operational
-# fail-closed authority _resolve_operational_suite (which run_forecast_operational
-# calls) REJECTS mp_physics=14. => advertised-operational but NOT functional.
-_MP_DISPATCH_GAP = {14}
+# mp=14 (WDM5) was scan-wired (MP_SCAN_ADAPTERS[14], _SCAN_WIRED_OPTIONS) but
+# MISSING from the physics-dispatch routable table (coupling.physics_dispatch._MP_ENTRIES),
+# so _resolve_operational_suite REJECTED it (advertised-operational but unroutable).
+# CLOSED 2026-06-08: added _mp_entry(14, microphysics_wdm5, wdm5_physics_tendency) to
+# _MP_ENTRIES. WDM5 now routes + runs functionally, so the gap set is empty.
+_MP_DISPATCH_GAP: set[int] = set()
 
 
 @pytest.mark.parametrize("mp", OPERATIONAL_MP)
