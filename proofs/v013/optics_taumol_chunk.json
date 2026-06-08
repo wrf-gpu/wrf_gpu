@@ -1,0 +1,215 @@
+{
+  "proof": "v0.13 RRTMG taumol/optics CONSTRUCTION chunking \u2014 bit-inertness + peak-VRAM",
+  "branch": "worker/opus/v013-optics-taumol-chunk",
+  "files_changed": [
+    "src/gpuwrf/physics/rrtmg_lw.py",
+    "src/gpuwrf/physics/rrtmg_sw.py"
+  ],
+  "inertness": {
+    "ncol_tile": 1,
+    "sw": {
+      "construction_reference": "upfront (_SW_TAUMOL_CHUNK=False)",
+      "rows": [
+        {
+          "with_clear_sky": false,
+          "chunk_bands": 1,
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "bit_equal": true
+        },
+        {
+          "with_clear_sky": false,
+          "chunk_bands": 2,
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "bit_equal": true
+        },
+        {
+          "with_clear_sky": false,
+          "chunk_bands": 7,
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "bit_equal": true
+        },
+        {
+          "with_clear_sky": false,
+          "chunk_bands": 14,
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "bit_equal": true
+        },
+        {
+          "with_clear_sky": true,
+          "chunk_bands": 1,
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "bit_equal": true
+        },
+        {
+          "with_clear_sky": true,
+          "chunk_bands": 2,
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "bit_equal": true
+        },
+        {
+          "with_clear_sky": true,
+          "chunk_bands": 7,
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "bit_equal": true
+        },
+        {
+          "with_clear_sky": true,
+          "chunk_bands": 14,
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "bit_equal": true
+        }
+      ],
+      "max_rel_over_all": 0.0,
+      "all_bit_identical": true
+    },
+    "lw": {
+      "construction_reference": "upfront (_LW_TAUMOL_CHUNK=False)",
+      "rows": [
+        {
+          "with_clear_sky": false,
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "bit_equal": true
+        },
+        {
+          "with_clear_sky": true,
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "bit_equal": true
+        }
+      ],
+      "max_rel_over_all": 0.0,
+      "all_bit_identical": true,
+      "fallback_duplicate_dropped": "yes (branch mask all-True -> tau=branch_tau, no _lw_fallback_taumol alloc)"
+    }
+  },
+  "vram": {
+    "compare_ncol_tile": 8192,
+    "compare_nrep": 3,
+    "deep_ncol_tile": 16384,
+    "deep_nrep": 4,
+    "rows": [
+      {
+        "kind": "lw",
+        "construct": "upfront",
+        "ncol": 24576,
+        "nlev": 48,
+        "peak_bytes_in_use": 18721120256,
+        "bytes_in_use_after": 144765440,
+        "peak_mib": 17853.85,
+        "role": "compare"
+      },
+      {
+        "kind": "lw",
+        "construct": "chunked",
+        "ncol": 24576,
+        "nlev": 48,
+        "peak_bytes_in_use": 10557532160,
+        "bytes_in_use_after": 144765184,
+        "peak_mib": 10068.45,
+        "role": "compare"
+      },
+      {
+        "kind": "sw",
+        "construct": "upfront",
+        "ncol": 24576,
+        "nlev": 48,
+        "peak_bytes_in_use": 17542330624,
+        "bytes_in_use_after": 146141440,
+        "peak_mib": 16729.67,
+        "role": "compare"
+      },
+      {
+        "kind": "sw",
+        "construct": "chunked",
+        "ncol": 24576,
+        "nlev": 48,
+        "peak_bytes_in_use": 1999028480,
+        "bytes_in_use_after": 146141696,
+        "peak_mib": 1906.42,
+        "role": "compare"
+      },
+      {
+        "kind": "lw",
+        "construct": "upfront",
+        "ncol_arg": 16384,
+        "nrep": 4,
+        "nlev": 64,
+        "role": "deep_oom",
+        "result": "OOM",
+        "error_tail": [
+          "EXECUTION FAILED: RESOURCE_EXHAUSTED: Out of memory while trying to allocate 6.09GiB. [tf-allocator-allocation-error='']",
+          "--------------------",
+          "For simplicity, JAX has removed its internal frames from the traceback of the following exception. Set JAX_TRACEBACK_FILTERING=off to include these."
+        ],
+        "rc": 1
+      },
+      {
+        "kind": "lw",
+        "construct": "chunked",
+        "ncol": 49152,
+        "nlev": 64,
+        "peak_bytes_in_use": 22137075712,
+        "bytes_in_use_after": 380301568,
+        "peak_mib": 21111.56,
+        "role": "deep_oom"
+      },
+      {
+        "kind": "sw",
+        "construct": "upfront",
+        "ncol_arg": 16384,
+        "nrep": 4,
+        "nlev": 64,
+        "role": "deep_oom",
+        "result": "OOM",
+        "error_tail": [
+          "    return x.block_until_ready()",
+          "           ~~~~~~~~~~~~~~~~~~~^^",
+          "jax.errors.JaxRuntimeError: RESOURCE_EXHAUSTED: Out of memory while trying to allocate 133.81GiB."
+        ],
+        "rc": 1
+      },
+      {
+        "kind": "sw",
+        "construct": "chunked",
+        "ncol": 49152,
+        "nlev": 64,
+        "peak_bytes_in_use": 12904723456,
+        "bytes_in_use_after": 383054336,
+        "peak_mib": 12306.9,
+        "role": "deep_oom"
+      }
+    ]
+  },
+  "summary": {
+    "lw_peak_mib_upfront": 17853.85,
+    "lw_peak_mib_chunked": 10068.45,
+    "lw_peak_reduction_pct": 43.61,
+    "lw_deep_upfront_oom": true,
+    "lw_deep_chunked_peak_mib": 21111.56,
+    "lw_deep_oom_then_fits": true,
+    "sw_peak_mib_upfront": 16729.67,
+    "sw_peak_mib_chunked": 1906.42,
+    "sw_peak_reduction_pct": 88.6,
+    "sw_deep_upfront_oom": true,
+    "sw_deep_chunked_peak_mib": 12306.9,
+    "sw_deep_oom_then_fits": true
+  },
+  "verdict": {
+    "sw_construction_inert_bit_identical": true,
+    "lw_construction_inert_bit_identical": true,
+    "sw_inert_max_rel": 0.0,
+    "lw_inert_max_rel": 0.0,
+    "lw_vram_reduced": true,
+    "sw_vram_reduced": true,
+    "deep_column_oom_then_fits": true
+  }
+}
