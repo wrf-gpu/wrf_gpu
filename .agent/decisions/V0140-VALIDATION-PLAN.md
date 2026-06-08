@@ -1,0 +1,585 @@
+# V0.14.0 Validation Plan - 16h Campaign
+
+Date: 2026-06-08
+Owner: GPT-5.5 xhigh validation architect
+Branch: `worker/gpt/v013-valplan`
+
+## Positioning
+
+This is the deeper validation campaign after the v0.13 3h gate. The model is a
+fast, GPU-native, GPU-scalable WRF-compatible implementation. The campaign must
+not overclaim bit-truth or perfect efficiency.
+
+Primary objective: prove that implemented couplings run stably across longer
+horizons, more schemes, nesting, GWD, feedback, restart/reproducibility, and
+multi-region data without NaNs, OOMs, or crashes.
+
+Secondary objective: collect strong, honest CPU-WRF and AEMET equivalence
+evidence. The powered TOST scorer is the main gate-keeper-facing artifact.
+
+## Corpus Reality
+
+Current pairable truth found on disk:
+
+- Canary L2 9/3 km:
+  `/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output` contains the current
+  powered-TOST `n=15` CPU-WRF truth corpus with 72h d01/d02 wrfout.
+- Canary L2 and L3 operational cases:
+  `/mnt/data/canairy_meteo/runs/wrf_l2` and `/mnt/data/canairy_meteo/runs/wrf_l3`
+  contain retained inputs and some retained CPU-WRF outputs. L3 has full 24h
+  examples such as `20260509_18z_l3_24h_20260511T190519Z` and
+  `20260521_18z_l3_24h_20260522T133443Z`.
+- AEMET:
+  `/mnt/data/canairy_meteo/artifacts/datasets/aemet_stations`.
+- Switzerland:
+  `/mnt/data/wrf_gpu_switzerland_big/run_cpu` and
+  `/mnt/data/wrf_gpu_switzerland_128/run_cpu` contain 24h CPU truth. This gives
+  a non-Canary winter/Alps region. It does not give Canary seasonal coverage.
+- Pristine WRF:
+  `/home/enric/src/wrf_pristine/WRF` exists with CPU-WRF binaries for oracle or
+  backfill work.
+
+Limitations:
+
+- Current Canary truth is effectively MAM 2026. A true Canary multi-season claim
+  is not available from the retained corpus.
+- Powered `n=15` is available now. ADR-029 indicates roughly `n=27` is needed
+  for a 10 percent MDE at the current margins, so `n=30` requires additional
+  CPU-WRF truth/backfill before this campaign can honestly claim that sample
+  size.
+- 9/3/1 km plus GWD plus 2-way feedback for 24h is known 32GB-VRAM-marginal and
+  has OOMed around hour 14. The 16h plan uses a bounded 12h 2-way slice and a
+  24h one-way 1 km run.
+
+## Common Setup
+
+```bash
+export OUT=/mnt/data/wrf_gpu_validation/v0140_campaign_$(date -u +%Y%m%dT%H%M%SZ)
+mkdir -p "$OUT"
+```
+
+GPU jobs are serial. CPU jobs may run in parallel on cores 0-23. CPU-only
+commands must force `JAX_PLATFORMS=cpu`.
+
+## Tests
+
+### B1 - 72h Canary L2 9/3 km, GWD, 2-Way Feedback
+
+Type: PRIMARY RUNS-confidence, SECONDARY long-run equivalence support
+
+Resource: GPU, one serial job
+
+Estimate: 1h45m
+
+Command:
+
+```bash
+/tmp/wrf_gpu_run_lowprio.sh taskset -c 0-23 env \
+  PYTHONPATH=src \
+  JAX_ENABLE_X64=true \
+  XLA_PYTHON_CLIENT_PREALLOCATE=false \
+  GPUWRF_GWD_NESTED=1 \
+  python -m gpuwrf.cli run \
+    --input-dir /mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z \
+    --output-dir "$OUT/b1_canary_l2_72h_feedback_gwd" \
+    --max-dom 2 \
+    --hours 72 \
+    --feedback \
+    --proof-dir "$OUT/b1_canary_l2_72h_feedback_gwd/proofs" \
+    --score
+```
+
+Pass criterion:
+
+- d01 and d02 each emit 72 hourly wrfout frames.
+- Core surface, precipitation, moisture, thermodynamic, and 3D wind fields are
+  finite for all frames.
+- No OOM, NaN, or crash occurs.
+- Runtime and memory proof metadata are retained.
+
+What it proves:
+
+- The heaviest fitting nested GWD plus 2-way configuration can survive a
+  multi-day operational horizon.
+
+### B2 - 24h Canary L3 9/3/1 km, GWD, One-Way Nesting
+
+Type: PRIMARY RUNS-confidence
+
+Resource: GPU, one serial job
+
+Estimate: 2h00m
+
+Command:
+
+```bash
+/tmp/wrf_gpu_run_lowprio.sh taskset -c 0-23 env \
+  PYTHONPATH=src \
+  JAX_ENABLE_X64=true \
+  XLA_PYTHON_CLIENT_PREALLOCATE=false \
+  GPUWRF_GWD_NESTED=1 \
+  python -m gpuwrf.cli run \
+    --input-dir /mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z \
+    --output-dir "$OUT/b2_canary_l3_24h_oneway_gwd" \
+    --max-dom 3 \
+    --hours 24 \
+    --proof-dir "$OUT/b2_canary_l3_24h_oneway_gwd/proofs" \
+    --score
+```
+
+Pass criterion:
+
+- d01, d02, and d03 each emit 24 hourly wrfout frames.
+- All core fields are finite.
+- GWD diagnostics and nested boundary updates are present.
+
+What it proves:
+
+- Full 24h 1 km Canary production geometry runs with GWD when feedback is not
+  enabled.
+
+### B3 - 12h Canary L3 9/3/1 km, GWD, 2-Way Feedback Slice
+
+Type: PRIMARY RUNS-confidence
+
+Resource: GPU, one serial job
+
+Estimate: 1h15m
+
+Command:
+
+```bash
+/tmp/wrf_gpu_run_lowprio.sh taskset -c 0-23 env \
+  PYTHONPATH=src \
+  JAX_ENABLE_X64=true \
+  XLA_PYTHON_CLIENT_PREALLOCATE=false \
+  GPUWRF_GWD_NESTED=1 \
+  python -m gpuwrf.cli run \
+    --input-dir /mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z \
+    --output-dir "$OUT/b3_canary_l3_12h_feedback_gwd" \
+    --max-dom 3 \
+    --hours 12 \
+    --feedback \
+    --proof-dir "$OUT/b3_canary_l3_12h_feedback_gwd/proofs" \
+    --score
+```
+
+Pass criterion:
+
+- d01, d02, and d03 each emit 12 hourly wrfout frames.
+- All fields are finite.
+- No OOM occurs before hour 12.
+
+What it proves:
+
+- The heaviest known coupling combination is stable through the largest horizon
+  that is expected to fit reliably on the current 32GB workstation.
+
+### B4 - Powered TOST n=15, CPU-WRF And AEMET
+
+Type: SECONDARY gate-keeper equivalence, PRIMARY repeated nested-run stability
+
+Resource: GPU serial campaign plus CPU scoring
+
+Estimate: 6h00m
+
+Command:
+
+```bash
+/tmp/wrf_gpu_run_lowprio.sh taskset -c 0-23 env \
+  PYTHONPATH=src \
+  JAX_ENABLE_X64=true \
+  XLA_PYTHON_CLIENT_PREALLOCATE=false \
+  GPUWRF_AEMET_ROOT=/mnt/data/canairy_meteo/artifacts/datasets/aemet_stations \
+  python proofs/v0120/powered_tost_n15/run_powered_tost_n15_v0120.py \
+    --resume
+```
+
+Pass criterion:
+
+- All 15 available manifest cases are either scored or have documented,
+  reproducible exclusions.
+- For T2, U10, and V10, the aggregate report includes complete-pair counts,
+  case-level RMSE deltas, confidence intervals, TOST p-values, and ADR-029
+  margins:
+  - T2 margin: 0.2148692978020805 K
+  - U10 margin: 0.23064713972582307 m/s
+  - V10 margin: 0.2752320537920854 m/s
+- AEMET pair counts are nonzero for each scored case where observations exist.
+- Any `NOT_EQUIVALENT` result is kept as a result, not treated as a harness
+  failure.
+
+What it proves:
+
+- This is the main gate-keeper-facing equivalence artifact currently available
+  from retained truth.
+- It also provides repeated 9/3 km nested GPU stability evidence across cases.
+
+n=30 path:
+
+- Current disk truth does not support n=30. To run n=30, first backfill and
+  retain 15 additional CPU-WRF L2 truth cases with pristine WRF, then generate a
+  new manifest with complete d01/d02 72h wrfout and AEMET-pairable dates.
+- A full n=30 GPU campaign is expected to cost roughly 11-12h and should replace
+  B1, B2, B3, and B7 in a 16h window, or run as a second overnight campaign.
+
+### B5 - Forecast-Skill Closure A/B: rad_rk_tendf And Wind-Error Levers
+
+Type: SECONDARY forecast-skill measurement, PRIMARY variant stability
+
+Resource: GPU serial plus CPU scoring
+
+Estimate: 2h00m
+
+Precondition:
+
+- Land a small measurement harness at `proofs/v014/skill_ab_runner.py`. The
+  harness must only toggle existing operational namelist/options and reuse the
+  existing CPU-WRF/AEMET scorer. It must not introduce new physics.
+
+CPU precheck:
+
+```bash
+taskset -c 0-23 env \
+  JAX_PLATFORMS=cpu \
+  JAX_ENABLE_X64=true \
+  PYTHONPATH=src \
+  python proofs/v013/skill_closure.py
+```
+
+GPU A/B command:
+
+```bash
+/tmp/wrf_gpu_run_lowprio.sh taskset -c 0-23 env \
+  PYTHONPATH=src \
+  JAX_ENABLE_X64=true \
+  XLA_PYTHON_CLIENT_PREALLOCATE=false \
+  GPUWRF_AEMET_ROOT=/mnt/data/canairy_meteo/artifacts/datasets/aemet_stations \
+  python proofs/v014/skill_ab_runner.py \
+    --case-dir /mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z \
+    --truth-dir /mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z \
+    --domain d02 \
+    --hours 24 \
+    --variants baseline,rad_rk_tendf1,moist_adv_opt2,rad_rk_tendf1_moist_adv_opt2 \
+    --out "$OUT/b5_skill_ab_20260509.json"
+```
+
+Pass criterion:
+
+- Every variant run finishes and is finite.
+- The report includes T2, U10, V10, QVAPOR, PSFC, and precipitation RMSE versus
+  CPU-WRF, plus AEMET T2/U10/V10 where available.
+- The report includes per-lead wind error growth slopes.
+- The report states whether `rad_rk_tendf`, moisture-advection wiring, or their
+  combination improves U10/V10 without materially degrading T2/QVAPOR/PSFC.
+
+What it proves:
+
+- This directly measures the #7 forecast-skill closure hypothesis instead of
+  inferring it from CPU-only closure proofs.
+
+### B6 - Full Implemented Scheme Operational Forecast Gates
+
+Type: PRIMARY RUNS-confidence
+
+Resource: GPU serial short forecasts
+
+Estimate: 1h30m
+
+Precondition:
+
+- Land `proofs/v014/operational_suite_runner.py`. The existing
+  `proofs/v060/forecast_gate_harness.py --run` refuses manager-scheduled runs,
+  so the campaign needs a runner that launches short forecasts and records
+  per-scheme active diagnostics.
+
+Command:
+
+```bash
+/tmp/wrf_gpu_run_lowprio.sh taskset -c 0-23 env \
+  PYTHONPATH=src \
+  JAX_ENABLE_X64=true \
+  XLA_PYTHON_CLIENT_PREALLOCATE=false \
+  python proofs/v014/operational_suite_runner.py \
+    --case-dir /mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z \
+    --hours 3 \
+    --matrix full_v013 \
+    --out-dir "$OUT/b6_scheme_forecast_gates"
+```
+
+Pass criterion:
+
+- Every implemented operational scheme in the v0.13 suite runs a 3h forecast
+  without NaNs or crashes.
+- The matrix includes:
+  - Microphysics: Thompson, WSM6, WDM6, Morrison, Kessler, Lin, WSM3, WSM5,
+    plus WSM7-ref as reference/fail-closed unless operationalized.
+  - PBL: MYNN, MYJ, YSU, ACM2, BouLac, MRF.
+  - Surface: sfclayrev, MYNN, Janjic, GFS, old-MM5.
+  - LSM: Noah-MP, Noah-classic.
+  - Cumulus: KF, BMJ, GF, Tiedtke.
+  - Radiation: RRTMG SW/LW, Dudhia SW, RRTM LW, GSFC SW.
+  - GWD on/off.
+- Each run records scheme-active diagnostics so a disabled branch cannot pass as
+  a silent no-op.
+- Reference-only and unported schemes are fail-closed and listed explicitly.
+
+What it proves:
+
+- The whole implemented physics surface is exercised in operational forecast
+  form, not just in isolated oracles.
+
+### B7 - Switzerland 24h Winter/Alps Run And CPU-WRF Compare
+
+Type: PRIMARY RUNS-confidence, SECONDARY multi-region equivalence support
+
+Resource: GPU serial plus CPU compare
+
+Estimate: 45 min GPU plus 10 min CPU
+
+GPU command:
+
+```bash
+/tmp/wrf_gpu_run_lowprio.sh taskset -c 0-23 env \
+  PYTHONPATH=src \
+  JAX_ENABLE_X64=true \
+  XLA_PYTHON_CLIENT_PREALLOCATE=false \
+  python -m gpuwrf.cli run \
+    --input-dir /mnt/data/wrf_gpu_switzerland_128/run_cpu \
+    --output-dir "$OUT/b7_switzerland_128_gpu" \
+    --domain d01 \
+    --hours 24 \
+    --proof-dir "$OUT/b7_switzerland_128_gpu/proofs"
+```
+
+CPU compare command:
+
+```bash
+taskset -c 0-23 env \
+  JAX_PLATFORMS=cpu \
+  PYTHONPATH=src \
+  python scripts/equivalence_switzerland_compare.py \
+    --gpu-dir "$OUT/b7_switzerland_128_gpu" \
+    --cpu-dir /mnt/data/wrf_gpu_switzerland_128/run_cpu \
+    --domain d01 \
+    --hours 24 \
+    --out "$OUT/b7_switzerland_equivalence.json"
+```
+
+Pass criterion:
+
+- GPU run emits 24 finite d01 frames.
+- Comparator finds pairable CPU-WRF and GPU-WRF frames and reports finite RMSE
+  and status.
+- `EQUIVALENT` and `NOT_EQUIVALENT` are both valid scientific outcomes; `NO_DATA`
+  or missing pairs is a failure.
+
+What it proves:
+
+- The model is not only a Canary-specific runner.
+- It gives a winter/Alps rough-equivalence data point, while avoiding a false
+  Canary multi-season claim.
+
+### B8 - CPU Reproducibility, Community, And Operational Smoke Sweep
+
+Type: PRIMARY RUNS-confidence and SECONDARY reviewer support
+
+Resource: CPU parallel lane
+
+Estimate: 2h00m
+
+Commands:
+
+```bash
+taskset -c 0-23 env \
+  JAX_PLATFORMS=cpu \
+  PYTHONPATH=src \
+  bash scripts/verify_reproducibility.sh
+
+taskset -c 0-23 env \
+  JAX_PLATFORMS=cpu \
+  PYTHONPATH=src \
+  bash scripts/community_validation.sh
+
+taskset -c 0-23 env \
+  JAX_PLATFORMS=cpu \
+  JAX_ENABLE_X64=true \
+  PYTHONPATH=src \
+  python proofs/v060/multicfg_operational_smoke.py \
+    --steps 16 \
+    --out "$OUT/b8_multicfg_operational_smoke.json"
+```
+
+Pass criterion:
+
+- Reproducibility proof suite passes.
+- Community validation passes Straka, Skamarock, conservation, and restart
+  checks.
+- 16-step multicfg operational smoke passes with finite outputs and active
+  scheme reporting.
+
+What it proves:
+
+- The core cheap proof surface stays green while GPU campaign work is running.
+
+### B9 - Focused V0.13 Oracle, Wiring, Restart, And Fake-Mesh Sweep
+
+Type: PRIMARY RUNS-confidence and SECONDARY reviewer support
+
+Resource: CPU parallel lane
+
+Estimate: 45 min
+
+Commands:
+
+```bash
+taskset -c 0-23 env \
+  JAX_PLATFORMS=cpu \
+  JAX_ENABLE_X64=true \
+  PYTHONPATH=src \
+  python -m pytest -q \
+    tests/test_v013_myj_janjic_operational.py \
+    tests/test_v013_mrf_operational.py \
+    tests/test_v013_t3_surface_lsm_wiring.py \
+    tests/test_v013_ra_sw_gsfc.py \
+    tests/test_v060_ra_sw_dudhia.py \
+    tests/test_rrtm_lw_operational_wiring.py \
+    tests/test_gwd_operational_wiring.py \
+    tests/test_v0110_boundary_feedback.py \
+    tests/test_p0_1a_nesting.py \
+    tests/test_p0_5_restart_full_carry.py \
+    tests/test_v0110_wrfrst_netcdf.py \
+    tests/test_m7_restart_checkpoint_roundtrip.py
+
+taskset -c 0-23 env JAX_PLATFORMS=cpu JAX_ENABLE_X64=true PYTHONPATH=src \
+  python proofs/v013/t3_microphysics_oracle.py
+
+taskset -c 0-23 env JAX_PLATFORMS=cpu JAX_ENABLE_X64=true PYTHONPATH=src \
+  python proofs/v013/myj_janjic_oracle.py
+
+taskset -c 0-23 env JAX_PLATFORMS=cpu JAX_ENABLE_X64=true PYTHONPATH=src \
+  python proofs/v013/mrf_oracle.py
+
+taskset -c 0-23 env JAX_PLATFORMS=cpu JAX_ENABLE_X64=true PYTHONPATH=src \
+  python proofs/v013/t3_surface_lsm_oracle.py
+
+taskset -c 0-23 env JAX_PLATFORMS=cpu JAX_ENABLE_X64=true PYTHONPATH=src \
+  python proofs/v013/t3_radiation_oracle.py
+
+taskset -c 0-23 env JAX_PLATFORMS=cpu JAX_ENABLE_X64=true PYTHONPATH=src \
+  python proofs/v013/t3_cumulus_oracle.py
+
+taskset -c 0-23 env \
+  JAX_PLATFORMS=cpu \
+  JAX_ENABLE_X64=true \
+  XLA_FLAGS=--xla_force_host_platform_device_count=8 \
+  PYTHONPATH=src \
+  python proofs/v013/multigpu_fakemesh.py
+```
+
+Pass criterion:
+
+- All focused tests and proof scripts exit 0.
+- Restart checkpoint roundtrip and wrfrst NetCDF handling are green.
+- Fake mesh is partition bit-identical.
+- Reference-only schemes are named honestly and fail closed.
+
+What it proves:
+
+- The deeper campaign has a complete CPU-side proof floor for the v0.13
+  additions.
+
+### B10 - Carry-Over Scheme Admission Path
+
+Type: CONDITIONAL PRIMARY RUNS-confidence path
+
+Resource: CPU oracle first, then GPU short forecast once ported
+
+Estimate: not included in the mandatory 16h wall unless a scheme is newly
+ported before campaign start
+
+Scope:
+
+- Cumulus JAX kernels beyond the current operational set.
+- CAM, NUWRF, and GFDL radiation.
+- RUC LSM.
+- Shin-Hong and QNSE PBL.
+
+Admission commands, per newly ported scheme:
+
+```bash
+taskset -c 0-23 env \
+  JAX_PLATFORMS=cpu \
+  JAX_ENABLE_X64=true \
+  WRF_PRISTINE_ROOT=/home/enric/src/wrf_pristine/WRF \
+  PYTHONPATH=src \
+  python proofs/v014/<family>_<scheme>_oracle.py \
+    --out "$OUT/b10_<scheme>_oracle.json"
+
+/tmp/wrf_gpu_run_lowprio.sh taskset -c 0-23 env \
+  PYTHONPATH=src \
+  JAX_ENABLE_X64=true \
+  XLA_PYTHON_CLIENT_PREALLOCATE=false \
+  python proofs/v014/operational_suite_runner.py \
+    --case-dir /mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z \
+    --hours 3 \
+    --matrix full_v013_plus_carryovers \
+    --only <scheme> \
+    --out-dir "$OUT/b10_<scheme>_forecast_gate"
+```
+
+Pass criterion:
+
+- Oracle parity or source-derived tolerance proof passes.
+- Operational forecast emits 3 finite hourly outputs with active diagnostics.
+- Until both gates pass, the scheme remains reference-only or fail-closed in
+  public validation reports.
+
+What it proves:
+
+- Carry-over schemes have a concrete, falsifiable path into the campaign without
+  being smuggled into operational claims.
+
+## 16h Budget
+
+GPU is serial. CPU lanes run concurrently on cores 0-23 and provide proof
+coverage while GPU jobs run.
+
+| Lane | Time window | Test | Estimate | Notes |
+| --- | ---: | --- | ---: | --- |
+| GPU | 00:00-01:45 | B1 L2 72h GWD 2-way | 1h45m | Multi-day heaviest fitting run |
+| GPU | 01:45-03:45 | B2 L3 24h one-way GWD | 2h00m | Full 1 km production geometry |
+| GPU | 03:45-05:00 | B3 L3 12h 2-way GWD | 1h15m | Bounded heaviest slice |
+| GPU | 05:00-11:00 | B4 powered TOST n=15 | 6h00m | Main equivalence campaign |
+| GPU | 11:00-13:00 | B5 skill A/B | 2h00m | #7 closure measurement |
+| GPU | 13:00-14:30 | B6 scheme forecast gates | 1h30m | Full implemented suite |
+| GPU | 14:30-15:15 | B7 Switzerland | 45 min | Non-Canary region |
+| GPU | 15:15-16:00 | Slack/scoring/retry packaging | 45 min | Absorbs compile variance |
+| CPU | 00:00-02:00 | B8 CPU proof sweep | 2h00m | Parallel |
+| CPU | 02:00-02:45 | B9 focused proof sweep | 45 min | Parallel |
+| CPU | 11:00-15:30 | B4/B5/B7 scoring as outputs appear | included | Does not extend GPU critical path |
+
+Mandatory test count: 9.
+
+Conditional carry-over admission path: 1 additional template test family.
+
+Budgeted wall time: 16h00.
+
+## Acceptance Summary
+
+The 16h campaign passes only if:
+
+- B1, B2, B3, B6, B7, B8, and B9 pass all RUNS-confidence criteria.
+- B4 completes the available n=15 powered TOST corpus or documents every
+  exclusion.
+- B5 reports finite A/B skill measurements, including wind error growth, even if
+  no variant improves skill.
+- The report clearly separates:
+  - stable finite operational runs,
+  - rough CPU-WRF equivalence,
+  - AEMET forecast skill,
+  - powered TOST pass/fail,
+  - reference-only or fail-closed schemes.
+
+The highest-value test is B4: it is the largest available gate-keeper-facing
+equivalence campaign using retained CPU-WRF truth and AEMET pairing.
