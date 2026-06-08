@@ -1,0 +1,78 @@
+{
+  "checks": {
+    "both_wrfinput_present": true,
+    "d01_lbc_wrfbdy_d01_resolves": true,
+    "d02_parent_is_d01_ratio_gt_1": true,
+    "is_nest_max_dom_2": true,
+    "one_way_nest": true,
+    "verdict_setup_ok": true,
+    "wrfbdy_d02_absent": true,
+    "wrfbdy_d02_not_required": true
+  },
+  "data_source": "REAL_L2_CORPUS",
+  "owned_files": [
+    "proofs/v0120/powered_tost_n15/run_one_case_v0120.py",
+    "proofs/v0120/powered_tost_n15/run_powered_tost_n15_v0120.py",
+    "proofs/v013/tost_wrfbdy_fix.py",
+    "proofs/v013/tost_wrfbdy_fix.md"
+  ],
+  "run_id": "20260429_18z_l2_72h_20260524T204451Z",
+  "schema": "PoweredTOSTWrfbdyFixProof",
+  "schema_version": 1,
+  "setup_only_check": {
+    "d01_lbc_source": "/tmp/claude-1000/v013_wrfbdy_proof_96gf9pto/20260429_18z_l2_72h_20260524T204451Z/wrfbdy_d01",
+    "disk_inputs": {
+      "wrfbdy_d01": true,
+      "wrfbdy_d02": false,
+      "wrfinput_d01": true,
+      "wrfinput_d02": true
+    },
+    "domains": [
+      "d01",
+      "d02"
+    ],
+    "grids_loaded": {
+      "d01": {
+        "nx": 93,
+        "ny": 59,
+        "nz": 44
+      },
+      "d02": {
+        "nx": 159,
+        "ny": 66,
+        "nz": 44
+      }
+    },
+    "init_mode": "standalone_native_init_nested",
+    "max_dom": 2,
+    "nest_config": {
+      "feedback": 0,
+      "nested": [
+        false,
+        true
+      ],
+      "one_way": true,
+      "specified": [
+        true,
+        false
+      ]
+    },
+    "nest_edge": {
+      "child": "d02",
+      "parent": "d01",
+      "parent_grid_ratio": 3
+    },
+    "new_path": "live-nested: d01 LBC from wrfbdy_d01 (resolved above); d02 child uses build_replay_case(load_lateral_boundaries=False) -> empty *_bdy leaves, parent feeds d02 LBC live; load_wrfbdy_boundary_leaves NEVER called for d02",
+    "old_path_would_fail_here": "the OLD single-domain d02 path called load_wrfbdy_boundary_leaves -> wrfbdy_path_for_run(run,'d02') -> FileNotFoundError(wrfbdy_d02)",
+    "run_dir": "/tmp/claude-1000/v013_wrfbdy_proof_96gf9pto/20260429_18z_l2_72h_20260524T204451Z",
+    "run_id": "20260429_18z_l2_72h_20260524T204451Z",
+    "schema": "PoweredTOSTSetupOnlyCheck",
+    "schema_version": 1,
+    "score_domain": "d02",
+    "verdict": "SETUP_OK",
+    "wrfbdy_d02_present": false,
+    "wrfbdy_d02_required": false
+  },
+  "title": "v0.13 KI-5 powered-TOST wrfbdy_d02 routing fix \u2014 CPU setup-verify",
+  "verdict": "PASS"
+}
