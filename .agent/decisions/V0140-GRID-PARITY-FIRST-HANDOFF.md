@@ -114,6 +114,24 @@ metric/base payload is exact or root-caused as writer-only.
 Wave deliverables are expected under `proofs/v014/` and
 `.agent/reviews/2026-06-08-v014-*.md`.
 
+## Active Wave 2
+
+- `019ea95e-f825-7a92-a5d2-bfc1e1082aee` (`Huygens`):
+  primary static metric/base-state parity sprint. Write scope is
+  `proofs/v014/static_metric_base_parity.*` and
+  `.agent/reviews/2026-06-08-v014-static-metric-base-parity.md`; source edits
+  are allowed only if a narrow bug is proven in `vertical_coord.py` or
+  `metrics.py`.
+- `019ea95f-15e9-70b2-b6bf-cc4c1de48047` (`Curie`):
+  read-only same-state tendency localization design. Write scope is
+  `proofs/v014/same_state_tendency_localization_plan.md`, optional inventory
+  JSON, and
+  `.agent/reviews/2026-06-08-v014-same-state-tendency-localization-design.md`.
+- `019ea957-da82-7891-9a9b-3ad594d8b671` (`Nietzsche`):
+  exact-branch memory preflight remains open; manager sent a status check after
+  no completion notice. Do not start a duplicate exact-branch memory preflight
+  unless this worker is confirmed dead or stays silent without proof artifacts.
+
 ## Next Manager Actions
 
 1. Run the sprint
