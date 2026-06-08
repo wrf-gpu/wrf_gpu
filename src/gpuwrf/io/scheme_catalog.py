@@ -136,7 +136,7 @@ class SchemeSupport:
 # physics_registry accept-matrix and the WRF v4 catalog.                      #
 # --------------------------------------------------------------------------- #
 _IMPLEMENTED: Mapping[str, frozenset[int]] = {
-    "mp_physics": frozenset({0, 1, 2, 3, 4, 6, 8, 10, 16}),
+    "mp_physics": frozenset({0, 1, 2, 3, 4, 6, 8, 10, 14, 16}),
     "cu_physics": frozenset({0, 1, 2, 3, 6}),
     # bl=2 MYJ + sf=2 Janjic Eta are the v0.13 traceable MYJ pair (operationally
     # scan-wired via physics.myj_adapters + runtime.operational_mode; mandatory pair).
@@ -248,7 +248,7 @@ def _label(key: str) -> str:
 
 # Per-key fallback alternative text used for RECOGNIZED_FAIL_CLOSED schemes.
 _DEFAULT_ALTERNATIVE: Mapping[str, str] = {
-    "mp_physics": "Use one of mp_physics=0/1/2/3/4/6/8/10/16 (8=Thompson is the "
+    "mp_physics": "Use one of mp_physics=0/1/2/3/4/6/8/10/14/16 (8=Thompson is the "
     "operational default).",
     "cu_physics": "Use one of cu_physics=0/1/2/3/6 (1=Kain-Fritsch, 3=Grell-"
     "Freitas, 6=Tiedtke are GPU-operational).",

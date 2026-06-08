@@ -133,7 +133,7 @@ SUPPORTED_OPTIONS: dict[str, SupportedOption] = {
     "mp_physics": SupportedOption(
         key="mp_physics",
         supported_values=frozenset(ACCEPTED_MP_PHYSICS),
-        implemented="0=disabled/passive qv, 1=Kessler, 2=Purdue-Lin, 3=WSM3, 4=WSM5, 6=WSM6, 8=Thompson, 10=Morrison, 16=WDM6",
+        implemented="0=disabled/passive qv, 1=Kessler, 2=Purdue-Lin, 3=WSM3, 4=WSM5, 6=WSM6, 8=Thompson, 10=Morrison, 14=WDM5, 16=WDM6",
         action="Use one of the frozen v0.6.0 microphysics options; all other MP options remain unsupported.",
     ),
     "cu_physics": SupportedOption(

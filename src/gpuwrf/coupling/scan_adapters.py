@@ -84,6 +84,7 @@ from gpuwrf.coupling.physics_couplers import (
 from gpuwrf.physics.microphysics_kessler import kessler_physics_tendency
 from gpuwrf.physics.microphysics_lin import lin_physics_tendency
 from gpuwrf.physics.microphysics_morrison import morrison_tendency
+from gpuwrf.physics.microphysics_wdm5 import wdm5_physics_tendency
 from gpuwrf.physics.microphysics_wdm6 import wdm6_physics_tendency
 from gpuwrf.physics.microphysics_wsm3 import wsm3_physics_tendency
 from gpuwrf.physics.microphysics_wsm5 import wsm5_physics_tendency
@@ -271,6 +272,41 @@ def morrison_adapter(state: State, dt: float, grid=None) -> State:
     )
     tend.validate_keys()
     return _apply_mp_replacements(state, tend, ny=ny, nx=nx, nz=nz)
+
+
+def wdm5_adapter(state: State, dt: float, grid=None) -> State:
+    """mp=14 WDM5 double-moment warm-rain 5-class microphysics scan adapter.
+
+    WDM5 reuses the WDM6 number leaves ``Nc`` (cloud-droplet number) and ``Nn``
+    (CCN); no new State leaf is introduced. The kernel returns ``Nc``/``Nr`` as
+    replacements and ``Nn`` as a diagnostic; this adapter materializes ``Nn`` into
+    the State leaf so the CCN prognostic actually evolves (it would otherwise be
+    lost). WDM5 has NO graupel and NO land/sea ``qcr`` switch, so (unlike WDM6) it
+    takes no ``slmsk`` argument.
+    """
+
+    del grid
+    nz, ny, nx = state.theta.shape
+    mp = lambda f: _mp_in(f, ny, nx, nz)  # noqa: E731
+    rho = _rho_from_state(state)
+    pii = (jnp.maximum(state.p, 1.0) / P0_PA) ** R_D_OVER_CP
+    interface_z = state.ph.astype(jnp.float64) / GRAVITY_M_S2
+    dz = jnp.maximum(interface_z[1:] - interface_z[:-1], 1.0)
+    tend = wdm5_physics_tendency(
+        mp(state.theta), mp(state.qv), mp(state.qc), mp(state.qr),
+        mp(state.qi), mp(state.qs),
+        mp(state.Nn), mp(state.Nc), mp(state.Nr),
+        mp(pii), mp(rho), mp(state.p), mp(dz), float(dt),
+    )
+    tend.validate_keys()
+    next_state = _apply_mp_replacements(state, tend, ny=ny, nx=nx, nz=nz)
+    # Nn is returned in diagnostics (the kernel reuses the WDM6 number layout but
+    # returns Nn as a diagnostic); thread it into the State leaf so CCN evolves.
+    nn = tend.diagnostics.get("Nn")
+    if nn is not None:
+        nn3d = jnp.moveaxis(jnp.asarray(nn).reshape(ny, nx, nz), -1, 0)
+        next_state = next_state.replace(Nn=nn3d.astype(_output_dtype(state, "Nn")))
+    return next_state
 
 
 def wdm6_adapter(state: State, dt: float, grid=None) -> State:
@@ -1114,6 +1150,7 @@ MP_SCAN_ADAPTERS = {
     4: wsm5_adapter,
     6: wsm6_adapter,
     10: morrison_adapter,
+    14: wdm5_adapter,
     16: wdm6_adapter,
 }
 
@@ -1167,6 +1204,7 @@ __all__ = [
     "wsm5_adapter",
     "wsm6_adapter",
     "morrison_adapter",
+    "wdm5_adapter",
     "wdm6_adapter",
     "sfclay_revised_mm5_adapter",
     "pleim_xiu_sfclay_adapter",
