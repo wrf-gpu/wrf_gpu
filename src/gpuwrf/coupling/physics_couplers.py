@@ -282,13 +282,24 @@ class RRTMGRadiationDiagnostics(NamedTuple):
     # B1 (v0.12.0) top-of-atmosphere all-sky flux slices, mass-point (ny, nx).
     # These are the ``[..., -1]`` (model top) interface fluxes the RRTMG SW/LW
     # column solvers already compute; surfaced here for the wrfout TOA flux vars
-    # (SWDNT/SWUPT/LWDNT/LWUPT/OLR). All-sky only -- the RRTMG port does NOT run a
-    # separate clear-sky radiative-transfer pass, so the WRF ``...C`` clear-sky
-    # flux vars are deliberately NOT produced here (no fabrication).
+    # (SWDNT/SWUPT/LWDNT/LWUPT/OLR).
     sw_toa_down: object
     sw_toa_up: object
     lw_toa_down: object
     lw_toa_up: object
+    # v0.13.0 clear-sky (cloud-free) SW/LW fluxes from the WRF second clear-sky
+    # radiative-transfer pass (RRTMG `pbbcd/pbbcu`, `totdclfl/totuclfl`), surfaced
+    # for the WRF ``...C`` wrfout vars.  ``None`` unless ``with_clear_sky=True`` is
+    # threaded into the diagnostics call.  Top == model-top interface, bot ==
+    # surface: SWUPTC/SWDNTC/SWUPBC/SWDNBC + LWUPTC/LWDNTC/LWUPBC/LWDNBC.
+    sw_clear_toa_down: object = None
+    sw_clear_toa_up: object = None
+    sw_clear_sfc_down: object = None
+    sw_clear_sfc_up: object = None
+    lw_clear_toa_down: object = None
+    lw_clear_toa_up: object = None
+    lw_clear_sfc_down: object = None
+    lw_clear_sfc_up: object = None
 
 
 class SolarGeometry(NamedTuple):
@@ -1498,12 +1509,17 @@ def rrtmg_radiation_diagnostics(
     slope_rad: int = 0,
     shadow_length_m: float = 25000.0,
     land_state=None,
+    with_clear_sky: bool = False,
 ) -> RRTMGRadiationDiagnostics:
     """Return surface RRTMG radiation diagnostics without changing State.
 
     `time_utc` is the simulation init instant; `lead_seconds` (may be traced)
     is elapsed forecast time, so SWDOWN/GLW/coszen follow the real forecast
     clock (diurnal cycle) at the M9 I/O cadence.
+
+    When ``with_clear_sky`` is True the SW/LW solvers also run the WRF clear-sky
+    (cloud-free) radiative-transfer pass and the ``...C`` clear-sky surface/TOA
+    fluxes are populated.  The all-sky outputs are byte-identical either way.
     """
 
     sw_state, lw_state, surface_albedo, surface_emissivity, geometry, topography = _rrtmg_column_inputs(
@@ -1517,13 +1533,25 @@ def rrtmg_radiation_diagnostics(
         shadow_length_m=shadow_length_m,
         land_state=land_state,
     )
-    sw = solve_rrtmg_sw_column(sw_state, debug=False, topography=topography)
-    lw = solve_rrtmg_lw_column(lw_state, debug=False)
+    sw = solve_rrtmg_sw_column(sw_state, debug=False, topography=topography, with_clear_sky=with_clear_sky)
+    lw = solve_rrtmg_lw_column(lw_state, debug=False, with_clear_sky=with_clear_sky)
     shadow_mask = (
         jnp.zeros_like(surface_albedo, dtype=jnp.int32)
         if topography is None
         else topography.shadow_mask
     )
+    if with_clear_sky:
+        sw_clear_toa_down = sw.clear_flux_down[..., -1]
+        sw_clear_toa_up = sw.clear_flux_up[..., -1]
+        sw_clear_sfc_down = sw.clear_flux_down[..., 0]
+        sw_clear_sfc_up = sw.clear_flux_up[..., 0]
+        lw_clear_toa_down = lw.clear_flux_down[..., -1]
+        lw_clear_toa_up = lw.clear_flux_up[..., -1]
+        lw_clear_sfc_down = lw.clear_flux_down[..., 0]
+        lw_clear_sfc_up = lw.clear_flux_up[..., 0]
+    else:
+        sw_clear_toa_down = sw_clear_toa_up = sw_clear_sfc_down = sw_clear_sfc_up = None
+        lw_clear_toa_down = lw_clear_toa_up = lw_clear_sfc_down = lw_clear_sfc_up = None
     return RRTMGRadiationDiagnostics(
         surface_albedo=surface_albedo,
         surface_emissivity=surface_emissivity,
@@ -1542,6 +1570,14 @@ def rrtmg_radiation_diagnostics(
         sw_toa_up=sw.toa_up,
         lw_toa_down=lw.toa_down,
         lw_toa_up=lw.toa_up,
+        sw_clear_toa_down=sw_clear_toa_down,
+        sw_clear_toa_up=sw_clear_toa_up,
+        sw_clear_sfc_down=sw_clear_sfc_down,
+        sw_clear_sfc_up=sw_clear_sfc_up,
+        lw_clear_toa_down=lw_clear_toa_down,
+        lw_clear_toa_up=lw_clear_toa_up,
+        lw_clear_sfc_down=lw_clear_sfc_down,
+        lw_clear_sfc_up=lw_clear_sfc_up,
     )
 
 

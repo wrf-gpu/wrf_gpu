@@ -375,6 +375,15 @@ class RRTMGLWColumnResult(NamedTuple):
     surface_up: jnp.ndarray
     column_net_heating: jnp.ndarray
     surface_emission: jnp.ndarray
+    # Clear-sky (cloud-free) interface fluxes, WRF `totdclfl`/`totuclfl` from the
+    # parallel clear-sky stream in `rtrnmc` (`module_ra_rrtmg_lw.F` :3417-3489).
+    # Populated only when ``solve_rrtmg_lw_column(..., with_clear_sky=True)``;
+    # otherwise ``None`` (the main all-sky flux outputs are byte-identical with or
+    # without the clear-sky pass).  WRF `...C` vars: LWUPTC=clear_flux_up[...,-1],
+    # LWDNTC=clear_flux_down[...,-1], LWUPBC=clear_flux_up[...,0],
+    # LWDNBC=clear_flux_down[...,0].
+    clear_flux_down: jnp.ndarray | None = None
+    clear_flux_up: jnp.ndarray | None = None
 
 
 class RRTMGLWIntermediateState(NamedTuple):
@@ -1801,7 +1810,7 @@ def _lw_rtrnmc_layer_terms(radld, odepth_raw, odcld, efclfrac, cldfmc, plfrac, b
     }
 
 
-def _lw_rtrnmc_outputs(state, intermediate_base, cldfmc, taucmc, transfer_tau, tables: RRTMGTableBundle, *, flux_only: bool = False):
+def _lw_rtrnmc_outputs(state, intermediate_base, cldfmc, taucmc, transfer_tau, tables: RRTMGTableBundle, *, flux_only: bool = False, with_clear_sky: bool = False):
     """Ports WRF `rtrnmc` cloudy-source recurrence and per-g-point flux capture.
 
     When ``flux_only`` is True (the operational path) the per-band
@@ -1839,6 +1848,13 @@ def _lw_rtrnmc_outputs(state, intermediate_base, cldfmc, taucmc, transfer_tau, t
     flux_up_acc = None
     zfd_tile = []
     zfu_tile = []
+    # Clear-sky (cloud-free) band-summed flux accumulators, WRF `totdclfl`/
+    # `totuclfl` from the parallel clear-sky stream in `rtrnmc`
+    # (`module_ra_rrtmg_lw.F` :3417-3489).  Only built when ``with_clear_sky``.
+    clear_down_acc = None
+    clear_up_acc = None
+    zcd_tile = []
+    zcu_tile = []
 
     def _flush_tile(down_acc, up_acc, dtile, utile):
         if not dtile:
@@ -1923,10 +1939,36 @@ def _lw_rtrnmc_outputs(state, intermediate_base, cldfmc, taucmc, transfer_tau, t
             tfn = jnp.where(is_cloud, terms["cloud"]["tfn"], terms["clear"]["tfn"])
             iclddn_new = jnp.logical_or(iclddn, cloud_l)
             radclrd_new = jnp.where(iclddn_new[..., None], radclrd + (bbd - radclrd) * atrans, rad_new)
-            return (rad_new, radclrd_new, iclddn_new), (rad_new * scale * valid, atrans, atot, bbugas, bbutot, tfn * valid)
+            # WRF `rtrnmc` :3417-3423 — clear-sky down stream tracks the all-sky
+            # stream until the first cloud above (iclddn), then propagates with the
+            # clear-sky source/transmittance only.  Emit it (and the cumulative
+            # iclddn / clear surface-reflected atrans) for the clear-sky up sweep.
+            return (rad_new, radclrd_new, iclddn_new), (
+                rad_new * scale * valid,
+                atrans,
+                atot,
+                bbugas,
+                bbutot,
+                tfn * valid,
+                radclrd_new * scale * valid,
+                iclddn_new,
+                terms["clear"]["atrans"],
+                terms["clear"]["bbugas"],
+            )
 
-        (radld, _, _), down_outputs = lax.scan(down_body, (radld, radclrd, iclddn), down_xs)
-        zfd_scan, atrans_scan, atot_scan, bbugas_scan, bbutot_scan, tfn_scan = down_outputs
+        (radld, radclrd_final, _), down_outputs = lax.scan(down_body, (radld, radclrd, iclddn), down_xs)
+        (
+            zfd_scan,
+            atrans_scan,
+            atot_scan,
+            bbugas_scan,
+            bbutot_scan,
+            tfn_scan,
+            zcd_scan,
+            iclddn_scan,
+            atrans_clear_scan,
+            bbugas_clear_scan,
+        ) = down_outputs
         zfd_layer0 = jnp.flip(jnp.concatenate((jnp.zeros_like(radld)[None, ...], zfd_scan), axis=0), axis=0)
         zfd = jnp.moveaxis(zfd_layer0, 0, -2)
         atrans_layers = jnp.moveaxis(jnp.flip(atrans_scan, axis=0), 0, -2)
@@ -1962,6 +2004,70 @@ def _lw_rtrnmc_outputs(state, intermediate_base, cldfmc, taucmc, transfer_tau, t
 
         _, zfu_scan = lax.scan(up_body, radlu, up_xs)
         zfu = jnp.moveaxis(jnp.concatenate((radlu[None, ...] * scale * valid, zfu_scan), axis=0), 0, -2)
+
+        if with_clear_sky:
+            # Clear-sky DOWN flux: same interface layout as `zfd`, built from the
+            # clear-sky down radiance `radclrd` (WRF `clrdrad`).  zcd_scan is the
+            # per-layer clear radiance emitted top-to-bottom; prepend the TOA zero
+            # and flip back to bottom-to-top, exactly mirroring the all-sky `zfd`.
+            zcd_layer0 = jnp.flip(jnp.concatenate((jnp.zeros_like(radld)[None, ...], zcd_scan), axis=0), axis=0)
+            zcd = jnp.moveaxis(zcd_layer0, 0, -2)
+            # Clear-sky UP sweep (WRF `rtrnmc` :3436-3467).  Surface boundary uses
+            # the CLEAR down radiance at the surface (`radclrd_final`); the stream
+            # follows the all-sky `radlu` while no cloud is above (iclddn=0) and
+            # diverges with the clear-sky gas source/transmittance once iclddn=1.
+            radclru0 = frac_b[..., 0, :] * plankbnd[..., band][..., None] + (1.0 - state.surface_emissivity[..., None]) * radclrd_final
+            # The clear stream follows the all-sky up radiance `radlu` while no
+            # cloud is above (iclddn=0); the carry recomputes that all-sky `radlu`
+            # recurrence (identical formula to `up_body`) so no external radiance
+            # series is needed.
+            up_clear_xs = (
+                layer0(jnp.moveaxis(jnp.flip(atrans_clear_scan, axis=0), 0, -2)),
+                layer0(jnp.moveaxis(jnp.flip(bbugas_clear_scan, axis=0), 0, -2)),
+                layer0(jnp.moveaxis(jnp.flip(iclddn_scan, axis=0), 0, -2)),
+                layer0(atrans_layers),
+                layer0(atot_layers),
+                layer0(bbugas_layers),
+                layer0(bbutot_layers),
+                layer0(efclfrac),
+                layer0(cldf_b),
+                jnp.moveaxis(cloud_layer, -1, 0),
+            )
+
+            def up_clear_body(carry, xs):
+                radlu_l, radclru_l = carry
+                (
+                    atrans_clr_l,
+                    bbugas_clr_l,
+                    iclddn_l,
+                    atrans_l,
+                    atot_l,
+                    bbugas_l,
+                    bbutot_l,
+                    efclfrac_l,
+                    cldf_l,
+                    cloud_l,
+                ) = xs
+                is_cloud = cloud_l[..., None]
+                gassrc = bbugas_l * atrans_l
+                rad_cloud = (
+                    radlu_l
+                    - radlu_l * (atrans_l + efclfrac_l * (1.0 - atrans_l))
+                    + gassrc
+                    + cldf_l * (bbutot_l * atot_l - gassrc)
+                )
+                rad_clear_allsky = radlu_l + (bbugas_l - radlu_l) * atrans_l
+                radlu_new = jnp.where(is_cloud, rad_cloud, rad_clear_allsky)
+                # WRF :3461-3467 — clear stream = all-sky up while no cloud above
+                # (iclddn=0); once a cloud is above, propagate with clear-sky gas
+                # source + clear-sky transmittance.
+                radclru_diverged = radclru_l + (bbugas_clr_l - radclru_l) * atrans_clr_l
+                radclru_new = jnp.where(iclddn_l[..., None], radclru_diverged, radlu_new)
+                return (radlu_new, radclru_new), radclru_new * scale * valid
+
+            _, zcu_scan = lax.scan(up_clear_body, (radlu, radclru0), up_clear_xs)
+            zcu = jnp.moveaxis(jnp.concatenate((radclru0[None, ...] * scale * valid, zcu_scan), axis=0), 0, -2)
+
         if flux_only:
             # Collect this band into the current tile; flush (g-point-reduce +
             # fp64 band-accumulate) once the tile is full.  Only one tile's
@@ -1970,10 +2076,17 @@ def _lw_rtrnmc_outputs(state, intermediate_base, cldfmc, taucmc, transfer_tau, t
             # fp64 precision and reproduces `sum(zfd_all, axis=(-1, -2))`.
             zfd_tile.append(zfd)
             zfu_tile.append(zfu)
+            if with_clear_sky:
+                zcd_tile.append(zcd)
+                zcu_tile.append(zcu)
             if len(zfd_tile) >= flux_only_tile:
                 flux_down_acc, flux_up_acc = _flush_tile(flux_down_acc, flux_up_acc, zfd_tile, zfu_tile)
                 zfd_tile = []
                 zfu_tile = []
+                if with_clear_sky:
+                    clear_down_acc, clear_up_acc = _flush_tile(clear_down_acc, clear_up_acc, zcd_tile, zcu_tile)
+                    zcd_tile = []
+                    zcu_tile = []
         else:
             zfd_bands.append(zfd)
             zfu_bands.append(zfu)
@@ -1985,6 +2098,9 @@ def _lw_rtrnmc_outputs(state, intermediate_base, cldfmc, taucmc, transfer_tau, t
         # `tfn`/per-g-point outputs are oracle-only; the production path consumes
         # the band-summed fluxes directly, so return them in the per-g-point
         # slots' place via the dedicated flux tuple.
+        if with_clear_sky:
+            clear_down_acc, clear_up_acc = _flush_tile(clear_down_acc, clear_up_acc, zcd_tile, zcu_tile)
+            return flux_down_acc, flux_up_acc, plansum, clear_down_acc, clear_up_acc
         return flux_down_acc, flux_up_acc, plansum
     zfd_all = jnp.stack(zfd_bands, axis=-2)
     zfu_all = jnp.stack(zfu_bands, axis=-2)
@@ -2070,7 +2186,7 @@ def _lw_solver_state(
 
 
 def _lw_solver_fluxes(
-    state: RRTMGLWColumnState, tables: RRTMGTableBundle
+    state: RRTMGLWColumnState, tables: RRTMGTableBundle, with_clear_sky: bool = False
 ) -> tuple[RRTMGLWColumnState, jnp.ndarray, jnp.ndarray, int, jnp.ndarray]:
     """Operational path: band-summed LW fluxes without the full per-g-point array.
 
@@ -2078,20 +2194,34 @@ def _lw_solver_fluxes(
     fp64, so the peak g-point temporary is a single band's `(..., nlay+1, 16)`
     buffer rather than the full `(..., nlay+1, 16, 16)` stack — the dominant LW
     fp64 VRAM consumer.  Bit-comparable (fp64) to the oracle path's
-    `sum(zf*_per_gpoint, axis=(-1, -2))`.
+    `sum(zf*_per_gpoint, axis=(-1, -2))`.  When ``with_clear_sky`` the parallel
+    clear-sky (`totdclfl`/`totuclfl`) band-summed fluxes are also returned.
     """
 
     state, intermediate_base, cldfmc, taucmc, transfer_tau, original_layers, layer_mass = _lw_solver_base(state, tables)
-    flux_down_model, flux_up_model, _ = _lw_rtrnmc_outputs(
-        state, intermediate_base, cldfmc, taucmc, transfer_tau, tables, flux_only=True
+    outputs = _lw_rtrnmc_outputs(
+        state, intermediate_base, cldfmc, taucmc, transfer_tau, tables, flux_only=True, with_clear_sky=with_clear_sky
     )
+    if with_clear_sky:
+        flux_down_model, flux_up_model, _, clear_down, clear_up = outputs
+        return state, flux_down_model, flux_up_model, original_layers, layer_mass, clear_down, clear_up
+    flux_down_model, flux_up_model, _ = outputs
     return state, flux_down_model, flux_up_model, original_layers, layer_mass
 
 
-def _longwave_impl(state: RRTMGLWColumnState, tables: RRTMGTableBundle, debug: bool) -> RRTMGLWColumnResult:
+def _longwave_impl(
+    state: RRTMGLWColumnState, tables: RRTMGTableBundle, debug: bool, with_clear_sky: bool = False
+) -> RRTMGLWColumnResult:
     """Unjitted LW implementation shared by production and stripped paths."""
 
-    state, flux_down_model, flux_up_model, original_layers, layer_mass = _lw_solver_fluxes(state, tables)
+    if with_clear_sky:
+        state, flux_down_model, flux_up_model, original_layers, layer_mass, clear_flux_down, clear_flux_up = _lw_solver_fluxes(
+            state, tables, with_clear_sky=True
+        )
+    else:
+        state, flux_down_model, flux_up_model, original_layers, layer_mass = _lw_solver_fluxes(state, tables)
+        clear_flux_down = None
+        clear_flux_up = None
     net_down = flux_down_model - flux_up_model
     layer_net_heating = net_down[..., 1 : original_layers + 1] - net_down[..., :original_layers]
     heating_rate = layer_net_heating / (layer_mass * CP_AIR)
@@ -2112,6 +2242,8 @@ def _longwave_impl(state: RRTMGLWColumnState, tables: RRTMGTableBundle, debug: b
         surface_up=flux_up[..., 0],
         column_net_heating=jnp.sum(layer_net_heating, axis=-1),
         surface_emission=surface_emission,
+        clear_flux_down=clear_flux_down,
+        clear_flux_up=clear_flux_up,
     )
 
 
@@ -2125,16 +2257,23 @@ def compute_rrtmg_lw_intermediates(
     return intermediate
 
 
-@partial(jax.jit, static_argnames=("debug",))
+@partial(jax.jit, static_argnames=("debug", "with_clear_sky"))
 def solve_rrtmg_lw_column(
     state: RRTMGLWColumnState,
     tables: RRTMGTableBundle = RRTMG_TABLES,
     *,
     debug: bool = False,
+    with_clear_sky: bool = False,
 ) -> RRTMGLWColumnResult:
-    """Computes one fused longwave column radiation call."""
+    """Computes one fused longwave column radiation call.
 
-    return _longwave_impl(state, tables, debug)
+    When ``with_clear_sky`` is True the result also carries the WRF clear-sky
+    (cloud-free) interface fluxes ``clear_flux_down``/``clear_flux_up`` (the
+    parallel clear-sky `rtrnmc` stream, WRF ``totdclfl``/``totuclfl``); the main
+    all-sky flux outputs are byte-identical regardless of this flag.
+    """
+
+    return _longwave_impl(state, tables, debug, with_clear_sky)
 
 
 @jax.jit
