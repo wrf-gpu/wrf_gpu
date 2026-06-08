@@ -1,0 +1,917 @@
+{
+  "absolute_total_cancellation": {
+    "base_pressure_pa": 90000.0,
+    "fp32_ulp_at_total_pa": 0.0078125,
+    "mechanism": "The pressure update is quantized at the ULP of the absolute total pressure, not at the scale of the acoustic residual.",
+    "millipascal_fresh_recovered_delta_pa": 0.0,
+    "millipascal_recurrent_recovered_delta_pa": 0.0,
+    "old_recovered_perturbation_fp32_pa": 100.0,
+    "old_total_fp32_pa": 90100.0,
+    "pressure_perturbation_pa": 100.0,
+    "rows": [
+      {
+        "fresh_abs_error_pa": -0.0001,
+        "fresh_abs_total_recovered_delta_pa": 0.0,
+        "increment_pa": 0.0001,
+        "increment_to_total_ulp": 0.0128,
+        "recurrent_abs_error_pa": -0.0001,
+        "recurrent_abs_total_recovered_delta_pa": 0.0
+      },
+      {
+        "fresh_abs_error_pa": -0.0005,
+        "fresh_abs_total_recovered_delta_pa": 0.0,
+        "increment_pa": 0.0005,
+        "increment_to_total_ulp": 0.064,
+        "recurrent_abs_error_pa": -0.0005,
+        "recurrent_abs_total_recovered_delta_pa": 0.0
+      },
+      {
+        "fresh_abs_error_pa": -0.001,
+        "fresh_abs_total_recovered_delta_pa": 0.0,
+        "increment_pa": 0.001,
+        "increment_to_total_ulp": 0.128,
+        "recurrent_abs_error_pa": -0.001,
+        "recurrent_abs_total_recovered_delta_pa": 0.0
+      },
+      {
+        "fresh_abs_error_pa": -0.002,
+        "fresh_abs_total_recovered_delta_pa": 0.0,
+        "increment_pa": 0.002,
+        "increment_to_total_ulp": 0.256,
+        "recurrent_abs_error_pa": -0.002,
+        "recurrent_abs_total_recovered_delta_pa": 0.0
+      },
+      {
+        "fresh_abs_error_pa": 0.0028125,
+        "fresh_abs_total_recovered_delta_pa": 0.0078125,
+        "increment_pa": 0.005,
+        "increment_to_total_ulp": 0.64,
+        "recurrent_abs_error_pa": 0.0028125,
+        "recurrent_abs_total_recovered_delta_pa": 0.0078125
+      },
+      {
+        "fresh_abs_error_pa": -0.0021875,
+        "fresh_abs_total_recovered_delta_pa": 0.0078125,
+        "increment_pa": 0.01,
+        "increment_to_total_ulp": 1.28,
+        "recurrent_abs_error_pa": -0.0021875,
+        "recurrent_abs_total_recovered_delta_pa": 0.0078125
+      },
+      {
+        "fresh_abs_error_pa": 0.0015624999999999944,
+        "fresh_abs_total_recovered_delta_pa": 0.1015625,
+        "increment_pa": 0.1,
+        "increment_to_total_ulp": 12.8,
+        "recurrent_abs_error_pa": 0.0015624999999999944,
+        "recurrent_abs_total_recovered_delta_pa": 0.1015625
+      },
+      {
+        "fresh_abs_error_pa": 0.0,
+        "fresh_abs_total_recovered_delta_pa": 1.0,
+        "increment_pa": 1.0,
+        "increment_to_total_ulp": 128.0,
+        "recurrent_abs_error_pa": 0.0,
+        "recurrent_abs_total_recovered_delta_pa": 1.0
+      }
+    ]
+  },
+  "memory_savings": {
+    "core_candidate_set": {
+      "field_count": 23,
+      "fields": [
+        {
+          "elements": 10288050,
+          "formula": "nz * ny * nx",
+          "fp32_mib": 39.24579620361328,
+          "fp64_mib": 78.49159240722656,
+          "name": "p",
+          "saving_mib": 39.24579620361328,
+          "shape": "mass3d"
+        },
+        {
+          "elements": 10288050,
+          "formula": "nz * ny * nx",
+          "fp32_mib": 39.24579620361328,
+          "fp64_mib": 78.49159240722656,
+          "name": "pm1",
+          "saving_mib": 39.24579620361328,
+          "shape": "mass3d"
+        },
+        {
+          "elements": 10288050,
+          "formula": "nz * ny * nx",
+          "fp32_mib": 39.24579620361328,
+          "fp64_mib": 78.49159240722656,
+          "name": "theta",
+          "saving_mib": 39.24579620361328,
+          "shape": "mass3d"
+        },
+        {
+          "elements": 10288050,
+          "formula": "nz * ny * nx",
+          "fp32_mib": 39.24579620361328,
+          "fp64_mib": 78.49159240722656,
+          "name": "theta_coupled_work",
+          "saving_mib": 39.24579620361328,
+          "shape": "mass3d"
+        },
+        {
+          "elements": 10288050,
+          "formula": "nz * ny * nx",
+          "fp32_mib": 39.24579620361328,
+          "fp64_mib": 78.49159240722656,
+          "name": "theta_ave",
+          "saving_mib": 39.24579620361328,
+          "shape": "mass3d"
+        },
+        {
+          "elements": 10288050,
+          "formula": "nz * ny * nx",
+          "fp32_mib": 39.24579620361328,
+          "fp64_mib": 78.49159240722656,
+          "name": "theta_tend",
+          "saving_mib": 39.24579620361328,
+          "shape": "mass3d"
+        },
+        {
+          "elements": 10288050,
+          "formula": "nz * ny * nx",
+          "fp32_mib": 39.24579620361328,
+          "fp64_mib": 78.49159240722656,
+          "name": "t_2ave",
+          "saving_mib": 39.24579620361328,
+          "shape": "mass3d"
+        },
+        {
+          "elements": 10304100,
+          "formula": "nz * ny * (nx + 1)",
+          "fp32_mib": 39.30702209472656,
+          "fp64_mib": 78.61404418945312,
+          "name": "u",
+          "saving_mib": 39.30702209472656,
+          "shape": "xstag3d"
+        },
+        {
+          "elements": 10304100,
+          "formula": "nz * ny * (nx + 1)",
+          "fp32_mib": 39.30702209472656,
+          "fp64_mib": 78.61404418945312,
+          "name": "u_1",
+          "saving_mib": 39.30702209472656,
+          "shape": "xstag3d"
+        },
+        {
+          "elements": 10304100,
+          "formula": "nz * ny * (nx + 1)",
+          "fp32_mib": 39.30702209472656,
+          "fp64_mib": 78.61404418945312,
+          "name": "ru_m",
+          "saving_mib": 39.30702209472656,
+          "shape": "xstag3d"
+        },
+        {
+          "elements": 10320100,
+          "formula": "nz * (ny + 1) * nx",
+          "fp32_mib": 39.36805725097656,
+          "fp64_mib": 78.73611450195312,
+          "name": "v",
+          "saving_mib": 39.36805725097656,
+          "shape": "ystag3d"
+        },
+        {
+          "elements": 10320100,
+          "formula": "nz * (ny + 1) * nx",
+          "fp32_mib": 39.36805725097656,
+          "fp64_mib": 78.73611450195312,
+          "name": "v_1",
+          "saving_mib": 39.36805725097656,
+          "shape": "ystag3d"
+        },
+        {
+          "elements": 10320100,
+          "formula": "nz * (ny + 1) * nx",
+          "fp32_mib": 39.36805725097656,
+          "fp64_mib": 78.73611450195312,
+          "name": "rv_m",
+          "saving_mib": 39.36805725097656,
+          "shape": "ystag3d"
+        },
+        {
+          "elements": 10493811,
+          "formula": "(nz + 1) * ny * nx",
+          "fp32_mib": 40.03071212768555,
+          "fp64_mib": 80.0614242553711,
+          "name": "w",
+          "saving_mib": 40.03071212768555,
+          "shape": "face3d"
+        },
+        {
+          "elements": 10493811,
+          "formula": "(nz + 1) * ny * nx",
+          "fp32_mib": 40.03071212768555,
+          "fp64_mib": 80.0614242553711,
+          "name": "ww",
+          "saving_mib": 40.03071212768555,
+          "shape": "face3d"
+        },
+        {
+          "elements": 10493811,
+          "formula": "(nz + 1) * ny * nx",
+          "fp32_mib": 40.03071212768555,
+          "fp64_mib": 80.0614242553711,
+          "name": "ww_1",
+          "saving_mib": 40.03071212768555,
+          "shape": "face3d"
+        },
+        {
+          "elements": 10493811,
+          "formula": "(nz + 1) * ny * nx",
+          "fp32_mib": 40.03071212768555,
+          "fp64_mib": 80.0614242553711,
+          "name": "ww_m",
+          "saving_mib": 40.03071212768555,
+          "shape": "face3d"
+        },
+        {
+          "elements": 10493811,
+          "formula": "(nz + 1) * ny * nx",
+          "fp32_mib": 40.03071212768555,
+          "fp64_mib": 80.0614242553711,
+          "name": "ph",
+          "saving_mib": 40.03071212768555,
+          "shape": "face3d"
+        },
+        {
+          "elements": 10493811,
+          "formula": "(nz + 1) * ny * nx",
+          "fp32_mib": 40.03071212768555,
+          "fp64_mib": 80.0614242553711,
+          "name": "ph_tend",
+          "saving_mib": 40.03071212768555,
+          "shape": "face3d"
+        },
+        {
+          "elements": 205761,
+          "formula": "ny * nx",
+          "fp32_mib": 0.7849159240722656,
+          "fp64_mib": 1.5698318481445312,
+          "name": "mu",
+          "saving_mib": 0.7849159240722656,
+          "shape": "mass2d"
+        },
+        {
+          "elements": 205761,
+          "formula": "ny * nx",
+          "fp32_mib": 0.7849159240722656,
+          "fp64_mib": 1.5698318481445312,
+          "name": "muts",
+          "saving_mib": 0.7849159240722656,
+          "shape": "mass2d"
+        },
+        {
+          "elements": 205761,
+          "formula": "ny * nx",
+          "fp32_mib": 0.7849159240722656,
+          "fp64_mib": 1.5698318481445312,
+          "name": "muave",
+          "saving_mib": 0.7849159240722656,
+          "shape": "mass2d"
+        },
+        {
+          "elements": 205761,
+          "formula": "ny * nx",
+          "fp32_mib": 0.7849159240722656,
+          "fp64_mib": 1.5698318481445312,
+          "name": "mudf",
+          "saving_mib": 0.7849159240722656,
+          "shape": "mass2d"
+        }
+      ],
+      "fp32_mib": 754.0697479248047,
+      "fp64_mib": 1508.1394958496094,
+      "saving_mib": 754.0697479248047,
+      "total_elements": 197674860
+    },
+    "core_plus_prep_candidate_set": {
+      "field_count": 36,
+      "fields": [
+        {
+          "elements": 10288050,
+          "formula": "nz * ny * nx",
+          "fp32_mib": 39.24579620361328,
+          "fp64_mib": 78.49159240722656,
+          "name": "p",
+          "saving_mib": 39.24579620361328,
+          "shape": "mass3d"
+        },
+        {
+          "elements": 10288050,
+          "formula": "nz * ny * nx",
+          "fp32_mib": 39.24579620361328,
+          "fp64_mib": 78.49159240722656,
+          "name": "pm1",
+          "saving_mib": 39.24579620361328,
+          "shape": "mass3d"
+        },
+        {
+          "elements": 10288050,
+          "formula": "nz * ny * nx",
+          "fp32_mib": 39.24579620361328,
+          "fp64_mib": 78.49159240722656,
+          "name": "theta",
+          "saving_mib": 39.24579620361328,
+          "shape": "mass3d"
+        },
+        {
+          "elements": 10288050,
+          "formula": "nz * ny * nx",
+          "fp32_mib": 39.24579620361328,
+          "fp64_mib": 78.49159240722656,
+          "name": "theta_coupled_work",
+          "saving_mib": 39.24579620361328,
+          "shape": "mass3d"
+        },
+        {
+          "elements": 10288050,
+          "formula": "nz * ny * nx",
+          "fp32_mib": 39.24579620361328,
+          "fp64_mib": 78.49159240722656,
+          "name": "theta_ave",
+          "saving_mib": 39.24579620361328,
+          "shape": "mass3d"
+        },
+        {
+          "elements": 10288050,
+          "formula": "nz * ny * nx",
+          "fp32_mib": 39.24579620361328,
+          "fp64_mib": 78.49159240722656,
+          "name": "theta_tend",
+          "saving_mib": 39.24579620361328,
+          "shape": "mass3d"
+        },
+        {
+          "elements": 10288050,
+          "formula": "nz * ny * nx",
+          "fp32_mib": 39.24579620361328,
+          "fp64_mib": 78.49159240722656,
+          "name": "t_2ave",
+          "saving_mib": 39.24579620361328,
+          "shape": "mass3d"
+        },
+        {
+          "elements": 10304100,
+          "formula": "nz * ny * (nx + 1)",
+          "fp32_mib": 39.30702209472656,
+          "fp64_mib": 78.61404418945312,
+          "name": "u",
+          "saving_mib": 39.30702209472656,
+          "shape": "xstag3d"
+        },
+        {
+          "elements": 10304100,
+          "formula": "nz * ny * (nx + 1)",
+          "fp32_mib": 39.30702209472656,
+          "fp64_mib": 78.61404418945312,
+          "name": "u_1",
+          "saving_mib": 39.30702209472656,
+          "shape": "xstag3d"
+        },
+        {
+          "elements": 10304100,
+          "formula": "nz * ny * (nx + 1)",
+          "fp32_mib": 39.30702209472656,
+          "fp64_mib": 78.61404418945312,
+          "name": "ru_m",
+          "saving_mib": 39.30702209472656,
+          "shape": "xstag3d"
+        },
+        {
+          "elements": 10320100,
+          "formula": "nz * (ny + 1) * nx",
+          "fp32_mib": 39.36805725097656,
+          "fp64_mib": 78.73611450195312,
+          "name": "v",
+          "saving_mib": 39.36805725097656,
+          "shape": "ystag3d"
+        },
+        {
+          "elements": 10320100,
+          "formula": "nz * (ny + 1) * nx",
+          "fp32_mib": 39.36805725097656,
+          "fp64_mib": 78.73611450195312,
+          "name": "v_1",
+          "saving_mib": 39.36805725097656,
+          "shape": "ystag3d"
+        },
+        {
+          "elements": 10320100,
+          "formula": "nz * (ny + 1) * nx",
+          "fp32_mib": 39.36805725097656,
+          "fp64_mib": 78.73611450195312,
+          "name": "rv_m",
+          "saving_mib": 39.36805725097656,
+          "shape": "ystag3d"
+        },
+        {
+          "elements": 10493811,
+          "formula": "(nz + 1) * ny * nx",
+          "fp32_mib": 40.03071212768555,
+          "fp64_mib": 80.0614242553711,
+          "name": "w",
+          "saving_mib": 40.03071212768555,
+          "shape": "face3d"
+        },
+        {
+          "elements": 10493811,
+          "formula": "(nz + 1) * ny * nx",
+          "fp32_mib": 40.03071212768555,
+          "fp64_mib": 80.0614242553711,
+          "name": "ww",
+          "saving_mib": 40.03071212768555,
+          "shape": "face3d"
+        },
+        {
+          "elements": 10493811,
+          "formula": "(nz + 1) * ny * nx",
+          "fp32_mib": 40.03071212768555,
+          "fp64_mib": 80.0614242553711,
+          "name": "ww_1",
+          "saving_mib": 40.03071212768555,
+          "shape": "face3d"
+        },
+        {
+          "elements": 10493811,
+          "formula": "(nz + 1) * ny * nx",
+          "fp32_mib": 40.03071212768555,
+          "fp64_mib": 80.0614242553711,
+          "name": "ww_m",
+          "saving_mib": 40.03071212768555,
+          "shape": "face3d"
+        },
+        {
+          "elements": 10493811,
+          "formula": "(nz + 1) * ny * nx",
+          "fp32_mib": 40.03071212768555,
+          "fp64_mib": 80.0614242553711,
+          "name": "ph",
+          "saving_mib": 40.03071212768555,
+          "shape": "face3d"
+        },
+        {
+          "elements": 10493811,
+          "formula": "(nz + 1) * ny * nx",
+          "fp32_mib": 40.03071212768555,
+          "fp64_mib": 80.0614242553711,
+          "name": "ph_tend",
+          "saving_mib": 40.03071212768555,
+          "shape": "face3d"
+        },
+        {
+          "elements": 205761,
+          "formula": "ny * nx",
+          "fp32_mib": 0.7849159240722656,
+          "fp64_mib": 1.5698318481445312,
+          "name": "mu",
+          "saving_mib": 0.7849159240722656,
+          "shape": "mass2d"
+        },
+        {
+          "elements": 205761,
+          "formula": "ny * nx",
+          "fp32_mib": 0.7849159240722656,
+          "fp64_mib": 1.5698318481445312,
+          "name": "muts",
+          "saving_mib": 0.7849159240722656,
+          "shape": "mass2d"
+        },
+        {
+          "elements": 205761,
+          "formula": "ny * nx",
+          "fp32_mib": 0.7849159240722656,
+          "fp64_mib": 1.5698318481445312,
+          "name": "muave",
+          "saving_mib": 0.7849159240722656,
+          "shape": "mass2d"
+        },
+        {
+          "elements": 205761,
+          "formula": "ny * nx",
+          "fp32_mib": 0.7849159240722656,
+          "fp64_mib": 1.5698318481445312,
+          "name": "mudf",
+          "saving_mib": 0.7849159240722656,
+          "shape": "mass2d"
+        },
+        {
+          "elements": 10304100,
+          "formula": "nz * ny * (nx + 1)",
+          "fp32_mib": 39.30702209472656,
+          "fp64_mib": 78.61404418945312,
+          "name": "u_save",
+          "saving_mib": 39.30702209472656,
+          "shape": "xstag3d"
+        },
+        {
+          "elements": 10304100,
+          "formula": "nz * ny * (nx + 1)",
+          "fp32_mib": 39.30702209472656,
+          "fp64_mib": 78.61404418945312,
+          "name": "u_work",
+          "saving_mib": 39.30702209472656,
+          "shape": "xstag3d"
+        },
+        {
+          "elements": 10320100,
+          "formula": "nz * (ny + 1) * nx",
+          "fp32_mib": 39.36805725097656,
+          "fp64_mib": 78.73611450195312,
+          "name": "v_save",
+          "saving_mib": 39.36805725097656,
+          "shape": "ystag3d"
+        },
+        {
+          "elements": 10320100,
+          "formula": "nz * (ny + 1) * nx",
+          "fp32_mib": 39.36805725097656,
+          "fp64_mib": 78.73611450195312,
+          "name": "v_work",
+          "saving_mib": 39.36805725097656,
+          "shape": "ystag3d"
+        },
+        {
+          "elements": 10493811,
+          "formula": "(nz + 1) * ny * nx",
+          "fp32_mib": 40.03071212768555,
+          "fp64_mib": 80.0614242553711,
+          "name": "w_save",
+          "saving_mib": 40.03071212768555,
+          "shape": "face3d"
+        },
+        {
+          "elements": 10493811,
+          "formula": "(nz + 1) * ny * nx",
+          "fp32_mib": 40.03071212768555,
+          "fp64_mib": 80.0614242553711,
+          "name": "w_work",
+          "saving_mib": 40.03071212768555,
+          "shape": "face3d"
+        },
+        {
+          "elements": 10493811,
+          "formula": "(nz + 1) * ny * nx",
+          "fp32_mib": 40.03071212768555,
+          "fp64_mib": 80.0614242553711,
+          "name": "ww_save",
+          "saving_mib": 40.03071212768555,
+          "shape": "face3d"
+        },
+        {
+          "elements": 10288050,
+          "formula": "nz * ny * nx",
+          "fp32_mib": 39.24579620361328,
+          "fp64_mib": 78.49159240722656,
+          "name": "t_save",
+          "saving_mib": 39.24579620361328,
+          "shape": "mass3d"
+        },
+        {
+          "elements": 10288050,
+          "formula": "nz * ny * nx",
+          "fp32_mib": 39.24579620361328,
+          "fp64_mib": 78.49159240722656,
+          "name": "theta_work",
+          "saving_mib": 39.24579620361328,
+          "shape": "mass3d"
+        },
+        {
+          "elements": 10493811,
+          "formula": "(nz + 1) * ny * nx",
+          "fp32_mib": 40.03071212768555,
+          "fp64_mib": 80.0614242553711,
+          "name": "ph_save",
+          "saving_mib": 40.03071212768555,
+          "shape": "face3d"
+        },
+        {
+          "elements": 10493811,
+          "formula": "(nz + 1) * ny * nx",
+          "fp32_mib": 40.03071212768555,
+          "fp64_mib": 80.0614242553711,
+          "name": "ph_work",
+          "saving_mib": 40.03071212768555,
+          "shape": "face3d"
+        },
+        {
+          "elements": 205761,
+          "formula": "ny * nx",
+          "fp32_mib": 0.7849159240722656,
+          "fp64_mib": 1.5698318481445312,
+          "name": "mu_save",
+          "saving_mib": 0.7849159240722656,
+          "shape": "mass2d"
+        },
+        {
+          "elements": 205761,
+          "formula": "ny * nx",
+          "fp32_mib": 0.7849159240722656,
+          "fp64_mib": 1.5698318481445312,
+          "name": "mu_work",
+          "saving_mib": 0.7849159240722656,
+          "shape": "mass2d"
+        }
+      ],
+      "fp32_mib": 1191.6348915100098,
+      "fp64_mib": 2383.2697830200195,
+      "saving_mib": 1191.6348915100098,
+      "total_elements": 312379937
+    },
+    "example_grid": {
+      "nx": 641,
+      "ny": 321,
+      "nz": 50
+    },
+    "formula": {
+      "face3d": "(nz + 1) * ny * nx",
+      "mass2d": "ny * nx",
+      "mass3d": "nz * ny * nx",
+      "note": "This is resident-buffer arithmetic only. Real VRAM savings depend on liveness, aliasing, buffer donation, compile choices, and which fp64 islands remain local rather than resident.",
+      "per_array_saving_bytes": "4 * element_count when demoting fp64 storage to fp32",
+      "xstag3d": "nz * ny * (nx + 1)",
+      "ystag3d": "nz * (ny + 1) * nx"
+    },
+    "prep_carry_candidate_set": {
+      "field_count": 13,
+      "fields": [
+        {
+          "elements": 10304100,
+          "formula": "nz * ny * (nx + 1)",
+          "fp32_mib": 39.30702209472656,
+          "fp64_mib": 78.61404418945312,
+          "name": "u_save",
+          "saving_mib": 39.30702209472656,
+          "shape": "xstag3d"
+        },
+        {
+          "elements": 10304100,
+          "formula": "nz * ny * (nx + 1)",
+          "fp32_mib": 39.30702209472656,
+          "fp64_mib": 78.61404418945312,
+          "name": "u_work",
+          "saving_mib": 39.30702209472656,
+          "shape": "xstag3d"
+        },
+        {
+          "elements": 10320100,
+          "formula": "nz * (ny + 1) * nx",
+          "fp32_mib": 39.36805725097656,
+          "fp64_mib": 78.73611450195312,
+          "name": "v_save",
+          "saving_mib": 39.36805725097656,
+          "shape": "ystag3d"
+        },
+        {
+          "elements": 10320100,
+          "formula": "nz * (ny + 1) * nx",
+          "fp32_mib": 39.36805725097656,
+          "fp64_mib": 78.73611450195312,
+          "name": "v_work",
+          "saving_mib": 39.36805725097656,
+          "shape": "ystag3d"
+        },
+        {
+          "elements": 10493811,
+          "formula": "(nz + 1) * ny * nx",
+          "fp32_mib": 40.03071212768555,
+          "fp64_mib": 80.0614242553711,
+          "name": "w_save",
+          "saving_mib": 40.03071212768555,
+          "shape": "face3d"
+        },
+        {
+          "elements": 10493811,
+          "formula": "(nz + 1) * ny * nx",
+          "fp32_mib": 40.03071212768555,
+          "fp64_mib": 80.0614242553711,
+          "name": "w_work",
+          "saving_mib": 40.03071212768555,
+          "shape": "face3d"
+        },
+        {
+          "elements": 10493811,
+          "formula": "(nz + 1) * ny * nx",
+          "fp32_mib": 40.03071212768555,
+          "fp64_mib": 80.0614242553711,
+          "name": "ww_save",
+          "saving_mib": 40.03071212768555,
+          "shape": "face3d"
+        },
+        {
+          "elements": 10288050,
+          "formula": "nz * ny * nx",
+          "fp32_mib": 39.24579620361328,
+          "fp64_mib": 78.49159240722656,
+          "name": "t_save",
+          "saving_mib": 39.24579620361328,
+          "shape": "mass3d"
+        },
+        {
+          "elements": 10288050,
+          "formula": "nz * ny * nx",
+          "fp32_mib": 39.24579620361328,
+          "fp64_mib": 78.49159240722656,
+          "name": "theta_work",
+          "saving_mib": 39.24579620361328,
+          "shape": "mass3d"
+        },
+        {
+          "elements": 10493811,
+          "formula": "(nz + 1) * ny * nx",
+          "fp32_mib": 40.03071212768555,
+          "fp64_mib": 80.0614242553711,
+          "name": "ph_save",
+          "saving_mib": 40.03071212768555,
+          "shape": "face3d"
+        },
+        {
+          "elements": 10493811,
+          "formula": "(nz + 1) * ny * nx",
+          "fp32_mib": 40.03071212768555,
+          "fp64_mib": 80.0614242553711,
+          "name": "ph_work",
+          "saving_mib": 40.03071212768555,
+          "shape": "face3d"
+        },
+        {
+          "elements": 205761,
+          "formula": "ny * nx",
+          "fp32_mib": 0.7849159240722656,
+          "fp64_mib": 1.5698318481445312,
+          "name": "mu_save",
+          "saving_mib": 0.7849159240722656,
+          "shape": "mass2d"
+        },
+        {
+          "elements": 205761,
+          "formula": "ny * nx",
+          "fp32_mib": 0.7849159240722656,
+          "fp64_mib": 1.5698318481445312,
+          "name": "mu_work",
+          "saving_mib": 0.7849159240722656,
+          "shape": "mass2d"
+        }
+      ],
+      "fp32_mib": 437.5651435852051,
+      "fp64_mib": 875.1302871704102,
+      "saving_mib": 437.5651435852051,
+      "total_elements": 114705077
+    }
+  },
+  "metadata": {
+    "cpu_only": true,
+    "date": "2026-06-08",
+    "gpu_used": false,
+    "jax_used": false,
+    "lane": "worker/gpt/v014-fp32-probes",
+    "mode_labels": [
+      "fp64_reference",
+      "absolute_total32",
+      "perturbation32"
+    ],
+    "numpy_version": "2.4.4",
+    "platform": "Linux-7.0.0-22-generic-x86_64-with-glibc2.43",
+    "production_forecast_claim": false,
+    "python": "3.13.11",
+    "worker": "GPT-5.5 xhigh"
+  },
+  "one_column_recurrence_sensitivity": {
+    "errors_vs_fp64_reference": {
+      "absolute_total32_p_l2_pa": 0.00291252107910186,
+      "absolute_total32_ph_l2_m2_s2": 0.0007069872735879,
+      "absolute_total32_w_l2_m_s": 4.045828488924642e-06,
+      "p_error_ratio_absolute_over_perturbation": 1361217.3938719633,
+      "perturbation32_p_l2_pa": 2.13964433029851e-09,
+      "perturbation32_ph_l2_m2_s2": 3.839899595733626e-10,
+      "perturbation32_w_l2_m_s": 3.432185343088693e-12,
+      "ph_error_ratio_absolute_over_perturbation": 1841160.8323650132
+    },
+    "final_linf": {
+      "absolute_total32_p_pa": 0.0,
+      "absolute_total32_ph_m2_s2": 0.0,
+      "fp64_reference_p_pa": 0.004099093052352333,
+      "fp64_reference_ph_m2_s2": 0.001030602195639719,
+      "perturbation32_p_pa": 0.004099095705896616,
+      "perturbation32_ph_m2_s2": 0.0010306020267307758
+    },
+    "grid": {
+      "dz_m": 1000.0,
+      "nz_mass_levels": 16,
+      "vertical_faces": 17
+    },
+    "mechanism": "Every pressure residual update is far below one fp32 ULP of the absolute total. Adding those residuals to p_total32 prevents the recurrence from accumulating them; adding them to p_prime32 keeps the column close to the fp64 residual reference.",
+    "model": "1D linear acoustic pressure/w/geopotential residual recurrence",
+    "parameters": {
+      "bulk_modulus_pa": 200000.0,
+      "cfl": 0.22360679774997896,
+      "dt_s": 0.5,
+      "initial_w_amp_m_s": 1e-05,
+      "rho_kg_m3": 1.0,
+      "steps": 600
+    },
+    "per_step_increment_scale": {
+      "fp32_ulp_at_50000_ph_m2_s2": 0.00390625,
+      "fp32_ulp_at_90000_pa": 0.0078125,
+      "max_dp_to_pressure_total_ulp": 0.02497705956335801,
+      "max_dph_to_ph_total_ulp": 0.012559564810000446,
+      "max_reference_abs_dp_pa": 0.00019513327783873444,
+      "max_reference_abs_dph_m2_s2": 4.906080003906424e-05
+    }
+  },
+  "perturbation_form_preservation": {
+    "fp32_ulp_at_perturbation_pa": 7.62939453125e-06,
+    "mechanism": "The pressure update is quantized at the ULP of the perturbation field, so millipascal residuals are many fp32 ULPs at p'=100 Pa.",
+    "millipascal_recovered_delta_pa": 0.00099945068359375,
+    "millipascal_relative_error": -0.0005493164062500208,
+    "pressure_perturbation_pa": 100.0,
+    "rows": [
+      {
+        "increment_pa": 0.0001,
+        "increment_to_perturbation_ulp": 13.1072,
+        "perturbation_abs_error_pa": -8.178710937500048e-07,
+        "perturbation_recovered_delta_pa": 9.918212890625e-05,
+        "perturbation_relative_error": -0.008178710937500047
+      },
+      {
+        "increment_pa": 0.0005,
+        "increment_to_perturbation_ulp": 65.536,
+        "perturbation_abs_error_pa": 3.5400390624999896e-06,
+        "perturbation_recovered_delta_pa": 0.0005035400390625,
+        "perturbation_relative_error": 0.007080078124999979
+      },
+      {
+        "increment_pa": 0.001,
+        "increment_to_perturbation_ulp": 131.072,
+        "perturbation_abs_error_pa": -5.493164062500208e-07,
+        "perturbation_recovered_delta_pa": 0.00099945068359375,
+        "perturbation_relative_error": -0.0005493164062500208
+      },
+      {
+        "increment_pa": 0.002,
+        "increment_to_perturbation_ulp": 262.144,
+        "perturbation_abs_error_pa": -1.0986328125000416e-06,
+        "perturbation_recovered_delta_pa": 0.0019989013671875,
+        "perturbation_relative_error": -0.0005493164062500208
+      },
+      {
+        "increment_pa": 0.005,
+        "increment_to_perturbation_ulp": 655.36,
+        "perturbation_abs_error_pa": -2.746582031250104e-06,
+        "perturbation_recovered_delta_pa": 0.00499725341796875,
+        "perturbation_relative_error": -0.0005493164062500208
+      },
+      {
+        "increment_pa": 0.01,
+        "increment_to_perturbation_ulp": 1310.72,
+        "perturbation_abs_error_pa": 2.136230468749792e-06,
+        "perturbation_recovered_delta_pa": 0.01000213623046875,
+        "perturbation_relative_error": 0.00021362304687497918
+      },
+      {
+        "increment_pa": 0.1,
+        "increment_to_perturbation_ulp": 13107.2,
+        "perturbation_abs_error_pa": -1.5258789062555511e-06,
+        "perturbation_recovered_delta_pa": 0.09999847412109375,
+        "perturbation_relative_error": -1.525878906255551e-05
+      },
+      {
+        "increment_pa": 1.0,
+        "increment_to_perturbation_ulp": 131072.0,
+        "perturbation_abs_error_pa": 0.0,
+        "perturbation_recovered_delta_pa": 1.0,
+        "perturbation_relative_error": 0.0
+      }
+    ]
+  },
+  "precision_lane_lists": {
+    "first_fp64_islands_to_keep": [
+      "Explicit base/reference state: pb/p_base, phb/ph_base, mub, php_stage, and final total reconstruction.",
+      "calc_p_rho local bracket: mass_h/safe_mass, hydrostatic al, EOS pressure bracket, and smdiv pm1 update.",
+      "advance_uv pressure-gradient accumulation: p/ph/base-pressure/al/alt/php/dpn/bracket terms.",
+      "advance_w coefficient build and Thomas solve: a, alpha, gamma, RHS, t_2ave, and ph_next local arithmetic.",
+      "Terrain lower-boundary and terrain PGF terms, especially ht-gradient surface-w coupling.",
+      "Boundary/nesting forcing leaves: u_work_bdy, v_work_bdy, ph_bdy_target, ph_save_for_spec, and rw_tend_pg_buoy.",
+      "Diagnostics/restart/history interfaces that reconstruct or export absolute totals."
+    ],
+    "plausible_fp32_resident_candidates_after_r1_r2": [
+      "Perturbation pressure storage p and pressure memory pm1, with fp64 local calc_p_rho first.",
+      "Perturbation geopotential/work storage ph and ph_work, with fp64 local PGF/implicit-w arithmetic first.",
+      "Perturbation dry-mass/work storage mu, muts, muave, mudf, mu_work, and mass flux carry arrays.",
+      "Coupled acoustic work arrays u, v, w, ww, theta_coupled_work, theta_work, and t_2ave storage.",
+      "Substep sumflux/carry arrays ru_m, rv_m, ww_m and same-shape save arrays where not used as fp64 boundary references."
+    ]
+  },
+  "recommendation": {
+    "reason": "The probes support the numerical mechanism for a mixed perturbation-authoritative lane, but they are not source integration, WRF fixture parity, transfer audit, or production forecast evidence. v0.13 should remain fp64.",
+    "recommended_scope": "v0.14-only",
+    "supports_v013_pull_in": false
+  }
+}

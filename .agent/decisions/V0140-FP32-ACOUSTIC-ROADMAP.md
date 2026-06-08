@@ -4,6 +4,19 @@ Date: 2026-06-08
 Owner: manager, from GPT-5.5 xhigh feasibility refresh
 Primary evidence: `.agent/reviews/2026-06-08-gpt-fp32-acoustic-refresh.md`
 
+Update 2026-06-08 22:45 WEST: the three de-risk workers are complete and mirrored into
+this branch:
+
+- `.agent/reviews/2026-06-08-gpt-fp32-roi-and-v013-decision.md` (`a945107a`) says ship
+  v0.13 after fp64 TOST; do not hold the tag for FP32 acoustic.
+- `.agent/reviews/2026-06-08-gpt-fp32-probes.md` + `proofs/v014/fp32_acoustic_probes.*`
+  (`a1357aee`) show the absolute-total fp32 cancellation mechanism and perturbation-form
+  rescue on CPU-only probes.
+- `.agent/reviews/2026-06-08-gpt-fp32-r0r1.md` +
+  `.agent/decisions/ADR-031-mixed-perturb-fp32-acoustic-DRAFT.md` (`014fb7aa`) define the
+  R0/R1 contract and static audit. Its default-inert source scaffold is **not merged into
+  v0.13**.
+
 ## Priority
 
 This is the highest-priority v0.14 memory/performance lane. It may be pulled into v0.13 only if
@@ -19,7 +32,8 @@ if the acoustic state is made perturbation-authoritative and the fp64 islands ar
 kept where the numerics need them.
 
 This is not part of v0.13. v0.13 production remains fp64 and its tag remains gated by the
-RRTMG memory fix plus powered TOST n=15.
+RRTMG memory fix plus powered TOST n=15. The de-risk evidence upgrades FP32 acoustic to
+v0.14 P1, not a v0.13 release blocker.
 
 ## Scope Boundary
 
@@ -77,4 +91,6 @@ Rejected:
 ## First Sprint Recommendation
 
 Start with R0+R1 only after v0.13 is tagged: ADR, explicit base-state plumbing, and fp64-default
-bit identity over focused acoustic prep/finish plus a one-step operational carry test.
+bit identity over focused acoustic prep/finish plus a one-step operational carry test. The
+worker R0 scaffold may be reviewed as a starting patch, but it should not be pulled into the
+active fp64 TOST release candidate.

@@ -12,7 +12,15 @@ conditions. It converts "the port generalizes" from an assertion into something
   [`scripts/equivalence_demo.py`](../scripts/equivalence_demo.py))
 - Case builder (offline, run once): [`scripts/build_switzerland_case.sh`](../scripts/build_switzerland_case.sh)
 - CPU reference producer (maintainer): [`scripts/run_switzerland_cpu_reference.sh`](../scripts/run_switzerland_cpu_reference.sh)
-- Proof object: `proofs/v0120/equivalence_switzerland.json`
+- Proof object when the suite is run: `proofs/v0120/equivalence_switzerland.json`
+
+> **Current release status (v0.13.0):** this suite is documented and the case
+> generation / CPU-reference assets exist, but it is **not** a v0.13.0
+> validation pass. The large 128²/150² Switzerland GPU attempt in v0.12.0
+> ended as an honest fp64 single-GPU OOM/grid-ceiling characterization
+> (`proofs/v0120/switzerland_128_gpu_result.json`). Re-running Switzerland
+> after the v0.13 RRTMG memory fix is scheduled in the v0.14 B7 validation
+> campaign.
 
 ## The case (robust "it works" default)
 

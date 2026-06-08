@@ -28,9 +28,8 @@ CPU-WRF d02 truth + AEMET.  The scoring config (d02 T2/U10/V10) is unchanged.
 This reuses the existing, validated native-init/live-nest runtime; it does NOT
 reimplement any init/LBC code.
 
-Usage (called by run_powered_tost_n15_v0120.py via GPU lock wrapper):
-    /tmp/wrf_gpu_run_lowprio.sh taskset -c 0-3 \\
-        env PYTHONPATH=src JAX_ENABLE_X64=true XLA_PYTHON_CLIENT_PREALLOCATE=false \\
+Usage (called by run_powered_tost_n15_v0120.py via the repo GPU lock wrapper):
+    scripts/run_gpu_lowprio.sh --cores 0-3 -- \\
         python proofs/v0120/powered_tost_n15/run_one_case_v0120.py \\
         --run-root /tmp/v0120_merged_run_root \\
         --run-id <RUN_ID> \\

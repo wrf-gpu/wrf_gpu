@@ -58,6 +58,10 @@ export OUT=/mnt/data/wrf_gpu_validation/v0140_campaign_$(date -u +%Y%m%dT%H%M%SZ
 mkdir -p "$OUT"
 ```
 
+GPU jobs must use `scripts/run_gpu_lowprio.sh` (repo-versioned lock wrapper);
+do not depend on `/tmp/wrf_gpu_run_lowprio.sh`. Long detached campaigns should
+follow `docs/GPU_RUNBOOK.md`.
+
 GPU jobs are serial. CPU jobs may run in parallel on cores 0-23. CPU-only
 commands must force `JAX_PLATFORMS=cpu`.
 
@@ -74,7 +78,7 @@ Estimate: 1h45m
 Command:
 
 ```bash
-/tmp/wrf_gpu_run_lowprio.sh taskset -c 0-23 env \
+scripts/run_gpu_lowprio.sh --cores 0-23 -- env \
   PYTHONPATH=src \
   JAX_ENABLE_X64=true \
   XLA_PYTHON_CLIENT_PREALLOCATE=false \
@@ -113,7 +117,7 @@ Estimate: 2h00m
 Command:
 
 ```bash
-/tmp/wrf_gpu_run_lowprio.sh taskset -c 0-23 env \
+scripts/run_gpu_lowprio.sh --cores 0-23 -- env \
   PYTHONPATH=src \
   JAX_ENABLE_X64=true \
   XLA_PYTHON_CLIENT_PREALLOCATE=false \
@@ -149,7 +153,7 @@ Estimate: 1h15m
 Command:
 
 ```bash
-/tmp/wrf_gpu_run_lowprio.sh taskset -c 0-23 env \
+scripts/run_gpu_lowprio.sh --cores 0-23 -- env \
   PYTHONPATH=src \
   JAX_ENABLE_X64=true \
   XLA_PYTHON_CLIENT_PREALLOCATE=false \
@@ -186,7 +190,7 @@ Estimate: 6h00m
 Command:
 
 ```bash
-/tmp/wrf_gpu_run_lowprio.sh taskset -c 0-23 env \
+scripts/run_gpu_lowprio.sh --cores 0-23 -- env \
   PYTHONPATH=src \
   JAX_ENABLE_X64=true \
   XLA_PYTHON_CLIENT_PREALLOCATE=false \
@@ -250,7 +254,7 @@ taskset -c 0-23 env \
 GPU A/B command:
 
 ```bash
-/tmp/wrf_gpu_run_lowprio.sh taskset -c 0-23 env \
+scripts/run_gpu_lowprio.sh --cores 0-23 -- env \
   PYTHONPATH=src \
   JAX_ENABLE_X64=true \
   XLA_PYTHON_CLIENT_PREALLOCATE=false \
@@ -296,7 +300,7 @@ Precondition:
 Command:
 
 ```bash
-/tmp/wrf_gpu_run_lowprio.sh taskset -c 0-23 env \
+scripts/run_gpu_lowprio.sh --cores 0-23 -- env \
   PYTHONPATH=src \
   JAX_ENABLE_X64=true \
   XLA_PYTHON_CLIENT_PREALLOCATE=false \
@@ -340,7 +344,7 @@ Estimate: 45 min GPU plus 10 min CPU
 GPU command:
 
 ```bash
-/tmp/wrf_gpu_run_lowprio.sh taskset -c 0-23 env \
+scripts/run_gpu_lowprio.sh --cores 0-23 -- env \
   PYTHONPATH=src \
   JAX_ENABLE_X64=true \
   XLA_PYTHON_CLIENT_PREALLOCATE=false \
@@ -516,7 +520,7 @@ taskset -c 0-23 env \
   python proofs/v014/<family>_<scheme>_oracle.py \
     --out "$OUT/b10_<scheme>_oracle.json"
 
-/tmp/wrf_gpu_run_lowprio.sh taskset -c 0-23 env \
+scripts/run_gpu_lowprio.sh --cores 0-23 -- env \
   PYTHONPATH=src \
   JAX_ENABLE_X64=true \
   XLA_PYTHON_CLIENT_PREALLOCATE=false \

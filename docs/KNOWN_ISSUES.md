@@ -336,8 +336,10 @@ The next roadmap is **Tier 3 (the scheme long-tail toward v1.0.0) + these carry-
 - **Tier-2 speed/architecture remainder** — sub-jit split + recompile hygiene,
   `--xla_gpu_force_compilation_parallelism` + dev `--fast-compile`, CPU-flock for idle nightly cores.
 - **Multi-hardware / independent reproduction** — v0.13.0 is one RTX 5090, one JAX/CUDA stack.
-- **Gotthard / Switzerland operational suite** — still out of scope; v0.13.0 ships the standalone
-  port + the AIFS / 1 km-nest path.
+- **Gotthard / Switzerland operational suite** — not a v0.13.0 pass. The case builder and
+  CPU truth exist, and `proofs/v0120/switzerland_128_gpu_result.json` honestly records the
+  128²/150² fp64 single-GPU OOM/grid-ceiling attempt. The GPU-vs-CPU-WRF Switzerland
+  validation is carried to the v0.14 B7 campaign.
 - **New-Tiedtke cumulus scan-wiring** — recognized/accepted but not separately source-gated;
   remains fail-closed if selected operationally.
 - **fp32 standalone path** — gated-fp32 operational mode (ADR-007), pending evidence it helps on

@@ -10,6 +10,15 @@ merged plus GPU-proven (`proofs/v013/rrtmg_column_tile_vram_suite.json`: LW unti
 LW tiled 5374.84 MiB; SW untiled 10033.1 MiB, SW tiled 1619.54 MiB). FP32 acoustic is
 feasible in principle only as an opt-in v0.14 mixed perturbation-authoritative reformulation,
 not as a v0.13 production path.
+GPU validation launch is now standardized through `scripts/run_gpu_lowprio.sh` and
+`scripts/run_powered_tost_n15.sh`; the operational runbook is `docs/GPU_RUNBOOK.md`.
+The Switzerland/Gotthard suite is explicitly not a v0.13 pass: case generation and CPU truth
+exist, and the v0.12 128²/150² attempt is documented as fp64 OOM/grid-ceiling evidence
+(`proofs/v0120/switzerland_128_gpu_result.json`); the post-memory-fix GPU-vs-CPU-WRF
+Switzerland run is v0.14 B7.
+The completed FP32 de-risk reports (`2026-06-08-gpt-fp32-*`) make mixed
+perturbation-authoritative acoustic the highest-priority v0.14 lane, but they do not meet the
+threshold for a v0.13 pull-in.
 
 The project completed
 the 2026-05-28 reset (M8–M23 roadmap in `.agent/decisions/PROJECT-RESET-PLAN-FINAL.md`), rebuilt

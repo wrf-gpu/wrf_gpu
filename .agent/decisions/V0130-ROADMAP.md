@@ -118,6 +118,15 @@ tests/dynamics/test_moisture_advection_operational.py::test_default_moist_adv_op
 paper is local publish material only. No remaining known source-changing v0.13 done branch blocks
 TOST.
 
+**2026-06-08 ~22:40 — GPU RUN LAUNCHER HARDENED + SWITZERLAND STATUS CLARIFIED.**
+The failed `/tmp/wrf_gpu_run_lowprio.sh` launch path is retired from active plans. Added
+versioned wrappers `scripts/run_gpu_lowprio.sh` and `scripts/run_powered_tost_n15.sh`,
+plus `docs/GPU_RUNBOOK.md` with lock/log/rc/hibernate-resume instructions. Updated v0.13/v0.14
+validation plans to call the repo wrapper. Switzerland/Gotthard is explicitly **not** a v0.13
+pass: case builder + CPU truth exist and `proofs/v0120/switzerland_128_gpu_result.json`
+documents the 128²/150² fp64 OOM/grid-ceiling attempt; the post-memory-fix GPU-vs-CPU-WRF
+Switzerland run is v0.14 B7.
+
 **2026-06-08 ~07:20** — v0.13 wave 1:
 - ✅ **Outsider-reproducibility** (T2) MERGED `d9398fc`: 45 proof .py /home/enric→0 (resolvers+WRF_PRISTINE_ROOT env), `scripts/verify_reproducibility.sh` GREEN 11/11 outsider-runnable, `manifest/reproducibility_assets.json`, `docs/REPRODUCIBILITY.md`. Independently re-verified (gate rc=0, 0 .py leaks).
 - ✅ **compile-speed** (T1) CPU-verified+BANKED `worker/opus/v013-compile-speed @b9da88d`: opt-in default-off + subprocess flag-probe (fixes the v0.12 GPU-abort); 22 tests, import-inert. → GPU-runbook validation pending (when GPU frees) → then merge.
@@ -223,7 +232,7 @@ RUNNING NOW (poll/continue these):
 MERGED v0.13 (9 lanes this wave + earlier): #7 rad_rk_tendf knob, #5 2way-VRAM-dedup, T3 microphysics-WSM7, T3 cumulus-oracle-infra, T3 pbl-MRF, T3 surface-2sfclay(+slab-ref), T3 radiation-GSFC-SW(+GSFC-LW-ref-infra), dispatch-bug-fix, compile-perf, TOST-wrfbdy-fix. EARLIER v0.13: optics/taumol VRAM, #4 GWD-on-nested GREEN (default-on), RRTM-LW, multi-GPU(fake-mesh), MYJ+Janjic, clear-sky, reproducibility, g-point-chunk, TOST-rc2-fix.
 
 CLOSEABLES REMAINING (GPU-serial after #5 frees GPU):
- - TOST n=15 (UNBLOCKED via wrfbdy-fix): single-case smoke `/tmp/wrf_gpu_run_lowprio.sh taskset -c 0-23 env PYTHONPATH=src JAX_ENABLE_X64=true XLA_PYTHON_CLIENT_PREALLOCATE=false python proofs/v0120/powered_tost_n15/run_powered_tost_n15_v0120.py --case 20260429_18z_l2_72h_20260524T204451Z --allow-single` → rc=0 → full `--resume`.
+ - TOST n=15 (UNBLOCKED via wrfbdy-fix): single-case smoke `scripts/run_gpu_lowprio.sh --cores 0-23 -- env PYTHONPATH=src JAX_ENABLE_X64=true XLA_PYTHON_CLIENT_PREALLOCATE=false python proofs/v0120/powered_tost_n15/run_powered_tost_n15_v0120.py --case 20260429_18z_l2_72h_20260524T204451Z --allow-single` → rc=0 → full `scripts/run_powered_tost_n15.sh --detach --resume`.
  - #7 rad_rk_tendf A/B (prod 24h, =0 vs =1, score U10/V10/T2 vs CPU-WRF) — the wind-skill credibility measure.
  - WDM5 merge (CPU).
  - THEN the curated v0.13 VALIDATION CAMPAIGN (≤3h, Canary known-region, parallel CPU 0-23 + GPU-serial). ANY failure → immediate cross-model debug worker.
