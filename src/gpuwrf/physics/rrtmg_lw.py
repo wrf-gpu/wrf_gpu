@@ -492,6 +492,30 @@ _CFC_VMR = np.asarray([0.093e-9, 0.251e-9, 0.538e-9, 0.169e-9], dtype=np.float64
 _ONEMINUS = 1.0 - 1.0e-6
 _LW_TAUMOL_BRANCH_ACCEPTED = (True,) * 16
 
+# Number of LW spectral bands.  The `rtrnmc` band loop builds a per-band
+# (..., nlay+1, 16) flux buffer; stacking all 16 into a (ncol, nlay+1, 16, 16)
+# array before `sum(axis=(-1, -2))` would force every band's buffer to stay
+# live.  Because the surface flux is an associative sum over (band, g-point) and
+# bands never couple in `rtrnmc`, the production path accumulates the band-summed
+# flux INCREMENTALLY (in fp64) so the full stacked array is never materialised,
+# and the oracle entry (`compute_rrtmg_lw_intermediates`) still requests the full
+# per-g-point arrays for WRF intermediate-boundary parity.
+#
+# MEASURED CAVEAT (proofs/v013): unlike the SW two-stream, this is VRAM-NEUTRAL
+# at the measured grids — the LW peak floor is the UPSTREAM `_lw_solver_base`
+# arrays (taumol branch+fallback `tau`/`fracs` and the planck tables, each
+# ~(ncol, nlay, 16, 16) fp64), NOT the flux stack.  XLA's liveness analysis
+# already scheduled the per-band buffers without a stack penalty, so removing the
+# explicit stack is numerically inert + HLO-cleaner but does not lower peak here.
+# Reducing the LW peak further requires chunking `_lw_solver_base` (taumol), out
+# of scope for this g-point-flux sprint.
+_LW_NBANDS = 16
+# Band-tile width for the production flux accumulation.  1 = one band per flush
+# (smallest per-tile buffer); set to `_LW_NBANDS` for a single-stack flush.  The
+# numerical result is independent of this value (fp64 sum of disjoint per-band
+# contributions; see proofs/v013).
+_LW_GPOINT_CHUNK_BANDS = 1
+
 
 def _leaves(state: RRTMGLWColumnState):
     """Centralizes leaf iteration for equality and hashing."""
@@ -1777,8 +1801,19 @@ def _lw_rtrnmc_layer_terms(radld, odepth_raw, odcld, efclfrac, cldfmc, plfrac, b
     }
 
 
-def _lw_rtrnmc_outputs(state, intermediate_base, cldfmc, taucmc, transfer_tau, tables: RRTMGTableBundle):
-    """Ports WRF `rtrnmc` cloudy-source recurrence and per-g-point flux capture."""
+def _lw_rtrnmc_outputs(state, intermediate_base, cldfmc, taucmc, transfer_tau, tables: RRTMGTableBundle, *, flux_only: bool = False):
+    """Ports WRF `rtrnmc` cloudy-source recurrence and per-g-point flux capture.
+
+    When ``flux_only`` is True (the operational path) the per-band
+    ``(..., nlay+1, 16)`` flux buffers are reduced over the g-point axis and
+    accumulated into fp64 band-summed fluxes ``flux_down``/``flux_up`` rather than
+    stacked into the full ``(..., nlay+1, 16, 16)`` per-g-point array — so the
+    peak live g-point temporary is one band (or one tile), not all 16.  The
+    accumulation is over disjoint per-band contributions in fp64, so the result
+    is independent of how bands are tiled and reproduces ``sum(axis=(-1, -2))``
+    of the full array to fp64 precision.  When False (the WRF intermediate-oracle
+    entry) the full per-g-point arrays are built as before.
+    """
 
     del transfer_tau
     tau = intermediate_base.tau
@@ -1793,6 +1828,27 @@ def _lw_rtrnmc_outputs(state, intermediate_base, cldfmc, taucmc, transfer_tau, t
     zfd_bands = []
     zfu_bands = []
     tfn_bands = []
+    # fp64 band-summed flux accumulators (flux_only path).  Shape
+    # `(..., nlay+1)`; lazily initialised on the first tile from the per-band
+    # `(..., nlay+1, 16)` buffers reduced over the g-point axis.  A tile of
+    # `_LW_GPOINT_CHUNK_BANDS` bands is flushed into the fp64 accumulator before
+    # the next tile starts, so the peak live g-point temporary is one tile
+    # (default 1 band) rather than the full 16-band stack.
+    flux_only_tile = max(1, min(int(_LW_GPOINT_CHUNK_BANDS), _LW_NBANDS))
+    flux_down_acc = None
+    flux_up_acc = None
+    zfd_tile = []
+    zfu_tile = []
+
+    def _flush_tile(down_acc, up_acc, dtile, utile):
+        if not dtile:
+            return down_acc, up_acc
+        # Reduce each band over g-points, sum the tile's bands, accumulate fp64.
+        dsum = sum(jnp.sum(z, axis=-1) for z in dtile)
+        usum = sum(jnp.sum(z, axis=-1) for z in utile)
+        down_acc = dsum if down_acc is None else down_acc + dsum
+        up_acc = usum if up_acc is None else up_acc + usum
+        return down_acc, up_acc
 
     for band in range(16):
         valid = tables.lw_gpoint_mask[band]
@@ -1906,21 +1962,45 @@ def _lw_rtrnmc_outputs(state, intermediate_base, cldfmc, taucmc, transfer_tau, t
 
         _, zfu_scan = lax.scan(up_body, radlu, up_xs)
         zfu = jnp.moveaxis(jnp.concatenate((radlu[None, ...] * scale * valid, zfu_scan), axis=0), 0, -2)
-        zfd_bands.append(zfd)
-        zfu_bands.append(zfu)
-        tfn_bands.append(tfn_layers)
+        if flux_only:
+            # Collect this band into the current tile; flush (g-point-reduce +
+            # fp64 band-accumulate) once the tile is full.  Only one tile's
+            # buffers are live; the full 16-band stack is never built.  Summing
+            # disjoint per-band contributions in fp64 is order-independent to
+            # fp64 precision and reproduces `sum(zfd_all, axis=(-1, -2))`.
+            zfd_tile.append(zfd)
+            zfu_tile.append(zfu)
+            if len(zfd_tile) >= flux_only_tile:
+                flux_down_acc, flux_up_acc = _flush_tile(flux_down_acc, flux_up_acc, zfd_tile, zfu_tile)
+                zfd_tile = []
+                zfu_tile = []
+        else:
+            zfd_bands.append(zfd)
+            zfu_bands.append(zfu)
+            tfn_bands.append(tfn_layers)
 
+    plansum = jnp.sum(fracs * tables.lw_gpoint_mask.reshape((1,) * (fracs.ndim - 2) + (16, 16)), axis=-1) * planklay
+    if flux_only:
+        flux_down_acc, flux_up_acc = _flush_tile(flux_down_acc, flux_up_acc, zfd_tile, zfu_tile)
+        # `tfn`/per-g-point outputs are oracle-only; the production path consumes
+        # the band-summed fluxes directly, so return them in the per-g-point
+        # slots' place via the dedicated flux tuple.
+        return flux_down_acc, flux_up_acc, plansum
     zfd_all = jnp.stack(zfd_bands, axis=-2)
     zfu_all = jnp.stack(zfu_bands, axis=-2)
     tfn_all = jnp.stack(tfn_bands, axis=-2)
-    plansum = jnp.sum(fracs * tables.lw_gpoint_mask.reshape((1,) * (fracs.ndim - 2) + (16, 16)), axis=-1) * planklay
     return tfn_all, zfd_all, zfu_all, plansum
 
 
-def _lw_solver_state(
-    state: RRTMGLWColumnState, tables: RRTMGTableBundle
-) -> tuple[RRTMGLWColumnState, RRTMGLWIntermediateState, int, jnp.ndarray]:
-    """Builds LW gas/source state before transfer; WRF formulas: `rtrnmc` lines 3253-3409."""
+def _lw_solver_base(state: RRTMGLWColumnState, tables: RRTMGTableBundle):
+    """Builds LW gas/source state up to the `rtrnmc` transfer entry.
+
+    Shared by the operational flux path (`_lw_solver_fluxes`) and the WRF
+    intermediate-oracle path (`_lw_solver_state`) so the only divergence between
+    them is whether `_lw_rtrnmc_outputs` accumulates band-summed fluxes
+    (operational, low VRAM) or materialises the full per-g-point arrays
+    (oracle).  WRF formulas: `rtrnmc` lines 3253-3409.
+    """
 
     state = _clip_state(state)
     original_layers = state.p.shape[-1]
@@ -1968,7 +2048,18 @@ def _lw_solver_state(
         rtrnmc_zfd_per_gpoint=jnp.zeros(fracs.shape[:-3] + (fracs.shape[-3] + 1, 16, 16), dtype=fracs.dtype),
         rtrnmc_zfu_per_gpoint=jnp.zeros(fracs.shape[:-3] + (fracs.shape[-3] + 1, 16, 16), dtype=fracs.dtype),
     )
-    tfn_output, zfd_per_gpoint, zfu_per_gpoint, plansum = _lw_rtrnmc_outputs(state, intermediate_base, cldfmc, taucmc, transfer_tau, tables)
+    return state, intermediate_base, cldfmc, taucmc, transfer_tau, original_layers, layer_mass
+
+
+def _lw_solver_state(
+    state: RRTMGLWColumnState, tables: RRTMGTableBundle
+) -> tuple[RRTMGLWColumnState, RRTMGLWIntermediateState, int, jnp.ndarray]:
+    """Oracle path: full per-g-point `rtrnmc` outputs for WRF intermediate parity."""
+
+    state, intermediate_base, cldfmc, taucmc, transfer_tau, original_layers, layer_mass = _lw_solver_base(state, tables)
+    tfn_output, zfd_per_gpoint, zfu_per_gpoint, plansum = _lw_rtrnmc_outputs(
+        state, intermediate_base, cldfmc, taucmc, transfer_tau, tables
+    )
     intermediate = intermediate_base._replace(
         rtrnmc_plansum=plansum,
         rtrnmc_tfn_tbl_output=tfn_output,
@@ -1978,12 +2069,29 @@ def _lw_solver_state(
     return state, intermediate, original_layers, layer_mass
 
 
+def _lw_solver_fluxes(
+    state: RRTMGLWColumnState, tables: RRTMGTableBundle
+) -> tuple[RRTMGLWColumnState, jnp.ndarray, jnp.ndarray, int, jnp.ndarray]:
+    """Operational path: band-summed LW fluxes without the full per-g-point array.
+
+    Accumulates the (band, g-point)-summed up/down fluxes one band at a time in
+    fp64, so the peak g-point temporary is a single band's `(..., nlay+1, 16)`
+    buffer rather than the full `(..., nlay+1, 16, 16)` stack — the dominant LW
+    fp64 VRAM consumer.  Bit-comparable (fp64) to the oracle path's
+    `sum(zf*_per_gpoint, axis=(-1, -2))`.
+    """
+
+    state, intermediate_base, cldfmc, taucmc, transfer_tau, original_layers, layer_mass = _lw_solver_base(state, tables)
+    flux_down_model, flux_up_model, _ = _lw_rtrnmc_outputs(
+        state, intermediate_base, cldfmc, taucmc, transfer_tau, tables, flux_only=True
+    )
+    return state, flux_down_model, flux_up_model, original_layers, layer_mass
+
+
 def _longwave_impl(state: RRTMGLWColumnState, tables: RRTMGTableBundle, debug: bool) -> RRTMGLWColumnResult:
     """Unjitted LW implementation shared by production and stripped paths."""
 
-    state, intermediate, original_layers, layer_mass = _lw_solver_state(state, tables)
-    flux_up_model = jnp.sum(intermediate.rtrnmc_zfu_per_gpoint, axis=(-1, -2))
-    flux_down_model = jnp.sum(intermediate.rtrnmc_zfd_per_gpoint, axis=(-1, -2))
+    state, flux_down_model, flux_up_model, original_layers, layer_mass = _lw_solver_fluxes(state, tables)
     net_down = flux_down_model - flux_up_model
     layer_net_heating = net_down[..., 1 : original_layers + 1] - net_down[..., :original_layers]
     heating_rate = layer_net_heating / (layer_mass * CP_AIR)

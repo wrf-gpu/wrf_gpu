@@ -1,0 +1,72 @@
+{
+  "proof": "v0.13 RRTMG g-point chunking — numerical inertness + peak-VRAM reduction",
+  "base_commit": "6d051f8",
+  "branch": "worker/opus/v013-gpoint-chunk",
+  "hardware": "RTX 5090 (32 GiB), fp64",
+  "files_changed": [
+    "src/gpuwrf/physics/rrtmg_sw.py",
+    "src/gpuwrf/physics/rrtmg_lw.py"
+  ],
+  "what_changed": {
+    "sw": "Two-stream (reftra/vrtqdr) + g-point reduction tiled over the 14-band axis with a SEQUENTIAL lax.scan (_sw_band_scan_fluxes): the band axis is carved by lax.dynamic_slice (no transpose copy) and each tile's (band,g-point)-summed flux is accumulated in fp64 in the scan carry. Knob: _SW_GPOINT_CHUNK_BANDS (default 1, snapped to a divisor of 14 by _sw_chunk_bands). The scan's carry dependency forces XLA to free each tile's two-stream working set before the next.",
+    "lw": "rtrnmc band loop production path (_lw_solver_fluxes / flux_only) accumulates fp64 band-summed fluxes one band-tile at a time instead of stacking all 16 bands into a (ncol,nlay+1,16,16) array. Knob: _LW_GPOINT_CHUNK_BANDS (default 1). Oracle entry (compute_rrtmg_lw_intermediates) still returns the full per-g-point arrays (WRF parity preserved).",
+    "api": "Public API + defaults of solve_rrtmg_sw_column / solve_rrtmg_lw_column unchanged. Tile-size knobs added at module scope."
+  },
+  "inertness": {
+    "method": "CPU fp64. The 'unchunked' reference is the chunk = n_bands configuration of the SAME tiled code path (one tile == original single-pass); each candidate chunk width is bit-compared against it on the analytic SW/LW column fixtures (3 columns x 16 layers). Reproduce: PYTHONPATH=src JAX_PLATFORMS=cpu python proofs/v013/gpoint_chunk_rrtmg.py --mode inertness",
+    "platform": "cpu",
+    "sw": {
+      "reference_chunk": 14,
+      "chunk_widths_tested": [1, 2, 3, 4, 5, 7, 14],
+      "max_rel_over_all_chunks": 0.0,
+      "all_bit_identical": true
+    },
+    "lw": {
+      "reference_chunk": 16,
+      "chunk_widths_tested": [1, 2, 4, 8, 16],
+      "max_rel_over_all_chunks": 0.0,
+      "all_bit_identical": true
+    },
+    "vs_legacy_float32_band_sum": {
+      "note": "The original SW code reduced the (band, g-point) axes in the working float32 two-stream precision; the chunked path reduces in fp64. This is a one-time, knob-independent precision IMPROVEMENT of <=~5e-5 rel on the SW fixture (flux_down 2.5458984 -> 2.5458433, marginally closer to the WRF oracle). LW already worked in fp64, so LW is bit-identical (0.0) to the legacy full-array sum.",
+      "sw_max_rel_vs_legacy": 4.913e-05,
+      "lw_max_rel_vs_legacy": 0.0
+    },
+    "energy_closure_invariant_chunked_sw": {
+      "metric": "max|heating_rate * layer_mass * CP_AIR - net_flux_divergence|",
+      "value": 3.552713678800501e-15,
+      "note": "fp64 machine-epsilon: heating rate / flux divergence / column absorption stay mutually consistent."
+    },
+    "lw_oracle_intermediates_preserved": true
+  },
+  "vram": {
+    "method": "GPU RTX 5090 32 GiB. XLA_PYTHON_CLIENT_PREALLOCATE=false (BFC on-demand). The kernel is wrapped in jax.jit because the operational path runs the radiation column kernel inside a jitted lax.scan — only under jit does XLA do whole-program memory planning. device.memory_stats()['peak_bytes_in_use']. Columns built by tiling the 3-column fixture; vertical levels deepened by repeating the layer axis. One fresh process per config. Reproduce: XLA_PYTHON_CLIENT_PREALLOCATE=false PYTHONPATH=src python proofs/v013/gpoint_chunk_rrtmg.py --mode vram --kind sw --chunk 1 --ncol 24576 --nrep 3 (via the jit-wrapped run_vram).",
+    "platform": "gpu",
+    "sw_peak_mib_jit": [
+      {"grid": "nlev=16 ncol=49152", "unchunked_chunk14": 9245.95, "chunked_chunk1": 5046.56, "reduction_pct": 45.4},
+      {"grid": "nlev=32 ncol=24576", "unchunked_chunk14": 11170.17, "chunked_chunk1": 4900.36, "reduction_pct": 56.1},
+      {"grid": "nlev=48 ncol=24576", "unchunked_chunk14": 16729.52, "chunked_chunk1": 7258.51, "reduction_pct": 56.6}
+    ],
+    "sw_intermediate_chunk_caveat": {
+      "note": "chunk=1 (one band per scan tile) is the default and the most robust/lowest peak. INTERMEDIATE tile widths can be WORSE: at nlev=48 ncol=24576, chunk=2 = 11051 MiB (34% reduction) but chunk=7 OOM'd (24.3 GiB attempt) because XLA schedules the two large tiles with overlapping live buffers. The default is therefore the smallest tile."
+    },
+    "sw_oom_then_fits_evidence": {
+      "deep_column_unchunked_oom": {
+        "grid": "nlev=80 ncol=24576, chunk=14",
+        "result": "RESOURCE_EXHAUSTED",
+        "attempted_alloc_gib": 84.23,
+        "note": "The unchunked SW two-stream working set alone demanded 84.23 GiB (> 32 GiB GPU). chunk=1 streams it band-by-band; the family of allocation that drove the 24h-nested-1km+GWD OOM."
+      }
+    },
+    "lw_peak_mib_jit": [
+      {"grid": "nlev=16 ncol=49152", "chunk16_single_stack": 12496.01, "chunk1_accumulate": 12496.01, "reduction_pct": 0.0}
+    ],
+    "lw_note": "LW is VRAM-NEUTRAL. chunk=16 and chunk=1 give the identical 12496 MiB peak at nlev=16, and BOTH OOM at the IDENTICAL upstream allocation (23.34 GiB at nlev=32 ncol=49152; 34.59 GiB at nlev=48 ncol=49152) — proving the LW peak floor is the upstream _lw_solver_base arrays (taumol branch+fallback tau/fracs + planck tables, each ~(ncol,nlay,16,16) fp64), NOT the flux stack. The LW flux-stack accumulation is numerically inert + removes the explicit 16-way stack from the HLO (defensive) but does not lower peak. Cutting the LW peak requires chunking taumol (out of scope for this g-point-flux sprint)."
+  },
+  "verdict": {
+    "numerically_inert": "YES — result bit-identical (max_rel 0.0) across ALL chunk widths for both SW and LW; energy closure to 3.6e-15; LW oracle intermediates unchanged; full RRTMG test suite shows ZERO new failures vs base 6d051f8.",
+    "sw_vram_reduced": "YES — 45-57% peak reduction under jit via the sequential lax.scan (chunk=1), growing with column depth; addresses the deep-column OOM (unchunked two-stream alone is 84 GiB at nlev=80).",
+    "lw_vram_reduced": "NEUTRAL — numerically inert; peak unchanged because the LW floor is the upstream taumol/fracs/planck arrays, not the flux stack.",
+    "api_and_defaults_preserved": "YES"
+  }
+}
