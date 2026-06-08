@@ -178,3 +178,25 @@ POSITIONING: do NOT claim "perfectly-efficient rewrite" or "completely true/fait
  2. GPT-xhigh #2 = build a v0.13 (≤3h wall-clock, full CPU+GPU) + v0.14 (16h) VALIDATION PLAN on known regions (Canary/Switzerland). Primary: WE are sure it runs; Secondary: convince WRF gate-keepers (stable + roughly-equivalent for most couplings). branch worker/gpt/v013-valplan.
  3. As soon as the remaining CPU/GPU v0.13 items finish → START the v0.13 validation plan (manager curates from GPT's plan). Any validation failure → immediately dispatch a debug worker. v0.13 ≠ fully-validated, but must be CLEARLY seriously-tested (not an untested bug-heap). Parallelize CPU+GPU.
 CPU BUDGET CHANGE: validation/CPU runs use ~24 threads (taskset -c 0-23), NOT 28 like the nightlies — leave cores 24-31 free for agents + overhead. (Supersedes the old cores-0-3-only rule for the validation window.)
+
+**⚑⚑ PRE-COMPACT ANCHOR 2026-06-08 ~15:00 — READ FIRST ON RESUME ⚑⚑**
+Trunk = branch worker/opus/v0120-integration @ 440ebe0a (v0.13.0, spec-count 36). Working dir = /home/enric/src/wrf_gpu2/.claude/worktrees/v0120-integration. Loop heartbeat ~1100s. Principal AFK → debug via GPT-codex (stdin; NEVER pkill -f codex).
+POSITIONING (principal 2026-06-08): sell FAST/GPU-NATIVE/GPU-SCALABLE WRF-compatible model, NOT "perfect/true port"; get STRONGER ON PROOF. CPU budget: taskset -c 0-23 (~24 threads), leave 24-31 free (NOT 28).
+
+RUNNING NOW (poll/continue these):
+ - #5 = 9/3km(max-dom=2) 2-way+GWD 24h gate (GPU nohup). Poll /mnt/data/canairy_meteo/gate_2way_d02_v013/run.rc → rc=0 + ~24/dom finite = #5 CLOSED (2-way+GWD 24h GREEN at fitting res; 1km-24h=32GB HW-limit). At hr12 @15:00. Write proofs/v013/twoway_gwd_9_3km_24h_gate.json.
+ - WDM5 (mp=14 clean op port) = Opus lane ac48e9d (CPU). Merge when done: 3-way union catalog + spec-count→37 + run dispatch/interfaces/namelist tests.
+ - GPT-xhigh #1 impl-review = codex, /tmp/gpt_impl_review.log (grep "DONE rc="), branch worker/gpt/v013-impl-review, report .agent/reviews/2026-06-08-gpt-v013-impl-review.md. On done: merge its safe fixes (CPU-verify); SUBSTANTIAL bugs → roadmap cases + alternate Opus-max ↔ GPT-xhigh debug workers.
+ - GPT-xhigh #2 validation-plan = codex, /tmp/gpt_valplan.log, branch worker/gpt/v013-valplan, docs .agent/decisions/V0130-VALIDATION-PLAN.md + V0140-VALIDATION-PLAN.md. On done: CURATE the 3h plan into the roadmap.
+
+MERGED v0.13 (9 lanes this wave + earlier): #7 rad_rk_tendf knob, #5 2way-VRAM-dedup, T3 microphysics-WSM7, T3 cumulus-oracle-infra, T3 pbl-MRF, T3 surface-2sfclay(+slab-ref), T3 radiation-GSFC-SW(+GSFC-LW-ref-infra), dispatch-bug-fix, compile-perf, TOST-wrfbdy-fix. EARLIER v0.13: optics/taumol VRAM, #4 GWD-on-nested GREEN (default-on), RRTM-LW, multi-GPU(fake-mesh), MYJ+Janjic, clear-sky, reproducibility, g-point-chunk, TOST-rc2-fix.
+
+CLOSEABLES REMAINING (GPU-serial after #5 frees GPU):
+ - TOST n=15 (UNBLOCKED via wrfbdy-fix): single-case smoke `/tmp/wrf_gpu_run_lowprio.sh taskset -c 0-23 env PYTHONPATH=src JAX_ENABLE_X64=true XLA_PYTHON_CLIENT_PREALLOCATE=false python proofs/v0120/powered_tost_n15/run_powered_tost_n15_v0120.py --case 20260429_18z_l2_72h_20260524T204451Z --allow-single` → rc=0 → full `--resume`.
+ - #7 rad_rk_tendf A/B (prod 24h, =0 vs =1, score U10/V10/T2 vs CPU-WRF) — the wind-skill credibility measure.
+ - WDM5 merge (CPU).
+ - THEN the curated v0.13 VALIDATION CAMPAIGN (≤3h, Canary known-region, parallel CPU 0-23 + GPU-serial). ANY failure → immediate cross-model debug worker.
+
+DOCUMENTED CARRY-OVERS (principal-allowed): cumulus JAX kernels (2400-5300 LOC), CAM/Goddard-NUWRF/GFDL radiation (8-12k LOC), RUC-LSM (7516 LOC), Shin-Hong/QNSE PBL — all have de-risked oracle-infra; qh-State-leaf (→WSM7/WDM7 operational) + slab-LSM-hook = focused future State sprints; 2way+GWD+1km+24h + multi-hardware = 32GB-HW-limits; #7 24h wind-skill closure = open research (lever landed, not closed).
+
+RELEASE v0.13.0 (when closeables + validation done): fill 18 <<MANAGER-FILL>> in RELEASE_NOTES_v0.13.0.md/README.md/docs/KNOWN_ISSUES.md (#5/#7/TOST/validation numbers) + GPU-scalable honest positioning + fix docs/namelist-compatibility.md stale MYJ refs → gap-critic (Opus+GPT) → tag v0.13.0 → push wrfgpu HEAD:main + tag (home=latest) → final report.
