@@ -28,6 +28,10 @@ from gpuwrf.physics.ra_sw_dudhia import (
     DudhiaSWColumnState,
     solve_dudhia_sw_column,
 )
+from gpuwrf.physics.ra_sw_gsfc import (
+    GsfcSWColumnState,
+    solve_gsfc_sw_column,
+)
 from gpuwrf.physics.rrtmg_lw import RRTMGLWColumnState, solve_rrtmg_lw_column
 from gpuwrf.physics.ra_lw_rrtm import RRTMLWColumnState
 from gpuwrf.physics.ra_lw_rrtm_jax import solve_rrtm_lw_column_jax
@@ -1843,6 +1847,139 @@ def dudhia_sw_theta_tendency(
     heating_rate_T = jnp.moveaxis(out.heating_rate.reshape(ny, nx, nz), -1, 0)
     # T-space heating rate -> theta tendency via the Exner factor
     # (theta = T/exner; for fixed pressure d(theta)/dt = (dT/dt)/exner).
+    exner = (jnp.maximum(state.p, 1.0) / P0_PA) ** R_D_OVER_CP
+    rthraten = heating_rate_T / jnp.maximum(exner, 1.0e-12)
+    return rthraten.astype(_output_dtype(state, "theta"))
+
+
+# --------------------------------------------------------------------------- #
+# GSFC (Chou-Suarez) shortwave (``ra_sw_physics=2``) HELD-RATE theta-tendency  #
+# coupler. SW-only; the dispatch adds the operational RRTMG/classic-RRTM LW.   #
+# --------------------------------------------------------------------------- #
+def _gsfc_sw_column_inputs(
+    state: State,
+    grid: GridSpec | None,
+    *,
+    time_utc=None,
+    lead_seconds=0.0,
+    radiation_static: RRTMGRadiationStatic | None = None,
+    land_state=None,
+) -> tuple[GsfcSWColumnState, SolarGeometry]:
+    """Build the GSFC SW column-kernel input view from operational ``State``.
+
+    Mirrors :func:`_dudhia_sw_column_inputs` but assembles the inputs the
+    Chou-Suarez multi-band kernel (``module_ra_gsfcsw.F:GSFCSWRAD``) consumes:
+    layer ``T`` (K), pressure ``p`` (Pa), interface pressure ``p8w`` (Pa,
+    reconstructed WRF-faithfully via :func:`_interface_pressure_from_state`), the
+    six moisture species, a diagnostic cloud fraction, per-column cosine-zenith,
+    surface ``albedo`` and the date-adjusted total solar constant ``solcon``.
+    The ozone climatology is selected from the grid CENTER latitude
+    (``grid.projection.lat_0``) and the time-of-year Julian day, exactly as
+    WRF's ``gsfc_swinit(cen_lat)`` + ``GSFCSWRAD`` ``iprof`` block.
+
+    The kernel works on flat ``(ncol=ny*nx, nz)`` columns, so the
+    ``(nz, ny, nx)`` mass fields are reshaped to the kernel's batch contract.
+    """
+
+    T = _temperature_from_theta(state.theta, state.p)
+    nz, ny, nx = state.theta.shape
+    ncol = ny * nx
+
+    def _cols(field3d):  # (nz, ny, nx) -> (ncol, nz)
+        return jnp.moveaxis(field3d, 0, -1).reshape(ncol, nz)
+
+    dz_cols = _column_dz_from_state(state, grid).reshape(ncol, nz)
+    # _interface_pressure_from_state returns COLUMN form (ny, nx, nz+1) with the
+    # vertical axis trailing and index 0 = surface; flatten to (ncol, nz+1).
+    p8w_cols = _interface_pressure_from_state(state).reshape(ncol, nz + 1)
+    cloud_fraction = _cloud_fraction_columns(state).reshape(ncol, nz)
+
+    surface_shape = state.t_skin.shape
+    surface_albedo, _ = _surface_radiation_properties(state, land_state=land_state)
+    static = _radiation_static_for_grid(surface_shape, grid, radiation_static, state.t_skin.dtype)
+    if static is None:
+        lat, lon = _grid_lat_lon(surface_shape, grid, state.t_skin.dtype)
+    else:
+        lat, lon = static.xlat_deg, static.xlong_deg
+    geometry = _compute_solar_geometry(lat, lon, time_utc, lead_seconds)
+    geometry = SolarGeometry(
+        coszen=geometry.coszen.astype(state.t_skin.dtype),
+        declination_rad=geometry.declination_rad,
+        hour_angle_rad=geometry.hour_angle_rad.astype(state.t_skin.dtype),
+    )
+    solcon = _solcon_for_time(time_utc, lead_seconds).astype(state.t_skin.dtype)
+    solcon = jnp.broadcast_to(solcon, surface_shape).reshape(ncol)
+
+    julian, _ = _time_utc_parts(time_utc)
+    # Grid CENTER latitude for the ozone profile (WRF gsfc_swinit cen_lat). The
+    # projection lat_0 is the canonical grid center; falls back to 0 (tropical)
+    # when no grid is supplied (bare-kernel callers inject their own).
+    center_lat = float(grid.projection.lat_0) if grid is not None else 0.0
+
+    column = GsfcSWColumnState(
+        T=_cols(T),
+        p=_cols(state.p),
+        p8w=p8w_cols,
+        qv=_cols(state.qv),
+        qc=_cols(state.qc),
+        qr=_cols(state.qr),
+        qi=_cols(state.qi),
+        qs=_cols(state.qs),
+        qg=_cols(state.qg),
+        dz=dz_cols,
+        cldfra=cloud_fraction,
+        coszen=geometry.coszen.reshape(ncol),
+        albedo=jnp.asarray(surface_albedo).reshape(ncol),
+        solcon=solcon,
+        julday=int(julian),
+        center_lat=center_lat,
+        f_qi=True,
+        warm_rain=False,
+    )
+    return column, geometry
+
+
+def gsfc_sw_theta_tendency(
+    state: State,
+    grid: GridSpec | None = None,
+    *,
+    time_utc=None,
+    lead_seconds=0.0,
+    radiation_static: RRTMGRadiationStatic | None = None,
+    land_state=None,
+) -> "jnp.ndarray":
+    """Return the GSFC (``ra_sw_physics=2``) shortwave ``RTHRATEN`` (K/s).
+
+    Shortwave-only HELD-RATE primitive, the GSFC analogue of
+    :func:`dudhia_sw_theta_tendency`. WRF's ``GSFCSWRAD`` accumulates the SW
+    heating into ``RTHRATEN`` as ``RTHRATEN += max(TTEN,0)/pi3D``: the kernel
+    returns the (already non-negative) per-layer TEMPERATURE heating rate
+    ``dT/dt`` (K/s) and the theta tendency is that rate divided by the Exner
+    factor. The operational scan holds this rate over the ``radt`` interval (the
+    same cadence machinery the RRTMG path uses) and ADDS it into theta at every
+    dynamics step.
+
+    This coupler is SHORTWAVE-ONLY; the longwave heating still comes from the
+    operational RRTMG-LW / classic-RRTM-LW path (the dispatch adds the two
+    RTHRATEN contributions), exactly as WRF runs the SW and LW radiation drivers
+    independently.
+
+    The returned 3-D field is on the ``(nz, ny, nx)`` mass grid and matches the
+    state's theta dtype (fp64 under ``force_fp64``).
+    """
+
+    nz, ny, nx = state.theta.shape
+    column, _ = _gsfc_sw_column_inputs(
+        state,
+        grid,
+        time_utc=time_utc,
+        lead_seconds=lead_seconds,
+        radiation_static=radiation_static,
+        land_state=land_state,
+    )
+    out = solve_gsfc_sw_column(column)
+    # (ncol, nz) heating rate -> (nz, ny, nx) dT/dt (K/s).
+    heating_rate_T = jnp.moveaxis(out.heating_rate.reshape(ny, nx, nz), -1, 0)
     exner = (jnp.maximum(state.p, 1.0) / P0_PA) ** R_D_OVER_CP
     rthraten = heating_rate_T / jnp.maximum(exner, 1.0e-12)
     return rthraten.astype(_output_dtype(state, "theta"))

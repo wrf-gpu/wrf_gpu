@@ -62,7 +62,7 @@ ACCEPTED_BL_PBL_PHYSICS: tuple[int, ...] = (0, 1, 2, 5, 7, 8)
 ACCEPTED_SF_SFCLAY_PHYSICS: tuple[int, ...] = (0, 1, 2, 5, 7)
 ACCEPTED_CU_PHYSICS: tuple[int, ...] = (0, 1, 2, 3, 6, 16)
 ACCEPTED_SF_SURFACE_PHYSICS: tuple[int, ...] = (0, 2, 4)
-ACCEPTED_RA_SW_PHYSICS: tuple[int, ...] = (0, 1, 4)
+ACCEPTED_RA_SW_PHYSICS: tuple[int, ...] = (0, 1, 2, 4)
 ACCEPTED_RA_LW_PHYSICS: tuple[int, ...] = (0, 1, 4)
 
 ACCEPTED_NAMELIST_OPTIONS: Mapping[str, tuple[int, ...]] = {
@@ -133,6 +133,7 @@ SURFACE_SCHEMES: Mapping[int, SchemeOption] = {
 RA_SW_SCHEMES: Mapping[int, SchemeOption] = {
     0: SchemeOption("ra_sw_physics", 0, "disabled", "none", "accepted", "radiation"),
     1: SchemeOption("ra_sw_physics", 1, "Dudhia shortwave", "swradscheme", "implemented", "radiation"),
+    2: SchemeOption("ra_sw_physics", 2, "GSFC (Chou-Suarez) shortwave", "gsfcswscheme", "implemented", "radiation"),
     4: SchemeOption("ra_sw_physics", 4, "RRTMG shortwave", "rrtmg_swscheme", "accepted", "radiation"),
 }
 

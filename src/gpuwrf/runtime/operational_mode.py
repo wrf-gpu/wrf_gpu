@@ -33,6 +33,7 @@ from gpuwrf.coupling.boundary_apply import (
 )
 from gpuwrf.coupling.physics_couplers import (
     dudhia_sw_theta_tendency,
+    gsfc_sw_theta_tendency,
     gwdo_adapter,
     mynn_adapter,
     rrtm_lw_theta_tendency,
@@ -2386,9 +2387,11 @@ _SCAN_WIRED_OPTIONS = {
     # gated -> NOT wired.
     "cu_physics": (0, 1, 2, 3, 6),
     # ra_sw=4 RRTMG SW (default), 1 Dudhia SW (Stephens-1984, scan-wired held-rate
-    # theta tendency via dudhia_sw_theta_tendency). Any other recognized SW scheme
-    # is fail-closed (no GPU scan adapter).
-    "ra_sw_physics": (1, 4),
+    # theta tendency via dudhia_sw_theta_tendency), 2 GSFC/Chou-Suarez SW
+    # (multi-band delta-Eddington, scan-wired held-rate theta tendency via
+    # gsfc_sw_theta_tendency). Any other recognized SW scheme is fail-closed
+    # (no GPU scan adapter).
+    "ra_sw_physics": (1, 2, 4),
     # ra_lw=4 RRTMG LW (default), 1 classic AER RRTM LW (16-band k-distribution,
     # scan-wired held-rate theta tendency via rrtm_lw_theta_tendency, JAX-traceable
     # port of phys/module_ra_rrtm.F). SW/LW are selected independently.
@@ -2406,9 +2409,9 @@ _SCAN_UNWIRED_REASON = {
     # scan-wired (in _SCAN_WIRED_OPTIONS), so they are intentionally absent here.
     "cu_physics=16": "New Tiedtke is interface-compatible but not separately savepoint-gated by a distinct WRF source path; GPU-batching/gating TODO",
     "sf_surface_physics=2": "Noah-classic requires explicit noahclassic_static + noahclassic_land bundles (WRF REDPRM + 4-layer carry)",
-    # ra_sw=1 (Dudhia) and ra_sw=4 (RRTMG) are scan-wired; any other recognized SW
-    # scheme has no operational GPU scan adapter in the radiation slot.
-    "ra_sw_physics=2": "Goddard SW has no operational GPU scan adapter in the radiation slot (only Dudhia=1 and RRTMG=4 are wired)",
+    # ra_sw=1 (Dudhia), ra_sw=2 (GSFC/Chou-Suarez) and ra_sw=4 (RRTMG) are
+    # scan-wired; any other recognized SW scheme has no operational GPU scan
+    # adapter in the radiation slot.
 }
 
 
@@ -2822,6 +2825,15 @@ def _physics_step_forcing(
     def _sw_tendency() -> jnp.ndarray:
         if ra_sw == 1:
             return dudhia_sw_theta_tendency(
+                next_state,
+                namelist.grid,
+                time_utc=namelist.time_utc,
+                lead_seconds=lead_seconds,
+                radiation_static=namelist.radiation_static,
+                land_state=land_for_rad,
+            )
+        if ra_sw == 2:
+            return gsfc_sw_theta_tendency(
                 next_state,
                 namelist.grid,
                 time_utc=namelist.time_utc,
