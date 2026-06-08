@@ -119,3 +119,8 @@ closure + outsider-runnable reproducibility + community-standard benchmarks.
 - ✅ **Multi-GPU fake-mesh** (T1#8) MERGED `9c04a7b`: shard_map + ppermute halo, partition-invariance bit-identical (0.0); CPU fake-mesh only → real throughput HW-deferred (per-watt/Earth PROJECTED). 27 tests.
 - Tier1 DONE: #1,#3,#6,#8 (4/8). RUNNING: GWD-nested-gate(GPU,compiling), TOST-rc2-fix, clear-sky-radiation, community-validation (CPU) + skill-closure-investigation (CPU read-only, front-loading #7).
 - Tier1 remaining: #2(rc2-fix running→then GPU campaign), #4(gate running), #5(2-way-24h), #7(skill-closure, investigating). Tier2 remaining: sub-jit, parallel-compile, CPU-flock, multi-hardware + follow-ups(optics/taumol-chunk, PD-moisture-op-wiring, stale-rrtmg-pin).
+
+**2026-06-08 ~08:31** — GWD-nested gate (#4) OOM:
+- 🔴 24h-nested-1km+GWD (GPUWRF_GWD_NESTED=1) on chunked trunk OOM'd at **step 0** (0 wrfout, "Failed to allocate 8.1 GiB", platform allocator) — WORSE than gwd7 (which reached hr7). GPU clean afterward (4041 MiB → no lingering CPU-lane contention; the 4 concurrent CPU lanes are JAX_PLATFORMS=cpu). Likely self-inflicted: bigger v0.13 compile graph + GWD residents + the UNCHUNKED LW taumol floor (_lw_solver_base) at first radiation call.
+- VERDICT: SW g-point-chunk alone is INSUFFICIENT for 24h-nested-1km+GWD on one 32GB GPU. #4 (GWD-on-nested default-on) is BLOCKED on the optics/taumol-chunk follow-up (the LW floor g-point-chunk flagged). GWD stays GATED-OFF-default (no regression vs v0.12.0) — HONEST.
+- PLAN: dispatch optics/taumol-chunk AFTER clear-sky merges (rrtmg collision); then re-test GWD-nested on an EXCLUSIVE GPU. GPT-codex cross-diagnosing the step0-vs-hr7 OOM.
