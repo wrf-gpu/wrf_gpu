@@ -244,6 +244,14 @@ SCHEME_STEP_SPECS: tuple[PhysicsStepSpec, ...] = (
         "M20 physics-oracle factory savepoint at module_microphysics_driver.F:morrison two moment",
     ),
     _mp_spec(
+        14,
+        "WDM5",
+        "src/gpuwrf/physics/microphysics_wdm5.py",
+        "v0.13 WDM5 pristine-WRF single-column savepoint parity gate at "
+        "module_mp_wdm5.F (proofs/v013/t3_wdm5_oracle.py/.json)",
+        diagnostics=("re_cloud", "re_ice", "re_snow"),
+    ),
+    _mp_spec(
         16,
         "WDM6",
         "src/gpuwrf/physics/microphysics_wdm6.py",

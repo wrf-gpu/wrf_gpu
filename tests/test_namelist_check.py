@@ -67,7 +67,7 @@ def test_unsupported_selected_option_raises_actionable_error() -> None:
     assert "physics.mp_physics domain 2=5" in message
     assert "Ferrier" in message
     assert "NOT YET IMPLEMENTED" in message
-    assert "Supported mp_physics values: 0, 1, 2, 3, 4, 6, 8, 10, 16" in message
+    assert "Supported mp_physics values: 0, 1, 2, 3, 4, 6, 8, 10, 14, 16" in message
     assert "physics.cu_physics domain 1=7" in message
     assert "Zhang-McFarlane" in message
     assert "1=Kain-Fritsch" in message
@@ -75,7 +75,7 @@ def test_unsupported_selected_option_raises_actionable_error() -> None:
 
 
 def test_registry_records_supported_active_suite() -> None:
-    assert SUPPORTED_OPTIONS["mp_physics"].supported_values == frozenset({0, 1, 2, 3, 4, 6, 8, 10, 16})
+    assert SUPPORTED_OPTIONS["mp_physics"].supported_values == frozenset({0, 1, 2, 3, 4, 6, 8, 10, 14, 16})
     assert SUPPORTED_OPTIONS["bl_pbl_physics"].supported_values == frozenset({0, 1, 2, 5, 7, 8, 99})
     assert SUPPORTED_OPTIONS["sf_sfclay_physics"].supported_values == frozenset({0, 1, 2, 3, 5, 7, 91})
     assert SUPPORTED_OPTIONS["sf_surface_physics"].supported_values == frozenset({0, 1, 2, 4})

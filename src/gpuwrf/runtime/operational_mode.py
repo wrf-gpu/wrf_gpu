@@ -2402,8 +2402,8 @@ def _noahmp_params(namelist: OperationalNamelist):
 # _SCAN_UNWIRED_REASON. The dispatcher (coupling.physics_dispatch) remains the
 # single fail-closed authority for option -> scheme + GPU-runnability.
 _SCAN_WIRED_OPTIONS = {
-    # mp=0 passive, 8 Thompson (existing couplers); 1/2/3/4/6/10/16 new scan adapters.
-    "mp_physics": (0, 1, 2, 3, 4, 6, 8, 10, 16),
+    # mp=0 passive, 8 Thompson (existing couplers); 1/2/3/4/6/10/14/16 new scan adapters.
+    "mp_physics": (0, 1, 2, 3, 4, 6, 8, 10, 14, 16),
     # bl=0 off, 5 MYNN (existing); 1 YSU / 7 ACM2 / 8 BouLac wired
     # (v0.6.0 jax.lax.scan rewrites); 2 MYJ wired (v0.13 traceable MYJ+Janjic pair);
     # 99 MRF wired (v0.13 jit/vmap-traceable port of phys/module_bl_mrf.F).
@@ -2504,7 +2504,7 @@ def _resolve_operational_suite(namelist: OperationalNamelist):
     if not_wired:
         raise UnsupportedSchemeSelection(
             "operational scan supports the v0.2.0 suite + the v0.6.0/v0.13 scan-wired "
-            "schemes (mp_physics in {0,1,2,3,4,6,8,10,16}, bl_pbl_physics in {0,1,2,5,7,8,99}, "
+            "schemes (mp_physics in {0,1,2,3,4,6,8,10,14,16}, bl_pbl_physics in {0,1,2,5,7,8,99}, "
             "sf_sfclay_physics in {0,1,2,3,5,7,91}, cu_physics in {0,1,2,3,6}, Noah-MP via "
             "use_noahmp, explicit Noah-classic via sf_surface_physics=2 plus "
             "noahclassic_static/noahclassic_land). The following selected schemes "
