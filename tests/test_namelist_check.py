@@ -359,23 +359,27 @@ def test_operational_validator_accepts_wired_rrtm_lw() -> None:
             )
 
 
-def test_operational_validator_rejects_myj_janjic_reference_pair() -> None:
-    """MYJ PBL (bl=2) + Janjic Eta surface layer (sf=2) is a valid reference pair
-    that ``validate_namelist`` accepts, but the OPERATIONAL run rejects both
-    (no operational GPU scan carry-path)."""
+def test_operational_validator_accepts_myj_janjic_pair() -> None:
+    """v0.13: MYJ PBL (bl=2) + Janjic Eta surface layer (sf=2) is now an
+    IMPLEMENTED operational pair -- both the validation and operational layers
+    accept it (the pair is jit/vmap-traceable + scan-wired)."""
 
     # Reference (validation) layer accepts the pair.
     validate_namelist({"physics": {"bl_pbl_physics": [2], "sf_sfclay_physics": [2]}})
+    # The operational layer now ALSO accepts it (no longer reference-only).
+    validate_operational_namelist(
+        {"physics": {"bl_pbl_physics": [2], "sf_sfclay_physics": [2]}}
+    )
 
-    with pytest.raises(NotOperationallyWiredError) as excinfo:
+
+def test_operational_validator_rejects_unpaired_myj() -> None:
+    """The mandatory MYJ<->Janjic pairing still fails closed when only one is set."""
+
+    with pytest.raises(UnsupportedSchemeError) as excinfo:
         validate_operational_namelist(
-            {"physics": {"bl_pbl_physics": [2], "sf_sfclay_physics": [2]}}
+            {"physics": {"bl_pbl_physics": [2], "sf_sfclay_physics": [5]}}
         )
-    keys = {s.key for s in excinfo.value.selections}
-    assert keys == {"bl_pbl_physics", "sf_sfclay_physics"}
-    message = str(excinfo.value)
-    assert "MYJ" in message  # bl=2 scheme name
-    assert "Janjic" in message  # sf=2 scheme name
+    assert any(s.key == "myj_pairing" for s in excinfo.value.selections)
 
 
 def test_operational_validator_rejects_reference_only_per_domain() -> None:

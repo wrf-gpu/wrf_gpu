@@ -138,8 +138,10 @@ class SchemeSupport:
 _IMPLEMENTED: Mapping[str, frozenset[int]] = {
     "mp_physics": frozenset({0, 1, 2, 3, 4, 6, 8, 10, 16}),
     "cu_physics": frozenset({0, 1, 2, 3, 6}),
-    "bl_pbl_physics": frozenset({0, 1, 5, 7, 8}),
-    "sf_sfclay_physics": frozenset({0, 1, 5, 7}),
+    # bl=2 MYJ + sf=2 Janjic Eta are the v0.13 traceable MYJ pair (operationally
+    # scan-wired via physics.myj_adapters + runtime.operational_mode; mandatory pair).
+    "bl_pbl_physics": frozenset({0, 1, 2, 5, 7, 8}),
+    "sf_sfclay_physics": frozenset({0, 1, 2, 5, 7}),
     "sf_surface_physics": frozenset({0, 2, 4}),
     # ra_lw=1 (classic AER RRTM 16-band LW) is now operationally scan-wired
     # (coupling.physics_couplers.rrtm_lw_theta_tendency over the JAX-traceable
@@ -164,22 +166,10 @@ _REFERENCE_ONLY: Mapping[str, dict[int, tuple[str, str]]] = {
             "Use cu_physics=6 (modified Tiedtke, GPU-operational) or 1/3.",
         ),
     },
-    "bl_pbl_physics": {
-        2: (
-            "MYJ TKE PBL has a WRF-savepoint-parity column adapter (CPU reference) "
-            "but no operational GPU scan adapter/carry path yet.",
-            "Use bl_pbl_physics=5 (MYNN), 1 (YSU) or 7 (ACM2) for the operational "
-            "scan. If you must reference MYJ, pair it with sf_sfclay_physics=2.",
-        ),
-    },
-    "sf_sfclay_physics": {
-        2: (
-            "Janjic Eta surface layer has a WRF-savepoint-parity column adapter "
-            "(CPU reference) but no operational GPU scan adapter/carry path yet.",
-            "Use sf_sfclay_physics=5 (MYNN-SL), 1 (revised-MM5) or 7 (Pleim-Xiu). "
-            "Janjic Eta must pair with bl_pbl_physics=2.",
-        ),
-    },
+    # bl_pbl_physics=2 (MYJ) + sf_sfclay_physics=2 (Janjic Eta) were REFERENCE_ONLY
+    # (host-NumPy savepoint kernels); they are now operationally scan-wired as a
+    # mandatory pair via the JAX-traceable physics.bl_myj / physics.sf_myj rewrites
+    # (IMPLEMENTED above), so they are no longer listed here.
     # ra_lw_physics=1 (classic RRTM LW) was REFERENCE_ONLY (host-NumPy kernel); it
     # is now operationally scan-wired via the JAX-traceable physics.ra_lw_rrtm_jax
     # rewrite (IMPLEMENTED above), so it is no longer listed here.
@@ -198,10 +188,10 @@ _DEFAULT_ALTERNATIVE: Mapping[str, str] = {
     "operational default).",
     "cu_physics": "Use one of cu_physics=0/1/2/3/6 (1=Kain-Fritsch, 3=Grell-"
     "Freitas, 6=Tiedtke are GPU-operational).",
-    "bl_pbl_physics": "Use one of bl_pbl_physics=0/1/5/7/8 (5=MYNN, 1=YSU, 7=ACM2, "
-    "8=BouLac).",
-    "sf_sfclay_physics": "Use one of sf_sfclay_physics=0/1/5/7 (5=MYNN-SL, "
-    "1=revised-MM5, 7=Pleim-Xiu).",
+    "bl_pbl_physics": "Use one of bl_pbl_physics=0/1/2/5/7/8 (5=MYNN, 1=YSU, 2=MYJ "
+    "[pair with sf_sfclay_physics=2], 7=ACM2, 8=BouLac).",
+    "sf_sfclay_physics": "Use one of sf_sfclay_physics=0/1/2/5/7 (5=MYNN-SL, "
+    "1=revised-MM5, 2=Janjic Eta [pair with bl_pbl_physics=2], 7=Pleim-Xiu).",
     "sf_surface_physics": "Use sf_surface_physics=4 (Noah-MP) or 2 (Noah classic).",
     "ra_lw_physics": "Use ra_lw_physics=4 (RRTMG).",
     "ra_sw_physics": "Use ra_sw_physics=4 (RRTMG) or 1 (Dudhia); both GPU-operational.",
