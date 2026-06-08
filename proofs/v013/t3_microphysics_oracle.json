@@ -20,6 +20,7 @@
       6,
       8,
       10,
+      14,
       16
     ],
     "scan_wired_mp_physics": [
@@ -29,6 +30,7 @@
       4,
       6,
       10,
+      14,
       16
     ],
     "wsm7_not_in_accepted": true,

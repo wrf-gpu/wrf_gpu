@@ -1,0 +1,105 @@
+{
+  "schema": "v013_cpu_campaign_a4a7_v1",
+  "campaign": "v0.13 validation campaign - CPU lanes A4-A7",
+  "generated_at_utc": "2026-06-08T14:52:00Z",
+  "base_branch": "worker/opus/v0120-integration",
+  "base_commit": "0b917ea6",
+  "worker_branch": "validation-cpu-a4a7",
+  "platform": "CPU only (JAX_PLATFORMS=cpu), pinned taskset -c 12-23",
+  "out_root": "/mnt/data/wrf_gpu_validation/v0130_campaign_cpu",
+  "note_on_xla_warnings": "A5/A7 logs contain thousands of benign XLA:CPU AOT 'machine feature +prefer-no-gather/+prefer-no-scatter not supported on host' warnings from a persistent JIT cache compiled on a different CPU feature set. They are non-fatal (the runtime recompiles) and A7's PASS confirms they do not affect correctness; they are NOT the A5 failure cause.",
+  "lanes": [
+    {
+      "name": "A4",
+      "title": "Community dycore / conservation / restart gate",
+      "command": "taskset -c 12-23 env JAX_PLATFORMS=cpu PYTHONPATH=src bash scripts/community_validation.sh",
+      "rc": 0,
+      "verdict": "PASS",
+      "proof_object": "proofs/v013/community_validation.json",
+      "key_numbers": {
+        "straka_density_current": "RAN_TO_COMPLETION PASS, front position 14150 m (target 15000 +/- 2000), max|w|=14.58 m/s, theta' min=-9.97 K, rel mass drift 2.25e-09, wall 176.6 s",
+        "skamarock_warm_bubble": "RAN_TO_COMPLETION PASS, thermal rise 1924 m, theta' max=1.92 K (0.5-2.5), max|w|=11.68 m/s, rel mass drift 0.0, wall 19.0 s",
+        "closed_domain_conservation": "PASS, dry-mass rel residual 0.0, total-water rel residual -2.45e-16, MSE residual 0.0 J (tol dry 1e-10 / water 1e-08)",
+        "bitwise_restart": "PASS, full-carry bit-identical=true, stochastic-seed bit-identical=true, 203-var wrfrst NetCDF round-trip"
+      },
+      "proves": "Cheap analytic + idealized + conservation + structural-restart gates remain green on the v0.13 tip."
+    },
+    {
+      "name": "A5",
+      "title": "Operational physics-suite coupler smoke",
+      "command": "taskset -c 12-15 env JAX_PLATFORMS=cpu JAX_ENABLE_X64=true PYTHONPATH=src python proofs/v060/multicfg_operational_smoke.py --steps 8 --out $OUT/a5_multicfg_operational_smoke.json",
+      "rc": 1,
+      "verdict": "FAIL",
+      "proof_object": "NOT PRODUCED (crashed before writing JSON)",
+      "failure": {
+        "type": "AttributeError",
+        "message": "'_NLStub' object has no attribute 'ra_sw_physics'",
+        "raised_at": "src/gpuwrf/runtime/operational_mode.py:2485 (int(getattr(namelist, key)) over _SCAN_WIRED_OPTIONS)",
+        "called_from": "proofs/v060/multicfg_operational_smoke.py:554 _resolve_operational_suite(_NLStub(cfg))",
+        "deterministic": true,
+        "crashes_on": "first SWEEP config (no scheme exercised at all)"
+      },
+      "root_cause": "v0.13 added 'ra_sw_physics' and 'ra_lw_physics' to _SCAN_WIRED_OPTIONS (operational_mode.py:2431,2435). _resolve_operational_suite reads every wired key via getattr WITHOUT a default. The proof harness stub _NLStub.__init__ (proofs/v060/multicfg_operational_smoke.py:298-314) was NOT updated to set ra_sw_physics/ra_lw_physics, so it raises AttributeError.",
+      "scope": "PROOF-HARNESS GAP, NOT a production regression. The real OperationalNamelist dataclass (operational_mode.py:393) defines ra_sw_physics:int=4 and ra_lw_physics with defaults, so the public run_forecast_operational path is unaffected. Only the multicfg smoke stub is stale.",
+      "fix_hint": "Add self.ra_sw_physics = getattr(cfg,'ra_sw_physics',4) and self.ra_lw_physics = getattr(cfg,'ra_lw_physics',4) (or pull from cfg.as_namelist()) to _NLStub.__init__. Then A5 should run the full sweep.",
+      "honest_fail_closed_assessment": "CANNOT be assessed this run: the smoke never reached its per-config accept/reject logic. Coverage (Thompson/WSM6/WDM6/Morrison/Kessler/Lin/WSM3/WSM5; MYNN/MYJ/YSU/ACM2/BouLac/MRF; sfclayrev/MYNN/Janjic/GFS/old-MM5; Noah-MP/Noah-classic; KF/BMJ/GF/Tiedtke; RRTMG SW/LW) is UNVERIFIED. This becomes an immediate debug lane.",
+      "proves": "NOTHING this run - the operational coupler smoke is blocked by a stale stub on the v0.13 tip."
+    },
+    {
+      "name": "A6",
+      "title": "v0.13 focused operational wiring pytest",
+      "command": "taskset -c 16-19 env JAX_PLATFORMS=cpu JAX_ENABLE_X64=true PYTHONPATH=src python -m pytest -q tests/test_v013_myj_janjic_operational.py tests/test_v013_mrf_operational.py tests/test_v013_t3_surface_lsm_wiring.py tests/test_v013_ra_sw_gsfc.py tests/test_v060_ra_sw_dudhia.py tests/test_rrtm_lw_operational_wiring.py tests/test_gwd_operational_wiring.py tests/test_v0110_boundary_feedback.py tests/test_p0_1a_nesting.py",
+      "rc": 0,
+      "verdict": "PASS",
+      "proof_object": "$OUT/a6_pytest.log",
+      "key_numbers": {
+        "result": "89 passed, 0 failed, 0 error in 524.81 s (8m44s)"
+      },
+      "in_flight_note": "No failure observed in test_v013_mrf_operational.py or test_v013_t3_surface_lsm_wiring.py; the parallel MRF/surface wiring change (if any) did not break these tests on this tip.",
+      "proves": "MYJ/Janjic, MRF, GFS/old-MM5, GSFC SW, Dudhia SW, RRTM LW, GWD, nesting and 2-way feedback wiring are all green."
+    },
+    {
+      "name": "A7",
+      "title": "Reference / fail-closed / fake-mesh oracle sweep",
+      "command": "for each of proofs/v013/{t3_microphysics_oracle,myj_janjic_oracle,mrf_oracle,t3_surface_lsm_oracle,t3_radiation_oracle,t3_cumulus_oracle}.py: taskset -c 20-23 env JAX_PLATFORMS=cpu JAX_ENABLE_X64=true PYTHONPATH=src python <script>; plus fakemesh with XLA_FLAGS=--xla_force_host_platform_device_count=8",
+      "rc": 0,
+      "verdict": "PASS",
+      "proof_objects": [
+        "proofs/v013/t3_microphysics_oracle.json",
+        "proofs/v013/myj_janjic_oracle.json",
+        "proofs/v013/mrf_oracle.json",
+        "proofs/v013/t3_surface_lsm_oracle.json",
+        "proofs/v013/t3_radiation_oracle.json",
+        "proofs/v013/t3_cumulus_oracle.json",
+        "proofs/v013/multigpu_fakemesh.json"
+      ],
+      "per_component_rc": {
+        "microphysics": 0,
+        "myj_janjic": 0,
+        "mrf": 0,
+        "surface_lsm": 0,
+        "radiation": 0,
+        "cumulus": 0,
+        "fakemesh": 0
+      },
+      "key_numbers": {
+        "microphysics": "WSM7 oracle parity PASS; default mp byte-unchanged PASS; fail-closed PASS; OVERALL PASS",
+        "myj_janjic": "verdict PASS (12 sub-checks pass)",
+        "mrf": "verdict PASS (6 sub-checks pass)",
+        "surface_lsm": "verdict PASS; slab_lsm worst |jax-oracle|=2.33e-10, old_mm5_sfclay 2.27e-12, gfs_sfclay 2.16e-12",
+        "radiation": "OVERALL PASS vs gfortran pristine-WRF oracle; held-rate RTH rel err <= 1.26e-04, GSW err <= 8.3e-04; FP64 audit RTH rel <= 1.3e-07",
+        "cumulus": "GATE_PASS; operational cu=[0,1,2,3,6] byte-unchanged; New-Tiedtke(16) + KIM-SAS(14) honestly 'oracle-staged (kernel carry-over)'; all_fail_closed_ok=True",
+        "fakemesh": "gate_pass=True; partition-invariant bit-identity for P=2,4,8 vs P=1 (flux5 advection + 6th-order diffusion bit-identical); padded_eager==global_eager exact; honestly labeled CPU fake-device only, multi-GPU throughput PROJECTED not MEASURED"
+      },
+      "proves": "Reference/fail-closed side of the implemented suite is not drifting and is honestly labeled; multi-GPU decomposition math is deterministic + partition-invariant on a fake 8-device mesh, with no false real-multi-GPU throughput claim."
+    }
+  ],
+  "summary": {
+    "A4": "PASS",
+    "A5": "FAIL (proof-harness stub gap, not production regression)",
+    "A6": "PASS",
+    "A7": "PASS",
+    "biggest_reassurance": "A6 (89/89 operational-wiring tests) + A7 (all 6 oracles PASS vs gfortran pristine-WRF + fakemesh partition-invariant bit-identity) + A4 (idealized dycore + conservation + restart all green): the v0.13 implemented couplings, reference/fail-closed gates, and decomposition math are sound on the trunk tip.",
+    "biggest_concern": "A5 operational coupler smoke cannot run on the v0.13 tip: the multicfg smoke's _NLStub is stale (missing ra_sw_physics/ra_lw_physics that v0.13 added to _SCAN_WIRED_OPTIONS). The full operational-coupler scheme matrix (all MP/PBL/SFC/LSM/CU/RA families through the device scan) is therefore UNVERIFIED end-to-end this run. Production path is unaffected, but the smoke must be repaired to re-establish that gate."
+  }
+}

@@ -208,7 +208,7 @@
           "pass": true,
           "status": "RAN_TO_COMPLETION",
           "verdict": "PASS",
-          "wall_s": 132.8
+          "wall_s": 176.6
         },
         "warm_bubble": {
           "benchmark_spec": {
@@ -257,13 +257,13 @@
           "pass": true,
           "status": "RAN_TO_COMPLETION",
           "verdict": "PASS",
-          "wall_s": 16.9
+          "wall_s": 19.0
         }
       },
       "pass": true
     }
   },
-  "generated_at": "2026-06-08T07:42:49Z",
+  "generated_at": "2026-06-08T14:37:34Z",
   "jax_backend": "cpu",
   "pass": true,
   "schema": "v013_community_validation_v1"
