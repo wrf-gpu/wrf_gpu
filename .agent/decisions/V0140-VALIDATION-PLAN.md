@@ -6,6 +6,12 @@ Branch: `worker/gpt/v013-valplan`
 
 ## Positioning
 
+2026-06-08 23:11 WEST manager update: this plan is now **grid-parity-first**.
+The powered TOST scorer remains a final gate, but it is not the next GPU
+campaign. The next campaign must first explain and reduce the CPU-WRF vs GPU-WRF
+cell-level divergence across all written fields. Station TOST cannot hide a broad
+spatial field mismatch.
+
 This is the deeper validation campaign after the v0.13 3h gate. The model is a
 fast, GPU-native, GPU-scalable WRF-compatible implementation. The campaign must
 not overclaim bit-truth or perfect efficiency.
@@ -15,7 +21,8 @@ horizons, more schemes, nesting, GWD, feedback, restart/reproducibility, and
 multi-region data without NaNs, OOMs, or crashes.
 
 Secondary objective: collect strong, honest CPU-WRF and AEMET equivalence
-evidence. The powered TOST scorer is the main gate-keeper-facing artifact.
+evidence. The direct grid-cell envelope is the first gate; powered TOST is the
+final gate-keeper-facing artifact after the grid-field gap is no longer radical.
 
 ## Corpus Reality
 
@@ -179,13 +186,22 @@ What it proves:
 - The heaviest known coupling combination is stable through the largest horizon
   that is expected to fit reliably on the current 32GB workstation.
 
-### B4 - Powered TOST n=15, CPU-WRF/AEMET, And Grid-Cell Envelope
+### B4 - Grid-Cell Envelope First, Then Powered TOST n=15
 
-Type: SECONDARY gate-keeper equivalence, PRIMARY repeated nested-run stability
+Type: PRIMARY CPU-WRF field-parity gate, SECONDARY gate-keeper equivalence
 
 Resource: GPU serial campaign plus CPU scoring
 
 Estimate: 6h00m
+
+Current status:
+
+- TOST is paused after 3 durable cases.
+- `proofs/v014/v10_grid_diagnostics.json` shows V10 grid RMSE above 1.5 m/s in
+  3/3 cases. This is too large to continue treating station TOST as the next
+  decision point.
+- Before resuming the n=15 campaign, the project must either fix the responsible
+  operators or record an operator-specific root cause and accepted residual.
 
 Command:
 
@@ -200,21 +216,28 @@ scripts/run_gpu_lowprio.sh --cores 0-23 -- env \
 ```
 
 B4 has two distinct proof pillars. They answer different questions and both must
-be reported before any v0.14 equivalence claim:
+be reported before any v0.14 equivalence claim. Their order is now binding:
 
-- **B4a station-skill TOST:** compare CPU-WRF skill vs AEMET and GPU skill vs
-  AEMET on complete station/time pairs (`tost_pairs`). This is the ADR-029
-  statistical TOST artifact.
-- **B4b direct grid-cell envelope:** compare GPU wrfout against CPU-WRF wrfout
-  directly over every common d02 grid cell and lead hour (`cell_level`). This is
-  not a station-skill test; it is the field-by-field numerical divergence
-  envelope reviewers expect when asking whether "millions of grid values" remain
-  close enough.
+- **B4b direct grid-cell envelope comes first:** compare GPU wrfout against
+  CPU-WRF wrfout directly over every common grid cell, lead hour, and written
+  field. This is not a station-skill test; it is the field-by-field numerical
+  divergence envelope reviewers expect when asking whether "millions of grid
+  values" remain close enough.
+- **B4a station-skill TOST comes after B4b is acceptable:** compare CPU-WRF skill
+  vs AEMET and GPU skill vs AEMET on complete station/time pairs (`tost_pairs`).
+  This is the ADR-029 statistical TOST artifact.
+
+The immediate B4b implementation target is broader than the current T2/U10/V10
+`cell_level` summary: compare every field written by `wrfout_writer.py` for which
+the CPU truth has a matching variable, including surface fields, precipitation,
+pressure diagnostics, 3D winds, thermodynamic state, and moisture fields.
 
 Pass criterion:
 
+- The grid-cell envelope report exists before any resumed TOST run and includes
+  all comparable written fields, not only T2/U10/V10.
 - All 15 available manifest cases are either scored or have documented,
-  reproducible exclusions.
+  reproducible exclusions once TOST is resumed.
 - For T2, U10, and V10, the aggregate report includes complete-pair counts,
   case-level RMSE deltas, confidence intervals, TOST p-values, and ADR-029
   margins:
@@ -224,8 +247,9 @@ Pass criterion:
 - AEMET pair counts are nonzero for each scored case where observations exist.
 - Any `NOT_EQUIVALENT` result is kept as a result, not treated as a harness
   failure.
-- `cell_level_stats.json` is emitted and contains pooled grid-cell RMSE, MAE,
-  p95, p99, max, Pearson r, and fraction-within-tolerance for T2, U10, and V10.
+- `cell_level_stats.json` or its v0.14 successor is emitted and contains pooled
+  grid-cell RMSE, bias, MAE, p95, p99, max, Pearson r, fraction-within-tolerance,
+  per-lead blocks, and spatial/terrain splits for all comparable fields.
 - The direct grid-cell envelope is reported separately from station TOST. The
   current script's `cell_tol` values (`T2=2.0 K`, `U10/V10=2.5 m/s`) are
   diagnostic tolerances, not a historical pass claim. For v0.14 closure, promote
@@ -341,7 +365,8 @@ Pass criterion:
   without NaNs or crashes.
 - The matrix includes:
   - Microphysics: Thompson, WSM6, WDM6, Morrison, Kessler, Lin, WSM3, WSM5,
-    plus WSM7-ref as reference/fail-closed unless operationalized.
+    plus WSM7 as column-oracle-proven but `recognized_fail_closed` unless the
+    qh State/dynamics/I-O leaf is operationalized.
   - PBL: MYNN, MYJ, YSU, ACM2, BouLac, MRF.
   - Surface: sfclayrev, MYNN, Janjic, GFS, old-MM5.
   - LSM: Noah-MP, Noah-classic.
@@ -578,14 +603,14 @@ coverage while GPU jobs run.
 | GPU | 00:00-01:45 | B1 L2 72h GWD 2-way | 1h45m | Multi-day heaviest fitting run |
 | GPU | 01:45-03:45 | B2 L3 24h one-way GWD | 2h00m | Full 1 km production geometry |
 | GPU | 03:45-05:00 | B3 L3 12h 2-way GWD | 1h15m | Bounded heaviest slice |
-| GPU | 05:00-11:00 | B4 powered TOST n=15 | 6h00m | Main equivalence campaign |
-| GPU | 11:00-13:00 | B5 skill A/B | 2h00m | #7 closure measurement |
-| GPU | 13:00-14:30 | B6 scheme forecast gates | 1h30m | Full implemented suite |
-| GPU | 14:30-15:15 | B7 Switzerland | 45 min | Non-Canary region |
-| GPU | 15:15-16:00 | Slack/scoring/retry packaging | 45 min | Absorbs compile variance |
+| GPU | 05:00-09:00 | B4 grid-cell envelope + targeted reruns | 4h00m | First gate; no station-only decision |
+| GPU | 09:00-11:00 | B5 skill A/B | 2h00m | #7 closure measurement, only if it helps attribution |
+| GPU | 11:00-12:30 | B6 scheme forecast gates | 1h30m | Full implemented suite |
+| GPU | 12:30-13:15 | B7 Switzerland | 45 min | Non-Canary region |
+| GPU | 13:15-16:00 | Slack / targeted probe retry / conditional TOST resume | 2h45m | TOST only after B4b is acceptable |
 | CPU | 00:00-02:00 | B8 CPU proof sweep | 2h00m | Parallel |
 | CPU | 02:00-02:45 | B9 focused proof sweep | 45 min | Parallel |
-| CPU | 11:00-15:30 | B4/B5/B7 scoring as outputs appear | included | Does not extend GPU critical path |
+| CPU | 05:00-15:30 | B4/B5/B7 scoring and field reports as outputs appear | included | Does not extend GPU critical path |
 
 Mandatory test count: 9.
 
@@ -598,8 +623,9 @@ Budgeted wall time: 16h00.
 The 16h campaign passes only if:
 
 - B1, B2, B3, B6, B7, B8, and B9 pass all RUNS-confidence criteria.
-- B4 completes the available n=15 powered TOST corpus or documents every
-  exclusion.
+- B4 emits an all-comparable-field grid-cell envelope and either narrows the
+  current V10/U10/PSFC divergence or records the next operator-specific falsifier.
+  Powered TOST completion is conditional on this result, not mandatory before it.
 - B5 reports finite A/B skill measurements, including wind error growth, even if
   no variant improves skill.
 - The report clearly separates:
@@ -609,5 +635,6 @@ The 16h campaign passes only if:
   - powered TOST pass/fail,
   - reference-only or fail-closed schemes.
 
-The highest-value test is B4: it is the largest available gate-keeper-facing
-equivalence campaign using retained CPU-WRF truth and AEMET pairing.
+The highest-value test is B4: it is now the direct field-parity gate using
+retained CPU-WRF truth. Powered TOST remains the final gate after B4b is no
+longer radically red.
