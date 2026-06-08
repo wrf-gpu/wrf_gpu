@@ -417,6 +417,30 @@ class OperationalNamelist:
     # a no-op when ``gwd_opt != 1`` OR ``gwdo_statics`` is None.
     gwd_opt: int = 0
     gwdo_statics: object = None
+    # --- v0.13 skill-closure #1: WRF-faithful radiation *_tendf (RTHRATEN) cadence ---
+    # ``rad_rk_tendf`` (static aux) selects how the held radiative heating rate
+    # RTHRATEN (K/s) is delivered to theta: 0 = the v0.9 SHIPPED single Euler step
+    # ``theta += dt*RTHRATEN`` applied BEFORE the dycore (default, byte-for-byte
+    # unchanged); 1 = the WRF-faithful per-RK/per-acoustic-substep cadence, routing
+    # the SAME held rate through the ``t_tendf`` (mass-coupled) channel of
+    # ``rk_addtend_dry`` so RTHRATEN is integrated by ``advance_mu_t`` at EVERY
+    # acoustic substep interleaved with the dynamics, exactly as WRF
+    # (``module_first_rk_step_part2.F:392-394`` feeds ``t_tendf``; ``rk_addtend_dry``
+    # folds ``t_tendf/msfty`` into the theta tendency; ``advance_mu_t`` applies
+    # ``theta += msfty*dts*theta_tend`` each substep -- the msfty cancels and the
+    # mass-coupled rate decouples to ``dts*RTHRATEN`` per substep).  The coupler doc
+    # (physics_couplers.rrtmg_theta_tendency :1660-1665) states the lumped one-step
+    # form is NOT WRF-equivalent because the intervening dynamics/MP/PBL see a
+    # different temperature trajectory.  This routes ONLY the genuine instantaneous
+    # radiation rate (an explicit WRF R*TEN source) -- NOT the aggregate physics
+    # state delta that the reverted v0.11 bridge (``_dry_physics_tendencies_from_
+    # state_delta``) wrongly treated as a source and that regressed the d02 winds
+    # (proofs/v0110/wind_regression_debug.md: the THETA/h_diabatic aggregate was the
+    # culprit, momentum tendf was neutral).  The implicit-solve PBL/surface/MP
+    # deltas stay on the post-dycore state-increment path (faithful for an implicit
+    # scheme).  Wind-skill impact is GPU-measured (manager); default 0 keeps the
+    # operational forecast bit-for-bit unchanged.
+    rad_rk_tendf: int = 0
 
     @classmethod
     def from_grid(
@@ -457,6 +481,7 @@ class OperationalNamelist:
         topo_shadow_length_m: float = 25000.0,
         gwd_opt: int = 0,
         gwdo_statics: object = None,
+        rad_rk_tendf: int = 0,
     ) -> "OperationalNamelist":
         """Build a namelist using resident zero tendencies and flat metrics."""
 
@@ -507,6 +532,7 @@ class OperationalNamelist:
             topo_shadow_length_m=topo_shadow_length_m,
             gwd_opt=gwd_opt,
             gwdo_statics=gwdo_statics,
+            rad_rk_tendf=rad_rk_tendf,
         )
 
     def tree_flatten(self):
@@ -570,6 +596,7 @@ class OperationalNamelist:
             int(self.gwd_opt),
             int(self.ra_sw_physics),
             int(self.ra_lw_physics),
+            int(self.rad_rk_tendf),
         )
         return children, aux
 
@@ -628,6 +655,7 @@ class OperationalNamelist:
             gwd_opt,
             ra_sw_physics,
             ra_lw_physics,
+            rad_rk_tendf,
         ) = aux
         noahmp_static = noahmp_static_holder.value
         noahmp_energy_params = noahmp_energy_holder.value
@@ -691,6 +719,7 @@ class OperationalNamelist:
             gwdo_statics=gwdo_statics,
             ra_sw_physics=ra_sw_physics,
             ra_lw_physics=ra_lw_physics,
+            rad_rk_tendf=rad_rk_tendf,
         )
 
 
@@ -2887,12 +2916,39 @@ def _physics_step_forcing(
         held_rthraten = jax.lax.cond(
             run_radiation, _refresh_rthraten, lambda _u: carry.rthraten, None
         )
-    next_state = next_state.replace(
-        theta=next_state.theta + float(namelist.dt_s) * held_rthraten
-    )
+    # WRF-faithful RTHRATEN cadence (rad_rk_tendf=1): instead of the lumped one-step
+    # Euler add ``theta += dt*RTHRATEN`` BEFORE the dycore (the v0.9 SHIPPED default,
+    # rad_rk_tendf=0), route the SAME held rate through the ``t_tendf`` channel of
+    # ``rk_addtend_dry`` so it is integrated at EVERY acoustic substep interleaved
+    # with the dynamics (advance_mu_t: theta += msfty*dts*theta_tend; rk_addtend_dry
+    # folds t_tendf/msfty; the msfty cancels and the mass-coupled rate decouples to
+    # dts*RTHRATEN per substep -> dt*RTHRATEN over the full RK3 step, but distributed
+    # across the substeps, NOT lumped).  Source: module_first_rk_step_part2.F:392-394
+    # feeds RTHRATEN into t_tendf; the coupler doc rrtmg_theta_tendency:1660-1665
+    # documents the lumped form as NOT WRF-equivalent.  The branch is a STATIC Python
+    # condition (rad_rk_tendf is a compile-time constant) so rad_rk_tendf=0 emits the
+    # identical XLA program and the operational forecast is bit-for-bit unchanged.
+    if int(namelist.rad_rk_tendf) != 0:
+        metrics = namelist.metrics
+        mass_h = (
+            metrics.c1h[:, None, None] * next_state.mu_total[None, :, :]
+            + metrics.c2h[:, None, None]
+        )
+        # COUPLED radiation theta tendency d(mut*theta)/dt = mut*RTHRATEN; rk_addtend_dry
+        # consumes t_tendf already mass-coupled (it only re-divides by msfty).
+        t_tendf_rad = (mass_h * held_rthraten).astype(next_state.theta.dtype)
+        dry = DryPhysicsTendencies(t_tendf=t_tendf_rad)
+        # theta is left WITHOUT the radiation add here; the dycore delivers it via the
+        # RK/acoustic cadence above.
+    else:
+        next_state = next_state.replace(
+            theta=next_state.theta + float(namelist.dt_s) * held_rthraten
+        )
+        dry = _dry_physics_tendencies_from_state_delta(
+            before, next_state, namelist, float(namelist.dt_s)
+        )
     next_carry = next_carry.replace(rthraten=held_rthraten)
 
-    dry = _dry_physics_tendencies_from_state_delta(before, next_state, namelist, float(namelist.dt_s))
     return _PhysicsStepForcing(next_state, next_carry, dry, True)
 
 
