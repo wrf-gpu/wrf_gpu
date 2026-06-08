@@ -47,7 +47,8 @@ is acceptable or what root-caused residual remains.
 ## Active Sidecar Agents
 
 - `019ea948-6d45-78d3-b06a-bc0ad1df40ff` (`Peirce`):
-  prior V10/wind-divergence attribution synthesis.
+  prior V10/wind-divergence attribution synthesis. Completed:
+  `.agent/reviews/2026-06-08-gpt-v014-v10-prior-attribution.md`.
 - `019ea948-81c9-7161-b50c-04eaff1eb010` (`Raman`):
   v0.14 cell-level validation envelope design. Completed:
   `.agent/reviews/2026-06-08-gpt-v014-cell-envelope-gate.md`.
@@ -64,6 +65,11 @@ Cell-envelope design verdict: start with the 10 frozen core fields from
 `RAINNC`, `T`, `U`, `V`, `W`, `QVAPOR`), while inventorying every current-common
 writer field. Other fields stay report-only until per-field tolerances are
 frozen before seeing promotion results.
+
+Prior-attribution verdict: do not re-debug the old fixed boundary-normal or
+missing-Coriolis causes unless a current regression probe proves them. The next
+useful work is current-code spatial/vertical anatomy, then first-divergence /
+component-tendency localization.
 
 Sidecar deliverables are expected under `.agent/reviews/2026-06-08-gpt-v014-*.md`.
 
