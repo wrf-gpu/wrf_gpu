@@ -245,6 +245,12 @@ def _fail_closed_checks():
             self.cu_physics = kw.get("cu_physics", 0)
             self.sf_surface_physics = kw.get("sf_surface_physics", None)
             self.use_noahmp = kw.get("use_noahmp", False)
+            # _resolve_operational_suite reads the radiation selectors too.
+            self.ra_sw_physics = kw.get("ra_sw_physics", 4)
+            self.ra_lw_physics = kw.get("ra_lw_physics", 4)
+            self.noahclassic_static = kw.get("noahclassic_static", None)
+            self.noahclassic_land = kw.get("noahclassic_land", None)
+            self.noahclassic_rad = kw.get("noahclassic_rad", None)
 
     accepted = []
     rejected = []
@@ -258,8 +264,11 @@ def _fail_closed_checks():
         _NL(mp_physics=3),  # WSM3 (v0.6.0 scan-wired)
         _NL(mp_physics=4),  # WSM5 (v0.6.0 scan-wired)
         _NL(mp_physics=16),  # WDM6
-        _NL(bl_pbl_physics=1),  # YSU PBL (v0.6.0 jax.lax.scan rewrite -> now wired)
-        _NL(bl_pbl_physics=7),  # ACM2 PBL (v0.6.0 jax.lax.scan rewrite -> now wired)
+        # YSU(1)/ACM2(7) re-derive their surface forcing from the revised-MM5 surface
+        # layer, so they are faithful ONLY with sf_sfclay_physics=1 (must be pinned;
+        # the default sf=5 MYNN-sfclay now FAILS CLOSED -- see _fail_closed list below).
+        _NL(bl_pbl_physics=1, sf_sfclay_physics=1),  # YSU PBL + revised-MM5 (WRF isfc=1)
+        _NL(bl_pbl_physics=7, sf_sfclay_physics=1),  # ACM2 PBL + revised-MM5 (WRF isfc=1)
         _NL(cu_physics=6),  # modified Tiedtke (v0.6.0 GPU-batched jit/vmap -> now wired)
     ]:
         try:
@@ -267,16 +276,23 @@ def _fail_closed_checks():
             accepted.append(True)
         except UnsupportedSchemeSelection:
             accepted.append(False)
-    # NOT-wired schemes that MUST fail closed (loud) post-consolidation:
-    #  - GF cumulus (cu=3): CPU-NumPy reference (closure-ensemble not vmap-rewritten)
+    # NOT-wired schemes that MUST fail closed (loud) post-consolidation. NOTE: GF
+    # cumulus (cu=3) and MYJ+Janjic (bl=2/sf=2) were SCAN-WIRED in later sprints
+    # (v0.9.0 GF GPU-batch, v0.13 MYJ-Janjic) and are now ACCEPTED -- they are no
+    # longer in this fail-closed list.
     #  - New-Tiedtke (cu=16): not separately savepoint-gated
-    #  - MYJ PBL (bl=2) + Janjic Eta sfclay (sf=2): parity-proven CPU refs, no scan adapter
     #  - explicit Noah-classic (sf_surface=2) WITHOUT its required static/land bundle
     for nl in [
-        _NL(cu_physics=3),      # Grell-Freitas CPU-ref
         _NL(cu_physics=16),     # New Tiedtke (not separately gated)
-        _NL(bl_pbl_physics=2, sf_sfclay_physics=2),  # MYJ + Janjic parity-only pair
         _NL(sf_surface_physics=2),  # Noah-classic missing explicit land/static bundle
+        # surface-layer/PBL pairing fail-close (GPT#1 MAJOR fix 2026-06-08): the
+        # YSU/ACM2/BouLac/MRF PBLs re-derive revised-MM5 surface forcing, so pairing
+        # them with a NON-revised-MM5 surface layer (or the default sf=5 MYNN-sfclay)
+        # would SILENTLY substitute revised-MM5 -- must fail closed (no silent swap).
+        _NL(bl_pbl_physics=1),                       # YSU + default sf=5 MYNN-sfclay
+        _NL(bl_pbl_physics=7, sf_sfclay_physics=7),  # ACM2 + Pleim-Xiu (not threaded)
+        _NL(bl_pbl_physics=99, sf_sfclay_physics=3), # MRF + GFS (silent revised-MM5)
+        _NL(bl_pbl_physics=8, sf_sfclay_physics=91), # BouLac + old-MM5 (silent revised-MM5)
     ]:
         try:
             _resolve_operational_suite(nl)

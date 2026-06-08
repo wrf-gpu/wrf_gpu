@@ -70,6 +70,39 @@ DEFAULT_CU_PHYSICS = 0        # no cumulus (resolved grid-scale only)
 DEFAULT_SF_SURFACE_PHYSICS = 4  # Noah-MP
 
 
+# --- Surface-layer <-> PBL pairing rule (fail-closed) -------------------------
+# WRF's own ``module_physics_init.F`` (CASE blocks under ``pbl_select``) FATAL-ERRORs
+# unless each PBL is paired with a surface-layer scheme whose Monin-Obukhov forcing
+# the PBL was designed to consume (the ``isfc`` requirement): the surface_driver
+# writes HFX/QFX/BR/PSIM/PSIH/U10/V10/ZNT and pbl_driver reads those SAME fields
+# (dyn_em/module_first_rk_step_part1.F:594 -> :1113).
+#
+# In THIS reimplementation the YSU(1)/ACM2(7)/BouLac(8)/MRF(99) PBL scan adapters
+# (coupling.scan_adapters) re-derive the per-cell surface forcing they consume via
+# the REVISED-MM5 surface layer (``_pbl_surface_forcing`` ->
+# ``surface_layer.surface_layer_with_diagnostics``) because the frozen State carries
+# only the B2 kinematic flux handles (ustar/theta_flux/qv_flux/tau_u/tau_v/rhosfc/
+# fltv) and NOT the stability functions PSIM/PSIH, the bulk Richardson BR, or U10/V10
+# those PBL kernels also require. The revised-MM5 re-derivation is faithful ONLY when
+# the SELECTED surface-layer scheme IS revised-MM5 (sf_sfclay=1). Pairing one of these
+# PBLs with any OTHER surface layer would SILENTLY substitute revised-MM5 forcing for
+# the requested scheme's forcing -- an honest-failure (presenting a different scheme's
+# result as the requested one), so we FAIL CLOSED here.
+#
+# MYNN(5) and MYJ(2) are exempt: MYNN consumes the SELECTED scheme's kinematic flux
+# handles directly from State (physics_couplers._surface_fluxes_from_state), and MYJ
+# re-runs the Janjic surface layer it is mandatorily paired with (sf_sfclay=2). bl=0
+# (no PBL) needs no surface forcing.
+#
+# The set below names the PBL options whose forcing is re-derived from revised-MM5,
+# and hence are faithful ONLY with sf_sfclay_physics=1 (revised-MM5). This matches
+# WRF's isfc==1 requirement for YSU/MRF (sf in {1,91}); we further restrict to {1}
+# because only the revised-MM5 forcing path is wired into these adapters (the old-MM5
+# sf=91 forcing is NOT separately threaded into the PBL re-derivation).
+_PBL_REQUIRES_REVISED_MM5_SFCLAY: frozenset[int] = frozenset({1, 7, 8, 99})
+_REVISED_MM5_SFCLAY_OPTION = 1
+
+
 class UnsupportedSchemeSelection(ValueError):
     """Raised when a namelist selects a physics option the dispatcher cannot route."""
 
@@ -425,6 +458,20 @@ def resolve_physics_suite(config: Any) -> PhysicsSuite:
         raise UnsupportedSchemeSelection(
             "MYJ pairing violation: bl_pbl_physics=2 and sf_sfclay_physics=2 "
             "must be selected together; no fallback surface-layer/PBL pairing is WRF-faithful."
+        )
+    if (
+        pbl_opt in _PBL_REQUIRES_REVISED_MM5_SFCLAY
+        and sfclay_opt != _REVISED_MM5_SFCLAY_OPTION
+    ):
+        raise UnsupportedSchemeSelection(
+            f"surface-layer/PBL pairing violation: bl_pbl_physics={pbl_opt} "
+            f"(YSU/ACM2/BouLac/MRF) re-derives its surface-layer forcing via the "
+            f"revised-MM5 surface layer, so it is faithful ONLY with "
+            f"sf_sfclay_physics=1 (revised-MM5); selected sf_sfclay_physics="
+            f"{sfclay_opt}. Running this pairing would SILENTLY substitute revised-MM5 "
+            f"surface forcing for the requested scheme. Select sf_sfclay_physics=1, "
+            f"or use bl_pbl_physics=5 (MYNN, consumes the selected scheme's State flux "
+            f"handles) / bl_pbl_physics=2 (MYJ, pairs with sf_sfclay_physics=2)."
         )
     return PhysicsSuite(
         microphysics=scheme_entry("microphysics", _option_from(config, "microphysics")),
