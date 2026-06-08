@@ -144,3 +144,5 @@ closure + outsider-runnable reproducibility + community-standard benchmarks.
   - Q3: PBL/cumulus moisture tendencies should fold into the RK scalar tendency before the final limiter, not apply later as state deltas (= the existing v0.9 physics-state-delta-post-dycore cadence).
   - Q2: report the final top-hat overshoot as a validation LIMITATION; Q4: real-map/lateral-boundary conservation + physics-increment positivity still untested.
   → CARRY-OVER: a deeper WRF-cadence-fidelity sprint (acoustic-accumulated scalar fluxes + physics-tendency folding) for BOTH theta+moisture — GPU-bound, same family as #7-headline-skill. moisture_adv_opt stays OPT-IN (default-off) until then. GPT cross-check = did its job (validated merge + surfaced real refinements).
+
+**2026-06-08 ~09:24** — optics/taumol-chunk MERGED + inertness verified; launching GWD-nested-1km RETEST (#4) on chunked trunk (GPU exclusive). VRAM SW-88.6%/LW-43.6%; deep-col OOM→fits → expect 24h-nested-1km+GWD to fit now.
