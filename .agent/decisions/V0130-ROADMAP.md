@@ -158,3 +158,7 @@ v0.13.0 now releases only when ALL closed (Tier1 #7-skill, Tier2 remainder, all 
 - (next wave) Tier2 compile-perf (sub-jit + parallel-compile-knob) + CPU-flock; multi-hardware = physically HW-limited (1 GPU), honest-not-closeable.
 
 **2026-06-08 ~12:32 — #5 (2-way+GWD 24h) OOM at hr12** (RESOURCE_EXHAUSTED 3.66GiB). GWD-one-way fit 24h GREEN; the 2-way feedback path (child→parent copy_fcn + sm121 smoother) adds resident VRAM that tips over at a later-hour peak. CLOSE (no carry-over): dispatched 2-way-feedback-VRAM-reduction lane (release child-copy post-area-average, chunk/reuse smoother buffers) → then re-test 2-way+GWD 24h on GPU. #5 = VRAM-marginal, fixable (not a feedback-numerical bug — ran finite to hr12).
+
+**2026-06-08 ~12:57 — wave-1 merges + diagnostics.** MERGED: #7 rad_rk_tendf A/B knob (870b4ff0, CPU gates PASS; honest: won't close 8.06→7.5 alone — GPU A/B + icloud_bl/acoustic-flux levers = follow-ups); T3-pbl MRF bl=99 (oracle 5.4e-16; YSU/MYJ/MYNN/ACM2/BouLac already op; Shin-Hong+QNSE carry-over). T3 so far: microphysics WSM7, cumulus oracle-infra, pbl MRF. 
+**TOST Step-0 rc=2 root cause = DATA-PREP**: standalone native-init needs wrfbdy_d02 (lateral forcing); the L2 corpus merged-run-root has no CPU-WRF wrfout history + no wrfbdy_d02. Fix = build wrfbdy_d02 from each case's retained met_em via native-init LBC, THEN run n=15. NOT a forecast/physics bug (scoring path already CPU-rc0-proven). → dispatch TOST-fix-and-run lane.
+RUNNING (CPU): aacae3=T3-radiation, ad9e47=T3-surface+lsm, a07e524=#5-2way-VRAM. GPU free.
