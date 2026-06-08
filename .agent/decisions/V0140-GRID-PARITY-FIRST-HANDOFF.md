@@ -267,20 +267,27 @@ Wave deliverables are expected under `proofs/v014/` and
 - `019ea988-9f3c-7571-9073-f2b6d41b09f6` (`Kierkegaard`):
   CPU-only same-state savepoint request manifest sprint
   `.agent/sprints/2026-06-09-v014-same-state-savepoint-request/sprint-contract.md`.
-  Write scope: `proofs/v014/same_state_savepoint_request.*` and
+  Completed and manager-validated 2026-06-09. Deliverables:
+  `proofs/v014/same_state_savepoint_request.*` and
   `.agent/reviews/2026-06-09-v014-same-state-savepoint-request.md`. No `src/`
-  edits, no WRF edits, no GPU. Objective: package Helmholtz's h10 selected
-  cells, native-stagger context, patch bounds, full-column requirement, term
-  groups, RK/acoustic sampling, and expected savepoint artifact schema so the
-  WRF instrumentation worker can start without rereading broad diagnostics.
+  edits, no WRF edits, no GPU. Manager reran the CPU-only generator and
+  revalidated JSON/compile. Verdict: manifest packages h10 `d02`
+  (`2026-05-02T04:00:00+00:00`) with exactly 24 selected mass-grid cells,
+  native U/V/W/PH stagger context, halo-8 patch bounds, full native vertical
+  column requirement, RK stages `1,2,3`, first/last acoustic substep samples,
+  and 15 WRF source term groups:
+  `stage_input`, `mass_coupling`, `momentum_advection`,
+  `scalar_theta_mu_advection`, `diffusion`, `horizontal_pgf`, `coriolis`,
+  `source_tendency_folding`, `small_step_prep`, `acoustic_uv`, `mu_theta`,
+  `w_ph`, `pressure_rho_refresh`, `boundary_spec_relax`,
+  `final_stage_state`.
 
 ## Next Manager Actions
 
-1. Integrate Kierkegaard's savepoint request manifest.
-2. Open the next same-state localization sprint using Helmholtz h10 cell/level
-   manifest plus Sartre's WRF savepoint path, unless Ampere finds a runtime
-   base-state blocker. Ampere did not find one; proceed with documented
-   `PHB/HGT/XLAT/XLONG` exclusions and treat `PB/MUB` as dynamic symptoms.
+1. Open the next same-state localization sprint using Helmholtz/Kierkegaard h10
+   cell/level manifest plus Sartre's WRF savepoint path. Ampere did not find a
+   runtime base-state blocker; proceed with documented `PHB/HGT/XLAT/XLONG`
+   exclusions and treat `PB/MUB` as dynamic symptoms.
 4. Keep `wrfout_writer.py`, runtime dycore, pressure-gradient, acoustic,
    radiation, and surface-layer code read-only unless the static/base parity
    proof isolates their ownership.
