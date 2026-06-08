@@ -93,3 +93,8 @@ closure + outsider-runnable reproducibility + community-standard benchmarks.
 - ✅ **RRTM-LW skeptic** (T1) VERDICT SOUND `a057e04`: no JAX port bug (max div 2.7e-13), oracle-integrity clean. 2 findings → rrtmlw-fix lane.
 - 🔄 RUNNING: g-point-chunk-RRTMG (GPU keystone), rrtmlw-fix (F1 ptop + F2 fail-loud).
 - Carry-overs noted: 51 non-.py proof files still have /home/enric (29 dev .sh + logs; not on CPU verify path); stale rrtmg manifest-pin `5cc63950` vs disk `0695e523` (radiation-owned → fold into g-point-chunk or a radiation lane); proof-report .json regeneration embeds git_head (consider gitignore).
+
+**2026-06-08 ~07:29** — wave 1 cont.:
+- ✅ **RRTM-LW findings fix** (T1 #6) MERGED `a5e4973`: F1 `_nbuf` grid-aware (real top_pressure_pa; None→5000 = production bit-identical, 7+7 cases max diff 0.0); F2/F3 masking-clamps→fail-loud NaN guards (forbidden pattern removed). New pristine-WRF non-5000-ptop oracle (100mb/20mb): grid-aware rel ~2e-13 vs hardcoded 4.8e-2/NaN. Oracle OVERALL PASS, 9 wiring tests, /home/enric in proofs/*.py stays 0. → Tier1 #6 DONE.
+- 🔄 g-point-chunk now in GPU VRAM-measurement phase (~21GB held).
+- v0.13 trunk @ a5e4973. DONE: reproducibility (T2), RRTM-LW skeptic+fix (T1#6). BANKED: compile-speed (T1#1, GPU-validate pending). RUNNING: g-point-chunk (T1#3 keystone).
