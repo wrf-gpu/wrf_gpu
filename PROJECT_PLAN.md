@@ -38,7 +38,7 @@ The canonical user-facing scope statement is the top of [`README.md`](README.md)
   **2 MYJ (v0.13.0)**, 5 MYNN, 7 ACM2, 8 BouLac, **99 MRF (v0.13.0)**}; SFCLAY
   {1 revised-MM5, **2 Janjic-Eta (v0.13.0)**, **3 GFS (v0.13.0)**, 5 MYNN-SL,
   7 Pleim-Xiu, **91 old-MM5 (v0.13.0)**}; CU {1 KF, 2 BMJ, 3 Grell-Freitas, 6 Tiedtke
-  scan-wired with a real-QVFTEN fix branch pending merge}; RRTMG SW+LW + Dudhia-SW/RRTM-LW +
+  operational when active flux-form moisture advection provides WRF-style RQVFTEN}; RRTMG SW+LW + Dudhia-SW/RRTM-LW +
   **GSFC-SW (v0.13.0)** + clear-sky diagnostics; GWD `gwd_opt=1` (v0.13.0 default-on nested);
   LSM {2 Noah-classic, 4 Noah-MP}.
   Source of truth: [`src/gpuwrf/contracts/physics_registry.py`](src/gpuwrf/contracts/physics_registry.py)
