@@ -179,7 +179,7 @@ What it proves:
 - The heaviest known coupling combination is stable through the largest horizon
   that is expected to fit reliably on the current 32GB workstation.
 
-### B4 - Powered TOST n=15, CPU-WRF And AEMET
+### B4 - Powered TOST n=15, CPU-WRF/AEMET, And Grid-Cell Envelope
 
 Type: SECONDARY gate-keeper equivalence, PRIMARY repeated nested-run stability
 
@@ -199,6 +199,18 @@ scripts/run_gpu_lowprio.sh --cores 0-23 -- env \
     --resume
 ```
 
+B4 has two distinct proof pillars. They answer different questions and both must
+be reported before any v0.14 equivalence claim:
+
+- **B4a station-skill TOST:** compare CPU-WRF skill vs AEMET and GPU skill vs
+  AEMET on complete station/time pairs (`tost_pairs`). This is the ADR-029
+  statistical TOST artifact.
+- **B4b direct grid-cell envelope:** compare GPU wrfout against CPU-WRF wrfout
+  directly over every common d02 grid cell and lead hour (`cell_level`). This is
+  not a station-skill test; it is the field-by-field numerical divergence
+  envelope reviewers expect when asking whether "millions of grid values" remain
+  close enough.
+
 Pass criterion:
 
 - All 15 available manifest cases are either scored or have documented,
@@ -212,12 +224,24 @@ Pass criterion:
 - AEMET pair counts are nonzero for each scored case where observations exist.
 - Any `NOT_EQUIVALENT` result is kept as a result, not treated as a harness
   failure.
+- `cell_level_stats.json` is emitted and contains pooled grid-cell RMSE, MAE,
+  p95, p99, max, Pearson r, and fraction-within-tolerance for T2, U10, and V10.
+- The direct grid-cell envelope is reported separately from station TOST. The
+  current script's `cell_tol` values (`T2=2.0 K`, `U10/V10=2.5 m/s`) are
+  diagnostic tolerances, not a historical pass claim. For v0.14 closure, promote
+  them into a predeclared envelope or replace them with an ADR-bound envelope
+  before the final run; do not tune them after seeing the campaign.
+- No v0.14 "CPU-WRF equivalent" claim is allowed unless both B4a and B4b pass,
+  or unless the release explicitly says which pillar failed and why.
 
 What it proves:
 
 - This is the main gate-keeper-facing equivalence artifact currently available
   from retained truth.
 - It also provides repeated 9/3 km nested GPU stability evidence across cases.
+- It separates station skill from direct grid-field agreement so a station
+  TOST result cannot hide a broad spatial divergence, and a good grid envelope
+  cannot be mistaken for an observation-skill proof.
 
 n=30 path:
 
