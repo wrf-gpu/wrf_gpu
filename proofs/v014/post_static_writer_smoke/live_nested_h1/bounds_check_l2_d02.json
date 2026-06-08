@@ -1,0 +1,43 @@
+{
+  "aggregate": {
+    "theta_lower_30_max_k": 349.8239440917969,
+    "theta_lower_30_min_k": 290.0340270996094,
+    "theta_max_k": 494.691650390625,
+    "theta_min_k": 290.0340270996094,
+    "u_abs_max_m_s": 33.02834701538086,
+    "v_abs_max_m_s": 9.444591522216797,
+    "w_abs_max_m_s": 11.237213134765625
+  },
+  "bounds_policy": {
+    "theta_broad_k": [
+      150.0,
+      550.0
+    ],
+    "theta_lower_30_levels_k": [
+      200.0,
+      400.0
+    ],
+    "wind_abs_max_m_s": 150.0
+  },
+  "failures": [],
+  "file_count": 1,
+  "files": [
+    {
+      "all_numeric_fields_finite": true,
+      "nonfinite_counts": {},
+      "numeric_variable_count": 103,
+      "path": "/tmp/v014_post_static_writer_smoke/l2_d02_20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_19:00:00",
+      "theta_lower_30_max_k": 349.8239440917969,
+      "theta_lower_30_min_k": 290.0340270996094,
+      "theta_max_k": 494.691650390625,
+      "theta_min_k": 290.0340270996094,
+      "u_abs_max_m_s": 33.02834701538086,
+      "v_abs_max_m_s": 9.444591522216797,
+      "valid_time_utc": "2026-05-01T19:00:00+00:00",
+      "w_abs_max_m_s": 11.237213134765625
+    }
+  ],
+  "schema": "M7L2D02BoundsCheck",
+  "schema_version": 1,
+  "status": "PASS"
+}

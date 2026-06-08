@@ -132,6 +132,20 @@ probe to split forecast-step drift from h1 writer reconstruction. Because the
 grid-envelope script uses retained old GPU wrfouts, its static mismatch count
 cannot improve until a fresh writer artifact exists.
 
+Manager closeout 2026-06-09 00:20 WEST: committed `a42865e8`
+(`v014 fix static metric writer payload`) and `4374ca77`
+(`v014 add wrfout grid comparator`). The new comparator
+`scripts/compare_wrfout_grid.py` is now the primary context-sparing
+CPU-WRF-vs-GPU wrfout grid validation tool. Smoke proof:
+`proofs/v014/grid_comparison_framework_smoke.*`; method:
+`proofs/v014/grid_comparison_method.md`; review:
+`.agent/reviews/2026-06-08-v014-grid-comparison-framework.md`. Case 3 retained
+smoke: 24 paired h1-h24 d02 files, 100 common variables, 99 numeric fields,
+37 dynamic, 61 static/time-invariant, 2 metadata, report-only verdict because
+no frozen tolerance manifest was supplied. Top retained static failures
+(`C2F/C2H/C4F/C4H`) are expected to disappear only after a fresh post-fix
+writer artifact; retained old wrfouts still carry the stale writer payload.
+
 ## Active Wave 1
 
 - `019ea94e-898f-7211-9561-e70af150fcfd` (`Averroes`):
@@ -179,22 +193,50 @@ Wave deliverables are expected under `proofs/v014/` and
 - `019ea968-c876-71c3-886a-133a3e740ab2` (`Hypatia`):
   v0.14 grid comparison framework sprint
   `.agent/sprints/2026-06-08-v014-grid-comparison-framework/sprint-contract.md`.
-  Purpose is a fast complete wrfout-grid comparator with concise top-level
-  output and detailed machine artifacts for Canary and Switzerland. Write scope:
-  `scripts/compare_wrfout_grid.py`, `proofs/v014/grid_comparison_*`, and one
-  review report; no model code and no GPU.
+  Completed and accepted. Commit `4374ca77`.
+
+## Active Wave 3
+
+- Manager-owned GPU smoke:
+  `.agent/sprints/2026-06-09-v014-post-static-writer-smoke/sprint-contract.md`.
+  Purpose is a short h1 live-nested d01->d02 run through
+  `proofs/v0120/powered_tost_n15/run_one_case_v0120.py` on the current branch,
+  then `scripts/compare_wrfout_grid.py --min-lead 1 --max-lead 1`, to prove
+  the static metric writer payload is fixed on disk and clear stale retained
+  artifacts from the comparator's top fields. First attempted command using
+  `scripts/m7_l2_d02_replay.py` was blocked immediately because that old
+  single-domain d02 path demands missing `wrfbdy_d02`; this is a known wrong
+  path for L2 nested cases, not a GPU/OOM issue. Corrected command uses
+  `/tmp/v0120_merged_run_root` and the live-nested TOST per-case runner.
+  Completed 2026-06-09 00:36 WEST: h1 live-nested run is `L2_D02_GREEN`;
+  `bounds/RMSE/wall_clock` all PASS; d02 wrfout written under
+  `/tmp/v014_post_static_writer_smoke/l2_d02_20260501_18z_l2_72h_20260519T173026Z`.
+  h1 comparator proof: `proofs/v014/post_static_writer_grid_compare.*`.
+  Former static metric writer failures are exact on disk:
+  `C1/C2/C3/C4`, `DN/DNW/RDN/RDNW`, and all `MAPFAC_*` have
+  `rmse=max_abs=bias=0`. Remaining top h1 static/base fields are
+  `PHB/MUB/PB/HGT/XLAT/XLONG`; dynamic top fields include
+  `PSFC/MU/P/HFX/PBLH/PH` and radiation fluxes. Closeout:
+  `.agent/reviews/2026-06-09-v014-post-static-writer-smoke.md`.
+- `019ea977-234a-7b52-b87b-b6fb709e2d2d` (`Helmholtz`):
+  CPU-only dynamic field attribution sprint
+  `.agent/sprints/2026-06-09-v014-dynamic-field-attribution/sprint-contract.md`.
+  Write scope: `proofs/v014/dynamic_field_attribution.*` and
+  `.agent/reviews/2026-06-09-v014-dynamic-field-attribution.md`. No `src/`
+  edits, no GPU. Objective: select first/worst leads, vertical levels, regions,
+  and 16-32 candidate cells for same-state tendency localization.
 
 ## Next Manager Actions
 
-1. Commit the accepted static metric/base-state patch with its proof objects.
-2. Finish and gate the grid-comparison framework smoke. It becomes the primary
-   context-sparing wrfout-directory comparator for Canary and Switzerland.
+1. Integrate Helmholtz's dynamic field attribution proof and open the next
+   same-state tendency localization sprint with the selected lead/cells.
+2. Integrate Sartre's WRF savepoint feasibility proof so same-state
+   localization starts from exact WRF source/build paths.
 3. Keep `wrfout_writer.py`, runtime dycore, pressure-gradient, acoustic,
    radiation, and surface-layer code read-only unless the static/base parity
    proof isolates their ownership.
-4. Launch same-state tendency localization as the next dynamic-debug sprint once
-   the comparator smoke is committed, with a focus on `PB/MUB`, `PSFC`, `MU`,
-   `P`, `PH`, `U`, `V`, `U10`, and `V10`.
+4. Launch source-changing dynamic fixes only after a same-state/term proof
+   names the first failing operator or cadence path.
 5. Use Opus 4.8 xhigh/max via `claude --permission-mode auto` only after two
    failed GPT attempts on the same static/base or tendency root-cause problem.
 6. Keep GPU time for short targeted probes only; no powered TOST, no Switzerland

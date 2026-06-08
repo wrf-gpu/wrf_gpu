@@ -1,0 +1,53 @@
+{
+  "failures": [],
+  "fields": {
+    "T2": {
+      "gen2_source_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_19:00:00",
+      "max_abs_error": 3.015106201171875,
+      "mean_error": -0.1739811840024657,
+      "pass": true,
+      "rmse": 0.4471655786037445,
+      "shape": [
+        66,
+        159
+      ],
+      "threshold": 3.0,
+      "units": "K",
+      "valid_time_utc": "2026-05-01T19:00:00+00:00"
+    },
+    "U10": {
+      "gen2_source_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_19:00:00",
+      "max_abs_error": 9.378246307373047,
+      "mean_error": -0.02864928418450584,
+      "pass": true,
+      "rmse": 0.454221248626709,
+      "shape": [
+        66,
+        159
+      ],
+      "threshold": 7.5,
+      "units": "m s-1",
+      "valid_time_utc": "2026-05-01T19:00:00+00:00"
+    },
+    "V10": {
+      "gen2_source_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_19:00:00",
+      "max_abs_error": 4.819608688354492,
+      "mean_error": -1.2291707390500792,
+      "pass": true,
+      "rmse": 1.2879773378372192,
+      "shape": [
+        66,
+        159
+      ],
+      "threshold": 7.5,
+      "units": "m s-1",
+      "valid_time_utc": "2026-05-01T19:00:00+00:00"
+    }
+  },
+  "final_wrfout": "/tmp/v014_post_static_writer_smoke/l2_d02_20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_19:00:00",
+  "reference_run_dir": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z",
+  "schema": "M7L2D02Tier4RMSE",
+  "schema_version": 1,
+  "status": "PASS",
+  "valid_time_utc": "2026-05-01T19:00:00+00:00"
+}
