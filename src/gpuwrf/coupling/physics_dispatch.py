@@ -180,6 +180,19 @@ _SFCLAY_ENTRIES: dict[int, SchemeEntry] = {
     7: SchemeEntry("surface_layer", 7, SFCLAY_SCHEMES[7].name, "gpuwrf.physics.sfclay_pleim_xiu",
                    "step_pxsfclay_column", "column_state", True,
                    reads_state=_SFCLAY_READS, writes_state=_SFCLAY_WRITES),
+    # v0.13 Tier-3: NCEP-GFS (3) + old-MM5 (91) surface layers. Both are jit/vmap
+    # batched columns that produce HFX/QFX/USTAR; coupling.scan_adapters wraps them
+    # to write the B2 kinematic flux handles. fp64 pristine-WRF oracle-validated.
+    3: SchemeEntry("surface_layer", 3, SFCLAY_SCHEMES[3].name, "gpuwrf.physics.sfclay_gfs",
+                   "sf_gfs_columns", "column_state", True,
+                   reads_state=_SFCLAY_READS, writes_state=_SFCLAY_WRITES,
+                   notes="NCEP-GFS Monin-Obukhov surface layer; scan-wired via "
+                   "coupling.scan_adapters.gfs_sfclay_adapter."),
+    91: SchemeEntry("surface_layer", 91, SFCLAY_SCHEMES[91].name, "gpuwrf.physics.sfclay_old_mm5",
+                    "sfclay_old_mm5_columns", "column_state", True,
+                    reads_state=_SFCLAY_READS, writes_state=_SFCLAY_WRITES,
+                    notes="Classic MM5 4-regime Monin-Obukhov surface layer; scan-wired via "
+                    "coupling.scan_adapters.sfclay_old_mm5_adapter."),
 }
 
 # --- Cumulus (cu_physics) ------------------------------------------------------
@@ -241,6 +254,17 @@ _CU_ENTRIES: dict[int, SchemeEntry] = {
 # lsm_noah_classic.sflx_step land step + a 4-layer land carry (S0 land carry).
 _SURFACE_ENTRIES: dict[int, SchemeEntry] = {
     0: SchemeEntry("land_surface", 0, "disabled", "", "", "disabled", True),
+    # v0.13 Tier-3 slab LSM (1): jit/vmap column port + fp64 oracle, REFERENCE-ONLY
+    # (carries TSLB soil temperatures; not yet threaded into the operational scan --
+    # needs the GSW/GLW radiation forcing + TMN/THC/EMISS static hook).
+    1: SchemeEntry("land_surface", 1, SURFACE_SCHEMES[1].name, "gpuwrf.physics.lsm_slab",
+                   "slab_columns", "land_step", True,
+                   reads_state=("t_skin", "mavail"),
+                   writes_state=("t_skin",),
+                   carry_members=("tslb",),
+                   notes="5-layer thermal-diffusion slab LSM; reference-only (fp64 oracle "
+                   "proofs/v013/t3_surface_lsm_oracle.json) -- fail-closed in the operational "
+                   "scan until the slab LSM hook (TSLB carry + GSW/GLW forcing) lands."),
     2: SchemeEntry("land_surface", 2, SURFACE_SCHEMES[2].name, "gpuwrf.physics.lsm_noah_classic",
                    "sflx_step", "land_step", True,
                    reads_state=("t_skin", "soil_moisture", "mavail"),

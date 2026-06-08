@@ -141,7 +141,10 @@ _IMPLEMENTED: Mapping[str, frozenset[int]] = {
     # bl=2 MYJ + sf=2 Janjic Eta are the v0.13 traceable MYJ pair (operationally
     # scan-wired via physics.myj_adapters + runtime.operational_mode; mandatory pair).
     "bl_pbl_physics": frozenset({0, 1, 2, 5, 7, 8}),
-    "sf_sfclay_physics": frozenset({0, 1, 2, 5, 7}),
+    # sf_sfclay 3 (NCEP-GFS) + 91 (old-MM5) are v0.13 Tier-3 scan-wired surface
+    # layers (coupling.scan_adapters.{gfs_sfclay_adapter,sfclay_old_mm5_adapter};
+    # fp64 pristine-WRF oracle-validated; B2 kinematic flux handles).
+    "sf_sfclay_physics": frozenset({0, 1, 2, 3, 5, 7, 91}),
     "sf_surface_physics": frozenset({0, 2, 4}),
     # ra_lw=1 (classic AER RRTM 16-band LW) is now operationally scan-wired
     # (coupling.physics_couplers.rrtm_lw_theta_tendency over the JAX-traceable
@@ -164,6 +167,25 @@ _REFERENCE_ONLY: Mapping[str, dict[int, tuple[str, str]]] = {
             "gated by a distinct WRF source path; GPU-batching/gating is TODO, so "
             "it is fail-closed in the operational GPU scan.",
             "Use cu_physics=6 (modified Tiedtke, GPU-operational) or 1/3.",
+        ),
+    },
+    # sf_surface_physics=1 (5-layer thermal-diffusion slab LSM) is a v0.13 Tier-3
+    # JAX port (physics.lsm_slab.slab_columns) with a passing fp64 pristine-WRF
+    # oracle (proofs/v013/t3_surface_lsm_oracle.json), but it is NOT yet threaded
+    # into the operational LSM scan slot: the slab needs a land carry (TSLB soil
+    # temperatures) + radiation forcing (GSW/GLW) + static (TMN/THC/EMISS) bundle
+    # that the resident State does not yet carry (unlike the surface-layer slot,
+    # which is a plain State->State adapter). So it is REFERENCE_ONLY: selectable
+    # for a single-column reference comparison, fail-closed in the operational scan.
+    "sf_surface_physics": {
+        1: (
+            "the 5-layer thermal-diffusion slab LSM is JAX-ported and fp64 "
+            "oracle-validated (physics.lsm_slab), but the operational LSM scan "
+            "slot needs a TSLB soil-temperature land carry + GSW/GLW radiation "
+            "forcing + TMN/THC/EMISS statics that the resident State does not "
+            "yet carry; the LSM hook is deferred, so it fail-closes in the scan.",
+            "Use sf_surface_physics=4 (Noah-MP) or 2 (Noah classic); slab=1 is a "
+            "reference-only single-column path until the slab LSM hook lands.",
         ),
     },
     # bl_pbl_physics=2 (MYJ) + sf_sfclay_physics=2 (Janjic Eta) were REFERENCE_ONLY
@@ -190,9 +212,11 @@ _DEFAULT_ALTERNATIVE: Mapping[str, str] = {
     "Freitas, 6=Tiedtke are GPU-operational).",
     "bl_pbl_physics": "Use one of bl_pbl_physics=0/1/2/5/7/8 (5=MYNN, 1=YSU, 2=MYJ "
     "[pair with sf_sfclay_physics=2], 7=ACM2, 8=BouLac).",
-    "sf_sfclay_physics": "Use one of sf_sfclay_physics=0/1/2/5/7 (5=MYNN-SL, "
-    "1=revised-MM5, 2=Janjic Eta [pair with bl_pbl_physics=2], 7=Pleim-Xiu).",
-    "sf_surface_physics": "Use sf_surface_physics=4 (Noah-MP) or 2 (Noah classic).",
+    "sf_sfclay_physics": "Use one of sf_sfclay_physics=0/1/2/3/5/7/91 (5=MYNN-SL, "
+    "1=revised-MM5, 2=Janjic Eta [pair with bl_pbl_physics=2], 3=NCEP-GFS, "
+    "7=Pleim-Xiu, 91=old-MM5).",
+    "sf_surface_physics": "Use sf_surface_physics=4 (Noah-MP) or 2 (Noah classic); "
+    "1=slab is reference-only.",
     "ra_lw_physics": "Use ra_lw_physics=4 (RRTMG).",
     "ra_sw_physics": "Use ra_sw_physics=4 (RRTMG) or 1 (Dudhia); both GPU-operational.",
     "diff_opt": "Use diff_opt=0/1/2 (1+km_opt=4 = 2-D Smagorinsky real-data "
