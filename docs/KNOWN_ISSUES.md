@@ -238,17 +238,36 @@ These are intentional boundaries of the v0.12.0 release, carried forward by desi
 
 - **Gotthard / Switzerland operational suite** — v0.12.0 ships the standalone port + the
   AIFS / 1 km-nest path only.
-- **Scheme scan-wiring of the reference-only families** — MYJ PBL + Janjic-Eta sfclay,
-  Dudhia SW, classic RRTM LW, and New-Tiedtke cumulus are recognized and parity-proven but
-  **fail closed** if selected operationally (not scan-wired into the GPU loop).
+- **Scheme scan-wiring of the remaining reference-only families** — MYJ PBL + Janjic-Eta
+  sfclay and New-Tiedtke cumulus are recognized and parity-proven but **fail closed** if
+  selected operationally. (v0.12.0 newly wired **Dudhia SW `ra_sw=1`** and **classic AER RRTM
+  LW `ra_lw=1`** to operational, pristine-WRF oracles PASS, default RRTMG `=4` byte-unchanged.)
 - **Full two-way nesting** — feedback + radiation-in-loop + in-loop `w` relaxation +
-  5-domain long-run equivalence (one-way 24 h is proven via the v0.11.0 replay-boundary proof).
+  5-domain long-run equivalence (one-way 24 h is proven via the v0.11.0 replay-boundary proof;
+  v0.12.0 lands the 2-way feedback scaffolding, defaults off → 24 h real-GPU equivalence = v0.13).
 - **fp32 standalone path** — gated-fp32 operational mode (ADR-007), pending evidence it helps
   on this memory-bound workload.
-- **Full 375-variable `wrfout`** (KI-3), **RRTMG SW `taug` UV-band fix** (KI-6), and the
+- **Full 375-variable `wrfout`** — v0.12.0 ships **104 variables** (up from 64; **B1** radiation
+  fluxes + **B3** Noah-MP snow-layer added this release); the full WRF 375-var schema remains a
+  scope boundary. Also deferred: deeper **RRTMG SW `taug` UV-band fidelity** (KI-6) and the
   **`*_tendf` source-tendency adapter** for RK-stage physics.
-- **Standalone nested 24 h 1 km skill proof** — <<MANAGER-FILL: Lane A in flight; replace with the proof result/verdict if it lands before the v0.12.0 tag, else state it remains a smoke-only (2 h) demonstration carried to v0.13.0.>>
-- **Powered n=15 TOST scoring** (KI-5) — <<MANAGER-FILL: pending GPU campaign; do NOT claim a TOST PASS.>>
+- **GWD operational coupling on the nested path** — `gwd_opt=1` is gated **off by default**
+  (`GPUWRF_GWD_NESTED=1` to enable): the 24 h nested 1 km + GWD run exceeds the single-GPU fp64
+  VRAM ceiling at ~sim-hr 7 (the RRTMG g-point temporary). The kernel is oracle-validated
+  (pristine-WRF, fp64 ~1e-13) and ran clean for 7 sim-hours; the fix (g-point-chunked RRTMG
+  temporary) → v0.13.
+- **Compile-speed infra (AOT + persistent XLA autotune cache)** — CPU-proven (3.8–5.8× cold→warm,
+  bit-identical) but reverted from v0.12.0 because its XLA-autotune flag injection aborts the GPU
+  path; carried to v0.13 with GPU validation.
+- **Classic RRTM LW cross-model skeptic pass** — `ra_lw=1` shipped operational + oracle-PASS, but
+  the author wrote both kernel and oracle; an independent skeptic audit of the band/laytrop
+  vectorization is a v0.13 hardening item.
+- **Standalone nested 24 h 1 km gate — PASS** (resolved, not a deferral): `PIPELINE_GREEN`, 24/24
+  `wrfout` per domain, all fields finite at +24 h, GWD gated-off
+  (`proofs/v0120/nested_24h_1km_gate_FINAL.json`). Completion + finiteness gate on the prod-failing
+  case, not a skill-vs-truth claim.
+- **Powered n=15 TOST scoring** (KI-5) — **not scored** for v0.12.0 (the GPU `daily_pipeline`
+  scoring path needs an rc=2 fix); carried to a v0.12.x point release. **No TOST PASS is claimed.**
 
 ---
 

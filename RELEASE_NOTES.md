@@ -109,7 +109,7 @@ See [`docs/KNOWN_ISSUES.md`](docs/KNOWN_ISSUES.md) for full detail.
 
 | ID | Summary | Severity |
 |---|---|---|
-| KI-3 | Focused **64-variable** `wrfout` (vs WRF's 375); missing only stochastic-seed + Noah-MP snow-layer diagnostics. | Scope boundary |
+| KI-3 | Focused **104-variable** `wrfout` (vs WRF's full 375-var schema); v0.12.0 **added the radiation-flux (B1) and Noah-MP snow-layer (B3) diagnostics**. Remaining gap is mostly stochastic-seed + less-common diagnostics. | Scope boundary |
 | KI-4 | d02 **U10** episodic final-lead under-prediction (8.06 vs 7.5 m/s bar); within bar at all other leads, beats persistence 23/24. | Documented residual |
 | KI-5 | Powered **n=15 TOST** not yet scored (corpus prepared); **no TOST PASS is claimed**, n=15 underpowered. | Scope boundary |
 | KI-6 | RRTMG SW intermediate `taug` differs in 4 UV bands; integrated fluxes pass tier-1 (< 0.05% rel). Pre-existing; carried to v0.13.0. | Isolated |
@@ -120,9 +120,11 @@ See [`docs/KNOWN_ISSUES.md`](docs/KNOWN_ISSUES.md) for full detail.
 
 - **Gotthard / Switzerland operational suite** — v0.12.0 ships the standalone port
   + the AIFS / 1 km-nest path only.
-- **Scheme scan-wiring of the reference-only families** — MYJ PBL + Janjic-Eta
-  sfclay, Dudhia SW, classic RRTM LW, New-Tiedtke cumulus are recognized and
-  parity-proven but **fail closed** if selected operationally.
+- **Scheme scan-wiring of the remaining reference-only families** — MYJ PBL +
+  Janjic-Eta sfclay and New-Tiedtke cumulus are recognized and parity-proven but
+  **fail closed** if selected operationally. (v0.12.0 newly wired **Dudhia SW
+  `ra_sw=1`** and **classic RRTM LW `ra_lw=1`** to operational — see the capability
+  expansion below.)
 - **Full two-way nesting** — feedback + radiation-in-loop + in-loop `w` relaxation
   + 5-domain long-run equivalence (one-way 24 h is proven via the v0.11.0
   replay-boundary proof).
@@ -131,10 +133,49 @@ See [`docs/KNOWN_ISSUES.md`](docs/KNOWN_ISSUES.md) for full detail.
 - **Full 375-variable `wrfout`** (KI-3), **RRTMG SW `taug` UV-band fix** (KI-6),
   and the **`*_tendf` source-tendency adapter** for RK-stage physics.
 
-## Pending before tag (manager fills)
+## Resolved at tag
 
-- **Standalone nested 24 h 1 km proof** — <<MANAGER-FILL: Lane A in flight; replace
-  with the proof result/verdict if it lands before tag, else state it remains a
-  smoke-only (2 h) demonstration carried to v0.13.0.>>
-- **Powered n=15 TOST** — <<MANAGER-FILL: pending GPU campaign; do NOT claim a TOST
-  PASS — record "not scored" if the campaign has not completed.>>
+- **Standalone nested 24 h 1 km gate — PASS.** The 24 h standalone nested 1 km run
+  on the production AIFS case (`--max-dom 3`, d01→d02→d03, no CPU-WRF `wrfout`) is
+  `PIPELINE_GREEN`: 24/24 `wrfout` per domain, all fields finite at +24 h (d03 T2 ∈
+  [279.6, 300.9] K), forecast-only ≈ 2.0 h
+  (`proofs/v0120/nested_24h_1km_gate_FINAL.json`). Completion + finiteness gate on
+  the prod-failing case, **not** a skill-vs-truth claim.
+- **Powered n=15 TOST — not scored.** The GPU scoring campaign did not complete for
+  v0.12.0 (the GPU `daily_pipeline` scoring path needs an rc=2 fix); carried to a
+  v0.12.x point release. **No equivalence / TOST PASS is claimed.**
+
+## Capability expansion shipped in v0.12.0
+
+Beyond the standalone headline, v0.12.0 lands a broad WRF-compatibility expansion
+(each merged behind its own oracle/proof, defaults unchanged):
+
+- **`wrfout` coverage 64 → 104 variables** — radiation-flux diagnostics (B1) and
+  Noah-MP snow-layer state (B3) now written.
+- **Gravity-wave drag operational coupling** (`gwd_opt=1`) — reads geo_em sub-grid
+  orography stats; pristine-WRF column oracle PASS (fp64 ~1e-13). **Gated off by
+  default on the memory-tight nested path** (`GPUWRF_GWD_NESTED=1` to enable): the
+  24 h nested 1 km + GWD run exceeds the single-GPU fp64 VRAM ceiling at ~sim-hr 7
+  (RRTMG g-point temporary) → full nested-GWD is a v0.13 item; the kernel itself
+  ran clean for 7 sim-hours.
+- **Dudhia SW (`ra_sw=1`) + classic AER RRTM LW (`ra_lw=1`)** reference-only →
+  operational, via JIT/vmap-traceable JAX rewrites; pristine-WRF oracles PASS
+  (fp64 ~1e-13), default `ra_sw/ra_lw=4` (RRTMG) byte-unchanged.
+- **Map projections** — lat-lon, Mercator, and Polar-stereographic added (Lambert
+  already supported).
+- **Positive-definite / monotonic scalar advection** (`scalar_adv_opt=1/2`) on the
+  final RK3 stage (opt-in; WRF-parity + idealized validated).
+- **Multi-stream `auxhist`** — 1 → N configurable secondary output streams.
+- **2-way nesting** scaffolding (feedback path, defaults off — 24 h real-GPU
+  equivalence is a v0.13 item).
+- **Namelist cadence handling** — `cudt/bldt>0` now WARN-and-run (conservative
+  every-step approximation) rather than hard-reject.
+- **Test-hygiene** — CPU suite honestly green (GPU-required / purged-fixture tests
+  skip with reason); 24 genuine pre-existing failures triaged
+  (`proofs/v0120/test_hygiene_report.md`), not masked.
+
+**Reverted from v0.12.0 → v0.13:** a compile-speed infra lane (AOT precompile +
+persistent XLA autotune cache) was CPU-proven but its XLA-autotune flag injection
+broke the GPU path; reverted and carried to v0.13 with GPU validation. The classic
+RRTM LW kernel also needs an independent cross-model skeptic pass (author wrote
+both kernel and oracle) → v0.13.

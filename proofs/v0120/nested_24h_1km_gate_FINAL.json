@@ -1,0 +1,19 @@
+{
+  "gate": "v0.12.0_FINAL_nested_24h_1km",
+  "date": "2026-06-08",
+  "trunk": "fe2057a",
+  "case": "20260531_18z_l3_24h (AIFS-1km, the prod-failing case)",
+  "config": "standalone_native_init_nested, max_dom=3 (9/3/1km), 24h, GWD gated-off-default (GPUWRF_GWD_NESTED unset)",
+  "verdict": "PIPELINE_GREEN",
+  "all_domains_finite": true,
+  "all_outputs_present": true,
+  "wrfout_per_domain": 24,
+  "root_steps": 4800,
+  "wall_clock_forecast_only_s": 7243.3,
+  "wall_clock_total_s": 7251.0,
+  "hr24_finiteness": {
+    "d03": "T2[279.6,300.9] U10[-12.4,8.6] V10[-14.3,4.1] PSFC[67677,101925] RAINNC[0,10.3] ALL_FINITE",
+    "d01": "T2[288.8,301.7] U10[-9.7,4.4] V10[-11.6,3.0] PSFC[82560,102363] RAINNC[0,3.4] ALL_FINITE"
+  },
+  "note": "FINAL release gate on the actual v0.12.0 trunk (16 features + GWD-gate + test-hygiene). The prod-failing AIFS-1km case runs out-of-box, full 24h, all fields finite. GWD operational coupling gated-off-default (24h-nested+GWD exceeds fp64 VRAM ceiling at ~hr7 -> v0.13); GWD kernel oracle-validated + ran clean 7 sim-hours in gwd7."
+}
