@@ -1,0 +1,20 @@
+# Canary Raw Pairability
+
+Generated UTC: 2026-06-08T16:24:15.605679+00:00
+
+| classification | domain | case | common leads | same grid | vars | CPU | GPU |
+| --- | --- | --- | ---: | --- | --- | --- | --- |
+| exploratory_incomplete_leads | d01 | 20260429_18z | 16 | True | T2,U10,V10 | `/mnt/data/canairy_meteo/runs/cu0_confirm/20260429_18z_cu0` | `/tmp/v0120_powered_tost_runs/l2_d02_20260429_18z_l2_72h_20260524T204451Z` |
+| exploratory_incomplete_leads | d01 | 20260429_18z | 16 | True | T2,U10,V10 | `/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260429_18z_l2_72h_20260524T204451Z` | `/tmp/v0120_powered_tost_runs/l2_d02_20260429_18z_l2_72h_20260524T204451Z` |
+| exploratory_incomplete_leads | d02 | 20260429_18z | 16 | True | T2,U10,V10 | `/mnt/data/canairy_meteo/runs/cu0_confirm/20260429_18z_cu0` | `/tmp/v0120_powered_tost_runs/l2_d02_20260429_18z_l2_72h_20260524T204451Z` |
+| exploratory_incomplete_leads | d02 | 20260429_18z | 16 | True | T2,U10,V10 | `/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260429_18z_l2_72h_20260524T204451Z` | `/tmp/v0120_powered_tost_runs/l2_d02_20260429_18z_l2_72h_20260524T204451Z` |
+| exploratory_incomplete_leads | d01 | 20260531_18z | 1 | True | T2,U10,V10 | `/mnt/data/canairy_meteo/runs/wrf_l3/20260531_18z_l3_24h_20260601T125256Z` | `/mnt/data/canairy_meteo/gate_2way_d02_v013/out` |
+| exploratory_incomplete_leads | d02 | 20260531_18z | 1 | True | T2,U10,V10 | `/mnt/data/canairy_meteo/runs/wrf_l3/20260531_18z_l3_24h_20260601T125256Z` | `/mnt/data/canairy_meteo/gate_2way_d02_v013/out` |
+| exploratory_incomplete_leads | d01 | 20260531_18z | 1 | True | T2,U10,V10 | `/mnt/data/canairy_meteo/runs/wrf_l3/20260531_18z_l3_24h_20260601T125256Z` | `/mnt/data/canairy_meteo/gate_gwd_nested_v013b/out` |
+| exploratory_incomplete_leads | d02 | 20260531_18z | 1 | True | T2,U10,V10 | `/mnt/data/canairy_meteo/runs/wrf_l3/20260531_18z_l3_24h_20260601T125256Z` | `/mnt/data/canairy_meteo/gate_gwd_nested_v013b/out` |
+| exploratory_incomplete_leads | d03 | 20260531_18z | 1 | True | T2,U10,V10 | `/mnt/data/canairy_meteo/runs/wrf_l3/20260531_18z_l3_24h_20260601T125256Z` | `/mnt/data/canairy_meteo/gate_gwd_nested_v013b/out` |
+| exploratory_incomplete_leads | d01 | 20260531_18z | 1 | True | T2,U10,V10 | `/mnt/data/canairy_meteo/runs/wrf_l3/20260531_18z_l3_24h_20260601T125256Z` | `/mnt/data/canairy_meteo/gate_revalidate_gwd8/out` |
+| exploratory_incomplete_leads | d02 | 20260531_18z | 1 | True | T2,U10,V10 | `/mnt/data/canairy_meteo/runs/wrf_l3/20260531_18z_l3_24h_20260601T125256Z` | `/mnt/data/canairy_meteo/gate_revalidate_gwd8/out` |
+| exploratory_incomplete_leads | d03 | 20260531_18z | 1 | True | T2,U10,V10 | `/mnt/data/canairy_meteo/runs/wrf_l3/20260531_18z_l3_24h_20260601T125256Z` | `/mnt/data/canairy_meteo/gate_revalidate_gwd8/out` |
+| pairable_station_only_grid_mismatch | d02 | 20260509_18z | 34 | False | T2,U10,V10 | `/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z` | `/home/enric/src/wrf_gpu2/.claude/worktrees/gpt-canary-stats/proofs/m20/tost_run/gpu_wrfout/case2_L2` |
+| pairable_station_only_grid_mismatch | d02 | 20260521_18z | 24 | False | T2,U10,V10 | `/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z` | `/home/enric/src/wrf_gpu2/.claude/worktrees/gpt-canary-stats/proofs/m20/tost_run/gpu_wrfout/case3_L3` |
