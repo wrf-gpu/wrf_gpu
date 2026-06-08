@@ -435,6 +435,13 @@ def sm121_smooth(field: jax.Array, smoother: FeedbackSmoother) -> jax.Array:
     intermediate ``cfldnew`` is the raw field with the j-pass applied over the
     interior (so the interior i-pass reads raw values just outside the j-region,
     exactly as WRF does with its 3-cell ``cfldnew`` halo).
+
+    VRAM note (v0.13): an alternative interior-slab + ``jnp.concatenate``
+    formulation was measured to be bit-identical but PEAK-WORSE under eager dispatch
+    (the concat of the j-blend slab with the raw halo columns materialises more live
+    buffers than the two ``.at[interior].set`` writes below, especially for the
+    large d01->d02 overlap).  The full-field ``.at[].set`` form here is kept because
+    it is the lower-peak eager form; see proofs/v013/twoway_vram.* for the A/B.
     """
 
     i_lo, i_hi = int(smoother.i_lo), int(smoother.i_hi)
@@ -539,6 +546,19 @@ def apply_state_feedback(
     ph_pert = _fb(parent.ph_perturbation, child.ph_perturbation, mass, mass_sm)
     mu_pert = _fb(parent.mu_perturbation, child.mu_perturbation, mass, mass_sm)
 
+    # Rebuild each total ONCE and share the buffer between the total and its
+    # transitional legacy alias (p<-p_total, ph<-ph_total, mu<-mu_total).  Computing
+    # ``_base_pressure(parent) + p_pert`` twice (once for ``p_total``, once for
+    # ``p``) allocated TWO equal full-size buffers per total plus a second base-state
+    # subtraction transient -- 6 redundant full-size temporaries across p/ph/mu.
+    # ``State.replace`` already forces ``p == p_total`` when both are supplied (it
+    # sets ``values[legacy] = values[total]``), so binding both to the same object
+    # here is byte-identical AND eliminates the redundant allocations -- a pure
+    # VRAM/op reduction with no change to the feedback math or result.
+    p_val = _base_pressure(parent) + p_pert
+    ph_val = _base_geopotential(parent) + ph_pert
+    mu_val = _base_mu(parent) + mu_pert
+
     updates = {
         "u": u,
         "v": v,
@@ -546,14 +566,14 @@ def apply_state_feedback(
         "theta": theta,
         "qv": qv,
         "p_perturbation": p_pert,
-        "p_total": _base_pressure(parent) + p_pert,
-        "p": _base_pressure(parent) + p_pert,
+        "p_total": p_val,
+        "p": p_val,
         "ph_perturbation": ph_pert,
-        "ph_total": _base_geopotential(parent) + ph_pert,
-        "ph": _base_geopotential(parent) + ph_pert,
+        "ph_total": ph_val,
+        "ph": ph_val,
         "mu_perturbation": mu_pert,
-        "mu_total": _base_mu(parent) + mu_pert,
-        "mu": _base_mu(parent) + mu_pert,
+        "mu_total": mu_val,
+        "mu": mu_val,
     }
     for name in ("qc", "qr", "qi", "qs", "qg", "Ni", "Nr", "Ns", "Ng", "qke", "Nc", "Nn"):
         if hasattr(parent, name) and hasattr(child, name):
