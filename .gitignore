@@ -79,3 +79,6 @@ data/
 # Claude Code scheduled-task lock
 .claude/scheduled_tasks.lock
 
+
+# publish/ = local working folder (paper drafts, figures, analysis) — NOT part of the release
+/publish/

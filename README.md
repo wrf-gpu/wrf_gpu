@@ -271,7 +271,7 @@ Proof objects live under [`proofs/v013/`](proofs/v013/) and [`proofs/v0130/`](pr
 - **Full 375-variable `wrfout`** (KI-3), **RRTMG SW `taug` UV-band fix** (KI-6), and the **`*_tendf` source-tendency adapter** for RK-stage physics.
 - **Tier-3 scheme long-tail** — ~22 microphysics, ~10 cumulus, ~8 PBL, ~12 radiation, ~4 surface-layer + ~6 LSM families; each opt-in / fail-closed until oracle-proven.
 
-A code-grounded, prioritized inventory of the remaining gap to a complete WRF v4 replacement lives in [`publish/GPU_PORT_GAPS_TODO.md`](publish/GPU_PORT_GAPS_TODO.md), [`PROJECT_PLAN.md`](PROJECT_PLAN.md), and the full-port gap analysis under [`.agent/reviews/`](.agent/reviews/).
+A code-grounded, prioritized inventory of the remaining gap to a complete WRF v4 replacement lives in [`docs/GPU_PORT_GAPS_TODO.md`](docs/GPU_PORT_GAPS_TODO.md), [`PROJECT_PLAN.md`](PROJECT_PLAN.md), and the full-port gap analysis under [`.agent/reviews/`](.agent/reviews/).
 
 ## Roadmap — delta to a complete WRF v4 port (post-v0.13.0)
 
@@ -331,7 +331,7 @@ Consolidated, honestly-prioritized ledger of everything still deferred / simplif
 | Run the community-standard validation suite | [`docs/VALIDATION.md`](docs/VALIDATION.md) — `scripts/community_validation.sh` |
 | See v0.13.0 proof objects | [`proofs/v013/`](proofs/v013/), [`proofs/v0130/`](proofs/v0130/) |
 | See prior release proofs | [`proofs/v0120/`](proofs/v0120/), [`proofs/v0110/`](proofs/v0110/), [`proofs/v090/`](proofs/v090/), [`proofs/v0100/`](proofs/v0100/) |
-| See the full WRF v4 gap inventory | [`publish/GPU_PORT_GAPS_TODO.md`](publish/GPU_PORT_GAPS_TODO.md), [`PROJECT_PLAN.md`](PROJECT_PLAN.md) |
+| See the full WRF v4 gap inventory | [`docs/GPU_PORT_GAPS_TODO.md`](docs/GPU_PORT_GAPS_TODO.md), [`PROJECT_PLAN.md`](PROJECT_PLAN.md) |
 | See prior versions (v0.2.0, v0.9.0–v0.12.0) | Accessible via git tags `v0.2.0`, `v0.9.0`, `v0.10.0`, `v0.11.0`, `v0.12.0` on the org repo; v0.2.0 is the stable paper-claims baseline |
 
 ## Run
@@ -410,5 +410,5 @@ Full detail with symptom / ruled-out / workaround / follow-up in
 ├── scripts/                         CLIs: check_*_done, validators
 ├── tests/                           pytest suite
 ├── proofs/                          per-milestone proof objects (JSON + reports)
-└── publish/                         user-facing analysis + gaps TODO
+└── docs/                            namelist compat · known issues · WRF v4 gap inventory
 ```
