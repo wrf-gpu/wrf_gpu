@@ -46,6 +46,30 @@ _SW_OD_LO = 0.06
 _SW_BPADE = 1.0 / 0.278
 _SW_EXP_EPS = 1.0e-20
 
+# Number of spectral bands in the SW two-stream solve.  The full per-g-point
+# temporary that dominates fp64 VRAM is ~(ncol, nlev+1, _SW_NBANDS, 16); since
+# the TOA->surface flux is an associative sum over (band, g-point), the
+# reflectance/transmittance + vertical-quadrature work is tiled over the band
+# axis so the peak live buffer is one tile of `_SW_GPOINT_CHUNK_BANDS` bands
+# instead of all 14 at once.  Each tile reduces its g-points to a fp64 band
+# partial; the disjoint per-band partials are summed in fp64 at the call site.
+# Because that reduction is over distinct band columns in fp64, the result is
+# PROVABLY INDEPENDENT of the chunk width (bit-identical across tile sizes — see
+# proofs/v013/gpoint_chunk_rrtmg.json).  It differs from the LEGACY single-pass
+# code only in that the original reduced the band axis in the working float32
+# precision; doing the band sum in fp64 is a one-time, knob-independent
+# precision *improvement* of <=~1e-5 rel, not a per-tile chunking artifact.
+_SW_NBANDS = 14
+# Default tile width.  One band per tile gives the lowest, most robust peak: the
+# scan visits the 14 bands sequentially and XLA frees each band's two-stream
+# working set before the next, roughly HALVING the deep-column peak vs the
+# single-pass solve (proofs/v013: nlev=48 ncol=24576 -> 16730 MiB unchunked ->
+# ~8030 MiB at chunk=1).  Intermediate widths (e.g. 7) can be WORSE than either
+# extreme because XLA schedules the two large tiles concurrently, so the default
+# is the smallest tile.  Set to `_SW_NBANDS` to recover the single-pass solve.
+# The numerical result is independent of this value (proofs/v013).
+_SW_GPOINT_CHUNK_BANDS = 1
+
 
 @jax.tree_util.register_pytree_node_class
 class RRTMGSWColumnState:
@@ -1258,6 +1282,184 @@ def _vertical_quadrature(pref, prefd, ptra, ptrad, direct_trans):
     return flux_down, flux_up, ptdbt
 
 
+def _sw_band_tile_fluxes(
+    tau_clear,
+    omega_clear,
+    asymmetry_clear,
+    tau_total_cloud,
+    omega_total_cloud,
+    asymmetry_total_cloud,
+    cloud_amount,
+    mask,
+    sfluxzen,
+    coszen,
+    surface_albedo,
+    source_scale,
+    partial_dtype,
+):
+    """Two-stream solve + (band, g-point) reduction for one band tile.
+
+    Operates on a band slice ``[..., nlev, tile_bands, gpoint]`` of the SW
+    optics.  The Eddington reflectance/transmittance and the vertical-quadrature
+    adding method are purely elementwise in the (band, g-point) trailing axes —
+    bands never couple — so processing a tile in isolation yields exactly the
+    same per-(band, g-point) flux that the full single-pass solve would.  The
+    returned arrays are the (tile-band, g-point)-summed fluxes
+    ``[..., nlev+1]`` for down / up / direct (cast to ``partial_dtype`` =
+    fp64 under force_fp64 BEFORE reducing), so the heavy
+    ``[..., nlev+1, tile_bands, gpoint]`` temporary is freed before the next
+    tile.  Accumulating these fp64 per-tile fluxes over the (disjoint) tiles
+    reproduces the original ``sum(axis=(-1, -2))`` reduction to fp64 precision,
+    independent of the tile width (proofs/v013).
+    """
+
+    tau_clear_top_down = jnp.flip(tau_clear, axis=-3)
+    omega_clear_top_down = jnp.flip(omega_clear, axis=-3)
+    asymmetry_clear_top_down = jnp.flip(asymmetry_clear, axis=-3)
+    tau_cloud_top_down = jnp.flip(tau_total_cloud, axis=-3)
+    omega_cloud_top_down = jnp.flip(omega_total_cloud, axis=-3)
+    asymmetry_cloud_top_down = jnp.flip(asymmetry_total_cloud, axis=-3)
+    cloud_top_down = jnp.flip(jnp.clip(cloud_amount, 0.0, 1.0), axis=-3)
+    active_top_down = jnp.flip(mask + jnp.zeros_like(tau_clear), axis=-3)
+    cloud_active_top_down = active_top_down * (cloud_top_down > 1.0e-12)
+    pref_clear, prefd_clear, ptra_clear, ptrad_clear = _reftra_eddington(
+        tau_clear_top_down, omega_clear_top_down, asymmetry_clear_top_down, coszen, active_top_down
+    )
+    pref_cloud, prefd_cloud, ptra_cloud, ptrad_cloud = _reftra_eddington(
+        tau_cloud_top_down, omega_cloud_top_down, asymmetry_cloud_top_down, coszen, cloud_active_top_down
+    )
+    cloud_top_down = cloud_top_down.astype(pref_clear.dtype)
+    active_top_down = active_top_down.astype(pref_clear.dtype)
+    pref_lay = (1.0 - cloud_top_down) * pref_clear + cloud_top_down * pref_cloud
+    prefd_lay = (1.0 - cloud_top_down) * prefd_clear + cloud_top_down * prefd_cloud
+    ptra_lay = (1.0 - cloud_top_down) * ptra_clear + cloud_top_down * ptra_cloud
+    ptrad_lay = (1.0 - cloud_top_down) * ptrad_clear + cloud_top_down * ptrad_cloud
+    surface = jnp.broadcast_to(
+        surface_albedo[..., None, None, None].astype(pref_lay.dtype),
+        pref_lay.shape[:-3] + (1, pref_lay.shape[-2], pref_lay.shape[-1]),
+    )
+    zero_surface = jnp.zeros_like(surface)
+    pref = jnp.concatenate((pref_lay, surface), axis=-3)
+    prefd = jnp.concatenate((prefd_lay, surface), axis=-3)
+    ptra = jnp.concatenate((ptra_lay, zero_surface), axis=-3)
+    ptrad = jnp.concatenate((ptrad_lay, zero_surface), axis=-3)
+    mu0 = jnp.maximum(coszen[..., None, None, None], 1.0e-6)
+    direct_clear = _sw_transmittance_lookup((tau_clear_top_down / mu0).astype(pref_lay.dtype))
+    direct_cloud = _sw_transmittance_lookup((tau_cloud_top_down / mu0).astype(pref_lay.dtype))
+    direct_trans = ((1.0 - cloud_top_down) * direct_clear + cloud_top_down * direct_cloud) * active_top_down
+    direct_trans = jnp.where(active_top_down > 0.0, direct_trans, 1.0).astype(pref_lay.dtype)
+    down_top_down, up_top_down, direct_top_down = _vertical_quadrature(pref, prefd, ptra, ptrad, direct_trans)
+    top_flux_band = (coszen[..., None, None] * source_scale[..., None, None] * sfluxzen).astype(down_top_down.dtype)
+    down_band = jnp.flip(down_top_down * top_flux_band[..., None, :, :], axis=-3)
+    up_band = jnp.flip(up_top_down * top_flux_band[..., None, :, :], axis=-3)
+    direct_band = jnp.flip(direct_top_down * top_flux_band[..., None, :, :], axis=-3)
+    # Reduce over BOTH the tile-band and g-point axes here, casting the (float32)
+    # per-g-point flux to `partial_dtype` (fp64 under force_fp64) FIRST.  Because
+    # each band tile contributes a DISJOINT set of bands, accumulating these fp64
+    # per-tile fluxes across tiles makes the band reduction associative to fp64
+    # precision: the result is provably independent of the chunk width
+    # (bit-identical across tile sizes, see proofs/v013).  It differs from the
+    # legacy single-pass band-sum (which reduced in float32) by <=~1e-5 rel — a
+    # knob-independent, one-time precision *improvement*, not a chunking artifact.
+    down_partial = jnp.sum(down_band.astype(partial_dtype), axis=(-1, -2))
+    up_partial = jnp.sum(up_band.astype(partial_dtype), axis=(-1, -2))
+    direct_partial = jnp.sum(direct_band.astype(partial_dtype), axis=(-1, -2))
+    return down_partial, up_partial, direct_partial
+
+
+def _sw_chunk_bands(n_bands: int) -> int:
+    """Snaps the requested chunk width to a divisor of ``n_bands``.
+
+    `lax.scan` needs uniform tile shapes, so the band axis must split evenly.
+    The requested ``_SW_GPOINT_CHUNK_BANDS`` is clamped to [1, n_bands] and then
+    rounded DOWN to the nearest divisor of ``n_bands`` (14: divisors 1,2,7,14),
+    guaranteeing ``n_bands % chunk == 0``.  The numerical result is independent
+    of the chosen width (proofs/v013); only the peak-VRAM / op-count trade moves.
+    """
+
+    requested = max(1, min(int(_SW_GPOINT_CHUNK_BANDS), n_bands))
+    chunk = requested
+    while n_bands % chunk != 0:
+        chunk -= 1
+    return chunk
+
+
+def _sw_band_scan_fluxes(
+    tau_clear,
+    omega_clear,
+    asymmetry_clear,
+    tau_total_cloud,
+    omega_total_cloud,
+    asymmetry_total_cloud,
+    cloud_amount,
+    mask,
+    sfluxzen,
+    coszen,
+    surface_albedo,
+    source_scale,
+    out_dtype,
+    chunk: int,
+):
+    """Accumulates the band-tiled two-stream fluxes via a sequential ``lax.scan``.
+
+    ``lax.scan`` runs the ``n_tiles`` tiles SEQUENTIALLY with a carry
+    dependency, which is what forces XLA to free each tile's
+    ``[..., nlev+1, chunk, gpoint]`` two-stream working set before the next tile
+    — a Python ``for`` loop leaves the tiles mutually independent and lets XLA
+    schedule them concurrently, inflating peak VRAM above even the single-pass
+    solve.  Each tile is carved from the full-band optics with
+    ``lax.dynamic_slice`` along the band axis (NO leading-axis reshape/transpose,
+    which would transiently copy the whole ~(ncol,nlev,14,16) input).  The carry
+    is the fp64 running flux ``(down, up, direct)``; each step adds the tile's
+    (band, g-point)-summed fp64 flux.  Result is bit-identical across chunk
+    widths (proofs/v013).
+    """
+
+    n_bands = tau_clear.shape[-2]
+    n_tiles = n_bands // chunk
+    band_axis = tau_clear.ndim - 2  # axis of size n_bands in [..., nlev, band, gpoint]
+    sflux_band_axis = sfluxzen.ndim - 2
+
+    def _band_slice(arr, start, axis):
+        starts = [0] * arr.ndim
+        starts[axis] = start
+        sizes = list(arr.shape)
+        sizes[axis] = chunk
+        return lax.dynamic_slice(arr, starts, sizes)
+
+    flux_shape = tau_clear.shape[:-3] + (tau_clear.shape[-3] + 1,)
+    init = (
+        jnp.zeros(flux_shape, dtype=out_dtype),
+        jnp.zeros(flux_shape, dtype=out_dtype),
+        jnp.zeros(flux_shape, dtype=out_dtype),
+    )
+
+    def body(carry, tile_index):
+        d_acc, u_acc, dir_acc = carry
+        start = tile_index * chunk
+        d_p, u_p, dir_p = _sw_band_tile_fluxes(
+            _band_slice(tau_clear, start, band_axis),
+            _band_slice(omega_clear, start, band_axis),
+            _band_slice(asymmetry_clear, start, band_axis),
+            _band_slice(tau_total_cloud, start, band_axis),
+            _band_slice(omega_total_cloud, start, band_axis),
+            _band_slice(asymmetry_total_cloud, start, band_axis),
+            _band_slice(cloud_amount, start, band_axis),
+            _band_slice(mask, start, 0),
+            _band_slice(sfluxzen, start, sflux_band_axis),
+            coszen,
+            surface_albedo,
+            source_scale,
+            out_dtype,
+        )
+        return (d_acc + d_p, u_acc + u_p, dir_acc + dir_p), None
+
+    (flux_down_model, flux_up_model, direct_down_model), _ = lax.scan(
+        body, init, jnp.arange(n_tiles)
+    )
+    return flux_down_model, flux_up_model, direct_down_model
+
+
 def _shortwave_impl(
     state: RRTMGSWColumnState,
     tables: RRTMGTableBundle,
@@ -1364,58 +1566,44 @@ def _shortwave_impl(
     omega_total_cloud = omega_total_cloud * mask
     asymmetry_total_cloud = asymmetry_total_cloud * mask
 
-    tau_clear_top_down = jnp.flip(tau_clear, axis=-3)
-    omega_clear_top_down = jnp.flip(omega_clear, axis=-3)
-    asymmetry_clear_top_down = jnp.flip(asymmetry_clear, axis=-3)
-    tau_cloud_top_down = jnp.flip(tau_total_cloud, axis=-3)
-    omega_cloud_top_down = jnp.flip(omega_total_cloud, axis=-3)
-    asymmetry_cloud_top_down = jnp.flip(asymmetry_total_cloud, axis=-3)
-    cloud_top_down = jnp.flip(jnp.clip(cloud_amount, 0.0, 1.0), axis=-3)
-    active_top_down = jnp.flip(mask + jnp.zeros_like(tau_clear), axis=-3)
-    cloud_active_top_down = active_top_down * (cloud_top_down > 1.0e-12)
-    pref_clear, prefd_clear, ptra_clear, ptrad_clear = _reftra_eddington(
-        tau_clear_top_down, omega_clear_top_down, asymmetry_clear_top_down, state.coszen, active_top_down
+    # Two-stream + vertical quadrature + g-point reduction, TILED over the band
+    # axis (axis=-2 of the optics).  Bands never couple in `_reftra_eddington`
+    # or `_vertical_quadrature`, so each tile reproduces exactly the per-(band,
+    # g-point) flux of the single-pass solve; the heavy
+    # `[..., nlev, tile_bands, gpoint]` working set is freed before the next
+    # tile.  Each tile returns g-point-summed band partials
+    # `[..., nlev+1, tile_bands]`; concatenating the (small) partials and
+    # summing the band axis once reproduces the original `sum(axis=(-1, -2))`.
+    # The cast to `out_dtype` (fp64 under force_fp64) happens at the per-tile
+    # partial so the band-summed fluxes carry export precision exactly, keeping
+    # heating_rate / flux_down/up / column_absorbed mutually consistent (the
+    # energy-closure invariant flux-divergence == heating*mass*cp).
+    #
+    # `source_scale` MUST be built in the working two-stream dtype (`cloud_dtype`
+    # == float32), exactly as the original single-pass code did with
+    # `_solar_source_scale(state, down_top_down.dtype)`: the TOA flux
+    # `coszen * source_scale * sfluxzen` is then multiplied in float32, so using
+    # the fp64 export dtype here would silently change the rounding of every band
+    # flux (~7e-5 rel) — a real numerical drift, not VRAM chunking.
+    source_scale = _solar_source_scale(state, cloud_dtype)
+    n_bands = tau_clear.shape[-2]
+    chunk = _sw_chunk_bands(n_bands)
+    flux_down_model, flux_up_model, direct_down_model = _sw_band_scan_fluxes(
+        tau_clear,
+        omega_clear,
+        asymmetry_clear,
+        tau_total_cloud,
+        omega_total_cloud,
+        asymmetry_total_cloud,
+        cloud_amount,
+        mask,
+        sfluxzen,
+        state.coszen,
+        state.surface_albedo,
+        source_scale,
+        out_dtype,
+        chunk,
     )
-    pref_cloud, prefd_cloud, ptra_cloud, ptrad_cloud = _reftra_eddington(
-        tau_cloud_top_down, omega_cloud_top_down, asymmetry_cloud_top_down, state.coszen, cloud_active_top_down
-    )
-    cloud_top_down = cloud_top_down.astype(pref_clear.dtype)
-    active_top_down = active_top_down.astype(pref_clear.dtype)
-    pref_lay = (1.0 - cloud_top_down) * pref_clear + cloud_top_down * pref_cloud
-    prefd_lay = (1.0 - cloud_top_down) * prefd_clear + cloud_top_down * prefd_cloud
-    ptra_lay = (1.0 - cloud_top_down) * ptra_clear + cloud_top_down * ptra_cloud
-    ptrad_lay = (1.0 - cloud_top_down) * ptrad_clear + cloud_top_down * ptrad_cloud
-    surface = jnp.broadcast_to(
-        state.surface_albedo[..., None, None, None].astype(pref_lay.dtype),
-        pref_lay.shape[:-3] + (1, pref_lay.shape[-2], pref_lay.shape[-1]),
-    )
-    zero_surface = jnp.zeros_like(surface)
-    pref = jnp.concatenate((pref_lay, surface), axis=-3)
-    prefd = jnp.concatenate((prefd_lay, surface), axis=-3)
-    ptra = jnp.concatenate((ptra_lay, zero_surface), axis=-3)
-    ptrad = jnp.concatenate((ptrad_lay, zero_surface), axis=-3)
-    mu0 = jnp.maximum(state.coszen[..., None, None, None], 1.0e-6)
-    direct_clear = _sw_transmittance_lookup((tau_clear_top_down / mu0).astype(pref_lay.dtype))
-    direct_cloud = _sw_transmittance_lookup((tau_cloud_top_down / mu0).astype(pref_lay.dtype))
-    direct_trans = ((1.0 - cloud_top_down) * direct_clear + cloud_top_down * direct_cloud) * active_top_down
-    direct_trans = jnp.where(active_top_down > 0.0, direct_trans, 1.0).astype(pref_lay.dtype)
-    down_top_down, up_top_down, direct_top_down = _vertical_quadrature(pref, prefd, ptra, ptrad, direct_trans)
-    source_scale = _solar_source_scale(state, down_top_down.dtype)
-    top_flux_band = (state.coszen[..., None, None] * source_scale[..., None, None] * sfluxzen).astype(down_top_down.dtype)
-    down_band = jnp.flip(down_top_down * top_flux_band[..., None, :, :], axis=-3)
-    up_band = jnp.flip(up_top_down * top_flux_band[..., None, :, :], axis=-3)
-    direct_band = jnp.flip(direct_top_down * top_flux_band[..., None, :, :], axis=-3)
-
-    # Promote the band-summed fluxes to the export dtype (fp64 under force_fp64)
-    # at the accumulation point, BEFORE deriving net flux / column absorption /
-    # heating rate.  Doing the cast here (rather than only on the returned
-    # leaves) keeps heating_rate, flux_down/up and column_absorbed mutually
-    # consistent in one precision, so the energy-closure invariant
-    # (flux divergence == heating*mass*cp) is preserved exactly while the
-    # exported diagnostics never silently downcast below the state regime.
-    flux_down_model = jnp.sum(down_band, axis=(-1, -2)).astype(out_dtype)
-    flux_up_model = jnp.sum(up_band, axis=(-1, -2)).astype(out_dtype)
-    direct_down_model = jnp.sum(direct_band, axis=(-1, -2)).astype(out_dtype)
     net_down = flux_down_model - flux_up_model
     column_absorbed_layers = net_down[..., 1 : original_layers + 1] - net_down[..., :original_layers]
     column_absorbed_total = net_down[..., -1] - net_down[..., 0]
