@@ -1,0 +1,8 @@
+# Build artifacts + copied (and shimmed) pristine-WRF source, regenerated
+# by goddard_lw_build_and_run.sh. The driver/build/dumper ARE committed.
+*.o
+*.mod
+*.txt
+module_ra_goddard.F
+module_checkerror.F
+goddard_lw_oracle

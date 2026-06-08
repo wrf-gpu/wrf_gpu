@@ -2451,6 +2451,12 @@ _SCAN_UNWIRED_REASON = {
     # ra_sw=1 (Dudhia), ra_sw=2 (GSFC/Chou-Suarez) and ra_sw=4 (RRTMG) are
     # scan-wired; any other recognized SW scheme has no operational GPU scan
     # adapter in the radiation slot.
+    # ra_lw=5 (GSFC/Goddard NUWRF LW) is v0.13 Tier-3 reference-only: a fp64
+    # single-column pristine-WRF oracle is staged (module_ra_goddard.F:lwrad,
+    # proofs/v013/oracle/radiation_lw); its traceable JAX column kernel is a
+    # documented carry-over (the combined NUWRF SW+LW module is ~12.5k LOC), so it
+    # fail-closes here. ra_lw=4 (RRTMG) and 1 (classic RRTM) remain the operational LW.
+    "ra_lw_physics=5": "GSFC/Goddard NUWRF longwave has a single-column fp64 pristine-WRF oracle staged (proofs/v013/oracle/radiation_lw, module_ra_goddard.F:lwrad); traceable JAX column kernel is a Tier-3 carry-over (~12.5k-LOC combined NUWRF SW+LW module)",
 }
 
 
