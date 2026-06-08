@@ -1,0 +1,93 @@
+{
+  "proof": "v013_multigpu_fakemesh_shard_map_bit_identity",
+  "generated_utc": "2026-06-08T07:22:12.106609+00:00",
+  "jax_version": "0.10.0",
+  "python": "3.13.11",
+  "platform": "cpu",
+  "fake_device_count": 8,
+  "sharded_stencils": [
+    "flux5_face_periodic_advection_x",
+    "sixth_order_diffusion_x"
+  ],
+  "halo_substrate": "jax.shard_map + jax.lax.ppermute periodic ring",
+  "hardware_honesty": "CPU fake-device proof only. This workstation has ONE physical RTX 5090. Real multi-GPU throughput, NVLink/NCCL bandwidth, and collective overlap are UNMEASURED. Per-watt / whole-Earth claims derived from scaling stay PROJECTED, never MEASURED. The validatable deliverable is the fake-mesh bit-identity proven here.",
+  "checks": {
+    "partition_invariance_bit_identity": {
+      "domain_shape": [
+        8,
+        6,
+        48
+      ],
+      "halo_width": 3,
+      "reference_partitions": 1,
+      "partition_counts_tested": [
+        1,
+        2,
+        4,
+        8
+      ],
+      "comparisons": [
+        {
+          "partitions": 2,
+          "vs_partitions": 1,
+          "flux5_advection_bit_identical": true,
+          "flux5_advection_max_abs_diff": 0.0,
+          "sixth_order_diffusion_bit_identical": true,
+          "sixth_order_diffusion_max_abs_diff": 0.0
+        },
+        {
+          "partitions": 4,
+          "vs_partitions": 1,
+          "flux5_advection_bit_identical": true,
+          "flux5_advection_max_abs_diff": 0.0,
+          "sixth_order_diffusion_bit_identical": true,
+          "sixth_order_diffusion_max_abs_diff": 0.0
+        },
+        {
+          "partitions": 8,
+          "vs_partitions": 1,
+          "flux5_advection_bit_identical": true,
+          "flux5_advection_max_abs_diff": 0.0,
+          "sixth_order_diffusion_bit_identical": true,
+          "sixth_order_diffusion_max_abs_diff": 0.0
+        }
+      ],
+      "all_bit_identical": true
+    },
+    "ppermute_halo_analytic": {
+      "nx": 48,
+      "checks": [
+        {
+          "partitions": 2,
+          "halo_width": 3,
+          "analytic_field": "sin(2*pi*i/nx)",
+          "ghost_cells_bit_identical_to_analytic": true,
+          "max_abs_diff": 0.0
+        },
+        {
+          "partitions": 4,
+          "halo_width": 3,
+          "analytic_field": "sin(2*pi*i/nx)",
+          "ghost_cells_bit_identical_to_analytic": true,
+          "max_abs_diff": 0.0
+        }
+      ],
+      "all_bit_identical": true
+    },
+    "sharded_vs_eager_global": {
+      "domain_shape": [
+        8,
+        6,
+        48
+      ],
+      "halo_width": 3,
+      "sharded_partitions": 2,
+      "padded_eager_vs_global_eager_bit_identical": true,
+      "padded_eager_vs_global_eager_max_abs_diff": 0.0,
+      "sharded_vs_global_eager_max_abs_diff": 8.881784197001252e-16,
+      "sharded_vs_global_eager_within_fp64_roundoff": true,
+      "note": "padded_eager==global_eager (0.0) proves the decomposition is exact; the sharded-vs-eager ~1e-15 residual is XLA jit float reassociation, identical to a plain single-device jit and independent of partition count."
+    }
+  },
+  "gate_pass": true
+}
