@@ -1,0 +1,175 @@
+{
+  "probe": "target 1km nest peak-VRAM (CPU-mode, fp64)",
+  "nz": 50,
+  "anchor": {
+    "source": "proofs/v013/optics_taumol_chunk.json (RTX 5090, fp64, GPU-measured)",
+    "ncol": 24576,
+    "nlev": 48,
+    "peaks_mib": {
+      "sw_upfront": 16729.67,
+      "sw_chunked": 1906.42,
+      "lw_upfront": 17853.85,
+      "lw_chunked": 10068.45
+    }
+  },
+  "resident_carry": {
+    "d01_9km": {
+      "shape": "90x60x50",
+      "analytic_resident_gib": 0.0575,
+      "measured_array_gib": 0.0575,
+      "rss_delta_gib": 0.0776
+    },
+    "d02_3km": {
+      "shape": "301x161x50",
+      "analytic_resident_gib": 0.4885,
+      "measured_array_gib": 0.4885,
+      "rss_delta_gib": 0.448
+    }
+  },
+  "shapes": [
+    {
+      "shape": "400x250x50",
+      "ny": 250,
+      "nx": 400,
+      "resident_carry_gib": 0.9961,
+      "measured_array_gib": 0.9961,
+      "rss_delta_gib": 0.5252,
+      "transient_chunked": {
+        "ncol": 100000,
+        "nlev": 50,
+        "sw_transient_gib": 7.891,
+        "lw_transient_gib": 41.675,
+        "rad_peak_gib": 41.675,
+        "dyn_scratch_gib": 0.745,
+        "transient_total_gib": 42.421
+      },
+      "transient_upfront": {
+        "ncol": 100000,
+        "nlev": 50,
+        "sw_transient_gib": 69.248,
+        "lw_transient_gib": 73.901,
+        "rad_peak_gib": 73.901,
+        "dyn_scratch_gib": 0.745,
+        "transient_total_gib": 74.646
+      },
+      "d03_replay_peak_gib_chunked": 43.417,
+      "d03_replay_peak_gib_upfront": 75.642,
+      "live_nest_peak_gib_chunked": 43.963,
+      "live_nest_peak_gib_upfront": 76.188,
+      "fits_32gib_replay_chunked": false,
+      "fits_32gib_live_chunked": false
+    },
+    {
+      "shape": "560x280x50",
+      "ny": 280,
+      "nx": 560,
+      "resident_carry_gib": 1.5582,
+      "measured_array_gib": 1.5582,
+      "rss_delta_gib": 0.5799,
+      "transient_chunked": {
+        "ncol": 156800,
+        "nlev": 50,
+        "sw_transient_gib": 12.373,
+        "lw_transient_gib": 65.347,
+        "rad_peak_gib": 65.347,
+        "dyn_scratch_gib": 1.168,
+        "transient_total_gib": 66.515
+      },
+      "transient_upfront": {
+        "ncol": 156800,
+        "nlev": 50,
+        "sw_transient_gib": 108.58,
+        "lw_transient_gib": 115.877,
+        "rad_peak_gib": 115.877,
+        "dyn_scratch_gib": 1.168,
+        "transient_total_gib": 117.045
+      },
+      "d03_replay_peak_gib_chunked": 68.073,
+      "d03_replay_peak_gib_upfront": 118.603,
+      "live_nest_peak_gib_chunked": 68.619,
+      "live_nest_peak_gib_upfront": 119.149,
+      "fits_32gib_replay_chunked": false,
+      "fits_32gib_live_chunked": false
+    },
+    {
+      "shape": "641x321x50",
+      "ny": 321,
+      "nx": 641,
+      "resident_carry_gib": 2.0397,
+      "measured_array_gib": 2.0397,
+      "rss_delta_gib": 0.4986,
+      "transient_chunked": {
+        "ncol": 205761,
+        "nlev": 50,
+        "sw_transient_gib": 16.237,
+        "lw_transient_gib": 85.752,
+        "rad_peak_gib": 85.752,
+        "dyn_scratch_gib": 1.533,
+        "transient_total_gib": 87.285
+      },
+      "transient_upfront": {
+        "ncol": 205761,
+        "nlev": 50,
+        "sw_transient_gib": 142.485,
+        "lw_transient_gib": 152.059,
+        "rad_peak_gib": 152.059,
+        "dyn_scratch_gib": 1.533,
+        "transient_total_gib": 153.592
+      },
+      "d03_replay_peak_gib_chunked": 89.325,
+      "d03_replay_peak_gib_upfront": 155.632,
+      "live_nest_peak_gib_chunked": 89.871,
+      "live_nest_peak_gib_upfront": 156.178,
+      "fits_32gib_replay_chunked": false,
+      "fits_32gib_live_chunked": false
+    },
+    {
+      "shape": "720x360x50",
+      "ny": 360,
+      "nx": 720,
+      "resident_carry_gib": 2.5647,
+      "measured_array_gib": 2.5647,
+      "rss_delta_gib": 0.5424,
+      "transient_chunked": {
+        "ncol": 259200,
+        "nlev": 50,
+        "sw_transient_gib": 20.454,
+        "lw_transient_gib": 108.023,
+        "rad_peak_gib": 108.023,
+        "dyn_scratch_gib": 1.931,
+        "transient_total_gib": 109.954
+      },
+      "transient_upfront": {
+        "ncol": 259200,
+        "nlev": 50,
+        "sw_transient_gib": 179.49,
+        "lw_transient_gib": 191.551,
+        "rad_peak_gib": 191.551,
+        "dyn_scratch_gib": 1.931,
+        "transient_total_gib": 193.482
+      },
+      "d03_replay_peak_gib_chunked": 112.519,
+      "d03_replay_peak_gib_upfront": 196.047,
+      "live_nest_peak_gib_chunked": 113.065,
+      "live_nest_peak_gib_upfront": 196.593,
+      "fits_32gib_replay_chunked": false,
+      "fits_32gib_live_chunked": false
+    }
+  ],
+  "usable_budget_gib": 29.0,
+  "nest_companion_resident_gib": 0.546,
+  "largest_fitting_1km": {
+    "replay_chunked": {
+      "max_ncol": 59498,
+      "grid": "~345x172 (2:1), ~243x243 (square); ncol=59498"
+    },
+    "replay_upfront": {
+      "max_ncol": 35817,
+      "grid": "~268x134 (2:1), ~189x189 (square); ncol=35817"
+    },
+    "live_nest_chunked": {
+      "max_ncol": 58378,
+      "grid": "~342x171 (2:1), ~241x241 (square); ncol=58378"
+    }
+  }
+}
