@@ -4,6 +4,13 @@ Date: 2026-06-08
 Owner: manager, from GPT-5.5 xhigh feasibility refresh
 Primary evidence: `.agent/reviews/2026-06-08-gpt-fp32-acoustic-refresh.md`
 
+## Priority
+
+This is the highest-priority v0.14 memory/performance lane. It may be pulled into v0.13 only if
+the de-risk agents produce strong evidence that a large memory gain can be implemented with a
+small number of default-inert, proofable sprints and without invalidating the active fp64 TOST
+release candidate. Otherwise v0.13 ships after TOST and this becomes v0.14 P1.
+
 ## Decision
 
 Stable fp32 acoustics are not mathematically impossible on GPU/JAX. The current global/naive
