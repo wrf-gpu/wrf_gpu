@@ -306,6 +306,11 @@ class _NLStub:
         self.sf_sfclay_physics = cfg.sf_sfclay_physics
         self.cu_physics = cfg.cu_physics
         self.sf_surface_physics = cfg.sf_surface_physics
+        # v0.13 added ra_sw/ra_lw to _SCAN_WIRED_OPTIONS (read with no default in
+        # _resolve_operational_suite); mirror the OperationalNamelist defaults
+        # (RRTMG SW/LW = 4) so this stub matches the public namelist contract.
+        self.ra_sw_physics = getattr(cfg, "ra_sw_physics", 4)
+        self.ra_lw_physics = getattr(cfg, "ra_lw_physics", 4)
         self.use_noahmp = cfg.use_noahmp
         # Noah-classic resolve path checks for explicit land/static bundles; in this
         # smoke they are present whenever sf_surface_physics==2 (set below).
