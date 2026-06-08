@@ -803,11 +803,16 @@ WRFOUT_VARIABLE_SPECS: dict[str, WrfoutVariableSpec] = {
     # Schemas (dims/MemoryOrder/stagger/units/description/dtype) are copied verbatim
     # from the reference Gen2 wrfout_d02; every field maps to a flux slice the RRTMG
     # SW/LW column solvers already compute (surface == bottom interface, TOA == top
-    # interface). The WRF clear-sky ``...C`` flux vars (SWDNBC/SWUPBC/LWDNBC/LWUPBC
-    # /SWDNTC/SWUPTC/LWDNTC/LWUPTC) are deliberately NOT specced/emitted: this port
-    # runs no separate clear-sky radiative-transfer pass, so a clear-sky flux would
-    # be fabricated. OLR == LWUPT (WRF's TOA outgoing LW) and is derived in
+    # interface). OLR == LWUPT (WRF's TOA outgoing LW) and is derived in
     # ``prepare_wrfout_payload`` from the diagnostic LWUPT.
+    #
+    # v0.13.0: the WRF clear-sky ``...C`` flux vars (SWDNBC/SWUPBC/LWDNBC/LWUPBC
+    # /SWDNTC/SWUPTC/LWDNTC/LWUPTC) ARE now specced/emitted -- the RRTMG SW/LW
+    # solvers run the WRF second clear-sky (cloud-free) radiative-transfer pass
+    # (``solve_rrtmg_*_column(..., with_clear_sky=True)``; WRF ``pbbcd/pbbcu``,
+    # ``totdclfl/totuclfl``).  Still ADD-only: emitted only when the radiation
+    # diagnostics supply them, never fabricated, and the all-sky fluxes above are
+    # byte-identical with or without the clear-sky pass.
     "SWDNB": _spec(
         "SWDNB", XY, "XY ", "INSTANTANEOUS DOWNWELLING SHORTWAVE FLUX AT BOTTOM", "W m-2",
         coordinates="XLONG XLAT XTIME",
@@ -846,6 +851,44 @@ WRFOUT_VARIABLE_SPECS: dict[str, WrfoutVariableSpec] = {
     ),
     "SWNORM": _spec(
         "SWNORM", XY, "XY ", "NORMAL SHORT WAVE FLUX AT GROUND SURFACE (SLOPE-DEPENDENT)", "W m-2",
+        coordinates="XLONG XLAT XTIME",
+    ),
+    # --- v0.13.0 RRTMG CLEAR-SKY (cloud-free) up/down radiation flux diagnostics.
+    # Schemas copied verbatim from the reference Gen2 wrfout; each maps to a
+    # clear-sky flux slice the RRTMG SW/LW clear-sky pass computes (WRF `pbbcd/
+    # pbbcu`, `totdclfl/totuclfl`).  Bottom == surface interface, top == model-top
+    # interface.  ADD-only (no fallback): emitted only when the radiation
+    # diagnostics supply the clear-sky fluxes. ---
+    "SWDNBC": _spec(
+        "SWDNBC", XY, "XY ", "INSTANTANEOUS DOWNWELLING CLEAR SKY SHORTWAVE FLUX AT BOTTOM", "W m-2",
+        coordinates="XLONG XLAT XTIME",
+    ),
+    "SWUPBC": _spec(
+        "SWUPBC", XY, "XY ", "INSTANTANEOUS UPWELLING CLEAR SKY SHORTWAVE FLUX AT BOTTOM", "W m-2",
+        coordinates="XLONG XLAT XTIME",
+    ),
+    "LWDNBC": _spec(
+        "LWDNBC", XY, "XY ", "INSTANTANEOUS DOWNWELLING CLEAR SKY LONGWAVE FLUX AT BOTTOM", "W m-2",
+        coordinates="XLONG XLAT XTIME",
+    ),
+    "LWUPBC": _spec(
+        "LWUPBC", XY, "XY ", "INSTANTANEOUS UPWELLING CLEAR SKY LONGWAVE FLUX AT BOTTOM", "W m-2",
+        coordinates="XLONG XLAT XTIME",
+    ),
+    "SWDNTC": _spec(
+        "SWDNTC", XY, "XY ", "INSTANTANEOUS DOWNWELLING CLEAR SKY SHORTWAVE FLUX AT TOP", "W m-2",
+        coordinates="XLONG XLAT XTIME",
+    ),
+    "SWUPTC": _spec(
+        "SWUPTC", XY, "XY ", "INSTANTANEOUS UPWELLING CLEAR SKY SHORTWAVE FLUX AT TOP", "W m-2",
+        coordinates="XLONG XLAT XTIME",
+    ),
+    "LWDNTC": _spec(
+        "LWDNTC", XY, "XY ", "INSTANTANEOUS DOWNWELLING CLEAR SKY LONGWAVE FLUX AT TOP", "W m-2",
+        coordinates="XLONG XLAT XTIME",
+    ),
+    "LWUPTC": _spec(
+        "LWUPTC", XY, "XY ", "INSTANTANEOUS UPWELLING CLEAR SKY LONGWAVE FLUX AT TOP", "W m-2",
         coordinates="XLONG XLAT XTIME",
     ),
 }
@@ -1378,11 +1421,15 @@ def _build_output_fields(
         # --- B1 (v0.12.0) RRTMG up/down all-sky surface + TOA flux diagnostics ---
         # ADD-only (no physical fallback): appear only when the operational
         # radiation diagnostics supply them, never fabricated. SWDNB == SWDOWN in
-        # the no-slope config; SWNORM is the slope-normal surface SW flux. The
-        # clear-sky ``...C`` vars are absent by design (no clear-sky pass). OLR is
+        # the no-slope config; SWNORM is the slope-normal surface SW flux. OLR is
         # derived below from LWUPT (== WRF's TOA outgoing LW).
         "SWDNB", "SWUPB", "LWDNB", "LWUPB",
         "SWDNT", "SWUPT", "LWDNT", "LWUPT", "SWNORM",
+        # --- v0.13.0 RRTMG clear-sky (cloud-free) flux diagnostics. ADD-only:
+        # appear only when the radiation diagnostics supply the WRF clear-sky pass
+        # outputs (``with_clear_sky=True``). ---
+        "SWDNBC", "SWUPBC", "LWDNBC", "LWUPBC",
+        "SWDNTC", "SWUPTC", "LWDNTC", "LWUPTC",
     }
     if diagnostics is not None:
         # WRF stochastic-perturbation restart seed arrays are 1-D integer state.

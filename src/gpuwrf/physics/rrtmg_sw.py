@@ -181,6 +181,15 @@ class RRTMGSWColumnResult(NamedTuple):
     surface_down_topographic: jnp.ndarray
     surface_up_topographic: jnp.ndarray
     surface_absorbed_topographic: jnp.ndarray
+    # Clear-sky (cloud-free) interface fluxes, WRF `pbbcd`/`pbbcu` from the
+    # `vrtqdr_sw(zrefc,...)` clear-sky quadrature in `module_ra_rrtmg_sw.F`
+    # (:8710-8743).  Populated only when ``solve_rrtmg_sw_column(...,
+    # with_clear_sky=True)``; otherwise ``None`` (the operational/main flux
+    # outputs above are byte-identical with or without the clear-sky pass).
+    # WRF `...C` vars: SWUPTC=clear_flux_up[...,-1], SWDNTC=clear_flux_down[...,-1],
+    # SWUPBC=clear_flux_up[...,0], SWDNBC=clear_flux_down[...,0].
+    clear_flux_down: jnp.ndarray | None = None
+    clear_flux_up: jnp.ndarray | None = None
 
 
 class RRTMGSWTopographyState(NamedTuple):
@@ -1296,6 +1305,7 @@ def _sw_band_tile_fluxes(
     surface_albedo,
     source_scale,
     partial_dtype,
+    with_clear_sky: bool = False,
 ):
     """Two-stream solve + (band, g-point) reduction for one band tile.
 
@@ -1364,7 +1374,28 @@ def _sw_band_tile_fluxes(
     down_partial = jnp.sum(down_band.astype(partial_dtype), axis=(-1, -2))
     up_partial = jnp.sum(up_band.astype(partial_dtype), axis=(-1, -2))
     direct_partial = jnp.sum(direct_band.astype(partial_dtype), axis=(-1, -2))
-    return down_partial, up_partial, direct_partial
+    if not with_clear_sky:
+        return down_partial, up_partial, direct_partial
+    # Clear-sky pass: WRF runs a SECOND `vrtqdr_sw` using ONLY the cloud-free
+    # reftra (`zrefc/zrefdc/ztrac/ztradc`) + the clear direct-beam transmittance,
+    # then accumulates the same `zincflx` band-flux into `pbbcd/pbbcu`
+    # (`module_ra_rrtmg_sw.F` :8710-8743).  `pref_clear` etc. are already the
+    # deterministic cloud-free reftra (built from gas+Rayleigh `tau_clear`,
+    # independent of the McICA cloud sample), so the clear-sky flux is just the
+    # adding-method quadrature applied to those arrays — bands/g-points never
+    # couple, so the per-tile fp64 reduction is chunk-width-independent exactly
+    # like the all-sky path.
+    pref_c = jnp.concatenate((pref_clear, surface), axis=-3)
+    prefd_c = jnp.concatenate((prefd_clear, surface), axis=-3)
+    ptra_c = jnp.concatenate((ptra_clear, zero_surface), axis=-3)
+    ptrad_c = jnp.concatenate((ptrad_clear, zero_surface), axis=-3)
+    direct_clear_trans = jnp.where(active_top_down > 0.0, direct_clear, 1.0).astype(pref_lay.dtype)
+    down_c_td, up_c_td, _ = _vertical_quadrature(pref_c, prefd_c, ptra_c, ptrad_c, direct_clear_trans)
+    down_c_band = jnp.flip(down_c_td * top_flux_band[..., None, :, :], axis=-3)
+    up_c_band = jnp.flip(up_c_td * top_flux_band[..., None, :, :], axis=-3)
+    down_c_partial = jnp.sum(down_c_band.astype(partial_dtype), axis=(-1, -2))
+    up_c_partial = jnp.sum(up_c_band.astype(partial_dtype), axis=(-1, -2))
+    return down_partial, up_partial, direct_partial, down_c_partial, up_c_partial
 
 
 def _sw_chunk_bands(n_bands: int) -> int:
@@ -1399,6 +1430,7 @@ def _sw_band_scan_fluxes(
     source_scale,
     out_dtype,
     chunk: int,
+    with_clear_sky: bool = False,
 ):
     """Accumulates the band-tiled two-stream fluxes via a sequential ``lax.scan``.
 
@@ -1428,16 +1460,13 @@ def _sw_band_scan_fluxes(
         return lax.dynamic_slice(arr, starts, sizes)
 
     flux_shape = tau_clear.shape[:-3] + (tau_clear.shape[-3] + 1,)
-    init = (
-        jnp.zeros(flux_shape, dtype=out_dtype),
-        jnp.zeros(flux_shape, dtype=out_dtype),
-        jnp.zeros(flux_shape, dtype=out_dtype),
-    )
+    zero_flux = jnp.zeros(flux_shape, dtype=out_dtype)
+    n_acc = 5 if with_clear_sky else 3
+    init = tuple(zero_flux for _ in range(n_acc))
 
     def body(carry, tile_index):
-        d_acc, u_acc, dir_acc = carry
         start = tile_index * chunk
-        d_p, u_p, dir_p = _sw_band_tile_fluxes(
+        tile = _sw_band_tile_fluxes(
             _band_slice(tau_clear, start, band_axis),
             _band_slice(omega_clear, start, band_axis),
             _band_slice(asymmetry_clear, start, band_axis),
@@ -1451,12 +1480,15 @@ def _sw_band_scan_fluxes(
             surface_albedo,
             source_scale,
             out_dtype,
+            with_clear_sky,
         )
-        return (d_acc + d_p, u_acc + u_p, dir_acc + dir_p), None
+        return tuple(acc + part for acc, part in zip(carry, tile)), None
 
-    (flux_down_model, flux_up_model, direct_down_model), _ = lax.scan(
-        body, init, jnp.arange(n_tiles)
-    )
+    accumulated, _ = lax.scan(body, init, jnp.arange(n_tiles))
+    if with_clear_sky:
+        flux_down_model, flux_up_model, direct_down_model, clear_down, clear_up = accumulated
+        return flux_down_model, flux_up_model, direct_down_model, clear_down, clear_up
+    flux_down_model, flux_up_model, direct_down_model = accumulated
     return flux_down_model, flux_up_model, direct_down_model
 
 
@@ -1465,6 +1497,7 @@ def _shortwave_impl(
     tables: RRTMGTableBundle,
     debug: bool,
     topography: RRTMGSWTopographyState | None = None,
+    with_clear_sky: bool = False,
 ) -> RRTMGSWColumnResult:
     """Unjitted SW implementation shared by production and stripped paths."""
 
@@ -1588,7 +1621,7 @@ def _shortwave_impl(
     source_scale = _solar_source_scale(state, cloud_dtype)
     n_bands = tau_clear.shape[-2]
     chunk = _sw_chunk_bands(n_bands)
-    flux_down_model, flux_up_model, direct_down_model = _sw_band_scan_fluxes(
+    scan_out = _sw_band_scan_fluxes(
         tau_clear,
         omega_clear,
         asymmetry_clear,
@@ -1603,7 +1636,14 @@ def _shortwave_impl(
         source_scale,
         out_dtype,
         chunk,
+        with_clear_sky,
     )
+    if with_clear_sky:
+        flux_down_model, flux_up_model, direct_down_model, clear_flux_down, clear_flux_up = scan_out
+    else:
+        flux_down_model, flux_up_model, direct_down_model = scan_out
+        clear_flux_down = None
+        clear_flux_up = None
     net_down = flux_down_model - flux_up_model
     column_absorbed_layers = net_down[..., 1 : original_layers + 1] - net_down[..., :original_layers]
     column_absorbed_total = net_down[..., -1] - net_down[..., 0]
@@ -1655,6 +1695,8 @@ def _shortwave_impl(
         surface_down_topographic=surface_down_topographic,
         surface_up_topographic=surface_up_topographic,
         surface_absorbed_topographic=surface_absorbed_topographic,
+        clear_flux_down=clear_flux_down,
+        clear_flux_up=clear_flux_up,
     )
 
 
@@ -1841,17 +1883,24 @@ def compute_rrtmg_sw_intermediates(
     )
 
 
-@partial(jax.jit, static_argnames=("debug",))
+@partial(jax.jit, static_argnames=("debug", "with_clear_sky"))
 def solve_rrtmg_sw_column(
     state: RRTMGSWColumnState,
     tables: RRTMGTableBundle = RRTMG_TABLES,
     *,
     debug: bool = False,
     topography: RRTMGSWTopographyState | None = None,
+    with_clear_sky: bool = False,
 ) -> RRTMGSWColumnResult:
-    """Computes one fused shortwave column radiation call."""
+    """Computes one fused shortwave column radiation call.
 
-    return _shortwave_impl(state, tables, debug, topography)
+    When ``with_clear_sky`` is True the result also carries the WRF clear-sky
+    (cloud-free) interface fluxes ``clear_flux_down``/``clear_flux_up`` (the
+    ``vrtqdr_sw(zrefc,...)`` clear-sky quadrature, WRF ``pbbcd``/``pbbcu``); the
+    main all-sky flux outputs are byte-identical regardless of this flag.
+    """
+
+    return _shortwave_impl(state, tables, debug, topography, with_clear_sky)
 
 
 @jax.jit
