@@ -150,3 +150,9 @@ closure + outsider-runnable reproducibility + community-standard benchmarks.
 **2026-06-08 ~09:51** — 🎉 GWD-nested-1km RETEST (#4) PAST step0 + forecasting (sim-hr2, wrfout 2/2/2, GPU only 6.3GB used vs 28GB ceiling — HUGE headroom from optics/taumol −88.6%/−43.6%). The prior run OOM'd at step0; this fits cleanly with GWD on. → optics/taumol-chunk UNBLOCKED GWD-on-nested. Awaiting full 24h (ETA ~11:00) to confirm #4; then flip GWD-nested default-on + write proof.
 
 **2026-06-08 ~11:25** — ✅ #4 GWD-on-nested DONE: 24h-nested-1km+GWD GREEN (PIPELINE_GREEN, 24/24 wrfout/dom, all-finite, forecast-only ~1.86h, peak ~6-18GB) — optics/taumol VRAM chunking unblocked it (v0.12 OOM'd step0/hr7). GWD flipped DEFAULT-ON (gwd_opt=1 honoured; GPUWRF_GWD_NESTED=0 force-off). Tier1: #1,#2,#3,#4,#6,#7-correctness,#8 DONE; remaining #5 (2-way-24h), #7-headline (carry-over). GPU free → launching #5.
+
+**2026-06-08 ~12:10 — PRINCIPAL: NO CARRY-OVER. Close EVERYTHING incl Tier3, max-parallel, agent-validated.**
+v0.13.0 now releases only when ALL closed (Tier1 #7-skill, Tier2 remainder, all Tier3). Tier3-problems discussable for carry-over; the rest NOT. Launching full-closure wave (all CPU-developable via fp64 oracles, parallel to #5-GPU):
+- #7-skill/dycore-fidelity (the hard credibility gate: wind-error-growth, dycore-ph'/MYNN-EDMF/*_tendf + moisture-cadence GPT Q1/Q3) — ATTACK, honest if research-wall.
+- Tier3 ×5 physics groups (microphysics, cumulus, PBL, radiation, surface+LSM), top-schemes-first batches, per-family oracle.
+- (next wave) Tier2 compile-perf (sub-jit + parallel-compile-knob) + CPU-flock; multi-hardware = physically HW-limited (1 GPU), honest-not-closeable.
