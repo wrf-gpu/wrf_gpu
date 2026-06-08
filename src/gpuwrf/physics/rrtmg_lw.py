@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import importlib.util
+import os
 from functools import lru_cache, partial
 from pathlib import Path
 import re
@@ -538,6 +539,34 @@ _LW_GPOINT_CHUNK_BANDS = 1
 _LW_TAUMOL_CHUNK = True
 
 
+def _env_int(name: str, default: int) -> int:
+    """Reads integer tuning knobs without making import-time env errors fatal."""
+
+    try:
+        return int(os.environ.get(name, str(default)))
+    except (TypeError, ValueError):
+        return default
+
+
+def _env_bool(name: str, default: bool) -> bool:
+    """Reads boolean tuning knobs without making import-time env errors fatal."""
+
+    value = os.environ.get(name)
+    if value is None:
+        return default
+    return value.strip().lower() not in {"0", "false", "no", "off"}
+
+
+# Column tiling over the leading horizontal/batch axes.  v0.13 band/taumol
+# chunking removed per-spectral-stack blowups, but the public LW solve still had
+# an `ncol`-wide transient floor when invoked on a whole 1 km nest.  The
+# production entry flattens arbitrary leading dimensions, scans over fixed-size
+# column tiles, and reshapes outputs back.  Set `_LW_COLUMN_TILING=False` or
+# `_LW_COLUMN_TILE_COLS=0` for the exact whole-column reference path.
+_LW_COLUMN_TILING = _env_bool("GPUWRF_RRTMG_LW_COLUMN_TILING", True)
+_LW_COLUMN_TILE_COLS = max(0, _env_int("GPUWRF_RRTMG_LW_COLUMN_TILE_COLS", 16384))
+
+
 def _leaves(state: RRTMGLWColumnState):
     """Centralizes leaf iteration for equality and hashing."""
 
@@ -810,6 +839,188 @@ def _clip_state(state: RRTMGLWColumnState) -> RRTMGLWColumnState:
         surface_emissivity=jnp.clip(state.surface_emissivity, 0.0, 1.0),
         dz=jnp.maximum(state.dz, 1.0),
         rho=jnp.maximum(state.rho, MIN_LAYER_MASS),
+    )
+
+
+def _column_count(leading_shape: tuple[int, ...]) -> int:
+    """Returns the static number of flattened columns for a leading shape."""
+
+    return int(np.prod(leading_shape, dtype=np.int64)) if leading_shape else 1
+
+
+def _flatten_layer_field(arr, leading_shape: tuple[int, ...], ncol: int):
+    """Flattens arbitrary leading axes of a column-layer field to `(ncol, nz)`."""
+
+    arr = jnp.asarray(arr)
+    return jnp.reshape(arr, (ncol,) + arr.shape[len(leading_shape):])
+
+
+def _flatten_surface_field(arr, leading_shape: tuple[int, ...], ncol: int):
+    """Flattens a surface/column field when it carries the state leading axes."""
+
+    arr = jnp.asarray(arr)
+    if arr.shape == ():
+        return jnp.reshape(arr, (ncol,)) if not leading_shape else arr
+    if leading_shape and arr.shape[: len(leading_shape)] == leading_shape:
+        return jnp.reshape(arr, (ncol,) + arr.shape[len(leading_shape):])
+    return arr
+
+
+def _pad_leading_columns(arr, ncol: int, padded_ncol: int):
+    """Pads a flattened leading column axis by repeating the last real column."""
+
+    arr = jnp.asarray(arr)
+    if arr.shape == () or arr.shape[0] != ncol or padded_ncol == ncol:
+        return arr
+    pad_cols = padded_ncol - ncol
+    tail = jnp.broadcast_to(arr[-1:], (pad_cols,) + arr.shape[1:])
+    return jnp.concatenate((arr, tail), axis=0)
+
+
+def _slice_leading_columns(arr, start, tile_cols: int, padded_ncol: int):
+    """Slices one fixed-size tile from arrays that carry the padded column axis."""
+
+    arr = jnp.asarray(arr)
+    if arr.shape == () or arr.shape[0] != padded_ncol:
+        return arr
+    zero = jnp.zeros((), dtype=start.dtype)
+    starts = [zero] * arr.ndim
+    starts[0] = start
+    sizes = list(arr.shape)
+    sizes[0] = tile_cols
+    return lax.dynamic_slice(arr, starts, sizes)
+
+
+def _flatten_lw_state(state: RRTMGLWColumnState, leading_shape: tuple[int, ...], ncol: int) -> RRTMGLWColumnState:
+    """Flattens a LW state from `leading_shape + (nz,)` to `(ncol, nz)`."""
+
+    return state.replace(
+        T=_flatten_layer_field(state.T, leading_shape, ncol),
+        p=_flatten_layer_field(state.p, leading_shape, ncol),
+        qv=_flatten_layer_field(state.qv, leading_shape, ncol),
+        qc=_flatten_layer_field(state.qc, leading_shape, ncol),
+        qi=_flatten_layer_field(state.qi, leading_shape, ncol),
+        qs=_flatten_layer_field(state.qs, leading_shape, ncol),
+        qg=_flatten_layer_field(state.qg, leading_shape, ncol),
+        cloud_fraction=_flatten_layer_field(state.cloud_fraction, leading_shape, ncol),
+        dz=_flatten_layer_field(state.dz, leading_shape, ncol),
+        rho=_flatten_layer_field(state.rho, leading_shape, ncol),
+        surface_temperature=_flatten_surface_field(state.surface_temperature, leading_shape, ncol),
+        surface_emissivity=_flatten_surface_field(state.surface_emissivity, leading_shape, ncol),
+    )
+
+
+def _pad_lw_state(state: RRTMGLWColumnState, ncol: int, padded_ncol: int) -> RRTMGLWColumnState:
+    """Pads all flattened LW state leaves that carry the leading column axis."""
+
+    return state.replace(
+        T=_pad_leading_columns(state.T, ncol, padded_ncol),
+        p=_pad_leading_columns(state.p, ncol, padded_ncol),
+        qv=_pad_leading_columns(state.qv, ncol, padded_ncol),
+        qc=_pad_leading_columns(state.qc, ncol, padded_ncol),
+        qi=_pad_leading_columns(state.qi, ncol, padded_ncol),
+        qs=_pad_leading_columns(state.qs, ncol, padded_ncol),
+        qg=_pad_leading_columns(state.qg, ncol, padded_ncol),
+        cloud_fraction=_pad_leading_columns(state.cloud_fraction, ncol, padded_ncol),
+        surface_temperature=_pad_leading_columns(state.surface_temperature, ncol, padded_ncol),
+        surface_emissivity=_pad_leading_columns(state.surface_emissivity, ncol, padded_ncol),
+        dz=_pad_leading_columns(state.dz, ncol, padded_ncol),
+        rho=_pad_leading_columns(state.rho, ncol, padded_ncol),
+    )
+
+
+def _slice_lw_state(state: RRTMGLWColumnState, start, tile_cols: int, padded_ncol: int) -> RRTMGLWColumnState:
+    """Slices a fixed-size LW state tile from a padded flattened state."""
+
+    return state.replace(
+        T=_slice_leading_columns(state.T, start, tile_cols, padded_ncol),
+        p=_slice_leading_columns(state.p, start, tile_cols, padded_ncol),
+        qv=_slice_leading_columns(state.qv, start, tile_cols, padded_ncol),
+        qc=_slice_leading_columns(state.qc, start, tile_cols, padded_ncol),
+        qi=_slice_leading_columns(state.qi, start, tile_cols, padded_ncol),
+        qs=_slice_leading_columns(state.qs, start, tile_cols, padded_ncol),
+        qg=_slice_leading_columns(state.qg, start, tile_cols, padded_ncol),
+        cloud_fraction=_slice_leading_columns(state.cloud_fraction, start, tile_cols, padded_ncol),
+        surface_temperature=_slice_leading_columns(state.surface_temperature, start, tile_cols, padded_ncol),
+        surface_emissivity=_slice_leading_columns(state.surface_emissivity, start, tile_cols, padded_ncol),
+        dz=_slice_leading_columns(state.dz, start, tile_cols, padded_ncol),
+        rho=_slice_leading_columns(state.rho, start, tile_cols, padded_ncol),
+    )
+
+
+def _zero_lw_column_result(total_cols: int, nlayers: int, dtype, with_clear_sky: bool) -> RRTMGLWColumnResult:
+    """Allocates the fixed-shape scan carry for LW tiled column outputs."""
+
+    layer = jnp.zeros((total_cols, nlayers), dtype=dtype)
+    interface = jnp.zeros((total_cols, nlayers + 2), dtype=dtype)
+    column = jnp.zeros((total_cols,), dtype=dtype)
+    clear_down = jnp.zeros_like(interface) if with_clear_sky else None
+    clear_up = jnp.zeros_like(interface) if with_clear_sky else None
+    return RRTMGLWColumnResult(
+        heating_rate=layer,
+        flux_down=interface,
+        flux_up=interface,
+        toa_down=column,
+        toa_up=column,
+        surface_down=column,
+        surface_up=column,
+        column_net_heating=column,
+        surface_emission=column,
+        clear_flux_down=clear_down,
+        clear_flux_up=clear_up,
+    )
+
+
+def _update_tile(carry, tile, start):
+    """Scatters one fixed-size tile into a padded scan-carry field."""
+
+    zero = jnp.zeros((), dtype=start.dtype)
+    starts = [zero] * carry.ndim
+    starts[0] = start
+    return lax.dynamic_update_slice(carry, tile, starts)
+
+
+def _scatter_lw_result(carry: RRTMGLWColumnResult, tile: RRTMGLWColumnResult, start) -> RRTMGLWColumnResult:
+    """Scatters one LW tile result into the full padded result carry."""
+
+    clear_down = None if carry.clear_flux_down is None else _update_tile(carry.clear_flux_down, tile.clear_flux_down, start)
+    clear_up = None if carry.clear_flux_up is None else _update_tile(carry.clear_flux_up, tile.clear_flux_up, start)
+    return RRTMGLWColumnResult(
+        heating_rate=_update_tile(carry.heating_rate, tile.heating_rate, start),
+        flux_down=_update_tile(carry.flux_down, tile.flux_down, start),
+        flux_up=_update_tile(carry.flux_up, tile.flux_up, start),
+        toa_down=_update_tile(carry.toa_down, tile.toa_down, start),
+        toa_up=_update_tile(carry.toa_up, tile.toa_up, start),
+        surface_down=_update_tile(carry.surface_down, tile.surface_down, start),
+        surface_up=_update_tile(carry.surface_up, tile.surface_up, start),
+        column_net_heating=_update_tile(carry.column_net_heating, tile.column_net_heating, start),
+        surface_emission=_update_tile(carry.surface_emission, tile.surface_emission, start),
+        clear_flux_down=clear_down,
+        clear_flux_up=clear_up,
+    )
+
+
+def _unflatten_lw_result(result: RRTMGLWColumnResult, leading_shape: tuple[int, ...], ncol: int) -> RRTMGLWColumnResult:
+    """Restores LW result fields from flat columns to the caller's leading shape."""
+
+    def restore(arr):
+        if arr is None:
+            return None
+        arr = arr[:ncol]
+        return jnp.reshape(arr, leading_shape + arr.shape[1:])
+
+    return RRTMGLWColumnResult(
+        heating_rate=restore(result.heating_rate),
+        flux_down=restore(result.flux_down),
+        flux_up=restore(result.flux_up),
+        toa_down=restore(result.toa_down),
+        toa_up=restore(result.toa_up),
+        surface_down=restore(result.surface_down),
+        surface_up=restore(result.surface_up),
+        column_net_heating=restore(result.column_net_heating),
+        surface_emission=restore(result.surface_emission),
+        clear_flux_down=restore(result.clear_flux_down),
+        clear_flux_up=restore(result.clear_flux_up),
     )
 
 
@@ -2413,6 +2624,39 @@ def _longwave_impl(
     )
 
 
+def _longwave_column_tiled_impl(
+    state: RRTMGLWColumnState,
+    tables: RRTMGTableBundle,
+    debug: bool,
+    with_clear_sky: bool = False,
+) -> RRTMGLWColumnResult:
+    """Runs the LW solve over fixed-size flattened column tiles."""
+
+    if not _LW_COLUMN_TILING or _LW_COLUMN_TILE_COLS <= 0:
+        return _longwave_impl(state, tables, debug, with_clear_sky)
+
+    leading_shape = state.p.shape[:-1]
+    ncol = _column_count(leading_shape)
+    tile_cols = min(max(int(_LW_COLUMN_TILE_COLS), 1), ncol)
+    n_tiles = (ncol + tile_cols - 1) // tile_cols
+    padded_ncol = n_tiles * tile_cols
+    nlayers = state.p.shape[-1]
+    out_dtype = jnp.result_type(state.p.dtype, jnp.float64)
+
+    flat_state = _flatten_lw_state(state, leading_shape, ncol)
+    padded_state = _pad_lw_state(flat_state, ncol, padded_ncol)
+    init = _zero_lw_column_result(padded_ncol, nlayers, out_dtype, with_clear_sky)
+
+    def body(carry, tile_index):
+        start = tile_index * tile_cols
+        tile_state = _slice_lw_state(padded_state, start, tile_cols, padded_ncol)
+        tile_result = _longwave_impl(tile_state, tables, debug, with_clear_sky)
+        return _scatter_lw_result(carry, tile_result, start), None
+
+    tiled, _ = lax.scan(body, init, jnp.arange(n_tiles, dtype=jnp.int32))
+    return _unflatten_lw_result(tiled, leading_shape, ncol)
+
+
 def compute_rrtmg_lw_intermediates(
     state: RRTMGLWColumnState,
     tables: RRTMGTableBundle = RRTMG_TABLES,
@@ -2439,7 +2683,7 @@ def solve_rrtmg_lw_column(
     all-sky flux outputs are byte-identical regardless of this flag.
     """
 
-    return _longwave_impl(state, tables, debug, with_clear_sky)
+    return _longwave_column_tiled_impl(state, tables, debug, with_clear_sky)
 
 
 @jax.jit
