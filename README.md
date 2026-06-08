@@ -119,7 +119,7 @@ open issues are in **[docs/KNOWN_ISSUES.md](docs/KNOWN_ISSUES.md)**.
 | **Dynamics** | Nonhydrostatic ARW, RK3 + split-explicit acoustic, flux-form advection, constant-K (`diff_opt=2`/`km_opt=1`) + 2-D Smagorinsky (`diff_opt=1`/`km_opt=4`) horizontal diffusion | 3-D TKE / full Smagorinsky closures (`km_opt=2/3/5`) → use `km_opt=1` or `4` | Moving/global nests; adaptive Δt |
 | **Microphysics** | Kessler, Lin, WSM3/5/6, Thompson, Morrison, WDM6 | Aerosol-coupled (Thompson-aerosol mp=28, Morrison-aerosol mp=40), NSSL | WRF-Chem |
 | **PBL / sfc** | YSU, MYNN-EDMF, ACM2, BouLac, **MYJ (v0.13.0)**; MYNN-SL, revised-MM5, Pleim-Xiu, **Janjic-Eta (v0.13.0)** sfclay | — | — |
-| **Cumulus** | Kain-Fritsch, BMJ, Tiedtke, Grell-Freitas (scale-aware) | New-Tiedtke | — |
+| **Cumulus** | Kain-Fritsch, BMJ, Tiedtke (requires active flux-form moisture advection for RQVFTEN), Grell-Freitas (scale-aware) | New-Tiedtke | — |
 | **Radiation** | RRTMG SW + LW with topographic shading + slope correction; Dudhia SW + classic RRTM LW (`ra_lw=1`, v0.13.0 skeptic-hardened); clear-sky `…C` flux diagnostics (v0.13.0, opt-in) | — | — |
 | **Land** | Noah classic, Noah-MP (prognostic) | — | Full Noah-MP snow-layer diagnostics in wrfout (KI-3) |
 | **Nesting** | One-way live d01→d02→d03, per-domain subcycling, restart; GWD (`gwd_opt=1`) default-on on nested (v0.13.0) | — | Two-way feedback + radiation/​w-relax in loop — finite/stable but 24 h equivalence vs CPU-WRF untested (KI-11) |
@@ -142,7 +142,7 @@ delta-to-complete-WRF ledger is in the [Roadmap](#roadmap--delta-to-a-complete-w
 | Microphysics | `mp_physics` | 1 Kessler, 2 Purdue-Lin, 3 WSM3, 4 WSM5, 6 WSM6, 8 Thompson, 10 Morrison, 16 WDM6 |
 | PBL | `bl_pbl_physics` | 1 YSU, **2 MYJ (v0.13.0: jit/vmap rewrite, oracle PASS, mandatory Janjic pairing)**, **5 MYNN-EDMF** (v0.11.0: DMP mass flux + cloud-aware moisture/thermodynamics, WRF defaults `bl_mynn_edmf=1`/`bl_mynn_edmf_mom=1`), 7 ACM2, 8 BouLac |
 | Surface layer | `sf_sfclay_physics` | 1 revised-MM5, **2 Janjic-Eta (v0.13.0, paired with MYJ)**, 5 MYNN-SL, 7 Pleim-Xiu |
-| Cumulus | `cu_physics` | **1 Kain-Fritsch** (v0.11.0: column/savepoint parity PASS; d01 parent now has faithful KF), 2 BMJ (fp64), 3 Grell-Freitas (scale-aware), 6 Tiedtke |
+| Cumulus | `cu_physics` | **1 Kain-Fritsch** (v0.11.0: column/savepoint parity PASS; d01 parent now has faithful KF), 2 BMJ (fp64), 3 Grell-Freitas (scale-aware), 6 Tiedtke (requires active flux-form moisture advection for RQVFTEN) |
 | Radiation | `ra_sw_physics` / `ra_lw_physics` | RRTMG SW + LW (`=4`) with topographic shading (`topo_shading=1`) + slope-corrected surface radiation (`slope_rad=1`); **Dudhia SW (`ra_sw=1`) + classic RRTM LW (`ra_lw=1`)** (v0.12.0 wired, **v0.13.0 LW skeptic-hardened**); **clear-sky `…C` flux diagnostics (v0.13.0, opt-in)** |
 | Land surface | `sf_surface_physics` | 2 Noah classic (explicit static/land bundle), 4 Noah-MP (`use_noahmp=True`) |
 | Diffusion | `diff_opt`, `km_opt` | constant-K and 2-D Smagorinsky; **v0.11.0: terrain-slope + map-factor deformation terms now included** (WRF formula parity, max residual `3.78e-15`) |

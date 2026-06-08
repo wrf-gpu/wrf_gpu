@@ -32,8 +32,8 @@ DISCIPLINE
   the GPU scan). Tiny idealized columns keep the whole module fast (~<2 min on
   4 CPU cores).
 
-Run (CPU, cores 28-31, NO GPU):
-  JAX_PLATFORMS=cpu PYTHONPATH=src TF_CPP_MIN_LOG_LEVEL=3 taskset -c 28-31 \
+Run (CPU, cores 24-27, NO GPU):
+  JAX_PLATFORMS=cpu PYTHONPATH=src TF_CPP_MIN_LOG_LEVEL=3 taskset -c 24-27 \
       python -m pytest tests/test_v013_operational_smoke.py -q
 """
 
@@ -405,11 +405,10 @@ def test_myj_pairing_fails_closed_when_unpaired(bl: int, sf: int) -> None:
 #    unstable column and produce convective precip (rainc_acc > 0). mp/PBL off and
 #    a larger dt so the cumulus step accumulates a measurable adjustment.
 # ============================================================================
-# cu=6 (modified Tiedtke) is scan-wired (CU_SCAN_ADAPTERS[6], runs finite), but its
-# operational adapter HARD-ZEROES the QVFTEN/QVPBLTEN large-scale moisture-convergence
-# forcing (documented carry-over in scan_adapters.tiedtke_adapter). The Tiedtke kernel
-# triggers only when fed nonzero QVFTEN (verified directly), so with the forcing zeroed
-# it never activates in the operational scan -> wired-but-INERT. Reported, not masked.
+# cu=6 (modified Tiedtke) needs the WRF RQVFTEN/RQVBLTEN moisture-forcing hand-off.
+# The operational runtime now threads RQVFTEN from the flux-form qv-advection
+# diagnostic and RQVBLTEN from the PBL qv increment; selecting cu=6 without the
+# flux-form path fails closed instead of advertising an inert scheme.
 _CU_TRIGGERING = tuple(o for o in OPERATIONAL_CU if o != 6)
 
 
@@ -428,29 +427,47 @@ def test_cumulus_operational_triggers_and_rains(cu: int) -> None:
     assert _changed(after.theta, state.theta), f"cu={cu} did not apply a convective tendency"
 
 
-def test_cumulus_tiedtke_runs_finite_but_is_inert_carry_over() -> None:
-    """cu=6 (Tiedtke) is scan-wired and runs finite, but is INERT in the operational
-    scan because the adapter zeroes its QVFTEN moisture-convergence forcing. This is
-    a documented carry-over surfaced honestly (xfail), not a silent skip."""
+def test_cumulus_tiedtke_operational_triggers_with_real_qvften() -> None:
+    """cu=6 (Tiedtke) runs through the operational physics step with real WRF-style
+    RQVFTEN forcing from the flux-form qv-advection diagnostic, not a synthetic
+    direct kernel injection."""
 
     grid = _grid()
     state = _convective_state(grid)
-    nml = _namelist(grid, dt_s=900.0, mp_physics=0, bl_pbl_physics=0, sf_sfclay_physics=0, cu_physics=6)
+    nml = _namelist(
+        grid,
+        dt_s=900.0,
+        mp_physics=0,
+        bl_pbl_physics=0,
+        sf_sfclay_physics=0,
+        cu_physics=6,
+        use_flux_advection=True,
+        moist_adv_opt=2,
+    )
     _resolve_operational_suite(nml)
     carry = initial_operational_carry(state)
     forcing = _physics_step_forcing(carry, nml, 0.0, run_radiation=False)
     after = forcing.state
-    # It genuinely RUNS (finite, JIT-traceable) -- this much is functional.
     assert _all_finite(after), "cu=6 produced a non-finite field"
-    if _maxabs(after.rainc_acc) <= 0.0 and not _changed(after.theta, state.theta):
-        pytest.xfail(
-            "cu_physics=6 (modified Tiedtke) is scan-wired (CU_SCAN_ADAPTERS[6]) and runs "
-            "finite, but the operational adapter hard-zeroes QVFTEN/QVPBLTEN (the "
-            "large-scale moisture-convergence forcing the Tiedtke closure triggers on), so "
-            "it is INERT even on a strongly convective column. The kernel itself triggers "
-            "when fed nonzero QVFTEN -> the gap is the operational coupling, not the kernel. "
-            "Thread a real QVFTEN forcing into tiedtke_adapter to make cu=6 functional."
-        )
+    assert _maxabs(after.rainc_acc) > 0.0, "cu=6 did not trigger (no convective precip)"
+    assert _changed(after.theta, state.theta), "cu=6 did not apply a convective tendency"
+
+
+def test_cumulus_tiedtke_requires_qvften_source() -> None:
+    """cu=6 must fail closed when the operational scan cannot diagnose RQVFTEN."""
+
+    grid = _grid()
+    nml = _namelist(
+        grid,
+        dt_s=900.0,
+        mp_physics=0,
+        bl_pbl_physics=0,
+        sf_sfclay_physics=0,
+        cu_physics=6,
+        use_flux_advection=False,
+    )
+    with pytest.raises(UnsupportedSchemeSelection, match="RQVFTEN"):
+        _resolve_operational_suite(nml)
 
 
 # ============================================================================
