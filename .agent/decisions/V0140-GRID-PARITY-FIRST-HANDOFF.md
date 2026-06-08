@@ -284,7 +284,7 @@ Wave deliverables are expected under `proofs/v014/` and
 
 ## Active Wave 4
 
-- Pending dispatch:
+- `019ea992-7045-7db3-bd21-f09583024532` (`Herschel`):
   WRF same-state marker savepoint sprint
   `.agent/sprints/2026-06-09-v014-wrf-same-state-marker-savepoint/sprint-contract.md`.
   Write scope in repo: `proofs/v014/wrf_same_state_marker_savepoint.*`,
