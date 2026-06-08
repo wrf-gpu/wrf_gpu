@@ -1,0 +1,22 @@
+{
+  "blocked_reason": null,
+  "init_mode": "standalone_native_init_nested",
+  "output_dir": "/tmp/v014_post_static_writer_smoke/l2_d02_20260501_18z_l2_72h_20260519T173026Z",
+  "proofs": {
+    "bounds": "proofs/v014/post_static_writer_smoke/live_nested_h1/bounds_check_l2_d02.json",
+    "tier4_rmse": "proofs/v014/post_static_writer_smoke/live_nested_h1/tier4_rmse_l2_d02.json",
+    "wall_clock": "proofs/v014/post_static_writer_smoke/live_nested_h1/wall_clock_l2_d02.json"
+  },
+  "run_dir": "/tmp/v0120_merged_run_root/20260501_18z_l2_72h_20260519T173026Z",
+  "run_id": "20260501_18z_l2_72h_20260519T173026Z",
+  "schema": "M7L2D02ReplayValidationSummary",
+  "schema_version": 1,
+  "score_domain": "d02",
+  "statuses": {
+    "bounds": "PASS",
+    "pipeline": "PIPELINE_GREEN",
+    "rmse": "PASS",
+    "wall_clock": "PASS"
+  },
+  "verdict": "L2_D02_GREEN"
+}

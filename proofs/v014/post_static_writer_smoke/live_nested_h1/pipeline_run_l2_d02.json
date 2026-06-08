@@ -1,0 +1,187 @@
+{
+  "all_domains_finite": true,
+  "all_outputs_present": true,
+  "carry_overs": [
+    "Two-way feedback is OFF (one-way nesting); matches the v0.11.0 validated wiring.",
+    "In-loop nested w relaxation is OFF (deferred to a longer stability gate).",
+    "No TOST/ensemble equivalence or CPU-speedup baseline is claimed by a standalone smoke."
+  ],
+  "cpu_affinity": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "device": "cuda:0",
+  "domains": [
+    "d01",
+    "d02"
+  ],
+  "feedback": false,
+  "hierarchy": {
+    "edges": [
+      {
+        "child": "d02",
+        "feedback": false,
+        "i_parent_start": 24,
+        "j_parent_start": 20,
+        "parent": "d01",
+        "parent_grid_ratio": 3
+      }
+    ],
+    "event_counts": {
+      "advance": 400,
+      "force": 200,
+      "output": 2
+    },
+    "force_counts": {
+      "d01->d02": 200
+    },
+    "observed_own_steps": {
+      "d01": 200,
+      "d02": 600
+    },
+    "order": [
+      "d01",
+      "d02"
+    ],
+    "output_cadence_steps": {
+      "d01": 200,
+      "d02": 600
+    },
+    "persistent_state_bytes": {
+      "d01": 87507568,
+      "d02": 67322512
+    }
+  },
+  "hours": 1,
+  "init_mode": "standalone_native_init_nested",
+  "input_dir": "/tmp/v0120_merged_run_root/20260501_18z_l2_72h_20260519T173026Z",
+  "max_dom": 2,
+  "metadata": {
+    "domains": {
+      "d01": {
+        "grid": {
+          "dx_m": 9000.0,
+          "dy_m": 9000.0,
+          "mass_shape": [
+            44,
+            59,
+            93
+          ],
+          "wrf_staggered_extent": [
+            45,
+            60,
+            94
+          ]
+        },
+        "ic_source": "wrfinput_d01",
+        "lbc_source": "wrfbdy native lateral forcing (standalone; no CPU wrfout replay)",
+        "namelist": {
+          "boundary_update_cadence_s": 3600.0,
+          "cu_physics": 1,
+          "dt_s": 18.0,
+          "gwd_opt": 1,
+          "gwdo_statics_loaded": true,
+          "radiation_cadence_steps": 100,
+          "radiation_static_loaded": true
+        },
+        "qke_coldstart": {
+          "note": "parent wrfout carried no real QKE (MAXVAL<0.0002); seeded WRF cold-start background TKE profile",
+          "qke_max": 4.99220117532457e-05,
+          "seeded": true,
+          "wrf_ref": "phys/module_bl_mynnedmf.F:618-691 (mym_initialize INITIALIZE_QKE)"
+        },
+        "standalone_native_init": true,
+        "wrfbdy_path": "/tmp/v0120_merged_run_root/20260501_18z_l2_72h_20260519T173026Z/wrfbdy_d01"
+      },
+      "d02": {
+        "grid": {
+          "dx_m": 3000.0,
+          "dy_m": 3000.0,
+          "mass_shape": [
+            44,
+            66,
+            159
+          ],
+          "wrf_staggered_extent": [
+            45,
+            67,
+            160
+          ]
+        },
+        "ic_source": "wrfinput_d02",
+        "lbc_source": "live parent boundary package (build_child_boundary_package)",
+        "namelist": {
+          "boundary_update_cadence_s": 18.0,
+          "cu_physics": 0,
+          "dt_s": 6.0,
+          "gwd_opt": 1,
+          "gwdo_statics_loaded": true,
+          "radiation_cadence_steps": 300,
+          "radiation_static_loaded": true
+        },
+        "qke_coldstart": {
+          "note": "parent wrfout carried no real QKE (MAXVAL<0.0002); seeded WRF cold-start background TKE profile",
+          "qke_max": 4.99220117532457e-05,
+          "seeded": true,
+          "wrf_ref": "phys/module_bl_mynnedmf.F:618-691 (mym_initialize INITIALIZE_QKE)"
+        },
+        "standalone_native_init": true,
+        "wrfbdy_path": null
+      }
+    },
+    "edges": [
+      {
+        "child": "d02",
+        "feedback": false,
+        "i_parent_start": 24,
+        "j_parent_start": 20,
+        "parent": "d01",
+        "parent_grid_ratio": 3
+      }
+    ]
+  },
+  "nesting_mode": "one_way",
+  "orchestration_cpu_affinity": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "output_dir": "/tmp/v014_post_static_writer_smoke/l2_d02_20260501_18z_l2_72h_20260519T173026Z",
+  "per_domain": {
+    "d01": {
+      "dt_s": 18.0,
+      "expected_wrfout_count": 1,
+      "final_state_finite": true,
+      "own_steps": 200,
+      "wrfout_count": 1,
+      "wrfout_files": [
+        "/tmp/v014_post_static_writer_smoke/l2_d02_20260501_18z_l2_72h_20260519T173026Z/wrfout_d01_2026-05-01_19:00:00"
+      ]
+    },
+    "d02": {
+      "dt_s": 6.0,
+      "expected_wrfout_count": 1,
+      "final_state_finite": true,
+      "own_steps": 600,
+      "wrfout_count": 1,
+      "wrfout_files": [
+        "/tmp/v014_post_static_writer_smoke/l2_d02_20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_19:00:00"
+      ]
+    }
+  },
+  "root_steps": 200,
+  "run_id": "/tmp/v0120_merged_run_root/20260501_18z_l2_72h_20260519T173026Z",
+  "run_start_utc": "2026-05-01T18:00:00+00:00",
+  "schema": "M7DailyPipelineRun",
+  "schema_version": 1,
+  "verdict": "PIPELINE_GREEN",
+  "wall_clock_forecast_only_s": 151.5834318640009,
+  "wall_clock_total_s": 156.37118748600005,
+  "wrfout_files": [
+    "/tmp/v014_post_static_writer_smoke/l2_d02_20260501_18z_l2_72h_20260519T173026Z/wrfout_d01_2026-05-01_19:00:00",
+    "/tmp/v014_post_static_writer_smoke/l2_d02_20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_19:00:00"
+  ]
+}

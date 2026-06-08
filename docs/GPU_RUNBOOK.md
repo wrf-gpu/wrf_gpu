@@ -91,6 +91,43 @@ scripts/run_powered_tost_n15.sh --dry-run --resume
 `--dry-run` prepares the merged root and prints the case plan without launching
 GPU forecasts.
 
+## L2 d02 TOST/Debug Cases
+
+The L2 corpus cases used by powered TOST are **max_dom=2 live-nested cases**:
+d01 has `wrfbdy_d01`, while d02 is a nest and correctly has no `wrfbdy_d02`.
+For these cases, do not use the old single-domain `scripts/m7_l2_d02_replay.py`
+path for a fresh GPU forecast; it routes d02 as standalone and fails fast with
+`standalone native-init requires wrfbdy_d02`.
+
+Use the TOST-fixed live-nested per-case runner for short debug smokes:
+
+```bash
+scripts/run_gpu_lowprio.sh --cores 0-23 -- \
+  python proofs/v0120/powered_tost_n15/run_one_case_v0120.py \
+    --run-root /tmp/v0120_merged_run_root \
+    --cpu-truth-root /mnt/data/canairy_meteo/runs/wrf_l2_backfill_output \
+    --run-id 20260501_18z_l2_72h_20260519T173026Z \
+    --hours 1 \
+    --output-root /tmp/v014_post_static_writer_smoke \
+    --proof-dir proofs/v014/post_static_writer_smoke/live_nested_h1
+```
+
+Then compare the written d02 wrfout against CPU-WRF truth:
+
+```bash
+JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= PYTHONPATH=src \
+  python scripts/compare_wrfout_grid.py \
+    --cpu-dir /mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z \
+    --gpu-dir /tmp/v014_post_static_writer_smoke/l2_d02_20260501_18z_l2_72h_20260519T173026Z \
+    --domain d02 \
+    --min-lead 1 --max-lead 1 \
+    --out-json proofs/v014/post_static_writer_grid_compare.json \
+    --out-md proofs/v014/post_static_writer_grid_compare.md
+```
+
+For the full n=15 campaign, still use `scripts/run_powered_tost_n15.sh`; it
+prepares the same merged root and runs the same live-nested per-case path.
+
 ## Common Failures
 
 - `GPU lock busy` / rc `75`: another GPU campaign owns
@@ -98,6 +135,9 @@ GPU forecasts.
   owning run deliberately.
 - `command not found` for a `/tmp/wrf_gpu_run_lowprio.sh` path: use
   `scripts/run_gpu_lowprio.sh` or `scripts/run_powered_tost_n15.sh`.
+- `standalone native-init requires wrfbdy_d02` on an L2 d02 case: wrong runner
+  for a nested case. Use `run_one_case_v0120.py` or `python -m gpuwrf.cli run
+  --max-dom 2` so d02 gets live parent boundaries.
 - Long startup with no hourly `wrfout`: usually cold XLA compile. Watch
   `nvidia-smi` memory and CPU activity.
 - `CUDA_ERROR_OUT_OF_MEMORY`: verify the run is on the memory-fixed branch and
