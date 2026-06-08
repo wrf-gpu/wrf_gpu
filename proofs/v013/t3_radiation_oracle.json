@@ -1,0 +1,586 @@
+{
+  "scheme": "GSFC (Chou-Suarez) shortwave (ra_sw_physics=2) -- bare kernel + operational wiring",
+  "what_is_proven": "the JAX port physics.ra_sw_gsfc.solve_gsfc_sw_column reproduces the pristine-WRF GSFCSWRAD RTHRATEN/GSW/RSWTOA oracle (fp32 canonical + fp64 precision-audit); and the wired operational coupler coupling.physics_couplers.gsfc_sw_theta_tendency runs finite + physically-bounded on a real State. The scheme is now operationally scan-wired in the radiation slot (ra_sw_physics=2).",
+  "verdict": "PASS",
+  "overall_pass": true,
+  "canonical_fp32_pass": true,
+  "fp64_precision_audit_pass": true,
+  "self_compare": false,
+  "self_compare_note": "The reference is the unmodified pristine WRF phys/module_ra_gsfcsw.F GSFCSWRAD source compiled standalone (proofs/radiation/oracle/gsfcsw_build_and_run.sh); the JAX port is never used to make the reference.",
+  "oracle": {
+    "source": "$WRF_PRISTINE_ROOT/phys/module_ra_gsfcsw.F",
+    "entry": "GSFCSWRAD -> sorad (Chou-Suarez multi-band delta-Eddington SW)",
+    "source_unmodified": true,
+    "full_wrf_exe": false,
+    "fp32_savepoints": "proofs/radiation/savepoints_gsfcsw (gsfcsw_case_*.json)",
+    "fp64_savepoints": "proofs/radiation/savepoints_gsfcsw_fp64 (gsfcsw_case_*.json)",
+    "fp32_source_checksums": "da257cf060c385c3aa4d6c3a737ec8c10773bd52034786d954bab0a0dc290766  module_ra_gsfcsw.F\n",
+    "fp64_source_checksums": "da257cf060c385c3aa4d6c3a737ec8c10773bd52034786d954bab0a0dc290766  module_ra_gsfcsw.F\n"
+  },
+  "wired_path": {
+    "kernel": "gpuwrf.physics.ra_sw_gsfc.solve_gsfc_sw_column",
+    "coupler": "gpuwrf.coupling.physics_couplers.gsfc_sw_theta_tendency",
+    "column_assembler": "gpuwrf.coupling.physics_couplers._gsfc_sw_column_inputs",
+    "dispatch": "gpuwrf.runtime.operational_mode radiation slot dispatches ra_sw_physics=2 -> GSFC SW + RRTMG/classic-RRTM LW; default ra_sw_physics=4 -> RRTMG SW+LW (byte-unchanged).",
+    "tendency_conversion": "RTHRATEN = max(dT/dt,0)/exner (WRF GSFCSWRAD: TTEN2D/pi3D)"
+  },
+  "default_unchanged": "ra_sw_physics default is 4 (RRTMG SW+LW); the GSFC path is opt-in via ra_sw_physics=2 only. The default RRTMG dispatch is untouched.",
+  "jax_precision": "fp64",
+  "jax_platform": "cpu",
+  "git_head": "e51b31b22a0dfe228124a0780755f286186a9e31",
+  "predeclared_tolerances": {
+    "fp32": {
+      "rthraten_abs": 1e-06,
+      "rthraten_rel": 0.005,
+      "gsw_rel": 0.005,
+      "gsw_abs": 0.05,
+      "rswtoa_rel": 0.005,
+      "rswtoa_abs": 0.05
+    },
+    "fp64": {
+      "rthraten_abs": 1e-09,
+      "rthraten_rel": 1e-06,
+      "gsw_rel": 1e-07,
+      "gsw_abs": 0.0001,
+      "rswtoa_rel": 1e-07,
+      "rswtoa_abs": 0.0001
+    },
+    "sanity_max_rthraten": 0.01
+  },
+  "fp32_cases": {
+    "1": {
+      "label": "clearsky_highsun_land",
+      "coszen": 0.949999988079071,
+      "albedo": 0.2000000029802322,
+      "solcon": 1370.0,
+      "bare_kernel": {
+        "RTHRATEN": {
+          "max_abs": 4.825700729786637e-09,
+          "max_rel": 0.00016711358246513397,
+          "scale": 2.887677146645728e-05,
+          "tol_abs": 1e-06,
+          "tol_rel": 0.005,
+          "pass": true
+        },
+        "GSW": {
+          "kernel": 844.9882431263917,
+          "oracle": 844.9879150390625,
+          "abs_err": 0.00032808732919420436,
+          "tol": 4.224939575195313,
+          "pass": true
+        },
+        "RSWTOA": {
+          "kernel": -235.15687177877908,
+          "oracle": -235.1573486328125,
+          "abs_err": 0.00047685403342256905,
+          "tol": 1.1757867431640625,
+          "pass": true
+        }
+      },
+      "full_wired_path_sanity": {
+        "finite": true,
+        "max_abs_rthraten": 2.6289616953522634e-05,
+        "nonnegative_daytime_sw": true,
+        "bound": 0.01,
+        "pass": true
+      },
+      "pass": true
+    },
+    "2": {
+      "label": "clearsky_lowsun_land",
+      "coszen": 0.1800000071525574,
+      "albedo": 0.2199999988079071,
+      "solcon": 1370.0,
+      "bare_kernel": {
+        "RTHRATEN": {
+          "max_abs": 8.997482608300323e-10,
+          "max_rel": 0.00012566336851773324,
+          "scale": 7.159988399507711e-06,
+          "tol_abs": 1e-06,
+          "tol_rel": 0.005,
+          "pass": true
+        },
+        "GSW": {
+          "kernel": 124.45242220185023,
+          "oracle": 124.4524841308594,
+          "abs_err": 6.192900917767474e-05,
+          "tol": 0.622262420654297,
+          "pass": true
+        },
+        "RSWTOA": {
+          "kernel": -58.47202816585005,
+          "oracle": -58.47198486328125,
+          "abs_err": 4.330256879825356e-05,
+          "tol": 0.2923599243164063,
+          "pass": true
+        }
+      },
+      "full_wired_path_sanity": {
+        "finite": true,
+        "max_abs_rthraten": 2.5347002224641966e-05,
+        "nonnegative_daytime_sw": true,
+        "bound": 0.01,
+        "pass": true
+      },
+      "pass": true
+    },
+    "3": {
+      "label": "nighttime_zerosun",
+      "coszen": 0.0,
+      "albedo": 0.2000000029802322,
+      "solcon": 1370.0,
+      "bare_kernel": {
+        "RTHRATEN": {
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "scale": 1e-06,
+          "tol_abs": 1e-06,
+          "tol_rel": 0.005,
+          "pass": true
+        },
+        "GSW": {
+          "kernel": 0.0,
+          "oracle": 0.0,
+          "abs_err": 0.0,
+          "tol": 0.05,
+          "pass": true
+        },
+        "RSWTOA": {
+          "kernel": 0.0,
+          "oracle": 0.0,
+          "abs_err": 0.0,
+          "tol": 0.05,
+          "pass": true
+        }
+      },
+      "full_wired_path_sanity": {
+        "finite": true,
+        "max_abs_rthraten": 0.00021646402490803772,
+        "nonnegative_daytime_sw": true,
+        "bound": 0.01,
+        "pass": true
+      },
+      "pass": true
+    },
+    "4": {
+      "label": "thick_warm_cloud_highsun",
+      "coszen": 0.8500000238418579,
+      "albedo": 0.1800000071525574,
+      "solcon": 1370.0,
+      "bare_kernel": {
+        "RTHRATEN": {
+          "max_abs": 6.9165935251056226e-09,
+          "max_rel": 3.10988868004399e-05,
+          "scale": 0.0002224064664915204,
+          "tol_abs": 1e-06,
+          "tol_rel": 0.005,
+          "pass": true
+        },
+        "GSW": {
+          "kernel": 81.94894010525331,
+          "oracle": 81.94821166992188,
+          "abs_err": 0.0007284353314389591,
+          "tol": 0.4097410583496094,
+          "pass": true
+        },
+        "RSWTOA": {
+          "kernel": -812.1439429603042,
+          "oracle": -812.1446533203125,
+          "abs_err": 0.0007103600082700723,
+          "tol": 4.0607232666015625,
+          "pass": true
+        }
+      },
+      "full_wired_path_sanity": {
+        "finite": true,
+        "max_abs_rthraten": 0.0002711137017141335,
+        "nonnegative_daytime_sw": true,
+        "bound": 0.01,
+        "pass": true
+      },
+      "pass": true
+    },
+    "5": {
+      "label": "ice_cloud_midsun_marine",
+      "coszen": 0.550000011920929,
+      "albedo": 0.05999999865889549,
+      "solcon": 1370.0,
+      "bare_kernel": {
+        "RTHRATEN": {
+          "max_abs": 1.6225544080517539e-09,
+          "max_rel": 7.775284745019998e-06,
+          "scale": 0.0002086810272885486,
+          "tol_abs": 1e-06,
+          "tol_rel": 0.005,
+          "pass": true
+        },
+        "GSW": {
+          "kernel": 162.2022304159591,
+          "oracle": 162.2020721435547,
+          "abs_err": 0.00015827240440557944,
+          "tol": 0.8110103607177734,
+          "pass": true
+        },
+        "RSWTOA": {
+          "kernel": -429.36879566069155,
+          "oracle": -429.3684997558594,
+          "abs_err": 0.00029590483217134533,
+          "tol": 2.146842498779297,
+          "pass": true
+        }
+      },
+      "full_wired_path_sanity": {
+        "finite": true,
+        "max_abs_rthraten": 0.0003595110861260428,
+        "nonnegative_daytime_sw": true,
+        "bound": 0.01,
+        "pass": true
+      },
+      "pass": true
+    },
+    "6": {
+      "label": "snow_graupel_clouds_highsun",
+      "coszen": 0.7799999713897705,
+      "albedo": 0.300000011920929,
+      "solcon": 1370.0,
+      "bare_kernel": {
+        "RTHRATEN": {
+          "max_abs": 1.0718228073147446e-08,
+          "max_rel": 3.89278035576331e-05,
+          "scale": 0.0002753360604401678,
+          "tol_abs": 1e-06,
+          "tol_rel": 0.005,
+          "pass": true
+        },
+        "GSW": {
+          "kernel": 37.898155711367885,
+          "oracle": 37.8973274230957,
+          "abs_err": 0.0008282882721815099,
+          "tol": 0.18948663711547853,
+          "pass": true
+        },
+        "RSWTOA": {
+          "kernel": -827.1027859069235,
+          "oracle": -827.0990600585938,
+          "abs_err": 0.0037258483297364364,
+          "tol": 4.135495300292969,
+          "pass": true
+        }
+      },
+      "full_wired_path_sanity": {
+        "finite": true,
+        "max_abs_rthraten": 0.0004119632799376316,
+        "nonnegative_daytime_sw": true,
+        "bound": 0.01,
+        "pass": true
+      },
+      "pass": true
+    },
+    "7": {
+      "label": "terminator_lowsun_humid",
+      "coszen": 0.05000000074505806,
+      "albedo": 0.1500000059604645,
+      "solcon": 1370.0,
+      "bare_kernel": {
+        "RTHRATEN": {
+          "max_abs": 1.6600192038751583e-10,
+          "max_rel": 4.713146230497913e-05,
+          "scale": 3.522104179864982e-06,
+          "tol_abs": 1e-06,
+          "tol_rel": 0.005,
+          "pass": true
+        },
+        "GSW": {
+          "kernel": 26.132630976288343,
+          "oracle": 26.13263511657715,
+          "abs_err": 4.140288805132286e-06,
+          "tol": 0.13066317558288573,
+          "pass": true
+        },
+        "RSWTOA": {
+          "kernel": -13.52130733134301,
+          "oracle": -13.52131271362305,
+          "abs_err": 5.382280040322485e-06,
+          "tol": 0.06760656356811526,
+          "pass": true
+        }
+      },
+      "full_wired_path_sanity": {
+        "finite": true,
+        "max_abs_rthraten": 2.863822120816567e-05,
+        "nonnegative_daytime_sw": true,
+        "bound": 0.01,
+        "pass": true
+      },
+      "pass": true
+    }
+  },
+  "fp64_audit_cases": {
+    "1": {
+      "label": "clearsky_highsun_land",
+      "coszen": 0.95,
+      "albedo": 0.2,
+      "solcon": 1370.0,
+      "bare_kernel": {
+        "RTHRATEN": {
+          "max_abs": 1.382498462091557e-12,
+          "max_rel": 4.7874954368010824e-08,
+          "scale": 2.887727999622528e-05,
+          "tol_abs": 1e-09,
+          "tol_rel": 1e-06,
+          "pass": true
+        },
+        "GSW": {
+          "kernel": 844.9882609114644,
+          "oracle": 844.9882697983847,
+          "abs_err": 8.88692034095584e-06,
+          "tol": 0.0001,
+          "pass": true
+        },
+        "RSWTOA": {
+          "kernel": -235.156872106332,
+          "oracle": -235.1568751120474,
+          "abs_err": 3.0057153992402164e-06,
+          "tol": 0.0001,
+          "pass": true
+        }
+      },
+      "full_wired_path_sanity": {
+        "finite": true,
+        "max_abs_rthraten": 2.628961445828297e-05,
+        "nonnegative_daytime_sw": true,
+        "bound": 0.01,
+        "pass": true
+      },
+      "pass": true
+    },
+    "2": {
+      "label": "clearsky_lowsun_land",
+      "coszen": 0.18,
+      "albedo": 0.22,
+      "solcon": 1370.0,
+      "bare_kernel": {
+        "RTHRATEN": {
+          "max_abs": 4.644233546794254e-13,
+          "max_rel": 6.48624326616316e-08,
+          "scale": 7.160128530827491e-06,
+          "tol_abs": 1e-09,
+          "tol_rel": 1e-06,
+          "pass": true
+        },
+        "GSW": {
+          "kernel": 124.4524151664264,
+          "oracle": 124.4524196789939,
+          "abs_err": 4.512567500114528e-06,
+          "tol": 0.0001,
+          "pass": true
+        },
+        "RSWTOA": {
+          "kernel": -58.47202630742626,
+          "oracle": -58.47203092928234,
+          "abs_err": 4.621856078301789e-06,
+          "tol": 0.0001,
+          "pass": true
+        }
+      },
+      "full_wired_path_sanity": {
+        "finite": true,
+        "max_abs_rthraten": 2.534700240285466e-05,
+        "nonnegative_daytime_sw": true,
+        "bound": 0.01,
+        "pass": true
+      },
+      "pass": true
+    },
+    "3": {
+      "label": "nighttime_zerosun",
+      "coszen": 0.0,
+      "albedo": 0.2,
+      "solcon": 1370.0,
+      "bare_kernel": {
+        "RTHRATEN": {
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "scale": 1e-09,
+          "tol_abs": 1e-09,
+          "tol_rel": 1e-06,
+          "pass": true
+        },
+        "GSW": {
+          "kernel": 0.0,
+          "oracle": 0.0,
+          "abs_err": 0.0,
+          "tol": 0.0001,
+          "pass": true
+        },
+        "RSWTOA": {
+          "kernel": 0.0,
+          "oracle": 0.0,
+          "abs_err": 0.0,
+          "tol": 0.0001,
+          "pass": true
+        }
+      },
+      "full_wired_path_sanity": {
+        "finite": true,
+        "max_abs_rthraten": 0.00021646394178425572,
+        "nonnegative_daytime_sw": true,
+        "bound": 0.01,
+        "pass": true
+      },
+      "pass": true
+    },
+    "4": {
+      "label": "thick_warm_cloud_highsun",
+      "coszen": 0.85,
+      "albedo": 0.18,
+      "solcon": 1370.0,
+      "bare_kernel": {
+        "RTHRATEN": {
+          "max_abs": 1.9322578273203196e-12,
+          "max_rel": 8.688230587805499e-09,
+          "scale": 0.0002223994641708025,
+          "tol_abs": 1e-09,
+          "tol_rel": 1e-06,
+          "pass": true
+        },
+        "GSW": {
+          "kernel": 81.94892887298411,
+          "oracle": 81.94892990327178,
+          "abs_err": 1.0302876631840263e-06,
+          "tol": 0.0001,
+          "pass": true
+        },
+        "RSWTOA": {
+          "kernel": -812.1439214696763,
+          "oracle": -812.1439272632474,
+          "abs_err": 5.793571062895353e-06,
+          "tol": 0.0001,
+          "pass": true
+        }
+      },
+      "full_wired_path_sanity": {
+        "finite": true,
+        "max_abs_rthraten": 0.00027111375577102353,
+        "nonnegative_daytime_sw": true,
+        "bound": 0.01,
+        "pass": true
+      },
+      "pass": true
+    },
+    "5": {
+      "label": "ice_cloud_midsun_marine",
+      "coszen": 0.55,
+      "albedo": 0.06,
+      "solcon": 1370.0,
+      "bare_kernel": {
+        "RTHRATEN": {
+          "max_abs": 1.2213438539600968e-12,
+          "max_rel": 5.852660679075992e-09,
+          "scale": 0.0002086818151488872,
+          "tol_abs": 1e-09,
+          "tol_rel": 1e-06,
+          "pass": true
+        },
+        "GSW": {
+          "kernel": 162.20224513812545,
+          "oracle": 162.2022477057608,
+          "abs_err": 2.5676353629933146e-06,
+          "tol": 0.0001,
+          "pass": true
+        },
+        "RSWTOA": {
+          "kernel": -429.3687679078735,
+          "oracle": -429.3687744888652,
+          "abs_err": 6.580991680493753e-06,
+          "tol": 0.0001,
+          "pass": true
+        }
+      },
+      "full_wired_path_sanity": {
+        "finite": true,
+        "max_abs_rthraten": 0.00035951101369767214,
+        "nonnegative_daytime_sw": true,
+        "bound": 0.01,
+        "pass": true
+      },
+      "pass": true
+    },
+    "6": {
+      "label": "snow_graupel_clouds_highsun",
+      "coszen": 0.78,
+      "albedo": 0.3,
+      "solcon": 1370.0,
+      "bare_kernel": {
+        "RTHRATEN": {
+          "max_abs": 1.4990245881336874e-12,
+          "max_rel": 5.444555893189089e-09,
+          "scale": 0.0002753254108400107,
+          "tol_abs": 1e-09,
+          "tol_rel": 1e-06,
+          "pass": true
+        },
+        "GSW": {
+          "kernel": 37.89816039227162,
+          "oracle": 37.8981609022331,
+          "abs_err": 5.099614810433195e-07,
+          "tol": 0.0001,
+          "pass": true
+        },
+        "RSWTOA": {
+          "kernel": -827.1028104695762,
+          "oracle": -827.1028169615581,
+          "abs_err": 6.491981935141666e-06,
+          "tol": 0.0001,
+          "pass": true
+        }
+      },
+      "full_wired_path_sanity": {
+        "finite": true,
+        "max_abs_rthraten": 0.00041196340238244556,
+        "nonnegative_daytime_sw": true,
+        "bound": 0.01,
+        "pass": true
+      },
+      "pass": true
+    },
+    "7": {
+      "label": "terminator_lowsun_humid",
+      "coszen": 0.05,
+      "albedo": 0.15,
+      "solcon": 1370.0,
+      "bare_kernel": {
+        "RTHRATEN": {
+          "max_abs": 4.568208367193658e-13,
+          "max_rel": 1.2970385923168966e-07,
+          "scale": 3.522029640639666e-06,
+          "tol_abs": 1e-09,
+          "tol_rel": 1e-06,
+          "pass": true
+        },
+        "GSW": {
+          "kernel": 26.13263065338563,
+          "oracle": 26.13263254469198,
+          "abs_err": 1.8913063506431627e-06,
+          "tol": 0.0001,
+          "pass": true
+        },
+        "RSWTOA": {
+          "kernel": -13.52130562818612,
+          "oracle": -13.52130936449627,
+          "abs_err": 3.7363101501597384e-06,
+          "tol": 0.0001,
+          "pass": true
+        }
+      },
+      "full_wired_path_sanity": {
+        "finite": true,
+        "max_abs_rthraten": 2.8638220302527647e-05,
+        "nonnegative_daytime_sw": true,
+        "bound": 0.01,
+        "pass": true
+      },
+      "pass": true
+    }
+  }
+}

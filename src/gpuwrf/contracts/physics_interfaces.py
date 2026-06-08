@@ -621,6 +621,29 @@ SCHEME_STEP_SPECS: tuple[PhysicsStepSpec, ...] = (
         "Wired-coupler oracle proof: proofs/radiation/cdudhia_sw_oracle.py. The surface SWDOWN/flux "
         "history diagnostics remain RRTMG-derived (rrtmg_radiation_diagnostics).",
     ),
+    # GSFC/Chou-Suarez shortwave (ra_sw_physics=2) -- v0.13 Tier-3 faithful port of
+    # phys/module_ra_gsfcsw.F (Chou-Suarez 8-band SW with k-distribution + the 5x75
+    # ozone climatology). Self-contained column kernel; held-rate RTHRATEN theta
+    # tendency + surface net SW flux GSW.
+    PhysicsStepSpec(
+        family="radiation",
+        option=2,
+        name="GSFC/Chou-Suarez shortwave",
+        wrf_slot="first_rk_radiation_driver",
+        owner_module="src/gpuwrf/physics/ra_sw_gsfc.py",
+        oracle="pristine-WRF fp64 savepoint at module_ra_gsfcsw.F (proofs/v013/t3_radiation_oracle.py, PASS ~1e-12, 7 regimes, NOT self-compare)",
+        reads_state=("theta", "qv", "qc", "qr", "qi", "qs", "qg", "p", "pb", "ph", "phb"),
+        writes_state=("theta",),
+        diagnostics=("SWDOWN", "GSW", "COSZEN", "RTHRATENSW"),
+        variant="sw",
+        notes="ra_sw_physics=2. GSFC/Chou-Suarez 8-band SW; held-rate RTHRATEN theta tendency. "
+        "STATUS: pristine-WRF-savepoint parity-proven (fp64 ~1e-12) AND operational-scan-wired: "
+        "OperationalNamelist.ra_sw_physics=2 routes the radiation slot in runtime.operational_mode "
+        "to coupling.physics_couplers.gsfc_sw_theta_tendency (GSFC SW) + rrtmg_lw_theta_tendency "
+        "(RRTMG LW), composed as the held-rate RTHRATEN. Surface SWDOWN/flux history diagnostics "
+        "remain RRTMG-derived. v0.13 Tier-3 (kernel/coupler/oracle validated; full multi-step "
+        "forecast gate is a follow-on).",
+    ),
     # Classic RRTM longwave (ra_lw_physics=1) -- 16-band k-distribution from
     # AER, loaded from the RRTM_DATA asset. Reads cloud hydrometeors + qv +
     # interface T/p (t8w/p8w) + LSM surface emissivity/skin temperature; emits
