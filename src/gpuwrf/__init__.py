@@ -11,6 +11,15 @@
 # The fp32/mixed-precision operational matrix is a separately-gated perf
 # decision (ADR-007 / F7-perf), applied via explicit downcast, NOT by leaving
 # x64 off.
+#
+# The compile-cache import hook below ALSO wires two ADDITIVE, default-OFF/opt-in
+# v0.13 compile-speed knobs: the persistent GPU autotune cache
+# (GPUWRF_XLA_AUTOTUNE_CACHE) and the standalone parallel-compile knob
+# (GPUWRF_XLA_PARALLEL_COMPILE). Both are HARD-SAFE -- OFF by default, respect the
+# platform pin, and validate each --xla_gpu_* flag against the installed build in an
+# isolated subprocess before injecting -- so an unknown flag can NEVER abort import
+# (the v0.12.0 GPU-abort regression guard). With neither opted in, the default
+# GPU/CPU path is byte-unchanged.
 from jax import config as _jax_config
 
 _jax_config.update("jax_enable_x64", True)
