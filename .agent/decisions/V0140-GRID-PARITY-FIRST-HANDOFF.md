@@ -49,7 +49,8 @@ is acceptable or what root-caused residual remains.
 - `019ea948-6d45-78d3-b06a-bc0ad1df40ff` (`Peirce`):
   prior V10/wind-divergence attribution synthesis.
 - `019ea948-81c9-7161-b50c-04eaff1eb010` (`Raman`):
-  v0.14 cell-level validation envelope design.
+  v0.14 cell-level validation envelope design. Completed:
+  `.agent/reviews/2026-06-08-gpt-v014-cell-envelope-gate.md`.
 - `019ea948-ec75-76e0-b708-44aabd02af0b` (`Heisenberg`):
   FP32 acoustic status freeze. Completed:
   `.agent/reviews/2026-06-08-gpt-v014-fp32-status-freeze.md`.
@@ -57,6 +58,12 @@ is acceptable or what root-caused residual remains.
 FP32 freeze verdict: feasible in principle, v0.14 P1, but source work waits
 until the grid-cell divergence root cause is clearer. Naive/global fp32 remains
 rejected; only mixed perturbation-authoritative acoustic is a candidate.
+
+Cell-envelope design verdict: start with the 10 frozen core fields from
+`docs/equivalence-demo.md` as hard-fail fields (`T2`, `U10`, `V10`, `PSFC`,
+`RAINNC`, `T`, `U`, `V`, `W`, `QVAPOR`), while inventorying every current-common
+writer field. Other fields stay report-only until per-field tolerances are
+frozen before seeing promotion results.
 
 Sidecar deliverables are expected under `.agent/reviews/2026-06-08-gpt-v014-*.md`.
 
