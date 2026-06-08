@@ -1,0 +1,22 @@
+{
+  "blocked_reason": null,
+  "init_mode": "standalone_native_init_nested",
+  "output_dir": "/tmp/v0120_powered_tost_runs/l2_d02_20260430_18z_l2_72h_20260520T191306Z",
+  "proofs": {
+    "bounds": "/home/enric/src/wrf_gpu2/.claude/worktrees/v0120-integration/proofs/v0120/powered_tost_n15/pipeline_proofs/20260430_18z_l2_72h_20260520T191306Z/bounds_check_l2_d02.json",
+    "tier4_rmse": "/home/enric/src/wrf_gpu2/.claude/worktrees/v0120-integration/proofs/v0120/powered_tost_n15/pipeline_proofs/20260430_18z_l2_72h_20260520T191306Z/tier4_rmse_l2_d02.json",
+    "wall_clock": "/home/enric/src/wrf_gpu2/.claude/worktrees/v0120-integration/proofs/v0120/powered_tost_n15/pipeline_proofs/20260430_18z_l2_72h_20260520T191306Z/wall_clock_l2_d02.json"
+  },
+  "run_dir": "/tmp/v0120_merged_run_root/20260430_18z_l2_72h_20260520T191306Z",
+  "run_id": "20260430_18z_l2_72h_20260520T191306Z",
+  "schema": "M7L2D02ReplayValidationSummary",
+  "schema_version": 1,
+  "score_domain": "d02",
+  "statuses": {
+    "bounds": "PASS",
+    "pipeline": "PIPELINE_GREEN",
+    "rmse": "PASS",
+    "wall_clock": "PASS"
+  },
+  "verdict": "L2_D02_GREEN"
+}
