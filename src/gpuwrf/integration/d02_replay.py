@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace as dataclass_replace
 from functools import partial
 import gzip
 import json
@@ -1114,6 +1114,14 @@ def build_replay_case(
     _debug("Gen2Run created")
     grid = run.grid(domain).as_grid_spec()
     _debug(f"grid loaded mass_shape={(grid.nz, grid.ny, grid.nx)}")
+    # Keep GridSpec.metrics and the runtime namelist metrics on the same loaded
+    # WRF payload. GridSpec.__post_init__ fills metrics=None with DycoreMetrics.flat;
+    # leaving that fallback in place made wrfout static metrics emit flat C/DN/map
+    # fields even though dynamics consumed the loaded WRF metrics below.
+    metrics_source = run.history_files(domain)[0]
+    metrics = load_wrfinput_metrics(metrics_source)
+    grid = dataclass_replace(grid, metrics=metrics)
+    _debug(f"load_wrfinput_metrics complete (source={metrics_source})")
     state = State.zeros(grid)
     _debug("State.zeros complete")
     tendencies = Tendencies.zeros(grid)
@@ -1130,9 +1138,6 @@ def build_replay_case(
     # only HGT differs, so sourcing the metrics from the same wrfout snapshot
     # makes the terrain slopes consistent with PHB without changing any other
     # metric.  See proofs/b4/static_field_parity.json and metrics_consistency.json.
-    metrics_source = run.history_files(domain)[0]
-    metrics = load_wrfinput_metrics(metrics_source)
-    _debug(f"load_wrfinput_metrics complete (source={metrics_source})")
     land = load_prescribed_land_state(run, domain=domain, time=0)
     _debug("load_prescribed_land_state complete")
     # Auto-detect the standalone native-init path: fewer than two CPU-WRF
