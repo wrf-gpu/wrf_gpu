@@ -72,6 +72,11 @@ CLEAR_SKY_VARS = [
     "LWUPTC", "LWDNTC", "LWUPBC", "LWDNBC",
 ]
 
+# Absolute guardrail independent of the all-sky calibration floor. This keeps
+# the oracle from passing solely because the shared all-sky JAX-vs-WRF mismatch
+# is large on a variable.
+ABSOLUTE_RMSE_CEILING_WM2 = 10.0
+
 
 def to_columns(arr3d):
     """(nz,ny,nx) -> (ny*nx, nz) bottom-to-top mass-level columns (GPU layout)."""
@@ -254,16 +259,25 @@ def run():
     # JAX-vs-WRF RMSE (the shared RRTMG state-mismatch floor) by more than a small
     # margin -> the clear-sky pass introduces no NEW systematic error.  margin =
     # max(1.15x floor, floor + 5 W/m2) to absorb the slightly different
-    # cloud-sensitivity of the clear vs all-sky stream.
+    # cloud-sensitivity of the clear vs all-sky stream. A separate absolute RMSE
+    # ceiling prevents a high all-sky floor from hiding a bad clear-sky pass.
     oracle_pass = {}
+    oracle_absolute_pass = {}
     for v in CLEAR_SKY_VARS:
         clear_rmse = oracle[v]["clear_jax_vs_wrf"]["rmse_Wm2"]
         floor_rmse = oracle[v]["allsky_jax_vs_wrf_FLOOR"]["rmse_Wm2"]
         tol = max(1.15 * floor_rmse, floor_rmse + 5.0)
-        oracle_pass[v] = bool(clear_rmse <= tol)
+        floor_pass = clear_rmse <= tol
+        absolute_pass = clear_rmse <= ABSOLUTE_RMSE_CEILING_WM2
+        oracle_pass[v] = bool(floor_pass and absolute_pass)
+        oracle_absolute_pass[v] = bool(absolute_pass)
         oracle[v]["tol_Wm2"] = float(tol)
+        oracle[v]["absolute_rmse_ceiling_Wm2"] = float(ABSOLUTE_RMSE_CEILING_WM2)
+        oracle[v]["floor_relative_pass"] = bool(floor_pass)
+        oracle[v]["absolute_rmse_pass"] = bool(absolute_pass)
         oracle[v]["pass"] = oracle_pass[v]
     oracle_all_pass = all(oracle_pass.values())
+    oracle_absolute_all_pass = all(oracle_absolute_pass.values())
 
     # ---- (C) PHYSICAL INVARIANTS ----
     invariants = {
@@ -322,6 +336,8 @@ def run():
         "vars_added": CLEAR_SKY_VARS,
         "A_oracle": oracle,
         "A_oracle_pass": oracle_all_pass,
+        "A_oracle_absolute_rmse_ceiling_Wm2": ABSOLUTE_RMSE_CEILING_WM2,
+        "A_oracle_absolute_rmse_pass": oracle_absolute_all_pass,
         "B_allsky_byte_unchanged": byte_unchanged,
         "B_allsky_byte_unchanged_pass": byte_unchanged_pass,
         "C_invariants": invariants,

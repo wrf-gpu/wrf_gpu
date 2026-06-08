@@ -1,0 +1,158 @@
+{
+  "all_expected_savepoints_present": false,
+  "description": "Checksum sidecar for the pristine-WRF source files and JSON savepoints used by proofs/v013/t3_cumulus_oracle.py. Missing Grell-3D savepoints are reported as missing, not promoted.",
+  "generated_utc": "2026-06-08T21:50:56.343385+00:00",
+  "present_savepoints_pinned": true,
+  "proof": "v013-t3-cumulus-source-and-savepoint-checksums",
+  "savepoints": {
+    "5": {
+      "all_expected_present": false,
+      "entries": [
+        {
+          "exists": false,
+          "path": "proofs/v013/savepoints/cumulus/g3_case_1.json"
+        },
+        {
+          "exists": false,
+          "path": "proofs/v013/savepoints/cumulus/g3_case_2.json"
+        },
+        {
+          "exists": false,
+          "path": "proofs/v013/savepoints/cumulus/g3_case_3.json"
+        },
+        {
+          "exists": false,
+          "path": "proofs/v013/savepoints/cumulus/g3_case_4.json"
+        },
+        {
+          "exists": false,
+          "path": "proofs/v013/savepoints/cumulus/g3_case_5.json"
+        }
+      ],
+      "expected_count": 5,
+      "present_count": 0,
+      "status": "not-built",
+      "stem": "g3"
+    },
+    "14": {
+      "all_expected_present": true,
+      "entries": [
+        {
+          "bytes": 17078,
+          "exists": true,
+          "path": "proofs/v013/savepoints/cumulus/ksas_case_1.json",
+          "sha256": "21261ec57b273027caf35a3e767f19c0e11a9ce4a37860887dc0992b939affd4"
+        },
+        {
+          "bytes": 14564,
+          "exists": true,
+          "path": "proofs/v013/savepoints/cumulus/ksas_case_2.json",
+          "sha256": "798550609da6adbdba1cfba9ed385fcac8a330aacb072b68946fa70c1793c475"
+        },
+        {
+          "bytes": 17535,
+          "exists": true,
+          "path": "proofs/v013/savepoints/cumulus/ksas_case_3.json",
+          "sha256": "83d4a0a70a90303ebda184369723a84234116c98fc18fc4abb26d65154f108c0"
+        },
+        {
+          "bytes": 14532,
+          "exists": true,
+          "path": "proofs/v013/savepoints/cumulus/ksas_case_4.json",
+          "sha256": "e97684f63336902c2a9497bb6605fc3dc17c492528c5e5f68c716f34a13d9740"
+        },
+        {
+          "bytes": 12704,
+          "exists": true,
+          "path": "proofs/v013/savepoints/cumulus/ksas_case_5.json",
+          "sha256": "1d94fcbadf1c3f917467653f2fc9686e95cb629a58775431670a9e9cfc0500f9"
+        }
+      ],
+      "expected_count": 5,
+      "present_count": 5,
+      "status": "oracle-staged (kernel carry-over)",
+      "stem": "ksas"
+    },
+    "16": {
+      "all_expected_present": true,
+      "entries": [
+        {
+          "bytes": 19464,
+          "exists": true,
+          "path": "proofs/v013/savepoints/cumulus/ntiedtke_case_1.json",
+          "sha256": "99d90e6e569ec81851b8f7183df5780df75000f135f06a288d65ac93e37d340e"
+        },
+        {
+          "bytes": 17652,
+          "exists": true,
+          "path": "proofs/v013/savepoints/cumulus/ntiedtke_case_2.json",
+          "sha256": "aaefc3ebcf111e0c7fa92ac457333e1e5bac9a0409fc8e7b04900fe7d0ce05fd"
+        },
+        {
+          "bytes": 20009,
+          "exists": true,
+          "path": "proofs/v013/savepoints/cumulus/ntiedtke_case_3.json",
+          "sha256": "c29c2e5cd00b017526c2b487be727c60e855470cf38d2fae0db8c46b616975bc"
+        },
+        {
+          "bytes": 17269,
+          "exists": true,
+          "path": "proofs/v013/savepoints/cumulus/ntiedtke_case_4.json",
+          "sha256": "afe3c8224317b84d4c6d004d8c712dd99123e9db2e81099423bb7c7f12995eaf"
+        },
+        {
+          "bytes": 14017,
+          "exists": true,
+          "path": "proofs/v013/savepoints/cumulus/ntiedtke_case_5.json",
+          "sha256": "fdf082a9af23479daf17e60deccdfb38dc4cae25edbf098a83c966afd0911c57"
+        }
+      ],
+      "expected_count": 5,
+      "present_count": 5,
+      "status": "oracle-staged (kernel carry-over)",
+      "stem": "ntiedtke"
+    }
+  },
+  "source_files": {
+    "g3": [
+      {
+        "bytes": 187000,
+        "exists": true,
+        "path": "phys/module_cu_g3.F",
+        "sha256": "68089efd157753e8d050c19d4e65f711838147381639014f5f0be40576a337e9"
+      }
+    ],
+    "ksas": [
+      {
+        "bytes": 79421,
+        "exists": true,
+        "path": "phys/module_cu_ksas.F",
+        "sha256": "84d88fe79c3aba7c299d0efaee216c596021c9659b445dd8d3365c5799a48854"
+      }
+    ],
+    "ntiedtke": [
+      {
+        "bytes": 18968,
+        "exists": true,
+        "path": "phys/module_cu_ntiedtke.F",
+        "sha256": "447406d1550d4095e4e6f129ee74a7ec0ccdebd21383ba0cc6fe3d282ac58d2f"
+      },
+      {
+        "bytes": 138993,
+        "exists": true,
+        "path": "phys/physics_mmm/cu_ntiedtke.F90",
+        "sha256": "e762101f04d4acd2d19047a92d0b7cd4e244df930f9f9ef7aabae54bfe9a9fd1"
+      }
+    ],
+    "shared": [
+      {
+        "bytes": 95371,
+        "exists": true,
+        "path": "phys/module_cumulus_driver.F",
+        "sha256": "d73eb4b670599e0bbf98a3661b5dbf17413aed01139d18fa1a84161578dc31e3"
+      }
+    ]
+  },
+  "source_files_all_found": true,
+  "wrf_pristine_root": "/home/enric/src/wrf_pristine/WRF"
+}
