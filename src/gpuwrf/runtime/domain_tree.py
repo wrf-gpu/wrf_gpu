@@ -347,6 +347,19 @@ def _operational_force(edge: DomainEdge, parent: OperationalCarry, child: Operat
 def _operational_feedback(edge: DomainEdge, parent: OperationalCarry, child: OperationalCarry) -> OperationalCarry:
     if edge.feedback_weights is None:
         return parent
+    # NOTE (v0.13 VRAM).  The feedback runs EAGERLY (op-by-op), NOT jitted, on
+    # purpose: a measured A/B on the 9/3/1 km d02->d03 edge showed the eager path
+    # peaks LOWER than a fused ``jax.jit`` feedback program.  Eager dispatch keeps
+    # only ONE leaf's gather/scatter/smoother scratch live at a time (each
+    # ``apply_state_feedback`` per-leaf result is consumed and freed before the next
+    # leaf), whereas XLA's buffer-assignment schedules several leaves' transients
+    # concurrently, raising the simultaneous working set.  Donating the parent
+    # state is also unsafe here: the carried WRF ``*_save`` scratch aliases the
+    # parent ``state`` leaves (``u_save = state.u`` etc.), which must stay valid for
+    # the next parent advance.  The peak VRAM reduction therefore comes from inside
+    # ``apply_state_feedback`` (rebuilding each p/ph/mu total ONCE and sharing it
+    # with its legacy alias, removing 6 redundant full-parent-field temporaries),
+    # measured bit-identical; see proofs/v013/twoway_vram.*.
     fed = apply_state_feedback(parent.state, child.state, edge.feedback_weights, feedback=True)
     return parent.replace(state=fed)
 
