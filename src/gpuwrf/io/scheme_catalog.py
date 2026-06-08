@@ -154,10 +154,11 @@ _IMPLEMENTED: Mapping[str, frozenset[int]] = {
     # physics.ra_lw_rrtm_jax kernel, dispatched in runtime.operational_mode by
     # OperationalNamelist.ra_lw_physics; SW selected independently).
     "ra_lw_physics": frozenset({0, 1, 4}),
-    # ra_sw=1 (Dudhia, Stephens-1984 broadband SW) is now operationally scan-wired
-    # (coupling.physics_couplers.dudhia_sw_theta_tendency, dispatched in
-    # runtime.operational_mode by OperationalNamelist.ra_sw_physics).
-    "ra_sw_physics": frozenset({0, 1, 4}),
+    # ra_sw=1 (Dudhia, Stephens-1984 broadband SW) and ra_sw=2 (GSFC/Chou-Suarez
+    # multi-band delta-Eddington SW) are now operationally scan-wired
+    # (coupling.physics_couplers.dudhia_sw_theta_tendency / gsfc_sw_theta_tendency,
+    # dispatched in runtime.operational_mode by OperationalNamelist.ra_sw_physics).
+    "ra_sw_physics": frozenset({0, 1, 2, 4}),
 }
 
 # Recognized WRF schemes with a parity-proven adapter that the operational scan
@@ -240,7 +241,7 @@ _DEFAULT_ALTERNATIVE: Mapping[str, str] = {
     "sf_surface_physics": "Use sf_surface_physics=4 (Noah-MP) or 2 (Noah classic); "
     "1=slab is reference-only.",
     "ra_lw_physics": "Use ra_lw_physics=4 (RRTMG).",
-    "ra_sw_physics": "Use ra_sw_physics=4 (RRTMG) or 1 (Dudhia); both GPU-operational.",
+    "ra_sw_physics": "Use ra_sw_physics=4 (RRTMG), 1 (Dudhia) or 2 (GSFC/Chou-Suarez); all GPU-operational.",
     "diff_opt": "Use diff_opt=0/1/2 (1+km_opt=4 = 2-D Smagorinsky real-data "
     "default; 2+km_opt=1 = constant-K).",
     "km_opt": "Use km_opt=0/1/4 (4 with diff_opt=1 = 2-D Smagorinsky; 1 with "
