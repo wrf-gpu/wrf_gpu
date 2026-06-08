@@ -243,11 +243,16 @@ Wave deliverables are expected under `proofs/v014/` and
 - `019ea980-b391-7923-a63f-81cd9f6dae48` (`Ampere`):
   CPU-only base-state writer attribution sprint
   `.agent/sprints/2026-06-09-v014-base-state-writer-attribution/sprint-contract.md`.
-  Write scope: `proofs/v014/base_state_writer_attribution.*` and
+  Completed and manager-validated 2026-06-09. Deliverables:
+  `proofs/v014/base_state_writer_attribution.*` and
   `.agent/reviews/2026-06-09-v014-base-state-writer-attribution.md`. No `src/`
-  edits, no GPU. Objective: classify remaining post-fix h1 `PHB/MUB/PB/HGT`
-  and `XLAT/XLONG` mismatches as CPU-output convention, writer fallback,
-  runtime input mismatch, forecast-step change, or unresolved blocker.
+  edits, no GPU. Verdict: no runtime input mismatch; CPU and GPU native
+  `wrfinput_d02` are exact for `PHB/MUB/PB/HGT/XLAT/XLONG`. Classifications:
+  `PHB` and `HGT` are `cpu_output_convention`, `XLAT/XLONG` are
+  `writer_fallback`, and `PB/MUB` are `forecast_step_change` /
+  dynamic state-split symptoms. Same-state dynamic localization can proceed
+  with these exclusions recorded; an exact `XLAT/XLONG` wrfout fix is
+  writer-only and not a dycore blocker.
 - `019ea988-9f3c-7571-9073-f2b6d41b09f6` (`Kierkegaard`):
   CPU-only same-state savepoint request manifest sprint
   `.agent/sprints/2026-06-09-v014-same-state-savepoint-request/sprint-contract.md`.
@@ -260,14 +265,13 @@ Wave deliverables are expected under `proofs/v014/` and
 
 ## Next Manager Actions
 
-1. Integrate Ampere's base-state writer attribution proof. If it marks only
-   writer/output conventions or documented exclusions, dynamic same-state
-   localization may proceed; if it finds runtime input mismatch, fix that first.
-2. Integrate Sartre's WRF savepoint feasibility proof so same-state
+1. Integrate Sartre's WRF savepoint feasibility proof so same-state
    localization starts from exact WRF source/build paths.
+2. Integrate Kierkegaard's savepoint request manifest.
 3. Open the next same-state localization sprint using Helmholtz h10 cell/level
    manifest plus Sartre's WRF savepoint path, unless Ampere finds a runtime
-   base-state blocker.
+   base-state blocker. Ampere did not find one; proceed with documented
+   `PHB/HGT/XLAT/XLONG` exclusions and treat `PB/MUB` as dynamic symptoms.
 4. Keep `wrfout_writer.py`, runtime dycore, pressure-gradient, acoustic,
    radiation, and surface-layer code read-only unless the static/base parity
    proof isolates their ownership.
