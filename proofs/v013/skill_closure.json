@@ -1,0 +1,81 @@
+{
+  "proof": "v0.13 skill-closure #1: WRF-faithful radiation *_tendf (RTHRATEN) RK-cadence",
+  "platform": "cpu",
+  "fp64": true,
+  "default_path": "byte-identical (rad_rk_tendf default 0)",
+  "all_gates_passed": true,
+  "gates": {
+    "default_rad_rk_tendf0_byte_identical": true,
+    "net_heating_equivalence_lumped_vs_tendf": true,
+    "closed_domain_dry_mass_and_water_conservation_rad_tendf": true,
+    "idealized_dycore_gates_pass_cpu": true,
+    "finite_stable_rad_rk_tendf1": true
+  },
+  "details": {
+    "default_rad_rk_tendf0_byte_identical": {
+      "name": "default_rad_rk_tendf0_byte_identical",
+      "passed": true,
+      "steps": 6,
+      "max_abs_leaf_diff": 0.0,
+      "worst_leaf": "",
+      "note": "rad_rk_tendf defaults to 0; with the radiation cadence at its default the operational step is byte-for-byte identical to the v0.9 SHIPPED Euler add (the t_tendf branch is a STATIC Python gate, never traced when off)."
+    },
+    "net_heating_equivalence_lumped_vs_tendf": {
+      "name": "net_heating_equivalence_lumped_vs_tendf",
+      "passed": true,
+      "steps": 1,
+      "expected_dt_rate_K": 1e-05,
+      "lumped_mean_dtheta_K": 1.0015643327037082e-05,
+      "tendf_mean_dtheta_K": 1.0015643333112222e-05,
+      "net_heating_rel_diff": 6.065651828749108e-10,
+      "cadence_interleave_max_K": 3.865352482534945e-12,
+      "cadence_interleave_mean_K": 4.304823164602567e-13,
+      "note": "The WRF-faithful t_tendf cadence delivers the SAME column-mean radiative heating as the lumped Euler add to ~1e-9 relative (no spurious O(1) heat source/sink). The two are NOT bit-identical: the lumped form heats BEFORE the dycore (which then advects the already-heated theta) while t_tendf heats DURING the substeps -- the documented 'different temperature trajectory' (rrtmg_theta_tendency:1660-1665), i.e. the WRF fidelity gain. On this near-rest idealized box the trajectory difference is ~6e-10 net / ~4e-13 per-cell; on a real advective flow it grows into the skill-relevant regime (GPU-measured by the manager)."
+    },
+    "closed_domain_dry_mass_and_water_conservation_rad_tendf": {
+      "name": "closed_domain_dry_mass_and_water_conservation_rad_tendf",
+      "passed": true,
+      "steps": 12,
+      "dry_mass_rel_drift": 4.668913965443254e-16,
+      "total_water_rel_drift": 0.0,
+      "note": "With rad_rk_tendf=1 on a closed periodic box the dry-air mass integral and the total-water integral are conserved to fp64 round-off (radiation is a heat source via t_tendf, not a mass or moisture source)."
+    },
+    "idealized_dycore_gates_pass_cpu": {
+      "name": "idealized_dycore_gates_pass_cpu",
+      "passed": true,
+      "note": "Straka + Skamarock run through the SAME operational dycore on CPU; both PASS.  Radiation is OFF in the idealized cases, so rad_rk_tendf never fires and the dry dynamics are byte-unchanged -- the change cannot destabilize the dycore.",
+      "density_current": {
+        "status": "RAN_TO_COMPLETION",
+        "verdict": "PASS",
+        "checks_passed": {
+          "all_snapshots_finite": true,
+          "theta_prime_min_900s": true,
+          "max_abs_w_900s": true,
+          "front_position_900s": true,
+          "rotor_count_proxy_900s": true,
+          "relative_mass_drift": true
+        }
+      },
+      "warm_bubble": {
+        "status": "RAN_TO_COMPLETION",
+        "verdict": "PASS",
+        "checks_passed": {
+          "all_snapshots_finite": true,
+          "theta_prime_max_500s": true,
+          "max_abs_w_500s": true,
+          "thermal_rise_500s": true,
+          "horizontal_drift_500s": true,
+          "relative_mass_drift": true
+        }
+      }
+    },
+    "finite_stable_rad_rk_tendf1": {
+      "name": "finite_stable_rad_rk_tendf1",
+      "passed": true,
+      "steps": 24,
+      "mean_warming_K": 0.0002467162371019427,
+      "expected_warming_K": 0.00024000000000000006,
+      "note": "A multi-step rad_rk_tendf=1 forecast stays finite and the mean warming tracks the seeded uniform heating (no runaway / spurious extrema)."
+    }
+  }
+}
