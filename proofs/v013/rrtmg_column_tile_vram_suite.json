@@ -1,0 +1,55 @@
+{
+  "proof": "v0.13 RRTMG leading-column tiling GPU peak-VRAM suite",
+  "mode": "vram-suite",
+  "ncol": 65536,
+  "nrep": 3,
+  "tile_cols": 16384,
+  "rows": [
+    {
+      "kind": "lw",
+      "column_mode": "untiled",
+      "ncol": 65536,
+      "nrep": 3,
+      "tile_cols": 0,
+      "result": "OOM",
+      "rc": 1,
+      "error_tail": [
+        "    ~~~~~~~~~~~~^^^^^^^^^^^",
+        "  File \"/home/enric/miniconda3/lib/python3.13/site-packages/jax/_src/api.py\", line 2564, in try_to_block",
+        "    return x.block_until_ready()",
+        "           ~~~~~~~~~~~~~~~~~~~^^",
+        "jax.errors.JaxRuntimeError: RESOURCE_EXHAUSTED: Out of memory while trying to allocate 32.11GiB."
+      ]
+    },
+    {
+      "kind": "lw",
+      "column_mode": "tiled",
+      "ncol": 65536,
+      "nlev": 48,
+      "tile_cols": 16384,
+      "peak_bytes_in_use": 5635927552,
+      "bytes_in_use_after": 381950976,
+      "peak_mib": 5374.84
+    },
+    {
+      "kind": "sw",
+      "column_mode": "untiled",
+      "ncol": 65536,
+      "nlev": 48,
+      "tile_cols": 0,
+      "peak_bytes_in_use": 10520467968,
+      "bytes_in_use_after": 385875712,
+      "peak_mib": 10033.1
+    },
+    {
+      "kind": "sw",
+      "column_mode": "tiled",
+      "ncol": 65536,
+      "nlev": 48,
+      "tile_cols": 16384,
+      "peak_bytes_in_use": 1698215168,
+      "bytes_in_use_after": 385875712,
+      "peak_mib": 1619.54
+    }
+  ]
+}

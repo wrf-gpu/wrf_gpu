@@ -87,6 +87,26 @@ closure + outsider-runnable reproducibility + community-standard benchmarks.
 
 ## Progress log (live, manager-maintained)
 
+**2026-06-08 ~22:10 — NEW MANAGER MEMORY/FP32 REFRESH INTEGRATED.** Memory refresh report
+copied to `.agent/reviews/2026-06-08-gpt-memory-refresh.md`: non-radiation memory items
+do not currently block TOST; because the principal elevated solvable memory work into v0.13,
+RRTMG column tiling is the remaining v0.13 memory gate before TOST resumes. Pending memory
+lesson created and validated at `.agent/memory/pending/2026-06-08-v013-memory-efficiency.md`.
+FP32 acoustic refresh copied to `.agent/reviews/2026-06-08-gpt-fp32-acoustic-refresh.md` and
+roadmapped as `.agent/decisions/V0140-FP32-ACOUSTIC-ROADMAP.md`: mixed perturbation-authoritative
+fp32 is feasible in principle, but v0.13 stays fp64 and TOST-gated. Active worker:
+GPT RRTMG column-tiling fix in tmux window 5; TOST remains stopped until its proof/merge.
+
+**2026-06-08 ~22:15 — RRTMG COLUMN-TILING MEMORY GATE CLOSED.** Merged `79abf247`
+(`v013 rrtmg column tiling`) from GPT xhigh. Manager re-ran CPU gates:
+`py_compile`, `tests/test_m5_rrtmg_column_shapes.py` (3 passed), and
+`proofs/v013/rrtmg_column_tile.py --mode inertness` (`max_abs=0.0`, `max_rel=0.0`).
+GPU proof written to `proofs/v013/rrtmg_column_tile_vram_suite.json`: LW untiled OOM on
+32.11 GiB allocation, LW tiled peak 5374.84 MiB; SW untiled peak 10033.1 MiB, SW tiled
+peak 1619.54 MiB. Memory map verdict remains: no other non-radiation issue blocks TOST.
+Next before TOST: merge/verify any remaining source-changing v0.13 done branches so TOST
+validates the actual release candidate.
+
 **2026-06-08 ~07:20** — v0.13 wave 1:
 - ✅ **Outsider-reproducibility** (T2) MERGED `d9398fc`: 45 proof .py /home/enric→0 (resolvers+WRF_PRISTINE_ROOT env), `scripts/verify_reproducibility.sh` GREEN 11/11 outsider-runnable, `manifest/reproducibility_assets.json`, `docs/REPRODUCIBILITY.md`. Independently re-verified (gate rc=0, 0 .py leaks).
 - ✅ **compile-speed** (T1) CPU-verified+BANKED `worker/opus/v013-compile-speed @b9da88d`: opt-in default-off + subprocess flag-probe (fixes the v0.12 GPU-abort); 22 tests, import-inert. → GPU-runbook validation pending (when GPU frees) → then merge.

@@ -1,6 +1,17 @@
 # Project Plan
 
-Status (2026-06-08): **v0.13.0 "Validate & Accelerate" release-doc prep.** The project completed
+Status (2026-06-08 22:10 WEST): **v0.13.0 "Validate & Accelerate" memory-closure + TOST-gated release.**
+The v0.13 tag is now blocked primarily by resuming and completing the powered TOST n=15 run
+on the memory-fixed release candidate. TOST was intentionally stopped at 2/15 durable cases
+after the 641x321x50 target-geometry probe found the previous all-column RRTMG g-point
+transient drove an approximately 90 GiB fp64 peak on a 32 GiB card. The refreshed memory map
+found no other non-radiation memory item that must block TOST, and RRTMG column tiling is now
+merged plus GPU-proven (`proofs/v013/rrtmg_column_tile_vram_suite.json`: LW untiled OOM,
+LW tiled 5374.84 MiB; SW untiled 10033.1 MiB, SW tiled 1619.54 MiB). FP32 acoustic is
+feasible in principle only as an opt-in v0.14 mixed perturbation-authoritative reformulation,
+not as a v0.13 production path.
+
+The project completed
 the 2026-05-28 reset (M8–M23 roadmap in `.agent/decisions/PROJECT-RESET-PLAN-FINAL.md`), rebuilt
 the dycore honestly, and advanced through the incremental version chain. The current system is a
 **standalone, JAX-native, single-GPU WRF-compatible v4 ARW forecast system for standard regional
@@ -16,30 +27,37 @@ The canonical user-facing scope statement is the top of [`README.md`](README.md)
   expanded physics menu → v0.9.0 standalone consolidation → v0.10.0 Thompson-sedimentation →
   v0.11.0 live nesting/restart/conservation/MYNN-EDMF/topo-slope-radiation/slope-diffusion →
   v0.12.0 standalone out-of-box CLI + persistent JIT cache + fail-closed catalog + PSFC fix +
-  equivalence demo → **v0.13.0 "Validate & Accelerate"** (RRTMG VRAM-floor chunking → GWD-on-nested
-  default-on, compile-speed re-land GPU-validated, MYJ+Janjic operational, moisture flux-advection
-  into RK3, multi-GPU fake-mesh sharding, clear-sky diagnostics, RRTM-LW skeptic-hardening,
-  outsider-reproducibility + community-validation). Closeouts in
+  equivalence demo → **v0.13.0 "Validate & Accelerate"** (RRTMG VRAM-floor chunking plus
+  RRTMG column tiling, GWD-on-nested default-on, compile-speed re-land GPU-validated,
+  MYJ+Janjic operational, WDM5/MRF/GFS-sfclay/old-MM5/GSFC-SW coverage expansion, moisture
+  flux-advection into RK3, multi-GPU fake-mesh sharding, clear-sky diagnostics, RRTM-LW
+  skeptic-hardening, outsider-reproducibility + community-validation). Closeouts in
   [`.agent/decisions/`](.agent/decisions/); v0.13 roadmap = `.agent/decisions/V0130-ROADMAP.md`.
 - **GPU-operational menu (scan-wired, WRF-oracle-gated):** MP {1 Kessler, 2 Lin, 3 WSM3, 4 WSM5,
-  6 WSM6, 8 Thompson, 10 Morrison, 16 WDM6}; PBL {1 YSU, **2 MYJ (v0.13.0)**, 5 MYNN, 7 ACM2,
-  8 BouLac}; SFCLAY {1 revised-MM5, **2 Janjic-Eta (v0.13.0)**, 5 MYNN-SL, 7 Pleim-Xiu}; CU
-  {1 KF, 2 BMJ, 3 Grell-Freitas, 6 Tiedtke}; RRTMG SW+LW + Dudhia-SW/RRTM-LW + clear-sky
-  diagnostics; GWD `gwd_opt=1` (v0.13.0 default-on nested); LSM {2 Noah-classic, 4 Noah-MP}.
+  6 WSM6, 8 Thompson, 10 Morrison, **14 WDM5 (v0.13.0)**, 16 WDM6}; PBL {1 YSU,
+  **2 MYJ (v0.13.0)**, 5 MYNN, 7 ACM2, 8 BouLac, **99 MRF (v0.13.0)**}; SFCLAY
+  {1 revised-MM5, **2 Janjic-Eta (v0.13.0)**, **3 GFS (v0.13.0)**, 5 MYNN-SL,
+  7 Pleim-Xiu, **91 old-MM5 (v0.13.0)**}; CU {1 KF, 2 BMJ, 3 Grell-Freitas, 6 Tiedtke
+  scan-wired with a real-QVFTEN fix branch pending merge}; RRTMG SW+LW + Dudhia-SW/RRTM-LW +
+  **GSFC-SW (v0.13.0)** + clear-sky diagnostics; GWD `gwd_opt=1` (v0.13.0 default-on nested);
+  LSM {2 Noah-classic, 4 Noah-MP}.
   Source of truth: [`src/gpuwrf/contracts/physics_registry.py`](src/gpuwrf/contracts/physics_registry.py)
   + `_SCAN_WIRED_OPTIONS` in [`src/gpuwrf/runtime/operational_mode.py`](src/gpuwrf/runtime/operational_mode.py).
 - **Parity-proven but fail-closed (recognized, loudly rejected):** New-Tiedtke (`cu=16`).
   (v0.13.0 promoted MYJ + Janjic to operational; Dudhia SW + RRTM LW were wired in v0.12.0.)
-- **Honest qualifiers:** **the 24 h forecast-skill closure (T2/U10/V10) vs CPU-WRF is NOT closed
+- **Current blockers and honest qualifiers:** **the powered TOST n=15 run blocks the v0.13.0 tag**
+  and must be resumed on memory-fixed code after the RRTMG column-tiling proof. **The 24 h
+  forecast-skill closure (T2/U10/V10) vs CPU-WRF is NOT closed
   (KI-9)** — the credibility gate for any "operational/replacement" claim; the equivalence demo's
   24 h d02 verdict is `NOT_EQUIVALENT`, dominated by lead-time wind divergence. The powered n=15
-  TOST scoring path is unblocked (rc=2 fixed) but the run result is pending; n=15 underpowered vs
-  the n≈27 target. Multi-GPU throughput is fake-mesh-only (real throughput UNMEASURED → per-watt /
-  whole-Earth claims stay PROJECTED). Moisture flux-advection + clear-sky diagnostics are opt-in
-  (default-off, byte-identical when off).
+  TOST scoring path is unblocked (rc=2 fixed); 2/15 cases are durable, and `--resume` continues after
+  the memory fix. n=15 remains underpowered vs the n≈27 target. Multi-GPU throughput is
+  fake-mesh-only (real throughput UNMEASURED → per-watt / whole-Earth claims stay PROJECTED).
+  Moisture flux-advection + clear-sky diagnostics are opt-in (default-off, byte-identical when off).
 - **Next (v0.14+ roadmap):** the path to 1.0.0 = **Tier 3 (the scheme long-tail: ~22 microphysics,
   ~10 cumulus, ~8 PBL, ~12 radiation, ~4 surface-layer + ~6 LSM families, each opt-in/fail-closed
-  until oracle-proven) + the v0.13.0 carry-overs**: the KI-9 skill-closure (hard
+  until oracle-proven) + the v0.13.0 carry-overs**: FP32/mixed-precision acoustic reformulation
+  per `.agent/decisions/V0140-FP32-ACOUSTIC-ROADMAP.md`, the KI-9 skill-closure (hard
   dynamics-`ph'`/MYNN/`*_tendf` GPU work), moisture-advection cadence refinements (KI-10), 2-way
   nesting 24 h equivalence (KI-11), the Tier-2 speed remainder (sub-jit, parallel-compile,
   CPU-flock), and multi-hardware/independent reproduction. See
