@@ -1,4 +1,10 @@
 {
+  "checksum_sidecar": {
+    "all_expected_savepoints_present": false,
+    "path": "proofs/v013/t3_cumulus_source_checksums.json",
+    "present_savepoints_pinned": true,
+    "source_files_all_found": true
+  },
   "description": "Tier-3 cumulus family: pristine-WRF fp64 oracle integrity, default byte-unchanged, fail-closed honesty, per-scheme kernel parity (when wired).",
   "dispatch": {
     "all_fail_closed_ok": true,
@@ -45,7 +51,7 @@
     ]
   },
   "gate_pass": true,
-  "generated_utc": "2026-06-08T14:51:09.089545+00:00",
+  "generated_utc": "2026-06-08T21:50:56.343506+00:00",
   "operational_schemes": [],
   "oracle_staged_schemes": [
     16,

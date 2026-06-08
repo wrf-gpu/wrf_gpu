@@ -39,6 +39,7 @@ Run CPU-only:
 from __future__ import annotations
 
 from datetime import datetime, timezone
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -53,7 +54,9 @@ sys.path.insert(0, str(ROOT / "src"))
 
 SAVE = ROOT / "proofs" / "v013" / "savepoints" / "cumulus"
 REPORT = ROOT / "proofs" / "v013" / "t3_cumulus_oracle.json"
+SOURCE_CHECKSUM_REPORT = ROOT / "proofs" / "v013" / "t3_cumulus_source_checksums.json"
 CASES = (1, 2, 3, 4, 5)
+WRF_PRISTINE_ROOT = Path(os.environ.get("WRF_PRISTINE_ROOT", "/home/enric/src/wrf_pristine/WRF"))
 
 # WRF cu_physics codes for this Tier-3 batch (the three named reference-only
 # schemes); savepoint filename stem per scheme.
@@ -61,6 +64,16 @@ SCHEMES = {
     16: ("New-Tiedtke", "ntiedtke"),
     14: ("KIM-SAS", "ksas"),
     5: ("Grell-3D", "g3"),
+}
+
+SCHEME_SOURCE_FILES = {
+    "shared": ("phys/module_cumulus_driver.F",),
+    "ntiedtke": (
+        "phys/module_cu_ntiedtke.F",
+        "phys/physics_mmm/cu_ntiedtke.F90",
+    ),
+    "ksas": ("phys/module_cu_ksas.F",),
+    "g3": ("phys/module_cu_g3.F",),
 }
 
 # Operational accept set that MUST stay unchanged by this batch (the default
@@ -88,6 +101,27 @@ def _load(stem: str, case: int) -> dict | None:
         return None
     with p.open() as fh:
         return json.load(fh)
+
+
+def _sha256(path: Path) -> str:
+    h = hashlib.sha256()
+    with path.open("rb") as fh:
+        for chunk in iter(lambda: fh.read(1024 * 1024), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def _checksum_entry(path: Path, *, relative_to: Path | None = None) -> dict:
+    entry = {
+        "path": str(path if relative_to is None else path.relative_to(relative_to)),
+        "exists": path.exists(),
+    }
+    if path.exists():
+        entry.update({
+            "bytes": path.stat().st_size,
+            "sha256": _sha256(path),
+        })
+    return entry
 
 
 def _arr(columns: dict, name: str) -> np.ndarray:
@@ -197,6 +231,62 @@ def _default_unchanged() -> dict:
     }
 
 
+def _write_source_checksum_sidecar(schemes_report: dict) -> dict:
+    """Pin the exact reference inputs behind the cumulus oracle report."""
+    source_files = {}
+    for group, rels in SCHEME_SOURCE_FILES.items():
+        source_files[group] = [
+            _checksum_entry(WRF_PRISTINE_ROOT / rel, relative_to=WRF_PRISTINE_ROOT)
+            for rel in rels
+        ]
+
+    savepoints = {}
+    for code, (_label, stem) in SCHEMES.items():
+        entries = []
+        for case in CASES:
+            p = SAVE / f"{stem}_case_{case}.json"
+            entries.append(_checksum_entry(p, relative_to=ROOT))
+        savepoints[code] = {
+            "stem": stem,
+            "status": schemes_report[code]["status"],
+            "entries": entries,
+            "present_count": sum(1 for e in entries if e["exists"]),
+            "expected_count": len(entries),
+            "all_expected_present": all(e["exists"] for e in entries),
+        }
+
+    source_files_all_found = all(
+        e["exists"] for entries in source_files.values() for e in entries
+    )
+    present_savepoints_pinned = all(
+        (not e["exists"]) or bool(e.get("sha256"))
+        for scheme in savepoints.values()
+        for e in scheme["entries"]
+    )
+    report = {
+        "proof": "v013-t3-cumulus-source-and-savepoint-checksums",
+        "generated_utc": datetime.now(timezone.utc).isoformat(),
+        "wrf_pristine_root": str(WRF_PRISTINE_ROOT),
+        "description": "Checksum sidecar for the pristine-WRF source files and "
+        "JSON savepoints used by proofs/v013/t3_cumulus_oracle.py. Missing "
+        "Grell-3D savepoints are reported as missing, not promoted.",
+        "source_files": source_files,
+        "source_files_all_found": source_files_all_found,
+        "savepoints": savepoints,
+        "present_savepoints_pinned": present_savepoints_pinned,
+        "all_expected_savepoints_present": all(
+            scheme["all_expected_present"] for scheme in savepoints.values()
+        ),
+    }
+    SOURCE_CHECKSUM_REPORT.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n")
+    return {
+        "path": str(SOURCE_CHECKSUM_REPORT.relative_to(ROOT)),
+        "source_files_all_found": source_files_all_found,
+        "present_savepoints_pinned": present_savepoints_pinned,
+        "all_expected_savepoints_present": report["all_expected_savepoints_present"],
+    }
+
+
 def main() -> int:
     schemes_report = {}
     for code, (label, stem) in SCHEMES.items():
@@ -218,6 +308,7 @@ def main() -> int:
         }
 
     dispatch = _default_unchanged()
+    checksum_sidecar = _write_source_checksum_sidecar(schemes_report)
 
     # Gate: this batch PASSES iff (1) at least one scheme's oracle is built and
     # non-trivial (real fp64 reference, not a stub/self-compare), (2) the default
@@ -248,6 +339,7 @@ def main() -> int:
             c for c, s in schemes_report.items()
             if s["status"].startswith("oracle-staged")
         ],
+        "checksum_sidecar": checksum_sidecar,
         "gate_pass": gate_pass,
     }
     REPORT.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n")
