@@ -1,0 +1,194 @@
+{
+  "aggregate": {
+    "PSFC": {
+      "bias": -211.16311544253938,
+      "frame_count": 1,
+      "mae": 211.16311544253938,
+      "mean_frame_corr": 0.9999963336837936,
+      "n": 5395,
+      "rmse": 212.00957938286444,
+      "status": "OK"
+    },
+    "RAINNC": {
+      "bias": 7.846666870611769e-06,
+      "frame_count": 1,
+      "mae": 7.847911229393576e-06,
+      "mean_frame_corr": -0.0006501365206325004,
+      "n": 5395,
+      "rmse": 0.00026249356335681897,
+      "status": "OK"
+    },
+    "T2": {
+      "bias": 0.13258422059632763,
+      "frame_count": 1,
+      "mae": 0.47064646808387395,
+      "mean_frame_corr": 0.9459188802943419,
+      "n": 5395,
+      "rmse": 0.6751236650015386,
+      "status": "OK"
+    },
+    "U10": {
+      "bias": -0.6768129265519115,
+      "frame_count": 1,
+      "mae": 0.970227141269531,
+      "mean_frame_corr": 0.9640371149804566,
+      "n": 5395,
+      "rmse": 1.3277967660883527,
+      "status": "OK"
+    },
+    "V10": {
+      "bias": -0.5044455138942705,
+      "frame_count": 1,
+      "mae": 0.7729867575638794,
+      "mean_frame_corr": 0.9711627014352102,
+      "n": 5395,
+      "rmse": 1.182944060892346,
+      "status": "OK"
+    }
+  },
+  "boundary_width": 5,
+  "common_frame_count_before_filters": 1,
+  "cpu_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260531_18z_l3_24h_20260601T125256Z",
+  "domain": "d03",
+  "generated_utc": "2026-06-08T16:24:46.965697+00:00",
+  "gpu_dir": "/mnt/data/canairy_meteo/gate_revalidate_gwd8/out",
+  "init_time_utc": "2026-05-31T18:00:00+00:00",
+  "max_lead": 1,
+  "schema": "CanaryGridPairStats",
+  "schema_version": 1,
+  "scored_rows": [
+    {
+      "bias": 0.13258422059632763,
+      "corr": 0.9459188802943419,
+      "cpu_file": "/mnt/data/canairy_meteo/runs/wrf_l3/20260531_18z_l3_24h_20260601T125256Z/wrfout_d03_2026-05-31_19:00:00",
+      "cpu_shape": [
+        65,
+        83
+      ],
+      "finite_fraction": 1.0,
+      "gpu_file": "/mnt/data/canairy_meteo/gate_revalidate_gwd8/out/wrfout_d03_2026-05-31_19:00:00",
+      "gpu_shape": [
+        65,
+        83
+      ],
+      "lead_hour": 1,
+      "mae": 0.47064646808387395,
+      "max_abs": 2.85491943359375,
+      "n": 5395,
+      "p95_abs": 1.6282836914062502,
+      "p99_abs": 2.262752075195315,
+      "rmse": 0.6751236650015386,
+      "status": "OK",
+      "valid_time_utc": "2026-05-31T19:00:00+00:00",
+      "variable": "T2"
+    },
+    {
+      "bias": -0.6768129265519115,
+      "corr": 0.9640371149804566,
+      "cpu_file": "/mnt/data/canairy_meteo/runs/wrf_l3/20260531_18z_l3_24h_20260601T125256Z/wrfout_d03_2026-05-31_19:00:00",
+      "cpu_shape": [
+        65,
+        83
+      ],
+      "finite_fraction": 1.0,
+      "gpu_file": "/mnt/data/canairy_meteo/gate_revalidate_gwd8/out/wrfout_d03_2026-05-31_19:00:00",
+      "gpu_shape": [
+        65,
+        83
+      ],
+      "lead_hour": 1,
+      "mae": 0.970227141269531,
+      "max_abs": 10.990083694458008,
+      "n": 5395,
+      "p95_abs": 2.6184789955616,
+      "p99_abs": 4.102802569866183,
+      "rmse": 1.3277967660883527,
+      "status": "OK",
+      "valid_time_utc": "2026-05-31T19:00:00+00:00",
+      "variable": "U10"
+    },
+    {
+      "bias": -0.5044455138942705,
+      "corr": 0.9711627014352102,
+      "cpu_file": "/mnt/data/canairy_meteo/runs/wrf_l3/20260531_18z_l3_24h_20260601T125256Z/wrfout_d03_2026-05-31_19:00:00",
+      "cpu_shape": [
+        65,
+        83
+      ],
+      "finite_fraction": 1.0,
+      "gpu_file": "/mnt/data/canairy_meteo/gate_revalidate_gwd8/out/wrfout_d03_2026-05-31_19:00:00",
+      "gpu_shape": [
+        65,
+        83
+      ],
+      "lead_hour": 1,
+      "mae": 0.7729867575638794,
+      "max_abs": 10.46397215127945,
+      "n": 5395,
+      "p95_abs": 2.323994255065918,
+      "p99_abs": 4.432277393341075,
+      "rmse": 1.182944060892346,
+      "status": "OK",
+      "valid_time_utc": "2026-05-31T19:00:00+00:00",
+      "variable": "V10"
+    },
+    {
+      "bias": -211.16311544253938,
+      "corr": 0.9999963336837936,
+      "cpu_file": "/mnt/data/canairy_meteo/runs/wrf_l3/20260531_18z_l3_24h_20260601T125256Z/wrfout_d03_2026-05-31_19:00:00",
+      "cpu_shape": [
+        65,
+        83
+      ],
+      "finite_fraction": 1.0,
+      "gpu_file": "/mnt/data/canairy_meteo/gate_revalidate_gwd8/out/wrfout_d03_2026-05-31_19:00:00",
+      "gpu_shape": [
+        65,
+        83
+      ],
+      "lead_hour": 1,
+      "mae": 211.16311544253938,
+      "max_abs": 274.515625,
+      "n": 5395,
+      "p95_abs": 245.03046875,
+      "p99_abs": 254.1712500000001,
+      "rmse": 212.00957938286444,
+      "status": "OK",
+      "valid_time_utc": "2026-05-31T19:00:00+00:00",
+      "variable": "PSFC"
+    },
+    {
+      "bias": 7.846666870611769e-06,
+      "corr": -0.0006501365206325004,
+      "cpu_file": "/mnt/data/canairy_meteo/runs/wrf_l3/20260531_18z_l3_24h_20260601T125256Z/wrfout_d03_2026-05-31_19:00:00",
+      "cpu_shape": [
+        65,
+        83
+      ],
+      "finite_fraction": 1.0,
+      "gpu_file": "/mnt/data/canairy_meteo/gate_revalidate_gwd8/out/wrfout_d03_2026-05-31_19:00:00",
+      "gpu_shape": [
+        65,
+        83
+      ],
+      "lead_hour": 1,
+      "mae": 7.847911229393576e-06,
+      "max_abs": 0.013572259806096554,
+      "n": 5395,
+      "p95_abs": 0.0,
+      "p99_abs": 0.0,
+      "rmse": 0.00026249356335681897,
+      "status": "OK",
+      "valid_time_utc": "2026-05-31T19:00:00+00:00",
+      "variable": "RAINNC"
+    }
+  ],
+  "spinup_hours": 0,
+  "variables": [
+    "T2",
+    "U10",
+    "V10",
+    "PSFC",
+    "RAINNC"
+  ]
+}
