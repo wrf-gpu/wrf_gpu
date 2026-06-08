@@ -1,6 +1,6 @@
 {
   "mode": "DRY-PLAN (no GPU touched)",
-  "manifest": "/home/enric/src/wrf_gpu2/proofs/v010_validation/v010_cases_manifest.json",
+  "manifest": "REPO/proofs/v010_validation/v010_cases_manifest.json",
   "n_cases": 3,
   "n_scoring_units": 5,
   "units": [

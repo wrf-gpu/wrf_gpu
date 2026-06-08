@@ -51,13 +51,13 @@ product) and cross-check against the met_em static block.
 
 ### TBD-b — WPS / metgrid source on disk: **RESOLVED, PRESENT (source + built binaries)**
 Full WPS source tree AND compiled binaries are on disk:
-`/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_src/WPS/`
+`~/src/canairy_meteo/Gen2/artifacts/wrf_src/WPS/`
 - `install_gen2_dmpar/bin/metgrid.exe` (+ geogrid.exe/ungrib.exe in tree)
 - `metgrid/METGRID.TBL` → `METGRID.TBL.ARW` (the active per-field interp spec)
 - `metgrid/src/{interp_module.F, interp_option_module.F, process_domain_module.F,
   ...}` — the EXACT interp algorithm for S3 to port, not "work from docs".
-- The GRIB→met_em map: `/home/enric/src/canairy_meteo/Gen2/configs/Vtable.AIFS_PURE`.
-- WPS run drivers: `/home/enric/src/canairy_meteo/Gen2/scripts/run_wps_case.py`,
+- The GRIB→met_em map: `~/src/canairy_meteo/Gen2/configs/Vtable.AIFS_PURE`.
+- WPS run drivers: `~/src/canairy_meteo/Gen2/scripts/run_wps_case.py`,
   `run_ungrib_case.py`, `run_wps_all_cases.sh`.
 
 Consequence: S3 ports a **known algorithm** (metgrid `interp_module.F`), and S4

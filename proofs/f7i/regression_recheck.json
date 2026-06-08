@@ -1,7 +1,7 @@
 {
   "status": "PASS",
   "ac5": "no regression; nothing weakened; no clamps/caps/sanitizers/epssm-fudge added",
-  "production_code_changed": "NONE — git diff (tracked, non-proof) is empty; all F7I work is diagnostic scripts (scripts/f7i_*.py) + proofs/f7i/* + a separate WRF build tree under /home/enric/src/wrf_ideal_f7i (not in repo).",
+  "production_code_changed": "NONE — git diff (tracked, non-proof) is empty; all F7I work is diagnostic scripts (scripts/f7i_*.py) + proofs/f7i/* + a separate WRF build tree under ~/src/wrf_ideal_f7i (not in repo).",
   "m4_bare_core_tests": {
     "command": "PYTHONPATH=src taskset -c 0-3 python -m pytest tests/test_m4_acoustic.py tests/test_m4_dycore_step.py tests/test_m4_tier2_invariants.py -q",
     "result": "10 passed",

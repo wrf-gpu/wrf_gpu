@@ -866,7 +866,7 @@
     "ustar_input": "same-step WRF UST used as prior-step ustar",
     "znt": "land 0.10 m / water 2.85e-3 m (not in wrfout)"
   },
-  "spec": "/home/enric/src/wrf_gpu2/.agent/decisions/P1-4a-MYNN-PARITY-SPEC.md",
+  "spec": "REPO/.agent/decisions/P1-4a-MYNN-PARITY-SPEC.md",
   "status": "VALIDATES P1-4a POST-TAG -- not a v0.1.0 gate",
   "verdict": {
     "all_pass": true,

@@ -1,7 +1,7 @@
 # v0.11.0 Release Integrity Report — s3
 
 **Date**: 2026-06-06  
-**Worktree**: `/home/enric/src/wrf_gpu2/.claude/worktrees/v0110-integration`  
+**Worktree**: `REPO
 **Branch**: `worker/opus/v0110-integration` @ `3d5c6ae`
 
 ---
@@ -56,7 +56,7 @@ All sharding-specific code in 5 changed core files is behind early-return guards
 - Covered: full WRF restart variable set (U, V, W, T, P, PH, MU, all moisture, QKE, surface, NoahMP, carry)
 - Schema version: `v0.11.0-wrfrst-netcdf-2`
 
-**Proof file**: `/home/enric/src/wrf_gpu2/.claude/worktrees/v0110-integration/proofs/v0110/restart_continuity.json`
+**Proof file**: `REPO/proofs/v0110/restart_continuity.json`
 
 ---
 
@@ -75,7 +75,7 @@ All sharding-specific code in 5 changed core files is behind early-return guards
 - `JAX_LOG_COMPILES=1` confirmed: exactly ONE `Compiling jit(_advance_chunk)` + ONE trace-cache-miss, both in chunk 1. Chunks 2-3 reuse cached executable — no per-chunk recompile.
 - Root cause of prior recompile (fixed): non-JAX-contract-compliant `tree_unflatten` in `State` and `DycoreMetrics` surfaced by the committed initial carry path.
 
-**Proof file**: `/home/enric/src/wrf_gpu2/.claude/worktrees/v0110-integration/proofs/v0110/recompile_fix2_3chunks.json`
+**Proof file**: `REPO/proofs/v0110/recompile_fix2_3chunks.json`
 
 ---
 
@@ -94,6 +94,6 @@ All sharding-specific code in 5 changed core files is behind early-return guards
 - `/tmp/v0110_overnight/dgx_bitident_result.json` (GPU bit-identity proof, generated this run)
 - `/tmp/v0110_overnight/dgx_bitident_trunk_hashes.json` (trunk state sha256s)
 - `/tmp/v0110_overnight/dgx_bitident_dgx_hashes.json` (DGX-d2 state sha256s)
-- `/home/enric/src/wrf_gpu2/.claude/worktrees/v0110-integration/proofs/v0110/restart_continuity.json`
-- `/home/enric/src/wrf_gpu2/.claude/worktrees/v0110-integration/proofs/v0110/recompile_fix2_3chunks.json`
-- `/home/enric/src/wrf_gpu2/.claude/worktrees/v0110-dgx-d2/proofs/v0110/dgx_d2_sharded_forecast.json`
+- `REPO/proofs/v0110/restart_continuity.json`
+- `REPO/proofs/v0110/recompile_fix2_3chunks.json`
+- `REPO/proofs/v0110/dgx_d2_sharded_forecast.json`

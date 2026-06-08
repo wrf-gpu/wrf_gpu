@@ -199,7 +199,7 @@
   },
   "wrf_source": {
     "cloud_water_sedimentation_lines": "3646-3667, 3824-3837",
-    "path": "/home/enric/src/wrf_pristine/WRF/phys/module_mp_thompson.F",
+    "path": "~/src/wrf_pristine/WRF/phys/module_mp_thompson.F",
     "snow_fall_speed_lines": "3711-3721"
   }
 }

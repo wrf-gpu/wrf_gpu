@@ -2,7 +2,7 @@
   "schema": "M21TostCampaignResult",
   "schema_version": 1,
   "generated_utc": "2026-06-01T02:56:06.865352+00:00",
-  "manifest": "/home/enric/src/wrf_gpu2/proofs/v010_validation/v010_cases_manifest.json",
+  "manifest": "REPO/proofs/v010_validation/v010_cases_manifest.json",
   "n_scoring_units_attempted": 5,
   "n_scoring_units_scored": 4,
   "per_unit_meta": [

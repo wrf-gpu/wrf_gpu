@@ -1,7 +1,7 @@
 {
   "title": "F7M Straka density-current: WRF v4.7.1 em_grav2d_x ground truth vs JAX dycore, front/center region",
   "wrf": {
-    "source": "pristine WRF v4.7.1 serial gfortran, /home/enric/src/wrf_pristine/WRF, case em_grav2d_x (ideal_case=6), canonical 100m Straka namelist",
+    "source": "pristine WRF v4.7.1 serial gfortran, ~/src/wrf_pristine/WRF, case em_grav2d_x (ideal_case=6), canonical 100m Straka namelist",
     "namelist": {
       "dx_m": 100, "dz_m": "~100 (ztop=6409/64)", "e_we": 513, "e_vert": 65,
       "time_step_s": 1, "time_step_sound": 6, "diff_opt": 2, "km_opt": 1,

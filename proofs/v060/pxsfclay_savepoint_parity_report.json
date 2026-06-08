@@ -7328,7 +7328,7 @@
     "fp32_build_manifest": [
       "mode=fp32",
       "full_wrf_exe=false",
-      "wrf_source=/home/enric/src/wrf_pristine/WRF/phys/module_sf_pxsfclay.F",
+      "wrf_source=~/src/wrf_pristine/WRF/phys/module_sf_pxsfclay.F",
       "compiler=GNU Fortran (conda-forge gcc 14.3.0-19) 14.3.0",
       "fflags=-O2 -ffree-form -ffree-line-length-none -cpp -DEM_CORE=1 -ffpe-summary=none "
     ],
@@ -7338,7 +7338,7 @@
     "fp64_build_manifest": [
       "mode=fp64",
       "full_wrf_exe=false",
-      "wrf_source=/home/enric/src/wrf_pristine/WRF/phys/module_sf_pxsfclay.F",
+      "wrf_source=~/src/wrf_pristine/WRF/phys/module_sf_pxsfclay.F",
       "compiler=GNU Fortran (conda-forge gcc 14.3.0-19) 14.3.0",
       "fflags=-O2 -ffree-form -ffree-line-length-none -cpp -DEM_CORE=1 -ffpe-summary=none -fdefault-real-8 -fdefault-double-8"
     ],
@@ -7350,7 +7350,7 @@
     "generation_command": "taskset -c 0-3 bash proofs/v060/oracle/build_and_run.sh",
     "type": "single-column Fortran driver linked against unmodified WRF module_sf_pxsfclay.F",
     "wrf_sources": [
-      "/home/enric/src/wrf_pristine/WRF/phys/module_sf_pxsfclay.F"
+      "~/src/wrf_pristine/WRF/phys/module_sf_pxsfclay.F"
     ]
   },
   "overall_pass": true,

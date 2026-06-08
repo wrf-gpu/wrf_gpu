@@ -1,6 +1,6 @@
 {
-  "before": "/home/enric/src/wrf_gpu2/.claude/worktrees/v040k-kfwire/proofs/v040/forecast_gate_kf2date6h_cu0_BEFORE.json",
-  "after": "/home/enric/src/wrf_gpu2/.claude/worktrees/v040k-kfwire/proofs/v040/forecast_gate_kf2date6h_cu1_AFTER.json",
+  "before": "REPO/proofs/v040/forecast_gate_kf2date6h_cu0_BEFORE.json",
+  "after": "REPO/proofs/v040/forecast_gate_kf2date6h_cu1_AFTER.json",
   "before_table": {
     "20260429_18z_l2_72h_20260524T204451Z": {
       "U10": {

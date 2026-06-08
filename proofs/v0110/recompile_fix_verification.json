@@ -83,5 +83,5 @@
   "schema_version": 1,
   "verdict": "Gate 1 fails before any hot chunk can be measured: the fixed committed-carry path raises a trace-time TypeError in State.tree_unflatten/State.__init__ for lu_index. Because the fixed path cannot produce forecast output, bit-identity and default/flag-off pass claims are not established.",
   "verified_at_utc": "2026-06-05T12:41:21.753584+00:00",
-  "worktree": "/home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag"
+  "worktree": "REPO"
 }

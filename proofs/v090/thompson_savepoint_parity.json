@@ -197,6 +197,6 @@
   "th_storage_precision_pass": true,
   "water_closure_max_rel_residual": 3.046657320892406e-07,
   "water_closure_pass": true,
-  "wrf_source": "/home/enric/src/wrf_pristine/WRF/phys/module_mp_thompson.F",
+  "wrf_source": "~/src/wrf_pristine/WRF/phys/module_mp_thompson.F",
   "wrf_source_sha256": "fabf19e2a9073cff886e882b187080bfdf089d3fd40c0fce1d19bc93b1e5e802"
 }

@@ -5,7 +5,7 @@
   "canonical_fp32_pass": true,
   "fp64_precision_audit_pass": true,
   "oracle": {
-    "source": "/home/enric/src/wrf_pristine/WRF/phys/module_mp_kessler.F",
+    "source": "~/src/wrf_pristine/WRF/phys/module_mp_kessler.F",
     "source_unmodified": true,
     "full_wrf_exe": false,
     "full_wrf_exe_note": "Standalone driver compiled the unmodified WRF Kessler module; this is not a full wrf.exe integration savepoint.",
@@ -13,8 +13,8 @@
     "fp64_savepoints": "proofs/v060/savepoints_fp64",
     "fp32_source_checksums": "56935bc95cc72084a37cdaf1b680a6015806daccc48feaf4b3cc6f167653ebfc  module_mp_kessler.F\n",
     "fp64_source_checksums": "56935bc95cc72084a37cdaf1b680a6015806daccc48feaf4b3cc6f167653ebfc  module_mp_kessler.F\n",
-      "fp32_build_manifest": "mode=fp32\nfull_wrf_exe=false\nwrf_source=/home/enric/src/wrf_pristine/WRF/phys/module_mp_kessler.F\ncompiler=GNU Fortran (conda-forge gcc 14.3.0-19) 14.3.0\nfflags=-O2 -cpp -ffree-form -ffree-line-length-none -ffpe-summary=none\n",
-    "fp64_build_manifest": "mode=fp64\nfull_wrf_exe=false\nwrf_source=/home/enric/src/wrf_pristine/WRF/phys/module_mp_kessler.F\ncompiler=GNU Fortran (conda-forge gcc 14.3.0-19) 14.3.0\nfflags=-O2 -cpp -ffree-form -ffree-line-length-none -ffpe-summary=none -fdefault-real-8\n"
+      "fp32_build_manifest": "mode=fp32\nfull_wrf_exe=false\nwrf_source=~/src/wrf_pristine/WRF/phys/module_mp_kessler.F\ncompiler=GNU Fortran (conda-forge gcc 14.3.0-19) 14.3.0\nfflags=-O2 -cpp -ffree-form -ffree-line-length-none -ffpe-summary=none\n",
+    "fp64_build_manifest": "mode=fp64\nfull_wrf_exe=false\nwrf_source=~/src/wrf_pristine/WRF/phys/module_mp_kessler.F\ncompiler=GNU Fortran (conda-forge gcc 14.3.0-19) 14.3.0\nfflags=-O2 -cpp -ffree-form -ffree-line-length-none -ffpe-summary=none -fdefault-real-8\n"
   },
   "jax_precision": "fp64",
   "jax_platform": "cpu",

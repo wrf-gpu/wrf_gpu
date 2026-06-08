@@ -127,7 +127,7 @@ Noah-MP / surface-layer lanes). The MF lever and the land-vapor lever stack.
 # WRF Fortran oracle (needs wrfbuild conda gfortran + pristine WRF .o)
 proofs/mynn_edmf/fortran_oracle/build_and_run.sh
 # column extraction (needs canary_env netCDF4)
-/home/enric/miniconda3/envs/canary_env/bin/python proofs/mynn_edmf/extract_column.py
+~/miniconda3/envs/canary_env/bin/python proofs/mynn_edmf/extract_column.py
 proofs/mynn_edmf/emit_flat.py
 # JAX verification + integration (CPU, fp64)
 JAX_PLATFORM_NAME=cpu OMP_NUM_THREADS=2 taskset -c 0-3 python3 proofs/mynn_edmf/jax_oracle.py

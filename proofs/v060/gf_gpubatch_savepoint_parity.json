@@ -454,20 +454,20 @@
     "full_wrf_exe_run": false,
     "note": "Same WRF-module oracle gold as the CPU-reference gate. Not a coupled wrf.exe run.",
     "savepoints": "proofs/v060/savepoints/gf_case_{1..5}.json (unmodified-WRF GF module gold; not a JAX self-compare)",
-    "source": "unmodified WRF GF modules from /home/enric/src/wrf_pristine/WRF/phys compiled into a standalone single-column driver",
+    "source": "unmodified WRF GF modules from ~/src/wrf_pristine/WRF/phys compiled into a standalone single-column driver",
     "source_checksums_sha256": {
-      "/home/enric/src/wrf_gpu2/.claude/worktrees/wf_5a3ae99e-e72-1/proofs/v060/oracle/gf_oracle_driver.f90": "96e3a0ce6a04ce1ab82c9335b7427b361d555c884d28103df8bbe53e4bb2173a",
-      "/home/enric/src/wrf_gpu2/.claude/worktrees/wf_5a3ae99e-e72-1/src/gpuwrf/physics/_gf_jax.py": "87ac8eebdf9bac992d92390aad47d7c1a0b7e317fba463edab55b13fa976e0f0",
-      "/home/enric/src/wrf_gpu2/.claude/worktrees/wf_5a3ae99e-e72-1/src/gpuwrf/physics/_gf_reference.py": "7ba90b7d37e1df17f68c3de1c815541df3827227362f07a03de2e20f8e99feb3",
-      "/home/enric/src/wrf_pristine/WRF/phys/module_cu_gf_deep.F": "798ad7271963757b88be36ce01e24222f7af045dc0692908d6e7c270d6b4ea11",
-      "/home/enric/src/wrf_pristine/WRF/phys/module_cu_gf_sh.F": "0dd1ed7c620b39e13f7ef77dc4ff1a269fa1f8d746492d360e203df0215b529a",
-      "/home/enric/src/wrf_pristine/WRF/phys/module_cu_gf_wrfdrv.F": "0cead99c913b6a74f3a492aea1e1c7ef6d34f95402574336022d1a6c716a4382",
-      "/home/enric/src/wrf_pristine/WRF/phys/module_gfs_machine.F": "300ee4f75663e89d34c8a9b8733cc07a5dd48c3d973da019d31cb76524babe25",
-      "/home/enric/src/wrf_pristine/WRF/phys/module_gfs_physcons.F": "2b8ef99663ba62748b57c7002f5e5b8c9338f2a825c1d32c113bd4e3bff2eb52"
+      "REPO/proofs/v060/oracle/gf_oracle_driver.f90": "96e3a0ce6a04ce1ab82c9335b7427b361d555c884d28103df8bbe53e4bb2173a",
+      "REPO/src/gpuwrf/physics/_gf_jax.py": "87ac8eebdf9bac992d92390aad47d7c1a0b7e317fba463edab55b13fa976e0f0",
+      "REPO/src/gpuwrf/physics/_gf_reference.py": "7ba90b7d37e1df17f68c3de1c815541df3827227362f07a03de2e20f8e99feb3",
+      "~/src/wrf_pristine/WRF/phys/module_cu_gf_deep.F": "798ad7271963757b88be36ce01e24222f7af045dc0692908d6e7c270d6b4ea11",
+      "~/src/wrf_pristine/WRF/phys/module_cu_gf_sh.F": "0dd1ed7c620b39e13f7ef77dc4ff1a269fa1f8d746492d360e203df0215b529a",
+      "~/src/wrf_pristine/WRF/phys/module_cu_gf_wrfdrv.F": "0cead99c913b6a74f3a492aea1e1c7ef6d34f95402574336022d1a6c716a4382",
+      "~/src/wrf_pristine/WRF/phys/module_gfs_machine.F": "300ee4f75663e89d34c8a9b8733cc07a5dd48c3d973da019d31cb76524babe25",
+      "~/src/wrf_pristine/WRF/phys/module_gfs_physcons.F": "2b8ef99663ba62748b57c7002f5e5b8c9338f2a825c1d32c113bd4e3bff2eb52"
     },
-    "wrf_gf_deep_source": "/home/enric/src/wrf_pristine/WRF/phys/module_cu_gf_deep.F",
-    "wrf_gf_sh_source": "/home/enric/src/wrf_pristine/WRF/phys/module_cu_gf_sh.F",
-    "wrf_gf_wrfdrv_source": "/home/enric/src/wrf_pristine/WRF/phys/module_cu_gf_wrfdrv.F"
+    "wrf_gf_deep_source": "~/src/wrf_pristine/WRF/phys/module_cu_gf_deep.F",
+    "wrf_gf_sh_source": "~/src/wrf_pristine/WRF/phys/module_cu_gf_sh.F",
+    "wrf_gf_wrfdrv_source": "~/src/wrf_pristine/WRF/phys/module_cu_gf_wrfdrv.F"
   },
   "predeclared_tolerances": {
     "ktop_deep_levels": 1,

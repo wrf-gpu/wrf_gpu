@@ -79,9 +79,9 @@
     "theta_perturbation_max_k": 2.0
   },
   "plots": [
-    "/home/enric/src/wrf_gpu2/.claude/worktrees/agent-a6339843bee5268fd/proofs/pd_monotonic/idealized_default/plots/warm_bubble_theta_prime_100s.ppm",
-    "/home/enric/src/wrf_gpu2/.claude/worktrees/agent-a6339843bee5268fd/proofs/pd_monotonic/idealized_default/plots/warm_bubble_theta_prime_250s.ppm",
-    "/home/enric/src/wrf_gpu2/.claude/worktrees/agent-a6339843bee5268fd/proofs/pd_monotonic/idealized_default/plots/warm_bubble_theta_prime_500s.ppm"
+    "REPO/proofs/pd_monotonic/idealized_default/plots/warm_bubble_theta_prime_100s.ppm",
+    "REPO/proofs/pd_monotonic/idealized_default/plots/warm_bubble_theta_prime_250s.ppm",
+    "REPO/proofs/pd_monotonic/idealized_default/plots/warm_bubble_theta_prime_500s.ppm"
   ],
   "reference": {
     "description": "Dry rising thermal: coherent mushroom-like rise by 500-1000 s, bounded theta prime, O(10 m/s) vertical velocity, horizontal symmetry.",

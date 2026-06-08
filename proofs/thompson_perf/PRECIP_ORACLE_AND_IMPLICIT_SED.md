@@ -32,7 +32,7 @@ max 3.6e-8, all fall speeds 0) — it cannot discriminate a sedimentation scheme
 change. I built a standalone single-column harness that drives the REAL WRF
 `mp_gt_driver` (`module_mp_thompson.F`) on a deliberately precipitating column:
 
-- `/home/enric/src/wrf_pristine/precip_oracle/precip_column_oracle.F` — links the
+- `~/src/wrf_pristine/precip_oracle/precip_column_oracle.F` — links the
   already-compiled WRF objects (`libwrflib.a` + the LIB_BUNDLED set), calls
   `thompson_init` then `mp_gt_driver`, and dumps pre/post via the SAME
   `module_wrfgpu2_oracle` raw big-endian .f64 + sidecar format the full model

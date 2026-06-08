@@ -1,7 +1,7 @@
 mode=fp64
 full_wrf_exe=false
-wrf_source=/home/enric/src/wrf_pristine/WRF/share/module_model_constants.F
-wrf_source=/home/enric/src/wrf_pristine/WRF/phys/module_sf_myjsfc.F
-wrf_source=/home/enric/src/wrf_pristine/WRF/phys/module_bl_myjpbl.F
+wrf_source=~/src/wrf_pristine/WRF/share/module_model_constants.F
+wrf_source=~/src/wrf_pristine/WRF/phys/module_sf_myjsfc.F
+wrf_source=~/src/wrf_pristine/WRF/phys/module_bl_myjpbl.F
 compiler=GNU Fortran (conda-forge gcc 14.3.0-19) 14.3.0
 fflags=-O2 -ffree-form -ffree-line-length-none -cpp -ffpe-summary=none -fdefault-real-8 -fdefault-double-8

@@ -131,7 +131,7 @@
   },
   "init_mode_detected": "standalone_native_init (GPU reads wrfinput+wrfbdy; no CPU wrfout in clean input dir)",
   "objective": "native real-init IC/BC produced + validated for the Gotthard / Central Switzerland (NON-Canary) equivalence case",
-  "real_exe": "/home/enric/src/wrf_pristine/WRF/main/real.exe (serial gfortran)",
+  "real_exe": "~/src/wrf_pristine/WRF/main/real.exe (serial gfortran)",
   "schema": "v0.12.0-switzerland-case-build-2026-06-07",
   "status": {
     "cpu_reference": "PENDING_MANAGER (serial CPU-WRF run)",

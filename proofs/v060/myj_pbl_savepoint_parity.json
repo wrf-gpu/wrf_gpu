@@ -856,9 +856,9 @@
     "build_manifest": [
       "mode=fp64",
       "full_wrf_exe=false",
-      "wrf_source=/home/enric/src/wrf_pristine/WRF/share/module_model_constants.F",
-      "wrf_source=/home/enric/src/wrf_pristine/WRF/phys/module_sf_myjsfc.F",
-      "wrf_source=/home/enric/src/wrf_pristine/WRF/phys/module_bl_myjpbl.F",
+      "wrf_source=~/src/wrf_pristine/WRF/share/module_model_constants.F",
+      "wrf_source=~/src/wrf_pristine/WRF/phys/module_sf_myjsfc.F",
+      "wrf_source=~/src/wrf_pristine/WRF/phys/module_bl_myjpbl.F",
       "compiler=GNU Fortran (conda-forge gcc 14.3.0-19) 14.3.0",
       "fflags=-O2 -ffree-form -ffree-line-length-none -cpp -ffpe-summary=none -fdefault-real-8 -fdefault-double-8"
     ],
@@ -872,9 +872,9 @@
     ],
     "type": "single-column Fortran driver linked against unmodified WRF module_bl_myjpbl.F and module_sf_myjsfc.F",
     "wrf_sources": [
-      "/home/enric/src/wrf_pristine/WRF/share/module_model_constants.F",
-      "/home/enric/src/wrf_pristine/WRF/phys/module_sf_myjsfc.F",
-      "/home/enric/src/wrf_pristine/WRF/phys/module_bl_myjpbl.F"
+      "~/src/wrf_pristine/WRF/share/module_model_constants.F",
+      "~/src/wrf_pristine/WRF/phys/module_sf_myjsfc.F",
+      "~/src/wrf_pristine/WRF/phys/module_bl_myjpbl.F"
     ]
   },
   "overall_pass": true,

@@ -20,7 +20,7 @@ Status: RAN_TO_COMPLETION
 - CPU affinity: [0, 1, 2, 3]
 - Timesteps: 5000
 - Snapshot seconds: [100.0, 250.0, 500.0]
-- Plots: /home/enric/src/wrf_gpu2/.claude/worktrees/agent-a6339843bee5268fd/proofs/pd_monotonic/idealized_default/plots/warm_bubble_theta_prime_100s.ppm, /home/enric/src/wrf_gpu2/.claude/worktrees/agent-a6339843bee5268fd/proofs/pd_monotonic/idealized_default/plots/warm_bubble_theta_prime_250s.ppm, /home/enric/src/wrf_gpu2/.claude/worktrees/agent-a6339843bee5268fd/proofs/pd_monotonic/idealized_default/plots/warm_bubble_theta_prime_500s.ppm
+- Plots: REPO/proofs/pd_monotonic/idealized_default/plots/warm_bubble_theta_prime_100s.ppm, REPO/proofs/pd_monotonic/idealized_default/plots/warm_bubble_theta_prime_250s.ppm, REPO/proofs/pd_monotonic/idealized_default/plots/warm_bubble_theta_prime_500s.ppm
 
 ## References
 

@@ -3,7 +3,7 @@
 Component: `src/gpuwrf/physics/noahmp/snow.py::noahmp_snow`
 Oracle: verbatim pristine-WRF Noah-MP snow routines compiled with gfortran (fp64
 via `-fdefault-real-8`), transcribed unchanged from
-`/home/enric/src/wrf_pristine/WRF/phys/module_sf_noahmplsm.F`
+`~/src/wrf_pristine/WRF/phys/module_sf_noahmplsm.F`
 (SNOWWATER/SNOWFALL/COMPACT/COMBINE/DIVIDE/COMBO/SNOWH2O/SNOW_AGE/SNOWALB_CLASS).
 
 ## Gate: pristine-WRF savepoint parity

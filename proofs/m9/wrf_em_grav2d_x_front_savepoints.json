@@ -1,6 +1,6 @@
 {
   "case": "em_grav2d_x_straka_100m",
-  "wrfout": "/home/enric/src/wrf_pristine/run_grav2d/wrfout_d01_0001-01-01_00:00:00",
+  "wrfout": "~/src/wrf_pristine/run_grav2d/wrfout_d01_0001-01-01_00:00:00",
   "dx_m": 100.0,
   "nx": 512,
   "nz": 64,

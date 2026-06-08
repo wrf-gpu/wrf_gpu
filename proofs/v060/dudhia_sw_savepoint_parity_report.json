@@ -5,7 +5,7 @@
   "canonical_fp32_pass": true,
   "fp64_precision_audit_pass": true,
   "oracle": {
-    "source": "/home/enric/src/wrf_pristine/WRF/phys/module_ra_sw.F",
+    "source": "~/src/wrf_pristine/WRF/phys/module_ra_sw.F",
     "entry": "SWRAD -> SWPARA (Stephens 1984 broadband shortwave)",
     "source_unmodified": true,
     "full_wrf_exe": false,
@@ -14,8 +14,8 @@
     "fp64_savepoints": "proofs/v060/savepoints_fp64 (dudhia_case_*.json)",
     "fp32_source_checksums": "cd7e1c89a962c9b62f042a8f24ee7d8892c0428866f7a44ec36df0d06705a4c0  module_ra_sw.F\n",
     "fp64_source_checksums": "cd7e1c89a962c9b62f042a8f24ee7d8892c0428866f7a44ec36df0d06705a4c0  module_ra_sw.F\n",
-    "fp32_build_manifest": "build_mode=fp32\nfflags=-O2 -ffree-form -ffree-line-length-none -cpp -ffpe-summary=none \ngfortran=GNU Fortran (conda-forge gcc 14.3.0-19) 14.3.0\nwrf_source=/home/enric/src/wrf_pristine/WRF/phys/module_ra_sw.F\n",
-    "fp64_build_manifest": "build_mode=fp64\nfflags=-O2 -ffree-form -ffree-line-length-none -cpp -ffpe-summary=none -fdefault-real-8 -fdefault-double-8\ngfortran=GNU Fortran (conda-forge gcc 14.3.0-19) 14.3.0\nwrf_source=/home/enric/src/wrf_pristine/WRF/phys/module_ra_sw.F\n"
+    "fp32_build_manifest": "build_mode=fp32\nfflags=-O2 -ffree-form -ffree-line-length-none -cpp -ffpe-summary=none \ngfortran=GNU Fortran (conda-forge gcc 14.3.0-19) 14.3.0\nwrf_source=~/src/wrf_pristine/WRF/phys/module_ra_sw.F\n",
+    "fp64_build_manifest": "build_mode=fp64\nfflags=-O2 -ffree-form -ffree-line-length-none -cpp -ffpe-summary=none -fdefault-real-8 -fdefault-double-8\ngfortran=GNU Fortran (conda-forge gcc 14.3.0-19) 14.3.0\nwrf_source=~/src/wrf_pristine/WRF/phys/module_ra_sw.F\n"
   },
   "jax_precision": "fp64",
   "jax_platform": "cpu",

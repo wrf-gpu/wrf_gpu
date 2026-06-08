@@ -3,7 +3,7 @@
     {
       "check": "create_venv",
       "detail": {
-        "cmd": "/home/enric/miniconda3/bin/python3 -m venv --system-site-packages /tmp/claude-1000/gpuwrf_dry_smoke_fbf6q2vg/venv",
+        "cmd": "~/miniconda3/bin/python3 -m venv --system-site-packages /tmp/claude-1000/gpuwrf_dry_smoke_fbf6q2vg/venv",
         "returncode": 0,
         "stderr_tail": "",
         "stdout_tail": ""
@@ -13,10 +13,10 @@
     {
       "check": "pip_install_editable",
       "detail": {
-        "cmd": "/tmp/claude-1000/gpuwrf_dry_smoke_fbf6q2vg/venv/bin/python -m pip install --no-build-isolation -e /home/enric/src/wrf_gpu2/.claude/worktrees/agent-ab12b41c1fa8a3415",
+        "cmd": "/tmp/claude-1000/gpuwrf_dry_smoke_fbf6q2vg/venv/bin/python -m pip install --no-build-isolation -e REPO",
         "returncode": 0,
         "stderr_tail": "\n[notice] A new release of pip is available: 25.3 -> 26.1.2\n[notice] To update, run: /tmp/claude-1000/gpuwrf_dry_smoke_fbf6q2vg/venv/bin/python -m pip install --upgrade pip\n",
-        "stdout_tail": "rement already satisfied: packaging>=22.0 in /home/enric/miniconda3/lib/python3.13/site-packages (from zarr<4,>=3.0->gpuwrf==0.0.0) (25.0)\nRequirement already satisfied: typing-extensions>=4.12 in /home/enric/miniconda3/lib/python3.13/site-packages (from zarr<4,>=3.0->gpuwrf==0.0.0) (4.15.0)\nRequirement already satisfied: jaxlib<=0.10.0,>=0.10.0 in /home/enric/miniconda3/lib/python3.13/site-packages (from jax>=0.4->gpuwrf==0.0.0) (0.10.0)\nRequirement already satisfied: ml_dtypes>=0.5.0 in /home/enric/miniconda3/lib/python3.13/site-packages (from jax>=0.4->gpuwrf==0.0.0) (0.5.4)\nRequirement already satisfied: opt_einsum in /home/enric/miniconda3/lib/python3.13/site-packages (from jax>=0.4->gpuwrf==0.0.0) (3.4.0)\nRequirement already satisfied: scipy>=1.14 in /home/enric/.local/lib/python3.13/site-packages (from jax>=0.4->gpuwrf==0.0.0) (1.17.1)\nRequirement already satisfied: cftime in /home/enric/.local/lib/python3.13/site-packages (from netCDF4>=1.6->gpuwrf==0.0.0) (1.6.5)\nRequirement already satisfied: certifi in /home/enric/miniconda3/lib/python3.13/site-packages (from netCDF4>=1.6->gpuwrf==0.0.0) (2026.4.22)\nBuilding wheels for collected packages: gpuwrf\n  Building editable for gpuwrf (pyproject.toml): started\n  Building editable for gpuwrf (pyproject.toml): finished with status 'done'\n  Created wheel for gpuwrf: filename=gpuwrf-0.0.0-0.editable-py3-none-any.whl size=2190 sha256=74c06a3fad4653de11caf79cde716095a9c0d63d68da0c2fdae0e1e0404a82b7\n  Stored in directory: /tmp/claude-1000/pip-ephem-wheel-cache-6qms258j/wheels/35/6c/ba/755b98458fcc7c18b2c7366f50c2743922718525c9bbf00ec5\nSuccessfully built gpuwrf\nInstalling collected packages: gpuwrf\n  Attempting uninstall: gpuwrf\n    Found existing installation: gpuwrf 0.0.0\n    Not uninstalling gpuwrf at /home/enric/miniconda3/lib/python3.13/site-packages, outside environment /tmp/claude-1000/gpuwrf_dry_smoke_fbf6q2vg/venv\n    Can't uninstall 'gpuwrf'. No files were found to uninstall.\nSuccessfully installed gpuwrf-0.0.0\n"
+        "stdout_tail": "rement already satisfied: packaging>=22.0 in ~/miniconda3/lib/python3.13/site-packages (from zarr<4,>=3.0->gpuwrf==0.0.0) (25.0)\nRequirement already satisfied: typing-extensions>=4.12 in ~/miniconda3/lib/python3.13/site-packages (from zarr<4,>=3.0->gpuwrf==0.0.0) (4.15.0)\nRequirement already satisfied: jaxlib<=0.10.0,>=0.10.0 in ~/miniconda3/lib/python3.13/site-packages (from jax>=0.4->gpuwrf==0.0.0) (0.10.0)\nRequirement already satisfied: ml_dtypes>=0.5.0 in ~/miniconda3/lib/python3.13/site-packages (from jax>=0.4->gpuwrf==0.0.0) (0.5.4)\nRequirement already satisfied: opt_einsum in ~/miniconda3/lib/python3.13/site-packages (from jax>=0.4->gpuwrf==0.0.0) (3.4.0)\nRequirement already satisfied: scipy>=1.14 in ~/.local/lib/python3.13/site-packages (from jax>=0.4->gpuwrf==0.0.0) (1.17.1)\nRequirement already satisfied: cftime in ~/.local/lib/python3.13/site-packages (from netCDF4>=1.6->gpuwrf==0.0.0) (1.6.5)\nRequirement already satisfied: certifi in ~/miniconda3/lib/python3.13/site-packages (from netCDF4>=1.6->gpuwrf==0.0.0) (2026.4.22)\nBuilding wheels for collected packages: gpuwrf\n  Building editable for gpuwrf (pyproject.toml): started\n  Building editable for gpuwrf (pyproject.toml): finished with status 'done'\n  Created wheel for gpuwrf: filename=gpuwrf-0.0.0-0.editable-py3-none-any.whl size=2190 sha256=74c06a3fad4653de11caf79cde716095a9c0d63d68da0c2fdae0e1e0404a82b7\n  Stored in directory: /tmp/claude-1000/pip-ephem-wheel-cache-6qms258j/wheels/35/6c/ba/755b98458fcc7c18b2c7366f50c2743922718525c9bbf00ec5\nSuccessfully built gpuwrf\nInstalling collected packages: gpuwrf\n  Attempting uninstall: gpuwrf\n    Found existing installation: gpuwrf 0.0.0\n    Not uninstalling gpuwrf at ~/miniconda3/lib/python3.13/site-packages, outside environment /tmp/claude-1000/gpuwrf_dry_smoke_fbf6q2vg/venv\n    Can't uninstall 'gpuwrf'. No files were found to uninstall.\nSuccessfully installed gpuwrf-0.0.0\n"
       },
       "ok": true
     },
@@ -26,7 +26,7 @@
         "cmd": "/tmp/claude-1000/gpuwrf_dry_smoke_fbf6q2vg/venv/bin/python -c import gpuwrf; print('gpuwrf', gpuwrf.__file__)",
         "returncode": 0,
         "stderr_tail": "",
-        "stdout_tail": "gpuwrf /home/enric/src/wrf_gpu2/.claude/worktrees/agent-ab12b41c1fa8a3415/src/gpuwrf/__init__.py\n"
+        "stdout_tail": "gpuwrf REPO/src/gpuwrf/__init__.py\n"
       },
       "ok": true
     },
@@ -98,7 +98,7 @@
   ],
   "generated_utc": "2026-06-03T22:32:56.105911+00:00",
   "python": "3.13.11",
-  "repo": "/home/enric/src/wrf_gpu2/.claude/worktrees/agent-ab12b41c1fa8a3415",
+  "repo": "REPO",
   "schema": "GpuwrfReadmeRunnabilityDrySmoke",
   "schema_version": 1,
   "scope": "install + entrypoint surface only; no GPU, no real forecast case",

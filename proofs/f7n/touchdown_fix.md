@@ -106,7 +106,7 @@ round-off. Drift → **2.25e-9** (PASS), and θ′min improved to the canonical
   `conservative_constant_k_diffusion_tendency` (flux-divergence, mass-conserving).
 - **M** `src/gpuwrf/runtime/operational_mode.py::_augment_large_step_tendencies`
   — wire the conservative diffusion for u/v/w/θ.
-- **NEW** WRF instrumentation `/home/enric/src/wrf_pristine/WRF/dyn_em/solve_em.F`
+- **NEW** WRF instrumentation `~/src/wrf_pristine/WRF/dyn_em/solve_em.F`
   (`WRFGPU2_TOUCHDOWN` block) + `recompile_grav2d_incremental.sh`.
 - **NEW** `scripts/f7n_jax_touchdown_dump.py`, `scripts/f7n_touchdown_diff.py`,
   `scripts/f7n_official_run.py`.

@@ -73,7 +73,7 @@ Owner: Opus MAX. CPU-only, file-disjoint from S1/S2/S4.
   operators only). If S5 wants the SINALPHA_U/V + COSALPHA_U/V vars, add them as
   optional schema specs (manager sign-off per the freeze policy).
 - Build the oracle once: `bash proofs/v030/s3_oracle/build.sh` (gfortran at
-  `/home/enric/miniconda3/envs/wrfbuild/bin`); the test fixture auto-builds.
+  `~/miniconda3/envs/wrfbuild/bin`); the test fixture auto-builds.
 
 ## Validation commands
 ```

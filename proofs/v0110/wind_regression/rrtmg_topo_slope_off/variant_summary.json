@@ -1,7 +1,7 @@
 {
   "analyzer": {
     "returncode": 2,
-    "stderr": "/home/enric/src/wrf_gpu2/.claude/worktrees/v0110-wind-regr/proofs/v090/d02_coupled_skill_analyze.py:209: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).\n  \"generated\": datetime.utcnow().isoformat() + \"Z\",\n",
+    "stderr": "REPO/proofs/v090/d02_coupled_skill_analyze.py:209: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).\n  \"generated\": datetime.utcnow().isoformat() + \"Z\",\n",
     "stdout": "{\n  \"status\": \"FAIL\",\n  \"lead_count\": 24,\n  \"all_leads_finite\": true,\n  \"binding_all_leads_within_bar\": false,\n  \"field_summary\": {\n    \"T2\": {\n      \"mean_rmse\": 1.1575333049614864,\n      \"final_rmse\": 1.2893144373430867,\n      \"mean_bias\": -0.17590816823267344\n    },\n    \"HFX\": {\n      \"mean_rmse\": 69.67702055223367,\n      \"final_rmse\": 51.116474496133854,\n      \"mean_bias\": 6.899661368701245\n    },\n    \"U10\": {\n      \"mean_rmse\": 5.539653222907586,\n      \"final_rmse\": 9.329890057552843,\n      \"mean_bias\": -4.8714191440888035\n    },\n    \"V10\": {\n      \"mean_rmse\": 4.521300699366919,\n      \"final_rmse\": 5.090175929214235,\n      \"mean_bias\": -3.154986027888564\n    },\n    \"PBLH\": {\n      \"mean_rmse\": 165.63263549759066,\n      \"final_rmse\": 217.1262786701761,\n      \"mean_bias\": -9.133100782550356\n    }\n  }\n}\n"
   },
   "effective_run_root": "/tmp/vburst_runs",

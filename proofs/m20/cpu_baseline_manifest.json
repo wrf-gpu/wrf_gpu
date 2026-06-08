@@ -3,7 +3,7 @@
   "schema_version": 1,
   "generated_utc": "2026-05-29T16:07:05.816023+00:00",
   "description": "CPU WRF v4 baseline runs (the denominator for skill comparison and speedup). Built by Gen2 nightly pipeline; physics suite = CONUS with Thompson MP(8), MYNN PBL(5), Noah-MP LSM(4), RRTMG(4).",
-  "wrf_build": "/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_src/WRF/install_gen2_dmpar",
+  "wrf_build": "~/src/canairy_meteo/Gen2/artifacts/wrf_src/WRF/install_gen2_dmpar",
   "cpu_baseline_28rank_note": "Operational CPU baseline = 28-rank WRF on the same workstation (nproc_x=7, nproc_y=4 = 28 MPI ranks per namelist).",
   "count": 5,
   "cases": [

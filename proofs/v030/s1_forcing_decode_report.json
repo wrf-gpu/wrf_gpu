@@ -579,8 +579,8 @@
     "min": 3.0729854643141152e-06,
     "sample_0_0": 0.0008227117359638214,
     "source_refs": [
-      "/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_src/WRF/dyn_em/module_initialize_real.F:1163",
-      "/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_src/WRF/dyn_em/module_initialize_real.F:1167"
+      "~/src/canairy_meteo/Gen2/artifacts/wrf_src/WRF/dyn_em/module_initialize_real.F:1163",
+      "~/src/canairy_meteo/Gen2/artifacts/wrf_src/WRF/dyn_em/module_initialize_real.F:1167"
     ],
     "tolerance_abs": 1e-06
   },
@@ -1166,8 +1166,8 @@
         "source": "aifs_grib_normalized",
         "source_path": "/mnt/data/canairy_meteo/runs/wps_cases/20260428_18z_72h/ungrib/step_000.grib2",
         "source_refs": [
-          "/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_src/WPS/ungrib/src/rrpr.F:869",
-          "/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_src/WPS/ungrib/src/rrpr.F:978"
+          "~/src/canairy_meteo/Gen2/artifacts/wrf_src/WPS/ungrib/src/rrpr.F:869",
+          "~/src/canairy_meteo/Gen2/artifacts/wrf_src/WPS/ungrib/src/rrpr.F:978"
         ]
       },
       "PMSL": {
@@ -3285,10 +3285,10 @@
         "policy": "wps_fill",
         "rationale": "Oracle met_em files have SPECHUMD k=0 equal to -1 everywhere; METGRID.TBL.ARW fills level 200100 with const(-1) for SPECHUMD.",
         "source_refs": [
-          "/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_src/WPS/metgrid/METGRID.TBL.ARW:691",
-          "/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_src/WPS/metgrid/METGRID.TBL.ARW:695",
-          "/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_src/WRF/dyn_em/module_initialize_real.F:1144",
-          "/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_src/WRF/dyn_em/module_initialize_real.F:1163"
+          "~/src/canairy_meteo/Gen2/artifacts/wrf_src/WPS/metgrid/METGRID.TBL.ARW:691",
+          "~/src/canairy_meteo/Gen2/artifacts/wrf_src/WPS/metgrid/METGRID.TBL.ARW:695",
+          "~/src/canairy_meteo/Gen2/artifacts/wrf_src/WRF/dyn_em/module_initialize_real.F:1144",
+          "~/src/canairy_meteo/Gen2/artifacts/wrf_src/WRF/dyn_em/module_initialize_real.F:1163"
         ]
       },
       "TT[0]": "2t at heightAboveGround 2 m",
@@ -3299,19 +3299,19 @@
         "ST[0]/SM[0]": "010040, met_em SOIL_LAYERS[0] = 40 cm",
         "ST[1]/SM[1]": "000010, met_em SOIL_LAYERS[1] = 10 cm",
         "source_refs": [
-          "/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_src/WPS/metgrid/METGRID.TBL.ARW:2",
-          "/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_src/WPS/metgrid/METGRID.TBL.ARW:29"
+          "~/src/canairy_meteo/Gen2/artifacts/wrf_src/WPS/metgrid/METGRID.TBL.ARW:2",
+          "~/src/canairy_meteo/Gen2/artifacts/wrf_src/WPS/metgrid/METGRID.TBL.ARW:29"
         ]
       },
       "wps_level_refs": [
-        "/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_src/WPS/ungrib/src/rd_grib2.F:755",
-        "/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_src/WPS/ungrib/src/rd_grib2.F:792",
-        "/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_src/WPS/metgrid/src/process_domain_module.F:1070",
-        "/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_src/WPS/metgrid/src/process_domain_module.F:1172"
+        "~/src/canairy_meteo/Gen2/artifacts/wrf_src/WPS/ungrib/src/rd_grib2.F:755",
+        "~/src/canairy_meteo/Gen2/artifacts/wrf_src/WPS/ungrib/src/rd_grib2.F:792",
+        "~/src/canairy_meteo/Gen2/artifacts/wrf_src/WPS/metgrid/src/process_domain_module.F:1070",
+        "~/src/canairy_meteo/Gen2/artifacts/wrf_src/WPS/metgrid/src/process_domain_module.F:1172"
       ]
     },
     "valid_time": "2026-04-28_18:00:00",
-    "vtable_path": "/home/enric/src/canairy_meteo/Gen2/configs/Vtable.AIFS_PURE"
+    "vtable_path": "~/src/canairy_meteo/Gen2/configs/Vtable.AIFS_PURE"
   },
   "soil_layer_order_cm": [
     40.0,
@@ -3328,10 +3328,10 @@
       "policy": "wps_fill",
       "rationale": "Oracle met_em files have SPECHUMD k=0 equal to -1 everywhere; METGRID.TBL.ARW fills level 200100 with const(-1) for SPECHUMD.",
       "source_refs": [
-        "/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_src/WPS/metgrid/METGRID.TBL.ARW:691",
-        "/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_src/WPS/metgrid/METGRID.TBL.ARW:695",
-        "/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_src/WRF/dyn_em/module_initialize_real.F:1144",
-        "/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_src/WRF/dyn_em/module_initialize_real.F:1163"
+        "~/src/canairy_meteo/Gen2/artifacts/wrf_src/WPS/metgrid/METGRID.TBL.ARW:691",
+        "~/src/canairy_meteo/Gen2/artifacts/wrf_src/WPS/metgrid/METGRID.TBL.ARW:695",
+        "~/src/canairy_meteo/Gen2/artifacts/wrf_src/WRF/dyn_em/module_initialize_real.F:1144",
+        "~/src/canairy_meteo/Gen2/artifacts/wrf_src/WRF/dyn_em/module_initialize_real.F:1163"
       ]
     },
     "TT[0]": "2t at heightAboveGround 2 m",
@@ -3342,15 +3342,15 @@
       "ST[0]/SM[0]": "010040, met_em SOIL_LAYERS[0] = 40 cm",
       "ST[1]/SM[1]": "000010, met_em SOIL_LAYERS[1] = 10 cm",
       "source_refs": [
-        "/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_src/WPS/metgrid/METGRID.TBL.ARW:2",
-        "/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_src/WPS/metgrid/METGRID.TBL.ARW:29"
+        "~/src/canairy_meteo/Gen2/artifacts/wrf_src/WPS/metgrid/METGRID.TBL.ARW:2",
+        "~/src/canairy_meteo/Gen2/artifacts/wrf_src/WPS/metgrid/METGRID.TBL.ARW:29"
       ]
     },
     "wps_level_refs": [
-      "/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_src/WPS/ungrib/src/rd_grib2.F:755",
-      "/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_src/WPS/ungrib/src/rd_grib2.F:792",
-      "/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_src/WPS/metgrid/src/process_domain_module.F:1070",
-      "/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_src/WPS/metgrid/src/process_domain_module.F:1172"
+      "~/src/canairy_meteo/Gen2/artifacts/wrf_src/WPS/ungrib/src/rd_grib2.F:755",
+      "~/src/canairy_meteo/Gen2/artifacts/wrf_src/WPS/ungrib/src/rd_grib2.F:792",
+      "~/src/canairy_meteo/Gen2/artifacts/wrf_src/WPS/metgrid/src/process_domain_module.F:1070",
+      "~/src/canairy_meteo/Gen2/artifacts/wrf_src/WPS/metgrid/src/process_domain_module.F:1172"
     ]
   },
   "surface_spechumd_policy": "wps_fill",

@@ -4152,9 +4152,9 @@
     ],
     "type": "single-column Fortran driver linked against unmodified WRF module_sf_sfclayrev.F and sf_sfclayrev.F90",
     "wrf_sources": [
-      "/home/enric/src/wrf_pristine/WRF/phys/module_sf_sfclayrev.F",
-      "/home/enric/src/wrf_pristine/WRF/phys/physics_mmm/sf_sfclayrev.F90",
-      "/home/enric/src/wrf_pristine/WRF/phys/ccpp_kind_types.f90"
+      "~/src/wrf_pristine/WRF/phys/module_sf_sfclayrev.F",
+      "~/src/wrf_pristine/WRF/phys/physics_mmm/sf_sfclayrev.F90",
+      "~/src/wrf_pristine/WRF/phys/ccpp_kind_types.f90"
     ]
   },
   "predeclared_tolerances": {

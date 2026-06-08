@@ -759,7 +759,7 @@
         "shape_mismatch_hours": []
       }
     },
-    "source": "/home/enric/src/wrf_gpu2/proofs/m9/operational_trace_hourly.json",
+    "source": "REPO/proofs/m9/operational_trace_hourly.json",
     "status": "FAIL"
   }
 }

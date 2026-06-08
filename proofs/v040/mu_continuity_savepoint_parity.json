@@ -31,7 +31,7 @@
     "wrf_source_bounds": "module_small_step_em.F:1048-1063; DMDT/MU update:1092-1107; theta flux:1138-1171"
   },
   "wrf_provenance": {
-    "wrf_root": "/home/enric/src/wrf_pristine/WRF",
+    "wrf_root": "~/src/wrf_pristine/WRF",
     "wrf_git_head": "f52c197ed39d12e087d02c50f412d90d418f6186",
     "module_small_step_em_F_sha256": "cabf1a177d50fb0096db79644af20cfe6d75217dbe63ab406a7e29bb54c17634",
     "module_small_step_em_o_sha256": "285722ae513bba55d0cde9f7c4490282a2ca804edf2a51c619a35ca7b54cf43f",
@@ -42,7 +42,7 @@
       "note": "Only module_small_step_em.F is asserted clean; the WRF worktree has unrelated dirt in other files."
     },
     "linked_driver": "/tmp/v040_mu_continuity_wrf_oracle/wrf_advance_mu_t_driver",
-    "linked_driver_source": "/home/enric/src/wrf_gpu2/.claude/worktrees/v040-mu-fix/proofs/v040/wrf_advance_mu_t_driver.F90"
+    "linked_driver_source": "REPO/proofs/v040/wrf_advance_mu_t_driver.F90"
   },
   "predeclared_tolerances": {
     "source_formula_fp64": {

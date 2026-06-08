@@ -2,7 +2,7 @@
 
 You are a skeptical reviewer for a JAX GPU port of WRF v4 (Canary d02, 66x159, 93% water).
 Branch worker/opus/v10-momentum, base 59915f2. Read-only review; do NOT edit code.
-Working dir: /home/enric/src/wrf_gpu2/.claude/worktrees/agent-abc754c924875d0fb
+Working dir: REPO
 
 ## The defect (proven by prior sprints)
 case3 (init 2026-05-21 18z, L3) 24h forecast: V10 below persistence over water.

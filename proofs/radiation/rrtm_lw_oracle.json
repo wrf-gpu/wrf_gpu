@@ -9,7 +9,7 @@
   "self_compare": false,
   "self_compare_note": "The reference is the unmodified pristine WRF phys/module_ra_rrtm.F RRTMLWRAD source compiled standalone (proofs/v060/oracle, RRTM_DATA AER tables); the JAX kernel/coupler is never used to make the reference.",
   "oracle": {
-    "source": "/home/enric/src/wrf_pristine/WRF/phys/module_ra_rrtm.F",
+    "source": "~/src/wrf_pristine/WRF/phys/module_ra_rrtm.F",
     "entry": "RRTMLWRAD -> RRTM (AER 16-band k-distribution LW)",
     "source_unmodified": true,
     "full_wrf_exe": false,
