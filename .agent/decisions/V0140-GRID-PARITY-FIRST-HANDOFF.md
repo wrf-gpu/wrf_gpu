@@ -76,6 +76,11 @@ missing-Coriolis causes unless a current regression probe proves them. The next
 useful work is current-code spatial/vertical anatomy, then first-divergence /
 component-tendency localization.
 
+Memory verdict: RRTMG column tiling is fixed and was the only true memory
+blocker. Before long validation, run an exact-branch memory preflight and an
+empirical memory map for MYNN BouLac/non-radiation physics/post-physics
+merge/moisture limiter liveness; do not rewrite these blindly.
+
 ## Active Wave 1
 
 - `019ea94e-898f-7211-9561-e70af150fcfd` (`Averroes`):
@@ -83,7 +88,9 @@ component-tendency localization.
 - `019ea950-77c3-7750-9adb-7e1c1e05bc1d` (`Godel`):
   CPU-only wind/mass vertical-spatial anatomy probe.
 - `019ea950-93c0-7a60-8598-8da51ae2d2fb` (`Planck`):
-  v0.14 memory research integration and memory-fix roadmap.
+  v0.14 memory research integration and memory-fix roadmap. Completed:
+  `.agent/decisions/V0140-MEMORY-FIX-ROADMAP.md` and
+  `.agent/reviews/2026-06-08-v014-memory-research-integration.md`.
 - `019ea950-e500-7cd0-8292-15576f327532` (`Descartes`):
   Switzerland validation prep, no GPU run.
 
