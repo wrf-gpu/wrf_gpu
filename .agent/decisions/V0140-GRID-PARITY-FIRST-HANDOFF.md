@@ -89,6 +89,19 @@ max 228 m. Dynamic divergence remains broad (`PSFC`, `P`, `PH`, `MU`, `U`, `V`,
 `U10`, `V10`), but no dycore/radiation/FP32 fix should start until the static
 metric/base payload is exact or root-caused as writer-only.
 
+Manager preliminary 2026-06-08 23:55 WEST: the vertical static mismatch has a
+specific writer-vs-runtime hypothesis. `build_replay_case()` constructs
+`grid = run.grid(domain).as_grid_spec()` before loading real WRF metrics.
+`GridSpec.__post_init__` fills `grid.metrics` with `DycoreMetrics.flat` when no
+metrics are provided. The pipelines pass `case.metrics` into
+`OperationalNamelist`, so runtime dynamics may use the real loaded metrics while
+`wrfout_writer._add_grid_static_fields()` reads `grid.metrics` and emits the
+flat fallback. Local read-only compare supports this pattern: GPU `C1H/C3H`
+match `ZNU`, `C1F/C3F` match `ZNW`, `C2*/C4*` are zero, and `DN[0]/RDN[0]`
+match the flat fallback. Huygens must prove/refute this before any source fix.
+`HGT/XLAT/MAPFAC/F/E/SINALPHA` should be treated separately because GPU HGT
+matches the retained `wrfinput_d02` while CPU wrfout HGT differs from that input.
+
 ## Active Wave 1
 
 - `019ea94e-898f-7211-9561-e70af150fcfd` (`Averroes`):
