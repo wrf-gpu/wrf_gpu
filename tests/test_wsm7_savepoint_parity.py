@@ -143,10 +143,10 @@ def test_effective_radii_vs_fp64_oracle(cid):
 def test_physics_tendency_adapter_shape_and_keys():
     """The WSM7 adapter returns a frozen PhysicsTendency carrying the hail leaf.
 
-    WSM7 is REFERENCE_ONLY: its output carries qh/hail_acc which are NOT in the
-    operational State/accumulator contract, so validate_keys() must raise -- this
-    is the structural reason WSM7 cannot be scan-wired without a State/dycore/IO
-    change (a separate precipitating hail class).
+    WSM7 is parity-proven but fail-closed: its output carries qh/hail_acc which
+    are NOT in the operational State/accumulator contract, so validate_keys()
+    must raise -- this is the structural reason WSM7 cannot be scan-wired
+    without a State/dycore/IO change (a separate precipitating hail class).
     """
     with open(os.path.join(SAVE_FP32, "wsm7_case_4.json")) as fh:
         d = json.load(fh)
@@ -161,7 +161,7 @@ def test_physics_tendency_adapter_shape_and_keys():
     assert isinstance(tend, PhysicsTendency)
     assert set(tend.state_replacements) == {"theta", "qv", "qc", "qr", "qi", "qs", "qg", "qh"}
     assert set(tend.accumulator_increments) == {"rain_acc", "snow_acc", "graupel_acc", "hail_acc"}
-    # The qh hail leaf is not in the operational state contract -> reference-only.
+    # The qh hail leaf is not in the operational state contract -> fail-closed.
     with pytest.raises(ValueError):
         tend.validate_keys()
     # theta round-trips to the oracle T_OUT via pii

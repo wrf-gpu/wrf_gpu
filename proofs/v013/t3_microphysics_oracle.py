@@ -7,8 +7,9 @@ into a single machine-checked proof:
   1. PER-SCHEME PRISTINE-WRF SAVEPOINT ORACLE PASS (fp64). For each newly-ported
      scheme, the JAX port is compared column-by-column against the UNMODIFIED
      pristine WRF Fortran scheme (oracle savepoints, NOT a JAX self-compare).
-     Batch 1 ships WSM7 (mp_physics=24): proofs/v013/run_wsm7_parity.py, gated
-     against phys/module_mp_wsm7.F via proofs/v013/savepoints_wsm7{,_fp64}.
+     Batch 1 proves the WSM7 (mp_physics=24) column kernel:
+     proofs/v013/run_wsm7_parity.py, gated against phys/module_mp_wsm7.F via
+     proofs/v013/savepoints_wsm7{,_fp64}.
 
   2. DEFAULT mp_physics BYTE-UNCHANGED. The operational accept-matrix
      (ACCEPTED_MP_PHYSICS) and the operational scan-adapter table
@@ -26,10 +27,12 @@ SCOPE HONESTY (recorded in the JSON): of the originally-named candidates,
 WSM6/WDM6 were ALREADY operationally wired on trunk; Goddard 4-ice (mp=7) is a
 separate code family with no existing GPU analogue (least tractable). The
 genuinely-remaining tractable family extensions are WSM7 (24), WDM7 (26),
-WDM5 (14). Batch 1 delivers WSM7 fully (kernel + oracle + fail-closed wiring).
+WDM5 (14). Batch 1 de-risks WSM7's column kernel and fail-closed honesty
+(kernel + oracle + explicit recognized_fail_closed catalog status).
 WSM7/WDM7 add a separate precipitating HAIL class (qh) that is NOT in the
-operational moist-state pytree, so they are REFERENCE_ONLY until a cross-cutting
-State/dynamics/I-O hail leaf is added (out of the microphysics-slot ownership).
+operational moist-state pytree, so they are not an operational or namelist-
+accepted reference path until a cross-cutting State/dynamics/I-O hail leaf is
+added (out of the microphysics-slot ownership).
 WDM5 (14) needs NO new state leaf (its Nn/Nc/Nr number species already exist for
 the wired WDM6) and is the operationally-wirable carry-over for batch 2.
 
@@ -130,7 +133,7 @@ def main() -> int:
 
     wsm7 = _run_wsm7_parity()
     schemes["WSM7 (mp_physics=24)"] = {
-        "status": "REFERENCE_ONLY (parity-proven, fail-closed: hail leaf not in operational state)",
+        "status": "RECOGNIZED_FAIL_CLOSED_WITH_ORACLE (parity-proven; hail leaf not in operational state)",
         "kernel": "src/gpuwrf/physics/microphysics_wsm7.py",
         "constants": "src/gpuwrf/physics/wsm7_constants.py",
         "oracle": "proofs/v013/oracle/wsm7_oracle_driver.f90 (drives UNMODIFIED phys/module_mp_wsm7.F)",
@@ -151,12 +154,15 @@ def main() -> int:
         "scope_honesty": {
             "already_wired_on_trunk": ["WSM6 (6)", "WDM6 (16)", "Lin (2)", "WSM3 (3)",
                                        "WSM5 (4)", "Morrison (10)", "Kessler (1)", "Thompson (8)"],
-            "delivered_this_batch": ["WSM7 (24) -- ported + oracle PASS, REFERENCE_ONLY"],
+            "delivered_this_batch": [
+                "WSM7 (24) -- column kernel ported + oracle PASS; operational path "
+                "recognized_fail_closed until qh State/dynamics/I-O leaf lands"
+            ],
             "carry_over_next_batch": {
                 "WDM5 (14)": "operationally-wirable (Nn/Nc/Nr warm-rain number species already "
                              "exist for wired WDM6; NO new state leaf). Highest-value next port.",
-                "WDM7 (26)": "REFERENCE_ONLY like WSM7 (adds a hail qh leaf); extends the wired "
-                             "WDM6 kernel + the WSM7 hail machinery.",
+                "WDM7 (26)": "fail-closed for the same qh State/dynamics/I-O blocker as "
+                             "WSM7; extends the wired WDM6 kernel + the WSM7 hail machinery.",
                 "Goddard 4-ice (7)": "intractable for this batch -- a separate code family "
                                      "(module_mp_gsfcgce.F) with no existing GPU analogue.",
             },
@@ -164,7 +170,7 @@ def main() -> int:
                                  "MOIST_SPECIES; operational wiring requires a cross-cutting "
                                  "State/dynamics/I-O addition (advect qh in the dycore), which is "
                                  "outside the microphysics-slot ownership and is the honest reason "
-                                 "they are REFERENCE_ONLY rather than IMPLEMENTED.",
+                                 "they are recognized_fail_closed rather than implemented.",
         },
         "overall_pass": overall,
     }
