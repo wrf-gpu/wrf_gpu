@@ -1,5 +1,5 @@
 {
-  "git_head": "33821cf02e920c28b08b0186acc10f0efa6aaa71",
+  "git_head": "0b917ea637c607449537d8d8238a50891baad720",
   "jax_platform": "cpu",
   "jax_precision": "fp64",
   "operational_kernels": {
