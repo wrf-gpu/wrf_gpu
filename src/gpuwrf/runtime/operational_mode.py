@@ -89,6 +89,7 @@ from gpuwrf.dynamics.explicit_diffusion import (
     wrf_deformation_momentum_tendency,
 )
 from gpuwrf.dynamics.flux_advection import (
+    advect_moisture_scalars,
     advect_scalar_flux,
     advect_scalar_flux_limited,
     advect_u_flux,
@@ -303,6 +304,23 @@ class OperationalNamelist:
     # the plain ``advect_scalar_flux`` path is byte-unchanged.  3/4 (WENO/WENO-PD)
     # are out of scope and fail-closed in the scheme catalog.
     scalar_adv_opt: int = 0
+    # WRF moisture-species flux-form advection option (the moisture analogue of
+    # ``scalar_adv_opt``; canonical ``moist_adv_opt``): 0 = OFF -> moisture
+    # (qv + every condensate qc/qr/qi/qs/qg) is NOT resolved-wind advected in the
+    # dycore (the byte-for-byte v0.12.0 operational program; the new code path is
+    # never traced), 1 = positive-definite, 2 = monotonic (WRF real-case default).
+    # When non-zero AND ``use_flux_advection`` is set, every moisture species is
+    # flux-advected in the RK3 LARGE step exactly as WRF
+    # (``solve_em.F:2282-2408`` ``moist_variable_loop`` -> ``rk_scalar_tend(...,
+    # config_flags%moist_adv_opt)``): the coupled tendency d(mu*q)/dt is built per
+    # RK stage from the stage-entry haloed state with ``advect_moisture_scalars``
+    # and integrated with the WRF scalar large-step update
+    # ``q_new = (mu_old*q_old + dt_rk*adv_tend)/mu_new`` AFTER the acoustic loop
+    # (NOT inside the acoustic substeps -- WRF advances scalars in the large step).
+    # The PD/monotonic limiter is applied ONLY on the final RK3 stage (matching the
+    # theta wiring); other stages and opt==0 use the plain h5/v3 path.  Default 0
+    # keeps the operational forecast bit-for-bit unchanged.
+    moist_adv_opt: int = 0
     # Force pure fp64 (Sprint F7-B is fp64-correctness-only; idealized cases set it).
     force_fp64: bool = False
     # Use the WRF deformation-tensor momentum diffusion (diff_opt=2/km_opt=1) for
@@ -429,6 +447,7 @@ class OperationalNamelist:
         const_nu_m2_s: float = 0.0,
         use_flux_advection: bool = False,
         scalar_adv_opt: int = 0,
+        moist_adv_opt: int = 0,
         force_fp64: bool = False,
         use_deformation_momentum_diffusion: bool = False,
         time_utc: object = None,
@@ -478,6 +497,7 @@ class OperationalNamelist:
             const_nu_m2_s=const_nu_m2_s,
             use_flux_advection=use_flux_advection,
             scalar_adv_opt=scalar_adv_opt,
+            moist_adv_opt=moist_adv_opt,
             force_fp64=force_fp64,
             use_deformation_momentum_diffusion=use_deformation_momentum_diffusion,
             time_utc=time_utc,
@@ -525,6 +545,7 @@ class OperationalNamelist:
             float(self.const_nu_m2_s),
             bool(self.use_flux_advection),
             int(self.scalar_adv_opt),
+            int(self.moist_adv_opt),
             bool(self.force_fp64),
             bool(self.use_deformation_momentum_diffusion),
             self.time_utc,
@@ -582,6 +603,7 @@ class OperationalNamelist:
             const_nu_m2_s,
             use_flux_advection,
             scalar_adv_opt,
+            moist_adv_opt,
             force_fp64,
             use_deformation_momentum_diffusion,
             time_utc,
@@ -642,6 +664,7 @@ class OperationalNamelist:
             const_nu_m2_s=const_nu_m2_s,
             use_flux_advection=use_flux_advection,
             scalar_adv_opt=scalar_adv_opt,
+            moist_adv_opt=moist_adv_opt,
             force_fp64=force_fp64,
             use_deformation_momentum_diffusion=use_deformation_momentum_diffusion,
             time_utc=time_utc,
@@ -1937,6 +1960,141 @@ def _augment_large_step_tendencies(
     )
 
 
+# WRF advects every moisture species (vapour + condensates) in the RK3 large
+# step, in this Registry order (``moist_variable_loop`` over the moist array,
+# solve_em.F:2282-2408).  The condensates that exist as State leaves in this port
+# are qc/qr/qi/qs/qg; qv is index P_QV.
+_MOISTURE_SPECIES = ("qv", "qc", "qr", "qi", "qs", "qg")
+
+
+def _moisture_coupled_tendencies(
+    haloed: State,
+    namelist: OperationalNamelist,
+    *,
+    rk_step: int,
+    step_origin: State | None,
+) -> tuple[jax.Array, ...]:
+    """WRF moisture-species coupled large-step tendency ``d(mu*q)/dt`` per stage.
+
+    Source: ``solve_em.F:2282-2408`` ``moist_variable_loop`` ->
+    ``rk_scalar_tend(im, im, ..., config_flags%moist_adv_opt, ...)``.  Each moist
+    species is flux-advected by the SAME high-order flux-form scalar advection
+    (h=5/v=3) used for theta, with the PD/monotonic limiter (moist_adv_opt 1/2)
+    applied ONLY on the final RK3 stage (the start-of-step ``step_origin``
+    moisture / ``mu_old`` feed the FCT bound) -- identical cadence to the theta
+    ``scalar_adv_opt`` wiring in ``_augment_large_step_tendencies``.
+
+    Reuses the EXACT same ``vel`` / ``mu_total`` / ``metrics`` build as the theta
+    flux advection so the transporting velocity field is bit-consistent with the
+    momentum/theta advection of the same stage.  Returns a tuple of COUPLED
+    tendencies ``d(mu*q)/dt`` in ``_MOISTURE_SPECIES`` order, consumed by the WRF
+    scalar large-step update ``q_new = (mu_old*q_old + dt_rk*tend)/mu_new`` AFTER
+    the acoustic loop (NOT inside the acoustic substeps).
+    """
+
+    metrics = namelist.metrics
+    grid = namelist.grid
+    dx = float(grid.projection.dx_m)
+    dy = float(grid.projection.dy_m)
+    mu_total = haloed.mu_total
+    vel = couple_velocities_periodic(
+        haloed.u,
+        haloed.v,
+        mu_total,
+        c1h=metrics.c1h,
+        c2h=metrics.c2h,
+        dnw=metrics.dnw,
+        rdx=1.0 / dx,
+        rdy=1.0 / dy,
+        msfuy=metrics.msfuy,
+        msfvx=metrics.msfvx,
+        msftx=metrics.msftx,
+        msfux=metrics.msfux,
+        msfvy=metrics.msfvy,
+    )
+    fields = tuple(getattr(haloed, name) for name in _MOISTURE_SPECIES)
+    # The limiter (moist_adv_opt 1/2) is the final-RK3-stage FCT; it needs the
+    # start-of-step moisture (WRF ``moist_old``) and ``mu_old`` (grid%mu_1).  The
+    # selection inside advect_moisture_scalars is STATIC, so on opt==0 / non-final
+    # stages the plain h5/v3 path is emitted and ``fields_old`` is ignored.
+    use_limiter = (
+        int(namelist.moist_adv_opt) in (1, 2)
+        and int(rk_step) == int(namelist.rk_order)
+        and step_origin is not None
+    )
+    fields_old = (
+        tuple(getattr(step_origin, name) for name in _MOISTURE_SPECIES)
+        if use_limiter
+        else None
+    )
+    mu_old = step_origin.mu_total if step_origin is not None else mu_total
+    return advect_moisture_scalars(
+        fields,
+        fields_old,
+        vel,
+        moist_adv_opt=int(namelist.moist_adv_opt),
+        is_final_rk_stage=(int(rk_step) == int(namelist.rk_order)),
+        mut=mu_total,
+        mu_old=mu_old,
+        c1=metrics.c1h,
+        c2=metrics.c2h,
+        rdx=1.0 / dx,
+        rdy=1.0 / dy,
+        rdzw=metrics.rdnw,
+        fzm=metrics.fnm,
+        fzp=metrics.fnp,
+        dt=float(namelist.dt_s),
+    )
+
+
+def _apply_moisture_large_step(
+    state: State,
+    step_origin: State,
+    *,
+    q_tendencies: tuple[jax.Array, ...],
+    dt_rk: float,
+    metrics: DycoreMetrics,
+) -> State:
+    """WRF scalar large-step update for moisture AFTER the acoustic loop.
+
+    Source: ``solve_em.F`` ``rk_scalar_tend`` followed by the moist-scalar update
+    ``moist_2 = (mu_1*moist_old + dt_rk*adv_tend) / mu_2`` (decouple by the UPDATED
+    dry-air mass once the acoustic small-step loop has advanced ``mu``).
+
+    WRF's RK3 low-storage scheme integrates EVERY stage from the START-OF-STEP
+    reference: ``field_old`` / ``mu_1`` are the step-entry (``rk1_reference``)
+    values, NOT the stage-entry values; ``dt_rk`` is the stage substep fraction of
+    ``dt`` (dt/3, dt/2, dt).  This mirrors the theta cadence in
+    ``small_step_finish_wrf`` (``theta = (theta_work + t_save*mass_current)/
+    mass_stage`` with ``t_save`` = the rk1 reference theta).  The coupled tendency
+    ``q_tendencies`` is ``d(mu*q)/dt`` built from the CURRENT-stage state by
+    ``_moisture_coupled_tendencies``; ``step_origin`` supplies ``moist_old`` /
+    ``mu_old`` and ``state.mu_total`` is the post-acoustic dry mass.
+
+    WRF couples scalars with ``mut = c1*mu + c2`` (the same column mass weight the
+    advection flux divergence uses), so we decouple with that SAME weight -- the
+    update is consistent with the coupled tendency the flux kernels returned.
+
+    The condensates qc/qr/qi/qs/qg are advected here for the FIRST time in the
+    interior (previously they had ZERO resolved-wind transport anywhere); qv was
+    previously only boundary-ring advected.  This adds horizontal + resolved-
+    vertical transport of every species, matching WRF.
+    """
+
+    # Column dry-mass weights mut = c1h*mu + c2h on mass points (the scalar
+    # coupling weight; matches the c1/c2 passed to advect_moisture_scalars).
+    mass_old = metrics.c1h[:, None, None] * step_origin.mu_total[None, :, :] + metrics.c2h[:, None, None]
+    mass_new = metrics.c1h[:, None, None] * state.mu_total[None, :, :] + metrics.c2h[:, None, None]
+    inv_mass_new = 1.0 / mass_new
+    updates: dict[str, jax.Array] = {}
+    for name, q_tend in zip(_MOISTURE_SPECIES, q_tendencies):
+        q_old = getattr(step_origin, name)
+        # q_new = (mut_old*moist_old + dt_rk*adv_tend) / mut_new (WRF scalar update).
+        q_new = (mass_old * q_old + float(dt_rk) * q_tend) * inv_mass_new
+        updates[name] = q_new
+    return state.replace(**updates)
+
+
 def _rk_scan_step(
     carry: OperationalCarry,
     namelist: OperationalNamelist,
@@ -1970,6 +2128,28 @@ def _rk_scan_step(
             physics_tendencies=physics_tendencies,
             step_origin=rk1_reference,
         )
+        # WRF advances moisture in the LARGE step (NOT the acoustic substeps):
+        # build the coupled moisture tendency d(mu*q)/dt for THIS stage from the
+        # stage-entry haloed state (same transporting ``vel`` as theta/momentum),
+        # then apply the WRF scalar update q_new=(mu_old*q_old+dt_rk*tend)/mu_new
+        # AFTER the acoustic loop has advanced ``mu``.  The branch is a STATIC
+        # Python condition (moist_adv_opt and use_flux_advection are compile-time
+        # constants), so when moisture advection is OFF (the default) the new code
+        # path is never traced and the operational program is byte-for-byte
+        # unchanged.  Source: solve_em.F:2282-2408 moist_variable_loop.
+        moisture_advected = (
+            bool(namelist.use_flux_advection) and int(namelist.moist_adv_opt) != 0
+        )
+        q_tendencies = (
+            _moisture_coupled_tendencies(
+                haloed,
+                namelist,
+                rk_step=int(stage.rk_step),
+                step_origin=rk1_reference,
+            )
+            if moisture_advected
+            else None
+        )
         candidate = apply_halo(stage_carry.state, halo_spec(namelist.grid))
         prep = small_step_prep_wrf(
             candidate,
@@ -1989,6 +2169,16 @@ def _rk_scan_step(
             tendencies=tendencies,
             lead_seconds=lead_seconds,
         )
+        if moisture_advected:
+            stage_carry = stage_carry.replace(
+                state=_apply_moisture_large_step(
+                    stage_carry.state,
+                    rk1_reference,
+                    q_tendencies=q_tendencies,
+                    dt_rk=float(stage.dt_rk),
+                    metrics=namelist.metrics,
+                )
+            )
         return stage_carry.replace(state=apply_halo(stage_carry.state, halo_spec(namelist.grid)))
 
     # Static RK sequencing avoids per-stage scalar dispatch inside the profiled
