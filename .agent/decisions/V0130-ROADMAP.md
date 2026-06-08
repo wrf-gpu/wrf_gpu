@@ -107,6 +107,17 @@ peak 1619.54 MiB. Memory map verdict remains: no other non-radiation issue block
 Next before TOST: merge/verify any remaining source-changing v0.13 done branches so TOST
 validates the actual release candidate.
 
+**2026-06-08 ~22:27 — TIEDTKE SOURCE BRANCH MERGED; RELEASE CANDIDATE READY FOR TOST.**
+Cherry-picked `5128f4a4` (`[v013] Fix Tiedtke operational moisture forcing`) instead of merging
+the stale branch. Manager reran the worker gates on the memory-fixed head:
+`py_compile`, two focused Tiedtke tests (2 passed), and the broad CPU gate
+`tests/test_v013_operational_smoke.py tests/test_v060_physics_dispatch.py
+tests/contracts/test_v060_physics_interfaces.py tests/test_namelist_check.py
+tests/dynamics/test_moisture_advection_operational.py::test_default_moist_adv_opt0_byte_identical_and_passthrough`
+(97 passed, 5 known Tiedtke boolean-deprecation warnings). Canary-stats is already ancestor;
+paper is local publish material only. No remaining known source-changing v0.13 done branch blocks
+TOST.
+
 **2026-06-08 ~07:20** — v0.13 wave 1:
 - ✅ **Outsider-reproducibility** (T2) MERGED `d9398fc`: 45 proof .py /home/enric→0 (resolvers+WRF_PRISTINE_ROOT env), `scripts/verify_reproducibility.sh` GREEN 11/11 outsider-runnable, `manifest/reproducibility_assets.json`, `docs/REPRODUCIBILITY.md`. Independently re-verified (gate rc=0, 0 .py leaks).
 - ✅ **compile-speed** (T1) CPU-verified+BANKED `worker/opus/v013-compile-speed @b9da88d`: opt-in default-off + subprocess flag-probe (fixes the v0.12 GPU-abort); 22 tests, import-inert. → GPU-runbook validation pending (when GPU frees) → then merge.
