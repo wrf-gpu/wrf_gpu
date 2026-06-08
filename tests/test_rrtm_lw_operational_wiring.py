@@ -43,6 +43,8 @@ from gpuwrf.runtime.operational_mode import (
     UnsupportedSchemeSelection,
     _physics_step_forcing,
     _resolve_operational_suite,
+    compute_m9_diagnostics,
+    noahmp_initial_rad,
 )
 from gpuwrf.runtime.operational_state import initial_operational_carry
 
@@ -204,8 +206,39 @@ def test_unwired_ra_lw_value_fails_closed() -> None:
 
 def test_wired_ra_lw_values_resolve_ok() -> None:
     grid = _grid()
-    for ra_lw in (1, 4):
+    for ra_lw in (0, 1, 4):
         _resolve_operational_suite(_namelist(grid, ra_lw_physics=ra_lw))
+
+
+def test_disabled_sw_and_lw_resolve_and_emit_zero_rthraten() -> None:
+    grid = _grid()
+    _resolve_operational_suite(_namelist(grid, ra_sw_physics=0, ra_lw_physics=0))
+    rth = _rthraten_from_step(grid, ra_sw_physics=0, ra_lw_physics=0)
+    assert np.array_equal(rth, np.zeros_like(rth))
+
+
+def test_disabled_sw_and_lw_seed_zero_land_radiation() -> None:
+    grid = _grid()
+    state = _state(grid)
+    nml = _namelist(grid, ra_sw_physics=0, ra_lw_physics=0)
+    soldn, lwdn, cosz = noahmp_initial_rad(state, nml)
+    assert np.array_equal(np.asarray(soldn), np.zeros_like(np.asarray(soldn)))
+    assert np.array_equal(np.asarray(lwdn), np.zeros_like(np.asarray(lwdn)))
+    assert np.all(np.isfinite(np.asarray(cosz)))
+
+
+def test_disabled_sw_and_lw_zero_m9_radiation_diagnostics() -> None:
+    grid = _grid()
+    state = _state(grid)
+    nml = _namelist(grid, ra_sw_physics=0, ra_lw_physics=0)
+    diag = compute_m9_diagnostics(state, nml, 0.0)
+    for name in ("swdown", "swdnb", "swupb", "swdnt", "swupt", "swnorm"):
+        arr = np.asarray(getattr(diag, name))
+        assert np.array_equal(arr, np.zeros_like(arr)), name
+    for name in ("glw", "lwdnb", "lwupb", "lwdnt", "lwupt"):
+        arr = np.asarray(getattr(diag, name))
+        assert np.array_equal(arr, np.zeros_like(arr)), name
+    assert np.all(np.isfinite(np.asarray(diag.coszen)))
 
 
 def test_sw_and_lw_selected_independently() -> None:
