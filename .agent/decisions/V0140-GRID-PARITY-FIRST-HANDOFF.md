@@ -112,6 +112,26 @@ if stale `GridSpec.metrics` plumbing is proven, or `src/gpuwrf/io/wrfout_writer.
 if writer payload selection is proven. `contracts/grid.py` and runtime dycore
 remain read-only without a follow-up contract.
 
+Manager closeout 2026-06-09 00:05 WEST: Huygens completed the static
+metric/base-state sprint and the narrow source patch is accepted. The fix loads
+WRF `DycoreMetrics` immediately after `GridSpec` creation in
+`src/gpuwrf/integration/d02_replay.py` and attaches them with
+`dataclasses.replace(grid, metrics=metrics)`. Runtime `case.metrics` /
+`namelist.metrics` behavior is preserved; no dycore, radiation, runtime, or
+writer source was changed. Proofs:
+`proofs/v014/static_metric_base_parity.*` and
+`.agent/reviews/2026-06-08-v014-static-metric-base-parity.md`.
+
+Static proof verdict: retained GPU h1 vertical C/DN/RDN and MAPFAC mismatches
+were stale writer payload from flat `GridSpec.metrics`, not runtime dynamics.
+Current patched synthetic writer payload matches wrfinput for those fields.
+`XLAT/XLONG` remain a separate writer-fallback issue because runtime State lacks
+lat/lon arrays. `HGT` and much of `PHB` are CPU wrfinput-vs-CPU-wrfout
+conventions. `PB/MUB` need a fresh GPU h0/h1 writer artifact or same-state
+probe to split forecast-step drift from h1 writer reconstruction. Because the
+grid-envelope script uses retained old GPU wrfouts, its static mismatch count
+cannot improve until a fresh writer artifact exists.
+
 ## Active Wave 1
 
 - `019ea94e-898f-7211-9561-e70af150fcfd` (`Averroes`):
@@ -144,12 +164,11 @@ Wave deliverables are expected under `proofs/v014/` and
 ## Active Wave 2
 
 - `019ea95e-f825-7a92-a5d2-bfc1e1082aee` (`Huygens`):
-  primary static metric/base-state parity sprint. Write scope is
-  `proofs/v014/static_metric_base_parity.*` and
-  `.agent/reviews/2026-06-08-v014-static-metric-base-parity.md`; source edits
-  are allowed only within the sprint contract. Current uncommitted candidate
-  patch attaches loaded WRF metrics to `GridSpec` in `d02_replay.py`; do not
-  commit until Huygens reruns post-fix proof and writes the missing review.
+  primary static metric/base-state parity sprint. Completed and accepted.
+  Deliverables: `proofs/v014/static_metric_base_parity.*` and
+  `.agent/reviews/2026-06-08-v014-static-metric-base-parity.md`. The source
+  patch is limited to `src/gpuwrf/integration/d02_replay.py` and fixes stale
+  `GridSpec.metrics` for future writer output.
 - `019ea95f-15e9-70b2-b6bf-cc4c1de48047` (`Curie`):
   read-only same-state tendency localization design. Completed:
   `proofs/v014/same_state_tendency_localization_plan.md`,
@@ -167,16 +186,18 @@ Wave deliverables are expected under `proofs/v014/` and
 
 ## Next Manager Actions
 
-1. Run the sprint
-   `.agent/sprints/2026-06-08-v014-static-metric-base-parity/sprint-contract.md`.
-2. Keep `wrfout_writer.py`, runtime dycore, pressure-gradient, acoustic,
+1. Commit the accepted static metric/base-state patch with its proof objects.
+2. Finish and gate the grid-comparison framework smoke. It becomes the primary
+   context-sparing wrfout-directory comparator for Canary and Switzerland.
+3. Keep `wrfout_writer.py`, runtime dycore, pressure-gradient, acoustic,
    radiation, and surface-layer code read-only unless the static/base parity
    proof isolates their ownership.
-3. Launch same-state tendency localization only as a read-only sidecar until
-   static/base parity is exact or root-caused.
-4. Use Opus 4.8 xhigh/max via `claude --permission-mode auto` only after two
+4. Launch same-state tendency localization as the next dynamic-debug sprint once
+   the comparator smoke is committed, with a focus on `PB/MUB`, `PSFC`, `MU`,
+   `P`, `PH`, `U`, `V`, `U10`, and `V10`.
+5. Use Opus 4.8 xhigh/max via `claude --permission-mode auto` only after two
    failed GPT attempts on the same static/base or tendency root-cause problem.
-5. Keep GPU time for short targeted probes only; no powered TOST, no Switzerland
+6. Keep GPU time for short targeted probes only; no powered TOST, no Switzerland
    equivalence, no FP32 source landing until the static/base gate is green or
    explicitly explained.
 

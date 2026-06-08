@@ -36999,7 +36999,7 @@
     }
   ],
   "contract": ".agent/sprints/2026-06-08-v014-grid-parity-attribution/sprint-contract.md",
-  "generated_utc": "2026-06-08T22:28:50.647364+00:00",
+  "generated_utc": "2026-06-08T22:50:02.736380+00:00",
   "inputs": {
     "case_dir": "/home/enric/src/wrf_gpu2/proofs/v0120/powered_tost_n15",
     "cpu_root": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output",

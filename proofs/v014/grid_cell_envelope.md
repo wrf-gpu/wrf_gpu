@@ -1,6 +1,6 @@
 # V0.14 Grid-Cell Envelope
 
-Generated UTC: `2026-06-08T22:28:50.647364+00:00`
+Generated UTC: `2026-06-08T22:50:02.736380+00:00`
 
 This is a grid-field attribution artifact, not a station-skill result and not an equivalence pass.
 
