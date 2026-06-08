@@ -69,6 +69,20 @@ _SW_NBANDS = 14
 # is the smallest tile.  Set to `_SW_NBANDS` to recover the single-pass solve.
 # The numerical result is independent of this value (proofs/v013).
 _SW_GPOINT_CHUNK_BANDS = 1
+# Taumol/optics CONSTRUCTION chunking.  g-point-chunk already tiled the SW
+# two-stream FLUX solve over bands, but the upstream optics arrays
+# (`tau_gas`/`tau_rayleigh` from taumol + the 6 delta-scaled clear/cloud
+# `(..., nlev, 14, 16)` optics arrays) were still built for all 14 bands UP FRONT
+# and only then sliced per tile — the remaining SW fp64 VRAM floor.  When True
+# (default) the OPERATIONAL flux path builds each band-tile's taumol (via a
+# `lax.switch` over `_sw_taumol_band`) AND its delta-scaled clear/cloud optics
+# INSIDE the two-stream band scan, so only one tile's `(..., nlev, chunk, 16)`
+# optics is live; the full 14-band optics stack is never materialised.  The McICA
+# `cloud_amount` is built once and sliced per tile (re-running the KISS scan per
+# tile would be 14x wasteful and is band-coupled).  Bit-identical to the
+# upfront-construction path in fp64 (proofs/v013).  Set False for the
+# upfront-construction path; the oracle entry always builds the full arrays.
+_SW_TAUMOL_CHUNK = True
 
 
 @jax.tree_util.register_pytree_node_class
@@ -812,129 +826,150 @@ def _binary_params(spec_a, spec_b, strrat, multiplier):
     return speccomb, js, fs
 
 
-def _sw_taumol(coef: _SWSetCoefState, tables: RRTMGTableBundle):
-    """Ports WRF `taumol_sw` gas and Rayleigh optical-depth branches."""
+def _sw_taumol_band(band, coef: _SWSetCoefState, tables: RRTMGTableBundle):
+    """One-band SW `taumol_sw`: gas + Rayleigh optical depth for `band`.
+
+    Extracted from the band loop so the chunked optics path can build a single
+    band-tile's `(..., nlay, 16)` `tau`/`ray` lazily inside the two-stream band
+    scan instead of materialising the full `(..., nlay, 14, 16)` stack up front.
+    `band` is a STATIC Python int (per-band gas chemistry differs structurally);
+    the chunked driver resolves it with `lax.switch` over a traced band index.
+    Byte-identical to the per-band slice of `_sw_taumol`.
+    """
 
     dtype = jnp.float32
     coef = _setcoef_state_dtype(coef, dtype)
     gpoint_mask = tables.sw_gpoint_mask.astype(dtype)
-    taug = []
-    taur = []
-    for band in range(14):
-        absa = tables.sw_absa[band].astype(dtype)
-        absb = tables.sw_absb[band].astype(dtype)
-        nspa = tables.sw_nspa[band]
-        nspb = tables.sw_nspb[band]
-        strrat = jnp.asarray(tables.sw_strrat[band], dtype=dtype)
-        lower = coef.lower_mask
-        lower_idx0 = ((coef.jp - 1) * 5 + (coef.jt - 1)) * nspa + 1
-        lower_idx1 = (coef.jp * 5 + (coef.jt1 - 1)) * nspa + 1
-        upper_idx0 = ((coef.jp - 13) * 5 + (coef.jt - 1)) * nspb + 1
-        upper_idx1 = ((coef.jp - 12) * 5 + (coef.jt1 - 1)) * nspb + 1
+    absa = tables.sw_absa[band].astype(dtype)
+    absb = tables.sw_absb[band].astype(dtype)
+    nspa = tables.sw_nspa[band]
+    nspb = tables.sw_nspb[band]
+    strrat = jnp.asarray(tables.sw_strrat[band], dtype=dtype)
+    lower = coef.lower_mask
+    lower_idx0 = ((coef.jp - 1) * 5 + (coef.jt - 1)) * nspa + 1
+    lower_idx1 = (coef.jp * 5 + (coef.jt1 - 1)) * nspa + 1
+    upper_idx0 = ((coef.jp - 13) * 5 + (coef.jt - 1)) * nspb + 1
+    upper_idx1 = ((coef.jp - 12) * 5 + (coef.jt1 - 1)) * nspb + 1
 
-        if band in (0, 2):
-            speccomb, js, fs = _binary_params(coef.colh2o, coef.colch4, strrat, 8.0)
-            low = speccomb[..., None] * _interp_binary(absa, lower_idx0 + js - 1, lower_idx1 + js - 1, nspa, fs, coef) + _continuum_terms(
-                band, coef, tables
-            )
-            high = coef.colch4[..., None] * _interp_four_rows(absb, upper_idx0, upper_idx1, nspb, coef)
-            tau = jnp.where(lower[..., None], low, high)
-            ray = coef.colmol[..., None] * tables.sw_rayl[band].astype(dtype)
-        elif band in (1, 5):
-            speccomb_l, js_l, fs_l = _binary_params(coef.colh2o, coef.colco2, strrat, 8.0)
-            low = speccomb_l[..., None] * _interp_binary(absa, lower_idx0 + js_l - 1, lower_idx1 + js_l - 1, nspa, fs_l, coef) + _continuum_terms(
-                band, coef, tables
-            )
-            speccomb_u, js_u, fs_u = _binary_params(coef.colh2o, coef.colco2, strrat, 4.0)
-            high = speccomb_u[..., None] * _interp_binary(absb, upper_idx0 + js_u - 1, upper_idx1 + js_u - 1, nspb, fs_u, coef)
-            high = high + coef.colh2o[..., None] * coef.forfac[..., None] * (
+    if band in (0, 2):
+        speccomb, js, fs = _binary_params(coef.colh2o, coef.colch4, strrat, 8.0)
+        low = speccomb[..., None] * _interp_binary(absa, lower_idx0 + js - 1, lower_idx1 + js - 1, nspa, fs, coef) + _continuum_terms(
+            band, coef, tables
+        )
+        high = coef.colch4[..., None] * _interp_four_rows(absb, upper_idx0, upper_idx1, nspb, coef)
+        tau = jnp.where(lower[..., None], low, high)
+        ray = coef.colmol[..., None] * tables.sw_rayl[band].astype(dtype)
+    elif band in (1, 5):
+        speccomb_l, js_l, fs_l = _binary_params(coef.colh2o, coef.colco2, strrat, 8.0)
+        low = speccomb_l[..., None] * _interp_binary(absa, lower_idx0 + js_l - 1, lower_idx1 + js_l - 1, nspa, fs_l, coef) + _continuum_terms(
+            band, coef, tables
+        )
+        speccomb_u, js_u, fs_u = _binary_params(coef.colh2o, coef.colco2, strrat, 4.0)
+        high = speccomb_u[..., None] * _interp_binary(absb, upper_idx0 + js_u - 1, upper_idx1 + js_u - 1, nspb, fs_u, coef)
+        high = high + coef.colh2o[..., None] * coef.forfac[..., None] * (
+            _take_rows(tables.sw_forref[band].astype(dtype), coef.indfor - 1)
+            + coef.forfrac[..., None]
+            * (_take_rows(tables.sw_forref[band].astype(dtype), coef.indfor) - _take_rows(tables.sw_forref[band].astype(dtype), coef.indfor - 1))
+        )
+        tau = jnp.where(lower[..., None], low, high)
+        ray = coef.colmol[..., None] * tables.sw_rayl[band].astype(dtype)
+    elif band == 3:
+        speccomb, js, fs = _binary_params(coef.colh2o, coef.colco2, strrat, 8.0)
+        low = speccomb[..., None] * _interp_binary(absa, lower_idx0 + js - 1, lower_idx1 + js - 1, nspa, fs, coef) + _continuum_terms(
+            band, coef, tables
+        )
+        high = coef.colco2[..., None] * _interp_four_rows(absb, upper_idx0, upper_idx1, nspb, coef)
+        tau = jnp.where(lower[..., None], low, high)
+        ray = coef.colmol[..., None] * tables.sw_rayl[band].astype(dtype)
+    elif band == 4:
+        low = coef.colh2o[..., None] * (_interp_four_rows(absa, lower_idx0, lower_idx1, nspa, coef) + _continuum_terms(band, coef, tables) / jnp.maximum(coef.colh2o[..., None], 1.0e-300))
+        low = low + coef.colch4[..., None] * tables.sw_abs_ch4[band].astype(dtype)
+        high = coef.colh2o[..., None] * (
+            _interp_four_rows(absb, upper_idx0, upper_idx1, nspb, coef)
+            + coef.forfac[..., None]
+            * (
                 _take_rows(tables.sw_forref[band].astype(dtype), coef.indfor - 1)
                 + coef.forfrac[..., None]
                 * (_take_rows(tables.sw_forref[band].astype(dtype), coef.indfor) - _take_rows(tables.sw_forref[band].astype(dtype), coef.indfor - 1))
             )
-            tau = jnp.where(lower[..., None], low, high)
-            ray = coef.colmol[..., None] * tables.sw_rayl[band].astype(dtype)
-        elif band == 3:
-            speccomb, js, fs = _binary_params(coef.colh2o, coef.colco2, strrat, 8.0)
-            low = speccomb[..., None] * _interp_binary(absa, lower_idx0 + js - 1, lower_idx1 + js - 1, nspa, fs, coef) + _continuum_terms(
-                band, coef, tables
-            )
-            high = coef.colco2[..., None] * _interp_four_rows(absb, upper_idx0, upper_idx1, nspb, coef)
-            tau = jnp.where(lower[..., None], low, high)
-            ray = coef.colmol[..., None] * tables.sw_rayl[band].astype(dtype)
-        elif band == 4:
-            low = coef.colh2o[..., None] * (_interp_four_rows(absa, lower_idx0, lower_idx1, nspa, coef) + _continuum_terms(band, coef, tables) / jnp.maximum(coef.colh2o[..., None], 1.0e-300))
-            low = low + coef.colch4[..., None] * tables.sw_abs_ch4[band].astype(dtype)
-            high = coef.colh2o[..., None] * (
-                _interp_four_rows(absb, upper_idx0, upper_idx1, nspb, coef)
-                + coef.forfac[..., None]
-                * (
-                    _take_rows(tables.sw_forref[band].astype(dtype), coef.indfor - 1)
-                    + coef.forfrac[..., None]
-                    * (_take_rows(tables.sw_forref[band].astype(dtype), coef.indfor) - _take_rows(tables.sw_forref[band].astype(dtype), coef.indfor - 1))
-                )
-            ) + coef.colch4[..., None] * tables.sw_abs_ch4[band].astype(dtype)
-            tau = jnp.where(lower[..., None], low, high)
-            ray = coef.colmol[..., None] * tables.sw_rayl[band].astype(dtype)
-        elif band == 6:
-            o2adj = jnp.asarray(1.6, dtype=dtype)
-            o2cont = jnp.asarray(4.35e-4 / (350.0 * 2.0), dtype=dtype) * coef.colo2
-            speccomb, js, fs = _binary_params(coef.colh2o, o2adj * coef.colo2, strrat, 8.0)
-            low = speccomb[..., None] * _interp_binary(absa, lower_idx0 + js - 1, lower_idx1 + js - 1, nspa, fs, coef) + _continuum_terms(
-                band, coef, tables
-            ) + o2cont[..., None]
-            high = coef.colo2[..., None] * o2adj * _interp_four_rows(absb, upper_idx0, upper_idx1, nspb, coef) + o2cont[..., None]
-            tau = jnp.where(lower[..., None], low, high)
-            ray = coef.colmol[..., None] * tables.sw_rayl[band].astype(dtype)
-        elif band == 7:
-            low = coef.colh2o[..., None] * (
-                tables.sw_givfac[band].astype(dtype) * _interp_four_rows(absa, lower_idx0, lower_idx1, nspa, coef)
-                + _continuum_terms(band, coef, tables) / jnp.maximum(coef.colh2o[..., None], jnp.asarray(1.0e-30, dtype=dtype))
-            )
-            tau = jnp.where(lower[..., None], low, jnp.zeros_like(low))
-            ray = coef.colmol[..., None] * tables.sw_rayl[band].astype(dtype)
-        elif band == 8:
-            speccomb, js, fs = _binary_params(coef.colh2o, coef.colo2, strrat, 8.0)
-            low = speccomb[..., None] * _interp_binary(absa, lower_idx0 + js - 1, lower_idx1 + js - 1, nspa, fs, coef)
-            low = low + coef.colo3[..., None] * tables.sw_abs_o3a[band].astype(dtype) + _continuum_terms(band, coef, tables)
-            high = coef.colo2[..., None] * _interp_four_rows(absb, upper_idx0, upper_idx1, nspb, coef) + coef.colo3[..., None] * tables.sw_abs_o3b[band].astype(dtype)
-            tau = jnp.where(lower[..., None], low, high)
-            ray_low = coef.colmol[..., None] * (
-                _take_rows(tables.sw_rayla[band].T.astype(dtype), js - 1)
-                + fs[..., None] * (_take_rows(tables.sw_rayla[band].T.astype(dtype), js) - _take_rows(tables.sw_rayla[band].T.astype(dtype), js - 1))
-            )
-            ray_high = coef.colmol[..., None] * tables.sw_raylb[band].astype(dtype)
-            ray = jnp.where(lower[..., None], ray_low, ray_high)
-        elif band == 9:
-            low = coef.colh2o[..., None] * _interp_four_rows(absa, lower_idx0, lower_idx1, nspa, coef) + coef.colo3[..., None] * tables.sw_abs_o3a[band].astype(dtype)
-            high = coef.colo3[..., None] * tables.sw_abs_o3b[band].astype(dtype)
-            tau = jnp.where(lower[..., None], low, high)
-            ray = coef.colmol[..., None] * tables.sw_rayl[band].astype(dtype)
-        elif band == 10:
-            tau = jnp.zeros(coef.colh2o.shape + (gpoint_mask.shape[1],), dtype=dtype)
-            ray = coef.colmol[..., None] * tables.sw_rayl[band].astype(dtype)
-        elif band == 11:
-            low = coef.colo3[..., None] * _interp_four_rows(absa, lower_idx0, lower_idx1, nspa, coef)
-            high = coef.colo3[..., None] * _interp_four_rows(absb, upper_idx0, upper_idx1, nspb, coef)
-            tau = jnp.where(lower[..., None], low, high)
-            ray = coef.colmol[..., None] * tables.sw_rayl[band].astype(dtype)
-        elif band == 12:
-            speccomb_l, js_l, fs_l = _binary_params(coef.colo3, coef.colo2, strrat, 8.0)
-            low = speccomb_l[..., None] * _interp_binary(absa, lower_idx0 + js_l - 1, lower_idx1 + js_l - 1, nspa, fs_l, coef)
-            speccomb_u, js_u, fs_u = _binary_params(coef.colo3, coef.colo2, strrat, 4.0)
-            high = speccomb_u[..., None] * _interp_binary(absb, upper_idx0 + js_u - 1, upper_idx1 + js_u - 1, nspb, fs_u, coef)
-            tau = jnp.where(lower[..., None], low, high)
-            ray = coef.colmol[..., None] * tables.sw_rayl[band].astype(dtype)
-        else:
-            low = coef.colh2o[..., None] * (
-                _interp_four_rows(absa, lower_idx0, lower_idx1, nspa, coef)
-                + _continuum_terms(band, coef, tables) / jnp.maximum(coef.colh2o[..., None], jnp.asarray(1.0e-30, dtype=dtype))
-            ) + coef.colco2[..., None] * tables.sw_abs_co2[band].astype(dtype)
-            high = coef.colco2[..., None] * _interp_four_rows(absb, upper_idx0, upper_idx1, nspb, coef) + coef.colh2o[..., None] * tables.sw_abs_h2o[band].astype(dtype)
-            tau = jnp.where(lower[..., None], low, high)
-            ray = coef.colmol[..., None] * tables.sw_rayl[band].astype(dtype)
-        taug.append(tau * gpoint_mask[band])
-        taur.append(ray * gpoint_mask[band])
+        ) + coef.colch4[..., None] * tables.sw_abs_ch4[band].astype(dtype)
+        tau = jnp.where(lower[..., None], low, high)
+        ray = coef.colmol[..., None] * tables.sw_rayl[band].astype(dtype)
+    elif band == 6:
+        o2adj = jnp.asarray(1.6, dtype=dtype)
+        o2cont = jnp.asarray(4.35e-4 / (350.0 * 2.0), dtype=dtype) * coef.colo2
+        speccomb, js, fs = _binary_params(coef.colh2o, o2adj * coef.colo2, strrat, 8.0)
+        low = speccomb[..., None] * _interp_binary(absa, lower_idx0 + js - 1, lower_idx1 + js - 1, nspa, fs, coef) + _continuum_terms(
+            band, coef, tables
+        ) + o2cont[..., None]
+        high = coef.colo2[..., None] * o2adj * _interp_four_rows(absb, upper_idx0, upper_idx1, nspb, coef) + o2cont[..., None]
+        tau = jnp.where(lower[..., None], low, high)
+        ray = coef.colmol[..., None] * tables.sw_rayl[band].astype(dtype)
+    elif band == 7:
+        low = coef.colh2o[..., None] * (
+            tables.sw_givfac[band].astype(dtype) * _interp_four_rows(absa, lower_idx0, lower_idx1, nspa, coef)
+            + _continuum_terms(band, coef, tables) / jnp.maximum(coef.colh2o[..., None], jnp.asarray(1.0e-30, dtype=dtype))
+        )
+        tau = jnp.where(lower[..., None], low, jnp.zeros_like(low))
+        ray = coef.colmol[..., None] * tables.sw_rayl[band].astype(dtype)
+    elif band == 8:
+        speccomb, js, fs = _binary_params(coef.colh2o, coef.colo2, strrat, 8.0)
+        low = speccomb[..., None] * _interp_binary(absa, lower_idx0 + js - 1, lower_idx1 + js - 1, nspa, fs, coef)
+        low = low + coef.colo3[..., None] * tables.sw_abs_o3a[band].astype(dtype) + _continuum_terms(band, coef, tables)
+        high = coef.colo2[..., None] * _interp_four_rows(absb, upper_idx0, upper_idx1, nspb, coef) + coef.colo3[..., None] * tables.sw_abs_o3b[band].astype(dtype)
+        tau = jnp.where(lower[..., None], low, high)
+        ray_low = coef.colmol[..., None] * (
+            _take_rows(tables.sw_rayla[band].T.astype(dtype), js - 1)
+            + fs[..., None] * (_take_rows(tables.sw_rayla[band].T.astype(dtype), js) - _take_rows(tables.sw_rayla[band].T.astype(dtype), js - 1))
+        )
+        ray_high = coef.colmol[..., None] * tables.sw_raylb[band].astype(dtype)
+        ray = jnp.where(lower[..., None], ray_low, ray_high)
+    elif band == 9:
+        low = coef.colh2o[..., None] * _interp_four_rows(absa, lower_idx0, lower_idx1, nspa, coef) + coef.colo3[..., None] * tables.sw_abs_o3a[band].astype(dtype)
+        high = coef.colo3[..., None] * tables.sw_abs_o3b[band].astype(dtype)
+        tau = jnp.where(lower[..., None], low, high)
+        ray = coef.colmol[..., None] * tables.sw_rayl[band].astype(dtype)
+    elif band == 10:
+        tau = jnp.zeros(coef.colh2o.shape + (gpoint_mask.shape[1],), dtype=dtype)
+        ray = coef.colmol[..., None] * tables.sw_rayl[band].astype(dtype)
+    elif band == 11:
+        low = coef.colo3[..., None] * _interp_four_rows(absa, lower_idx0, lower_idx1, nspa, coef)
+        high = coef.colo3[..., None] * _interp_four_rows(absb, upper_idx0, upper_idx1, nspb, coef)
+        tau = jnp.where(lower[..., None], low, high)
+        ray = coef.colmol[..., None] * tables.sw_rayl[band].astype(dtype)
+    elif band == 12:
+        speccomb_l, js_l, fs_l = _binary_params(coef.colo3, coef.colo2, strrat, 8.0)
+        low = speccomb_l[..., None] * _interp_binary(absa, lower_idx0 + js_l - 1, lower_idx1 + js_l - 1, nspa, fs_l, coef)
+        speccomb_u, js_u, fs_u = _binary_params(coef.colo3, coef.colo2, strrat, 4.0)
+        high = speccomb_u[..., None] * _interp_binary(absb, upper_idx0 + js_u - 1, upper_idx1 + js_u - 1, nspb, fs_u, coef)
+        tau = jnp.where(lower[..., None], low, high)
+        ray = coef.colmol[..., None] * tables.sw_rayl[band].astype(dtype)
+    else:
+        low = coef.colh2o[..., None] * (
+            _interp_four_rows(absa, lower_idx0, lower_idx1, nspa, coef)
+            + _continuum_terms(band, coef, tables) / jnp.maximum(coef.colh2o[..., None], jnp.asarray(1.0e-30, dtype=dtype))
+        ) + coef.colco2[..., None] * tables.sw_abs_co2[band].astype(dtype)
+        high = coef.colco2[..., None] * _interp_four_rows(absb, upper_idx0, upper_idx1, nspb, coef) + coef.colh2o[..., None] * tables.sw_abs_h2o[band].astype(dtype)
+        tau = jnp.where(lower[..., None], low, high)
+        ray = coef.colmol[..., None] * tables.sw_rayl[band].astype(dtype)
+
+    return tau * gpoint_mask[band], ray * gpoint_mask[band]
+
+
+def _sw_taumol(coef: _SWSetCoefState, tables: RRTMGTableBundle):
+    """Ports WRF `taumol_sw` gas and Rayleigh optical-depth branches.
+
+    Thin wrapper over `_sw_taumol_band` that stacks all 14 bands into the full
+    `(..., nlay, 14, 16)` arrays.  The operational flux path builds taumol
+    per-band-tile inside the two-stream scan instead.
+    """
+
+    taug = []
+    taur = []
+    for band in range(14):
+        tau_b, ray_b = _sw_taumol_band(band, coef, tables)
+        taug.append(tau_b)
+        taur.append(ray_b)
     return jnp.stack(taug, axis=-2), jnp.stack(taur, axis=-2)
 
 
@@ -1492,6 +1527,232 @@ def _sw_band_scan_fluxes(
     return flux_down_model, flux_up_model, direct_down_model
 
 
+def _sw_assemble_result(
+    state, debug, topography, out_dtype,
+    heating_rate, flux_down, flux_up, column_absorbed_total, surface_absorbed,
+    surface_down, surface_up, surface_direct, surface_diffuse,
+    surface_diffuse_fraction, clear_flux_down, clear_flux_up,
+):
+    """Shared SW post-flux assembly (topographic correction + result struct).
+
+    Identical for the chunked-optics and upfront-construction flux paths.
+    """
+
+    if topography is None:
+        topographic_correction_factor = jnp.ones_like(surface_down)
+        surface_down_topographic = surface_down
+        surface_up_topographic = surface_up
+        surface_absorbed_topographic = surface_absorbed
+    else:
+        topographic = apply_wrf_topographic_sw_adjustment(
+            surface_down=surface_down,
+            surface_up=surface_up,
+            surface_absorbed=surface_absorbed,
+            coszen=state.coszen.astype(out_dtype),
+            diffuse_fraction=surface_diffuse_fraction,
+            topography=topography,
+        )
+        topographic_correction_factor = topographic.correction_factor.astype(out_dtype)
+        surface_down_topographic = topographic.surface_down.astype(out_dtype)
+        surface_up_topographic = topographic.surface_up.astype(out_dtype)
+        surface_absorbed_topographic = topographic.surface_absorbed.astype(out_dtype)
+
+    heating_rate = assert_finite(heating_rate, "rrtmg_sw.heating_rate", enabled=debug)
+    flux_down = assert_physical_bounds(flux_down, 0.0, 2000.0, "rrtmg_sw.flux_down", enabled=debug)
+    flux_up = assert_physical_bounds(flux_up, 0.0, 2000.0, "rrtmg_sw.flux_up", enabled=debug)
+    return RRTMGSWColumnResult(
+        heating_rate=heating_rate,
+        flux_down=flux_down,
+        flux_up=flux_up,
+        toa_down=flux_down[..., -1],
+        toa_up=flux_up[..., -1],
+        surface_down=surface_down,
+        surface_up=surface_up,
+        column_absorbed=column_absorbed_total,
+        surface_absorbed=surface_absorbed,
+        surface_direct=surface_direct,
+        surface_diffuse=surface_diffuse,
+        surface_diffuse_fraction=surface_diffuse_fraction,
+        topographic_correction_factor=topographic_correction_factor,
+        surface_down_topographic=surface_down_topographic,
+        surface_up_topographic=surface_up_topographic,
+        surface_absorbed_topographic=surface_absorbed_topographic,
+        clear_flux_down=clear_flux_down,
+        clear_flux_up=clear_flux_up,
+    )
+
+
+def _sw_band_scan_optics_fluxes(
+    coef,
+    tables,
+    liquid_incloud,
+    ice_incloud,
+    snow_incloud,
+    cloud_amount,
+    sfluxzen,
+    coszen,
+    surface_albedo,
+    source_scale,
+    out_dtype,
+    cloud_dtype,
+    chunk: int,
+    with_clear_sky: bool = False,
+):
+    """Builds the SW optics per band-tile INSIDE the two-stream band scan.
+
+    Same numerics as the upfront-construction path: the per-band taumol is the
+    shared `_sw_taumol_band` (resolved by `lax.switch` over the traced band
+    index), and the per-tile delta-scaled clear/cloud optics + two-stream solve
+    reproduce exactly the per-(band, g-point) flux of the single-pass build —
+    bands never couple.  The win: the full `(..., nlev, 14, 16)` taumol + 6
+    optics arrays are NEVER materialised; only one tile's `(..., nlev, chunk,
+    16)` optics is live, freed by the scan carry before the next tile.  The McICA
+    `cloud_amount` is built once upstream and sliced per tile.  Bit-identical to
+    the upfront path in fp64 (proofs/v013).
+    """
+
+    n_bands = _SW_NBANDS
+    n_tiles = n_bands // chunk
+    band_axis = cloud_amount.ndim - 2  # the size-14 axis in [..., nlev, band, gpoint]
+    sflux_band_axis = sfluxzen.ndim - 2
+    gpoint_mask = tables.sw_gpoint_mask.astype(cloud_dtype)  # (14, 16)
+
+    liquid_coeff = tables.sw_cloud_liquid_extinction.astype(cloud_dtype)[:, None]
+    ice_coeff = tables.sw_cloud_ice_extinction.astype(cloud_dtype)[:, None]
+    snow_coeff = tables.sw_cloud_snow_extinction.astype(cloud_dtype)[:, None]
+    liquid_ssa = tables.sw_cloud_liquid_ssa.astype(cloud_dtype)[:, None]
+    ice_ssa = tables.sw_cloud_ice_ssa.astype(cloud_dtype)[:, None]
+    snow_ssa = tables.sw_cloud_snow_ssa.astype(cloud_dtype)[:, None]
+    liquid_asy = tables.sw_cloud_liquid_asymmetry.astype(cloud_dtype)[:, None]
+    ice_asy = tables.sw_cloud_ice_asymmetry.astype(cloud_dtype)[:, None]
+    snow_asy = tables.sw_cloud_snow_asymmetry.astype(cloud_dtype)[:, None]
+    liquid_forward = liquid_asy * liquid_asy
+    ice_forward = tables.sw_cloud_ice_forward_fraction.astype(cloud_dtype)[:, None]
+    snow_forward = tables.sw_cloud_snow_forward_fraction.astype(cloud_dtype)[:, None]
+
+    # Per-band taumol resolved by `lax.switch` over the traced band index.
+    taumol_branches = [
+        (lambda b=b: _sw_taumol_band(b, coef, tables)) for b in range(n_bands)
+    ]
+
+    def _slice_band_axis(arr, start, axis):
+        starts = [0] * arr.ndim
+        starts[axis] = start
+        sizes = list(arr.shape)
+        sizes[axis] = chunk
+        return lax.dynamic_slice(arr, starts, sizes)
+
+    def _coeff_tile(arr_14x1, start):
+        # `arr_14x1` is (14, 1); gather the tile's bands -> (chunk, 1).
+        return lax.dynamic_slice(arr_14x1, (start, 0), (chunk, 1))
+
+    def scale_cloud_component(tau_orig, omega_orig, asym_orig, forward_fraction):
+        denom = jnp.maximum(1.0 - forward_fraction * omega_orig, 1.0e-12)
+        tau_scaled = denom * tau_orig
+        omega_scaled = jnp.clip(omega_orig * (1.0 - forward_fraction) / denom, 0.0, 0.999999)
+        asym_scaled = jnp.clip((asym_orig - forward_fraction) / jnp.maximum(1.0 - forward_fraction, 1.0e-12), -0.999999, 0.999999)
+        scattering = tau_scaled * omega_scaled
+        return tau_scaled, scattering, asym_scaled
+
+    flux_shape = cloud_amount.shape[:-3] + (cloud_amount.shape[-3] + 1,)
+    zero_flux = jnp.zeros(flux_shape, dtype=out_dtype)
+    n_acc = 5 if with_clear_sky else 3
+    init = tuple(zero_flux for _ in range(n_acc))
+
+    def body(carry, tile_index):
+        start = tile_index * chunk
+        # ---- per-tile taumol (gas + Rayleigh), built lazily over the tile bands.
+        tau_list = []
+        ray_list = []
+        for j in range(chunk):
+            tau_b, ray_b = lax.switch(start + j, taumol_branches)
+            tau_list.append(tau_b)
+            ray_list.append(ray_b)
+        tau_gas = jnp.stack(tau_list, axis=-2)
+        tau_rayleigh = jnp.stack(ray_list, axis=-2)
+
+        # ---- per-tile band slices of the band-dependent inputs.
+        mask_t = _slice_band_axis(gpoint_mask, start, 0)            # (chunk, 16)
+        cloud_amount_t = _slice_band_axis(cloud_amount, start, band_axis)
+        sfluxzen_t = _slice_band_axis(sfluxzen, start, sflux_band_axis)
+        liquid_coeff_t = _coeff_tile(liquid_coeff, start)
+        ice_coeff_t = _coeff_tile(ice_coeff, start)
+        snow_coeff_t = _coeff_tile(snow_coeff, start)
+        liquid_ssa_t = _coeff_tile(liquid_ssa, start)
+        ice_ssa_t = _coeff_tile(ice_ssa, start)
+        snow_ssa_t = _coeff_tile(snow_ssa, start)
+        liquid_asy_t = _coeff_tile(liquid_asy, start)
+        ice_asy_t = _coeff_tile(ice_asy, start)
+        snow_asy_t = _coeff_tile(snow_asy, start)
+        liquid_forward_t = _coeff_tile(liquid_forward, start)
+        ice_forward_t = _coeff_tile(ice_forward, start)
+        snow_forward_t = _coeff_tile(snow_forward, start)
+
+        # ---- clear (gas + Rayleigh) optics + delta-scaling (WRF :8330-8360).
+        tau_clear_orig = tau_gas + tau_rayleigh
+        omega_clear_orig = jnp.clip(tau_rayleigh / jnp.maximum(tau_clear_orig, MIN_OPTICAL_DEPTH), 0.0, 0.999999)
+        asymmetry_clear_orig = jnp.zeros_like(tau_clear_orig)
+        tau_clear, omega_clear, asymmetry_clear = _delta_scale(tau_clear_orig, omega_clear_orig, asymmetry_clear_orig)
+
+        tau_liquid_orig = liquid_incloud * liquid_coeff_t * cloud_amount_t
+        tau_ice_orig = ice_incloud * ice_coeff_t * cloud_amount_t
+        tau_snow_orig = snow_incloud * snow_coeff_t * cloud_amount_t
+
+        tau_liquid, scat_liquid, asym_liquid = scale_cloud_component(tau_liquid_orig, liquid_ssa_t, liquid_asy_t, liquid_forward_t)
+        tau_ice, scat_ice, asym_ice = scale_cloud_component(tau_ice_orig, ice_ssa_t, ice_asy_t, ice_forward_t)
+        tau_snow, scat_snow, asym_snow = scale_cloud_component(tau_snow_orig, snow_ssa_t, snow_asy_t, snow_forward_t)
+        tau_cloud = tau_liquid + tau_ice + tau_snow
+        scattering_cloud = scat_liquid + scat_ice + scat_snow
+        omega_cloud = jnp.clip(scattering_cloud / jnp.maximum(tau_cloud, MIN_OPTICAL_DEPTH), 0.0, 0.999999)
+        omega_cloud = jnp.where(cloud_amount_t > 0.0, omega_cloud, 1.0)
+        asymmetry_cloud = jnp.where(
+            scattering_cloud > MIN_OPTICAL_DEPTH,
+            (scat_liquid * asym_liquid + scat_ice * asym_ice + scat_snow * asym_snow) / jnp.maximum(scattering_cloud, MIN_OPTICAL_DEPTH),
+            0.0,
+        )
+
+        scattering_total_cloud = tau_clear * omega_clear + tau_cloud * omega_cloud
+        tau_total_cloud = jnp.maximum(tau_clear + tau_cloud, MIN_OPTICAL_DEPTH)
+        omega_total_cloud = jnp.clip(scattering_total_cloud / jnp.maximum(tau_total_cloud, MIN_OPTICAL_DEPTH), 0.0, 0.999999)
+        asymmetry_total_cloud = jnp.where(
+            scattering_total_cloud > MIN_OPTICAL_DEPTH,
+            (tau_clear * omega_clear * asymmetry_clear + tau_cloud * omega_cloud * asymmetry_cloud) / jnp.maximum(scattering_total_cloud, MIN_OPTICAL_DEPTH),
+            0.0,
+        )
+
+        tau_clear = jnp.maximum(tau_clear, MIN_OPTICAL_DEPTH) * mask_t
+        omega_clear = omega_clear * mask_t
+        asymmetry_clear = asymmetry_clear * mask_t
+        tau_total_cloud = tau_total_cloud * mask_t
+        omega_total_cloud = omega_total_cloud * mask_t
+        asymmetry_total_cloud = asymmetry_total_cloud * mask_t
+
+        tile = _sw_band_tile_fluxes(
+            tau_clear,
+            omega_clear,
+            asymmetry_clear,
+            tau_total_cloud,
+            omega_total_cloud,
+            asymmetry_total_cloud,
+            cloud_amount_t,
+            mask_t,
+            sfluxzen_t,
+            coszen,
+            surface_albedo,
+            source_scale,
+            out_dtype,
+            with_clear_sky,
+        )
+        return tuple(acc + part for acc, part in zip(carry, tile)), None
+
+    accumulated, _ = lax.scan(body, init, jnp.arange(n_tiles))
+    if with_clear_sky:
+        flux_down_model, flux_up_model, direct_down_model, clear_down, clear_up = accumulated
+        return flux_down_model, flux_up_model, direct_down_model, clear_down, clear_up
+    flux_down_model, flux_up_model, direct_down_model = accumulated
+    return flux_down_model, flux_up_model, direct_down_model
+
+
 def _shortwave_impl(
     state: RRTMGSWColumnState,
     tables: RRTMGTableBundle,
@@ -1529,8 +1790,71 @@ def _shortwave_impl(
     snow_path_g = (0.99 * qs_ext * layer_mass_ext * 1000.0).astype(cloud_dtype)
 
     coef = _sw_setcoef(qv_ext, p_ext, _extend_with_wrf_top_layer(state.T), pressure_interfaces, tables)
-    tau_gas, tau_rayleigh = _sw_taumol_fused(coef, tables)
     sfluxzen = _sw_sfluxzen(coef, tables)
+    mask = tables.sw_gpoint_mask.astype(cloud_dtype)
+
+    cloud_box = cloud_ext.astype(cloud_dtype)[..., None, None]
+    cloud_amount = _mcica_random_overlap_mask(p_ext, cloud_ext, mask).astype(cloud_dtype)
+    cloud_safe = jnp.maximum(cloud_box, 0.01)
+    cloud_present = cloud_box > 0.0
+    liquid_incloud = jnp.where(cloud_present, liquid_path_g[..., None, None] / cloud_safe, 0.0)
+    ice_incloud = jnp.where(cloud_present, ice_path_g[..., None, None] / cloud_safe, 0.0)
+    snow_incloud = jnp.where(cloud_present, snow_path_g[..., None, None] / cloud_safe, 0.0)
+
+    # `source_scale` MUST be built in the working two-stream dtype (`cloud_dtype`
+    # == float32): the TOA flux `coszen * source_scale * sfluxzen` is multiplied
+    # in float32, so the fp64 export dtype here would shift every band flux
+    # (~7e-5 rel) — a real numerical drift, not VRAM chunking.
+    source_scale = _solar_source_scale(state, cloud_dtype)
+    chunk = _sw_chunk_bands(_SW_NBANDS)
+
+    if _SW_TAUMOL_CHUNK:
+        # Build each band-tile's taumol + delta-scaled optics INSIDE the
+        # two-stream band scan, so the full `(..., nlev, 14, 16)` taumol + 6
+        # optics arrays are never materialised (the remaining SW fp64 VRAM
+        # floor).  Bit-identical to the upfront-construction path (proofs/v013).
+        scan_out = _sw_band_scan_optics_fluxes(
+            coef,
+            tables,
+            liquid_incloud,
+            ice_incloud,
+            snow_incloud,
+            cloud_amount,
+            sfluxzen,
+            state.coszen,
+            state.surface_albedo,
+            source_scale,
+            out_dtype,
+            cloud_dtype,
+            chunk,
+            with_clear_sky,
+        )
+        if with_clear_sky:
+            flux_down_model, flux_up_model, direct_down_model, clear_flux_down, clear_flux_up = scan_out
+        else:
+            flux_down_model, flux_up_model, direct_down_model = scan_out
+            clear_flux_down = None
+            clear_flux_up = None
+        net_down = flux_down_model - flux_up_model
+        column_absorbed_layers = net_down[..., 1 : original_layers + 1] - net_down[..., :original_layers]
+        column_absorbed_total = net_down[..., -1] - net_down[..., 0]
+        heating_rate = column_absorbed_layers / (layer_mass.astype(out_dtype) * CP_AIR)
+        surface_absorbed = flux_down_model[..., 0] - flux_up_model[..., 0]
+        flux_down = flux_down_model
+        flux_up = flux_up_model
+        surface_down = flux_down[..., 0]
+        surface_up = flux_up[..., 0]
+        surface_direct = direct_down_model[..., 0]
+        surface_diffuse = surface_down - surface_direct
+        surface_diffuse_fraction = jnp.where(surface_down > 0.001, jnp.minimum(surface_diffuse / surface_down, 1.0), 0.0).astype(out_dtype)
+        return _sw_assemble_result(
+            state, debug, topography, out_dtype,
+            heating_rate, flux_down, flux_up, column_absorbed_total, surface_absorbed,
+            surface_down, surface_up, surface_direct, surface_diffuse,
+            surface_diffuse_fraction, clear_flux_down, clear_flux_up,
+        )
+
+    tau_gas, tau_rayleigh = _sw_taumol_fused(coef, tables)
     liquid_coeff = tables.sw_cloud_liquid_extinction.astype(cloud_dtype)[:, None]
     ice_coeff = tables.sw_cloud_ice_extinction.astype(cloud_dtype)[:, None]
     snow_coeff = tables.sw_cloud_snow_extinction.astype(cloud_dtype)[:, None]
@@ -1543,15 +1867,6 @@ def _shortwave_impl(
     liquid_forward = liquid_asy * liquid_asy
     ice_forward = tables.sw_cloud_ice_forward_fraction.astype(cloud_dtype)[:, None]
     snow_forward = tables.sw_cloud_snow_forward_fraction.astype(cloud_dtype)[:, None]
-    mask = tables.sw_gpoint_mask.astype(cloud_dtype)
-
-    cloud_box = cloud_ext.astype(cloud_dtype)[..., None, None]
-    cloud_amount = _mcica_random_overlap_mask(p_ext, cloud_ext, mask).astype(cloud_dtype)
-    cloud_safe = jnp.maximum(cloud_box, 0.01)
-    cloud_present = cloud_box > 0.0
-    liquid_incloud = jnp.where(cloud_present, liquid_path_g[..., None, None] / cloud_safe, 0.0)
-    ice_incloud = jnp.where(cloud_present, ice_path_g[..., None, None] / cloud_safe, 0.0)
-    snow_incloud = jnp.where(cloud_present, snow_path_g[..., None, None] / cloud_safe, 0.0)
 
     tau_clear_orig = tau_gas + tau_rayleigh
     omega_clear_orig = jnp.clip(tau_rayleigh / jnp.maximum(tau_clear_orig, MIN_OPTICAL_DEPTH), 0.0, 0.999999)
@@ -1618,9 +1933,6 @@ def _shortwave_impl(
     # `coszen * source_scale * sfluxzen` is then multiplied in float32, so using
     # the fp64 export dtype here would silently change the rounding of every band
     # flux (~7e-5 rel) — a real numerical drift, not VRAM chunking.
-    source_scale = _solar_source_scale(state, cloud_dtype)
-    n_bands = tau_clear.shape[-2]
-    chunk = _sw_chunk_bands(n_bands)
     scan_out = _sw_band_scan_fluxes(
         tau_clear,
         omega_clear,
@@ -1656,47 +1968,11 @@ def _shortwave_impl(
     surface_direct = direct_down_model[..., 0]
     surface_diffuse = surface_down - surface_direct
     surface_diffuse_fraction = jnp.where(surface_down > 0.001, jnp.minimum(surface_diffuse / surface_down, 1.0), 0.0).astype(out_dtype)
-    if topography is None:
-        topographic_correction_factor = jnp.ones_like(surface_down)
-        surface_down_topographic = surface_down
-        surface_up_topographic = surface_up
-        surface_absorbed_topographic = surface_absorbed
-    else:
-        topographic = apply_wrf_topographic_sw_adjustment(
-            surface_down=surface_down,
-            surface_up=surface_up,
-            surface_absorbed=surface_absorbed,
-            coszen=state.coszen.astype(out_dtype),
-            diffuse_fraction=surface_diffuse_fraction,
-            topography=topography,
-        )
-        topographic_correction_factor = topographic.correction_factor.astype(out_dtype)
-        surface_down_topographic = topographic.surface_down.astype(out_dtype)
-        surface_up_topographic = topographic.surface_up.astype(out_dtype)
-        surface_absorbed_topographic = topographic.surface_absorbed.astype(out_dtype)
-
-    heating_rate = assert_finite(heating_rate, "rrtmg_sw.heating_rate", enabled=debug)
-    flux_down = assert_physical_bounds(flux_down, 0.0, 2000.0, "rrtmg_sw.flux_down", enabled=debug)
-    flux_up = assert_physical_bounds(flux_up, 0.0, 2000.0, "rrtmg_sw.flux_up", enabled=debug)
-    return RRTMGSWColumnResult(
-        heating_rate=heating_rate,
-        flux_down=flux_down,
-        flux_up=flux_up,
-        toa_down=flux_down[..., -1],
-        toa_up=flux_up[..., -1],
-        surface_down=surface_down,
-        surface_up=surface_up,
-        column_absorbed=column_absorbed_total,
-        surface_absorbed=surface_absorbed,
-        surface_direct=surface_direct,
-        surface_diffuse=surface_diffuse,
-        surface_diffuse_fraction=surface_diffuse_fraction,
-        topographic_correction_factor=topographic_correction_factor,
-        surface_down_topographic=surface_down_topographic,
-        surface_up_topographic=surface_up_topographic,
-        surface_absorbed_topographic=surface_absorbed_topographic,
-        clear_flux_down=clear_flux_down,
-        clear_flux_up=clear_flux_up,
+    return _sw_assemble_result(
+        state, debug, topography, out_dtype,
+        heating_rate, flux_down, flux_up, column_absorbed_total, surface_absorbed,
+        surface_down, surface_up, surface_direct, surface_diffuse,
+        surface_diffuse_fraction, clear_flux_down, clear_flux_up,
     )
 
 
