@@ -103,3 +103,9 @@ closure + outsider-runnable reproducibility + community-standard benchmarks.
 - ✅ **PD/mono advection → moisture** (T2) MERGED `6eb4b01`: `advect_moisture_scalars()` pure addition (default moist_adv_opt=0 byte-unchanged), positivity + WRF-parity bit-exact (0.0 diff), 10 tests + 55 dynamics regression green. FOLLOW-UP: function proven but NOT operationally wired (operational path flux-advects theta only; moisture via physics boundary) → ~1-call runtime hookup + investigate "is moisture correctly advected operationally?" (relevant to skill-closure #7).
 - 🔄 g-point-chunk in GPU VRAM-ceiling measurement (~32GB held @0% — watch for hang). MYJ+Janjic actively editing (CPU).
 - v0.13 trunk @ 6eb4b01. DONE: reproducibility(T2), RRTM-LW(T1#6), PD-moisture(T2). BANKED: compile-speed(T1#1).
+
+**2026-06-08 ~08:14** — wave 2/3:
+- ✅ **g-point-chunk RRTMG** (T1#3) MERGED `f323303`: SW peak VRAM −45..57% (lax.scan band-tiling, bit-identical max_rel=0.0). LW inert/neutral. Remaining VRAM floor = upstream optics/taumol → follow-up.
+- ✅ **compile-speed** (T1#1) MERGED `4227ef6`, GPU-VALIDATED: real-GPU import clean (no v0.12 abort, XLA_FLAGS=None, autotune default-off); 22 tests. Autotune-effect gated/opt-in until measured.
+- Tier1 done: #1, #3, #6. Tier2 done: reproducibility, PD-moisture(fn-level). RUNNING: MYJ+Janjic (CPU).
+- NEXT: #4 GWD-on-nested fit test (24h-nested-1km+GWD on the chunked trunk — does it clear the hr7 OOM now?); if OOM→optics/taumol follow-up needed first.
