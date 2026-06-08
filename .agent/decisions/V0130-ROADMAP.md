@@ -133,3 +133,5 @@ closure + outsider-runnable reproducibility + community-standard benchmarks.
 - ✅ **clear-sky radiation** (T2) MERGED `f9eb962`: 8 ...C flux vars via WRF-faithful 2nd clear-sky stream, oracle PASS (not self-compare), all-sky byte-unchanged, default-off. (Follow-up: runtime threads with_clear_sky through M9Diagnostics for operational wrfout.)
 - Tier1 done: #1,#2,#3,#6,#8. Tier2 done: reproducibility, PD-moisture, MYJ+Janjic, clear-sky.
 - RUNNING: community-validation, moisture-wiring(#7-correctness core-dycore), GPT-moisture-cross-check (codex), optics/taumol-chunk (NEW: LW _lw_solver_base + SW optics VRAM floor → unblocks #4 GWD-nested).
+
+**2026-06-08 ~08:49** — community-validation (T2) MERGED `ad01bff`: scripts/community_validation.sh PASS (idealized Straka+warm-bubble, conservation budgets, bitwise-restart). Tier2 5/9 done. LESSON: GPT cross-check via `codex exec "<longprompt>"` arg hung on stdin; use stdin pipe for long prompts. AVOID pkill -f "codex" (self-matches our own codex). moisture-wiring GPT-cross-check re-run robustly at merge.
