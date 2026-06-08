@@ -137,11 +137,16 @@ def test_all_routed_entrypoints_exist_on_module() -> None:
 
 
 def test_nested_wrf_style_mapping_resolves() -> None:
+    # YSU (bl=1) re-derives its surface forcing from the revised-MM5 surface layer,
+    # so it is faithful ONLY with sf_sfclay_physics=1; pin it (a WRF-valid isfc=1
+    # pairing) so this stays a gate-ready combo rather than a silent substitution.
     suite = resolve_physics_suite(
-        {"physics": {"mp_physics": [6, 6], "bl_pbl_physics": 1, "cu_physics": 3}}
+        {"physics": {"mp_physics": [6, 6], "bl_pbl_physics": 1,
+                     "sf_sfclay_physics": 1, "cu_physics": 3}}
     )
     assert suite.microphysics.option == 6
     assert suite.pbl.option == 1
+    assert suite.surface_layer.option == 1
     assert suite.cumulus.option == 3
     # GF cu=3 is now the v0.9.0 GPU-batched scan-wired adapter -> gate-ready
     # (WSM6 + YSU + GF are all GPU-runnable).

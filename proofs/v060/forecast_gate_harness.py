@@ -175,14 +175,20 @@ def validate_combo(combo: ForecastCombo) -> ComboReadiness:
     return readiness
 
 
-# Fully-scan-wired alternate combos (post-consolidation 2026-06-04). YSU (bl=1) and
-# ACM2 (bl=7) are now the v0.6.0 jax.lax.scan/vmap GPU-op rewrites and ARE scan-wired,
-# so canonical combo_3 (ACM2) is already GPU-scan-runnable. The only canonical combo
-# still unwired is combo_2, whose Noah-classic land (sf_surface=2) needs the explicit
-# noahclassic_static/noahclassic_land bundle the readiness stub does not attach. These
-# alternates swap Noah-classic for Noah-MP(4) so the microphysics (WSM6/Morrison/WDM6/
-# Kessler), surface-layer (revised-MM5/Pleim-Xiu) and cumulus (KF/Tiedtke) schemes are
-# exercised end-to-end on the GPU scan without depending on the Noah-classic bundle.
+# Fully-scan-wired alternate combos (post-consolidation 2026-06-04; pairing-fix
+# 2026-06-08). YSU (bl=1) and ACM2 (bl=7) are the v0.6.0 jax.lax.scan/vmap GPU-op
+# rewrites, but their scan adapters re-derive surface forcing from the REVISED-MM5
+# surface layer, so they are faithful ONLY with sf_sfclay_physics=1 (WRF isfc=1).
+# Canonical combo_3 (ACM2 bl=7 + Pleim-Xiu sf=7) therefore now FAILS CLOSED in the
+# dispatcher (it would silently substitute revised-MM5 forcing for Pleim-Xiu); the
+# scan-wired variant below uses MYNN (bl=5), which consumes the SELECTED scheme's
+# State flux handles and so pairs correctly with Pleim-Xiu. Canonical combo_2 (YSU
+# bl=1 + revised-MM5 sf=1) is a VALID isfc=1 pairing; it is still unwired only because
+# its Noah-classic land (sf_surface=2) needs the explicit noahclassic_static/
+# noahclassic_land bundle the readiness stub does not attach. These alternates swap
+# Noah-classic for Noah-MP(4) so the microphysics (WSM6/Morrison/WDM6/Kessler),
+# surface-layer (revised-MM5/Pleim-Xiu) and cumulus (KF/Tiedtke) schemes are exercised
+# end-to-end on the GPU scan without depending on the Noah-classic bundle.
 SCAN_WIRED_COMBOS: tuple[ForecastCombo, ...] = (
     ForecastCombo(
         combo_id="combo_2w_wsm6_mynn_revisedmm5_noahmp_kf",
