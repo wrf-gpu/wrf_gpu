@@ -1,0 +1,242 @@
+{
+  "schema_version": "v014-same-state-tendency-inventory-v1",
+  "generated_by": "gpt-5.5-xhigh-sidecar",
+  "scope": {
+    "purpose": "CPU-first same-state tendency localization design after static/base parity",
+    "edits_to_src": false,
+    "gpu_consumed": false,
+    "truth_requirement": "CPU WRF source-derived term savepoints, not JAX self-comparison"
+  },
+  "case": {
+    "name": "l2_d02_20260501_18z_l2_72h_case3",
+    "jax_retained_outputs_for_selection_only": "/tmp/v0120_powered_tost_runs/l2_d02_20260501_18z_l2_72h_20260519T173026Z",
+    "cpu_wrf_history": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z",
+    "lead_candidates": ["h10", "h8", "h12", "h14"],
+    "preferred_first_lead": "h10"
+  },
+  "sample_selection": {
+    "region": "ocean_or_low_terrain_interior",
+    "filters": {
+      "boundary_frame_exclusion_cells": 8,
+      "preferred_landmask": "LANDMASK == 0",
+      "fallback_low_terrain": "HGT < 300 m",
+      "rank_by": ["abs(dV10)", "abs(dU10)", "abs(dPSFC)", "low_level_abs(dU_dV_dP_dPH_MU)"]
+    },
+    "cell_count": {
+      "minimum": 16,
+      "preferred": 32
+    },
+    "patch": {
+      "preferred_execution": "full_domain_cpu_then_crop_stats",
+      "minimum_halo_cells_if_cropped": 8,
+      "vertical_levels": "all",
+      "native_staggering": ["mass", "u", "v", "w_ph"]
+    }
+  },
+  "jax_code_paths": [
+    {
+      "group": "rk_stage_orchestration",
+      "file": "src/gpuwrf/runtime/operational_mode.py",
+      "functions": ["_rk_scan_step"],
+      "lines_inspected": "2159-2262",
+      "terms": ["stage_input_state", "rk_weights", "large_step_tendencies", "prep_state", "acoustic_result"]
+    },
+    {
+      "group": "large_step_assembly",
+      "file": "src/gpuwrf/runtime/operational_mode.py",
+      "functions": ["_augment_large_step_tendencies"],
+      "lines_inspected": "1693-1991",
+      "terms": ["advective_tendencies", "diffusive_tendencies", "large_step_pgf", "coriolis", "dry_source_folding"]
+    },
+    {
+      "group": "physics_source_timing",
+      "file": "src/gpuwrf/runtime/operational_mode.py",
+      "functions": ["_physics_step_forcing", "_dry_physics_tendencies_from_state_delta", "_apply_physics_non_dry_updates"],
+      "lines_inspected": "2758-3057",
+      "terms": ["raw_dry_tendf_availability", "state_delta_physics", "radiation_held_rate_path"]
+    },
+    {
+      "group": "large_step_pgf_coriolis_addtend",
+      "file": "src/gpuwrf/dynamics/core/rk_addtend_dry.py",
+      "functions": ["large_step_horizontal_pgf", "large_step_coriolis", "rk_addtend_dry"],
+      "lines_inspected": "193-495",
+      "terms": ["ru_pgf", "rv_pgf", "ru_cor", "rv_cor", "ru_tendf", "rv_tendf", "rw_tendf", "ph_tendf", "t_tendf", "mu_tendf"]
+    },
+    {
+      "group": "acoustic_state_and_scan",
+      "file": "src/gpuwrf/runtime/operational_mode.py",
+      "functions": ["_acoustic_core_state_from_prep", "_acoustic_scan", "_carry_from_finished_stage"],
+      "lines_inspected": "1194-1687",
+      "terms": ["php_stage", "rw_tend_pg_buoy", "ph_tend", "boundary_targets", "finished_stage_state"]
+    },
+    {
+      "group": "acoustic_uv",
+      "file": "src/gpuwrf/dynamics/core/acoustic.py",
+      "functions": ["advance_uv_wrf", "acoustic_substep_core"],
+      "lines_inspected": "456-582, 633-903",
+      "terms": ["large_step_u_add", "large_step_v_add", "small_step_x_pgf", "small_step_y_pgf", "emdiv", "normal_boundary_work", "ru_m", "rv_m"]
+    },
+    {
+      "group": "mu_theta",
+      "file": "src/gpuwrf/dynamics/mu_t_advance.py",
+      "functions": ["advance_mu_t_wrf", "_advance_mu_t_periodic", "_advance_mu_t_specified_or_nested"],
+      "lines_inspected": "81-344",
+      "terms": ["dvdxi", "dmdt", "mu_tendency", "mu_work_new", "mudf", "muts", "muave", "ww", "theta_tendency"]
+    },
+    {
+      "group": "w_ph_vertical",
+      "file": "src/gpuwrf/dynamics/core/advance_w.py",
+      "functions": ["pg_buoy_w_dry", "advance_w_wrf"],
+      "lines_inspected": "88-380",
+      "terms": ["rw_tend_pg_buoy", "vertical_pressure_buoyancy", "w_next", "ph_rhs_related_inputs"]
+    },
+    {
+      "group": "rhs_ph",
+      "file": "src/gpuwrf/dynamics/core/rhs_ph.py",
+      "functions": ["rhs_ph_wrf"],
+      "lines_inspected": "68-195",
+      "terms": ["ph_tend", "omega_vertical_advection", "gw_term", "horizontal_advection_terms"]
+    },
+    {
+      "group": "pressure_rho",
+      "file": "src/gpuwrf/dynamics/core/calc_p_rho.py",
+      "functions": ["calc_p_rho_wrf", "calc_p_rho_step"],
+      "lines_inspected": "95-173",
+      "terms": ["p", "alt", "al", "rho"]
+    },
+    {
+      "group": "small_step_prep_finish",
+      "file": "src/gpuwrf/dynamics/core/small_step_prep.py",
+      "functions": ["small_step_prep_wrf"],
+      "lines_inspected": "190-325",
+      "terms": ["u_work", "v_work", "theta_work", "w_work", "ph_work", "p", "alt", "cqu", "cqv", "php"]
+    },
+    {
+      "group": "small_step_finish",
+      "file": "src/gpuwrf/dynamics/core/small_step_finish.py",
+      "functions": ["small_step_finish_wrf"],
+      "lines_inspected": "22-77",
+      "terms": ["u", "v", "w", "theta", "ph", "mu"]
+    },
+    {
+      "group": "advection",
+      "file": "src/gpuwrf/dynamics/advection.py",
+      "functions": ["compute_advection_tendencies"],
+      "lines_inspected": "262-274",
+      "terms": ["primitive_u_adv", "primitive_v_adv", "primitive_w_adv", "primitive_scalar_adv"]
+    },
+    {
+      "group": "flux_advection",
+      "file": "src/gpuwrf/dynamics/flux_advection.py",
+      "functions": ["couple_velocities_periodic", "advect_u_flux", "advect_v_flux", "advect_w_flux", "advect_scalar_flux"],
+      "lines_inspected": "171-247, 878-1150",
+      "terms": ["ru", "rv", "rom", "ru_adv", "rv_adv", "rw_adv", "scalar_flux_adv"]
+    },
+    {
+      "group": "diffusion",
+      "file": "src/gpuwrf/dynamics/explicit_diffusion.py",
+      "functions": ["sixth_order_diffusion_tendency", "constant_k_diffusion_tendency", "conservative_constant_k_diffusion_tendency", "smag2d_horizontal_km", "horizontal_diffusion_coord_scalar_tendency", "horizontal_diffusion_coord_momentum_tendency"],
+      "lines_inspected": "198-329, 1114-1335",
+      "terms": ["sixth_order_diffusion", "constant_k_diffusion", "smagorinsky_diffusion"]
+    },
+    {
+      "group": "boundary_spec_relax",
+      "file": "src/gpuwrf/coupling/boundary_apply.py",
+      "functions": ["apply_lateral_boundaries", "apply_normal_bdy_work", "nested_ph_relax_tendency", "nested_w_relax_tendency", "spec_bdyupdate_ph_inloop"],
+      "lines_inspected": "148-230, 760-1033",
+      "terms": ["end_step_boundary_delta", "normal_boundary_work", "ph_relax_tendency", "w_relax_tendency", "ph_inloop_update"]
+    }
+  ],
+  "wrf_truth_instrumentation_candidates": [
+    {
+      "area": "rk_orchestration",
+      "candidate_files": ["dyn_em/solve_em.F", "dyn_em/module_em.F"],
+      "routines": ["rk_tendency", "rk_addtend_dry"],
+      "save": ["stage_input_state", "stage_weights", "total_tendencies_pre_source", "total_tendencies_post_source"]
+    },
+    {
+      "area": "horizontal_pgf_coriolis_diffusion",
+      "candidate_files": ["dyn_em/module_big_step_utilities_em.F", "dyn_em/module_diffusion_em.F"],
+      "routines": ["horizontal_pressure_gradient", "coriolis", "diffusion_helpers"],
+      "save": ["ru_pgf", "rv_pgf", "ru_cor", "rv_cor", "diffusion_terms"]
+    },
+    {
+      "area": "advection",
+      "candidate_files": ["dyn_em/module_advect_em.F"],
+      "routines": ["advect_u", "advect_v", "advect_w", "advect_scalar"],
+      "save": ["coupled_fluxes", "ru_adv", "rv_adv", "rw_adv", "scalar_adv"]
+    },
+    {
+      "area": "small_step",
+      "candidate_files": ["dyn_em/module_small_step_em.F"],
+      "routines": ["small_step_prep", "advance_uv", "advance_mu_t", "advance_w", "calc_p_rho", "small_step_finish"],
+      "save": ["work_arrays", "small_step_pgf", "emdiv", "dvdxi", "dmdt", "mu_tendency", "ww", "rw_terms", "finished_state"]
+    },
+    {
+      "area": "boundary",
+      "candidate_files": ["dyn_em/module_bc_em.F", "share/module_bc.F"],
+      "routines": ["specified_boundary_update", "relax_boundary_update", "inloop_boundary_work"],
+      "save": ["boundary_before_after", "normal_momentum_work", "ph_w_relax"]
+    },
+    {
+      "area": "physics_source",
+      "candidate_files": ["dyn_em/module_first_rk_step_part2.F", "phys/module_pbl_driver.F", "physics_drivers_active_in_case"],
+      "routines": ["physics_driver_outputs", "source_tendency_folding"],
+      "save": ["RUBLTEN", "RVBLTEN", "RTHRATEN", "RTHBLTEN", "RTHCUTEN", "RQ_tendencies", "MUTTEN", "tendf_fields_entering_rk_addtend_dry"]
+    }
+  ],
+  "term_groups_in_compare_order": [
+    "stage_input_parity",
+    "mass_coupling",
+    "momentum_advection",
+    "diffusion",
+    "large_step_horizontal_pgf",
+    "coriolis",
+    "source_tendency_folding",
+    "final_large_step_tendency",
+    "small_step_prep",
+    "acoustic_uv",
+    "mu_theta",
+    "w_ph_pressure_refresh",
+    "end_step_boundary_spec_relax"
+  ],
+  "data_dependencies": [
+    "V014 static/base parity proof",
+    "CPU WRF wrfout h8-h14 for cell selection and context",
+    "wrfinput for initial/static/base fields",
+    "wrfbdy for specified/nested boundary leaves",
+    "WRF namelist and operational switches",
+    "validation-instrumented CPU WRF term savepoints",
+    "JAX retained outputs only for high-error cell selection"
+  ],
+  "cpu_only_command_template": "CUDA_VISIBLE_DEVICES= JAX_PLATFORMS=cpu PYTHONPATH=src python <same_state_harness>.py --savepoint <wrf_term_savepoint> --cells <cell_manifest>",
+  "pass_fail_rule": {
+    "finite": true,
+    "native_stagger_shape_exact": true,
+    "static_abs_tolerance": "1e-12",
+    "tendency_abs_tolerance": "max(1e-9, 1e-11 * term_scale)",
+    "tendency_rel_tolerance": "1e-9",
+    "updated_state_abs_tolerance": "max(1e-8, 1e-10 * field_scale)",
+    "updated_state_rel_tolerance": "1e-8",
+    "no_after_the_fact_tolerance_tuning": true
+  },
+  "known_risks": [
+    "Dynamic tendency work is premature until static/base parity is green or formally root-caused as writer-only.",
+    "Current JAX dry physics/source tendency path is mostly empty except radiation held-rate, while WRF may fold raw source tendencies through rk_addtend_dry.",
+    "Flux advection path documents periodic-oriented assumptions; interior-cell selection reduces but does not eliminate accumulated boundary/stencil risk.",
+    "Patch cropping may invalidate stencils or boundary logic; full-domain CPU execution is preferred for the first proof if feasible.",
+    "Existing savepoint tests are not same-state WRF term oracles."
+  ],
+  "recommended_next_sprint": {
+    "name": "V015 same-state CPU tendency localization",
+    "trigger": "V014 static/base parity green but U/V/P/PH/MU divergence remains",
+    "objective": "Build CPU-only WRF term oracle and JAX same-state comparison harness for h8-h14 ocean/low-terrain interior cells; identify first failing named term; do not implement model fixes.",
+    "deliverables": [
+      "WRF validation hook patch or external instrumented-WRF note",
+      "cell-selection manifest",
+      "CPU-only JAX comparison script and manifest",
+      "JSON proof with per-term stats and first failing term",
+      "Markdown review and next fix-sprint recommendation"
+    ]
+  }
+}
