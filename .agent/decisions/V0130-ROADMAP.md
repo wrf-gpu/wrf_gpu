@@ -109,3 +109,8 @@ closure + outsider-runnable reproducibility + community-standard benchmarks.
 - ✅ **compile-speed** (T1#1) MERGED `4227ef6`, GPU-VALIDATED: real-GPU import clean (no v0.12 abort, XLA_FLAGS=None, autotune default-off); 22 tests. Autotune-effect gated/opt-in until measured.
 - Tier1 done: #1, #3, #6. Tier2 done: reproducibility, PD-moisture(fn-level). RUNNING: MYJ+Janjic (CPU).
 - NEXT: #4 GWD-on-nested fit test (24h-nested-1km+GWD on the chunked trunk — does it clear the hr7 OOM now?); if OOM→optics/taumol follow-up needed first.
+
+**2026-06-08 ~08:23** — wave 3:
+- ✅ **MYJ-PBL + Janjic-sfclay** (T2) MERGED `c612ab9`: reference-only→operational, oracle PASS vs v0.6.0 pristine-WRF savepoints (worst PBL 2.7e-11/SFC 1.6e-10), default byte-unchanged + fail-closed pairing, 101 tests. Follow-up: end-to-end coupled-RMSE (only per-scheme parity proven).
+- RUNNING (max-parallel): GWD-nested-gate (GPU, compiling), TOST-rc2-fix, multi-GPU-fakemesh, clear-sky-radiation, community-validation (CPU).
+- Tier1 done: #1,#3,#6. Tier2 done: reproducibility, PD-moisture, MYJ+Janjic.
