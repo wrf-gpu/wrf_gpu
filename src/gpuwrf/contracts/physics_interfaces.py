@@ -432,6 +432,42 @@ SCHEME_STEP_SPECS: tuple[PhysicsStepSpec, ...] = (
         writes_state=("theta", "qv", "qc", "qr", "qi", "qs"),
         returns_accumulators=("rainc_acc",),
         diagnostics=("raincv", *CUMULUS_TENDENCY_MEMBERS[16]),
+        notes="v0.13 Tier-3 reference-only: single-column fp64 pristine-WRF oracle "
+        "staged (proofs/v013/oracle/cumulus/ntiedtke_*); traceable JAX kernel is a "
+        "carry-over (fail-closed in the operational scan).",
+    ),
+    PhysicsStepSpec(
+        family="cumulus",
+        option=5,
+        name="Grell-3D ensemble",
+        wrf_slot="first_rk_cumulus_driver",
+        owner_module="src/gpuwrf/physics/cumulus_g3.py",
+        oracle="v0.13 single-column fp64 pristine-WRF savepoint harness "
+        "(proofs/v013/oracle/cumulus) vs unmodified phys/module_cu_g3.F:G3DRV "
+        "(module verified to compile standalone; G3DRV driver + savepoints are a "
+        "Tier-3 carry-over)",
+        reads_state=("u", "v", "w", "theta", "qv", "qc", "qr", "qi", "qs", "p", "pb", "ph", "mu"),
+        writes_state=("theta", "qv", "qc", "qi"),
+        returns_accumulators=("rainc_acc",),
+        diagnostics=("raincv", *CUMULUS_TENDENCY_MEMBERS[5]),
+        notes="v0.13 Tier-3 reference-only: oracle harness scaffolded (G3DRV driver "
+        "+ savepoints + traceable JAX kernel are a carry-over); fail-closed in the "
+        "operational scan.",
+    ),
+    PhysicsStepSpec(
+        family="cumulus",
+        option=14,
+        name="KIM Simplified Arakawa-Schubert",
+        wrf_slot="first_rk_cumulus_driver",
+        owner_module="src/gpuwrf/physics/cumulus_ksas.py",
+        oracle="v0.13 single-column fp64 pristine-WRF savepoint "
+        "(proofs/v013/oracle/cumulus/ksas_*) vs unmodified phys/module_cu_ksas.F:cu_ksas",
+        reads_state=("u", "v", "w", "theta", "qv", "qc", "qr", "qi", "qs", "p", "pb", "ph", "mu"),
+        writes_state=("theta", "qv", "qc", "qi"),
+        returns_accumulators=("rainc_acc",),
+        diagnostics=("raincv", *CUMULUS_TENDENCY_MEMBERS[14]),
+        notes="v0.13 Tier-3 reference-only: oracle staged; traceable JAX column "
+        "kernel is a carry-over (fail-closed in the operational scan).",
     ),
     PhysicsStepSpec(
         family="land_surface",

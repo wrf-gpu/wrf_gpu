@@ -1,0 +1,124 @@
+{
+  "description": "Tier-3 cumulus family: pristine-WRF fp64 oracle integrity, default byte-unchanged, fail-closed honesty, per-scheme kernel parity (when wired).",
+  "dispatch": {
+    "all_fail_closed_ok": true,
+    "cu_scan_adapter_codes": [
+      1,
+      2,
+      3,
+      6
+    ],
+    "default_byte_unchanged": true,
+    "expected_operational": [
+      0,
+      1,
+      2,
+      3,
+      6
+    ],
+    "fail_closed": {
+      "5": {
+        "fail_closed_ok": true,
+        "label": "Grell-3D",
+        "named_reason": "Grell-3D ensemble has a single-column fp64 pristine-WRF oracle staged (proofs/v013); traceable JAX column kernel is a Tier-3 carry-over",
+        "operationally_wired": false
+      },
+      "14": {
+        "fail_closed_ok": true,
+        "label": "KIM-SAS",
+        "named_reason": "KIM-SAS has a single-column fp64 pristine-WRF oracle staged (proofs/v013); traceable JAX column kernel is a Tier-3 carry-over",
+        "operationally_wired": false
+      },
+      "16": {
+        "fail_closed_ok": true,
+        "label": "New-Tiedtke",
+        "named_reason": "New Tiedtke is interface-compatible but not separately savepoint-gated by a distinct WRF source path; GPU-batching/gating TODO",
+        "operationally_wired": false
+      }
+    },
+    "operational_cu_physics": [
+      0,
+      1,
+      2,
+      3,
+      6
+    ]
+  },
+  "gate_pass": true,
+  "generated_utc": "2026-06-08T11:43:23.131734+00:00",
+  "operational_schemes": [],
+  "oracle_staged_schemes": [
+    16,
+    14
+  ],
+  "proof": "v013-t3-cumulus-oracle",
+  "schemes": {
+    "5": {
+      "kernel_parity": null,
+      "label": "Grell-3D",
+      "oracle": {
+        "built": false,
+        "reason": "no savepoints on disk"
+      },
+      "status": "not-built",
+      "stem": "g3"
+    },
+    "14": {
+      "kernel_parity": null,
+      "label": "KIM-SAS",
+      "oracle": {
+        "active_cases": [
+          1,
+          3
+        ],
+        "all_finite": true,
+        "built": true,
+        "cases_present": [
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "nontrivial": true,
+        "null_cases": [
+          2,
+          4,
+          5
+        ],
+        "schema": "wrf-v013-cumulus-column-savepoint-v1",
+        "self_compare": false
+      },
+      "status": "oracle-staged (kernel carry-over)",
+      "stem": "ksas"
+    },
+    "16": {
+      "kernel_parity": null,
+      "label": "New-Tiedtke",
+      "oracle": {
+        "active_cases": [
+          1,
+          3
+        ],
+        "all_finite": true,
+        "built": true,
+        "cases_present": [
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "nontrivial": true,
+        "null_cases": [
+          4,
+          5
+        ],
+        "schema": "wrf-v013-cumulus-column-savepoint-v1",
+        "self_compare": false
+      },
+      "status": "oracle-staged (kernel carry-over)",
+      "stem": "ntiedtke"
+    }
+  }
+}

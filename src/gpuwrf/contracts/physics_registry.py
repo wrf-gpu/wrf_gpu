@@ -60,7 +60,7 @@ class SchemeOption:
 ACCEPTED_MP_PHYSICS: tuple[int, ...] = (0, 1, 2, 3, 4, 6, 8, 10, 16)
 ACCEPTED_BL_PBL_PHYSICS: tuple[int, ...] = (0, 1, 2, 5, 7, 8)
 ACCEPTED_SF_SFCLAY_PHYSICS: tuple[int, ...] = (0, 1, 2, 5, 7)
-ACCEPTED_CU_PHYSICS: tuple[int, ...] = (0, 1, 2, 3, 6, 16)
+ACCEPTED_CU_PHYSICS: tuple[int, ...] = (0, 1, 2, 3, 5, 6, 14, 16)
 ACCEPTED_SF_SURFACE_PHYSICS: tuple[int, ...] = (0, 2, 4)
 ACCEPTED_RA_SW_PHYSICS: tuple[int, ...] = (0, 1, 4)
 ACCEPTED_RA_LW_PHYSICS: tuple[int, ...] = (0, 1, 4)
@@ -120,7 +120,16 @@ CU_SCHEMES: Mapping[int, SchemeOption] = {
     # slot (CU_SCAN_ADAPTERS[3], stateless State->State), savepoint-parity-gated
     # against unmodified module_cu_gf_*.F (proofs/v060/gf_gpubatch_savepoint_parity.json).
     3: SchemeOption("cu_physics", 3, "Grell-Freitas", "gfscheme", "implemented", "cumulus"),
+    # Grell-3D (5) is a v0.13 Tier-3 reference-only scheme: a single-column fp64
+    # pristine-WRF oracle is staged (proofs/v013/oracle/cumulus), but the
+    # traceable JAX column kernel is a documented carry-over, so it is "accepted"
+    # (selectable for a single-column reference comparison) and fail-closes in the
+    # operational scan -- NOT in CU_SCAN_ADAPTERS / _SCAN_WIRED_OPTIONS.
+    5: SchemeOption("cu_physics", 5, "Grell-3D ensemble", "g3scheme", "accepted", "cumulus"),
     6: SchemeOption("cu_physics", 6, "Tiedtke", "tiedtkescheme", "accepted", "cumulus"),
+    # KIM Simplified Arakawa-Schubert (14): v0.13 Tier-3 reference-only, same
+    # status as Grell-3D above (fp64 oracle staged, JAX kernel carry-over).
+    14: SchemeOption("cu_physics", 14, "KIM Simplified Arakawa-Schubert", "ksasscheme", "accepted", "cumulus"),
     16: SchemeOption("cu_physics", 16, "New Tiedtke", "ntiedtkescheme", "accepted", "cumulus"),
 }
 
@@ -429,7 +438,12 @@ CUMULUS_TENDENCY_MEMBERS: Mapping[int, tuple[str, ...]] = {
     1: ("rucuten", "rvcuten", "rthcuten", "rqvcuten", "rqrcuten", "rqccuten", "rqscuten", "rqicuten"),
     2: ("rthcuten", "rqvcuten"),
     3: ("rthcuten", "rqvcuten", "rqrcuten", "rqccuten", "rqscuten", "rqicuten"),
+    # Grell-3D(5) writes theta/qv/qc/qi cumulus tendencies + cumulus momentum
+    # (RU/RV CUTEN); KSAS(14) likewise. Both are reference-only (oracle dumps
+    # exactly these tendency fields, proofs/v013/oracle/cumulus).
+    5: ("rthcuten", "rqvcuten", "rqccuten", "rqicuten", "rucuten", "rvcuten"),
     6: ("rthcuten", "rqvcuten", "rqrcuten", "rqccuten", "rqscuten", "rqicuten"),
+    14: ("rthcuten", "rqvcuten", "rqccuten", "rqicuten", "rucuten", "rvcuten"),
     16: ("rthcuten", "rqvcuten", "rqrcuten", "rqccuten", "rqscuten", "rqicuten"),
 }
 
@@ -448,7 +462,12 @@ CUMULUS_CARRY_MEMBERS: Mapping[int, tuple[str, ...]] = {
         "kbcon_shallow",
         "ktop_shallow",
     ),
+    # 5 (Grell-3D) / 14 (KSAS) are v0.13 Tier-3 reference-only: their JAX kernel
+    # is a carry-over, so no persistent operational cumulus carry is threaded yet
+    # (empty, like New-Tiedtke 16). Promotion to operational would populate these.
+    5: (),
     6: (),
+    14: (),
     16: (),
 }
 
