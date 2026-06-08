@@ -1,0 +1,125 @@
+{
+  "schema": "V013TwoWayVRAM",
+  "verdict": "TWO_WAY_VRAM_REDUCED_BIT_IDENTICAL",
+  "operator": "WRF copy_fcn odd-ratio area-average + sm121 1-2-1 feedback-zone smoother",
+  "change": "apply_state_feedback rebuilds each total ONCE and shares the buffer with its legacy alias (was computed twice); removed 6 redundant full-parent-field temporaries. Feedback MATH unchanged.",
+  "rejected_alternatives": [
+    "jax.jit(feedback): bit-identical but PEAK-HIGHER (XLA parallel leaf transients vs eager one-leaf-at-a-time working set).",
+    "interior-slab jnp.concatenate sm121: bit-identical but PEAK-WORSE for the large d01->d02 overlap."
+  ],
+  "two_way_state_finite": true,
+  "bit_identity": {
+    "reference": "pre-change apply_state_feedback snapshot (git-pinned)",
+    "all_bit_identical": true,
+    "max_abs_diff_over_all_leaves": 0.0,
+    "max_rel": 0.0,
+    "per_field": {
+      "theta": {
+        "max_abs_diff": 0.0,
+        "bit_identical": true
+      },
+      "u": {
+        "max_abs_diff": 0.0,
+        "bit_identical": true
+      },
+      "v": {
+        "max_abs_diff": 0.0,
+        "bit_identical": true
+      },
+      "w": {
+        "max_abs_diff": 0.0,
+        "bit_identical": true
+      },
+      "qv": {
+        "max_abs_diff": 0.0,
+        "bit_identical": true
+      },
+      "p_total": {
+        "max_abs_diff": 0.0,
+        "bit_identical": true
+      },
+      "p": {
+        "max_abs_diff": 0.0,
+        "bit_identical": true
+      },
+      "ph_total": {
+        "max_abs_diff": 0.0,
+        "bit_identical": true
+      },
+      "ph": {
+        "max_abs_diff": 0.0,
+        "bit_identical": true
+      },
+      "mu_total": {
+        "max_abs_diff": 0.0,
+        "bit_identical": true
+      },
+      "mu": {
+        "max_abs_diff": 0.0,
+        "bit_identical": true
+      },
+      "p_perturbation": {
+        "max_abs_diff": 0.0,
+        "bit_identical": true
+      },
+      "ph_perturbation": {
+        "max_abs_diff": 0.0,
+        "bit_identical": true
+      },
+      "mu_perturbation": {
+        "max_abs_diff": 0.0,
+        "bit_identical": true
+      },
+      "qke": {
+        "max_abs_diff": 0.0,
+        "bit_identical": true
+      }
+    }
+  },
+  "peak_vram": {
+    "device": "NVIDIA GeForce RTX 5090",
+    "edge": "d02->d03 (1 km) feedback edge, ratio 3, nz 44, parent 159x66, child 93x75",
+    "measure_helper": "proofs/v013/_twoway_vram_measure.py",
+    "method": "fresh process per mode (device peak counter is monotonic); transient = peak_post - peak_pre on top of the resident states; XLA_PYTHON_CLIENT_PREALLOCATE=false BFC allocator for honest peak stats",
+    "before": {
+      "feedback_transient_bytes": 82682624,
+      "feedback_transient_mib": 78.852,
+      "peak_post_bytes": 270137088,
+      "peak_post_mib": 257.623,
+      "resident_after_bytes": 257606656
+    },
+    "after": {
+      "feedback_transient_bytes": 73153024,
+      "feedback_transient_mib": 69.764,
+      "peak_post_bytes": 260607744,
+      "peak_post_mib": 248.535,
+      "resident_after_bytes": 255831808
+    },
+    "transient_reduction_bytes": 9529600,
+    "transient_reduction_mib": 9.088,
+    "transient_reduction_pct": 11.5,
+    "peak_post_reduction_mib": 9.088,
+    "note": "Eager feedback transient (working set on top of the resident states) dropped ~9.1 MiB / ~11.5% by removing the 6 redundant full-parent-field temporaries (duplicate base-state subtraction + add for each of p/ph/mu total+alias).  The saving is full-parent-field-sized (independent of overlap), so it scales with the parent grid.  Peak VRAM for the feedback step fell by the same ~9.5 MiB. Bit-identical."
+  },
+  "headroom": {
+    "one_way_gwd_24h": "GREEN (proofs/v013/gwd_nested_24h_gate.json)",
+    "marginal_reduction": "per-feedback-event transient cut ~9.1 MiB / ~11.5% (parent-field-scaled)",
+    "closing_gate": "the 2-way + GWD 24 h GPU re-run is the closing gate; this proof supplies the bit-inertness + marginal-VRAM-reduction evidence for it.",
+    "one_way_gwd_24h_detail": {
+      "gate": "v0.13_GWD_nested_1km_24h (#4)",
+      "date": "2026-06-08",
+      "trunk": "optics/taumol-chunked",
+      "config": "standalone_native_init_nested max_dom=3 (9/3/1km) 24h, GWD ON (gwd_opt=1, GPUWRF_GWD_NESTED default-on)",
+      "verdict": "PIPELINE_GREEN",
+      "all_domains_finite": true,
+      "all_outputs_present": true,
+      "wrfout_per_domain": 24,
+      "wall_clock_forecast_only_s": 6708.5,
+      "hr24": {
+        "d03": "T2[279.6,300.9] U10[-12.4,8.6] V10[-14.3,4.1] RAINNC[0,11.6] ALLFIN",
+        "d01": "T2[288.8,301.7] ALLFIN"
+      },
+      "note": "GWD-on-nested (#4) GREEN \u2014 the 24h nested-1km+GWD run that OOM'd at step0/hr7 in v0.12.0 now FITS after the v0.13 RRTMG g-point+optics/taumol VRAM chunking (SW -88.6%/LW -43.6%). GWD flipped default-ON (gwd_opt=1 honoured; GPUWRF_GWD_NESTED=0 to force off). Completion+finiteness gate, not skill-vs-truth."
+    }
+  }
+}
