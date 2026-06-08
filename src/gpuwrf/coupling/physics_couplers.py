@@ -1901,6 +1901,15 @@ def _rrtm_lw_column_inputs(
 
     _, surface_emissivity = _surface_radiation_properties(state, land_state=land_state)
 
+    # F1: plumb the grid's REAL model-top pressure so the kernel sizes its
+    # above-model-top RRTM buffer (nbuf=nint(p_top_mb/4), WRF module_ra_rrtm.F:6781)
+    # to THIS grid's top -- not the hardcoded 5000 Pa. It is a STATIC Python float
+    # (it sets traced-array shapes), constant-folded into the trace. ``grid is None``
+    # (proof / bare-kernel callers) keeps the legacy 5000-Pa fallback (None).
+    top_pressure_pa = None
+    if grid is not None:
+        top_pressure_pa = float(grid.vertical.top_pressure_pa)
+
     return RRTMLWColumnState(
         T=_cols(T),
         t8w=t8w_cols,
@@ -1917,6 +1926,7 @@ def _rrtm_lw_column_inputs(
         rho=rho_cols,
         emiss=jnp.asarray(surface_emissivity).reshape(ncol),
         tsk=jnp.asarray(state.t_skin).reshape(ncol),
+        top_pressure_pa=top_pressure_pa,
     )
 
 

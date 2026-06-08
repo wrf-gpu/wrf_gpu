@@ -5,11 +5,126 @@
   "overall_pass": true,
   "canonical_fp64_pass": true,
   "secondary_fp32_pass": true,
+  "non_5000_ptop_pass": true,
+  "negative_pressure_guard_pass": true,
   "host_callback_free": true,
+  "v013_carryover_fixes": {
+    "F1_grid_aware_buffer": "ra_lw_rrtm_jax._nbuf / _prepare_atmosphere_jax / solve_rrtm_lw_column_jax now size the above-model-top buffer nbuf=nint(p_top_mb/4) from the grid's RRTMLWColumnState.top_pressure_pa (plumbed by coupling.physics_couplers._rrtm_lw_column_inputs from grid.vertical.top_pressure_pa), matching WRF module_ra_rrtm.F:6781; None falls back to DEFAULT_PTOP_PA=5000 (production bit-identical).",
+    "F2_fail_loud_guards": "the forbidden masking clamps jnp.maximum(pavel,1e-300) and jnp.clip(ifp,0,200) are replaced by positivity GUARDS: a non-positive prepared pavel/pz NaN-taints the column and a non-finite/out-of-range corr index NaN-taints the correction, so a mis-sized/pathological column NaN-propagates (the sanity gate fails loud) instead of emitting silent finite garbage. Positive-pressure production is unaffected."
+  },
+  "non_5000_ptop_oracle": {
+    "driver": "proofs/v060/oracle/rrtm_lw_ptop_oracle_driver.f90 (same UNMODIFIED module_ra_rrtm.F:RRTMLWRAD)",
+    "savepoints": "proofs/v060/savepoints_fp64/rrtm_lw_ptop_case_{1,2}.json (low-top 100mb, high-top 20mb)",
+    "source_checksums": "9f54e70db6258a521921d89ada864857a45c7b0cd134e25f498350f5aa49428e  module_ra_rrtm.F\nb249f472550dd2d8e594fb5d2474e280f423e5e339a9ff393d42c261098d5182  module_ra_clWRF_support.F\n4be1fa00674f947f306edde20433dc170b90ea1e71c0d25a98bcb6a0676e71ff  RRTM_DATA\n"
+  },
+  "non_5000_ptop_cases": {
+    "1": {
+      "label": "lowtop_ptop100mb",
+      "ptop_pa": 10000.0,
+      "nbuf_grid_aware": 25,
+      "nbuf_hardcoded": 13,
+      "F1_grid_aware_vs_oracle": {
+        "RTHRATEN": {
+          "max_abs": 8.165397611531455e-18,
+          "max_rel": 2.1567267686348927e-13,
+          "tol_rel": 0.001,
+          "pass": true
+        },
+        "GLW": {
+          "value": 328.03764461479994,
+          "oracle": 328.0376446147997,
+          "abs_err": 2.2737367544323206e-13,
+          "tol": 0.32803764461479973,
+          "pass": true
+        },
+        "OLR": {
+          "value": 259.8200760127383,
+          "oracle": 259.8200760127386,
+          "abs_err": 2.8421709430404007e-13,
+          "tol": 0.2598200760127386,
+          "pass": true
+        },
+        "finite": true,
+        "pass": true
+      },
+      "hardcoded_path_diverges": {
+        "rth_rel_vs_oracle": 0.048133294721908415,
+        "glw": 328.0615434556553,
+        "olr": 259.8203246791682,
+        "finite": true,
+        "diverges": true,
+        "note": "old DEFAULT_PTOP_PA=5000 buffer; must NOT match oracle (fix is load-bearing)"
+      },
+      "F2_fail_loud": {
+        "negative_buffer_regime": false,
+        "hardcoded_finite": true,
+        "pass": true,
+        "note": "low-top: hardcoded nbuf=13 undershoots TOA (finite but biased); F2 regime not triggered"
+      },
+      "pass": true
+    },
+    "2": {
+      "label": "hightop_ptop20mb",
+      "ptop_pa": 2000.0,
+      "nbuf_grid_aware": 5,
+      "nbuf_hardcoded": 13,
+      "F1_grid_aware_vs_oracle": {
+        "RTHRATEN": {
+          "max_abs": 2.1480755542369057e-17,
+          "max_rel": 5.569406702334214e-13,
+          "tol_rel": 0.001,
+          "pass": true
+        },
+        "GLW": {
+          "value": 328.17493283729675,
+          "oracle": 328.1749328372967,
+          "abs_err": 5.684341886080802e-14,
+          "tol": 0.3281749328372967,
+          "pass": true
+        },
+        "OLR": {
+          "value": 256.1195377251044,
+          "oracle": 256.1195377251046,
+          "abs_err": 1.7053025658242404e-13,
+          "tol": 0.2561195377251046,
+          "pass": true
+        },
+        "finite": true,
+        "pass": true
+      },
+      "hardcoded_path_diverges": {
+        "rth_rel_vs_oracle": NaN,
+        "glw": NaN,
+        "olr": NaN,
+        "finite": false,
+        "diverges": true,
+        "note": "old DEFAULT_PTOP_PA=5000 buffer; must NOT match oracle (fix is load-bearing)"
+      },
+      "F2_fail_loud": {
+        "negative_buffer_regime": true,
+        "hardcoded_finite": false,
+        "pass": true,
+        "note": "hardcoded nbuf=13 buffer -> negative pressure -> NaN (fail-loud, no finite garbage)"
+      },
+      "pass": true
+    }
+  },
+  "negative_pressure_guard": {
+    "model_top_pa": 3000.0,
+    "hardcoded_nbuf13_buffer_goes_negative": true,
+    "hardcoded_result": {
+      "glw": NaN,
+      "olr": NaN,
+      "is_nan_fail_loud": true
+    },
+    "grid_aware_result_finite": true,
+    "note": "legacy nbuf=13 buffer drives pressures negative -> kernel NaN-propagates (fail-loud) instead of the old maximum/clip masking clamps emitting finite garbage; grid-aware buffer makes the same column physical/finite",
+    "pass": true
+  },
   "self_compare": false,
   "self_compare_note": "The reference is the unmodified pristine WRF phys/module_ra_rrtm.F RRTMLWRAD source compiled standalone (proofs/v060/oracle, RRTM_DATA AER tables); the JAX kernel/coupler is never used to make the reference.",
   "oracle": {
-    "source": "~/src/wrf_pristine/WRF/phys/module_ra_rrtm.F",
+    "source": "/home/enric/src/wrf_pristine/WRF/phys/module_ra_rrtm.F",
     "entry": "RRTMLWRAD -> RRTM (AER 16-band k-distribution LW)",
     "source_unmodified": true,
     "full_wrf_exe": false,
@@ -28,7 +143,7 @@
   },
   "jax_precision": "fp64",
   "jax_platform": "cpu",
-  "git_head": "58ceb2954dbf666d5f9d84aa135825b5f01f12f2",
+  "git_head": "a057e04c545ce72c7d437133885cc1c29f1194b6",
   "predeclared_tolerances": {
     "rthraten_abs": 1e-08,
     "rthraten_rel": 0.001,
