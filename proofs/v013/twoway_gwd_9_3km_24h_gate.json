@@ -1,0 +1,15 @@
+{
+  "gate": "twoway_gwd_9_3km_24h",
+  "version": "v0.13.0",
+  "verdict": "PIPELINE_GREEN",
+  "config": "9/3km nested (max_dom=2), TWO-WAY feedback (--feedback) + GWD operational (gwd_opt=1, GPUWRF_GWD_NESTED default-on)",
+  "case": "Canary prod nested, 24h forecast",
+  "result": {"rc": 0, "wrfout_d01": 24, "wrfout_d02": 24, "all_domains_finite_at_final": true,
+             "finiteness_fields_checked": ["U","V","W","T","PH","QVAPOR","P"], "nonfinite_vars": "NONE",
+             "first_d01": "wrfout_d01_2026-05-31_19:00:00", "last_d01": "wrfout_d01_2026-06-01_18:00:00"},
+  "wall_clock": "14:30:45 -> 15:23:44 (~53 min)",
+  "what_it_proves": "RUNS-stability: 2-way-feedback + operational GWD integrate stably + finite to 24h at the fitting (9/3km) resolution. NOT an equivalence/skill claim.",
+  "hardware_limit_note": "The heaviest config 9/3/1km + 2-way + GWD + 24h is 32GB-VRAM-marginal (OOMs ~hr14, documented HW limit); 9/3km (this gate) fits. One-way GWD-nested 24h is fully GREEN (proofs/v013/gwd_nested_24h_gate.json).",
+  "oracle_integrity": "audited 2026-06-08 (.agent/reviews/2026-06-08-opus-v013-oracle-integrity-audit.md): finiteness/completion gate, honestly NOT a skill claim",
+  "generated": "2026-06-08"
+}
