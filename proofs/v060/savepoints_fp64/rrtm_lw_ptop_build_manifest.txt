@@ -1,0 +1,6 @@
+build_mode=fp64
+fflags=-O2 -ffree-form -ffree-line-length-none -cpp -ffpe-summary=none -fallow-argument-mismatch -fconvert=big-endian -frecord-marker=4 -fdefault-real-8 -fdefault-double-8 -DRWORDSIZE=8 -DIWORDSIZE=4
+gfortran=GNU Fortran (conda-forge gcc 14.3.0-19) 14.3.0
+rrtm_data=/home/enric/src/wrf_pristine/WRF/run/RRTM_DATA_DBL
+wrf_source=/home/enric/src/wrf_pristine/WRF/phys/module_ra_rrtm.F
+note=NON-5000-ptop savepoints (Finding F1 grid-aware buffer fix)
