@@ -93,6 +93,9 @@ merge/moisture limiter liveness; do not rewrite these blindly.
   `.agent/reviews/2026-06-08-v014-memory-research-integration.md`.
 - `019ea950-e500-7cd0-8292-15576f327532` (`Descartes`):
   Switzerland validation prep, no GPU run.
+- `019ea957-da82-7891-9a9b-3ad594d8b671` (`Nietzsche`):
+  exact-branch memory preflight; short GPU memory checks allowed via
+  `scripts/run_gpu_lowprio.sh`, no TOST or long validation.
 
 Wave deliverables are expected under `proofs/v014/` and
 `.agent/reviews/2026-06-08-v014-*.md`.
