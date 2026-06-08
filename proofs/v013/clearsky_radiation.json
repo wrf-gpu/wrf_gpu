@@ -1,0 +1,290 @@
+{
+  "proof": "v0.13.0 clear-sky radiation flux (RRTMG SW+LW ...C vars)",
+  "generated_utc": "2026-06-08T07:34:38.059677+00:00",
+  "oracle_kind": "pristine-CPU-WRF RRTMG clear-sky wrfout (...C) vs JAX clear-sky on IDENTICAL profiles; all-sky JAX-vs-WRF = calibration floor (NOT self-compare)",
+  "source_wrfout": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d03_2026-05-22_12:00:00",
+  "domain_shape": [
+    75,
+    93
+  ],
+  "n_columns": 6975,
+  "n_daylit": 6975,
+  "platform": "cpu",
+  "fp64": true,
+  "vars_added": [
+    "SWUPTC",
+    "SWDNTC",
+    "SWUPBC",
+    "SWDNBC",
+    "LWUPTC",
+    "LWDNTC",
+    "LWUPBC",
+    "LWDNBC"
+  ],
+  "A_oracle": {
+    "SWUPTC": {
+      "clear_jax_vs_wrf": {
+        "n": 6975,
+        "wrf_mean": 151.79979957170383,
+        "jax_mean": 150.47420113854247,
+        "bias_Wm2": -1.3255984331613535,
+        "rmse_Wm2": 1.4620135290473857,
+        "mae_Wm2": 1.3257100409748814,
+        "max_abs_Wm2": 4.997104044424077,
+        "bias_pct": -0.8732544027735667
+      },
+      "allsky_jax_vs_wrf_FLOOR": {
+        "n": 6975,
+        "wrf_mean": 154.96618339292465,
+        "jax_mean": 151.0463497703662,
+        "bias_Wm2": -3.9198336225584036,
+        "rmse_Wm2": 11.992497970452055,
+        "mae_Wm2": 3.9711358549682414,
+        "max_abs_Wm2": 148.95228966304796,
+        "bias_pct": -2.52947677792352
+      },
+      "tol_Wm2": 16.992497970452057,
+      "pass": true
+    },
+    "SWDNTC": {
+      "clear_jax_vs_wrf": {
+        "n": 6975,
+        "wrf_mean": 1260.5169981203796,
+        "jax_mean": 1260.5190512690408,
+        "bias_Wm2": 0.0020531486609857196,
+        "rmse_Wm2": 0.00205330194806896,
+        "mae_Wm2": 0.0020531486609857196,
+        "max_abs_Wm2": 0.0021209896076470613,
+        "bias_pct": 0.00016288147355785547
+      },
+      "allsky_jax_vs_wrf_FLOOR": {
+        "n": 6975,
+        "wrf_mean": 1260.5169981203796,
+        "jax_mean": 1260.5190512690408,
+        "bias_Wm2": 0.0020531486609857196,
+        "rmse_Wm2": 0.00205330194806896,
+        "mae_Wm2": 0.0020531486609857196,
+        "max_abs_Wm2": 0.0021209896076470613,
+        "bias_pct": 0.00016288147355785547
+      },
+      "tol_Wm2": 5.002053301948069,
+      "pass": true
+    },
+    "SWUPBC": {
+      "clear_jax_vs_wrf": {
+        "n": 6975,
+        "wrf_mean": 116.16179184233415,
+        "jax_mean": 115.22740874301623,
+        "bias_Wm2": -0.9343830993179444,
+        "rmse_Wm2": 1.2265643350607294,
+        "mae_Wm2": 0.9344121447397692,
+        "max_abs_Wm2": 3.6099097235114073,
+        "bias_pct": -0.8043807559254751
+      },
+      "allsky_jax_vs_wrf_FLOOR": {
+        "n": 6975,
+        "wrf_mean": 115.61513743192064,
+        "jax_mean": 115.04829176830438,
+        "bias_Wm2": -0.5668456636162588,
+        "rmse_Wm2": 1.917163292966267,
+        "mae_Wm2": 1.1261212848825668,
+        "max_abs_Wm2": 25.17218229519375,
+        "bias_pct": -0.4902867186833928
+      },
+      "tol_Wm2": 6.917163292966267,
+      "pass": true
+    },
+    "SWDNBC": {
+      "clear_jax_vs_wrf": {
+        "n": 6975,
+        "wrf_mean": 1011.2520065559196,
+        "jax_mean": 1004.873279060367,
+        "bias_Wm2": -6.378727495552536,
+        "rmse_Wm2": 6.528076288821638,
+        "mae_Wm2": 6.379090552815133,
+        "max_abs_Wm2": 25.383413303841053,
+        "bias_pct": -0.6307752621700049
+      },
+      "allsky_jax_vs_wrf_FLOOR": {
+        "n": 6975,
+        "wrf_mean": 1006.8654976618503,
+        "jax_mean": 1003.9385450192302,
+        "bias_Wm2": -2.9269526426201367,
+        "rmse_Wm2": 14.948187143095632,
+        "mae_Wm2": 8.424439395253165,
+        "max_abs_Wm2": 167.9456893381007,
+        "bias_pct": -0.29069946774590305
+      },
+      "tol_Wm2": 19.94818714309563,
+      "pass": true
+    },
+    "LWUPTC": {
+      "clear_jax_vs_wrf": {
+        "n": 6975,
+        "wrf_mean": 297.0461142831891,
+        "jax_mean": 294.7426835827011,
+        "bias_Wm2": -2.3034307004880725,
+        "rmse_Wm2": 2.6995505540048037,
+        "mae_Wm2": 2.308458670120809,
+        "max_abs_Wm2": 24.986531083962916,
+        "bias_pct": -0.7754454913663995
+      },
+      "allsky_jax_vs_wrf_FLOOR": {
+        "n": 6975,
+        "wrf_mean": 296.84039045873936,
+        "jax_mean": 294.7426835827011,
+        "bias_Wm2": -2.0977068760383077,
+        "rmse_Wm2": 2.3022592189485467,
+        "mae_Wm2": 2.1717254390040206,
+        "max_abs_Wm2": 15.669915283696469,
+        "bias_pct": -0.7066783845677118
+      },
+      "tol_Wm2": 7.302259218948547,
+      "pass": true
+    },
+    "LWDNTC": {
+      "clear_jax_vs_wrf": {
+        "n": 6975,
+        "wrf_mean": 0.0,
+        "jax_mean": 0.0,
+        "bias_Wm2": 0.0,
+        "rmse_Wm2": 0.0,
+        "mae_Wm2": 0.0,
+        "max_abs_Wm2": 0.0,
+        "bias_pct": 0.0
+      },
+      "allsky_jax_vs_wrf_FLOOR": {
+        "n": 6975,
+        "wrf_mean": 0.0,
+        "jax_mean": 0.0,
+        "bias_Wm2": 0.0,
+        "rmse_Wm2": 0.0,
+        "mae_Wm2": 0.0,
+        "max_abs_Wm2": 0.0,
+        "bias_pct": 0.0
+      },
+      "tol_Wm2": 5.0,
+      "pass": true
+    },
+    "LWUPBC": {
+      "clear_jax_vs_wrf": {
+        "n": 6975,
+        "wrf_mean": 451.1740330499902,
+        "jax_mean": 453.6803751467774,
+        "bias_Wm2": 2.5063420967871655,
+        "rmse_Wm2": 4.923507555809574,
+        "mae_Wm2": 2.517232987154071,
+        "max_abs_Wm2": 18.20199325582371,
+        "bias_pct": 0.5555155911442852
+      },
+      "allsky_jax_vs_wrf_FLOOR": {
+        "n": 6975,
+        "wrf_mean": 451.19751869119625,
+        "jax_mean": 453.6878742429267,
+        "bias_Wm2": 2.4903555517304556,
+        "rmse_Wm2": 4.91924816348141,
+        "mae_Wm2": 2.526316331571092,
+        "max_abs_Wm2": 18.20199325582371,
+        "bias_pct": 0.5519435388196091
+      },
+      "tol_Wm2": 9.91924816348141,
+      "pass": true
+    },
+    "LWDNBC": {
+      "clear_jax_vs_wrf": {
+        "n": 6975,
+        "wrf_mean": 325.8710238614646,
+        "jax_mean": 326.8887765131824,
+        "bias_Wm2": 1.017752651717741,
+        "rmse_Wm2": 1.4514370602096323,
+        "mae_Wm2": 1.0254238526154833,
+        "max_abs_Wm2": 7.514202130428032,
+        "bias_pct": 0.3123176278939153
+      },
+      "allsky_jax_vs_wrf_FLOOR": {
+        "n": 6975,
+        "wrf_mean": 327.0624478138476,
+        "jax_mean": 327.29222489200254,
+        "bias_Wm2": 0.2297770781549492,
+        "rmse_Wm2": 3.817207694697515,
+        "mae_Wm2": 1.8778252537863687,
+        "max_abs_Wm2": 47.92957268724416,
+        "bias_pct": 0.07025480292550437
+      },
+      "tol_Wm2": 8.817207694697515,
+      "pass": true
+    }
+  },
+  "A_oracle_pass": true,
+  "B_allsky_byte_unchanged": {
+    "SW_surface_down": true,
+    "SW_surface_up": true,
+    "SW_toa_down": true,
+    "SW_toa_up": true,
+    "LW_surface_down": true,
+    "LW_surface_up": true,
+    "LW_toa_down": true,
+    "LW_toa_up": true
+  },
+  "B_allsky_byte_unchanged_pass": true,
+  "C_invariants": {
+    "SWDNTC_eq_SWDNT_max_abs": 0.0,
+    "SW_clear_sfc_down_ge_allsky_frac": 1.0,
+    "SW_clear_toa_up_le_allsky_frac": 1.0,
+    "LW_clear_sfc_down_le_allsky_frac": 1.0,
+    "LW_clear_olr_ge_allsky_frac": 1.0
+  },
+  "C_invariants_pass": true,
+  "C_schema": {
+    "SWUPTC": {
+      "in_schema": true,
+      "units_match": true,
+      "desc_match": true,
+      "memoryorder_match": true
+    },
+    "SWDNTC": {
+      "in_schema": true,
+      "units_match": true,
+      "desc_match": true,
+      "memoryorder_match": true
+    },
+    "SWUPBC": {
+      "in_schema": true,
+      "units_match": true,
+      "desc_match": true,
+      "memoryorder_match": true
+    },
+    "SWDNBC": {
+      "in_schema": true,
+      "units_match": true,
+      "desc_match": true,
+      "memoryorder_match": true
+    },
+    "LWUPTC": {
+      "in_schema": true,
+      "units_match": true,
+      "desc_match": true,
+      "memoryorder_match": true
+    },
+    "LWDNTC": {
+      "in_schema": true,
+      "units_match": true,
+      "desc_match": true,
+      "memoryorder_match": true
+    },
+    "LWUPBC": {
+      "in_schema": true,
+      "units_match": true,
+      "desc_match": true,
+      "memoryorder_match": true
+    },
+    "LWDNBC": {
+      "in_schema": true,
+      "units_match": true,
+      "desc_match": true,
+      "memoryorder_match": true
+    }
+  },
+  "C_schema_pass": true,
+  "OVERALL_PASS": true
+}
