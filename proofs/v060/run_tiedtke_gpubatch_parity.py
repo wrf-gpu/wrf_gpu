@@ -47,6 +47,8 @@ import numpy as np
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "src"))
+# Pristine-WRF checkout root. Override with WRF_PRISTINE_ROOT; default = sibling of repo.
+WRF_PRISTINE_ROOT = Path(os.environ.get("WRF_PRISTINE_ROOT", str(ROOT.parent / "wrf_pristine" / "WRF")))
 
 SAVE = ROOT / "proofs" / "v060" / "savepoints"
 REPORT = ROOT / "proofs" / "v060" / "tiedtke_gpubatch_savepoint_parity.json"
@@ -186,8 +188,8 @@ def main() -> int:
     if not batch_consistent:
         failures.append(f"batched-vs-single mismatch max_abs={batch_vs_single_max:.3e} > {BATCH_VS_SINGLE_ABS:.0e}")
 
-    wrf_tiedtke = Path("/home/enric/src/wrf_pristine/WRF/phys/module_cu_tiedtke.F")
-    wrf_constants = Path("/home/enric/src/wrf_pristine/WRF/share/module_model_constants.F")
+    wrf_tiedtke = WRF_PRISTINE_ROOT / "phys/module_cu_tiedtke.F"
+    wrf_constants = WRF_PRISTINE_ROOT / "share/module_model_constants.F"
     kernel_src = ROOT / "src" / "gpuwrf" / "physics" / "cumulus_tiedtke_jax.py"
     savepoint_files = sorted(SAVE.glob("tiedtke_case_*.json"))
 

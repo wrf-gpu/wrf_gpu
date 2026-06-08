@@ -22,7 +22,9 @@ from gpuwrf.physics.pbl_boulac import boulac_columns
 ROOT = Path(__file__).resolve().parents[2]
 SAVEPOINT_DIR = ROOT / "proofs" / "v060" / "savepoints"
 REPORT_PATH = ROOT / "proofs" / "v060" / "boulac_pbl_savepoint_parity.json"
-WRF_SOURCE = Path("/home/enric/src/wrf_pristine/WRF/phys/module_bl_boulac.F")
+# Pristine-WRF checkout root. Override with WRF_PRISTINE_ROOT; default = sibling of repo.
+WRF_PRISTINE_ROOT = Path(os.environ.get("WRF_PRISTINE_ROOT", str(ROOT.parent / "wrf_pristine" / "WRF")))
+WRF_SOURCE = WRF_PRISTINE_ROOT / "phys/module_bl_boulac.F"
 CASES = (1, 2, 3, 4, 5, 6)
 
 # Predeclared before the full six-case parity run. The WRF oracle is compiled
@@ -60,6 +62,11 @@ def _scalars(cases: list[dict], name: str) -> np.ndarray:
 
 
 def _sha256(path: Path) -> str:
+    # Provenance hash of the (optional) pristine-WRF source tree. The binding
+    # oracle is the vendored savepoints + boulac_wrf_source_checksums.txt, so a
+    # missing WRF tree (outsider without WRF_PRISTINE_ROOT) must not fail the gate.
+    if not Path(path).is_file():
+        return "missing"
     h = hashlib.sha256()
     with path.open("rb") as fh:
         for chunk in iter(lambda: fh.read(1024 * 1024), b""):

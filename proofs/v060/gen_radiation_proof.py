@@ -37,7 +37,7 @@ def main() -> int:
         "sprint": "worker/opus/v060-radiation",
         "git_head": sw.get("git_head", "unknown"),
         "oracle_rule": (
-            "Oracle = UNMODIFIED pristine WRF (/home/enric/src/wrf_pristine/WRF), "
+            "Oracle = UNMODIFIED pristine WRF ($WRF_PRISTINE_ROOT), "
             "conda env wrfbuild, standalone single-column drivers. No JAX self-compare. "
             "No mask/tolerance loosening. Tolerances predeclared before comparison."
         ),

@@ -27,6 +27,7 @@ Run (CPU, cores 0-3):
 from __future__ import annotations
 
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -46,7 +47,10 @@ from gpuwrf.physics.noahmp.tables import load_noahmp_parameters  # noqa: E402
 from gpuwrf.physics.noahmp.types import NoahMPEtFluxes, NoahMPForcing  # noqa: E402
 from gpuwrf.physics.noahmp.water_hydro import noahmp_water_hydro  # noqa: E402
 
-TABLE_DIR = Path("/home/enric/src/wrf_pristine/WRF/run")
+# Pristine-WRF run/ dir (MPTABLE/SOILPARM/GENPARM). Override with WRF_PRISTINE_ROOT
+# (pointing at your WRF checkout root); default = sibling of the repo.
+WRF_PRISTINE_ROOT = Path(os.environ.get("WRF_PRISTINE_ROOT", str(ROOT.parent / "wrf_pristine" / "WRF")))
+TABLE_DIR = WRF_PRISTINE_ROOT / "run"
 # Soil moisture is volumetric (m3/m3); the WRF reference is float32-stored. The
 # one-step Schaake drawdown is ~1e-7..1e-8, so atol 5e-6 / rtol 5e-6 is true parity.
 TOL = {"smc": (5e-6, 5e-6), "sh2o": (5e-6, 5e-6), "smcwtd": (5e-6, 5e-6)}

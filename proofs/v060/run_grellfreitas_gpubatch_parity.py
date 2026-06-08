@@ -59,16 +59,25 @@ PREDECLARED_TOLERANCES = {
     "vmap_vs_single_max_abs": 1.0e-12,
 }
 
-WRF_SOURCE_PATHS = (
-    "/home/enric/src/wrf_pristine/WRF/phys/module_cu_gf_deep.F",
-    "/home/enric/src/wrf_pristine/WRF/phys/module_cu_gf_sh.F",
-    "/home/enric/src/wrf_pristine/WRF/phys/module_cu_gf_wrfdrv.F",
-    "/home/enric/src/wrf_pristine/WRF/phys/module_gfs_physcons.F",
-    "/home/enric/src/wrf_pristine/WRF/phys/module_gfs_machine.F",
+# Pristine-WRF checkout root. Override with WRF_PRISTINE_ROOT; default = sibling of repo.
+WRF_PRISTINE_ROOT = Path(os.environ.get("WRF_PRISTINE_ROOT", str(ROOT.parent / "wrf_pristine" / "WRF")))
+WRF_SOURCE_PATHS = tuple(
+    str(WRF_PRISTINE_ROOT / "phys" / name)
+    for name in (
+        "module_cu_gf_deep.F",
+        "module_cu_gf_sh.F",
+        "module_cu_gf_wrfdrv.F",
+        "module_gfs_physcons.F",
+        "module_gfs_machine.F",
+    )
 )
 
 
 def sha256(path):
+    # Provenance hash; a missing pristine-WRF source records "missing" rather than
+    # aborting (binding oracle is the vendored savepoints). See run_grellfreitas_parity.
+    if not Path(path).is_file():
+        return "missing"
     h = hashlib.sha256()
     with open(path, "rb") as fh:
         for chunk in iter(lambda: fh.read(1 << 20), b""):
@@ -252,10 +261,10 @@ def build_report():
         "scale_aware_pair": scale_pair,
         "oracle": {
             "full_wrf_exe_run": False,
-            "source": "unmodified WRF GF modules from /home/enric/src/wrf_pristine/WRF/phys compiled into a standalone single-column driver",
-            "wrf_gf_deep_source": "/home/enric/src/wrf_pristine/WRF/phys/module_cu_gf_deep.F",
-            "wrf_gf_sh_source": "/home/enric/src/wrf_pristine/WRF/phys/module_cu_gf_sh.F",
-            "wrf_gf_wrfdrv_source": "/home/enric/src/wrf_pristine/WRF/phys/module_cu_gf_wrfdrv.F",
+            "source": "unmodified WRF GF modules from $WRF_PRISTINE_ROOT/phys compiled into a standalone single-column driver",
+            "wrf_gf_deep_source": "$WRF_PRISTINE_ROOT/phys/module_cu_gf_deep.F",
+            "wrf_gf_sh_source": "$WRF_PRISTINE_ROOT/phys/module_cu_gf_sh.F",
+            "wrf_gf_wrfdrv_source": "$WRF_PRISTINE_ROOT/phys/module_cu_gf_wrfdrv.F",
             "savepoints": "proofs/v060/savepoints/gf_case_{1..5}.json (unmodified-WRF GF module gold; not a JAX self-compare)",
             "source_checksums_sha256": src_sums,
             "note": "Same WRF-module oracle gold as the CPU-reference gate. Not a coupled wrf.exe run.",

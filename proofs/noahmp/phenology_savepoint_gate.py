@@ -18,6 +18,7 @@ Run (CPU, cores 0-3):
 from __future__ import annotations
 
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -37,7 +38,10 @@ from gpuwrf.physics.noahmp.phenology import noahmp_phenology_table  # noqa: E402
 from gpuwrf.physics.noahmp.tables import load_noahmp_parameters  # noqa: E402
 from gpuwrf.physics.noahmp.types import NoahMPForcing  # noqa: E402
 
-TABLE_DIR = Path("/home/enric/src/wrf_pristine/WRF/run")
+# Pristine-WRF run/ dir (MPTABLE/SOILPARM/GENPARM). Override with WRF_PRISTINE_ROOT
+# (pointing at your WRF checkout root); default = sibling of the repo.
+WRF_PRISTINE_ROOT = Path(os.environ.get("WRF_PRISTINE_ROOT", str(ROOT.parent / "wrf_pristine" / "WRF")))
+TABLE_DIR = WRF_PRISTINE_ROOT / "run"
 # Tolerances at the savepoint's float32 storage precision (the WRF reference is
 # dumped as float32, ~1e-7 relative): atol 1e-5, rtol 1e-5 is true WRF parity.
 TOL = {"lai": (1e-5, 1e-5), "sai": (1e-5, 1e-5), "fveg": (1e-5, 1e-5)}

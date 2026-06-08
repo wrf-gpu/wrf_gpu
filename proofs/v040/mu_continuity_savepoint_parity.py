@@ -13,6 +13,7 @@ import argparse
 import hashlib
 import json
 import os
+import shutil
 import subprocess
 import sys
 from datetime import datetime, timezone
@@ -34,7 +35,8 @@ if str(ROOT / "src") not in sys.path:
 
 from gpuwrf.dynamics.mu_t_advance import AdvanceMuTInputs, advance_mu_t_wrf  # noqa: E402
 
-WRF_ROOT = Path("/home/enric/src/wrf_pristine/WRF")
+# Pristine-WRF checkout root. Override with WRF_PRISTINE_ROOT; default = sibling of repo.
+WRF_ROOT = Path(os.environ.get("WRF_PRISTINE_ROOT", str(ROOT.parent / "wrf_pristine" / "WRF")))
 WRF_SMALL_STEP = WRF_ROOT / "dyn_em/module_small_step_em.F"
 WRF_SMALL_STEP_OBJ = WRF_ROOT / "dyn_em/module_small_step_em.o"
 DRIVER_SRC = ROOT / "proofs/v040/wrf_advance_mu_t_driver.F90"
@@ -293,9 +295,11 @@ def _numpy_source_advance(arrays: dict[str, np.ndarray], attrs: dict[str, Any]) 
 
 
 def _compile_driver(build_dir: Path) -> Path:
-    fc = Path(os.environ.get("WRF_FC", "/home/enric/miniconda3/envs/wrfbuild/bin/gfortran"))
-    if not fc.exists():
-        raise FileNotFoundError(f"WRF Fortran compiler not found: {fc}")
+    # Fortran compiler: WRF_FC override, else gfortran on PATH.
+    fc_env = os.environ.get("WRF_FC")
+    fc = Path(fc_env) if fc_env else Path(shutil.which("gfortran") or "gfortran")
+    if not fc.exists() and not shutil.which(str(fc)):
+        raise FileNotFoundError(f"WRF Fortran compiler not found: {fc} (set WRF_FC)")
     exe = build_dir / "wrf_advance_mu_t_driver"
     cmd = [
         str(fc),

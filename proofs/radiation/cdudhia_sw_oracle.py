@@ -356,7 +356,7 @@ def main() -> int:
             "coupler is never used to make the reference."
         ),
         "oracle": {
-            "source": "/home/enric/src/wrf_pristine/WRF/phys/module_ra_sw.F",
+            "source": "$WRF_PRISTINE_ROOT/phys/module_ra_sw.F",
             "entry": "SWRAD -> SWPARA (Stephens 1984 broadband shortwave)",
             "source_unmodified": True,
             "full_wrf_exe": False,

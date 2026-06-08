@@ -16,7 +16,7 @@ Gates (predeclared, falsifiable):
 
 Run: PYTHONPATH=src OMP_NUM_THREADS=4 XLA_PYTHON_CLIENT_PREALLOCATE=false \
        XLA_PYTHON_CLIENT_MEM_FRACTION=0.3 taskset -c 0-3 \
-       /home/enric/miniconda3/bin/python3 proofs/thompson_perf/precip_parity_p1_5.py
+       python3 proofs/thompson_perf/precip_parity_p1_5.py
 """
 from __future__ import annotations
 

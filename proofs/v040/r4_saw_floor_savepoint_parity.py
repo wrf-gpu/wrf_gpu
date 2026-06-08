@@ -194,9 +194,9 @@ def main() -> int:
             "type": "unmodified WRF module_bl_mynnedmf object-linked Fortran oracle",
             "source": str(FORT),
             "wrf_source_lines": {
-                "kmdz_floor": "/home/enric/src/wrf_pristine/WRF/phys/module_bl_mynnedmf.F:3990-3997",
-                "uv_onoff_mf_terms": "/home/enric/src/wrf_pristine/WRF/phys/module_bl_mynnedmf.F:3949-3956,4009-4034,4070-4095",
-                "du_dv_outputs": "/home/enric/src/wrf_pristine/WRF/phys/module_bl_mynnedmf.F:4055-4062,4116-4123",
+                "kmdz_floor": "$WRF_PRISTINE_ROOT/phys/module_bl_mynnedmf.F:3990-3997",
+                "uv_onoff_mf_terms": "$WRF_PRISTINE_ROOT/phys/module_bl_mynnedmf.F:3949-3956,4009-4034,4070-4095",
+                "du_dv_outputs": "$WRF_PRISTINE_ROOT/phys/module_bl_mynnedmf.F:4055-4062,4116-4123",
             },
         },
         "predeclared_tolerances": TOL,

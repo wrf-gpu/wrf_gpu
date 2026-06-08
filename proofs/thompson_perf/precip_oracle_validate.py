@@ -3,7 +3,7 @@ WRF Thompson oracle, and (separately) evaluate the IMPLICIT backward-Euler
 sedimentation prototype against the same oracle.
 
 The oracle is produced by the standalone single-column harness
-``/home/enric/src/wrf_pristine/precip_oracle/precip_column_oracle.exe`` driving
+``$WRF_PRISTINE_ROOT/../precip_oracle/precip_column_oracle.exe`` driving
 the REAL WRF ``mp_gt_driver`` on a deliberately precipitating, near-saturated
 column with ACTIVE rain / snow / graupel / cloud-ice (nonzero fall speeds). It
 is dumped via the same ``module_wrfgpu2_oracle`` raw big-endian .f64 + sidecar
@@ -19,7 +19,7 @@ Two comparisons:
 Run:
   PYTHONPATH=src OMP_NUM_THREADS=4 XLA_PYTHON_CLIENT_PREALLOCATE=false \
     XLA_PYTHON_CLIENT_MEM_FRACTION=0.5 taskset -c 0-3 \
-    /home/enric/miniconda3/bin/python3 proofs/thompson_perf/precip_oracle_validate.py
+    python3 proofs/thompson_perf/precip_oracle_validate.py
 """
 from __future__ import annotations
 

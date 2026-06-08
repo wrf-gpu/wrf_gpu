@@ -1,7 +1,7 @@
 """Faithful fp64 NumPy transcription of WRF ``SFCLAY1D_mynn``.
 
 This is a LITERAL, line-referenced port of the pristine surface-layer routine in
-``/home/enric/src/wrf_pristine/WRF/phys/module_sf_mynn.F`` (sha256 recorded in
+``$WRF_PRISTINE_ROOT/phys/module_sf_mynn.F`` (sha256 recorded in
 ``oracle_source_sha256.txt``) for the default Canary configuration:
 
   ISFFLX=1, isftcflx=0, iz0tlnd=0, spp_pbl=0, COARE_OPT=3.0, psi_opt=0 (CB05),

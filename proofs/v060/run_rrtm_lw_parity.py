@@ -251,7 +251,7 @@ def main() -> int:
         "git_head": git_head(),
         "predeclared_tolerances": PREDECLARED_TOL,
         "oracle": {
-            "source": "/home/enric/src/wrf_pristine/WRF/phys/module_ra_rrtm.F",
+            "source": "$WRF_PRISTINE_ROOT/phys/module_ra_rrtm.F",
             "entry": "RRTMLWRAD -> RRTM (AER 16-band k-distribution LW)",
             "lookup_asset": "RRTM_DATA / RRTM_DATA_DBL (big-endian, frecord-marker=4)",
             "source_unmodified": True,

@@ -65,7 +65,7 @@ from pathlib import Path
 import numpy as np
 from netCDF4 import Dataset
 
-ROOT = Path("/home/enric/src/wrf_gpu2")
+ROOT = Path(__file__).resolve().parents[2]
 
 # Core fields the GPU emit always carries.
 CORE_FIELDS = ("T2", "U10", "V10")

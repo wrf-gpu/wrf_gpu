@@ -22,6 +22,7 @@ Run (CPU, cores 0-3):
 from __future__ import annotations
 
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -41,7 +42,10 @@ from gpuwrf.physics.noahmp.noahmp_driver import noah_mp_step  # noqa: E402
 from gpuwrf.physics.noahmp.tables import load_noahmp_parameters  # noqa: E402
 from gpuwrf.physics.noahmp.types import NoahMPForcing  # noqa: E402
 
-TABLE_DIR = Path("/home/enric/src/wrf_pristine/WRF/run")
+# Pristine-WRF run/ dir (MPTABLE/SOILPARM/GENPARM). Override with WRF_PRISTINE_ROOT
+# (pointing at your WRF checkout root); default = sibling of the repo.
+WRF_PRISTINE_ROOT = Path(os.environ.get("WRF_PRISTINE_ROOT", str(ROOT.parent / "wrf_pristine" / "WRF")))
+TABLE_DIR = WRF_PRISTINE_ROOT / "run"
 
 # Driver-mapping tolerances (W/m2 / K / kg/m2/s): match the S1 energy gate.
 TOL = {

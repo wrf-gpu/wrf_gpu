@@ -34,6 +34,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 from pathlib import Path
 from typing import Any
 
@@ -42,7 +43,9 @@ import numpy as np
 ROOT = Path(__file__).resolve().parents[2]
 ORACLE_DIR = Path("/mnt/data/wrf_gpu2/physics_oracle_v090/surface_mynn")
 SCHEME = "mynnedmf"
-PRISTINE_SRC = Path("/home/enric/src/wrf_pristine/WRF/phys/module_bl_mynnedmf.F")
+# Pristine-WRF checkout root. Override with WRF_PRISTINE_ROOT; default = sibling of repo.
+WRF_PRISTINE_ROOT = Path(os.environ.get("WRF_PRISTINE_ROOT", str(ROOT.parent / "wrf_pristine" / "WRF")))
+PRISTINE_SRC = WRF_PRISTINE_ROOT / "phys/module_bl_mynnedmf.F"
 
 CP = 1004.0
 P608 = 0.608
