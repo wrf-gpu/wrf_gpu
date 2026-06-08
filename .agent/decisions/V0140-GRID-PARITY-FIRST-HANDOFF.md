@@ -20,6 +20,11 @@ Release labels are secondary. The current priority order is:
 The operating motto for this phase is "no slob": do not hide behind station scores
 if the actual grid fields are not WRF-close.
 
+Principal communication directive 2026-06-08 late WEST: do not send
+Hermes/Telegram process-progress updates. Keep manager/agent handoffs and
+top-level validation output context-sparing: concise verdicts and proof paths in
+text, full field tables in JSON/CSV artifacts.
+
 ## Current Evidence
 
 - Powered TOST Case 1 and Case 2 were durable before the memory-fix pause.
@@ -149,6 +154,10 @@ Wave deliverables are expected under `proofs/v014/` and
   exact-branch memory preflight remains open; manager sent a status check after
   no completion notice. Do not start a duplicate exact-branch memory preflight
   unless this worker is confirmed dead or stays silent without proof artifacts.
+- Pending dispatch: v0.14 grid comparison framework sprint
+  `.agent/sprints/2026-06-08-v014-grid-comparison-framework/sprint-contract.md`;
+  purpose is a fast complete wrfout-grid comparator with concise top-level
+  output and detailed machine artifacts for Canary and Switzerland.
 
 ## Next Manager Actions
 
