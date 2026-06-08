@@ -82,3 +82,14 @@ closure + outsider-runnable reproducibility + community-standard benchmarks.
   5. **Surface-layer (~4) + LSM (~6)** (GFS/QNSE/TEMF/old-MM5 sfclay; thermal-slab/RUC/CLM4/CTSM/Pleim-Xiu/SSiB)
 - Discipline: per-scheme fp64 oracle on CPU (parallelizable, like RRTM-LW); GPU only for a per-group integration smoke (serialized, one GPU job). Defaults unchanged (each scheme opt-in, fail-closed until oracle-proven). File-ownership per group subdir to avoid collisions.
 - Cadence: land each group as it proves out; this is the bulk of the path to v1.0.0.
+
+---
+
+## Progress log (live, manager-maintained)
+
+**2026-06-08 ~07:20** — v0.13 wave 1:
+- ✅ **Outsider-reproducibility** (T2) MERGED `d9398fc`: 45 proof .py /home/enric→0 (resolvers+WRF_PRISTINE_ROOT env), `scripts/verify_reproducibility.sh` GREEN 11/11 outsider-runnable, `manifest/reproducibility_assets.json`, `docs/REPRODUCIBILITY.md`. Independently re-verified (gate rc=0, 0 .py leaks).
+- ✅ **compile-speed** (T1) CPU-verified+BANKED `worker/opus/v013-compile-speed @b9da88d`: opt-in default-off + subprocess flag-probe (fixes the v0.12 GPU-abort); 22 tests, import-inert. → GPU-runbook validation pending (when GPU frees) → then merge.
+- ✅ **RRTM-LW skeptic** (T1) VERDICT SOUND `a057e04`: no JAX port bug (max div 2.7e-13), oracle-integrity clean. 2 findings → rrtmlw-fix lane.
+- 🔄 RUNNING: g-point-chunk-RRTMG (GPU keystone), rrtmlw-fix (F1 ptop + F2 fail-loud).
+- Carry-overs noted: 51 non-.py proof files still have /home/enric (29 dev .sh + logs; not on CPU verify path); stale rrtmg manifest-pin `5cc63950` vs disk `0695e523` (radiation-owned → fold into g-point-chunk or a radiation lane); proof-report .json regeneration embeds git_head (consider gitignore).
