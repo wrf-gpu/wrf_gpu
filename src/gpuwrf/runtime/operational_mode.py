@@ -72,6 +72,10 @@ from gpuwrf.coupling.scan_adapters import (
     initial_kf_carry,
     kf_adapter,
 )
+from gpuwrf.physics.myj_adapters import (
+    janjic_sfclay_adapter,
+    myj_pbl_adapter,
+)
 from gpuwrf.dynamics.advection import compute_advection_tendencies, halo_spec
 from gpuwrf.dynamics.explicit_diffusion import (
     C_S_DEFAULT,
@@ -2181,10 +2185,11 @@ _SCAN_WIRED_OPTIONS = {
     # mp=0 passive, 8 Thompson (existing couplers); 1/2/3/4/6/10/16 new scan adapters.
     "mp_physics": (0, 1, 2, 3, 4, 6, 8, 10, 16),
     # bl=0 off, 5 MYNN (existing); 1 YSU / 7 ACM2 / 8 BouLac wired
-    # (v0.6.0 jax.lax.scan rewrites).
-    "bl_pbl_physics": (0, 1, DEFAULT_BL_PBL_PHYSICS, 7, 8),
-    # sf_sfclay=0 off, 5 MYNN-sfclay (existing); 1 revised-MM5 / 7 Pleim-Xiu wired.
-    "sf_sfclay_physics": (0, 1, 5, 7),
+    # (v0.6.0 jax.lax.scan rewrites); 2 MYJ wired (v0.13 traceable MYJ+Janjic pair).
+    "bl_pbl_physics": (0, 1, 2, DEFAULT_BL_PBL_PHYSICS, 7, 8),
+    # sf_sfclay=0 off, 5 MYNN-sfclay (existing); 1 revised-MM5 / 7 Pleim-Xiu wired;
+    # 2 Janjic Eta wired (v0.13, mandatorily paired with bl_pbl_physics=2 MYJ).
+    "sf_sfclay_physics": (0, 1, 2, 5, 7),
     # cu=0 no cumulus, 1 KF, 2 BMJ (fp64 savepoint-parity carry-threaded adapter),
     # 3 Grell-Freitas (v0.9.0 GPU-batched jit/vmap stateless adapter), 6 modified-
     # Tiedtke (v0.6.0 GPU-batched jit/vmap adapter). New-Tiedtke(16) not separately
@@ -2204,8 +2209,9 @@ _SCAN_WIRED_OPTIONS = {
 # (surfaced in the fail-closed error so the rejection is honest + actionable).
 _SCAN_UNWIRED_REASON = {
     # YSU(1)/ACM2(7) are now jax.lax.scan-traceable + scan-wired (v0.6.0 GPU-op).
-    "bl_pbl_physics=2": "MYJ PBL has a WRF-savepoint column adapter, but no operational scan adapter/carry path yet",
-    "sf_sfclay_physics=2": "Janjic Eta surface layer has a WRF-savepoint column adapter, but no operational scan adapter/carry path yet",
+    # MYJ(2)/Janjic(2) are now traceable + scan-wired as a mandatory pair (v0.13):
+    # physics.myj_adapters.{myj_pbl_adapter,janjic_sfclay_adapter}, so they are
+    # intentionally absent here.
     # cu=3 (Grell-Freitas) and cu=6 (modified Tiedtke) are now GPU-batched +
     # scan-wired (in _SCAN_WIRED_OPTIONS), so they are intentionally absent here.
     "cu_physics=16": "New Tiedtke is interface-compatible but not separately savepoint-gated by a distinct WRF source path; GPU-batching/gating TODO",
@@ -2252,9 +2258,9 @@ def _resolve_operational_suite(namelist: OperationalNamelist):
             not_wired.append(f"sf_surface_physics=2 ({_SCAN_UNWIRED_REASON['sf_surface_physics=2']})")
     if not_wired:
         raise UnsupportedSchemeSelection(
-            "operational scan supports the v0.2.0 suite + the v0.6.0 scan-wired "
-            "schemes (mp_physics in {0,1,2,3,4,6,8,10,16}, bl_pbl_physics in {0,1,5,7,8}, "
-            "sf_sfclay_physics in {0,1,5,7}, cu_physics in {0,1,2,3,6}, Noah-MP via "
+            "operational scan supports the v0.2.0 suite + the v0.6.0/v0.13 scan-wired "
+            "schemes (mp_physics in {0,1,2,3,4,6,8,10,16}, bl_pbl_physics in {0,1,2,5,7,8}, "
+            "sf_sfclay_physics in {0,1,2,5,7}, cu_physics in {0,1,2,3,6}, Noah-MP via "
             "use_noahmp, explicit Noah-classic via sf_surface_physics=2 plus "
             "noahclassic_static/noahclassic_land). The following selected schemes "
             "are NOT scan-wired: "
@@ -2515,8 +2521,12 @@ def _physics_step_forcing(
     # mp_opt == 0 -> passive (no microphysics).
 
     # --- surface-layer / land slot ---
+    # sf=2 Janjic Eta is the v0.13 traceable MYJ-pair surface layer (defined in
+    # physics.myj_adapters, NOT in coupling.scan_adapters); route it explicitly.
     if bool(namelist.use_noahmp):
-        if sf_opt in SFCLAY_SCAN_ADAPTERS:
+        if sf_opt == 2:
+            next_state = janjic_sfclay_adapter(next_state, float(namelist.dt_s), namelist.grid)
+        elif sf_opt in SFCLAY_SCAN_ADAPTERS:
             next_state = SFCLAY_SCAN_ADAPTERS[sf_opt](next_state, float(namelist.dt_s), namelist.grid)
         next_carry_rad = _refresh_noahmp_rad(
             next_state,
@@ -2539,7 +2549,9 @@ def _physics_step_forcing(
         )
         next_carry = next_carry.replace(noahmp_land=next_land, noahmp_rad=next_carry_rad)
     else:
-        if sf_opt in SFCLAY_SCAN_ADAPTERS:
+        if sf_opt == 2:
+            next_state = janjic_sfclay_adapter(next_state, float(namelist.dt_s), namelist.grid)
+        elif sf_opt in SFCLAY_SCAN_ADAPTERS:
             next_state = SFCLAY_SCAN_ADAPTERS[sf_opt](next_state, float(namelist.dt_s), namelist.grid)
         else:
             next_state = surface_adapter(next_state, float(namelist.dt_s))
@@ -2560,8 +2572,13 @@ def _physics_step_forcing(
             )
 
     # --- PBL slot ---
+    # bl=2 MYJ is the v0.13 traceable MYJ PBL (paired with the Janjic surface
+    # layer already run in the surface slot); it re-derives the surface coupling
+    # and threads the TKE carry via qke. Defined in physics.myj_adapters.
     bl_opt = int(namelist.bl_pbl_physics)
-    if bl_opt in PBL_SCAN_ADAPTERS:
+    if bl_opt == 2:
+        next_state = myj_pbl_adapter(next_state, float(namelist.dt_s), namelist.grid)
+    elif bl_opt in PBL_SCAN_ADAPTERS:
         next_state = PBL_SCAN_ADAPTERS[bl_opt](next_state, float(namelist.dt_s), namelist.grid)
     elif bl_opt == DEFAULT_BL_PBL_PHYSICS:
         next_state = mynn_adapter(next_state, float(namelist.dt_s), namelist.grid)
