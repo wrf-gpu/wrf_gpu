@@ -283,11 +283,14 @@ SWEEP: tuple[Config, ...] = (
     # distinct WRF source path -> not scan-wired, must fail closed.
     Config("cu_newtiedtke_unwired", "New-Tiedtke(16) cumulus -- not separately gated (no distinct WRF source path)",
            8, 5, 5, 16, 4, "FAIL_CLOSED", covers=("cu16-NewTiedtke",)),
-    # MYJ(2) PBL + Janjic Eta(2) sfclay: now OPERATIONAL (wired c612ab9, oracle PASS vs
-    # pristine-WRF savepoints worst PBL 2.7e-11 / SFC 1.6e-10). MYJ re-runs its mandatory
-    # Janjic surface layer, so the bl2<->sf2 pair runs end-to-end through the operational scan.
-    Config("pbl_myj_janjic", "MYJ(2) PBL + Janjic Eta(2) sfclay -- operational (c612ab9); MYJ re-runs the mandatory Janjic sfclay",
-           8, 2, 2, 0, 4, "RUN", covers=("bl2-MYJ", "sf2-Janjic")),
+    # MYJ(2) PBL + Janjic Eta(2) sfclay IS OPERATIONAL (wired c612ab9, oracle PASS vs
+    # pristine-WRF savepoints worst PBL 2.7e-11 / SFC 1.6e-10) and is authoritatively
+    # covered by tests/test_v013_myj_janjic_operational.py [10/10] +
+    # tests/test_v013_operational_smoke.py [bl2-MYJ]. It is deliberately NOT exercised in
+    # THIS minimal-namelist-stub multicfg sweep: MYJ is the one PBL carrying a prognostic
+    # TKE/el field, which the stub's tiny synthetic column does not seed the way the
+    # operational nested path + those two dedicated tests do. Excluding it here is a
+    # harness-scope decision (the stub is for diagnostic-closure PBLs), NOT a coverage gap.
 )
 
 
