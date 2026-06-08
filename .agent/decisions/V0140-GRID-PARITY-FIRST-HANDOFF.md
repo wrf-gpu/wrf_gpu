@@ -81,18 +81,32 @@ blocker. Before long validation, run an exact-branch memory preflight and an
 empirical memory map for MYNN BouLac/non-radiation physics/post-physics
 merge/moisture limiter liveness; do not rewrite these blindly.
 
+Wave-1 grid attribution verdict: the first fix target is static grid,
+vertical-coordinate, and base-state parity, not a dynamic operator edit. Case 3
+emitted wrfouts have 31 non-exact static/grid fields; largest mismatches are
+`C2H/C2F` max 95,000 Pa, `C4H/C4F` about 26.7 kPa, `RDN` max 161.7, and `HGT`
+max 228 m. Dynamic divergence remains broad (`PSFC`, `P`, `PH`, `MU`, `U`, `V`,
+`U10`, `V10`), but no dycore/radiation/FP32 fix should start until the static
+metric/base payload is exact or root-caused as writer-only.
+
 ## Active Wave 1
 
 - `019ea94e-898f-7211-9561-e70af150fcfd` (`Averroes`):
-  all-comparable-field grid-cell envelope harness and report.
+  all-comparable-field grid-cell envelope harness and report. Completed:
+  `proofs/v014/grid_cell_envelope.*` and
+  `.agent/reviews/2026-06-08-v014-grid-parity-attribution.md`.
 - `019ea950-77c3-7750-9adb-7e1c1e05bc1d` (`Godel`):
-  CPU-only wind/mass vertical-spatial anatomy probe.
+  CPU-only wind/mass vertical-spatial anatomy probe. Completed:
+  `proofs/v014/wind_mass_divergence_probe.*` and
+  `.agent/reviews/2026-06-08-v014-wind-mass-divergence-probe.md`.
 - `019ea950-93c0-7a60-8598-8da51ae2d2fb` (`Planck`):
   v0.14 memory research integration and memory-fix roadmap. Completed:
   `.agent/decisions/V0140-MEMORY-FIX-ROADMAP.md` and
   `.agent/reviews/2026-06-08-v014-memory-research-integration.md`.
 - `019ea950-e500-7cd0-8292-15576f327532` (`Descartes`):
-  Switzerland validation prep, no GPU run.
+  Switzerland validation prep, no GPU run. Completed:
+  `proofs/v014/switzerland_validation_plan.md` and
+  `.agent/reviews/2026-06-08-v014-switzerland-validation-prep.md`.
 - `019ea957-da82-7891-9a9b-3ad594d8b671` (`Nietzsche`):
   exact-branch memory preflight; short GPU memory checks allowed via
   `scripts/run_gpu_lowprio.sh`, no TOST or long validation.
@@ -102,16 +116,18 @@ Wave deliverables are expected under `proofs/v014/` and
 
 ## Next Manager Actions
 
-1. Commit the Case 3 proof object, `proofs/v014/v10_grid_diagnostics.*`, this
-   handoff, and the plan updates. Do not stage unrelated dirty files.
-2. Review sidecar reports and convert them into a narrow sprint contract for
-   grid-divergence attribution.
-3. Launch implementation workers only after that contract freezes file ownership
-   and falsifiable gates.
-4. Use Opus 4.8 xhigh/max via `claude --permission-mode auto` only for stuck
-   single-case root-cause debugging, not as routine double-agent validation.
-5. Keep GPU time for short targeted probes until the cell-level gap is narrowed;
-   then restart powered TOST as the final gate.
+1. Run the sprint
+   `.agent/sprints/2026-06-08-v014-static-metric-base-parity/sprint-contract.md`.
+2. Keep `wrfout_writer.py`, runtime dycore, pressure-gradient, acoustic,
+   radiation, and surface-layer code read-only unless the static/base parity
+   proof isolates their ownership.
+3. Launch same-state tendency localization only as a read-only sidecar until
+   static/base parity is exact or root-caused.
+4. Use Opus 4.8 xhigh/max via `claude --permission-mode auto` only after two
+   failed GPT attempts on the same static/base or tendency root-cause problem.
+5. Keep GPU time for short targeted probes only; no powered TOST, no Switzerland
+   equivalence, no FP32 source landing until the static/base gate is green or
+   explicitly explained.
 
 ## Non-Goals Until Grid Parity Moves
 
