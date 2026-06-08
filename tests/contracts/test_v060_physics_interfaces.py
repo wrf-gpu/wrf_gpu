@@ -52,11 +52,12 @@ def test_mp_registry_names_match_expected_wrfout_variables() -> None:
 
 def test_interfaces_self_check_and_scheme_specs_cover_v060_options() -> None:
     assert_interfaces_consistent()
-    # 24 single-option specs (8 microphysics incl. Purdue-Lin + WSM3/WSM5 + 5 PBL
-    # incl. BouLac + 4 surface-layer + 5 cumulus incl. BMJ cu=2 + 2 land-surface)
+    # 27 single-option specs (8 microphysics incl. Purdue-Lin + WSM3/WSM5 + 5 PBL
+    # incl. BouLac + 6 surface-layer incl. v0.13 Tier-3 GFS(3) + old-MM5(91) + 5
+    # cumulus incl. BMJ cu=2 + 3 land-surface incl. v0.13 Tier-3 slab(1))
     # + 4 radiation variants (RRTMG LW/SW under option 4, classic RRTM LW + Dudhia
     # SW under option 1).
-    assert len(SCHEME_STEP_SPECS) == 28
+    assert len(SCHEME_STEP_SPECS) == 31
     assert scheme_step_spec("microphysics", 16).writes_state[-3:] == ("Nn", "Nc", "Nr")
     assert scheme_step_spec("pbl", 2).writes_carry == ("tke_pbl", "el_pbl")
     assert scheme_step_spec("surface_layer", 2).owner_module.endswith("sfclay_janjic.py")

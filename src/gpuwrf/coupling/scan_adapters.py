@@ -97,6 +97,9 @@ from gpuwrf.physics.pbl_boulac import TEMIN as BOULAC_TKE_MIN, boulac_columns
 from gpuwrf.physics.pbl_ysu import ysu_columns
 from gpuwrf.physics.sfclay_pleim_xiu import step_pxsfclay_column
 from gpuwrf.physics.sfclay_revised_mm5 import step_sfclay_revised_mm5_column
+from gpuwrf.physics.sfclay_old_mm5 import sfclay_old_mm5_columns
+from gpuwrf.physics.sfclay_gfs import sf_gfs_columns
+from gpuwrf.physics.surface_constants import CP_D, EP1, R_D
 from gpuwrf.physics.surface_layer import surface_layer_with_diagnostics
 
 CP_DRY = 1004.0  # J kg^-1 K^-1 (matches R_D_OVER_CP = 287/1004)
@@ -377,6 +380,87 @@ def pleim_xiu_sfclay_adapter(state: State, dt: float, grid=None) -> State:
         dx=dx,
     )
     return _apply_surface_flux_replacements(state, result.tendency)
+
+
+# v0.13 Tier-3 surface-layer ports. Both produce HFX/QFX/USTAR/U10/V10 directly
+# (the WRF in-place style); the helper below converts those to the SAME B2
+# kinematic flux handles (theta_flux/qv_flux/tau_u/tau_v/rhosfc/fltv) that the
+# revised-MM5 / MYNN adapters write, so they drop into the surface-layer slot.
+
+def _flux_handles_from_hfx_qfx(state: State, *, hfx, qfx, ust, cpm) -> State:
+    """Map a scheme's HFX/QFX/USTAR onto the B2 kinematic surface handles.
+
+    Mirrors ``sfclay_revised_mm5.py`` (theta_flux=hfx/(rho*cpm), qv_flux=qfx/rho,
+    tau_u/tau_v=-ust^2*u/|wind|, fltv=(1+ep1*qv)*theta_flux + ep1*thx*qv_flux).
+    """
+
+    inp = _surface_layer_bottom_inputs(state)
+    T0 = _temperature_from_theta(state.theta, state.p)[0]
+    rhox = state.p[0] / (R_D * T0 * (1.0 + EP1 * state.qv[0]))
+    theta_flux = hfx / jnp.maximum(rhox * cpm, 1.0e-12)
+    qv_flux = qfx / jnp.maximum(rhox, 1.0e-12)
+    u_b = inp["u"]
+    v_b = inp["v"]
+    wind = jnp.maximum(jnp.sqrt(u_b * u_b + v_b * v_b), 0.1)
+    tau_u = -(ust * ust) * u_b / wind
+    tau_v = -(ust * ust) * v_b / wind
+    thx = T0 * (P0_PA / state.p[0]) ** R_D_OVER_CP
+    fltv = (1.0 + EP1 * state.qv[0]) * theta_flux + EP1 * thx * qv_flux
+    updates = {
+        "ustar": ust, "theta_flux": theta_flux, "qv_flux": qv_flux,
+        "tau_u": tau_u, "tau_v": tau_v, "rhosfc": rhox, "fltv": fltv,
+    }
+    return state.replace(**{k: jnp.asarray(v).astype(_output_dtype(state, k))
+                            for k, v in updates.items()})
+
+
+def sfclay_old_mm5_adapter(state: State, dt: float, grid=None) -> State:
+    """sf_sfclay=91 old-MM5 surface layer scan adapter (writes B2 flux handles)."""
+
+    del dt
+    dx = float(grid.projection.dx_m) if grid is not None else 3000.0
+    inp = _surface_layer_bottom_inputs(state)
+    z = jnp.zeros_like(state.t_skin)
+    out = sfclay_old_mm5_columns(
+        inp["u"], inp["v"], inp["temperature"], inp["qv"], inp["pressure"], inp["dz"],
+        inp["psfc"], state.t_skin, state.xland,
+        jnp.maximum(state.roughness_m, 1.0e-4), jnp.maximum(state.ustar, 1.0e-3),
+        z,                                       # mol carry (0 = no prior unstable)
+        jnp.full_like(state.t_skin, -1.0),       # qsfc<0 -> recomputed from tsk
+        jnp.full_like(state.t_skin, 1000.0),     # pblh (default, as revised-MM5)
+        state.mavail, state.lakemask,
+        jnp.full_like(state.t_skin, dx),
+        z, z,                                    # hfx_in/qfx_in (0 on entry)
+        isfflx=1,
+    )
+    cpm = CP_D * (1.0 + 0.8 * state.qv[0])
+    return _flux_handles_from_hfx_qfx(
+        state, hfx=out["hfx"], qfx=out["qfx"], ust=out["ust"], cpm=cpm
+    )
+
+
+def gfs_sfclay_adapter(state: State, dt: float, grid=None) -> State:
+    """sf_sfclay=3 NCEP-GFS surface layer scan adapter (writes B2 flux handles)."""
+
+    del dt, grid
+    inp = _surface_layer_bottom_inputs(state)
+    # GFS derives its reference height Z1 from the hydrostatic thickness
+    # -RD*Tv*log(p_mid/psfc)/g, so it needs a genuine surface pressure ABOVE the
+    # lowest-level pressure (psfc==p_mid -> Z1=0 -> NaN). Derive psfc by adding the
+    # hydrostatic weight of the half lowest layer below the mass point:
+    # psfc = p_mid + rho * g * 0.5 * dz.
+    T0 = inp["temperature"]
+    rhox = inp["pressure"] / (R_D * T0 * (1.0 + EP1 * inp["qv"]))
+    psfc = inp["pressure"] + rhox * GRAVITY_M_S2 * 0.5 * inp["dz"]
+    out = sf_gfs_columns(
+        inp["u"], inp["v"], inp["temperature"], inp["qv"], inp["pressure"],
+        psfc, state.t_skin, state.xland,
+        jnp.maximum(state.roughness_m, 1.0e-4), jnp.maximum(state.ustar, 1.0e-3),
+        isfflx=1,
+    )
+    return _flux_handles_from_hfx_qfx(
+        state, hfx=out["hfx"], qfx=out["qfx"], ust=out["ust"], cpm=out["cpm"]
+    )
 
 
 # --- Cumulus adapter (cu_physics) ---------------------------------------------
@@ -1002,7 +1086,9 @@ MP_SCAN_ADAPTERS = {
 # existing surface_adapter; sf_sfclay=0 disables).
 SFCLAY_SCAN_ADAPTERS = {
     1: sfclay_revised_mm5_adapter,
+    3: gfs_sfclay_adapter,
     7: pleim_xiu_sfclay_adapter,
+    91: sfclay_old_mm5_adapter,
 }
 
 # Cumulus options whose adapter is threaded (cu=0 = no cumulus). KF (1) is the
@@ -1047,6 +1133,8 @@ __all__ = [
     "wdm6_adapter",
     "sfclay_revised_mm5_adapter",
     "pleim_xiu_sfclay_adapter",
+    "sfclay_old_mm5_adapter",
+    "gfs_sfclay_adapter",
     "kf_adapter",
     "tiedtke_adapter",
     "gf_adapter",

@@ -170,13 +170,14 @@ SUPPORTED_OPTIONS: dict[str, SupportedOption] = {
         key="sf_sfclay_physics",
         supported_values=frozenset(ACCEPTED_SF_SFCLAY_PHYSICS),
         implemented=(
-            "0=disabled, 1=revised-MM5, 2=Janjic Eta, 5=MYNN surface layer, 7=Pleim-Xiu "
-            "surface layer (all GPU-operational, scan-wired); "
+            "0=disabled, 1=revised-MM5, 2=Janjic Eta, 3=NCEP-GFS, 5=MYNN surface layer, "
+            "7=Pleim-Xiu, 91=old-MM5 surface layer (all GPU-operational, scan-wired); "
             "2=Janjic Eta is the v0.13 jit/vmap-traceable MYJ pair (mandatorily paired "
-            "with bl_pbl_physics=2 MYJ), savepoint-parity-proven"
+            "with bl_pbl_physics=2 MYJ), savepoint-parity-proven; 3=NCEP-GFS and 91=old-MM5 "
+            "are v0.13 Tier-3 fp64 pristine-WRF oracle-validated surface layers"
         ),
         action=(
-            "Use sf_sfclay_physics=0/1/2/5/7 for the operational GPU scan; 2=Janjic Eta "
+            "Use sf_sfclay_physics=0/1/2/3/5/7/91 for the operational GPU scan; 2=Janjic Eta "
             "MUST pair with bl_pbl_physics=2. "
             "All other sfclay options remain unsupported. "
             "Use the PBL-compatible partner (MYNN-SL 5<->MYNN PBL 5, Pleim-Xiu 7<->ACM2 7, Janjic 2<->MYJ 2)."
@@ -186,8 +187,12 @@ SUPPORTED_OPTIONS: dict[str, SupportedOption] = {
         key="sf_surface_physics",
         supported_values=frozenset(ACCEPTED_SF_SURFACE_PHYSICS),
         implemented="0=disabled, 2=Noah classic (explicit static/land bundle), 4=Noah-MP "
-        "(set use_noahmp=True) -- both GPU-operational, scan-wired",
-        action="Use one of the frozen v0.6.0 land-surface options; all other land-surface options remain unsupported.",
+        "(set use_noahmp=True) -- both GPU-operational, scan-wired; 1=thermal-diffusion "
+        "slab LSM is v0.13 Tier-3 JAX-ported + fp64 oracle-validated (physics.lsm_slab) "
+        "but REFERENCE-ONLY (fail-closed in the operational scan until the LSM hook lands)",
+        action="Use sf_surface_physics=4 (Noah-MP) or 2 (Noah classic) for the operational "
+        "scan; 1=slab is accepted for a single-column reference comparison only; all other "
+        "land-surface options remain unsupported.",
     ),
     "ra_sw_physics": SupportedOption(
         key="ra_sw_physics",
