@@ -81,7 +81,10 @@ def test_registry_records_supported_active_suite() -> None:
     assert SUPPORTED_OPTIONS["sf_surface_physics"].supported_values == frozenset({0, 1, 2, 4})
     assert SUPPORTED_OPTIONS["cu_physics"].supported_values == frozenset({0, 1, 2, 3, 5, 6, 14, 16})
     assert SUPPORTED_OPTIONS["ra_sw_physics"].supported_values == frozenset({0, 1, 2, 4})
-    assert SUPPORTED_OPTIONS["ra_lw_physics"].supported_values == frozenset({0, 1, 4})
+    # ra_lw=5 (GSFC/Goddard NUWRF LW) is v0.13 Tier-3 reference-only: namelist-
+    # accepted (selectable for a single-column reference comparison) but
+    # fail-closed in the operational scan (proofs/v013/t3_gsfc_lw_oracle.py).
+    assert SUPPORTED_OPTIONS["ra_lw_physics"].supported_values == frozenset({0, 1, 4, 5})
 
 
 def test_myj_janjic_pairing_is_enforced() -> None:
@@ -170,7 +173,13 @@ def test_implemented_scheme_passes() -> None:
         # sf_sfclay=3 (GFS) + 91 (old-MM5) are now v0.13 Tier-3 implemented; the
         # remaining unimplemented surface-layer option is QNSE (4).
         ("sf_sfclay_physics", 4, "QNSE"),
-        ("ra_lw_physics", 5, "Goddard"),
+        # ra_lw=5 (GSFC/Goddard NUWRF LW) is now v0.13 Tier-3 REFERENCE-ONLY
+        # (namelist-accepted for a single-column reference comparison, fail-closed
+        # in the operational scan), so it is no longer a "recognized-but-
+        # unimplemented" fail-at-namelist example -- see the reference-only test in
+        # tests/test_scheme_catalog_fail_closed.py. ra_lw=3 (CAM LW) remains
+        # recognized-but-unimplemented.
+        ("ra_lw_physics", 3, "CAM"),
         # ra_sw=2 (GSFC/Chou-Suarez) is now operationally scan-wired (v0.13 Tier3),
         # so it is no longer a "recognized-but-unimplemented" example. ra_sw=3
         # (CAM) remains recognized-but-unimplemented (no GPU radiation-slot adapter).

@@ -211,6 +211,25 @@ _REFERENCE_ONLY: Mapping[str, dict[int, tuple[str, str]]] = {
             "reference-only single-column path until the slab LSM hook lands.",
         ),
     },
+    # ra_lw_physics=5 (GSFC/Goddard NUWRF LW) is a v0.13 Tier-3 reference-only
+    # scheme: a single-column fp64 pristine-WRF oracle is staged (the unmodified-
+    # physics module_ra_goddard.F:lwrad, proofs/v013/oracle/radiation_lw), but its
+    # traceable JAX column kernel is a documented carry-over (the combined NUWRF
+    # SW+LW module is ~12.5k LOC, with ~11.8k hardcoded LW correlated-k
+    # coefficients -- too large for a faithful single-session port without becoming
+    # a self-compare/happy-path). It is REFERENCE_ONLY: namelist-accepted so a
+    # single-column reference comparison can be run, fail-closed in the operational
+    # GPU scan with a named reason (never silently wrong).
+    "ra_lw_physics": {
+        5: (
+            "GSFC/Goddard NUWRF longwave has a v0.13 single-column fp64 pristine-WRF "
+            "oracle staged (module_ra_goddard.F:lwrad), but its traceable JAX column "
+            "kernel is not yet ported (the combined NUWRF SW+LW module is ~12.5k LOC "
+            "with ~11.8k hardcoded LW coefficients), so it is fail-closed in the "
+            "operational GPU scan.",
+            "Use ra_lw_physics=4 (RRTMG, GPU-operational default) or 1 (classic RRTM).",
+        ),
+    },
     # bl_pbl_physics=2 (MYJ) + sf_sfclay_physics=2 (Janjic Eta) were REFERENCE_ONLY
     # (host-NumPy savepoint kernels); they are now operationally scan-wired as a
     # mandatory pair via the JAX-traceable physics.bl_myj / physics.sf_myj rewrites
