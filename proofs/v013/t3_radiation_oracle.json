@@ -27,7 +27,7 @@
   "default_unchanged": "ra_sw_physics default is 4 (RRTMG SW+LW); the GSFC path is opt-in via ra_sw_physics=2 only. The default RRTMG dispatch is untouched.",
   "jax_precision": "fp64",
   "jax_platform": "cpu",
-  "git_head": "e51b31b22a0dfe228124a0780755f286186a9e31",
+  "git_head": "0b917ea637c607449537d8d8238a50891baad720",
   "predeclared_tolerances": {
     "fp32": {
       "rthraten_abs": 1e-06,
