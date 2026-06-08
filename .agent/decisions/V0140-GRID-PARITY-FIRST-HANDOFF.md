@@ -102,6 +102,11 @@ match the flat fallback. Huygens must prove/refute this before any source fix.
 `HGT/XLAT/MAPFAC/F/E/SINALPHA` should be treated separately because GPU HGT
 matches the retained `wrfinput_d02` while CPU wrfout HGT differs from that input.
 
+Sprint contract update: Huygens may patch `src/gpuwrf/integration/d02_replay.py`
+if stale `GridSpec.metrics` plumbing is proven, or `src/gpuwrf/io/wrfout_writer.py`
+if writer payload selection is proven. `contracts/grid.py` and runtime dycore
+remain read-only without a follow-up contract.
+
 ## Active Wave 1
 
 - `019ea94e-898f-7211-9561-e70af150fcfd` (`Averroes`):
