@@ -1,0 +1,70 @@
+{
+  "tier": "v0.13 Tier-3 MICROPHYSICS batch 1",
+  "schemes_delivered": {
+    "WSM7 (mp_physics=24)": {
+      "status": "REFERENCE_ONLY (parity-proven, fail-closed: hail leaf not in operational state)",
+      "kernel": "src/gpuwrf/physics/microphysics_wsm7.py",
+      "constants": "src/gpuwrf/physics/wsm7_constants.py",
+      "oracle": "proofs/v013/oracle/wsm7_oracle_driver.f90 (drives UNMODIFIED phys/module_mp_wsm7.F)",
+      "oracle_pass": true,
+      "parity_report": "proofs/v013/wsm7_savepoint_parity_report.json"
+    }
+  },
+  "default_unchanged": {
+    "accepted_mp_physics": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      6,
+      8,
+      10,
+      16
+    ],
+    "scan_wired_mp_physics": [
+      1,
+      2,
+      3,
+      4,
+      6,
+      10,
+      16
+    ],
+    "wsm7_not_in_accepted": true,
+    "wsm7_not_scan_wired": true,
+    "default_mp8_implemented": true,
+    "pass": true
+  },
+  "fail_closed": {
+    "mp24_namelist_rejected": true,
+    "defaults_and_wired_accepted": true,
+    "mp24_catalog_status": "recognized_fail_closed",
+    "mp24_reason_names_port_and_blocker": true,
+    "catalog_consistent": true,
+    "registry_consistent": true,
+    "pass": true
+  },
+  "scope_honesty": {
+    "already_wired_on_trunk": [
+      "WSM6 (6)",
+      "WDM6 (16)",
+      "Lin (2)",
+      "WSM3 (3)",
+      "WSM5 (4)",
+      "Morrison (10)",
+      "Kessler (1)",
+      "Thompson (8)"
+    ],
+    "delivered_this_batch": [
+      "WSM7 (24) -- ported + oracle PASS, REFERENCE_ONLY"
+    ],
+    "carry_over_next_batch": {
+      "WDM5 (14)": "operationally-wirable (Nn/Nc/Nr warm-rain number species already exist for wired WDM6; NO new state leaf). Highest-value next port.",
+      "WDM7 (26)": "REFERENCE_ONLY like WSM7 (adds a hail qh leaf); extends the wired WDM6 kernel + the WSM7 hail machinery.",
+      "Goddard 4-ice (7)": "intractable for this batch -- a separate code family (module_mp_gsfcgce.F) with no existing GPU analogue."
+    },
+    "hail_leaf_blocker": "WSM7/WDM7 carry a separate precipitating HAIL class (qh) not in MOIST_SPECIES; operational wiring requires a cross-cutting State/dynamics/I-O addition (advect qh in the dycore), which is outside the microphysics-slot ownership and is the honest reason they are REFERENCE_ONLY rather than IMPLEMENTED."
+  },
+  "overall_pass": true
+}
