@@ -221,25 +221,52 @@ Wave deliverables are expected under `proofs/v014/` and
 - `019ea977-234a-7b52-b87b-b6fb709e2d2d` (`Helmholtz`):
   CPU-only dynamic field attribution sprint
   `.agent/sprints/2026-06-09-v014-dynamic-field-attribution/sprint-contract.md`.
-  Write scope: `proofs/v014/dynamic_field_attribution.*` and
+  Completed and manager-validated 2026-06-09. Deliverables:
+  `proofs/v014/dynamic_field_attribution.*` and
   `.agent/reviews/2026-06-09-v014-dynamic-field-attribution.md`. No `src/`
-  edits, no GPU. Objective: select first/worst leads, vertical levels, regions,
-  and 16-32 candidate cells for same-state tendency localization.
+  edits, no GPU. Manager reran the CPU-only script and revalidated JSON/compile.
+  Verdict: first materially bad lead is h1 (`W`, `PSFC` threshold hits), but
+  selected same-state localization lead is h10
+  (`2026-05-02T04:00:00+00:00`) because it is the strongest h10-h14 primary
+  debug window. The manifest selects 24 mass-grid cells with U/V/W/PH native
+  stagger context and first-probe levels
+  `0,1,2,16,17,18,24,25,26,28,29,30,31,32`. Top dynamic suspects are
+  `PSFC`, `V`, `P`, `T`, `U`, `V10`, `MU`, and `PH`. Next target is CPU-WRF
+  term savepoints for these h10 cells before any JAX-only operator conclusion.
+- `019ea97b-119c-7561-ae35-948a3fc1405a` (`Sartre`):
+  CPU-only same-state WRF savepoint feasibility sprint
+  `.agent/sprints/2026-06-09-v014-same-state-wrf-savepoint-feasibility/sprint-contract.md`.
+  Write scope: `proofs/v014/same_state_wrf_savepoint_feasibility.*` and
+  `.agent/reviews/2026-06-09-v014-same-state-wrf-savepoint-feasibility.md`.
+  Objective: identify exact WRF source/build paths, term-savepoint routines,
+  minimal patch strategy, artifact schema, and next sprint outline.
+- `019ea980-b391-7923-a63f-81cd9f6dae48` (`Ampere`):
+  CPU-only base-state writer attribution sprint
+  `.agent/sprints/2026-06-09-v014-base-state-writer-attribution/sprint-contract.md`.
+  Write scope: `proofs/v014/base_state_writer_attribution.*` and
+  `.agent/reviews/2026-06-09-v014-base-state-writer-attribution.md`. No `src/`
+  edits, no GPU. Objective: classify remaining post-fix h1 `PHB/MUB/PB/HGT`
+  and `XLAT/XLONG` mismatches as CPU-output convention, writer fallback,
+  runtime input mismatch, forecast-step change, or unresolved blocker.
 
 ## Next Manager Actions
 
-1. Integrate Helmholtz's dynamic field attribution proof and open the next
-   same-state tendency localization sprint with the selected lead/cells.
+1. Integrate Ampere's base-state writer attribution proof. If it marks only
+   writer/output conventions or documented exclusions, dynamic same-state
+   localization may proceed; if it finds runtime input mismatch, fix that first.
 2. Integrate Sartre's WRF savepoint feasibility proof so same-state
    localization starts from exact WRF source/build paths.
-3. Keep `wrfout_writer.py`, runtime dycore, pressure-gradient, acoustic,
+3. Open the next same-state localization sprint using Helmholtz h10 cell/level
+   manifest plus Sartre's WRF savepoint path, unless Ampere finds a runtime
+   base-state blocker.
+4. Keep `wrfout_writer.py`, runtime dycore, pressure-gradient, acoustic,
    radiation, and surface-layer code read-only unless the static/base parity
    proof isolates their ownership.
-4. Launch source-changing dynamic fixes only after a same-state/term proof
+5. Launch source-changing dynamic fixes only after a same-state/term proof
    names the first failing operator or cadence path.
-5. Use Opus 4.8 xhigh/max via `claude --permission-mode auto` only after two
+6. Use Opus 4.8 xhigh/max via `claude --permission-mode auto` only after two
    failed GPT attempts on the same static/base or tendency root-cause problem.
-6. Keep GPU time for short targeted probes only; no powered TOST, no Switzerland
+7. Keep GPU time for short targeted probes only; no powered TOST, no Switzerland
    equivalence, no FP32 source landing until the static/base gate is green or
    explicitly explained.
 
