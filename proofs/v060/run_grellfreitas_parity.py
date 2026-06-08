@@ -36,16 +36,26 @@ PREDECLARED_TOLERANCES = {
     "scale_pair": "fine-grid case must produce less RAINCV than coarse-grid case; ratio tolerance 0.20",
 }
 
-WRF_SOURCE_PATHS = (
-    "/home/enric/src/wrf_pristine/WRF/phys/module_cu_gf_deep.F",
-    "/home/enric/src/wrf_pristine/WRF/phys/module_cu_gf_sh.F",
-    "/home/enric/src/wrf_pristine/WRF/phys/module_cu_gf_wrfdrv.F",
-    "/home/enric/src/wrf_pristine/WRF/phys/module_gfs_physcons.F",
-    "/home/enric/src/wrf_pristine/WRF/phys/module_gfs_machine.F",
+# Pristine-WRF checkout root. Override with WRF_PRISTINE_ROOT; default = sibling of repo.
+WRF_PRISTINE_ROOT = Path(os.environ.get("WRF_PRISTINE_ROOT", str(ROOT.parent / "wrf_pristine" / "WRF")))
+WRF_SOURCE_PATHS = tuple(
+    str(WRF_PRISTINE_ROOT / "phys" / name)
+    for name in (
+        "module_cu_gf_deep.F",
+        "module_cu_gf_sh.F",
+        "module_cu_gf_wrfdrv.F",
+        "module_gfs_physcons.F",
+        "module_gfs_machine.F",
+    )
 )
 
 
 def sha256(path: str | Path) -> str:
+    # Provenance hash. The binding oracle is the vendored gf_case_*.json savepoints,
+    # so a missing pristine-WRF source (outsider without WRF_PRISTINE_ROOT) records
+    # "missing" rather than aborting the gate.
+    if not Path(path).is_file():
+        return "missing"
     h = hashlib.sha256()
     with open(path, "rb") as fh:
         for chunk in iter(lambda: fh.read(1024 * 1024), b""):
@@ -242,7 +252,7 @@ def build_report() -> dict:
         "oracle": {
             "full_wrf_exe_run": False,
             "generation_command": "taskset -c 0-3 bash proofs/v060/oracle/build_and_run.sh",
-            "source": "unmodified WRF GF modules from /home/enric/src/wrf_pristine/WRF/phys compiled into a standalone single-column driver",
+            "source": "unmodified WRF GF modules from $WRF_PRISTINE_ROOT/phys compiled into a standalone single-column driver",
             "note": (
                 "This is a real WRF-module oracle, not a JAX self-compare. It is not a full coupled wrf.exe run. "
                 "Pristine WRF GFDRV does not take cugd_* arrays; those S0 carry members are reported as adapter carry only."

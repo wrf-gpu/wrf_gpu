@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -89,7 +90,13 @@ def main():
     ap.add_argument("--init", default="2026-05-21_18:00:00")
     ap.add_argument("--hours", type=int, default=12)
     ap.add_argument("--dt", type=float, default=30.0)
-    ap.add_argument("--table-dir", default="/home/enric/src/wrf_pristine/WRF/run")
+    ap.add_argument(
+        "--table-dir",
+        default=os.environ.get(
+            "WRF_PRISTINE_ROOT_RUN",
+            str(ROOT.parent / "wrf_pristine" / "WRF" / "run"),
+        ),
+    )
     ap.add_argument("--out", required=True)
     args = ap.parse_args()
 

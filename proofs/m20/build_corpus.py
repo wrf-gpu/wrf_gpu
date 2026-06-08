@@ -269,7 +269,7 @@ def build_case_and_baseline_manifests() -> tuple[dict, dict]:
         "description": "CPU WRF v4 baseline runs (the denominator for skill comparison "
                        "and speedup). Built by Gen2 nightly pipeline; physics suite = CONUS "
                        "with Thompson MP(8), MYNN PBL(5), Noah-MP LSM(4), RRTMG(4).",
-        "wrf_build": "/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_src/WRF/install_gen2_dmpar",
+        "wrf_build": "$WRF_GEN2_SRC_ROOT/install_gen2_dmpar",
         "cpu_baseline_28rank_note": "Operational CPU baseline = 28-rank WRF on the same workstation "
                                     "(nproc_x=7, nproc_y=4 = 28 MPI ranks per namelist).",
         "count": len(baseline_cases),

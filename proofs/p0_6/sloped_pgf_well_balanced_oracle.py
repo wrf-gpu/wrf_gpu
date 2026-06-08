@@ -421,7 +421,7 @@ def build_report(*, write_json: bool = False) -> dict[str, Any]:
         "status": current_status,
         "diagnostic_completed": True,
         "source": {
-            "wrf_pristine_root": "/home/enric/src/wrf_pristine/WRF",
+            "wrf_pristine_root": "$WRF_PRISTINE_ROOT",
             "horizontal_pressure_gradient": "dyn_em/module_big_step_utilities_em.F:2183-2404",
             "current_gpu_operator": "src/gpuwrf/dynamics/core/rk_addtend_dry.py:large_step_horizontal_pgf",
         },

@@ -369,7 +369,7 @@ def build_report(*, write_json: bool = False) -> dict[str, Any]:
             "documented_decoupled_u1_v1_feed_is_problem": bool(not current_production_feed_pass),
         },
         "source": {
-            "wrf_pristine_root": "/home/enric/src/wrf_pristine/WRF",
+            "wrf_pristine_root": "$WRF_PRISTINE_ROOT",
             "advance_w_surface_bc": "dyn_em/module_small_step_em.F:1372-1394",
             "current_advance_w_formula": "src/gpuwrf/dynamics/core/advance_w.py:274-303",
             "current_production_feed": "src/gpuwrf/dynamics/core/acoustic.py:620-645",

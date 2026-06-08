@@ -95,7 +95,7 @@ def main():
             "kind": ("external WRF oracle (NOT self-compare): compiled pristine WRF "
                      "module_sf_noahlsm.o SFLX over real Canary d03 land columns"),
             "driver": "proofs/v060/oracle/noahclassic_offline_driver.F90",
-            "wrf_source": "/home/enric/src/wrf_pristine/WRF/phys/module_sf_noahlsm.F",
+            "wrf_source": "$WRF_PRISTINE_ROOT/phys/module_sf_noahlsm.F",
             "savepoints": "proofs/v060/savepoints_noahclassic.json",
             "scope_options": data["scope_options"],
             "regimes": sorted({c["case"] for c in cols}),

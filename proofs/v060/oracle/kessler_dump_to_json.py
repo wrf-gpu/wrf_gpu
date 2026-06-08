@@ -49,7 +49,7 @@ def main(infile: str, outfile: str) -> None:
         "metadata": {
             "scheme": "Kessler warm rain (mp_physics=1)",
             "case_label": CASE_LABELS.get(case_id, "unknown"),
-            "oracle_source": "/home/enric/src/wrf_pristine/WRF/phys/module_mp_kessler.F",
+            "oracle_source": "$WRF_PRISTINE_ROOT/phys/module_mp_kessler.F",
             "full_wrf_exe": bool(scalars["FULL_WRF_EXE"]),
         },
         "scalars": scalars,

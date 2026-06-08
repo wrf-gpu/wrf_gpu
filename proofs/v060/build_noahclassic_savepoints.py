@@ -21,6 +21,7 @@ Run (CPU only; cores 0-3):
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 from pathlib import Path
 
@@ -32,6 +33,8 @@ except Exception as exc:  # pragma: no cover
     raise SystemExit(f"netCDF4 required: {exc}")
 
 HERE = Path(__file__).resolve().parent
+# Pristine-WRF checkout root. Override with WRF_PRISTINE_ROOT; default = sibling of repo.
+WRF_PRISTINE_ROOT = Path(os.environ.get("WRF_PRISTINE_ROOT", str(HERE.parents[2] / "wrf_pristine" / "WRF")))
 ORACLE = HERE / "oracle"
 RUN = Path("/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z")
 DAY = "wrfout_d03_2026-05-22_12:00:00"
@@ -286,7 +289,7 @@ def main() -> None:
     for tbl in ("VEGPARM.TBL", "SOILPARM.TBL", "GENPARM.TBL"):
         link = ORACLE / tbl
         if not link.exists():
-            link.symlink_to(Path("/home/enric/src/wrf_pristine/WRF/run") / tbl)
+            link.symlink_to(WRF_PRISTINE_ROOT / "run" / tbl)
 
     meta = build_columns()
     _write_columns(meta)
@@ -313,7 +316,7 @@ def main() -> None:
         "kind": ("external oracle: compiled pristine WRF module_sf_noahlsm.o SFLX "
                  "called on real Canary d03 land columns; per-column input snapshot "
                  "+ WRF-computed output (NOT a self-compare)"),
-        "wrf_source": "/home/enric/src/wrf_pristine/WRF/phys/module_sf_noahlsm.F",
+        "wrf_source": "$WRF_PRISTINE_ROOT/phys/module_sf_noahlsm.F",
         "corpus": str(RUN), "dataset": DATASET,
         "scope_options": {"local": False, "ua_phys": False, "rdlai2d": False,
                           "usemonalb": False, "opt_thcnd": 1, "fasdas": 0,

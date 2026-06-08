@@ -18,6 +18,7 @@ Run (CPU only, cores 0-3):
 from __future__ import annotations
 
 import json
+import os
 import re
 import sys
 from pathlib import Path
@@ -38,7 +39,10 @@ from gpuwrf.physics.noahmp.energy_radiation import TwoStreamParams, radiation_tw
 from gpuwrf.physics.noahmp.tables import load_noahmp_parameters  # noqa: E402
 from gpuwrf.physics.noahmp.types import NoahMPForcing, NoahMPPhenology  # noqa: E402
 
-TABLE_DIR = Path("/home/enric/src/wrf_pristine/WRF/run")
+# Pristine-WRF run/ dir (MPTABLE/SOILPARM/GENPARM). Override with WRF_PRISTINE_ROOT
+# (pointing at your WRF checkout root); default = sibling of the repo.
+WRF_PRISTINE_ROOT = Path(os.environ.get("WRF_PRISTINE_ROOT", str(ROOT.parent / "wrf_pristine" / "WRF")))
+TABLE_DIR = WRF_PRISTINE_ROOT / "run"
 SOILCOLOR = 4  # offline driver / WRF drv default
 DT = 90.0
 

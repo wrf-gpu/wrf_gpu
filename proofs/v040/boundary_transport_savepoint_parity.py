@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import sys
 from pathlib import Path
 from typing import Any
@@ -55,8 +56,11 @@ CASES = [
      "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260429_18z_l2_72h_20260524T204451Z/wrfout_d01_2026-04-29_18:00:00"),
 ]
 
-WRF_PGF_SRC = Path("/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/WRF/dyn_em/module_big_step_utilities_em.F")
-WRF_ADV_SRC = Path("/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/WRF/dyn_em/module_advect_em.F")
+# Gen2 WRF dyn_em source tree used for provenance hashing only (sha256 -> "missing"
+# if absent, so this is safe for outsiders). Override with WRF_GEN2_SRC_ROOT.
+WRF_GEN2_SRC_ROOT = Path(os.environ.get("WRF_GEN2_SRC_ROOT", str(ROOT.parent / "canairy_meteo" / "Gen2" / "artifacts" / "wrf_gpu_src" / "WRF")))
+WRF_PGF_SRC = WRF_GEN2_SRC_ROOT / "dyn_em/module_big_step_utilities_em.F"
+WRF_ADV_SRC = WRF_GEN2_SRC_ROOT / "dyn_em/module_advect_em.F"
 
 
 def _sha(p: Path) -> str:
