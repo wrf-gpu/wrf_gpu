@@ -52,8 +52,10 @@ XLA_PYTHON_CLIENT_PREALLOCATE=false PYTHONPATH=src \
 
 ## unresolved risks
 
-- GPU peak-VRAM proof was intentionally not run by this worker.
-- Runtime impact of `lax.dynamic_update_slice` result carries should be measured in the manager GPU pass; correctness and residency shape are proven on CPU.
+- Manager GPU peak-VRAM proof ran after merge in `proofs/v013/rrtmg_column_tile_vram_suite.json`.
+- GPU result: LW untiled OOMed on a 32.11 GiB allocation; LW tiled peak was 5374.84 MiB.
+- GPU result: SW untiled peak was 10033.1 MiB; SW tiled peak was 1619.54 MiB.
+- Runtime impact of `lax.dynamic_update_slice` result carries should still be measured in full forecast context; correctness and residency shape are proven.
 - `tests/test_m5_rrtmg_tier1.py` rewrites `artifacts/m5/tier1_rrtmg_sw_parity.json` on this CPU path; the generated artifact churn was restored and is not part of this patch.
 
 ## next decision needed, if any
