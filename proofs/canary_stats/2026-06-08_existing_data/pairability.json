@@ -1,0 +1,673 @@
+{
+  "by_domain": {
+    "d01": {
+      "exploratory_incomplete_leads": 5
+    },
+    "d02": {
+      "exploratory_incomplete_leads": 5,
+      "pairable_station_only_grid_mismatch": 2
+    },
+    "d03": {
+      "exploratory_incomplete_leads": 2
+    }
+  },
+  "generated_utc": "2026-06-08T16:24:15.605679+00:00",
+  "inventory": "proofs/canary_stats/2026-06-08_existing_data/inventory.json",
+  "pair_count": 14,
+  "pairs": [
+    {
+      "case_id": "20260429_18z",
+      "classification": "exploratory_incomplete_leads",
+      "common_lead_count": 16,
+      "common_leads": [
+        "L001",
+        "L002",
+        "L003",
+        "L004",
+        "L005",
+        "L006",
+        "L007",
+        "L008",
+        "L009",
+        "L010",
+        "L011",
+        "L012",
+        "L013",
+        "L014",
+        "L015",
+        "L016"
+      ],
+      "common_score_vars": [
+        "T2",
+        "U10",
+        "V10"
+      ],
+      "cpu_frame_count": 25,
+      "cpu_grid": [
+        9000.0,
+        9000.0,
+        59,
+        93,
+        44
+      ],
+      "cpu_path": "/mnt/data/canairy_meteo/runs/cu0_confirm/20260429_18z_cu0",
+      "cpu_provenance": "CPU-WRF",
+      "cpu_run_id": "20260429_18z_cu0",
+      "domain": "d01",
+      "gpu_frame_count": 16,
+      "gpu_grid": [
+        9000.0,
+        9000.0,
+        59,
+        93,
+        44
+      ],
+      "gpu_path": "/tmp/v0120_powered_tost_runs/l2_d02_20260429_18z_l2_72h_20260524T204451Z",
+      "gpu_provenance": "GPU/JAX GPUWRF",
+      "gpu_run_id": "l2_d02_20260429_18z_l2_72h_20260524T204451Z",
+      "reason": "same_case_domain",
+      "same_grid": true
+    },
+    {
+      "case_id": "20260429_18z",
+      "classification": "exploratory_incomplete_leads",
+      "common_lead_count": 16,
+      "common_leads": [
+        "L001",
+        "L002",
+        "L003",
+        "L004",
+        "L005",
+        "L006",
+        "L007",
+        "L008",
+        "L009",
+        "L010",
+        "L011",
+        "L012",
+        "L013",
+        "L014",
+        "L015",
+        "L016"
+      ],
+      "common_score_vars": [
+        "T2",
+        "U10",
+        "V10"
+      ],
+      "cpu_frame_count": 73,
+      "cpu_grid": [
+        9000.0,
+        9000.0,
+        59,
+        93,
+        44
+      ],
+      "cpu_path": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260429_18z_l2_72h_20260524T204451Z",
+      "cpu_provenance": "CPU-WRF",
+      "cpu_run_id": "20260429_18z_l2_72h_20260524T204451Z",
+      "domain": "d01",
+      "gpu_frame_count": 16,
+      "gpu_grid": [
+        9000.0,
+        9000.0,
+        59,
+        93,
+        44
+      ],
+      "gpu_path": "/tmp/v0120_powered_tost_runs/l2_d02_20260429_18z_l2_72h_20260524T204451Z",
+      "gpu_provenance": "GPU/JAX GPUWRF",
+      "gpu_run_id": "l2_d02_20260429_18z_l2_72h_20260524T204451Z",
+      "reason": "same_case_domain",
+      "same_grid": true
+    },
+    {
+      "case_id": "20260429_18z",
+      "classification": "exploratory_incomplete_leads",
+      "common_lead_count": 16,
+      "common_leads": [
+        "L001",
+        "L002",
+        "L003",
+        "L004",
+        "L005",
+        "L006",
+        "L007",
+        "L008",
+        "L009",
+        "L010",
+        "L011",
+        "L012",
+        "L013",
+        "L014",
+        "L015",
+        "L016"
+      ],
+      "common_score_vars": [
+        "T2",
+        "U10",
+        "V10"
+      ],
+      "cpu_frame_count": 25,
+      "cpu_grid": [
+        3000.0,
+        3000.0,
+        66,
+        159,
+        44
+      ],
+      "cpu_path": "/mnt/data/canairy_meteo/runs/cu0_confirm/20260429_18z_cu0",
+      "cpu_provenance": "CPU-WRF",
+      "cpu_run_id": "20260429_18z_cu0",
+      "domain": "d02",
+      "gpu_frame_count": 16,
+      "gpu_grid": [
+        3000.0,
+        3000.0,
+        66,
+        159,
+        44
+      ],
+      "gpu_path": "/tmp/v0120_powered_tost_runs/l2_d02_20260429_18z_l2_72h_20260524T204451Z",
+      "gpu_provenance": "GPU/JAX GPUWRF",
+      "gpu_run_id": "l2_d02_20260429_18z_l2_72h_20260524T204451Z",
+      "reason": "same_case_domain",
+      "same_grid": true
+    },
+    {
+      "case_id": "20260429_18z",
+      "classification": "exploratory_incomplete_leads",
+      "common_lead_count": 16,
+      "common_leads": [
+        "L001",
+        "L002",
+        "L003",
+        "L004",
+        "L005",
+        "L006",
+        "L007",
+        "L008",
+        "L009",
+        "L010",
+        "L011",
+        "L012",
+        "L013",
+        "L014",
+        "L015",
+        "L016"
+      ],
+      "common_score_vars": [
+        "T2",
+        "U10",
+        "V10"
+      ],
+      "cpu_frame_count": 73,
+      "cpu_grid": [
+        3000.0,
+        3000.0,
+        66,
+        159,
+        44
+      ],
+      "cpu_path": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260429_18z_l2_72h_20260524T204451Z",
+      "cpu_provenance": "CPU-WRF",
+      "cpu_run_id": "20260429_18z_l2_72h_20260524T204451Z",
+      "domain": "d02",
+      "gpu_frame_count": 16,
+      "gpu_grid": [
+        3000.0,
+        3000.0,
+        66,
+        159,
+        44
+      ],
+      "gpu_path": "/tmp/v0120_powered_tost_runs/l2_d02_20260429_18z_l2_72h_20260524T204451Z",
+      "gpu_provenance": "GPU/JAX GPUWRF",
+      "gpu_run_id": "l2_d02_20260429_18z_l2_72h_20260524T204451Z",
+      "reason": "same_case_domain",
+      "same_grid": true
+    },
+    {
+      "case_id": "20260531_18z",
+      "classification": "exploratory_incomplete_leads",
+      "common_lead_count": 1,
+      "common_leads": [
+        "L001"
+      ],
+      "common_score_vars": [
+        "T2",
+        "U10",
+        "V10"
+      ],
+      "cpu_frame_count": 2,
+      "cpu_grid": [
+        9000.0,
+        9000.0,
+        59,
+        93,
+        44
+      ],
+      "cpu_path": "/mnt/data/canairy_meteo/runs/wrf_l3/20260531_18z_l3_24h_20260601T125256Z",
+      "cpu_provenance": "CPU-WRF",
+      "cpu_run_id": "20260531_18z_l3_24h_20260601T125256Z",
+      "domain": "d01",
+      "gpu_frame_count": 24,
+      "gpu_grid": [
+        9000.0,
+        9000.0,
+        59,
+        93,
+        44
+      ],
+      "gpu_path": "/mnt/data/canairy_meteo/gate_2way_d02_v013/out",
+      "gpu_provenance": "GPU/JAX GPUWRF",
+      "gpu_run_id": "out",
+      "reason": "same_case_domain",
+      "same_grid": true
+    },
+    {
+      "case_id": "20260531_18z",
+      "classification": "exploratory_incomplete_leads",
+      "common_lead_count": 1,
+      "common_leads": [
+        "L001"
+      ],
+      "common_score_vars": [
+        "T2",
+        "U10",
+        "V10"
+      ],
+      "cpu_frame_count": 2,
+      "cpu_grid": [
+        3000.0,
+        3000.0,
+        66,
+        159,
+        44
+      ],
+      "cpu_path": "/mnt/data/canairy_meteo/runs/wrf_l3/20260531_18z_l3_24h_20260601T125256Z",
+      "cpu_provenance": "CPU-WRF",
+      "cpu_run_id": "20260531_18z_l3_24h_20260601T125256Z",
+      "domain": "d02",
+      "gpu_frame_count": 24,
+      "gpu_grid": [
+        3000.0,
+        3000.0,
+        66,
+        159,
+        44
+      ],
+      "gpu_path": "/mnt/data/canairy_meteo/gate_2way_d02_v013/out",
+      "gpu_provenance": "GPU/JAX GPUWRF",
+      "gpu_run_id": "out",
+      "reason": "same_case_domain",
+      "same_grid": true
+    },
+    {
+      "case_id": "20260531_18z",
+      "classification": "exploratory_incomplete_leads",
+      "common_lead_count": 1,
+      "common_leads": [
+        "L001"
+      ],
+      "common_score_vars": [
+        "T2",
+        "U10",
+        "V10"
+      ],
+      "cpu_frame_count": 2,
+      "cpu_grid": [
+        9000.0,
+        9000.0,
+        59,
+        93,
+        44
+      ],
+      "cpu_path": "/mnt/data/canairy_meteo/runs/wrf_l3/20260531_18z_l3_24h_20260601T125256Z",
+      "cpu_provenance": "CPU-WRF",
+      "cpu_run_id": "20260531_18z_l3_24h_20260601T125256Z",
+      "domain": "d01",
+      "gpu_frame_count": 24,
+      "gpu_grid": [
+        9000.0,
+        9000.0,
+        59,
+        93,
+        44
+      ],
+      "gpu_path": "/mnt/data/canairy_meteo/gate_gwd_nested_v013b/out",
+      "gpu_provenance": "GPU/JAX GPUWRF",
+      "gpu_run_id": "out",
+      "reason": "same_case_domain",
+      "same_grid": true
+    },
+    {
+      "case_id": "20260531_18z",
+      "classification": "exploratory_incomplete_leads",
+      "common_lead_count": 1,
+      "common_leads": [
+        "L001"
+      ],
+      "common_score_vars": [
+        "T2",
+        "U10",
+        "V10"
+      ],
+      "cpu_frame_count": 2,
+      "cpu_grid": [
+        3000.0,
+        3000.0,
+        66,
+        159,
+        44
+      ],
+      "cpu_path": "/mnt/data/canairy_meteo/runs/wrf_l3/20260531_18z_l3_24h_20260601T125256Z",
+      "cpu_provenance": "CPU-WRF",
+      "cpu_run_id": "20260531_18z_l3_24h_20260601T125256Z",
+      "domain": "d02",
+      "gpu_frame_count": 24,
+      "gpu_grid": [
+        3000.0,
+        3000.0,
+        66,
+        159,
+        44
+      ],
+      "gpu_path": "/mnt/data/canairy_meteo/gate_gwd_nested_v013b/out",
+      "gpu_provenance": "GPU/JAX GPUWRF",
+      "gpu_run_id": "out",
+      "reason": "same_case_domain",
+      "same_grid": true
+    },
+    {
+      "case_id": "20260531_18z",
+      "classification": "exploratory_incomplete_leads",
+      "common_lead_count": 1,
+      "common_leads": [
+        "L001"
+      ],
+      "common_score_vars": [
+        "T2",
+        "U10",
+        "V10"
+      ],
+      "cpu_frame_count": 2,
+      "cpu_grid": [
+        1000.0,
+        1000.0,
+        75,
+        93,
+        44
+      ],
+      "cpu_path": "/mnt/data/canairy_meteo/runs/wrf_l3/20260531_18z_l3_24h_20260601T125256Z",
+      "cpu_provenance": "CPU-WRF",
+      "cpu_run_id": "20260531_18z_l3_24h_20260601T125256Z",
+      "domain": "d03",
+      "gpu_frame_count": 24,
+      "gpu_grid": [
+        1000.0,
+        1000.0,
+        75,
+        93,
+        44
+      ],
+      "gpu_path": "/mnt/data/canairy_meteo/gate_gwd_nested_v013b/out",
+      "gpu_provenance": "GPU/JAX GPUWRF",
+      "gpu_run_id": "out",
+      "reason": "same_case_domain",
+      "same_grid": true
+    },
+    {
+      "case_id": "20260531_18z",
+      "classification": "exploratory_incomplete_leads",
+      "common_lead_count": 1,
+      "common_leads": [
+        "L001"
+      ],
+      "common_score_vars": [
+        "T2",
+        "U10",
+        "V10"
+      ],
+      "cpu_frame_count": 2,
+      "cpu_grid": [
+        9000.0,
+        9000.0,
+        59,
+        93,
+        44
+      ],
+      "cpu_path": "/mnt/data/canairy_meteo/runs/wrf_l3/20260531_18z_l3_24h_20260601T125256Z",
+      "cpu_provenance": "CPU-WRF",
+      "cpu_run_id": "20260531_18z_l3_24h_20260601T125256Z",
+      "domain": "d01",
+      "gpu_frame_count": 24,
+      "gpu_grid": [
+        9000.0,
+        9000.0,
+        59,
+        93,
+        44
+      ],
+      "gpu_path": "/mnt/data/canairy_meteo/gate_revalidate_gwd8/out",
+      "gpu_provenance": "GPU/JAX GPUWRF",
+      "gpu_run_id": "out",
+      "reason": "same_case_domain",
+      "same_grid": true
+    },
+    {
+      "case_id": "20260531_18z",
+      "classification": "exploratory_incomplete_leads",
+      "common_lead_count": 1,
+      "common_leads": [
+        "L001"
+      ],
+      "common_score_vars": [
+        "T2",
+        "U10",
+        "V10"
+      ],
+      "cpu_frame_count": 2,
+      "cpu_grid": [
+        3000.0,
+        3000.0,
+        66,
+        159,
+        44
+      ],
+      "cpu_path": "/mnt/data/canairy_meteo/runs/wrf_l3/20260531_18z_l3_24h_20260601T125256Z",
+      "cpu_provenance": "CPU-WRF",
+      "cpu_run_id": "20260531_18z_l3_24h_20260601T125256Z",
+      "domain": "d02",
+      "gpu_frame_count": 24,
+      "gpu_grid": [
+        3000.0,
+        3000.0,
+        66,
+        159,
+        44
+      ],
+      "gpu_path": "/mnt/data/canairy_meteo/gate_revalidate_gwd8/out",
+      "gpu_provenance": "GPU/JAX GPUWRF",
+      "gpu_run_id": "out",
+      "reason": "same_case_domain",
+      "same_grid": true
+    },
+    {
+      "case_id": "20260531_18z",
+      "classification": "exploratory_incomplete_leads",
+      "common_lead_count": 1,
+      "common_leads": [
+        "L001"
+      ],
+      "common_score_vars": [
+        "T2",
+        "U10",
+        "V10"
+      ],
+      "cpu_frame_count": 2,
+      "cpu_grid": [
+        1000.0,
+        1000.0,
+        75,
+        93,
+        44
+      ],
+      "cpu_path": "/mnt/data/canairy_meteo/runs/wrf_l3/20260531_18z_l3_24h_20260601T125256Z",
+      "cpu_provenance": "CPU-WRF",
+      "cpu_run_id": "20260531_18z_l3_24h_20260601T125256Z",
+      "domain": "d03",
+      "gpu_frame_count": 24,
+      "gpu_grid": [
+        1000.0,
+        1000.0,
+        75,
+        93,
+        44
+      ],
+      "gpu_path": "/mnt/data/canairy_meteo/gate_revalidate_gwd8/out",
+      "gpu_provenance": "GPU/JAX GPUWRF",
+      "gpu_run_id": "out",
+      "reason": "same_case_domain",
+      "same_grid": true
+    },
+    {
+      "case_id": "20260509_18z",
+      "classification": "pairable_station_only_grid_mismatch",
+      "common_lead_count": 34,
+      "common_leads": [
+        "L039",
+        "L040",
+        "L041",
+        "L042",
+        "L043",
+        "L044",
+        "L045",
+        "L046",
+        "L047",
+        "L048",
+        "L049",
+        "L050",
+        "L051",
+        "L052",
+        "L053",
+        "L054",
+        "L055",
+        "L056",
+        "L057",
+        "L058",
+        "L059",
+        "L060",
+        "L061",
+        "L062",
+        "L063",
+        "L064",
+        "L065",
+        "L066",
+        "L067",
+        "L068",
+        "L069",
+        "L070",
+        "L071",
+        "L072"
+      ],
+      "common_score_vars": [
+        "T2",
+        "U10",
+        "V10"
+      ],
+      "cpu_frame_count": 73,
+      "cpu_grid": [
+        3000.0,
+        3000.0,
+        66,
+        120,
+        44
+      ],
+      "cpu_path": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z",
+      "cpu_provenance": "CPU-WRF",
+      "cpu_run_id": "20260509_18z_l2_72h_20260511T190519Z",
+      "domain": "d02",
+      "gpu_frame_count": 34,
+      "gpu_grid": [
+        null,
+        null,
+        66,
+        120,
+        null
+      ],
+      "gpu_path": "/home/enric/src/wrf_gpu2/.claude/worktrees/gpt-canary-stats/proofs/m20/tost_run/gpu_wrfout/case2_L2",
+      "gpu_provenance": "GPU/JAX proof-output",
+      "gpu_run_id": "case2_L2",
+      "reason": "explicit_sidecar_cpu_run_dir",
+      "same_grid": false
+    },
+    {
+      "case_id": "20260521_18z",
+      "classification": "pairable_station_only_grid_mismatch",
+      "common_lead_count": 24,
+      "common_leads": [
+        "L001",
+        "L002",
+        "L003",
+        "L004",
+        "L005",
+        "L006",
+        "L007",
+        "L008",
+        "L009",
+        "L010",
+        "L011",
+        "L012",
+        "L013",
+        "L014",
+        "L015",
+        "L016",
+        "L017",
+        "L018",
+        "L019",
+        "L020",
+        "L021",
+        "L022",
+        "L023",
+        "L024"
+      ],
+      "common_score_vars": [
+        "T2",
+        "U10",
+        "V10"
+      ],
+      "cpu_frame_count": 25,
+      "cpu_grid": [
+        3000.0,
+        3000.0,
+        66,
+        159,
+        44
+      ],
+      "cpu_path": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
+      "cpu_provenance": "CPU-WRF",
+      "cpu_run_id": "20260521_18z_l3_24h_20260522T133443Z",
+      "domain": "d02",
+      "gpu_frame_count": 24,
+      "gpu_grid": [
+        null,
+        null,
+        66,
+        159,
+        null
+      ],
+      "gpu_path": "/home/enric/src/wrf_gpu2/.claude/worktrees/gpt-canary-stats/proofs/m20/tost_run/gpu_wrfout/case3_L3",
+      "gpu_provenance": "GPU/JAX proof-output",
+      "gpu_run_id": "case3_L3",
+      "reason": "explicit_sidecar_cpu_run_dir",
+      "same_grid": false
+    }
+  ],
+  "schema": "CanaryExistingPairability",
+  "schema_version": 1,
+  "summary_counts": {
+    "exploratory_incomplete_leads": 12,
+    "pairable_station_only_grid_mismatch": 2
+  }
+}

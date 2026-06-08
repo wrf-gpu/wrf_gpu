@@ -1,0 +1,76 @@
+{
+  "aemet_root": "/mnt/data/canairy_meteo/artifacts/datasets/aemet_stations",
+  "aggregate_tost": null,
+  "case_scores": [
+    {
+      "case_id": "smoke_20260429_d02_partial",
+      "domain": "d02",
+      "forecast_hours": 15,
+      "init_time_utc": "2026-04-29T18:00:00+00:00",
+      "per_block": {
+        "T2": {
+          "0-24h": {
+            "cpu_rmse": 3.1384155973058685,
+            "gpu_rmse": 1.3273931382934536,
+            "n_pairs": 92,
+            "paired_delta_rmse": -1.8110224590124149,
+            "status": "OK"
+          },
+          "24-48h": {
+            "n_pairs": 0,
+            "status": "EXCLUDED_LOW_N"
+          },
+          "48-72h": {
+            "n_pairs": 0,
+            "status": "EXCLUDED_LOW_N"
+          }
+        },
+        "U10": {
+          "0-24h": {
+            "cpu_rmse": 2.066721434794434,
+            "gpu_rmse": 2.8917000570917235,
+            "n_pairs": 65,
+            "paired_delta_rmse": 0.8249786222972895,
+            "status": "OK"
+          },
+          "24-48h": {
+            "n_pairs": 0,
+            "status": "EXCLUDED_LOW_N"
+          },
+          "48-72h": {
+            "n_pairs": 0,
+            "status": "EXCLUDED_LOW_N"
+          }
+        },
+        "V10": {
+          "0-24h": {
+            "cpu_rmse": 2.6712271098217064,
+            "gpu_rmse": 2.4556290347253005,
+            "n_pairs": 65,
+            "paired_delta_rmse": -0.21559807509640594,
+            "status": "OK"
+          },
+          "24-48h": {
+            "n_pairs": 0,
+            "status": "EXCLUDED_LOW_N"
+          },
+          "48-72h": {
+            "n_pairs": 0,
+            "status": "EXCLUDED_LOW_N"
+          }
+        }
+      },
+      "schema": "M20PairedCaseScore",
+      "schema_version": 1,
+      "self_test_cpu_vs_cpu": false,
+      "total_complete_pairs": 222
+    }
+  ],
+  "caveat": "Uses ADR-029 scorer on existing wrfouts only; it does not launch forecasts.",
+  "excluded": [],
+  "generated_utc": "2026-06-08T16:25:28.060931+00:00",
+  "n_excluded": 0,
+  "n_scored": 1,
+  "schema": "CanaryStationTostExistingPairs",
+  "schema_version": 1
+}
