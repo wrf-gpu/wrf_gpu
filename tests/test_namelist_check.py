@@ -76,7 +76,7 @@ def test_unsupported_selected_option_raises_actionable_error() -> None:
 
 def test_registry_records_supported_active_suite() -> None:
     assert SUPPORTED_OPTIONS["mp_physics"].supported_values == frozenset({0, 1, 2, 3, 4, 6, 8, 10, 16})
-    assert SUPPORTED_OPTIONS["bl_pbl_physics"].supported_values == frozenset({0, 1, 2, 5, 7, 8})
+    assert SUPPORTED_OPTIONS["bl_pbl_physics"].supported_values == frozenset({0, 1, 2, 5, 7, 8, 99})
     assert SUPPORTED_OPTIONS["sf_sfclay_physics"].supported_values == frozenset({0, 1, 2, 5, 7})
     assert SUPPORTED_OPTIONS["sf_surface_physics"].supported_values == frozenset({0, 2, 4})
     assert SUPPORTED_OPTIONS["cu_physics"].supported_values == frozenset({0, 1, 2, 3, 5, 6, 14, 16})

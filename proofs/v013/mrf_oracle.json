@@ -1,0 +1,465 @@
+{
+  "cases": [
+    {
+      "case": 1,
+      "fields": {
+        "RQCBLTEN": {
+          "abs_tolerance": 5e-12,
+          "jax": 0.0,
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "oracle": 0.0,
+          "pass": true,
+          "rel_tolerance": 1e-09,
+          "scale": 1e-30
+        },
+        "RQVBLTEN": {
+          "abs_tolerance": 5e-12,
+          "jax": -5.167537272910555e-07,
+          "max_abs": 1.4505439221729893e-20,
+          "max_rel": 1.9306499806536988e-14,
+          "oracle": -5.1675372729107e-07,
+          "pass": true,
+          "rel_tolerance": 1e-09,
+          "scale": 7.513241326539416e-07
+        },
+        "RTHBLTEN": {
+          "abs_tolerance": 5e-12,
+          "jax": -6.204487199275096e-07,
+          "max_abs": 4.8292821158051405e-16,
+          "max_rel": 4.1698994854687933e-13,
+          "oracle": -6.204487204104378e-07,
+          "pass": true,
+          "rel_tolerance": 1e-09,
+          "scale": 0.001158129142593042
+        },
+        "RUBLTEN": {
+          "abs_tolerance": 5e-12,
+          "jax": 3.537104862693467e-05,
+          "max_abs": 7.413232354369637e-18,
+          "max_rel": 6.116690090733062e-14,
+          "oracle": 3.537104862692726e-05,
+          "pass": true,
+          "rel_tolerance": 1e-09,
+          "scale": 0.0001211967950706031
+        },
+        "RVBLTEN": {
+          "abs_tolerance": 5e-12,
+          "jax": 8.842762156733668e-06,
+          "max_abs": 1.8516140226979005e-18,
+          "max_rel": 6.11109896633568e-14,
+          "oracle": 8.842762156731816e-06,
+          "pass": true,
+          "rel_tolerance": 1e-09,
+          "scale": 3.029919876765079e-05
+        }
+      },
+      "pass": true,
+      "regime": "unstable_daytime",
+      "scalars": {
+        "PBL": {
+          "abs_tolerance": 1e-06,
+          "jax": 1999.678995944032,
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "oracle": 1999.678995944032,
+          "pass": true,
+          "rel_tolerance": 1e-09,
+          "scale": 1999.678995944032
+        }
+      }
+    },
+    {
+      "case": 2,
+      "fields": {
+        "RQCBLTEN": {
+          "abs_tolerance": 5e-12,
+          "jax": 0.0,
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "oracle": 0.0,
+          "pass": true,
+          "rel_tolerance": 1e-09,
+          "scale": 1e-30
+        },
+        "RQVBLTEN": {
+          "abs_tolerance": 5e-12,
+          "jax": 4.3162232508615316e-07,
+          "max_abs": 4.33574989875795e-20,
+          "max_rel": 3.026745228434915e-14,
+          "oracle": 4.316223250861965e-07,
+          "pass": true,
+          "rel_tolerance": 1e-09,
+          "scale": 1.432479304179791e-06
+        },
+        "RTHBLTEN": {
+          "abs_tolerance": 5e-12,
+          "jax": -0.0001410483968015882,
+          "max_abs": 5.1358656910638345e-16,
+          "max_rel": 2.5831411028863294e-13,
+          "oracle": -0.0001410483968021018,
+          "pass": true,
+          "rel_tolerance": 1e-09,
+          "scale": 0.001988224989074411
+        },
+        "RUBLTEN": {
+          "abs_tolerance": 5e-12,
+          "jax": 1.2247966256021906e-08,
+          "max_abs": 2.960594390432431e-17,
+          "max_rel": 1.1058085945098726e-13,
+          "oracle": 1.224796628562785e-08,
+          "pass": true,
+          "rel_tolerance": 1e-09,
+          "scale": 0.0002677311792593414
+        },
+        "RVBLTEN": {
+          "abs_tolerance": 5e-12,
+          "jax": 3.0619915640054765e-09,
+          "max_abs": 7.401486389671384e-18,
+          "max_rel": 1.1058086563017504e-13,
+          "oracle": 3.061991571406963e-09,
+          "pass": true,
+          "rel_tolerance": 1e-09,
+          "scale": 6.693279481483534e-05
+        }
+      },
+      "pass": true,
+      "regime": "strong_unstable",
+      "scalars": {
+        "PBL": {
+          "abs_tolerance": 1e-06,
+          "jax": 2573.9348781145754,
+          "max_abs": 2.7284841053187847e-12,
+          "max_rel": 1.060043953915965e-15,
+          "oracle": 2573.934878114578,
+          "pass": true,
+          "rel_tolerance": 1e-09,
+          "scale": 2573.934878114578
+        }
+      }
+    },
+    {
+      "case": 3,
+      "fields": {
+        "RQCBLTEN": {
+          "abs_tolerance": 5e-12,
+          "jax": 0.0,
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "oracle": 0.0,
+          "pass": true,
+          "rel_tolerance": 1e-09,
+          "scale": 1e-30
+        },
+        "RQVBLTEN": {
+          "abs_tolerance": 5e-12,
+          "jax": 4.0292433495132226e-11,
+          "max_abs": 2.258720060152611e-22,
+          "max_rel": 6.669001898924345e-15,
+          "oracle": 4.02924334953581e-11,
+          "pass": true,
+          "rel_tolerance": 1e-09,
+          "scale": 3.386893712711229e-08
+        },
+        "RTHBLTEN": {
+          "abs_tolerance": 5e-12,
+          "jax": 2.103385293832256e-08,
+          "max_abs": 5.353630020130708e-16,
+          "max_rel": 3.123339544724595e-12,
+          "oracle": 2.103385347368556e-08,
+          "pass": true,
+          "rel_tolerance": 1e-09,
+          "scale": 0.0001714072371405515
+        },
+        "RUBLTEN": {
+          "abs_tolerance": 5e-12,
+          "jax": 6.515460692450384e-08,
+          "max_abs": 1.1842379546963194e-16,
+          "max_rel": 5.446511544737674e-13,
+          "oracle": 6.515460704292764e-08,
+          "pass": true,
+          "rel_tolerance": 1e-09,
+          "scale": 0.0002174305415436987
+        },
+        "RVBLTEN": {
+          "abs_tolerance": 5e-12,
+          "jax": 2.099753323806889e-08,
+          "max_abs": 2.9605952176130435e-17,
+          "max_rel": 5.44651215343274e-13,
+          "oracle": 2.099753320846294e-08,
+          "pass": true,
+          "rel_tolerance": 1e-09,
+          "scale": 5.435763538592468e-05
+        }
+      },
+      "pass": true,
+      "regime": "stable_nocturnal",
+      "scalars": {
+        "PBL": {
+          "abs_tolerance": 1e-06,
+          "jax": 200.957524225555,
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "oracle": 200.957524225555,
+          "pass": true,
+          "rel_tolerance": 1e-09,
+          "scale": 200.957524225555
+        }
+      }
+    },
+    {
+      "case": 4,
+      "fields": {
+        "RQCBLTEN": {
+          "abs_tolerance": 5e-12,
+          "jax": 0.0,
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "oracle": 0.0,
+          "pass": true,
+          "rel_tolerance": 1e-09,
+          "scale": 1e-30
+        },
+        "RQVBLTEN": {
+          "abs_tolerance": 5e-12,
+          "jax": 4.9631243891863514e-08,
+          "max_abs": 1.4459117107426924e-20,
+          "max_rel": 2.913309434461529e-13,
+          "oracle": 4.963124389187797e-08,
+          "pass": true,
+          "rel_tolerance": 1e-09,
+          "scale": 4.963124389187797e-08
+        },
+        "RTHBLTEN": {
+          "abs_tolerance": 5e-12,
+          "jax": -2.597218772664067e-05,
+          "max_abs": 4.736506597092377e-16,
+          "max_rel": 1.8236841066416362e-11,
+          "oracle": -2.597218772616702e-05,
+          "pass": true,
+          "rel_tolerance": 1e-09,
+          "scale": 2.597218772616702e-05
+        },
+        "RUBLTEN": {
+          "abs_tolerance": 5e-12,
+          "jax": -8.838860214025837e-06,
+          "max_abs": 7.401373893108076e-18,
+          "max_rel": 8.08909567884779e-14,
+          "oracle": -8.838860214018436e-06,
+          "pass": true,
+          "rel_tolerance": 1e-09,
+          "scale": 9.149816230338281e-05
+        },
+        "RVBLTEN": {
+          "abs_tolerance": 5e-12,
+          "jax": -2.2097150535064593e-06,
+          "max_abs": 1.850343473277019e-18,
+          "max_rel": 8.089095678847791e-14,
+          "oracle": -2.209715053504609e-06,
+          "pass": true,
+          "rel_tolerance": 1e-09,
+          "scale": 2.28745405758457e-05
+        }
+      },
+      "pass": true,
+      "regime": "stable_marine",
+      "scalars": {
+        "PBL": {
+          "abs_tolerance": 1e-06,
+          "jax": 200.957524225555,
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "oracle": 200.957524225555,
+          "pass": true,
+          "rel_tolerance": 1e-09,
+          "scale": 200.957524225555
+        }
+      }
+    },
+    {
+      "case": 5,
+      "fields": {
+        "RQCBLTEN": {
+          "abs_tolerance": 5e-12,
+          "jax": 0.0,
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "oracle": 0.0,
+          "pass": true,
+          "rel_tolerance": 1e-09,
+          "scale": 1e-30
+        },
+        "RQVBLTEN": {
+          "abs_tolerance": 5e-12,
+          "jax": 9.822365789156674e-08,
+          "max_abs": 2.167874949378975e-20,
+          "max_rel": 1.0182570440919149e-13,
+          "oracle": 9.822365789154506e-08,
+          "pass": true,
+          "rel_tolerance": 1e-09,
+          "scale": 2.129005600263039e-07
+        },
+        "RTHBLTEN": {
+          "abs_tolerance": 5e-12,
+          "jax": 3.1471446912465793e-09,
+          "max_abs": 5.429580854756169e-16,
+          "max_rel": 8.6458981122465e-12,
+          "oracle": 3.147144148288494e-09,
+          "pass": true,
+          "rel_tolerance": 1e-09,
+          "scale": 6.279950080680951e-05
+        },
+        "RUBLTEN": {
+          "abs_tolerance": 5e-12,
+          "jax": 1.6818027888850412e-08,
+          "max_abs": 2.9605942249963084e-17,
+          "max_rel": 3.1724390469766376e-13,
+          "oracle": 1.681802785924447e-08,
+          "pass": true,
+          "rel_tolerance": 1e-09,
+          "scale": 9.332233594268047e-05
+        },
+        "RVBLTEN": {
+          "abs_tolerance": 5e-12,
+          "jax": 4.204506972212603e-09,
+          "max_abs": 7.401486389671384e-18,
+          "max_rel": 3.17243940152439e-13,
+          "oracle": 4.204506964811117e-09,
+          "pass": true,
+          "rel_tolerance": 1e-09,
+          "scale": 2.333058398567012e-05
+        }
+      },
+      "pass": true,
+      "regime": "neutral",
+      "scalars": {
+        "PBL": {
+          "abs_tolerance": 1e-06,
+          "jax": 100.4787621127775,
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "oracle": 100.4787621127775,
+          "pass": true,
+          "rel_tolerance": 1e-09,
+          "scale": 100.4787621127775
+        }
+      }
+    },
+    {
+      "case": 6,
+      "fields": {
+        "RQCBLTEN": {
+          "abs_tolerance": 5e-12,
+          "jax": 0.0,
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "oracle": 0.0,
+          "pass": true,
+          "rel_tolerance": 1e-09,
+          "scale": 1e-30
+        },
+        "RQVBLTEN": {
+          "abs_tolerance": 5e-12,
+          "jax": 1.2641478110269704e-07,
+          "max_abs": 7.252719610864947e-21,
+          "max_rel": 3.1705472445766737e-14,
+          "oracle": 1.264147811027043e-07,
+          "pass": true,
+          "rel_tolerance": 1e-09,
+          "scale": 2.287529265892809e-07
+        },
+        "RTHBLTEN": {
+          "abs_tolerance": 5e-12,
+          "jax": 1.2300082798311963e-06,
+          "max_abs": 4.7953542111028695e-16,
+          "max_rel": 4.227366793185558e-12,
+          "oracle": 1.230008279351661e-06,
+          "pass": true,
+          "rel_tolerance": 1e-09,
+          "scale": 0.0001134359625200467
+        },
+        "RUBLTEN": {
+          "abs_tolerance": 5e-12,
+          "jax": -3.731465079093906e-05,
+          "max_abs": 7.399679827213568e-18,
+          "max_rel": 5.783846996239112e-14,
+          "oracle": -3.731465079094646e-05,
+          "pass": true,
+          "rel_tolerance": 1e-09,
+          "scale": 0.0001279369912797682
+        },
+        "RVBLTEN": {
+          "abs_tolerance": 5e-12,
+          "jax": -3.198424781994021e-05,
+          "max_abs": 1.849919956803392e-18,
+          "max_rel": 5.78384699623911e-14,
+          "oracle": -3.198424781994206e-05,
+          "pass": true,
+          "rel_tolerance": 1e-09,
+          "scale": 3.198424781994206e-05
+        }
+      },
+      "pass": true,
+      "regime": "low_ust_edge",
+      "scalars": {
+        "PBL": {
+          "abs_tolerance": 1e-06,
+          "jax": 749.3526010729329,
+          "max_abs": 9.890754881780595e-12,
+          "max_rel": 1.3199066591106793e-14,
+          "oracle": 749.352601072923,
+          "pass": true,
+          "rel_tolerance": 1e-09,
+          "scale": 749.352601072923
+        }
+      }
+    }
+  ],
+  "exercised_through": "jax.jit over the full 6-case batch (genuine jit/vmap path)",
+  "git_head": "1e245fa0ae3788df57e0e92f6ad54d80e05cddae",
+  "jax_platform": "cpu",
+  "jax_precision": "fp64",
+  "operational_kernel": "gpuwrf.physics.bl_mrf.mrf_columns (jit/vmap-traceable)",
+  "oracle": {
+    "build_manifest": [
+      "mode=fp64",
+      "full_wrf_exe=false",
+      "wrf_source=/home/enric/src/wrf_pristine/WRF/phys/module_bl_mrf.F",
+      "compiler=GNU Fortran (conda-forge gcc 14.3.0-19) 14.3.0",
+      "fflags=-O2 -ffree-form -ffree-line-length-none -cpp -ffpe-summary=none -fdefault-real-8 -fdefault-double-8"
+    ],
+    "full_wrf_exe": false,
+    "savepoints": "proofs/v013/savepoints_fp64/mrf",
+    "self_compare": false,
+    "source_checksums_sha256": [
+      "a1306d0063043d001fa4a53b9219031b931999c7d7daea172fd97518bc9b19eb  module_bl_mrf.F"
+    ],
+    "type": "single-column Fortran driver linked against UNMODIFIED pristine WRF phys/module_bl_mrf.F (MRF -> MRF2D -> TRIDI2)",
+    "wrf_sources": [
+      "/home/enric/src/wrf_pristine/WRF/phys/module_bl_mrf.F"
+    ]
+  },
+  "overall_pass": true,
+  "predeclared_tolerances": {
+    "pblh_m": {
+      "abs": 1e-06,
+      "rel": 1e-09
+    },
+    "relative_floor": 1e-30,
+    "tendencies": {
+      "abs": 5e-12,
+      "rel": 1e-09
+    }
+  },
+  "regimes_covered": [
+    "unstable_daytime",
+    "strong_unstable",
+    "stable_nocturnal",
+    "stable_marine",
+    "neutral",
+    "low_ust_edge"
+  ],
+  "schema": "gpuwrf.v013.mrf_operational_savepoint_parity.v1",
+  "scheme": "MRF PBL (bl_pbl_physics=99)",
+  "verdict": "PASS"
+}
