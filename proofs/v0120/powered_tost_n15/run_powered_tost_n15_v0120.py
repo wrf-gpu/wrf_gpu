@@ -9,9 +9,10 @@ and writes per-case proof JSONs + the final TOST + cell-level stats report.
 MANAGER: run ONE instance at a time on the GPU (flock wrapper enforces serial).
 
 Usage (from this worktree root):
-    /tmp/wrf_gpu_run_lowprio.sh taskset -c 0-3 \\
-        env PYTHONPATH=src JAX_ENABLE_X64=true XLA_PYTHON_CLIENT_PREALLOCATE=false \\
-        python proofs/v0120/powered_tost_n15/run_powered_tost_n15_v0120.py [--resume]
+    scripts/run_powered_tost_n15.sh --resume
+
+    # Detached durable manager run:
+    scripts/run_powered_tost_n15.sh --detach --resume
 
 Options:
     --resume        Skip cases that already have a case_<RUN_ID>.json proof
@@ -71,7 +72,8 @@ PROOF_DIR       = ROOT / "proofs/v0120/powered_tost_n15"
 # the lock for correctness, only for serialising against other GPU lanes. NEVER
 # wrap the orchestrator itself in a second lock wrapper (the inner per-case call
 # would deadlock on the same flock the outer wrapper already holds).
-_WRAP_ENV = os.environ.get("GPUWRF_GPU_LOCK_WRAPPER", "/tmp/wrf_gpu_run_lowprio.sh")
+_DEFAULT_LOCK_WRAPPER = ROOT / "scripts/run_gpu_lowprio.sh"
+_WRAP_ENV = os.environ.get("GPUWRF_GPU_LOCK_WRAPPER", str(_DEFAULT_LOCK_WRAPPER))
 GPU_LOCK_WRAPPER = _WRAP_ENV if (_WRAP_ENV and Path(_WRAP_ENV).is_file()) else None
 
 FIELDS = ("T2", "U10", "V10")
@@ -216,7 +218,8 @@ def run_gpu_forecast(run_id: str, gpu_out_dir: Path, proof_subdir: Path) -> dict
 
     # Prefix with the GPU lock wrapper ONLY if it exists on this box. The
     # orchestrator must NOT itself be wrapped in a lock wrapper (double-wrap
-    # deadlock); the lock lives at the per-case granularity only.
+    # deadlock); the lock lives at the per-case granularity only unless
+    # scripts/run_powered_tost_n15.sh explicitly owns the campaign-level lock.
     prefix = [GPU_LOCK_WRAPPER] if GPU_LOCK_WRAPPER else []
     cmd = [
         *prefix,

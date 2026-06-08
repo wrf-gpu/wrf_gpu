@@ -51,6 +51,11 @@ mkdir -p "$OUT"
 
 GPU jobs are serial. CPU work may run in parallel on cores 0-23, leaving the
 remaining cores free. CPU-only commands must force `JAX_PLATFORMS=cpu`.
+Use the versioned GPU wrapper `scripts/run_gpu_lowprio.sh` for all GPU jobs;
+do not use a helper under `/tmp`. The powered TOST campaign can also be launched
+through `scripts/run_powered_tost_n15.sh --detach --resume`, which writes
+durable log/rc/runinfo files under `/mnt/data/wrf_gpu_validation/v0130_marathon`
+by default. See `docs/GPU_RUNBOOK.md`.
 
 ## Tests
 
@@ -65,7 +70,7 @@ Estimate: 45 min
 Command:
 
 ```bash
-/tmp/wrf_gpu_run_lowprio.sh taskset -c 0-23 env \
+scripts/run_gpu_lowprio.sh --cores 0-23 -- env \
   PYTHONPATH=src \
   JAX_ENABLE_X64=true \
   XLA_PYTHON_CLIENT_PREALLOCATE=false \
@@ -106,7 +111,7 @@ Estimate: 35 min
 Command:
 
 ```bash
-/tmp/wrf_gpu_run_lowprio.sh taskset -c 0-23 env \
+scripts/run_gpu_lowprio.sh --cores 0-23 -- env \
   PYTHONPATH=src \
   JAX_ENABLE_X64=true \
   XLA_PYTHON_CLIENT_PREALLOCATE=false \
@@ -146,7 +151,7 @@ Estimate: 50 min
 Command:
 
 ```bash
-/tmp/wrf_gpu_run_lowprio.sh taskset -c 0-23 env \
+scripts/run_gpu_lowprio.sh --cores 0-23 -- env \
   PYTHONPATH=src \
   JAX_ENABLE_X64=true \
   XLA_PYTHON_CLIENT_PREALLOCATE=false \

@@ -265,7 +265,10 @@ Proof objects live under [`proofs/v013/`](proofs/v013/) and [`proofs/v0130/`](pr
 - **Two-way nesting 24 h real-GPU equivalence vs CPU-WRF** (KI-11) — only finite/stable proven.
 - **Tier-2 speed/architecture remainder** — sub-jit split + recompile hygiene, parallel-compile + dev `--fast-compile`, CPU-flock for idle nightly cores.
 - **Multi-hardware / independent reproduction** — v0.13.0 is one RTX 5090, one JAX/CUDA stack.
-- **Gotthard / Switzerland operational suite** — still out of scope; v0.13.0 ships the standalone port + the AIFS / 1 km-nest path.
+- **Gotthard / Switzerland operational suite** — not a v0.13.0 pass. Case generation
+  and CPU truth exist, but the v0.13 release does not claim a Switzerland GPU-vs-CPU-WRF
+  equivalence result; the 128²/150² v0.12 attempt was an fp64 grid-ceiling/OOM
+  characterization and the re-run is v0.14 B7.
 - **New-Tiedtke cumulus scan-wiring** — recognized/accepted but not separately source-gated; fail-closed if selected.
 - **fp32 standalone path** — gated-fp32 operational mode (ADR-007), pending evidence it helps on this workload.
 - **Full 375-variable `wrfout`** (KI-3), **RRTMG SW `taug` UV-band fix** (KI-6), and the **`*_tendf` source-tendency adapter** for RK-stage physics.
@@ -324,6 +327,7 @@ Consolidated, honestly-prioritized ledger of everything still deferred / simplif
 | Understand the project scope | [`PROJECT_CONSTITUTION.md`](PROJECT_CONSTITUTION.md), [`PROJECT_SCOPE.md`](PROJECT_SCOPE.md), [`PROJECT_SPEC.md`](PROJECT_SPEC.md) |
 | See the GPU-operational vs fail-closed physics matrix | [`src/gpuwrf/contracts/physics_registry.py`](src/gpuwrf/contracts/physics_registry.py), [`src/gpuwrf/runtime/operational_mode.py`](src/gpuwrf/runtime/operational_mode.py) (`_SCAN_WIRED_OPTIONS`) |
 | Run a forecast | [`docs/quickstart.md`](docs/quickstart.md) — `python -m gpuwrf.cli run …` |
+| Run long GPU validation / powered TOST reliably | [`docs/GPU_RUNBOOK.md`](docs/GPU_RUNBOOK.md) — `scripts/run_gpu_lowprio.sh`, `scripts/run_powered_tost_n15.sh` |
 | Run & verify the GPU-vs-CPU equivalence demo | [`docs/equivalence-demo.md`](docs/equivalence-demo.md) — `scripts/equivalence_demo.py` |
 | Understand the cold/warm/kernel speedup numbers | [`docs/PERFORMANCE.md`](docs/PERFORMANCE.md), [`proofs/perf/speedup_denominator.md`](proofs/perf/speedup_denominator.md) |
 | Check current known issues | [`docs/KNOWN_ISSUES.md`](docs/KNOWN_ISSUES.md) |
@@ -370,6 +374,16 @@ integration and uses **≈ 24.6 GiB VRAM** at fp64; the **persistent JIT cache
 turns every later run into a ~10 s cache read** (bit-identical executable) — see
 [docs/resource-profile.md](docs/resource-profile.md) and
 [docs/PERFORMANCE.md](docs/PERFORMANCE.md).
+
+For long GPU validation jobs, use the versioned run wrappers, not a helper under
+`/tmp`:
+
+```bash
+scripts/run_gpu_lowprio.sh --cores 0-23 -- python -m gpuwrf.cli run ...
+PYTHON=/home/enric/miniconda3/bin/python scripts/run_powered_tost_n15.sh --detach --resume
+```
+
+The full lock/log/resume procedure is in [docs/GPU_RUNBOOK.md](docs/GPU_RUNBOOK.md).
 
 ## Known issues (v0.13.0)
 
