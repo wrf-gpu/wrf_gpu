@@ -7,10 +7,12 @@ qv, qc, qi, qke, surface hfx/qfx/ust/pblh/tsk/psfc) to a JSON the Fortran oracle
 and the JAX port both consume.
 
 The derived surface fluxes (flt/flq/flqv/fltv) follow module_bl_mynnedmf.F:869-876.
-Run with: /home/enric/miniconda3/envs/canary_env/bin/python extract_column.py
+Run with: JAX_PLATFORMS=cpu python extract_column.py
 """
 
 import json
+from pathlib import Path
+
 import numpy as np
 import netCDF4 as nc
 
@@ -27,7 +29,7 @@ WRFOUT = (
     "/mnt/data/canairy_meteo/runs/wrf_l3/"
     "20260521_18z_l3_24h_20260522T133443Z/wrfout_d03_2026-05-22_12:00:00"
 )
-OUT = "/home/enric/src/wrf_gpu2/.claude/worktrees/agent-afd276c1c17aa32e5/proofs/mynn_edmf/column_d03_12z.json"
+OUT = str(Path(__file__).resolve().parent / "column_d03_12z.json")
 
 
 def main():

@@ -21,7 +21,9 @@ from gpuwrf.physics.cumulus_bmj import step_bmj_column
 
 
 REPO = Path(__file__).resolve().parents[2]
-WRF_BMJ_SOURCE = Path("/home/enric/src/wrf_pristine/WRF/phys/module_cu_bmj.F")
+# Pristine-WRF checkout root. Override with WRF_PRISTINE_ROOT; default = sibling of repo.
+WRF_PRISTINE_ROOT = Path(os.environ.get("WRF_PRISTINE_ROOT", str(REPO.parent / "wrf_pristine" / "WRF")))
+WRF_BMJ_SOURCE = WRF_PRISTINE_ROOT / "phys/module_cu_bmj.F"
 SAVEPOINT_DIR = REPO / "proofs" / "v060" / "savepoints"
 REPORT_PATH = REPO / "proofs" / "v060" / "bmj_savepoint_parity.json"
 
@@ -39,6 +41,10 @@ TOLERANCES: dict[str, dict[str, float]] = {
 
 
 def _sha256(path: Path) -> str:
+    # Provenance hash of the (optional) pristine-WRF source. The binding oracle is
+    # the vendored savepoints, so a missing WRF tree must not fail the gate.
+    if not Path(path).is_file():
+        return "missing"
     h = hashlib.sha256()
     with path.open("rb") as fh:
         for chunk in iter(lambda: fh.read(1024 * 1024), b""):

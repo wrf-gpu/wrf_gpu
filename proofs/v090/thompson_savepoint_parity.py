@@ -18,6 +18,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 from pathlib import Path
 from typing import Any
 
@@ -28,7 +29,11 @@ import gpuwrf  # noqa: F401  enables jax_enable_x64 at import (fp64 throughout)
 from gpuwrf.validation.tier1_thompson import run_oracle_parity_f64
 
 ORACLE_DIR = Path("/mnt/data/wrf_gpu2/physics_oracle_v090/microphysics")
-PRISTINE_SRC = Path("/home/enric/src/wrf_pristine/WRF/phys/module_mp_thompson.F")
+# Pristine-WRF checkout root. Override with WRF_PRISTINE_ROOT; default = sibling of repo.
+WRF_PRISTINE_ROOT = Path(
+    os.environ.get("WRF_PRISTINE_ROOT", str(Path(__file__).resolve().parents[2].parent / "wrf_pristine" / "WRF"))
+)
+PRISTINE_SRC = WRF_PRISTINE_ROOT / "phys/module_mp_thompson.F"
 DEFAULT_OUT = Path(__file__).resolve().parent / "thompson_savepoint_parity.json"
 
 
