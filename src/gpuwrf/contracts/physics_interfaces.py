@@ -266,14 +266,18 @@ SCHEME_STEP_SPECS: tuple[PhysicsStepSpec, ...] = (
         option=2,
         name="MYJ",
         wrf_slot="first_rk_pbl_driver",
-        owner_module="src/gpuwrf/physics/pbl_myj.py",
-        oracle="M20 physics-oracle factory savepoint at module_pbl_driver.F:MYJ paired with Janjic Eta sfclay",
-        reads_state=("u", "v", "theta", "qv", "p", "pb", "ph", "mu", "ustar", "theta_flux", "qv_flux"),
-        writes_state=("u", "v", "theta", "qv"),
+        owner_module="src/gpuwrf/physics/bl_myj.py",
+        oracle="v0.13 operational savepoint parity vs unmodified WRF module_bl_myjpbl.F "
+        "(proofs/v013/myj_janjic_oracle.py/.json; reuses v0.6.0 fp64 savepoints)",
+        reads_state=("u", "v", "theta", "qv", "qke", "p", "pb", "ph", "mu", "ustar", "theta_flux", "qv_flux"),
+        writes_state=("u", "v", "theta", "qv", "qke"),
         reads_carry=PBL_CARRY_MEMBERS[2],
         writes_carry=PBL_CARRY_MEMBERS[2],
         diagnostics=("pblh", "kpbl", "mixht", "tke_pbl", "exch_h", "exch_m", "el_pbl"),
-        notes="Requires sf_sfclay_physics=2; pairing is enforced by namelist_check and dispatcher resolution.",
+        notes="v0.13 OPERATIONAL (jit/vmap-traceable bl_myj.myj_columns, scan-wired via "
+        "physics.myj_adapters.myj_pbl_adapter; host-NumPy reference in pbl_myj.py). "
+        "Mandatory pair with sf_sfclay_physics=2; the TKE carry rides State.qke (q^2 "
+        "convention). Pairing enforced by namelist_check and dispatcher resolution.",
     ),
     PhysicsStepSpec(
         family="pbl",
@@ -329,11 +333,16 @@ SCHEME_STEP_SPECS: tuple[PhysicsStepSpec, ...] = (
         name="Janjic Eta surface layer",
         wrf_slot="first_rk_surface_driver",
         owner_module="src/gpuwrf/physics/sfclay_janjic.py",
-        oracle="M20 physics-oracle factory savepoint at module_surface_driver.F:MYJSFC",
-        reads_state=("u", "v", "theta", "qv", "t_skin", "soil_moisture", "xland", "roughness_m"),
+        oracle="v0.13 operational savepoint parity vs unmodified WRF module_sf_myjsfc.F "
+        "(proofs/v013/myj_janjic_oracle.py/.json; reuses v0.6.0 fp64 savepoints)",
+        reads_state=("u", "v", "theta", "qv", "qke", "t_skin", "soil_moisture", "xland", "roughness_m"),
         writes_state=("ustar", "theta_flux", "qv_flux", "tau_u", "tau_v", "rhosfc", "fltv"),
         diagnostics=("T2", "Q2", "U10", "V10", "PSFC", "HFX", "QFX", "LH", "UST", "AKHS", "AKMS"),
-        notes="Requires bl_pbl_physics=2; pairing is enforced by namelist_check and dispatcher resolution.",
+        notes="v0.13 OPERATIONAL (jit/vmap-batched via sf_myj.myjsfc_columns over the "
+        "traceable sfclay_janjic kernel, scan-wired via physics.myj_adapters."
+        "janjic_sfclay_adapter). Mandatory pair with bl_pbl_physics=2; runs FIRST in "
+        "the WRF call chain and supplies the MYJ PBL coupling. Pairing enforced by "
+        "namelist_check and dispatcher resolution.",
     ),
     PhysicsStepSpec(
         family="surface_layer",

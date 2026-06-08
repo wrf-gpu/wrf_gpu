@@ -113,11 +113,10 @@ class NotOperationallyWiredError(UnsupportedSchemeError):
     """Raised by the OPERATIONAL run path for a parity-proven-but-not-wired scheme.
 
     The validation layer (:func:`validate_namelist`) intentionally *accepts*
-    ``REFERENCE_ONLY`` schemes (classic RRTM/Dudhia radiation, MYJ/Janjic,
-    New-Tiedtke) so a single-column / reference comparison can be run against
-    them. The OPERATIONAL forecast scan, however, cannot actually select those
-    schemes -- the radiation slot hardcodes RRTMG, and the MYJ/Janjic/New-Tiedtke
-    column adapters have no operational GPU scan carry-path. Running them through
+    ``REFERENCE_ONLY`` schemes (New-Tiedtke cumulus) so a single-column /
+    reference comparison can be run against them. The OPERATIONAL forecast scan,
+    however, cannot actually select those schemes -- the New-Tiedtke
+    column adapter has no operational GPU scan carry-path. Running them through
     ``gpuwrf run`` would therefore *silently substitute a different scheme*, which
     violates the "no silent wrong path" contract. The operational entrypoint
     (:func:`validate_operational_namelist`) fail-closes them loudly, naming the
@@ -156,13 +155,13 @@ SUPPORTED_OPTIONS: dict[str, SupportedOption] = {
         key="bl_pbl_physics",
         supported_values=frozenset(ACCEPTED_BL_PBL_PHYSICS),
         implemented=(
-            "0=disabled, 1=YSU, 5=MYNN, 7=ACM2, 8=BouLac (all GPU-operational, scan-wired); "
-            "2=MYJ (savepoint-parity-proven CPU reference, NOT yet GPU-scan-wired -- "
-            "selectable for reference but fail-closed in the operational GPU scan, GPU-batching TODO)"
+            "0=disabled, 1=YSU, 2=MYJ, 5=MYNN, 7=ACM2, 8=BouLac (all GPU-operational, scan-wired); "
+            "2=MYJ is the v0.13 jit/vmap-traceable MYJ pair (mandatorily paired with "
+            "sf_sfclay_physics=2 Janjic Eta), savepoint-parity-proven"
         ),
         action=(
-            "Use bl_pbl_physics=0/1/5/7/8 for the operational GPU scan; 2=MYJ remains "
-            "CPU-reference-only and must pair with sf_sfclay_physics=2. "
+            "Use bl_pbl_physics=0/1/2/5/7/8 for the operational GPU scan; 2=MYJ MUST "
+            "pair with sf_sfclay_physics=2. "
             "All other PBL options remain unsupported. "
             "Pair with the matching surface layer (MYNN<->5, ACM2<->7/1, YSU<->1, MYJ<->2)."
         ),
@@ -171,14 +170,14 @@ SUPPORTED_OPTIONS: dict[str, SupportedOption] = {
         key="sf_sfclay_physics",
         supported_values=frozenset(ACCEPTED_SF_SFCLAY_PHYSICS),
         implemented=(
-            "0=disabled, 1=revised-MM5, 5=MYNN surface layer, 7=Pleim-Xiu surface layer "
-            "(all GPU-operational, scan-wired); "
-            "2=Janjic Eta (savepoint-parity-proven CPU reference, NOT yet GPU-scan-wired -- "
-            "selectable for reference but fail-closed in the operational GPU scan, GPU-batching TODO)"
+            "0=disabled, 1=revised-MM5, 2=Janjic Eta, 5=MYNN surface layer, 7=Pleim-Xiu "
+            "surface layer (all GPU-operational, scan-wired); "
+            "2=Janjic Eta is the v0.13 jit/vmap-traceable MYJ pair (mandatorily paired "
+            "with bl_pbl_physics=2 MYJ), savepoint-parity-proven"
         ),
         action=(
-            "Use sf_sfclay_physics=0/1/5/7 for the operational GPU scan; 2=Janjic Eta remains "
-            "CPU-reference-only and must pair with bl_pbl_physics=2. "
+            "Use sf_sfclay_physics=0/1/2/5/7 for the operational GPU scan; 2=Janjic Eta "
+            "MUST pair with bl_pbl_physics=2. "
             "All other sfclay options remain unsupported. "
             "Use the PBL-compatible partner (MYNN-SL 5<->MYNN PBL 5, Pleim-Xiu 7<->ACM2 7, Janjic 2<->MYJ 2)."
         ),
@@ -351,14 +350,14 @@ def validate_operational_namelist(config: Any) -> None:
     fail closed exactly as before) AND THEN additionally rejects any selected
     scheme classified ``REFERENCE_ONLY`` by :func:`scheme_catalog.classify_scheme`.
 
-    Why the extra rejection: ``REFERENCE_ONLY`` schemes (classic RRTM longwave /
-    Dudhia shortwave radiation, MYJ PBL, Janjic Eta surface layer, New-Tiedtke
-    cumulus) are *parity-proven* and so are accepted by :func:`validate_namelist`
+    Why the extra rejection: ``REFERENCE_ONLY`` schemes (New-Tiedtke cumulus) are
+    *parity-proven* and so are accepted by :func:`validate_namelist`
     for a reference / single-column comparison -- but they are NOT wired into the
-    operational GPU scan. The operational radiation slot hardcodes RRTMG; the
-    MYJ/Janjic/New-Tiedtke adapters have no operational scan carry-path. Running
-    one of them through ``gpuwrf run`` would therefore *silently substitute a
-    different scheme* (e.g. RRTMG for the requested RRTM/Dudhia), which violates
+    operational GPU scan. The New-Tiedtke adapter has no operational scan
+    carry-path (MYJ PBL + Janjic Eta surface layer were REFERENCE_ONLY through
+    v0.12.0 but are now IMPLEMENTED via the v0.13 traceable pair). Running
+    a reference-only scheme through ``gpuwrf run`` would therefore *silently
+    substitute a different scheme*, which violates
     the v0.12.0 "no silent wrong path" Scope-A contract. So the operational path
     refuses them loudly, naming the operational scheme the scan would actually run
     and the supported alternative.
