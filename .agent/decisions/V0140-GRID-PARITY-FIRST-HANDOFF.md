@@ -248,6 +248,15 @@ Wave deliverables are expected under `proofs/v014/` and
   edits, no GPU. Objective: classify remaining post-fix h1 `PHB/MUB/PB/HGT`
   and `XLAT/XLONG` mismatches as CPU-output convention, writer fallback,
   runtime input mismatch, forecast-step change, or unresolved blocker.
+- `019ea988-9f3c-7571-9073-f2b6d41b09f6` (`Kierkegaard`):
+  CPU-only same-state savepoint request manifest sprint
+  `.agent/sprints/2026-06-09-v014-same-state-savepoint-request/sprint-contract.md`.
+  Write scope: `proofs/v014/same_state_savepoint_request.*` and
+  `.agent/reviews/2026-06-09-v014-same-state-savepoint-request.md`. No `src/`
+  edits, no WRF edits, no GPU. Objective: package Helmholtz's h10 selected
+  cells, native-stagger context, patch bounds, full-column requirement, term
+  groups, RK/acoustic sampling, and expected savepoint artifact schema so the
+  WRF instrumentation worker can start without rereading broad diagnostics.
 
 ## Next Manager Actions
 
