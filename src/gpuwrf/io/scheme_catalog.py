@@ -182,14 +182,15 @@ _REFERENCE_ONLY: Mapping[str, dict[int, tuple[str, str]]] = {
             "KIM Simplified Arakawa-Schubert has a v0.13 single-column fp64 "
             "pristine-WRF oracle staged, but its traceable JAX column kernel is not "
             "yet ported, so it is fail-closed in the operational GPU scan.",
-            "Use cu_physics=1/2/3/6 (Kain-Fritsch / BMJ / Grell-Freitas / Tiedtke "
-            "are GPU-operational).",
+            "Use cu_physics=1/2/3/6 (Kain-Fritsch / BMJ / Grell-Freitas / Tiedtke; "
+            "Tiedtke also requires active flux-form moisture advection for RQVFTEN).",
         ),
         16: (
             "New Tiedtke is interface-compatible but not separately savepoint-"
             "gated by a distinct WRF source path; GPU-batching/gating is TODO, so "
             "it is fail-closed in the operational GPU scan.",
-            "Use cu_physics=6 (modified Tiedtke, GPU-operational) or 1/3.",
+            "Use cu_physics=6 (modified Tiedtke with active flux-form moisture "
+            "advection for RQVFTEN) or 1/3.",
         ),
     },
     # sf_surface_physics=1 (5-layer thermal-diffusion slab LSM) is a v0.13 Tier-3
@@ -251,7 +252,7 @@ _DEFAULT_ALTERNATIVE: Mapping[str, str] = {
     "mp_physics": "Use one of mp_physics=0/1/2/3/4/6/8/10/14/16 (8=Thompson is the "
     "operational default).",
     "cu_physics": "Use one of cu_physics=0/1/2/3/6 (1=Kain-Fritsch, 3=Grell-"
-    "Freitas, 6=Tiedtke are GPU-operational).",
+    "Freitas, 6=Tiedtke requires active flux-form moisture advection for RQVFTEN).",
     "bl_pbl_physics": "Use one of bl_pbl_physics=0/1/2/5/7/8/99 (5=MYNN, 1=YSU, 2=MYJ "
     "[pair with sf_sfclay_physics=2], 7=ACM2, 8=BouLac, 99=MRF).",
     "sf_sfclay_physics": "Use one of sf_sfclay_physics=0/1/2/3/5/7/91 (5=MYNN-SL, "

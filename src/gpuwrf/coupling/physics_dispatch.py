@@ -15,8 +15,9 @@ Design contract (S0 ``V0.6.0-S0-PLAN.md``):
 * Each scheme records ``gpu_runnable``. KF (cu=1), BMJ (cu=2), Grell-Freitas
   (cu=3), Tiedtke (cu=6), and the jit/vmap'd microphysics / PBL / surface-layer /
   Noah-MP/Noah-classic kernels are GPU-runnable. Tiedtke (cu=6) is GPU-batched via
-  ``cumulus_tiedtke_jax`` and scan-wired (``CU_SCAN_ADAPTERS[6]``), savepoint-
-  gated against unmodified ``module_cu_tiedtke.F``
+  ``cumulus_tiedtke_jax`` and scan-wired (``CU_SCAN_ADAPTERS[6]``) when the
+  runtime can provide WRF ``RQVFTEN`` from active flux-form moisture advection,
+  savepoint-gated against unmodified ``module_cu_tiedtke.F``
   (proofs/v060/tiedtke_gpubatch_savepoint_parity.json). Grell-Freitas (cu=3) is
   the v0.9.0 GPU-batched jit/vmap port (``physics._gf_jax.gfdrv_batched``,
   stateless State->State, scan-wired ``CU_SCAN_ADAPTERS[3]``), savepoint-gated
@@ -237,11 +238,12 @@ _SFCLAY_ENTRIES: dict[int, SchemeEntry] = {
 
 # --- Cumulus (cu_physics) ------------------------------------------------------
 # KF (cu=1), BMJ (cu=2), Grell-Freitas (cu=3), and Tiedtke (cu=6) are jit/vmap'd
-# operational GPU cumulus paths (scan-wired via CU_SCAN_ADAPTERS). Grell-Freitas
-# (cu=3) is the v0.9.0 GPU-batched jit/vmap port of the scale-aware closure-ensemble
-# kernel (physics._gf_jax.gfdrv_batched), savepoint-parity gated. New Tiedtke (cu=16)
-# shares the Tiedtke kernel but is NOT separately savepoint-gated, so it stays
-# gpu_runnable=False / fail-closed. All route through the combined R*CUTEN
+# operational GPU cumulus paths (scan-wired via CU_SCAN_ADAPTERS). Tiedtke requires
+# runtime RQVFTEN/RQVBLTEN from active moisture advection and the PBL qv increment.
+# Grell-Freitas (cu=3) is the v0.9.0 GPU-batched jit/vmap port of the scale-aware
+# closure-ensemble kernel (physics._gf_jax.gfdrv_batched), savepoint-parity gated.
+# New Tiedtke (cu=16) shares the Tiedtke kernel but is NOT separately savepoint-
+# gated, so it stays gpu_runnable=False / fail-closed. All route through the combined R*CUTEN
 # tendency + RAINCV/PRATEC family (S0 cugd_* correction: no inert cugd_* State
 # carry for GF).
 _CU_ENTRIES: dict[int, SchemeEntry] = {
@@ -275,7 +277,9 @@ _CU_ENTRIES: dict[int, SchemeEntry] = {
                    reads_state=("u", "v", "w", "theta", "qv", "qc", "qr", "qi", "qs"),
                    writes_state=("theta", "qv", "qc", "qr", "qi", "qs"),
                    tendency_members=CUMULUS_TENDENCY_MEMBERS[6], accumulators=("rainc_acc",),
-                   notes="GPU-batched (jit/vmap) Tiedtke; scan-wired via CU_SCAN_ADAPTERS[6]; "
+                   notes="GPU-batched (jit/vmap) Tiedtke; scan-wired via CU_SCAN_ADAPTERS[6] "
+                   "when runtime supplies WRF RQVFTEN/RQVBLTEN from active moisture "
+                   "advection/PBL forcing; "
                    "savepoint-gated vs unmodified module_cu_tiedtke.F "
                    "(proofs/v060/tiedtke_gpubatch_savepoint_parity.json); tendency-only carry."),
     16: SchemeEntry("cumulus", 16, CU_SCHEMES[16].name, "gpuwrf.physics.cumulus_tiedtke", "step_tiedtke_column",

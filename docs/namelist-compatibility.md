@@ -173,7 +173,7 @@ dropping hail. Wiring it needs a cross-cutting State/dynamics/I-O `qh` leaf.
 | 2  | Betts-Miller-Janjic | OPERATIONAL | adjustment scheme; carries CLDEFI; fp64 savepoint-parity |
 | 3  | Grell-Freitas | OPERATIONAL | v0.9.0 GPU-batched jit/vmap scale-aware adapter; savepoint-parity |
 | 5  | Grell-3D ensemble | REFERENCE-ONLY | fp64 single-column oracle staged; JAX kernel is a v0.13 carry-over |
-| 6  | Tiedtke | OPERATIONAL | GPU-batched (`cumulus_tiedtke_jax`); savepoint-parity |
+| 6  | Tiedtke | OPERATIONAL | GPU-batched (`cumulus_tiedtke_jax`); savepoint-parity; requires active flux-form moisture advection (`use_flux_advection=True`, `moist_adv_opt=1/2`) so WRF `RQVFTEN` is available |
 | 14 | KIM Simplified Arakawa-Schubert | REFERENCE-ONLY | fp64 single-column oracle staged; JAX kernel is a v0.13 carry-over |
 | 16 | New Tiedtke | REFERENCE-ONLY | shares Tiedtke kernel but NOT separately source-gated; fail-closed |
 

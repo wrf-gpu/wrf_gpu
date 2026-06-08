@@ -583,7 +583,15 @@ def initial_kf_carry(state: State):
     return (w0avg, nca)
 
 
-def tiedtke_adapter(state: State, dt: float, grid=None, *, stepcu: int = 1) -> State:
+def tiedtke_adapter(
+    state: State,
+    dt: float,
+    grid=None,
+    *,
+    stepcu: int = 1,
+    qvften: jax.Array | None = None,
+    qvpblten: jax.Array | None = None,
+) -> State:
     """cu=6 modified-Tiedtke cumulus ``State -> State`` scan adapter.
 
     Tiedtke is a per-column kernel (``cumulus_tiedtke_jax.tiedtke_column_jax``); the
@@ -604,9 +612,10 @@ def tiedtke_adapter(state: State, dt: float, grid=None, *, stepcu: int = 1) -> S
         levels, edges by zero-gradient (same assembler the YSU/ACM2 adapter uses).
       * ``ZNU`` eta at mass levels: WRF eta relation ``(p - p_top)/(p_sfc - p_top)``
         per column (used only by the below-cloud rain-evaporation coefficient).
-      * ``QVFTEN`` / ``QVPBLTEN`` advective / PBL moisture forcing: zero in the
-        per-slot scan (no separate forcing tracked into the cumulus slot here;
-        WRF folds them into the moisture budget -- documented carry-over).
+      * ``QVFTEN`` / ``QVPBLTEN`` advective / PBL moisture forcing: threaded by
+        the operational runtime from the WRF flux-form qv-advection diagnostic
+        and the PBL-slot qv increment.  Direct adapter calls may omit them, in
+        which case they remain zero for isolated kernel tests.
       * ``QFX`` surface moisture flux from the B2 kinematic ``qv_flux`` handle.
     """
 
@@ -654,7 +663,12 @@ def tiedtke_adapter(state: State, dt: float, grid=None, *, stepcu: int = 1) -> S
     u_c = _cols(_u_mass(state))
     v_c = _cols(_v_mass(state))
     w_c = _cols1(w_int)
-    zero_c = jnp.zeros_like(T_c)
+    qvften_c = _cols(
+        jnp.zeros_like(state.qv) if qvften is None else jnp.asarray(qvften, jnp.float64)
+    )
+    qvpblten_c = _cols(
+        jnp.zeros_like(state.qv) if qvpblten is None else jnp.asarray(qvpblten, jnp.float64)
+    )
     znu_c = _cols(znu)
     qfx_c = qfx_2d.reshape(ny * nx)
     xland_c = xland_2d.reshape(ny * nx)
@@ -672,7 +686,7 @@ def tiedtke_adapter(state: State, dt: float, grid=None, *, stepcu: int = 1) -> S
 
     (rth, rqv, rqc, rqr, rqi, rqs, ru, rv, raincv) = jax.vmap(_one)(
         T_c, qv_c, qc_c, qi_c, p_c, p8w_c, dz_c, rho_c, pii_c, u_c, v_c, w_c,
-        zero_c, zero_c, qfx_c, xland_c, znu_c,
+        qvften_c, qvpblten_c, qfx_c, xland_c, znu_c,
     )
 
     def _back(field2d):  # (ncol, nz) -> (nz, ny, nx)

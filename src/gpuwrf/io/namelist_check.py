@@ -142,12 +142,14 @@ SUPPORTED_OPTIONS: dict[str, SupportedOption] = {
         implemented=(
             "0=disabled, 1=Kain-Fritsch, 2=Betts-Miller-Janjic (fp64 savepoint-parity), "
             "3=Grell-Freitas (v0.9.0 GPU-batched jit/vmap scale-aware adapter, savepoint-parity), "
-            "6=Tiedtke (all GPU-operational, scan-wired); "
+            "6=Tiedtke (GPU-operational only with use_flux_advection=True and "
+            "moist_adv_opt=1/2 so RQVFTEN is available); "
             "16=New Tiedtke (accepted, NOT separately source-gated; fail-closed in the GPU scan) "
             "-- 16 is selectable for reference but fail-closed in the operational GPU scan"
         ),
         action=(
-            "Use cu_physics=0/1/2/3/6 for the operational GPU scan; "
+            "Use cu_physics=0/1/2/3/6 for the operational GPU scan; cu=6 requires "
+            "active flux-form moisture advection (use_flux_advection=True, moist_adv_opt=1/2); "
             "16=New Tiedtke remains fail-closed (not separately source-gated)."
         ),
     ),

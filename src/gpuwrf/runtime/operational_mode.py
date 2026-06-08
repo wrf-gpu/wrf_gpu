@@ -72,6 +72,7 @@ from gpuwrf.coupling.scan_adapters import (
     initial_bmj_carry,
     initial_kf_carry,
     kf_adapter,
+    tiedtke_adapter,
 )
 from gpuwrf.physics.myj_adapters import (
     janjic_sfclay_adapter,
@@ -2077,6 +2078,36 @@ def _moisture_coupled_tendencies(
     )
 
 
+def _tiedtke_qvften_from_flux_advection(
+    state: State,
+    namelist: OperationalNamelist,
+) -> jax.Array:
+    """Diagnose WRF ``RQVFTEN`` for modified Tiedtke from flux-form qv advection.
+
+    WRF stores the scalar advection tendency in ``RQVFTEN`` via ``set_tend`` and
+    mass-normalizes it before ``cumulus_driver`` calls ``CU_TIEDTKE``.  This port's
+    operational moisture-advection helper returns the same coupled
+    ``d(mut*qv)/dt`` quantity, so divide by the mass-point dry-air weight
+    ``c1h*mu + c2h`` to recover the kg kg-1 s-1 forcing the Tiedtke closure uses.
+    The helper is called only when the active flux-form moisture-advection path
+    is enabled.
+    """
+
+    haloed = apply_halo(state, halo_spec(namelist.grid))
+    qv_coupled = _moisture_coupled_tendencies(
+        haloed,
+        namelist,
+        rk_step=1,
+        step_origin=state,
+    )[0]
+    metrics = namelist.metrics
+    mass = (
+        metrics.c1h[:, None, None] * haloed.mu_total[None, :, :]
+        + metrics.c2h[:, None, None]
+    )
+    return qv_coupled / mass
+
+
 def _apply_moisture_large_step(
     state: State,
     step_origin: State,
@@ -2420,8 +2451,9 @@ _SCAN_WIRED_OPTIONS = {
     "sf_sfclay_physics": (0, 1, 2, 3, 5, 7, 91),
     # cu=0 no cumulus, 1 KF, 2 BMJ (fp64 savepoint-parity carry-threaded adapter),
     # 3 Grell-Freitas (v0.9.0 GPU-batched jit/vmap stateless adapter), 6 modified-
-    # Tiedtke (v0.6.0 GPU-batched jit/vmap adapter). New-Tiedtke(16) not separately
-    # gated -> NOT wired.
+    # Tiedtke (v0.6.0 GPU-batched jit/vmap adapter; requires active flux-form
+    # moisture advection so the scan can diagnose WRF RQVFTEN). New-Tiedtke(16)
+    # not separately gated -> NOT wired.
     "cu_physics": (0, 1, 2, 3, 6),
     # ra_sw=0 disabled, 4 RRTMG SW (default), 1 Dudhia SW (Stephens-1984, scan-wired held-rate
     # theta tendency via dudhia_sw_theta_tendency), 2 GSFC/Chou-Suarez SW
@@ -2487,6 +2519,19 @@ def _resolve_operational_suite(namelist: OperationalNamelist):
             tag = f"{key}={selected}"
             reason = _SCAN_UNWIRED_REASON.get(tag)
             not_wired.append(f"{tag} ({reason})" if reason else tag)
+    tiedtke_lacks_rqvften = (
+        int(getattr(namelist, "cu_physics", 0)) == 6
+        and (
+            not bool(namelist.use_flux_advection)
+            or int(getattr(namelist, "moist_adv_opt", 0)) == 0
+        )
+    )
+    if tiedtke_lacks_rqvften:
+        not_wired.append(
+            "cu_physics=6 (modified-Tiedtke requires use_flux_advection=True and "
+            "moist_adv_opt=1/2 so the operational scan can diagnose WRF RQVFTEN "
+            "moisture-convergence forcing)"
+        )
     # Land surface: the scan threads Noah-MP (use_noahmp=True), explicit
     # Noah-classic (sf_surface_physics=2 + WRF-derived land/static bundle), or the
     # legacy bulk surface path. NOTE the dispatcher maps the legacy
@@ -2829,6 +2874,7 @@ def _physics_step_forcing(
     # layer already run in the surface slot); it re-derives the surface coupling
     # and threads the TKE carry via qke. Defined in physics.myj_adapters.
     bl_opt = int(namelist.bl_pbl_physics)
+    pbl_entry_state = next_state
     if bl_opt == 2:
         next_state = myj_pbl_adapter(next_state, float(namelist.dt_s), namelist.grid)
     elif bl_opt in PBL_SCAN_ADAPTERS:
@@ -2836,6 +2882,13 @@ def _physics_step_forcing(
     elif bl_opt == DEFAULT_BL_PBL_PHYSICS:
         next_state = mynn_adapter(next_state, float(namelist.dt_s), namelist.grid)
     # bl_opt == 0 -> no PBL mixing.
+    qvpblten = (
+        (
+            jnp.asarray(next_state.qv, jnp.float64)
+            - jnp.asarray(pbl_entry_state.qv, jnp.float64)
+        )
+        / float(namelist.dt_s)
+    )
 
     # --- orographic gravity-wave drag slot (gwd_opt=1) ---
     # WRF applies GWDO inside the PBL driver, right after the PBL momentum
@@ -2847,7 +2900,16 @@ def _physics_step_forcing(
         )
 
     # --- cumulus slot ---
-    if cu_opt in CU_STATELESS_SCAN_ADAPTERS:
+    if cu_opt == 6:
+        qvften = _tiedtke_qvften_from_flux_advection(next_state, namelist)
+        next_state = tiedtke_adapter(
+            next_state,
+            float(namelist.dt_s),
+            namelist.grid,
+            qvften=qvften,
+            qvpblten=qvpblten,
+        )
+    elif cu_opt in CU_STATELESS_SCAN_ADAPTERS:
         next_state = CU_STATELESS_SCAN_ADAPTERS[cu_opt](
             next_state, float(namelist.dt_s), namelist.grid
         )
